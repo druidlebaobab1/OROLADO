@@ -310,8 +310,20 @@
   function bindStake(box) {
     var inp = $('csStake'); if (!inp) return;
     var set = function (v) { v = Math.max(0.1, Math.min(1000, Math.round((Number(v) || 0.1) * 100) / 100)); S.stake = v; inp.value = m2(v); box.dispatchEvent(new Event('stake')); };
-    inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); });
-    inp.addEventListener('focus', function () { try { inp.select(); } catch (e) { /* ignore */ } });
+    // v2807 (propriétaire, iPhone) : select() ne sélectionne pas sur iPhone → le montant tapé s'ajoutait derrière l'ancien
+    // (« 0.105 »). Toucher la case la VIDE (l'ancien montant reste en gris) ; vide en sortant = l'ancien montant revient.
+    var editing = false;
+    var commit = function () {
+      if (!editing) return; editing = false; inp.placeholder = '';
+      var t = String(inp.value).replace(/\s/g, '').replace(',', '.').replace(/[^0-9.]/g, ''), i = t.indexOf('.');
+      if (i >= 0) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, '');
+      if (t === '' || !isFinite(parseFloat(t))) inp.value = m2(S.stake); else set(parseFloat(t));
+    };
+    inp.addEventListener('focus', function () { editing = true; inp.placeholder = m2(S.stake); inp.value = ''; });
+    inp.addEventListener('input', function () { var c = String(inp.value).replace(/[^0-9.,]/g, ''); if (c !== inp.value) inp.value = c; });
+    inp.addEventListener('blur', commit);
+    inp.addEventListener('change', commit);
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
     box.querySelectorAll('[data-sk]').forEach(function (b) {
       b.addEventListener('click', function (e) {
         e.preventDefault();

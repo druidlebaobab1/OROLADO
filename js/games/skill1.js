@@ -1,36 +1,39 @@
-/* v2805 — "You're in control" group 1 (owner request): Space Runner, Flappy Rocket, Tower Stack, Star Blades, Basket Shot,
-   Penalty Kicker. MIXED MODE like Aviator, but the player plays: bet → the multiplier grows with time while you play
-   (one gesture: tap or swipe) → gold CASH OUT at any moment. A mistake ends the round; the server's secret end arrives
-   as an unavoidable meteor. Canvas 2D, 60 fps, devicePixelRatio ≤ 2, sprites pre-drawn once per size, pauses when the
-   tab is hidden. The server (casino_ext.php, type 'skill') draws everything and pays; this file only shows it. */
+/* v2807 — "You're in control" group 1 (owner request, round 3: obvious on phones): Space Runner, Flappy Rocket,
+   Tower Stack, Star Blades, Basket Shot, Star Bridge (new — replaces Penalty Kicker). MIXED MODE like Aviator, but the
+   player plays: bet → the multiplier grows with time while you play (ONE gesture: tap, or hold for Star Bridge) → gold
+   CASH OUT at any moment. A mistake ends the round; the server's secret end arrives as an unavoidable meteor.
+   Phones: the whole scene takes the touches (pointer events, touch-action:none, iOS scroll / zoom / callout blocked),
+   every touch shows a ripple, a hand hint shows the gesture until the first move, and touching the idle scene points
+   to the BET button. Canvas 2D, 60 fps, devicePixelRatio ≤ 2, sprites pre-drawn once per size, pauses when hidden.
+   The server (casino_ext.php, type 'skill') draws everything and pays; this file only shows it. */
 (function (D6) {
   'use strict';
   var K = D6.CasinoKit, $ = K.$;
   var T = {
-    en: { bet: 'Bet', cash: 'Cash out', end: 'Meteor strike!', crash: 'Crashed!', miss: 'Missed!', clash: 'Blade clash!', save: 'Saved!', late: 'Too late!',
-      h_jump: 'Tap to jump', h_boost: 'Tap to boost', h_drop: 'Tap to drop', h_throw: 'Tap to throw', h_shoot: 'Swipe up to shoot', h_kick: 'Swipe to shoot' },
-    fr: { bet: 'Miser', cash: 'Encaisser', end: 'Météorite !', crash: 'Crash !', miss: 'Raté !', clash: 'Lames croisées !', save: 'Arrêté !', late: 'Trop tard !',
-      h_jump: 'Touche pour sauter', h_boost: 'Touche pour propulser', h_drop: 'Touche pour poser', h_throw: 'Touche pour lancer', h_shoot: 'Glisse vers le haut pour tirer', h_kick: 'Glisse pour tirer' },
-    es: { bet: 'Apostar', cash: 'Retirar', end: '¡Meteorito!', crash: '¡Choque!', miss: '¡Fallo!', clash: '¡Choque de cuchillas!', save: '¡Atajada!', late: '¡Muy tarde!',
-      h_jump: 'Toca para saltar', h_boost: 'Toca para impulsar', h_drop: 'Toca para soltar', h_throw: 'Toca para lanzar', h_shoot: 'Desliza hacia arriba para tirar', h_kick: 'Desliza para chutar' },
-    pt: { bet: 'Apostar', cash: 'Sacar', end: 'Meteoro!', crash: 'Bateu!', miss: 'Errou!', clash: 'Lâminas batem!', save: 'Defendeu!', late: 'Tarde demais!',
-      h_jump: 'Toque para pular', h_boost: 'Toque para impulsionar', h_drop: 'Toque para soltar', h_throw: 'Toque para lançar', h_shoot: 'Deslize para cima para arremessar', h_kick: 'Deslize para chutar' },
-    ar: { bet: 'راهن', cash: 'اسحب', end: 'نيزك!', crash: 'اصطدام!', miss: 'أخطأت!', clash: 'تصادم الشفرات!', save: 'تصدّى!', late: 'متأخر جدًا!',
-      h_jump: 'المس للقفز', h_boost: 'المس للدفع', h_drop: 'المس للإسقاط', h_throw: 'المس للرمي', h_shoot: 'اسحب للأعلى للتسديد', h_kick: 'اسحب للتسديد' },
-    tr: { bet: 'Bahis', cash: 'Çek', end: 'Meteor çarptı!', crash: 'Çarptı!', miss: 'Kaçtı!', clash: 'Bıçaklar çarpıştı!', save: 'Kurtardı!', late: 'Çok geç!',
-      h_jump: 'Zıplamak için dokun', h_boost: 'İtmek için dokun', h_drop: 'Bırakmak için dokun', h_throw: 'Fırlatmak için dokun', h_shoot: 'Atmak için yukarı kaydır', h_kick: 'Şut için kaydır' },
-    vi: { bet: 'Cược', cash: 'Rút', end: 'Thiên thạch!', crash: 'Va chạm!', miss: 'Trượt!', clash: 'Va lưỡi dao!', save: 'Bị cản!', late: 'Quá muộn!',
-      h_jump: 'Chạm để nhảy', h_boost: 'Chạm để tăng tốc', h_drop: 'Chạm để thả', h_throw: 'Chạm để phóng', h_shoot: 'Vuốt lên để ném', h_kick: 'Vuốt để sút' },
-    id: { bet: 'Pasang', cash: 'Tarik', end: 'Meteor!', crash: 'Tabrakan!', miss: 'Meleset!', clash: 'Pisau beradu!', save: 'Ditepis!', late: 'Terlambat!',
-      h_jump: 'Ketuk untuk lompat', h_boost: 'Ketuk untuk dorong', h_drop: 'Ketuk untuk jatuhkan', h_throw: 'Ketuk untuk lempar', h_shoot: 'Geser ke atas untuk menembak', h_kick: 'Geser untuk menendang' },
-    ru: { bet: 'Ставка', cash: 'Забрать', end: 'Метеорит!', crash: 'Авария!', miss: 'Мимо!', clash: 'Клинки столкнулись!', save: 'Сейв!', late: 'Поздно!',
-      h_jump: 'Нажми — прыжок', h_boost: 'Нажми — ускорение', h_drop: 'Нажми — сбросить', h_throw: 'Нажми — бросок', h_shoot: 'Смахни вверх — бросок', h_kick: 'Смахни — удар' },
-    de: { bet: 'Setzen', cash: 'Auszahlen', end: 'Meteorit!', crash: 'Crash!', miss: 'Daneben!', clash: 'Klingen-Crash!', save: 'Gehalten!', late: 'Zu spät!',
-      h_jump: 'Tippen zum Springen', h_boost: 'Tippen für Schub', h_drop: 'Tippen zum Absetzen', h_throw: 'Tippen zum Werfen', h_shoot: 'Nach oben wischen zum Werfen', h_kick: 'Wischen zum Schießen' },
-    hi: { bet: 'दांव', cash: 'कैश आउट', end: 'उल्कापिंड!', crash: 'टक्कर!', miss: 'चूक गए!', clash: 'ब्लेड टकराए!', save: 'बचा लिया!', late: 'बहुत देर!',
-      h_jump: 'कूदने के लिए टैप करें', h_boost: 'बूस्ट के लिए टैप करें', h_drop: 'गिराने के लिए टैप करें', h_throw: 'फेंकने के लिए टैप करें', h_shoot: 'शूट के लिए ऊपर स्वाइप करें', h_kick: 'शॉट के लिए स्वाइप करें' },
-    zh: { bet: '下注', cash: '兑现', end: '陨石撞击！', crash: '撞上了！', miss: '没中！', clash: '飞刀相撞！', save: '被扑出！', late: '太慢了！',
-      h_jump: '点击跳跃', h_boost: '点击推进', h_drop: '点击放下', h_throw: '点击投掷', h_shoot: '向上滑动投篮', h_kick: '滑动射门' }
+    en: { bet: 'Bet', cash: 'Cash out', go: 'Bet to start', end: 'Meteor strike!', crash: 'Crashed!', miss: 'Missed!', clash: 'Blade clash!', fell: 'Fell!', late: 'Too late!',
+      h_jump: 'Tap to jump', h_boost: 'Tap to fly', h_drop: 'Tap to drop', h_throw: 'Tap to throw', h_shoot: 'Tap to shoot', h_hold: 'Hold to build' },
+    fr: { bet: 'Miser', cash: 'Encaisser', go: 'Mise pour jouer', end: 'Météorite !', crash: 'Crash !', miss: 'Raté !', clash: 'Lames croisées !', fell: 'Tombé !', late: 'Trop tard !',
+      h_jump: 'Touche pour sauter', h_boost: 'Touche pour voler', h_drop: 'Touche pour poser', h_throw: 'Touche pour lancer', h_shoot: 'Touche pour tirer', h_hold: 'Maintiens pour bâtir' },
+    es: { bet: 'Apostar', cash: 'Retirar', go: 'Apuesta para jugar', end: '¡Meteorito!', crash: '¡Choque!', miss: '¡Fallo!', clash: '¡Choque de cuchillas!', fell: '¡Caída!', late: '¡Muy tarde!',
+      h_jump: 'Toca para saltar', h_boost: 'Toca para volar', h_drop: 'Toca para soltar', h_throw: 'Toca para lanzar', h_shoot: 'Toca para tirar', h_hold: 'Mantén para construir' },
+    pt: { bet: 'Apostar', cash: 'Sacar', go: 'Aposte para jogar', end: 'Meteoro!', crash: 'Bateu!', miss: 'Errou!', clash: 'Lâminas batem!', fell: 'Caiu!', late: 'Tarde demais!',
+      h_jump: 'Toque para pular', h_boost: 'Toque para voar', h_drop: 'Toque para soltar', h_throw: 'Toque para lançar', h_shoot: 'Toque para arremessar', h_hold: 'Segure para construir' },
+    ar: { bet: 'راهن', cash: 'اسحب', go: 'راهن لتبدأ', end: 'نيزك!', crash: 'اصطدام!', miss: 'أخطأت!', clash: 'تصادم الشفرات!', fell: 'سقط!', late: 'متأخر جدًا!',
+      h_jump: 'المس للقفز', h_boost: 'المس للطيران', h_drop: 'المس للإسقاط', h_throw: 'المس للرمي', h_shoot: 'المس للتسديد', h_hold: 'اضغط مطولًا للبناء' },
+    tr: { bet: 'Bahis', cash: 'Çek', go: 'Başlamak için bahis', end: 'Meteor çarptı!', crash: 'Çarptı!', miss: 'Kaçtı!', clash: 'Bıçaklar çarpıştı!', fell: 'Düştü!', late: 'Çok geç!',
+      h_jump: 'Zıplamak için dokun', h_boost: 'Uçmak için dokun', h_drop: 'Bırakmak için dokun', h_throw: 'Atmak için dokun', h_shoot: 'Atış için dokun', h_hold: 'Kurmak için basılı tut' },
+    vi: { bet: 'Cược', cash: 'Rút', go: 'Đặt cược để chơi', end: 'Thiên thạch!', crash: 'Va chạm!', miss: 'Trượt!', clash: 'Va lưỡi dao!', fell: 'Rơi rồi!', late: 'Quá muộn!',
+      h_jump: 'Chạm để nhảy', h_boost: 'Chạm để bay', h_drop: 'Chạm để thả', h_throw: 'Chạm để phóng', h_shoot: 'Chạm để ném', h_hold: 'Giữ để xây cầu' },
+    id: { bet: 'Pasang', cash: 'Tarik', go: 'Pasang untuk main', end: 'Meteor!', crash: 'Tabrakan!', miss: 'Meleset!', clash: 'Pisau beradu!', fell: 'Jatuh!', late: 'Terlambat!',
+      h_jump: 'Ketuk untuk lompat', h_boost: 'Ketuk untuk terbang', h_drop: 'Ketuk untuk taruh', h_throw: 'Ketuk untuk lempar', h_shoot: 'Ketuk untuk tembak', h_hold: 'Tahan untuk membangun' },
+    ru: { bet: 'Ставка', cash: 'Забрать', go: 'Сделай ставку', end: 'Метеорит!', crash: 'Авария!', miss: 'Мимо!', clash: 'Клинки столкнулись!', fell: 'Упал!', late: 'Поздно!',
+      h_jump: 'Тап — прыжок', h_boost: 'Тап — взлёт', h_drop: 'Тап — сбросить', h_throw: 'Тап — бросок', h_shoot: 'Тап — бросок', h_hold: 'Держи — строить' },
+    de: { bet: 'Setzen', cash: 'Auszahlen', go: 'Setze zum Starten', end: 'Meteorit!', crash: 'Crash!', miss: 'Daneben!', clash: 'Klingen-Crash!', fell: 'Gestürzt!', late: 'Zu spät!',
+      h_jump: 'Tippen zum Springen', h_boost: 'Tippen zum Fliegen', h_drop: 'Tippen zum Ablegen', h_throw: 'Tippen zum Werfen', h_shoot: 'Tippen zum Werfen', h_hold: 'Halten zum Bauen' },
+    hi: { bet: 'दांव', cash: 'कैश आउट', go: 'खेलने को दांव लगाएँ', end: 'उल्कापिंड!', crash: 'टक्कर!', miss: 'चूक गए!', clash: 'ब्लेड टकराए!', fell: 'गिर गए!', late: 'बहुत देर!',
+      h_jump: 'कूदने को टैप करें', h_boost: 'उड़ने को टैप करें', h_drop: 'गिराने को टैप करें', h_throw: 'फेंकने को टैप करें', h_shoot: 'शॉट को टैप करें', h_hold: 'बनाने को दबाए रखें' },
+    zh: { bet: '下注', cash: '兑现', go: '下注开始', end: '陨石撞击！', crash: '撞上了！', miss: '没中！', clash: '飞刀相撞！', fell: '掉下去了！', late: '太慢了！',
+      h_jump: '点击跳跃', h_boost: '点击飞行', h_drop: '点击放下', h_throw: '点击投掷', h_shoot: '点击投篮', h_hold: '按住搭桥' }
   };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
 
@@ -121,32 +124,32 @@
       zh: '2. 在圆环耗尽前点击把飞刀掷向旋转的星球——击中已插上的飞刀就结束本轮。'
     },
     basket: {
-      en: '2. Swipe up to throw the ball into the moving hoop before the ring empties — a miss ends the round.',
-      fr: '2. Glisse vers le haut pour lancer le ballon dans le panier qui bouge avant que l’anneau se vide — un raté termine la partie.',
-      es: '2. Desliza hacia arriba para lanzar el balón al aro que se mueve antes de que se vacíe el anillo: un fallo termina la ronda.',
-      pt: '2. Deslize para cima para arremessar a bola na cesta que se move antes de o anel esvaziar — um erro encerra a rodada.',
-      ar: '2. اسحب للأعلى لرمي الكرة في السلة المتحركة قبل أن تفرغ الحلقة — الإخفاق ينهي الجولة.',
-      tr: '2. Halka boşalmadan topu hareket eden potaya atmak için yukarı kaydır — kaçırmak turu bitirir.',
-      vi: '2. Vuốt lên để ném bóng vào rổ đang di chuyển trước khi vòng cạn — ném trượt là hết ván.',
-      id: '2. Geser ke atas untuk melempar bola ke ring yang bergerak sebelum cincin habis — meleset mengakhiri ronde.',
-      ru: '2. Смахни вверх, чтобы бросить мяч в движущееся кольцо, пока таймер не опустел — промах завершает раунд.',
-      de: '2. Wische nach oben, um den Ball in den beweglichen Korb zu werfen, bevor der Ring leer ist — ein Fehlwurf beendet die Runde.',
-      hi: '2. घेरा खाली होने से पहले चलती बास्केट में गेंद डालने के लिए ऊपर स्वाइप करें — चूकने पर राउंड खत्म।',
-      zh: '2. 在圆环耗尽前向上滑动，把球投进移动的篮筐——投失就结束本轮。'
+      en: '2. Tap to shoot when the moving hoop is above the ball (its rim turns green) — a miss, or waiting too long, ends the round.',
+      fr: '2. Touche pour tirer quand le panier qui bouge est au-dessus du ballon (son cercle devient vert) — un raté, ou trop attendre, termine la partie.',
+      es: '2. Toca para tirar cuando el aro que se mueve esté sobre el balón (su aro se pone verde): un fallo, o esperar demasiado, termina la ronda.',
+      pt: '2. Toque para arremessar quando a cesta que se move estiver acima da bola (o aro fica verde) — um erro, ou esperar demais, encerra a rodada.',
+      ar: '2. المس للتسديد عندما تكون السلة المتحركة فوق الكرة (تصبح حلقتها خضراء) — الإخفاق أو الانتظار طويلًا ينهي الجولة.',
+      tr: '2. Hareket eden pota topun üstündeyken (çemberi yeşil olur) atış için dokun — ıska ya da çok beklemek turu bitirir.',
+      vi: '2. Chạm để ném khi rổ đang di chuyển ở ngay trên quả bóng (vành rổ chuyển xanh) — ném trượt, hoặc chờ quá lâu, là hết ván.',
+      id: '2. Ketuk untuk menembak saat ring yang bergerak ada di atas bola (ringnya jadi hijau) — meleset, atau menunggu terlalu lama, mengakhiri ronde.',
+      ru: '2. Нажми, чтобы бросить, когда движущееся кольцо над мячом (оно становится зелёным) — промах или долгое ожидание завершает раунд.',
+      de: '2. Tippe zum Werfen, wenn der bewegliche Korb über dem Ball ist (der Ring wird grün) — ein Fehlwurf oder zu langes Warten beendet die Runde.',
+      hi: '2. जब चलती बास्केट गेंद के ठीक ऊपर हो (उसका घेरा हरा हो जाता है) तब शॉट के लिए टैप करें — चूकना या बहुत देर करना राउंड खत्म करता है।',
+      zh: '2. 当移动的篮筐在球的正上方（篮圈变绿）时点击投篮——投失或等待太久都会结束本轮。'
     },
-    kicker: {
-      en: '2. Swipe to shoot past the moving keeper into the goal before the ring empties — a save or a miss ends the round.',
-      fr: '2. Glisse pour tirer dans le but en évitant le gardien qui bouge, avant que l’anneau se vide — un arrêt ou un tir raté termine la partie.',
-      es: '2. Desliza para chutar al arco esquivando al portero que se mueve antes de que se vacíe el anillo: una atajada o un fallo termina la ronda.',
-      pt: '2. Deslize para chutar no gol, longe do goleiro que se move, antes de o anel esvaziar — uma defesa ou um erro encerra a rodada.',
-      ar: '2. اسحب للتسديد في المرمى بعيدًا عن الحارس المتحرك قبل أن تفرغ الحلقة — التصدي أو الإخفاق ينهي الجولة.',
-      tr: '2. Halka boşalmadan hareket eden kaleciyi geçip kaleye şut çekmek için kaydır — kurtarış ya da ıska turu bitirir.',
-      vi: '2. Vuốt để sút qua thủ môn đang di chuyển vào khung thành trước khi vòng cạn — bị cản hoặc sút trượt là hết ván.',
-      id: '2. Geser untuk menendang melewati kiper yang bergerak ke gawang sebelum cincin habis — ditepis atau meleset mengakhiri ronde.',
-      ru: '2. Смахни, чтобы пробить мимо движущегося вратаря в ворота, пока таймер не опустел — сейв или промах завершает раунд.',
-      de: '2. Wische, um am beweglichen Torwart vorbei ins Tor zu schießen, bevor der Ring leer ist — eine Parade oder ein Fehlschuss beendet die Runde.',
-      hi: '2. घेरा खाली होने से पहले चलते गोलकीपर से बचाकर गोल में शॉट के लिए स्वाइप करें — बचाव या चूक पर राउंड खत्म।',
-      zh: '2. 在圆环耗尽前滑动射门，避开移动的守门员——被扑出或射偏就结束本轮。'
+    starbridge: {
+      en: '2. Hold to grow a light bridge, release to drop it onto the next pillar — too short or too long and you fall; waiting too long also ends the round.',
+      fr: '2. Maintiens le doigt pour allonger un pont de lumière, relâche pour le poser sur le pilier suivant — trop court ou trop long, tu tombes ; trop attendre termine aussi la partie.',
+      es: '2. Mantén pulsado para alargar un puente de luz y suelta para dejarlo caer sobre el siguiente pilar: si es muy corto o muy largo, caes; esperar demasiado también termina la ronda.',
+      pt: '2. Segure para esticar uma ponte de luz e solte para apoiá-la no próximo pilar — curta ou longa demais, você cai; esperar demais também encerra a rodada.',
+      ar: '2. اضغط مطولًا لتمديد جسر من الضوء، ثم اترك ليسقط على العمود التالي — إن كان قصيرًا جدًا أو طويلًا جدًا تسقط؛ والانتظار طويلًا ينهي الجولة أيضًا.',
+      tr: '2. Işık köprüsünü uzatmak için basılı tut, sonraki sütuna indirmek için bırak — çok kısa ya da çok uzunsa düşersin; çok beklemek de turu bitirir.',
+      vi: '2. Giữ để kéo dài cây cầu ánh sáng, thả ra để đặt nó lên cột tiếp theo — quá ngắn hoặc quá dài là rơi; chờ quá lâu cũng hết ván.',
+      id: '2. Tahan untuk memanjangkan jembatan cahaya, lepas untuk menjatuhkannya ke pilar berikut — terlalu pendek atau terlalu panjang kamu jatuh; menunggu terlalu lama juga mengakhiri ronde.',
+      ru: '2. Держи палец, чтобы вырастить мост из света, отпусти — он ляжет на следующую колонну. Слишком короткий или длинный — падение; долгое ожидание тоже завершает раунд.',
+      de: '2. Halte gedrückt, um eine Lichtbrücke wachsen zu lassen, lass los, um sie auf die nächste Säule zu legen — zu kurz oder zu lang und du stürzt; zu langes Warten beendet die Runde auch.',
+      hi: '2. रोशनी का पुल बढ़ाने के लिए दबाए रखें, अगले खंभे पर गिराने के लिए छोड़ें — बहुत छोटा या बहुत लंबा हुआ तो आप गिरेंगे; बहुत देर करना भी राउंड खत्म करता है।',
+      zh: '2. 按住让光桥变长，松手让它落到下一根柱子上——太短或太长都会掉下去；等待太久也会结束本轮。'
     }
   };
   function rules(k) { var o = {}; Object.keys(R1).forEach(function (lg) { o[lg] = R1[lg] + '\n' + R2[k][lg] + '\n' + R3[lg]; }); return o; }
@@ -221,11 +224,11 @@
       };
     },
     reset: function (w) {
-      w.dist = 0; w.v = 0; w.y = 0; w.vy = 0; w.air = 0; w.obs = []; w.next = 70; w.buf = 0; w.dead = 0; w.leg = 0; w.rot = 0; w.fall = 0;
+      w.dist = 0; w.v = 0; w.y = 0; w.vy = 0; w.air = 0; w.obs = []; w.next = 100; w.buf = 0; w.dead = 0; w.leg = 0; w.rot = 0; w.fall = 0;
     },
     gy: 80,
     rx: function (w) { return Math.max(14, w.VW * 0.22); },
-    tap: function (w) { if (w.dead) return; if (!w.air) { w.vy = -160; w.air = 1; } else w.buf = 0.16; },
+    tap: function (w) { if (w.dead) return; if (!w.air) { w.vy = -160; w.air = 1; } else w.buf = 0.24; }, // a tap just before landing is kept (no lost touch)
     step: function (w, dt, mode) {
       var play = mode === 'play' || mode === 'hold';
       var tv = mode === 'idle' ? 22 : mode === 'post' ? 0 : Math.min(70, 42 + w.t * 1.1);
@@ -322,7 +325,7 @@
       var play = mode === 'play' || mode === 'hold', rx = this.rx(w), fl = this.floor;
       var tv = mode === 'idle' ? 18 : mode === 'post' ? 0 : Math.min(46, 34 + w.t * 0.5);
       w.v += (tv - w.v) * Math.min(1, dt * 3); w.dist += w.v * dt; w.flame = Math.max(0, w.flame - dt);
-      if (play && !w.go && w.t > 1.2) w.go = 1; // gravity starts by itself after a short hover
+      if (play && !w.go && w.t > 2.5) w.go = 1; // gravity starts by itself after a short hover
       if (!w.go || mode === 'idle') { w.hov += dt; var ty = 45 + Math.sin(w.hov * 2.2) * 3; w.vy = (ty - w.y) * 4; w.y += w.vy * dt; }
       else { w.vy = Math.min(120, w.vy + 230 * dt); w.y += w.vy * dt; if (w.y < 4) { w.y = 4; w.vy = Math.max(0, w.vy); } }
       if (w.dead && w.y > fl - 2) { w.y = fl - 2; w.vy = 0; }
@@ -330,8 +333,8 @@
       if (play) {
         if (!w.next) w.next = w.dist + w.VW - rx + 8;
         while (w.next < w.dist + w.VW + 20) {
-          var gap = Math.max(31, 40 - w.t * 0.22), lo = gap / 2 + 6, hi = fl - gap / 2 - 5;
-          var gc = clamp(w.lastC + rnd(-27, 27), lo, hi); w.lastC = gc;
+          var gap = Math.max(32, 48 - w.t * 0.25), lo = gap / 2 + 6, hi = fl - gap / 2 - 5, dv = Math.min(27, 12 + w.t * 0.35);
+          var gc = clamp(w.lastC + rnd(-dv, dv), lo, hi); w.lastC = gc;
           w.cols.push({ x: w.next, top: gc - gap / 2, bot: gc + gap / 2, s: Math.floor(Math.random() * 3) });
           w.next += 58 - Math.min(6, w.t * 0.1);
         }
@@ -390,7 +393,7 @@
     col: function (i) { return 'hsl(' + ((262 + i * 11) % 360) + ',78%,'; },
     reset: function (w) {
       var pw = Math.min(w.VW * 0.92, 70), bw = pw * 0.5;
-      w.pw = pw; w.blocks = [{ x: w.VW / 2 - bw / 2, w: bw }]; w.deb = []; w.cam = 0; w.mv = null; w.wait = 0.25; w.dead = 0; w.perf = 0; w.dir = 1; w.spd = pw / 1.75; w.drop = null; w.idleN = 0;
+      w.pw = pw; w.blocks = [{ x: w.VW / 2 - bw / 2, w: bw }]; w.deb = []; w.cam = 0; w.mv = null; w.wait = 0.25; w.dead = 0; w.perf = 0; w.dir = 1; w.spd = pw / 2.3; w.drop = null; w.idleN = 0;
       for (var i = 0; i < 3; i++) w.blocks.push({ x: w.VW / 2 - bw / 2, w: bw });
     },
     base: function (w) { return w.VH - 12; },
@@ -426,7 +429,7 @@
           if (dr.miss) { w.dead = 1; w.deb.push({ x: dr.x, y: this.topY(w) - BH, w: dr.w, vx: w.dir * 10, vy: 10, a: 0, va: w.dir * 2, i: w.blocks.length }); return mode === 'play' ? 'miss' : null; }
           w.blocks.push({ x: dr.x, w: dr.w, p: dr.perfect ? 0.5 : 0 });
           if (mode === 'idle' && w.blocks.length > 7) { w.blocks.splice(4); w.cam = 0; }
-          w.spd = Math.min(w.pw / 0.95, w.spd * (mode === 'idle' ? 1 : 1.03)); w.wait = 0.12;
+          w.spd = Math.min(w.pw / 1.05, w.spd * (mode === 'idle' ? 1 : 1.025)); w.wait = 0.12;
         }
         return null;
       }
@@ -501,7 +504,7 @@
         })
       };
     },
-    reset: function (w) { w.rot = 0; w.stuck = []; w.lvl = 1; w.left = 6; w.fly = null; w.ready = 0.2; w.fuse = 0; w.dead = 0; w.bounce = null; w.lt = 0; w.pop = 1; w.shards = []; w.stuck.push({ a: 1.2 }, { a: 3.6 }, { a: 5.1 }); },
+    reset: function (w) { w.rot = 0; w.stuck = []; w.lvl = 1; w.left = 6; w.fly = null; w.ready = 0.2; w.fuse = 0; w.q = 0; w.dead = 0; w.bounce = null; w.lt = 0; w.pop = 1; w.shards = []; w.stuck.push({ a: 1.2 }, { a: 3.6 }, { a: 5.1 }); },
     cx: function (w) { return w.VW / 2; }, cy: function (w) { return Math.max(w.VH * 0.37, w.top + this.R + 6); },
     by: function (w) { return w.VH * 0.9; },
     newLevel: function (w) {
@@ -518,7 +521,8 @@
       if (w.lvl === 2) return b * (0.75 + 0.45 * Math.sin(w.lt * 1.3));
       return b * 1.1 * Math.sin(w.lt * 0.85 + 0.6); // stops and turns back (visible, fair)
     },
-    tap: function (w) { if (w.dead || w.fly || w.ready > 0 || w.pop < 1) return; w.fly = { y: this.by(w) - this.BL }; w.fuse = 0; },
+    lim: function (w) { return Math.max(2.6, 4.2 - w.t * 0.03); },
+    tap: function (w) { if (w.dead) return; if (w.fly || w.ready > 0 || w.pop < 1) { w.q = 0.3; return; } w.q = 0; w.fly = { y: this.by(w) - this.BL }; w.fuse = 0; }, // a tap during the flight is kept for the next blade
     step: function (w, dt, mode) {
       var R = this.R, BL = this.BL;
       w.lt += dt; w.rot += (mode === 'idle' ? 1.1 : mode === 'post' && w.dead ? 0.3 : this.omega(w)) * dt;
@@ -527,10 +531,11 @@
       if (w.bounce) { var bo = w.bounce; bo.vy += 150 * dt; bo.x += bo.vx * dt; bo.y += bo.vy * dt; bo.a += bo.va * dt; }
       if (mode === 'post' || w.dead) return null;
       if (mode === 'idle') return null;
+      if (w.q > 0) { w.q -= dt; if (!w.fly && w.ready <= 0 && w.pop >= 1) this.tap(w); }
       if (w.ready > 0) { w.ready -= dt; return null; }
       if (!w.fly) {
         w.fuse += dt;
-        if (mode === 'play' && w.fuse > Math.max(2.1, 3 - w.t * 0.02)) { w.dead = 1; w.bounce = { x: this.cx(w), y: this.by(w) - BL, vx: 0, vy: 30, a: 0, va: 3 }; return 'late'; }
+        if (mode === 'play' && w.fuse > this.lim(w)) { w.dead = 1; w.bounce = { x: this.cx(w), y: this.by(w) - BL, vx: 0, vy: 30, a: 0, va: 3 }; return 'late'; }
         return null;
       }
       w.fly.y -= 280 * dt;
@@ -562,7 +567,7 @@
       else if (!w.dead && w.ready <= 0) {
         c.drawImage(sp.blade, cx - 2, by - BL, 4, BL);
         if (w.mode === 'play' || w.mode === 'hold') { // fuse ring around the handle
-          var lim = Math.max(2.1, 3 - w.t * 0.02), f = 1 - clamp(w.fuse / lim, 0, 1);
+          var lim = this.lim(w), f = 1 - clamp(w.fuse / lim, 0, 1);
           c.lineWidth = 1; c.strokeStyle = 'rgba(255,255,255,.15)'; c.beginPath(); c.arc(cx, by - 3, 4.6, 0, PI2); c.stroke();
           c.strokeStyle = f > 0.35 ? '#FBBF24' : '#F43F5E'; c.beginPath(); c.arc(cx, by - 3, 4.6, -Math.PI / 2, -Math.PI / 2 + PI2 * f); c.stroke();
         }
@@ -575,14 +580,12 @@
     }
   };
 
-  /* shared shot logic for the two swipe games (ball flies to where the swipe points; the target moves slowly) */
-  function swipeTarget(w, dx, dy, x0, y0, yT) { return clamp(x0 + dx / Math.max(1, -dy) * (y0 - yT), -10, w.VW + 10); }
-
-  /* 5. BASKET SHOT — swipe up into a floating hoop that drifts slowly */
+  /* 5. BASKET SHOT — ONE tap: the ball flies straight up; the floating hoop must be above it when it arrives.
+     The rim (and a dotted guide) turns green exactly when a shot would score: nothing to guess. */
   DEF.basket = {
-    hint: 'h_shoot', gest: 'swipe', hue: '#F97316',
+    hint: 'h_shoot', gest: 'tap', hue: '#F97316',
     scale: function (W, H) { return Math.min(H / 100, W / 72); },
-    RIM: 9, BR: 6,
+    RIM: 9, BR: 6, FT: 0.5,
     art: function (w, k) {
       var BR = this.BR;
       w.sp = {
@@ -600,55 +603,67 @@
         })
       };
     },
-    reset: function (w) { w.ph = 0; w.ball = null; w.next = 0.3; w.shot = null; w.dead = 0; w.clock = 0; w.swish = 0; w.score = 0; w.fall = null; },
-    hy: function (w) { return Math.max(w.VH * 0.27, w.top + 19); },
-    hx: function (w) { var A = Math.min(w.VW / 2 - 14, 24); return w.VW / 2 + A * Math.sin(w.ph); },
+    reset: function (w) { w.ph = -1.1; w.om = 1; w.ball = null; w.next = 0.3; w.shot = null; w.dead = 0; w.clock = 0; w.swish = 0; w.fall = null; w.pend = null; w.idleT = 0; },
+    hy: function (w) { return Math.max(w.VH * 0.3, w.top + 19); },
+    amp: function (w) { return Math.min(w.VW / 2 - 14, w.mode === 'idle' ? 18 : 12 + w.t * 0.3); }, // small swings at the start
+    hx: function (w, ph) { return w.VW / 2 + this.amp(w) * Math.sin(ph == null ? w.ph : ph); },
     b0: function (w) { return { x: w.VW / 2, y: w.VH * 0.84 }; },
-    swipe: function (w, dx, dy) {
+    tol: function (w) { return Math.max(5.4, 7.6 - w.t * 0.03); },
+    lim: function (w) { return Math.max(3, 4.8 - w.t * 0.03); },
+    good: function (w) { return Math.abs(this.hx(w, w.ph + w.om * this.FT) - w.VW / 2) <= this.tol(w); }, // the hoop when the ball arrives
+    tap: function (w) {
       if (w.dead || w.shot || !w.ball) return;
-      var b = this.b0(w), hy = this.hy(w);
-      w.shot = { t: 0, x0: b.x, y0: b.y, tx: swipeTarget(w, dx, dy, b.x, b.y, hy), T: 0.62 }; w.ball = null;
+      var ok = this.good(w), b = this.b0(w);
+      w.shot = { t: 0, ok: ok, x0: b.x, y0: b.y }; w.ball = null;
+      if (!ok) w.pend = 'miss'; // decided now (honest: no cash-out during a ball already missing)
     },
     step: function (w, dt, mode) {
-      var om = mode === 'idle' ? 0.5 : Math.min(1.15, 0.5 + w.t * 0.014);
-      if (!(mode === 'post' && w.dead)) w.ph += om * dt;
+      w.om = mode === 'idle' ? 0.9 : Math.min(1.6, 1.1 + w.t * 0.01); // the hoop passes over the ball every ~3 s
+      if (!(mode === 'post' && w.dead)) w.ph += w.om * dt;
       w.swish = Math.max(0, w.swish - dt);
       if (!w.ball && !w.shot && !w.dead && mode !== 'post') { w.next -= dt; if (w.next <= 0) { w.ball = 1; w.clock = 0; } }
       if (w.ball && (mode === 'play' || mode === 'hold')) {
         w.clock += dt;
-        if (mode === 'play' && w.clock > Math.max(2.4, 3.3 - w.t * 0.02)) { w.dead = 1; w.ball = null; w.fall = { x: this.b0(w).x, y: this.b0(w).y, vx: 0, vy: 0, s: 1, r: 0 }; return 'late'; }
+        if (mode === 'play' && w.clock > this.lim(w)) { w.dead = 1; w.ball = null; w.fall = { x: this.b0(w).x, y: this.b0(w).y, vx: 0, vy: 0, s: 1, r: 0 }; return 'late'; }
       }
+      w.okNow = w.ball && !w.shot && !w.dead && this.good(w) ? 1 : 0;
+      if (mode === 'idle' && w.ball) { w.idleT += dt; if (w.idleT > 0.8 && this.good(w)) { w.idleT = 0; this.tap(w); } } // attract scene: shoots by itself
       if (w.fall) { var f = w.fall; f.vy += 160 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.r += dt * 4; if (f.y > w.VH + 20) w.fall = null; }
-      if (!w.shot) return null;
-      var s = w.shot; s.t += dt / s.T;
-      if (s.t < 1) return null;
-      if (s.res) { // scored: the ball drops through the net, then the next one comes
-        if (s.t > 1.5) { w.shot = null; w.next = 0.15; }
-        return null;
+      if (w.shot) {
+        var s = w.shot; s.t += dt / this.FT;
+        if (s.ok && s.t >= 1 && !s.in) { s.in = 1; w.swish = 0.45; }
+        if (s.ok && s.t > 1.5) { w.shot = null; w.next = 0.15; }
+        if (!s.ok && s.t >= 1) { // off the rim / past the hoop, then down
+          var hx = this.hx(w), d = Math.abs(s.x0 - hx), near = d < this.RIM + this.BR;
+          w.shot = null; if (mode !== 'idle') w.dead = 1; else w.next = 0.4;
+          w.fall = { x: s.x0, y: this.hy(w), vx: (s.x0 > hx ? 1 : -1) * (near ? 26 : 6), vy: near ? -40 : -20, s: 0.62, r: 0 };
+        }
       }
-      var hx = this.hx(w), d = Math.abs(s.tx - hx), tol = this.RIM - this.BR * 0.62 + 0.4;
-      if (d <= tol || mode === 'hold' || mode === 'idle') { s.res = 1; s.hx = hx; w.swish = 0.45; w.score++; return null; }
-      w.shot = null; w.dead = 1;
-      w.fall = { x: s.tx, y: this.hy(w), vx: (s.tx > hx ? 1 : -1) * (d < this.RIM + 4 ? 26 : 8), vy: d < this.RIM + 4 ? -40 : 10, s: 0.62, r: 0 };
-      return mode === 'play' ? 'miss' : null;
+      if (w.pend) { var p = w.pend; w.pend = null; if (mode === 'play') return p; }
+      return null;
     },
     focus: function (w) { return { x: this.hx(w), y: this.hy(w) }; },
     hit: function (w) { w.gone = 1; w.ball = null; w.shot = null; w.dead = 1; },
     draw: function (w, c) {
       var sp = w.sp, hx = this.hx(w), hy = this.hy(w), RIM = this.RIM, BR = this.BR, b0 = this.b0(w), i;
+      var ready = w.ball && !w.dead && !w.shot, ok = ready && this.good(w);
+      if (ready) { // dotted guide straight up from the ball (green = shoot now)
+        c.strokeStyle = ok ? 'rgba(74,222,128,.85)' : 'rgba(255,255,255,.22)'; c.lineWidth = ok ? 0.9 : 0.6;
+        for (var gy = b0.y - BR - 3; gy > hy + 4; gy -= 4.5) { c.beginPath(); c.moveTo(b0.x, gy); c.lineTo(b0.x, gy - 2); c.stroke(); }
+      }
       if (!w.gone) {
         c.drawImage(sp.board, hx - 15, hy - 18.5, 30, 20);
-        // little thrusters under the floating hoop
         c.fillStyle = 'rgba(251,146,60,' + (0.5 + Math.random() * 0.4).toFixed(2) + ')'; c.fillRect(hx - 13.6, hy + 1.2, 1.2, 1.6 + Math.random()); c.fillRect(hx + 12.4, hy + 1.2, 1.2, 1.6 + Math.random());
-        c.strokeStyle = '#EA580C'; c.lineWidth = 1; c.beginPath(); c.ellipse(hx, hy, RIM, 2.2, 0, Math.PI, PI2); c.stroke();
+        if (ok) { c.fillStyle = 'rgba(74,222,128,.22)'; c.beginPath(); c.ellipse(hx, hy, RIM + 3, 4.5, 0, 0, PI2); c.fill(); }
+        c.strokeStyle = ok ? '#22C55E' : '#EA580C'; c.lineWidth = 1; c.beginPath(); c.ellipse(hx, hy, RIM, 2.2, 0, Math.PI, PI2); c.stroke();
       }
       var bx = null, by, bs = 1;
       if (w.shot) {
         var s = w.shot, u = Math.min(1, s.t);
-        bx = s.x0 + (s.tx - s.x0) * u;
-        var yc = hy - 34; by = (1 - u) * (1 - u) * s.y0 + 2 * u * (1 - u) * yc + u * u * hy;
+        bx = s.ok ? s.x0 + (hx - s.x0) * u * u : s.x0;
+        var yc = hy - 30; by = (1 - u) * (1 - u) * s.y0 + 2 * u * (1 - u) * yc + u * u * hy;
         bs = 1 - 0.38 * u;
-        if (s.t > 1) { bx = s.hx + (hx - s.hx) * 0.5; by = hy + (s.t - 1) * 26; }
+        if (s.t > 1) { bx = hx; by = hy + (s.t - 1) * 26; }
       } else if (w.ball && !w.dead) { bx = b0.x; by = b0.y + Math.sin(Date.now() / 180) * 0.6; }
       if (bx != null) { c.globalAlpha = w.shot && w.shot.t > 1.3 ? clamp((1.5 - w.shot.t) * 5, 0, 1) : 1; c.drawImage(sp.ball, bx - BR * bs, by - BR * bs, BR * 2 * bs, BR * 2 * bs); c.globalAlpha = 1; }
       if (w.fall) { var f = w.fall; c.save(); c.translate(f.x, f.y); c.rotate(f.r); c.drawImage(sp.ball, -BR * f.s, -BR * f.s, BR * 2 * f.s, BR * 2 * f.s); c.restore(); }
@@ -657,111 +672,126 @@
         c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 0.45; c.beginPath();
         for (i = 0; i <= 6; i++) { var t = i / 6, x1 = hx - RIM + t * RIM * 2, x2 = hx - RIM * 0.6 + t * RIM * 1.2 + sw; c.moveTo(x1, hy); c.lineTo(x2, hy + 8); }
         c.moveTo(hx - RIM * 0.85, hy + 3); c.lineTo(hx + RIM * 0.85, hy + 3); c.moveTo(hx - RIM * 0.7, hy + 6); c.lineTo(hx + RIM * 0.7, hy + 6); c.stroke();
-        c.strokeStyle = '#F97316'; c.lineWidth = 1.2; c.beginPath(); c.ellipse(hx, hy, RIM, 2.2, 0, 0, Math.PI); c.stroke();
+        c.strokeStyle = ok ? '#4ADE80' : '#F97316'; c.lineWidth = 1.3; c.beginPath(); c.ellipse(hx, hy, RIM, 2.2, 0, 0, Math.PI); c.stroke();
       }
-      if (w.ball && !w.dead && !w.shot && (w.mode === 'play' || w.mode === 'hold')) { // shot clock ring
-        var lim = Math.max(2.4, 3.3 - w.t * 0.02), q = 1 - clamp(w.clock / lim, 0, 1);
+      if (ready && (w.mode === 'play' || w.mode === 'hold')) { // shot clock ring
+        var q = 1 - clamp(w.clock / this.lim(w), 0, 1);
         c.lineWidth = 1; c.strokeStyle = 'rgba(255,255,255,.15)'; c.beginPath(); c.arc(b0.x, b0.y, BR + 2.2, 0, PI2); c.stroke();
         c.strokeStyle = q > 0.35 ? '#FBBF24' : '#F43F5E'; c.beginPath(); c.arc(b0.x, b0.y, BR + 2.2, -Math.PI / 2, -Math.PI / 2 + PI2 * q); c.stroke();
       }
     }
   };
 
-  /* 6. PENALTY KICKER — swipe past the moving keeper into the goal */
-  DEF.kicker = {
-    hint: 'h_kick', gest: 'swipe', hue: '#6366F1',
+  /* 6. STAR BRIDGE (new, replaces Penalty Kicker) — HOLD to grow a light bridge, RELEASE: it falls onto the next pillar.
+     Right length → the astronaut walks across; too short / too long → he falls. Gaps and pillars get harder slowly. */
+  DEF.starbridge = {
+    hint: 'h_hold', gest: 'hold', hue: '#A855F7',
     scale: function (W, H) { return Math.min(H / 100, W / 72); },
-    BR: 5, KW: 15,
     art: function (w, k) {
-      var BR = this.BR, KW = this.KW, GW = this.gw(w);
       w.sp = {
-        ball: sprite(BR * 2, BR * 2, k, function (c) {
-          c.beginPath(); c.arc(BR, BR, BR - 0.1, 0, PI2); c.fillStyle = rgrad(c, BR, BR, BR, ['#FFFFFF', '#E2E8F0', '#64748B'], -BR * 0.35, -BR * 0.4); c.fill();
-          c.fillStyle = '#1E1B4B';
-          var pent = function (x, y, r) { c.beginPath(); for (var i = 0; i < 5; i++) { var a = -Math.PI / 2 + i * PI2 / 5; c[i ? 'lineTo' : 'moveTo'](x + r * Math.cos(a), y + r * Math.sin(a)); } c.closePath(); c.fill(); };
-          pent(BR, BR, BR * 0.34); pent(BR * 0.25, BR * 0.75, BR * 0.22); pent(BR * 1.75, BR * 0.75, BR * 0.22); pent(BR * 0.55, BR * 1.75, BR * 0.22); pent(BR * 1.45, BR * 1.75, BR * 0.22);
+        pil: sprite(16, 60, k, function (c) {
+          c.fillStyle = grad(c, 0, 0, 0, 60, ['#8B5CF6', '#5B21B6', '#2E1065', '#140A33']); c.fillRect(0, 0, 16, 60);
+          c.fillStyle = grad(c, 0, 0, 16, 0, ['rgba(255,255,255,.22)', 'rgba(255,255,255,0)', 'rgba(0,0,0,.25)']); c.fillRect(0, 0, 16, 60);
+          c.fillStyle = grad(c, 0, 0, 0, 2.2, ['#FEF3C7', '#F59E0B']); c.fillRect(0, 0, 16, 2.2);
+          c.fillStyle = 'rgba(15,6,40,.4)'; for (var i = 0; i < 5; i++) c.fillRect(3 + (i % 2) * 6, 8 + i * 10, 4, 1.2);
         }),
-        keeper: sprite(KW, 17, k, function (c) {
-          var m = KW / 2;
-          c.strokeStyle = '#7C3AED'; c.lineWidth = 2.4; c.lineCap = 'round';
-          c.beginPath(); c.moveTo(m - 3, 8); c.lineTo(2.2, 3); c.moveTo(m + 3, 8); c.lineTo(KW - 2.2, 3); c.moveTo(m - 1.6, 13); c.lineTo(m - 2.6, 16.4); c.moveTo(m + 1.6, 13); c.lineTo(m + 2.6, 16.4); c.stroke();
-          rr(c, m - 3.6, 6.5, 7.2, 7.5, 2.4); c.fillStyle = grad(c, 0, 6.5, 0, 14, ['#A78BFA', '#6D28D9', '#3B0764']); c.fill();
-          c.fillStyle = '#FBBF24'; c.font = 'bold 3.6px sans-serif'; c.textAlign = 'center'; c.fillText('1', m, 12.2);
-          c.beginPath(); c.arc(m, 4, 3.1, 0, PI2); c.fillStyle = '#F1F5F9'; c.fill();
-          rr(c, m - 2.2, 2.8, 4.4, 2.4, 1.1); c.fillStyle = grad(c, 0, 2.8, 0, 5.2, ['#67E8F9', '#0E7490']); c.fill();
-          c.fillStyle = '#FDE68A'; c.beginPath(); c.arc(2.2, 2.6, 1.9, 0, PI2); c.arc(KW - 2.2, 2.6, 1.9, 0, PI2); c.fill();
-        }),
-        goal: sprite(GW + 4, 26, k, function (c) {
-          var x0 = 2, x1 = GW + 2;
-          c.fillStyle = 'rgba(15,10,40,.45)'; c.fillRect(x0, 2, GW, 22);
-          c.strokeStyle = 'rgba(255,255,255,.22)'; c.lineWidth = 0.35; c.beginPath();
-          for (var x = x0 + 3; x < x1; x += 3) { c.moveTo(x, 2); c.lineTo(x, 24); }
-          for (var y = 5; y < 24; y += 3) { c.moveTo(x0, y); c.lineTo(x1, y); }
-          c.stroke();
-          c.strokeStyle = '#F8FAFC'; c.lineWidth = 1.6; c.lineJoin = 'round'; c.beginPath(); c.moveTo(x0, 24.5); c.lineTo(x0, 1.5); c.lineTo(x1, 1.5); c.lineTo(x1, 24.5); c.stroke();
+        hero: sprite(10, 14, k, function (c) {
+          c.lineCap = 'round'; c.strokeStyle = '#CBD5E1'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(4, 10); c.lineTo(3.6, 13.2); c.moveTo(6.2, 10); c.lineTo(6.6, 13.2); c.stroke();
+          rr(c, 0.6, 5.4, 3, 5, 1.2); c.fillStyle = '#94A3B8'; c.fill();
+          rr(c, 2.2, 5, 6, 6.2, 2.2); c.fillStyle = grad(c, 2, 5, 8, 11, ['#FFFFFF', '#E2E8F0', '#94A3B8']); c.fill();
+          c.fillStyle = '#A855F7'; c.fillRect(3, 7.6, 4.4, 1);
+          c.beginPath(); c.arc(5.4, 3.4, 3.3, 0, PI2); c.fillStyle = grad(c, 2, 0, 9, 7, ['#FFFFFF', '#CBD5E1']); c.fill();
+          rr(c, 5, 1.8, 3.8, 2.8, 1.3); c.fillStyle = grad(c, 5, 1.8, 9, 4.6, ['#FDE68A', '#F59E0B', '#92400E']); c.fill();
+          c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 0.45; c.beginPath(); c.arc(6.6, 3, 1, Math.PI * 1.1, Math.PI * 1.6); c.stroke();
         })
       };
     },
-    gw: function (w) { return Math.min(w.VW * 0.86, 62); },
-    gy: function (w) { return Math.max(w.VH * 0.36, w.top + 25); },
-    reset: function (w) { w.ph = 0; w.ball = null; w.next = 0.3; w.shot = null; w.dead = 0; w.clock = 0; w.bulge = 0; w.save = 0; },
-    kx: function (w) { var GW = this.gw(w); return w.VW / 2 + (GW / 2 - this.KW / 2) * Math.sin(w.ph); },
-    b0: function (w) { return { x: w.VW / 2, y: w.VH * 0.86 }; },
-    swipe: function (w, dx, dy) {
-      if (w.dead || w.shot || !w.ball) return;
-      var b = this.b0(w), gy = this.gy(w) - 4;
-      w.shot = { t: 0, x0: b.x, y0: b.y, tx: swipeTarget(w, dx, dy, b.x, b.y, gy), ty: gy, T: 0.42 }; w.ball = null;
+    py: function (w) { return Math.max(w.VH * 0.6, w.top + 30); },
+    ax: function (w) { return w.VW * 0.3; }, // screen x of the current pillar's right edge
+    vg: function (w) { return Math.min(40, 30 + w.t * 0.12); }, // bridge growth (units / s)
+    lim: function (w) { return Math.max(4, 7 - w.t * 0.04); },
+    add: function (w) {
+      var last = w.P[w.P.length - 1], t = w.t || 0, pw = Math.max(8, rnd(12, 16) - t * 0.08);
+      var room = Math.max(9, w.VW - this.ax(w) - pw - 3), g = clamp(rnd(10, 15 + Math.min(18, t * 0.4)), 8, room);
+      w.P.push({ x: last.x + last.w + g, w: pw });
+    },
+    reset: function (w) {
+      var pw = 16;
+      w.P = [{ x: this.ax(w) - pw, w: pw }]; this.add(w);
+      w.i = 0; w.cam = 0; w.L = 0; w.ang = 0; w.a = 0; w.st = 'stand'; w.hx = this.ax(w) - 3; w.hy = 0; w.vy = 0; w.fuse = 0;
+      w.down = 0; w.pend = null; w.dead = 0; w.idleT = 0; w.ok = 0; w.walk = 0; w.glow = 0;
+    },
+    press: function (w) { w.down = 1; },
+    release: function (w) {
+      w.down = 0;
+      if (w.st !== 'grow') return;
+      var cur = w.P[w.i], nx = w.P[w.i + 1], base = cur.x + cur.w;
+      w.st = 'drop'; w.a = 0;
+      w.ok = w.L >= nx.x - base && w.L <= nx.x + nx.w - base;
+      w.perf = w.ok && Math.abs(base + w.L - (nx.x + nx.w / 2)) < 1.4;
+      if (!w.ok) w.pend = 'fell'; // decided now: the bridge is already too short / too long
     },
     step: function (w, dt, mode) {
-      var om = mode === 'idle' ? 0.9 : Math.min(2.0, 0.95 + w.t * 0.025);
-      if (!(w.save && w.dead)) w.ph += om * dt;
-      w.bulge = Math.max(0, w.bulge - dt);
-      if (!w.ball && !w.shot && !w.dead && mode !== 'post') { w.next -= dt; if (w.next <= 0) { w.ball = 1; w.clock = 0; } }
-      if (w.ball && (mode === 'play' || mode === 'hold')) {
-        w.clock += dt;
-        if (mode === 'play' && w.clock > Math.max(2.4, 3.3 - w.t * 0.02)) { w.dead = 1; return 'late'; }
+      var cur = w.P[w.i], nx = w.P[w.i + 1], base = cur.x + cur.w, live = mode === 'play' || mode === 'hold';
+      w.glow = Math.max(0, w.glow - dt);
+      if (w.st === 'stand') {
+        if (mode === 'idle') { w.idleT += dt; if (w.idleT > 0.9) { w.idleT = 0; w.st = 'grow'; w.L = 0; w.demo = nx.x + nx.w * rnd(0.3, 0.7) - base; } }
+        else if (live && !w.dead) {
+          if (w.down) { w.st = 'grow'; w.L = 0; w.fuse = 0; }
+          else if (mode === 'play') { w.fuse += dt; if (w.fuse > this.lim(w)) { w.dead = 1; w.st = 'fall'; w.vy = 0; w.L = 0; return 'late'; } }
+        }
+      } else if (w.st === 'grow') {
+        w.L += this.vg(w) * dt;
+        var maxL = w.VW - (base - w.cam) - 1;
+        if ((mode === 'idle' && w.L >= w.demo) || w.L >= maxL || (!live && mode !== 'idle')) { w.down = 1; this.release(w); }
+      } else if (w.st === 'drop') {
+        w.a = Math.min(1, w.a + dt / 0.32); w.ang = Math.PI / 2 * w.a * w.a;
+        if (w.a >= 1) { w.st = 'walk'; w.tx = w.ok ? nx.x + nx.w - 3 : base + w.L + 1.5; if (w.perf) { w.glow = 0.6; } }
+      } else if (w.st === 'walk') {
+        w.walk += dt; w.hx = Math.min(w.tx, w.hx + 46 * dt);
+        if (w.hx >= w.tx) {
+          if (w.ok) { w.st = 'shift'; w.i++; this.add(w); }
+          else { w.st = 'fall'; w.vy = 0; if (mode !== 'idle') w.dead = 1; }
+        }
+      } else if (w.st === 'shift') {
+        var tc = cur.x + cur.w - this.ax(w);
+        w.cam += (tc - w.cam) * Math.min(1, dt * 7);
+        if (Math.abs(tc - w.cam) < 0.25) {
+          w.cam = tc; w.st = 'stand'; w.L = 0; w.ang = 0; w.fuse = 0;
+          while (w.P.length && w.P[0].x + w.P[0].w < w.cam - 4) { w.P.shift(); w.i--; }
+        }
+      } else if (w.st === 'fall') {
+        if (!w.ok && w.L) w.ang = Math.min(Math.PI, w.ang + dt * 5 * (w.ang < Math.PI * 0.98 && w.L < nx.x - base ? 1 : 0));
+        w.vy += 260 * dt; w.hy += w.vy * dt;
+        if (mode === 'idle' && w.hy > w.VH) this.reset(w);
       }
-      if (mode === 'idle' && w.ball && w.clock > 0) { /* attract: no shots */ }
-      if (!w.shot) return null;
-      var s = w.shot; s.t += dt / s.T;
-      if (s.t < 1) return null;
-      if (s.res) { if (s.t > 1.8) { w.shot = null; w.next = 0.15; } return null; }
-      var GW = this.gw(w), kx = this.kx(w), cx = w.VW / 2;
-      if (Math.abs(s.tx - cx) > GW / 2 - 1.5 && mode === 'play') { s.res = 2; s.out = 1; w.dead = 1; return 'miss'; }
-      if (Math.abs(s.tx - kx) < this.KW / 2 + 1.6 && mode === 'play') { s.res = 3; w.dead = 1; w.save = 1; return 'save'; }
-      s.res = 1; w.bulge = 0.5; return null;
+      if (w.pend) { var p = w.pend; w.pend = null; if (mode === 'play') return p; }
+      return null;
     },
-    focus: function (w) { return { x: this.kx(w), y: this.gy(w) - 8 }; },
-    hit: function (w) { w.gone = 1; w.dead = 1; },
+    focus: function (w) { return { x: w.hx - w.cam, y: this.py(w) + w.hy - 7 }; },
+    hit: function (w) { w.gone = 1; w.dead = 1; w.st = 'over'; w.L = 0; },
     draw: function (w, c) {
-      var sp = w.sp, GW = this.gw(w), gy = this.gy(w), cx = w.VW / 2, BR = this.BR, KW = this.KW, b0 = this.b0(w);
-      // pitch lines (penalty box) on the planet turf
-      c.strokeStyle = 'rgba(255,255,255,.28)'; c.lineWidth = 0.6;
-      c.beginPath(); c.moveTo(cx - GW * 0.75, gy); c.lineTo(cx + GW * 0.75, gy); c.moveTo(cx - GW * 0.4, gy); c.lineTo(cx - GW * 0.5, gy + 14); c.lineTo(cx + GW * 0.5, gy + 14); c.lineTo(cx + GW * 0.4, gy); c.stroke();
-      c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.ellipse(b0.x, b0.y + BR * 0.8, 2, 0.8, 0, 0, PI2); c.fill();
-      c.save(); if (w.bulge > 0 && w.shot) { c.translate(0, -Math.sin(w.bulge * 6) * 0.8); }
-      c.drawImage(sp.goal, cx - GW / 2 - 2, gy - 24.5, GW + 4, 26); c.restore();
-      var s = w.shot, bx = null, by, bsc = 1;
-      if (s) {
-        var u = Math.min(1, s.t), yc = (s.y0 + s.ty) / 2 - 10;
-        bx = s.x0 + (s.tx - s.x0) * u; by = (1 - u) * (1 - u) * s.y0 + 2 * u * (1 - u) * yc + u * u * s.ty; bsc = 1 - 0.45 * u;
-        if (s.t > 1) {
-          if (s.res === 1) { by = s.ty + Math.min(1, (s.t - 1) * 3) * 5; }
-          if (s.res === 2) { bx += (s.tx > cx ? 1 : -1) * (s.t - 1) * 30; by -= (s.t - 1) * 8; }
-          if (s.res === 3) { bx = this.kx(w); by = gy - 13; }
-        }
+      var sp = w.sp, py = this.py(w), i, cam = w.cam;
+      for (i = 0; i < w.P.length; i++) {
+        var p = w.P[i], x = p.x - cam;
+        if (x > w.VW + 2 || x + p.w < -2) continue;
+        c.drawImage(sp.pil, x, py, p.w, w.VH - py + 1);
+        if (i === w.i + 1) { c.fillStyle = w.glow > 0 ? '#FFFFFF' : '#F43F5E'; c.fillRect(x + p.w / 2 - 1, py - 0.2, 2, 0.9); } // the perfect spot
       }
-      var behind = s && s.t >= 1 && s.res === 1;
-      if (behind && bx != null) c.drawImage(sp.ball, bx - BR * bsc, by - BR * bsc, BR * 2 * bsc, BR * 2 * bsc);
-      if (!w.gone) { var kx = this.kx(w), dv = Math.cos(w.ph) * 0.12; c.save(); c.translate(kx, gy - 9); c.rotate(dv); c.drawImage(sp.keeper, -KW / 2, -8.5, KW, 17); c.restore(); }
-      if (!behind && bx != null) c.drawImage(sp.ball, bx - BR * bsc, by - BR * bsc, BR * 2 * bsc, BR * 2 * bsc);
-      if (w.ball && !w.dead) {
-        c.drawImage(sp.ball, b0.x - BR, b0.y - BR, BR * 2, BR * 2);
-        if (w.mode === 'play' || w.mode === 'hold') {
-          var lim = Math.max(2.4, 3.3 - w.t * 0.02), q = 1 - clamp(w.clock / lim, 0, 1);
-          c.lineWidth = 1; c.strokeStyle = 'rgba(255,255,255,.15)'; c.beginPath(); c.arc(b0.x, b0.y, BR + 2.2, 0, PI2); c.stroke();
-          c.strokeStyle = q > 0.35 ? '#FBBF24' : '#F43F5E'; c.beginPath(); c.arc(b0.x, b0.y, BR + 2.2, -Math.PI / 2, -Math.PI / 2 + PI2 * q); c.stroke();
-        }
+      var cur = w.P[w.i];
+      if (w.L > 0 && cur) { // the light bridge
+        var bx = cur.x + cur.w - cam - 0.6, ex = bx + Math.sin(w.ang) * w.L, ey = py - Math.cos(w.ang) * w.L;
+        c.lineCap = 'round';
+        if (!lite()) { c.strokeStyle = 'rgba(253,230,138,.28)'; c.lineWidth = 3; c.beginPath(); c.moveTo(bx, py - 0.6); c.lineTo(ex, ey - 0.6); c.stroke(); }
+        c.strokeStyle = w.glow > 0 ? '#FFFFFF' : '#FDE68A'; c.lineWidth = 1.3; c.beginPath(); c.moveTo(bx, py - 0.6); c.lineTo(ex, ey - 0.6); c.stroke();
+      }
+      if (w.gone) return;
+      var hx = w.hx - cam, hy = py + w.hy, bob = w.st === 'walk' ? Math.abs(Math.sin(w.walk * 14)) * 0.8 : 0;
+      c.drawImage(sp.hero, hx - 6, hy - 14.2 - bob, 10, 14);
+      if (w.st === 'stand' && !w.dead && (w.mode === 'play' || w.mode === 'hold')) { // time left before the pillar crumbles
+        var q = 1 - clamp(w.fuse / this.lim(w), 0, 1);
+        c.lineWidth = 0.9; c.strokeStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(hx - 1, hy - 20, 2.6, 0, PI2); c.stroke();
+        c.strokeStyle = q > 0.35 ? '#FBBF24' : '#F43F5E'; c.beginPath(); c.arc(hx - 1, hy - 20, 2.6, -Math.PI / 2, -Math.PI / 2 + PI2 * q); c.stroke();
       }
     }
   };
@@ -777,9 +807,9 @@
       var fx = function (v) { return Number(v).toFixed(2).replace('.', dc); };
       box.classList.add('cg-game', 'cg-skill', 'sk-' + key);
       box.style.setProperty('--sk', G.hue);
-      var hand = G.gest === 'tap'
-        ? '<svg viewBox="0 0 32 32" aria-hidden="true"><circle class="sk-rip" cx="13" cy="9" r="6"/><path d="M11 21V9.5a2 2 0 0 1 4 0V16m0-2a2 2 0 0 1 4 0v2m0-1a2 2 0 0 1 4 0v5c0 4.5-3 8-7.5 8H14c-2.4 0-4-1-5.3-2.9L6 23a2 2 0 0 1 3.2-2.4L11 23"/></svg>'
-        : '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-arr" d="M16 3l-4 5h8z"/><path d="M11 23V11.5a2 2 0 0 1 4 0V18m0-2a2 2 0 0 1 4 0v2m0-1a2 2 0 0 1 4 0v5c0 4.5-3 8-7.5 8H14c-2.4 0-4-1-5.3-2.9L6 25a2 2 0 0 1 3.2-2.4L11 25"/></svg>';
+      // hand icon: tap = a ripple under the finger; hold = a ring that fills while the finger stays down
+      var finger = '<path d="M11 21V9.5a2 2 0 0 1 4 0V16m0-2a2 2 0 0 1 4 0v2m0-1a2 2 0 0 1 4 0v5c0 4.5-3 8-7.5 8H14c-2.4 0-4-1-5.3-2.9L6 23a2 2 0 0 1 3.2-2.4L11 23"/>';
+      var hand = '<svg viewBox="0 0 32 32" aria-hidden="true">' + (G.gest === 'hold' ? '<circle class="sk-hold" cx="13" cy="9" r="6.5"/>' : '<circle class="sk-rip" cx="13" cy="9" r="6"/>') + finger + '</svg>';
       box.innerHTML = '<div class="cg-hist sk-hist" id="skHist"></div>' +
         '<div class="cg-stage sk-stage" id="skStage"><canvas class="sk-cv" id="skCv"></canvas>' +
         '<div class="sk-hud"><b class="sk-m fit" id="skM" dir="ltr">' + fx(1) + '×</b><small class="sk-st fit" id="skSt"></small></div>' +
@@ -789,6 +819,7 @@
       if (!watch) K.bindStake(box);
       var st = $('skStage'), cv = $('skCv'), ctx = cv.getContext('2d', { alpha: false }), mEl = $('skM'), sEl = $('skSt'), hint = $('skHint'), btn = $('csGo');
       var w = { W: 0, H: 0, s: 1, VW: 100, VH: 100, t: 0, mode: 'idle' };
+      box._sk = w; // read-only hook for the touch tests (scripts in /tmp); nothing reads it in the app
       var dpr = 1, bg = null, phase = 'idle', R = null, off = 0, busy = false, failing = false, parts = [], met = null, shake = 0, last = 0, hidden = false, mTxt = '', lockT = 0, flash = 0;
       var alive = function () { return box.isConnected && K.S.game === key; };
       var nowS = function () { return Date.now() / 1000 + off; };
@@ -854,6 +885,7 @@
         for (var i = 0; i < parts.length; i++) {
           var p = parts[i], a = 1 - p.t / p.life;
           if (p.ring) { ctx.globalAlpha = Math.max(0, a); ctx.strokeStyle = '#FDE68A'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(p.x, p.y, 4 + p.t * 60, 0, PI2); ctx.stroke(); continue; }
+          if (p.tap) { ctx.globalAlpha = Math.max(0, a) * 0.9; ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(p.x, p.y, 2 + p.t * 22, 0, PI2); ctx.stroke(); continue; } // every touch shows a ripple
           ctx.globalAlpha = Math.max(0, a); ctx.fillStyle = p.c; ctx.fillRect(p.x - p.r / 2, p.y - p.r / 2, p.r, p.r);
         }
         ctx.globalAlpha = 1;
@@ -875,14 +907,14 @@
         if (phase === 'play') w.t = Math.max(0, nowS() - R.t0);
         var why = G.step(w, dt, w.mode);
         if (why && phase === 'play' && !busy) fail(why);
-        for (var i = parts.length - 1; i >= 0; i--) { var p = parts[i]; p.t += dt; if (!p.ring) { p.vy += 60 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } if (p.t > p.life) parts.splice(i, 1); }
+        for (var i = parts.length - 1; i >= 0; i--) { var p = parts[i]; p.t += dt; if (!p.ring && !p.tap) { p.vy += 60 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } if (p.t > p.life) parts.splice(i, 1); }
         if (met) { met.t += dt; if (met.t >= 0.55 && !met.done) { met.done = 1; G.hit(w); boom(met.x1, met.y1); if (met.cb) met.cb(); } if (met.t > 0.6) met = null; }
         shake = Math.max(0, shake - dt); flash = Math.max(0, flash - dt);
         if (phase === 'play') {
           var m = MULT(R.rate, w.t), txt = fx(m) + '×';
           if (txt !== mTxt) { var rel = txt.length !== mTxt.length; mTxt = txt; mEl.textContent = txt; if (rel) K.fitEl(mEl); }
           if (!busy && !failing) setBtn('cash', l.cash, false, '+$ ' + K.m2(R.stake * m));
-          if (w.t > 3 && !hint.classList.contains('off')) hint.classList.add('off');
+          if ((gN > 0 || w.t > 9) && !hint.classList.contains('off')) hint.classList.add('off'); // the hint stays until the first move
         }
         draw();
         // idle scene in lite mode: one still frame only (old phones)
@@ -896,6 +928,7 @@
       var begin = function (r) {
         R = r; off = r.now - Date.now() / 1000;
         if (r.tSend) off = r.now - (r.tSend + Date.now()) / 2000; // half the round trip
+        clearTimeout(idleT); gN = 0; box.setAttribute('data-gn', '0'); st.querySelectorAll('.cs-toast').forEach(function (t) { t.remove(); }); st.querySelectorAll('.sk-hud *, .sk-hint, .sk-hint *').forEach(function (e) { e.style.visibility = ''; }); // the last result pill never sits on a new round if (btn) btn.classList.remove('sk-nudge');
         parts = []; met = null; w.gone = 0; w.t = Math.max(0, nowS() - r.t0);
         G.reset(w); mTxt = ''; mEl.className = 'sk-m fit'; status('');
         hint.classList.remove('off');
@@ -907,7 +940,12 @@
         if (r && r.c != null) { var h = HIST[key] = HIST[key] || []; h.unshift(Number(r.c)); h.length = Math.min(h.length, 30); h.fresh = 1; paintHist(); }
         setTimeout(function () { if (alive() && r) K.resultLine(box, r); }, delay || 0);
         lockT = Date.now() + 900; setBtn('wait', l.bet, true);
-        setTimeout(function () { if (alive() && phase !== 'play') setBtn('', l.bet, false); }, 900);
+        setTimeout(function () { if (alive() && phase !== 'play') { busy = false; setBtn('', l.bet, false); } }, 900); // (bug fix: after a meteor end the BET button stayed dead)
+        clearTimeout(idleT); idleT = setTimeout(function () { if (alive() && phase !== 'play' && !busy) toIdle(); }, 3200);
+      };
+      var idleT = 0;
+      var toIdle = function () { // the attract scene comes back with the gesture hint
+        setPhase('idle'); parts = []; met = null; w.gone = 0; G.reset(w); mEl.className = 'sk-m fit'; status(''); hint.classList.remove('off'); run();
       };
       var finish = function (r) { // the server says the round is over (secret end, or another tab)
         if (phase !== 'play') return;
@@ -965,40 +1003,52 @@
         var r = await K.multi(key, 'start');
         busy = false;
         if (!alive()) return;
-        if (!r) { setBtn('', l.bet, false); return; }
+        if (!r) { setBtn('', l.bet, false); if (phase !== 'idle') toIdle(); return; }
         K.afterPlay(r);
         if (r.done) { setBtn('', l.bet, false); return; }
         r.tSend = t1; begin(r);
       });
 
-      /* ---- the one gesture: tap (pointerdown) or swipe (up) on the scene ---- */
-      var sw = null;
+      /* ---- the one gesture, on the WHOLE scene: tap (pointerdown, no 300 ms delay) or hold (down … up) ---- */
+      var gN = 0, nudgeT = 0, downId = null;
       var act = function () { return phase === 'play' && !busy && !failing; };
+      var ripple = function (e) {
+        if (!w.W) return;
+        var rc = cv.getBoundingClientRect();
+        parts.push({ tap: 1, x: (e.clientX - rc.left) / w.s, y: (e.clientY - rc.top) / w.s, t: 0, life: 0.35 });
+        if (phase === 'idle' && lite()) draw();
+      };
+      var nudge = function () { // touching the scene before betting: point to the BET button (one line)
+        if (!btn || watch) return;
+        status(l.go); btn.classList.remove('sk-nudge'); void btn.offsetWidth; btn.classList.add('sk-nudge');
+        clearTimeout(nudgeT); nudgeT = setTimeout(function () { if (!alive()) return; btn.classList.remove('sk-nudge'); if (phase === 'idle') status(''); }, 1800);
+      };
+      var did = function () { gN++; box.setAttribute('data-gn', String(gN)); };
       cv.addEventListener('pointerdown', function (e) {
-        if (G.gest === 'tap') { if (act()) { e.preventDefault(); G.tap(w); } return; }
-        e.preventDefault(); // no text selection / drag-scroll of the page with a mouse
-        sw = { x: e.clientX, y: e.clientY, id: e.pointerId, done: false };
-        try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
+        e.preventDefault();
+        if (e.pointerType === 'mouse' && e.button) return;
+        ripple(e);
+        if (!act()) { if (phase === 'idle') nudge(); return; }
+        if (G.gest === 'hold') { downId = e.pointerId; try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } G.press(w); did(); return; }
+        G.tap(w); did();
       });
-      var shoot = function (e) {
-        if (!sw || sw.done) return;
-        var dx = e.clientX - sw.x, dy = e.clientY - sw.y;
-        if (dy < -14 && Math.abs(dx) < -dy * 1.8 && Math.hypot(dx, dy) > 22) { sw.done = true; if (act()) G.swipe(w, dx, dy); }
-      };
-      cv.addEventListener('pointermove', function (e) { if (sw && Math.hypot(e.clientX - sw.x, e.clientY - sw.y) > Math.min(w.W, w.H) * 0.16) shoot(e); });
-      cv.addEventListener('pointerup', function (e) { shoot(e); sw = null; });
-      cv.addEventListener('pointercancel', function () { sw = null; });
+      var up = function (e) { if (G.gest !== 'hold' || downId === null || (e && e.pointerId !== downId)) return; downId = null; G.release(w); };
+      cv.addEventListener('pointerup', up);
+      cv.addEventListener('pointercancel', up);
+      cv.addEventListener('lostpointercapture', up);
+      cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+      // iOS Safari: no page scroll, no double-tap zoom, no long-press magnifier / callout while playing on the scene
+      var stopT = function (e) { if (e.cancelable) e.preventDefault(); };
+      ['touchstart', 'touchmove', 'touchend'].forEach(function (ev) { st.addEventListener(ev, stopT, { passive: false }); });
       var onKey = function (e) {
-        if (!alive()) { document.removeEventListener('keydown', onKey); return; }
+        if (!alive()) { document.removeEventListener('keydown', onKey); document.removeEventListener('keyup', onKey); return; }
         if (!act() || (e.target && e.target.tagName === 'INPUT')) return;
-        if (G.gest !== 'tap') { // PC / TV remote: ← ↑ → shoot left, straight, right
-          var kd = { ArrowLeft: -38, ArrowUp: 0, ArrowRight: 38 }[e.key];
-          if (kd != null) { e.preventDefault(); if (!e.repeat) G.swipe(w, kd, -100); }
-          return;
-        }
-        if (e.code === 'Space' || e.key === ' ' || e.key === 'ArrowUp') { e.preventDefault(); if (!e.repeat) G.tap(w); }
+        if (!(e.code === 'Space' || e.key === ' ' || e.key === 'ArrowUp')) return;
+        e.preventDefault();
+        if (G.gest === 'hold') { if (e.type === 'keydown' && !e.repeat) { G.press(w); did(); } else if (e.type === 'keyup') G.release(w); return; }
+        if (e.type === 'keydown' && !e.repeat) { G.tap(w); did(); }
       };
-      document.addEventListener('keydown', onKey);
+      document.addEventListener('keydown', onKey); document.addEventListener('keyup', onKey);
       var onVis = function () {
         if (!alive()) { document.removeEventListener('visibilitychange', onVis); return; }
         hidden = document.hidden;
@@ -1012,5 +1062,5 @@
       if (!watch) K.multi(key, 'state', null, true).then(function (r) { if (alive() && r && !r.done && r.t0 && phase === 'idle') { r.now = r.now || Date.now() / 1000; begin(r); } });
     };
   }
-  ['spacerun', 'flappyrock', 'stack', 'knifehit', 'basket', 'kicker'].forEach(function (k) { K.register(k, make(k), { rules: rules(k) }); });
+  ['spacerun', 'flappyrock', 'stack', 'knifehit', 'basket', 'starbridge'].forEach(function (k) { K.register(k, make(k), { rules: rules(k) }); });
 })(window.D6 = window.D6 || {});

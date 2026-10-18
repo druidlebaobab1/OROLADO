@@ -416,7 +416,7 @@
     if (k === 'gifts') { if (D6.Portal && D6.Portal.open) D6.Portal.open(); setTimeout(function () { close(); backToLive('portalModal', 'active'); }, 350); return; }
     if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); backToLive('learnModal', 'on'); return; }
     // v2796 : Actus, Écris-nous, Amis, Groupes, Défier, Mon identifiant, Mes défis → la messagerie (js/social2.js)
-    if (D6.Social2 && ['news', 'chat', 'friends', 'groups', 'duel', 'myid', 'record'].indexOf(k) >= 0) { D6.Social2.open(k); return; }
+    if (D6.Social2 && ['news', 'chat', 'friends', 'groups', 'duel', 'myid', 'record'].indexOf(k) >= 0) { D6.Social2.open(k, true); return; } // v2808 : ‹ ramène au menu
     if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
     if (k === 'quiz' || k === 'stats' || k === 'badges' || k === 'levels' || k === 'missions') { show('fun', k); return; }
     if (k === 'groups') { show('groups'); return; }
@@ -435,7 +435,7 @@
       if (seen) {
         ob.disconnect(); m._oroBack = null;
         // si une autre fenêtre s'ouvre (ex. Recharger), on ne remet pas Live par-dessus
-        setTimeout(function () { if (!document.querySelector('.modal-backdrop.active') && !document.querySelector('#learnModal.on')) open(); }, 120);
+        setTimeout(function () { if (!document.querySelector('.modal-backdrop.active') && !document.querySelector('#learnModal.on')) open('grid'); }, 120); // v2808 : retour au menu en tuiles
       }
     });
     m._oroBack = ob;
@@ -497,7 +497,9 @@
     if ($('liveTabFriendsT')) $('liveTabFriendsT').textContent = x.friends;
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
     // v2796 (propriétaire) : Social s'ouvre en MESSAGERIE (js/social2.js) ; l'ancienne page en tuiles reste dans « Plus »
-    if (D6.Social2 && (!w || ['home', 'dms', 'news', 'chat', 'friends', 'groups'].indexOf(w) >= 0)) { tab = 'home'; D6.Social2.open(w === 'home' || w === 'dms' ? '' : w); }
+    // v2808 (propriétaire) : le VISITEUR arrive sur le menu en tuiles (il voit tout ce qui existe ; chaque action demande l'inscription)
+    if (w === 'grid' || (guest() && (!w || w === 'home' || w === 'dms'))) show('home');
+    else if (D6.Social2 && (!w || ['home', 'dms', 'news', 'chat', 'friends', 'groups'].indexOf(w) >= 0)) { tab = 'home'; D6.Social2.open(w === 'home' || w === 'dms' ? '' : w); }
     else show(w === 'dms' ? 'friends' : (w || 'home'));
     // v2689 : la tuile « Envoyer de l'argent » apparaît dès que le serveur dit que c'est ouvert pour ce joueur
     if (!guest() && D6.LiveSend) D6.LiveSend.status().then(function () { if (tab === 'home') paintHome(); });
@@ -616,7 +618,7 @@
       if (tab === 'friends' && peer) { peer = null; friendsList(); return; }
       if (tab === 'groups' && D6.LiveGroups && D6.LiveGroups.inGroup()) { D6.LiveGroups.back(); return; }
       peer = null;
-      if (tab === 'home') { if (D6.Social2) { D6.Social2.open(''); return; } close(); return; }
+      if (tab === 'home') { if (D6.Social2 && !guest()) { D6.Social2.open(''); return; } close(); return; } // v2808 : visiteur → le menu est sa première page
       show('home');
     });
     // v2689 : le pack de la langue vient d'arriver → l'accueil Live est redessiné dans la bonne langue

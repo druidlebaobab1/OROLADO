@@ -70,7 +70,7 @@ function sp_admin_save(array $in): array {
   // v2713 : logos des 2 équipes (sports d'équipe seulement ; jamais bloquant)
   $logos = [];
   $sportK = sp_clean((string) ($in['sport'] ?? 'foot'), 12);
-  $given = array_values(array_filter(array_map('strval', (array) ($in['logos'] ?? [])), static fn($l) => (bool) preg_match('#^(img/teams/[a-z0-9-]{2,30}\.png|q:(btc|us|ball|vote|fire|star))$#', $l)));
+  $given = array_values(array_filter(array_map('strval', (array) ($in['logos'] ?? [])), static fn($l) => (bool) preg_match('#^(img/teams/[a-z0-9-]{2,30}\.png|q:(btc|eth|sol|xrp|doge|us|ball|vote|fire|star|race|trophy|film|chart|gold))$#', $l)));
   if ($given) $logos = $given; // v2755 : logos fournis (suggestions) — pas de recherche sur internet
   elseif (!empty($in['noFetch'])) $logos = []; // v2787 : publication automatique — les logos seront cherchés plus tard, un par un (jamais d'attente)
   elseif (!in_array($sportK, ['event', 'crypto', 'politique'], true) && ($tm = sp_title_teams($title))) {
@@ -220,6 +220,126 @@ function sp_suggestions2(): array {
     ['Bitcoin au-dessus de 83 000 $ le dimanche 15 novembre à 12 h (UTC) ?', 'Bitcoin · prix Coinbase', 'event', $t('2026-11-13 12:00'), [['Oui', 1.90], ['Non', 1.80]], ['q:btc'], $t('2026-11-15 12:05'), sp_btc_q(83000, '15/11', '12:00')],
   ];
 }
+/*
+ * v2807 (propriétaire, 18/10/2026) — 3e SÉRIE : matchs et prédictions façon Polymarket / Kalshi / grands bookmakers, du 24/10 au 30/11.
+ * Seulement des événements avec une HEURE DE FIN EXACTE et des chances PROCHES (chaque camp entre 40 et 60 % ; foot : 2 équipes
+ * proches + nul 27 %). Cote = 0,94 ÷ chance (marge maison 6 %, comme sp_add_draw). Paris fermés au coup d'envoi / départ ;
+ * questions de prix : fermées 2 jours avant l'heure de la réponse. Chaque événement a son image (écusson rangé dans img/teams/ —
+ * même source que sp_team_logo — ou icône dessinée « q:… »). Vérifié le 18/10/2026 : calendriers officiels (TheSportsDB, clubs,
+ * F1 « start times 2026 »), prix Coinbase (BTC 81 900 $, ETH 2 400 $, SOL 104 $, XRP 1,30 $, DOGE 0,079 $), Yahoo Finance
+ * (S&P 500 7 660, or 4 200 $, NVDA 214 $, TSLA 355 $, AAPL 343 $), cotes Ballon d'Or (Yamal 10/11, Kane 6/5). Heures en UTC.
+ */
+function sp_p2o(float $p): float { return max(1.01, floor(0.94 / $p * 100) / 100); }
+/** une question « prix au-dessus de … » dans les 12 langues ($v = valeur affichée telle quelle, $d = jj/mm, $h = heure UTC ou '' = clôture de la Bourse). */
+function sp_px_q(string $name, string $v, string $d, string $h): array {
+  // « 2 400 $ » (écriture française) → « $2,400 » pour l'anglais, l'arabe, le turc, le hindi et le chinois (comme sp_btc_q)
+  $w = preg_match('/^([0-9 ]+)(?:[.,]([0-9]+))? \$$/', $v, $mm) ? '$' . str_replace(' ', ',', $mm[1]) . (isset($mm[2]) ? '.' . $mm[2] : '') : str_replace(' ', ',', $v);
+  return sp_px_q2($name, $v, $w, $d, $h);
+}
+function sp_px_q2(string $name, string $v, string $w, string $d, string $h): array {
+  if ($h === '') return ['en' => "{$name} above {$w} at the close on {$d}?", 'es' => "¿{$name} por encima de {$v} al cierre del {$d}?", 'pt' => "{$name} acima de {$v} no fechamento de {$d}?",
+    'ar' => "هل سيكون {$name} فوق {$w} عند إغلاق {$d}؟", 'tr' => "{$name} {$d} kapanışında {$w} üzerinde mi?", 'vi' => "{$name} trên {$v} khi đóng cửa ngày {$d}?",
+    'id' => "{$name} di atas {$v} saat penutupan {$d}?", 'ru' => "{$name} выше {$v} на закрытии {$d}?", 'de' => "{$name} über {$v} zum Handelsschluss am {$d}?",
+    'hi' => "क्या {$d} को बंद होने पर {$name} {$w} से ऊपर होगा?", 'zh' => "{$name} 在 {$d} 收盘时是否高于 {$w}？"];
+  return ['en' => "{$name} above {$w} on {$d} at {$h} UTC?", 'es' => "¿{$name} por encima de {$v} el {$d} a las {$h} UTC?", 'pt' => "{$name} acima de {$v} em {$d} às {$h} UTC?",
+    'ar' => "هل سيكون {$name} فوق {$w} يوم {$d} الساعة {$h} UTC؟", 'tr' => "{$name} {$d} saat {$h} UTC'de {$w} üzerinde mi?", 'vi' => "{$name} trên {$v} vào {$d} lúc {$h} UTC?",
+    'id' => "{$name} di atas {$v} pada {$d} pukul {$h} UTC?", 'ru' => "{$name} выше {$v} {$d} в {$h} UTC?", 'de' => "{$name} über {$v} am {$d} um {$h} UTC?",
+    'hi' => "क्या {$d} को {$h} UTC पर {$name} {$w} से ऊपर होगा?", 'zh' => "{$name} 在 {$d} {$h} UTC 是否高于 {$w}？"];
+}
+/** duel F1 : « qui finit devant ? » (si les deux abandonnent : l'admin choisit « Annulé », mises rendues). */
+function sp_f1_q(string $gp, string $a, string $b): array {
+  return ['en' => "F1 {$gp} GP: {$a} or {$b}, who finishes ahead?", 'es' => "F1 GP de {$gp}: ¿{$a} o {$b}, quién termina delante?", 'pt' => "F1 GP de {$gp}: {$a} ou {$b}, quem termina à frente?",
+    'ar' => "فورمولا 1 جائزة {$gp} الكبرى: {$a} أم {$b}، من ينهي في المقدمة؟", 'tr' => "F1 {$gp} GP: {$a} mı {$b} mi, kim önde bitirir?", 'vi' => "F1 GP {$gp}: {$a} hay {$b}, ai về trước?",
+    'id' => "F1 GP {$gp}: {$a} atau {$b}, siapa finis lebih depan?", 'ru' => "Ф1, Гран-при {$gp}: {$a} или {$b} — кто финиширует выше?", 'de' => "F1 GP {$gp}: {$a} oder {$b}, wer kommt vorne an?",
+    'hi' => "F1 {$gp} GP: {$a} या {$b}, कौन आगे रहेगा?", 'zh' => "F1 {$gp} 大奖赛：{$a} 还是 {$b} 名次更靠前？"];
+}
+function sp_suggestions3(): array {
+  $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
+  $D = SP_DRAW_P;
+  // foot : [domicile, chance], [extérieur, chance] ; le nul prend 27 %, les deux équipes se partagent le reste
+  $foot = static function (string $title, string $lg, string $ko, string $h, float $ph, string $a, string $lh, string $la) use ($t, $D): array {
+    $pa = 1 - $D - $ph; $k = $t($ko);
+    return [$title, $lg, 'foot', $k, [[$h, sp_p2o($ph)], ['Nul', sp_p2o($D)], [$a, sp_p2o($pa)]], ['img/teams/' . $lh . '.png', 'img/teams/' . $la . '.png'], $k + 7200];
+  };
+  $duo = static function (string $title, string $lg, string $sport, string $ko, string $h, float $ph, string $a, array $logos, int $len, array $tr = []) use ($t): array {
+    $k = $t($ko);
+    return [$title, $lg, $sport, $k, [[$h, sp_p2o($ph)], [$a, sp_p2o(1 - $ph)]], $logos, $k + $len, $tr];
+  };
+  // question Oui / Non : fermée à $close, réponse à $end
+  $yn = static function (string $title, string $lg, string $close, string $end, float $pYes, string $img, array $tr) use ($t): array {
+    return [$title, $lg, 'event', $t($close), [['Oui', sp_p2o($pYes)], ['Non', sp_p2o(1 - $pYes)]], ['q:' . $img], $t($end), $tr];
+  };
+  $tm = static fn(string $s): string => 'img/teams/' . $s . '.png';
+  $PL = 'Premier League'; $LL = 'LaLiga'; $SA = 'Serie A'; $BL = 'Bundesliga'; $L1 = 'Ligue 1'; $CL = 'Ligue des champions';
+  $nba = 'NBA'; $nfl = 'NFL · nul = remboursé'; $f1 = 'Formule 1 · duel'; $cb = 'Crypto · prix Coinbase'; $bo = 'Bourse de New York';
+  return [
+    // ---------- FOOTBALL (1 · N · 2) ----------
+    $foot('Napoli - AS Roma', $SA, '2026-10-24 16:00', 'Napoli', 0.39, 'Roma', 'napoli', 'roma'),
+    $foot('Valencia - Villarreal', $LL, '2026-10-24 16:30', 'Valencia', 0.34, 'Villarreal', 'valencia', 'villarreal'),
+    $foot('Liverpool - Brighton', $PL, '2026-10-25 14:00', 'Liverpool', 0.41, 'Brighton', 'liverpool', 'brighton'),
+    $foot('FC Barcelona - Real Madrid', $LL . ' · El Clásico', '2026-10-25 20:00', 'Barcelona', 0.42, 'Real Madrid', 'barcelona', 'real-madrid'),
+    $foot('Chelsea - Manchester United', $PL, '2026-10-31 12:30', 'Chelsea', 0.40, 'Man United', 'chelsea', 'man-united'),
+    $foot('Bayer Leverkusen - VfB Stuttgart', $BL, '2026-10-31 14:30', 'Leverkusen', 0.40, 'Stuttgart', 'leverkusen', 'stuttgart'),
+    $foot('AC Milan - Inter', $SA . ' · derby', '2026-10-31 19:45', 'Milan', 0.34, 'Inter', 'ac-milan', 'inter'),
+    $foot('Liverpool - Arsenal', $PL, '2026-11-01 16:30', 'Liverpool', 0.36, 'Arsenal', 'liverpool', 'arsenal'),
+    $foot('Juventus - Napoli', $SA, '2026-11-01 19:45', 'Juventus', 0.38, 'Napoli', 'juventus', 'napoli'),
+    $foot('Athletic Bilbao - Real Sociedad', $LL . ' · derby basque', '2026-11-01 20:00', 'Athletic', 0.41, 'Real Sociedad', 'athletic-bilbao', 'real-sociedad'),
+    $foot('Atlético Madrid - Bayern Munich', $CL, '2026-11-03 20:00', 'Atlético', 0.34, 'Bayern', 'atletico-madrid', 'bayern'),
+    $foot('Villarreal - PSG', $CL, '2026-11-03 20:00', 'Villarreal', 0.32, 'PSG', 'villarreal', 'psg'),
+    $foot('Borussia Dortmund - Real Betis', $CL, '2026-11-04 20:00', 'Dortmund', 0.42, 'Betis', 'dortmund', 'real-betis'),
+    $foot('RB Leipzig - Manchester City', $CL, '2026-11-04 20:00', 'Leipzig', 0.32, 'Man City', 'leipzig', 'man-city'),
+    $foot('Manchester United - Aston Villa', $PL, '2026-11-08 16:30', 'Man United', 0.38, 'Aston Villa', 'man-united', 'aston-villa'),
+    $foot('RC Lens - Olympique de Marseille', $L1, '2026-11-08 19:45', 'Lens', 0.37, 'Marseille', 'lens', 'marseille'),
+    $foot('Atlético Madrid - FC Barcelona', $LL, '2026-11-08 20:00', 'Atlético', 0.35, 'Barcelona', 'atletico-madrid', 'barcelona'),
+    $foot('Newcastle - Arsenal', $PL, '2026-11-21 17:30', 'Newcastle', 0.34, 'Arsenal', 'newcastle', 'arsenal'),
+    $foot('Liverpool - Manchester United', $PL, '2026-11-22 16:30', 'Liverpool', 0.42, 'Man United', 'liverpool', 'man-united'),
+    $foot('Atalanta - Inter', $SA, '2026-11-22 19:45', 'Atalanta', 0.34, 'Inter', 'atalanta', 'inter'),
+    $foot('Club Brugge - Liverpool', $CL, '2026-11-25 20:00', 'Club Brugge', 0.32, 'Liverpool', 'club-brugge', 'liverpool'),
+    $foot('Arsenal - Manchester City', $PL, '2026-11-29 16:30', 'Arsenal', 0.38, 'Man City', 'arsenal', 'man-city'),
+    $foot('Borussia Dortmund - Bayer Leverkusen', $BL, '2026-11-29 18:30', 'Dortmund', 0.40, 'Leverkusen', 'dortmund', 'leverkusen'),
+    // ---------- NBA (pas de nul : prolongation) ----------
+    $duo('Miami Heat - Detroit Pistons', $nba, 'basket', '2026-10-24 00:00', 'Heat', 0.47, 'Pistons', [$tm('miami-heat'), $tm('detroit-pistons')], 10800),
+    $duo('Atlanta Hawks - Houston Rockets', $nba, 'basket', '2026-10-25 00:30', 'Hawks', 0.47, 'Rockets', [$tm('atlanta-hawks'), $tm('houston-rockets')], 10800),
+    $duo('New York Knicks - Detroit Pistons', $nba, 'basket', '2026-10-28 00:00', 'Knicks', 0.52, 'Pistons', [$tm('new-york-knicks'), $tm('detroit-pistons')], 10800),
+    $duo('San Antonio Spurs - Minnesota T-Wolves', $nba, 'basket', '2026-11-01 00:00', 'Spurs', 0.56, 'Timberwolves', [$tm('san-antonio-spurs'), $tm('minnesota-timberwolves')], 10800),
+    $duo('New York Knicks - Cleveland Cavaliers', $nba, 'basket', '2026-11-12 00:00', 'Knicks', 0.52, 'Cavaliers', [$tm('new-york-knicks'), $tm('cleveland-cavaliers')], 10800),
+    // ---------- NFL (match nul très rare = mises rendues) ----------
+    $duo('Buffalo Bills - Baltimore Ravens', $nfl, 'autre', '2026-11-01 18:00', 'Bills', 0.54, 'Ravens', [$tm('buffalo-bills'), $tm('baltimore-ravens')], 12600),
+    $duo('Detroit Lions - Minnesota Vikings', $nfl, 'autre', '2026-11-01 18:00', 'Lions', 0.52, 'Vikings', [$tm('detroit-lions'), $tm('minnesota-vikings')], 12600),
+    $duo('Denver Broncos - Kansas City Chiefs', $nfl, 'autre', '2026-11-01 21:25', 'Broncos', 0.50, 'Chiefs', [$tm('denver-broncos'), $tm('kansas-city-chiefs')], 12600),
+    // ---------- FORMULE 1 : duels (qui finit devant ; les deux abandonnent = mises rendues) ----------
+    $duo('F1 GP des États-Unis : Leclerc ou Hamilton, qui finit devant ?', $f1, 'event', '2026-10-25 20:00', 'Leclerc', 0.50, 'Hamilton', ['q:race'], 9000, sp_f1_q('United States', 'Leclerc', 'Hamilton')),
+    $duo('F1 GP du Mexique : Verstappen ou Russell, qui finit devant ?', $f1, 'event', '2026-11-01 20:00', 'Verstappen', 0.50, 'Russell', ['q:race'], 9000, sp_f1_q('Mexico City', 'Verstappen', 'Russell')),
+    $duo('F1 GP du Brésil : Leclerc ou Hamilton, qui finit devant ?', $f1, 'event', '2026-11-08 17:00', 'Leclerc', 0.50, 'Hamilton', ['q:race'], 9000, sp_f1_q('São Paulo', 'Leclerc', 'Hamilton')),
+    $duo('F1 GP de Las Vegas : Verstappen ou Russell, qui finit devant ?', $f1, 'event', '2026-11-22 04:00', 'Verstappen', 0.50, 'Russell', ['q:race'], 9000, sp_f1_q('Las Vegas', 'Verstappen', 'Russell')),
+    // ---------- STARS / BUZZ ----------
+    $yn('Ballon d’Or 2026 (lundi 26/10, Londres) : Lamine Yamal sacré ?', 'Ballon d’Or · stars', '2026-10-25 12:00', '2026-10-26 22:30', 0.52, 'trophy',
+      ['en' => 'Ballon d’Or 2026 (Mon 26/10, London): will Lamine Yamal win?', 'es' => 'Balón de Oro 2026 (lunes 26/10, Londres): ¿lo gana Lamine Yamal?', 'pt' => 'Bola de Ouro 2026 (seg. 26/10, Londres): Lamine Yamal vence?',
+       'ar' => 'الكرة الذهبية 2026 (الاثنين 26/10، لندن): هل يفوز لامين يامال؟', 'tr' => 'Ballon d’Or 2026 (26/10 Pazartesi, Londra): Lamine Yamal kazanır mı?', 'vi' => 'Quả bóng vàng 2026 (thứ Hai 26/10, London): Lamine Yamal đoạt giải?',
+       'id' => 'Ballon d’Or 2026 (Senin 26/10, London): Lamine Yamal menang?', 'ru' => 'Золотой мяч 2026 (пн 26/10, Лондон): победит Ламин Ямаль?', 'de' => 'Ballon d’Or 2026 (Mo. 26.10., London): Gewinnt Lamine Yamal?',
+       'hi' => 'बैलन डी’ओर 2026 (सोमवार 26/10, लंदन): क्या लामिन यमाल जीतेंगे?', 'zh' => '2026 金球奖（10月26日周一，伦敦）：亚马尔能获奖吗？']),
+    $yn('Nouveau Hunger Games : plus de 75 M$ au 1er week-end aux USA (20-22/11) ?', 'Box-office USA · cinéma', '2026-11-19 23:00', '2026-11-22 20:00', 0.50, 'film',
+      ['en' => 'New Hunger Games film: over $75M on its US opening weekend (20-22/11)?', 'es' => 'Nueva película de Los Juegos del Hambre: ¿más de 75 M$ en su estreno en EE. UU. (20-22/11)?', 'pt' => 'Novo Jogos Vorazes: mais de 75 mi $ na estreia nos EUA (20-22/11)?',
+       'ar' => 'فيلم ألعاب الجوع الجديد: أكثر من 75 مليون $ في أول عطلة بأمريكا (20-22/11)؟', 'tr' => 'Yeni Açlık Oyunları: ABD açılış hafta sonu 75 milyon $ üstü mü (20-22/11)?', 'vi' => 'Hunger Games mới: hơn 75 triệu $ cuối tuần ra mắt ở Mỹ (20-22/11)?',
+       'id' => 'Hunger Games baru: lebih dari 75 juta $ di pekan perdana AS (20-22/11)?', 'ru' => 'Новые «Голодные игры»: больше 75 млн $ за стартовый уикенд в США (20-22/11)?', 'de' => 'Neuer Tribute-von-Panem-Film: über 75 Mio. $ am US-Startwochenende (20.-22.11.)?',
+       'hi' => 'नई हंगर गेम्स फ़िल्म: अमेरिका में पहले वीकेंड (20-22/11) 75 मिलियन $ से ज़्यादा?', 'zh' => '新《饥饿游戏》：北美首周末（11/20-22）票房超 7500 万美元？']),
+    // ---------- BOURSE / ACTU ÉCO ----------
+    $yn('Tesla au-dessus de 350 $ à la clôture du vendredi 30 octobre ?', $bo, '2026-10-28 20:00', '2026-10-30 20:15', 0.52, 'chart', sp_px_q('Tesla', '350 $', '30/10', '')),
+    $yn('Apple au-dessus de 340 $ à la clôture du vendredi 30 octobre ?', $bo, '2026-10-28 20:00', '2026-10-30 20:15', 0.53, 'chart', sp_px_q('Apple', '340 $', '30/10', '')),
+    $yn('Nvidia au-dessus de 215 $ à la clôture du vendredi 20 novembre ?', $bo . ' · résultats Nvidia', '2026-11-17 21:00', '2026-11-20 21:15', 0.50, 'chart', sp_px_q('Nvidia', '215 $', '20/11', '')),
+    $yn('S&P 500 au-dessus de 7 700 points à la clôture du vendredi 20 novembre ?', $bo, '2026-11-18 21:00', '2026-11-20 21:15', 0.50, 'chart', sp_px_q('S&P 500', '7 700', '20/11', '')),
+    $yn('L’or au-dessus de 4 200 $ l’once le vendredi 27/11 (prix LBMA de 15 h UTC) ?', 'Or · prix LBMA', '2026-11-25 15:00', '2026-11-27 15:30', 0.50, 'gold', sp_px_q('Gold (LBMA)', '4 200 $', '27/11', '15:00')),
+    // ---------- CRYPTO (prix Coinbase à l'heure dite ; fermé 2 jours avant) ----------
+    $yn('Bitcoin au-dessus de 82 000 $ le dimanche 1er novembre à 0 h (UTC) ?', $cb, '2026-10-30 00:00', '2026-11-01 00:05', 0.50, 'btc', sp_btc_q(82000, '01/11', '00:00')),
+    $yn('Bitcoin au-dessus de 80 000 $ le dimanche 22 novembre à 12 h (UTC) ?', $cb, '2026-11-20 12:00', '2026-11-22 12:05', 0.58, 'btc', sp_btc_q(80000, '22/11', '12:00')),
+    $yn('Bitcoin au-dessus de 85 000 $ le lundi 30 novembre à 12 h (UTC) ?', $cb, '2026-11-28 12:00', '2026-11-30 12:05', 0.42, 'btc', sp_btc_q(85000, '30/11', '12:00')),
+    $yn('Ethereum au-dessus de 2 400 $ le samedi 31 octobre à 12 h (UTC) ?', $cb, '2026-10-29 12:00', '2026-10-31 12:05', 0.50, 'eth', sp_px_q('Ethereum', '2 400 $', '31/10', '12:00')),
+    $yn('Ethereum au-dessus de 2 500 $ le lundi 30 novembre à 12 h (UTC) ?', $cb, '2026-11-28 12:00', '2026-11-30 12:05', 0.42, 'eth', sp_px_q('Ethereum', '2 500 $', '30/11', '12:00')),
+    $yn('Solana au-dessus de 105 $ le dimanche 8 novembre à 12 h (UTC) ?', $cb, '2026-11-06 12:00', '2026-11-08 12:05', 0.48, 'sol', sp_px_q('Solana', '105 $', '08/11', '12:00')),
+    $yn('XRP au-dessus de 1,30 $ le dimanche 15 novembre à 12 h (UTC) ?', $cb, '2026-11-13 12:00', '2026-11-15 12:05', 0.50, 'xrp', sp_px_q('XRP', '1,30 $', '15/11', '12:00')),
+    $yn('Dogecoin au-dessus de 0,08 $ le samedi 7 novembre à 12 h (UTC) ?', $cb, '2026-11-05 12:00', '2026-11-07 12:05', 0.49, 'doge', sp_px_q('Dogecoin', '0,08 $', '07/11', '12:00')),
+  ];
+}
 /** v2787 : un événement est « serré » si chaque cote est entre 1,55 et 2,30 (pas de petite cote contre grosse cote). */
 function sp_is_tight(array $e): bool {
   foreach ((array) ($e['opts'] ?? []) as $o) { $v = (float) ($o['odd'] ?? 0); if ($v < 1.55 || $v > 2.30) return false; }
@@ -252,6 +372,12 @@ function sp_autoseed_once(): void {
   if (!is_file($flag2)) {
     @file_put_contents($flag2, (string) time());
     try { sp_remove_loose(); sp_admin_seed(sp_suggestions2()); } catch (Throwable $e) { @unlink($flag2); }
+  }
+  // v2807 : 3e série (matchs et prédictions serrés jusqu'au 30/11, chacun avec son image), une seule fois aussi
+  $flag3 = sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10c.done';
+  if (!is_file($flag3)) {
+    @file_put_contents($flag3, (string) time());
+    try { sp_admin_seed(sp_suggestions3()); } catch (Throwable $e) { @unlink($flag3); }
   }
   sp_draw_once(); // v2802 : le nul revient au football (matchs encore sans pari)
 }
@@ -482,7 +608,36 @@ function sp_admin_list(): array {
       if ($b['status'] === 'open') $exp[$s['ev']][$s['k']]['risk'] = ($exp[$s['ev']][$s['k']]['risk'] ?? 0) + (float) $b['pot'];
     }
   }
+  // v2807 : après le résultat, combien de paris ont GAGNÉ / PERDU sur cet événement (« test » = dont paris en mode démo)
+  $res = []; $all = [];
+  foreach ($bets as $b) foreach ((array) ($b['sel'] ?? []) as $s) {
+    $all[$s['ev']] = ($all[$s['ev']] ?? 0) + 1;
+    $r = (string) ($s['r'] ?? ''); if ($r === '') continue;
+    $res[$s['ev']][$r] = ($res[$s['ev']][$r] ?? 0) + 1;
+    if (($b['mode'] ?? '') !== 'real') $res[$s['ev']]['test'] = ($res[$s['ev']]['test'] ?? 0) + 1;
+  }
   $out = [];
-  foreach (array_reverse(sp_events()) as $e) { $e['exp'] = $exp[$e['id']] ?? []; $out[] = $e; }
+  foreach (array_reverse(sp_events()) as $e) { $e['exp'] = $exp[$e['id']] ?? []; $e['res'] = $res[$e['id']] ?? []; $e['nb'] = $all[$e['id']] ?? 0; $out[] = $e; }
   return $out;
+}
+/**
+ * v2807 (propriétaire) — Admin : TOUS les paris posés sur un événement, avec, après le résultat, qui a GAGNÉ et qui a PERDU.
+ * Lecture seule (aucun argent ne bouge ici). Par pari : joueur, choix, mise, cote du choix, état de CE choix (won / lost / void /
+ * en attente) et état du coupon entier (un combiné peut perdre sur un autre match), gain versé.
+ */
+function sp_admin_event_bets(string $eid): array {
+  $ev = null; foreach (sp_events() as $e) if ($e['id'] === $eid) $ev = $e;
+  if (!$ev) return ['ok' => false, 'reason' => 'Match introuvable'];
+  $lbl = []; foreach ((array) $ev['opts'] as $o) $lbl[$o['k']] = (string) $o['label'];
+  $rows = [];
+  foreach ((array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []) as $b) {
+    foreach ((array) ($b['sel'] ?? []) as $s) {
+      if (($s['ev'] ?? '') !== $eid) continue;
+      $rows[] = ['id' => (string) $b['id'], 'uid' => (string) $b['uid'], 'mode' => (string) $b['mode'], 'at' => (int) $b['at'], 'k' => (string) $s['k'], 'pick' => $lbl[$s['k']] ?? (string) ($s['l'] ?? ''),
+        'stake' => (float) $b['stake'], 'odd' => (float) $s['odd'], 'cOdd' => (float) $b['odd'], 'n' => count((array) $b['sel']), 'r' => (string) ($s['r'] ?? ''),
+        'status' => (string) $b['status'], 'win' => (float) ($b['win'] ?? 0), 'pot' => (float) $b['pot']];
+    }
+  }
+  usort($rows, static fn($a, $b) => $b['at'] <=> $a['at']);
+  return ['ok' => true, 'ev' => ['id' => $ev['id'], 'title' => $ev['title'], 'status' => $ev['status'], 'result' => $ev['result'] ?? null, 'opts' => $ev['opts']], 'bets' => $rows];
 }

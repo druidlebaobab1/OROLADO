@@ -2082,7 +2082,13 @@ if ($isAjax) {
     }
     if ($action === 'sp_list') admin_json(['ok' => true, 'events' => sp_admin_list()]);
     if ($action === 'sp_save') admin_json(sp_admin_save((array) ($req['ev'] ?? [])));
-    if ($action === 'sp_seed') admin_json(sp_admin_seed(sp_suggestions2())); // v2787 : les événements serrés de la semaine (ceux qui manquent)
+    if ($action === 'sp_seed') admin_json(sp_admin_seed(array_merge(sp_suggestions2(), sp_suggestions3()))); // v2787/v2807 : les événements serrés (ceux qui manquent)
+    // v2807 (propriétaire) : les paris d'un événement → qui a gagné, qui a perdu (lecture seule)
+    if ($action === 'sp_bets') {
+      $r = sp_admin_event_bets((string) ($req['id'] ?? ''));
+      if (!empty($r['ok'])) { $ldb = admin_local_db(); foreach ($r['bets'] as $i => $b) { $u = (array) ($ldb['users'][$b['uid']] ?? []); $r['bets'][$i]['name'] = (string) ($u['displayName'] ?? $u['name'] ?? ''); $r['bets'][$i]['email'] = (string) ($u['email'] ?? ''); $r['bets'][$i]['publicId'] = (string) ($u['publicId'] ?? ''); } }
+      admin_json($r);
+    }
     if ($action === 'sp_close') admin_json(sp_admin_close((string) ($req['id'] ?? '')));
     if ($action === 'sp_settle') admin_json(sp_admin_settle(admin_local_db(), (string) ($req['id'] ?? ''), (string) ($req['k'] ?? '')));
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
@@ -3456,18 +3462,36 @@ setInterval(() => {
       const nb = Object.values(e.exp || {}).reduce((s, x) => s + (x.n || 0), 0);
       const head = '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b>' + (ICO[e.sport] || '🏆') + ' ' + esc(e.title) + '</b><span class="muted" style="white-space:nowrap">' + nb + ' coupon(s)</span></div>' +
         '<div class="muted" style="margin:2px 0 6px">' + esc(e.league || '') + ' · paris fermés ' + when(e.start) + (e.endAt ? ' · fin ' + when(e.endAt) : '') + '</div>';
+      // v2807 : bouton « qui a gagné / perdu » (liste des paris de l'événement) + résumé gagnants / perdants
+      const nbA = e.nb || nb;
+      const who = nbA ? '<button class="mini" type="button" data-who="' + esc(e.id) + '">👥 Voir les ' + nbA + ' pari(s)' + (mode === 'done' ? ' : gagnants / perdants' : '') + '</button><div class="spWho" data-whobox="' + esc(e.id) + '"></div>' : '';
       if (mode === 'done') {
         const w = e.result === 'void' ? 'Annulé / nul (mises rendues)' : ((e.opts.find(o => o.k === e.result) || {}).label || '?');
-        return '<div class="nt-card" style="margin-bottom:6px;opacity:.85">' + head + '<div>Résultat : <b>' + esc(w) + '</b></div></div>';
+        const rs = e.res || {};
+        const sum = nbA ? '<div class="muted" style="margin:4px 0">✅ ' + (rs.won || 0) + ' gagnant(s) · ❌ ' + (rs.lost || 0) + ' perdant(s)' + (rs.void ? ' · ↺ ' + rs.void + ' remboursé(s)' : '') + (rs.test ? ' <span class="muted">(dont ' + rs.test + ' en test)</span>' : '') + '</div>' : '<div class="muted">Aucun pari sur cet événement.</div>';
+        return '<div class="nt-card" style="margin-bottom:6px">' + head + '<div>Résultat : <b style="color:#5CF59A">' + esc(w) + '</b></div>' + sum + who + '</div>';
       }
       const opts = e.opts.map(o => { const x = (e.exp && e.exp[o.k]) || {}; return '<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.06);align-items:center"><span>' + esc(o.label) + ' <b style="color:#FFD27A">' + Number(o.odd).toFixed(2) + '</b></span><span class="muted">' + (x.n || 0) + ' · misé ' + m2(x.in) + (x.risk ? ' · à payer ' + m2(x.risk) : '') + '</span>' + (mode === 'todo' ? '<button class="mini ok" type="button" data-set="' + esc(e.id) + '" data-k="' + esc(o.k) + '">✅ ' + esc(o.label) + ' a gagné</button>' : '') + '</div>'; }).join('');
       return '<div class="nt-card" style="margin-bottom:8px' + (mode === 'todo' ? ';border-color:rgba(251,191,36,.7)' : '') + '">' + head + opts +
-        (mode === 'todo' ? '<button class="mini" type="button" data-set="' + esc(e.id) + '" data-k="void">↺ Match nul / annulé → mises rendues</button>' : (e.status === 'open' ? '<button class="mini" type="button" data-close="' + esc(e.id) + '">Fermer les paris maintenant</button>' : '<span class="muted">Paris fermés</span>')) + '</div>';
+        (mode === 'todo' ? '<button class="mini" type="button" data-set="' + esc(e.id) + '" data-k="void">↺ Match nul / annulé → mises rendues</button>' : (e.status === 'open' ? '<button class="mini" type="button" data-close="' + esc(e.id) + '">Fermer les paris maintenant</button>' : '<span class="muted">Paris fermés</span>')) + ' ' + who + '</div>';
     };
     $c('spList').innerHTML =
       '<h4 style="margin:6px 0">🔔 À valider (' + todo.length + ')</h4>' + (todo.length ? '<p class="muted" style="margin:0 0 6px">Ces événements sont finis : vérifiez le vrai résultat, puis touchez le gagnant. Les gagnants sont payés une seule fois.</p>' + todo.map(e => card(e, 'todo')).join('') : '<p class="muted">Rien à valider pour l’instant. Vous recevrez une notification quand un événement sera fini.</p>') +
       '<h4 style="margin:14px 0 6px">🟢 À venir / en cours (' + live.length + ')</h4>' + (live.length ? live.map(e => card(e, 'live')).join('') : '<p class="muted">Aucun.</p>') +
       '<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">✅ Historique (' + done.length + ')</summary>' + done.map(e => card(e, 'done')).join('') + '</details>';
+    $c('spList').querySelectorAll('[data-who]').forEach(b => b.onclick = async () => {
+      const box = $c('spList').querySelector('[data-whobox="' + b.dataset.who + '"]'); if (!box) return;
+      if (box.innerHTML) { box.innerHTML = ''; return; }
+      box.innerHTML = '<p class="muted">Chargement…</p>';
+      const r = await ajax({action:'sp_bets', id:b.dataset.who});
+      if (!r.ok) { box.innerHTML = '<p class="muted">' + esc(r.reason || 'Erreur') + '</p>'; return; }
+      const ST = {won:['✅ Gagné', '#5CF59A'], lost:['❌ Perdu', '#FF7A90'], void:['↺ Remboursé', '#FCD34D'], '':['⏳ En attente', '#94A3B8']};
+      box.innerHTML = r.bets.length ? '<div style="margin-top:6px">' +
+        r.bets.map(x => { const s = ST[x.r] || ST['']; const cp = x.status === 'won' ? '<b style="color:#5CF59A">payé ' + m2(x.win) + '</b>' : x.status === 'lost' ? '<span style="color:#FF7A90">coupon perdu</span>' : x.status === 'void' ? 'remboursé ' + m2(x.win) : 'coupon en cours (gain possible ' + m2(x.pot) + ')';
+          return '<div style="border-top:1px solid rgba(255,255,255,.08);padding:6px 0;font-size:12.5px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="min-width:0;overflow-wrap:anywhere">' + esc(x.name || x.email || x.uid) + (x.publicId ? ' <span class="muted">' + esc(x.publicId) + '</span>' : '') + (x.mode !== 'real' ? ' <span class="muted">(test)</span>' : '') + '</span><b style="color:' + s[1] + ';white-space:nowrap">' + s[0] + '</b></div>' +
+            '<div class="muted">' + esc(x.pick) + ' <b style="color:#FFD27A">' + Number(x.odd).toFixed(2) + '</b> · mise ' + m2(x.stake) + (x.n > 1 ? ' · combiné ×' + Number(x.cOdd).toFixed(2) + ' (' + x.n + ' matchs)' : '') + ' · ' + cp + ' · ' + new Date(x.at * 1000).toLocaleString('fr-FR', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) + '</div></div>'; }).join('') + '</div>'
+        : '<p class="muted">Aucun pari.</p>';
+    });
     $c('spList').querySelectorAll('[data-close]').forEach(b => b.onclick = async () => { if (!confirm('Fermer les paris de ce match ?')) return; await ajax({action:'sp_close', id:b.dataset.close}); list(); });
     $c('spList').querySelectorAll('[data-set]').forEach(b => b.onclick = async () => {
       const lbl = b.dataset.k === 'void' ? 'Match NUL ou ANNULÉ : toutes les mises sur ce match sont rendues (×1). Confirmer ?' : 'Confirmer : ' + b.textContent.replace('✅ ', '') + ' ? Les gagnants seront payés tout de suite.';

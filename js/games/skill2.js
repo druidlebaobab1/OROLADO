@@ -11,104 +11,104 @@
 
   /* ------------------------------------------------------------------ texts (12 languages) */
   var C = {
-    en: { bet: 'Bet', cash: 'Cash out', won: 'Cashed out', r1: 'Bet and play: the multiplier grows while you play.', r3: 'The round can also end at any random moment (like Aviator): cash out before!' },
-    fr: { bet: 'Miser', cash: 'Encaisser', won: 'Encaissé', r1: 'Mise et joue : le multiplicateur monte pendant que tu joues.', r3: 'La partie peut aussi s’arrêter à tout moment, au hasard (comme Aviator) : encaisse avant !' },
-    es: { bet: 'Apostar', cash: 'Retirar', won: 'Retirado', r1: 'Apuesta y juega: el multiplicador sube mientras juegas.', r3: 'La ronda también puede terminar en cualquier momento al azar (como Aviator): ¡retira antes!' },
-    pt: { bet: 'Apostar', cash: 'Sacar', won: 'Sacado', r1: 'Aposte e jogue: o multiplicador sobe enquanto você joga.', r3: 'A rodada também pode terminar a qualquer momento, ao acaso (como no Aviator): saque antes!' },
-    ar: { bet: 'راهن', cash: 'اسحب', won: 'تم السحب', r1: 'راهن والعب: يرتفع المضاعف أثناء لعبك.', r3: 'قد تنتهي الجولة أيضًا في أي لحظة عشوائية (مثل Aviator): اسحب قبلها!' },
-    tr: { bet: 'Bahis', cash: 'Çek', won: 'Çekildi', r1: 'Bahis yap ve oyna: sen oynarken çarpan yükselir.', r3: 'Tur her an rastgele de bitebilir (Aviator gibi): önce çek!' },
-    vi: { bet: 'Cược', cash: 'Rút tiền', won: 'Đã rút', r1: 'Đặt cược và chơi: hệ số nhân tăng khi bạn chơi.', r3: 'Ván cũng có thể kết thúc ngẫu nhiên bất cứ lúc nào (như Aviator): hãy rút trước!' },
-    id: { bet: 'Pasang', cash: 'Tarik', won: 'Ditarik', r1: 'Pasang dan main: pengali naik selama kamu bermain.', r3: 'Ronde juga bisa berakhir kapan saja secara acak (seperti Aviator): tarik sebelumnya!' },
-    ru: { bet: 'Ставка', cash: 'Забрать', won: 'Забрано', r1: 'Сделай ставку и играй: множитель растёт, пока ты играешь.', r3: 'Раунд может закончиться и в любой случайный момент (как в Aviator): забери раньше!' },
-    de: { bet: 'Setzen', cash: 'Auszahlen', won: 'Ausgezahlt', r1: 'Setze und spiele: Der Multiplikator steigt, während du spielst.', r3: 'Die Runde kann auch jederzeit zufällig enden (wie bei Aviator): zahle vorher aus!' },
-    hi: { bet: 'दांव', cash: 'कैश आउट', won: 'कैश आउट हुआ', r1: 'दांव लगाएँ और खेलें: खेलते समय गुणक बढ़ता है।', r3: 'राउंड किसी भी समय अचानक खत्म हो सकता है (Aviator की तरह): पहले कैश आउट करें!' },
-    zh: { bet: '下注', cash: '兑现', won: '已兑现', r1: '下注并开始：游戏进行中倍数不断上升。', r3: '回合也可能在任意随机时刻结束（如 Aviator）：请提前兑现！' }
+    en: { go: 'Bet to start', bet: 'Bet', cash: 'Cash out', won: 'Cashed out', r1: 'Bet and play: the multiplier grows while you play.', r3: 'The round can also end at any random moment (like Aviator): cash out before!' },
+    fr: { go: 'Mise pour jouer', bet: 'Miser', cash: 'Encaisser', won: 'Encaissé', r1: 'Mise et joue : le multiplicateur monte pendant que tu joues.', r3: 'La partie peut aussi s’arrêter à tout moment, au hasard (comme Aviator) : encaisse avant !' },
+    es: { go: 'Apuesta para jugar', bet: 'Apostar', cash: 'Retirar', won: 'Retirado', r1: 'Apuesta y juega: el multiplicador sube mientras juegas.', r3: 'La ronda también puede terminar en cualquier momento al azar (como Aviator): ¡retira antes!' },
+    pt: { go: 'Aposte para jogar', bet: 'Apostar', cash: 'Sacar', won: 'Sacado', r1: 'Aposte e jogue: o multiplicador sobe enquanto você joga.', r3: 'A rodada também pode terminar a qualquer momento, ao acaso (como no Aviator): saque antes!' },
+    ar: { go: 'راهن لتبدأ', bet: 'راهن', cash: 'اسحب', won: 'تم السحب', r1: 'راهن والعب: يرتفع المضاعف أثناء لعبك.', r3: 'قد تنتهي الجولة أيضًا في أي لحظة عشوائية (مثل Aviator): اسحب قبلها!' },
+    tr: { go: 'Başlamak için bahis', bet: 'Bahis', cash: 'Çek', won: 'Çekildi', r1: 'Bahis yap ve oyna: sen oynarken çarpan yükselir.', r3: 'Tur her an rastgele de bitebilir (Aviator gibi): önce çek!' },
+    vi: { go: 'Đặt cược để chơi', bet: 'Cược', cash: 'Rút tiền', won: 'Đã rút', r1: 'Đặt cược và chơi: hệ số nhân tăng khi bạn chơi.', r3: 'Ván cũng có thể kết thúc ngẫu nhiên bất cứ lúc nào (như Aviator): hãy rút trước!' },
+    id: { go: 'Pasang untuk main', bet: 'Pasang', cash: 'Tarik', won: 'Ditarik', r1: 'Pasang dan main: pengali naik selama kamu bermain.', r3: 'Ronde juga bisa berakhir kapan saja secara acak (seperti Aviator): tarik sebelumnya!' },
+    ru: { go: 'Сделай ставку', bet: 'Ставка', cash: 'Забрать', won: 'Забрано', r1: 'Сделай ставку и играй: множитель растёт, пока ты играешь.', r3: 'Раунд может закончиться и в любой случайный момент (как в Aviator): забери раньше!' },
+    de: { go: 'Setze zum Starten', bet: 'Setzen', cash: 'Auszahlen', won: 'Ausgezahlt', r1: 'Setze und spiele: Der Multiplikator steigt, während du spielst.', r3: 'Die Runde kann auch jederzeit zufällig enden (wie bei Aviator): zahle vorher aus!' },
+    hi: { go: 'खेलने को दांव लगाएँ', bet: 'दांव', cash: 'कैश आउट', won: 'कैश आउट हुआ', r1: 'दांव लगाएँ और खेलें: खेलते समय गुणक बढ़ता है।', r3: 'राउंड किसी भी समय अचानक खत्म हो सकता है (Aviator की तरह): पहले कैश आउट करें!' },
+    zh: { go: '下注开始', bet: '下注', cash: '兑现', won: '已兑现', r1: '下注并开始：游戏进行中倍数不断上升。', r3: '回合也可能在任意随机时刻结束（如 Aviator）：请提前兑现！' }
   };
   // per game: hint (gesture), fail (mistake), late (timer / misses), end (the secret end's event), rule (step 2 of the rules)
   var G = {
     archer: {
-      en: ['Pull back and release to shoot', 'Missed!', 'Time’s up!', 'Meteor!', 'Pull back and release to hit the moving target (mind the wind). A miss, or the timer running out, ends the round.'],
-      fr: ['Tire vers l’arrière et relâche pour tirer', 'Raté !', 'Temps écoulé !', 'Météore !', 'Tire en arrière et relâche pour toucher la cible qui bouge (attention au vent). Un tir raté, ou le chrono à zéro, termine la partie.'],
-      es: ['Tira hacia atrás y suelta para disparar', '¡Fallaste!', '¡Se acabó el tiempo!', '¡Meteoro!', 'Tira hacia atrás y suelta para acertar al blanco móvil (ojo al viento). Fallar, o que se acabe el tiempo, termina la ronda.'],
-      pt: ['Puxe para trás e solte para atirar', 'Errou!', 'Tempo esgotado!', 'Meteoro!', 'Puxe para trás e solte para acertar o alvo em movimento (cuidado com o vento). Errar, ou o tempo acabar, encerra a rodada.'],
-      ar: ['اسحب للخلف ثم اترك للرمي', 'أخطأت!', 'انتهى الوقت!', 'نيزك!', 'اسحب للخلف واترك لتصيب الهدف المتحرك (انتبه للرياح). الخطأ أو انتهاء الوقت ينهي الجولة.'],
-      tr: ['Geri çek ve atmak için bırak', 'Iskaladın!', 'Süre doldu!', 'Meteor!', 'Hareketli hedefi vurmak için geri çek ve bırak (rüzgâra dikkat). Iska ya da sürenin bitmesi turu bitirir.'],
-      vi: ['Kéo ngược rồi thả để bắn', 'Trượt rồi!', 'Hết giờ!', 'Thiên thạch!', 'Kéo ngược rồi thả để bắn trúng mục tiêu di chuyển (chú ý gió). Bắn trượt hoặc hết giờ sẽ kết thúc ván.'],
-      id: ['Tarik ke belakang lalu lepas untuk memanah', 'Meleset!', 'Waktu habis!', 'Meteor!', 'Tarik lalu lepas untuk mengenai target yang bergerak (perhatikan angin). Meleset atau waktu habis mengakhiri ronde.'],
-      ru: ['Оттяни назад и отпусти, чтобы выстрелить', 'Мимо!', 'Время вышло!', 'Метеор!', 'Оттяни и отпусти, чтобы попасть в движущуюся мишень (учитывай ветер). Промах или конец таймера завершает раунд.'],
-      de: ['Zurückziehen und loslassen zum Schießen', 'Daneben!', 'Zeit abgelaufen!', 'Meteor!', 'Zurückziehen und loslassen, um das bewegte Ziel zu treffen (Wind beachten). Ein Fehlschuss oder abgelaufene Zeit beendet die Runde.'],
-      hi: ['पीछे खींचें और छोड़कर तीर चलाएँ', 'चूक गए!', 'समय खत्म!', 'उल्का!', 'चलते निशाने पर लगाने के लिए पीछे खींचें और छोड़ें (हवा का ध्यान रखें)। चूकना या समय खत्म होना राउंड खत्म करता है।'],
-      zh: ['向后拉再松手射箭', '射偏了！', '时间到！', '流星！', '向后拉再松手，射中移动的靶子（注意风向）。射偏或计时结束，本回合结束。']
+      en: ['Tap the target', 'Missed!', 'Time’s up!', 'Meteor!', 'Tap the moving target to shoot an arrow at it. A miss, or the timer running out, ends the round.'],
+      fr: ['Touche la cible', 'Raté !', 'Temps écoulé !', 'Météore !', 'Touche la cible qui bouge pour y tirer une flèche. Un tir raté, ou le chrono à zéro, termine la partie.'],
+      es: ['Toca el blanco', '¡Fallaste!', '¡Se acabó el tiempo!', '¡Meteoro!', 'Toca el blanco que se mueve para dispararle una flecha. Fallar, o que se acabe el tiempo, termina la ronda.'],
+      pt: ['Toque no alvo', 'Errou!', 'Tempo esgotado!', 'Meteoro!', 'Toque no alvo em movimento para atirar uma flecha nele. Errar, ou o tempo acabar, encerra a rodada.'],
+      ar: ['المس الهدف', 'أخطأت!', 'انتهى الوقت!', 'نيزك!', 'المس الهدف المتحرك لترمي سهمًا عليه. الخطأ أو انتهاء الوقت ينهي الجولة.'],
+      tr: ['Hedefe dokun', 'Iskaladın!', 'Süre doldu!', 'Meteor!', 'Ok atmak için hareketli hedefe dokun. Iska ya da sürenin bitmesi turu bitirir.'],
+      vi: ['Chạm vào bia', 'Trượt rồi!', 'Hết giờ!', 'Thiên thạch!', 'Chạm vào bia đang di chuyển để bắn tên vào đó. Bắn trượt hoặc hết giờ sẽ kết thúc ván.'],
+      id: ['Ketuk sasaran', 'Meleset!', 'Waktu habis!', 'Meteor!', 'Ketuk target yang bergerak untuk memanahnya. Meleset atau waktu habis mengakhiri ronde.'],
+      ru: ['Жми на мишень', 'Мимо!', 'Время вышло!', 'Метеор!', 'Нажми на движущуюся мишень, чтобы выстрелить в неё. Промах или конец таймера завершает раунд.'],
+      de: ['Ziel antippen', 'Daneben!', 'Zeit abgelaufen!', 'Meteor!', 'Tippe auf das bewegte Ziel, um einen Pfeil darauf zu schießen. Ein Fehlschuss oder abgelaufene Zeit beendet die Runde.'],
+      hi: ['निशाने पर टैप करें', 'चूक गए!', 'समय खत्म!', 'उल्का!', 'चलते निशाने पर तीर चलाने के लिए उस पर टैप करें। चूकना या समय खत्म होना राउंड खत्म करता है।'],
+      zh: ['点击靶子', '射偏了！', '时间到！', '流星！', '点击移动的靶子向它射箭。射偏或计时结束，本回合结束。']
     },
     slicer: {
-      en: ['Swipe to slice — avoid the bombs', 'Bomb!', 'Too many missed!', 'Supernova!', 'Swipe to slice the flying fruits. Slicing a bomb, or dropping 3 fruits, ends the round.'],
-      fr: ['Glisse pour trancher — évite les bombes', 'Bombe !', 'Trop de fruits ratés !', 'Supernova !', 'Glisse pour trancher les fruits. Trancher une bombe, ou laisser tomber 3 fruits, termine la partie.'],
-      es: ['Desliza para cortar — evita las bombas', '¡Bomba!', '¡Demasiadas frutas perdidas!', '¡Supernova!', 'Desliza para cortar las frutas. Cortar una bomba, o dejar caer 3 frutas, termina la ronda.'],
-      pt: ['Deslize para cortar — evite as bombas', 'Bomba!', 'Frutas demais perdidas!', 'Supernova!', 'Deslize para cortar as frutas. Cortar uma bomba, ou deixar cair 3 frutas, encerra a rodada.'],
-      ar: ['اسحب لتقطع — تجنّب القنابل', 'قنبلة!', 'فاتتك فواكه كثيرة!', 'مستعر أعظم!', 'اسحب لتقطع الفواكه الطائرة. قطع قنبلة أو سقوط 3 فواكه ينهي الجولة.'],
-      tr: ['Kesmek için kaydır — bombalardan kaç', 'Bomba!', 'Çok meyve kaçtı!', 'Süpernova!', 'Uçan meyveleri kesmek için kaydır. Bomba kesmek ya da 3 meyve düşürmek turu bitirir.'],
-      vi: ['Vuốt để chém — tránh bom', 'Bom!', 'Bỏ lỡ quá nhiều!', 'Siêu tân tinh!', 'Vuốt để chém trái cây đang bay. Chém trúng bom hoặc để rơi 3 trái sẽ kết thúc ván.'],
-      id: ['Usap untuk memotong — hindari bom', 'Bom!', 'Terlalu banyak terlewat!', 'Supernova!', 'Usap untuk memotong buah yang terbang. Memotong bom atau menjatuhkan 3 buah mengakhiri ronde.'],
-      ru: ['Проведи, чтобы разрезать — избегай бомб', 'Бомба!', 'Слишком много пропущено!', 'Сверхновая!', 'Проводи пальцем, чтобы резать фрукты. Бомба или 3 упавших фрукта завершают раунд.'],
-      de: ['Wischen zum Schneiden — Bomben meiden', 'Bombe!', 'Zu viele verpasst!', 'Supernova!', 'Wische, um die Früchte zu schneiden. Eine Bombe oder 3 verpasste Früchte beenden die Runde.'],
-      hi: ['काटने के लिए स्वाइप करें — बम से बचें', 'बम!', 'बहुत फल छूट गए!', 'सुपरनोवा!', 'उड़ते फल काटने के लिए स्वाइप करें। बम काटना या 3 फल गिरना राउंड खत्म करता है।'],
-      zh: ['滑动切水果——避开炸弹', '炸弹！', '漏掉太多了！', '超新星！', '滑动切开飞行的水果。切到炸弹或漏掉 3 个水果，本回合结束。']
+      en: ['Swipe to slice', 'Bomb!', 'Too many missed!', 'Supernova!', 'Swipe to slice the flying fruits. Slicing a bomb, or dropping 3 fruits, ends the round.'],
+      fr: ['Glisse pour trancher', 'Bombe !', 'Trop de fruits ratés !', 'Supernova !', 'Glisse pour trancher les fruits. Trancher une bombe, ou laisser tomber 3 fruits, termine la partie.'],
+      es: ['Desliza para cortar', '¡Bomba!', '¡Demasiadas frutas perdidas!', '¡Supernova!', 'Desliza para cortar las frutas. Cortar una bomba, o dejar caer 3 frutas, termina la ronda.'],
+      pt: ['Deslize para cortar', 'Bomba!', 'Frutas demais perdidas!', 'Supernova!', 'Deslize para cortar as frutas. Cortar uma bomba, ou deixar cair 3 frutas, encerra a rodada.'],
+      ar: ['اسحب للتقطيع', 'قنبلة!', 'فاتتك فواكه كثيرة!', 'مستعر أعظم!', 'اسحب لتقطع الفواكه الطائرة. قطع قنبلة أو سقوط 3 فواكه ينهي الجولة.'],
+      tr: ['Kesmek için kaydır', 'Bomba!', 'Çok meyve kaçtı!', 'Süpernova!', 'Uçan meyveleri kesmek için kaydır. Bomba kesmek ya da 3 meyve düşürmek turu bitirir.'],
+      vi: ['Vuốt để chém', 'Bom!', 'Bỏ lỡ quá nhiều!', 'Siêu tân tinh!', 'Vuốt để chém trái cây đang bay. Chém trúng bom hoặc để rơi 3 trái sẽ kết thúc ván.'],
+      id: ['Usap untuk potong', 'Bom!', 'Terlalu banyak terlewat!', 'Supernova!', 'Usap untuk memotong buah yang terbang. Memotong bom atau menjatuhkan 3 buah mengakhiri ronde.'],
+      ru: ['Проведи — режь', 'Бомба!', 'Слишком много пропущено!', 'Сверхновая!', 'Проводи пальцем, чтобы резать фрукты. Бомба или 3 упавших фрукта завершают раунд.'],
+      de: ['Wischen zum Schneiden', 'Bombe!', 'Zu viele verpasst!', 'Supernova!', 'Wische, um die Früchte zu schneiden. Eine Bombe oder 3 verpasste Früchte beenden die Runde.'],
+      hi: ['काटने को स्वाइप करें', 'बम!', 'बहुत फल छूट गए!', 'सुपरनोवा!', 'उड़ते फल काटने के लिए स्वाइप करें। बम काटना या 3 फल गिरना राउंड खत्म करता है।'],
+      zh: ['滑动切水果', '炸弹！', '漏掉太多了！', '超新星！', '滑动切开飞行的水果。切到炸弹或漏掉 3 个水果，本回合结束。']
     },
     chicken: {
-      en: ['Tap to hop over the next lane', 'Hit!', 'Too slow!', 'Comet!', 'Tap to hop over the next lane. Being hit by a ship, or waiting until your platform crumbles, ends the round.'],
-      fr: ['Touche pour sauter la voie suivante', 'Touché !', 'Trop lent !', 'Comète !', 'Touche pour sauter la voie suivante. Un vaisseau qui te touche, ou ta plateforme qui s’effrite, termine la partie.'],
-      es: ['Toca para saltar el siguiente carril', '¡Golpe!', '¡Muy lento!', '¡Cometa!', 'Toca para saltar el siguiente carril. Que te golpee una nave, o esperar hasta que tu plataforma se rompa, termina la ronda.'],
-      pt: ['Toque para pular a próxima pista', 'Atingido!', 'Lento demais!', 'Cometa!', 'Toque para pular a próxima pista. Ser atingido por uma nave, ou esperar até a plataforma desmoronar, encerra a rodada.'],
-      ar: ['المس للقفز فوق المسار التالي', 'اصطدام!', 'بطيء جدًا!', 'مذنّب!', 'المس لتقفز فوق المسار التالي. اصطدام مركبة بك أو تفتت منصتك ينهي الجولة.'],
-      tr: ['Sonraki şeridi atlamak için dokun', 'Çarpıldın!', 'Çok yavaş!', 'Kuyruklu yıldız!', 'Sonraki şeridi atlamak için dokun. Bir gemiye çarpmak ya da platformun ufalanmasını beklemek turu bitirir.'],
-      vi: ['Chạm để nhảy qua làn kế tiếp', 'Bị đâm!', 'Chậm quá!', 'Sao chổi!', 'Chạm để nhảy qua làn kế tiếp. Bị tàu đâm hoặc chờ đến khi bệ vỡ sẽ kết thúc ván.'],
-      id: ['Ketuk untuk melompati jalur berikut', 'Tertabrak!', 'Terlalu lambat!', 'Komet!', 'Ketuk untuk melompati jalur berikut. Tertabrak kapal atau menunggu sampai pijakan runtuh mengakhiri ronde.'],
-      ru: ['Нажми, чтобы перепрыгнуть полосу', 'Сбит!', 'Слишком медленно!', 'Комета!', 'Нажимай, чтобы перепрыгнуть полосу. Удар корабля или рассыпавшаяся платформа завершают раунд.'],
-      de: ['Tippen, um über die nächste Spur zu hüpfen', 'Getroffen!', 'Zu langsam!', 'Komet!', 'Tippe, um über die nächste Spur zu hüpfen. Ein Treffer durch ein Schiff oder eine zerbröckelte Plattform beendet die Runde.'],
-      hi: ['अगली लेन पार करने के लिए टैप करें', 'टक्कर!', 'बहुत धीमे!', 'धूमकेतु!', 'अगली लेन पार करने के लिए टैप करें। यान से टकराना या प्लेटफ़ॉर्म टूटने तक रुकना राउंड खत्म करता है।'],
-      zh: ['点击跳过下一条航道', '被撞了！', '太慢了！', '彗星！', '点击跳过下一条航道。被飞船撞到，或等到平台碎裂，本回合结束。']
+      en: ['Tap to hop', 'Hit!', 'Too slow!', 'Comet!', 'Tap to hop over the next lane. Being hit by a ship, or waiting until your platform crumbles, ends the round.'],
+      fr: ['Touche pour sauter', 'Touché !', 'Trop lent !', 'Comète !', 'Touche pour sauter la voie suivante. Un vaisseau qui te touche, ou ta plateforme qui s’effrite, termine la partie.'],
+      es: ['Toca para saltar', '¡Golpe!', '¡Muy lento!', '¡Cometa!', 'Toca para saltar el siguiente carril. Que te golpee una nave, o esperar hasta que tu plataforma se rompa, termina la ronda.'],
+      pt: ['Toque para pular', 'Atingido!', 'Lento demais!', 'Cometa!', 'Toque para pular a próxima pista. Ser atingido por uma nave, ou esperar até a plataforma desmoronar, encerra a rodada.'],
+      ar: ['المس للقفز', 'اصطدام!', 'بطيء جدًا!', 'مذنّب!', 'المس لتقفز فوق المسار التالي. اصطدام مركبة بك أو تفتت منصتك ينهي الجولة.'],
+      tr: ['Zıplamak için dokun', 'Çarpıldın!', 'Çok yavaş!', 'Kuyruklu yıldız!', 'Sonraki şeridi atlamak için dokun. Bir gemiye çarpmak ya da platformun ufalanmasını beklemek turu bitirir.'],
+      vi: ['Chạm để nhảy', 'Bị đâm!', 'Chậm quá!', 'Sao chổi!', 'Chạm để nhảy qua làn kế tiếp. Bị tàu đâm hoặc chờ đến khi bệ vỡ sẽ kết thúc ván.'],
+      id: ['Ketuk untuk lompat', 'Tertabrak!', 'Terlalu lambat!', 'Komet!', 'Ketuk untuk melompati jalur berikut. Tertabrak kapal atau menunggu sampai pijakan runtuh mengakhiri ronde.'],
+      ru: ['Тап — прыжок', 'Сбит!', 'Слишком медленно!', 'Комета!', 'Нажимай, чтобы перепрыгнуть полосу. Удар корабля или рассыпавшаяся платформа завершают раунд.'],
+      de: ['Tippen zum Hüpfen', 'Getroffen!', 'Zu langsam!', 'Komet!', 'Tippe, um über die nächste Spur zu hüpfen. Ein Treffer durch ein Schiff oder eine zerbröckelte Plattform beendet die Runde.'],
+      hi: ['कूदने को टैप करें', 'टक्कर!', 'बहुत धीमे!', 'धूमकेतु!', 'अगली लेन पार करने के लिए टैप करें। यान से टकराना या प्लेटफ़ॉर्म टूटने तक रुकना राउंड खत्म करता है।'],
+      zh: ['点击跳跃', '被撞了！', '太慢了！', '彗星！', '点击跳过下一条航道。被飞船撞到，或等到平台碎裂，本回合结束。']
     },
     hamster: {
-      en: ['Tap left or right to switch lanes', 'Crash!', '', 'Dead end!', 'Tap the left or right side to switch lanes. Hitting an obstacle ends the round.'],
-      fr: ['Touche à gauche ou à droite pour changer de voie', 'Boum !', '', 'Cul-de-sac !', 'Touche à gauche ou à droite pour changer de voie. Heurter un obstacle termine la partie.'],
-      es: ['Toca izquierda o derecha para cambiar de carril', '¡Choque!', '', '¡Sin salida!', 'Toca a la izquierda o a la derecha para cambiar de carril. Chocar con un obstáculo termina la ronda.'],
-      pt: ['Toque à esquerda ou à direita para mudar de pista', 'Batida!', '', 'Sem saída!', 'Toque à esquerda ou à direita para mudar de pista. Bater num obstáculo encerra a rodada.'],
-      ar: ['المس اليسار أو اليمين لتغيير المسار', 'اصطدام!', '', 'طريق مسدود!', 'المس اليسار أو اليمين لتغيير المسار. الاصطدام بعائق ينهي الجولة.'],
-      tr: ['Şerit değiştirmek için sola ya da sağa dokun', 'Çarptın!', '', 'Çıkmaz!', 'Şerit değiştirmek için sola ya da sağa dokun. Engele çarpmak turu bitirir.'],
-      vi: ['Chạm trái hoặc phải để đổi làn', 'Đâm rồi!', '', 'Ngõ cụt!', 'Chạm bên trái hoặc phải để đổi làn. Đâm vào chướng ngại sẽ kết thúc ván.'],
-      id: ['Ketuk kiri atau kanan untuk pindah jalur', 'Tabrakan!', '', 'Jalan buntu!', 'Ketuk kiri atau kanan untuk pindah jalur. Menabrak rintangan mengakhiri ronde.'],
-      ru: ['Нажми слева или справа, чтобы сменить полосу', 'Авария!', '', 'Тупик!', 'Нажимай слева или справа, чтобы менять полосу. Столкновение с препятствием завершает раунд.'],
-      de: ['Links oder rechts tippen zum Spurwechsel', 'Crash!', '', 'Sackgasse!', 'Tippe links oder rechts, um die Spur zu wechseln. Ein Hindernis beendet die Runde.'],
-      hi: ['लेन बदलने के लिए बाएँ या दाएँ टैप करें', 'टक्कर!', '', 'रास्ता बंद!', 'लेन बदलने के लिए बाएँ या दाएँ टैप करें। बाधा से टकराना राउंड खत्म करता है।'],
-      zh: ['点击左侧或右侧切换跑道', '撞上了！', '', '死路！', '点击左侧或右侧切换跑道。撞上障碍，本回合结束。']
+      en: ['Tap left or right', 'Crash!', '', 'Dead end!', 'Tap the left or right side to switch lanes. Hitting an obstacle ends the round.'],
+      fr: ['Touche à gauche ou à droite', 'Boum !', '', 'Cul-de-sac !', 'Touche à gauche ou à droite pour changer de voie. Heurter un obstacle termine la partie.'],
+      es: ['Toca izquierda o derecha', '¡Choque!', '', '¡Sin salida!', 'Toca a la izquierda o a la derecha para cambiar de carril. Chocar con un obstáculo termina la ronda.'],
+      pt: ['Toque à esquerda ou direita', 'Batida!', '', 'Sem saída!', 'Toque à esquerda ou à direita para mudar de pista. Bater num obstáculo encerra a rodada.'],
+      ar: ['المس يسارًا أو يمينًا', 'اصطدام!', '', 'طريق مسدود!', 'المس اليسار أو اليمين لتغيير المسار. الاصطدام بعائق ينهي الجولة.'],
+      tr: ['Sola ya da sağa dokun', 'Çarptın!', '', 'Çıkmaz!', 'Şerit değiştirmek için sola ya da sağa dokun. Engele çarpmak turu bitirir.'],
+      vi: ['Chạm trái hoặc phải', 'Đâm rồi!', '', 'Ngõ cụt!', 'Chạm bên trái hoặc phải để đổi làn. Đâm vào chướng ngại sẽ kết thúc ván.'],
+      id: ['Ketuk kiri atau kanan', 'Tabrakan!', '', 'Jalan buntu!', 'Ketuk kiri atau kanan untuk pindah jalur. Menabrak rintangan mengakhiri ronde.'],
+      ru: ['Жми слева или справа', 'Авария!', '', 'Тупик!', 'Нажимай слева или справа, чтобы менять полосу. Столкновение с препятствием завершает раунд.'],
+      de: ['Links oder rechts tippen', 'Crash!', '', 'Sackgasse!', 'Tippe links oder rechts, um die Spur zu wechseln. Ein Hindernis beendet die Runde.'],
+      hi: ['बाएँ या दाएँ टैप करें', 'टक्कर!', '', 'रास्ता बंद!', 'लेन बदलने के लिए बाएँ या दाएँ टैप करें। बाधा से टकराना राउंड खत्म करता है।'],
+      zh: ['点击左边或右边', '撞上了！', '', '死路！', '点击左侧或右侧切换跑道。撞上障碍，本回合结束。']
     },
     dodge: {
-      en: ['Drag to steer the ship', 'Hit!', '', 'Giant meteor!', 'Drag to steer your ship between the asteroids. A hit ends the round.'],
-      fr: ['Fais glisser pour piloter le vaisseau', 'Touché !', '', 'Météore géant !', 'Fais glisser pour piloter ton vaisseau entre les astéroïdes. Être touché termine la partie.'],
-      es: ['Arrastra para pilotar la nave', '¡Impacto!', '', '¡Meteoro gigante!', 'Arrastra para pilotar tu nave entre los asteroides. Un impacto termina la ronda.'],
-      pt: ['Arraste para pilotar a nave', 'Atingido!', '', 'Meteoro gigante!', 'Arraste para pilotar a nave entre os asteroides. Ser atingido encerra a rodada.'],
-      ar: ['اسحب لتوجيه المركبة', 'إصابة!', '', 'نيزك عملاق!', 'اسحب لتوجيه مركبتك بين الكويكبات. الإصابة تنهي الجولة.'],
-      tr: ['Gemiyi yönetmek için sürükle', 'Vuruldun!', '', 'Dev meteor!', 'Gemiyi asteroitlerin arasından geçirmek için sürükle. Vurulmak turu bitirir.'],
-      vi: ['Kéo để lái tàu', 'Trúng rồi!', '', 'Thiên thạch khổng lồ!', 'Kéo để lái tàu né các tiểu hành tinh. Bị trúng sẽ kết thúc ván.'],
-      id: ['Seret untuk mengemudikan kapal', 'Kena!', '', 'Meteor raksasa!', 'Seret untuk mengemudikan kapal di antara asteroid. Terkena mengakhiri ronde.'],
-      ru: ['Веди пальцем, чтобы управлять кораблём', 'Попадание!', '', 'Гигантский метеор!', 'Веди пальцем, чтобы проводить корабль между астероидами. Попадание завершает раунд.'],
-      de: ['Ziehen, um das Schiff zu steuern', 'Treffer!', '', 'Riesenmeteor!', 'Ziehe, um dein Schiff zwischen den Asteroiden zu steuern. Ein Treffer beendet die Runde.'],
-      hi: ['यान चलाने के लिए खींचें', 'टक्कर!', '', 'विशाल उल्का!', 'क्षुद्रग्रहों के बीच यान चलाने के लिए खींचें। टकराना राउंड खत्म करता है।'],
-      zh: ['拖动来驾驶飞船', '被击中！', '', '巨型流星！', '拖动驾驶飞船穿过小行星。被击中，本回合结束。']
+      en: ['Slide to steer', 'Hit!', '', 'Giant meteor!', 'Drag to steer your ship between the asteroids. A hit ends the round.'],
+      fr: ['Glisse pour piloter', 'Touché !', '', 'Météore géant !', 'Fais glisser pour piloter ton vaisseau entre les astéroïdes. Être touché termine la partie.'],
+      es: ['Desliza para pilotar', '¡Impacto!', '', '¡Meteoro gigante!', 'Arrastra para pilotar tu nave entre los asteroides. Un impacto termina la ronda.'],
+      pt: ['Deslize para pilotar', 'Atingido!', '', 'Meteoro gigante!', 'Arraste para pilotar a nave entre os asteroides. Ser atingido encerra a rodada.'],
+      ar: ['اسحب للتوجيه', 'إصابة!', '', 'نيزك عملاق!', 'اسحب لتوجيه مركبتك بين الكويكبات. الإصابة تنهي الجولة.'],
+      tr: ['Yönlendirmek için kaydır', 'Vuruldun!', '', 'Dev meteor!', 'Gemiyi asteroitlerin arasından geçirmek için sürükle. Vurulmak turu bitirir.'],
+      vi: ['Kéo để lái', 'Trúng rồi!', '', 'Thiên thạch khổng lồ!', 'Kéo để lái tàu né các tiểu hành tinh. Bị trúng sẽ kết thúc ván.'],
+      id: ['Geser untuk setir', 'Kena!', '', 'Meteor raksasa!', 'Seret untuk mengemudikan kapal di antara asteroid. Terkena mengakhiri ronde.'],
+      ru: ['Веди пальцем', 'Попадание!', '', 'Гигантский метеор!', 'Веди пальцем, чтобы проводить корабль между астероидами. Попадание завершает раунд.'],
+      de: ['Wischen zum Steuern', 'Treffer!', '', 'Riesenmeteor!', 'Ziehe, um dein Schiff zwischen den Asteroiden zu steuern. Ein Treffer beendet die Runde.'],
+      hi: ['चलाने को खिसकाएँ', 'टक्कर!', '', 'विशाल उल्का!', 'क्षुद्रग्रहों के बीच यान चलाने के लिए खींचें। टकराना राउंड खत्म करता है।'],
+      zh: ['滑动操控', '被击中！', '', '巨型流星！', '拖动驾驶飞船穿过小行星。被击中，本回合结束。']
     },
     dartspro: {
-      en: ['Tap to throw when the aim is on the board', 'Off the board!', 'Time’s up!', 'Meteor!', 'Tap to throw when the moving aim is on the board (green). Off the board, or the timer running out, ends the round.'],
-      fr: ['Touche pour lancer quand la mire est sur la cible', 'Hors cible !', 'Temps écoulé !', 'Météore !', 'Touche pour lancer quand la mire est sur la cible (verte). Hors cible, ou le chrono à zéro, termine la partie.'],
-      es: ['Toca para lanzar cuando la mira esté en la diana', '¡Fuera de la diana!', '¡Se acabó el tiempo!', '¡Meteoro!', 'Toca para lanzar cuando la mira esté en la diana (verde). Fuera de la diana, o que se acabe el tiempo, termina la ronda.'],
-      pt: ['Toque para lançar quando a mira estiver no alvo', 'Fora do alvo!', 'Tempo esgotado!', 'Meteoro!', 'Toque para lançar quando a mira estiver no alvo (verde). Fora do alvo, ou o tempo acabar, encerra a rodada.'],
-      ar: ['المس للرمي عندما يكون المؤشر على اللوحة', 'خارج اللوحة!', 'انتهى الوقت!', 'نيزك!', 'المس للرمي عندما يكون المؤشر على اللوحة (أخضر). خارج اللوحة أو انتهاء الوقت ينهي الجولة.'],
-      tr: ['Nişangâh tahtadayken atmak için dokun', 'Tahta dışı!', 'Süre doldu!', 'Meteor!', 'Nişangâh tahtadayken (yeşil) atmak için dokun. Tahta dışı ya da sürenin bitmesi turu bitirir.'],
-      vi: ['Chạm để ném khi tâm ngắm trên bảng', 'Ra ngoài bảng!', 'Hết giờ!', 'Thiên thạch!', 'Chạm để ném khi tâm ngắm nằm trên bảng (xanh). Ra ngoài bảng hoặc hết giờ sẽ kết thúc ván.'],
-      id: ['Ketuk untuk melempar saat bidikan di papan', 'Di luar papan!', 'Waktu habis!', 'Meteor!', 'Ketuk untuk melempar saat bidikan di papan (hijau). Di luar papan atau waktu habis mengakhiri ronde.'],
-      ru: ['Нажми, чтобы бросить, когда прицел на мишени', 'Мимо мишени!', 'Время вышло!', 'Метеор!', 'Нажми, чтобы бросить, когда прицел на мишени (зелёный). Мимо мишени или конец таймера завершает раунд.'],
-      de: ['Tippen zum Werfen, wenn das Visier auf der Scheibe ist', 'Neben der Scheibe!', 'Zeit abgelaufen!', 'Meteor!', 'Tippe zum Werfen, wenn das Visier auf der Scheibe ist (grün). Daneben oder abgelaufene Zeit beendet die Runde.'],
-      hi: ['निशाना बोर्ड पर हो तब फेंकने के लिए टैप करें', 'बोर्ड से बाहर!', 'समय खत्म!', 'उल्का!', 'निशाना बोर्ड पर (हरा) हो तब फेंकने के लिए टैप करें। बोर्ड से बाहर या समय खत्म होना राउंड खत्म करता है।'],
-      zh: ['准星在靶上时点击投掷', '脱靶了！', '时间到！', '流星！', '准星在靶上（绿色）时点击投掷。脱靶或计时结束，本回合结束。']
+      en: ['Tap when green', 'Off the board!', 'Time’s up!', 'Meteor!', 'Tap to throw when the moving aim is on the board (green). Off the board, or the timer running out, ends the round.'],
+      fr: ['Touche quand c’est vert', 'Hors cible !', 'Temps écoulé !', 'Météore !', 'Touche pour lancer quand la mire est sur la cible (verte). Hors cible, ou le chrono à zéro, termine la partie.'],
+      es: ['Toca cuando esté verde', '¡Fuera de la diana!', '¡Se acabó el tiempo!', '¡Meteoro!', 'Toca para lanzar cuando la mira esté en la diana (verde). Fuera de la diana, o que se acabe el tiempo, termina la ronda.'],
+      pt: ['Toque quando ficar verde', 'Fora do alvo!', 'Tempo esgotado!', 'Meteoro!', 'Toque para lançar quando a mira estiver no alvo (verde). Fora do alvo, ou o tempo acabar, encerra a rodada.'],
+      ar: ['المس عندما يخضرّ', 'خارج اللوحة!', 'انتهى الوقت!', 'نيزك!', 'المس للرمي عندما يكون المؤشر على اللوحة (أخضر). خارج اللوحة أو انتهاء الوقت ينهي الجولة.'],
+      tr: ['Yeşilken dokun', 'Tahta dışı!', 'Süre doldu!', 'Meteor!', 'Nişangâh tahtadayken (yeşil) atmak için dokun. Tahta dışı ya da sürenin bitmesi turu bitirir.'],
+      vi: ['Chạm khi màu xanh', 'Ra ngoài bảng!', 'Hết giờ!', 'Thiên thạch!', 'Chạm để ném khi tâm ngắm nằm trên bảng (xanh). Ra ngoài bảng hoặc hết giờ sẽ kết thúc ván.'],
+      id: ['Ketuk saat hijau', 'Di luar papan!', 'Waktu habis!', 'Meteor!', 'Ketuk untuk melempar saat bidikan di papan (hijau). Di luar papan atau waktu habis mengakhiri ronde.'],
+      ru: ['Жми, когда зелёный', 'Мимо мишени!', 'Время вышло!', 'Метеор!', 'Нажми, чтобы бросить, когда прицел на мишени (зелёный). Мимо мишени или конец таймера завершает раунд.'],
+      de: ['Tippen bei Grün', 'Neben der Scheibe!', 'Zeit abgelaufen!', 'Meteor!', 'Tippe zum Werfen, wenn das Visier auf der Scheibe ist (grün). Daneben oder abgelaufene Zeit beendet die Runde.'],
+      hi: ['हरा हो तब टैप करें', 'बोर्ड से बाहर!', 'समय खत्म!', 'उल्का!', 'निशाना बोर्ड पर (हरा) हो तब फेंकने के लिए टैप करें। बोर्ड से बाहर या समय खत्म होना राउंड खत्म करता है।'],
+      zh: ['变绿时点击', '脱靶了！', '时间到！', '流星！', '准星在靶上（绿色）时点击投掷。脱靶或计时结束，本回合结束。']
     }
   };
   function L(key) {
@@ -186,16 +186,27 @@
     });
   }
 
+  /* hand hints (one per gesture): tap = ripple; swipe = finger sweeping; lr = arrows left / right; drag = finger sliding */
+  var FINGER = '<path d="M11 21V9.5a2 2 0 0 1 4 0V16m0-2a2 2 0 0 1 4 0v2m0-1a2 2 0 0 1 4 0v5c0 4.5-3 8-7.5 8H14c-2.4 0-4-1-5.3-2.9L6 23a2 2 0 0 1 3.2-2.4L11 23"/>';
+  var HAND = {
+    tap: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle class="sk-rip" cx="13" cy="9" r="6"/>' + FINGER + '</svg>',
+    swipe: '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-trail" d="M3 6c5 3 12 4 20 1"/>' + FINGER + '</svg>',
+    lr: '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-arr" d="M1 9l5-4v8zM31 9l-5-4v8z"/>' + FINGER + '</svg>',
+    drag: '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-arr" d="M1 9l5-4v8zM31 9l-5-4v8z"/>' + FINGER + '</svg>'
+  };
+
   /* ------------------------------------------------------------------ shared engine (round flow + canvas loop) */
-  function boot(key, mk) {
+  function boot(key, mk, gest) {
     K.register(key, function (box) {
       var l = L(key), lite = document.documentElement.classList.contains('oro-lite'), hist = [];
       try { hist = JSON.parse(localStorage.getItem('cg_' + key + '_h') || '[]').slice(0, 12); } catch (e) { hist = []; }
       box.classList.add('cg-game', 'cg-s2', 'cg-' + key);
       box.innerHTML = '<div class="cg-stage s2-st" id="s2St"><canvas class="s2-bg" id="s2Bg"></canvas><canvas class="s2-cv" id="s2Cv"></canvas><div class="cg-hist s2-hist" id="s2Hist"></div>' +
-        '<div class="s2-hud" id="s2Hud"><b class="fit s2-m idle" id="s2M">' + xm(1) + '</b><small class="fit s2-msg" id="s2Msg"></small></div></div>' + K.stakePanel(l.bet);
+        '<div class="s2-hud" id="s2Hud"><b class="fit s2-m idle" id="s2M">' + xm(1) + '</b><small class="fit s2-msg" id="s2Msg"></small></div>' +
+        '<div class="sk-hint g-' + gest + '" id="s2Hint"><i class="sk-hand">' + HAND[gest] + '</i><small class="fit">' + K.esc(l.hint) + '</small></div></div>' + K.stakePanel(l.bet);
       K.bindStake(box);
-      var st = $('s2St'), cv = $('s2Cv'), ctx = cv.getContext('2d'), btn = $('csGo'), mEl = $('s2M'), msgEl = $('s2Msg'), hud = $('s2Hud');
+      var st = $('s2St'), cv = $('s2Cv'), ctx = cv.getContext('2d'), btn = $('csGo'), mEl = $('s2M'), msgEl = $('s2Msg'), hud = $('s2Hud'), hintEl = $('s2Hint'), gN = 0, nudgeT = 0;
+      var hintOn = function (on) { hintEl.classList.toggle('off', !on); st.classList.toggle('idle', phase === 'idle'); };
       var W = 0, H = 0, dpr = 1, rect = null, sized = false, fadeS = null, fadeH = 0, phase = 'idle', R = null, off = 0, busy = false, playT = 0, overT = 0, last = 0, drawn = false, hintT = 0;
       var P = [], RG = [], shake = 0, flash = 0, mShown = '';
       var bgCv = $('s2Bg'), bgOn = null;
@@ -288,7 +299,7 @@
         if (phase === 'play' || phase === 'cashing') {
           var m = mult(), s = xm(m);
           if (s !== mShown) { mShown = s; tx(mEl, s); if (phase === 'play' && btn.lastChild && btn.lastChild.className === 'fit s2-b2') tx(btn.lastChild, money(R.stake * m)); }
-          if (hintT > 0) { hintT -= dt; if (hintT <= 0) say('', ''); }
+          if (hintT > 0) { hintT -= dt; if (hintT <= 0 || gN > 0) { hintT = 0; hintOn(false); } } // the hand hint stays until the first move
         }
       }
 
@@ -306,7 +317,8 @@
         R = r; off = (Number(r.now) || Date.now() / 1000) - Date.now() / 1000; playT = r.resume ? Math.max(0, r.now - r.t0) : 0;
         if (r.done) { result(r); return; }
         g.reset(true); P.length = 0; RG.length = 0;
-        phase = 'play'; mShown = ''; hintT = 2.6; say(l.hint, '');
+        phase = 'play'; mShown = ''; hintT = 9; gN = 0; box.setAttribute('data-gn', '0'); say('', ''); hintOn(true);
+        btn.classList.remove('sk-nudge'); st.querySelectorAll('.cs-toast').forEach(function (t) { t.remove(); }); st.querySelectorAll('.s2-hud *, .sk-hint, .sk-hint *').forEach(function (e) { e.style.visibility = ''; });
         setBtn(l.cash, money(r.stake * mult()), 'cash');
         poll();
       }
@@ -324,7 +336,7 @@
       }
       // the server's secret moment came: an unavoidable event, then the loss
       function ended(r) {
-        phase = 'over'; overT = 99; btn.disabled = true;
+        phase = 'over'; overT = 99; btn.disabled = true; hintOn(false);
         g.boom(); say(l.end, 'lost'); setBtn(l.bet, '', 'wait');
         setTimeout(function () { if (box.isConnected) result(r); }, 1300);
       }
@@ -351,7 +363,7 @@
         else ended(r);
       }
       function result(r) {
-        phase = 'over'; overT = 2.4; clearTimeout(K.S.timer);
+        phase = 'over'; overT = 3.2; clearTimeout(K.S.timer); hintOn(false);
         btn.disabled = true; setTimeout(function () { if (box.isConnected) btn.disabled = false; }, 900); // a late "cash out" tap never places a new bet
         var won = (Number(r.win) || 0) > 0, v = won ? Number(r.out) || mult() : (r.why === 'end' && r.c ? Number(r.c) : mult());
         if (!won) tx(mEl, xm(Math.max(1, v)));
@@ -360,24 +372,37 @@
         paintHist(); setBtn(l.bet); R = null;
         K.resultLine(box, r);
       }
-      function toIdle() { phase = 'idle'; g.reset(false); say(l.hint, 'idle'); tx(mEl, xm(1)); mShown = ''; drawn = false; }
+      function toIdle() { phase = 'idle'; g.reset(false); say('', 'idle'); tx(mEl, xm(1)); mShown = ''; drawn = false; hintOn(true); }
 
-      // one gesture: pointer events on the canvas only
+      // ONE gesture on the WHOLE scene (pointer events, no 300 ms delay); every touch shows a ripple
       function pt(e) { var r = rect || st.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+      var practice = function () { return phase === 'idle' && g.practice; };   // Fruit Slicer: slice the idle fruits for fun
+      function nudge() { // touching the scene before betting points to the BET button
+        if (K.guest()) return;
+        say(l.go, 'idle'); btn.classList.remove('sk-nudge'); void btn.offsetWidth; btn.classList.add('sk-nudge');
+        clearTimeout(nudgeT); nudgeT = setTimeout(function () { if (!box.isConnected) return; btn.classList.remove('sk-nudge'); if (phase === 'idle') say('', 'idle'); }, 1800);
+      }
       cv.addEventListener('pointerdown', function (e) {
         e.preventDefault(); rect = st.getBoundingClientRect();
+        if (e.pointerType === 'mouse' && e.button) return;
         try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
-        if (phase === 'play') { var p = pt(e); g.down(p[0], p[1]); }
+        var p = pt(e);
+        RG.push({ x: p[0], y: p[1], r: 24, t: 0.25, c: 'rgba(255,255,255,.85)' });
+        if (phase === 'play') { gN++; box.setAttribute('data-gn', String(gN)); g.down(p[0], p[1]); }
+        else { if (practice()) g.down(p[0], p[1]); if (phase === 'idle') nudge(); }
       });
-      cv.addEventListener('pointermove', function (e) { if (phase === 'play' && g.move) { var p = pt(e); g.move(p[0], p[1]); } });
+      cv.addEventListener('pointermove', function (e) { if ((phase === 'play' || practice()) && g.move) { var p = pt(e); g.move(p[0], p[1]); } });
       ['pointerup', 'pointercancel'].forEach(function (ev) { cv.addEventListener(ev, function (e) { if (g.up) { var p = pt(e); g.up(p[0], p[1], phase === 'play'); } }); });
       cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+      // iOS Safari: no page scroll, no double-tap zoom, no long-press magnifier / callout on the scene
+      var stopT = function (e) { if (e.cancelable) e.preventDefault(); };
+      ['touchstart', 'touchmove', 'touchend'].forEach(function (ev) { st.addEventListener(ev, stopT, { passive: false }); });
       btn.addEventListener('click', function () {
         if (phase === 'play') cash();
         else if (phase === 'idle' || phase === 'over') { if (phase === 'over') toIdle(); start(); }
       });
 
-      paintHist(); setBtn(l.bet); say(l.hint, 'idle');
+      paintHist(); setBtn(l.bet); say('', 'idle'); hintOn(true);
       requestAnimationFrame(function () { resize(); cancelAnimationFrame(K.S.raf || 0); K.S.raf = requestAnimationFrame(loop); });
       // a round still running (page reloaded, game reopened): pick it up
       if (!K.guest()) K.multi(key, 'state', null, true).then(function (r) { if (r && !r.done && r.t0 && box.isConnected && phase === 'idle') { r.resume = 1; requestAnimationFrame(function () { begin(r); }); } });
@@ -520,7 +545,7 @@
       c.fillStyle = '#FBBF24'; c.beginPath(); c.moveTo(x0 + 7, y0); c.lineTo(x0, y0 - 4); c.lineTo(x0, y0 + 4); c.closePath(); c.fill();
       c.fillStyle = '#F43F5E'; c.beginPath(); c.moveTo(x0 - 26, y0); c.lineTo(x0 - 31, y0 - 4.5); c.lineTo(x0 - 22, y0); c.lineTo(x0 - 31, y0 + 4.5); c.closePath(); c.fill();
     }
-  });
+  }, 'tap');
 
   /* ================================================================== 2. FRUIT SLICER — swipe the space fruits, never a bomb */
   boot('slicer', function (A) {
@@ -668,7 +693,7 @@
       boom: function () { down = false; var r = FR * 2.2; nova = { x: W / 2, y: H + r, r: r, vy: -Math.sqrt(2 * gv * (H * 0.55)) }; },
       win: function () { for (var i = 0; i < ob.length; i++) if (ob[i].k >= 0) A.burst(ob[i].x, ob[i].y, 6, ['#FDE68A', '#FFFFFF'], 120, 0.5, 2.6); ob = ob.filter(function (o) { return o.k < 0; }); }
     };
-  });
+  }, 'swipe');
 
   /* ================================================================== 3. CHICKEN ROAD — tap to hop lane by lane between the ships */
   boot('chicken', function (A) {
@@ -819,7 +844,7 @@
       boom: function () { comet = { x: -W * 0.5, y: Y(cy()) - ch * 0.45, r: Math.max(18, rowH * 0.42), v: W * 2.4 }; hop = null; queued = false; },
       win: function () { won = 0.001; queued = false; }
     };
-  });
+  }, 'tap');
 
   /* ================================================================== 4. HAMSTER RUN — 3 lanes in a space tube, tap left / right */
   boot('hamster', function (A) {
@@ -940,7 +965,7 @@
       boom: function () { wall = { z: 0.75, v: 2.6 }; obs = obs.filter(function (o) { return o.z > 0.75; }); },
       win: function () { won = 0.001; obs = []; }
     };
-  });
+  }, 'lr');
 
   /* ================================================================== 5. ASTEROID DODGE — drag the ship left / right */
   boot('dodge', function (A) {
@@ -1025,7 +1050,7 @@
       boom: function () { drag = null; big = { x: s.x, y: -W * 0.3, r: Math.max(W * 0.2, 40), v: H * 1.9 }; },
       win: function () { won = 0.001; drag = null; }
     };
-  });
+  }, 'drag');
 
   /* ================================================================== 6. DARTS PRO — tap to throw when the moving aim is on the board */
   boot('dartspro', function (A) {
@@ -1121,5 +1146,5 @@
       boom: function () { fly = null; met = { x: -W * 0.2, y: T - 30, r: Math.max(18, R * 0.3), vx: 0, vy: 0 }; met.vx = (cx - met.x) / 0.65; met.vy = (cy - met.y) / 0.65; },
       win: function () { won = 0.001; }
     };
-  });
+  }, 'tap');
 })(window.D6 = window.D6 || {});

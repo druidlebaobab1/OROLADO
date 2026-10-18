@@ -292,3 +292,5 @@ html:root body #casinoModal .sp2 .sp2-note span{max-width:100%;padding:3px 10px;
 }
 /* rien ne dépasse sous la barre du coupon (elle masque le bas de la liste qui défile) */
 html:root body #casinoModal .sp2 .sp2-bar::after{content:"";position:absolute;left:calc(-1 * var(--sp2-px));right:calc(-1 * var(--sp2-px));top:100%;height:calc(var(--sp2-pb) + 4px);background:#0E0A26;pointer-events:none}
+/* v2807 : pastille d'un combattant / joueur sans photo = icône du sport (gant, balle) sur sa couleur */
+html:root body #casinoModal .sp2 .sp2-tm i.sp-crest-ico .sp-ico{width:62%;height:62%;display:block}
