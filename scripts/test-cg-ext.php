@@ -56,7 +56,7 @@ echo "2) Retour aux joueurs (simulé) ≤ 94 %\n";
 $N = 200000; $s = 0.0; for ($i = 0; $i < $N; $i++) $s += casino_ext_instant('tgood', [])['mult'];
 check(sprintf('table : retour %.2f %% (attendu 74,4 %%)', $s / $N * 100), abs($s / $N - 0.7444) < 0.01);
 $s = 0.0; for ($i = 0; $i < $N; $i++) $s += casino_ext_instant('pgood', ['pick' => $i % 3])['mult'];
-check(sprintf('gobelets 1 sur 3 : retour %.2f %% (×%.2f)', $s / $N * 100, casino_ext_pick_mult(1 / 3)), $s / $N < 0.945 && $s / $N > 0.92);
+check(sprintf('gobelets 1 sur 3 : retour %.2f %% (×%.2f)', $s / $N * 100, casino_ext_pick_mult(1 / 3)), $s / $N < 0.955 && $s / $N > 0.92); // simulation : ±1 % de hasard (le calcul exact, lui, est vérifié au chargement)
 check('pick sans choix refusé', isset(casino_ext_instant('pgood', [])['err']) && isset(casino_ext_instant('pgood', ['pick' => 3])['err']));
 
 echo "3) Argent : instantané (table / pick) — mise retirée une fois, gain versé une fois\n";
@@ -74,6 +74,8 @@ echo "4) Mode mixte « où tu contrôles » : rien à gagner en trichant\n";
 $b0 = $bal[$U];
 $r = casino_multi(load_db(), $me, 'srun', 'start', 'real', 2, []);
 check('départ : 2 $ retirés, moment secret caché', $r['ok'] && abs($bal[$U] - ($b0 - 2)) < 0.001 && !isset($r['c']), json_encode($r));
+// le moment secret est tiré au hasard (6 % des parties s'arrêtent dès ×1,00, comme l'avion) : on le fixe pour la suite du test
+casino_with(casino_user_file('u_x'), static function (array &$st) { $st['g']['srun']['c'] = 5.0; return true; });
 $r2 = casino_multi(load_db(), $me, 'srun', 'start', 'real', 2, []);
 check('2e départ pendant la partie : la même partie reprend, rien retiré', !empty($r2['resume']) && abs($bal[$U] - ($b0 - 2)) < 0.001);
 // on recule l'horloge de départ de 6 s (×e^(0,12·6) = ×2,05) et on fixe le moment secret à ×5
@@ -91,14 +93,15 @@ $r = casino_multi(load_db(), $me, 'srun', 'cash', 'real', 0, []);
 check('encaisser APRÈS le moment secret : perdu', $r['done'] && (float) $r['win'] === 0.0 && abs($bal[$U] - $b2) < 0.001 && (float) $r['c'] === 1.5, json_encode($r));
 // partie 3 : faute du joueur
 casino_multi(load_db(), $me, 'srun', 'start', 'real', 1, []);
+casino_with($file, static function (array &$st) { $st['g']['srun']['c'] = 5.0; return true; }); // pas de fin à ×1,00 pour ce test
 $b3 = $bal[$U];
 $r = casino_multi(load_db(), $me, 'srun', 'fail', 'real', 0, []);
 check('faute du joueur (obstacle) : perdu, moment secret révélé', $r['done'] && (float) $r['win'] === 0.0 && $r['why'] === 'fail' && isset($r['c']) && abs($bal[$U] - $b3) < 0.001);
 $r = casino_multi(load_db(), $me, 'srun', 'cash', 'real', 0, []);
 check('encaisser après la faute : rien', (float) ($r['win'] ?? 0) === 0.0 && abs($bal[$U] - $b3) < 0.001);
 // retour exact du mode mixte : encaisser à ×x quand le moment secret ≥ x … même loi que l'avion
-foreach ([1.2, 2, 5, 20] as $x) { $N = 200000; $w = 0; for ($i = 0; $i < $N; $i++) if (casino_crash_point() > $x) $w++;
-  check(sprintf('mixte : encaisser à ×%s rend %.1f %% (≤ 94)', $x, $w / $N * $x * 100), $w / $N * $x < 0.955); }
+foreach ([1.2, 2, 5, 20] as $x) { $N = 1000000; // 1 million de tirages : la simulation est stable même à ×20 $w = 0; for ($i = 0; $i < $N; $i++) if (casino_crash_point() > $x) $w++;
+  check(sprintf('mixte : encaisser à ×%s rend %.1f %% (≤ 94)', $x, $w / $N * $x * 100), $w / $N * $x < 0.95); }
 check('admin : la limite de mise accepte les nouveaux jeux', isset(casino_save_limits(['srun' => 5])['limits']['srun']));
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";

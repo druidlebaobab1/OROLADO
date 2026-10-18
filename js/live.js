@@ -415,6 +415,8 @@
     // v2760 (propriétaire) : Cadeaux s'ouvre PAR-DESSUS Social (on ne voit plus l'écran de trading entre les deux)
     if (k === 'gifts') { if (D6.Portal && D6.Portal.open) D6.Portal.open(); setTimeout(function () { close(); backToLive('portalModal', 'active'); }, 350); return; }
     if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); backToLive('learnModal', 'on'); return; }
+    // v2796 : Actus, Écris-nous, Amis, Groupes, Défier, Mon identifiant, Mes défis → la messagerie (js/social2.js)
+    if (D6.Social2 && ['news', 'chat', 'friends', 'groups', 'duel', 'myid', 'record'].indexOf(k) >= 0) { D6.Social2.open(k); return; }
     if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
     if (k === 'quiz' || k === 'stats' || k === 'badges' || k === 'levels' || k === 'missions') { show('fun', k); return; }
     if (k === 'groups') { show('groups'); return; }
@@ -441,6 +443,7 @@
     setTimeout(function () { if (!seen && m._oroBack === ob) { ob.disconnect(); m._oroBack = null; } }, 4000);
   }
   function show(w, sub) {
+    if (D6.Social2) D6.Social2.hide(); // v2796 : une page de l'ancien Social par-dessus la messagerie
     tab = w; curSub = sub || '';
     var h = H(), home = w === 'home';
     $('livePaneHome').hidden = !home;
@@ -493,11 +496,13 @@
     $('liveSub').textContent = x.sub; $('liveTabNewsT').textContent = x.news; $('liveTabChatT').textContent = x.chat; $('liveText').placeholder = x.ph;
     if ($('liveTabFriendsT')) $('liveTabFriendsT').textContent = x.friends;
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
-    show(w || 'home');
+    // v2796 (propriétaire) : Social s'ouvre en MESSAGERIE (js/social2.js) ; l'ancienne page en tuiles reste dans « Plus »
+    if (D6.Social2 && (!w || ['home', 'dms', 'news', 'chat', 'friends', 'groups'].indexOf(w) >= 0)) { tab = 'home'; D6.Social2.open(w === 'home' || w === 'dms' ? '' : w); }
+    else show(w === 'dms' ? 'friends' : (w || 'home'));
     // v2689 : la tuile « Envoyer de l'argent » apparaît dès que le serveur dit que c'est ouvert pour ce joueur
     if (!guest() && D6.LiveSend) D6.LiveSend.status().then(function () { if (tab === 'home') paintHome(); });
   }
-  function close() { clearInterval(timer); clearInterval(duelTick); clearInterval(duelPoll); if (D6.LiveGroups) D6.LiveGroups.stop(); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
+  function close() { if (D6.Social2) D6.Social2.stop(); clearInterval(timer); clearInterval(duelTick); clearInterval(duelPoll); if (D6.LiveGroups) D6.LiveGroups.stop(); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
 
   function grow() { var t = $('liveText'); t.style.height = 'auto'; t.style.height = Math.min(110, t.scrollHeight) + 'px'; }
 
@@ -607,10 +612,11 @@
     // Un seul bouton retour : d'une conversation → la liste ; de la liste → l'accueil.
     if ($('liveBack')) $('liveBack').addEventListener('click', function () {
       clearInterval(duelTick); clearInterval(duelPoll);
+      if (D6.Social2 && D6.Social2.back(tab)) return; // v2796 : retour à la messagerie
       if (tab === 'friends' && peer) { peer = null; friendsList(); return; }
       if (tab === 'groups' && D6.LiveGroups && D6.LiveGroups.inGroup()) { D6.LiveGroups.back(); return; }
       peer = null;
-      if (tab === 'home') { close(); return; }
+      if (tab === 'home') { if (D6.Social2) { D6.Social2.open(''); return; } close(); return; }
       show('home');
     });
     // v2689 : le pack de la langue vient d'arriver → l'accueil Live est redessiné dans la bonne langue
@@ -631,7 +637,7 @@
       } catch (err) { if (D6.App && D6.App.toast) D6.App.toast(L().badImg, 'err'); }
     });
     // Réponse de l'équipe reçue en notification (lien /?live=1) → la conversation s'ouvre.
-    try { if (/[?&]live=1/.test(location.search)) setTimeout(function () { open('chat'); }, 1500); else if (/[?&]live=amis/.test(location.search)) setTimeout(function () { open('friends'); }, 1500); } catch (e) { /* ignore */ }
+    try { if (/[?&]live=1/.test(location.search)) setTimeout(function () { open('chat'); }, 1500); else if (/[?&]live=amis/.test(location.search)) setTimeout(function () { open('dms'); }, 1500); } catch (e) { /* ignore */ }
     // Pastille « réponse non lue » sur le bouton Live : une seule lecture, 6 s après l'ouverture du site.
     setTimeout(async function () {
       if (guest()) return;
@@ -646,6 +652,20 @@
     if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { open('home'); if (t !== 'home') show(t, s2 || undefined); });
     close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(a || 'register');
   }
-  D6.Live = { open: open, close: close, toAuth: toAuth };
+  // v2796 : pastilles (bouton Social) mises à jour par la messagerie
+  function badges(me) { if (!me) return; dmUn = me.dmUnread || 0; setFriendBadge(dmUn); setBadge(me.unread || 0); }
+  D6.Live = { open: open, close: close, toAuth: toAuth, show: show, badges: badges };
+  /* v2796 — la messagerie (js/social2.js + css/social2.css) est chargée tout de suite après la page, une seule fois
+     (si index.html ne les a pas déjà). Sans elle, l'ancien Social marche comme avant. */
+  (function () {
+    var v = ((document.currentScript && /[?&]v=(\d+)/.exec(document.currentScript.src)) || [])[1] || '1';
+    var go = function () {
+      if (!document.querySelector('link[href*="css/social2.css"]')) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'css/social2.css?v=' + v; document.head.appendChild(l); }
+      if (!document.querySelector('script[src*="js/social2.js"]') && !D6.Social2) { var s = document.createElement('script'); s.src = 'js/social2.js?v=' + v; s.async = true; document.head.appendChild(s); }
+    };
+    // v2806 : chargée juste APRÈS l'affichage du site (le démarrage reste rapide) ; Social reste prêt avant qu'on le touche
+    var later = function () { if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 2500 }); else setTimeout(go, 1200); };
+    if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
+  })();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })(window.D6 = window.D6 || {});

@@ -165,8 +165,21 @@
     t.innerHTML = (win ? '<i class="ct-coin" aria-hidden="true"></i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(r.win) : '0') + '</b>'; // dir=ltr : en arabe on lit bien « +$ 0 »
     host.appendChild(t);
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
+    // v2805 (propriétaire : jamais rien de superposé) — pendant que la pastille est là, les petits textes du jeu qu'elle couvre
+    // s'effacent (gros multiplicateur, statut…) puis reviennent quand elle part.
+    var hid = [];
+    try {
+      var tr = t.getBoundingClientRect(), ta = tr.width * tr.height;
+      host.querySelectorAll('b,strong,span,em,small,i,div,p,label').forEach(function (el) {
+        if (el === t || t.contains(el) || el.contains(t) || el.childElementCount > 3 || !el.textContent.trim()) return;
+        var r2 = el.getBoundingClientRect(); if (!r2.width || r2.width * r2.height > ta * 6) return;
+        if (r2.right <= tr.left || r2.left >= tr.right || r2.bottom <= tr.top - 4 || r2.top >= tr.bottom + 4) return;
+        if (el.style.visibility === 'hidden') return;
+        el.style.visibility = 'hidden'; hid.push(el);
+      });
+    } catch (eHide) { /* ignore */ }
     setTimeout(function () { t.classList.remove('in'); t.classList.add('out'); }, 2800);
-    setTimeout(function () { if (t.parentNode) t.remove(); }, 3300);
+    setTimeout(function () { if (t.parentNode) t.remove(); hid.forEach(function (el) { el.style.visibility = ''; }); }, 3300);
     afterPlay(r);
   }
 
@@ -191,7 +204,7 @@
   function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
   // v2756 (propriétaire) : « Prédictions » ouvre SA page (sans les onglets) ; « Jeux » ouvre les 24 jeux
   function open(game, view) {
-    ensure(); readBal();
+    ensure(); readBal(); loadCatalog();
     S.stake = 0.1;
     var pm = view === 'pred';
     if ($('casinoModal')) $('casinoModal').classList.toggle('pred-only', pm);
@@ -332,7 +345,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2803';
+  var MOD_V = '2806';
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
@@ -348,6 +361,16 @@
       var m = $('casinoModal'); if (m && !S.game && S.view === 'games' && $('csView') && $('csView').className.indexOf('cs-grid') >= 0) home('games');
     }
   };
+  // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
+  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-more1', 'cat-more2'], catAsked = false;
+  function loadCatalog() {
+    if (catAsked) return; catAsked = true;
+    CAT_FILES.forEach(function (f) { var js = document.createElement('script'); js.src = 'js/games/' + f + '.js?v=' + MOD_V; js.async = true; document.head.appendChild(js); });
+  }
+  (function () {
+    var later = function () { if (window.requestIdleCallback) requestIdleCallback(loadCatalog, { timeout: 4000 }); else setTimeout(loadCatalog, 2000); };
+    if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
+  })();
   function loadMod(k) {
     var f = String(MODS[k] || k).replace(/[^a-z0-9_-]/gi, '');
     if (modState[f]) return modState[f];

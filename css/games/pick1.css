@@ -1,0 +1,70 @@
+/* v2805 — pick1: Thimbles, Cups & Balls, Goal, Color Prediction, Lucky Dice (new instant games). */
+html:root body #casinoModal .p1-game .p1-stage{display:flex;flex-direction:column;padding:8px 10px 6px;
+  background:radial-gradient(60% 45% at 50% 62%,rgba(251,191,36,.12),transparent 70%),radial-gradient(120% 80% at 50% 0%,rgba(139,92,246,.3),transparent 60%),linear-gradient(180deg,#1B1442,#0E0A26)}
+html:root body #casinoModal .p1-game .p1-hist{flex:0 0 auto}
+html:root body #casinoModal .p1-game .p1-scene{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
+html:root body #casinoModal .p1-game .p1-svg{display:block;width:100%;height:100%;max-height:100%;overflow:visible}
+html:root body #casinoModal .p1-game.p1-busy .p1-opts{pointer-events:none}
+html:root body #casinoModal .p1-game .p1-opts > button{min-height:50px!important}
+html:root body #casinoModal .p1-game .p1-opts > button b{display:block;max-width:100%;font:900 16px/1.05 var(--cg-font);color:#fff}
+html:root body #casinoModal .p1-game .p1-opts > button small{display:block;max-width:100%;direction:ltr;unicode-bidi:isolate}
+@media (max-height:640px){html:root body #casinoModal .p1-game .p1-opts > button{min-height:44px!important}}
+/* historique : pastilles */
+html:root body #casinoModal .p1-game .p1-hist i.cg{width:18px;height:18px;padding:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#BBF7D0,#22C55E 55%,#14532D)}
+html:root body #casinoModal .p1-game .p1-hist i.cv{width:18px;height:18px;padding:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#E9D5FF,#A855F7 55%,#4C1D95)}
+html:root body #casinoModal .p1-game .p1-hist i.cr{width:18px;height:18px;padding:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FECDD3,#F43F5E 55%,#881337)}
+
+/* ---- gobelets ---- */
+html:root body #casinoModal .p1-game .p1-cup{cursor:pointer;will-change:transform}
+html:root body #casinoModal .p1-game .p1-cupin{filter:drop-shadow(0 6px 6px rgba(0,0,0,.5))}
+html:root body #casinoModal .p1-game .p1-mark{cursor:pointer}
+html:root body #casinoModal .p1-game .p1-mark ellipse{fill:rgba(255,255,255,.04);stroke:rgba(255,255,255,.12);stroke-width:1.2}
+html:root body #casinoModal .p1-game .p1-mark path{fill:none;stroke:transparent;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+html:root body #casinoModal .p1-game .p1-mark.on ellipse{fill:rgba(251,191,36,.16);stroke:#FBBF24;stroke-width:1.8}
+html:root body #casinoModal .p1-game .p1-mark.on path{stroke:#FBBF24}
+html:root body #casinoModal .p1-game .p1-ball{transition:opacity .15s}
+html:root body #casinoModal .p1-game.p1-won .p1-ball{filter:drop-shadow(0 0 8px #67E8F9)}
+
+/* ---- Goal ---- */
+html:root body #casinoModal .cg-goal .gl-z{cursor:pointer}
+html:root body #casinoModal .cg-goal .gl-z rect{fill:transparent;stroke:transparent}
+html:root body #casinoModal .cg-goal .gl-z circle{fill:none;stroke:rgba(255,255,255,.22);stroke-width:1.5;stroke-dasharray:3 3}
+html:root body #casinoModal .cg-goal .gl-z circle + circle{fill:rgba(255,255,255,.1);stroke:none}
+html:root body #casinoModal .cg-goal .gl-z.on rect{fill:rgba(251,191,36,.08);stroke:rgba(251,191,36,.4);stroke-dasharray:4 4}
+html:root body #casinoModal .cg-goal .gl-z.on circle{stroke:#FBBF24;stroke-dasharray:none}
+html:root body #casinoModal .cg-goal .gl-z.on circle + circle{fill:#FBBF24}
+html:root body #casinoModal .cg-goal .gl-keep,html:root body #casinoModal .cg-goal .gl-ball{will-change:transform}
+html:root body #casinoModal .cg-goal .gl-kin{filter:drop-shadow(0 4px 4px rgba(0,0,0,.45))}
+html:root body #casinoModal .cg-goal .gl-svg.gl-shake .gl-net{animation:glNet .5s ease-out}
+@keyframes glNet{0%{transform:translateY(0)}30%{transform:translateY(-3px)}60%{transform:translateY(2px)}100%{transform:translateY(0)}}
+html:root body #casinoModal .cg-goal .gl-o{flex-direction:row!important;gap:6px!important}
+html:root body #casinoModal .cg-goal .gl-o .gl-ar{flex:0 0 22px;width:22px;height:22px;color:#fff}
+html:root body #casinoModal .cg-goal .gl-o.on .gl-ar{color:#FDE68A}
+html:root body #casinoModal .cg-goal .gl-o small{font-size:13px}
+
+/* ---- Color Prediction ---- */
+html:root body #casinoModal .cg-colorpred .cp-b{transition:opacity .2s}
+html:root body #casinoModal .cg-colorpred .cp-b.hit circle:first-child{stroke:#fff;stroke-width:3}
+html:root body #casinoModal .cg-colorpred .cp-run{filter:drop-shadow(0 0 6px #FDE68A)}
+html:root body #casinoModal .cg-colorpred .cp-orb{transform-box:fill-box;transform-origin:center}
+html:root body #casinoModal .cg-colorpred .cp-o b{display:flex!important;align-items:center;justify-content:center;gap:5px}
+html:root body #casinoModal .cg-colorpred .cp-o b i{flex:0 0 12px;width:12px;height:12px;border-radius:50%}
+html:root body #casinoModal .cg-colorpred .cp-o.cg b i{background:#22C55E;box-shadow:0 0 8px #22C55E}
+html:root body #casinoModal .cg-colorpred .cp-o.cv b i{background:#A855F7;box-shadow:0 0 8px #A855F7}
+html:root body #casinoModal .cg-colorpred .cp-o.cr b i{background:#F43F5E;box-shadow:0 0 8px #F43F5E}
+html:root body #casinoModal .cg-colorpred .cp-o.cg.on{background:linear-gradient(180deg,rgba(34,197,94,.35),rgba(21,128,61,.2))!important;box-shadow:inset 0 0 0 2px #4ADE80,0 0 16px -4px rgba(34,197,94,.8)!important}
+html:root body #casinoModal .cg-colorpred .cp-o.cv.on{background:linear-gradient(180deg,rgba(168,85,247,.38),rgba(109,40,217,.2))!important;box-shadow:inset 0 0 0 2px #C084FC,0 0 16px -4px rgba(168,85,247,.8)!important}
+html:root body #casinoModal .cg-colorpred .cp-o.cr.on{background:linear-gradient(180deg,rgba(244,63,94,.38),rgba(190,18,60,.2))!important;box-shadow:inset 0 0 0 2px #FB7185,0 0 16px -4px rgba(244,63,94,.8)!important}
+
+/* ---- Lucky Dice ---- */
+html:root body #casinoModal .cg-luckydice .ld-di{transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 6px 6px rgba(0,0,0,.5))}
+html:root body #casinoModal .cg-luckydice .ld-st{font:900 21px/1 var(--cg-font);fill:#FDE68A}
+html:root body #casinoModal .cg-luckydice .ld-sum{opacity:.35;transition:opacity .2s}
+html:root body #casinoModal .cg-luckydice .ld-sum.on{opacity:1}
+html:root body #casinoModal .cg-luckydice .ld-sum.w circle{stroke:#4ADE80}
+html:root body #casinoModal .cg-luckydice .ld-o b{display:flex!important;align-items:baseline;justify-content:center;gap:5px}
+html:root body #casinoModal .cg-luckydice .ld-o b i{font:800 11px/1 var(--cg-font);font-style:normal;color:#C4B5FD}
+html.oro-lite body #casinoModal .p1-game .p1-cupin,html.oro-lite body #casinoModal .cg-luckydice .ld-di{filter:none}
+/* positions dans la scène : toujours de gauche à droite (arabe compris), comme les gobelets / zones dessinés */
+html:root body #casinoModal .cg-thimbles .p1-opts,html:root body #casinoModal .cg-cups .p1-opts,html:root body #casinoModal .cg-goal .p1-opts{direction:ltr}
+html:root body #casinoModal .p1-game .p1-hist i{direction:ltr;unicode-bidi:isolate}

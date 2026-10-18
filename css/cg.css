@@ -133,3 +133,5 @@ html:root body #casinoModal .cs-sec-g{display:grid;grid-template-columns:repeat(
 @media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cs-sec-g{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px 4px}}
 html:root body #casinoModal #csView.cs-grid3 .cs-g .cs-pl{width:min(72px,18vw)!important}
 html:root body #casinoModal #csView.cs-grid3 .cs-g b{max-width:100%}
+/* v2806 : la page d'un jeu ne glisse jamais sur le côté (même après la feuille des règles) */
+html:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{overflow-x:clip!important}
