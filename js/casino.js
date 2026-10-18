@@ -150,7 +150,7 @@
   // v2718 (propriétaire) : le résultat arrive en NOTIFICATION dans le jeu (gain : vert « +2,50 $ » ; perte : discrète « −1,00 $ »),
   // elle reste ~2,8 s puis s'en va ; plus de ligne en bas → toute la place va au jeu.
   function resultLine(box, r, extra) {
-    var x = X(), host = box.querySelector('.cs-stage') || box;
+    var x = X(), host = box.querySelector('.cg-stage') || box.querySelector('.cs-stage') || box;
     var old = host.querySelectorAll('.cs-toast'); for (var i = 0; i < old.length; i++) old[i].remove();
     var win = (Number(r.win) || 0) > 0, t = document.createElement('div');
     t.className = 'cs-toast ' + (win ? 'win' : 'lose');
@@ -260,34 +260,81 @@
   function modeSwitch() { return ''; }
   function bindMode() { /* plus de choix réel / démo */ }
   /* panneau de mise compact, en bas de l'écran */
-  // v2791 (propriétaire) : TERMINAL DE MISE simple — case du montant plus courte ; ✕ efface (retour à 0,10 $), ½, ×2 et
-  // « +1 $ » toujours visibles ; dessous, des « + » qui AJOUTENT (+0,10 · +0,50 · +1 · +5 · +10 · +50). Après ✕, le 1er « + » remplace 0,10.
+  /* v2795 (propriétaire) — TERMINAL DE MISE comme les grands jeux (Aviator / JetX) : à gauche le montant avec « − » et « + »
+     (petite croix DANS la case pour revenir à 0,10 $) et 4 montants rapides ; à droite le GRAND bouton de mise.
+     Aucun mot dans le terminal. Les textes du bouton s'adaptent seuls à la place (fit). */
+  var QUICK = [0.5, 1, 5, 10];
   function stakePanel(btnLabel, extra) {
     var x = X();
-    return '<div class="cs-panel">' + (extra ? '<div class="cs-extra">' + extra + '</div>' : '') +
-      '<div class="cs-stake sk2"><button type="button" data-sk="clr" class="sk-clr" aria-label="' + esc(x.skClear || 'Clear') + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button>' +
-        '<button type="button" data-sk="half">½</button><input id="csStake" inputmode="decimal" value="' + m2(S.stake) + '" aria-label="' + esc(x.stake) + '"><button type="button" data-sk="dbl">×2</button>' +
-        '<button type="button" data-sk="p1" class="sk-p1">+1 $</button></div>' +
-      '<div class="cs-chips sk-add">' + [0.1, 0.5, 1, 5, 10, 50].map(function (v) { return '<button type="button" data-v="' + v + '">+' + (v < 1 ? m2(v).replace('.', dec()) : v) + ' $</button>'; }).join('') + '</div>' +
-      '<button type="button" class="cs-go" id="csGo">' + esc(btnLabel || x.bet) + '</button></div>';
+    return '<div class="cs-panel cg-panel">' + (extra ? '<div class="cs-extra">' + extra + '</div>' : '') +
+      '<div class="cg-term"><div class="cg-tl">' +
+        '<div class="cg-amt"><button type="button" class="cg-step" data-sk="dn" aria-label="−"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>' +
+          '<label class="cg-in"><input id="csStake" inputmode="decimal" autocomplete="off" value="' + m2(S.stake) + '" aria-label="' + esc(x.stake) + '">' +
+          '<button type="button" class="cg-clr" data-sk="clr" aria-label="0.10"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg></button></label>' +
+          '<button type="button" class="cg-step" data-sk="up" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button></div>' +
+        '<div class="cg-quick">' + QUICK.map(function (v) { return '<button type="button" data-q="' + v + '">' + (v < 1 ? m2(v).replace('.', dec()) : v) + '</button>'; }).join('') + '</div>' +
+      '</div><button type="button" class="cs-go cg-go fit" id="csGo">' + esc(btnLabel || x.bet) + '</button></div></div>';
   }
   function dec() { return ['en', 'zh', 'hi', 'ar'].indexOf((document.documentElement.lang || 'fr').slice(0, 2)) >= 0 ? '.' : ','; }
+  function stepOf(v, up) { return up ? (v < 1 ? 0.1 : v < 10 ? 1 : v < 100 ? 5 : 50) : (v <= 1 ? 0.1 : v <= 10 ? 1 : v <= 100 ? 5 : 50); }
   function bindStake(box) {
-    var inp = $('csStake'), fresh = S.stake <= 0.1;
+    var inp = $('csStake'); if (!inp) return;
     var set = function (v) { v = Math.max(0.1, Math.min(1000, Math.round((Number(v) || 0.1) * 100) / 100)); S.stake = v; inp.value = m2(v); box.dispatchEvent(new Event('stake')); };
-    var add = function (v) { set(fresh ? v : S.stake + v); fresh = false; };
-    inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); fresh = false; });
+    inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); });
+    inp.addEventListener('focus', function () { try { inp.select(); } catch (e) { /* ignore */ } });
     box.querySelectorAll('[data-sk]').forEach(function (b) {
-      b.addEventListener('click', function () {
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
         var k = b.getAttribute('data-sk');
-        if (k === 'clr') { set(0.1); fresh = true; return; }
-        if (k === 'p1') { add(1); return; }
-        set(k === 'half' ? S.stake / 2 : S.stake * 2); fresh = false;
+        if (k === 'clr') set(0.1);
+        else if (k === 'up') set(S.stake + stepOf(S.stake, true));
+        else set(S.stake - stepOf(S.stake, false));
       });
     });
-    box.querySelectorAll('.cs-chips.sk-add [data-v]').forEach(function (b) { b.addEventListener('click', function () { add(+b.getAttribute('data-v')); }); });
+    box.querySelectorAll('.cg-quick [data-q]').forEach(function (b) { b.addEventListener('click', function () { set(+b.getAttribute('data-q')); }); });
+  }
+
+  /* v2795 (propriétaire) — TEXTES ÉLASTIQUES : un texte marqué « fit » reste sur UNE ligne et rapetisse seul s'il manque
+     de place (toutes les langues, tous les écrans) ; il reprend sa taille quand la place revient. */
+  function fitEl(el) {
+    if (!el || !el.isConnected) return;
+    el.style.fontSize = '';
+    var fs = parseFloat(getComputedStyle(el).fontSize) || 14, min = Math.max(7, fs * 0.5), n = 0;
+    while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 30) { fs = Math.max(min, fs * 0.93); el.style.fontSize = fs.toFixed(1) + 'px'; }
+  }
+  function fitAll(root) { (root || document).querySelectorAll('.fit').forEach(fitEl); }
+  function setText(el, t) { if (!el) return; t = String(t == null ? '' : t); if (el.textContent !== t) { el.textContent = t; fitEl(el); } }
+  var fitT = 0;
+  window.addEventListener('resize', function () { clearTimeout(fitT); fitT = setTimeout(function () { var m = $('casinoModal'); if (m) fitAll(m); }, 120); });
+
+  /* v2795 — chaque jeu refait vit dans son propre fichier (js/games/<jeu>.js + css/games/<jeu>.css), chargé SEULEMENT
+     quand on ouvre ce jeu : le site reste léger. Sans réseau, l'ancien jeu prend le relais. */
+  var MODS = {};      // jeux refaits disponibles : { clé du jeu: nom du fichier } (plusieurs jeux peuvent partager un fichier)
+  try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
+  var MOD_V = '2795';
+  var modState = {};
+  function loadMod(k) {
+    var f = String(MODS[k] || k).replace(/[^a-z0-9_-]/gi, '');
+    if (modState[f]) return modState[f];
+    modState[f] = new Promise(function (res) {
+      var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'css/games/' + f + '.css?v=' + MOD_V; document.head.appendChild(css);
+      var js = document.createElement('script'); js.src = 'js/games/' + f + '.js?v=' + MOD_V; js.async = true;
+      js.onload = function () { res(true); };
+      js.onerror = function () { delete MODS[k]; modState[f] = null; res(false); }; // l'ancien jeu prend le relais
+      document.head.appendChild(js);
+    });
+    return modState[f];
   }
   function go(k) {
+    if (MODS[k] && !(GAMES[k] && GAMES[k].v2)) {
+      S.game = k;
+      loadMod(k).then(function () { if (S.game === k) render(k); }); // ouvert entre-temps un autre jeu / fermé : on ne dessine pas
+      var bd = $('csBody'); if (bd) bd.innerHTML = '<div class="cg-load"><i></i></div>';
+      return;
+    }
+    render(k);
+  }
+  function render(k) {
     stopAll();
     S.game = k;
     var x = X(), m = $('casinoModal');
@@ -310,6 +357,8 @@
     box.insertBefore(tag, box.firstChild);
     var mb = m.querySelector('.modal-box'); if (mb) mb.scrollTop = 0;
     decFix(box);
+    tag.querySelector('b').classList.add('fit');
+    requestAnimationFrame(function () { fitAll(box); });
   }
   // v2789 (propriétaire) : en anglais, chinois, hindi, arabe, on écrit les gains « ×2.85 » (point), pas « ×2,85 »
   function decFix(root) {
@@ -322,7 +371,8 @@
   }
   /* « ? » : comment on joue (une page, sans défiler) */
   function help(k) {
-    var x = X(), r = (RULES[(document.documentElement.lang || 'fr').slice(0, 2)] || RULES.en)[k] || RULES.en[k] || '';
+    var x = X(), lg = (document.documentElement.lang || 'en').slice(0, 2), mr = GAMES[k] && GAMES[k].rules;
+    var r = mr ? (mr[lg] || mr.en || '') : ((RULES[lg] || RULES.en)[k] || RULES.en[k] || ''); // v2795 : un jeu refait apporte ses règles
     var sh = $('csSheet');
     sh.innerHTML = '<div class="cs-sheet-in">' + gicon(k, 'big') + '<b>' + esc(name(k)) + '</b><p>' + esc(r).replace(/\n/g, '<br>') + '</p><small>' + esc(x.rules) + '</small><button type="button" class="cs-go" id="csSheetOk">' + esc(x.gotIt) + '</button></div>';
     sh.hidden = false;
@@ -813,7 +863,7 @@
   function makeDraw(game) {
     return function (box, x) {
       var cfg = DRAW_CFG[game], lx = LX();
-      box.innerHTML = '<div class="cs-stage lv-stage lv-' + game + (game === 'roulette' ? ' rl-stage' : '') + '"><div class="lv-head"><span class="lv-live lv-pill"><i></i>LIVE</span><b id="lvPhase"></b><em id="lvTime"></em></div>' +
+      box.innerHTML = '<div class="cs-stage lv-stage lv-' + game + (game === 'roulette' ? ' rl-stage' : '') + '"><div class="lv-head"><span class="lv-live lv-pill"><i></i>LIVE</span><b id="lvPhase" class="fit"></b><em id="lvTime" class="fit"></em></div>' +
         '<i class="lv-bar"><b id="lvBar"></b></i><div class="lv-scene">' + cfg.stage() + '</div><div class="lv-last" id="lvLast"></div></div><div class="cs-res"></div>' +
         (guest() ? '<div id="csNeed"></div>' : stakePanel(lx.betOn, cfg.picks(x)));
       if (guest()) { needAccount($('csNeed'), x); }
@@ -864,17 +914,17 @@
         if (!box.isConnected || S.game !== game) return;
         if (R) {
           var t = nowS(), bet = t < R.close, left;
-          if (bet) { left = Math.max(0, Math.ceil(R.close - t)); $('lvPhase').textContent = lx.open; $('lvTime').textContent = left + ' s'; $('lvBar').style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.close - t) / R.B)) + ')'; }
-          else { left = Math.max(0, Math.ceil(R.end - t)); $('lvPhase').textContent = t < R.close + cfg.reveal ? lx.draw : fmt(lx.winner, { s: R.res ? cfg.winName(R.res) : '…' }); $('lvTime').textContent = fmt(lx.next, { s: left }); $('lvBar').style.transform = 'scaleX(0)'; }
+          if (bet) { left = Math.max(0, Math.ceil(R.close - t)); setText($('lvPhase'), lx.open); setText($('lvTime'), left + '\u00a0s'); $('lvBar').style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.close - t) / R.B)) + ')'; }
+          else { left = Math.max(0, Math.ceil(R.end - t)); setText($('lvPhase'), t < R.close + cfg.reveal ? lx.draw : fmt(lx.winner, { s: R.res ? cfg.winName(R.res) : '…' })); setText($('lvTime'), fmt(lx.next, { s: left }).replace(/ s$/, '\u00a0s')); $('lvBar').style.transform = 'scaleX(0)'; }
           if (!bet && !R.res) { /* le résultat arrive à la prochaine lecture */ }
           if (cfg.onRound && (st.ri !== R.i || st.oddsKey !== String(R.odds))) { st.ri = R.i; st.oddsKey = String(R.odds); cfg.onRound(st, R); }
           cfg.paint(st, R, t);
           var b = $('csGo');
           if (b) {
             var mineNow = me && me.rid === R.i;
-            if (mineNow) { b.textContent = lx.placed + ' · ' + cfg.label(me.sel, x); b.disabled = true; b.classList.add('placed'); }
-            else if (!bet) { b.textContent = lx.closed; b.disabled = true; b.classList.remove('placed'); }
-            else { var mm = sel == null ? '' : (cfg.multOf ? cfg.multOf(sel, R) : cfg.mult); b.textContent = lx.betOn + (mm ? ' · ' + mm : ''); b.disabled = S.busy; b.classList.remove('placed'); }
+            if (mineNow) { setText(b, lx.placed + ' · ' + cfg.label(me.sel, x)); b.disabled = true; b.classList.add('placed'); }
+            else if (!bet) { setText(b, lx.closed); b.disabled = true; b.classList.remove('placed'); }
+            else { var mm = sel == null ? '' : (cfg.multOf ? cfg.multOf(sel, R) : cfg.mult); setText(b, lx.betOn + (mm ? ' · ' + mm : '')); b.disabled = S.busy; b.classList.remove('placed'); }
           }
           showMine();
         }
@@ -1549,6 +1599,13 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   D6.Casino = { open: open, close: close, home: home, openPred: openPred };
+  // v2795 — boîte à outils partagée par les jeux refaits (js/games/*.js)
+  D6.CasinoKit = { GAMES: GAMES, MODS: MODS, S: S, X: X, LX: LX, $: $, esc: esc, fmt: fmt, m2: m2, dec: dec, sleep: sleep, toast: toast, guest: guest,
+    play: play, multi: multi, resultLine: resultLine, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
+    afterPlay: afterPlay, stopAll: stopAll, fitEl: fitEl, fitAll: fitAll, setText: setText, ART: ART, pal: pal, gicon: gicon, name: name,
+    seeded: seeded, easeOut: easeOut, lang: function () { return (document.documentElement.lang || 'en').slice(0, 2); },
+    /* register(clé, fonction(box, x), { rules: { en: '…', fr: '…', … } }) */
+    register: function (k, fn, o) { fn.v2 = 1; if (o && o.rules) fn.rules = o.rules; GAMES[k] = fn; } };
   // v2740 (propriétaire) : bouton du haut = manette + « Jeux », traduit en un seul mot dans chaque langue
   GAMES_WORD = { fr: 'Jeux', en: 'Games', es: 'Juegos', pt: 'Jogos', ar: 'ألعاب', tr: 'Oyunlar', vi: 'Trò chơi', id: 'Game', ru: 'Игры', de: 'Spiele', hi: 'गेम्स', zh: '游戏' };
   function paintGamesBtn() {

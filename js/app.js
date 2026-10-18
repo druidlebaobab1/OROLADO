@@ -6972,7 +6972,8 @@
   // au lieu de dépasser en bas. Élargies d'abord à tout l'écran, puis réduites (jamais sous 42 %) ;
   // au-delà, le reste défile. Profil : rangé en 2 colonnes (css/app.css), puis réduit de même.
   // Téléphone debout, tablette, PC : rien ne change (aucune réduction).
-  var LS_FIT_SEL = '.modal-backdrop.active > .modal-box, #screenAuth:not(.hidden) .auth-card, #drawerProfile.drawer.on';
+  // v2795 : le Casino a sa propre mise en page couchée (jeu à gauche, mise à droite) — on ne le réduit plus ici (il sortait de 34 px à droite)
+  var LS_FIT_SEL = '.modal-backdrop.active:not(#casinoModal) > .modal-box, #screenAuth:not(.hidden) .auth-card, #drawerProfile.drawer.on';
   var lsFitted = [];
   function lsPhoneLandscape() {
     var iw = window.innerWidth || 0;
