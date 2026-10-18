@@ -49,8 +49,8 @@
         '<radialGradient id="pnP" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FDE68A"/><stop offset=".6" stop-color="#F59E0B"/><stop offset="1" stop-color="#92400E"/></radialGradient>' +
         '<radialGradient id="pnB" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".75" stop-color="#E5E7EB"/><stop offset="1" stop-color="#9CA3AF"/></radialGradient></defs>' +
       // planète et projecteurs
-      '<g class="pn-planet"><circle cx="286" cy="28" r="15" fill="url(#pnP)"/><ellipse cx="286" cy="28" rx="25" ry="6" fill="none" stroke="#FDE68A" stroke-opacity=".6" stroke-width="1.6" transform="rotate(-16 286 28)"/></g>' +
-      '<path d="M24 10l-24 92h70zM296 60l-40 42h64z" fill="url(#pnL)" opacity=".5"/><circle cx="24" cy="10" r="4" fill="#fff"/>' +
+      '<g class="pn-planet"><circle cx="262" cy="26" r="13" fill="url(#pnP)"/><ellipse cx="262" cy="26" rx="22" ry="5" fill="none" stroke="#FDE68A" stroke-opacity=".6" stroke-width="1.6" transform="rotate(-16 262 26)"/></g>' +
+      '<path d="M44 14l-26 88h62z" fill="url(#pnL)" opacity=".5"/><circle cx="44" cy="14" r="3.5" fill="#fff"/>' +
       // tribunes
       '<path d="M-600 98Q-200 92 0 96Q160 84 320 96Q520 92 920 98V142H-600z" fill="#22184D"/><g fill="#7C6FD1" opacity=".55">' + crowd + '</g>' +
       // pelouse
@@ -139,7 +139,8 @@
       resetPieces();
       if (kp.animate && ball.animate) {
         // le gardien plonge vers la colonne tirée par le serveur
-        var kd = keeper === 0 ? 'translate(-62px,-6px) rotate(-72deg)' : keeper === 2 ? 'translate(62px,-6px) rotate(72deg)' : 'translate(0,-20px)';
+        var hh = keeper === z[0] ? z[1] : 1, up = hh === 0 ? 34 : hh === 1 ? 20 : 6;
+        var kd = keeper === 0 ? 'translate(-46px,-' + up + 'px) rotate(-64deg)' : keeper === 2 ? 'translate(46px,-' + up + 'px) rotate(64deg)' : 'translate(0,-' + (hh === 0 ? 22 : 10) + 'px)';
         kp.animate([{ transform: 'none' }, { transform: kd, offset: 0.55 }, { transform: kd }], { duration: dur + 500, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' });
         var end = 'translate(' + dx + 'px,' + dy + 'px) scale(.55)';
         var kf = goal ? [{ transform: 'none' }, { transform: end, offset: 0.62 }, { transform: 'translate(' + dx * 1.02 + 'px,' + (dy + 4) + 'px) scale(.5)' }]

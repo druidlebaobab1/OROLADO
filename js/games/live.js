@@ -96,6 +96,14 @@
   function oddTxt(v) { if (!v) return '—'; var t = (Math.floor(Number(v) * 100 + 1e-6) / 100).toFixed(2).replace(/0$/, '').replace(/\.0$/, ''); return '×' + decs(t); }
   function chipAmt(v) { v = Number(v) || 0; return v >= 1000 ? decs(Math.round(v / 100) / 10) + 'K' : v >= 100 ? String(Math.round(v)) : v >= 10 ? decs(Math.round(v * 10) / 10) : decs(Math.round(v * 100) / 100); }
   function chipHtml(placed) { return '<i class="lz-chip' + (placed ? ' placed' : '') + '"><b>' + chipAmt(K.S.stake) + '</b></i>'; }
+  // the big bet button: cg.css sets its font with !important, so K.fitEl's inline size cannot shrink it — we fit it here
+  function goFit(el) {
+    if (!el || !el.isConnected) return;
+    el.style.removeProperty('font-size');
+    var fs = parseFloat(getComputedStyle(el).fontSize) || 16, min = Math.max(8, fs * 0.42), n = 0;
+    while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 40) { fs = Math.max(min, fs * 0.93); el.style.setProperty('font-size', fs.toFixed(1) + 'px', 'important'); }
+  }
+  function goText(el, t) { if (el.textContent === t) return; el.textContent = t; goFit(el); }
   function lite() { return document.documentElement.classList.contains('oro-lite'); }
 
   /* ================================================================== ROULETTE */
@@ -565,6 +573,8 @@
       G.init(st);
       box.addEventListener('stake', function () { st.mk = ''; });
       var ph = $('lzPh'), tm = $('lzTm'), bar = $('lzBar'), barB = $('lzBarB'), go = $('csGo'), stage = box.querySelector('.lz-stage');
+      var onRs = function () { if (!box.isConnected) { window.removeEventListener('resize', onRs); return; } setTimeout(function () { goFit(go); }, 200); };
+      window.addEventListener('resize', onRs);
       if (window.ResizeObserver) {
         var ro = new ResizeObserver(function () { if (!box.isConnected) { ro.disconnect(); return; } st.S = 0; G.layout(st); st.okey = ''; });
         ro.observe($('lzScene'));
@@ -630,12 +640,12 @@
           var lk = R.i + ':' + list.join(',');
           if (lk !== st.lastKey) { st.lastKey = lk; $('lzLast').innerHTML = list.map(function (v, i) { return '<span class="lz-li' + (i === 0 && rev ? ' new' : '') + '">' + G.chip(v) + '</span>'; }).join(''); }
           var mineNow = !!(st.me && st.me.rid === R.i);
-          if (mineNow) { K.setText(go, l.placed + ' · ' + G.label(st.me.sel, l)); go.disabled = true; go.classList.add('placed'); }
-          else if (!bet) { K.setText(go, l.bclosed); go.disabled = true; go.classList.remove('placed'); }
+          if (mineNow) { goText(go, l.placed + ' · ' + G.label(st.me.sel, l)); go.disabled = true; go.classList.add('placed'); go.classList.remove('wait'); }
+          else if (!bet) { goText(go, l.bclosed); go.disabled = true; go.classList.remove('placed'); go.classList.add('wait'); }
           else {
             var hint = G.hint ? G.hint(st, l) : '';
             var mm = st.sel == null ? '' : G.mult(st.sel, R);
-            K.setText(go, hint || (l.bet + (mm ? ' · ' + mm : ''))); go.disabled = st.busy; go.classList.remove('placed');
+            goText(go, hint || (l.bet + (mm ? ' · ' + mm : ''))); go.disabled = st.busy; go.classList.remove('placed', 'wait');
           }
           var mk = [st.sel, mineNow ? st.me.sel : '', K.S.stake, rev ? 1 : 0, R.i, mineNow ? 1 : 0].join('|');
           if (mk !== st.mk) { st.mk = mk; G.mark(st, { sel: mineNow ? st.me.sel : st.sel, placed: mineNow, rev: rev, R: R }); }
