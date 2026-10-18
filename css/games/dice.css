@@ -1,14 +1,14 @@
 /* v2795 — Dice (Spribe-style): slider 0–100, red / green zones, result marker. */
-html:root body #casinoModal .cg-dice .dc-stage{display:flex;flex-direction:column;padding:10px 14px 14px;container-type:size;
+html:root body #casinoModal .cg-dice .dc-stage{display:flex;flex-direction:column;padding:10px 14px 14px;
   background:radial-gradient(70% 55% at 50% 45%,rgba(34,197,94,.13),transparent 70%),radial-gradient(120% 80% at 50% 0%,rgba(139,92,246,.3),transparent 60%),linear-gradient(180deg,#1B1442,#0E0A26)}
 html:root body #casinoModal .cg-dice .dc-hist{flex:0 0 auto}
 html:root body #casinoModal .cg-dice .dc-hist i.w{color:#86EFAC;background:rgba(34,197,94,.16)}
 html:root body #casinoModal .cg-dice .dc-hist i.l{color:#FDA4AF;background:rgba(244,63,94,.14)}
 html:root body #casinoModal .cg-dice .dc-big{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 4px 18px rgba(139,92,246,.5))}
-html:root body #casinoModal .cg-dice .dc-big::before{content:"";position:absolute;left:50%;top:50%;width:min(78cqw,64cqh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;z-index:-1;
+html:root body #casinoModal .cg-dice .dc-big::before{content:"";position:absolute;left:50%;top:50%;width:min(calc(78 * var(--cqw,1vmin)),calc(64 * var(--cqh,1vmin)));aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;z-index:-1;
   background:radial-gradient(circle,rgba(139,92,246,.22),rgba(139,92,246,.05) 55%,transparent 70%);box-shadow:inset 0 0 0 1px rgba(196,181,253,.12)}
-html:root body #casinoModal .cg-dice .dc-big::after{content:"";position:absolute;left:50%;top:50%;width:min(56cqw,46cqh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;z-index:-1;border:1px dashed rgba(251,191,36,.18)}
-html:root body #casinoModal .cg-dice .dc-num{display:block;max-width:100%;text-align:center;color:#E9E5FF;font:900 56px/1 var(--cg-font);font-size:clamp(30px,min(19cqw,30cqh),110px);
+html:root body #casinoModal .cg-dice .dc-big::after{content:"";position:absolute;left:50%;top:50%;width:min(calc(56 * var(--cqw,1vmin)),calc(46 * var(--cqh,1vmin)));aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;z-index:-1;border:1px dashed rgba(251,191,36,.18)}
+html:root body #casinoModal .cg-dice .dc-num{display:block;max-width:100%;text-align:center;color:#E9E5FF;font:900 56px/1 var(--cg-font);font-size:clamp(30px,min(calc(19 * var(--cqw,1vmin)),calc(30 * var(--cqh,1vmin))),110px);
   font-variant-numeric:tabular-nums;letter-spacing:-.01em;transition:color .2s}
 html:root body #casinoModal .cg-dice .dc-num.w{color:#4ADE80}
 html:root body #casinoModal .cg-dice .dc-num.l{color:#FB7185}

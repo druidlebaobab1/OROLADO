@@ -36,3 +36,4 @@ html:root body #casinoModal .cg-wheel .wh-leg span.on b{color:#fff;text-shadow:0
 html.oro-lite body #casinoModal .cg-wheel .wh-glow{display:none}
 /* téléphone couché : le cadre met la mise à droite ; la scène prend toute la hauteur libre */
 @media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-wheel > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}}
+@media (min-width:900px) and (min-height:700px){html:root body #casinoModal .cg-wheel .wh-leg span{height:34px}html:root body #casinoModal .cg-wheel .wh-leg b{font-size:15px}}

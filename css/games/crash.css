@@ -67,10 +67,10 @@ html:root body #casinoModal .cg-crash .cr-boom{left:0;top:0;width:130px;height:1
 html:root body #casinoModal .cg-crash .cr-boom.go{animation:crBoom .8s ease-out forwards}
 @keyframes crBoom{0%{opacity:1;scale:.15}60%{opacity:.9}100%{opacity:0;scale:1.9}}
 /* mon multiplicateur encaissé, posé sur la courbe */
-html:root body #casinoModal .cg-crash .cr-out{visibility:hidden;position:absolute;left:0;top:0;z-index:4;margin:-34px 0 0 -26px;padding:3px 9px;border-radius:999px;opacity:0;pointer-events:none;
-  background:linear-gradient(180deg,#FDE68A,#F59E0B);color:#3B2300;font:900 13px/1.2 var(--cg-font);white-space:nowrap;box-shadow:0 4px 14px -4px rgba(245,158,11,.9)}
+html:root body #casinoModal .cg-crash .cr-out{visibility:hidden;display:block;flex:none;padding:4px 12px;border-radius:999px;opacity:0;pointer-events:none;
+  background:linear-gradient(180deg,#FDE68A,#F59E0B);color:#3B2300;font:900 clamp(13px,3.8vw,16px)/1.2 var(--cg-font);white-space:nowrap;box-shadow:0 4px 14px -4px rgba(245,158,11,.9)}
 html:root body #casinoModal .cg-crash .cr-out.in{visibility:visible;animation:crOut 2.4s ease-out forwards}
-@keyframes crOut{0%{opacity:0;translate:0 8px}12%{opacity:1;translate:0 0}75%{opacity:1}100%{opacity:0;translate:0 -18px}}
+@keyframes crOut{0%{opacity:0;transform:scale(.5)}12%{opacity:1;transform:scale(1.08)}20%{transform:none}80%{opacity:1}100%{opacity:0}}
 
 /* centre : gros multiplicateur / en attente */
 html:root body #casinoModal .cg-crash .cr-mid{position:absolute;left:8px;right:8px;top:12%;bottom:24%;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;pointer-events:none;text-align:center}
@@ -124,3 +124,14 @@ html.oro-lite body #casinoModal .cg-crash .cr-bob,html.oro-lite body #casinoModa
 html.oro-lite body #casinoModal .cg-crash .cr-axis::before{animation:none!important}
 html.oro-lite body #casinoModal .cg-crash .cr-line{filter:none}
 html.oro-lite body #casinoModal .cg-crash .cr-rays{display:none}
+
+/* ---------- bouton du terminal : « ENCAISSER » + montant sur deux lignes (chacune sur UNE ligne) ---------- */
+html:root body #casinoModal .cg-crash .cs-go.cg-go{flex-direction:column;gap:2px;overflow:hidden}
+html:root body #casinoModal .cg-crash .cg-go .cr-b1{display:block;max-width:100%;font:inherit;line-height:1.05}
+html:root body #casinoModal .cg-crash .cg-go .cr-b2{display:none;max-width:100%;font:900 clamp(17px,5.6vw,26px)/1.05 var(--cg-font);font-variant-numeric:tabular-nums;text-transform:none;letter-spacing:0}
+html:root body #casinoModal .cg-crash .cg-go.two .cr-b1{font-size:clamp(13px,3.8vw,17px)}
+html:root body #casinoModal .cg-crash .cg-go.two .cr-b2{display:block}
+/* chiffres toujours de gauche à droite (arabe) ; bandeau d'historique : le plus récent reste visible */
+html:root body #casinoModal .cg-crash .cr-m,html:root body #casinoModal .cg-crash .cr-hist i,html:root body #casinoModal .cg-crash .cr-out,html:root body #casinoModal .cg-crash .cg-go .cr-b2{direction:ltr;unicode-bidi:isolate}
+html[dir="rtl"] body #casinoModal .cg-crash .cr-hist{-webkit-mask-image:linear-gradient(270deg,#000 85%,transparent);mask-image:linear-gradient(270deg,#000 85%,transparent)}
+html[dir="rtl"] body #casinoModal .cg-crash .cr-plot,html[dir="rtl"] body #casinoModal .cg-crash .cr-craft{direction:ltr}

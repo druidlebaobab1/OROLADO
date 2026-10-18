@@ -18,6 +18,13 @@
     hi: { bet: 'दांव', cash: 'कैश आउट', hi: 'ऊँचा या बराबर', lo: 'नीचा या बराबर', higher: 'ऊँचा', lower: 'नीचा', same: 'बराबर', skip: 'छोड़ें' },
     zh: { bet: '下注', cash: '兑现', hi: '更高或相同', lo: '更低或相同', higher: '更高', lower: '更低', same: '相同', skip: '跳过' }
   };
+  // tailles relatives à la scène (comme des unités de conteneur, mais fiables partout) : --cqw / --cqh = 1 % de la largeur / hauteur
+  function cq(el) {
+    if (!el) return;
+    var f = function () { if (!el.isConnected) return; el.style.setProperty('--cqw', (el.clientWidth / 100).toFixed(2) + 'px'); el.style.setProperty('--cqh', (el.clientHeight / 100).toFixed(2) + 'px'); };
+    f(); requestAnimationFrame(f);
+    if (window.ResizeObserver) new ResizeObserver(f).observe(el); else window.addEventListener('resize', f);
+  }
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   var RANK = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
   var SUIT = ['♠', '♥', '♦', '♣'];
@@ -55,7 +62,7 @@
         '<button type="button" class="hl-b hi" id="hlHi" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l7 9H5z"/></svg><span><b class="fit" id="hlHiL"></b><small class="fit" id="hlHiM"></small></span></button>' +
         '<button type="button" class="hl-b lo" id="hlLo" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19l7-9H5z"/></svg><span><b class="fit" id="hlLoL"></b><small class="fit" id="hlLoM"></small></span></button>' +
       '</div>');
-    K.bindStake(box);
+    K.bindStake(box); cq(box.querySelector('.hl-stage')); cq(box.querySelector('.hl-table'));
     var go = $('csGo'), card = $('hlCard');
 
     function live() { return g && !g.done; }

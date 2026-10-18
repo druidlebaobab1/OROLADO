@@ -47,3 +47,4 @@ html:root body #casinoModal .cg-scratch .sc-p.on b{color:#fff}
 html.oro-lite body #casinoModal .cg-scratch .sc-cell.win,html.oro-lite body #casinoModal .cg-scratch .sc-card.fresh,html.oro-lite body #casinoModal .cg-scratch .sc-cell.op .sy{animation:none}
 /* téléphone couché : le cadre met la mise à droite ; la scène prend toute la hauteur libre */
 @media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-scratch > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}}
+@media (min-width:900px) and (min-height:700px){html:root body #casinoModal .cg-scratch .sc-p{height:36px}html:root body #casinoModal .cg-scratch .sc-p .sy{width:19px;height:19px}html:root body #casinoModal .cg-scratch .sc-p b{font-size:15px}}

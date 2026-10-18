@@ -70,3 +70,4 @@ html:root body #casinoModal .cg-slots .sl-p.on b{color:#fff}
 html.oro-lite body #casinoModal .cg-slots .sl-bulbs i,html.oro-lite body #casinoModal .cg-slots .sl-c.win .sy,html.oro-lite body #casinoModal .cg-slots .sl-mach.big{animation:none}
 /* téléphone couché : le cadre met la mise à droite ; la scène prend toute la hauteur libre */
 @media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-slots > .cg-stage{height:calc(100dvh - 120px);min-height:0;flex:none}}
+@media (min-width:900px) and (min-height:700px){html:root body #casinoModal .cg-slots .sl-p{height:36px}html:root body #casinoModal .cg-slots .sl-p .sy{width:20px;height:20px}html:root body #casinoModal .cg-slots .sl-p b{font-size:15px}}

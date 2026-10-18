@@ -17,6 +17,13 @@
     hi: { bet: 'दांव', under: 'से कम', over: 'से ज़्यादा', mult: 'गुणक', chance: 'मौका' },
     zh: { bet: '下注', under: '小于', over: '大于', mult: '倍数', chance: '胜率' }
   };
+  // tailles relatives à la scène (comme des unités de conteneur, mais fiables partout) : --cqw / --cqh = 1 % de la largeur / hauteur
+  function cq(el) {
+    if (!el) return;
+    var f = function () { if (!el.isConnected) return; el.style.setProperty('--cqw', (el.clientWidth / 100).toFixed(2) + 'px'); el.style.setProperty('--cqh', (el.clientHeight / 100).toFixed(2) + 'px'); };
+    f(); requestAnimationFrame(f);
+    if (window.ResizeObserver) new ResizeObserver(f).observe(el); else window.addEventListener('resize', f);
+  }
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   var HIST = [];                 // derniers lancers de cette visite : [roll, gagné]
   var SET = { c: 50, over: 0 };  // réglage gardé quand on revient au jeu
@@ -47,7 +54,7 @@
             '<span><small class="fit">' + K.esc(l.chance) + '</small><b class="fit" id="dcCh"></b></span>' +
             '<button type="button" class="dc-st" data-d="1" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button></div>' +
         '</div>');
-    K.bindStake(box);
+    K.bindStake(box); cq(box.querySelector('.dc-stage'));
 
     var track = $('dcTrack'), green = $('dcGreen'), hrun = $('dcHrun'), run = $('dcRun'), mark = $('dcMark'), num = $('dcNum');
     // valeur de la poignée (0–100) : « moins de » → chance ; « plus de » → 100 − chance

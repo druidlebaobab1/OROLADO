@@ -1,14 +1,14 @@
 /* v2795 — Coin Flip: 3D coin (gold heads / silver tails). */
-html:root body #casinoModal .cg-coin .cn-stage{display:flex;flex-direction:column;padding:10px 12px;container-type:size;
+html:root body #casinoModal .cg-coin .cn-stage{display:flex;flex-direction:column;padding:10px 12px;
   background:radial-gradient(50% 42% at 50% 52%,rgba(251,191,36,.16),transparent 70%),radial-gradient(120% 80% at 50% 0%,rgba(139,92,246,.3),transparent 60%),linear-gradient(180deg,#1B1442,#0E0A26)}
 html:root body #casinoModal .cg-coin .cn-hist{flex:0 0 auto;gap:4px}
 html:root body #casinoModal .cg-coin .cn-hist i{width:20px;height:20px;padding:0;border-radius:50%}
 html:root body #casinoModal .cg-coin .cn-hist i.h{background:radial-gradient(circle at 35% 30%,#FFF4C2,#FBBF24 55%,#B45309);box-shadow:inset 0 0 0 2px rgba(124,45,18,.35)}
 html:root body #casinoModal .cg-coin .cn-hist i.t{background:radial-gradient(circle at 35% 30%,#fff,#CBD5E1 55%,#64748B);box-shadow:inset 0 0 0 2px rgba(30,41,59,.35)}
 html:root body #casinoModal .cg-coin .cn-scene{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;perspective:900px}
-html:root body #casinoModal .cg-coin .cn-scene::before{content:"";position:absolute;left:50%;top:50%;width:min(86cqw,76cqh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+html:root body #casinoModal .cg-coin .cn-scene::before{content:"";position:absolute;left:50%;top:50%;width:min(calc(86 * var(--cqw,1vmin)),calc(76 * var(--cqh,1vmin)));aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
   border:1px dashed rgba(251,191,36,.18);box-shadow:0 0 0 18px rgba(139,92,246,.05),0 0 0 40px rgba(139,92,246,.03)}
-html:root body #casinoModal .cg-coin .cn-toss{position:relative;z-index:2;width:min(56cqw,52cqh);aspect-ratio:1;transform-style:preserve-3d}
+html:root body #casinoModal .cg-coin .cn-toss{position:relative;z-index:2;width:min(calc(56 * var(--cqw,1vmin)),calc(52 * var(--cqh,1vmin)));aspect-ratio:1;transform-style:preserve-3d}
 html:root body #casinoModal .cg-coin .cn-coin{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
 html:root body #casinoModal .cg-coin .cn-face{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;
   box-shadow:0 10px 30px -6px rgba(0,0,0,.6)}
@@ -18,7 +18,7 @@ html:root body #casinoModal .cg-coin .cn-coin.w .cn-face{animation:cnWin 1s ease
 html:root body #casinoModal .cg-coin .cn-coin.l .cn-face{animation:cnLose .6s ease-out}
 @keyframes cnWin{0%{box-shadow:0 0 0 0 rgba(34,197,94,.9)}100%{box-shadow:0 0 0 30px rgba(34,197,94,0)}}
 @keyframes cnLose{0%{box-shadow:0 0 0 0 rgba(244,63,94,.8)}100%{box-shadow:0 0 0 22px rgba(244,63,94,0)}}
-html:root body #casinoModal .cg-coin .cn-shadow{position:absolute;left:50%;bottom:6%;width:min(40cqw,36cqh);height:12px;margin-left:calc(min(40cqw,36cqh) / -2);border-radius:50%;
+html:root body #casinoModal .cg-coin .cn-shadow{position:absolute;left:50%;bottom:6%;width:min(calc(40 * var(--cqw,1vmin)),calc(36 * var(--cqh,1vmin)));height:12px;margin-left:calc(min(calc(40 * var(--cqw,1vmin)),calc(36 * var(--cqh,1vmin))) / -2);border-radius:50%;
   background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent)}
 /* choix Face / Pile */
 html:root body #casinoModal .cg-coin .cn-pick > button{flex-direction:row;gap:8px;min-height:52px!important;padding:5px 10px!important}

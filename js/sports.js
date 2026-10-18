@@ -483,7 +483,7 @@
   function mineBar() {
     var x = X(), st = [['all', x.fAll], ['open', x.fOpen], ['won', x.fWon], ['lost', x.fLost], ['void', x.fVoid]], c = counts();
     var per = [['all', x.pAll], ['today', x.pToday], ['7', x.p7], ['month', x.pMonth], ['year', x.pYear], ['day', x.pDay]];
-    return '<div class="sp2-mf"><div class="sp2-st">' + st.map(function (o) { return '<button type="button" data-mst="' + o[0] + '" class="st-' + o[0] + (MF.st === o[0] ? ' on' : '') + '"><b>' + (mineCache ? c[o[0]] || 0 : '·') + '</b><span class="fit">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
+    return '<div class="sp2-mf"><div class="sp2-st">' + st.map(function (o) { return '<button type="button" data-mst="' + o[0] + '" class="st-' + o[0] + (MF.st === o[0] ? ' on' : '') + '" style="flex-grow:' + (String(o[1]).length + 3) + '"><b>' + (mineCache ? c[o[0]] || 0 : '·') + '</b><span class="fit">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
       '<div class="sp2-per"><label class="sp2-selw">' + IC.cal + '<select id="spMfPer" aria-label="' + esc(x.pAll) + '">' + per.map(function (o) { return '<option value="' + o[0] + '"' + (MF.per === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></label>' +
       '<input type="date" id="spMfDay" value="' + esc(MF.day) + '"' + (MF.per === 'day' ? '' : ' hidden') + '></div></div>';
   }

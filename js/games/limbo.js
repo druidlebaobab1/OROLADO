@@ -18,6 +18,13 @@
     hi: { bet: 'दांव', target: 'लक्ष्य', chance: 'मौका', win: 'जीत' },
     zh: { bet: '下注', target: '目标', chance: '胜率', win: '赢取' }
   };
+  // tailles relatives à la scène (comme des unités de conteneur, mais fiables partout) : --cqw / --cqh = 1 % de la largeur / hauteur
+  function cq(el) {
+    if (!el) return;
+    var f = function () { if (!el.isConnected) return; el.style.setProperty('--cqw', (el.clientWidth / 100).toFixed(2) + 'px'); el.style.setProperty('--cqh', (el.clientHeight / 100).toFixed(2) + 'px'); };
+    f(); requestAnimationFrame(f);
+    if (window.ResizeObserver) new ResizeObserver(f).observe(el); else window.addEventListener('resize', f);
+  }
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   var HIST = [];
   var SET = { t: 2 };
@@ -48,7 +55,7 @@
           '<div class="lb-cell"><small class="fit">' + K.esc(l.win) + '</small><b class="fit lb-pay" id="lbPay"></b></div>' +
         '</div>' +
         '<div class="lb-quick">' + QUICK.map(function (q) { return '<button type="button" data-q="' + q + '">×' + nf(q, q % 1 ? 1 : 0) + '</button>'; }).join('') + '</div>');
-    K.bindStake(box);
+    K.bindStake(box); cq(box.querySelector('.lb-stage'));
     var inp = $('lbT'), num = $('lbNum'), core = box.querySelector('.lb-core');
 
     function paint() {

@@ -91,8 +91,9 @@
         '<svg class="cr-plot" id="crSvg" aria-hidden="true"><defs><linearGradient id="crA' + game + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".5"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient></defs>' +
         '<path id="crArea" fill="url(#crA' + game + ')"/><path id="crLine" class="cr-line" fill="none" stroke="' + col + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
         '<i class="cr-axis x"></i><i class="cr-axis y"></i>' +
-        '<span class="cr-craft" id="crCraft"><span class="cr-bob">' + craftSvg(game) + '</span></span><i class="cr-boom" id="crBoom"></i><b class="cr-out" id="crOut"></b>' +
+        '<span class="cr-craft" id="crCraft"><span class="cr-bob">' + craftSvg(game) + '</span></span><i class="cr-boom" id="crBoom"></i>' +
         '<div class="cr-mid"><small class="cr-flew fit" id="crFlew"></small><b class="cr-m fit" id="crM">' + fx(1) + '×</b>' +
+        '<b class="cr-out" id="crOut"></b>' +
         '<div class="cr-wait" id="crWait" hidden><i class="cr-spin"></i><small class="fit">' + K.esc(l.wait) + '</small><i class="cr-bar"><b id="crBar"></b></i></div></div></div>' +
         K.stakePanel(l.bet, opts);
       var watch = K.guest();
@@ -157,7 +158,7 @@
         if (!r || !r.done || !r.ref || shown === r.ref) return;
         shown = r.ref;
         if (cancelRef === r.ref) { K.afterPlay(r); return; } // bet cancelled before take-off: stake back, no result pill
-        if (r.out > 0 && lastXY[0]) { var o = $('crOut'); K.setText(o, fx(r.out) + '×'); o.style.transform = 'translate(' + lastXY[0].toFixed(0) + 'px,' + lastXY[1].toFixed(0) + 'px)'; o.classList.remove('in'); void o.offsetWidth; o.classList.add('in'); }
+        if (r.out > 0) { var o = $('crOut'); o.textContent = fx(r.out) + '×'; o.classList.remove('in'); void o.offsetWidth; o.classList.add('in'); } // my cash-out multiplier, under the big one
         K.resultLine(box, r);
       };
       var askMine = async function () {
@@ -186,10 +187,16 @@
         if (R && nowS() >= R.t0 && R.c == null) { clearTimeout(K.S.timer); K.S.timer = setTimeout(sync, 450); } // in flight: more often
       };
 
-      var setBtn = function (cls, txt, dis) {
+      // big-game button: one line ("Bet", "Cancel"), or two stacked one-line texts while flying ("CASH OUT" / "+$ 1.23")
+      var b1 = null, b2 = null;
+      if (btn) { btn.innerHTML = '<b class="cr-b1 fit"></b><small class="cr-b2 fit"></small>'; b1 = btn.firstChild; b2 = btn.lastChild; K.setText(b1, l.bet); }
+      var setBtn = function (cls, txt, dis, sub) {
         if (!btn) return;
         ['cash', 'stop', 'wait'].forEach(function (c) { btn.classList.toggle(c, c === cls); });
-        K.setText(btn, txt); btn.disabled = !!dis;
+        var two = !!sub;
+        if (btn.classList.contains('two') !== two) { btn.classList.toggle('two', two); b2.textContent = ''; K.fitEl(b1); }
+        K.setText(b1, txt); if (two) K.setText(b2, sub);
+        btn.disabled = !!dis;
       };
       var tick = function () {
         if (!alive()) return;
@@ -202,10 +209,10 @@
             K.setText(flew, phase === 'end' ? (game === 'rocket' ? l.lost : l.flew) : '');
             K.fitEl(mEl); K.fitEl(wait.querySelector('small'));
             if (phase === 'end') {
-              craft.style.transition = game === 'rocket' ? 'opacity .25s' : 'transform 1s cubic-bezier(.55,0,.9,.45), opacity 1s';
+              craft.style.transition = game === 'rocket' ? 'opacity .25s, visibility 0s .3s' : 'transform 1s cubic-bezier(.55,0,.9,.45), opacity 1s, visibility 0s 1s'; craft.style.visibility = 'hidden';
               if (game === 'rocket') { var bm = $('crBoom'); bm.style.transform = 'translate(' + lastXY[0].toFixed(0) + 'px,' + lastXY[1].toFixed(0) + 'px)'; bm.classList.remove('go'); void bm.offsetWidth; bm.classList.add('go'); craft.style.opacity = '0'; }
               else { craft.style.transform = 'translate(' + (W + cw).toFixed(0) + 'px,' + (-cw).toFixed(0) + 'px) rotate(-30deg)'; craft.style.opacity = '0'; }
-            } else { craft.style.transition = 'none'; craft.style.opacity = '1'; }
+            } else { craft.style.transition = 'none'; craft.style.opacity = '1'; craft.style.visibility = ''; }
           }
           if (phase === 'bet') {
             park(); bar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.t0 - t) / (R.bet || 5))).toFixed(3) + ')';
@@ -218,7 +225,7 @@
           var open = me && !me.done, inFlight = phase === 'fly';
           if (!btn || watch) { /* visitor: watches only */ }
           else if (open && me.rid === R.i && inFlight) {
-            setBtn('cash', l.cash + ' +$ ' + K.m2(me.stake * Math.min(MULT(s), me.auto > 1 ? me.auto : 1e9)), busy);
+            setBtn('cash', l.cash, busy, '+$ ' + K.m2(me.stake * Math.min(MULT(s), me.auto > 1 ? me.auto : 1e9)));
             if (me.auto > 1 && MULT(s) >= me.auto && Date.now() - autoAsk > 900) { autoAsk = Date.now(); askMine(); } // auto cash-out reached: the server has settled it
           }
           else if (open) setBtn('stop', l.cancel, busy);

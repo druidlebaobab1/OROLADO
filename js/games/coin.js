@@ -17,6 +17,13 @@
     hi: { bet: 'दांव', heads: 'चित', tails: 'पट' },
     zh: { bet: '下注', heads: '正面', tails: '反面' }
   };
+  // tailles relatives à la scène (comme des unités de conteneur, mais fiables partout) : --cqw / --cqh = 1 % de la largeur / hauteur
+  function cq(el) {
+    if (!el) return;
+    var f = function () { if (!el.isConnected) return; el.style.setProperty('--cqw', (el.clientWidth / 100).toFixed(2) + 'px'); el.style.setProperty('--cqh', (el.clientHeight / 100).toFixed(2) + 'px'); };
+    f(); requestAnimationFrame(f);
+    if (window.ResizeObserver) new ResizeObserver(f).observe(el); else window.addEventListener('resize', f);
+  }
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   var HIST = [];          // derniers lancers : 0 = face (or), 1 = pile (argent)
   var SET = { side: 0, rot: 0 };
@@ -52,7 +59,7 @@
         '<button type="button" data-s="0" class="cn-b h"><span class="cn-mini">' + faceSvg(true, 'cnm0') + '</span><span class="cn-lbl"><b class="fit">' + K.esc(l.heads) + '</b><small class="fit">' + MULT + '</small></span></button>' +
         '<button type="button" data-s="1" class="cn-b t"><span class="cn-mini">' + faceSvg(false, 'cnm1') + '</span><span class="cn-lbl"><b class="fit">' + K.esc(l.tails) + '</b><small class="fit">' + MULT + '</small></span></button>' +
       '</div>');
-    K.bindStake(box);
+    K.bindStake(box); cq(box.querySelector('.cn-stage'));
     var coin = $('cnCoin'), toss = $('cnToss'), sh = $('cnShadow');
     function paintPick() { box.querySelectorAll('.cn-b').forEach(function (b) { b.classList.toggle('on', +b.getAttribute('data-s') === SET.side); }); }
     function paintHist() { $('cnHist').innerHTML = HIST.slice(0, 18).map(chip).join(''); }
