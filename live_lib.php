@@ -989,3 +989,37 @@ function live_img_in_groups(string $uid, string $name): bool {
   }
   return false;
 }
+
+/* =====================================================================================================
+ * v2796 — Social « messagerie » (comme WhatsApp / Telegram) : petit point vert « en ligne » (le joueur a ouvert
+ * Social il y a moins de 2 min 30 — un fichier vide touché au plus toutes les 30 s, rien d'autre) et DEMANDES DE
+ * CONTACT : quelqu'un m'écrit pour la 1re fois → Accepter (la conversation passe dans mes discussions) ou Refuser
+ * (il est bloqué et disparaît de ma liste). Aucun argent, aucune donnée existante modifiée.
+ * ===================================================================================================== */
+const LIVE_ONLINE_SEC = 150;
+function live_seen_file(string $uid): string { return live_dir('seen') . '/' . live_safe_id($uid); }
+function live_seen_touch(string $uid): void {
+  if ($uid === '') return;
+  $f = live_seen_file($uid);
+  $t = @filemtime($f);
+  if ($t === false || $t < time() - 30) @touch($f);
+}
+function live_seen_on(string $uid): bool { clearstatcache(true, live_seen_file($uid)); $t = @filemtime(live_seen_file($uid)); return $t !== false && $t >= time() - LIVE_ONLINE_SEC; }
+
+/** Demande de contact : l'autre m'a écrit, je ne lui ai jamais répondu et je n'ai encore ni accepté ni refusé. */
+function live_dm_is_request(string $uid, array $row, array $thread): bool {
+  if ((int) ($row['ok'] ?? 0) !== 0 || !$thread) return false;
+  foreach ($thread as $m) if ((string) ($m['f'] ?? '') === $uid) return false;
+  return true;
+}
+/** Réponse à une demande : oui → contact accepté ; non → bloqué et caché de la liste. */
+function live_dm_answer(string $uid, string $peer, bool $yes): void {
+  $f = live_dir('inbox') . '/' . live_safe_id($uid) . '.json';
+  live_update($f, function ($q) use ($peer, $yes) {
+    if (!isset($q['c'][$peer])) return ['ok' => true];
+    $q['c'][$peer]['ok'] = $yes ? 1 : -1;
+    if (!$yes) $q['c'][$peer]['un'] = 0;
+    return ['ok' => true, '__write' => $q];
+  });
+  if (!$yes) live_set_block($uid, $peer, true);
+}

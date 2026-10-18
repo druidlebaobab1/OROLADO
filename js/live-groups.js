@@ -242,9 +242,9 @@
       D6.Live.open('groups');
       if (guest()) { try { sessionStorage.setItem('oro_gjoin', tok); } catch (e) { /* ignore */ } return; }
       var r = await call('gJoin', { tok: tok });
-      if (r && r.ok) { toast(X().joined.replace('{n}', r.g.name)); open(r.g.id); } else toast(X()[(r && r.reason) || 'gGone'] || X().gGone, 'err');
+      if (r && r.ok) { toast(X().joined.replace('{n}', r.g.name)); if (D6.Social2) D6.Social2.openGroup(r.g.id); else open(r.g.id); } // v2796 : la messagerie else toast(X()[(r && r.reason) || 'gGone'] || X().gGone, 'err');
     }, 1800);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootJoin); else bootJoin();
-  D6.LiveGroups = { open: open, stop: stop, inGroup: function () { return !!cur; }, back: list, title: function () { return X().title; }, sub: function () { return X().sub; } };
+  D6.LiveGroups = { t: X, open: open, stop: stop, inGroup: function () { return !!cur; }, back: list, title: function () { return X().title; }, sub: function () { return X().sub; } };
 })(window.D6 = window.D6 || {});

@@ -54,6 +54,12 @@
   var NAMES = { crash: 'Sky Rush', jet: 'Jet Man', rocket: 'Rocket', mines: 'Mines', apple: 'Golden Orchard', tower: 'Tower', plinko: 'Cascade', dice: 'Dice', limbo: 'Target',
     wheel: 'Lucky Wheel', roulette: 'Roulette', slots: 'Lucky 777', coin: 'Coin Flip', keno: 'Keno', scratch: 'Scratch Card', hilo: 'Hi-Lo', dragon: 'Dragon Tiger', baccarat: 'Baccarat',
     sicbo: 'Sic Bo', chests: 'Treasure', balloon: 'Balloon', penalty: 'Penalty', race: 'Racing', colors: 'Colors', darts: 'Darts', cryptox: 'Crypto Live', horses: 'Horse Race', rps: 'Rock Paper Scissors', lotto: 'Oro Lotto' };
+  var SEC_T = { en: { live: 'Live games', skill: 'You’re in control', more: 'All games' }, fr: { live: 'Jeux live', skill: 'Tu contrôles', more: 'Tous les jeux' },
+    es: { live: 'Juegos en vivo', skill: 'Tú controlas', more: 'Todos los juegos' }, pt: { live: 'Jogos ao vivo', skill: 'Você controla', more: 'Todos os jogos' },
+    ar: { live: 'ألعاب مباشرة', skill: 'أنت تتحكم', more: 'كل الألعاب' }, tr: { live: 'Canlı oyunlar', skill: 'Kontrol sende', more: 'Tüm oyunlar' },
+    vi: { live: 'Trò chơi trực tiếp', skill: 'Bạn điều khiển', more: 'Tất cả trò chơi' }, id: { live: 'Game live', skill: 'Kamu yang kendalikan', more: 'Semua game' },
+    ru: { live: 'Live-игры', skill: 'Ты управляешь', more: 'Все игры' }, de: { live: 'Live-Spiele', skill: 'Du steuerst', more: 'Alle Spiele' },
+    hi: { live: 'लाइव गेम्स', skill: 'आप नियंत्रित करें', more: 'सभी गेम्स' }, zh: { live: '直播游戏', skill: '由你掌控', more: '全部游戏' } };
   // v2718 : jeux EN DIRECT (même tour / même tirage pour tout le monde) → pastille « LIVE » qui clignote sous le nom
   var LIVE_GAMES = { crash: 1, jet: 1, rocket: 1, cryptox: 1, horses: 1, roulette: 1, race: 1 }; // v2792 : Racing en direct
   var ART = D6.CasinoArt || { planet: function () { return ''; }, obj: function () { return ''; }, sym: function () { return ''; }, car: function () { return ''; }, PAL: {} };
@@ -159,8 +165,21 @@
     t.innerHTML = (win ? '<i class="ct-coin" aria-hidden="true"></i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(r.win) : '0') + '</b>'; // dir=ltr : en arabe on lit bien « +$ 0 »
     host.appendChild(t);
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
+    // v2805 (propriétaire : jamais rien de superposé) — pendant que la pastille est là, les petits textes du jeu qu'elle couvre
+    // s'effacent (gros multiplicateur, statut…) puis reviennent quand elle part.
+    var hid = [];
+    try {
+      var tr = t.getBoundingClientRect(), ta = tr.width * tr.height;
+      host.querySelectorAll('b,strong,span,em,small,i,div,p,label').forEach(function (el) {
+        if (el === t || t.contains(el) || el.contains(t) || el.childElementCount > 3 || !el.textContent.trim()) return;
+        var r2 = el.getBoundingClientRect(); if (!r2.width || r2.width * r2.height > ta * 6) return;
+        if (r2.right <= tr.left || r2.left >= tr.right || r2.bottom <= tr.top - 4 || r2.top >= tr.bottom + 4) return;
+        if (el.style.visibility === 'hidden') return;
+        el.style.visibility = 'hidden'; hid.push(el);
+      });
+    } catch (eHide) { /* ignore */ }
     setTimeout(function () { t.classList.remove('in'); t.classList.add('out'); }, 2800);
-    setTimeout(function () { if (t.parentNode) t.remove(); }, 3300);
+    setTimeout(function () { if (t.parentNode) t.remove(); hid.forEach(function (el) { el.style.visibility = ''; }); }, 3300);
     afterPlay(r);
   }
 
@@ -185,7 +204,7 @@
   function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
   // v2756 (propriétaire) : « Prédictions » ouvre SA page (sans les onglets) ; « Jeux » ouvre les 24 jeux
   function open(game, view) {
-    ensure(); readBal();
+    ensure(); readBal(); loadCatalog();
     S.stake = 0.1;
     var pm = view === 'pred';
     if ($('casinoModal')) $('casinoModal').classList.toggle('pred-only', pm);
@@ -215,10 +234,21 @@
       if (D6.Sports && D6.Sports.paint) D6.Sports.paint(v, { guest: guest(), signup: signup, toast: toast, afterPlay: afterPlay, stake: function () { return S.stake; } });
     } else {
       v.className = 'cs-grid';
-      v.innerHTML = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).map(function (k) {
+      var tile = function (k) {
         return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + (LIVE_GAMES[k] ? '<i class="cs-onair" aria-label="live"><svg viewBox="0 0 16 12"><circle cx="8" cy="6" r="2.2"/><path d="M4.6 2.6a4.8 4.8 0 0 0 0 6.8M11.4 2.6a4.8 4.8 0 0 1 0 6.8"/></svg></i>' : '') + '<span>' + esc(name(k)) + '</span></b></button>';
+      };
+      // v2804 (propriétaire) : 3 listes — Live · Tu contrôles · Tous les jeux
+      var all = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).concat(CAT.filter(function (k) { return ORDER.indexOf(k) < 0; }));
+      var secOf = function (k) { return SECTION[k] || (LIVE_GAMES[k] ? 'live' : 'more'); };
+      var ST = SEC_T[(document.documentElement.lang || 'en').slice(0, 2)] || SEC_T.en;
+      var html = ['live', 'skill', 'more'].map(function (sec) {
+        var ks = all.filter(function (k) { return secOf(k) === sec; });
+        if (!ks.length) return '';
+        return '<div class="cs-sec cs-sec-' + sec + '"><h3 class="fit">' + esc(ST[sec]) + '<small>' + ks.length + '</small></h3><div class="cs-sec-g">' + ks.map(tile).join('') + '</div></div>';
       }).join('');
-      fitGrid();
+      v.className = 'cs-grid cs-grid3';
+      v.innerHTML = html;
+      fitAll(v);
       v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { var mb = m.querySelector('.modal-box'); S.homeY = mb ? mb.scrollTop : 0; go(b.getAttribute('data-g')); }); });
     }
     var box = m.querySelector('.modal-box'); if (box) box.scrollTop = 0;
@@ -226,7 +256,7 @@
   // v2757 : les 24 jeux tiennent dans l'écran, sans défiler (téléphone, iPhone, PC, télé) : la taille des logos s'adapte
   function fitGrid() {
     var v = $('csView'), m = $('casinoModal'), mb = m && m.querySelector('.modal-box');
-    if (!v || !mb || v.className.indexOf('cs-grid') < 0 || !v.firstChild) return;
+    if (!v || !mb || v.className.indexOf('cs-grid') < 0 || v.className.indexOf('cs-grid3') >= 0 || !v.firstChild) return; // v2804 : l'accueil en 3 listes défile (beaucoup de jeux)
     v.style.removeProperty('--cs-pl');
     var cols = getComputedStyle(v).gridTemplateColumns.split(' ').length || 4, n = v.children.length, rows = Math.ceil(n / cols);
     var top = v.getBoundingClientRect().top - mb.getBoundingClientRect().top + mb.scrollTop;
@@ -315,8 +345,32 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2803';
+  var MOD_V = '2806';
   var modState = {};
+  /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
+     { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
+     L'accueil range tout en 3 listes : Live · Tu contrôles · Tous les jeux. */
+  var SECTION = {}, CAT = [];
+  D6.CasinoCatalog = {
+    add: function (list) {
+      (list || []).forEach(function (e) {
+        if (!e || !e.k || NAMES[e.k] || !/^[a-z][a-z0-9]{1,15}$/.test(e.k)) return;
+        NAMES[e.k] = String(e.name || e.k); MODS[e.k] = String(e.file || e.k); SECTION[e.k] = e.sec === 'live' || e.sec === 'skill' ? e.sec : 'more'; CAT.push(e.k);
+        if (e.icon && ART.addObj) ART.addObj(e.k, e.icon, e.pal);
+      });
+      var m = $('casinoModal'); if (m && !S.game && S.view === 'games' && $('csView') && $('csView').className.indexOf('cs-grid') >= 0) home('games');
+    }
+  };
+  // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
+  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-more1', 'cat-more2'], catAsked = false;
+  function loadCatalog() {
+    if (catAsked) return; catAsked = true;
+    CAT_FILES.forEach(function (f) { var js = document.createElement('script'); js.src = 'js/games/' + f + '.js?v=' + MOD_V; js.async = true; document.head.appendChild(js); });
+  }
+  (function () {
+    var later = function () { if (window.requestIdleCallback) requestIdleCallback(loadCatalog, { timeout: 4000 }); else setTimeout(loadCatalog, 2000); };
+    if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
+  })();
   function loadMod(k) {
     var f = String(MODS[k] || k).replace(/[^a-z0-9_-]/gi, '');
     if (modState[f]) return modState[f];
@@ -332,7 +386,11 @@
   function go(k) {
     if (MODS[k] && !(GAMES[k] && GAMES[k].v2)) {
       S.game = k;
-      loadMod(k).then(function () { if (S.game === k) render(k); }); // ouvert entre-temps un autre jeu / fermé : on ne dessine pas
+      loadMod(k).then(function () {
+        if (S.game !== k) return; // ouvert entre-temps un autre jeu / fermé : on ne dessine pas
+        if (!GAMES[k]) { toast(X().e_unavailable); home('games'); return; } // nouveau jeu sans ancienne version : retour à l'accueil
+        render(k);
+      });
       var bd = $('csBody'); if (bd) bd.innerHTML = '<div class="cg-load"><i></i></div>';
       return;
     }

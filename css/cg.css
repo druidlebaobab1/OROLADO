@@ -119,3 +119,19 @@ html:root body #casinoModal .cg-in input{padding:0 24px 0 2px!important}
 @media (max-height:640px){html:root body #casinoModal .cg-step{width:34px!important;height:34px!important;min-width:34px;flex-basis:34px!important}}
 @media (max-width:380px){html:root body #casinoModal .cg-in input{font-size:15px!important;padding:0 20px 0 0!important;letter-spacing:-.02em}
   html:root body #casinoModal .cg-amt{gap:4px;padding:0 3px}}
+
+/* ===== v2804 (propriétaire) : ACCUEIL DES JEUX en 3 listes — Live · Tu contrôles · Tous les jeux (la liste défile) ===== */
+html:root body #casinoModal #csView.cs-grid.cs-grid3{display:block!important;padding:4px 2px 18px!important;max-width:900px;margin:0 auto}
+html:root body #casinoModal .cs-sec{margin:0 0 14px}
+html:root body #casinoModal .cs-sec h3{display:flex;align-items:center;gap:8px;margin:2px 4px 10px;font:900 clamp(15px,4.4vw,19px)/1.1 var(--cg-font);color:#fff;letter-spacing:.01em}
+html:root body #casinoModal .cs-sec h3::before{content:"";flex:none;width:6px;height:18px;border-radius:3px;background:linear-gradient(180deg,#FDE68A,#F59E0B)}
+html:root body #casinoModal .cs-sec-live h3::before{background:linear-gradient(180deg,#FB7185,#E11D48);box-shadow:0 0 10px rgba(244,63,94,.7)}
+html:root body #casinoModal .cs-sec-skill h3::before{background:linear-gradient(180deg,#86EFAC,#16A34A)}
+html:root body #casinoModal .cs-sec h3 small{margin-inline-start:auto;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,.1);font:800 12px/1.4 var(--cg-font);color:#C4B5FD}
+html:root body #casinoModal .cs-sec-g{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 8px;align-items:start}
+@media (min-width:600px){html:root body #casinoModal .cs-sec-g{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cs-sec-g{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px 4px}}
+html:root body #casinoModal #csView.cs-grid3 .cs-g .cs-pl{width:min(72px,18vw)!important}
+html:root body #casinoModal #csView.cs-grid3 .cs-g b{max-width:100%}
+/* v2806 : la page d'un jeu ne glisse jamais sur le côté (même après la feuille des règles) */
+html:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{overflow-x:clip!important}

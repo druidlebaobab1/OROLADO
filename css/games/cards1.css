@@ -1,0 +1,76 @@
+/* v2805 — cards1: Higher Card, Casino War, Andar Bahar, Red Dog, Teen Patti, Video Poker (new instant card games). */
+html:root body #casinoModal .c1-game .c1-stage{display:flex;flex-direction:column;gap:6px;padding:8px 10px 6px;
+  background:radial-gradient(70% 50% at 50% 55%,rgba(91,33,182,.35),transparent 70%),radial-gradient(120% 80% at 50% 0%,rgba(139,92,246,.28),transparent 60%),linear-gradient(180deg,#1B1442,#0E0A26)}
+html:root body #casinoModal .c1-game .c1-hist{flex:0 0 auto}
+html:root body #casinoModal .c1-game .c1-scene{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center}
+html:root body #casinoModal .c1-game .c1-svg{display:block;width:100%;height:100%;min-height:0}
+html:root body #casinoModal .c1-game .c1-slot{fill:rgba(255,255,255,.03);stroke:rgba(251,191,36,.32);stroke-width:1;stroke-dasharray:4 3}
+html:root body #casinoModal .c1-game .c1-c{will-change:transform;transition:opacity .22s}
+html:root body #casinoModal .c1-game .c1-c.out{opacity:0}
+html:root body #casinoModal .c1-game .c1-f{transform-box:fill-box;transform-origin:center;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+html:root body #casinoModal .c1-game.c1-busy .c1-opts{pointer-events:none}
+/* choix */
+html:root body #casinoModal .c1-game .c1-opts > button{min-height:50px!important}
+html:root body #casinoModal .c1-game .c1-opts > button b{display:block;max-width:100%;font:900 15px/1.05 var(--cg-font);color:#fff}
+html:root body #casinoModal .c1-game .c1-opts > button small{display:block;max-width:100%;unicode-bidi:isolate}
+html:root body #casinoModal .c1-game .c1-opts > button small em{font-style:normal;color:#C4B5FD;margin-right:5px}
+html:root body #casinoModal .c1-game .c1-opts > button.ic{display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:7px;row-gap:3px;align-content:center;justify-items:start}
+html:root body #casinoModal .c1-game .c1-opts > button.ic > :first-child{grid-row:1 / span 2;align-self:center}
+html:root body #casinoModal .c1-game .c1-ar{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;color:#FDE68A}
+@media (max-height:640px){html:root body #casinoModal .c1-game .c1-opts > button{min-height:44px!important}}
+/* statut (une ligne) */
+html:root body #casinoModal .c1-game .c1-st{flex:none;display:flex;justify-content:center;min-height:22px;min-width:0}
+html:root body #casinoModal .c1-game .c1-st span{display:block;max-width:92%;padding:3px 12px;border-radius:999px;background:rgba(0,0,0,.4);box-shadow:inset 0 0 0 1px rgba(251,191,36,.3);font:800 12px/1.25 var(--cg-font);color:#FDE68A;letter-spacing:.03em;text-transform:uppercase;opacity:0;transition:opacity .2s}
+html:root body #casinoModal .c1-game .c1-st.on span{opacity:1}
+/* noms sous les cartes */
+html:root body #casinoModal .c1-game .c1-lbls{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:10%;padding:0 6%}
+html:root body #casinoModal .c1-game .c1-lbls b{display:block;text-align:center;font:900 13px/1.3 var(--cg-font);color:#C4B5FD;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;transition:background .2s,color .2s}
+html:root body #casinoModal .c1-game .c1-lbls b.w{color:#052E16;background:linear-gradient(180deg,#86EFAC,#22C55E)}
+
+/* Higher Card / War */
+html:root body #casinoModal .cg-highcard .hc-vs circle,html:root body #casinoModal .cg-war .wr-vs circle{fill:#140B38;stroke:#FBBF24;stroke-width:2}
+html:root body #casinoModal .cg-highcard .hc-vs path{fill:none;stroke:#C4B5FD;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+html:root body #casinoModal .cg-highcard .hc-vs.up path:first-child,html:root body #casinoModal .cg-highcard .hc-vs.dn path:last-child{stroke:#4ADE80}
+html:root body #casinoModal .cg-highcard .hc-vs.up path:last-child,html:root body #casinoModal .cg-highcard .hc-vs.dn path:first-child{opacity:.2}
+html:root body #casinoModal .cg-highcard .hc-vs.eq path{stroke:#FB7185}
+html:root body #casinoModal .cg-war .wr-vs text{font:900 12px/1 var(--cg-font);fill:#FDE68A}
+html:root body #casinoModal .cg-war .wr-o.tie small{color:#86EFAC}
+
+/* Andar Bahar */
+html:root body #casinoModal .cg-andar .ab-row rect{fill:rgba(255,255,255,.03);stroke:rgba(255,255,255,.12)}
+html:root body #casinoModal .cg-andar .ab-row.a circle{fill:#2563EB}
+html:root body #casinoModal .cg-andar .ab-row.b circle{fill:#E11D48}
+html:root body #casinoModal .cg-andar .ab-row text{font:900 11px/1 var(--cg-font);fill:#fff}
+html:root body #casinoModal .cg-andar .ab-row.w rect{fill:rgba(34,197,94,.12);stroke:#4ADE80;stroke-width:1.6}
+html:root body #casinoModal .cg-andar .ab-jk{font:900 14px/1 var(--cg-font);fill:#FDE68A}
+html:root body #casinoModal .cg-andar .ab-o{flex-direction:row!important}
+html:root body #casinoModal .cg-andar .ab-i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font:900 12px/1 var(--cg-font);font-style:normal;color:#fff}
+html:root body #casinoModal .cg-andar .ab-o.a .ab-i{background:#2563EB}
+html:root body #casinoModal .cg-andar .ab-o.b .ab-i{background:#E11D48}
+
+/* Red Dog : tableau des gains */
+html:root body #casinoModal .cg-reddog .rd-pay,html:root body #casinoModal .cg-vpoker .vp-pay{flex:none;display:grid;gap:4px}
+html:root body #casinoModal .cg-reddog .rd-pay{grid-template-columns:repeat(5,minmax(0,1fr))}
+html:root body #casinoModal .cg-reddog .rd-pay span{min-width:0;display:flex;align-items:center;justify-content:center;gap:4px;height:26px;padding:0 4px;border-radius:999px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+html:root body #casinoModal .cg-reddog .rd-pay i{flex:none;font:900 10.5px/1 var(--cg-font);font-style:normal;color:#C4B5FD}
+html:root body #casinoModal .cg-reddog .rd-pay i.t{font-size:14px;color:#FB7185}
+html:root body #casinoModal .cg-reddog .rd-pay b{display:block;min-width:0;font:900 12px/1 var(--cg-font);color:#FDE68A;direction:ltr}
+html:root body #casinoModal .cg-reddog .rd-pay span.on{background:rgba(251,191,36,.22);box-shadow:inset 0 0 0 1.5px #FBBF24}
+html:root body #casinoModal .cg-reddog .rd-gap path{stroke:rgba(251,191,36,.45);stroke-width:2;stroke-dasharray:3 4}
+
+/* Teen Patti */
+html:root body #casinoModal .cg-teenpatti .tp-wrap{width:100%;height:100%;min-height:0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:6px;align-items:center}
+html:root body #casinoModal .cg-teenpatti .tp-pay{display:flex;flex-direction:column;gap:5px;min-width:0}
+html:root body #casinoModal .cg-teenpatti .tp-pay span{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;padding:6px 7px;border-radius:10px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+html:root body #casinoModal .cg-teenpatti .tp-pay b,html:root body #casinoModal .cg-vpoker .vp-pay b{display:block;min-width:0;flex:1 1 auto;font:800 12px/1.2 var(--cg-font);color:#E9E5FF}
+html:root body #casinoModal .cg-teenpatti .tp-pay i,html:root body #casinoModal .cg-vpoker .vp-pay i{flex:none;font:900 12px/1 var(--cg-font);font-style:normal;color:#FDE68A}
+html:root body #casinoModal .cg-teenpatti .tp-pay span.on,html:root body #casinoModal .cg-vpoker .vp-pay span.on{background:rgba(34,197,94,.25);box-shadow:inset 0 0 0 1.5px #4ADE80}
+
+/* Video Poker */
+html:root body #casinoModal .cg-vpoker .vp-pay{grid-template-columns:repeat(2,minmax(0,1fr));padding:6px;border-radius:12px;background:linear-gradient(180deg,#24157A,#160D4D);box-shadow:inset 0 0 0 1.5px rgba(251,191,36,.55)}
+html:root body #casinoModal .cg-vpoker .vp-pay span{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0;padding:3px 7px;border-radius:7px}
+html:root body #casinoModal .cg-vpoker .vp-pay span:first-child{grid-column:1 / -1}
+html:root body #casinoModal .cg-vpoker .vp-pay b{font-size:11.5px;text-transform:uppercase;letter-spacing:.02em}
+html.oro-lite body #casinoModal .c1-game .c1-f{filter:none}
+html:root body #casinoModal .c1-game .c1-hist i{direction:ltr;unicode-bidi:isolate}
+html:root body #casinoModal .cg-reddog .rd-pay,html:root body #casinoModal .cg-war .c1-opts,html:root body #casinoModal .cg-war .c1-lbls{direction:ltr}

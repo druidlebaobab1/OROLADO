@@ -580,7 +580,7 @@ function casino_max_stake(string $game): float {
 function casino_save_limits(array $in): array {
   $out = [];
   foreach ($in as $g => $v) {
-    if (!in_array((string) $g, CASINO_GAMES, true)) continue;
+    if (!in_array((string) $g, CASINO_GAMES, true) && casino_ext_type((string) $g) === '') continue;
     $v = round((float) $v, 2);
     if ($v >= CASINO_MIN && $v < CASINO_MAX_STAKE) $out[(string) $g] = $v; // vide ou ≥ max = mise maximale normale
   }
@@ -601,7 +601,8 @@ function casino_mode(string $m, bool $guest, ?array $user = null): string {
 
 /** Jeu instantané : mise → tirage → gain, en un seul appel. */
 function casino_play(array $db, ?array $user, string $game, string $mode, float $stake, array $p): array {
-  if (!in_array($game, CASINO_GAMES, true) || in_array($game, CASINO_MULTI, true)) return ['ok' => false, 'reason' => 'game'];
+  $ext = in_array(casino_ext_type($game), ['table', 'pick'], true); // v2804 : nouveaux jeux décrits par fiche (casino_ext.php)
+  if (!$ext && (!in_array($game, CASINO_GAMES, true) || in_array($game, CASINO_MULTI, true))) return ['ok' => false, 'reason' => 'game'];
   $stake = floor($stake * 100 + 1e-6) / 100;
   if ($e = casino_check_stake($stake, $game)) return ['ok' => false, 'reason' => $e];
   // Limbo : on refuse une cible dont le gain dépasserait le gain maximal.
@@ -609,7 +610,7 @@ function casino_play(array $db, ?array $user, string $game, string $mode, float 
   $uid = (string) ($user['id'] ?? '');
   if ($uid === '') return ['ok' => false, 'reason' => 'login'];
   $mode = casino_mode($mode, false, $user);
-  $res = casino_instant($game, $p, $stake);
+  $res = $ext ? casino_ext_instant($game, $p) : casino_instant($game, $p, $stake);
   if (isset($res['err'])) return ['ok' => false, 'reason' => $res['err']];
   $ref = 'cs_' . bin2hex(random_bytes(9));
   $deb = casino_debit($db, $uid, $mode, $stake, $ref);
@@ -626,6 +627,7 @@ function casino_play(array $db, ?array $user, string $game, string $mode, float 
 
 /** Jeux en plusieurs étapes (avion, mines, hi-lo) : une partie à la fois par jeu et par joueur, gardée par le serveur. */
 function casino_multi(array $db, array $user, string $game, string $act, string $mode, float $stake, array $p): array {
+  if (casino_ext_type($game) === 'skill') return casino_skill_act($db, $user, $game, $act, $mode, $stake, $p); // v2804 : jeux « où tu contrôles »
   if (!in_array($game, CASINO_MULTI, true)) return ['ok' => false, 'reason' => 'game'];
   $uid = (string) ($user['id'] ?? '');
   if ($uid === '') return ['ok' => false, 'reason' => 'login'];
@@ -977,6 +979,7 @@ function casino_finish(array $db, string $uid, string $game, array $g, float $no
 
 /** Ce que le navigateur a le droit de voir (jamais le point d'explosion ni les mines avant la fin). */
 function casino_public(string $game, array $g, float $now): array {
+  if (casino_ext_type($game) === 'skill') return casino_skill_public($game, $g, $now);
   $o = ['game' => $game, 'mode' => (string) $g['mode'], 'stake' => (float) $g['stake'], 'done' => !empty($g['done']) ? 1 : 0, 'win' => (float) ($g['win'] ?? 0)];
   if (casino_is_draw($game)) {
     $o['rid'] = (int) ($g['round'] ?? 0); $o['sel'] = (string) ($g['sel'] ?? ''); $o['ref'] = substr(hash('sha256', (string) $g['ref']), 0, 10);
@@ -1018,3 +1021,7 @@ function casino_public(string $game, array $g, float $now): array {
 function casino_history(string $uid): array {
   return (array) (casino_with(casino_user_file($uid), static fn(array &$st) => $st['h'] ?? []) ?: []);
 }
+
+// v2804 : moteur des nouveaux jeux (fiches casino_ext/*.php) — chargé après les constantes ci-dessus
+if (is_file(__DIR__ . '/casino_ext.php')) require_once __DIR__ . '/casino_ext.php';
+if (!function_exists('casino_ext_type')) { function casino_ext_type(string $g): string { return ''; } function casino_ext_keys(): array { return []; } }

@@ -81,6 +81,7 @@ if ($action === 'feed') {
     $dmUn = 0;
     foreach (live_inbox((string) $me['id']) as $row) $dmUn += (int) ($row['un'] ?? 0) > 0 ? 1 : 0;
     $out['me'] = ['msgs' => $msgs, 'unread' => (int) ($th['unreadUser'] ?? 0), 'dmUnread' => $dmUn];
+    live_seen_touch((string) $me['id']); // v2796 : point vert « en ligne » dans Social
     if (!empty($req['read'])) live_mark_read((string) $me['id'], 'u');
   }
   live_out($out);
@@ -164,10 +165,11 @@ if ($action === 'myid') {
   live_oro_id($me);
   live_out(['ok' => true, 'id' => live_code_of((string) $me['id'])]);
 }
-if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'duelCreate', 'duelAnswer'], true)) {
+if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'duelCreate', 'duelAnswer', 'friendAnswer'], true)) {
   $me = live_me($tok);
   if (!$me) live_out(['ok' => false, 'login' => true]);
   $uid = (string) $me['id'];
+  live_seen_touch($uid); // v2796
   $myId = live_oro_id($me);
 
   if ($action === 'friends') {
@@ -176,11 +178,16 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
     foreach (live_inbox($uid) as $peer => $row) {
       $w = live_who_uid((string) $peer);
       if (!$w) continue;
+      $isBlocked = in_array((string) $peer, $blocked, true);
+      if ((int) ($row['ok'] ?? 0) === -1 && $isBlocked) continue; // v2796 : demande refusée → cachée
       $last = live_dm_thread($uid, (string) $peer);
       $l = $last ? end($last) : null;
       $list[] = ['id' => $w['id'], 'name' => $w['name'], 'at' => (int) ($row['at'] ?? 0), 'un' => (int) ($row['un'] ?? 0),
-        'last' => is_array($l) ? (((string) ($l['f'] ?? '') === $uid ? '✓ ' : '') . ((string) ($l['t'] ?? '') !== '' ? (string) $l['t'] : '📷')) : '',
-        'blocked' => in_array((string) $peer, $blocked, true),
+        'last' => is_array($l) ? (((string) ($l['f'] ?? '') === $uid ? '✓ ' : '') . ((string) ($l['t'] ?? '') !== '' ? (string) $l['t'] : (live_is_audio((string) ($l['img'] ?? '')) ? '🎤' : '📷'))) : '',
+        'mine' => is_array($l) && (string) ($l['f'] ?? '') === $uid, // v2796 : dernier message envoyé par moi
+        'req' => live_dm_is_request($uid, (array) $row, $last), // v2796 : demande de contact (Accepter / Refuser)
+        'on' => live_seen_on((string) $peer), // v2796 : en ligne dans Social
+        'blocked' => $isBlocked,
         'duel' => (static function () use ($uid, $peer) { $d = live_duel_last($uid, (string) $peer); if (!$d) return ''; if (($d['st'] ?? '') === 'pending' && !live_duel_expired($d) && (string) $d['b'] === $uid) return 'invite'; return ($d['st'] ?? '') === 'active' && time() < (int) ($d['end'] ?? 0) ? 'live' : ''; })()];
     }
     live_out(['ok' => true, 'me' => live_code_of($uid), 'name' => (string) ($me['displayName'] ?? ''), 'list' => $list, 'stats' => live_duel_stats($uid)]);
@@ -188,7 +195,7 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
 
   // Trouver un ami par son identifiant (au-delà de 10 essais ratés en 1 h : bloqué).
   $peerId = live_norm_oro_id((string) ($req['id'] ?? ''));
-  if ($action === 'find' || $action === 'dm' || $action === 'dmSend' || $action === 'block' || $action === 'report' || $action === 'duelCreate' || $action === 'duelAnswer') {
+  if ($action === 'find' || $action === 'dm' || $action === 'dmSend' || $action === 'block' || $action === 'report' || $action === 'duelCreate' || $action === 'duelAnswer' || $action === 'friendAnswer') {
     if ($action === 'find' && !live_find_allowed($uid)) live_out(['ok' => false, 'reason' => 'findLocked']);
     $peer = $peerId !== '' ? live_who($peerId) : null;
     if (!$peer || $peer['uid'] === $uid) {
@@ -197,9 +204,14 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
     }
     $p = $peer['uid'];
     if ($action === 'find') live_out(['ok' => true, 'peer' => ['id' => $peer['id'], 'name' => $peer['name']]]);
+    if ($action === 'friendAnswer') { live_dm_answer($uid, $p, !empty($req['yes'])); live_out(['ok' => true]); } // v2796
     if ($action === 'dm') {
       live_inbox_read($uid, $p);
+      // v2796 : « lu » (✓✓) = l'ami n'a plus de message non lu de moi ; s'il m'a bloqué, rien n'apparaît jamais lu
+      $peerUn = live_is_blocked($p, $uid) ? 9999 : (int) ((live_inbox($p)[$uid] ?? [])['un'] ?? 0);
+      $myRow = (array) (live_inbox($uid)[$p] ?? []);
       live_out(['ok' => true, 'peer' => ['id' => $peer['id'], 'name' => $peer['name']], 'blocked' => live_is_blocked($uid, $p),
+        'on' => live_seen_on($p), 'peerUn' => $peerUn, 'req' => live_dm_is_request($uid, $myRow, live_dm_thread($uid, $p)),
         'msgs' => array_map(static fn($m) => $dmOut($m, $uid, $peer['id']), array_slice(live_dm_thread($uid, $p), -80)),
         'duel' => $duelOut(live_duel_last($uid, $p), $uid), 'stats' => live_duel_stats($uid), 'hisStats' => live_duel_stats($p)]);
     }
@@ -234,7 +246,8 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
       if (live_is_blocked($uid, $p)) live_out(['ok' => false, 'reason' => 'youBlocked']);
       $text = live_clean_text((string) ($req['text'] ?? ''));
       $imgData = (string) ($req['img'] ?? '');
-      if ($text === '' && $imgData === '') live_out(['ok' => false, 'reason' => 'empty']);
+      $audData = $imgData === '' ? (string) ($req['aud'] ?? '') : ''; // v2796 : note vocale (10 s) aussi entre amis
+      if ($text === '' && $imgData === '' && $audData === '') live_out(['ok' => false, 'reason' => 'empty']);
       if (!live_quota_ok($uid, 'dm', LIVE_DM_HOUR, 3600)) live_out(['ok' => false, 'reason' => 'tooMany']);
       if (!live_dm_thread($uid, $p) && !live_quota_ok($uid, 'newconv', LIVE_NEWCONV_DAY, 86400)) live_out(['ok' => false, 'reason' => 'tooMany']);
       $img = '';
@@ -242,13 +255,17 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
         if (!live_quota_ok($uid, 'img', LIVE_IMG_DAY, 86400)) live_out(['ok' => false, 'reason' => 'tooManyImg']);
         $img = live_save_image($imgData, 'img');
         if ($img === '') live_out(['ok' => false, 'reason' => 'badImg']);
+      } elseif ($audData !== '') {
+        if (!live_quota_ok($uid, 'aud', LIVE_AUD_DAY, 86400)) live_out(['ok' => false, 'reason' => 'tooManyAud']);
+        $img = live_save_audio($audData);
+        if ($img === '') live_out(['ok' => false, 'reason' => 'badAud']);
       }
       $r = live_dm_send($uid, $p, $text, $img);
       echo json_encode(['ok' => true, 'msg' => $dmOut($r['msg'], $uid, $peer['id'])], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
       if (!empty($r['delivered'])) {
         if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
         $fromW = live_who_uid($uid);
-        $pushTo($p, '💬 ' . (string) ($fromW['name'] ?? 'OROLADO'), $text !== '' ? $text : '📷 Photo');
+        $pushTo($p, '💬 ' . (string) ($fromW['name'] ?? 'OROLADO'), live_media_label(['t' => $text, 'img' => $img]));
       }
       exit;
     }
@@ -260,12 +277,13 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
   $me = live_me($tok);
   if (!$me) live_out(['ok' => false, 'login' => true]);
   $uid = (string) $me['id'];
+  live_seen_touch($uid); // v2796
   live_oro_id($me); // le joueur a un identifiant (nom visible dans les groupes)
   $gOut = static function (array $g, string $uid, bool $withMsgs) {
     $o = ['id' => (string) $g['id'], 'name' => (string) $g['name'], 'emoji' => (string) ($g['emoji'] ?? '💬'), 'n' => count((array) $g['members']),
       'owner' => (string) $g['owner'] === $uid, 'canWrite' => (string) $g['owner'] === $uid, 'at' => (int) ($g['at'] ?? 0), 'link' => 'https://orolado.com/?g=' . rawurlencode((string) $g['tok'])];
     $last = $g['msgs'] ? end($g['msgs']) : null;
-    if (is_array($last) && empty($last['sys'])) { $w = live_who_uid((string) $last['f']); $o['last'] = ((string) $last['f'] === $uid ? '✓ ' : (($w['name'] ?? '') . ' : ')) . ((string) ($last['t'] ?? '') !== '' ? (string) $last['t'] : '📷'); }
+    if (is_array($last) && empty($last['sys'])) { $w = live_who_uid((string) $last['f']); $o['last'] = ((string) $last['f'] === $uid ? '✓ ' : (($w['name'] ?? '') . ' : ')) . ((string) ($last['t'] ?? '') !== '' ? (string) $last['t'] : (live_is_audio((string) ($last['img'] ?? '')) ? '🎤' : '📷')); }
     if ($withMsgs) {
       $o['msgs'] = array_map(static function ($m) use ($uid) {
         $w = live_who_uid((string) $m['f']);
@@ -336,13 +354,18 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
   if ($action === 'gSend') {
     $text = live_clean_text((string) ($req['text'] ?? ''));
     $imgData = (string) ($req['img'] ?? '');
-    if ($text === '' && $imgData === '') live_out(['ok' => false, 'reason' => 'empty']);
+    $audData = $imgData === '' ? (string) ($req['aud'] ?? '') : ''; // v2796 : note vocale du créateur
+    if ($text === '' && $imgData === '' && $audData === '') live_out(['ok' => false, 'reason' => 'empty']);
     if (!live_quota_ok($uid, 'gmsg', LIVE_GROUP_HOUR, 3600)) live_out(['ok' => false, 'reason' => 'tooMany']);
     $img = '';
     if ($imgData !== '') {
       if (!live_quota_ok($uid, 'img', LIVE_IMG_DAY, 86400)) live_out(['ok' => false, 'reason' => 'tooManyImg']);
       $img = live_save_image($imgData, 'img');
       if ($img === '') live_out(['ok' => false, 'reason' => 'badImg']);
+    } elseif ($audData !== '') {
+      if (!live_quota_ok($uid, 'aud', LIVE_AUD_DAY, 86400)) live_out(['ok' => false, 'reason' => 'tooManyAud']);
+      $img = live_save_audio($audData);
+      if ($img === '') live_out(['ok' => false, 'reason' => 'badAud']);
     }
     $r = live_group_send($uid, $gid, $text, $img);
     live_out(empty($r['ok']) ? $r : ['ok' => true]);
