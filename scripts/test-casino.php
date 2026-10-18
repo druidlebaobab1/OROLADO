@@ -47,6 +47,10 @@ $params = [
   'darts' => fn() => [],
   'dice#duel' => fn() => ['duel' => ['red', 'black'][random_int(0, 1)]],
   'rps' => fn() => ['pick' => random_int(0, 2)],
+  // v2791 : Oro Lotto — chaque nombre de numéros choisis (1 à 10) a son tableau, chacun doit rendre ≈ 94 %
+  'lotto#1' => fn() => ['picks' => [7]], 'lotto#3' => fn() => ['picks' => [5, 17, 33]],
+  'lotto#5' => fn() => ['picks' => [3, 11, 19, 27, 36]], 'lotto#7' => fn() => ['picks' => [1, 6, 12, 18, 25, 31, 40]],
+  'lotto#10' => fn() => ['picks' => [2, 4, 8, 10, 15, 21, 26, 30, 35, 39]],
 ];
 foreach ($params as $g => $pf) {
   $N = 300000; $sum = 0.0; $bad = 0;
@@ -59,6 +63,8 @@ foreach ($params as $g => $pf) {
     if ($g === 'scratch') { $c = array_count_values($r['view']['grid']); $three = max($c) >= 3; if (($r['mult'] > 0) !== $three || max($c) > 3 || count($r['view']['grid']) !== 9) $bad++; }
     if ($g === 'dice#duel' && ($r['view']['r'] === $r['view']['b'] ? $r['mult'] != 1.0 : (($r['view']['side'] === 'red') === ($r['view']['r'] > $r['view']['b'])) !== ($r['mult'] > 1))) $bad++;
     if ($g === 'rps' && ($r['view']['me'] === $r['view']['bot'] ? $r['mult'] != 1.0 : (((($r['view']['me'] - $r['view']['bot'] + 3) % 3) === 1) !== ($r['mult'] > 1)))) $bad++;
+    if (strpos($g, 'lotto') === 0) { $pk = $pf()['picks']; $d = $r['view']['draw'];
+      if (count($d) !== 10 || count(array_unique($d)) !== 10 || min($d) < 1 || max($d) > 40 || CASINO_LOTTO[count($pk)][count(array_intersect($pk, $d))] != $r['mult']) $bad++; }
     if ($g === 'darts' && CASINO_DARTS[$r['view']['z']][0] != $r['mult']) $bad++;
     if ($g === 'plinko' && CASINO_PLINKO[array_sum($r['view']['path'])] != $r['mult']) $bad++;
     if ($g === 'keno' && CASINO_KENO[count(array_intersect([3, 9, 15], $r['view']['draw']))] != $r['mult']) $bad++;
@@ -82,6 +88,16 @@ foreach ([[3, 1], [3, 5], [5, 3], [10, 2]] as [$m, $k]) {
 }
 foreach ([1, 7, 13] as $a) { $ev = ((14 - $a) / 13) * casino_hilo_mult($a, true); check("hi-lo carte $a « plus haut » : retour " . round($ev * 100, 1) . ' %', $ev <= 0.971); }
 
+echo "1b) v2791 : Oro Lotto refuse les grilles fausses (0 numéro, 11 numéros, hors 1-40) ; chaque tableau rend 93,5 à 94,1 %\n";
+check('lotto : 0 numéro refusé', isset(casino_instant('lotto', ['picks' => []], 1)['err']));
+check('lotto : 11 numéros refusés', isset(casino_instant('lotto', ['picks' => range(1, 11)], 1)['err']));
+check('lotto : numéros hors grille ignorés (0, 41)', isset(casino_instant('lotto', ['picks' => [0, 41]], 1)['err']));
+check('lotto : doublons comptés une fois', casino_instant('lotto', ['picks' => [5, 5, 5]], 1)['view']['k'] === 1);
+$cmb = static function (int $n, int $k): float { if ($k < 0 || $k > $n) return 0.0; $r = 1.0; for ($i = 1; $i <= $k; $i++) $r = $r * ($n - $k + $i) / $i; return $r; };
+foreach (CASINO_LOTTO as $k => $row) {
+  $ev = 0.0; foreach ($row as $h => $m) $ev += $cmb($k, $h) * $cmb(40 - $k, 10 - $h) / $cmb(40, 10) * $m;
+  check(sprintf('lotto %2d numéro(s) : retour exact %.2f %%', $k, $ev * 100), $ev > 0.935 && $ev < 0.941);
+}
 echo "2) Argent réel : mise retirée une fois, gain versé une fois\n";
 $U = 'aaaaaaaa-1111-2222-3333-444444444444';
 $db = blank_db();

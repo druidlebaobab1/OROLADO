@@ -876,6 +876,12 @@
       ]
     ],
     casino: {
+      lotPick: 'Pilih 1 sampai 10 angka',
+      lotRand: 'Acak',
+      lotClear: 'Hapus',
+      lotHits: '{h} tepat dari {k}',
+      lotPay: 'Tepat',
+      lotDraw: 'Undian',
     "title": "Kasino",
     "sub": "15 game · mulai $0,10",
     "real": "Nyata",

@@ -16,7 +16,7 @@ const CASINO_MIN = 0.10;
 const CASINO_MAX_STAKE = 1000.0;
 const CASINO_MAX_WIN = 10000.0;
 const CASINO_GAMES = ['crash', 'jet', 'rocket', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines', 'apple',
-  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps'];
+  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps', 'lotto'];
 const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower', 'balloon', 'penalty', 'cryptox', 'horses', 'roulette']; // jeux en plusieurs étapes (état gardé par le serveur)
 /*
  * v2718 (propriétaire) — JEUX EN DIRECT À TIRAGE : le serveur fait un tirage commun à heure fixe, tout le monde voit le même.
@@ -122,6 +122,17 @@ const CASINO_WHEEL = [[0.5, 600], [1.2, 500], [0, 680], [1.5, 550], [0.5, 600], 
 const CASINO_PLINKO = [12, 3, 1.4, 0.6, 0.33, 0.6, 1.4, 3, 12];                                     // 8 rangées, retour 94 % (v2780)
 const CASINO_KENO = [0, 0.6, 3.37, 25];                                                              // 3 numéros choisis sur 20, 5 tirés : retour 94 % (v2780)
 const CASINO_RACE_MULT = 5.7;                                                                         // 6 voitures : retour 95 % (v2781 : chance visible)
+// v2791 (propriétaire) : ORO LOTTO remplace Pierre-Feuille-Ciseaux — loterie comme les grands sites : le joueur choisit 1 à 10
+// numéros sur 40, le serveur tire 10 boules. CASINO_LOTTO[k][h] = gain ÷ mise pour h bons numéros sur k choisis.
+// Chaque ligne est calculée (loi hypergéométrique) pour un retour aux joueurs de 93,8 à 94 % : marge maison 6 %, comme les autres jeux.
+const CASINO_LOTTO_N = 40;
+const CASINO_LOTTO_DRAW = 10;
+const CASINO_LOTTO = [
+  1 => [0, 3.76], 2 => [0, 1.45, 6.61], 3 => [0, 0, 4.25, 29.5], 4 => [0, 0, 2.07, 8.03, 78],
+  5 => [0, 0, 0, 5.92, 32.1, 422], 6 => [0, 0, 0, 3.24, 12.3, 90.8, 1000], 7 => [0, 0, 0, 2.07, 6.09, 31.4, 309, 1000],
+  8 => [0, 0, 0, 0, 5.56, 22.1, 153, 1000, 1000], 9 => [0, 0, 0, 0, 3.39, 10.9, 58.4, 546, 1000, 1000],
+  10 => [0, 0, 0, 0, 2.35, 6.36, 27.5, 198, 1000, 1000, 1000],
+];
 const CASINO_RPS_MULT = 1.91;                                                                         // Pierre-Feuille-Ciseaux (égalité = mise rendue) : retour 97 % (v2781 : chance visible)
 const CASINO_DICE_DUEL = 1.92;                                                                         // dé rouge contre dé noir (égalité = mise rendue) : retour 96,7 % (v2781 : chance visible)
 const CASINO_COIN_MULT = 1.94;                                                                        // retour 97 % (v2781 : chance visible)
@@ -319,6 +330,16 @@ function casino_instant(string $game, array $p, float $stake): array {
       $bot = random_int(0, 2);
       $m = $me === $bot ? 1.0 : (($me - $bot + 3) % 3 === 1 ? CASINO_RPS_MULT : 0.0);
       return ['mult' => $m, 'view' => ['me' => $me, 'bot' => $bot]];
+    case 'lotto':
+      $picks = array_values(array_unique(array_map('intval', (array) ($p['picks'] ?? []))));
+      $picks = array_values(array_filter($picks, static fn($x) => $x >= 1 && $x <= CASINO_LOTTO_N));
+      $k = count($picks);
+      if ($k < 1 || $k > 10) return ['err' => 'param'];
+      $all = range(1, CASINO_LOTTO_N);
+      for ($i = CASINO_LOTTO_N - 1; $i > 0; $i--) { $j = random_int(0, $i); [$all[$i], $all[$j]] = [$all[$j], $all[$i]]; }
+      $draw = array_slice($all, 0, CASINO_LOTTO_DRAW);
+      $hits = count(array_intersect($picks, $draw));
+      return ['mult' => (float) CASINO_LOTTO[$k][$hits], 'view' => ['draw' => $draw, 'hits' => $hits, 'k' => $k]];
     case 'darts':
       $r = random_int(1, 10000); $acc = 0; $z = 4;
       foreach (CASINO_DARTS as $j => [$x, $w]) { $acc += $w; if ($r <= $acc) { $z = $j; break; } }

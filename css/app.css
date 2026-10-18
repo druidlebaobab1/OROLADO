@@ -12557,3 +12557,41 @@ html.is-ios #oddsRow .odds-chip[data-odds="1.9"],html.is-ios .odds-row .odds-chi
 html.is-ios #oddsRow .odds-chip[data-odds="5"],html.is-ios .odds-row .odds-chip[data-odds="5"]{scale:.96}
 html.is-ios #oddsRow .odds-chip[data-odds="10"],html.is-ios .odds-row .odds-chip[data-odds="10"]{scale:1.04}
 html.is-ios #oddsRow .odds-chip[data-odds="50"],html.is-ios .odds-row .odds-chip[data-odds="50"]{scale:1.1}
+
+/* ================= v2791 (propriétaire) : ORO LOTTO — loterie 1 à 10 numéros sur 40, 10 boules tirées ================= */
+html:root body #casinoModal#casinoModal[data-g="lotto"] > .modal-box{background:radial-gradient(80% 45% at 50% 22%,rgba(245,158,11,.28),transparent 70%),linear-gradient(180deg,#2e1065,#1e1b4b 60%,#140f33)!important}
+html body #casinoModal .lot-stage{justify-content:flex-start!important;gap:10px!important;padding:12px 10px!important}
+html body #casinoModal .lot-tube{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;width:100%;max-width:420px;padding:6px;border-radius:999px;
+  background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.25));box-shadow:inset 0 2px 6px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.12)}
+html body #casinoModal .lot-tube i{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font:900 clamp(10px,3vw,13px)/1 system-ui;font-style:normal;color:transparent;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.12),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+html body #casinoModal .lot-tube i.in{animation:lotDrop .32s cubic-bezier(.2,1.4,.4,1)}
+html body #casinoModal .lot-tube i.miss{color:#fff;background:radial-gradient(circle at 35% 28%,#fff 0,#c4b5fd 22%,#7c3aed 70%,#4c1d95);box-shadow:0 2px 4px rgba(0,0,0,.45)}
+html body #casinoModal .lot-tube i.hit{color:#422006;background:radial-gradient(circle at 35% 28%,#fff 0,#fde68a 22%,#f59e0b 70%,#b45309);box-shadow:0 0 10px rgba(251,191,36,.8),0 2px 4px rgba(0,0,0,.45)}
+@keyframes lotDrop{0%{transform:translateY(-120%) scale(.6);opacity:0}100%{transform:none;opacity:1}}
+html body #casinoModal .lot-pay{display:flex;align-items:stretch;gap:4px;width:100%;max-width:420px;min-height:38px;overflow:hidden}
+html body #casinoModal .lot-pay small{flex:0 0 auto;align-self:center;font:800 10px/1.1 system-ui;color:#C4B5FD;text-transform:uppercase;letter-spacing:.04em;max-width:52px}
+html body #casinoModal .lot-pay small.lot-hint{max-width:none;flex:1;text-align:center;font-size:12px;text-transform:none;letter-spacing:0;color:#E9D5FF}
+html body #casinoModal .lot-pay span{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px 2px;border-radius:10px;
+  background:rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);transition:transform .2s,background .2s}
+html body #casinoModal .lot-pay span em{font:800 10px/1 system-ui;font-style:normal;color:#CBD5E1}
+html body #casinoModal .lot-pay span em::after{content:" ✓"}
+html body #casinoModal .lot-pay span b{font:900 clamp(10px,3vw,13px)/1.1 system-ui;color:#FDE047;white-space:nowrap}
+html body #casinoModal .lot-pay span.on{background:linear-gradient(180deg,#FBBF24,#D97706);transform:scale(1.06);box-shadow:0 0 14px rgba(251,191,36,.6)}
+html body #casinoModal .lot-pay span.on em,html body #casinoModal .lot-pay span.on b{color:#fff}
+html body #casinoModal .lot-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:clamp(4px,1.4vw,7px);width:100%;max-width:min(420px,62vh)}
+html body #casinoModal .lot-grid button{aspect-ratio:1;min-height:0!important;height:auto!important;padding:0!important;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;
+  font:900 clamp(12px,3.6vw,16px)/1 system-ui;color:#E0E7FF;background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.22),rgba(99,102,241,.22) 45%,rgba(30,27,75,.85));
+  box-shadow:inset 0 0 0 1px rgba(199,210,254,.22),0 2px 4px rgba(0,0,0,.35);transition:transform .12s,background .15s}
+html body #casinoModal .lot-grid button:active{transform:scale(.9)}
+html body #casinoModal .lot-grid button.pk{color:#422006;background:radial-gradient(circle at 35% 28%,#fff 0,#fde68a 25%,#f59e0b 70%,#b45309);box-shadow:0 0 0 2px rgba(253,224,71,.55),0 3px 6px rgba(0,0,0,.4)}
+html body #casinoModal .lot-grid button.dr{color:#fff;background:radial-gradient(circle at 35% 28%,#fff 0,#c4b5fd 22%,#7c3aed 70%,#4c1d95)}
+html body #casinoModal .lot-grid button.hit{color:#14532d;background:radial-gradient(circle at 35% 28%,#fff 0,#bbf7d0 22%,#22c55e 70%,#15803d);box-shadow:0 0 0 2px #fff,0 0 14px rgba(34,197,94,.85);animation:lotHit .4s ease}
+@keyframes lotHit{50%{transform:scale(1.18)}}
+html body #casinoModal .lot-tools{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html body #casinoModal .lot-tools button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:36px!important;padding:0 14px!important;border-radius:999px!important;font:800 13px system-ui!important;
+  color:#fff!important;background:rgba(255,255,255,.1)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)!important}
+html body #casinoModal .lot-tools button svg{width:18px;height:18px;fill:none;stroke:#FDE68A;stroke-width:2}
+html body #casinoModal .lot-tools button svg circle{fill:#FDE68A;stroke:none}
+html body #casinoModal .lot-tools b{font:900 15px system-ui;color:#FDE68A;font-variant-numeric:tabular-nums}
+html.oro-lite body #casinoModal .lot-tube i.in,html.oro-lite body #casinoModal .lot-grid button.hit{animation:none}

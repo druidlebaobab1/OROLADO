@@ -876,6 +876,12 @@
       ]
     ],
     casino: {
+      lotPick: '1 ile 10 arasında sayı seç',
+      lotRand: 'Rastgele',
+      lotClear: 'Temizle',
+      lotHits: '{k} sayıdan {h} isabet',
+      lotPay: 'İsabet',
+      lotDraw: 'Çekiliş',
     "title": "Casino",
     "sub": "15 oyun · 0,10 $'dan",
     "real": "Gerçek",

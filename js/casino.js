@@ -17,7 +17,7 @@
       takeoff: 'Départ dans {s} s — mise maintenant', placed: 'Pari placé ✓ attends le départ', betNext: 'Miser (prochain tour)', cancel: 'Pari annulé : mise rendue', cashout: 'Encaisser', auto: 'Encaissement auto (×)', flying: 'En vol…', boom: 'Explosé à ×{x}', cashed: 'Encaissé à ×{x} : +{w} $', start: 'Décoller',
       heads: 'Pile', tails: 'Face', rock: 'Pierre', paper: 'Feuille', scissors: 'Ciseaux', you: 'Toi', rpsRule: 'Gagné ×1,91 · égalité = mise rendue', ddRule: 'Le plus grand dé gagne ×1,92 · égalité = mise rendue', tieBack: 'égalité, mise rendue', chance: 'Chance de gagner', under: 'En dessous', over: 'Au-dessus', mult: 'Gain ×{x}', target: 'Cible ×', result: 'Résultat ×{x}', roll: 'Tirage {x}',
       pickCar: 'Choisis ta voiture', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', number: 'Numéro', dozen: 'Douzaine', green: 'Vert', violet: 'Violet',
-      pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
+      lotPick: 'Choisis 1 à 10 numéros', lotRand: 'Hasard', lotClear: 'Effacer', lotHits: '{h} bon(s) sur {k}', lotPay: 'Bons numéros', lotDraw: 'Tirage', pick3: 'Choisis 3 numéros', picked: '{n}/3 choisis', hits: '{n} bon(s) numéro(s)', scratchGo: 'Gratter', aim: 'Vise un coin', left: 'Gauche', center: 'Centre', right: 'Droite', goal: 'BUT !', saved: 'Arrêté !',
       shoot: 'Choisis où tirer dans le but', hi: 'Plus haut ou égal', lo: 'Plus bas ou égal', minesN: 'Nombre de mines', next: 'Prochaine case ×{x}', open: 'Ouvre des cases…', sports: 'Paris', sportsSoon: 'Les grands matchs arrivent bientôt ici.' },
     en: { title: 'Casino', sub: '18 games · from $0.10', real: 'Real', demo: 'Demo', tryM: 'Try', bal: 'Balance', stake: 'Stake', play: 'Play', again: 'Play again',
       win: 'You win! +${w}', lose: 'Lost', tryNote: 'Create your account and top up to play for real money, from $0.10.', signup: 'Create my account', gamesTab: 'Games', realAcc: 'Real account', bet: 'Bet', gotIt: 'Got it', revealAll: 'Reveal all', dragonN: 'Dragon', tigerN: 'Tiger', tie: 'Tie', player: 'Player', banker: 'Banker', small: 'Small', big: 'Big', triple: 'triple', pickChest: 'Pick a chest', pump: 'Pump', pumpFirst: 'Pump the balloon', level: 'Rotten apples',
@@ -31,10 +31,10 @@
       takeoff: 'Take-off in {s} s — bet now', placed: 'Bet placed ✓ wait for take-off', betNext: 'Bet (next round)', cancel: 'Bet cancelled: stake returned', cashout: 'Cash out', auto: 'Auto cash-out (×)', flying: 'Flying…', boom: 'Blew up at ×{x}', cashed: 'Cashed out at ×{x}: +${w}', start: 'Take off',
       heads: 'Heads', tails: 'Tails', rock: 'Rock', paper: 'Paper', scissors: 'Scissors', you: 'You', rpsRule: 'Win ×1.91 · tie = stake back', ddRule: 'Higher die wins ×1.92 · tie = stake back', tieBack: 'tie, stake back', chance: 'Win chance', under: 'Under', over: 'Over', mult: 'Win ×{x}', target: 'Target ×', result: 'Result ×{x}', roll: 'Roll {x}',
       pickCar: 'Pick your car', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', number: 'Number', dozen: 'Dozen', green: 'Green', violet: 'Violet',
-      pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
+      lotPick: 'Pick 1 to 10 numbers', lotRand: 'Random', lotClear: 'Clear', lotHits: '{h} hit(s) out of {k}', lotPay: 'Hits', lotDraw: 'Draw', pick3: 'Pick 3 numbers', picked: '{n}/3 picked', hits: '{n} number(s) hit', scratchGo: 'Scratch', aim: 'Aim a corner', left: 'Left', center: 'Centre', right: 'Right', goal: 'GOAL!', saved: 'Saved!',
       shoot: 'Pick where to shoot in the goal', hi: 'Higher or equal', lo: 'Lower or equal', minesN: 'Number of mines', next: 'Next tile ×{x}', open: 'Open tiles…', sports: 'Bets', sportsSoon: 'Big matches are coming here soon.' }
   };
-  T.zh = Object.assign({}, T.en, { title: '娱乐场', sub: '18 款游戏 · 0.10 美元起', real: '真实', demo: '模拟', tryM: '试玩', bal: '余额', stake: '投注', play: '开始', again: '再来一局',
+  T.zh = Object.assign({}, T.en, { lotPick: '选择 1 到 10 个号码', lotRand: '随机', lotClear: '清除', lotHits: '{k} 中 {h}', lotPay: '命中', lotDraw: '开奖', title: '娱乐场', sub: '18 款游戏 · 0.10 美元起', real: '真实', demo: '模拟', tryM: '试玩', bal: '余额', stake: '投注', play: '开始', again: '再来一局',
     win: '赢了！+{w} 美元', lose: '输了', tryNote: '创建账户并充值，即可真钱游戏，0.10 美元起。', signup: '创建账户', gamesTab: '游戏', realAcc: '真实账户', bet: '投注', gotIt: '知道了', revealAll: '全部刮开', dragonN: '龙', tigerN: '虎', tie: '和', player: '闲', banker: '庄', small: '小', big: '大', triple: '围骰', pickChest: '选一个宝箱', pump: '充气', pumpFirst: '给气球充气', level: '坏苹果', deposit: '充值', hist: '最近的游戏', none: '还没有游戏记录。',
     rules: '请理性游戏，只投入你能承受损失的金额。',
     g: { crash: ['飞机', '爆炸前兑现'], coin: ['正反面', '×1.94'], dice: ['骰子', '自选胜率'], limbo: ['极限', '最高 ×1000'], wheel: ['娱乐场转盘', '最高 ×50'], race: ['赛车', '6 辆车 · ×5.7'],
@@ -53,7 +53,7 @@
   /* ---------- v2694 : noms en anglais (les mêmes dans toutes les langues, à nous) + logos « planète » (js/casino-art.js) ---------- */
   var NAMES = { crash: 'Sky Rush', jet: 'Jet Man', rocket: 'Rocket', mines: 'Mines', apple: 'Golden Orchard', tower: 'Tower', plinko: 'Cascade', dice: 'Dice', limbo: 'Target',
     wheel: 'Lucky Wheel', roulette: 'Roulette', slots: 'Lucky 777', coin: 'Coin Flip', keno: 'Keno', scratch: 'Scratch Card', hilo: 'Hi-Lo', dragon: 'Dragon Tiger', baccarat: 'Baccarat',
-    sicbo: 'Sic Bo', chests: 'Treasure', balloon: 'Balloon', penalty: 'Penalty', race: 'Racing', colors: 'Colors', darts: 'Darts', cryptox: 'Crypto Live', horses: 'Horse Race', rps: 'Rock Paper Scissors' };
+    sicbo: 'Sic Bo', chests: 'Treasure', balloon: 'Balloon', penalty: 'Penalty', race: 'Racing', colors: 'Colors', darts: 'Darts', cryptox: 'Crypto Live', horses: 'Horse Race', rps: 'Rock Paper Scissors', lotto: 'Oro Lotto' };
   // v2718 : jeux EN DIRECT (même tour / même tirage pour tout le monde) → pastille « LIVE » qui clignote sous le nom
   var LIVE_GAMES = { crash: 1, jet: 1, rocket: 1, cryptox: 1, horses: 1, roulette: 1 };
   var ART = D6.CasinoArt || { planet: function () { return ''; }, obj: function () { return ''; }, sym: function () { return ''; }, car: function () { return ''; }, PAL: {} };
@@ -76,7 +76,8 @@
   // v2718 (propriétaire) : Keno, Cascade, Darts et Colors retirés ; Crypto Live et Horse Race ajoutés ; jeux en direct séparés
   // v2738 (propriétaire) : 24 jeux = 6 lignes de 4, bien droites ; nouveau : Rock Paper Scissors
   // v2757 (propriétaire) : les 6 jeux en direct sont répartis (un par rangée, jamais dans la même colonne)
-  var ORDER = ['crash', 'mines', 'penalty', 'apple', 'slots', 'rps', 'cryptox', 'wheel', 'dragon', 'roulette', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'jet', 'horses', 'balloon', 'sicbo', 'race', 'scratch', 'hilo', 'rocket', 'chests'];
+  // v2791 (propriétaire) : Oro Lotto (loterie 1 à 10 numéros sur 40) prend la place de Rock Paper Scissors
+  var ORDER = ['crash', 'mines', 'penalty', 'apple', 'slots', 'lotto', 'cryptox', 'wheel', 'dragon', 'roulette', 'dice', 'tower', 'baccarat', 'limbo', 'coin', 'jet', 'horses', 'balloon', 'sicbo', 'race', 'scratch', 'hilo', 'rocket', 'chests'];
   // v2693 (propriétaire) : la mise de départ est toujours 0,10 $ à l'ouverture du Casino.
   var S = { mode: 'real', stake: 0.1, game: '', view: 'games', bal: { real: null, demo: null }, busy: false, timer: 0 };
   function save() { /* la mise n'est plus gardée : 0,10 $ à chaque ouverture */ }
@@ -339,6 +340,7 @@
       chests: '1. Touche un des 3 coffres.\n2. Touche « Miser » : ton coffre s’ouvre.\n3. S’il contient l’or : ×2,85. Les autres s’ouvrent ensuite pour montrer où il était.',
       balloon: '1. Touche « Miser ».\n2. Appuie sur la main pour gonfler : chaque souffle fait monter le gain (en haut à gauche).\n3. Encaisse avant qu’il éclate ! S’il éclate, la mise est perdue.',
       penalty: '1. Touche « Miser ».\n2. Choisis l’endroit du but où tirer : le gardien plonge.\n3. Chaque but fait monter le gain (ligne du haut : ×1,44 → ×24,60). Encaisse quand tu veux ; un arrêt = mise perdue.',
+      lotto: '1. Touche 1 à 10 numéros sur la grille (ou « Hasard »).\n2. Touche « Miser » : 10 boules sont tirées sur 40.\n3. Plus tu as de bons numéros, plus tu gagnes : le tableau au-dessus de la grille montre le gain pour chaque nombre de bons numéros (jusqu’à ×1000).',
       rps: '1. Choisis : Pierre, Feuille ou Ciseaux.\n2. Touche « Miser » : le robot OROLADO joue en même temps.\n3. Feuille bat pierre, ciseaux bat feuille, pierre bat ciseaux. Tu gagnes ×1,91 ; égalité = mise rendue.',
       race: '1. Choisis ta voiture (1 à 6).\n2. Touche « Miser » : la course démarre.\n3. Si ta voiture gagne : ×5,7.',
       plinko: 'La bille tombe et rebondit jusqu’à une case : les cases du bord paient le plus (×12).',
@@ -369,6 +371,7 @@
       chests: '1. Tap one of the 3 chests.\n2. Tap “Bet”: your chest opens.\n3. If it holds the gold: ×2.85. The others then open to show where it was.',
       balloon: '1. Tap “Bet”.\n2. Press the hand to pump: each pump raises the win (top left).\n3. Cash out before it pops! If it pops, the stake is lost.',
       penalty: '1. Tap “Bet”.\n2. Tap the goal where you want to shoot: the keeper dives.\n3. Each goal raises the win (top line: ×1.44 → ×24.60). Cash out anytime; a save = stake lost.',
+      lotto: '1. Tap 1 to 10 numbers on the grid (or “Random”).\n2. Tap “Bet”: 10 balls are drawn out of 40.\n3. The more numbers you hit, the more you win: the table above the grid shows the win for each number of hits (up to ×1000).',
       rps: '1. Pick: Rock, Paper or Scissors.\n2. Tap “Bet”: the OROLADO robot plays at the same time.\n3. Paper beats rock, scissors beats paper, rock beats scissors. You win ×1.91; tie = stake back.',
       race: '1. Pick your car (1 to 6).\n2. Tap “Bet”: the race starts.\n3. If your car wins: ×5.7.',
       plinko: 'The ball drops and bounces into a slot: the edge slots pay the most (×12).',
@@ -463,6 +466,67 @@
       me.classList.toggle('top', win); bot.classList.toggle('top', !win && !tie);
       resultLine(box, r, nm[r.view.me] + ' — ' + nm[r.view.bot] + (tie ? ' · ' + (x.tieBack || 'égalité, mise rendue') : ''));
       g.disabled = false;
+    });
+  };
+
+  /* v2791 (propriétaire) — ORO LOTTO : loterie comme les grands sites (1 à 10 numéros sur 40, 10 boules tirées).
+     Le tableau des gains suit le nombre de numéros choisis ; le serveur tire (casino_lib.php, CASINO_LOTTO, marge 6 %). */
+  var LOTTO = { 1: [0, 3.76], 2: [0, 1.45, 6.61], 3: [0, 0, 4.25, 29.5], 4: [0, 0, 2.07, 8.03, 78], 5: [0, 0, 0, 5.92, 32.1, 422],
+    6: [0, 0, 0, 3.24, 12.3, 90.8, 1000], 7: [0, 0, 0, 2.07, 6.09, 31.4, 309, 1000], 8: [0, 0, 0, 0, 5.56, 22.1, 153, 1000, 1000],
+    9: [0, 0, 0, 0, 3.39, 10.9, 58.4, 546, 1000, 1000], 10: [0, 0, 0, 0, 2.35, 6.36, 27.5, 198, 1000, 1000, 1000] };
+  GAMES.lotto = function (box, x) {
+    var picks = [3, 11, 19, 27, 36], busy = false;
+    var dot = ['en', 'zh', 'hi', 'ar'].indexOf((document.documentElement.lang || 'fr').slice(0, 2)) >= 0;
+    var mx = function (v) { return '×' + (dot ? String(v) : String(v).replace('.', ',')); };
+    box.innerHTML = '<div class="cs-stage lot-stage"><div class="lot-tube" id="csLotTube">' + Array.from({ length: 10 }, function () { return '<i></i>'; }).join('') + '</div>' +
+      '<div class="lot-pay" id="csLotPay"></div>' +
+      '<div class="lot-grid" id="csLotGrid">' + Array.from({ length: 40 }, function (_, i) { return '<button type="button" data-n="' + (i + 1) + '"><span>' + (i + 1) + '</span></button>'; }).join('') + '</div></div>' +
+      stakePanel(x.bet, '<div class="lot-tools"><button type="button" id="csLotRand"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1.4"/><circle cx="15" cy="15" r="1.4"/><circle cx="15" cy="9" r="1.4"/><circle cx="9" cy="15" r="1.4"/></svg>' + esc(x.lotRand || 'Random') + '</button>' +
+        '<b id="csLotN"></b><button type="button" id="csLotClr">' + esc(x.lotClear || 'Clear') + '</button></div>');
+    bindStake(box);
+    var grid = $('csLotGrid'), tube = $('csLotTube');
+    function payRow(hits) {
+      var k = picks.length, row = LOTTO[k] || [], h = [];
+      for (var i = 0; i < row.length; i++) if (row[i] > 0) h.push(i);
+      $('csLotPay').innerHTML = k ? '<small>' + esc(x.lotPay || 'Hits') + '</small>' + h.map(function (i) { return '<span class="' + (hits === i ? 'on' : '') + '"><em>' + i + '</em><b>' + mx(row[i]) + '</b></span>'; }).join('')
+        : '<small class="lot-hint">' + esc(x.lotPick || '') + '</small>';
+    }
+    function paint() {
+      grid.querySelectorAll('[data-n]').forEach(function (b) { b.className = picks.indexOf(+b.getAttribute('data-n')) >= 0 ? 'pk' : ''; });
+      $('csLotN').textContent = picks.length + ' / 10';
+      payRow(-1);
+    }
+    function clearDraw() { tube.querySelectorAll('i').forEach(function (t) { t.className = ''; t.textContent = ''; }); }
+    grid.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-n]'); if (!b || busy) return;
+      var n = +b.getAttribute('data-n'), i = picks.indexOf(n);
+      if (i >= 0) picks.splice(i, 1); else if (picks.length < 10) picks.push(n); else { toast(x.lotPick || ''); return; }
+      clearDraw(); paint();
+    });
+    $('csLotClr').addEventListener('click', function () { if (busy) return; picks = []; clearDraw(); paint(); });
+    $('csLotRand').addEventListener('click', function () {
+      if (busy) return;
+      var k = picks.length || 5, all = []; for (var i = 1; i <= 40; i++) all.push(i);
+      for (var j = 39; j > 0; j--) { var r = Math.floor(Math.random() * (j + 1)), t = all[j]; all[j] = all[r]; all[r] = t; }
+      picks = all.slice(0, k); clearDraw(); paint();
+    });
+    paint();
+    $('csGo').addEventListener('click', async function () {
+      var g = this; if (busy || g.disabled) return;
+      if (!picks.length) { toast(x.lotPick || ''); return; }
+      busy = true; g.disabled = true; clearDraw(); paint();
+      var r = await play('lotto', { picks: picks.slice() });
+      if (!r) { busy = false; g.disabled = false; return; }
+      var slots = tube.querySelectorAll('i'), lite = document.documentElement.classList.contains('oro-lite');
+      for (var i = 0; i < r.view.draw.length; i++) {
+        var n = r.view.draw[i], hit = picks.indexOf(n) >= 0, b = grid.querySelector('[data-n="' + n + '"]');
+        slots[i].textContent = n; slots[i].className = 'in ' + (hit ? 'hit' : 'miss');
+        if (b) b.className = hit ? 'pk hit' : 'dr';
+        await sleep(lite ? 90 : 260);
+      }
+      payRow(r.view.hits);
+      resultLine(box, r, fmt(x.lotHits || '{h}/{k}', { h: r.view.hits, k: r.view.k }));
+      busy = false; g.disabled = false;
     });
   };
 

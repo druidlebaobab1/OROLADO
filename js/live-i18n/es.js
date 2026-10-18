@@ -876,6 +876,12 @@
       ]
     ],
     casino: {
+      lotPick: 'Elige de 1 a 10 números',
+      lotRand: 'Azar',
+      lotClear: 'Borrar',
+      lotHits: '{h} acierto(s) de {k}',
+      lotPay: 'Aciertos',
+      lotDraw: 'Sorteo',
       title: 'Casino',
       sub: '15 juegos · desde $0.10',
       real: 'Real',

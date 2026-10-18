@@ -9,7 +9,7 @@
     wheel: ['#FFE6EC', '#E11D74'], roulette: ['#D1FAE5', '#047857'], slots: ['#FFD9EC', '#BE185D'], plinko: ['#CCFBF1', '#0D9488'],
     limbo: ['#FFE4E6', '#BE123C'], keno: ['#E0E7FF', '#4338CA'], scratch: ['#EDE9FE', '#6D28D9'], hilo: ['#FFEDD5', '#EA580C'],
     dragon: ['#DBEAFE', '#1E40AF'], baccarat: ['#DBEAFE', '#1E3A8A'], sicbo: ['#FEE2E2', '#9F1239'], chests: ['#CFFAFE', '#0E7490'],
-    balloon: ['#E0F2FE', '#0EA5E9'], penalty: ['#DCFCE7', '#15803D'], race: ['#FEE2E2', '#DC2626'], colors: ['#F3E8FF', '#9333EA'], cryptox: ['#FFEDD5', '#F7931A'], horses: ['#FEF3C7', '#B45309'], rps: ['#E0E7FF', '#6366F1'],
+    balloon: ['#E0F2FE', '#0EA5E9'], penalty: ['#DCFCE7', '#15803D'], race: ['#FEE2E2', '#DC2626'], colors: ['#F3E8FF', '#9333EA'], cryptox: ['#FFEDD5', '#F7931A'], horses: ['#FEF3C7', '#B45309'], rps: ['#E0E7FF', '#6366F1'], lotto: ['#FEF3C7', '#D97706'],
     darts: ['#FEF3C7', '#B45309'], sports: ['#E0F2FE', '#0284C7'],
     g_defi: ['#FFE4E6', '#E11D48'], g_top: ['#FEF3C7', '#CA8A04'], g_bon: ['#DCFCE7', '#16A34A'], g_jauge: ['#E0F2FE', '#2563EB'], g_aff: ['#F3E8FF', '#9333EA'], g_send: ['#CCFBF1', '#0D9488']
   };
@@ -297,6 +297,14 @@
   }
   OBJ.rps = function () {
     return '<g transform="translate(-2 20) scale(.52)">' + rpsSvg(0) + '</g><g transform="translate(17 -2) scale(.52)">' + rpsSvg(1) + '</g><g transform="translate(34 22) scale(.52)">' + rpsSvg(2) + '</g>';
+  };
+  // v2791 : Oro Lotto — globe de loterie en verre, boules numérotées, socle doré
+  OBJ.lotto = function () {
+    return '<defs>' + G.gold + '<radialGradient id="IDv" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".6" stop-color="#C7D2FE" stop-opacity=".18"/><stop offset="1" stop-color="#6366F1" stop-opacity=".35"/></radialGradient></defs>' +
+      '<path d="M18 52h28l3 7H15z" fill="url(#IDg)" stroke="#7A4A00" stroke-width="1.2"/><rect x="28" y="44" width="8" height="9" fill="#B7791F"/>' +
+      '<circle cx="32" cy="27" r="21" fill="url(#IDv)" stroke="#E0E7FF" stroke-width="2"/>' +
+      ball(24, 34, 7, '#F87171', '#B91C1C', '7') + ball(39, 35, 7, '#60A5FA', '#1D4ED8', '21') + ball(31, 22, 7.5, '#FDE047', '#CA8A04', '3') + ball(42, 22, 5.5, '#4ADE80', '#15803D', '') +
+      '<path d="M18 18a17 17 0 0 1 12-9" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity=".85"/>';
   };
   OBJ.cryptox = function () {
     var coin = function (cx, cy, r, c, t, fs) { return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + c + '" stroke="#fff" stroke-opacity=".55" stroke-width="1.6"/><circle cx="' + (cx - r * .3) + '" cy="' + (cy - r * .35) + '" r="' + r * .35 + '" fill="#fff" opacity=".22"/><text x="' + cx + '" y="' + (cy + fs * .36) + '" text-anchor="middle" font-size="' + fs + '" font-weight="900" font-family="system-ui" fill="#fff">' + t + '</text>'; };
