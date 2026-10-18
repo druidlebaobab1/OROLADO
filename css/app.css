@@ -12550,3 +12550,10 @@ html.oro-lite #liveModal .live-mic.on{animation:none}
 #liveModal .lga-id{margin:10px 12px 4px}
 #liveModal .lga-id input{text-transform:none}
 #liveModal .lga-hint{margin:4px 14px 8px;color:#A7B0D0;font-size:12.5px}
+
+/* v2791 (propriétaire) : iPhone seulement — le 5000 % (×1,26) débordait à droite et touchait le cadre « $ 1.90 ».
+   Même échelle 90 → 5000 %, plus resserrée ; Android garde v2716 tel quel. */
+html.is-ios #oddsRow .odds-chip[data-odds="1.9"],html.is-ios .odds-row .odds-chip[data-odds="1.9"]{scale:.88}
+html.is-ios #oddsRow .odds-chip[data-odds="5"],html.is-ios .odds-row .odds-chip[data-odds="5"]{scale:.96}
+html.is-ios #oddsRow .odds-chip[data-odds="10"],html.is-ios .odds-row .odds-chip[data-odds="10"]{scale:1.04}
+html.is-ios #oddsRow .odds-chip[data-odds="50"],html.is-ios .odds-row .odds-chip[data-odds="50"]{scale:1.1}
