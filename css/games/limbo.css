@@ -50,3 +50,5 @@ html:root body #casinoModal .cg-limbo.running .cs-extra{pointer-events:none;opac
 }
 html.oro-lite body #casinoModal .cg-limbo .lb-ring.r2,html.oro-lite body #casinoModal .cg-limbo .lb-planet{animation:none!important}
 html:root body #casinoModal .cg-limbo .lb-num b,html:root body #casinoModal .cg-limbo .lb-in,html:root body #casinoModal .cg-limbo .lb-cell b,html:root body #casinoModal .cg-limbo .cg-hist i,html:root body #casinoModal .cg-limbo .lb-quick button{direction:ltr;unicode-bidi:isolate}
+/* v2801 : la cible (« 2.00 ») n'est jamais coupée, même en arabe / petit iPhone */
+html:root body #casinoModal .cg-limbo .lb-in input{direction:ltr!important;width:5.2ch!important;font-size:clamp(12px,3.6vw,16px)!important;padding:0!important;text-align:center!important}
