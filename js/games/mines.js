@@ -20,7 +20,8 @@
   };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   function num(v) { return Number(v).toFixed(2).replace('.', K.dec()); }
-  function money(v) { return '$ ' + K.m2(v).replace('.', K.dec()); }
+  function money(v) { return '\u2066$\u00a0' + K.m2(v).replace('.', K.dec()) + '\u2069'; }
+  function xm(v) { return '\u2066×' + num(v) + '\u2069'; } // ×1.25 reste dans le bon sens en arabe
   // même calcul que casino_mines_mult (serveur) : aperçu avant la mise seulement
   function mm(m, k) { if (k > 25 - m) return 0; var v = 0.94; for (var j = 0; j < k; j++) v *= (25 - j) / (25 - m - j); return Math.floor(v * 100 + 1e-6) / 100; }
   var DEFS = '<svg class="mn-defs" width="0" height="0" aria-hidden="true"><defs>' +
@@ -61,7 +62,7 @@
       var m = live() ? g.m : mines, open = live() ? g.open.length : 0;
       K.setText($('mnM'), String(m)); K.setText($('mnGc'), String(25 - m - open));
       var nx = live() ? g.next : mm(mines, 1);
-      K.setText($('mnNext'), nx ? l.next + ' ×' + num(nx) : '');
+      K.setText($('mnNext'), nx ? l.next + ' ' + xm(nx) : '');
       K.setText($('mnCntT'), l.mines + ': ' + m);
       box.querySelectorAll('.mn-st-b, #mnCnt').forEach(function (b) { b.disabled = !!live(); });
       $('mnRnd').disabled = !live() || busy;

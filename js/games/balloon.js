@@ -20,7 +20,8 @@
   };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   function num(v) { return Number(v).toFixed(2).replace('.', K.dec()); }
-  function money(v) { return '$ ' + K.m2(v).replace('.', K.dec()); }
+  function money(v) { return '\u2066$\u00a0' + K.m2(v).replace('.', K.dec()) + '\u2069'; }
+  function xm(v) { return '\u2066×' + num(v) + '\u2069'; } // ×1.25 reste dans le bon sens en arabe
   function mult(k) { return k < 1 ? 0 : Math.floor(0.94 / Math.pow(0.9, k) * 100 + 1e-6) / 100; } // = casino_balloon_mult
   function size(k) { return 0.42 + 0.58 * (1 - Math.exp(-k / 9)); }
   var BALLOON = '<svg viewBox="0 0 100 132" aria-hidden="true"><defs><radialGradient id="blBody" cx="34%" cy="28%" r="78%"><stop offset="0" stop-color="#FFF3C4"/><stop offset=".22" stop-color="#FCD34D"/><stop offset=".62" stop-color="#F59E0B"/><stop offset="1" stop-color="#9A3412"/></radialGradient>' +
@@ -53,7 +54,7 @@
       else { btn.innerHTML = ''; K.setText(btn, main); }
     }
     function paintHist() {
-      $('blHist').innerHTML = hist.map(function (h) { return '<i class="' + (h < 0 ? 'pop' : h >= 5 ? 'hi' : h >= 2 ? 'mid' : 'lo') + '">×' + num(Math.abs(h)) + '</i>'; }).join('');
+      $('blHist').innerHTML = hist.map(function (h) { return '<i class="' + (h < 0 ? 'pop' : h >= 5 ? 'hi' : h >= 2 ? 'mid' : 'lo') + '">' + xm(Math.abs(h)) + '</i>'; }).join('');
     }
     function grow(k) { ball.style.transform = 'scale(' + size(k).toFixed(3) + ')'; }
     function paint(r, pumped) {
@@ -69,7 +70,7 @@
           var bu = $('blBurst'); bu.classList.remove('go'); void bu.offsetWidth; bu.classList.add('go');
           hist.unshift(-mult(k + 1));
         } else {
-          K.setText($('blM'), '×' + num(r.mult || mult(k)));
+          K.setText($('blM'), xm(r.mult || mult(k)));
           sky.classList.add('won'); hist.unshift(r.mult || mult(k));
         }
         hist = hist.slice(0, 12); try { localStorage.setItem('cg_balloon_h', JSON.stringify(hist)); } catch (e) { /* ignore */ }
@@ -79,14 +80,14 @@
       } else {
         ball.classList.remove('pop');
         grow(k);
-        K.setText($('blM'), '×' + num(k ? r.mult : 1));
+        K.setText($('blM'), xm(k ? r.mult : 1));
         if (pumped) { sky.classList.remove('pumped'); void sky.offsetWidth; sky.classList.add('pumped'); }
         if (k) setBtn(l.cash, money(r.stake * r.mult), 'cash'); else setBtn(l.pump, '', 'wait');
       }
       info();
     }
     function info() {
-      K.setText($('blNext'), live() ? l.next + ' ×' + num(g.next) : l.next + ' ×' + num(mult(1)));
+      K.setText($('blNext'), live() ? l.next + ' ' + xm(g.next) : l.next + ' ' + xm(mult(1)));
       K.setText($('blPumpT'), holding ? l.pump : (live() ? l.hold : l.pump));
       wob.classList.toggle('on', !!live());
       sky.classList.toggle('on', !!live());

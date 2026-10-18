@@ -253,7 +253,7 @@
     lastList = r; lastJson = JSON.stringify(r);
     events = r;
     var chg = syncSlip();
-    if (view === 'list' && (!same || !box.querySelector('.sp2-list'))) render();
+    if (view === 'list' && (!same || !box.querySelector('.sp2-list') || box.querySelector('.sp2-skel'))) render(); // la liste arrive : on remplace le squelette de chargement
     else if (view === 'slip' && chg && !sending && !lastBet) { render(); if (ctx.toast) ctx.toast(XX().oddsChg, 'info'); }
     if (!ctx.guest && mineCache === null) loadMine().then(function (m) { if (m) { mineCache = m; paintBadge(); } });
   }
@@ -278,6 +278,8 @@
     })();
     return mining;
   }
+  // le pack de langue (ar, ru, de…) arrive un peu après : on redessine les textes de la page Paris s'il est ouvert
+  document.addEventListener('oro:livepack', function () { if (box && box.isConnected && box.classList.contains('sp2') && !sending && view !== 'slip' && (events.length || view === 'mine')) render(); });
   // pré-chargement discret, 4 s après l'ouverture du site (une seule petite lecture)
   setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); } }); }, 4000);
 

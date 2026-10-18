@@ -22,7 +22,8 @@
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   var ROWS = 10;
   function num(v) { v = Number(v); if (v >= 1e6) return (Math.floor(v / 1e4) / 100).toFixed(2).replace('.', K.dec()) + 'M'; if (v >= 1e4) return Math.floor(v / 1e3) + 'K'; return v >= 1000 ? String(Math.floor(v)) : v.toFixed(2).replace('.', K.dec()); }
-  function money(v) { return '$ ' + K.m2(v).replace('.', K.dec()); }
+  function money(v) { return '\u2066$\u00a0' + K.m2(v).replace('.', K.dec()) + '\u2069'; }
+  function xm(v) { return '\u2066×' + num(v) + '\u2069'; } // ×1.25 reste dans le bon sens en arabe
   function mult(k, lv) { return k < 1 ? 0 : Math.floor(0.94 / Math.pow((5 - lv) / 5, k) * 100 + 1e-6) / 100; } // = casino_apple_mult
   var DEFS = '<svg class="ap-defs" width="0" height="0" aria-hidden="true"><defs>' +
     '<radialGradient id="apGold" cx="35%" cy="32%" r="75%"><stop offset="0" stop-color="#FEF9C3"/><stop offset=".35" stop-color="#FDE047"/><stop offset=".75" stop-color="#F59E0B"/><stop offset="1" stop-color="#B45309"/></radialGradient>' +
@@ -59,11 +60,11 @@
       else { btn.innerHTML = ''; K.setText(btn, main); }
     }
     function ladder() {
-      rowEls.forEach(function (row) { K.setText(row.querySelector('.ap-m b'), '×' + num(mult(+row.getAttribute('data-row') + 1, lv))); });
+      rowEls.forEach(function (row) { K.setText(row.querySelector('.ap-m b'), xm(mult(+row.getAttribute('data-row') + 1, lv))); });
       box.querySelectorAll('[data-lv]').forEach(function (b) {
         var n = +b.getAttribute('data-lv');
         b.classList.toggle('on', n === lv); b.disabled = !!live();
-        K.setText(b.querySelector('small'), '×' + num(mult(1, n)));
+        K.setText(b.querySelector('small'), xm(mult(1, n)));
       });
     }
     function cell(b, kind, extra) { b.className = 'ap-c ' + kind + (extra ? ' ' + extra : ''); b.firstChild.innerHTML = kind === 'good' ? GOLD + '<i class="ap-sp"></i>' : ROT; }
@@ -103,7 +104,7 @@
       info();
     }
     function info() {
-      K.setText($('apNext'), live() ? (g.next ? l.next + ' ×' + num(g.next) : '') : l.next + ' ×' + num(mult(1, lv)));
+      K.setText($('apNext'), live() ? (g.next ? l.next + ' ' + xm(g.next) : '') : l.next + ' ' + xm(mult(1, lv)));
       ap.classList.toggle('on', !!live());
     }
     async function pick(row, c) {

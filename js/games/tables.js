@@ -15,7 +15,7 @@
     vi: { dragon: 'Rồng', tiger: 'Hổ', tie: 'Hòa', player: 'Con', banker: 'Cái', small: 'Xỉu', big: 'Tài', triple: 'Bộ ba', deal: 'Chia bài', roll: 'Lắc', place: 'Mời đặt cược', closed: 'Ngừng cược', rd: 'R', rt: 'H', rx: 'H', rp: 'C', rb: 'C' },
     id: { dragon: 'Naga', tiger: 'Harimau', tie: 'Seri', player: 'Pemain', banker: 'Bankir', small: 'Kecil', big: 'Besar', triple: 'Triple', deal: 'Bagikan', roll: 'Kocok', place: 'Pasang taruhan', closed: 'Taruhan ditutup', rd: 'N', rt: 'H', rx: 'S', rp: 'P', rb: 'B' },
     ru: { dragon: 'Дракон', tiger: 'Тигр', tie: 'Ничья', player: 'Игрок', banker: 'Банкир', small: 'Малое', big: 'Большое', triple: 'Тройка', deal: 'Раздать', roll: 'Бросить', place: 'Делайте ставки', closed: 'Ставки сделаны', rd: 'Д', rt: 'Т', rx: 'Н', rp: 'И', rb: 'Б' },
-    de: { dragon: 'Drache', tiger: 'Tiger', tie: 'Unentschieden', player: 'Spieler', banker: 'Bank', small: 'Klein', big: 'Groß', triple: 'Drilling', deal: 'Geben', roll: 'Würfeln', place: 'Bitte Einsätze', closed: 'Nichts geht mehr', rd: 'D', rt: 'T', rx: 'U', rp: 'S', rb: 'B' },
+    de: { dragon: 'Drache', tiger: 'Tiger', tie: 'Remis', player: 'Spieler', banker: 'Bank', small: 'Klein', big: 'Groß', triple: 'Drilling', deal: 'Geben', roll: 'Würfeln', place: 'Bitte Einsätze', closed: 'Nichts geht mehr', rd: 'D', rt: 'T', rx: 'R', rp: 'S', rb: 'B' },
     hi: { dragon: 'ड्रैगन', tiger: 'टाइगर', tie: 'टाई', player: 'प्लेयर', banker: 'बैंकर', small: 'छोटा', big: 'बड़ा', triple: 'ट्रिपल', deal: 'बाँटें', roll: 'फेंकें', place: 'दांव लगाएँ', closed: 'दांव बंद', rd: 'D', rt: 'T', rx: 'T', rp: 'P', rb: 'B' },
     zh: { dragon: '龙', tiger: '虎', tie: '和', player: '闲', banker: '庄', small: '小', big: '大', triple: '围骰', deal: '发牌', roll: '摇骰', place: '请下注', closed: '停止下注', rd: '龙', rt: '虎', rx: '和', rp: '闲', rb: '庄' }
   };
@@ -268,7 +268,7 @@
       vi: '1. Chạm Rồng, Hổ (×2) hoặc Hòa (×12) để đặt chip, rồi chạm “Chia bài”.\n2. Rồng một lá, Hổ một lá (A = 1 … K = 13).\n3. Lá cao hơn thắng. Hòa: hoàn một nửa cược Rồng / Hổ.',
       id: '1. Ketuk Naga, Harimau (×2) atau Seri (×12) untuk menaruh chip, lalu “Bagikan”.\n2. Satu kartu untuk Naga, satu untuk Harimau (A = 1 … K = 13).\n3. Kartu tertinggi menang. Seri: setengah taruhan Naga / Harimau dikembalikan.',
       ru: '1. Нажмите Дракон, Тигр (×2) или Ничья (×12), чтобы поставить фишку, затем «Раздать».\n2. Одна карта Дракону, одна Тигру (A = 1 … K = 13).\n3. Старшая карта выигрывает. Ничья: половина ставки на Дракона / Тигра возвращается.',
-      de: '1. Tippe auf Drache, Tiger (×2) oder Unentschieden (×12), um deinen Chip zu setzen, dann „Geben“.\n2. Eine Karte für den Drachen, eine für den Tiger (A = 1 … K = 13).\n3. Die höhere Karte gewinnt. Unentschieden: die Hälfte eines Drache- / Tiger-Einsatzes kommt zurück.',
+      de: '1. Tippe auf Drache, Tiger (×2) oder Remis (×12), um deinen Chip zu setzen, dann „Geben“.\n2. Eine Karte für den Drachen, eine für den Tiger (A = 1 … K = 13).\n3. Die höhere Karte gewinnt. Remis: die Hälfte eines Drache- / Tiger-Einsatzes kommt zurück.',
       hi: '1. चिप रखने के लिए ड्रैगन, टाइगर (×2) या टाई (×12) दबाएँ, फिर “बाँटें”।\n2. ड्रैगन को एक पत्ता, टाइगर को एक पत्ता (A = 1 … K = 13)।\n3. बड़ा पत्ता जीतता है। टाई पर ड्रैगन / टाइगर दांव का आधा वापस।',
       zh: '1. 点击 龙、虎（×2）或 和（×12）放下筹码，然后点“发牌”。\n2. 龙、虎各发一张牌（A = 1 … K = 13）。\n3. 点数大者赢。和局：龙 / 虎注退还一半。'
     },
@@ -282,7 +282,7 @@
       vi: '1. Chạm Con (×2), Cái (×1,95) hoặc Hòa (×9) để đặt chip, rồi chạm “Chia bài”.\n2. Mỗi bên hai hoặc ba lá (10, J, Q, K = 0; chỉ tính chữ số cuối).\n3. Bên gần 9 nhất thắng. Hòa: hoàn cược Con / Cái.',
       id: '1. Ketuk Pemain (×2), Bankir (×1,95) atau Seri (×9) untuk menaruh chip, lalu “Bagikan”.\n2. Dua atau tiga kartu per tangan (10, J, Q, K = 0; hanya digit terakhir yang dihitung).\n3. Tangan paling dekat ke 9 menang. Seri: taruhan Pemain / Bankir dikembalikan.',
       ru: '1. Нажмите Игрок (×2), Банкир (×1,95) или Ничья (×9), чтобы поставить фишку, затем «Раздать».\n2. Две или три карты на руку (10, J, Q, K = 0; считается только последняя цифра).\n3. Выигрывает рука ближе к 9. Ничья: ставки на Игрока / Банкира возвращаются.',
-      de: '1. Tippe auf Spieler (×2), Bank (×1,95) oder Unentschieden (×9), um deinen Chip zu setzen, dann „Geben“.\n2. Zwei oder drei Karten pro Hand (10, B, D, K = 0; nur die letzte Ziffer zählt).\n3. Die Hand näher an 9 gewinnt. Unentschieden: Spieler- / Bank-Einsätze kommen zurück.',
+      de: '1. Tippe auf Spieler (×2), Bank (×1,95) oder Remis (×9), um deinen Chip zu setzen, dann „Geben“.\n2. Zwei oder drei Karten pro Hand (10, B, D, K = 0; nur die letzte Ziffer zählt).\n3. Die Hand näher an 9 gewinnt. Remis: Spieler- / Bank-Einsätze kommen zurück.',
       hi: '1. चिप रखने के लिए प्लेयर (×2), बैंकर (×1.95) या टाई (×9) दबाएँ, फिर “बाँटें”।\n2. हर हाथ में दो या तीन पत्ते (10, J, Q, K = 0; सिर्फ़ आख़िरी अंक गिना जाता है)।\n3. 9 के सबसे पास वाला हाथ जीतता है। टाई पर प्लेयर / बैंकर दांव वापस।',
       zh: '1. 点击 闲（×2）、庄（×1.95）或 和（×9）放下筹码，然后点“发牌”。\n2. 每边两张或三张牌（10、J、Q、K 计 0，只算个位数）。\n3. 最接近 9 点者赢。和局：闲 / 庄注全数退还。'
     },

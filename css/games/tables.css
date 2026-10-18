@@ -71,7 +71,7 @@ html:root body #casinoModal .tb-stage .tb-spot::after{content:"";position:absolu
 html:root body #casinoModal .tb-stage .tb-spot.win{filter:brightness(1.35) saturate(1.2)}
 html:root body #casinoModal .tb-stage .tb-spot.win::after{opacity:1;animation:tbGlow 1s ease-in-out infinite alternate}
 @keyframes tbGlow{from{opacity:.45}to{opacity:1}}
-html:root body #casinoModal .tb-stage .tb-spot > b{display:block;width:100%;font:900 14px/1.2 var(--cg-font);letter-spacing:.06em;text-transform:uppercase;text-align:center}
+html:root body #casinoModal .tb-stage .tb-spot > b{display:block;width:100%;font:900 14px/1.2 var(--cg-font);letter-spacing:.04em;text-transform:uppercase;text-align:center}
 html:root body #casinoModal .tb-stage .tb-spot > small{display:block;width:100%;font:800 11px/1.2 var(--cg-font);color:#FDE68A;text-align:center}
 html:root body #casinoModal .tb-stage .tb-felt.busy .tb-spot{cursor:default}
 html:root body #casinoModal .tb-stage .tb-spot > small,html:root body #casinoModal .tb-stage .tb-chip b,html:root body #casinoModal .tb-stage .tb-band,html:root body #casinoModal .tb-stage .tb-bub{direction:ltr;unicode-bidi:isolate}
@@ -114,7 +114,7 @@ html:root body #casinoModal .tb-stage .tb-band.win::after{opacity:1}
 html:root body #casinoModal .tb-stage.tb-sicbo .tb-spot{flex:1 1 0}
 /* ---- tailles selon la place (container queries) ---- */
 @supports (container-type:size){
-  html:root body #casinoModal .tb-stage .tb-felt{container-type:size}
+  html:root body #casinoModal .tb-stage .tb-felt{container-type:size;container-name:tbfelt}
   html:root body #casinoModal .tb-stage .tb-deal,html:root body #casinoModal .tb-stage .tb-sb{container-type:size}
   html:root body #casinoModal .tb-stage .tb-deal{--cw:min(calc((100cqw - 70px)/2.7),calc((92cqh - 28px)/1.4),150px)}
   html:root body #casinoModal .tb-stage.tb-baccarat .tb-deal{--cw:min(calc((100cqw - 62px)/7.7),calc((92cqh - 28px)/1.4),96px)}
@@ -128,6 +128,15 @@ html:root body #casinoModal .tb-stage.tb-sicbo .tb-spot{flex:1 1 0}
   html:root body #casinoModal .tb-stage .tb-hh b{font-size:clamp(11px,5cqh,22px)}
   html:root body #casinoModal .tb-stage .tb-hh{height:clamp(22px,7cqh,34px)}
   html:root body #casinoModal .tb-stage .tb-bub{height:clamp(22px,7cqh,34px);min-width:clamp(24px,7cqh,36px);font-size:clamp(13px,4.6cqh,20px)}
+}
+/* baccara sur écran haut et étroit : Joueur au-dessus, Banque en dessous (cartes plus grandes) */
+@supports (container-type:size){
+  @container tbfelt (max-aspect-ratio: 17/20){
+    html:root body #casinoModal .tb-stage.tb-baccarat .tb-deal{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto minmax(0,1fr);row-gap:2px;
+      --cw:min(calc((100cqw - 40px)/3.7),calc((46cqh - 46px)/1.4),110px)}
+    html:root body #casinoModal .tb-stage.tb-baccarat .tb-mid{flex-direction:row;width:auto;height:auto;padding:0;justify-content:center}
+    html:root body #casinoModal .tb-stage.tb-baccarat .tb-mid > i{display:none}
+  }
 }
 @media (min-height:860px){html:root body #casinoModal .tb-stage{--rr:6;--bd:15px}html:root body #casinoModal .tb-stage .tb-cnt span{font-size:12px;line-height:15px}html:root body #casinoModal .tb-stage .tb-cnt i{width:10px;height:10px}}
 @media (max-height:520px){html:root body #casinoModal .tb-stage{--rr:2;--bd:12px}}
