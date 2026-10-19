@@ -3,36 +3,38 @@
    player plays: bet → the multiplier grows with time while you play (ONE gesture: tap, or hold for Star Bridge) → gold
    CASH OUT at any moment. A mistake ends the round; the server's secret end arrives as an unavoidable meteor.
    Phones: the whole scene takes the touches (pointer events, touch-action:none, iOS scroll / zoom / callout blocked),
-   every touch shows a ripple, a hand hint shows the gesture until the first move, and touching the idle scene points
-   to the BET button. Canvas 2D, 60 fps, devicePixelRatio ≤ 2, sprites pre-drawn once per size, pauses when hidden.
+   v2812 (owner, round 4): NO touch ripple any more (players read the white rings as "not working"); the hand hint sits
+   where it never covers the target and disappears as soon as the round starts; touching the idle scene pulses BET with
+   one clear line ("Place a bet to start"). The multiplier grows slowly (rate 0.03: ×2 after ~23 s) and the obstacles get
+   harder with the time played (w.t = 0.55 × real seconds: fair at the start, really hard after a minute or two). Canvas 2D, 60 fps, devicePixelRatio ≤ 2, sprites pre-drawn once per size, pauses when hidden.
    The server (casino_ext.php, type 'skill') draws everything and pays; this file only shows it. */
 (function (D6) {
   'use strict';
   var K = D6.CasinoKit, $ = K.$;
   var T = {
-    en: { bet: 'Bet', cash: 'Cash out', go: 'Bet to start', end: 'Meteor strike!', crash: 'Crashed!', miss: 'Missed!', clash: 'Blade clash!', fell: 'Fell!', late: 'Too late!',
+    en: { bet: 'Bet', cash: 'Cash out', go: 'Place a bet to start', end: 'Meteor strike!', crash: 'Crashed!', miss: 'Missed!', clash: 'Blade clash!', fell: 'Fell!', late: 'Too late!',
       h_jump: 'Tap to jump', h_boost: 'Tap to fly', h_drop: 'Tap to drop', h_throw: 'Tap to throw', h_shoot: 'Tap to shoot', h_hold: 'Hold to build' },
-    fr: { bet: 'Miser', cash: 'Encaisser', go: 'Mise pour jouer', end: 'Météorite !', crash: 'Crash !', miss: 'Raté !', clash: 'Lames croisées !', fell: 'Tombé !', late: 'Trop tard !',
+    fr: { bet: 'Miser', cash: 'Encaisser', go: 'Placez une mise pour commencer', end: 'Météorite !', crash: 'Crash !', miss: 'Raté !', clash: 'Lames croisées !', fell: 'Tombé !', late: 'Trop tard !',
       h_jump: 'Touche pour sauter', h_boost: 'Touche pour voler', h_drop: 'Touche pour poser', h_throw: 'Touche pour lancer', h_shoot: 'Touche pour tirer', h_hold: 'Maintiens pour bâtir' },
-    es: { bet: 'Apostar', cash: 'Retirar', go: 'Apuesta para jugar', end: '¡Meteorito!', crash: '¡Choque!', miss: '¡Fallo!', clash: '¡Choque de cuchillas!', fell: '¡Caída!', late: '¡Muy tarde!',
+    es: { bet: 'Apostar', cash: 'Retirar', go: 'Haz una apuesta para empezar', end: '¡Meteorito!', crash: '¡Choque!', miss: '¡Fallo!', clash: '¡Choque de cuchillas!', fell: '¡Caída!', late: '¡Muy tarde!',
       h_jump: 'Toca para saltar', h_boost: 'Toca para volar', h_drop: 'Toca para soltar', h_throw: 'Toca para lanzar', h_shoot: 'Toca para tirar', h_hold: 'Mantén para construir' },
-    pt: { bet: 'Apostar', cash: 'Sacar', go: 'Aposte para jogar', end: 'Meteoro!', crash: 'Bateu!', miss: 'Errou!', clash: 'Lâminas batem!', fell: 'Caiu!', late: 'Tarde demais!',
+    pt: { bet: 'Apostar', cash: 'Sacar', go: 'Faça uma aposta para começar', end: 'Meteoro!', crash: 'Bateu!', miss: 'Errou!', clash: 'Lâminas batem!', fell: 'Caiu!', late: 'Tarde demais!',
       h_jump: 'Toque para pular', h_boost: 'Toque para voar', h_drop: 'Toque para soltar', h_throw: 'Toque para lançar', h_shoot: 'Toque para arremessar', h_hold: 'Segure para construir' },
-    ar: { bet: 'راهن', cash: 'اسحب', go: 'راهن لتبدأ', end: 'نيزك!', crash: 'اصطدام!', miss: 'أخطأت!', clash: 'تصادم الشفرات!', fell: 'سقط!', late: 'متأخر جدًا!',
+    ar: { bet: 'راهن', cash: 'اسحب', go: 'ضع رهانًا للبدء', end: 'نيزك!', crash: 'اصطدام!', miss: 'أخطأت!', clash: 'تصادم الشفرات!', fell: 'سقط!', late: 'متأخر جدًا!',
       h_jump: 'المس للقفز', h_boost: 'المس للطيران', h_drop: 'المس للإسقاط', h_throw: 'المس للرمي', h_shoot: 'المس للتسديد', h_hold: 'اضغط مطولًا للبناء' },
-    tr: { bet: 'Bahis', cash: 'Çek', go: 'Başlamak için bahis', end: 'Meteor çarptı!', crash: 'Çarptı!', miss: 'Kaçtı!', clash: 'Bıçaklar çarpıştı!', fell: 'Düştü!', late: 'Çok geç!',
+    tr: { bet: 'Bahis', cash: 'Çek', go: 'Başlamak için bahis yapın', end: 'Meteor çarptı!', crash: 'Çarptı!', miss: 'Kaçtı!', clash: 'Bıçaklar çarpıştı!', fell: 'Düştü!', late: 'Çok geç!',
       h_jump: 'Zıplamak için dokun', h_boost: 'Uçmak için dokun', h_drop: 'Bırakmak için dokun', h_throw: 'Atmak için dokun', h_shoot: 'Atış için dokun', h_hold: 'Kurmak için basılı tut' },
-    vi: { bet: 'Cược', cash: 'Rút', go: 'Đặt cược để chơi', end: 'Thiên thạch!', crash: 'Va chạm!', miss: 'Trượt!', clash: 'Va lưỡi dao!', fell: 'Rơi rồi!', late: 'Quá muộn!',
+    vi: { bet: 'Cược', cash: 'Rút', go: 'Đặt cược để bắt đầu', end: 'Thiên thạch!', crash: 'Va chạm!', miss: 'Trượt!', clash: 'Va lưỡi dao!', fell: 'Rơi rồi!', late: 'Quá muộn!',
       h_jump: 'Chạm để nhảy', h_boost: 'Chạm để bay', h_drop: 'Chạm để thả', h_throw: 'Chạm để phóng', h_shoot: 'Chạm để ném', h_hold: 'Giữ để xây cầu' },
-    id: { bet: 'Pasang', cash: 'Tarik', go: 'Pasang untuk main', end: 'Meteor!', crash: 'Tabrakan!', miss: 'Meleset!', clash: 'Pisau beradu!', fell: 'Jatuh!', late: 'Terlambat!',
+    id: { bet: 'Pasang', cash: 'Tarik', go: 'Pasang taruhan untuk mulai', end: 'Meteor!', crash: 'Tabrakan!', miss: 'Meleset!', clash: 'Pisau beradu!', fell: 'Jatuh!', late: 'Terlambat!',
       h_jump: 'Ketuk untuk lompat', h_boost: 'Ketuk untuk terbang', h_drop: 'Ketuk untuk taruh', h_throw: 'Ketuk untuk lempar', h_shoot: 'Ketuk untuk tembak', h_hold: 'Tahan untuk membangun' },
-    ru: { bet: 'Ставка', cash: 'Забрать', go: 'Сделай ставку', end: 'Метеорит!', crash: 'Авария!', miss: 'Мимо!', clash: 'Клинки столкнулись!', fell: 'Упал!', late: 'Поздно!',
+    ru: { bet: 'Ставка', cash: 'Забрать', go: 'Сделайте ставку, чтобы начать', end: 'Метеорит!', crash: 'Авария!', miss: 'Мимо!', clash: 'Клинки столкнулись!', fell: 'Упал!', late: 'Поздно!',
       h_jump: 'Тап — прыжок', h_boost: 'Тап — взлёт', h_drop: 'Тап — сбросить', h_throw: 'Тап — бросок', h_shoot: 'Тап — бросок', h_hold: 'Держи — строить' },
-    de: { bet: 'Setzen', cash: 'Auszahlen', go: 'Setze zum Starten', end: 'Meteorit!', crash: 'Crash!', miss: 'Daneben!', clash: 'Klingen-Crash!', fell: 'Gestürzt!', late: 'Zu spät!',
+    de: { bet: 'Setzen', cash: 'Auszahlen', go: 'Einsatz setzen, um zu starten', end: 'Meteorit!', crash: 'Crash!', miss: 'Daneben!', clash: 'Klingen-Crash!', fell: 'Gestürzt!', late: 'Zu spät!',
       h_jump: 'Tippen zum Springen', h_boost: 'Tippen zum Fliegen', h_drop: 'Tippen zum Ablegen', h_throw: 'Tippen zum Werfen', h_shoot: 'Tippen zum Werfen', h_hold: 'Halten zum Bauen' },
-    hi: { bet: 'दांव', cash: 'कैश आउट', go: 'खेलने को दांव लगाएँ', end: 'उल्कापिंड!', crash: 'टक्कर!', miss: 'चूक गए!', clash: 'ब्लेड टकराए!', fell: 'गिर गए!', late: 'बहुत देर!',
+    hi: { bet: 'दांव', cash: 'कैश आउट', go: 'शुरू करने के लिए दांव लगाएँ', end: 'उल्कापिंड!', crash: 'टक्कर!', miss: 'चूक गए!', clash: 'ब्लेड टकराए!', fell: 'गिर गए!', late: 'बहुत देर!',
       h_jump: 'कूदने को टैप करें', h_boost: 'उड़ने को टैप करें', h_drop: 'गिराने को टैप करें', h_throw: 'फेंकने को टैप करें', h_shoot: 'शॉट को टैप करें', h_hold: 'बनाने को दबाए रखें' },
-    zh: { bet: '下注', cash: '兑现', go: '下注开始', end: '陨石撞击！', crash: '撞上了！', miss: '没中！', clash: '飞刀相撞！', fell: '掉下去了！', late: '太慢了！',
+    zh: { bet: '下注', cash: '兑现', go: '下注即可开始', end: '陨石撞击！', crash: '撞上了！', miss: '没中！', clash: '飞刀相撞！', fell: '掉下去了！', late: '太慢了！',
       h_jump: '点击跳跃', h_boost: '点击飞行', h_drop: '点击放下', h_throw: '点击投掷', h_shoot: '点击投篮', h_hold: '按住搭桥' }
   };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
@@ -197,7 +199,7 @@
 
   /* 1. SPACE RUNNER — tap to jump over rocks and craters */
   DEF.spacerun = {
-    hint: 'h_jump', gest: 'tap', hue: '#22C55E',
+    hint: 'h_jump', hintY: 0.42, gest: 'tap', hue: '#22C55E',
     scale: function (W, H) { return H / 100; },
     art: function (w, k) {
       w.sp = {
@@ -296,7 +298,7 @@
 
   /* 2. FLAPPY ROCKET — tap to boost through the asteroid gaps */
   DEF.flappyrock = {
-    hint: 'h_boost', gest: 'tap', hue: '#F43F5E',
+    hint: 'h_boost', hintY: 0.72, gest: 'tap', hue: '#F43F5E',
     scale: function (W, H) { return H / 100; },
     floor: 93,
     art: function (w, k) {
@@ -325,7 +327,7 @@
       var play = mode === 'play' || mode === 'hold', rx = this.rx(w), fl = this.floor;
       var tv = mode === 'idle' ? 18 : mode === 'post' ? 0 : Math.min(46, 34 + w.t * 0.5);
       w.v += (tv - w.v) * Math.min(1, dt * 3); w.dist += w.v * dt; w.flame = Math.max(0, w.flame - dt);
-      if (play && !w.go && w.t > 2.5) w.go = 1; // gravity starts by itself after a short hover
+      if (play && !w.go && (w.e || 0) > 2.5) w.go = 1; // gravity starts by itself after a short hover
       if (!w.go || mode === 'idle') { w.hov += dt; var ty = 45 + Math.sin(w.hov * 2.2) * 3; w.vy = (ty - w.y) * 4; w.y += w.vy * dt; }
       else { w.vy = Math.min(120, w.vy + 230 * dt); w.y += w.vy * dt; if (w.y < 4) { w.y = 4; w.vy = Math.max(0, w.vy); } }
       if (w.dead && w.y > fl - 2) { w.y = fl - 2; w.vy = 0; }
@@ -380,7 +382,7 @@
 
   /* 3. TOWER STACK — tap to drop the sliding block; the overhang is cut */
   DEF.stack = {
-    hint: 'h_drop', gest: 'tap', hue: '#F59E0B',
+    hint: 'h_drop', hintY: 0.3, gest: 'tap', hue: '#F59E0B',
     scale: function (W, H) { return Math.min(H / 100, W / 72); },
     BH: 6,
     art: function (w, k) {
@@ -479,7 +481,7 @@
 
   /* 4. STAR BLADES (knife-hit style) — tap to throw blades into the spinning planet */
   DEF.knifehit = {
-    hint: 'h_throw', gest: 'tap', hue: '#0EA5E9',
+    hint: 'h_throw', hintY: 0.68, gest: 'tap', hue: '#0EA5E9',
     scale: function (W, H) { return Math.min(H / 100, W / 70); },
     R: 14, BL: 15,
     art: function (w, k) {
@@ -583,7 +585,7 @@
   /* 5. BASKET SHOT — ONE tap: the ball flies straight up; the floating hoop must be above it when it arrives.
      The rim (and a dotted guide) turns green exactly when a shot would score: nothing to guess. */
   DEF.basket = {
-    hint: 'h_shoot', gest: 'tap', hue: '#F97316',
+    hint: 'h_shoot', hintY: 0.6, gest: 'tap', hue: '#F97316',
     scale: function (W, H) { return Math.min(H / 100, W / 72); },
     RIM: 9, BR: 6, FT: 0.5,
     art: function (w, k) {
@@ -685,7 +687,7 @@
   /* 6. STAR BRIDGE (new, replaces Penalty Kicker) — HOLD to grow a light bridge, RELEASE: it falls onto the next pillar.
      Right length → the astronaut walks across; too short / too long → he falls. Gaps and pillars get harder slowly. */
   DEF.starbridge = {
-    hint: 'h_hold', gest: 'hold', hue: '#A855F7',
+    hint: 'h_hold', hintY: 0.3, gest: 'hold', hue: '#A855F7',
     scale: function (W, H) { return Math.min(H / 100, W / 72); },
     art: function (w, k) {
       w.sp = {
@@ -799,6 +801,7 @@
 
   /* ---------- shared engine: HUD, terminal, server clock, polling, meteor, particles ---------- */
   var HIST = {};
+  var DK = 0.55; // v2812: difficulty clock = 0.55 × real seconds (the multiplier is slower now, the ramp follows it)
   var MULT = function (rate, s) { return Math.max(1, Math.floor(Math.exp(rate * Math.max(0, s)) * 100) / 100); };
 
   function make(key) {
@@ -807,10 +810,10 @@
       var l = L(), dc = K.dec();
       var fx = function (v) { return Number(v).toFixed(2).replace('.', dc); };
       box.classList.add('cg-game', 'cg-skill', 'sk-' + key);
-      box.style.setProperty('--sk', G.hue);
+      box.style.setProperty('--sk', G.hue); box.style.setProperty('--hy', (G.hintY || 0.4) * 100 + '%'); // hint height: a free zone of this scene
       // hand icon: tap = a ripple under the finger; hold = a ring that fills while the finger stays down
       var finger = '<path d="M11 21V9.5a2 2 0 0 1 4 0V16m0-2a2 2 0 0 1 4 0v2m0-1a2 2 0 0 1 4 0v5c0 4.5-3 8-7.5 8H14c-2.4 0-4-1-5.3-2.9L6 23a2 2 0 0 1 3.2-2.4L11 23"/>';
-      var hand = '<svg viewBox="0 0 32 32" aria-hidden="true">' + (G.gest === 'hold' ? '<circle class="sk-hold" cx="13" cy="9" r="6.5"/>' : '<circle class="sk-rip" cx="13" cy="9" r="6"/>') + finger + '</svg>';
+      var hand = '<svg viewBox="0 0 32 32" aria-hidden="true">' + (G.gest === 'hold' ? '<circle class="sk-hold" cx="13" cy="9" r="6.5"/>' : '') + finger + '</svg>';
       box.innerHTML = '<div class="cg-hist sk-hist" id="skHist"></div>' +
         '<div class="cg-stage sk-stage" id="skStage"><canvas class="sk-cv" id="skCv"></canvas>' +
         '<div class="sk-hud"><b class="sk-m fit" id="skM" dir="ltr">' + fx(1) + '×</b><small class="sk-st fit" id="skSt"></small></div>' +
@@ -886,7 +889,6 @@
         for (var i = 0; i < parts.length; i++) {
           var p = parts[i], a = 1 - p.t / p.life;
           if (p.ring) { ctx.globalAlpha = Math.max(0, a); ctx.strokeStyle = '#FDE68A'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(p.x, p.y, 4 + p.t * 60, 0, PI2); ctx.stroke(); continue; }
-          if (p.tap) { ctx.globalAlpha = Math.max(0, a) * 0.9; ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(p.x, p.y, 2 + p.t * 22, 0, PI2); ctx.stroke(); continue; } // every touch shows a ripple
           ctx.globalAlpha = Math.max(0, a); ctx.fillStyle = p.c; ctx.fillRect(p.x - p.r / 2, p.y - p.r / 2, p.r, p.r);
         }
         ctx.globalAlpha = 1;
@@ -905,17 +907,16 @@
         if (!alive() || hidden) return;
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         w.mode = phase === 'play' ? (busy ? 'hold' : 'play') : phase === 'idle' ? 'idle' : 'post';
-        if (phase === 'play') w.t = Math.max(0, nowS() - R.t0);
+        if (phase === 'play') { w.e = Math.max(0, nowS() - R.t0); w.t = w.e * DK; }
         var why = G.step(w, dt, w.mode);
         if (why && phase === 'play' && !busy) fail(why);
-        for (var i = parts.length - 1; i >= 0; i--) { var p = parts[i]; p.t += dt; if (!p.ring && !p.tap) { p.vy += 60 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } if (p.t > p.life) parts.splice(i, 1); }
+        for (var i = parts.length - 1; i >= 0; i--) { var p = parts[i]; p.t += dt; if (!p.ring) { p.vy += 60 * dt; p.x += p.vx * dt; p.y += p.vy * dt; } if (p.t > p.life) parts.splice(i, 1); }
         if (met) { met.t += dt; if (met.t >= 0.55 && !met.done) { met.done = 1; G.hit(w); boom(met.x1, met.y1); if (met.cb) met.cb(); } if (met.t > 0.6) met = null; }
         shake = Math.max(0, shake - dt); flash = Math.max(0, flash - dt);
         if (phase === 'play') {
-          var m = MULT(R.rate, w.t), txt = fx(m) + '×';
+          var m = MULT(R.rate, w.e), txt = fx(m) + '×';
           if (txt !== mTxt) { var rel = txt.length !== mTxt.length; mTxt = txt; mEl.textContent = txt; if (rel) K.fitEl(mEl); }
           if (!busy && !failing) setBtn('cash', l.cash, false, '+$ ' + K.m2(R.stake * m));
-          if ((gN > 0 || w.t > 9) && !hint.classList.contains('off')) hint.classList.add('off'); // the hint stays until the first move
         }
         draw();
         // idle scene in lite mode: one still frame only (old phones)
@@ -930,9 +931,9 @@
         R = r; off = r.now - Date.now() / 1000;
         if (r.tSend) off = r.now - (r.tSend + Date.now()) / 2000; // half the round trip
         clearTimeout(idleT); gN = 0; box.setAttribute('data-gn', '0'); st.querySelectorAll('.cs-toast').forEach(function (t) { t.remove(); }); st.querySelectorAll('.sk-hud *, .sk-hint, .sk-hint *').forEach(function (e) { e.style.visibility = ''; }); // the last result pill never sits on a new round if (btn) btn.classList.remove('sk-nudge');
-        parts = []; met = null; w.gone = 0; w.t = Math.max(0, nowS() - r.t0);
+        parts = []; met = null; w.gone = 0; w.e = Math.max(0, nowS() - r.t0); w.t = w.e * DK;
         G.reset(w); mTxt = ''; mEl.className = 'sk-m fit'; status('');
-        hint.classList.remove('off');
+        hint.classList.add('off'); // v2812: the hint leaves as soon as the round starts (it never hides the game)
         setPhase('play'); busy = false; failing = false;
         clearTimeout(K.S.timer); K.S.timer = setTimeout(poll, 700);
         run();
@@ -953,7 +954,7 @@
         clearTimeout(K.S.timer);
         if (r.why === 'cash' && r.win > 0) return won(r);
         setPhase('end'); busy = true;
-        mEl.textContent = fx(r.c != null ? r.c : MULT(R.rate, w.t)) + '×'; mEl.className = 'sk-m fit l';
+        mEl.textContent = fx(r.c != null ? r.c : MULT(R.rate, w.e)) + '×'; mEl.className = 'sk-m fit l';
         meteor(function () { status(l.end, 'l'); });
         settle(r, 900);
       };
@@ -986,7 +987,7 @@
       };
       var cash = async function () {
         if (busy || failing || phase !== 'play') return;
-        busy = true; setBtn('wait', l.cash, true, '+$ ' + K.m2(R.stake * MULT(R.rate, w.t)));
+        busy = true; setBtn('wait', l.cash, true, '+$ ' + K.m2(R.stake * MULT(R.rate, w.e)));
         var r = await K.multi(key, 'cash');
         if (!alive()) return;
         busy = false;
@@ -1013,12 +1014,6 @@
       /* ---- the one gesture, on the WHOLE scene: tap (pointerdown, no 300 ms delay) or hold (down … up) ---- */
       var gN = 0, nudgeT = 0, downId = null;
       var act = function () { return phase === 'play' && !busy && !failing; };
-      var ripple = function (e) {
-        if (!w.W) return;
-        var rc = cv.getBoundingClientRect();
-        parts.push({ tap: 1, x: (e.clientX - rc.left) / w.s, y: (e.clientY - rc.top) / w.s, t: 0, life: 0.35 });
-        if (phase === 'idle' && lite()) draw();
-      };
       var nudge = function () { // touching the scene before betting: point to the BET button (one line)
         if (!btn || watch) return;
         status(l.go); btn.classList.remove('sk-nudge'); void btn.offsetWidth; btn.classList.add('sk-nudge');
@@ -1028,8 +1023,7 @@
       cv.addEventListener('pointerdown', function (e) {
         e.preventDefault();
         if (e.pointerType === 'mouse' && e.button) return;
-        ripple(e);
-        if (!act()) { if (phase === 'idle') nudge(); return; }
+        if (!act()) { if (phase === 'idle') nudge(); return; } // v2812: no ripple — the game itself answers the touch
         if (G.gest === 'hold') { downId = e.pointerId; try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } G.press(w); did(); return; }
         G.tap(w); did();
       });

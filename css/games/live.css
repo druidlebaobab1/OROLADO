@@ -208,3 +208,15 @@ html.oro-lite body #casinoModal .lz-game .lz-live i,html.oro-lite body #casinoMo
 html.oro-lite body #casinoModal .lz-game .lz-sp .lzFl,html.oro-lite body #casinoModal .lz-game .lz-sp .lzBd,html.oro-lite body #casinoModal .lz-game .lz-sp .lzTl{animation:none!important}
 /* right-to-left languages: numbers, odds and seconds keep their own order (×5.02, 23 s) */
 html:root body #casinoModal .lz-game .lz-tm,html:root body #casinoModal .lz-game .lz-tl > span,html:root body #casinoModal .lz-game .lz-rc-dist,html:root body #casinoModal .lz-game .lz-cw-pop em{direction:ltr;unicode-bidi:isolate}
+/* ---------- v2811 (propriétaire) : « LIVE » sobre — petit point rouge + le mot, sans cadre ni fond ; statut sur une ligne ---------- */
+html:root body #casinoModal .lz-game .lz-live{height:20px;padding:0;gap:5px;border-radius:0;background:none;box-shadow:none;color:#fff;font:800 11px/1 var(--cg-font);letter-spacing:.12em}
+html:root body #casinoModal .lz-game .lz-live i{width:7px;height:7px;background:#EF4444;box-shadow:0 0 6px rgba(239,68,68,.9);animation:lzLive 1.6s ease-in-out infinite}
+html:root body #casinoModal .lz-game .lz-live b{font:inherit;color:inherit}
+@keyframes lzLive{0%,100%{opacity:1}50%{opacity:.35}}
+html:root body #casinoModal .lz-game .lz-head{gap:10px}
+html:root body #casinoModal .lz-game .lz-ph{min-width:0;white-space:nowrap;overflow:hidden;font-weight:800;letter-spacing:.01em}
+html:root body #casinoModal .lz-game .lz-tm{flex:none;min-width:0;white-space:nowrap;font-size:15px;letter-spacing:.02em}
+html:root body #casinoModal .lz-game .lz-tm:empty{display:none}
+html:root body #casinoModal .lz-game .lz-stage[data-ph="warn"] .lz-tm{color:#FB7185}
+html:root body #casinoModal .lz-game .lz-stage[data-ph="shut"] .lz-ph{color:#FDE68A}
+html.oro-lite body #casinoModal .lz-game .lz-live i{animation:none}
