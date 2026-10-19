@@ -2105,6 +2105,24 @@ if ($isAjax) {
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
   }
 
+  // v2843 (propriétaire) — PARTIES DE JEUX (Action, Live, Casino) : fiche joueur, direct, statistiques, trades ou jeux
+  if (str_starts_with($action, 'gm_')) {
+    require_once __DIR__ . '/admin_games_lib.php';
+    $gmMode = (string) ($req['mode'] ?? '');
+    if ($action === 'gm_player') {
+      $pid = (string) ($req['userId'] ?? '');
+      if ($pid === '') admin_json(['ok' => false, 'reason' => 'Joueur introuvable']);
+      admin_json(admin_gm_player($pid, (string) ($req['email'] ?? ''), $gmMode, (float) ($req['before'] ?? 0), (int) ($req['limit'] ?? 40)));
+    }
+    if ($action === 'gm_feed') {
+      admin_json(admin_gm_feed($gmMode, preg_replace('/[^a-z]/', '', (string) ($req['sec'] ?? '')), preg_replace('/[^a-z0-9]/', '', (string) ($req['game'] ?? '')),
+        (float) ($req['before'] ?? 0), (int) ($req['limit'] ?? 40), (float) ($req['after'] ?? 0)));
+    }
+    if ($action === 'gm_summary') admin_json(admin_gm_summary((string) ($req['period'] ?? 'd7'), $gmMode));
+    if ($action === 'gm_compare') admin_json(admin_gm_compare());
+    admin_json(['ok' => false, 'reason' => 'Action inconnue']);
+  }
+
   if (str_starts_with($action, 'live_')) {
     require_once __DIR__ . '/live_lib.php';
     $imgOut = static fn(array $m): array => array_merge(
@@ -2507,6 +2525,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">💬 Social <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
       <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎮 Jeux &amp; Prédictions</button>
       <button class="mini" id="btnTopG" type="button" style="border-color:#FACC15;color:#FDE68A">🏆 Jeux les plus joués</button>
+      <button class="mini" id="btnGm" type="button" style="border-color:#A78BFA;color:#C4B5FD">🎲 Parties de jeux</button>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
       <button class="mini" id="btnBack" type="button">Retour</button>
     </div>
@@ -2662,6 +2681,79 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .lvA-post img{max-width:200px;border-radius:9px;display:block;margin:4px 0}
   </style>
   <!-- v2690 — CASINO & PARIS : gérer les matchs (cotes, fermer, résultat → paiement) et voir le bénéfice de la maison -->
+  <!-- v2843 (propriétaire) : PARTIES DE JEUX — direct de toutes les parties, statistiques par jeu, trades ou jeux ? -->
+  <div class="modal" id="gmModal">
+    <div class="modal-box">
+      <button class="mini" type="button" id="closeGm">Retour</button>
+      <h2 style="color:#C4B5FD;margin:10px 0 4px">🎲 Parties de jeux</h2>
+      <p class="muted" id="gmStart">Chaque partie jouée (Action, Live, Casino), comme les trades.</p>
+      <div class="lvA-tabs gm-tabs"><button class="mini ok" type="button" data-gt="feed">🔴 En direct</button><button class="mini" type="button" data-gt="sum">📊 Par jeu</button><button class="mini" type="button" data-gt="cmp">⚖️ Trades ou jeux ?</button></div>
+      <div id="gmPaneFeed">
+        <div class="gm-filt"><span class="gm-seg" id="gmFMode"><button type="button" data-v="" class="on">Tous</button><button type="button" data-v="real">Réel</button><button type="button" data-v="demo">Démo</button></span>
+          <select id="gmFSec"><option value="">Toutes les sections</option><option value="action">Action</option><option value="live">Live</option><option value="casino">Casino</option></select></div>
+        <p class="muted gm-live"><i class="gm-dot"></i><span id="gmFSt">Chargement…</span></p>
+        <div class="gm-list gm-list-tall" id="gmFList"></div>
+        <button class="mini gm-more" type="button" id="gmFMore" hidden>Charger plus</button>
+      </div>
+      <div id="gmPaneSum" hidden>
+        <div class="gm-filt"><span class="gm-seg" id="gmSPer"><button type="button" data-v="today">Aujourd'hui</button><button type="button" data-v="d7" class="on">7 jours</button><button type="button" data-v="d30">30 jours</button></span>
+          <span class="gm-seg" id="gmSMode"><button type="button" data-v="real" class="on">Réel</button><button type="button" data-v="demo">Démo</button></span></div>
+        <div class="gm-cards" id="gmSSec"><p class="muted">Chargement…</p></div>
+        <div class="gm-filt"><label class="muted" for="gmSSort">Trier</label><select id="gmSSort"><option value="in">Total misé</option><option value="n">Parties</option><option value="house">Net maison</option><option value="out">Total payé</option><option value="players">Joueurs</option><option value="name">Nom</option></select>
+          <button class="mini" type="button" id="gmSDir">▼ Décroissant</button>
+          <label class="muted gm-chk"><input type="checkbox" id="gmSZero"> Jeux sans partie</label></div>
+        <div class="gm-list" id="gmSList"></div>
+      </div>
+      <div id="gmPaneCmp" hidden><div id="gmCBox"><p class="muted">Chargement…</p></div></div>
+    </div>
+  </div>
+  <style>
+    .gm-filt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+    .gm-filt select{flex:1 1 150px;min-width:0}
+    .gm-seg{display:inline-flex;border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;max-width:100%}
+    .gm-seg button{background:transparent;border:0;color:#C9CFE6;font:inherit;font-size:.85rem;font-weight:800;padding:9px 12px;min-height:40px;cursor:pointer;white-space:nowrap}
+    .gm-seg button + button{border-left:1px solid rgba(255,255,255,.12)}
+    .gm-seg button.on{background:rgba(167,139,250,.28);color:#fff}
+    .gm-chk{display:flex;align-items:center;gap:6px}
+    .gm-list{max-height:60vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.025)}
+    .gm-list-tall{max-height:calc(100vh - 240px);min-height:200px}
+    .gm-list:empty::before{content:"Aucune partie";display:block;padding:14px;color:#8B93AD;font-size:.85rem}
+    .gm-row{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.06);font-size:.84rem;line-height:1.35;min-width:0}
+    .gm-row.new{animation:gmNew 1.6s ease-out}
+    @keyframes gmNew{from{background:rgba(167,139,250,.28)}to{background:transparent}}
+    .gm-l1,.gm-l2{display:flex;align-items:center;gap:6px;min-width:0}
+    .gm-l2{flex-wrap:wrap;gap:2px 10px;color:#9AA3BD;font-size:.78rem;margin-top:2px}
+    .gm-g{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff}
+    .gm-chip{flex:none;font-size:.68rem;font-weight:900;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.08);color:#C9CFE6;letter-spacing:.02em}
+    .gm-chip.s-action{background:rgba(236,72,153,.2);color:#F9A8D4}.gm-chip.s-live{background:rgba(239,68,68,.2);color:#FCA5A5}.gm-chip.s-casino{background:rgba(250,204,21,.16);color:#FDE68A}
+    .gm-chip.m-real{background:rgba(34,197,94,.18);color:#86EFAC}.gm-chip.m-demo{background:rgba(148,163,184,.18);color:#CBD5E1}
+    .gm-res{flex:none;font-weight:900;white-space:nowrap}
+    .gm-res.won{color:#4ADE80}.gm-res.lost,.gm-res.part{color:#FF7A90}.gm-res.void,.gm-res.even{color:#94A3B8}
+    .gm-who{display:block;margin-top:3px;color:#93C5FD;font-size:.78rem;text-decoration:underline;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:none;border:0;padding:0;font-family:inherit;max-width:100%;text-align:left}
+    .gm-more{display:block;width:100%;margin-top:8px!important}
+    .gm-live{display:flex;align-items:center;gap:6px;margin:4px 0 8px}
+    .gm-dot{width:8px;height:8px;border-radius:50%;background:#22C55E;flex:none;box-shadow:0 0 0 3px rgba(34,197,94,.2)}
+    .gm-tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px;margin:6px 0 8px}
+    .gm-tot div,.gm-card{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:8px 10px;min-width:0}
+    .gm-tot span,.gm-card span{display:block;color:#9AA3BD;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .gm-tot b{display:block;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gm-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}
+    .gm-card h4{margin:0 0 6px;font-size:.9rem;color:#fff}
+    .gm-card .kv{display:flex;justify-content:space-between;gap:6px;font-size:.8rem;min-width:0}
+    .gm-card .kv span{display:inline;font-size:.78rem}
+    .gm-card .kv b{white-space:nowrap}
+    .gm-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px 8px;margin-top:4px;font-size:.78rem}
+    .gm-grid span{color:#9AA3BD;font-size:.68rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .gm-grid b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8rem}
+    .pos{color:#4ADE80}.neg{color:#FF7A90}
+    .gm-cmp{margin:0 0 10px}
+    .gm-cmp table{width:100%;display:table!important;table-layout:fixed;font-size:.82rem}
+    .modal.on .gm-cmp td,.modal.on .gm-cmp th{white-space:normal!important;padding:6px 4px!important;text-align:right;overflow-wrap:anywhere}
+    .modal.on .gm-cmp td:first-child,.modal.on .gm-cmp th:first-child{text-align:left;color:#9AA3BD;width:38%}
+    .gm-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin:8px 0 4px;background:rgba(255,255,255,.08)}
+    .gm-bar i{display:block;height:100%}
+    .gm-verdict{font-size:.85rem;margin:4px 0 0}
+  </style>
   <div class="modal" id="casModal">
     <div class="modal-box lvA-box">
       <button class="mini" type="button" id="closeCasA">Retour</button>
@@ -3066,7 +3158,7 @@ async function openUser(uid) {
       '<div><span>Retraits payés</span><b>'+money(j.totals.wdPaid)+'</b></div>'+
       '<div><span>Retraits en attente</span><b>'+money(j.totals.wdOpen)+'</b></div>'+
       '<div><span>Misé (réel)</span><b>'+money(j.totals.stake)+'</b></div>'+
-      '<div><span>Gains nets jeux</span><b>'+money(j.totals.net)+'</b></div>'+
+      '<div><span>Gains nets trades</span><b>'+money(j.totals.net)+'</b></div>'+
       '<div><span>Trades réels</span><b>'+esc(j.totals.trades)+'</b></div>'+
       (j.totals.bonusBy ? '<div style="border-color:rgba(255,104,124,.55)"><span>Bonus Défi du jour</span><b style="color:#FF9AA8">'+money(j.totals.bonusBy.defi)+'</b></div>'+
       '<div style="border-color:rgba(43,212,154,.55)"><span>Bonus Affiliation</span><b style="color:#7FF5CF">'+money(j.totals.bonusBy.aff)+'</b></div>'+
@@ -3083,8 +3175,10 @@ async function openUser(uid) {
     tbl('Dépôts NON payés (page ouverte, jamais payée)', (j.deposits||[]).filter(d => d.paid === false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Bonus reçus', j.bonuses || [], ['Réf','Montant','Motif','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.motif && d.motif !== 'Bonus' ? d.motif : '—')+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
-    tbl('Jeux', j.games, ['Jeu','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(fdate(d.at))+'</td></tr>');
+    gmPlayerBox()+
+    tbl('Trades (argent réel)', j.games, ['Actif','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(fdate(d.at))+'</td></tr>');
   document.getElementById('userModal').classList.add('on');
+  gmPlayerInit(u);
   const go = async (sign) => {
     const motif = document.getElementById('adjMotif').value.trim() || (sign > 0 ? 'Crédit admin' : 'Débit admin');
     const amt = Number(document.getElementById('adjAmt').value);
@@ -3632,6 +3726,185 @@ setInterval(() => {
   };
   $c('btnCasA').onclick = () => { $c('casModal').classList.add('on'); resetForm(); tab('sp'); };
   $c('closeCasA').onclick = () => $c('casModal').classList.remove('on');
+})();
+</script>
+<script>
+/* v2843 (propriétaire) — PARTIES DE JEUX dans l'admin : liste « Jeux » de la fiche joueur + fenêtre « 🎲 Parties de jeux »
+   (direct de toutes les parties, statistiques par jeu triables, trades ou jeux ?). Lecture seule. */
+const GM_SEC = {action:'Action', live:'Live', casino:'Casino'};
+function gmMoney(v) { return (Number(v) || 0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $'; }
+function gmSigned(v) { v = Number(v) || 0; return (v > 0 ? '+' : v < 0 ? '−' : '') + gmMoney(Math.abs(v)); }
+function gmWhen(t) { const d = new Date(t * 1000); return d.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'}); }
+function gmRow(r, who) {
+  const net = r.w - r.s;
+  const lab = r.res === 'won' ? 'Gagné ' + gmSigned(net) : r.res === 'void' ? 'Annulé (rendu)' : r.res === 'even' ? 'Mise rendue' : r.res === 'part' ? 'Perdu ' + gmSigned(net) : 'Perdu ' + gmSigned(-r.s);
+  const x = Number(r.x) || 0;
+  let h = '<div class="gm-row" data-k="' + esc(r.k) + '"><div class="gm-l1"><b class="gm-g">' + esc(r.name) + '</b>' +
+    '<span class="gm-res ' + esc(r.res) + '">' + esc(lab) + '</span></div>' +
+    '<div class="gm-l2"><span class="gm-chip s-' + esc(r.sec) + '">' + esc(GM_SEC[r.sec] || r.sec) + '</span>' +
+    '<span class="gm-chip m-' + esc(r.m) + '">' + (r.m === 'real' ? 'Réel' : 'Démo') + '</span><span>' + esc(gmWhen(r.t)) + '</span><span>Mise ' + gmMoney(r.s) + '</span><span>Gain ' + gmMoney(r.w) + '</span><span>×' + x.toFixed(2) + '</span>' + (r.old ? '<span>(ancien)</span>' : '') + '</div>';
+  if (who) {
+    const nm = [r.publicId, r.pname || r.email].filter(Boolean).join(' · ') || 'Joueur inconnu';
+    h += r.pid ? '<button type="button" class="gm-who" data-pid="' + esc(r.pid) + '">' + esc(nm) + (r.adm ? ' (admin)' : '') + '</button>'
+      : '<span class="gm-who" style="text-decoration:none;color:#8B93AD">' + esc(nm) + '</span>';
+  }
+  return h + '</div>';
+}
+/* Liste qui se remplit en descendant (défilement infini + bouton « Charger plus » de secours). */
+function gmPager(listEl, moreEl, fetchPage) {
+  const P = {rows: [], keys: {}, more: false, busy: false, gen: 0};
+  P.add = (rows, top) => {
+    const fresh = rows.filter(r => !P.keys[r.k]);
+    fresh.forEach(r => { P.keys[r.k] = 1; });
+    if (!fresh.length) return 0;
+    const html = fresh.map(r => gmRow(r, P.who)).join('');
+    if (top) {
+      P.rows = fresh.concat(P.rows);
+      listEl.insertAdjacentHTML('afterbegin', html);
+      for (let i = 0; i < fresh.length; i++) { const el = listEl.children[i]; if (el) el.classList.add('new'); }
+    } else {
+      P.rows = P.rows.concat(fresh);
+      listEl.insertAdjacentHTML('beforeend', html);
+    }
+    return fresh.length;
+  };
+  P.load = async (reset) => {
+    if (reset) { P.gen++; P.rows = []; P.keys = {}; P.more = false; P.busy = false; listEl.innerHTML = ''; listEl.scrollTop = 0; }
+    if (P.busy) return;
+    P.busy = true;
+    const gen = P.gen;
+    const before = P.rows.length ? P.rows[P.rows.length - 1].t : 0;
+    let j;
+    try { j = await fetchPage(before); } catch (e) { j = {ok:false}; }
+    if (gen !== P.gen) return;
+    P.busy = false;
+    if (!j || !j.ok) { moreEl.hidden = false; moreEl.textContent = 'Réessayer'; return; }
+    P.add(j.rows || [], false);
+    P.more = !!j.more;
+    moreEl.hidden = !P.more;
+    moreEl.textContent = 'Charger plus';
+    if (P.onPage) P.onPage(j);
+  };
+  listEl.addEventListener('scroll', () => { if (P.more && !P.busy && listEl.scrollTop + listEl.clientHeight > listEl.scrollHeight - 160) P.load(false); }, {passive: true});
+  moreEl.onclick = () => P.load(false);
+  listEl.addEventListener('click', e => { const b = e.target.closest('.gm-who[data-pid]'); if (b) openUser(b.dataset.pid); });
+  return P;
+}
+function gmSeg(el, cb) {
+  el.querySelectorAll('button').forEach(b => b.onclick = () => { el.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); cb(b.dataset.v); });
+}
+function gmSegVal(el) { const b = el.querySelector('button.on'); return b ? b.dataset.v : ''; }
+
+/* --- Fiche joueur : ses parties --- */
+function gmPlayerBox() {
+  return '<h3 class="panel-title">🎮 Jeux (Action · Live · Casino)</h3>' +
+    '<div class="gm-filt"><span class="gm-seg" id="gmPMode"><button type="button" data-v="" class="on">Tous</button><button type="button" data-v="real">Réel</button><button type="button" data-v="demo">Démo</button></span></div>' +
+    '<div class="gm-tot" id="gmPTot"></div><div class="gm-list" id="gmPList"><p class="muted" style="padding:12px">Chargement…</p></div>' +
+    '<button class="mini gm-more" type="button" id="gmPMore" hidden>Charger plus</button>';
+}
+function gmPlayerInit(u) {
+  const list = document.getElementById('gmPList'), more = document.getElementById('gmPMore'), seg = document.getElementById('gmPMode'), tot = document.getElementById('gmPTot');
+  if (!list) return;
+  list.innerHTML = '';
+  const P = gmPager(list, more, before => ajax({action:'gm_player', userId:u.id, email:u.email || '', mode:gmSegVal(seg), before, limit:40}));
+  P.onPage = j => {
+    const t = j.tot; if (!t || !tot) return;
+    tot.innerHTML = '<div><span>Parties</span><b>' + t.n + '</b></div><div><span>Total misé</span><b>' + gmMoney(t.in) + '</b></div>' +
+      '<div><span>Total payé</span><b>' + gmMoney(t.out) + '</b></div>' +
+      '<div><span>Net maison</span><b class="' + (t.house >= 0 ? 'pos' : 'neg') + '">' + gmSigned(t.house) + '</b></div>' +
+      '<div><span>Parties gagnées</span><b>' + t.won + (t.n ? ' (' + Math.round(t.won / t.n * 100) + ' %)' : '') + '</b></div>' +
+      (t.fav && t.fav.length ? '<div style="grid-column:1/-1"><span>Jeux préférés</span><b style="white-space:normal;font-size:.85rem">' + t.fav.map(f => esc(f.name) + ' (' + f.n + ')').join(' · ') + '</b></div>' : '');
+  };
+  gmSeg(seg, () => P.load(true));
+  P.load(true);
+}
+
+/* --- Fenêtre « Parties de jeux » --- */
+(function () {
+  const $g = id => document.getElementById(id);
+  if (!$g('btnGm')) return;
+  let pane = 'feed', poll = 0, feed = null;
+  const st = $g('gmFSt');
+  const feedReq = (before, after) => ajax({action:'gm_feed', mode:gmSegVal($g('gmFMode')), sec:$g('gmFSec').value, before: before || 0, after: after || 0, limit: after ? 200 : 40});
+  const stamp = () => { st.textContent = 'En direct · mis à jour à ' + new Date().toLocaleTimeString('fr-FR'); };
+  function startFeed() {
+    if (!feed) {
+      feed = gmPager($g('gmFList'), $g('gmFMore'), before => feedReq(before, 0));
+      feed.who = true;
+      feed.onPage = j => { stamp(); if (j.start) $g('gmStart').textContent = 'Chaque partie jouée (Action, Live, Casino) est enregistrée depuis le ' + new Date(j.start * 1000).toLocaleString('fr-FR') + '. Les anciennes parties restent visibles dans la fiche du joueur.'; };
+      gmSeg($g('gmFMode'), () => feed.load(true));
+      $g('gmFSec').onchange = () => feed.load(true);
+    }
+    feed.load(true);
+    clearInterval(poll);
+    poll = setInterval(async () => {
+      if (!$g('gmModal').classList.contains('on') || pane !== 'feed' || document.hidden || feed.busy) return;
+      const newest = feed.rows.length ? feed.rows[0].t : 0;
+      if (!newest) { if (!feed.rows.length) feed.load(true); return; }
+      const gen = feed.gen;
+      let j; try { j = await feedReq(0, newest); } catch (e) { return; }
+      if (gen !== feed.gen || !j || !j.ok) return;
+      feed.add(j.rows || [], true);
+      stamp();
+    }, 5000);
+  }
+  // Statistiques par jeu
+  let sum = null, sortK = 'in', sortDir = -1;
+  const secCard = b => '<div class="gm-card"><h4>' + esc(b.label) + '</h4>' +
+    '<div class="kv"><span>Parties</span><b>' + b.n + '</b></div><div class="kv"><span>Misé</span><b>' + gmMoney(b.in) + '</b></div>' +
+    '<div class="kv"><span>Payé</span><b>' + gmMoney(b.out) + '</b></div><div class="kv"><span>Net maison</span><b class="' + (b.house >= 0 ? 'pos' : 'neg') + '">' + gmSigned(b.house) + '</b></div>' +
+    '<div class="kv"><span>Joueurs</span><b>' + b.players + '</b></div></div>';
+  function paintSum() {
+    if (!sum) return;
+    $g('gmSSec').innerHTML = secCard(Object.assign({label:'Total'}, sum.total)) + sum.sections.map(secCard).join('');
+    let rows = sum.games.slice();
+    if (!$g('gmSZero').checked) rows = rows.filter(r => r.n > 0);
+    rows.sort((a, b) => (sortK === 'name' ? sortDir * a.name.localeCompare(b.name) : sortDir * ((a[sortK] || 0) - (b[sortK] || 0))) || a.name.localeCompare(b.name));
+    $g('gmSList').innerHTML = rows.map(r => '<div class="gm-row"><div class="gm-l1"><b class="gm-g">' + esc(r.name) + '</b><span class="gm-chip s-' + esc(r.sec) + '">' + esc(GM_SEC[r.sec] || r.sec) + '</span></div>' +
+      '<div class="gm-grid"><span>Parties</span><span>Misé</span><span>Payé</span><span>Maison</span><span>Joueurs</span>' +
+      '<b>' + r.n + '</b><b>' + gmMoney(r.in) + '</b><b>' + gmMoney(r.out) + '</b><b class="' + (r.house >= 0 ? 'pos' : 'neg') + '">' + gmSigned(r.house) + '</b><b>' + r.players + '</b></div></div>').join('');
+  }
+  async function loadSum() {
+    $g('gmSSec').innerHTML = '<p class="muted">Chargement…</p>';
+    const j = await ajax({action:'gm_summary', period:gmSegVal($g('gmSPer')), mode:gmSegVal($g('gmSMode'))});
+    if (!j.ok) { $g('gmSSec').innerHTML = '<p class="muted">' + esc(j.reason || 'Erreur') + '</p>'; return; }
+    sum = j; paintSum();
+  }
+  gmSeg($g('gmSPer'), loadSum);
+  gmSeg($g('gmSMode'), loadSum);
+  $g('gmSSort').onchange = () => { sortK = $g('gmSSort').value; sortDir = sortK === 'name' ? 1 : -1; $g('gmSDir').textContent = sortDir < 0 ? '▼ Décroissant' : '▲ Croissant'; paintSum(); };
+  $g('gmSDir').onclick = () => { sortDir = -sortDir; $g('gmSDir').textContent = sortDir < 0 ? '▼ Décroissant' : '▲ Croissant'; paintSum(); };
+  $g('gmSZero').onchange = paintSum;
+  // Trades ou jeux ?
+  async function loadCmp() {
+    const box = $g('gmCBox');
+    box.innerHTML = '<p class="muted">Chargement…</p>';
+    const j = await ajax({action:'gm_compare'});
+    if (!j.ok) { box.innerHTML = '<p class="muted">' + esc(j.reason || 'Erreur') + '</p>'; return; }
+    box.innerHTML = '<p class="muted">Argent réel seulement, compte admin non compté. Net maison = misé − payé aux joueurs.</p>' + j.rows.map(r => {
+      const T = r.trades, G = r.games, tv = T.vol + G.vol;
+      const pT = tv > 0 ? Math.round(T.vol / tv * 100) : 0;
+      const verdict = tv <= 0 ? 'Aucune mise sur cette période.' : (pT === 50 ? 'Égalité : autant de mises en trades qu\'en jeux.' :
+        'Les joueurs préfèrent <b style="color:' + (pT > 50 ? '#93C5FD' : '#C4B5FD') + '">' + (pT > 50 ? 'les TRADES' : 'les JEUX') + '</b> : ' + Math.max(pT, 100 - pT) + ' % de l\'argent misé.');
+      const line = (k, a, b) => '<tr><td>' + k + '</td><td>' + a + '</td><td>' + b + '</td></tr>';
+      const h = v => '<span class="' + (v >= 0 ? 'pos' : 'neg') + '">' + gmSigned(v) + '</span>';
+      return '<div class="nt-card gm-cmp"><b style="font-size:1rem">' + esc(r.label) + '</b>' +
+        '<table><thead><tr><th></th><th style="color:#93C5FD">📈 Trades</th><th style="color:#C4B5FD">🎮 Jeux</th></tr></thead><tbody>' +
+        line('Joueurs actifs', T.players, G.players) + line('Trades / parties', T.n, G.n) + line('Volume misé', gmMoney(T.vol), gmMoney(G.vol)) +
+        line('Net maison', h(T.house), h(G.house)) + '</tbody></table>' +
+        '<div class="gm-bar"><i style="width:' + pT + '%;background:#3B82F6"></i><i style="width:' + (tv > 0 ? 100 - pT : 0) + '%;background:#8B5CF6"></i></div>' +
+        '<p class="gm-verdict">' + verdict + '</p><p class="muted" style="margin:2px 0 0">Joueurs qui font les deux : <b>' + r.both + '</b></p></div>';
+    }).join('');
+  }
+  function tab(w) {
+    pane = w;
+    document.querySelectorAll('#gmModal [data-gt]').forEach(b => b.classList.toggle('ok', b.dataset.gt === w));
+    $g('gmPaneFeed').hidden = w !== 'feed'; $g('gmPaneSum').hidden = w !== 'sum'; $g('gmPaneCmp').hidden = w !== 'cmp';
+    if (w === 'feed') startFeed(); else if (w === 'sum') loadSum(); else loadCmp();
+  }
+  document.querySelectorAll('#gmModal [data-gt]').forEach(b => b.onclick = () => tab(b.dataset.gt));
+  $g('btnGm').onclick = () => { $g('gmModal').classList.add('on'); tab(pane); };
+  $g('closeGm').onclick = () => { $g('gmModal').classList.remove('on'); clearInterval(poll); };
 })();
 </script>
 <?php endif; ?>
