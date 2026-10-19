@@ -1080,7 +1080,7 @@
 
   /* ================================================================== 3. METRO DASH — rail tracks in the neon city */
   var KID = {
-    skin: '#8D5A36', hair: '#1A1A1A', style: 'short', top: ['#22D3EE', '#0E7490'], sleeve: 'long', bottom: ['#1E3A8A', '#172554'], legs: 'pants', shoe: '#F8FAFC', sole: '#F43F5E', stripe: '#FDE68A',
+    skin: '#F2CDB0', hair: '#5B3A1E', style: 'short', top: ['#22D3EE', '#0E7490'], sleeve: 'long', bottom: ['#1E3A8A', '#172554'], legs: 'pants', shoe: '#F8FAFC', sole: '#F43F5E', stripe: '#FDE68A',
     hat: function (c, x, y, r, v) { // cap worn backwards + headphones
       c.fillStyle = lg(c, x - r, 0, x + r, 0, ['#F43F5E', '#9F1239']); c.beginPath(); c.ellipse(x, y - r * 0.3, r * 1.02, r * 0.85, 0, Math.PI, TAU); c.fill();
       if (v === 'back') { rr(c, x - r * 0.55, y - r * 0.4, r * 1.1, r * 0.4, r * 0.12); c.fillStyle = '#BE123C'; c.fill(); c.fillStyle = '#FDE68A'; c.fillRect(x - r * 0.3, y - r * 0.3, r * 0.6, r * 0.12); }
