@@ -17,11 +17,12 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "step",
+    "kind": "pixel",
     "line": "#7DD3FC",
     "rise": "#FFE14D",
     "fall": "#FF7EB3",
-    "zoom": 12
+    "zoom": 12,
+    "tempo": "normal"
    },
    "accent": "#7DD3FC",
    "glyph": "valknut",
@@ -103,11 +104,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "classic",
-    "up": "#F2F5FF",
-    "dn": "#FF3366",
-    "body": "normal",
-    "zoom": 9
+    "kind": "nightsky",
+    "line": "#E6E1FF",
+    "fill": "#7B5CFF",
+    "zoom": 9,
+    "tempo": "normal"
    },
    "accent": "#F2F5FF",
    "glyph": "nightstar",
@@ -192,7 +193,8 @@
     "kind": "spark",
     "up": "#FFE600",
     "dn": "#3DA9FF",
-    "zoom": 11
+    "zoom": 11,
+    "tempo": "hot"
    },
    "accent": "#FFE600",
    "glyph": "bolt",
@@ -447,7 +449,8 @@
     "kind": "arrows",
     "up": "#00FFC8",
     "dn": "#FF2E63",
-    "zoom": 5
+    "zoom": 5,
+    "tempo": "hot"
    },
    "accent": "#00FFC8",
    "glyph": "khadga",
@@ -529,11 +532,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "baseline",
+    "kind": "coinstack",
     "up": "#2BFF88",
-    "below": "#FF4D5E",
-    "line": "#2BFF88",
-    "zoom": 13
+    "dn": "#FF4D5E",
+    "zoom": 13,
+    "tempo": "normal"
    },
    "accent": "#2BFF88",
    "glyph": "coin",
@@ -615,10 +618,11 @@
     "jumpMax": 0.002
    },
    "look": {
-    "kind": "bars",
+    "kind": "hammers",
     "up": "#5AA9FF",
-    "dn": "#FFA53D",
-    "zoom": 10
+    "dn": "#FF9A3D",
+    "zoom": 10,
+    "tempo": "normal"
    },
    "accent": "#5AA9FF",
    "glyph": "hammer",
@@ -685,91 +689,6 @@
    }
   },
   {
-   "id": "medusa",
-   "name": "MEDUSA",
-   "tag": "Regard calme",
-   "family": "F",
-   "base": 6030.15,
-   "model": {
-    "sigma": 9e-05,
-    "hold": 0,
-    "wideP": 0,
-    "wideK": 1,
-    "jumpP": 0,
-    "jumpMin": 0,
-    "jumpMax": 0
-   },
-   "look": {
-    "kind": "thread",
-    "line": "#33FFD1",
-    "width": 3.2,
-    "zoom": 15
-   },
-   "accent": "#33FFD1",
-   "glyph": "gorgon",
-   "planet": {
-    "p1": "#89FFE4",
-    "p2": "#1B6662",
-    "pg": "rgba(51,255,209,.45)"
-   },
-   "fair": {
-    "5": [
-     0,
-     0.000368495,
-     0.000539789,
-     0.000844353,
-     -0.000368359,
-     -0.000539497,
-     -0.000843641
-    ],
-    "10": [
-     0,
-     0.000521171,
-     0.000763462,
-     0.001194305,
-     -0.000520899,
-     -0.00076288,
-     -0.00119288
-    ],
-    "30": [
-     0,
-     0.000902866,
-     0.001322725,
-     0.0020695,
-     -0.000902052,
-     -0.001320978,
-     -0.002065226
-    ],
-    "60": [
-     0,
-     0.001277085,
-     0.001871127,
-     0.002927969,
-     -0.001275456,
-     -0.001867633,
-     -0.002919421
-    ],
-    "300": [
-     0,
-     0.002857902,
-     0.004188809,
-     0.00655899,
-     -0.002849758,
-     -0.004171336,
-     -0.00651625
-    ],
-    "600": [
-     0,
-     0.004044074,
-     0.005929004,
-     0.009288396,
-     -0.004027786,
-     -0.005894058,
-     -0.009202916
-    ]
-   }
-  },
-  {
    "id": "belial",
    "name": "BELIAL",
    "tag": "Rapide",
@@ -789,7 +708,8 @@
     "up": "#FF8C1A",
     "dn": "#C77DFF",
     "body": "normal",
-    "zoom": 6
+    "zoom": 6,
+    "tempo": "hot"
    },
    "accent": "#FF8C1A",
    "glyph": "chain",
@@ -871,10 +791,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "pearls",
+    "kind": "sundisc",
     "up": "#FFD60A",
     "dn": "#FF6B1A",
-    "zoom": 12
+    "zoom": 15,
+    "tempo": "calm"
    },
    "accent": "#FFD60A",
    "glyph": "wingsun",
@@ -959,7 +880,8 @@
     "kind": "led",
     "up": "#9DA8FF",
     "dn": "#FF5277",
-    "zoom": 12
+    "zoom": 12,
+    "tempo": "hot"
    },
    "accent": "#9DA8FF",
    "glyph": "bident",
@@ -1045,7 +967,8 @@
     "up": "#FFFFFF",
     "dn": "#FF7A3D",
     "body": "thin",
-    "zoom": 4
+    "zoom": 4,
+    "tempo": "hot"
    },
    "accent": "#FFFFFF",
    "glyph": "wolf",
@@ -1298,10 +1221,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "crystals",
-    "up": "#4DFFE1",
+    "kind": "grass",
+    "up": "#4DFF9A",
     "dn": "#FFB52E",
-    "zoom": 12
+    "zoom": 12,
+    "tempo": "normal"
    },
    "accent": "#4DFFE1",
    "glyph": "crook",
@@ -1385,7 +1309,8 @@
    "look": {
     "kind": "neon",
     "line": "#A6FF1A",
-    "zoom": 11
+    "zoom": 11,
+    "tempo": "hot"
    },
    "accent": "#A6FF1A",
    "glyph": "mask",
@@ -1557,7 +1482,8 @@
     "up": "#F472FF",
     "dn": "#2EE6FF",
     "body": "normal",
-    "zoom": 9
+    "zoom": 9,
+    "tempo": "hot"
    },
    "accent": "#F472FF",
    "glyph": "batwing",
@@ -1643,7 +1569,8 @@
     "up": "#1AE5FF",
     "dn": "#FF4FA0",
     "body": "wide",
-    "zoom": 8
+    "zoom": 8,
+    "tempo": "hot"
    },
    "accent": "#1AE5FF",
    "glyph": "tripundra",
@@ -1725,11 +1652,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "bricks",
-    "up": "#FF4A3D",
+    "kind": "banners",
+    "up": "#FF3B2F",
     "dn": "#FFE066",
-    "body": "normal",
-    "zoom": 9
+    "zoom": 5,
+    "tempo": "hot"
    },
    "accent": "#FF4A3D",
    "glyph": "shield",
@@ -1897,10 +1824,12 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "spark",
-    "up": "#3DFFF5",
+    "kind": "eyes",
+    "line": "#3DFFF5",
+    "up": "#21C7FF",
     "dn": "#FFC94D",
-    "zoom": 12
+    "zoom": 15,
+    "tempo": "calm"
    },
    "accent": "#3DFFF5",
    "glyph": "eye",
@@ -1982,11 +1911,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "bricks",
+    "kind": "gears",
     "up": "#FFCF5C",
     "dn": "#8C9EFF",
-    "body": "wide",
-    "zoom": 12
+    "zoom": 12,
+    "tempo": "normal"
    },
    "accent": "#FFCF5C",
    "glyph": "hourglass",
@@ -2072,7 +2001,8 @@
     "up": "#FF6E8A",
     "dn": "#6EFFB4",
     "body": "wide",
-    "zoom": 12
+    "zoom": 12,
+    "tempo": "hot"
    },
    "accent": "#FF6E8A",
    "glyph": "wheel",
@@ -2243,7 +2173,8 @@
     "kind": "led",
     "up": "#FFB347",
     "dn": "#FF4141",
-    "zoom": 5
+    "zoom": 5,
+    "tempo": "hot"
    },
    "accent": "#FFB347",
    "glyph": "was",
@@ -2325,10 +2256,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "mountain",
-    "line": "#FF9A3D",
-    "fill": "#FF3D6E",
-    "zoom": 19
+    "kind": "fans",
+    "up": "#FF9A3D",
+    "dn": "#FF3D6E",
+    "zoom": 15,
+    "tempo": "calm"
    },
    "accent": "#FF9A3D",
    "glyph": "mirror",
@@ -2414,7 +2346,8 @@
     "up": "#E879F9",
     "dn": "#FFD24D",
     "body": "wide",
-    "zoom": 8
+    "zoom": 8,
+    "tempo": "hot"
    },
    "accent": "#E879F9",
    "glyph": "ramhorns",
@@ -2496,10 +2429,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "pearls",
+    "kind": "drops",
     "up": "#5CFF7A",
     "dn": "#2FD3FF",
-    "zoom": 11
+    "zoom": 11,
+    "tempo": "normal"
    },
    "accent": "#5CFF7A",
    "glyph": "hydra",
@@ -2581,11 +2515,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "classic",
+    "kind": "notes",
     "up": "#FFD86B",
     "dn": "#9B7BFF",
-    "body": "normal",
-    "zoom": 12
+    "zoom": 12,
+    "tempo": "normal"
    },
    "accent": "#FFD86B",
    "glyph": "lyre",
@@ -2667,10 +2601,11 @@
     "jumpMax": 0.004
    },
    "look": {
-    "kind": "arrows",
+    "kind": "cubes",
     "up": "#FF5E7E",
     "dn": "#7AF0FF",
-    "zoom": 12
+    "zoom": 12,
+    "tempo": "normal"
    },
    "accent": "#FF5E7E",
    "glyph": "key",
@@ -2752,10 +2687,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "stars",
-    "line": "#FF9FD8",
-    "star": "#FFF0FA",
-    "zoom": 18
+    "kind": "hearts",
+    "up": "#FF5FA8",
+    "dn": "#FFE3F2",
+    "zoom": 15,
+    "tempo": "calm"
    },
    "accent": "#FF9FD8",
    "glyph": "rose",
@@ -2837,10 +2773,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "crystals",
+    "kind": "bubbles",
     "up": "#1EDBFF",
     "dn": "#A98BFF",
-    "zoom": 6
+    "zoom": 5,
+    "tempo": "hot"
    },
    "accent": "#1EDBFF",
    "glyph": "whaletail",
@@ -2926,7 +2863,8 @@
     "line": "#6EFFC0",
     "rise": "#FFF46B",
     "fall": "#FF8AD4",
-    "zoom": 7
+    "zoom": 7,
+    "tempo": "hot"
    },
    "accent": "#6EFFC0",
    "glyph": "caduceus",
@@ -3008,10 +2946,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "arrows",
+    "kind": "hive",
     "up": "#C6FF3D",
-    "dn": "#FF6B6B",
-    "zoom": 11
+    "dn": "#FF8A3D",
+    "zoom": 11,
+    "tempo": "hot"
    },
    "accent": "#C6FF3D",
    "glyph": "fly",
@@ -3093,10 +3032,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "spark",
+    "kind": "sparkles",
     "up": "#FFC21A",
     "dn": "#FF4FD8",
-    "zoom": 11
+    "zoom": 11,
+    "tempo": "hot"
    },
    "accent": "#FFC21A",
    "glyph": "spade",
@@ -3178,11 +3118,12 @@
     "jumpMax": 0.003
    },
    "look": {
-    "kind": "ribbon",
+    "kind": "scales",
     "line": "#8E9BFF",
-    "fill": "#C04DFF",
-    "mid": "#E3E7FF",
-    "zoom": 16
+    "fill": "#5B2BCF",
+    "spine": "#FFD36E",
+    "zoom": 14,
+    "tempo": "normal"
    },
    "accent": "#8E9BFF",
    "glyph": "dragon",
@@ -3268,7 +3209,8 @@
     "up": "#FFF04D",
     "dn": "#6E8BFF",
     "body": "thin",
-    "zoom": 4
+    "zoom": 4,
+    "tempo": "hot"
    },
    "accent": "#FFF04D",
    "glyph": "tomoe",
@@ -3350,9 +3292,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "neon",
-    "line": "#FF4D6A",
-    "zoom": 10
+    "kind": "feathers",
+    "up": "#FF4D6A",
+    "dn": "#C9CBD9",
+    "zoom": 15,
+    "tempo": "calm"
    },
    "accent": "#FF4D6A",
    "glyph": "scythe",
@@ -3434,10 +3378,13 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "led",
-    "up": "#FF7B4D",
-    "dn": "#7FE7FF",
-    "zoom": 9
+    "kind": "jaws",
+    "line": "#FF7B4D",
+    "fill": "#8A0F0F",
+    "fang": "#FFF4E0",
+    "dn": "#FFB199",
+    "zoom": 5,
+    "tempo": "hot"
    },
    "accent": "#FF7B4D",
    "glyph": "collar",
@@ -3523,7 +3470,8 @@
     "up": "#FF2E8B",
     "dn": "#2EF2C8",
     "body": "normal",
-    "zoom": 6
+    "zoom": 6,
+    "tempo": "hot"
    },
    "accent": "#FF2E8B",
    "glyph": "quill",
@@ -3605,11 +3553,11 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "capsule",
+    "kind": "ankh",
     "up": "#F5D27A",
-    "dn": "#4DC9FF",
-    "body": "normal",
-    "zoom": 12
+    "dn": "#4D8BFF",
+    "zoom": 12,
+    "tempo": "normal"
    },
    "accent": "#F5D27A",
    "glyph": "nemes",
@@ -3777,10 +3725,11 @@
     "jumpMax": 0.002
    },
    "look": {
-    "kind": "embers",
-    "up": "#FFB703",
-    "dn": "#FF3D2E",
-    "zoom": 6
+    "kind": "flames",
+    "up": "#FFC400",
+    "dn": "#FF3B1F",
+    "zoom": 5,
+    "tempo": "hot"
    },
    "accent": "#FFB703",
    "glyph": "phoenix",
@@ -3843,6 +3792,92 @@
      -0.030999913,
      -0.04510276,
      -0.069445985
+    ]
+   }
+  },
+  {
+   "id": "medusa",
+   "name": "MEDUSA",
+   "tag": "Regard calme",
+   "family": "F",
+   "base": 6030.15,
+   "model": {
+    "sigma": 9e-05,
+    "hold": 0,
+    "wideP": 0,
+    "wideK": 1,
+    "jumpP": 0,
+    "jumpMin": 0,
+    "jumpMax": 0
+   },
+   "look": {
+    "kind": "petrify",
+    "line": "#21E6A8",
+    "gold": "#F5D76E",
+    "zoom": 15,
+    "tempo": "calm"
+   },
+   "accent": "#33FFD1",
+   "glyph": "gorgon",
+   "planet": {
+    "p1": "#89FFE4",
+    "p2": "#1B6662",
+    "pg": "rgba(51,255,209,.45)"
+   },
+   "fair": {
+    "5": [
+     0,
+     0.000368495,
+     0.000539789,
+     0.000844353,
+     -0.000368359,
+     -0.000539497,
+     -0.000843641
+    ],
+    "10": [
+     0,
+     0.000521171,
+     0.000763462,
+     0.001194305,
+     -0.000520899,
+     -0.00076288,
+     -0.00119288
+    ],
+    "30": [
+     0,
+     0.000902866,
+     0.001322725,
+     0.0020695,
+     -0.000902052,
+     -0.001320978,
+     -0.002065226
+    ],
+    "60": [
+     0,
+     0.001277085,
+     0.001871127,
+     0.002927969,
+     -0.001275456,
+     -0.001867633,
+     -0.002919421
+    ],
+    "300": [
+     0,
+     0.002857902,
+     0.004188809,
+     0.00655899,
+     -0.002849758,
+     -0.004171336,
+     -0.00651625
+    ],
+    "600": [
+     0,
+     0.004044074,
+     0.005929004,
+     0.009288396,
+     -0.004027786,
+     -0.005894058,
+     -0.009202916
     ]
    }
   }
