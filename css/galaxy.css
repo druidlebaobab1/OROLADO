@@ -1041,7 +1041,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay #fsTopMidHome.fs-top-mid-home{
   html.is-ios:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap #chart{flex:1 1 0!important;height:auto!important;min-height:150px!important;max-height:none!important}
   html.is-ios:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap #chartStage{flex:1 1 0!important;height:auto!important;min-height:110px!important;max-height:none!important}
   /* la place sous ACHETER / VENDRE est DANS le terminal (même fond jusqu'en bas : plus de bande d'une autre couleur) */
-  html.is-ios:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap > .pad{margin-bottom:0!important;padding-bottom:calc(10px + var(--ios-pad-b,8px))!important}
+  html.is-ios:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap > .pad{margin-bottom:0!important;padding-bottom:calc(4px + var(--ios-pad-b,0px))!important}
 }
 /* plus jamais de boutons agrandis pour remplir le vide (c'est la courbe qui le prend) */
 html body #screenTrade#screenTrade.saf-fill .btn-trade{min-height:54px!important;height:auto!important}
