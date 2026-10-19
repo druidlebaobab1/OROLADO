@@ -3,7 +3,10 @@
    Darts Pro — MIXED MODE like Aviator, but the player plays. One gesture each (drag / swipe / tap), canvas 2D at 60 fps.
    The multiplier follows the SERVER clock (×e^(rate·s), casino_ext.php 'skill'); the player cashes out with the gold button,
    or loses on a mistake (K.multi 'fail'); the server's secret end shows an unavoidable event (meteor, comet, supernova…).
-   This file only draws: the server decides and pays. */
+   This file only draws: the server decides and pays.
+   v2812 (owner, round 4): no touch ripple (the white rings confused players), the hand hint sits in a free zone of each
+   scene and leaves as soon as the round starts, the multiplier grows slowly (rate 0.03: ×2 after ~23 s) and the
+   difficulty keeps rising for ~2 minutes; Fruit Slicer cuts EVERY fruit the blade crosses (swept test, generous radius). */
 (function (D6) {
   'use strict';
   var K = D6.CasinoKit;
@@ -12,18 +15,18 @@
 
   /* ------------------------------------------------------------------ texts (12 languages) */
   var C = {
-    en: { go: 'Bet to start', bet: 'Bet', cash: 'Cash out', won: 'Cashed out', r1: 'Bet and play: the multiplier grows while you play.', r3: 'The round can also end at any random moment (like Aviator): cash out before!' },
-    fr: { go: 'Mise pour jouer', bet: 'Miser', cash: 'Encaisser', won: 'Encaissé', r1: 'Mise et joue : le multiplicateur monte pendant que tu joues.', r3: 'La partie peut aussi s’arrêter à tout moment, au hasard (comme Aviator) : encaisse avant !' },
-    es: { go: 'Apuesta para jugar', bet: 'Apostar', cash: 'Retirar', won: 'Retirado', r1: 'Apuesta y juega: el multiplicador sube mientras juegas.', r3: 'La ronda también puede terminar en cualquier momento al azar (como Aviator): ¡retira antes!' },
-    pt: { go: 'Aposte para jogar', bet: 'Apostar', cash: 'Sacar', won: 'Sacado', r1: 'Aposte e jogue: o multiplicador sobe enquanto você joga.', r3: 'A rodada também pode terminar a qualquer momento, ao acaso (como no Aviator): saque antes!' },
-    ar: { go: 'راهن لتبدأ', bet: 'راهن', cash: 'اسحب', won: 'تم السحب', r1: 'راهن والعب: يرتفع المضاعف أثناء لعبك.', r3: 'قد تنتهي الجولة أيضًا في أي لحظة عشوائية (مثل Aviator): اسحب قبلها!' },
-    tr: { go: 'Başlamak için bahis', bet: 'Bahis', cash: 'Çek', won: 'Çekildi', r1: 'Bahis yap ve oyna: sen oynarken çarpan yükselir.', r3: 'Tur her an rastgele de bitebilir (Aviator gibi): önce çek!' },
-    vi: { go: 'Đặt cược để chơi', bet: 'Cược', cash: 'Rút tiền', won: 'Đã rút', r1: 'Đặt cược và chơi: hệ số nhân tăng khi bạn chơi.', r3: 'Ván cũng có thể kết thúc ngẫu nhiên bất cứ lúc nào (như Aviator): hãy rút trước!' },
-    id: { go: 'Pasang untuk main', bet: 'Pasang', cash: 'Tarik', won: 'Ditarik', r1: 'Pasang dan main: pengali naik selama kamu bermain.', r3: 'Ronde juga bisa berakhir kapan saja secara acak (seperti Aviator): tarik sebelumnya!' },
-    ru: { go: 'Сделай ставку', bet: 'Ставка', cash: 'Забрать', won: 'Забрано', r1: 'Сделай ставку и играй: множитель растёт, пока ты играешь.', r3: 'Раунд может закончиться и в любой случайный момент (как в Aviator): забери раньше!' },
-    de: { go: 'Setze zum Starten', bet: 'Setzen', cash: 'Auszahlen', won: 'Ausgezahlt', r1: 'Setze und spiele: Der Multiplikator steigt, während du spielst.', r3: 'Die Runde kann auch jederzeit zufällig enden (wie bei Aviator): zahle vorher aus!' },
-    hi: { go: 'खेलने को दांव लगाएँ', bet: 'दांव', cash: 'कैश आउट', won: 'कैश आउट हुआ', r1: 'दांव लगाएँ और खेलें: खेलते समय गुणक बढ़ता है।', r3: 'राउंड किसी भी समय अचानक खत्म हो सकता है (Aviator की तरह): पहले कैश आउट करें!' },
-    zh: { go: '下注开始', bet: '下注', cash: '兑现', won: '已兑现', r1: '下注并开始：游戏进行中倍数不断上升。', r3: '回合也可能在任意随机时刻结束（如 Aviator）：请提前兑现！' }
+    en: { go: 'Place a bet to start', bet: 'Bet', cash: 'Cash out', won: 'Cashed out', r1: 'Bet and play: the multiplier grows while you play.', r3: 'The round can also end at any random moment (like Aviator): cash out before!' },
+    fr: { go: 'Placez une mise pour commencer', bet: 'Miser', cash: 'Encaisser', won: 'Encaissé', r1: 'Mise et joue : le multiplicateur monte pendant que tu joues.', r3: 'La partie peut aussi s’arrêter à tout moment, au hasard (comme Aviator) : encaisse avant !' },
+    es: { go: 'Haz una apuesta para empezar', bet: 'Apostar', cash: 'Retirar', won: 'Retirado', r1: 'Apuesta y juega: el multiplicador sube mientras juegas.', r3: 'La ronda también puede terminar en cualquier momento al azar (como Aviator): ¡retira antes!' },
+    pt: { go: 'Faça uma aposta para começar', bet: 'Apostar', cash: 'Sacar', won: 'Sacado', r1: 'Aposte e jogue: o multiplicador sobe enquanto você joga.', r3: 'A rodada também pode terminar a qualquer momento, ao acaso (como no Aviator): saque antes!' },
+    ar: { go: 'ضع رهانًا للبدء', bet: 'راهن', cash: 'اسحب', won: 'تم السحب', r1: 'راهن والعب: يرتفع المضاعف أثناء لعبك.', r3: 'قد تنتهي الجولة أيضًا في أي لحظة عشوائية (مثل Aviator): اسحب قبلها!' },
+    tr: { go: 'Başlamak için bahis yapın', bet: 'Bahis', cash: 'Çek', won: 'Çekildi', r1: 'Bahis yap ve oyna: sen oynarken çarpan yükselir.', r3: 'Tur her an rastgele de bitebilir (Aviator gibi): önce çek!' },
+    vi: { go: 'Đặt cược để bắt đầu', bet: 'Cược', cash: 'Rút tiền', won: 'Đã rút', r1: 'Đặt cược và chơi: hệ số nhân tăng khi bạn chơi.', r3: 'Ván cũng có thể kết thúc ngẫu nhiên bất cứ lúc nào (như Aviator): hãy rút trước!' },
+    id: { go: 'Pasang taruhan untuk mulai', bet: 'Pasang', cash: 'Tarik', won: 'Ditarik', r1: 'Pasang dan main: pengali naik selama kamu bermain.', r3: 'Ronde juga bisa berakhir kapan saja secara acak (seperti Aviator): tarik sebelumnya!' },
+    ru: { go: 'Сделайте ставку, чтобы начать', bet: 'Ставка', cash: 'Забрать', won: 'Забрано', r1: 'Сделай ставку и играй: множитель растёт, пока ты играешь.', r3: 'Раунд может закончиться и в любой случайный момент (как в Aviator): забери раньше!' },
+    de: { go: 'Einsatz setzen, um zu starten', bet: 'Setzen', cash: 'Auszahlen', won: 'Ausgezahlt', r1: 'Setze und spiele: Der Multiplikator steigt, während du spielst.', r3: 'Die Runde kann auch jederzeit zufällig enden (wie bei Aviator): zahle vorher aus!' },
+    hi: { go: 'शुरू करने के लिए दांव लगाएँ', bet: 'दांव', cash: 'कैश आउट', won: 'कैश आउट हुआ', r1: 'दांव लगाएँ और खेलें: खेलते समय गुणक बढ़ता है।', r3: 'राउंड किसी भी समय अचानक खत्म हो सकता है (Aviator की तरह): पहले कैश आउट करें!' },
+    zh: { go: '下注即可开始', bet: '下注', cash: '兑现', won: '已兑现', r1: '下注并开始：游戏进行中倍数不断上升。', r3: '回合也可能在任意随机时刻结束（如 Aviator）：请提前兑现！' }
   };
   // per game: hint (gesture), fail (mistake), late (timer / misses), end (the secret end's event), rule (step 2 of the rules)
   var G = {
@@ -190,18 +193,18 @@
   /* hand hints (one per gesture): tap = ripple; swipe = finger sweeping; lr = arrows left / right; drag = finger sliding */
   var FINGER = '<path d="M11 21V9.5a2 2 0 0 1 4 0V16m0-2a2 2 0 0 1 4 0v2m0-1a2 2 0 0 1 4 0v5c0 4.5-3 8-7.5 8H14c-2.4 0-4-1-5.3-2.9L6 23a2 2 0 0 1 3.2-2.4L11 23"/>';
   var HAND = {
-    tap: '<svg viewBox="0 0 32 32" aria-hidden="true"><circle class="sk-rip" cx="13" cy="9" r="6"/>' + FINGER + '</svg>',
+    tap: '<svg viewBox="0 0 32 32" aria-hidden="true">' + FINGER + '</svg>',
     swipe: '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-trail" d="M3 6c5 3 12 4 20 1"/>' + FINGER + '</svg>',
     lr: '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-arr" d="M1 9l5-4v8zM31 9l-5-4v8z"/>' + FINGER + '</svg>',
     drag: '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-arr" d="M1 9l5-4v8zM31 9l-5-4v8z"/>' + FINGER + '</svg>'
   };
 
   /* ------------------------------------------------------------------ shared engine (round flow + canvas loop) */
-  function boot(key, mk, gest) {
+  function boot(key, mk, gest, hy) {
     K.register(key, function (box) {
       var l = L(key), lite = document.documentElement.classList.contains('oro-lite'), hist = [];
       try { hist = JSON.parse(localStorage.getItem('cg_' + key + '_h') || '[]').slice(0, 12); } catch (e) { hist = []; }
-      box.classList.add('cg-game', 'cg-s2', 'cg-' + key);
+      box.classList.add('cg-game', 'cg-s2', 'cg-' + key); box.style.setProperty('--hy', (hy || 0.46) * 100 + '%'); // v2812: hint in a free zone of this scene
       box.innerHTML = '<div class="cg-stage s2-st" id="s2St"><canvas class="s2-bg" id="s2Bg"></canvas><canvas class="s2-cv" id="s2Cv"></canvas><div class="cg-hist s2-hist" id="s2Hist"></div>' +
         '<div class="s2-hud" id="s2Hud"><b class="fit s2-m idle" id="s2M">' + xm(1) + '</b><small class="fit s2-msg" id="s2Msg"></small></div>' +
         '<div class="sk-hint g-' + gest + '" id="s2Hint"><i class="sk-hand">' + HAND[gest] + '</i><small class="fit">' + K.esc(l.hint) + '</small></div></div>' + K.stakePanel(l.bet);
@@ -215,8 +218,9 @@
         l: l, lite: lite,
         // the static background lives in its own canvas behind the scene: painted once, never redrawn each frame
         bg: function (img) { if (bgOn === img) return; bgOn = img; bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
-        lv: function () { return Math.min(1, playT / 55); },               // difficulty rises slowly over ~1 min
+        lv: function () { return Math.min(1, playT / 110); },              // v2812: difficulty rises over ~2 min (fair start, really hard later)
         live: function () { return phase === 'play'; },
+        idle: function () { return phase === 'idle'; },
         fail: function (why) {                                              // the player's own mistake
           if (phase !== 'play') return false;
           phase = 'failing'; say(why, 'lost'); setBtn(l.bet, '', 'wait'); btn.disabled = true;
@@ -319,7 +323,7 @@
         R = r; off = (Number(r.now) || Date.now() / 1000) - Date.now() / 1000; playT = r.resume ? Math.max(0, r.now - r.t0) : 0;
         if (r.done) { result(r); return; }
         g.reset(true); P.length = 0; RG.length = 0;
-        phase = 'play'; mShown = ''; hintT = 9; gN = 0; box.setAttribute('data-gn', '0'); say('', ''); hintOn(true);
+        phase = 'play'; mShown = ''; hintT = 0; gN = 0; box.setAttribute('data-gn', '0'); say('', ''); hintOn(false); // v2812: the hint leaves when the round starts
         btn.classList.remove('sk-nudge'); st.querySelectorAll('.cs-toast').forEach(function (t) { t.remove(); }); st.querySelectorAll('.s2-hud *, .sk-hint, .sk-hint *').forEach(function (e) { e.style.visibility = ''; });
         setBtn(l.cash, money(r.stake * mult()), 'cash');
         poll();
@@ -376,7 +380,7 @@
       }
       function toIdle() { phase = 'idle'; g.reset(false); say('', 'idle'); tx(mEl, xm(1)); mShown = ''; drawn = false; hintOn(true); }
 
-      // ONE gesture on the WHOLE scene (pointer events, no 300 ms delay); every touch shows a ripple
+      // ONE gesture on the WHOLE scene (pointer events, no 300 ms delay); v2812: no ripple — the game itself answers
       function pt(e) { var r = rect || st.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
       var practice = function () { return phase === 'idle' && g.practice; };   // Fruit Slicer: slice the idle fruits for fun
       function nudge() { // touching the scene before betting points to the BET button
@@ -389,11 +393,15 @@
         if (e.pointerType === 'mouse' && e.button) return;
         try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
         var p = pt(e);
-        RG.push({ x: p[0], y: p[1], r: 24, t: 0.25, c: 'rgba(255,255,255,.85)' });
         if (phase === 'play') { gN++; box.setAttribute('data-gn', String(gN)); g.down(p[0], p[1]); }
         else { if (practice()) g.down(p[0], p[1]); if (phase === 'idle') nudge(); }
       });
-      cv.addEventListener('pointermove', function (e) { if ((phase === 'play' || practice()) && g.move) { var p = pt(e); g.move(p[0], p[1]); } });
+      cv.addEventListener('pointermove', function (e) {
+        if (!((phase === 'play' || practice()) && g.move)) return;
+        var ev = e.getCoalescedEvents ? e.getCoalescedEvents() : null; // every point of a fast swipe (iOS / Android batch them)
+        if (!ev || !ev.length) ev = [e];
+        for (var i = 0; i < ev.length; i++) { var p = pt(ev[i]); g.move(p[0], p[1]); }
+      });
       ['pointerup', 'pointercancel'].forEach(function (ev) { cv.addEventListener(ev, function (e) { if (g.up) { var p = pt(e); g.up(p[0], p[1], phase === 'play'); } }); });
       cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
       // iOS Safari: no page scroll, no double-tap zoom, no long-press magnifier / callout on the scene
@@ -532,7 +540,7 @@
       c.fillStyle = '#FBBF24'; c.beginPath(); c.moveTo(x0 + 7, y0); c.lineTo(x0, y0 - 4); c.lineTo(x0, y0 + 4); c.closePath(); c.fill();
       c.fillStyle = '#F43F5E'; c.beginPath(); c.moveTo(x0 - 26, y0); c.lineTo(x0 - 31, y0 - 4.5); c.lineTo(x0 - 22, y0); c.lineTo(x0 - 31, y0 + 4.5); c.closePath(); c.fill();
     }
-  }, 'tap');
+  }, 'tap', 0.6);
 
   /* ================================================================== 2. FRUIT SLICER — swipe the space fruits, never a bomb */
   boot('slicer', function (A) {
@@ -562,18 +570,45 @@
     }
     function spawn(live, bombOk) {
       var lv = A.lv(), r = FR * rnd(0.9, 1.1), bomb = bombOk && Math.random() < 0.12 + 0.12 * lv;
+      var g = live ? gv * (0.85 + 0.6 * lv) : gv * 0.8; // v2812: the fruits fly faster as the round goes on
       var x0 = rnd(0.12, 0.88) * W, top = Math.max(T + r, H * 0.12), peak = rnd(top, Math.max(top + 1, H * 0.45));
-      var vy = -Math.sqrt(2 * gv * (H + r - peak)), tp = -vy / gv, xt = rnd(0.25, 0.75) * W;
-      ob.push({ x: x0, y: H + r, vx: (xt - x0) / tp * 0.7, vy: vy, r: r, k: bomb ? -1 : (Math.random() * 4) | 0, rot: rnd(0, TAU), vr: rnd(-3, 3), live: live });
+      var vy = -Math.sqrt(2 * g * (H + r - peak)), tp = -vy / g, xt = rnd(0.25, 0.75) * W;
+      ob.push({ x: x0, y: H + r, px: x0, py: H + r, vx: (xt - x0) / tp * 0.7, vy: vy, g: g, r: r, k: bomb ? -1 : (Math.random() * 4) | 0, rot: rnd(0, TAU), vr: rnd(-3, 3), live: live });
       return bomb;
     }
-    function segHit(o, x1, y1, x2, y2) {
-      var dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy, k = L2 ? clamp(((o.x - x1) * dx + (o.y - y1) * dy) / L2, 0, 1) : 0;
-      var px = x1 + dx * k - o.x, py = y1 + dy * k - o.y;
-      return px * px + py * py < o.r * o.r * 0.85;
+    // v2812 (owner: "some fruits can't be cut") — a fruit is cut when the blade segment passes within its DRAWN radius
+    // plus a generous margin, tested at its position now AND one frame ago (fast fruits never slip between two moves).
+    // Bombs keep a tighter radius: a near miss never kills.
+    function d2(cx, cy, x1, y1, x2, y2) {
+      var dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy, k = L2 ? clamp(((cx - x1) * dx + (cy - y1) * dy) / L2, 0, 1) : 0;
+      var px = x1 + dx * k - cx, py = y1 + dy * k - cy;
+      return px * px + py * py;
     }
+    function segHit(o, x1, y1, x2, y2) {
+      var R = o.k < 0 ? o.r * 0.8 : o.r * 1.1 + Math.max(10, o.r * 0.35), R2 = R * R;
+      if (d2(o.x, o.y, x1, y1, x2, y2) < R2 || d2(o.px, o.py, x1, y1, x2, y2) < R2) return true;
+      return o.k >= 0 && d2((o.x + o.px) / 2, (o.y + o.py) / 2, x1, y1, x2, y2) < R2;
+    }
+    // test every live fruit against the blade segments drawn during the last ~90 ms
+    function sweep(fromI) {
+      var now = performance.now(), live = A.live() || (A.idle && A.idle());
+      for (var j = Math.max(1, fromI || 1); j < trail.length; j++) {
+        var p = trail[j - 1], q = trail[j];
+        if (now - q[2] > 90 || q[3]) continue; // q[3]: start of a new stroke (no segment across two strokes)
+        var a = Math.atan2(q[1] - p[1], q[0] - p[0]);
+        for (var i = ob.length - 1; i >= 0; i--) {
+          var o = ob[i];
+          if (!segHit(o, p[0], p[1], q[0], q[1])) continue;
+          if (o.k < 0) { if (A.live() && A.fail(A.l.fail)) { A.explode(o.x, o.y, 1.4); ob.splice(i, 1); } return; }
+          if (!live && o.live) continue;
+          ob.splice(i, 1); cut(o, a);
+        }
+      }
+    }
+    var cuts = 0;
     function cut(o, a) {
       if (o.k < 0) return;
+      cuts++;
       var cut0 = a - o.rot;
       for (var s = 0; s < 2; s++) {
         var n = s ? 1 : -1, sp = 90 + Math.random() * 40;
@@ -611,7 +646,7 @@
           }
         }
         for (i = ob.length - 1; i >= 0; i--) {
-          var o = ob[i]; o.vy += gv * dt; o.x += o.vx * dt; o.y += o.vy * dt; o.rot += o.vr * dt;
+          var o = ob[i]; o.px = o.x; o.py = o.y; o.vy += (o.g || gv) * dt; o.x += o.vx * dt; o.y += o.vy * dt; o.rot += o.vr * dt;
           if (o.y > H + o.r * 1.5 && o.vy > 0) {
             ob.splice(i, 1);
             if (o.k >= 0 && o.live && playing) { miss++; A.ring(clamp(o.x, 20, W - 20), H - 6, 40, '#F43F5E'); if (miss >= 3) A.fail(A.l.late); }
@@ -620,6 +655,7 @@
         for (i = halves.length - 1; i >= 0; i--) { var hh = halves[i]; hh.t += dt; hh.vy += gv * dt; hh.x += hh.vx * dt; hh.y += hh.vy * dt; hh.rot += hh.vr * dt; if (hh.y > H + hh.r * 2) halves.splice(i, 1); }
         var now = performance.now();
         while (trail.length && now - trail[0][2] > 140) trail.shift();
+        if (trail.length > 1 && !nova) sweep(1); // fruits that fly into the fresh blade line are cut too
         if (nova) {
           nova.vy += gv * dt; nova.y += nova.vy * dt;
           if (!nova.hit && nova.vy >= 0) {
@@ -650,7 +686,7 @@
         // blade trail
         if (trail.length > 1) {
           c.lineCap = 'round'; c.lineJoin = 'round';
-          c.strokeStyle = 'rgba(167,139,250,.45)'; c.lineWidth = 9; c.beginPath(); c.moveTo(trail[0][0], trail[0][1]); for (i = 1; i < trail.length; i++) c.lineTo(trail[i][0], trail[i][1]); c.stroke();
+          c.strokeStyle = 'rgba(167,139,250,.45)'; c.lineWidth = 9; c.beginPath(); c.moveTo(trail[0][0], trail[0][1]); for (i = 1; i < trail.length; i++) { if (trail[i][3]) c.moveTo(trail[i][0], trail[i][1]); else c.lineTo(trail[i][0], trail[i][1]); } c.stroke();
           c.strokeStyle = '#FFFFFF'; c.lineWidth = 3; c.stroke();
         }
         // misses: 3 little crosses (top-right)
@@ -661,27 +697,22 @@
           }
         }
       },
-      down: function (x, y) { down = true; trail = [[x, y, performance.now()]]; },
+      down: function (x, y) { down = true; trail.push([x, y, performance.now(), 1]); if (trail.length > 24) trail.shift(); },
       move: function (x, y) {
         if (!down || nova) return;
         var p = trail[trail.length - 1], now = performance.now();
-        if (!p) { trail.push([x, y, now]); return; }
+        if (!p) { trail.push([x, y, now, 1]); return; }
         if (Math.abs(x - p[0]) + Math.abs(y - p[1]) < 2) return;
-        trail.push([x, y, now]); if (trail.length > 12) trail.shift();
-        var a = Math.atan2(y - p[1], x - p[0]);
-        for (var i = ob.length - 1; i >= 0; i--) {
-          var o = ob[i];
-          if (!segHit(o, p[0], p[1], x, y)) continue;
-          if (o.k < 0) { if (A.fail(A.l.fail)) { A.explode(o.x, o.y, 1.4); ob.splice(i, 1); } return; }
-          ob.splice(i, 1); cut(o, a);
-        }
+        trail.push([x, y, now]); if (trail.length > 24) trail.shift();
+        sweep(trail.length - 1); // the new segment, at once
       },
       practice: true,
+      dbg: function () { return { cuts: cuts, miss: miss, ob: ob.map(function (o) { return { x: o.x, y: o.y, vx: o.vx, vy: o.vy, g: o.g || gv, r: o.r, k: o.k }; }) }; }, // read-only, for the touch tests
       up: function () { down = false; },
       boom: function () { down = false; var r = FR * 2.2; nova = { x: W / 2, y: H + r, r: r, vy: -Math.sqrt(2 * gv * (H * 0.55)) }; },
       win: function () { for (var i = 0; i < ob.length; i++) if (ob[i].k >= 0) A.burst(ob[i].x, ob[i].y, 6, ['#FDE68A', '#FFFFFF'], 120, 0.5, 2.6); ob = ob.filter(function (o) { return o.k < 0; }); }
     };
-  }, 'swipe');
+  }, 'swipe', 0.5);
 
   /* ================================================================== 3. CHICKEN ROAD — tap to hop lane by lane between the ships */
   boot('chicken', function (A) {
@@ -832,7 +863,7 @@
       boom: function () { comet = { x: -W * 0.5, y: Y(cy()) - ch * 0.45, r: Math.max(18, rowH * 0.42), v: W * 2.4 }; hop = null; queued = false; },
       win: function () { won = 0.001; queued = false; }
     };
-  }, 'tap');
+  }, 'tap', 0.42);
 
   /* ================================================================== 4. HAMSTER RUN — 3 lanes in a space tube, tap left / right */
   boot('hamster', function (A) {
@@ -953,7 +984,7 @@
       boom: function () { wall = { z: 0.75, v: 2.6 }; obs = obs.filter(function (o) { return o.z > 0.75; }); },
       win: function () { won = 0.001; obs = []; }
     };
-  }, 'lr');
+  }, 'lr', 0.52);
 
   /* ================================================================== 5. ASTEROID DODGE — drag the ship left / right */
   boot('dodge', function (A) {
@@ -1038,7 +1069,7 @@
       boom: function () { drag = null; big = { x: s.x, y: -W * 0.3, r: Math.max(W * 0.2, 40), v: H * 1.9 }; },
       win: function () { won = 0.001; drag = null; }
     };
-  }, 'drag');
+  }, 'drag', 0.45);
 
   /* ================================================================== 6. DARTS PRO — tap to throw when the moving aim is on the board */
   boot('dartspro', function (A) {
@@ -1135,5 +1166,5 @@
       boom: function () { fly = null; met = { x: -W * 0.2, y: T - 30, r: Math.max(18, R * 0.3), vx: 0, vy: 0 }; met.vx = (cx - met.x) / 0.65; met.vy = (cy - met.y) / 0.65; },
       win: function () { won = 0.001; }
     };
-  }, 'tap');
+  }, 'tap', 0.29);
 })(window.D6 = window.D6 || {});

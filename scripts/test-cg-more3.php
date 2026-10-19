@@ -52,7 +52,7 @@ for ($i = 0; $i < $N; $i++) { $r = casino_ext_instant('bowling', []); $s += $r['
 check(sprintf('retour simulé %.2f %% · dessin = gain', $s / $N * 100), abs($s / $N - $ev / $w) < 0.012 && $bad === 0, "bad=$bad");
 
 echo "2) Lucky Planets : 6 planètes, cote = 0,94 ÷ chance → marge 6 % pour CHAQUE choix\n";
-check('jeu en direct déclaré (tirage commun, P 40 s, mises 28 s)', in_array('planets', CASINO_GAMES, true) && in_array('planets', CASINO_MULTI, true) && (CASINO_DRAW['planets'] ?? null) === [40, 28]);
+check('jeu en direct déclaré (tirage commun, v2811 : P 160 s, mises 120 s)', in_array('planets', CASINO_GAMES, true) && in_array('planets', CASINO_MULTI, true) && (CASINO_DRAW['planets'] ?? null) === [160, 120]);
 check('chances : total 100', array_sum(CASINO_PLANETS_W) === 100 && count(CASINO_PLANETS_W) === 6);
 $od = casino_planets_odds();
 check('cotes affichées ×2,93 ×3,91 ×5,22 ×7,23 ×10,44 ×23,50', $od === [2.93, 3.91, 5.22, 7.23, 10.44, 23.5], json_encode($od));
@@ -72,7 +72,7 @@ save_db(orolado_data_file(), $db); $bal[$U] = 50.0; $me = $db['users']['u_p'];
 $file = casino_user_file('u_p');
 [$P, $B] = CASINO_DRAW['planets'];
 foreach (['0', '5'] as $n => $sel) {
-  $i0 = (int) floor(time() / $P) + 50 + $n * 3; $t = $i0 * $P + 2.0;
+  $i0 = casino_draw_i('planets', time()) + 50 + $n * 3; $t = casino_draw_start('planets', $i0) + 2.0;
   casino_with($file, static function (array &$st) { unset($st['g']['planets']); return true; });
   $b0 = $bal[$U];
   $pub = casino_draw_public('planets', $t);
@@ -83,7 +83,7 @@ foreach (['0', '5'] as $n => $sel) {
   check("sel $sel : pari accepté, 2 $ retirés", $r['ok'] && abs($bal[$U] - ($b0 - 2)) < 0.001, json_encode($r));
   $r2 = casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'bet', 'real', 2, ['sel' => $sel], $t + 1);
   check("sel $sel : 2e pari sur le même tour refusé", $r2['ok'] === false && abs($bal[$U] - ($b0 - 2)) < 0.001);
-  $tShow = $i0 * $P + $B + 0.5;
+  $tShow = casino_draw_start('planets', $i0) + $B + 0.5;
   $dr = casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'dround', 'real', 0, [], $tShow);
   $out = casino_draw_outcome('planets', $i0);
   $want = casino_money(2 * (float) casino_draw_mult('planets', $sel, $out));
@@ -91,15 +91,15 @@ foreach (['0', '5'] as $n => $sel) {
   casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'dround', 'real', 0, [], $tShow + 2);
   check("sel $sel : gain versé UNE seule fois", abs($bal[$U] - ($b0 - 2 + $want)) < 0.001);
   check("sel $sel : résultat public = le même pour tous", (casino_draw_public('planets', $tShow)['res']['n'] ?? null) === $out['n']);
-  $late = casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'bet', 'real', 2, ['sel' => $sel], $i0 * $P + $B - 0.3);
+  $late = casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'bet', 'real', 2, ['sel' => $sel], casino_draw_start('planets', $i0) + $B - 0.3);
   check("sel $sel : pari après la fermeture refusé", $late['ok'] === false);
 }
 // un gain forcé : on cherche un tour futur dont le tirage est la planète 0
-for ($i0 = (int) floor(time() / $P) + 200; casino_draw_outcome('planets', $i0)['n'] !== 0; $i0++);
+for ($i0 = casino_draw_i('planets', time()) + 200; casino_draw_outcome('planets', $i0)['n'] !== 0; $i0++);
 casino_with($file, static function (array &$st) { unset($st['g']['planets']); return true; });
 $b0 = $bal[$U];
-casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'bet', 'real', 1, ['sel' => '0'], $i0 * $P + 1);
-$dr = casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'dround', 'real', 0, [], $i0 * $P + $B + 1);
+casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'bet', 'real', 1, ['sel' => '0'], casino_draw_start('planets', $i0) + 1);
+$dr = casino_draw_act(load_db(), $me, 'u_p', $file, 'planets', 'dround', 'real', 0, [], casino_draw_start('planets', $i0) + $B + 1);
 check('planète gagnante : 1 $ × 2,93 = 2,93 $ versés', abs($dr['win'] - 2.93) < 0.001 && abs($bal[$U] - ($b0 - 1 + 2.93)) < 0.001, json_encode([$dr['win'] ?? null, $bal[$U] - $b0]));
 
 echo "4) Star Bowling : une vraie partie retire la mise une fois et verse le gain une fois\n";

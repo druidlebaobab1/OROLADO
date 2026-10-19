@@ -38,11 +38,12 @@ $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 
 $GAMES = ['spacerun', 'flappyrock', 'stack', 'knifehit', 'basket', 'starbridge', 'kicker']; // kicker : retiré du catalogue, fiche gardée pour régler les anciennes parties
-echo "1) Fiches : les 6 jeux (+ kicker retiré) existent, type skill, vitesse entre 0,08 et 0,14\n";
+echo "1) Fiches : les 6 jeux (+ kicker retiré) existent, type skill, vitesse 0,03 (v2812 : ×2 après ~23 s ; kicker garde 0,09)\n";
 $k = casino_ext_keys();
 foreach ($GAMES as $g) {
   $r = casino_skill_rate($g);
-  check("$g chargé (skill, rate $r)", in_array($g, $k, true) && casino_ext_type($g) === 'skill' && $r >= 0.08 && $r <= 0.14);
+  check("$g chargé (skill, rate $r)", in_array($g, $k, true) && casino_ext_type($g) === 'skill' && abs($r - ($g === 'kicker' ? 0.09 : 0.03)) < 1e-9);
+  if ($g !== 'kicker') check(sprintf('%s : ×2 après %.1f s, ×5 après %.1f s de jeu (lent : on se bat pour ×2)', $g, casino_skill_secs($g, 2), casino_skill_secs($g, 5)), casino_skill_secs($g, 2) >= 20 && casino_skill_secs($g, 5) >= 50);
   check("$g : clé libre (pas un ancien jeu)", !in_array($g, CASINO_GAMES, true));
 }
 check('noms affichés', (casino_ext_names()['stack'] ?? '') === 'Tower Stack' && (casino_ext_names()['spacerun'] ?? '') === 'Space Runner');
@@ -98,7 +99,7 @@ foreach ($GAMES as $g) {
   check("$g encaisser après la faute : rien", (float) ($r['win'] ?? 0) === 0.0 && abs($bal[$U] - $b2) < 0.001);
   // fin secrète passée : l'état la révèle, encaisser ne paie rien
   casino_multi(load_db(), $me, $g, 'start', 'real', 1, []);
-  casino_with($file, static function (array &$st) use ($g) { $st['g'][$g]['t0'] -= 5.0; $st['g'][$g]['c'] = 1.2; return true; });
+  casino_with($file, static function (array &$st) use ($g) { $st['g'][$g]['t0'] -= 12.0; $st['g'][$g]['c'] = 1.2; /* v2812 : rate 0,03 → ×1,43 après 12 s (> ×1,2) */ return true; });
   $b3 = $bal[$U];
   $r = casino_multi(load_db(), $me, $g, 'state', 'real', 0, []);
   check("$g fin secrète : état done, why=end, c révélé", !empty($r['done']) && ($r['why'] ?? '') === 'end' && (float) $r['c'] === 1.2 && abs($bal[$U] - $b3) < 0.001, json_encode($r));

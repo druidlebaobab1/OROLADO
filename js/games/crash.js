@@ -1,4 +1,5 @@
-/* v2795 — Sky Rush / Jet Man / Rocket rebuilt (owner request): shared live round like Spribe Aviator / SmartSoft JetX /
+/* v2811 — vol à la Aviator (petit compteur en haut, décollage qui monte, avion toujours au bout de la courbe, sortie fluide).
+   v2795 — Sky Rush / Jet Man / Rocket rebuilt (owner request): shared live round like Spribe Aviator / SmartSoft JetX /
    Pragmatic Spaceman — bet during the countdown (or for the next round during the flight), live gold CASH OUT button,
    auto cash-out at a target, glowing curve + parallax stars, fly-away / explosion, coloured history of the last rounds.
    The server (casino_lib.php casino_round_*) draws every round; this file only shows it. */
@@ -6,18 +7,18 @@
   'use strict';
   var K = D6.CasinoKit, $ = K.$;
   var T = {
-    en: { bet: 'Bet', cancel: 'Cancel', cash: 'Cash out', wait: 'Waiting for next round', flew: 'Flew away!', lost: 'Lost in space!', auto: 'Auto cash-out' },
-    fr: { bet: 'Miser', cancel: 'Annuler', cash: 'Encaisser', wait: 'En attente du prochain tour', flew: 'Envolé !', lost: 'Perdu dans l’espace !', auto: 'Encaissement auto' },
-    es: { bet: 'Apostar', cancel: 'Cancelar', cash: 'Retirar', wait: 'Esperando la próxima ronda', flew: '¡Voló!', lost: '¡Perdido en el espacio!', auto: 'Retiro automático' },
-    pt: { bet: 'Apostar', cancel: 'Cancelar', cash: 'Sacar', wait: 'Aguardando a próxima rodada', flew: 'Voou!', lost: 'Perdido no espaço!', auto: 'Saque automático' },
-    ar: { bet: 'راهن', cancel: 'إلغاء', cash: 'اسحب', wait: 'بانتظار الجولة التالية', flew: 'طار بعيدًا!', lost: 'ضاع في الفضاء!', auto: 'سحب تلقائي' },
-    tr: { bet: 'Bahis', cancel: 'İptal', cash: 'Çek', wait: 'Sonraki tur bekleniyor', flew: 'Uçup gitti!', lost: 'Uzayda kayboldu!', auto: 'Otomatik çekim' },
-    vi: { bet: 'Cược', cancel: 'Hủy', cash: 'Rút', wait: 'Đang chờ vòng tiếp theo', flew: 'Bay mất rồi!', lost: 'Lạc vào không gian!', auto: 'Tự động rút' },
-    id: { bet: 'Pasang', cancel: 'Batal', cash: 'Tarik', wait: 'Menunggu ronde berikutnya', flew: 'Terbang pergi!', lost: 'Hilang di angkasa!', auto: 'Tarik otomatis' },
-    ru: { bet: 'Ставка', cancel: 'Отмена', cash: 'Забрать', wait: 'Ожидание следующего раунда', flew: 'Улетел!', lost: 'Потерян в космосе!', auto: 'Автовывод' },
-    de: { bet: 'Setzen', cancel: 'Abbrechen', cash: 'Auszahlen', wait: 'Warten auf die nächste Runde', flew: 'Weggeflogen!', lost: 'Im All verloren!', auto: 'Auto-Auszahlung' },
-    hi: { bet: 'दांव', cancel: 'रद्द करें', cash: 'कैश आउट', wait: 'अगले राउंड का इंतज़ार', flew: 'उड़ गया!', lost: 'अंतरिक्ष में खो गया!', auto: 'ऑटो कैश आउट' },
-    zh: { bet: '下注', cancel: '取消', cash: '兑现', wait: '等待下一轮', flew: '飞走了！', lost: '迷失太空！', auto: '自动兑现' }
+    en: { bet: 'Bet', cancel: 'Cancel', cash: 'Cash out', wait: 'Waiting for next round', flew: 'Flew away!', lost: 'Exploded!', auto: 'Auto cash-out' },
+    fr: { bet: 'Miser', cancel: 'Annuler', cash: 'Encaisser', wait: 'En attente du prochain tour', flew: 'Envolé !', lost: 'Explosion !', auto: 'Encaissement auto' },
+    es: { bet: 'Apostar', cancel: 'Cancelar', cash: 'Retirar', wait: 'Esperando la próxima ronda', flew: '¡Voló!', lost: '¡Explotó!', auto: 'Retiro automático' },
+    pt: { bet: 'Apostar', cancel: 'Cancelar', cash: 'Sacar', wait: 'Aguardando a próxima rodada', flew: 'Voou!', lost: 'Explodiu!', auto: 'Saque automático' },
+    ar: { bet: 'راهن', cancel: 'إلغاء', cash: 'اسحب', wait: 'بانتظار الجولة التالية', flew: 'طار بعيدًا!', lost: 'انفجر!', auto: 'سحب تلقائي' },
+    tr: { bet: 'Bahis', cancel: 'İptal', cash: 'Çek', wait: 'Sonraki tur bekleniyor', flew: 'Uçup gitti!', lost: 'Patladı!', auto: 'Otomatik çekim' },
+    vi: { bet: 'Cược', cancel: 'Hủy', cash: 'Rút', wait: 'Đang chờ vòng tiếp theo', flew: 'Bay mất rồi!', lost: 'Nổ tung!', auto: 'Tự động rút' },
+    id: { bet: 'Pasang', cancel: 'Batal', cash: 'Tarik', wait: 'Menunggu ronde berikutnya', flew: 'Terbang pergi!', lost: 'Meledak!', auto: 'Tarik otomatis' },
+    ru: { bet: 'Ставка', cancel: 'Отмена', cash: 'Забрать', wait: 'Ожидание следующего раунда', flew: 'Улетел!', lost: 'Взрыв!', auto: 'Автовывод' },
+    de: { bet: 'Setzen', cancel: 'Abbrechen', cash: 'Auszahlen', wait: 'Warten auf die nächste Runde', flew: 'Weggeflogen!', lost: 'Explodiert!', auto: 'Auto-Auszahlung' },
+    hi: { bet: 'दांव', cancel: 'रद्द करें', cash: 'कैश आउट', wait: 'अगले राउंड का इंतज़ार', flew: 'उड़ गया!', lost: 'फट गया!', auto: 'ऑटो कैश आउट' },
+    zh: { bet: '下注', cancel: '取消', cash: '兑现', wait: '等待下一轮', flew: '飞走了！', lost: '爆炸了！', auto: '自动兑现' }
   };
   var RULES = {
     en: '1. Bet during the countdown (a bet placed during a flight plays the next round).\n2. The multiplier climbs from ×1.00: tap Cash out to win your bet × the multiplier.\n3. If it flies away before you cash out, the bet is lost. Auto cash-out cashes out at your target by itself.',
@@ -108,9 +109,8 @@
         '<path id="crArea" fill="url(#crA' + game + ')"/><path id="crLine" class="cr-line" fill="none" stroke="' + col + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
         '<i class="cr-axis x"></i><i class="cr-axis y"></i>' +
         '<span class="cr-craft" id="crCraft"><span class="cr-bob">' + craftSvg(game) + '</span></span><i class="cr-boom" id="crBoom"></i>' +
-        '<div class="cr-mid"><small class="cr-flew fit" id="crFlew"></small><b class="cr-m fit" id="crM">' + fx(1) + '×</b>' +
-        '<b class="cr-out" id="crOut"></b>' +
-        '<div class="cr-wait" id="crWait" hidden><i class="cr-spin"></i><small class="fit">' + K.esc(l.wait) + '</small><i class="cr-bar"><b id="crBar"></b></i></div></div></div>' +
+        '<div class="cr-top" id="crTop"><b class="cr-m fit" id="crM">' + fx(1) + '×</b><small class="cr-flew fit" id="crFlew"></small></div><b class="cr-out" id="crOut"></b>' +
+        '<div class="cr-mid"><div class="cr-wait" id="crWait" hidden><i class="cr-spin"></i><small class="fit">' + K.esc(l.wait) + '</small><i class="cr-bar"><b id="crBar"></b></i></div></div></div>' +
         K.stakePanel(l.bet, opts);
       var watch = K.guest();
       if (!watch) K.bindStake(box);
@@ -166,31 +166,46 @@
       };
       paintAuto();
 
-      /* ---- scene geometry ---- */
+      /* ---- scene geometry ----
+         v2811 (propriétaire) : comme Aviator — petit compteur EN HAUT (jamais sur l'avion), l'avion décolle en MONTANT
+         (la courbe monte dès le départ puis se cabre), il reste toujours au bout de la courbe, et les axes se resserrent
+         doucement (aucun saut) : le bout de la courbe glisse vers le coin haut-droit et y reste pendant que la courbe dessous
+         se comprime. Fin du vol : il continue tout droit en accélérant et sort de l'écran (aucun « bond »). */
+      var X0 = 0, Y0 = 0, WP = 0, HP = 0, ang = -12, flyA = 0, endAt = 0, endXY = null;
+      var gx = function (t) { return Math.exp(0.08 * t) - 1; };
       var measure = function () {
         W = st.clientWidth; H = st.clientHeight;
         svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
-        cw = Math.max(64, Math.min(150, Math.min(W * 0.22, H * 0.42)));
+        cw = Math.max(60, Math.min(140, W * 0.2, H * 0.36));
         craft.style.width = cw + 'px'; craft.style.height = (cw / 2) + 'px';
+        var top = $('crTop'), tb = top ? top.offsetTop + top.offsetHeight : H * 0.2;
+        X0 = Math.max(18, W * 0.06); Y0 = H - Math.max(16, H * 0.1);
+        var yTop = Math.min(Y0 - 40, tb + cw * 0.5 + 4), xR = W - cw * 0.95;
+        WP = Math.max(40, xR - X0); HP = Math.max(30, Y0 - yTop);
       };
-      var geo = function (s, m) {
-        var x0 = W * 0.05, y0 = H * 0.9, wp = W * 0.86, hp = H * 0.68;
-        var ts = Math.max(9, s * 1.12), ms = Math.max(2.2, 1 + (Math.exp(0.08 * s) - 1) * 1.16);
-        var px = function (t) { return x0 + wp * t / ts; }, py = function (t) { return y0 - hp * (Math.exp(0.08 * t) - 1) / (ms - 1); };
-        return { x0: x0, y0: y0, px: px, py: py };
+      // point de la courbe au temps t (0 ≤ t ≤ s) pour un vol arrivé à s secondes
+      var pt = function (s, t) {
+        var Ts = s + 7 * Math.exp(-s / 7), G = gx(s) + 0.9 * Math.exp(-s / 5);
+        var v = 0.32 * t / Ts + 0.68 * gx(t) / G;
+        return [X0 + WP * t / Ts, Y0 - HP * v];
+      };
+      var placeCraft = function (x, y, a, op) {
+        craft.style.transform = 'translate(' + (x - cw * 0.14).toFixed(1) + 'px,' + (y - cw * 0.25).toFixed(1) + 'px) rotate(' + a.toFixed(1) + 'deg)';
+        if (op != null) craft.style.opacity = String(op);
       };
       var drawFlight = function (s) {
-        // the plane rides the true multiplier; the trail is a smooth bent curve to it (like the big crash games)
-        var g = geo(s), X = g.px(s), Y = g.py(s), cx = g.x0 + (X - g.x0) * 0.58, cy = g.y0;
-        var d = 'M' + g.x0.toFixed(1) + ' ' + g.y0.toFixed(1) + 'Q' + cx.toFixed(1) + ' ' + cy.toFixed(1) + ' ' + X.toFixed(1) + ' ' + Y.toFixed(1);
-        line.setAttribute('d', d); area.setAttribute('d', d + 'L' + X.toFixed(1) + ' ' + g.y0.toFixed(1) + 'Z');
-        var a = Math.atan2(Y - cy, Math.max(0.01, X - cx)) * 180 / Math.PI; a = Math.max(-34, Math.min(0, a));
-        craft.style.transform = 'translate(' + Math.max(cw * 0.12, X - cw * 0.62).toFixed(1) + 'px,' + (Y - cw * 0.3).toFixed(1) + 'px) rotate(' + a.toFixed(1) + 'deg)';
-        return [X, Y];
+        var n = Math.max(8, Math.min(48, Math.round(s * 6))), d = '', p = null;
+        for (var k = 0; k <= n; k++) { p = pt(s, s * k / n); d += (k ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }
+        line.setAttribute('d', d); area.setAttribute('d', d + 'L' + p[0].toFixed(1) + ' ' + Y0.toFixed(1) + 'L' + X0.toFixed(1) + ' ' + Y0.toFixed(1) + 'Z');
+        var q = pt(s, Math.max(0, s - 0.25)), a = Math.atan2(p[1] - q[1], Math.max(0.5, p[0] - q[0])) * 180 / Math.PI;
+        if (s < 0.05) a = -14;
+        a = Math.max(-30, Math.min(-8, a)); ang += (a - ang) * 0.12; // l'avion s'incline en douceur, sans à-coups
+        placeCraft(p[0], p[1], ang, 1);
+        return p;
       };
       var park = function () {
         line.setAttribute('d', ''); area.setAttribute('d', '');
-        craft.style.transform = 'translate(' + (W * 0.05 - cw * 0.08).toFixed(1) + 'px,' + (H * 0.9 - cw * 0.4).toFixed(1) + 'px)';
+        ang = -14; placeCraft(X0, Y0, ang);
       };
       var lastXY = [0, 0];
       measure();
@@ -256,23 +271,31 @@
         if (R && W) {
           var t = nowS(), s = t - R.t0, phase = t < R.t0 ? 'bet' : R.c != null ? 'end' : 'fly';
           if (phase !== view) {
-            view = phase;
+            var was = view; view = phase;
             st.classList.toggle('flying', phase === 'fly'); st.classList.toggle('ended', phase === 'end'); st.classList.toggle('betting', phase === 'bet');
-            wait.hidden = phase !== 'bet'; mEl.hidden = phase === 'bet';
+            wait.hidden = phase !== 'bet'; mEl.style.visibility = phase === 'bet' ? 'hidden' : '';
             K.setText(flew, phase === 'end' ? (game === 'rocket' ? l.lost : l.flew) : '');
             K.fitEl(mEl); K.fitEl(wait.querySelector('small'));
             if (phase === 'end') {
-              craft.style.transition = game === 'rocket' ? 'opacity .25s, visibility 0s .3s' : 'transform 1s cubic-bezier(.55,0,.9,.45), opacity 1s, visibility 0s 1s'; craft.style.visibility = 'hidden';
-              if (game === 'rocket') { var bm = $('crBoom'); bm.style.transform = 'translate(' + lastXY[0].toFixed(0) + 'px,' + lastXY[1].toFixed(0) + 'px)'; bm.classList.remove('go'); void bm.offsetWidth; bm.classList.add('go'); craft.style.opacity = '0'; }
-              else { craft.style.transform = 'translate(' + (W + cw).toFixed(0) + 'px,' + (-cw).toFixed(0) + 'px) rotate(-30deg)'; craft.style.opacity = '0'; }
-            } else { craft.style.transition = 'none'; craft.style.opacity = '1'; craft.style.visibility = ''; }
+              endAt = performance.now(); endXY = was === 'fly' ? lastXY : null; flyA = Math.min(ang, -16);
+              if (!endXY) { craft.style.opacity = '0'; craft.style.visibility = 'hidden'; }
+              else if (game === 'rocket') { var bm = $('crBoom'); bm.style.transform = 'translate(' + lastXY[0].toFixed(0) + 'px,' + lastXY[1].toFixed(0) + 'px)'; bm.classList.remove('go'); void bm.offsetWidth; bm.classList.add('go'); craft.style.opacity = '0'; craft.style.visibility = 'hidden'; }
+            } else if (phase === 'bet') {
+              park(); craft.style.visibility = ''; craft.style.opacity = '0'; craft.classList.remove('in'); void craft.offsetWidth; craft.classList.add('in'); craft.style.opacity = '1'; // le suivant arrive au départ en fondu
+            } else { craft.style.visibility = ''; craft.style.opacity = '1'; }
           }
           if (phase === 'bet') {
-            park(); bar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.t0 - t) / (R.bet || 5))).toFixed(3) + ')';
+            if (Math.abs(ang + 14) > 0.01) park();
+            bar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.t0 - t) / (R.bet || 5))).toFixed(3) + ')';
           } else if (phase === 'fly') {
             lastXY = drawFlight(s); K.setText(mEl, fx(MULT(s)) + '×');
           } else {
             K.setText(mEl, fx(R.c) + '×');
+            if (endXY && game !== 'rocket') { // il file tout droit en accélérant, puis disparaît
+              var e = (performance.now() - endAt) / 1000;
+              if (e < 1.2) { var dd = cw * (1.4 * e + 6 * e * e), ra = flyA * Math.PI / 180; placeCraft(endXY[0] + dd * Math.cos(ra), endXY[1] + dd * Math.sin(ra), flyA, Math.max(0, 1 - e / 1.1)); }
+              else { craft.style.opacity = '0'; craft.style.visibility = 'hidden'; endXY = null; }
+            }
           }
           paintHist(); paintLock();
           var open = me && !me.done, inFlight = phase === 'fly';

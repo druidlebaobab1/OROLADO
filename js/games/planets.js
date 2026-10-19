@@ -1,4 +1,5 @@
-/* v2807 — Lucky Planets (NEW live game, owner request): a shared draw every 40 s for everyone, game-show style — 6 planets
+/* v2811 — rounds of 160 s (2 min of bets, 30 s comet), status line « Bets open 1:54 », calm polling, plain LIVE badge.
+   v2807 — Lucky Planets (NEW live game, owner request): a shared draw every 40 s for everyone, game-show style — 6 planets
    on an orbit, bets during the countdown, then a comet races around the orbit and stops on the drawn planet.
    Fixed chances, odds = 0.94 ÷ chance (6 % margin): Moon ×2.93 · Mars ×3.91 · Earth ×5.22 · Neptune ×7.23 · Saturn ×10.44 ·
    Sun ×23.50. Server: casino_lib.php casino_draw_* ('planets'), public state casino-tour.php?g=planets. */
@@ -6,36 +7,43 @@
   'use strict';
   var K = D6.CasinoKit, $ = K.$;
   var T = {
-    en: { open: 'Place your bets', lastc: 'Last bets', closed: 'No more bets', next: 'Next round', bet: 'Place bet', placed: 'Bet placed', bclosed: 'Bets closed', pick: 'Pick a planet first' },
-    fr: { open: 'Faites vos jeux', lastc: 'Derniers paris', closed: 'Rien ne va plus', next: 'Prochain tour', bet: 'Parier', placed: 'Pari placé', bclosed: 'Paris fermés', pick: 'Choisis d’abord une planète' },
-    es: { open: 'Hagan sus apuestas', lastc: 'Últimas apuestas', closed: 'No va más', next: 'Próxima ronda', bet: 'Apostar', placed: 'Apuesta hecha', bclosed: 'Apuestas cerradas', pick: 'Elige primero un planeta' },
-    pt: { open: 'Façam suas apostas', lastc: 'Últimas apostas', closed: 'Apostas encerradas', next: 'Próxima rodada', bet: 'Apostar', placed: 'Aposta feita', bclosed: 'Apostas fechadas', pick: 'Escolha primeiro um planeta' },
-    ar: { open: 'ضعوا رهاناتكم', lastc: 'آخر الرهانات', closed: 'لا مزيد من الرهانات', next: 'الجولة التالية', bet: 'راهن', placed: 'تم الرهان', bclosed: 'الرهانات مغلقة', pick: 'اختر كوكبًا أولاً' },
-    tr: { open: 'Bahislerinizi yapın', lastc: 'Son bahisler', closed: 'Bahisler kapandı', next: 'Sonraki tur', bet: 'Bahis yap', placed: 'Bahis alındı', bclosed: 'Bahis kapalı', pick: 'Önce bir gezegen seç' },
-    vi: { open: 'Mời đặt cược', lastc: 'Cược cuối', closed: 'Hết giờ cược', next: 'Vòng tiếp theo', bet: 'Đặt cược', placed: 'Đã đặt cược', bclosed: 'Đã đóng cược', pick: 'Hãy chọn một hành tinh trước' },
-    id: { open: 'Pasang taruhan', lastc: 'Taruhan terakhir', closed: 'Taruhan ditutup', next: 'Ronde berikutnya', bet: 'Pasang', placed: 'Taruhan dipasang', bclosed: 'Taruhan tutup', pick: 'Pilih planet dulu' },
-    ru: { open: 'Делайте ставки', lastc: 'Последние ставки', closed: 'Ставки сделаны', next: 'Следующий раунд', bet: 'Поставить', placed: 'Ставка принята', bclosed: 'Ставки закрыты', pick: 'Сначала выберите планету' },
-    de: { open: 'Machen Sie Ihr Spiel', lastc: 'Letzte Einsätze', closed: 'Nichts geht mehr', next: 'Nächste Runde', bet: 'Setzen', placed: 'Einsatz platziert', bclosed: 'Einsätze geschlossen', pick: 'Wähle zuerst einen Planeten' },
-    hi: { open: 'दांव लगाएं', lastc: 'आखिरी दांव', closed: 'दांव बंद', next: 'अगला राउंड', bet: 'दांव लगाएं', placed: 'दांव लग गया', bclosed: 'दांव बंद', pick: 'पहले एक ग्रह चुनें' },
-    zh: { open: '请下注', lastc: '最后下注', closed: '停止下注', next: '下一局', bet: '下注', placed: '已下注', bclosed: '下注已截止', pick: '请先选择一颗星球' }
+    en: { bo: 'Place your bets', lastc: 'Bets closing', bclosed: 'Bets closed', dp: 'Draw in progress', rs: 'Results', nx: 'Next round in', mc: 'Market closed', placed: 'Bet placed', bet: 'Place bet', pick: 'Select a planet first' },
+    fr: { bo: 'Pariez maintenant', lastc: 'Clôture des paris', bclosed: 'Paris fermés', dp: 'Tirage en cours', rs: 'Résultats', nx: 'Prochain tour dans', mc: 'Marché fermé', placed: 'Pari enregistré', bet: 'Parier', pick: 'Choisissez d’abord une planète' },
+    es: { bo: 'Apueste ahora', lastc: 'Cierre de apuestas', bclosed: 'Apuestas cerradas', dp: 'Sorteo en curso', rs: 'Resultados', nx: 'Próxima ronda en', mc: 'Mercado cerrado', placed: 'Apuesta registrada', bet: 'Apostar', pick: 'Elija primero un planeta' },
+    pt: { bo: 'Aposte agora', lastc: 'Encerramento das apostas', bclosed: 'Apostas encerradas', dp: 'Sorteio em andamento', rs: 'Resultados', nx: 'Próxima rodada em', mc: 'Mercado fechado', placed: 'Aposta registrada', bet: 'Apostar', pick: 'Escolha primeiro um planeta' },
+    ar: { bo: 'ضع رهانك الآن', lastc: 'الرهانات تُغلق قريبًا', bclosed: 'الرهانات مغلقة', dp: 'السحب جارٍ', rs: 'النتائج', nx: 'الجولة التالية خلال', mc: 'السوق مغلق', placed: 'تم تسجيل الرهان', bet: 'راهن', pick: 'اختر كوكبًا أولاً' },
+    tr: { bo: 'Bahislerinizi yapın', lastc: 'Bahisler kapanıyor', bclosed: 'Bahisler kapandı', dp: 'Çekiliş sürüyor', rs: 'Sonuçlar', nx: 'Sonraki tur', mc: 'Piyasa kapalı', placed: 'Bahis alındı', bet: 'Bahis yap', pick: 'Önce bir gezegen seçin' },
+    vi: { bo: 'Mời đặt cược', lastc: 'Sắp đóng cược', bclosed: 'Đã đóng cược', dp: 'Đang quay thưởng', rs: 'Kết quả', nx: 'Vòng tiếp theo sau', mc: 'Thị trường đóng cửa', placed: 'Đã đặt cược', bet: 'Đặt cược', pick: 'Hãy chọn một hành tinh trước' },
+    id: { bo: 'Pasang taruhan Anda', lastc: 'Taruhan segera ditutup', bclosed: 'Taruhan ditutup', dp: 'Undian berlangsung', rs: 'Hasil', nx: 'Ronde berikutnya dalam', mc: 'Pasar tutup', placed: 'Taruhan tercatat', bet: 'Pasang', pick: 'Pilih planet dulu' },
+    ru: { bo: 'Делайте ставки', lastc: 'Приём ставок завершается', bclosed: 'Ставки закрыты', dp: 'Идёт розыгрыш', rs: 'Результаты', nx: 'Следующий раунд через', mc: 'Рынок закрыт', placed: 'Ставка принята', bet: 'Поставить', pick: 'Сначала выберите планету' },
+    de: { bo: 'Jetzt setzen', lastc: 'Einsätze schließen gleich', bclosed: 'Einsätze geschlossen', dp: 'Ziehung läuft', rs: 'Ergebnisse', nx: 'Nächste Runde in', mc: 'Markt geschlossen', placed: 'Einsatz platziert', bet: 'Setzen', pick: 'Wählen Sie zuerst einen Planeten' },
+    hi: { bo: 'अभी दांव लगाएं', lastc: 'दांव बंद होने वाले हैं', bclosed: 'दांव बंद', dp: 'ड्रॉ जारी है', rs: 'नतीजे', nx: 'अगला राउंड', mc: 'बाज़ार बंद', placed: 'दांव दर्ज हुआ', bet: 'दांव लगाएं', pick: 'पहले एक ग्रह चुनें' },
+    zh: { bo: '请下注', lastc: '即将停止下注', bclosed: '停止下注', dp: '开奖中', rs: '开奖结果', nx: '下一局', mc: '暂停交易', placed: '已下注', bet: '下注', pick: '请先选择一颗星球' }
   };
   var RULES = {
-    en: '🔴 LIVE: one draw every 40 s, the same for everyone.\n1. Pick one of the 6 planets: each shows its payout (Moon ×2.93 … Sun ×23.50 — the rarer the planet, the bigger the payout).\n2. Set your stake and tap “Place bet” before “No more bets”. One bet per round.\n3. The comet flies around the orbit and stops on one planet: if it is yours, you win stake × its payout.',
-    fr: '🔴 EN DIRECT : un tirage toutes les 40 s, le même pour tout le monde.\n1. Choisis une des 6 planètes : chacune affiche son gain (Lune ×2,93 … Soleil ×23,50 — plus la planète est rare, plus elle paie).\n2. Choisis ta mise et touche « Parier » avant « Rien ne va plus ». Un pari par tour.\n3. La comète fait le tour de l’orbite et s’arrête sur une planète : si c’est la tienne, tu gagnes mise × son gain.',
-    es: '🔴 EN VIVO: un sorteo cada 40 s, el mismo para todos.\n1. Elige uno de los 6 planetas: cada uno muestra su pago (Luna ×2,93 … Sol ×23,50 — cuanto más raro, más paga).\n2. Elige tu apuesta y toca «Apostar» antes de «No va más». Una apuesta por ronda.\n3. El cometa recorre la órbita y se detiene en un planeta: si es el tuyo, ganas apuesta × su pago.',
-    pt: '🔴 AO VIVO: um sorteio a cada 40 s, o mesmo para todos.\n1. Escolha um dos 6 planetas: cada um mostra seu pagamento (Lua ×2,93 … Sol ×23,50 — quanto mais raro, mais paga).\n2. Escolha o valor e toque em «Apostar» antes de «Apostas encerradas». Uma aposta por rodada.\n3. O cometa percorre a órbita e para num planeta: se for o seu, você ganha aposta × o pagamento.',
-    ar: '🔴 مباشر: سحب كل 40 ثانية، نفسه للجميع.\n1. اختر أحد الكواكب الستة: يظهر على كل كوكب عائده (القمر ×2.93 … الشمس ×23.50 — كلما ندر الكوكب زاد عائده).\n2. اختر مبلغ الرهان والمس «راهن» قبل «لا مزيد من الرهانات». رهان واحد لكل جولة.\n3. يدور المذنب حول المدار ويتوقف على كوكب: إذا كان كوكبك تربح الرهان × عائده.',
-    tr: '🔴 CANLI: her 40 sn’de bir çekiliş, herkes için aynı.\n1. 6 gezegenden birini seç: her biri ödemesini gösterir (Ay ×2,93 … Güneş ×23,50 — gezegen ne kadar nadirse o kadar çok öder).\n2. Tutarını seç ve “Bahisler kapandı” demeden “Bahis yap”a dokun. Her turda bir bahis.\n3. Kuyruklu yıldız yörüngeyi dolaşır ve bir gezegende durur: seninkiyse bahis × ödemesini kazanırsın.',
-    vi: '🔴 TRỰC TIẾP: mỗi 40 giây một lần quay, giống nhau cho mọi người.\n1. Chọn một trong 6 hành tinh: mỗi hành tinh hiện tỷ lệ trả (Mặt Trăng ×2,93 … Mặt Trời ×23,50 — càng hiếm càng trả cao).\n2. Chọn mức cược và chạm «Đặt cược» trước khi «Hết giờ cược». Mỗi vòng một cược.\n3. Sao chổi bay quanh quỹ đạo và dừng ở một hành tinh: nếu là của bạn, bạn thắng cược × tỷ lệ trả.',
-    id: '🔴 LANGSUNG: satu undian tiap 40 dtk, sama untuk semua.\n1. Pilih satu dari 6 planet: masing-masing menampilkan bayarannya (Bulan ×2,93 … Matahari ×23,50 — makin langka, makin besar bayarannya).\n2. Atur taruhan lalu sentuh «Pasang» sebelum «Taruhan ditutup». Satu taruhan per ronde.\n3. Komet mengitari orbit dan berhenti di satu planet: jika itu planetmu, kamu menang taruhan × bayarannya.',
-    ru: '🔴 В ПРЯМОМ ЭФИРЕ: один розыгрыш каждые 40 с, общий для всех.\n1. Выберите одну из 6 планет: у каждой своя выплата (Луна ×2,93 … Солнце ×23,50 — чем реже планета, тем больше выплата).\n2. Выберите сумму и нажмите «Поставить» до «Ставки сделаны». Одна ставка за раунд.\n3. Комета облетает орбиту и останавливается на планете: если она ваша, вы выигрываете ставку × выплату.',
-    de: '🔴 LIVE: alle 40 s eine Ziehung, für alle gleich.\n1. Wähle einen der 6 Planeten: jeder zeigt seine Auszahlung (Mond ×2,93 … Sonne ×23,50 — je seltener, desto höher).\n2. Wähle deinen Einsatz und tippe auf „Setzen“, bevor „Nichts geht mehr“ kommt. Ein Einsatz pro Runde.\n3. Der Komet fliegt um die Umlaufbahn und stoppt auf einem Planeten: Ist es deiner, gewinnst du Einsatz × Auszahlung.',
-    hi: '🔴 लाइव: हर 40 सेकंड में एक ड्रॉ, सबके लिए एक जैसा।\n1. 6 ग्रहों में से एक चुनें: हर ग्रह पर उसका भुगतान लिखा है (चंद्रमा ×2.93 … सूर्य ×23.50 — ग्रह जितना दुर्लभ, भुगतान उतना बड़ा)।\n2. राशि चुनें और «दांव बंद» से पहले «दांव लगाएं» छुएं। हर राउंड में एक दांव।\n3. धूमकेतु कक्षा में घूमकर एक ग्रह पर रुकता है: वह आपका हो तो आप दांव × उसका भुगतान जीतते हैं।',
-    zh: '🔴 直播：每 40 秒开奖一次，所有人同一结果。\n1. 从 6 颗星球中选一颗：每颗都标有赔率（月球 ×2.93 … 太阳 ×23.50 — 越稀有赔率越高）。\n2. 设定金额，在“停止下注”前点击“下注”。每局一注。\n3. 彗星绕轨道飞行并停在一颗星球上：如果是你选的，即赢 投注 × 赔率。'
+    en: '🔴 LIVE: one draw every 160 s, the same for everyone.\n1. Pick one of the 6 planets: each shows its payout (Moon ×2.93 … Sun ×23.50 — the rarer the planet, the bigger the payout).\n2. Set your stake and tap “Place bet” before “No more bets”. One bet per round.\n3. The comet flies around the orbit and stops on one planet: if it is yours, you win stake × its payout.',
+    fr: '🔴 EN DIRECT : un tirage toutes les 160 s, le même pour tout le monde.\n1. Choisis une des 6 planètes : chacune affiche son gain (Lune ×2,93 … Soleil ×23,50 — plus la planète est rare, plus elle paie).\n2. Choisis ta mise et touche « Parier » avant « Rien ne va plus ». Un pari par tour.\n3. La comète fait le tour de l’orbite et s’arrête sur une planète : si c’est la tienne, tu gagnes mise × son gain.',
+    es: '🔴 EN VIVO: un sorteo cada 160 s, el mismo para todos.\n1. Elige uno de los 6 planetas: cada uno muestra su pago (Luna ×2,93 … Sol ×23,50 — cuanto más raro, más paga).\n2. Elige tu apuesta y toca «Apostar» antes de «No va más». Una apuesta por ronda.\n3. El cometa recorre la órbita y se detiene en un planeta: si es el tuyo, ganas apuesta × su pago.',
+    pt: '🔴 AO VIVO: um sorteio a cada 160 s, o mesmo para todos.\n1. Escolha um dos 6 planetas: cada um mostra seu pagamento (Lua ×2,93 … Sol ×23,50 — quanto mais raro, mais paga).\n2. Escolha o valor e toque em «Apostar» antes de «Apostas encerradas». Uma aposta por rodada.\n3. O cometa percorre a órbita e para num planeta: se for o seu, você ganha aposta × o pagamento.',
+    ar: '🔴 مباشر: سحب كل 160 ثانية، نفسه للجميع.\n1. اختر أحد الكواكب الستة: يظهر على كل كوكب عائده (القمر ×2.93 … الشمس ×23.50 — كلما ندر الكوكب زاد عائده).\n2. اختر مبلغ الرهان والمس «راهن» قبل «لا مزيد من الرهانات». رهان واحد لكل جولة.\n3. يدور المذنب حول المدار ويتوقف على كوكب: إذا كان كوكبك تربح الرهان × عائده.',
+    tr: '🔴 CANLI: her 160 sn’de bir çekiliş, herkes için aynı.\n1. 6 gezegenden birini seç: her biri ödemesini gösterir (Ay ×2,93 … Güneş ×23,50 — gezegen ne kadar nadirse o kadar çok öder).\n2. Tutarını seç ve “Bahisler kapandı” demeden “Bahis yap”a dokun. Her turda bir bahis.\n3. Kuyruklu yıldız yörüngeyi dolaşır ve bir gezegende durur: seninkiyse bahis × ödemesini kazanırsın.',
+    vi: '🔴 TRỰC TIẾP: mỗi 160 giây một lần quay, giống nhau cho mọi người.\n1. Chọn một trong 6 hành tinh: mỗi hành tinh hiện tỷ lệ trả (Mặt Trăng ×2,93 … Mặt Trời ×23,50 — càng hiếm càng trả cao).\n2. Chọn mức cược và chạm «Đặt cược» trước khi «Hết giờ cược». Mỗi vòng một cược.\n3. Sao chổi bay quanh quỹ đạo và dừng ở một hành tinh: nếu là của bạn, bạn thắng cược × tỷ lệ trả.',
+    id: '🔴 LANGSUNG: satu undian tiap 160 dtk, sama untuk semua.\n1. Pilih satu dari 6 planet: masing-masing menampilkan bayarannya (Bulan ×2,93 … Matahari ×23,50 — makin langka, makin besar bayarannya).\n2. Atur taruhan lalu sentuh «Pasang» sebelum «Taruhan ditutup». Satu taruhan per ronde.\n3. Komet mengitari orbit dan berhenti di satu planet: jika itu planetmu, kamu menang taruhan × bayarannya.',
+    ru: '🔴 В ПРЯМОМ ЭФИРЕ: один розыгрыш каждые 160 с, общий для всех.\n1. Выберите одну из 6 планет: у каждой своя выплата (Луна ×2,93 … Солнце ×23,50 — чем реже планета, тем больше выплата).\n2. Выберите сумму и нажмите «Поставить» до «Ставки сделаны». Одна ставка за раунд.\n3. Комета облетает орбиту и останавливается на планете: если она ваша, вы выигрываете ставку × выплату.',
+    de: '🔴 LIVE: alle 160 s eine Ziehung, für alle gleich.\n1. Wähle einen der 6 Planeten: jeder zeigt seine Auszahlung (Mond ×2,93 … Sonne ×23,50 — je seltener, desto höher).\n2. Wähle deinen Einsatz und tippe auf „Setzen“, bevor „Nichts geht mehr“ kommt. Ein Einsatz pro Runde.\n3. Der Komet fliegt um die Umlaufbahn und stoppt auf einem Planeten: Ist es deiner, gewinnst du Einsatz × Auszahlung.',
+    hi: '🔴 लाइव: हर 160 सेकंड में एक ड्रॉ, सबके लिए एक जैसा।\n1. 6 ग्रहों में से एक चुनें: हर ग्रह पर उसका भुगतान लिखा है (चंद्रमा ×2.93 … सूर्य ×23.50 — ग्रह जितना दुर्लभ, भुगतान उतना बड़ा)।\n2. राशि चुनें और «दांव बंद» से पहले «दांव लगाएं» छुएं। हर राउंड में एक दांव।\n3. धूमकेतु कक्षा में घूमकर एक ग्रह पर रुकता है: वह आपका हो तो आप दांव × उसका भुगतान जीतते हैं।',
+    zh: '🔴 直播：每 160 秒开奖一次，所有人同一结果。\n1. 从 6 颗星球中选一颗：每颗都标有赔率（月球 ×2.93 … 太阳 ×23.50 — 越稀有赔率越高）。\n2. 设定金额，在“停止下注”前点击“下注”。每局一注。\n3. 彗星绕轨道飞行并停在一颗星球上：如果是你选的，即赢 投注 × 赔率。'
   };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   var ODDS = [2.93, 3.91, 5.22, 7.23, 10.44, 23.5]; // = server casino_planets_odds() (the server's value is shown when it arrives)
-  var REVEAL = 7.5, N = 6;
+  var REVEAL = 30, N = 6; // v2811 : 30 s de comète (elle ralentit planète après planète)
+  function mmss(v) { v = Math.max(0, Math.ceil(v)); return Math.floor(v / 60) + ':' + (v % 60 < 10 ? '0' : '') + (v % 60); }
+  // v2811 : appels au serveur espacés (≈ 8 s) quand rien ne change, précis à la fermeture, au résultat et au nouveau tour
+  function pollDelay(R, t, hasRes) {
+    if (t < R.close) { var a = R.close - t; return a > 14 ? Math.min(8000, (a - 10) * 1000) : a > 1.3 ? Math.min(2500, (a - 1.1) * 1000) : Math.max(100, (a + 0.1) * 1000); }
+    if (!hasRes) return 400;
+    var b = R.end - t; return b > 14 ? Math.min(8000, (b - 10) * 1000) : b > 1.3 ? Math.min(2500, (b - 1.1) * 1000) : Math.max(150, (b + 0.25) * 1000);
+  }
   var GID = 0;
   /* our own planet drawings (r = radius, centred on 0,0) */
   function planet(i, r, uid) {
@@ -69,7 +77,7 @@
     var pl = []; for (var i = 0; i < N; i++) pl.push(i);
     // le plus proche (bas de l'orbite) se dessine en dernier
     var order = pl.slice().sort(function (a, b) { return pos(ang(a))[1] - pos(ang(b))[1]; });
-    box.innerHTML = '<div class="cg-stage lp-stage"><div class="lp-head"><span class="lp-live"><i></i>LIVE</span><b class="lp-ph fit" id="lpPh"></b><em class="lp-tm fit" id="lpTm"></em></div>' +
+    box.innerHTML = '<div class="cg-stage lp-stage"><div class="lp-head"><span class="lp-live"><i></i><b>LIVE</b></span><b class="lp-ph fit" id="lpPh"></b><em class="lp-tm fit" id="lpTm"></em></div>' +
       '<i class="lp-bar" id="lpBarB"><b id="lpBar"></b></i>' +
       '<div class="lp-scene"><svg class="lp-svg" id="lpSvg" viewBox="0 0 360 230" preserveAspectRatio="xMidYMid meet" dir="ltr" aria-hidden="true"><defs>' +
         '<radialGradient id="lpN' + uid + '" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#A78BFA" stop-opacity=".55"/><stop offset=".5" stop-color="#7C3AED" stop-opacity=".18"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></radialGradient>' +
@@ -112,14 +120,12 @@
       try { var rq = await fetch('casino-tour.php?g=planets', { cache: 'no-store' }); r = await rq.json(); } catch (e) { r = null; }
       if ((!r || !r.ok) && !K.guest()) { r = await K.multi('planets', 'dround', null, true); if (r) r.mine = 1; }
       if (!alive()) return;
-      var delay = 1000;
+      var delay = 4000;
       if (r && r.round) {
-        st.off = r.now - Date.now() / 1000; st.R = r.round;
+        st.off = r.now - Date.now() / 1000; st.R = r.round; st.fails = 0;
         if (r.round.odds && r.round.odds.length === N) st.odds = r.round.odds;
-        var tt = nowS(), R0 = st.R;
-        if (tt < R0.close && R0.close - tt < 1.3) delay = Math.max(100, (R0.close - tt + 0.1) * 1000);
-        else if (tt >= R0.close && !R0.res) delay = 300;
-      }
+        delay = pollDelay(st.R, nowS(), !!st.R.res);
+      } else { st.fails = (st.fails || 0) + 1; delay = Math.min(10000, 1500 * st.fails); }
       clearTimeout(K.S.timer); K.S.timer = setTimeout(sync, delay);
       if (!r || !r.round) return;
       var mine = r.mine ? r : null, open0 = st.me && !st.me.done;
@@ -150,24 +156,31 @@
       if (!alive()) return;
       var R = st.R;
       if (R) {
-        var t = nowS(), bet = t < R.close, e = t - R.close, res = R.res ? +R.res.n : -1, rev = res >= 0 && e >= REVEAL;
+        var t = nowS();
+        if (t >= R.end + 0.6) { // tour fini, le serveur répondra au prochain appel : on montre déjà le suivant (mises ouvertes)
+          var lst = (R.last || []).slice(); if (R.res) lst.unshift(+R.res.n);
+          st.R = R = { i: R.i + 1, t0: R.end, close: R.end + R.B, end: R.end + R.P, P: R.P, B: R.B, phase: 'bet', last: lst.slice(0, 6) };
+        }
+        var bet = t < R.close, e = t - R.close, res = R.res ? +R.res.n : -1, rev = res >= 0 && e >= REVEAL;
+        // v2811 : statut sur une ligne — « Paris ouverts 1:54 » · « Derniers paris 0:08 » · « Tirage en cours » · « Prochain tour dans 0:41 »
         if (bet) {
           var left = R.close - t;
-          K.setText(ph, left <= 5 ? l.lastc : l.open); K.setText(tm, Math.ceil(left) + ' s');
+          K.setText(ph, left <= 10 ? l.lastc : l.bo); K.setText(tm, mmss(left));
           bar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, left / R.B)).toFixed(4) + ')';
-          big.textContent = String(Math.ceil(left)); big.setAttribute('class', 'cnt' + (left <= 5 ? ' warn' : ''));
+          big.textContent = mmss(left); big.setAttribute('class', 'cnt' + (left <= 10 ? ' warn' : ''));
         } else {
-          K.setText(ph, rev ? l.next : l.closed); K.setText(tm, Math.max(0, Math.ceil(R.end - t)) + ' s');
+          var rs = rev && e < REVEAL + 5; // « Résultats » quelques secondes, puis « Prochain tour dans 0:41 »
+          K.setText(ph, rs ? l.rs : rev ? l.nx : l.dp); K.setText(tm, rev && !rs ? mmss(R.end - t) : '');
           bar.style.transform = 'scaleX(0)';
           if (rev) { big.textContent = oddTxt(st.odds[res]); big.setAttribute('class', 'odd'); } else { big.textContent = ''; }
         }
-        var cls = bet ? (R.close - t <= 5 ? 'warn' : 'open') : 'shut';
+        var cls = bet ? (R.close - t <= 10 ? 'warn' : 'open') : 'shut';
         if (st.cls !== cls) { st.cls = cls; barB.className = 'lp-bar ' + cls; stage.setAttribute('data-ph', cls); }
         // la comète : lente pendant les mises, puis elle file et s'arrête sur la planète tirée (la même pour tous)
         var a0 = norm(R.close * 36), a, spd = 36;
         if (bet || res < 0) a = norm(t * 36);
         else {
-          var tgt = ang(res), tot = 3 * 360 + norm(tgt - a0), k = Math.min(1, e / REVEAL);
+          var tgt = ang(res), tot = 9 * 360 + norm(tgt - a0), k = Math.min(1, e / REVEAL);
           a = a0 + tot * eo(k); spd = tot * 4 * Math.pow(1 - k, 3) / REVEAL;
         }
         setCom(a, spd);
@@ -193,7 +206,7 @@
           box.querySelectorAll('[data-o]').forEach(function (x) { var v = oddTxt(st.odds[+x.getAttribute('data-o')]); if (x.textContent !== v) { x.textContent = v; if (x.classList.contains('fit')) K.fitEl(x); } });
         }
         showMine(t);
-      }
+      } else if ((st.fails || 0) >= 2) { K.setText(ph, l.mc); K.setText(tm, ''); } // serveur injoignable
       K.S.raf = requestAnimationFrame(tick);
     };
     // portrait : l'orbite devient plus ronde et remplit la hauteur ; paysage : ellipse large

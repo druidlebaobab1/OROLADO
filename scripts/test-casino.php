@@ -283,7 +283,7 @@ $file = casino_user_file('u_cs');
 // v2792 : Racing en direct (10 voitures, cotes) ; chevaux : gagnant « w3 », couplé « c2-7 », ancien format « 3 »
 foreach ([['cryptox', '7'], ['horses', 'w3'], ['horses', 'c2-7'], ['horses', '3'], ['race', '4'], ['roulette', 'red']] as [$dg, $sel]) {
   [$P, $B] = CASINO_DRAW[$dg];
-  $i0 = (int) floor(time() / $P) + 50; $t = $i0 * $P + 2.0; // un tour futur, 2 s après son ouverture
+  $i0 = casino_draw_i($dg, time()) + 50; $t = casino_draw_start($dg, $i0) + 2.0; // un tour futur, 2 s après son ouverture
   casino_with($file, static function (array &$st) use ($dg) { unset($st['g'][$dg]); return true; });
   $bal[$U] = 50.0; syncv();
   $pub = casino_draw_public($dg, $t);
@@ -294,7 +294,7 @@ foreach ([['cryptox', '7'], ['horses', 'w3'], ['horses', 'c2-7'], ['horses', '3'
   check("$dg : pari accepté, 2 $ retirés", $r['ok'] && $bal[$U] == 48.0 && !isset($r['res']), json_encode($r));
   $r2 = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 2, ['sel' => $sel], $t + 1);
   check("$dg : 2e pari sur le même tour refusé", $r2['ok'] === false && $r2['reason'] === 'already' && $bal[$U] == 48.0);
-  $tShow = $i0 * $P + $B + 0.5;
+  $tShow = casino_draw_start($dg, $i0) + $B + 0.5;
   $d = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'dround', 'real', 0, [], $tShow);
   $out = casino_draw_outcome($dg, $i0);
   $want = casino_money(2 * (float) casino_draw_mult($dg, $sel, $out));
@@ -303,9 +303,9 @@ foreach ([['cryptox', '7'], ['horses', 'w3'], ['horses', 'c2-7'], ['horses', '3'
   check("$dg : gain versé UNE seule fois", abs($bal[$U] - (48.0 + $want)) < 0.001);
   $pr = casino_draw_public($dg, $tShow)['res'] ?? [];
   check("$dg : le résultat public est le même pour tous", isset($out['order']) ? ($pr['order'] ?? null) === $out['order'] : ($pr['n'] ?? null) === $out['n']);
-  $late = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 2, ['sel' => $sel], $i0 * $P + $B - 0.3);
+  $late = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 2, ['sel' => $sel], casino_draw_start($dg, $i0) + $B - 0.3);
   check("$dg : pari après la fermeture des mises refusé", $late['ok'] === false);
-  $nx = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 1, ['sel' => $sel], ($i0 + 1) * $P + 1);
+  $nx = casino_draw_act(load_db(), $me, 'u_cs', $file, $dg, 'bet', 'real', 1, ['sel' => $sel], casino_draw_start($dg, $i0 + 1) + 1);
   check("$dg : tour suivant, nouveau pari accepté", $nx['ok'] === true, json_encode($nx));
   casino_with($file, static function (array &$st) use ($dg) { unset($st['g'][$dg]); return true; });
 }
@@ -335,7 +335,7 @@ foreach (['race', 'horses'] as $dg) { $sum = 0.0; $N = 40000;
     $sum += casino_draw_mult($dg, $sel, $out); }
   check(sprintf('%s : retour en jouant %.1f %% (≈ 94)', $dg, $sum / $N * 100), $sum / $N > 0.90 && $sum / $N < 0.975);
 }
-$tB = (int) (floor(time() / 60) + 80) * 60 + 3.0;
+$tB = casino_draw_start('race', casino_draw_i('race', time()) + 80) + 3.0; // v2811 : race et horses ont la même période
 $pb = casino_draw_public('race', $tB);
 check('race : pendant les mises, les COTES sont visibles mais pas l\'arrivée', count($pb['odds'] ?? []) === 10 && !isset($pb['res']) && !isset($pb['order']));
 $ph = casino_draw_public('horses', $tB);
@@ -398,7 +398,7 @@ casino_with($file, static function (array &$st) { unset($st['g']['crash']); retu
 
 // b) pari en direct sur un tour sorti de l'historique (60 tours) : jamais bloqué
 [$P, $B] = CASINO_DRAW['planets'];
-$i0 = (int) floor(time() / $P) + 200; $t = $i0 * $P + 2.0;
+$i0 = casino_draw_i('planets', time()) + 200; $t = casino_draw_start('planets', $i0) + 2.0;
 casino_with($file, static function (array &$st) { unset($st['g']['planets']); return true; });
 $bal[$U] = 50.0; syncv();
 $r = casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'bet', 'real', 0.15, ['sel' => '0'], $t);
@@ -406,7 +406,7 @@ check('Lucky Planets : pari 0,15 $ accepté, résultat gardé avec le pari (cach
 casino_with($file, static function (array &$st) { $st['g']['planets']['o'] = ['n' => 0]; return true; }); // la planète choisie sort (×2,93)
 for ($k = 1; $k <= 70; $k++) casino_draw_outcome('planets', $i0 + $k); // le tour quitte l'historique des 60 derniers
 check('le tour du pari a quitté l\'historique et n\'est PAS re-tiré', casino_draw_outcome('planets', $i0) === [] && count((array) json_decode((string) file_get_contents(casino_dir() . '/draw-planets.json'), true)) <= 60);
-$late = ($i0 + 70) * $P + 1.0; // le joueur revient 70 tours plus tard
+$late = casino_draw_start('planets', $i0 + 70) + 1.0; // le joueur revient 70 tours plus tard
 $d = casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'dround', 'real', 0, [], $late);
 $wantP = casino_win(0.15, casino_planets_odds()[0]);
 check(sprintf('retour 70 tours plus tard : pari réglé avec SON résultat (0,15 × %.2f = %.2f $, vers le bas)', casino_planets_odds()[0], $wantP), !empty($d['done']) && abs((float) $d['win'] - $wantP) < 1e-9 && abs($bal[$U] - (49.85 + $wantP)) < 0.001 && $wantP === 0.43, json_encode([$d['win'] ?? null, $bal[$U]]));
@@ -416,11 +416,11 @@ casino_with($file, static function (array &$st) { unset($st['g']['planets']); re
 // ancien pari (posé avant v2810, sans résultat gardé) dont le tour a disparu → mise rendue UNE fois
 $bal[$U] = 48.0; syncv();
 $oldRound = $i0 - 100000;
-casino_with($file, static function (array &$st) use ($oldRound, $P, $B) { $st['g']['planets'] = ['ref' => 'cs_oldbet' . $oldRound, 'mode' => 'real', 'stake' => 2.0, 'round' => $oldRound, 'close' => (float) ($oldRound * $P + $B), 'sel' => '1', 't0' => (float) ($oldRound * $P + 1), 'done' => 0]; return true; });
+casino_with($file, static function (array &$st) use ($oldRound, $P, $B) { $st['g']['planets'] = ['ref' => 'cs_oldbet' . $oldRound, 'mode' => 'real', 'stake' => 2.0, 'round' => $oldRound, 'close' => (float) (casino_draw_start('planets', $oldRound) + $B), 'sel' => '1', 't0' => (float) (casino_draw_start('planets', $oldRound) + 1), 'done' => 0]; return true; });
 $x = casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'bet', 'real', 1, ['sel' => '1'], $late + 2);
 $st = casino_with($file, static fn(array &$s) => $s['g']['planets'] ?? null);
 check('ancien pari au tour introuvable : mise rendue (2 $), puis le nouveau pari passe', abs($bal[$U] - (48.0 + 2.0 - 1.0)) < 0.001 && $x['ok'] === true, json_encode([$x, $bal[$U]]));
-casino_with($file, static function (array &$st) use ($oldRound, $P, $B) { $st['g']['planets'] = ['ref' => 'cs_oldbet' . $oldRound, 'mode' => 'real', 'stake' => 2.0, 'round' => $oldRound, 'close' => (float) ($oldRound * $P + $B), 'sel' => '1', 't0' => 0.0, 'done' => 0]; return true; });
+casino_with($file, static function (array &$st) use ($oldRound, $P, $B) { $st['g']['planets'] = ['ref' => 'cs_oldbet' . $oldRound, 'mode' => 'real', 'stake' => 2.0, 'round' => $oldRound, 'close' => (float) (casino_draw_start('planets', $oldRound) + $B), 'sel' => '1', 't0' => 0.0, 'done' => 0]; return true; });
 $b1 = $bal[$U];
 casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'dround', 'real', 0, [], $late + 3);
 check('le remboursement ne se fait qu\'UNE fois (même référence)', abs($bal[$U] - $b1) < 0.001, $b1 . ' → ' . $bal[$U]);
@@ -442,7 +442,7 @@ foreach (['tower', 'mines', 'crash'] as $mg) {
 }
 @unlink(casino_round_file('crash'));
 [$P, $B] = CASINO_DRAW['cryptox'];
-$tC = ((int) floor(time() / $P) + 300) * $P + 2.0;
+$tC = casino_draw_start('cryptox', casino_draw_i('cryptox', time()) + 300) + 2.0;
 casino_with($file, static function (array &$st) { unset($st['g']['cryptox']); return true; });
 $bal[$U] = 50.0; syncv(); $inner = null;
 $hook = static function () use (&$inner, $me, $file, $tC) { $inner = casino_draw_act(load_db(), $me, 'u_cs', $file, 'cryptox', 'bet', 'real', 2, ['sel' => '3'], $tC + 0.1); };

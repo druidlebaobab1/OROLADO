@@ -8,77 +8,77 @@
 
   /* ------------------------------------------------------------------ texts (12 languages) */
   var T = {
-    en: { open: 'Place your bets', lastc: 'Last bets', closed: 'No more bets', next: 'Next round', bet: 'Place bet', placed: 'Bet placed', bclosed: 'Bets closed', pick: 'Pick your bet on the board first', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', win1: 'Winner', pair: 'Forecast', pairHint: 'Pick 2 horses · any order', m: 'm' },
-    fr: { open: 'Faites vos jeux', lastc: 'Derniers paris', closed: 'Rien ne va plus', next: 'Prochain tour', bet: 'Parier', placed: 'Pari placé', bclosed: 'Paris fermés', pick: 'Choisis d’abord ton pari sur le tableau', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', win1: 'Gagnant', pair: 'Couplé', pairHint: 'Choisis 2 chevaux · ordre libre', m: 'm' },
-    es: { open: 'Hagan sus apuestas', lastc: 'Últimas apuestas', closed: 'No va más', next: 'Próxima ronda', bet: 'Apostar', placed: 'Apuesta hecha', bclosed: 'Apuestas cerradas', pick: 'Elige primero tu apuesta en el tablero', red: 'Rojo', black: 'Negro', even: 'Par', odd: 'Impar', win1: 'Ganador', pair: 'Pronóstico', pairHint: 'Elige 2 caballos · cualquier orden', m: 'm' },
-    pt: { open: 'Façam suas apostas', lastc: 'Últimas apostas', closed: 'Apostas encerradas', next: 'Próxima rodada', bet: 'Apostar', placed: 'Aposta feita', bclosed: 'Apostas fechadas', pick: 'Escolha primeiro sua aposta no quadro', red: 'Vermelho', black: 'Preto', even: 'Par', odd: 'Ímpar', win1: 'Vencedor', pair: 'Dupla', pairHint: 'Escolha 2 cavalos · qualquer ordem', m: 'm' },
-    ar: { open: 'ضعوا رهاناتكم', lastc: 'آخر الرهانات', closed: 'لا مزيد من الرهانات', next: 'الجولة التالية', bet: 'راهن', placed: 'تم الرهان', bclosed: 'الرهانات مغلقة', pick: 'اختر رهانك على اللوحة أولاً', red: 'أحمر', black: 'أسود', even: 'زوجي', odd: 'فردي', win1: 'الفائز', pair: 'الثنائي', pairHint: 'اختر حصانين · بأي ترتيب', m: 'م' },
-    tr: { open: 'Bahislerinizi yapın', lastc: 'Son bahisler', closed: 'Bahisler kapandı', next: 'Sonraki tur', bet: 'Bahis yap', placed: 'Bahis alındı', bclosed: 'Bahis kapalı', pick: 'Önce tablodan bahsini seç', red: 'Kırmızı', black: 'Siyah', even: 'Çift', odd: 'Tek', win1: 'Kazanan', pair: 'İkili', pairHint: '2 at seç · sıra önemsiz', m: 'm' },
-    vi: { open: 'Mời đặt cược', lastc: 'Cược cuối', closed: 'Hết giờ cược', next: 'Vòng tiếp theo', bet: 'Đặt cược', placed: 'Đã đặt cược', bclosed: 'Đã đóng cược', pick: 'Hãy chọn cược trên bảng trước', red: 'Đỏ', black: 'Đen', even: 'Chẵn', odd: 'Lẻ', win1: 'Thắng', pair: 'Cặp đôi', pairHint: 'Chọn 2 ngựa · không cần thứ tự', m: 'm' },
-    id: { open: 'Pasang taruhan', lastc: 'Taruhan terakhir', closed: 'Taruhan ditutup', next: 'Ronde berikutnya', bet: 'Pasang', placed: 'Taruhan dipasang', bclosed: 'Taruhan tutup', pick: 'Pilih dulu taruhanmu di papan', red: 'Merah', black: 'Hitam', even: 'Genap', odd: 'Ganjil', win1: 'Pemenang', pair: 'Pasangan', pairHint: 'Pilih 2 kuda · urutan bebas', m: 'm' },
-    ru: { open: 'Делайте ставки', lastc: 'Последние ставки', closed: 'Ставки сделаны', next: 'Следующий раунд', bet: 'Поставить', placed: 'Ставка принята', bclosed: 'Ставки закрыты', pick: 'Сначала выберите ставку на поле', red: 'Красное', black: 'Чёрное', even: 'Чёт', odd: 'Нечет', win1: 'Победитель', pair: 'Пара', pairHint: 'Выберите 2 лошади · любой порядок', m: 'м' },
-    de: { open: 'Machen Sie Ihr Spiel', lastc: 'Letzte Einsätze', closed: 'Nichts geht mehr', next: 'Nächste Runde', bet: 'Setzen', placed: 'Einsatz platziert', bclosed: 'Einsätze geschlossen', pick: 'Wähle zuerst deinen Einsatz auf dem Tisch', red: 'Rot', black: 'Schwarz', even: 'Gerade', odd: 'Ungerade', win1: 'Sieger', pair: 'Zweierwette', pairHint: 'Wähle 2 Pferde · beliebige Reihenfolge', m: 'm' },
-    hi: { open: 'दांव लगाएं', lastc: 'आखिरी दांव', closed: 'दांव बंद', next: 'अगला राउंड', bet: 'दांव लगाएं', placed: 'दांव लग गया', bclosed: 'दांव बंद', pick: 'पहले बोर्ड पर अपना दांव चुनें', red: 'लाल', black: 'काला', even: 'सम', odd: 'विषम', win1: 'विजेता', pair: 'जोड़ी', pairHint: '2 घोड़े चुनें · कोई भी क्रम', m: 'मी' },
-    zh: { open: '请下注', lastc: '最后下注', closed: '停止下注', next: '下一局', bet: '下注', placed: '已下注', bclosed: '下注已截止', pick: '请先在桌面上选择投注', red: '红', black: '黑', even: '双', odd: '单', win1: '独赢', pair: '连赢', pairHint: '选 2 匹马 · 不分顺序', m: '米' }
+    en: { bo: 'Place your bets', lastc: 'Bets closing', bclosed: 'Bets closed', dp: 'Draw in progress', rp: 'Race in progress', rs: 'Results', nx: 'Next round in', mc: 'Market closed', placed: 'Bet placed', bet: 'Place bet', pick: 'Select your bet on the board first', red: 'Red', black: 'Black', even: 'Even', odd: 'Odd', win1: 'Winner', pair: 'Forecast', pairHint: 'Pick 2 horses · any order', m: 'm' },
+    fr: { bo: 'Pariez maintenant', lastc: 'Clôture des paris', bclosed: 'Paris fermés', dp: 'Tirage en cours', rp: 'Course en cours', rs: 'Résultats', nx: 'Prochain tour dans', mc: 'Marché fermé', placed: 'Pari enregistré', bet: 'Parier', pick: 'Choisissez d’abord votre pari', red: 'Rouge', black: 'Noir', even: 'Pair', odd: 'Impair', win1: 'Gagnant', pair: 'Couplé', pairHint: 'Choisissez 2 chevaux · ordre libre', m: 'm' },
+    es: { bo: 'Apueste ahora', lastc: 'Cierre de apuestas', bclosed: 'Apuestas cerradas', dp: 'Sorteo en curso', rp: 'Carrera en curso', rs: 'Resultados', nx: 'Próxima ronda en', mc: 'Mercado cerrado', placed: 'Apuesta registrada', bet: 'Apostar', pick: 'Elija primero su apuesta', red: 'Rojo', black: 'Negro', even: 'Par', odd: 'Impar', win1: 'Ganador', pair: 'Pronóstico', pairHint: 'Elige 2 caballos · cualquier orden', m: 'm' },
+    pt: { bo: 'Aposte agora', lastc: 'Encerramento das apostas', bclosed: 'Apostas encerradas', dp: 'Sorteio em andamento', rp: 'Corrida em andamento', rs: 'Resultados', nx: 'Próxima rodada em', mc: 'Mercado fechado', placed: 'Aposta registrada', bet: 'Apostar', pick: 'Escolha primeiro sua aposta', red: 'Vermelho', black: 'Preto', even: 'Par', odd: 'Ímpar', win1: 'Vencedor', pair: 'Dupla', pairHint: 'Escolha 2 cavalos · qualquer ordem', m: 'm' },
+    ar: { bo: 'ضع رهانك الآن', lastc: 'الرهانات تُغلق قريبًا', bclosed: 'الرهانات مغلقة', dp: 'السحب جارٍ', rp: 'السباق جارٍ', rs: 'النتائج', nx: 'الجولة التالية خلال', mc: 'السوق مغلق', placed: 'تم تسجيل الرهان', bet: 'راهن', pick: 'اختر رهانك أولاً', red: 'أحمر', black: 'أسود', even: 'زوجي', odd: 'فردي', win1: 'الفائز', pair: 'الثنائي', pairHint: 'اختر حصانين · بأي ترتيب', m: 'م' },
+    tr: { bo: 'Bahislerinizi yapın', lastc: 'Bahisler kapanıyor', bclosed: 'Bahisler kapandı', dp: 'Çekiliş sürüyor', rp: 'Yarış sürüyor', rs: 'Sonuçlar', nx: 'Sonraki tur', mc: 'Piyasa kapalı', placed: 'Bahis alındı', bet: 'Bahis yap', pick: 'Önce bahsinizi seçin', red: 'Kırmızı', black: 'Siyah', even: 'Çift', odd: 'Tek', win1: 'Kazanan', pair: 'İkili', pairHint: '2 at seç · sıra önemsiz', m: 'm' },
+    vi: { bo: 'Mời đặt cược', lastc: 'Sắp đóng cược', bclosed: 'Đã đóng cược', dp: 'Đang quay thưởng', rp: 'Cuộc đua đang diễn ra', rs: 'Kết quả', nx: 'Vòng tiếp theo sau', mc: 'Thị trường đóng cửa', placed: 'Đã đặt cược', bet: 'Đặt cược', pick: 'Hãy chọn cược trước', red: 'Đỏ', black: 'Đen', even: 'Chẵn', odd: 'Lẻ', win1: 'Thắng', pair: 'Cặp đôi', pairHint: 'Chọn 2 ngựa · không cần thứ tự', m: 'm' },
+    id: { bo: 'Pasang taruhan Anda', lastc: 'Taruhan segera ditutup', bclosed: 'Taruhan ditutup', dp: 'Undian berlangsung', rp: 'Balapan berlangsung', rs: 'Hasil', nx: 'Ronde berikutnya dalam', mc: 'Pasar tutup', placed: 'Taruhan tercatat', bet: 'Pasang', pick: 'Pilih taruhan Anda dulu', red: 'Merah', black: 'Hitam', even: 'Genap', odd: 'Ganjil', win1: 'Pemenang', pair: 'Pasangan', pairHint: 'Pilih 2 kuda · urutan bebas', m: 'm' },
+    ru: { bo: 'Делайте ставки', lastc: 'Приём ставок завершается', bclosed: 'Ставки закрыты', dp: 'Идёт розыгрыш', rp: 'Идёт забег', rs: 'Результаты', nx: 'Следующий раунд через', mc: 'Рынок закрыт', placed: 'Ставка принята', bet: 'Поставить', pick: 'Сначала выберите ставку', red: 'Красное', black: 'Чёрное', even: 'Чёт', odd: 'Нечет', win1: 'Победитель', pair: 'Пара', pairHint: 'Выберите 2 лошади · любой порядок', m: 'м' },
+    de: { bo: 'Jetzt setzen', lastc: 'Einsätze schließen gleich', bclosed: 'Einsätze geschlossen', dp: 'Ziehung läuft', rp: 'Rennen läuft', rs: 'Ergebnisse', nx: 'Nächste Runde in', mc: 'Markt geschlossen', placed: 'Einsatz platziert', bet: 'Setzen', pick: 'Wählen Sie zuerst Ihren Einsatz', red: 'Rot', black: 'Schwarz', even: 'Gerade', odd: 'Ungerade', win1: 'Sieger', pair: 'Zweierwette', pairHint: 'Wähle 2 Pferde · beliebige Reihenfolge', m: 'm' },
+    hi: { bo: 'अभी दांव लगाएं', lastc: 'दांव बंद होने वाले हैं', bclosed: 'दांव बंद', dp: 'ड्रॉ जारी है', rp: 'रेस जारी है', rs: 'नतीजे', nx: 'अगला राउंड', mc: 'बाज़ार बंद', placed: 'दांव दर्ज हुआ', bet: 'दांव लगाएं', pick: 'पहले अपना दांव चुनें', red: 'लाल', black: 'काला', even: 'सम', odd: 'विषम', win1: 'विजेता', pair: 'जोड़ी', pairHint: '2 घोड़े चुनें · कोई भी क्रम', m: 'मी' },
+    zh: { bo: '请下注', lastc: '即将停止下注', bclosed: '停止下注', dp: '开奖中', rp: '比赛进行中', rs: '开奖结果', nx: '下一局', mc: '暂停交易', placed: '已下注', bet: '下注', pick: '请先选择投注', red: '红', black: '黑', even: '双', odd: '单', win1: '独赢', pair: '连赢', pairHint: '选 2 匹马 · 不分顺序', m: '米' }
   };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
 
   var RULES = {
     roulette: {
-      en: '🔴 LIVE: one spin every 40 s, the same for everyone.\n1. Tap a spot on the table: a number 0 to 36 (×36), Red / Black / Even / Odd (×2) or a dozen 1-12 · 13-24 · 25-36 (×3). Your chip appears on it.\n2. Set your stake and tap “Place bet” before “No more bets”. One bet per spin.\n3. The ball lands on a number: if your spot wins, you get stake × its payout. 0 is green: Red, Black, Even, Odd and the dozens lose on 0.',
-      fr: '🔴 EN DIRECT : un lancer toutes les 40 s, le même pour tout le monde.\n1. Touche une case du tapis : un numéro de 0 à 36 (×36), Rouge / Noir / Pair / Impair (×2) ou une douzaine 1-12 · 13-24 · 25-36 (×3). Ton jeton s’y pose.\n2. Choisis ta mise et touche « Parier » avant « Rien ne va plus ». Un pari par lancer.\n3. La bille tombe sur un numéro : si ta case gagne, tu touches mise × son gain. Le 0 est vert : Rouge, Noir, Pair, Impair et les douzaines perdent sur le 0.',
-      es: '🔴 EN VIVO: una tirada cada 40 s, la misma para todos.\n1. Toca una casilla de la mesa: un número del 0 al 36 (×36), Rojo / Negro / Par / Impar (×2) o una docena 1-12 · 13-24 · 25-36 (×3). Tu ficha aparece en ella.\n2. Elige tu apuesta y toca «Apostar» antes de «No va más». Una apuesta por tirada.\n3. La bola cae en un número: si tu casilla gana, cobras apuesta × su pago. El 0 es verde: Rojo, Negro, Par, Impar y las docenas pierden con el 0.',
-      pt: '🔴 AO VIVO: um giro a cada 40 s, o mesmo para todos.\n1. Toque numa casa da mesa: um número de 0 a 36 (×36), Vermelho / Preto / Par / Ímpar (×2) ou uma dúzia 1-12 · 13-24 · 25-36 (×3). Sua ficha aparece nela.\n2. Escolha o valor e toque em «Apostar» antes de «Apostas encerradas». Uma aposta por giro.\n3. A bola cai num número: se sua casa ganhar, você recebe aposta × o pagamento. O 0 é verde: Vermelho, Preto, Par, Ímpar e as dúzias perdem no 0.',
-      ar: '🔴 مباشر: دورة كل 40 ثانية، نفسها للجميع.\n1. المس خانة على الطاولة: رقم من 0 إلى 36 (×36)، أحمر / أسود / زوجي / فردي (×2) أو دزينة 1-12 · 13-24 · 25-36 (×3). تظهر فيشتك عليها.\n2. اختر مبلغ الرهان والمس «راهن» قبل «لا مزيد من الرهانات». رهان واحد لكل دورة.\n3. تسقط الكرة على رقم: إذا ربحت خانتك تحصل على الرهان × عائدها. الصفر أخضر: الأحمر والأسود والزوجي والفردي والدزينات تخسر عند الصفر.',
-      tr: '🔴 CANLI: her 40 sn’de bir çevirme, herkes için aynı.\n1. Masada bir alana dokun: 0-36 arası bir sayı (×36), Kırmızı / Siyah / Çift / Tek (×2) veya bir düzine 1-12 · 13-24 · 25-36 (×3). Fişin oraya konur.\n2. Bahis tutarını seç ve “Bahisler kapandı” demeden “Bahis yap”a dokun. Her çevirmede bir bahis.\n3. Top bir sayıya düşer: alanın kazanırsa bahis × ödemesini alırsın. 0 yeşildir: Kırmızı, Siyah, Çift, Tek ve düzineler 0’da kaybeder.',
-      vi: '🔴 TRỰC TIẾP: mỗi 40 giây một lần quay, giống nhau cho mọi người.\n1. Chạm một ô trên bàn: một số từ 0 đến 36 (×36), Đỏ / Đen / Chẵn / Lẻ (×2) hoặc một tá 1-12 · 13-24 · 25-36 (×3). Phỉnh của bạn hiện trên đó.\n2. Chọn mức cược và chạm «Đặt cược» trước khi «Hết giờ cược». Mỗi lần quay một cược.\n3. Bi rơi vào một số: nếu ô của bạn thắng, bạn nhận cược × tỷ lệ trả. Số 0 màu xanh: Đỏ, Đen, Chẵn, Lẻ và các tá đều thua khi ra 0.',
-      id: '🔴 LANGSUNG: satu putaran tiap 40 dtk, sama untuk semua.\n1. Sentuh kotak di meja: angka 0 sampai 36 (×36), Merah / Hitam / Genap / Ganjil (×2) atau lusin 1-12 · 13-24 · 25-36 (×3). Chipmu muncul di sana.\n2. Atur taruhan lalu sentuh «Pasang» sebelum «Taruhan ditutup». Satu taruhan per putaran.\n3. Bola jatuh di satu angka: jika kotakmu menang, kamu dapat taruhan × bayarannya. 0 berwarna hijau: Merah, Hitam, Genap, Ganjil dan lusin kalah di 0.',
-      ru: '🔴 В ПРЯМОМ ЭФИРЕ: один запуск каждые 40 с, общий для всех.\n1. Нажмите на поле стола: число от 0 до 36 (×36), Красное / Чёрное / Чёт / Нечет (×2) или дюжина 1-12 · 13-24 · 25-36 (×3). Ваша фишка появится там.\n2. Выберите сумму и нажмите «Поставить» до «Ставки сделаны». Одна ставка за запуск.\n3. Шарик падает на число: если ваше поле выиграло, вы получаете ставку × выплату. 0 зелёный: Красное, Чёрное, Чёт, Нечет и дюжины на 0 проигрывают.',
-      de: '🔴 LIVE: alle 40 s ein Wurf, für alle gleich.\n1. Tippe auf ein Feld des Tisches: eine Zahl von 0 bis 36 (×36), Rot / Schwarz / Gerade / Ungerade (×2) oder ein Dutzend 1-12 · 13-24 · 25-36 (×3). Dein Jeton erscheint dort.\n2. Wähle deinen Einsatz und tippe auf „Setzen“, bevor „Nichts geht mehr“ kommt. Ein Einsatz pro Wurf.\n3. Die Kugel fällt auf eine Zahl: Gewinnt dein Feld, erhältst du Einsatz × Auszahlung. Die 0 ist grün: Rot, Schwarz, Gerade, Ungerade und die Dutzende verlieren bei 0.',
-      hi: '🔴 लाइव: हर 40 सेकंड में एक स्पिन, सबके लिए एक जैसा।\n1. टेबल पर कोई खाना छुएं: 0 से 36 तक कोई नंबर (×36), लाल / काला / सम / विषम (×2) या दर्जन 1-12 · 13-24 · 25-36 (×3)। आपकी चिप वहां दिखेगी।\n2. राशि चुनें और «दांव बंद» से पहले «दांव लगाएं» छुएं। हर स्पिन में एक दांव।\n3. गेंद किसी नंबर पर रुकती है: आपका खाना जीता तो आपको दांव × भुगतान मिलता है। 0 हरा है: 0 आने पर लाल, काला, सम, विषम और दर्जन हारते हैं।',
-      zh: '🔴 直播：每 40 秒开一局，所有人同一结果。\n1. 点击桌面上的位置：0 到 36 任一号码（×36）、红 / 黑 / 双 / 单（×2）或一打 1-12 · 13-24 · 25-36（×3）。你的筹码会放在上面。\n2. 设定金额，在“停止下注”前点击“下注”。每局一注。\n3. 小球落在一个号码上：你的位置中奖即得 投注 × 赔率。0 为绿色：开 0 时红、黑、单、双和各打均输。'
+      en: '🔴 LIVE: one spin every 160 s, the same for everyone.\n1. Tap a spot on the table: a number 0 to 36 (×36), Red / Black / Even / Odd (×2) or a dozen 1-12 · 13-24 · 25-36 (×3). Your chip appears on it.\n2. Set your stake and tap “Place bet” before “No more bets”. One bet per spin.\n3. The ball lands on a number: if your spot wins, you get stake × its payout. 0 is green: Red, Black, Even, Odd and the dozens lose on 0.',
+      fr: '🔴 EN DIRECT : un lancer toutes les 160 s, le même pour tout le monde.\n1. Touche une case du tapis : un numéro de 0 à 36 (×36), Rouge / Noir / Pair / Impair (×2) ou une douzaine 1-12 · 13-24 · 25-36 (×3). Ton jeton s’y pose.\n2. Choisis ta mise et touche « Parier » avant « Rien ne va plus ». Un pari par lancer.\n3. La bille tombe sur un numéro : si ta case gagne, tu touches mise × son gain. Le 0 est vert : Rouge, Noir, Pair, Impair et les douzaines perdent sur le 0.',
+      es: '🔴 EN VIVO: una tirada cada 160 s, la misma para todos.\n1. Toca una casilla de la mesa: un número del 0 al 36 (×36), Rojo / Negro / Par / Impar (×2) o una docena 1-12 · 13-24 · 25-36 (×3). Tu ficha aparece en ella.\n2. Elige tu apuesta y toca «Apostar» antes de «No va más». Una apuesta por tirada.\n3. La bola cae en un número: si tu casilla gana, cobras apuesta × su pago. El 0 es verde: Rojo, Negro, Par, Impar y las docenas pierden con el 0.',
+      pt: '🔴 AO VIVO: um giro a cada 160 s, o mesmo para todos.\n1. Toque numa casa da mesa: um número de 0 a 36 (×36), Vermelho / Preto / Par / Ímpar (×2) ou uma dúzia 1-12 · 13-24 · 25-36 (×3). Sua ficha aparece nela.\n2. Escolha o valor e toque em «Apostar» antes de «Apostas encerradas». Uma aposta por giro.\n3. A bola cai num número: se sua casa ganhar, você recebe aposta × o pagamento. O 0 é verde: Vermelho, Preto, Par, Ímpar e as dúzias perdem no 0.',
+      ar: '🔴 مباشر: دورة كل 160 ثانية، نفسها للجميع.\n1. المس خانة على الطاولة: رقم من 0 إلى 36 (×36)، أحمر / أسود / زوجي / فردي (×2) أو دزينة 1-12 · 13-24 · 25-36 (×3). تظهر فيشتك عليها.\n2. اختر مبلغ الرهان والمس «راهن» قبل «لا مزيد من الرهانات». رهان واحد لكل دورة.\n3. تسقط الكرة على رقم: إذا ربحت خانتك تحصل على الرهان × عائدها. الصفر أخضر: الأحمر والأسود والزوجي والفردي والدزينات تخسر عند الصفر.',
+      tr: '🔴 CANLI: her 160 sn’de bir çevirme, herkes için aynı.\n1. Masada bir alana dokun: 0-36 arası bir sayı (×36), Kırmızı / Siyah / Çift / Tek (×2) veya bir düzine 1-12 · 13-24 · 25-36 (×3). Fişin oraya konur.\n2. Bahis tutarını seç ve “Bahisler kapandı” demeden “Bahis yap”a dokun. Her çevirmede bir bahis.\n3. Top bir sayıya düşer: alanın kazanırsa bahis × ödemesini alırsın. 0 yeşildir: Kırmızı, Siyah, Çift, Tek ve düzineler 0’da kaybeder.',
+      vi: '🔴 TRỰC TIẾP: mỗi 160 giây một lần quay, giống nhau cho mọi người.\n1. Chạm một ô trên bàn: một số từ 0 đến 36 (×36), Đỏ / Đen / Chẵn / Lẻ (×2) hoặc một tá 1-12 · 13-24 · 25-36 (×3). Phỉnh của bạn hiện trên đó.\n2. Chọn mức cược và chạm «Đặt cược» trước khi «Hết giờ cược». Mỗi lần quay một cược.\n3. Bi rơi vào một số: nếu ô của bạn thắng, bạn nhận cược × tỷ lệ trả. Số 0 màu xanh: Đỏ, Đen, Chẵn, Lẻ và các tá đều thua khi ra 0.',
+      id: '🔴 LANGSUNG: satu putaran tiap 160 dtk, sama untuk semua.\n1. Sentuh kotak di meja: angka 0 sampai 36 (×36), Merah / Hitam / Genap / Ganjil (×2) atau lusin 1-12 · 13-24 · 25-36 (×3). Chipmu muncul di sana.\n2. Atur taruhan lalu sentuh «Pasang» sebelum «Taruhan ditutup». Satu taruhan per putaran.\n3. Bola jatuh di satu angka: jika kotakmu menang, kamu dapat taruhan × bayarannya. 0 berwarna hijau: Merah, Hitam, Genap, Ganjil dan lusin kalah di 0.',
+      ru: '🔴 В ПРЯМОМ ЭФИРЕ: один запуск каждые 160 с, общий для всех.\n1. Нажмите на поле стола: число от 0 до 36 (×36), Красное / Чёрное / Чёт / Нечет (×2) или дюжина 1-12 · 13-24 · 25-36 (×3). Ваша фишка появится там.\n2. Выберите сумму и нажмите «Поставить» до «Ставки сделаны». Одна ставка за запуск.\n3. Шарик падает на число: если ваше поле выиграло, вы получаете ставку × выплату. 0 зелёный: Красное, Чёрное, Чёт, Нечет и дюжины на 0 проигрывают.',
+      de: '🔴 LIVE: alle 160 s ein Wurf, für alle gleich.\n1. Tippe auf ein Feld des Tisches: eine Zahl von 0 bis 36 (×36), Rot / Schwarz / Gerade / Ungerade (×2) oder ein Dutzend 1-12 · 13-24 · 25-36 (×3). Dein Jeton erscheint dort.\n2. Wähle deinen Einsatz und tippe auf „Setzen“, bevor „Nichts geht mehr“ kommt. Ein Einsatz pro Wurf.\n3. Die Kugel fällt auf eine Zahl: Gewinnt dein Feld, erhältst du Einsatz × Auszahlung. Die 0 ist grün: Rot, Schwarz, Gerade, Ungerade und die Dutzende verlieren bei 0.',
+      hi: '🔴 लाइव: हर 160 सेकंड में एक स्पिन, सबके लिए एक जैसा।\n1. टेबल पर कोई खाना छुएं: 0 से 36 तक कोई नंबर (×36), लाल / काला / सम / विषम (×2) या दर्जन 1-12 · 13-24 · 25-36 (×3)। आपकी चिप वहां दिखेगी।\n2. राशि चुनें और «दांव बंद» से पहले «दांव लगाएं» छुएं। हर स्पिन में एक दांव।\n3. गेंद किसी नंबर पर रुकती है: आपका खाना जीता तो आपको दांव × भुगतान मिलता है। 0 हरा है: 0 आने पर लाल, काला, सम, विषम और दर्जन हारते हैं।',
+      zh: '🔴 直播：每 160 秒开一局，所有人同一结果。\n1. 点击桌面上的位置：0 到 36 任一号码（×36）、红 / 黑 / 双 / 单（×2）或一打 1-12 · 13-24 · 25-36（×3）。你的筹码会放在上面。\n2. 设定金额，在“停止下注”前点击“下注”。每局一注。\n3. 小球落在一个号码上：你的位置中奖即得 投注 × 赔率。0 为绿色：开 0 时红、黑、单、双和各打均输。'
     },
     cryptox: {
-      en: '🔴 LIVE: one spin every 60 s, the same for everyone.\n1. Pick one of the 15 cryptos on the board (BTC, ETH, USDT…).\n2. Set your stake and tap “Place bet” before the countdown ends. One bet per spin.\n3. The big wheel stops under the pointer: if it is your crypto, you win ×14.4.',
-      fr: '🔴 EN DIRECT : un tour de roue toutes les 60 s, le même pour tout le monde.\n1. Choisis une des 15 cryptos du tableau (BTC, ETH, USDT…).\n2. Choisis ta mise et touche « Parier » avant la fin du compte à rebours. Un pari par tour.\n3. La grande roue s’arrête sous la flèche : si c’est ta crypto, tu gagnes ×14,4.',
-      es: '🔴 EN VIVO: un giro cada 60 s, el mismo para todos.\n1. Elige una de las 15 criptos del tablero (BTC, ETH, USDT…).\n2. Elige tu apuesta y toca «Apostar» antes del fin de la cuenta atrás. Una apuesta por giro.\n3. La gran rueda se detiene bajo la flecha: si es tu cripto, ganas ×14,4.',
-      pt: '🔴 AO VIVO: um giro a cada 60 s, o mesmo para todos.\n1. Escolha uma das 15 criptos do quadro (BTC, ETH, USDT…).\n2. Escolha o valor e toque em «Apostar» antes do fim da contagem. Uma aposta por giro.\n3. A grande roda para sob a seta: se for a sua cripto, você ganha ×14,4.',
-      ar: '🔴 مباشر: دورة كل 60 ثانية، نفسها للجميع.\n1. اختر واحدة من 15 عملة رقمية على اللوحة (BTC، ETH، USDT…).\n2. اختر مبلغ الرهان والمس «راهن» قبل نهاية العد التنازلي. رهان واحد لكل دورة.\n3. تتوقف العجلة الكبيرة تحت المؤشر: إذا كانت عملتك تربح ×14.4.',
-      tr: '🔴 CANLI: her 60 sn’de bir çevirme, herkes için aynı.\n1. Tablodaki 15 kriptodan birini seç (BTC, ETH, USDT…).\n2. Bahis tutarını seç ve geri sayım bitmeden “Bahis yap”a dokun. Her çevirmede bir bahis.\n3. Büyük çark okun altında durur: senin kriptonsa ×14,4 kazanırsın.',
-      vi: '🔴 TRỰC TIẾP: mỗi 60 giây một lần quay, giống nhau cho mọi người.\n1. Chọn một trong 15 đồng crypto trên bảng (BTC, ETH, USDT…).\n2. Chọn mức cược và chạm «Đặt cược» trước khi hết giờ. Mỗi lần quay một cược.\n3. Vòng quay lớn dừng dưới mũi tên: nếu là đồng của bạn, bạn thắng ×14,4.',
-      id: '🔴 LANGSUNG: satu putaran tiap 60 dtk, sama untuk semua.\n1. Pilih satu dari 15 kripto di papan (BTC, ETH, USDT…).\n2. Atur taruhan lalu sentuh «Pasang» sebelum hitung mundur habis. Satu taruhan per putaran.\n3. Roda besar berhenti di bawah panah: jika itu kriptomu, kamu menang ×14,4.',
-      ru: '🔴 В ПРЯМОМ ЭФИРЕ: одно вращение каждые 60 с, общее для всех.\n1. Выберите одну из 15 криптовалют на поле (BTC, ETH, USDT…).\n2. Выберите сумму и нажмите «Поставить» до конца отсчёта. Одна ставка за вращение.\n3. Большое колесо останавливается под стрелкой: если это ваша криптовалюта, вы выигрываете ×14,4.',
-      de: '🔴 LIVE: alle 60 s eine Drehung, für alle gleich.\n1. Wähle eine der 15 Kryptos auf dem Tableau (BTC, ETH, USDT…).\n2. Wähle deinen Einsatz und tippe auf „Setzen“, bevor der Countdown endet. Ein Einsatz pro Drehung.\n3. Das große Rad stoppt unter dem Zeiger: Ist es deine Krypto, gewinnst du ×14,4.',
-      hi: '🔴 लाइव: हर 60 सेकंड में एक स्पिन, सबके लिए एक जैसा।\n1. बोर्ड पर 15 क्रिप्टो में से एक चुनें (BTC, ETH, USDT…)।\n2. राशि चुनें और उलटी गिनती खत्म होने से पहले «दांव लगाएं» छुएं। हर स्पिन में एक दांव।\n3. बड़ा पहिया तीर के नीचे रुकता है: अगर वह आपकी क्रिप्टो है तो आप ×14.4 जीतते हैं।',
-      zh: '🔴 直播：每 60 秒转一次，所有人同一结果。\n1. 在面板上从 15 种加密货币中选一种（BTC、ETH、USDT…）。\n2. 设定金额，在倒计时结束前点击“下注”。每轮一注。\n3. 大转盘停在指针下：如果是你选的币，你赢 ×14.4。'
+      en: '🔴 LIVE: one spin every 180 s, the same for everyone.\n1. Pick one of the 15 cryptos on the board (BTC, ETH, USDT…).\n2. Set your stake and tap “Place bet” before the countdown ends. One bet per spin.\n3. The big wheel stops under the pointer: if it is your crypto, you win ×14.4.',
+      fr: '🔴 EN DIRECT : un tour de roue toutes les 180 s, le même pour tout le monde.\n1. Choisis une des 15 cryptos du tableau (BTC, ETH, USDT…).\n2. Choisis ta mise et touche « Parier » avant la fin du compte à rebours. Un pari par tour.\n3. La grande roue s’arrête sous la flèche : si c’est ta crypto, tu gagnes ×14,4.',
+      es: '🔴 EN VIVO: un giro cada 180 s, el mismo para todos.\n1. Elige una de las 15 criptos del tablero (BTC, ETH, USDT…).\n2. Elige tu apuesta y toca «Apostar» antes del fin de la cuenta atrás. Una apuesta por giro.\n3. La gran rueda se detiene bajo la flecha: si es tu cripto, ganas ×14,4.',
+      pt: '🔴 AO VIVO: um giro a cada 180 s, o mesmo para todos.\n1. Escolha uma das 15 criptos do quadro (BTC, ETH, USDT…).\n2. Escolha o valor e toque em «Apostar» antes do fim da contagem. Uma aposta por giro.\n3. A grande roda para sob a seta: se for a sua cripto, você ganha ×14,4.',
+      ar: '🔴 مباشر: دورة كل 180 ثانية، نفسها للجميع.\n1. اختر واحدة من 15 عملة رقمية على اللوحة (BTC، ETH، USDT…).\n2. اختر مبلغ الرهان والمس «راهن» قبل نهاية العد التنازلي. رهان واحد لكل دورة.\n3. تتوقف العجلة الكبيرة تحت المؤشر: إذا كانت عملتك تربح ×14.4.',
+      tr: '🔴 CANLI: her 180 sn’de bir çevirme, herkes için aynı.\n1. Tablodaki 15 kriptodan birini seç (BTC, ETH, USDT…).\n2. Bahis tutarını seç ve geri sayım bitmeden “Bahis yap”a dokun. Her çevirmede bir bahis.\n3. Büyük çark okun altında durur: senin kriptonsa ×14,4 kazanırsın.',
+      vi: '🔴 TRỰC TIẾP: mỗi 180 giây một lần quay, giống nhau cho mọi người.\n1. Chọn một trong 15 đồng crypto trên bảng (BTC, ETH, USDT…).\n2. Chọn mức cược và chạm «Đặt cược» trước khi hết giờ. Mỗi lần quay một cược.\n3. Vòng quay lớn dừng dưới mũi tên: nếu là đồng của bạn, bạn thắng ×14,4.',
+      id: '🔴 LANGSUNG: satu putaran tiap 180 dtk, sama untuk semua.\n1. Pilih satu dari 15 kripto di papan (BTC, ETH, USDT…).\n2. Atur taruhan lalu sentuh «Pasang» sebelum hitung mundur habis. Satu taruhan per putaran.\n3. Roda besar berhenti di bawah panah: jika itu kriptomu, kamu menang ×14,4.',
+      ru: '🔴 В ПРЯМОМ ЭФИРЕ: одно вращение каждые 180 с, общее для всех.\n1. Выберите одну из 15 криптовалют на поле (BTC, ETH, USDT…).\n2. Выберите сумму и нажмите «Поставить» до конца отсчёта. Одна ставка за вращение.\n3. Большое колесо останавливается под стрелкой: если это ваша криптовалюта, вы выигрываете ×14,4.',
+      de: '🔴 LIVE: alle 180 s eine Drehung, für alle gleich.\n1. Wähle eine der 15 Kryptos auf dem Tableau (BTC, ETH, USDT…).\n2. Wähle deinen Einsatz und tippe auf „Setzen“, bevor der Countdown endet. Ein Einsatz pro Drehung.\n3. Das große Rad stoppt unter dem Zeiger: Ist es deine Krypto, gewinnst du ×14,4.',
+      hi: '🔴 लाइव: हर 180 सेकंड में एक स्पिन, सबके लिए एक जैसा।\n1. बोर्ड पर 15 क्रिप्टो में से एक चुनें (BTC, ETH, USDT…)।\n2. राशि चुनें और उलटी गिनती खत्म होने से पहले «दांव लगाएं» छुएं। हर स्पिन में एक दांव।\n3. बड़ा पहिया तीर के नीचे रुकता है: अगर वह आपकी क्रिप्टो है तो आप ×14.4 जीतते हैं।',
+      zh: '🔴 直播：每 180 秒转一次，所有人同一结果。\n1. 在面板上从 15 种加密货币中选一种（BTC、ETH、USDT…）。\n2. 设定金额，在倒计时结束前点击“下注”。每轮一注。\n3. 大转盘停在指针下：如果是你选的币，你赢 ×14.4。'
     },
     race: {
-      en: '🔴 LIVE: one race every 60 s, the same for everyone.\n1. 10 cars, each with its odds on the board (favourite = low odds, outsider = high odds).\n2. Pick your car, set your stake and tap “Place bet” before the start. One bet per race.\n3. Watch the race: if your car crosses the line 1st, you win stake × its odds.',
-      fr: '🔴 EN DIRECT : une course toutes les 60 s, la même pour tout le monde.\n1. 10 voitures, chacune avec sa cote au tableau (favorite = petite cote, outsider = grosse cote).\n2. Choisis ta voiture, ta mise et touche « Parier » avant le départ. Un pari par course.\n3. Regarde la course : si ta voiture passe la ligne en 1re, tu gagnes mise × sa cote.',
-      es: '🔴 EN VIVO: una carrera cada 60 s, la misma para todos.\n1. 10 coches, cada uno con su cuota en el tablero (favorito = cuota baja, outsider = cuota alta).\n2. Elige tu coche y tu apuesta y toca «Apostar» antes de la salida. Una apuesta por carrera.\n3. Mira la carrera: si tu coche cruza la meta 1.º, ganas apuesta × su cuota.',
-      pt: '🔴 AO VIVO: uma corrida a cada 60 s, a mesma para todos.\n1. 10 carros, cada um com sua cotação no quadro (favorito = cotação baixa, azarão = cotação alta).\n2. Escolha seu carro e o valor e toque em «Apostar» antes da largada. Uma aposta por corrida.\n3. Assista à corrida: se seu carro cruzar a linha em 1.º, você ganha aposta × a cotação.',
-      ar: '🔴 مباشر: سباق كل 60 ثانية، نفسه للجميع.\n1. 10 سيارات، لكل منها احتمالها على اللوحة (المرشحة = احتمال منخفض، المغمورة = احتمال مرتفع).\n2. اختر سيارتك ومبلغ الرهان والمس «راهن» قبل الانطلاق. رهان واحد لكل سباق.\n3. شاهد السباق: إذا عبرت سيارتك الخط أولاً تربح الرهان × احتمالها.',
-      tr: '🔴 CANLI: her 60 sn’de bir yarış, herkes için aynı.\n1. 10 araba, her birinin tabloda oranı var (favori = düşük oran, sürpriz = yüksek oran).\n2. Arabanı ve tutarını seç, start öncesi “Bahis yap”a dokun. Her yarışta bir bahis.\n3. Yarışı izle: araban çizgiyi 1. geçerse bahis × oranını kazanırsın.',
-      vi: '🔴 TRỰC TIẾP: mỗi 60 giây một cuộc đua, giống nhau cho mọi người.\n1. 10 xe, mỗi xe có tỷ lệ trên bảng (xe được ưa chuộng = tỷ lệ thấp, xe ít cơ hội = tỷ lệ cao).\n2. Chọn xe, mức cược và chạm «Đặt cược» trước khi xuất phát. Mỗi cuộc đua một cược.\n3. Xem cuộc đua: nếu xe của bạn về nhất, bạn thắng cược × tỷ lệ của xe.',
-      id: '🔴 LANGSUNG: satu balapan tiap 60 dtk, sama untuk semua.\n1. 10 mobil, masing-masing dengan odds di papan (favorit = odds rendah, kuda hitam = odds tinggi).\n2. Pilih mobil dan taruhan, lalu sentuh «Pasang» sebelum start. Satu taruhan per balapan.\n3. Tonton balapan: jika mobilmu finis pertama, kamu menang taruhan × odds-nya.',
-      ru: '🔴 В ПРЯМОМ ЭФИРЕ: одна гонка каждые 60 с, общая для всех.\n1. 10 машин, у каждой свой коэффициент на табло (фаворит = низкий, аутсайдер = высокий).\n2. Выберите машину и сумму и нажмите «Поставить» до старта. Одна ставка за гонку.\n3. Смотрите гонку: если ваша машина финиширует 1-й, вы выигрываете ставку × её коэффициент.',
-      de: '🔴 LIVE: alle 60 s ein Rennen, für alle gleich.\n1. 10 Autos, jedes mit seiner Quote auf der Tafel (Favorit = niedrige Quote, Außenseiter = hohe Quote).\n2. Wähle dein Auto und deinen Einsatz und tippe vor dem Start auf „Setzen“. Ein Einsatz pro Rennen.\n3. Schau das Rennen: Fährt dein Auto als 1. über die Linie, gewinnst du Einsatz × Quote.',
-      hi: '🔴 लाइव: हर 60 सेकंड में एक रेस, सबके लिए एक जैसी।\n1. 10 कारें, बोर्ड पर हर एक का भाव (पसंदीदा = कम भाव, कमजोर = ऊंचा भाव)।\n2. अपनी कार और राशि चुनें और स्टार्ट से पहले «दांव लगाएं» छुएं। हर रेस में एक दांव।\n3. रेस देखें: आपकी कार पहले लाइन पार करे तो आप दांव × उसका भाव जीतते हैं।',
-      zh: '🔴 直播：每 60 秒一场比赛，所有人同一结果。\n1. 10 辆赛车，面板上各有赔率（热门 = 赔率低，冷门 = 赔率高）。\n2. 选好赛车和金额，在发车前点击“下注”。每场一注。\n3. 观看比赛：你的赛车第一个冲线，即赢 投注 × 该车赔率。'
+      en: '🔴 LIVE: one race every 210 s, the same for everyone.\n1. 10 cars, each with its odds on the board (favourite = low odds, outsider = high odds).\n2. Pick your car, set your stake and tap “Place bet” before the start. One bet per race.\n3. Watch the race: if your car crosses the line 1st, you win stake × its odds.',
+      fr: '🔴 EN DIRECT : une course toutes les 210 s, la même pour tout le monde.\n1. 10 voitures, chacune avec sa cote au tableau (favorite = petite cote, outsider = grosse cote).\n2. Choisis ta voiture, ta mise et touche « Parier » avant le départ. Un pari par course.\n3. Regarde la course : si ta voiture passe la ligne en 1re, tu gagnes mise × sa cote.',
+      es: '🔴 EN VIVO: una carrera cada 210 s, la misma para todos.\n1. 10 coches, cada uno con su cuota en el tablero (favorito = cuota baja, outsider = cuota alta).\n2. Elige tu coche y tu apuesta y toca «Apostar» antes de la salida. Una apuesta por carrera.\n3. Mira la carrera: si tu coche cruza la meta 1.º, ganas apuesta × su cuota.',
+      pt: '🔴 AO VIVO: uma corrida a cada 210 s, a mesma para todos.\n1. 10 carros, cada um com sua cotação no quadro (favorito = cotação baixa, azarão = cotação alta).\n2. Escolha seu carro e o valor e toque em «Apostar» antes da largada. Uma aposta por corrida.\n3. Assista à corrida: se seu carro cruzar a linha em 1.º, você ganha aposta × a cotação.',
+      ar: '🔴 مباشر: سباق كل 210 ثانية، نفسه للجميع.\n1. 10 سيارات، لكل منها احتمالها على اللوحة (المرشحة = احتمال منخفض، المغمورة = احتمال مرتفع).\n2. اختر سيارتك ومبلغ الرهان والمس «راهن» قبل الانطلاق. رهان واحد لكل سباق.\n3. شاهد السباق: إذا عبرت سيارتك الخط أولاً تربح الرهان × احتمالها.',
+      tr: '🔴 CANLI: her 210 sn’de bir yarış, herkes için aynı.\n1. 10 araba, her birinin tabloda oranı var (favori = düşük oran, sürpriz = yüksek oran).\n2. Arabanı ve tutarını seç, start öncesi “Bahis yap”a dokun. Her yarışta bir bahis.\n3. Yarışı izle: araban çizgiyi 1. geçerse bahis × oranını kazanırsın.',
+      vi: '🔴 TRỰC TIẾP: mỗi 210 giây một cuộc đua, giống nhau cho mọi người.\n1. 10 xe, mỗi xe có tỷ lệ trên bảng (xe được ưa chuộng = tỷ lệ thấp, xe ít cơ hội = tỷ lệ cao).\n2. Chọn xe, mức cược và chạm «Đặt cược» trước khi xuất phát. Mỗi cuộc đua một cược.\n3. Xem cuộc đua: nếu xe của bạn về nhất, bạn thắng cược × tỷ lệ của xe.',
+      id: '🔴 LANGSUNG: satu balapan tiap 210 dtk, sama untuk semua.\n1. 10 mobil, masing-masing dengan odds di papan (favorit = odds rendah, kuda hitam = odds tinggi).\n2. Pilih mobil dan taruhan, lalu sentuh «Pasang» sebelum start. Satu taruhan per balapan.\n3. Tonton balapan: jika mobilmu finis pertama, kamu menang taruhan × odds-nya.',
+      ru: '🔴 В ПРЯМОМ ЭФИРЕ: одна гонка каждые 210 с, общая для всех.\n1. 10 машин, у каждой свой коэффициент на табло (фаворит = низкий, аутсайдер = высокий).\n2. Выберите машину и сумму и нажмите «Поставить» до старта. Одна ставка за гонку.\n3. Смотрите гонку: если ваша машина финиширует 1-й, вы выигрываете ставку × её коэффициент.',
+      de: '🔴 LIVE: alle 210 s ein Rennen, für alle gleich.\n1. 10 Autos, jedes mit seiner Quote auf der Tafel (Favorit = niedrige Quote, Außenseiter = hohe Quote).\n2. Wähle dein Auto und deinen Einsatz und tippe vor dem Start auf „Setzen“. Ein Einsatz pro Rennen.\n3. Schau das Rennen: Fährt dein Auto als 1. über die Linie, gewinnst du Einsatz × Quote.',
+      hi: '🔴 लाइव: हर 210 सेकंड में एक रेस, सबके लिए एक जैसी।\n1. 10 कारें, बोर्ड पर हर एक का भाव (पसंदीदा = कम भाव, कमजोर = ऊंचा भाव)।\n2. अपनी कार और राशि चुनें और स्टार्ट से पहले «दांव लगाएं» छुएं। हर रेस में एक दांव।\n3. रेस देखें: आपकी कार पहले लाइन पार करे तो आप दांव × उसका भाव जीतते हैं।',
+      zh: '🔴 直播：每 210 秒一场比赛，所有人同一结果。\n1. 10 辆赛车，面板上各有赔率（热门 = 赔率低，冷门 = 赔率高）。\n2. 选好赛车和金额，在发车前点击“下注”。每场一注。\n3. 观看比赛：你的赛车第一个冲线，即赢 投注 × 该车赔率。'
     },
     horses: {
-      en: '🔴 LIVE: one race every 60 s, the same for everyone. Each horse has its odds on the board.\n1. Winner: pick 1 horse; if it finishes 1st you win stake × its odds.\n2. Forecast: pick 2 horses; if they finish 1st and 2nd in any order you win stake × the forecast odds (shown on the button).\n3. Tap “Place bet” before the start, then watch the race. One bet per race.',
-      fr: '🔴 EN DIRECT : une course toutes les 60 s, la même pour tout le monde. Chaque cheval a sa cote au tableau.\n1. Gagnant : choisis 1 cheval ; s’il arrive 1er, tu gagnes mise × sa cote.\n2. Couplé : choisis 2 chevaux ; s’ils arrivent 1er et 2e dans n’importe quel ordre, tu gagnes mise × la cote du couplé (écrite sur le bouton).\n3. Touche « Parier » avant le départ, puis regarde la course. Un pari par course.',
-      es: '🔴 EN VIVO: una carrera cada 60 s, la misma para todos. Cada caballo tiene su cuota en el tablero.\n1. Ganador: elige 1 caballo; si llega 1.º, ganas apuesta × su cuota.\n2. Pronóstico: elige 2 caballos; si llegan 1.º y 2.º en cualquier orden, ganas apuesta × la cuota del pronóstico (en el botón).\n3. Toca «Apostar» antes de la salida y mira la carrera. Una apuesta por carrera.',
-      pt: '🔴 AO VIVO: uma corrida a cada 60 s, a mesma para todos. Cada cavalo tem sua cotação no quadro.\n1. Vencedor: escolha 1 cavalo; se chegar em 1.º, você ganha aposta × a cotação.\n2. Dupla: escolha 2 cavalos; se chegarem em 1.º e 2.º em qualquer ordem, você ganha aposta × a cotação da dupla (no botão).\n3. Toque em «Apostar» antes da largada e assista à corrida. Uma aposta por corrida.',
-      ar: '🔴 مباشر: سباق كل 60 ثانية، نفسه للجميع. لكل حصان احتماله على اللوحة.\n1. الفائز: اختر حصاناً واحداً؛ إذا وصل أولاً تربح الرهان × احتماله.\n2. الثنائي: اختر حصانين؛ إذا وصلا أولاً وثانياً بأي ترتيب تربح الرهان × احتمال الثنائي (على الزر).\n3. المس «راهن» قبل الانطلاق ثم شاهد السباق. رهان واحد لكل سباق.',
-      tr: '🔴 CANLI: her 60 sn’de bir yarış, herkes için aynı. Her atın tabloda oranı var.\n1. Kazanan: 1 at seç; 1. gelirse bahis × oranını kazanırsın.\n2. İkili: 2 at seç; herhangi bir sırayla 1. ve 2. gelirlerse bahis × ikili oranını kazanırsın (butonda yazar).\n3. Start öncesi “Bahis yap”a dokun ve yarışı izle. Her yarışta bir bahis.',
-      vi: '🔴 TRỰC TIẾP: mỗi 60 giây một cuộc đua, giống nhau cho mọi người. Mỗi ngựa có tỷ lệ trên bảng.\n1. Thắng: chọn 1 ngựa; nếu về nhất, bạn thắng cược × tỷ lệ của nó.\n2. Cặp đôi: chọn 2 ngựa; nếu về nhất và nhì theo bất kỳ thứ tự nào, bạn thắng cược × tỷ lệ cặp (ghi trên nút).\n3. Chạm «Đặt cược» trước khi xuất phát rồi xem đua. Mỗi cuộc đua một cược.',
-      id: '🔴 LANGSUNG: satu balapan tiap 60 dtk, sama untuk semua. Tiap kuda punya odds di papan.\n1. Pemenang: pilih 1 kuda; jika finis pertama kamu menang taruhan × odds-nya.\n2. Pasangan: pilih 2 kuda; jika finis 1 dan 2 dalam urutan apa pun kamu menang taruhan × odds pasangan (tertulis di tombol).\n3. Sentuh «Pasang» sebelum start, lalu tonton balapannya. Satu taruhan per balapan.',
-      ru: '🔴 В ПРЯМОМ ЭФИРЕ: один забег каждые 60 с, общий для всех. У каждой лошади свой коэффициент на табло.\n1. Победитель: выберите 1 лошадь; если она придёт 1-й, вы выигрываете ставку × её коэффициент.\n2. Пара: выберите 2 лошади; если они займут 1-е и 2-е места в любом порядке, вы выигрываете ставку × коэффициент пары (на кнопке).\n3. Нажмите «Поставить» до старта и смотрите забег. Одна ставка за забег.',
-      de: '🔴 LIVE: alle 60 s ein Rennen, für alle gleich. Jedes Pferd hat seine Quote auf der Tafel.\n1. Sieger: wähle 1 Pferd; kommt es als 1. ins Ziel, gewinnst du Einsatz × Quote.\n2. Zweierwette: wähle 2 Pferde; belegen sie Platz 1 und 2 in beliebiger Reihenfolge, gewinnst du Einsatz × Zweierquote (auf dem Knopf).\n3. Tippe vor dem Start auf „Setzen“ und schau das Rennen. Ein Einsatz pro Rennen.',
-      hi: '🔴 लाइव: हर 60 सेकंड में एक रेस, सबके लिए एक जैसी। बोर्ड पर हर घोड़े का भाव है।\n1. विजेता: 1 घोड़ा चुनें; वह पहले आए तो आप दांव × उसका भाव जीतते हैं।\n2. जोड़ी: 2 घोड़े चुनें; वे किसी भी क्रम में पहले और दूसरे आएं तो आप दांव × जोड़ी का भाव (बटन पर लिखा) जीतते हैं।\n3. स्टार्ट से पहले «दांव लगाएं» छुएं और रेस देखें। हर रेस में एक दांव।',
-      zh: '🔴 直播：每 60 秒一场比赛，所有人同一结果。面板上每匹马都有赔率。\n1. 独赢：选 1 匹马；它跑第一，即赢 投注 × 该马赔率。\n2. 连赢：选 2 匹马；它们跑出前两名（不分顺序），即赢 投注 × 连赢赔率（显示在按钮上）。\n3. 在开跑前点击“下注”，然后观看比赛。每场一注。'
+      en: '🔴 LIVE: one race every 210 s, the same for everyone. Each horse has its odds on the board.\n1. Winner: pick 1 horse; if it finishes 1st you win stake × its odds.\n2. Forecast: pick 2 horses; if they finish 1st and 2nd in any order you win stake × the forecast odds (shown on the button).\n3. Tap “Place bet” before the start, then watch the race. One bet per race.',
+      fr: '🔴 EN DIRECT : une course toutes les 210 s, la même pour tout le monde. Chaque cheval a sa cote au tableau.\n1. Gagnant : choisis 1 cheval ; s’il arrive 1er, tu gagnes mise × sa cote.\n2. Couplé : choisis 2 chevaux ; s’ils arrivent 1er et 2e dans n’importe quel ordre, tu gagnes mise × la cote du couplé (écrite sur le bouton).\n3. Touche « Parier » avant le départ, puis regarde la course. Un pari par course.',
+      es: '🔴 EN VIVO: una carrera cada 210 s, la misma para todos. Cada caballo tiene su cuota en el tablero.\n1. Ganador: elige 1 caballo; si llega 1.º, ganas apuesta × su cuota.\n2. Pronóstico: elige 2 caballos; si llegan 1.º y 2.º en cualquier orden, ganas apuesta × la cuota del pronóstico (en el botón).\n3. Toca «Apostar» antes de la salida y mira la carrera. Una apuesta por carrera.',
+      pt: '🔴 AO VIVO: uma corrida a cada 210 s, a mesma para todos. Cada cavalo tem sua cotação no quadro.\n1. Vencedor: escolha 1 cavalo; se chegar em 1.º, você ganha aposta × a cotação.\n2. Dupla: escolha 2 cavalos; se chegarem em 1.º e 2.º em qualquer ordem, você ganha aposta × a cotação da dupla (no botão).\n3. Toque em «Apostar» antes da largada e assista à corrida. Uma aposta por corrida.',
+      ar: '🔴 مباشر: سباق كل 210 ثانية، نفسه للجميع. لكل حصان احتماله على اللوحة.\n1. الفائز: اختر حصاناً واحداً؛ إذا وصل أولاً تربح الرهان × احتماله.\n2. الثنائي: اختر حصانين؛ إذا وصلا أولاً وثانياً بأي ترتيب تربح الرهان × احتمال الثنائي (على الزر).\n3. المس «راهن» قبل الانطلاق ثم شاهد السباق. رهان واحد لكل سباق.',
+      tr: '🔴 CANLI: her 210 sn’de bir yarış, herkes için aynı. Her atın tabloda oranı var.\n1. Kazanan: 1 at seç; 1. gelirse bahis × oranını kazanırsın.\n2. İkili: 2 at seç; herhangi bir sırayla 1. ve 2. gelirlerse bahis × ikili oranını kazanırsın (butonda yazar).\n3. Start öncesi “Bahis yap”a dokun ve yarışı izle. Her yarışta bir bahis.',
+      vi: '🔴 TRỰC TIẾP: mỗi 210 giây một cuộc đua, giống nhau cho mọi người. Mỗi ngựa có tỷ lệ trên bảng.\n1. Thắng: chọn 1 ngựa; nếu về nhất, bạn thắng cược × tỷ lệ của nó.\n2. Cặp đôi: chọn 2 ngựa; nếu về nhất và nhì theo bất kỳ thứ tự nào, bạn thắng cược × tỷ lệ cặp (ghi trên nút).\n3. Chạm «Đặt cược» trước khi xuất phát rồi xem đua. Mỗi cuộc đua một cược.',
+      id: '🔴 LANGSUNG: satu balapan tiap 210 dtk, sama untuk semua. Tiap kuda punya odds di papan.\n1. Pemenang: pilih 1 kuda; jika finis pertama kamu menang taruhan × odds-nya.\n2. Pasangan: pilih 2 kuda; jika finis 1 dan 2 dalam urutan apa pun kamu menang taruhan × odds pasangan (tertulis di tombol).\n3. Sentuh «Pasang» sebelum start, lalu tonton balapannya. Satu taruhan per balapan.',
+      ru: '🔴 В ПРЯМОМ ЭФИРЕ: один забег каждые 210 с, общий для всех. У каждой лошади свой коэффициент на табло.\n1. Победитель: выберите 1 лошадь; если она придёт 1-й, вы выигрываете ставку × её коэффициент.\n2. Пара: выберите 2 лошади; если они займут 1-е и 2-е места в любом порядке, вы выигрываете ставку × коэффициент пары (на кнопке).\n3. Нажмите «Поставить» до старта и смотрите забег. Одна ставка за забег.',
+      de: '🔴 LIVE: alle 210 s ein Rennen, für alle gleich. Jedes Pferd hat seine Quote auf der Tafel.\n1. Sieger: wähle 1 Pferd; kommt es als 1. ins Ziel, gewinnst du Einsatz × Quote.\n2. Zweierwette: wähle 2 Pferde; belegen sie Platz 1 und 2 in beliebiger Reihenfolge, gewinnst du Einsatz × Zweierquote (auf dem Knopf).\n3. Tippe vor dem Start auf „Setzen“ und schau das Rennen. Ein Einsatz pro Rennen.',
+      hi: '🔴 लाइव: हर 210 सेकंड में एक रेस, सबके लिए एक जैसी। बोर्ड पर हर घोड़े का भाव है।\n1. विजेता: 1 घोड़ा चुनें; वह पहले आए तो आप दांव × उसका भाव जीतते हैं।\n2. जोड़ी: 2 घोड़े चुनें; वे किसी भी क्रम में पहले और दूसरे आएं तो आप दांव × जोड़ी का भाव (बटन पर लिखा) जीतते हैं।\n3. स्टार्ट से पहले «दांव लगाएं» छुएं और रेस देखें। हर रेस में एक दांव।',
+      zh: '🔴 直播：每 210 秒一场比赛，所有人同一结果。面板上每匹马都有赔率。\n1. 独赢：选 1 匹马；它跑第一，即赢 投注 × 该马赔率。\n2. 连赢：选 2 匹马；它们跑出前两名（不分顺序），即赢 投注 × 连赢赔率（显示在按钮上）。\n3. 在开跑前点击“下注”，然后观看比赛。每场一注。'
     }
   };
 
@@ -105,12 +105,27 @@
   }
   function goText(el, t) { if (el.textContent === t) return; el.textContent = t; goFit(el); }
   function lite() { return document.documentElement.classList.contains('oro-lite'); }
+  // v2811 : compte à rebours « 2:41 » (chiffres toujours de gauche à droite)
+  function mmss(v) { v = Math.max(0, Math.ceil(v)); return Math.floor(v / 60) + ':' + (v % 60 < 10 ? '0' : '') + (v % 60); }
+  /* v2811 : prochain appel au serveur selon la phase — lent quand rien ne change (≈ 8 s), précis aux moments clés
+     (fermeture des mises, résultat, nouveau tour). Les tours longs = beaucoup moins d'appels qu'avant (1 par seconde). */
+  function pollDelay(R, t, hasRes) {
+    if (t < R.close) { var a = R.close - t; return a > 14 ? Math.min(8000, (a - 10) * 1000) : a > 1.3 ? Math.min(2500, (a - 1.1) * 1000) : Math.max(100, (a + 0.1) * 1000); }
+    if (!hasRes) return 400;
+    var b = R.end - t; return b > 14 ? Math.min(8000, (b - 10) * 1000) : b > 1.3 ? Math.min(2500, (b - 1.1) * 1000) : Math.max(150, (b + 0.25) * 1000);
+  }
+  // un tour fini sans réponse du serveur : on affiche déjà le suivant (mises ouvertes) en attendant ses données
+  function nextRound(R, resVal) {
+    var n = { i: R.i + 1, t0: R.end, close: R.end + R.B, end: R.end + R.P, P: R.P, B: R.B, phase: 'bet', guess: 1, last: (R.last || []).slice() };
+    if (resVal != null) { n.last.unshift(resVal); n.last = n.last.slice(0, 6); }
+    return n;
+  }
 
   /* ================================================================== ROULETTE */
   var RL_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
   var RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
   var KZ = 0.56;                 // tilt of the wheel (orthographic: circle squashed vertically)
-  var RT = 119, RP = 84, TB = 7.4; // ball track radius, pocket radius, ball run time (s)
+  var RT = 119, RP = 84, TB = 30; // ball track radius, pocket radius, ball run time (s) — v2811 : 30 s de bille (suspense)
   function rcol(n) { n = +n; return n === 0 ? 'g' : RED.indexOf(n) >= 0 ? 'r' : 'k'; }
   function pk(n) { return RL_ORDER.indexOf(+n) * 360 / 37; }
   function P(r, a) { a = a * Math.PI / 180; return (r * Math.sin(a)).toFixed(2) + ' ' + (-r * Math.cos(a)).toFixed(2); }
@@ -169,7 +184,7 @@
   function rlChip(v) { return '<i class="lz-rn ' + rcol(v) + '">' + v + '</i>'; }
 
   var ROULETTE = {
-    reveal: 8,
+    reveal: TB + 0.8,
     scene: function () {
       return '<div class="lz-rw" id="rwBox" dir="ltr"><div class="lz-rw-bowl">' + bowlSvg() + '</div><div class="lz-rw-wheel" id="rwW">' + wheelSvg() + '</div>' +
         '<i class="lz-rw-shine"></i><i class="lz-rw-ball" id="rwBall"></i></div><div class="lz-rw-res" id="rwRes"></div>';
@@ -196,11 +211,11 @@
       else {
         // launched at the close: the ball runs against the wheel, slows down, drops, bounces, settles in the server's pocket
         var k = Math.min(1, e / TB), L0 = 180 + rnd(R.i, 1) * 180, Pn = res ? pk(res.n) : L0 - 180;
-        var Q = 1440 + mod(L0 - Pn, 360), g = 1 - (1 - k) * (1 - k);
+        var Q = 360 * 14 + mod(L0 - Pn, 360), g = 1 - Math.pow(1 - k, 2.4), tD = TB - 7.5;
         rel = L0 - Q * g;
-        if (k < 0.6) r = RT;
-        else if (k < 0.78) { var q = (k - 0.6) / 0.18; r = RT - (RT - RP - 5) * (0.5 - 0.5 * Math.cos(Math.PI * q)); rel += Math.sin(q * 9) * 3 * (1 - q); }
-        else if (k < 1) { var z = (k - 0.78) / 0.22; r = RP + 9 * Math.abs(Math.sin(z * Math.PI * 3)) * Math.pow(1 - z, 1.5); }
+        if (e < tD) r = RT; // la bille tourne longtemps sur la piste en ralentissant…
+        else if (e < tD + 2.2) { var q = (e - tD) / 2.2; r = RT - (RT - RP - 5) * (0.5 - 0.5 * Math.cos(Math.PI * q)); rel += Math.sin(q * 9) * 3 * (1 - q); } // …descend…
+        else if (k < 1) { var z = (e - tD - 2.2) / (TB - tD - 2.2); r = RP + 9 * Math.abs(Math.sin(z * Math.PI * 3)) * Math.pow(1 - z, 1.5); } // …rebondit sur les cases et se pose
         if (!res && k > 0.5) r = RT;
       }
       var a = (A + rel) * Math.PI / 180, u = st.S / 262;
@@ -246,7 +261,7 @@
     '<circle cx="16" cy="16" r="16" fill="#2A5ADA"/><path d="M16 7l7.8 4.5v9L16 25l-7.8-4.5v-9z" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/>'
   ];
   function logo(i, cls) { return '<svg class="' + (cls || 'lz-logo') + '" viewBox="0 0 32 32" aria-hidden="true">' + (CRYPTO_ART[i] || CRYPTO_ART[0]) + '</svg>'; }
-  var SEG = 24, IDLE = 7, TS = 10;
+  var SEG = 24, IDLE = 7, TS = 45, SPIN = 360 * 9; // v2811 : 45 s de roue, qui ralentit lentement jusqu'au dernier cran
   function cwOff(i) { return (rnd(i, 11) - 0.5) * 13; }
   function cwFinal(i, n) { return -n * SEG + cwOff(i); }
   function moneyWheelSvg() {
@@ -288,8 +303,9 @@
     layout: function (st) {
       var sc = $('lzScene'), bx = $('cwBox'); if (!sc || !bx) return;
       var W = sc.clientWidth, H = sc.clientHeight; if (!W || !H) return;
-      var S = Math.max(90, Math.min(W * 0.96, (H - 10) * 1.3, 640)), top = 10;
-      if (S < H - 14) top = Math.max(10, (H - S) / 2);
+      // v2811 (propriétaire) : la roue ENTIÈRE est visible sur tous les écrans (avant : coupée en bas), flèche comprise
+      var S = Math.max(90, Math.min(W * 0.94, (H - 10) / 1.04, 640)), pwT = Math.max(18, S * 0.085) * 0.42;
+      var top = Math.max(pwT + 3, (H - S + pwT) / 2);
       var w = $('cwW'); w.style.width = w.style.height = S + 'px'; w.style.left = ((W - S) / 2) + 'px'; w.style.top = top + 'px';
       var hb = $('cwHub'), hs = S * 0.2; hb.style.width = hb.style.height = hs + 'px'; hb.style.left = ((W - hs) / 2) + 'px'; hb.style.top = (top + S / 2 - hs / 2) + 'px';
       var p = $('cwPtr'), pw = Math.max(18, S * 0.085); p.style.width = pw + 'px'; p.style.height = (pw * 1.3) + 'px'; p.style.left = ((W - pw) / 2) + 'px'; p.style.top = (top - pw * 0.42) + 'px';
@@ -301,8 +317,8 @@
       if (e < 0) A = F0 + (t - R.t0) * IDLE;
       else {
         var A0 = F0 + (R.close - R.t0) * IDLE, k = Math.min(1, e / TS), g = 1 - Math.pow(1 - k, 3);
-        var corr = R.res ? mod(cwFinal(R.i, R.res.n) - A0 - 1800, 360) : 0;
-        A = A0 + (1800 + corr) * g; sp = 3 * Math.pow(1 - k, 2) * (1800 + corr) / TS;
+        var corr = R.res ? mod(cwFinal(R.i, R.res.n) - A0 - SPIN, 360) : 0;
+        A = A0 + (SPIN + corr) * g; sp = 3 * Math.pow(1 - k, 2) * (SPIN + corr) / TS;
       }
       $('cwW').style.transform = 'rotate(' + A.toFixed(2) + 'deg)';
       // pointer flapper: kicked by each peg passing under it
@@ -388,28 +404,29 @@
   var FAR_URI = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="40" viewBox="0 0 240 40"><path d="M0 40V30Q20 18 40 30T80 28Q96 14 112 28L130 26Q150 8 170 26Q190 20 210 30Q228 22 240 30V40Z" fill="#241650"/><path d="M58 30a12 12 0 0 1 24 0Z" fill="#2f1d66"/><circle cx="70" cy="22" r="1.3" fill="#22D3EE"/><path d="M186 30V14h3v16ZM187.5 12l-2 2h4Z" fill="#2f1d66"/><circle cx="187.5" cy="11" r="1.2" fill="#F472B6"/></svg>') + '")';
 
   function makeRace(horses) {
-    var D = horses ? 400 : 1500, TW = 16.2, GAP = 0.3, TAU = 0.8, C0 = 0.07;
+    var D = horses ? 1200 : 3000, TW = 72, GAP = 0.55, TAU = 1.4, C0 = 0.03; // v2811 : ~75 s de course, lisible, avec dépassements
     var HP1 = (1 - Math.exp(-1 / C0)) / (1 - C0 * (1 - Math.exp(-1 / C0)));
     var kind = horses ? 'h' : 'c';
     function hS(s) { return (s - C0 * (1 - Math.exp(-s / C0))) / (1 - C0 * (1 - Math.exp(-1 / C0))); }
     function plan(st, R) {
       if (st.planI === R.i || !R.res || !R.res.order) return !!st.pl && st.planI === R.i;
-      var o = R.res.order, pl = { T: [], a: [], b: [], v: [] };
+      var o = R.res.order, pl = { T: [], a: [], b: [], c: [], v: [] };
       for (var h = 0; h < 10; h++) {
         var rank = o.indexOf(h); if (rank < 0) rank = 9;
         pl.T[h] = TW + rank * GAP + (rnd(R.i, h + 20) - 0.5) * 0.12;
-        pl.a[h] = (rnd(R.i, h + 40) - 0.5) * 0.2; pl.b[h] = (rnd(R.i, h + 60) - 0.5) * 0.08;
-        pl.v[h] = D / pl.T[h] * HP1 * (1 - pl.a[h] * Math.PI + 2 * pl.b[h] * Math.PI);
+        pl.a[h] = (rnd(R.i, h + 40) - 0.5) * 0.12; pl.b[h] = (rnd(R.i, h + 60) - 0.5) * 0.07; pl.c[h] = (rnd(R.i, h + 80) - 0.5) * 0.04;
+        pl.v[h] = D / pl.T[h] * HP1 * (1 - pl.a[h] * Math.PI + 2 * pl.b[h] * Math.PI - 3 * pl.c[h] * Math.PI);
       }
       pl.last = TW + 9 * GAP + 0.1; st.pl = pl; st.planI = R.i; return true;
     }
     function posAt(pl, h, e) {
       if (e <= 0) return 0;
       var T = pl.T[h];
-      if (e < T) { var u = hS(e / T); return D * (u + pl.a[h] * Math.sin(Math.PI * u) + pl.b[h] * Math.sin(2 * Math.PI * u)); }
+      if (e < T) { var u = hS(e / T); return D * (u + pl.a[h] * Math.sin(Math.PI * u) + pl.b[h] * Math.sin(2 * Math.PI * u) + pl.c[h] * Math.sin(3 * Math.PI * u)); }
       return D + pl.v[h] * TAU * (1 - Math.exp(-(e - T) / TAU));
     }
     return {
+      race: true,
       reveal: TW + 9 * GAP + 0.9,
       scene: function () {
         var r = '', ln = '', pos = '';
@@ -562,7 +579,7 @@
     return function (box) {
       var l = L();
       box.classList.add('cg-game', 'lz-game', 'cg-' + game);
-      box.innerHTML = '<div class="cg-stage lz-stage"><div class="lz-head"><span class="lz-live"><i></i>LIVE</span><b class="lz-ph fit" id="lzPh"></b><em class="lz-tm fit" id="lzTm"></em></div>' +
+      box.innerHTML = '<div class="cg-stage lz-stage"><div class="lz-head"><span class="lz-live"><i></i><b>LIVE</b></span><b class="lz-ph fit" id="lzPh"></b><em class="lz-tm fit" id="lzTm"></em></div>' +
         '<i class="lz-bar" id="lzBarB"><b id="lzBar"></b></i><div class="lz-scene" id="lzScene">' + G.scene(l) + '</div><div class="lz-last" id="lzLast"></div></div>' +
         K.stakePanel(l.bet, '<div class="lz-board">' + G.board(l) + '</div>');
       K.bindStake(box);
@@ -595,14 +612,11 @@
         try { var rq = await fetch('casino-tour.php?g=' + game, { cache: 'no-store' }); r = await rq.json(); } catch (e) { r = null; }
         if (!r || !r.ok) { r = await K.multi(game, 'dround', null, true); if (r) r.mine = 1; }
         if (!alive()) return;
-        var delay = 1000;
+        var delay = 4000;
         if (r && r.round) {
-          st.off = r.now - Date.now() / 1000; st.R = r.round;
-          var t = st.now(), R0 = st.R;
-          // read the result right at the close (everyone's animation starts on time)
-          if (t < R0.close && R0.close - t < 1.3) delay = Math.max(100, (R0.close - t + 0.1) * 1000);
-          else if (t >= R0.close && !R0.res) delay = 300;
-        }
+          st.off = r.now - Date.now() / 1000; st.R = r.round; st.fails = 0;
+          delay = pollDelay(st.R, st.now(), !!st.R.res);
+        } else { st.fails = (st.fails || 0) + 1; delay = Math.min(10000, 1500 * st.fails); }
         clearTimeout(K.S.timer); K.S.timer = setTimeout(sync, delay);
         if (!r || !r.round) return;
         var mine = r.mine ? r : null, open0 = st.me && !st.me.done;
@@ -624,16 +638,19 @@
         var R = st.R;
         if (R) {
           var t = st.now(), bet = t < R.close, e = t - R.close, rev = !!R.res && e >= G.reveal;
+          if (t >= R.end + 0.6) { st.R = R = nextRound(R, R.res ? G.resVal(R.res) : null); bet = t < R.close; e = t - R.close; rev = false; } // le serveur répond au prochain appel
           if (st.ri !== R.i) { st.ri = R.i; st.mk = ''; if (G.round) G.round(st, R); }
+          // v2811 : statut professionnel sur UNE ligne — « Paris ouverts 1:54 » · « Derniers paris 0:08 » · « Tirage en cours » · « Prochain tour dans 0:41 »
           if (bet) {
             var left = R.close - t;
-            K.setText(ph, left <= 5 ? l.lastc : l.open); K.setText(tm, Math.ceil(left) + ' s');
+            K.setText(ph, left <= 10 ? l.lastc : l.bo); K.setText(tm, mmss(left));
             bar.style.transform = 'scaleX(' + clamp(left / R.B, 0, 1).toFixed(4) + ')';
           } else {
-            K.setText(ph, rev ? l.next : l.closed); K.setText(tm, Math.max(0, Math.ceil(R.end - t)) + ' s');
+            var rs = rev && e < G.reveal + 5; // « Résultats » quelques secondes, puis « Prochain tour dans 0:41 »
+            K.setText(ph, rs ? l.rs : rev ? l.nx : (G.race ? l.rp : l.dp)); K.setText(tm, rev && !rs ? mmss(R.end - t) : '');
             bar.style.transform = 'scaleX(0)';
           }
-          var cls = bet ? (R.close - t <= 5 ? 'warn' : 'open') : 'shut';
+          var cls = bet ? (R.close - t <= 10 ? 'warn' : 'open') : 'shut';
           if (st.cls !== cls) { st.cls = cls; barB.className = 'lz-bar ' + cls; stage.setAttribute('data-ph', cls); }
           G.paint(st, R, t, e, rev);
           var list = (R.last || []).slice(); if (rev && R.res) list.unshift(G.resVal(R.res));
@@ -650,7 +667,7 @@
           var mk = [st.sel, mineNow ? st.me.sel : '', K.S.stake, rev ? 1 : 0, R.i, mineNow ? 1 : 0].join('|');
           if (mk !== st.mk) { st.mk = mk; G.mark(st, { sel: mineNow ? st.me.sel : st.sel, placed: mineNow, rev: rev, R: R }); }
           showMine(t);
-        }
+        } else if ((st.fails || 0) >= 2) { K.setText(ph, l.mc); K.setText(tm, ''); } // serveur injoignable
         K.S.raf = requestAnimationFrame(tick);
       };
       sync(); tick();
