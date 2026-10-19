@@ -2110,3 +2110,15 @@ html.is-android body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:2
 @media (max-width:859px){
   html:not(.fs-trade) body #screenTrade .trade-shell{max-width:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}
 }
+
+/* v2845 (propriétaire) — iPhone / Safari : le BAS de l'écran redevient bleu (#1A2A68) comme avant, sans bande posée
+   sur ACHETER / VENDRE : c'est le fond du terminal lui-même qui finit en bleu, sous la barre de Safari. */
+@media (max-width:859px){
+  html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
+    background:linear-gradient(0deg,#1A2A68 0,#1A2A68 env(safe-area-inset-bottom,0px),rgba(26,42,104,0) calc(env(safe-area-inset-bottom,0px) + 34px)),
+      url("../icons/ui/pad-planets.svg?v=2500") center/cover no-repeat,
+      linear-gradient(180deg,rgb(10,10,32) 0,rgba(10,10,32,.85) 10px,rgba(10,10,32,0) 40px),
+      linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #1A2A68!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#1A2A68!important}
+  html.is-ios{background:#1A2A68!important}
+}
