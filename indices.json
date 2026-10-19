@@ -17,17 +17,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "step",
-    "color": "#7DD3FC",
-    "accent2": "#FDE68A",
-    "zoom": 11
+    "kind": "step",
+    "line": "#7DD3FC",
+    "rise": "#FFE14D",
+    "fall": "#FF7EB3",
+    "zoom": 12
    },
    "accent": "#7DD3FC",
-   "glyph": "eye",
+   "glyph": "valknut",
    "planet": {
-    "p1": "#B8E7FD",
-    "p2": "#385F71",
+    "p1": "#B4E5FD",
+    "p2": "#375572",
     "pg": "rgba(125,211,252,.45)"
    },
    "fair": {
@@ -89,8 +89,8 @@
   },
   {
    "id": "lucifer",
-   "name": "LUCIFER",
-   "tag": "Étoile du matin",
+   "name": "NYX",
+   "tag": "Nuit étoilée",
    "family": "A",
    "base": 6660.66,
    "model": {
@@ -103,18 +103,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "up": "#FF5A5A",
-    "dn": "#8B0A1A",
+    "kind": "classic",
+    "up": "#F2F5FF",
+    "dn": "#FF3366",
     "body": "normal",
-    "zoom": 12
+    "zoom": 9
    },
-   "accent": "#FF3B3B",
-   "glyph": "star",
+   "accent": "#F2F5FF",
+   "glyph": "nightstar",
    "planet": {
-    "p1": "#FF9393",
-    "p2": "#731B1B",
-    "pg": "rgba(255,59,59,.45)"
+    "p1": "#F7F9FF",
+    "p2": "#636274",
+    "pg": "rgba(242,245,255,.45)"
    },
    "fair": {
     "5": [
@@ -174,92 +174,6 @@
    }
   },
   {
-   "id": "lilith",
-   "name": "LILITH",
-   "tag": "Douce nuit",
-   "family": "F",
-   "base": 7710.4,
-   "model": {
-    "sigma": 0.00011,
-    "hold": 0,
-    "wideP": 0,
-    "wideK": 1,
-    "jumpP": 0,
-    "jumpMin": 0,
-    "jumpMax": 0
-   },
-   "look": {
-    "chart": "line",
-    "line": "smooth",
-    "color": "#F472B6",
-    "halo": "rgba(244,114,182,0.5)",
-    "zoom": 14
-   },
-   "accent": "#F472B6",
-   "glyph": "moon",
-   "planet": {
-    "p1": "#F9B1D7",
-    "p2": "#6E3352",
-    "pg": "rgba(244,114,182,.45)"
-   },
-   "fair": {
-    "5": [
-     0,
-     0.000450401,
-     0.000659782,
-     0.001032084,
-     -0.000450199,
-     -0.000659347,
-     -0.00103102
-    ],
-    "10": [
-     0,
-     0.000637023,
-     0.0009332,
-     0.0014599,
-     -0.000636617,
-     -0.00093233,
-     -0.001457771
-    ],
-    "30": [
-     0,
-     0.001103614,
-     0.001616902,
-     0.002529971,
-     -0.001102397,
-     -0.001614292,
-     -0.002523586
-    ],
-    "60": [
-     0,
-     0.001561102,
-     0.002287409,
-     0.003579793,
-     -0.001558669,
-     -0.002282189,
-     -0.003567024
-    ],
-    "300": [
-     0,
-     0.003494099,
-     0.005122035,
-     0.008022375,
-     -0.003481933,
-     -0.005095933,
-     -0.007958529
-    ],
-    "600": [
-     0,
-     0.004944976,
-     0.007251327,
-     0.011364172,
-     -0.004920644,
-     -0.007199124,
-     -0.011236479
-    ]
-   }
-  },
-  {
    "id": "zeus",
    "name": "ZEUS",
    "tag": "Foudre",
@@ -275,18 +189,17 @@
     "jumpMax": 0.0035
    },
    "look": {
-    "chart": "candle",
-    "up": "#FDE047",
-    "dn": "#A16207",
-    "body": "wide",
-    "zoom": 14
+    "kind": "spark",
+    "up": "#FFE600",
+    "dn": "#3DA9FF",
+    "zoom": 11
    },
-   "accent": "#FACC15",
+   "accent": "#FFE600",
    "glyph": "bolt",
    "planet": {
-    "p1": "#FCE37E",
-    "p2": "#715C09",
-    "pg": "rgba(250,204,21,.45)"
+    "p1": "#FFF06B",
+    "p2": "#685C13",
+    "pg": "rgba(255,230,0,.45)"
    },
    "fair": {
     "5": [
@@ -346,6 +259,91 @@
    }
   },
   {
+   "id": "lilith",
+   "name": "LILITH",
+   "tag": "Douce nuit",
+   "family": "F",
+   "base": 7710.4,
+   "model": {
+    "sigma": 0.00011,
+    "hold": 0,
+    "wideP": 0,
+    "wideK": 1,
+    "jumpP": 0,
+    "jumpMin": 0,
+    "jumpMax": 0
+   },
+   "look": {
+    "kind": "mountain",
+    "line": "#FF5FCB",
+    "fill": "#B44DFF",
+    "zoom": 18
+   },
+   "accent": "#FF5FCB",
+   "glyph": "moon",
+   "planet": {
+    "p1": "#FFA2E1",
+    "p2": "#682960",
+    "pg": "rgba(255,95,203,.45)"
+   },
+   "fair": {
+    "5": [
+     0,
+     0.000450401,
+     0.000659782,
+     0.001032084,
+     -0.000450199,
+     -0.000659347,
+     -0.00103102
+    ],
+    "10": [
+     0,
+     0.000637023,
+     0.0009332,
+     0.0014599,
+     -0.000636617,
+     -0.00093233,
+     -0.001457771
+    ],
+    "30": [
+     0,
+     0.001103614,
+     0.001616902,
+     0.002529971,
+     -0.001102397,
+     -0.001614292,
+     -0.002523586
+    ],
+    "60": [
+     0,
+     0.001561102,
+     0.002287409,
+     0.003579793,
+     -0.001558669,
+     -0.002282189,
+     -0.003567024
+    ],
+    "300": [
+     0,
+     0.003494099,
+     0.005122035,
+     0.008022375,
+     -0.003481933,
+     -0.005095933,
+     -0.007958529
+    ],
+    "600": [
+     0,
+     0.004944976,
+     0.007251327,
+     0.011364172,
+     -0.004920644,
+     -0.007199124,
+     -0.011236479
+    ]
+   }
+  },
+  {
    "id": "anubis",
    "name": "ANUBIS",
    "tag": "Gardien",
@@ -361,18 +359,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "crystals",
-    "up": "#FBBF24",
-    "dn": "#1E3A8A",
+    "kind": "bricks",
+    "up": "#FFC233",
+    "dn": "#29D4FF",
     "zoom": 11
    },
-   "accent": "#D4A017",
-   "glyph": "ankh",
+   "accent": "#FFC233",
+   "glyph": "scales",
    "planet": {
-    "p1": "#E7CB7F",
-    "p2": "#5F480A",
-    "pg": "rgba(212,160,23,.45)"
+    "p1": "#FFDC89",
+    "p2": "#684F26",
+    "pg": "rgba(255,194,51,.45)"
    },
    "fair": {
     "5": [
@@ -432,95 +429,9 @@
    }
   },
   {
-   "id": "mammon",
-   "name": "MAMMON",
-   "tag": "Trésor",
-   "family": "A",
-   "base": 8888.88,
-   "model": {
-    "sigma": 0.00022,
-    "hold": 0,
-    "wideP": 0,
-    "wideK": 1,
-    "jumpP": 0,
-    "jumpMin": 0,
-    "jumpMax": 0
-   },
-   "look": {
-    "chart": "line",
-    "line": "area",
-    "color": "#34D399",
-    "areaRgb": "52,211,153",
-    "zoom": 12
-   },
-   "accent": "#10B981",
-   "glyph": "coin",
-   "planet": {
-    "p1": "#7CD9BA",
-    "p2": "#07533A",
-    "pg": "rgba(16,185,129,.45)"
-   },
-   "fair": {
-    "5": [
-     0,
-     0.000901006,
-     0.001319998,
-     0.002065234,
-     -0.000900195,
-     -0.001318258,
-     -0.002060977
-    ],
-    "10": [
-     0,
-     0.001274452,
-     0.00186727,
-     0.00292193,
-     -0.00127283,
-     -0.00186379,
-     -0.002913417
-    ],
-    "30": [
-     0,
-     0.002208446,
-     0.003236417,
-     0.005066343,
-     -0.00220358,
-     -0.003225976,
-     -0.005040804
-    ],
-    "60": [
-     0,
-     0.003124642,
-     0.004580051,
-     0.0071724,
-     -0.003114909,
-     -0.004559169,
-     -0.007121323
-    ],
-    "300": [
-     0,
-     0.007000408,
-     0.010270305,
-     0.016109108,
-     -0.006951743,
-     -0.010165898,
-     -0.015853719
-    ],
-    "600": [
-     0,
-     0.009914405,
-     0.014555237,
-     0.022857489,
-     -0.009817075,
-     -0.014346421,
-     -0.022346699
-    ]
-   }
-  },
-  {
    "id": "kali",
-   "name": "KALI",
-   "tag": "Tempête",
+   "name": "VALKYRIE",
+   "tag": "Lame des cieux",
    "family": "E",
    "base": 4380.25,
    "model": {
@@ -533,18 +444,17 @@
     "jumpMax": 0.0025
    },
    "look": {
-    "chart": "candle",
-    "styled": "embers",
-    "up": "#F43F5E",
-    "dn": "#6B0A2A",
-    "zoom": 9
+    "kind": "arrows",
+    "up": "#00FFC8",
+    "dn": "#FF2E63",
+    "zoom": 5
    },
-   "accent": "#E11D48",
-   "glyph": "flame",
+   "accent": "#00FFC8",
+   "glyph": "khadga",
    "planet": {
-    "p1": "#EF839A",
-    "p2": "#650D20",
-    "pg": "rgba(225,29,72,.45)"
+    "p1": "#6BFFDF",
+    "p2": "#07665F",
+    "pg": "rgba(0,255,200,.45)"
    },
    "fair": {
     "5": [
@@ -604,6 +514,92 @@
    }
   },
   {
+   "id": "mammon",
+   "name": "MAMMON",
+   "tag": "Trésor",
+   "family": "A",
+   "base": 8888.88,
+   "model": {
+    "sigma": 0.00022,
+    "hold": 0,
+    "wideP": 0,
+    "wideK": 1,
+    "jumpP": 0,
+    "jumpMin": 0,
+    "jumpMax": 0
+   },
+   "look": {
+    "kind": "baseline",
+    "up": "#2BFF88",
+    "below": "#FF4D5E",
+    "line": "#2BFF88",
+    "zoom": 13
+   },
+   "accent": "#2BFF88",
+   "glyph": "coin",
+   "planet": {
+    "p1": "#84FFBA",
+    "p2": "#186646",
+    "pg": "rgba(43,255,136,.45)"
+   },
+   "fair": {
+    "5": [
+     0,
+     0.000901006,
+     0.001319998,
+     0.002065234,
+     -0.000900195,
+     -0.001318258,
+     -0.002060977
+    ],
+    "10": [
+     0,
+     0.001274452,
+     0.00186727,
+     0.00292193,
+     -0.00127283,
+     -0.00186379,
+     -0.002913417
+    ],
+    "30": [
+     0,
+     0.002208446,
+     0.003236417,
+     0.005066343,
+     -0.00220358,
+     -0.003225976,
+     -0.005040804
+    ],
+    "60": [
+     0,
+     0.003124642,
+     0.004580051,
+     0.0071724,
+     -0.003114909,
+     -0.004559169,
+     -0.007121323
+    ],
+    "300": [
+     0,
+     0.007000408,
+     0.010270305,
+     0.016109108,
+     -0.006951743,
+     -0.010165898,
+     -0.015853719
+    ],
+    "600": [
+     0,
+     0.009914405,
+     0.014555237,
+     0.022857489,
+     -0.009817075,
+     -0.014346421,
+     -0.022346699
+    ]
+   }
+  },
+  {
    "id": "thor",
    "name": "THOR",
    "tag": "Tonnerre",
@@ -619,18 +615,17 @@
     "jumpMax": 0.002
    },
    "look": {
-    "chart": "candle",
-    "styled": "bars",
-    "up": "#60A5FA",
-    "dn": "#1D4ED8",
-    "zoom": 12
+    "kind": "bars",
+    "up": "#5AA9FF",
+    "dn": "#FFA53D",
+    "zoom": 10
    },
-   "accent": "#3B82F6",
+   "accent": "#5AA9FF",
    "glyph": "hammer",
    "planet": {
-    "p1": "#93BAFA",
-    "p2": "#1B3B6F",
-    "pg": "rgba(59,130,246,.45)"
+    "p1": "#9FCDFF",
+    "p2": "#2A4574",
+    "pg": "rgba(90,169,255,.45)"
    },
    "fair": {
     "5": [
@@ -696,7 +691,7 @@
    "family": "F",
    "base": 6030.15,
    "model": {
-    "sigma": 0.00009,
+    "sigma": 9e-05,
     "hold": 0,
     "wideP": 0,
     "wideK": 1,
@@ -705,17 +700,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "core",
-    "color": "#2DD4BF",
-    "zoom": 13
+    "kind": "thread",
+    "line": "#33FFD1",
+    "width": 3.2,
+    "zoom": 15
    },
-   "accent": "#2DD4BF",
-   "glyph": "serpent",
+   "accent": "#33FFD1",
+   "glyph": "gorgon",
    "planet": {
-    "p1": "#8CE7DC",
-    "p2": "#145F56",
-    "pg": "rgba(45,212,191,.45)"
+    "p1": "#89FFE4",
+    "p2": "#1B6662",
+    "pg": "rgba(51,255,209,.45)"
    },
    "fair": {
     "5": [
@@ -790,18 +785,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "up": "#FB923C",
-    "dn": "#7C2D12",
-    "body": "thin",
-    "zoom": 10
+    "kind": "hollow",
+    "up": "#FF8C1A",
+    "dn": "#C77DFF",
+    "body": "normal",
+    "zoom": 6
    },
-   "accent": "#F97316",
-   "glyph": "horns",
+   "accent": "#FF8C1A",
+   "glyph": "chain",
    "planet": {
-    "p1": "#FCB27F",
-    "p2": "#70340A",
-    "pg": "rgba(249,115,22,.45)"
+    "p1": "#FFBC7A",
+    "p2": "#683A1C",
+    "pg": "rgba(255,140,26,.45)"
    },
    "fair": {
     "5": [
@@ -876,18 +871,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "step",
-    "color": "#FCD34D",
-    "accent2": "#F97316",
+    "kind": "pearls",
+    "up": "#FFD60A",
+    "dn": "#FF6B1A",
     "zoom": 12
    },
-   "accent": "#FBBF24",
-   "glyph": "sun",
+   "accent": "#FFD60A",
+   "glyph": "wingsun",
    "planet": {
-    "p1": "#FDDC87",
-    "p2": "#715610",
-    "pg": "rgba(251,191,36,.45)"
+    "p1": "#FFE771",
+    "p2": "#685616",
+    "pg": "rgba(255,214,10,.45)"
    },
    "fair": {
     "5": [
@@ -962,18 +956,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "pearls",
-    "up": "#A5B4FC",
-    "dn": "#3730A3",
+    "kind": "led",
+    "up": "#9DA8FF",
+    "dn": "#FF5277",
     "zoom": 12
    },
-   "accent": "#818CF8",
-   "glyph": "crown",
+   "accent": "#9DA8FF",
+   "glyph": "bident",
    "planet": {
-    "p1": "#BAC0FB",
-    "p2": "#3A3F70",
-    "pg": "rgba(129,140,248,.45)"
+    "p1": "#C6CDFF",
+    "p2": "#434574",
+    "pg": "rgba(157,168,255,.45)"
    },
    "fair": {
     "5": [
@@ -1048,18 +1041,18 @@
     "jumpMax": 0.002
    },
    "look": {
-    "chart": "candle",
-    "up": "#E5E7EB",
-    "dn": "#4B5563",
+    "kind": "classic",
+    "up": "#FFFFFF",
+    "dn": "#FF7A3D",
     "body": "thin",
-    "zoom": 8
+    "zoom": 4
    },
-   "accent": "#CBD5E1",
-   "glyph": "claw",
+   "accent": "#FFFFFF",
+   "glyph": "wolf",
    "planet": {
-    "p1": "#E2E8EF",
-    "p2": "#5B6065",
-    "pg": "rgba(203,213,225,.45)"
+    "p1": "#FFFFFF",
+    "p2": "#686674",
+    "pg": "rgba(255,255,255,.45)"
    },
    "fair": {
     "5": [
@@ -1134,18 +1127,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "smooth",
-    "color": "#C4B5FD",
-    "halo": "rgba(196,181,253,0.5)",
-    "zoom": 14
+    "kind": "stars",
+    "line": "#CDB8FF",
+    "star": "#FFFFFF",
+    "zoom": 17
    },
-   "accent": "#A78BFA",
-   "glyph": "feather",
+   "accent": "#CDB8FF",
+   "glyph": "owl",
    "planet": {
-    "p1": "#CFBFFC",
-    "p2": "#4B3F71",
-    "pg": "rgba(167,139,250,.45)"
+    "p1": "#E2D6FF",
+    "p2": "#554B74",
+    "pg": "rgba(205,184,255,.45)"
    },
    "fair": {
     "5": [
@@ -1220,18 +1212,18 @@
     "jumpMax": 0.004
    },
    "look": {
-    "chart": "candle",
-    "styled": "embers",
-    "up": "#FB923C",
-    "dn": "#7F1D1D",
+    "kind": "capsule",
+    "up": "#FF7B2E",
+    "dn": "#F45BFF",
+    "body": "normal",
     "zoom": 13
    },
-   "accent": "#EA580C",
-   "glyph": "horns",
+   "accent": "#FF7B2E",
+   "glyph": "bull",
    "planet": {
-    "p1": "#F3A379",
-    "p2": "#692805",
-    "pg": "rgba(234,88,12,.45)"
+    "p1": "#FFB286",
+    "p2": "#683424",
+    "pg": "rgba(255,123,46,.45)"
    },
    "fair": {
     "5": [
@@ -1306,18 +1298,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "crystals",
-    "up": "#5EEAD4",
-    "dn": "#115E59",
+    "kind": "crystals",
+    "up": "#4DFFE1",
+    "dn": "#FFB52E",
     "zoom": 12
    },
-   "accent": "#14B8A6",
-   "glyph": "crown",
+   "accent": "#4DFFE1",
+   "glyph": "crook",
    "planet": {
-    "p1": "#7ED8CE",
-    "p2": "#09534B",
-    "pg": "rgba(20,184,166,.45)"
+    "p1": "#98FFEE",
+    "p2": "#256668",
+    "pg": "rgba(77,255,225,.45)"
    },
    "fair": {
     "5": [
@@ -1392,18 +1383,16 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "up": "#84CC16",
-    "dn": "#7E22CE",
-    "body": "normal",
+    "kind": "neon",
+    "line": "#A6FF1A",
     "zoom": 11
    },
-   "accent": "#84CC16",
-   "glyph": "spiral",
+   "accent": "#A6FF1A",
+   "glyph": "mask",
    "planet": {
-    "p1": "#BBE37F",
-    "p2": "#3B5C0A",
-    "pg": "rgba(132,204,22,.45)"
+    "p1": "#CBFF7A",
+    "p2": "#47661C",
+    "pg": "rgba(166,255,26,.45)"
    },
    "fair": {
     "5": [
@@ -1478,18 +1467,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "area",
-    "color": "#E2E8F0",
-    "areaRgb": "148,163,184",
-    "zoom": 14
+    "kind": "ribbon",
+    "line": "#E9EEF7",
+    "fill": "#8FA3C8",
+    "mid": "#FFFFFF",
+    "zoom": 16
    },
-   "accent": "#94A3B8",
-   "glyph": "moon",
+   "accent": "#E9EEF7",
+   "glyph": "skull",
    "planet": {
-    "p1": "#C4CCD8",
-    "p2": "#434953",
-    "pg": "rgba(148,163,184,.45)"
+    "p1": "#F2F5FA",
+    "p2": "#605F70",
+    "pg": "rgba(233,238,247,.45)"
    },
    "fair": {
     "5": [
@@ -1564,18 +1553,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "bars",
-    "up": "#D8B4FE",
-    "dn": "#6B21A8",
-    "zoom": 11
+    "kind": "glass",
+    "up": "#F472FF",
+    "dn": "#2EE6FF",
+    "body": "normal",
+    "zoom": 9
    },
-   "accent": "#A855F7",
-   "glyph": "wing",
+   "accent": "#F472FF",
+   "glyph": "batwing",
    "planet": {
-    "p1": "#CFA2FB",
-    "p2": "#4C266F",
-    "pg": "rgba(168,85,247,.45)"
+    "p1": "#F9ADFF",
+    "p2": "#643074",
+    "pg": "rgba(244,114,255,.45)"
    },
    "fair": {
     "5": [
@@ -1650,18 +1639,18 @@
     "jumpMax": 0.002
    },
    "look": {
-    "chart": "candle",
-    "up": "#38BDF8",
-    "dn": "#1E3A8A",
+    "kind": "classic",
+    "up": "#1AE5FF",
+    "dn": "#FF4FA0",
     "body": "wide",
-    "zoom": 10
+    "zoom": 8
    },
-   "accent": "#0EA5E9",
-   "glyph": "trident",
+   "accent": "#1AE5FF",
+   "glyph": "tripundra",
    "planet": {
-    "p1": "#7ACEF3",
-    "p2": "#064A69",
-    "pg": "rgba(14,165,233,.45)"
+    "p1": "#7AF0FF",
+    "p2": "#115C74",
+    "pg": "rgba(26,229,255,.45)"
    },
    "fair": {
     "5": [
@@ -1736,18 +1725,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "embers",
-    "up": "#EF4444",
-    "dn": "#450A0A",
-    "zoom": 10
+    "kind": "bricks",
+    "up": "#FF4A3D",
+    "dn": "#FFE066",
+    "body": "normal",
+    "zoom": 9
    },
-   "accent": "#DC2626",
-   "glyph": "sword",
+   "accent": "#FF4A3D",
+   "glyph": "shield",
    "planet": {
-    "p1": "#EC8888",
-    "p2": "#631111",
-    "pg": "rgba(220,38,38,.45)"
+    "p1": "#FF968E",
+    "p2": "#68212A",
+    "pg": "rgba(255,74,61,.45)"
    },
    "fair": {
     "5": [
@@ -1813,7 +1802,7 @@
    "family": "B",
    "base": 8530.25,
    "model": {
-    "sigma": 0.000095,
+    "sigma": 9.5e-05,
     "hold": 0,
     "wideP": 0,
     "wideK": 1,
@@ -1822,18 +1811,18 @@
     "jumpMax": 0.003
    },
    "look": {
-    "chart": "candle",
-    "styled": "pearls",
-    "up": "#FDE68A",
-    "dn": "#B45309",
-    "zoom": 14
+    "kind": "capsule",
+    "up": "#FFE45C",
+    "dn": "#FF5CA8",
+    "body": "wide",
+    "zoom": 13
    },
-   "accent": "#F59E0B",
+   "accent": "#FFE45C",
    "glyph": "crown",
    "planet": {
-    "p1": "#FACA79",
-    "p2": "#6E4705",
-    "pg": "rgba(245,158,11,.45)"
+    "p1": "#FFEFA0",
+    "p2": "#685C36",
+    "pg": "rgba(255,228,92,.45)"
    },
    "fair": {
     "5": [
@@ -1908,17 +1897,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "core",
-    "color": "#22D3EE",
-    "zoom": 13
+    "kind": "spark",
+    "up": "#3DFFF5",
+    "dn": "#FFC94D",
+    "zoom": 12
    },
-   "accent": "#22D3EE",
+   "accent": "#3DFFF5",
    "glyph": "eye",
    "planet": {
-    "p1": "#85E7F6",
-    "p2": "#0F5F6B",
-    "pg": "rgba(34,211,238,.45)"
+    "p1": "#8EFFF9",
+    "p2": "#1F6670",
+    "pg": "rgba(61,255,245,.45)"
    },
    "fair": {
     "5": [
@@ -1993,18 +1982,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "up": null,
-    "dn": null,
+    "kind": "bricks",
+    "up": "#FFCF5C",
+    "dn": "#8C9EFF",
     "body": "wide",
     "zoom": 12
    },
-   "accent": "#CA8A04",
+   "accent": "#FFCF5C",
    "glyph": "hourglass",
    "planet": {
-    "p1": "#E2BF75",
-    "p2": "#5B3E02",
-    "pg": "rgba(202,138,4,.45)"
+    "p1": "#FFE3A0",
+    "p2": "#685436",
+    "pg": "rgba(255,207,92,.45)"
    },
    "fair": {
     "5": [
@@ -2079,17 +2068,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "plain",
-    "color": "#FB7185",
+    "kind": "glass",
+    "up": "#FF6E8A",
+    "dn": "#6EFFB4",
+    "body": "wide",
     "zoom": 12
    },
-   "accent": "#FB7185",
-   "glyph": "spiral",
+   "accent": "#FF6E8A",
+   "glyph": "wheel",
    "planet": {
-    "p1": "#FDB1BC",
-    "p2": "#71333C",
-    "pg": "rgba(251,113,133,.45)"
+    "p1": "#FFABBB",
+    "p2": "#682F47",
+    "pg": "rgba(255,110,138,.45)"
    },
    "fair": {
     "5": [
@@ -2164,18 +2154,18 @@
     "jumpMax": 0.0025
    },
    "look": {
-    "chart": "line",
-    "line": "area",
-    "color": "#06B6D4",
-    "areaRgb": "6,182,212",
-    "zoom": 14
+    "kind": "baseline",
+    "up": "#1AF0FF",
+    "below": "#FF8A4C",
+    "line": "#1AF0FF",
+    "zoom": 13
    },
-   "accent": "#06B6D4",
+   "accent": "#1AF0FF",
    "glyph": "trident",
    "planet": {
-    "p1": "#76D7E7",
-    "p2": "#03525F",
-    "pg": "rgba(6,182,212,.45)"
+    "p1": "#7AF6FF",
+    "p2": "#116074",
+    "pg": "rgba(26,240,255,.45)"
    },
    "fair": {
     "5": [
@@ -2250,18 +2240,17 @@
     "jumpMax": 0.002
    },
    "look": {
-    "chart": "candle",
-    "styled": "bars",
-    "up": "#FDBA74",
-    "dn": "#9A3412",
-    "zoom": 9
+    "kind": "led",
+    "up": "#FFB347",
+    "dn": "#FF4141",
+    "zoom": 5
    },
-   "accent": "#D97706",
-   "glyph": "claw",
+   "accent": "#FFB347",
+   "glyph": "was",
    "planet": {
-    "p1": "#EAB476",
-    "p2": "#623603",
-    "pg": "rgba(217,119,6,.45)"
+    "p1": "#FFD394",
+    "p2": "#68492E",
+    "pg": "rgba(255,179,71,.45)"
    },
    "fair": {
     "5": [
@@ -2336,18 +2325,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "smooth",
-    "color": "#FB923C",
-    "halo": "rgba(251,146,60,0.5)",
-    "zoom": 14
+    "kind": "mountain",
+    "line": "#FF9A3D",
+    "fill": "#FF3D6E",
+    "zoom": 19
    },
-   "accent": "#FB923C",
-   "glyph": "sun",
+   "accent": "#FF9A3D",
+   "glyph": "mirror",
    "planet": {
-    "p1": "#FDC394",
-    "p2": "#71421B",
-    "pg": "rgba(251,146,60,.45)"
+    "p1": "#FFC48E",
+    "p2": "#683F2A",
+    "pg": "rgba(255,154,61,.45)"
    },
    "fair": {
     "5": [
@@ -2422,18 +2410,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "up": "#F0ABFC",
-    "dn": "#701A75",
-    "body": "thin",
-    "zoom": 10
+    "kind": "hollow",
+    "up": "#E879F9",
+    "dn": "#FFD24D",
+    "body": "wide",
+    "zoom": 8
    },
-   "accent": "#D946EF",
-   "glyph": "horns",
+   "accent": "#E879F9",
+   "glyph": "ramhorns",
    "planet": {
-    "p1": "#EA99F6",
-    "p2": "#62206C",
-    "pg": "rgba(217,70,239,.45)"
+    "p1": "#F2B1FC",
+    "p2": "#603371",
+    "pg": "rgba(232,121,249,.45)"
    },
    "fair": {
     "5": [
@@ -2508,18 +2496,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "crystals",
-    "up": "#4ADE80",
-    "dn": "#14532D",
+    "kind": "pearls",
+    "up": "#5CFF7A",
+    "dn": "#2FD3FF",
     "zoom": 11
    },
-   "accent": "#22C55E",
-   "glyph": "serpent",
+   "accent": "#5CFF7A",
+   "glyph": "hydra",
    "planet": {
-    "p1": "#85DFA6",
-    "p2": "#0F592A",
-    "pg": "rgba(34,197,94,.45)"
+    "p1": "#A0FFB2",
+    "p2": "#2A6641",
+    "pg": "rgba(92,255,122,.45)"
    },
    "fair": {
     "5": [
@@ -2580,8 +2567,8 @@
   },
   {
    "id": "apollo",
-   "name": "APOLLO",
-   "tag": "Lumière",
+   "name": "ORPHEUS",
+   "tag": "Lyre d’or",
    "family": "A",
    "base": 7150.25,
    "model": {
@@ -2594,18 +2581,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "up": "#FFD166",
-    "dn": "#B45309",
+    "kind": "classic",
+    "up": "#FFD86B",
+    "dn": "#9B7BFF",
     "body": "normal",
     "zoom": 12
    },
-   "accent": "#FFD166",
-   "glyph": "sun",
+   "accent": "#FFD86B",
+   "glyph": "lyre",
    "planet": {
-    "p1": "#FFE6AB",
-    "p2": "#735E2E",
-    "pg": "rgba(255,209,102,.45)"
+    "p1": "#FFE8A9",
+    "p2": "#68573B",
+    "pg": "rgba(255,216,107,.45)"
    },
    "fair": {
     "5": [
@@ -2680,18 +2667,17 @@
     "jumpMax": 0.004
    },
    "look": {
-    "chart": "candle",
-    "up": "#FB7185",
-    "dn": "#881337",
-    "body": "thin",
+    "kind": "arrows",
+    "up": "#FF5E7E",
+    "dn": "#7AF0FF",
     "zoom": 12
    },
-   "accent": "#BE123C",
-   "glyph": "flame",
+   "accent": "#FF5E7E",
+   "glyph": "key",
    "planet": {
-    "p1": "#DB7D94",
-    "p2": "#55081B",
-    "pg": "rgba(190,18,60,.45)"
+    "p1": "#FFA2B4",
+    "p2": "#682942",
+    "pg": "rgba(255,94,126,.45)"
    },
    "fair": {
     "5": [
@@ -2766,18 +2752,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "area",
-    "color": "#F9A8D4",
-    "areaRgb": "249,168,212",
-    "zoom": 14
+    "kind": "stars",
+    "line": "#FF9FD8",
+    "star": "#FFF0FA",
+    "zoom": 18
    },
-   "accent": "#F9A8D4",
-   "glyph": "feather",
+   "accent": "#FF9FD8",
+   "glyph": "rose",
    "planet": {
-    "p1": "#FCCFE7",
-    "p2": "#704C5F",
-    "pg": "rgba(249,168,212,.45)"
+    "p1": "#FFC7E8",
+    "p2": "#684165",
+    "pg": "rgba(255,159,216,.45)"
    },
    "fair": {
     "5": [
@@ -2852,18 +2837,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "crystals",
-    "up": "#22D3EE",
-    "dn": "#164E63",
-    "zoom": 9
+    "kind": "crystals",
+    "up": "#1EDBFF",
+    "dn": "#A98BFF",
+    "zoom": 6
    },
-   "accent": "#0891B2",
-   "glyph": "wave",
+   "accent": "#1EDBFF",
+   "glyph": "whaletail",
    "planet": {
-    "p1": "#77C3D5",
-    "p2": "#044150",
-    "pg": "rgba(8,145,178,.45)"
+    "p1": "#7CEAFF",
+    "p2": "#135874",
+    "pg": "rgba(30,219,255,.45)"
    },
    "fair": {
     "5": [
@@ -2938,18 +2922,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "step",
-    "color": "#6EE7B7",
-    "accent2": "#F472B6",
-    "zoom": 9
+    "kind": "step",
+    "line": "#6EFFC0",
+    "rise": "#FFF46B",
+    "fall": "#FF8AD4",
+    "zoom": 7
    },
-   "accent": "#6EE7B7",
-   "glyph": "wing",
+   "accent": "#6EFFC0",
+   "glyph": "caduceus",
    "planet": {
-    "p1": "#AFF2D7",
-    "p2": "#316852",
-    "pg": "rgba(110,231,183,.45)"
+    "p1": "#ABFFDA",
+    "p2": "#31665C",
+    "pg": "rgba(110,255,192,.45)"
    },
    "fair": {
     "5": [
@@ -3024,18 +3008,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "pearls",
-    "up": "#BEF264",
-    "dn": "#3F6212",
+    "kind": "arrows",
+    "up": "#C6FF3D",
+    "dn": "#FF6B6B",
     "zoom": 11
    },
-   "accent": "#A3E635",
-   "glyph": "gem",
+   "accent": "#C6FF3D",
+   "glyph": "fly",
    "planet": {
-    "p1": "#CCF190",
-    "p2": "#496718",
-    "pg": "rgba(163,230,53,.45)"
+    "p1": "#DEFF8E",
+    "p2": "#53662A",
+    "pg": "rgba(198,255,61,.45)"
    },
    "fair": {
     "5": [
@@ -3110,18 +3093,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "bars",
-    "up": "#FBBF24",
-    "dn": "#92400E",
+    "kind": "spark",
+    "up": "#FFC21A",
+    "dn": "#FF4FD8",
     "zoom": 11
    },
-   "accent": "#EAB308",
-   "glyph": "star",
+   "accent": "#FFC21A",
+   "glyph": "spade",
    "planet": {
-    "p1": "#F3D577",
-    "p2": "#695104",
-    "pg": "rgba(234,179,8,.45)"
+    "p1": "#FFDC7A",
+    "p2": "#684F1C",
+    "pg": "rgba(255,194,26,.45)"
    },
    "fair": {
     "5": [
@@ -3196,18 +3178,18 @@
     "jumpMax": 0.003
    },
    "look": {
-    "chart": "line",
-    "line": "smooth",
-    "color": "#818CF8",
-    "halo": "rgba(129,140,248,0.5)",
-    "zoom": 14
+    "kind": "ribbon",
+    "line": "#8E9BFF",
+    "fill": "#C04DFF",
+    "mid": "#E3E7FF",
+    "zoom": 16
    },
-   "accent": "#6366F1",
-   "glyph": "wave",
+   "accent": "#8E9BFF",
+   "glyph": "dragon",
    "planet": {
-    "p1": "#A9ABF7",
-    "p2": "#2D2E6C",
-    "pg": "rgba(99,102,241,.45)"
+    "p1": "#BDC5FF",
+    "p2": "#3D4074",
+    "pg": "rgba(142,155,255,.45)"
    },
    "fair": {
     "5": [
@@ -3282,18 +3264,18 @@
     "jumpMax": 0.0018
    },
    "look": {
-    "chart": "candle",
-    "up": "#FACC15",
-    "dn": "#312E81",
+    "kind": "hollow",
+    "up": "#FFF04D",
+    "dn": "#6E8BFF",
     "body": "thin",
-    "zoom": 8
+    "zoom": 4
    },
-   "accent": "#FDE047",
-   "glyph": "bolt",
+   "accent": "#FFF04D",
+   "glyph": "tomoe",
    "planet": {
-    "p1": "#FEEE9A",
-    "p2": "#726520",
-    "pg": "rgba(253,224,71,.45)"
+    "p1": "#FFF698",
+    "p2": "#686030",
+    "pg": "rgba(255,240,77,.45)"
    },
    "fair": {
     "5": [
@@ -3368,17 +3350,16 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "core",
-    "color": "#F87171",
-    "zoom": 13
+    "kind": "neon",
+    "line": "#FF4D6A",
+    "zoom": 10
    },
-   "accent": "#F87171",
-   "glyph": "sword",
+   "accent": "#FF4D6A",
+   "glyph": "scythe",
    "planet": {
-    "p1": "#FBB1B1",
-    "p2": "#703333",
-    "pg": "rgba(248,113,113,.45)"
+    "p1": "#FF98A9",
+    "p2": "#68223B",
+    "pg": "rgba(255,77,106,.45)"
    },
    "fair": {
     "5": [
@@ -3453,18 +3434,17 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "styled": "embers",
-    "up": "#FF8A5B",
-    "dn": "#5A1A0A",
-    "zoom": 10
+    "kind": "led",
+    "up": "#FF7B4D",
+    "dn": "#7FE7FF",
+    "zoom": 9
    },
-   "accent": "#FF6B35",
-   "glyph": "claw",
+   "accent": "#FF7B4D",
+   "glyph": "collar",
    "planet": {
-    "p1": "#FFAB8F",
-    "p2": "#73301A",
-    "pg": "rgba(255,107,53,.45)"
+    "p1": "#FFB298",
+    "p2": "#683430",
+    "pg": "rgba(255,123,77,.45)"
    },
    "fair": {
     "5": [
@@ -3539,18 +3519,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "candle",
-    "up": "#FF2E6E",
-    "dn": "#4A0020",
-    "body": "wide",
-    "zoom": 10
+    "kind": "classic",
+    "up": "#FF2E8B",
+    "dn": "#2EF2C8",
+    "body": "normal",
+    "zoom": 6
    },
-   "accent": "#FF2E6E",
-   "glyph": "flame",
+   "accent": "#FF2E8B",
+   "glyph": "quill",
    "planet": {
-    "p1": "#FF8CAF",
-    "p2": "#731531",
-    "pg": "rgba(255,46,110,.45)"
+    "p1": "#FF86BC",
+    "p2": "#681647",
+    "pg": "rgba(255,46,139,.45)"
    },
    "fair": {
     "5": [
@@ -3625,18 +3605,18 @@
     "jumpMax": 0
    },
    "look": {
-    "chart": "line",
-    "line": "area",
-    "color": "#D6B25E",
-    "areaRgb": "214,178,94",
+    "kind": "capsule",
+    "up": "#F5D27A",
+    "dn": "#4DC9FF",
+    "body": "normal",
     "zoom": 12
    },
-   "accent": "#D6B25E",
-   "glyph": "gem",
+   "accent": "#F5D27A",
+   "glyph": "nemes",
    "planet": {
-    "p1": "#E9D49E",
-    "p2": "#5E4E29",
-    "pg": "rgba(214,178,94,.45)"
+    "p1": "#F9E5B2",
+    "p2": "#655541",
+    "pg": "rgba(245,210,122,.45)"
    },
    "fair": {
     "5": [
@@ -3711,18 +3691,18 @@
     "jumpMax": 0.003
    },
    "look": {
-    "chart": "candle",
-    "styled": "crystals",
-    "up": "#A78BFA",
-    "dn": "#312E81",
+    "kind": "glass",
+    "up": "#B57CFF",
+    "dn": "#47FFB0",
+    "body": "normal",
     "zoom": 12
    },
-   "accent": "#8B5CF6",
-   "glyph": "spiral",
+   "accent": "#B57CFF",
+   "glyph": "tentacle",
    "planet": {
-    "p1": "#BFA5FA",
-    "p2": "#3F296F",
-    "pg": "rgba(139,92,246,.45)"
+    "p1": "#D4B3FF",
+    "p2": "#4C3474",
+    "pg": "rgba(181,124,255,.45)"
    },
    "fair": {
     "5": [
@@ -3797,17 +3777,16 @@
     "jumpMax": 0.002
    },
    "look": {
-    "chart": "candle",
-    "styled": "embers",
+    "kind": "embers",
     "up": "#FFB703",
-    "dn": "#C1121F",
-    "zoom": 9
+    "dn": "#FF3D2E",
+    "zoom": 6
    },
    "accent": "#FFB703",
-   "glyph": "flame",
+   "glyph": "phoenix",
    "planet": {
-    "p1": "#FFD774",
-    "p2": "#735201",
+    "p1": "#FFD56D",
+    "p2": "#684A14",
     "pg": "rgba(255,183,3,.45)"
    },
    "fair": {

@@ -219,15 +219,20 @@ function onLive(line) {
  */
 function broadcastTick(j, assets) {
   const cache = new Map();
+  // v2813 : chaque téléphone suit aussi les marchés visibles de sa barre (« tièdes ») → beaucoup de groupes
+  // différents. Le morceau de chaque marché n'est fabriqué qu'UNE fois par tick ; un groupe ne fait que
+  // les assembler (plus de JSON.stringify par groupe).
+  const head = '{"ok":true,"tickMs":' + Number(j.tickMs) + ',"at":' + Number(j.at) + ',"assets":{';
+  const frag = {};
+  for (const id of Object.keys(assets)) frag[id] = JSON.stringify(id) + ':' + JSON.stringify(assets[id]);
   let subs = 0;
   for (const s of clients) {
     const key = s._key || '';
     let buf = cache.get(key);
     if (buf === undefined) {
-      const part = {};
-      let any = false;
-      for (const id of (s._sub || LEGACY)) if (assets[id]) { part[id] = assets[id]; any = true; }
-      buf = any ? frame(JSON.stringify({ ok: true, tickMs: j.tickMs, at: j.at, assets: part })) : null;
+      const parts = [];
+      for (const id of (s._sub || LEGACY)) if (frag[id]) parts.push(frag[id]);
+      buf = parts.length ? frame(head + parts.join(',') + '}}') : null;
       cache.set(key, buf);
     }
     if (s._sub) subs++;

@@ -2146,27 +2146,48 @@
       // v2488 (propriétaire) : les colonnes s'arrêtent AU-DESSUS de la ligne des heures et s'effacent
       // doucement vers le bas (plus de trait net au bas de la courbe, les heures ne sont plus cachées).
       var bot = Math.max(pad.t + 20, (cssH || (pad.t + h)) - 12);
-      var fadeF = Math.max(0, Math.min(0.95, (bot - 26 - pad.t) / Math.max(1, bot - pad.t)));
-      var gUp = ctx.createLinearGradient(0, pad.t, 0, bot);
-      gUp.addColorStop(0, PU ? palRgba(PU, 0.85) : 'rgba(255,159,67,0.85)');
-      gUp.addColorStop(fadeF, PU ? palRgba(PU, 0.45) : 'rgba(255,159,67,0.45)');
-      gUp.addColorStop(1, PU ? palRgba(PU, 0) : 'rgba(255,159,67,0)');
-      var gDn = ctx.createLinearGradient(0, pad.t, 0, bot);
-      gDn.addColorStop(0, PD ? palRgba(PD, 0.9) : 'rgba(255,59,48,0.85)');
-      gDn.addColorStop(fadeF, PD ? palRgba(PD, 0.5) : 'rgba(255,59,48,0.45)');
-      gDn.addColorStop(1, PD ? palRgba(PD, 0) : 'rgba(255,59,48,0)');
-      var cwE = Math.max(1, Math.min(12 * sizeK(), slot * 0.72));
+      // v2813 (propriétaire : AZAZEL « vibre », « flashs de lumière ») : les colonnes étaient des blocs
+      // pleins orange / rouge de toute la hauteur qui défilaient (effet stroboscope), et la colonne en
+      // cours changeait de couleur. Maintenant : braise vive en HAUT de chaque colonne, corps qui s'éteint
+      // vers le sol (dégradé attaché à la colonne elle-même), colonnes un peu plus fines (plus d'air), et la
+      // colonne en cours reste couleur « braise blanche » neutre jusqu'à la fin de sa seconde (une seule
+      // prise de couleur, plus de clignotement). Même identité : des colonnes de braise qui sortent du sol.
+      var depth = Math.max(50, Math.min(110, h * 0.3));
+      function emberGrad(hex, al0) {
+        var g = ctx.createLinearGradient(0, 0, 0, depth);
+        g.addColorStop(0, palRgba(hex, al0));
+        g.addColorStop(0.25, palRgba(hex, al0 * 0.45));
+        g.addColorStop(1, palRgba(hex, 0.04));
+        return g;
+      }
+      var cU = PU || '#FF9F43';
+      var cD = PD || '#FF3B30';
+      var gUp = emberGrad(cU, 0.78);
+      var gDn = emberGrad(cD, 0.82);
+      var cN = '#FFE3B3';
+      var gNe = emberGrad(cN, 0.7);
+      var cwE = Math.max(1, Math.min(9 * sizeK(), slot * 0.55));
       for (i = 0; i < n; i++) {
         c = candles[i];
-        // v2612 (propriétaire) : la colonne en cours garde UNE couleur pendant sa seconde (plus de
-        // clignotement orange / rouge à chaque mouvement) ; plus de lueur autour (elle clignotait aussi).
-        up = i === last ? emberUp(c) : c.c >= c.o;
+        var forming = i === last;
+        up = c.c >= c.o;
         x = toX(i);
         var top = Math.max(pad.t, Math.min(bot, toY(c.c)));
-        ctx.fillStyle = up ? gUp : gDn;
-        ctx.fillRect(x - cwE / 2, top, cwE, bot - top);
-        ctx.fillStyle = up ? (PU || '#FFB570') : (PD ? palRgba(PD, 1) : '#FF5A4E');
-        ctx.fillRect(x - cwE / 2, top - 1, cwE, 2.5);
+        var colH = bot - top;
+        ctx.save();
+        ctx.translate(0, top);
+        ctx.fillStyle = forming ? gNe : (up ? gUp : gDn);
+        ctx.fillRect(x - cwE / 2, 0, cwE, Math.min(colH, depth));
+        ctx.restore();
+        if (colH > depth) {
+          ctx.fillStyle = palRgba(forming ? cN : (up ? cU : cD), 0.035);
+          ctx.fillRect(x - cwE / 2, top + depth, cwE, colH - depth);
+        }
+        // Braise du sommet : trait vif + petit noyau clair (sans lueur floue, rien qui clignote).
+        ctx.fillStyle = forming ? cN : (up ? cU : cD);
+        ctx.fillRect(x - cwE / 2, top - 1.2, cwE, 2.6);
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fillRect(x - cwE / 2 + cwE * 0.2, top - 0.6, cwE * 0.6, 1);
       }
       ctx.restore();
     } else if (style === 'bolts') {
@@ -2377,6 +2398,411 @@
       ctx.restore();
     }
     return { toX: toX, toY: toY, lastX: toX(last), lastY: toY(candles[last].c), count: n };
+  }
+
+  /*
+   * v2813 — dessins propres aux marchés ajoutés (propriétaire : « chaque indice doit avoir SON look »).
+   * Mêmes bougies d'une seconde, mêmes prix, mêmes règles : seul le dessin change. Chaque point est au
+   * centre de sa seconde (rond du trade, ligne objectif et boule tombent au même endroit qu'avant).
+   * Bougies : classic (façon VOLATILITY), hollow (hausse en creux), capsule (gélules brillantes), bricks
+   * (corps en briques), led (colonne de points lumineux), arrows (flèches), spark (étincelle sur sa mèche),
+   * glass (verre coloré). Courbes : step (escalier), mountain (montagne pleine), neon (tube néon épais),
+   * ribbon (ruban haut-bas), stars (constellation), baseline (deux couleurs autour du milieu), thread (fil).
+   * Rien ne clignote : les couleurs dépendent de la seconde elle-même (jamais de sa place dans la liste).
+   */
+  function extColRgba(hex, al) { return palRgba(hex, al); }
+  function drawExt(kind, pad, w, h, candles, minP, maxP, X) {
+    if (!candles || candles.length < 2) return null;
+    var n = candles.length;
+    var last = n - 1;
+    var slot = Math.max(w / Math.max(1, n), candleStepWidth(w));
+    var toX = makeToX(n, pad, w);
+    var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
+    var capVis = Math.max(maxP - minP, 0.01) * 0.55;
+    var U = X.up || '#00E676';
+    var D = X.dn || '#FF3B30';
+    var k = sizeK();
+    var big = cssH >= 200;
+    var i, c, x, up, y1, y2, bh, hw, lw;
+    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1 }[kind];
+    var lastX = isLine ? (panMs > 0 ? toX(last) : pad.l + w) : toX(last);
+    function wick(cd) {
+      var a = isFinite(cd.h) ? cd.h : Math.max(cd.o, cd.c);
+      var b = isFinite(cd.l) ? cd.l : Math.min(cd.o, cd.c);
+      if (a - b > capVis) { var m = (a + b) / 2; a = m + capVis / 2; b = m - capVis / 2; }
+      return [a, b];
+    }
+    ctx.save();
+    if (!isLine) {
+      var maxBody = (X.body === 'wide' ? 12 : (X.body === 'thin' ? 3.6 : 7.5)) * k;
+      var gap = Math.min(2.4, Math.max(0.6, slot * 0.18));
+      var cw = Math.max(1.2, Math.min(maxBody, slot - gap));
+      for (i = 0; i < n; i++) {
+        c = candles[i];
+        up = c.c >= c.o;
+        var col = up ? U : D;
+        x = toX(i);
+        var wk = wick(c);
+        hw = wk[0]; lw = wk[1];
+        y1 = toY(Math.max(c.o, c.c));
+        y2 = toY(Math.min(c.o, c.c));
+        bh = Math.max(2.4, y2 - y1);
+        var hot = i === last && big;
+        if (kind === 'classic' || kind === 'hollow' || kind === 'glass') {
+          ctx.strokeStyle = col;
+          ctx.lineWidth = X.body === 'wide' ? 1.5 : 1.2;
+          ctx.beginPath();
+          ctx.moveTo(x, toY(hw));
+          ctx.lineTo(x, toY(lw));
+          ctx.stroke();
+          if (hot) { ctx.shadowColor = extColRgba(col, 0.7); ctx.shadowBlur = 9; }
+          if (kind === 'classic' || (kind === 'hollow' && !up)) {
+            ctx.fillStyle = col;
+            ctx.fillRect(x - cw / 2, y1, cw, bh);
+            ctx.shadowBlur = 0;
+            if (cw >= 4) {
+              // Liseré clair en haut du corps (effet verni, comme VOLATILITY en plus fin).
+              ctx.fillStyle = 'rgba(255,255,255,0.28)';
+              ctx.fillRect(x - cw / 2, y1, cw, Math.min(1.4, bh));
+            }
+          } else if (kind === 'hollow') {
+            ctx.fillStyle = extColRgba(col, 0.14);
+            ctx.fillRect(x - cw / 2, y1, cw, bh);
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = col;
+            ctx.lineWidth = Math.min(2, Math.max(1.2, cw * 0.22));
+            var lwh = ctx.lineWidth / 2;
+            ctx.strokeRect(x - cw / 2 + lwh, y1 + lwh, Math.max(1, cw - lwh * 2), Math.max(1, bh - lwh * 2));
+          } else {
+            // Verre : corps translucide, bord lumineux, reflet en haut à gauche.
+            ctx.fillStyle = extColRgba(col, 0.34);
+            ctx.fillRect(x - cw / 2, y1, cw, bh);
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = col;
+            ctx.lineWidth = 1.3;
+            ctx.strokeRect(x - cw / 2 + 0.65, y1 + 0.65, Math.max(1, cw - 1.3), Math.max(1, bh - 1.3));
+            if (cw >= 4 && bh >= 5) {
+              ctx.fillStyle = 'rgba(255,255,255,0.55)';
+              ctx.fillRect(x - cw / 2 + 1.4, y1 + 1.4, Math.max(1, cw * 0.22), Math.max(1, bh - 2.8));
+            }
+          }
+        } else if (kind === 'capsule') {
+          // Gélules : corps aux bouts ronds, dégradé brillant, mèche fine.
+          ctx.strokeStyle = extColRgba(col, 0.75);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, toY(hw));
+          ctx.lineTo(x, toY(lw));
+          ctx.stroke();
+          var cr = Math.min(cw / 2, bh / 2);
+          var gC = ctx.createLinearGradient(x - cw / 2, 0, x + cw / 2, 0);
+          gC.addColorStop(0, extColRgba(col, 0.75));
+          gC.addColorStop(0.35, '#FFFFFF');
+          gC.addColorStop(0.55, col);
+          gC.addColorStop(1, extColRgba(col, 0.8));
+          if (hot) { ctx.shadowColor = extColRgba(col, 0.8); ctx.shadowBlur = 10; }
+          ctx.fillStyle = cw >= 4 ? gC : col;
+          roundRectOn(ctx, x - cw / 2, y1, cw, bh, cr);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        } else if (kind === 'bricks') {
+          // Corps en briques : rangées de 3 px décalées une sur deux, joints sombres.
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(x, toY(hw));
+          ctx.lineTo(x, toY(lw));
+          ctx.stroke();
+          if (hot) { ctx.shadowColor = extColRgba(col, 0.7); ctx.shadowBlur = 9; }
+          ctx.fillStyle = col;
+          ctx.fillRect(x - cw / 2, y1, cw, bh);
+          ctx.shadowBlur = 0;
+          if (cw >= 4 && bh >= 5) {
+            ctx.fillStyle = 'rgba(12,8,30,0.55)';
+            var rowH = 3.4;
+            var r, yy;
+            for (r = 0, yy = y2 - rowH; yy > y1; r++, yy -= rowH) {
+              ctx.fillRect(x - cw / 2, yy, cw, 0.9);
+              var jx = x + (r % 2 ? -cw / 4 : cw / 4);
+              ctx.fillRect(jx - 0.45, yy + 0.9, 0.9, Math.min(rowH - 0.9, y2 - yy - 0.9));
+            }
+          }
+        } else if (kind === 'led') {
+          // Colonne de points lumineux : forts dans le corps, pâles sur la mèche.
+          var step = Math.max(2.6, Math.min(4.2, cw * 0.62));
+          var dr = Math.max(0.9, Math.min(2.1, cw * 0.3));
+          var yTop = toY(hw), yBot = toY(lw);
+          var yy2;
+          ctx.fillStyle = extColRgba(col, 0.38);
+          for (yy2 = yBot; yy2 >= yTop; yy2 -= step) {
+            if (yy2 >= y1 - 0.5 && yy2 <= y1 + bh + 0.5) continue;
+            ctx.beginPath(); ctx.arc(x, yy2, dr * 0.7, 0, Math.PI * 2); ctx.fill();
+          }
+          if (hot) { ctx.shadowColor = extColRgba(col, 0.9); ctx.shadowBlur = 8; }
+          ctx.fillStyle = col;
+          var any = false;
+          for (yy2 = y1 + bh; yy2 >= y1 - 0.01; yy2 -= step) {
+            ctx.beginPath(); ctx.arc(x, yy2, dr, 0, Math.PI * 2); ctx.fill();
+            any = true;
+          }
+          if (!any) { ctx.beginPath(); ctx.arc(x, (y1 + y2) / 2, dr, 0, Math.PI * 2); ctx.fill(); }
+          ctx.shadowBlur = 0;
+        } else if (kind === 'arrows') {
+          // Flèche : tige de l'ouverture à la clôture, pointe sur la clôture dans le sens du mouvement.
+          var yo = toY(c.o), yc = toY(c.c);
+          var aw = Math.max(2.6, Math.min(6.5 * k, slot * 0.42));
+          var ah = Math.max(3, aw * 1.1);
+          ctx.strokeStyle = extColRgba(col, 0.55);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, toY(hw));
+          ctx.lineTo(x, toY(lw));
+          ctx.stroke();
+          ctx.strokeStyle = col;
+          ctx.lineWidth = Math.max(1.4, aw * 0.42);
+          ctx.beginPath();
+          ctx.moveTo(x, yo);
+          ctx.lineTo(x, up ? yc + ah * 0.6 : yc - ah * 0.6);
+          ctx.stroke();
+          if (hot) { ctx.shadowColor = extColRgba(col, 0.85); ctx.shadowBlur = 9; }
+          ctx.fillStyle = col;
+          ctx.beginPath();
+          if (up) { ctx.moveTo(x, yc - ah * 0.45); ctx.lineTo(x + aw, yc + ah * 0.6); ctx.lineTo(x - aw, yc + ah * 0.6); }
+          else { ctx.moveTo(x, yc + ah * 0.45); ctx.lineTo(x + aw, yc - ah * 0.6); ctx.lineTo(x - aw, yc - ah * 0.6); }
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        } else if (kind === 'spark') {
+          // Étincelle : mèche fine, petit trait à l'ouverture, point brillant sur la clôture.
+          var ys = toY(c.c);
+          ctx.strokeStyle = extColRgba(col, 0.6);
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(x, toY(hw));
+          ctx.lineTo(x, toY(lw));
+          ctx.stroke();
+          var tw = Math.max(2, Math.min(5 * k, slot * 0.36));
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(x - tw, toY(c.o));
+          ctx.lineTo(x, toY(c.o));
+          ctx.stroke();
+          var sr = Math.max(2, Math.min(4.2 * k, slot * 0.34));
+          if (hot) { ctx.shadowColor = extColRgba(col, 0.95); ctx.shadowBlur = 10; }
+          ctx.fillStyle = col;
+          ctx.beginPath(); ctx.arc(x, ys, sr, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = 'rgba(255,255,255,0.85)';
+          ctx.beginPath(); ctx.arc(x, ys, Math.max(0.8, sr * 0.42), 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      ctx.restore();
+      return { toX: toX, toY: toY, lastX: lastX, lastY: toY(candles[last].c), count: n };
+    }
+    /* —— courbes —— */
+    var M = X.line || U;
+    var pts = [];
+    for (i = 0; i < n; i++) pts.push([toX(i), toY(candles[i].c)]);
+    var lastY = pts[last][1];
+    function smoothPath(list, endX, endY) {
+      ctx.moveTo(list[0][0], list[0][1]);
+      var q;
+      for (q = 1; q < list.length; q++) {
+        var mx = (list[q - 1][0] + list[q][0]) / 2;
+        var my = (list[q - 1][1] + list[q][1]) / 2;
+        ctx.quadraticCurveTo(list[q - 1][0], list[q - 1][1], mx, my);
+      }
+      ctx.lineTo(list[list.length - 1][0], list[list.length - 1][1]);
+      if (endX != null) ctx.lineTo(endX, endY);
+    }
+    var floor = pad.t + h;
+    if (kind === 'step') {
+      // Escalier : marches dans la couleur du marché ; contremarche montante / descendante colorée.
+      var sw = (X.width || 2.8);
+      ctx.lineCap = 'square';
+      ctx.lineWidth = sw;
+      ctx.strokeStyle = M;
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < n; i++) ctx.lineTo(pts[i][0], pts[i - 1][1]);
+      ctx.lineTo(lastX, pts[last][1]);
+      ctx.stroke();
+      for (i = 1; i < n; i++) {
+        var d0 = pts[i - 1][1], d1 = pts[i][1];
+        if (Math.abs(d1 - d0) < 0.5) continue;
+        ctx.strokeStyle = d1 < d0 ? (X.rise || M) : (X.fall || M);
+        ctx.beginPath();
+        ctx.moveTo(pts[i][0], d0);
+        ctx.lineTo(pts[i][0], d1);
+        ctx.stroke();
+      }
+    } else if (kind === 'mountain') {
+      // Montagne : crête lissée, versant plein (dégradé franc), ligne de crête claire.
+      ctx.beginPath();
+      smoothPath(pts, lastX, lastY);
+      ctx.lineTo(lastX, floor);
+      ctx.lineTo(pts[0][0], floor);
+      ctx.closePath();
+      var gM = ctx.createLinearGradient(0, pad.t, 0, floor);
+      gM.addColorStop(0, extColRgba(M, 0.62));
+      gM.addColorStop(0.55, extColRgba(X.fill || M, 0.24));
+      gM.addColorStop(1, extColRgba(X.fill || M, 0.03));
+      ctx.fillStyle = gM;
+      ctx.fill();
+      ctx.beginPath();
+      smoothPath(pts, lastX, lastY);
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = 1.2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      smoothPath(pts, lastX, lastY);
+      ctx.strokeStyle = M;
+      ctx.lineWidth = 2.6;
+      ctx.globalAlpha = 0.55;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    } else if (kind === 'neon') {
+      // Tube néon : segments droits, trois épaisseurs (lueur large, corps, cœur clair).
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      var passes = [[10, 0.12], [5.5, 0.32], [3, 1]];
+      passes.forEach(function (ps) {
+        ctx.beginPath();
+        ctx.moveTo(pts[0][0], pts[0][1]);
+        for (var q = 1; q < n; q++) ctx.lineTo(pts[q][0], pts[q][1]);
+        ctx.lineTo(lastX, lastY);
+        ctx.strokeStyle = M;
+        ctx.globalAlpha = ps[1];
+        ctx.lineWidth = ps[0];
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < n; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.lineTo(lastX, lastY);
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    } else if (kind === 'ribbon') {
+      // Ruban : bande entre le plus haut et le plus bas de chaque seconde, fil du prix au milieu.
+      var hiP = [], loP = [];
+      for (i = 0; i < n; i++) {
+        var wr = wick(candles[i]);
+        hiP.push([pts[i][0], Math.min(toY(wr[0]), pts[i][1] - 1.5)]);
+        loP.push([pts[i][0], Math.max(toY(wr[1]), pts[i][1] + 1.5)]);
+      }
+      ctx.beginPath();
+      smoothPath(hiP, lastX, hiP[last][1]);
+      ctx.lineTo(lastX, loP[last][1]);
+      for (i = last; i >= 0; i--) ctx.lineTo(loP[i][0], loP[i][1]);
+      ctx.closePath();
+      var gR = ctx.createLinearGradient(0, pad.t, 0, floor);
+      gR.addColorStop(0, extColRgba(M, 0.5));
+      gR.addColorStop(1, extColRgba(X.fill || M, 0.32));
+      ctx.fillStyle = gR;
+      ctx.fill();
+      ctx.strokeStyle = extColRgba(M, 0.8);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.beginPath();
+      smoothPath(pts, lastX, lastY);
+      ctx.strokeStyle = X.mid || '#FFFFFF';
+      ctx.lineWidth = 1.8;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    } else if (kind === 'stars') {
+      // Constellation : fil pointillé fin, une étoile toutes les 5 secondes (attachée à SA seconde).
+      ctx.setLineDash([1.5, 3.5]);
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < n; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.lineTo(lastX, lastY);
+      ctx.strokeStyle = M;
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.setLineDash([]);
+      for (i = 0; i < n; i++) {
+        var tk = candles[i].tk;
+        var sec = tk != null ? Math.round(tk / 4) : i;
+        var strong = sec % 5 === 0;
+        var rr = strong ? 3.2 : 1.5;
+        if (strong) {
+          ctx.fillStyle = extColRgba(M, 0.3);
+          ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], rr * 2.2, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = X.star || '#FFFFFF';
+          ctx.beginPath();
+          ctx.moveTo(pts[i][0], pts[i][1] - rr * 1.6);
+          ctx.lineTo(pts[i][0] + rr * 0.5, pts[i][1] - rr * 0.5);
+          ctx.lineTo(pts[i][0] + rr * 1.6, pts[i][1]);
+          ctx.lineTo(pts[i][0] + rr * 0.5, pts[i][1] + rr * 0.5);
+          ctx.lineTo(pts[i][0], pts[i][1] + rr * 1.6);
+          ctx.lineTo(pts[i][0] - rr * 0.5, pts[i][1] + rr * 0.5);
+          ctx.lineTo(pts[i][0] - rr * 1.6, pts[i][1]);
+          ctx.lineTo(pts[i][0] - rr * 0.5, pts[i][1] - rr * 0.5);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillStyle = M;
+          ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], rr, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    } else if (kind === 'baseline') {
+      // Ligne de base (milieu du cadre) : au-dessus = couleur 1, en dessous = couleur 2.
+      var by = pad.t + h / 2;
+      var A2 = X.below || D;
+      [[pad.t, by, U], [by, floor, A2]].forEach(function (zone) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(pad.l - 2, zone[0], w + 4 + (lastX - (pad.l + w)), zone[1] - zone[0]);
+        ctx.clip();
+        ctx.beginPath();
+        smoothPath(pts, lastX, lastY);
+        ctx.lineTo(lastX, by);
+        ctx.lineTo(pts[0][0], by);
+        ctx.closePath();
+        var gB = ctx.createLinearGradient(0, zone[0] === pad.t ? pad.t : floor, 0, by);
+        gB.addColorStop(0, extColRgba(zone[2], 0.42));
+        gB.addColorStop(1, extColRgba(zone[2], 0.06));
+        ctx.fillStyle = gB;
+        ctx.fill();
+        ctx.beginPath();
+        smoothPath(pts, lastX, lastY);
+        ctx.strokeStyle = zone[2];
+        ctx.lineWidth = 2.4;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+        ctx.restore();
+      });
+      ctx.setLineDash([4, 5]);
+      ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.l, by);
+      ctx.lineTo(pad.l + w, by);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      // Fil (thread) : trait lisse et lumineux (style COBRA, avec SA couleur).
+      ctx.beginPath();
+      smoothPath(pts, lastX, lastY);
+      ctx.strokeStyle = M;
+      ctx.lineWidth = X.width || 3.2;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.shadowColor = extColRgba(M, 0.6);
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+    ctx.restore();
+    return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: n };
   }
 
   function drawTrendLine(pad, w, h, candles, minP, maxP) {
@@ -3858,7 +4284,11 @@
     var a = D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[assetId];
     if (!a || !a.ext || !(a.fairVar > 0)) return 0;
     var zRef = ZOOM_STEPS[defaultZoomIdx(assetId)] || 28;
-    return Math.max(0.004, Math.min(0.035, 55 * Math.sqrt(a.fairVar) * Math.sqrt(zRef / 28)));
+    // v2813 : cadre calé sur le mouvement ORDINAIRE (pics rares comptés pour 15 % seulement) : avant, les
+    // marchés à pics avaient un cadre immense et une courbe presque plate (« endormie ») entre deux pics.
+    // Un pic qui ne tient pas agrandit le cadre tout de suite (caméra), puis il se resserre doucement.
+    var v = a.spanVar > 0 ? a.spanVar : a.fairVar;
+    return Math.max(0.003, Math.min(0.035, 55 * Math.sqrt(v) * Math.sqrt(zRef / 28)));
   }
   function routeSpanPct(assetId) {
     var base = {
@@ -4058,6 +4488,8 @@
     return routeCamera(prevMin, prevMax, head, 'goldtrend');
   }
 
+  var waitAsset = '';
+  var waitSince = 0;
   function drawFrame(now) {
     cameraTick();
     try {
@@ -4072,13 +4504,19 @@
     if (!market) return;
     if (market.waiting) {
       // Historique pas encore reçu du serveur : fond seul, jamais une fausse courbe.
-      ctx.fillStyle = '#0B0E14';
-      ctx.fillRect(0, 0, cssW, cssH);
-      ctx.fillStyle = 'rgba(245,197,24,0.55)';
-      ctx.font = '700 12px "Hanken Grotesk", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText((D6.I18N && D6.I18N.t) ? D6.I18N.t('m_connecting') : 'Connecting to market…', cssW / 2, cssH / 2);
-      ctx.textAlign = 'left';
+      // v2813 : le décor habituel (plus d'écran noir qui « clignote » au changement de marché) ; le texte
+      // « Connexion au marché » n'apparaît que si l'attente dure (réseau lent) — les marchés de la barre
+      // sont chargés à l'avance, l'attente est normalement nulle.
+      if (waitAsset !== activeAsset) { waitAsset = activeAsset; waitSince = Date.now(); }
+      if (bgCanvas) ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
+      else { ctx.fillStyle = '#120F38'; ctx.fillRect(0, 0, cssW, cssH); }
+      if (Date.now() - waitSince > 1500) {
+        ctx.fillStyle = 'rgba(245,197,24,0.55)';
+        ctx.font = '700 12px "Hanken Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText((D6.I18N && D6.I18N.t) ? D6.I18N.t('m_connecting') : 'Connecting to market…', cssW / 2, cssH / 2);
+        ctx.textAlign = 'left';
+      }
       if (headPriceMotion[activeAsset]) headPriceMotion[activeAsset].value = NaN;
       viewMin = 0;
       viewMax = 0;
@@ -4394,7 +4832,9 @@
     var clipH = asset.id === 'crash300' ? Math.max(h, (cssH || 0) - pad.t) : h;
     ctx.rect(pad.l, pad.t, Math.max(2, w), Math.max(2, clipH));
     ctx.clip();
-    if (asset.id === 'stable') {
+    if (asset.ext && asset.xkind) {
+      map = drawExt(asset.xkind, pad, seriesW, h, candles, minP, maxP, asset.xdraw || {});
+    } else if (asset.id === 'stable') {
       map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2d75', 3.6);
     } else if (STYLED_ASSETS[asset.id]) {
       map = drawStyledCandles(pad, seriesW, h, candles, minP, maxP, STYLED_ASSETS[asset.id], STYLED_PAL[asset.id]);
@@ -4559,7 +4999,7 @@
     }
     if (asset.id === 'crash300' && !primary) {
       // v2612 : même couleur que la colonne en cours (fixée pour sa seconde, plus de clignotement).
-      tagCol = emberLock.cur ? '#FF9F43' : '#FF3B30';
+      tagCol = '#FFD08A';
     }
     if (asset.id === 'nexusprime') tagCol = '#00E5FF';
     if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
