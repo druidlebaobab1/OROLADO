@@ -63,7 +63,7 @@
       '<circle cx="32" cy="30" r="22" fill="#78350F"/><circle cx="32" cy="30" r="20" fill="#F8FAFC"/><circle cx="32" cy="30" r="16" fill="#1F2937"/><circle cx="32" cy="30" r="12" fill="#3B82F6"/><circle cx="32" cy="30" r="8" fill="#EF4444"/><circle cx="32" cy="30" r="4" fill="#FACC15"/>' +
       '<path d="M33 29L55 9" stroke="#F8FAFC" stroke-width="2"/><path d="M33 29l5-1.4-3.4 4z" fill="#CBD5E1"/><path d="M55 9l3-5M55 9l5-2M52 12l3-5M52 12l5-2" stroke="#EF4444" stroke-width="1.6" stroke-linecap="round"/>',
     // ladder with rungs and a glowing ball
-    ladder: '<defs>' + rg('IDb', '#FFFFFF', '#FDE68A', '#D97706') + '</defs>' + sh() +
+    ladderlive: '<defs>' + rg('IDb', '#FFFFFF', '#FDE68A', '#D97706') + '</defs>' + sh() +
       '<path d="M20 10V52M44 10V52" stroke="#E2E8F0" stroke-width="3.6" stroke-linecap="round"/><path d="M20 20H44M20 31H44M20 42H44" stroke="#FBBF24" stroke-width="3" stroke-linecap="round"/>' +
       '<circle cx="20" cy="7" r="4.4" fill="#22D3EE" stroke="#fff" stroke-width=".8"/><circle cx="44" cy="55" r="4.4" fill="#F472B6" stroke="#fff" stroke-width=".8"/>' +
       '<path d="M20 11V20H44V31H20V36" stroke="#FDE68A" stroke-width="1.2" stroke-dasharray="2 2" fill="none"/><circle cx="20" cy="37" r="5" fill="url(#IDb)"/>' + sp(54, 16, 4) + sp(9, 40, 3),
@@ -84,7 +84,7 @@
     { k: 'hilolive', name: 'Hi-Lo Live', sec: 'live', file: 'live3', pal: ['#CCFBF1', '#0F766E'], icon: ICONS.hilolive },
     { k: 'bullseye', name: 'Bullseye', sec: 'live', file: 'live3', pal: ['#FEF9C3', '#A16207'], icon: ICONS.bullseye },
     { k: 'lucky10', name: 'Lucky Ten', sec: 'live', file: 'live3', pal: ['#E0F2FE', '#0284C7'], icon: ICONS.lucky10 },
-    { k: 'ladder', name: 'Lucky Ladder', sec: 'live', file: 'live3', pal: ['#F5F3FF', '#6D28D9'], icon: ICONS.ladder },
+    { k: 'ladderlive', name: 'Lucky Ladder', sec: 'live', file: 'live3', pal: ['#F5F3FF', '#6D28D9'], icon: ICONS.ladderlive },
     { k: 'coinlive', name: 'Coin Toss', sec: 'live', file: 'live3', pal: ['#FFEDD5', '#C2410C'], icon: ICONS.coinlive }
   ]);
 })(window.D6 = window.D6 || {});

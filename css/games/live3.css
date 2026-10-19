@@ -43,7 +43,7 @@ html:root body #casinoModal .cg-live3 .l3-svg .warn{fill:#FB7185!important}
 /* scene stage colours */
 html:root body #casinoModal .cg-dtlive .l3-stage{background:#04130B}html:root body #casinoModal .cg-hilolive .l3-stage{background:#021817}html:root body #casinoModal .cg-sicbolive .l3-stage{background:#12052B}html:root body #casinoModal .cg-kenolive .l3-stage{background:#06142B}
 html:root body #casinoModal .cg-lucky10 .l3-stage{background:#0A0F2C}html:root body #casinoModal .cg-moneywheel .l3-stage{background:#0F0520}html:root body #casinoModal .cg-coinlive .l3-stage{background:#1C0A04}html:root body #casinoModal .cg-pegdrop .l3-stage{background:#0E1A3D}
-html:root body #casinoModal .cg-football .l3-stage{background:#052E16}html:root body #casinoModal .cg-bullseye .l3-stage{background:#0C4A6E}html:root body #casinoModal .cg-ladder .l3-stage{background:#100726}html:root body #casinoModal .cg-moonshot .l3-stage{background:#020617}
+html:root body #casinoModal .cg-football .l3-stage{background:#052E16}html:root body #casinoModal .cg-bullseye .l3-stage{background:#0C4A6E}html:root body #casinoModal .cg-ladderlive .l3-stage{background:#100726}html:root body #casinoModal .cg-moonshot .l3-stage{background:#020617}
 /* Dragon Tiger */
 html:root body #casinoModal .cg-dtlive .l3-board{grid-template-columns:repeat(3,minmax(0,1fr))}
 html:root body #casinoModal .cg-dtlive .l3-board button{height:58px!important}
@@ -146,19 +146,19 @@ html:root body #casinoModal .cg-bullseye .be-r.win{stroke:#22C55E;stroke-width:3
 html:root body #casinoModal .cg-bullseye .be-cd{fill:#fff;font-size:17px;font-weight:900;paint-order:stroke;stroke:#0C4A6E;stroke-width:3px}
 html:root body #casinoModal .cg-bullseye .be-wl{fill:#E0F2FE;font-size:12px}
 /* Lucky Ladder */
-html:root body #casinoModal .cg-ladder .l3-board{display:flex;flex-direction:column;gap:5px}
-html:root body #casinoModal .cg-ladder .la-r1{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
-html:root body #casinoModal .cg-ladder .la-r2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
-html:root body #casinoModal .cg-ladder .l3-board button{height:46px!important}
-html:root body #casinoModal .cg-ladder .l3-board svg{width:28px;height:24px}
-html:root body #casinoModal .cg-ladder .la-it{fill:#FDE68A;font-size:11px;font-weight:900}
-html:root body #casinoModal .cg-ladder .la-rg{stroke:#FDE68A;stroke-width:5;stroke-linecap:round}
-html:root body #casinoModal .cg-ladder .la-st circle{fill:rgba(34,211,238,.18);stroke:#22D3EE;stroke-width:2}html:root body #casinoModal .cg-ladder .la-st circle.on{fill:#22D3EE}
-html:root body #casinoModal .cg-ladder .la-en circle{fill:rgba(244,114,182,.18);stroke:#F472B6;stroke-width:2}html:root body #casinoModal .cg-ladder .la-en circle.on{fill:#F472B6}
-html:root body #casinoModal .cg-ladder .la-q{fill:#EDE9FE;font-size:46px;font-weight:900;opacity:.85}
-html:root body #casinoModal .cg-ladder .la-n{fill:#FDE68A;font-size:30px;font-weight:900}
-html:root body #casinoModal .cg-ladder .la-cd{fill:#fff;font-size:13px;font-weight:900}
-html:root body #casinoModal .cg-ladder .l3-li svg{width:24px;height:21px}
+html:root body #casinoModal .cg-ladderlive .l3-board{display:flex;flex-direction:column;gap:5px}
+html:root body #casinoModal .cg-ladderlive .la-r1{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+html:root body #casinoModal .cg-ladderlive .la-r2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+html:root body #casinoModal .cg-ladderlive .l3-board button{height:46px!important}
+html:root body #casinoModal .cg-ladderlive .l3-board svg{width:28px;height:24px}
+html:root body #casinoModal .cg-ladderlive .la-it{fill:#FDE68A;font-size:11px;font-weight:900}
+html:root body #casinoModal .cg-ladderlive .la-rg{stroke:#FDE68A;stroke-width:5;stroke-linecap:round}
+html:root body #casinoModal .cg-ladderlive .la-st circle{fill:rgba(34,211,238,.18);stroke:#22D3EE;stroke-width:2}html:root body #casinoModal .cg-ladderlive .la-st circle.on{fill:#22D3EE}
+html:root body #casinoModal .cg-ladderlive .la-en circle{fill:rgba(244,114,182,.18);stroke:#F472B6;stroke-width:2}html:root body #casinoModal .cg-ladderlive .la-en circle.on{fill:#F472B6}
+html:root body #casinoModal .cg-ladderlive .la-q{fill:#EDE9FE;font-size:46px;font-weight:900;opacity:.85}
+html:root body #casinoModal .cg-ladderlive .la-n{fill:#FDE68A;font-size:30px;font-weight:900}
+html:root body #casinoModal .cg-ladderlive .la-cd{fill:#fff;font-size:13px;font-weight:900}
+html:root body #casinoModal .cg-ladderlive .l3-li svg{width:24px;height:21px}
 /* Moon Shot */
 html:root body #casinoModal .cg-moonshot .l3-board{display:flex;flex-direction:column;gap:5px}
 html:root body #casinoModal .cg-moonshot .ms-r1{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
@@ -176,10 +176,10 @@ html:root body #casinoModal .cg-moonshot .ms-h.a{color:#86EFAC}html:root body #c
 @media (max-width:380px){html:root body #casinoModal .cg-live3 .l3-board{gap:4px}html:root body #casinoModal .cg-live3 .l3-board button{height:46px!important}html:root body #casinoModal .cg-live3 .l3-board svg{width:22px;height:22px}html:root body #casinoModal .cg-live3 .l3-board b{font-size:10.5px}
   html:root body #casinoModal .cg-live3 .l3-board button span{font-size:10.5px}html:root body #casinoModal .cg-lucky10 .l3-board svg{width:19px;height:19px}html:root body #casinoModal .cg-lucky10 .l3-board b{font-size:9.5px}html:root body #casinoModal .cg-lucky10 .l3-board button{height:32px!important}html:root body #casinoModal .cg-lucky10 .l3-board .l10-x{height:30px!important;gap:3px!important}
   html:root body #casinoModal .cg-pegdrop .l3-board svg{width:32px;height:13px}html:root body #casinoModal .cg-pegdrop .l3-board b{font-size:9.5px}html:root body #casinoModal .cg-coinlive .l3-board svg{width:38px;height:16px}html:root body #casinoModal .cg-coinlive .l3-board .co-b.w{height:36px!important}
-  html:root body #casinoModal .cg-ladder .l3-board button{height:40px!important}html:root body #casinoModal .cg-ladder .l3-board svg{width:24px;height:20px}html:root body #casinoModal .cg-moonshot .l3-board button{height:40px!important}html:root body #casinoModal .cg-moonshot .ms-r2 button{height:32px!important}html:root body #casinoModal .cg-moonshot .ms-l{font-size:10.5px}
+  html:root body #casinoModal .cg-ladderlive .l3-board button{height:40px!important}html:root body #casinoModal .cg-ladderlive .l3-board svg{width:24px;height:20px}html:root body #casinoModal .cg-moonshot .l3-board button{height:40px!important}html:root body #casinoModal .cg-moonshot .ms-r2 button{height:32px!important}html:root body #casinoModal .cg-moonshot .ms-l{font-size:10.5px}
   html:root body #casinoModal .cg-kenolive .l3-board button{height:38px!important}html:root body #casinoModal .cg-football .fb-l{font-size:13px!important}}
 @media (max-height:640px){html:root body #casinoModal .cg-live3 .l3-last{height:22px}html:root body #casinoModal .cg-live3 .l3-li{min-width:22px;height:22px}html:root body #casinoModal .cg-live3 .l3-li svg{width:18px;height:18px}
-  html:root body #casinoModal .cg-ladder .l3-board button{height:38px!important}html:root body #casinoModal .cg-moonshot .l3-board button{height:38px!important}}
+  html:root body #casinoModal .cg-ladderlive .l3-board button{height:38px!important}html:root body #casinoModal .cg-moonshot .l3-board button{height:38px!important}}
 /* old phones: no decorative animation */
 html.oro-lite body #casinoModal .cg-live3 .l3-live i,html.oro-lite body #casinoModal .cg-live3 .mw-bulb{animation:none}
 /* 3-option boards (Dragon Duel, Hi-Lo): icon on the left, name and payout on two lines */

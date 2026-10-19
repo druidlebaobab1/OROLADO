@@ -392,7 +392,7 @@
       bySec.more.sort(function (a, b) { return moPos(a) - moPos(b); });
       // v2850 (propriétaire : « Live plein, 24 jeux ») : ordre fixe des jeux en direct (les catalogues arrivent dans n'importe quel ordre)
       var LV_POS = ['crash', 'cryptox', 'roulette', 'jet', 'horses', 'race', 'rocket', 'planets', 'catwalk', 'fleets', 'gemcount', 'claw',
-        'dtlive', 'moneywheel', 'football', 'kenolive', 'moonshot', 'sicbolive', 'pegdrop', 'hilolive', 'bullseye', 'lucky10', 'ladder', 'coinlive'];
+        'dtlive', 'moneywheel', 'football', 'kenolive', 'moonshot', 'sicbolive', 'pegdrop', 'hilolive', 'bullseye', 'lucky10', 'ladderlive', 'coinlive'];
       var lvPos = function (k) { var i = LV_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.live.sort(function (a, b) { return lvPos(a) - lvPos(b); });
       var cur = curSec(); if (!bySec[cur].length) cur = SEC_ORDER.filter(function (x) { return bySec[x].length; })[0] || 'skill';
@@ -604,7 +604,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2870'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2871'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.

@@ -67,7 +67,7 @@ function all_outcomes(string $g, int $base = 8): array {
     case 'pegdrop': for ($m = 0; $m < 256; $m++) { $s = 0; for ($b = 0; $b < 8; $b++) $s += $m >> $b & 1; $L[] = [1 / 256, ['n' => $s]]; } break;
     case 'football': foreach (CASINO_FB_H as $h => $wh) foreach (CASINO_FB_A as $a => $wa) $L[] = [$wh * $wa / 10000, ['n' => $h * 10 + $a]]; break;
     case 'bullseye': foreach (CASINO_BULL_W as $i => $w) $L[] = [$w / 100, ['n' => $i]]; break;
-    case 'ladder': for ($k = 0; $k < 4; $k++) $L[] = [0.25, ['n' => $k]]; break;
+    case 'ladderlive': for ($k = 0; $k < 4; $k++) $L[] = [0.25, ['n' => $k]]; break;
     case 'moonshot': // P(X dans [a, b[) = 1/a − 1/b : on prend un point de chaque tranche élémentaire (bornes 1 · 1,5 · 2 · 3 · 10 · ∞)
       $edges = [1.0, 1.5, 2.0, 3.0, 10.0, INF];
       for ($k = 0; $k < 5; $k++) $L[] = [1 / $edges[$k] - ($edges[$k + 1] === INF ? 0 : 1 / $edges[$k + 1]), ['n' => (int) round($edges[$k] * 100)]];
@@ -140,7 +140,7 @@ $xs = []; for ($k = 0; $k < $M; $k++) $xs[] = casino_live3_draw('moonshot')['n']
 $okM = true; foreach ([1.25, 2, 2.5, 5, 20, 50] as $m) { $f = count(array_filter($xs, static fn($x) => $x >= $m)) / $M; if (abs($f - 1 / $m) > 0.006) $okM = false; }
 check('moonshot : P(X ≥ m) = 1/m (m = 1,25 · 2 · 2,5 · 5 · 20 · 50)', $okM);
 $inv = ['dtlive' => ['D', 'tie', ''], 'hilolive' => ['x', 'H'], 'sicbolive' => ['3', 'any'], 'kenolive' => ['10', 'top '], 'lucky10' => ['0', '11', 'odd2'], 'moneywheel' => ['1', 'v3', 'v50'],
-  'coinlive' => ['h4', 'H'], 'pegdrop' => ['d5', '4', 'l'], 'football' => ['3', 'X', 'ng'], 'bullseye' => ['5', '-1', 'gold'], 'ladder' => ['c4', 's'], 'moonshot' => ['e', 'o3']];
+  'coinlive' => ['h4', 'H'], 'pegdrop' => ['d5', '4', 'l'], 'football' => ['3', 'X', 'ng'], 'bullseye' => ['5', '-1', 'gold'], 'ladderlive' => ['c4', 's'], 'moonshot' => ['e', 'o3']];
 $okI = true; foreach ($inv as $g => $l) foreach ($l as $s) if (casino_draw_mult($g, $s, []) !== null) { $okI = false; echo "     accepté à tort : $g/$s\n"; }
 check('sélections invalides refusées', $okI);
 check('High-Low : carte de base publique pendant les mises, la suivante cachée', casino_live3_pre('hilolive', ['b' => 9, 'x' => 4, 's' => [2, 1]]) === ['b' => 9, 's' => 2] && casino_live3_pre('dtlive', ['d' => 1]) === []);
@@ -152,7 +152,7 @@ $db['users']['u_l'] = ['id' => 'u_l', 'email' => 'l3@gmail.com', 'role' => 'user
 $db['vault']['u_l'] = ['demo' => 500, 'real' => 100];
 save_db(orolado_data_file(), $db); $bal[$U] = 1000.0; $me = $db['users']['u_l'];
 $file = casino_user_file('u_l');
-$sels = ['dtlive' => 'd', 'hilolive' => 'h', 'sicbolive' => 'big', 'kenolive' => 'tt', 'lucky10' => '7', 'moneywheel' => 'v5', 'coinlive' => 'h2', 'pegdrop' => 'L', 'football' => 'x', 'bullseye' => '0', 'ladder' => 'c2', 'moonshot' => 'o2'];
+$sels = ['dtlive' => 'd', 'hilolive' => 'h', 'sicbolive' => 'big', 'kenolive' => 'tt', 'lucky10' => '7', 'moneywheel' => 'v5', 'coinlive' => 'h2', 'pegdrop' => 'L', 'football' => 'x', 'bullseye' => '0', 'ladderlive' => 'c2', 'moonshot' => 'o2'];
 foreach ($G as $g) {
   [$P, $B] = CASINO_LIVE3[$g]; $sel = $sels[$g];
   $i0 = casino_draw_i($g, time()) + 40; $t = casino_draw_start($g, $i0) + 2.0;

@@ -900,7 +900,7 @@
     return s + '</svg>';
   }
   function laDecode(n) { var s = n >> 1, r = n % 2 ? 4 : 3; return { s: s, r: r, e: r === 3 ? 1 - s : s }; }
-  live('ladder', {
+  live('ladderlive', {
     SHOW: 12, lab: 'la', bev: 'tick', endEv: 'coin', odds0: { sl: 1.88, sr: 1.88, r3: 1.88, r4: 1.88, el: 1.88, er: 1.88, c0: 3.76, c1: 3.76, c2: 3.76, c3: 3.76 },
     beat: function (e, res, R) { if (e < LA_T0) return e >= 1.2 ? 0 : -1; var d = laDecode(+res.n); return laAt(laPath(d.s, laRungs(R.i, d.r)), seg(e, LA_T0, LA_T1))[2]; },
     rules: rules(155, {

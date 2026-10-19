@@ -11,7 +11,7 @@ header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 $g = (string) ($_GET['g'] ?? '');
 if (!in_array($g, ['crash', 'jet', 'rocket', 'cryptox', 'horses', 'roulette', 'race', 'planets', 'catwalk', 'fleets', 'gemcount', 'claw', // v2850 : + 12 jeux live3
-  'dtlive', 'hilolive', 'sicbolive', 'kenolive', 'lucky10', 'moneywheel', 'coinlive', 'pegdrop', 'football', 'bullseye', 'ladder', 'moonshot'], true)) { echo '{"ok":false}'; exit; }
+  'dtlive', 'hilolive', 'sicbolive', 'kenolive', 'lucky10', 'moneywheel', 'coinlive', 'pegdrop', 'football', 'bullseye', 'ladderlive', 'moonshot'], true)) { echo '{"ok":false}'; exit; }
 require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/casino_lib.php';
 $now = microtime(true);
