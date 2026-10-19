@@ -390,6 +390,11 @@
         'shells', 'viking', 'ladder', 'safari', 'luckyten', 'donut', 'popdarts', 'rubymine', 'treasure', 'pumpkin', 'scratchwin', 'medusa'];
       var moPos = function (k) { var i = MO_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.more.sort(function (a, b) { return moPos(a) - moPos(b); });
+      // v2850 (propriétaire : « Live plein, 24 jeux ») : ordre fixe des jeux en direct (les catalogues arrivent dans n'importe quel ordre)
+      var LV_POS = ['crash', 'cryptox', 'roulette', 'jet', 'horses', 'race', 'rocket', 'planets', 'catwalk', 'fleets', 'gemcount', 'claw',
+        'dtlive', 'moneywheel', 'football', 'kenolive', 'moonshot', 'sicbolive', 'pegdrop', 'hilolive', 'bullseye', 'lucky10', 'ladder', 'coinlive'];
+      var lvPos = function (k) { var i = LV_POS.indexOf(k); return i < 0 ? 999 : i; };
+      bySec.live.sort(function (a, b) { return lvPos(a) - lvPos(b); });
       var cur = curSec(); if (!bySec[cur].length) cur = SEC_ORDER.filter(function (x) { return bySec[x].length; })[0] || 'skill';
       v.className = 'cs-grid cs-grid3';
       var tpb = m.querySelector('.cs-top'); if (tpb) v.style.setProperty('--cs-tabs-top', Math.max(0, tpb.offsetHeight - 8) + 'px');
@@ -631,7 +636,7 @@
     }, catDone ? 0 : 90);
   }
   // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
-  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa', 'cat-skill6'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
+  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa', 'cat-skill6', 'cat-live3'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
   function loadCatalog() {
     if (catAsked) return; catAsked = true;
     catLeft = CAT_FILES.length;
