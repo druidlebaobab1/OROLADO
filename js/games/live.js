@@ -647,6 +647,7 @@
           if (t >= R.end + 0.6) { st.R = R = nextRound(R, R.res ? G.resVal(R.res) : null); bet = t < R.close; e = t - R.close; rev = false; } // le serveur répond au prochain appel
           if (st.ri !== R.i) { st.ri = R.i; st.mk = ''; if (G.round) G.round(st, R); }
           if (bet) st.goArm = R.i; else if (st.goArm === R.i && e < 1.5) { st.goArm = -1; if (game !== 'roulette') K.sfx('go'); } // v2832 : départ du tirage / de la course
+          if (K.amb) K.amb(game, !bet && e >= 0 && e < G.reveal, e / G.reveal); // v2851 : ambiance (suspense, moteurs, galop + foule) pendant le tirage
           // v2811 : statut professionnel sur UNE ligne — « Paris ouverts 1:54 » · « Derniers paris 0:08 » · « Tirage en cours » · « Prochain tour dans 0:41 »
           if (bet) {
             var left = R.close - t;

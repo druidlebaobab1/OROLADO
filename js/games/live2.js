@@ -132,6 +132,7 @@
           G.frame(ctx, R, t, e, bet ? null : res, st.odds);
           // v2832 : sons du spectacle — départ (si on a vu les mises), puis un petit son à chaque temps fort
           if (bet) st.goArm = R.i; else if (st.goArm === R.i && e < 1.5) { st.goArm = -1; K.sfx('go'); }
+          if (K.amb) K.amb(key, !bet && !!res && e >= 0 && e < G.SHOW, e / G.SHOW); // v2851 : ambiance pendant le spectacle
           if (!bet && res && e >= 0 && e < G.SHOW && G.beat) K.sfxBeat(st, 'bt', G.beat(e, res, R), 'tick');
           var wins = rev ? G.wins(res).join(',') : '';
           if (wins !== wasWin) {
