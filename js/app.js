@@ -1199,7 +1199,7 @@
         // alors la place de la barre sous ACHETER / VENDRE (bande vide), retirée quelques secondes plus tard. Cette mesure
         // n'est crue qu'après 3 s (les recalculs prévus après le chargement la reprennent si elle est vraie).
         if (underBar && (window.performance && performance.now ? performance.now() : 99999) < 3000) underBar = false;
-        bottomRes = underBar ? (safeBottomPx() + 35) : 8;
+        bottomRes = underBar ? (safeBottomPx() + 35) : 0; // v2836 (propriétaire) : ACHETER / VENDRE descendent contre la barre de Safari
       } else {
         bottomRes = safeBottomPx() + 4;
       }
