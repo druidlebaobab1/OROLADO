@@ -3532,6 +3532,15 @@
       var t = targetTagQueue[i];
       var key = t.entry ? 'e|' + t.off + '|' + t.side : (t.off !== 0 ? t.off + '|' + t.mult + '|' + t.side : '0|' + t.mult + '|' + t.side + '|' + Math.round(t.by / 14));
       var gr = byKey[key];
+      // v2845 (propriétaire) : objectifs proches à l'écran = UNE étiquette posée sur leur trait, avec le nombre (· 2, · 3…),
+      // comme les ronds des secondes qui s'empilent — plus d'étiquettes écartées loin de leurs traits.
+      if (!gr && !t.entry && t.off === 0) {
+        for (var q = 0; q < groups.length; q++) {
+          var o = groups[q];
+          if (!o.entry && o.off === 0 && o.side === t.side && o.mult === t.mult && Math.abs(o.by - t.by) < 14) { gr = o; break; }
+        }
+        if (gr) byKey[key] = gr;
+      }
       if (!gr) {
         gr = { mult: t.mult, off: t.off, by: t.by, bar: t.bar, n: 0, fade: 0, pad: t.pad, layout: t.layout, top: t.top, bot: t.bot, entry: !!t.entry, side: t.side };
         byKey[key] = gr;
@@ -3579,6 +3588,8 @@
       var ty = it.by - H / 2;
       var guard = 0;
       var hit = true;
+      // Objectif à l'écran : l'étiquette reste SUR son trait (elle peut chevaucher une autre, comme les ronds).
+      if (!it.entry && it.off === 0) { ty = Math.max(top, Math.min(bot, ty)); hit = false; }
       while (hit && guard < 24) {
         if (ty < top) { ty = top; dir = 1; }
         if (ty > bot) { ty = bot; dir = -1; }
