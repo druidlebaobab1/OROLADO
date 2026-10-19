@@ -2423,7 +2423,7 @@
     var k = sizeK();
     var big = cssH >= 200;
     var i, c, x, up, y1, y2, bh, hw, lw;
-    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1, coins: 1 }[kind];
+    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1, coins: 1, comet: 1, ohlc: 1, diamonds: 1, dashes: 1, zigzag: 1, dotline: 1, rings: 1, arcs: 1 }[kind];
     var lastX = isLine ? (panMs > 0 ? toX(last) : pad.l + w) : toX(last);
     function wick(cd) {
       var a = isFinite(cd.h) ? cd.h : Math.max(cd.o, cd.c);
@@ -2752,6 +2752,87 @@
           ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], rr, 0, Math.PI * 2); ctx.fill();
         }
       }
+    } else if (kind === 'comet' || kind === 'ohlc' || kind === 'diamonds' || kind === 'dashes' || kind === 'zigzag' || kind === 'dotline' || kind === 'rings' || kind === 'arcs') {
+      // 2026-10-19 (propriétaire : « trop de simulations identiques ; chaque monde différent ») : 8 dessins nouveaux.
+      var cU2 = X.up || M, cD2 = X.dn || '#FF4D6D';
+      var cdir = function (j) { return j > 0 ? candles[j].c >= candles[j - 1].c : candles[j].c >= candles[j].o; };
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      if (kind === 'comet') {
+        // COMÈTE : traînée qui s'efface vers le passé, tête lumineuse
+        for (i = 1; i < n; i++) {
+          ctx.globalAlpha = 0.15 + 0.85 * (i / n);
+          ctx.strokeStyle = M; ctx.lineWidth = 1 + 3.4 * (i / n);
+          ctx.beginPath(); ctx.moveTo(pts[i - 1][0], pts[i - 1][1]); ctx.lineTo(pts[i][0], pts[i][1]); ctx.stroke();
+        }
+        ctx.globalAlpha = 1; ctx.beginPath(); ctx.moveTo(pts[last][0], pts[last][1]); ctx.lineTo(lastX, lastY); ctx.stroke();
+      } else if (kind === 'ohlc') {
+        // BARRES OHLC : trait haut-bas, ouverture à gauche, clôture à droite
+        var tk = Math.max(2, Math.min(6, slot * 0.35));
+        ctx.lineWidth = Math.max(1.2, Math.min(2.4, slot * 0.18));
+        for (i = 0; i < n; i++) {
+          var cc = candles[i], wb = wick(cc), xx = toX(i);
+          ctx.strokeStyle = cc.c >= cc.o ? cU2 : cD2;
+          ctx.beginPath(); ctx.moveTo(xx, toY(wb[0])); ctx.lineTo(xx, toY(wb[1]));
+          ctx.moveTo(xx - tk, toY(cc.o)); ctx.lineTo(xx, toY(cc.o)); ctx.moveTo(xx, toY(cc.c)); ctx.lineTo(xx + tk, toY(cc.c)); ctx.stroke();
+        }
+      } else if (kind === 'diamonds') {
+        // LOSANGES : un diamant par seconde, de l'ouverture à la clôture
+        var dw = Math.max(2.2, Math.min(7, slot * 0.42));
+        for (i = 0; i < n; i++) {
+          var cd = candles[i], xd = toX(i), ya = toY(cd.o), yb = toY(cd.c);
+          if (Math.abs(ya - yb) < 4) { var mid = (ya + yb) / 2; ya = mid - 2; yb = mid + 2; }
+          ctx.fillStyle = cd.c >= cd.o ? cU2 : cD2;
+          ctx.beginPath(); ctx.moveTo(xd, ya); ctx.lineTo(xd + dw, (ya + yb) / 2); ctx.lineTo(xd, yb); ctx.lineTo(xd - dw, (ya + yb) / 2); ctx.closePath(); ctx.fill();
+        }
+      } else if (kind === 'dashes') {
+        // TIRETS : un trait horizontal par prix (sans liaison), couleur selon le sens
+        var hw2 = Math.max(2, Math.min(8, slot * 0.45));
+        ctx.lineWidth = 3;
+        for (i = 0; i < n; i++) { ctx.strokeStyle = cdir(i) ? cU2 : cD2; ctx.beginPath(); ctx.moveTo(pts[i][0] - hw2, pts[i][1]); ctx.lineTo(pts[i][0] + hw2, pts[i][1]); ctx.stroke(); }
+      } else if (kind === 'zigzag') {
+        // ZIGZAG : seulement les sommets et les creux, reliés, avec un triangle à chaque pivot
+        var piv = [pts[0]], dirZ = 0;
+        for (i = 1; i < n; i++) {
+          var dz = pts[i][1] < pts[i - 1][1] ? 1 : (pts[i][1] > pts[i - 1][1] ? -1 : dirZ);
+          if (dirZ !== 0 && dz !== dirZ) piv.push(pts[i - 1]);
+          dirZ = dz;
+        }
+        piv.push([lastX, lastY]);
+        ctx.strokeStyle = M; ctx.lineWidth = 2.6;
+        ctx.beginPath(); ctx.moveTo(piv[0][0], piv[0][1]); for (i = 1; i < piv.length; i++) ctx.lineTo(piv[i][0], piv[i][1]); ctx.stroke();
+        for (i = 1; i < piv.length - 1; i++) {
+          var top2 = piv[i][1] < piv[i - 1][1];
+          ctx.fillStyle = top2 ? cU2 : cD2; ctx.beginPath();
+          if (top2) { ctx.moveTo(piv[i][0], piv[i][1] - 7); ctx.lineTo(piv[i][0] - 4, piv[i][1] - 1); ctx.lineTo(piv[i][0] + 4, piv[i][1] - 1); }
+          else { ctx.moveTo(piv[i][0], piv[i][1] + 7); ctx.lineTo(piv[i][0] - 4, piv[i][1] + 1); ctx.lineTo(piv[i][0] + 4, piv[i][1] + 1); }
+          ctx.closePath(); ctx.fill();
+        }
+      } else if (kind === 'dotline') {
+        // POINTILLÉS : une ligne faite de petits points serrés
+        ctx.fillStyle = M;
+        for (i = 1; i < n + 1; i++) {
+          var a0 = pts[i - 1], a1 = i < n ? pts[i] : [lastX, lastY], dx = a1[0] - a0[0], dy = a1[1] - a0[1], L2 = Math.sqrt(dx * dx + dy * dy), k2;
+          for (k2 = 0; k2 < L2; k2 += 4.5) { ctx.beginPath(); ctx.arc(a0[0] + dx * k2 / (L2 || 1), a0[1] + dy * k2 / (L2 || 1), 1.6, 0, Math.PI * 2); ctx.fill(); }
+        }
+      } else if (kind === 'rings') {
+        // ANNEAUX : un cercle vide par prix, plus grand quand le prix a beaucoup bougé
+        var rng = Math.max(1e-9, maxP - minP);
+        ctx.lineWidth = 2;
+        for (i = 0; i < n; i++) {
+          var mv = i > 0 ? Math.abs(candles[i].c - candles[i - 1].c) / rng : 0;
+          ctx.strokeStyle = cdir(i) ? cU2 : cD2;
+          ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], Math.max(2.4, Math.min(9, 2.4 + mv * 120)), 0, Math.PI * 2); ctx.stroke();
+        }
+      } else {
+        // ARCHES : chaque prix relié au suivant par une petite arche (pont)
+        ctx.lineWidth = 2.4;
+        for (i = 1; i < n + 1; i++) {
+          var b0 = pts[i - 1], b1 = i < n ? pts[i] : [lastX, lastY];
+          ctx.strokeStyle = b1[1] <= b0[1] ? cU2 : cD2;
+          ctx.beginPath(); ctx.moveTo(b0[0], b0[1]); ctx.quadraticCurveTo((b0[0] + b1[0]) / 2, Math.min(b0[1], b1[1]) - Math.max(4, Math.abs(b1[0] - b0[0]) * 0.5), b1[0], b1[1]); ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
     } else if (kind === 'coins') {
       // 2026-10-19 (propriétaire : MAMMON « rouge en bas, un trait au milieu, je ne comprends pas ») : FIL D'OR semé de pièces —
       // une ligne dorée lisse, une pièce d'or toutes les quelques secondes (pièce verte si ça a monté, rouge si ça a baissé).
