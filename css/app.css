@@ -12748,3 +12748,7 @@ html:root body #screenTrade #btnHelp#btnHelp{overflow:visible!important}
    La page des jeux est maintenant ancrée aux 4 bords (top / right / bottom / left), voir plus haut. */
 /* Anciens Android : « inset » inconnu → les fenêtres plein écran gardent leurs 4 bords. */
 .modal-backdrop{top:0;right:0;bottom:0;left:0}
+/* v2818 (propriétaire, iPhone seulement) : la grosse pastille 5000 % touchait la case « $ 1.90 / Payout » au-dessus.
+   Même taille, juste descendue de quelques pixels (Android inchangé). */
+html.is-ios #oddsRow .odds-chip[data-odds="50"],html.is-ios .odds-row .odds-chip[data-odds="50"]{translate:0 5px}
+html.is-ios #oddsRow .odds-chip[data-odds="10"],html.is-ios .odds-row .odds-chip[data-odds="10"]{translate:0 2px}
