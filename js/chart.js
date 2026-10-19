@@ -3538,7 +3538,8 @@
     // de l'ordre (sécurité v2814). Le rond ne se pose donc plus au clic : il reste collé au bout de la courbe
     // (suivi v2353) jusqu'au vrai point d'entrée, et la zone + la ligne d'arrivée n'apparaissent qu'une fois
     // confirmées, à leur vraie place : plus de double trait ni de sursaut. Démo : inchangé (prix du clic).
-    var clickMode = trade.mode !== 'real' && shownPrice[trade.id] > 0 && shownMarks[trade.id] > 1;
+    // 2026-10-19 (propriétaire) : le serveur reprend le prix du CLIC en réel aussi → rond, zone et lignes au clic, d'un coup.
+    var clickMode = shownPrice[trade.id] > 0 && shownMarks[trade.id] > 1;
     if (clickMode) rideEntryT = 0;
     var riding = !clickMode && !(panMs > 0) && lastDrawnClose > 0 && (trade.pending || (rideEntryT > 0 && rideHeadT < rideEntryT));
     var rs = rideState[trade.id];
@@ -3589,7 +3590,7 @@
     // v2453 — chaque trade a sa zone (jusqu'à 3 à la fois), de plus en plus légère : 1er plein, 2e et 3e plus légers.
     // Dessin seulement : les prix, l'objectif et le résultat ne changent pas.
     var zoneK = idx === 0 ? 1 : idx === 1 ? 0.6 : 0.38;
-    if (idx < 3 && !(trade.pending && trade.mode === 'real')) {
+    if (idx < 3 && !(trade.pending && riding)) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
       var refP = bar > 0 ? bar : entry;
       var zy = priceToY(refP, pad, plotH, minP, maxP);
@@ -3687,7 +3688,7 @@
     // v2818 (propriétaire : « la ligne de mise et la ligne objectif basculent un tout petit peu ensemble ») : en RÉEL,
     // pendant que le rond suit le bout de la courbe (attente du vrai prix d'entrée, ~0,5 s), les deux lignes ne sont
     // pas dessinées ; elles apparaissent ensuite UNE fois, à leur vraie place, avec un court fondu, et ne bougent plus.
-    var hideLines = riding && trade.mode === 'real';
+    var hideLines = riding && trade.mode === 'real' && !clickMode;
     if (!hideLines && trade.mode === 'real' && rs && rs.end) lineFade *= Math.min(1, Math.max(0.15, (Date.now() - rs.end) / 220));
     if (!hideLines) {
       g.setLineDash(TRADE_DASH);
