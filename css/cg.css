@@ -141,3 +141,9 @@ html:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{overflow-x:clip!i
   html:root body #casinoModal .cs-sec.cs-sec-live .cs-sec-g{grid-template-columns:repeat(8,minmax(0,1fr))}
   html:root body #casinoModal .cs-sec.cs-sec-skill .cs-sec-g{grid-template-columns:repeat(6,minmax(0,1fr))}
 }
+/* v2807 (propriétaire) : iPhone couché — le montant (« 0.10 ») était coupé : boutons − / + un peu plus petits, chiffres à 15 px */
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .cg-amt{gap:3px!important;padding:0 3px!important}
+  html:root body #casinoModal .cg-step{width:32px!important;height:32px!important;min-width:32px!important;flex:0 0 32px!important}
+  html:root body #casinoModal .cg-in input{font-size:15px!important;padding:0 20px 0 0!important;letter-spacing:-.02em}
+}
