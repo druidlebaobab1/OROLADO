@@ -10,7 +10,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 $g = (string) ($_GET['g'] ?? '');
-if (!in_array($g, ['crash', 'jet', 'rocket', 'cryptox', 'horses', 'roulette', 'race', 'planets'], true)) { echo '{"ok":false}'; exit; }
+if (!in_array($g, ['crash', 'jet', 'rocket', 'cryptox', 'horses', 'roulette', 'race', 'planets', 'catwalk', 'fleets', 'gemcount', 'claw'], true)) { echo '{"ok":false}'; exit; }
 require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/casino_lib.php';
 $now = microtime(true);
