@@ -667,7 +667,38 @@ function casino_stat(string $game, string $mode, float $stake, float $win): void
   });
 }
 
-function casino_hist_add(string $uid, array $row): void {
+/**
+ * v2843 (propriétaire : « je veux voir TOUTES les parties de chaque joueur dans l'admin ») — JOURNAL DES PARTIES.
+ * Chaque partie terminée (tous les jeux : Action, Live, Casino, et tout jeu ajouté plus tard par les fiches casino_ext/,
+ * car ils passent tous par casino_hist_add) est AJOUTÉE à la fin de deux fichiers, jamais réécrits :
+ *   data/casino/rounds/AAAA-MM.jsonl  (toutes les parties du mois, pour le direct et les statistiques de l'admin)
+ *   data/casino/ur/<joueur>.jsonl     (toutes les parties d'un joueur, pour sa fiche dans l'admin)
+ * Affichage seulement : rien ne change dans les mises ni les gains. Une erreur d'écriture n'arrête jamais la partie.
+ */
+function casino_round_log(string $uid, array $row, array $extra = []): void {
+  try {
+    $m = (string) ($row['m'] ?? '');
+    if ($uid === '' || $m === 'try' || $m === '') return;
+    $s = casino_money((float) ($row['s'] ?? 0));
+    $w = casino_money((float) ($row['w'] ?? 0));
+    $t = round(microtime(true), 4);
+    $line = ['t' => $t, 'u' => $uid, 'g' => (string) ($row['g'] ?? ''), 'm' => $m, 's' => $s, 'w' => $w,
+      'x' => $s > 0 ? floor($w / $s * 100 + 1e-6) / 100 : 0.0];
+    if (!empty($extra['r'])) $line['r'] = (string) $extra['r'];
+    if (!empty($extra['v'])) $line['v'] = 1; // pari annulé (mise rendue)
+    $json = json_encode($line, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
+    $dir = casino_dir('rounds');
+    if (!is_file($dir . DIRECTORY_SEPARATOR . '.start')) @file_put_contents($dir . DIRECTORY_SEPARATOR . '.start', (string) (int) $t, LOCK_EX);
+    @file_put_contents($dir . DIRECTORY_SEPARATOR . gmdate('Y-m', (int) $t) . '.jsonl', $json, FILE_APPEND | LOCK_EX);
+    @file_put_contents(casino_round_user_file($uid), $json, FILE_APPEND | LOCK_EX);
+  } catch (\Throwable $e) {
+    error_log('OROLADO casino_round_log: ' . $e->getMessage());
+  }
+}
+function casino_round_user_file(string $uid): string { return casino_dir('ur') . DIRECTORY_SEPARATOR . hash('sha256', 'cs|' . $uid) . '.jsonl'; }
+
+function casino_hist_add(string $uid, array $row, array $extra = []): void {
+  casino_round_log($uid, $row, $extra);
   casino_with(casino_user_file($uid), static function (array &$st) use ($row, $uid) {
     $h = (array) ($st['h'] ?? []);
     array_unshift($h, $row);
@@ -760,7 +791,7 @@ function casino_play(array $db, ?array $user, string $game, string $mode, float 
   $bal = casino_credit($db, $uid, $mode, $win, $ref);
   if ($mode !== 'try') {
     casino_stat($game, $mode, $stake, $win);
-    casino_hist_add($uid, ['g' => $game, 'm' => $mode, 's' => $stake, 'w' => $win, 'at' => time()]);
+    casino_hist_add($uid, ['g' => $game, 'm' => $mode, 's' => $stake, 'w' => $win, 'at' => time()], ['r' => $ref]);
   }
   return ['ok' => true, 'game' => $game, 'mode' => $mode, 'stake' => $stake, 'mult' => (float) $res['mult'], 'win' => $win, 'view' => $res['view'],
     'bal' => $bal, 'pending' => $bal === null && $mode === 'real' ? 1 : 0];
@@ -1146,7 +1177,7 @@ function casino_finish(array $db, string $uid, string $game, array $g, float $no
       casino_with($file, static function (array &$st) use ($game) { $st['g'][$game]['paid'] = 0; return true; });
     } else {
       casino_stat($game, (string) $g['mode'], (float) $g['stake'], (float) ($g['win'] ?? 0));
-      casino_hist_add($uid, ['g' => $game, 'm' => $g['mode'], 's' => (float) $g['stake'], 'w' => (float) ($g['win'] ?? 0), 'at' => time()]);
+      casino_hist_add($uid, ['g' => $game, 'm' => $g['mode'], 's' => (float) $g['stake'], 'w' => (float) ($g['win'] ?? 0), 'at' => time()], ['r' => (string) ($g['ref'] ?? ''), 'v' => !empty($g['void'])]);
     }
   }
   $g['paid'] = 1;
