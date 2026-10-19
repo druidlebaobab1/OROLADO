@@ -146,48 +146,65 @@
   /* =============================== DREIDEL =============================== */
   // 4 faces également probables : 0 Shin ×0 · 1 Hei ×0.7 · 2 Nun ×1 · 3 Gimel ×2.06
   var DR_L = ['ש', 'ה', 'נ', 'ג'], DR_V = [0, 0.7, 1, 2.06], DR_C = ['#94A3B8', '#38BDF8', '#A78BFA', '#FBBF24'];
-  function dreidel(face, sx) {
-    var f = DR_L[face], n = DR_L[(face + 1) % 4];
-    return '<g transform="scale(' + sx.toFixed(3) + ' 1)"><rect x="-6" y="-78" width="12" height="22" rx="4" fill="url(#dlG)"/><path d="M-34-58H34V8L0 52-34 8z" fill="url(#dlB)" stroke="#BFDBFE" stroke-width="2"/>' +
-      '<path d="M0-58V52" stroke="#1E3A8A" stroke-width="1.2" opacity=".5"/>' + '<text x="-15" y="-6" text-anchor="middle" font-size="30" font-weight="900" fill="' + DR_C[DR_L.indexOf(f)] + '" font-family="Arial,sans-serif">' + f + '</text>' +
-      '<text x="17" y="-6" text-anchor="middle" font-size="24" font-weight="900" fill="#E0F2FE" opacity=".45" font-family="Arial,sans-serif" transform="scale(.8 1) translate(5 0)">' + n + '</text></g>';
+  // toupie en pseudo-3D : face avant (largeur cos) + face de droite (largeur sin) selon l'angle ph ∈ [0, π/2)
+  function dreidel(face, ph) {
+    var c1 = Math.cos(ph), s1 = Math.sin(ph), wF = 66 * c1, wS = 66 * s1, x0 = -(wF + wS) / 2, xm = x0 + wF, x1 = xm + wS, tip = x0 + (wF + wS) / 2, out = '';
+    var fc = function (xa, xb, f, light) {
+      if (xb - xa < 1) return '';
+      var w = xb - xa, cx = (xa + xb) / 2, sc = Math.max(0.05, w / 66), L = DR_L[f];
+      return '<path d="M' + xa.toFixed(1) + ' -56H' + xb.toFixed(1) + 'V6L' + tip.toFixed(1) + ' 50L' + xa.toFixed(1) + ' 6z" fill="url(#' + (light ? 'dlF1' : 'dlF2') + ')" stroke="#DBEAFE" stroke-opacity=".6" stroke-width="1.2"/>' +
+        '<path d="M' + xa.toFixed(1) + ' 6H' + xb.toFixed(1) + '" stroke="#1E3A8A" stroke-opacity=".5"/>' +
+        '<g transform="translate(' + cx.toFixed(1) + ' -16) scale(' + sc.toFixed(3) + ' 1)"><text y="12" text-anchor="middle" font-size="36" font-weight="900" fill="' + DR_C[f] + '" stroke="#0B1437" stroke-width="1" font-family="Arial,sans-serif" opacity="' + (light ? 1 : 0.75) + '">' + L + '</text></g>';
+    };
+    out += fc(x0, xm, face, true) + fc(xm, x1, (face + 1) % 4, false);
+    out = '<rect x="-7" y="-80" width="14" height="26" rx="5" fill="url(#dlG)" stroke="#92400E" stroke-width=".8"/><ellipse cy="-56" rx="' + ((wF + wS) / 2).toFixed(1) + '" ry="5" fill="#93C5FD"/>' + out +
+      '<path d="M-4-78q4-2 8 0" stroke="#FFF" stroke-opacity=".6" fill="none"/>';
+    return out;
   }
+  function gelt(x, y, r) { return '<g transform="translate(' + x + ' ' + y + ')"><ellipse rx="' + r + '" ry="' + (r * 0.45) + '" fill="#B45309"/><ellipse cy="-1.5" rx="' + r + '" ry="' + (r * 0.45) + '" fill="url(#dlG)"/><path d="M' + (-r * 0.4) + ' -1.5h' + (r * 0.8) + '" stroke="#92400E" stroke-width="1"/></g>'; }
   game({
     key: 'dreidel', l: verb('spin'), vb: '0 0 300 250', W: [1, 1, 1, 1],
     chips: [1, 2, 3].map(function (j) { return [chipT(DR_L[j], DR_C[j], 13), DR_V[j]]; }),
     chipOf: function (i) { return i - 1; },
-    scene: '<defs><linearGradient id="dlB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#60A5FA"/><stop offset="1" stop-color="#1E3A8A"/></linearGradient><linearGradient id="dlG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FEF3C7"/><stop offset="1" stop-color="#D97706"/></linearGradient></defs>' +
-      felt('dlF', '#312E81', '#0B0820') + '<ellipse cx="150" cy="200" rx="120" ry="24" fill="#4338CA" opacity=".45"/>' +
-      [0, 1, 2, 3].map(function (j) { var x = 48 + j * 68; return '<g class="dl-s" id="dlS' + j + '"><rect x="' + (x - 26) + '" y="12" width="52" height="34" rx="10" fill="#1E1B4B" stroke="' + DR_C[j] + '" stroke-opacity=".7"/>' + txt(x - 9, 36, DR_L[j], 17, DR_C[j]) + txt(x + 11, 34, j ? xm(DR_V[j]) : '×0', 9, '#E0E7FF') + '</g>'; }).join('') +
-      '<ellipse id="dlSh" cx="150" cy="204" rx="26" ry="6" fill="#000" opacity=".35"/><g id="dlD" transform="translate(150 150)">' + dreidel(3, 1) + '</g>',
-    reset: function (c) { c.qa('.dl-s').forEach(function (g) { g.classList.remove('on'); }); },
+    scene: '<defs><linearGradient id="dlF1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#93C5FD"/><stop offset=".5" stop-color="#3B82F6"/><stop offset="1" stop-color="#1E40AF"/></linearGradient>' +
+      '<linearGradient id="dlF2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#172554"/></linearGradient><linearGradient id="dlG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FEF3C7"/><stop offset="1" stop-color="#D97706"/></linearGradient>' +
+      '<radialGradient id="dlT" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#4338CA"/><stop offset="1" stop-color="#1E1B4B"/></radialGradient><radialGradient id="dlL" r=".5"><stop offset="0" stop-color="#FDE68A" stop-opacity=".5"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0"/></radialGradient></defs>' +
+      felt('dlF', '#312E81', '#0B0820') + [[40, 70], [262, 64], [30, 140], [270, 150]].map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="22" fill="url(#dlL)"/><rect x="' + (p[0] - 2) + '" y="' + (p[1] - 6) + '" width="4" height="14" rx="1" fill="#E0E7FF"/><path d="M' + p[0] + ' ' + (p[1] - 6) + 'q-3-5 0-9q3 4 0 9" fill="#FBBF24"/>'; }).join('') +
+      '<ellipse cx="150" cy="204" rx="132" ry="30" fill="url(#dlT)" stroke="#FDE68A" stroke-opacity=".35" stroke-width="2"/>' + gelt(58, 214, 9) + gelt(76, 222, 8) + gelt(232, 218, 9) + gelt(248, 208, 7) + gelt(220, 228, 7) +
+      [0, 1, 2, 3].map(function (j) { var x = 48 + j * 68; return '<g class="dl-s" id="dlS' + j + '"><rect x="' + (x - 26) + '" y="10" width="52" height="34" rx="10" fill="#1E1B4B" stroke="' + DR_C[j] + '" stroke-opacity=".7"/>' + txt(x - 9, 34, DR_L[j], 17, DR_C[j]) + txt(x + 11, 32, j ? xm(DR_V[j]) : '×0', 9, '#E0E7FF') + '</g>'; }).join('') +
+      '<ellipse id="dlBlur" cx="150" cy="200" rx="40" ry="8" fill="none" stroke="#93C5FD" stroke-width="2" opacity="0"/><ellipse id="dlSh" cx="150" cy="204" rx="26" ry="6" fill="#000" opacity=".4"/><g id="dlD" transform="translate(150 150)">' + dreidel(3, 0.35) + '</g>',
+    reset: function (c) { c.qa('.dl-s').forEach(function (g) { g.classList.remove('on'); }); c.id('dlD').classList.remove('dl-win'); },
     play: async function (c, r) {
-      var i = +r.view.i, d = c.id('dlD'), sh = c.id('dlSh'), spins = 22 + rnd(6), lastF = -1;
+      var i = +r.view.i, d = c.id('dlD'), sh = c.id('dlSh'), bl = c.id('dlBlur'), spins = 20 + rnd(5), lastF = -1;
+      // fin : la face gagnante bien de face (angle = multiple de π/2 + 0,35 rad pour garder le relief)
+      var endA = (spins * 4 + ((i - 3 + 4) % 4)) * Math.PI / 2;
       c.sfx('launch');
-      await tw(c.box, 2600, function (k) {
-        var e = ease(k), a = (1 - Math.pow(1 - k, 2)) * spins * Math.PI, face = (Math.floor(a / (Math.PI / 2)) % 4 + 4) % 4, sx = Math.max(0.25, Math.abs(Math.cos(a)));
-        if (k > 0.92) { face = i; sx = 1; }
-        if (face !== lastF) { lastF = face; if (k < 0.9) c.sfx('tick'); }
-        var wob = (1 - e) * 4 + (k > 0.75 ? Math.sin(k * 40) * (k - 0.75) * 40 : 0), x = 150 + Math.sin(k * 9) * 30 * (1 - e);
-        d.innerHTML = dreidel(face, sx); d.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + (150 - (1 - e) * 10).toFixed(1) + ') rotate(' + wob.toFixed(1) + ')'); sh.setAttribute('cx', x.toFixed(1));
+      await tw(c.box, 2800, function (k) {
+        var e = 1 - Math.pow(1 - k, 2.2), a = e * endA, q = Math.floor(a / (Math.PI / 2)), face = ((3 + q) % 4 + 4) % 4, ph = a - q * Math.PI / 2;
+        if (face !== lastF) { lastF = face; if (k < 0.92) c.sfx('tick'); }
+        var x = 150 + Math.sin(k * 8) * 34 * (1 - e), wob = (1 - e) * 3 + (k > 0.7 ? Math.sin(k * 36) * (k - 0.7) * 30 : 0);
+        d.innerHTML = dreidel(face, k > 0.985 ? 0.35 : ph);
+        d.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + (150 - (1 - e) * 8).toFixed(1) + ') rotate(' + wob.toFixed(1) + ')');
+        sh.setAttribute('cx', x.toFixed(1)); bl.setAttribute('cx', x.toFixed(1)); bl.setAttribute('opacity', ((1 - k) * 0.8).toFixed(2));
       });
-      // il se couche, la face gagnante vers le haut
-      await tw(c.box, 380, function (k) { d.setAttribute('transform', 'translate(' + (150 + k * 6) + ' ' + (150 + k * 30) + ') rotate(' + (k * 72).toFixed(1) + ')'); });
-      c.sfx('stop'); c.id('dlS' + i).classList.add('on');
+      d.innerHTML = dreidel(i, 0.35);
+      // un dernier petit balancement, puis il reste droit : la lettre de face est le résultat
+      await tw(c.box, 500, function (k) { d.setAttribute('transform', 'translate(150 150) rotate(' + (Math.sin(k * Math.PI * 3) * 6 * (1 - k)).toFixed(1) + ')'); });
+      c.sfx('stop'); c.id('dlS' + i).classList.add('on'); d.classList.add('dl-win');
     },
     rules: {
-      en: '1. Set your stake and tap “Spin”: the dreidel spins, wobbles and falls.\n2. The letter on top is the result; each of the 4 sides is equally likely.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · Hei (ה) ×0.7 · Shin (ש): the stake is lost.',
-      fr: '1. Choisis ta mise et touche « Tourner » : la toupie tourne, vacille et tombe.\n2. La lettre du dessus donne le résultat ; les 4 faces ont la même chance.\n3. Guimel (ג) ×2.06 · Noun (נ) ×1 · Hé (ה) ×0.7 · Shin (ש) : la mise est perdue.',
-      es: '1. Elige tu apuesta y toca «Girar»: la perinola gira, se tambalea y cae.\n2. La letra de arriba es el resultado; las 4 caras tienen la misma probabilidad.\n3. Guímel (ג) ×2.06 · Nun (נ) ×1 · He (ה) ×0.7 · Shin (ש): pierdes la apuesta.',
-      pt: '1. Escolha o valor e toque em «Girar»: o pião gira, balança e cai.\n2. A letra de cima é o resultado; as 4 faces têm a mesma chance.\n3. Guímel (ג) ×2.06 · Nun (נ) ×1 · Hê (ה) ×0.7 · Shin (ש): a aposta é perdida.',
-      ar: '1. اختر الرهان والمس «أدر»: تدور الدوّامة وتتمايل ثم تسقط.\n2. الحرف الظاهر في الأعلى هو النتيجة؛ للأوجه الأربعة الفرصة نفسها.\n3. جيمل (ג) ×2.06 · نون (נ) ×1 · هي (ה) ×0.7 · شين (ש): تخسر الرهان.',
-      tr: '1. Bahsini seç ve “Çevir”e dokun: topaç döner, sallanır ve düşer.\n2. Üstteki harf sonuçtur; 4 yüzün şansı eşittir.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · He (ה) ×0.7 · Şin (ש): bahis kaybedilir.',
-      vi: '1. Chọn mức cược và chạm «Quay»: con quay xoay, chao đảo rồi đổ.\n2. Chữ cái ở mặt trên là kết quả; 4 mặt có cơ hội như nhau.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · Hei (ה) ×0.7 · Shin (ש): mất tiền cược.',
-      id: '1. Atur taruhan lalu sentuh «Putar»: gasing berputar, oleng, lalu jatuh.\n2. Huruf di atas adalah hasilnya; keempat sisi sama peluangnya.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · Hei (ה) ×0.7 · Shin (ש): taruhan hilang.',
-      ru: '1. Выберите ставку и нажмите «Крутить»: волчок крутится, качается и падает.\n2. Буква сверху — результат; у всех 4 граней равные шансы.\n3. Гимел (ג) ×2.06 · Нун (נ) ×1 · Хэй (ה) ×0.7 · Шин (ש) — ставка проиграна.',
-      de: '1. Wähle deinen Einsatz und tippe auf „Drehen“: der Dreidel dreht sich, wackelt und fällt.\n2. Der Buchstabe oben ist das Ergebnis; alle 4 Seiten sind gleich wahrscheinlich.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · He (ה) ×0.7 · Schin (ש): Einsatz verloren.',
-      hi: '1. राशि चुनें और «घुमाएं» छुएं: लट्टू घूमता है, डगमगाता है और गिरता है।\n2. ऊपर वाला अक्षर नतीजा है; चारों तरफ़ का मौका बराबर है।\n3. गिमेल (ג) ×2.06 · नून (נ) ×1 · हे (ה) ×0.7 · शिन (ש): दांव हार जाते हैं।',
-      zh: '1. 设定金额并点击“旋转”：陀螺旋转、摇晃后倒下。\n2. 朝上的字母就是结果；4 个面的机会相同。\n3. Gimel（ג）×2.06 · Nun（נ）×1 · Hei（ה）×0.7 · Shin（ש）：输掉下注。'
+      en: '1. Set your stake and tap “Spin”: the dreidel spins, wobbles and stops.\n2. The letter facing you is the result; each of the 4 sides is equally likely.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · Hei (ה) ×0.7 · Shin (ש): the stake is lost.',
+      fr: '1. Choisis ta mise et touche « Tourner » : la toupie tourne, vacille et s’arrête.\n2. La lettre tournée vers toi donne le résultat ; les 4 faces ont la même chance.\n3. Guimel (ג) ×2.06 · Noun (נ) ×1 · Hé (ה) ×0.7 · Shin (ש) : la mise est perdue.',
+      es: '1. Elige tu apuesta y toca «Girar»: la perinola gira, se tambalea y se detiene.\n2. La letra que queda de frente es el resultado; las 4 caras tienen la misma probabilidad.\n3. Guímel (ג) ×2.06 · Nun (נ) ×1 · He (ה) ×0.7 · Shin (ש): pierdes la apuesta.',
+      pt: '1. Escolha o valor e toque em «Girar»: o pião gira, balança e para.\n2. A letra virada para você é o resultado; as 4 faces têm a mesma chance.\n3. Guímel (ג) ×2.06 · Nun (נ) ×1 · Hê (ה) ×0.7 · Shin (ש): a aposta é perdida.',
+      ar: '1. اختر الرهان والمس «أدر»: تدور الدوّامة وتتمايل ثم تتوقف.\n2. الحرف المواجه لك هو النتيجة؛ للأوجه الأربعة الفرصة نفسها.\n3. جيمل (ג) ×2.06 · نون (נ) ×1 · هي (ה) ×0.7 · شين (ש): تخسر الرهان.',
+      tr: '1. Bahsini seç ve “Çevir”e dokun: topaç döner, sallanır ve durur.\n2. Sana dönük harf sonuçtur; 4 yüzün şansı eşittir.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · He (ה) ×0.7 · Şin (ש): bahis kaybedilir.',
+      vi: '1. Chọn mức cược và chạm «Quay»: con quay xoay, chao đảo rồi dừng lại.\n2. Chữ cái quay về phía bạn là kết quả; 4 mặt có cơ hội như nhau.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · Hei (ה) ×0.7 · Shin (ש): mất tiền cược.',
+      id: '1. Atur taruhan lalu sentuh «Putar»: gasing berputar, oleng, lalu berhenti.\n2. Huruf yang menghadap kamu adalah hasilnya; keempat sisi sama peluangnya.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · Hei (ה) ×0.7 · Shin (ש): taruhan hilang.',
+      ru: '1. Выберите ставку и нажмите «Крутить»: волчок крутится, качается и останавливается.\n2. Буква, повёрнутая к вам, — результат; у всех 4 граней равные шансы.\n3. Гимел (ג) ×2.06 · Нун (נ) ×1 · Хэй (ה) ×0.7 · Шин (ש) — ставка проиграна.',
+      de: '1. Wähle deinen Einsatz und tippe auf „Drehen“: der Dreidel dreht sich, wackelt und bleibt stehen.\n2. Der Buchstabe, der zu dir zeigt, ist das Ergebnis; alle 4 Seiten sind gleich wahrscheinlich.\n3. Gimel (ג) ×2.06 · Nun (נ) ×1 · He (ה) ×0.7 · Schin (ש): Einsatz verloren.',
+      hi: '1. राशि चुनें और «घुमाएं» छुएं: लट्टू घूमता है, डगमगाता है और रुक जाता है।\n2. आपकी ओर वाला अक्षर नतीजा है; चारों तरफ़ का मौका बराबर है।\n3. गिमेल (ג) ×2.06 · नून (נ) ×1 · हे (ה) ×0.7 · शिन (ש): दांव हार जाते हैं।',
+      zh: '1. 设定金额并点击“旋转”：陀螺旋转、摇晃后停下。\n2. 正对你的字母就是结果；4 个面的机会相同。\n3. Gimel（ג）×2.06 · Nun（נ）×1 · Hei（ה）×0.7 · Shin（ש）：输掉下注。'
     }
   });
 

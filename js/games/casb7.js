@@ -164,38 +164,92 @@
   function snd(ev, a) { try { if (D6.Sfx) D6.Sfx.play(ev, a || {}, 'cometqueen'); } catch (e) { /* ignore */ } }
   function amb(on, v) { try { if (D6.Sfx && D6.Sfx.amb) D6.Sfx.amb('cometqueen', on, v); } catch (e) { /* ignore */ } }
   // la reine assise sur sa comète (sprite dessiné une fois) — repère : centre de la comète en (0, 0), unité u
-  function queen(c, u) {
-    c.save(); c.scale(u, u);
-    // robe qui flotte en arrière
-    var g = c.createLinearGradient(-30, -10, 6, 8); g.addColorStop(0, 'rgba(244,114,182,0)'); g.addColorStop(0.35, '#F472B6'); g.addColorStop(1, '#BE185D');
-    c.fillStyle = g; c.beginPath(); c.moveTo(-1, -12); c.bezierCurveTo(-8, -10, -20, -6, -34, 2); c.bezierCurveTo(-22, 2, -12, 4, -4, 2); c.bezierCurveTo(2, 0, 6, -4, 5, -10); c.closePath(); c.fill();
-    c.strokeStyle = 'rgba(253,230,138,.8)'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-4, 2); c.bezierCurveTo(-12, 4, -22, 2, -34, 2); c.stroke();
-    // buste
-    var b = c.createLinearGradient(-4, -24, 4, -10); b.addColorStop(0, '#F9A8D4'); b.addColorStop(1, '#DB2777');
-    c.fillStyle = b; c.beginPath(); c.moveTo(-3.6, -11); c.quadraticCurveTo(-4.4, -19, -2.6, -22); c.lineTo(2.6, -22); c.quadraticCurveTo(4.6, -19, 3.8, -11); c.closePath(); c.fill();
-    // cheveux longs qui volent
-    c.fillStyle = '#7C2D12'; c.beginPath(); c.moveTo(-1, -31); c.bezierCurveTo(-10, -32, -16, -24, -24, -22); c.bezierCurveTo(-16, -19, -8, -20, -3, -22); c.closePath(); c.fill();
-    // visage
-    c.fillStyle = '#FCD9C0'; c.beginPath(); c.arc(0.8, -27, 4.6, 0, TAU); c.fill();
-    c.fillStyle = '#7C2D12'; c.beginPath(); c.arc(0.2, -29, 4.8, Math.PI * 1.02, Math.PI * 1.98); c.fill(); c.beginPath(); c.arc(-3.6, -30.5, 2.6, 0, TAU); c.fill();
-    c.fillStyle = '#9F1239'; c.beginPath(); c.arc(3.2, -25.3, 0.9, 0, TAU); c.fill();
-    c.fillStyle = '#1F2937'; c.beginPath(); c.arc(2.6, -27.6, 0.6, 0, TAU); c.fill();
-    // diadème
-    c.fillStyle = '#FDE68A'; c.beginPath(); c.moveTo(-3.5, -32.5); c.lineTo(-2, -36); c.lineTo(-0.5, -33.4); c.lineTo(1, -37); c.lineTo(2.5, -33.4); c.lineTo(4, -35.5); c.lineTo(4.6, -32); c.closePath(); c.fill();
-    // bras levé et baguette étoilée
-    c.strokeStyle = '#FCD9C0'; c.lineWidth = 2; c.lineCap = 'round'; c.beginPath(); c.moveTo(2, -20); c.lineTo(9, -27); c.stroke();
-    c.strokeStyle = '#FDE68A'; c.lineWidth = 1; c.beginPath(); c.moveTo(9, -27); c.lineTo(13, -33); c.stroke();
-    c.fillStyle = '#FEF3C7'; c.beginPath(); for (var j = 0; j < 10; j++) { var a = -Math.PI / 2 + j * Math.PI / 5, rr = j % 2 ? 1.4 : 3.4; c.lineTo(13.5 + Math.cos(a) * rr, -34.5 + Math.sin(a) * rr); } c.closePath(); c.fill();
-    c.restore();
+  // ---- la reine (sprite dessiné UNE fois par vol, à la taille de l'écran) — repère : centre de la comète (0, 0), unité s
+  var CQ_SKIN = [['#FBE3D3', '#E9B99A'], ['#F1C7A5', '#D69A72'], ['#D9A27A', '#B27650'], ['#A8704B', '#7E4E31'], ['#7A4B2E', '#563220']];
+  var CQ_HAIR = [['#2B1B12', '#5B3A26'], ['#7C2D12', '#C2410C'], ['#E8C26A', '#FEF3C7'], ['#0F0A1E', '#3B2F63'], ['#9F1239', '#F43F5E'], ['#D6D3E8', '#FFFFFF']];
+  var CQ_GOWN = [['#FBCFE8', '#EC4899', '#831843'], ['#E9D5FF', '#A855F7', '#4C1D95'], ['#CCFBF1', '#14B8A6', '#134E4A'], ['#FEF3C7', '#F59E0B', '#78350F'], ['#FECDD3', '#E11D48', '#4C0519']];
+  function look() { return { skin: CQ_SKIN[rnd(CQ_SKIN.length)], hair: CQ_HAIR[rnd(CQ_HAIR.length)], gown: CQ_GOWN[rnd(CQ_GOWN.length)] }; }
+  var Q_BOX = [-84, -104, 132, 128]; // x, y, largeur, hauteur du sprite (unités)
+  function queenSprite(lk, s, dpr) {
+    return mkc(Q_BOX[2] * s, Q_BOX[3] * s, dpr, function (c) {
+      c.translate(-Q_BOX[0] * s, -Q_BOX[1] * s); c.scale(s, s); c.lineCap = 'round'; c.lineJoin = 'round';
+      var sk = lk.skin, hr = lk.hair, gw = lk.gown, g;
+      // cheveux longs qui volent (derrière)
+      g = c.createLinearGradient(-70, -90, 4, -60); g.addColorStop(0, hr[1]); g.addColorStop(0.5, hr[0]); g.addColorStop(1, hr[0]);
+      c.fillStyle = g; c.beginPath(); c.moveTo(6, -78);
+      c.bezierCurveTo(-8, -88, -26, -86, -40, -90); c.bezierCurveTo(-52, -94, -64, -86, -78, -92);
+      c.bezierCurveTo(-68, -80, -58, -82, -48, -76); c.bezierCurveTo(-60, -72, -70, -66, -80, -68);
+      c.bezierCurveTo(-64, -58, -46, -64, -34, -62); c.bezierCurveTo(-24, -58, -14, -56, -6, -56); c.closePath(); c.fill();
+      c.strokeStyle = hr[1]; c.globalAlpha = 0.55; c.lineWidth = 0.9;
+      [[-6, -76, -40, -84, -70, -88], [-4, -68, -36, -72, -72, -72], [-6, -62, -30, -64, -60, -66]].forEach(function (a) { c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(a[2], a[3], a[4], a[5]); c.stroke(); });
+      c.globalAlpha = 1;
+      // robe : longue traîne (ombrée), drapé devant la comète
+      g = c.createLinearGradient(-80, -30, 16, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.18, gw[0]); g.addColorStop(0.55, gw[1]); g.addColorStop(1, gw[2]);
+      c.fillStyle = g; c.beginPath(); c.moveTo(-6, -36);
+      c.bezierCurveTo(-22, -34, -44, -24, -82, -10); c.bezierCurveTo(-62, -6, -48, 2, -30, 6); c.bezierCurveTo(-16, 10, 4, 10, 18, 2);
+      c.bezierCurveTo(16, -10, 10, -22, 7, -36); c.closePath(); c.fill();
+      c.strokeStyle = gw[2]; c.globalAlpha = 0.35; c.lineWidth = 1.2;
+      [[-4, -30, -30, -18, -66, -10], [0, -22, -20, -6, -46, 0], [6, -16, 2, -2, -14, 6]].forEach(function (a) { c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(a[2], a[3], a[4], a[5]); c.stroke(); });
+      c.globalAlpha = 0.8; c.strokeStyle = '#FDE68A'; c.lineWidth = 1; c.beginPath(); c.moveTo(-82, -10); c.bezierCurveTo(-62, -6, -48, 2, -30, 6); c.bezierCurveTo(-16, 10, 4, 10, 18, 2); c.stroke();
+      c.globalAlpha = 1;
+      for (var q = 0; q < 26; q++) { var x = -70 + Math.random() * 82, y = -28 + Math.random() * 32 - (x < -40 ? (x + 40) * -0.3 : 0), r = 0.5 + Math.random() * 1.4; c.fillStyle = 'rgba(255,255,255,' + (0.5 + Math.random() * 0.5).toFixed(2) + ')'; c.beginPath(); c.moveTo(x, y - r * 2); c.lineTo(x + r * 0.5, y - r * 0.5); c.lineTo(x + r * 2, y); c.lineTo(x + r * 0.5, y + r * 0.5); c.lineTo(x, y + r * 2); c.lineTo(x - r * 0.5, y + r * 0.5); c.lineTo(x - r * 2, y); c.lineTo(x - r * 0.5, y - r * 0.5); c.fill(); }
+      // bras posé sur la comète
+      c.strokeStyle = sk[1]; c.lineWidth = 3.6; c.beginPath(); c.moveTo(-4, -50); c.quadraticCurveTo(4, -38, 12, -22); c.stroke();
+      c.fillStyle = sk[1]; c.beginPath(); c.arc(13, -20, 2.4, 0, TAU); c.fill();
+      // buste
+      g = c.createLinearGradient(-10, -58, 8, -34); g.addColorStop(0, gw[0]); g.addColorStop(0.5, gw[1]); g.addColorStop(1, gw[2]);
+      c.fillStyle = g; c.beginPath(); c.moveTo(-7, -34); c.bezierCurveTo(-10, -42, -10, -48, -8, -52); c.lineTo(7, -52); c.bezierCurveTo(9, -46, 9, -40, 7, -34); c.closePath(); c.fill();
+      c.strokeStyle = '#FDE68A'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(-7.5, -36); c.quadraticCurveTo(0, -33, 7.5, -36); c.stroke();
+      // épaules, décolleté, cou
+      c.fillStyle = sk[0]; c.beginPath(); c.moveTo(-8, -52); c.quadraticCurveTo(-8, -57, -3, -57.5); c.lineTo(4, -57.5); c.quadraticCurveTo(9, -57, 8, -52); c.quadraticCurveTo(4, -48, 0, -50); c.quadraticCurveTo(-4, -48, -8, -52); c.fill();
+      c.fillStyle = sk[0]; c.fillRect(-1.6, -63, 4, 7);
+      c.fillStyle = '#FDE68A'; c.beginPath(); c.arc(0.4, -53.5, 1.3, 0, TAU); c.fill();
+      // bras levé, bracelet, baguette étoilée
+      c.strokeStyle = sk[0]; c.lineWidth = 3.4; c.beginPath(); c.moveTo(5, -55); c.quadraticCurveTo(14, -60, 17, -64); c.lineTo(25, -78); c.stroke();
+      c.strokeStyle = '#FDE68A'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(21.5, -71.5); c.lineTo(23.5, -72.6); c.stroke();
+      c.fillStyle = sk[0]; c.beginPath(); c.arc(25.5, -79, 2.4, 0, TAU); c.fill();
+      c.strokeStyle = '#FDE68A'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(26, -80); c.lineTo(31, -94); c.stroke();
+      g = c.createRadialGradient(31.5, -96, 0, 31.5, -96, 9); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(1, 'rgba(253,230,138,0)'); c.fillStyle = g; c.beginPath(); c.arc(31.5, -96, 9, 0, TAU); c.fill();
+      c.fillStyle = '#FEF3C7'; c.beginPath(); for (var j = 0; j < 10; j++) { var a = -Math.PI / 2 + j * Math.PI / 5, rr = j % 2 ? 1.8 : 4.4; c.lineTo(31.5 + Math.cos(a) * rr, -96 + Math.sin(a) * rr); } c.closePath(); c.fill();
+      // tête
+      g = c.createRadialGradient(4, -72, 1, 2, -69, 10); g.addColorStop(0, sk[0]); g.addColorStop(1, sk[1]);
+      c.fillStyle = g; c.beginPath(); c.ellipse(2.5, -69, 7, 8.6, 0.12, 0, TAU); c.fill();
+      c.fillStyle = 'rgba(244,114,182,.35)'; c.beginPath(); c.arc(6.4, -66.5, 2, 0, TAU); c.fill();
+      c.strokeStyle = '#2B1B12'; c.lineWidth = 0.9; c.beginPath(); c.arc(5.6, -70.5, 1.8, 0.15, Math.PI - 0.4); c.stroke();
+      c.beginPath(); c.moveTo(4.2, -73.6); c.quadraticCurveTo(6, -74.6, 7.8, -73.4); c.stroke();
+      c.lineWidth = 0.6; [[4.4, -69.6, 3.6, -68.6], [5.6, -69.1, 5.2, -68], [6.8, -69.4, 6.9, -68.3]].forEach(function (a) { c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(a[2], a[3]); c.stroke(); });
+      c.fillStyle = '#BE123C'; c.beginPath(); c.ellipse(7.6, -64.4, 1.6, 0.9, 0.2, 0, TAU); c.fill();
+      // cheveux devant (frange, mèche)
+      g = c.createLinearGradient(-6, -80, 8, -66); g.addColorStop(0, hr[1]); g.addColorStop(1, hr[0]);
+      c.fillStyle = g; c.beginPath(); c.moveTo(-5, -64); c.bezierCurveTo(-7, -74, -2, -80, 4, -79); c.bezierCurveTo(10, -78.5, 11, -74, 9.4, -71.5); c.bezierCurveTo(6, -75, 2, -74.5, 0, -72); c.bezierCurveTo(-1.5, -68, -1, -63, -3, -58); c.closePath(); c.fill();
+      // diadème
+      c.fillStyle = '#FBBF24'; c.beginPath(); c.moveTo(-3, -78.6); c.lineTo(-1.6, -84); c.lineTo(0.8, -80); c.lineTo(3, -86.5); c.lineTo(5.2, -80); c.lineTo(7.6, -84); c.lineTo(8.6, -78); c.closePath(); c.fill();
+      c.fillStyle = '#F472B6'; c.beginPath(); c.arc(3, -81.4, 1.3, 0, TAU); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(-1.6, -84, 0.7, 0, TAU); c.arc(3, -86.5, 0.7, 0, TAU); c.arc(7.6, -84, 0.7, 0, TAU); c.fill();
+      c.fillStyle = '#FDE68A'; c.beginPath(); c.arc(0, -63.6, 1, 0, TAU); c.fill();
+    });
   }
-  function comet(c, x, y, u, dir, t) {
-    var tl = 70 * u, ang = dir + Math.PI, nx = Math.cos(ang + Math.PI / 2), ny = Math.sin(ang + Math.PI / 2), r = 9 * u;
-    var g = c.createLinearGradient(x, y, x + Math.cos(ang) * tl, y + Math.sin(ang) * tl);
-    g.addColorStop(0, 'rgba(254,243,199,.95)'); g.addColorStop(0.3, 'rgba(244,114,182,.55)'); g.addColorStop(1, 'rgba(168,85,247,0)');
-    c.fillStyle = g; c.beginPath(); c.moveTo(x + nx * r, y + ny * r); c.lineTo(x + Math.cos(ang) * tl, y + Math.sin(ang) * tl); c.lineTo(x - nx * r, y - ny * r); c.closePath(); c.fill();
-    var h = c.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r * 1.6);
-    h.addColorStop(0, '#FFFFFF'); h.addColorStop(0.35, '#FDE68A'); h.addColorStop(0.7, 'rgba(245,158,11,.75)'); h.addColorStop(1, 'rgba(245,158,11,0)');
-    c.fillStyle = h; c.beginPath(); c.arc(x, y, r * 1.6 * (1 + Math.sin(t * 9) * 0.05), 0, TAU); c.fill();
+  // cape et rubans qui flottent selon la vitesse (dessinés chaque image, derrière le sprite) — dans le repère de la reine
+  function ribbons(c, lk, t, sp) {
+    var w = Math.min(1.6, 0.4 + sp), gw = lk.gown;
+    c.globalAlpha = 0.55; c.fillStyle = gw[1]; c.beginPath(); c.moveTo(-7, -54);
+    for (var q = 0; q <= 8; q++) { var x = -7 - q * 13 * w, y = -54 + q * 4 + Math.sin(t * 7 - q * 0.8) * q * 1.2; c.lineTo(x, y); }
+    for (q = 8; q >= 0; q--) { x = -7 - q * 12 * w; y = -40 + q * 5.4 + Math.sin(t * 7 - q * 0.8 + 0.6) * q * 1.4; c.lineTo(x, y); }
+    c.closePath(); c.fill(); c.globalAlpha = 1;
+    [['#FDE68A', 0, 1.6], [gw[0], 1.7, 1.3]].forEach(function (rb) {
+      c.strokeStyle = rb[0]; c.lineWidth = rb[2]; c.beginPath(); c.moveTo(-6, -36);
+      for (var k = 1; k <= 12; k++) c.lineTo(-6 - k * 10 * w, -34 + k * 2 + Math.sin(t * 8 + rb[1] - k * 0.7) * k * 0.9);
+      c.stroke();
+    });
+  }
+  function cometGlow(c, x, y, s, t, lite) {
+    var r = 19 * s, g = c.createRadialGradient(x, y, 0, x, y, r * 3.4);
+    g.addColorStop(0, 'rgba(255,247,214,.9)'); g.addColorStop(0.3, 'rgba(253,230,138,.45)'); g.addColorStop(0.6, 'rgba(244,114,182,.18)'); g.addColorStop(1, 'rgba(244,114,182,0)');
+    c.fillStyle = g; c.beginPath(); c.arc(x, y, r * 3.4, 0, TAU); c.fill();
+    var h = c.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.1, x, y, r);
+    h.addColorStop(0, '#FFFFFF'); h.addColorStop(0.4, '#FEF3C7'); h.addColorStop(0.8, '#FBBF24'); h.addColorStop(1, '#D97706');
+    c.fillStyle = h; c.beginPath(); c.arc(x, y, r * (1 + Math.sin(t * 10) * 0.04), 0, TAU); c.fill();
+    if (!lite) { c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.2; var f = r * (2.2 + Math.sin(t * 6) * 0.3); c.beginPath(); c.moveTo(x - f, y); c.lineTo(x + f, y); c.moveTo(x, y - f * 0.7); c.lineTo(x, y + f * 0.7); c.stroke(); }
   }
   K.register('cometqueen', function (box) {
     var l = Lx(CQ), lite0 = lite(), hist = [];
@@ -220,50 +274,74 @@
     function secs() { return demo ? (performance.now() - dT) / 1000 : (R ? Math.max(0, nowS() - R.t0) : 0); }
     function mult() { var rate = R ? R.rate : 0.12; return Math.max(1, Math.floor(Math.exp(rate * secs()) * 100 + 1e-9) / 100); }
     function money(v) { return '$' + (Math.floor(v * 100 + 1e-6) / 100).toFixed(2); }
+    var S = 1, LK = look(), clouds = [], cloudS = [], streaks = [], flash = 0, rings = [], spd = 0.1, camX = 0;
+    function newLook() { LK = look(); if (W) qS = queenSprite(LK, S, dpr); }
     function resize() {
       if (!box.isConnected) return;
       var r = st.getBoundingClientRect(), w = Math.round(r.width), h = Math.round(r.height);
       if (!w || !h || (w === W && h === H)) return;
-      W = w; H = h; dpr = lite0 ? 1 : Math.min(2, window.devicePixelRatio || 1); u = Math.min(W, H * 1.2) / 230;
+      W = w; H = h; dpr = lite0 ? 1 : Math.min(2, window.devicePixelRatio || 1); u = Math.min(W, H * 1.2) / 230; S = Math.min(H * 0.28 / 100, W * 0.5 / 132);
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      // ciel profond : dégradé, nébuleuses, poussière d'étoiles, planète à anneau (peint une fois)
       bgS = mkc(W, H, dpr, function (c) {
-        var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2E1065'); g.addColorStop(0.55, '#86198F'); g.addColorStop(1, '#F472B6'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-        var m = c.createRadialGradient(W * 0.82, H * 0.2, 2, W * 0.82, H * 0.2, H * 0.5); m.addColorStop(0, 'rgba(254,243,199,.35)'); m.addColorStop(1, 'rgba(254,243,199,0)'); c.fillStyle = m; c.fillRect(0, 0, W, H);
-        c.strokeStyle = 'rgba(255,255,255,.07)'; c.lineWidth = 1; for (var q = 1; q < 6; q++) { c.beginPath(); c.moveTo(0, H * q / 6); c.lineTo(W, H * q / 6); c.stroke(); }
-        c.fillStyle = 'rgba(46,16,101,.55)'; c.beginPath(); c.moveTo(0, H); for (var x = 0; x <= W; x += 20) c.lineTo(x, H - 18 - Math.sin(x / 37) * 8 - Math.sin(x / 13) * 3); c.lineTo(W, H); c.fill();
+        var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#12052E'); g.addColorStop(0.45, '#4C1D95'); g.addColorStop(0.8, '#A21CAF'); g.addColorStop(1, '#F472B6'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+        [[0.2, 0.25, 0.45, 'rgba(236,72,153,.32)'], [0.75, 0.35, 0.5, 'rgba(139,92,246,.35)'], [0.5, 0.75, 0.55, 'rgba(244,114,182,.28)'], [0.9, 0.1, 0.3, 'rgba(56,189,248,.18)']].forEach(function (n) {
+          var m = c.createRadialGradient(W * n[0], H * n[1], 1, W * n[0], H * n[1], Math.max(W, H) * n[2]); m.addColorStop(0, n[3]); m.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = m; c.fillRect(0, 0, W, H); });
+        for (var q = 0; q < (lite0 ? 60 : 140); q++) { c.globalAlpha = 0.2 + Math.random() * 0.6; c.fillStyle = Math.random() < 0.2 ? '#FBCFE8' : '#FFFFFF'; var z = Math.random() < 0.08 ? 1.6 : 0.8; c.fillRect(Math.random() * W, Math.random() * H * 0.85, z, z); }
+        c.globalAlpha = 1;
+        var px = W * 0.86, py = H * 0.16, pr = Math.min(W, H) * 0.07, pg = c.createRadialGradient(px - pr * 0.4, py - pr * 0.4, 1, px, py, pr); pg.addColorStop(0, '#FDE68A'); pg.addColorStop(0.6, '#F472B6'); pg.addColorStop(1, '#6D28D9');
+        c.fillStyle = pg; c.beginPath(); c.arc(px, py, pr, 0, TAU); c.fill();
+        c.strokeStyle = 'rgba(253,230,138,.7)'; c.lineWidth = Math.max(1, pr * 0.12); c.beginPath(); c.ellipse(px, py, pr * 1.8, pr * 0.45, -0.35, 0, TAU); c.stroke();
+        c.fillStyle = 'rgba(46,16,101,.6)'; c.beginPath(); c.moveTo(0, H); for (var x = 0; x <= W; x += 16) c.lineTo(x, H - 14 - Math.sin(x / 41) * 9 - Math.sin(x / 11) * 3); c.lineTo(W, H); c.fill();
       });
-      qS = mkc(70 * u, 60 * u, dpr, function (c) { c.translate(40 * u, 44 * u); queen(c, u); });
-      stars = []; for (var q = 0; q < (lite0 ? 24 : 50); q++) stars.push([Math.random() * W, Math.random() * H * 0.8, 0.4 + Math.random() * 1.3, Math.random() * TAU]);
+      cloudS = [0, 1, 2].map(function (k) { var cw = W * (0.4 + k * 0.12), ch = cw * 0.34; return mkc(cw, ch, dpr, function (c) { c.scale(1, 0.5); [[0.3, 1.25, 0.24], [0.52, 1.1, 0.3], [0.74, 1.3, 0.22]].forEach(function (b) { var x = cw * b[0], y = ch * b[1], r = cw * b[2], g = c.createRadialGradient(x, y, 1, x, y, r); g.addColorStop(0, ['rgba(251,207,232,.3)', 'rgba(196,181,253,.26)', 'rgba(244,114,182,.22)'][k]); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, cw, ch * 2); }); }); });
+      clouds = [0, 1, 2, 3, 4].map(function (q) { return { k: q % 3, x: Math.random() * W * 1.4, y: H * (0.18 + q * 0.15), d: 0.25 + (q % 3) * 0.3 }; });
+      streaks = []; for (var q = 0; q < (lite0 ? 16 : 34); q++) streaks.push({ x: Math.random() * W, y: Math.random() * H * 0.9, d: 0.3 + Math.random() * 0.9 });
+      qS = queenSprite(LK, S, dpr);
     }
-    function pos(s) { var k1 = 1 - Math.exp(-s / 7), k2 = 1 - Math.exp(-s / 9); return [36 * u + (W - 96 * u) * k1, H * (0.86 - 0.6 * k2) + Math.sin(s * 2.2) * 3 * u]; }
-    function burst(x, y, n, cols, sp) { if (lite0) n = Math.ceil(n / 2); for (var q = 0; q < n; q++) { var a = Math.random() * TAU, s = sp * (0.3 + Math.random()); P.push({ x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, t: 0, m: 0.6 + Math.random() * 0.7, c: cols[q % cols.length], r: (1.5 + Math.random() * 2.5) * u }); } }
+    // trajectoire (comme Aviator) — la reine reste entière dans l'écran
+    function pos(s) { var k1 = 1 - Math.exp(-s / 7), k2 = 1 - Math.exp(-s / 9), x0 = 86 * S + 6, x1 = W - 50 * S, y0 = H - 30 * S - 8, y1 = 104 * S + 8; return [x0 + (x1 - x0) * k1, y0 - (y0 - y1) * k2 + Math.sin(s * 2.2) * 3 * S]; }
+    function burst(x, y, n, cols, sp) { if (lite0) n = Math.ceil(n / 2); for (var q = 0; q < n; q++) { var a = Math.random() * TAU, s = sp * (0.3 + Math.random()); P.push({ x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, t: 0, m: 0.7 + Math.random() * 0.8, c: cols[q % cols.length], r: (1.4 + Math.random() * 3) * S, g: 40 }); } }
+    function queenAt(x, y, rot, sc, tt) {
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(S * sc, S * sc);
+      ribbons(ctx, LK, tt, spd);
+      ctx.restore();
+      cometGlow(ctx, x, y, S * sc, tt, lite0);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(sc, sc); ctx.drawImage(qS, Q_BOX[0] * S, Q_BOX[1] * S, Q_BOX[2] * S, Q_BOX[3] * S); ctx.restore();
+    }
     function draw(ts, dt) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.drawImage(bgS, 0, 0, W, H);
-      var tt = ts / 1000;
-      for (var q = 0; q < stars.length; q++) { var s = stars[q]; ctx.globalAlpha = 0.35 + 0.35 * Math.sin(tt * 2 + s[3]); ctx.fillStyle = '#FDF4FF'; ctx.fillRect(s[0], s[1], s[2], s[2]); }
+      var tt = ts / 1000, flying = phase === 'play' || phase === 'cashing' || phase === 'won';
+      var target = flying ? 0.7 + Math.log(Math.max(1, mult())) * 0.45 : phase === 'crash' ? 2.4 : 0.12; spd += (target - spd) * Math.min(1, dt * 2);
+      // nuages en parallaxe et étoiles filantes : le ciel défile avec la vitesse
+      for (var q = 0; q < clouds.length; q++) { var cl = clouds[q], img = cloudS[cl.k]; cl.x -= spd * cl.d * W * 0.18 * dt; if (cl.x < -img.width / dpr) { cl.x = W + Math.random() * W * 0.4; cl.y = H * (0.15 + Math.random() * 0.65); } ctx.drawImage(img, cl.x, cl.y, img.width / dpr, img.height / dpr); }
+      ctx.strokeStyle = '#FDF4FF'; ctx.lineCap = 'round';
+      for (q = 0; q < streaks.length; q++) { var sr = streaks[q], v = spd * sr.d * W * 0.5; sr.x -= v * dt; sr.y += v * dt * 0.18; if (sr.x < -40 || sr.y > H) { sr.x = W + Math.random() * 60; sr.y = Math.random() * H * 0.8; } var L = Math.max(1.2, v * 0.06); ctx.globalAlpha = Math.min(0.85, 0.25 + sr.d * 0.4); ctx.lineWidth = sr.d * 1.3; ctx.beginPath(); ctx.moveTo(sr.x, sr.y); ctx.lineTo(sr.x + L, sr.y - L * 0.18); ctx.stroke(); }
       ctx.globalAlpha = 1;
-      var flying = phase === 'play' || phase === 'cashing' || phase === 'won';
+      var hd, dir = -0.4, sc = 1;
       if (flying || phase === 'crash') {
-        var sNow = phase === 'crash' ? crashAt : secs(), N = 40, p0 = pos(0);
-        // traînée rose sous la courbe (comme Aviator)
-        ctx.beginPath(); ctx.moveTo(p0[0], H); for (var j = 0; j <= N; j++) { var p = pos(sNow * j / N); ctx.lineTo(p[0], p[1]); } var pe = pos(sNow); ctx.lineTo(pe[0], H); ctx.closePath();
-        var fg = ctx.createLinearGradient(0, pe[1], 0, H); fg.addColorStop(0, 'rgba(244,114,182,.45)'); fg.addColorStop(1, 'rgba(244,114,182,0)'); ctx.fillStyle = fg; ctx.fill();
-        ctx.beginPath(); for (j = 0; j <= N; j++) { p = pos(sNow * j / N); if (j) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); } ctx.strokeStyle = '#FDE68A'; ctx.lineWidth = 3 * u; ctx.stroke();
-        var hd = pe, pb = pos(Math.max(0, sNow - 0.25)), dir = Math.atan2(hd[1] - pb[1], hd[0] - pb[0]);
-        if (phase === 'crash') { fly.t += dt; hd = [pe[0] + fly.t * fly.t * 900 * u, pe[1] - fly.t * fly.t * 700 * u]; dir = -0.66; }
-        if (hd[0] < W + 60 * u && hd[1] > -60 * u) {
-          comet(ctx, hd[0], hd[1], u, dir, tt);
-          ctx.save(); ctx.translate(hd[0], hd[1]); ctx.rotate(dir * 0.35); ctx.drawImage(qS, -40 * u, -44 * u, 70 * u, 60 * u); ctx.restore();
-          if (!lite0 && flying && Math.random() < 0.5) P.push({ x: hd[0] - Math.cos(dir) * 10 * u, y: hd[1] - Math.sin(dir) * 10 * u, vx: -40 * Math.random() - 20, vy: (Math.random() - 0.5) * 30, t: 0, m: 0.6, c: ['#FDE68A', '#F9A8D4', '#fff'][q % 3 || 0], r: 1.5 * u });
-        }
-      } else {
-        // en attente : la reine plane doucement au départ
-        var ip = pos(0); ip[1] += Math.sin(tt * 2) * 4 * u;
-        comet(ctx, ip[0], ip[1], u, -0.35, tt);
-        ctx.drawImage(qS, ip[0] - 40 * u, ip[1] - 44 * u, 70 * u, 60 * u);
+        var sNow = phase === 'crash' ? crashAt : secs(), N = 36, p0 = pos(0), pe = pos(sNow);
+        ctx.beginPath(); ctx.moveTo(p0[0], H); for (var j = 0; j <= N; j++) { var p = pos(sNow * j / N); ctx.lineTo(p[0], p[1]); } ctx.lineTo(pe[0], H); ctx.closePath();
+        var fg = ctx.createLinearGradient(0, pe[1], 0, H); fg.addColorStop(0, 'rgba(244,114,182,.4)'); fg.addColorStop(1, 'rgba(244,114,182,0)'); ctx.fillStyle = fg; ctx.fill();
+        ctx.beginPath(); for (j = 0; j <= N; j++) { p = pos(sNow * j / N); if (j) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }
+        ctx.strokeStyle = 'rgba(253,230,138,.35)'; ctx.lineWidth = 7 * S; ctx.stroke(); ctx.strokeStyle = '#FDE68A'; ctx.lineWidth = 2.4 * S; ctx.stroke();
+        var pb = pos(Math.max(0, sNow - 0.25)); hd = pe; dir = Math.atan2(pe[1] - pb[1], pe[0] - pb[0]);
+        if (phase === 'crash') { fly.t += dt; var e = fly.t * fly.t; hd = [pe[0] + e * 1100 * S, pe[1] - e * 900 * S]; dir = -0.7; sc = Math.max(0.2, 1 - fly.t * 0.55); }
+      } else { hd = pos(0); hd[1] += Math.sin(tt * 2) * 4 * S; }
+      // longue queue de particules lumineuses derrière la comète
+      if ((flying || phase === 'idle') && hd[0] < W + 80 * S) {
+        var n = lite0 ? 1 : (flying ? 3 : 1), back = dir + Math.PI;
+        for (q = 0; q < n; q++) { var sp2 = (40 + Math.random() * 90) * (0.6 + spd) * S; P.push({ x: hd[0] + (Math.random() - 0.5) * 10 * S, y: hd[1] + (Math.random() - 0.5) * 10 * S, vx: Math.cos(back) * sp2 - spd * 30 * S, vy: Math.sin(back) * sp2 + (Math.random() - 0.5) * 20 * S, t: 0, m: 0.6 + Math.random() * 0.6, c: ['#FFF7D6', '#FDE68A', '#F9A8D4', '#C4B5FD'][q % 4], r: (2 + Math.random() * 3.5) * S, g: 0 }); }
       }
-      for (q = P.length - 1; q >= 0; q--) { var pt = P[q]; pt.t += dt; if (pt.t >= pt.m) { P.splice(q, 1); continue; } pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.vy += 60 * dt; ctx.globalAlpha = 1 - pt.t / pt.m; ctx.fillStyle = pt.c; ctx.fillRect(pt.x, pt.y, pt.r, pt.r); }
+      if (P.length > (lite0 ? 60 : 180)) P.splice(0, P.length - (lite0 ? 60 : 180));
+      if (!lite0) ctx.globalCompositeOperation = 'lighter';
+      for (q = P.length - 1; q >= 0; q--) { var pt = P[q]; pt.t += dt; if (pt.t >= pt.m) { P.splice(q, 1); continue; } pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.vy += pt.g * dt; var k = 1 - pt.t / pt.m; ctx.globalAlpha = k * 0.9; ctx.fillStyle = pt.c; ctx.beginPath(); ctx.arc(pt.x, pt.y, Math.max(0.3, pt.r * (0.4 + k * 0.6)), 0, TAU); ctx.fill(); }
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+      if (hd[0] < W + 120 * S && hd[1] > -140 * S) queenAt(hd[0], hd[1], flying ? Math.max(-0.35, dir * 0.45) : -0.12 + Math.sin(tt * 1.5) * 0.03, sc, tt);
+      // onde de choc + éclair quand la comète s'échappe
+      for (q = rings.length - 1; q >= 0; q--) { var rg = rings[q]; rg.t += dt; if (rg.t > 0.9) { rings.splice(q, 1); continue; } if (rg.t <= 0) continue; var kk = rg.t / 0.9; ctx.globalAlpha = (1 - kk) * 0.9; ctx.strokeStyle = rg.c; ctx.lineWidth = (1 - kk) * 8 * S + 1; ctx.beginPath(); ctx.arc(rg.x, rg.y, rg.r * (1 - Math.pow(1 - kk, 3)), 0, TAU); ctx.stroke(); }
+      if (flash > 0) { flash = Math.max(0, flash - dt * 2.4); ctx.globalAlpha = flash * 0.7; ctx.fillStyle = '#FFF1F2'; ctx.fillRect(0, 0, W, H); }
       ctx.globalAlpha = 1;
     }
     function loop(ts) {
@@ -285,12 +363,12 @@
     }
     // ---- visiteur : vols de démonstration (aucune mise, aucun son)
     function demoStep() {
-      if (phase === 'idle') { outT -= 0.016; if (outT > 0) return; phase = 'play'; dT = performance.now(); var q = Math.random(); dC = Math.min(30, Math.max(1, Math.floor(0.94 / Math.max(1e-6, 1 - q) * 100) / 100)); mShown = ''; say('', ''); return; }
+      if (phase === 'idle') { outT -= 0.016; if (outT > 0) return; phase = 'play'; dT = performance.now(); newLook(); var q = Math.random(); dC = Math.min(30, Math.max(1, Math.floor(0.94 / Math.max(1e-6, 1 - q) * 100) / 100)); mShown = ''; say('', ''); return; }
       if (phase === 'play' && mult() >= dC) { crashAt = secs(); crash(); }
     }
     function crash() {
       phase = 'crash'; outT = 2.6; fly = { t: 0 };
-      var p = pos(crashAt); burst(p[0], p[1], 30, ['#FDE68A', '#F472B6', '#C084FC', '#fff'], 180 * u);
+      var p = pos(crashAt); burst(p[0], p[1], 46, ['#FDE68A', '#F472B6', '#C084FC', '#fff'], 260 * S); rings.push({ x: p[0], y: p[1], r: Math.max(W, H) * 0.55, t: 0, c: '#FDE68A' }, { x: p[0], y: p[1], r: Math.max(W, H) * 0.35, t: -0.12, c: '#F472B6' }); flash = 1;
       tx(xm(demo ? dC : Math.max(1, R && R.c ? R.c : mult()))); say(l.flew, 'lost');
       if (!demo) { ambOn = false; amb(false); snd('boom'); }
     }
@@ -311,7 +389,7 @@
       phase = 'play'; mShown = ''; P.length = 0; say('', '');
       st.querySelectorAll('.cs-toast').forEach(function (t) { t.remove(); });
       setBtn(l.cash, money(r.stake * mult()), 'cash');
-      if (!r.resume) snd('takeoff'); ambOn = true; amb(true, 0);
+      if (!r.resume) { snd('takeoff'); newLook(); } ambOn = true; amb(true, 0);
       poll();
     }
     function poll() {
@@ -335,7 +413,7 @@
       if (!r) { if (phase === 'cashing') { phase = 'play'; poll(); } return; }
       if ((Number(r.win) || 0) > 0) {
         phase = 'won'; outT = 3; ambOn = false; amb(false); snd('cashout');
-        var p = pos(secs()); burst(p[0], p[1], 24, ['#FDE68A', '#FEF3C7', '#4ADE80'], 140 * u);
+        var p = pos(secs()); burst(p[0], p[1], 36, ['#FDE68A', '#FEF3C7', '#4ADE80', '#FBBF24'], 200 * S); rings.push({ x: p[0], y: p[1], r: Math.max(W, H) * 0.3, t: 0, c: '#4ADE80' });
         tx(xm(r.out)); say(l.won + ' ' + xm(r.out), 'won'); result(r);
       } else ended(r);
     }

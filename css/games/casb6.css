@@ -33,3 +33,5 @@ html:root body #casinoModal .m4-dreidel,html:root body #casinoModal .m4-oracle{-
 html:root body #casinoModal .m4-rpsduel{--m4bg:linear-gradient(180deg,#0F172A,#312E81)}
 html:root body #casinoModal .m4-dreidel .dl-s.on rect{fill:#4338CA;stroke-width:3;stroke-opacity:1}
 html:root body #casinoModal .m4-rpsduel .cg-opts > button svg{width:34px;height:34px;margin:0 auto}
+html:root body #casinoModal .m4-dreidel #dlD.dl-win{filter:drop-shadow(0 0 8px rgba(253,230,138,.7))}
+html.oro-lite body #casinoModal .m4-dreidel #dlD.dl-win{filter:none}

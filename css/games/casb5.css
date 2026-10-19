@@ -33,7 +33,10 @@ html:root body #casinoModal .m4-pachinko{--m4bg:linear-gradient(180deg,#0B0820,#
 html:root body #casinoModal .m4-amida{--m4bg:linear-gradient(180deg,#1E1B4B,#312E81)}
 html:root body #casinoModal .m4-skeeball{--m4bg:linear-gradient(180deg,#020617,#0B1437)}
 html:root body #casinoModal .m4-ducks{--m4bg:linear-gradient(180deg,#9D174D,#DB2777)}
-html:root body #casinoModal .m4-amida .ld-top.on circle{fill:#F43F5E;stroke:#fff}
-html:root body #casinoModal .m4-amida .ld-pot.win rect{stroke:#4ADE80;stroke-width:3;stroke-opacity:1}
+
+
 html:root body #casinoModal .m4-amida .cg-opts > button > b{font-size:18px}
 html:root body #casinoModal .m4-ducks .m4-pay span,html:root body #casinoModal .m4-amida .m4-pay span{height:30px}
+html:root body #casinoModal .m4-amida .ld-top.on ellipse{stroke:#FFF;stroke-width:2.4}
+html:root body #casinoModal .m4-amida .ld-pot.win path{stroke:#4ADE80;stroke-width:2.6;stroke-opacity:1}
+html:root body #casinoModal .m4-amida{--m4bg:linear-gradient(180deg,#0B0820,#2E1065)}

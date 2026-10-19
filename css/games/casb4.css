@@ -35,6 +35,11 @@ html:root body #casinoModal .m4-twoup{--m4bg:linear-gradient(180deg,#451A03,#783
 html:root body #casinoModal .m4-dblroul .cg-opts > button svg{width:30px;height:20px}
 html:root body #casinoModal .m4-twoup .cg-opts > button svg{width:40px;height:20px;margin-bottom:1px}
 html:root body #casinoModal .m4-twoup .cg-opts > button > b{font-size:12.5px}
-html:root body #casinoModal .m4-fantan .ft-n.on circle{stroke-opacity:1;stroke-width:2.5;fill:#78350F}
-html:root body #casinoModal .m4-fantan .ft-n.win circle{fill:#16A34A;stroke:#fff;stroke-width:2.5}
+html:root body #casinoModal .m4-fantan .ft-n.on > rect:first-child{stroke:#FEF3C7;stroke-width:3}
+html:root body #casinoModal .m4-fantan .ft-n.win > rect:nth-child(2){fill:#16A34A}
+html:root body #casinoModal .m4-fantan .ft-n.win > rect:first-child{stroke:#4ADE80;stroke-width:3}
+html:root body #casinoModal .m4-fantan .ft-glow ellipse{stroke:#FBBF24;stroke-width:1.6}
+html:root body #casinoModal .m4-fantan{--m4bg:linear-gradient(180deg,#1C0A05,#3F0A0A)}
+html:root body #casinoModal .m4-twoup .tu-won{filter:drop-shadow(0 0 5px #FDE68A)}
+html.oro-lite body #casinoModal .m4-twoup .tu-won{filter:none}
 html:root body #casinoModal .m4-fantan .cg-opts > button > b{font-size:18px}

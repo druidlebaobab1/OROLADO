@@ -208,24 +208,34 @@
     key: 'amida', l: verb('play'), vb: '0 0 300 250', W: [1, 1, 1, 1, 1],
     chips: [0.3, 0.8, 1.6, 2].map(function (v) { return ['', v]; }),
     chipOf: function (i) { return i - 1; },
-    scene: bg('#1E1B4B', '#312E81') + '<g id="ldR"></g><g stroke="#E0E7FF" stroke-width="4" stroke-linecap="round">' + [0, 1, 2, 3, 4].map(function (q) { return '<path d="M' + LD_X(q) + ' ' + LD_Y0 + 'V' + LD_Y1 + '"/>'; }).join('') + '</g>' +
-      '<path id="ldTrail" d="" fill="none" stroke="#F43F5E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
-      [0, 1, 2, 3, 4].map(function (q) { return '<g class="ld-top" id="ldT' + q + '"><circle cx="' + LD_X(q) + '" cy="22" r="13" fill="#4338CA" stroke="#C7D2FE" stroke-width="2"/>' + txt(LD_X(q), 27, q + 1, 13, '#fff') + '</g>'; }).join('') +
-      LD_V.map(function (v, i) { var x = LD_X(LD_POS[i]); return '<g class="ld-pot" id="ldP' + i + '"><rect x="' + (x - 23) + '" y="206" width="46" height="34" rx="9" fill="' + (v ? (v >= 1.6 ? '#B45309' : '#334155') : '#1F2937') + '" stroke="#FDE68A" stroke-opacity=".6" stroke-width="1.5"/>' + txt(x, 228, v ? xm(v) : '×0', 13, v >= 1 ? '#FDE68A' : '#E2E8F0') + '</g>'; }).join('') +
-      '<g id="ldBall" opacity="0">' + '<circle r="7" fill="#F43F5E" stroke="#fff" stroke-width="2"/></g>',
+    scene: '<defs><linearGradient id="ldPole" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#92400E"/><stop offset=".45" stop-color="#FDE68A"/><stop offset="1" stop-color="#B45309"/></linearGradient>' +
+      '<radialGradient id="ldLan" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="#FEF3C7"/><stop offset=".45" stop-color="#F97316"/><stop offset="1" stop-color="#9A3412"/></radialGradient>' +
+      '<radialGradient id="ldGlow" r=".5"><stop offset="0" stop-color="#FDBA74" stop-opacity=".55"/><stop offset="1" stop-color="#FDBA74" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="ldOrb" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFF"/><stop offset=".45" stop-color="#FDA4AF"/><stop offset="1" stop-color="#E11D48"/></radialGradient>' +
+      '<linearGradient id="ldJar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#2E1065"/></linearGradient><linearGradient id="ldJarG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBBF24"/><stop offset="1" stop-color="#92400E"/></linearGradient></defs>' +
+      bg('#0B0820', '#2E1065') + (function () { var q = '', k; for (k = 0; k < 30; k++) q += '<circle cx="' + rnd(300) + '" cy="' + rnd(200) + '" r="' + (0.5 + Math.random()).toFixed(1) + '" fill="#E9D5FF" opacity="' + (0.25 + Math.random() * 0.5).toFixed(2) + '"/>'; return q; })() +
+      '<path d="M-20 10Q150 26 320 10" stroke="#FDE68A" stroke-opacity=".4" fill="none"/>' +
+      '<g id="ldR"></g>' + [0, 1, 2, 3, 4].map(function (q) { return '<rect x="' + (LD_X(q) - 3) + '" y="' + LD_Y0 + '" width="6" height="' + (LD_Y1 - LD_Y0) + '" rx="3" fill="url(#ldPole)"/>' + [0.3, 0.6].map(function (f) { return '<rect x="' + (LD_X(q) - 3.5) + '" y="' + (LD_Y0 + (LD_Y1 - LD_Y0) * f) + '" width="7" height="2" fill="#78350F" opacity=".6"/>'; }).join(''); }).join('') +
+      '<path id="ldTrailG" d="" fill="none" stroke="#FB7185" stroke-opacity=".35" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path id="ldTrail" d="" fill="none" stroke="#FFE4E6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
+      [0, 1, 2, 3, 4].map(function (q) { var x = LD_X(q); return '<g class="ld-top" id="ldT' + q + '"><circle cx="' + x + '" cy="24" r="22" fill="url(#ldGlow)"/><path d="M' + x + ' 8V12" stroke="#FDE68A"/><rect x="' + (x - 6) + '" y="11" width="12" height="3" rx="1" fill="#78350F"/><ellipse cx="' + x + '" cy="24" rx="13" ry="11" fill="url(#ldLan)" stroke="#7C2D12"/><path d="M' + (x - 8) + ' 24h16M' + (x - 11) + ' 20h22M' + (x - 11) + ' 28h22" stroke="#7C2D12" stroke-opacity=".35"/><rect x="' + (x - 6) + '" y="34" width="12" height="3" rx="1" fill="#78350F"/>' + txt(x, 29, q + 1, 12, '#fff') + '</g>'; }).join('') +
+      LD_V.map(function (v, i) { var x = LD_X(LD_POS[i]), gold = v >= 1.6; return '<g class="ld-pot" id="ldP' + i + '"><path d="M' + (x - 14) + ' 206h28l2 4q8 8 4 20-4 10-20 10t-20-10q-4-12 4-20z" fill="url(#' + (gold ? 'ldJarG' : 'ldJar') + ')" stroke="#FDE68A" stroke-opacity=".7" stroke-width="1.4"/>' +
+        (v ? [[-6, 203], [0, 200], [6, 203]].slice(0, gold ? 3 : v >= 0.8 ? 2 : 1).map(function (p) { return '<ellipse cx="' + (x + p[0]) + '" cy="' + p[1] + '" rx="5" ry="2.6" fill="#FBBF24" stroke="#92400E" stroke-width=".7"/>'; }).join('') : '') +
+        txt(x, 229, v ? xm(v) : '×0', 12, gold ? '#FFFBEB' : '#E9D5FF') + '</g>'; }).join('') +
+      '<g id="ldBall" opacity="0"><circle r="13" fill="url(#ldGlow)"/><circle r="7" fill="url(#ldOrb)" stroke="#fff" stroke-width="1.5"/></g><g id="ldFx"></g>',
     opts: function () { return '<div class="cg-opts ld-opts">' + [0, 1, 2, 3, 4].map(function (q) { return '<button type="button" data-o="' + q + '"><b class="fit">' + (q + 1) + '</b></button>'; }).join('') + '</div>'; },
     onPick: function (c, j) { c.qa('.ld-top').forEach(function (g, q) { g.classList.toggle('on', q === j); }); },
     init: function (c) { c.id('ldR').innerHTML = ''; },
     params: function (c) { return { lane: c.sel }; },
-    reset: function (c) { c.id('ldR').innerHTML = ''; c.id('ldTrail').setAttribute('d', ''); c.id('ldBall').setAttribute('opacity', '0'); c.qa('.ld-pot').forEach(function (g) { g.classList.remove('win'); }); },
+    reset: function (c) { c.id('ldR').innerHTML = ''; c.id('ldTrail').setAttribute('d', ''); c.id('ldTrailG').setAttribute('d', ''); c.id('ldFx').innerHTML = ''; c.id('ldBall').setAttribute('opacity', '0'); c.qa('.ld-pot').forEach(function (g) { g.classList.remove('win'); }); },
     play: async function (c, r) {
       var i = +r.view.i, want = LD_POS[i], start = c.sel, rungs = find(ldMake, function (rg) { return ldPath(rg, start).col === want; }, 5000) || ldMake();
       var R = c.id('ldR');
-      for (var k = 0; k < rungs.length; k++) { var rg = rungs[k], y = LD_Y0 + (rg[0] + 1) * (LD_Y1 - LD_Y0) / (LD_N + 1); R.insertAdjacentHTML('beforeend', '<path d="M' + LD_X(rg[1]) + ' ' + y + 'H' + LD_X(rg[1] + 1) + '" stroke="#FBBF24" stroke-width="4" stroke-linecap="round"/>'); c.sfx('tick'); await wait(c.box, 55); }
-      var P = ldPath(rungs, start).pts, b = c.id('ldBall'), d = 'M' + P[0][0] + ' ' + P[0][1], trail = c.id('ldTrail');
+      for (var k = 0; k < rungs.length; k++) { var rg = rungs[k], y = LD_Y0 + (rg[0] + 1) * (LD_Y1 - LD_Y0) / (LD_N + 1); R.insertAdjacentHTML('beforeend', '<g><rect x="' + LD_X(rg[1]) + '" y="' + (y - 2.5) + '" width="52" height="5" rx="2.5" fill="url(#ldPole)"/><circle cx="' + (LD_X(rg[1]) + 26) + '" cy="' + y + '" r="6" fill="url(#ldGlow)"/></g>'); c.sfx('tick'); await wait(c.box, 55); }
+      var P = ldPath(rungs, start).pts, b = c.id('ldBall'), d = 'M' + P[0][0] + ' ' + P[0][1], trail = c.id('ldTrail'), trailG = c.id('ldTrailG');
       b.setAttribute('opacity', '1');
-      for (k = 1; k < P.length; k++) { var a = P[k - 1], z = P[k], dd = d; await tw(c.box, Math.max(70, Math.hypot(z[0] - a[0], z[1] - a[1]) * 4), function (q) { var x = lerp(a[0], z[0], q), y2 = lerp(a[1], z[1], q); tr(b, x, y2); trail.setAttribute('d', dd + 'L' + x.toFixed(1) + ' ' + y2.toFixed(1)); }); d += 'L' + z[0] + ' ' + z[1]; if (a[1] === z[1]) c.sfx('step', { k: k }); }
+      for (k = 1; k < P.length; k++) { var a = P[k - 1], z = P[k], dd = d; await tw(c.box, Math.max(70, Math.hypot(z[0] - a[0], z[1] - a[1]) * 4), function (q) { var x = lerp(a[0], z[0], q), y2 = lerp(a[1], z[1], q); tr(b, x, y2); trail.setAttribute('d', dd + 'L' + x.toFixed(1) + ' ' + y2.toFixed(1)); trailG.setAttribute('d', trail.getAttribute('d')); }); d += 'L' + z[0] + ' ' + z[1]; if (a[1] === z[1]) c.sfx('step', { k: k }); }
       c.id('ldP' + i).classList.add('win'); c.sfx('stop');
+      if (LD_V[i] > 0) { var fx = c.id('ldFx'), px = LD_X(want); fx.innerHTML = [0, 1, 2, 3, 4, 5, 6, 7].map(function (q) { return '<circle r="2.6" fill="#FDE68A"/>'; }).join(''); var dots = [].slice.call(fx.children); await tw(c.box, 600, function (k) { dots.forEach(function (d, q) { var a = -Math.PI * (0.15 + q / 7 * 0.7); tr(d, px + Math.cos(a) * 34 * ease(k), 214 + Math.sin(a) * 34 * ease(k) + k * k * 20); d.setAttribute('opacity', String(1 - k)); }); }); fx.innerHTML = ''; }
     },
     rules: {
       en: '1. Pick a starting post (1 to 5), set your stake and tap “Play”.\n2. Golden rungs appear at random; the ball goes down your post and crosses every rung it meets.\n3. It ends in one of the 5 pots: ×0 · ×0.3 · ×0.8 · ×1.6 · ×2 (each pot is equally likely, whatever post you pick).',

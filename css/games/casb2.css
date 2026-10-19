@@ -34,3 +34,4 @@ html:root body #casinoModal .m4-clocksol{--m4bg:linear-gradient(180deg,#1E1B4B,#
 html:root body #casinoModal .m4-trente .tq-opts button.tq-red b{color:#FCA5A5}
 html:root body #casinoModal .m4-trente .cb-win circle{stroke:#4ADE80;stroke-width:3}
 html:root body #casinoModal .m4-clocksol [class^=ck-k] > rect:first-child{stroke:#F87171;stroke-width:2.4}
+html:root body #casinoModal .m4-acerace #arCup.ar-win{filter:drop-shadow(0 0 6px #FDE68A)}

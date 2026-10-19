@@ -235,31 +235,45 @@
     ar: { heads: 'وجهان', odds: 'مختلط', tails: 'ظهران' }, tr: { heads: 'Yazı', odds: 'Karışık', tails: 'Tura' }, vi: { heads: 'Hai ngửa', odds: 'Lẫn', tails: 'Hai sấp' }, id: { heads: 'Kepala', odds: 'Campur', tails: 'Ekor' },
     ru: { heads: 'Орлы', odds: 'Разные', tails: 'Решки' }, de: { heads: 'Köpfe', odds: 'Gemischt', tails: 'Zahlen' }, hi: { heads: 'चित', odds: 'मिश्रित', tails: 'पट' }, zh: { heads: '双正', odds: '一正一反', tails: '双反' }
   };
-  function tuCoin(h, sx) { return '<g transform="scale(' + (sx == null ? 1 : sx).toFixed(3) + ' 1)"><circle r="20" fill="' + (h ? 'url(#tuG)' : 'url(#tuS)') + '" stroke="' + (h ? '#92400E' : '#475569') + '" stroke-width="1.5"/><circle r="15" fill="none" stroke="' + (h ? '#FEF3C7' : '#E2E8F0') + '" stroke-opacity=".7"/>' +
-    (h ? '<path d="M-9 4h18l2-10-6 4-5-7-5 7-6-4z" fill="#FEF3C7" stroke="#92400E" stroke-width=".8"/>' : '<path d="M0-10l2.9 6 6.6 1-4.8 4.6 1.2 6.5L0 5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-1z" fill="#F8FAFC" stroke="#475569" stroke-width=".8"/>') + '</g>'; }
+  function tuCoin(h, sx) { sx = sx == null ? 1 : sx; if (Math.abs(sx) < 0.18) return '<rect x="-3" y="-20" width="6" height="40" rx="3" fill="' + (h ? '#B45309' : '#475569') + '"/>'; return '<g transform="scale(' + Math.abs(sx).toFixed(3) + ' 1)"><circle r="20" cx="' + (sx > 0 ? -1.5 : 1.5) + '" fill="' + (h ? '#92400E' : '#334155') + '"/><circle r="20" fill="' + (h ? 'url(#tuG)' : 'url(#tuS)') + '" stroke="' + (h ? '#92400E' : '#475569') + '" stroke-width="1.5"/><circle r="15" fill="none" stroke="' + (h ? '#FEF3C7' : '#E2E8F0') + '" stroke-opacity=".7"/>' +
+    (h ? '<path d="M-9 4h18l2-10-6 4-5-7-5 7-6-4z" fill="#FEF3C7" stroke="#92400E" stroke-width=".8"/><path d="M-12 9h24" stroke="#FEF3C7" stroke-width="1.4" opacity=".7"/>' : '<path d="M0-10l2.9 6 6.6 1-4.8 4.6 1.2 6.5L0 5l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-1z" fill="#F8FAFC" stroke="#475569" stroke-width=".8"/>') + '</g>'; }
   function tuIco(a, b) { return '<svg viewBox="-24 -12 48 24" aria-hidden="true"><defs><radialGradient id="tuGi" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FEF3C7"/><stop offset="1" stop-color="#D97706"/></radialGradient><radialGradient id="tuSi" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#F8FAFC"/><stop offset="1" stop-color="#64748B"/></radialGradient></defs>' +
     [a, b].map(function (h, j) { return '<g transform="translate(' + (j ? 11 : -11) + ' 0) scale(.5)">' + tuCoin(h).replace(/tuG\)/g, 'tuGi)').replace(/tuS\)/g, 'tuSi)') + '</g>'; }).join('') + '</svg>'; }
   game({
     key: 'twoup', l: verb('toss', TU), vb: '0 0 300 250', n: 3, W: [1, 2, 1],
-    scene: '<defs><radialGradient id="tuG" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FEF3C7"/><stop offset=".55" stop-color="#FBBF24"/><stop offset="1" stop-color="#B45309"/></radialGradient><radialGradient id="tuS" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#F8FAFC"/><stop offset=".55" stop-color="#94A3B8"/><stop offset="1" stop-color="#334155"/></radialGradient></defs>' +
-      felt('tuF', '#B45309', '#451A03') + '<ellipse cx="150" cy="196" rx="132" ry="34" fill="#000" opacity=".25"/><circle cx="150" cy="196" r="64" fill="none" stroke="#FDE68A" stroke-opacity=".3" stroke-width="2" transform="scale(1 .3) translate(0 457)"/>' +
-      '<g id="tuKip" transform="translate(150 214)"><rect x="-46" y="-5" width="92" height="10" rx="5" fill="#D6A36A" stroke="#78350F"/><rect x="40" y="-3" width="26" height="6" rx="3" fill="#92400E"/></g>' +
-      '<g id="tuC0" transform="translate(126 200)">' + tuCoin(true) + '</g><g id="tuC1" transform="translate(174 200)">' + tuCoin(false) + '</g>',
+    scene: '<defs><radialGradient id="tuG" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FEF3C7"/><stop offset=".55" stop-color="#FBBF24"/><stop offset="1" stop-color="#B45309"/></radialGradient><radialGradient id="tuS" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#F8FAFC"/><stop offset=".55" stop-color="#94A3B8"/><stop offset="1" stop-color="#334155"/></radialGradient>' +
+      '<linearGradient id="tuSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B0764"/><stop offset=".55" stop-color="#C2410C"/><stop offset="1" stop-color="#FDBA74"/></linearGradient><radialGradient id="tuSand" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#FCD34D"/><stop offset="1" stop-color="#B45309"/></radialGradient>' +
+      '<radialGradient id="tuSun" r=".5"><stop offset="0" stop-color="#FFF7ED"/><stop offset=".4" stop-color="#FDBA74"/><stop offset="1" stop-color="#FDBA74" stop-opacity="0"/></radialGradient></defs>' +
+      '<rect x="-400" y="-400" width="1100" height="700" fill="url(#tuSky)"/><rect x="-400" y="150" width="1100" height="600" fill="#78350F"/><circle cx="230" cy="112" r="46" fill="url(#tuSun)"/>' +
+      '<path d="M-400 140Q-40 104 40 122T150 116T250 126T700 120V160H-400z" fill="#7C2D12"/><path d="M-400 148Q60 132 150 140T700 142V170H-400z" fill="#451A03"/>' +
+      // la foule en cercle
+      (function () { var s = '', q; for (q = 0; q < 26; q++) { var a = Math.PI * (1.05 + q / 25 * 0.9), x = 150 + Math.cos(a) * 150, y = 176 + Math.sin(a) * 38; s += '<g transform="translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')" fill="' + ['#1C1917', '#292524', '#3F1D0B'][q % 3] + '"><circle cy="-15" r="5.5"/><path d="M-8 4Q-8-9 0-9T8 4z"/>' + (q % 4 ? '' : '<path d="M-8-17h16l-3-5h-10z"/>') + '</g>'; } return s; })() +
+      '<ellipse cx="150" cy="206" rx="128" ry="34" fill="url(#tuSand)" stroke="#FDE68A" stroke-opacity=".45" stroke-width="2"/><ellipse cx="150" cy="206" rx="70" ry="18" fill="none" stroke="#FEF3C7" stroke-opacity=".35" stroke-dasharray="4 5"/>' +
+      '<g id="tuDust"></g><ellipse id="tuSh0" cx="126" cy="214" rx="18" ry="4" fill="#000" opacity=".3"/><ellipse id="tuSh1" cx="174" cy="214" rx="18" ry="4" fill="#000" opacity=".3"/>' +
+      '<g id="tuKip" transform="translate(150 222)"><rect x="-50" y="-5" width="100" height="10" rx="5" fill="#D6A36A" stroke="#78350F"/><path d="M-40-2h80" stroke="#FEF3C7" stroke-opacity=".5"/><rect x="44" y="-3.5" width="28" height="7" rx="3.5" fill="#92400E"/></g>' +
+      '<g id="tuC0" transform="translate(126 208)">' + tuCoin(true) + '</g><g id="tuC1" transform="translate(174 208)">' + tuCoin(false) + '</g>',
     opts: function (l) { return '<div class="cg-opts tu-opts">' + [[true, true, l.heads, 0.25], [true, false, l.odds, 0.5], [false, false, l.tails, 0.25]].map(function (q, j) { return '<button type="button" data-o="' + j + '">' + tuIco(q[0], q[1]) + '<b class="fit">' + K.esc(q[2]) + '</b><small class="fit">' + xm(pm(q[3])) + '</small></button>'; }).join('') + '</div>'; },
     params: function (c) { return { pick: c.sel }; },
     play: async function (c, r) {
-      var w = +r.view.w, faces = w === 0 ? [true, true] : w === 2 ? [false, false] : shuffle([true, false]), cs = [c.id('tuC0'), c.id('tuC1')], kip = c.id('tuKip');
-      var land = [[110 + rnd(20), 168 + rnd(12)], [170 + rnd(20), 172 + rnd(12)]], from = [[126, 200], [174, 200]];
-      await tw(c.box, 240, function (k) { tr(kip, 150, 214 - Math.sin(k * Math.PI) * 18, 1, -Math.sin(k * Math.PI) * 10); });
+      var w = +r.view.w, faces = w === 0 ? [true, true] : w === 2 ? [false, false] : shuffle([true, false]), cs = [c.id('tuC0'), c.id('tuC1')], sh = [c.id('tuSh0'), c.id('tuSh1')], kip = c.id('tuKip');
+      var land = [[104 + rnd(24), 200 + rnd(10)], [172 + rnd(24), 204 + rnd(10)]], from = [[126, 208], [174, 208]];
+      await tw(c.box, 260, function (k) { tr(kip, 150, 222 - Math.sin(k * Math.PI) * 20, 1, -Math.sin(k * Math.PI) * 12); });
       c.sfx('flip', { d: 1500 });
-      await tw(c.box, 1700, function (k) {
-        cs.forEach(function (g, j) { var spin = k * (14 + j * 3) * Math.PI, sx = Math.cos(spin), up = Math.sin(k * Math.PI) * 150; g.innerHTML = tuCoin(k > 0.85 ? faces[j] : sx > 0 ? !(j % 2) : !!(j % 2), k > 0.85 ? 1 : Math.max(0.08, Math.abs(sx)));
-          tr(g, lerp(from[j][0], land[j][0], k), lerp(from[j][1], land[j][1], k) - up); });
+      await tw(c.box, 1750, function (k) {
+        cs.forEach(function (g, j) { var spin = k * (14 + j * 3) * Math.PI, sx = Math.cos(spin), up = Math.sin(k * Math.PI) * 168, x = lerp(from[j][0], land[j][0], k), y = lerp(from[j][1], land[j][1], k);
+          g.innerHTML = tuCoin(k > 0.86 ? faces[j] : sx > 0 ? !(j % 2) : !!(j % 2), k > 0.86 ? 1 : sx);
+          tr(g, x, y - up, 1 + Math.sin(k * Math.PI) * 0.25);
+          sh[j].setAttribute('cx', x.toFixed(1)); sh[j].setAttribute('cy', (y + 6).toFixed(1)); sh[j].setAttribute('rx', (18 - Math.sin(k * Math.PI) * 12).toFixed(1)); sh[j].setAttribute('opacity', (0.3 - Math.sin(k * Math.PI) * 0.2).toFixed(2)); });
       });
       cs.forEach(function (g, j) { g.innerHTML = tuCoin(faces[j]); tr(g, land[j][0], land[j][1]); });
+      // petit nuage de poussière à l'atterrissage
+      var D = c.id('tuDust'); D.innerHTML = land.map(function (p) { return [0, 1, 2, 3, 4].map(function (q) { return '<circle cx="' + (p[0] + (q - 2) * 9) + '" cy="' + (p[1] + 8) + '" r="5" fill="#FDE68A" opacity=".5"/>'; }).join(''); }).join('');
       c.sfx('stop');
+      await tw(c.box, 450, function (k) { D.setAttribute('opacity', String(1 - k)); D.setAttribute('transform', 'translate(0 ' + (-k * 8).toFixed(1) + ')'); });
+      D.innerHTML = ''; D.removeAttribute('opacity');
+      cs.forEach(function (g, j) { g.classList.add('tu-won'); });
     },
-    reset: function (c) { tr(c.id('tuC0'), 126, 200); tr(c.id('tuC1'), 174, 200); },
+    reset: function (c) { tr(c.id('tuC0'), 126, 208); tr(c.id('tuC1'), 174, 208); [0, 1].forEach(function (j) { c.id('tuC' + j).classList.remove('tu-won'); var s = c.id('tuSh' + j); s.setAttribute('cx', j ? 174 : 126); s.setAttribute('cy', 214); s.setAttribute('rx', 18); s.setAttribute('opacity', '.3'); }); },
     rules: {
       en: '1. Pick Heads (two crowns), Odds (one of each) or Tails (two stars); set your stake and tap “Toss”.\n2. Two coins are thrown high from the wooden paddle and spin.\n3. Heads ×3.76 · Odds ×1.88 · Tails ×3.76. Another result: the stake is lost.',
       fr: '1. Choisis Faces (deux couronnes), Mixte (une de chaque) ou Piles (deux étoiles) ; ta mise, puis touche « Lancer ».\n2. Deux pièces sont lancées haut depuis la palette en bois et tournoient.\n3. Faces ×3.76 · Mixte ×1.88 · Piles ×3.76. Autre résultat : la mise est perdue.',
@@ -278,34 +292,48 @@
 
   /* =============================== FAN-TAN (choix) =============================== */
   // un tas de haricots sous un bol ; le croupier les retire 4 par 4 ; reste 1, 2, 3 ou 4 : ×3.76 chacun
+  var FT_XY = [[150, 30], [270, 125], [150, 220], [30, 125]];
+  function ftPlaque(j) { var p = FT_XY[j]; return '<g class="ft-n" id="ftN' + j + '"><rect x="' + (p[0] - 17) + '" y="' + (p[1] - 15) + '" width="34" height="30" rx="6" fill="url(#ftBr)" stroke="#78350F" stroke-width="1.5"/><rect x="' + (p[0] - 13) + '" y="' + (p[1] - 11) + '" width="26" height="22" rx="4" fill="#7F1D1D"/>' + txt(p[0], p[1] + 6, j + 1, 16, '#FDE68A') + '</g>'; }
   game({
     key: 'fantan', l: verb('play'), vb: '0 0 300 250', n: 4,
-    scene: felt('ftF', '#166534', '#052E16') + '<rect x="22" y="22" width="256" height="206" rx="18" fill="none" stroke="#FDE68A" stroke-opacity=".4" stroke-width="2"/>' +
-      [1, 2, 3, 4].map(function (n, j) { var x = [150, 262, 150, 38][j], y = [36, 125, 214, 125][j]; return '<g class="ft-n" id="ftN' + j + '"><circle cx="' + x + '" cy="' + y + '" r="13" fill="#0B1220" stroke="#FDE68A" stroke-opacity=".6"/>' + txt(x, y + 5, n, 14, '#FDE68A') + '</g>'; }).join('') +
-      '<g id="ftBeans"></g><g id="ftBowl" transform="translate(150 125)"><ellipse cy="30" rx="60" ry="10" fill="#000" opacity=".3"/><path d="M-58 24Q-58-40 0-40T58 24z" fill="#B91C1C" stroke="#FBBF24" stroke-width="2"/><path d="M-40-10Q0-30 40-10" stroke="#FDE68A" stroke-width="2" fill="none" opacity=".6"/><circle cy="-42" r="7" fill="#FBBF24"/></g>' +
-      '<g id="ftStick" opacity="0"><path d="M0 0L90-60" stroke="#D6A36A" stroke-width="4" stroke-linecap="round"/></g>' + pillG('ftLeft', 150, 178, 54),
+    scene: '<defs><linearGradient id="ftBr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FEF3C7"/><stop offset=".5" stop-color="#D97706"/><stop offset="1" stop-color="#78350F"/></linearGradient>' +
+      '<radialGradient id="ftBean" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#E7E5E4"/><stop offset="1" stop-color="#A8A29E"/></radialGradient>' +
+      '<radialGradient id="ftBowlG" cx="35%" cy="25%" r="85%"><stop offset="0" stop-color="#FEF3C7"/><stop offset=".45" stop-color="#D97706"/><stop offset="1" stop-color="#451A03"/></radialGradient>' +
+      '<radialGradient id="ftTab" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#991B1B"/><stop offset="1" stop-color="#3F0A0A"/></radialGradient></defs>' +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="#1C0A05"/><rect x="8" y="8" width="284" height="234" rx="22" fill="url(#ftTab)" stroke="url(#ftBr)" stroke-width="5"/>' +
+      '<rect x="22" y="22" width="256" height="206" rx="14" fill="none" stroke="#FBBF24" stroke-opacity=".35" stroke-dasharray="2 6"/>' +
+      [[22, 22], [278, 22], [22, 228], [278, 228]].map(function (p) { return '<path d="M' + p[0] + ' ' + (p[1] - 8) + 'l8 8-8 8-8-8z" fill="#FBBF24" opacity=".6"/>'; }).join('') +
+      '<rect x="56" y="52" width="188" height="146" rx="12" fill="#14532D" stroke="#FDE68A" stroke-opacity=".35"/>' + [0, 1, 2, 3].map(ftPlaque).join('') +
+      '<g id="ftTray" transform="translate(70 188)"><rect x="-14" y="-8" width="40" height="14" rx="5" fill="#451A03" stroke="#D97706"/></g><g id="ftOut"></g>' +
+      '<g id="ftBeans"></g><g id="ftBowl" transform="translate(150 125)"><ellipse cy="34" rx="62" ry="10" fill="#000" opacity=".35"/><path d="M-60 26Q-60-42 0-42T60 26z" fill="url(#ftBowlG)" stroke="#78350F" stroke-width="2"/>' +
+        '<path d="M-48 0Q0-18 48 0" stroke="#FEF3C7" stroke-width="2" fill="none" opacity=".55"/><path d="M-52 14Q0-4 52 14" stroke="#7F1D1D" stroke-width="4" fill="none"/><circle cy="-44" r="8" fill="url(#ftBr)" stroke="#78350F"/></g>' +
+      '<g id="ftStick" opacity="0"><path d="M0 0L96-64" stroke="#D6A36A" stroke-width="5" stroke-linecap="round"/><path d="M24-16l3 4M48-32l3 4M72-48l3 4" stroke="#92400E" stroke-width="1.5"/><path d="M0 0l-6 4" stroke="#78350F" stroke-width="5" stroke-linecap="round"/></g>' + pillG('ftLeft', 236, 188, 46),
     opts: function () { return '<div class="cg-opts ft-opts">' + [0, 1, 2, 3].map(function (j) { return optBtn(j, '<b class="fit">' + (j + 1) + '</b>', pm(0.25)); }).join('') + '</div>'; },
     onPick: function (c, j) { c.qa('.ft-n').forEach(function (g, q) { g.classList.toggle('on', q === j); }); },
     params: function (c) { return { pick: c.sel }; },
-    reset: function (c) { c.id('ftBeans').innerHTML = ''; tr(c.id('ftBowl'), 150, 125); c.id('ftBowl').style.opacity = ''; setP(c, 'ftLeft', ''); },
+    reset: function (c) { c.id('ftBeans').innerHTML = ''; c.id('ftOut').innerHTML = ''; tr(c.id('ftBowl'), 150, 125); c.id('ftBowl').style.opacity = ''; setP(c, 'ftLeft', ''); c.qa('.ft-n').forEach(function (g) { g.classList.remove('win'); }); },
     play: async function (c, r) {
       var w = +r.view.w, n = 4 * (5 + rnd(3)) + w + 1, B = c.id('ftBeans'), beans = [];
-      for (var j = 0; j < n; j++) { var a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * 46; beans.push([150 + Math.cos(a) * d * 1.25, 125 + Math.sin(a) * d * 0.75]); }
-      B.innerHTML = beans.map(function (p, q) { return '<ellipse id="ftB' + q + '" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" rx="5.6" ry="4" fill="#F8FAFC" stroke="#94A3B8" stroke-width=".6" transform="rotate(' + rnd(180) + ' ' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')"/>'; }).join('');
+      for (var j = 0; j < n; j++) { var a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * 44; beans.push([150 + Math.cos(a) * d * 1.3, 122 + Math.sin(a) * d * 0.72, rnd(180)]); }
+      B.innerHTML = beans.map(function (p, q) { return '<g id="ftB' + q + '" transform="translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ') rotate(' + p[2] + ')"><ellipse rx="6" ry="4.3" fill="url(#ftBean)" stroke="#78716C" stroke-width=".5"/><path d="M-3-1q3-2 6 0" stroke="#A8A29E" stroke-width=".6" fill="none"/></g>'; }).join('');
       var bowl = c.id('ftBowl'); c.sfx('open');
-      await tw(c.box, 600, function (k) { var e = ease(k); tr(bowl, 150 + e * 90, 125 - e * 90); bowl.style.opacity = String(1 - e); });
-      // retirer 4 par 4 (les haricots les plus à gauche d'abord)
-      var order = beans.map(function (p, q) { return q; }).sort(function (a, b) { return beans[a][0] - beans[b][0]; }), left = n, stick = c.id('ftStick');
-      stick.setAttribute('opacity', '1');
+      await tw(c.box, 650, function (k) { var e = ease(k); tr(bowl, 150 + e * 100, 125 - e * 96, 1 - e * 0.3, e * 20); bowl.style.opacity = String(1 - e); });
+      var order = beans.map(function (p, q) { return q; }).sort(function (a, b) { return beans[a][0] - beans[b][0]; }), left = n, stick = c.id('ftStick'), out = 0, O = c.id('ftOut');
+      stick.setAttribute('opacity', '1'); setP(c, 'ftLeft', String(left));
       while (left > 4) {
         var grp = order.splice(0, 4), cx = grp.reduce(function (s, q) { return s + beans[q][0]; }, 0) / 4, cy = grp.reduce(function (s, q) { return s + beans[q][1]; }, 0) / 4;
-        tr(stick, cx, cy); c.sfx('tick');
-        await tw(c.box, lite() ? 160 : 230, function (k) { grp.forEach(function (q) { var e = c.id('ftB' + q); e.setAttribute('opacity', String(1 - k)); e.setAttribute('transform', 'translate(' + (-k * 40).toFixed(1) + ' 0)'); }); });
-        grp.forEach(function (q) { var e = c.id('ftB' + q); if (e) e.remove(); });
-        left -= 4; setP(c, 'ftLeft', String(left));
+        c.sfx('tick');
+        await tw(c.box, lite() ? 120 : 170, function (k) { tr(stick, lerp(cx + 30, cx, ease(k)), lerp(cy - 10, cy, ease(k))); });
+        var tx0 = 62 + (out % 6) * 3, ty0 = 186 - Math.floor(out / 6) * 3;
+        await tw(c.box, lite() ? 160 : 240, function (k) { var e = ease(k); tr(stick, lerp(cx, 80, e), lerp(cy, 184, e)); grp.forEach(function (q, z) { var el = c.id('ftB' + q); tr(el, lerp(beans[q][0], tx0 + z * 4, e), lerp(beans[q][1], ty0, e), 1 - e * 0.4, beans[q][2]); }); });
+        grp.forEach(function (q) { var el = c.id('ftB' + q); if (el) { O.appendChild(el); } });
+        out++; left -= 4; setP(c, 'ftLeft', String(left));
       }
       stick.setAttribute('opacity', '0'); c.sfx('stop');
-      order.forEach(function (q) { var e = c.id('ftB' + q); if (e) e.setAttribute('fill', '#FDE68A'); });
+      // le reste se range en ligne et brille
+      var rest = order.slice();
+      await tw(c.box, 420, function (k) { var e = ease(k); rest.forEach(function (q, z) { tr(c.id('ftB' + q), lerp(beans[q][0], 150 + (z - (rest.length - 1) / 2) * 18, e), lerp(beans[q][1], 125, e), 1 + e * 0.5, beans[q][2] * (1 - e)); }); });
+      rest.forEach(function (q) { var el = c.id('ftB' + q); if (el) el.setAttribute('class', 'ft-glow'); });
       c.qa('.ft-n').forEach(function (g, q) { g.classList.toggle('win', q === w); });
     },
     rules: {
