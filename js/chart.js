@@ -33,6 +33,9 @@
   // 2026-10-03 (propriétaire : « bougies trop maigres ») : départ un peu plus proche, bougies plus
   // larges ; AZAZEL juste un cran (un peu plus large, même hauteur).
   function defaultZoomIdx(id) {
+    // Marchés ajoutés (js/indices.js) : zoom de départ choisi pour chacun.
+    var ax = D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[id];
+    if (ax && ax.ext && isFinite(ax.zoomIdx)) return Math.max(0, Math.min(ZOOM_STEPS.length - 1, Number(ax.zoomIdx)));
     // BAAL (Boom) : on voit plus de temps (41 s) pour voir la descente ET les pics.
     // ORO 999 (style Boom : descente en zigzag + grands pics) : on voit 35 s pour voir la descente ET les pics.
     if (id === 'horizon50') return 14;
@@ -1896,6 +1899,10 @@
     if (opts.v100Big) maxBody = 12;
     // BAAL : la bougie calme, gros carreaux.
     if (opts.horizonOrange) maxBody = 14;
+    // Marchés ajoutés : corps fin, normal ou large.
+    if (opts.body === 'thin') maxBody = 3.2;
+    else if (opts.body === 'wide') maxBody = 12;
+    else if (opts.body === 'normal') maxBody = 7;
     maxBody *= sizeK();
     var cw = Math.max(1, Math.min(maxBody, slot - gap));
     var toX = makeToX(candles.length, pad, w);
@@ -1907,6 +1914,7 @@
       var c = candles[i];
       var up = c.c >= c.o;
       var col = up ? '#00E676' : '#ff3b30';
+      if (opts.pal) col = up ? opts.pal.up : opts.pal.dn;
       if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
       if (opts.v75Rose) col = up ? '#E0001B' : '#7A000C';
       if (opts.apexAiry) col = up ? '#C084FC' : '#7C3AED';
@@ -1967,7 +1975,7 @@
         ctx.shadowBlur = 9;
       } else if (!thin && i === candles.length - 1 && cssH >= 200 && !opts.v75Rose &&
         !opts.titanWhite && !opts.horizonOrange) {
-        ctx.shadowColor = opts.apexAiry ? 'rgba(192,132,252,0.7)' : (up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)');
+        ctx.shadowColor = opts.pal ? palRgba(col, 0.55) : (opts.apexAiry ? 'rgba(192,132,252,0.7)' : (up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)'));
         ctx.shadowBlur = 8;
       }
       if (opts.titanWhite) {
@@ -2026,6 +2034,11 @@
       } else if (opts.v75Rose) {
         ctx.fillStyle = '#7A000C';
         ctx.fillRect(x - cw / 2, y1, cw, bh);
+      } else if (opts.pal && !up && opts.body === 'wide') {
+        // Marché ajouté, corps large : baisse en creux (contour), hausse pleine.
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1.3;
+        ctx.strokeRect(x - cw / 2 + 0.65, y1 + 0.65, Math.max(1, cw - 1.3), Math.max(1, bh - 1.3));
       } else if (opts.apexAiry) {
         // ORO 888 : corps violet plein, liseré clair en haut (effet bijou).
         ctx.fillStyle = col;
@@ -2051,9 +2064,29 @@
    * le rond du trade, la ligne objectif et la boule tombent au même endroit.
    */
   var STYLED_ASSETS = { apex500: 'pearls', crash300: 'embers', nexusprime: 'crystals', v75: 'bars', goldtrend: 'pyramids', titanpulse: 'bolts' };
+  // Marchés ajoutés : même dessin (perles, braises, cristaux, barres), avec LEURS couleurs.
+  var STYLED_PAL = {};
+  (function () {
+    var all = (D6.CONFIG && D6.CONFIG.ASSETS) || {};
+    Object.keys(all).forEach(function (id) {
+      var a = all[id];
+      if (!a || !a.ext || a.chart !== 'candle' || !a.styled) return;
+      if (['pearls', 'embers', 'crystals', 'bars'].indexOf(a.styled) < 0) return;
+      STYLED_ASSETS[id] = a.styled;
+      STYLED_PAL[id] = a.candlePal || null;
+    });
+  })();
+  function palRgba(hex, al) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+    if (!m) return 'rgba(255,255,255,' + al + ')';
+    var n = parseInt(m[1], 16);
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + al + ')';
+  }
 
-  function drawStyledCandles(pad, w, h, candles, minP, maxP, style) {
+  function drawStyledCandles(pad, w, h, candles, minP, maxP, style, pal) {
     if (!candles || candles.length < 2) return null;
+    // pal = { up, dn } : couleurs d'un marché ajouté ; sans pal, couleurs d'origine (inchangées).
+    var PU = pal && pal.up, PD = pal && pal.dn;
     var n = candles.length;
     var slot = Math.max(w / Math.max(1, n), candleStepWidth(w));
     var toX = makeToX(n, pad, w);
@@ -2070,7 +2103,7 @@
       ctx.save();
       // v2583 (propriétaire) : BAAL plus visible, sans lueur : fil plus épais et plus clair, perles un peu plus
       // grosses et plus vives, fin contour clair (on ne les confond plus avec les bulles du décor).
-      ctx.strokeStyle = 'rgba(216,180,254,0.78)';
+      ctx.strokeStyle = PU ? palRgba(PU, 0.7) : 'rgba(216,180,254,0.78)';
       ctx.lineWidth = 2 * sizeK();
       ctx.lineJoin = 'round';
       ctx.beginPath();
@@ -2088,10 +2121,10 @@
         var move = Math.abs(toY(c.o) - y);
         var r = Math.max(3.2, Math.min(rMax, 3.2 + move * 0.35));
         if (i === last && cssH >= 200) {
-          ctx.shadowColor = 'rgba(192,132,252,0.85)';
+          ctx.shadowColor = PU ? palRgba(PU, 0.85) : 'rgba(192,132,252,0.85)';
           ctx.shadowBlur = 12;
         }
-        ctx.fillStyle = up ? '#D58BFF' : '#8B4BFF';
+        ctx.fillStyle = up ? (PU || '#D58BFF') : (PD || '#8B4BFF');
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fill();
@@ -2115,13 +2148,13 @@
       var bot = Math.max(pad.t + 20, (cssH || (pad.t + h)) - 12);
       var fadeF = Math.max(0, Math.min(0.95, (bot - 26 - pad.t) / Math.max(1, bot - pad.t)));
       var gUp = ctx.createLinearGradient(0, pad.t, 0, bot);
-      gUp.addColorStop(0, 'rgba(255,159,67,0.85)');
-      gUp.addColorStop(fadeF, 'rgba(255,159,67,0.45)');
-      gUp.addColorStop(1, 'rgba(255,159,67,0)');
+      gUp.addColorStop(0, PU ? palRgba(PU, 0.85) : 'rgba(255,159,67,0.85)');
+      gUp.addColorStop(fadeF, PU ? palRgba(PU, 0.45) : 'rgba(255,159,67,0.45)');
+      gUp.addColorStop(1, PU ? palRgba(PU, 0) : 'rgba(255,159,67,0)');
       var gDn = ctx.createLinearGradient(0, pad.t, 0, bot);
-      gDn.addColorStop(0, 'rgba(255,59,48,0.85)');
-      gDn.addColorStop(fadeF, 'rgba(255,59,48,0.45)');
-      gDn.addColorStop(1, 'rgba(255,59,48,0)');
+      gDn.addColorStop(0, PD ? palRgba(PD, 0.9) : 'rgba(255,59,48,0.85)');
+      gDn.addColorStop(fadeF, PD ? palRgba(PD, 0.5) : 'rgba(255,59,48,0.45)');
+      gDn.addColorStop(1, PD ? palRgba(PD, 0) : 'rgba(255,59,48,0)');
       var cwE = Math.max(1, Math.min(12 * sizeK(), slot * 0.72));
       for (i = 0; i < n; i++) {
         c = candles[i];
@@ -2132,7 +2165,7 @@
         var top = Math.max(pad.t, Math.min(bot, toY(c.c)));
         ctx.fillStyle = up ? gUp : gDn;
         ctx.fillRect(x - cwE / 2, top, cwE, bot - top);
-        ctx.fillStyle = up ? '#FFB570' : '#FF5A4E';
+        ctx.fillStyle = up ? (PU || '#FFB570') : (PD ? palRgba(PD, 1) : '#FF5A4E');
         ctx.fillRect(x - cwE / 2, top - 1, cwE, 2.5);
       }
       ctx.restore();
@@ -2286,10 +2319,10 @@
         var yT = Math.min(toY(hiC), yc - 7);
         var yB = Math.max(toY(loC), yc + 7);
         if (i === last && cssH >= 200) {
-          ctx.shadowColor = up ? 'rgba(0,229,255,0.9)' : 'rgba(41,121,255,0.9)';
+          ctx.shadowColor = PU ? palRgba(up ? PU : PD, 0.9) : (up ? 'rgba(0,229,255,0.9)' : 'rgba(41,121,255,0.9)');
           ctx.shadowBlur = 12;
         }
-        ctx.fillStyle = up ? 'rgba(0,229,255,0.85)' : 'rgba(21,101,192,0.95)';
+        ctx.fillStyle = PU ? (up ? palRgba(PU, 0.88) : palRgba(PD, 0.95)) : (up ? 'rgba(0,229,255,0.85)' : 'rgba(21,101,192,0.95)');
         ctx.beginPath();
         ctx.moveTo(x, yT);
         ctx.lineTo(x + halfW, yc);
@@ -2299,7 +2332,7 @@
         ctx.fill();
         ctx.shadowBlur = 0;
         // Reflet : petite facette claire en haut à gauche (effet pierre taillée).
-        ctx.fillStyle = up ? 'rgba(224,255,255,0.75)' : 'rgba(144,202,249,0.55)';
+        ctx.fillStyle = up ? 'rgba(255,255,255,0.75)' : (PU ? 'rgba(255,255,255,0.4)' : 'rgba(144,202,249,0.55)');
         ctx.beginPath();
         ctx.moveTo(x, yT);
         ctx.lineTo(x, yc);
@@ -2326,10 +2359,10 @@
         var yBot = toY(lw);
         if (yBot - yTop < 3) { var yMid = (yTop + yBot) / 2; yTop = yMid - 1.5; yBot = yMid + 1.5; }
         if (i === last && cssH >= 200) {
-          ctx.shadowColor = up ? 'rgba(230,10,30,0.8)' : 'rgba(150,0,15,0.8)';
+          ctx.shadowColor = PU ? palRgba(up ? PU : PD, 0.8) : (up ? 'rgba(230,10,30,0.8)' : 'rgba(150,0,15,0.8)');
           ctx.shadowBlur = 10;
         }
-        ctx.strokeStyle = up ? '#F0102A' : '#A8000F';
+        ctx.strokeStyle = up ? (PU || '#F0102A') : (PD || '#A8000F');
         ctx.lineWidth = 2.6;
         ctx.beginPath();
         ctx.moveTo(x, yTop);
@@ -2367,7 +2400,7 @@
     }
   }
 
-  function drawCoreLine(pad, w, h, data, minP, maxP, color, width) {
+  function drawCoreLine(pad, w, h, data, minP, maxP, color, width, glow) {
     if (!data || data.length < 2) return null;
     var col = color || '#ff2d55';
     var toX = makeToX(data.length, pad, w);
@@ -2386,7 +2419,10 @@
     ctx.lineWidth = width || 1.8;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    if (col === '#ff2244' || col === '#ff2d75') {
+    if (glow) {
+      ctx.shadowColor = glow;
+      ctx.shadowBlur = 8;
+    } else if (col === '#ff2244' || col === '#ff2d75') {
       ctx.shadowColor = col === '#ff2d75' ? 'rgba(255,45,117,0.55)' : 'rgba(255,34,68,0.55)';
       ctx.shadowBlur = 8;
     } else {
@@ -2449,7 +2485,8 @@
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
   }
 
-  function drawLine(pad, w, h, data, minP, maxP, color) {
+  function drawLine(pad, w, h, data, minP, maxP, color, fillRgb) {
+    var fr = fillRgb || '245,166,35';
     if (!data || data.length < 2) return null;
     var col = color || '#f5a623';
     var toX = makeToX(data.length, pad, w);
@@ -2470,8 +2507,8 @@
     ctx.lineTo(toX(0), pad.t + h);
     ctx.closePath();
     var grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + h);
-    grad.addColorStop(0, 'rgba(245,166,35,0.28)');
-    grad.addColorStop(1, 'rgba(245,166,35,0)');
+    grad.addColorStop(0, 'rgba(' + fr + ',0.28)');
+    grad.addColorStop(1, 'rgba(' + fr + ',0)');
     ctx.fillStyle = grad;
     ctx.fill();
     ctx.restore();
@@ -2485,8 +2522,8 @@
     ctx.lineTo(lastX, lastY);
     ctx.strokeStyle = col;
     ctx.lineWidth = col === '#ffb300' ? 3.2 : 2.2;
-    ctx.shadowColor = 'rgba(245,166,35,0.85)';
-    ctx.shadowBlur = 14;
+    ctx.shadowColor = 'rgba(' + fr + ',0.85)';
+    ctx.shadowBlur = fillRgb ? 8 : 14;
     ctx.stroke();
     ctx.shadowBlur = 0;
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
@@ -3807,13 +3844,20 @@
   // Taille FIXE du cadre (en % du prix) par actif, calée sur la volatilité du flux serveur
   // (~45 écarts-types d'un tick) : bougies bien lisibles, ni plates ni géantes. Le même
   // cadre sert au petit écran et au plein écran (plus haut = encore plus d'aisance).
+  // Marchés ajoutés : cadre calé sur leur propre volatilité (même recette : ~55 écarts-types d'un tick).
+  function extSpanPct(assetId) {
+    var a = D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[assetId];
+    if (!a || !a.ext || !(a.fairVar > 0)) return 0;
+    var zRef = ZOOM_STEPS[defaultZoomIdx(assetId)] || 28;
+    return Math.max(0.004, Math.min(0.035, 55 * Math.sqrt(a.fairVar) * Math.sqrt(zRef / 28)));
+  }
   function routeSpanPct(assetId) {
     var base = {
       // Cadres agrandis moins vite que les vitesses (×vitesse^0,6) : on sent la vitesse sans déborder.
       v100: 0.0120, stable: 0.0055, apex500: 0.01377, horizon50: 0.0080,
       goldtrend: 0.0110, v75: 0.00955, nexusprime: 0.01033, titanpulse: 0.0330,
       boomspike: 0.0054, crash300: 0.0099
-    }[assetId] || 0.0090;
+    }[assetId] || extSpanPct(assetId) || 0.0090;
     // Vélocité : moins de secondes à l'écran → le cadre se resserre d'autant (racine du temps), pour
     // garder la même hauteur de mouvement qu'avant (sinon la courbe paraîtrait plate). Ancien → nouveau.
     // v2336 : zooms de départ un peu plus larges (APOCALYPSE 7 s, PYTHON 10 s, ASMODUS 12 s, AZAZEL 14 s).
@@ -4344,7 +4388,12 @@
     if (asset.id === 'stable') {
       map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2d75', 3.6);
     } else if (STYLED_ASSETS[asset.id]) {
-      map = drawStyledCandles(pad, seriesW, h, candles, minP, maxP, STYLED_ASSETS[asset.id]);
+      map = drawStyledCandles(pad, seriesW, h, candles, minP, maxP, STYLED_ASSETS[asset.id], STYLED_PAL[asset.id]);
+    } else if (asset.ext && asset.chart === 'candle') {
+      map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
+        thin: false, capWicks: true, tradeLock: true, lockSpan: maxP - minP,
+        pal: asset.candlePal, body: asset.candleBody || 'normal'
+      });
     } else if (asset.chart === 'candle' || asset.id === 'horizon50') {
       map = drawCandles(pad, seriesW, h, candles, minP, maxP, {
         thin: false,
@@ -4362,6 +4411,10 @@
         v100Big: asset.id === 'v100'
       });
       if (asset.trendLine) drawTrendLine(pad, seriesW, h, candles, minP, maxP);
+    } else if (asset.lineStyle === 'core') {
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor, asset.lineWidth || 3.2, palRgba(asset.lineColor, 0.55));
+    } else if (asset.lineStyle === 'plain') {
+      map = drawLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor, asset.areaRgb);
     } else if (asset.lineStyle === 'step') {
       map = drawStepLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
@@ -4503,6 +4556,7 @@
     if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
     if (asset.id === 'v75') tagCol = '#ff2d75';
     if (asset.id === 'apex500') tagCol = '#C084FC';
+    if (asset.ext && asset.chart === 'candle' && asset.candlePal && !primary) tagCol = market.price >= market.candle.o ? asset.candlePal.up : (asset.accent || asset.candlePal.up);
     // Historique regardé : le point du direct reste affiché tant que le bout de la courbe est à l'écran.
     if (map && (!(panMs > 0) || (panTrim === 0 && map.lastX < layout.axisX - 70))) {
       drawBead(map, market.price, tagCol, now, theme);

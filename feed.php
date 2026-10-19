@@ -4,6 +4,7 @@ declare(strict_types=1);
 /**
  * Flux de prix public (lecture seule, sans compte).
  *   feed.php?all=1&hist=1440          → les 1440 derniers ticks des 10 actifs (ouverture du site)
+ *   feed.php?all=1&hist=1440&ids=odin,v100 → mêmes données, seulement pour ces marchés (12 au plus)
  *   feed.php?all=1&s=v100.N,stable.M  → les nouveaux ticks de chaque actif (~2 fois par seconde)
  *   feed.php?a=v100&hist=5400         → historique long d'un actif (zoom arrière)
  *   feed.php?a=v100&since=N           → les ticks après N pour un actif
@@ -133,6 +134,8 @@ if (isset($_GET['live'])) {
   $relay = isset($_GET['relay']);
   // Un téléphone qui demande le direct = quelqu'un regarde (anciens téléphones sans signal).
   if (!$relay) @file_put_contents($dir . '/visit.beat', (string) time());
+  // Réponse : les 10 marchés d'origine (comme live.json) ; les autres se lisent par marché.
+  $j = feed_live_legacy($j);
   if (($pumpAlive && !$relay) || !$canDetach) feed_out($j + ['serverMs' => orolado_feed_now_ms()]);
 
   /*
@@ -217,9 +220,17 @@ if (isset($_GET['all'])) {
     $id = orolado_feed_asset_id($bits[0]);
     if ($id !== '') $since[$id] = (int) $bits[1];
   }
+  // ids : marchés demandés (téléphone à jour : seulement ceux qu'il regarde, 12 au plus).
+  // Sans ids (ancien téléphone, page de présentation) : les 10 marchés d'origine, comme avant.
+  $want = [];
+  foreach (explode(',', (string) ($_GET['ids'] ?? '')) as $raw) {
+    $id = orolado_feed_asset_id($raw);
+    if ($id !== '' && !in_array($id, $want, true) && count($want) < 12) $want[] = $id;
+  }
+  if (!$want) $want = orolado_feed_legacy_ids();
   $out = [];
   try {
-    foreach (array_keys(orolado_feed_assets()) as $id) {
+    foreach ($want as $id) {
       $sl = feed_slice($id, $since[$id] ?? null, $hist);
       $out[$id] = feed_pack((int) $sl['first'], $sl['c']);
     }

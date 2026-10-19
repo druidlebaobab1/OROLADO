@@ -22,7 +22,7 @@ git reset -q --hard "$after"
 
 # Le code change-t-il pour la ligne directe / le moteur ?
 relance=0
-if [ "$before" != "$after" ] && git diff --name-only "$before" "$after" | grep -qE '^(serveur-direct/|scripts/moteur-prix\.php|feed_lib\.php|feed_live_lib\.php)'; then
+if [ "$before" != "$after" ] && git diff --name-only "$before" "$after" | grep -qE '^(serveur-direct/|scripts/moteur-prix\.php|feed_lib\.php|feed_live_lib\.php|indices\.json)'; then
   relance=1
 fi
 [ -f "$SITE/.deploye" ] || relance=1
