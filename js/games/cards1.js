@@ -254,10 +254,15 @@
         var from = [20, 6, 0.32];
         await deal(box, u.layer, from, 8, 58, 1, jk);
         var na = 0, nb = 0, step = lite() ? 120 : 230, gap = Math.min(36, (312 - 106 - 54) / Math.max(1, Math.ceil(seq.length / 2) - 1));
+        // v2812 (round 4, propriétaire : « trop long ») : les cartes partent l'une derrière l'autre sans attendre que la
+        // précédente soit retournée (16 cartes ≈ 3 s au lieu de 12 s)
+        var ps = [], gapMs = lite() ? 90 : (seq.length > 8 ? 170 : 280);
         for (var j = 0; j < seq.length; j++) {
           var side = j % 2, n = side ? nb++ : na++;
-          await deal(box, u.layer, from, 106 + n * gap, side ? 110 : 14, sc, seq[j], step);
+          ps.push(deal(box, u.layer, from, 106 + n * gap, side ? 110 : 14, sc, seq[j], step));
+          if (j < seq.length - 1) await wait(box, gapMs);
         }
+        await Promise.all(ps);
         box.querySelector('.ab-row.' + (w ? 'b' : 'a')).classList.add('w');
         hist('andar', u.hist, [w ? 'lo' : 'hi', w ? 'B' : 'A']);
         K.resultLine(box, r);

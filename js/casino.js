@@ -102,8 +102,9 @@
     // v2757 (propriétaire) : visiteur = « Connexion » (léger) + « Inscription » (orange), comme en haut du site
     if (guest()) {
       var tl = ($('btnGoLogin') || {}).textContent || 'Connexion', tr = ($('btnGoRegister') || {}).textContent || X().signup;
-      b.innerHTML = '<span class="cs-auth"><span role="button" tabindex="0" class="cs-in" id="csLogin">' + esc(tl) + '</span><span role="button" tabindex="0" class="cs-join" id="csJoin">' + esc(tr) + '</span></span>';
+      b.innerHTML = '<span class="cs-auth"><span role="button" tabindex="0" class="cs-in fit" id="csLogin">' + esc(tl) + '</span><span role="button" tabindex="0" class="cs-join fit" id="csJoin">' + esc(tr) + '</span></span>';
       b.className = 'cs-wallet cs-guestw';
+      requestAnimationFrame(function () { fitEl($('csLogin')); fitEl($('csJoin')); }); // v2819 : « Connexion / Inscription » rapetissent (arabe, allemand… sur iPhone SE)
       $('csJoin').addEventListener('click', function (e) { e.stopPropagation(); signup(); });
       $('csLogin').addEventListener('click', function (e) { e.stopPropagation(); toAuth('login'); });
       return;
@@ -214,11 +215,30 @@
     $('csHelp').addEventListener('click', function () { if (S.game) help(S.game); });
     m.addEventListener('click', function (e) { if (e.target === m) close(); });
     if (D6.BigPageSwipe) D6.BigPageSwipe('casinoModal');
+    // v2812 (round 4) : dans un jeu, la fenêtre reste calée en haut (vieux iPhone sans « overflow:clip » : la case de mise la faisait glisser)
+    var mbx = m.querySelector('.modal-box'); if (mbx) mbx.addEventListener('scroll', function () { if (m.classList.contains('in-game') && mbx.scrollTop) mbx.scrollTop = 0; }, { passive: true });
+    // v2812 (round 4) : casino fermé par n'importe quel chemin (glissé, retour du téléphone, autre page) → plus de jeu à rouvrir
+    try { new MutationObserver(function () { if (!m.classList.contains('active')) { cgMark(null); S.pend = ''; } }).observe(m, { attributes: true, attributeFilter: ['class'] }); } catch (eMo) { /* ignore */ }
   }
-  function backStep() { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
+  /* v2812 (propriétaire, round 4) — ACTUALISER LA PAGE : on se souvient du jeu ouvert (sessionStorage 'oro_cg' : clé du jeu ;
+     '' = salle de jeux ; absent = casino fermé) ; js/back.js rouvre le même endroit après un rechargement. */
+  function cgMark(k) { try { if (k == null) sessionStorage.removeItem('oro_cg'); else sessionStorage.setItem('oro_cg', k); } catch (eSs) { /* ignore */ } }
+  /* v2812 (propriétaire : « je touche deux fois et ça ouvre deux jeux / ça me sort ») — UN toucher = UNE action :
+     après un changement d'écran (jeu ↔ salle ↔ fermé), les touchers des 0,45 s suivants sur ‹ / ✕ / logos sont ignorés. */
+  var navAt = 0;
+  // horloge de l'ÉVÉNEMENT (e.timeStamp) : un 2e toucher mis en attente pendant le dessin de la salle compte à son vrai moment
+  function nowOf(e) { return e && e.timeStamp > 0 && e.timeStamp < 1e11 ? e.timeStamp : performance.now(); }
+  function navBusy(e, ms) { return nowOf(e) - navAt < (ms || 450); }
+  function navMark() { navAt = performance.now(); }
+  function backStep(e) { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (navBusy(e, S.game ? 450 : 650)) return; navMark(); if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
   // v2756 (propriétaire) : « Prédictions » ouvre SA page (sans les onglets) ; « Jeux » ouvre les 24 jeux
   function open(game, view) {
     ensure(); readBal(); loadCatalog();
+    var cm0 = $('casinoModal');
+    // déjà ouvert sur ce jeu (ou en train de le charger) : rien à refaire (js/back.js peut rappeler open() pendant le chargement)
+    if (game && cm0.classList.contains('active') && (S.game === game || S.pend === game)) return;
+    // jeu du catalogue pas encore connu (juste après le chargement de la page) : la salle s'affiche, le jeu s'ouvre dès que le catalogue arrive
+    if (game && !NAMES[game] && /^[a-z][a-z0-9]{1,15}$/.test(game) && !catDone) { S.pend = game; clearTimeout(S.pendT); S.pendT = setTimeout(function () { S.pend = ''; }, 12000); }
     S.stake = 0.1;
     var pm = view === 'pred';
     if ($('casinoModal')) $('casinoModal').classList.toggle('pred-only', pm);
@@ -227,7 +247,7 @@
   }
   function openPred() { open(null, 'pred'); }
   function close() {
-    stopAll();
+    stopAll(); navMark(); cgMark(null); S.pend = '';
     S.game = '';
     if (D6.App && D6.App.closeModal) D6.App.closeModal('casinoModal');
     try { if (D6.App && D6.App.refreshVault) D6.App.refreshVault(); } catch (e) { /* ignore */ }
@@ -246,6 +266,7 @@
   function home(view) {
     stopAll();
     S.game = ''; S.view = view || S.view || 'games';
+    if ($('casinoModal') && $('casinoModal').classList.contains('active')) cgMark('');
     var x = X(), m = $('casinoModal');
     m.classList.remove('in-game'); m.removeAttribute('data-g'); $('csSheet').hidden = true; $('csHelp').hidden = true;
     paintBal();
@@ -259,22 +280,36 @@
     } else {
       v.className = 'cs-grid';
       var tile = function (k) {
-        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + (LIVE_GAMES[k] ? '<i class="cs-onair" aria-label="live"><svg viewBox="0 0 16 12"><circle cx="8" cy="6" r="2.2"/><path d="M4.6 2.6a4.8 4.8 0 0 0 0 6.8M11.4 2.6a4.8 4.8 0 0 1 0 6.8"/></svg></i>' : '') + '<span>' + esc(name(k)) + '</span></b></button>';
+        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + (LIVE_GAMES[k] ? '<i class="cs-onair" aria-label="live"><svg viewBox="0 0 16 12"><circle cx="8" cy="6" r="2.2"/><path d="M4.6 2.6a4.8 4.8 0 0 0 0 6.8M11.4 2.6a4.8 4.8 0 0 1 0 6.8"/></svg></i>' : '') + '<span class="fit">' + esc(name(k)) + '</span></b></button>';
       };
       // v2804 (propriétaire) : 3 listes — Live · Tu contrôles · Tous les jeux
+      // v2812 (round 4) : la salle de jeux (~70 logos dessinés) est gardée telle quelle : revenir d'un jeu est instantané
+      // (avant : tout redessiné à chaque retour, ~1 s sur un vieil Android → le 2e toucher passait « à travers »)
+      // v2821 (propriétaire) : 3 onglets en haut — Joue toi-même · Live · Casino (chaque onglet montre sa liste)
       var all = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).concat(CAT.filter(function (k) { return ORDER.indexOf(k) < 0; }));
       var secOf = function (k) { return SECTION[k] || (LIVE_GAMES[k] ? 'live' : 'more'); };
       var lg = (document.documentElement.lang || 'en').slice(0, 2), TT = TAB_T[lg] || TAB_T.en;
       var bySec = {}; SEC_ORDER.forEach(function (sec) { bySec[sec] = all.filter(function (k) { return secOf(k) === sec; }); });
       var cur = curSec(); if (!bySec[cur].length) cur = SEC_ORDER.filter(function (x) { return bySec[x].length; })[0] || 'skill';
+      v.className = 'cs-grid cs-grid3';
+      var tpb = m.querySelector('.cs-top'); if (tpb) v.style.setProperty('--cs-tabs-top', Math.max(0, tpb.offsetHeight - 8) + 'px');
+      // v2812 (round 4) : la salle de jeux (logos dessinés) est gardée telle quelle, par onglet : revenir d'un jeu est instantané
+      // (avant : tout redessiné à chaque retour, ~1 s sur un vieil Android → le 2e toucher passait « à travers »)
+      var lsig = lg + '|' + cur + '|' + all.join(',');
+      S.lobs = S.lobs || {};
+      var hit = S.lobs[cur];
+      if (hit && hit.sig === lsig) {
+        v.textContent = ''; hit.nodes.forEach(function (n) { v.appendChild(n); });
+        balanceGrid(v); fitAll(v); evenNames(v);
+        var box0 = m.querySelector('.modal-box'); if (box0) box0.scrollTop = 0;
+        return;
+      }
       var tabs = '<div class="cs-tabs" role="tablist">' + SEC_ORDER.map(function (sec) {
         return '<button type="button" class="cs-tab' + (sec === cur ? ' on' : '') + '" data-t="' + (sec === 'more' ? 'casino' : sec) + '" data-sec="' + sec + '" role="tab"><span class="fit">' + esc(TT[sec]) + '</span><i>' + bySec[sec].length + '</i></button>';
       }).join('') + '</div>';
       var html = tabs + '<div class="cs-sec cs-sec-' + cur + '"><div class="cs-sec-g">' + bySec[cur].map(tile).join('') + '</div></div>';
-      v.className = 'cs-grid cs-grid3';
       v.innerHTML = html;
-      fitAll(v);
-      var tp = m.querySelector('.cs-top'); if (tp) v.style.setProperty('--cs-tabs-top', Math.max(0, tp.offsetHeight - 8) + 'px');
+      balanceGrid(v); fitAll(v); evenNames(v);
       v.querySelectorAll('.cs-tab').forEach(function (t) {
         t.addEventListener('click', function () {
           var sec = t.getAttribute('data-sec'); if (sec === curSec() && t.classList.contains('on')) return;
@@ -282,7 +317,8 @@
           home('games');
         });
       });
-      v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { var mb = m.querySelector('.modal-box'); S.homeY = mb ? mb.scrollTop : 0; go(b.getAttribute('data-g')); }); });
+      v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function (e) { if (navBusy(e) || S.game) return; navMark(); var mb = m.querySelector('.modal-box'); S.homeY = mb ? mb.scrollTop : 0; go(b.getAttribute('data-g')); }); });
+      S.lobs[cur] = { sig: lsig, nodes: [].slice.call(v.children) };
     }
     var box = m.querySelector('.modal-box'); if (box) box.scrollTop = 0;
   }
@@ -301,7 +337,38 @@
     var over = mb.scrollHeight - mb.clientHeight; // reste un petit dépassement (marges) : on réduit encore un peu
     if (over > 0 && px > 34) v.style.setProperty('--cs-pl', Math.max(34, px - Math.ceil(over / rows) - 1) + 'px');
   }
-  window.addEventListener('resize', function () { if (!S.game && S.view === 'games') fitGrid(); });
+  var lobRT = 0;
+  window.addEventListener('resize', function () { if (!S.game && S.view === 'games') { fitGrid(); clearTimeout(lobRT); lobRT = setTimeout(function () { var v = $('csView'); if (!v || S.game) return; balanceGrid(v); fitAll(v); evenNames(v); }, 160); } });
+  /* v2812 (propriétaire : « des trous dans les grilles ») — chaque liste de l'accueil a des rangées COMPLÈTES sur tous les écrans :
+     on part du nombre de colonnes prévu par l'écran (téléphone 4, tablette/PC/télé 6, téléphone couché 8) et, si le nombre de
+     jeux ne tombe pas juste, on prend le nombre de colonnes le plus proche qui tombe juste (ex. 16 jeux sur 6 → 8 ; 8 sur 6 → 8). */
+  // v2812 : dans une même liste, tous les noms ont la même taille (celle du nom le plus long, déjà rapetissé par fit)
+  function evenNames(v) {
+    if (!v || !v.querySelectorAll) return;
+    v.querySelectorAll('.cs-sec-g').forEach(function (g) {
+      // taille commune = celle qui va à 80 % des noms ; les quelques noms très longs restent un peu plus petits
+      var sp = [].slice.call(g.querySelectorAll('.cs-g b > span')); if (!sp.length) return;
+      var fs = sp.map(function (e) { return parseFloat(getComputedStyle(e).fontSize) || 12; });
+      var q = fs.slice().sort(function (a, b2) { return a - b2; })[Math.floor(fs.length * 0.2)];
+      sp.forEach(function (e, i) { e.style.setProperty('font-size', Math.min(fs[i], q).toFixed(1) + 'px', 'important'); });
+    });
+  }
+  function balanceGrid(v) {
+    if (!v || !v.querySelectorAll) return;
+    v.querySelectorAll('.cs-sec-g').forEach(function (g) {
+      g.style.removeProperty('grid-template-columns');
+      var n = g.children.length; if (!n) return;
+      var base = getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length || 4;
+      if (n % base === 0) return;
+      var lo = Math.max(3, base - 2), hi = Math.min(10, base + 2), best = 0, bd = 99;
+      if (n <= hi && n >= Math.max(3, base - 2)) { best = n; bd = Math.abs(n - base); }
+      for (var c = hi; c >= lo; c--) if (n % c === 0 && Math.abs(c - base) < bd) { best = c; bd = Math.abs(c - base); }
+      if (!best) { // aucun nombre ne tombe juste : le moins de cases vides possible
+        var hole = 99; for (var c2 = hi; c2 >= lo; c2--) { var h = (c2 - n % c2) % c2; if (h < hole) { hole = h; best = c2; } }
+      }
+      if (best && best !== base) g.style.setProperty('grid-template-columns', 'repeat(' + best + ',minmax(0,1fr))');
+    });
+  }
   function name(k) { return NAMES[k] || k; }
   // v2747 (propriétaire) : 2e onglet = « Prédictions » (boule de cristal) — toutes les questions et tous les matchs ensemble
   var GAMES_WORD = {}; var PRED_WORD = { fr: 'Paris', en: 'Bets', es: 'Apuestas', pt: 'Apostas', ar: 'رهانات', tr: 'Bahisler', vi: 'Cược', id: 'Taruhan', ru: 'Ставки', de: 'Wetten', hi: 'दांव', zh: '投注' };
@@ -404,7 +471,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2821'; // v2818 : montant de mise qui rapetisse
+  var MOD_V = '2822'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
@@ -418,14 +485,30 @@
         if (e.sec === 'live') LIVE_GAMES[e.k] = 1; // v2807 : pastille « en direct » sur le logo
         if (e.icon && ART.addObj) ART.addObj(e.k, e.icon, e.pal);
       });
-      var m = $('casinoModal'); if (m && !S.game && S.view === 'games' && $('csView') && $('csView').className.indexOf('cs-grid') >= 0) home('games');
+      catRepaint();
     }
   };
+  // v2812 : les 5 fichiers du catalogue arrivent l'un après l'autre → UN seul nouveau dessin de la salle (pas de saut, pas de
+  // rangée à moitié vide entre deux), à la même hauteur de défilement ; un jeu demandé avant l'arrivée du catalogue s'ouvre alors.
+  var catRT = 0, catDone = false, catLeft = 0;
+  function catRepaint() {
+    clearTimeout(catRT);
+    catRT = setTimeout(function () {
+      var m = $('casinoModal'); if (!m || !m.classList.contains('active')) return;
+      if (S.pend && NAMES[S.pend] && !S.game) { var pk = S.pend; S.pend = ''; go(pk); return; }
+      if (!S.game && S.view === 'games' && $('csView') && $('csView').className.indexOf('cs-grid') >= 0) {
+        var mb = m.querySelector('.modal-box'), y = mb ? mb.scrollTop : 0;
+        home('games'); if (mb) mb.scrollTop = y;
+      }
+    }, catDone ? 0 : 90);
+  }
   // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
   var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-more1', 'cat-more2', 'cat-more3'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
   function loadCatalog() {
     if (catAsked) return; catAsked = true;
-    CAT_FILES.forEach(function (f) { var js = document.createElement('script'); js.src = 'js/games/' + f + '.js?v=' + MOD_V; js.async = true; document.head.appendChild(js); });
+    catLeft = CAT_FILES.length;
+    var one = function () { if (--catLeft <= 0) { catDone = true; if (S.pend && !NAMES[S.pend]) S.pend = ''; catRepaint(); } };
+    CAT_FILES.forEach(function (f) { var js = document.createElement('script'); js.src = 'js/games/' + f + '.js?v=' + MOD_V; js.async = true; js.onload = one; js.onerror = one; document.head.appendChild(js); });
   }
   (function () {
     var later = function () { if (window.requestIdleCallback) requestIdleCallback(loadCatalog, { timeout: 4000 }); else setTimeout(loadCatalog, 2000); };
@@ -444,10 +527,15 @@
     return modState[f];
   }
   function go(k) {
+    navMark(); S.pend = ''; cgMark(k);
     if (MODS[k] && !(GAMES[k] && GAMES[k].v2)) {
       S.game = k;
+      var seq = (S.goSeq = (S.goSeq || 0) + 1);
+      // v2812 : jamais d'écran noir — réseau trop lent (12 s) → message et retour à la salle de jeux
+      var slow = setTimeout(function () { if (S.game === k && S.goSeq === seq && !(GAMES[k] && GAMES[k].v2)) { toast(X().e_unavailable); delete modState[String(MODS[k] || k).replace(/[^a-z0-9_-]/gi, '')]; home('games'); } }, 12000);
       loadMod(k).then(function () {
-        if (S.game !== k) return; // ouvert entre-temps un autre jeu / fermé : on ne dessine pas
+        clearTimeout(slow);
+        if (S.game !== k || S.goSeq !== seq) return; // ouvert entre-temps un autre jeu / fermé : on ne dessine pas
         if (!GAMES[k]) { toast(X().e_unavailable); home('games'); return; } // nouveau jeu sans ancienne version : retour à l'accueil
         render(k);
       });
@@ -458,7 +546,7 @@
   }
   function render(k) {
     stopAll();
-    S.game = k;
+    S.game = k; cgMark(k);
     var x = X(), m = $('casinoModal');
     m.classList.add('in-game'); m.setAttribute('data-g', k); $('csSheet').hidden = true; $('csHelp').hidden = false;
     var p = pal(k);
@@ -480,7 +568,59 @@
     var mb = m.querySelector('.modal-box'); if (mb) mb.scrollTop = 0;
     decFix(box);
     tag.querySelector('b').classList.add('fit');
-    requestAnimationFrame(function () { fitAll(box); });
+    requestAnimationFrame(function () { fitAll(box); if (box.isConnected && S.game === k) gameHint(k, box); });
+    watchFit(box);
+  }
+  /* v2812 (propriétaire : « certains jeux, je ne comprends pas du tout ») — PETIT GESTE D'AIDE à l'ouverture, comme les jeux
+     « Tu contrôles » : une main dorée qui tapote + une phrase courte sur ce qu'il faut faire ; elle part au premier toucher. */
+  var HINT_T = {
+    andar: { en: 'Pick Andar or Bahar, then Bet', fr: 'Choisis Andar ou Bahar, puis Miser', es: 'Elige Andar o Bahar y apuesta', pt: 'Escolha Andar ou Bahar e aposte', ar: 'اختر أندر أو باهر ثم راهن', tr: 'Andar veya Bahar seç, sonra bahis', vi: 'Chọn Andar hoặc Bahar rồi cược', id: 'Pilih Andar atau Bahar, lalu pasang', ru: 'Выбери Андар или Бахар и ставь', de: 'Andar oder Bahar wählen, dann setzen', hi: 'अंदर या बाहर चुनें, फिर दांव', zh: '选安达或巴哈，然后下注' },
+    war: { en: 'Higher card wins: pick a side', fr: 'La plus forte gagne : choisis', es: 'Gana la carta más alta: elige', pt: 'Ganha a carta maior: escolha', ar: 'الورقة الأعلى تفوز: اختر', tr: 'Yüksek kart kazanır: seç', vi: 'Lá cao hơn thắng: chọn bên', id: 'Kartu tertinggi menang: pilih', ru: 'Старшая карта бьёт: выбирай', de: 'Höhere Karte gewinnt: wählen', hi: 'बड़ा पत्ता जीतता है: चुनें', zh: '大牌获胜：选一边' },
+    highcard: { en: 'Next card: higher or lower?', fr: 'Carte suivante : plus haut ou bas ?', es: 'Siguiente carta: ¿mayor o menor?', pt: 'Próxima carta: maior ou menor?', ar: 'الورقة التالية: أعلى أم أقل؟', tr: 'Sonraki kart: yüksek mi düşük mü?', vi: 'Lá tiếp theo: cao hay thấp?', id: 'Kartu berikut: tinggi atau rendah?', ru: 'Следующая карта: выше или ниже?', de: 'Nächste Karte: höher oder tiefer?', hi: 'अगला पत्ता: ज़्यादा या कम?', zh: '下一张：大还是小？' },
+    reddog: { en: 'Tap Bet: 3rd card must fall between', fr: 'Miser : la 3e carte doit tomber entre', es: 'Apuesta: la 3.ª carta debe caer entre', pt: 'Aposte: a 3.ª carta deve cair entre', ar: 'راهن: الورقة الثالثة يجب أن تقع بينهما', tr: 'Bahis: 3. kart arada olmalı', vi: 'Cược: lá thứ 3 phải nằm giữa', id: 'Pasang: kartu ke-3 harus di antara', ru: 'Ставь: 3-я карта должна лечь между', de: 'Setzen: 3. Karte muss dazwischen', hi: 'दांव: तीसरा पत्ता बीच में हो', zh: '下注：第三张须在两张之间' },
+    teenpatti: { en: 'Tap Bet: a good 3-card hand pays', fr: 'Miser : une belle main de 3 cartes paie', es: 'Apuesta: una buena mano de 3 paga', pt: 'Aposte: uma boa mão de 3 paga', ar: 'راهن: يد جيدة من 3 أوراق تربح', tr: 'Bahis: iyi 3 kartlık el kazandırır', vi: 'Cược: bộ 3 lá đẹp sẽ thắng', id: 'Pasang: 3 kartu bagus menang', ru: 'Ставь: сильная рука из 3 карт платит', de: 'Setzen: gute 3-Karten-Hand zahlt', hi: 'दांव: अच्छे 3 पत्ते जिताते हैं', zh: '下注：好的三张牌赢钱' },
+    vpoker: { en: 'Tap Bet: Jacks or better pays', fr: 'Miser : valets ou mieux = gain', es: 'Apuesta: jotas o más pagan', pt: 'Aposte: valetes ou mais pagam', ar: 'راهن: شباب أو أعلى تربح', tr: 'Bahis: Vale veya üstü kazanır', vi: 'Cược: đôi J trở lên thắng', id: 'Pasang: Jack ke atas menang', ru: 'Ставь: валеты и выше платят', de: 'Setzen: Buben oder besser zahlt', hi: 'दांव: जैक या बेहतर जीतता है', zh: '下注：J 对或更好赢钱' },
+    thimbles: { en: 'Find the ball: pick a thimble', fr: 'Trouve la bille : choisis un dé', es: 'Encuentra la bola: elige uno', pt: 'Ache a bola: escolha um', ar: 'جد الكرة: اختر كشتبانًا', tr: 'Topu bul: bir yüksük seç', vi: 'Tìm bóng: chọn một chiếc', id: 'Cari bola: pilih satu', ru: 'Найди шарик: выбери напёрсток', de: 'Finde die Kugel: Hut wählen', hi: 'गेंद ढूंढें: एक चुनें', zh: '找小球：选一个顶针' },
+    cups: { en: 'Find the ball: pick a cup', fr: 'Trouve la balle : choisis un gobelet', es: 'Encuentra la bola: elige un vaso', pt: 'Ache a bola: escolha um copo', ar: 'جد الكرة: اختر كوبًا', tr: 'Topu bul: bir bardak seç', vi: 'Tìm bóng: chọn một cốc', id: 'Cari bola: pilih gelas', ru: 'Найди шарик: выбери стакан', de: 'Finde den Ball: Becher wählen', hi: 'गेंद ढूंढें: कप चुनें', zh: '找小球：选一个杯子' },
+    goal: { en: 'Pick where to shoot, then Bet', fr: 'Choisis où tirer, puis Miser', es: 'Elige dónde chutar y apuesta', pt: 'Escolha onde chutar e aposte', ar: 'اختر مكان التسديد ثم راهن', tr: 'Nereye şut seç, sonra bahis', vi: 'Chọn hướng sút rồi cược', id: 'Pilih arah tendangan, lalu pasang', ru: 'Выбери, куда бить, и ставь', de: 'Schussrichtung wählen, dann setzen', hi: 'शॉट की दिशा चुनें, फिर दांव', zh: '选射门方向，然后下注' },
+    colorpred: { en: 'Pick a colour, then Bet', fr: 'Choisis une couleur, puis Miser', es: 'Elige un color y apuesta', pt: 'Escolha uma cor e aposte', ar: 'اختر لونًا ثم راهن', tr: 'Bir renk seç, sonra bahis', vi: 'Chọn màu rồi cược', id: 'Pilih warna, lalu pasang', ru: 'Выбери цвет и ставь', de: 'Farbe wählen, dann setzen', hi: 'रंग चुनें, फिर दांव', zh: '选颜色，然后下注' },
+    luckydice: { en: 'Bet on the total of 2 dice', fr: 'Parie sur le total des 2 dés', es: 'Apuesta al total de 2 dados', pt: 'Aposte no total de 2 dados', ar: 'راهن على مجموع النردين', tr: '2 zarın toplamına bahis yap', vi: 'Cược tổng 2 xúc xắc', id: 'Tebak total 2 dadu', ru: 'Ставь на сумму 2 кубиков', de: 'Auf die Summe von 2 Würfeln', hi: '2 पासों के जोड़ पर दांव', zh: '押两颗骰子的总和' },
+    miniroul: { en: 'Pick a number, then Bet', fr: 'Choisis un numéro, puis Miser', es: 'Elige un número y apuesta', pt: 'Escolha um número e aposte', ar: 'اختر رقمًا ثم راهن', tr: 'Bir sayı seç, sonra bahis', vi: 'Chọn số rồi cược', id: 'Pilih angka, lalu pasang', ru: 'Выбери число и ставь', de: 'Zahl wählen, dann setzen', hi: 'नंबर चुनें, फिर दांव', zh: '选号码，然后下注' },
+    wheel2: { en: 'Pick a number on the wheel', fr: 'Choisis un nombre de la roue', es: 'Elige un número de la rueda', pt: 'Escolha um número da roda', ar: 'اختر رقمًا على العجلة', tr: 'Çarktan bir sayı seç', vi: 'Chọn một số trên vòng quay', id: 'Pilih angka di roda', ru: 'Выбери число на колесе', de: 'Zahl auf dem Rad wählen', hi: 'पहिये पर नंबर चुनें', zh: '选转盘上的数字' },
+    plinko2: { en: 'Tap Bet to drop the ball', fr: 'Touche Miser pour lâcher la bille', es: 'Toca Apostar para soltar la bola', pt: 'Toque Apostar para soltar a bola', ar: 'اضغط راهن لإسقاط الكرة', tr: 'Topu bırakmak için Bahis', vi: 'Nhấn Cược để thả bóng', id: 'Tekan Pasang untuk jatuhkan bola', ru: 'Жми «Ставка», чтобы бросить шар', de: 'Setzen tippen: Kugel fällt', hi: 'गेंद गिराने को दांव दबाएं', zh: '点下注让球落下' },
+    keno80: { en: 'Pick numbers, then Bet', fr: 'Choisis tes numéros, puis Miser', es: 'Elige números y apuesta', pt: 'Escolha números e aposte', ar: 'اختر الأرقام ثم راهن', tr: 'Sayıları seç, sonra bahis', vi: 'Chọn số rồi cược', id: 'Pilih angka, lalu pasang', ru: 'Выбери числа и ставь', de: 'Zahlen wählen, dann setzen', hi: 'नंबर चुनें, फिर दांव', zh: '选号码，然后下注' },
+    bowling: { en: 'Tap Roll: more pins, bigger win', fr: 'Lancer : plus de quilles, plus de gain', es: 'Lanza: más bolos, más premio', pt: 'Lance: mais pinos, mais ganho', ar: 'ارمِ: قوارير أكثر = ربح أكبر', tr: 'At: daha çok lobut, daha çok kazanç', vi: 'Ném: càng nhiều ki càng thắng lớn', id: 'Lempar: makin banyak pin, makin besar', ru: 'Бросай: больше кеглей — больше выигрыш', de: 'Werfen: mehr Pins, mehr Gewinn', hi: 'फेंकें: ज़्यादा पिन, ज़्यादा जीत', zh: '投球：击倒越多赢越多' },
+    dice: { en: 'Slide to set your chance, then Bet', fr: 'Glisse pour choisir ta chance, puis Miser', es: 'Desliza tu probabilidad y apuesta', pt: 'Deslize sua chance e aposte', ar: 'اسحب لاختيار فرصتك ثم راهن', tr: 'Şansını kaydır, sonra bahis', vi: 'Kéo để chọn tỉ lệ rồi cược', id: 'Geser peluangmu, lalu pasang', ru: 'Сдвинь шанс и ставь', de: 'Chance schieben, dann setzen', hi: 'मौका खिसकाएं, फिर दांव', zh: '滑动选择胜率，然后下注' }
+  };
+  var HINT_POS = { dice: 'top', plinko2: 'top', keno80: 'mid', bowling: 'mid', miniroul: 'mid', wheel2: 'mid', colorpred: 'mid' }; // sinon : en bas de la scène
+  var HAND = '<svg viewBox="0 0 32 32" aria-hidden="true"><circle class="cg-hrip" cx="13" cy="9" r="6"/><path d="M13 9v11.5l-2.4-2.2a2 2 0 0 0-2.9 2.8l5.2 6.2c1 1.2 2.4 1.7 3.9 1.7h3.4a5 5 0 0 0 5-5v-6.2a2 2 0 0 0-3.4-1.4 2 2 0 0 0-3.4-1 2 2 0 0 0-3.4-.8V9a2 2 0 0 0-4 0z"/></svg>';
+  function gameHint(k, box) {
+    var m = HINT_T[k]; if (!m || !box) return;
+    var st = box.querySelector('.cg-stage') || box.querySelector('.cs-stage'); if (!st || st.querySelector('.cg-hint')) return;
+    var h = document.createElement('div'); h.className = 'cg-hint' + (HINT_POS[k] ? ' at-' + HINT_POS[k] : '');
+    h.innerHTML = '<i class="cg-hhand">' + HAND + '</i><small class="fit">' + esc(m[(document.documentElement.lang || 'en').slice(0, 2)] || m.en) + '</small>';
+    st.appendChild(h); fitEl(h.querySelector('small'));
+    var off = function () { h.classList.add('off'); setTimeout(function () { if (h.parentNode) h.remove(); }, 400); box.removeEventListener('pointerdown', off, true); };
+    box.addEventListener('pointerdown', off, true);
+  }
+  /* v2819 (propriétaire : « aucun texte ne dépasse, dans les 12 langues ») — FILET DE SÉCURITÉ du cadre : tout texte « fit » d'un
+     jeu qui déborde (texte changé par le jeu, élément d'abord caché, police arrivée en retard…) est rapetissé ; vérifié juste
+     après l'ouverture puis à chaque changement de texte (au plus ~3 fois par seconde, seulement les textes qui débordent). */
+  function fitBad(root) {
+    if (!root || !root.isConnected) return;
+    var l = root.querySelectorAll('.fit');
+    for (var i = 0; i < l.length; i++) { var e = l[i]; if (e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 1) fitEl(e); }
+  }
+  function watchFit(box) {
+    var t = 0, last = 0;
+    var run = function () { t = 0; last = Date.now(); if (box.isConnected) fitBad(box); };
+    [250, 900, 2000].forEach(function (ms) { setTimeout(function () { fitBad(box); }, ms); });
+    if (!window.MutationObserver) return;
+    var mo = new MutationObserver(function () {
+      if (!box.isConnected) { mo.disconnect(); return; }
+      if (!t) t = setTimeout(run, Math.max(60, 320 - (Date.now() - last)));
+    });
+    mo.observe(box, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'disabled'] });
   }
   // v2789 (propriétaire) : en anglais, chinois, hindi, arabe, on écrit les gains « ×2.85 » (point), pas « ×2,85 »
   function decFix(root) {
@@ -1720,7 +1860,9 @@
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  D6.Casino = { open: open, close: close, home: home, openPred: openPred };
+  // v2812 : D6.Casino.home() marche aussi casino fermé (juste après le chargement de la page) : il ouvre la salle de jeux
+  function homePub(view) { var cm = $('casinoModal'); if (!cm || !cm.classList.contains('active')) { open(null, view === 'pred' ? 'pred' : (view || 'games')); if (view === 'sports') home('sports'); return; } S.pend = ''; home(view); }
+  D6.Casino = { open: open, close: close, home: homePub, openPred: openPred };
   // v2795 — boîte à outils partagée par les jeux refaits (js/games/*.js)
   D6.CasinoKit = { GAMES: GAMES, MODS: MODS, S: S, X: X, LX: LX, $: $, esc: esc, fmt: fmt, m2: m2, dec: dec, sleep: sleep, toast: toast, guest: guest,
     play: play, multi: multi, resultLine: resultLine, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
