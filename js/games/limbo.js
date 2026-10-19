@@ -89,6 +89,7 @@
           if (!box.isConnected) return done();
           var k = Math.min(1, (now - t0) / dur), v = Math.exp(lnR * K.easeOut(k));
           show(v, v >= SET.t ? 'w' : '');
+          var lv = Math.floor(Math.log(v) / 0.223); K.sfxBeat(core, 'lv', lv, 'tick', { n: lv }); // v2832 : le nombre monte en notes
           if (k < 1) K.S.raf = requestAnimationFrame(step); else done();
         })(t0);
       });

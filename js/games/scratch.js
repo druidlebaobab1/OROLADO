@@ -101,6 +101,7 @@
       var bw = Math.max(18, Math.min(W, H) * 0.13);
       ctx.globalCompositeOperation = 'destination-out'; ctx.strokeStyle = '#000'; ctx.lineWidth = bw; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1 + 0.01, y1); ctx.stroke(); ctx.globalCompositeOperation = 'source-over';
+      if (live && (Math.abs(x1 - x0) + Math.abs(y1 - y0)) > 2) K.sfx('tick'); // v2832 : le grattage (très léger)
       var rr = bw / 2, dx = x1 - x0, dy = y1 - y0, L2 = dx * dx + dy * dy;
       for (var i = 0; i < 9; i++) {
         if (opened[i]) continue;
@@ -117,6 +118,7 @@
     function openCell(i) {
       if (opened[i] || !live) return;
       opened[i] = 1; clearCell(i); cellEls[i].classList.add('op');
+      K.sfx('reveal', { k: opened.filter(Boolean).length }); // v2832 : une case découverte
       if (opened.filter(Boolean).length === 9) finish();
     }
     cv.addEventListener('pointerdown', function (e) {

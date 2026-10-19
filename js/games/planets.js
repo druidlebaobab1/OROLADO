@@ -184,6 +184,9 @@
           a = a0 + tot * eo(k); spd = tot * 4 * Math.pow(1 - k, 3) / REVEAL;
         }
         setCom(a, spd);
+        // v2832 : départ de la comète (si on a vu les mises), puis tic à chaque planète qu'elle dépasse
+        if (bet) st.goArm = R.i; else if (st.goArm === R.i && e < 1.5) { st.goArm = -1; K.sfx('go'); }
+        if (!bet && res >= 0 && e < REVEAL) K.sfxBeat(st, 'pl', Math.floor((a + 30) / 60), 'tick');
         var win = rev ? res : -1;
         if (win !== wasWin) {
           wasWin = win; stage.classList.toggle('lp-done', win >= 0);

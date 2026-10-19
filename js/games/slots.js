@@ -135,9 +135,10 @@
           var k = Math.min(1, (now - R.t0) / R.d);
           R.pos = R.p0 + (R.P - R.p0) * easeBack(k);
           if (k > 0.55) R.strip.classList.remove('blur');
-          if (k >= 1) { R.pos = R.P % LEN; R.mode = 'idle'; R.el.classList.add('thud'); setTimeout(function () { R.el.classList.remove('thud'); }, 260); }
+          if (k >= 1) { R.pos = R.P % LEN; R.mode = 'idle'; K.sfx('stop'); R.el.classList.add('thud'); setTimeout(function () { R.el.classList.remove('thud'); }, 260); }
         }
         draw(R);
+        var fp = Math.floor(R.pos); if (R.mode !== 'idle' && fp !== R.fp) K.sfx('tick'); R.fp = fp; // v2832 : tic des symboles qui défilent
       });
       if (moving) K.S.raf = requestAnimationFrame(loop); else done();
     }

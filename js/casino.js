@@ -151,6 +151,7 @@
     if (guest()) { signup(); return null; } // v2698 : une seule fenêtre (plus de message superposé à l'inscription)
     if (S.busy) return null;
     S.busy = true;
+    sfx('launch', null, game);
     var md = mode();
     var r = await api('csPlay', { game: game, mode: md, stake: S.stake, p: p || {} });
     S.busy = false;
@@ -161,8 +162,11 @@
   }
   async function multi(game, act, p, quiet) {
     if (guest()) { if (!quiet) signup(); return null; }
+    if (!quiet && (act === 'start' || act === 'bet')) sfx('launch', null, game);
     var r = await api('csMulti', { game: game, act: act, mode: 'real', stake: S.stake, p: p || {} });
     if (!r || !r.ok) { if (!quiet) err(r); return null; }
+    // v2832 : un bon choix (case ouverte, étage, pompe, bonne carte) = petite note qui monte ; la fin passe par resultLine
+    if (!quiet && !r.done && SFX_STEP[act] && game !== 'penalty') sfx(act === 'skip' ? 'card' : 'step', { k: Number(r.k) || (r.open && r.open.length) || 1 }, game);
     if (r.mode === 'demo' && !S.adminTest) { S.adminTest = true; paintBal(); }
     if (r.mode && r.bal != null) { S.bal[r.mode] = r.bal; paintBal(); }
     return r;
@@ -170,7 +174,21 @@
   /* résultat : petite bannière DANS l'écran du jeu (ne prend plus de place) */
   // v2718 (propriétaire) : le résultat arrive en NOTIFICATION dans le jeu (gain : vert « +2,50 $ » ; perte : discrète « −1,00 $ »),
   // elle reste ~2,8 s puis s'en va ; plus de ligne en bas → toute la place va au jeu.
+  /* v2832 — SONS (js/sfx.js) : un seul endroit pour TOUS les jeux — gain = mélodie du jeu (plus riche si ×5, étincelles si ×25),
+     perte = aucun son, vibration courte. Les jeux ajoutent leurs petits bruits (tic de roue, rouleaux…) avec K.sfx(). */
+  var SFX_STEP = { open: 1, pick: 1, pump: 1, guess: 1, skip: 1 };
+  function sfx(ev, a, k) { try { if (D6.Sfx) return D6.Sfx.play(ev, a, k || S.game); } catch (e) { /* ignore */ } return false; }
+  // un évènement quand une valeur change (case de roue qui passe, volée, juge…) ; jamais au premier regard (arrivée en cours de tirage)
+  function sfxBeat(o, slot, v, ev, a) { var key = '_sb' + slot; if (o[key] === v) return; var had = key in o; o[key] = v; if (had && v != null && v !== -1) sfx(ev, a); }
+  function sfxResult(r) {
+    try {
+      if (!D6.Sfx) return;
+      var w = Number(r && r.win) || 0, st = Number(r && r.stake) || 0;
+      if (w > 0) D6.Sfx.win(st > 0 ? w / st : (Number(r.mult) || Number(r.out) || 2), S.game); else D6.Sfx.lose();
+    } catch (e) { /* ignore */ }
+  }
   function resultLine(box, r, extra) {
+    sfxResult(r);
     var x = X(), host = box.querySelector('.cg-stage') || box.querySelector('.cs-stage') || box;
     var old = host.querySelectorAll('.cs-toast'); for (var i = 0; i < old.length; i++) old[i].remove();
     var win = (Number(r.win) || 0) > 0, t = document.createElement('div');
@@ -205,7 +223,7 @@
     m.className = 'modal-backdrop'; m.id = 'casinoModal';
     m.innerHTML = '<div class="modal-box glass cs-box" role="dialog" aria-modal="true"><button type="button" class="btn-close" id="closeCasino" aria-label="Close"></button>' +
       '<div class="cs-top"><button type="button" class="cs-back" id="csBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-      '<button type="button" class="cs-wallet" id="csBal"></button><button type="button" class="cs-help" id="csHelp" aria-label="?"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7C9.8 5.4 6.6 4.9 3 5.4v13c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6v-13C17.4 4.9 14.2 5.4 12 7z" fill="#FFF7E0"/><path d="M12 7v13" stroke="#B45309" stroke-width="1.5"/><path d="M5.3 9c1.9-.2 3.6 0 4.8.7M5.3 12c1.9-.2 3.6 0 4.8.7M5.3 15c1.9-.2 3.6 0 4.8.7M13.9 9.7c1.2-.7 2.9-.9 4.8-.7M13.9 12.7c1.2-.7 2.9-.9 4.8-.7M13.9 15.7c1.2-.7 2.9-.9 4.8-.7" stroke="#94A3B8" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M3 18.4c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6" stroke="#B45309" stroke-width="1.5" fill="none"/></svg></button></div>' +
+      '<button type="button" class="cs-wallet" id="csBal"></button><span class="cs-tr"><button type="button" class="cs-help" id="csHelp" aria-label="?"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7C9.8 5.4 6.6 4.9 3 5.4v13c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6v-13C17.4 4.9 14.2 5.4 12 7z" fill="#FFF7E0"/><path d="M12 7v13" stroke="#B45309" stroke-width="1.5"/><path d="M5.3 9c1.9-.2 3.6 0 4.8.7M5.3 12c1.9-.2 3.6 0 4.8.7M5.3 15c1.9-.2 3.6 0 4.8.7M13.9 9.7c1.2-.7 2.9-.9 4.8-.7M13.9 12.7c1.2-.7 2.9-.9 4.8-.7M13.9 15.7c1.2-.7 2.9-.9 4.8-.7" stroke="#94A3B8" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M3 18.4c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6" stroke="#B45309" stroke-width="1.5" fill="none"/></svg></button><button type="button" id="csSnd"></button></span></div>' +
       '<div id="csBody"></div><div class="cs-sheet" id="csSheet" hidden></div></div>';
     document.body.appendChild(m);
     $('closeCasino').style.setProperty('display', 'none', 'important');
@@ -213,6 +231,7 @@
     $('csBack').addEventListener('click', backStep);
     $('csBal').addEventListener('click', function () { deposit(); }); // v2807 : le visiteur voit aussi l'aperçu de Recharger (sûr, sans paiement)
     $('csHelp').addEventListener('click', function () { if (S.game) help(S.game); });
+    if (D6.Sfx) D6.Sfx.button($('csSnd')); else $('csSnd').remove(); // v2832 : bouton du son (muet / actif)
     m.addEventListener('click', function (e) { if (e.target === m) close(); });
     if (D6.BigPageSwipe) D6.BigPageSwipe('casinoModal');
     // v2812 (round 4) : dans un jeu, la fenêtre reste calée en haut (vieux iPhone sans « overflow:clip » : la case de mise la faisait glisser)
@@ -259,12 +278,27 @@
   // v2821 (propriétaire) : 3 onglets en haut, comme la page Paris — Joue toi-même · Live · Casino (on ne défile plus
   // dans 100+ jeux : chaque onglet montre sa liste).
   // v2825 (propriétaire : « Joue toi-même est plus long… même forme ») : 3 onglets de même largeur, mots courts comme les grandes plateformes.
-  var TAB_T = { en: { skill: 'Arcade', live: 'Live', more: 'Casino' }, fr: { skill: 'Arcade', live: 'Live', more: 'Casino' },
-    es: { skill: 'Arcade', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Arcade', live: 'Ao vivo', more: 'Cassino' },
-    ar: { skill: 'أركيد', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Arcade', live: 'Canlı', more: 'Casino' },
-    vi: { skill: 'Arcade', live: 'Live', more: 'Casino' }, id: { skill: 'Arcade', live: 'Live', more: 'Kasino' },
-    ru: { skill: 'Аркады', live: 'Live', more: 'Казино' }, de: { skill: 'Arcade', live: 'Live', more: 'Casino' },
-    hi: { skill: 'आर्केड', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '街机', live: '直播', more: '娱乐场' } };
+  // 2026-10-19 (propriétaire : « Arcade ne me plaît pas ») : « Adresse » = jeux où TU joues toi-même (réflexes, adresse).
+  var TAB_T = { en: { skill: 'Skill', live: 'Live', more: 'Casino' }, fr: { skill: 'Adresse', live: 'Live', more: 'Casino' },
+    es: { skill: 'Habilidad', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Habilidade', live: 'Ao vivo', more: 'Cassino' },
+    ar: { skill: 'مهارة', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Beceri', live: 'Canlı', more: 'Casino' },
+    vi: { skill: 'Kỹ năng', live: 'Live', more: 'Casino' }, id: { skill: 'Keahlian', live: 'Live', more: 'Kasino' },
+    ru: { skill: 'Ловкость', live: 'Live', more: 'Казино' }, de: { skill: 'Geschick', live: 'Live', more: 'Casino' },
+    hi: { skill: 'कौशल', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '技巧', live: '直播', more: '娱乐场' } };
+  // une ligne qui explique chaque onglet (en haut de sa grille)
+  var TAB_D = {
+    en: { skill: 'You play: your reflexes, your skill, you cash out when you want.', live: 'Live draws for everyone at the same time: bet before the start.', more: 'Classic casino games: pick, bet, win instantly.' },
+    fr: { skill: 'C’est toi qui joues : tes réflexes, ton adresse, tu encaisses quand tu veux.', live: 'Tirages en direct pour tout le monde en même temps : parie avant le départ.', more: 'Les jeux de casino classiques : choisis, mise, gagne tout de suite.' },
+    es: { skill: 'Juegas tú: tus reflejos, tu habilidad, cobras cuando quieras.', live: 'Sorteos en vivo para todos a la vez: apuesta antes del inicio.', more: 'Juegos de casino clásicos: elige, apuesta, gana al instante.' },
+    pt: { skill: 'Você joga: seus reflexos, sua habilidade, saca quando quiser.', live: 'Sorteios ao vivo para todos ao mesmo tempo: aposte antes do início.', more: 'Jogos de cassino clássicos: escolha, aposte, ganhe na hora.' },
+    ar: { skill: 'أنت من يلعب: ردود فعلك ومهارتك، واسحب متى شئت.', live: 'سحوبات مباشرة للجميع في نفس الوقت: راهن قبل البداية.', more: 'ألعاب الكازينو الكلاسيكية: اختر وراهن واربح فورًا.' },
+    tr: { skill: 'Sen oynarsın: refleksin, becerin; istediğin an çek.', live: 'Herkes için aynı anda canlı çekiliş: başlamadan bahis yap.', more: 'Klasik casino oyunları: seç, bahis yap, anında kazan.' },
+    vi: { skill: 'Bạn tự chơi: phản xạ, kỹ năng, rút khi muốn.', live: 'Quay trực tiếp cho mọi người cùng lúc: cược trước khi bắt đầu.', more: 'Trò chơi casino cổ điển: chọn, cược, thắng ngay.' },
+    id: { skill: 'Kamu yang main: refleks, keahlian, tarik kapan saja.', live: 'Undian langsung untuk semua sekaligus: pasang sebelum mulai.', more: 'Game kasino klasik: pilih, pasang, menang langsung.' },
+    ru: { skill: 'Играешь ты: реакция, ловкость, забираешь когда хочешь.', live: 'Живые розыгрыши для всех одновременно: ставь до старта.', more: 'Классические игры казино: выбери, поставь, выиграй сразу.' },
+    de: { skill: 'Du spielst: Reflexe, Geschick, auszahlen wann du willst.', live: 'Live-Ziehungen für alle gleichzeitig: setze vor dem Start.', more: 'Klassische Casinospiele: wählen, setzen, sofort gewinnen.' },
+    hi: { skill: 'आप खुद खेलते हैं: आपकी फुर्ती, आपका कौशल, जब चाहें निकालें।', live: 'सबके लिए एक साथ लाइव ड्रॉ: शुरू होने से पहले दांव लगाएं।', more: 'क्लासिक कैसीनो गेम: चुनें, दांव लगाएं, तुरंत जीतें।' },
+    zh: { skill: '你自己玩：靠反应和技巧，随时提现。', live: '所有人同时直播开奖：开始前下注。', more: '经典娱乐场游戏：选择、下注、即时赢取。' } };
   var SEC_ORDER = ['skill', 'live', 'more'];
   function curSec() { var v = ''; try { v = sessionStorage.getItem('oro_cs_tab') || ''; } catch (e) { /* ignore */ } return SEC_ORDER.indexOf(v) >= 0 ? v : 'skill'; }
   function home(view) {
@@ -332,9 +366,8 @@
       var tabs = '<div class="cs-tabs" role="tablist">' + SEC_ORDER.map(function (sec) {
         return '<button type="button" class="cs-tab' + (sec === cur ? ' on' : '') + '" data-t="' + (sec === 'more' ? 'casino' : sec) + '" data-sec="' + sec + '" role="tab"><span class="fit">' + esc(TT[sec]) + '</span><i>' + bySec[sec].length + '</i></button>';
       }).join('') + '</div>';
-      // v2827 (propriétaire : « on touche Jeux et on lit CASINO en haut ») : le petit titre du bandeau reprend le mot du menu.
-      var kick = '<i class="cs-kick" aria-hidden="true">★ ' + esc(tabWord(GAMES_WORD).toUpperCase()) + ' ★</i>';
-      var html = kick + tabs + '<div class="cs-sec cs-sec-' + cur + '"><div class="cs-sec-g">' + bySec[cur].map(tile).join('') + '</div></div>';
+      var TD = TAB_D[lg] || TAB_D.en;
+      var html = tabs + '<div class="cs-sec cs-sec-' + cur + '"><p class="cs-sec-d fit2">' + esc(TD[cur]) + '</p><div class="cs-sec-g">' + bySec[cur].map(tile).join('') + '</div></div>';
       v.innerHTML = html;
       balanceGrid(v); fitAll(v); evenNames(v);
       v.querySelectorAll('.cs-tab').forEach(function (t) {
@@ -523,7 +556,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2841'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2842'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
@@ -601,6 +634,7 @@
     S.game = k; cgMark(k);
     var x = X(), m = $('casinoModal');
     m.classList.add('in-game'); m.setAttribute('data-g', k); $('csSheet').hidden = true; $('csHelp').hidden = false;
+    if (D6.Sfx) D6.Sfx.game(k);
     var p = pal(k);
     m.style.setProperty('--tc', p[1]); m.style.setProperty('--p1', p[0]); m.style.setProperty('--p2', p[1]);
     paintBal();
@@ -1917,7 +1951,7 @@
   D6.Casino = { open: open, close: close, home: homePub, openPred: openPred };
   // v2795 — boîte à outils partagée par les jeux refaits (js/games/*.js)
   D6.CasinoKit = { GAMES: GAMES, MODS: MODS, S: S, X: X, LX: LX, $: $, esc: esc, fmt: fmt, m2: m2, dec: dec, sleep: sleep, toast: toast, guest: guest,
-    play: play, multi: multi, resultLine: resultLine, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
+    play: play, multi: multi, resultLine: resultLine, sfx: sfx, sfxBeat: sfxBeat, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
     afterPlay: afterPlay, stopAll: stopAll, fitEl: fitEl, fitAll: fitAll, setText: setText, ART: ART, pal: pal, gicon: gicon, name: name,
     seeded: seeded, easeOut: easeOut, lang: function () { return (document.documentElement.lang || 'en').slice(0, 2); },
     /* register(clé, fonction(box, x), { rules: { en: '…', fr: '…', … } }) */

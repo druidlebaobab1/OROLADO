@@ -122,6 +122,7 @@
       if (!box.isConnected) return;
       // 2) les quilles tombent (exactement n), la tête devient dorée pour le strike doré
       var down = FALL[n] || [];
+      if (down.length) K.sfx('stop'); // v2832 : les quilles tombent
       if (gold && pins[0]) pins[0].classList.add('gold');
       var dirs = down.map(function (pi) { var p = PINS[pi], dx = p[0] - (gutter ? 150 : x1), dir = dx === 0 ? (K.seeded(pi, 5) < .5 ? -1 : 1) : Math.sign(dx); return [pi, dir, (p[1] < 85 ? 1 : 0) + Math.abs(p[0] - x1) / 40]; });
       var bx = gutter ? x1 : x1, ballGone = anim(box, fast ? 250 : 500, function (k) { setBall(bx + (gutter ? 0 : (x1 - 150) * 0.1 * k), y1 - 60 * k, 0.4 - 0.1 * k, 900 + 200 * k, String(1 - k)); });

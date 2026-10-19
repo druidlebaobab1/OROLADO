@@ -135,7 +135,7 @@
       box.querySelectorAll('.tb-spot').forEach(function (b) {
         b.addEventListener('click', function () {
           if (busy) return;
-          bet = b.getAttribute('data-b'); store('cg_tb_spot_' + g, bet); clearWin(); putChip(true);
+          bet = b.getAttribute('data-b'); store('cg_tb_spot_' + g, bet); clearWin(); putChip(true); K.sfx('chip'); // v2832 : le jeton se pose
         });
       });
 
@@ -174,8 +174,9 @@
         cd.style.opacity = '0';
         void cd.offsetWidth;
         cd.classList.add('fly'); cd.style.transform = fin; cd.style.opacity = '1';
+        K.sfx('card'); // v2832 : la carte glisse du sabot…
         await wait(430);
-        cd.classList.add('up');
+        cd.classList.add('up'); K.sfx('stop', { as: 'tok' }); // …et se retourne
         await wait(380);
       };
       var bub = function (side, v) { var e = $('tbV' + side); K.setText(e, String(v)); e.classList.add('on'); };
@@ -189,6 +190,7 @@
       var shake = async function (dice) {
         var dome = $('tbDome'), ds = box.querySelectorAll('.tb-die');
         dome.classList.remove('open'); dome.classList.add('shake');
+        [0, 430, 860].forEach(function (ms) { setTimeout(function () { if (alive()) K.sfx('roll'); }, ms); }); // v2832 : les dés dans la cloche
         K.S.timer = setInterval(function () { if (!alive()) return; ds.forEach(function (e) { e.innerHTML = die(1 + Math.floor(Math.random() * 6)); }); }, 110);
         await wait(1300);
         clearInterval(K.S.timer); K.S.timer = 0;

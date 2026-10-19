@@ -1024,8 +1024,8 @@
         e.preventDefault();
         if (e.pointerType === 'mouse' && e.button) return;
         if (!act()) { if (phase === 'idle') nudge(); return; } // v2812: no ripple — the game itself answers the touch
-        if (G.gest === 'hold') { downId = e.pointerId; try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } G.press(w); did(); return; }
-        G.tap(w); did();
+        if (G.gest === 'hold') { downId = e.pointerId; try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ } G.press(w); did(); K.sfx('act'); return; }
+        G.tap(w); did(); K.sfx('act'); // v2832 : le geste du jeu (saut, vol, lancer…) a son petit son
       });
       var up = function (e) { if (G.gest !== 'hold' || downId === null || (e && e.pointerId !== downId)) return; downId = null; G.release(w); };
       cv.addEventListener('pointerup', up);
@@ -1040,8 +1040,8 @@
         if (!act() || (e.target && e.target.tagName === 'INPUT')) return;
         if (!(e.code === 'Space' || e.key === ' ' || e.key === 'ArrowUp')) return;
         e.preventDefault();
-        if (G.gest === 'hold') { if (e.type === 'keydown' && !e.repeat) { G.press(w); did(); } else if (e.type === 'keyup') G.release(w); return; }
-        if (e.type === 'keydown' && !e.repeat) { G.tap(w); did(); }
+        if (G.gest === 'hold') { if (e.type === 'keydown' && !e.repeat) { G.press(w); did(); K.sfx('act'); } else if (e.type === 'keyup') G.release(w); return; }
+        if (e.type === 'keydown' && !e.repeat) { G.tap(w); did(); K.sfx('act'); }
       };
       document.addEventListener('keydown', onKey); document.addEventListener('keyup', onKey);
       var onVis = function () {

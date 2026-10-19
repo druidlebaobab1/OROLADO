@@ -160,3 +160,8 @@ html[dir=rtl] body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-g
 html[lang="ar"] body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-kick{letter-spacing:0}
 @media (min-width:600px){html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-kick{left:24px}}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-sec-live .cs-g::after{display:none!important;content:none!important}
+/* 2026-10-19 (propriétaire : « la pancarte JEUX OROLADO prend de la place pour rien ») : plus de bandeau ; les onglets montent.
+   Une ligne qui explique l'onglet, en haut de sa grille. */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid.cs-grid3::before,
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid.cs-grid3::after{display:none!important;content:none!important}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-sec-d{margin:0 2px 10px;padding:0 4px;font:600 clamp(12px,3.4vw,14px)/1.35 var(--lb-font);color:#C9C2F2;text-align:center}

@@ -227,6 +227,7 @@
           sendFail(); return true;
         },
         burst: function (x, y, n, cols, sp, life, sz) {
+          if (phase === 'play' && !A._xb) K.sfx('hit'); // v2832 : un bon coup (fruit coupé, brique, pièce…) sonne ; jamais l'explosion d'une erreur
           if (lite) n = Math.ceil(n / 3);
           for (var i = 0; i < n; i++) {
             if (P.length > 160) P.shift();
@@ -237,7 +238,9 @@
         ring: function (x, y, r, col) { RG.push({ x: x, y: y, r: r, t: 0, c: col || '#FDE68A' }); },
         explode: function (x, y, s) {
           s = s || 1;
+          A._xb = 1;
           A.burst(x, y, 34, ['#FFF7ED', '#FDE68A', '#FB923C', '#F43F5E', '#C4B5FD'], 260 * s, 0.9, 3.4 * Math.sqrt(s));
+          A._xb = 0;
           A.ring(x, y, 70 * s, '#FDBA74'); shake = Math.max(shake, 0.45); flash = Math.max(flash, 0.55);
         },
         shake: function (a) { shake = Math.max(shake, a); },
@@ -393,7 +396,7 @@
         if (e.pointerType === 'mouse' && e.button) return;
         try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ignore */ }
         var p = pt(e);
-        if (phase === 'play') { gN++; box.setAttribute('data-gn', String(gN)); g.down(p[0], p[1]); }
+        if (phase === 'play') { gN++; box.setAttribute('data-gn', String(gN)); K.sfx('act'); g.down(p[0], p[1]); }
         else { if (practice()) g.down(p[0], p[1]); if (phase === 'idle') nudge(); }
       });
       cv.addEventListener('pointermove', function (e) {

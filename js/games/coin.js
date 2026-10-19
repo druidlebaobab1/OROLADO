@@ -75,6 +75,7 @@
       var from = SET.rot, base = Math.ceil((from + 1) / 360) * 360, to = base + (lite ? 720 : 1800) + (res ? 180 : 0);
       var dur = lite ? 500 : 1500;
       SET.rot = to % 360;
+      K.sfx('flip', { d: dur }); // v2832 : la pièce tinte en tournant
       if (coin.animate) {
         var a1 = coin.animate([{ transform: 'rotateX(' + from + 'deg)' }, { transform: 'rotateX(' + to + 'deg)' }], { duration: dur, easing: 'cubic-bezier(.25,.6,.3,1)', fill: 'forwards' });
         toss.animate([{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-34%) scale(1.18)', offset: .45 }, { transform: 'translateY(0) scale(1)' }], { duration: dur, easing: 'ease-in-out' });

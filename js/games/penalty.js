@@ -336,6 +336,7 @@
       var fast = lite(), TB = fast ? 320 : 620, TK = fast ? 280 : 520, delay = fast ? 0 : 90;
       var tx = z[2], ty = z[3], cxp = (SPOT[0] + tx) / 2 + (tx - 180) * 0.32 + (col === 1 ? 14 : 0), cyp = Math.min(SPOT[1], ty) - 34 - (row === 0 ? 24 : row === 1 ? 10 : 0);
       var endS = 0.42, trailOn = !fast, side = target.rot !== 0;
+      K.sfx('act'); // v2832 : le tir
       var hist = [];
       await anim(box, TB, function (k) {
         var t = ease(k), bx = bez(SPOT[0], cxp, tx, t), by = bez(SPOT[1], cyp, ty, t), s = 1 - (1 - endS) * t;
@@ -360,6 +361,7 @@
       var fall = side ? anim(box, fast ? 220 : 480, function (k) { drawK(lerpPose(target, land, easeIn(k))); }) : anim(box, fast ? 150 : 360, function (k) { drawK(lerpPose(target, READY, easeIO(k) * 0.5)); });
       if (goal) {
         flash(l.goal, 'goal');
+        if (!r.done) K.sfx('step', { k: (r.shots || []).length || 1 }); // v2832 : but ! (une note qui monte à chaque but)
         await anim(box, fast ? 260 : 720, function (k) {
           var s1 = Math.min(1, k * 4), bx = tx + (tx - 180) * 0.07 * s1, by = ty + 5 * s1 + (k > 0.25 ? (150 - ty) * easeIn((k - 0.25) / 0.75) : 0);
           setBall(bx, Math.min(by, 150), endS - 0.05 * s1, 1080 + k * 160);

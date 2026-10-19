@@ -91,9 +91,10 @@
       if (!r || !box.isConnected) { busy = false; go.disabled = false; return; }
       var me = cs[r.view.pick], won = r.view.gold === r.view.pick;
       me.classList.add('shake', 'mine'); K.setText(st, '');
+      K.sfx('roll', { as: 'rattle' }); // v2832 : le coffre tremble
       await K.sleep(lite ? 200 : 700); if (!box.isConnected) return;
       me.classList.remove('shake'); me.classList.add('open', won ? 'gold' : 'empty');
-      if (won) burst(r.view.pick);
+      if (won) { burst(r.view.pick); K.sfx('reveal'); } // v2832 : coffre d'or (le coffre vide reste muet)
       await K.sleep(lite ? 250 : 650); if (!box.isConnected) return;
       cs.forEach(function (c, i) { if (i !== r.view.pick) c.classList.add('open', 'dim', i === r.view.gold ? 'gold' : 'empty'); });
       hist.unshift(r.mult); hist = hist.slice(0, 12);

@@ -74,6 +74,7 @@
         var b = balls[i], seg = (t - b.t0) / b.sd;
         if (seg < 0) continue;
         var n = Math.floor(seg), f = seg - n, P = b.pts;
+        if (n !== b.n) { b.n = n; if (n > 0 && n < P.length - 1) K.sfx('tick', { p: n / 12 }); } // v2832 : la bille touche un clou
         if (n >= P.length - 1) { b.el.remove(); balls.splice(i, 1); land(b); continue; }
         var a = P[n], c = P[n + 1], hop = n === P.length - 2 ? 4 : 9;
         b.el.setAttribute('cx', (a[0] + (c[0] - a[0]) * f).toFixed(2));
@@ -157,6 +158,7 @@
         rot = r0 + (r1 - r0) * e; bAng = b0 + (b1 - b0) * (1 - Math.pow(1 - p, 2.2));
         bR = p < 0.6 ? 106 : 106 - (106 - 73) * Math.min(1, (p - 0.6) / 0.3) + (p > 0.75 && p < 0.92 ? Math.sin((p - 0.75) / 0.17 * Math.PI) * 4 : 0);
         if (p >= 1) { rot = r1 % 360; bAng = 0; bR = 73; }
+        else K.sfxBeat(MR, 'pk', Math.floor((bAng - rot) / A), 'tick', p < 0.6 ? { v: 0.45 } : null); // v2832 : la bille passe les cases
         paint();
         if (p >= 1) {
           hist('miniroul', u.hist, ['n' + mrCol(w), String(w)]);
@@ -225,6 +227,7 @@
           if (!box.isConnected) return;
           var c = cellOf(draw[i]), hit = KN.picks.indexOf(draw[i]) >= 0;
           c.classList.add(hit ? 'h' : 'd');
+          K.sfx(hit ? 'step' : 'ball', { k: hit ? hits + 1 : i }); // v2832 : chaque boule tirée
           if (hit) { hits++; box.querySelectorAll('.kn-p').forEach(function (p) { p.classList.toggle('on', +p.getAttribute('data-h') === hits); }); }
         }
       } catch (e) { return; }
@@ -291,6 +294,7 @@
         var p = Math.min(1, (t - t0) / D);
         rot = r0 + (r1 - r0) * ease(p);
         paint();
+        if (p < 1) K.sfxBeat(MW, 'sg', Math.floor((rot + A / 2) / A), 'tick'); // v2832 : tic à chaque case sous le clapet
         var fr = (((rot + A / 2) % A) + A) % A / A; // passage d'une case : le clapet bascule
         pin.setAttribute('transform', 'rotate(' + (-16 * Math.max(0, 1 - fr * 5)).toFixed(1) + ' 130 6)');
         if (p >= 1) {

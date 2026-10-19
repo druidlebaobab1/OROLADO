@@ -94,13 +94,14 @@
     g.innerHTML = '<g class="c1-f"><g class="c1-b">' + BACK + '</g></g>';
     g.style.transform = 'translate(' + from[0] + 'px,' + from[1] + 'px) scale(' + from[2] + ')';
     layer.appendChild(g);
+    K.sfx('card'); // v2832 : la carte glisse
     return anim(g, [{ transform: 'translate(' + from[0] + 'px,' + from[1] + 'px) scale(' + from[2] + ')' }, { transform: 'translate(' + x + 'px,' + y + 'px) scale(' + sc + ')' }], ms || 340, 'cubic-bezier(.2,.75,.25,1)')
       .then(function () { if (!alive(box)) throw new Error('gone'); return c ? flip(g, c) : null; }).then(function () { return g; });
   }
   function flip(g, c) {
     var f = g.querySelector('.c1-f');
     return anim(f, [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], 130, 'ease-in').then(function () {
-      f.innerHTML = face(c);
+      f.innerHTML = face(c); K.sfx('stop', { as: 'tok' }); // v2832 : elle se retourne
       return anim(f, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 150, 'ease-out');
     });
   }
