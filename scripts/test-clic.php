@@ -3,7 +3,9 @@ declare(strict_types=1);
 // Script de test : uniquement en ligne de commande, jamais depuis internet.
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
- * v2359 — Prix du CLIC accepté + surveillance des robots, avec une FAUSSE caisse (aucun appel à Supabase).
+ * v2359 — Prix du CLIC + surveillance des robots, avec une FAUSSE caisse (aucun appel à Supabase).
+ * 2026-10-19 (audit) : en RÉEL, entrée TOUJOURS au prix d'arrivée (le « prix du clic » permettait de choisir le
+ * meilleur des 6 derniers prix) ; le prix du clic reste en DÉMO ; la démo ne compte plus dans le score robot.
  * Usage : php scripts/test-clic.php
  * Dossier data/ temporaire : ne touche jamais aux vraies données.
  */
@@ -68,11 +70,15 @@ function place(array $me, array $req): array {
 orolado_feed_advance($asset);
 usleep(2000000); // un peu d'historique
 
-echo "1) Prix du clic accepté seulement s'il est récent\n";
+echo "1) DÉMO : prix du clic accepté seulement s'il est récent ; RÉEL : toujours le prix d'arrivée\n";
+$st = orolado_feed_advance($asset);
+$r = place($meH, ['id' => 'c1d', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'demo', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 2]);
+check('démo, clic d’il y a 0,5 s : pris', !empty($r['ok']) && $r['order']['entryTick'] === $st['n'] - 2
+  && abs($r['order']['entryPrice'] - orolado_feed_price_at($asset, $st['n'] - 2) / 100) < 1e-9, 'entrée ' . ($r['order']['entryTick'] ?? '?') . ' / clic ' . ($st['n'] - 2));
 $st = orolado_feed_advance($asset);
 $r = place($meH, ['id' => 'c1', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 2]);
-check('clic d’il y a 0,5 s : pris', !empty($r['ok']) && $r['order']['entryTick'] === $st['n'] - 2
-  && abs($r['order']['entryPrice'] - orolado_feed_price_at($asset, $st['n'] - 2) / 100) < 1e-9, 'entrée ' . ($r['order']['entryTick'] ?? '?') . ' / clic ' . ($st['n'] - 2));
+check('réel, clic d’il y a 0,5 s : prix d’arrivée (jamais le prix du clic)', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']
+  && abs($r['order']['entryPrice'] - orolado_feed_price_at($asset, $r['order']['entryTick']) / 100) < 1e-9, 'entrée ' . ($r['order']['entryTick'] ?? '?') . ' / arrivée ' . $st['n']);
 $st = orolado_feed_advance($asset);
 $r = place($meH, ['id' => 'c2', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 20]);
 check('clic d’il y a 5 s : refusé (prix d’arrivée)', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
@@ -143,16 +149,22 @@ check('admin : joueur honnête absent', $adminH === '');
 $wdR = admin_suspect_reason($uR, [], ['amount' => 50, 'status' => 'pending'], []);
 check('retrait du robot : signalé', $wdR !== '', $wdR);
 
-echo "4) v2649 — robot repéré : il n'a PLUS droit au prix du clic ; le joueur honnête oui\n";
+echo "4) Robot repéré : prix d'arrivée partout ; joueur honnête : prix du clic en DÉMO, prix d'arrivée en RÉEL\n";
 $db = load_db();
 $st = orolado_feed_advance($asset);
 $r = place($db['users'][$robot], ['id' => 'after1', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 4]);
 check('robot : prix du clic REFUSÉ (prix d’arrivée)', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n'], 'entrée ' . ($r['order']['entryTick'] ?? '?') . ' / clic ' . ($st['n'] - 4));
 $st = orolado_feed_advance($asset);
-$r = place($db['users'][$honest], ['id' => 'after2', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 2]);
-check('joueur honnête : prix du clic toujours pris', !empty($r['ok']) && $r['order']['entryTick'] === $st['n'] - 2);
+$r = place($db['users'][$robot], ['id' => 'after1d', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'demo', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 4]);
+check('robot en démo : prix du clic REFUSÉ aussi', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
+$st = orolado_feed_advance($asset);
+$r = place($db['users'][$honest], ['id' => 'after2', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'demo', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 2]);
+check('joueur honnête en démo : prix du clic toujours pris', !empty($r['ok']) && $r['order']['entryTick'] === $st['n'] - 2);
+$st = orolado_feed_advance($asset);
+$r = place($db['users'][$honest], ['id' => 'after3', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 2]);
+check('joueur honnête en réel : prix d’arrivée', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
 
-echo "5) v2654 — compte NEUF : pas de prix du clic (prix d'arrivée) ; robot qui s'entraîne en DÉMO repéré avant le réel\n";
+echo "5) Compte NEUF : prix d'arrivée ; robot en DÉMO : perd le prix du clic en démo, mais la démo ne touche PAS au score robot du compte\n";
 $neuf = '11111111-2222-3333-4444-000000000004';
 $demoBot = '11111111-2222-3333-4444-000000000005';
 $db = load_db();
@@ -173,10 +185,16 @@ for ($i = 0; $i < 80; $i++) {
   usleep(260000);
 }
 $uD = load_db()['users'][$demoBot];
-check('robot entraîné en DÉMO : repéré « suspect »', orolado_click_edge_reason($uD) !== '', (int) ($uD['clickFav'] ?? 0) . ' contre ' . (int) ($uD['clickUnfav'] ?? 0));
+check('démo : compteurs du score robot (clickFav / clickUnfav) intacts', (int) ($uD['clickFav'] ?? 0) === 0 && (int) ($uD['clickUnfav'] ?? 0) === 0 && orolado_click_edge_reason($uD) === '',
+  (int) ($uD['clickFav'] ?? 0) . ' / ' . (int) ($uD['clickUnfav'] ?? 0));
+check('démo : compteurs démo à part (robot vu en démo)', (int) ($uD['clickFavDemo'] ?? 0) >= 40, (int) ($uD['clickFavDemo'] ?? 0) . ' contre ' . (int) ($uD['clickUnfavDemo'] ?? 0));
+check('robot entraîné en DÉMO : plus de prix du clic en démo', !orolado_click_demo_trusted($uD, $uD));
+$st = orolado_feed_advance($asset);
+$r = place($uD, ['id' => 'd_demo', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'demo', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 4]);
+check('ce robot en démo : prix d’arrivée', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
 $st = orolado_feed_advance($asset);
 $r = place($uD, ['id' => 'd_real', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 4]);
-check('ce robot en RÉEL : prix du clic refusé dès le 1er trade', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
+check('ce robot en RÉEL : prix d’arrivée', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
