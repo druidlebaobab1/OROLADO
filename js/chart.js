@@ -1834,7 +1834,7 @@
       for (T = M0, guard = 0; T <= tRight + majorMs && guard < 40; T += majorMs, guard++) {
         var lx = headX + ((T - xNow) / 1000) * pxSec;
         if (lx < 24 || lx > priceColL) continue;
-        ctx.fillText(gridClock(T, M), lx, cssH - 5);
+        ctx.fillText(gridClock(T, M), lx, cssH - (padTopRGB ? 9 : 5));
         timeLabelsQ.push(gridClock(T, M), lx);
       }
     }
@@ -6187,7 +6187,7 @@
       padTopAt = nowF;
       try { var padEl = document.querySelector('#tradeWrap > .pad'); var pv = padEl ? getComputedStyle(padEl).getPropertyValue('--oro-pad-top').trim() : ''; padTopRGB = /^\d+\s*,\s*\d+\s*,\s*\d+$/.test(pv) ? pv : ''; } catch (eP) { padTopRGB = ''; }
     }
-    if (padTopRGB) { fadeRGB = padTopRGB; fz = 9; } // v2857 (propriétaire) : bande sombre réduite — juste au raccord, sans manger la courbe
+    if (padTopRGB) { fadeRGB = padTopRGB; fz = 6; } // v2857 (propriétaire) : bande sombre réduite — juste au raccord, sans manger la courbe
     ctx.save();
     var gF = ctx.createLinearGradient(0, cssH - fz, 0, cssH);
     gF.addColorStop(0, 'rgba(' + fadeRGB + ',0)');
@@ -6200,7 +6200,7 @@
       ctx.fillStyle = '#64748B';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
-      for (var q = 0; q < timeLabelsQ.length; q += 2) ctx.fillText(timeLabelsQ[q], timeLabelsQ[q + 1], cssH - 5);
+      for (var q = 0; q < timeLabelsQ.length; q += 2) ctx.fillText(timeLabelsQ[q], timeLabelsQ[q + 1], cssH - (padTopRGB ? 9 : 5)); // v2874 : téléphone — heures un peu plus haut, au-dessus du raccord sombre
     }
     ctx.restore();
   }
