@@ -49,11 +49,52 @@
       '<ellipse cx="32" cy="34" rx="15" ry="19" fill="url(#IDf)" stroke="#065F46" stroke-width="1.3"/><path d="M24 30q3-3 6 0M34 30q3-3 6 0" stroke="#064E3B" stroke-width="1.8" fill="none"/><circle cx="27" cy="32" r="1.8" fill="#FDE047"/><circle cx="37" cy="32" r="1.8" fill="#FDE047"/>' +
       '<path d="M28 44q4 3 8 0" stroke="#9F1239" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M19 20q13-10 26 0" stroke="url(#IDg)" stroke-width="3.4" fill="none"/>'
   };
+
+  function star(cx, cy, r, f) { var d = ''; for (var j = 0; j < 10; j++) { var a = -Math.PI / 2 + j * Math.PI / 5, rr = j % 2 ? r * .45 : r; d += (j ? 'L' : 'M') + (cx + Math.cos(a) * rr).toFixed(1) + ' ' + (cy + Math.sin(a) * rr).toFixed(1); } return '<path d="' + d + 'z" fill="' + f + '"/>'; }
+  var CARD = function (x, y, r, t, col) { return '<g transform="translate(' + x + ' ' + y + ') rotate(' + r + ')"><rect x="-11" y="-15" width="22" height="30" rx="3" fill="#fff" stroke="#CBD5E1"/><text x="0" y="5" text-anchor="middle" font-family="Arial" font-weight="900" font-size="13" fill="' + col + '">' + t + '</text></g>'; };
+  Object.assign(ICONS, {
+    scratchwin: '<defs>' + GOLD + lg('IDf', '#F3F4F6', '#9CA3AF') + '</defs>' + sh(24) + '<rect x="8" y="12" width="48" height="40" rx="6" fill="#F5D0FE" stroke="url(#IDg)" stroke-width="2.4"/>' +
+      '<circle cx="22" cy="24" r="7" fill="url(#IDg)"/><text x="22" y="27.5" text-anchor="middle" font-family="Arial" font-weight="900" font-size="9" fill="#78350F">7</text><rect x="34" y="17" width="16" height="14" rx="7" fill="url(#IDf)"/>' +
+      '<rect x="14" y="36" width="36" height="11" rx="3" fill="url(#IDf)"/><path d="M14 41h20" stroke="#fff" stroke-width="5" stroke-linecap="round"/><text x="24" y="44.5" text-anchor="middle" font-family="Arial" font-weight="900" font-size="8" fill="#7E22CE">×200</text>' +
+      '<path d="M46 40l12-14 4 3-12 14z" fill="#FBBF24" stroke="#92400E" stroke-width="1"/>' + tw(56, 12, .8),
+    pickbox: '<defs>' + lg('IDb', '#F9A8D4', '#BE185D') + lg('IDl', '#FBCFE8', '#DB2777') + '</defs>' + sh(22) + '<rect x="12" y="28" width="40" height="28" rx="3" fill="url(#IDb)"/><rect x="28" y="28" width="8" height="28" fill="#FEF3C7"/>' +
+      '<g transform="rotate(-12 32 24)"><rect x="9" y="18" width="46" height="11" rx="3" fill="url(#IDl)"/><rect x="28" y="18" width="8" height="11" fill="#FEF3C7"/><path d="M32 18c-10-12-18-2-8 0M32 18c10-12 18-2 8 0" stroke="#FEF3C7" stroke-width="3.4" fill="none"/></g>' +
+      '<text x="32" y="14" text-anchor="middle" font-family="Arial" font-weight="900" font-size="11" fill="#FDE68A" stroke="#78350F" stroke-width="2" paint-order="stroke">?</text>' + tw(54, 10, .8) + tw(10, 14, .6),
+    ladder: '<defs>' + lg('IDw', '#FCD34D', '#92400E') + '</defs>' + sh(16) + '<path d="M14 58L22 10M50 58L42 10" stroke="url(#IDw)" stroke-width="5" stroke-linecap="round"/>' + [51, 42, 33, 24, 15].map(function (y) { var t = (58 - y) / 48 * 8; return '<path d="M' + (14 + t) + ' ' + y + 'H' + (50 - t) + '" stroke="url(#IDw)" stroke-width="3.6" stroke-linecap="round"/>'; }).join('') +
+      star(32, 7, 7, '#FDE68A') + '<circle cx="32" cy="27" r="5" fill="#FCD34D"/><path d="M27 26a5 5 0 0 1 10 0z" fill="#1E3A8A"/><rect x="27" y="32" width="10" height="11" rx="3.4" fill="#EF4444"/><path d="M27 34l-6-6M37 34l6-6" stroke="#FCD34D" stroke-width="2.6" stroke-linecap="round"/><path d="M29 43l-2 9M35 43l2 9" stroke="#1E3A8A" stroke-width="3" stroke-linecap="round"/>',
+    hilorun: '<defs>' + lg('IDa', '#86EFAC', '#15803D') + '</defs>' + sh(26) + CARD(14, 40, -12, '3', '#111827') + CARD(28, 34, -4, '7', '#DC2626') + CARD(42, 28, 4, 'J', '#111827') + CARD(54, 22, 12, 'K', '#DC2626').replace('rotate(12)', 'rotate(10)') +
+      '<path d="M6 20l14-12M20 8h-8M20 8v8" stroke="url(#IDa)" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    envelope: '<defs>' + GOLD + lg('IDr', '#F87171', '#991B1B') + '</defs>' + sh(22) + '<g transform="rotate(-10 22 34)"><rect x="10" y="16" width="26" height="36" rx="3" fill="url(#IDr)"/><path d="M10 16l13 12 13-12z" fill="#B91C1C"/><circle cx="23" cy="30" r="5" fill="url(#IDg)"/></g>' +
+      '<g transform="rotate(10 42 32)"><rect x="29" y="12" width="26" height="38" rx="3" fill="url(#IDr)"/><path d="M29 12l13 13 13-13z" fill="#B91C1C"/><circle cx="42" cy="28" r="6" fill="url(#IDg)"/><path d="M39 28h6M42 25v6" stroke="#92400E" stroke-width="1.4"/></g>' + tw(54, 10, .8),
+    treasure: '<defs>' + lg('IDp', '#FEF3C7', '#D97706') + '</defs>' + sh(26) + '<path d="M6 14l16-6 20 6 16-6v42l-16 6-20-6-16 6z" fill="url(#IDp)" stroke="#92400E" stroke-width="1.4"/><path d="M22 8v42M42 14v42" stroke="#92400E" stroke-width="1" opacity=".5"/>' +
+      '<path d="M12 44q8-14 16-6t16-16" stroke="#7F1D1D" stroke-width="1.8" stroke-dasharray="3 3" fill="none"/><path d="M40 18l8 8M48 18l-8 8" stroke="#DC2626" stroke-width="3.4" stroke-linecap="round"/><ellipse cx="14" cy="44" rx="5" ry="3" fill="#4D7C0F"/>',
+    flip21: '<defs>' + GOLD + '</defs>' + sh(24) + CARD(18, 34, -14, 'A', '#DC2626') + CARD(32, 30, 0, 'Q', '#111827') + CARD(46, 34, 14, '7', '#DC2626') +
+      '<circle cx="32" cy="54" r="8" fill="url(#IDg)" stroke="#78350F"/><text x="32" y="57.5" text-anchor="middle" font-family="Arial" font-weight="900" font-size="9" fill="#78350F">21</text>',
+    popdarts: '<defs>' + GOLD + '</defs>' + sh(20) + '<path d="M22 44q-1 8 2 14" stroke="#E5E7EB" stroke-width="1" fill="none"/><path d="M22 10c10 0 16 8 16 17S30 44 22 44 6 36 6 27 12 10 22 10z" fill="#F43F5E"/>' +
+      '<path d="M44 26c8 0 13 6 13 14s-6 14-13 14-13-6-13-14 5-14 13-14z" fill="url(#IDg)"/><ellipse cx="16" cy="20" rx="3" ry="5" fill="#fff" opacity=".5" transform="rotate(-25 16 20)"/>' +
+      '<g transform="rotate(40 38 22)"><path d="M38 22l-2-20h4z" fill="#E5E7EB"/><path d="M35 2l3-6 3 6z" fill="#2563EB"/></g>' + star(48, 40, 5, '#fff'),
+    egghunt: '<defs>' + GOLD + lg('IDs', '#FFFFFF', '#64748B') + '</defs>' + '<ellipse cx="32" cy="54" rx="28" ry="8" fill="#15803D"/><circle cx="12" cy="48" r="9" fill="#22C55E"/><circle cx="52" cy="48" r="9" fill="#22C55E"/>' +
+      '<path d="M24 22c6 0 9 10 9 15 0 6-4 9-9 9s-9-3-9-9c0-5 3-15 9-15z" fill="url(#IDs)" stroke="#475569"/><path d="M40 16c7 0 11 11 11 17 0 7-5 11-11 11s-11-4-11-11c0-6 4-17 11-17z" fill="url(#IDg)" stroke="#92400E"/>' +
+      '<path d="M30 33l5-3 5 3 5-3 5 3" stroke="#fff" stroke-width="1.6" fill="none" opacity=".7"/>' + tw(54, 10, .8),
+    shells: '<defs>' + lg('IDs', '#FFEDD5', '#C2410C') + rg('IDp', '#FFFFFF', '#F5F3FF', '#A5B4FC') + '</defs>' + sh(26) +
+      '<g transform="translate(20 40)"><path d="M-14 6C-15-7-8-15 0-15S15-7 14 6z" fill="url(#IDs)" stroke="#9A3412"/><path d="M0 6L-8-13M0 6L0-15M0 6L8-13" stroke="#9A3412" opacity=".5"/></g>' +
+      '<g transform="translate(46 40)"><path d="M-14 6C-15-7-8-15 0-15S15-7 14 6z" fill="url(#IDs)" stroke="#9A3412" transform="translate(0 -12) rotate(-14)"/></g><circle cx="46" cy="44" r="5.4" fill="url(#IDp)" stroke="#A5B4FC"/>' +
+      '<g transform="translate(32 18)"><ellipse rx="9" ry="6" fill="#DC2626"/><path d="M-9-2q-7-7-2-11 2 4 5 2zM9-2q7-7 2-11-2 4-5 2z" fill="#EF4444"/><circle cx="-3" cy="-6" r="1.6" fill="#fff"/><circle cx="3" cy="-6" r="1.6" fill="#fff"/></g>',
+    colorwheel: '<defs>' + GOLD + '</defs>' + sh(22) + (function () { var o = '', C = ['#FBBF24', '#EF4444', '#3B82F6', '#EF4444', '#22C55E', '#EF4444', '#3B82F6', '#EF4444', '#22C55E', '#3B82F6']; for (var j = 0; j < 10; j++) { var a0 = (j * 36 - 108) * Math.PI / 180, a1 = ((j + 1) * 36 - 108) * Math.PI / 180; o += '<path d="M32 32L' + (32 + Math.cos(a0) * 24).toFixed(1) + ' ' + (32 + Math.sin(a0) * 24).toFixed(1) + 'A24 24 0 0 1 ' + (32 + Math.cos(a1) * 24).toFixed(1) + ' ' + (32 + Math.sin(a1) * 24).toFixed(1) + 'z" fill="' + C[j] + '" stroke="#fff" stroke-width=".8"/>'; } return o; })() +
+      '<circle cx="32" cy="32" r="24" fill="none" stroke="url(#IDg)" stroke-width="3"/><circle cx="32" cy="32" r="5" fill="#1E1B4B" stroke="#FDE68A" stroke-width="1.4"/><path d="M32 12l-5-9h10z" fill="#FDE68A" stroke="#78350F"/>',
+    luckyten: '<defs>' + GOLD + rg('IDc', '#FFFFFF', '#E0F2FE', '#7DD3FC') + '</defs>' + sh(20) + '<path d="M22 46h20l-3 10H25z" fill="url(#IDg)"/><circle cx="32" cy="26" r="21" fill="#0B1222"/>' +
+      [[24, 30, '#EF4444', '3'], [38, 34, '#3B82F6', '7'], [31, 18, '#22C55E', '1'], [40, 22, '#A855F7', '9']].map(function (b) { return '<circle cx="' + b[0] + '" cy="' + b[1] + '" r="6" fill="' + b[2] + '"/><circle cx="' + b[0] + '" cy="' + b[1] + '" r="3.2" fill="#fff"/><text x="' + b[0] + '" y="' + (b[1] + 1.8) + '" text-anchor="middle" font-family="Arial" font-weight="900" font-size="4.6" fill="#111">' + b[3] + '</text>'; }).join('') +
+      '<circle cx="32" cy="26" r="21" fill="url(#IDc)" opacity=".25" stroke="#E0F2FE" stroke-width="1.6"/>' + hi(32, 26, 21)
+  });
   var L = [
     ['scarab', 'Scarab Sun', 'casa1', ['#FEF3C7', '#B45309']], ['kraken', 'Kraken Deep', 'casa1', ['#FAE8FF', '#A21CAF']], ['donut', 'Donut Shop', 'casa1', ['#FCE7F3', '#DB2777']],
     ['cherrybar', 'Cherry Bar', 'casa1', ['#FEE2E2', '#B91C1C']], ['ufo', 'UFO Invasion', 'casa1', ['#DCFCE7', '#16A34A']], ['koi', 'Koi Fortune', 'casa1', ['#FFE4E6', '#DC2626']],
     ['goldtrain', 'Gold Train', 'casa1', ['#FFEDD5', '#C2410C']], ['viking', 'Viking Raid', 'casa1', ['#E2E8F0', '#475569']], ['safari', 'Safari King', 'casa1', ['#FEF9C3', '#CA8A04']],
-    ['rubymine', 'Ruby Mine', 'casa1', ['#FFE4E6', '#BE123C']], ['pumpkin', 'Pumpkin Night', 'casa1', ['#FFEDD5', '#EA580C']], ['medusa', 'Medusa', 'casa1', ['#D1FAE5', '#047857']]
+    ['rubymine', 'Ruby Mine', 'casa1', ['#FFE4E6', '#BE123C']], ['pumpkin', 'Pumpkin Night', 'casa1', ['#FFEDD5', '#EA580C']], ['medusa', 'Medusa', 'casa1', ['#D1FAE5', '#047857']],
+    ['scratchwin', 'Win Numbers', 'casa2', ['#F3E8FF', '#7E22CE']], ['pickbox', 'Mystery Boxes', 'casa2', ['#FCE7F3', '#BE185D']], ['ladder', 'Lucky Ladder', 'casa2', ['#E0F2FE', '#0369A1']],
+    ['hilorun', 'Hi-Lo Run', 'casa2', ['#DCFCE7', '#15803D']], ['envelope', 'Red Envelopes', 'casa2', ['#FEE2E2', '#B91C1C']], ['treasure', 'Pirate Map', 'casa2', ['#FEF3C7', '#92400E']],
+    ['flip21', 'Lucky 21', 'casa3', ['#DBEAFE', '#1D4ED8']], ['popdarts', 'Balloon Darts', 'casa3', ['#FFE4E6', '#E11D48']], ['egghunt', 'Egg Hunt', 'casa3', ['#DCFCE7', '#16A34A']],
+    ['shells', 'Crab Shells', 'casa3', ['#E0F2FE', '#0284C7']], ['colorwheel', 'Color Wheel', 'casa3', ['#EDE9FE', '#6D28D9']], ['luckyten', 'Lucky Numbers', 'casa3', ['#E0E7FF', '#4338CA']]
   ];
   D6.CasinoCatalog.add(L.map(function (g) { return { k: g[0], name: g[1], sec: 'more', file: g[2], pal: g[3], icon: ICONS[g[0]] }; }));
 })(window.D6 = window.D6 || {});

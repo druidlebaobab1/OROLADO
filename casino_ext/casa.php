@@ -73,8 +73,8 @@ return [
   'hilorun' => ['type' => 'table', 'name' => 'Hi-Lo Run', 'out' => [[0, 2599051], [0.6, 1599416], [2.3, 507507], [9.2, 104104], [50, 15015], [400, 1716]]],
   // Red Envelopes — 3 envelopes, the prize is their total; each line = one fixed trio (js/games/casa2.js ENV)
   'envelope' => $casaFill('Red Envelopes', [[0, null], [0.4, 2200], [0.7, 1800], [1.2, 1300], [1.5, 900], [2.5, 500], [5, 200], [12, 60], [24, 15], [104, 2]]),
-  // Treasure Map — 4 islands, the treasure is on island 0 / 1 / 2 / 3 with chance 40 · 30 · 20 · 10 % → ×2.35 · ×3.13 · ×4.7 · ×9.4
-  'treasure' => ['type' => 'pick', 'name' => 'Treasure Map', 'opts' => [0.4, 0.3, 0.2, 0.1]],
+  // Pirate Map — 4 islands, the treasure is on island 0 / 1 / 2 / 3 with chance 40 · 30 · 20 · 10 % → ×2.34 · ×3.13 · ×4.69 · ×9.39 (0,94 ÷ chance, rounded down)
+  'treasure' => ['type' => 'pick', 'name' => 'Pirate Map', 'opts' => [0.4, 0.3, 0.2, 0.1]],
   // Lucky 21 — 3 cards (13 ranks, A = 11 or 1, faces 10), exact counts out of 2 197: 7-7-7 ×100, 21 ×5.4, 20 ×3, 19 ×2, 18 ×0.6. RTP 93.61 %
   'flip21' => ['type' => 'table', 'name' => 'Lucky 21', 'out' => [[0, 1526], [0.6, 151], [2, 159], [3, 165], [5.4, 195], [100, 1]]],
   // Balloon Darts — 3 darts: balloons popped 0 / 1 / 2 / 3, then 3 with the golden balloon
@@ -83,8 +83,8 @@ return [
   'egghunt' => $casaFill('Egg Hunt', [[0, null], [0.5, 2600], [1.5, 1300], [5, 300], [2, 900], [3, 500], [6, 150], [12, 50], [20, 20], [100, 3]]),
   // Crab Shells — 4 shells, the pearl is under one ×3.76
   'shells' => ['type' => 'pick', 'name' => 'Crab Shells', 'opts' => [0.25, 0.25, 0.25, 0.25]],
-  // Color Wheel — 20 segments: red 9 · blue 6 · green 4 · gold 1 → ×2.08 · ×3.13 · ×4.7 · ×18.8
+  // Color Wheel — 20 segments: red 9 · blue 6 · green 4 · gold 1 → ×2.08 · ×3.13 · ×4.69 · ×18.79
   'colorwheel' => ['type' => 'pick', 'name' => 'Color Wheel', 'opts' => [0.45, 0.3, 0.2, 0.05]],
-  // Lucky Numbers — ball machine, numbers 1–10, the chosen number ×9.4
+  // Lucky Numbers — ball machine, numbers 1–10, the chosen number ×9.39
   'luckyten' => ['type' => 'pick', 'name' => 'Lucky Numbers', 'opts' => array_fill(0, 10, 0.1)],
 ];

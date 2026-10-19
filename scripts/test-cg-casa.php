@@ -80,6 +80,24 @@ $J = json_decode((string) $js, true);
 check('casa1.js : chaque ligne de chaque machine se dessine exactement (40 grilles par ligne)', is_array($J) && $J['bad'] === 0, substr((string) $js, 0, 200));
 foreach ($slots as $g) check("$g : lignes du navigateur = lignes du serveur (" . count($fiches[$g]['out']) . ')', is_array($J) && array_map('floatval', $J['rows'][$g] ?? []) === array_map('floatval', array_column($fiches[$g]['out'], 0)));
 
+// jeux instantanés : les gains dessinés par casa2.js / casa3.js = ceux du serveur
+$J2 = file_get_contents(__DIR__ . '/../js/games/casa2.js') . file_get_contents(__DIR__ . '/../js/games/casa3.js');
+$arr = function (string $name) use ($J2) { // the array literal after « NAME = » (brackets balanced)
+  if (!preg_match('/(?:var |, )' . $name . ' = \[/', $J2, $m, PREG_OFFSET_CAPTURE)) return null;
+  $i = $m[0][1] + strlen($m[0][0]) - 1; $d = 0;
+  for ($j = $i; $j < strlen($J2); $j++) { if ($J2[$j] === '[') $d++; elseif ($J2[$j] === ']' && --$d === 0) return json_decode(substr($J2, $i, $j - $i + 1), true); }
+  return null;
+};
+foreach (['scratchwin' => 'SW', 'pickbox' => 'PB', 'ladder' => 'LD', 'hilorun' => 'HL', 'flip21' => 'F21', 'popdarts' => 'PD', 'egghunt' => 'EGM'] as $g => $v)
+  check("$g : gains du navigateur ($v) = gains du serveur", array_map('floatval', (array) $arr($v)) === array_map('floatval', array_column($fiches[$g]['out'], 0)), json_encode($arr($v)));
+$env = $arr('ENV');
+check('envelope : chaque trio du navigateur fait le gain du serveur', is_array($env) && array_map(fn($t) => round(array_sum($t), 2), $env) === array_map('floatval', array_column($fiches['envelope']['out'], 0)));
+$eg = $arr('EG');
+check('egghunt : œufs (argent, or) dans le même ordre', is_array($eg) && count($eg) === count($fiches['egghunt']['out']));
+check('pick : ×2.34 · ×3.13 · ×4.69 · ×9.39 | ×3.76 | ×2.08 · ×3.13 · ×4.69 · ×18.79 | ×9.39 (comme affichés)',
+  array_map('casino_ext_pick_mult', $fiches['treasure']['opts']) === [2.34, 3.13, 4.69, 9.39] && casino_ext_pick_mult(0.25) === 3.76
+  && array_map('casino_ext_pick_mult', $fiches['colorwheel']['opts']) === [2.08, 3.13, 4.69, 18.79] && casino_ext_pick_mult($fiches['luckyten']['opts'][0]) === 9.39);
+
 echo "4) Retour simulé (tirages du serveur) · dessin = gain\n";
 foreach ($fiches as $g => $d) {
   $N = 300000; $s = 0.0; $n = $d['type'] === 'pick' ? count($d['opts']) : 0; $bad = 0;
