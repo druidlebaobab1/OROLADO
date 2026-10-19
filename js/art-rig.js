@@ -27,7 +27,7 @@
   /* ------------------------------------------------------------------ POSE — 3D joints (y down from the top of the head, unit = height) */
   function pose(o) {
     var p = o.pal || {}, fem = p.build === 'f', k = o.pose || 'stand', ph = (o.ph || 0) * T2;
-    var J = { legs: [], arms: [], lean: 0, rot: 0, hipX: 0, tilt: 0, hipY: 0.5, shTilt: 0, headTurn: 0, flight: 0, fem: fem };
+    var J = { legs: [], arms: [], lean: 0, rot: 0, hipX: 0, tilt: 0, hipY: 0.5, shTilt: 0, headTurn: 0, flight: 0, fem: fem, big: p.build === 'b' };
     var Lt = 0.245, Ls = 0.243, La = 0.168, Lf = 0.148;
     for (var s = -1; s <= 1; s += 2) {
       var f = ph + (s > 0 ? PI : 0), sf = Math.sin(f), cf = Math.cos(f);
@@ -42,6 +42,9 @@
       } else if (k === 'catwalk') {
         th = 0.05 + 0.34 * sf; kn = 0.05 + 0.55 * Math.pow(Math.max(0, Math.cos(f + 0.75)), 2);
         ar = -0.24 * sf; el = 0.18 + 0.12 * (0.5 - 0.5 * sf); ab = 0.1; cross = 0.85;
+      } else if (k === 'zombie') { // shambling: short dragging steps, arms reaching forward, one leg stiff
+        th = 0.02 + 0.26 * sf; kn = 0.08 + (s < 0 ? 0.45 : 0.15) * Math.pow(Math.max(0, Math.cos(f + 0.7)), 2);
+        ar = 1.66 + 0.08 * Math.sin(f + s) + (s > 0 ? 0.1 : 0); el = -0.12 - 0.12 * (0.5 + 0.5 * sf); ab = 0.36 + 0.05 * sf;
       } else if (k === 'stand') {
         th = 0.02; kn = 0.05; ar = 0.04 + 0.02 * Math.sin(ph); el = 0.16; ab = 0.1;
       } else if (k === 'jump') {
@@ -63,6 +66,7 @@
     if (k === 'walk') { J.rot = 0.04 * -sL; J.tilt = 0.008 * sL; J.lean = 0.03; }
     if (k === 'catwalk') { J.hipX = 0.022 * sL; J.tilt = 0.022 * sL; J.shTilt = -0.012 * sL; J.rot = 0.05 * -sL; J.lean = -0.04; }
     if (k === 'stand') { J.breath = 0.003 * Math.sin(ph); }
+    if (k === 'zombie') { J.lean = 0.12; J.rot = 0.05 * -sL; J.tilt = 0.02 * sL; J.hipX = 0.012 * sL; J.shTilt = 0.02; }
     if (k === 'jump') { J.lean = 0.05; }
     if (k === 'slide') { J.lean = -0.55; J.hipY = 0.83; }
     if (k === 'kick') { J.lean = -0.12; J.rot = 0.12; }
@@ -75,7 +79,7 @@
   function build(J) {
     var fem = J.fem, hipY = J.hipY, lean = J.lean, B = {};
     function up(hgt, x, dz) { return [x + J.hipX * (1 - hgt * 2.2), hipY - hgt * Math.cos(lean), hgt * Math.sin(lean) + (dz || 0)]; }
-    var shW = fem ? 0.098 : 0.117, wW = fem ? 0.07 : 0.088, hW = fem ? 0.112 : 0.1;
+    var big = J.big ? 1.22 : 1, shW = (fem ? 0.098 : 0.117) * big, wW = (fem ? 0.07 : 0.088) * big * big, hW = (fem ? 0.112 : 0.1) * big;
     B.legs = J.legs.map(function (L) {
       var s = L.s, hip = [J.hipX + s * (fem ? 0.058 : 0.055), hipY + s * J.tilt, s * J.rot * 0.35];
       var kx = hip[0] + s * 0.008 - s * L.cross * 0.02 + s * L.fo;
@@ -122,10 +126,11 @@
     var p = o.pal || {}, v = o.view || 'back', J = pose(o), B = build(J), fem = J.fem, k = J.k;
     var suit = !!p.suit, skin = p.skin || '#D9A066', top = p.top || ['#64748B', '#334155'], bot = p.bottom || ['#334155', '#1E293B'], legsOf = p.legs || 'pants';
     var LIGHT = v === 'front' ? 1 : -1; // light from the upper left of the screen
+    var BK = J.big ? 1.3 : 1; // brute: thicker limbs
     // projection: y grows downwards, unit = h, origin at the top of the head; the canvas origin is at the feet
     function P(q) {
       if (v === 'side') return [q[2] * h, q[1] * h, 1 + q[0] * 0.25];
-      if (v === 'front') return [-q[0] * (1 + q[2] * 0.15) * h, (q[1] + q[2] * 0.22) * h, 1 + q[2] * 0.15];
+      if (v === 'front') return [-q[0] * (1 + q[2] * 0.3) * h, (q[1] + q[2] * 0.22) * h, 1 + q[2] * 0.6];
       return [q[0] * (1 - q[2] * 0.16) * h, (q[1] - q[2] * 0.3) * h, 1 - q[2] * 0.16];
     }
     function depth(q) { return v === 'side' ? -q[0] : v === 'front' ? q[2] : -q[2]; }
@@ -162,7 +167,7 @@
     function thigh(L, far) {
       var H0 = pt(L.hip), K0 = pt(L.knee), M = pt(lerp3(L.hip, L.knee, 0.45)), cloth = legsOf === 'pants' || legsOf === 'shorts' || legsOf === 'tights' || suit;
       var col = suit ? '#E8ECF2' : legsOf === 'tights' ? (p.tights || skin) : cloth ? bot[0] : skin, add = suit ? 0.016 : legsOf === 'pants' ? 0.008 : 0;
-      var r0 = (fem ? 0.056 : 0.054) + add, r1 = (fem ? 0.05 : 0.048) + add, r2 = 0.033 + add;
+      var r0 = (fem ? 0.056 : 0.054) * BK + add, r1 = (fem ? 0.05 : 0.048) * BK + add, r2 = 0.033 * BK + add;
       chain([[H0[0], H0[1], r0 * h * H0[2]], [M[0], M[1], r1 * h * M[2]], [K0[0], K0[1], r2 * h * K0[2]]]);
       cyl(H0, K0, r0 * h, col, cloth && !suit ? null : skinDark, far);
       if (legsOf === 'shorts' && !suit) { var S1 = pt(lerp3(L.hip, L.knee, 0.55)); chain([[H0[0], H0[1], (r0 + 0.008) * h], [S1[0], S1[1], (r1 + 0.01) * h]]); cyl(H0, S1, r0 * h, bot[0], null, far); }
@@ -207,7 +212,7 @@
     function arm(A, far) {
       var S0 = pt(A.sh), E0 = pt(A.el), W0 = pt(A.wr), H0 = pt(A.hd), M0 = pt(lerp3(A.sh, A.el, 0.4)), F0 = pt(lerp3(A.el, A.wr, 0.35));
       var sl = suit ? 'long' : p.sleeve || 'short', cl = suit ? '#E8ECF2' : top[0], add = suit ? 0.014 : sl === 'long' ? 0.006 : 0;
-      var ru = (fem ? 0.027 : 0.032) + add, rm = (fem ? 0.024 : 0.03) + add, re = (fem ? 0.019 : 0.022) + add, rf = (fem ? 0.021 : 0.025) + add, rw = (fem ? 0.014 : 0.016) + add * 0.8;
+      var ru = (fem ? 0.027 : 0.032) * BK + add, rm = (fem ? 0.024 : 0.03) * BK + add, re = (fem ? 0.019 : 0.022) * BK + add, rf = (fem ? 0.021 : 0.025) * BK + add, rw = (fem ? 0.014 : 0.016) * BK + add * 0.8;
       chain([[S0[0], S0[1], ru * h], [M0[0], M0[1], rm * h], [E0[0], E0[1], re * h]]);
       cyl(S0, E0, ru * h, sl === 'none' || sl === 'short' ? skin : cl, sl === 'none' || sl === 'short' ? skinDark : null, far);
       if (sl === 'short') { var Q = pt(lerp3(A.sh, A.el, 0.46)); chain([[S0[0], S0[1], (ru + 0.005) * h], [Q[0], Q[1], (rm + 0.004) * h]]); cyl(S0, Q, ru * h, cl, null, far); c.strokeStyle = 'rgba(0,0,0,.18)'; c.lineWidth = 0.004 * h; c.stroke(); }
@@ -401,6 +406,7 @@
       if (p.hat) p.hat(c, x, y, r / 1.15 * 1.15, v);
     }
     function face(x, y, r) {
+      if (p.zombie) { zface(x, y, r); return; }
       var ec = p.eyes || '#3B2416', skD = warm(skin, 0.25);
       [-1, 1].forEach(function (s) {
         var ex = x + s * r * 0.36, ey = y + r * 0.08;
@@ -420,6 +426,21 @@
       c.strokeStyle = 'rgba(0,0,0,.3)'; c.lineWidth = r * 0.025; c.beginPath(); c.moveTo(x - r * 0.21, y + r * 0.66); c.quadraticCurveTo(x, y + r * 0.69, x + r * 0.21, y + r * 0.66); c.stroke();
       if (p.beard) { c.fillStyle = p.beard; c.globalAlpha = 0.55; c.beginPath(); c.moveTo(x - r * 0.85, y + r * 0.2); c.quadraticCurveTo(x - r * 0.8, y + r * 1.1, x, y + r * 1.12); c.quadraticCurveTo(x + r * 0.8, y + r * 1.1, x + r * 0.85, y + r * 0.2); c.quadraticCurveTo(x + r * 0.5, y + r * 0.85, x, y + r * 0.8); c.quadraticCurveTo(x - r * 0.5, y + r * 0.85, x - r * 0.85, y + r * 0.2); c.fill(); c.globalAlpha = 1; }
     }
+    function zface(x, y, r) { // undead: sunken dark sockets, glowing eyes, open jaw with teeth, wounds
+      var skD = shade(skin, -0.35);
+      [-1, 1].forEach(function (s) {
+        var ex = x + s * r * 0.36, ey = y + r * 0.06;
+        c.fillStyle = 'rgba(20,10,10,.65)'; c.beginPath(); c.ellipse(ex, ey, r * 0.24, r * 0.2, 0, 0, T2); c.fill();
+        var eg = c.createRadialGradient(ex, ey, 0, ex, ey, r * 0.16); eg.addColorStop(0, '#FEF9C3'); eg.addColorStop(0.5, p.eyes || '#FACC15'); eg.addColorStop(1, 'rgba(250,204,21,0)');
+        c.fillStyle = eg; c.beginPath(); c.arc(ex, ey, r * 0.16, 0, T2); c.fill();
+        c.strokeStyle = 'rgba(20,10,10,.6)'; c.lineWidth = r * 0.07; c.beginPath(); c.moveTo(ex - s * r * 0.2, ey - r * 0.28); c.lineTo(ex + s * r * 0.2, ey - r * 0.18); c.stroke();
+      });
+      c.strokeStyle = skD; c.lineWidth = r * 0.06; c.beginPath(); c.moveTo(x + r * 0.05, y + r * 0.1); c.lineTo(x + r * 0.08, y + r * 0.42); c.stroke();
+      c.fillStyle = '#2A0A0A'; c.beginPath(); c.moveTo(x - r * 0.3, y + r * 0.58); c.quadraticCurveTo(x, y + r * 0.5, x + r * 0.32, y + r * 0.6); c.quadraticCurveTo(x + r * 0.05, y + r * 1.02, x - r * 0.3, y + r * 0.58); c.fill();
+      c.fillStyle = '#E7E5C9'; for (var i = 0; i < 5; i++) c.fillRect(x - r * 0.24 + i * r * 0.11, y + r * 0.56, r * 0.07, r * 0.09);
+      c.fillStyle = 'rgba(127,29,29,.75)'; c.beginPath(); c.ellipse(x - r * 0.55, y - r * 0.45, r * 0.16, r * 0.08, 0.5, 0, T2); c.fill();
+      c.fillStyle = 'rgba(127,29,29,.5)'; c.fillRect(x + r * 0.2, y + r * 0.85, r * 0.06, r * 0.3);
+    }
     function helmet(x, y, r) {
       var R = r * 1.55;
       var g = c.createRadialGradient(x - R * 0.35, y - R * 0.4, R * 0.1, x, y, R); g.addColorStop(0, '#FFFFFF'); g.addColorStop(0.6, '#E2E8F0'); g.addColorStop(1, '#94A3B8');
@@ -437,6 +458,7 @@
     /* ---------------- skirt / dress (over the thighs) */
     function skirt() {
       var hp = B.hipS.map(pt), wa = B.waist.map(pt), sk = p.skirt || top, sl = p.skirtLen || 0.2, ph = (o.ph || 0) * T2;
+      if (p.gown) { gown(hp, wa, sk, ph); return; }
       var fl = 0.03 + 0.03 * Math.sin(ph), sw = 0.025 * Math.sin(ph);
       var L = v === 'front' ? 1 : 0, R = 1 - L, dir = L ? -1 : 1;
       var bl = [hp[L][0] - dir * (fl + 0.01) * h + sw * h, hp[L][1] + sl * h], br = [hp[R][0] + dir * (fl + 0.01) * h + sw * h, hp[R][1] + sl * h];
@@ -446,6 +468,28 @@
       c.strokeStyle = 'rgba(0,0,0,.14)'; c.lineWidth = 0.005 * h;
       for (var i = 1; i < 4; i++) { var t = i / 4; c.beginPath(); c.moveTo(wa[L][0] + (wa[R][0] - wa[L][0]) * t, wa[L][1] + 0.02 * h); c.quadraticCurveTo(bl[0] + (br[0] - bl[0]) * t + sw * h * 0.5, (wa[L][1] + bl[1]) / 2, bl[0] + (br[0] - bl[0]) * t, bl[1] + 0.008 * h); c.stroke(); }
       if (p.skirtDeco) p.skirtDeco(c, h, bl, br, wa);
+    }
+
+    // a ball gown down to the floor: bell shape, deep folds, petticoat lace and a gold trim at the hem, swaying with the walk
+    function gown(hp, wa, sk, ph) {
+      var L = v === 'front' ? 1 : 0, R = 1 - L, dir = L ? -1 : 1, sw = 0.018 * Math.sin(ph) * h, fl = (p.flare || 0.2) * h, gy = 0.995 * h;
+      var bl = [hp[L][0] - dir * fl + sw, gy], br = [hp[R][0] + dir * fl + sw, gy], n = 7, i;
+      c.beginPath(); c.moveTo(wa[L][0], wa[L][1]);
+      c.bezierCurveTo(hp[L][0] - dir * 0.02 * h, hp[L][1] + 0.05 * h, bl[0] + dir * fl * 0.25, gy - 0.25 * h, bl[0], gy);
+      for (i = 1; i <= n; i++) { var tx = bl[0] + (br[0] - bl[0]) * i / n; c.quadraticCurveTo(tx - (br[0] - bl[0]) / n / 2, gy + (i % 2 ? 0.018 : -0.004) * h, tx, gy); }
+      c.bezierCurveTo(br[0] - dir * fl * 0.25, gy - 0.25 * h, hp[R][0] + dir * 0.02 * h, hp[R][1] + 0.05 * h, wa[R][0], wa[R][1]); c.closePath();
+      var g = c.createLinearGradient(bl[0], 0, br[0], 0); g.addColorStop(0, shade(sk[0], 0.18)); g.addColorStop(0.35, sk[0]); g.addColorStop(0.7, sk[1]); g.addColorStop(1, shade(sk[1], -0.25)); c.fillStyle = g; c.fill();
+      c.save(); c.clip();
+      for (i = 0; i <= n; i++) { // folds: dark valleys + light ridges from the waist down
+        var t0 = i / n, x0 = wa[L][0] + (wa[R][0] - wa[L][0]) * t0, x1 = bl[0] + (br[0] - bl[0]) * t0 + sw * 0.5;
+        c.strokeStyle = 'rgba(0,0,0,.13)'; c.lineWidth = 0.012 * h; c.beginPath(); c.moveTo(x0, wa[0][1] + 0.03 * h); c.quadraticCurveTo((x0 + x1) / 2 + sw, (wa[0][1] + gy) / 2, x1, gy); c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,.16)'; c.lineWidth = 0.006 * h; c.beginPath(); c.moveTo(x0 + 0.01 * h, wa[0][1] + 0.05 * h); c.quadraticCurveTo((x0 + x1) / 2 + sw + 0.012 * h, (wa[0][1] + gy) / 2, x1 + 0.02 * h, gy); c.stroke();
+      }
+      var vg = c.createLinearGradient(0, wa[0][1], 0, gy); vg.addColorStop(0, 'rgba(255,255,255,.12)'); vg.addColorStop(0.5, 'rgba(255,255,255,0)'); vg.addColorStop(1, 'rgba(0,0,0,.18)'); c.fillStyle = vg; c.fillRect(bl[0] - 0.1 * h, wa[0][1], br[0] - bl[0] + 0.2 * h, gy - wa[0][1] + 0.03 * h);
+      c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(bl[0] - 0.1 * h, gy - 0.03 * h, br[0] - bl[0] + 0.2 * h, 0.012 * h); // lace petticoat
+      c.fillStyle = p.trim || '#FDE68A'; c.fillRect(bl[0] - 0.1 * h, gy - 0.045 * h, br[0] - bl[0] + 0.2 * h, 0.01 * h);
+      if (p.sparkle) { c.fillStyle = 'rgba(255,255,255,.8)'; for (i = 0; i < 14; i++) { var sx = bl[0] + (br[0] - bl[0]) * ((i * 0.618) % 1), sy = wa[0][1] + (gy - wa[0][1]) * (0.2 + ((i * 0.37) % 0.75)); c.fillRect(sx, sy, 0.006 * h, 0.006 * h); } }
+      c.restore();
     }
 
     /* ---------------- ordering */
@@ -459,7 +503,7 @@
     } else {
       legSort.forEach(function (L, i) {
         items.push({ d: -20 + i, f: function () { thigh(L, false); } });
-        var nearCam = depth(L.ank) > 0.1 && v === 'back';
+        var nearCam = depth(L.ank) > 0.1 && v === 'back' && !p.gown;
         items.push({ d: nearCam ? 1.5 : -18 + i, f: function () { shin(L, false); } });
       });
       items.push({ d: 0, f: torsoBF });
