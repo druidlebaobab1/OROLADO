@@ -423,10 +423,15 @@
     return '<div class="cs-panel cg-panel">' + (extra ? '<div class="cs-extra">' + extra + '</div>' : '') +
       '<div class="cg-term"><div class="cg-tl">' +
         '<div class="cg-amt"><button type="button" class="cg-step" data-sk="dn" aria-label="−"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>' +
-          '<label class="cg-in"><input id="csStake" inputmode="decimal" autocomplete="off" value="' + m2(S.stake) + '" aria-label="' + esc(x.stake) + '">' +
-          '<button type="button" class="cg-clr" data-sk="clr" aria-label="0.10"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg></button></label>' +
+          '<label class="cg-in"><input id="csStake" inputmode="decimal" autocomplete="off" value="' + m2(S.stake) + '" aria-label="' + esc(x.stake) + '"></label>' +
           '<button type="button" class="cg-step" data-sk="up" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button></div>' +
-        '<div class="cg-quick">' + QUICK.map(function (v) { return '<button type="button" data-q="' + v + '">' + (v < 1 ? m2(v).replace('.', dec()) : v) + '</button>'; }).join('') + '</div>' +
+        // 2026-10-19 (propriétaire) : 4 touches utiles au lieu de 0,50 / 1 / 5 / 10 : moitié, double, effacer (⌫), max.
+        '<div class="cg-quick cg-ops">' +
+          '<button type="button" data-op="half" aria-label="½">½</button>' +
+          '<button type="button" data-op="dbl" aria-label="×2">×2</button>' +
+          '<button type="button" data-op="clr" aria-label="0.10"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z"/><path d="M12 9.5l5 5M17 9.5l-5 5"/></svg></button>' +
+          '<button type="button" data-op="max">MAX</button>' +
+        '</div>' +
       '</div><button type="button" class="cs-go cg-go fit" id="csGo">' + esc(btnLabel || x.bet) + '</button></div></div>';
   }
   function dec() { return ['en', 'zh', 'hi', 'ar'].indexOf((document.documentElement.lang || 'fr').slice(0, 2)) >= 0 ? '.' : ','; }
@@ -481,6 +486,16 @@
       });
     });
     box.querySelectorAll('.cg-quick [data-q]').forEach(function (b) { b.addEventListener('click', function () { set(+b.getAttribute('data-q')); }); });
+    box.querySelectorAll('.cg-ops [data-op]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        var op = b.getAttribute('data-op');
+        if (op === 'half') set(S.stake / 2);
+        else if (op === 'dbl') set(S.stake * 2);
+        else if (op === 'clr') set(0.1);
+        else { var bal = S.bal[S.adminTest ? 'demo' : 'real']; set(Math.min(1000, bal != null && bal >= 0.1 ? Math.floor(bal * 100) / 100 : 1000)); }
+      });
+    });
     setTimeout(fitInp, 0);
   }
 
@@ -505,7 +520,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2832'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2839'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.

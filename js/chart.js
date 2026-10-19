@@ -2423,7 +2423,7 @@
     var k = sizeK();
     var big = cssH >= 200;
     var i, c, x, up, y1, y2, bh, hw, lw;
-    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1 }[kind];
+    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1, coins: 1 }[kind];
     var lastX = isLine ? (panMs > 0 ? toX(last) : pad.l + w) : toX(last);
     function wick(cd) {
       var a = isFinite(cd.h) ? cd.h : Math.max(cd.o, cd.c);
@@ -2751,6 +2751,23 @@
           ctx.fillStyle = M;
           ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], rr, 0, Math.PI * 2); ctx.fill();
         }
+      }
+    } else if (kind === 'coins') {
+      // 2026-10-19 (propriétaire : MAMMON « rouge en bas, un trait au milieu, je ne comprends pas ») : FIL D'OR semé de pièces —
+      // une ligne dorée lisse, une pièce d'or toutes les quelques secondes (pièce verte si ça a monté, rouge si ça a baissé).
+      ctx.beginPath();
+      smoothPath(pts, lastX, lastY);
+      ctx.strokeStyle = X.line || '#FFD54A';
+      ctx.lineWidth = 2.4;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      var stepC = Math.max(2, Math.round(26 / Math.max(1, slot)));
+      for (i = stepC; i < n; i += stepC) {
+        var cx = pts[i][0], cy = pts[i][1], upC = candles[i].c >= candles[i - stepC].c;
+        ctx.fillStyle = '#FFD54A'; ctx.strokeStyle = '#8A5A00'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(cx, cy, 5.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = upC ? (X.up || '#2BFF88') : (X.dn || '#FF4D5E');
+        ctx.beginPath(); ctx.arc(cx, cy, 2.2, 0, Math.PI * 2); ctx.fill();
       }
     } else if (kind === 'current') {
       // v2835 (propriétaire : POSEIDON « on ne comprend pas », plus de trait au milieu) : COURANT MARIN — un seul tracé épais

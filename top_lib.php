@@ -12,7 +12,7 @@ declare(strict_types=1);
  * archives de la semaine si personne ne l'a mis à jour depuis plus d'un jour.
  */
 
-const OROLADO_TOP_MIN_TRADES = 20;
+const OROLADO_TOP_MIN_TRADES = 5; // 2026-10-19 (propriétaire : « le classement doit montrer du monde et défiler »)
 const OROLADO_TOP_SHOW = 50;
 
 function orolado_top_public(): bool {

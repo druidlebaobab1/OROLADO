@@ -137,8 +137,8 @@
   function logoHtml(lg, cls) {
     if (!lg) return '';
     if (/^q:[a-z]+$/.test(lg)) return QIMG[lg.slice(2)] ? '<span class="' + cls + ' sp-qsvg">' + QIMG[lg.slice(2)] + '</span>' : '';
-    if (/^img\/teams\/[a-z0-9-]+\.png$/.test(lg)) return '<img class="' + cls + '" src="' + lg + '" alt="" loading="lazy">';
-    if (/^[a-f0-9]{16}$/.test(lg)) return '<img class="' + cls + '" src="sp-logo.php?k=' + lg + '" alt="" loading="lazy">';
+    if (/^img\/teams\/[a-z0-9-]+\.png$/.test(lg)) return '<img class="' + cls + '" src="' + lg + '" alt="">';
+    if (/^[a-f0-9]{16}$/.test(lg)) return '<img class="' + cls + '" src="sp-logo.php?k=' + lg + '" alt="">';
     return '';
   }
   function crest(n, lg, sp) {
@@ -304,7 +304,19 @@
   // le pack de langue (ar, ru, de…) arrive un peu après : on redessine les textes de la page Paris s'il est ouvert
   document.addEventListener('oro:livepack', function () { if (box && box.isConnected && box.classList.contains('sp2') && !sending && view !== 'slip' && (events.length || view === 'mine')) render(); });
   // pré-chargement discret, 4 s après l'ouverture du site (une seule petite lecture)
-  setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); } }); }, 4000);
+  // 2026-10-19 (propriétaire : « Paris : les logos arrivent en éclats au 1er clic ») : la liste ET les logos des équipes
+  // sont chargés en avance, en silence (le 1er clic sur Paris affiche tout d'un coup).
+  function warmLogos(json) {
+    try {
+      var seen = {}, m, re = /"(img\/teams\/[a-z0-9-]+\.png|[a-f0-9]{16})"/g, n = 0;
+      while ((m = re.exec(json)) && n < 80) {
+        var u = m[1].charAt(0) === 'i' ? m[1] : 'sp-logo.php?k=' + m[1];
+        if (seen[u]) continue; seen[u] = 1; n++;
+        var im = new Image(); im.decoding = 'async'; im.src = u;
+      }
+    } catch (e) { /* ignore */ }
+  }
+  setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); warmLogos(lastJson); } }); }, 2500);
 
   // v2765 (propriétaire) : deux onglets en HAUT de la page — « Paris » (les matchs) et « Mes paris » (mes reçus)
   var view = 'list', mineCache = null;
