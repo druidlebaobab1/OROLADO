@@ -3539,7 +3539,8 @@
     // (suivi v2353) jusqu'au vrai point d'entrée, et la zone + la ligne d'arrivée n'apparaissent qu'une fois
     // confirmées, à leur vraie place : plus de double trait ni de sursaut. Démo : inchangé (prix du clic).
     // 2026-10-19 (propriétaire) : le serveur reprend le prix du CLIC en réel aussi → rond, zone et lignes au clic, d'un coup.
-    var clickMode = shownPrice[trade.id] > 0 && shownMarks[trade.id] > 1;
+    // v2831 : en réel, seulement si le serveur va prendre le prix du clic (trade.clickOk, js/engine.js) ; sinon suivi v2817.
+    var clickMode = (trade.mode !== 'real' || trade.clickOk !== false) && shownPrice[trade.id] > 0 && shownMarks[trade.id] > 1;
     if (clickMode) rideEntryT = 0;
     var riding = !clickMode && !(panMs > 0) && lastDrawnClose > 0 && (trade.pending || (rideEntryT > 0 && rideHeadT < rideEntryT));
     var rs = rideState[trade.id];
