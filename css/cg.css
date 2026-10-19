@@ -214,3 +214,6 @@ html:root body #casinoModal .cs-top .cs-snd[data-snd="off"] svg{opacity:.62}
 html:root body #casinoModal .cs-top .cs-snd[data-snd="off"] svg .wv{stroke:#fff}
 html:root body #casinoModal .cs-top .cs-snd:focus-visible{outline:2px solid #FDE68A;outline-offset:2px}
 html:root body #casinoModal.pred-only .cs-top .cs-snd{display:none!important}
+
+/* v2876 (propriétaire) : le bouton du son seulement DANS les jeux, pas dans la salle des jeux */
+html:root body #casinoModal:not(.in-game) .cs-top #csSnd{display:none!important}
