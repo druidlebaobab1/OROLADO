@@ -1194,6 +1194,11 @@
         var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
         var standalone = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
         var underBar = !standalone && fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
+        // v2834 (propriétaire, captures Safari : « à l'actualisation la page monte, puis redescend après quelques secondes ») :
+        // pendant le chargement, Safari annonce un moment la hauteur de TOUT l'écran alors que sa barre est là ; on réservait
+        // alors la place de la barre sous ACHETER / VENDRE (bande vide), retirée quelques secondes plus tard. Cette mesure
+        // n'est crue qu'après 3 s (les recalculs prévus après le chargement la reprennent si elle est vraie).
+        if (underBar && (window.performance && performance.now ? performance.now() : 99999) < 3000) underBar = false;
         bottomRes = underBar ? (safeBottomPx() + 35) : 8;
       } else {
         bottomRes = safeBottomPx() + 4;
