@@ -69,6 +69,7 @@ function orolado_feed_legacy_ids(): array {
  * Indices ajoutés (fichier indices.json) : modèle de prix vérifié + noms + lignes objectif (×5 / ×10 / ×50).
  * Modèle (toujours 50/50 : aucune pente, aucune mémoire d'un tick à l'autre, mouvements symétriques) :
  *   hold  = chance qu'un tick ne bouge pas (courbe « en marches ») ;
+ *   (2026-10-19 : pauses ramenées à 10 % sur les 6 indices « en marches » — moteur relancé.)
  *   wideP / wideK = chance d'un tick plus large (×wideK) : bougies hachées ;
  *   jumpP / jumpMin / jumpMax = pics soudains, vers le haut OU vers le bas à chance égale.
  * Lignes objectif calculées par scripts/indices-calib.js ; vérifiées par scripts/test-indices.php.
