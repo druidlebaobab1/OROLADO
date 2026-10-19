@@ -1,0 +1,46 @@
+/* v2830 — more4d (owner request, round 5): Lucky Polish, Loves Me, Bouquet Toss, Fireworks, Gold Rush — new instant games; the scene always shows exactly the line (or option) the server drew (casino_ext/more4.php). */
+html:root body #casinoModal .m4 .m4-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;background:var(--m4bg,linear-gradient(180deg,#1B1442,#0E0A26))}
+html:root body #casinoModal .m4 .m4-pay{flex:0 0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;direction:ltr;position:relative;z-index:2}
+html:root body #casinoModal .m4 .m4-pay span{min-width:0;height:40px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 2px;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);backdrop-filter:blur(2px);transition:background .25s,box-shadow .25s,transform .25s}
+html:root body #casinoModal .m4 .m4-pay svg{width:20px;height:20px;flex:none;overflow:visible}
+html:root body #casinoModal .m4 .m4-pay b{display:block;max-width:100%;white-space:nowrap;font:900 clamp(9px,2.9vw,12.5px)/1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .m4 .m4-pay span.on{background:linear-gradient(180deg,#34D399,#15803D);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px -4px #22C55E;transform:translateY(-1px)}
+html:root body #casinoModal .m4 .m4-pay span:last-child b{color:#FDE68A}
+html:root body #casinoModal .m4 .m4-pay span.on:last-child{background:linear-gradient(180deg,#FDE68A,#D97706);box-shadow:0 0 18px -3px #FBBF24}
+html:root body #casinoModal .m4 .m4-pay span.on:last-child b{color:#fff}
+html:root body #casinoModal .m4 .m4-scene{position:relative;flex:1 1 auto;min-height:0;margin:0 -8px -8px}
+html:root body #casinoModal .m4 .m4-svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:hidden}
+html:root body #casinoModal .m4.m4-busy .cg-opts{pointer-events:none}
+html:root body #casinoModal .m4 .cg-opts > button b{display:block;max-width:100%;white-space:nowrap;font:900 14px/1.05 var(--cg-font);color:#fff}
+html:root body #casinoModal .m4 .cg-opts > button small{display:block;max-width:100%;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+@media (max-height:640px){html:root body #casinoModal .m4 .m4-pay span{height:34px}html:root body #casinoModal .m4 .m4-pay svg{width:16px;height:16px}}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .m4 .m4-stage{flex-direction:row}
+  html:root body #casinoModal .m4 .m4-pay{grid-auto-flow:row;grid-auto-rows:minmax(0,1fr);width:64px}
+  html:root body #casinoModal .m4 .m4-pay span{height:auto;flex-direction:row;gap:3px}
+  html:root body #casinoModal .m4 .m4-pay svg{width:14px;height:14px}
+  html:root body #casinoModal .m4 .m4-scene{margin:-8px -8px -8px 0}
+}
+html:root body #casinoModal .m4-nails{--m4bg:linear-gradient(180deg,#4A0E3A,#831843)}
+html:root body #casinoModal .m4-nails .na-n{transition:fill .25s}
+html:root body #casinoModal .m4-nails .na-n.win{filter:drop-shadow(0 0 4px #fff);animation:naW .7s ease-in-out infinite alternate}
+@keyframes naW{from{opacity:.8}to{opacity:1}}
+html:root body #casinoModal .m4-daisy{--m4bg:linear-gradient(180deg,#500724,#831843)}
+html:root body #casinoModal .m4-daisy #dsTagR.ds-yes{fill:#16A34A;stroke:#BBF7D0}
+html:root body #casinoModal .m4-daisy #dsTagR.ds-no{fill:#475569}
+html:root body #casinoModal .m4-bouquet{--m4bg:linear-gradient(180deg,#3B0764,#581C87)}
+html:root body #casinoModal .m4-bouquet .bq-l{cursor:pointer}
+html:root body #casinoModal .m4-bouquet .bq-ring{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.18);stroke-width:1.2}
+html:root body #casinoModal .m4-bouquet .bq-l.on .bq-ring{fill:rgba(251,191,36,.22);stroke:#FBBF24;stroke-width:2}
+html:root body #casinoModal .m4-bouquet .bq-l.got{filter:drop-shadow(0 0 6px #FDE68A)}
+html:root body #casinoModal .m4-bouquet .bq-opts > button{min-height:46px!important}
+html:root body #casinoModal .m4-fireworks{--m4bg:linear-gradient(180deg,#020617,#1E1B4B)}
+html:root body #casinoModal .m4-fireworks .fw-s{transition:opacity .3s}
+html:root body #casinoModal .m4-fireworks .fw-s.on{animation:fwOn .5s ease-in-out infinite alternate}
+@keyframes fwOn{from{opacity:.75}to{opacity:1}}
+html:root body #casinoModal .m4-goldpan{--m4bg:linear-gradient(180deg,#1E1B4B,#164E63)}
+html:root body #casinoModal .m4-goldpan .gr-w{animation:fiWave2 3s ease-in-out infinite alternate}
+@keyframes fiWave2{from{transform:translateX(-6px)}to{transform:translateX(6px)}}
+html.oro-lite body #casinoModal .m4 .na-n.win,html.oro-lite body #casinoModal .m4 .fw-s.on,html.oro-lite body #casinoModal .m4 .gr-w{animation:none}
+html.oro-lite body #casinoModal .m4 .na-n.win,html.oro-lite body #casinoModal .m4 .bq-l.got{filter:none}

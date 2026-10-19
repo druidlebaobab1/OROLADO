@@ -1,0 +1,40 @@
+/* v2830 — more4a (owner request, round 5): Coin Pusher, Big Catch, Gumball Machine, Jewel Boutique, Piñata — new instant games; the scene always shows exactly the line the server drew (casino_ext/more4.php). */
+html:root body #casinoModal .m4 .m4-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;background:var(--m4bg,linear-gradient(180deg,#1B1442,#0E0A26))}
+html:root body #casinoModal .m4 .m4-pay{flex:0 0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;direction:ltr;position:relative;z-index:2}
+html:root body #casinoModal .m4 .m4-pay span{min-width:0;height:40px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 2px;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);backdrop-filter:blur(2px);transition:background .25s,box-shadow .25s,transform .25s}
+html:root body #casinoModal .m4 .m4-pay svg{width:20px;height:20px;flex:none;overflow:visible}
+html:root body #casinoModal .m4 .m4-pay b{display:block;max-width:100%;white-space:nowrap;font:900 clamp(9px,2.9vw,12.5px)/1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .m4 .m4-pay span.on{background:linear-gradient(180deg,#34D399,#15803D);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px -4px #22C55E;transform:translateY(-1px)}
+html:root body #casinoModal .m4 .m4-pay span:last-child b{color:#FDE68A}
+html:root body #casinoModal .m4 .m4-pay span.on:last-child{background:linear-gradient(180deg,#FDE68A,#D97706);box-shadow:0 0 18px -3px #FBBF24}
+html:root body #casinoModal .m4 .m4-pay span.on:last-child b{color:#fff}
+html:root body #casinoModal .m4 .m4-scene{position:relative;flex:1 1 auto;min-height:0;margin:0 -8px -8px}
+html:root body #casinoModal .m4 .m4-svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:hidden}
+html:root body #casinoModal .m4.m4-busy .cg-opts{pointer-events:none}
+html:root body #casinoModal .m4 .cg-opts > button b{display:block;max-width:100%;white-space:nowrap;font:900 14px/1.05 var(--cg-font);color:#fff}
+html:root body #casinoModal .m4 .cg-opts > button small{display:block;max-width:100%;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+@media (max-height:640px){html:root body #casinoModal .m4 .m4-pay span{height:34px}html:root body #casinoModal .m4 .m4-pay svg{width:16px;height:16px}}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .m4 .m4-stage{flex-direction:row}
+  html:root body #casinoModal .m4 .m4-pay{grid-auto-flow:row;grid-auto-rows:minmax(0,1fr);width:64px}
+  html:root body #casinoModal .m4 .m4-pay span{height:auto;flex-direction:row;gap:3px}
+  html:root body #casinoModal .m4 .m4-pay svg{width:14px;height:14px}
+  html:root body #casinoModal .m4 .m4-scene{margin:-8px -8px -8px 0}
+}
+html:root body #casinoModal .m4-coinpush{--m4bg:radial-gradient(80% 50% at 50% 100%,rgba(251,191,36,.18),transparent 70%),linear-gradient(180deg,#140B33,#22104A)}
+html:root body #casinoModal .m4-coinpush .cp-bulb{fill:#FDE68A;animation:cpBulb 1.2s ease-in-out infinite}
+@keyframes cpBulb{0%,100%{opacity:.35}50%{opacity:1}}
+html:root body #casinoModal .m4-coinpush.m4-big .cp-bulb{animation-duration:.3s}
+html:root body #casinoModal .m4-fishing{--m4bg:linear-gradient(180deg,#1E1B4B,#0B0A2A)}
+html:root body #casinoModal .m4-fishing .fi-waves{animation:fiWave 3s ease-in-out infinite alternate}
+@keyframes fiWave{from{transform:translateX(-6px)}to{transform:translateX(6px)}}
+html:root body #casinoModal .m4-fishing .fi-fish{filter:drop-shadow(0 0 6px rgba(253,230,138,.6))}
+html:root body #casinoModal .m4-gumball{--m4bg:radial-gradient(70% 50% at 50% 40%,rgba(244,114,182,.25),transparent 70%),linear-gradient(180deg,#2A0B3D,#12082A)}
+html:root body #casinoModal .m4-jewelbox{--m4bg:linear-gradient(180deg,#2A0B2E,#4A0E3A)}
+html:root body #casinoModal .m4-jewelbox .jb-tw path{animation:jbTw 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes jbTw{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1.1)}}
+html:root body #casinoModal .m4-jewelbox #jbItem{filter:drop-shadow(0 0 6px rgba(255,255,255,.55))}
+html:root body #casinoModal .m4-pinata{--m4bg:linear-gradient(180deg,#4C1D95,#BE185D)}
+html.oro-lite body #casinoModal .m4 .cp-bulb,html.oro-lite body #casinoModal .m4 .fi-waves,html.oro-lite body #casinoModal .m4 .jb-tw path{animation:none}
+html.oro-lite body #casinoModal .m4 .fi-fish,html.oro-lite body #casinoModal .m4 #jbItem{filter:none}

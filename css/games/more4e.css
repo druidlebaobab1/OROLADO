@@ -1,0 +1,38 @@
+/* v2830 — more4e (owner request, round 5): 3 video slots with their own mechanic — Crystal Clusters (cluster pays), Mega Reels (megaways), Coin Link (hold & win). Each screen is built from the line the server drew (casino_ext/more5.php). */
+html:root body #casinoModal .m4 .m4-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;background:var(--m4bg,linear-gradient(180deg,#1B1442,#0E0A26))}
+html:root body #casinoModal .m4 .m4-pay{flex:0 0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;direction:ltr;position:relative;z-index:2}
+html:root body #casinoModal .m4 .m4-pay span{min-width:0;height:40px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 2px;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);backdrop-filter:blur(2px);transition:background .25s,box-shadow .25s,transform .25s}
+html:root body #casinoModal .m4 .m4-pay svg{width:20px;height:20px;flex:none;overflow:visible}
+html:root body #casinoModal .m4 .m4-pay b{display:block;max-width:100%;white-space:nowrap;font:900 clamp(9px,2.9vw,12.5px)/1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .m4 .m4-pay span.on{background:linear-gradient(180deg,#34D399,#15803D);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px -4px #22C55E;transform:translateY(-1px)}
+html:root body #casinoModal .m4 .m4-pay span:last-child b{color:#FDE68A}
+html:root body #casinoModal .m4 .m4-pay span.on:last-child{background:linear-gradient(180deg,#FDE68A,#D97706);box-shadow:0 0 18px -3px #FBBF24}
+html:root body #casinoModal .m4 .m4-pay span.on:last-child b{color:#fff}
+html:root body #casinoModal .m4 .m4-scene{position:relative;flex:1 1 auto;min-height:0;margin:0 -8px -8px}
+html:root body #casinoModal .m4 .m4-svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:hidden}
+html:root body #casinoModal .m4.m4-busy .cg-opts{pointer-events:none}
+html:root body #casinoModal .m4 .cg-opts > button b{display:block;max-width:100%;white-space:nowrap;font:900 14px/1.05 var(--cg-font);color:#fff}
+html:root body #casinoModal .m4 .cg-opts > button small{display:block;max-width:100%;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+@media (max-height:640px){html:root body #casinoModal .m4 .m4-pay span{height:34px}html:root body #casinoModal .m4 .m4-pay svg{width:16px;height:16px}}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .m4 .m4-stage{flex-direction:row}
+  html:root body #casinoModal .m4 .m4-pay{grid-auto-flow:row;grid-auto-rows:minmax(0,1fr);width:64px}
+  html:root body #casinoModal .m4 .m4-pay span{height:auto;flex-direction:row;gap:3px}
+  html:root body #casinoModal .m4 .m4-pay svg{width:14px;height:14px}
+  html:root body #casinoModal .m4 .m4-scene{margin:-8px -8px -8px 0}
+}
+html:root body #casinoModal .m4-cluster{--m4bg:radial-gradient(80% 60% at 50% 40%,rgba(129,140,248,.25),transparent 70%),linear-gradient(180deg,#0F0A2A,#1E1B4B)}
+html:root body #casinoModal .m4-cluster.cl-won .cl-c:not(.win){opacity:.35}
+html:root body #casinoModal .m4-cluster .cl-c.win > rect{fill:rgba(253,230,138,.22);stroke:#FDE68A;stroke-width:1.5}
+html:root body #casinoModal .m4-cluster .cl-c.win .cl-s{animation:clW .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes clW{from{filter:brightness(1)}to{filter:brightness(1.35)}}
+html:root body #casinoModal .m4 .sl-sp{animation:slSp .8s ease-in-out infinite alternate}
+@keyframes slSp{from{opacity:.2}to{opacity:1}}
+html:root body #casinoModal .m4-megaways{--m4bg:radial-gradient(80% 60% at 50% 40%,rgba(244,114,182,.2),transparent 70%),linear-gradient(180deg,#0B0820,#1E1B4B)}
+html:root body #casinoModal .m4-megaways.mw-won .mw-c:not(.win){opacity:.3}
+html:root body #casinoModal .m4-megaways .mw-c.win{filter:drop-shadow(0 0 3px #FDE68A)}
+html:root body #casinoModal .m4-coinlink{--m4bg:radial-gradient(80% 60% at 50% 45%,rgba(251,191,36,.18),transparent 70%),linear-gradient(180deg,#12082A,#2E1065)}
+html:root body #casinoModal .m4-coinlink .lk-cell.held{fill:rgba(251,191,36,.18);stroke:rgba(251,191,36,.6)}
+html.oro-lite body #casinoModal .m4 .cl-c.win .cl-s,html.oro-lite body #casinoModal .m4 .sl-sp{animation:none}
+html.oro-lite body #casinoModal .m4 .mw-c.win{filter:none}
