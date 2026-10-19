@@ -470,7 +470,7 @@
     $('livePaneHome').hidden = !home;
     $('liveBar').hidden = false;
     $('liveModal').classList.toggle('lv-at-home', home);
-    $('liveBarT').textContent = home ? (H().home || 'Social') : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
+    $('liveBarT').textContent = home ? ((D6.Social2 && D6.Social2.t ? D6.Social2.t('title') : '') || 'Social') : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
     if ($('livePaneFun')) $('livePaneFun').hidden = w !== 'fun' && w !== 'send';
     if ($('livePaneGuest')) $('livePaneGuest').hidden = w !== 'guest';
     if ($('livePaneGroups')) $('livePaneGroups').hidden = w !== 'groups';

@@ -12686,3 +12686,5 @@ html:root body #portalModal .gh-grid.gh-imm .gh-hero-w{border-radius:50%}
 html:root body #portalModal .gh-grid.gh-imm .gh-hero-w *,html:root body #portalModal .gh-grid.gh-imm .cs-pl *{pointer-events:none!important}
 html:root body #portalModal .gh-grid.gh-imm .cs-pl{border-radius:50%!important}
 html:root body #portalModal .gh-grid.gh-imm .gh-hero > b,html:root body #portalModal .gh-grid.gh-imm .gh-p > b,html:root body #portalModal .gh-grid.gh-imm .gh-p > small{max-width:100%}
+/* v2808 : sur PC aussi, la flèche ‹ de Social ne colle plus au bord haut de la fenêtre */
+@media (min-width:860px){html:root body #liveModal#liveModal#liveModal .live-bar #liveBack#liveBack{top:-24px!important}}
