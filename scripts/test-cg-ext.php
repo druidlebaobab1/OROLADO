@@ -100,8 +100,25 @@ check('faute du joueur (obstacle) : perdu, moment secret révélé', $r['done'] 
 $r = casino_multi(load_db(), $me, 'srun', 'cash', 'real', 0, []);
 check('encaisser après la faute : rien', (float) ($r['win'] ?? 0) === 0.0 && abs($bal[$U] - $b3) < 0.001);
 // retour exact du mode mixte : encaisser à ×x quand le moment secret ≥ x … même loi que l'avion
-foreach ([1.2, 2, 5, 20] as $x) { $N = 1000000; // 1 million de tirages : la simulation est stable même à ×20 $w = 0; for ($i = 0; $i < $N; $i++) if (casino_crash_point() > $x) $w++;
+foreach ([1.2, 2, 5, 20] as $x) { $N = 1000000; $w = 0; for ($i = 0; $i < $N; $i++) if (casino_crash_point() > $x) $w++; // 1 million de tirages : stable même à ×20
   check(sprintf('mixte : encaisser à ×%s rend %.1f %% (≤ 94)', $x, $w / $N * $x * 100), $w / $N * $x < 0.95); }
+// v2810 : deux départs simultanés d'un jeu « où tu contrôles » → une seule mise ; encaissement arrondi VERS LE BAS
+casino_with($file, static function (array &$st) { unset($st['g']['srun']); return true; });
+$bal[$U] = 30.0; $dbs = load_db(); $dbs['vault']['u_x']['real'] = 30.0; save_db(orolado_data_file(), $dbs);
+$origRpc = $GLOBALS['OROLADO_FAKE_RPC']; $hook = null; $inner = null;
+$GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use ($origRpc, &$hook) { if ($fn === 'debit_real' && $hook) { $h = $hook; $hook = null; $h(); } return $origRpc($fn, $a); };
+$hook = static function () use (&$inner, $me) { $inner = casino_multi(load_db(), $me, 'srun', 'start', 'real', 2, []); };
+$outer = casino_multi(load_db(), $me, 'srun', 'start', 'real', 2, []);
+$GLOBALS['OROLADO_FAKE_RPC'] = $origRpc;
+check('mixte : 2 départs simultanés → une seule mise retirée, le 2e « busy »', $outer['ok'] === true && ($inner['reason'] ?? '') === 'busy' && abs($bal[$U] - 28.0) < 0.001, json_encode([$inner, $bal[$U]]));
+casino_with($file, static function (array &$st) { unset($st['g']['srun']); return true; });
+casino_multi(load_db(), $me, 'srun', 'start', 'real', 0.10, []);
+casino_with($file, static function (array &$st) { $st['g']['srun']['t0'] -= log(1.055) / 0.12; $st['g']['srun']['c'] = 50.0; return true; });
+$b4 = $bal[$U]; $r = casino_multi(load_db(), $me, 'srun', 'cash', 'real', 0, []);
+check('mixte : encaisser à 0,10 $ paie l\'arrondi INFÉRIEUR', abs((float) $r['win'] - casino_win(0.10, (float) $r['out'])) < 1e-9 && (float) $r['win'] <= 0.10 * (float) $r['out'] + 1e-9 && abs($bal[$U] - ($b4 + (float) $r['win'])) < 0.001, json_encode([$r['out'] ?? null, $r['win'] ?? null]));
+// v2810 : jeu 'pick' / 'table' à 0,10 $ : gain = arrondi inférieur de mise × multiplicateur
+$okp = true; for ($k = 0; $k < 200; $k++) { $r = casino_play(load_db(), $me, 'pgood', 'real', 0.10, ['pick' => 0]); if (!$r['ok']) break; if (abs($r['win'] - casino_win(0.10, (float) $r['mult'])) > 1e-9) $okp = false; }
+check('pick à 0,10 $ : ×' . casino_ext_pick_mult(1 / 3) . ' → ' . casino_win(0.10, casino_ext_pick_mult(1 / 3)) . ' $ (vers le bas)', $okp && casino_win(0.10, casino_ext_pick_mult(1 / 3)) === 0.28);
 check('admin : la limite de mise accepte les nouveaux jeux', isset(casino_save_limits(['srun' => 5])['limits']['srun']));
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";

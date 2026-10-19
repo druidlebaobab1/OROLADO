@@ -166,18 +166,18 @@
   })();
   // nouveaux petits textes (12 langues)
   var NT = {
-    en: { results: 'Results', inPlay: 'In play', oddsChg: 'Odds updated', sending: 'Sending…' },
-    fr: { results: 'Résultats', inPlay: 'En jeu', oddsChg: 'Cotes mises à jour', sending: 'Envoi…' },
-    es: { results: 'Resultados', inPlay: 'En juego', oddsChg: 'Cuotas actualizadas', sending: 'Enviando…' },
-    pt: { results: 'Resultados', inPlay: 'Em jogo', oddsChg: 'Odds atualizadas', sending: 'Enviando…' },
-    ar: { results: 'النتائج', inPlay: 'جارٍ الآن', oddsChg: 'تم تحديث الاحتمالات', sending: 'جارٍ الإرسال…' },
-    tr: { results: 'Sonuçlar', inPlay: 'Oynanıyor', oddsChg: 'Oranlar güncellendi', sending: 'Gönderiliyor…' },
-    vi: { results: 'Kết quả', inPlay: 'Đang diễn ra', oddsChg: 'Tỷ lệ đã cập nhật', sending: 'Đang gửi…' },
-    id: { results: 'Hasil', inPlay: 'Berlangsung', oddsChg: 'Odds diperbarui', sending: 'Mengirim…' },
-    ru: { results: 'Результаты', inPlay: 'Идёт игра', oddsChg: 'Коэффициенты обновлены', sending: 'Отправка…' },
-    de: { results: 'Ergebnisse', inPlay: 'Läuft', oddsChg: 'Quoten aktualisiert', sending: 'Wird gesendet…' },
-    hi: { results: 'नतीजे', inPlay: 'जारी है', oddsChg: 'ऑड्स अपडेट हुए', sending: 'भेजा जा रहा है…' },
-    zh: { results: '结果', inPlay: '进行中', oddsChg: '赔率已更新', sending: '发送中…' }
+    en: { results: 'Results', inPlay: 'In play', oddsChg: 'Odds updated', sending: 'Sending…', qOnly: 'Predictions: single bets only.', e_single: 'Predictions are single bets only: they can’t be combined.', e_corr: 'These picks are linked: they can’t be in the same slip.', e_cap: 'Limit reached on this choice: lower your stake.' },
+    fr: { results: 'Résultats', inPlay: 'En jeu', oddsChg: 'Cotes mises à jour', sending: 'Envoi…', qOnly: 'Prédiction : pari simple uniquement.', e_single: 'Les prédictions se jouent seules : pas de combiné.', e_corr: 'Ces choix sont liés : pas dans le même coupon.', e_cap: 'Limite atteinte sur ce choix : baisse la mise.' },
+    es: { results: 'Resultados', inPlay: 'En juego', oddsChg: 'Cuotas actualizadas', sending: 'Enviando…', qOnly: 'Predicciones: solo apuesta simple.', e_single: 'Las predicciones son solo apuestas simples: no se combinan.', e_corr: 'Estas selecciones están relacionadas: no pueden ir en el mismo boleto.', e_cap: 'Límite alcanzado en esta opción: baja la apuesta.' },
+    pt: { results: 'Resultados', inPlay: 'Em jogo', oddsChg: 'Odds atualizadas', sending: 'Enviando…', qOnly: 'Previsões: só aposta simples.', e_single: 'Previsões são só apostas simples: não podem ser combinadas.', e_corr: 'Essas escolhas estão ligadas: não podem ficar no mesmo bilhete.', e_cap: 'Limite atingido nesta opção: diminua a aposta.' },
+    ar: { results: 'النتائج', inPlay: 'جارٍ الآن', oddsChg: 'تم تحديث الاحتمالات', sending: 'جارٍ الإرسال…', qOnly: 'التوقعات: رهان فردي فقط.', e_single: 'التوقعات رهانات فردية فقط: لا يمكن دمجها.', e_corr: 'هذه الاختيارات مترابطة: لا يمكن وضعها في نفس القسيمة.', e_cap: 'تم بلوغ الحد لهذا الاختيار: خفّض المبلغ.' },
+    tr: { results: 'Sonuçlar', inPlay: 'Oynanıyor', oddsChg: 'Oranlar güncellendi', sending: 'Gönderiliyor…', qOnly: 'Tahminler: yalnızca tekli bahis.', e_single: 'Tahminler yalnızca tekli bahistir: kombine yapılamaz.', e_corr: 'Bu seçimler bağlantılı: aynı kupona eklenemez.', e_cap: 'Bu seçimde limite ulaşıldı: bahsi düşür.' },
+    vi: { results: 'Kết quả', inPlay: 'Đang diễn ra', oddsChg: 'Tỷ lệ đã cập nhật', sending: 'Đang gửi…', qOnly: 'Dự đoán: chỉ cược đơn.', e_single: 'Dự đoán chỉ được cược đơn: không thể cược xiên.', e_corr: 'Các lựa chọn này liên quan nhau: không thể chung một phiếu.', e_cap: 'Đã đạt giới hạn cho lựa chọn này: hãy giảm tiền cược.' },
+    id: { results: 'Hasil', inPlay: 'Berlangsung', oddsChg: 'Odds diperbarui', sending: 'Mengirim…', qOnly: 'Prediksi: hanya taruhan tunggal.', e_single: 'Prediksi hanya taruhan tunggal: tidak bisa digabung.', e_corr: 'Pilihan ini saling terkait: tidak bisa dalam satu slip.', e_cap: 'Batas tercapai untuk pilihan ini: kurangi taruhan.' },
+    ru: { results: 'Результаты', inPlay: 'Идёт игра', oddsChg: 'Коэффициенты обновлены', sending: 'Отправка…', qOnly: 'Прогнозы: только одиночная ставка.', e_single: 'Прогнозы — только одиночные ставки, без экспресса.', e_corr: 'Эти исходы связаны: их нельзя ставить в один купон.', e_cap: 'Лимит по этому исходу исчерпан: уменьшите ставку.' },
+    de: { results: 'Ergebnisse', inPlay: 'Läuft', oddsChg: 'Quoten aktualisiert', sending: 'Wird gesendet…', qOnly: 'Prognosen: nur Einzelwette.', e_single: 'Prognosen nur als Einzelwette: keine Kombi möglich.', e_corr: 'Diese Tipps hängen zusammen: nicht im selben Wettschein.', e_cap: 'Limit für diese Auswahl erreicht: Einsatz senken.' },
+    hi: { results: 'नतीजे', inPlay: 'जारी है', oddsChg: 'ऑड्स अपडेट हुए', sending: 'भेजा जा रहा है…', qOnly: 'भविष्यवाणी: सिर्फ़ एकल दांव।', e_single: 'भविष्यवाणियाँ सिर्फ़ एकल दांव हैं: इन्हें जोड़ा नहीं जा सकता।', e_corr: 'ये चुनाव आपस में जुड़े हैं: एक ही स्लिप में नहीं रख सकते।', e_cap: 'इस विकल्प की सीमा पूरी हो गई: दांव कम करें।' },
+    zh: { results: '结果', inPlay: '进行中', oddsChg: '赔率已更新', sending: '发送中…', qOnly: '预测：仅限单关。', e_single: '预测只能单关投注，不能串关。', e_corr: '这些选择相互关联，不能放在同一投注单。', e_cap: '该选项已达上限，请降低投注额。' }
   };
   function XX() { var l = lg(); return Object.assign(X(), NT.en, NT[l] || {}); }
   // petites icônes
@@ -396,8 +396,15 @@
     var o = e.opts.filter(function (z) { return z.k === k; })[0]; if (!o) return;
     var had = inSlip(ev, k), n0 = slip.length;
     if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 10) { if (ctx.toast) ctx.toast(x.max10); return; }
+    // v2810 : une prédiction se joue SEULE ; deux choix liés (même groupe : même match, même actif…) jamais dans le même coupon
+    if (!had) {
+      var xx = XX(), others = slip.filter(function (s) { return s.ev !== ev; }).map(function (s) { return evById(s.ev) || { q: !!s.q, grp: s.grp || [] }; });
+      var isQ = function (z) { return !!(z && (z.q || EVK[z.sport])); }, g = e.grp || [];
+      if (others.length && (isQ(e) || others.some(isQ))) { if (ctx.toast) ctx.toast(xx.e_single, 'info'); return; }
+      if (others.some(function (z) { return (z.grp || []).some(function (y) { return g.indexOf(y) > -1; }); })) { if (ctx.toast) ctx.toast(xx.e_corr, 'info'); return; }
+    }
     slip = slip.filter(function (s) { return s.ev !== ev; }); // un seul choix par match
-    if (!had) slip.push({ ev: ev, k: k, odd: o.odd, t: trT(e), l: trO(o.label) });
+    if (!had) slip.push({ ev: ev, k: k, odd: o.odd, t: trT(e), l: trO(o.label), q: !!(e.q || EVK[e.sport]), grp: e.grp || [] });
     var c = b.closest('.sp2-ev');
     if (c) c.querySelectorAll('.sp2-o').forEach(function (z) { var on = inSlip(ev, z.getAttribute('data-k')); z.classList.toggle('on', on); z.setAttribute('aria-pressed', String(on)); });
     paintBar(slip.length > n0);
@@ -625,7 +632,7 @@
     }
     var odd = totalOdd(), multi = slip.length > 1, anyClosed = slip.some(function (z) { return z.closed; });
     var type = '<div class="sp2-type ' + (multi ? 'combo' : 'single') + '"><em><span class="fit">' + esc(multi ? x.rcCombo : x.rcSingle) + '</span></em>' +
-      (multi ? '<div class="sp2-type-t">' + linesHtml(x.combo, 'span', 30) + '</div>' : '<div class="sp2-type-t"><span class="fit">' + esc(x.single) + '</span></div>') + '</div>';
+      (multi ? '<div class="sp2-type-t">' + linesHtml(x.combo, 'span', 30) + '</div>' : '<div class="sp2-type-t"><span class="fit">' + esc(slip[0].q ? x.qOnly : x.single) + '</span></div>') + '</div>'; // v2810 : prédiction = simple seulement
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
       var e = evById(z.ev);
       return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><span class="sp2-sel-ic">' + sico(e ? qKind(e) : 'autre') + '</span>' +
@@ -707,7 +714,7 @@
     if (!r || !r.ok) {
       busy(false);
       var why = (r && r.reason) || 'unavailable';
-      if (why === 'maxWin' && r.maxStake > 0) { stake = Math.max(0.1, r.maxStake); try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } render(); }
+      if ((why === 'maxWin' || why === 'cap') && r.maxStake >= 0.1) { stake = Math.max(0.1, r.maxStake); try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } render(); }
       if (why === 'closed') { var l = await fetchList(); if (l) { lastList = events = l; lastJson = JSON.stringify(l); syncSlip(); if (view === 'slip') render(); } }
       if (ctx.toast) ctx.toast(x['e_' + why] || x.e_unavailable);
       return;

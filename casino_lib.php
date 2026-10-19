@@ -191,6 +191,15 @@ const CASINO_SCRATCH = [[20, 10], [5, 40], [2, 120], [1, 300]];
 const CASINO_DARTS = [[20, 100], [5, 400], [2, 1500], [1, 2400], [0, 5600]]; // v2780 : retour 94 %
 
 function casino_money(float $v): float { return round($v + 1e-9, 2); }
+/** v2810 (audit argent) — GAIN versé au joueur : mise × multiplicateur, plafonné, arrondi VERS LE BAS au centime.
+ *  Jamais au centime le plus proche : sur les petites mises l'arrondi au plus proche effaçait la marge maison
+ *  (Banque du baccara à 0,10 $ : 0,195 → 0,20 = retour 101 %). Les remboursements (égalité, annulation) restent exacts. */
+function casino_win(float $stake, float $mult): float {
+  $v = min(CASINO_MAX_WIN, $stake * $mult);
+  return $v > 0 ? floor($v * 100 + 1e-6) / 100 : 0.0;
+}
+/** v2810 — jeux retirés du site : plus jouables même par l'API (Pierre-Feuille-Ciseaux, remplacé par Oro Lotto). */
+const CASINO_RETIRED = ['rps'];
 const CASINO_ROULETTE_RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 /** Roulette européenne (37 cases) : gain ÷ mise pour la mise $bet si la bille tombe sur $n ; null = mise invalide.
  *  v2781 (propriétaire) : gains des grands sites — rouge / noir / pair / impair ×2 · douzaine ×3 · numéro ×36 (retour 97,3 %). */
@@ -207,19 +216,30 @@ function casino_roulette_mult(string $bet, int $n): ?float {
 
 /* ---------------------------------------------------------------- v2718 : tirages en direct */
 function casino_is_draw(string $g): bool { return isset(CASINO_DRAW[$g]); }
-/** Résultat secret du tour $i (tiré une seule fois, sous verrou ; on garde les 60 derniers). */
+/** Résultat secret du tour $i (tiré une seule fois, sous verrou ; on garde les 60 derniers).
+ *  v2810 : un tour PLUS ANCIEN que ceux gardés n'est jamais re-tiré (il rendrait un autre résultat que celui montré) :
+ *  on renvoie [] — le pari garde de toute façon son propre résultat (casino_draw_act), voir casino_draw_settle. */
 function casino_draw_outcome(string $g, int $i): array {
   return casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'draw-' . $g . '.json', static function (array &$s) use ($g, $i) {
     $k = (string) $i;
     if (!isset($s[$k])) {
+      if (count($s) >= 60 && $i < min(array_map('intval', array_keys($s)))) return [];
       if ($g === 'cryptox') $s[$k] = ['n' => random_int(0, CASINO_CRYPTOX_N - 1)];
       elseif ($g === 'planets') $s[$k] = ['n' => casino_planets_draw()];
       elseif ($g === 'horses' || $g === 'race') { $pr = casino_runner_probs(); $s[$k] = casino_runner_card($g, $pr) + ['order' => casino_runner_order($pr)]; }
       else $s[$k] = ['n' => random_int(0, 36)];
       if (count($s) > 60) { $ks = array_map('intval', array_keys($s)); sort($ks); foreach (array_slice($ks, 0, count($ks) - 60) as $old) unset($s[(string) $old]); }
     }
-    return $s[$k];
+    return $s[$k] ?? [];
   }) ?: [];
+}
+/** v2810 — ce qu'un pari garde du résultat de son tour pour être réglé même si le tour a quitté l'historique (60 tours) :
+ *  le résultat sans les chances ('p') ; pour un couplé, seulement la cote de SA paire. Gardé côté serveur, jamais montré avant la fin. */
+function casino_draw_keep(string $sel, array $out): array {
+  $c = $out['c'] ?? null;
+  unset($out['p'], $out['c']);
+  if (is_array($c) && preg_match('/^c(\d)-(\d)$/', $sel, $mm) && isset($c[$mm[1] . '-' . $mm[2]])) $out['c'] = [$mm[1] . '-' . $mm[2] => $c[$mm[1] . '-' . $mm[2]]];
+  return $out;
 }
 /** Gain ÷ mise d'une sélection pour un résultat ; null = sélection invalide. Sans résultat ($out vide) : vérifie seulement la sélection. */
 function casino_draw_mult(string $g, string $sel, array $out): ?float {
@@ -249,7 +269,7 @@ function casino_draw_public(string $g, float $now): array {
   if ($g === 'planets') $o['odds'] = casino_planets_odds();
   if ($now >= $t0 + $B) { $o['res'] = casino_draw_outcome($g, $i); unset($o['res']['p'], $o['res']['c']); }
   $last = [];
-  for ($k = 1; $k <= 6; $k++) { $r = casino_draw_outcome($g, $i - $k); $last[] = isset($r['order']) ? (int) $r['order'][0] : (int) $r['n']; }
+  for ($k = 1; $k <= 6; $k++) { $r = casino_draw_outcome($g, $i - $k); $last[] = isset($r['order']) ? (int) $r['order'][0] : (int) ($r['n'] ?? 0); }
   $o['last'] = $last;
   return $o;
 }
@@ -274,6 +294,23 @@ function casino_with(string $file, callable $fn) {
   return $res;
 }
 function casino_user_file(string $uid): string { return casino_dir('u') . DIRECTORY_SEPARATOR . hash('sha256', 'cs|' . $uid) . '.json'; }
+/** v2810 — VERROU PAR JOUEUR autour de « vérifier → retirer la mise → enregistrer la partie » : deux départs (ou deux paris)
+ *  envoyés en même temps ne retirent jamais deux mises. Le 2e attend le 1er (1 s au plus) puis voit la partie déjà posée
+ *  (reprise / « déjà ») ; s'il n'obtient pas le verrou : « busy », RIEN retiré. Fichier à part (pas le fichier du joueur,
+ *  qui est verrouillé à chaque lecture par casino_with). */
+const CASINO_USER_LOCK_WAIT = 1.0;
+function casino_user_lock(string $uid, callable $fn) {
+  $fp = @fopen(casino_user_file($uid) . '.lock', 'c');
+  if (!$fp) return ['ok' => false, 'reason' => 'busy'];
+  $end = microtime(true) + CASINO_USER_LOCK_WAIT; $got = false;
+  while (true) {
+    if (flock($fp, LOCK_EX | LOCK_NB)) { $got = true; break; }
+    if (microtime(true) >= $end) break;
+    usleep(25000);
+  }
+  if (!$got) { fclose($fp); return ['ok' => false, 'reason' => 'busy']; }
+  try { return $fn(); } finally { flock($fp, LOCK_UN); fclose($fp); }
+}
 
 /* ---------------------------------------------------------------- tirages (purs, testables) */
 
@@ -612,6 +649,7 @@ function casino_mode(string $m, bool $guest, ?array $user = null): string {
 function casino_play(array $db, ?array $user, string $game, string $mode, float $stake, array $p): array {
   $ext = in_array(casino_ext_type($game), ['table', 'pick'], true); // v2804 : nouveaux jeux décrits par fiche (casino_ext.php)
   if (!$ext && (!in_array($game, CASINO_GAMES, true) || in_array($game, CASINO_MULTI, true))) return ['ok' => false, 'reason' => 'game'];
+  if (in_array($game, CASINO_RETIRED, true)) return ['ok' => false, 'reason' => 'game']; // v2810 : retiré de l'écran → refusé aussi par l'API
   $stake = floor($stake * 100 + 1e-6) / 100;
   if ($e = casino_check_stake($stake, $game)) return ['ok' => false, 'reason' => $e];
   // Limbo : on refuse une cible dont le gain dépasserait le gain maximal.
@@ -624,7 +662,7 @@ function casino_play(array $db, ?array $user, string $game, string $mode, float 
   $ref = 'cs_' . bin2hex(random_bytes(9));
   $deb = casino_debit($db, $uid, $mode, $stake, $ref);
   if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
-  $win = casino_money(min(CASINO_MAX_WIN, $stake * (float) $res['mult']));
+  $win = casino_win($stake, (float) $res['mult']);
   $bal = casino_credit($db, $uid, $mode, $win, $ref);
   if ($mode !== 'try') {
     casino_stat($game, $mode, $stake, $win);
@@ -654,54 +692,57 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
     $stake = floor($stake * 100 + 1e-6) / 100;
     if ($e = casino_check_stake($stake, $game)) return ['ok' => false, 'reason' => $e];
     $mode = casino_mode($mode, false, $user);
-    $cur = casino_with($file, static fn(array &$st) => $st['g'][$game] ?? null);
-    if (is_array($cur) && !empty($cur['done']) && empty($cur['paid'])) {
-      $fin = casino_finish($db, $uid, $game, $cur, $now); // gain encore à verser (base injoignable la 1re fois)
-      if (($fin['bal'] ?? null) === null && $cur['mode'] === 'real' && (float) ($cur['win'] ?? 0) > 0) return ['ok' => false, 'reason' => 'unavailable'];
-    }
-    if (is_array($cur) && empty($cur['done'])) {
-      // partie précédente encore ouverte : l'avion a forcément explosé depuis ; mines / hi-lo : on la reprend
+    // v2810 : tout le départ sous le verrou du joueur (deux départs simultanés ne retirent jamais deux mises)
+    return casino_user_lock($uid, static function () use ($db, $uid, $file, $game, $mode, $stake, $p, $now) {
+      $cur = casino_with($file, static fn(array &$st) => $st['g'][$game] ?? null);
+      if (is_array($cur) && !empty($cur['done']) && empty($cur['paid'])) {
+        $fin = casino_finish($db, $uid, $game, $cur, $now); // gain encore à verser (base injoignable la 1re fois)
+        if (($fin['bal'] ?? null) === null && $cur['mode'] === 'real' && (float) ($cur['win'] ?? 0) > 0) return ['ok' => false, 'reason' => 'unavailable'];
+      }
+      if (is_array($cur) && empty($cur['done'])) {
+        // partie précédente encore ouverte : l'avion a forcément explosé depuis ; mines / hi-lo : on la reprend
+        if (casino_is_crash($game)) {
+          $cur = casino_settle_crash($db, $uid, $file, $now, $game);
+          if (is_array($cur) && empty($cur['done'])) return ['ok' => true, 'resume' => 1, 'now' => $now] + casino_public($game, $cur, $now);
+        } else return ['ok' => true, 'resume' => 1, 'now' => $now] + casino_public($game, $cur, $now);
+      }
+      $ref = 'cs_' . bin2hex(random_bytes(9));
+      $deb = casino_debit($db, $uid, $mode, $stake, $ref);
+      if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
+      $g = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 't0' => $now, 'done' => 0];
       if (casino_is_crash($game)) {
-        $cur = casino_settle_crash($db, $uid, $file, $now, $game);
-        if (is_array($cur) && empty($cur['done'])) return ['ok' => true, 'resume' => 1, 'now' => $now] + casino_public($game, $cur, $now);
-      } else return ['ok' => true, 'resume' => 1, 'now' => $now] + casino_public($game, $cur, $now);
-    }
-    $ref = 'cs_' . bin2hex(random_bytes(9));
-    $deb = casino_debit($db, $uid, $mode, $stake, $ref);
-    if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
-    $g = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 't0' => $now, 'done' => 0];
-    if (casino_is_crash($game)) {
-      // v2701 : tour commun — même départ et même point d'explosion que tous les joueurs de ce tour
-      $slot = casino_round_slot($game, $now);
-      if (!$slot) { casino_credit($db, $uid, $mode, $stake, $ref); return ['ok' => false, 'reason' => 'busy']; }
-      $g['round'] = (int) $slot['i']; $g['t0'] = (float) $slot['t0']; $g['c'] = (float) $slot['c'];
-      $auto = round((float) ($p['auto'] ?? 0), 2);
-      if ($auto >= 1.01) $g['auto'] = $auto;
-    } elseif ($game === 'apple') {
-      // v2693 : difficulté = nombre de pommes pourries par étage (1 à 4 sur 5)
-      $nb = max(1, min(4, (int) ($p['level'] ?? 1)));
-      $g['lv'] = $nb; $g['bad'] = [];
-      for ($i = 0; $i < CASINO_APPLE_ROWS; $i++) { $c = range(0, 4); for ($j = 4; $j > 0; $j--) { $r = random_int(0, $j); [$c[$j], $c[$r]] = [$c[$r], $c[$j]]; } $g['bad'][] = array_slice($c, 0, $nb); }
-      $g['k'] = 0; $g['picks'] = [];
-    } elseif ($game === 'tower') {
-      $g['traps'] = []; for ($i = 0; $i < CASINO_TOWER_ROWS; $i++) $g['traps'][] = random_int(0, 2);
-      $g['k'] = 0; $g['picks'] = [];
-    } elseif ($game === 'penalty') {
-      $g['k'] = 0; $g['shots'] = [];
-    } elseif ($game === 'balloon') {
-      // le point d'éclatement est tiré dès le départ (gardé secret) : nombre de souffles qui passent
-      $n = 0; while ($n < 60 && random_int(1, 1000) > CASINO_BALLOON_POP * 1000) $n++;
-      $g['pop'] = $n; $g['k'] = 0;
-    } elseif ($game === 'mines') {
-      $m = max(1, min(24, (int) ($p['mines'] ?? 3))); // v2795 : 1 à 24 mines comme Spribe (même calcul ×0,94)
-      $cells = range(0, 24);
-      for ($i = 24; $i > 0; $i--) { $j = random_int(0, $i); [$cells[$i], $cells[$j]] = [$cells[$j], $cells[$i]]; }
-      $g['m'] = $m; $g['mines'] = array_slice($cells, 0, $m); $g['open'] = [];
-    } else { // hilo
-      $g['card'] = random_int(1, 13); $g['k'] = 0; $g['mult'] = 1.0; $g['cards'] = [$g['card']];
-    }
-    casino_with($file, static function (array &$st) use ($game, $g) { $st['g'][$game] = $g; return true; });
-    return ['ok' => true, 'now' => $now] + casino_public($game, $g, $now);
+        // v2701 : tour commun — même départ et même point d'explosion que tous les joueurs de ce tour
+        $slot = casino_round_slot($game, $now);
+        if (!$slot) { casino_credit($db, $uid, $mode, $stake, $ref); return ['ok' => false, 'reason' => 'busy']; }
+        $g['round'] = (int) $slot['i']; $g['t0'] = (float) $slot['t0']; $g['c'] = (float) $slot['c'];
+        $auto = round((float) ($p['auto'] ?? 0), 2);
+        if ($auto >= 1.01) $g['auto'] = $auto;
+      } elseif ($game === 'apple') {
+        // v2693 : difficulté = nombre de pommes pourries par étage (1 à 4 sur 5)
+        $nb = max(1, min(4, (int) ($p['level'] ?? 1)));
+        $g['lv'] = $nb; $g['bad'] = [];
+        for ($i = 0; $i < CASINO_APPLE_ROWS; $i++) { $c = range(0, 4); for ($j = 4; $j > 0; $j--) { $r = random_int(0, $j); [$c[$j], $c[$r]] = [$c[$r], $c[$j]]; } $g['bad'][] = array_slice($c, 0, $nb); }
+        $g['k'] = 0; $g['picks'] = [];
+      } elseif ($game === 'tower') {
+        $g['traps'] = []; for ($i = 0; $i < CASINO_TOWER_ROWS; $i++) $g['traps'][] = random_int(0, 2);
+        $g['k'] = 0; $g['picks'] = [];
+      } elseif ($game === 'penalty') {
+        $g['k'] = 0; $g['shots'] = [];
+      } elseif ($game === 'balloon') {
+        // le point d'éclatement est tiré dès le départ (gardé secret) : nombre de souffles qui passent
+        $n = 0; while ($n < 60 && random_int(1, 1000) > CASINO_BALLOON_POP * 1000) $n++;
+        $g['pop'] = $n; $g['k'] = 0;
+      } elseif ($game === 'mines') {
+        $m = max(1, min(24, (int) ($p['mines'] ?? 3))); // v2795 : 1 à 24 mines comme Spribe (même calcul ×0,94)
+        $cells = range(0, 24);
+        for ($i = 24; $i > 0; $i--) { $j = random_int(0, $i); [$cells[$i], $cells[$j]] = [$cells[$j], $cells[$i]]; }
+        $g['m'] = $m; $g['mines'] = array_slice($cells, 0, $m); $g['open'] = [];
+      } else { // hilo
+        $g['card'] = random_int(1, 13); $g['k'] = 0; $g['mult'] = 1.0; $g['cards'] = [$g['card']];
+      }
+      casino_with($file, static function (array &$st) use ($game, $g) { $st['g'][$game] = $g; return true; });
+      return ['ok' => true, 'now' => $now] + casino_public($game, $g, $now);
+    });
   }
 
   $g = casino_with($file, static fn(array &$st) => $st['g'][$game] ?? null);
@@ -721,7 +762,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
         $m = casino_crash_mult($now - (float) $g['t0']);
         if (!empty($g['auto']) && $g['auto'] <= $m && $g['auto'] < $g['c']) $m = (float) $g['auto'];
         if ($m >= (float) $g['c']) { $g['done'] = 1; $g['out'] = 0; $g['win'] = 0.0; }
-        else { $g['done'] = 1; $g['out'] = $m; $g['win'] = casino_money(min(CASINO_MAX_WIN, (float) $g['stake'] * $m)); }
+        else { $g['done'] = 1; $g['out'] = $m; $g['win'] = casino_win((float) $g['stake'], $m); }
         $st['g'][$game] = $g;
         return $g;
       });
@@ -743,7 +784,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
         else {
           $g['k'] = $k + 1;
           $max = $game === 'tower' ? CASINO_TOWER_ROWS : 60;
-          if ($g['k'] >= $max || $g['stake'] * $multf($g['k']) >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * $multf($g['k']))); }
+          if ($g['k'] >= $max || $g['stake'] * $multf($g['k']) >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], $multf($g['k'])); }
         }
         $st['g'][$game] = $g;
         return $g;
@@ -754,7 +795,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
       $r = casino_with($file, static function (array &$st) use ($game, $multf) {
         $g = $st['g'][$game];
         if (!empty($g['done']) || $g['k'] < 1) return $g;
-        $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * $multf((int) $g['k'])));
+        $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], $multf((int) $g['k']));
         $st['g'][$game] = $g;
         return $g;
       });
@@ -775,7 +816,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
         if (!$goal) { $g['done'] = 1; $g['win'] = 0.0; $g['boom'] = (int) $g['k']; }
         else {
           $g['k'] = (int) $g['k'] + 1;
-          if ($g['k'] >= CASINO_PEN_ROWS || $g['stake'] * casino_pen_mult($g['k']) >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_pen_mult($g['k']))); }
+          if ($g['k'] >= CASINO_PEN_ROWS || $g['stake'] * casino_pen_mult($g['k']) >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], casino_pen_mult($g['k'])); }
         }
         $st['g'][$game] = $g;
         return $g;
@@ -786,7 +827,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
       $r = casino_with($file, static function (array &$st) use ($game) {
         $g = $st['g'][$game];
         if (!empty($g['done']) || $g['k'] < 1) return $g;
-        $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_pen_mult((int) $g['k'])));
+        $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], casino_pen_mult((int) $g['k']));
         $st['g'][$game] = $g;
         return $g;
       });
@@ -807,7 +848,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
         else {
           $g['k'] = $row + 1;
           $mm = casino_apple_mult($g['k'], (int) ($g['lv'] ?? 1));
-          if ($g['k'] >= CASINO_APPLE_ROWS || $g['stake'] * $mm >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * $mm)); }
+          if ($g['k'] >= CASINO_APPLE_ROWS || $g['stake'] * $mm >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], $mm); }
         }
         $st['g'][$game] = $g;
         return $g;
@@ -818,7 +859,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
       $r = casino_with($file, static function (array &$st) use ($game) {
         $g = $st['g'][$game];
         if (!empty($g['done']) || $g['k'] < 1) return $g;
-        $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_apple_mult((int) $g['k'], (int) ($g['lv'] ?? 1))));
+        $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], casino_apple_mult((int) $g['k'], (int) ($g['lv'] ?? 1)));
         $st['g'][$game] = $g;
         return $g;
       });
@@ -836,7 +877,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
         if (in_array($cell, $g['mines'], true)) { $g['done'] = 1; $g['boom'] = $cell; $g['win'] = 0.0; }
         else {
           $g['open'][] = $cell;
-          if (count($g['open']) >= 25 - $g['m'] || $g['stake'] * casino_mines_mult($g['m'], count($g['open'])) >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_mines_mult($g['m'], count($g['open'])))); }
+          if (count($g['open']) >= 25 - $g['m'] || $g['stake'] * casino_mines_mult($g['m'], count($g['open'])) >= CASINO_MAX_WIN) { $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], casino_mines_mult($g['m'], count($g['open']))); }
         }
         $st['g'][$game] = $g;
         return $g;
@@ -847,7 +888,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
       $r = casino_with($file, static function (array &$st) use ($game) {
         $g = $st['g'][$game];
         if (!empty($g['done']) || !$g['open']) return $g;
-        $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * casino_mines_mult($g['m'], count($g['open']))));
+        $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], casino_mines_mult($g['m'], count($g['open'])));
         $st['g'][$game] = $g;
         return $g;
       });
@@ -891,7 +932,7 @@ function casino_multi(array $db, array $user, string $game, string $act, string 
       $r = casino_with($file, static function (array &$st) use ($game) {
         $g = $st['g'][$game];
         if (!empty($g['done']) || $g['k'] < 1) return $g;
-        $g['done'] = 1; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * $g['mult']));
+        $g['done'] = 1; $g['win'] = casino_win((float) $g['stake'], (float) $g['mult']);
         $st['g'][$game] = $g;
         return $g;
       });
@@ -910,7 +951,7 @@ function casino_settle_crash(array $db, string $uid, string $file, float $now, s
     if (!is_array($g) || !empty($g['done'])) return $g;
     if ($now < (float) $g['t0']) return $g; // v2701 : rien n'est réglé avant le départ du tour
     $m = casino_crash_mult($now - (float) $g['t0']);
-    if (!empty($g['auto']) && $g['auto'] < $g['c'] && $m >= $g['auto']) { $g['done'] = 1; $g['out'] = (float) $g['auto']; $g['win'] = casino_money(min(CASINO_MAX_WIN, $g['stake'] * $g['auto'])); }
+    if (!empty($g['auto']) && $g['auto'] < $g['c'] && $m >= $g['auto']) { $g['done'] = 1; $g['out'] = (float) $g['auto']; $g['win'] = casino_win((float) $g['stake'], (float) $g['auto']); }
     elseif ($m >= (float) $g['c']) { $g['done'] = 1; $g['out'] = 0; $g['win'] = 0.0; }
     else return $g;
     $st['g'][$game] = $g;
@@ -920,16 +961,28 @@ function casino_settle_crash(array $db, string $uid, string $file, float $now, s
   return $r;
 }
 
-/** v2718 — tirage en direct : règle mon pari si son résultat est révélé. */
+/** v2718 — tirage en direct : règle mon pari si son résultat est révélé.
+ *  v2810 : le résultat vient du pari lui-même (gardé à la mise) ; ancien pari sans résultat gardé dont le tour a quitté
+ *  l'historique → mise RENDUE (une seule fois : même référence, drapeau « payé »). Un pari ne reste donc jamais bloqué. */
 function casino_draw_settle(array $db, string $uid, string $file, float $now, string $game): ?array {
-  $r = casino_with($file, static function (array &$st) use ($now, $game) {
+  $g0 = casino_with($file, static fn(array &$st) => $st['g'][$game] ?? null);
+  if (!is_array($g0) || !empty($g0['done']) || $now < (float) ($g0['close'] ?? 0)) {
+    if (is_array($g0) && !empty($g0['done']) && empty($g0['paid'])) casino_finish($db, $uid, $game, $g0, $now);
+    return $g0;
+  }
+  // résultat cherché HORS du verrou du joueur (fichier du tirage verrouillé à part)
+  $out = is_array($g0['o'] ?? null) && $g0['o'] ? $g0['o'] : casino_draw_outcome($game, (int) ($g0['round'] ?? 0));
+  $r = casino_with($file, static function (array &$st) use ($now, $game, $out, $g0) {
     $g = $st['g'][$game] ?? null;
-    if (!is_array($g) || !empty($g['done']) || $now < (float) $g['close']) return $g;
-    $out = casino_draw_outcome($game, (int) $g['round']);
-    if (!$out) return $g;
-    $m = (float) (casino_draw_mult($game, (string) $g['sel'], $out) ?? 0.0);
-    unset($out['p'], $out['c']); // v2792 : le résultat gardé avec le pari reste léger (arrivée + cotes gagnant)
-    $g['done'] = 1; $g['out'] = $m; $g['res'] = $out; $g['win'] = casino_money(min(CASINO_MAX_WIN, (float) $g['stake'] * $m));
+    if (!is_array($g) || !empty($g['done']) || ($g['ref'] ?? '') !== ($g0['ref'] ?? '')) return $g;
+    if ($out) {
+      $m = (float) (casino_draw_mult($game, (string) $g['sel'], $out) ?? 0.0);
+      $g['done'] = 1; $g['out'] = $m; $g['res'] = casino_draw_keep('', $out); $g['win'] = casino_win((float) $g['stake'], $m);
+    } else {
+      // tour introuvable (sorti de l'historique) : pari annulé, mise rendue exactement
+      $g['done'] = 1; $g['out'] = 1.0; $g['res'] = null; $g['void'] = 1; $g['win'] = casino_money((float) $g['stake']);
+    }
+    unset($g['o']);
     $st['g'][$game] = $g;
     return $g;
   });
@@ -950,17 +1003,27 @@ function casino_draw_act(array $db, array $user, string $uid, string $file, stri
   if ($now > $close - 0.8) return ['ok' => false, 'reason' => 'closed']; // mises fermées (petite marge pour le réseau)
   $sel = (string) ($p['sel'] ?? '');
   if (casino_draw_mult($game, $sel, []) === null) return ['ok' => false, 'reason' => 'param'];
-  if (is_array($mine) && empty($mine['done'])) return ['ok' => false, 'reason' => 'already']; // déjà un pari sur ce tour
-  if (is_array($mine) && !empty($mine['done']) && empty($mine['paid'])) return ['ok' => false, 'reason' => 'unavailable'];
   $stake = floor($stake * 100 + 1e-6) / 100;
   if ($e = casino_check_stake($stake, $game)) return ['ok' => false, 'reason' => $e];
   $mode = casino_mode($mode, false, $user);
-  $ref = 'cs_' . bin2hex(random_bytes(9));
-  $deb = casino_debit($db, $uid, $mode, $stake, $ref);
-  if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
-  $g = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 'round' => $i, 'close' => (float) $close, 'sel' => $sel, 't0' => $now, 'done' => 0];
-  casino_with($file, static function (array &$st) use ($game, $g) { $st['g'][$game] = $g; return true; });
-  return ['ok' => true, 'now' => $now, 'round' => casino_draw_public($game, $now), 'has' => 1, 'bal' => $mode === 'demo' ? ($deb['demo'] ?? null) : ($deb['real'] ?? null)] + casino_public($game, $g, $now);
+  // v2810 : le résultat du tour est fixé (tiré une fois, sous verrou) AVANT la mise et gardé avec le pari
+  $out = casino_draw_outcome($game, $i);
+  if (!$out) return ['ok' => false, 'reason' => 'busy'];
+  // v2810 : vérifier → retirer → enregistrer sous le verrou du joueur (deux paris simultanés : un seul retiré)
+  return casino_user_lock($uid, static function () use ($db, $uid, $file, $game, $mode, $stake, $sel, $i, $close, $now, $out) {
+    $mine = casino_with($file, static fn(array &$st) => $st['g'][$game] ?? null);
+    if (is_array($mine) && empty($mine['done'])) {
+      // « déjà » seulement pour un pari dont le tour n'est pas encore fermé ; sinon il se règle au prochain appel
+      return ['ok' => false, 'reason' => $now < (float) ($mine['close'] ?? 0) ? 'already' : 'unavailable'];
+    }
+    if (is_array($mine) && !empty($mine['done']) && empty($mine['paid'])) return ['ok' => false, 'reason' => 'unavailable'];
+    $ref = 'cs_' . bin2hex(random_bytes(9));
+    $deb = casino_debit($db, $uid, $mode, $stake, $ref);
+    if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
+    $g = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 'round' => $i, 'close' => (float) $close, 'sel' => $sel, 't0' => $now, 'done' => 0, 'o' => casino_draw_keep($sel, $out)];
+    casino_with($file, static function (array &$st) use ($game, $g) { $st['g'][$game] = $g; return true; });
+    return ['ok' => true, 'now' => $now, 'round' => casino_draw_public($game, $now), 'has' => 1, 'bal' => $mode === 'demo' ? ($deb['demo'] ?? null) : ($deb['real'] ?? null)] + casino_public($game, $g, $now);
+  });
 }
 
 /** Fin de partie (plusieurs étapes) : versement une seule fois, statistiques, historique. */

@@ -140,12 +140,18 @@ function casino_skill_act(array $db, array $user, string $g, string $act, string
     $stake = floor($stake * 100 + 1e-6) / 100;
     if ($e = casino_check_stake($stake, $g)) return ['ok' => false, 'reason' => $e];
     $mode = casino_mode($mode, false, $user);
-    $ref = 'cs_' . bin2hex(random_bytes(9));
-    $deb = casino_debit($db, $uid, $mode, $stake, $ref);
-    if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
-    $x = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 't0' => $now, 'c' => casino_crash_point(), 'done' => 0];
-    casino_with($file, static function (array &$st) use ($g, $x) { $st['g'][$g] = $x; return true; });
-    return ['ok' => true, 'now' => $now, 'bal' => $mode === 'demo' ? ($deb['demo'] ?? null) : ($deb['real'] ?? null)] + casino_skill_public($g, $x, $now);
+    // v2810 : vérifier → retirer → enregistrer sous le verrou du joueur (deux départs simultanés : une seule mise retirée)
+    return casino_user_lock($uid, static function () use ($db, $uid, $file, $g, $mode, $stake, $now) {
+      $cur = casino_with($file, static fn(array &$st) => $st['g'][$g] ?? null);
+      if (is_array($cur) && empty($cur['done'])) return ['ok' => true, 'resume' => 1, 'now' => $now] + casino_skill_public($g, $cur, $now);
+      if (is_array($cur) && empty($cur['paid']) && (float) ($cur['win'] ?? 0) > 0) return ['ok' => false, 'reason' => 'unavailable']; // gain pas encore versé
+      $ref = 'cs_' . bin2hex(random_bytes(9));
+      $deb = casino_debit($db, $uid, $mode, $stake, $ref);
+      if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
+      $x = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 't0' => $now, 'c' => casino_crash_point(), 'done' => 0];
+      casino_with($file, static function (array &$st) use ($g, $x) { $st['g'][$g] = $x; return true; });
+      return ['ok' => true, 'now' => $now, 'bal' => $mode === 'demo' ? ($deb['demo'] ?? null) : ($deb['real'] ?? null)] + casino_skill_public($g, $x, $now);
+    });
   }
   if (!is_array($cur)) return ['ok' => false, 'reason' => 'noGame'];
   if (!empty($cur['done'])) return empty($cur['paid']) ? casino_finish($db, $uid, $g, $cur, $now) : (['ok' => true, 'now' => $now] + casino_skill_public($g, $cur, $now));
@@ -156,7 +162,7 @@ function casino_skill_act(array $db, array $user, string $g, string $act, string
       if (!is_array($x) || !empty($x['done'])) return $x;
       $m = casino_skill_mult($g, $now - (float) $x['t0']);
       $x['done'] = 1;
-      if ($act === 'cash' && $m < (float) $x['c']) { $x['out'] = $m; $x['win'] = casino_money(min(CASINO_MAX_WIN, (float) $x['stake'] * $m)); $x['why'] = 'cash'; }
+      if ($act === 'cash' && $m < (float) $x['c']) { $x['out'] = $m; $x['win'] = casino_win((float) $x['stake'], $m); $x['why'] = 'cash'; }
       else { $x['out'] = 0; $x['win'] = 0.0; $x['why'] = $act === 'fail' ? 'fail' : 'end'; }
       $st['g'][$g] = $x;
       return $x;

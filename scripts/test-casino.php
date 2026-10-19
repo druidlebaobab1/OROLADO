@@ -342,6 +342,130 @@ $ph = casino_draw_public('horses', $tB);
 check('horses : cotes gagnant (10) et couplé (45) visibles avant la fermeture', count($ph['odds'] ?? []) === 10 && count($ph['pair'] ?? []) === 45 && !isset($ph['res']));
 check('roulette : plus jouable en instantané (seulement en direct)', casino_play(load_db(), $me, 'roulette', 'real', 1, ['bet' => 'red'])['ok'] === false);
 
+echo "12) v2810 (audit argent) : gains arrondis VERS LE BAS, pari en direct jamais bloqué, deux départs simultanés = une seule mise, PFC refusé\n";
+// a) arrondi des gains au centime INFÉRIEUR (mises minuscules : la marge maison ne disparaît plus)
+check('Banque du baccara à 0,10 $ : 0,195 → 0,19 (plus 0,20)', casino_win(0.10, 1.95) === 0.19);
+check('limbo ×1,05 à 0,10 $ : 0,105 → 0,10', casino_win(0.10, 1.05) === 0.10);
+check('dés 89 % à 0,10 $ : 0,10561 → 0,10', casino_win(0.10, floor(CASINO_EDGE * 100 / 89 * 10000) / 10000) === 0.10);
+check('remboursement exact (égalité ×1) : 0,29 → 0,29', casino_win(0.29, 1.0) === 0.29 && casino_win(0.10, 1.0) === 0.10 && casino_win(7.77, 1.0) === 7.77);
+check('gain rond inchangé (2 $ × 1,94 = 3,88) et plafond respecté', casino_win(2, 1.94) === 3.88 && casino_win(1000, 1000) === CASINO_MAX_WIN && casino_win(1, 0) === 0.0);
+$mults = [CASINO_COIN_MULT, CASINO_DICE_DUEL, CASINO_PENALTY_MULT, CASINO_RPS_MULT, 1.95, 2.85, 1.97, 4.7, 9.4, 0.5, 12.0, 9.0];
+foreach (CASINO_WHEEL as [$x]) $mults[] = (float) $x; foreach (CASINO_PLINKO as $x) $mults[] = (float) $x; foreach (CASINO_KENO as $x) $mults[] = (float) $x;
+for ($c = 2; $c <= 95; $c++) $mults[] = floor(CASINO_EDGE * 100 / $c * 10000) / 10000;
+for ($t = 101; $t <= 300; $t++) $mults[] = $t / 100;
+for ($k = 1; $k <= 8; $k++) { $mults[] = casino_tower_mult($k); $mults[] = casino_pen_mult($k); }
+for ($k = 1; $k <= 20; $k++) $mults[] = casino_balloon_mult($k);
+foreach ([1, 3, 5, 10] as $mm) for ($k = 1; $k <= 5; $k++) $mults[] = casino_mines_mult($mm, $k);
+for ($a = 1; $a <= 13; $a++) { $mults[] = casino_hilo_mult($a, true); $mults[] = casino_hilo_mult($a, false); }
+foreach (casino_planets_odds() as $x) $mults[] = (float) $x;
+$over = 0; $worstGap = 0.0;
+foreach ($mults as $m) for ($c = 10; $c <= 500; $c++) { $s = $c / 100; $w = casino_win($s, $m); if ($w > $s * $m + 1e-9 || $w < $s * $m - 0.01 - 1e-9 || abs($w * 100 - round($w * 100)) > 1e-6) $over++; }
+check('aucun gain au-dessus de mise × multiplicateur (toutes mises 0,10 à 5,00 $, ' . count($mults) . ' multiplicateurs)', $over === 0, (string) $over);
+// exact : Banque du baccara à 0,10 $ (probabilités exactes du tirage du jeu) < 100 %
+$PB = ['p' => 0.0, 'b' => 0.0, 't' => 0.0]; $vv = static fn($c) => casino_bac_v($c);
+for ($a = 1; $a <= 13; $a++) for ($b = 1; $b <= 13; $b++) for ($c = 1; $c <= 13; $c++) for ($e = 1; $e <= 13; $e++) {
+  $base = 1 / 28561; $tp0 = ($vv($a) + $vv($b)) % 10; $tb0 = ($vv($c) + $vv($e)) % 10;
+  $add = static function ($tp, $tb, $pr) use (&$PB) { if ($tp === $tb) $PB['t'] += $pr; elseif ($tp > $tb) $PB['p'] += $pr; else $PB['b'] += $pr; };
+  if ($tp0 >= 8 || $tb0 >= 8) { $add($tp0, $tb0, $base); continue; }
+  if ($tp0 <= 5) {
+    for ($p3 = 1; $p3 <= 13; $p3++) { $tp = ($tp0 + $vv($p3)) % 10; $x = $vv($p3); $tb = $tb0;
+      $dr = $tb <= 2 || ($tb === 3 && $x !== 8) || ($tb === 4 && $x >= 2 && $x <= 7) || ($tb === 5 && $x >= 4 && $x <= 7) || ($tb === 6 && ($x === 6 || $x === 7));
+      if ($dr) { for ($b3 = 1; $b3 <= 13; $b3++) $add($tp, ($tb + $vv($b3)) % 10, $base / 169); } else $add($tp, $tb, $base / 13); }
+  } elseif ($tb0 <= 5) { for ($b3 = 1; $b3 <= 13; $b3++) $add($tp0, ($tb0 + $vv($b3)) % 10, $base / 13); } else $add($tp0, $tb0, $base);
+}
+foreach ([0.10, 0.11, 0.13, 0.15, 0.17, 0.19] as $s) { $rtp = ($PB['b'] * casino_win($s, 1.95) + $PB['t'] * casino_win($s, 1.0)) / $s;
+  check(sprintf('Banque du baccara à %.2f $ : retour exact %.2f %% (< 100)', $s, $rtp * 100), $rtp < 1.0); }
+// de bout en bout : casino_play paie l'arrondi inférieur
+$bal[$U] = 50.0; syncv(); $seen = []; $okBal = true;
+for ($k = 0; $k < 400; $k++) { $b0 = $bal[$U]; $r = casino_play(load_db(), $me, 'baccarat', 'real', 0.10, ['bet' => 'banker']); if (!$r['ok']) break; $seen[(string) $r['win']] = 1; if (abs($bal[$U] - ($b0 - 0.10 + $r['win'])) > 0.001) $okBal = false; }
+ksort($seen);
+check('casino_play Banque 0,10 $ : gains possibles 0 / 0,10 (égalité) / 0,19 seulement, solde exact', !array_diff(array_keys($seen), ['0', '0.1', '0.19']) && isset($seen['0.19']) && $okBal, json_encode(array_keys($seen)));
+// plusieurs étapes : Ballon à 0,10 $, 2 souffles (×1,16) puis encaisser → 0,11 (0,116 arrondi vers le bas)
+$bal[$U] = 50.0; syncv();
+casino_with($file, static function (array &$st) { unset($st['g']['balloon']); return true; });
+casino_multi(load_db(), $me, 'balloon', 'start', 'real', 0.10, []);
+casino_with($file, static function (array &$st) { $st['g']['balloon']['pop'] = 50; return true; });
+casino_multi(load_db(), $me, 'balloon', 'pump', 'real', 0, []); casino_multi(load_db(), $me, 'balloon', 'pump', 'real', 0, []);
+$r = casino_multi(load_db(), $me, 'balloon', 'cash', 'real', 0, []);
+check(sprintf('Ballon 0,10 $ ×%.2f : gain %.2f $ (vers le bas)', casino_balloon_mult(2), $r['win'] ?? -1), abs(($r['win'] ?? -1) - casino_win(0.10, casino_balloon_mult(2))) < 1e-9 && abs($bal[$U] - (49.90 + casino_win(0.10, casino_balloon_mult(2)))) < 0.001);
+// avion à encaissement automatique ×1,05 à 0,10 $ → 0,10
+casino_with($file, static function (array &$st) { unset($st['g']['crash']); return true; }); @unlink(casino_round_file('crash'));
+$s = casino_multi(load_db(), $me, 'crash', 'start', 'real', 0.10, ['auto' => 1.05]);
+casino_with($file, static function (array &$st) { $st['g']['crash']['c'] = 3.0; return true; });
+$r = casino_settle_crash(load_db(), 'u_cs', $file, (float) $s['t0'] + 5, 'crash');
+check('avion auto ×1,05 à 0,10 $ : gain 0,10 (0,105 vers le bas)', ($r['win'] ?? -1) === 0.10, json_encode($r['win'] ?? null));
+casino_with($file, static function (array &$st) { unset($st['g']['crash']); return true; }); @unlink(casino_round_file('crash'));
+
+// b) pari en direct sur un tour sorti de l'historique (60 tours) : jamais bloqué
+[$P, $B] = CASINO_DRAW['planets'];
+$i0 = (int) floor(time() / $P) + 200; $t = $i0 * $P + 2.0;
+casino_with($file, static function (array &$st) { unset($st['g']['planets']); return true; });
+$bal[$U] = 50.0; syncv();
+$r = casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'bet', 'real', 0.15, ['sel' => '0'], $t);
+check('Lucky Planets : pari 0,15 $ accepté, résultat gardé avec le pari (caché au joueur)', $r['ok'] && !isset($r['o']) && !isset($r['res']) && abs($bal[$U] - 49.85) < 0.001, json_encode($r));
+casino_with($file, static function (array &$st) { $st['g']['planets']['o'] = ['n' => 0]; return true; }); // la planète choisie sort (×2,93)
+for ($k = 1; $k <= 70; $k++) casino_draw_outcome('planets', $i0 + $k); // le tour quitte l'historique des 60 derniers
+check('le tour du pari a quitté l\'historique et n\'est PAS re-tiré', casino_draw_outcome('planets', $i0) === [] && count((array) json_decode((string) file_get_contents(casino_dir() . '/draw-planets.json'), true)) <= 60);
+$late = ($i0 + 70) * $P + 1.0; // le joueur revient 70 tours plus tard
+$d = casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'dround', 'real', 0, [], $late);
+$wantP = casino_win(0.15, casino_planets_odds()[0]);
+check(sprintf('retour 70 tours plus tard : pari réglé avec SON résultat (0,15 × %.2f = %.2f $, vers le bas)', casino_planets_odds()[0], $wantP), !empty($d['done']) && abs((float) $d['win'] - $wantP) < 1e-9 && abs($bal[$U] - (49.85 + $wantP)) < 0.001 && $wantP === 0.43, json_encode([$d['win'] ?? null, $bal[$U]]));
+$nb = casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'bet', 'real', 1, ['sel' => '2'], $late + 1);
+check('puis un nouveau pari est accepté (pas « déjà »)', $nb['ok'] === true, json_encode($nb));
+casino_with($file, static function (array &$st) { unset($st['g']['planets']); return true; });
+// ancien pari (posé avant v2810, sans résultat gardé) dont le tour a disparu → mise rendue UNE fois
+$bal[$U] = 48.0; syncv();
+$oldRound = $i0 - 100000;
+casino_with($file, static function (array &$st) use ($oldRound, $P, $B) { $st['g']['planets'] = ['ref' => 'cs_oldbet' . $oldRound, 'mode' => 'real', 'stake' => 2.0, 'round' => $oldRound, 'close' => (float) ($oldRound * $P + $B), 'sel' => '1', 't0' => (float) ($oldRound * $P + 1), 'done' => 0]; return true; });
+$x = casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'bet', 'real', 1, ['sel' => '1'], $late + 2);
+$st = casino_with($file, static fn(array &$s) => $s['g']['planets'] ?? null);
+check('ancien pari au tour introuvable : mise rendue (2 $), puis le nouveau pari passe', abs($bal[$U] - (48.0 + 2.0 - 1.0)) < 0.001 && $x['ok'] === true, json_encode([$x, $bal[$U]]));
+casino_with($file, static function (array &$st) use ($oldRound, $P, $B) { $st['g']['planets'] = ['ref' => 'cs_oldbet' . $oldRound, 'mode' => 'real', 'stake' => 2.0, 'round' => $oldRound, 'close' => (float) ($oldRound * $P + $B), 'sel' => '1', 't0' => 0.0, 'done' => 0]; return true; });
+$b1 = $bal[$U];
+casino_draw_act(load_db(), $me, 'u_cs', $file, 'planets', 'dround', 'real', 0, [], $late + 3);
+check('le remboursement ne se fait qu\'UNE fois (même référence)', abs($bal[$U] - $b1) < 0.001, $b1 . ' → ' . $bal[$U]);
+casino_with($file, static function (array &$st) { unset($st['g']['planets']); return true; });
+
+// c) deux départs / deux paris simultanés : la 2e demande arrive pendant que la 1re retire la mise
+$origRpc = $GLOBALS['OROLADO_FAKE_RPC']; $hook = null;
+$GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use ($origRpc, &$hook) { if ($fn === 'debit_real' && $hook) { $h = $hook; $hook = null; $h(); } return $origRpc($fn, $a); };
+foreach (['tower', 'mines', 'crash'] as $mg) {
+  casino_with($file, static function (array &$st) use ($mg) { unset($st['g'][$mg]); return true; });
+  $bal[$U] = 50.0; syncv(); $inner = null;
+  $hook = static function () use (&$inner, $me, $mg) { $inner = casino_multi(load_db(), $me, $mg, 'start', 'real', 3, []); };
+  $outer = casino_multi(load_db(), $me, $mg, 'start', 'real', 3, []);
+  $kept = casino_with($file, static fn(array &$s) => $s['g'][$mg] ?? null);
+  check("$mg : 2 départs simultanés → une seule mise retirée, le 2e « busy » sans rien retirer", $outer['ok'] === true && ($inner['ok'] ?? null) === false && ($inner['reason'] ?? '') === 'busy' && abs($bal[$U] - 47.0) < 0.001 && is_array($kept), json_encode([$inner, $bal[$U]]));
+  $again = casino_multi(load_db(), $me, $mg, 'start', 'real', 3, []);
+  check("$mg : départ suivant = reprise de la partie, rien retiré", !empty($again['resume']) && abs($bal[$U] - 47.0) < 0.001);
+  casino_with($file, static function (array &$st) use ($mg) { unset($st['g'][$mg]); return true; });
+}
+@unlink(casino_round_file('crash'));
+[$P, $B] = CASINO_DRAW['cryptox'];
+$tC = ((int) floor(time() / $P) + 300) * $P + 2.0;
+casino_with($file, static function (array &$st) { unset($st['g']['cryptox']); return true; });
+$bal[$U] = 50.0; syncv(); $inner = null;
+$hook = static function () use (&$inner, $me, $file, $tC) { $inner = casino_draw_act(load_db(), $me, 'u_cs', $file, 'cryptox', 'bet', 'real', 2, ['sel' => '3'], $tC + 0.1); };
+$outer = casino_draw_act(load_db(), $me, 'u_cs', $file, 'cryptox', 'bet', 'real', 2, ['sel' => '5'], $tC);
+$kept = casino_with($file, static fn(array &$s) => $s['g']['cryptox'] ?? null);
+check('Crypto Live : 2 paris simultanés → une seule mise retirée, le 2e refusé sans rien retirer', $outer['ok'] === true && ($inner['ok'] ?? null) === false && abs($bal[$U] - 48.0) < 0.001 && ($kept['sel'] ?? '') === '5', json_encode([$inner, $bal[$U]]));
+$r2 = casino_draw_act(load_db(), $me, 'u_cs', $file, 'cryptox', 'bet', 'real', 2, ['sel' => '3'], $tC + 1);
+check('Crypto Live : pari suivant sur le même tour → « déjà », rien retiré', $r2['ok'] === false && $r2['reason'] === 'already' && abs($bal[$U] - 48.0) < 0.001);
+casino_with($file, static function (array &$st) { unset($st['g']['cryptox']); return true; });
+// verrou tenu par une autre requête : « busy », rien retiré
+$lk = fopen(casino_user_file('u_cs') . '.lock', 'c'); flock($lk, LOCK_EX);
+$bal[$U] = 50.0; syncv();
+$r = casino_multi(load_db(), $me, 'tower', 'start', 'real', 3, []);
+check('joueur occupé par une autre requête : « busy », rien retiré', $r['ok'] === false && $r['reason'] === 'busy' && abs($bal[$U] - 50.0) < 0.001);
+flock($lk, LOCK_UN); fclose($lk);
+$GLOBALS['OROLADO_FAKE_RPC'] = $origRpc;
+casino_with($file, static function (array &$st) { unset($st['g']['tower']); return true; });
+
+// d) Pierre-Feuille-Ciseaux retiré de l'écran → refusé aussi par l'API
+$bal[$U] = 50.0; syncv();
+$r = casino_play(load_db(), $me, 'rps', 'real', 1, ['pick' => 0]);
+check('Pierre-Feuille-Ciseaux : refusé par le serveur, rien retiré', $r['ok'] === false && $r['reason'] === 'game' && abs($bal[$U] - 50.0) < 0.001);
+
 echo "9) Admin : joueurs du casino (v2698)\n";
 casino_hist_add('u_admin_t', ['g' => 'coin', 'm' => 'real', 's' => 2.0, 'w' => 3.88, 'at' => time()]);
 casino_hist_add('u_admin_t', ['g' => 'dice', 'm' => 'real', 's' => 5.0, 'w' => 0.0, 'at' => time()]);
