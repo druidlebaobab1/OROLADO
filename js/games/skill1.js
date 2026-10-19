@@ -721,24 +721,57 @@
 
   /* 5. BASKET SHOT — ONE tap: the ball flies straight up; the floating hoop must be above it when it arrives.
      The rim (and a dotted guide) turns green exactly when a shot would score: nothing to guess. */
+  /* v2860 (owner: "amateur") — Basket Shot: ONLY the drawing changed (same hoop motion, timing, tolerance): a night arena in
+     space (stands full of camera flashes, spotlights, a jumbotron, a glossy parquet court), a pebbled leather ball with seams,
+     a glass backboard with a metal frame and LED strip hanging from a truss, a chrome rim and a real net. */
   DEF.basket = {
     hint: 'h_shoot', hintY: 0.6, gest: 'tap', hue: '#F97316',
     scale: function (W, H) { return Math.min(H / 100, W / 72); },
     RIM: 9, BR: 6, FT: 0.5,
+    sky: function (W, H, dpr) {
+      var c = document.createElement('canvas'); c.width = Math.ceil(W * dpr); c.height = Math.ceil(H * dpr);
+      var x = c.getContext('2d'); x.scale(dpr, dpr);
+      var r = srnd(41), i, fy = H * 0.74;
+      x.fillStyle = grad(x, 0, 0, 0, fy, ['#05040F', '#120B2E', '#1F1240']); x.fillRect(0, 0, W, fy);
+      for (i = 0; i < Math.round(W * H / 3000); i++) { x.fillStyle = 'rgba(255,255,255,' + (0.2 + r() * 0.5).toFixed(2) + ')'; x.fillRect(r() * W, r() * H * 0.25, 1, 1); }
+      // stands: tiers of seats with a crowd of faint heads and camera flashes
+      for (var t = 0; t < 6; t++) { var ty = H * (0.32 + t * 0.065); x.fillStyle = t % 2 ? '#1A1238' : '#221848'; x.fillRect(0, ty, W, H * 0.065); for (var px = 2; px < W; px += 7) { var hc = ['#F97316', '#3B82F6', '#E2E8F0', '#A855F7', '#FBBF24', '#22C55E', '#F43F5E'][((px * 7 + t * 13) >> 2) % 7]; x.fillStyle = 'rgba(15,10,35,.9)'; x.fillRect(px - 2.6 + (t % 2) * 3, ty + H * 0.034, 5.2, H * 0.03); x.fillStyle = hc; x.globalAlpha = 0.55; x.fillRect(px - 2.4 + (t % 2) * 3, ty + H * 0.036, 4.8, H * 0.02); x.globalAlpha = 1; x.fillStyle = '#C08552'; x.beginPath(); x.arc(px + (t % 2) * 3, ty + H * 0.026, 2, 0, PI2); x.fill(); } }
+      for (i = 0; i < 14; i++) { var fx = r() * W, fyy = H * (0.33 + r() * 0.38); x.fillStyle = rgrad(x, fx, fyy, 3.5, ['rgba(255,255,255,.95)', 'rgba(255,255,255,0)']); x.fillRect(fx - 4, fyy - 4, 8, 8); }
+      // roof truss + spotlights with cones
+      x.strokeStyle = '#3F3A5E'; x.lineWidth = 3; x.beginPath(); x.moveTo(0, H * 0.06); x.lineTo(W, H * 0.06); x.moveTo(0, H * 0.1); x.lineTo(W, H * 0.1); x.stroke(); x.lineWidth = 1.2; for (i = 0; i < W; i += 14) { x.beginPath(); x.moveTo(i, H * 0.06); x.lineTo(i + 7, H * 0.1); x.lineTo(i + 14, H * 0.06); x.stroke(); }
+      [0.12, 0.88].forEach(function (q) { var sx = W * q; x.fillStyle = grad(x, sx, H * 0.1, W / 2, fy, ['rgba(186,230,253,.28)', 'rgba(186,230,253,0)']); x.beginPath(); x.moveTo(sx - 6, H * 0.1); x.lineTo(sx + 6, H * 0.1); x.lineTo(W / 2 + W * 0.25, fy); x.lineTo(W / 2 - W * 0.25, fy); x.closePath(); x.fill(); x.fillStyle = '#E0F2FE'; x.beginPath(); x.arc(sx, H * 0.11, 4, 0, PI2); x.fill(); });
+      // jumbotron
+      var jw = W * 0.26, jx = W * 0.04, jy = H * 0.15; x.fillStyle = '#0B0A18'; x.fillRect(jx - 3, jy - 3, jw + 6, jw * 0.45 + 6); x.fillStyle = grad(x, jx, jy, jx + jw, jy + jw * 0.45, ['#7C3AED', '#DB2777', '#F97316']); x.fillRect(jx, jy, jw, jw * 0.45);
+      x.fillStyle = 'rgba(0,0,0,.35)'; for (i = 0; i < jw; i += 3) x.fillRect(jx + i, jy, 1, jw * 0.45); x.fillStyle = 'rgba(255,255,255,.85)'; x.beginPath(); x.arc(jx + jw / 2, jy + jw * 0.22, jw * 0.12, 0, PI2); x.fill();
+      x.strokeStyle = '#F97316'; x.lineWidth = 1.5; x.beginPath(); x.arc(jx + jw / 2, jy + jw * 0.22, jw * 0.12, 0, PI2); x.moveTo(jx + jw / 2 - jw * 0.12, jy + jw * 0.22); x.lineTo(jx + jw / 2 + jw * 0.12, jy + jw * 0.22); x.stroke();
+      // the court: glossy parquet in perspective with lines and a reflection of the lights
+      x.fillStyle = grad(x, 0, fy, 0, H, ['#B45309', '#D97706', '#92400E']); x.fillRect(0, fy, W, H - fy);
+      for (i = -W; i < W * 2; i += 18) { x.strokeStyle = 'rgba(80,30,5,.35)'; x.lineWidth = 1; x.beginPath(); x.moveTo(W / 2 + (i - W / 2) * 0.35, fy); x.lineTo(i, H); x.stroke(); }
+      for (i = 0; i < 8; i++) { var ly = fy + (H - fy) * Math.pow(i / 8, 1.6); x.fillStyle = 'rgba(80,30,5,.2)'; x.fillRect(0, ly, W, 1); }
+      x.strokeStyle = 'rgba(255,255,255,.75)'; x.lineWidth = 2; x.beginPath(); x.ellipse(W / 2, fy + (H - fy) * 0.55, W * 0.32, (H - fy) * 0.28, 0, 0, PI2); x.stroke(); x.beginPath(); x.moveTo(0, fy + 2); x.lineTo(W, fy + 2); x.stroke();
+      x.fillStyle = grad(x, 0, fy, 0, H, ['rgba(255,255,255,.18)', 'rgba(255,255,255,0)']); x.fillRect(W * 0.3, fy, W * 0.4, H - fy);
+      x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, fy - 4, W, 4);
+      return c;
+    },
     art: function (w, k) {
       var BR = this.BR;
       w.sp = {
         ball: sprite(BR * 2, BR * 2, k, function (c) {
-          c.beginPath(); c.arc(BR, BR, BR - 0.1, 0, PI2); c.fillStyle = rgrad(c, BR, BR, BR, ['#FED7AA', '#F97316', '#9A3412'], -BR * 0.35, -BR * 0.4); c.fill();
-          c.strokeStyle = '#431407'; c.lineWidth = 0.4; c.beginPath(); c.moveTo(0.2, BR); c.lineTo(BR * 2 - 0.2, BR); c.moveTo(BR, 0.2); c.lineTo(BR, BR * 2 - 0.2); c.stroke();
+          c.beginPath(); c.arc(BR, BR, BR - 0.1, 0, PI2); c.fillStyle = rgrad(c, BR, BR, BR, ['#FED7AA', '#F97316', '#C2410C', '#7C2D12'], -BR * 0.35, -BR * 0.4); c.fill();
+          c.save(); c.clip(); var r = srnd(3); for (var i = 0; i < 160; i++) { c.fillStyle = r() < 0.5 ? 'rgba(0,0,0,.12)' : 'rgba(255,255,255,.08)'; c.fillRect(r() * BR * 2, r() * BR * 2, 0.22, 0.22); } c.restore();
+          c.strokeStyle = '#2A0E04'; c.lineWidth = 0.38; c.beginPath(); c.moveTo(0.2, BR); c.quadraticCurveTo(BR, BR * 1.15, BR * 2 - 0.2, BR); c.moveTo(BR, 0.2); c.quadraticCurveTo(BR * 0.85, BR, BR, BR * 2 - 0.2); c.stroke();
           c.beginPath(); c.arc(BR - BR * 1.3, BR, BR * 1.05, -0.8, 0.8); c.stroke(); c.beginPath(); c.arc(BR + BR * 1.3, BR, BR * 1.05, Math.PI - 0.8, Math.PI + 0.8); c.stroke();
-          c.fillStyle = 'rgba(255,255,255,.4)'; c.beginPath(); c.ellipse(BR * 0.65, BR * 0.55, BR * 0.28, BR * 0.16, -0.6, 0, PI2); c.fill();
+          c.fillStyle = 'rgba(255,255,255,.45)'; c.beginPath(); c.ellipse(BR * 0.62, BR * 0.52, BR * 0.26, BR * 0.14, -0.6, 0, PI2); c.fill();
         }),
-        board: sprite(30, 20, k, function (c) {
-          rr(c, 0.5, 0.5, 29, 17, 2); c.fillStyle = 'rgba(186,230,253,.16)'; c.fill(); c.strokeStyle = '#E0F2FE'; c.lineWidth = 0.8; c.stroke();
-          c.strokeStyle = '#FB923C'; c.lineWidth = 0.7; c.strokeRect(10, 7, 10, 7.5);
-          c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.moveTo(3, 2); c.lineTo(9, 2); c.lineTo(4, 10); c.lineTo(2.5, 10); c.closePath(); c.fill();
-          c.fillStyle = '#64748B'; c.fillRect(1, 17.5, 3, 2); c.fillRect(26, 17.5, 3, 2);
+        board: sprite(30, 40, k, function (c) { // the backboard (bottom 20 units) hanging from a truss (top 20)
+          c.strokeStyle = '#64748B'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(8, 0); c.lineTo(10, 20.5); c.moveTo(22, 0); c.lineTo(20, 20.5); c.stroke();
+          c.strokeStyle = '#94A3B8'; c.lineWidth = 0.4; for (var y = 2; y < 20; y += 3) { c.beginPath(); c.moveTo(8.2 + y * 0.1, y); c.lineTo(21.8 - y * 0.1, y + 1.5); c.stroke(); }
+          rr(c, 0.5, 20.5, 29, 17, 1.6); c.fillStyle = grad(c, 0, 20.5, 30, 37.5, ['rgba(224,242,254,.32)', 'rgba(186,230,253,.14)', 'rgba(224,242,254,.26)']); c.fill();
+          c.strokeStyle = grad(c, 0, 0, 30, 0, ['#CBD5E1', '#F8FAFC', '#94A3B8']); c.lineWidth = 1.1; c.stroke();
+          c.strokeStyle = '#FB923C'; c.lineWidth = 0.75; c.strokeRect(10, 27.5, 10, 7.5);
+          c.fillStyle = 'rgba(255,255,255,.3)'; c.beginPath(); c.moveTo(3, 21.5); c.lineTo(9.5, 21.5); c.lineTo(4, 31); c.lineTo(2.5, 31); c.closePath(); c.fill();
+          c.fillStyle = 'rgba(56,189,248,.8)'; c.fillRect(1.5, 36.2, 27, 0.6);
+          c.fillStyle = '#475569'; c.fillRect(12, 37.4, 6, 2.4);
         })
       };
     },
@@ -791,10 +824,10 @@
         for (var gy = b0.y - BR - 3; gy > hy + 4; gy -= 4.5) { c.beginPath(); c.moveTo(b0.x, gy); c.lineTo(b0.x, gy - 2); c.stroke(); }
       }
       if (!w.gone) {
-        c.drawImage(sp.board, hx - 15, hy - 18.5, 30, 20);
+        c.drawImage(sp.board, hx - 15, hy - 38.5, 30, 40);
         c.fillStyle = 'rgba(251,146,60,' + (0.5 + Math.random() * 0.4).toFixed(2) + ')'; c.fillRect(hx - 13.6, hy + 1.2, 1.2, 1.6 + Math.random()); c.fillRect(hx + 12.4, hy + 1.2, 1.2, 1.6 + Math.random());
         if (ok) { c.fillStyle = 'rgba(74,222,128,.22)'; c.beginPath(); c.ellipse(hx, hy, RIM + 3, 4.5, 0, 0, PI2); c.fill(); }
-        c.strokeStyle = ok ? '#22C55E' : '#EA580C'; c.lineWidth = 1; c.beginPath(); c.ellipse(hx, hy, RIM, 2.2, 0, Math.PI, PI2); c.stroke();
+        c.strokeStyle = ok ? '#16A34A' : '#C2410C'; c.lineWidth = 1.1; c.beginPath(); c.ellipse(hx, hy, RIM, 2.2, 0, Math.PI, PI2); c.stroke();
       }
       var bx = null, by, bs = 1;
       if (w.shot) {
@@ -811,7 +844,8 @@
         c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 0.45; c.beginPath();
         for (i = 0; i <= 6; i++) { var t = i / 6, x1 = hx - RIM + t * RIM * 2, x2 = hx - RIM * 0.6 + t * RIM * 1.2 + sw; c.moveTo(x1, hy); c.lineTo(x2, hy + 8); }
         c.moveTo(hx - RIM * 0.85, hy + 3); c.lineTo(hx + RIM * 0.85, hy + 3); c.moveTo(hx - RIM * 0.7, hy + 6); c.lineTo(hx + RIM * 0.7, hy + 6); c.stroke();
-        c.strokeStyle = ok ? '#4ADE80' : '#F97316'; c.lineWidth = 1.3; c.beginPath(); c.ellipse(hx, hy, RIM, 2.2, 0, 0, Math.PI); c.stroke();
+        c.strokeStyle = ok ? '#4ADE80' : '#F97316'; c.lineWidth = 1.4; c.beginPath(); c.ellipse(hx, hy, RIM, 2.2, 0, 0, Math.PI); c.stroke();
+        c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 0.35; c.beginPath(); c.ellipse(hx, hy - 0.3, RIM - 0.3, 1.9, 0, 0.3, Math.PI - 0.3); c.stroke();
       }
       if (ready && (w.mode === 'play' || w.mode === 'hold')) { // shot clock ring
         var q = 1 - clamp(w.clock / this.lim(w), 0, 1);

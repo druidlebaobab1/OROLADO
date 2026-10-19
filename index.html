@@ -2303,7 +2303,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/sports.js?v=2855"></script>
   <script src="js/casino-art.js?v=2873"></script>
   <script src="js/sfx.js?v=2871"></script>
-  <script src="js/casino.js?v=2875"></script>
+  <script src="js/casino.js?v=2876"></script>
   <script src="js/fit.js?v=2790"></script>
   <script src="js/learn-txt.js?v=2790"></script>
   <script src="js/learn-txt2.js?v=2790"></script>
@@ -2328,7 +2328,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
     function busy() {
       try {
         if (window.D6 && D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount() > 0) return true;
-        var m = document.getElementById('casinoModal'); if (m && m.offsetParent !== null) return true;
+        var m = document.getElementById('casinoModal'); if (m && m.offsetParent !== null && m.classList.contains('in-game')) return true; // salle des jeux : on peut recharger
         var a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
         if (document.querySelector('.modal.open, .modal.show, .sheet.open, [role="dialog"][open]')) return true;
       } catch (e) { return true; }
