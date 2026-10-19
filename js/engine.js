@@ -202,7 +202,20 @@
    * envoyés en entier aux téléphones pas encore à jour (ancien code), rien ne change pour eux.
    */
   var WATCH_MAX = 12;
-  function watchIds() {
+  /*
+   * v2813 — marchés « tièdes » (propriétaire : les nouveaux indices « dormaient » : écran « Connexion
+   * au marché », puis la courbe sautait). Cause : depuis l'abonnement par marché, seul le marché affiché
+   * recevait ses prix ; un autre marché n'avait AUCUN historique (chargement au clic) ou un historique
+   * vieux de plusieurs minutes (courbe figée puis saut vers le présent). Maintenant les marchés visibles
+   * dans la barre (et leurs voisins, et celui que le doigt touche) sont chargés à l'avance et restent
+   * abonnés : au clic, la courbe est déjà là, vivante, à jour. Ligne directe : le serveur pousse aussi
+   * leurs prix (quelques octets par tick) ; lecture de fichiers (secours) : un marché tiède par tour.
+   */
+  var WARM_MAX = 11;
+  var warmIds = [];
+  var warmTurn = 0;
+  /** Marchés affichés + trades ouverts (« chauds » : lus à chaque tour). */
+  function hotIds() {
     var out = [];
     function add(id) {
       if (id && C.ASSETS[id] && out.indexOf(id) < 0 && out.length < WATCH_MAX) out.push(id);
@@ -212,14 +225,29 @@
     for (i = 0; i < trades.length; i++) {
       if (isOpen(trades[i])) add(canonAssetId(trades[i].assetId));
     }
-    // v2818 (propriétaire : « les nouveaux indices dorment ») : les voisins du marché regardé (dans l'ordre de la liste)
-    // restent aussi en direct → passer à l'indice d'à côté est instantané, sans chargement ni saut.
-    var order = Object.keys(C.ASSETS), w = order.indexOf(out[0]), d;
-    for (d = 1; d <= 3 && w >= 0; d++) { add(order[w + d]); add(order[w - d]); }
     return out;
   }
+  function watchIds() {
+    var out = hotIds();
+    // v2818 : les voisins du marché regardé (dans l'ordre de la liste) restent aussi en direct.
+    var order = Object.keys(C.ASSETS), w = order.indexOf(out[0]), d;
+    for (d = 1; d <= 3 && w >= 0; d++) {
+      if (order[w + d] && out.indexOf(order[w + d]) < 0 && out.length < WATCH_MAX) out.push(order[w + d]);
+      if (w - d >= 0 && out.indexOf(order[w - d]) < 0 && out.length < WATCH_MAX) out.push(order[w - d]);
+    }
+    var i;
+    for (i = 0; i < warmIds.length && out.length < WATCH_MAX; i++) {
+      if (C.ASSETS[warmIds[i]] && out.indexOf(warmIds[i]) < 0) out.push(warmIds[i]);
+    }
+    return out;
+  }
+  /** Prix d'un marché présents et à jour (moins de 3 s de retard). */
+  function feedFresh(id) {
+    var f = feeds[id];
+    return !!(f && f.loaded && Date.now() - tickToLocal(f.last) <= 3000);
+  }
   /* v2818 : préchargement discret de TOUS les marchés (1 minute de prix chacun, 12 par requête, une requête toutes les
-     1,5 s après l'ouverture) : quand on touche un indice, sa courbe est déjà là, vivante ; seul le dernier morceau manquant
+     1,5 s après l'ouverture) : quand on touche un indice, sa courbe est déjà là ; seul le dernier morceau manquant
      est demandé. Léger : ~40 Ko au total, une seule fois. */
   var prefetchDone = false;
   function prefetchAll() {
@@ -259,8 +287,7 @@
     }
     var i;
     for (i = 0; i < ids.length; i++) {
-      var f = feeds[ids[i]];
-      if (!f || !f.loaded || Date.now() - tickToLocal(f.last) > 3000) { pollAll(); return; }
+      if (!feedFresh(ids[i])) { pollAll(); return; }
     }
   }
 
@@ -411,6 +438,13 @@
     if (allBusy) return;
     if (allFailAt && Date.now() - allFailAt < 2000) return;
     var ids = watchIds();
+    // Marché affiché pas encore reçu : on le demande SEUL (réponse plus courte, courbe plus vite) ;
+    // les marchés tièdes suivent à la demande suivante.
+    var hot = hotIds();
+    var hk;
+    for (hk = 0; hk < hot.length; hk++) {
+      if (!feedOf(hot[hk]).loaded) { ids = hot; break; }
+    }
     var parts = [];
     var i;
     for (i = 0; i < ids.length; i++) {
@@ -430,6 +464,13 @@
         var a = j.assets[id];
         mergeTicks(id, a.first, unpack(a));
       });
+      // Marchés tièdes encore absents ou en retard : on les complète tout de suite (une seule demande).
+      var rest = watchIds();
+      var rk;
+      for (rk = 0; rk < rest.length; rk++) {
+        // (seulement ceux qui n'étaient pas dans cette demande : jamais de boucle sur un marché absent)
+        if (ids.indexOf(rest[rk]) < 0 && !feedFresh(rest[rk])) { setTimeout(pollAll, 60); break; }
+      }
     }, function () {
       allBusy = false;
       allFailAt = Date.now();
@@ -490,7 +531,11 @@
   }
   function pollLive() {
     if (liveBusy || allBusy) return;
-    var ids = watchIds();
+    // Marchés chauds à chaque tour ; un seul marché tiède par tour, à tour de rôle (sa copie a 10 s de
+    // prix : chacun reste à jour sans multiplier les lectures).
+    var ids = hotIds();
+    var wl = watchIds().filter(function (id) { return ids.indexOf(id) < 0; });
+    if (wl.length) ids.push(wl[(warmTurn++) % wl.length]);
     var i;
     for (i = 0; i < ids.length; i++) {
       if (!feedOf(ids[i]).loaded) { pollAll(); return; }
@@ -1222,6 +1267,24 @@
 
     preloadAll: function () {
       ensureMarkets();
+    },
+
+    /**
+     * Marchés à garder prêts (barre des marchés : ceux qu'on voit, leurs voisins, celui sous le doigt),
+     * du plus probable au moins probable. Leurs prix sont chargés et suivis en fond : au clic, la courbe
+     * s'affiche aussitôt, vivante (aucun écran de chargement, aucun saut).
+     */
+    warm: function (ids) {
+      if (!Array.isArray(ids)) return;
+      var out = [];
+      ids.forEach(function (id) {
+        var c = C.ASSETS[id] ? id : '';
+        if (c && out.indexOf(c) < 0 && out.length < WARM_MAX) out.push(c);
+      });
+      if (out.join(',') === warmIds.join(',')) return;
+      warmIds = out;
+      ensureMarkets();
+      if (pollTimer) syncWatch();
     },
 
     /** Retard à appliquer à l'axe du temps (courbe figée proprement en attendant le direct). */
