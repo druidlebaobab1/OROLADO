@@ -154,6 +154,7 @@
         '<path d="M0-4.6l4.4 3.2-1.7 5.2h-5.4l-1.7-5.2z" fill="#1F2937"/><path d="M0-4.6V-11.4M4.4-1.4l6.4-2.2M2.7 3.8l3.9 5.8M-2.7 3.8l-3.9 5.8M-4.4-1.4l-6.4-2.2" stroke="#1F2937" stroke-width="1.3"/>' +
         '<path d="M-7.5-9.5l3-2.4M7.5-9.5l-3-2.4M11.6 2l-.6 3.8M-11.6 2l.6 3.8M-3 11.6h6" stroke="#1F2937" stroke-width="2.6" stroke-linecap="round"/></g>' +
         '<circle r="' + BR + '" fill="none" stroke="#000" stroke-opacity=".25"/><ellipse cx="-4" cy="-5" rx="4" ry="2.6" fill="#fff" opacity=".55"/></g>' +
+      '<text id="pnFlash" class="pn-flash" x="180" y="58" text-anchor="middle"></text>' +
       '</svg>';
   }
 
@@ -185,7 +186,7 @@
     box.classList.add('cg-game', 'cg-penalty');
     box.innerHTML = '<div class="cg-stage pn-stage">' +
         '<div class="pn-lad" id="pnLad">' + LADDER.map(function (m, k) { return '<span data-k="' + k + '"><i>' + (k + 1) + '</i><b class="fit">×' + nf(m, 2) + '</b></span>'; }).join('') + '</div>' +
-        '<div class="pn-field">' + scene() + '<div class="pn-flash" id="pnFlash"><b class="fit"></b></div><div class="pn-tip"><b class="fit" id="pnTip"></b></div></div>' +
+        '<div class="pn-field">' + scene() + '<div class="pn-tip"><b class="fit" id="pnTip"></b></div></div>' +
       '</div>' + K.stakePanel(l.bet);
     K.bindStake(box);
     var go = $('csGo'), kp = $('pkKp'), dv = $('pkDv'), kShadow = $('pkShadow'), ball = $('pkBall'), spin = $('pkSpin'), bSh = $('pkBShadow'), trail = $('pkTrail'), net = $('pkNet');
@@ -246,8 +247,11 @@
       trail.setAttribute('opacity', '0'); net.removeAttribute('transform'); ball.style.opacity = '';
     }
     function flash(txt, cls) {
-      var f = $('pnFlash'), b = f.firstChild;
-      f.className = 'pn-flash'; K.setText(b, txt); void f.offsetWidth; f.className = 'pn-flash on ' + cls;
+      // annonce dessinée DANS la scène SVG (pas de calque HTML animé : plus léger, aucun artefact sur les vieux téléphones)
+      var f = $('pnFlash');
+      f.setAttribute('class', 'pn-flash'); f.textContent = txt; f.style.fontSize = '34px';
+      try { var w = f.getComputedTextLength(); if (w > 200) f.style.fontSize = (34 * 200 / w).toFixed(1) + 'px'; } catch (e) { /* ignore */ }
+      void f.getBoundingClientRect(); f.setAttribute('class', 'pn-flash on ' + cls);
     }
     // idle : le gardien se balance d'un pied sur l'autre (comme les vrais) — très léger
     var idleT = 0;
@@ -338,10 +342,11 @@
       var r = await K.multi('penalty', live() ? 'cash' : 'start');
       if (!box.isConnected) return;
       busy = false;
-      if (r) { g = r; if (r.done) K.resultLine(box, r); else $('pnFlash').className = 'pn-flash'; }
+      if (r) { g = r; if (r.done) K.resultLine(box, r); else $('pnFlash').setAttribute('class', 'pn-flash'); }
       paint();
     });
     reset(); paint();
+    requestAnimationFrame(function () { K.fitAll(box.querySelector('#pnLad')); }); // multiplicateurs sur UNE ligne, rapetissés si besoin
     K.S.raf = idleT = requestAnimationFrame(idle);
     K.multi('penalty', 'state', null, true).then(function (r) { if (r && !r.done && box.isConnected && !g) { g = r; paint(); } });
   }, { rules: {

@@ -442,6 +442,27 @@
     ob.observe(m, { attributes: true, attributeFilter: ['class'] });
     setTimeout(function () { if (!seen && m._oroBack === ob) { ob.disconnect(); m._oroBack = null; } }, 4000);
   }
+  /* v2808 (propriétaire) : pages « inscris-toi » de Mon niveau et Missions (avant : le texte de « Mes amis » s'affichait) */
+  var GUEST_MORE = {
+    fr: { levels: ['Ton niveau', 'Gagne de l’expérience à chaque trade et monte de niveau.', ['⭐ De l’XP à chaque trade', '📈 Ta barre de progression', '🏆 Atteins le plus haut niveau']], missions: ['Missions de la semaine', 'Chaque semaine, des missions à réussir pour gagner de l’XP.', ['🎯 Nouvelles missions chaque semaine', '⭐ De l’XP en bonus', '📊 Suis ta progression']] },
+    en: { levels: ['Your level', 'Earn XP with every trade and level up.', ['⭐ XP on every trade', '📈 Your progress bar', '🏆 Reach the top level']], missions: ['Weekly missions', 'Every week, missions to complete to earn XP.', ['🎯 New missions every week', '⭐ Bonus XP', '📊 Follow your progress']] },
+    es: { levels: ['Tu nivel', 'Gana XP con cada operación y sube de nivel.', ['⭐ XP en cada operación', '📈 Tu barra de progreso', '🏆 Llega al nivel más alto']], missions: ['Misiones de la semana', 'Cada semana, misiones para ganar XP.', ['🎯 Nuevas misiones cada semana', '⭐ XP extra', '📊 Sigue tu progreso']] },
+    pt: { levels: ['Seu nível', 'Ganhe XP a cada operação e suba de nível.', ['⭐ XP em cada operação', '📈 Sua barra de progresso', '🏆 Chegue ao nível mais alto']], missions: ['Missões da semana', 'Toda semana, missões para ganhar XP.', ['🎯 Novas missões toda semana', '⭐ XP extra', '📊 Acompanhe seu progresso']] },
+    ar: { levels: ['مستواك', 'اكسب نقاط الخبرة مع كل صفقة وارتقِ بمستواك.', ['⭐ نقاط خبرة مع كل صفقة', '📈 شريط تقدّمك', '🏆 بلوغ أعلى مستوى']], missions: ['مهام الأسبوع', 'كل أسبوع مهام تنجزها لتكسب نقاط الخبرة.', ['🎯 مهام جديدة كل أسبوع', '⭐ نقاط خبرة إضافية', '📊 تابع تقدّمك']] },
+    tr: { levels: ['Seviyen', 'Her işlemde XP kazan ve seviye atla.', ['⭐ Her işlemde XP', '📈 İlerleme çubuğun', '🏆 En yüksek seviyeye ulaş']], missions: ['Haftalık görevler', 'Her hafta XP kazanmak için görevler.', ['🎯 Her hafta yeni görevler', '⭐ Ekstra XP', '📊 İlerlemeni takip et']] },
+    vi: { levels: ['Cấp độ của bạn', 'Nhận XP sau mỗi giao dịch và lên cấp.', ['⭐ XP cho mỗi giao dịch', '📈 Thanh tiến độ', '🏆 Đạt cấp cao nhất']], missions: ['Nhiệm vụ tuần', 'Mỗi tuần, các nhiệm vụ để nhận XP.', ['🎯 Nhiệm vụ mới mỗi tuần', '⭐ XP thưởng', '📊 Theo dõi tiến độ']] },
+    id: { levels: ['Levelmu', 'Dapatkan XP di setiap trading dan naik level.', ['⭐ XP di setiap trading', '📈 Bilah progresmu', '🏆 Capai level tertinggi']], missions: ['Misi mingguan', 'Setiap minggu, misi untuk mendapatkan XP.', ['🎯 Misi baru setiap minggu', '⭐ XP bonus', '📊 Pantau progresmu']] },
+    ru: { levels: ['Твой уровень', 'Получай опыт за каждую сделку и повышай уровень.', ['⭐ Опыт за каждую сделку', '📈 Шкала прогресса', '🏆 Достигни высшего уровня']], missions: ['Задания недели', 'Каждую неделю задания, чтобы получать опыт.', ['🎯 Новые задания каждую неделю', '⭐ Бонусный опыт', '📊 Следи за прогрессом']] },
+    de: { levels: ['Dein Level', 'Sammle XP mit jedem Trade und steige auf.', ['⭐ XP für jeden Trade', '📈 Dein Fortschrittsbalken', '🏆 Erreiche das höchste Level']], missions: ['Wochenmissionen', 'Jede Woche Missionen, um XP zu sammeln.', ['🎯 Jede Woche neue Missionen', '⭐ Bonus-XP', '📊 Verfolge deinen Fortschritt']] },
+    hi: { levels: ['आपका लेवल', 'हर ट्रेड पर XP कमाएँ और लेवल बढ़ाएँ।', ['⭐ हर ट्रेड पर XP', '📈 आपकी प्रगति पट्टी', '🏆 सबसे ऊँचा लेवल पाएँ']], missions: ['साप्ताहिक मिशन', 'हर हफ़्ते XP कमाने के लिए मिशन।', ['🎯 हर हफ़्ते नए मिशन', '⭐ बोनस XP', '📊 अपनी प्रगति देखें']] },
+    zh: { levels: ['你的等级', '每笔交易都能获得经验值并升级。', ['⭐ 每笔交易得经验值', '📈 你的进度条', '🏆 冲到最高等级']], missions: ['每周任务', '每周完成任务，赚取经验值。', ['🎯 每周新任务', '⭐ 额外经验值', '📊 查看你的进度']] }
+  };
+  function guestTexts() {
+    var G = D6.LIVE_T && D6.LIVE_T.guest; if (!G) return;
+    var l = (document.documentElement.lang || 'en').slice(0, 2), tb = G[l] || G.en, add = GUEST_MORE[l] || GUEST_MORE.en;
+    if (tb && !tb.levels) tb.levels = add.levels;
+    if (tb && !tb.missions) tb.missions = add.missions;
+  }
   function show(w, sub) {
     if (D6.Social2) D6.Social2.hide(); // v2796 : une page de l'ancien Social par-dessus la messagerie
     tab = w; curSub = sub || '';
@@ -462,6 +483,7 @@
     if (w === 'guest') {
       $('livePaneNews').hidden = true;
       $('liveBarT').textContent = (sub === 'send' && D6.LiveSend ? D6.LiveSend.title() : h[sub] ? h[sub][0] : (sub === 'groups' && D6.LiveGroups ? D6.LiveGroups.title() : (D6.LiveFun ? D6.LiveFun.title(sub) : '')));
+      guestTexts();
       if (D6.LiveGuest) D6.LiveGuest($('liveGuestBox'), sub, sub === 'chat' ? '<button type="button" class="lgu-have" id="lguMail">✉️ ' + esc(L().guestMail) + '</button>' : '');
       if ($('lguMail')) $('lguMail').addEventListener('click', function () { close(); if (D6.App && D6.App.openModal) D6.App.openModal('helpModal'); });
       return;

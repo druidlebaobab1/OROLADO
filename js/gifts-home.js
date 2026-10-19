@@ -81,7 +81,26 @@
       return '<button type="button" class="gh-p' + (t.big ? ' wide' : '') + (last ? ' wide' : '') + '" data-k="' + t.k + '">' + planet(t.k) + '<b>' + esc(x[t.k][0]) + '</b><small class="gh-sub">' + esc(x[t.k][1] || '') + '</small>' + extra + '</button>'; // v2764 : une petite phrase explique chaque tuile
     }).join('');
     grid.querySelectorAll('[data-k]').forEach(function (b) { b.addEventListener('click', function () { go(b.getAttribute('data-k')); }); });
+    fitHome();
   }
+  // v2808 (propriétaire) : l'accueil Cadeaux tient TOUJOURS dans l'écran (iPhone SE, Safari avec sa barre, encoche) :
+  // on réduit les tuiles juste assez ; s'il reste trop peu de place, la page défile (jamais de tuile coupée).
+  var fitT = 0;
+  function fitHome() {
+    clearTimeout(fitT);
+    fitT = setTimeout(function () {
+      var m = $('portalModal'), grid = $('ghGrid'), box = m && m.querySelector('.portal-box');
+      if (!box || !grid || !m.classList.contains('active') || !m.classList.contains('gh-home')) return;
+      var before = grid.style.zoom;
+      grid.style.removeProperty('zoom'); box.style.removeProperty('overflow-y');
+      if (box.scrollHeight <= box.clientHeight + 1) return;
+      if (before) { grid.style.setProperty('zoom', before); if (box.scrollHeight <= box.clientHeight + 1 && box.scrollHeight > box.clientHeight - 40) return; }
+      var z = 1, n = 0;
+      while (box.scrollHeight > box.clientHeight + 1 && z > 0.78 && n < 12) { z = Math.round((z - 0.02) * 100) / 100; n++; grid.style.setProperty('zoom', String(z)); }
+      if (box.scrollHeight > box.clientHeight + 1) box.style.setProperty('overflow-y', 'auto', 'important');
+    }, 30);
+  }
+  window.addEventListener('resize', function () { var m = $('portalModal'); if (m && m.classList.contains('active')) fitHome(); });
 
   function mode(home) {
     var m = $('portalModal');
@@ -91,9 +110,10 @@
     var box = m.querySelector('.portal-box'); if (box) box.scrollTop = 0;
   }
   function home() { sub = ''; mode(true); paintHome(); hidePages(); }
+  function unfit() { var g = $('ghGrid'), b = $('portalModal') && $('portalModal').querySelector('.portal-box'); if (g) g.style.removeProperty('zoom'); if (b) b.style.removeProperty('overflow-y'); }
   function hidePages() { ['ghWheel', 'ghJauge'].forEach(function (id) { if ($(id)) $(id).hidden = true; }); }
   function go(k) {
-    sub = k;
+    sub = k; unfit();
     hidePages();
     if (k === 'wheel' || k === 'jauge') {
       if (D6.Portal && D6.Portal.tab) D6.Portal.tab('none');
@@ -232,7 +252,7 @@
     // À chaque ouverture de Cadeaux : retour à l'accueil des tuiles + état de la roue relu.
     new MutationObserver(function () {
       var on = m.classList.contains('active');
-      if (on && !m._ghOn) { home(); refresh().then(function () { if (!sub) paintHome(); }); }
+      if (on && !m._ghOn) { home(); refresh().then(function () { if (!sub) paintHome(); }); setTimeout(function () { if (!sub) fitHome(); }, 320); setTimeout(function () { if (!sub) fitHome(); }, 900); }
       m._ghOn = on;
     }).observe(m, { attributes: true, attributeFilter: ['class'] });
     setTimeout(function () { if (!guest()) refresh(); }, 4000); // v2706 : état lu d'avance → Cadeaux s'affiche en entier d'un coup
@@ -241,5 +261,5 @@
     document.addEventListener('oro:lang', function () { if (document.documentElement.lang === lastLang) return; lastLang = document.documentElement.lang; if (!m.classList.contains('active')) return; if (!sub) paintHome(); else if (sub === 'wheel') paintWheel(); else if (sub === 'jauge') paintJauge(); else mode(false); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  D6.GiftsHome = { home: home, go: go, sub: function () { return sub; } };
+  D6.GiftsHome = { home: home, go: go, sub: function () { return sub; }, fit: function () { if (!sub) fitHome(); } };
 })(window.D6 = window.D6 || {});

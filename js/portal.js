@@ -997,7 +997,9 @@
       if (box && m && m.classList.contains('active')) fitLines(box);
       if (!box || !m || !m.classList.contains('active') || window.innerWidth >= 860) return;
       // v2419 : plus de resserrage (zoom) : les cartes ont toutes la même taille et défilent si besoin.
-      for (var z = 0; z < box.children.length; z++) box.children[z].style.zoom = '';
+      for (var z = 0; z < box.children.length; z++) if (box.children[z].id !== 'ghGrid') box.children[z].style.zoom = '';
+      // v2808 : l'accueil Cadeaux (tuiles) se resserre juste assez pour tenir dans l'écran (js/gifts-home.js)
+      if (D6.GiftsHome && D6.GiftsHome.fit && m.classList.contains('gh-home')) D6.GiftsHome.fit();
       return;
       var kids = [];
       for (var i = 0; i < box.children.length; i++) {

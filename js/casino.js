@@ -368,13 +368,14 @@
       (list || []).forEach(function (e) {
         if (!e || !e.k || NAMES[e.k] || !/^[a-z][a-z0-9]{1,15}$/.test(e.k)) return;
         NAMES[e.k] = String(e.name || e.k); MODS[e.k] = String(e.file || e.k); SECTION[e.k] = e.sec === 'live' || e.sec === 'skill' ? e.sec : 'more'; CAT.push(e.k);
+        if (e.sec === 'live') LIVE_GAMES[e.k] = 1; // v2807 : pastille « en direct » sur le logo
         if (e.icon && ART.addObj) ART.addObj(e.k, e.icon, e.pal);
       });
       var m = $('casinoModal'); if (m && !S.game && S.view === 'games' && $('csView') && $('csView').className.indexOf('cs-grid') >= 0) home('games');
     }
   };
   // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
-  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-more1', 'cat-more2'], catAsked = false;
+  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-more1', 'cat-more2', 'cat-more3'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
   function loadCatalog() {
     if (catAsked) return; catAsked = true;
     CAT_FILES.forEach(function (f) { var js = document.createElement('script'); js.src = 'js/games/' + f + '.js?v=' + MOD_V; js.async = true; document.head.appendChild(js); });

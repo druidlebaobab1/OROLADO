@@ -99,7 +99,7 @@
 
   var busyAt = 0;
   window.addEventListener('popstate', function () {
-    if (skip > 0) { skip--; return; }
+    if (skip > 0) { skip--; sync(); return; } // une fenêtre a pu s'ouvrir pendant ce retour : on remet l'entrée
     if (!guard) return;
     guard = false;
     if (!anyOpen()) return;

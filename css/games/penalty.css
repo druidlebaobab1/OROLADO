@@ -34,15 +34,13 @@ html:root body #casinoModal .cg-penalty.aim .pk-z:hover rect,html:root body #cas
 html:root body #casinoModal .cg-penalty .pk-z.sel{opacity:1}
 html:root body #casinoModal .cg-penalty .pk-z.sel rect{fill:rgba(251,191,36,.3);stroke:#FBBF24;stroke-width:1.6;stroke-dasharray:none}
 @keyframes pkPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
-/* annonce courte « But ! » / « Arrêté ! » (état du jeu, comme « Envolé ! ») */
-html:root body #casinoModal .cg-penalty .pn-flash{position:absolute;left:0;right:0;top:9%;display:flex;justify-content:center;pointer-events:none;opacity:0}
-html:root body #casinoModal .cg-penalty .pn-flash b{display:block;max-width:86%;padding:0 18px;border-radius:14px;white-space:nowrap;
-  font:900 clamp(26px,9vw,46px)/1.25 var(--cg-font);letter-spacing:.02em;text-transform:uppercase;font-style:italic}
-html:root body #casinoModal .cg-penalty .pn-flash.goal b{color:#FEF3C7;background:linear-gradient(180deg,rgba(245,158,11,.0),rgba(245,158,11,.0));text-shadow:0 2px 0 #B45309,0 0 22px rgba(251,191,36,.9)}
-html:root body #casinoModal .cg-penalty .pn-flash.save b{color:#fff;text-shadow:0 2px 0 #9F1239,0 0 18px rgba(244,63,94,.85)}
-html:root body #casinoModal .cg-penalty .pn-flash.on{animation:pkFlash 1.25s cubic-bezier(.2,.9,.3,1) forwards}
-@keyframes pkFlash{0%{opacity:0;transform:scale(.4)}18%{opacity:1;transform:scale(1.12)}30%{transform:scale(1)}78%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05) translateY(-6px)}}
-html:root body #casinoModal .cg-penalty .pn-tip{position:absolute;left:0;right:0;bottom:10px;height:28px;display:flex;justify-content:center;align-items:center;pointer-events:none}
+/* annonce courte « But ! » / « Arrêté ! » (état du jeu, comme « Envolé ! »), dessinée dans le SVG */
+html:root body #casinoModal .cg-penalty .pn-flash{opacity:0;font-family:var(--cg-font);font-weight:900;font-style:italic;letter-spacing:.02em;text-transform:uppercase;pointer-events:none;paint-order:stroke;stroke-width:3px;stroke-linejoin:round}
+html:root body #casinoModal .cg-penalty .pn-flash.goal{fill:#FEF3C7;stroke:#B45309}
+html:root body #casinoModal .cg-penalty .pn-flash.save{fill:#fff;stroke:#9F1239}
+html:root body #casinoModal .cg-penalty .pn-flash.on{animation:pkFlash 1.25s ease-out forwards}
+@keyframes pkFlash{0%{opacity:0}14%{opacity:1}80%{opacity:1}100%{opacity:0}}
+html:root body #casinoModal .cg-penalty .pn-tip{position:absolute;left:0;right:0;top:6px;height:28px;display:flex;justify-content:center;align-items:center;pointer-events:none}
 html:root body #casinoModal .cg-penalty .pn-tip b{display:block;max-width:90%;padding:0 14px;border-radius:999px;background:rgba(10,6,30,.62);box-shadow:inset 0 0 0 1px rgba(253,230,138,.35);
   font:800 13px/28px var(--cg-font);color:#FDE68A;white-space:nowrap}
 html:root body #casinoModal .cg-penalty .pn-tip b:empty{display:none}
@@ -50,7 +48,7 @@ html:root body #casinoModal .cg-penalty .pn-tip b:empty{display:none}
   html:root body #casinoModal .cg-penalty .pn-lad span{height:27px}
   html:root body #casinoModal .cg-penalty .pn-lad i{display:none}
   html:root body #casinoModal .cg-penalty .pn-lad b{font-size:11px}
-  html:root body #casinoModal .cg-penalty .pn-tip{bottom:6px}
+  html:root body #casinoModal .cg-penalty .pn-tip{top:4px}
 }
 @media (max-width:360px){html:root body #casinoModal .cg-penalty .pn-lad{gap:3px}html:root body #casinoModal .cg-penalty .pn-lad b{font-size:10.5px}}
 /* téléphone couché : échelle à gauche en colonne */
@@ -61,3 +59,7 @@ html:root body #casinoModal .cg-penalty .pn-tip b:empty{display:none}
   html:root body #casinoModal .cg-penalty .pn-field{margin:-8px -8px -8px 0}
 }
 html.oro-lite body #casinoModal .cg-penalty .pk-glow,html.oro-lite body #casinoModal .cg-penalty .pk-led,html.oro-lite body #casinoModal .cg-penalty.aim .pk-ret{animation:none}
+/* les 8 multiplicateurs tiennent toujours sur une ligne (SE 320 px : « ×10,93 ») */
+html:root body #casinoModal .cg-penalty .pn-lad span{padding:0 1px}
+html:root body #casinoModal .cg-penalty .pn-lad b{font-size:clamp(8.5px,2.7vw,13px)!important;letter-spacing:-.04em}
+@media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-penalty .pn-lad b{font-size:13px!important}}

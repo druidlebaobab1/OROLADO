@@ -16,8 +16,8 @@ const CASINO_MIN = 0.10;
 const CASINO_MAX_STAKE = 1000.0;
 const CASINO_MAX_WIN = 10000.0;
 const CASINO_GAMES = ['crash', 'jet', 'rocket', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines', 'apple',
-  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps', 'lotto'];
-const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower', 'balloon', 'penalty', 'cryptox', 'horses', 'roulette', 'race']; // jeux en plusieurs étapes (état gardé par le serveur)
+  'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps', 'lotto', 'planets'];
+const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower', 'balloon', 'penalty', 'cryptox', 'horses', 'roulette', 'race', 'planets']; // jeux en plusieurs étapes (état gardé par le serveur)
 /*
  * v2718 (propriétaire) — JEUX EN DIRECT À TIRAGE : le serveur fait un tirage commun à heure fixe, tout le monde voit le même.
  *  - période P secondes ; tour n° i = floor(maintenant / P) ; mises ouvertes de i·P à i·P + B ; à i·P + B le résultat est
@@ -26,7 +26,13 @@ const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower
  *  - Crypto Live : 15 cryptos, la bonne paie ×14,4 (retour 96 %). Chevaux Live : 10 chevaux, le gagnant paie ×9,6 (96 %).
  *    Roulette Live : roulette européenne (rouge / noir / pair / impair ×2, douzaine ×3, numéro ×36 — retour 97,3 %).
  */
-const CASINO_DRAW = ['cryptox' => [60, 45], 'horses' => [60, 33], 'roulette' => [40, 28], 'race' => [60, 33]]; // [période P, mises ouvertes B]
+const CASINO_DRAW = ['cryptox' => [60, 45], 'horses' => [60, 33], 'roulette' => [40, 28], 'race' => [60, 33], 'planets' => [40, 28]]; // [période P, mises ouvertes B]
+/* v2807 (propriétaire) — LUCKY PLANETS (jeu en direct) : toutes les 40 s une comète choisit UNE des 6 planètes, la même pour
+ * tout le monde. Chances fixes (sur 100) : Lune 32 · Mars 24 · Terre 18 · Neptune 13 · Saturne 9 · Soleil 4 ;
+ * cote = 0,94 ÷ chance (arrondie vers le bas) → marge maison 6 % quel que soit le choix (×2,93 … ×23,50). */
+const CASINO_PLANETS_W = [32, 24, 18, 13, 9, 4];
+function casino_planets_odds(): array { return array_map(static fn($w) => floor(CASINO_EDGE * 100 / $w * 100 + 1e-6) / 100, CASINO_PLANETS_W); }
+function casino_planets_draw(): int { $r = random_int(1, 100); $acc = 0; foreach (CASINO_PLANETS_W as $i => $w) { $acc += $w; if ($r <= $acc) return $i; } return 0; }
 /*
  * v2792 (propriétaire, comme les courses virtuelles des grands sites) — RACING devient EN DIRECT (10 voitures) et HORSE RACE
  * reçoit des COTES : à chaque tour, chaque coureur a sa chance p (favoris → outsiders), tirée par le serveur et montrée
@@ -207,6 +213,7 @@ function casino_draw_outcome(string $g, int $i): array {
     $k = (string) $i;
     if (!isset($s[$k])) {
       if ($g === 'cryptox') $s[$k] = ['n' => random_int(0, CASINO_CRYPTOX_N - 1)];
+      elseif ($g === 'planets') $s[$k] = ['n' => casino_planets_draw()];
       elseif ($g === 'horses' || $g === 'race') { $pr = casino_runner_probs(); $s[$k] = casino_runner_card($g, $pr) + ['order' => casino_runner_order($pr)]; }
       else $s[$k] = ['n' => random_int(0, 36)];
       if (count($s) > 60) { $ks = array_map('intval', array_keys($s)); sort($ks); foreach (array_slice($ks, 0, count($ks) - 60) as $old) unset($s[(string) $old]); }
@@ -217,6 +224,7 @@ function casino_draw_outcome(string $g, int $i): array {
 /** Gain ÷ mise d'une sélection pour un résultat ; null = sélection invalide. Sans résultat ($out vide) : vérifie seulement la sélection. */
 function casino_draw_mult(string $g, string $sel, array $out): ?float {
   if ($g === 'cryptox') { if (!preg_match('/^\d{1,2}$/', $sel) || (int) $sel >= CASINO_CRYPTOX_N) return null; return $out ? ((int) $sel === (int) $out['n'] ? CASINO_CRYPTOX_MULT : 0.0) : 0.0; }
+  if ($g === 'planets') { if (!preg_match('/^[0-5]$/', $sel)) return null; return $out ? ((int) $sel === (int) $out['n'] ? (float) casino_planets_odds()[(int) $sel] : 0.0) : 0.0; }
   if ($g === 'race') { if (!preg_match('/^\d$/', $sel)) return null; return $out ? ((int) $sel === (int) $out['order'][0] ? (float) ($out['o'][(int) $sel] ?? 0) : 0.0) : 0.0; }
   if ($g === 'horses') {
     // ancien format (pari posé avant v2792, tour sans cotes) : « 3 » = cheval gagnant ×9,6
@@ -238,6 +246,7 @@ function casino_draw_public(string $g, float $now): array {
   $i = (int) floor($now / $P); $t0 = $i * $P;
   $o = ['i' => $i, 't0' => (float) $t0, 'close' => (float) ($t0 + $B), 'end' => (float) ($t0 + $P), 'phase' => $now < $t0 + $B ? 'bet' : 'show', 'P' => $P, 'B' => $B];
   if ($g === 'horses' || $g === 'race') { $cur = casino_draw_outcome($g, $i); if (isset($cur['o'])) { $o['odds'] = $cur['o']; if (isset($cur['c'])) $o['pair'] = $cur['c']; } } // v2792 : cotes visibles, arrivée secrète
+  if ($g === 'planets') $o['odds'] = casino_planets_odds();
   if ($now >= $t0 + $B) { $o['res'] = casino_draw_outcome($g, $i); unset($o['res']['p'], $o['res']['c']); }
   $last = [];
   for ($k = 1; $k <= 6; $k++) { $r = casino_draw_outcome($g, $i - $k); $last[] = isset($r['order']) ? (int) $r['order'][0] : (int) $r['n']; }
