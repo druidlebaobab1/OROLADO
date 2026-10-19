@@ -167,7 +167,7 @@ function orolado_trade_exposure(array $db, string $assetId = '', string $uid = '
  * Le prix d'entrée et la ligne objectif sont décidés ICI, jamais par le navigateur.
  */
 /** v2359 : prix du clic accepté jusqu'à 1,5 s en arrière (6 prix de 250 ms). */
-if (!defined('OROLADO_CLICK_MAX_TICKS')) define('OROLADO_CLICK_MAX_TICKS', 6);
+if (!defined('OROLADO_CLICK_MAX_TICKS')) define('OROLADO_CLICK_MAX_TICKS', 12); // 2026-10-19 (propriétaire) : 3 s, le trade reste TOUJOURS au clic
 /**
  * v2654 : prix du clic accordé seulement après 30 clics mesurés sans comportement de robot.
  * 2026-10-19 : ne sert plus qu'à la DÉMO. En RÉEL, le prix d'entrée est TOUJOURS le prix à l'arrivée de l'ordre

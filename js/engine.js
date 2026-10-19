@@ -1529,7 +1529,7 @@
       // 0,15 s si inconnu) + 40 ms de marge.
       var oneWay = isFinite(clock.rtt) && clock.rtt > 0 ? Math.min(600, clock.rtt / 2) : 150;
       var arriveTick = clock.ready ? Math.floor((Date.now() + clock.offset + oneWay + 40) / TICK_MS) : 0;
-      var clickOk = mode !== 'real' || !(arriveTick > 0) || arriveTick - entryTick <= 5; // serveur : 6 prix (1,5 s), toutes mises
+      var clickOk = mode !== 'real' || !(arriveTick > 0) || arriveTick - entryTick <= 11; // serveur : 12 prix (3 s), toutes mises
 
       lastOrderAt = nowPerf;
       D6.holdRemote = true;
