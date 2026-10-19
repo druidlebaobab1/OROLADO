@@ -279,12 +279,13 @@
   // dans 100+ jeux : chaque onglet montre sa liste).
   // v2825 (propriétaire : « Joue toi-même est plus long… même forme ») : 3 onglets de même largeur, mots courts comme les grandes plateformes.
   // 2026-10-19 (propriétaire : « Arcade ne me plaît pas ») : « Adresse » = jeux où TU joues toi-même (réflexes, adresse).
-  var TAB_T = { en: { skill: 'Skill', live: 'Live', more: 'Casino' }, fr: { skill: 'Adresse', live: 'Live', more: 'Casino' },
-    es: { skill: 'Habilidad', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Habilidade', live: 'Ao vivo', more: 'Cassino' },
-    ar: { skill: 'مهارة', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Beceri', live: 'Canlı', more: 'Casino' },
-    vi: { skill: 'Kỹ năng', live: 'Live', more: 'Casino' }, id: { skill: 'Keahlian', live: 'Live', more: 'Kasino' },
-    ru: { skill: 'Ловкость', live: 'Live', more: 'Казино' }, de: { skill: 'Geschick', live: 'Live', more: 'Casino' },
-    hi: { skill: 'कौशल', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '技巧', live: '直播', more: '娱乐场' } };
+  // v2849 (propriétaire) : le 1er onglet s'appelle « Action » (avant : Adresse / Skill)
+  var TAB_T = { en: { skill: 'Action', live: 'Live', more: 'Casino' }, fr: { skill: 'Action', live: 'Live', more: 'Casino' },
+    es: { skill: 'Acción', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Ação', live: 'Ao vivo', more: 'Cassino' },
+    ar: { skill: 'أكشن', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Aksiyon', live: 'Canlı', more: 'Casino' },
+    vi: { skill: 'Hành động', live: 'Live', more: 'Casino' }, id: { skill: 'Aksi', live: 'Live', more: 'Kasino' },
+    ru: { skill: 'Экшен', live: 'Live', more: 'Казино' }, de: { skill: 'Action', live: 'Live', more: 'Casino' },
+    hi: { skill: 'एक्शन', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '动作', live: '直播', more: '娱乐场' } };
   // une ligne qui explique chaque onglet (en haut de sa grille)
   var TAB_D = {
     en: { skill: 'You play: your reflexes, your skill, you cash out when you want.', live: 'Live draws for everyone at the same time: bet before the start.', more: 'Classic casino games: pick, bet, win instantly.' },
