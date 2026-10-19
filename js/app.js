@@ -70,7 +70,7 @@
       try {
         if (typing()) return; // clavier ouvert : la page ne change pas de taille
         var h = Math.round(window.innerHeight || 0);
-        if (h > 200 && h !== lastH) { lastH = h; root.style.setProperty('--app-h', h + 'px'); }
+        if (h > 200 && h !== lastH) { lastH = h; } // v2822 : plus de hauteur mesurée posée sur la page (le CSS suit la fenêtre)
       } catch (eH) { /* ignore */ }
     }
     function home() {
@@ -1177,17 +1177,21 @@
       // défilement), on recalcule : avant, le calcul fait au mauvais moment laissait une bande vide en bas.
       var typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName || '');
       var sameW = safariGapW === window.innerWidth;
-      var sameH = Math.abs((safariGapH || 0) - window.innerHeight) < 30;
+      // v2822 : la hauteur suivie est celle de l'écran de jeu lui-même (fixé sur la fenêtre) ; 2 px suffisent pour
+      // recalculer (avant : 30 px de tolérance → bande vide sous ACHETER / VENDRE quand Safari rétrécissait sa barre).
+      var scrH = Math.round(scr.getBoundingClientRect().height || window.innerHeight);
+      var sameH = Math.abs((safariGapH || 0) - scrH) < 2;
       if (!force && sameW && (sameH || typing)) return;
       safariGapW = window.innerWidth;
-      safariGapH = window.innerHeight;
+      safariGapH = scrH;
       scr.classList.remove('saf-fill');
       // Safari : la page peut passer SOUS sa barre flottante (hauteur = tout l'écran) → on garde la
       // place de la barre ; sinon petite marge. Autres navigateurs iPhone : la zone de la barre d'accueil.
       var bottomRes;
       if (UA_SAFARI_IOS) {
         var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
-        var underBar = fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
+        var standalone = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+        var underBar = !standalone && fullScreenH > 0 && window.innerHeight >= fullScreenH - 4;
         bottomRes = underBar ? (safeBottomPx() + 35) : 8;
       } else {
         bottomRes = safeBottomPx() + 4;
@@ -1200,9 +1204,10 @@
       // VENDRE passaient sous la bande bleue du bas. On prend le vrai bas de la page s'il est plus haut.
       var viewBottom = window.innerHeight;
       var scrBottom = scr.getBoundingClientRect().bottom;
-      if (scrBottom > 300 && scrBottom < viewBottom - 2) viewBottom = scrBottom;
+      if (scrBottom > 300) viewBottom = Math.min(viewBottom, scrBottom); // v2822 : le vrai bas de l'écran de jeu
       var h = Math.floor(viewBottom - bottomRes - padH - cardTop);
-      if (h < 200) h = 200;
+      var hMin = 150; // v2822 : petit iPhone (SE…) : ACHETER / VENDRE restent dans l'écran (avant : 200 → coupés en bas)
+      if (h < hMin) h = hMin;
       html.style.setProperty('--ios-chart-h', h + 'px');
       html.style.setProperty('--ios-stage-h', Math.max(150, h - toolsH) + 'px');
       html.classList.add('ios-fit');
@@ -1404,7 +1409,8 @@
           root.style.setProperty('--ios-full-h', Math.max(window.innerHeight || 0, (screen && screen.height) || 0) + 'px');
           if (document.body) {
             document.body.style.setProperty('background-color', '#1A2A68', 'important');
-            document.body.style.setProperty('min-height', Math.max(window.innerHeight || 0, (screen && screen.height) || 0) + 'px', 'important');
+            // v2822 : plus de hauteur minimale forcée sur le body (il est fixé sur la fenêtre, css/app.css « VERROU ») :
+            // une hauteur plus grande que la fenêtre poussait ACHETER / VENDRE hors de l'écran.
           }
         } catch (eP) { /* ignore */ }
       };
@@ -1425,6 +1431,13 @@
     }, true);
   })();
   if (IOS_ANY) {
+    // v2822 : l'écran de jeu change de taille (barre de Safari qui grandit / rétrécit, rotation) → recalcul tout de suite
+    try {
+      if (window.ResizeObserver && $('screenTrade')) {
+        var sgT = 0;
+        new ResizeObserver(function () { clearTimeout(sgT); sgT = setTimeout(function () { fillSafariGap(false); }, 40); }).observe($('screenTrade'));
+      }
+    } catch (eRoSg) { /* ignore */ }
     window.addEventListener('resize', function () { setTimeout(function () { fillSafariGap(false); }, 150); });
     window.addEventListener('orientationchange', function () { setTimeout(function () { fillSafariGap(true); }, 400); });
     window.addEventListener('load', function () { [300, 1000, 2500, 5000].forEach(function (ms) { setTimeout(function () { fillSafariGap(true); }, ms); }); }); // v2573 : recalculs en plus (barre de Safari qui rétrécit après le chargement)

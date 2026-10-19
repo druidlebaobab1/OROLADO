@@ -817,13 +817,17 @@
     // v2814 (propriétaire) : plus de planètes derrière les logos : l'emblème seul, net, avec une ombre douce ;
     // le marché choisi : emblème plus lumineux, anneau doré sous lui (socle) et nom en gras doré.
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip .mk-art{background:none!important;box-shadow:none!important;border-radius:0!important;' +
-    'position:relative!important;overflow:visible!important;opacity:.86!important;filter:drop-shadow(0 2px 2.5px rgba(0,0,0,.55))!important;transform:none!important}' +
+    'position:relative!important;overflow:visible!important;opacity:.5!important;filter:saturate(.55) drop-shadow(0 2px 2.5px rgba(0,0,0,.55))!important;transform:scale(.9)!important;transition:transform .2s ease,opacity .2s ease,filter .2s ease!important}' +
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip .mk-art > svg{width:90%!important;height:90%!important;filter:none!important;margin:auto!important}' +
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip .mk-art::before{display:none!important;content:none!important}' +
     // v2821 (propriétaire) : plus d'anneau sous l'emblème (il faisait croire qu'il appartenait au logo).
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip .mk-art::after{display:none!important;content:none!important}' +
-    'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip.on .mk-art{opacity:1!important;transform:translateY(-1px) scale(1.07)!important;' +
-    'filter:drop-shadow(0 0 6px rgba(255,190,90,.55)) drop-shadow(0 2px 2px rgba(0,0,0,.5))!important}' +
+    // v2822 (propriétaire : « on doit sentir sur quel indice on est, même en vidéo ») : les autres emblèmes sont atténués et
+    // plus petits ; celui choisi est plein, plus grand, avec un halo lumineux doré (aucun anneau sous lui).
+    'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip.on .mk-art{opacity:1!important;transform:translateY(-2px) scale(1.16)!important;' +
+    'filter:saturate(1.15) drop-shadow(0 0 10px rgba(255,200,110,.75)) drop-shadow(0 0 3px rgba(255,230,170,.9)) drop-shadow(0 2px 2px rgba(0,0,0,.5))!important}' +
+    'html body #tradeWrap#tradeWrap #assetBar#assetBar .asset-chip:not(.on) .mk-name{opacity:.62!important}' +
+    'html.oro-lite body #tradeWrap#tradeWrap #assetBar#assetBar .asset-chip .mk-art{transition:none!important}' +
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip.on .mk-name{color:#FFD58A!important;font-weight:900!important;text-shadow:0 0 8px rgba(255,160,60,.5)!important}' +
     // Noms longs (9 lettres et plus) : lettres un peu plus serrées, jamais coupés.
     'html body #tradeWrap#tradeWrap .asset-chip .mk-name.mk-long{letter-spacing:-.01em!important}';
