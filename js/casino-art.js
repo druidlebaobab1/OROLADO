@@ -117,15 +117,14 @@
         '<path d="M8 24L18 11H46L56 24 32 56z" fill="none" stroke="#E0F7FF" stroke-width="1" stroke-linejoin="round"/><path d="M8 24H56" stroke="#fff" stroke-width=".8" opacity=".8"/>' +
         '<path d="M20 14.5L24 21" stroke="#fff" stroke-width="2.4"' + RC + '/>' + spark(14, 13, 4.5) + spark(41, 36, 2.6, .8);
     },
-    // Penalty : but avec filet sur pelouse + ballon
+    // Penalty — v2860 (owner: logos must match the new game art): a round medallion with the redrawn keeper in his goal and the ball
+    // (image rendered from the game itself: img/games/penalty.webp), glossy green ring, same 64×64 frame.
     penalty: function () {
-      var net = ''; for (var i = 1; i < 10; i++) net += 'M' + (6 + i * 5.2) + ' 13V44'; for (var j = 1; j < 6; j++) net += 'M7 ' + (12 + j * 5.4) + 'H57';
-      return '<defs>' + lg('IDn', ['#86EFAC', '#22C55E', '#14532D']) + lg('IDp', ['#FFFFFF', '#E2E8F0', '#94A3B8'], 'h') + '</defs>' +
-        '<ellipse cx="32" cy="47" rx="30" ry="8" fill="url(#IDn)"/><path d="M8 45.5H56" stroke="#fff" stroke-width="1.2" opacity=".7"/>' +
-        '<rect x="7" y="12" width="50" height="33" fill="#0B1220" opacity=".35"/><path d="' + net + '" stroke="#fff" stroke-width=".7" opacity=".5"/>' +
-        '<path d="M6 46V11.5H58V46" fill="none" stroke="#475569" stroke-width="4.4" stroke-linejoin="round" transform="translate(.8 1)"/>' +
-        '<path d="M6 46V11.5H58V46" fill="none" stroke="url(#IDp)" stroke-width="3.6" stroke-linejoin="round"/>' +
-        '<g transform="translate(19 24) scale(.6)">' + OBJ.sports() + '</g>';
+      return '<defs><clipPath id="IDm"><circle cx="32" cy="33" r="26.5"/></clipPath><linearGradient id="IDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7D6"/><stop offset=".45" stop-color="#4ADE80"/><stop offset="1" stop-color="#14532D"/></linearGradient>' +
+        '<linearGradient id="IDs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
+        '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDg)"/>' +
+        '<image href="img/games/penalty.webp?v=2866" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
+        '<circle cx="32" cy="33" r="26.5" fill="url(#IDs)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>';
     },
     // Golden Orchard : pomme-bijou en or à facettes, cœur rubis, 2 feuilles, étincelles
     apple: function () {
