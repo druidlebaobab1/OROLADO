@@ -266,7 +266,10 @@
     box.classList.add('sp2');
     if (lastBet && view === 'slip') { lastBet = null; view = 'list'; }
     // v2763 (propriétaire) : Paris s'affiche TOUT DE SUITE (dernière liste gardée en mémoire), puis se met à jour en silence
-    if (lastList) { events = lastList; syncSlip(); render(); }
+    // v2844 (propriétaire) : comme Cadeaux — si la même liste est déjà affichée, on ne reconstruit rien (plus d'« éclair »)
+    var sig0 = (lastJson || '') + '|' + view + '|' + (document.documentElement.lang || '');
+    if (lastList && view === 'list' && box.dataset.sig === sig0 && box.querySelector('.sp2-list')) { events = lastList; syncSlip(); }
+    else if (lastList) { events = lastList; syncSlip(); render(); }
     else if (view === 'list') { box.innerHTML = tabs() + skeleton(); bindTabs(); }
     else render();
     var r = await fetchList();
@@ -628,6 +631,7 @@
     });
   }
   function render() {
+    if (box) box.dataset.sig = (lastJson || '') + '|' + view + '|' + (document.documentElement.lang || '');
     if (!box) return;
     box.classList.add('sp2');
     if (view === 'mine') { renderMine(); return; }
