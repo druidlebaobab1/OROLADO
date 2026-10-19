@@ -12753,3 +12753,6 @@ html:root body #screenTrade #btnHelp#btnHelp{overflow:visible!important}
    Même taille, juste descendue de quelques pixels (Android inchangé). */
 html.is-ios #oddsRow .odds-chip[data-odds="50"],html.is-ios .odds-row .odds-chip[data-odds="50"]{translate:0 5px}
 html.is-ios #oddsRow .odds-chip[data-odds="10"],html.is-ios .odds-row .odds-chip[data-odds="10"]{translate:0 2px}
+/* 2026-10-19 (propriétaire : « le classement ne défile plus, 2 lignes énormes ») : les lignes du classement gardent leur hauteur
+   normale (avant : avec peu de joueurs, chaque ligne s'étirait pour remplir le cadre) ; la liste défile quand elle est longue. */
+html body #portalModal#portalModal#portalModal #topRows{align-content:start!important;grid-auto-rows:max-content!important}
