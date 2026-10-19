@@ -1652,7 +1652,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "banners",
+    "kind": "mosaic",
     "up": "#FF3B2F",
     "dn": "#FFE066",
     "zoom": 5,
@@ -2515,7 +2515,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "notes",
+    "kind": "tide",
     "up": "#FFD86B",
     "dn": "#9B7BFF",
     "zoom": 12,
