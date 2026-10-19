@@ -109,7 +109,8 @@
     $('ghTitle').textContent = home ? '' : (X()[sub] ? X()[sub][0] : '');
     var box = m.querySelector('.portal-box'); if (box) box.scrollTop = 0;
   }
-  function home() { sub = ''; mode(true); paintHome(); hidePages(); }
+  // 2026-10-19 (propriétaire : « en revenant du tournoi, le Top 50 reste affiché en bas des Cadeaux ») : la page ouverte est refermée.
+  function home() { sub = ''; if (D6.Portal && D6.Portal.tab) D6.Portal.tab('none'); mode(true); paintHome(); hidePages(); }
   function unfit() { var g = $('ghGrid'), b = $('portalModal') && $('portalModal').querySelector('.portal-box'); if (g) g.style.removeProperty('zoom'); if (b) b.style.removeProperty('overflow-y'); }
   function hidePages() { ['ghWheel', 'ghJauge'].forEach(function (id) { if ($(id)) $(id).hidden = true; }); }
   function go(k) {
