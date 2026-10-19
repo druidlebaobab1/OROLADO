@@ -233,6 +233,16 @@
     try { if (D6.App && D6.App.refreshVault) D6.App.refreshVault(); } catch (e) { /* ignore */ }
   }
   function stopAll() { clearInterval(S.timer); S.timer = 0; cancelAnimationFrame(S.raf || 0); clearInterval(S.idle || 0); }
+  // v2821 (propriétaire) : 3 onglets en haut, comme la page Paris — Joue toi-même · Live · Casino (on ne défile plus
+  // dans 100+ jeux : chaque onglet montre sa liste).
+  var TAB_T = { en: { skill: 'Play yourself', live: 'Live', more: 'Casino' }, fr: { skill: 'Joue toi-même', live: 'Live', more: 'Casino' },
+    es: { skill: 'Juega tú', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Jogue você', live: 'Ao vivo', more: 'Cassino' },
+    ar: { skill: 'العب بنفسك', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Kendin oyna', live: 'Canlı', more: 'Casino' },
+    vi: { skill: 'Tự chơi', live: 'Trực tiếp', more: 'Casino' }, id: { skill: 'Main sendiri', live: 'Live', more: 'Kasino' },
+    ru: { skill: 'Играй сам', live: 'Live', more: 'Казино' }, de: { skill: 'Selbst spielen', live: 'Live', more: 'Casino' },
+    hi: { skill: 'खुद खेलें', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '亲自玩', live: '直播', more: '娱乐场' } };
+  var SEC_ORDER = ['skill', 'live', 'more'];
+  function curSec() { var v = ''; try { v = sessionStorage.getItem('oro_cs_tab') || ''; } catch (e) { /* ignore */ } return SEC_ORDER.indexOf(v) >= 0 ? v : 'skill'; }
   function home(view) {
     stopAll();
     S.game = ''; S.view = view || S.view || 'games';
@@ -254,15 +264,24 @@
       // v2804 (propriétaire) : 3 listes — Live · Tu contrôles · Tous les jeux
       var all = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).concat(CAT.filter(function (k) { return ORDER.indexOf(k) < 0; }));
       var secOf = function (k) { return SECTION[k] || (LIVE_GAMES[k] ? 'live' : 'more'); };
-      var ST = SEC_T[(document.documentElement.lang || 'en').slice(0, 2)] || SEC_T.en;
-      var html = ['live', 'skill', 'more'].map(function (sec) {
-        var ks = all.filter(function (k) { return secOf(k) === sec; });
-        if (!ks.length) return '';
-        return '<div class="cs-sec cs-sec-' + sec + '"><h3 class="fit">' + esc(ST[sec]) + '<small>' + ks.length + '</small></h3><div class="cs-sec-g">' + ks.map(tile).join('') + '</div></div>';
-      }).join('');
+      var lg = (document.documentElement.lang || 'en').slice(0, 2), TT = TAB_T[lg] || TAB_T.en;
+      var bySec = {}; SEC_ORDER.forEach(function (sec) { bySec[sec] = all.filter(function (k) { return secOf(k) === sec; }); });
+      var cur = curSec(); if (!bySec[cur].length) cur = SEC_ORDER.filter(function (x) { return bySec[x].length; })[0] || 'skill';
+      var tabs = '<div class="cs-tabs" role="tablist">' + SEC_ORDER.map(function (sec) {
+        return '<button type="button" class="cs-tab' + (sec === cur ? ' on' : '') + '" data-t="' + (sec === 'more' ? 'casino' : sec) + '" data-sec="' + sec + '" role="tab"><span class="fit">' + esc(TT[sec]) + '</span><i>' + bySec[sec].length + '</i></button>';
+      }).join('') + '</div>';
+      var html = tabs + '<div class="cs-sec cs-sec-' + cur + '"><div class="cs-sec-g">' + bySec[cur].map(tile).join('') + '</div></div>';
       v.className = 'cs-grid cs-grid3';
       v.innerHTML = html;
       fitAll(v);
+      var tp = m.querySelector('.cs-top'); if (tp) v.style.setProperty('--cs-tabs-top', Math.max(0, tp.offsetHeight - 8) + 'px');
+      v.querySelectorAll('.cs-tab').forEach(function (t) {
+        t.addEventListener('click', function () {
+          var sec = t.getAttribute('data-sec'); if (sec === curSec() && t.classList.contains('on')) return;
+          try { sessionStorage.setItem('oro_cs_tab', sec); } catch (e) { /* ignore */ }
+          home('games');
+        });
+      });
       v.querySelectorAll('.cs-g').forEach(function (b) { b.addEventListener('click', function () { var mb = m.querySelector('.modal-box'); S.homeY = mb ? mb.scrollTop : 0; go(b.getAttribute('data-g')); }); });
     }
     var box = m.querySelector('.modal-box'); if (box) box.scrollTop = 0;
@@ -385,7 +404,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2818'; // v2818 : montant de mise qui rapetisse
+  var MOD_V = '2821'; // v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
