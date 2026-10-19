@@ -1392,7 +1392,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "ribbon",
+    "kind": "halftone",
     "line": "#E9EEF7",
     "fill": "#8FA3C8",
     "mid": "#FFFFFF",
@@ -2084,7 +2084,7 @@
     "jumpMax": 0.0025
    },
    "look": {
-    "kind": "baseline",
+    "kind": "aurora",
     "up": "#1AF0FF",
     "below": "#FF8A4C",
     "line": "#1AF0FF",

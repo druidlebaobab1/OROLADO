@@ -742,7 +742,7 @@
       // v2850 (propriétaire : « la courbe dort puis saute ») : GARDE-FOU. Si les prix de l'indice affiché ont plus de
       // 2,5 s de retard (réseau mobile lent, coupure, retour de veille), on redemande tout de suite l'historique
       // complet (même requête qu'au démarrage) au lieu d'attendre : la courbe reprend sans trou ni saut.
-      if (wantedAsset && feedLagMs(canonAssetId(wantedAsset)) > 2500 && Date.now() - stallAt > 2500) { stallAt = Date.now(); allFailAt = 0; pollAll(); }
+      if (wantedAsset && feedLagMs(canonAssetId(wantedAsset)) > 2000 && Date.now() - stallAt > 2000) { stallAt = Date.now(); allFailAt = 0; pollAll(); }
     }, POLL_MS);
   }
 
