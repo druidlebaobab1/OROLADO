@@ -6153,6 +6153,7 @@
    * bougies et colonnes coupées au bord). Le bas s'efface doucement (16 px, juste la ligne des heures) vers le fond du terminal, puis
    * les heures sont redessinées nettes par-dessus. Dessin seulement : aucun prix, aucun trade ne change.
    */
+  var padTopRGB = null, padTopAt = 0;
   function fadeChartBottom() {
     if (!ctx || !(cssH > 80) || !(cssW > 0)) return;
     // v2492 (propriétaire) : plus de « lueur noire ». Le bas se fond dans le BLEU de la courbe elle-même
@@ -6180,6 +6181,13 @@
         }
       } catch (eS) { /* ignore */ }
     }
+    // v2854 (propriétaire : « un trait entre la courbe et le terminal ») : téléphone — le bas de la courbe se fond dans la
+    // couleur EXACTE du haut du terminal (variable --oro-pad-top posée par le CSS sur .pad), plus dans une couleur relevée.
+    if (padTopRGB === null || nowF - padTopAt > 5000) {
+      padTopAt = nowF;
+      try { var padEl = document.querySelector('#tradeWrap > .pad'); var pv = padEl ? getComputedStyle(padEl).getPropertyValue('--oro-pad-top').trim() : ''; padTopRGB = /^\d+\s*,\s*\d+\s*,\s*\d+$/.test(pv) ? pv : ''; } catch (eP) { padTopRGB = ''; }
+    }
+    if (padTopRGB) { fadeRGB = padTopRGB; fz = 22; }
     ctx.save();
     var gF = ctx.createLinearGradient(0, cssH - fz, 0, cssH);
     gF.addColorStop(0, 'rgba(' + fadeRGB + ',0)');

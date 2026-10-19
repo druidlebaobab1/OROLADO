@@ -168,7 +168,7 @@
     <link rel="stylesheet" href="css/app.css?v=2838">
     <link rel="stylesheet" href="css/auth.css?v=2790">
     <link rel="stylesheet" href="css/tv.css?v=2790">
-    <link rel="stylesheet" href="css/galaxy.css?v=2845">
+    <link rel="stylesheet" href="css/galaxy.css?v=2854">
     <link rel="stylesheet" href="css/cg.css?v=2843">
     <link rel="stylesheet" href="css/lobby.css?v=2842">
     <link rel="stylesheet" href="css/sports2.css?v=2813">
@@ -2237,7 +2237,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/auth.js?v=2790"></script>
   <script src="js/fair_table.js?v=2790"></script>
   <script src="js/engine.js?v=2851"></script>
-  <script src="js/chart.js?v=2848"></script>
+  <script src="js/chart.js?v=2854"></script>
   <script>/* v2573 — paiement Flutterwave chargé APRÈS l'affichage (avant : 2 s de blocage, Safari restait en « chargement » avec sa grande barre sur ACHETER / VENDRE). Au clic sur Recharger, ensureFlwScript() le recharge si besoin. */(function(){function go(){if(window.FlutterwaveCheckout||window.__flwInject)return;window.__flwInject=1;var s=document.createElement('script');s.src='https://checkout.flutterwave.com/v3.js?v=2790';s.async=true;s.onload=function(){window.__flwLoad='ok'};s.onerror=function(){window.__flwLoad='err'};document.head.appendChild(s);}if(document.readyState==='complete')setTimeout(go,300);else window.addEventListener('load',function(){setTimeout(go,300)});})();</script>
   <script>
   (function () {
@@ -2294,20 +2294,21 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/app.js?v=2842"></script>
   <script src="js/portal.js?v=2808"></script>
   <script src="js/live-ui.js?v=2791"></script>
-  <script src="js/live.js?v=2844"></script>
+  <script src="js/live.js?v=2855"></script>
   <script src="js/live-quiz-data.js?v=2790"></script>
   <script src="js/live-fun.js?v=2790"></script>
   <script src="js/live-groups.js?v=2806"></script>
   <script src="js/live-send.js?v=2790"></script>
   <script src="js/gifts-home.js?v=2842"></script>
-  <script src="js/sports.js?v=2844"></script>
+  <script src="js/sports.js?v=2855"></script>
   <script src="js/casino-art.js?v=2805"></script>
   <script src="js/sfx.js?v=2853"></script>
-  <script src="js/casino.js?v=2853"></script>
+  <script src="js/casino.js?v=2860"></script>
   <script src="js/fit.js?v=2790"></script>
   <script src="js/learn-txt.js?v=2790"></script>
   <script src="js/learn-txt2.js?v=2790"></script>
   <script src="js/learn.js?v=2790"></script>
+  <script src="js/art-rig.js?v=2860"></script>
 <script>
 /* Petits boutons (+ − ÷2 ×2 ⌫ ↺, durées) : ils s'allument un instant au toucher, comme MA / BB / EMA. Dessin seulement. */
 (function(){var SEL='.qbtn,.ind-btn.zoom-btn,.ind-btn.chart-reset-btn,.chart-fs-btn,.fs-trade-close,.dur-chip,.help-badge,#btnProfile,.mode-btn,.lang-dd-btn';function lit(e){var t=e.target&&e.target.closest?e.target.closest(SEL):null;if(!t)return;t.classList.add('tap-lit');clearTimeout(t._tapLit);t._tapLit=setTimeout(function(){t.classList.remove('tap-lit');},340);}document.addEventListener(window.PointerEvent?'pointerdown':'touchstart',lit,{passive:true,capture:true});})();

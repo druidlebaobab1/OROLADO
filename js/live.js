@@ -542,10 +542,18 @@
     if (w === 'chat' && !guest()) timer = setInterval(function () { if (!document.hidden) load(true); }, 15000);
   }
 
+  var openedOnce = false;
+  // v2855 : le menu Social est préparé dès que le site est chargé (DOM + dessins prêts avant le 1er clic)
+  setTimeout(function () { try { if ($('liveHomeGrid') && !$('liveHomeGrid').firstChild) paintHome(); } catch (eP) { /* ignore */ } }, 3000);
   function open(w) {
     var x = L();
     $('liveSub').textContent = x.sub; $('liveTabNewsT').textContent = x.news; $('liveTabChatT').textContent = x.chat; $('liveText').placeholder = x.ph;
     if ($('liveTabFriendsT')) $('liveTabFriendsT').textContent = x.friends;
+    // v2855 (propriétaire : « au 1er clic après actualisation, le menu se remplit petit à petit ») : la 1re fois, la grille
+    // reste invisible le temps que Safari ait tout dessiné, puis apparaît D'UN COUP (court fondu) — comme Cadeaux.
+    var gFirst = $('liveHomeGrid');
+    if (gFirst && !openedOnce) { openedOnce = true; gFirst.style.transition = 'none'; gFirst.style.opacity = '0';
+      requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(function () { gFirst.style.transition = 'opacity .18s ease-out'; gFirst.style.opacity = '1'; }, 90); }); }); }
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
     // v2796 (propriétaire) : Social s'ouvre en MESSAGERIE (js/social2.js) ; l'ancienne page en tuiles reste dans « Plus »
     // v2808 (propriétaire) : le VISITEUR arrive sur le menu en tuiles (il voit tout ce qui existe ; chaque action demande l'inscription)

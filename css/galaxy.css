@@ -2122,3 +2122,12 @@ html.is-android body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:2
   html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#1A2A68!important}
   html.is-ios{background:#1A2A68!important}
 }
+
+/* v2854 (propriétaire : plus de trait entre la courbe et le terminal) : couleur exacte du haut du terminal, lue par
+   js/chart.js pour fondre le bas de la courbe dedans (Android / iPhone, portrait). */
+@media (max-width:859px){
+  html body #tradeWrap > .pad{--oro-pad-top:10,10,34}
+  html.is-ios body #tradeWrap > .pad{--oro-pad-top:10,10,32}
+  /* la dernière ligne de pixels sous la courbe (arrondi de hauteur) laissait voir le fond : le terminal la recouvre */
+  html:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) > .pad{box-shadow:0 -2px 0 0 rgb(var(--oro-pad-top))!important}
+}

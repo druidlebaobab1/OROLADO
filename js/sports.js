@@ -309,6 +309,7 @@
   // pré-chargement discret, 4 s après l'ouverture du site (une seule petite lecture)
   // 2026-10-19 (propriétaire : « Paris : les logos arrivent en éclats au 1er clic ») : la liste ET les logos des équipes
   // sont chargés en avance, en silence (le 1er clic sur Paris affiche tout d'un coup).
+  var warmKeep = [];
   function warmLogos(json) {
     try {
       var seen = {}, m, re = /"(img\/teams\/[a-z0-9-]+\.png|[a-f0-9]{16})"/g, n = 0;
@@ -316,10 +317,12 @@
         var u = m[1].charAt(0) === 'i' ? m[1] : 'sp-logo.php?k=' + m[1];
         if (seen[u]) continue; seen[u] = 1; n++;
         var im = new Image(); im.decoding = 'async'; im.src = u;
+        // v2855 : logos gardés en mémoire ET décodés à l'avance (plus de logos qui « arrivent » à l'ouverture de Paris)
+        warmKeep.push(im); if (im.decode) im.decode().catch(function () {});
       }
     } catch (e) { /* ignore */ }
   }
-  setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); warmLogos(lastJson); } }); }, 2500);
+  setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); warmLogos(lastJson); } }); }, 1500);
 
   // v2765 (propriétaire) : deux onglets en HAUT de la page — « Paris » (les matchs) et « Mes paris » (mes reçus)
   var view = 'list', mineCache = null;
