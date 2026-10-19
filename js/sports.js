@@ -348,7 +348,7 @@
     if (s < 86400) return '<em class="sp2-chip cd' + (s < 3600 ? ' soon' : '') + '" data-ts="' + e.start + '">' + IC.clock + '<span class="fit">' + cd(s) + '</span></em>';
     return '<em class="sp2-chip">' + IC.cal + '<span class="fit">' + esc(when2(e.start)) + '</span></em>';
   }
-  function card(e) {
+  function card(e, ins) {
     var x = XX(), q = !!EVK[e.sport], tm = q ? null : teams(e.title), settled = e.status === 'settled', three = e.opts.length === 3;
     var opts = e.opts.map(function (o, i) {
       var on = inSlip(e.id, o.k), win = settled && e.result === o.k, lose = settled && e.result && e.result !== 'void' && e.result !== o.k;
@@ -359,9 +359,9 @@
     }).join('');
     var head;
     if (tm) {
-      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0], e.sport) + '<span class="sp2-tn">' + '<span class="fit">' + esc(tm[0]) + '</span>' + '</span></div>' +
+      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0], e.sport) + '<span class="sp2-tn">' + linesHtml(tm[0], 'span', 20) + '</span></div>' +
         '<div class="sp2-mid"><b class="fit">' + esc(hm(e.start)) + '</b><small class="fit">' + esc(dayLabel(e.start)) + '</small></div>' +
-        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1], e.sport) + '<span class="sp2-tn">' + '<span class="fit">' + esc(tm[1]) + '</span>' + '</span></div></div>';
+        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1], e.sport) + '<span class="sp2-tn">' + linesHtml(tm[1], 'span', 20) + '</span></div></div>';
     } else {
       var img = q ? logoHtml((e.logos || [])[0] || '', 'sp2-qimg') : '';
       if (!img) img = '<span class="sp2-qimg sp2-qico">' + sico(qKind(e)) + '</span>';
@@ -370,22 +370,59 @@
     var chip = tm && e.open && e.start - nowS() >= 86400 ? '' : timeChip(e);
     // « Ligue 1 · nul = remboursé » : le nom de la ligue en haut, la petite règle (« nul = remboursé ») en dessous des équipes
     var lgAll = e.league ? trW(e.league) : '', cut = lgAll.indexOf(' · '), lgName = cut > 0 ? lgAll.slice(0, cut) : lgAll, note = cut > 0 ? lgAll.slice(cut + 3) : '';
-    return '<article class="sp2-ev' + (e.open ? '' : ' shut') + (settled ? ' done' : '') + '" data-card="' + esc(e.id) + '">' +
+    return '<article class="sp2-ev' + (q ? ' sp2-isq' : '') + (ins ? ' sp2-ins' : '') + (e.open ? '' : ' shut') + (settled ? ' done' : '') + '" data-card="' + esc(e.id) + '">' +
       '<div class="sp2-meta"><span class="sp2-lg">' + sico(qKind(e)) + '<span class="fit">' + esc(lgName || (x.sport[qKind(e)] || x.sport.autre)) + '</span></span>' + chip + '</div>' +
       head + (note ? '<p class="sp2-note"><span class="fit">' + esc(note) + '</span></p>' : '') + '<div class="sp2-odds n' + e.opts.length + '">' + opts + '</div></article>';
+  }
+  // v2830 (propriétaire) : matchs et prédictions MÉLANGÉS dès le haut de la liste (une question toutes les 2–3 rencontres),
+  // les prédictions qui ferment le plus tôt d'abord, jamais deux fois le même sujet à la suite (Bitcoin, F1, Bourse…).
+  function isQev(e) { return !!(e && (e.q || EVK[e.sport])); }
+  function qTopic(e) { var g = (e.grp || []).filter(function (z) { return /^asset:/.test(z); })[0]; return g || (e.logos || [])[0] || e.league || e.id; }
+  var gridCols = 1; // colonnes de la grille (ordinateur / TV : 2–3) — sert à boucher les trous en fin de journée
+  function feed(list, cols) {
+    var live = [], res = [], M = [], Q = [];
+    list.forEach(function (e) { (e.status === 'settled' ? res : live).push(e); });
+    live.forEach(function (e) { (isQev(e) ? Q : M).push(e); });
+    if (!M.length || !Q.length) return live.map(function (e) { return { e: e }; }).concat(res.map(function (e) { return { e: e, res: 1 }; }));
+    var qs = [], pool = Q.slice(), lastT = '';
+    while (pool.length) {
+      var j = 0;
+      for (var i = 0; i < Math.min(pool.length, 6); i++) if (qTopic(pool[i]) !== lastT) { j = i; break; }
+      var q = pool.splice(j, 1)[0]; lastT = qTopic(q); qs.push(q);
+    }
+    // écarts 2 puis 3 (3 puis 4 s'il y a peu de questions) : sur ordinateur, les questions ne tombent pas toujours dans la même colonne
+    var gaps = M.length / qs.length >= 4 ? [3, 4] : [2, 3], out = [], qi = 0, n = 0, gi = 0, grp = null, groups = [];
+    M.forEach(function (e) { var k = new Date(e.start * 1000).toDateString(); if (!grp || grp.k !== k) groups.push(grp = { k: k, m: [] }); grp.m.push(e); });
+    groups.forEach(function (g) {
+      var arr = [];
+      g.m.forEach(function (e) {
+        arr.push({ e: e });
+        if (++n >= gaps[gi % 2] && qi < qs.length) { arr.push({ e: qs[qi++], ins: 1 }); n = 0; gi++; }
+      });
+      // plusieurs colonnes : une journée finit sur une rangée pleine (une prédiction de plus plutôt qu'un trou)
+      if (cols > 1) while (arr.length % cols && qi < qs.length) { arr.push({ e: qs[qi++], ins: 1 }); n = 0; }
+      out = out.concat(arr);
+    });
+    while (qi < qs.length) out.push({ e: qs[qi++], tail: 1 });
+    return out.concat(res.map(function (e) { return { e: e, res: 1 }; }));
   }
   function renderList() {
     var x = XX();
     if (!events.length) { box.innerHTML = tabs() + empty(x.none); bindTabs(); fitAll(box); return; }
-    var key = function (e) { return e.status === 'settled' ? 'res' : new Date(e.start * 1000).toDateString(); };
-    var cnt = {}; events.forEach(function (e) { cnt[key(e)] = (cnt[key(e)] || 0) + 1; });
+    var items = feed(events, gridCols);
+    // en-tête de jour : seulement les matchs (une prédiction glissée entre deux matchs ne change pas de jour)
+    var key = function (it) { return it.res ? 'res' : it.tail ? 'q' : it.ins ? null : new Date(it.e.start * 1000).toDateString(); };
+    var cnt = {}, cur = '';
+    items.forEach(function (it) { var k = key(it); if (k) cur = k; if (!it.ins) cnt[cur] = (cnt[cur] || 0) + 1; });
     var html = '', last = '';
-    events.forEach(function (e) {
-      var k = key(e);
-      if (k !== last) { last = k; html += '<h4 class="sp2-day"><span class="fit">' + esc(k === 'res' ? x.results : dayLabel(e.start)) + '</span><i>' + cnt[k] + '</i></h4>'; }
-      html += card(e);
+    items.forEach(function (it) {
+      var k = key(it), e = it.e;
+      if (k && k !== last) { last = k; html += '<h4 class="sp2-day' + (k === 'q' ? ' sp2-dq' : '') + '"><span class="fit">' + esc(k === 'res' ? x.results : k === 'q' ? x.sport.event : dayLabel(e.start)) + '</span><i>' + cnt[k] + '</i></h4>'; }
+      html += card(e, it.ins);
     });
     box.innerHTML = tabs() + '<div class="sp2-list">' + html + '</div>' + slipBar();
+    var gc = 1; try { gc = Math.max(1, getComputedStyle(box.querySelector('.sp2-list')).gridTemplateColumns.split(' ').filter(Boolean).length); } catch (e) { /* ignore */ }
+    if (gc !== gridCols) { gridCols = gc; renderList(); return; } // même rendu synchrone : rien ne saute à l'écran
     box.querySelector('.sp2-list').addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.sp2-o'); if (b && !b.disabled) pick(b); });
     bindTabs(); bindSlip(); fitAll(box); startTick();
   }
@@ -636,7 +673,7 @@
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
       var e = evById(z.ev);
       return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><span class="sp2-sel-ic">' + sico(e ? qKind(e) : 'autre') + '</span>' +
-        '<div class="sp2-sel-t"><small class="fit" dir="auto">' + esc(e ? trT(e) : z.t) + '</small><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b></div>' +
+        '<div class="sp2-sel-t">' + linesHtml(e ? trT(e) : z.t, 'small', 40, true) + '<b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b></div>' +
         '<em>' + (z.closed ? IC.lock : Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>';
     }).join('') + '</div>';
     var tot = '<div class="sp2-tot"><div><small class="fit">' + esc(x.totalOdd) + '</small><b class="fit" id="spOdd">' + odd.toFixed(2) + '</b></div>' +
