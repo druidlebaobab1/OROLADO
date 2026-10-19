@@ -308,7 +308,9 @@
       var tabs = '<div class="cs-tabs" role="tablist">' + SEC_ORDER.map(function (sec) {
         return '<button type="button" class="cs-tab' + (sec === cur ? ' on' : '') + '" data-t="' + (sec === 'more' ? 'casino' : sec) + '" data-sec="' + sec + '" role="tab"><span class="fit">' + esc(TT[sec]) + '</span><i>' + bySec[sec].length + '</i></button>';
       }).join('') + '</div>';
-      var html = tabs + '<div class="cs-sec cs-sec-' + cur + '"><div class="cs-sec-g">' + bySec[cur].map(tile).join('') + '</div></div>';
+      // v2827 (propriétaire : « on touche Jeux et on lit CASINO en haut ») : le petit titre du bandeau reprend le mot du menu.
+      var kick = '<i class="cs-kick" aria-hidden="true">★ ' + esc(tabWord(GAMES_WORD).toUpperCase()) + ' ★</i>';
+      var html = kick + tabs + '<div class="cs-sec cs-sec-' + cur + '"><div class="cs-sec-g">' + bySec[cur].map(tile).join('') + '</div></div>';
       v.innerHTML = html;
       balanceGrid(v); fitAll(v); evenNames(v);
       v.querySelectorAll('.cs-tab').forEach(function (t) {
@@ -482,7 +484,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2825'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2827'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
