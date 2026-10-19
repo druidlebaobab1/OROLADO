@@ -45,6 +45,8 @@
       } else if (k === 'zombie') { // shambling: short dragging steps, arms reaching forward, one leg stiff
         th = 0.02 + 0.26 * sf; kn = 0.08 + (s < 0 ? 0.45 : 0.15) * Math.pow(Math.max(0, Math.cos(f + 0.7)), 2);
         ar = 1.66 + 0.08 * Math.sin(f + s) + (s > 0 ? 0.1 : 0); el = -0.12 - 0.12 * (0.5 + 0.5 * sf); ab = 0.36 + 0.05 * sf;
+      } else if (k === 'archer') { // bow arm (left) stretched forward-up, draw arm (right) bent back to the cheek, feet apart
+        th = s < 0 ? 0.12 : -0.08; kn = 0.12; ar = s < 0 ? 2.05 : 1.75; el = s < 0 ? 0.02 : 1.9; ab = s < 0 ? 0.1 : 0.55; fo = 0.02;
       } else if (k === 'stand') {
         th = 0.02; kn = 0.05; ar = 0.04 + 0.02 * Math.sin(ph); el = 0.16; ab = 0.1;
       } else if (k === 'jump') {
@@ -71,6 +73,7 @@
     if (k === 'slide') { J.lean = -0.55; J.hipY = 0.83; }
     if (k === 'kick') { J.lean = -0.12; J.rot = 0.12; }
     if (k === 'ready') { J.lean = 0.3; }
+    if (k === 'archer') { J.lean = 0.06; J.rot = -0.12; }
     if (k === 'dive') { J.lean = 0; }
     J.Lt = Lt; J.Ls = Ls; J.La = La; J.Lf = Lf; J.k = k;
     return J;
