@@ -402,6 +402,10 @@
     var h = H(), g = $('liveHomeGrid');
     var list = HOME.filter(function (t) { return t.k !== 'send' || guest() || (D6.LiveSend && D6.LiveSend.enabled()); })
       .sort(function (a, b) { return ORDERH.indexOf(a.k) - ORDERH.indexOf(b.k); });
+    // v2844 (propriétaire) : comme Cadeaux — rien ne change → on garde la grille déjà dessinée (plus d'« éclair »)
+    var sig = list.map(function (t) { return t.k; }).join(',') + '|' + dmUn + '|' + ($('liveBadge') ? $('liveBadge').textContent : '') + '|' + document.documentElement.lang;
+    if (g.dataset.sig === sig && g.firstChild) { paintMsgBar(); return; }
+    g.dataset.sig = sig;
     g.className = 'lh-grid lh-free';
     g.innerHTML = list.map(function (t) {
       var badge = (t.k === 'friends' && dmUn > 0) ? '<i class="lh-b">' + dmUn + '</i>' : (t.k === 'chat' && $('liveBadge') && $('liveBadge').textContent) ? '<i class="lh-b">' + esc($('liveBadge').textContent) + '</i>' : '';
