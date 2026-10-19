@@ -425,6 +425,17 @@ function orolado_fair_barrier(string $asset, int $duration, string $side, float 
   if ($idx === 0 && !empty(orolado_feed_assets()[$asset]['ext'])) {
     return (int) round($entryCents * exp(orolado_fair_drift($asset, $duration, $entryCents)), 0, PHP_ROUND_HALF_UP);
   }
+  // 2026-10-19 (propriétaire : « pas de faille ») : les 10 marchés d'origine aussi. Leur ligne 90 % suit le
+  // petit retour vers le prix de départ ET le léger glissement d'un mouvement « prix × (1 + x) » (−variance/2
+  // par tick). Sans ça, APOCALYPSE loin de sa base (ex. 2×) sur 10 min donnait ~57 % à la VENTE (faille).
+  // Au prix de départ : ligne ≈ prix d'entrée (écart de quelques centimes au plus).
+  if ($idx === 0) {
+    $a = orolado_feed_assets()[$asset] ?? null;
+    if (is_array($a)) {
+      $drag = intdiv($duration * 1000, OROLADO_TICK_MS) * orolado_feed_tick_var($a) / 2.0;
+      return (int) round($entryCents * exp(orolado_fair_drift($asset, $duration, $entryCents) - $drag), 0, PHP_ROUND_HALF_UP);
+    }
+  }
   // Gros payouts (×5, ×10, ×50) : la ligne suit aussi le petit retour attendu vers le prix de
   // départ (l'élastique). Sans ça, quand un prix est très loin de sa base (ex. moitié), jouer
   // « vers la base » en ×50 sur 10 min rapportait ~108 % : une faille rare mais réelle.

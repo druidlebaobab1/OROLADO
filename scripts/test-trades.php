@@ -70,7 +70,10 @@ echo "2) Trade réel 10 \$ CALL 88 % sur 5 s\n";
 $r = orolado_trade_place($me, ['id' => 't1', 'stake' => 10, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 check('ordre accepté', !empty($r['ok']), $r['reason'] ?? '');
 check('MOINS : caisse 100 → 90', abs($bank['real'][$uid] - 90) < 0.001, (string) $bank['real'][$uid]);
-check('ligne = prix d’entrée à 88 %', ($r['order']['barrier'] ?? null) === ($r['order']['entryPrice'] ?? -1));
+// 2026-10-19 : la ligne 90 % suit le petit retour vers le départ (faille fermée) : = règle publique, à 0,1 % de l'entrée au plus.
+$eC = (int) round(((float) ($r['order']['entryPrice'] ?? 0)) * 100);
+$bC = (int) round(((float) ($r['order']['barrier'] ?? -1)) * 100);
+check('ligne 90 % = règle publique, au plus près du prix d’entrée', $eC > 0 && $bC === orolado_fair_barrier('v100', 5, 'call', 1.9, $eC) && abs($bC - $eC) <= max(1, $eC * 0.001), $bC . ' / ' . $eC);
 $r2 = orolado_trade_place($me, ['id' => 't1', 'stake' => 10, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 check('double clic même ordre : pas de 2e débit', !empty($r2['duplicate']) && abs($bank['real'][$uid] - 90) < 0.001);
 $early = orolado_trade_settle($uid, 't1');
