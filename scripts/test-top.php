@@ -2,7 +2,7 @@
 declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 /**
- * Classement DÉMO de la semaine (top_lib.php) : semaine lundi → dimanche, 20 trades minimum,
+ * Classement DÉMO de la semaine (top_lib.php) : semaine lundi → dimanche, 5 trades minimum,
  * points = 1000 × gain net ÷ total misé, chaque trade compté une seule fois, archives relues,
  * admin et comptes bloqués exclus. Dossier temporaire : rien ne part en ligne.
  */
@@ -49,8 +49,8 @@ for ($i = 0; $i < 20; $i++) $o[] = ord_('u_a', $i < 14, 10, $t + $i);
 for ($i = 0; $i < 25; $i++) $o[] = ord_('u_b', $i < 15, 10, $t + $i);
 // C : 20 trades, 10 gagnés → net = 90 − 100 = −10 → −50 points.
 for ($i = 0; $i < 20; $i++) $o[] = ord_('u_c', $i < 10, 10, $t + $i);
-// Peu : 19 trades tous gagnés → pas assez de trades.
-for ($i = 0; $i < 19; $i++) $o[] = ord_('u_peu', true, 10, $t + $i);
+// Peu : 4 trades tous gagnés → pas assez de trades.
+for ($i = 0; $i < 4; $i++) $o[] = ord_('u_peu', true, 10, $t + $i);
 // Banni et admin : très bons, mais exclus.
 for ($i = 0; $i < 30; $i++) { $o[] = ord_('u_ban', true, 10, $t + $i); $o[] = ord_('admin_master', true, 10, $t + $i); }
 // Trades réels, semaine dernière, ouverts : ignorés.
@@ -64,7 +64,7 @@ $pid = fn($u) => $db['users'][$u]['publicId'];
 $names = array_map(fn($x) => $x['id'] . ':' . $x['points'], $r['top']);
 check('ordre : Awa (330) > Bruno (140) > Chloé (−50)', $names === [$pid('u_a') . ':330', $pid('u_b') . ':140', $pid('u_c') . ':-50'], implode(' | ', $names));
 check('anonyme : ni nom ni pays envoyés', !isset($r['top'][0]['name']) && !isset($r['top'][0]['country']) && !str_contains(json_encode($r), 'Awa'));
-check('moins de 20 trades : absent', !in_array($pid('u_peu'), array_column($r['top'], 'id'), true));
+check('moins de 5 trades : absent', !in_array($pid('u_peu'), array_column($r['top'], 'id'), true));
 check('admin et compte suspendu : absents', count($r['top']) === 3);
 check('Bruno voit sa place : 2e', $r['me']['rank'] === 2 && !empty($r['top'][1]['me']));
 check('réel / semaine dernière / ordre ouvert : ignorés (Chloé = 20 trades)', $r['top'][2]['trades'] === 20);
