@@ -83,7 +83,7 @@
         '<linearGradient id="pkBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#94A3B8"/></linearGradient>' +
         '<linearGradient id="pkNetBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0720" stop-opacity=".7"/><stop offset="1" stop-color="#0B0720" stop-opacity=".45"/></linearGradient>' +
         '<linearGradient id="pkShirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDE047"/><stop offset="1" stop-color="#F59E0B"/></linearGradient>' +
-        '<radialGradient id="pkSkin" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#D9A066"/><stop offset="1" stop-color="#A86A35"/></radialGradient>' +
+        '<radialGradient id="pkSkin" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FBE3CF"/><stop offset="1" stop-color="#E8B996"/></radialGradient>' +
         '<radialGradient id="pkGBall" cx="36%" cy="30%" r="74%"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset=".85" stop-color="#1E293B" stop-opacity=".32"/><stop offset="1" stop-color="#0F172A" stop-opacity=".6"/></radialGradient>' +
         '<clipPath id="pkBc"><circle r="' + BR + '"/></clipPath>' +
         '<linearGradient id="pkShortG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#312E81"/><stop offset="1" stop-color="#1E1B4B"/></linearGradient>' +
@@ -198,12 +198,12 @@
         '<text x="0" y="-12.6" text-anchor="middle" font-size="7" font-weight="900" font-family="system-ui,sans-serif" fill="#5B21B6" opacity=".9">1</text>' +
         '<path d="M-11-6Q0-3.6 11-6" stroke="#000" stroke-opacity=".12" stroke-width="2" fill="none"/>' +
         // cou + tête
-        '<path d="M-2.6-28.5H2.6V-24.5H-2.6Z" fill="url(#pkSkin)"/><path d="M-2.6-26H2.6" stroke="#7A4A22" stroke-opacity=".35" stroke-width="1"/>' +
-        '<g id="kHead"><ellipse cx="-6" cy="-35.4" rx="1.3" ry="2" fill="#A86A35"/><ellipse cx="6" cy="-35.4" rx="1.3" ry="2" fill="#A86A35"/>' +
+        '<path d="M-2.6-28.5H2.6V-24.5H-2.6Z" fill="url(#pkSkin)"/><path d="M-2.6-26H2.6" stroke="#B97F5C" stroke-opacity=".35" stroke-width="1"/>' +
+        '<g id="kHead"><ellipse cx="-6" cy="-35.4" rx="1.3" ry="2" fill="#E3AE89"/><ellipse cx="6" cy="-35.4" rx="1.3" ry="2" fill="#E3AE89"/>' +
           '<ellipse cx="0" cy="-35.6" rx="5.9" ry="6.8" fill="url(#pkSkin)"/>' +
-          '<path d="M-6-36.6Q-6.6-43.6 0-43.8Q6.6-43.6 6-36.6Q5.4-40 2.4-40.6Q-1.6-39-4.4-40.4Q-5.6-39.4-6-36.6Z" fill="#1F130A"/>' +
+          '<path d="M-6-36.6Q-6.6-43.6 0-43.8Q6.6-43.6 6-36.6Q5.4-40 2.4-40.6Q-1.6-39-4.4-40.4Q-5.6-39.4-6-36.6Z" fill="#6B4423"/>' +
           '<path d="M-3.6-36.8h2M1.6-36.8h2" stroke="#2A1608" stroke-width=".9" stroke-linecap="round"/><circle cx="-2.6" cy="-35.2" r=".75" fill="#111"/><circle cx="2.6" cy="-35.2" r=".75" fill="#111"/>' +
-          '<path d="M-1.6-31.4Q0-30.6 1.6-31.4" stroke="#7A3E14" stroke-width=".7" fill="none" stroke-linecap="round"/><path d="M0-35v2.2" stroke="#9A5C2B" stroke-width=".6"/></g>' +
+          '<path d="M-1.6-31.4Q0-30.6 1.6-31.4" stroke="#B5524A" stroke-width=".7" fill="none" stroke-linecap="round"/><path d="M0-35v2.2" stroke="#C98F6B" stroke-width=".6"/></g>' +
         arm('L') + arm('R') +
       '</g>';
   }

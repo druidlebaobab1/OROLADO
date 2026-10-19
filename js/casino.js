@@ -252,7 +252,10 @@
     if (D6.App && D6.App.closeModal) D6.App.closeModal('casinoModal');
     try { if (D6.App && D6.App.refreshVault) D6.App.refreshVault(); } catch (e) { /* ignore */ }
   }
-  function stopAll() { clearInterval(S.timer); S.timer = 0; cancelAnimationFrame(S.raf || 0); clearInterval(S.idle || 0); }
+  // 2026-10-19 (propriétaire : « Space Runner : après la mise le personnage reste bloqué, on perd ») : l'animation arrêtée est
+  // aussi OUBLIÉE (S.raf = 0). Avant, l'ancien numéro restait : en ouvrant un autre jeu « à toi de jouer », il croyait son
+  // animation déjà lancée et ne la démarrait jamais (jeu figé pendant que la partie tournait sur le serveur).
+  function stopAll() { clearInterval(S.timer); S.timer = 0; cancelAnimationFrame(S.raf || 0); S.raf = 0; clearInterval(S.idle || 0); }
   // v2821 (propriétaire) : 3 onglets en haut, comme la page Paris — Joue toi-même · Live · Casino (on ne défile plus
   // dans 100+ jeux : chaque onglet montre sa liste).
   // v2825 (propriétaire : « Joue toi-même est plus long… même forme ») : 3 onglets de même largeur, mots courts comme les grandes plateformes.
@@ -520,7 +523,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2839'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2841'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
