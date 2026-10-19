@@ -380,5 +380,7 @@
     });
   };
 
+  // 2026-10 : marchés ajoutés (js/indices.js, chargé juste avant ce fichier). APOCALYPSE reste le dernier.
+  try { if (typeof D6.installIndices === 'function') D6.installIndices(D6.CONFIG); } catch (eIdx) { /* ignore */ }
   try { Object.freeze(D6.CONFIG.ASSETS); } catch (e) { /* ignore */ }
 })(window.D6 = window.D6 || {});

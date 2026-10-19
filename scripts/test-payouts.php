@@ -65,7 +65,8 @@ for ($k = 0; $k < 4; $k++) {
   $paths[] = $P;
 }
 
-$table = orolado_fair_table()[$asset];
+// Marchés ajoutés (indices.json) : leurs lignes sont dans indices.json.
+$table = orolado_fair_table()[$asset] ?? orolado_indices_defs()[$asset]['fair'];
 // Écart-type des mouvements passés (10 s et 60 s) pour repérer les « grosses » montées / chutes.
 $lb = [10 * $TPS, 60 * $TPS];
 $sd = [];

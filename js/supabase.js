@@ -134,7 +134,7 @@
       at: o.created_at,
       clock: '',
       assetId: o.asset_id,
-      assetName: assetMap[o.asset_id] || o.asset_id || '—',
+      assetName: assetMap[o.asset_id] || (D6.CONFIG && D6.CONFIG.ASSETS && D6.CONFIG.ASSETS[o.asset_id] && D6.CONFIG.ASSETS[o.asset_id].name) || o.asset_id || '—',
       side: o.side,
       stake: o.stake,
       payout: o.payout,

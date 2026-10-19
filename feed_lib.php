@@ -52,7 +52,97 @@ function orolado_feed_assets(): array {
     'boomspike' => $plain(3890.20, 0.00012),
     'crash300' => $plain(4210.55, 0.00022),
   ];
+  // 2026-10 : indices ajoutés (indices.json, même fichier que le téléphone). Un indice mal écrit est
+  // simplement ignoré (jamais d'erreur pour les 10 marchés d'origine).
+  foreach (orolado_indices_defs() as $id => $d) {
+    if (!isset($a[$id])) $a[$id] = $d['model'];
+  }
   return $a;
+}
+
+/** Les 10 marchés d'origine : ce que reçoivent les téléphones pas encore à jour (ancien code). */
+function orolado_feed_legacy_ids(): array {
+  return ['v100', 'stable', 'apex500', 'horizon50', 'goldtrend', 'v75', 'nexusprime', 'titanpulse', 'boomspike', 'crash300'];
+}
+
+/**
+ * Indices ajoutés (fichier indices.json) : modèle de prix vérifié + noms + lignes objectif (×5 / ×10 / ×50).
+ * Modèle (toujours 50/50 : aucune pente, aucune mémoire d'un tick à l'autre, mouvements symétriques) :
+ *   hold  = chance qu'un tick ne bouge pas (courbe « en marches ») ;
+ *   wideP / wideK = chance d'un tick plus large (×wideK) : bougies hachées ;
+ *   jumpP / jumpMin / jumpMax = pics soudains, vers le haut OU vers le bas à chance égale.
+ * Lignes objectif calculées par scripts/indices-calib.js ; vérifiées par scripts/test-indices.php.
+ */
+function orolado_indices_defs(): array {
+  static $defs = null;
+  if ($defs !== null) return $defs;
+  $defs = [];
+  $raw = @file_get_contents(__DIR__ . '/indices.json');
+  $j = is_string($raw) ? json_decode($raw, true) : null;
+  if (!is_array($j) || !is_array($j['indices'] ?? null)) {
+    error_log('OROLADO indices.json illisible : seuls les marchés d\'origine sont actifs');
+    return $defs;
+  }
+  $num = static function ($v, float $min, float $max): ?float {
+    if (!is_int($v) && !is_float($v)) return null;
+    $f = (float) $v;
+    return is_finite($f) && $f >= $min && $f <= $max ? $f : null;
+  };
+  foreach ($j['indices'] as $e) {
+    $id = is_array($e) ? (string) ($e['id'] ?? '') : '';
+    $m = is_array($e['model'] ?? null) ? $e['model'] : [];
+    $base = $num($e['base'] ?? null, 100.0, 1000000.0);
+    $sigma = $num($m['sigma'] ?? null, 0.00002, 0.002);
+    $hold = $num($m['hold'] ?? 0, 0.0, 0.7);
+    $wideP = $num($m['wideP'] ?? 0, 0.0, 0.5);
+    $wideK = $num($m['wideK'] ?? 1, 1.0, 6.0);
+    $jumpP = $num($m['jumpP'] ?? 0, 0.0, 0.2);
+    $jumpMin = $num($m['jumpMin'] ?? 0, 0.0, 0.02);
+    $jumpMax = $num($m['jumpMax'] ?? 0, 0.0, 0.02);
+    if (!preg_match('/^[a-z0-9]{2,16}$/', $id) || in_array($id, orolado_feed_legacy_ids(), true) || isset($defs[$id])
+      || in_array($id, ['boom300', 'pulseai'], true)
+      || $base === null || $sigma === null || $hold === null || $wideP === null || $wideK === null
+      || $jumpP === null || $jumpMin === null || $jumpMax === null || $jumpMin > $jumpMax) {
+      error_log('OROLADO indices.json : indice ignoré (' . $id . ')');
+      continue;
+    }
+    $fair = [];
+    foreach (OROLADO_DURATIONS as $dur) {
+      $row = $e['fair'][(string) $dur] ?? null;
+      if (!is_array($row) || count($row) !== 7) { $fair = null; break; }
+      $row = array_map('floatval', array_values($row));
+      // Lignes ×5 < ×10 < ×50 au-dessus (achat), en miroir (en log) en dessous (vente), jamais au-delà de ±50 %.
+      if (!($row[1] > 0 && $row[2] > $row[1] && $row[3] > $row[2] && $row[3] < 0.5 && $row[4] < 0 && $row[5] < $row[4] && $row[6] < $row[5] && $row[6] > -0.5)
+        || abs(log(1 + $row[1]) + log(1 + $row[4])) > 1e-6 || abs(log(1 + $row[3]) + log(1 + $row[6])) > 1e-6) { $fair = null; break; }
+      $fair[(string) $dur] = $row;
+    }
+    $defs[$id] = [
+      'name' => strtoupper(substr(preg_replace('/[^A-Za-z0-9 ]/', '', (string) ($e['name'] ?? $id)) ?? $id, 0, 12)),
+      // ext = 1 : mouvement en log (voir orolado_feed_step) et ligne 90 % corrigée de l'élastique.
+      'model' => ['base' => $base, 'sigma' => $sigma, 'drift' => 0.0, 'jumpP' => $jumpP, 'jumpMin' => $jumpMin,
+        'jumpMax' => $jumpMax, 'jumpDir' => 2, 'hold' => $hold, 'wideP' => $wideP, 'wideK' => $wideK, 'ext' => 1],
+      // Sans lignes ×5 / ×10 / ×50 valides, l'indice n'est pas ouvert (voir orolado_feed_assets).
+      'fair' => $fair,
+    ];
+    if ($fair === null) {
+      error_log('OROLADO indices.json : lignes objectif absentes pour ' . $id . ' (indice fermé)');
+      unset($defs[$id]);
+    }
+  }
+  return $defs;
+}
+
+/** Nom affiché d'un marché (admin, reçus) ; '' si inconnu. */
+function orolado_feed_asset_name(string $id): string {
+  static $legacy = [
+    'v100' => 'VOLATILITY', 'stable' => 'COBRA', 'apex500' => 'BAAL', 'horizon50' => 'ORO 999',
+    'crash300' => 'AZAZEL', 'goldtrend' => 'OROF', 'boomspike' => 'VALAC', 'nexusprime' => 'ASMODUS',
+    'v75' => 'ZUL', 'titanpulse' => 'APOCALYPSE',
+  ];
+  $k = strtolower(trim($id));
+  if (isset($legacy[$k])) return $legacy[$k];
+  $d = orolado_indices_defs()[$k] ?? null;
+  return $d ? (string) $d['name'] : '';
 }
 
 function orolado_feed_asset_id(string $id): string {
@@ -95,18 +185,40 @@ function orolado_feed_z(): float {
  */
 const OROLADO_PRICE_BAND = 0.35;
 
-function orolado_feed_pull(array $a): float {
+/** Variance (log) d'un tick : sigma² (+ pics). Indices ajoutés : pauses et ticks larges compris. */
+function orolado_feed_tick_var(array $a): float {
   $var = $a['sigma'] * $a['sigma'];
+  $hold = (float) ($a['hold'] ?? 0);
+  $wideP = (float) ($a['wideP'] ?? 0);
+  if ($hold > 0 || $wideP > 0) {
+    $k = (float) ($a['wideK'] ?? 1);
+    $var *= (1.0 - $hold) * (1.0 - $wideP + $wideP * $k * $k);
+  }
   if (($a['jumpP'] ?? 0) > 0) {
     $jmin = (float) $a['jumpMin']; $jmax = (float) $a['jumpMax'];
     $var += $a['jumpP'] * ($jmin * $jmin + $jmin * $jmax + $jmax * $jmax) / 3.0;
   }
-  return $var / (2.0 * OROLADO_PRICE_BAND * OROLADO_PRICE_BAND);
+  return $var;
 }
 
-/** Un tick, en centimes entiers. Copie exacte de FairCalib.Step (C#). */
+function orolado_feed_pull(array $a): float {
+  return orolado_feed_tick_var($a) / (2.0 * OROLADO_PRICE_BAND * OROLADO_PRICE_BAND);
+}
+
+/** Un tick, en centimes entiers. Copie exacte de FairCalib.Step (C#) pour les 10 marchés d'origine. */
 function orolado_feed_step(array $a, int $cents): int {
-  $rel = $a['sigma'] * orolado_feed_z() + $a['drift'];
+  if (!empty($a['ext'])) return orolado_feed_step_ext($a, $cents);
+  $hold = (float) ($a['hold'] ?? 0);
+  $wideP = (float) ($a['wideP'] ?? 0);
+  if ($hold <= 0 && $wideP <= 0) {
+    $rel = $a['sigma'] * orolado_feed_z() + $a['drift'];
+  } else if ($hold > 0 && orolado_feed_u() < $hold) {
+    // Indice « en marches » : ce tick ne bouge pas (sauf pic). Même chance à chaque tick, sans mémoire.
+    $rel = (float) $a['drift'];
+  } else {
+    $s = $wideP > 0 && orolado_feed_u() < $wideP ? $a['sigma'] * (float) $a['wideK'] : $a['sigma'];
+    $rel = $s * orolado_feed_z() + $a['drift'];
+  }
   $baseCents = (float) $a['base'] * 100.0;
   if ($cents > 0 && $baseCents > 0) $rel -= orolado_feed_pull($a) * log($cents / $baseCents);
   if ($a['jumpP'] > 0 && orolado_feed_u() < $a['jumpP']) {
@@ -116,6 +228,39 @@ function orolado_feed_step(array $a, int $cents): int {
   }
   $next = $cents + (int) round($cents * $rel, 0, PHP_ROUND_HALF_UP);
   return $next < 100 ? 100 : $next;
+}
+
+/**
+ * Un tick d'un marché ajouté (indices.json). Même idée que les 10 d'origine, mais le mouvement est
+ * appliqué en LOG (prix × e^mouvement au lieu de prix × (1 + mouvement)) : un mouvement de +x et un
+ * de −x se compensent exactement, donc sur n'importe quelle durée la hausse et la baisse ont
+ * exactement la même chance (avec « prix × (1 + x) », la baisse gagnait d'un cheveu sur 10 min).
+ *   - pause (hold) : ce tick ne bouge pas ; tick large (wideP, ×wideK) ; pic (jumpP) ± au hasard ;
+ *   - aucune mémoire d'un tick à l'autre : rien à « attendre », rien à deviner ;
+ *   - élastique très mou vers le prix de départ (comme les 10 d'origine) + garde-fou : le prix reste
+ *     toujours entre 1/20 et 20 fois son départ (jamais 0, jamais l'infini ; en pratique jamais atteint).
+ */
+function orolado_feed_step_ext(array $a, int $cents): int {
+  $baseCents = (float) $a['base'] * 100.0;
+  $lo = (int) max(100, floor($baseCents / 20));
+  $hi = (int) ceil($baseCents * 20);
+  if ($cents < $lo || $cents > $hi) $cents = $cents < $lo ? $lo : $hi;
+  $hold = (float) ($a['hold'] ?? 0);
+  $wideP = (float) ($a['wideP'] ?? 0);
+  if ($hold > 0 && orolado_feed_u() < $hold) {
+    $x = 0.0;
+  } else {
+    $s = $wideP > 0 && orolado_feed_u() < $wideP ? $a['sigma'] * (float) $a['wideK'] : $a['sigma'];
+    $x = $s * orolado_feed_z();
+  }
+  $x -= orolado_feed_pull($a) * log($cents / $baseCents);
+  if ($a['jumpP'] > 0 && orolado_feed_u() < $a['jumpP']) {
+    $x += (orolado_feed_u() < 0.5 ? -1 : 1) * ($a['jumpMin'] + ($a['jumpMax'] - $a['jumpMin']) * orolado_feed_u());
+  }
+  $next = $cents * exp($x);
+  if (!is_finite($next)) return $cents;
+  $next = (int) round($next, 0, PHP_ROUND_HALF_UP);
+  return $next < $lo ? $lo : ($next > $hi ? $hi : $next);
 }
 
 function orolado_feed_state_read(string $asset): ?array {
@@ -263,7 +408,7 @@ function orolado_fair_duration(int $d): int {
 
 /** Ligne gagnante en centimes. CALL gagne au-dessus, PUT en dessous, pile dessus = mise rendue. */
 function orolado_fair_barrier(string $asset, int $duration, string $side, float $mult, int $entryCents): int {
-  $row = orolado_fair_table()[$asset][(string) $duration] ?? null;
+  $row = orolado_fair_table()[$asset][(string) $duration] ?? (orolado_indices_defs()[$asset]['fair'][(string) $duration] ?? null);
   if (!is_array($row) || count($row) < 7) throw new RuntimeException('fair: table absente');
   $mult = orolado_fair_mult($mult);
   $idx = 0;
@@ -274,6 +419,12 @@ function orolado_fair_barrier(string $asset, int $duration, string $side, float 
   // Payout de base (90 %) : les 10 marchés sont à pile ou face (aucune pente) → la ligne est TOUJOURS
   // exactement le prix d'entrée (le petit écart de la table n'est que le bruit du calcul). Pas de ligne objectif.
   $rel = $idx === 0 ? 0.0 : (float) $row[$idx];
+  // Marchés ajoutés : la ligne 90 % suit AUSSI le petit retour attendu vers le prix de départ (même calcul
+  // que pour ×5 / ×10 / ×50). Ainsi hausse et baisse ont exactement 50 % de chance, quel que soit le prix
+  // du moment (au prix de départ : ligne = prix d'entrée). Les 10 marchés d'origine ne changent pas.
+  if ($idx === 0 && !empty(orolado_feed_assets()[$asset]['ext'])) {
+    return (int) round($entryCents * exp(orolado_fair_drift($asset, $duration, $entryCents)), 0, PHP_ROUND_HALF_UP);
+  }
   // Gros payouts (×5, ×10, ×50) : la ligne suit aussi le petit retour attendu vers le prix de
   // départ (l'élastique). Sans ça, quand un prix est très loin de sa base (ex. moitié), jouer
   // « vers la base » en ×50 sur 10 min rapportait ~108 % : une faille rare mais réelle.

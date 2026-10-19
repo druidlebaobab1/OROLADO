@@ -8,6 +8,12 @@
  *    connectés par WebSocket (adresse /direct, derrière nginx). Message au même format que
  *    feedcache/live.json (first / p0 / d) : le site l'applique avec le même code.
  * 3. Un joueur qui se connecte reçoit d'abord les 40 derniers prix (10 s), puis les nouveaux.
+ * 4. 2026-10 (55 marchés) : abonnement. Un téléphone à jour dit quels marchés il regarde
+ *    (adresse /direct?s=odin,v100 puis message {"sub":[…]} quand il change de marché) et ne reçoit
+ *    QUE ceux-là (en général 1 ou 2) : débit par joueur ~ le même qu'avec 10 marchés, voire moins.
+ *    Un ancien téléphone (sans abonnement) reçoit les 10 marchés d'origine, exactement comme avant.
+ *    Un seul moteur, une seule boucle : chaque message n'est fabriqué qu'une fois par groupe
+ *    de joueurs qui regardent la même chose.
  *
  * Aucun module à installer : uniquement Node.js. Les prix et les trades restent calculés par
  * PHP (mêmes fichiers) ; ce programme ne fait que transmettre.
@@ -33,7 +39,45 @@ const MAX_BUFFER = 256 * 1024;
 const clients = new Set();
 let snapshot = null; // dernier direct complet (40 prix par marché), envoyé aux nouveaux venus
 let lastTick = {}; // dernier tick envoyé, par marché
-const stats = { started: Date.now(), ticks: 0, sent: 0, dropped: 0, moteurRestarts: 0, lastAt: 0, peak: 0 };
+const stats = { started: Date.now(), ticks: 0, sent: 0, bytes: 0, dropped: 0, moteurRestarts: 0, lastAt: 0, peak: 0, abonnes: 0 };
+// Les 10 marchés d'origine : ce que reçoit un téléphone qui ne dit rien (ancien code).
+const LEGACY = ['v100', 'stable', 'apex500', 'horizon50', 'goldtrend', 'v75', 'nexusprime', 'titanpulse', 'boomspike', 'crash300'];
+const SUB_MAX = 12;
+let known = new Set(LEGACY); // marchés existants (d'après le dernier direct du moteur)
+
+/** Liste de marchés demandée par un téléphone → liste propre (connus, sans doublon, 12 au plus) ou null. */
+function cleanSub(list) {
+  if (!Array.isArray(list)) return null;
+  const out = [];
+  for (const raw of list) {
+    const id = String(raw || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (id && known.has(id) && out.indexOf(id) < 0) out.push(id);
+    if (out.length >= SUB_MAX) break;
+  }
+  return out.length ? out.sort() : null;
+}
+
+/** Les 40 derniers prix des marchés demandés (null = les 10 d'origine), au format du direct. */
+function snapshotFor(sub) {
+  if (!snapshot) return null;
+  const assets = {};
+  for (const id of (sub || LEGACY)) if (snapshot.assets[id]) assets[id] = snapshot.assets[id];
+  return JSON.stringify({ ok: true, tickMs: snapshot.tickMs, direct: 1, at: snapshot.at, rp: snapshot.rp, assets });
+}
+
+function setSub(sock, list) {
+  const sub = cleanSub(list);
+  if (!sub) return;
+  const was = sock._sub;
+  sock._sub = sub;
+  sock._key = sub.join(',');
+  // Nouveaux marchés : leurs 40 derniers prix tout de suite (la courbe s'affiche sans attendre).
+  const fresh = was ? sub.filter((id) => was.indexOf(id) < 0) : sub;
+  if (fresh.length) {
+    const t = snapshotFor(fresh);
+    if (t) send(sock, frame(t));
+  }
+}
 
 /* ---------- Trames WebSocket (texte, sans compression) ---------- */
 function frame(text) {
@@ -63,15 +107,10 @@ function send(sock, buf) {
     return;
   }
   sock.write(buf);
+  stats.bytes += buf.length;
 }
 
-function broadcast(text) {
-  const buf = frame(text);
-  for (const s of clients) send(s, buf);
-  stats.sent += clients.size;
-}
-
-/* Lecture minimale des trames du navigateur : fermeture, ping. Le reste est ignoré. */
+/* Lecture minimale des trames du navigateur : fermeture, ping, abonnement (texte). Le reste est ignoré. */
 function onData(sock, chunk) {
   sock._in = sock._in ? Buffer.concat([sock._in, chunk]) : chunk;
   while (sock._in && sock._in.length >= 2) {
@@ -88,6 +127,12 @@ function onData(sock, chunk) {
     sock._in = b.length > need ? b.subarray(need) : null;
     if (op === 0x8) { try { sock.end(CLOSE); } catch (e) { /* ignore */ } clients.delete(sock); return; }
     if (op === 0x9) send(sock, PONG_EMPTY);
+    // Texte : {"sub":["odin","v100"]} (marchés regardés). Trame courte seulement (≤ 1 Ko).
+    if (op === 0x1 && len <= 1024 && (b[0] & 0x80)) {
+      const body = Buffer.from(b.subarray(off + (masked ? 4 : 0), need));
+      if (masked) { const m = b.subarray(off, off + 4); for (let i = 0; i < body.length; i++) body[i] ^= m[i & 3]; }
+      try { const j = JSON.parse(body.toString('utf8')); if (j && j.sub) setSub(sock, j.sub); } catch (e) { /* ignore */ }
+    }
   }
 }
 
@@ -100,6 +145,9 @@ const server = http.createServer((req, res) => {
       joueurs: clients.size,
       max: stats.peak,
       ticks: stats.ticks,
+      abonnes: stats.abonnes,
+      marches: known.size,
+      envoye_mo: Math.round(stats.bytes / 1048576),
       retard_ms: stats.lastAt ? Date.now() - stats.lastAt : null,
       coupes_lents: stats.dropped,
       redemarrages_moteur: stats.moteurRestarts,
@@ -123,7 +171,11 @@ server.on('upgrade', (req, sock) => {
   sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ' + accept + '\r\n\r\n');
   clients.add(sock);
   if (clients.size > stats.peak) stats.peak = clients.size;
-  if (snapshot) send(sock, frame(snapshot));
+  // ?s=odin,v100 : téléphone à jour, il ne veut que ces marchés.
+  let q = null;
+  try { q = new URL(req.url, 'http://x').searchParams.get('s'); } catch (e) { q = null; }
+  if (q) setSub(sock, q.split(','));
+  if (!sock._sub) { const t = snapshotFor(null); if (t) send(sock, frame(t)); }
   sock.on('data', (c) => onData(sock, c));
   sock.on('close', () => clients.delete(sock));
   sock.on('error', () => { clients.delete(sock); sock.destroy(); });
@@ -134,7 +186,8 @@ function onLive(line) {
   let j;
   try { j = JSON.parse(line); } catch (e) { return; }
   if (!j || !j.ok || !j.assets) return;
-  snapshot = line;
+  snapshot = j;
+  known = new Set(Object.keys(j.assets));
   stats.ticks++;
   stats.lastAt = Date.now();
   // Seulement les prix nouveaux depuis le dernier envoi, au format first / p0 / d.
@@ -156,7 +209,31 @@ function onLive(line) {
     lastTick[id] = lastOfFile;
     any = true;
   }
-  if (any) broadcast(JSON.stringify({ ok: true, tickMs: j.tickMs, at: j.at, assets }));
+  if (any) broadcastTick(j, assets);
+}
+
+/*
+ * Envoi d'un tick : un message par GROUPE de joueurs qui regardent la même chose (fabriqué une
+ * seule fois). Anciens téléphones : les 10 marchés d'origine. Un marché sans prix nouveau n'est
+ * pas envoyé ; un groupe sans rien de nouveau ne reçoit rien.
+ */
+function broadcastTick(j, assets) {
+  const cache = new Map();
+  let subs = 0;
+  for (const s of clients) {
+    const key = s._key || '';
+    let buf = cache.get(key);
+    if (buf === undefined) {
+      const part = {};
+      let any = false;
+      for (const id of (s._sub || LEGACY)) if (assets[id]) { part[id] = assets[id]; any = true; }
+      buf = any ? frame(JSON.stringify({ ok: true, tickMs: j.tickMs, at: j.at, assets: part })) : null;
+      cache.set(key, buf);
+    }
+    if (s._sub) subs++;
+    if (buf) { send(s, buf); stats.sent++; }
+  }
+  stats.abonnes = subs;
 }
 
 /* ---------- Le moteur PHP (relancé tout seul) ---------- */
@@ -183,7 +260,12 @@ function startMoteur() {
 
 /* Faux prix pour les tests de foule (aucun lien avec le vrai jeu). */
 function startFake() {
-  const ids = ['v100', 'stable', 'v75', 'boomspike', 'apex888', 'horizon50', 'titan', 'crash300', 'pulse25', 'apocalypse'];
+  // DIRECT_FAKE_N : nombre de marchés simulés (10 = les marchés d'origine ; plus = ceux de indices.json).
+  let ids = LEGACY.slice();
+  try {
+    const ext = JSON.parse(require('fs').readFileSync(path.join(ROOT, 'indices.json'), 'utf8')).indices.map((e) => e.id);
+    ids = ids.concat(ext).slice(0, Math.max(1, Number(process.env.DIRECT_FAKE_N || 10)));
+  } catch (e) { /* ignore */ }
   const price = {};
   ids.forEach((id, i) => { price[id] = 100000 + i * 1000; });
   setInterval(() => {
@@ -191,7 +273,10 @@ function startFake() {
     const assets = {};
     ids.forEach((id) => {
       price[id] += Math.round((Math.random() - 0.5) * 200);
-      assets[id] = { first: n - 39, p0: price[id], d: new Array(39).fill(0) };
+      // 40 derniers prix (comme le vrai moteur) : écarts de taille réaliste.
+      const d = [];
+      for (let k = 0; k < 39; k++) d.push(Math.round((Math.random() - 0.5) * 400));
+      assets[id] = { first: n - 39, p0: price[id], d };
     });
     onLive(JSON.stringify({ ok: true, tickMs: 250, at: Date.now(), assets }));
   }, 250);

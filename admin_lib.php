@@ -1851,7 +1851,13 @@ function admin_asset_name(string $id): string {
     'nexus' => 'ASMODUS', 'titan' => 'APOCALYPSE',
   ];
   $k = strtolower(trim($id));
-  return $map[$k] ?? strtoupper($id !== '' ? $id : '—');
+  if (isset($map[$k])) return $map[$k];
+  // 2026-10 : marchés ajoutés (indices.json) : LUCIFER, ODIN, ANUBIS…
+  if (function_exists('orolado_feed_asset_name')) {
+    $n = orolado_feed_asset_name($k);
+    if ($n !== '') return $n;
+  }
+  return strtoupper($id !== '' ? $id : '—');
 }
 
 function admin_bust_cache(): void {

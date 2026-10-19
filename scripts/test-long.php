@@ -43,7 +43,7 @@ if (($argv[3] ?? '') === 'all') {
 }
 
 $cfg = orolado_feed_assets()[$asset];
-$table = orolado_fair_table()[$asset];
+$table = orolado_fair_table()[$asset] ?? orolado_indices_defs()[$asset]["fair"];
 $N = (int) ($mil * 1e6);
 $maxD = max($DURS) * $TPS;
 $buf = new SplFixedArray($maxD + 1);
