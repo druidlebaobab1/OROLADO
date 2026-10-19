@@ -217,6 +217,8 @@
         else if (e < tD + 2.2) { var q = (e - tD) / 2.2; r = RT - (RT - RP - 5) * (0.5 - 0.5 * Math.cos(Math.PI * q)); rel += Math.sin(q * 9) * 3 * (1 - q); } // …descend…
         else if (k < 1) { var z = (e - tD - 2.2) / (TB - tD - 2.2); r = RP + 9 * Math.abs(Math.sin(z * Math.PI * 3)) * Math.pow(1 - z, 1.5); } // …rebondit sur les cases et se pose
         if (!res && k > 0.5) r = RT;
+        // v2832 : sons — un souffle à chaque tour de bille sur la piste, puis tic-tic sur les cases quand elle descend et rebondit
+        if (k < 1) { if (e < tD) K.sfxBeat(st, 'rv', Math.floor(-rel / 360), 'go', { as: 'whoosh' }); else K.sfxBeat(st, 'rp', Math.floor(-rel / (360 / 37)), 'tick'); }
       }
       var a = (A + rel) * Math.PI / 180, u = st.S / 262;
       var x = st.cx + Math.sin(a) * r * u - st.bs / 2, y = st.cy - Math.cos(a) * r * u * KZ - st.bs / 2;
@@ -324,6 +326,7 @@
       // pointer flapper: kicked by each peg passing under it
       var f = mod(A + SEG / 2, SEG) / SEG, kick = sp > 4 ? Math.max(0, 1 - f * 3.2) * Math.min(1, sp / 120) * 26 : 0;
       $('cwPtr').style.transform = 'rotate(' + (-kick).toFixed(1) + 'deg)';
+      if (e >= 0 && sp > 4) K.sfxBeat(st, 'pg', Math.floor((A + SEG / 2) / SEG), 'tick'); // v2832 : tic à chaque cran sous le clapet
       st.box.querySelector('.lz-cw').classList.toggle('spin', e >= 0 && e < TS);
       var key = rev && R.res ? R.i : -1;
       if (st.popKey !== key) {
@@ -509,6 +512,7 @@
         var spread = lead - last, VW = clamp(spread * 1.3 + D * 0.03, D * 0.08, D * 0.3);
         var cam = Math.min(Math.max(lead - 0.66 * VW, -0.5 * VW), D - 0.6 * VW), ppm = st.W / VW;
         var run = has && e < pl.last + 0.6;
+        if (run && lead < D) K.sfxBeat(st, 'ld', Math.floor(lead / (D / 60)), 'tick'); // v2832 : galop / moteurs pendant la course
         for (h = 0; h < 10; h++) {
           var sp = $('rcR' + h), x = (p[h] - cam) * ppm - st.lane[h].w * 0.88;
           sp.style.transform = 'translate3d(' + x.toFixed(1) + 'px,0,0)';
@@ -642,6 +646,7 @@
           var t = st.now(), bet = t < R.close, e = t - R.close, rev = !!R.res && e >= G.reveal;
           if (t >= R.end + 0.6) { st.R = R = nextRound(R, R.res ? G.resVal(R.res) : null); bet = t < R.close; e = t - R.close; rev = false; } // le serveur répond au prochain appel
           if (st.ri !== R.i) { st.ri = R.i; st.mk = ''; if (G.round) G.round(st, R); }
+          if (bet) st.goArm = R.i; else if (st.goArm === R.i && e < 1.5) { st.goArm = -1; if (game !== 'roulette') K.sfx('go'); } // v2832 : départ du tirage / de la course
           // v2811 : statut professionnel sur UNE ligne — « Paris ouverts 1:54 » · « Derniers paris 0:08 » · « Tirage en cours » · « Prochain tour dans 0:41 »
           if (bet) {
             var left = R.close - t;

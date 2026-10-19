@@ -866,9 +866,10 @@
             var k = Math.min(1, (now - R.t0) / R.d);
             R.pos = R.p0 + (R.P - R.p0) * easeBack(k);
             if (k > 0.5) R.strip.classList.remove('blur');
-            if (k >= 1) { R.pos = R.P % LEN; R.mode = 'idle'; R.el.classList.add('thud'); setTimeout(function () { R.el.classList.remove('thud'); }, 240); }
+            if (k >= 1) { R.pos = R.P % LEN; R.mode = 'idle'; K.sfx('stop'); R.el.classList.add('thud'); setTimeout(function () { R.el.classList.remove('thud'); }, 240); }
           }
           draw(R);
+          var fp = Math.floor(R.pos); if (R.mode !== 'idle' && fp !== R.fp) K.sfx('tick'); R.fp = fp; // v2832 : tic des symboles qui défilent
         });
         if (moving) K.S.raf = requestAnimationFrame(loop); else if (onStop) { var f = onStop; onStop = null; f(); }
       }
@@ -946,8 +947,9 @@
         }
       }
       function setA(o, a) { if (o.a) o.a.cancel(); o.a = a; return a.finished; }
+      var cascN = 0;
       async function spinGrid(r) {
-        var t0 = performance.now(), fall = [];
+        var t0 = performance.now(), fall = []; cascN = 0;
         G.forEach(function (col, c) {
           col.forEach(function (o) {
             fall.push(setA(o, anim(o.el, [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(' + (rows * 100 + 40) + '%)', opacity: 1 }],
@@ -959,6 +961,7 @@
         var c = r ? compose(key, rowIndex(r)) : composeS(th, null);
         await Promise.all(fall);
         var land2 = [];
+        G.forEach(function (col, ci) { setTimeout(function () { if (box.isConnected) K.sfx('stop', { as: 'thunk' }); }, (slam ? 20 : 75) * ci + (slam ? 170 : 330)); }); // v2832 : chaque colonne se pose
         G.forEach(function (col, ci) {
           col.forEach(function (o, ri) {
             setSym(o, c.g[ci][ri], c.vals[ci + ':' + ri]);
@@ -983,6 +986,7 @@
             { duration: 320, easing: 'ease-in', fill: 'forwards' })));
         }); });
         if (!lite) burst();
+        K.sfx('reveal', { as: 'gem', k: (cascN = (cascN || 0) + 1) }); // v2832 : chaque cascade sonne un peu plus haut
         await Promise.all(pops);
         if (!box.isConnected) return r;
         mach.classList.remove('dim');
@@ -1039,6 +1043,7 @@
             if (!box.isConnected) { done(); return; }
             if (fin) return;
             var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 2.2);
+            K.sfxBeat(big, 'cnt', Math.floor(e * 9), 'rise', { n: Math.floor(e * 9) }); // v2832 : le compteur monte en notes
             v.textContent = '×' + (m * e).toFixed(2).replace('.', K.dec()); if (k >= 1) { end(); return; }
             K.S.raf = requestAnimationFrame(step);
           })(t0);

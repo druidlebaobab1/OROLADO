@@ -2057,7 +2057,7 @@
   function getAudio() {
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
-    if (!audioCtx) audioCtx = new AC();
+    if (!audioCtx) audioCtx = window.__oroAC || (window.__oroAC = new AC()); // v2832 : un seul AudioContext pour tout le site (partagé avec js/sfx.js)
     if (audioCtx.state === 'suspended') audioCtx.resume();
     return audioCtx;
   }
@@ -9926,6 +9926,7 @@
         if ($('screenTrade') && $('screenTrade').classList.contains('hidden')) return;
         if (e.target && e.target.closest && e.target.closest('button, .qbtn, .dur-chip, .mode-btn, .asset-chip')) {
           if (e.target.closest('#btnCall, #btnPut')) return;
+          if (e.target.closest('#casinoModal')) return; // v2832 : le casino a ses propres sons (js/sfx.js) — pas de « tap » ni de vibration à chaque bouton
           playTap();
         }
       }, { passive: true });

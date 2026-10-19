@@ -266,12 +266,14 @@
         K.setText(b1, txt); if (two) K.setText(b2, sub);
         btn.disabled = !!dis;
       };
+      var sLv = 99, SLV = [1.5, 2, 3, 5, 10, 20, 50, 100, 250, 500];
       var tick = function () {
         if (!alive()) return;
         if (R && W) {
           var t = nowS(), s = t - R.t0, phase = t < R.t0 ? 'bet' : R.c != null ? 'end' : 'fly';
           if (phase !== view) {
             var was = view; view = phase;
+            if (phase === 'fly') { sLv = 0; if (was === 'bet' && s < 1.5) K.sfx('go'); } // v2832 : décollage (seulement si on l'a vu partir)
             st.classList.toggle('flying', phase === 'fly'); st.classList.toggle('ended', phase === 'end'); st.classList.toggle('betting', phase === 'bet');
             wait.hidden = phase !== 'bet'; mEl.style.visibility = phase === 'bet' ? 'hidden' : '';
             K.setText(flew, phase === 'end' ? (game === 'rocket' ? l.lost : l.flew) : '');
@@ -289,6 +291,8 @@
             bar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.t0 - t) / (R.bet || 5))).toFixed(3) + ')';
           } else if (phase === 'fly') {
             lastXY = drawFlight(s); K.setText(mEl, fx(MULT(s)) + '×');
+            var lv = 0, mm = MULT(s); while (lv < SLV.length && mm >= SLV[lv]) lv++;
+            if (lv > sLv) { sLv = lv; K.sfx('rise', { n: lv }); } // v2832 : petite note qui monte à ×1,5 · ×2 · ×3 · ×5 · ×10…
           } else {
             K.setText(mEl, fx(R.c) + '×');
             if (endXY && game !== 'rocket') { // il file tout droit en accélérant, puis disparaît

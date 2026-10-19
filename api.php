@@ -462,6 +462,8 @@ if ($action === 'xferStatus' || $action === 'xferSend') {
         if (!empty($res['ok'])) {
           // Message automatique dans leur conversation Live (l'ami voit tout de suite qui lui a envoyé).
           try { live_dm_send((string) $me['id'], (string) $to['uid'], '💸 +' . number_format((float) $res['amount'], 2, ',', ' ') . ' $'); } catch (Throwable $eDm) { /* jamais bloquant */ }
+          // 2026-10-19 : l'ami est prévenu (notification + e-mail), avec le nom de celui qui envoie
+          try { require_once __DIR__ . '/notify_lib.php'; orolado_notify_player((string) $to['uid'], 'xfer', (float) $res['amount'], trim((string) ($me['displayName'] ?? '')) !== '' ? (string) $me['displayName'] : (string) ($me['publicId'] ?? 'OROLADO')); } catch (Throwable $eNt) { /* jamais bloquant */ }
           $res += orolado_xfer_status(load_db(), $me);
         }
       }

@@ -130,6 +130,9 @@
           var cls = bet ? (R.close - t <= 10 ? 'warn' : 'open') : 'shut';
           if (st.cls !== cls) { st.cls = cls; barB.className = 'l2-bar ' + cls; stage.setAttribute('data-ph', cls); }
           G.frame(ctx, R, t, e, bet ? null : res, st.odds);
+          // v2832 : sons du spectacle — départ (si on a vu les mises), puis un petit son à chaque temps fort
+          if (bet) st.goArm = R.i; else if (st.goArm === R.i && e < 1.5) { st.goArm = -1; K.sfx('go'); }
+          if (!bet && res && e >= 0 && e < G.SHOW && G.beat) K.sfxBeat(st, 'bt', G.beat(e, res, R), 'tick');
           var wins = rev ? G.wins(res).join(',') : '';
           if (wins !== wasWin) {
             wasWin = wins; var ws = wins ? wins.split(',') : [];
@@ -197,6 +200,7 @@
   function rowCls(el, lead, now, win) { var k = (lead ? 1 : 0) + (now ? 2 : 0) + (win ? 4 : 0); if (el._rk === k) return; el._rk = k; el.classList.toggle('lead', lead); el.classList.toggle('now', now); el.classList.toggle('cwin', win); }
   live('catwalk', {
     SHOW: 70, lab: 'cw', varOdds: true, odds0: {},
+    beat: function (e) { var sl = Math.floor((e - CW_W0) / CW_SLOT), u = e - CW_W0 - sl * CW_SLOT; return sl < 0 || sl > 5 ? -1 : sl * 4 + (u >= 4.9) + (u >= 5.5) + (u >= 6.1); }, // v2832 : chaque mannequin, chaque note de juge
     rules: {
       en: '🔴 LIVE: a new show every 200 s, the same for everyone.\n1. Pick one of the 6 models. The favourite changes every round: each model shows her payout (×3.13 for the favourite … ×11.75 for the outsider).\n2. Set your stake and tap “Place bet” before bets close. One bet per round.\n3. Each model walks the runway and 3 judges score her: the best total is crowned. If she is yours, you win stake × her payout.',
       fr: '🔴 EN DIRECT : un défilé toutes les 200 s, le même pour tout le monde.\n1. Choisis une des 6 mannequins. La favorite change à chaque tour : chacune affiche son gain (×3,13 pour la favorite … ×11,75 pour l’outsider).\n2. Choisis ta mise et touche « Parier » avant la fermeture des paris. Un pari par tour.\n3. Chaque mannequin défile et 3 juges la notent : la meilleure note totale est couronnée. Si c’est la tienne, tu gagnes mise × son gain.',
@@ -334,6 +338,7 @@
     return plan;
   }
   live('fleets', {
+    beat: function (e) { return e < FL_0 ? -1 : Math.floor((e - FL_0) / FL_V); }, // v2832 : chaque volée
     SHOW: 46, lab: 'fl', odds0: { g: 1.88, v: 1.88, s5: 30.08, s4: 6.01, s3: 3, s2: 3, s1: 6.01, s0: 30.08 },
     rules: {
       en: '🔴 LIVE: a new battle every 180 s, the same for everyone.\n1. Bet on the winning fleet, Gold or Violet (×1.88), or on the exact score: 3–2 ×3.00 · 4–1 ×6.01 · 5–0 ×30.08.\n2. Set your stake and tap “Place bet” before bets close. One bet per round.\n3. 5 volleys: each volley destroys one ship. The fleet that wins the most volleys wins the battle.',
@@ -455,6 +460,7 @@
   }
   function gcSlot(g) { return [302 + (g % 3) * 20, 40 + Math.floor(g / 3) * 34]; }
   live('gemcount', {
+    beat: function (e, res) { var T = gcTimes((+res.k - +res.n) / 4), n = 0; for (var j = 0; j < T.length; j++) if (T[j][0] <= e) n++; return n || -1; }, // v2832 : chaque poignée de gemmes retirée
     SHOW: 36, lab: 'gc', odds0: { '1': 3.76, '2': 3.76, '3': 3.76, '4': 3.76, odd: 1.88, even: 1.88 },
     rules: {
       en: '🔴 LIVE: a new count every 170 s, the same for everyone.\n1. A pile of gems is hidden under the dome. Guess how many will be left at the end: 1, 2, 3 or 4 (×3.76), or Odd / Even (×1.88).\n2. Set your stake and tap “Place bet” before bets close. One bet per round.\n3. The dome lifts and the gems are removed 4 by 4: the last 1 to 4 gems decide.',
@@ -556,6 +562,7 @@
   var CL_K = [[0, CL_HOME, CL_TOP, 1, ''], [3.6, 'd', CL_TOP, 1, ''], [6.2, 'd', 150, 1, ''], [7.0, 'd', 150, 0, 'd'], [9.8, 'd', 64, 0, 'd'], [10.4, 'd', 64, 0, 'd'], [10.6, 'd', 64, .7, ''],
     [11.4, 'd', 64, 1, ''], [15.4, 'n', 64, 1, ''], [16.6, 'n', 64, 1, ''], [19.4, 'n', 150, 1, ''], [20.2, 'n', 150, 0, 'n'], [23.0, 'n', 60, 0, 'n'], [27.6, CL_HOME, 60, 0, 'n'], [28.4, CL_HOME, 60, 1, '']];
   live('claw', {
+    beat: function (e) { var n = 0; for (var j = 1; j < CL_K.length; j++) if (CL_K[j][0] <= e) n++; return n || -1; }, // v2832 : chaque mouvement de la pince
     SHOW: 32, lab: 'cl', odds0: { '0': 3.13, '1': 3.91, '2': 5.22, '3': 7.23, '4': 10.44, '5': 15.66 },
     rules: {
       en: '🔴 LIVE: the claw plays every 165 s, the same for everyone.\n1. Pick one of the 6 prizes: each shows its payout (Teddy ×3.13 … Diamond ×15.66 — the rarer, the bigger).\n2. Set your stake and tap “Place bet” before bets close. One bet per round.\n3. The claw grabs one prize and drops it in the chute: if it is yours, you win stake × its payout.',

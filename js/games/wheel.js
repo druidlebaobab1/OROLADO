@@ -85,7 +85,7 @@
           var k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 4);
           R = R0 + D * e;
           rot.style.transform = 'rotate(' + R.toFixed(2) + 'deg)';
-          var si = under(R); if (si !== seg) { seg = si; kick = 1; lastKick = now; }
+          var si = under(R); if (si !== seg) { seg = si; kick = 1; lastKick = now; K.sfx('tick'); } // v2832 : tic à chaque case qui passe sous la flèche
           var p = kick ? -24 * Math.exp(-(now - lastKick) / 70) : 0;
           pin.style.transform = 'rotate(' + p.toFixed(1) + 'deg)';
           if (k < 1) K.S.raf = requestAnimationFrame(f); else { pin.style.transform = ''; done(); }

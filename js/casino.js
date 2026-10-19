@@ -151,6 +151,7 @@
     if (guest()) { signup(); return null; } // v2698 : une seule fenêtre (plus de message superposé à l'inscription)
     if (S.busy) return null;
     S.busy = true;
+    sfx('launch', null, game);
     var md = mode();
     var r = await api('csPlay', { game: game, mode: md, stake: S.stake, p: p || {} });
     S.busy = false;
@@ -161,8 +162,11 @@
   }
   async function multi(game, act, p, quiet) {
     if (guest()) { if (!quiet) signup(); return null; }
+    if (!quiet && (act === 'start' || act === 'bet')) sfx('launch', null, game);
     var r = await api('csMulti', { game: game, act: act, mode: 'real', stake: S.stake, p: p || {} });
     if (!r || !r.ok) { if (!quiet) err(r); return null; }
+    // v2832 : un bon choix (case ouverte, étage, pompe, bonne carte) = petite note qui monte ; la fin passe par resultLine
+    if (!quiet && !r.done && SFX_STEP[act] && game !== 'penalty') sfx(act === 'skip' ? 'card' : 'step', { k: Number(r.k) || (r.open && r.open.length) || 1 }, game);
     if (r.mode === 'demo' && !S.adminTest) { S.adminTest = true; paintBal(); }
     if (r.mode && r.bal != null) { S.bal[r.mode] = r.bal; paintBal(); }
     return r;
@@ -170,7 +174,21 @@
   /* résultat : petite bannière DANS l'écran du jeu (ne prend plus de place) */
   // v2718 (propriétaire) : le résultat arrive en NOTIFICATION dans le jeu (gain : vert « +2,50 $ » ; perte : discrète « −1,00 $ »),
   // elle reste ~2,8 s puis s'en va ; plus de ligne en bas → toute la place va au jeu.
+  /* v2832 — SONS (js/sfx.js) : un seul endroit pour TOUS les jeux — gain = mélodie du jeu (plus riche si ×5, étincelles si ×25),
+     perte = aucun son, vibration courte. Les jeux ajoutent leurs petits bruits (tic de roue, rouleaux…) avec K.sfx(). */
+  var SFX_STEP = { open: 1, pick: 1, pump: 1, guess: 1, skip: 1 };
+  function sfx(ev, a, k) { try { if (D6.Sfx) return D6.Sfx.play(ev, a, k || S.game); } catch (e) { /* ignore */ } return false; }
+  // un évènement quand une valeur change (case de roue qui passe, volée, juge…) ; jamais au premier regard (arrivée en cours de tirage)
+  function sfxBeat(o, slot, v, ev, a) { var key = '_sb' + slot; if (o[key] === v) return; var had = key in o; o[key] = v; if (had && v != null && v !== -1) sfx(ev, a); }
+  function sfxResult(r) {
+    try {
+      if (!D6.Sfx) return;
+      var w = Number(r && r.win) || 0, st = Number(r && r.stake) || 0;
+      if (w > 0) D6.Sfx.win(st > 0 ? w / st : (Number(r.mult) || Number(r.out) || 2), S.game); else D6.Sfx.lose();
+    } catch (e) { /* ignore */ }
+  }
   function resultLine(box, r, extra) {
+    sfxResult(r);
     var x = X(), host = box.querySelector('.cg-stage') || box.querySelector('.cs-stage') || box;
     var old = host.querySelectorAll('.cs-toast'); for (var i = 0; i < old.length; i++) old[i].remove();
     var win = (Number(r.win) || 0) > 0, t = document.createElement('div');
@@ -205,7 +223,7 @@
     m.className = 'modal-backdrop'; m.id = 'casinoModal';
     m.innerHTML = '<div class="modal-box glass cs-box" role="dialog" aria-modal="true"><button type="button" class="btn-close" id="closeCasino" aria-label="Close"></button>' +
       '<div class="cs-top"><button type="button" class="cs-back" id="csBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-      '<button type="button" class="cs-wallet" id="csBal"></button><button type="button" class="cs-help" id="csHelp" aria-label="?"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7C9.8 5.4 6.6 4.9 3 5.4v13c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6v-13C17.4 4.9 14.2 5.4 12 7z" fill="#FFF7E0"/><path d="M12 7v13" stroke="#B45309" stroke-width="1.5"/><path d="M5.3 9c1.9-.2 3.6 0 4.8.7M5.3 12c1.9-.2 3.6 0 4.8.7M5.3 15c1.9-.2 3.6 0 4.8.7M13.9 9.7c1.2-.7 2.9-.9 4.8-.7M13.9 12.7c1.2-.7 2.9-.9 4.8-.7M13.9 15.7c1.2-.7 2.9-.9 4.8-.7" stroke="#94A3B8" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M3 18.4c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6" stroke="#B45309" stroke-width="1.5" fill="none"/></svg></button></div>' +
+      '<button type="button" class="cs-wallet" id="csBal"></button><span class="cs-tr"><button type="button" class="cs-help" id="csHelp" aria-label="?"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7C9.8 5.4 6.6 4.9 3 5.4v13c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6v-13C17.4 4.9 14.2 5.4 12 7z" fill="#FFF7E0"/><path d="M12 7v13" stroke="#B45309" stroke-width="1.5"/><path d="M5.3 9c1.9-.2 3.6 0 4.8.7M5.3 12c1.9-.2 3.6 0 4.8.7M5.3 15c1.9-.2 3.6 0 4.8.7M13.9 9.7c1.2-.7 2.9-.9 4.8-.7M13.9 12.7c1.2-.7 2.9-.9 4.8-.7M13.9 15.7c1.2-.7 2.9-.9 4.8-.7" stroke="#94A3B8" stroke-width="1.1" stroke-linecap="round" fill="none"/><path d="M3 18.4c3.6-.5 6.8 0 9 1.6 2.2-1.6 5.4-2.1 9-1.6" stroke="#B45309" stroke-width="1.5" fill="none"/></svg></button><button type="button" id="csSnd"></button></span></div>' +
       '<div id="csBody"></div><div class="cs-sheet" id="csSheet" hidden></div></div>';
     document.body.appendChild(m);
     $('closeCasino').style.setProperty('display', 'none', 'important');
@@ -213,6 +231,7 @@
     $('csBack').addEventListener('click', backStep);
     $('csBal').addEventListener('click', function () { deposit(); }); // v2807 : le visiteur voit aussi l'aperçu de Recharger (sûr, sans paiement)
     $('csHelp').addEventListener('click', function () { if (S.game) help(S.game); });
+    if (D6.Sfx) D6.Sfx.button($('csSnd')); else $('csSnd').remove(); // v2832 : bouton du son (muet / actif)
     m.addEventListener('click', function (e) { if (e.target === m) close(); });
     if (D6.BigPageSwipe) D6.BigPageSwipe('casinoModal');
     // v2812 (round 4) : dans un jeu, la fenêtre reste calée en haut (vieux iPhone sans « overflow:clip » : la case de mise la faisait glisser)
@@ -615,6 +634,7 @@
     S.game = k; cgMark(k);
     var x = X(), m = $('casinoModal');
     m.classList.add('in-game'); m.setAttribute('data-g', k); $('csSheet').hidden = true; $('csHelp').hidden = false;
+    if (D6.Sfx) D6.Sfx.game(k);
     var p = pal(k);
     m.style.setProperty('--tc', p[1]); m.style.setProperty('--p1', p[0]); m.style.setProperty('--p2', p[1]);
     paintBal();
@@ -1931,7 +1951,7 @@
   D6.Casino = { open: open, close: close, home: homePub, openPred: openPred };
   // v2795 — boîte à outils partagée par les jeux refaits (js/games/*.js)
   D6.CasinoKit = { GAMES: GAMES, MODS: MODS, S: S, X: X, LX: LX, $: $, esc: esc, fmt: fmt, m2: m2, dec: dec, sleep: sleep, toast: toast, guest: guest,
-    play: play, multi: multi, resultLine: resultLine, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
+    play: play, multi: multi, resultLine: resultLine, sfx: sfx, sfxBeat: sfxBeat, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
     afterPlay: afterPlay, stopAll: stopAll, fitEl: fitEl, fitAll: fitAll, setText: setText, ART: ART, pal: pal, gicon: gicon, name: name,
     seeded: seeded, easeOut: easeOut, lang: function () { return (document.documentElement.lang || 'en').slice(0, 2); },
     /* register(clé, fonction(box, x), { rules: { en: '…', fr: '…', … } }) */

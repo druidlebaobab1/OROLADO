@@ -132,6 +132,7 @@
           for (var e = 0; e < sw.length; e++) {
             var ca = slot.indexOf(sw[e][0]), cb = slot.indexOf(sw[e][1]), xa = X(slot[ca]), xb = X(slot[cb]), dur = 300 - e * 8;
             slot[ca] = sw[e][1]; slot[cb] = sw[e][0];
+            K.sfx('tick'); // v2832 : les gobelets glissent
             await Promise.all([
               anim(cupEl[ca], [{ transform: 'translate(' + xa + 'px,' + Y + 'px)' }, { transform: 'translate(' + (xa + xb) / 2 + 'px,' + (Y + 10) + 'px) scale(1.06)' }, { transform: 'translate(' + xb + 'px,' + Y + 'px)' }], dur),
               anim(cupEl[cb], [{ transform: 'translate(' + xb + 'px,' + Y + 'px)' }, { transform: 'translate(' + (xa + xb) / 2 + 'px,' + (Y - 10) + 'px) scale(.94)' }, { transform: 'translate(' + xa + 'px,' + Y + 'px)' }], dur)
@@ -225,6 +226,7 @@
         var goal = r.view.i === 1, kz = goal ? [0, 1, 2].filter(function (q) { return q !== z; })[rnd(2)] : z;
         var bx = ZX[z], by = ZY[z] + (goal ? 0 : 0);
         var kd = KD[kz];
+        K.sfx('act'); // v2832 : le tir
         await Promise.all([
           anim(ball, [{ transform: 'translate(154px,192px) scale(1)' }, { transform: 'translate(' + bx + 'px,' + by + 'px) scale(.62)' }], 520, 'cubic-bezier(.2,.7,.3,1)'),
           K.sleep(lite() ? 60 : 120).then(function () { return anim(kin, [{ transform: 'translate(0,0) rotate(0deg)' }, { transform: 'translate(' + kd[0] + ',' + kd[1] + ') rotate(' + kd[2] + ')' }], 380, 'cubic-bezier(.2,.8,.3,1)'); })
@@ -294,7 +296,7 @@
           var f = function (t) {
             if (!alive(box)) return res();
             var p = Math.min(1, (t - t0) / D), e = 1 - Math.pow(1 - p, 3), k = Math.floor(e * steps + 1e-9);
-            put((from + k) % 20);
+            put((from + k) % 20); K.sfxBeat(CP, 'k', k, 'tick'); // v2832 : tic à chaque perle
             if (p < 1) K.S.raf = requestAnimationFrame(f); else res();
           };
           K.S.raf = requestAnimationFrame(f);

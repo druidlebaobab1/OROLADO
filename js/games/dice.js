@@ -110,6 +110,7 @@
           if (!box.isConnected) return res();
           var k = Math.min(1, (now - t0) / dur), v = from + (roll - from) * K.easeOut(k);
           K.setText(num, nf(v, 2)); K.setText($('dcMarkN'), nf(v, 2));
+          if (k < 1) K.sfxBeat(run, 'v', Math.floor(v / 8), 'tick', { v: 0.5 }); // v2832 : le repère glisse (tic léger)
           if (k < 1) K.S.raf = requestAnimationFrame(step); else res();
         })(t0);
       });

@@ -1911,6 +1911,8 @@ if ($isAjax) {
       $motif
     );
     admin_bust_cache();
+    // 2026-10-19 : argent / bonus envoyé par l'admin → le joueur est prévenu (notification + e-mail)
+    if ($delta > 0) { require_once __DIR__ . '/notify_lib.php'; orolado_notify_player((string) $targets[0], 'bonus', $delta); }
     admin_json(['ok' => true, 'real' => $lastReal]);
   }
   if ($action === 'suspend') {

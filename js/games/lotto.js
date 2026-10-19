@@ -95,6 +95,7 @@
         sl[i].appendChild(ball);
         if (!skip && !lite) await K.sleep(330);
         if (hit) hits++;
+        if (!skip) { if (hit) K.sfx('step', { k: hits }); else K.sfx('ball', { k: i }); } // v2832 : chaque boule ; un numéro trouvé sonne plus haut
         if (c) c.classList.add(hit ? 'hit' : 'dr');
         paintPay(hits, false);
         if (!skip) await K.sleep(lite ? 90 : 170);
