@@ -205,7 +205,9 @@
   /* ---- fin casa ---- */
   /* v2850 — round 6 « Tu contrôles » (js/games/skill6.js, skill7.js, skill8.js) : famille de sons de chaque jeu */
   Object.assign(MAP, { blockfall: 'build', merge2048: 'build', mazechomp: 'arcade', bubblepop: 'arcade', gemswap: 'arcade', memoflip: 'build', echopads: 'arcade', pianokeys: 'build',
-    tankbattle: 'shoot', sniper: 'shoot', gunship: 'shoot', dogfight: 'shoot' });
+    tankbattle: 'shoot', sniper: 'shoot', gunship: 'shoot', dogfight: 'shoot',
+    trenchdef: 'shoot', commando: 'run', alienwave: 'shoot', cityshield: 'shoot', neonpong: 'arcade', meteorblast: 'shoot', skyhopper: 'fly', fruitcatch: 'arcade',
+    beattap: 'arcade', ropeswing: 'fly', minigolf: 'throwg', skislalom: 'run' });
   // notes de départ (do5, ré5, mi5, fa5, sol5, la4, si4…) : chaque jeu tire la sienne, son motif et son tempo
   var ROOTS = [3, 5, 7, 8, 10, 0, 2, -2, 1];
   var PATS = [[0, 4, 7, 12], [0, 2, 4, 7, 12], [4, 7, 12, 16], [0, 7, 12, 16], [7, 9, 12, 16], [0, 4, 9, 12], [0, 4, 7, 9, 12], [2, 4, 7, 14]];

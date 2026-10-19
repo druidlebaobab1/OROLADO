@@ -370,7 +370,8 @@
       var SK_POS = ['hamster', 'highway', 'jungledash', 'metrodash', 'airstrike', 'zombiesiege', 'colorjump', 'helixdrop', 'spacerun', 'flappyrock', 'stack', 'knifehit',
         'brickbreak', 'neonsnake', 'cupcake', 'princess', 'basket', 'starbridge', 'archer', 'slicer', 'chicken', 'dodge', 'dartspro', 'orbit',
         // v2850 (round 6) : les classiques que tout le monde connaît + les jeux de guerre (js/games/cat-skill6.js)
-        'tankbattle', 'blockfall', 'sniper', 'merge2048', 'gunship', 'mazechomp', 'dogfight', 'bubblepop', 'gemswap', 'memoflip', 'echopads', 'pianokeys'];
+        'tankbattle', 'blockfall', 'sniper', 'merge2048', 'gunship', 'mazechomp', 'dogfight', 'bubblepop', 'gemswap', 'memoflip', 'echopads', 'pianokeys',
+        'trenchdef', 'neonpong', 'commando', 'fruitcatch', 'alienwave', 'skyhopper', 'cityshield', 'meteorblast', 'beattap', 'ropeswing', 'minigolf', 'skislalom'];
       var skPos = function (k) { var i = SK_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.skill.sort(function (a, b) { return skPos(a) - skPos(b); });
       // v2832 : ordre fixe des jeux « Casino » : deux jeux qui se ressemblent sont toujours à au moins 3 places l'un de l'autre
