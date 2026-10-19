@@ -52,7 +52,6 @@ return [
   // Pachinko — drain · start pocket, reels miss · tulip ×0.5 · side pocket ×2 · three alike ×10 · 7-7-7 ×100. 93.79 %
   'pachinko' => ['type' => 'table', 'name' => 'Pachinko', 'out' => [[0, 1991], [0, 1000], [0.5, 2000], [2, 1200], [10, 200], [100, 6]]],
   // Lucky Ladder — 5 pots under a ladder lottery, each equally likely: ×0 · ×0.3 · ×0.8 · ×1.6 · ×2. 94 %
-  'ladder' => ['type' => 'table', 'name' => 'Lucky Ladder', 'out' => [[0, 1], [0.3, 1], [0.8, 1], [1.6, 1], [2, 1]]],
   // Skee-Ball — 5 balls, holes 10/20/30/40/50/100 (30/25/18/12/10/5 %), exact total law (÷1000): <150 · 150+ ×1.45 · 200+ ×2.6 · 250+ ×5.5 · 300+ ×20 · 350+ ×100. 93.88 %
   'skeeball' => ['type' => 'table', 'name' => 'Skee-Ball', 'out' => [[0, 6058493], [1.45, 2582892], [2.6, 1065068], [5.5, 243699], [20, 43148], [100, 6700]]],
   // Lucky Ducks — the hooked duck shows: nothing · ×0.5 · ×1 · ×2 · ×5 · ×20 · golden duck ×100. 93.80 %

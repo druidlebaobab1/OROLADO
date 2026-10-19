@@ -350,7 +350,7 @@
         'diamond', 'horseshoe', 'wheel2', 'bingo', 'jungle', 'domino', 'bowling', 'pinata',
         // casb (round 6) : tables, cartes, dés, hasard d'arcade + Comet Queen
         'cometqueen', 'blackjack', 'yatzy', 'pachinko', 'dblroul', 'tcpoker', 'derby', 'ducks', 'acerace', 'twoup', 'skeeball', 'ceelo',
-        'niuniu', 'oracle', 'twinwheel', 'crownanchor', 'holdem', 'ladder', 'fantan', 'shipcrew', 'clocksol', 'dreidel', 'rpsduel', 'trente',
+        'niuniu', 'oracle', 'twinwheel', 'crownanchor', 'holdem', 'fantan', 'shipcrew', 'clocksol', 'dreidel', 'rpsduel', 'trente',
         // casa (round 6) : 12 machines à sous (casa1) alternées avec 12 jeux instantanés (casa2/3) ; mêmes mécaniques ≥ 6 places d'écart
         'hilorun', 'scarab', 'pickbox', 'kraken', 'colorwheel', 'cherrybar', 'egghunt', 'ufo', 'flip21', 'goldtrain', 'envelope', 'koi',
         'shells', 'viking', 'ladder', 'safari', 'luckyten', 'donut', 'popdarts', 'rubymine', 'treasure', 'pumpkin', 'scratchwin', 'medusa'];
