@@ -1196,20 +1196,11 @@
       } else {
         bottomRes = safeBottomPx() + 4;
       }
-      var cardTop = card.getBoundingClientRect().top;
-      var toolsH = Math.max(0, stage.getBoundingClientRect().top - cardTop);
-      var padH = pad.getBoundingClientRect().height;
-      // Application installée sur l'écran d'accueil (iPhone) : la page est plus courte que la fenêtre
-      // (≈ hauteur de la barre d'état en moins). Avant, le calcul prenait toute la fenêtre : ACHETER /
-      // VENDRE passaient sous la bande bleue du bas. On prend le vrai bas de la page s'il est plus haut.
-      var viewBottom = window.innerHeight;
-      var scrBottom = scr.getBoundingClientRect().bottom;
-      if (scrBottom > 300) viewBottom = Math.min(viewBottom, scrBottom); // v2822 : le vrai bas de l'écran de jeu
-      var h = Math.floor(viewBottom - bottomRes - padH - cardTop);
-      var hMin = 150; // v2822 : petit iPhone (SE…) : ACHETER / VENDRE restent dans l'écran (avant : 200 → coupés en bas)
-      if (h < hMin) h = hMin;
-      html.style.setProperty('--ios-chart-h', h + 'px');
-      html.style.setProperty('--ios-stage-h', Math.max(150, h - toolsH) + 'px');
+      // v2827 : la courbe prend la place libre par la mise en page (css/galaxy.css) ; ici, seulement la place gardée
+      // sous ACHETER / VENDRE (dans le terminal, même fond jusqu'en bas).
+      // Le terminal touche le bas de l'écran de jeu ; si l'écran s'arrête plus haut que la fenêtre, la différence compte.
+      var under = Math.max(0, Math.round(bottomRes - Math.max(0, window.innerHeight - scr.getBoundingClientRect().bottom)));
+      html.style.setProperty('--ios-pad-b', under + 'px');
       html.classList.add('ios-fit');
       bumpChartLayout();
     } catch (eFg) { /* ignore */ }

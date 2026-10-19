@@ -1033,8 +1033,16 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay #fsTopMidHome.fs-top-mid-home{
    Retouches 8 — la courbe d'abord (demandées par le propriétaire)
    ===================================================================== */
 /* iPhone : la courbe prend toute la place libre jusqu'au terminal (calcul fait par app.js) */
-html.ios-fit:not(.fs-trade) body #tradeWrap#tradeWrap #chart{height:var(--ios-chart-h)!important;min-height:var(--ios-chart-h)!important;max-height:var(--ios-chart-h)!important}
-html.ios-fit:not(.fs-trade) body #tradeWrap#tradeWrap #chartStage{height:var(--ios-stage-h)!important;min-height:var(--ios-stage-h)!important;max-height:var(--ios-stage-h)!important}
+/* v2827 (propriétaire, iPhone Safari : « à l'actualisation la page monte puis redescend, bande vide sous ACHETER / VENDRE ») :
+   plus de hauteur calculée par le code. La courbe PREND la place libre (mise en page pure, dès la première image, tous les
+   navigateurs iPhone) ; ACHETER / VENDRE restent collés en bas ; seule la place sous eux (barre flottante de Safari) vient
+   d'app.js (--ios-pad-b). */
+@media (orientation:portrait) and (max-width:859px){
+  html.is-ios:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap #chart{flex:1 1 0!important;height:auto!important;min-height:150px!important;max-height:none!important}
+  html.is-ios:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap #chartStage{flex:1 1 0!important;height:auto!important;min-height:110px!important;max-height:none!important}
+  /* la place sous ACHETER / VENDRE est DANS le terminal (même fond jusqu'en bas : plus de bande d'une autre couleur) */
+  html.is-ios:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap > .pad{margin-bottom:0!important;padding-bottom:calc(10px + var(--ios-pad-b,8px))!important}
+}
 /* plus jamais de boutons agrandis pour remplir le vide (c'est la courbe qui le prend) */
 html body #screenTrade#screenTrade.saf-fill .btn-trade{min-height:54px!important;height:auto!important}
 /* la courbe : couleur sombre franche, sans fondu ni bords flous, sur toute la largeur comme l'ancien site */
@@ -2090,3 +2098,9 @@ html[lang="de"] body #screenTrade#screenTrade #previewMult#previewMult{font-size
    navigateur. Plus d'espace en bas du profil pour qu'on puisse toujours la faire remonter et la lire. */
 html.is-android body #drawerProfile#drawerProfile{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 64px)!important}
 html.is-android body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:28px!important}
+/* v2827 (propriétaire, captures iPhone : « bande sous ACHETER / VENDRE ») : plus de plancher bleu fixe posé PAR-DESSUS le bas de
+   l'écran. Le terminal descend lui-même jusqu'au bas de la fenêtre (son fond finit dans le même bleu que la page, #1A2A68) ;
+   sous la barre de Safari, c'est le fond de la page, du même bleu : aucune limite visible. */
+@media (max-width:859px){
+  html.is-ios body #oroIosFloor#oroIosFloor,html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{display:none!important}
+}
