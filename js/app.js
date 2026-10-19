@@ -51,17 +51,61 @@
 
   // v2551 — iPhone : après le clavier, Safari gardait la page remontée, et la REMETTAIT décalée même après une
   // actualisation (ligne des planètes plus dessinée). La page repart toujours à sa place : en haut, sans décalage.
+  // v2812 (propriétaire, round 4) — VERROU DE L'ÉCRAN : au chargement / à l'actualisation, Safari (iPhone, iOS 26 surtout)
+  // faisait encore défiler la page entière de quelques dizaines de px (barre du haut sous l'heure, ACHETER / VENDRE trop
+  // hauts, bande vide en bas). Cause : la page (html / body, « overflow:hidden » mais défilables par le navigateur) était
+  // un peu plus haute que la vraie zone visible (100dvh ≠ fenêtre réelle) et Safari la faisait défiler (restauration,
+  // barre d'adresse qui se replie, clavier). Correctif : (1) la hauteur de la page = la fenêtre MESURÉE (--app-h), body
+  // fixé (css/app.css « VERROU ») ; (2) dès que html / body / un écran défile tout seul (hors saisie au clavier), on le
+  // remet à 0 tout de suite. Rien ne tourne en continu : seulement sur les événements du navigateur.
   (function scrollHome() {
     try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (eSr) { /* ignore */ }
-    function home() {
+    var root = document.documentElement;
+    function typing() {
+      var ae = document.activeElement;
+      return !!(ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable));
+    }
+    var lastH = 0;
+    function setH() {
       try {
-        var ae = document.activeElement;
-        if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
-        if (window.scrollY || window.pageYOffset) window.scrollTo(0, 0);
+        if (typing()) return; // clavier ouvert : la page ne change pas de taille
+        var h = Math.round(window.innerHeight || 0);
+        if (h > 200 && h !== lastH) { lastH = h; root.style.setProperty('--app-h', h + 'px'); }
       } catch (eH) { /* ignore */ }
     }
-    window.addEventListener('pageshow', function () { home(); setTimeout(home, 300); });
-    window.addEventListener('load', function () { setTimeout(home, 50); });
+    function home() {
+      try {
+        if (typing()) return;
+        var b = document.body;
+        if (window.scrollY || window.pageYOffset || window.scrollX) window.scrollTo(0, 0);
+        if (root.scrollTop) root.scrollTop = 0;
+        if (b && (b.scrollTop || b.scrollLeft)) { b.scrollTop = 0; b.scrollLeft = 0; }
+        var vv = window.visualViewport;
+        if (vv && vv.offsetTop > 0.5 && (vv.scale || 1) <= 1.01) window.scrollTo(0, 0);
+        var sc = document.querySelectorAll('.screen');
+        for (var i = 0; i < sc.length; i++) if (sc[i].scrollTop && getComputedStyle(sc[i]).overflowY === 'hidden') sc[i].scrollTop = 0;
+      } catch (eH) { /* ignore */ }
+    }
+    D6.viewHome = function () { setH(); home(); };
+    var raf = 0;
+    function soon() { if (raf) return; raf = requestAnimationFrame(function () { raf = 0; setH(); home(); }); }
+    setH();
+    window.addEventListener('scroll', soon, { passive: true });
+    // défilement d'un élément (body, un écran) : on ne regarde que ceux qui ne doivent JAMAIS défiler
+    document.addEventListener('scroll', function (e) {
+      var t = e.target;
+      if (t === document || t === document.body || t === root || (t && t.classList && t.classList.contains('screen'))) soon();
+    }, { passive: true, capture: true });
+    window.addEventListener('resize', soon);
+    window.addEventListener('orientationchange', function () { setTimeout(soon, 120); setTimeout(soon, 500); });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', soon);
+      window.visualViewport.addEventListener('scroll', function () { if (!typing()) soon(); });
+    }
+    document.addEventListener('focusout', function () { setTimeout(soon, 60); setTimeout(soon, 420); }, true);
+    window.addEventListener('pageshow', function () { setH(); home(); setTimeout(soon, 120); setTimeout(soon, 600); });
+    window.addEventListener('load', function () { soon(); setTimeout(soon, 50); setTimeout(soon, 700); setTimeout(soon, 1800); });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(soon, 80); });
   })();
 
   // v2538 — MODE LÉGER automatique : sur un téléphone qui n'arrive pas à suivre (plus d'1 image sur 3 lente,
@@ -7146,7 +7190,7 @@
     lockBehind();
     if (returnToProfile && PROFILE_SUBVIEWS[id]) {
       if ($('drawerProfile') && !$('drawerProfile').classList.contains('on')) {
-        setTimeout(function () { openDrawer(); }, 80);
+        openDrawer(); // v2812 : tout de suite (avant : 80 ms où l'on voyait passer l'écran de trading)
       }
     }
   }
