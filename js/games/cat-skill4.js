@@ -10,7 +10,7 @@
     return '<defs><clipPath id="IDm"><circle cx="32" cy="33" r="26.5"/></clipPath><linearGradient id="IDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7D6"/><stop offset=".45" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient>' +
       '<linearGradient id="IDs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
       '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDg)"/>' +
-      '<image href="img/games/' + k + '.webp?v=2863" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
+      '<image href="img/games/' + k + '.webp?v=2864" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
       '<circle cx="32" cy="33" r="26.5" fill="url(#IDs)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>' + (run ? RUN : '');
   }
   D6.CasinoCatalog.add([
@@ -43,15 +43,7 @@
     '<ellipse cx="32" cy="40" rx="21" ry="5" fill="#C98A4B"/><ellipse cx="32" cy="37" rx="19" ry="6" fill="url(#IDf)"/><ellipse cx="32" cy="31" rx="14.5" ry="5.5" fill="url(#IDf)"/><ellipse cx="32" cy="25.5" rx="10" ry="4.5" fill="url(#IDf)"/><path d="M28 22h8l-3-5z" fill="#F9A8D4"/>' +
     '<circle cx="34" cy="18" r="4" fill="url(#IDc)"/><path d="M34 14q2-4 6-3" stroke="#166534" stroke-width="1.4" fill="none"/>' +
     '<path d="M19 36l3-1M43 35l3 1M26 31l2 1.4M38 30l-2 1.6M31 37h3" stroke-width="1.6" stroke-linecap="round" stroke="#FACC15"/><path d="M23 33l1.6 1.4M40 37l2-1M33 27l1.8.6" stroke="#22D3EE" stroke-width="1.6" stroke-linecap="round"/>' },
-  { k: 'princess', name: 'Princess Rush', sec: 'skill', file: 'skill5', pal: ['#FAE8FF', '#C026D3'], icon: '<defs><linearGradient id="IDd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBCFE8"/><stop offset=".55" stop-color="#EC4899"/><stop offset="1" stop-color="#9D174D"/></linearGradient><linearGradient id="IDh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDE68A"/><stop offset="1" stop-color="#D97706"/></linearGradient><linearGradient id="IDr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9D5FF"/><stop offset="1" stop-color="#FDF2F8"/></linearGradient></defs>' +
-    '<path d="M24 16h4v-5l2-3 2 3v5h4v-4l2 -3 2 3v4h4V24H20z" fill="#DDD6FE"/><path d="M22 12l2-4 2 4zM38 12l2-4 2 4zM28 11l2-4 2 4z" fill="#EC4899"/>' +
-    '<path d="M26 24h12l22 40H4z" fill="url(#IDr)"/><path d="M32 24v40" stroke="#D97706" stroke-width="1.2" stroke-dasharray="3 3" opacity=".6"/>' +
-    '<path d="M4 46V26a10 10 0 0 1 20 0v20" fill="#EC4899" fill-opacity=".3" stroke="#16A34A" stroke-width="3"/><circle cx="7" cy="22" r="2.2" fill="#EC4899"/><circle cx="14" cy="16.6" r="2.2" fill="#EC4899"/><circle cx="21" cy="22" r="2.2" fill="#EC4899"/>' +
-    '<circle cx="14" cy="31" r="5" fill="#fff"/><path d="M14 34.6c-3.4-2.2-4.2-4.8-2.2-6 1-.5 1.8 0 2.2.7.4-.7 1.2-1.2 2.2-.7 2 1.2 1.2 3.8-2.2 6z" fill="#EC4899"/>' +
-    '<path d="M40 46V26a10 10 0 0 1 20 0v20" fill="#14B8A6" fill-opacity=".3" stroke="#16A34A" stroke-width="3"/><circle cx="43" cy="22" r="2.2" fill="#14B8A6"/><circle cx="50" cy="16.6" r="2.2" fill="#14B8A6"/><circle cx="57" cy="22" r="2.2" fill="#14B8A6"/><circle cx="50" cy="31" r="5" fill="#fff"/><path d="M50 35l-3.6-3.6 1.6-2h4l1.6 2z" fill="#14B8A6"/>' +
-    '<path d="M29 40q-8 10-11 22q14 3 28 0q-3-12-11-22z" fill="url(#IDd)"/><path d="M27 62q5 1.6 10 0M24 52l2 9M40 52l-2 9" stroke="#fff" stroke-opacity=".45" stroke-width="1.2" fill="none"/>' +
-    '<path d="M28.6 31h6.8l-.6 10h-5.6z" fill="#BE185D"/><path d="M29 32l-3 9M35 32l3 9" stroke="#E8B48A" stroke-width="1.8" stroke-linecap="round"/>' +
-    '<path d="M27.5 27a4.5 4.5 0 0 1 9 0l.6 9c-2.6 1.4-7.6 1.4-10.2 0z" fill="url(#IDh)"/><path d="M28.5 23.6l1.4-2 1.2 1.4 1-2 1 2 1.2-1.4 1.4 2z" fill="#FACC15"/>' }
+  { k: 'princess', name: 'Princess Rush', sec: 'skill', file: 'skill5', pal: ['#FAE8FF', '#C026D3'], icon: medal('princess', '#F0ABFC', '#86198F', 0) }
 ]);
   var V = ''; try { V = ((document.currentScript && document.currentScript.src) || '').split('?v=')[1] || ''; } catch (e) { V = ''; }
   var warmed = false, warmT = 0;
