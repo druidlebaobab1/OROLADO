@@ -173,6 +173,14 @@
       var xe = entryCents * Math.exp(fairDrift(assetId, duration, entryCents));
       return xe >= 0 ? Math.floor(xe + 0.5) : -Math.floor(-xe + 0.5);
     }
+    // 10 marchés d'origine : retour vers le départ + glissement −variance/2 par tick (copie de feed_lib.php).
+    if (idx === 0 && FAIR_BASE[assetId]) {
+      var fb = FAIR_BASE[assetId];
+      var tv = fb[1] * fb[1];
+      if (fb[2] > 0) tv += fb[2] * (fb[3] * fb[3] + fb[3] * fb[4] + fb[4] * fb[4]) / 3;
+      var xo = entryCents * Math.exp(fairDrift(assetId, duration, entryCents) - Math.floor(duration * 1000 / 250) * tv / 2);
+      return xo >= 0 ? Math.floor(xo + 0.5) : -Math.floor(-xo + 0.5);
+    }
     // Gros payouts : la ligne suit le petit retour attendu vers le prix de départ (copie de
     // orolado_fair_drift, feed_lib.php). Le 88 % reste au prix d'entrée.
     if (idx > 0) rel = (1 + rel) * Math.exp(fairDrift(assetId, duration, entryCents)) - 1;
