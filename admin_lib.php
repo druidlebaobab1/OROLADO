@@ -3159,10 +3159,62 @@ function admin_wd_notify_paid(array $db, string $uid, array $row): void {
     if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) && !orolado_is_reserved_admin_email($email)) {
       [$t, $b] = admin_wd_paid_texts($lang, $amt);
       $hi = ['fr' => 'Bonjour', 'es' => 'Hola', 'pt' => 'Olá', 'de' => 'Hallo', 'tr' => 'Merhaba', 'id' => 'Halo', 'vi' => 'Xin chào', 'ru' => 'Здравствуйте', 'ar' => 'مرحبًا', 'hi' => 'नमस्ते', 'zh' => '您好'][$lang] ?? 'Hello';
-      admin_mail_plain($email, $t, $hi . " {prenom},\n\n" . $b . "\n\nOROLADO\nhttps://orolado.com");
+      // 1er retrait payé de ce joueur ? (message spécial, une seule fois)
+      $nPaid = 0;
+      foreach (($db['withdrawals'] ?? []) as $w) {
+        if (is_array($w) && (string) ($w['userId'] ?? '') === $uid && (string) ($w['id'] ?? '') !== (string) ($row['id'] ?? '')
+          && in_array(strtolower((string) ($w['status'] ?? '')), ['approved', 'paid', 'completed'], true)) $nPaid++;
+      }
+      $name = trim((string) ($u['displayName'] ?? $u['name'] ?? ''));
+      admin_mail_wd_paid($email, $name, $t, $hi, $b, $nPaid === 0 ? admin_wd_first_text($lang) : '', $lang);
     }
   } catch (Throwable $e) { /* jamais bloquant */ }
   try {
     if (function_exists('push_notify_user')) push_notify_user($uid, static fn(string $l): array => admin_wd_paid_texts($l, $amt), '/');
   } catch (Throwable $e) { /* jamais bloquant */ }
+}
+
+/** 2026-10-19 — texte en plus pour le 1er retrait d'un joueur (une seule fois). */
+function admin_wd_first_text(string $lang): string {
+  $T = [
+    'fr' => 'Félicitations pour votre tout premier retrait sur OROLADO ! 🎉 Merci de votre confiance : vos gains arrivent toujours directement chez vous.',
+    'en' => 'Congratulations on your very first withdrawal on OROLADO! 🎉 Thank you for your trust: your winnings always come straight to you.',
+    'es' => '¡Felicidades por tu primer retiro en OROLADO! 🎉 Gracias por tu confianza: tus ganancias siempre llegan directamente a ti.',
+    'pt' => 'Parabéns pelo seu primeiro saque na OROLADO! 🎉 Obrigado pela confiança: seus ganhos chegam sempre direto para você.',
+    'ar' => 'تهانينا على أول عملية سحب لك في OROLADO! 🎉 شكرًا لثقتك: أرباحك تصلك دائمًا مباشرة.',
+    'tr' => 'OROLADO\'daki ilk çekiminiz için tebrikler! 🎉 Güveniniz için teşekkürler: kazançlarınız her zaman doğrudan size gelir.',
+    'vi' => 'Chúc mừng lần rút tiền đầu tiên của bạn tại OROLADO! 🎉 Cảm ơn bạn đã tin tưởng: tiền thắng luôn về thẳng tay bạn.',
+    'id' => 'Selamat atas penarikan pertama Anda di OROLADO! 🎉 Terima kasih atas kepercayaan Anda: kemenangan Anda selalu langsung sampai ke Anda.',
+    'ru' => 'Поздравляем с первым выводом в OROLADO! 🎉 Спасибо за доверие: ваши выигрыши всегда приходят прямо к вам.',
+    'de' => 'Glückwunsch zu deiner allerersten Auszahlung bei OROLADO! 🎉 Danke für dein Vertrauen: Deine Gewinne kommen immer direkt zu dir.',
+    'hi' => 'OROLADO पर आपकी पहली निकासी के लिए बधाई! 🎉 भरोसे के लिए धन्यवाद: आपकी जीत हमेशा सीधे आप तक पहुँचती है।',
+    'zh' => '恭喜您在 OROLADO 完成首次提现！🎉 感谢您的信任：您的奖金总是直接到账。',
+  ];
+  return $T[$lang] ?? $T['en'];
+}
+/** 2026-10-19 (propriétaire : « un vrai mail bien joli, professionnel ») : reçu de retrait sobre (pas de pub, pas de pixel). */
+function admin_mail_wd_paid(string $to, string $name, string $subject, string $hi, string $msg, string $first, string $lang): array {
+  $e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+  $who = $name !== '' ? $name : admin_mail_first_name($to);
+  $dir = $lang === 'ar' ? 'rtl' : 'ltr';
+  $p = static fn(string $t, string $st = ''): string => '<tr><td style="padding:0 28px 12px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:23px;color:#E8EEF9;' . $st . '">' . $t . '</td></tr>';
+  $html = '<!doctype html><html dir="' . $dir . '"><body style="margin:0;padding:0;background:#0F0B2A;">' .
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0F0B2A;padding:24px 0;"><tr><td align="center">' .
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#1B1442;border-radius:16px;overflow:hidden;">' .
+    '<tr><td style="padding:22px 28px 6px;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:bold;letter-spacing:3px;color:#FBBF24;">OROLADO</td></tr>' .
+    '<tr><td style="padding:6px 28px 18px;font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:bold;color:#4ADE80;">' . $e($subject) . '</td></tr>' .
+    $p($e($hi . ($who !== '' ? ' ' . $who : '') . ',')) . $p($e($msg)) .
+    ($first !== '' ? $p($e($first), 'color:#FDE68A;') : '') .
+    '<tr><td style="padding:10px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#A5B4D8;">OROLADO · <a href="https://orolado.com" style="color:#A5B4D8;">orolado.com</a></td></tr>' .
+    '</table></td></tr></table></body></html>';
+  $text = $hi . ($who !== '' ? ' ' . $who : '') . ",\n\n" . $msg . ($first !== '' ? "\n\n" . $first : '') . "\n\nOROLADO\nhttps://orolado.com\n";
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) return ($GLOBALS['OROLADO_FAKE_MAIL'])($to, $subject, $text);
+  return brevo_send_smtp([
+    'sender' => ['email' => brevo_env('BREVO_SENDER_EMAIL', 'contact@mail.orolado.com'), 'name' => 'OROLADO'],
+    'to' => [['email' => $to, 'name' => $who !== '' ? $who : $to]],
+    'subject' => $subject,
+    'htmlContent' => $html,
+    'textContent' => $text,
+    'replyTo' => ['email' => 'support@orolado.com', 'name' => 'OROLADO'],
+  ]);
 }
