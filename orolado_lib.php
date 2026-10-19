@@ -48,7 +48,8 @@ function orolado_server_user_fields(): array {
   // s'affichait dans le tableau admin comme une vraie.
   // v2671 : 'clickFav' / 'clickUnfav' (compteurs anti-robot, trade_lib.php) — avant, chaque envoi du profil par le
   // téléphone les EFFAÇAIT (robot jamais repéré) et un tricheur pouvait y écrire de faux chiffres.
-  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav', 'devices'];
+  // 2026-10-19 : 'clickFavDemo' / 'clickUnfavDemo' (mêmes compteurs, démo seulement, trade_lib.php).
+  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav', 'clickFavDemo', 'clickUnfavDemo', 'devices'];
 }
 
 /** Compteurs d'argent tenus par le serveur seul (dépôts validés, trades réels réglés). */

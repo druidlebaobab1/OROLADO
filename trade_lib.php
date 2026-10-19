@@ -53,7 +53,8 @@ function orolado_trade_debit(string $payId, string $orderId, float $stake): arra
   try {
     if (is_file($marker)) {
       $meta = json_decode((string) @file_get_contents($marker), true);
-      return ['ok' => true, 'real' => orolado_money($meta['real'] ?? 0), 'duplicate' => true];
+      // 'duplicate' : CETTE demande n'a rien débité (la mise a été prise par une autre demande du même ordre).
+      return ['ok' => true, 'real' => orolado_money($meta['real'] ?? 0), 'duplicate' => true, 'refunded' => !empty($meta['refunded'])];
     }
     $rpc = orolado_trade_rpc('debit_real', ['p_user' => $payId, 'p_amount' => $stake]);
     if (!$rpc) return ['ok' => false, 'reason' => 'unavailable'];
@@ -67,6 +68,38 @@ function orolado_trade_debit(string $payId, string $orderId, float $stake): arra
     flock($fp, LOCK_UN);
     fclose($fp);
   }
+}
+
+/** Note sur le marqueur de débit que la mise de cet ordre a été rendue (une demande répétée ne la reprend pas). */
+function orolado_trade_debit_mark_refunded(string $payId, string $orderId): void {
+  $dir = orolado_data_dir() . '/stakes';
+  $key = hash('sha256', $payId . '|' . $orderId);
+  $marker = $dir . '/' . $key . '.ok';
+  $fp = @fopen($dir . '/' . $key . '.lock', 'c');
+  if (!$fp || !flock($fp, LOCK_EX)) {
+    if ($fp) fclose($fp);
+    return;
+  }
+  try {
+    $meta = is_file($marker) ? json_decode((string) @file_get_contents($marker), true) : null;
+    if (!is_array($meta)) $meta = [];
+    $meta['refunded'] = date('c');
+    @file_put_contents($marker, json_encode($meta));
+  } finally {
+    flock($fp, LOCK_UN);
+    fclose($fp);
+  }
+}
+
+/**
+ * Clé « une seule fois » d'un trade réel dans Supabase (trade_settlements.order_id est UNIQUE pour TOUS les
+ * joueurs, et l'id d'ordre est choisi par le téléphone) : rangée par joueur, pour qu'aucun id choisi ne puisse
+ * occuper la clé d'un autre crédit (dépôt « dep_… », retrait « wdr_… », trade d'un autre joueur…).
+ * $kind : 'trs' règlement, 'trr' mise rendue (ordre non enregistré), 'trd' mise rendue (débit en double).
+ * Les ordres ouverts AVANT ce changement n'ont pas de 'settleKey' et se règlent toujours avec leur id (une fois).
+ */
+function orolado_trade_key(string $kind, string $payId, string $oid): string {
+  return $kind . '_' . substr(hash('sha256', strtolower($payId)), 0, 16) . '_' . $oid;
 }
 
 /**
@@ -135,8 +168,26 @@ function orolado_trade_exposure(array $db, string $assetId = '', string $uid = '
  */
 /** v2359 : prix du clic accepté jusqu'à 1,5 s en arrière (6 prix de 250 ms). */
 if (!defined('OROLADO_CLICK_MAX_TICKS')) define('OROLADO_CLICK_MAX_TICKS', 6);
-/** v2654 : prix du clic accordé seulement après 30 clics mesurés (démo + réel) sans comportement de robot. */
+/**
+ * v2654 : prix du clic accordé seulement après 30 clics mesurés sans comportement de robot.
+ * 2026-10-19 : ne sert plus qu'à la DÉMO. En RÉEL, le prix d'entrée est TOUJOURS le prix à l'arrivée de l'ordre
+ * (un script choisissait le meilleur des 6 derniers prix comme « prix du clic » : 117 % à 162 % de retour).
+ */
 if (!defined('OROLADO_CLICK_TRUST_AFTER')) define('OROLADO_CLICK_TRUST_AFTER', 30);
+
+/**
+ * DÉMO seulement : prix du clic accordé ? Compteurs DÉMO à part (clickFavDemo / clickUnfavDemo) : la démo ne
+ * compte plus dans le score robot du compte (admin, retraits) ni dans quoi que ce soit du réel. Les anciens
+ * compteurs (clickFav / clickUnfav, qui mélangeaient démo et réel avant ce changement) comptent dans le
+ * nombre de clics vus, pour que les joueurs déjà « connus » gardent le prix du clic en démo.
+ */
+function orolado_click_demo_trusted(array $row, array $me): bool {
+  $demo = ['clickFav' => (int) ($row['clickFavDemo'] ?? 0), 'clickUnfav' => (int) ($row['clickUnfavDemo'] ?? 0)];
+  $seen = $demo['clickFav'] + $demo['clickUnfav'] + (int) ($row['clickFav'] ?? 0) + (int) ($row['clickUnfav'] ?? 0);
+  return $seen >= OROLADO_CLICK_TRUST_AFTER
+    && orolado_click_edge_reason($demo) === ''
+    && orolado_click_edge_reason($row) === '' && orolado_click_edge_reason($me) === '';
+}
 
 /**
  * v2359 : comportement de robot. Entre le clic et l'arrivée de l'ordre, le prix a souvent déjà bougé :
@@ -159,6 +210,48 @@ function orolado_click_edge_reason(array $u): string {
     return 'Robot probable : choisit trop souvent le sens que le prix a déjà pris depuis son clic (' . $fav . ' fois contre ' . $unfav . ' ; un humain fait moitié-moitié)';
   }
   return '';
+}
+
+/**
+ * Réponse à une demande en double (même ordre, mise déjà prise par une autre demande) : renvoie l'ordre déjà
+ * enregistré, en l'attendant un court instant si l'autre demande est encore en train de l'écrire. Ne débite,
+ * ne crédite et n'écrit RIEN.
+ */
+function orolado_trade_place_duplicate(string $uid, string $oid, bool $refunded): array {
+  if ($refunded) return ['ok' => false, 'duplicate' => true, 'reason' => 'Ordre non enregistré, mise rendue'];
+  $waitMs = (int) (defined('OROLADO_DUP_WAIT_MS') ? OROLADO_DUP_WAIT_MS : 2500);
+  $until = microtime(true) + $waitMs / 1000;
+  do {
+    $o = orolado_trade_find(load_db(), $uid, $oid);
+    if ($o) return ['ok' => true, 'duplicate' => true, 'order' => orolado_trade_public($o)];
+    if (microtime(true) >= $until) break;
+    usleep(100000);
+  } while (true);
+  return ['ok' => false, 'duplicate' => true, 'pending' => true, 'reason' => 'Ordre déjà en cours d’enregistrement, vérifiez vos trades ouverts'];
+}
+
+/** seenTick acceptable : récent (au plus OROLADO_CLICK_MAX_TICKS avant l'arrivée), jamais dans le futur. */
+function orolado_click_tick_ok(int $seenTick, int $arrivalTick): bool {
+  return $seenTick > 0 && $seenTick < $arrivalTick && $seenTick >= $arrivalTick - OROLADO_CLICK_MAX_TICKS;
+}
+
+/**
+ * Choix du prix d'entrée (fonction pure, testée par scripts/test-trade-exploits.php).
+ * RÉEL : TOUJOURS le prix et le tick d'ARRIVÉE (jamais meilleur pour le joueur que le prix à l'arrivée).
+ * DÉMO : prix du clic si $demoTrusted et seenTick valable. 'move' = mesure anti-robot ('fav' / 'unfav' / '').
+ */
+function orolado_trade_pick_entry(string $mode, string $side, int $arrivalTick, int $arrivalCents, int $seenTick, ?int $seenCents, bool $demoTrusted): array {
+  $out = ['tick' => $arrivalTick, 'cents' => $arrivalCents, 'lag' => 0, 'move' => ''];
+  if (!orolado_click_tick_ok($seenTick, $arrivalTick) || $seenCents === null || $seenCents <= 0) return $out;
+  if ($arrivalCents !== $seenCents) {
+    $out['move'] = (($side === 'call') === ($arrivalCents > $seenCents)) ? 'fav' : 'unfav';
+  }
+  if ($mode === 'demo' && $demoTrusted) {
+    $out['tick'] = $seenTick;
+    $out['cents'] = $seenCents;
+    $out['lag'] = $arrivalTick - $seenTick;
+  }
+  return $out;
 }
 
 function orolado_trade_place(array $me, array $req): array {
@@ -219,39 +312,34 @@ function orolado_trade_place(array $me, array $req): array {
       $entryCents = (int) $atArrival;
     }
   }
-  // v2359 (choix du propriétaire) : prix du CLIC accepté. Le téléphone envoie le numéro du prix qu'il affichait
-  // au clic (seenTick) ; le serveur le prend s'il est récent (au plus OROLADO_CLICK_MAX_TICKS en arrière), jamais
-  // dans le futur. Le rond et la ligne tombent alors exactement au même endroit, comme en démo visiteur.
-  // Protection : on note si le prix a déjà bougé DANS le sens choisi entre le clic et l'arrivée (clickFav) ou
-  // contre lui (clickUnfav). Robot = presque toujours dans le bon sens → compte et retraits « suspects » (admin).
+  // Prix du CLIC (seenTick : numéro du prix que le téléphone affichait au clic, au plus OROLADO_CLICK_MAX_TICKS en
+  // arrière, jamais dans le futur).
+  // 2026-10-19 (audit, faille d'argent réel) : en RÉEL, le prix d'entrée et l'heure de départ sont TOUJOURS ceux de
+  // l'ARRIVÉE de l'ordre. Avant, un compte « de confiance » pouvait envoyer comme seenTick le meilleur des 6 derniers
+  // prix (v100 5 s ×1,9 : 117 % de retour ; ×50 : 162 %), et la confiance s'obtenait avec 30 trades DÉMO.
+  // Pourquoi pas « le pire des deux (clic, arrivée) » : mesuré, ça fait perdre ~8 points de retour aux joueurs
+  // HONNÊTES (94,6 % → 86,8 % sur v100 5 s ×1,9) ; le prix d'arrivée garde le jeu exactement équitable pour eux.
+  // Le téléphone affiche l'entrée / la ligne / l'expiration renvoyées par le serveur (Engine.confirmTrade).
+  // En DÉMO (pas d'argent) : le prix du clic reste accordé aux comptes sans comportement de robot (rond et ligne
+  // au même endroit que le clic, comme avant).
+  // Mesure anti-robot : on note si le prix a déjà bougé DANS le sens choisi entre le clic et l'arrivée (fav) ou
+  // contre lui (unfav). RÉEL → clickFav / clickUnfav (score robot de l'admin, retraits « suspects »).
+  // DÉMO → clickFavDemo / clickUnfavDemo (ne servent qu'au prix du clic en démo, jamais au score du compte).
   $arrivalTick = $entryTick;
   $arrivalCents = $entryCents;
-  $clickLag = 0;
   $seenTick = (isset($req['seenTick']) && is_numeric($req['seenTick'])) ? (int) $req['seenTick'] : 0;
-  // v2649 (propriétaire, 15/10 : 10 gains d'affilée, retraits « Suspect ») : un joueur marqué robot probable
-  // n'a PLUS droit au prix du clic → ses ordres prennent le prix à l'ARRIVÉE (sa triche ne marche plus).
-  // Les joueurs honnêtes (jamais marqués) ne voient aucune différence.
-  $meRow = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : $me;
-  // v2654 (propriétaire : « A + B ») : B — compte NOUVEAU (moins de OROLADO_CLICK_TRUST_AFTER clics mesurés,
-  // démo + réel) : pas encore de prix du clic, prix à l'arrivée ; on MESURE quand même son clic (sinon il
-  // resterait « nouveau » pour toujours). Un robot n'a donc jamais de fenêtre pour tricher, même compte neuf.
-  $clickSeen = (int) ($meRow['clickFav'] ?? 0) + (int) ($meRow['clickUnfav'] ?? 0);
-  $clickTrusted = $clickSeen >= OROLADO_CLICK_TRUST_AFTER
-    && orolado_click_edge_reason($meRow) === '' && orolado_click_edge_reason($me) === '';
-  $clickMove = '';
-  if ($seenTick > 0 && $seenTick < $entryTick && $seenTick >= $entryTick - OROLADO_CLICK_MAX_TICKS) {
-    $atSeen = orolado_feed_price_at($assetId, $seenTick);
-    if ($atSeen !== null && $atSeen > 0) {
-      if ($arrivalCents !== (int) $atSeen) {
-        $clickMove = (($side === 'call') === ($arrivalCents > (int) $atSeen)) ? 'fav' : 'unfav';
-      }
-      if ($clickTrusted) {
-        $clickLag = $entryTick - $seenTick;
-        $entryTick = $seenTick;
-        $entryCents = (int) $atSeen;
-      }
-    }
+  $seenCents = null;
+  if (orolado_click_tick_ok($seenTick, $arrivalTick)) {
+    $p = orolado_feed_price_at($assetId, $seenTick);
+    if ($p !== null && $p > 0) $seenCents = (int) $p;
   }
+  $meRow = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : $me;
+  $demoTrusted = $mode === 'demo' && $seenCents !== null && orolado_click_demo_trusted($meRow, $me);
+  $pick = orolado_trade_pick_entry($mode, $side, $arrivalTick, $arrivalCents, $seenTick, $seenCents, $demoTrusted);
+  $entryTick = $pick['tick'];
+  $entryCents = $pick['cents'];
+  $clickLag = $pick['lag'];
+  $clickMove = $pick['move'];
   $expiryTick = $entryTick + intdiv($duration * 1000, OROLADO_TICK_MS);
   $barrierCents = orolado_fair_barrier($assetId, $duration, $side, $payout, $entryCents);
 
@@ -260,6 +348,13 @@ function orolado_trade_place(array $me, array $req): array {
     $deb = orolado_trade_debit($payId, $oid, $stake);
     if (empty($deb['ok'])) {
       return ['ok' => false, 'reason' => ($deb['reason'] ?? '') === 'insufficient' ? 'Solde insuffisant' : 'Caisse indisponible, réessayez'];
+    }
+    if (!empty($deb['duplicate'])) {
+      // 2026-10-19 (audit, faille d'argent réel) : la mise de cet ordre a déjà été prise par une AUTRE demande
+      // (même id envoyé plusieurs fois en même temps). CETTE demande n'a rien débité : elle ne crée JAMAIS
+      // d'ordre (sinon elle pourrait l'enregistrer avec une autre mise / un autre sens que ceux payés) et ne
+      // rend JAMAIS rien (avant : « dupref_ » + clé au hasard → +mise par demande en trop, 100 $ → 400 $).
+      return orolado_trade_place_duplicate($uid, $oid, !empty($deb['refunded']));
     }
     $realAfter = $deb['real'];
   }
@@ -293,6 +388,8 @@ function orolado_trade_place(array $me, array $req): array {
     'arrivalTick' => $arrivalTick,
     'arrivalCents' => $arrivalCents,
   ];
+  // Clé de règlement rangée par joueur (voir orolado_trade_key) ; gardée dans l'ordre : elle ne change jamais.
+  if ($mode === 'real') $order['settleKey'] = orolado_trade_key('trs', $payId, $oid);
   $placed = with_db_lock(function ($box) use ($order, $uid, $mode, $stake, $realAfter, $clickMove) {
     $locked =& $box->db;
     if (!isset($locked['orders']) || !is_array($locked['orders'])) $locked['orders'] = [];
@@ -308,9 +405,9 @@ function orolado_trade_place(array $me, array $req): array {
       $bal = orolado_money($locked['vault'][$uid]['demo'] ?? 0);
       if ($stake > $bal + 0.009) return ['ok' => false, 'reason' => 'Solde insuffisant', 'skip_write' => true];
       $locked['vault'][$uid]['demo'] = orolado_money($bal - $stake);
-      // v2654 (A) : la DÉMO est surveillée aussi → un robot qui s'entraîne en démo est repéré avant le réel.
+      // DÉMO : compteurs à part (prix du clic en démo seulement) ; jamais dans le score robot du compte.
       if ($clickMove !== '' && isset($locked['users'][$uid]) && is_array($locked['users'][$uid])) {
-        $k = $clickMove === 'fav' ? 'clickFav' : 'clickUnfav';
+        $k = $clickMove === 'fav' ? 'clickFavDemo' : 'clickUnfavDemo';
         $locked['users'][$uid][$k] = (int) ($locked['users'][$uid][$k] ?? 0) + 1;
       }
     } else {
@@ -331,16 +428,22 @@ function orolado_trade_place(array $me, array $req): array {
     return ['ok' => true, 'order' => $order, 'vault' => $locked['vault'][$uid]];
   });
 
+  // Ici, en réel, CETTE demande a vraiment débité la mise (les doublons sont sortis plus haut, sans rien débiter).
   if (empty($placed['ok'])) {
-    // Mise prise mais ordre non enregistré : on la rend (clé dédiée, jamais deux fois).
-    if ($mode === 'real') orolado_trade_credit_once($payId, 'refund_' . $oid, $stake);
+    // Mise prise par CETTE demande mais ordre non enregistré (fichier impossible à ouvrir) : il n'existe ni dans
+    // le JSON ni dans Supabase (supabase_put_order vient après) → on la rend, clé fixe par joueur + ordre
+    // (jamais deux fois), et le marqueur de débit le note (un renvoi du même ordre ne la reprend pas).
+    if ($mode === 'real') {
+      if (orolado_trade_credit_once($payId, orolado_trade_key('trr', $payId, $oid), $stake) !== null) {
+        orolado_trade_debit_mark_refunded($payId, $oid);
+      }
+    }
     return ['ok' => false, 'reason' => $placed['reason'] ?? 'Ordre refusé'];
   }
   if (!empty($placed['duplicate'])) {
-    // Même ordre arrivé 2 fois EN MÊME TEMPS (réseau lent qui renvoie) : les deux demandes ont
-    // passé le contrôle d'avant et ont débité la mise, mais un seul trade existe. On rend la mise
-    // prise en trop (clé unique pour ce débit : jamais rendue deux fois).
-    if ($mode === 'real') orolado_trade_credit_once($payId, 'dupref_' . $oid . '_' . bin2hex(random_bytes(4)), $stake);
+    // L'ordre existe déjà alors que CETTE demande vient de débiter (marqueur de débit perdu) : on rend CE débit,
+    // clé fixe par joueur + ordre → une seule fois, quel que soit le nombre de demandes.
+    if ($mode === 'real') orolado_trade_credit_once($payId, orolado_trade_key('trd', $payId, $oid), $stake);
     return ['ok' => true, 'duplicate' => true, 'order' => orolado_trade_public($placed['order'])];
   }
 
@@ -407,7 +510,10 @@ function orolado_trade_settle(string $uid, string $oid): array {
       $credit = 0.0;
       $net = 0.0;
     }
-    $realAfter = orolado_trade_credit_once($payId, $oid, $credit);
+    // Clé de règlement : celle notée à l'ouverture (rangée par joueur) ; ordres ouverts avant ce changement :
+    // leur id, comme avant → chaque ordre garde UNE seule clé, donc un seul crédit.
+    $settleKey = (isset($o['settleKey']) && is_string($o['settleKey']) && $o['settleKey'] !== '') ? $o['settleKey'] : $oid;
+    $realAfter = orolado_trade_credit_once($payId, $settleKey, $credit);
     if ($realAfter === null) {
       if (function_exists('orolado_health_event')) {
         orolado_health_event('Trades', 'Le règlement d’un trade réel attend la base (nouvel essai automatique). Si ça dure, la base Supabase est peut-être en panne.', 'warn');
