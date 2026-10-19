@@ -147,3 +147,5 @@ html:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{overflow-x:clip!i
   html:root body #casinoModal .cg-step{width:32px!important;height:32px!important;min-width:32px!important;flex:0 0 32px!important}
   html:root body #casinoModal .cg-in input{font-size:15px!important;padding:0 20px 0 0!important;letter-spacing:-.02em}
 }
+/* v2817 (propriétaire : « CHOISIS UNE PORTE » sortait du bouton) : le texte du grand bouton rapetisse pour tenir sur une ligne. */
+html:root body #casinoModal .cs-go.cg-go > .cg-gol{display:block;max-width:100%;min-width:0;overflow:hidden;white-space:nowrap}

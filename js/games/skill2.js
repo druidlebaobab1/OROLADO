@@ -252,7 +252,7 @@
         btn.classList.remove('cash', 'wait');
         if (cls) btn.classList.add(cls);
         if (sub) { btn.innerHTML = '<span class="fit s2-b1"></span><span class="fit s2-b2"></span>'; K.setText(btn.firstChild, main); K.setText(btn.lastChild, sub); }
-        else { btn.innerHTML = ''; K.setText(btn, main); }
+        else { btn.innerHTML = '<span class="fit cg-gol"></span>'; K.setText(btn.firstChild, main); }
       }
       function paintHist() {
         $('s2Hist').innerHTML = hist.map(function (h) { var v = Math.abs(h); return '<i class="' + (h < 0 ? 'x' : v >= 10 ? 'hi' : v >= 2 ? 'mid' : 'lo') + '">' + xm(v) + '</i>'; }).join('');

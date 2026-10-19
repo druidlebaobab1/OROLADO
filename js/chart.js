@@ -3108,7 +3108,11 @@
     var rideCandleT = 0;
     if (!lineRd && camCandles && camCandles.length) rideCandleT = Number(camCandles[camCandles.length - 1].t) || 0;
     // v2358 : rond au clic (prix et heure du clic gardés dans shownPrice / shownMarks) : plus de suivi de la courbe.
-    var clickMode = shownPrice[trade.id] > 0 && shownMarks[trade.id] > 1;
+    // v2817 (propriétaire : « le trait s'affiche puis bouge ») : en RÉEL le serveur fixe l'entrée au prix de l'ARRIVÉE
+    // de l'ordre (sécurité v2814). Le rond ne se pose donc plus au clic : il reste collé au bout de la courbe
+    // (suivi v2353) jusqu'au vrai point d'entrée, et la zone + la ligne d'arrivée n'apparaissent qu'une fois
+    // confirmées, à leur vraie place : plus de double trait ni de sursaut. Démo : inchangé (prix du clic).
+    var clickMode = trade.mode !== 'real' && shownPrice[trade.id] > 0 && shownMarks[trade.id] > 1;
     if (clickMode) rideEntryT = 0;
     var riding = !clickMode && !(panMs > 0) && lastDrawnClose > 0 && (trade.pending || (rideEntryT > 0 && rideHeadT < rideEntryT));
     var rs = rideState[trade.id];
@@ -3159,7 +3163,7 @@
     // v2453 — chaque trade a sa zone (jusqu'à 3 à la fois), de plus en plus légère : 1er plein, 2e et 3e plus légers.
     // Dessin seulement : les prix, l'objectif et le résultat ne changent pas.
     var zoneK = idx === 0 ? 1 : idx === 1 ? 0.6 : 0.38;
-    if (idx < 3) {
+    if (idx < 3 && !(trade.pending && trade.mode === 'real')) {
       // Zone gagnante : au-dessus de la ligne (CALL) ou en dessous (PUT), très légère.
       var refP = bar > 0 ? bar : entry;
       var zy = priceToY(refP, pad, plotH, minP, maxP);
