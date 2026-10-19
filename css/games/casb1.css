@@ -1,0 +1,32 @@
+/* casb1 — Blackjack, Three Card Poker, Casino Hold'em, Niu Niu (owner request, round 6) */
+html:root body #casinoModal .m4 .m4-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;background:var(--m4bg,linear-gradient(180deg,#1B1442,#0E0A26))}
+html:root body #casinoModal .m4 .m4-pay{flex:0 0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;direction:ltr;position:relative;z-index:2}
+html:root body #casinoModal .m4 .m4-pay span{min-width:0;height:40px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 2px;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);backdrop-filter:blur(2px);transition:background .25s,box-shadow .25s,transform .25s}
+html:root body #casinoModal .m4 .m4-pay svg{width:20px;height:20px;flex:none;overflow:visible}
+html:root body #casinoModal .m4 .m4-pay b{display:block;max-width:100%;white-space:nowrap;font:900 clamp(9px,2.9vw,12.5px)/1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .m4 .m4-pay span.on{background:linear-gradient(180deg,#34D399,#15803D);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px -4px #22C55E;transform:translateY(-1px)}
+html:root body #casinoModal .m4 .m4-pay span:last-child b{color:#FDE68A}
+html:root body #casinoModal .m4 .m4-pay span.on:last-child{background:linear-gradient(180deg,#FDE68A,#D97706);box-shadow:0 0 18px -3px #FBBF24}
+html:root body #casinoModal .m4 .m4-pay span.on:last-child b{color:#fff}
+html:root body #casinoModal .m4 .m4-scene{position:relative;flex:1 1 auto;min-height:0;margin:0 -8px -8px}
+html:root body #casinoModal .m4 .m4-svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:hidden}
+html:root body #casinoModal .m4.m4-busy .cg-opts{pointer-events:none}
+html:root body #casinoModal .m4 .cg-opts > button b{display:block;max-width:100%;white-space:nowrap;font:900 14px/1.05 var(--cg-font);color:#fff}
+html:root body #casinoModal .m4 .cg-opts > button small{display:block;max-width:100%;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+@media (max-height:640px){html:root body #casinoModal .m4 .m4-pay span{height:34px}html:root body #casinoModal .m4 .m4-pay svg{width:16px;height:16px}}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .m4 .m4-stage{flex-direction:row}
+  html:root body #casinoModal .m4 .m4-pay{grid-auto-flow:row;grid-auto-rows:minmax(0,1fr);width:64px}
+  html:root body #casinoModal .m4 .m4-pay span{height:auto;flex-direction:row;gap:3px}
+  html:root body #casinoModal .m4 .m4-pay svg{width:14px;height:14px}
+  html:root body #casinoModal .m4 .m4-scene{margin:-8px -8px -8px 0}
+}
+html:root body #casinoModal .cb .cb-who{position:absolute;left:10px;max-width:34%;font:900 11px/1.2 var(--cg-font);font-style:normal;color:#FDE68A;opacity:.8;white-space:nowrap;letter-spacing:.3px;text-transform:uppercase;pointer-events:none;z-index:1}
+html[dir=rtl] body #casinoModal .cb .cb-who{left:auto;right:10px}
+html:root body #casinoModal .cb .cb-glow > rect:first-child{stroke:#FDE68A;stroke-width:2.6}
+html:root body #casinoModal .cb .cg-opts > button svg{display:block;width:26px;height:22px;margin:0 auto 2px;overflow:visible}
+html:root body #casinoModal .cb .cg-opts > button{padding-top:3px!important;padding-bottom:3px!important}
+html:root body #casinoModal .cb .cg-opts > button > b{display:block;max-width:100%;white-space:nowrap;font:900 14px/1.05 var(--cg-font);color:#fff}
+html:root body #casinoModal .cb .cg-opts > button small{display:block;max-width:100%;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+html:root body #casinoModal .m4-blackjack,html:root body #casinoModal .m4-holdem,html:root body #casinoModal .m4-niuniu,html:root body #casinoModal .m4-tcpoker{--m4bg:linear-gradient(180deg,#0B1220,#111827)}

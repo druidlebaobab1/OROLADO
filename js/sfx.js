@@ -193,6 +193,10 @@
     stack: 'build', starbridge: 'build', cupcake: 'build',
     airstrike: 'shoot', zombiesiege: 'shoot', brickbreak: 'arcade', neonsnake: 'arcade'
   };
+  // casb (round 6) : familles des jeux de tables, cartes, dés et hasard d'arcade
+  Object.assign(MAP, { blackjack: 'cards', tcpoker: 'cards', holdem: 'cards', niuniu: 'cards', acerace: 'cards', trente: 'cards', clocksol: 'cards',
+    yatzy: 'dice', crownanchor: 'dice', derby: 'dice', ceelo: 'dice', shipcrew: 'dice', dblroul: 'wheel', twinwheel: 'wheel', twoup: 'coin', fantan: 'cups',
+    pachinko: 'balls', skeeball: 'balls', ladder: 'pick', ducks: 'cups', dreidel: 'wheel', oracle: 'show', rpsduel: 'cups', cometqueen: 'crash' });
   // notes de départ (do5, ré5, mi5, fa5, sol5, la4, si4…) : chaque jeu tire la sienne, son motif et son tempo
   var ROOTS = [3, 5, 7, 8, 10, 0, 2, -2, 1];
   var PATS = [[0, 4, 7, 12], [0, 2, 4, 7, 12], [4, 7, 12, 16], [0, 7, 12, 16], [7, 9, 12, 16], [0, 4, 9, 12], [0, 4, 7, 9, 12], [2, 4, 7, 14]];
