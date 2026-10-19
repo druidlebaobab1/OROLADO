@@ -2089,6 +2089,12 @@ if ($isAjax) {
       if (!empty($r['ok'])) { $ldb = admin_local_db(); foreach ($r['bets'] as $i => $b) { $u = (array) ($ldb['users'][$b['uid']] ?? []); $r['bets'][$i]['name'] = (string) ($u['displayName'] ?? $u['name'] ?? ''); $r['bets'][$i]['email'] = (string) ($u['email'] ?? ''); $r['bets'][$i]['publicId'] = (string) ($u['publicId'] ?? ''); } }
       admin_json($r);
     }
+    // v2810 : remettre les cotes à jour (question de prix : rouvre 72 h au plus) et plafond de mises par choix
+    if ($action === 'sp_odds') {
+      $r = sp_admin_odds((string) ($req['id'] ?? ''), array_map('floatval', (array) ($req['odds'] ?? [])), isset($req['cap']) && $req['cap'] !== '' && $req['cap'] !== null ? (float) $req['cap'] : null);
+      if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'sports', 0, 'Cotes mises à jour : ' . (string) ($req['id'] ?? '') . ' ' . json_encode($req['odds'] ?? []) . (isset($req['cap']) ? ' plafond ' . (string) $req['cap'] : ''));
+      admin_json($r);
+    }
     if ($action === 'sp_close') admin_json(sp_admin_close((string) ($req['id'] ?? '')));
     if ($action === 'sp_settle') admin_json(sp_admin_settle(admin_local_db(), (string) ($req['id'] ?? ''), (string) ($req['k'] ?? '')));
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
@@ -3461,7 +3467,8 @@ setInterval(() => {
     const card = (e, mode) => {
       const nb = Object.values(e.exp || {}).reduce((s, x) => s + (x.n || 0), 0);
       const head = '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b>' + (ICO[e.sport] || '🏆') + ' ' + esc(e.title) + '</b><span class="muted" style="white-space:nowrap">' + nb + ' coupon(s)</span></div>' +
-        '<div class="muted" style="margin:2px 0 6px">' + esc(e.league || '') + ' · paris fermés ' + when(e.start) + (e.endAt ? ' · fin ' + when(e.endAt) : '') + '</div>';
+        '<div class="muted" style="margin:2px 0 6px">' + esc(e.league || '') + ' · paris fermés ' + when(e.close || e.start) + (e.endAt ? ' · fin ' + when(e.endAt) : '') +
+        (mode !== 'done' && e.pricedAt ? ' · cotes du ' + when(e.pricedAt) : '') + (mode !== 'done' && e.capEff ? ' · plafond ' + m2(e.capEff) + ' $ par choix' : '') + (mode !== 'done' && e.isQ ? ' · simple seulement' : '') + '</div>';
       // v2807 : bouton « qui a gagné / perdu » (liste des paris de l'événement) + résumé gagnants / perdants
       const nbA = e.nb || nb;
       const who = nbA ? '<button class="mini" type="button" data-who="' + esc(e.id) + '">👥 Voir les ' + nbA + ' pari(s)' + (mode === 'done' ? ' : gagnants / perdants' : '') + '</button><div class="spWho" data-whobox="' + esc(e.id) + '"></div>' : '';
@@ -3473,7 +3480,7 @@ setInterval(() => {
       }
       const opts = e.opts.map(o => { const x = (e.exp && e.exp[o.k]) || {}; return '<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.06);align-items:center"><span>' + esc(o.label) + ' <b style="color:#FFD27A">' + Number(o.odd).toFixed(2) + '</b></span><span class="muted">' + (x.n || 0) + ' · misé ' + m2(x.in) + (x.risk ? ' · à payer ' + m2(x.risk) : '') + '</span>' + (mode === 'todo' ? '<button class="mini ok" type="button" data-set="' + esc(e.id) + '" data-k="' + esc(o.k) + '">✅ ' + esc(o.label) + ' a gagné</button>' : '') + '</div>'; }).join('');
       return '<div class="nt-card" style="margin-bottom:8px' + (mode === 'todo' ? ';border-color:rgba(251,191,36,.7)' : '') + '">' + head + opts +
-        (mode === 'todo' ? '<button class="mini" type="button" data-set="' + esc(e.id) + '" data-k="void">↺ Match nul / annulé → mises rendues</button>' : (e.status === 'open' ? '<button class="mini" type="button" data-close="' + esc(e.id) + '">Fermer les paris maintenant</button>' : '<span class="muted">Paris fermés</span>')) + ' ' + who + '</div>';
+        (mode === 'todo' ? '<button class="mini" type="button" data-set="' + esc(e.id) + '" data-k="void">↺ Match nul / annulé → mises rendues</button>' : (e.status === 'open' ? '<button class="mini" type="button" data-close="' + esc(e.id) + '">Fermer les paris maintenant</button> <button class="mini" type="button" data-odds="' + esc(e.id) + '">✏️ Cotes / plafond</button><div data-oddsbox="' + esc(e.id) + '"></div>' : '<span class="muted">Paris fermés</span>')) + ' ' + who + '</div>';
     };
     $c('spList').innerHTML =
       '<h4 style="margin:6px 0">🔔 À valider (' + todo.length + ')</h4>' + (todo.length ? '<p class="muted" style="margin:0 0 6px">Ces événements sont finis : vérifiez le vrai résultat, puis touchez le gagnant. Les gagnants sont payés une seule fois.</p>' + todo.map(e => card(e, 'todo')).join('') : '<p class="muted">Rien à valider pour l’instant. Vous recevrez une notification quand un événement sera fini.</p>') +
@@ -3493,6 +3500,23 @@ setInterval(() => {
         : '<p class="muted">Aucun pari.</p>';
     });
     $c('spList').querySelectorAll('[data-close]').forEach(b => b.onclick = async () => { if (!confirm('Fermer les paris de ce match ?')) return; await ajax({action:'sp_close', id:b.dataset.close}); list(); });
+    // v2810 : remettre les cotes à jour (les paris déjà pris gardent LEUR cote) + plafond de mises par choix
+    $c('spList').querySelectorAll('[data-odds]').forEach(b => b.onclick = () => {
+      const e = j.events.find(x => x.id === b.dataset.odds), box = $c('spList').querySelector('[data-oddsbox="' + b.dataset.odds + '"]'); if (!e || !box) return;
+      if (box.innerHTML) { box.innerHTML = ''; return; }
+      box.innerHTML = '<div style="margin-top:6px;padding:8px;border:1px solid rgba(255,255,255,.12);border-radius:8px">' +
+        e.opts.map(o => '<label style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin:3px 0"><span>' + esc(o.label) + '</span><input class="spEdO" data-k="' + esc(o.k) + '" type="number" step="0.01" min="1.01" value="' + Number(o.odd).toFixed(2) + '" style="width:90px"></label>').join('') +
+        '<label style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin:3px 0"><span class="muted">Plafond des mises par choix ($, vide = ' + (e.isQ ? '500' : 'aucun') + ')</span><input class="spEdCap" type="number" step="1" min="0" value="' + (e.cap ? e.cap : '') + '" style="width:90px"></label>' +
+        '<p class="muted" style="margin:4px 0">Cote = 0,94 ÷ chance (marge maison 6 %).' + (e.isPx ? ' Question de prix : les paris rouvrent pour 72 h au plus.' : '') + '</p>' +
+        '<button class="mini ok" type="button" data-oddsave="1">Enregistrer les cotes</button> <span class="muted" data-oddsst="1"></span></div>';
+      box.querySelector('[data-oddsave]').onclick = async () => {
+        const odds = {}; box.querySelectorAll('.spEdO').forEach(i => { odds[i.dataset.k] = parseFloat(String(i.value).replace(',', '.')); });
+        const cv = box.querySelector('.spEdCap').value.trim();
+        const r = await ajax({action:'sp_odds', id:e.id, odds, cap: cv === '' ? 0 : parseFloat(cv)});
+        if (!r.ok) { box.querySelector('[data-oddsst]').textContent = r.reason || 'Échec'; return; }
+        list();
+      };
+    });
     $c('spList').querySelectorAll('[data-set]').forEach(b => b.onclick = async () => {
       const lbl = b.dataset.k === 'void' ? 'Match NUL ou ANNULÉ : toutes les mises sur ce match sont rendues (×1). Confirmer ?' : 'Confirmer : ' + b.textContent.replace('✅ ', '') + ' ? Les gagnants seront payés tout de suite.';
       if (!confirm(lbl)) return;

@@ -15,6 +15,80 @@ const SP_MAX_SEL = 10;
 const SP_MAX_WIN = 6000.0;        // v2779 (propriétaire) : gain maximal caché par coupon = 6 000 $ ; AUCUNE mise maximale
 const SP_DEFAULT_MAX_STAKE = 50.0; // (plus utilisé depuis v2779 : pas de mise maximale ; gardé pour les anciens matchs)
 const SP_MY_BETS = 300;            // v2779 : « Mes paris » montre les 300 derniers coupons
+/*
+ * v2810 — SÉCURITÉ ARGENT des prédictions (audit du 19/10/2026) :
+ *  1. Combinés : une question (type « event » / crypto / politique) se joue en SIMPLE seulement ; et deux choix du même
+ *     « groupe de corrélation » (même match / mêmes équipes le même jour, même actif, même GP…) sont refusés dans un coupon.
+ *  2. Cotes périmées : une question de PRIX (crypto, Bourse, or…) ferme au plus tard 72 h après la pose de ses cotes
+ *     (pricedAt) ; l'admin peut remettre des cotes à jour (sp_admin_odds), ce qui rouvre une fenêtre de 72 h.
+ *     Plafond de mises par choix sur chaque question (500 $ par défaut, réglable par événement : champ « cap »).
+ *  3. Gains arrondis au cent INFÉRIEUR (jamais au plus proche).
+ */
+const SP_Q_CAP = 500.0;            // total des mises réelles par choix d'une question (0 sur un match = pas de plafond)
+const SP_PRICE_TTL = 259200;       // 72 h : durée maximale d'ouverture d'une question de prix après la pose de ses cotes
+const SP_Q_SPORTS = ['event', 'crypto', 'politique'];
+function sp_floor2(float $v): float { return floor($v * 100 + 1e-6) / 100; }
+function sp_is_question(array $e): bool { return in_array((string) ($e['sport'] ?? ''), SP_Q_SPORTS, true); }
+/** L'actif d'une question de prix (btc, eth, gold, tesla…), '' si aucun. */
+function sp_asset(array $e): string {
+  foreach ((array) ($e['logos'] ?? []) as $l) if (preg_match('/^q:(btc|eth|sol|xrp|doge|gold)$/', (string) $l, $m)) return $m[1];
+  $t = sp_lower((string) ($e['title'] ?? '') . ' ' . (string) ($e['league'] ?? ''));
+  foreach (['btc' => '/bitcoin|\bbtc\b/u', 'eth' => '/ethereum|\beth\b|\bether\b/u', 'sol' => '/solana|\bsol\b/u', 'xrp' => '/\bxrp\b|ripple/u', 'doge' => '/dogecoin|\bdoge\b/u',
+    'gold' => '/\bgold\b|lbma|l’or\b|l\'or\b|\bor\s+au-dessus/u', 'spx' => '/s&p|sp500|s&amp;p/u', 'ndx' => '/nasdaq/u', 'dji' => '/dow jones/u', 'cac' => '/cac ?40/u',
+    'tsla' => '/tesla/u', 'aapl' => '/apple/u', 'nvda' => '/nvidia/u', 'msft' => '/microsoft/u', 'amzn' => '/amazon/u', 'goog' => '/google|alphabet/u', 'meta' => '/\bmeta\b/u'] as $k => $rx)
+    if (preg_match($rx, $t)) return $k;
+  return '';
+}
+/** Question de PRIX (cote vite périmée) : crypto, action, indice, or… */
+function sp_is_price(array $e): bool {
+  if (!sp_is_question($e)) return false;
+  if (($e['sport'] ?? '') === 'crypto') return true;
+  foreach ((array) ($e['logos'] ?? []) as $l) if (preg_match('/^q:(btc|eth|sol|xrp|doge|chart|gold)$/', (string) $l)) return true;
+  if (sp_asset($e) !== '') return true;
+  $t = sp_lower((string) ($e['title'] ?? '') . ' ' . (string) ($e['league'] ?? ''));
+  return (bool) preg_match('/crypto|bourse|\bprix\b|\bprice\b|\bcours\b|cotation|au-dessus de|en dessous de|au-dessous de|\babove\b|\bbelow\b/u', $t);
+}
+/** Groupes de corrélation d'un événement : deux choix d'un même groupe ne vont jamais dans le même coupon. */
+function sp_corr_groups(array $e): array {
+  $g = [];
+  if (!empty($e['grp'])) $g[] = 'x:' . sp_lower((string) $e['grp']);
+  $t = sp_lower((string) ($e['title'] ?? '') . ' ' . (string) ($e['league'] ?? ''));
+  $day = gmdate('Y-m-d', (int) ($e['start'] ?? 0));
+  if (sp_is_question($e)) {
+    $g[] = 'q'; // toutes les questions ensemble (de toute façon : simples seulement)
+    if (sp_is_price($e)) {
+      $g[] = 'px';
+      $a = sp_asset($e);
+      if ($a !== '') $g[] = 'asset:' . $a;
+      if (in_array($a, ['btc', 'eth', 'sol', 'xrp', 'doge'], true) || ($e['sport'] ?? '') === 'crypto' || str_contains($t, 'crypto')) $g[] = 'crypto';
+      elseif ($a !== '' && $a !== 'gold') $g[] = 'stocks';
+    }
+    if (preg_match('/\bf1\b|formule 1|formula 1|grand prix|\bgp\b/u', $t)) { $g[] = 'f1'; $g[] = 'f1:' . $day; }
+    if (preg_match('/ballon d|award|oscar|trophée|trophy|\bmvp\b|golden boy|élection|election/u', $t)) $g[] = 'award';
+  }
+  $tm = sp_title_teams((string) ($e['title'] ?? ''));
+  if ($tm) {
+    $n = array_map(static fn($x) => trim((string) preg_replace('/[^\p{L}\p{N}]+/u', '', (string) preg_replace('/\b(fc|as|ac|cf|sc|ss|us|rc|ogc|ca|afc|cd|ud|sl|sk|bv|vfb|rb)\b\.?/u', '', sp_lower((string) $x)))), $tm);
+    sort($n);
+    $g[] = 'm:' . $day . ':' . implode('|', $n); // même match (publié deux fois, dans un sens ou dans l'autre) le même jour
+  } elseif (!sp_is_question($e)) $g[] = 'm:' . $day . ':' . sp_lower((string) ($e['title'] ?? ''));
+  return array_values(array_unique($g));
+}
+/** Heure réelle de fermeture des paris : le début, ou plus tôt pour une question de prix (72 h après la pose des cotes). */
+function sp_close_at(array $e): int {
+  $c = (int) ($e['start'] ?? 0);
+  if (sp_is_price($e)) {
+    $p = (int) ($e['pricedAt'] ?? $e['createdAt'] ?? 0);
+    if ($p > 0) $c = min($c, $p + SP_PRICE_TTL);
+  }
+  return $c;
+}
+/** Plafond des mises réelles par choix (0 = aucun). Questions : 500 $ par défaut ; champ « cap » réglable par l'admin. */
+function sp_cap(array $e): float {
+  $c = (float) ($e['cap'] ?? 0);
+  if ($c > 0) return $c;
+  return sp_is_question($e) ? SP_Q_CAP : 0.0;
+}
 
 function sp_dir(): string { $d = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'sports'; if (!is_dir($d)) @mkdir($d, 0750, true); return $d; }
 function sp_with(string $name, callable $fn) {
@@ -41,9 +115,10 @@ function sp_public_events(int $now = 0): array {
   if (!$filled && PHP_SAPI !== 'cli') { $filled = true; register_shutdown_function(static function () { if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } } try { sp_logo_fill_one(); } catch (Throwable $e) { /* jamais bloquant */ } }); }
   $out = [];
   foreach (sp_events() as $e) {
-    $open = $e['status'] === 'open' && $now < (int) $e['start'];
+    $close = sp_close_at($e); // v2810 : question de prix fermée 72 h après ses cotes
+    $open = $e['status'] === 'open' && $now < $close;
     if (!$open && !($e['status'] === 'settled' && (int) ($e['settledAt'] ?? 0) > $now - 3 * 86400)) continue;
-    $out[] = ['id' => $e['id'], 'title' => $e['title'], 'league' => $e['league'], 'sport' => $e['sport'], 'start' => (int) $e['start'], 'open' => $open,
+    $out[] = ['id' => $e['id'], 'title' => $e['title'], 'league' => $e['league'], 'sport' => $e['sport'], 'start' => $close, 'open' => $open, 'q' => sp_is_question($e), 'grp' => sp_corr_groups($e),
       'opts' => array_map(static fn($o) => ['k' => $o['k'], 'label' => $o['label'], 'odd' => (float) $o['odd']], $e['opts']), 'result' => $e['result'] ?? null, 'status' => $e['status'], 'logos' => array_values(array_map('strval', (array) ($e['logos'] ?? []))), 'i18n' => !empty($e['i18n']) ? (object) $e['i18n'] : null];
   }
   usort($out, static fn($a, $b) => [$b['open'], $a['start']] <=> [$a['open'], $b['start']]);
@@ -81,17 +156,32 @@ function sp_admin_save(array $in): array {
   if ($i1 !== '' || $i2 !== '') { $logos = [$i1 !== '' ? $i1 : ($logos[0] ?? ''), $i2 !== '' ? $i2 : ($logos[1] ?? '')]; }
   $endAt = (int) ($in['endAt'] ?? 0); if ($endAt && $endAt < $start) $endAt = 0;
   $tr = []; foreach ((array) ($in['i18n'] ?? []) as $lg => $tx) if (preg_match('/^[a-z]{2}$/', (string) $lg) && is_string($tx) && $tx !== '') $tr[(string) $lg] = sp_clean($tx, 120); // v2789 : titre traduit // v2787 : heure de fin réelle (pour prévenir l'admin au bon moment)
-  return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake, $logos, $endAt, $tr) {
+  // v2810 : date de la pose des cotes (une question de prix ferme au plus tard 72 h après) et plafond de mises par choix
+  $now = time();
+  $pricedAt = (int) ($in['pricedAt'] ?? 0); $pricedAt = $pricedAt > 0 ? min($pricedAt, $now) : $now;
+  $cap = max(0.0, min(100000.0, round((float) ($in['cap'] ?? 0), 2)));
+  return sp_with('events.json', static function (array &$s) use ($id, $title, $in, $start, $opts, $maxStake, $logos, $endAt, $tr, $pricedAt, $cap) {
+    $fix = static function (array $e) use ($pricedAt): array { // v2810 : question de prix → fermeture ≤ cotes + 72 h (heure de réponse gardée dans endAt)
+      $e['pricedAt'] = $pricedAt;
+      if (!sp_is_price($e)) return $e;
+      $e['closeMax'] = (int) $e['start'];
+      if (empty($e['endAt'])) $e['endAt'] = (int) $e['start'];
+      $e['start'] = min((int) $e['start'], $pricedAt + SP_PRICE_TTL);
+      return $e;
+    };
     foreach ((array) ($s['e'] ?? []) as $i => $e) {
       if ($e['id'] === $id) {
         if ($e['status'] !== 'open') return ['ok' => false, 'reason' => 'Match déjà fermé ou réglé'];
+        // v2810 : les clés des choix restent les mêmes (oD du nul…) : un pari déjà pris garde SON choix
+        $old = array_values((array) ($e['opts'] ?? []));
+        if (count($old) === count($opts)) foreach ($opts as $j => $o) $opts[$j]['k'] = (string) $old[$j]['k'];
         // cotes modifiables tant qu'aucun pari n'est pris sur l'ancienne cote (les paris gardent LEUR cote de toute façon)
-        $s['e'][$i] = array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake, 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []) + ($tr ? ['i18n' => $tr] : []));
+        $s['e'][$i] = $fix(array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake, 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []) + ($tr ? ['i18n' => $tr] : []) + ($cap > 0 ? ['cap' => $cap] : [])));
         return ['ok' => true, 'id' => $id];
       }
     }
-    $s['e'][] = ['id' => $id, 'title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start,
-      'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time(), 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []) + ($tr ? ['i18n' => $tr] : []);
+    $s['e'][] = $fix(['id' => $id, 'title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start,
+      'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time(), 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []) + ($tr ? ['i18n' => $tr] : []) + ($cap > 0 ? ['cap' => $cap] : []));
     // on garde au plus 300 matchs (les plus anciens réglés partent)
     if (count($s['e']) > 300) $s['e'] = array_slice($s['e'], -300);
     return ['ok' => true, 'id' => $id];
@@ -380,6 +470,12 @@ function sp_autoseed_once(): void {
     try { sp_admin_seed(sp_suggestions3()); } catch (Throwable $e) { @unlink($flag3); }
   }
   sp_draw_once(); // v2802 : le nul revient au football (matchs encore sans pari)
+  // v2810 : questions de prix aux cotes périmées → fermées 72 h après leurs cotes (une seule fois ; la règle s'applique aussi à chaque pari)
+  $flag4 = sp_dir() . DIRECTORY_SEPARATOR . 'stale-2026-10.done';
+  if (!is_file($flag4)) {
+    @file_put_contents($flag4, (string) time());
+    try { sp_stale_fix(); } catch (Throwable $e) { @unlink($flag4); }
+  }
 }
 /**
  * v2802 (propriétaire) : le NUL revient au football. Les matchs de foot ouverts « nul = remboursé » (2 choix) sur lesquels
@@ -469,15 +565,87 @@ function sp_remind_admin(int $now): void {
 function sp_admin_seed(?array $list = null): array {
   $have = [];
   foreach (sp_events() as $e) if (($e['status'] ?? '') === 'open') $have[sp_lower((string) $e['title'])] = 1;
-  $added = 0; $skipped = 0;
+  $added = 0; $skipped = 0; $pm = sp_seed_priced();
   foreach (($list ?? sp_suggestions()) as $row) {
     [$title, $league, $sport, $start, $opts, $logos] = $row; $endAt = (int) ($row[6] ?? 0); $tr = (array) ($row[7] ?? []);
-    if (isset($have[sp_lower($title)]) || $start < time() + 120) { $skipped++; continue; }
-    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 1000, 'logos' => $logos, 'noFetch' => true, 'endAt' => $endAt, 'i18n' => $tr,
+    // v2810 : les cotes des listes datent de leur vérification (17-18/10) : une question de prix déjà périmée n'est pas publiée
+    $pAt = $pm[sp_lower($title)] ?? time();
+    $close = sp_close_at(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'logos' => $logos, 'pricedAt' => $pAt]);
+    if (isset($have[sp_lower($title)]) || $close < time() + 120) { $skipped++; continue; }
+    $r = sp_admin_save(['title' => $title, 'league' => $league, 'sport' => $sport, 'start' => $start, 'maxStake' => 1000, 'logos' => $logos, 'noFetch' => true, 'endAt' => $endAt, 'i18n' => $tr, 'pricedAt' => $pAt,
       'opts' => array_map(static fn($o) => ['label' => $o[0], 'odd' => $o[1]], $opts)]);
     if (!empty($r['ok'])) $added++; else $skipped++;
   }
   return ['ok' => true, 'added' => $added, 'skipped' => $skipped];
+}
+/** v2810 : date de pose des cotes des listes toutes prêtes (titre en minuscules → horodatage) : 1re et 2e séries le 17/10, 3e le 18/10. */
+function sp_seed_priced(): array {
+  static $m = null;
+  if ($m !== null) return $m;
+  $m = [];
+  foreach ([[sp_suggestions(), '2026-10-17 00:00'], [sp_suggestions2(), '2026-10-17 00:00'], [sp_suggestions3(), '2026-10-18 00:00']] as [$list, $d])
+    foreach ($list as $row) { $k = sp_lower((string) $row[0]); $m[$k] = min($m[$k] ?? PHP_INT_MAX, (int) strtotime($d . ' UTC')); }
+  return $m;
+}
+/**
+ * v2810 — cotes périmées : chaque question de PRIX encore ouverte ferme au plus tard 72 h après la pose de ses cotes.
+ * Idempotent. Seuls changent : l'heure de fermeture (seulement PLUS TÔT, jamais dans le passé), et les repères pricedAt /
+ * closeMax / endAt (heure de la réponse, pour que l'admin soit prévenu au bon moment). Cotes, choix et paris ne bougent pas.
+ */
+function sp_stale_fix(int $now = 0): int {
+  $now = $now ?: time();
+  $pm = sp_seed_priced();
+  return (int) sp_with('events.json', static function (array &$s) use ($now, $pm) {
+    $n = 0;
+    foreach ((array) ($s['e'] ?? []) as $i => $e) {
+      if (($e['status'] ?? '') !== 'open' || !sp_is_price($e)) continue;
+      $start = (int) $e['start'];
+      if (empty($e['pricedAt'])) {
+        $p = (int) ($e['createdAt'] ?? 0) ?: $now;
+        if (isset($pm[sp_lower((string) $e['title'])])) $p = min($p, $pm[sp_lower((string) $e['title'])]);
+        $e['pricedAt'] = $p;
+      }
+      if (empty($e['closeMax'])) $e['closeMax'] = $start;
+      if (empty($e['endAt'])) $e['endAt'] = $start; // l'ancienne fermeture : l'admin n'est pas prévenu plus tôt qu'avant
+      $close = min($start, (int) $e['pricedAt'] + SP_PRICE_TTL);
+      if ($close < $start && $now < $start) $e['start'] = max($close, $now); // plus tôt seulement ; déjà dépassé = fermé tout de suite
+      if ($e !== $s['e'][$i]) { $s['e'][$i] = $e; $n++; }
+    }
+    return $n;
+  });
+}
+/**
+ * v2810 — Admin : REMET À JOUR les cotes d'un événement ouvert ($odds = [clé du choix => cote]) et, au besoin, son plafond
+ * de mises par choix ($cap, 0 = défaut). Les clés des choix ne changent pas ; les paris déjà pris gardent LEUR cote.
+ * La date des cotes repart de maintenant : une question de prix rouvre pour 72 h au plus (jamais après sa fermeture d'origine).
+ */
+function sp_admin_odds(string $eid, array $odds, ?float $cap = null, int $now = 0): array {
+  $now = $now ?: time();
+  return sp_with('events.json', static function (array &$s) use ($eid, $odds, $cap, $now) {
+    foreach ((array) ($s['e'] ?? []) as $i => $e) {
+      if ($e['id'] !== $eid) continue;
+      if ($e['status'] !== 'open') return ['ok' => false, 'reason' => 'Événement fermé ou réglé'];
+      $inv = 0.0;
+      foreach ($e['opts'] as $j => $o) {
+        $v = isset($odds[$o['k']]) ? round((float) $odds[$o['k']], 2) : (float) $o['odd'];
+        if ($v < 1.01 || $v > 100) return ['ok' => false, 'reason' => 'Cote invalide : ' . $o['label']];
+        $e['opts'][$j]['odd'] = $v; $inv += 1 / $v;
+      }
+      if ($inv < 1.0 - 1e-9) return ['ok' => false, 'reason' => 'Cotes trop hautes : la maison perdrait à coup sûr (somme des 1/cote < 1). Marge conseillée : 6 % (cote = 0,94 ÷ chance).'];
+      if ($cap !== null) { $c = max(0.0, min(100000.0, round($cap, 2))); if ($c > 0) $e['cap'] = $c; else unset($e['cap']); }
+      $e['pricedAt'] = $now;
+      if (sp_is_price($e)) {
+        $max = (int) ($e['closeMax'] ?? 0) ?: (int) $e['start'];
+        $e['closeMax'] = $max;
+        if (empty($e['endAt'])) $e['endAt'] = $max;
+        $e['start'] = min($max, $now + SP_PRICE_TTL);
+        if ($e['start'] <= $now) return ['ok' => false, 'reason' => 'Trop tard : la fermeture prévue est passée'];
+      }
+      $s['e'][$i] = $e;
+      return ['ok' => true, 'id' => $eid, 'start' => (int) $e['start'], 'opts' => $e['opts'], 'cap' => sp_cap($e)];
+    }
+    return ['ok' => false, 'reason' => 'Match introuvable'];
+  });
 }
 /** Les deux équipes d'un titre « A - B » / « A vs B » (comme l'affichage du joueur). */
 function sp_title_teams(string $t): array {
@@ -496,15 +664,20 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   $sel = array_slice(array_values($sel), 0, SP_MAX_SEL + 1);
   if (!$sel || count($sel) > SP_MAX_SEL) return ['ok' => false, 'reason' => 'param'];
   $ev = []; foreach (sp_events() as $e) $ev[$e['id']] = $e;
-  $picked = []; $odd = 1.0; $seen = [];
+  $picked = []; $odd = 1.0; $seen = []; $grp = []; $caps = [];
+  $multi = count($sel) > 1;
   foreach ($sel as $s) {
     $eid = (string) ($s['ev'] ?? $s[0] ?? ''); $k = (string) ($s['k'] ?? $s[1] ?? '');
     $e = $ev[$eid] ?? null;
     if (!$e || isset($seen[$eid])) return ['ok' => false, 'reason' => 'param'];
-    if ($e['status'] !== 'open' || $now >= (int) $e['start']) return ['ok' => false, 'reason' => 'closed'];
+    if ($e['status'] !== 'open' || $now >= sp_close_at($e)) return ['ok' => false, 'reason' => 'closed']; // v2810 : question de prix fermée 72 h après ses cotes
     $o = null; foreach ($e['opts'] as $oo) if ($oo['k'] === $k) $o = $oo;
     if (!$o) return ['ok' => false, 'reason' => 'param'];
+    // v2810 : une question (prédiction) se joue en SIMPLE seulement ; jamais deux choix d'un même groupe dans un coupon
+    if ($multi && sp_is_question($e)) return ['ok' => false, 'reason' => 'single'];
+    foreach (sp_corr_groups($e) as $g) { if (isset($grp[$g])) return ['ok' => false, 'reason' => 'corr']; $grp[$g] = 1; }
     $seen[$eid] = 1;
+    if (($c = sp_cap($e)) > 0) $caps[$eid . '|' . $k] = $c;
     $picked[] = ['ev' => $eid, 'k' => $k, 'odd' => (float) $o['odd'], 't' => $e['title'], 'l' => $o['label']];
     $odd *= (float) $o['odd'];
   }
@@ -512,9 +685,36 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   // v2779 (propriétaire) : pas de mise maximale ; seul le GAIN d'un coupon est plafonné (6 000 $)
   if ($mode === 'real' && $stake * $odd > SP_MAX_WIN + 1e-9) return ['ok' => false, 'reason' => 'maxWin', 'maxStake' => floor(SP_MAX_WIN / $odd * 100) / 100];
   $ref = 'sp_' . bin2hex(random_bytes(9));
+  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => sp_floor2(min(SP_MAX_WIN, $stake * $odd)), 'sel' => $picked, 'status' => 'open', 'at' => $now];
+  // v2810 : plafond de mises par choix — vérifié ET réservé sous le verrou des paris (deux paris en même temps ne passent pas tous les deux)
+  if ($mode === 'real' && $caps) {
+    $res = sp_with('bets.json', static function (array &$s) use ($bet, $caps) {
+      $used = [];
+      foreach ((array) ($s['b'] ?? []) as $b) {
+        if (($b['mode'] ?? '') !== 'real' || ($b['status'] ?? '') === 'void') continue;
+        foreach ((array) ($b['sel'] ?? []) as $x) { $key = ($x['ev'] ?? '') . '|' . ($x['k'] ?? ''); if (isset($caps[$key])) $used[$key] = ($used[$key] ?? 0) + (float) $b['stake']; }
+      }
+      $left = PHP_FLOAT_MAX;
+      foreach ($caps as $key => $c) $left = min($left, $c - ($used[$key] ?? 0));
+      if ($bet['stake'] > $left + 1e-9) return ['ok' => false, 'reason' => 'cap', 'maxStake' => max(0.0, sp_floor2($left))];
+      $bet['status'] = 'pend'; $s['b'][] = $bet; // réservé (pas encore payé : jamais réglé, jamais montré)
+      return ['ok' => true];
+    });
+    if (!is_array($res)) return ['ok' => false, 'reason' => 'unavailable'];
+    if (empty($res['ok'])) return $res;
+    $deb = null;
+    try { $deb = casino_debit($db, $uid, $mode, $stake, $ref); } finally {
+      $okD = !empty($deb['ok']);
+      sp_with('bets.json', static function (array &$s) use ($ref, $okD) {
+        foreach ((array) ($s['b'] ?? []) as $i => $b) if ($b['id'] === $ref) { if ($okD) $s['b'][$i]['status'] = 'open'; else array_splice($s['b'], $i, 1); break; }
+        return true;
+      });
+    }
+    if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
+    return ['ok' => true, 'bet' => sp_bet_public($bet), 'bal' => $deb['real'] ?? ($deb['demo'] ?? null)];
+  }
   $deb = casino_debit($db, $uid, $mode, $stake, $ref);
   if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
-  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => casino_money(min(SP_MAX_WIN, $stake * $odd)), 'sel' => $picked, 'status' => 'open', 'at' => $now];
   sp_with('bets.json', static function (array &$s) use ($bet) { $s['b'][] = $bet; return true; });
   return ['ok' => true, 'bet' => sp_bet_public($bet), 'bal' => $deb['real'] ?? ($deb['demo'] ?? null)];
 }
@@ -525,7 +725,7 @@ function sp_bet_public(array $b): array {
 }
 function sp_my_bets(string $uid): array {
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
-  $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid));
+  $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid && ($b['status'] ?? '') !== 'pend'));
   return array_map('sp_bet_public', array_slice(array_reverse($mine), 0, SP_MY_BETS));
 }
 
@@ -575,7 +775,7 @@ function sp_resolve(array $db): array {
       }
       if ($lost) { $s['b'][$i]['status'] = 'lost'; $s['b'][$i]['win'] = 0.0; $s['b'][$i]['done'] = time(); $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => 0.0, 's' => $b['stake']]; continue; }
       if (!$ready) continue;
-      $win = casino_money(min(SP_MAX_WIN, (float) $b['stake'] * (floor($odd * 100 + 1e-6) / 100)));
+      $win = sp_floor2(min(SP_MAX_WIN, (float) $b['stake'] * (floor($odd * 100 + 1e-6) / 100))); // v2810 : arrondi au cent INFÉRIEUR
       // v2779 (propriétaire) : tous les matchs du coupon annulés → « Remboursé » (la mise revient, visible dans l'historique et le reçu)
       $s['b'][$i]['status'] = $live === 0 ? 'void' : 'won'; $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();
       $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake']];
@@ -617,7 +817,8 @@ function sp_admin_list(): array {
     if (($b['mode'] ?? '') !== 'real') $res[$s['ev']]['test'] = ($res[$s['ev']]['test'] ?? 0) + 1;
   }
   $out = [];
-  foreach (array_reverse(sp_events()) as $e) { $e['exp'] = $exp[$e['id']] ?? []; $e['res'] = $res[$e['id']] ?? []; $e['nb'] = $all[$e['id']] ?? 0; $out[] = $e; }
+  foreach (array_reverse(sp_events()) as $e) { $e['exp'] = $exp[$e['id']] ?? []; $e['res'] = $res[$e['id']] ?? []; $e['nb'] = $all[$e['id']] ?? 0;
+    $e['close'] = sp_close_at($e); $e['capEff'] = sp_cap($e); $e['isQ'] = sp_is_question($e); $e['isPx'] = sp_is_price($e); $out[] = $e; } // v2810
   return $out;
 }
 /**
