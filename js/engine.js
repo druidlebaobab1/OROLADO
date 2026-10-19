@@ -59,11 +59,17 @@
     var want = lag + (live ? 60 : POLL_MS + 100);
     // v2344 : descend en quelques secondes (avant ~1 min et plus) ; remonte toujours tout de suite si besoin.
     needDelay = want > needDelay ? want : needDelay * (live ? 0.97 : 0.997) + want * (live ? 0.03 : 0.003);
+    // v2831 : juste après le chargement (départ prudent à 1,4 s), en direct, la cible rejoint vite le retard mesuré
+    // (avant : ~30 s → pendant ce temps le prix vu au clic était trop ancien et le trade ne se posait pas au clic).
+    if (live && needDelay > want + 250) needDelay = needDelay * 0.6 + want * 0.4;
     // v2354 : 0,2 s de réserve minimum en direct : la courbe colle au serveur, donc après un clic connecté le vrai
     // point d'entrée est déjà (ou presque) affiché quand la réponse du serveur arrive → le rond apparaît vite.
     var target = Math.max(live ? 120 : DISPLAY_DELAY, Math.min(2600, needDelay));
     if (dispDelay < target) dispDelay = Math.min(target, dispDelay + 80);
-    else if (dispDelay > target + (live ? 30 : 150)) dispDelay = Math.max(target, dispDelay - (live ? 12 : 4));
+    // v2831 (propriétaire : « après actualisation, le trait ne se pose plus au clic ») : en direct, le retard d'affichage
+    // redescend en ~2-3 s au lieu de ~30 s (avant : 12 ms par prix depuis 1,4 s). Le prix vu au clic est alors celui que le
+    // serveur accepte (au plus 2 prix d'écart) → le trade se pose où le joueur a touché.
+    else if (dispDelay > target + (live ? 30 : 150)) dispDelay = Math.max(target, dispDelay - (live ? Math.max(40, (dispDelay - target) * 0.5) : 4));
   }
   var POLL_MS = 300;
   var MULTS = [1.9, 5, 10, 50];
@@ -1007,7 +1013,8 @@
       status: t.status || (t.settled ? 'closed' : 'open'),
       mode: t.mode,
       accountType: t.mode,
-      confirmed: !!t.serverConfirmed
+      confirmed: !!t.serverConfirmed,
+      clickOk: t.clickOk !== false
     });
   }
 
@@ -1515,6 +1522,14 @@
       var expiryTick = entryTick + Math.round(duration * 1000 / TICK_MS);
       var bar = barrierCents(assetId, duration, side, payout, entryCents);
       var guest = !hasToken();
+      // v2831 : le serveur prendra-t-il le prix du clic ? (réel : prix vu au plus ~2 prix avant l'arrivée de l'ordre, mise ≤ 20 —
+      // trade_lib.php). Oui → rond et lignes posés au clic tout de suite. Sinon → ils attendent le vrai prix d'entrée et
+      // apparaissent une seule fois à leur place (jamais posés au clic puis déplacés).
+      // Tick estimé à l'ARRIVÉE de l'ordre au serveur : heure serveur + aller simple (moitié de l'aller-retour mesuré,
+      // 0,15 s si inconnu) + 40 ms de marge.
+      var oneWay = isFinite(clock.rtt) && clock.rtt > 0 ? Math.min(600, clock.rtt / 2) : 150;
+      var arriveTick = clock.ready ? Math.floor((Date.now() + clock.offset + oneWay + 40) / TICK_MS) : 0;
+      var clickOk = mode !== 'real' || (stake <= 20 && arriveTick > 0 && arriveTick - entryTick <= 2);
 
       lastOrderAt = nowPerf;
       D6.holdRemote = true;
@@ -1538,6 +1553,7 @@
         barrierCents: bar,
         payout: payout,
         entryTick: entryTick,
+        clickOk: clickOk,
         expiryTick: expiryTick,
         startTime: tickToLocal(entryTick),
         startedAt: tickToLocal(entryTick),

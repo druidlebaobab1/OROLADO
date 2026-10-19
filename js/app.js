@@ -4718,7 +4718,9 @@
         assetId: res.trade.assetId,
         payout: res.trade.payout || currentOdds(u),
         // v2359 : prix vu au clic (le serveur le prend s'il date de moins de 1,5 s) → ligne = rond, comme en démo.
-        seenTick: res.seenTick
+        // v2831 : prix du clic demandé seulement si le téléphone sait que le serveur l'acceptera (trade.clickOk) ; sinon le
+        // trade part au prix d'arrivée et s'affiche une seule fois à sa vraie place (jamais posé au clic puis déplacé).
+        seenTick: (res.trade && res.trade.clickOk === false) ? 0 : res.seenTick
       };
       var placedTradeId = res.trade.id;
       function killUnfundedTrade(reason) {
