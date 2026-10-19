@@ -820,13 +820,10 @@
     'position:relative!important;overflow:visible!important;opacity:.86!important;filter:drop-shadow(0 2px 2.5px rgba(0,0,0,.55))!important;transform:none!important}' +
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip .mk-art > svg{width:90%!important;height:90%!important;filter:none!important;margin:auto!important}' +
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip .mk-art::before{display:none!important;content:none!important}' +
-    'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip .mk-art::after{content:""!important;display:block!important;position:absolute!important;left:12%!important;right:12%!important;' +
-    'bottom:-3px!important;height:7px!important;border-radius:50%!important;border:1.5px solid rgba(255,206,120,0)!important;' +
-    'background:radial-gradient(ellipse at 50% 50%,rgba(255,190,90,0),rgba(255,190,90,0))!important;transition:all .2s ease!important;pointer-events:none!important}' +
+    // v2821 (propriétaire) : plus d'anneau sous l'emblème (il faisait croire qu'il appartenait au logo).
+    'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip .mk-art::after{display:none!important;content:none!important}' +
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip.on .mk-art{opacity:1!important;transform:translateY(-1px) scale(1.07)!important;' +
     'filter:drop-shadow(0 0 6px rgba(255,190,90,.55)) drop-shadow(0 2px 2px rgba(0,0,0,.5))!important}' +
-    'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip.on .mk-art::after{border-color:rgba(255,206,120,.95)!important;' +
-    'background:radial-gradient(ellipse at 50% 50%,rgba(255,190,90,.55),rgba(255,190,90,0) 70%)!important;box-shadow:0 0 10px rgba(255,170,60,.7)!important}' +
     'html body #tradeWrap#tradeWrap #assetBar#assetBar:not(#q1):not(#q2):not(#q3):not(#q4) .asset-chip.on .mk-name{color:#FFD58A!important;font-weight:900!important;text-shadow:0 0 8px rgba(255,160,60,.5)!important}' +
     // Noms longs (9 lettres et plus) : lettres un peu plus serrées, jamais coupés.
     'html body #tradeWrap#tradeWrap .asset-chip .mk-name.mk-long{letter-spacing:-.01em!important}';
