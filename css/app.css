@@ -12688,13 +12688,14 @@ html:root body #portalModal .gh-grid.gh-imm .cs-pl{border-radius:50%!important}
 html:root body #portalModal .gh-grid.gh-imm .gh-hero > b,html:root body #portalModal .gh-grid.gh-imm .gh-p > b,html:root body #portalModal .gh-grid.gh-imm .gh-p > small{max-width:100%}
 /* v2808 : sur PC aussi, la flèche ‹ de Social ne colle plus au bord haut de la fenêtre */
 @media (min-width:860px){html:root body #liveModal#liveModal#liveModal .live-bar #liveBack#liveBack{top:-24px!important}}
-/* v2812 (propriétaire, round 4) — VERROU DE L'ÉCRAN (iPhone : Safari, Chrome, appli installée).
-   La page fait exactement la hauteur de la fenêtre MESURÉE (--app-h, js/app.js « scrollHome ») et le body est fixé :
-   Safari ne peut plus faire défiler la page entière (barre du haut sous l'heure, bande vide sous ACHETER / VENDRE). */
-html.is-ios:root{height:var(--app-h,100%)!important;min-height:0!important;max-height:none!important;overflow:hidden!important;overscroll-behavior:none}
-html.is-ios:root body{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:auto!important;
-  height:var(--app-h,100%)!important;max-height:none!important;overflow:hidden!important;overscroll-behavior:none}
-html.is-ios:root body > .screen{height:var(--app-h,100%)!important;max-height:var(--app-h,100%)!important}
+/* v2812 / v2822 (propriétaire, round 4) — VERROU DE L'ÉCRAN (iPhone : Safari, Chrome, appli installée).
+   Le body est FIXÉ sur la fenêtre (top:0 / bottom:0) : il prend la vraie zone visible dès la première image, sans hauteur
+   mesurée par le code (avant : --app-h mesuré → la page « montait puis redescendait » et laissait une bande vide sous
+   ACHETER / VENDRE quand Safari changeait sa barre). Safari ne peut plus faire défiler la page entière. */
+html.is-ios:root{height:100%!important;min-height:0!important;max-height:none!important;overflow:hidden!important;overscroll-behavior:none}
+html.is-ios:root body{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;
+  height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important;overscroll-behavior:none}
+html.is-ios:root body > .screen{height:100%!important;max-height:100%!important;min-height:0!important}
 /* v2812 (propriétaire, round 4) — Social : barre « Mes discussions » en haut du menu en tuiles */
 html body #liveModal #livePaneHome .lh-msgs{display:flex;align-items:center;gap:10px;width:calc(100% - 8px);margin:2px 4px 6px;min-height:54px;padding:7px 12px;
   border-radius:16px;border:1px solid rgba(75,227,199,.38);background:linear-gradient(135deg,rgba(75,227,199,.16),rgba(46,140,240,.14) 60%,rgba(123,59,230,.12));
