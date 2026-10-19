@@ -847,40 +847,23 @@
       icons[k] = mkc(64, 64, 1, function (c) { circ(c, 32, 32, 30, '#fff'); circ(c, 32, 32, 26, lg(c, 0, 6, 0, 58, [LK[k][0], LK[k][1]])); icon(c, k, 32, 33, 15, '#fff'); });
       return icons[k];
     }
-    // the princess seen from behind (ball gown, long hair, tiara): 4 walk frames per dress color, drawn once
+    // the princess seen from behind (ball gown, long hair, tiara): v2860 — a real figure (D6.Rig) with a 6-frame walk, drawn once per dress colour
+    var NF = 6, PROP = null;
+    function tiara(c, x, y, r) {
+      c.fillStyle = lg(c, x - r, 0, x + r, 0, ['#FEF3C7', '#FACC15', '#B45309']); c.beginPath(); c.moveTo(x - r * 0.75, y - r * 0.55);
+      [[-0.55, -1.0], [-0.35, -0.7], [0, -1.25], [0.35, -0.7], [0.55, -1.0], [0.75, -0.55]].forEach(function (q) { c.lineTo(x + q[0] * r, y + q[1] * r); });
+      c.quadraticCurveTo(x, y - r * 0.75, x - r * 0.75, y - r * 0.55); c.fill();
+      circ(c, x, y - r * 1.05, r * 0.12, '#F0ABFC'); circ(c, x - r * 0.03, y - r * 1.08, r * 0.04, '#fff');
+    }
     function model(k, f) {
       var key = k + '_' + f; if (SPR[key]) return SPR[key];
-      var w = mh * 0.6, h = mh, L = LK[k];
-      SPR[key] = mkc(w, h, dpr, function (c) {
-        var cx = w / 2, sw = Math.sin(f / 4 * TAU), sk = '#E8B48A', hx = sw * w * 0.025;
-        c.lineCap = 'round'; c.lineJoin = 'round';
-        // shoes peeking under the gown
-        c.fillStyle = '#E0F2FE'; c.beginPath(); c.ellipse(cx - w * 0.07, h * (0.965 - Math.max(0, sw) * 0.02), w * 0.045, h * 0.02, 0, 0, TAU); c.ellipse(cx + w * 0.07, h * (0.965 - Math.max(0, -sw) * 0.02), w * 0.045, h * 0.02, 0, 0, TAU); c.fill();
-        // ball gown: bodice + wide skirt with folds
-        c.fillStyle = lg(c, 0, h * 0.42, 0, h * 0.96, [L[0], L[1], L[2]]);
-        c.beginPath(); c.moveTo(cx - w * 0.12, h * 0.42); c.quadraticCurveTo(cx - w * 0.36 + hx, h * 0.62, cx - w * 0.46 + hx, h * 0.95);
-        c.quadraticCurveTo(cx + hx, h * 0.99, cx + w * 0.46 + hx, h * 0.95); c.quadraticCurveTo(cx + w * 0.36 + hx, h * 0.62, cx + w * 0.12, h * 0.42); c.closePath(); c.fill();
-        c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = Math.max(1, w * 0.018);
-        for (var i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(cx + i * w * 0.04, h * 0.47); c.quadraticCurveTo(cx + i * w * 0.12 + hx, h * 0.7, cx + i * w * 0.17 + hx, h * 0.95); c.stroke(); }
-        c.strokeStyle = '#FDE68A'; c.lineWidth = Math.max(1, w * 0.02); c.beginPath(); c.moveTo(cx - w * 0.45 + hx, h * 0.94); c.quadraticCurveTo(cx + hx, h * 0.985, cx + w * 0.45 + hx, h * 0.94); c.stroke();
-        poly(c, [cx - w * 0.12, h * 0.27, cx + w * 0.12, h * 0.27, cx + w * 0.11, h * 0.44, cx - w * 0.11, h * 0.44], lg(c, 0, h * 0.27, 0, h * 0.44, [L[1], L[2]]));
-        c.fillStyle = '#FDE68A'; c.fillRect(cx - w * 0.12, h * 0.42, w * 0.24, h * 0.022);
-        // arms (gloves)
-        c.strokeStyle = sk; c.lineWidth = w * 0.05;
-        c.beginPath(); c.moveTo(cx - w * 0.12, h * 0.29); c.lineTo(cx - w * 0.2 - sw * w * 0.02, h * 0.47); c.moveTo(cx + w * 0.12, h * 0.29); c.lineTo(cx + w * 0.2 - sw * w * 0.02, h * 0.47); c.stroke();
-        circ(c, cx - w * 0.2 - sw * w * 0.02, h * 0.475, w * 0.03, '#fff'); circ(c, cx + w * 0.2 - sw * w * 0.02, h * 0.475, w * 0.03, '#fff');
-        // neck, head, long golden hair
-        c.fillStyle = sk; c.fillRect(cx - w * 0.035, h * 0.2, w * 0.07, h * 0.08);
-        circ(c, cx, h * 0.15, w * 0.11, sk);
-        c.fillStyle = lg(c, 0, h * 0.05, 0, h * 0.42, ['#FDE68A', '#D97706']);
-        c.beginPath(); c.ellipse(cx, h * 0.145, w * 0.125, w * 0.13, 0, Math.PI, 0); c.lineTo(cx + w * 0.14, h * 0.36); c.quadraticCurveTo(cx, h * 0.41, cx - w * 0.14, h * 0.36); c.closePath(); c.fill();
-        c.strokeStyle = 'rgba(146,64,14,.35)'; c.lineWidth = Math.max(1, w * 0.015); c.beginPath(); c.moveTo(cx - w * 0.04, h * 0.1); c.quadraticCurveTo(cx - w * 0.07, h * 0.24, cx - w * 0.03, h * 0.37); c.moveTo(cx + w * 0.05, h * 0.1); c.quadraticCurveTo(cx + w * 0.08, h * 0.24, cx + w * 0.04, h * 0.36); c.stroke();
-        // tiara
-        poly(c, [cx - w * 0.1, h * 0.07, cx - w * 0.06, h * 0.03, cx - w * 0.03, h * 0.06, cx, h * 0.015, cx + w * 0.03, h * 0.06, cx + w * 0.06, h * 0.03, cx + w * 0.1, h * 0.07], '#FACC15');
-        circ(c, cx, h * 0.045, w * 0.018, L[1]);
-      });
+      var w = mh * 0.72, h = mh, L = LK[k];
+      var pal = { build: 'f', skin: '#F2C9A8', hair: '#E3AE3C', style: 'long', top: [L[1], L[2]], sleeve: 'short', legs: 'dress', gown: 1, flare: 0.19, skirt: [L[0], L[1]], trim: '#FDE68A', sparkle: 1, shoe: '#E0F2FE', gloves: '#FFFFFF',
+        hat: function (c, x, y, r, vw) { tiara(c, x, y - r * 0.55, r * 0.6); } };
+      SPR[key] = D6.Rig ? D6.Rig.one(w, h, dpr, { view: 'back', pose: 'walk', ph: f / NF, pal: pal, scale: 0.97 }) : mkc(w, h, dpr, function () {});
       return SPR[key];
     }
+    function quad(c, lx0, lx1, z0, z1) { c.beginPath(); c.moveTo(SX(lx0, z0), SY(z0)); c.lineTo(SX(lx1, z0), SY(z0)); c.lineTo(SX(lx1, z1), SY(z1)); c.lineTo(SX(lx0, z1), SY(z1)); c.closePath(); c.fill(); }
     function addRow(live) {
       var lv = live ? A.lv() : 0;
       if (sinceArch >= 4 && Math.random() < 0.45) {
@@ -928,27 +911,61 @@
         mh = Math.min(lw * 1.25, (ny - hy) * 0.6);
         SPR = {};
         bg = mkc(W, H, dpr, function (c) {
-          c.fillStyle = lg(c, 0, 0, 0, hy + 4, ['#0F0A2E', '#2E1065', '#6D28D9']); c.fillRect(0, 0, W, hy + 4);
-          stars(c, W, H, A.lite ? 30 : 70, 0, hy);
-          var mr = Math.min(W, H) * 0.05; circ(c, W * 0.85, Math.max(mr + 6, hy * 0.35), mr, rg(c, W * 0.85, Math.max(mr + 6, hy * 0.35), mr, ['#FEFCE8', '#FDE68A'], -mr * 0.3, -mr * 0.3));
-          // the castle at the end of the path
-          var cw2 = Math.min(W * 0.5, lw * 2.2), cb = hy + 2, cx2 = W / 2, th = Math.min(cw2 * 0.55, (hy - T * 0.4) / 1.25);
-          c.fillStyle = '#3B1773'; c.fillRect(cx2 - cw2 * 0.3, cb - th * 0.55, cw2 * 0.6, th * 0.55);
-          [[-0.38, 0.85], [0.38, 0.85], [-0.14, 1], [0.14, 1]].forEach(function (q) { var tx = cx2 + q[0] * cw2, tw = cw2 * 0.13, tH = th * q[1]; c.fillStyle = '#4C1D95'; c.fillRect(tx - tw / 2, cb - tH, tw, tH); poly(c, [tx - tw * 0.7, cb - tH, tx + tw * 0.7, cb - tH, tx, cb - tH - tw * 1.4], '#9D174D'); c.fillStyle = '#FDE68A'; c.fillRect(tx - tw * 0.15, cb - tH * 0.7, tw * 0.3, tH * 0.18); });
-          c.fillStyle = '#FDE68A'; c.beginPath(); c.arc(cx2, cb - th * 0.12, cw2 * 0.07, Math.PI, 0); c.fillRect(cx2 - cw2 * 0.07, cb - th * 0.12, cw2 * 0.14, th * 0.12); c.fill();
-          // garden: lawn, hedges, rose bushes
-          c.fillStyle = lg(c, 0, hy, 0, H, ['#14532D', '#166534', '#14532D']); c.fillRect(0, hy, W, H - hy);
-          for (var row = 0; row < 4; row++) {
-            var z = 0.2 + row * 0.55, y = SY(z), pz = Pz(z), r = Math.max(4, lw * 0.22 * pz);
-            [-1, 1].forEach(function (s) {
-              for (var k = 0; k < 3; k++) { var x = W / 2 + s * (lw * pz * 1.25 + r * (0.8 + k * 1.6)); if (x < -r || x > W + r) continue; circ(c, x, y - r * 0.7, r, '#15803D'); circ(c, x - r * 0.3, y - r, r * 0.6, '#22C55E'); circ(c, x + r * 0.25, y - r * 1.1, r * 0.22, ['#F472B6', '#FDE68A', '#C084FC'][(row + k) % 3]); }
-            });
-          }
-          // the path
-          poly(c, [SX(-1.05, 30), SY(30), SX(1.05, 30), SY(30), SX(1.05, -0.15), H, SX(-1.05, -0.15), H], lg(c, 0, hy, 0, H, ['#E9D5FF', '#FBCFE8', '#FDF2F8']));
-          c.strokeStyle = 'rgba(190,24,93,.35)'; c.lineWidth = 2; c.beginPath(); c.moveTo(SX(-1.05, 30), SY(30)); c.lineTo(SX(-1.05, -0.15), H); c.moveTo(SX(1.05, 30), SY(30)); c.lineTo(SX(1.05, -0.15), H); c.stroke();
-          c.strokeStyle = 'rgba(217,119,6,.45)'; c.setLineDash([6, 8]); c.beginPath(); c.moveTo(W / 2, SY(30)); c.lineTo(W / 2, H); c.stroke(); c.setLineDash([]);
+          var S = 9; function R() { S = (S * 9301 + 49297) % 233280; return S / 233280; }
+          c.fillStyle = lg(c, 0, 0, 0, hy + 4, ['#0B0726', '#24104F', '#5B21B6', '#C0569A']); c.fillRect(0, 0, W, hy + 4);
+          stars(c, W, H, A.lite ? 30 : 80, 0, hy * 0.8);
+          var mr = Math.min(W, H) * 0.05, mx = W * 0.85, my = Math.max(mr + 6, hy * 0.32);
+          circ(c, mx, my, mr * 3, rg(c, mx, my, mr * 3, ['rgba(254,249,195,.3)', 'rgba(254,249,195,0)'])); circ(c, mx, my, mr, rg(c, mx, my, mr, ['#FFFFFF', '#FEF3C7', '#FBBF24'], -mr * 0.3, -mr * 0.3));
+          for (var k = 0; k < 4; k++) { var cy = hy * (0.35 + k * 0.12), cx = W * ((k * 0.37) % 1); for (var j = 0; j < 5; j++) circ(c, cx + j * W * 0.04, cy + Math.sin(j) * 4, W * (0.03 + (j % 2) * 0.015), 'rgba(196,181,253,.12)'); }
+          // distant hills with tiny lights of the kingdom
+          c.fillStyle = '#2A1458'; c.beginPath(); c.moveTo(0, hy + 3); for (var x = 0; x <= W; x += 10) c.lineTo(x, hy - H * 0.035 * (1 + Math.sin(x / W * 7))); c.lineTo(W, hy + 3); c.closePath(); c.fill();
+          for (k = 0; k < 30; k++) { c.fillStyle = 'rgba(253,230,138,.7)'; c.fillRect(R() * W, hy - R() * H * 0.04, 1.5, 1.5); }
+          // the castle: curtain wall with crenels, 5 towers with slate cones, lit windows, banners, a glowing gate and a bridge
+          var cw2 = Math.min(W * 0.62, lw * 2.5), cb = hy + 2, cx2 = W / 2, th = Math.min(cw2 * 0.6, (hy - T * 0.4) / 1.2);
+          var stone = function (x0, w0, y0, h0) { c.fillStyle = lg(c, x0, 0, x0 + w0, 0, ['#B9A8E0', '#8C78C4', '#5B4A92']); c.fillRect(x0, y0, w0, h0); c.strokeStyle = 'rgba(40,20,80,.25)'; c.lineWidth = 0.8; for (var yy = y0 + 5; yy < y0 + h0; yy += 6) { c.beginPath(); c.moveTo(x0, yy); c.lineTo(x0 + w0, yy); c.stroke(); } };
+          stone(cx2 - cw2 * 0.36, cw2 * 0.72, cb - th * 0.42, th * 0.42);
+          for (x = cx2 - cw2 * 0.36; x < cx2 + cw2 * 0.36; x += cw2 * 0.04) { c.fillStyle = '#8C78C4'; c.fillRect(x, cb - th * 0.42 - cw2 * 0.02, cw2 * 0.022, cw2 * 0.022); }
+          [[-0.42, 0.78, 0.12], [0.42, 0.78, 0.12], [-0.2, 0.95, 0.13], [0.2, 0.95, 0.13], [0, 1.18, 0.16]].forEach(function (q, qi) {
+            var tx = cx2 + q[0] * cw2, tw = cw2 * q[2], tH = th * q[1];
+            stone(tx - tw / 2, tw, cb - tH, tH);
+            c.fillStyle = lg(c, tx - tw * 0.7, 0, tx + tw * 0.7, 0, ['#F472B6', '#BE185D', '#701A75']); poly(c, [tx - tw * 0.68, cb - tH, tx + tw * 0.68, cb - tH, tx, cb - tH - tw * 1.6]); c.fill();
+            c.strokeStyle = '#4A044E'; c.lineWidth = 1; c.beginPath(); c.moveTo(tx, cb - tH - tw * 1.6); c.lineTo(tx, cb - tH - tw * 2.05); c.stroke();
+            c.fillStyle = qi % 2 ? '#FDE68A' : '#F9A8D4'; poly(c, [tx, cb - tH - tw * 2.05, tx + tw * 0.5, cb - tH - tw * 1.95, tx, cb - tH - tw * 1.85]); c.fill();
+            for (var wy = 0; wy < 2; wy++) { var wy0 = cb - tH * (0.75 - wy * 0.3); circ(c, tx, wy0, tw * 0.22, 'rgba(253,230,138,.25)'); c.fillStyle = '#FDE68A'; c.beginPath(); c.arc(tx, wy0 - tw * 0.06, tw * 0.1, Math.PI, 0); c.fillRect(tx - tw * 0.1, wy0 - tw * 0.06, tw * 0.2, tw * 0.22); c.fill(); }
+          });
+          circ(c, cx2, cb - th * 0.12, cw2 * 0.16, 'rgba(253,230,138,.22)');
+          c.fillStyle = '#FEF3C7'; c.beginPath(); c.arc(cx2, cb - th * 0.14, cw2 * 0.065, Math.PI, 0); c.fillRect(cx2 - cw2 * 0.065, cb - th * 0.14, cw2 * 0.13, th * 0.14); c.fill();
+          // lawn (stripes are drawn live so they scroll), flower beds far away
+          c.fillStyle = lg(c, 0, hy, 0, H, ['#1B5E35', '#1E7A40', '#14532D']); c.fillRect(0, hy, W, H - hy);
+          c.fillStyle = lg(c, 0, hy, 0, hy + H * 0.08, ['rgba(192,86,154,.25)', 'rgba(192,86,154,0)']); c.fillRect(0, hy, W, H * 0.08);
+          // the path: pale marble, edged with gold kerbs
+          poly(c, [SX(-1.05, 30), SY(30), SX(1.05, 30), SY(30), SX(1.05, -0.15), H, SX(-1.05, -0.15), H], lg(c, 0, hy, 0, H, ['#E9D5FF', '#FBE3F0', '#FFF5FA']));
+          [-1.05, 1.05].forEach(function (lx) { poly(c, [SX(lx - 0.04, 30), SY(30), SX(lx + 0.04, 30), SY(30), SX(lx + 0.04, -0.15), H, SX(lx - 0.04, -0.15), H], '#E8C06A'); });
         });
+        // garden props that scroll past on both sides (pre-drawn once)
+        PROP = {
+          cone: mkc(lw * 0.5, lw * 1.0, dpr, function (c, w, h) { // topiary cone with roses
+            c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(w / 2, h * 0.97, w * 0.4, h * 0.03, 0, 0, TAU); c.fill();
+            c.fillStyle = '#7C2D12'; c.fillRect(w * 0.45, h * 0.85, w * 0.1, h * 0.12);
+            var S2 = 4; function R2() { S2 = (S2 * 9301 + 49297) % 233280; return S2 / 233280; }
+            c.fillStyle = lg(c, 0, 0, w, 0, ['#4ADE80', '#16A34A', '#0B4A22']); c.beginPath(); c.moveTo(w / 2, 0); c.quadraticCurveTo(w * 0.95, h * 0.6, w * 0.82, h * 0.86); c.quadraticCurveTo(w / 2, h * 0.92, w * 0.18, h * 0.86); c.quadraticCurveTo(w * 0.05, h * 0.6, w / 2, 0); c.fill();
+            for (var i = 0; i < 40; i++) { var yy = h * (0.08 + R2() * 0.76), half = w * 0.4 * (yy / h), xx = w / 2 + (R2() - 0.5) * 2 * half; c.fillStyle = R2() < 0.5 ? 'rgba(134,239,172,.5)' : 'rgba(5,46,22,.35)'; c.beginPath(); c.ellipse(xx, yy, w * 0.04, w * 0.025, R2() * 3, 0, TAU); c.fill(); }
+            for (i = 0; i < 6; i++) { var ry = h * (0.25 + i * 0.1), rx = w / 2 + Math.sin(i * 2.4) * w * 0.3 * (ry / h); circ(c, rx, ry, w * 0.05, '#F472B6'); circ(c, rx, ry, w * 0.022, '#FBCFE8'); }
+          }),
+          lamp: mkc(lw * 0.3, lw * 1.5, dpr, function (c, w, h) { // garden lantern on a curly post
+            c.fillStyle = lg(c, w * 0.42, 0, w * 0.58, 0, ['#4B5563', '#111827']); c.fillRect(w * 0.44, h * 0.18, w * 0.12, h * 0.8); c.fillRect(w * 0.3, h * 0.95, w * 0.4, h * 0.05);
+            circ(c, w / 2, h * 0.12, w * 0.5, rg(c, w / 2, h * 0.12, w * 0.5, ['rgba(254,240,138,.7)', 'rgba(254,240,138,0)']));
+            c.fillStyle = '#111827'; poly(c, [w * 0.28, h * 0.06, w * 0.72, h * 0.06, w / 2, h * 0.02]); c.fill();
+            c.fillStyle = lg(c, 0, h * 0.06, 0, h * 0.18, ['#FFFBEB', '#FDE68A', '#F59E0B']); c.fillRect(w * 0.32, h * 0.06, w * 0.36, h * 0.12);
+            c.strokeStyle = '#111827'; c.lineWidth = 1; c.strokeRect(w * 0.32, h * 0.06, w * 0.36, h * 0.12); c.beginPath(); c.moveTo(w / 2, h * 0.06); c.lineTo(w / 2, h * 0.18); c.stroke();
+          }),
+          bush: mkc(lw * 0.7, lw * 0.5, dpr, function (c, w, h) { // round rose bush
+            var S3 = 8; function R3() { S3 = (S3 * 9301 + 49297) % 233280; return S3 / 233280; }
+            c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(w / 2, h * 0.95, w * 0.45, h * 0.06, 0, 0, TAU); c.fill();
+            [[0.3, 0.6, 0.3], [0.7, 0.6, 0.3], [0.5, 0.45, 0.36]].forEach(function (q) { circ(c, w * q[0], h * q[1], w * q[2] * 0.85, rg(c, w * q[0], h * q[1], w * q[2] * 0.85, ['#4ADE80', '#15803D', '#0B3D20'], -w * 0.06, -h * 0.1)); });
+            for (var i = 0; i < 9; i++) { var rx = w * (0.2 + R3() * 0.6), ry = h * (0.25 + R3() * 0.5), cl = ['#F43F5E', '#FB7185', '#FDE68A', '#F0ABFC'][i % 4]; circ(c, rx, ry, w * 0.045, cl); circ(c, rx - w * 0.01, ry - w * 0.01, w * 0.018, '#fff'); }
+          })
+        };
         for (var i = 0; i < (A.lite ? 6 : 14); i++) flies.push({ x: rnd(0, W), y: rnd(hy * 0.6, H), p: rnd(0, TAU) });
         flies = flies.slice(-14);
       },
@@ -984,13 +1001,27 @@
       draw: function (c) {
         A.bg(bg);
         var i, list = gates.slice().sort(function (a, b) { return b.z - a.z; });
+        // scrolling ground: mowed lawn stripes and marble tiles (the strongest cue of her walking)
+        var S0 = 0.16, o0 = dist % S0, n0 = Math.floor(dist / S0), z, k;
+        for (z = ZM + S0 - o0, k = 0; z > -0.15; z -= S0, k++) {
+          var za = Math.max(-0.15, z - S0);
+          if ((n0 + k) % 2) { c.fillStyle = 'rgba(255,255,255,.05)'; quad(c, 1.1, 6, za, z); quad(c, -6, -1.1, za, z); c.fillStyle = 'rgba(120,60,150,.06)'; quad(c, -1.0, 0, za, z); quad(c, 0, 1.0, Math.max(-0.15, za - 0.0), z); }
+          c.fillStyle = 'rgba(160,120,170,.35)'; quad(c, -1.0, 1.0, za, za + 0.006);
+        }
+        if (PROP) {
+          var S1 = 0.45, o1 = dist % S1, n1 = Math.floor(dist / S1);
+          var sideList = [];
+          for (z = ZM + S1 - o1, k = 0; z > -0.15; z -= S1, k++) { var q = (n1 + k) % 3; sideList.push([z, q === 0 ? 'lamp' : q === 1 ? 'cone' : 'bush', -1.35]); sideList.push([z + S1 / 2, q === 0 ? 'cone' : q === 1 ? 'bush' : 'lamp', 1.35]); }
+          sideList.sort(function (a, b) { return b[0] - a[0]; });
+          sideList.forEach(function (e) { if (e[0] < -0.12 || e[0] > ZM) return; var im = PROP[e[1]], wl = e[1] === 'lamp' ? 0.3 : e[1] === 'cone' ? 0.5 : 0.7, hl = e[1] === 'lamp' ? 1.5 : e[1] === 'cone' ? 1.0 : 0.5, p = Pz(e[0]), ww = wl * lw * p, hh = hl * lw * p; c.drawImage(im, SX(e[2] + (e[2] < 0 ? -wl / 2 : wl / 2), e[0]) - ww / 2, SY(e[0]) - hh, ww, hh); });
+        }
         if (!A.lite) for (i = 0; i < flies.length; i++) { var f = flies[i]; c.globalAlpha = 0.35 + 0.35 * Math.sin(t * 3 + f.p); circ(c, f.x + Math.sin(t * 0.7 + f.p) * 8, f.y + Math.cos(t * 0.5 + f.p) * 6, 1.8, '#FEF08A'); }
         c.globalAlpha = 1;
         for (i = 0; i < list.length; i++) if (list[i].z > 0.02) gate(c, list[i]);
         // the princess
-        var x = SX(px, 0), y = ny - lw * 0.02, w = mh * 0.6;
+        var x = SX(px, 0), y = ny - lw * 0.02, w = mh * 0.72;
         if (!(mid && mid.hit)) {
-          var fr = model(look, ((dist * 9) | 0) % 4);
+          var fr = model(look, ((dist * 13) | 0) % NF);
           c.fillStyle = 'rgba(20,0,30,.25)'; c.beginPath(); c.ellipse(x, y, w * 0.42, w * 0.08, 0, 0, TAU); c.fill();
           c.save(); c.translate(x, y);
           if (fall) c.rotate(Math.min(1.3, fall.t * 3.2) * fall.dir);

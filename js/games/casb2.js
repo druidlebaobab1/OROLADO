@@ -147,29 +147,34 @@
 
   /* =============================== ACE RACE (choix) =============================== */
   // les 4 as sur la ligne de départ ; on retourne le paquet (48 cartes), chaque carte fait avancer l'as de sa couleur ; le premier à 6 gagne
-  var AR_LEN = 6, AR_Y = [64, 106, 148, 190], AR_X = function (p) { return 40 + p * 36; };
+  var AR_LEN = 6, AR_Y = [72, 114, 156, 198], AR_C = ['#E2E8F0', '#F43F5E', '#FB923C', '#4ADE80'], AR_X = function (p) { return 40 + p * 36; };
   function aceRace() { var d = deck().filter(function (cc) { return cc[0] !== 1; }), pos = [0, 0, 0, 0], flips = []; for (var j = 0; j < d.length; j++) { flips.push(d[j]); if (++pos[d[j][1]] >= AR_LEN) return { w: d[j][1], flips: flips }; } return null; }
   game({
     key: 'acerace', l: verb('race'), vb: '0 0 300 250', n: 4,
-    scene: felt('arF', '#14532D', '#052E16') + AR_Y.map(function (y) { return '<rect x="16" y="' + (y - 19) + '" width="268" height="38" rx="8" fill="#000" opacity=".18"/>'; }).join('') +
-      [1, 2, 3, 4, 5].map(function (p) { return '<path d="M' + (AR_X(p) - 18) + ' 44V210" stroke="#FDE68A" stroke-opacity=".18" stroke-dasharray="3 5"/>'; }).join('') +
-      '<g transform="translate(' + (AR_X(AR_LEN) - 18) + ' 0)"><path d="M0 42V212" stroke="#fff" stroke-width="5" stroke-dasharray="5 5"/><path d="M0 42V212" stroke="#111" stroke-width="5" stroke-dasharray="5 5" stroke-dashoffset="5"/></g>' +
+    scene: felt('arF', '#166534', '#022C22') +
+      // fanions en haut
+      '<path d="M-20 34Q150 50 320 34" stroke="#FDE68A" stroke-opacity=".5" fill="none"/>' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(function (q) { var x = 6 + q * 26, y = 37 + Math.sin(q / 11 * Math.PI) * 7; return '<path d="M' + x + ' ' + y + 'l8 0-4 9z" fill="' + ['#F43F5E', '#FBBF24', '#38BDF8', '#A78BFA'][q % 4] + '"/>'; }).join('') +
+      AR_Y.map(function (y, s) { return '<rect x="10" y="' + (y - 19) + '" width="280" height="38" rx="10" fill="' + (s % 2 ? '#14532D' : '#15803D') + '" stroke="#86EFAC" stroke-opacity=".25"/><rect x="10" y="' + (y - 19) + '" width="8" height="38" rx="4" fill="' + AR_C[s] + '"/>' +
+        [1, 2, 3, 4, 5].map(function (p) { return '<rect id="arT' + s + '_' + p + '" x="' + (AR_X(p) - 15) + '" y="' + (y - 14) + '" width="30" height="28" rx="6" fill="#052E16" opacity=".55"/>' + txt(AR_X(p), y + 4, p, 10, '#BBF7D0', ' opacity=".35"'); }).join(''); }).join('') +
+      '<g transform="translate(' + (AR_X(AR_LEN) - 18) + ' 0)">' + (function () { var q = '', k; for (k = 0; k < 17; k++) q += '<rect x="' + (k % 2 ? 0 : 6) + '" y="' + (44 + k * 10) + '" width="6" height="10" fill="#fff"/><rect x="' + (k % 2 ? 6 : 0) + '" y="' + (44 + k * 10) + '" width="6" height="10" fill="#111"/>'; return q; })() + '</g>' +
+      '<g id="arCup" transform="translate(282 22)"><path d="M-9-8h18v6a9 9 0 0 1-18 0z" fill="#FBBF24" stroke="#92400E"/><path d="M-9-6h-4a4 4 0 0 0 4 6M9-6h4a4 4 0 0 1-4 6" stroke="#FBBF24" stroke-width="2" fill="none"/><rect x="-3" y="6" width="6" height="5" fill="#D97706"/><rect x="-7" y="10" width="14" height="4" rx="1" fill="#92400E"/></g>' +
       '<g id="arAces">' + [0, 1, 2, 3].map(function (s) { return '<g id="arA' + s + '" transform="translate(' + AR_X(0) + ' ' + AR_Y[s] + ') scale(.78)">' + card([1, s]) + '</g>'; }).join('') + '</g>' +
-      '<g transform="translate(150 22)"><g id="arDeck" transform="translate(-24 0) scale(.72)">' + card(null) + '</g><g id="arFlip" transform="translate(24 0) scale(.72)" opacity="0"></g></g>',
+      '<g transform="translate(118 18)"><rect x="-58" y="-16" width="116" height="34" rx="9" fill="#022C22" stroke="#FDE68A" stroke-opacity=".5"/><g id="arDeck" transform="translate(-36 1) scale(.62)">' + card(null) + '</g><g id="arFlip" transform="translate(0 1) scale(.62)" opacity="0"></g><text id="arN" x="38" y="6" text-anchor="middle" font-size="12" font-weight="900" fill="#FDE68A" font-family="Arial,sans-serif">48</text></g>',
     opts: function () { return '<div class="cg-opts ar-opts">' + [0, 1, 2, 3].map(function (s) { return optBtn(s, suitIco(s), pm(0.25)); }).join('') + '</div>'; },
     onPick: function (c, j) { [0, 1, 2, 3].forEach(function (s) { c.id('arA' + s).classList.toggle('cb-glow', s === j); }); },
     params: function (c) { return { pick: c.sel }; },
-    reset: function (c) { [0, 1, 2, 3].forEach(function (s) { tr(c.id('arA' + s), AR_X(0), AR_Y[s], 0.78); }); c.id('arFlip').setAttribute('opacity', '0'); },
+    reset: function (c) { [0, 1, 2, 3].forEach(function (s) { tr(c.id('arA' + s), AR_X(0), AR_Y[s], 0.78); for (var p = 1; p < AR_LEN; p++) { var t = c.id('arT' + s + '_' + p); t.setAttribute('fill', '#052E16'); t.setAttribute('opacity', '.55'); } }); c.id('arFlip').setAttribute('opacity', '0'); c.id('arN').textContent = '48'; c.id('arCup').removeAttribute('class'); c.id('arFlip')._j = -1; },
     play: async function (c, r) {
       var w = +r.view.w, race = find(aceRace, function (x) { return x && x.w === w; }) || aceRace(), pos = [0, 0, 0, 0], fl = c.id('arFlip');
       for (var j = 0; j < race.flips.length; j++) {
         var cc = race.flips[j], s = cc[1], a = c.id('arA' + s), from = pos[s]; pos[s]++;
-        fl.innerHTML = card(cc); fl.setAttribute('opacity', '1'); c.sfx('card');
-        await tw(c.box, 110, function (k) { fl.setAttribute('transform', 'translate(24 0) scale(' + (0.72 * Math.abs(1 - 2 * (1 - k) * 0.5)).toFixed(3) + ' .72)'); });
+        fl.setAttribute('opacity', '1'); c.sfx('card'); c.id('arN').textContent = String(47 - j);
+        await tw(c.box, 120, function (k) { if (k >= 0.5 && fl._j !== j) { fl._j = j; fl.innerHTML = card(cc); } fl.setAttribute('transform', 'translate(' + lerp(-36, 0, Math.min(1, k * 1.4)).toFixed(1) + ' 1) scale(' + (0.62 * Math.max(0.05, Math.abs(1 - 2 * k))).toFixed(3) + ' .62)'); });
         await tw(c.box, 190, function (k) { var e = ease(k); tr(a, lerp(AR_X(from), AR_X(pos[s]), e), AR_Y[s] - Math.sin(k * Math.PI) * 6, 0.78); });
+        var lt = c.id('arT' + s + '_' + pos[s]); if (lt) { lt.setAttribute('fill', AR_C[s]); lt.setAttribute('opacity', '.45'); }
       }
       c.sfx('stop');
-      var win = c.id('arA' + w);
+      var win = c.id('arA' + w); c.id('arCup').setAttribute('class', 'ar-win');
       await tw(c.box, 420, function (k) { tr(win, AR_X(AR_LEN), AR_Y[w], 0.78 + Math.sin(k * Math.PI) * 0.18); });
     },
     rules: {

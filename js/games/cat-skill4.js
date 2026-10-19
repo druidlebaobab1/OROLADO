@@ -2,20 +2,20 @@
    Air Strike (war), Zombie Siege, Brick Breaker, Neon Snake, Helix Drop, Color Jump, Cupcake Party, Princess Rush.
    Each icon shows the same objects and colours as inside its game. Also warms the two modules once the lobby shows
    the "You're in control" list (same ?v= as this file), so the first opening is instant. */
-(function (D6) { if (!D6.CasinoCatalog) return; D6.CasinoCatalog.add([
-  { k: 'airstrike', name: 'Air Strike', sec: 'skill', file: 'skill4', pal: ['#DBEAFE', '#1D4ED8'], icon: '<defs><linearGradient id="IDw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F5F9"/><stop offset="1" stop-color="#94A3B8"/></linearGradient><linearGradient id="IDb" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#64748B"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#64748B"/></linearGradient><radialGradient id="IDx" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFF7ED"/><stop offset=".5" stop-color="#FB923C"/><stop offset="1" stop-color="#F43F5E" stop-opacity="0"/></radialGradient></defs>' +
-    '<circle cx="47" cy="13" r="11" fill="url(#IDx)"/><path d="M41 6l12 0-6 9z" fill="#B91C1C"/><path d="M38 8h18l-2 3H40z" fill="#EF4444"/>' +
-    '<path d="M27 12v8M37 12v8" stroke="#FDE68A" stroke-width="2.4" stroke-linecap="round"/>' +
-    '<path d="M6 40l22-9h8l22 9v5l-22-3h-8L6 45z" fill="url(#IDw)"/><path d="M22 57l8-5h4l8 5v3H22z" fill="url(#IDw)"/>' +
-    '<ellipse cx="32" cy="40" rx="5" ry="22" fill="url(#IDb)"/><ellipse cx="32" cy="20" rx="2.6" ry="3.2" fill="#FBBF24"/><ellipse cx="32" cy="31" rx="2.4" ry="5" fill="#38BDF8"/><circle cx="31.2" cy="29" r="1" fill="#fff"/>' +
-    '<circle cx="15" cy="40" r="2.6" fill="#2563EB"/><circle cx="49" cy="40" r="2.6" fill="#2563EB"/><circle cx="15" cy="40" r="1.1" fill="#fff"/><circle cx="49" cy="40" r="1.1" fill="#fff"/><path d="M30 62l2 2.5 2-2.5z" fill="#FB923C"/>' },
-  { k: 'zombiesiege', name: 'Zombie Siege', sec: 'skill', file: 'skill4', pal: ['#DCFCE7', '#166534'], icon: '<defs><radialGradient id="IDh" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#D1FAE5"/><stop offset=".6" stop-color="#6EE7B7"/><stop offset="1" stop-color="#2F6B4A"/></radialGradient><linearGradient id="IDs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#60A5FA"/><stop offset="1" stop-color="#1E3A8A"/></linearGradient><linearGradient id="IDg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E7D3A1"/><stop offset="1" stop-color="#8B7350"/></linearGradient></defs>' +
-    '<path d="M8 36l10-6M56 36l-10-6" stroke="#3F7D5A" stroke-width="5" stroke-linecap="round"/><circle cx="8" cy="36" r="3.4" fill="#A7F3D0"/><circle cx="56" cy="36" r="3.4" fill="#A7F3D0"/>' +
-    '<path d="M18 30h28l2 22H16z" fill="url(#IDs)"/><path d="M22 52l4-8 4 8zM38 34l6 4-5 2z" fill="#3F7D5A"/>' +
-    '<circle cx="32" cy="20" r="12" fill="url(#IDh)"/><path d="M21 16a12 12 0 0 1 20-6l-4 3-5-2-4 4z" fill="#3F2A1A"/>' +
-    '<circle cx="27.5" cy="21" r="3" fill="#FEF08A"/><circle cx="36.5" cy="21" r="3" fill="#FEF08A"/><circle cx="27.5" cy="21" r="1.4" fill="#DC2626"/><circle cx="36.5" cy="21" r="1.4" fill="#DC2626"/><rect x="28" y="26.5" width="8" height="3" rx="1" fill="#1F1F1F"/>' +
-    '<g fill="none" stroke="#F43F5E" stroke-width="2"><circle cx="32" cy="21" r="9" opacity=".9"/><path d="M32 8v6M32 28v6M19 21h6M39 21h6"/></g>' +
-    '<rect x="2" y="52" width="16" height="9" rx="4.5" fill="url(#IDg)"/><rect x="17" y="53" width="16" height="9" rx="4.5" fill="url(#IDg)"/><rect x="32" y="52" width="16" height="9" rx="4.5" fill="url(#IDg)"/><rect x="47" y="53" width="16" height="9" rx="4.5" fill="url(#IDg)"/>' },
+(function (D6) { if (!D6.CasinoCatalog) return;
+  /* v2860 (owner: the logos must match the new game art): a round medallion showing the game's own scene and hero (an image
+     rendered from the game drawing, img/games/<key>.webp) in a glossy ring. Same 64×64 frame. */
+  var RUN = '<g transform="translate(42 2)"><rect width="20" height="12" rx="6" fill="#FBBF24" stroke="#FFF7ED" stroke-width="1.2"/><path d="M6 3.4l3 2.6-3 2.6M11 3.4l3 2.6-3 2.6" stroke="#3B2300" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>';
+  function medal(k, c1, c2, run) {
+    return '<defs><clipPath id="IDm"><circle cx="32" cy="33" r="26.5"/></clipPath><linearGradient id="IDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7D6"/><stop offset=".45" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient>' +
+      '<linearGradient id="IDs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
+      '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDg)"/>' +
+      '<image href="img/games/' + k + '.webp?v=2864" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
+      '<circle cx="32" cy="33" r="26.5" fill="url(#IDs)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>' + (run ? RUN : '');
+  }
+  D6.CasinoCatalog.add([
+  { k: 'airstrike', name: 'Air Strike', sec: 'skill', file: 'skill4', pal: ['#DBEAFE', '#1D4ED8'], icon: medal('airstrike', '#60A5FA', '#1E3A8A', 0) },
+  { k: 'zombiesiege', name: 'Zombie Siege', sec: 'skill', file: 'skill4', pal: ['#DCFCE7', '#166534'], icon: medal('zombiesiege', '#F87171', '#7F1D1D', 0) },
   { k: 'brickbreak', name: 'Brick Breaker', sec: 'skill', file: 'skill4', pal: ['#FCE7F3', '#DB2777'], icon: '<defs><linearGradient id="IDp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBCFE8"/><stop offset=".5" stop-color="#EC4899"/><stop offset="1" stop-color="#9D174D"/></linearGradient><radialGradient id="IDo" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#FDE68A"/><stop offset="1" stop-color="#F59E0B"/></radialGradient></defs>' +
     '<g stroke="#fff" stroke-opacity=".45" stroke-width=".8"><rect x="4" y="6" width="13" height="7" rx="2" fill="#DB2777"/><rect x="18" y="6" width="13" height="7" rx="2" fill="#EA580C"/><rect x="32" y="6" width="13" height="7" rx="2" fill="#CA8A04"/><rect x="46" y="6" width="13" height="7" rx="2" fill="#16A34A"/>' +
     '<rect x="4" y="14" width="13" height="7" rx="2" fill="#0891B2"/><rect x="32" y="14" width="13" height="7" rx="2" fill="#7C3AED"/><rect x="46" y="14" width="13" height="7" rx="2" fill="#DB2777"/><rect x="11" y="22" width="13" height="7" rx="2" fill="#16A34A"/><rect x="39" y="22" width="13" height="7" rx="2" fill="#EA580C"/></g>' +
@@ -43,15 +43,7 @@
     '<ellipse cx="32" cy="40" rx="21" ry="5" fill="#C98A4B"/><ellipse cx="32" cy="37" rx="19" ry="6" fill="url(#IDf)"/><ellipse cx="32" cy="31" rx="14.5" ry="5.5" fill="url(#IDf)"/><ellipse cx="32" cy="25.5" rx="10" ry="4.5" fill="url(#IDf)"/><path d="M28 22h8l-3-5z" fill="#F9A8D4"/>' +
     '<circle cx="34" cy="18" r="4" fill="url(#IDc)"/><path d="M34 14q2-4 6-3" stroke="#166534" stroke-width="1.4" fill="none"/>' +
     '<path d="M19 36l3-1M43 35l3 1M26 31l2 1.4M38 30l-2 1.6M31 37h3" stroke-width="1.6" stroke-linecap="round" stroke="#FACC15"/><path d="M23 33l1.6 1.4M40 37l2-1M33 27l1.8.6" stroke="#22D3EE" stroke-width="1.6" stroke-linecap="round"/>' },
-  { k: 'princess', name: 'Princess Rush', sec: 'skill', file: 'skill5', pal: ['#FAE8FF', '#C026D3'], icon: '<defs><linearGradient id="IDd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBCFE8"/><stop offset=".55" stop-color="#EC4899"/><stop offset="1" stop-color="#9D174D"/></linearGradient><linearGradient id="IDh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDE68A"/><stop offset="1" stop-color="#D97706"/></linearGradient><linearGradient id="IDr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9D5FF"/><stop offset="1" stop-color="#FDF2F8"/></linearGradient></defs>' +
-    '<path d="M24 16h4v-5l2-3 2 3v5h4v-4l2 -3 2 3v4h4V24H20z" fill="#DDD6FE"/><path d="M22 12l2-4 2 4zM38 12l2-4 2 4zM28 11l2-4 2 4z" fill="#EC4899"/>' +
-    '<path d="M26 24h12l22 40H4z" fill="url(#IDr)"/><path d="M32 24v40" stroke="#D97706" stroke-width="1.2" stroke-dasharray="3 3" opacity=".6"/>' +
-    '<path d="M4 46V26a10 10 0 0 1 20 0v20" fill="#EC4899" fill-opacity=".3" stroke="#16A34A" stroke-width="3"/><circle cx="7" cy="22" r="2.2" fill="#EC4899"/><circle cx="14" cy="16.6" r="2.2" fill="#EC4899"/><circle cx="21" cy="22" r="2.2" fill="#EC4899"/>' +
-    '<circle cx="14" cy="31" r="5" fill="#fff"/><path d="M14 34.6c-3.4-2.2-4.2-4.8-2.2-6 1-.5 1.8 0 2.2.7.4-.7 1.2-1.2 2.2-.7 2 1.2 1.2 3.8-2.2 6z" fill="#EC4899"/>' +
-    '<path d="M40 46V26a10 10 0 0 1 20 0v20" fill="#14B8A6" fill-opacity=".3" stroke="#16A34A" stroke-width="3"/><circle cx="43" cy="22" r="2.2" fill="#14B8A6"/><circle cx="50" cy="16.6" r="2.2" fill="#14B8A6"/><circle cx="57" cy="22" r="2.2" fill="#14B8A6"/><circle cx="50" cy="31" r="5" fill="#fff"/><path d="M50 35l-3.6-3.6 1.6-2h4l1.6 2z" fill="#14B8A6"/>' +
-    '<path d="M29 40q-8 10-11 22q14 3 28 0q-3-12-11-22z" fill="url(#IDd)"/><path d="M27 62q5 1.6 10 0M24 52l2 9M40 52l-2 9" stroke="#fff" stroke-opacity=".45" stroke-width="1.2" fill="none"/>' +
-    '<path d="M28.6 31h6.8l-.6 10h-5.6z" fill="#BE185D"/><path d="M29 32l-3 9M35 32l3 9" stroke="#E8B48A" stroke-width="1.8" stroke-linecap="round"/>' +
-    '<path d="M27.5 27a4.5 4.5 0 0 1 9 0l.6 9c-2.6 1.4-7.6 1.4-10.2 0z" fill="url(#IDh)"/><path d="M28.5 23.6l1.4-2 1.2 1.4 1-2 1 2 1.2-1.4 1.4 2z" fill="#FACC15"/>' }
+  { k: 'princess', name: 'Princess Rush', sec: 'skill', file: 'skill5', pal: ['#FAE8FF', '#C026D3'], icon: medal('princess', '#F0ABFC', '#86198F', 0) }
 ]);
   var V = ''; try { V = ((document.currentScript && document.currentScript.src) || '').split('?v=')[1] || ''; } catch (e) { V = ''; }
   var warmed = false, warmT = 0;

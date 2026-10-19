@@ -642,7 +642,8 @@
       go.addEventListener('click', async function () {
         if (busy) return;
         if (K.guest()) { K.play(key, {}); return; }
-        busy = true; go.disabled = true; box.classList.add('cz-busy'); clearWin(); pt.hidden = true;
+        busy = true; go.disabled = true;
+        if (demoP) { stopDemo = true; await demoP; demoP = null; } // the visitor just signed in: the demo ends first box.classList.add('cz-busy'); clearWin(); pt.hidden = true;
         var r = null;
         try {
           var pr = K.play(key, {}).then(function (x) {
@@ -658,17 +659,18 @@
         finally { busy = false; if (box.isConnected) { go.disabled = false; box.classList.remove('cz-busy'); } }
       });
       // visitor: the machine plays by itself (no money, no sound) so the game is alive before signing up
+      var stopDemo = false, demoP = null;
       if (K.guest()) {
-        (async function attract() {
+        demoP = (async function attract() {
           try {
             await wait(box, 900);
-            for (;;) {
+            while (!stopDemo && K.guest()) {
               var won = Math.random() < 0.45, cand = ROWS.filter(function (x) { return won ? x.m >= 1 && x.m <= 40 : x.m === 0; });
               var b2 = buildGrid(d, cand[rnd(cand.length)]);
               clearWin();
               await spin(Promise.resolve(b2), true);
               if (b2) await showWin(b2.win, 0, true);
-              await wait(box, 2600);
+              if (!stopDemo) await wait(box, 2600);
             }
           } catch (e) { /* left the game */ }
         })();

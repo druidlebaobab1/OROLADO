@@ -41,7 +41,7 @@ function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail;
 
 $all = include __DIR__ . '/../casino_ext/casb.php';
 $want = ['blackjack', 'tcpoker', 'holdem', 'niuniu', 'acerace', 'trente', 'clocksol', 'yatzy', 'crownanchor', 'derby', 'ceelo', 'shipcrew',
-  'dblroul', 'twinwheel', 'twoup', 'fantan', 'pachinko', 'ladder', 'skeeball', 'ducks', 'dreidel', 'oracle', 'rpsduel', 'cometqueen'];
+  'dblroul', 'twinwheel', 'twoup', 'fantan', 'pachinko', 'amida', 'skeeball', 'ducks', 'dreidel', 'oracle', 'rpsduel', 'cometqueen'];
 $fiches = array_filter($all, static fn($d) => $d['type'] !== 'skill');
 echo "1) Fiches : les 24 jeux se chargent (clé libre, retour ≤ 94,5 %)\n";
 $k = casino_ext_keys();
@@ -52,7 +52,7 @@ foreach (glob(__DIR__ . '/../casino_ext/*.php') as $f) { if (preg_match('/casb\.
 check('aucune clé déjà prise par un autre groupe', !array_intersect($want, array_keys($others)), json_encode(array_values(array_intersect($want, array_keys($others)))));
 $cat = (string) file_get_contents(__DIR__ . '/../js/games/cat-casb.js');
 $mods = ''; foreach (glob(__DIR__ . '/../js/games/casb*.js') as $f) $mods .= file_get_contents($f);
-foreach ($want as $g) check("$g : logo au catalogue + module avec règles en 12 langues", strpos($cat, "['$g', ") !== false && strpos($mods, "key: '$g'") !== false);
+foreach ($want as $g) check("$g : logo au catalogue + module avec règles en 12 langues", strpos($cat, "['$g', ") !== false && (strpos($mods, "key: '$g'") !== false || strpos($mods, "K.register('$g'") !== false));
 $casino = (string) file_get_contents(__DIR__ . '/../js/casino.js');
 check('cat-casb dans CAT_FILES, les 24 clés dans MO_POS', strpos($casino, "'cat-casb'") !== false && !array_filter($want, static fn($g) => strpos($casino, "'$g'") === false));
 
@@ -108,7 +108,7 @@ $derby = static function (array $pos) use (&$derby, &$memo, $N6): array {
 $pd = $derby([0, 0, 0, 0, 0, 0]); $ok = abs(array_sum($fiches['derby']['opts']) - 1) < 1e-9;
 foreach ($pd as $h => $p) if (abs($p - $fiches['derby']['opts'][$h]) > 2e-6) $ok = false;
 check('derby : chances = loi exacte de la course (±2·10⁻⁶) ' . implode(' ', array_map(static fn($p) => sprintf('%.6f', $p), $pd)), $ok);
-check('ladder / dreidel / rpsduel / acerace / fantan : issues équiprobables', count(array_unique(array_column($fiches['ladder']['out'], 1))) === 1 && count(array_unique(array_column($fiches['dreidel']['out'], 1))) === 1
+check('amida / dreidel / rpsduel / acerace / fantan : issues équiprobables', count(array_unique(array_column($fiches['amida']['out'], 1))) === 1 && count(array_unique(array_column($fiches['dreidel']['out'], 1))) === 1
   && count(array_unique(array_column($fiches['rpsduel']['out'], 1))) === 1 && $fiches['acerace']['opts'] === [0.25, 0.25, 0.25, 0.25] && $fiches['fantan']['opts'] === [0.25, 0.25, 0.25, 0.25]);
 
 echo "4) Retour simulé (tirages du serveur) · dessin = gain\n";

@@ -57,7 +57,7 @@
     pachinko: '<defs>' + lg('IDp', '#F472B6', '#7E22CE') + rg('IDb', '#FFFFFF', '#E2E8F0', '#64748B') + GOLD + '</defs>' + sh(22) + '<rect x="10" y="4" width="44" height="54" rx="10" fill="url(#IDp)" stroke="url(#IDg)" stroke-width="2"/>' +
       [[20, 14], [32, 14], [44, 14], [26, 22], [38, 22], [20, 30], [44, 30]].map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.6" fill="#FDE68A"/>'; }).join('') +
       '<rect x="22" y="34" width="20" height="12" rx="3" fill="#0F172A"/><text x="32" y="44" text-anchor="middle" font-size="9" font-weight="900" fill="#FDE68A" font-family="Arial">777</text><circle cx="32" cy="26" r="4" fill="url(#IDb)"/>' + hi(32, 26, 4),
-    ladder: '<defs>' + GOLD + '</defs>' + sh(24) + '<g stroke="#E0E7FF" stroke-width="2.6" stroke-linecap="round"><path d="M12 6v42M24 6v42M36 6v42M48 6v42"/><path d="M12 14h12M36 18h12M24 26h12M12 32h12M36 38h12" stroke="#FDE68A"/></g>' +
+    amida: '<defs>' + GOLD + '</defs>' + sh(24) + '<g stroke="#E0E7FF" stroke-width="2.6" stroke-linecap="round"><path d="M12 6v42M24 6v42M36 6v42M48 6v42"/><path d="M12 14h12M36 18h12M24 26h12M12 32h12M36 38h12" stroke="#FDE68A"/></g>' +
       '<path d="M24 6V26H36V48" stroke="#F43F5E" stroke-width="3.2" fill="none" stroke-linejoin="round"/>' + [12, 24, 36, 48].map(function (x, j) { return '<circle cx="' + x + '" cy="53" r="5" fill="' + (j === 2 ? 'url(#IDg)' : '#475569') + '"/>'; }).join(''),
     skeeball: '<defs>' + rg('IDb', '#FFFFFF', '#FDE68A', '#B45309') + lg('IDr', '#1D4ED8', '#0B1437') + '</defs>' + sh(24) + '<path d="M8 58L18 8h28l10 50z" fill="url(#IDr)"/>' +
       [[32, 44, 9, '10'], [32, 30, 6.5, '30'], [32, 18, 4.5, '50'], [22, 12, 3, ''], [42, 12, 3, '']].map(function (h) { return '<circle cx="' + h[0] + '" cy="' + h[1] + '" r="' + h[2] + '" fill="#020617" stroke="#FDE68A" stroke-width="1.2"/>'; }).join('') +
@@ -82,7 +82,11 @@
     ['blackjack', 'Blackjack', 'casb1', ['#DCFCE7', '#15803D']], ['tcpoker', 'Three Card Poker', 'casb1', ['#DBEAFE', '#1D4ED8']], ['holdem', 'Casino Hold’em', 'casb1', ['#FEE2E2', '#B91C1C']], ['niuniu', 'Niu Niu', 'casb1', ['#FEF3C7', '#B45309']],
     ['acerace', 'Ace Race', 'casb2', ['#E0E7FF', '#4338CA']], ['trente', '30 & 40', 'casb2', ['#FFE4E6', '#9F1239']], ['clocksol', 'Clock Patience', 'casb2', ['#EDE9FE', '#6D28D9']],
     ['yatzy', 'Yatzy', 'casb3', ['#F1F5F9', '#475569']], ['crownanchor', 'Crown & Anchor', 'casb3', ['#FEF3C7', '#1D4ED8']], ['derby', 'Dice Derby', 'casb3', ['#DCFCE7', '#166534']],
-    ['ceelo', 'Cee-Lo', 'casb3', ['#E2E8F0', '#334155']], ['shipcrew', 'Ship & Crew', 'casb3', ['#E0F2FE', '#0369A1']]
+    ['ceelo', 'Cee-Lo', 'casb3', ['#E2E8F0', '#334155']], ['shipcrew', 'Ship & Crew', 'casb3', ['#E0F2FE', '#0369A1']],
+    ['dblroul', 'Double Roulette', 'casb4', ['#DCFCE7', '#15803D']], ['twinwheel', 'Twin Wheel', 'casb4', ['#EDE9FE', '#6D28D9']], ['twoup', 'Two-Up', 'casb4', ['#FEF3C7', '#B45309']], ['fantan', 'Fan-Tan', 'casb4', ['#DCFCE7', '#166534']],
+    ['pachinko', 'Pachinko', 'casb5', ['#FCE7F3', '#A21CAF']], ['amida', 'Ladder Lottery', 'casb5', ['#E0E7FF', '#4338CA']], ['skeeball', 'Skee-Ball', 'casb5', ['#DBEAFE', '#1D4ED8']], ['ducks', 'Lucky Ducks', 'casb5', ['#FEF9C3', '#CA8A04']],
+    ['dreidel', 'Dreidel', 'casb6', ['#DBEAFE', '#1E40AF']], ['oracle', 'Oracle Ball', 'casb6', ['#EDE9FE', '#4C1D95']], ['rpsduel', 'RPS Duel', 'casb6', ['#F3E8FF', '#7E22CE']],
+    ['cometqueen', 'Comet Queen', 'casb7', ['#FCE7F3', '#BE185D']]
   ];
   D6.CasinoCatalog.add(L.map(function (g) { return { k: g[0], name: g[1], sec: 'more', file: g[2], pal: g[3], icon: ICONS[g[0]] }; }));
 })(window.D6 = window.D6 || {});
