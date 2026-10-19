@@ -255,12 +255,13 @@
   function stopAll() { clearInterval(S.timer); S.timer = 0; cancelAnimationFrame(S.raf || 0); clearInterval(S.idle || 0); }
   // v2821 (propriétaire) : 3 onglets en haut, comme la page Paris — Joue toi-même · Live · Casino (on ne défile plus
   // dans 100+ jeux : chaque onglet montre sa liste).
-  var TAB_T = { en: { skill: 'Play yourself', live: 'Live', more: 'Casino' }, fr: { skill: 'Joue toi-même', live: 'Live', more: 'Casino' },
-    es: { skill: 'Juega tú', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Jogue você', live: 'Ao vivo', more: 'Cassino' },
-    ar: { skill: 'العب بنفسك', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Kendin oyna', live: 'Canlı', more: 'Casino' },
-    vi: { skill: 'Tự chơi', live: 'Trực tiếp', more: 'Casino' }, id: { skill: 'Main sendiri', live: 'Live', more: 'Kasino' },
-    ru: { skill: 'Играй сам', live: 'Live', more: 'Казино' }, de: { skill: 'Selbst spielen', live: 'Live', more: 'Casino' },
-    hi: { skill: 'खुद खेलें', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '亲自玩', live: '直播', more: '娱乐场' } };
+  // v2825 (propriétaire : « Joue toi-même est plus long… même forme ») : 3 onglets de même largeur, mots courts comme les grandes plateformes.
+  var TAB_T = { en: { skill: 'Arcade', live: 'Live', more: 'Casino' }, fr: { skill: 'Arcade', live: 'Live', more: 'Casino' },
+    es: { skill: 'Arcade', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Arcade', live: 'Ao vivo', more: 'Cassino' },
+    ar: { skill: 'أركيد', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Arcade', live: 'Canlı', more: 'Casino' },
+    vi: { skill: 'Arcade', live: 'Live', more: 'Casino' }, id: { skill: 'Arcade', live: 'Live', more: 'Kasino' },
+    ru: { skill: 'Аркады', live: 'Live', more: 'Казино' }, de: { skill: 'Arcade', live: 'Live', more: 'Casino' },
+    hi: { skill: 'आर्केड', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '街机', live: '直播', more: '娱乐场' } };
   var SEC_ORDER = ['skill', 'live', 'more'];
   function curSec() { var v = ''; try { v = sessionStorage.getItem('oro_cs_tab') || ''; } catch (e) { /* ignore */ } return SEC_ORDER.indexOf(v) >= 0 ? v : 'skill'; }
   function home(view) {
@@ -437,6 +438,16 @@
     inp.addEventListener('blur', commit);
     inp.addEventListener('change', commit);
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+    // v2825 (propriétaire, iPhone : « je touche la case, le clavier ne vient pas ») : tout toucher sur la case du montant
+    // (sauf la petite ✕) ouvre le clavier, même si le doigt tombe à côté des chiffres. Le focus() part dans le toucher
+    // même (iOS n'ouvre le clavier que pendant le geste).
+    var lab = inp.closest('.cg-in');
+    if (lab) lab.addEventListener('touchend', function (e) {
+      if (e.target && e.target.closest && e.target.closest('.cg-clr')) return;
+      if (document.activeElement === inp) return;
+      if (e.cancelable) e.preventDefault();
+      try { inp.focus(); } catch (x) { /* ignore */ }
+    }, { passive: false });
     box.querySelectorAll('[data-sk]').forEach(function (b) {
       b.addEventListener('click', function (e) {
         e.preventDefault();
@@ -471,7 +482,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2824'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2825'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
