@@ -147,5 +147,47 @@ html:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{overflow-x:clip!i
   html:root body #casinoModal .cg-step{width:32px!important;height:32px!important;min-width:32px!important;flex:0 0 32px!important}
   html:root body #casinoModal .cg-in input{font-size:15px!important;padding:0 20px 0 0!important;letter-spacing:-.02em}
 }
-/* v2817 (propriétaire : « CHOISIS UNE PORTE » sortait du bouton) : le texte du grand bouton rapetisse pour tenir sur une ligne. */
-html:root body #casinoModal .cs-go.cg-go > .cg-gol{display:block;max-width:100%;min-width:0;overflow:hidden;white-space:nowrap}
+/* v2812 (round 4) : dans un jeu, la fenêtre ne peut JAMAIS glisser (toucher la case de mise sur iPhone la décalait de ~30 px :
+   la barre du haut et la flèche ‹ étaient à moitié coupées) */
+html:root body #casinoModal#casinoModal.in-game:not(#cgx) > .modal-box{overflow:clip!important}
+/* v2812 (round 4) : petit geste d'aide à l'ouverture des jeux (main dorée qui tapote + phrase courte), parti au 1er toucher */
+html:root body #casinoModal .cg-hint{position:absolute;left:50%;bottom:12px;z-index:25;display:flex;align-items:center;gap:6px;max-width:calc(100% - 20px);padding:5px 12px 5px 5px;border-radius:999px;
+  background:rgba(8,5,26,.78);box-shadow:inset 0 0 0 1px rgba(253,230,138,.35),0 6px 18px rgba(0,0,0,.35);pointer-events:none;transform:translateX(-50%);transition:opacity .35s,transform .35s;animation:cgHintIn .5s cubic-bezier(.2,1.4,.4,1)}
+html[dir="rtl"] body #casinoModal .cg-hint{padding:5px 5px 5px 12px}
+html:root body #casinoModal .cg-hint small{display:block;min-width:0;white-space:nowrap;overflow:hidden;color:#fff;font:800 clamp(11.5px,3.5vw,14px)/1.25 var(--cg-font)}
+html:root body #casinoModal .cg-hint.off{opacity:0;transform:translateX(-50%) translateY(8px)}
+html:root body #casinoModal .cg-hhand{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,#FDE68A,#F59E0B)}
+html:root body #casinoModal .cg-hhand svg{width:20px;height:20px;fill:#FFF7E0;stroke:#3B2300;stroke-width:1.8;stroke-linejoin:round;animation:cgTap 1.1s ease-in-out infinite}
+html:root body #casinoModal .cg-hhand .cg-hrip{fill:none;stroke:#3B2300;stroke-width:1.4;transform-box:fill-box;transform-origin:center;animation:cgRip 1.1s ease-out infinite}
+@keyframes cgHintIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes cgTap{0%,100%{transform:translateY(0)}45%{transform:translateY(2.5px) scale(.94)}}
+@keyframes cgRip{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
+html.oro-lite body #casinoModal .cg-hint,html.oro-lite body #casinoModal .cg-hhand svg,html.oro-lite body #casinoModal .cg-hhand .cg-hrip{animation:none!important}
+html:root body #casinoModal .cg-hint.at-top{bottom:auto;top:12px}
+html:root body #casinoModal .cg-hint.at-mid{bottom:auto;top:50%;margin-top:-19px}
+/* v2812 (propriétaire : jamais de texte sur 2 lignes) — le nom d'un jeu dans la salle tient sur UNE ligne et rapetisse seul (fit) */
+html:root body #casinoModal#casinoModal #csView.cs-grid.cs-grid3 .cs-g b{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:0!important;white-space:nowrap;overflow:hidden}
+html:root body #casinoModal#casinoModal #csView.cs-grid.cs-grid3 .cs-g b > span{display:block;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap}
+html:root body #casinoModal#casinoModal #csView.cs-grid.cs-grid3 .cs-g b > .cs-onair{flex:none}
+/* v2812 : tablette, PC, télé : les 3 listes ont le MÊME nombre de colonnes (8) → mêmes logos, mêmes écarts, rangées pleines
+   (8 · 16 · 48 = multiples de 8) ; si une liste change de taille, js/casino.js (balanceGrid) choisit le nombre qui tombe juste */
+@media (min-width:600px){html:root body #casinoModal#casinoModal .cs-sec .cs-sec-g{grid-template-columns:repeat(8,minmax(0,1fr))}}
+/* v2812 (round 4) : la lueur décorative sous le jeu (.cs-game::before, bottom:-8 %) dépassait sous la fenêtre → la fenêtre du casino
+   « défilait » de 12 à 51 px selon l'écran. Elle s'arrête maintenant au bas du jeu. */
+html:root body #casinoModal#casinoModal #csBody .cs-game::before{bottom:0!important}
+/* v2812 (round 4) : iPhone SE (320 px) — le « + » du portefeuille chevauchait le livre des règles : sur petit écran, l'icône
+   portefeuille s'efface, les écarts se resserrent et le montant peut rapetisser ; rien ne dépasse de la case */
+@media (max-width:380px){
+  html:root body #casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet{max-width:100%;overflow:hidden;gap:6px!important;padding-inline:8px 4px!important}
+  html:root body #casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-wal{display:none!important}
+  html:root body #casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t{min-width:0;flex:1 1 auto;overflow:hidden}
+  html:root body #casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:15.5px!important}
+  html:root body #casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-plus{width:30px!important;height:30px!important;min-width:30px!important}
+}
+/* v2819 (round 4) : le texte DANS le grand bouton (span .fit / .cg-gol) est une boîte d'une ligne qui rapetisse (fit) au lieu de
+   déborder (« CHOISIS UNE POMME » coupé sur iPhone SE) */
+html:root body #casinoModal#casinoModal #csGo > .fit,html:root body #casinoModal#casinoModal #csGo > .cg-gol{display:block;flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:clip}
+/* v2819 : visiteur — les 2 boutons « Connexion · Inscription » du haut tiennent dans la case du milieu (jamais sous le livre) */
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-guestw{min-width:0;max-width:100%;overflow:hidden}
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-guestw .cs-auth{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%}
+html:root body #casinoModal#casinoModal .cs-top #csBal.cs-guestw .cs-auth > span{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:clip}
