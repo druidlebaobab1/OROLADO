@@ -169,17 +169,17 @@
     // Payout de base (90 %) : ligne toujours au prix d'entrée (copie de feed_lib.php).
     var rel = idx === 0 ? 0 : Number(row[idx]);
     // Marchés ajoutés : la ligne 90 % suit aussi le petit retour vers le prix de départ (copie de feed_lib.php).
-    if (idx === 0 && C.ASSETS[assetId] && C.ASSETS[assetId].ext) {
-      var xe = entryCents * Math.exp(fairDrift(assetId, duration, entryCents));
+    // Payout 90 % (copie de feed_lib.php, v2818) : ligne = prix d'entrée (pas d'objectif) tant que le retour attendu
+    // vers le départ est < 2 % de l'écart type du mouvement sur la durée ; sinon la ligne suit ce retour.
+    if (idx === 0) {
+      var fb = FAIR_BASE[assetId], ex = C.ASSETS[assetId];
+      var tv = fb ? fb[1] * fb[1] : (ex && ex.ext ? Number(ex.fairVar) : 0);
+      if (fb && fb[2] > 0) tv += fb[2] * (fb[3] * fb[3] + fb[3] * fb[4] + fb[4] * fb[4]) / 3;
+      var dr = fairDrift(assetId, duration, entryCents);
+      var sd = Math.sqrt(Math.floor(duration * 1000 / 250) * tv);
+      if (!(tv > 0) || Math.abs(dr) < 0.02 * sd) return entryCents;
+      var xe = entryCents * Math.exp(dr);
       return xe >= 0 ? Math.floor(xe + 0.5) : -Math.floor(-xe + 0.5);
-    }
-    // 10 marchés d'origine : retour vers le départ + glissement −variance/2 par tick (copie de feed_lib.php).
-    if (idx === 0 && FAIR_BASE[assetId]) {
-      var fb = FAIR_BASE[assetId];
-      var tv = fb[1] * fb[1];
-      if (fb[2] > 0) tv += fb[2] * (fb[3] * fb[3] + fb[3] * fb[4] + fb[4] * fb[4]) / 3;
-      var xo = entryCents * Math.exp(fairDrift(assetId, duration, entryCents) - Math.floor(duration * 1000 / 250) * tv / 2);
-      return xo >= 0 ? Math.floor(xo + 0.5) : -Math.floor(-xo + 0.5);
     }
     // Gros payouts : la ligne suit le petit retour attendu vers le prix de départ (copie de
     // orolado_fair_drift, feed_lib.php). Le 88 % reste au prix d'entrée.
@@ -212,7 +212,40 @@
     for (i = 0; i < trades.length; i++) {
       if (isOpen(trades[i])) add(canonAssetId(trades[i].assetId));
     }
+    // v2818 (propriétaire : « les nouveaux indices dorment ») : les voisins du marché regardé (dans l'ordre de la liste)
+    // restent aussi en direct → passer à l'indice d'à côté est instantané, sans chargement ni saut.
+    var order = Object.keys(C.ASSETS), w = order.indexOf(out[0]), d;
+    for (d = 1; d <= 3 && w >= 0; d++) { add(order[w + d]); add(order[w - d]); }
     return out;
+  }
+  /* v2818 : préchargement discret de TOUS les marchés (1 minute de prix chacun, 12 par requête, une requête toutes les
+     1,5 s après l'ouverture) : quand on touche un indice, sa courbe est déjà là, vivante ; seul le dernier morceau manquant
+     est demandé. Léger : ~40 Ko au total, une seule fois. */
+  var prefetchDone = false;
+  function prefetchAll() {
+    if (prefetchDone) return;
+    prefetchDone = true;
+    var ids = Object.keys(C.ASSETS).filter(function (id) { var f = feeds[id]; return !f || !f.loaded; });
+    var k = 0;
+    function next() {
+      if (k >= ids.length) return;
+      if (document.hidden) { setTimeout(next, 3000); return; }
+      var chunk = ids.slice(k, k + 12);
+      k += 12;
+      getJson('feed.php?all=1&hist=240&ids=' + chunk.join(',')).then(function (j) {
+        if (j && j.ok && j.assets) {
+          Object.keys(j.assets).forEach(function (id) {
+            if (!C.ASSETS[id]) return;
+            var f = feedOf(id);
+            if (f.loaded) return;
+            var a = j.assets[id];
+            mergeTicks(id, a.first, unpack(a));
+          });
+        }
+        setTimeout(next, 1500);
+      }, function () { setTimeout(next, 4000); });
+    }
+    setTimeout(next, 2500);
   }
   var watchKey = '';
   /** Le marché regardé a changé : on prévient la ligne directe et on charge ce qui manque. */
@@ -646,6 +679,7 @@
     startHeartbeat();
     if (pollTimer) return;
     pollAll();
+    prefetchAll();
     pollTimer = setInterval(function () {
       if (document.hidden) return;
       syncWatch();

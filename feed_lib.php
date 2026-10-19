@@ -422,19 +422,20 @@ function orolado_fair_barrier(string $asset, int $duration, string $side, float 
   // Marchés ajoutés : la ligne 90 % suit AUSSI le petit retour attendu vers le prix de départ (même calcul
   // que pour ×5 / ×10 / ×50). Ainsi hausse et baisse ont exactement 50 % de chance, quel que soit le prix
   // du moment (au prix de départ : ligne = prix d'entrée). Les 10 marchés d'origine ne changent pas.
-  if ($idx === 0 && !empty(orolado_feed_assets()[$asset]['ext'])) {
-    return (int) round($entryCents * exp(orolado_fair_drift($asset, $duration, $entryCents)), 0, PHP_ROUND_HALF_UP);
-  }
-  // 2026-10-19 (propriétaire : « pas de faille ») : les 10 marchés d'origine aussi. Leur ligne 90 % suit le
-  // petit retour vers le prix de départ ET le léger glissement d'un mouvement « prix × (1 + x) » (−variance/2
-  // par tick). Sans ça, APOCALYPSE loin de sa base (ex. 2×) sur 10 min donnait ~57 % à la VENTE (faille).
-  // Au prix de départ : ligne ≈ prix d'entrée (écart de quelques centimes au plus).
+  // Payout 90 % (×1,90) — v2818 (propriétaire : « le 90 % n'a pas d'objectif ») : la ligne qui décide reste le PRIX
+  // D'ENTRÉE (aucune ligne objectif à l'écran) tant que le petit retour attendu vers le prix de départ est minuscule
+  // (moins de 2 % de l'écart type du mouvement sur la durée : avantage possible < 1 point, toujours sous les 52,6 %
+  // qu'il faudrait pour gagner à ×1,90). Loin de la base (cas rare), la ligne suit ce retour → 50/50 : la faille
+  // (APOCALYPSE à 2× sa base sur 10 min : ~55 % à la VENTE) reste fermée. Même règle pour tous les marchés.
   if ($idx === 0) {
     $a = orolado_feed_assets()[$asset] ?? null;
     if (is_array($a)) {
-      $drag = intdiv($duration * 1000, OROLADO_TICK_MS) * orolado_feed_tick_var($a) / 2.0;
-      return (int) round($entryCents * exp(orolado_fair_drift($asset, $duration, $entryCents) - $drag), 0, PHP_ROUND_HALF_UP);
+      $dr = orolado_fair_drift($asset, $duration, $entryCents);
+      $sd = sqrt(intdiv($duration * 1000, OROLADO_TICK_MS) * orolado_feed_tick_var($a));
+      if (abs($dr) < 0.02 * $sd) return $entryCents;
+      return (int) round($entryCents * exp($dr), 0, PHP_ROUND_HALF_UP);
     }
+    return $entryCents;
   }
   // Gros payouts (×5, ×10, ×50) : la ligne suit aussi le petit retour attendu vers le prix de
   // départ (l'élastique). Sans ça, quand un prix est très loin de sa base (ex. moitié), jouer
