@@ -1956,6 +1956,7 @@ if ($isAjax) {
     if ($amt > 0) $row['amount'] = $amt;
     if ($motif !== '') $row['reason'] = $motif;
 
+    $wasPaid = in_array(strtolower((string) ($row['status'] ?? '')), ['approved', 'paid', 'completed'], true);
     if ($act === 'approve') {
       if (!empty($row['offsite']) || !admin_wd_has_local($db, $id)) {
         admin_json(['ok' => false, 'reason' => 'Retrait créé hors du site : aucun argent n’a été débité. Ne le payez pas.']);
@@ -1997,6 +1998,8 @@ if ($isAjax) {
     }
     save_db(orolado_data_file(), $db);
     admin_bust_cache();
+    // 2026-10-19 : le joueur est prévenu (notification + e-mail) une seule fois, quand le retrait passe à « validé ».
+    if ($act === 'approve' && !$wasPaid && $uid !== '') admin_wd_notify_paid($db, $uid, $row);
     admin_json(['ok' => true, 'refunded' => !empty($row['refunded']), 'status' => $row['status'] ?? '']);
   }
   if ($action === 'mark_msg') {
