@@ -334,6 +334,20 @@ function push_notify_admin(string $title, string $body, string $url = '/admin.ph
   return push_send_rows($rows, push_payload($title, $body, $url));
 }
 
+/** 2026-10-19 — notification à UN joueur (tous ses appareils abonnés), texte dans la langue de chaque appareil. */
+function push_notify_user(string $uid, callable $textFor, string $url = '/'): array {
+  $out = ['sent' => 0, 'gone' => 0, 'fail' => 0, 'codes' => []];
+  if ($uid === '') return $out;
+  foreach (push_sub_files() as $f) {
+    $r = json_decode((string) @file_get_contents($f), true);
+    if (!is_array($r) || (string) ($r['uid'] ?? '') !== $uid) continue;
+    [$t, $b] = $textFor((string) ($r['lang'] ?? 'fr'));
+    $res = push_send_rows([$r], push_payload($t, $b, $url));
+    foreach (['sent', 'gone', 'fail'] as $k) $out[$k] += (int) ($res[$k] ?? 0);
+  }
+  return $out;
+}
+
 /** Journal des envois (pour l'admin). */
 function push_log_add(array $row): void {
   $f = push_dir() . '/journal.json';

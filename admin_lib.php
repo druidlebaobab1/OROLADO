@@ -3127,3 +3127,42 @@ function admin_watch_rows(): array {
   admin_cache_set('watch', ['rows' => $rows]);
   return $rows;
 }
+
+/**
+ * 2026-10-19 (propriétaire : « quand je valide un retrait, le joueur doit être prévenu, comme les grandes plateformes ») :
+ * notification sur ses appareils + e-mail simple (texte seul, arrive dans la boîte principale). Jamais bloquant.
+ */
+function admin_wd_paid_texts(string $lang, string $amt): array {
+  $T = [
+    'fr' => ['Retrait envoyé ✅', 'Votre retrait de %s a été validé et envoyé. Merci de jouer sur OROLADO !'],
+    'en' => ['Withdrawal sent ✅', 'Your withdrawal of %s has been approved and sent. Thank you for playing on OROLADO!'],
+    'es' => ['Retiro enviado ✅', 'Tu retiro de %s fue aprobado y enviado. ¡Gracias por jugar en OROLADO!'],
+    'pt' => ['Saque enviado ✅', 'Seu saque de %s foi aprovado e enviado. Obrigado por jogar na OROLADO!'],
+    'ar' => ['تم إرسال السحب ✅', 'تمت الموافقة على سحبك بمبلغ %s وإرساله. شكرًا لك على اللعب في OROLADO!'],
+    'tr' => ['Çekim gönderildi ✅', '%s tutarındaki çekiminiz onaylandı ve gönderildi. OROLADO\'da oynadığınız için teşekkürler!'],
+    'vi' => ['Đã gửi tiền rút ✅', 'Yêu cầu rút %s của bạn đã được duyệt và gửi đi. Cảm ơn bạn đã chơi tại OROLADO!'],
+    'id' => ['Penarikan dikirim ✅', 'Penarikan Anda sebesar %s telah disetujui dan dikirim. Terima kasih telah bermain di OROLADO!'],
+    'ru' => ['Вывод отправлен ✅', 'Ваш вывод %s одобрен и отправлен. Спасибо, что играете в OROLADO!'],
+    'de' => ['Auszahlung gesendet ✅', 'Deine Auszahlung von %s wurde genehmigt und gesendet. Danke, dass du bei OROLADO spielst!'],
+    'hi' => ['निकासी भेजी गई ✅', 'आपकी %s की निकासी स्वीकृत होकर भेज दी गई है। OROLADO पर खेलने के लिए धन्यवाद!'],
+    'zh' => ['提现已发出 ✅', '您的 %s 提现已批准并发出。感谢您在 OROLADO 游戏！'],
+  ];
+  $x = $T[$lang] ?? $T['en'];
+  return [$x[0], sprintf($x[1], $amt)];
+}
+function admin_wd_notify_paid(array $db, string $uid, array $row): void {
+  $amt = '$' . number_format(abs((float) ($row['amount'] ?? 0)), 2, '.', ' ');
+  try {
+    $u = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
+    $lang = strtolower(substr((string) ($u['lang'] ?? $u['language'] ?? 'fr'), 0, 2));
+    $email = trim((string) ($u['email'] ?? ''));
+    if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) && !orolado_is_reserved_admin_email($email)) {
+      [$t, $b] = admin_wd_paid_texts($lang, $amt);
+      $hi = ['fr' => 'Bonjour', 'es' => 'Hola', 'pt' => 'Olá', 'de' => 'Hallo', 'tr' => 'Merhaba', 'id' => 'Halo', 'vi' => 'Xin chào', 'ru' => 'Здравствуйте', 'ar' => 'مرحبًا', 'hi' => 'नमस्ते', 'zh' => '您好'][$lang] ?? 'Hello';
+      admin_mail_plain($email, $t, $hi . " {prenom},\n\n" . $b . "\n\nOROLADO\nhttps://orolado.com");
+    }
+  } catch (Throwable $e) { /* jamais bloquant */ }
+  try {
+    if (function_exists('push_notify_user')) push_notify_user($uid, static fn(string $l): array => admin_wd_paid_texts($l, $amt), '/');
+  } catch (Throwable $e) { /* jamais bloquant */ }
+}
