@@ -2303,7 +2303,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/sports.js?v=2844"></script>
   <script src="js/casino-art.js?v=2805"></script>
   <script src="js/sfx.js?v=2843"></script>
-  <script src="js/casino.js?v=2842"></script>
+  <script src="js/casino.js?v=2849"></script>
   <script src="js/fit.js?v=2790"></script>
   <script src="js/learn-txt.js?v=2790"></script>
   <script src="js/learn-txt2.js?v=2790"></script>
@@ -2316,5 +2316,38 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
 /* Zoom resté après actualisation : on remet l'écran à sa taille normale à chaque ouverture. */
 (function(){function reset(){try{var m=document.querySelector('meta[name=viewport]');if(!m)return;var c=m.getAttribute('content');m.setAttribute('content',c.replace(/initial-scale=[^,]*/,'initial-scale=1.01'));setTimeout(function(){m.setAttribute('content',c);},60);}catch(e){}}window.addEventListener('pageshow',reset);window.addEventListener('load',reset);})();
 </script>
+  <script>
+  /* v2849 (propriétaire : son iPhone affichait une version vieille de plusieurs jours — Safari garde l'onglet en mémoire
+     sans le recharger). MISE À JOUR AUTOMATIQUE : au retour sur le site (après une veille de plus de 2 min) et toutes les
+     30 min, on compare les versions des fichiers du site à celles de la page affichée ; si le site a changé, la page se
+     recharge toute seule — jamais pendant un trade ouvert, un jeu, une saisie ou une fenêtre ouverte (on réessaie plus tard). */
+  (function () {
+    function sig(html) { var m = html.match(/(?:app|chart|engine|casino|indices)\.js\?v=\d+/g); return m ? m.join('|') : ''; }
+    var mine = sig(document.documentElement.innerHTML), hiddenAt = 0, last = Date.now(), want = false;
+    function busy() {
+      try {
+        if (window.D6 && D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount() > 0) return true;
+        var m = document.getElementById('casinoModal'); if (m && m.offsetParent !== null) return true;
+        var a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+        if (document.querySelector('.modal.open, .modal.show, .sheet.open, [role="dialog"][open]')) return true;
+      } catch (e) { return true; }
+      return false;
+    }
+    function apply() { if (want && !document.hidden && !busy()) { want = false; location.reload(); } }
+    function check() {
+      last = Date.now();
+      if (!mine || !window.fetch) return;
+      fetch('/?u=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
+        var s = t && sig(t); if (s && s !== mine) { want = true; apply(); }
+      }).catch(function () {});
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { hiddenAt = Date.now(); return; }
+      if (hiddenAt && Date.now() - hiddenAt > 120000) check(); else apply();
+    });
+    window.addEventListener('pageshow', function (e) { if (e && e.persisted) check(); });
+    setInterval(function () { if (want) apply(); else if (!document.hidden && Date.now() - last > 1800000) check(); }, 20000);
+  })();
+  </script>
 </body>
 </html>
