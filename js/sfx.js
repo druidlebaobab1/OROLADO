@@ -6,7 +6,8 @@
    - Volume général doux (0,3) + compresseur léger ; nombre de voix limité ; rien quand l'onglet est caché.
    - Chaque jeu a un THÈME (famille : roue, rouleaux, avion, cartes…) + une petite mélodie de gain propre au jeu
      (note de départ, motif et tempo tirés du nom du jeu).
-   - Perte : aucun son, vibration courte (Android ; l'iPhone ne vibre pas depuis un site).
+   - Perte : vibration courte (Android ; l'iPhone ne vibre pas depuis un site) + v2851 : petit motif d'échec doux et bas.
+   - v2851 : AMBIANCE pendant chaque partie + vrais bruitages d'action (explosion, tir, zombie, pas, cha-ching…) : voir plus bas.
    - Bouton muet : localStorage 'oro_sfx' = 'on' | 'off' (par défaut : son activé).
    API : D6.Sfx.play(évènement, options, clé du jeu) · win(rapport gain/mise) · lose() · game(clé) · on() · set(bool) · button(el)
    Évènements : launch go tick stop step act hit card roll flip rise ball chip shot reveal. */
@@ -77,7 +78,7 @@
   // un souffle (bruit filtré) : clics, frottements, élans
   function noise(c, o) {
     if (!nbuf || nbuf.sampleRate !== c.sampleRate) {
-      var n = Math.floor(c.sampleRate * 0.8); nbuf = c.createBuffer(1, n, c.sampleRate);
+      var n = Math.floor(c.sampleRate * 2); nbuf = c.createBuffer(1, n, c.sampleRate);
       var ch = nbuf.getChannelData(0); for (var i = 0; i < n; i++) ch[i] = Math.random() * 2 - 1;
     }
     var t = c.currentTime + (o.t || 0), d = Math.max(0.012, o.d || 0.1), a = Math.min(o.a || 0.002, d * 0.5), v = o.v || 0.15;
@@ -193,6 +194,15 @@
     stack: 'build', starbridge: 'build', cupcake: 'build',
     airstrike: 'shoot', zombiesiege: 'shoot', brickbreak: 'arcade', neonsnake: 'arcade'
   };
+  // casb (round 6) : familles des jeux de tables, cartes, dés et hasard d'arcade
+  Object.assign(MAP, { blackjack: 'cards', tcpoker: 'cards', holdem: 'cards', niuniu: 'cards', acerace: 'cards', trente: 'cards', clocksol: 'cards',
+    yatzy: 'dice', crownanchor: 'dice', derby: 'dice', ceelo: 'dice', shipcrew: 'dice', dblroul: 'wheel', twinwheel: 'wheel', twoup: 'coin', fantan: 'cups',
+    pachinko: 'balls', skeeball: 'balls', ladder: 'pick', ducks: 'cups', dreidel: 'wheel', oracle: 'show', rpsduel: 'cups', cometqueen: 'crash' });
+  /* ---- casa (round 6) : 12 machines à sous + 12 jeux instantanés (js/games/casa1-3.js) ---- */
+  Object.assign(MAP, { scarab: 'slots', kraken: 'slots', donut: 'slots', cherrybar: 'slots', ufo: 'slots', koi: 'slots', goldtrain: 'slots', viking: 'slots',
+    safari: 'slots', rubymine: 'slots', pumpkin: 'slots', medusa: 'slots', scratchwin: 'scratch', pickbox: 'chests', ladder: 'pick', hilorun: 'cards',
+    envelope: 'chests', treasure: 'pick', flip21: 'cards', popdarts: 'throwg', egghunt: 'pick', shells: 'cups', colorwheel: 'wheel', luckyten: 'balls' });
+  /* ---- fin casa ---- */
   // notes de départ (do5, ré5, mi5, fa5, sol5, la4, si4…) : chaque jeu tire la sienne, son motif et son tempo
   var ROOTS = [3, 5, 7, 8, 10, 0, 2, -2, 1];
   var PATS = [[0, 4, 7, 12], [0, 2, 4, 7, 12], [4, 7, 12, 16], [0, 7, 12, 16], [7, 9, 12, 16], [0, 4, 9, 12], [0, 4, 7, 9, 12], [2, 4, 7, 14]];
@@ -218,7 +228,7 @@
   function play(ev, a, k) {
     a = a || {};
     var c = ready(); if (!c || !casinoOpen()) return false;
-    var P = theme(k), name = a.as || P.F[ev] || DEF[ev] || ev, fn = R[name];
+    var P = theme(k), name = a.as || (ev === 'crash' && CRASH_KEY[P.k]) || P.F[ev] || DEF[ev] || ev, fn = R[name];
     if (!fn) return false;
     if (!gate(name)) return false;
     var prio = ev === 'stop' || ev === 'launch' || ev === 'go';
@@ -230,7 +240,9 @@
   // gain : petite mélodie propre au jeu ; gros gain (×5) : pluie de pièces ; très gros (×25) : étincelles + accord
   function win(ratio, k) {
     var c = ready(); if (!c) return false;
-    var P = theme(k), ins = INS[P.F.ins] || INS.bell, sp = P.sp, pat = P.pat;
+    var P = theme(k), ins0 = INS[P.F.ins] || INS.bell, sp = P.sp, pat = P.pat;
+    // v2851 : juste après le « cha-ching » d'un encaissement, la mélodie part un peu plus tard (pas de bouillie)
+    var ofs = last.cashout && performance.now() - last.cashout < 400 ? 0.16 : 0, ins = ofs ? function (c1, f, t, v, d) { ins0(c1, f, t + ofs, v, d); } : ins0;
     ratio = Number(ratio) || 0;
     if (ratio < 1.01) { // petit retour (×0,5, égalité) : deux notes discrètes
       ins(c, note(P, pat[0]), 0, 0.12, 0.25); ins(c, note(P, pat[1]), sp, 0.12, 0.4);
@@ -258,9 +270,284 @@
   function lose() {
     if (!isOn() || document.hidden) return false;
     try { if (navigator.vibrate) { navigator.vibrate(25); vibN++; } } catch (e) { /* ignore */ }
-    note2log('lose', cur, 'vib');
+    // v2851 (propriétaire : « quand il perd on va sentir ») : petit motif d'échec, doux et bas (jamais agressif)
+    var c = ready(), st = false;
+    if (c && casinoOpen()) { try { R.fail(c, theme(cur), {}); st = true; } catch (e) { st = false; } }
+    note2log('lose', cur, st ? 'sting' : 'vib');
     return true;
   }
+
+  /* =====================================================================================================================
+     v2851 — AMBIANCE DE PARTIE + BRUITAGES D'ACTION (propriétaire : « les jeux n'ont pas de vrai son, on ne sent pas
+     l'action » ; « quand il perd on va sentir »). Toujours 100 % synthétisé, aucun fichier.
+     1) AMBIANCE (« bed ») pendant qu'une partie tourne : boucle douce propre au thème du jeu, qui monte avec le
+        multiplicateur / le suspense (coureurs : rythme + pas qui accélèrent ; avions/fusées : moteur dont la note monte ;
+        guerre / zombies : tambours tendus, bataille au loin, grognements ; course : moteurs + foule ; machines à sous :
+        rouleaux qui tournent ; tables : salle de casino feutrée ; live : pouls de suspense pendant le tirage).
+        ≤ 3 sons continus (oscillateur, souffle en boucle, LFO) + des petites frappes programmées → ≤ 4 voix ; nœuds
+        réutilisés pendant la partie, une petite horloge (100 ms) seulement quand une ambiance existe ; rien quand l'onglet
+        est caché, le son coupé ou le casino fermé ; mode « lite » (vieux Android) : 2 sons continus, frappes allégées.
+     2) BRUITAGES : boom (explosion), engine (moteur qui rugit), takeoff, gun, blast (cible touchée), zombie, bump (obstacle),
+        footstep, jump, whoosh, coin, cashout (« cha-ching »), fail (perte), near (frôlé), cd (compte à rebours), crowd.
+     API (gardez ces noms) :
+       D6.Sfx.amb(jeuOuThème, true|false, intensité 0..1) — démarre / met à jour / arrête l'ambiance (appel à chaque image
+         possible : une mise à jour ne coûte qu'une affectation). Thèmes : engine jet rocket run arcade war zombie race horses
+         reel table suspense sport.
+       D6.Sfx.play('boom' | 'gun' | 'hit' | 'zombie' | 'step' | 'jump' | 'whoosh' | 'coin' | 'cashout' | 'fail' | 'tick' |
+         'reel' | 'crowd' | 'engine' | 'takeoff' | 'bump' | 'near' …, options, clé du jeu)
+       D6.Sfx.bed() → état de l'ambiance (tests). Le kit du casino (js/casino.js) branche tout ça au début / à la fin des
+       parties ; les jeux n'ajoutent qu'une ligne quand il faut (moteur de l'avion, tirage live…). */
+  function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+  // une voix « parlée » (grognement, moteur) : oscillateur → passe-bande
+  function voc(c, o) {
+    var t = c.currentTime + (o.t || 0), d = o.d || 0.5, osc = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain();
+    osc.type = o.type || 'sawtooth'; osc.frequency.setValueAtTime(o.f, t); if (o.f2) osc.frequency.exponentialRampToValueAtTime(o.f2, t + d);
+    f.type = o.ft || 'bandpass'; f.frequency.value = o.bp || 600; f.Q.value = o.q || 3;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(o.v || 0.05, t + (o.a || 0.08)); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    osc.connect(f); f.connect(g); g.connect(bus(c)); osc.start(t); osc.stop(t + d + 0.05); track(osc);
+  }
+  var R2 = {
+    // grosse explosion (avion / fusée / mine) : coup sourd + souffle qui s'éteint + débris
+    boom: function (c, P, a) {
+      var s = a.s || 1, L = lite();
+      tone(c, { f: 92, f2: 30, d: 1.05, v: 0.5 * s, a: 0.004 });
+      noise(c, { ft: 'lowpass', f: 1700, f2: 100, d: 1.35, v: 0.36 * s, a: 0.003 });
+      if (!L) { noise(c, { t: 0.01, f: 2400, f2: 500, q: 0.8, d: 0.35, v: 0.12 * s }); for (var i = 0; i < 4; i++) noise(c, { t: 0.18 + Math.random() * 0.6, f: 900 + Math.random() * 1500, q: 3, d: 0.04, v: 0.05 * s }); }
+    },
+    blast: function (c, P, a) { var s = a.s || 1; tone(c, { f: 120, f2: 42, d: 0.28, v: 0.26 * s, a: 0.003 }); noise(c, { ft: 'lowpass', f: 1300, f2: 180, d: 0.38, v: 0.2 * s, a: 0.002 }); },
+    gun: function (c, P) { noise(c, { f: 1900, f2: 700, q: 0.9, d: 0.07, v: 0.2, a: 0.001 }); tone(c, { f: 150, f2: 55, d: 0.1, v: 0.22, a: 0.001 }); if (!lite()) noise(c, { t: 0.04, ft: 'lowpass', f: 600, d: 0.22, v: 0.05, a: 0.01 }); },
+    zombie: function (c, P) { voc(c, { f: 150 + Math.random() * 30, f2: 68, d: 0.55, bp: 520, q: 4, v: 0.1 }); noise(c, { ft: 'lowpass', f: 650, d: 0.14, v: 0.16 }); },
+    groan: function (c, P, a) { voc(c, { f: 105 + Math.random() * 40, f2: 72, d: 0.95, bp: 480 + Math.random() * 160, q: 5, v: 0.06 * (a.v || 1), a: 0.25 }); },
+    bump: function (c, P) { tone(c, { f: 190, f2: 58, d: 0.24, v: 0.36, a: 0.002 }); noise(c, { ft: 'lowpass', f: 900, d: 0.11, v: 0.22 }); tone(c, { t: 0.03, f: 880, f2: 380, d: 0.14, v: 0.04, type: 'triangle', a: 0.003 }); },
+    footstep: function (c, P, a) { var s = a.v || 1, o = a.t || 0; noise(c, { t: o, ft: 'lowpass', f: 380 + (a.alt ? 60 : 0), d: 0.055, v: 0.08 * s }); tone(c, { t: o, f: a.alt ? 96 : 84, f2: 58, d: 0.06, v: 0.08 * s, a: 0.002 }); },
+    jump: function (c, P) { tone(c, { f: P.r * 0.6, f2: P.r * 1.25, d: 0.11, v: 0.12, a: 0.004 }); noise(c, { f: 600, f2: 1800, q: 1, d: 0.12, v: 0.05, a: 0.02 }); },
+    engine: function (c, P) { voc(c, { f: 70, f2: 190, d: 0.7, ft: 'lowpass', bp: 900, q: 1, v: 0.09, a: 0.06 }); noise(c, { ft: 'lowpass', f: 300, f2: 1400, d: 0.7, v: 0.07, a: 0.1 }); },
+    cashout: function (c, P) { // « cha-ching » : tiroir-caisse + deux clochettes + pièces
+      noise(c, { ft: 'highpass', f: 3200, d: 0.07, v: 0.1, a: 0.002 });
+      INS.bell(c, 2093, 0.04, 0.09, 0.32); INS.bell(c, 2637, 0.12, 0.09, 0.5);
+      if (!lite()) for (var i = 0; i < 4; i++) tone(c, { t: 0.18 + i * 0.05, f: 3000 + Math.random() * 1500, d: 0.08, v: 0.025, a: 0.002 });
+      last.cashout = performance.now();
+    },
+    // perte : deux notes qui descendent, feutrées et basses (on sent la perte, sans agresser)
+    fail: function (c, P) {
+      var f = P.r * 0.5;
+      tone(c, { f: f, d: 0.22, v: 0.09, type: 'triangle', lp: 1100, a: 0.01 });
+      tone(c, { t: 0.17, f: f * 0.84, f2: f * 0.79, d: 0.5, v: 0.09, type: 'triangle', lp: 900, a: 0.012 });
+      tone(c, { t: 0.17, f: f * 0.42, d: 0.45, v: 0.05, a: 0.02 });
+    },
+    near: function (c, P) { tone(c, { f: 220, d: 0.6, v: 0.05, a: 0.2 }); tone(c, { f: 233, d: 0.6, v: 0.04, a: 0.2 }); tone(c, { f: 70, f2: 45, d: 0.12, v: 0.18 }); tone(c, { t: 0.2, f: 70, f2: 45, d: 0.12, v: 0.12 }); },
+    cd: function (c, P, a) { tone(c, { f: a.last ? 1568 : 1046, d: a.last ? 0.16 : 0.06, v: 0.07, a: 0.002 }); },
+    crowd: function (c, P, a) { var s = a.v || 1; noise(c, { f: 1100, f2: 1500, q: 0.5, d: 1.5, v: 0.09 * s, a: 0.3 }); if (!lite()) noise(c, { t: 0.1, f: 2600, q: 0.8, d: 1.1, v: 0.03 * s, a: 0.3 }); }
+  };
+  Object.keys(R2).forEach(function (n) { R[n] = R2[n]; });
+  GAP.footstep = 60; GAP.gun = 70; GAP.zombie = 90; GAP.blast = 70; GAP.bump = 200; GAP.boom = 300; GAP.cashout = 250; GAP.fail = 400; GAP.crowd = 600; GAP.engine = 300; GAP.cd = 300;
+  // familles : le geste et l'objet touché ont un vrai bruitage ; « crash » = l'obstacle / la fin de la partie
+  FAM.war = { ins: 'synth', sp: 0.08, launch: 'pop', act: 'gun', hit: 'blast', crash: 'boom' };
+  FAM.zombie = { ins: 'synth', sp: 0.08, launch: 'pop', act: 'gun', hit: 'zombie', crash: 'bump' };
+  MAP.airstrike = 'war'; MAP.zombiesiege = 'zombie';
+  FAM.run.step = 'footstep'; FAM.run.act = 'jump'; FAM.run.crash = 'bump';
+  FAM.fly.crash = 'boom'; FAM.build.crash = 'bump'; FAM.throwg.crash = 'bump'; FAM.arcade.crash = 'bump'; FAM.shoot.crash = 'boom'; FAM.crash.crash = 'boom';
+  DEF.crash = 'bump'; DEF.near = 'near'; DEF.cashout = 'cashout'; DEF.fail = 'fail';
+  var CRASH_KEY = { flappyrock: 'boom', dodge: 'boom', orbit: 'bump', mines: 'blast', balloon: 'blast', stack: 'bump' };
+
+  /* ---------- ambiances : réglages en fonction de l'intensité i (0 → 1) ---------- */
+  function fs(f) { return typeof f === 'function' ? f : function () { return f; }; }
+  var BEDS = {
+    engine: { vol: 1, start: 'takeoff', d: { type: 'sawtooth', f: function (i) { return 50 + 78 * i; }, lp: function (i) { return 260 + 950 * i; }, v: function (i) { return 0.06 + 0.035 * i; } },
+      d2: { type: 'triangle', mul: 2.004, v: 0.022 }, n: { ft: 'lowpass', f: function (i) { return 260 + 1300 * i; }, q: 0.7, v: function (i) { return 0.03 + 0.05 * i; } },
+      lfo: { f: function (i) { return 9 + 8 * i; }, to: 'dg', depth: 0.35 } },
+    jet: { vol: 1, start: 'takeoff', d: { type: 'sawtooth', f: function (i) { return 70 + 110 * i; }, lp: function (i) { return 400 + 1500 * i; }, v: function (i) { return 0.05 + 0.03 * i; } },
+      d2: { type: 'triangle', mul: 4.01, v: 0.011 }, n: { ft: 'bandpass', f: function (i) { return 800 + 1700 * i; }, q: 0.8, v: function (i) { return 0.03 + 0.04 * i; } },
+      lfo: { f: function (i) { return 5 + 4 * i; }, to: 'dg', depth: 0.2 } },
+    rocket: { vol: 1, start: 'takeoff', d: { type: 'sawtooth', f: function (i) { return 40 + 58 * i; }, lp: function (i) { return 210 + 700 * i; }, v: function (i) { return 0.05 + 0.03 * i; } },
+      n: { ft: 'lowpass', f: function (i) { return 420 + 1800 * i; }, q: 0.6, v: function (i) { return 0.05 + 0.065 * i; } },
+      lfo: { f: function (i) { return 12 + 10 * i; }, to: 'ng', depth: 0.3 } },
+    run: { vol: 1, start: 'whoosh', d: { type: 'triangle', f: function (i, P) { return P.r / 8; }, lp: 480, v: 0.028 },
+      n: { ft: 'highpass', f: 3200, q: 0.5, v: function (i) { return 0.006 + 0.014 * i; } },
+      bpm: function (i) { return 112 + 58 * i; },
+      beat: function (c, P, n, T, i, V) { // une croche : un pas (gauche / droite), grosse caisse au temps, charleston à contretemps, basse
+        var o = T - c.currentTime;
+        R.footstep(c, P, { t: o, v: 0.55 * V, alt: n % 2 });
+        if (n % 4 === 0) tone(c, { t: o, f: 118, f2: 46, d: 0.13, v: 0.11 * V, a: 0.002 });
+        if (n % 2 === 1 && i > 0.2) noise(c, { t: o, ft: 'highpass', f: 7000, d: 0.025, v: 0.022 * V });
+        if (n % 8 === 0 && !lite()) tone(c, { t: o, f: note(P, [0, 0, 5, 7][(n >> 3) % 4] - 24), d: 0.22, v: 0.06 * V, type: 'triangle', lp: 700, a: 0.004 });
+      } },
+    arcade: { vol: 1, d: { type: 'sine', f: function (i, P) { return P.r / 4; }, lp: 700, v: 0.024 },
+      bpm: function (i) { return 100 + 52 * i; },
+      beat: function (c, P, n, T, i, V) {
+        var o = T - c.currentTime;
+        tone(c, { t: o, f: note(P, PENTA[(n * 3 + (n >> 3)) % 5] - 12), d: 0.13, v: 0.034 * V, type: 'triangle', lp: 1800, a: 0.003 });
+        if (n % 4 === 0) tone(c, { t: o, f: 110, f2: 45, d: 0.12, v: 0.09 * V, a: 0.002 });
+        if (n % 2 === 1 && i > 0.3 && !lite()) noise(c, { t: o, ft: 'highpass', f: 7500, d: 0.02, v: 0.018 * V });
+      } },
+    war: { vol: 1, d: { type: 'sawtooth', f: 55, lp: function (i) { return 190 + 160 * i; }, v: function (i) { return 0.04 + 0.02 * i; } },
+      n: { ft: 'lowpass', f: 170, q: 0.7, v: function (i) { return 0.022 + 0.02 * i; } }, lfo: { f: 0.25, to: 'nf', depth: 60 },
+      bpm: function (i) { return 92 + 40 * i; },
+      beat: function (c, P, n, T, i, V) { // tambours tendus
+        var o = T - c.currentTime, k = n % 8;
+        if (k === 0 || k === 3 || k === 4) tone(c, { t: o, f: k === 3 ? 150 : 120, f2: 72, d: 0.22, v: 0.14 * V, a: 0.003 });
+        if (k === 6) noise(c, { t: o, f: 1700, q: 0.8, d: 0.1, v: 0.06 * V });
+        if (i > 0.55 && k === 7 && !lite()) noise(c, { t: o, f: 1700, q: 0.8, d: 0.07, v: 0.04 * V });
+      },
+      rp: [1.6, 4.2],
+      rnd: function (c, P, i, V) { // bataille au loin : explosion sourde ou rafale
+        if (Math.random() < 0.5) { noise(c, { ft: 'lowpass', f: 260, f2: 80, d: 0.9, v: 0.07 * V, a: 0.01 }); tone(c, { f: 70, f2: 34, d: 0.7, v: 0.07 * V, a: 0.005 }); }
+        else { var m = 3 + Math.floor(Math.random() * 3); for (var j = 0; j < m; j++) noise(c, { t: j * 0.075, f: 1800 + Math.random() * 600, q: 2, d: 0.03, v: 0.028 * V }); }
+      } },
+    zombie: { vol: 1, d: { type: 'sawtooth', f: 46, lp: 175, v: 0.045 }, n: { ft: 'bandpass', f: 320, q: 2, v: function (i) { return 0.012 + 0.012 * i; } },
+      lfo: { f: 0.15, to: 'df', depth: 3 },
+      bpm: function (i) { return 76 + 46 * i; },
+      beat: function (c, P, n, T, i, V) { var o = T - c.currentTime; if (n % 2 === 0) { tone(c, { t: o, f: 72, f2: 40, d: 0.14, v: 0.16 * V, a: 0.003 }); tone(c, { t: o + 0.16, f: 66, f2: 40, d: 0.12, v: 0.1 * V, a: 0.003 }); } },
+      rp: [2, 5], rnd: function (c, P, i, V) { R.groan(c, P, { v: V }); } },
+    race: { vol: 1, start: 'engine', d: { type: 'sawtooth', f: function (i) { return 64 + 66 * i; }, lp: function (i) { return 500 + 1000 * i; }, v: function (i) { return 0.045 + 0.02 * i; } },
+      lfo: { f: 0.6, to: 'df', depth: 16 }, n: { ft: 'bandpass', f: 1000, q: 0.6, v: function (i) { return 0.02 + 0.03 * i; } },
+      rp: [3, 6], rnd: function (c, P, i, V) { R.crowd(c, P, { v: 0.35 * V }); } },
+    horses: { vol: 1, d: { type: 'triangle', f: function (i, P) { return P.r / 8; }, lp: 300, v: 0.02 }, n: { ft: 'bandpass', f: 1000, q: 0.6, v: function (i) { return 0.022 + 0.03 * i; } },
+      bpm: function (i) { return 118 + 40 * i; },
+      beat: function (c, P, n, T, i, V) { if (n % 2) return; var o = T - c.currentTime; [0, 0.07, 0.14].forEach(function (d, j) { tone(c, { t: o + d, f: 115 - j * 12, f2: 70, d: 0.06, v: 0.09 * V, a: 0.002 }); }); if (!lite()) noise(c, { t: o, ft: 'lowpass', f: 500, d: 0.05, v: 0.05 * V }); },
+      rp: [4, 7], rnd: function (c, P, i, V) { R.crowd(c, P, { v: 0.4 * V }); } },
+    reel: { vol: 1, d: { type: 'sawtooth', f: 36, lp: 150, v: 0.03 }, n: { ft: 'bandpass', f: 1500, q: 1.6, v: function (i) { return 0.03 + 0.015 * i; } },
+      lfo: { f: 18, to: 'ng', depth: 0.3 } },
+    table: { vol: 1, d: { type: 'triangle', f: function (i, P) { return P.r / 4; }, lp: 500, v: 0.012 }, n: { ft: 'lowpass', f: 420, q: 0.5, v: 0.02 },
+      lfo: { f: 0.23, to: 'ng', depth: 0.4 },
+      rp: [1.5, 4], rnd: function (c, P, i, V) { noise(c, { f: 4000, q: 6, d: 0.02, v: 0.02 * V }); noise(c, { t: 0.06, f: 3700, q: 6, d: 0.02, v: 0.016 * V }); } },
+    suspense: { vol: 1, d: { type: 'sine', f: function (i, P) { return P.r / 4 * (1 + 0.5 * i); }, lp: function (i) { return 600 + 500 * i; }, v: function (i) { return 0.028 + 0.02 * i; } },
+      d2: { type: 'sine', mul: 1.498, v: 0.011 }, n: { ft: 'bandpass', f: 2400, q: 0.7, v: function (i) { return 0.004 + 0.01 * i; } },
+      bpm: function (i) { return 66 + 56 * i; },
+      beat: function (c, P, n, T, i, V) { if (n % 2) return; var o = T - c.currentTime; tone(c, { t: o, f: 68, f2: 42, d: 0.13, v: 0.13 * V, a: 0.003 }); if (!lite()) tone(c, { t: o + 0.17, f: 62, f2: 40, d: 0.11, v: 0.08 * V, a: 0.003 }); } },
+    sport: { vol: 1, start: 'crowd', n: { ft: 'bandpass', f: 1000, q: 0.55, v: function (i) { return 0.03 + 0.03 * i; } }, lfo: { f: 0.18, to: 'ng', depth: 0.35 },
+      bpm: function () { return 96; },
+      beat: function (c, P, n, T, i, V) { var k = n % 8; if ((k === 0 || k === 3) && i > 0.15) tone(c, { t: T - c.currentTime, f: 92, f2: 55, d: 0.2, v: 0.09 * V, a: 0.003 }); },
+      rp: [3, 6], rnd: function (c, P, i, V) { R.crowd(c, P, { v: 0.3 * V }); } }
+  };
+  var BED_OF = {
+    crash: 'engine', jet: 'jet', rocket: 'rocket', flappyrock: 'rocket', airstrike: 'war', zombiesiege: 'zombie', fleets: 'war',
+    race: 'race', highway: 'race', horses: 'horses',
+    hamster: 'run', jungledash: 'run', metrodash: 'run', spacerun: 'run', princess: 'run', chicken: 'run',
+    basket: 'sport', archer: 'sport', dartspro: 'sport', penalty: 'sport', goal: 'sport', bowling: 'sport', golf: 'sport', skijump: 'sport', cricket: 'sport',
+    pool: 'sport', tennis: 'sport', striker: 'sport', horseshoe: 'sport', darts: 'sport',
+    cluster: 'reel', megaways: 'reel', coinlink: 'reel',
+    mines: 'suspense', tower: 'suspense', apple: 'suspense', balloon: 'suspense', safe: 'suspense', fireworks: 'suspense', bingo: 'suspense', limbo: 'suspense',
+    hilo: 'suspense', catwalk: 'suspense', gemcount: 'suspense', claw: 'suspense',
+    pinata: 'arcade', pinball: 'arcade', moles: 'arcade', coinpush: 'table', fishing: 'table', gumball: 'table', jewelbox: 'table', domino: 'table',
+    nails: 'table', daisy: 'table', bouquet: 'table', goldpan: 'table', snakes: 'table', craps: 'table', checkers: 'table', connect4: 'table'
+  };
+  var BED_FAM = { wheel: 'suspense', live: 'suspense', slots: 'reel', crash: 'engine', limbo: 'suspense', dice: 'table', cards: 'table', pick: 'suspense',
+    balloon: 'suspense', coin: 'table', balls: 'suspense', scratch: 'table', chests: 'table', sport: 'sport', bowling: 'sport', horses: 'horses', cars: 'race',
+    cups: 'table', show: 'suspense', fleet: 'war', claw: 'suspense', run: 'run', fly: 'arcade', throwg: 'arcade', build: 'arcade', shoot: 'war', arcade: 'arcade',
+    war: 'war', zombie: 'zombie' };
+  function bedOf(k) { return BED_OF[k] || BED_FAM[theme(k).fam] || 'table'; }
+
+  var B = null, bedT = 0;
+  function bedInfo() {
+    if (!B) return null;
+    var nd = B.nodes, v = nd ? ['dO', 'd2O', 'nS', 'lO'].filter(function (x) { return nd[x]; }).length : 0;
+    return { key: B.key, theme: B.th, src: B.src, i: Math.round(B.iv * 100) / 100, m: B.m || null, playing: !!nd, voices: v, beats: B.n };
+  }
+  function bedBuild(c) {
+    var S = BEDS[B.th], P = B.P, L = lite(), t = c.currentTime, i = B.iv, nd = {};
+    nd.g = c.createGain(); nd.g.gain.setValueAtTime(0.0001, t); nd.g.gain.linearRampToValueAtTime(S.vol * (L ? 0.85 : 1), t + 0.45); nd.g.connect(bus(c));
+    if (S.d) {
+      nd.dO = c.createOscillator(); nd.dO.type = S.d.type; nd.dO.frequency.value = fs(S.d.f)(i, P);
+      nd.dF = c.createBiquadFilter(); nd.dF.type = 'lowpass'; nd.dF.frequency.value = fs(S.d.lp)(i, P); nd.dF.Q.value = 0.7;
+      nd.dG = c.createGain(); nd.dG.gain.value = fs(S.d.v)(i, P);
+      nd.dO.connect(nd.dF); nd.dF.connect(nd.dG); nd.dG.connect(nd.g); nd.dO.start(t);
+      if (S.d2 && !L) { nd.d2O = c.createOscillator(); nd.d2O.type = S.d2.type; nd.d2O.frequency.value = nd.dO.frequency.value * S.d2.mul; nd.d2G = c.createGain(); nd.d2G.gain.value = S.d2.v; nd.d2O.connect(nd.d2G); nd.d2G.connect(nd.dF); nd.d2O.start(t); }
+    }
+    if (S.n) {
+      if (!nbuf || nbuf.sampleRate !== c.sampleRate) noise(c, { d: 0.02, v: 0.0001 }); // crée le bruit partagé
+      nd.nS = c.createBufferSource(); nd.nS.buffer = nbuf; nd.nS.loop = true;
+      nd.nF = c.createBiquadFilter(); nd.nF.type = S.n.ft; nd.nF.frequency.value = fs(S.n.f)(i, P); nd.nF.Q.value = S.n.q || 0.7;
+      nd.nG = c.createGain(); nd.nG.gain.value = fs(S.n.v)(i, P);
+      nd.nS.connect(nd.nF); nd.nF.connect(nd.nG); nd.nG.connect(nd.g); nd.nS.start(t, Math.random() * 1.5);
+    }
+    if (S.lfo && !L) {
+      var tgt = S.lfo.to === 'dg' ? nd.dG && nd.dG.gain : S.lfo.to === 'ng' ? nd.nG && nd.nG.gain : S.lfo.to === 'nf' ? nd.nF && nd.nF.frequency : nd.dO && nd.dO.frequency;
+      if (tgt) {
+        nd.lO = c.createOscillator(); nd.lO.frequency.value = fs(S.lfo.f)(i, P); nd.lG = c.createGain();
+        var base0 = S.lfo.to === 'dg' ? nd.dG.gain.value : S.lfo.to === 'ng' ? nd.nG.gain.value : 1;
+        nd.lG.gain.value = (S.lfo.to === 'dg' || S.lfo.to === 'ng') ? base0 * S.lfo.depth : S.lfo.depth;
+        nd.lO.connect(nd.lG); nd.lG.connect(tgt); nd.lO.start(t);
+      }
+    }
+    B.nodes = nd; B.next = 0; B.rndAt = 0; B.bornA = t;
+  }
+  function bedKill(fade) { // arrête les sons (l'envie d'ambiance reste, sauf si bedOff)
+    if (!B || !B.nodes) return;
+    var nd = B.nodes; B.nodes = null;
+    try {
+      var c = nd.g.context, t = c.currentTime, f = Math.max(0.03, fade || 0.05);
+      nd.g.gain.cancelScheduledValues(t); nd.g.gain.setValueAtTime(nd.g.gain.value, t); nd.g.gain.linearRampToValueAtTime(0.0001, t + f);
+      ['dO', 'd2O', 'nS', 'lO'].forEach(function (x) { if (nd[x]) { try { nd[x].stop(t + f + 0.05); } catch (e) { /* ignore */ } } });
+      setTimeout(function () { try { nd.g.disconnect(); } catch (e) { /* ignore */ } }, (f + 0.2) * 1000);
+    } catch (e) { /* ignore */ }
+  }
+  function bedOff(fade) {
+    if (!B) return;
+    note2log('amb', B.key, 'off');
+    bedKill(fade); B = null;
+    clearInterval(bedT); bedT = 0;
+  }
+  function bedMute(off) { if (off) bedKill(0.05); }
+  function bedSet(c, nd, S, i, P) {
+    var t = c.currentTime, k = 0.25;
+    if (nd.dO) { var f = fs(S.d.f)(i, P); nd.dO.frequency.setTargetAtTime(f, t, k); nd.dF.frequency.setTargetAtTime(fs(S.d.lp)(i, P), t, k); nd.dG.gain.setTargetAtTime(fs(S.d.v)(i, P), t, k); if (nd.d2O) nd.d2O.frequency.setTargetAtTime(f * S.d2.mul, t, k); }
+    if (nd.nS) { nd.nF.frequency.setTargetAtTime(fs(S.n.f)(i, P), t, k); nd.nG.gain.setTargetAtTime(fs(S.n.v)(i, P), t, k); }
+    if (nd.lO) nd.lO.frequency.setTargetAtTime(fs(S.lfo.f)(i, P), t, k);
+  }
+  function bedLoop() {
+    if (!B) { clearInterval(bedT); bedT = 0; return; }
+    var now = Date.now();
+    if (!casinoOpen() || (cur && B.key !== cur) || (B.ttl && now > B.ttl)) { bedOff(0.5); return; } // casino fermé, autre jeu, partie oubliée
+    if (!isOn() || document.hidden) { bedKill(0.05); return; } // muet / onglet caché : silence total (l'ambiance revient après)
+    var c = ready(); if (!c) return; // iPhone pas encore déverrouillé
+    var S = BEDS[B.th], P = B.P;
+    // intensité : horloge du multiplicateur (jeux d'adresse), valeur donnée par le jeu, ou montée douce avec le temps
+    var i = B.i;
+    if (B.clk) { var el = now / 1000 + B.clk.off - B.clk.t0, m = Math.exp(B.clk.rate * Math.max(0, el)); B.m = Math.round(m * 100) / 100; i = clamp01(Math.log(m) / Math.log(8)); }
+    else if (B.auto) i = Math.max(B.i, 1 - Math.exp(-(now - B.born) / 18000));
+    B.iv += (i - B.iv) * 0.3;
+    if (!B.nodes) bedBuild(c);
+    var nd = B.nodes;
+    if (Math.abs(B.iv - (B.ivSet || -1)) > 0.01) { B.ivSet = B.iv; try { bedSet(c, nd, S, B.iv, P); } catch (e) { /* ignore */ } }
+    var V = Math.min(1, (c.currentTime - B.bornA) / 0.5) * (lite() ? 0.8 : 1);
+    if (S.bpm && S.beat) {
+      var stp = 30 / S.bpm(B.iv, P), ahead = c.currentTime + (lite() ? 0.3 : 0.22);
+      if (B.next < c.currentTime) B.next = c.currentTime + 0.04;
+      while (B.next < ahead) { if (room(2)) { try { S.beat(c, P, B.n, B.next, B.iv, V); } catch (e) { /* ignore */ } } B.n++; B.next += stp; }
+    }
+    if (S.rnd) {
+      if (!B.rndAt) B.rndAt = c.currentTime + S.rp[0];
+      else if (c.currentTime >= B.rndAt) { if (room(3)) { try { S.rnd(c, P, B.iv, V); } catch (e) { /* ignore */ } } B.rndAt = c.currentTime + (S.rp[0] + Math.random() * (S.rp[1] - S.rp[0])) * (1.25 - 0.5 * B.iv); }
+    }
+  }
+  /* amb(jeu ou thème, on, intensité 0..1, o) — o (kit du casino) : { clk: {rate, t0, off}, ttl: ms, fresh: 1, src } */
+  function amb(k, on, i, o) {
+    o = o || {};
+    var th = null;
+    if (k && BEDS[k] && (k !== cur || (!MAP[k] && !BED_OF[k]))) { th = k; k = cur || k; } // un nom de thème (« war », « race »…) sauf si c'est le jeu ouvert
+    k = k || cur;
+    if (!on) { if (B && (!k || k === '*' || B.key === k)) bedOff(o.fade == null ? 0.6 : o.fade); return false; }
+    if (!k) return false;
+    var num = typeof i === 'number' && isFinite(i), now = Date.now();
+    if (B && B.key === k && (!th || B.th === th)) {
+      if (num) { B.i = clamp01(i); if (!o.keepAuto) B.auto = false; }
+      if (o.clk) B.clk = o.clk;
+      B.ttl = o.ttl ? now + o.ttl : B.ttl;
+      return true;
+    }
+    if (B) bedOff(0.25);
+    th = th || bedOf(k);
+    B = { key: k, th: th, P: theme(k), src: o.src || 'game', i: num ? clamp01(i) : 0, iv: num ? clamp01(i) : 0, auto: !num || !!o.keepAuto, clk: o.clk || null, born: now,
+      ttl: o.ttl ? now + o.ttl : 0, nodes: null, n: 0, next: 0, rndAt: 0, bornA: 0 };
+    note2log('amb', k, th);
+    if (o.fresh && BEDS[th].start) play(BEDS[th].start, null, k);
+    clearInterval(bedT); bedT = setInterval(bedLoop, lite() ? 150 : 100);
+    bedLoop();
+    return true;
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) bedKill(0.03); else if (B) bedLoop(); });
+  window.addEventListener('pagehide', function () { bedKill(0.03); });
 
   /* ---------- bouton muet ---------- */
   var LBL = { en: 'Sound', fr: 'Son', es: 'Sonido', pt: 'Som', ar: 'الصوت', tr: 'Ses', vi: 'Âm thanh', id: 'Suara', ru: 'Звук', de: 'Ton', hi: 'ध्वनि', zh: '声音' };
@@ -281,6 +568,7 @@
     try { localStorage.setItem('oro_sfx', on ? 'on' : 'off'); } catch (e) { /* ignore */ }
     if (out) { try { out.gain.cancelScheduledValues(out.context.currentTime); out.gain.setValueAtTime(on ? base() : 0, out.context.currentTime); } catch (e) { /* ignore */ } }
     paintBtns();
+    bedMute(!on);
     if (on) { var c = ensure(); if (c && c.state === 'suspended') { try { c.resume(); } catch (e) { /* ignore */ } } setTimeout(function () { var c2 = ready(); if (c2) { INS.glass(c2, 784, 0, 0.09, 0.25); INS.glass(c2, 1047, 0.08, 0.08, 0.35); note2log('ui', '', 'on'); } }, 30); }
   }
   function button(b) {
@@ -304,6 +592,6 @@
   }
   ['pointerdown', 'touchend', 'keydown'].forEach(function (ev) { document.addEventListener(ev, unlock, { passive: true, capture: true }); });
 
-  D6.Sfx = { play: play, win: win, lose: lose, on: isOn, set: set, button: button, theme: theme,
+  D6.Sfx = { play: play, win: win, lose: lose, on: isOn, set: set, button: button, theme: theme, amb: amb, bed: bedInfo,
     game: function (k) { cur = k || ''; }, log: LOG, vib: function () { return vibN; }, fam: function (k) { return theme(k).fam; } };
 })(window.D6 = window.D6 || {});

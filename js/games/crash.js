@@ -274,6 +274,7 @@
           if (phase !== view) {
             var was = view; view = phase;
             if (phase === 'fly') { sLv = 0; if (was === 'bet' && s < 1.5) K.sfx('go'); } // v2832 : décollage (seulement si on l'a vu partir)
+            if (K.amb) { K.amb(game, phase === 'fly', 0); if (phase === 'end' && was === 'fly') K.sfx(game === 'rocket' ? 'boom' : 'go', { as: game === 'rocket' ? 'boom' : 'zoom' }); } // v2851 : moteur pendant le vol ; la fusée EXPLOSE, l'avion s'envole
             st.classList.toggle('flying', phase === 'fly'); st.classList.toggle('ended', phase === 'end'); st.classList.toggle('betting', phase === 'bet');
             wait.hidden = phase !== 'bet'; mEl.style.visibility = phase === 'bet' ? 'hidden' : '';
             K.setText(flew, phase === 'end' ? (game === 'rocket' ? l.lost : l.flew) : '');
@@ -289,8 +290,10 @@
           if (phase === 'bet') {
             if (Math.abs(ang + 14) > 0.01) park();
             bar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.t0 - t) / (R.bet || 5))).toFixed(3) + ')';
+            if (me && !me.done && me.rid === R.i) K.sfxBeat(box, 'cd', R.t0 - t <= 3 ? Math.ceil(R.t0 - t) : -1, 'cd', { last: R.t0 - t <= 1 }); // v2851 : 3 · 2 · 1 avant le départ (si on a misé)
           } else if (phase === 'fly') {
             lastXY = drawFlight(s); K.setText(mEl, fx(MULT(s)) + '×');
+            if (K.amb) K.amb(game, true, Math.log(MULT(s)) / Math.log(20)); // v2851 : le moteur monte avec le multiplicateur
             var lv = 0, mm = MULT(s); while (lv < SLV.length && mm >= SLV[lv]) lv++;
             if (lv > sLv) { sLv = lv; K.sfx('rise', { n: lv }); } // v2832 : petite note qui monte à ×1,5 · ×2 · ×3 · ×5 · ×10…
           } else {

@@ -152,10 +152,11 @@
     if (S.busy) return null;
     S.busy = true;
     sfx('launch', null, game);
+    amb(game, true, null, { ttl: 25000, src: 'kit', fresh: 1 }); // v2851 : ambiance du jeu pendant le tirage / l'animation (fin : resultLine)
     var md = mode();
     var r = await api('csPlay', { game: game, mode: md, stake: S.stake, p: p || {} });
     S.busy = false;
-    if (!r || !r.ok) { err(r); return null; }
+    if (!r || !r.ok) { amb(game, false); err(r); return null; }
     if (r.mode === 'demo') S.adminTest = true;
     if (S.bal.real != null && r.bal == null && r.mode === 'real') S.bal.real = S.bal.real - r.stake + r.win;
     return r;
@@ -163,8 +164,10 @@
   async function multi(game, act, p, quiet) {
     if (guest()) { if (!quiet) signup(); return null; }
     if (!quiet && (act === 'start' || act === 'bet')) sfx('launch', null, game);
+    if (act === 'fail' && !LIVE_GAMES[game] && ambOn(game)) { sfx('crash', null, game); amb(game, false, 0, { fade: 0.15 }); } // v2851 : l'obstacle / l'erreur se SENT tout de suite
     var r = await api('csMulti', { game: game, act: act, mode: 'real', stake: S.stake, p: p || {} });
     if (!r || !r.ok) { if (!quiet) err(r); return null; }
+    ambMulti(game, act, r, quiet);
     // v2832 : un bon choix (case ouverte, étage, pompe, bonne carte) = petite note qui monte ; la fin passe par resultLine
     if (!quiet && !r.done && SFX_STEP[act] && game !== 'penalty') sfx(act === 'skip' ? 'card' : 'step', { k: Number(r.k) || (r.open && r.open.length) || 1 }, game);
     if (r.mode === 'demo' && !S.adminTest) { S.adminTest = true; paintBal(); }
@@ -180,9 +183,37 @@
   function sfx(ev, a, k) { try { if (D6.Sfx) return D6.Sfx.play(ev, a, k || S.game); } catch (e) { /* ignore */ } return false; }
   // un évènement quand une valeur change (case de roue qui passe, volée, juge…) ; jamais au premier regard (arrivée en cours de tirage)
   function sfxBeat(o, slot, v, ev, a) { var key = '_sb' + slot; if (o[key] === v) return; var had = key in o; o[key] = v; if (had && v != null && v !== -1) sfx(ev, a); }
+  /* v2851 — AMBIANCE + BRUITAGES D'ACTION (js/sfx.js D6.Sfx.amb) branchés ici pour TOUS les jeux :
+     partie lancée (Miser / Démarrer) → ambiance du thème ; jeux d'adresse : elle suit le multiplicateur (même horloge que
+     le serveur : exp(rate · t)) ; bonne case → la tension monte ; erreur / fin secrète → choc ou explosion ; encaissement →
+     « cha-ching » ; fin de partie (resultLine), fermeture, autre jeu → l'ambiance s'éteint en fondu. Les jeux en direct
+     (crash, tirages) pilotent leur ambiance eux-mêmes (une ligne K.amb dans leur boucle). */
+  var SK1 = { spacerun: 1, flappyrock: 1, stack: 1, knifehit: 1, basket: 1, starbridge: 1 }; // fin secrète : la météorite tombe ~0,5 s après
+  var SFX_LOSSFX = { mines: 1, balloon: 1 };
+  function amb(k, on, i, o) { try { if (D6.Sfx && D6.Sfx.amb) return D6.Sfx.amb(k || S.game, on, i, o); } catch (e) { /* ignore */ } return false; }
+  function ambOn(k) { try { var b = D6.Sfx && D6.Sfx.bed && D6.Sfx.bed(); return !!(b && b.key === k); } catch (e) { return false; } }
+  function ambMulti(game, act, r, quiet) {
+    try {
+      if (!D6.Sfx || !D6.Sfx.amb || LIVE_GAMES[game]) { if (act === 'cash' && r.done && Number(r.win) > Number(r.stake)) sfx('cashout', null, game); return; }
+      var clk = r.rate && r.t0 ? { rate: Number(r.rate), t0: Number(r.t0), off: (Number(r.now) || Date.now() / 1000) - Date.now() / 1000 } : null;
+      if ((act === 'start' || act === 'bet') && !r.done) amb(game, true, clk ? null : 0.06, { src: 'kit', fresh: quiet ? 0 : 1, clk: clk, ttl: clk ? 0 : 180000, keepAuto: !clk });
+      else if (act === 'state' && !r.done && clk) amb(game, true, null, { src: 'kit', clk: clk }); // partie reprise (page rechargée) / horloge recalée
+      else if (SFX_STEP[act] && !r.done) amb(game, true, Math.min(1, 0.12 + (Number(r.k) || (r.open && r.open.length) || 1) / 8), { ttl: 180000 });
+      if (!r.done) return;
+      var won = Number(r.win) > 0;
+      if (act === 'cash' && won) { sfx('cashout', null, game); amb(game, false, 0, { fade: 0.4 }); return; }
+      if ((act === 'state' || act === 'cash') && !won && ambOn(game)) { // la fin secrète du serveur : choc / explosion (au moment où on la voit)
+        amb(game, false, 0, { fade: 0.25 });
+        if (SK1[game]) setTimeout(function () { if (S.game === game) sfx('crash', null, game); }, 520); else sfx('crash', null, game);
+        return;
+      }
+      if (SFX_STEP[act] && !won && SFX_LOSSFX[game]) sfx('crash', null, game); // mine qui saute, ballon qui éclate
+    } catch (e) { /* ignore */ }
+  }
   function sfxResult(r) {
     try {
       if (!D6.Sfx) return;
+      if (!LIVE_GAMES[S.game]) amb(S.game, false, 0, { fade: 0.5 });
       var w = Number(r && r.win) || 0, st = Number(r && r.stake) || 0;
       if (w > 0) D6.Sfx.win(st > 0 ? w / st : (Number(r.mult) || Number(r.out) || 2), S.game); else D6.Sfx.lose();
     } catch (e) { /* ignore */ }
@@ -274,7 +305,7 @@
   // 2026-10-19 (propriétaire : « Space Runner : après la mise le personnage reste bloqué, on perd ») : l'animation arrêtée est
   // aussi OUBLIÉE (S.raf = 0). Avant, l'ancien numéro restait : en ouvrant un autre jeu « à toi de jouer », il croyait son
   // animation déjà lancée et ne la démarrait jamais (jeu figé pendant que la partie tournait sur le serveur).
-  function stopAll() { clearInterval(S.timer); S.timer = 0; cancelAnimationFrame(S.raf || 0); S.raf = 0; clearInterval(S.idle || 0); }
+  function stopAll() { clearInterval(S.timer); S.timer = 0; cancelAnimationFrame(S.raf || 0); S.raf = 0; clearInterval(S.idle || 0); amb('*', false, 0, { fade: 0.3 }); }
   // v2821 (propriétaire) : 3 onglets en haut, comme la page Paris — Joue toi-même · Live · Casino (on ne défile plus
   // dans 100+ jeux : chaque onglet montre sa liste).
   // v2825 (propriétaire : « Joue toi-même est plus long… même forme ») : 3 onglets de même largeur, mots courts comme les grandes plateformes.
@@ -347,7 +378,13 @@
         'thimbles', 'cricket', 'pharaoh', 'scratch', 'tower', 'spacegems', 'teenpatti', 'fireworks', 'coin', 'wildwest', 'striker', 'colorpred',
         'jewelbox', 'aztec', 'checkers', 'keno80', 'pool', 'ocean', 'andar', 'gumball', 'dragonf', 'luckydice', 'bouquet', 'balloon', 'panda',
         'moles', 'miniroul', 'tennis', 'clover', 'hilo', 'goldpan', 'connect4', 'cosmic7', 'cups', 'craps', 'slots', 'skijump', 'chests', 'vpoker',
-        'diamond', 'horseshoe', 'wheel2', 'bingo', 'jungle', 'domino', 'bowling', 'pinata'];
+        'diamond', 'horseshoe', 'wheel2', 'bingo', 'jungle', 'domino', 'bowling', 'pinata',
+        // casb (round 6) : tables, cartes, dés, hasard d'arcade + Comet Queen
+        'cometqueen', 'blackjack', 'yatzy', 'pachinko', 'dblroul', 'tcpoker', 'derby', 'ducks', 'acerace', 'twoup', 'skeeball', 'ceelo',
+        'niuniu', 'oracle', 'twinwheel', 'crownanchor', 'holdem', 'fantan', 'shipcrew', 'clocksol', 'dreidel', 'rpsduel', 'trente',
+        // casa (round 6) : 12 machines à sous (casa1) alternées avec 12 jeux instantanés (casa2/3) ; mêmes mécaniques ≥ 6 places d'écart
+        'hilorun', 'scarab', 'pickbox', 'kraken', 'colorwheel', 'cherrybar', 'egghunt', 'ufo', 'flip21', 'goldtrain', 'envelope', 'koi',
+        'shells', 'viking', 'ladder', 'safari', 'luckyten', 'donut', 'popdarts', 'rubymine', 'treasure', 'pumpkin', 'scratchwin', 'medusa'];
       var moPos = function (k) { var i = MO_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.more.sort(function (a, b) { return moPos(a) - moPos(b); });
       var cur = curSec(); if (!bySec[cur].length) cur = SEC_ORDER.filter(function (x) { return bySec[x].length; })[0] || 'skill';
@@ -557,7 +594,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2842'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2853'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
@@ -589,7 +626,7 @@
     }, catDone ? 0 : 90);
   }
   // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
-  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
+  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
   function loadCatalog() {
     if (catAsked) return; catAsked = true;
     catLeft = CAT_FILES.length;
@@ -1952,7 +1989,7 @@
   D6.Casino = { open: open, close: close, home: homePub, openPred: openPred };
   // v2795 — boîte à outils partagée par les jeux refaits (js/games/*.js)
   D6.CasinoKit = { GAMES: GAMES, MODS: MODS, S: S, X: X, LX: LX, $: $, esc: esc, fmt: fmt, m2: m2, dec: dec, sleep: sleep, toast: toast, guest: guest,
-    play: play, multi: multi, resultLine: resultLine, sfx: sfx, sfxBeat: sfxBeat, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
+    play: play, multi: multi, resultLine: resultLine, sfx: sfx, sfxBeat: sfxBeat, amb: amb, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
     afterPlay: afterPlay, stopAll: stopAll, fitEl: fitEl, fitAll: fitAll, setText: setText, ART: ART, pal: pal, gicon: gicon, name: name,
     seeded: seeded, easeOut: easeOut, lang: function () { return (document.documentElement.lang || 'en').slice(0, 2); },
     /* register(clé, fonction(box, x), { rules: { en: '…', fr: '…', … } }) */

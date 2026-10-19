@@ -1,0 +1,43 @@
+/* casa1 (owner request, round 6) — 12 video slots (js/games/casa1.js) */
+html:root body #casinoModal .cz .cz-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;background:var(--czbg,linear-gradient(180deg,#1B1442,#0E0A26))}
+html:root body #casinoModal .cz .cz-pay{flex:0 0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;direction:ltr;position:relative;z-index:2;padding:0 26px 0 0;margin:0;border:0;background:none;cursor:pointer;font:inherit;color:inherit;min-height:0}
+html:root body #casinoModal .cz .cz-pay span{min-width:0;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:3px;padding:0 4px;
+  background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.04));box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+html:root body #casinoModal .cz .cz-pay svg{width:24px;height:24px;flex:none;overflow:visible}
+html:root body #casinoModal .cz .cz-pay b{display:block;min-width:0;max-width:100%;white-space:nowrap;font:900 clamp(9px,2.8vw,12.5px)/1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .cz .cz-pay span:last-of-type b{color:#FDE68A}
+html:root body #casinoModal .cz .cz-i{position:absolute;right:0;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font:900 12px/1 Georgia,serif;font-style:italic;color:#fff;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+html:root body #casinoModal .cz .cz-scene{position:relative;flex:1 1 auto;min-height:0}
+html:root body #casinoModal .cz .cz-svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+html:root body #casinoModal .cz .cz-hit{fill:rgba(253,230,138,.16);stroke:#FDE68A;stroke-width:4;animation:czHit .6s ease-in-out infinite alternate}
+html:root body #casinoModal .cz .cz-line{fill:none;stroke:#FDE68A;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
+@keyframes czHit{from{stroke-opacity:.45}to{stroke-opacity:1}}
+html:root body #casinoModal .cz .cz-pt{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;background:rgba(5,4,20,.86);border-radius:16px;padding:8px;cursor:pointer}
+html:root body #casinoModal .cz .cz-pt[hidden]{display:none}
+html:root body #casinoModal .cz .cz-ptin{display:grid;grid-template-columns:1fr;gap:4px;width:100%;max-width:420px;max-height:100%;overflow:auto}
+html:root body #casinoModal .cz .cz-pr{display:flex;align-items:center;gap:8px;min-width:0;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.07)}
+html:root body #casinoModal .cz .cz-pr svg{width:30px;height:30px;flex:none;overflow:visible}
+html:root body #casinoModal .cz .cz-pr b{flex:1 1 auto;min-width:0;white-space:nowrap;font:800 clamp(10px,3.2vw,14px)/1.1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums;text-align:right}
+html:root body #casinoModal .cz.cz-A .cz-ptin,html:root body #casinoModal .cz.cz-L5 .cz-ptin{grid-template-columns:1fr 1fr}
+html:root body #casinoModal .cz.cz-A .cz-pr svg,html:root body #casinoModal .cz.cz-L5 .cz-pr svg{width:24px;height:24px}
+html:root body #casinoModal .cz.cz-A .cz-pr b,html:root body #casinoModal .cz.cz-L5 .cz-pr b{font-size:clamp(8px,2.4vw,12px)}
+@media (max-height:640px){html:root body #casinoModal .cz .cz-pay span{height:32px}html:root body #casinoModal .cz .cz-pay svg{width:20px;height:20px}}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .cz .cz-stage{flex-direction:row}
+  html:root body #casinoModal .cz .cz-pay{grid-auto-flow:row;grid-auto-rows:minmax(0,1fr);width:84px;padding:0 0 26px}
+  html:root body #casinoModal .cz .cz-pay span{height:auto}
+  html:root body #casinoModal .cz .cz-i{top:auto;bottom:0;right:50%;transform:translateX(50%)}
+}
+html.oro-lite body #casinoModal .cz .cz-hit{animation:none}
+html:root body #casinoModal .cz .cz-stage{justify-content:center}
+html:root body #casinoModal .cz .cz-pay[hidden]{display:none}
+html:root body #casinoModal .cz .cz-tab{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4px;direction:ltr;overflow:hidden}
+html:root body #casinoModal .cz .cz-tab[hidden]{display:none}
+html:root body #casinoModal .cz .cz-tab .cz-pr{padding:3px 6px;gap:5px}
+html:root body #casinoModal .cz .cz-tab .cz-pr svg{width:32px;height:32px}
+html:root body #casinoModal .cz .cz-tab .cz-pr b{font-size:clamp(10px,3vw,15px);text-align:left}
+html:root body #casinoModal .cz .cz-tab .cz-pr{padding:5px 8px;min-height:40px}
+html:root body #casinoModal .cz.cz-R33 .cz-tab,html:root body #casinoModal .cz.cz-R3 .cz-tab{grid-template-columns:1fr 1fr 1fr}
+html:root body #casinoModal .cz.cz-R33 .cz-tab .cz-pr b,html:root body #casinoModal .cz.cz-R3 .cz-tab .cz-pr b{text-align:center}
+html:root body #casinoModal .cz .cz-pay b,html:root body #casinoModal .cz .cz-pr b{direction:ltr;unicode-bidi:isolate}
