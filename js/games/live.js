@@ -370,8 +370,10 @@
       '<path d="M96 0L98 -7L101.5 -1Z" fill="' + body + '" stroke="' + dk + '" stroke-width=".8"/><circle cx="103" cy="5" r="1.4" fill="#111"/><circle cx="114.6" cy="17.5" r="1" fill="' + dk + '"/>' +
       '<path d="M79 22C85 13 90 6 95 1" stroke="' + dk + '" stroke-width="4" fill="none" stroke-linecap="round"/>' +
       leg(41, 39, 'lzH1', body) + leg(84, 39, 'lzF1', body) +
-      '<path d="M49 23L71 23L72.5 40L49 40Z" fill="' + j + '" stroke="rgba(255,255,255,.7)" stroke-width=".8"/>' +
-      '<text x="60.8" y="35.6" text-anchor="middle" font-size="11" font-weight="900" font-family="system-ui,sans-serif" fill="' + ink + '">' + (i + 1) + '</text>' +
+      // v2830 (propriétaire : « le pied du jockey cache le numéro ») : tapis de selle + numéro reculés vers l'arrière du cheval,
+      // hors de la jambe du jockey (jambe vers x 57-66) ; même taille, même couleur.
+      '<path d="M37 24L56 22.5L56.5 40L38 40Z" fill="' + j + '" stroke="rgba(255,255,255,.7)" stroke-width=".8"/>' +
+      '<text x="46.8" y="35.4" text-anchor="middle" font-size="' + (i >= 9 ? '9.5' : '11') + '" font-weight="900" font-family="system-ui,sans-serif" fill="' + ink + '">' + (i + 1) + '</text>' +
       '<path d="M108 9L70 16" stroke="#FDE68A" stroke-width=".9"/>' +
       '<path d="M61 21L57 29L63 31" stroke="#F8FAFC" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M62 30.5L66 31" stroke="#111" stroke-width="3.4" stroke-linecap="round"/>' +
       '<path d="M57 22C58 13 66 8 74 8L78 12C72 14 67 18 64 24Z" fill="' + j + '" stroke="rgba(0,0,0,.35)" stroke-width=".6"/>' +
