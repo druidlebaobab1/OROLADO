@@ -51,7 +51,7 @@
       btn.classList.remove('cash', 'wait');
       if (cls) btn.classList.add(cls);
       if (sub) { btn.innerHTML = '<span class="fit bl-b1"></span><span class="fit bl-b2"></span>'; K.setText(btn.firstChild, main); K.setText(btn.lastChild, sub); }
-      else { btn.innerHTML = ''; K.setText(btn, main); }
+      else { btn.innerHTML = '<span class="fit cg-gol"></span>'; K.setText(btn.firstChild, main); }
     }
     function paintHist() {
       $('blHist').innerHTML = hist.map(function (h) { return '<i class="' + (h < 0 ? 'pop' : h >= 5 ? 'hi' : h >= 2 ? 'mid' : 'lo') + '">' + xm(Math.abs(h)) + '</i>'; }).join('');

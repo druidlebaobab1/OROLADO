@@ -57,7 +57,7 @@
       btn.classList.remove('cash', 'wait');
       if (cls) btn.classList.add(cls);
       if (sub) { btn.innerHTML = '<span class="fit ap-b1"></span><span class="fit ap-b2"></span>'; K.setText(btn.firstChild, main); K.setText(btn.lastChild, sub); }
-      else { btn.innerHTML = ''; K.setText(btn, main); }
+      else { btn.innerHTML = '<span class="fit cg-gol"></span>'; K.setText(btn.firstChild, main); }
     }
     function ladder() {
       rowEls.forEach(function (row) { K.setText(row.querySelector('.ap-m b'), xm(mult(+row.getAttribute('data-row') + 1, lv))); });

@@ -56,7 +56,7 @@
       btn.classList.remove('cash', 'wait');
       if (cls) btn.classList.add(cls);
       if (sub) { btn.innerHTML = '<span class="fit mn-b1"></span><span class="fit mn-b2"></span>'; K.setText(btn.firstChild, main); K.setText(btn.lastChild, sub); }
-      else { btn.innerHTML = ''; K.setText(btn, main); }
+      else { btn.innerHTML = '<span class="fit cg-gol"></span>'; K.setText(btn.firstChild, main); }
     }
     function info() {
       var m = live() ? g.m : mines, open = live() ? g.open.length : 0;

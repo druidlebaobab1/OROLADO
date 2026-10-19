@@ -46,7 +46,7 @@
       btn.classList.remove('cash', 'wait');
       if (cls) btn.classList.add(cls);
       if (sub) { btn.innerHTML = '<span class="fit tw-b1"></span><span class="fit tw-b2"></span>'; K.setText(btn.firstChild, main); K.setText(btn.lastChild, sub); }
-      else { btn.innerHTML = ''; K.setText(btn, main); }
+      else { btn.innerHTML = '<span class="fit cg-gol"></span>'; K.setText(btn.firstChild, main); }
     }
     function door(b, kind, extra) { b.className = 'tw-d ' + kind + (extra ? ' ' + extra : ''); b.firstChild.innerHTML = kind === 'good' ? STAR : HOLE; }
     function reset() { rowEls.forEach(function (row) { row.className = 'tw-row'; row.querySelectorAll('.tw-d').forEach(function (b) { b.className = 'tw-d'; b.firstChild.innerHTML = ''; }); }); tw.classList.remove('boom'); }
