@@ -256,11 +256,11 @@
       '<nav class="sx-seg" role="tablist">' + ['chats', 'groups', 'friends'].map(function (s) { return '<button type="button" role="tab" data-s="' + s + '" class="' + (seg === s ? 'on' : '') + '"><b class="fit">' + esc(t(s)) + '</b><i class="sx-sb" data-c="' + s + '"></i></button>'; }).join('') + '</nav>' +
       '<div class="sx-body" id="sxBody"></div>' +
       (guest() ? '' : '<button type="button" class="sx-fab" id="sxFab" aria-label="' + esc(t('newChat')) + '">' + ic('edit') + '</button>');
-    $('sxClose').addEventListener('click', function () { if (D6.Live) D6.Live.close(); });
+    $('sxClose').addEventListener('click', closeList);
     $('sxSearchB').addEventListener('click', function () { var s = $('sxSrch'); s.hidden = !s.hidden; if (!s.hidden) $('sxQ').focus(); else { q = ''; $('sxQ').value = ''; paintBody(); } });
     $('sxQ').addEventListener('input', function () { q = this.value.trim(); paintBody(); });
     $('sxQx').addEventListener('click', function () { q = ''; $('sxQ').value = ''; $('sxSrch').hidden = true; paintBody(); });
-    $('sxMoreB').addEventListener('click', function () { leave('home', undefined, false); });
+    $('sxMoreB').addEventListener('click', function () { if (gridRet) toGrid(); else leave('home', undefined, false); });
     L.querySelectorAll('.sx-seg button').forEach(function (b) { b.addEventListener('click', function () { seg = b.getAttribute('data-s'); hint = ''; L.querySelectorAll('.sx-seg button').forEach(function (z) { z.classList.toggle('on', z === b); }); paintBody(true); }); });
     if ($('sxFab')) $('sxFab').addEventListener('click', function () { if (seg === 'groups') createSheet(); else { seg = 'friends'; paintList(); setTimeout(function () { if ($('sxAddIn')) $('sxAddIn').focus(); }, 50); } });
     paintBody(true);
@@ -464,7 +464,7 @@
       '<div class="sx-recb" id="sxRec" hidden><i class="sx-recd"></i><b id="sxRecT">0:00</b><small class="fit">' + esc(t('rec')) + '</small></div></div>' +
       (canMic ? '<button type="button" class="sx-cb sx-mic" id="sxMic" aria-label="' + esc(t('voice')) + '">' + ic('mic') + '</button>' : '') +
       '<button type="submit" class="sx-cb sx-go" id="sxGo" aria-label="Send" hidden>' + ic('send') + '</button></form>');
-    $('sxCBack').addEventListener('click', closeConv);
+    $('sxCBack').addEventListener('click', backConv);
     $('sxWho').addEventListener('click', function () { if (c.kind === 'group') groupInfo(); else if (c.kind === 'dm') dmMenu(); });
     C.querySelectorAll('[data-ca]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -893,10 +893,21 @@
   }
 
   /* =========================== OUVERTURE =========================== */
-  async function open(w) {
+  // v2808 (propriétaire) : page ouverte depuis le menu en tuiles (« Plus ») → la flèche ‹ ramène à ce menu, un niveau à la fois
+  var gridRet = false, directK = '';
+  function toGrid() {
+    gridRet = false; directK = ''; handoff = null;
+    clearInterval(tConv); clearInterval(tDuel); conv = null; closePanel(); closeSheet(); if (root) inConv(false);
+    stop(); $('liveModal').classList.remove('sx-on');
+    if (D6.Live && D6.Live.show) D6.Live.show('home');
+  }
+  function closeList() { if (gridRet) { toGrid(); return; } if (D6.Live) D6.Live.close(); }
+  function backConv() { if (gridRet && conv && directK && conv.k === directK) { toGrid(); return; } closeConv(); }
+  async function open(w, fromGrid) {
     if (!mount()) return false;
     handoff = null; on();
     var startK = w === 'chat' ? 'team' : w === 'news' ? 'news' : '';
+    gridRet = !!fromGrid; directK = fromGrid ? startK : '';
     seg = w === 'groups' ? 'groups' : ['friends', 'duel', 'myid', 'record'].indexOf(w) >= 0 ? 'friends' : 'chats';
     hint = w === 'duel' ? t('duelHint') : '';
     q = ''; conv = null; inConv(false); closePanel(); closeSheet();

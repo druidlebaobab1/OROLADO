@@ -12647,3 +12647,44 @@ html:root body #casinoModal .cs-toast .ct-coin{width:24px;height:24px;flex:none;
 html:root body #casinoModal .cs-toast.win.in{animation:csWinPop .45s cubic-bezier(.2,1.5,.4,1)}
 @keyframes csWinPop{0%{transform:translate(-50%,-14px) scale(.7)}100%{transform:translate(-50%,0) scale(1)}}
 html.oro-lite body #casinoModal .cs-toast.win.in{animation:none}
+/* v2808 (propriétaire) — boutons RETOUR ‹ et FERMER ✕ : partout la même taille (32 px, zone de toucher 44 px) et la même
+   place que dans les Jeux : 12 px sous l'heure / la batterie / l'encoche (env(safe-area-inset-top)), 14 px du bord.
+   (la croix ✕ des pages Recharger / Historique… : 8 px, pour ne pas toucher la première carte). Jamais sous la barre
+   d'état, jamais coupés. Téléphones et tablettes (les grandes fenêtres PC gardent leur croix). */
+@media (max-width:859px){
+  html:root body #depositModal#depositModal#depositModal#depositModal > .modal-box > .btn-close,html:root body #financeModal#financeModal#financeModal#financeModal > .modal-box > .btn-close,
+  html:root body #termsModal#termsModal#termsModal#termsModal > .modal-box > .btn-close,html:root body #historySheet#historySheet#historySheet#historySheet > .modal-box > .btn-close,
+  html:root body #passModal#passModal#passModal#passModal > .modal-box > .btn-close,html:root body #emailModal#emailModal#emailModal#emailModal > .modal-box > .btn-close,
+  html:root body #helpModal#helpModal#helpModal#helpModal > .modal-box > .btn-close{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;
+    right:14px!important;left:auto!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;margin:0!important;z-index:30!important}
+  html[dir=rtl]:root body #depositModal#depositModal#depositModal#depositModal > .modal-box > .btn-close,html[dir=rtl]:root body #financeModal#financeModal#financeModal#financeModal > .modal-box > .btn-close,
+  html[dir=rtl]:root body #termsModal#termsModal#termsModal#termsModal > .modal-box > .btn-close,html[dir=rtl]:root body #historySheet#historySheet#historySheet#historySheet > .modal-box > .btn-close,
+  html[dir=rtl]:root body #passModal#passModal#passModal#passModal > .modal-box > .btn-close,html[dir=rtl]:root body #emailModal#emailModal#emailModal#emailModal > .modal-box > .btn-close,
+  html[dir=rtl]:root body #helpModal#helpModal#helpModal#helpModal > .modal-box > .btn-close{right:auto!important;left:14px!important}
+  html:root body #financeModal#financeModal#financeModal#financeModal > .modal-box > .modal-head-row > .btn-close,html:root body #historySheet#historySheet#historySheet#historySheet > .modal-box > .modal-head-row > .btn-close,html:root body #termsModal#termsModal#termsModal#termsModal > .modal-box > .modal-head-row > .btn-close,html:root body #helpModal#helpModal#helpModal#helpModal > .modal-box > .modal-head-row > .btn-close,html:root body #depositModal#depositModal#depositModal#depositModal > .modal-box > .modal-head-row > .btn-close,html:root body #passModal#passModal#passModal#passModal > .modal-box > .modal-head-row > .btn-close,html:root body #emailModal#emailModal#emailModal#emailModal > .modal-box > .modal-head-row > .btn-close{position:absolute!important;top:calc(env(safe-area-inset-top,0px) + 8px)!important;right:14px!important;left:auto!important;width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;margin:0!important;z-index:30!important}
+  html[dir=rtl]:root body #financeModal#financeModal#financeModal#financeModal > .modal-box > .modal-head-row > .btn-close,html[dir=rtl]:root body #historySheet#historySheet#historySheet#historySheet > .modal-box > .modal-head-row > .btn-close,html[dir=rtl]:root body #termsModal#termsModal#termsModal#termsModal > .modal-box > .modal-head-row > .btn-close,html[dir=rtl]:root body #helpModal#helpModal#helpModal#helpModal > .modal-box > .modal-head-row > .btn-close,html[dir=rtl]:root body #depositModal#depositModal#depositModal#depositModal > .modal-box > .modal-head-row > .btn-close,html[dir=rtl]:root body #passModal#passModal#passModal#passModal > .modal-box > .modal-head-row > .btn-close,html[dir=rtl]:root body #emailModal#emailModal#emailModal#emailModal > .modal-box > .modal-head-row > .btn-close{right:auto!important;left:14px!important}
+  /* Social (pages en tuiles, Missions, Envoyer de l'argent, Groupes…) : la flèche descendait sous l'heure */
+  html:root body #liveModal#liveModal#liveModal .live-bar #liveBack#liveBack{top:-26px!important;left:0!important;width:32px!important;height:32px!important}
+  html[dir=rtl]:root body #liveModal#liveModal#liveModal .live-bar #liveBack#liveBack{left:auto!important;right:0!important}
+  /* Cadeaux : même hauteur que les Jeux */
+  html:root body #portalModal#portalModal#portalModal .gh-back{top:calc(env(safe-area-inset-top,0px) + 12px)!important;left:14px!important}
+  html[dir=rtl]:root body #portalModal#portalModal#portalModal .gh-back{left:auto!important;right:14px!important}
+}
+/* Zone de toucher confortable (44 px) sans grossir le dessin */
+html:root body #liveModal #liveBack,html:root body #portalModal .gh-back,html:root body #casinoModal .cs-back,html:root body #liveModal .sx-bk,
+html:root body .modal-backdrop > .modal-box > .btn-close{position:relative}
+html:root body #liveModal #liveBack::after,html:root body #portalModal .gh-back::after,html:root body #liveModal .sx-bk::after,
+html:root body .modal-backdrop > .modal-box > .btn-close::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+/* Messagerie Social : la flèche ‹ a le même rond discret que dans les Jeux et Cadeaux */
+html:root body #liveModal .sx .sx-hd .sx-bk{width:42px;height:42px;background:none}
+html:root body #liveModal .sx .sx-hd .sx-bk::before{content:"";position:absolute;left:5px;top:5px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}
+/* v2808 (propriétaire) — Cadeaux : seuls la roue, les logos et leurs titres réagissent au toucher ; le vide autour
+   (à côté de la roue, entre les logos, sur toute la largeur d'une ligne) ne fait plus rien. */
+html:root body #portalModal .gh-grid.gh-imm .gh-hero,html:root body #portalModal .gh-grid.gh-imm .gh-p{pointer-events:none!important}
+html:root body #portalModal .gh-grid.gh-imm .gh-hero > *,html:root body #portalModal .gh-grid.gh-imm .gh-p > *{pointer-events:auto}
+html:root body #portalModal .gh-grid.gh-imm .gh-hero-w{border-radius:50%}
+html:root body #portalModal .gh-grid.gh-imm .gh-hero-w *,html:root body #portalModal .gh-grid.gh-imm .cs-pl *{pointer-events:none!important}
+html:root body #portalModal .gh-grid.gh-imm .cs-pl{border-radius:50%!important}
+html:root body #portalModal .gh-grid.gh-imm .gh-hero > b,html:root body #portalModal .gh-grid.gh-imm .gh-p > b,html:root body #portalModal .gh-grid.gh-imm .gh-p > small{max-width:100%}
+/* v2808 : sur PC aussi, la flèche ‹ de Social ne colle plus au bord haut de la fenêtre */
+@media (min-width:860px){html:root body #liveModal#liveModal#liveModal .live-bar #liveBack#liveBack{top:-24px!important}}

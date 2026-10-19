@@ -135,3 +135,15 @@ html:root body #casinoModal #csView.cs-grid3 .cs-g .cs-pl{width:min(72px,18vw)!i
 html:root body #casinoModal #csView.cs-grid3 .cs-g b{max-width:100%}
 /* v2806 : la page d'un jeu ne glisse jamais sur le côté (même après la feuille des règles) */
 html:root body #casinoModal#casinoModal:not(#cgx) > .modal-box{overflow-x:clip!important}
+/* v2807 (propriétaire : « pas de trous » dans l'accueil) — lignes toujours complètes : téléphone 4 colonnes (8 · 12 · 48) ;
+   écrans larges : Live sur UNE ligne de 8, « Tu contrôles » 2 lignes de 6, « Tous les jeux » 6 ou 8 colonnes (48 = 8×6 = 6×8) */
+@media (min-width:600px),(orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .cs-sec.cs-sec-live .cs-sec-g{grid-template-columns:repeat(8,minmax(0,1fr))}
+  html:root body #casinoModal .cs-sec.cs-sec-skill .cs-sec-g{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+/* v2807 (propriétaire) : iPhone couché — le montant (« 0.10 ») était coupé : boutons − / + un peu plus petits, chiffres à 15 px */
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .cg-amt{gap:3px!important;padding:0 3px!important}
+  html:root body #casinoModal .cg-step{width:32px!important;height:32px!important;min-width:32px!important;flex:0 0 32px!important}
+  html:root body #casinoModal .cg-in input{font-size:15px!important;padding:0 20px 0 0!important;letter-spacing:-.02em}
+}

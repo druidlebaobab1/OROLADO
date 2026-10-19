@@ -4818,19 +4818,33 @@
   function bindDepositPeek() {
     if (depositPeekBound || !$('depositModal')) return;
     depositPeekBound = true;
+    // v2808 (propriétaire) : le visiteur peut aussi taper un montant / choisir un montant rapide (rien n'est envoyé) ;
+    // toute vraie action (choisir un moyen, payer, ouvrir la crypto, valider…) ouvre l'inscription, et « Retour »
+    // sur l'inscription rouvre cette page de recharge.
+    var FREE = '#closeDeposit, .dep-amt-chip, input[type="number"], input[type="text"], input[type="tel"], input:not([type]), textarea';
+    var signup = function () {
+      closeModal('depositModal');
+      authReturnFn = function () { openDeposit(); }; authReturnAt = Date.now();
+      showAuthScreen('register', { fromReal: true });
+    };
     var stop = function (e) {
       var m = $('depositModal');
       if (!m || !m.classList.contains('dep-peek') || !isGuest()) return;
       var t = e.target;
-      if (!t || !t.closest || t.closest('#closeDeposit') || t === m) return;
-      if (!t.closest('button, input, select, textarea, label, a, [role="radio"], [role="button"], .pay-method-card')) return;
+      if (!t || !t.closest || t === m) return;
+      if (e.type === 'submit') { e.preventDefault(); e.stopPropagation(); signup(); return; }
+      if (e.type === 'keydown') { if (e.key === 'Enter' && t.closest('input, textarea')) { e.preventDefault(); e.stopPropagation(); if (t.blur) t.blur(); signup(); } return; }
+      if (t.closest(FREE)) return;
+      if (!t.closest('button, input, select, label, a, [role="radio"], [role="button"], .pay-method-card, .pl-logo, .crypto-tile, [data-coin], [data-op]')) return;
       e.preventDefault(); e.stopPropagation();
       if (t.blur) t.blur();
-      closeModal('depositModal');
-      showAuthScreen('register', { fromReal: true });
+      if (e.type === 'focusin') return; // le clic qui suit ouvre l'inscription (pas deux fois)
+      signup();
     };
     $('depositModal').addEventListener('click', stop, true);
     $('depositModal').addEventListener('focusin', stop, true);
+    $('depositModal').addEventListener('submit', stop, true);
+    $('depositModal').addEventListener('keydown', stop, true);
   }
   function openDeposit(preMsg, method) {
     var peek = isGuest();
@@ -9966,7 +9980,7 @@
       });
       function onBalancePlusClick() {
         var u = user();
-        if (!u || isGuest(u)) { requireAccount(); return; }
+        if (!u || isGuest(u)) { openDeposit(); return; } // v2808 : le visiteur voit la vraie page de recharge (aperçu)
         if (u.mode === 'real') {
           openDeposit();
           return;
@@ -9984,8 +9998,8 @@
       if ($('btnFsMidPlus')) $('btnFsMidPlus').addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        // Non inscrit : on quitte le plein écran puis page d'inscription (comme RÉEL).
-        if (isGuest()) { leaveTradeFullscreen(); requireAccount(); return; }
+        // v2808 : non inscrit → on quitte le plein écran et il voit la vraie page de recharge (aperçu, inscription au 1er geste).
+        if (isGuest()) { leaveTradeFullscreen(); openDeposit(); return; }
         openDeposit();
       });
       if ($('closeTip')) { /* bound in bindModals */ }

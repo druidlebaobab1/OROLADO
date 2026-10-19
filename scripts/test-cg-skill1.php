@@ -37,8 +37,8 @@ require $tmp . '/casino_lib.php';
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 
-$GAMES = ['spacerun', 'flappyrock', 'stack', 'knifehit', 'basket', 'kicker'];
-echo "1) Fiches : les 6 jeux existent, type skill, vitesse entre 0,08 et 0,14\n";
+$GAMES = ['spacerun', 'flappyrock', 'stack', 'knifehit', 'basket', 'starbridge', 'kicker']; // kicker : retiré du catalogue, fiche gardée pour régler les anciennes parties
+echo "1) Fiches : les 6 jeux (+ kicker retiré) existent, type skill, vitesse entre 0,08 et 0,14\n";
 $k = casino_ext_keys();
 foreach ($GAMES as $g) {
   $r = casino_skill_rate($g);
@@ -46,6 +46,11 @@ foreach ($GAMES as $g) {
   check("$g : clé libre (pas un ancien jeu)", !in_array($g, CASINO_GAMES, true));
 }
 check('noms affichés', (casino_ext_names()['stack'] ?? '') === 'Tower Stack' && (casino_ext_names()['spacerun'] ?? '') === 'Space Runner');
+check('Star Bridge : nom pour l\'admin, Penalty Kicker garde le sien', (casino_ext_names()['starbridge'] ?? '') === 'Star Bridge' && (casino_ext_names()['kicker'] ?? '') === 'Penalty Kicker');
+$cat = (string) file_get_contents(__DIR__ . '/../js/games/cat-skill1.js');
+check('catalogue : starbridge affiché, kicker plus affiché', strpos($cat, "k: 'starbridge'") !== false && strpos($cat, "k: 'kicker'") === false);
+$js = (string) file_get_contents(__DIR__ . '/../js/games/skill1.js');
+check('module : starbridge enregistré, plus de kicker', strpos($js, "'starbridge']") !== false && strpos($js, "'kicker'") === false);
 
 echo "2) Retour aux joueurs : encaisser à ×x rend ≤ 94 % (exact + simulé), multiplicateur = e^(rate·s) arrondi vers le bas\n";
 foreach ([1.1, 1.5, 2, 3, 5, 10] as $x) {

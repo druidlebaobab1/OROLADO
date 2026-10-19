@@ -1,0 +1,28 @@
+/* v2807 — Star Bowling (instant): cosmic lane, 10 pins, pay ladder. */
+html:root body #casinoModal .cg-bowling .bw-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;background:linear-gradient(180deg,#0B0720,#170E3A)}
+html:root body #casinoModal .cg-bowling .bw-pay{flex:0 0 auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;direction:ltr;position:relative;z-index:2}
+html:root body #casinoModal .cg-bowling .bw-pay span{min-width:0;height:34px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 2px;
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px var(--cg-line);transition:background .25s,box-shadow .25s,transform .25s}
+html:root body #casinoModal .cg-bowling .bw-pay i{font:900 10px/1 var(--cg-font);font-style:normal;color:#C4B5FD}
+html:root body #casinoModal .cg-bowling .bw-pay span:nth-child(5) i{color:#FDE68A}
+html:root body #casinoModal .cg-bowling .bw-pay span:nth-child(6) i{color:#FBBF24;font-size:12px}
+html:root body #casinoModal .cg-bowling .bw-pay b{display:block;max-width:100%;white-space:nowrap;font:900 clamp(9px,2.9vw,13px)/1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .cg-bowling .bw-pay span.on{background:linear-gradient(180deg,#34D399,#15803D);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px -4px #22C55E;transform:translateY(-1px)}
+html:root body #casinoModal .cg-bowling .bw-pay span.on i{color:#fff}
+html:root body #casinoModal .cg-bowling .bw-pay span:nth-child(6).on{background:linear-gradient(180deg,#FDE68A,#D97706);box-shadow:0 0 18px -3px #FBBF24}
+html:root body #casinoModal .cg-bowling .bw-field{position:relative;flex:1 1 auto;min-height:0;margin:0 -8px -8px}
+html:root body #casinoModal .cg-bowling .bw-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+html:root body #casinoModal .cg-bowling .bw-body{fill:url(#bwPinG);stroke:#94A3B8;stroke-width:.4}
+html:root body #casinoModal .cg-bowling .bw-pin.gold .bw-body{fill:url(#bwGold);stroke:#FDE68A}
+html:root body #casinoModal .cg-bowling .bw-pin.gold{filter:drop-shadow(0 0 4px #FBBF24)}
+html:root body #casinoModal .cg-bowling .bw-flash{opacity:0;font-family:var(--cg-font);font-weight:900;font-style:italic;text-transform:uppercase;fill:#FEF3C7;stroke:#B45309;stroke-width:3px;paint-order:stroke;stroke-linejoin:round;pointer-events:none}
+html:root body #casinoModal .cg-bowling .bw-flash.on{animation:bwFlash 1.2s ease-out forwards}
+@keyframes bwFlash{0%{opacity:0}15%{opacity:1}80%{opacity:1}100%{opacity:0}}
+@media (max-height:640px){html:root body #casinoModal .cg-bowling .bw-pay span{height:30px}}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .cg-bowling .bw-stage{flex-direction:row}
+  html:root body #casinoModal .cg-bowling .bw-pay{display:flex;flex-direction:column-reverse;width:62px}
+  html:root body #casinoModal .cg-bowling .bw-pay span{flex:1 1 0;height:auto}
+  html:root body #casinoModal .cg-bowling .bw-field{margin:-8px -8px -8px 0}
+}
+html.oro-lite body #casinoModal .cg-bowling .bw-pin.gold{filter:none}

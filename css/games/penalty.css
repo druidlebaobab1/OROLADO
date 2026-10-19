@@ -1,35 +1,65 @@
-/* v2795 — Penalty (Evoplay Penalty Shoot-Out style): ladder, goal + keeper, 5 targets. */
-html:root body #casinoModal .cg-penalty .pn-stage{display:flex;flex-direction:column;gap:6px;padding:8px;
-  background:radial-gradient(90% 60% at 50% 0%,rgba(139,92,246,.35),transparent 65%),linear-gradient(180deg,#1B1442,#0E0A26 60%,#0B2A1B)}
-/* échelle des multiplicateurs */
-html:root body #casinoModal .cg-penalty .pn-lad{flex:0 0 auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;direction:ltr}
-html:root body #casinoModal .cg-penalty .pn-lad span{min-width:0;height:28px;padding:0 3px;border-radius:9px;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px var(--cg-line);transition:background .2s,box-shadow .2s}
-html:root body #casinoModal .cg-penalty .pn-lad b{display:block;max-width:100%;font:800 12px/1 var(--cg-font);color:#C4B5FD;font-variant-numeric:tabular-nums}
-html:root body #casinoModal .cg-penalty .pn-lad span.ok{background:linear-gradient(180deg,#22C55E,#15803D)}
-html:root body #casinoModal .cg-penalty .pn-lad span.ok b{color:#fff}
-html:root body #casinoModal .cg-penalty .pn-lad span.cur{background:linear-gradient(180deg,rgba(251,191,36,.35),rgba(245,158,11,.18));box-shadow:inset 0 0 0 1.5px var(--cg-gold),0 0 14px -3px rgba(251,191,36,.8)}
-html:root body #casinoModal .cg-penalty .pn-lad span.cur b{color:#FDE68A}
-html:root body #casinoModal .cg-penalty .pn-lad span.miss{background:linear-gradient(180deg,#FB7185,#E11D48)}
-html:root body #casinoModal .cg-penalty .pn-lad span.miss b{color:#fff}
+/* v2807 — Penalty (Penalty Shoot-Out style, rebuilt): night stadium, perspective goal + net, SVG goalkeeper, 6 aim zones, ladder. */
+html:root body #casinoModal .cg-penalty .pn-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;
+  background:linear-gradient(180deg,#0B0720,#120B2E 55%,#0E4A27)}
+/* échelle des multiplicateurs (série de tirs) */
+html:root body #casinoModal .cg-penalty .pn-lad{flex:0 0 auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;direction:ltr;position:relative;z-index:2}
+html:root body #casinoModal .cg-penalty .pn-lad span{position:relative;min-width:0;height:32px;padding:0 3px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px var(--cg-line);transition:background .25s,box-shadow .25s,transform .25s}
+html:root body #casinoModal .cg-penalty .pn-lad i{font:800 8px/1 var(--cg-font);font-style:normal;color:rgba(196,181,253,.6);letter-spacing:.04em}
+html:root body #casinoModal .cg-penalty .pn-lad b{display:block;max-width:100%;font:900 12px/1 var(--cg-font);color:#DDD6FE;font-variant-numeric:tabular-nums;white-space:nowrap}
+html:root body #casinoModal .cg-penalty .pn-lad span.ok{background:linear-gradient(180deg,#34D399,#15803D);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 10px -6px #22C55E}
+html:root body #casinoModal .cg-penalty .pn-lad span.ok b,html:root body #casinoModal .cg-penalty .pn-lad span.ok i{color:#fff}
+html:root body #casinoModal .cg-penalty .pn-lad span.cur{background:linear-gradient(180deg,rgba(251,191,36,.42),rgba(245,158,11,.16));box-shadow:inset 0 0 0 1.5px var(--cg-gold),0 0 16px -3px rgba(251,191,36,.85);transform:translateY(-1px)}
+html:root body #casinoModal .cg-penalty .pn-lad span.cur b{color:#FEF3C7}
+html:root body #casinoModal .cg-penalty .pn-lad span.cur i{color:#FDE68A}
+html:root body #casinoModal .cg-penalty .pn-lad span.miss{background:linear-gradient(180deg,#FB7185,#BE123C)}
+html:root body #casinoModal .cg-penalty .pn-lad span.miss b,html:root body #casinoModal .cg-penalty .pn-lad span.miss i{color:#fff}
 /* terrain */
-html:root body #casinoModal .cg-penalty .pn-field{position:relative;flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center}
-html:root body #casinoModal .cg-penalty .pn-svg{display:block;width:100%;height:100%;overflow:hidden}
-html:root body #casinoModal .cg-penalty .pn-kp,html:root body #casinoModal .cg-penalty .pn-ball,html:root body #casinoModal .cg-penalty .pn-net{transform-box:fill-box;transform-origin:50% 50%}
-html:root body #casinoModal .cg-penalty .pn-kp{transform-origin:50% 100%}
-html:root body #casinoModal .cg-penalty .pn-t{cursor:default;opacity:.35;transition:opacity .2s}
-html:root body #casinoModal .cg-penalty .pn-t .pn-hit{fill:transparent}
-html:root body #casinoModal .cg-penalty .pn-t .pn-r1{fill:rgba(251,191,36,.14);stroke:#FBBF24;stroke-width:1.6}
-html:root body #casinoModal .cg-penalty .pn-t .pn-r2{fill:none;stroke:#FDE68A;stroke-width:1.2}
-html:root body #casinoModal .cg-penalty .pn-t .pn-r3{fill:#FDE68A}
-html:root body #casinoModal .cg-penalty.aim .pn-t{cursor:pointer;opacity:1}
-html:root body #casinoModal .cg-penalty.aim .pn-t .pn-r1{transform-box:fill-box;transform-origin:50% 50%;animation:pnPulse 1.3s ease-in-out infinite}
-html:root body #casinoModal .cg-penalty.aim .pn-t:hover .pn-r1{fill:rgba(251,191,36,.35)}
-html:root body #casinoModal .cg-penalty .pn-t.sel{opacity:1}
-html:root body #casinoModal .cg-penalty .pn-t.sel .pn-r1{fill:rgba(251,191,36,.45)}
-@keyframes pnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
-html:root body #casinoModal .cg-penalty .pn-tip{position:absolute;left:0;right:0;bottom:8px;height:26px;display:flex;justify-content:center;align-items:center;pointer-events:none}
-html:root body #casinoModal .cg-penalty .pn-tip b{display:block;max-width:90%;padding:0 12px;border-radius:999px;background:rgba(10,6,30,.55);font:800 13px/26px var(--cg-font);color:#FDE68A}
+html:root body #casinoModal .cg-penalty .pn-field{position:relative;flex:1 1 auto;min-height:0;margin:0 -8px -8px;display:flex;align-items:flex-end;justify-content:center}
+html:root body #casinoModal .cg-penalty .pn-svg{display:block;width:100%;height:100%;overflow:hidden;-webkit-tap-highlight-color:transparent}
+html:root body #casinoModal .cg-penalty .pk-glow{animation:pkGlow 3.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
+@keyframes pkGlow{0%,100%{opacity:.85}50%{opacity:1}}
+html:root body #casinoModal .cg-penalty .pk-led{animation:pkLed 6s linear infinite}
+@keyframes pkLed{0%,100%{opacity:1}50%{opacity:.72}}
+/* zones de tir */
+html:root body #casinoModal .cg-penalty .pk-z{cursor:default;opacity:0;transition:opacity .25s;pointer-events:none}
+html:root body #casinoModal .cg-penalty .pk-z rect{fill:rgba(251,191,36,.1);stroke:rgba(253,230,138,.8);stroke-width:1.2;stroke-dasharray:5 3}
+html:root body #casinoModal .cg-penalty .pk-ret circle{fill:none;stroke:#FDE68A;stroke-width:1.5}
+html:root body #casinoModal .cg-penalty .pk-ret .pk-dot{fill:#FDE68A;stroke:none}
+html:root body #casinoModal .cg-penalty .pk-ret path{stroke:#FDE68A;stroke-width:1.5;stroke-linecap:round}
+html:root body #casinoModal .cg-penalty .pk-ret{transform-box:fill-box;transform-origin:50% 50%}
+html:root body #casinoModal .cg-penalty.aim .pk-z{opacity:1;cursor:pointer;pointer-events:auto}
+html:root body #casinoModal .cg-penalty.aim .pk-ret{animation:pkPulse 1.4s ease-in-out infinite}
+html:root body #casinoModal .cg-penalty.aim .pk-z:hover rect,html:root body #casinoModal .cg-penalty.aim .pk-z:active rect{fill:rgba(251,191,36,.24);stroke:#FBBF24;stroke-dasharray:none}
+html:root body #casinoModal .cg-penalty .pk-z.sel{opacity:1}
+html:root body #casinoModal .cg-penalty .pk-z.sel rect{fill:rgba(251,191,36,.3);stroke:#FBBF24;stroke-width:1.6;stroke-dasharray:none}
+@keyframes pkPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
+/* annonce courte « But ! » / « Arrêté ! » (état du jeu, comme « Envolé ! »), dessinée dans le SVG */
+html:root body #casinoModal .cg-penalty .pn-flash{opacity:0;font-family:var(--cg-font);font-weight:900;font-style:italic;letter-spacing:.02em;text-transform:uppercase;pointer-events:none;paint-order:stroke;stroke-width:3px;stroke-linejoin:round}
+html:root body #casinoModal .cg-penalty .pn-flash.goal{fill:#FEF3C7;stroke:#B45309}
+html:root body #casinoModal .cg-penalty .pn-flash.save{fill:#fff;stroke:#9F1239}
+html:root body #casinoModal .cg-penalty .pn-flash.on{animation:pkFlash 1.25s ease-out forwards}
+@keyframes pkFlash{0%{opacity:0}14%{opacity:1}80%{opacity:1}100%{opacity:0}}
+html:root body #casinoModal .cg-penalty .pn-tip{position:absolute;left:0;right:0;top:6px;height:28px;display:flex;justify-content:center;align-items:center;pointer-events:none}
+html:root body #casinoModal .cg-penalty .pn-tip b{display:block;max-width:90%;padding:0 14px;border-radius:999px;background:rgba(10,6,30,.62);box-shadow:inset 0 0 0 1px rgba(253,230,138,.35);
+  font:800 13px/28px var(--cg-font);color:#FDE68A;white-space:nowrap}
 html:root body #casinoModal .cg-penalty .pn-tip b:empty{display:none}
-@media (max-height:640px){html:root body #casinoModal .cg-penalty .pn-lad span{height:24px}html:root body #casinoModal .cg-penalty .pn-lad b{font-size:11px}}
-html.oro-lite body #casinoModal .cg-penalty.aim .pn-t .pn-r1{animation:none}
+@media (max-height:640px){
+  html:root body #casinoModal .cg-penalty .pn-lad span{height:27px}
+  html:root body #casinoModal .cg-penalty .pn-lad i{display:none}
+  html:root body #casinoModal .cg-penalty .pn-lad b{font-size:11px}
+  html:root body #casinoModal .cg-penalty .pn-tip{top:4px}
+}
+@media (max-width:360px){html:root body #casinoModal .cg-penalty .pn-lad{gap:3px}html:root body #casinoModal .cg-penalty .pn-lad b{font-size:10.5px}}
+/* téléphone couché : échelle à gauche en colonne */
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .cg-penalty .pn-stage{flex-direction:row}
+  html:root body #casinoModal .cg-penalty .pn-lad{grid-template-columns:1fr;grid-template-rows:repeat(8,minmax(0,1fr));width:64px;flex-direction:column-reverse;display:flex}
+  html:root body #casinoModal .cg-penalty .pn-lad span{flex:1 1 0;height:auto;min-height:0}
+  html:root body #casinoModal .cg-penalty .pn-field{margin:-8px -8px -8px 0}
+}
+html.oro-lite body #casinoModal .cg-penalty .pk-glow,html.oro-lite body #casinoModal .cg-penalty .pk-led,html.oro-lite body #casinoModal .cg-penalty.aim .pk-ret{animation:none}
+/* les 8 multiplicateurs tiennent toujours sur une ligne (SE 320 px : « ×10,93 ») */
+html:root body #casinoModal .cg-penalty .pn-lad span{padding:0 1px}
+html:root body #casinoModal .cg-penalty .pn-lad b{font-size:clamp(8.5px,2.7vw,13px)!important;letter-spacing:-.04em}
+@media (orientation:landscape) and (max-height:500px){html:root body #casinoModal .cg-penalty .pn-lad b{font-size:13px!important}}

@@ -56,7 +56,16 @@
     'titre poids plumes': { en: 'featherweight title', es: 'título pluma', pt: 'título peso-pena', ar: 'لقب وزن الريشة', tr: 'tüy siklet unvanı', vi: 'đai hạng lông', id: 'gelar kelas bulu', ru: 'титул в полулёгком весе', de: 'Federgewichtstitel', hi: 'फेदरवेट खिताब', zh: '羽量级金腰带' },
     'prix Coinbase': { en: 'Coinbase price', es: 'precio Coinbase', pt: 'preço Coinbase', ar: 'سعر Coinbase', tr: 'Coinbase fiyatı', vi: 'giá Coinbase', id: 'harga Coinbase', ru: 'цена Coinbase', de: 'Coinbase-Kurs', hi: 'Coinbase कीमत', zh: 'Coinbase 价格' },
     'Oui': { en: 'Yes', es: 'Sí', pt: 'Sim', ar: 'نعم', tr: 'Evet', vi: 'Có', id: 'Ya', ru: 'Да', de: 'Ja', hi: 'हाँ', zh: '是' },
-    'Non': { en: 'No', es: 'No', pt: 'Não', ar: 'لا', tr: 'Hayır', vi: 'Không', id: 'Tidak', ru: 'Нет', de: 'Nein', hi: 'नहीं', zh: '否' }
+    'Non': { en: 'No', es: 'No', pt: 'Não', ar: 'لا', tr: 'Hayır', vi: 'Không', id: 'Tidak', ru: 'Нет', de: 'Nein', hi: 'नहीं', zh: '否' },
+    // v2807 : nouvelles compétitions / catégories
+    'Formule 1': { en: 'Formula 1', es: 'Fórmula 1', pt: 'Fórmula 1', ar: 'فورمولا 1', tr: 'Formula 1', vi: 'Công thức 1', id: 'Formula 1', ru: 'Формула-1', de: 'Formel 1', hi: 'फ़ॉर्मूला 1', zh: 'F1 一级方程式' },
+    'duel': { en: 'head-to-head', es: 'duelo', pt: 'duelo', ar: 'مواجهة', tr: 'düello', vi: 'đối đầu', id: 'duel', ru: 'дуэль', de: 'Duell', hi: 'मुकाबला', zh: '对决' },
+    'Bourse de New York': { en: 'New York Stock Exchange', es: 'Bolsa de Nueva York', pt: 'Bolsa de Nova York', ar: 'بورصة نيويورك', tr: 'New York Borsası', vi: 'Chứng khoán New York', id: 'Bursa New York', ru: 'Нью-Йоркская биржа', de: 'New Yorker Börse', hi: 'न्यूयॉर्क शेयर बाज़ार', zh: '纽约股市' },
+    'résultats Nvidia': { en: 'Nvidia earnings', es: 'resultados de Nvidia', pt: 'resultados da Nvidia', ar: 'نتائج إنفيديا', tr: 'Nvidia bilançosu', vi: 'KQKD Nvidia', id: 'laporan Nvidia', ru: 'отчёт Nvidia', de: 'Nvidia-Zahlen', hi: 'Nvidia नतीजे', zh: '英伟达财报' },
+    'Or · prix LBMA': { en: 'Gold · LBMA price', es: 'Oro · precio LBMA', pt: 'Ouro · preço LBMA', ar: 'الذهب · سعر LBMA', tr: 'Altın · LBMA fiyatı', vi: 'Vàng · giá LBMA', id: 'Emas · harga LBMA', ru: 'Золото · цена LBMA', de: 'Gold · LBMA-Preis', hi: 'सोना · LBMA कीमत', zh: '黄金 · LBMA 价格' },
+    'Box-office USA': { en: 'US box office', es: 'Taquilla EE. UU.', pt: 'Bilheteria EUA', ar: 'شباك التذاكر الأمريكي', tr: 'ABD gişesi', vi: 'Phòng vé Mỹ', id: 'Box office AS', ru: 'Кассовые сборы США', de: 'US-Kinokasse', hi: 'US बॉक्स ऑफ़िस', zh: '北美票房' },
+    'cinéma': { en: 'movies', es: 'cine', pt: 'cinema', ar: 'سينما', tr: 'sinema', vi: 'điện ảnh', id: 'film', ru: 'кино', de: 'Kino', hi: 'सिनेमा', zh: '电影' },
+    'derby basque': { en: 'Basque derby', es: 'derbi vasco', pt: 'dérbi basco', ar: 'ديربي الباسك', tr: 'Bask derbisi', vi: 'derby xứ Basque', id: 'derby Basque', ru: 'баскское дерби', de: 'Baskenderby', hi: 'बास्क डर्बी', zh: '巴斯克德比' }
   };
   function lg() { return (document.documentElement.lang || 'fr').slice(0, 2); }
   function trW(t) { var l = lg(); if (l === 'fr' || !t) return t; Object.keys(LGW).forEach(function (k) { if (LGW[k][l] && t.indexOf(k) > -1) t = t.split(k).join(LGW[k][l]); }); return t; }
@@ -103,7 +112,7 @@
   function qKind(e) {
     if (!EVK[e.sport]) return e.sport || 'autre';
     var l = (e.logos || [])[0] || '';
-    return l === 'q:ball' ? 'foot' : l === 'q:btc' ? 'crypto' : (l === 'q:us' || l === 'q:vote') ? 'politique' : 'event';
+    return l === 'q:ball' ? 'foot' : /^q:(btc|eth|sol|xrp|doge)$/.test(l) ? 'crypto' : (l === 'q:us' || l === 'q:vote') ? 'politique' : l === 'q:race' ? 'autre' : 'event';
   }
   function sico(k) { return '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true">' + (SICO[k] || SICO.autre) + '</svg>'; }
   var CREST = ['#2563EB', '#DC2626', '#16A34A', '#F59E0B', '#7C3AED', '#0891B2', '#DB2777', '#EA580C'];
@@ -115,6 +124,16 @@
     vote: '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2" fill="#3B82F6"/><rect x="7" y="3" width="10" height="11" rx="1" fill="#fff" transform="rotate(-8 12 8)"/><path d="M9.5 8.3l1.6 1.6 3.2-3.4" stroke="#16A34A" stroke-width="1.6" fill="none"/></svg>'
   };
   QIMG.ball = '<svg viewBox="0 0 24 24">' + BALL + '</svg>';
+  // v2807 : images dessinées des nouvelles questions (crypto, F1, Ballon d'Or, cinéma, Bourse, or) — SVG maison, légers
+  QIMG.eth = '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#627EEA"/><path d="M16 4.5v8.6l7.2 3.2z" fill="#fff" opacity=".6"/><path d="M16 4.5L8.8 16.3l7.2-3.2z" fill="#fff"/><path d="M16 22v5.5l7.2-10z" fill="#fff" opacity=".6"/><path d="M16 27.5V22l-7.2-4.5z" fill="#fff"/><path d="M16 20.6l7.2-4.3-7.2-3.2z" fill="#fff" opacity=".25"/><path d="M8.8 16.3l7.2 4.3v-7.5z" fill="#fff" opacity=".6"/></svg>';
+  QIMG.sol = '<svg viewBox="0 0 32 32"><defs><linearGradient id="spSolG" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#9945FF"/><stop offset="1" stop-color="#14F195"/></linearGradient></defs><circle cx="16" cy="16" r="16" fill="#111827"/><g fill="url(#spSolG)"><path d="M10.3 20.2h13.2l-2.4 2.6H7.9z"/><path d="M10.3 9.2h13.2l-2.4 2.6H7.9z"/><path d="M21.1 14.7H7.9l2.4 2.6h13.2z"/></g></svg>';
+  QIMG.xrp = '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#23292F"/><path d="M8.5 8.5h2.6l3.3 3.3a2.3 2.3 0 0 0 3.2 0l3.3-3.3h2.6l-4.6 4.6a4.3 4.3 0 0 1-5.8 0zM8.5 23.5h2.6l3.3-3.3a2.3 2.3 0 0 1 3.2 0l3.3 3.3h2.6l-4.6-4.6a4.3 4.3 0 0 0-5.8 0z" fill="#fff"/></svg>';
+  QIMG.doge = '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#C2A633"/><path d="M12.2 9.3h4.4c4 0 6.4 2.6 6.4 6.7s-2.4 6.7-6.4 6.7h-4.4zm2.6 2.3v8.8h1.8c2.4 0 3.8-1.6 3.8-4.4s-1.4-4.4-3.8-4.4z" fill="#fff"/><path d="M10.2 15h6.8v2h-6.8z" fill="#fff"/></svg>';
+  QIMG.race = '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#E10600"/><path d="M10 7.5v18" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><g transform="translate(10.9 8.2)"><rect width="12" height="9" rx="1" fill="#fff"/>' + (function () { var s = ''; for (var r = 0; r < 3; r++) for (var c = 0; c < 4; c++) if ((r + c) % 2) s += '<rect x="' + c * 3 + '" y="' + r * 3 + '" width="3" height="3" fill="#111"/>'; return s; })() + '</g></svg>';
+  QIMG.trophy = '<svg viewBox="0 0 32 32"><defs><radialGradient id="spGoldB" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#FFF4C2"/><stop offset=".45" stop-color="#F5C542"/><stop offset="1" stop-color="#A86B0C"/></radialGradient></defs><path d="M11 25.5h10l1.4 4H9.6z" fill="#7A4A06"/><circle cx="16" cy="14" r="11.5" fill="url(#spGoldB)"/><path d="M16 8.6l3.6 2.6-1.4 4.2h-4.4l-1.4-4.2zM16 8.6V3M19.6 11.2l5.2-1.8M18.2 15.4l3.4 4.4M13.8 15.4l-3.4 4.4M12.4 11.2L7.2 9.4" stroke="#9A6408" stroke-width="1" fill="none" opacity=".75"/></svg>';
+  QIMG.film = '<svg viewBox="0 0 32 32"><rect x="4" y="12" width="24" height="15" rx="2" fill="#1F2937"/><path d="M4 9.5l22.6-5.3.8 3.4L4.8 12.9z" fill="#F8FAFC"/><path d="M8 8.6l2.2 3.2M13.5 7.3l2.2 3.2M19 6l2.2 3.2" stroke="#1F2937" stroke-width="2.2"/><path d="M13.5 16.2v7l6-3.5z" fill="#FBBF24"/></svg>';
+  QIMG.chart = '<svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0F2A1E"/><path d="M6 25h21" stroke="#3F6B55" stroke-width="1.2"/><path d="M6 21.5l5.5-5 4.5 3.5 5-7 5 3.5" stroke="#22C55E" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 9.5h4.5V14" stroke="#22C55E" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  QIMG.gold = '<svg viewBox="0 0 32 32"><defs><linearGradient id="spGoldI" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDE68A"/><stop offset="1" stop-color="#C98A0B"/></linearGradient></defs><g stroke="#8A5A05" stroke-width=".8" fill="url(#spGoldI)"><path d="M3.5 26.5l2.6-6.5h8.4l2.6 6.5z"/><path d="M14.9 26.5l2.6-6.5h8.4l2.6 6.5z"/><path d="M9.2 19.3l2.6-6.5h8.4l2.6 6.5z"/></g><path d="M12.6 14.2h5.4" stroke="#FFF7D6" stroke-width="1" opacity=".8"/></svg>';
   function logoHtml(lg, cls) {
     if (!lg) return '';
     if (/^q:[a-z]+$/.test(lg)) return QIMG[lg.slice(2)] ? '<span class="' + cls + ' sp-qsvg">' + QIMG[lg.slice(2)] + '</span>' : '';
@@ -122,10 +141,13 @@
     if (/^[a-f0-9]{16}$/.test(lg)) return '<img class="' + cls + '" src="sp-logo.php?k=' + lg + '" alt="" loading="lazy">';
     return '';
   }
-  function crest(n, lg) {
+  function crest(n, lg, sp) {
     if (lg && /^img\/teams\//.test(lg)) return logoHtml(lg, 'sp-crest sp-logo');
     if (lg && /^[a-f0-9]{16}$/.test(lg)) return '<img class="sp-crest sp-logo" src="sp-logo.php?k=' + lg + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'; // v2713 : vrai logo
-    var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; }); return '<i class="sp-crest" style="--cc:' + CREST[h % CREST.length] + '">' + esc(String(n || '?').trim().charAt(0).toUpperCase()) + '</i>'; }
+    var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; });
+    // v2807 : combat / tennis sans photo → pastille avec l'icône du sport (gant, balle) au lieu d'une simple lettre
+    if (sp === 'mma' || sp === 'boxe' || sp === 'tennis') return '<i class="sp-crest sp-crest-ico" style="--cc:' + CREST[h % CREST.length] + '">' + sico(sp) + '</i>';
+    return '<i class="sp-crest" style="--cc:' + CREST[h % CREST.length] + '">' + esc(String(n || '?').trim().charAt(0).toUpperCase()) + '</i>'; }
   // « Équipe A - Équipe B » / « A vs B » → deux lignes ; sinon le titre tel quel
   function teams(t) { var m = String(t || '').split(/\s+(?:-|–|—|vs\.?|VS|contre)\s+/); return m.length === 2 ? m : null; }
   /* v2798 (propriétaire) — PARIS façon grande appli de paris (1xBet / Betway / Bet365) aux couleurs OROLADO (violet
@@ -199,6 +221,7 @@
     var mid = t.length / 2, best = -1, bd = 1e9;
     for (var i = 1; i < t.length - 1; i++) {
       var c = t.charAt(i), pen;
+      if (c === ' ' && /\d/.test(t.charAt(i - 1)) && /[\d$€%]/.test(t.charAt(i + 1))) continue; // v2807 : « 4 200 $ » jamais coupé en deux lignes
       if (c === ' ') pen = Math.abs(i - mid) - (/[.!?:;,،]/.test(t.charAt(i - 1)) ? t.length * 0.18 : 0);
       else if (/[，。、！？：；]/.test(c)) pen = Math.abs(i + 1 - mid) - t.length * 0.18;
       else continue;
@@ -336,9 +359,9 @@
     }).join('');
     var head;
     if (tm) {
-      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0]) + '<span class="sp2-tn">' + '<span class="fit">' + esc(tm[0]) + '</span>' + '</span></div>' +
+      head = '<div class="sp2-match"><div class="sp2-tm">' + crest(tm[0], (e.logos || [])[0], e.sport) + '<span class="sp2-tn">' + '<span class="fit">' + esc(tm[0]) + '</span>' + '</span></div>' +
         '<div class="sp2-mid"><b class="fit">' + esc(hm(e.start)) + '</b><small class="fit">' + esc(dayLabel(e.start)) + '</small></div>' +
-        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1]) + '<span class="sp2-tn">' + '<span class="fit">' + esc(tm[1]) + '</span>' + '</span></div></div>';
+        '<div class="sp2-tm">' + crest(tm[1], (e.logos || [])[1], e.sport) + '<span class="sp2-tn">' + '<span class="fit">' + esc(tm[1]) + '</span>' + '</span></div></div>';
     } else {
       var img = q ? logoHtml((e.logos || [])[0] || '', 'sp2-qimg') : '';
       if (!img) img = '<span class="sp2-qimg sp2-qico">' + sico(qKind(e)) + '</span>';

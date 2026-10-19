@@ -76,7 +76,21 @@
   }
   var COL = { crash: '#FF3B5C', jet: '#A855F7', rocket: '#22D3EE' };
   var MULT = function (s) { return Math.max(1, Math.floor(Math.exp(0.08 * Math.max(0, s)) * 100) / 100); }; // same as the server
-  var autoOn = false, autoVal = 2;
+  /* v2807 (propriétaire, iPhone) : l'encaissement auto « restait sur 2 » — sur iPhone, select() au toucher ne sélectionne
+     pas : le chiffre tapé s'ajoutait derrière « 2,00 » (« 2,003,5 » → illisible → retour à 2). Maintenant : toucher la case
+     la VIDE (l'ancienne valeur reste en gris), on tape « 3,5 » ou « 3.5 », la valeur est gardée (par jeu, sur ce téléphone),
+     l'auto s'allume, et 4 raccourcis ×1,5 ×2 ×5 ×10. Pendant une mise ouverte la cible est verrouillée (comme Aviator). */
+  var AUTO_KEY = 'oro_cr_auto';
+  var autoMem = (function () { try { return JSON.parse(localStorage.getItem(AUTO_KEY) || '{}') || {}; } catch (e) { return {}; } })();
+  var autoSave = function (game, on, v) { autoMem[game] = { on: on ? 1 : 0, v: v }; try { localStorage.setItem(AUTO_KEY, JSON.stringify(autoMem)); } catch (e) { /* navigation privée */ } };
+  var CHIPS = [1.5, 2, 5, 10];
+  /* « 3,5 » « 3.5 » « x3.5 » « 3,50× » → 3.5 ; rien de lisible → null (la valeur d'avant est gardée) */
+  var parseAuto = function (t) {
+    t = String(t == null ? '' : t).replace(/[\s×xX]/g, '').replace(',', '.').replace(/[^0-9.]/g, '');
+    var i = t.indexOf('.'); if (i >= 0) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, '');
+    var v = parseFloat(t);
+    return isFinite(v) && v > 0 ? v : null;
+  };
 
   function make(game) {
     return function (box, x) {
@@ -84,8 +98,10 @@
       var fx = function (v) { return Number(v).toFixed(2).replace('.', dc); };
       box.classList.add('cg-game', 'cg-crash', 'cr-' + game);
       box.style.setProperty('--cr', col);
+      var mem = autoMem[game] || {}, autoOn = !!mem.on, autoVal = Math.max(1.01, Math.min(1000, Number(mem.v) || 2));
       var opts = '<div class="cr-opts"><button type="button" class="cr-auto' + (autoOn ? ' on' : '') + '" id="crAuto"><i class="cr-sw"><b></b></i><span class="fit">' + K.esc(l.auto) + '</span></button>' +
-        '<label class="cr-tg' + (autoOn ? ' on' : '') + '" id="crTgW"><input id="crTg" inputmode="decimal" autocomplete="off" value="' + fx(autoVal) + '" aria-label="' + K.esc(l.auto) + '"><em>×</em></label></div>';
+        '<label class="cr-tg' + (autoOn ? ' on' : '') + '" id="crTgW"><input id="crTg" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="7" value="' + fx(autoVal) + '" aria-label="' + K.esc(l.auto) + '"><em>×</em></label>' +
+        '<div class="cr-chips" id="crChips">' + CHIPS.map(function (v) { return '<button type="button" data-av="' + v + '">×' + String(v).replace('.', dc) + '</button>'; }).join('') + '</div></div>';
       box.innerHTML = '<div class="cg-hist cr-hist" id="crHist"></div>' +
         '<div class="cg-stage cr-stage" id="crSt"><i class="cr-glow"></i><i class="cr-rays"></i><i class="cr-sky s1"></i><i class="cr-sky s2"></i><i class="cr-planet"></i>' +
         '<svg class="cr-plot" id="crSvg" aria-hidden="true"><defs><linearGradient id="crA' + game + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".5"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient></defs>' +
@@ -104,17 +120,51 @@
       var nowS = function () { return Date.now() / 1000 + off; };
 
       /* ---- auto cash-out (compact, inside the options area) ---- */
-      var tg = $('crTg');
-      var setAuto = function (v) { v = Math.max(1.01, Math.min(1000, Math.round((Number(String(v).replace(',', '.')) || 2) * 100) / 100)); autoVal = v; tg.value = fx(v); };
-      $('crAuto').addEventListener('click', function () {
-        if (me && !me.done) return; // locked while a bet is open (the server keeps the target given at bet time)
-        autoOn = !autoOn; this.classList.toggle('on', autoOn); $('crTgW').classList.toggle('on', autoOn);
+      var tg = $('crTg'), tgW = $('crTgW'), aBtn = $('crAuto'), chips = $('crChips'), editing = false;
+      var locked = function () { return !!(me && !me.done); }; // une mise ouverte garde la cible donnée au serveur
+      var paintAuto = function () {
+        aBtn.classList.toggle('on', autoOn); tgW.classList.toggle('on', autoOn);
+        if (!editing) tg.value = fx(autoVal);
+        chips.querySelectorAll('[data-av]').forEach(function (b) { b.classList.toggle('on', autoOn && Number(b.getAttribute('data-av')) === autoVal); });
+      };
+      var setAuto = function (v) {
+        var n = parseAuto(v);
+        if (n != null) autoVal = Math.max(1.01, Math.min(1000, Math.round(n * 100) / 100));
+        autoSave(game, autoOn, autoVal); paintAuto();
+      };
+      var setOn = function (on) { autoOn = !!on; autoSave(game, autoOn, autoVal); paintAuto(); };
+      aBtn.addEventListener('click', function () { if (!locked()) setOn(!autoOn); });
+      chips.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-av]'); if (!b || locked()) return;
+        editing = false; if (document.activeElement === tg) tg.blur();
+        autoOn = true; setAuto(b.getAttribute('data-av'));
       });
-      // v2802 (propriétaire) : le joueur écrit LE multiplicateur qu'il veut (×1,01 à ×1000) ; toucher la case active l'auto
-      var turnOn = function () { if ((me && !me.done) || autoOn) return; autoOn = true; $('crAuto').classList.add('on'); $('crTgW').classList.add('on'); };
-      tg.addEventListener('change', function () { setAuto(tg.value); });
-      tg.addEventListener('input', function () { var v = Number(String(tg.value).replace(',', '.')); if (v >= 1.01 && v <= 1000) autoVal = Math.round(v * 100) / 100; });
-      tg.addEventListener('focus', function () { turnOn(); try { tg.select(); } catch (e) { /* ignore */ } });
+      // toucher la case : elle se vide (l'ancienne valeur reste en gris derrière), le clavier chiffres s'ouvre, l'auto s'allume
+      tg.addEventListener('focus', function () {
+        if (locked()) { tg.blur(); return; }
+        editing = true; tg.placeholder = fx(autoVal); tg.value = '';
+        if (!autoOn) setOn(true);
+      });
+      tg.addEventListener('input', function () {
+        var clean = String(tg.value).replace(/[^0-9.,]/g, '');
+        if (clean !== tg.value) tg.value = clean;
+        var n = parseAuto(clean); if (n != null && n >= 1.01 && n <= 1000) { autoVal = Math.round(n * 100) / 100; autoSave(game, autoOn, autoVal); }
+        paintAuto();
+      });
+      var commit = function () { if (!editing) return; editing = false; var t = tg.value; tg.placeholder = ''; if (String(t).trim() === '') paintAuto(); else setAuto(t); };
+      tg.addEventListener('blur', commit);
+      tg.addEventListener('change', commit);
+      tg.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); tg.blur(); } });
+      var wasLocked = null;
+      var paintLock = function () {
+        var lk = locked();
+        if (lk === wasLocked) return;
+        wasLocked = lk; box.querySelector('.cr-opts').classList.toggle('lock', lk); tg.readOnly = lk;
+        if (lk) { editing = false; if (document.activeElement === tg) tg.blur(); autoOn = me.auto > 1; if (autoOn) autoVal = Number(me.auto); } // ce que le serveur garde pour CETTE mise
+        else { var m0 = autoMem[game] || {}; autoOn = !!m0.on; autoVal = Math.max(1.01, Math.min(1000, Number(m0.v) || autoVal)); } // le réglage gardé pour les mises suivantes
+        paintAuto();
+      };
+      paintAuto();
 
       /* ---- scene geometry ---- */
       var measure = function () {
@@ -224,7 +274,7 @@
           } else {
             K.setText(mEl, fx(R.c) + '×');
           }
-          paintHist();
+          paintHist(); paintLock();
           var open = me && !me.done, inFlight = phase === 'fly';
           if (!btn || watch) { /* visitor: watches only */ }
           else if (open && me.rid === R.i && inFlight) {
@@ -244,7 +294,7 @@
           var c = await K.multi(game, 'cash');
           if (c) { if (pre && c.done && Number(c.out) === 1) cancelRef = c.ref; me = c; showMine(c); }
         } else {
-          setAuto(tg.value); // la valeur écrite, même sans avoir quitté la case
+          if (editing) commit(); // la valeur écrite, même sans avoir quitté la case
           var r = await K.multi(game, 'start', autoOn ? { auto: autoVal } : {});
           if (r) { me = r; if (r.done) showMine(r); else K.afterPlay(r); }
         }
