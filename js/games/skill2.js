@@ -868,67 +868,135 @@
     };
   }, 'tap', 0.42);
 
-  /* ================================================================== 4. HAMSTER RUN — 3 lanes in a space tube, tap left / right */
+  /* ================================================================== 4. HAMSTER RUN — 3 lanes in a space tube, tap left / right
+     v2860 (owner: "amateur") — ONLY the drawing changed (same lanes, same rows, same timing, same hit test): a real furry hamster
+     seen from behind with a 6-frame gallop, inside a glossy rainbow play-tube whose rings, floor bands, sawdust and speed
+     streaks rush past (faster as the multiplier climbs); toy-block walls and mousetraps; a toy-brick wall for the end.
+     Every sprite is pre-drawn once per size. */
   boot('hamster', function (A) {
     var W, H, u, dpr, T, bg, hamS = [], obS = [], hy, ny, lw, F = 5, lane = 0, hx = 0, obs = [], rowT = 0, ringP = 0, dead = false, wall = null, t = 0, won = 0, spd = 0.5, lastFree = 0;
+    var ringN = 0, rph = 0, SD = [], wallS = null, floorG = null, shadeG = null, sfx = 0; // drawing only
+    var TUBE = ['#F472B6', '#FB923C', '#FACC15', '#4ADE80', '#22D3EE', '#818CF8', '#C084FC'];
     function P(z) { return 1 / (1 + F * z); }
     function SY(z) { return hy + (ny - hy) * P(z); }
     function SX(lx, z) { return W / 2 + lx * lw * P(z); }
-    function hamSprite(f) {
-      var w = lw * 0.62, h = w * 1.05;
-      return mkc(w, h, dpr, function (c) { // seen from behind, running
-        var x = w / 2;
-        c.fillStyle = '#FDA4AF'; c.beginPath(); c.ellipse(x - w * 0.2, h * (f ? 0.9 : 0.94), w * 0.1, h * 0.06, 0, 0, TAU); c.fill(); c.beginPath(); c.ellipse(x + w * 0.2, h * (f ? 0.94 : 0.9), w * 0.1, h * 0.06, 0, 0, TAU); c.fill();
-        c.fillStyle = gl(c, x, h * 0.58, w * 0.46, ['#FFE7C2', '#F5A65B', '#B45309', '#7C2D12']); c.beginPath(); c.ellipse(x, h * 0.6, w * 0.44, h * 0.34, 0, 0, TAU); c.fill();
-        circ(c, x - w * 0.25, h * 0.25, w * 0.1, '#C2410C'); circ(c, x + w * 0.25, h * 0.25, w * 0.1, '#C2410C');
-        circ(c, x - w * 0.25, h * 0.25, w * 0.05, '#FDA4AF'); circ(c, x + w * 0.25, h * 0.25, w * 0.05, '#FDA4AF');
-        circ(c, x, h * 0.38, w * 0.3, gl(c, x, h * 0.38, w * 0.3, ['#FFE7C2', '#F5A65B', '#9A3412']));
-        c.fillStyle = '#FFF7ED'; c.beginPath(); c.ellipse(x, h * 0.66, w * 0.2, h * 0.16, 0, 0, TAU); c.fill();
-        circ(c, x, h * 0.82, w * 0.06, '#FFF7ED');
-        c.strokeStyle = 'rgba(186,230,253,.85)'; c.lineWidth = Math.max(1.5, w * 0.04); c.beginPath(); c.arc(x, h * 0.4, w * 0.4, Math.PI * 1.05, Math.PI * 1.95); c.stroke();
-        c.strokeStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(x, h * 0.4, w * 0.33, Math.PI * 1.15, Math.PI * 1.4); c.stroke();
+    function sh(hex, k) { return D6.Rig ? D6.Rig.shade(hex, k) : hex; }
+    // the hamster seen from behind: fur (gradient + hundreds of short strands), round ears, pink soles kicking, a tiny tail
+    function hamSprite(f, n) {
+      var w = lw * 0.82, h = w * 1.08, ph = f / n * TAU;
+      return mkc(w, h, dpr, function (c) {
+        var x = w / 2, bob = Math.sin(ph * 2) * h * 0.025, sq = 1 + Math.cos(ph * 2) * 0.04, by = h * 0.6 + bob, rx = w * 0.42 * sq, ry = h * 0.33 / sq;
+        var fL = Math.sin(ph), fR = Math.sin(ph + Math.PI);
+        // back feet (behind / under the body): the one pushing off shows its pink sole
+        [[-1, fL], [1, fR]].forEach(function (q) {
+          var s = q[0], up = Math.max(0, q[1]), fx = x + s * w * 0.2, fy = h * 0.93 - up * h * 0.1;
+          c.fillStyle = '#E9A0A8'; c.beginPath(); c.ellipse(fx, fy, w * 0.085, h * (0.045 + up * 0.03), s * 0.2, 0, TAU); c.fill();
+          c.fillStyle = '#C97880'; for (var k = -1; k <= 1; k++) { c.beginPath(); c.arc(fx + k * w * 0.035, fy - h * (0.03 + up * 0.02), w * 0.016, 0, TAU); c.fill(); }
+        });
+        // body
+        var g = c.createRadialGradient(x - rx * 0.35, by - ry * 0.55, rx * 0.1, x, by, rx * 1.15);
+        g.addColorStop(0, '#F8D49A'); g.addColorStop(0.35, '#E3A15A'); g.addColorStop(0.75, '#B86A2A'); g.addColorStop(1, '#6E3712');
+        c.fillStyle = g; c.beginPath(); c.ellipse(x, by, rx, ry, 0, 0, TAU); c.fill();
+        // white flanks / belly fur at the bottom
+        c.save(); c.beginPath(); c.ellipse(x, by, rx, ry, 0, 0, TAU); c.clip();
+        var wg = c.createLinearGradient(0, by + ry * 0.1, 0, by + ry); wg.addColorStop(0, 'rgba(255,247,237,0)'); wg.addColorStop(0.5, 'rgba(255,247,237,.85)'); wg.addColorStop(1, '#F1E4D3');
+        c.fillStyle = wg; c.fillRect(x - rx, by, rx * 2, ry);
+        // fur strands following the body
+        var R = 13 + f * 7;
+        for (var i = 0; i < 260; i++) {
+          R = (R * 9301 + 49297) % 233280; var a = R / 233280 * TAU; R = (R * 9301 + 49297) % 233280; var d = Math.sqrt(R / 233280);
+          var px = x + Math.cos(a) * rx * d, py = by + Math.sin(a) * ry * d, L = w * (0.025 + 0.02 * d), ang = a + 0.4;
+          c.strokeStyle = i % 3 ? 'rgba(110,55,18,.28)' : 'rgba(255,236,200,.4)'; c.lineWidth = Math.max(0.6, w * 0.006);
+          c.beginPath(); c.moveTo(px, py); c.lineTo(px + Math.cos(ang) * L * 0.4 + Math.cos(a) * L, py + Math.sin(ang) * L * 0.4 + Math.sin(a) * L); c.stroke();
+        }
+        // dark dorsal stripe (Syrian hamster) + rim light
+        c.fillStyle = 'rgba(110,55,18,.22)'; c.beginPath(); c.ellipse(x, by - ry * 0.35, rx * 0.16, ry * 0.55, 0, 0, TAU); c.fill();
+        c.restore();
+        c.strokeStyle = 'rgba(255,240,210,.55)'; c.lineWidth = Math.max(1, w * 0.012); c.beginPath(); c.ellipse(x, by, rx * 0.985, ry * 0.985, 0, Math.PI * 1.05, Math.PI * 1.45); c.stroke();
+        // tail
+        c.fillStyle = '#F5DFC5'; c.beginPath(); c.ellipse(x, by + ry * 0.82, w * 0.04, h * 0.03, 0, 0, TAU); c.fill();
+        // head (back of it) + cheeks + ears
+        var hy0 = by - ry * 0.8 - bob * 0.3, hr = w * 0.25;
+        [-1, 1].forEach(function (s) { c.fillStyle = '#E8B074'; c.beginPath(); c.ellipse(x + s * hr * 0.85, hy0 + hr * 0.35, hr * 0.42, hr * 0.38, 0, 0, TAU); c.fill(); });
+        var hg = c.createRadialGradient(x - hr * 0.35, hy0 - hr * 0.4, hr * 0.1, x, hy0, hr * 1.1); hg.addColorStop(0, '#F6CF92'); hg.addColorStop(0.55, '#D38942'); hg.addColorStop(1, '#8A4A1A');
+        c.fillStyle = hg; c.beginPath(); c.ellipse(x, hy0, hr, hr * 0.88, 0, 0, TAU); c.fill();
+        [-1, 1].forEach(function (s) {
+          var ex = x + s * hr * 0.62, ey = hy0 - hr * 0.68 + (s > 0 ? Math.sin(ph * 2) : Math.cos(ph * 2)) * hr * 0.03;
+          c.fillStyle = '#9A5420'; c.beginPath(); c.ellipse(ex, ey, hr * 0.32, hr * 0.34, s * 0.4, 0, TAU); c.fill();
+          c.fillStyle = '#F2A7B3'; c.beginPath(); c.ellipse(ex + s * hr * 0.02, ey + hr * 0.03, hr * 0.2, hr * 0.22, s * 0.4, 0, TAU); c.fill();
+          c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(ex - hr * 0.08, ey - hr * 0.1, hr * 0.07, hr * 0.05, 0, 0, TAU); c.fill();
+        });
+        c.strokeStyle = 'rgba(110,55,18,.3)'; c.lineWidth = Math.max(0.6, w * 0.006);
+        for (i = 0; i < 40; i++) { var a2 = Math.PI * (1.1 + i / 40 * 0.8), d2 = 0.4 + (i % 5) * 0.12; c.beginPath(); c.moveTo(x + Math.cos(a2) * hr * d2, hy0 + Math.sin(a2) * hr * d2 * 0.88); c.lineTo(x + Math.cos(a2) * hr * (d2 + 0.16), hy0 + Math.sin(a2) * hr * (d2 + 0.16) * 0.88); c.stroke(); }
+        c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.ellipse(x - hr * 0.3, hy0 - hr * 0.45, hr * 0.28, hr * 0.12, -0.5, 0, TAU); c.fill();
+        // front paws flicking out at the sides on each stride
+        var pf = Math.max(0, Math.sin(ph * 2 + 1));
+        [-1, 1].forEach(function (s) { c.fillStyle = '#F1C9A5'; c.beginPath(); c.ellipse(x + s * rx * (0.92 + pf * 0.08), by - ry * 0.15, w * 0.045, h * 0.03, s * 0.6, 0, TAU); c.fill(); });
       });
     }
     function obSprite(k) {
-      var w = lw * 0.84, h = k ? w : w * 0.7;
+      var w = lw * 0.84, h = k ? w * 0.62 : w * 0.95;
       return mkc(w, h, dpr, function (c) {
-        if (k === 0) { // energy barrier
-          var g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#F0ABFC'); g.addColorStop(0.5, '#C026D3'); g.addColorStop(1, '#581C87');
-          c.fillStyle = g; c.beginPath(); c.roundRect ? c.roundRect(0, h * 0.1, w, h * 0.9, w * 0.08) : c.rect(0, h * 0.1, w, h * 0.9); c.fill();
-          c.fillStyle = '#FDE68A'; for (var i = 0; i < 4; i++) { c.beginPath(); c.moveTo(w * (i * 0.25), h * 0.3); c.lineTo(w * (i * 0.25 + 0.13), h * 0.3); c.lineTo(w * (i * 0.25 + 0.25), h * 0.75); c.lineTo(w * (i * 0.25 + 0.12), h * 0.75); c.closePath(); c.fill(); }
-          c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(w * 0.05, h * 0.14, w * 0.9, h * 0.06);
-        } else { // spiky space mine
-          var x = w / 2, r = w * 0.36;
-          c.fillStyle = '#94A3B8'; for (var s = 0; s < 10; s++) { var a = s / 10 * TAU; c.beginPath(); c.moveTo(x + Math.cos(a - 0.22) * r, x + Math.sin(a - 0.22) * r); c.lineTo(x + Math.cos(a) * w * 0.49, x + Math.sin(a) * w * 0.49); c.lineTo(x + Math.cos(a + 0.22) * r, x + Math.sin(a + 0.22) * r); c.fill(); }
-          circ(c, x, x, r, gl(c, x, x, r, ['#E2E8F0', '#64748B', '#1E293B']));
-          circ(c, x, x, r * 0.35, gl(c, x, x, r * 0.35, ['#FFE4E6', '#F43F5E', '#7F1D1D']));
+        c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(w / 2, h * 0.97, w * 0.5, h * 0.05, 0, 0, TAU); c.fill();
+        if (k === 0) { // a wall of 3 toy blocks with bevels and studs
+          var cols = [['#F43F5E', '#9F1239'], ['#FACC15', '#A16207'], ['#3B82F6', '#1E3A8A'], ['#22C55E', '#14532D']], bw = w / 2, bh = h * 0.42;
+          [[0, h - bh, 0], [bw, h - bh, 2], [bw * 0.5, h - bh * 2, 1]].forEach(function (b, i) {
+            var cl = cols[(b[2] + i) % 4], x0 = b[0] + 1, y0 = b[1] + 1, ww = bw - 2, hh = bh - 2;
+            c.fillStyle = cl[1]; c.fillRect(x0, y0, ww, hh);
+            c.fillStyle = cl[0]; c.fillRect(x0 + ww * 0.08, y0 + hh * 0.08, ww * 0.84, hh * 0.8);
+            c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x0 + ww, y0); c.lineTo(x0 + ww * 0.92, y0 + hh * 0.08); c.lineTo(x0 + ww * 0.08, y0 + hh * 0.08); c.lineTo(x0 + ww * 0.08, y0 + hh * 0.88); c.lineTo(x0, y0 + hh); c.closePath(); c.fill();
+            c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.moveTo(x0 + ww, y0); c.lineTo(x0 + ww, y0 + hh); c.lineTo(x0, y0 + hh); c.lineTo(x0 + ww * 0.08, y0 + hh * 0.88); c.lineTo(x0 + ww * 0.92, y0 + hh * 0.88); c.lineTo(x0 + ww * 0.92, y0 + hh * 0.08); c.closePath(); c.fill();
+            c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.arc(x0 + ww / 2, y0 + hh * 0.48, hh * 0.22, 0, TAU); c.fill(); c.fillStyle = cl[0]; c.beginPath(); c.arc(x0 + ww / 2 + 1, y0 + hh * 0.48 + 1, hh * 0.18, 0, TAU); c.fill();
+          });
+        } else { // a mousetrap: wooden base, steel bar and spring, cheese bait
+          var by = h * 0.55;
+          c.fillStyle = '#7C4A1E'; c.beginPath(); c.moveTo(w * 0.04, h * 0.95); c.lineTo(w * 0.96, h * 0.95); c.lineTo(w * 0.88, by); c.lineTo(w * 0.12, by); c.closePath(); c.fill();
+          c.fillStyle = lg2(c, 0, by, 0, h * 0.9, ['#E0A85A', '#B97A35']); c.beginPath(); c.moveTo(w * 0.06, h * 0.88); c.lineTo(w * 0.94, h * 0.88); c.lineTo(w * 0.87, by); c.lineTo(w * 0.13, by); c.closePath(); c.fill();
+          c.strokeStyle = 'rgba(90,50,15,.35)'; c.lineWidth = 1; for (var i = 1; i < 6; i++) { c.beginPath(); c.moveTo(w * (0.12 + i * 0.13), by + 2); c.lineTo(w * (0.08 + i * 0.15), h * 0.87); c.stroke(); }
+          c.strokeStyle = '#CBD5E1'; c.lineWidth = Math.max(2, w * 0.03); c.beginPath(); c.moveTo(w * 0.18, h * 0.82); c.lineTo(w * 0.18, h * 0.12); c.lineTo(w * 0.82, h * 0.12); c.lineTo(w * 0.82, h * 0.82); c.stroke();
+          c.strokeStyle = '#64748B'; c.lineWidth = Math.max(1, w * 0.012); c.beginPath(); c.moveTo(w * 0.18, h * 0.12); c.lineTo(w * 0.82, h * 0.12); c.stroke();
+          c.strokeStyle = '#94A3B8'; c.lineWidth = Math.max(1.5, w * 0.02); for (i = 0; i < 4; i++) { c.beginPath(); c.ellipse(w * (0.38 + i * 0.08), h * 0.78, w * 0.03, h * 0.08, 0, 0, TAU); c.stroke(); }
+          c.fillStyle = '#FBBF24'; c.beginPath(); c.moveTo(w * 0.42, h * 0.7); c.lineTo(w * 0.62, h * 0.7); c.lineTo(w * 0.6, h * 0.56); c.closePath(); c.fill();
+          c.fillStyle = '#D97706'; [[0.5, 0.66], [0.56, 0.63]].forEach(function (q) { c.beginPath(); c.arc(w * q[0], h * q[1], w * 0.015, 0, TAU); c.fill(); });
         }
       });
     }
+    function lg2(c, x0, y0, x1, y1, st) { var g = c.createLinearGradient(x0, y0, x1, y1); st.forEach(function (s, i) { g.addColorStop(i / (st.length - 1), s); }); return g; }
     return {
       size: function (w, h, uu, d, top) {
         W = w; H = h; u = uu; dpr = d; T = top;
         hy = Math.max(T + 4, H * 0.22); ny = H * 0.95; lw = Math.min(W * 0.3, (ny - hy) * 0.5);
+        var tr = lw * 1.95, cyN = ny - tr * 0.45;
         bg = mkc(W, H, dpr, function (c) {
-          var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#120C32'); g.addColorStop(1, '#0A0720'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-          stars(c, W, hy + 30, A.lite ? 20 : 50);
-          var q = c.createRadialGradient(W / 2, hy, 0, W / 2, hy, lw * 1.6); q.addColorStop(0, 'rgba(253,230,138,.9)'); q.addColorStop(0.25, 'rgba(167,139,250,.55)'); q.addColorStop(1, 'rgba(76,29,149,0)');
-          c.fillStyle = q; c.fillRect(0, 0, W, H);
-          // floor of the tube (3 lanes)
-          c.beginPath(); c.moveTo(SX(-1.55, 1.2), SY(1.2)); c.lineTo(SX(1.55, 1.2), SY(1.2)); c.lineTo(SX(1.55, -0.08), SY(-0.08)); c.lineTo(SX(-1.55, -0.08), SY(-0.08)); c.closePath();
-          var f = c.createLinearGradient(0, hy, 0, H); f.addColorStop(0, 'rgba(76,29,149,.35)'); f.addColorStop(1, 'rgba(91,33,182,.75)'); c.fillStyle = f; c.fill();
-          c.lineWidth = 2;
-          [-1.5, 1.5].forEach(function (lx) { c.strokeStyle = 'rgba(251,191,36,.75)'; c.beginPath(); c.moveTo(SX(lx, 1.2), SY(1.2)); c.lineTo(SX(lx, -0.08), SY(-0.08)); c.stroke(); });
-          [-0.5, 0.5].forEach(function (lx) { c.strokeStyle = 'rgba(196,181,253,.28)'; c.beginPath(); c.moveTo(SX(lx, 1.2), SY(1.2)); c.lineTo(SX(lx, -0.08), SY(-0.08)); c.stroke(); });
+          // the world outside the tube: a bright toy room, out of focus (soft colour blobs), glowing exit at the end
+          var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#3B1D6E'); g.addColorStop(0.5, '#5B2A86'); g.addColorStop(1, '#2A1250'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+          var R = 31;
+          for (var i = 0; i < (A.lite ? 14 : 30); i++) {
+            R = (R * 9301 + 49297) % 233280; var bx = R / 233280 * W; R = (R * 9301 + 49297) % 233280; var by = R / 233280 * H; R = (R * 9301 + 49297) % 233280;
+            var br = Math.min(W, H) * (0.05 + R / 233280 * 0.12), col = TUBE[i % TUBE.length], q = c.createRadialGradient(bx, by, 0, bx, by, br);
+            q.addColorStop(0, col + '88'); q.addColorStop(1, col + '00'); c.fillStyle = q; c.fillRect(bx - br, by - br, br * 2, br * 2);
+          }
+          var q2 = c.createRadialGradient(W / 2, hy, 0, W / 2, hy, lw * 1.4); q2.addColorStop(0, 'rgba(255,251,235,1)'); q2.addColorStop(0.2, 'rgba(253,230,138,.85)'); q2.addColorStop(0.6, 'rgba(244,114,182,.25)'); q2.addColorStop(1, 'rgba(244,114,182,0)');
+          c.fillStyle = q2; c.fillRect(0, 0, W, H);
         });
-        hamS = [hamSprite(0), hamSprite(1)]; obS = [obSprite(0), obSprite(1)];
+        floorG = null; shadeG = null;
+        var n = A.lite ? 4 : 6; hamS = []; for (var i = 0; i < n; i++) hamS.push(hamSprite(i, n));
+        obS = [obSprite(0), obSprite(1)];
+        wallS = mkc(lw * 3.4, lw * 1.6, dpr, function (c, w, h) { // toy-brick wall (end of the round)
+          var cols = ['#F43F5E', '#FACC15', '#3B82F6', '#22C55E', '#F97316', '#A855F7'], bw = w / 6, bh = h / 4;
+          for (var r = 0; r < 4; r++) for (var k = -1; k < 7; k++) { var x0 = k * bw + (r % 2) * bw / 2, y0 = r * bh, cl = cols[(k + r * 2 + 12) % 6];
+            c.fillStyle = sh(cl, -0.35); c.fillRect(x0 + 1, y0 + 1, bw - 2, bh - 2); c.fillStyle = cl; c.fillRect(x0 + 1, y0 + 1, bw - 4, bh - 4); c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(x0 + 1, y0 + 1, bw - 4, bh * 0.12);
+            c.fillStyle = sh(cl, 0.3); c.beginPath(); c.arc(x0 + bw * 0.3, y0 + bh * 0.5, bh * 0.16, 0, TAU); c.arc(x0 + bw * 0.7, y0 + bh * 0.5, bh * 0.16, 0, TAU); c.fill(); }
+        });
       },
       reset: function (live) { obs = []; lane = 0; hx = 0; dead = false; wall = null; won = 0; rowT = live ? 1.2 : 0.8; lastFree = 0; },
       step: function (dt, live) {
         t += dt;
         var lv = A.lv(), playing = A.live();
         spd = (live ? 0.48 + 0.4 * lv : 0.32) * (won ? 1.6 : 1);
+        var rp0 = ringP;
         ringP = (ringP + dt * spd / 0.14) % 1;
+        if (ringP < rp0) ringN++; rph = (rph + dt * spd * 9) % 1; sfx += ((live ? 0.3 + lv * 0.7 : 0.15) - sfx) * Math.min(1, dt * 2); // drawing only
         var tgt = lane, dx = tgt - hx, st = dt * 8.5;
         hx = Math.abs(dx) <= st ? tgt : hx + Math.sign(dx) * st;
         if (live && !wall) {
@@ -948,37 +1016,59 @@
         }
         if (wall) { var w0 = wall.z; wall.z -= wall.v * dt; if (w0 > 0.02 && wall.z <= 0.02) { dead = true; A.explode(SX(hx, 0), ny - lw * 0.35, 1.8); } if (wall.z < -0.07) wall = null; }
         if (won) won += dt;
+        // sawdust kicked up behind the hamster (drawing only)
+        if (!dead && !A.lite || (!dead && SD.length < 6)) { if (Math.random() < dt * (8 + 20 * spd)) SD.push({ x: SX(hx, 0) + rnd(-1, 1) * lw * 0.15, y: ny - lw * 0.02, vx: rnd(-1, 1) * lw * 0.6, vy: -rnd(0.3, 0.9) * lw, t: 0, m: rnd(0.3, 0.6), c: Math.random() < 0.5 ? '#FDE68A' : '#F5D0A9' }); }
+        for (i = SD.length - 1; i >= 0; i--) { var q = SD[i]; q.t += dt; if (q.t > q.m) { SD.splice(i, 1); continue; } q.x += q.vx * dt; q.y += q.vy * dt; q.vy += lw * 3 * dt; }
       },
       draw: function (c) {
         A.bg(bg);
-        var i, z, p;
-        // moving tube rings + lane dashes give the speed
-        var n = A.lite ? 6 : 11, tr = lw * 1.95, cyN = ny - tr * 0.45;
-        c.lineWidth = 2;
-        for (i = 0; i < n; i++) {
-          z = (n - 1 - i + 1 - ringP) * 0.14; if (z < -0.06) continue;
-          p = P(z); c.strokeStyle = 'rgba(167,139,250,' + (0.12 + 0.5 * p).toFixed(2) + ')';
-          c.beginPath(); c.arc(W / 2, hy + (cyN - hy) * p, tr * p, Math.PI * 0.82, Math.PI * 2.18); c.stroke();
+        var i, z, p, n = A.lite ? 7 : 12, tr = (ny - hy) * 1.0, cyN = ny - tr * 0.55, cx = W / 2;
+        function cy(pp) { return hy + (cyN - hy) * pp; }
+        // tube segments, far → near: translucent coloured plastic, a bright connector ring, a glossy highlight
+        for (i = 0; i < n + 2; i++) {
+          var z1 = (n - 1 - i + 1 - ringP) * 0.14, z0 = z1 + 0.14; if (z0 < -0.12) continue;
+          var p0 = P(z0), p1 = P(Math.max(z1, -0.12)), cut = z1 < -0.12, col = TUBE[((ringN + n - i) % TUBE.length + TUBE.length) % TUBE.length];
+          c.globalAlpha = Math.min(0.75, 0.42 + 0.3 * p1); c.fillStyle = col; c.beginPath(); c.arc(cx, cy(p1), tr * p1, 0, TAU); c.arc(cx, cy(p0), tr * p0, 0, TAU, true); c.fill('evenodd');
+          if (cut) continue;
+          c.globalAlpha = Math.min(1, 0.25 + 0.5 * p1); c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = Math.max(1, 3.2 * p1); c.beginPath(); c.arc(cx - tr * p1 * 0.05, cy(p1) - tr * p1 * 0.05, tr * p1 * 0.93, Math.PI * 1.12, Math.PI * 1.42); c.stroke();
+          c.lineWidth = Math.max(1.5, 9 * p1); c.strokeStyle = sh(col, -0.15); c.beginPath(); c.arc(cx, cy(p1), tr * p1, Math.PI * 0.75, Math.PI * 2.25); c.stroke();
+          c.lineWidth = Math.max(0.8, 3 * p1); c.strokeStyle = sh(col, 0.45); c.beginPath(); c.arc(cx, cy(p1), tr * p1 - 2.5 * p1, Math.PI * 0.8, Math.PI * 2.2); c.stroke();
         }
-        c.strokeStyle = 'rgba(253,230,138,.55)'; c.lineCap = 'round';
-        for (i = 0; i < n; i++) {
-          var z1 = (n - 1 - i + 1 - ringP) * 0.14, z2 = z1 + 0.05; if (z1 < -0.06) continue;
-          c.lineWidth = 3 * P(z1);
-          c.beginPath(); c.moveTo(SX(-0.5, z1), SY(z1)); c.lineTo(SX(-0.5, z2), SY(z2)); c.moveTo(SX(0.5, z1), SY(z1)); c.lineTo(SX(0.5, z2), SY(z2)); c.stroke();
+        c.globalAlpha = 1;
+        // the tube's long seams converging to the end of the tube + an inner shadow (reads as a real tube around us)
+        var pf = P(1.5), pn = P(-0.12);
+        c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = 1.2;
+        for (i = 0; i < 12; i++) { var aa = Math.PI * (0.78 + i * 0.12); c.beginPath(); c.moveTo(cx + Math.cos(aa) * tr * pf, cy(pf) + Math.sin(aa) * tr * pf); c.lineTo(cx + Math.cos(aa) * tr * pn, cy(pn) + Math.sin(aa) * tr * pn); c.stroke(); }
+        if (!shadeG) { shadeG = c.createRadialGradient(cx, cy(1), tr * 0.35, cx, cy(1), tr * 1.25); shadeG.addColorStop(0, 'rgba(20,6,40,0)'); shadeG.addColorStop(1, 'rgba(20,6,40,.45)'); }
+        c.fillStyle = shadeG; c.fillRect(0, 0, W, H);
+        // speed streaks on the tube wall (longer / brighter as the multiplier climbs)
+        if (sfx > 0.08) {
+          c.strokeStyle = 'rgba(255,255,255,' + (0.22 * sfx).toFixed(3) + ')'; c.lineWidth = 1.5; c.lineCap = 'round';
+          for (i = 0; i < (A.lite ? 6 : 14); i++) { var a = Math.PI * (0.85 + (i * 0.618 % 1) * 1.3), k = (t * (1.5 + spd * 2) + i * 0.37) % 1, r0 = tr * (0.15 + k * 0.9), r1 = r0 + tr * 0.25 * sfx * k; c.beginPath(); c.moveTo(cx + Math.cos(a) * r0, cy(1) + (hy - cy(1)) * (1 - k) * 0.6 + Math.sin(a) * r0 * 0.9); c.lineTo(cx + Math.cos(a) * r1, cy(1) + (hy - cy(1)) * (1 - k) * 0.6 + Math.sin(a) * r1 * 0.9); c.stroke(); }
         }
+        // floor: a sawdust-yellow runway with bands that scroll with the rings, lane grooves, seeds
+        if (!floorG) { floorG = c.createLinearGradient(0, hy, 0, H); floorG.addColorStop(0, '#FDE68A'); floorG.addColorStop(0.15, '#F59E0B'); floorG.addColorStop(1, '#B45309'); }
+        c.fillStyle = floorG; c.beginPath(); c.moveTo(SX(-1.55, 8), SY(8)); c.lineTo(SX(1.55, 8), SY(8)); c.lineTo(SX(1.55, -0.08), SY(-0.08)); c.lineTo(SX(-1.55, -0.08), SY(-0.08)); c.closePath(); c.fill();
+        for (i = 0; i < n; i++) {
+          z = (n - 1 - i + 1 - ringP) * 0.14; if (z < -0.08) continue;
+          var za = Math.max(-0.08, z), zb = z + 0.07;
+          c.fillStyle = (ringN + n - i) % 2 ? 'rgba(255,255,255,.12)' : 'rgba(120,53,15,.12)'; c.beginPath(); c.moveTo(SX(-1.55, za), SY(za)); c.lineTo(SX(1.55, za), SY(za)); c.lineTo(SX(1.55, zb), SY(zb)); c.lineTo(SX(-1.55, zb), SY(zb)); c.closePath(); c.fill();
+          var R = (ringN + n - i) * 7 + 3;
+          for (var s = 0; s < 4; s++) { R = (R * 9301 + 49297) % 233280; var sx = -1.4 + R / 233280 * 2.8; R = (R * 9301 + 49297) % 233280; var sz = z + R / 233280 * 0.14; if (sz < -0.08) continue; var sp = P(sz); c.fillStyle = s % 2 ? '#4B2E12' : '#FFF7D6'; c.beginPath(); c.ellipse(SX(sx, sz), SY(sz), 3.5 * sp + 0.5, 1.6 * sp + 0.3, 0.3, 0, TAU); c.fill(); }
+        }
+        [-1.5, 1.5].forEach(function (lx) { c.strokeStyle = '#7C2D12'; c.lineWidth = 3; c.beginPath(); c.moveTo(SX(lx, 8), SY(8)); c.lineTo(SX(lx, -0.08), SY(-0.08)); c.stroke(); });
+        [-0.5, 0.5].forEach(function (lx) { c.strokeStyle = 'rgba(120,53,15,.35)'; c.lineWidth = 2; c.beginPath(); c.moveTo(SX(lx, 8), SY(8)); c.lineTo(SX(lx, -0.08), SY(-0.08)); c.stroke(); });
         var sorted = obs.slice().sort(function (a, b) { return b.z - a.z; });
-        function drawOb(o) { var pp = P(o.z), img = obS[o.k], w = img.width / dpr * pp, hh = img.height / dpr * pp; c.drawImage(img, SX(o.ln, o.z) - w / 2, SY(o.z) - hh, w, hh); }
-        function drawWall() {
-          var pp = P(wall.z), x0 = SX(-1.55, wall.z), x1 = SX(1.55, wall.z), y1 = SY(wall.z), hh = lw * 1.5 * pp;
-          var g = c.createLinearGradient(0, y1 - hh, 0, y1); g.addColorStop(0, '#FDA4AF'); g.addColorStop(1, '#BE123C');
-          c.fillStyle = g; c.fillRect(x0, y1 - hh, x1 - x0, hh);
-          c.fillStyle = '#1F1235'; for (var s = 0; s < 6; s++) c.fillRect(x0 + (x1 - x0) * (s / 6 + 0.04), y1 - hh * 0.7, (x1 - x0) * 0.08, hh * 0.4);
-        }
+        function drawOb(o) { var pp = P(o.z), img = obS[o.k], w = lw * 0.84 * pp, hh = w * img.height / img.width; c.drawImage(img, SX(o.ln, o.z) - w / 2, SY(o.z) - hh, w, hh); }
+        function drawWall() { var pp = P(wall.z), x0 = SX(-1.7, wall.z), x1 = SX(1.7, wall.z), y1 = SY(wall.z), hh = lw * 1.6 * pp; c.drawImage(wallS, x0, y1 - hh, x1 - x0, hh); }
         for (i = 0; i < sorted.length; i++) if (sorted[i].z > 0.02) drawOb(sorted[i]);
         if (wall && wall.z > 0.02) drawWall();
+        for (i = 0; i < SD.length; i++) { var q = SD[i]; c.globalAlpha = 1 - q.t / q.m; c.fillStyle = q.c; c.fillRect(q.x - 1.5, q.y - 1, 3, 2); }
+        c.globalAlpha = 1;
         if (!dead) {
-          var img = hamS[((t * (A.live() ? 10 : 6)) | 0) % 2], hw = img.width / dpr, hh = img.height / dpr, bob = Math.abs(Math.sin(t * 12)) * 3;
-          c.drawImage(img, SX(hx, 0) - hw / 2, ny - hh - bob - (won ? Math.abs(Math.sin(won * 8)) * 10 : 0), hw, hh);
+          var img = hamS[((rph * hamS.length) | 0) % hamS.length], hw = lw * 0.82, hh2 = hw * 1.08, x = SX(hx, 0), lean = (lane - hx) * 0.35, jy = won ? Math.abs(Math.sin(won * 8)) * 10 : 0;
+          c.fillStyle = 'rgba(80,30,5,.35)'; c.beginPath(); c.ellipse(x, ny - 2, hw * 0.45, hw * 0.08, 0, 0, TAU); c.fill();
+          c.save(); c.translate(x, ny - jy); c.rotate(lean); c.drawImage(img, -hw / 2, -hh2, hw, hh2); c.restore();
         }
         for (i = 0; i < sorted.length; i++) if (sorted[i].z <= 0.02) drawOb(sorted[i]);
         if (wall && wall.z <= 0.02) drawWall();
