@@ -420,9 +420,9 @@
       var lv = A.lv();
       tg.r = Math.max(18, (10 - 3 * lv) * u);   // big at the start, smaller very slowly
       tg.y = Math.max(T + tg.r + 8, H * 0.36);
-      tg.x = first ? W / 2 : (Math.random() < 0.5 ? -tg.r : W + tg.r);
+      tg.x = first ? W / 2 : (Math.random() < 0.5 ? tg.r + 6 : W - tg.r - 6); // always fully on screen (it fades in)
       tg.v = W * (0.1 + 0.18 * lv) * (Math.random() < 0.5 ? -1 : 1);
-      if (!first) tg.v = Math.abs(tg.v) * (tg.x < 0 ? 1 : -1);
+      if (!first) tg.v = Math.abs(tg.v) * (tg.x < W / 2 ? 1 : -1);
       tg.in = first ? 1 : 0;
       lim = 6.5 - 2 * lv; clock = lim;
     }

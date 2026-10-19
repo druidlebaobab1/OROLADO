@@ -124,7 +124,21 @@
   }
   async function api(a, d) { try { return await D6.Api.post(a, d, 15000); } catch (e) { return null; } }
   function err(r) { var x = X(); toast(x['e_' + ((r && r.reason) || 'unavailable')] || x.e_unavailable); if (r && r.reason === 'insufficient') deposit(); }
-  function deposit() { close(); if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); }
+  // v2807 (propriétaire) : Recharger s'ouvre PAR-DESSUS le casino (on ne ferme plus le jeu) : en fermant Recharger, on retrouve
+  // le jeu là où on l'avait laissé. La fenêtre Recharger passe au-dessus de celle du casino tant qu'elle est ouverte.
+  function deposit() {
+    if (!(D6.App && D6.App.openDeposit)) return;
+    var dm = $('depositModal'), cm = $('casinoModal');
+    if (dm && cm) {
+      var z = parseInt(getComputedStyle(cm).zIndex, 10) || 0, dz = parseInt(getComputedStyle(dm).zIndex, 10) || 0;
+      if (dz <= z) {
+        dm.style.setProperty('z-index', String(z + 1), 'important');
+        // Recharger fermé : on rend sa place normale à la fenêtre (rien ne reste au-dessus)
+        if (!dm._csZ && window.MutationObserver) { dm._csZ = new MutationObserver(function () { if (!dm.classList.contains('active')) dm.style.removeProperty('z-index'); }); dm._csZ.observe(dm, { attributes: true, attributeFilter: ['class'] }); }
+      }
+    }
+    D6.App.openDeposit();
+  }
   // v2762 (propriétaire) : le visiteur qui part s'inscrire depuis un jeu y REVIENT s'il touche « Retour »
   function toAuth(tab) {
     var r = { game: S.game || '', pred: !!($('casinoModal') && $('casinoModal').classList.contains('pred-only')) };
@@ -196,7 +210,7 @@
     $('closeCasino').style.setProperty('display', 'none', 'important');
     $('closeCasino').addEventListener('click', backStep);
     $('csBack').addEventListener('click', backStep);
-    $('csBal').addEventListener('click', function () { if (!guest()) deposit(); });
+    $('csBal').addEventListener('click', function () { deposit(); }); // v2807 : le visiteur voit aussi l'aperçu de Recharger (sûr, sans paiement)
     $('csHelp').addEventListener('click', function () { if (S.game) help(S.game); });
     m.addEventListener('click', function (e) { if (e.target === m) close(); });
     if (D6.BigPageSwipe) D6.BigPageSwipe('casinoModal');
@@ -320,7 +334,12 @@
       if (t === '' || !isFinite(parseFloat(t))) inp.value = m2(S.stake); else set(parseFloat(t));
     };
     inp.addEventListener('focus', function () { editing = true; inp.placeholder = m2(S.stake); inp.value = ''; });
-    inp.addEventListener('input', function () { var c = String(inp.value).replace(/[^0-9.,]/g, ''); if (c !== inp.value) inp.value = c; });
+    // le montant tapé compte TOUT DE SUITE (sur iPhone, toucher « Miser » ne fait pas toujours sortir de la case)
+    inp.addEventListener('input', function () {
+      var c = String(inp.value).replace(/[^0-9.,]/g, ''); if (c !== inp.value) inp.value = c;
+      var v = parseFloat(c.replace(',', '.'));
+      if (isFinite(v) && v >= 0.1) { S.stake = Math.min(1000, Math.round(v * 100) / 100); box.dispatchEvent(new Event('stake')); }
+    });
     inp.addEventListener('blur', commit);
     inp.addEventListener('change', commit);
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
@@ -357,7 +376,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2806';
+  var MOD_V = '2807'; // v2807 : crash (auto), penalty, planets, bowling, cat-more3
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.

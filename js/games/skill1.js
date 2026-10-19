@@ -721,10 +721,11 @@
       w.i = 0; w.cam = 0; w.L = 0; w.ang = 0; w.a = 0; w.st = 'stand'; w.hx = this.ax(w) - 3; w.hy = 0; w.vy = 0; w.fuse = 0;
       w.down = 0; w.pend = null; w.dead = 0; w.idleT = 0; w.ok = 0; w.walk = 0; w.glow = 0;
     },
-    press: function (w) { w.down = 1; },
+    press: function (w) { w.down = 1; w.dt0 = w.st === 'stand' ? performance.now() : 0; },
     release: function (w) {
       w.down = 0;
       if (w.st !== 'grow') return;
+      w.L = Math.min(this.vg(w) * (performance.now() - w.g0) / 1000, w.VW); // exact length at the moment the finger lifts
       var cur = w.P[w.i], nx = w.P[w.i + 1], base = cur.x + cur.w;
       w.st = 'drop'; w.a = 0;
       w.ok = w.L >= nx.x - base && w.L <= nx.x + nx.w - base;
@@ -735,13 +736,13 @@
       var cur = w.P[w.i], nx = w.P[w.i + 1], base = cur.x + cur.w, live = mode === 'play' || mode === 'hold';
       w.glow = Math.max(0, w.glow - dt);
       if (w.st === 'stand') {
-        if (mode === 'idle') { w.idleT += dt; if (w.idleT > 0.9) { w.idleT = 0; w.st = 'grow'; w.L = 0; w.demo = nx.x + nx.w * rnd(0.3, 0.7) - base; } }
+        if (mode === 'idle') { w.idleT += dt; if (w.idleT > 0.9) { w.idleT = 0; w.st = 'grow'; w.L = 0; w.g0 = performance.now(); w.demo = nx.x + nx.w * rnd(0.3, 0.7) - base; } }
         else if (live && !w.dead) {
-          if (w.down) { w.st = 'grow'; w.L = 0; w.fuse = 0; }
+          if (w.down) { w.st = 'grow'; w.L = 0; w.fuse = 0; w.g0 = w.dt0 || performance.now(); }
           else if (mode === 'play') { w.fuse += dt; if (w.fuse > this.lim(w)) { w.dead = 1; w.st = 'fall'; w.vy = 0; w.L = 0; return 'late'; } }
         }
       } else if (w.st === 'grow') {
-        w.L += this.vg(w) * dt;
+        w.L = this.vg(w) * (performance.now() - w.g0) / 1000; // real time, not frames: the same hold gives the same bridge on a slow phone
         var maxL = w.VW - (base - w.cam) - 1;
         if ((mode === 'idle' && w.L >= w.demo) || w.L >= maxL || (!live && mode !== 'idle')) { w.down = 1; this.release(w); }
       } else if (w.st === 'drop') {
