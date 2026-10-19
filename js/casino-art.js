@@ -132,9 +132,8 @@
       return '<defs>' + rg('IDa', ['#FFFBE0', '#FFD54A', '#E9A100', '#8A5600'], '36%', '30%', '78%') + lg('IDl', ['#BBF7D0', '#22C55E', '#14532D'], 'd') +
         rg('IDr', ['#FFC2D1', '#E11D48', '#7F1D1D'], '40%', '35%', '70%') + '</defs>' +
         '<path d="M32 19c-5-5-18-5-21 7s4 29 13.5 29c3 0 5-1.6 7.5-1.6s4.5 1.6 7.5 1.6C49 55 56 38 53 26S37 14 32 19z" fill="url(#IDa)" stroke="#7A4A00" stroke-width="1.4"/>' +
-        '<g fill="none" stroke="#FFF3BF" stroke-width="1" opacity=".55"><path d="M32 21l-9 12 9 19 9-19z"/><path d="M14 30l9 3M50 30l-9 3M17 46l6-13M47 46l-6-13"/></g>' +
-        '<path d="M44 48c4-4 7-10 7.5-17" stroke="#8A5600" stroke-width="2" fill="none" opacity=".35"' + RC + '/>' +
-        '<path d="M32 28l5 6-5 7-5-7z" fill="url(#IDr)" stroke="#FFE4E6" stroke-width=".8"/>' +
+        // v2873 (propriétaire) : pomme dorée + seulement le losange rouge au centre (plus de traits blancs)
+        '<path d="M32 27l6 7.5-6 8.5-6-8.5z" fill="url(#IDr)" stroke="#FFE4E6" stroke-width=".8"/>' +
         '<path d="M32 19c0-6 2-10 6.5-13" stroke="#5B3A12" stroke-width="3" fill="none"' + RC + '/>' +
         '<path d="M36 12c6-5 13-4 15-1-5 6-11 6-15 1z" fill="url(#IDl)"/><path d="M38 11.6c4-2 8-2.4 11-.8" stroke="#DCFCE7" stroke-width=".9" fill="none"/><path d="M33 13c-5-4-11-4-13-1 4 5 9 5 13 1z" fill="url(#IDl)" opacity=".85"/>' +
         '<ellipse cx="20" cy="29" rx="3.6" ry="7" fill="#fff" opacity=".75" transform="rotate(22 20 29)"/>' + spark(47, 21, 4) + spark(13, 46, 2.6, .8);
