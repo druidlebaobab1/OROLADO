@@ -368,7 +368,9 @@
       var bySec = {}; SEC_ORDER.forEach(function (sec) { bySec[sec] = all.filter(function (k) { return secOf(k) === sec; }); });
       // v2829 : ordre fixe des jeux « Arcade » (les catalogues arrivent dans n'importe quel ordre ; jeux voisins jamais semblables)
       var SK_POS = ['hamster', 'highway', 'jungledash', 'metrodash', 'airstrike', 'zombiesiege', 'colorjump', 'helixdrop', 'spacerun', 'flappyrock', 'stack', 'knifehit',
-        'brickbreak', 'neonsnake', 'cupcake', 'princess', 'basket', 'starbridge', 'archer', 'slicer', 'chicken', 'dodge', 'dartspro', 'orbit'];
+        'brickbreak', 'neonsnake', 'cupcake', 'princess', 'basket', 'starbridge', 'archer', 'slicer', 'chicken', 'dodge', 'dartspro', 'orbit',
+        // v2850 (round 6) : les classiques que tout le monde connaît + les jeux de guerre (js/games/cat-skill6.js)
+        'tankbattle', 'blockfall', 'sniper', 'merge2048', 'gunship', 'mazechomp', 'dogfight', 'bubblepop', 'gemswap', 'memoflip', 'echopads', 'pianokeys'];
       var skPos = function (k) { var i = SK_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.skill.sort(function (a, b) { return skPos(a) - skPos(b); });
       // v2832 : ordre fixe des jeux « Casino » : deux jeux qui se ressemblent sont toujours à au moins 3 places l'un de l'autre
@@ -467,7 +469,9 @@
       if (best && best !== base) g.style.setProperty('grid-template-columns', 'repeat(' + best + ',minmax(0,1fr))');
     });
   }
-  function name(k) { return NAMES[k] || k; }
+  // v2850 : un jeu du catalogue peut donner son nom dans les 12 langues (nm) ; sinon le nom anglais commun
+  var NAMEL = {};
+  function name(k) { var n = NAMEL[k], l = (document.documentElement.lang || 'en').slice(0, 2); return (n && n[l]) || NAMES[k] || k; }
   // v2747 (propriétaire) : 2e onglet = « Prédictions » (boule de cristal) — toutes les questions et tous les matchs ensemble
   var GAMES_WORD = {}; var PRED_WORD = { fr: 'Paris', en: 'Bets', es: 'Apuestas', pt: 'Apostas', ar: 'رهانات', tr: 'Bahisler', vi: 'Cược', id: 'Taruhan', ru: 'Ставки', de: 'Wetten', hi: 'दांव', zh: '投注' };
   function tabWord(m) { var l = (document.documentElement.lang || 'fr').slice(0, 2); return m[l] || m.en; }
@@ -604,7 +608,7 @@
     add: function (list) {
       (list || []).forEach(function (e) {
         if (!e || !e.k || NAMES[e.k] || !/^[a-z][a-z0-9]{1,15}$/.test(e.k)) return;
-        NAMES[e.k] = String(e.name || e.k); MODS[e.k] = String(e.file || e.k); SECTION[e.k] = e.sec === 'live' || e.sec === 'skill' ? e.sec : 'more'; CAT.push(e.k);
+        NAMES[e.k] = String(e.name || e.k); if (e.nm) NAMEL[e.k] = e.nm; MODS[e.k] = String(e.file || e.k); SECTION[e.k] = e.sec === 'live' || e.sec === 'skill' ? e.sec : 'more'; CAT.push(e.k);
         if (e.sec === 'live') LIVE_GAMES[e.k] = 1; // v2807 : pastille « en direct » sur le logo
         if (e.icon && ART.addObj) ART.addObj(e.k, e.icon, e.pal);
       });
@@ -626,7 +630,7 @@
     }, catDone ? 0 : 90);
   }
   // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
-  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
+  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa', 'cat-skill6'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
   function loadCatalog() {
     if (catAsked) return; catAsked = true;
     catLeft = CAT_FILES.length;
