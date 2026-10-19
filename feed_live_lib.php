@@ -35,7 +35,7 @@ function feed_slice(string $asset, ?int $since, int $hist): array {
   return ['first' => $from, 'last' => $last, 'c' => orolado_feed_read($asset, $from, $last)];
 }
 
-/** Écrit feedcache/live.json : les 40 derniers prix (10 s) des 10 actifs. */
+/** Écrit feedcache/live.json (10 marchés d'origine) et feedcache/a/<id>.js : les 40 derniers prix (10 s). */
 function feed_live_write(string $dir, string $file, array $base, float $rp, bool $withJson = true, ?array &$tm = null, ?array &$mem = null): array {
   $t0 = microtime(true);
   $out = [];
@@ -61,19 +61,43 @@ function feed_live_write(string $dir, string $file, array $base, float $rp, bool
     }
     $mem[$id] = $m;
     $out[$id] = feed_pack($m['last'] - count($m['c']) + 1, $m['c']);
-  }  $t1 = microtime(true);
-  $j = $base + ['at' => orolado_feed_now_ms(), 'rp' => $rp, 'assets' => $out];
+  }
+  $t1 = microtime(true);
+  $at = orolado_feed_now_ms();
+  $j = $base + ['at' => $at, 'rp' => $rp, 'assets' => $out];
   if (!is_dir($dir)) @mkdir($dir, 0755, true);
-  $json = json_encode($j, JSON_UNESCAPED_SLASHES);
+  // live.js / live.json : les 10 marchés d'origine seulement (ce que lisent les téléphones pas encore
+  // à jour et la page de présentation). Taille inchangée malgré les 55 marchés.
+  $json = json_encode(feed_live_legacy($j), JSON_UNESCAPED_SLASHES);
   // live.js (distribué par Cloudflare) à chaque fois ; live.json (anciens téléphones pas encore
   // mis à jour) seulement quand on le demande (1 fois par seconde dans le moteur).
   foreach ($withJson ? [$dir . '/live.js', $file] : [$dir . '/live.js'] as $dest) {
-    $tmp = $dir . '/live.' . bin2hex(random_bytes(4)) . '.tmp';
-    if (@file_put_contents($tmp, $json) !== false) {
-      if (!@rename($tmp, $dest)) { @unlink($dest); @rename($tmp, $dest); }
-    }
+    feed_live_put($dir, $dest, $json);
+  }
+  // 2026-10 : un petit fichier par marché (feedcache/a/<id>.js, même forme) : un téléphone à jour
+  // ne lit que le(s) marché(s) qu'il regarde, quand la ligne directe n'est pas là.
+  $ad = $dir . '/a';
+  if (!is_dir($ad)) @mkdir($ad, 0755, true);
+  foreach ($out as $id => $pack) {
+    feed_live_put($ad, $ad . '/' . $id . '.js', json_encode($base + ['at' => $at, 'rp' => $rp, 'assets' => [$id => $pack]], JSON_UNESCAPED_SLASHES));
   }
   $tm = [(microtime(true) - $t0) * 1000, ($t1 - $t0) * 1000];
+  return $j;
+}
+
+/** Écriture atomique (fichier temporaire puis renommage) : un lecteur ne voit jamais un fichier à moitié écrit. */
+function feed_live_put(string $dir, string $dest, string $json): void {
+  $tmp = $dir . '/live.' . bin2hex(random_bytes(4)) . '.tmp';
+  if (@file_put_contents($tmp, $json) !== false) {
+    if (!@rename($tmp, $dest)) { @unlink($dest); @rename($tmp, $dest); }
+  }
+}
+
+/** Le même direct, réduit aux 10 marchés d'origine (anciens téléphones, live.js / live.json, feed.php?live=1). */
+function feed_live_legacy(array $j): array {
+  if (isset($j['assets']) && is_array($j['assets'])) {
+    $j['assets'] = array_intersect_key($j['assets'], array_flip(orolado_feed_legacy_ids()));
+  }
   return $j;
 }
 

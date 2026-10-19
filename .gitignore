@@ -19,6 +19,7 @@ data/stakes/
 feedcache/*.json
 feedcache/*.tmp
 feedcache/*.js
+feedcache/a/
 admin-apercu.html
 
 # Fichiers de fonctionnement du serveur (jamais dans le code publié)

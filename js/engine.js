@@ -143,11 +143,13 @@
   var FAIR_BAND = 0.35;
   function fairDrift(assetId, duration, entryCents) {
     var a = FAIR_BASE[assetId];
-    if (!a || !(entryCents > 0)) return 0;
-    var base = a[0] * 100;
+    var ext = !a && C.ASSETS[assetId] && C.ASSETS[assetId].ext ? C.ASSETS[assetId] : null;
+    if ((!a && !ext) || !(entryCents > 0)) return 0;
+    var base = (a ? a[0] : Number(ext.basePrice)) * 100;
     // Variance d'un tick (+ pics au hasard quand l'actif en a, ex. BAAL) : même calcul que feed_lib.php.
-    var v = a[1] * a[1];
-    if (a[2] > 0) v += a[2] * (a[3] * a[3] + a[3] * a[4] + a[4] * a[4]) / 3;
+    // Marchés ajoutés (js/indices.js) : variance calculée comme orolado_feed_tick_var.
+    var v = a ? a[1] * a[1] : Number(ext.fairVar);
+    if (a && a[2] > 0) v += a[2] * (a[3] * a[3] + a[3] * a[4] + a[4] * a[4]) / 3;
     var pull = v / (2 * FAIR_BAND * FAIR_BAND);
     var ticks = Math.floor(duration * 1000 / 250);
     return -(1 - Math.pow(1 - pull, ticks)) * Math.log(entryCents / base);
@@ -155,6 +157,8 @@
   function barrierCents(assetId, duration, side, mult, entryCents) {
     var table = D6.FAIR_TABLE || {};
     var row = table[assetId] && table[assetId][String(duration)];
+    // Marchés ajoutés : leurs lignes sont dans js/indices.js (les mêmes que celles du serveur).
+    if (!row && C.ASSETS[assetId] && C.ASSETS[assetId].fair) row = C.ASSETS[assetId].fair[String(duration)];
     if (!row) return entryCents;
     var m = normalizeOdds(mult);
     var idx = 0;
@@ -164,6 +168,11 @@
     if (idx > 0 && side === 'put') idx += 3;
     // Payout de base (90 %) : ligne toujours au prix d'entrée (copie de feed_lib.php).
     var rel = idx === 0 ? 0 : Number(row[idx]);
+    // Marchés ajoutés : la ligne 90 % suit aussi le petit retour vers le prix de départ (copie de feed_lib.php).
+    if (idx === 0 && C.ASSETS[assetId] && C.ASSETS[assetId].ext) {
+      var xe = entryCents * Math.exp(fairDrift(assetId, duration, entryCents));
+      return xe >= 0 ? Math.floor(xe + 0.5) : -Math.floor(-xe + 0.5);
+    }
     // Gros payouts : la ligne suit le petit retour attendu vers le prix de départ (copie de
     // orolado_fair_drift, feed_lib.php). Le 88 % reste au prix d'entrée.
     if (idx > 0) rel = (1 + rel) * Math.exp(fairDrift(assetId, duration, entryCents)) - 1;
@@ -176,6 +185,42 @@
     if (exitCents === barrier) return 'void';
     var won = side === 'put' ? exitCents < barrier : exitCents > barrier;
     return won ? 'won' : 'lost';
+  }
+
+  /*
+   * 2026-10 (55 marchés) : le téléphone ne reçoit QUE les prix des marchés qu'il regarde (le marché
+   * affiché + ceux de ses trades ouverts), plus tous les marchés à chaque tick. Les autres sont
+   * chargés à la demande quand on les choisit (une lecture, ~0,2 s). Les 10 marchés d'origine restent
+   * envoyés en entier aux téléphones pas encore à jour (ancien code), rien ne change pour eux.
+   */
+  var WATCH_MAX = 12;
+  function watchIds() {
+    var out = [];
+    function add(id) {
+      if (id && C.ASSETS[id] && out.indexOf(id) < 0 && out.length < WATCH_MAX) out.push(id);
+    }
+    add(wantedAsset ? canonAssetId(wantedAsset) : 'v100');
+    var i;
+    for (i = 0; i < trades.length; i++) {
+      if (isOpen(trades[i])) add(canonAssetId(trades[i].assetId));
+    }
+    return out;
+  }
+  var watchKey = '';
+  /** Le marché regardé a changé : on prévient la ligne directe et on charge ce qui manque. */
+  function syncWatch() {
+    var ids = watchIds();
+    var key = ids.join(',');
+    if (key === watchKey) return;
+    watchKey = key;
+    if (direct.ws && direct.ws.readyState === 1) {
+      try { direct.ws.send(JSON.stringify({ sub: ids })); } catch (eSub) { /* ignore */ }
+    }
+    var i;
+    for (i = 0; i < ids.length; i++) {
+      var f = feeds[ids[i]];
+      if (!f || !f.loaded || Date.now() - tickToLocal(f.last) > 3000) { pollAll(); return; }
+    }
   }
 
   /* —— Flux de prix —— */
@@ -324,7 +369,7 @@
   function pollAll() {
     if (allBusy) return;
     if (allFailAt && Date.now() - allFailAt < 2000) return;
-    var ids = Object.keys(C.ASSETS);
+    var ids = watchIds();
     var parts = [];
     var i;
     for (i = 0; i < ids.length; i++) {
@@ -332,7 +377,8 @@
       if (f.loaded) parts.push(ids[i] + '.' + f.last);
     }
     allBusy = true;
-    getJson('feed.php?all=1&hist=' + BOOT_TICKS + (parts.length ? '&s=' + parts.join(',') : '')).then(function (j) {
+    // ids = seulement les marchés regardés (55 marchés : on ne charge plus tout au démarrage).
+    getJson('feed.php?all=1&hist=' + BOOT_TICKS + '&ids=' + ids.join(',') + (parts.length ? '&s=' + parts.join(',') : '')).then(function (j) {
       allBusy = false;
       if (!j || !j.ok || !j.assets) {
         allFailAt = Date.now();
@@ -379,9 +425,31 @@
    * Ainsi la charge serveur ne dépend plus du nombre de visiteurs.
    */
   var liveBusy = false;
+  /*
+   * Un petit fichier par marché (feedcache/a/<id>.js, mêmes 40 derniers prix et même forme que
+   * live.js) : on ne lit que les marchés regardés. Réponses réunies en une seule, comme live.js.
+   */
+  function liveFiles(ids) {
+    var q = Math.floor((Date.now() + (clock.ready ? clock.offset : 0)) / 250);
+    return Promise.all(ids.map(function (id) {
+      return livePick('feedcache/a/' + id + '.js?t=' + q, 'feedcache/a/' + id + '.js?r=' + Date.now());
+    })).then(function (list) {
+      var j = null;
+      var i;
+      for (i = 0; i < list.length; i++) {
+        var one = list[i];
+        if (!one || !one.ok || !one.assets || !one.assets[ids[i]]) return null;
+        if (!j) j = { ok: true, tickMs: one.tickMs, direct: one.direct, at: one.at, rp: one.rp, assets: {} };
+        j.at = Math.min(Number(j.at) || 0, Number(one.at) || 0);
+        if (one.direct === 1) j.direct = 1;
+        j.assets[ids[i]] = one.assets[ids[i]];
+      }
+      return j;
+    });
+  }
   function pollLive() {
     if (liveBusy || allBusy) return;
-    var ids = Object.keys(C.ASSETS);
+    var ids = watchIds();
     var i;
     for (i = 0; i < ids.length; i++) {
       if (!feedOf(ids[i]).loaded) { pollAll(); return; }
@@ -390,7 +458,9 @@
     var done = function () { liveBusy = false; };
     // Adresse différente toutes les 250 ms : Cloudflare peut servir la même copie à tous
     // les joueurs de ce quart de seconde (pas d'en-tête no-cache qui l'en empêcherait).
-    livePick('feedcache/live.js?t=' + Math.floor((Date.now() + (clock.ready ? clock.offset : 0)) / 250)).then(function (j) {
+    liveFiles(ids).then(function (j) {
+      // Fichiers par marché absents (serveur pas encore à jour) : lecture complète par PHP.
+      if (!j) { pollAll(); done(); return; }
       var serverNow = Date.now() + clock.offset;
       var age = j && j.at ? serverNow - Number(j.at) : Infinity;
       if (j && j.ok && !applyLive(j)) {
@@ -416,7 +486,9 @@
         return;
       }
       return getJson('feed.php?live=1').then(function (j2) {
-        if (!applyLive(j2)) pollAll();
+        // live=1 ne contient que les 10 marchés d'origine : les autres marchés regardés passent par all=1.
+        var miss = !applyLive(j2) || !j2 || !j2.assets || ids.some(function (id) { return !j2.assets[id]; });
+        if (miss) pollAll();
         done();
       });
     }).then(done, function () {
@@ -430,7 +502,7 @@
    * rattrapait d'un coup (« tic-tic »). Si elle tarde plus de 350 ms (ou échoue), on prend la
    * version directe du même fichier (live.json, refaite 4×/s, mêmes prix) ; la 1re arrivée gagne.
    */
-  function livePick(cfUrl) {
+  function livePick(cfUrl, directUrl) {
     return new Promise(function (resolve) {
       var settled = false;
       var directStarted = false;
@@ -455,7 +527,7 @@
       function startDirect() {
         if (directStarted || settled) return;
         directStarted = true;
-        get('feedcache/live.json?r=' + Date.now(), { cache: 'no-store' });
+        get(directUrl || ('feedcache/live.json?r=' + Date.now()), { cache: 'no-store' });
       }
       get(cfUrl, { cache: 'default' });
       setTimeout(startDirect, 350);
@@ -474,10 +546,12 @@
   function directUrl() {
     var u = '';
     try { u = localStorage.getItem('oro_direct') || ''; } catch (eD) { /* ignore */ }
-    if (/^wss?:\/\/[^\s]+$/.test(u)) return u;
+    // ?s= : marchés regardés (le serveur n'envoie que ceux-là ; ancien serveur : il l'ignore).
+    var sub = '?s=' + encodeURIComponent(watchIds().join(','));
+    if (/^wss?:\/\/[^\s]+$/.test(u)) return u + (u.indexOf('?') < 0 ? sub : '');
     if (u === 'off') return '';
     if (!/^https?:$/.test(location.protocol)) return '';
-    return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/direct';
+    return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/direct' + sub;
   }
   function directFresh() {
     return !!(direct.ws && direct.ws.readyState === 1 && Date.now() - direct.lastAt < 1000);
@@ -493,9 +567,12 @@
     var ws;
     try { ws = new WebSocket(url); } catch (eW) { direct.fails++; return; }
     direct.ws = ws;
+    watchKey = watchIds().join(',');
     ws.onopen = function () {
       direct.fails = 0;
       direct.everOpen = true;
+      // Le marché a pu changer pendant l'ouverture : on redit la liste.
+      try { ws.send(JSON.stringify({ sub: watchIds() })); } catch (eS0) { /* ignore */ }
     };
     ws.onmessage = function (ev) {
       var j = null;
@@ -563,6 +640,7 @@
     pollAll();
     pollTimer = setInterval(function () {
       if (document.hidden) return;
+      syncWatch();
       directConnect();
       // Ligne directe active et fraîche : pas besoin de relire le fichier.
       if (!directFresh()) pollLive();
@@ -781,8 +859,11 @@
   function wakeMarket(assetId) {
     var id = canonAssetId(assetId);
     ensureMarkets();
+    var changed = wantedAsset !== id;
     wantedAsset = id;
     startPolling();
+    // Nouveau marché choisi : ses prix tout de suite (ligne directe + historique).
+    if (changed) syncWatch();
     return syncMarket(markets[id], id, Date.now());
   }
 
