@@ -6187,7 +6187,7 @@
       padTopAt = nowF;
       try { var padEl = document.querySelector('#tradeWrap > .pad'); var pv = padEl ? getComputedStyle(padEl).getPropertyValue('--oro-pad-top').trim() : ''; padTopRGB = /^\d+\s*,\s*\d+\s*,\s*\d+$/.test(pv) ? pv : ''; } catch (eP) { padTopRGB = ''; }
     }
-    if (padTopRGB) { fadeRGB = padTopRGB; fz = 22; }
+    if (padTopRGB) { fadeRGB = padTopRGB; fz = 9; } // v2857 (propriétaire) : bande sombre réduite — juste au raccord, sans manger la courbe
     ctx.save();
     var gF = ctx.createLinearGradient(0, cssH - fz, 0, cssH);
     gF.addColorStop(0, 'rgba(' + fadeRGB + ',0)');
