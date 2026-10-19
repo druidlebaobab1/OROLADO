@@ -2152,42 +2152,41 @@
       // vers le sol (dégradé attaché à la colonne elle-même), colonnes un peu plus fines (plus d'air), et la
       // colonne en cours reste couleur « braise blanche » neutre jusqu'à la fin de sa seconde (une seule
       // prise de couleur, plus de clignotement). Même identité : des colonnes de braise qui sortent du sol.
-      var depth = Math.max(50, Math.min(110, h * 0.3));
-      function emberGrad(hex, al0) {
-        var g = ctx.createLinearGradient(0, 0, 0, depth);
-        g.addColorStop(0, palRgba(hex, al0));
-        g.addColorStop(0.25, palRgba(hex, al0 * 0.45));
-        g.addColorStop(1, palRgba(hex, 0.04));
+      // v2835 (propriétaire : « AZAZEL / PHOENIX : c'est noir, flou, on ne voit rien ; garde l'idée, change les couleurs ») :
+      // colonnes NETTES et lumineuses (dégradé doux sur toute la hauteur, jamais noir) coiffées d'une perle brillante au prix.
+      // AZAZEL : menthe (hausse) / rose (baisse) ; PHOENIX (pal) : or / bleu. La colonne en cours reste blanche.
+      var cU = PU || '#5EF2C6';
+      var cD = PD || '#FF5C8A';
+      var cN = '#F8FAFC';
+      function colGrad(hex, a0, a1) {
+        var g = ctx.createLinearGradient(0, pad.t, 0, bot);
+        g.addColorStop(0, palRgba(hex, a0));
+        g.addColorStop(1, palRgba(hex, a1));
         return g;
       }
-      var cU = PU || '#FF9F43';
-      var cD = PD || '#FF3B30';
-      var gUp = emberGrad(cU, 0.78);
-      var gDn = emberGrad(cD, 0.82);
-      var cN = '#FFE3B3';
-      var gNe = emberGrad(cN, 0.7);
-      var cwE = Math.max(1, Math.min(9 * sizeK(), slot * 0.55));
+      var gUp = colGrad(cU, 0.62, 0.14);
+      var gDn = colGrad(cD, 0.62, 0.14);
+      var gNe = colGrad(cN, 0.55, 0.12);
+      var cwE = Math.max(1.5, Math.min(8 * sizeK(), slot * 0.5));
+      var orbR = Math.max(1.8, Math.min(5.5, cwE * 0.72));
       for (i = 0; i < n; i++) {
         c = candles[i];
         var forming = i === last;
         up = c.c >= c.o;
         x = toX(i);
-        var top = Math.max(pad.t, Math.min(bot, toY(c.c)));
-        var colH = bot - top;
-        ctx.save();
-        ctx.translate(0, top);
+        var top = Math.max(pad.t + orbR, Math.min(bot, toY(c.c)));
+        var col = forming ? cN : (up ? cU : cD);
         ctx.fillStyle = forming ? gNe : (up ? gUp : gDn);
-        ctx.fillRect(x - cwE / 2, 0, cwE, Math.min(colH, depth));
-        ctx.restore();
-        if (colH > depth) {
-          ctx.fillStyle = palRgba(forming ? cN : (up ? cU : cD), 0.035);
-          ctx.fillRect(x - cwE / 2, top + depth, cwE, colH - depth);
-        }
-        // Braise du sommet : trait vif + petit noyau clair (sans lueur floue, rien qui clignote).
-        ctx.fillStyle = forming ? cN : (up ? cU : cD);
-        ctx.fillRect(x - cwE / 2, top - 1.2, cwE, 2.6);
-        ctx.fillStyle = 'rgba(255,255,255,0.55)';
-        ctx.fillRect(x - cwE / 2 + cwE * 0.2, top - 0.6, cwE * 0.6, 1);
+        ctx.fillRect(x - cwE / 2, top, cwE, Math.max(0, bot - top));
+        // perle du prix : couleur pleine, petit reflet blanc
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.arc(x, top, orbR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        ctx.beginPath();
+        ctx.arc(x - orbR * 0.3, top - orbR * 0.3, orbR * 0.35, 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.restore();
     } else if (style === 'bolts') {
@@ -2424,7 +2423,7 @@
     var k = sizeK();
     var big = cssH >= 200;
     var i, c, x, up, y1, y2, bh, hw, lw;
-    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1 }[kind];
+    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1 }[kind];
     var lastX = isLine ? (panMs > 0 ? toX(last) : pad.l + w) : toX(last);
     function wick(cd) {
       var a = isFinite(cd.h) ? cd.h : Math.max(cd.o, cd.c);
@@ -2752,6 +2751,23 @@
           ctx.fillStyle = M;
           ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], rr, 0, Math.PI * 2); ctx.fill();
         }
+      }
+    } else if (kind === 'current') {
+      // v2835 (propriétaire : POSEIDON « on ne comprend pas », plus de trait au milieu) : COURANT MARIN — un seul tracé épais
+      // dont chaque morceau prend la couleur de son sens (montée / descente), sans remplissage ni ligne de base.
+      var cUp = X.up || '#2DE2FF', cDn = X.dn || X.below || '#FFB547';
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 3;
+      var segEnd = pts.concat([[lastX, lastY]]);
+      for (i = 1; i < segEnd.length; i++) {
+        var p0 = segEnd[i - 1], p1 = segEnd[i];
+        if (p1[0] - p0[0] < 0.01 && Math.abs(p1[1] - p0[1]) < 0.01) continue;
+        ctx.strokeStyle = p1[1] <= p0[1] ? cUp : cDn;
+        ctx.beginPath();
+        ctx.moveTo(p0[0], p0[1]);
+        ctx.lineTo(p1[0], p1[1]);
+        ctx.stroke();
       }
     } else if (kind === 'baseline') {
       // Ligne de base (milieu du cadre) : au-dessus = couleur 1, en dessous = couleur 2.
