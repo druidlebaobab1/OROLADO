@@ -409,12 +409,37 @@
       return '<button type="button" class="lh-f' + (FEAT[t.k] ? ' feat' : '') + '" data-k="' + t.k + '" style="--tc:' + (D6.LiveColor ? D6.LiveColor(t.k) : '#7a5cff') + '"><span class="lh-fi">' + (D6.LiveIcon ? D6.LiveIcon(t.k, 'free verre') : t.ico) + badge + '</span><b>' + esc(tt[0]) + '</b>' + (FEAT[t.k] ? '<small>' + esc(tt[1]) + '</small>' : '') + '</button>';
     }).join('');
     g.querySelectorAll('[data-k]').forEach(function (b) { b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); }); });
+    paintMsgBar();
+  }
+  /* v2812 (propriétaire, round 4) : « Mes discussions » — grande barre en haut du menu Social : la messagerie (style
+     WhatsApp : amis, groupes, équipe, actus) se trouve tout de suite, avec le nombre de messages non lus. */
+  var MSGW = { en: 'My chats', fr: 'Mes discussions', es: 'Mis chats', pt: 'Minhas conversas', ar: 'محادثاتي', tr: 'Sohbetlerim', vi: 'Tin nhắn của tôi', id: 'Obrolanku', ru: 'Мои чаты', de: 'Meine Chats', hi: 'मेरी चैट', zh: '我的聊天' };
+  var MSGS = { en: 'Friends, groups, team', fr: 'Amis, groupes, équipe', es: 'Amigos, grupos, equipo', pt: 'Amigos, grupos, equipa', ar: 'الأصدقاء، المجموعات، الفريق', tr: 'Arkadaşlar, gruplar, ekip', vi: 'Bạn bè, nhóm, đội ngũ', id: 'Teman, grup, tim', ru: 'Друзья, группы, команда', de: 'Freunde, Gruppen, Team', hi: 'दोस्त, ग्रुप, टीम', zh: '好友、群组、团队' };
+  function paintMsgBar() {
+    var pane = $('livePaneHome'), g = $('liveHomeGrid'); if (!pane || !g) return;
+    var b = $('lhMsgs');
+    if (!b) {
+      b = document.createElement('button'); b.type = 'button'; b.id = 'lhMsgs'; b.className = 'lh-msgs';
+      b.addEventListener('click', function () { tileGo('dms'); });
+      pane.insertBefore(b, g);
+    }
+    var l = (document.documentElement.lang || 'en').slice(0, 2);
+    var team = parseInt(($('liveBadge') && $('liveBadge').textContent) || '0', 10) || 0, n = (dmUn || 0) + team;
+    b.innerHTML = '<span class="lh-mi" aria-hidden="true"><svg viewBox="0 0 48 48"><defs><linearGradient id="lhMg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4BE3C7"/><stop offset="1" stop-color="#2E8CF0"/></linearGradient></defs>' +
+      '<path d="M9 9h22a4 4 0 0 1 4 4v11a4 4 0 0 1-4 4H19l-7 5.5V28H9a4 4 0 0 1-4-4V13a4 4 0 0 1 4-4z" fill="url(#lhMg)"/>' +
+      '<path d="M38.5 17H39a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4h-2v5l-6.5-5H25a4 4 0 0 1-4-4v-1h11a6.5 6.5 0 0 0 6.5-6.5z" fill="#fff" opacity=".86"/>' +
+      '<circle cx="14" cy="18.5" r="2.1" fill="#fff"/><circle cx="20" cy="18.5" r="2.1" fill="#fff"/><circle cx="26" cy="18.5" r="2.1" fill="#fff"/></svg></span>' +
+      '<span class="lh-mt"><b class="fit">' + esc(MSGW[l] || MSGW.en) + '</b><small>' + esc(MSGS[l] || MSGS.en) + '</small></span>' +
+      (n > 0 ? '<i class="lh-mb">' + (n > 99 ? '99+' : n) + '</i>' : '') + '<span class="lh-mc" aria-hidden="true">›</span>';
   }
   function tileGo(k) {
+    if (k === 'dms') { if (guest()) { show('guest', 'friends'); return; } if (D6.Social2) { D6.Social2.open('', true); return; } show('friends'); return; }
     if (guest() && k !== 'news' && k !== 'gifts' && k !== 'learn') { show('guest', k); return; }
     // v2760 (propriétaire) : Cadeaux s'ouvre PAR-DESSUS Social (on ne voit plus l'écran de trading entre les deux)
-    if (k === 'gifts') { if (D6.Portal && D6.Portal.open) D6.Portal.open(); setTimeout(function () { close(); backToLive('portalModal', 'active'); }, 350); return; }
-    if (k === 'learn') { close(); var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); backToLive('learnModal', 'on'); return; }
+    // v2812 (propriétaire, round 4) : Social RESTE ouvert dessous → en fermant Cadeaux / Apprendre on retrouve le menu Social
+    // tout de suite, sans voir passer l'écran de trading.
+    if (k === 'gifts') { if (D6.Portal && D6.Portal.open) D6.Portal.open(); return; }
+    if (k === 'learn') { var lb = document.querySelector('[data-learn-open]'); if (lb) lb.click(); else if (D6.Learn && D6.Learn.open) D6.Learn.open(); return; }
     // v2796 : Actus, Écris-nous, Amis, Groupes, Défier, Mon identifiant, Mes défis → la messagerie (js/social2.js)
     if (D6.Social2 && ['news', 'chat', 'friends', 'groups', 'duel', 'myid', 'record'].indexOf(k) >= 0) { D6.Social2.open(k, true); return; } // v2808 : ‹ ramène au menu
     if (k === 'news' || k === 'chat' || k === 'friends') { show(k); return; }
@@ -520,8 +545,12 @@
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
     // v2796 (propriétaire) : Social s'ouvre en MESSAGERIE (js/social2.js) ; l'ancienne page en tuiles reste dans « Plus »
     // v2808 (propriétaire) : le VISITEUR arrive sur le menu en tuiles (il voit tout ce qui existe ; chaque action demande l'inscription)
-    if (w === 'grid' || (guest() && (!w || w === 'home' || w === 'dms'))) show('home');
-    else if (D6.Social2 && (!w || ['home', 'dms', 'news', 'chat', 'friends', 'groups'].indexOf(w) >= 0)) { tab = 'home'; D6.Social2.open(w === 'home' || w === 'dms' ? '' : w); }
+    // v2812 (propriétaire, round 4) : Social s'ouvre TOUJOURS sur le MENU en tuiles (membre comme visiteur) : on voit tout
+    // ce qui existe. Les discussions (style WhatsApp) s'ouvrent depuis « Mes discussions », Mes amis, Mes groupes… et
+    // la flèche ‹ ramène au menu, puis à l'accueil. Un lien de notification (?live=1 / ?live=amis) ouvre la page voulue,
+    // et son ‹ ramène aussi au menu.
+    if (!w || w === 'grid' || w === 'home' || (guest() && w === 'dms')) show('home');
+    else if (D6.Social2 && ['dms', 'news', 'chat', 'friends', 'groups'].indexOf(w) >= 0) { tab = 'home'; D6.Social2.open(w === 'dms' ? '' : w, true); }
     else show(w === 'dms' ? 'friends' : (w || 'home'));
     // v2689 : la tuile « Envoyer de l'argent » apparaît dès que le serveur dit que c'est ouvert pour ce joueur
     if (!guest() && D6.LiveSend) D6.LiveSend.status().then(function () { if (tab === 'home') paintHome(); });
@@ -640,7 +669,7 @@
       if (tab === 'friends' && peer) { peer = null; friendsList(); return; }
       if (tab === 'groups' && D6.LiveGroups && D6.LiveGroups.inGroup()) { D6.LiveGroups.back(); return; }
       peer = null;
-      if (tab === 'home') { if (D6.Social2 && !guest()) { D6.Social2.open(''); return; } close(); return; } // v2808 : visiteur → le menu est sa première page
+      if (tab === 'home') { close(); return; } // v2812 : le menu est la première page de Social (membre et visiteur) → ‹ = accueil
       show('home');
     });
     // v2689 : le pack de la langue vient d'arriver → l'accueil Live est redessiné dans la bonne langue
@@ -677,8 +706,9 @@
     close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(a || 'register');
   }
   // v2796 : pastilles (bouton Social) mises à jour par la messagerie
-  function badges(me) { if (!me) return; dmUn = me.dmUnread || 0; setFriendBadge(dmUn); setBadge(me.unread || 0); }
-  D6.Live = { open: open, close: close, toAuth: toAuth, show: show, badges: badges };
+  function badges(me) { if (!me) return; dmUn = me.dmUnread || 0; setFriendBadge(dmUn); setBadge(me.unread || 0); if (tab === 'home' && $('liveModal') && $('liveModal').classList.contains('active')) paintMsgBar(); }
+  // v2812 : état de la page (pour revenir au même endroit après une actualisation, js/back.js)
+  D6.Live = { open: open, close: close, toAuth: toAuth, show: show, badges: badges, state: function () { return { tab: tab, sub: curSub }; } };
   /* v2796 — la messagerie (js/social2.js + css/social2.css) est chargée tout de suite après la page, une seule fois
      (si index.html ne les a pas déjà). Sans elle, l'ancien Social marche comme avant. */
   (function () {

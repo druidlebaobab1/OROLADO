@@ -941,5 +941,8 @@
   var rT = 0;
   window.addEventListener('resize', function () { clearTimeout(rT); rT = setTimeout(function () { if (!active) return; wide = mq(); fitAll(root); }, 150); });
   document.addEventListener('oro:livepack', function () { if (active) { paintList(); if (conv) { var k = conv.k; openConv(k); } else paintConvEmpty(); } });
-  D6.Social2 = { open: open, openGroup: openGroup, stop: stop, hide: hide, back: back, active: function () { return active; }, refresh: refreshList, t: t };
+  // v2812 : état (onglet, discussion ouverte) pour revenir au même endroit après une actualisation (js/back.js)
+  D6.Social2 = { open: open, openGroup: openGroup, stop: stop, hide: hide, back: back, active: function () { return active; }, refresh: refreshList, t: t,
+    state: function () { return { seg: seg, k: conv ? conv.k : '', grid: gridRet }; },
+    openConv: function (k) { if (active && k) openConv(k); } };
 })(window.D6 = window.D6 || {});

@@ -122,4 +122,184 @@
     if (sa) new MutationObserver(sync).observe(sa, { attributes: true, attributeFilter: ['style', 'class'] });
   } catch (e) { /* ignore */ }
   D6.Back = { step: closeTop, open: anyOpen };
+
+  /* ======================================================================================================
+     v2812 (propriétaire, round 4) — ANTI DOUBLE-TOUCHER GLOBAL. Quand une page s'ouvre, se ferme ou change de niveau
+     (jeu ↔ salle de jeux, Social menu ↔ discussion, Cadeaux accueil ↔ page, profil…), ou quand on touche une flèche ‹ / ✕,
+     les touchers des 0,35 s suivants sont ignorés : un double / triple toucher rapide agit UNE seule fois et ne « traverse »
+     jamais vers ce qui se trouve dessous (autre menu, bouton « Miser » du jeu qui vient de s'ouvrir…).
+     Seuls les vrais touchers sont filtrés (les clics lancés par le code passent).
+     ====================================================================================================== */
+  var NAV_MS = 350, navUntil = 0;
+  function navLock(ms) { var u = Date.now() + (ms || NAV_MS); if (u > navUntil) navUntil = u; }
+  var GUARD_SEL = BACK + ',' + CLOSE + ',#closeLive,#liveBack,#ghBack,#csBack,#sxClose,#sxCBack,#sxPBack,#btnCloseDrawer,#btnAuthBack,.rc-back';
+  function tapGuard(e) {
+    if (!e.isTrusted) return;
+    var now = Date.now();
+    if (now < navUntil) {
+      // la saisie au clavier n'est jamais bloquée
+      var t = e.target;
+      if (t && t.closest && t.closest('input, textarea, select, [contenteditable="true"]')) return;
+      e.stopImmediatePropagation(); e.stopPropagation();
+      if (e.type === 'click' || e.type === 'touchend' || e.type === 'mouseup' || e.type === 'pointerup' || e.type === 'dblclick') { try { if (e.cancelable) e.preventDefault(); } catch (x) { /* ignore */ } }
+      return;
+    }
+    // toucher sur une flèche ‹ / ✕ : les touchers suivants (geste répété) sont ignorés un instant
+    if (e.type === 'click') {
+      var b = e.target && e.target.closest ? e.target.closest(GUARD_SEL) : null;
+      if (b) setTimeout(function () { navLock(); }, 0);
+    }
+  }
+  ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click', 'dblclick'].forEach(function (ty) {
+    window.addEventListener(ty, tapGuard, { capture: true, passive: false });
+  });
+  // Changement de « niveau » d'une page (ouverte / fermée / jeu ↔ salle…) → verrou court
+  var SIG_CLS = ['active', 'on', 'in-game', 'sx-on', 'lv-at-home', 'gh-home', 'gh-sub', 'pred-only'];
+  function sigOf(el) {
+    var out = '';
+    for (var i = 0; i < SIG_CLS.length; i++) if (el.classList.contains(SIG_CLS[i])) out += SIG_CLS[i] + ' ';
+    return out + (el.getAttribute('data-g') || '');
+  }
+  function watchLevels() {
+    try {
+      var mo = new MutationObserver(function (list) {
+        for (var i = 0; i < list.length; i++) {
+          var el = list[i].target;
+          if (!el || !el.classList) continue;
+          var sg = sigOf(el);
+          if (el._oroSig !== sg) { el._oroSig = sg; navLock(); saveSoon(); }
+        }
+      });
+      var hook = function () {
+        document.querySelectorAll('.modal-backdrop, #drawerProfile, #rcptModal, #learnModal, #coachModal').forEach(function (el) {
+          if (el._oroLv) return; el._oroLv = 1; el._oroSig = sigOf(el);
+          if (/\b(active|on)\b/.test(el._oroSig)) navLock(); // page créée et ouverte d'un coup (1re ouverture des Jeux…)
+          mo.observe(el, { attributes: true, attributeFilter: ['class', 'data-g'] });
+        });
+      };
+      hook();
+      new MutationObserver(hook).observe(document.body, { childList: true });
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ======================================================================================================
+     v2812 (propriétaire, round 4) — L'ACTUALISATION GARDE TA PLACE. On retient (dans cet onglet seulement, sessionStorage)
+     la page où l'on est : jeu du casino ouvert, salle de jeux, Paris / Mes paris, Social (menu, messagerie, discussion,
+     page), Cadeaux (et sa page), Apprendre, Profil, Recharger. Après une actualisation (ou une coupure réseau qui
+     recharge la page), on y revient tout seul au lieu d'atterrir sur le trading. Fermer une page → on retient « trading ».
+     Affichage seulement : rien n'est envoyé au serveur.
+     ====================================================================================================== */
+  var RKEY = 'oro_route', restoring = false, restoredAt = 0;
+  function isOn(id, cls) { var e = $(id); return !!(e && e.classList.contains(cls || 'active')); }
+  function authShown() { var a = $('screenAuth'); return !!(a && getComputedStyle(a).display !== 'none' && !a.classList.contains('hidden')); }
+  function route() {
+    var r = { s: 'trade' };
+    if (authShown()) return { s: 'auth' };
+    if (isOn('learnModal', 'on')) r = { s: 'learn' };
+    else if (isOn('portalModal')) {
+      r = { s: 'gifts', sub: '' };
+      if (isOn('liveModal')) r.under = 'social'; // Cadeaux ouvert depuis Social : Social reste dessous
+      try { if (D6.GiftsHome && D6.GiftsHome.sub) r.sub = D6.GiftsHome.sub() || ''; } catch (e) { /* ignore */ }
+    } else if (isOn('liveModal')) {
+      r = { s: 'social' };
+      try { var st = D6.Live && D6.Live.state ? D6.Live.state() : null; if (st) { r.tab = st.tab; r.sub = st.sub || ''; } } catch (e) { /* ignore */ }
+      try { if (D6.Social2 && D6.Social2.active && D6.Social2.active() && $('liveModal').classList.contains('sx-on')) r.sx = D6.Social2.state(); } catch (e) { /* ignore */ }
+    } else if (isOn('casinoModal')) {
+      var cm = $('casinoModal');
+      r = { s: 'casino', v: cm.classList.contains('pred-only') ? 'pred' : 'games', g: '' };
+      var tab = cm.querySelector('.cs-tabs2 [data-v].on');
+      if (r.v !== 'pred' && tab) r.v = tab.getAttribute('data-v') === 'sports' ? 'sports' : 'games';
+      if (cm.classList.contains('in-game')) {
+        r.g = cm.getAttribute('data-g') || '';
+        if (!r.g) { try { r.g = sessionStorage.getItem('oro_cg') || ''; } catch (e) { /* ignore */ } }
+      }
+      r.mine = !!cm.querySelector('.sp2-tabs [data-sv="mine"].on');
+    } else if (isOn('drawerProfile', 'on')) r = { s: 'profile' };
+    if (isOn('depositModal') && r.s !== 'learn') r.dep = 1;
+    if (r.s === 'trade' && r.dep) r = { s: 'deposit' };
+    return r;
+  }
+  function save() {
+    if (restoring) return;
+    try { var r = route(); r.t = Date.now(); sessionStorage.setItem(RKEY, JSON.stringify(r)); } catch (e) { /* ignore */ }
+  }
+  var saveT = 0;
+  function saveSoon() { if (restoring) return; clearTimeout(saveT); saveT = setTimeout(save, 250); }
+  window.addEventListener('pagehide', save);
+  window.addEventListener('beforeunload', save);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
+  document.addEventListener('click', function () { setTimeout(saveSoon, 30); }, true);
+
+  function wait(test, ms) {
+    return new Promise(function (res) {
+      var t0 = Date.now();
+      (function loop() { var ok = false; try { ok = !!test(); } catch (e) { ok = false; } if (ok) return res(true); if (Date.now() - t0 > ms) return res(false); setTimeout(loop, 80); })();
+    });
+  }
+  function ready() {
+    var h = document.documentElement, st = $('screenTrade');
+    return h.classList.contains('oro-booted') && st && !st.classList.contains('hidden') && D6.App && D6.App.openModal;
+  }
+  function unveil() { try { document.documentElement.classList.remove('oro-restoring'); } catch (e) { /* ignore */ } }
+  async function restore(r) {
+    restoring = true;
+    setTimeout(unveil, 2500); // jamais plus longtemps : au pire on voit le trading
+    try {
+      if (r.s === 'casino') {
+        if (!(await wait(function () { return D6.Casino && D6.Casino.open; }, 6000))) return;
+        if (r.v === 'pred' && !r.g) D6.Casino.openPred();
+        else if (r.g) {
+          for (var i = 0; i < 6; i++) {
+            D6.Casino.open(r.g);
+            var ok = await wait(function () { var m = $('casinoModal'); return m && m.classList.contains('in-game') && m.getAttribute('data-g') === r.g; }, 1200);
+            if (ok || !isOn('casinoModal')) break;
+          }
+          if (!isOn('casinoModal', 'in-game') && isOn('casinoModal') && D6.Casino.home) D6.Casino.home('games'); // jeu retiré : la salle de jeux
+        } else { D6.Casino.open(null, 'games'); if (r.v === 'sports' && D6.Casino.home) D6.Casino.home('sports'); }
+        if (r.mine) {
+          await wait(function () { return document.querySelector('#casinoModal .sp2-tabs [data-sv="mine"]'); }, 4000);
+          var mb = document.querySelector('#casinoModal .sp2-tabs [data-sv="mine"]'); if (mb && !mb.classList.contains('on')) mb.click();
+        }
+      } else if (r.s === 'social') {
+        if (!(D6.Live && D6.Live.open)) return;
+        if (r.sx) {
+          D6.Live.open('grid');
+          if (await wait(function () { return D6.Social2 && D6.Social2.open; }, 6000)) {
+            var w = r.sx.seg === 'groups' ? 'groups' : r.sx.seg === 'friends' ? 'friends' : '';
+            if (r.sx.k === 'team') w = 'chat'; else if (r.sx.k === 'news') w = 'news';
+            await D6.Social2.open(w, true);
+            if (r.sx.k && r.sx.k !== 'team' && r.sx.k !== 'news' && D6.Social2.openConv) D6.Social2.openConv(r.sx.k);
+          }
+        } else {
+          D6.Live.open('grid');
+          if (r.tab && r.tab !== 'home' && D6.Live.show) D6.Live.show(r.tab, r.sub || undefined);
+        }
+      } else if (r.s === 'gifts') {
+        if (!(D6.Portal && D6.Portal.open)) return;
+        if (r.under === 'social' && D6.Live && D6.Live.open) D6.Live.open('grid');
+        D6.Portal.open();
+        if (r.sub && D6.GiftsHome && D6.GiftsHome.go) { await wait(function () { return isOn('portalModal'); }, 2000); await new Promise(function (z) { setTimeout(z, 120); }); D6.GiftsHome.go(r.sub); }
+      } else if (r.s === 'learn') {
+        if (D6.Learn && D6.Learn.open) D6.Learn.open();
+      } else if (r.s === 'profile') {
+        var pb = $('btnProfile'); if (pb && pb.offsetWidth) pb.click();
+      }
+      if ((r.dep || r.s === 'deposit') && D6.App.openDeposit) setTimeout(function () { D6.App.openDeposit(); }, 250);
+    } catch (e) { /* ignore */ }
+    finally { setTimeout(unveil, 60); setTimeout(function () { restoring = false; restoredAt = Date.now(); save(); }, 900); }
+  }
+  async function boot() {
+    watchLevels();
+    var r = null;
+    try { r = JSON.parse(sessionStorage.getItem(RKEY) || 'null'); } catch (e) { r = null; }
+    // lien avec une intention précise (notification, retour de paiement, casino=1…) : il passe avant
+    var q = location.search || '';
+    if (/[?&](live|casino|deposit|payment|tx_ref|transaction_id|status|reset|verify|r|ref)=/i.test(q)) return unveil();
+    if (!r || !r.s || r.s === 'trade' || r.s === 'auth' || !r.t || Date.now() - r.t > 12 * 3600 * 1000) return unveil();
+    if (!(await wait(ready, 9000))) return unveil();
+    if (authShown() || anyOpen()) return unveil(); // une autre page s'est déjà ouverte (inscription, reçu…)
+    restore(r);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  D6.Route = { save: save, get: route, lock: navLock, navMs: function (v) { if (v > 0 && v < 5000) NAV_MS = v; } }; // navMs : pour les tests seulement
 })(window.D6 = window.D6 || {});
