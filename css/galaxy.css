@@ -2104,3 +2104,9 @@ html.is-android body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:2
 @media (max-width:859px){
   html.is-ios body #oroIosFloor#oroIosFloor,html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{display:none!important}
 }
+/* v2829 — TABLETTES (iPad, Galaxy Tab… de 600 à 859 px) : l'écran de jeu prend toute la largeur. Avant, un ancien cadre de
+   448 px (28rem) restait au milieu alors que la courbe et le terminal étaient faits pour toute la largeur → coupés à gauche
+   et à droite (MA / BB / EMA, ACHETER / VENDRE, gain). */
+@media (max-width:859px){
+  html:not(.fs-trade) body #screenTrade .trade-shell{max-width:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}
+}

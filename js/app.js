@@ -371,7 +371,9 @@
       var ih = window.innerHeight || 0;
       var wideShort = !coarse && iw >= 700 && ih > 0 && ih <= 620 && iw / ih >= 1.5;
       var androidBigLandscape = noMobile && iw >= 800 && ih > 0 && iw / ih >= 1.4;
-      return !!(tvHint || (android && tvShape) || (noMobile && tvShape) || wideShort || androidBigLandscape);
+      // v2829 : une tablette tactile n'est jamais une télé (seuls les vrais signes de télé comptent pour elle)
+      var touch = (navigator.maxTouchPoints || 0) > 0;
+      return !!(tvHint || (!touch && ((android && tvShape) || (noMobile && tvShape) || wideShort || androidBigLandscape)));
     } catch (eTv) { return false; }
   })();
   if (IS_TV) {

@@ -123,7 +123,9 @@
       var longSide = Math.max(w, h);
       var shortSide = Math.min(w, h);
       var tvShape = longSide >= 1100 && shortSide >= 600 && (longSide / shortSide) >= 1.5;
-      if (tvHint || (android && tvShape) || (noMobile && tvShape)) {
+      // v2829 : une TABLETTE (écran tactile) n'est jamais une télé (avant : Galaxy Tab en portrait → mode télé, plein écran forcé)
+      var touch = (navigator.maxTouchPoints || 0) > 0;
+      if (tvHint || (!touch && ((android && tvShape) || (noMobile && tvShape)))) {
         document.documentElement.classList.add('is-tv');
       }
     } catch (eTv) {}
@@ -166,7 +168,7 @@
     <link rel="stylesheet" href="css/app.css?v=2822">
     <link rel="stylesheet" href="css/auth.css?v=2790">
     <link rel="stylesheet" href="css/tv.css?v=2790">
-    <link rel="stylesheet" href="css/galaxy.css?v=2827">
+    <link rel="stylesheet" href="css/galaxy.css?v=2829">
     <link rel="stylesheet" href="css/cg.css?v=2823">
     <link rel="stylesheet" href="css/lobby.css?v=2827">
     <link rel="stylesheet" href="css/sports2.css?v=2813">
@@ -2261,7 +2263,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/receipt.js?v=2790"></script>
   <script src="js/back.js?v=2815"></script>
   <script src="js/push.js?v=2790"></script>
-  <script src="js/app.js?v=2827"></script>
+  <script src="js/app.js?v=2829"></script>
   <script src="js/portal.js?v=2808"></script>
   <script src="js/live-ui.js?v=2791"></script>
   <script src="js/live.js?v=2815"></script>
