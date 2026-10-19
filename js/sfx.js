@@ -197,7 +197,7 @@
   // casb (round 6) : familles des jeux de tables, cartes, dés et hasard d'arcade
   Object.assign(MAP, { blackjack: 'cards', tcpoker: 'cards', holdem: 'cards', niuniu: 'cards', acerace: 'cards', trente: 'cards', clocksol: 'cards',
     yatzy: 'dice', crownanchor: 'dice', derby: 'dice', ceelo: 'dice', shipcrew: 'dice', dblroul: 'wheel', twinwheel: 'wheel', twoup: 'coin', fantan: 'cups',
-    pachinko: 'balls', skeeball: 'balls', ladder: 'pick', ducks: 'cups', dreidel: 'wheel', oracle: 'show', rpsduel: 'cups', cometqueen: 'crash' });
+    pachinko: 'balls', skeeball: 'balls', amida: 'pick', ducks: 'cups', dreidel: 'wheel', oracle: 'show', rpsduel: 'cups', cometqueen: 'crash' });
   /* ---- casa (round 6) : 12 machines à sous + 12 jeux instantanés (js/games/casa1-3.js) ---- */
   Object.assign(MAP, { scarab: 'slots', kraken: 'slots', donut: 'slots', cherrybar: 'slots', ufo: 'slots', koi: 'slots', goldtrain: 'slots', viking: 'slots',
     safari: 'slots', rubymine: 'slots', pumpkin: 'slots', medusa: 'slots', scratchwin: 'scratch', pickbox: 'chests', ladder: 'pick', hilorun: 'cards',
