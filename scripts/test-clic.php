@@ -82,10 +82,10 @@ check('réel, clic d’il y a 0,5 s, petite mise : prix du clic', !empty($r['ok'
   && abs($r['order']['entryPrice'] - orolado_feed_price_at($asset, $st['n'] - 2) / 100) < 1e-9, 'entrée ' . ($r['order']['entryTick'] ?? '?') . ' / clic ' . ($st['n'] - 2));
 $st = orolado_feed_advance($asset);
 $r = place($meH, ['id' => 'c1b', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 3]);
-check('réel, clic d’il y a 0,75 s : prix d’arrivée', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
+check('réel, clic d’il y a 0,75 s : prix du clic', !empty($r['ok']) && $r['order']['entryTick'] === $st['n'] - 3);
 $st = orolado_feed_advance($asset);
 $r = place($meH, ['id' => 'c1c', 'stake' => 50, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 1]);
-check('réel, grosse mise (50) : prix d’arrivée', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
+check('réel, grosse mise (50) : prix du clic aussi', !empty($r['ok']) && $r['order']['entryTick'] === $st['n'] - 1);
 $st = orolado_feed_advance($asset);
 $r = place($meH, ['id' => 'c2', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 20]);
 check('clic d’il y a 5 s : refusé (prix d’arrivée)', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
@@ -202,7 +202,7 @@ $r = place($uD, ['id' => 'd_demo', 'stake' => 1, 'side' => 'call', 'duration' =>
 check('ce robot en démo : prix d’arrivée', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
 $st = orolado_feed_advance($asset);
 $r = place($uD, ['id' => 'd_real', 'stake' => 1, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => $asset, 'payout' => 1.9, 'seenTick' => $st['n'] - 4]);
-check('ce robot en RÉEL : prix d’arrivée', !empty($r['ok']) && $r['order']['entryTick'] >= $st['n']);
+check('ce robot en RÉEL (score réel propre, la démo ne compte pas) : prix du clic', !empty($r['ok']) && $r['order']['entryTick'] === $st['n'] - 4);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

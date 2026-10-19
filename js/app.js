@@ -1333,7 +1333,8 @@
         box.textContent = (D6.testFlags ? 'TEST=' + D6.testFlags + String.fromCharCode(10) : '') + 'FLUIDITE: ' + fpsTxt() + '\n' + 'safari=' + UA_SAFARI_IOS + ' appli=' + appli +
           '\ninner=' + window.innerWidth + 'x' + window.innerHeight +
           '\nscreen=' + (screen.width || 0) + 'x' + (screen.height || 0) +
-          '\nvisual=' + (vv ? Math.round(vv.height) : '-') +
+          '\nvisual=' + (vv ? Math.round(vv.height) + ' haut=' + Math.round(vv.offsetTop) : '-') + ' defil=' + Math.round(window.scrollY || 0) + '/' + Math.round(document.body.scrollTop || 0) +
+          '\nreserve=' + (getComputedStyle(document.documentElement).getPropertyValue('--ios-pad-b') || '-') + ' sous=' + (document.documentElement.classList.contains('saf-under') ? 1 : 0) +
           '\nvh=' + probe('vh') + ' dvh=' + probe('dvh') + ' svh=' + probe('svh') + ' lvh=' + probe('lvh') +
           '\nhtml=' + Math.round(document.documentElement.getBoundingClientRect().height) + ' body=' + Math.round(document.body.getBoundingClientRect().height) +
           '\nscrBas=' + (scr ? Math.round(scr.getBoundingClientRect().bottom) : '-') +

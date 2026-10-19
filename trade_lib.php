@@ -267,8 +267,9 @@ function orolado_trade_pick_entry(string $mode, string $side, int $arrivalTick, 
   if ($arrivalCents !== $seenCents) {
     $out['move'] = (($side === 'call') === ($arrivalCents > $seenCents)) ? 'fav' : 'unfav';
   }
-  $okTick = $mode === 'demo' || $seenTick >= $arrivalTick - OROLADO_CLICK_REAL_TICKS;
-  if ($demoTrusted && $okTick) {
+  // 2026-10-19 (propriétaire : « comme mes jeux fonctionnaient avant ») : réel et démo, même fenêtre que le clic accepté
+  // (OROLADO_CLICK_MAX_TICKS, 1,5 s), toutes mises.
+  if ($demoTrusted) {
     $out['tick'] = $seenTick;
     $out['cents'] = $seenCents;
     $out['lag'] = $arrivalTick - $seenTick;
@@ -356,10 +357,10 @@ function orolado_trade_place(array $me, array $req): array {
     if ($p !== null && $p > 0) $seenCents = (int) $p;
   }
   $meRow = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : $me;
-  // 2026-10-19 : RÉEL → prix du clic pour les petites mises, si le compte n'est pas repéré robot sur ses trades RÉELS.
+  // 2026-10-19 (propriétaire) : RÉEL → prix du clic pour tous, toutes mises (seul un compte marqué « robot » dans l'admin ne l'a pas).
   $demoTrusted = $seenCents !== null && ($mode === 'demo'
     ? orolado_click_demo_trusted($meRow, $me)
-    : ($stake <= OROLADO_CLICK_REAL_MAX_STAKE + 0.0001 && orolado_click_real_trusted($meRow, $me)));
+    : (orolado_click_edge_reason($meRow) === '' && orolado_click_edge_reason($me) === ''));
   $pick = orolado_trade_pick_entry($mode, $side, $arrivalTick, $arrivalCents, $seenTick, $seenCents, $demoTrusted);
   $entryTick = $pick['tick'];
   $entryCents = $pick['cents'];
