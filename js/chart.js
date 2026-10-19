@@ -3258,7 +3258,12 @@
         g.restore();
       }
     }
-    {
+    // v2818 (propriétaire : « la ligne de mise et la ligne objectif basculent un tout petit peu ensemble ») : en RÉEL,
+    // pendant que le rond suit le bout de la courbe (attente du vrai prix d'entrée, ~0,5 s), les deux lignes ne sont
+    // pas dessinées ; elles apparaissent ensuite UNE fois, à leur vraie place, avec un court fondu, et ne bougent plus.
+    var hideLines = riding && trade.mode === 'real';
+    if (!hideLines && trade.mode === 'real' && rs && rs.end) lineFade *= Math.min(1, Math.max(0.15, (Date.now() - rs.end) / 220));
+    if (!hideLines) {
       g.setLineDash(TRADE_DASH);
       g.strokeStyle = lineCol;
       g.lineWidth = lite ? 1 : 1.35;
@@ -3270,8 +3275,8 @@
       g.setLineDash(NO_DASH);
       g.globalAlpha = 1;
     }
-    drawTargetLine(g, trade, bar, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, lineFade);
-    if (eOff) {
+    if (!hideLines) drawTargetLine(g, trade, bar, entry, pad, plotH, minP, maxP, plotTop, plotBot, layout, idx, lineFade);
+    if (eOff && !hideLines) {
       targetTagQueue.push({ entry: true, side: isCall ? 'call' : 'put', mult: 0, bar: entry, by: ey, off: eOff, fade: lineFade, pad: pad, layout: layout, top: plotTop, bot: plotBot });
     }
 

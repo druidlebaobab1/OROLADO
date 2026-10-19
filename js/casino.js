@@ -323,7 +323,15 @@
   function stepOf(v, up) { return up ? (v < 1 ? 0.1 : v < 10 ? 1 : v < 100 ? 5 : 50) : (v <= 1 ? 0.1 : v <= 10 ? 1 : v <= 100 ? 5 : 50); }
   function bindStake(box) {
     var inp = $('csStake'); if (!inp) return;
-    var set = function (v) { v = Math.max(0.1, Math.min(1000, Math.round((Number(v) || 0.1) * 100) / 100)); S.stake = v; inp.value = m2(v); box.dispatchEvent(new Event('stake')); };
+    // v2818 (propriétaire : « 1000.00 déborde ») : le montant rapetisse quand il s'allonge, pour toujours se lire en entier.
+    var baseFs = 0;
+    var fitInp = function () {
+      inp.style.removeProperty('font-size');
+      if (!baseFs) baseFs = parseFloat(getComputedStyle(inp).fontSize) || 16;
+      var n = String(inp.value || inp.placeholder || '').length;
+      if (n > 4) inp.style.setProperty('font-size', Math.max(10, baseFs * 5.4 / n).toFixed(1) + 'px', 'important');
+    };
+    var set = function (v) { v = Math.max(0.1, Math.min(1000, Math.round((Number(v) || 0.1) * 100) / 100)); S.stake = v; inp.value = m2(v); fitInp(); box.dispatchEvent(new Event('stake')); };
     // v2807 (propriétaire, iPhone) : select() ne sélectionne pas sur iPhone → le montant tapé s'ajoutait derrière l'ancien
     // (« 0.105 »). Toucher la case la VIDE (l'ancien montant reste en gris) ; vide en sortant = l'ancien montant revient.
     var editing = false;
@@ -331,12 +339,12 @@
       if (!editing) return; editing = false; inp.placeholder = '';
       var t = String(inp.value).replace(/\s/g, '').replace(',', '.').replace(/[^0-9.]/g, ''), i = t.indexOf('.');
       if (i >= 0) t = t.slice(0, i + 1) + t.slice(i + 1).replace(/\./g, '');
-      if (t === '' || !isFinite(parseFloat(t))) inp.value = m2(S.stake); else set(parseFloat(t));
+      if (t === '' || !isFinite(parseFloat(t))) { inp.value = m2(S.stake); fitInp(); } else set(parseFloat(t));
     };
-    inp.addEventListener('focus', function () { editing = true; inp.placeholder = m2(S.stake); inp.value = ''; });
+    inp.addEventListener('focus', function () { editing = true; inp.placeholder = m2(S.stake); inp.value = ''; fitInp(); });
     // le montant tapé compte TOUT DE SUITE (sur iPhone, toucher « Miser » ne fait pas toujours sortir de la case)
     inp.addEventListener('input', function () {
-      var c = String(inp.value).replace(/[^0-9.,]/g, ''); if (c !== inp.value) inp.value = c;
+      var c = String(inp.value).replace(/[^0-9.,]/g, ''); if (c !== inp.value) inp.value = c; fitInp();
       var v = parseFloat(c.replace(',', '.'));
       if (isFinite(v) && v >= 0.1) { S.stake = Math.min(1000, Math.round(v * 100) / 100); box.dispatchEvent(new Event('stake')); }
     });
@@ -353,6 +361,7 @@
       });
     });
     box.querySelectorAll('.cg-quick [data-q]').forEach(function (b) { b.addEventListener('click', function () { set(+b.getAttribute('data-q')); }); });
+    setTimeout(fitInp, 0);
   }
 
   /* v2795 (propriétaire) — TEXTES ÉLASTIQUES : un texte marqué « fit » reste sur UNE ligne et rapetisse seul s'il manque
@@ -376,7 +385,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2817'; // v2817 : texte des grands boutons qui tient toujours
+  var MOD_V = '2818'; // v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
