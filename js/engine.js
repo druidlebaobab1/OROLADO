@@ -82,6 +82,7 @@
   var settling = {};
   var lastOrderAt = 0;
   var wantedAsset = null;
+  var stallAt = 0;
   var pollTimer = 0;
 
   /* —— Horloge : décalage serveur ↔ téléphone (type NTP, meilleur aller-retour gardé) —— */
@@ -738,6 +739,10 @@
       // Ligne directe active et fraîche : pas besoin de relire le fichier.
       if (!directFresh()) pollLive();
       if (wantedAsset && feeds[wantedAsset] && feeds[wantedAsset].loaded) loadHistory(wantedAsset);
+      // v2850 (propriétaire : « la courbe dort puis saute ») : GARDE-FOU. Si les prix de l'indice affiché ont plus de
+      // 2,5 s de retard (réseau mobile lent, coupure, retour de veille), on redemande tout de suite l'historique
+      // complet (même requête qu'au démarrage) au lieu d'attendre : la courbe reprend sans trou ni saut.
+      if (wantedAsset && feedLagMs(canonAssetId(wantedAsset)) > 2500 && Date.now() - stallAt > 2500) { stallAt = Date.now(); allFailAt = 0; pollAll(); }
     }, POLL_MS);
   }
 
