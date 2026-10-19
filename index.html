@@ -6,6 +6,9 @@
      principale (qui vérifie le dépôt) et on n'affiche pas une 2e fois le site dans la fenêtre. */
   (function(){try{if(window.top!==window.self&&/[?&](deposit|payment)=/.test(location.search)){window.top.postMessage({oroPayReturn:String(location.search)},'*');document.write('<style>html,body{margin:0;background:#0b1030}</style>');if(window.stop)window.stop();}}catch(e){}})();</script>
   <script>/* v2565 — orolado.online : l'accueil est la page de présentation */try{if(/(^|\.)orolado\.online$/i.test(location.hostname)&&(location.pathname==='/'||location.pathname==='/index.html')&&!location.search)location.replace('/decouvrir/')}catch(e){}</script>
+  <script>/* v2825 (propriétaire, iPhone : « à l'actualisation la page monte puis redescend, le bas devient noir ») : l'écran est
+     verrouillé (css/app.css « VERROU ») DÈS la première image, avant le chargement du code ; le fond sous la barre de Safari
+     est le bleu du terminal (avant : presque noir). */try{if(/iphone|ipad|ipod/i.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)){var h=document.documentElement;h.classList.add('is-ios');h.style.setProperty('background','#1A2A68','important')}}catch(e){}</script>
   <meta name="google" content="notranslate">
   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -165,7 +168,7 @@
     <link rel="stylesheet" href="css/tv.css?v=2790">
     <link rel="stylesheet" href="css/galaxy.css?v=2790">
     <link rel="stylesheet" href="css/cg.css?v=2823">
-    <link rel="stylesheet" href="css/lobby.css?v=2820">
+    <link rel="stylesheet" href="css/lobby.css?v=2825">
     <link rel="stylesheet" href="css/sports2.css?v=2813">
   <!-- Meta Pixel Code -->
   <script>
@@ -2187,7 +2190,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
     </div>
   </div>
 
-  <script src="js/indices.js?v=2822"></script>
+  <script src="js/indices.js?v=2825"></script>
   <script>/* v2822 : emblèmes des indices (js/indices.js) posés dans le « monde OROLADO » de l'écran de chargement */
   (function(){try{var W=window.D6||{},list=(W.EXT_INDICES||[]).filter(function(e){return e&&e.glyph;}),orig=['v100','stable','apex500','horizon50','crash300','goldtrend','boomspike','nexusprime','v75','titanpulse'];
   var slots=document.querySelectorAll('#olWorld .ow-x');for(var i=0;i<slots.length;i++){var svg='';
@@ -2269,7 +2272,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/gifts-home.js?v=2808"></script>
   <script src="js/sports.js?v=2813"></script>
   <script src="js/casino-art.js?v=2805"></script>
-  <script src="js/casino.js?v=2824"></script>
+  <script src="js/casino.js?v=2825"></script>
   <script src="js/fit.js?v=2790"></script>
   <script src="js/learn-txt.js?v=2790"></script>
   <script src="js/learn-txt2.js?v=2790"></script>
