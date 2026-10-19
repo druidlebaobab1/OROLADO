@@ -163,7 +163,9 @@
         var r = b[2] * Math.max(W, H), q = c.createRadialGradient(b[0] * W, b[1] * H, 0, b[0] * W, b[1] * H, r);
         q.addColorStop(0, b[3]); q.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = q; c.fillRect(0, 0, W, H);
       });
+      c.save(); c.translate(W / 2, H * 0.45); c.rotate(-0.55); var mw = c.createLinearGradient(0, -H * 0.1, 0, H * 0.1); mw.addColorStop(0, 'rgba(196,181,253,0)'); mw.addColorStop(0.5, 'rgba(196,181,253,.1)'); mw.addColorStop(1, 'rgba(196,181,253,0)'); c.fillStyle = mw; c.fillRect(-W * 1.5, -H * 0.1, W * 3, H * 0.2); c.restore(); // v2860: milky way
       stars(c, W, H, n);
+      for (var i = 0; i < Math.round(n / 10); i++) { var sx = Math.random() * W, sy = Math.random() * H, q = c.createRadialGradient(sx, sy, 0, sx, sy, 4); q.addColorStop(0, 'rgba(255,255,255,.9)'); q.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = q; c.fillRect(sx - 4, sy - 4, 8, 8); }
     });
   }
   // fireball with tail (moving along angle a)
@@ -176,17 +178,21 @@
     h.addColorStop(0, '#FFF7ED'); h.addColorStop(0.35, '#FDBA74'); h.addColorStop(0.75, '#EA580C'); h.addColorStop(1, 'rgba(124,45,18,0)');
     c.fillStyle = h; c.beginPath(); c.arc(x, y, r * 1.2, 0, TAU); c.fill();
   }
-  function rockSprite(R, dpr) {
+  function rockSprite(R, dpr) { // v2860: a real asteroid — lumpy outline, craters with lit rims, terminator shadow, rim light
+    var seed = (Math.random() * 1000) | 0;
     return mkc(R * 2 + 2, R * 2 + 2, dpr, function (c) {
-      var cx = R + 1, cy = R + 1, n = 11;
-      c.beginPath();
-      for (var i = 0; i < n; i++) { var a = i / n * TAU, rr = R * rnd(0.8, 1); if (i) c.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); else c.moveTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); }
-      c.closePath(); c.fillStyle = gl(c, cx, cy, R, ['#E4DCF2', '#9A8DB8', '#4A3D68', '#2A2142']); c.fill();
-      c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = Math.max(1, R * 0.05); c.stroke();
-      for (var k = 0; k < 4; k++) {
-        var b = Math.random() * TAU, d = Math.random() * R * 0.5, cr = R * rnd(0.1, 0.22), x = cx + Math.cos(b) * d, y = cy + Math.sin(b) * d;
-        circ(c, x, y, cr, 'rgba(36,26,64,.5)'); circ(c, x - cr * 0.2, y - cr * 0.2, cr * 0.6, 'rgba(255,255,255,.1)');
-      }
+      var cx = R + 1, cy = R + 1, n = 14, S = seed; function Rn() { S = (S * 9301 + 49297) % 233280; return S / 233280; }
+      var pts = []; for (var i = 0; i < n; i++) { var a = i / n * TAU, rr = R * (0.78 + Rn() * 0.22); pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); }
+      c.beginPath(); c.moveTo((pts[0][0] + pts[n - 1][0]) / 2, (pts[0][1] + pts[n - 1][1]) / 2);
+      for (i = 0; i < n; i++) { var p = pts[i], q = pts[(i + 1) % n]; c.quadraticCurveTo(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2); }
+      c.closePath(); c.fillStyle = gl(c, cx, cy, R * 1.1, ['#D9CFEA', '#9A8DB8', '#5A4C7A', '#241B3A']); c.fill();
+      c.save(); c.clip();
+      for (var k = 0; k < 7; k++) { var b = Rn() * TAU, d = Rn() * R * 0.6, cr = R * (0.08 + Rn() * 0.16), x = cx + Math.cos(b) * d, y = cy + Math.sin(b) * d;
+        circ(c, x, y, cr, 'rgba(30,20,50,.45)'); c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = Math.max(0.6, cr * 0.2); c.beginPath(); c.arc(x, y, cr, Math.PI * 0.1, Math.PI * 0.9); c.stroke(); }
+      for (k = 0; k < 40; k++) { c.fillStyle = Rn() < 0.5 ? 'rgba(255,255,255,.1)' : 'rgba(0,0,0,.18)'; c.fillRect(cx - R + Rn() * R * 2, cy - R + Rn() * R * 2, 1, 1); }
+      var sh = c.createLinearGradient(cx - R, cy - R, cx + R, cy + R); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(0.55, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(8,4,20,.65)'); c.fillStyle = sh; c.fillRect(0, 0, R * 2 + 2, R * 2 + 2);
+      c.restore();
+      c.strokeStyle = 'rgba(196,181,253,.35)'; c.lineWidth = Math.max(1, R * 0.06); c.beginPath(); c.arc(cx, cy, R * 0.85, Math.PI * 1.05, Math.PI * 1.55); c.stroke();
     });
   }
 
@@ -1154,13 +1160,19 @@
         W = w; H = h; u = uu; dpr = d; T = top; sw = Math.max(28, 10.5 * u); shh = sw * 1.25;
         bg = bgSprite(W, H, dpr, [[0.3, 0.3, 0.5, 'rgba(139,92,246,.3)'], [0.8, 0.75, 0.5, 'rgba(14,165,233,.14)']], A.lite ? 30 : 50);
         stL = []; for (var i = 0; i < (A.lite ? 16 : 40); i++) stL.push([Math.random() * W, Math.random() * H, Math.random() < 0.8 ? 1.2 : 2, rnd(0.6, 1.4)]);
-        shipS = mkc(sw, shh, dpr, function (c, w, h) {
+        shipS = mkc(sw, shh, dpr, function (c, w, h) { // v2860: a starfighter from above: swept wings, panel lines, twin engines, canopy
           c.translate(w / 2, 0);
-          c.fillStyle = '#F59E0B'; c.beginPath(); c.moveTo(0, h * 0.4); c.lineTo(w * 0.5, h * 0.84); c.lineTo(w * 0.34, h * 0.94); c.lineTo(0, h * 0.8); c.lineTo(-w * 0.34, h * 0.94); c.lineTo(-w * 0.5, h * 0.84); c.closePath(); c.fill();
-          var g = c.createLinearGradient(-w * 0.2, 0, w * 0.2, 0); g.addColorStop(0, '#5B21B6'); g.addColorStop(0.4, '#F5F3FF'); g.addColorStop(0.65, '#C4B5FD'); g.addColorStop(1, '#4C1D95');
-          c.fillStyle = g; c.beginPath(); c.moveTo(0, 0); c.bezierCurveTo(w * 0.22, h * 0.2, w * 0.22, h * 0.6, w * 0.17, h * 0.92); c.lineTo(-w * 0.17, h * 0.92); c.bezierCurveTo(-w * 0.22, h * 0.6, -w * 0.22, h * 0.2, 0, 0); c.fill();
-          c.fillStyle = gl(c, 0, h * 0.38, w * 0.12, ['#E0F2FE', '#38BDF8', '#0C4A6E']); c.beginPath(); c.ellipse(0, h * 0.38, w * 0.09, h * 0.12, 0, 0, TAU); c.fill();
-          c.fillStyle = '#FBBF24'; c.fillRect(-w * 0.13, h * 0.9, w * 0.26, h * 0.07);
+          var wg = c.createLinearGradient(-w / 2, 0, w / 2, 0); wg.addColorStop(0, '#4C1D95'); wg.addColorStop(0.5, '#A78BFA'); wg.addColorStop(1, '#3B0764');
+          c.fillStyle = wg; c.beginPath(); c.moveTo(0, h * 0.34); c.lineTo(w * 0.5, h * 0.78); c.lineTo(w * 0.46, h * 0.88); c.lineTo(w * 0.16, h * 0.8); c.lineTo(-w * 0.16, h * 0.8); c.lineTo(-w * 0.46, h * 0.88); c.lineTo(-w * 0.5, h * 0.78); c.closePath(); c.fill();
+          c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = Math.max(0.8, w * 0.02); c.beginPath(); c.moveTo(0, h * 0.36); c.lineTo(w * 0.48, h * 0.79); c.moveTo(0, h * 0.36); c.lineTo(-w * 0.48, h * 0.79); c.stroke();
+          c.fillStyle = '#F59E0B'; c.fillRect(w * 0.38, h * 0.76, w * 0.1, h * 0.04); c.fillRect(-w * 0.48, h * 0.76, w * 0.1, h * 0.04);
+          [-1, 1].forEach(function (sd) { c.fillStyle = gl(c, sd * w * 0.22, h * 0.78, w * 0.1, ['#E2E8F0', '#64748B', '#1E293B']); c.fillRect(sd * w * 0.22 - w * 0.07, h * 0.58, w * 0.14, h * 0.34); c.fillStyle = '#0F172A'; c.fillRect(sd * w * 0.22 - w * 0.05, h * 0.9, w * 0.1, h * 0.04); });
+          var g = c.createLinearGradient(-w * 0.18, 0, w * 0.18, 0); g.addColorStop(0, '#94A3B8'); g.addColorStop(0.4, '#F8FAFC'); g.addColorStop(0.7, '#CBD5E1'); g.addColorStop(1, '#475569');
+          c.fillStyle = g; c.beginPath(); c.moveTo(0, 0); c.bezierCurveTo(w * 0.17, h * 0.2, w * 0.17, h * 0.6, w * 0.13, h * 0.9); c.lineTo(-w * 0.13, h * 0.9); c.bezierCurveTo(-w * 0.17, h * 0.6, -w * 0.17, h * 0.2, 0, 0); c.fill();
+          c.strokeStyle = 'rgba(15,23,42,.3)'; c.lineWidth = Math.max(0.6, w * 0.012); [0.5, 0.66].forEach(function (y) { c.beginPath(); c.moveTo(-w * 0.15, h * y); c.lineTo(w * 0.15, h * y); c.stroke(); });
+          c.fillStyle = '#DC2626'; c.beginPath(); c.moveTo(0, h * 0.02); c.lineTo(w * 0.05, h * 0.14); c.lineTo(-w * 0.05, h * 0.14); c.closePath(); c.fill();
+          c.fillStyle = gl(c, 0, h * 0.34, w * 0.12, ['#E0F2FE', '#38BDF8', '#0C4A6E']); c.beginPath(); c.ellipse(0, h * 0.34, w * 0.075, h * 0.12, 0, 0, TAU); c.fill();
+          c.fillStyle = 'rgba(255,255,255,.8)'; c.beginPath(); c.ellipse(-w * 0.025, h * 0.3, w * 0.02, h * 0.05, 0, 0, TAU); c.fill();
         });
         var RM = Math.max(18, 9 * u); rockS = [0, 1, 2].map(function () { return rockSprite(RM, dpr); }); rockS.R = RM;
         s.y = H - shh * 0.75 - 8; s.x = clamp(s.x || W / 2, sw, W - sw); s.tx = s.x;
@@ -1216,8 +1228,7 @@
         if (!dead) {
           var fl = 0.75 + Math.random() * 0.35, fy = s.y + shh * 0.42, tilt = clamp((s.tx - s.x) * 0.01, -0.35, 0.35);
           c.save(); c.translate(s.x, s.y); c.rotate(tilt);
-          c.fillStyle = 'rgba(251,146,60,.9)'; c.beginPath(); c.ellipse(0, fy - s.y + shh * 0.12 * fl, sw * 0.13, shh * 0.2 * fl * (won ? 1.8 : 1), 0, 0, TAU); c.fill();
-          c.fillStyle = '#FFF7ED'; c.beginPath(); c.ellipse(0, fy - s.y + shh * 0.06, sw * 0.06, shh * 0.1 * fl, 0, 0, TAU); c.fill();
+          [-1, 1].forEach(function (sd) { var ex = sd * sw * 0.22; c.fillStyle = 'rgba(56,189,248,.55)'; c.beginPath(); c.ellipse(ex, fy - s.y + shh * 0.14 * fl, sw * 0.08, shh * 0.2 * fl * (won ? 1.8 : 1), 0, 0, TAU); c.fill(); c.fillStyle = '#E0F2FE'; c.beginPath(); c.ellipse(ex, fy - s.y + shh * 0.08, sw * 0.04, shh * 0.1 * fl, 0, 0, TAU); c.fill(); });
           c.drawImage(shipS, -sw / 2, -shh / 2, sw, shh);
           c.restore();
         }
