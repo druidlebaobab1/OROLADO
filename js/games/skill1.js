@@ -188,9 +188,15 @@
     var n = Math.round(W * H / 2600), s = 7;
     for (var i = 0; i < n; i++) { s = (s * 9301 + 49297) % 233280; var px = s / 233280 * W; s = (s * 9301 + 49297) % 233280; var py = s / 233280 * H; x.globalAlpha = 0.25 + (i % 5) * 0.14; x.fillStyle = i % 9 ? '#fff' : '#FDE68A'; x.fillRect(px, py, i % 7 ? 1 : 1.6, i % 7 ? 1 : 1.6); }
     x.globalAlpha = 1;
-    var pr = Math.min(W, H) * 0.1, pxl = W * 0.9, pyl = H * 0.12;
-    x.fillStyle = rgrad(x, pxl, pyl, pr * 1.9, [hue + '55', hue + '00']); x.fillRect(pxl - pr * 2, pyl - pr * 2, pr * 4, pr * 4);
-    x.fillStyle = rgrad(x, pxl, pyl, pr, ['#FDE68A', hue, '#1C0A2E'], -pr * 0.4, -pr * 0.4); x.globalAlpha = 0.4; x.beginPath(); x.arc(pxl, pyl, pr, 0, PI2); x.fill(); x.globalAlpha = 1;
+    // v2860: a milky-way band, soft nebulae, and a lit planet with a ring placed fully inside the frame (never cut by an edge)
+    x.save(); x.translate(W / 2, H * 0.45); x.rotate(-0.5); var mw = x.createLinearGradient(0, -H * 0.12, 0, H * 0.12); mw.addColorStop(0, 'rgba(196,181,253,0)'); mw.addColorStop(0.5, 'rgba(196,181,253,.12)'); mw.addColorStop(1, 'rgba(196,181,253,0)'); x.fillStyle = mw; x.fillRect(-W * 1.5, -H * 0.12, W * 3, H * 0.24); x.restore();
+    [[0.2, 0.7, 'rgba(236,72,153,'], [0.75, 0.55, 'rgba(56,189,248,']].forEach(function (q) { var nr = Math.max(W, H) * 0.35; x.fillStyle = rgrad(x, W * q[0], H * q[1], nr, [q[2] + '.14)', q[2] + '0)']); x.fillRect(0, 0, W, H); });
+    var pr = Math.min(W, H) * 0.09, pxl = W - pr * 1.9, pyl = Math.max(pr * 1.6, H * 0.14);
+    x.fillStyle = rgrad(x, pxl, pyl, pr * 2.2, [hue + '44', hue + '00']); x.fillRect(pxl - pr * 2.3, pyl - pr * 2.3, pr * 4.6, pr * 4.6);
+    x.strokeStyle = 'rgba(253,230,138,.35)'; x.lineWidth = pr * 0.08; x.beginPath(); x.ellipse(pxl, pyl, pr * 1.6, pr * 0.35, -0.3, Math.PI, PI2); x.stroke();
+    x.fillStyle = rgrad(x, pxl, pyl, pr, ['#FEF3C7', hue, '#1C0A2E'], -pr * 0.45, -pr * 0.4); x.beginPath(); x.arc(pxl, pyl, pr, 0, PI2); x.fill();
+    x.save(); x.beginPath(); x.arc(pxl, pyl, pr, 0, PI2); x.clip(); for (var b = 0; b < 5; b++) { x.fillStyle = b % 2 ? 'rgba(0,0,0,.14)' : 'rgba(255,255,255,.08)'; x.fillRect(pxl - pr, pyl - pr + b * pr * 0.42, pr * 2, pr * 0.2); } x.restore();
+    x.strokeStyle = 'rgba(253,230,138,.6)'; x.beginPath(); x.ellipse(pxl, pyl, pr * 1.6, pr * 0.35, -0.3, 0, Math.PI); x.stroke();
     return c;
   }
 
@@ -595,11 +601,14 @@
       w.mv = null; w.drop = null; w.dead = 1;
     },
     block: function (c, x, y, wd, i, glow) {
-      var h = this.BH, cl = this.col(i);
+      var h = this.BH, cl = this.col(i); // v2860: a glossy 3-D slab: lit top face, front with bands and a shine, dark right edge
+      c.fillStyle = cl + '78%)'; c.beginPath(); c.moveTo(x, y + 0.2); c.lineTo(x + 1.4, y - 1.1); c.lineTo(x + wd + 1.4, y - 1.1); c.lineTo(x + wd, y + 0.2); c.closePath(); c.fill();
+      c.fillStyle = cl + '30%)'; c.beginPath(); c.moveTo(x + wd, y + 0.2); c.lineTo(x + wd + 1.4, y - 1.1); c.lineTo(x + wd + 1.4, y + h - 1.3); c.lineTo(x + wd, y + h); c.closePath(); c.fill();
       c.fillStyle = cl + '58%)'; c.fillRect(x, y, wd, h);
-      c.fillStyle = cl + '74%)'; c.fillRect(x, y, wd, 1.3);
+      c.fillStyle = cl + '66%)'; c.fillRect(x, y, wd, h * 0.45);
       c.fillStyle = cl + '38%)'; c.fillRect(x, y + h - 1.2, wd, 1.2);
-      c.fillStyle = 'rgba(255,255,255,.28)'; c.fillRect(x + 0.6, y + 0.35, Math.min(wd - 1.2, 6), 0.5);
+      c.fillStyle = 'rgba(255,255,255,.3)'; c.fillRect(x + 0.6, y + 0.45, Math.max(0, wd - 1.2), 0.45);
+      c.fillStyle = 'rgba(255,255,255,.14)'; c.fillRect(x + wd * 0.12, y + 0.4, Math.min(wd * 0.12, 4), h - 0.9);
       if (glow) { c.globalAlpha = Math.min(1, glow * 2); c.strokeStyle = '#FDE68A'; c.lineWidth = 0.8; c.strokeRect(x - 0.6, y - 0.6, wd + 1.2, h + 1.2); c.globalAlpha = 1; }
     },
     draw: function (w, c) {
@@ -862,21 +871,18 @@
     scale: function (W, H) { return Math.min(H / 100, W / 72); },
     art: function (w, k) {
       w.sp = {
-        pil: sprite(16, 60, k, function (c) {
-          c.fillStyle = grad(c, 0, 0, 0, 60, ['#8B5CF6', '#5B21B6', '#2E1065', '#140A33']); c.fillRect(0, 0, 16, 60);
-          c.fillStyle = grad(c, 0, 0, 16, 0, ['rgba(255,255,255,.22)', 'rgba(255,255,255,0)', 'rgba(0,0,0,.25)']); c.fillRect(0, 0, 16, 60);
-          c.fillStyle = grad(c, 0, 0, 0, 2.2, ['#FEF3C7', '#F59E0B']); c.fillRect(0, 0, 16, 2.2);
-          c.fillStyle = 'rgba(15,6,40,.4)'; for (var i = 0; i < 5; i++) c.fillRect(3 + (i % 2) * 6, 8 + i * 10, 4, 1.2);
+        pil: sprite(16, 60, k, function (c) { // v2860: a basalt pillar on an alien world, lit edge, crystals, a glowing landing pad
+          var r = srnd(13), q;
+          c.fillStyle = grad(c, 0, 0, 16, 0, ['#4C3A78', '#6B54A6', '#3B2A63', '#1E1438']); c.fillRect(0, 0, 16, 60);
+          for (q = 0; q < 6; q++) { c.fillStyle = 'rgba(0,0,0,.22)'; c.fillRect(2.4 + q * 2.4, 3, 0.35, 57); }
+          for (q = 0; q < 30; q++) { c.fillStyle = r() < 0.5 ? 'rgba(255,255,255,.08)' : 'rgba(0,0,0,.2)'; c.fillRect(r() * 16, 3 + r() * 57, 0.8 + r(), 0.5); }
+          c.fillStyle = grad(c, 0, 3, 0, 60, ['rgba(0,0,0,0)', 'rgba(5,2,15,.6)']); c.fillRect(0, 3, 16, 57);
+          c.fillStyle = grad(c, 0, 0, 0, 2.6, ['#E9D5FF', '#A78BFA', '#5B21B6']); c.fillRect(0, 0, 16, 2.6);
+          c.fillStyle = 'rgba(253,230,138,.9)'; c.fillRect(0, 0, 16, 0.5);
+          [[2, 5, 3], [12.5, 8, 2.4], [6, 18, 2]].forEach(function (k2) { c.fillStyle = grad(c, k2[0] - 1, 0, k2[0] + 1, 0, ['#A7F3D0', '#10B981', '#065F46']); c.beginPath(); c.moveTo(k2[0] - 1, k2[1] + k2[2]); c.lineTo(k2[0], k2[1]); c.lineTo(k2[0] + 1, k2[1] + k2[2]); c.closePath(); c.fill(); });
         }),
-        hero: sprite(10, 14, k, function (c) {
-          c.lineCap = 'round'; c.strokeStyle = '#CBD5E1'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(4, 10); c.lineTo(3.6, 13.2); c.moveTo(6.2, 10); c.lineTo(6.6, 13.2); c.stroke();
-          rr(c, 0.6, 5.4, 3, 5, 1.2); c.fillStyle = '#94A3B8'; c.fill();
-          rr(c, 2.2, 5, 6, 6.2, 2.2); c.fillStyle = grad(c, 2, 5, 8, 11, ['#FFFFFF', '#E2E8F0', '#94A3B8']); c.fill();
-          c.fillStyle = '#A855F7'; c.fillRect(3, 7.6, 4.4, 1);
-          c.beginPath(); c.arc(5.4, 3.4, 3.3, 0, PI2); c.fillStyle = grad(c, 2, 0, 9, 7, ['#FFFFFF', '#CBD5E1']); c.fill();
-          rr(c, 5, 1.8, 3.8, 2.8, 1.3); c.fillStyle = grad(c, 5, 1.8, 9, 4.6, ['#FDE68A', '#F59E0B', '#92400E']); c.fill();
-          c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 0.45; c.beginPath(); c.arc(6.6, 3, 1, Math.PI * 1.1, Math.PI * 1.6); c.stroke();
-        })
+        walk: D6.Rig ? D6.Rig.sheet(12, 16, k, { view: 'side', pose: 'walk', pal: { suit: 1, skin: '#D9A066' } }, lite() ? 6 : 8) : [],
+        stand: D6.Rig ? D6.Rig.one(12, 16, k, { view: 'side', pose: 'stand', pal: { suit: 1, skin: '#D9A066' } }) : null,
       };
     },
     py: function (w) { return Math.max(w.VH * 0.6, w.top + 30); },
@@ -961,7 +967,8 @@
       }
       if (w.gone) return;
       var hx = w.hx - cam, hy = py + w.hy, bob = w.st === 'walk' ? Math.abs(Math.sin(w.walk * 14)) * 0.8 : 0;
-      c.drawImage(sp.hero, hx - 6, hy - 14.2 - bob, 10, 14);
+      var fr = w.st === 'walk' && sp.walk.length ? sp.walk[Math.floor(((w.walk * 2.2) % 1 + 1) % 1 * sp.walk.length) % sp.walk.length] : sp.stand;
+      if (fr) c.drawImage(fr, hx - 7, hy - 16, 12, 16);
       if (w.st === 'stand' && !w.dead && (w.mode === 'play' || w.mode === 'hold')) { // time left before the pillar crumbles
         var q = 1 - clamp(w.fuse / this.lim(w), 0, 1);
         c.lineWidth = 0.9; c.strokeStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(hx - 1, hy - 20, 2.6, 0, PI2); c.stroke();
