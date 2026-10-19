@@ -370,29 +370,80 @@
     }
   };
 
-  /* 2. FLAPPY ROCKET — tap to boost through the asteroid gaps */
+  /* 2. FLAPPY ROCKET — tap to boost through the asteroid gaps
+     v2860 (owner: "planets / pipes must never look cut") — ONLY the drawing changed (same gaps, same hit test): each obstacle
+     is one continuous rocky pillar that runs past the screen edge with a jagged, crystal-tipped end at the gap; the sky is a
+     painted nebula with whole planets (never cut by the edges), two parallax star layers and a far asteroid belt; a detailed
+     rocket with a glowing flame and a smoke trail. */
   DEF.flappyrock = {
     hint: 'h_boost', hintY: 0.72, gest: 'tap', hue: '#F43F5E',
     scale: function (W, H) { return H / 100; },
     floor: 93,
+    sky: function (W, H, dpr) {
+      var c = document.createElement('canvas'); c.width = Math.ceil(W * dpr); c.height = Math.ceil(H * dpr);
+      var x = c.getContext('2d'); x.scale(dpr, dpr);
+      x.fillStyle = grad(x, 0, 0, 0, H, ['#0A0618', '#1A0B2E', '#2E0F3A', '#3B0D2A']); x.fillRect(0, 0, W, H);
+      var r = srnd(29), i;
+      for (i = 0; i < 6; i++) { var nx = r() * W, ny = H * (0.15 + r() * 0.7), nr = Math.max(W, H) * (0.15 + r() * 0.2), col = ['rgba(244,63,94,', 'rgba(168,85,247,', 'rgba(251,146,60,'][i % 3]; x.fillStyle = rgrad(x, nx, ny, nr, [col + '.2)', col + '0)']); x.fillRect(nx - nr, ny - nr, nr * 2, nr * 2); }
+      for (i = 0; i < Math.round(W * H / 2400); i++) { var b = r(); x.globalAlpha = 0.2 + b * 0.6; x.fillStyle = b > 0.9 ? '#FDE68A' : '#fff'; x.fillRect(r() * W, r() * H, 1, 1); }
+      x.globalAlpha = 1;
+      // planets entirely inside the frame (margins from the edges) — never cut
+      var m = Math.min(W, H);
+      [[0.78, 0.3, 0.085, ['#FFE4E6', '#FB7185', '#9F1239', '#2A0614']], [0.2, 0.62, 0.05, ['#E0E7FF', '#818CF8', '#312E81', '#0B0820']]].forEach(function (q) {
+        var pr = m * q[2], px = Math.min(W - pr * 1.6, Math.max(pr * 1.6, W * q[0])), py = Math.min(H * 0.85 - pr, Math.max(pr * 1.6 + 40, H * q[1]));
+        x.fillStyle = rgrad(x, px, py, pr * 2, ['rgba(255,255,255,.08)', 'rgba(255,255,255,0)']); x.fillRect(px - pr * 2, py - pr * 2, pr * 4, pr * 4);
+        x.fillStyle = rgrad(x, px, py, pr, q[3], -pr * 0.45, -pr * 0.4); x.beginPath(); x.arc(px, py, pr, 0, PI2); x.fill();
+        x.save(); x.beginPath(); x.arc(px, py, pr, 0, PI2); x.clip(); for (var k = 0; k < 5; k++) { x.fillStyle = k % 2 ? 'rgba(0,0,0,.12)' : 'rgba(255,255,255,.07)'; x.fillRect(px - pr, py - pr + k * pr * 0.42, pr * 2, pr * 0.18); } x.restore();
+        x.strokeStyle = 'rgba(255,228,230,.45)'; x.lineWidth = Math.max(1, pr * 0.07); x.beginPath(); x.ellipse(px, py, pr * 1.55, pr * 0.32, -0.3, 0, Math.PI); x.stroke();
+      });
+      return c;
+    },
     art: function (w, k) {
+      var R = srnd(5);
       w.sp = {
-        rocket: sprite(16, 8, k, function (c) {
-          c.fillStyle = '#BE123C'; c.beginPath(); c.moveTo(3.5, 1); c.lineTo(7, 2.6); c.lineTo(4, 2.6); c.closePath(); c.fill();
-          c.beginPath(); c.moveTo(3.5, 7); c.lineTo(7, 5.4); c.lineTo(4, 5.4); c.closePath(); c.fill();
-          c.beginPath(); c.moveTo(2.4, 2.4); c.lineTo(11.5, 2.4); c.quadraticCurveTo(15.8, 3.2, 15.8, 4); c.quadraticCurveTo(15.8, 4.8, 11.5, 5.6); c.lineTo(2.4, 5.6); c.closePath();
-          c.fillStyle = grad(c, 0, 2.4, 0, 5.6, ['#FFFFFF', '#E2E8F0', '#94A3B8']); c.fill();
-          c.beginPath(); c.moveTo(11.5, 2.45); c.quadraticCurveTo(15.8, 3.2, 15.8, 4); c.quadraticCurveTo(15.8, 4.8, 11.5, 5.55); c.closePath(); c.fillStyle = '#E11D48'; c.fill();
-          c.beginPath(); c.arc(8.6, 4, 1.15, 0, PI2); c.fillStyle = '#0E7490'; c.fill(); c.strokeStyle = '#FBBF24'; c.lineWidth = 0.45; c.stroke();
-          c.fillStyle = 'rgba(255,255,255,.8)'; c.fillRect(3, 2.8, 7.5, 0.45);
-          c.fillStyle = '#475569'; c.fillRect(1.6, 2.9, 1, 2.2);
+        rocket: sprite(18, 9, k, function (c) {
+          // fins
+          c.fillStyle = grad(c, 0, 0, 0, 9, ['#FB7185', '#BE123C', '#881337']);
+          c.beginPath(); c.moveTo(3, 2.6); c.lineTo(1, 0.4); c.lineTo(4.4, 0.6); c.lineTo(7.4, 2.6); c.closePath(); c.fill();
+          c.beginPath(); c.moveTo(3, 6.4); c.lineTo(1, 8.6); c.lineTo(4.4, 8.4); c.lineTo(7.4, 6.4); c.closePath(); c.fill();
+          // body (metal cylinder lit from above), nose cone, panel lines, rivets
+          c.beginPath(); c.moveTo(2.2, 2.5); c.lineTo(12.4, 2.5); c.bezierCurveTo(15.6, 2.7, 17.6, 3.6, 17.8, 4.5); c.bezierCurveTo(17.6, 5.4, 15.6, 6.3, 12.4, 6.5); c.lineTo(2.2, 6.5); c.closePath();
+          c.fillStyle = grad(c, 0, 2.5, 0, 6.5, ['#FFFFFF', '#E2E8F0', '#94A3B8', '#475569']); c.fill();
+          c.save(); c.clip(); c.fillStyle = grad(c, 0, 2.5, 0, 6.5, ['#FDA4AF', '#E11D48', '#881337']); c.fillRect(12.4, 0, 6, 9);
+          c.strokeStyle = 'rgba(15,23,42,.35)'; c.lineWidth = 0.2; [5, 8.2, 12.4].forEach(function (px) { c.beginPath(); c.moveTo(px, 2.5); c.lineTo(px, 6.5); c.stroke(); });
+          c.fillStyle = 'rgba(15,23,42,.4)'; for (var i = 0; i < 5; i++) c.fillRect(2.8 + i * 1.9, 3, 0.25, 0.25);
+          c.fillStyle = 'rgba(255,255,255,.75)'; c.fillRect(2.6, 2.9, 9.6, 0.4); c.restore();
+          // porthole
+          c.beginPath(); c.arc(9.6, 4.5, 1.25, 0, PI2); c.fillStyle = '#E2E8F0'; c.fill();
+          c.beginPath(); c.arc(9.6, 4.5, 0.95, 0, PI2); c.fillStyle = rgrad(c, 9.6, 4.5, 0.95, ['#A5F3FC', '#0891B2', '#164E63'], -0.3, -0.3); c.fill();
+          c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.arc(9.3, 4.2, 0.3, 0, PI2); c.fill();
+          // nozzle
+          c.fillStyle = grad(c, 0, 3, 0, 6, ['#94A3B8', '#334155', '#0F172A']); c.beginPath(); c.moveTo(2.4, 3.1); c.lineTo(0.6, 2.6); c.lineTo(0.6, 6.4); c.lineTo(2.4, 5.9); c.closePath(); c.fill();
         }),
+        pillar: sprite(14, 40, k, function (c) { // a repeatable slice of the rocky pillar (texture tiles vertically)
+          c.fillStyle = grad(c, 0, 0, 14, 0, ['#5B1A33', '#9F2A50', '#C2416A', '#7A1E3C', '#3B0A1F']); c.fillRect(0, 0, 14, 40);
+          for (var i = 0; i < 26; i++) { var px = R() * 14, py = R() * 40, pr = 0.6 + R() * 1.8; c.fillStyle = 'rgba(30,5,15,.35)'; c.beginPath(); c.ellipse(px, py, pr, pr * 0.7, 0, 0, PI2); c.fill(); c.fillStyle = 'rgba(255,200,215,.12)'; c.beginPath(); c.ellipse(px - pr * 0.3, py - pr * 0.3, pr * 0.5, pr * 0.3, 0, 0, PI2); c.fill(); }
+          c.strokeStyle = 'rgba(30,5,15,.4)'; c.lineWidth = 0.3; for (i = 0; i < 4; i++) { c.beginPath(); c.moveTo(R() * 14, 0); c.lineTo(R() * 14, 20); c.lineTo(R() * 14, 40); c.stroke(); }
+          c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(0, 0, 1.2, 40); c.fillRect(12.8, 0, 1.2, 40);
+        }),
+        cap: [0, 1].map(function (v) { return sprite(18, 9, k, function (c) { // the jagged end of a pillar with glowing crystals (pointing down; flipped for the bottom)
+          var rr2 = srnd(v * 3 + 7);
+          c.beginPath(); c.moveTo(0.5, 0); c.lineTo(17.5, 0);
+          for (var i = 0; i <= 8; i++) { var px = 17.5 - i * 17 / 8; c.lineTo(px, 3.6 + rr2() * 2.6); }
+          c.closePath(); c.fillStyle = grad(c, 0, 0, 18, 0, ['#6B1D3A', '#C2416A', '#E05A82', '#8A2546', '#45102A']); c.fill();
+          c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(0.5, 0, 17, 1);
+          [[4, 4.5, 2.6], [9, 5.4, 3.2], [13.6, 4.6, 2.4]].forEach(function (q) { c.fillStyle = grad(c, q[0] - 1, 0, q[0] + 1, 0, ['#FDE68A', '#F472B6', '#BE185D']); c.beginPath(); c.moveTo(q[0] - 1, q[1] - 1.5); c.lineTo(q[0], q[1] + q[2]); c.lineTo(q[0] + 1, q[1] - 1.5); c.closePath(); c.fill(); c.fillStyle = 'rgba(255,255,255,.6)'; c.fillRect(q[0] - 0.25, q[1] - 0.8, 0.4, q[2] * 0.6); });
+        }); }),
         rock: [0, 1, 2].map(function (v) { return sprite(16, 16, k, function (c) { rock(c, 8, 8, 7.6, v * 3 + 2, ['#FDA4AF', '#9F1239', '#3B0718']); }); }),
+        belt: sprite(160, 14, k, function (c) { c.globalAlpha = 0.45; for (var i = 0; i < 34; i++) { var bx = R() * 160, by = 4 + R() * 7, br = 0.3 + R() * 0.9; rock(c, bx, by, br, i, ['#6B3A55', '#3A1428', '#1A0812']); } }),
+        stars: sprite(160, 100, k, function (c) { for (var i = 0; i < 40; i++) { c.fillStyle = 'rgba(255,255,255,' + (0.4 + R() * 0.6).toFixed(2) + ')'; var sx = R() * 160, sy = R() * 100, sl = 0.5 + R() * 1.2; c.fillRect(sx, sy, sl * 2, 0.15); } }),
         floor: sprite(120, 10, k, function (c) {
           c.fillStyle = grad(c, 0, 0, 0, 10, ['#9F1239', '#4C0519', '#1E0A1E']); c.fillRect(0, 0, 120, 10); c.fillStyle = '#FDA4AF'; c.fillRect(0, 0, 120, 0.7);
           for (var i = 0; i < 10; i++) { c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(i * 12 + 5, 4 + (i % 2) * 2.5, 2, 0.8, 0, 0, PI2); c.fill(); }
+          for (i = 0; i < 30; i++) { c.fillStyle = 'rgba(253,164,175,.25)'; c.fillRect(R() * 120, 1 + R() * 8, 0.6, 0.4); }
         })
       };
+      w.smoke = [];
     },
     reset: function (w) { w.dist = 0; w.v = 0; w.y = 45; w.vy = 0; w.go = 0; w.cols = []; w.next = 0; w.dead = 0; w.ang = 0; w.flame = 0; w.hov = 0; w.lastC = 45; },
     rx: function (w) { return Math.max(16, w.VW * 0.28); },
@@ -433,21 +484,33 @@
     focus: function (w) { return { x: this.rx(w), y: w.y }; },
     hit: function (w) { w.gone = 1; },
     draw: function (w, c) {
-      var sp = w.sp, rx = this.rx(w), fl = this.floor, i, j;
+      var sp = w.sp, rx = this.rx(w), fl = this.floor, i, j, VH = w.VH || 100;
+      // parallax: fast star streaks + a far asteroid belt
+      var sx = -((w.dist * 0.5) % 160); for (i = 0; sx + i * 160 < w.VW; i++) c.drawImage(sp.stars, sx + i * 160, 0, 160, 100);
+      var bx = -((w.dist * 0.2) % 160); for (i = 0; bx + i * 160 < w.VW; i++) c.drawImage(sp.belt, bx + i * 160, 70, 160, 14);
       for (i = 0; i < w.cols.length; i++) {
         var o = w.cols[i], ox = rx + o.x - w.dist;
         if (ox > w.VW + 4 || ox < -18) continue;
-        for (j = o.top - 7; j > -12; j -= 10) c.drawImage(sp.rock[(((o.s + Math.round(j / 10)) % 3) + 3) % 3], ox - 1.5, j - 8, 16, 16);
-        for (j = o.bot + 7; j < fl + 6; j += 10) c.drawImage(sp.rock[(((o.s + 1 + Math.round(j / 10)) % 3) + 3) % 3], ox - 1.5, j - 8, 16, 16);
+        // top pillar: from above the screen down to the gap; bottom pillar: from the gap down into the ground
+        for (j = o.top - 4; j > -45; j -= 40) c.drawImage(sp.pillar, ox - 0.5, j - 40, 14, 40.4);
+        c.save(); c.translate(ox - 2.5, o.top - 7.5); c.drawImage(sp.cap[o.s % 2], 0, 0, 18, 9); c.restore();
+        for (j = o.bot + 4; j < fl + 2; j += 40) c.drawImage(sp.pillar, ox - 0.5, j, 14, Math.min(40.4, fl + 2 - j));
+        c.save(); c.translate(ox - 2.5, o.bot + 7.5); c.scale(1, -1); c.drawImage(sp.cap[(o.s + 1) % 2], 0, 0, 18, 9); c.restore();
       }
       var gx = -(w.dist % 120);
       for (i = 0; gx + i * 120 < w.VW; i++) c.drawImage(sp.floor, gx + i * 120, fl, 120.5, 10);
+      // smoke trail puffs (drawing only)
+      if (w.smoke) {
+        if (!w.gone && !w.dead && Math.random() < 0.6) w.smoke.push({ x: rx - 7 * Math.cos(w.ang), y: w.y - 7 * Math.sin(w.ang), t: 0, r: 0.8 + Math.random() * 0.6 });
+        for (i = w.smoke.length - 1; i >= 0; i--) { var p = w.smoke[i]; p.t += 0.016; p.x -= w.v * 0.016; if (p.t > 0.6 || w.smoke.length > 40) { w.smoke.splice(i, 1); continue; } c.fillStyle = 'rgba(226,232,240,' + (0.3 * (1 - p.t / 0.6)).toFixed(3) + ')'; c.beginPath(); c.arc(p.x, p.y, p.r * (1 + p.t * 4), 0, PI2); c.fill(); }
+      }
       if (w.gone) return;
       c.save(); c.translate(rx, w.y); c.rotate(w.ang);
-      if (!w.dead) { // flame
-        var f = 3 + (w.flame > 0 ? 4 : 1.5) + Math.random() * 1.2;
-        c.fillStyle = '#FB923C'; c.beginPath(); c.moveTo(-6.4, -1.3); c.lineTo(-6.4 - f, 0); c.lineTo(-6.4, 1.3); c.closePath(); c.fill();
-        c.fillStyle = '#FEF3C7'; c.beginPath(); c.moveTo(-6.4, -0.6); c.lineTo(-6.4 - f * 0.5, 0); c.lineTo(-6.4, 0.6); c.closePath(); c.fill();
+      if (!w.dead) { // flame with a hot core and a soft glow
+        var f = 3 + (w.flame > 0 ? 5 : 1.8) + Math.random() * 1.2;
+        c.fillStyle = 'rgba(251,146,60,.25)'; c.beginPath(); c.ellipse(-7.6 - f * 0.4, 0, f * 0.8, 2.6, 0, 0, PI2); c.fill();
+        c.fillStyle = '#F97316'; c.beginPath(); c.moveTo(-7.4, -1.4); c.quadraticCurveTo(-7.4 - f * 0.6, -1.1, -7.4 - f, 0); c.quadraticCurveTo(-7.4 - f * 0.6, 1.1, -7.4, 1.4); c.closePath(); c.fill();
+        c.fillStyle = '#FEF3C7'; c.beginPath(); c.moveTo(-7.4, -0.7); c.lineTo(-7.4 - f * 0.55, 0); c.lineTo(-7.4, 0.7); c.closePath(); c.fill();
       }
       c.drawImage(sp.rocket, -8, -4, 16, 8);
       c.restore();

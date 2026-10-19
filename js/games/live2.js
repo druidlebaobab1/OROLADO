@@ -174,7 +174,36 @@
     skin: ['#F3C9A9', '#8D5A3B', '#E5B08A', '#C68B5E', '#F5D5BC', '#6B3F2A'],
     hair: ['#24140A', '#F5D06F', '#6B3F1E', '#B4471F', '#141014', '#E9E4F0']
   };
+  /* v2860 (owner: "amateur") — the models are now real figures (D6.Rig): runway walk (crossing steps, hip sway, arm swing)
+     seen from the front when they come, from the back when they leave, a pose at the end of the runway; varied skin tones,
+     hair and outfits. One sprite sheet per model (built once, in the background), shown through an SVG viewBox. */
+  var CWF = { fw: 52, fh: 88, n: 18 }; // frames: 0-7 walk (front), 8-15 walk (back), 16-17 pose
+  var CWP = [
+    { style: 'long', legs: 'dress', skirt: ['#FB3B6A', '#881337'], skirtLen: 0.22, top: ['#FB3B6A', '#881337'], sleeve: 'none', lips: '#9F1239', shoe: '#111827' },
+    { style: 'bun', legs: 'pants', top: ['#14C08A', '#065F46'], bottom: ['#0E9F73', '#064E3B'], sleeve: 'none', lips: '#BE185D', shoe: '#F5F5F4' },
+    { style: 'wavy', legs: 'dress', skirt: ['#3B8BF6', '#1E3A8A'], skirtLen: 0.44, top: ['#3B8BF6', '#1E3A8A'], sleeve: 'short', lips: '#BE123C', shoe: '#E5E7EB' },
+    { style: 'pony', legs: 'pants', top: ['#F7B32B', '#92400E'], bottom: ['#1F2937', '#0B1220'], sleeve: 'long', lips: '#B91C1C', shoe: '#F7B32B' },
+    { style: 'afro', legs: 'dress', skirt: ['#9B6BFA', '#4C1D95'], skirtLen: 0.3, top: ['#9B6BFA', '#4C1D95'], sleeve: 'none', lips: '#7E1D3F', shoe: '#FDE68A' },
+    { style: 'bob', legs: 'skirt', skirt: ['#1F2937', '#0B1220'], skirtLen: 0.2, top: ['#F25FB0', '#9D174D'], sleeve: 'long', lips: '#DB2777', shoe: '#111827' }
+  ];
+  var CWS = {}; // model index → blob URL of its sheet (kept across rounds)
+  function cwSheet(i, cb) {
+    if (CWS[i]) { cb(CWS[i]); return; }
+    var R = D6.Rig; if (!R) return;
+    var k = 3, fw = CWF.fw * k, fh = CWF.fh * k, cv = document.createElement('canvas'); cv.width = fw * CWF.n; cv.height = fh;
+    var x = cv.getContext('2d'), P = CWP[i], pal = Object.assign({ build: 'f', skin: CW.skin[i], hair: CW.hair[i], heels: 1, lash: 1 }, P);
+    for (var f = 0; f < CWF.n; f++) {
+      var view = f < 8 ? 'front' : f < 16 ? 'back' : 'front', pose = f < 16 ? 'catwalk' : 'stand', ph = f < 16 ? (f % 8) / 8 : (f - 16) * 0.25;
+      x.save(); x.translate(f * fw + fw / 2, fh * 0.99); R.draw(x, fh * 0.94, { view: view, pose: pose, ph: ph, pal: pal }); x.restore();
+    }
+    var done = function (u) { CWS[i] = u; cb(u); };
+    if (cv.toBlob) cv.toBlob(function (b) { done(b ? URL.createObjectURL(b) : cv.toDataURL()); }); else done(cv.toDataURL());
+  }
   function cwModel(i, uid) {
+    if (D6.Rig) return '<ellipse cy="0" rx="13" ry="2.6" fill="#000" opacity=".35"/><svg class="cw-fr" x="' + (-CWF.fw / 2) + '" y="' + (-CWF.fh + 1) + '" width="' + CWF.fw + '" height="' + CWF.fh + '" viewBox="' + (16 * CWF.fw) + ' 0 ' + CWF.fw + ' ' + CWF.fh + '"><image width="' + (CWF.fw * CWF.n) + '" height="' + CWF.fh + '" preserveAspectRatio="none"/></svg>';
+    return cwModelSvg(i, uid);
+  }
+  function cwModelSvg(i, uid) {
     var g = 'cwd' + uid + '_' + i, sk = CW.skin[i], hc = CW.hair[i];
     var back = ['<path d="M-7-73q-2 15 1 23h12q3-8 1-23z" fill="' + hc + '"/>', '<circle cy="-81" r="4.2" fill="' + hc + '"/>',
       '<path d="M-7.4-70q-.5 9 1.6 11h11.6q2.1-2 1.6-11z" fill="' + hc + '"/>', '<path d="M4-72q9 3 7 17q-1.5 3-3 0q1-9-5-13z" fill="' + hc + '"/>',
@@ -198,6 +227,7 @@
   }
   function crown(s, fill) { return '<path d="M' + (-9 * s) + ' ' + (3 * s) + 'l' + (-2 * s) + ' ' + (-10 * s) + 'l' + (6 * s) + ' ' + (5 * s) + 'l' + (5 * s) + ' ' + (-8 * s) + 'l' + (5 * s) + ' ' + (8 * s) + 'l' + (6 * s) + ' ' + (-5 * s) + 'l' + (-2 * s) + ' ' + (10 * s) + 'z" fill="' + (fill || '#FBBF24') + '" stroke="#FDE68A" stroke-width="' + (0.8 * s) + '"/>'; }
   var CW_SLOT = 10.4, CW_W0 = 2;
+  function cwFrame(c, m, fi) { var sv = c.fr && c.fr[m]; if (sv) sa(sv, 'viewBox', (fi * CWF.fw) + ' 0 ' + CWF.fw + ' ' + CWF.fh); }
   function rowCls(el, lead, now, win) { var k = (lead ? 1 : 0) + (now ? 2 : 0) + (win ? 4 : 0); if (el._rk === k) return; el._rk = k; el.classList.toggle('lead', lead); el.classList.toggle('now', now); el.classList.toggle('cwin', win); }
   live('catwalk', {
     SHOW: 70, lab: 'cw', varOdds: true, odds0: {},
@@ -252,6 +282,8 @@
       c.cards = [].slice.call(c.box.querySelectorAll('.cw-flip')); c.cardT = c.cards.map(function (x) { return x.querySelector('text'); });
       c.vals = [].slice.call(c.box.querySelectorAll('.cw-val')); c.leads = [].slice.call(c.box.querySelectorAll('.cw-lead')); c.rows = [].slice.call(c.box.querySelectorAll('.cw-row'));
       c.big = c.box.querySelector('.cw-big'); c.cf = [].slice.call(c.box.querySelectorAll('.cw-cf'));
+      c.fr = c.models.map(function (m) { return m.querySelector('.cw-fr'); });
+      c.fr.forEach(function (sv, m) { if (!sv) return; setTimeout(function () { cwSheet(m, function (u) { var im = sv.querySelector('image'); if (im) { im.setAttribute('href', u); im.setAttributeNS('http://www.w3.org/1999/xlink', 'href', u); } }); }, 30 + m * 40); });
     },
     frame: function (c, R, t, e, res, odds) {
       var sc1 = function (v) { return (v / 10).toFixed(1).replace('.', c.dc); };
@@ -270,7 +302,7 @@
         txt(c.big, R && e < 0 ? mmss(R.close - t) : ''); sa(c.big, 'class', 'cw-big' + (R && R.close - t <= 10 ? ' warn' : ''));
         c.cf.forEach(function (x) { sa(x, 'opacity', '0'); });
         // draw order: lower on screen = in front
-        for (m = 0; m < 6; m++) { sa(c.models[m], 'transform', tr(pos[m][0], pos[m][1], pos[m][2], pos[m][3])); sa(c.models[m], 'opacity', '1'); }
+        for (m = 0; m < 6; m++) { sa(c.models[m], 'transform', tr(pos[m][0], pos[m][1], pos[m][2], pos[m][3])); sa(c.models[m], 'opacity', '1'); cwFrame(c, m, 16 + (Math.sin(t * 0.7 + m * 2) > 0.6 ? 1 : 0)); }
         return;
       }
       var q = res.q || [0, 1, 2, 3, 4, 5], s = res.s || [], n = +res.n;
@@ -288,9 +320,9 @@
         pos[walker] = [x, y, sc, rot];
       }
       // crowning: the winner comes back to the front, the crown drops
-      var crownK = 0;
+      var crownK = 0, cw = 1;
       if (e >= CW_W0 + 6 * CW_SLOT) {
-        var ce = e - (CW_W0 + 6 * CW_SLOT), cw = eio(ce / 2.6);
+        var ce = e - (CW_W0 + 6 * CW_SLOT); cw = eio(ce / 2.6);
         pos[n] = [lerp(backX(n), 180, cw), lerp(70, 196, cw), lerp(.44, 1.2, cw), Math.sin(t * 2) * 2];
         crownK = seg(ce, 2.6, 3.8);
       }
@@ -310,7 +342,13 @@
       }
       var revd = e >= 70;
       for (m = 0; m < 6; m++) { sa(c.leads[m], 'opacity', m === best ? '1' : '0'); rowCls(c.rows[m], m === best, m === walker, revd && m === n); }
-      for (m = 0; m < 6; m++) { sa(c.models[m], 'transform', tr(pos[m][0], pos[m][1], pos[m][2], pos[m][3])); sa(c.models[m], 'opacity', (crownK > 0 || revd) && m !== n ? '.45' : '1'); }
+      for (m = 0; m < 6; m++) {
+        sa(c.models[m], 'transform', tr(pos[m][0], pos[m][1], pos[m][2], pos[m][3])); sa(c.models[m], 'opacity', (crownK > 0 || revd) && m !== n ? '.45' : '1');
+        var fi = 16, wph = Math.floor(((u * 1.6) % 1 + 1) % 1 * 8);
+        if (m === walker) fi = u < 1.1 || (u >= 1.1 && u < 4.5) ? wph : u < 7.3 ? 16 + (u > 5.6 && u < 6.6 ? 1 : 0) : u < 9.8 ? 8 + wph : wph;
+        else if (e >= CW_W0 + 6 * CW_SLOT && m === n && cw < 1) fi = Math.floor(((e * 1.6) % 1) * 8);
+        cwFrame(c, m, fi);
+      }
       c.crowns.forEach(function (x, j) { sa(x, 'opacity', j === n && crownK > 0 ? '1' : '0'); sa(x, 'transform', 'translate(0 ' + (j === n ? lerp(-130, -79, eo(crownK)) : -79).toFixed(1) + ')'); });
       txt(c.big, revd ? c.oddTxt(odds[String(n)]) : ''); sa(c.big, 'class', 'cw-big odd');
       // confetti at the crowning

@@ -35,7 +35,12 @@
       '<path d="M21 38l5-6h12l5 6-11 15z" fill="url(#IDd)" stroke="#CFFAFE" stroke-width=".8"/><path d="M21 38h22M28 32l-1.5 6L32 53l5.5-15L36 32" stroke="#fff" stroke-opacity=".55" stroke-width=".7" fill="none"/>' + sp(51, 30, 4) + sp(13, 44, 3)
   };
   D6.CasinoCatalog.add([
-    { k: 'catwalk', name: 'Miss Catwalk', sec: 'live', file: 'live2', pal: ['#FCE7F3', '#DB2777'], icon: ICONS.catwalk },
+    // v2860 (owner: logos must match the new art): medallion rendered from the redrawn runway show (img/games/catwalk.webp)
+    { k: 'catwalk', name: 'Miss Catwalk', sec: 'live', file: 'live2', pal: ['#FCE7F3', '#DB2777'], icon: '<defs><clipPath id="IDm"><circle cx="32" cy="33" r="26.5"/></clipPath><linearGradient id="IDq" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7D6"/><stop offset=".45" stop-color="#F472B6"/><stop offset="1" stop-color="#831843"/></linearGradient>' +
+      '<linearGradient id="IDw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
+      '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDq)"/>' +
+      '<image href="img/games/catwalk.webp?v=2867" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
+      '<circle cx="32" cy="33" r="26.5" fill="url(#IDw)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>' },
     { k: 'fleets', name: 'Star Fleets', sec: 'live', file: 'live2', pal: ['#E0E7FF', '#4F46E5'], icon: ICONS.fleets },
     { k: 'gemcount', name: 'Gem Count', sec: 'live', file: 'live2', pal: ['#CCFBF1', '#0D9488'], icon: ICONS.gemcount },
     { k: 'claw', name: 'Lucky Claw', sec: 'live', file: 'live2', pal: ['#FAE8FF', '#C026D3'], icon: ICONS.claw }

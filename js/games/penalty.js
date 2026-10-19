@@ -175,6 +175,24 @@
     var sg = p.rot > 0 ? 1 : -1;
     return { x: p.x + sg * 8, y: 157, rot: sg * 96, a: [-10, 4, 10, -4, -176, -178, 176, 178] };
   }
+  /* v2860 (owner: "amateur", "varied skin tones"): every round a different keeper — skin tone, hair, kit — and limbs drawn as
+     tapered, muscled shapes (filled capsules) instead of straight strokes. Drawing only: the poses and the dives are unchanged. */
+  var KSKIN = [['#F7DCC6', '#E2B48F'], ['#EBC09B', '#C9936B'], ['#D29A6A', '#A86E44'], ['#B07A4F', '#875632'], ['#8A5A3A', '#653E25'], ['#6B4129', '#4A2A18'], ['#4E2F1D', '#331D11']];
+  var KHAIR = ['#1A1110', '#2B1B10', '#4A2E1A', '#7B4A26', '#C08A3E', '#E2C27A', '#8C2F1B'];
+  var KKIT = [['#FDE047', '#F59E0B', '#262262', '#F59E0B'], ['#34D399', '#059669', '#064E3B', '#059669'], ['#F472B6', '#DB2777', '#1F2937', '#F472B6'], ['#60A5FA', '#2563EB', '#111827', '#93C5FD'], ['#F97316', '#C2410C', '#1C1917', '#FDBA74'], ['#A3E635', '#4D7C0F', '#14532D', '#A3E635']];
+  function hairSvg(st, hc) {
+    var dk = hc;
+    if (st === 0) return ['', '<path d="M-6.1-36.2Q-6.8-44 0-44.2Q6.8-44 6.1-36.2Q5.4-40.2 2.4-40.8Q-1.6-39.2-4.4-40.6Q-5.6-39.6-6.1-36.2Z" fill="' + hc + '"/>']; // short
+    if (st === 1) return ['', '<path d="M-6-37Q-6.4-43.4 0-43.6Q6.4-43.4 6-37Q5-40.6 0-40.8Q-5-40.6-6-37Z" fill="' + hc + '" opacity=".85"/>']; // buzz
+    if (st === 2) return ['<circle cx="0" cy="-39" r="9" fill="' + dk + '"/>', '<path d="M-7.4-37Q-8.6-46.6 0-47Q8.6-46.6 7.4-37Q6-41.4 0-41.2Q-6-41.4-7.4-37Z" fill="' + hc + '"/>']; // afro
+    if (st === 3) { var c = ''; for (var i = 0; i < 9; i++) { var a = Math.PI * (1.05 + i * 0.112); c += '<circle cx="' + (Math.cos(a) * 6).toFixed(1) + '" cy="' + (-37.4 + Math.sin(a) * 6.4).toFixed(1) + '" r="2.3" fill="' + hc + '"/>'; } return ['', c]; } // curly
+    return ['<path d="M-1-41Q-4-34-3.2-26Q-1-25.4 0-28Q1-34 1-41Z" fill="' + hc + '"/>', '<path d="M-6.2-36Q-7-44.2 0-44.4Q7-44.2 6.2-36Q5.6-40.6 0-41Q-5.6-40.6-6.2-36Z" fill="' + hc + '"/>']; // tied hair (ponytail behind)
+  }
+  function capsule(a, b, ra, rb) { // a tapered limb between 2 joints, with round ends
+    var dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 0.001, nx = -dy / L, ny = dx / L, f = function (v) { return v.toFixed(2); };
+    return 'M' + f(a[0] + nx * ra) + ' ' + f(a[1] + ny * ra) + 'L' + f(b[0] + nx * rb) + ' ' + f(b[1] + ny * rb) + 'A' + f(rb) + ' ' + f(rb) + ' 0 0 0 ' + f(b[0] - nx * rb) + ' ' + f(b[1] - ny * rb) +
+      'L' + f(a[0] - nx * ra) + ' ' + f(a[1] - ny * ra) + 'A' + f(ra) + ' ' + f(ra) + ' 0 0 0 ' + f(a[0] + nx * ra) + ' ' + f(a[1] + ny * ra) + 'Z';
+  }
   function gloveD() { return 'M-4.6 3C-5.6-2.5-4.6-8.6 0-9.4C4.6-8.6 5.6-2.5 4.6 3Z'; }
   function keeperSvg() {
     var leg = function (s) {
@@ -199,11 +217,13 @@
         '<path d="M-11-6Q0-3.6 11-6" stroke="#000" stroke-opacity=".12" stroke-width="2" fill="none"/>' +
         // cou + tête
         '<path d="M-2.6-28.5H2.6V-24.5H-2.6Z" fill="url(#pkSkin)"/><path d="M-2.6-26H2.6" stroke="#B97F5C" stroke-opacity=".35" stroke-width="1"/>' +
-        '<g id="kHead"><ellipse cx="-6" cy="-35.4" rx="1.3" ry="2" fill="#E3AE89"/><ellipse cx="6" cy="-35.4" rx="1.3" ry="2" fill="#E3AE89"/>' +
-          '<ellipse cx="0" cy="-35.6" rx="5.9" ry="6.8" fill="url(#pkSkin)"/>' +
-          '<path d="M-6-36.6Q-6.6-43.6 0-43.8Q6.6-43.6 6-36.6Q5.4-40 2.4-40.6Q-1.6-39-4.4-40.4Q-5.6-39.4-6-36.6Z" fill="#6B4423"/>' +
-          '<path d="M-3.6-36.8h2M1.6-36.8h2" stroke="#2A1608" stroke-width=".9" stroke-linecap="round"/><circle cx="-2.6" cy="-35.2" r=".75" fill="#111"/><circle cx="2.6" cy="-35.2" r=".75" fill="#111"/>' +
-          '<path d="M-1.6-31.4Q0-30.6 1.6-31.4" stroke="#B5524A" stroke-width=".7" fill="none" stroke-linecap="round"/><path d="M0-35v2.2" stroke="#C98F6B" stroke-width=".6"/></g>' +
+        '<g id="kHead"><g id="kHairB"></g><ellipse class="kp-ear" cx="-6" cy="-35.4" rx="1.3" ry="2" fill="#E3AE89"/><ellipse class="kp-ear" cx="6" cy="-35.4" rx="1.3" ry="2" fill="#E3AE89"/>' +
+          '<path d="M-5.9-36.6Q-6-42.6 0-42.6Q6-42.6 5.9-36.6Q6-31.4 4.2-29.6Q2.2-28.2 0-28.2Q-2.2-28.2-4.2-29.6Q-6-31.4-5.9-36.6Z" fill="url(#pkSkin)"/>' +
+          '<path class="kp-shd" d="M3.4-41Q6.2-38 5.6-33Q5-30 3.6-29.4Q5-33 3.4-41Z" fill="#000" opacity=".12"/>' +
+          '<path class="kp-brow" d="M-4-37.6q1.2-.8 2.4-.2M1.6-37.8q1.2-.6 2.4.2" stroke="#2A1608" stroke-width=".8" fill="none" stroke-linecap="round"/>' +
+          '<ellipse cx="-2.5" cy="-35.6" rx="1.2" ry=".75" fill="#F8FAFC"/><ellipse cx="2.5" cy="-35.6" rx="1.2" ry=".75" fill="#F8FAFC"/><circle cx="-2.4" cy="-35.6" r=".55" fill="#1F1308"/><circle cx="2.4" cy="-35.6" r=".55" fill="#1F1308"/>' +
+          '<path class="kp-nose" d="M.2-35.4Q.9-33.4 .5-32.6Q0-32.3-.6-32.6" stroke="#000" stroke-opacity=".25" stroke-width=".55" fill="none"/>' +
+          '<path class="kp-lip" d="M-1.7-30.9Q0-30.1 1.7-30.9Q0-29.9-1.7-30.9Z" fill="#B5524A"/><g id="kHair"></g></g>' +
         arm('L') + arm('R') +
       '</g>';
   }
@@ -249,7 +269,24 @@
 
     /* ---- le gardien (rendu d'une pose) ---- */
     var KE = {}; ['ThL', 'SnL', 'SkL', 'ShL', 'BtL', 'ThR', 'SnR', 'SkR', 'ShR', 'BtR', 'UaL', 'FaL', 'GlL', 'UaR', 'FaR', 'GlR'].forEach(function (k) { KE[k] = $('k' + k); });
-    var seg = function (el, a, b) { el.setAttribute('d', 'M' + a[0].toFixed(2) + ' ' + a[1].toFixed(2) + 'L' + b[0].toFixed(2) + ' ' + b[1].toFixed(2)); };
+    var KW = { Th: [3.7, 2.7], Sn: [2.8, 1.9], Sk: [2.95, 2.05], Sh: [5.3, 4.5], Ua: [3.5, 2.8], Fa: [3.0, 2.3] };
+    var seg = function (el, a, b) { var k = el.id.slice(1, 3), w = KW[k]; el.setAttribute('d', w ? capsule(a, b, w[0], w[1]) : 'M' + a[0].toFixed(2) + ' ' + a[1].toFixed(2) + 'L' + b[0].toFixed(2) + ' ' + b[1].toFixed(2)); };
+    function dressKeeper() { // a new keeper look (skin, hair, kit)
+      var r = function (n) { return (Math.random() * n) | 0; }, sk = KSKIN[r(KSKIN.length)], hc = KHAIR[r(KHAIR.length)], kit = KKIT[r(KKIT.length)], st = r(5);
+      if (sk === KSKIN[5] || sk === KSKIN[6]) hc = KHAIR[r(2)];
+      var sg = $('pkSkin'); if (sg) { sg.children[0].setAttribute('stop-color', sk[0]); sg.children[1].setAttribute('stop-color', sk[1]); }
+      var sh = $('pkShirt'); if (sh) { sh.children[0].setAttribute('stop-color', kit[0]); sh.children[1].setAttribute('stop-color', kit[1]); }
+      var so = $('pkShortG'); if (so) { so.children[0].setAttribute('stop-color', kit[2]); so.children[1].setAttribute('stop-color', kit[2]); }
+      ['ThL', 'ThR', 'SnL', 'SnR'].forEach(function (k) { KE[k].style.cssText = 'fill:' + sk[0] + ';stroke:' + sk[1] + ';stroke-width:.5'; });
+      ['SkL', 'SkR'].forEach(function (k) { KE[k].style.cssText = 'fill:' + kit[3] + ';stroke:rgba(0,0,0,.2);stroke-width:.4'; });
+      ['ShL', 'ShR'].forEach(function (k) { KE[k].style.cssText = 'fill:' + kit[2] + ';stroke:none'; });
+      ['UaL', 'UaR'].forEach(function (k) { KE[k].style.cssText = 'fill:' + kit[0] + ';stroke:rgba(0,0,0,.18);stroke-width:.5'; });
+      ['FaL', 'FaR'].forEach(function (k) { KE[k].style.cssText = 'fill:' + kit[1] + ';stroke:rgba(0,0,0,.18);stroke-width:.5'; });
+      box.querySelectorAll('.kp-ear').forEach(function (e) { e.setAttribute('fill', sk[1]); });
+      var lip = box.querySelector('.kp-lip'); if (lip) lip.setAttribute('fill', D6.Rig ? D6.Rig.warm(sk[1], 0.25) : '#B5524A');
+      var brow = box.querySelector('.kp-brow'); if (brow) brow.setAttribute('stroke', hc === KHAIR[5] ? '#7B4A26' : '#1A1110');
+      var hs = hairSvg(st, hc); $('kHairB').innerHTML = hs[0]; $('kHair').innerHTML = hs[1];
+    }
     var mid = function (a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; };
     var cur = READY;
     function drawK(P) {
@@ -441,11 +478,11 @@
       var r = await K.multi('penalty', live() ? 'cash' : 'start');
       if (!box.isConnected) return;
       busy = false;
-      if (r) { g = r; if (r.done) K.resultLine(box, r); else $('pnFlash').setAttribute('class', 'pn-flash'); }
+      if (r) { if (!r.done && (!g || g.done)) dressKeeper(); g = r; if (r.done) K.resultLine(box, r); else $('pnFlash').setAttribute('class', 'pn-flash'); }
       paint();
     });
     box._pk = { drawK: drawK, pose: divePose, lerp: lerpPose, fall: fallPose, ready: READY, setBall: setBall, stop: function () { busy = true; cancelAnimationFrame(idleT); } }; // essais (aperçu des poses)
-    reset(); paint();
+    dressKeeper(); reset(); paint();
     requestAnimationFrame(function () { K.fitAll(box.querySelector('#pnLad')); });
     K.S.raf = idleT = requestAnimationFrame(idle);
     K.multi('penalty', 'state', null, true).then(function (r) { if (r && !r.done && box.isConnected && !g) { g = r; paint(); } });

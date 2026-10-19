@@ -11,7 +11,7 @@
     return '<defs><clipPath id="IDm"><circle cx="32" cy="33" r="26.5"/></clipPath><linearGradient id="IDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7D6"/><stop offset=".45" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient>' +
       '<linearGradient id="IDs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
       '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDg)"/>' +
-      '<image href="img/games/' + k + '.webp?v=2862" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
+      '<image href="img/games/' + k + '.webp?v=2865" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
       '<circle cx="32" cy="33" r="26.5" fill="url(#IDs)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>' + (run ? RUN : '');
   }
   D6.CasinoCatalog.add([
@@ -20,11 +20,7 @@
   { k: 'jungledash', name: 'Jungle Dash', sec: 'skill', file: 'skill3', pal: ['#DCFCE7', '#15803D'], icon: medal('jungledash', '#4ADE80', '#14532D', 1) },
   { k: 'metrodash', name: 'Metro Dash', sec: 'skill', file: 'skill3', pal: ['#CFFAFE', '#0891B2'], icon: medal('metrodash', '#22D3EE', '#155E75', 1) },
   { k: 'spacerun', name: 'Space Runner', sec: 'skill', file: 'skill1', pal: ['#DCFCE7', '#16A34A'], icon: medal('spacerun', '#A78BFA', '#4C1D95', 0) },
-  { k: 'flappyrock', name: 'Flappy Rocket', sec: 'skill', file: 'skill1', pal: ['#FFE4E6', '#E11D48'], icon: '<defs><linearGradient id="IDb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#94A3B8"/></linearGradient><radialGradient id="IDr" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FDA4AF"/><stop offset=".6" stop-color="#9F1239"/><stop offset="1" stop-color="#3B0718"/></radialGradient><linearGradient id="IDf" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#FDE68A"/><stop offset="1" stop-color="#F43F5E" stop-opacity="0"/></linearGradient></defs>' +
-    '<circle cx="50" cy="13" r="9" fill="url(#IDr)"/><circle cx="14" cy="51" r="9.5" fill="url(#IDr)"/><circle cx="46.4" cy="10" r="1.7" fill="#000" opacity=".25"/><circle cx="17" cy="48.6" r="2" fill="#000" opacity=".25"/>' +
-    '<g transform="rotate(-28 32 32)"><path d="M14 29C8 30 4 32 0 32c4 0 8 2 14 3z" fill="url(#IDf)"/><path d="M20 26l-5-6h6l6 6zM20 38l-5 6h6l6-6z" fill="#BE123C"/>' +
-    '<path d="M16 26h26c7 0 13 3 16 6-3 3-9 6-16 6H16c-1 0-2-1-2-2v-8c0-1 1-2 2-2z" fill="url(#IDb)"/><path d="M44 26.2c7 .6 11 3 14 5.8-3 2.8-7 5.2-14 5.8 1.3-3.8 1.3-7.8 0-11.6z" fill="#E11D48"/>' +
-    '<circle cx="34" cy="32" r="4" fill="#0E7490" stroke="#FBBF24" stroke-width="1.4"/><path d="M19 29h20" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".8"/></g>' },
+  { k: 'flappyrock', name: 'Flappy Rocket', sec: 'skill', file: 'skill1', pal: ['#FFE4E6', '#E11D48'], icon: medal('flappyrock', '#FB7185', '#881337', 0) },
   { k: 'stack', name: 'Tower Stack', sec: 'skill', file: 'skill1', pal: ['#FEF3C7', '#D97706'], icon: '<defs><linearGradient id="IDa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4B5FD"/><stop offset="1" stop-color="#6D28D9"/></linearGradient><linearGradient id="IDb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F9A8D4"/><stop offset="1" stop-color="#BE185D"/></linearGradient><linearGradient id="IDc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FDE68A"/><stop offset="1" stop-color="#D97706"/></linearGradient></defs>' +
     '<ellipse cx="32" cy="58" rx="24" ry="4" fill="#78350F" opacity=".45"/><rect x="12" y="45" width="40" height="11" rx="2" fill="url(#IDa)"/><rect x="14" y="34" width="37" height="11" rx="2" fill="url(#IDb)"/><rect x="16" y="23" width="34" height="11" rx="2" fill="url(#IDc)"/>' +
     '<path d="M14 47h22M16 36h18M18 25h16" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>' +
