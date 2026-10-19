@@ -3799,8 +3799,26 @@
         var ty = ey - timerH / 2; // v2557 : pile sur la ligne / le rond du trade (avant : tagY, décalé pour empiler)
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
         // v2557 (propriétaire) : chaque chrono reste COLLÉ sur la ligne de son trade, jamais décalé ailleurs.
-        // Plusieurs trades au même niveau → leurs chronos se superposent (comme les ronds d'entrée).
-        chronoPlaced.push(ty);
+        // v2828 (propriétaire : « même si la personne a cliqué plusieurs fois, tout va s'afficher ») : plusieurs trades
+        // au même niveau → leurs chronos se rangent CÔTE À CÔTE sur la ligne (avant : superposés, un seul visible).
+        // Première place libre en partant de la gauche (aucun rond ne recouvre un autre), jusqu'aux étiquettes de droite ;
+        // ligne pleine (des dizaines de trades au même niveau) : rangée juste en dessous, puis au-dessus.
+        var slotW = timerW + 3, maxX = Math.max(leftX + slotW, cssW - 110), ci, ri, placed = false;
+        var rows = [0, timerH + 2, -(timerH + 2), 2 * (timerH + 2), -2 * (timerH + 2)];
+        for (ri = 0; ri < rows.length && !placed; ri++) {
+          var ry = ty + rows[ri];
+          if (ry < plotTop + 2 || ry > plotBot - timerH - 2) continue;
+          var cx0 = leftX, busy = true;
+          while (busy && cx0 <= maxX) {
+            busy = false;
+            for (ci = 0; ci < chronoPlaced.length; ci++) {
+              var cp = chronoPlaced[ci];
+              if (Math.abs(cp.y - ry) < timerH - 2 && Math.abs(cp.x - cx0) < timerW) { busy = true; cx0 = cp.x + slotW; break; }
+            }
+          }
+          if (cx0 <= maxX) { leftX = cx0; ty = ry; placed = true; }
+        }
+        chronoPlaced.push({ x: leftX, y: ty });
         // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
         var durT = Number(trade.duration) || 0;
         chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label, call: isCall, frac: durT > 0 ? Math.max(0, Math.min(1, secs / durT)) : 1, k: zoneK });
