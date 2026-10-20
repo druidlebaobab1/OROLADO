@@ -1422,22 +1422,15 @@
       var paint = function () {
         try {
           // Hauteur réelle de l'écran (l'appli iPhone a une fenêtre plus courte que l'écran) : utilisée par le profil.
-          var fullH = Math.max(window.innerHeight || 0, (screen && screen.height) || 0), vw = window.innerWidth || 390;
+          var fullH = Math.max(window.innerHeight || 0, (screen && screen.height) || 0);
           root.style.setProperty('--ios-full-h', fullH + 'px');
-          // 2026-10-20 (propriétaire, capture de l'ancienne appli) : tout en bas de l'écran (sous ACHETER / VENDRE, sous le Profil,
-          // l'Historique, les Jeux…), le même petit monde de planètes sur fond prune, collé au vrai bas de l'écran ; plus de bleu.
-          var flH = Math.round(vw * 46 / 390);
-          root.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2902")', 'important');
-          root.style.setProperty('background-repeat', 'no-repeat', 'important');
-          root.style.setProperty('background-size', vw + 'px ' + flH + 'px', 'important');
-          root.style.setProperty('background-position', '0 ' + (fullH - flH) + 'px', 'important');
+          // 2026-10-20 : le petit monde de planètes est un bandeau fixé tout en bas (#oroIosFloor), haut exactement comme
+          // l'espace libre sous le terminal (jamais sur ACHETER / VENDRE) ; visible aussi sous Profil, Historique, Jeux…
+          var pad = document.querySelector('#tradeWrap > .pad'), gap = 0;
+          if (pad && pad.offsetParent !== null) gap = Math.round((window.innerHeight || 0) - pad.getBoundingClientRect().bottom);
+          if (gap > 6 && gap < 160) root.style.setProperty('--ios-floor-h', gap + 'px');
           if (document.body) {
             document.body.style.setProperty('background-color', '#22172F', 'important');
-            // le corps de la page couvre toute la fenêtre de l'appli : le dessin est posé au bas du corps (= bas de l'écran)
-            document.body.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2902")', 'important');
-            document.body.style.setProperty('background-repeat', 'no-repeat', 'important');
-            document.body.style.setProperty('background-size', '100% auto', 'important');
-            document.body.style.setProperty('background-position', 'center bottom', 'important');
             // v2822 : plus de hauteur minimale forcée sur le body (il est fixé sur la fenêtre, css/app.css « VERROU ») :
             // une hauteur plus grande que la fenêtre poussait ACHETER / VENDRE hors de l'écran.
           }
@@ -1445,6 +1438,7 @@
       };
       if (document.body) paint(); else document.addEventListener('DOMContentLoaded', paint);
       window.addEventListener('resize', paint);
+      window.addEventListener('load', function () { [300, 1200, 3000].forEach(function (ms) { setTimeout(paint, ms); }); });
     } catch (eIa) { /* ignore */ }
   })();
   (function diagByTaps() {
