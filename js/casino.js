@@ -218,18 +218,7 @@
       if (w > 0) D6.Sfx.win(st > 0 ? w / st : (Number(r.mult) || Number(r.out) || 2), S.game); else D6.Sfx.lose();
     } catch (e) { /* ignore */ }
   }
-  var CASH = '<svg viewBox="0 0 52 42"><defs><linearGradient id="ctBn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86EFAC"/><stop offset="1" stop-color="#16A34A"/></linearGradient>' +
-    '<radialGradient id="ctGd" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FFFBEB"/><stop offset=".35" stop-color="#FDE68A"/><stop offset=".75" stop-color="#F59E0B"/><stop offset="1" stop-color="#B45309"/></radialGradient></defs>' +
-    '<g transform="rotate(-14 24 15)"><rect x="9" y="6" width="31" height="16" rx="2.2" fill="#15803D" stroke="#0B5A2A" stroke-width=".8"/></g>' +
-    '<g transform="rotate(-5 26 17)"><rect x="11" y="9" width="31" height="16" rx="2.2" fill="#22C55E" stroke="#0E6B32" stroke-width=".8"/></g>' +
-    '<g transform="rotate(5 28 19)"><rect x="13" y="11" width="31" height="16" rx="2.2" fill="url(#ctBn)" stroke="#0E6B32" stroke-width=".9"/><rect x="15.5" y="13.5" width="26" height="11" rx="1.4" fill="none" stroke="#DCFCE7" stroke-width=".7" opacity=".8"/>' +
-    '<ellipse cx="28.5" cy="19" rx="4.6" ry="4" fill="#DCFCE7"/><text x="28.5" y="21.9" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="7.4" fill="#15803D">$</text></g>' +
-    '<g stroke="#92400E" stroke-width=".7"><ellipse cx="13" cy="36" rx="8.5" ry="3.3" fill="#D97706"/><ellipse cx="13" cy="34.3" rx="8.5" ry="3.3" fill="url(#ctGd)"/>' +
-    '<ellipse cx="13" cy="31.2" rx="8.5" ry="3.3" fill="#D97706"/><ellipse cx="13" cy="29.5" rx="8.5" ry="3.3" fill="url(#ctGd)"/>' +
-    '<ellipse cx="13" cy="26.4" rx="8.5" ry="3.3" fill="#D97706"/><ellipse cx="13" cy="24.7" rx="8.5" ry="3.3" fill="url(#ctGd)"/></g>' +
-    '<circle cx="39" cy="31.5" r="8" fill="url(#ctGd)" stroke="#92400E" stroke-width=".8"/><circle cx="39" cy="31.5" r="5.6" fill="none" stroke="#B45309" stroke-width=".8" opacity=".7"/>' +
-    '<text x="39" y="34.6" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="8.6" fill="#92400E">$</text>' +
-    '<path d="M46 6l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8zM4 14l.6 1.4 1.4.6-1.4.6L4 18l-.6-1.4L2 16l1.4-.6z" fill="#FFF7C2"/></svg>';
+  var CASH = '<svg viewBox="0 0 40 34"><defs><linearGradient id="ctBn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BBF7D0"/><stop offset=".5" stop-color="#4ADE80"/><stop offset="1" stop-color="#16A34A"/></linearGradient><linearGradient id="ctBd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FEF3C7"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><g transform="translate(1 25)"><rect width="15" height="7.6" rx="1.7" fill="url(#ctBn)" stroke="#0B5A2A" stroke-width=".7"/><rect x="1.4" y="1.3" width="12.2" height="5" rx="1" fill="none" stroke="#DCFCE7" stroke-width=".45" opacity=".75"/><rect x="6" width="3" height="7.6" fill="url(#ctBd)"/></g><g transform="translate(12.5 25)"><rect width="15" height="7.6" rx="1.7" fill="url(#ctBn)" stroke="#0B5A2A" stroke-width=".7"/><rect x="1.4" y="1.3" width="12.2" height="5" rx="1" fill="none" stroke="#DCFCE7" stroke-width=".45" opacity=".75"/><rect x="6" width="3" height="7.6" fill="url(#ctBd)"/></g><g transform="translate(24 25)"><rect width="15" height="7.6" rx="1.7" fill="url(#ctBn)" stroke="#0B5A2A" stroke-width=".7"/><rect x="1.4" y="1.3" width="12.2" height="5" rx="1" fill="none" stroke="#DCFCE7" stroke-width=".45" opacity=".75"/><rect x="6" width="3" height="7.6" fill="url(#ctBd)"/></g><g transform="translate(6.7 17)"><rect width="15" height="7.6" rx="1.7" fill="url(#ctBn)" stroke="#0B5A2A" stroke-width=".7"/><rect x="1.4" y="1.3" width="12.2" height="5" rx="1" fill="none" stroke="#DCFCE7" stroke-width=".45" opacity=".75"/><rect x="6" width="3" height="7.6" fill="url(#ctBd)"/></g><g transform="translate(18.3 17)"><rect width="15" height="7.6" rx="1.7" fill="url(#ctBn)" stroke="#0B5A2A" stroke-width=".7"/><rect x="1.4" y="1.3" width="12.2" height="5" rx="1" fill="none" stroke="#DCFCE7" stroke-width=".45" opacity=".75"/><rect x="6" width="3" height="7.6" fill="url(#ctBd)"/></g><g transform="translate(12.5 9)"><rect width="15" height="7.6" rx="1.7" fill="url(#ctBn)" stroke="#0B5A2A" stroke-width=".7"/><rect x="1.4" y="1.3" width="12.2" height="5" rx="1" fill="none" stroke="#DCFCE7" stroke-width=".45" opacity=".75"/><rect x="6" width="3" height="7.6" fill="url(#ctBd)"/></g><path d="M33.5 2.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" fill="#FFF7C2"/><path d="M6 6l.6 1.3 1.3.6-1.3.6L6 9.8l-.6-1.3-1.3-.6 1.3-.6z" fill="#FFF7C2" opacity=".85"/></svg>';
   function countUp(el, to) {
     if (document.documentElement.classList.contains('oro-lite') || !(to > 0)) { el.textContent = '+$\u00a0' + m2(to); return; }
     var t0 = performance.now(), dur = 520;
@@ -247,8 +236,8 @@
     t.className = 'cs-toast ' + (win ? 'win' : 'lose');
     // v2794 (propriétaire) : comme le trading, SANS mots — seulement le montant : gagné = « +$ 12.50 » (vert, total encaissé),
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
-    t.innerHTML = (win ? '<i class="ct-wal ct-cash" aria-hidden="true">' + CASH + '<i class="ct-burst"><b></b><b></b><b></b><b></b><b></b><b></b></i></i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : '0') + '</b>';
-    if (win) countUp(t.querySelector('b[dir]'), Number(r.win) || 0); // dir=ltr : en arabe on lit bien « +$ 0 »
+    t.innerHTML = (win ? '<i class="ct-ic" aria-hidden="true">' + CASH + '</i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : '0') + '</b>';
+    if (win) { var wb = t.querySelector('b[dir]'), wl = ('+$ ' + m2(Number(r.win) || 0)).length; t.style.setProperty('--ctfs', (wl <= 9 ? 20 : wl <= 12 ? 17 : wl <= 15 ? 14.5 : 12.5) + 'px'); countUp(wb, Number(r.win) || 0); } // dir=ltr : en arabe on lit bien « +$ 0 »
     host.appendChild(t);
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
     // v2805 (propriétaire : jamais rien de superposé) — pendant que la pastille est là, les petits textes du jeu qu'elle couvre
