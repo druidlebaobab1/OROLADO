@@ -7012,11 +7012,21 @@
       Array.prototype.forEach.call(items, function (it) { it.style.minHeight = ''; });
       Array.prototype.forEach.call(d.querySelectorAll('#profWalletCard .wallet-tab, #btnExpressCrypto, #profWalletCard .wallet-addr-row, #profWalletBal'), function (el) { el.style.minHeight = ''; });
       if (!d.classList.contains('on')) return;
-      var fits = function () { return d.scrollHeight - d.clientHeight <= 1; };
+      // v2944 — mesure par la position réelle du bas du contenu (fiable aussi sur les Chrome Android) :
+      // « free » = place vide sous la dernière ligne
+      var last = parts[parts.length - 1];
+      var padB = parseFloat(getComputedStyle(d).paddingBottom) || 0;
+      var freeNow = function () {
+        if (!last) return 0;
+        return d.clientHeight - padB - (last.getBoundingClientRect().bottom - d.getBoundingClientRect().top + d.scrollTop);
+      };
+      var fits = function () { return freeNow() >= -2 && d.scrollHeight - d.clientHeight <= 1; };
       // la photo garde sa vraie taille (104 px) même quand le reste est réduit
       var av = $('profAvatar');
       var avT = d.clientHeight < 600 ? 84 : 104; // très petit écran (iPhone SE) : photo un peu moins grande
+      var curZ = 1;
       var setZ = function (z) {
+        curZ = z;
         parts.forEach(function (el) { el.style.zoom = z >= 1 ? '' : String(z); });
         if (av) ['width', 'height', 'min-width'].forEach(function (k) {
           if (z >= 1) av.style.removeProperty(k); else av.style.setProperty(k, Math.round(avT / z) + 'px', 'important');
@@ -7025,34 +7035,36 @@
       setZ(1);
       if (!fits()) {
         var lo = 0.66, hi = 1;
-        for (var k = 0; k < 7; k++) {
+        for (var k = 0; k < 8; k++) {
           var mid = (lo + hi) / 2;
           setZ(mid);
           if (fits()) lo = mid; else hi = mid;
         }
         setZ(Math.round(lo * 1000) / 1000);
-        return;
       }
-      var last = parts[parts.length - 1];
-      var padB = parseFloat(getComputedStyle(d).paddingBottom) || 0;
-      var free = last ? d.clientHeight - padB - (last.getBoundingClientRect().bottom - d.getBoundingClientRect().top + d.scrollTop) - 4 : 0;
-      // la place libre nourrit : les lignes du menu, le bouton Recharger, les réseaux, la ligne de l'adresse et le solde
+      // la place vide qui reste nourrit : le solde, le bouton Recharger, les réseaux, la ligne de l'adresse
+      // et les lignes du menu (Historique financier, Retirer, …)
       var wal = $('profWalletCard');
-      var grow = Array.prototype.slice.call(items);
+      var els = [];
       if (wal) {
-        var wtabs = wal.querySelectorAll('.wallet-tab');
-        [$('btnExpressCrypto'), wal.querySelector('.wallet-addr-row'), wtabs.length ? wtabs : null, $('profWalletBal')].forEach(function (g) { if (g) grow.push(g); });
+        [$('profWalletBal'), $('btnExpressCrypto'), wal.querySelector('.wallet-addr-row')].forEach(function (g) { if (g) els.push(g); });
+        Array.prototype.forEach.call(wal.querySelectorAll('.wallet-tab'), function (t) { els.push(t); });
       }
-      if (grow.length && free > 8) {
-        var add = Math.min(16, Math.floor((free - 6) / grow.length));
-        if (add >= 1) grow.forEach(function (g) {
-          var list = g.length !== undefined && !g.tagName ? g : [g];
-          Array.prototype.forEach.call(list, function (el) { el.style.minHeight = Math.round(el.getBoundingClientRect().height + add) + 'px'; });
-        });
-        if (!fits()) grow.forEach(function (g) {
-          var list = g.length !== undefined && !g.tagName ? g : [g];
-          Array.prototype.forEach.call(list, function (el) { el.style.minHeight = ''; });
-        });
+      Array.prototype.forEach.call(items, function (it) { els.push(it); });
+      var groups = (wal ? 4 : 0) + items.length; // les 4 réseaux comptent pour une seule ligne
+      var free = freeNow();
+      if (els.length && groups && free > 10) {
+        var base = els.map(function (el) { return el.getBoundingClientRect().height / curZ; });
+        var add = Math.min(22, Math.floor((free - 6) / groups / curZ));
+        var apply = function (n) {
+          els.forEach(function (el, i) { el.style.minHeight = n > 0 ? Math.round(base[i] + n) + 'px' : ''; });
+        };
+        while (add >= 1) {
+          apply(add);
+          if (fits()) break;
+          add = Math.floor(add / 2);
+        }
+        if (add < 1) apply(0);
       }
     };
     if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
