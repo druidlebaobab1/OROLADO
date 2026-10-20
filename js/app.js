@@ -1890,7 +1890,11 @@
         }
       }).catch(function () { /* ignore */ });
     }
-    banWatchTimer = setInterval(pollMe, 8000);
+    // 2026-10-20 (propriétaire : « le site ralentit quand il y a du monde ») : chaque « me » interroge aussi la banque
+    // (Supabase). Toutes les 8 s × 30 joueurs, le serveur saturait et la connexion attendait son tour. 20 s suffisent
+    // (dépôt / bannissement vus au plus 20 s après) ; et dès qu'on revient sur le site, la vérification part tout de suite.
+    banWatchTimer = setInterval(pollMe, 20000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(pollMe, 400); });
     // Trades réels lancés depuis un autre appareil : vérification légère toutes les 3 s,
     // seulement en compte réel et page à l'écran (le serveur reste tranquille).
     var openBusy = false;
@@ -1904,7 +1908,7 @@
         openBusy = false;
         mirrorOtherDeviceTrades(r);
       }, function () { openBusy = false; });
-    }, 3000);
+    }, 12000); // 2026-10-20 : 3 s → 12 s (trades lancés depuis un AUTRE appareil seulement ; allège beaucoup le serveur)
     holdScreenAwake();
   }
 
