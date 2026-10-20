@@ -1038,7 +1038,7 @@
     return {
       size: function (w, h, uu, d, top) {
         W = w; H = h; u = uu; dpr = d; T = top;
-        hy = Math.max(T + 4, H * 0.22); ny = H * 0.95; lw = Math.min(W * 0.3, (ny - hy) * 0.5);
+        hy = Math.max(T + 4, H * 0.22); ny = H * 0.95; lw = Math.max(4, Math.min(W * 0.3, (ny - hy) * 0.5)); // 2026-10-20 (QA) : scène pas encore mesurée (très basse) → jamais de rayon négatif (createRadialGradient plantait l'image)
         var tr = lw * 1.95, cyN = ny - tr * 0.45;
         bg = mkc(W, H, dpr, function (c) {
           // the world outside the tube: a bright toy room, out of focus (soft colour blobs), glowing exit at the end

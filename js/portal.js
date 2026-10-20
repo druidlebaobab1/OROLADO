@@ -110,7 +110,9 @@
     if (!on || guest) hud(null);
     document.documentElement.classList.toggle('portal-on', on);
     document.documentElement.classList.toggle('gift-guest-on', guest);
-    layoutTopbar(on);
+    // 2026-10-20 (QA) : Cadeaux + Paris toujours regroupés à gauche. Avant, défi coupé par l'admin (joueur connecté) →
+    // pas de groupe .tb-left → « Paris » tombait sur une 2e ligne sous Cadeaux (grille 3 colonnes de la barre du haut).
+    layoutTopbar(true);
     show($('defiChip'), false);
     show($('giftGuest'), false);
     if ($('portalModal')) $('portalModal').classList.toggle('is-guest', guest);

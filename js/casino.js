@@ -223,7 +223,7 @@
     if (document.documentElement.classList.contains('oro-lite') || !(to > 0)) { el.textContent = '+$\u00a0' + m2(to); return; }
     var t0 = performance.now(), dur = 520;
     (function step(now) {
-      var k = Math.min(1, (now - t0) / dur); k = 1 - Math.pow(1 - k, 3);
+      var k = Math.max(0, Math.min(1, (now - t0) / dur)); k = 1 - Math.pow(1 - k, 3); // horloge d'image parfois un peu avant t0 : jamais « −0.07 »
       el.textContent = '+$\u00a0' + m2(Math.round(to * k * 100) / 100);
       if (k < 1 && el.isConnected) requestAnimationFrame(step);
     })(t0);
@@ -237,8 +237,11 @@
     // v2794 (propriétaire) : comme le trading, SANS mots — seulement le montant : gagné = « +$ 12.50 » (vert, total encaissé),
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
     t.innerHTML = (win ? '<i class="ct-ic" aria-hidden="true">' + CASH + '</i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : '0') + '</b>';
-    if (win) { var wb = t.querySelector('b[dir]'), wl = ('+$ ' + m2(Number(r.win) || 0)).length; t.style.setProperty('--ctfs', (wl <= 9 ? 20 : wl <= 12 ? 17 : wl <= 15 ? 14.5 : 12.5) + 'px'); countUp(wb, Number(r.win) || 0); } // dir=ltr : en arabe on lit bien « +$ 0 »
+    if (win) { var wl = ('+$ ' + m2(Number(r.win) || 0)).length; t.style.setProperty('--ctfs', (wl <= 9 ? 20 : wl <= 12 ? 17 : wl <= 15 ? 14.5 : 12.5) + 'px'); }
     host.appendChild(t);
+    // 2026-10-20 (QA) : le compteur démarre APRÈS l'ajout à l'écran (avant : pastille pas encore affichée → le compteur
+    // s'arrêtait dès la 1re image et le gain restait « +$ 0.00 » vert)
+    if (win) countUp(t.querySelector('b[dir]'), Number(r.win) || 0); // dir=ltr : en arabe on lit bien « +$ 0 »
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
     // v2805 (propriétaire : jamais rien de superposé) — pendant que la pastille est là, les petits textes du jeu qu'elle couvre
     // s'effacent (gros multiplicateur, statut…) puis reviennent quand elle part.
@@ -323,24 +326,24 @@
   // 2026-10-19 (propriétaire : « Arcade ne me plaît pas ») : « Adresse » = jeux où TU joues toi-même (réflexes, adresse).
   // v2849 (propriétaire) : le 1er onglet s'appelle « Action » (avant : Adresse / Skill)
   var TAB_T = { en: { skill: 'Action', live: 'Live', more: 'Casino' }, fr: { skill: 'Action', live: 'Live', more: 'Casino' },
-    es: { skill: 'Toma el control: corre, esquiva, dispara. ¡Cuanto más aguantes, más ganas!', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Ação', live: 'Ao vivo', more: 'Cassino' },
-    ar: { skill: 'تولَّ القيادة: اركض، راوغ، أطلق. كلما صمدت أكثر ربحت أكثر!', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Aksiyon', live: 'Canlı', more: 'Casino' },
-    vi: { skill: 'Tự điều khiển: chạy, né, bắn. Trụ càng lâu, thắng càng nhiều!', live: 'Live', more: 'Casino' }, id: { skill: 'Aksi', live: 'Live', more: 'Kasino' },
-    ru: { skill: 'Управляй сам: беги, уклоняйся, стреляй. Дольше держишься — больше выигрыш!', live: 'Live', more: 'Казино' }, de: { skill: 'Action', live: 'Live', more: 'Casino' },
-    hi: { skill: 'कमान संभालो: दौड़ो, बचो, निशाना लगाओ। जितना टिकोगे, उतना जीतोगे!', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '动作', live: '直播', more: '娱乐场' } };
+    es: { skill: 'Acción', live: 'En vivo', more: 'Casino' }, pt: { skill: 'Ação', live: 'Ao vivo', more: 'Cassino' },
+    ar: { skill: 'أكشن', live: 'مباشر', more: 'كازينو' }, tr: { skill: 'Aksiyon', live: 'Canlı', more: 'Casino' },
+    vi: { skill: 'Hành động', live: 'Live', more: 'Casino' }, id: { skill: 'Aksi', live: 'Live', more: 'Kasino' },
+    ru: { skill: 'Экшен', live: 'Live', more: 'Казино' }, de: { skill: 'Action', live: 'Live', more: 'Casino' },
+    hi: { skill: 'एक्शन', live: 'लाइव', more: 'कैसीनो' }, zh: { skill: '动作', live: '直播', more: '娱乐场' } };
   // une ligne qui explique chaque onglet (en haut de sa grille)
   var TAB_D = {
     en: { skill: 'Take control: run, dodge, shoot. The longer you last, the more you win!', live: 'Live draws for everyone at the same time: bet before the start.', more: 'Classic casino games: pick, bet, win instantly.' },
     fr: { skill: 'Prends les commandes : cours, esquive, tire. Plus tu tiens, plus tu gagnes !', live: 'Tirages en direct pour tout le monde en même temps : parie avant le départ.', more: 'Les jeux de casino classiques : choisis, mise, gagne tout de suite.' },
-    es: { skill: 'Juegas tú: tus reflejos, tu habilidad, cobras cuando quieras.', live: 'Sorteos en vivo para todos a la vez: apuesta antes del inicio.', more: 'Juegos de casino clásicos: elige, apuesta, gana al instante.' },
+    es: { skill: 'Toma el control: corre, esquiva, dispara. ¡Cuanto más aguantes, más ganas!', live: 'Sorteos en vivo para todos a la vez: apuesta antes del inicio.', more: 'Juegos de casino clásicos: elige, apuesta, gana al instante.' },
     pt: { skill: 'Assuma o comando: corra, desvie, atire. Quanto mais durar, mais ganha!', live: 'Sorteios ao vivo para todos ao mesmo tempo: aposte antes do início.', more: 'Jogos de cassino clássicos: escolha, aposte, ganhe na hora.' },
-    ar: { skill: 'أنت من يلعب: ردود فعلك ومهارتك، واسحب متى شئت.', live: 'سحوبات مباشرة للجميع في نفس الوقت: راهن قبل البداية.', more: 'ألعاب الكازينو الكلاسيكية: اختر وراهن واربح فورًا.' },
+    ar: { skill: 'تولَّ القيادة: اركض، راوغ، أطلق. كلما صمدت أكثر ربحت أكثر!', live: 'سحوبات مباشرة للجميع في نفس الوقت: راهن قبل البداية.', more: 'ألعاب الكازينو الكلاسيكية: اختر وراهن واربح فورًا.' },
     tr: { skill: 'Kontrol sende: koş, kaç, ateş et. Dayandıkça daha çok kazan!', live: 'Herkes için aynı anda canlı çekiliş: başlamadan bahis yap.', more: 'Klasik casino oyunları: seç, bahis yap, anında kazan.' },
-    vi: { skill: 'Bạn tự chơi: phản xạ, kỹ năng, rút khi muốn.', live: 'Quay trực tiếp cho mọi người cùng lúc: cược trước khi bắt đầu.', more: 'Trò chơi casino cổ điển: chọn, cược, thắng ngay.' },
+    vi: { skill: 'Tự điều khiển: chạy, né, bắn. Trụ càng lâu, thắng càng nhiều!', live: 'Quay trực tiếp cho mọi người cùng lúc: cược trước khi bắt đầu.', more: 'Trò chơi casino cổ điển: chọn, cược, thắng ngay.' },
     id: { skill: 'Ambil kendali: lari, hindari, tembak. Makin lama bertahan, makin besar!', live: 'Undian langsung untuk semua sekaligus: pasang sebelum mulai.', more: 'Game kasino klasik: pilih, pasang, menang langsung.' },
-    ru: { skill: 'Играешь ты: реакция, ловкость, забираешь когда хочешь.', live: 'Живые розыгрыши для всех одновременно: ставь до старта.', more: 'Классические игры казино: выбери, поставь, выиграй сразу.' },
+    ru: { skill: 'Управляй сам: беги, уклоняйся, стреляй. Дольше держишься — больше выигрыш!', live: 'Живые розыгрыши для всех одновременно: ставь до старта.', more: 'Классические игры казино: выбери, поставь, выиграй сразу.' },
     de: { skill: 'Übernimm das Steuer: rennen, ausweichen, schießen. Je länger, desto mehr!', live: 'Live-Ziehungen für alle gleichzeitig: setze vor dem Start.', more: 'Klassische Casinospiele: wählen, setzen, sofort gewinnen.' },
-    hi: { skill: 'आप खुद खेलते हैं: आपकी फुर्ती, आपका कौशल, जब चाहें निकालें।', live: 'सबके लिए एक साथ लाइव ड्रॉ: शुरू होने से पहले दांव लगाएं।', more: 'क्लासिक कैसीनो गेम: चुनें, दांव लगाएं, तुरंत जीतें।' },
+    hi: { skill: 'कमान संभालो: दौड़ो, बचो, निशाना लगाओ। जितना टिकोगे, उतना जीतोगे!', live: 'सबके लिए एक साथ लाइव ड्रॉ: शुरू होने से पहले दांव लगाएं।', more: 'क्लासिक कैसीनो गेम: चुनें, दांव लगाएं, तुरंत जीतें।' },
     zh: { skill: '亲自操控：奔跑、闪避、射击。坚持越久，赢得越多！', live: '所有人同时直播开奖：开始前下注。', more: '经典娱乐场游戏：选择、下注、即时赢取。' } };
   var SEC_ORDER = ['skill', 'live', 'more'];
   function curSec() { var v = ''; try { v = sessionStorage.getItem('oro_cs_tab') || ''; } catch (e) { /* ignore */ } return SEC_ORDER.indexOf(v) >= 0 ? v : 'skill'; }
@@ -618,7 +621,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2885'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2898'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.

@@ -1028,8 +1028,25 @@
         modeAmtLast[p[0]] = p[1];
       });
       paintModeExtras(realTxt, demoTxt);
+      fitModeTexts();
     } catch (eMa) { /* ignore */ }
   }
+  // 2026-10-20 (QA, iPhone SE 320 px) : « COMPTE RÉEL » / « РЕАЛЬНЫЙ СЧЁТ » et les soldes ≥ 10 000 $ étaient coupés
+  // (case de 64 px entre le portefeuille et le « + »). Le texte qui déborde rapetisse juste assez (au plus −40 %).
+  function fitModeTexts() {
+    try {
+      ['#modeReal .mb-lbl', '#modeReal .mb-amt', '#modeDemo .mb-lbl', '#modeDemo .mb-amt'].forEach(function (sel) {
+        var el = document.querySelector(sel);
+        if (!el) return;
+        el.style.removeProperty('font-size');
+        if (!el.clientWidth || el.scrollWidth <= el.clientWidth + 1) return;
+        var fs = parseFloat(getComputedStyle(el).fontSize) || 12;
+        el.style.setProperty('font-size', Math.max(fs * 0.6, Math.floor(fs * el.clientWidth / el.scrollWidth * 10) / 10) + 'px', 'important');
+      });
+    } catch (eFit) { /* ignore */ }
+  }
+  document.addEventListener('orolado-i18n', function () { requestAnimationFrame(fitModeTexts); });
+  window.addEventListener('resize', function () { requestAnimationFrame(fitModeTexts); });
   // v2497 — DÉMO / COMPTE RÉEL : le solde qui « vit »
   // (éclat vert quand il monte, petit effet doux quand il descend). Affichage seulement.
   var modeAmtNum = {};
