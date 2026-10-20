@@ -596,7 +596,7 @@
         var yes = el.hasAttribute('data-fyes'), id = el.getAttribute(yes ? 'data-fyes' : 'data-fno');
         await call('friendAnswer', { id: id, yes: yes ? 1 : 0 });
         await load(); paintBody();
-        if (yes) openConv('dm:' + id);
+        if (yes) listConv('dm:' + id);
         return;
       }
       if (el.hasAttribute('data-gyes') || el.hasAttribute('data-gno')) {
@@ -605,10 +605,10 @@
         var r = await call('gAnswer', { gid: gid, yes: gy ? 1 : 0 });
         if (r && !r.ok) toast(gx[r.reason] || gx.fail || '!', 'err');
         await load(); paintBody();
-        if (gy && r && r.ok && r.g) openConv('g:' + r.g.id);
+        if (gy && r && r.ok && r.g) listConv('g:' + r.g.id);
         return;
       }
-      openConv(el.getAttribute('data-k'));
+      listConv(el.getAttribute('data-k'));
     });
     b.addEventListener('submit', async function (e) {
       if (!e.target || e.target.id !== 'sxAdd') return;
@@ -618,7 +618,7 @@
       m.textContent = '';
       if (v.length < 7) { m.textContent = x.notFound || '?'; return; }
       var j = await call('find', { id: v });
-      if (j && j.ok) { $('sxAddIn').value = ''; openConv('dm:' + j.peer.id, j.peer.name, j.peer.ph); }
+      if (j && j.ok) { $('sxAddIn').value = ''; listConv('dm:' + j.peer.id, j.peer.name, j.peer.ph); }
       else m.textContent = x[(j && j.reason) || 'notFound'] || x.notFound || '?';
     });
   }
@@ -653,7 +653,7 @@
       var bt = this.querySelector('button'); bt.disabled = true;
       var r = await call('gCreate', { name: $('sxGn').value, emoji: pick });
       bt.disabled = false;
-      if (r && r.ok) { closeSheet(); await load(); seg = 'groups'; paintBody(); openConv('g:' + r.g.id); }
+      if (r && r.ok) { closeSheet(); await load(); seg = 'groups'; paintBody(); listConv('g:' + r.g.id); }
       else $('sxGm').textContent = x[(r && r.reason) || 'fail'] || x.fail || '!';
     });
     fitAll(s);
@@ -797,6 +797,17 @@
     var f = $('sxComp');
     if (f) {
       f.addEventListener('submit', function (e) { e.preventDefault(); send(); });
+      // 2026-10-20 : toucher « Envoyer » ne ferme plus le clavier (comme WhatsApp) : l'écran ne descend / remonte plus à chaque message
+      var gb = $('sxGo'), gy = 0, gx = 0;
+      if (gb) {
+        gb.addEventListener('touchstart', function (e) { var p = e.touches[0]; gx = p.clientX; gy = p.clientY; }, { passive: true });
+        gb.addEventListener('touchend', function (e) {
+          var p = e.changedTouches[0], txf = $('sxTx');
+          if (gb.hidden || !txf || document.activeElement !== txf || Math.abs(p.clientX - gx) > 12 || Math.abs(p.clientY - gy) > 12) return;
+          e.preventDefault(); send();
+        }, { passive: false });
+        gb.addEventListener('mousedown', function (e) { var txf = $('sxTx'); if (txf && document.activeElement === txf) e.preventDefault(); });
+      }
       var tx = $('sxTx');
       tx.addEventListener('input', function () { grow(); syncBtns(); });
       tx.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && wide) { e.preventDefault(); send(); } });
@@ -830,7 +841,16 @@
     b.addEventListener('click', function () { if (conv) leave('send', conv.peerId || conv.id, true); });
     d.parentNode.insertBefore(b, d);
   }
-  function grow() { var tx = $('sxTx'); if (!tx) return; fitPh(tx); var h0 = tx.style.height; tx.style.height = 'auto'; var h = Math.min(120, tx.scrollHeight) + 'px'; tx.style.height = h; if (h !== h0) { var el = $('sxMsgs'); if (el && el._stick !== false) el.scrollTop = 1e9; } }
+  // 2026-10-20 (propriétaire : « tic-tic » en écrivant) : la mesure de la case (hauteur « auto » un court instant) faisait
+  // glisser la conversation de quelques pixels à chaque lettre. On remet la conversation et la case exactement où elles
+  // étaient, dans la même image (rien ne bouge à l'écran) ; la hauteur ne change que si une ligne s'ajoute ou s'enlève.
+  function grow() {
+    var tx = $('sxTx'); if (!tx) return; fitPh(tx);
+    var el = $('sxMsgs'), st = el ? el.scrollTop : 0, ts = tx.scrollTop, h0 = tx.style.height;
+    tx.style.height = 'auto'; var h = Math.min(120, tx.scrollHeight) + 'px'; tx.style.height = h; tx.scrollTop = ts;
+    if (!el) return;
+    if (h !== h0 && el._stick !== false) el.scrollTop = 1e9; else el.scrollTop = st;
+  }
   function syncBtns() {
     var tx = $('sxTx'), go = $('sxGo'), mic = $('sxMic'); if (!tx || !go) return;
     var has = !!(tx.value.trim() || (conv && (conv.img || conv.aud)));
@@ -1009,6 +1029,7 @@
   }
   function tipGo(k) {
     if (k === 'action' || k === 'paris' || k === 'demo') {
+      if (k !== 'demo' && D6.Route && D6.Route.socialReturn) D6.Route.socialReturn('casinoModal'); // fermer les Jeux → retour ici
       if (D6.Live && D6.Live.close) D6.Live.close();
       setTimeout(function () {
         if (k === 'action' && D6.Casino && D6.Casino.open) D6.Casino.open(null, 'games');
@@ -1017,8 +1038,9 @@
       }, 80);
       return;
     }
-    if (k === 'help') { if (guest()) leave('guest', 'chat', true); else openConv('team'); return; }
+    if (k === 'help') { if (guest()) leave('guest', 'chat', true); else { stepFrom(); openConv('team'); } return; }
     if (guest() && D6.Live && D6.Live.toAuth) { D6.Live.toAuth('register'); return; }
+    stepFrom();
     closeConv();
     seg = k === 'groups' ? 'groups' : 'friends'; hint = k === 'duel' ? t('duelHint') : '';
     paintBody(true);
@@ -1414,19 +1436,31 @@
   /* =========================== OUVERTURE =========================== */
   // v2808 (propriétaire) : page ouverte depuis le menu en tuiles (« Plus ») → la flèche ‹ ramène à ce menu, un niveau à la fois
   var gridRet = false, directK = '';
+  // 2026-10-20 (propriétaire) : le retour remonte d'UNE étape. Une page ouverte depuis une autre page de Social
+  // (une carte d'Actualités → Mes amis, Mes groupes, Écrire à l'équipe…) ‹ ramène à cette page, pas au menu.
+  var steps = [];
+  function stepFrom() { if (conv) steps.push({ k: conv.k, seg: seg }); if (steps.length > 8) steps.shift(); }
+  // une discussion ouverte depuis une liste elle-même ouverte depuis une autre page : la liste devient une étape
+  function listConv(k, name, ph) { if (steps.length) { steps.push({ k: wide && conv ? conv.k : '', seg: seg }); if (steps.length > 8) steps.shift(); } return openConv(k, name, ph); }
+  function stepBack() {
+    var p = steps.pop(); if (!p) return false;
+    seg = p.seg || seg; hint = '';
+    if (p.k) { paintBody(true); openConv(p.k); } else { closeConv(); paintBody(true); }
+    return true;
+  }
   function toGrid() {
-    gridRet = false; directK = ''; handoff = null;
+    gridRet = false; directK = ''; handoff = null; steps = [];
     clearInterval(tConv); clearInterval(tDuel); conv = null; closePanel(); closeSheet(); if (root) inConv(false);
     stop(); $('liveModal').classList.remove('sx-on');
     if (D6.Live && D6.Live.show) D6.Live.show('home');
   }
-  function closeList() { if (gridRet) { toGrid(); return; } if (D6.Live) D6.Live.close(); }
-  function backConv() { if (gridRet && conv && directK && conv.k === directK) { toGrid(); return; } closeConv(); }
+  function closeList() { if (stepBack()) return; if (gridRet) { toGrid(); return; } if (D6.Live) D6.Live.close(); }
+  function backConv() { if (stepBack()) return; if (gridRet && conv && directK && conv.k === directK) { toGrid(); return; } closeConv(); }
   async function open(w, fromGrid) {
     if (!mount()) return false;
     handoff = null; on();
     var startK = w === 'chat' ? 'team' : w === 'news' ? 'news' : '';
-    gridRet = !!fromGrid; directK = fromGrid ? startK : '';
+    gridRet = !!fromGrid; directK = fromGrid ? startK : ''; steps = [];
     seg = w === 'groups' ? 'groups' : ['friends', 'duel', 'myid', 'record'].indexOf(w) >= 0 ? 'friends' : 'chats';
     hint = w === 'duel' ? t('duelHint') : '';
     q = ''; if (conv) { clearInterval(tConv); dropLocal(conv); } conv = null; inConv(false); closePanel(); closeSheet();

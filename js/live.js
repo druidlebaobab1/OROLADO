@@ -116,7 +116,7 @@
     if (g) {
       $('liveGuest').innerHTML = '<b>' + x.guestT + '</b><p>' + x.guestB + '</p><button type="button" class="lv-btn" id="lvSignup">' + x.guestBtn + '</button><button type="button" class="lv-link2" id="lvMail">' + x.guestMail + '</button>';
       $('lvSignup').addEventListener('click', function () { toAuth('register'); });
-      $('lvMail').addEventListener('click', function () { close(); if (D6.App && D6.App.openModal) D6.App.openModal('helpModal'); });
+      $('lvMail').addEventListener('click', function () { if (D6.Route && D6.Route.socialReturn) D6.Route.socialReturn('helpModal'); close(); if (D6.App && D6.App.openModal) D6.App.openModal('helpModal'); });
     } else if (!lastMsgs.length) {
       $('liveQuick').innerHTML = ['q1', 'q2', 'q3', 'q4'].map(function (k) { return '<button type="button" data-q="' + k + '">' + x[k] + '</button>'; }).join('');
       $('liveQuick').querySelectorAll('button').forEach(function (b) {
@@ -403,8 +403,10 @@
     var list = HOME.filter(function (t) { return t.k !== 'send' || guest() || (D6.LiveSend && D6.LiveSend.enabled()); })
       .sort(function (a, b) { return ORDERH.indexOf(a.k) - ORDERH.indexOf(b.k); });
     // v2844 (propriétaire) : comme Cadeaux — rien ne change → on garde la grille déjà dessinée (plus d'« éclair »)
-    var sig = list.map(function (t) { return t.k; }).join(',') + '|' + dmUn + '|' + ($('liveBadge') ? $('liveBadge').textContent : '') + '|' + document.documentElement.lang;
-    if (g.dataset.sig === sig && g.firstChild) { paintMsgBar(); return; }
+    // 2026-10-20 (propriétaire : « les logos apparaissent après quelques secondes ») : un nouveau badge ne redessine plus
+    // toute la grille (sur iPhone, les logos redessinés mettaient du temps à revenir) : seul le petit chiffre change.
+    var sig = list.map(function (t) { return t.k; }).join(',') + '|' + document.documentElement.lang;
+    if (g.dataset.sig === sig && g.firstChild) { homeBadges(g); paintMsgBar(); return; }
     g.dataset.sig = sig;
     g.className = 'lh-grid lh-free';
     g.innerHTML = list.map(function (t) {
@@ -414,6 +416,16 @@
     }).join('');
     g.querySelectorAll('[data-k]').forEach(function (b) { b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); }); });
     paintMsgBar();
+  }
+  function homeBadges(g) {
+    var team = $('liveBadge') ? $('liveBadge').textContent : '';
+    [['friends', dmUn > 0 ? String(dmUn) : ''], ['chat', team || '']].forEach(function (p) {
+      var fi = g.querySelector('[data-k="' + p[0] + '"] .lh-fi'); if (!fi) return;
+      var b = fi.querySelector('.lh-b');
+      if (!p[1]) { if (b) b.remove(); return; }
+      if (!b) { b = document.createElement('i'); b.className = 'lh-b'; fi.appendChild(b); }
+      if (b.textContent !== p[1]) b.textContent = p[1];
+    });
   }
   /* v2812 (propriétaire, round 4) : « Mes discussions » — grande barre en haut du menu Social : la messagerie (style
      WhatsApp : amis, groupes, équipe, actus) se trouve tout de suite, avec le nombre de messages non lus. */
@@ -514,7 +526,7 @@
       $('liveBarT').textContent = (sub === 'send' && D6.LiveSend ? D6.LiveSend.title() : h[sub] ? h[sub][0] : (sub === 'groups' && D6.LiveGroups ? D6.LiveGroups.title() : (D6.LiveFun ? D6.LiveFun.title(sub) : '')));
       guestTexts();
       if (D6.LiveGuest) D6.LiveGuest($('liveGuestBox'), sub, sub === 'chat' ? '<button type="button" class="lgu-have" id="lguMail">✉️ ' + esc(L().guestMail) + '</button>' : '');
-      if ($('lguMail')) $('lguMail').addEventListener('click', function () { close(); if (D6.App && D6.App.openModal) D6.App.openModal('helpModal'); });
+      if ($('lguMail')) $('lguMail').addEventListener('click', function () { if (D6.Route && D6.Route.socialReturn) D6.Route.socialReturn('helpModal'); close(); if (D6.App && D6.App.openModal) D6.App.openModal('helpModal'); });
       return;
     }
     if (w === 'fun') { $('livePaneNews').hidden = true; if (D6.LiveFun) D6.LiveFun.open(sub); return; }
@@ -565,7 +577,7 @@
     else if (D6.Social2 && ['dms', 'news', 'chat', 'friends', 'groups'].indexOf(w) >= 0) { tab = 'home'; D6.Social2.open(w === 'dms' ? '' : w, true); }
     else show(w === 'dms' ? 'friends' : (w || 'home'));
     // v2689 : la tuile « Envoyer de l'argent » apparaît dès que le serveur dit que c'est ouvert pour ce joueur
-    if (!guest() && D6.LiveSend) D6.LiveSend.status().then(function () { if (tab === 'home') paintHome(); });
+    if (!guest() && D6.LiveSend) D6.LiveSend.status().then(function () { if (tab === 'home') paintHome(); if (D6.LiveSend.enabled() && D6.LiveSend.warm) D6.LiveSend.warm(); });
   }
   function close() { if (D6.Social2) D6.Social2.stop(); clearInterval(timer); clearInterval(duelTick); clearInterval(duelPoll); if (D6.LiveGroups) D6.LiveGroups.stop(); if (D6.App && D6.App.closeModal) D6.App.closeModal('liveModal'); }
 
