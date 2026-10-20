@@ -275,7 +275,7 @@ function casino_win(float $stake, float $mult): float {
   return $v > 0 ? floor($v * 100 + 1e-6) / 100 : 0.0;
 }
 /** v2810 — jeux retirés du site : plus jouables même par l'API (Pierre-Feuille-Ciseaux, remplacé par Oro Lotto). */
-const CASINO_RETIRED = ['rps'];
+const CASINO_RETIRED = ['rps', 'highcard', 'war', 'reddog', 'goal', 'luckydice']; // 2026-10-20 (revue) : jeux cachés de l'écran → refusés aussi par l'API
 const CASINO_ROULETTE_RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 /** Roulette européenne (37 cases) : gain ÷ mise pour la mise $bet si la bille tombe sur $n ; null = mise invalide.
  *  v2781 (propriétaire) : gains des grands sites — rouge / noir / pair / impair ×2 · douzaine ×3 · numéro ×36 (retour 97,3 %). */
@@ -773,6 +773,18 @@ function casino_mode(string $m, bool $guest, ?array $user = null): string {
   return 'real';
 }
 
+/** Gains de jeux instantanés restés en attente (caisse injoignable au moment du gain) : versés au prochain jeu.
+ *  orolado_trade_credit_once : une seule fois par référence, donc réessayer ne paie jamais deux fois. */
+function casino_pend_pay(array $db, string $uid): void {
+  $file = casino_user_file($uid);
+  $pend = casino_with($file, static fn(array &$st) => $st['pend'] ?? []);
+  if (!is_array($pend) || !$pend) return;
+  foreach ($pend as $ref => $amt) {
+    if (casino_credit($db, $uid, 'real', (float) $amt, (string) $ref) === null) continue;
+    casino_with($file, static function (array &$st) use ($ref) { unset($st['pend'][$ref]); if (empty($st['pend'])) unset($st['pend']); return true; });
+  }
+}
+
 /** Jeu instantané : mise → tirage → gain, en un seul appel. */
 function casino_play(array $db, ?array $user, string $game, string $mode, float $stake, array $p): array {
   $ext = in_array(casino_ext_type($game), ['table', 'pick'], true); // v2804 : nouveaux jeux décrits par fiche (casino_ext.php)
@@ -784,6 +796,7 @@ function casino_play(array $db, ?array $user, string $game, string $mode, float 
   if ($game === 'limbo' && $stake * (float) ($p['target'] ?? 2) > CASINO_MAX_WIN) return ['ok' => false, 'reason' => 'maxWin'];
   $uid = (string) ($user['id'] ?? '');
   if ($uid === '') return ['ok' => false, 'reason' => 'login'];
+  casino_pend_pay($db, $uid);
   $mode = casino_mode($mode, false, $user);
   $res = $ext ? casino_ext_instant($game, $p) : casino_instant($game, $p, $stake);
   if (isset($res['err'])) return ['ok' => false, 'reason' => $res['err']];
@@ -792,6 +805,10 @@ function casino_play(array $db, ?array $user, string $game, string $mode, float 
   if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
   $win = casino_win($stake, (float) $res['mult']);
   $bal = casino_credit($db, $uid, $mode, $win, $ref);
+  // 2026-10-20 (revue) : caisse injoignable au paiement → le gain est gardé et versé plus tard (même référence : jamais en double)
+  if ($bal === null && $mode === 'real' && $win > 0) {
+    casino_with(casino_user_file($uid), static function (array &$st) use ($ref, $win) { $st['pend'][$ref] = $win; return true; });
+  }
   if ($mode !== 'try') {
     casino_stat($game, $mode, $stake, $win);
     casino_hist_add($uid, ['g' => $game, 'm' => $mode, 's' => $stake, 'w' => $win, 'at' => time()], ['r' => $ref]);

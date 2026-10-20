@@ -92,6 +92,7 @@ save_db(orolado_data_file(), $db); $bal[$U] = 100.0; $me = $db['users']['u_m'];
 foreach ($fiches as $g => $d) {
   $b0 = $bal[$U];
   $r = casino_play(load_db(), $me, $g, 'real', 1, $d['type'] === 'pick' ? ['pick' => 0] : []);
+  if (in_array($g, CASINO_RETIRED, true)) { check("$g : caché de l'écran → refusé, rien retiré", $r['ok'] === false && abs($bal[$U] - $b0) < 0.001); continue; }
   check("$g : solde = avant − 1 + gain (×" . ($r['mult'] ?? '?') . ')', $r['ok'] === true && abs($bal[$U] - ($b0 - 1 + $r['win'])) < 0.001, json_encode([$b0, $bal[$U], $r['win'] ?? null]));
 }
 check('pick hors limites refusé', casino_play(load_db(), $me, 'miniroul', 'real', 1, ['pick' => 13])['ok'] === false && casino_play(load_db(), $me, 'andar', 'real', 1, [])['ok'] === false);
