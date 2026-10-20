@@ -234,6 +234,48 @@ function orolado_click_edge_reason(array $u): string {
 }
 
 /**
+ * 2026-10-20 (propriétaire : « une vraie solution, comme les grandes plateformes ») — même mesure, mais PONDÉRÉE PAR LA MISE.
+ * Un robot malin joue honnêtement de petites mises (score par trade « normal ») et ne triche que sur les grosses : ici
+ * chaque trade compte pour sa mise. clickW = Σ(+mise si « fav », −mise si « unfav »), clickW2 = Σ mise², clickWn = nombre.
+ * Écart en sigmas : clickW / √clickW2. Pour un humain (sens choisi avant le mouvement), quelle que soit la façon de miser,
+ * la probabilité d'atteindre 4,5 est < 1 sur 25 000 (inégalité de Hoeffding) ; le robot qui triche sur les grosses mises
+ * y arrive vite. Renvoie la raison (texte) ou ''.
+ */
+function orolado_click_edge_weighted(array $u): string {
+  $w = (float) ($u['clickW'] ?? 0);
+  $w2 = (float) ($u['clickW2'] ?? 0);
+  $n = (int) ($u['clickWn'] ?? 0);
+  if ($n < 12 || $w <= 0 || $w2 <= 0) return '';
+  $z = $w / sqrt($w2);
+  if ($z >= 4.5) {
+    return 'Robot probable (mises pondérées) : ses GROSSES mises tombent trop souvent dans le sens que le prix a déjà pris depuis son clic (écart ' . number_format($z, 1, ',', '') . ' ; un humain reste proche de 0)';
+  }
+  return '';
+}
+
+/** Robot repéré par l'une OU l'autre mesure (par trade, ou pondérée par la mise). */
+function orolado_click_robot_reason(array $u): string {
+  $why = orolado_click_edge_reason($u);
+  return $why !== '' ? $why : orolado_click_edge_weighted($u);
+}
+
+/**
+ * 2026-10-20 — MODE TEST (accord du propriétaire : d'abord sur son compte). La mesure pondérée est enregistrée pour TOUS
+ * les comptes réels et affichée dans l'admin (étiquette, retraits « ⚠️ » à vérifier) ; mais elle ne retire le prix du clic
+ * qu'aux comptes ADMIN tant que le propriétaire ne l'a pas validée. Pour l'activer pour tout le monde : mettre
+ * OROLADO_ROBOT_W_ALL à true (après son accord).
+ */
+if (!defined('OROLADO_ROBOT_W_ALL')) define('OROLADO_ROBOT_W_ALL', false);
+function orolado_click_weighted_applies(array $u): bool {
+  return OROLADO_ROBOT_W_ALL || strtolower((string) ($u['role'] ?? '')) === 'admin';
+}
+/** Prix du clic refusé (réel) : robot par trade (tous), ou pondéré (tous si validé, sinon comptes admin seulement). */
+function orolado_click_real_blocked(array $u): bool {
+  if (orolado_click_edge_reason($u) !== '') return true;
+  return orolado_click_weighted_applies($u) && orolado_click_edge_weighted($u) !== '';
+}
+
+/**
  * Réponse à une demande en double (même ordre, mise déjà prise par une autre demande) : renvoie l'ordre déjà
  * enregistré, en l'attendant un court instant si l'autre demande est encore en train de l'écrire. Ne débite,
  * ne crédite et n'écrit RIEN.
@@ -360,7 +402,7 @@ function orolado_trade_place(array $me, array $req): array {
   // 2026-10-19 (propriétaire) : RÉEL → prix du clic pour tous, toutes mises (seul un compte marqué « robot » dans l'admin ne l'a pas).
   $demoTrusted = $seenCents !== null && ($mode === 'demo'
     ? orolado_click_demo_trusted($meRow, $me)
-    : (orolado_click_edge_reason($meRow) === '' && orolado_click_edge_reason($me) === ''));
+    : (!orolado_click_real_blocked($meRow) && !orolado_click_real_blocked($me)));
   $pick = orolado_trade_pick_entry($mode, $side, $arrivalTick, $arrivalCents, $seenTick, $seenCents, $demoTrusted);
   $entryTick = $pick['tick'];
   $entryCents = $pick['cents'];
@@ -446,6 +488,11 @@ function orolado_trade_place(array $me, array $req): array {
         $u['realTrades'] = (int) ($u['realTrades'] ?? 0) + 1;
         if ($clickMove === 'fav') $u['clickFav'] = (int) ($u['clickFav'] ?? 0) + 1;
         if ($clickMove === 'unfav') $u['clickUnfav'] = (int) ($u['clickUnfav'] ?? 0) + 1;
+        if ($clickMove !== '') { // 2026-10-20 : même mesure pondérée par la mise (orolado_click_edge_weighted)
+          $u['clickW'] = round((float) ($u['clickW'] ?? 0) + ($clickMove === 'fav' ? $stake : -$stake), 2);
+          $u['clickW2'] = round((float) ($u['clickW2'] ?? 0) + $stake * $stake, 2);
+          $u['clickWn'] = (int) ($u['clickWn'] ?? 0) + 1;
+        }
         if (function_exists('orolado_apply_wager_progress')) orolado_apply_wager_progress($u, $stake);
         unset($u);
       }

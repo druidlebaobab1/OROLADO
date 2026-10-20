@@ -327,6 +327,7 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
         if (!empty($m['sys'])) { $ww = live_who_uid((string) ($m['w'] ?? '')); $x['sys'] = (string) $m['sys']; $x['whom'] = (string) ($ww['name'] ?? 'Joueur'); } // v2706 : « X a ajouté Y »
         if (!empty($m['img'])) $x['img'] = 'live.php?i=' . rawurlencode((string) $m['img']);
         if (!empty($m['wh'])) $x['wh'] = (string) $m['wh'];
+        if (!$x['mine'] && !empty($w['ph'])) $x['wph'] = (string) $w['ph']; // 2026-10-20 : photo de profil de l'auteur (groupes)
         return $x;
       }, array_slice($g['msgs'], -80));
       $o['delta'] = $delta;

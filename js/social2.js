@@ -178,7 +178,7 @@
   }
   function cacheDel(ck) { var a = cacheAll(), k = ckey(); if (!a || !a[ck]) return; delete a[ck]; try { localStorage.setItem(k, JSON.stringify(a)); } catch (e) { /* ignore */ } }
   // ce qu'on garde d'un message (jamais les photos du téléphone en « data: », seulement l'adresse du serveur)
-  function slim(m) { var o = { id: m.id, t: m.t, at: m.at }; if (m.mine) o.mine = 1; if (m.read) o.read = 1; if (m.who) o.who = m.who; if (m.sys) { o.sys = 1; o.key = m.key; } if (m.simg) o.img = m.simg; if (m.wh) o.wh = m.wh; if (m.post) { o.post = 1; o.link = m.link; o.likes = m.likes; o.views = m.views; } return o; }
+  function slim(m) { var o = { id: m.id, t: m.t, at: m.at }; if (m.mine) o.mine = 1; if (m.read) o.read = 1; if (m.who) o.who = m.who; if (m.wph) o.wph = m.wph; if (m.sys) { o.sys = 1; o.key = m.key; } if (m.simg) o.img = m.simg; if (m.wh) o.wh = m.wh; if (m.post) { o.post = 1; o.link = m.link; o.likes = m.likes; o.views = m.views; } return o; }
   function unslim(m) { var o = Object.assign({}, m); o.key = m.key || m.id; o.simg = m.img; return o; }
   function snap(c) {
     var d = { m: c.msgs.filter(function (m) { return m.id && !/^tmp/.test(m.id); }).slice(-CMAX).map(slim), name: c.name, ph: c.ph || '', on: !!c.on, peerId: c.peerId || '', blocked: !!c.blocked, req: !!c.req, emoji: c.emoji || '', photo: c.photo || '' };
@@ -908,7 +908,7 @@
       var gx = GX();
       c.msgs = merge(c, jg.g.msgs.map(function (m) {
         if (m.sys) return { sys: 1, id: m.id, key: 's' + (m.id || m.at + m.whom), t: String(gx.sysAdd || '{a} + {b}').replace('{a}', m.mine ? t('you') : m.who).replace('{b}', m.whom), at: m.at };
-        return mk(c, Object.assign({}, m, { id: m.id || ('x' + m.at + m.who + (m.t || '').slice(0, 9)) }), { mine: m.mine, who: m.who });
+        return mk(c, Object.assign({}, m, { id: m.id || ('x' + m.at + m.who + (m.t || '').slice(0, 9)) }), { mine: m.mine, who: m.who, wph: m.wph || '' });
       }), !!jg.g.delta);
       paintHead();
       gSeen(c.id, Math.max(Math.floor(Date.now() / 1000), jg.g.at || 0));
@@ -942,7 +942,7 @@
           if (jg.g.delta) jg.g.members = (cc && cc.g && cc.g.members) || [];
           var gx = GX();
           fake.g = jg.g; fake.name = jg.g.name; fake.emoji = jg.g.emoji; fake.photo = jg.g.photo || '';
-          fake.msgs = merge(fake, jg.g.msgs.map(function (m) { return m.sys ? { sys: 1, id: m.id, key: 's' + (m.id || m.at + m.whom), t: String(gx.sysAdd || '{a} + {b}').replace('{a}', m.mine ? t('you') : m.who).replace('{b}', m.whom), at: m.at } : mk(fake, m, { mine: m.mine, who: m.who }); }), !!jg.g.delta);
+          fake.msgs = merge(fake, jg.g.msgs.map(function (m) { return m.sys ? { sys: 1, id: m.id, key: 's' + (m.id || m.at + m.whom), t: String(gx.sysAdd || '{a} + {b}').replace('{a}', m.mine ? t('you') : m.who).replace('{b}', m.whom), at: m.at } : mk(fake, m, { mine: m.mine, who: m.who, wph: m.wph || '' }); }), !!jg.g.delta);
           if (!(conv && conv.k === it.k)) cachePut(it.k, snap(fake));
         }
       }
@@ -1056,7 +1056,7 @@
         media = '<img src="' + esc(src) + '" alt=""' + (m.post ? ' loading="lazy"' : ' decoding="async"') + st + (wh ? '' : ' class="nowh"') + '>';
       }
     }
-    var who = (!mine && c.kind === 'group' && !cont && m.who) ? '<em class="sx-bw" style="--av:' + avc(m.who) + '">' + esc(m.who) + '</em>' : '';
+    var who = (!mine && c.kind === 'group' && !cont && m.who) ? '<em class="sx-bw' + (m.wph ? ' ph' : '') + '" style="--av:' + avc(m.who) + '">' + (m.wph ? '<img src="' + esc(m.wph) + '" alt="" decoding="async">' : '') + '<span>' + esc(m.who) + '</span></em>' : '';
     var tick = '';
     if (mine) {
       if (m.st === 'sending') tick = '<i class="sx-st" title="' + esc(t('sending')) + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg></i>';
