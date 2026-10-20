@@ -1478,16 +1478,32 @@
     } catch (eIa) { /* ignore */ }
   })();
   (function diagByTaps() {
-    var taps = [];
+    var taps = [], signTaps = [];
+    var count = function (arr) {
+      var now = Date.now();
+      while (arr.length && now - arr[0] > 2500) arr.shift();
+      arr.push(now);
+      if (arr.length >= 5) { arr.length = 0; startDiag(); }
+    };
     document.addEventListener('click', function (e) {
       try {
         if (!e.target || !e.target.closest || !e.target.closest('#btnHelp')) return;
-        var now = Date.now();
-        taps = taps.filter(function (t) { return now - t < 2500; });
-        taps.push(now);
-        if (taps.length >= 5) startDiag();
+        count(taps);
       } catch (eTp) { /* ignore */ }
     }, true);
+    // 2026-10-20 : aussi 5 touches rapides sur « OROLADO .com » au-dessus de la courbe (visiteurs : pas de bouton Aide ;
+    // la courbe ne donne pas de « click », on écoute le doigt lui-même)
+    document.addEventListener('touchend', function (e) {
+      try {
+        var t = e.changedTouches && e.changedTouches[0]; if (!t) return;
+        var hit = false;
+        document.querySelectorAll('.oro-sign').forEach(function (sg) {
+          var r = sg.getBoundingClientRect();
+          if (r.width && t.clientX >= r.left - 10 && t.clientX <= r.right + 10 && t.clientY >= r.top - 14 && t.clientY <= r.bottom + 14) hit = true;
+        });
+        if (hit) count(signTaps);
+      } catch (eTs) { /* ignore */ }
+    }, { capture: true, passive: true });
   })();
   if (IOS_ANY) {
     // v2822 : l'écran de jeu change de taille (barre de Safari qui grandit / rétrécit, rotation) → recalcul tout de suite
