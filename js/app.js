@@ -1418,13 +1418,21 @@
       if (!ios || !app) return;
       var root = document.documentElement;
       root.classList.add('ios-app');
-      root.style.setProperty('background', '#1A2A68', 'important');
+      root.style.setProperty('background-color', '#22172F', 'important');
       var paint = function () {
         try {
           // Hauteur réelle de l'écran (l'appli iPhone a une fenêtre plus courte que l'écran) : utilisée par le profil.
-          root.style.setProperty('--ios-full-h', Math.max(window.innerHeight || 0, (screen && screen.height) || 0) + 'px');
+          var fullH = Math.max(window.innerHeight || 0, (screen && screen.height) || 0), vw = window.innerWidth || 390;
+          root.style.setProperty('--ios-full-h', fullH + 'px');
+          // 2026-10-20 (propriétaire, capture de l'ancienne appli) : tout en bas de l'écran (sous ACHETER / VENDRE, sous le Profil,
+          // l'Historique, les Jeux…), le même petit monde de planètes sur fond prune, collé au vrai bas de l'écran ; plus de bleu.
+          var flH = Math.round(vw * 46 / 390);
+          root.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2888")', 'important');
+          root.style.setProperty('background-repeat', 'no-repeat', 'important');
+          root.style.setProperty('background-size', vw + 'px ' + flH + 'px', 'important');
+          root.style.setProperty('background-position', '0 ' + (fullH - flH) + 'px', 'important');
           if (document.body) {
-            document.body.style.setProperty('background-color', '#1A2A68', 'important');
+            document.body.style.setProperty('background-color', '#22172F', 'important');
             // v2822 : plus de hauteur minimale forcée sur le body (il est fixé sur la fenêtre, css/app.css « VERROU ») :
             // une hauteur plus grande que la fenêtre poussait ACHETER / VENDRE hors de l'écran.
           }

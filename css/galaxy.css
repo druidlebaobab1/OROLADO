@@ -2132,15 +2132,10 @@ html.is-android body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:2
   html:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) > .pad{box-shadow:0 -2px 0 0 rgb(var(--oro-pad-top))!important}
 }
 
-/* v2887 (propriétaire, capture de l'ancienne app) — iPhone, APPLICATION INSTALLÉE seulement : sous ACHETER / VENDRE, le fond de la page
-   redevient prune sombre avec quelques petites planètes brillantes (bleue + lune, verte, violette). Rien sur les boutons ni dans le terminal.
-   Le bas du terminal ne finit plus en bande bleue. Safari ne change pas. */
-@media (display-mode: standalone) and (max-width:859px), (display-mode: fullscreen) and (max-width:859px){
-  html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-    --appfl:calc(env(safe-area-inset-bottom,0px) + 8px);
-    padding-bottom:var(--appfl)!important;
-    background:url("../icons/ui/app-floor.svg?v=2887") center bottom/100% var(--appfl) no-repeat,
-      linear-gradient(180deg,rgb(10,10,32) 0,rgba(10,10,32,.85) 10px,rgba(10,10,32,0) 40px),
-      linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #1A2A68!important}
-  html.is-ios,html.is-ios body:not(#oroQ):not(.oroQ):not(#z9){background:#22172F!important}
-}
+/* v2888 (propriétaire) — APPLICATION iPhone installée (classe .ios-app posée par js/app.js) : le petit monde de planètes est peint
+   TOUT EN BAS de l'écran par js/app.js (fond de la page, sous chaque écran : trading, Profil, Historique, Jeux). Le terminal garde
+   son fond sombre, sans bande bleue en bas et sans dessin coupé ; fond prune partout (plus de bleu d'un côté et de noir de l'autre). */
+html.ios-app:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
+  background:linear-gradient(180deg,rgb(10,10,32) 0,rgba(10,10,32,.85) 10px,rgba(10,10,32,0) 40px),
+    linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #1A2A68!important}
+html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#22172F!important}
