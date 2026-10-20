@@ -5496,6 +5496,9 @@
       // Premier cadrage : on part de la tête et on remonte les bougies tant qu'elles
       // tiennent dans le cadre, puis on centre sur ce morceau. Résultat : le graphique
       // apparaît entier et en place tout de suite (pas de moitié coupée qui glisse).
+      // 2026-10-20 (« simulations qui dorment ») : le premier cadre prend DIRECTEMENT la taille que la caméra continue
+      // atteint ensuite (toutes les bougies visibles = 60 % de la hauteur, comme plus haut). Avant, il partait du cadre
+      // normal puis s'agrandissait pendant ~0,5 s juste après l'apparition (la courbe « se replaçait »).
       var lo = h;
       var hi = h;
       var list = camCandles || [];
@@ -5503,12 +5506,10 @@
       for (i = list.length - 1; i >= 0; i--) {
         var cd = list[i];
         if (!cd) continue;
-        var nlo = cd.l > 0 && cd.l < lo ? cd.l : lo;
-        var nhi = cd.h > hi ? cd.h : hi;
-        if (nhi - nlo > span * 0.84) break;
-        lo = nlo;
-        hi = nhi;
+        if (cd.l > 0 && cd.l < lo) lo = cd.l;
+        if (cd.h > hi) hi = cd.h;
       }
+      if ((hi - lo) / 0.60 > span) span = (hi - lo) / 0.60;
       mid = (hi + lo) / 2;
       // Tête déjà dans la zone calme : aucun glissement juste après l'arrivée.
       // v2848 : à l'arrivée, la tête est déjà près du milieu (plus de courbe collée en bas / en haut à l'ouverture)
@@ -5595,6 +5596,38 @@
 
   var waitAsset = '';
   var waitSince = 0;
+  /*
+   * 2026-10-20 (propriétaire : « simulations qui dorment », pubs bientôt) : à l'ARRIVÉE du joueur (ouverture, retour
+   * sur l'onglet / l'appli, changement d'indice), la courbe se montrait d'abord avec les vieux prix — figée, collée au
+   * bord, l'axe du temps retenu en arrière (lagMs) — puis, dès les nouveaux prix reçus, elle sautait à sa place.
+   * Maintenant, à chaque arrivée, la courbe n'est dessinée QUE quand les prix du marché affiché sont à jour
+   * (D6.Engine.feedFresh) : en attendant, le décor habituel seul (comme pendant « Connexion au marché ») ; la
+   * première courbe montrée est la bonne, cadrée d'un coup. En quittant la page, la courbe est effacée tout de suite,
+   * pour que le téléphone ne remontre pas l'ancienne image au retour. Affichage seulement (prix, trades : inchangés).
+   * Au plus 6 s d'attente : réseau très lent → comportement d'avant (courbe figée puis le direct).
+   */
+  var lastBackdrop = null;
+  var arriveGate = true;
+  var arriveSince = Date.now();
+  var ARRIVE_MAX_MS = 6000;
+  var frameHeld = false;
+  var arriveHidden = false;
+  function armArrival() {
+    arriveGate = true;
+    arriveSince = Date.now();
+  }
+  /** Vrai tant qu'il faut attendre (décor seul). Pendant l'attente, le cadre est remis à zéro (branche du décor) :
+      la première courbe montrée part du prix actuel et se cadre d'un coup, sans glisser depuis l'ancien cadre. */
+  function arrivalHold() {
+    if (!arriveGate) return false;
+    // Page cachée : rien n'est vu, on attend le retour (les prix sont encore ceux du départ).
+    if (document.hidden) { arriveHidden = true; return true; }
+    if (arriveHidden) { arriveHidden = false; arriveSince = Date.now(); }
+    var fresh = !(D6.Engine && D6.Engine.feedFresh) || D6.Engine.feedFresh(activeAsset);
+    if (!fresh && Date.now() - arriveSince < ARRIVE_MAX_MS) return true;
+    arriveGate = false;
+    return false;
+  }
   function drawFrame(now) {
     cameraTick();
     try {
@@ -5607,15 +5640,19 @@
     var theme = plotTheme(asset);
     var market = D6.Engine && D6.Engine.getMarket ? D6.Engine.getMarket(activeAsset) : null;
     if (!market) return;
-    if (market.waiting) {
+    frameHeld = !!(market.waiting || arrivalHold());
+    if (frameHeld) {
       // Historique pas encore reçu du serveur : fond seul, jamais une fausse courbe.
       // v2813 : le décor habituel (plus d'écran noir qui « clignote » au changement de marché) ; le texte
       // « Connexion au marché » n'apparaît que si l'attente dure (réseau lent) — les marchés de la barre
       // sont chargés à l'avance, l'attente est normalement nulle.
+      // 2026-10-20 : même fond pendant l'attente des prix à jour à l'arrivée (arrivalHold).
       if (waitAsset !== activeAsset) { waitAsset = activeAsset; waitSince = Date.now(); }
-      if (bgCanvas) ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
+      // Décor complet (étoiles et galaxie comprises) quand on le connaît : il ne change pas quand la courbe arrive.
+      if (lastBackdrop && bgCanvas) drawBackdrop(lastBackdrop.pad, lastBackdrop.w, lastBackdrop.h);
+      else if (bgCanvas) ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
       else { ctx.fillStyle = '#120F38'; ctx.fillRect(0, 0, cssW, cssH); }
-      if (Date.now() - waitSince > 1500) {
+      if (Date.now() - Math.max(waitSince, arriveGate ? arriveSince : 0) > 1500) {
         ctx.fillStyle = 'rgba(245,197,24,0.55)';
         ctx.font = '700 12px "Hanken Grotesk", sans-serif';
         ctx.textAlign = 'center';
@@ -5698,6 +5735,7 @@
     // Fond : carte du monde + logos crypto + lumières chaudes, dessiné une seule
     // fois dans une image puis simplement recopié à chaque image.
     drawBackdrop(pad, w, h);
+    lastBackdrop = { pad: pad, w: w, h: h };
 
     var candles = visibleCandles(market);
     camCandles = candles;
@@ -6195,12 +6233,18 @@
   function pauseChartEngine() {
     window.chartIsPaused = true;
     if (!chartHiddenAt) chartHiddenAt = Date.now();
+    // 2026-10-20 : on quitte la page → la courbe est effacée maintenant (décor seul) et attendra les prix à jour au
+    // retour : le téléphone ne remontre jamais l'image d'avant, figée, qui saute ensuite (voir arrivalHold).
+    armArrival();
+    try { drawNow(); } catch (eHide) { /* ignore */ }
   }
 
   function wakeChartEngine() {
     var sleptMs = chartHiddenAt ? (Date.now() - chartHiddenAt) : 0;
     chartHiddenAt = 0;
     window.chartIsPaused = false;
+    // Attente des prix à jour (arrivalHold) : comptée à partir du retour, pas du départ.
+    if (arriveGate) arriveSince = Date.now();
     window.lastTickTime = performance.now();
     lastTs = performance.now();
     lastFlush = 0;
@@ -6254,6 +6298,7 @@
     window.addEventListener('pageshow', function (ev) {
       if (document.hidden) return;
       if (ev && ev.persisted && !chartHiddenAt) chartHiddenAt = Date.now() - 20000;
+      if (ev && ev.persisted) armArrival();
       wakeChartEngine();
     });
     if (IS_MOBILE_CHART) {
@@ -6891,6 +6936,8 @@
       }
       persistView(activeAsset);
       activeAsset = id;
+      // 2026-10-20 : nouvel indice → sa courbe n'apparaît qu'à jour (indice tiède : tout de suite ; jamais vu : ~0,2 s).
+      armArrival();
       applyAssetView(id);
       if (headPriceMotion[id]) headPriceMotion[id].value = NaN;
       viewMin = 0;
@@ -6965,7 +7012,7 @@
     resize: resize,
     applyOpenTradeVisual: applyOpenTradeVisual,
     /** Contrôle : position du dernier rond de trade et de la boule du direct (pixels). */
-    markDebug: function () { return { ride: rideDbg, mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0, lo: viewMin, hi: viewMax, price: lastDrawnClose, emberT: emberLock.t, ember: emberLock.cur, emberRaw: emberLock.raw }; },
+    markDebug: function () { return { ride: rideDbg, mark: lastEntryMarkX, markY: lastEntryMarkY, markR: lastEntryMarkR, head: lastMap ? lastMap.lastX : NaN, zoom: zoomSec(), count: lastMap ? lastMap.count : 0, lo: viewMin, hi: viewMax, price: lastDrawnClose, emberT: emberLock.t, ember: emberLock.cur, emberRaw: emberLock.raw, gated: frameHeld }; },
     captureTradeFrame: captureTradeFrame,
     removeTradeVisual: removeTradeVisual,
     syncAccountMode: syncAccountMode,
