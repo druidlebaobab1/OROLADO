@@ -324,10 +324,11 @@
       mSub: 'Misi baru setiap Senin · +{x} poin masing-masing',
       mDone: 'Selesai ✓',
       m: {
-        trades: 'Lakukan 20 trade',
-        quiz: 'Jawab 10 pertanyaan kuis',
-        markets: 'Main di 3 pasar berbeda',
-        streak: 'Menang 3 trade berturut-turut'
+        trades: 'Lakukan 50 trade',
+        real: 'Lakukan 10 trade nyata',
+        quiz: 'Jawab 20 pertanyaan kuis',
+        markets: 'Main di 5 pasar berbeda',
+        streak: 'Menang 5 trade berturut-turut'
       },
       sTrades: 'Trade',
       sRate: 'Keberhasilan',
@@ -448,7 +449,7 @@
         'Pengukur besar',
         'Penuhi, menangkan hadiah besar'
       ],
-      wRule: 'Setiap deposit $10 atau lebih memberimu 1 putaran gratis.',
+      wRule: '1 putaran gratis untuk setiap $10 yang kamu deposit. Contoh: deposit $100 = 10 putaran.',
       spin: 'Putar roda',
       tickets: 'Kamu punya {n} putaran untuk dimainkan',
       ticket1: 'Kamu punya 1 putaran untuk dimainkan',
@@ -932,7 +933,7 @@
       ],
       "race": [
         "Balap mobil",
-        "6 mobil · ×5,7"
+        "10 mobil · langsung"
       ],
       "roulette": [
         "Roulette",

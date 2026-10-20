@@ -324,10 +324,11 @@
       mSub: 'Misiones nuevas cada lunes · +{x} puntos cada una',
       mDone: 'Hecho ✓',
       m: {
-        trades: 'Haz 20 trades',
-        quiz: 'Responde 10 preguntas del quiz',
-        markets: 'Juega en 3 mercados distintos',
-        streak: 'Gana 3 trades seguidos'
+        trades: 'Haz 50 trades',
+        real: 'Haz 10 trades en real',
+        quiz: 'Responde 20 preguntas del quiz',
+        markets: 'Juega en 5 mercados distintos',
+        streak: 'Gana 5 trades seguidos'
       },
       sTrades: 'Trades',
       sRate: 'Acierto',
@@ -448,7 +449,7 @@
         'Gran medidor',
         'Llénalo y gana un gran regalo'
       ],
-      wRule: 'Cada depósito de $10 o más te da 1 giro gratis.',
+      wRule: '1 giro gratis por cada $10 depositados. Ejemplo: $100 depositados = 10 giros.',
       spin: 'Girar la ruleta',
       tickets: 'Tienes {n} giro(s) para jugar',
       ticket1: 'Tienes 1 giro para jugar',
@@ -915,7 +916,7 @@
         dice: ["Dados", "Elige tu probabilidad"],
         limbo: ["Limbo", "Apunta hasta ×1000"],
         wheel: ["Ruleta de casino", "Hasta ×50"],
-        race: ["Carrera de coches", "6 coches · ×5.7"],
+        race: ["Carrera de coches", "10 coches · en vivo"],
         roulette: ["Ruleta", "Rojo, negro, número ×36"],
         slots: ["Tragaperras", "Hasta ×50"],
         plinko: ["Plinko", "Hasta ×12"],

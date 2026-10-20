@@ -324,10 +324,11 @@
       mSub: 'Neue Missionen jeden Montag · je +{x} Punkte',
       mDone: 'Erledigt ✓',
       m: {
-        trades: 'Mache 20 Trades',
-        quiz: 'Beantworte 10 Quizfragen',
-        markets: 'Spiele auf 3 verschiedenen Märkten',
-        streak: 'Gewinne 3 Trades in Folge'
+        trades: 'Mache 50 Trades',
+        real: 'Mache 10 echte Trades',
+        quiz: 'Beantworte 20 Quizfragen',
+        markets: 'Spiele auf 5 verschiedenen Märkten',
+        streak: 'Gewinne 5 Trades in Folge'
       },
       sTrades: 'Trades',
       sRate: 'Erfolg',
@@ -448,7 +449,7 @@
         'Große Anzeige',
         'Füll sie, gewinn ein Geschenk'
       ],
-      wRule: 'Jede Einzahlung ab 10 $ gibt dir 1 Gratis-Dreh.',
+      wRule: '1 Gratis-Dreh für je 10 $ Einzahlung. Beispiel: 100 $ eingezahlt = 10 Drehs.',
       spin: 'Rad drehen',
       tickets: 'Du hast {n} Dreh(s) zu spielen',
       ticket1: 'Du hast 1 Dreh zu spielen',
@@ -932,7 +933,7 @@
       ],
       "race": [
         "Autorennen",
-        "6 Autos · ×5.7"
+        "10 Autos · live"
       ],
       "roulette": [
         "Roulette",
