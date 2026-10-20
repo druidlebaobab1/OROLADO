@@ -1971,7 +1971,9 @@ html.ios-app body #drawerProfile#drawerProfile{bottom:auto!important;height:var(
   padding-top:calc(env(safe-area-inset-top,0px) + 8px)!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important;
   background-size:auto,cover,auto!important}
 html.ios-app body .drawer-backdrop,html.ios-app body #drawerBackdrop{bottom:auto!important;height:var(--ios-full-h,100vh)!important}
-html.ios-app.fs-trade body #tradeWrap#tradeWrap > .pad.pad{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important}
+/* v2939 — appli iPhone, plein écran : la fenêtre de l'appli s'arrête déjà au-dessus de la barre d'accueil : pas de marge en plus,
+   ACHETER / VENDRE descendent tout en bas comme en mode normal */
+html.ios-app.fs-trade body #tradeWrap#tradeWrap > .pad.pad{padding-bottom:6px!important}
 @media (display-mode: standalone), (display-mode: fullscreen) {
   html.is-android:not(.is-tv) body #drawerProfile#drawerProfile .drawer-head{padding-top:calc(env(safe-area-inset-top,0px) + 18px)!important}
 }
