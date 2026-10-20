@@ -1427,14 +1427,14 @@
           // 2026-10-20 (propriétaire, capture de l'ancienne appli) : tout en bas de l'écran (sous ACHETER / VENDRE, sous le Profil,
           // l'Historique, les Jeux…), le même petit monde de planètes sur fond prune, collé au vrai bas de l'écran ; plus de bleu.
           var flH = Math.round(vw * 46 / 390);
-          root.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2888")', 'important');
+          root.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2902")', 'important');
           root.style.setProperty('background-repeat', 'no-repeat', 'important');
           root.style.setProperty('background-size', vw + 'px ' + flH + 'px', 'important');
           root.style.setProperty('background-position', '0 ' + (fullH - flH) + 'px', 'important');
           if (document.body) {
             document.body.style.setProperty('background-color', '#22172F', 'important');
             // le corps de la page couvre toute la fenêtre de l'appli : le dessin est posé au bas du corps (= bas de l'écran)
-            document.body.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2888")', 'important');
+            document.body.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2902")', 'important');
             document.body.style.setProperty('background-repeat', 'no-repeat', 'important');
             document.body.style.setProperty('background-size', '100% auto', 'important');
             document.body.style.setProperty('background-position', 'center bottom', 'important');
