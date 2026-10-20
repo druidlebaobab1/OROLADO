@@ -9598,7 +9598,8 @@
       openModal('iosInstallModal');
     }
     function showInstallBanner() {
-      if (!isMobileUi() || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install') || !window.__oroInstallDue()) return;
+      // 2026-10-20 : ordinateur aussi, mais seulement quand Chrome / Edge ont dit « installable » (vraie installation)
+      if ((!isMobileUi() && !deferredPrompt) || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install') || !window.__oroInstallDue()) return;
       var el = $('installBanner');
       if (!el) return;
       window.__oroInstallMark();
@@ -9618,9 +9619,11 @@
     window.addEventListener('oro-bip', function () { if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; showInstallBanner(); } });
     if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; showInstallBanner(); }
     if (isIos() && !isStandalone()) showInstallBanner();
-    setTimeout(function () {
-      if (!deferredPrompt && !isIos() && !isStandalone()) showInstallBanner();
-    }, 2500);
+    // 2026-10-20 (propriétaire : « sur Android, Installer affiche les étapes au lieu d'installer ») : Chrome ne permet
+    // l'installation qu'après un petit temps sur le site (≈ 30 s et un toucher). Avant, la bannière apparaissait au bout de
+    // 2,5 s, trop tôt : le bouton ne pouvait que montrer les étapes. Maintenant, sur Android et ordinateur, la bannière
+    // n'apparaît QUE quand Chrome dit « installable » (événement beforeinstallprompt) : « Installer » installe vraiment.
+    // iPhone : inchangé (Apple ne permet que les étapes « Partager → Sur l'écran d'accueil »).
     if ($('btnInstall')) {
       $('btnInstall').addEventListener('click', async function () {
         if (deferredPrompt) {
@@ -9824,7 +9827,9 @@
             forever = localStorage.getItem('oro_install_dismissed') === '1'
               || (parseInt(localStorage.getItem('orolado_install_dismissed_count') || '0', 10) || 0) >= 2;
           } catch (e0) { forever = false; }
-          if (mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner') && (!window.__oroInstallDue || window.__oroInstallDue())) {
+          // 2026-10-20 : Android / ordinateur → seulement quand Chrome dit « installable » ; iPhone : étapes (inchangé)
+          var canInst = /iP(hone|od|ad)/.test(navigator.userAgent || '') || !!(deferredPrompt || window.__oroBip);
+          if (canInst && mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner') && (!window.__oroInstallDue || window.__oroInstallDue())) {
             if (window.__oroInstallMark) window.__oroInstallMark();
             var ban = $('installBanner');
             ban.classList.remove('hidden', 'fade-out');
