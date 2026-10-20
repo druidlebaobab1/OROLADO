@@ -165,7 +165,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=2918">
+    <link rel="stylesheet" href="css/app.css?v=2919">
     <link rel="stylesheet" href="css/auth.css?v=2790">
     <link rel="stylesheet" href="css/tv.css?v=2790">
     <link rel="stylesheet" href="css/galaxy.css?v=2919">
@@ -1266,35 +1266,35 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <div id="drawerBackdrop" class="drawer-backdrop"></div>
   <aside id="drawerProfile" class="drawer" role="dialog" aria-modal="true" aria-labelledby="profTitle" aria-hidden="true">
     <div class="drawer-head">
-      <!-- 2026-10-20 (propriétaire) : plus de titre « Profil » visible : à sa place, la photo de profil et le nom -->
+      <!-- 2026-10-20 (propriétaire) : plus de titre « Profil » ; une fine barre : la langue (petite) à gauche, la croix à droite -->
       <h2 id="profTitle" class="prof-title-sr" data-i18n="profileBtn">Profil</h2>
-      <div class="prof-head prof-hero">
-        <div class="avatar" id="profAvatar">OR</div>
-        <div class="prof-hero-t">
-          <div class="prof-name" id="profName">—</div>
-          <button type="button" class="prof-ph-hint" id="profPhHint" hidden></button>
-        </div>
-      </div>
       <!-- v2690 (propriétaire) : la langue est maintenant dans le profil (plus dans la barre du haut) -->
       <div class="lang-dd lang-in-profile" id="langBarTrade"></div>
       <button type="button" class="btn-close" id="btnCloseDrawer" aria-label="Close">✕</button>
     </div>
-    <div class="card glass">
-      <div class="list-row">
-        <span data-i18n="publicId">ID public</span>
-        <div class="prof-id-row">
-          <strong id="profPublicId">—</strong>
-          <button type="button" class="btn-copy-id" id="btnCopyPublicId" data-i18n="copyId" translate="no">Copier</button>
+    <!-- 2026-10-20 (propriétaire) : la CARTE DU JOUEUR — photo (on la touche pour la changer), nom, identifiant, e-mail, date -->
+    <div class="prof-head prof-card">
+      <div class="prof-card-top">
+        <div class="avatar" id="profAvatar">OR</div>
+        <div class="prof-card-who">
+          <div class="prof-name" id="profName">—</div>
+          <div class="prof-uid">
+            <span class="prof-uid-k" data-i18n="publicId">ID public</span>
+            <strong id="profPublicId">—</strong>
+            <button type="button" class="btn-copy-id" id="btnCopyPublicId" data-i18n="copyId" translate="no">Copier</button>
+          </div>
         </div>
       </div>
-      <div class="list-row">
-        <span data-i18n="email">E-mail</span>
-        <div class="prof-id-row">
-          <strong id="profEmail" class="prof-email">—</strong>
-          <button type="button" class="btn-copy-id" id="btnCopyEmail" data-i18n="copyId" translate="no">Copier</button>
+      <div class="prof-card-rows">
+        <div class="list-row">
+          <span data-i18n="email">E-mail</span>
+          <div class="prof-id-row">
+            <strong id="profEmail" class="prof-email">—</strong>
+            <button type="button" class="btn-copy-id" id="btnCopyEmail" data-i18n="copyId" translate="no">Copier</button>
+          </div>
         </div>
+        <div class="list-row"><span data-i18n="memberSince">Membre depuis</span><strong id="profSince">—</strong></div>
       </div>
-      <div class="list-row"><span data-i18n="memberSince">Membre depuis</span><strong id="profSince">—</strong></div>
     </div>
     <div class="wallet-card" id="profWalletCard">
       <div class="wallet-card-k" data-i18n="availBal">Solde disponible</div>
