@@ -2374,6 +2374,8 @@
   })();
   function flagOf(l) { return (l && FLAG_SVG[l.code]) || (l && l.flag) || ''; }
 
+  // v2960 (propriétaire) : petit mot « Langue » sous le drapeau, dans le profil
+  var LANG_WORD = { fr: 'Langue', en: 'Language', es: 'Idioma', pt: 'Idioma', ar: 'اللغة', tr: 'Dil', vi: 'Ngôn ngữ', id: 'Bahasa', ru: 'Язык', de: 'Sprache', hi: 'भाषा', zh: '语言' };
   function fillLangBars() {
     document.querySelectorAll('body > .lang-dd-menu').forEach(function (m) { m.remove(); });
     function render(boxId) {
@@ -2382,7 +2384,8 @@
       var curCode = 'en';
       try { curCode = (D6.I18N && D6.I18N.lang) || 'en'; } catch (eLangCur) { curCode = 'en'; }
       var cur = LANGS.filter(function (l) { return l.code === curCode; })[0] || LANGS[0];
-      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1" aria-haspopup="listbox" aria-expanded="false"><span class="lang-flag">' + flagOf(cur) + '</span><span class="lang-chev">▾</span><span class="lang-code">' + String(cur.code || '').toUpperCase() + '</span></button>' +
+      box.innerHTML = '<button type="button" class="lang-dd-btn" data-lang-toggle="1" aria-haspopup="listbox" aria-expanded="false"><span class="lang-flag">' + flagOf(cur) + '</span><span class="lang-chev">▾</span><span class="lang-code">' + String(cur.code || '').toUpperCase() + '</span>' +
+        (boxId === 'langBarTrade' ? '<span class="lang-lbl">' + (LANG_WORD[curCode] || LANG_WORD.en) + '</span>' : '') + '</button>' +
         '<div class="lang-dd-menu hidden" role="listbox" data-owner="' + boxId + '">' + LANGS.map(function (l) {
           return '<button type="button" class="lang-btn' + (l.code === D6.I18N.lang ? ' on' : '') + '" data-lang="' + l.code + '" role="option">' +
             '<span class="lang-flag">' + flagOf(l) + '</span><span class="lang-name">' + (l.name || l.code) + '</span></button>';
