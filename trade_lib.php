@@ -649,9 +649,14 @@ function orolado_trade_settle(string $uid, string $oid): array {
   return ['ok' => true, 'order' => orolado_trade_public($done['order']), 'vault' => $done['vault']];
 }
 
-/** Règle les trades expirés d'un joueur (retour sur le site, F5, téléphone réveillé). */
-function orolado_trade_settle_due(string $uid, int $max = 25): int {
-  $db = load_db();
+/**
+ * Règle les trades expirés d'un joueur (retour sur le site, F5, téléphone réveillé).
+ * $db : copie déjà lue au début de la même demande (« me »), pour ne pas relire tout le fichier une 2e fois.
+ * Sans risque : elle ne sert qu'à TROUVER les candidats ; chacun est réglé par orolado_trade_settle, qui relit
+ * l'ordre sous verrou et ne paie qu'une fois (un ordre placé depuis ne peut pas être déjà expiré).
+ */
+function orolado_trade_settle_due(string $uid, int $max = 25, ?array $db = null): int {
+  if ($db === null) $db = load_db();
   $n = 0;
   foreach (($db['orders'] ?? []) as $o) {
     if ($n >= $max) break;
