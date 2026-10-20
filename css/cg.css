@@ -246,3 +246,8 @@ html:root body #casinoModal .cs-toast .ct-burst b:nth-child(6){--dx:4px;--dy:32p
 @keyframes ctCoin{0%{opacity:0;transform:translate(0,0) scale(.4)}15%{opacity:1}70%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1) rotateY(360deg)}100%{opacity:0;transform:translate(calc(var(--dx) * 1.15),calc(var(--dy) * 1.15)) scale(.8) rotateY(540deg)}}
 html.oro-lite body #casinoModal .cs-toast .ct-wal,html.oro-lite body #casinoModal .cs-toast .ct-wal > svg,html.oro-lite body #casinoModal .cs-toast.win::after{animation:none}
 html.oro-lite body #casinoModal .cs-toast .ct-burst{display:none}
+/* v2886 (propriétaire) : à la place du portefeuille, une petite MONTAGNE D'ARGENT (billets + piles de pièces d'or), posée au bord */
+html:root body #casinoModal .cs-toast.cs-toast.cs-toast.win{padding-left:38px!important;margin-left:24px}
+html:root body #casinoModal .cs-toast .ct-wal.ct-cash{left:-28px;width:58px;height:47px;margin-top:-26px;border-radius:0;background:none;box-shadow:none;
+  filter:drop-shadow(0 0 7px rgba(253,224,71,.75)) drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+html:root body #casinoModal .cs-toast .ct-wal.ct-cash > svg{width:58px;height:47px}
