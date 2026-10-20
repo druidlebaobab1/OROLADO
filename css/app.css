@@ -13023,3 +13023,16 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row > span,
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row:last-child > span{text-transform:none!important;letter-spacing:0!important;font-size:13px!important;font-weight:600!important;color:rgba(226,232,255,.65)!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row:last-child > strong{font-size:13.5px!important;font-weight:700!important;color:#fff!important}
+
+/* v2934 — Profil B plus compact : la carte prend moins de place, tout le menu (Déconnecter mes autres appareils,
+   Se déconnecter) reste visible */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile > .prof-card{padding:10px 14px 2px!important;margin-bottom:8px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-top{gap:4px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar{width:66px!important;height:66px!important;min-width:66px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar .pav-cam{width:24px!important;height:24px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar .pav-cam svg{width:13px!important;height:13px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .prof-name{font-size:1.15rem!important;line-height:1.25!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows{margin-top:8px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row,
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row:last-child{min-height:34px!important;padding:3px 0!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{height:26px!important;min-height:26px!important;min-width:60px!important;font-size:12px!important}
