@@ -13,8 +13,8 @@ declare(strict_types=1);
  */
 
 const CASINO_MIN = 0.10;
-const CASINO_MAX_STAKE = 1000.0;
-const CASINO_MAX_WIN = 10000.0;
+const CASINO_MAX_STAKE = 1000000000.0; // 2026-10-20 (propriétaire) : aucune limite de mise sur le site
+const CASINO_MAX_WIN = 1000000000.0;  // 2026-10-20 (propriétaire) : aucun plafond de gain
 const CASINO_GAMES = ['crash', 'jet', 'rocket', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines', 'apple',
   'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps', 'lotto', 'planets',
   'catwalk', 'fleets', 'gemcount', 'claw', // v2830 : 4 nouveaux jeux en direct (CASINO_LIVE2)
