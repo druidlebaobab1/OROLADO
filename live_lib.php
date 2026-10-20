@@ -9,10 +9,12 @@ declare(strict_types=1);
  *  - data/live/pub/<nom>.jpg     : photos des publications (publiques)
  */
 
-const LIVE_MSG_MAX = 1000;        // lettres par message
+const LIVE_MSG_MAX = 4000;        // lettres par message (v2905 : 1000 → 4000, un long message passe en entier)
 const LIVE_IMG_MAX = 409600;      // 400 Ko par photo (le téléphone la réduit avant)
-const LIVE_IMG_DAY = 10;          // photos par joueur et par jour
-const LIVE_MSG_HOUR = 30;         // messages par joueur et par heure
+const LIVE_IMG_DAY = 60;          // photos par joueur et par jour (v2905 : 10 → 60)
+const LIVE_MSG_HOUR = 120;        // messages à l'équipe par joueur et par heure (v2905 : 30 → 120)
+const LIVE_BURST_N = 20;          // v2905 : anti-robot — au plus 20 messages en 10 s (un humain n'y arrive pas)
+const LIVE_BURST_SEC = 10;
 const LIVE_THREAD_KEEP = 200;     // derniers messages gardés par conversation
 
 function live_dir(string $sub = ''): string {
@@ -64,10 +66,10 @@ function live_clean_text(string $t): string {
 }
 
 /** Photo envoyée en « data:image/jpeg;base64,… » → fichier ; '' si refusée. */
-function live_save_image(string $dataUrl, string $sub = 'img'): string {
+function live_save_image(string $dataUrl, string $sub = 'img', int $max = LIVE_IMG_MAX): string {
   if (!preg_match('#^data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=\s]+)$#', $dataUrl, $m)) return '';
   $bin = base64_decode(preg_replace('/\s+/', '', $m[2]) ?? '', true);
-  if ($bin === false || strlen($bin) < 200 || strlen($bin) > LIVE_IMG_MAX) return '';
+  if ($bin === false || strlen($bin) < 200 || strlen($bin) > $max) return '';
   // Vraie image (pas un fichier déguisé) : signature JPEG / PNG / WEBP.
   $ok = str_starts_with($bin, "\xFF\xD8\xFF") || str_starts_with($bin, "\x89PNG") || (str_starts_with($bin, 'RIFF') && substr($bin, 8, 4) === 'WEBP');
   if (!$ok) return '';
@@ -78,8 +80,8 @@ function live_save_image(string $dataUrl, string $sub = 'img'): string {
 
 /* v2790 (propriétaire) — NOTE VOCALE dans la conversation avec l'équipe : 10 s max, enregistrée par le téléphone
    (Android : webm/opus, iPhone : mp4/aac), 256 Ko max, 20 par jour. Rangée avec les photos privées (mêmes droits). */
-const LIVE_AUD_MAX = 262144;
-const LIVE_AUD_DAY = 20;
+const LIVE_AUD_MAX = 1258291;     // v2905 : notes vocales jusqu'à 3 min (1,2 Mo max ; avant 256 Ko = 10 s)
+const LIVE_AUD_DAY = 100;         // v2905 : 20 → 100 par jour
 function live_save_audio(string $dataUrl): string {
   if (!preg_match('#^data:audio/(webm|mp4|ogg|x-m4a|aac)(?:;[a-z0-9=.,+ -]*)?;base64,([A-Za-z0-9+/=\s]+)$#i', $dataUrl, $m)) return '';
   $bin = base64_decode(preg_replace('/\s+/', '', $m[2]) ?? '', true);
@@ -130,6 +132,33 @@ function live_img_path(string $name, string $sub = 'img'): string {
   return is_file($f) ? $f : '';
 }
 
+/** v2905 : anti-robot — rafale de messages (plus de LIVE_BURST_N en LIVE_BURST_SEC secondes) refusée. */
+function live_burst_ok(string $uid): bool { return live_quota_ok($uid, 'burst', LIVE_BURST_N, LIVE_BURST_SEC); }
+
+/** Taille d'une photo envoyée par le téléphone (« 640x480 ») : la bulle garde sa place avant que la photo arrive. */
+function live_img_wh($wh): string { return preg_match('/^([1-9][0-9]{0,4})x([1-9][0-9]{0,4})$/', (string) $wh, $m) ? $m[1] . 'x' . $m[2] : ''; }
+
+/* v2905 (propriétaire) — PHOTO DE PROFIL : choisie dans le téléphone, recadrée en carré et réduite (≈ 256 px) par le
+   téléphone, vérifiée ici (vraie image, 300 Ko max), rangée avec les photos publiques (nom au hasard, impossible à deviner).
+   Fichier : data/live/photos.json { p: { uid: nom } }. Sans photo : l'initiale, comme avant. */
+const LIVE_PHOTO_MAX = 307200;
+const LIVE_PHOTO_DAY = 20;
+function live_photos_file(): string { return live_dir() . '/photos.json'; }
+function live_photo_of(string $uid): string {
+  static $mem = null;
+  if ($mem === null || isset($GLOBALS['LIVE_PHOTO_RELOAD'])) { unset($GLOBALS['LIVE_PHOTO_RELOAD']); $mem = (array) (live_read_json(live_photos_file(), [])['p'] ?? []); }
+  $f = (string) ($mem[$uid] ?? '');
+  return $f !== '' ? 'live.php?p=' . rawurlencode($f) : '';
+}
+function live_photo_set(string $uid, string $file): void {
+  live_update(live_photos_file(), function ($q) use ($uid, $file) {
+    $p = (array) ($q['p'] ?? []);
+    if ($file === '') unset($p[$uid]); else $p[$uid] = $file;
+    return ['ok' => true, '__write' => ['p' => $p]];
+  }, ['p' => []]);
+  $GLOBALS['LIVE_PHOTO_RELOAD'] = 1;
+}
+
 /** Compteur simple par joueur (messages / heure, photos / jour). */
 function live_quota_ok(string $uid, string $kind, int $max, int $window): bool {
   $f = live_dir('quota') . '/' . live_safe_id($uid) . '_' . $kind . '.json';
@@ -144,11 +173,11 @@ function live_quota_ok(string $uid, string $kind, int $max, int $window): bool {
 }
 
 /** Message dans la conversation d'un joueur. $from = 'u' (joueur) ou 'a' (OROLADO). */
-function live_add_msg(array $user, string $from, string $text, string $img = ''): array {
+function live_add_msg(array $user, string $from, string $text, string $img = '', string $wh = ''): array {
   $uid = (string) ($user['id'] ?? '');
   if ($uid === '' || ($text === '' && $img === '')) return ['ok' => false];
   $msg = ['id' => 'm' . bin2hex(random_bytes(6)), 'f' => $from === 'a' ? 'a' : 'u', 't' => $text, 'at' => time()];
-  if ($img !== '') $msg['img'] = $img;
+  if ($img !== '') { $msg['img'] = $img; if ($wh !== '') $msg['wh'] = $wh; }
   return live_update(live_thread_file($uid), function ($th) use ($user, $uid, $msg, $from) {
     $th['uid'] = $uid;
     if ($from !== 'a') {
@@ -290,8 +319,8 @@ function live_post_count(array $ids, string $field): void {
  * data/live/blocks/<uid>.json, data/live/reports.json
  * ===================================================================================================== */
 const LIVE_ID_ALPHA = '23456789ABCDEFGHJKMNPQRSTVWXYZ'; // 30 signes : ni O/0, ni I/1, ni L, ni U
-const LIVE_DM_HOUR = 60;        // messages privés par heure
-const LIVE_NEWCONV_DAY = 20;    // nouvelles personnes contactées par jour
+const LIVE_DM_HOUR = 600;       // messages privés par heure (v2905 : 60 → 600 ; les rafales sont arrêtées par LIVE_BURST_N)
+const LIVE_NEWCONV_DAY = 40;    // nouvelles personnes contactées par jour (v2905 : 20 → 40, anti-démarchage)
 const LIVE_FIND_MISS = 10;      // recherches ratées par heure avant blocage
 
 function live_ids_file(): string { return live_dir() . '/ids.json'; }
@@ -398,13 +427,13 @@ function live_who(string $oroId): ?array {
   $id = $uid !== '' ? live_code_of($uid) : '';
   if ($uid === '') return null;
   $u = live_users_db()['users'][$uid] ?? [];
-  return ['uid' => $uid, 'id' => $id, 'name' => (string) ($m['n'][$uid] ?? (is_array($u) ? ($u['displayName'] ?? 'Joueur') : 'Joueur'))];
+  return ['uid' => $uid, 'id' => $id, 'name' => (string) ($m['n'][$uid] ?? (is_array($u) ? ($u['displayName'] ?? 'Joueur') : 'Joueur')), 'ph' => live_photo_of($uid)];
 }
 
 function live_who_uid(string $uid): ?array {
   $m = live_read_json(live_ids_file(), []);
   if (!isset($m['u'][$uid])) return null;
-  return ['uid' => $uid, 'id' => live_code_of($uid), 'name' => (string) ($m['n'][$uid] ?? 'Joueur')];
+  return ['uid' => $uid, 'id' => live_code_of($uid), 'name' => (string) ($m['n'][$uid] ?? 'Joueur'), 'ph' => live_photo_of($uid)];
 }
 
 
@@ -463,10 +492,10 @@ function live_inbox_read(string $uid, string $peer): void {
 }
 
 /** Message privé de $from vers $to. Refusé (sans le dire) si $to a bloqué $from. */
-function live_dm_send(string $from, string $to, string $text, string $img = ''): array {
+function live_dm_send(string $from, string $to, string $text, string $img = '', string $wh = ''): array {
   if ($from === '' || $to === '' || $from === $to || ($text === '' && $img === '')) return ['ok' => false, 'reason' => 'empty'];
   $msg = ['id' => 'm' . bin2hex(random_bytes(6)), 'f' => $from, 't' => $text, 'at' => time()];
-  if ($img !== '') $msg['img'] = $img;
+  if ($img !== '') { $msg['img'] = $img; if ($wh !== '') $msg['wh'] = $wh; }
   $pair = live_pair($from, $to);
   // Bloqué par le destinataire : le message reste visible pour l'expéditeur seulement (il ne sait pas qu'il est bloqué).
   if (live_is_blocked($to, $from)) $msg['hid'] = $to;
@@ -799,7 +828,8 @@ const LIVE_GROUP_OWN = 5;       // v2790 : groupes créés par joueur sur 90 jou
 const LIVE_GROUP_DAYS = 90;
 const LIVE_GROUP_INV_MAX = 30;  // invitations en attente gardées par joueur (30 jours)
 const LIVE_GROUP_MAX = 5000;    // membres par groupe (v2689 : protection du serveur seulement, jamais affichée aux joueurs)
-const LIVE_GROUP_HOUR = 60;     // messages de groupe par heure
+const LIVE_GROUP_HOUR = 120;    // messages de groupe par heure (v2905 : 60 → 120)
+const LIVE_GROUP_DAY = 500;     // v2905 : publications d'un créateur par jour (garde-fou, jamais affiché à l'avance)
 
 function live_group_file(string $gid): string { return live_dir('groups') . '/' . live_safe_id($gid) . '.json'; }
 function live_ugroups_file(string $uid): string { return live_dir('ugroups') . '/' . live_safe_id($uid) . '.json'; }
@@ -809,13 +839,55 @@ function live_ugroups_set(string $uid, string $gid, bool $in): void {
   live_update(live_ugroups_file($uid), function ($q) use ($gid, $in) {
     $g = array_values(array_filter((array) ($q['g'] ?? []), static fn($x) => $x !== $gid));
     if ($in) array_unshift($g, $gid);
-    return ['ok' => true, '__write' => array_merge((array) $q, ['g' => array_slice($g, 0, 100)])]; // v2790 : garde aussi les créations et invitations
+    // v2790 : garde aussi les créations et invitations ; v2905 : 500 groupes (avant 100 : un vieux groupe pouvait sortir de la liste)
+    return ['ok' => true, '__write' => array_merge((array) $q, ['g' => array_slice($g, 0, 500)])];
   });
 }
 
+/** v2905 : un groupe tel qu'il est rangé, remis d'aplomb (vieux fichiers, champs manquants) — jamais d'erreur PHP. */
+function live_group_norm(array $g): array {
+  $g['id'] = (string) ($g['id'] ?? '');
+  $g['name'] = (string) ($g['name'] ?? '');
+  $g['emoji'] = (string) ($g['emoji'] ?? '💬');
+  $g['owner'] = (string) ($g['owner'] ?? '');
+  $g['members'] = array_values(array_filter(array_map('strval', (array) ($g['members'] ?? [])), static fn($m) => $m !== ''));
+  $g['msgs'] = array_values(array_filter((array) ($g['msgs'] ?? []), 'is_array'));
+  $g['tok'] = (string) ($g['tok'] ?? '');
+  $g['at'] = (int) ($g['at'] ?? 0);
+  return $g;
+}
+/** Le groupe (null s'il n'existe pas ou a été supprimé par son créateur). */
 function live_group_get(string $gid): ?array {
+  if (live_safe_id($gid) === '') return null;
   $g = live_read_json(live_group_file($gid), []);
-  return $g ?: null;
+  if (!$g || !empty($g['del'])) return null;
+  $g = live_group_norm($g);
+  return $g['id'] !== '' ? $g : null;
+}
+/** v2905 : le groupe a-t-il été supprimé par son créateur ? (pour afficher « groupe supprimé » proprement) */
+function live_group_deleted(string $gid): bool {
+  if (live_safe_id($gid) === '') return false;
+  return !empty(live_read_json(live_group_file($gid), [])['del']);
+}
+/** v2905 : lien d'invitation toujours valable (vieux groupe sans jeton ou jeton perdu → recréé, idempotent). */
+function live_group_ensure_tok(array $g): array {
+  if ($g['id'] === '') return $g;
+  $tok = preg_replace('/[^a-f0-9]/', '', (string) $g['tok']) ?? '';
+  if ($tok !== '' && (string) (live_read_json(live_dir('gtok') . '/' . $tok . '.json', [])['g'] ?? '') === $g['id']) return $g;
+  $r = live_update(live_group_file($g['id']), function ($cur) {
+    if (!$cur || !empty($cur['del'])) return ['ok' => false];
+    $t = preg_replace('/[^a-f0-9]/', '', (string) ($cur['tok'] ?? '')) ?? '';
+    if ($t === '') { $t = bin2hex(random_bytes(6)); $cur['tok'] = $t; return ['ok' => true, 'tok' => $t, '__write' => $cur]; }
+    return ['ok' => true, 'tok' => $t];
+  });
+  if (!empty($r['tok'])) { live_write_json(live_dir('gtok') . '/' . $r['tok'] . '.json', ['g' => $g['id']]); $g['tok'] = (string) $r['tok']; }
+  return $g;
+}
+/** v2905 : jeton d'un lien d'invitation → identifiant du groupe ('' si inconnu). */
+function live_group_by_tok(string $tok): string {
+  $tok = preg_replace('/[^a-f0-9]/', '', strtolower($tok)) ?? '';
+  if ($tok === '' || strlen($tok) > 40) return '';
+  return live_safe_id((string) (live_read_json(live_dir('gtok') . '/' . $tok . '.json', [])['g'] ?? ''));
 }
 
 function live_group_clean_name(string $n): string {
@@ -841,51 +913,122 @@ function live_group_create(string $uid, string $name, string $emoji): array {
     $since = time() - LIVE_GROUP_DAYS * 86400;
     $made = array_values(array_filter((array) ($q['made'] ?? []), static fn($t) => is_int($t) && $t > $since));
     $made[] = time();
-    return ['ok' => true, '__write' => array_merge((array) $q, ['g' => $g, 'own' => (int) ($q['own'] ?? 0) + 1, 'made' => $made])];
+    $mine = array_values(array_unique(array_merge([$gid], array_map('strval', (array) ($q['mine'] ?? [])))));
+    return ['ok' => true, '__write' => array_merge((array) $q, ['g' => $g, 'own' => (int) ($q['own'] ?? 0) + 1, 'made' => $made, 'mine' => $mine])];
   });
   return ['ok' => true, 'g' => $g];
 }
+/** v2905 : les groupes d'un joueur, y compris ceux qu'il a créés (jamais perdus de sa liste). */
+function live_ugroups_all(string $uid): array {
+  $q = live_read_json(live_ugroups_file($uid), []);
+  return array_values(array_unique(array_map('strval', array_merge((array) ($q['g'] ?? []), (array) ($q['mine'] ?? [])))));
+}
 
 function live_group_join(string $uid, string $tok): array {
-  $tok = preg_replace('/[^a-f0-9]/', '', strtolower($tok)) ?? '';
-  $m = $tok !== '' ? live_read_json(live_dir('gtok') . '/' . $tok . '.json', []) : [];
-  $gid = (string) ($m['g'] ?? '');
+  $gid = live_group_by_tok($tok);
   if ($gid === '') return ['ok' => false, 'reason' => 'gGone'];
   $r = live_update(live_group_file($gid), function ($g) use ($uid) {
-    if (!$g) return ['ok' => false, 'reason' => 'gGone'];
+    if (!$g || !empty($g['del'])) return ['ok' => false, 'reason' => 'gGone'];
+    $g = live_group_norm($g);
+    if (in_array($uid, $g['members'], true)) return ['ok' => true, 'g' => $g, 'already' => true];
     if (in_array($uid, (array) ($g['kicked'] ?? []), true)) return ['ok' => false, 'reason' => 'gGone'];
-    if (in_array($uid, (array) $g['members'], true)) return ['ok' => true, 'g' => $g];
-    if (count((array) $g['members']) >= LIVE_GROUP_MAX) return ['ok' => false, 'reason' => 'gFull'];
+    if (count($g['members']) >= LIVE_GROUP_MAX) return ['ok' => false, 'reason' => 'gFull'];
     $g['members'][] = $uid;
     return ['ok' => true, 'g' => $g, 'joined' => true, '__write' => $g];
   });
   if (!empty($r['ok'])) live_ugroups_set($uid, $gid, true);
+  unset($r['__write']);
   return $r;
 }
 
-function live_group_send(string $uid, string $gid, string $text, string $img = ''): array {
+/** v2905 : aperçu d'un lien d'invitation (comme WhatsApp) : logo, nom, nombre de membres, créateur — sans les messages. */
+function live_group_peek(string $tok, string $uid = ''): array {
+  $gid = live_group_by_tok($tok);
+  $g = $gid !== '' ? live_group_get($gid) : null;
+  if (!$g || $g['tok'] === '' || !hash_equals($g['tok'], preg_replace('/[^a-f0-9]/', '', strtolower($tok)) ?? '')) return ['ok' => false, 'reason' => 'gGone'];
+  if ($uid !== '' && in_array($uid, (array) ($g['kicked'] ?? []), true)) return ['ok' => false, 'reason' => 'gGone'];
+  $w = live_who_uid($g['owner']);
+  $o = ['id' => $g['id'], 'name' => $g['name'], 'emoji' => $g['emoji'], 'n' => count($g['members']), 'admin' => (string) ($w['name'] ?? ''), 'adminPh' => (string) ($w['ph'] ?? '')];
+  if (!empty($g['photo'])) $o['photo'] = 'live.php?p=' . rawurlencode((string) $g['photo']);
+  if ($uid !== '') { $o['member'] = in_array($uid, $g['members'], true); $o['mine'] = $g['owner'] === $uid; }
+  return ['ok' => true, 'g' => $o];
+}
+
+function live_group_send(string $uid, string $gid, string $text, string $img = '', string $wh = ''): array {
   $msg = ['id' => 'm' . bin2hex(random_bytes(6)), 'f' => $uid, 't' => $text, 'at' => time()];
   if ($img !== '') $msg['img'] = $img;
+  if ($img !== '' && $wh !== '') $msg['wh'] = $wh;
   return live_update(live_group_file($gid), function ($g) use ($uid, $msg) {
-    if (!$g || !in_array($uid, (array) $g['members'], true)) return ['ok' => false, 'reason' => 'gGone'];
-    if ((string) $g['owner'] !== $uid) return ['ok' => false, 'reason' => 'gOwnerOnly']; // v2790 (propriétaire) : seul le créateur écrit
-    $msgs = (array) ($g['msgs'] ?? []); $msgs[] = $msg;
-    $g['msgs'] = array_slice($msgs, -LIVE_THREAD_KEEP); $g['at'] = $msg['at'];
+    if (!$g || !empty($g['del'])) return ['ok' => false, 'reason' => 'gGone'];
+    $g = live_group_norm($g);
+    if (!in_array($uid, $g['members'], true)) return ['ok' => false, 'reason' => 'gGone'];
+    if ($g['owner'] !== $uid) return ['ok' => false, 'reason' => 'gOwnerOnly']; // v2790 (propriétaire) : seul le créateur écrit
+    $g['msgs'][] = $msg;
+    $g['msgs'] = array_slice($g['msgs'], -LIVE_THREAD_KEEP); $g['at'] = $msg['at'];
     return ['ok' => true, 'msg' => $msg, 'g' => $g, '__write' => $g];
   });
 }
 
+/** Quitter un groupe (ou, pour le créateur, retirer quelqu'un). v2905 : le créateur ne quitte jamais son groupe
+    (il le supprime : live_group_delete) — avant, il pouvait partir et laisser un groupe orphelin. */
 function live_group_leave(string $uid, string $gid, string $who = ''): array {
   $target = $who !== '' ? $who : $uid;
   $r = live_update(live_group_file($gid), function ($g) use ($uid, $target) {
-    if (!$g) return ['ok' => false];
-    if ($target !== $uid && (string) $g['owner'] !== $uid) return ['ok' => false, 'reason' => 'gOwner'];
-    $g['members'] = array_values(array_filter((array) $g['members'], static fn($m) => $m !== $target));
+    if (!$g || !empty($g['del'])) return ['ok' => false, 'reason' => 'gGone'];
+    $g = live_group_norm($g);
+    if ($target !== $uid && $g['owner'] !== $uid) return ['ok' => false, 'reason' => 'gOwner'];
+    if ($target === $g['owner']) return ['ok' => false, 'reason' => 'gOwnerLeave'];
+    if (!in_array($target, $g['members'], true)) return ['ok' => true, 'gone' => true]; // déjà parti : rien à faire
+    $g['members'] = array_values(array_filter($g['members'], static fn($m) => $m !== $target));
     if ($target !== $uid) { $g['kicked'] = array_values(array_unique(array_merge((array) ($g['kicked'] ?? []), [$target]))); }
-    if ((string) $g['owner'] === $target && $g['members']) $g['owner'] = $g['members'][0];
     return ['ok' => true, '__write' => $g];
   });
   if (!empty($r['ok'])) live_ugroups_set($target, $gid, false);
+  unset($r['__write']);
+  return $r;
+}
+
+/** v2905 (propriétaire) : le CRÉATEUR supprime son groupe pour tout le monde. Le fichier est gardé (marqué supprimé,
+    pour l'équipe), le lien d'invitation ne marche plus, le groupe disparaît chez tous les membres. Idempotent. */
+function live_group_delete(string $uid, string $gid): array {
+  $r = live_update(live_group_file($gid), function ($g) use ($uid) {
+    if (!$g) return ['ok' => false, 'reason' => 'gGone'];
+    if (!empty($g['del'])) return ['ok' => (string) ($g['owner'] ?? '') === $uid, 'reason' => 'gGone', 'tok' => ''];
+    if ((string) ($g['owner'] ?? '') !== $uid) return ['ok' => false, 'reason' => 'gOwner'];
+    $g['del'] = time();
+    return ['ok' => true, 'tok' => (string) ($g['tok'] ?? ''), '__write' => $g];
+  });
+  if (empty($r['ok'])) { unset($r['__write'], $r['tok']); return $r; }
+  $tok = preg_replace('/[^a-f0-9]/', '', (string) ($r['tok'] ?? '')) ?? '';
+  if ($tok !== '') @unlink(live_dir('gtok') . '/' . $tok . '.json');
+  live_ugroups_set($uid, $gid, false);
+  live_update(live_ugroups_file($uid), function ($q) use ($gid) {
+    $q['mine'] = array_values(array_filter(array_map('strval', (array) ($q['mine'] ?? [])), static fn($x) => $x !== $gid));
+    return ['ok' => true, '__write' => $q];
+  });
+  return ['ok' => true];
+}
+
+/** v2905 : photo du groupe (créateur seulement) ; '' = retour au logo. */
+function live_group_set_photo(string $uid, string $gid, string $file): array {
+  $r = live_update(live_group_file($gid), function ($g) use ($uid, $file) {
+    if (!$g || !empty($g['del'])) return ['ok' => false, 'reason' => 'gGone'];
+    if ((string) ($g['owner'] ?? '') !== $uid) return ['ok' => false, 'reason' => 'gOwner'];
+    if ($file === '') unset($g['photo']); else $g['photo'] = $file;
+    return ['ok' => true, '__write' => $g];
+  });
+  unset($r['__write']);
+  return $r;
+}
+/** v2905 : le créateur change le logo de son groupe. */
+function live_group_set_emoji(string $uid, string $gid, string $emoji): array {
+  if (!preg_match('/^[^\sA-Za-z0-9<>"\'&]{1,8}$/u', $emoji)) return ['ok' => false, 'reason' => 'fail'];
+  $r = live_update(live_group_file($gid), function ($g) use ($uid, $emoji) {
+    if (!$g || !empty($g['del'])) return ['ok' => false, 'reason' => 'gGone'];
+    if ((string) ($g['owner'] ?? '') !== $uid) return ['ok' => false, 'reason' => 'gOwner'];
+    $g['emoji'] = $emoji; unset($g['photo']);
+    return ['ok' => true, '__write' => $g];
+  });
   unset($r['__write']);
   return $r;
 }
@@ -908,7 +1051,7 @@ function live_group_add(string $uid, string $gid, array $peers): array {
   if (!$ok) return ['ok' => false, 'reason' => 'gNoneAdded'];
   $added = [];
   $r = live_update(live_group_file($gid), function ($g) use ($uid, $ok, &$added) {
-    if (!$g || !in_array($uid, (array) $g['members'], true)) return ['ok' => false, 'reason' => 'gGone'];
+    if (!$g || !empty($g['del']) || !in_array($uid, (array) $g['members'], true)) return ['ok' => false, 'reason' => 'gGone'];
     $isOwner = (string) $g['owner'] === $uid;
     foreach ($ok as $p) {
       if (in_array($p, (array) $g['members'], true)) continue;
@@ -963,7 +1106,7 @@ function live_group_answer(string $uid, string $gid, bool $yes): array {
   if (!$yes) return ['ok' => true, 'refused' => true];
   $by = (string) ($inv['by'] ?? '');
   $r = live_update(live_group_file($gid), function ($g) use ($uid, $by) {
-    if (!$g) return ['ok' => false, 'reason' => 'gGone'];
+    if (!$g || !empty($g['del'])) return ['ok' => false, 'reason' => 'gGone'];
     if (in_array($uid, (array) $g['members'], true)) return ['ok' => true, 'g' => $g];
     if (in_array($uid, (array) ($g['kicked'] ?? []), true)) {
       if ((string) $g['owner'] !== $by) return ['ok' => false, 'reason' => 'gGone'];

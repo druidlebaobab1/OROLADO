@@ -341,3 +341,132 @@ html[dir=rtl] #liveModal .sx .sx-ell{text-align:right}
 #liveModal .sx-add .sx-btn{max-width:40%;padding:0 14px}
 #liveModal .sx{color-scheme:dark}
 #liveModal .sx-b.pic img{min-height:120px}
+
+/* ======================================================================================================
+   v2905 (propriétaire) — Social solide comme WhatsApp : page BLOQUÉE (ni zoom, ni glissement de côté), barre d'écriture
+   au-dessus du clavier, photos de profil, logos de groupe dessinés, aperçu d'un lien d'invitation, copie « ✓ » sans
+   notification, confirmations dans le site, bulles qui gardent leur place (plus de « tic-tic »).
+   ====================================================================================================== */
+/* Social s'ouvre sans glisser (comme Paris / Jeux) */
+html body #liveModal#liveModal.active > .modal-box{animation:none!important}
+/* écran bloqué : rien ne défile derrière, jamais de largeur en trop */
+html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflow:hidden!important;overscroll-behavior:none}
+#liveModal .sx{max-width:100%;overflow:hidden;overflow-wrap:anywhere}
+#liveModal .sx-scr,#liveModal .sx-panel,#liveModal .sx-hd,#liveModal .sx-comp,#liveModal .sx-msgs,#liveModal .sx-body{max-width:100%;min-width:0}
+#liveModal .sx-msgs{overflow-x:hidden;touch-action:pan-y}
+#liveModal .sx-hd{overflow:hidden}
+@media (max-width:859px){
+  /* le clavier de l'iPhone s'ouvre : la page prend la hauteur VISIBLE (visualViewport), l'en-tête reste en haut */
+  html:root body #liveModal#liveModal#liveModal.sx-on > .modal-box{top:var(--sx-vt,0px)!important;bottom:auto!important;left:0!important;right:0!important;width:100%!important;max-width:100%!important;height:var(--sx-vh,100%)!important;max-height:none!important;transform:none!important}
+  html:root body #liveModal.sx-on{overflow:hidden!important;overscroll-behavior:none}
+}
+/* iPhone : une case de moins de 16 px fait zoomer toute la page → toujours 16 px ; seul le texte d'aide rapetisse */
+#liveModal .sx input,#liveModal .sx textarea{font-size:16px!important}
+#liveModal .sx input::placeholder,#liveModal .sx textarea::placeholder{font-size:var(--sx-ph,inherit)}
+
+/* en-tête de la liste : logo Social + titre + sous-titre */
+#liveModal .sx-lhd{gap:4px}
+#liveModal .sx-logo{flex:0 0 auto;width:34px;height:34px;display:grid;place-items:center;margin-inline-start:2px}
+#liveModal .sx-logo svg{width:34px;height:34px;display:block;filter:drop-shadow(0 4px 10px rgba(124,58,237,.45))}
+#liveModal .sx-tt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;padding:0 6px;line-height:1.1}
+#liveModal .sx-tt .sx-ttl{padding:0;font-size:21px}
+#liveModal .sx-tt small{font-size:12px;font-weight:600;color:var(--sx-sub);margin-top:2px}
+
+/* avatars : photo de profil, logo de groupe (taille réservée : rien ne bouge quand l'image arrive) */
+#liveModal .sx-av > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;background:rgba(255,255,255,.06)}
+#liveModal .sx-av-ph{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+#liveModal .sx-av-e{background:none;box-shadow:none}
+#liveModal .sx-av-e .sx-emb,#liveModal .sx-emos .sx-emb{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+#liveModal .sx-av .sx-dot{z-index:1}
+#liveModal .sx-wa{flex:0 0 auto;display:block;width:42px;height:42px}
+#liveModal .sx-wa .sx-av{width:42px!important;height:42px!important;font-size:17px}
+#liveModal .sx-av-e svg.sx-emb{width:100%!important;height:100%!important}
+/* lignes en attente (premier chargement) : même hauteur que les vraies, pas de saut */
+#liveModal .sx-skel .sx-av{background:rgba(255,255,255,.07);box-shadow:none}
+#liveModal .sx-skel .sx-rm i{display:block;height:11px;border-radius:6px;background:rgba(255,255,255,.07);width:62%}
+#liveModal .sx-skel .sx-rm i + i{width:84%;margin-top:6px}
+
+/* ma photo (carte « Mon identifiant ») et photo du groupe : bouton avec petit appareil photo */
+#liveModal .sx-mya{position:relative;flex:0 0 auto;border:0;background:none;padding:0;border-radius:50%;display:block}
+#liveModal .sx-idc .sx-mya .sx-av{width:46px;height:46px;font-size:19px}
+#liveModal .sx-camb{position:absolute;inset-inline-end:-3px;bottom:-3px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,var(--sx-gold),var(--sx-gold2));color:#2B1700;box-shadow:0 0 0 2px #1a1240;z-index:2}
+#liveModal .sx-camb .sx-ic{width:13px;height:13px;stroke-width:2.3}
+#liveModal .sx-mya.big .sx-camb{width:30px;height:30px}
+#liveModal .sx-mya.big .sx-camb .sx-ic{width:17px;height:17px}
+
+/* copier : ✓ vert sur le bouton / la ligne pendant 1,5 s */
+#liveModal .sx-copied{color:#4ADE80!important;background:rgba(34,197,94,.16)!important;transition:background .15s,color .15s}
+#liveModal .sx-copied .sx-ic{color:#4ADE80!important;stroke:#4ADE80!important}
+#liveModal .sx-linkc.sx-copied{box-shadow:inset 0 0 0 1px rgba(74,222,128,.55)}
+
+/* logos des groupes à choisir : 4 par ligne, avec leur nom */
+#liveModal .sx-emos{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#liveModal .sx-emos button{height:auto;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 6px;font-size:inherit;min-width:0}
+#liveModal .sx-emos button .sx-emb{width:46px;height:46px}
+#liveModal .sx-emos button small{font-size:11.5px;font-weight:700;color:var(--sx-sub);max-width:100%;text-align:center}
+#liveModal .sx-emos button.on small{color:#FFE3A6}
+#liveModal .sx-sheet .sx-h,#liveModal .sx-sheet .sx-menu{margin-top:10px}
+#liveModal .sx-sheet .sx-h{padding-inline:2px}
+#liveModal .sx-menu label.sx-mi{display:flex;align-items:center;gap:14px;width:100%;min-height:54px;padding:0 16px;border-bottom:1px solid var(--sx-line);font-size:15.5px;font-weight:600;cursor:pointer}
+#liveModal .sx-menu label.sx-mi:last-child{border-bottom:0}
+#liveModal .sx-menu label.sx-mi .sx-ic{color:#C4B5FD}
+#liveModal .sx-menu label.sx-mi .fit{flex:1 1 auto}
+
+/* confirmation dans le site (supprimer, quitter, retirer, signaler) */
+#liveModal .sx-ask{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:2px 2px 0}
+#liveModal .sx-askt{font-size:18px;font-weight:800;max-width:100%;overflow-wrap:anywhere}
+#liveModal .sx-ask p{margin:0;color:var(--sx-sub);font-size:14px;line-height:1.45}
+#liveModal .sx-ask textarea{width:100%;min-height:84px;padding:10px 12px;border-radius:14px;border:1.5px solid rgba(255,255,255,.13);background:rgba(8,5,26,.55);color:var(--sx-txt);resize:none;outline:none;line-height:1.35}
+#liveModal .sx-ask .sx-yn{margin-top:8px}
+#liveModal .sx-btn.red{background:linear-gradient(145deg,#F87171,#DC2626);box-shadow:0 8px 18px -10px rgba(220,38,38,.9)}
+#liveModal .sx-exit .sx-ic{width:20px;height:20px}
+
+/* aperçu d'un lien d'invitation */
+#liveModal .sx-joinb{display:flex;align-items:flex-start;justify-content:center}
+#liveModal .sx-join{width:100%;max-width:420px;margin:14px 8px 0;padding:22px 18px 18px;border-radius:22px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
+  background:linear-gradient(160deg,rgba(139,92,246,.22),rgba(242,169,59,.08));border:1px solid rgba(255,255,255,.1);min-height:260px}
+#liveModal .sx-join .sx-av.big{width:96px;height:96px}
+#liveModal .sx-jn{font-size:21px;font-weight:800;max-width:100%}
+#liveModal .sx-join > small{font-size:13.5px;color:var(--sx-sub);max-width:100%}
+#liveModal .sx-join p{margin:0;color:var(--sx-sub);font-size:14px;line-height:1.45}
+#liveModal .sx-jby{display:flex;align-items:center;gap:8px;max-width:100%;margin:4px 0 8px;padding:5px 12px 5px 5px;border-radius:99px;background:rgba(255,255,255,.06);font-size:13px;color:#E4DCFF;font-weight:600}
+#liveModal .sx-jby .sx-av{width:26px;height:26px;font-size:12px}
+#liveModal .sx-jby .fit{min-width:0}
+#liveModal .sx-join .sx-btn.wide{height:50px;margin-top:4px;font-size:16px}
+#liveModal .sx-lnk{border:0;background:none;color:#C4B5FD;font-size:14px;font-weight:700;text-decoration:underline;padding:6px}
+#liveModal .sx-skelav{background:rgba(255,255,255,.07)!important;box-shadow:none!important}
+#liveModal .sx-skl{display:block;width:60%;height:14px;border-radius:7px;background:rgba(255,255,255,.07)}
+#liveModal .sx-skl.s{width:40%}
+
+/* bulles photo : largeur fixe + proportions connues = la place est gardée avant que la photo arrive */
+#liveModal .sx-b.pic:not(.post){width:min(76%,260px)}
+#liveModal .sx-b.pic:not(.post) img{width:100%;height:auto;min-width:0;min-height:0;max-height:340px;object-fit:cover}
+#liveModal .sx-b.pic:not(.post) img.nowh{aspect-ratio:4/3}
+#liveModal .sx-b.aud{min-height:52px}
+#liveModal .sx-aud{height:40px;min-width:200px}
+#liveModal .sx-bt{overflow-wrap:anywhere;word-break:break-word}
+#liveModal .sx-empty .sx-yn{justify-content:center;flex-wrap:wrap}
+#liveModal .sx-empty .sx-yn .sx-btn{flex:1 1 0;min-width:0;max-width:200px}
+/* première ouverture d'une discussion : bulles grises (jamais d'écran vide) */
+#liveModal .sx-bsk{height:38px;box-shadow:none!important;background:rgba(255,255,255,.07)!important;border:0!important}
+#liveModal .sx-bsk.me{background:rgba(139,92,246,.28)!important}
+#liveModal .sx-bsk.w1{width:46%}#liveModal .sx-bsk.w2{width:62%}#liveModal .sx-bsk.w3{width:38%}
+/* nom dans l'en-tête d'une discussion : coupé par « … », le badge vérifié reste visible */
+#liveModal #sxWn{display:flex!important;align-items:center;min-width:0;overflow:hidden}
+#liveModal #sxWn .sx-wnt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#liveModal #sxWn .sx-ver{flex:0 0 auto}
+/* Actualités : une page d'infos (pas un fil de discussion) */
+#liveModal .sx-newsp{background-image:none;padding-top:4px}
+#liveModal .sx-newsp .sx-b.post{align-self:stretch;max-width:none;margin-top:10px;border-radius:18px}
+#liveModal .sx-newsp .sx-good{padding:14px 4px 4px}
+/* Actualités : cartes utiles */
+#liveModal .sx-tips{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px}
+#liveModal .sx-tip{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 10px;border-radius:18px;background:linear-gradient(135deg,rgba(139,92,246,.20),rgba(242,169,59,.07));border:1px solid rgba(255,255,255,.08)}
+#liveModal .sx-tipi{flex:0 0 auto;width:46px;height:46px;display:block}
+#liveModal .sx-tipi .sx-emb{width:46px;height:46px;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+#liveModal .sx-tipt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+#liveModal .sx-tipt b{font-size:14.5px;font-weight:800;line-height:1.25;color:var(--sx-txt)}
+#liveModal .sx-tipt small{font-size:12.5px;line-height:1.35;color:var(--sx-sub)}
+#liveModal .sx-tip .sx-btn.sm{flex:0 0 104px;width:104px;padding:0 10px;font-size:13px}
+@media (max-width:360px){#liveModal .sx-tip .sx-btn.sm{flex-basis:88px;width:88px}#liveModal .sx-tip{gap:9px;padding:9px 8px}#liveModal .sx-tipi,#liveModal .sx-tipi .sx-emb{width:40px;height:40px}}
+@media (max-width:360px){#liveModal .sx-logo{display:none}#liveModal .sx-emos button .sx-emb{width:40px;height:40px}#liveModal .sx-aud{min-width:170px}}

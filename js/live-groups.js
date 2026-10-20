@@ -70,9 +70,8 @@
       $('lgSign').addEventListener('click', function () { if (D6.Live && D6.Live.toAuth) { D6.Live.toAuth('register'); return; } if (D6.Live) D6.Live.close(); if (D6.App && D6.App.showAuth) D6.App.showAuth('register'); });
       return;
     }
-    // Invité par un lien avant de s'inscrire : on rejoint le groupe maintenant.
-    var pend = ''; try { pend = sessionStorage.getItem('oro_gjoin') || ''; sessionStorage.removeItem('oro_gjoin'); } catch (e) { pend = ''; }
-    if (pend) { var jr = await call('gJoin', { tok: pend }); if (jr && jr.ok) { toast(x.joined.replace('{n}', jr.g.name)); openGroup(jr.g.id); return; } }
+    // v2905 (propriétaire) : plus jamais d'entrée AUTOMATIQUE dans un groupe (avant, un lien ouvert plus tôt faisait entrer
+    // le joueur tout seul, des minutes après). On rejoint seulement en touchant « Rejoindre » sur l'aperçu (js/social2.js).
     var j = await call('groups', {});
     var invs = (j && j.ok && j.inv) || [];
     var invHtml = invs.length ? '<div class="lg-invs"><p class="lgi-h">' + esc(x.invTitle) + '</p>' + invs.map(function (v) {
@@ -141,7 +140,7 @@
     var x = X(), link = cur.link;
     if (!copyOnly) { try { if (navigator.share) { await navigator.share({ text: x.shareText + cur.name, url: link }); return; } } catch (e) { return; } }
     try { await navigator.clipboard.writeText(x.shareText + cur.name + ' ' + link); } catch (e) { /* ignore */ }
-    toast(x.copied);
+    // v2905 (propriétaire) : plus de notification « Lien copié ✓ Envoie-le… » (la messagerie montre un ✓ sur le bouton)
   }
   function info() {
     var x = X(), el = $('lgInfo'); if (!el || !cur) return;
@@ -232,18 +231,29 @@
     box = $('liveGroups'); if (!box) return;
     if (target) openGroup(target); else list();
   }
-  // Lien d'invitation : orolado.com/?g=JETON → rejoindre le groupe (après inscription si besoin).
+  /* Lien d'invitation : orolado.com/?g=JETON. v2905 (propriétaire) : avant, le site ouvrait l'ancienne page « Créer un
+     groupe » (la messagerie n'était pas encore chargée) puis faisait entrer le joueur TOUT SEUL dans le groupe. Maintenant :
+     on attend que le site et la messagerie soient prêts, puis on montre l'APERÇU du groupe (js/social2.js joinPreview) ;
+     le joueur choisit lui-même « Rejoindre ». Le code est retiré de l'adresse (une actualisation ne rejoue rien). */
   function bootJoin() {
-    var m = /[?&]g=([a-f0-9]{8,20})/.exec(location.search);
+    var m = /[?&]g=([a-f0-9]{8,40})(?:&|#|$)/i.exec(location.search);
     if (!m) return;
-    var tok = m[1];
-    setTimeout(async function () {
-      if (!D6.Live) return;
-      D6.Live.open('groups');
-      if (guest()) { try { sessionStorage.setItem('oro_gjoin', tok); } catch (e) { /* ignore */ } return; }
-      var r = await call('gJoin', { tok: tok });
-      if (r && r.ok) { toast(X().joined.replace('{n}', r.g.name)); if (D6.Social2) D6.Social2.openGroup(r.g.id); else open(r.g.id); } // v2796 : la messagerie else toast(X()[(r && r.reason) || 'gGone'] || X().gGone, 'err');
-    }, 1800);
+    var tok = m[1].toLowerCase();
+    try { var qs = location.search.replace(/([?&])g=[^&]*(&|$)/, '$1').replace(/[?&]$/, ''); history.replaceState(history.state, '', location.pathname + qs + location.hash); } catch (e) { /* ignore */ }
+    D6.SxJoinWait = tok;
+    var t0 = Date.now(), injected = false;
+    (function wait() {
+      var h = document.documentElement, st = $('screenTrade');
+      var ready = h.classList.contains('oro-booted') && st && !st.classList.contains('hidden') && D6.Live && D6.App && D6.App.openModal;
+      if (ready && D6.Social2 && D6.Social2.joinPreview) { if (D6.SxJoinWait === tok) { D6.SxJoinWait = ''; D6.Social2.joinPreview(tok); } return; }
+      if (ready && !D6.Social2 && !injected && Date.now() - t0 > 1200 && !document.querySelector('script[src*="js/social2.js"]')) {
+        injected = true;
+        var v = ((document.querySelector('script[src*="js/live.js"]') || {}).src || '').replace(/^.*[?&]v=(\d+).*$/, '$1') || '1';
+        var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'css/social2.css?v=' + v; document.head.appendChild(l);
+        var s = document.createElement('script'); s.src = 'js/social2.js?v=' + v; s.async = true; document.head.appendChild(s);
+      }
+      if (Date.now() - t0 < 25000) setTimeout(wait, 150);
+    })();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootJoin); else bootJoin();
   D6.LiveGroups = { t: X, open: open, stop: stop, inGroup: function () { return !!cur; }, back: list, title: function () { return X().title; }, sub: function () { return X().sub; } };
