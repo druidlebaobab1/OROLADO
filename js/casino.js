@@ -1555,9 +1555,64 @@
   };
 
   /* --- jeux en plusieurs étapes (visiteur → inscription) --- */
+  // v2958 (propriétaire) — message du visiteur adapté au jeu : Action (tu contrôles), Live (tirages en direct), Casino.
+  // [titre, ligne 1, ligne 2, bouton] ; 12 langues.
+  var GUEST_MSG = {
+    fr: { skill: ['🎮 À toi de jouer !', 'Ici, c’est toi qui contrôles : cours, esquive, saute, tire. Plus tu tiens, plus ton gain monte — et tu encaisses quand tu veux.'],
+          live: ['🔴 Jeu en direct', 'Un nouveau tour toutes les quelques secondes, le même pour tous les joueurs. Choisis, mise et suis le résultat en direct.'],
+          casino: ['🎰 Casino OROLADO', 'Des jeux rapides et équitables : tu mises, tu joues, ton gain arrive aussitôt sur ton solde.'],
+          end: 'Crée ton compte gratuit, recharge dès 0,10 $ et commence à jouer en argent réel.', btn: 'Créer mon compte gratuit' },
+    en: { skill: ['🎮 Your turn to play!', 'Here, you are in control: run, dodge, jump, shoot. The longer you last, the higher your win — and you cash out whenever you want.'],
+          live: ['🔴 Live game', 'A new round every few seconds, the same for every player. Pick, bet and follow the result live.'],
+          casino: ['🎰 OROLADO Casino', 'Fast, fair games: you bet, you play, your win lands on your balance instantly.'],
+          end: 'Create your free account, top up from $0.10 and start playing for real money.', btn: 'Create my free account' },
+    es: { skill: ['🎮 ¡Te toca jugar!', 'Aquí mandas tú: corre, esquiva, salta, dispara. Cuanto más aguantes, más sube tu ganancia, y cobras cuando quieras.'],
+          live: ['🔴 Juego en vivo', 'Una nueva ronda cada pocos segundos, la misma para todos. Elige, apuesta y sigue el resultado en directo.'],
+          casino: ['🎰 Casino OROLADO', 'Juegos rápidos y justos: apuestas, juegas y tu ganancia llega al instante a tu saldo.'],
+          end: 'Crea tu cuenta gratis, recarga desde 0,10 $ y empieza a jugar con dinero real.', btn: 'Crear mi cuenta gratis' },
+    pt: { skill: ['🎮 É a tua vez!', 'Aqui és tu que controlas: corre, desvia, salta, dispara. Quanto mais aguentas, mais o teu ganho sobe — e levantas quando quiseres.'],
+          live: ['🔴 Jogo ao vivo', 'Uma nova ronda a cada poucos segundos, igual para todos. Escolhe, aposta e acompanha o resultado ao vivo.'],
+          casino: ['🎰 Casino OROLADO', 'Jogos rápidos e justos: apostas, jogas e o ganho chega logo ao teu saldo.'],
+          end: 'Cria a tua conta grátis, carrega a partir de 0,10 $ e começa a jogar com dinheiro real.', btn: 'Criar a minha conta grátis' },
+    ar: { skill: ['🎮 دورك لتلعب!', 'هنا أنت من يتحكم: اركض، راوغ، اقفز، أطلق. كلما صمدت أكثر ارتفع ربحك، وتسحب متى شئت.'],
+          live: ['🔴 لعبة مباشرة', 'جولة جديدة كل بضع ثوانٍ، نفسها لجميع اللاعبين. اختر وراهن وتابع النتيجة مباشرة.'],
+          casino: ['🎰 كازينو OROLADO', 'ألعاب سريعة وعادلة: تراهن وتلعب ويصل ربحك فورًا إلى رصيدك.'],
+          end: 'أنشئ حسابك المجاني، اشحن من 0.10 $ وابدأ اللعب بأموال حقيقية.', btn: 'إنشاء حسابي المجاني' },
+    tr: { skill: ['🎮 Sıra sende!', 'Burada kontrol sende: koş, kaç, zıpla, ateş et. Ne kadar dayanırsan kazancın o kadar artar ve istediğin an çekersin.'],
+          live: ['🔴 Canlı oyun', 'Birkaç saniyede bir yeni tur, tüm oyuncular için aynı. Seç, bahis yap ve sonucu canlı izle.'],
+          casino: ['🎰 OROLADO Casino', 'Hızlı ve adil oyunlar: bahis yaparsın, oynarsın, kazancın anında bakiyene geçer.'],
+          end: 'Ücretsiz hesabını aç, 0,10 $’dan itibaren yükle ve gerçek parayla oynamaya başla.', btn: 'Ücretsiz hesabımı aç' },
+    vi: { skill: ['🎮 Đến lượt bạn!', 'Ở đây bạn điều khiển: chạy, né, nhảy, bắn. Trụ càng lâu, thưởng càng cao — rút bất cứ lúc nào.'],
+          live: ['🔴 Trò chơi trực tiếp', 'Vài giây lại có một vòng mới, giống nhau cho mọi người. Chọn, đặt cược và theo dõi kết quả trực tiếp.'],
+          casino: ['🎰 Casino OROLADO', 'Trò chơi nhanh và công bằng: bạn đặt cược, chơi, tiền thắng vào số dư ngay.'],
+          end: 'Tạo tài khoản miễn phí, nạp từ 0,10 $ và bắt đầu chơi bằng tiền thật.', btn: 'Tạo tài khoản miễn phí' },
+    id: { skill: ['🎮 Giliranmu main!', 'Di sini kamu yang kendalikan: lari, hindari, lompat, tembak. Makin lama bertahan, makin besar kemenanganmu — tarik kapan saja.'],
+          live: ['🔴 Game langsung', 'Ronde baru setiap beberapa detik, sama untuk semua pemain. Pilih, pasang taruhan, dan ikuti hasilnya langsung.'],
+          casino: ['🎰 Kasino OROLADO', 'Game cepat dan adil: pasang, main, kemenangan langsung masuk ke saldomu.'],
+          end: 'Buat akun gratis, isi saldo mulai 0,10 $ dan mulai main dengan uang asli.', btn: 'Buat akun gratisku' },
+    ru: { skill: ['🎮 Твой ход!', 'Здесь управляешь ты: беги, уклоняйся, прыгай, стреляй. Чем дольше держишься, тем больше выигрыш — забирай когда хочешь.'],
+          live: ['🔴 Живая игра', 'Новый раунд каждые несколько секунд, общий для всех игроков. Выбирай, ставь и следи за результатом вживую.'],
+          casino: ['🎰 Казино OROLADO', 'Быстрые и честные игры: ставишь, играешь, выигрыш сразу на балансе.'],
+          end: 'Создай бесплатный аккаунт, пополни от 0,10 $ и играй на реальные деньги.', btn: 'Создать бесплатный аккаунт' },
+    de: { skill: ['🎮 Du bist dran!', 'Hier steuerst du: laufen, ausweichen, springen, schießen. Je länger du durchhältst, desto höher dein Gewinn – auszahlen, wann du willst.'],
+          live: ['🔴 Live-Spiel', 'Alle paar Sekunden eine neue Runde, für alle Spieler gleich. Wählen, setzen und das Ergebnis live verfolgen.'],
+          casino: ['🎰 OROLADO Casino', 'Schnelle, faire Spiele: setzen, spielen, der Gewinn ist sofort auf deinem Guthaben.'],
+          end: 'Erstelle dein kostenloses Konto, lade ab 0,10 $ auf und spiele um echtes Geld.', btn: 'Kostenloses Konto erstellen' },
+    hi: { skill: ['🎮 अब आपकी बारी!', 'यहाँ कंट्रोल आपके हाथ में है: दौड़ें, बचें, कूदें, निशाना लगाएँ। जितना टिकेंगे, जीत उतनी बढ़ेगी — जब चाहें निकालें।'],
+          live: ['🔴 लाइव गेम', 'हर कुछ सेकंड में नया राउंड, सभी खिलाड़ियों के लिए एक जैसा। चुनें, दांव लगाएँ और नतीजा लाइव देखें।'],
+          casino: ['🎰 OROLADO कैसीनो', 'तेज़ और निष्पक्ष गेम: दांव लगाएँ, खेलें, जीत तुरंत बैलेंस में।'],
+          end: 'मुफ़्त खाता बनाएँ, 0.10 $ से रिचार्ज करें और असली पैसों से खेलें।', btn: 'मेरा मुफ़्त खाता बनाएँ' },
+    zh: { skill: ['🎮 轮到你了！', '在这里由你掌控：奔跑、闪避、跳跃、射击。坚持越久，奖金越高——随时可以提现。'],
+          live: ['🔴 直播游戏', '每隔几秒一轮新局，所有玩家同一结果。选择、下注，实时观看结果。'],
+          casino: ['🎰 OROLADO 赌场', '快速公平的游戏：下注、开玩，奖金立即到账。'],
+          end: '免费创建账户，0.10 美元起充值，即可真钱游戏。', btn: '免费创建账户' }
+  };
   function needAccount(box, x) {
     if (!guest()) return false;
-    box.innerHTML = '<div class="cs-try big"><span>' + esc(x.tryNote) + '</span><button type="button" id="csSign2">' + esc(x.signup) + '</button></div>';
+    var gl = (document.documentElement.lang || 'fr').slice(0, 2), gm = GUEST_MSG[gl] || GUEST_MSG.en;
+    var gk = S.game || '', sec = SECTION[gk] === 'skill' ? 'skill' : ((SECTION[gk] === 'live' || LIVE_GAMES[gk]) ? 'live' : 'casino');
+    var gt = gm[sec];
+    box.innerHTML = '<div class="cs-try big cs-try2"><b class="cs-try-t">' + esc(gt[0]) + '</b><span>' + esc(gt[1]) + '</span><span class="cs-try-e">' + esc(gm.end) + '</span><button type="button" id="csSign2">' + esc(gm.btn) + '</button></div>';
     $('csSign2').addEventListener('click', function () { toAuth('register'); });
     return true;
   }
