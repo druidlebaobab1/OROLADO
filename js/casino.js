@@ -363,6 +363,16 @@
       if (D6.Sports && D6.Sports.paint) D6.Sports.paint(v, { guest: guest(), signup: signup, toast: toast, afterPlay: afterPlay, stake: function () { return S.stake; } });
     } else {
       v.className = 'cs-grid';
+      // v2953 (propriétaire, vieux Android) : tant que le catalogue des jeux n'est pas arrivé, un petit rond de chargement
+      // au lieu d'une salle à moitié vide (boules sans dessin) ; la salle complète apparaît d'un coup (catRepaint).
+      // Réseau très lent : au bout de 6 s on montre quand même ce qui est là.
+      if (catAsked && !catDone && !S.catWaitDone) {
+        v.className = 'cs-grid cs-wait';
+        v.innerHTML = '<div class="cg-load"><i></i></div>';
+        clearTimeout(S.catWaitT);
+        S.catWaitT = setTimeout(function () { S.catWaitDone = true; catRepaint(); }, 6000);
+        return;
+      }
       var tile = function (k) {
         return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + (LIVE_GAMES[k] ? '<i class="cs-onair" aria-label="live"><svg viewBox="0 0 16 12"><circle cx="8" cy="6" r="2.2"/><path d="M4.6 2.6a4.8 4.8 0 0 0 0 6.8M11.4 2.6a4.8 4.8 0 0 1 0 6.8"/></svg></i>' : '') + '<span class="fit">' + esc(name(k)) + '</span></b></button>';
       };
@@ -661,7 +671,7 @@
     CAT_FILES.forEach(function (f) { var js = document.createElement('script'); js.src = 'js/games/' + f + '.js?v=' + MOD_V; js.async = true; js.onload = one; js.onerror = one; document.head.appendChild(js); });
   }
   (function () {
-    var later = function () { if (window.requestIdleCallback) requestIdleCallback(loadCatalog, { timeout: 4000 }); else setTimeout(loadCatalog, 2000); };
+    var later = function () { if (window.requestIdleCallback) requestIdleCallback(loadCatalog, { timeout: 1500 }); else setTimeout(loadCatalog, 800); }; // v2953 : plus tôt (avant 4 s / 2 s)
     if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
   })();
   function loadMod(k) {
