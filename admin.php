@@ -715,6 +715,14 @@ function admin_list_payload(string $view, array $req): array {
       }));
     }
     $list = admin_apply_filters($list, $req, 'createdAt');
+    // 2026-10-20 (propriétaire) : nombre d'inscrits PAR PAYS sur la période choisie, et filtre « un seul pays »
+    $byC = [];
+    foreach ($list as $p) { $ck = admin_country_cell($p); $byC[$ck] = ($byC[$ck] ?? 0) + 1; }
+    arsort($byC);
+    $countries = [];
+    foreach ($byC as $ck => $n) $countries[] = [(string) $ck, (int) $n];
+    $wantC = trim((string) ($req['country'] ?? ''));
+    if ($wantC !== '') $list = array_values(array_filter($list, static fn($p) => admin_country_cell($p) === $wantC));
     if ($view !== 'top_balances') {
       // v2641 : rangé par VRAIE heure (les fiches n'écrivent pas l'heure au même format) : le plus récent en haut.
       usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
@@ -724,8 +732,8 @@ function admin_list_payload(string $view, array $req): array {
       $p = admin_enrich_user_row($p, $vaults);
       $rows[] = $asUser($p);
     }
-    $summary = $total . ' joueur(s)';
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions];
+    $summary = $total . ' joueur(s)' . ($wantC !== '' ? ' · ' . $wantC : '') . (count($countries) > 1 && $wantC === '' ? ' · ' . count($countries) . ' pays' : '');
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'countries' => $countries];
   }
 
   if ($view === 'signup_idrange') {
@@ -1808,7 +1816,7 @@ if ($isAjax) {
     }
     $ck = 'list_e2_' . preg_replace('/[^a-z0-9_]+/i', '', $view) . '_' . md5(json_encode([
       $req['q'] ?? '', $req['preset'] ?? '', $req['cal'] ?? '',
-      $req['dateFrom'] ?? '', $req['dateTo'] ?? '', $req['idFrom'] ?? '', $req['page'] ?? 1,
+      $req['dateFrom'] ?? '', $req['dateTo'] ?? '', $req['idFrom'] ?? '', $req['page'] ?? 1, $req['country'] ?? '',
     ]));
     $cached = admin_cache_get($ck, 10);
     if (is_array($cached) && !empty($cached['ok'])) admin_json($cached);
@@ -2388,6 +2396,11 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .totals span{font-size:.62rem;color:var(--muted);text-transform:uppercase;font-weight:800}
     .sus-box{background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.45);color:#FECDD3;border-radius:10px;padding:8px 10px;margin:8px 0;font-weight:700}
     .filters{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;align-items:end}
+    .cty-bar{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 12px}
+    .cty-bar .cty{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#0E1420;color:var(--text);font:inherit;font-size:13px;cursor:pointer}
+    .cty-bar .cty b{color:var(--gold);font-weight:800}
+    .cty-bar .cty.on{border-color:var(--gold);background:rgba(242,179,61,.14)}
+    .cty-bar .cty.clr{color:var(--muted,#9aa3b2)}
     .filters input,.filters select{min-height:38px;border-radius:10px;border:1px solid var(--line);background:#0E1420;color:var(--text);padding:6px 10px;font:inherit}
     .filters input[type=search]{flex:1;min-width:180px}
     .panel-title{color:var(--gold);font-size:.8rem;margin:8px 0}
@@ -2563,7 +2576,9 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <input id="dateFrom" type="date" title="Du" style="display:none">
       <input id="dateTo" type="date" title="Au" style="display:none">
       <input id="idFrom" placeholder="12 ou 12-40" style="display:none;width:160px">
+      <select id="country" title="Pays" style="display:none"><option value="">🌍 Tous les pays</option></select>
     </div>
+    <div class="cty-bar" id="ctyBar" hidden></div>
     <div class="panel-title" id="viewTitle">Inscrits</div>
     <p class="muted" id="viewSum"></p>
     <div class="table-wrap" id="panel"><p class="muted" style="padding:12px">Choisissez un bouton…</p></div>
@@ -2895,7 +2910,7 @@ function renderButtons(badges) {
   });
 }
 document.querySelectorAll('.metric-btn[data-view]').forEach(btn => {
-  btn.addEventListener('click', () => { view = btn.getAttribute('data-view'); page = 1; loadList(); admOpenPage(btn); });
+  btn.addEventListener('click', () => { const nv = btn.getAttribute('data-view'); if (nv !== view) document.getElementById('country').value = ''; view = nv; page = 1; loadList(); admOpenPage(btn); });
 });
 // v2713 : chaque bouton ouvre SA page (le menu se cache, « ← Menu » pour revenir à l'endroit exact)
 let admFrom = null;
@@ -2932,6 +2947,7 @@ function filters() {
     dateFrom: document.getElementById('dateFrom').value,
     dateTo: document.getElementById('dateTo').value,
     idFrom: document.getElementById('idFrom').value,
+    country: document.getElementById('country').value,
     page
   };
 }
@@ -3003,10 +3019,29 @@ async function loadBadges() {
   paintHealth(j.board);
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
 }
+// 2026-10-20 (propriétaire) : inscrits PAR PAYS — liste déroulante (avec le nombre) + pastilles cliquables (les 8 premiers pays)
+function paintCountries(j) {
+  const sel = document.getElementById('country'), bar = document.getElementById('ctyBar');
+  const list = Array.isArray(j.countries) ? j.countries : null;
+  if (!list) { sel.style.display = 'none'; bar.hidden = true; if (sel.value) sel.value = ''; return; }
+  const cur = sel.value;
+  const all = list, tot = all.reduce((a, c) => a + c[1], 0); // le serveur compte TOUS les pays de la période (avant le choix du pays)
+  sel.innerHTML = '<option value="">🌍 Tous les pays ('+tot+')</option>' + all.map(c => '<option value="'+esc(c[0])+'">'+esc(c[0])+' — '+c[1]+'</option>').join('');
+  sel.value = cur; sel.style.display = '';
+  bar.innerHTML = all.slice(0, 8).map(c => '<button type="button" class="cty'+(c[0]===cur?' on':'')+'" data-c="'+esc(c[0])+'">'+esc(c[0])+' <b>'+c[1]+'</b></button>').join('') +
+    (cur ? '<button type="button" class="cty clr" data-c="">✕ Tous</button>' : '');
+  bar.hidden = all.length < 2 && !cur;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('#ctyBar .cty'); if (!b) return;
+  const sel = document.getElementById('country'), v = b.getAttribute('data-c');
+  sel.value = sel.value === v ? '' : v; page = 1; bustList(); loadList(true);
+});
 function renderList(j) {
   const panel = document.getElementById('panel');
   if (!j.ok) { panel.innerHTML = '<p class="muted" style="padding:12px">'+esc(j.reason||'Erreur')+'</p>'; return; }
   document.getElementById('viewSum').textContent = j.summary || '';
+  paintCountries(j);
   let html = '<table><thead><tr>'+(j.cols||[]).map(c=>'<th>'+esc(c)+'</th>').join('');
   if (j.actions) html += '<th></th>';
   html += '</tr></thead><tbody>';
@@ -3518,7 +3553,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   $n('btnNtTest').onclick = () => send('test');
   $n('btnNtAll').onclick = () => send('all');
 })();
-['q','preset','cal','dateFrom','dateTo','idFrom'].forEach(id => {
+['q','preset','cal','dateFrom','dateTo','idFrom','country'].forEach(id => {
   document.getElementById(id).addEventListener('change', () => { page=1; bustList(); loadList(true); });
 });
 document.getElementById('q').addEventListener('keydown', e => { if (e.key==='Enter'){ page=1; bustList(); loadList(true); } });
