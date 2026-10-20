@@ -223,7 +223,7 @@
     if (document.documentElement.classList.contains('oro-lite') || !(to > 0)) { el.textContent = '+$\u00a0' + m2(to); return; }
     var t0 = performance.now(), dur = 520;
     (function step(now) {
-      var k = Math.min(1, (now - t0) / dur); k = 1 - Math.pow(1 - k, 3);
+      var k = Math.max(0, Math.min(1, (now - t0) / dur)); k = 1 - Math.pow(1 - k, 3); // horloge d'image parfois un peu avant t0 : jamais « −0.07 »
       el.textContent = '+$\u00a0' + m2(Math.round(to * k * 100) / 100);
       if (k < 1 && el.isConnected) requestAnimationFrame(step);
     })(t0);
@@ -237,8 +237,10 @@
     // v2794 (propriétaire) : comme le trading, SANS mots — seulement le montant : gagné = « +$ 12.50 » (vert, total encaissé),
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
     t.innerHTML = (win ? '<i class="ct-wal" aria-hidden="true">' + WALLET + '<i class="ct-burst"><b></b><b></b><b></b><b></b><b></b><b></b></i></i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : '0') + '</b>';
-    if (win) countUp(t.querySelector('b[dir]'), Number(r.win) || 0); // dir=ltr : en arabe on lit bien « +$ 0 »
     host.appendChild(t);
+    // 2026-10-20 (QA) : le compteur démarre APRÈS l'ajout à l'écran (avant : pastille pas encore affichée → le compteur
+    // s'arrêtait dès la 1re image et le gain restait « +$ 0.00 » vert)
+    if (win) countUp(t.querySelector('b[dir]'), Number(r.win) || 0); // dir=ltr : en arabe on lit bien « +$ 0 »
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
     // v2805 (propriétaire : jamais rien de superposé) — pendant que la pastille est là, les petits textes du jeu qu'elle couvre
     // s'effacent (gros multiplicateur, statut…) puis reviennent quand elle part.
