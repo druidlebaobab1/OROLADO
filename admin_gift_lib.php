@@ -144,8 +144,13 @@ function admin_gift_payload(string $view, array $req, array $people): array {
   }
 
   if ($view === 'gift_defi') {
-    $MK = ['v100' => 'VOLATILITY', 'stable' => 'ZUL', 'apex500' => 'BAAL', 'horizon50' => 'ORO 999', 'goldtrend' => 'OROF', 'v75' => 'PYTHON',
-      'nexusprime' => 'ASMODUS', 'titanpulse' => 'APOCALYPSE', 'boomspike' => 'VALAC', 'crash300' => 'AZAZEL'];
+    // 2026-10-20 : le Défi tourne sur TOUS les marchés (10 d'origine + indices.json) → noms actuels (avant : liste figée,
+    // COBRA affiché « ZUL », ZUL « PYTHON », nouveaux indices en identifiant brut).
+    $mkName = static function (string $id): string {
+      if (function_exists('admin_asset_name')) return admin_asset_name($id);
+      $n = function_exists('orolado_feed_asset_name') ? orolado_feed_asset_name($id) : '';
+      return $n !== '' ? $n : strtoupper($id);
+    };
     $cols = ['ID', 'Nom', 'E-mail', 'Marché du défi', 'Commencé le', 'Série', 'État', 'Cadeau du jour', 'Défis gagnés', 'Cadeaux reçus (total)'];
     $list = [];
     $today = 0; $paidToday = 0.0;
@@ -162,7 +167,7 @@ function admin_gift_payload(string $view, array $req, array $people): array {
       $who = admin_gift_who($db, (string) $uid);
       $mk = (string) ($st['market'] ?? '');
       $list[] = ['t' => (int) $st['activatedAt'], 'cells' => [$who['id'], $who['name'], $who['email'] !== '' ? $who['email'] : '—',
-        $mk !== '' ? ($MK[$mk] ?? strtoupper($mk)) : '—', admin_gift_date($st['activatedAt']), (int) ($st['streak'] ?? 0) . ' / 5', $state,
+        $mk !== '' ? $mkName($mk) : '—', admin_gift_date($st['activatedAt']), (int) ($st['streak'] ?? 0) . ' / 5', $state,
         !empty($st['won']) ? admin_money($st['reward'] ?? 0) : '—', (string) $wonN, admin_money($sum)], 'who' => $who];
     }
     usort($list, static fn($a, $b) => $b['t'] <=> $a['t']);
