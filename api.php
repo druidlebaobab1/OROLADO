@@ -2247,12 +2247,36 @@ if ($action === 'withdraw') {
     if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ } }
     try {
       require_once __DIR__ . '/tg_lib.php';
-      $pidTg = (string) ($db['users'][(string) $me['id']]['publicId'] ?? $me['publicId'] ?? '');
-      tg_notify_admin(($suspect ? '⚠️ ' : '💸 ') . 'Retrait à payer : ' . number_format($amount, 2, ',', ' ') . " $\n" .
-        'Joueur : ' . ($pidTg !== '' ? $pidTg : (string) $me['id']) . "\n" .
-        'Moyen : ' . ucfirst((string) $operator) . ' ' . (string) $destination . "\n" .
-        '≈ ' . number_format($amount * 580, 0, ',', ' ') . " F\n" .
-        ($suspect ? "À vérifier dans l'admin avant de payer.\n" : '') . 'https://orolado.com/admin.php');
+      // v2960 (propriétaire) : fiche complète, comme dans l'admin
+      $uTg = (array) ($db['users'][(string) $me['id']] ?? []);
+      $pidTg = (string) ($uTg['publicId'] ?? $me['publicId'] ?? '');
+      $nmTg = trim((string) ($uTg['displayName'] ?? $uTg['name'] ?? $me['displayName'] ?? ''));
+      $wdTg = 0;
+      foreach ((array) ($db['withdrawals'] ?? []) as $wx) {
+        if (is_array($wx) && (string) ($wx['userId'] ?? '') === (string) $me['id'] && in_array(strtolower((string) ($wx['status'] ?? '')), ['approved', 'paid', 'completed'], true)) $wdTg++;
+      }
+      $insTg = strtotime((string) ($uTg['createdAt'] ?? '')) ?: 0;
+      $L = [];
+      $L[] = ($suspect ? '⚠️ ' : '💸 ') . 'RETRAIT À PAYER : ' . number_format($amount, 2, ',', ' ') . ' $ (≈ ' . number_format((float) ($amountFcfa ?: $amount * 580), 0, ',', ' ') . ' F)';
+      $L[] = '';
+      $L[] = '👤 Nom : ' . ($nmTg !== '' ? $nmTg : '—');
+      $L[] = '🆔 ID : ' . ($pidTg !== '' ? $pidTg : (string) $me['id']);
+      $L[] = '✉️ E-mail : ' . ((string) ($uTg['email'] ?? $me['email'] ?? '') ?: '—');
+      if (!empty($uTg['phone'])) $L[] = '📞 Téléphone du compte : ' . (string) $uTg['phone'];
+      $ctyTg = strtoupper(trim((string) ($uTg['country'] ?? '')));
+      $L[] = '🌍 Pays : ' . (preg_match('/^[A-Z]{2}$/', $ctyTg) ? $ctyTg . ' · ' : '') . 'indicatif ' . (string) $countryCode;
+      if ($insTg) $L[] = '📅 Inscrit le : ' . gmdate('d/m/Y H:i', $insTg) . ' (GMT)';
+      $L[] = '';
+      $L[] = '🏦 Moyen : ' . (trim((string) ($req['methodName'] ?? '')) ?: ucfirst((string) $operator));
+      $L[] = '📲 Numéro / adresse : ' . (string) $destination;
+      if (trim((string) $beneficiary) !== '') $L[] = '🧾 Bénéficiaire : ' . (string) $beneficiary;
+      $L[] = '💰 Solde restant : ' . number_format((float) ($db['vault'][(string) $me['id']]['real'] ?? 0), 2, ',', ' ') . ' $';
+      $L[] = '📤 Retraits déjà payés à ce joueur : ' . $wdTg;
+      $L[] = '🔖 Réf. retrait : ' . (string) $wdId;
+      if ($suspect) { $L[] = ''; $L[] = '⚠️ À vérifier dans l’admin avant de payer.'; }
+      $L[] = '';
+      $L[] = '👉 https://orolado.com/admin.php';
+      tg_notify_admin(implode("\n", $L));
     } catch (Throwable $e) { /* jamais bloquant */ }
   }
   exit;
