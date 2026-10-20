@@ -232,11 +232,11 @@
     sfxResult(r);
     var x = X(), host = box.querySelector('.cg-stage') || box.querySelector('.cs-stage') || box;
     var old = host.querySelectorAll('.cs-toast'); for (var i = 0; i < old.length; i++) old[i].remove();
-    var win = (Number(r.win) || 0) > 0, t = document.createElement('div');
+    var got = Number(r.win) || 0, put = Number(r.stake) || 0, win = got > 0 && !(put > 0 && got < put - 1e-9), t = document.createElement('div'); // 2026-10-20 (revue) : moins que la mise rendue (ex. Mines 0,97 $ pour 1 $) = pas une victoire verte
     t.className = 'cs-toast ' + (win ? 'win' : 'lose');
     // v2794 (propriétaire) : comme le trading, SANS mots — seulement le montant : gagné = « +$ 12.50 » (vert, total encaissé),
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
-    t.innerHTML = (win ? '<i class="ct-ic" aria-hidden="true">' + CASH + '</i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : '0') + '</b>';
+    t.innerHTML = (win ? '<i class="ct-ic" aria-hidden="true">' + CASH + '</i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : got > 0 ? m2(got) : '0') + '</b>';
     if (win) { var wl = ('+$ ' + m2(Number(r.win) || 0)).length; t.style.setProperty('--ctfs', (wl <= 9 ? 20 : wl <= 12 ? 17 : wl <= 15 ? 14.5 : 12.5) + 'px'); }
     host.appendChild(t);
     // 2026-10-20 (QA) : le compteur démarre APRÈS l'ajout à l'écran (avant : pastille pas encore affichée → le compteur
