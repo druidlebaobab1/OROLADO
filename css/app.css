@@ -12777,9 +12777,9 @@ html:root body #drawerProfile#drawerProfile #btnLogout#btnLogout{background-colo
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{width:auto!important;min-width:0!important;max-width:88px!important;padding:4px 9px 3px!important;column-gap:4px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-flag{width:20px!important;height:14px!important}
 /* 2026-10-20 (propriétaire : « on ne défile pas sur mon site ») — Retrait, téléphones : la taille des cases suit la HAUTEUR de
-   l'écran pour que tout tienne sans défiler. Grand écran (≥ 780 px) : un peu plus d'air et de grandes cases ; moyen : taille
+   l'écran pour que tout tienne sans défiler. Grand écran (≥ 740 px) : un peu plus d'air et de grandes cases ; moyen : taille
    d'origine ; petit (< 715 px) : cases compactes. */
-@media (max-width:859px) and (min-height:780px){
+@media (max-width:859px) and (min-height:740px){
   html:root body #withdrawModal .wd-modal-head{margin-bottom:6px!important}
   html:root body #withdrawModal #wdBalanceLabel{margin-top:4px!important}
   html:root body #withdrawModal .wd-card-grid .wd-card{min-height:42px!important}
