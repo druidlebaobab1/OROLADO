@@ -7,7 +7,17 @@ declare(strict_types=1);
  */
 
 function admin_tz(): DateTimeZone {
-  return new DateTimeZone('Africa/Abidjan');
+  // v2956 (propriétaire) : l'admin s'affiche à l'heure du téléphone qui l'ouvre (fuseau envoyé par le navigateur,
+  // cookie oro_admin_tz) ; sinon heure de Côte d'Ivoire comme avant.
+  static $tz = null;
+  if ($tz === null) {
+    $want = (string) ($_COOKIE['oro_admin_tz'] ?? '');
+    $tz = new DateTimeZone('Africa/Abidjan');
+    if ($want !== '' && preg_match('#^[A-Za-z_]+(/[A-Za-z0-9_+\-]+){0,2}$#', $want)) {
+      try { $tz = new DateTimeZone($want); } catch (Throwable $e) { /* fuseau inconnu : Côte d'Ivoire */ }
+    }
+  }
+  return $tz;
 }
 
 function admin_now(): DateTimeImmutable {
@@ -1706,6 +1716,7 @@ function admin_orders(): array {
 function admin_play_net(string $uid, string $email = ''): float {
   if ($uid === '') return 0.0;
   $net = 0.0;
+  if (!is_file(__DIR__ . '/admin_games_lib.php') || !is_file(__DIR__ . '/sports_lib.php')) return 0.0;
   try {
     require_once __DIR__ . '/admin_games_lib.php';
     $g = admin_gm_player($uid, $email, 'real', 0, 1);

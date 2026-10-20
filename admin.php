@@ -8,7 +8,7 @@ require_once __DIR__ . '/wipe_lib.php';
 require_once __DIR__ . '/admin_gift_lib.php';
 require_once __DIR__ . '/push_lib.php';
 orolado_load_env();
-date_default_timezone_set('Africa/Abidjan');
+date_default_timezone_set(admin_tz()->getName()); // v2956 : heure du téléphone de l'admin (voir admin_tz)
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
   session_name('oro_admin');
@@ -1815,7 +1815,7 @@ if ($isAjax) {
       admin_json(admin_list_payload($view, $req));
     }
     $ck = 'list_e2_' . preg_replace('/[^a-z0-9_]+/i', '', $view) . '_' . md5(json_encode([
-      $req['q'] ?? '', $req['preset'] ?? '', $req['cal'] ?? '',
+      admin_tz()->getName(), $req['q'] ?? '', $req['preset'] ?? '', $req['cal'] ?? '',
       $req['dateFrom'] ?? '', $req['dateTo'] ?? '', $req['idFrom'] ?? '', $req['page'] ?? 1, $req['country'] ?? '',
     ]));
     $cached = admin_cache_get($ck, 10);
@@ -2874,6 +2874,16 @@ let view = 'wd_pending';
 let page = 1;
 const TITLES = Object.fromEntries(TABS.map(t => [t.id, t.k]));
 
+// v2956 : fuseau horaire du téléphone → l'admin affiche les heures (retraits, inscriptions…) à l'heure locale
+(function () {
+  try {
+    var z = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    if (z && document.cookie.indexOf('oro_admin_tz=' + z) < 0) {
+      document.cookie = 'oro_admin_tz=' + z + '; path=/; max-age=31536000; samesite=lax; secure';
+      if (!sessionStorage.getItem('oro_tz_rl')) { sessionStorage.setItem('oro_tz_rl', '1'); location.reload(); }
+    }
+  } catch (e) { /* ancien navigateur : heure de Côte d'Ivoire */ }
+})();
 function ajax(body) {
   return fetch('admin.php?ajax=1', {
     method: 'POST',

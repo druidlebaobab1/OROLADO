@@ -50,6 +50,13 @@ function orolado_notify_player(string $uid, string $kind, float $amount, string 
   try {
     $db = load_db();
     $u = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
+    // v2956 : l'admin crédite sur l'identifiant du coffre (UUID) → on retrouve le joueur par son sbId (avant : introuvable,
+    // donc ni e-mail ni notification pour les cadeaux de l'admin)
+    if (!$u) {
+      foreach (($db['users'] ?? []) as $lid => $cand) {
+        if (is_array($cand) && (string) ($cand['sbId'] ?? '') === $uid) { $u = $cand; $uid = (string) $lid; break; }
+      }
+    }
     $lang = strtolower(substr((string) ($u['lang'] ?? $u['language'] ?? 'fr'), 0, 2));
     $email = trim((string) ($u['email'] ?? ''));
     if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) && function_exists('orolado_mail_send')
