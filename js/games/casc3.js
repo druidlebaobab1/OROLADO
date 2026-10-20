@@ -265,7 +265,7 @@
     chipOf: function (i) { return i - 1; },
     scene: '<defs>' + GOLDG + '<radialGradient id="mjFelt" cx="50%" cy="50%" r="70%"><stop offset="0" stop-color="#15803D"/><stop offset=".75" stop-color="#14532D"/><stop offset="1" stop-color="#052E16"/></radialGradient>' +
       '<linearGradient id="mjWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B45309"/><stop offset="1" stop-color="#78350F"/></linearGradient></defs>' +
-      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#mjWood)"/><rect x="10" y="8" width="280" height="234" rx="18" fill="url(#mjFelt)" stroke="#FBBF24" stroke-opacity=".5" stroke-width="2"/>' +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="#052E16"/><rect x="-60" y="-60" width="420" height="370" fill="url(#mjFelt)"/><rect x="10" y="8" width="280" height="234" rx="18" fill="none" stroke="#FBBF24" stroke-opacity=".35" stroke-width="2"/>' +
       '<g opacity=".18" fill="none" stroke="#BBF7D0" stroke-width="1.4"><circle cx="150" cy="150" r="70"/><circle cx="150" cy="150" r="56"/></g>' +
       '<g id="mjWall">' + [0, 1].map(function (row) { var o = ''; for (var q = 0; q < 12; q++) o += '<g transform="translate(' + (40 + q * 20 + row * 0) + ' ' + (44 - row * 6) + ') scale(.34)"><rect x="-26" y="-34" width="52" height="68" rx="7" fill="#FFFBF0" stroke="#D6D3D1"/><rect x="-26" y="-34" width="52" height="58" rx="7" fill="#15803D" stroke="#14532D"/></g>'; return o; }).join('') + '</g>' +
       MJX.map(function (x, j) { return '<rect x="' + (x - 29) + '" y="' + (MJY - 37) + '" width="58" height="74" rx="9" fill="#052E16" opacity=".5"/><g class="mj-t" id="mjT' + j + '" opacity="0"><g class="mj-in"></g></g>'; }).join('') +
@@ -329,7 +329,7 @@
     var x0 = j ? 176 : 34;
     return '<g transform="translate(' + x0 + ' 14)"><rect width="90" height="12" rx="6" fill="#0F172A" stroke="#334155"/><rect id="rbM' + j + '" x="1.5" y="1.5" width="0" height="9" rx="4.5" fill="' + (j ? '#EF4444' : '#3B82F6') + '"/>' +
       '<text id="rbN' + j + '" x="45" y="36" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" stroke="#0F172A" stroke-width="4" paint-order="stroke" font-family="var(--cg-font),Arial"></text>' +
-      [0, 1, 2].map(function (q) { return '<circle class="rb-d" id="rbD' + j + q + '" cx="' + (j ? 90 - q * 14 - 7 : q * 14 + 7) + '" cy="50" r="5" fill="#1E293B" stroke="#475569"/>'; }).join('') + '</g>';
+      [0, 1, 2].map(function (q) { return '<circle class="rb-d" id="rbD' + j + q + '" cx="' + (j ? 48 + q * 14 : q * 14 + 7) + '" cy="50" r="5" fill="#1E293B" stroke="#475569"/>'; }).join('') + '</g>';
   }
   game({
     key: 'robobox', verb: V.fight, rows: RB,
@@ -412,13 +412,13 @@
   // 5 lanterns, line i = i golden ones: 0 lose · 1 ×0.4 · 2 ×1.6 · 3 ×5 · 4 ×20 · 5 ×200
   var LN = L.rows.lantern, LNX = [50, 100, 150, 200, 250];
   function lantern(j) {
-    return '<g class="ln-l" id="lnL' + j + '"><circle class="ln-halo" r="24" fill="url(#lnHalo)" opacity="0"/><path d="M-11-16h22l4 27h-30z" fill="url(#lnRed)" stroke="#9A3412" stroke-width="1"/>' +
-      '<path class="ln-gold" d="M-11-16h22l4 27h-30z" fill="url(#cyGold)" stroke="#B45309" stroke-width="1" opacity="0"/><path d="M-4-16l-2 27M4-16l2 27" stroke="#7C2D12" stroke-opacity=".35"/><rect x="-12" y="-18" width="24" height="3" rx="1.4" fill="#7C2D12"/>' +
-      '<ellipse cy="12" rx="9" ry="2.6" fill="#FEF08A"/><ellipse cy="10" rx="4" ry="5" fill="#FFF7D6" opacity=".9"/></g>';
+    return '<g class="ln-l" id="lnL' + j + '"><circle class="ln-halo" r="24" fill="url(#lnHalo)" opacity="0"/><path d="M-15-14q15-6 30 0l-4 25h-22z" fill="url(#lnRed)" stroke="#9A3412" stroke-width="1"/>' +
+      '<path class="ln-gold" d="M-15-14q15-6 30 0l-4 25h-22z" fill="url(#cyGold)" stroke="#B45309" stroke-width="1" opacity="0"/><path d="M-5-16l1 27M5-16l-1 27" stroke="#7C2D12" stroke-opacity=".35"/><rect x="-11" y="10" width="22" height="2.6" rx="1.3" fill="#7C2D12"/>' +
+      '<ellipse cy="12" rx="8" ry="2.4" fill="#FEF08A"/><ellipse cy="8" rx="4" ry="5.5" fill="#FFF7D6" opacity=".9"/></g>';
   }
   game({
     key: 'lantern', verb: V.release, rows: LN,
-    chips: [1, 2, 3, 4, 5].map(function (j) { return ['<g transform="translate(-3 1) scale(.5)"><path d="M-11-16h22l4 27h-30z" fill="url(#cyGold)" stroke="#B45309"/></g>' + num(j, 11, '#FDE68A').replace('<text', '<text x="7"'), LN[j]]; }),
+    chips: [1, 2, 3, 4, 5].map(function (j) { return ['<g transform="translate(-3 1) scale(.5)"><path d="M-15-14q15-6 30 0l-4 25h-22z" fill="url(#cyGold)" stroke="#B45309"/></g>' + num(j, 11, '#FDE68A').replace('<text', '<text x="7"'), LN[j]]; }),
     chipOf: function (i) { return i - 1; },
     scene: '<defs>' + GOLDG + '<linearGradient id="lnSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B1026"/><stop offset=".6" stop-color="#312E81"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>' +
       '<linearGradient id="lnRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FB923C"/><stop offset="1" stop-color="#DC2626"/></linearGradient>' +
@@ -556,7 +556,7 @@
     scene: '<defs>' + GOLDG + '<linearGradient id="cuIce" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E0F2FE"/><stop offset="1" stop-color="#F8FAFC"/></linearGradient>' +
       '<linearGradient id="cuBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0C4A6E"/><stop offset="1" stop-color="#082F49"/></linearGradient></defs>' +
       '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#cuBg)"/>' + (function () { var o = ''; for (var q = 0; q < 40; q++) o += '<circle cx="' + ((q * 41) % 320 - 10) + '" cy="' + (12 + (q % 5) * 10) + '" r="1.4" fill="' + ['#FDE047', '#F472B6', '#fff', '#7DD3FC'][q % 4] + '" opacity=".4"/>'; return o; })() +
-      '<path d="M86 0H214L268 250H32z" fill="#BAE6FD"/><path d="M92 0H208L260 250H40z" fill="url(#cuIce)"/><path d="M150 0V250" stroke="#94A3B8" stroke-width=".8" stroke-dasharray="4 5"/><path d="M68 156H232" stroke="#DC2626" stroke-width="2.4" opacity=".7"/><path d="M100 22H200" stroke="#2563EB" stroke-width="1.2" opacity=".5"/>' +
+      '<path d="M68-80H232L304 420H-4z" fill="#BAE6FD"/><path d="M75-80H225L294 420H6z" fill="url(#cuIce)"/><path d="M150 -80V420" stroke="#94A3B8" stroke-width=".8" stroke-dasharray="4 5"/><path d="M68 156H232" stroke="#DC2626" stroke-width="2.4" opacity=".7"/><path d="M100 22H200" stroke="#2563EB" stroke-width="1.2" opacity=".5"/>' +
       '<g transform="translate(' + HX + ' ' + HY + ')"><ellipse rx="44" ry="' + (44 * HRY) + '" fill="#2563EB"/><ellipse rx="30" ry="' + (30 * HRY) + '" fill="#fff"/><ellipse rx="16" ry="' + (16 * HRY) + '" fill="#DC2626"/><ellipse rx="6" ry="' + (6 * HRY) + '" fill="#fff"/><path d="M-46 0H46" stroke="#1E293B" stroke-width=".8" opacity=".5"/></g>' +
       '<g id="cuG" opacity="0">' + stone('#FACC15') + '</g><g id="cuR" opacity="0">' + stone('#FACC15') + '</g>' +
       '<g id="cuBr" opacity="0"><g class="cu-b1"><path d="M-14-12l-12 18" stroke="#78350F" stroke-width="2.4"/><rect x="-22" y="-16" width="16" height="6" rx="3" fill="#EF4444"/></g><g class="cu-b2"><path d="M14-12l12 18" stroke="#78350F" stroke-width="2.4"/><rect x="6" y="-16" width="16" height="6" rx="3" fill="#EF4444"/></g></g>' +
@@ -583,7 +583,7 @@
       var cv = i === 1 ? curl * 0.6 : curl, last = -1, hitR = false;
       await tw(c.box, i === 0 ? 2300 : 2700, function (k) {
         var e = 1 - Math.pow(1 - k, 2), y = lerp(232, fy, e), x = lerp(150, fx, e) + cv * Math.sin(Math.PI * e) * (i === 1 ? 0 : 1), s = cuS(y);
-        tr(S, x, y, s, e * 240);
+        tr(S, x, y, s, Math.sin(e * Math.PI) * curl * 0.4);
         if (i === 0 && y < 0) S.setAttribute('opacity', Math.max(0, 1 + y / 40).toFixed(2));
         tr(Br, x, y - 18 * s, s); b1.setAttribute('transform', 'translate(' + (Math.sin(k * 40) * 4).toFixed(1) + ' 0)'); b2.setAttribute('transform', 'translate(' + (-Math.sin(k * 40) * 4).toFixed(1) + ' 0)');
         Br.setAttribute('opacity', k < 0.7 ? '1' : Math.max(0, 1 - (k - 0.7) / 0.15).toFixed(2));

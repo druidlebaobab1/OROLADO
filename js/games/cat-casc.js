@@ -89,9 +89,9 @@
       '<rect x="16" y="30" width="32" height="24" rx="8" fill="url(#IDb)" stroke="#1E3A8A" stroke-width="1.4"/><circle cx="32" cy="40" r="4" fill="#FDE047"/>' +
       '<circle cx="9" cy="34" r="8.5" fill="url(#IDr)"/><circle cx="55" cy="26" r="8.5" fill="url(#IDr)"/>' + hi(55, 26, 8) + star(56, 50, 5, '#FDE047'),
     lantern: '<defs>' + GOLD + lg('IDr', '#FDBA74', '#DC2626') + '</defs>' +
-      '<circle cx="34" cy="28" r="22" fill="#FDE68A" opacity=".25"/><path d="M22 10h24l6 34H16z" fill="url(#IDg)" stroke="#92400E" stroke-width="1.4"/><path d="M29 10l-3 34M35 10l3 34" stroke="#92400E" stroke-opacity=".35"/><rect x="20" y="7" width="28" height="4" rx="2" fill="#78350F"/>' +
-      '<ellipse cx="34" cy="44" rx="13" ry="3.4" fill="#FEF08A"/><ellipse cx="34" cy="41" rx="5" ry="6" fill="#FFF7D6"/>' +
-      '<g transform="translate(10 40) scale(.5)"><path d="M-11-16h22l4 27h-30z" fill="url(#IDr)"/></g><g transform="translate(56 48) scale(.4)"><path d="M-11-16h22l4 27h-30z" fill="url(#IDr)"/></g>' + tw(56, 12, .8),
+      '<circle cx="34" cy="28" r="24" fill="#FDE68A" opacity=".25"/><path d="M14 12q20-9 40 0l-6 32H20z" fill="url(#IDg)" stroke="#92400E" stroke-width="1.4"/><path d="M28 9l1 35M40 9l-1 35" stroke="#92400E" stroke-opacity=".35"/><rect x="19" y="42" width="30" height="4" rx="2" fill="#78350F"/>' +
+      '<ellipse cx="34" cy="48" rx="11" ry="3" fill="#FEF08A"/><ellipse cx="34" cy="40" rx="5.4" ry="7" fill="#FFF7D6"/>' +
+      '<g transform="translate(9 44) scale(.5)"><path d="M-15-14q15-6 30 0l-4 25h-22z" fill="url(#IDr)"/></g><g transform="translate(58 54) scale(.4)"><path d="M-15-14q15-6 30 0l-4 25h-22z" fill="url(#IDr)"/></g>' + tw(56, 12, .8),
     meteor: '<defs>' + lg('IDt', '#FDE68A', '#F43F5E') + rg('IDh', '#FFFFFF', '#FDE68A', '#F97316') + GOLD + '</defs>' + sh(18) +
       '<path d="M58 4L26 30l4 4z" fill="url(#IDt)" opacity=".85"/><circle cx="26" cy="32" r="7" fill="url(#IDh)"/>' +
       '<path d="M18 56l-3-12 6-6 3 18zM24 56l1-20 7 8-2 12zM32 56l4-12 5 6-3 6z" fill="url(#IDg)" stroke="#92400E" stroke-width="1.2" stroke-linejoin="round"/><path d="M44 56l2-10 5 5-1 5z" fill="#A855F7" stroke="#6B21A8"/>' + tw(10, 10, .8) + tw(46, 22, .6),

@@ -169,7 +169,7 @@
       '<radialGradient id="ptPot" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#57534E"/><stop offset=".55" stop-color="#1C1917"/><stop offset="1" stop-color="#000"/></radialGradient>' +
       '<radialGradient id="ptGlow"><stop offset="0" stop-color="#FFF7D6" stop-opacity=".95"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0"/></radialGradient></defs>' +
       '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#ptWall)"/>' +
-      '<g stroke="#fff" stroke-opacity=".06" stroke-width="1.5" fill="none">' + [0, 1, 2, 3, 4, 5, 6, 7, 8].map(function (r) { var y = 8 + r * 23, o = ''; for (var x = (r % 2 ? -20 : -44); x < 330; x += 48) o += '<rect x="' + x + '" y="' + y + '" width="46" height="21" rx="3"/>'; return o; }).join('') + '</g>' +
+      '<g stroke="#fff" stroke-opacity=".06" stroke-width="1.5" fill="none">' + [-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8].map(function (r) { var y = 8 + r * 23, o = ''; for (var x = (r % 2 ? -20 : -44); x < 330; x += 48) o += '<rect x="' + x + '" y="' + y + '" width="46" height="21" rx="3"/>'; return o; }).join('') + '</g>' +
       '<circle cx="150" cy="46" r="31" fill="#0B1030" stroke="#7C2D12" stroke-width="6"/>' + [[134, 30], [170, 58], [140, 62], [128, 48]].map(function (p) { return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.2" fill="#fff"/>'; }).join('') +
       '<circle cx="160" cy="38" r="10" fill="#FEF9C3"/><circle cx="165" cy="34" r="9" fill="#0B1030"/><path d="M150 15v62M119 46h62" stroke="#7C2D12" stroke-width="3"/>' +
       '<rect x="6" y="84" width="84" height="7" rx="2" fill="#92400E"/><rect x="210" y="84" width="84" height="7" rx="2" fill="#92400E"/>' +
@@ -261,8 +261,8 @@
       [0, 1, 2, 3, 4].map(function (j) { var q = dfQ(j); return '<g class="df-w" data-o="' + j + '"><path d="M' + q[0] + ' ' + q[1] + 'Q' + q[2] + ' ' + q[3] + ' ' + q[4] + ' ' + q[5] + '" stroke="transparent" stroke-width="18" fill="none"/>' +
         '<path class="df-wl" pathLength="100" d="M' + q[0] + ' ' + q[1] + 'Q' + q[2] + ' ' + q[3] + ' ' + q[4] + ' ' + q[5] + '" stroke="' + DFC[j] + '" stroke-width="6" fill="none" stroke-linecap="round"/>' +
         '<circle cx="' + q[4] + '" cy="214" r="6" fill="' + DFC[j] + '" stroke="#0F172A" stroke-width="2"/><text x="' + q[4] + '" y="233" text-anchor="middle" font-size="11" font-weight="900" fill="#0F172A" font-family="var(--cg-font),Arial">' + Math.round(DF[j] * 100) + '%</text></g>'; }).join('') +
-      '<g id="dfConf"></g><g id="dfPl" transform="translate(262 150)"><g id="dfJa"><path d="M0-12L-5 2 0 4z" fill="#E2E8F0" stroke="#475569"/><path d="M-1-14L-12-52" stroke="#DC2626" stroke-width="8" stroke-linecap="round"/></g>' +
-      '<g id="dfJb"><path d="M0-12L5 2 0 4z" fill="#CBD5E1" stroke="#475569"/><path d="M1-14L12-52" stroke="#B91C1C" stroke-width="8" stroke-linecap="round"/></g><circle cy="-14" r="3.6" fill="#94A3B8" stroke="#334155"/></g><g id="cyFx"></g>',
+      '<g id="dfConf"></g><g id="dfPl" transform="translate(262 150)"><g id="dfJa"><path d="M0-12L-5 2 0 4z" fill="#E2E8F0" stroke="#475569"/><path d="M-1-14L-12-52" stroke="#F97316" stroke-width="8" stroke-linecap="round"/><path d="M-9-44L-12-52" stroke="#1F2937" stroke-width="8" stroke-linecap="round"/></g>' +
+      '<g id="dfJb"><path d="M0-12L5 2 0 4z" fill="#CBD5E1" stroke="#475569"/><path d="M1-14L12-52" stroke="#EA580C" stroke-width="8" stroke-linecap="round"/><path d="M9-44L12-52" stroke="#1F2937" stroke-width="8" stroke-linecap="round"/></g><circle cy="-14" r="3.6" fill="#94A3B8" stroke="#334155"/></g><g id="cyFx"></g>',
     onSel: function (c, j) { c.qa('.df-w').forEach(function (e, q) { e.classList.toggle('on', q === j); }); },
     init: function (c) {
       c.qa('.df-w').forEach(function (e) { e.addEventListener('click', function () { if (c.box.classList.contains('cy-busy') || c.demo) return; c.pickOpt(+e.getAttribute('data-o')); }); });
@@ -494,7 +494,7 @@
     scene: '<defs>' + GOLDG + '<linearGradient id="bfWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFEDD5"/><stop offset="1" stop-color="#FDBA74"/></linearGradient>' +
       '<linearGradient id="bfWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D97706"/><stop offset="1" stop-color="#92400E"/></linearGradient>' +
       '<linearGradient id="bfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38BDF8"/><stop offset="1" stop-color="#BAE6FD"/></linearGradient></defs>' +
-      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#bfWall)"/><g stroke="#FB923C" stroke-opacity=".25" stroke-width="10">' + [-60, 0, 60, 120, 180, 240, 300].map(function (x) { return '<path d="M' + x + ' -20V200"/>'; }).join('') + '</g>' +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#bfWall)"/><g stroke="#FB923C" stroke-opacity=".25" stroke-width="10">' + [-60, 0, 60, 120, 180, 240, 300].map(function (x) { return '<path d="M' + x + ' -300V200"/>'; }).join('') + '</g>' +
       '<rect x="22" y="26" width="86" height="76" rx="4" fill="url(#bfSky)" stroke="#FFF7ED" stroke-width="7"/><path d="M65 26v76M22 64h86" stroke="#FFF7ED" stroke-width="4"/><g fill="#fff"><ellipse cx="44" cy="46" rx="12" ry="6"/><ellipse cx="54" cy="42" rx="9" ry="7"/></g><circle cx="92" cy="84" r="7" fill="#FDE047"/>' +
       '<rect x="196" y="36" width="64" height="50" rx="3" fill="#FEF3C7" stroke="#92400E" stroke-width="5"/><path d="M204 78l14-20 10 12 8-8 16 16z" fill="#16A34A"/><circle cx="244" cy="52" r="5" fill="#F97316"/>' +
       '<rect x="-400" y="236" width="1100" height="400" fill="#9A3412"/><path d="M-400 236H700" stroke="#7C2D12" stroke-width="3"/>' +
@@ -615,6 +615,8 @@
         D.innerHTML = Array.apply(null, Array(14)).map(function () { return '<circle r="' + (1.5 + Math.random() * 2.5) + '" fill="#A8A29E"/>'; }).join('');
         var E = [].slice.call(D.children), A = E.map(function () { return [(Math.random() - 0.5) * 70, -10 - Math.random() * 20]; });
         await tw(c.box, 800, function (k) { E.forEach(function (el, j) { tr(el, 150 + A[j][0] * k, 133 + A[j][1] * k + k * k * 70); el.setAttribute('opacity', (1 - k).toFixed(2)); }); });
+        D.innerHTML = ''; tr(F, 150, 150); // a little heap of grey dust stays in the circle
+        F.innerHTML = '<ellipse cy="6" rx="22" ry="5" fill="#57534E" opacity=".6"/><path d="M-16 6l6-9 5 5 4-8 6 6 5-4 6 10z" fill="#A8A29E" stroke="#57534E" stroke-width="1.2"/>';
         return;
       }
       F.innerHTML = gem(i, 1); c.sfx('reveal');
