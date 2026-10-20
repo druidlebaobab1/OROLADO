@@ -2422,8 +2422,8 @@ function admin_legacy_reason(array $p, array $realOrders, ?array $wd = null, arr
   $role = strtolower((string) ($p['role'] ?? ''));
   if (in_array($role, ['suspended', 'banned'], true)) return 'Compte déjà suspendu';
   // v2359 : prix du clic accepté → un robot gagnerait presque toujours grâce à lui (voir trade_lib.php).
-  if (function_exists('orolado_click_edge_reason')) {
-    $clickWhy = orolado_click_edge_reason($p);
+  if (function_exists('orolado_click_robot_reason')) {
+    $clickWhy = orolado_click_robot_reason($p);
     if ($clickWhy !== '') return $clickWhy;
   }
   if ($wd && (!empty($wd['suspect']) || strtolower((string) ($wd['status'] ?? '')) === 'review')) {
@@ -2503,18 +2503,18 @@ function admin_legacy_reason(array $p, array $realOrders, ?array $wd = null, arr
  * id, par lien Supabase (sbId) ou par e-mail : la liste des profils de l'admin ne porte pas ces compteurs.
  */
 function admin_click_reason_for(string $uid, string $email = ''): string {
-  if (!function_exists('orolado_click_edge_reason')) return '';
+  if (!function_exists('orolado_click_robot_reason')) return '';
   $users = admin_local_db()['users'] ?? [];
   $em = strtolower(trim($email));
   if ($uid !== '' && isset($users[$uid]) && is_array($users[$uid])) {
-    $why = orolado_click_edge_reason($users[$uid]);
+    $why = orolado_click_robot_reason($users[$uid]);
     if ($why !== '') return $why;
   }
   foreach ($users as $id => $u) {
     if (!is_array($u)) continue;
     $hit = ($uid !== '' && (string) ($u['sbId'] ?? '') === $uid) || ($em !== '' && strtolower((string) ($u['email'] ?? '')) === $em);
     if (!$hit) continue;
-    $why = orolado_click_edge_reason($u);
+    $why = orolado_click_robot_reason($u);
     if ($why !== '') return $why;
   }
   return '';
@@ -2563,6 +2563,7 @@ function admin_alerts(array $p, array $realOrders, ?array $wd = null, array $ctx
     $p['realStakeVolume'] = max((float) ($p['realStakeVolume'] ?? 0), (float) ($loc['realStakeVolume'] ?? 0));
   }
   if (!isset($p['clickFav']) && isset($loc['clickFav'])) { $p['clickFav'] = $loc['clickFav']; $p['clickUnfav'] = $loc['clickUnfav'] ?? 0; }
+  if (!isset($p['clickW']) && isset($loc['clickW'])) { $p['clickW'] = $loc['clickW']; $p['clickW2'] = $loc['clickW2'] ?? 0; $p['clickWn'] = $loc['clickWn'] ?? 0; }
   $out = [];
   $add = static function (string $lvl, string $txt) use (&$out): void {
     foreach ($out as $a) if ($a['txt'] === $txt) return;
