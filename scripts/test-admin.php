@@ -214,6 +214,13 @@ check('sa date d\'inscription affichée = la vraie (il y a 5 jours)', $p9row !==
 echo "2) Bonus jamais mélangés aux dépôts\n";
 $j = admin_list_payload('dep_all', ['preset' => 'all']);
 check('« Historique Global Dépôts » : 6 dépôts payés, 250 $, aucun bonus', ($j['total'] ?? 0) === 6 && str_contains($j['summary'], '250'), $j['summary'] ?? '');
+// v2961 — dépôts / retraits par pays : [pays, nombre, total] ; filtre un pays
+$cty = $j['countries'] ?? [];
+$nC = array_sum(array_map(static fn($c) => (int) $c[1], $cty)); $sC = array_sum(array_map(static fn($c) => (float) $c[2], $cty));
+check('dépôts par pays : nombre et total = toute la liste (6 dépôts, 250 $)', $nC === 6 && abs($sC - 250) < 0.01 && count($cty[0] ?? []) === 3, json_encode($cty));
+if ($cty) { $j1 = admin_list_payload('dep_all', ['preset' => 'all', 'country' => $cty[0][0]]); check('filtre « un seul pays » sur les dépôts', ($j1['total'] ?? -1) === (int) $cty[0][1], (string) ($j1['summary'] ?? '')); }
+$jw = admin_list_payload('wd_all', ['preset' => 'all']);
+check('retraits par pays : nombre = toute la liste', array_sum(array_map(static fn($c) => (int) $c[1], $jw['countries'] ?? [])) === ($jw['total'] ?? -1), json_encode($jw['countries'] ?? []));
 $j = admin_list_payload('dep_bonus', ['preset' => 'all']);
 check('« Bonus Offerts » : 4 bonus, 65 $ depuis le début', ($j['total'] ?? 0) === 4 && str_contains($j['summary'], 'Depuis le début $ 65'), $j['summary'] ?? '');
 $j = admin_list_payload('payers', ['preset' => 'all']);
