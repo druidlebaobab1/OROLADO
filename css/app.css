@@ -12834,3 +12834,32 @@ html body #drawerProfile#drawerProfile#drawerProfile .avatar .pav-cam{position:a
   background:linear-gradient(180deg,#FFE7A0,#F2A93B);box-shadow:0 0 0 2px #1C1240,0 2px 5px rgba(0,0,0,.45);pointer-events:none}
 html body #drawerProfile#drawerProfile#drawerProfile .avatar .pav-cam svg{width:12px;height:12px;fill:none;stroke:#3A2100;stroke-width:2.1;stroke-linejoin:round}
 html body #drawerProfile#drawerProfile#drawerProfile .prof-name{max-width:calc(100vw - 120px)!important}
+
+/* 2026-10-20 (propriétaire) — HAUT DU PROFIL sans le titre « Profil » : à sa place, la photo de profil (grande boule, cadre doré,
+   appareil photo) avec le nom juste à côté et un petit lien « Ajouter une photo ». La langue et la croix restent à droite.
+   Une seule ligne : le profil prend même un peu MOINS de hauteur qu'avant (rien ne déborde, de l'iPhone SE à la télé). */
+html body #drawerProfile .prof-title-sr{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;margin:-1px!important;padding:0!important;border:0!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head{display:flex!important;align-items:center!important;gap:8px!important;padding-left:14px!important;padding-right:12px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head > #langBarTrade#langBarTrade{position:static!important;transform:none!important;left:auto!important;right:auto!important;top:auto!important;margin:0 0 0 auto!important;flex:0 0 auto}
+html[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head > #langBarTrade#langBarTrade{margin:0 auto 0 0!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head .btn-close{margin:0!important;flex:0 0 auto}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero{flex:1 1 auto!important;min-width:0!important;display:flex!important;align-items:center!important;gap:12px!important;padding:2px 0!important;margin:0!important;background:none!important;border:0!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero .avatar{width:62px!important;height:62px!important;min-width:62px!important;flex:0 0 62px!important;margin:0!important;font-size:21px!important;
+  box-shadow:0 0 0 2.5px #FCD27B,0 0 0 5px rgba(124,58,237,.35),0 0 22px rgba(251,191,36,.45),-5px -5px 10px rgba(80,30,0,.4) inset!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero .avatar.has-ph{box-shadow:0 0 0 2.5px #FCD27B,0 0 0 5px rgba(124,58,237,.35),0 0 22px rgba(251,191,36,.45)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero .avatar .pav-cam{width:22px!important;height:22px!important;right:-3px!important;bottom:-2px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero .avatar .pav-cam svg{width:13px!important;height:13px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero-t{flex:1 1 auto;min-width:0;display:flex!important;flex-direction:column;align-items:flex-start;gap:5px;min-height:0!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero .prof-name{max-width:100%!important;font-size:1.18rem!important;line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html:root body #drawerProfile .prof-ph-hint{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:3px 9px 3px 7px;border-radius:999px;border:1px solid rgba(252,210,123,.45);background:rgba(252,210,123,.1);
+  color:#FDE68A;font:700 11.5px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+html:root body #drawerProfile .prof-ph-hint[hidden]{display:none!important}
+html:root body #drawerProfile .prof-ph-hint svg{flex:0 0 13px;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linejoin:round}
+html:root body #drawerProfile .prof-ph-hint span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:root body #drawerProfile .prof-ph-hint:active{transform:scale(.96)}
+@media (max-width:360px){
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero{gap:9px!important}
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero .avatar{width:52px!important;height:52px!important;min-width:52px!important;flex-basis:52px!important;font-size:18px!important}
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero .prof-name{font-size:1.02rem!important}
+}
+@media (max-width:360px){html:root body #drawerProfile .prof-ph-hint{display:none!important}}

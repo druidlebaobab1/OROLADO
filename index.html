@@ -165,7 +165,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=2913">
+    <link rel="stylesheet" href="css/app.css?v=2915">
     <link rel="stylesheet" href="css/auth.css?v=2790">
     <link rel="stylesheet" href="css/tv.css?v=2790">
     <link rel="stylesheet" href="css/galaxy.css?v=2913">
@@ -1262,16 +1262,18 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <div id="drawerBackdrop" class="drawer-backdrop"></div>
   <aside id="drawerProfile" class="drawer" role="dialog" aria-modal="true" aria-labelledby="profTitle" aria-hidden="true">
     <div class="drawer-head">
-      <h2 id="profTitle" data-i18n="profileBtn">Profil</h2>
+      <!-- 2026-10-20 (propriétaire) : plus de titre « Profil » visible : à sa place, la photo de profil et le nom -->
+      <h2 id="profTitle" class="prof-title-sr" data-i18n="profileBtn">Profil</h2>
+      <div class="prof-head prof-hero">
+        <div class="avatar" id="profAvatar">OR</div>
+        <div class="prof-hero-t">
+          <div class="prof-name" id="profName">—</div>
+          <button type="button" class="prof-ph-hint" id="profPhHint" hidden></button>
+        </div>
+      </div>
       <!-- v2690 (propriétaire) : la langue est maintenant dans le profil (plus dans la barre du haut) -->
       <div class="lang-dd lang-in-profile" id="langBarTrade"></div>
       <button type="button" class="btn-close" id="btnCloseDrawer" aria-label="Close">✕</button>
-    </div>
-    <div class="prof-head">
-      <div class="avatar" id="profAvatar">OR</div>
-      <div>
-        <div class="prof-name" id="profName">—</div>
-      </div>
     </div>
     <div class="card glass">
       <div class="list-row">
@@ -2291,10 +2293,10 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/receipt.js?v=2790"></script>
   <script src="js/back.js?v=2912"></script>
   <script src="js/push.js?v=2790"></script>
-  <script src="js/app.js?v=2913"></script>
+  <script src="js/app.js?v=2915"></script>
   <script src="js/portal.js?v=2891"></script>
   <script src="js/live-ui.js?v=2910"></script>
-  <script src="js/live.js?v=2914"></script>
+  <script src="js/live.js?v=2915"></script>
   <script src="js/live-quiz-data.js?v=2790"></script>
   <script src="js/live-fun.js?v=2790"></script>
   <script src="js/live-groups.js?v=2905"></script>

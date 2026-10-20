@@ -230,6 +230,14 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
     $p = $peer['uid'];
     if ($action === 'find') live_out(['ok' => true, 'peer' => ['id' => $peer['id'], 'name' => $peer['name'], 'ph' => (string) ($peer['ph'] ?? '')]]);
     if ($action === 'friendAnswer') { live_dm_answer($uid, $p, !empty($req['yes'])); live_out(['ok' => true]); } // v2796
+    if ($action === 'dm' && (string) ($req['before'] ?? '') !== '') {
+      // 2026-10-20 : les 80 messages juste AVANT celui-là (on remonte dans la discussion) ; ne marque rien comme lu
+      $thr = live_dm_thread($uid, $p); $before = (string) $req['before']; $ix = -1;
+      foreach ($thr as $i => $mm) if ((string) ($mm['id'] ?? '') === $before) { $ix = $i; break; }
+      if ($ix <= 0) live_out(['ok' => true, 'older' => [], 'more' => false]);
+      $from = max(0, $ix - 80);
+      live_out(['ok' => true, 'older' => array_map(static fn($m) => $dmOut($m, $uid, $peer['id']), array_slice($thr, $from, $ix - $from)), 'more' => $from > 0]);
+    }
     if ($action === 'dm') {
       // v2905 : « peek » = lecture en avance (Social prépare les discussions) → ne marque rien comme lu
       if (empty($req['peek'])) live_inbox_read($uid, $p);
@@ -241,7 +249,7 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
       $myRow = (array) (live_inbox($uid)[$p] ?? []);
       live_out(['ok' => true, 'peer' => ['id' => $peer['id'], 'name' => $peer['name'], 'ph' => (string) ($peer['ph'] ?? '')], 'blocked' => live_is_blocked($uid, $p),
         'on' => live_seen_on($p), 'peerUn' => $peerUn, 'req' => live_dm_is_request($uid, $myRow, live_dm_thread($uid, $p)),
-        'delta' => $delta, 'msgs' => array_map(static fn($m) => $dmOut($m, $uid, $peer['id']), array_slice($thr, -80)),
+        'delta' => $delta, 'more' => !$delta && count($thr) > 80, 'msgs' => array_map(static fn($m) => $dmOut($m, $uid, $peer['id']), array_slice($thr, -80)),
         'duel' => $duelOut(live_duel_last($uid, $p), $uid), 'stats' => live_duel_stats($uid), 'hisStats' => live_duel_stats($p)]);
     }
     if ($action === 'duelCreate') {
@@ -331,6 +339,7 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
         return $x;
       }, array_slice($g['msgs'], -80));
       $o['delta'] = $delta;
+      $o['more'] = !$delta && count($g['msgs']) > 80; // 2026-10-20 : il reste des messages plus anciens (chargés en remontant)
       if (!$delta) $o['members'] = array_map(static function ($m) use ($g) { $w = live_who_uid((string) $m); return ['name' => (string) ($w['name'] ?? 'Joueur'), 'id' => (string) ($w['id'] ?? ''), 'ph' => (string) ($w['ph'] ?? ''), 'owner' => (string) $m === $g['owner']]; }, array_slice($g['members'], 0, 300));
     }
     return $o;
@@ -370,6 +379,16 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
     live_out(['ok' => false, 'reason' => $gid !== '' && live_group_deleted($gid) ? 'gDeleted' : 'gGone']);
   }
   if ($action === 'gGet') {
+    // 2026-10-20 : « before » = les 80 messages juste AVANT celui-là (on remonte dans la discussion, comme WhatsApp)
+    $before = (string) ($req['before'] ?? '');
+    if ($before !== '') {
+      $all = live_group_norm($g)['msgs']; $ix = -1;
+      foreach ($all as $i => $mm) if ((string) ($mm['id'] ?? '') === $before) { $ix = $i; break; }
+      if ($ix <= 0) live_out(['ok' => true, 'older' => [], 'more' => false]);
+      $from = max(0, $ix - 80); $g2 = $g; $g2['msgs'] = array_slice($all, $from, $ix - $from);
+      $o2 = $gOut($g2, $uid, true, '');
+      live_out(['ok' => true, 'older' => $o2['msgs'] ?? [], 'more' => $from > 0]);
+    }
     if ($g['owner'] === $uid) $g = live_group_ensure_tok($g); // v2905 : le lien d'invitation du créateur marche toujours
     live_out(['ok' => true, 'g' => $gOut($g, $uid, true, (string) ($req['since'] ?? ''))]);
   }

@@ -474,3 +474,15 @@ html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflo
 #liveModal .sx-bw.ph{display:flex;align-items:center;gap:6px;min-width:0}
 #liveModal .sx-bw.ph img{flex:0 0 20px;width:20px;height:20px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--av) 70%,#fff)}
 #liveModal .sx-bw.ph span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 2026-10-20 (propriétaire : discussions fluides, sans à-coups) :
+   – l'état d'envoi (horloge → ✓ → ✓✓) a TOUJOURS la même largeur : la bulle ne change plus de taille ni de lignes ;
+   – le message en cours d'envoi n'est plus pâli (pas de « clignement » quand il part) ;
+   – un nouveau message apparaît en douceur (glisse de 8 px), sans pousser le reste de l'écran. */
+#liveModal .sx-meta .sx-st,#liveModal .sx-meta .sx-tick{display:inline-flex;justify-content:center;align-items:center;width:18px;height:14px;flex:0 0 18px}
+#liveModal .sx-b.sending{opacity:1}
+#liveModal .sx-b.sx-pop{animation:sxPop .24s cubic-bezier(.2,.85,.25,1) both}
+#liveModal .sx-b.me.sx-pop{transform-origin:100% 100%}
+#liveModal .sx-b.them.sx-pop{transform-origin:0 100%}
+@keyframes sxPop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+html.oro-lite #liveModal .sx-b.sx-pop{animation:none}
+@media (prefers-reduced-motion:reduce){#liveModal .sx-b.sx-pop{animation:none}}

@@ -212,7 +212,9 @@
   function syncAttrs(o, n) {
     var i, a;
     for (i = o.attributes.length - 1; i >= 0; i--) { a = o.attributes[i].name; if (!n.hasAttribute(a) && a !== 'style') o.removeAttribute(a); }
+    var pop = o.classList && o.classList.contains('sx-pop');
     for (i = 0; i < n.attributes.length; i++) { a = n.attributes[i]; if (o.getAttribute(a.name) !== a.value) o.setAttribute(a.name, a.value); }
+    if (pop && !o.classList.contains('sx-pop')) o.classList.add('sx-pop'); // l'apparition en douceur n'est jamais coupée en route
   }
   function morph(o, n) {
     if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName) { o.parentNode.replaceChild(n, o); return; }
@@ -233,7 +235,7 @@
       if (k) { if (keyed[k]) { m = keyed[k]; delete keyed[k]; } }
       else if (cur && !keyOf(cur) && cur.nodeType === nn.nodeType && cur.nodeName === nn.nodeName) m = cur;
       if (m) { if (m === cur) cur = cur.nextSibling; else op.insertBefore(m, cur); morph(m, nn); }
-      else op.insertBefore(nn, cur);
+      else { if (op._sxPop && !op._sxQuiet && nn.nodeType === 1 && nn.classList.contains('sx-b')) nn.classList.add('sx-pop'); op.insertBefore(nn, cur); }
     });
     while (cur) { var nx = cur.nextSibling; op.removeChild(cur); cur = nx; }
   }
@@ -820,7 +822,7 @@
       syncBtns();
     }
     var M = $('sxMsgs');
-    M.addEventListener('scroll', function () { M._stick = M.scrollTop + M.clientHeight >= M.scrollHeight - 60; }, { passive: true });
+    M.addEventListener('scroll', function () { M._stick = M.scrollTop + M.clientHeight >= M.scrollHeight - 60; if (M.scrollTop < 160) loadOlder(); }, { passive: true });
     M.addEventListener('click', function (e) {
       var a = e.target.closest('a[href]');
       if (a) { var gm = /^https:\/\/(?:www\.)?orolado\.com\/?\?(?:.*&)?g=([a-f0-9]{8,40})/i.exec(a.getAttribute('href') || ''); if (gm) { e.preventDefault(); joinPreview(gm[1].toLowerCase()); return; } }
@@ -868,7 +870,35 @@
   function merge(c, list, delta) {
     if (!delta) return list;
     var seen = {}; list.forEach(function (m) { seen[m.id] = 1; });
-    return c.msgs.filter(function (m) { return !seen[m.id]; }).concat(list).slice(-200);
+    return c.msgs.filter(function (m) { return !seen[m.id]; }).concat(list).slice(-3000);
+  }
+  function gMsg(c, m, gx) {
+    if (m.sys) return { sys: 1, id: m.id, key: 's' + (m.id || m.at + m.whom), t: String(gx.sysAdd || '{a} + {b}').replace('{a}', m.mine ? t('you') : m.who).replace('{b}', m.whom), at: m.at };
+    return mk(c, Object.assign({}, m, { id: m.id || ('x' + m.at + m.who + (m.t || '').slice(0, 9)) }), { mine: m.mine, who: m.who, wph: m.wph || '' });
+  }
+  /* 2026-10-20 (propriétaire : « rien ne doit s'effacer ») : en remontant tout en haut d'une discussion, les messages plus
+     anciens arrivent (80 à la fois, comme WhatsApp) ; l'écran reste exactement sur le message que l'on lisait. */
+  async function loadOlder() {
+    var c = conv, el = $('sxMsgs');
+    if (!c || !el || !c.more || c.olderBusy || (c.kind !== 'dm' && c.kind !== 'group')) return;
+    var first = '';
+    for (var i = 0; i < c.msgs.length; i++) { var id = String(c.msgs[i].id || ''); if (/^m[0-9a-f]{6,}$/.test(id)) { first = id; break; } }
+    if (!first) return;
+    c.olderBusy = true;
+    var j = c.kind === 'dm' ? await call('dm', { id: c.id, before: first }) : await call('gGet', { gid: c.id, before: first });
+    c.olderBusy = false;
+    if (conv !== c || !j || !j.ok) return;
+    c.more = !!j.more;
+    var gx = GX(), seen = {};
+    c.msgs.forEach(function (m) { seen[m.id] = 1; });
+    var list = (j.older || []).map(function (m) { return c.kind === 'dm' ? mk(c, m, { mine: m.mine }) : gMsg(c, m, gx); }).filter(function (m) { return !seen[m.id]; });
+    if (!list.length) return;
+    var h0 = el.scrollHeight, t0 = el.scrollTop;
+    el._stick = false; el._sxQuiet = true;
+    c.msgs = list.concat(c.msgs);
+    paintMsgs(false);
+    el._sxQuiet = false;
+    el.scrollTop = t0 + (el.scrollHeight - h0);
   }
   async function refreshConv(first) {
     var c = conv; if (!c) return;
@@ -895,6 +925,7 @@
       c.peerId = jd.peer.id; c.name = jd.peer.name; c.ph = jd.peer.ph || ''; c.on = !!jd.on; c.blocked = !!jd.blocked; c.req = !!jd.req; c.duel = jd.duel || null; c.stats = jd.stats || null;
       if (c.duel) c.duelOff = c.duel.now - Date.now() / 1000;
       c.msgs = merge(c, jd.msgs.map(function (m) { return mk(c, m, { mine: m.mine }); }), !!jd.delta);
+      if (!jd.delta) c.more = !!jd.more; else if (c.more === undefined) c.more = true; // ouverte depuis la mémoire : on pourra remonter
       var un = jd.peerUn == null ? -1 : +jd.peerUn, mine = c.msgs.filter(function (m) { return m.mine; }).length, i = 0;
       c.msgs.forEach(function (o) { if (o.mine) { i++; o.read = un >= 0 && i <= mine - un; } });
       paintHead();
@@ -906,10 +937,8 @@
       if (jg.g.delta) jg.g.members = (c.g && c.g.members) || [];
       c.g = jg.g; c.name = jg.g.name; c.emoji = jg.g.emoji; c.photo = jg.g.photo || '';
       var gx = GX();
-      c.msgs = merge(c, jg.g.msgs.map(function (m) {
-        if (m.sys) return { sys: 1, id: m.id, key: 's' + (m.id || m.at + m.whom), t: String(gx.sysAdd || '{a} + {b}').replace('{a}', m.mine ? t('you') : m.who).replace('{b}', m.whom), at: m.at };
-        return mk(c, Object.assign({}, m, { id: m.id || ('x' + m.at + m.who + (m.t || '').slice(0, 9)) }), { mine: m.mine, who: m.who, wph: m.wph || '' });
-      }), !!jg.g.delta);
+      c.msgs = merge(c, jg.g.msgs.map(function (m) { return gMsg(c, m, gx); }), !!jg.g.delta);
+      if (!jg.g.delta) c.more = !!jg.g.more; else if (c.more === undefined) c.more = true;
       paintHead();
       gSeen(c.id, Math.max(Math.floor(Date.now() / 1000), jg.g.at || 0));
       if (jg.g.canWrite === false) {
@@ -1008,6 +1037,7 @@
     if (!c.loaded && !all.length && c.kind !== 'news') { msgSkel(); return; }
     if (c.kind === 'dm' && !all.length) h += '<div class="sx-hi" data-key="hi">' + avatar({ name: c.name, ph: c.ph }, true) + '<b class="sx-ell">' + esc(c.name) + '</b><p>' + esc(t('sayHi')) + '</p></div>';
     if (c.kind === 'news') h += '<div class="sx-legal" data-key="legal"><button type="button" id="sxTerms">' + esc(x.terms || 'Terms') + '</button> · <button type="button" id="sxPriv">' + esc(x.privacy || 'Privacy') + '</button></div>';
+    el._sxPop = !first && el.firstChild && !el.querySelector('.sx-bsk'); // 2026-10-20 : seuls les NOUVEAUX messages apparaissent en douceur
     var chg = setHTML(el, h);
     if (chg && el.querySelector('.fit')) el.querySelectorAll('.fit').forEach(fitEl);
     if (!chg && !first) return;
