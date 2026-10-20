@@ -12983,3 +12983,21 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
   html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row > span{font-size:11.5px!important}
   html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{min-width:52px!important;padding:0 7px!important}
 }
+
+/* v2930 — Profil : le style validé par le propriétaire (tout centré) : ID public et E-mail dans deux capsules
+   de même largeur (étiquette, valeur, Copier), « Membre depuis » en petite ligne centrée dessous */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows{background:none!important;border:0!important;padding:0!important;margin:12px auto 0!important;width:100%!important;max-width:340px!important;gap:8px!important;align-items:stretch!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row{min-height:46px!important;padding:6px 6px 6px 14px!important;border-radius:14px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035))!important;border:1px solid rgba(252,210,123,.30)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row + .list-row{border-top:1px solid rgba(252,210,123,.30)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row > span{font-size:11px!important;letter-spacing:.06em!important;text-transform:uppercase!important;color:rgba(252,210,123,.85)!important;font-weight:700!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .prof-id-row > strong{font-size:14.5px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{height:32px!important;min-height:32px!important;min-width:70px!important;border-radius:10px!important;font-size:12.5px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row:last-child{background:none!important;border:0!important;box-shadow:none!important;min-height:0!important;padding:2px 0 0!important;justify-content:center!important;gap:6px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row:last-child > span{text-transform:none!important;letter-spacing:0!important;font-size:12.5px!important;font-weight:500!important;color:rgba(226,232,255,.6)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row:last-child > strong{font-size:12.5px!important;font-weight:600!important;color:rgba(226,232,255,.85)!important}
+@media (max-width:360px){
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row{padding-left:10px!important}
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .prof-id-row > strong{font-size:13px!important}
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{min-width:56px!important}
+}
