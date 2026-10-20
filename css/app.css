@@ -13083,3 +13083,11 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 /* v2948 — Profil : anneau doré autour de la croix retiré (demande du propriétaire) ; boule et taille inchangées */
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer::before,
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer::after{content:none!important;display:none!important}
+
+/* v2949 — Profil : cases USDT / BTC / ETH / TRX plus hautes (« TRON NETWORK »… bien dans la case, plus collé au bord) ;
+   « Se déconnecter » aussi haut que les autres lignes ; la hauteur fixe est retirée pour que l'ajustement puisse les agrandir */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .wallet-tab{height:auto!important;min-height:42px!important;padding:4px 2px 6px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-item.drawer-logout{min-height:40px!important;flex-shrink:0!important}
+html.is-android:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-item.drawer-logout{min-height:34px!important}
+/* v2949 — Historique financier / des trades : fond uni (avant, il foncait vers le bas : « lueur noire ») et liste jusqu'en bas */
+html:root body #financeModal#financeModal#financeModal > .modal-box,html:root body #historySheet#historySheet#historySheet > .modal-box{background:linear-gradient(180deg,#140D33 0%,#120C30 100%)!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important}
