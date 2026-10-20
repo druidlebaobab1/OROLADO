@@ -7010,6 +7010,7 @@
     var run = function () {
       parts.forEach(function (el) { el.style.zoom = ''; });
       Array.prototype.forEach.call(items, function (it) { it.style.minHeight = ''; });
+      Array.prototype.forEach.call(d.querySelectorAll('#profWalletCard .wallet-tab, #btnExpressCrypto, #profWalletCard .wallet-addr-row, #profWalletBal'), function (el) { el.style.minHeight = ''; });
       if (!d.classList.contains('on')) return;
       var fits = function () { return d.scrollHeight - d.clientHeight <= 1; };
       // la photo garde sa vraie taille (104 px) même quand le reste est réduit
@@ -7035,12 +7036,23 @@
       var last = parts[parts.length - 1];
       var padB = parseFloat(getComputedStyle(d).paddingBottom) || 0;
       var free = last ? d.clientHeight - padB - (last.getBoundingClientRect().bottom - d.getBoundingClientRect().top + d.scrollTop) - 4 : 0;
-      if (items.length && free > 8) {
-        var add = Math.min(18, Math.floor((free - 6) / items.length));
-        Array.prototype.forEach.call(items, function (it) {
-          it.style.minHeight = Math.round(it.getBoundingClientRect().height + add) + 'px';
+      // la place libre nourrit : les lignes du menu, le bouton Recharger, les réseaux, la ligne de l'adresse et le solde
+      var wal = $('profWalletCard');
+      var grow = Array.prototype.slice.call(items);
+      if (wal) {
+        var wtabs = wal.querySelectorAll('.wallet-tab');
+        [$('btnExpressCrypto'), wal.querySelector('.wallet-addr-row'), wtabs.length ? wtabs : null, $('profWalletBal')].forEach(function (g) { if (g) grow.push(g); });
+      }
+      if (grow.length && free > 8) {
+        var add = Math.min(16, Math.floor((free - 6) / grow.length));
+        if (add >= 1) grow.forEach(function (g) {
+          var list = g.length !== undefined && !g.tagName ? g : [g];
+          Array.prototype.forEach.call(list, function (el) { el.style.minHeight = Math.round(el.getBoundingClientRect().height + add) + 'px'; });
         });
-        if (!fits()) Array.prototype.forEach.call(items, function (it) { it.style.minHeight = ''; });
+        if (!fits()) grow.forEach(function (g) {
+          var list = g.length !== undefined && !g.tagName ? g : [g];
+          Array.prototype.forEach.call(list, function (el) { el.style.minHeight = ''; });
+        });
       }
     };
     if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
