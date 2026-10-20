@@ -2238,6 +2238,14 @@ if ($isAjax) {
     $v = push_vapid();
     admin_json(['ok' => true, 'stats' => push_stats(), 'journal' => push_log_list(), 'key' => (string) ($v['pub'] ?? '')]);
   }
+  // v2959 — alertes Telegram (retraits) : code du robot + liaison du compte Telegram de l'admin
+  if ($action === 'tg_status' || $action === 'tg_link' || $action === 'tg_test' || $action === 'tg_off') {
+    require_once __DIR__ . '/tg_lib.php';
+    if ($action === 'tg_status') admin_json(tg_status());
+    if ($action === 'tg_link') admin_json(tg_link(trim((string) ($req['token'] ?? ''))));
+    if ($action === 'tg_test') admin_json(['ok' => tg_notify_admin("🔔 Test OROLADO : les alertes de retrait arriveront ici."), 'reason' => 'Non relié : refaites « Relier ».']);
+    if ($action === 'tg_off') { $c = tg_conf(); $c['on'] = 0; tg_save($c); admin_json(['ok' => true]); }
+  }
   if ($action === 'push_test_sub') {
     $ok = push_save_sub(is_array($req['sub'] ?? null) ? $req['sub'] : [], [
       'plat' => (string) ($req['plat'] ?? 'pc'), 'app' => !empty($req['app']), 'lang' => 'fr',
@@ -2818,6 +2826,14 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <p class="muted" style="margin:4px 0 8px">iPhone : ouvrez l’admin depuis l’application OROLADO installée sur l’écran d’accueil (pas dans Safari).</p>
         <button class="mini ok" type="button" id="btnNtDevice">Activer les notifications sur cet appareil</button>
         <span class="muted" id="ntDeviceSt"></span>
+      </div>
+      <div class="nt-card">
+        <b>Telegram — alerte à chaque demande de retrait</b>
+        <p class="muted" style="margin:4px 0 8px">1) Collez le code du robot donné par BotFather. 2) Dans Telegram, ouvrez le robot et touchez DÉMARRER. 3) Appuyez sur « Relier ».</p>
+        <input type="password" id="tgToken" placeholder="Code du robot (ex. 123456:ABC…)" autocomplete="off" style="width:100%;margin-bottom:8px">
+        <button class="mini ok" type="button" id="btnTgLink">Relier</button>
+        <button class="mini" type="button" id="btnTgTest">Envoyer un test</button>
+        <span class="muted" id="tgSt"></span>
       </div>
       <div class="nt-card">
         <b>Nouveau message</b>
@@ -3513,8 +3529,12 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   $n('ntLang').onchange = paintWho;
   $n('ntTitle').oninput = preview;
   $n('ntBody').oninput = preview;
-  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; loadStats(); };
+  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; loadStats(); tgPaint(); };
   $n('closeNotif').onclick = () => $n('notifModal').classList.remove('on');
+  // v2959 — Telegram
+  const tgPaint = async () => { try { const j = await ajax({action:'tg_status'}); $n('tgSt').textContent = j.linked ? 'Relié ✓' + (j.bot ? ' (@' + j.bot + ')' : '') : (j.has ? 'Code enregistré — touchez DÉMARRER dans le robot puis « Relier ».' : 'Pas encore relié.'); } catch (e) { /* ignore */ } };
+  $n('btnTgLink').onclick = async () => { $n('tgSt').textContent = '…'; const j = await ajax({action:'tg_link', token: $n('tgToken').value.trim()}); $n('tgToken').value = ''; $n('tgSt').textContent = j.ok ? 'Relié ✓ — un message de test vient d’arriver dans Telegram.' : (j.reason || 'Échec'); };
+  $n('btnTgTest').onclick = async () => { const j = await ajax({action:'tg_test'}); $n('tgSt').textContent = j.ok ? 'Test envoyé ✓' : (j.reason || 'Échec'); };
   $n('btnNtDevice').onclick = async () => {
     const st = $n('ntDeviceSt');
     try {
