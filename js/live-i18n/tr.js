@@ -324,10 +324,11 @@
       mSub: 'Her Pazartesi yeni görevler · her biri +{x} puan',
       mDone: 'Tamam ✓',
       m: {
-        trades: '20 işlem yap',
-        quiz: '10 quiz sorusunu cevapla',
-        markets: '3 farklı piyasada oyna',
-        streak: 'Üst üste 3 işlem kazan'
+        trades: '50 işlem yap',
+        real: 'Gerçek hesapta 10 işlem yap',
+        quiz: '20 quiz sorusunu cevapla',
+        markets: '5 farklı piyasada oyna',
+        streak: 'Üst üste 5 işlem kazan'
       },
       sTrades: 'İşlemler',
       sRate: 'Başarı',
@@ -448,7 +449,7 @@
         'Büyük gösterge',
         'Doldur, büyük hediye kazan'
       ],
-      wRule: '$10 veya üzeri her yatırım sana 1 ücretsiz çevirme verir.',
+      wRule: 'Yatırdığın her 10 $ için 1 ücretsiz çevirme. Örnek: 100 $ yatırım = 10 çevirme.',
       spin: 'Çarkı çevir',
       tickets: 'Oynayacak {n} çevirmen var',
       ticket1: 'Oynayacak 1 çevirmen var',
@@ -932,7 +933,7 @@
       ],
       "race": [
         "Araba yarışı",
-        "6 araba · ×5,7"
+        "10 araba · canlı"
       ],
       "roulette": [
         "Rulet",

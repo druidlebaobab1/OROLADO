@@ -34,7 +34,11 @@
     star: '<path d="M12 3.5l2.4 5.3 5.6.6-4.2 3.8 1.2 5.6L12 16l-5 2.8 1.2-5.6L4 9.4l5.6-.6z"/>',
     zin: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M8 10.5h5M10.5 8v5"/>',
     zout: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M8 10.5h5"/>',
-    full: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'
+    full: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>',
+    // v2910 — Jeux (manette), Paris (ballon), Social (bulle) pour l'étape « Jeux, Paris et Social ».
+    pad: '<rect x="2.5" y="7" width="19" height="11" rx="5.5"/><path d="M7.5 10.5v4M5.5 12.5h4"/><circle cx="15.5" cy="11.3" r=".6"/><circle cx="17.8" cy="13.7" r=".6"/>',
+    ball: '<circle cx="12" cy="12" r="8.5"/><path d="M12 8.2l3.4 2.5-1.3 4h-4.2l-1.3-4zM12 3.5v4.7M15.4 10.7l4.3-1.4M14.1 14.7l2.6 3.6M9.9 14.7l-2.6 3.6M8.6 10.7 4.3 9.3"/>',
+    chat: '<path d="M4 5.5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-9l-4.5 3.5v-3.5H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1z"/><path d="M8 10.5h8M8 13.5h5"/>'
   };
   function I(n, cls) { return '<svg class="lg-i' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICO_P[n] + '</svg>'; }
   var TROPHY = '<svg class="lg-cup" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="lgCupG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF3C4"/><stop offset=".45" stop-color="#F5C451"/><stop offset="1" stop-color="#B8780C"/></linearGradient></defs><path d="M14 6h20v9a10 10 0 0 1-20 0z" fill="url(#lgCupG)" stroke="#7A4A06" stroke-width="1.4"/><path d="M14 9H8v3a6.5 6.5 0 0 0 7 6.4M34 9h6v3a6.5 6.5 0 0 1-7 6.4" fill="none" stroke="#F5C451" stroke-width="2.6" stroke-linecap="round"/><path d="M24 25v6M17 42h14l-1.6-6H18.6z" fill="url(#lgCupG)" stroke="#7A4A06" stroke-width="1.4" stroke-linejoin="round"/><path d="M19 9.5c.4 3.6 1.6 6 3.6 7.6" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.6" stroke-linecap="round"/><path d="M24 12.2l1.3 2.7 3 .4-2.2 2 .5 3-2.6-1.4-2.6 1.4.5-3-2.2-2 3-.4z" fill="#fff" opacity=".9"/></svg>';
@@ -87,18 +91,19 @@
       '<rect x="244" y="14" width="52" height="15" rx="6" fill="rgba(14,12,40,.86)" stroke="#F5A623"/><text x="270" y="25" fill="#fff" font-size="9" font-weight="800" text-anchor="middle">9 444.40</text></svg>' +
       '</div>';
   }
-  // Les 10 marchés : copie des vraies planètes de la barre des marchés (identifiants renommés pour ne pas se mélanger).
+  // Les marchés : copie des 4 premières vraies planètes de la barre des marchés (identifiants renommés pour ne pas se
+  // mélanger), puis une case « 50+ » (v2910 : plus de 50 marchés, on ne les dessine plus tous ici).
   function markets() {
     var h = '<div class="lg-mk">';
     try {
       document.querySelectorAll('#assetBar .asset-chip').forEach(function (c, i) {
         var art = c.querySelector('.mk-art'), nm = c.querySelector('.mk-name');
-        if (!art) return;
+        if (!art || i > 3) return;
         var svg = art.innerHTML.replace(/id="([^"]+)"/g, 'id="lg$1"').replace(/url\(#([^)]+)\)/g, 'url(#lg$1)').replace(/href="#([^"]+)"/g, 'href="#lg$1"');
         h += '<div class="lg-mk-i' + (i === 0 ? ' on' : '') + '"><i>' + svg + '</i><small>' + esc(nm ? nm.textContent : '') + '</small></div>';
       });
     } catch (e) { /* ignore */ }
-    return h + '</div>';
+    return h + '<div class="lg-mk-i lg-mk-more"><i>50+</i><small>' + esc(T('mkMore')) + '</small></div></div>';
   }
   function lineChart() {
     var p = 'M0 92', y = 92;
@@ -243,6 +248,12 @@
     return '<div class="lg-trust">' + [['clock', 'gw1'], ['out', 'gw2'], ['lock', 'gw3'], ['chart', 'gw4']].map(function (x) { return '<span>' + I(x[0]) + ' ' + esc(T(x[1])) + '</span>'; }).join('') + '</div>' +
       '<div class="lg-win"><p class="lg-win-good">' + I('star') + ' ' + esc(T('gw5')) + '</p><p class="lg-win-resp">' + I('bulb') + ' ' + esc(T('gw6')) + '</p></div>';
   }
+  // v2910 — étape « Jeux, Paris et Social » : les 3 boutons du haut du site.
+  function artWorld() {
+    return '<div class="lg-art lg-row lg-gifts lg-world">' + [['pad', 'wG'], ['ball', 'wB'], ['chat', 'wS']].map(function (x) {
+      return '<div><i>' + I(x[0]) + '</i><small>' + esc(T(x[1])) + '</small></div>';
+    }).join('') + '</div>';
+  }
   function gifts() {
     var G = [[gIco('defi'), 's13b'], [gIco('aff'), 's13c'], [gIco('top'), 's13d'], [gIco('bon'), 's13e']];
     return '<div class="lg-gl">' + G.map(function (g) {
@@ -252,7 +263,7 @@
   }
 
   // Cadres d'importance : 3 = très important, 2 = important, 1 = léger.
-  var IMP = { 1: 3, 2: 3, 8: 3, 13: 3, 14: 'f', 4: 2, 7: 2, 10: 1 };
+  var IMP = { 1: 3, 2: 3, 8: 3, 14: 3, 15: 'f', 4: 2, 7: 2, 13: 2, 10: 1 };
   function step(n, title, lines, art, extra) {
     var h = '<section class="lg-step' + (IMP[n] ? ' lg-imp' + IMP[n] : '') + '" id="lgStep' + n + '"><div class="lg-num">' + n + '</div><h3>' + esc(title) + '</h3>';
     if (art) h += art;
@@ -266,8 +277,8 @@
     var box = document.getElementById('learnBody');
     if (!box) return;
     var h = '<div class="lg-hero"><div class="lg-hero-ico">' + ICON + '</div><h2>' + esc(T('title')) + '</h2><p>' + esc(T('intro')) + '</p>' +
-      '<div class="lg-chips">' + [[1, 'user'], [2, 'card'], [3, 'cap'], [8, 'chart'], [13, 'gift'], [14, 'out']].map(function (c, i) {
-        return '<a href="#lgStep' + c[0] + '" data-lg-go="' + c[0] + '">' + I(c[1]) + ' ' + esc(T('n' + (i + 1))) + '</a>';
+      '<div class="lg-chips">' + [[1, 'user', 'n1'], [2, 'card', 'n2'], [3, 'cap', 'n3'], [8, 'chart', 'n4'], [13, 'pad', 'n7'], [14, 'gift', 'n5'], [15, 'out', 'n6']].map(function (c) {
+        return '<a href="#lgStep' + c[0] + '" data-lg-go="' + c[0] + '">' + I(c[1]) + ' ' + esc(T(c[2])) + '</a>';
       }).join('') + '</div></div>';
     h += '<div class="lg-part">' + esc(T('partA')) + '</div>';
     h += step(1, T('s1t'), [T('s1a'), T('s1b'), T('s1c'), T('s1d')], artSignup());
@@ -284,12 +295,14 @@
     h += step(11, T('s11t'), [T('s11a'), T('s11b'), T('s11c')], artTools());
     h += step(12, T('s12t'), [T('s12a'), T('s12b'), T('s12c'), T('s12g'), T('s12f'), T('s12e'), T('s12d')], '');
     h += '<div class="lg-part">' + esc(T('partC')) + '</div>';
-    h += step(13, T('s13t'), [T('s13a')], artGifts(), gifts());
-    h += step(14, T('s14t'), [T('s14a'), T('s14b'), T('s14c'), T('s14d')],
+    // v2910 — nouvelle étape 13 : Jeux (3 onglets, même solde réel), Paris, Social. Cadeaux = 14, retrait = 15.
+    h += step(13, T('s15t'), [T('s15a'), T('s15b'), T('s15c'), T('s15d')], artWorld());
+    h += step(14, T('s13t'), [T('s13a')], artGifts(), gifts());
+    h += step(15, T('s14t'), [T('s14a'), T('s14b'), T('s14c'), T('s14e'), T('s14d')],
       '<i class="lg-aura" aria-hidden="true"></i><div class="lg-cel">' + confetti(18) + '<span class="lg-cel-ico">' + I('check') + '</span><b>' + esc(T('s14cel')) + '</b></div>' + artWithdraw(), wdTrust());
     // v2504 — dernière carte : vraie fête (rayons, confettis, trophée qui brille, ce qu'on a appris coché).
     h += '<div class="lg-end lg-end-fete">' + confetti(28) + '<i class="lg-rays" aria-hidden="true"></i><div class="lg-trophy">' + TROPHY + '</div><h3>' + esc(T('endT')) + '</h3><p>' + esc(T('endA')) + '</p>' +
-      '<div class="lg-done">' + [1, 2, 3, 4, 5, 6].map(function (i) { return '<span>' + I('check') + ' ' + esc(T('n' + i)) + '</span>'; }).join('') + '</div>' +
+      '<div class="lg-done">' + ['n1', 'n2', 'n3', 'n4', 'n7', 'n5', 'n6'].map(function (k) { return '<span>' + I('check') + ' ' + esc(T(k)) + '</span>'; }).join('') + '</div>' +
       '<button type="button" class="lg-cta" data-learn-close>' + esc(T('endBtn')) + '</button>' +
       '<p class="lg-sign">© 2026 OROLADO.COM</p></div>';
     box.innerHTML = h;
