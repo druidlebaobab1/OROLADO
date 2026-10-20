@@ -4472,21 +4472,6 @@
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText(c.label, ccx, ccy + 0.5);
-      if (c.n > 1) {
-        // compteur des trades regroupés sur ce rond (petite pastille dorée en haut à droite)
-        var nTxt = '×' + c.n, bx = ccx + cr - 2, by = ccy - cr + 1;
-        g.font = '800 7.5px "Hanken Grotesk", sans-serif';
-        var bw = Math.max(13, g.measureText(nTxt).width + 6);
-        g.fillStyle = '#F5C518';
-        g.strokeStyle = 'rgba(0,0,0,0.45)';
-        g.lineWidth = 1;
-        g.beginPath();
-        if (g.roundRect) g.roundRect(bx - bw / 2, by - 5.5, bw, 11, 5.5); else g.rect(bx - bw / 2, by - 5.5, bw, 11);
-        g.fill();
-        g.stroke();
-        g.fillStyle = '#1A1205';
-        g.fillText(nTxt, bx, by + 0.5);
-      }
       g.restore();
     }
     chronoQueue.length = 0;
@@ -4911,23 +4896,12 @@
         var ty = ey - timerH / 2; // v2557 : pile sur la ligne / le rond du trade (avant : tagY, décalé pour empiler)
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
         // v2557 (propriétaire) : chaque chrono reste COLLÉ sur la ligne de son trade, jamais décalé ailleurs.
-        // v2952 (propriétaire) : le chrono reste à GAUCHE, sur la ligne de son trade (comme avant). Plusieurs trades au
-        // même niveau ne s'étalent plus sur la courbe : ils s'ajoutent au même rond, avec un compteur « ×2, ×3… »
-        // (comme les objectifs). Le rond montre le temps le plus court.
+        // v2953 (propriétaire) : le chrono reste à GAUCHE, sur la ligne de son trade (comme les objectifs). Plusieurs
+        // trades au même endroit : les ronds s'ajoutent l'un SUR l'autre, au même endroit (pas de compteur, pas d'étalement).
         var durT = Number(trade.duration) || 0;
-        var fracT = durT > 0 ? Math.max(0, Math.min(1, secs / durT)) : 1;
-        var mergeQ = null, qi;
-        for (qi = 0; qi < chronoQueue.length; qi++) {
-          if (Math.abs(chronoQueue[qi].y - ty) < timerH - 2) { mergeQ = chronoQueue[qi]; break; }
-        }
-        if (mergeQ) {
-          mergeQ.n = (mergeQ.n || 1) + 1;
-          if (secs < mergeQ.secs) { mergeQ.secs = secs; mergeQ.label = label; mergeQ.call = isCall; mergeQ.frac = fracT; }
-        } else {
-          chronoPlaced.push({ x: leftX, y: ty });
-          // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
-          chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label, call: isCall, frac: fracT, k: zoneK, secs: secs, n: 1 });
-        }
+        chronoPlaced.push({ x: leftX, y: ty });
+        // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
+        chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label, call: isCall, frac: durT > 0 ? Math.max(0, Math.min(1, secs / durT)) : 1, k: zoneK });
       }
     }
   }
