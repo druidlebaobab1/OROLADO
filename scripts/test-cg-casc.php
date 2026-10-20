@@ -63,14 +63,30 @@ foreach ($fiches as $g => $d) {
 }
 
 echo "3) Tables exactes et lignes identiques au navigateur\n";
-/*@INSTANT_EXACT@*/
+// jeux instantanés : poids = comptes exacts des règles naturelles (tuiles, rounds, météores, cartes, ricochets, lanternes)
+$IJ = json_decode((string) shell_exec('node ' . escapeshellarg(__DIR__ . '/test-cg-casc-inst.js') . ' 300 2>&1'), true);
+check('casc2.js / casc3.js : chaque ligne se dessine exactement (300 essais par ligne)', is_array($IJ) && $IJ['bad'] === [], json_encode($IJ['bad'] ?? null));
+foreach (['tarot' => 'C(22,3) = 1 540 tirages', 'mahjong' => 'C(48,3) = 17 296 mains', 'robobox' => '100³ paires de puissances', 'meteor' => '20³ chutes'] as $g => $w)
+  check("$g : poids = $w exacts", is_array($IJ) && array_column($fiches[$g]['out'], 1) === ($IJ['exact'][$g] ?? null), json_encode($IJ['exact'][$g] ?? null));
+$sk = []; for ($kk = 0; $kk < 10; $kk++) $sk[] = 2 * 3 ** $kk * 5 ** (9 - $kk); $sk[] = 3 ** 10;
+check('stoneskip : poids = rebond 3/5 exact (/5¹⁰)', array_column($fiches['stoneskip']['out'], 1) === $sk && array_sum($sk) === 5 ** 10);
+$ln = []; for ($kk = 0; $kk <= 5; $kk++) { $cb = 1; for ($q = 1; $q <= $kk; $q++) $cb = $cb * (5 - $kk + $q) / $q; $ln[] = (int) round($cb * 4 ** (5 - $kk)); }
+check('lantern : poids = binomiale(5, 1/5) exacte (/3 125)', array_column($fiches['lantern']['out'], 1) === $ln && array_sum($ln) === 3125);
 // machines à sous : la liste des lignes de js/games/casa1.js (même règle) = celle du serveur, et chaque ligne se dessine
 $js = shell_exec('node ' . escapeshellarg(__DIR__ . '/test-cg-casc-grids.js') . ' 40 2>&1');
 $J = json_decode((string) $js, true);
 check('casc1.js : chaque ligne de chaque machine se dessine exactement (40 grilles par ligne)', is_array($J) && $J['bad'] === 0, substr((string) $js, 0, 200));
 foreach ($slots as $g) check("$g : lignes du navigateur = lignes du serveur (" . count($fiches[$g]['out']) . ')', is_array($J) && array_map('floatval', $J['rows'][$g] ?? []) === array_map('floatval', array_column($fiches[$g]['out'], 0)));
 
-/*@INSTANT_JS@*/
+// gains dessinés par le navigateur (casc2.js / casc3.js) = gains du serveur ; options « pick » = affichées
+foreach (['potion', 'stoneskip', 'tarot', 'bottleflip', 'gemfusion', 'mahjong', 'robobox', 'lantern', 'meteor', 'curling'] as $g)
+  check("$g : gains du navigateur = gains du serveur (" . count($fiches[$g]['out']) . ' lignes)', is_array($IJ) && array_map('floatval', $IJ['rows'][$g] ?? []) === array_map('floatval', array_column($fiches[$g]['out'], 0)));
+foreach (['defuse', 'cargodrop'] as $g) check("$g : chances du navigateur = serveur", is_array($IJ) && array_map('floatval', $IJ['picks'][$g] ?? []) === array_map('floatval', $fiches[$g]['opts']));
+check('pick : defuse ×3.13 · ×3.76 · ×4.69 · ×6.26 · ×9.39 | cargodrop ×1.88 · ×3.13 · ×4.69', array_map('casino_ext_pick_mult', $fiches['defuse']['opts']) === [3.13, 3.76, 4.69, 6.26, 9.39] && array_map('casino_ext_pick_mult', $fiches['cargodrop']['opts']) === [1.88, 3.13, 4.69]);
+// catalogue, ordre du Casino, sons
+$casino = file_get_contents(__DIR__ . '/../js/casino.js'); $cat = file_get_contents(__DIR__ . '/../js/games/cat-casc.js'); $sfx = file_get_contents(__DIR__ . '/../js/sfx.js');
+check("cat-casc dans CAT_FILES, les 24 clés dans MO_POS, le catalogue et les sons", strpos($casino, "'cat-casc'") !== false && !array_filter($want, static fn($g) => strpos($casino, "'$g'") === false || strpos($cat, "['$g', ") === false || !preg_match('/[{ ]' . $g . ": '/", $sfx)));
+foreach (['casc2' => 6, 'casc3' => 6] as $f => $nb) { $src = file_get_contents(__DIR__ . "/../js/games/$f.js"); preg_match_all("/key: '([a-z0-9]+)'/", $src, $mm); check("$f.js : $nb jeux, règles en 12 langues", count($mm[1]) === $nb && substr_count($src, "      zh: '") === $nb && substr_count($src, "      hi: '") === $nb && substr_count($src, "      ar: '") === $nb && is_file(__DIR__ . "/../css/games/$f.css")); }
 echo "4) Retour simulé (tirages du serveur) · dessin = gain\n";
 foreach ($fiches as $g => $d) {
   $N = 300000; $s = 0.0; $n = $d['type'] === 'pick' ? count($d['opts']) : 0; $bad = 0;
@@ -97,7 +113,7 @@ foreach ($fiches as $g => $d) {
   $r = casino_play(load_db(), $me, $g, 'real', 1, $d['type'] === 'pick' ? ['pick' => 0] : []);
   check("$g : solde = avant − 1 + gain (×" . ($r['mult'] ?? '?') . ')', $r['ok'] === true && abs($bal[$U] - ($b0 - 1 + $r['win'])) < 0.001, json_encode([$b0, $bal[$U], $r['win'] ?? null]));
 }
-/*@PICK_REFUSE@*/
+foreach (['defuse' => 5, 'cargodrop' => 3] as $g => $nb) { $r = casino_play(load_db(), $me, $g, 'real', 1, ['pick' => $nb]); check("$g : choix hors liste refusé (mise non retirée)", empty($r['ok'])); }
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

@@ -397,8 +397,8 @@
         'hilorun', 'scarab', 'pickbox', 'kraken', 'colorwheel', 'cherrybar', 'egghunt', 'ufo', 'flip21', 'goldtrain', 'envelope', 'koi',
         'shells', 'viking', 'ladder', 'safari', 'luckyten', 'donut', 'popdarts', 'rubymine', 'treasure', 'pumpkin', 'scratchwin', 'medusa',
         // casc (round 7) : 12 machines à sous (casc1) alternées avec 12 jeux instantanés (casc2/3) ; même mécanique ≥ 6 places d'écart
-        'defuse', 'mermaid', 'zodiac', 'samurai', 'bottleflip', 'oasis', 'tarot', 'cybercity', 'curling', 'carnival', 'cookie', 'jazzclub',
-        'triplecoin', 'sushibar', 'piggy', 'fairy', 'memory', 'steampunk', 'lilypad', 'arctic', 'magichat', 'disco', 'stopclock', 'dinopark'];
+        'potion', 'mermaid', 'robobox', 'samurai', 'bottleflip', 'oasis', 'tarot', 'cybercity', 'curling', 'carnival', 'lantern', 'jazzclub',
+        'cargodrop', 'sushibar', 'gemfusion', 'fairy', 'mahjong', 'steampunk', 'stoneskip', 'arctic', 'meteor', 'disco', 'defuse', 'dinopark'];
       var moPos = function (k) { var i = MO_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.more.sort(function (a, b) { return moPos(a) - moPos(b); });
       // v2850 (propriétaire : « Live plein, 24 jeux ») : ordre fixe des jeux en direct (les catalogues arrivent dans n'importe quel ordre)
@@ -615,7 +615,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2878'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2883'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
