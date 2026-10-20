@@ -12766,12 +12766,22 @@ html:root body #drawerProfile#drawerProfile #btnLogout#btnLogout{background-colo
    un peu plus petit sur les écrans étroits et courts, le titre se lit en entier dans les 12 langues. */
 @media (max-height:720px) and (orientation:portrait) and (max-width:350px){html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1):not(#z2) .auth-learn .al-txt b{font-size:10.5px!important;letter-spacing:-.1px}}
 
-/* 2026-10-20 (propriétaire : « les retours ne s'affichent plus bien ») — téléphones : la flèche « retour » des panneaux (Historique,
-   Retrait, Mot de passe, E-mail, Aide, Conditions, Cadeaux…) était déformée par l'anneau doré générique (.btn-close::before
-   avec !important : position, hauteur, épaisseur). Flèche nette, centrée, toujours visible. */
+/* 2026-10-20 (propriétaire : « je préfère des croix ») — téléphones : les boutons ronds de fermeture des panneaux (Historique,
+   Retrait, Mot de passe, E-mail, Aide, Conditions, Cadeaux…) montrent une vraie croix ✕, même forme ronde ; plus de flèche. */
 @media (max-width:859px){
-  html:root body :is(#portalModal,#financeModal,#withdrawModal,#depositModal,#termsModal,#historySheet,#passModal,#emailModal,#helpModal) .btn-close.btn-close::before{
-    position:absolute!important;left:50%!important;right:auto!important;top:50%!important;width:10px!important;height:10px!important;margin:-7px 0 0 -5px!important;
-    border:0!important;border-right:2.6px solid #fff!important;border-bottom:2.6px solid #fff!important;border-radius:1px!important;
-    transform:rotate(45deg)!important;z-index:1!important;pointer-events:none}
+  html:root body :is(#portalModal,#financeModal,#withdrawModal,#depositModal,#termsModal,#historySheet,#passModal,#emailModal,#helpModal) .btn-close.btn-close::before{display:none!important;content:none!important}
+  html:root body :is(#portalModal,#financeModal,#withdrawModal,#depositModal,#termsModal,#historySheet,#passModal,#emailModal,#helpModal) .btn-close.btn-close .x-ico{display:block!important;width:16px!important;height:16px!important;
+    fill:none!important;stroke:#fff!important;stroke-width:2.8!important;stroke-linecap:round!important}
+}
+/* 2026-10-20 (propriétaire) — Profil : le bouton « Langue » un peu moins large (iPhone et Android), même place, même style */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{width:auto!important;min-width:0!important;max-width:88px!important;padding:4px 9px 3px!important;column-gap:4px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-flag{width:20px!important;height:14px!important}
+/* 2026-10-20 (propriétaire) — Retrait : le contenu descend un peu (il collait au trait et à la croix du haut) et les cases
+   prennent un peu plus de hauteur (plus agréables, l'écran est mieux rempli). */
+@media (max-width:859px){
+  html:root body #withdrawModal .wd-modal-head{margin-bottom:6px!important}
+  html:root body #withdrawModal #wdBalanceLabel{margin-top:4px!important}
+  html:root body #withdrawModal .wd-card-grid .wd-card{min-height:42px!important}
+  html:root body #withdrawModal .wd-card-grid{row-gap:7px!important}
+  html:root body #withdrawModal .wd-group-label{margin-top:10px!important}
 }
