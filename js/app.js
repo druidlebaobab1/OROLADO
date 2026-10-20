@@ -1488,15 +1488,7 @@
           if (fsNow !== wasFs) { wasFs = fsNow; paint(); }
         }).observe(root, { attributes: true, attributeFilter: ['class'] });
       } catch (eMo) { /* ignore */ }
-      // v2965 : la page descend maintenant jusqu'au vrai bas de l'écran (css/app.css, « APPLI iPhone installée ») ; elle ne doit
-      // jamais défiler (le site est fixé sur la fenêtre de toute façon) : retour en haut, sauf pendant la saisie (clavier).
-      window.addEventListener('scroll', function () {
-        try {
-          var ae = document.activeElement;
-          if ((window.scrollY || window.pageYOffset || 0) !== 0 && !(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName || ''))) window.scrollTo(0, 0);
-        } catch (eSc) { /* ignore */ }
-      }, { passive: true });
-      document.addEventListener('focusout', function () { setTimeout(function () { try { if (window.scrollY) window.scrollTo(0, 0); } catch (eFo) { /* ignore */ } }, 120); }, true);
+      // 2026-10-21 : garde anti-défilement retirée avec l'essai « page plus haute » (annulé).
       window.addEventListener('load', function () { [300, 1200, 3000].forEach(function (ms) { setTimeout(paint, ms); }); });
     } catch (eIa) { /* ignore */ }
   })();
