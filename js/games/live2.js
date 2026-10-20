@@ -171,7 +171,7 @@
     names: ['Ruby', 'Jade', 'Sky', 'Amber', 'Iris', 'Rose'],
     dress: ['#FB3B6A', '#14C08A', '#3B8BF6', '#F7B32B', '#9B6BFA', '#F25FB0'],
     dark: ['#881337', '#065F46', '#1E3A8A', '#92400E', '#4C1D95', '#9D174D'],
-    skin: ['#F3C9A9', '#8D5A3B', '#E5B08A', '#C68B5E', '#F5D5BC', '#6B3F2A'],
+    skin: ['#FDE7DA', '#FBE2D2', '#FCE5D6', '#FADFCD', '#FDE9DD', '#FBE1D0'], // propriétaire : toutes les mannequins à la peau claire
     hair: ['#24140A', '#F5D06F', '#6B3F1E', '#B4471F', '#141014', '#E9E4F0']
   };
   /* v2860 (owner: "amateur") — the models are now real figures (D6.Rig): runway walk (crossing steps, hip sway, arm swing)
@@ -183,7 +183,7 @@
     { style: 'bun', legs: 'pants', top: ['#14C08A', '#065F46'], bottom: ['#0E9F73', '#064E3B'], sleeve: 'none', lips: '#BE185D', shoe: '#F5F5F4' },
     { style: 'wavy', legs: 'dress', skirt: ['#3B8BF6', '#1E3A8A'], skirtLen: 0.44, top: ['#3B8BF6', '#1E3A8A'], sleeve: 'short', lips: '#BE123C', shoe: '#E5E7EB' },
     { style: 'pony', legs: 'pants', top: ['#F7B32B', '#92400E'], bottom: ['#1F2937', '#0B1220'], sleeve: 'long', lips: '#B91C1C', shoe: '#F7B32B' },
-    { style: 'afro', legs: 'dress', skirt: ['#9B6BFA', '#4C1D95'], skirtLen: 0.3, top: ['#9B6BFA', '#4C1D95'], sleeve: 'none', lips: '#7E1D3F', shoe: '#FDE68A' },
+    { style: 'wavy', legs: 'dress', skirt: ['#9B6BFA', '#4C1D95'], skirtLen: 0.3, top: ['#9B6BFA', '#4C1D95'], sleeve: 'none', lips: '#7E1D3F', shoe: '#FDE68A' },
     { style: 'bob', legs: 'skirt', skirt: ['#1F2937', '#0B1220'], skirtLen: 0.2, top: ['#F25FB0', '#9D174D'], sleeve: 'long', lips: '#DB2777', shoe: '#111827' }
   ];
   var CWS = {}; // model index → blob URL of its sheet (kept across rounds)
