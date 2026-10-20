@@ -2114,7 +2114,7 @@ if ($isAjax) {
     }
     if ($action === 'sp_list') admin_json(['ok' => true, 'events' => sp_admin_list()]);
     if ($action === 'sp_save') admin_json(sp_admin_save((array) ($req['ev'] ?? [])));
-    if ($action === 'sp_seed') admin_json(sp_admin_seed(array_merge(sp_suggestions2(), sp_suggestions3()))); // v2787/v2807 : les événements serrés (ceux qui manquent)
+    if ($action === 'sp_seed') admin_json(sp_admin_seed(array_merge(sp_suggestions2(), sp_suggestions3(), sp_suggestions4()))); // v2787/v2807 : les événements serrés (ceux qui manquent) ; 2026-10-21 : + 4e série
     // v2807 (propriétaire) : les paris d'un événement → qui a gagné, qui a perdu (lecture seule)
     if ($action === 'sp_bets') {
       $r = sp_admin_event_bets((string) ($req['id'] ?? ''));
