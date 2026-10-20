@@ -13173,3 +13173,12 @@ html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal
 html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:18px!important}
 html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet .cw-plus{width:34px!important;height:34px!important;min-width:34px!important;font-size:22px!important}
 html[dir=rtl]:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet{margin-inline:0 auto!important}
+/* 2026-10-20 (propriétaire) : dans un jeu, le portefeuille reste AU MILIEU (même place à gauche et à droite) ; texte « Compte réel » et
+   montant alignés à gauche après l'icône, comme sur les grands sites de paris / casino (Stake, 1xBet, BC.Game…). */
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top{grid-template-columns:84px minmax(0,1fr) 84px!important;column-gap:4px!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top > .cs-tr{justify-self:end!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet{justify-self:center!important;width:100%!important;max-width:250px!important;margin-inline:auto!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t{align-items:flex-start!important;text-align:start!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t small,html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{text-align:start!important;width:auto!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet .cw-t small{white-space:nowrap!important;font-size:10px!important;letter-spacing:.05em!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet{padding:4px 5px 4px 10px!important;gap:6px!important}
