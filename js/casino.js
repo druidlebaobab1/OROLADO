@@ -636,7 +636,7 @@
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
      L'accueil range tout en 3 listes : Live · Tu contrôles · Tous les jeux. */
-  var SECTION = {}, CAT = [];
+  var SECTION = {}, CAT = [], LOGO_SRC = [];
   D6.CasinoCatalog = {
     add: function (list) {
       (list || []).forEach(function (e) {
@@ -644,6 +644,7 @@
         NAMES[e.k] = String(e.name || e.k); if (e.nm) NAMEL[e.k] = e.nm; MODS[e.k] = String(e.file || e.k); SECTION[e.k] = e.sec === 'live' || e.sec === 'skill' ? e.sec : 'more'; CAT.push(e.k);
         if (e.sec === 'live') LIVE_GAMES[e.k] = 1; // v2807 : pastille « en direct » sur le logo
         if (e.icon && ART.addObj) ART.addObj(e.k, e.icon, e.pal);
+        if (e.icon) LOGO_SRC.push(String(e.icon));
       });
       catRepaint();
     }
@@ -664,10 +665,24 @@
   }
   // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
   var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa', 'cat-skill6', 'cat-live3', 'cat-casc'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
+  // 2026-10-20 (vieux Android : « boules de couleur avant les logos ») : les photos des logos sont préchargées en douceur
+  // dès que le catalogue est là (mêmes adresses → au 1er clic sur Jeux elles sortent de la mémoire du téléphone).
+  var logosDone = false;
+  function preloadLogos() {
+    if (logosDone) return; logosDone = true;
+    var go = function () {
+      try {
+        var seen = {};
+        LOGO_SRC.forEach(function (ic) { String(ic).replace(/img\/games\/[a-z0-9_-]+\.webp\?v=\d+/gi, function (u) { seen[u] = 1; return u; }); });
+        Object.keys(seen).forEach(function (u) { var im = new Image(); im.decoding = 'async'; im.src = u; });
+      } catch (eL) { /* ignore */ }
+    };
+    if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 3000 }); else setTimeout(go, 1500);
+  }
   function loadCatalog() {
     if (catAsked) return; catAsked = true;
     catLeft = CAT_FILES.length;
-    var one = function () { if (--catLeft <= 0) { catDone = true; if (S.pend && !NAMES[S.pend]) S.pend = ''; catRepaint(); } };
+    var one = function () { if (--catLeft <= 0) { catDone = true; if (S.pend && !NAMES[S.pend]) S.pend = ''; catRepaint(); preloadLogos(); } };
     CAT_FILES.forEach(function (f) { var js = document.createElement('script'); js.src = 'js/games/' + f + '.js?v=' + MOD_V; js.async = true; js.onload = one; js.onerror = one; document.head.appendChild(js); });
   }
   (function () {
