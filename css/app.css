@@ -13160,3 +13160,16 @@ html.is-ios:root body #tradeWrap#tradeWrap#tradeWrap #oddsRow#oddsRow .odds-chip
 
 /* 2026-10-20 : menu Cadeaux (accueil) : la carte du Top 50 n'y apparaît jamais (seulement dans « Tournoi démo ») */
 html:root body #portalModal#portalModal.gh-home .portal-box > #topCard{display:none!important}
+/* 2026-10-20 (propriétaire : « Compte réel trop petit en haut de Jeux / Paris / jeux ») : portefeuille plus large et plus grand.
+   Salle de jeux et Paris (place libre) : large ; dans un jeu : il s'étire entre la flèche ‹ et les boutons livre / son, sans les toucher. */
+html:root body #casinoModal#casinoModal#casinoModal .cs-top{grid-template-columns:52px minmax(0,1fr) 52px!important;column-gap:6px!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet{justify-self:center!important;width:100%!important;max-width:300px!important;min-width:0!important;margin-inline:auto!important;min-height:52px!important;height:auto!important;padding:5px 6px 5px 12px!important;gap:10px!important;justify-content:space-between!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t{flex:1 1 auto!important;min-width:0!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t small{font-size:11px!important;letter-spacing:.08em!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:21px!important;line-height:1.1!important;white-space:nowrap!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-plus{width:38px!important;height:38px!important;min-width:38px!important;font-size:24px!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top{grid-template-columns:52px minmax(0,1fr) auto!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet{justify-self:start!important;width:calc(100% - 8px)!important;max-width:250px!important;margin-inline:0 auto!important;min-height:48px!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:18px!important}
+html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet .cw-plus{width:34px!important;height:34px!important;min-width:34px!important;font-size:22px!important}
+html[dir=rtl]:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet{margin-inline:0 auto!important}
