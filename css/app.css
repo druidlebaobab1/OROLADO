@@ -13127,3 +13127,7 @@ html.is-android:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfi
 /* v2953 — Jeux : rond de chargement centré pendant l'arrivée du catalogue (vieux Android) */
 html:root body #casinoModal #csView.cs-wait{display:flex!important;align-items:center;justify-content:center;min-height:60vh}
 html:root body #casinoModal #csView.cs-wait .cg-load{flex:none;min-height:0}
+
+/* v2957 — Profil iPhone : lignes ID public / E-mail un peu plus larges (Android inchangé) ; le texte s'ajuste (js/app.js) */
+html:not(.is-android):root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows{max-width:min(400px,94%)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .prof-id-row > strong.fit-on{text-overflow:clip!important}
