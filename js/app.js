@@ -5059,6 +5059,9 @@
     $('depositModal').addEventListener('keydown', stop, true);
   }
   function openDeposit(preMsg, method) {
+    // 2026-10-20 (vieux Android) : le paiement Flutterwave (~800 Ko) n'est plus chargé à chaque visite ;
+    // il se prépare ici, dès l'ouverture de Recharger, pendant que le joueur choisit son moyen de paiement.
+    if (!isGuest()) { try { ensureFlwScript(); } catch (eFlw) { /* ignore */ } }
     var peek = isGuest();
     if (peek) { bindDepositPeek(); preMsg = ''; }
     if ($('depositModal')) $('depositModal').classList.toggle('dep-peek', peek);

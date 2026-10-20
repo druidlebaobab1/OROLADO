@@ -130,7 +130,7 @@
       if (!bon || !bon.guest) bon = { enabled: true, guest: true, phase: 'off', weekEnd: nextMonday() };
       setTimeout(function () { renderAff(); renderTop(); renderBon(); }, 0);
     }
-    if (!on) return;
+    if (!on || !s) return; // état pas encore lu (en-tête gardé) : rien d'autre à dessiner
     // Progression du défi affichée SUR la maison (« 3/5 ») : aucune pastille sur le graphique.
     var prog = $('btnPortal').querySelector('.pw-prog');
     if (!prog) { prog = document.createElement('span'); prog.className = 'pw-prog'; $('btnPortal').appendChild(prog); }
