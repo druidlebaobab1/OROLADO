@@ -7009,8 +7009,7 @@
     var items = d.querySelectorAll('.drawer-nav .drawer-item');
     var run = function () {
       parts.forEach(function (el) { el.style.zoom = ''; });
-      Array.prototype.forEach.call(items, function (it) { it.style.minHeight = ''; });
-      Array.prototype.forEach.call(d.querySelectorAll('#profWalletCard .wallet-tab, #btnExpressCrypto, #profWalletCard .wallet-addr-row, #profWalletBal'), function (el) { el.style.minHeight = ''; });
+      Array.prototype.forEach.call(d.querySelectorAll('.drawer-nav .drawer-item, #profWalletCard .wallet-tab, #btnExpressCrypto, #profWalletCard .wallet-addr-row, #profWalletBal'), function (el) { el.style.removeProperty('min-height'); });
       if (!d.classList.contains('on')) return;
       // v2944 — mesure par la position réelle du bas du contenu (fiable aussi sur les Chrome Android) :
       // « free » = place vide sous la dernière ligne
@@ -7023,7 +7022,8 @@
       var fits = function () { return freeNow() >= -2 && d.scrollHeight - d.clientHeight <= 1; };
       // la photo garde sa vraie taille (104 px) même quand le reste est réduit
       var av = $('profAvatar');
-      var avT = d.clientHeight < 600 ? 84 : 104; // très petit écran (iPhone SE) : photo un peu moins grande
+      // très petit écran (iPhone SE) : 84 px ; Android : 88 px (propriétaire : « un tout petit peu moins gros ») ; sinon 104 px
+      var avT = d.clientHeight < 600 ? 84 : (document.documentElement.classList.contains('is-android') ? 88 : 104);
       var curZ = 1;
       var setZ = function (z) {
         curZ = z;
@@ -7056,8 +7056,14 @@
       if (els.length && groups && free > 10) {
         var base = els.map(function (el) { return el.getBoundingClientRect().height / curZ; });
         var add = Math.min(22, Math.floor((free - 6) / groups / curZ));
+        // « Se déconnecter » part de la même hauteur que les autres lignes du menu
+        var lo = $('btnLogout'), fi = $('btnFinance');
+        if (lo && fi) { var li = els.indexOf(lo), fiI = els.indexOf(fi); if (li >= 0 && fiI >= 0) base[li] = Math.max(base[li], base[fiI]); }
         var apply = function (n) {
-          els.forEach(function (el, i) { el.style.minHeight = n > 0 ? Math.round(base[i] + n) + 'px' : ''; });
+          els.forEach(function (el, i) {
+            if (n > 0) el.style.setProperty('min-height', Math.round(base[i] + n) + 'px', 'important');
+            else el.style.removeProperty('min-height');
+          });
         };
         while (add >= 1) {
           apply(add);
