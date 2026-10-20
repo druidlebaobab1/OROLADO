@@ -165,7 +165,7 @@
     #toast,.toast,#sparkle,#particlesCanvas{pointer-events:none!important}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css?v=2921">
+    <link rel="stylesheet" href="css/app.css?v=2922">
     <link rel="stylesheet" href="css/auth.css?v=2790">
     <link rel="stylesheet" href="css/tv.css?v=2790">
     <link rel="stylesheet" href="css/galaxy.css?v=2919">
@@ -437,10 +437,15 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
       try { if (window.D6 && D6.Engine && D6.Engine.feedReady && D6.Engine.feedReady()) g = 96; } catch (e) { /* ignore */ }
       return g;
     }
+    var shownAt = Date.now();
     setInterval(function () {
       var off = el.classList.contains('off');
-      if (!off && wasOff) p = 0;
+      // 2026-10-20 (propriétaire : « quand c'est presque rempli, ça reprend à zéro ») : quand l'écran revient, il ne repart
+      // plus de 0 (on dirait que le site recommence) ; il reprend à 60 %.
+      if (!off && wasOff) { p = Math.max(p > 99 ? 60 : p, 60); shownAt = Date.now(); }
       wasOff = off;
+      // Sécurité : jamais plus de 6 s d'écran de chargement une fois la page chargée (quoi qu'il arrive ailleurs).
+      if (!off && document.readyState !== 'loading' && Date.now() - shownAt > 6000) { el.classList.remove('ol-done'); el.classList.add('off'); off = true; }
       if (off) { if (p < 100) { p = 100; paint(); } return; }
       var g = target();
       if (p < g) p = Math.min(g, p + Math.max(el.classList.contains('ol-done') ? 7 : 0.6, (g - p) * (el.classList.contains('ol-done') ? 0.35 : 0.1)));
