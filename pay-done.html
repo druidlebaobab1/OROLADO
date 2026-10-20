@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,9 +10,18 @@
   </style>
 </head>
 <body>
-  <p>Recharge réussie. Retour vers OROLADO…</p>
+  <p id="payDoneMsg">Payment successful. Returning to OROLADO…</p>
   <script>
     (function () {
+      // 2026-10-20 : message dans la langue choisie sur le site (anglais par défaut).
+      try {
+        var L = { fr: 'Recharge réussie. Retour vers OROLADO…', es: 'Recarga realizada. Volviendo a OROLADO…', pt: 'Recarga concluída. Voltando para a OROLADO…',
+          ar: 'تم الشحن بنجاح. جارٍ العودة إلى OROLADO…', tr: 'Yükleme başarılı. OROLADO’ya dönülüyor…', vi: 'Nạp tiền thành công. Đang quay lại OROLADO…',
+          id: 'Isi saldo berhasil. Kembali ke OROLADO…', ru: 'Пополнение выполнено. Возвращаемся в OROLADO…', de: 'Einzahlung erfolgreich. Zurück zu OROLADO…',
+          hi: 'रिचार्ज सफल। OROLADO पर लौट रहे हैं…', zh: '充值成功，正在返回 OROLADO…' };
+        var lg = String(localStorage.getItem('orolado_lang') || '').slice(0, 2);
+        if (L[lg]) { document.getElementById('payDoneMsg').textContent = L[lg]; document.documentElement.lang = lg; }
+      } catch (eL) {}
       var q = new URLSearchParams(location.search);
       var ref = q.get('ref') || '';
       try { if (ref) localStorage.setItem('oro_dep_ref', ref); } catch (e) {}

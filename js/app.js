@@ -5354,12 +5354,10 @@
     var cc = String(country || '').toUpperCase();
     var ops = WAVE_OPS[cc];
     if (!ops) return Promise.resolve(true);
-    var en = /^en/i.test(String(document.documentElement.getAttribute('data-lang') || document.documentElement.lang || 'fr'));
+    // 2026-10-20 : textes dans les 12 langues (js/i18n.js x_wave*) ; avant : anglais, sinon français pour tout le monde.
     var names = ops.map(function (o) { return WAVE_NAMES[o]; });
-    var list = names.length > 1 ? names.slice(0, -1).join(', ') + (en ? ' or ' : ' ou ') + names[names.length - 1] : names[0];
-    var txt = en
-      ? { t: 'Wave is under maintenance', p: 'Please pay with ' + list + '. On the next page, choose your operator and follow the steps.', go: 'Continue', no: 'Cancel' }
-      : { t: 'Wave est en maintenance', p: 'Payez avec ' + list + '. Sur la page suivante, choisissez votre opérateur et suivez les étapes.', go: 'Continuer', no: 'Annuler' };
+    var list = names.length > 1 ? names.slice(0, -1).join(', ') + t('x_or') + names[names.length - 1] : names[0];
+    var txt = { t: t('x_waveT'), p: t('x_waveP').replace('{list}', list), go: t('continueBtn'), no: t('cancel') };
     return new Promise(function (resolve) {
       var old = $('waveNotice');
       if (old) old.remove();
@@ -7134,6 +7132,24 @@
     }
   }
 
+  // 2026-10-20 : nom du pays dans la langue du joueur (les listes de js/config.js sont en français) ;
+  // le code ISO vient du drapeau, le nom du navigateur (Intl.DisplayNames). Français ou navigateur ancien : nom d'origine.
+  var ccNameCache = {};
+  function ccLabel(c) {
+    try {
+      var lg = (D6.I18N && D6.I18N.lang) || 'en';
+      if (!c || lg === 'fr' || /\//.test(String(c.name || '')) || typeof Intl === 'undefined' || !Intl.DisplayNames) return c ? c.name : '';
+      var m = String(c.flag || '').match(/\uD83C[\uDDE6-\uDDFF]/g);
+      if (!m || m.length !== 2) return c.name;
+      var iso = String.fromCharCode(65 + m[0].charCodeAt(1) - 0xDDE6, 65 + m[1].charCodeAt(1) - 0xDDE6);
+      if (!ccNameCache[lg]) ccNameCache[lg] = new Intl.DisplayNames([lg], { type: 'region' });
+      var nm = ccNameCache[lg].of(iso);
+      return nm && nm !== iso ? nm : c.name;
+    } catch (eCc) {
+      return c ? c.name : '';
+    }
+  }
+
   function fillWdDial(method) {
     var sel = $('wdDial');
     var fixed = $('wdDialFixed');
@@ -7152,7 +7168,7 @@
       if (!list.length) list = codes;
     }
     sel.innerHTML = list.map(function (c) {
-      return '<option value="' + c.code + '">' + c.flag + ' ' + c.code + ' · ' + c.name + '</option>';
+      return '<option value="' + c.code + '">' + c.flag + ' ' + c.code + ' · ' + ccLabel(c) + '</option>';
     }).join('');
     if (lock) sel.value = lock;
     else if (WD_DIAL_DEFAULT[method]) sel.value = WD_DIAL_DEFAULT[method];
@@ -7181,7 +7197,7 @@
     }
     var current = sel.value;
     sel.innerHTML = list.map(function (c) {
-      return '<option value="' + c.name + '">' + c.flag + ' ' + c.name + '</option>';
+      return '<option value="' + c.name + '">' + c.flag + ' ' + ccLabel(c) + '</option>';
     }).join('');
     var usa = list[0] && list[0].name;
     if (current && list.some(function (c) { return c.name === current; })) sel.value = current;

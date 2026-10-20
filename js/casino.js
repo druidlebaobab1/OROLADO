@@ -2045,7 +2045,7 @@
     // « + » au milieu de la carte Compte réel / Démo → page Recharger
     var ms = $('modeSwitcher');
     if (ms && !$('msPlus')) {
-      var p = document.createElement('button'); p.type = 'button'; p.id = 'msPlus'; p.className = 'ms-plus'; p.setAttribute('aria-label', 'Recharger'); p.innerHTML = '<span>+</span>';
+      var p = document.createElement('button'); p.type = 'button'; p.id = 'msPlus'; p.className = 'ms-plus'; p.setAttribute('aria-label', (D6.I18N && D6.I18N.depositLabel) ? D6.I18N.depositLabel() : 'Deposit'); p.innerHTML = '<span>+</span>';
       p.addEventListener('click', function (e) { e.stopPropagation(); e.preventDefault(); try { if (window.oroUi && window.oroUi.deposit) window.oroUi.deposit(); else if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); } catch (x) { /* ignore */ } }, true);
       ms.appendChild(p);
       // v2757 : le « + » se range au bout de « Compte réel » (côté de la séparation), dans toutes les langues
