@@ -13154,9 +13154,14 @@ html[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile
 /* v2964 (propriétaire) : rond blanc des flèches ACHETER / VENDRE plus calme (blanc légèrement transparent) ; au toucher il s'allume en blanc plein */
 html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade .bt-arr{background-color:rgba(255,255,255,.86)!important;box-shadow:0 0 0 4px rgba(255,255,255,.14),0 2px 8px rgba(0,0,0,.35)!important;transition:background-color .15s,box-shadow .15s}
 html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade:active .bt-arr,html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade.tap-lit .bt-arr,html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade.pressed .bt-arr{background-color:#fff!important;box-shadow:0 0 0 4px rgba(255,255,255,.3),0 0 14px rgba(255,255,255,.55)!important}
-/* v2964 (propriétaire) — iPhone seulement : la bulle 5000 % (la plus grande) touchait VENDRE : un peu plus petite, rétrécie
-   vers le haut (son haut ne bouge pas : jamais sur le cadre $ 1.90) → petit espace au-dessus de VENDRE */
-html.is-ios:root body #tradeWrap#tradeWrap#tradeWrap #oddsRow#oddsRow .odds-chip:last-child{scale:.95!important;translate:0 -2px!important;transform-origin:50% 0!important}
+/* v2965 (propriétaire) — iPhone seulement : la bulle 5000 % reste LA PLUS GRANDE (×1,06 : 59 px, contre 54 px pour 1000 %),
+   centrée entre le cadre « $ 1.90 » et VENDRE : ~4 px d'air au-dessus et ~4 px sous son anneau (avant v2964 : ×1,1 + 5 px
+   plus bas → l'anneau touchait VENDRE ; v2964 : ×0,95 tirée vers le haut → trop petite). Android ne change pas. */
+html.is-ios:root body #tradeWrap#tradeWrap#tradeWrap #oddsRow#oddsRow .odds-chip:last-child{scale:1.06!important;translate:0 1px!important;transform-origin:50% 50%!important}
+/* v2965 (propriétaire) — APPLI iPhone installée : la page descend jusqu'au vrai bas de l'écran (bande de 59 px sous la fenêtre),
+   pour que le petit monde de planètes posé en fond (js/app.js) puisse y être dessiné. Le site lui-même (body fixé sur la fenêtre)
+   ne bouge pas : ACHETER / VENDRE gardent leur place et leur marge de 6 px. Essai : non vérifié sur un vrai iPhone. */
+html.ios-app.is-ios:root:not(.fs-trade){min-height:calc(100% + var(--ios-under,0px))!important}
 
 /* 2026-10-20 : menu Cadeaux (accueil) : la carte du Top 50 n'y apparaît jamais (seulement dans « Tournoi démo ») */
 html:root body #portalModal#portalModal.gh-home .portal-box > #topCard{display:none!important}

@@ -65,6 +65,9 @@
     'Or · prix LBMA': { en: 'Gold · LBMA price', es: 'Oro · precio LBMA', pt: 'Ouro · preço LBMA', ar: 'الذهب · سعر LBMA', tr: 'Altın · LBMA fiyatı', vi: 'Vàng · giá LBMA', id: 'Emas · harga LBMA', ru: 'Золото · цена LBMA', de: 'Gold · LBMA-Preis', hi: 'सोना · LBMA कीमत', zh: '黄金 · LBMA 价格' },
     'Box-office USA': { en: 'US box office', es: 'Taquilla EE. UU.', pt: 'Bilheteria EUA', ar: 'شباك التذاكر الأمريكي', tr: 'ABD gişesi', vi: 'Phòng vé Mỹ', id: 'Box office AS', ru: 'Кассовые сборы США', de: 'US-Kinokasse', hi: 'US बॉक्स ऑफ़िस', zh: '北美票房' },
     'cinéma': { en: 'movies', es: 'cine', pt: 'cinema', ar: 'سينما', tr: 'sinema', vi: 'điện ảnh', id: 'film', ru: 'кино', de: 'Kino', hi: 'सिनेमा', zh: '电影' },
+    // 2026-10-21 : 4e série
+    'Ligue Europa': { en: 'Europa League', es: 'Liga Europa', pt: 'Liga Europa', ar: 'الدوري الأوروبي', tr: 'Avrupa Ligi', vi: 'Europa League', id: 'Liga Europa', ru: 'Лига Европы', de: 'Europa League', hi: 'यूरोपा लीग', zh: '欧联' },
+    'total de points': { en: 'total points', es: 'puntos totales', pt: 'pontos totais', ar: 'مجموع النقاط', tr: 'toplam sayı', vi: 'tổng điểm', id: 'total poin', ru: 'тотал очков', de: 'Gesamtpunkte', hi: 'कुल अंक', zh: '总分' },
     'derby basque': { en: 'Basque derby', es: 'derbi vasco', pt: 'dérbi basco', ar: 'ديربي الباسك', tr: 'Bask derbisi', vi: 'derby xứ Basque', id: 'derby Basque', ru: 'баскское дерби', de: 'Baskenderby', hi: 'बास्क डर्बी', zh: '巴斯克德比' }
   };
   function lg() { return (document.documentElement.lang || 'fr').slice(0, 2); }

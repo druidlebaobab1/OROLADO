@@ -2123,8 +2123,10 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
   html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
     background:linear-gradient(0deg,#1A2A68 0,#1A2A68 env(safe-area-inset-bottom,0px),rgba(26,42,104,0) calc(env(safe-area-inset-bottom,0px) + 34px)),
       url("../icons/ui/pad-planets.svg?v=2886") center/cover no-repeat,
-      linear-gradient(180deg,rgb(10,10,32) 0,rgba(10,10,32,.85) 10px,rgba(10,10,32,0) 40px),
+      linear-gradient(180deg,rgb(13,14,40) 0,rgba(13,14,40,.6) 6px,rgba(13,14,40,0) 22px),
       linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #1A2A68!important}
+  /* v2965 (propriétaire, iPhone : « bande noire sous la courbe ») : le raccord sombre en haut du terminal est plus court et plus
+     clair (avant : noir plein sur 10 px puis fondu jusqu'à 40 px) ; il part toujours de la couleur du bas de la courbe (pas de trait). */
   html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#1A2A68!important}
   html.is-ios{background:#1A2A68!important}
 }
@@ -2133,7 +2135,7 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
    js/chart.js pour fondre le bas de la courbe dedans (Android / iPhone, portrait). */
 @media (max-width:859px){
   html body #tradeWrap > .pad{--oro-pad-top:10,10,34}
-  html.is-ios body #tradeWrap > .pad{--oro-pad-top:10,10,32}
+  html.is-ios body #tradeWrap > .pad{--oro-pad-top:13,14,40} /* v2965 : un peu plus clair (avant 10,10,32 : bande noire) */
   /* la dernière ligne de pixels sous la courbe (arrondi de hauteur) laissait voir le fond : le terminal la recouvre */
   html:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) > .pad{box-shadow:0 -2px 0 0 rgb(var(--oro-pad-top))!important}
 }
@@ -2142,7 +2144,7 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
    TOUT EN BAS de l'écran par js/app.js (fond de la page, sous chaque écran : trading, Profil, Historique, Jeux). Le terminal garde
    son fond sombre, sans bande bleue en bas et sans dessin coupé ; fond prune partout (plus de bleu d'un côté et de noir de l'autre). */
 html.ios-app:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-  background:linear-gradient(180deg,rgb(10,10,32) 0,rgba(10,10,32,.85) 10px,rgba(10,10,32,0) 40px),
+  background:linear-gradient(180deg,rgb(13,14,40) 0,rgba(13,14,40,.6) 6px,rgba(13,14,40,0) 22px),
     linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #1A2A68!important}
 html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#0F102E!important}
 

@@ -430,6 +430,86 @@ function sp_suggestions3(): array {
     $yn('Dogecoin au-dessus de 0,08 $ le samedi 7 novembre à 12 h (UTC) ?', $cb, '2026-11-05 12:00', '2026-11-07 12:05', 0.49, 'doge', sp_px_q('Dogecoin', '0,08 $', '07/11', '12:00')),
   ];
 }
+/*
+ * 2026-10-21 (propriétaire : « Paris : trop peu d'événements ») — 4e SÉRIE : les grands événements réels de la semaine
+ * (Ligue Europa J3 du jeudi 22/10, Ligue 1 / Serie A / Bundesliga du week-end, NBA) + quelques questions façon
+ * « Combien de buts dans PSG – Barcelone ? ». Matchs PROCHES choisis d'après les cotes des bookmakers relevées le 20/10/2026
+ * (Megapari via oddscalendar.com, moyenne des bookmakers UK via bettingodds.com, DraftKings via scoresandstats.com / gainblers.com).
+ * Cotes OROLADO = cote du marché BAISSÉE (sp_m2o) : ×0,92 jusqu'à 2,50 (2,00 → 1,84), ×0,90 jusqu'à 4,00, ×0,88 au-delà —
+ * la maison garde toujours plus que 6 % (somme des 1/cote ≥ 1/0,94, vérifié par scripts/test-paris-seed4.php).
+ * Heures en UTC = coup d'envoi / début réel (heure d'été en Europe jusqu'au 25/10 à 1 h UTC, aux États-Unis jusqu'au 1/11).
+ * Fin réelle : foot +2 h, NBA +3 h (l'admin est prévenu à ce moment-là et donne le résultat ; « Annulé » = mises rendues).
+ */
+function sp_m2o(float $m): float { $k = $m <= 2.5 ? 0.92 : ($m <= 4.0 ? 0.90 : 0.88); return max(1.01, floor($m * $k * 100 + 1e-6) / 100); }
+/** Cotes d'un événement : si les cotes relevées gardent déjà une grosse marge (moyenne des bookmakers UK ≈ 8-11 %), on les
+ *  ramène d'abord à une marge de bookmaker normale (4 %) puis on baisse avec sp_m2o — chaque cote reste SOUS la cote du marché. */
+function sp_mset(array $m): array {
+  $s = 0.0; foreach ($m as $v) $s += 1 / $v;
+  $f = $s > 1.04 ? $s / 1.04 : 1.0;
+  return array_map(static fn($v) => min(sp_m2o($v * $f), floor($v * 0.95 * 100) / 100), $m);
+}
+function sp_suggestions4(): array {
+  $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
+  $tm = static fn(string $s): string => 'img/teams/' . $s . '.png';
+  // foot 1 · N · 2 : cotes du marché [domicile, nul, extérieur]
+  $foot = static function (string $title, string $lg, string $ko, string $h, string $a, array $m, string $lh, string $la) use ($t, $tm): array {
+    $k = $t($ko); $o = sp_mset($m);
+    return [$title, $lg, 'foot', $k, [[$h, $o[0]], ['Nul', $o[1]], [$a, $o[2]]], [$tm($lh), $tm($la)], $k + 7200];
+  };
+  // NBA (pas de nul : prolongation) : cotes du marché [domicile, extérieur]
+  $nba = static function (string $title, string $ko, string $h, string $a, array $m, string $lh, string $la) use ($t, $tm): array {
+    $k = $t($ko); $o = sp_mset($m);
+    return [$title, 'NBA', 'basket', $k, [[$h, $o[0]], [$a, $o[1]]], [$tm($lh), $tm($la)], $k + 10800];
+  };
+  // question Oui / Non (simple seulement) : cotes du marché (ou probabilité du modèle cité) [oui, non]
+  $yn = static function (string $title, string $lg, string $ko, int $len, array $m, string $img, array $tr) use ($t): array {
+    $k = $t($ko); $o = sp_mset($m);
+    return [$title, $lg, 'event', $k, [['Oui', $o[0]], ['Non', $o[1]]], [$img], $k + $len, $tr];
+  };
+  $EL = 'Ligue Europa'; $L1 = 'Ligue 1'; $SA = 'Serie A'; $BL = 'Bundesliga';
+  return [
+    // mer. 21/10 — NBA : Heat -115 / Wolves -105 (DraftKings, 20/10)
+    $nba('Miami Heat - Minnesota T-Wolves', '2026-10-21 23:30', 'Heat', 'Timberwolves', [1.87, 1.95], 'miami-heat', 'minnesota-timberwolves'),
+    // jeu. 22/10 2 h UTC — NBA : Lakers -225 / Warriors +185 ; total 234,5 points à -110 / -110 (DraftKings, 20/10)
+    $nba('Los Angeles Lakers - Golden State Warriors', '2026-10-22 02:00', 'Lakers', 'Warriors', [1.44, 2.85], 'los-angeles-lakers', 'golden-state-warriors'),
+    $yn('Lakers – Warriors : plus de 234,5 points au total ?', 'NBA · total de points', '2026-10-22 02:00', 10800, [1.91, 1.91], $tm('los-angeles-lakers'),
+      ['en' => 'Lakers – Warriors: over 234.5 total points?', 'es' => 'Lakers – Warriors: ¿más de 234,5 puntos en total?', 'pt' => 'Lakers – Warriors: mais de 234,5 pontos no total?',
+       'ar' => 'ليكرز – ووريورز: أكثر من 234.5 نقطة في المجموع؟', 'tr' => 'Lakers – Warriors: toplam 234,5 sayı üstü mü?', 'vi' => 'Lakers – Warriors: tổng trên 234,5 điểm?',
+       'id' => 'Lakers – Warriors: total lebih dari 234,5 poin?', 'ru' => 'Лейкерс – Уорриорз: больше 234,5 очков в сумме?', 'de' => 'Lakers – Warriors: über 234,5 Punkte insgesamt?',
+       'hi' => 'लेकर्स – वॉरियर्स: कुल 234.5 से ज़्यादा अंक?', 'zh' => '湖人 – 勇士：总分超过 234.5 分？']),
+    // jeu. 22/10 — Ligue Europa J3 (18 h 45 / 21 h heure de Paris = 16 h 45 / 19 h UTC ; cotes Megapari et moyenne UK)
+    $foot('Sturm Graz - Olympique de Marseille', $EL, '2026-10-22 16:45', 'Sturm Graz', 'Marseille', [3.60, 3.73, 2.06], 'sturm-graz', 'marseille'),
+    $foot('Bournemouth - AC Milan', $EL, '2026-10-22 19:00', 'Bournemouth', 'Milan', [2.15, 3.67, 3.40], 'bournemouth', 'ac-milan'),
+    $yn('Bournemouth – Milan : les deux équipes marquent ?', $EL, '2026-10-22 19:00', 7200, [1.82, 2.22], 'q:ball',
+      ['en' => 'Bournemouth – Milan: will both teams score?', 'es' => 'Bournemouth – Milan: ¿marcan ambos equipos?', 'pt' => 'Bournemouth – Milan: ambas as equipes marcam?',
+       'ar' => 'بورنموث – ميلان: هل يسجل الفريقان؟', 'tr' => 'Bournemouth – Milan: iki takım da gol atar mı?', 'vi' => 'Bournemouth – Milan: cả hai đội cùng ghi bàn?',
+       'id' => 'Bournemouth – Milan: kedua tim mencetak gol?', 'ru' => 'Борнмут – Милан: обе забьют?', 'de' => 'Bournemouth – Milan: Treffen beide Teams?',
+       'hi' => 'बोर्नमाउथ – मिलान: क्या दोनों टीमें गोल करेंगी?', 'zh' => '伯恩茅斯 – AC米兰：两队都有进球？']),
+    $foot('Beşiktaş - Crystal Palace', $EL, '2026-10-22 19:00', 'Beşiktaş', 'Crystal Palace', [2.15, 3.81, 3.29], 'besiktas', 'crystal-palace'),
+    $yn('Beşiktaş – Crystal Palace : 3 buts ou plus dans le match ?', $EL, '2026-10-22 19:00', 7200, [1.61, 2.63], 'q:ball',
+      ['en' => 'Beşiktaş – Crystal Palace: 3 or more goals in the match?', 'es' => 'Beşiktaş – Crystal Palace: ¿3 goles o más en el partido?', 'pt' => 'Beşiktaş – Crystal Palace: 3 gols ou mais no jogo?',
+       'ar' => 'بشكتاش – كريستال بالاس: 3 أهداف أو أكثر في المباراة؟', 'tr' => 'Beşiktaş – Crystal Palace: maçta 3 veya daha fazla gol?', 'vi' => 'Beşiktaş – Crystal Palace: trận đấu có từ 3 bàn trở lên?',
+       'id' => 'Beşiktaş – Crystal Palace: 3 gol atau lebih di laga ini?', 'ru' => 'Бешикташ – Кристал Пэлас: 3 гола и больше в матче?', 'de' => 'Beşiktaş – Crystal Palace: 3 oder mehr Tore im Spiel?',
+       'hi' => 'बेशिक्ताश – क्रिस्टल पैलेस: मैच में 3 या ज़्यादा गोल?', 'zh' => '贝西克塔斯 – 水晶宫：全场 3 球或以上？']),
+    $foot('Hoffenheim - Olympique Lyonnais', $EL, '2026-10-22 19:00', 'Hoffenheim', 'Lyon', [1.95, 3.75, 3.00], 'hoffenheim', 'lyon'),
+    $foot('Celtic - Celta Vigo', $EL, '2026-10-22 19:00', 'Celtic', 'Celta', [2.62, 3.50, 2.40], 'celtic', 'celta-vigo'),
+    // ven. 23/10
+    $foot('Stade Brestois - OGC Nice', $L1, '2026-10-23 18:45', 'Brest', 'Nice', [2.20, 3.50, 3.00], 'brest', 'nice'),
+    $nba('Boston Celtics - New York Knicks', '2026-10-23 23:00', 'Celtics', 'Knicks', [1.76, 2.10], 'boston-celtics', 'new-york-knicks'),
+    // sam. 24/10
+    $foot('Cagliari - Bologna', $SA, '2026-10-24 13:00', 'Cagliari', 'Bologna', [3.00, 3.00, 2.40], 'cagliari', 'bologna'),
+    $foot('RC Lens - Paris FC', $L1, '2026-10-24 18:45', 'Lens', 'Paris FC', [2.25, 3.60, 2.75], 'lens', 'paris-fc'),
+    // dim. 25/10 (heure d'hiver en Europe : 15 h à Paris = 14 h UTC)
+    $foot('AS Monaco - LOSC Lille', $L1, '2026-10-25 14:00', 'Monaco', 'Lille', [2.10, 3.40, 3.25], 'monaco', 'lille'),
+    $foot('Hoffenheim - Bayer Leverkusen', $BL, '2026-10-25 14:30', 'Hoffenheim', 'Leverkusen', [2.62, 3.80, 2.30], 'hoffenheim', 'leverkusen'),
+    // PSG – Lyon (20 h 45 à Paris = 19 h 45 UTC) : plus de 2,5 buts 61 % (modèle sportsedge ; 1,61 chez 1xBet au dernier PSG – OL)
+    $yn('PSG – Lyon : 3 buts ou plus dans le match ?', $L1, '2026-10-25 19:45', 7200, [1.61, 2.56], 'q:ball',
+      ['en' => 'PSG – Lyon: 3 or more goals in the match?', 'es' => 'PSG – Lyon: ¿3 goles o más en el partido?', 'pt' => 'PSG – Lyon: 3 gols ou mais no jogo?',
+       'ar' => 'باريس سان جيرمان – ليون: 3 أهداف أو أكثر في المباراة؟', 'tr' => 'PSG – Lyon: maçta 3 veya daha fazla gol?', 'vi' => 'PSG – Lyon: trận đấu có từ 3 bàn trở lên?',
+       'id' => 'PSG – Lyon: 3 gol atau lebih di laga ini?', 'ru' => 'ПСЖ – Лион: 3 гола и больше в матче?', 'de' => 'PSG – Lyon: 3 oder mehr Tore im Spiel?',
+       'hi' => 'PSG – ल्यों: मैच में 3 या ज़्यादा गोल?', 'zh' => '巴黎圣日耳曼 – 里昂：全场 3 球或以上？']),
+  ];
+}
 /** v2787 : un événement est « serré » si chaque cote est entre 1,55 et 2,30 (pas de petite cote contre grosse cote). */
 function sp_is_tight(array $e): bool {
   foreach ((array) ($e['opts'] ?? []) as $o) { $v = (float) ($o['odd'] ?? 0); if ($v < 1.55 || $v > 2.30) return false; }
@@ -468,6 +548,12 @@ function sp_autoseed_once(): void {
   if (!is_file($flag3)) {
     @file_put_contents($flag3, (string) time());
     try { sp_admin_seed(sp_suggestions3()); } catch (Throwable $e) { @unlink($flag3); }
+  }
+  // 2026-10-21 : 4e série (grands matchs réels de la semaine + questions), une seule fois aussi
+  $flag5 = sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10d.done';
+  if (!is_file($flag5)) {
+    @file_put_contents($flag5, (string) time());
+    try { sp_admin_seed(sp_suggestions4()); } catch (Throwable $e) { @unlink($flag5); }
   }
   sp_draw_once(); // v2802 : le nul revient au football (matchs encore sans pari)
   // v2810 : questions de prix aux cotes périmées → fermées 72 h après leurs cotes (une seule fois ; la règle s'applique aussi à chaque pari)
@@ -583,7 +669,7 @@ function sp_seed_priced(): array {
   static $m = null;
   if ($m !== null) return $m;
   $m = [];
-  foreach ([[sp_suggestions(), '2026-10-17 00:00'], [sp_suggestions2(), '2026-10-17 00:00'], [sp_suggestions3(), '2026-10-18 00:00']] as [$list, $d])
+  foreach ([[sp_suggestions(), '2026-10-17 00:00'], [sp_suggestions2(), '2026-10-17 00:00'], [sp_suggestions3(), '2026-10-18 00:00'], [sp_suggestions4(), '2026-10-20 12:00']] as [$list, $d])
     foreach ($list as $row) { $k = sp_lower((string) $row[0]); $m[$k] = min($m[$k] ?? PHP_INT_MAX, (int) strtotime($d . ' UTC')); }
   return $m;
 }
