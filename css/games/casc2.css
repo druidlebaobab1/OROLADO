@@ -1,0 +1,57 @@
+/* casc2 (owner request, round 7) — 6 instant games (js/games/casc2.js); base = same styles as casa2.css (one stylesheet is loaded per game file) */
+html:root body #casinoModal .cy .cy-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;background:linear-gradient(180deg,#1B1442,#0E0A26)}
+html:root body #casinoModal .cy .cy-pay{flex:0 0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px;direction:ltr;position:relative;z-index:2}
+html:root body #casinoModal .cy .cy-pay span{min-width:0;height:38px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 2px;
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);transition:background .25s,box-shadow .25s,transform .25s}
+html:root body #casinoModal .cy .cy-pay svg{width:18px;height:18px;flex:none;overflow:visible}
+html:root body #casinoModal .cy .cy-pay b{display:block;max-width:100%;white-space:nowrap;font:900 clamp(9px,2.8vw,12.5px)/1 var(--cg-font);color:#fff;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+html:root body #casinoModal .cy .cy-pay span.on{background:linear-gradient(180deg,#34D399,#15803D);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 16px -4px #22C55E;transform:translateY(-1px)}
+html:root body #casinoModal .cy .cy-pay span:last-child b{color:#FDE68A}
+html:root body #casinoModal .cy .cy-pay span.on:last-child{background:linear-gradient(180deg,#FDE68A,#D97706)}
+html:root body #casinoModal .cy .cy-pay span.on:last-child b{color:#fff}
+html:root body #casinoModal .cy .cy-scene{position:relative;flex:1 1 auto;min-height:0;margin:0 -8px -8px}
+html:root body #casinoModal .cy .cy-svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:hidden}
+html:root body #casinoModal .cy.cy-busy .cg-opts{pointer-events:none}
+html:root body #casinoModal .cy .cg-opts > button b{display:block;max-width:100%;white-space:nowrap;font:900 14px/1.05 var(--cg-font);color:#fff;direction:ltr;unicode-bidi:isolate}
+html:root body #casinoModal .cy .cg-opts > button b i{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;font:900 9px/1 var(--cg-font);font-style:normal;color:#fff;vertical-align:-2px;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7)}
+html:root body #casinoModal .cy .cg-opts > button small{display:block;max-width:100%;white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+html:root body #casinoModal .cy .ln-opts{grid-auto-flow:row;grid-template-columns:repeat(5,minmax(0,1fr))}
+html:root body #casinoModal .cy .ln-opts > button{min-height:34px!important}
+html:root body #casinoModal .cy .ln-opts > button b{font-size:17px;text-align:center}
+@media (max-height:640px){html:root body #casinoModal .cy .cy-pay span{height:32px}html:root body #casinoModal .cy .cy-pay svg{width:14px;height:14px}html:root body #casinoModal .cy .ln-opts > button{min-height:30px!important}}
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .cy .cy-stage{flex-direction:row}
+  html:root body #casinoModal .cy .cy-pay{grid-auto-flow:row;grid-auto-rows:minmax(0,1fr);width:64px}
+  html:root body #casinoModal .cy .cy-pay span{height:auto}
+  html:root body #casinoModal .cy .cy-scene{margin:-8px -8px -8px 0}
+}
+/* scenes */
+html:root body #casinoModal .cy .pt-b{animation:cyBub 1.6s ease-in infinite;transform-box:fill-box;transform-origin:center}
+@keyframes cyBub{0%{transform:translateY(0) scale(.6);opacity:0}25%{opacity:1}100%{transform:translateY(-30px) scale(1.1);opacity:0}}
+html:root body #casinoModal .cy .pt-fire{animation:cyFire .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes cyFire{0%{transform:scaleY(.9) scaleX(1.04)}100%{transform:scaleY(1.08) scaleX(.96)}}
+html:root body #casinoModal .cy .df-spark{animation:cyFire .25s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+html:root body #casinoModal .cy .df-w{cursor:pointer}
+html:root body #casinoModal .cy .df-w.on .df-wl{stroke-width:9;filter:drop-shadow(0 0 4px #FDE68A)}
+html:root body #casinoModal .cy .df-w.ok .df-wl{animation:cyOk .6s ease-in-out infinite alternate}
+@keyframes cyOk{0%{stroke-opacity:1}100%{stroke-opacity:.35}}
+html:root body #casinoModal .cy .df-soot #dfBall{fill:#1C1917}
+html:root body #casinoModal .cy .ss-rip{fill:none;stroke:#FFF7ED;stroke-width:1.6;animation:cyRip .9s ease-out forwards;transform-box:fill-box;transform-origin:center}
+html:root body #casinoModal .cy .ss-rip.big{stroke-width:2.4;animation-duration:1.3s}
+@keyframes cyRip{0%{transform:scale(.4);opacity:1}100%{transform:scale(2.6);opacity:0}}
+html:root body #casinoModal .cy .ta-c{transition:opacity .3s}
+html:root body #casinoModal .cy .ta-c.luck{filter:drop-shadow(0 0 7px #FDE68A)}
+html:root body #casinoModal .cy .ta-c.dim{opacity:.6}
+html:root body #casinoModal .cy .ta-fl{animation:cyFire .35s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+html:root body #casinoModal .cy .ta-halo{animation:cyHalo 2.4s ease-in-out infinite}
+@keyframes cyHalo{0%,100%{opacity:.5}50%{opacity:1}}
+html:root body #casinoModal .cy .gf-ring{animation:cySpin 14s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes cySpin{to{transform:rotate(360deg)}}
+html.oro-lite body #casinoModal .cy .pt-b,html.oro-lite body #casinoModal .cy .pt-fire,html.oro-lite body #casinoModal .cy .gf-ring,html.oro-lite body #casinoModal .cy .ta-halo,html.oro-lite body #casinoModal .cy .ta-fl,html.oro-lite body #casinoModal .cy .df-spark{animation:none}
+html.oro-lite body #casinoModal .cy .ta-c.luck,html.oro-lite body #casinoModal .cy .df-w.on .df-wl{filter:none}
+html:root body #casinoModal .cy-potion .cy-stage{background:linear-gradient(180deg,#2E1065,#140A30)}
+html:root body #casinoModal .cy-defuse .cy-stage{background:linear-gradient(180deg,#0F2742,#071526)}
+html:root body #casinoModal .cy-stoneskip .cy-stage{background:linear-gradient(180deg,#4C1D95,#2E1065)}
+html:root body #casinoModal .cy-tarot .cy-stage{background:linear-gradient(180deg,#3B0764,#1E0538)}
+html:root body #casinoModal .cy-bottleflip .cy-stage{background:linear-gradient(180deg,#9A3412,#7C2D12)}
+html:root body #casinoModal .cy-gemfusion .cy-stage{background:linear-gradient(180deg,#1E1B4B,#0B0820)}

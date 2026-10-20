@@ -203,6 +203,11 @@
     safari: 'slots', rubymine: 'slots', pumpkin: 'slots', medusa: 'slots', scratchwin: 'scratch', pickbox: 'chests', ladder: 'pick', hilorun: 'cards',
     envelope: 'chests', treasure: 'pick', flip21: 'cards', popdarts: 'throwg', egghunt: 'pick', shells: 'cups', colorwheel: 'wheel', luckyten: 'balls' });
   /* ---- fin casa ---- */
+  /* ---- casc (round 7) : 12 machines à sous + 12 jeux instantanés (js/games/casc1-3.js) ---- */
+  Object.assign(MAP, { samurai: 'slots', mermaid: 'slots', carnival: 'slots', jazzclub: 'slots', oasis: 'slots', arctic: 'slots', steampunk: 'slots', cybercity: 'slots',
+    fairy: 'slots', dinopark: 'slots', sushibar: 'slots', disco: 'slots', potion: 'pick', robobox: 'sport', bottleflip: 'throwg', tarot: 'cards',
+    curling: 'sport', lantern: 'show', cargodrop: 'claw', gemfusion: 'pick', mahjong: 'cards', stoneskip: 'throwg', meteor: 'balls', defuse: 'show' });
+  /* ---- fin casc ---- */
   /* v2850 — round 6 « Tu contrôles » (js/games/skill6.js, skill7.js, skill8.js) : famille de sons de chaque jeu */
   Object.assign(MAP, { blockfall: 'build', merge2048: 'build', mazechomp: 'arcade', bubblepop: 'arcade', gemswap: 'arcade', memoflip: 'build', echopads: 'arcade', pianokeys: 'build',
     tankbattle: 'shoot', sniper: 'shoot', gunship: 'shoot', dogfight: 'shoot',
