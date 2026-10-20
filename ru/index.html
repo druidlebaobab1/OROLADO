@@ -470,7 +470,8 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
       if (!off && wasOff) { p = Math.max(p > 99 ? 60 : p, 60); shownAt = Date.now(); }
       wasOff = off;
       // Sécurité : jamais plus de 6 s d'écran de chargement une fois la page chargée (quoi qu'il arrive ailleurs).
-      if (!off && document.readyState !== 'loading' && Date.now() - shownAt > 6000) { el.classList.remove('ol-done'); el.classList.add('off'); off = true; }
+      // 2026-10-20 : … mais jamais sur une page encore vide (site pas affiché) : on attend le site, au plus 20 s.
+      if (!off && document.readyState !== 'loading' && Date.now() - shownAt > 6000 && (document.documentElement.classList.contains('oro-booted') || Date.now() - shownAt > 20000)) { el.classList.remove('ol-done'); el.classList.add('off'); off = true; }
       if (off) { if (p < 100) { p = 100; paint(); } return; }
       var g = target();
       if (p < g) p = Math.min(g, p + Math.max(el.classList.contains('ol-done') ? 7 : 0.6, (g - p) * (el.classList.contains('ol-done') ? 0.35 : 0.1)));
@@ -531,7 +532,25 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
         // 2026-10-20 (URGENT, propriétaire : « le site reste bloqué sur le chargement ») : quand le serveur est lent, on n'attend
         // PLUS les prix et on ne recharge PLUS la page (les rechargements surchargeaient encore plus le serveur) :
         // l'écran de chargement part tout de suite, le site s'ouvre et la courbe arrive dès que les prix sont là.
-        off(); return;
+        // 2026-10-20 (propriétaire : « page bleue vide, je dois actualiser ») : l'écran de chargement ne part plus tant que le
+        // site lui-même n'est pas affiché (oro-booted) — les prix, eux, peuvent arriver après. Si le site n'est toujours pas
+        // là au bout de 20 s (fichier perdu en route), la page se recharge UNE fois (au plus une fois toutes les 3 min).
+        var bootT0 = Date.now();
+        (function waitBoot() {
+          if (document.documentElement.classList.contains('oro-booted')) { off(); return; }
+          if (Date.now() - bootT0 > 17000) {
+            var lastB = 0;
+            try { lastB = Number(sessionStorage.getItem('oro_rescue_at')) || 0; } catch (eB0) { lastB = 0; }
+            if (!document.hidden && Date.now() - lastB > 180000) {
+              try { sessionStorage.setItem('oro_rescue_at', String(Date.now())); } catch (eB1) { /* ignore */ }
+              location.reload();
+              return;
+            }
+            off(); return;
+          }
+          cap = setTimeout(waitBoot, 200);
+        })();
+        return;
         cap = setTimeout(function () {
           if (ready()) { off(); return; }
           var last = 0;
