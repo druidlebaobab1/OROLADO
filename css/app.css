@@ -12899,3 +12899,11 @@ html:root body #drawerProfile .prof-ph-hint:active{transform:scale(.96)}
   html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .field select{min-height:50px!important}
   html:root body #withdrawModal#withdrawModal#withdrawModal #btnSendWithdraw{min-height:54px!important;margin-top:14px!important}
 }
+/* 2026-10-20 (propriétaire) — Retrait : la croix descend un peu, pile à la hauteur du titre « Retrait » (avant : collée en haut) */
+html:root body #withdrawModal#withdrawModal#withdrawModal .wd-modal-head > .btn-close.btn-close:not(#oroX1):not(#oroX2){top:50%!important;bottom:auto!important;margin-top:0!important;translate:0 -50%}
+/* même chose pour les autres pages à titre à gauche : la croix descend pile à la hauteur du titre (téléphones) */
+@media (max-width:859px){
+  html:root body #financeModal#financeModal .btn-close.btn-close:not(#oroX1),html:root body #historySheet#historySheet .btn-close.btn-close:not(#oroX1){translate:0 13px}
+  html:root body #termsModal#termsModal .btn-close.btn-close:not(#oroX1){translate:0 16px}
+  html:root body #depositModal#depositModal .btn-close.btn-close:not(#oroX1){translate:0 8px}
+}
