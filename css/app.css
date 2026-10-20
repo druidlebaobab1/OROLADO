@@ -13131,3 +13131,9 @@ html:root body #casinoModal #csView.cs-wait .cg-load{flex:none;min-height:0}
 /* v2957 — Profil iPhone : lignes ID public / E-mail un peu plus larges (Android inchangé) ; le texte s'ajuste (js/app.js) */
 html:not(.is-android):root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows{max-width:min(400px,94%)!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .prof-id-row > strong.fit-on{text-overflow:clip!important}
+/* v2958 — message visiteur des jeux : titre + explication + appel, plus lisible */
+html:root body #casinoModal .cs-try.cs-try2{gap:7px!important;padding:16px 16px 18px!important;line-height:1.4}
+html:root body #casinoModal .cs-try.cs-try2 .cs-try-t{font:800 17px/1.2 system-ui,sans-serif;color:#FFE08A}
+html:root body #casinoModal .cs-try.cs-try2 > span{font-size:14px;color:#D6E2EE}
+html:root body #casinoModal .cs-try.cs-try2 .cs-try-e{font-weight:700;color:#8EF5B5}
+html:root body #casinoModal .cs-try.cs-try2 button{margin-top:4px;padding:11px 22px}
