@@ -70,7 +70,7 @@ check('Bruno voit sa place : 2e', $r['me']['rank'] === 2 && !empty($r['top'][1][
 check('réel / semaine dernière / ordre ouvert : ignorés (Chloé = 20 trades)', $r['top'][2]['trades'] === 20);
 check('aucun e-mail montré à un joueur', !isset($r['top'][0]['email']));
 $rp = orolado_top_status(load_db(), $db['users']['u_peu']);
-check('Petit : encore 1 trade pour entrer', $rp['me']['need'] === 1 && $rp['me']['rank'] === 0);
+check('Petit : encore ' . (OROLADO_TOP_MIN_TRADES - 4) . ' trades pour entrer', $rp['me']['need'] === OROLADO_TOP_MIN_TRADES - 4 && $rp['me']['rank'] === 0);
 $ra = orolado_top_status(load_db(), $db['users']['admin_master']);
 check('admin : numéro ORO seulement, AUCUN e-mail (même pour le compte admin)', !isset($ra['top'][0]['email']) && !empty($ra['admin']) && str_starts_with((string) ($ra['top'][0]['id'] ?? ''), 'ORO-'));
 check('fin de semaine annoncée = dimanche 23:59:59', $r['endsAt'] === $w['end']);

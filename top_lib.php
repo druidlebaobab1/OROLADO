@@ -12,13 +12,14 @@ declare(strict_types=1);
  * archives de la semaine si personne ne l'a mis à jour depuis plus d'un jour.
  */
 
-const OROLADO_TOP_MIN_TRADES = 5; // 2026-10-19 (propriétaire : « le classement doit montrer du monde et défiler »)
+const OROLADO_TOP_MIN_TRADES = 20; // 2026-10-20 (propriétaire : « c'est 20 trades », partout pareil ; avant 5)
 const OROLADO_TOP_SHOW = 50;
 
 function orolado_top_public(): bool {
   $v = getenv('OROLADO_TOP_PUBLIC');
   if ($v === false || $v === '') $v = $_ENV['OROLADO_TOP_PUBLIC'] ?? '';
-  return (string) $v === '1';
+  // 2026-10-20 (propriétaire : « les visiteurs doivent voir la liste du Top 50 ») : visible par défaut ; OROLADO_TOP_PUBLIC=0 le cache.
+  return (string) $v !== '0';
 }
 
 function orolado_top_allowed(array $user): bool {
