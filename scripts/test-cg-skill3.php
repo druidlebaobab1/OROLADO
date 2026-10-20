@@ -58,7 +58,7 @@ foreach ($ALL as $g) check(sprintf('%-10s : ×2 après %.1f s, ×5 après %.1f s
 $cat = (string) file_get_contents(__DIR__ . '/../js/games/cat-skill1.js');
 preg_match_all("/\{ k: '([a-z0-9]+)', name: '[^']+', sec: 'skill'/", $cat, $m);
 check('catalogue : 16 jeux « Tu contrôles », runners en premier', $m[1] === $ALL, implode(',', $m[1]));
-check('catalogue : badge « run » sur les 4 coureurs seulement', substr_count($cat, 'translate(42 2)') === 4);
+check('catalogue : badge « run » sur les 4 coureurs seulement', preg_match_all("/medal\\('[a-z0-9]+', '[^']+', '[^']+', 1\\)/", $cat) === 4); // v2860 : badge dessiné par medal(…, 1)
 $c2 = (string) file_get_contents(__DIR__ . '/../js/games/cat-skill2.js');
 check('cat-skill2.js n’ajoute plus rien (ordre fixe)', strpos($c2, 'CasinoCatalog.add') === false);
 $js = (string) file_get_contents(__DIR__ . '/../js/games/skill3.js');
