@@ -498,6 +498,10 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
       cap = setTimeout(function () {
         if (ready()) { off(); return; }
         try { if (window.D6 && D6.Engine && D6.Engine.resyncClocks) D6.Engine.resyncClocks(); } catch (eR) { /* ignore */ }
+        // 2026-10-20 (URGENT, propriétaire : « le site reste bloqué sur le chargement ») : quand le serveur est lent, on n'attend
+        // PLUS les prix et on ne recharge PLUS la page (les rechargements surchargeaient encore plus le serveur) :
+        // l'écran de chargement part tout de suite, le site s'ouvre et la courbe arrive dès que les prix sont là.
+        off(); return;
         cap = setTimeout(function () {
           if (ready()) { off(); return; }
           var last = 0;
@@ -511,8 +515,8 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
         }, 5000);
       }, maxMs);
     }
-    cover(1600, 8000, 1300);
-    window.addEventListener('pageshow', function (e) { if (e && e.persisted) cover(1200, 6000, 1100); });
+    cover(1600, 3500, 1300);
+    window.addEventListener('pageshow', function (e) { if (e && e.persisted) cover(1200, 3500, 1100); });
     // Ensuite, il ne revient QU'À UN SEUL MOMENT : quand on revient sur le site après 30 s ou plus d'absence
     // (autre appli, écran éteint) ; la courbe se recale derrière lui, on ne voit jamais le rattrapage.
     // JAMAIS en plein jeu (même si le réseau a un petit trou : la courbe se remet seule, ça ne distrait pas).
@@ -544,7 +548,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
       if (away < 30000) return;
       setTimeout(function () {
         if (document.hidden || !isOff() || !onTrade()) return;
-        cover(1500, 7000, 1200);
+        cover(1500, 3500, 1200);
       }, 120);
     });
   })();
