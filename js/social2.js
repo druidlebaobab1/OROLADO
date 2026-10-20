@@ -3,7 +3,11 @@
    Amis ; vraie conversation (bulles, heure, ✓ / ✓✓, dates, barre d'écriture photo / note vocale / envoyer, états d'envoi) ;
    fiche du groupe (membres, lien d'invitation) ; demandes de contact Accepter / Refuser ; Envoyer de l'argent et Défier
    dans l'en-tête d'une conversation. Mêmes appels serveur que l'ancien Social (live.php) : aucune règle d'argent ici.
-   Sur grand écran (≥ 860 px) : liste à gauche, conversation à droite. Rien ne tourne quand Social est fermé. */
+   Sur grand écran (≥ 860 px) : liste à gauche, conversation à droite. Rien ne tourne quand Social est fermé.
+   v2905 (propriétaire) : aperçu des liens d'invitation (on n'entre JAMAIS seul dans un groupe), le créateur supprime son
+   groupe, logos de groupe dessinés, photos de profil / de groupe, discussions mises à jour sans « tic-tic » (rien n'est
+   redessiné), ouverture instantanée (derniers messages gardés par compte + « since »), écran bloqué sur iPhone (16 px,
+   visualViewport), confirmations dans le site, copie « ✓ » sans notification, Actualités = page « Bon à savoir ». */
 (function (D6) {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
@@ -111,6 +115,24 @@
       em: { fire: '火焰', power: '力量', crown: 'VIP', rocket: '火箭', diamond: '钻石', money: '财富', trophy: '奖杯', lion: '雄狮', globe: '世界', heart: '好友', star: '星星', shield: '盾牌' } }
   };
   Object.keys(S2).forEach(function (l) { S[l] = Object.assign(S[l] || {}, S2[l]); });
+  /* v2905 (propriétaire) — Actualités : quelques cartes utiles et toujours vraies (aucune promesse d'argent, aucun bonus),
+     montrées AVANT les vraies publications de l'équipe (celles-ci restent en bas, là où la page s'ouvre). [titre, ligne, bouton] */
+  var TIPS = {
+    en: { demo: ['Practise in demo', 'Risk-free, at your own pace.', 'Demo'], action: ['Play it yourself', 'In Action, you are the player.', 'Play'], myid: ['Add your friends', 'With your ID, in a second.', 'My ID'], groups: ['Create your group', 'And invite your friends.', 'My groups'], duel: ['Challenge a friend', 'In demo: the best one wins.', 'Challenge'], help: ['Need help?', 'Write to the team, we answer.', 'Write'], newsT: 'OROLADO news', good: 'Good to know' },
+    fr: { demo: ['Entraîne-toi en démo', 'Sans risque, à ton rythme.', 'Démo'], action: ['Joue toi-même', 'Dans Action, c’est toi qui joues.', 'Jouer'], myid: ['Ajoute tes amis', 'Avec ton identifiant, en un instant.', 'Mon identifiant'], groups: ['Crée ton groupe', 'Et invite tes amis.', 'Mes groupes'], duel: ['Défie un ami', 'En démo : le meilleur gagne.', 'Défier'], help: ['Besoin d’aide ?', 'Écris à l’équipe, on te répond.', 'Écrire'], newsT: 'Les nouvelles d’OROLADO', good: 'Bon à savoir' },
+    es: { demo: ['Practica en demo', 'Sin riesgo, a tu ritmo.', 'Demo'], action: ['Juega tú mismo', 'En Acción, juegas tú.', 'Jugar'], myid: ['Añade a tus amigos', 'Con tu ID, en un instante.', 'Mi ID'], groups: ['Crea tu grupo', 'E invita a tus amigos.', 'Mis grupos'], duel: ['Reta a un amigo', 'En demo: gana el mejor.', 'Retar'], help: ['¿Necesitas ayuda?', 'Escribe al equipo, te respondemos.', 'Escribir'], newsT: 'Noticias de OROLADO', good: 'Bueno saber' },
+    pt: { demo: ['Treina em demo', 'Sem risco, ao teu ritmo.', 'Demo'], action: ['Joga tu mesmo', 'Em Ação, és tu que jogas.', 'Jogar'], myid: ['Adiciona amigos', 'Com o teu ID, num instante.', 'O meu ID'], groups: ['Cria o teu grupo', 'E convida os teus amigos.', 'Os meus grupos'], duel: ['Desafia um amigo', 'Em demo: ganha o melhor.', 'Desafiar'], help: ['Precisas de ajuda?', 'Escreve à equipa, respondemos.', 'Escrever'], newsT: 'Notícias da OROLADO', good: 'Bom saber' },
+    ar: { demo: ['تدرّب في التجريبي', 'بلا مخاطرة وعلى راحتك.', 'تجريبي'], action: ['العب بنفسك', 'في أكشن، أنت من يلعب.', 'العب'], myid: ['أضف أصدقاءك', 'بمعرّفك وفي لحظة.', 'معرّفي'], groups: ['أنشئ مجموعتك', 'وادعُ أصدقاءك.', 'مجموعاتي'], duel: ['تحدَّ صديقًا', 'في التجريبي: الأفضل يفوز.', 'تحدٍّ'], help: ['تحتاج مساعدة؟', 'راسل الفريق، سنرد عليك.', 'راسلنا'], newsT: 'أخبار OROLADO', good: 'من المفيد معرفته' },
+    tr: { demo: ['Demoda pratik yap', 'Risksiz, kendi hızında.', 'Demo'], action: ['Kendin oyna', 'Aksiyon’da oynayan sensin.', 'Oyna'], myid: ['Arkadaşlarını ekle', 'Kimliğinle, anında.', 'Kimliğim'], groups: ['Grubunu kur', 'Ve arkadaşlarını davet et.', 'Gruplarım'], duel: ['Bir arkadaşına meydan oku', 'Demoda: en iyisi kazanır.', 'Meydan oku'], help: ['Yardım mı lazım?', 'Ekibe yaz, yanıtlıyoruz.', 'Yaz'], newsT: 'OROLADO haberleri', good: 'Bilmekte fayda var' },
+    vi: { demo: ['Luyện tập với demo', 'Không rủi ro, theo nhịp của bạn.', 'Demo'], action: ['Tự mình chơi', 'Trong Hành động, bạn là người chơi.', 'Chơi'], myid: ['Thêm bạn bè', 'Bằng ID của bạn, chỉ trong giây lát.', 'ID của tôi'], groups: ['Tạo nhóm', 'Và mời bạn bè.', 'Nhóm của tôi'], duel: ['Thách đấu bạn bè', 'Ở demo: ai giỏi nhất sẽ thắng.', 'Thách đấu'], help: ['Cần giúp đỡ?', 'Nhắn cho đội, chúng tôi sẽ trả lời.', 'Nhắn tin'], newsT: 'Tin OROLADO', good: 'Nên biết' },
+    id: { demo: ['Berlatih di demo', 'Tanpa risiko, sesuai iramamu.', 'Demo'], action: ['Main sendiri', 'Di Aksi, kamu yang bermain.', 'Main'], myid: ['Tambah temanmu', 'Dengan ID-mu, sekejap saja.', 'ID-ku'], groups: ['Buat grupmu', 'Dan undang temanmu.', 'Grupku'], duel: ['Tantang teman', 'Di demo: yang terbaik menang.', 'Tantang'], help: ['Butuh bantuan?', 'Tulis ke tim, kami jawab.', 'Tulis'], newsT: 'Kabar OROLADO', good: 'Perlu kamu tahu' },
+    ru: { demo: ['Тренируйся в демо', 'Без риска, в своём темпе.', 'Демо'], action: ['Играй сам', 'В «Экшен» играешь ты.', 'Играть'], myid: ['Добавь друзей', 'По своему ID, за секунду.', 'Мой ID'], groups: ['Создай группу', 'И пригласи друзей.', 'Мои группы'], duel: ['Брось вызов другу', 'В демо: побеждает лучший.', 'Вызвать'], help: ['Нужна помощь?', 'Напиши команде, мы ответим.', 'Написать'], newsT: 'Новости OROLADO', good: 'Полезно знать' },
+    de: { demo: ['Übe im Demo', 'Ohne Risiko, in deinem Tempo.', 'Demo'], action: ['Spiel selbst', 'In Action spielst du.', 'Spielen'], myid: ['Freunde hinzufügen', 'Mit deiner ID, im Nu.', 'Meine ID'], groups: ['Gruppe erstellen', 'Und Freunde einladen.', 'Meine Gruppen'], duel: ['Fordere einen Freund heraus', 'Im Demo: der Beste gewinnt.', 'Fordern'], help: ['Hilfe nötig?', 'Schreib dem Team, wir antworten.', 'Schreiben'], newsT: 'OROLADO-News', good: 'Gut zu wissen' },
+    hi: { demo: ['डेमो में अभ्यास करें', 'बिना जोखिम, अपनी रफ़्तार से।', 'डेमो'], action: ['ख़ुद खेलें', 'एक्शन में आप खेलते हैं।', 'खेलें'], myid: ['दोस्त जोड़ें', 'अपनी ID से, पल भर में।', 'मेरी ID'], groups: ['ग्रुप बनाएँ', 'और दोस्तों को बुलाएँ।', 'मेरे ग्रुप'], duel: ['दोस्त को चुनौती दें', 'डेमो में: सबसे अच्छा जीतता है।', 'चुनौती'], help: ['मदद चाहिए?', 'टीम को लिखें, हम जवाब देंगे।', 'लिखें'], newsT: 'OROLADO समाचार', good: 'जानने लायक' },
+    zh: { demo: ['用模拟盘练习', '零风险，按你的节奏。', '模拟'], action: ['亲自上手', '在“动作”里，由你来玩。', '开玩'], myid: ['添加好友', '用你的 ID，一秒搞定。', '我的 ID'], groups: ['创建群组', '邀请你的好友。', '我的群组'], duel: ['挑战好友', '模拟盘对决，强者胜。', '挑战'], help: ['需要帮助？', '给团队留言，我们会回复。', '留言'], newsT: 'OROLADO 资讯', good: '实用提示' }
+  };
+  var TIP_ICO = { demo: 'shield', action: 'rocket', myid: 'heart', groups: 'globe', duel: 'trophy', help: 'chat' };
+  var TIP_EMO = { chat: '💬' };
   var AVC = ['#F97316', '#3B82F6', '#22C55E', '#A855F7', '#EC4899', '#14B8A6', '#EAB308', '#EF4444'];
   function lg() { return (document.documentElement.lang || 'en').slice(0, 2); }
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o && o[k] != null ? o[k] : m; }); }
@@ -129,6 +151,41 @@
   function isAud(u) { return /\.(webm|m4a|ogg)$/.test(String(u || '')); }
   function noEmo(s) { return String(s || '').replace(/^[^0-9A-Za-zÀ-￿]*[☀-➿\uD83C-􏰀-\uDFFF️]+\s*/, ''); }
   function soft(k) { var n = 0; try { n = +(localStorage.getItem('oro_soft_' + k) || 0); if (n < 3) localStorage.setItem('oro_soft_' + k, String(n + 1)); } catch (e) { n = 0; } return n < 3; }
+  /* ---------- v2905 (propriétaire) : OUVERTURE INSTANTANÉE comme WhatsApp — les derniers messages de chaque discussion
+     sont gardés (mémoire + ce téléphone, rangés PAR COMPTE : deux comptes sur un même téléphone ne se mélangent jamais).
+     On les montre tout de suite, puis on ne demande au serveur que les messages NOUVEAUX (« since »). ---------- */
+  var MEM = {}, CMAX = 100, CCONV = 30, CBYTES = 1500000;
+  function ckey() {
+    var u = ''; try { var cu = D6.Auth && D6.Auth.current && D6.Auth.current(); if (cu && !cu.guest) u = String(cu.id || ''); } catch (e) { u = ''; }
+    if (!u) { var tk = String((D6.Api && D6.Api.token && D6.Api.token()) || ''), h = 0; for (var i = 0; i < tk.length; i++) h = (h * 31 + tk.charCodeAt(i)) >>> 0; u = tk ? 't' + h.toString(36) : ''; }
+    return u ? 'sx_c1_' + u.replace(/[^A-Za-z0-9_-]/g, '') : '';
+  }
+  function cacheAll() { var k = ckey(); if (!k) return null; if (!MEM[k]) MEM[k] = store(k) || {}; return MEM[k]; }
+  function cacheGet(ck) { var a = cacheAll(), c = a && a[ck]; return c && c.m ? c : null; }
+  var cT = 0;
+  function cachePut(ck, data) {
+    var a = cacheAll(); if (!a || guest()) return;
+    data.u = Date.now(); a[ck] = data;
+    clearTimeout(cT);
+    cT = setTimeout(function () {
+      var k = ckey(); if (!k || MEM[k] !== a) return;
+      var keys = Object.keys(a).sort(function (x, y) { return (a[y].u || 0) - (a[x].u || 0); });
+      keys.slice(CCONV).forEach(function (z) { delete a[z]; });
+      var s = JSON.stringify(a);
+      while (s.length > CBYTES && keys.length > 1) { delete a[keys.pop()]; s = JSON.stringify(a); }
+      try { localStorage.setItem(k, s); } catch (e) { try { keys.slice(Math.ceil(keys.length / 2)).forEach(function (z) { delete a[z]; }); localStorage.setItem(k, JSON.stringify(a)); } catch (e2) { /* plein : la mémoire suffit */ } }
+    }, 500);
+  }
+  function cacheDel(ck) { var a = cacheAll(), k = ckey(); if (!a || !a[ck]) return; delete a[ck]; try { localStorage.setItem(k, JSON.stringify(a)); } catch (e) { /* ignore */ } }
+  // ce qu'on garde d'un message (jamais les photos du téléphone en « data: », seulement l'adresse du serveur)
+  function slim(m) { var o = { id: m.id, t: m.t, at: m.at }; if (m.mine) o.mine = 1; if (m.read) o.read = 1; if (m.who) o.who = m.who; if (m.sys) { o.sys = 1; o.key = m.key; } if (m.simg) o.img = m.simg; if (m.wh) o.wh = m.wh; if (m.post) { o.post = 1; o.link = m.link; o.likes = m.likes; o.views = m.views; } return o; }
+  function unslim(m) { var o = Object.assign({}, m); o.key = m.key || m.id; o.simg = m.img; return o; }
+  function snap(c) {
+    var d = { m: c.msgs.filter(function (m) { return m.id && !/^tmp/.test(m.id); }).slice(-CMAX).map(slim), name: c.name, ph: c.ph || '', on: !!c.on, peerId: c.peerId || '', blocked: !!c.blocked, req: !!c.req, emoji: c.emoji || '', photo: c.photo || '' };
+    if (c.g) d.g = { id: c.g.id, name: c.g.name, emoji: c.g.emoji, photo: c.g.photo || '', n: c.g.n, owner: !!c.g.owner, canWrite: c.g.canWrite !== false, link: c.g.link || '', members: (c.g.members || []).slice(0, 300), at: c.g.at || 0 };
+    return d;
+  }
+  function lastSrvId(c) { for (var i = c.msgs.length - 1; i >= 0; i--) { var id = String(c.msgs[i].id || ''); if (/^m[0-9a-f]{6,}$/.test(id)) return id; } return ''; }
   function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k) || ''; if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { /* ignore */ } return ''; }
   async function call(action, data) {
     try {
@@ -339,11 +396,11 @@
     root.addEventListener('error', function (e) { var im = e.target; if (im && im.tagName === 'IMG' && im.parentNode && im.parentNode.classList.contains('sx-av-ph')) { var sp = im.parentNode; sp.classList.remove('sx-av-ph'); im.remove(); } }, true);
     return root;
   }
-  function on() { mount(); active = true; $('liveModal').classList.add('sx-on'); document.documentElement.classList.add('sx-lock'); wide = mq(); vv(); }
+  function on() { mount(); active = true; $('liveModal').classList.add('sx-on'); wide = mq(); vv(); }
   // la page Social a été fermée (bouton, glissé vers le bas…) : plus rien ne tourne
   function alive() { var m = $('liveModal'); if (active && m && m.classList.contains('active') && m.classList.contains('sx-on')) return true; if (active) stop(); return false; }
   function stopTimers() { clearInterval(tList); clearInterval(tConv); clearInterval(tDuel); tList = tConv = tDuel = 0; }
-  function stop() { stopTimers(); micStop(true); active = false; document.documentElement.classList.remove('sx-lock'); }
+  function stop() { stopTimers(); micStop(true); active = false; }
   function hide() { stop(); if ($('liveModal')) $('liveModal').classList.remove('sx-on'); }
 
   /* v2905 (propriétaire) : écran BLOQUÉ comme WhatsApp — quand le clavier de l'iPhone s'ouvre, la page garde la largeur
@@ -379,7 +436,7 @@
   function chatItems() {
     var out = [], posts = (D.feed && D.feed.posts) || [], seen = store('oro_live_seen') || [];
     var p0 = posts[0];
-    out.push({ k: 'news', pin: 1, name: t('news'), prev: p0 ? (p0.t || '📷').split('\n')[0] : t('newsSub'), at: p0 ? p0.at : 0, un: posts.filter(function (p) { return seen.indexOf(p.id) < 0; }).length });
+    out.push({ k: 'news', pin: 1, name: t('news'), prev: p0 ? (p0.t || '📷').split('\n')[0] : TT().good, at: p0 ? p0.at : 0, un: posts.filter(function (p) { return seen.indexOf(p.id) < 0; }).length });
     var me = D.feed && D.feed.me, tm = (me && me.msgs) || [], lm = tm[tm.length - 1];
     out.push({ k: 'team', pin: 1, name: t('team'), prev: lm ? (lm.t || (isAud(lm.img) ? '🎤 ' + t('voice') : '📷 ' + t('photo'))) : t('teamSub'), mine: lm && lm.f === 'u', at: lm ? lm.at : 0, un: (me && me.unread) || 0 });
     var rest = [];
@@ -662,8 +719,19 @@
     if (it && it.ph && !conv.ph) conv.ph = it.ph;
     if (it && it.emoji) { conv.emoji = it.emoji; conv.photo = it.photo; }
     if (kind === 'group') { var gl = ((D.gr && D.gr.list) || []).filter(function (z) { return z.id === conv.id; })[0]; if (gl) conv.canWrite = gl.canWrite !== false; }
+    // v2905 : les derniers messages gardés s'affichent TOUT DE SUITE (puis seuls les nouveaux arrivent du serveur)
+    var cc = (kind === 'dm' || kind === 'group' || kind === 'team') ? cacheGet(k) : null;
+    if (cc) {
+      conv.msgs = cc.m.map(unslim);
+      if (!conv.name) conv.name = cc.name; if (!conv.ph) conv.ph = cc.ph;
+      conv.on = conv.on || cc.on; conv.peerId = cc.peerId; conv.blocked = cc.blocked; conv.req = cc.req;
+      if (cc.g) { conv.g = cc.g; conv.emoji = cc.g.emoji; conv.photo = cc.g.photo; if (conv.canWrite === undefined) conv.canWrite = cc.g.canWrite; }
+    }
     paintConvShell();
     inConv(true); markSel();
+    if (cc && (conv.msgs.length || kind === 'dm')) { paintMsgs(true); if (kind === 'dm') { paintBanner(); if ($('sxComp')) $('sxComp').hidden = !!conv.blocked; } }
+    else if (kind === 'news') paintMsgs(true);
+    else msgSkel();
     await refreshConv(true);
     var every = kind === 'team' ? 10000 : kind === 'news' ? 60000 : 6000;
     tConv = setInterval(function () { if (alive() && !document.hidden && conv && conv.k === k) refreshConv(); }, every);
@@ -682,7 +750,7 @@
   }
   function headStatus() {
     var c = conv;
-    if (c.kind === 'news') return esc(t('newsSub'));
+    if (c.kind === 'news') return esc(TT().good);
     if (c.kind === 'team') return esc(t('teamSub'));
     if (c.kind === 'group') return c.g ? esc(members(c.g.n)) : '';
     return c.on ? '<em class="sx-onl">' + esc(t('online')) + '</em>' : esc(c.peerId || c.id);
@@ -691,8 +759,7 @@
   function setIf(el, prop, v) { if (el && el[prop] !== v) el[prop] = v; }
   function paintHead() {
     var c = conv; if (!c) return;
-    setIf($('sxWn'), 'textContent', c.kind === 'news' ? t('news') : c.kind === 'team' ? t('team') : c.name);
-    if (c.kind === 'news' || c.kind === 'team') { var wn = $('sxWn'); if (wn && !wn.querySelector('.sx-ver')) wn.insertAdjacentHTML('beforeend', VER); }
+    var wn = $('sxWn'); if (wn) setHTML(wn, '<span class="sx-wnt">' + esc(c.kind === 'news' ? TT().newsT : c.kind === 'team' ? t('team') : c.name) + '</span>' + (c.kind === 'news' || c.kind === 'team' ? VER : ''));
     var hs = headStatus(), ws = $('sxWs'); if (ws && ws._h !== hs) { ws._h = hs; ws.innerHTML = hs; }
     var wa = $('sxWa'); if (wa) setHTML(wa, headAv());
   }
@@ -708,8 +775,8 @@
     var ph = c.kind === 'group' ? (GX().ph || x.ph) : x.ph;
     C.innerHTML = '<header class="sx-hd sx-chd"><button type="button" class="sx-ib sx-bk" id="sxCBack" aria-label="Back">' + ic('back') + '</button>' +
       '<button type="button" class="sx-who" id="sxWho"><span class="sx-wa" id="sxWa"></span><span class="sx-wt"><b class="sx-ell" id="sxWn"></b><small class="sx-ell" id="sxWs"></small></span></button>' + acts + '</header>' +
-      '<div class="sx-ban" id="sxBan" hidden></div><div class="sx-msgs" id="sxMsgs" role="log"></div><div class="sx-qk" id="sxQk" hidden></div>' +
-      (c.kind === 'group' && c.canWrite === false ? '' : c.kind === 'news' ? '<p class="sx-ro"><span class="fit">' + ic('lock') + ' ' + esc(t('channelNote')) + '</span></p>' :
+      '<div class="sx-ban" id="sxBan" hidden></div><div class="sx-msgs' + (c.kind === 'news' ? ' sx-newsp' : '') + '" id="sxMsgs" role="log"></div><div class="sx-qk" id="sxQk" hidden></div>' +
+      (c.kind === 'group' && c.canWrite === false ? '' : c.kind === 'news' ? '' :
       '<form class="sx-comp" id="sxComp" autocomplete="off"><label class="sx-cb sx-cam" aria-label="' + esc(t('photo')) + '">' + ic('cam') + '<input type="file" id="sxFile" accept="image/*" hidden></label>' +
       '<div class="sx-inw"><div class="sx-prev" id="sxPrev" hidden></div><textarea id="sxTx" rows="1" maxlength="4000" enterkeyhint="send" placeholder="' + esc(ph || '…') + '"></textarea>' +
       '<div class="sx-recb" id="sxRec" hidden><i class="sx-recd"></i><b id="sxRecT">0:00</b><small class="fit">' + esc(t('rec')) + '</small></div></div>' +
@@ -747,6 +814,7 @@
       var a = e.target.closest('a[href]');
       if (a) { var gm = /^https:\/\/(?:www\.)?orolado\.com\/?\?(?:.*&)?g=([a-f0-9]{8,40})/i.exec(a.getAttribute('href') || ''); if (gm) { e.preventDefault(); joinPreview(gm[1].toLowerCase()); return; } }
       var im = e.target.closest('.sx-b img'); if (im) { var lb = $('sxLb'); lb.innerHTML = '<img src="' + esc(im.getAttribute('src')) + '" alt="">'; lb.hidden = false; return; }
+      var tp = e.target.closest('[data-tip]'); if (tp) { tipGo(tp.getAttribute('data-tip')); return; }
       var rt = e.target.closest('[data-retry]'); if (rt) { retry(rt.getAttribute('data-retry')); return; }
       var lk = e.target.closest('.sx-like'); if (lk) { like(lk); return; }
       if (e.target.closest('#sxTerms')) { var bt = $('btnHelpTerms'); if (bt) bt.click(); return; }
@@ -775,7 +843,13 @@
   function clearPrev() { if (!conv) return; conv.img = ''; conv.aud = ''; if (conv.audUrl) { try { URL.revokeObjectURL(conv.audUrl); } catch (e) { /* ignore */ } } conv.audUrl = ''; var p = $('sxPrev'); if (p) { p.hidden = true; p.innerHTML = ''; } syncBtns(); }
 
   // message du serveur → message affiché ; la clé reste celle du message « en cours d'envoi » (pas de clignotement)
-  function mk(c, m, extra) { var o = Object.assign({ id: m.id, key: c.alias[m.id] || m.id, t: m.t, img: c.local[m.id] || m.img, wh: m.wh, at: m.at }, extra || {}); return o; }
+  function mk(c, m, extra) { var o = Object.assign({ id: m.id, key: c.alias[m.id] || m.id, t: m.t, img: c.local[m.id] || m.img, simg: m.img, wh: m.wh, at: m.at }, extra || {}); return o; }
+  // réponse « depuis le dernier message » : on ajoute seulement les nouveaux ; sinon on remplace tout
+  function merge(c, list, delta) {
+    if (!delta) return list;
+    var seen = {}; list.forEach(function (m) { seen[m.id] = 1; });
+    return c.msgs.filter(function (m) { return !seen[m.id]; }).concat(list).slice(-200);
+  }
   async function refreshConv(first) {
     var c = conv; if (!c) return;
     var k = c.k;
@@ -796,24 +870,26 @@
       if (D6.Live && D6.Live.badges) D6.Live.badges({ unread: 0, dmUnread: jt.me ? jt.me.dmUnread : 0 });
       paintQuick();
     } else if (c.kind === 'dm') {
-      var jd = await call('dm', { id: c.id }); if (!conv || conv.k !== k) return;
-      if (!jd || !jd.ok) { if (first) { toast(LT('live')[(jd && jd.reason) || 'notFound'] || '!', 'err'); closeConv(); } return; }
+      var jd = await call('dm', { id: c.id, since: lastSrvId(c) }); if (!conv || conv.k !== k) return;
+      if (!jd || !jd.ok) { if (first && !c.msgs.length) { toast(LT('live')[(jd && jd.reason) || 'notFound'] || '!', 'err'); closeConv(); } return; }
       c.peerId = jd.peer.id; c.name = jd.peer.name; c.ph = jd.peer.ph || ''; c.on = !!jd.on; c.blocked = !!jd.blocked; c.req = !!jd.req; c.duel = jd.duel || null; c.stats = jd.stats || null;
       if (c.duel) c.duelOff = c.duel.now - Date.now() / 1000;
-      var un = jd.peerUn == null ? -1 : +jd.peerUn, mine = jd.msgs.filter(function (m) { return m.mine; }).length, i = 0;
-      c.msgs = jd.msgs.map(function (m) { var o = mk(c, m, { mine: m.mine }); if (m.mine) { i++; o.read = un >= 0 && i <= mine - un; } return o; });
+      c.msgs = merge(c, jd.msgs.map(function (m) { return mk(c, m, { mine: m.mine }); }), !!jd.delta);
+      var un = jd.peerUn == null ? -1 : +jd.peerUn, mine = c.msgs.filter(function (m) { return m.mine; }).length, i = 0;
+      c.msgs.forEach(function (o) { if (o.mine) { i++; o.read = un >= 0 && i <= mine - un; } });
       paintHead();
       renderDuel();
       if ($('sxComp')) $('sxComp').hidden = c.blocked;
     } else {
-      var jg = await call('gGet', { gid: c.id }); if (!conv || conv.k !== k) return;
-      if (!jg || !jg.ok) { if (jg && (jg.reason === 'gGone' || jg.reason === 'gDeleted')) groupGone(c, jg.reason); else if (first) { toast(GX().fail || '!', 'err'); closeConv(); } return; }
+      var jg = await call('gGet', { gid: c.id, since: lastSrvId(c) }); if (!conv || conv.k !== k) return;
+      if (!jg || !jg.ok) { if (jg && (jg.reason === 'gGone' || jg.reason === 'gDeleted')) { groupGone(c, jg.reason); cacheDel(k); } else if (first && !c.msgs.length) { toast(GX().fail || '!', 'err'); closeConv(); } return; }
+      if (jg.g.delta) jg.g.members = (c.g && c.g.members) || [];
       c.g = jg.g; c.name = jg.g.name; c.emoji = jg.g.emoji; c.photo = jg.g.photo || '';
       var gx = GX();
-      c.msgs = jg.g.msgs.map(function (m) {
-        if (m.sys) return { sys: 1, key: 's' + (m.id || m.at + m.whom), t: String(gx.sysAdd || '{a} + {b}').replace('{a}', m.mine ? t('you') : m.who).replace('{b}', m.whom), at: m.at };
+      c.msgs = merge(c, jg.g.msgs.map(function (m) {
+        if (m.sys) return { sys: 1, id: m.id, key: 's' + (m.id || m.at + m.whom), t: String(gx.sysAdd || '{a} + {b}').replace('{a}', m.mine ? t('you') : m.who).replace('{b}', m.whom), at: m.at };
         return mk(c, Object.assign({}, m, { id: m.id || ('x' + m.at + m.who + (m.t || '').slice(0, 9)) }), { mine: m.mine, who: m.who });
-      });
+      }), !!jg.g.delta);
       paintHead();
       gSeen(c.id, Math.max(Math.floor(Date.now() / 1000), jg.g.at || 0));
       if (jg.g.canWrite === false) {
@@ -821,7 +897,38 @@
         if (first && !$('sxOnly') && soft('gread')) { var p = document.createElement('p'); p.className = 'sx-ro'; p.id = 'sxOnly'; p.innerHTML = '<span>' + esc(gx.onlyOwner || '') + '</span>'; $('sxC').appendChild(p); }
       }
     }
+    c.loaded = true;
     paintMsgs(first);
+    cachePut(c.k, snap(c));
+  }
+  /* v2905 : en ouvrant Social, les premières discussions sont préparées en silence (rien n'est marqué « lu ») :
+     les ouvrir ensuite est instantané. */
+  var preT = 0;
+  function prefetch() {
+    clearTimeout(preT);
+    if (guest()) return;
+    var items = chatItems().filter(function (it) { return /^(dm|g):/.test(it.k); }).slice(0, 6), i = 0;
+    var next = async function () {
+      if (!active || i >= items.length) return;
+      var it = items[i++], cc = cacheGet(it.k);
+      if ((conv && conv.k === it.k) || (cc && cc.u && cc.u / 1000 >= (it.at || 0))) { preT = setTimeout(next, 50); return; }
+      var fake = { k: it.k, msgs: cc ? cc.m.map(unslim) : [], alias: {}, local: {} }, id = it.k.replace(/^(dm|g):/, '');
+      if (it.k.indexOf('dm:') === 0) {
+        var jd = await call('dm', { id: id, peek: 1, since: lastSrvId(fake) });
+        if (jd && jd.ok) { fake.msgs = merge(fake, jd.msgs.map(function (m) { return mk(fake, m, { mine: m.mine }); }), !!jd.delta); fake.name = jd.peer.name; fake.ph = jd.peer.ph || ''; fake.peerId = jd.peer.id; fake.blocked = !!jd.blocked; fake.req = !!jd.req; if (!(conv && conv.k === it.k)) cachePut(it.k, snap(fake)); }
+      } else {
+        var jg = await call('gGet', { gid: id, since: lastSrvId(fake) });
+        if (jg && jg.ok) {
+          if (jg.g.delta) jg.g.members = (cc && cc.g && cc.g.members) || [];
+          var gx = GX();
+          fake.g = jg.g; fake.name = jg.g.name; fake.emoji = jg.g.emoji; fake.photo = jg.g.photo || '';
+          fake.msgs = merge(fake, jg.g.msgs.map(function (m) { return m.sys ? { sys: 1, id: m.id, key: 's' + (m.id || m.at + m.whom), t: String(gx.sysAdd || '{a} + {b}').replace('{a}', m.mine ? t('you') : m.who).replace('{b}', m.whom), at: m.at } : mk(fake, m, { mine: m.mine, who: m.who }); }), !!jg.g.delta);
+          if (!(conv && conv.k === it.k)) cachePut(it.k, snap(fake));
+        }
+      }
+      preT = setTimeout(next, 250);
+    };
+    preT = setTimeout(next, 400);
   }
   // v2905 : le groupe a été supprimé par son créateur (ou je n'en fais plus partie) : écran propre, plus de message d'erreur
   function groupGone(c, why) {
@@ -868,10 +975,53 @@
       if (m.sys) { h += '<div class="sx-sys" data-key="' + esc(m.key) + '"><span>' + esc(m.t) + '</span></div>'; prev = null; return; }
       h += bubble(m, prev); prev = m;
     });
+    if (c.kind === 'news') {
+      // v2905 (propriétaire) : Actualités = une page d'infos simple (pas un fil de discussion) : les vraies nouvelles de
+      // l'équipe en haut (la plus récente d'abord), puis « Bon à savoir » et ses cartes. La page s'ouvre en haut.
+      var nh = c.msgs.slice().reverse().map(function (m) { return bubble(m, null); }).join('') +
+        (c.msgs.length ? '<p class="sx-h sx-good" data-key="good"><span class="fit">' + esc(TT().good) + '</span></p>' : '') + tipsHtml() +
+        '<div class="sx-legal" data-key="legal"><button type="button" id="sxTerms">' + esc(x.terms || 'Terms') + '</button> · <button type="button" id="sxPriv">' + esc(x.privacy || 'Privacy') + '</button></div>';
+      if (setHTML(el, nh)) el.querySelectorAll('.fit').forEach(fitEl);
+      if (first) el.scrollTop = 0;
+      return;
+    }
+    if (!c.loaded && !all.length && c.kind !== 'news') { msgSkel(); return; }
     if (c.kind === 'dm' && !all.length) h += '<div class="sx-hi" data-key="hi">' + avatar({ name: c.name, ph: c.ph }, true) + '<b class="sx-ell">' + esc(c.name) + '</b><p>' + esc(t('sayHi')) + '</p></div>';
     if (c.kind === 'news') h += '<div class="sx-legal" data-key="legal"><button type="button" id="sxTerms">' + esc(x.terms || 'Terms') + '</button> · <button type="button" id="sxPriv">' + esc(x.privacy || 'Privacy') + '</button></div>';
-    if (!setHTML(el, h) && !first) return;
+    var chg = setHTML(el, h);
+    if (chg && el.querySelector('.fit')) el.querySelectorAll('.fit').forEach(fitEl);
+    if (!chg && !first) return;
     if (stick) { el.scrollTop = 1e9; el._stick = true; requestAnimationFrame(function () { if (el.isConnected && el._stick !== false) el.scrollTop = 1e9; }); }
+  }
+  // toute première ouverture (rien de gardé) : des bulles grises à la place d'un écran vide
+  function msgSkel() {
+    var el = $('sxMsgs'); if (!el) return;
+    setHTML(el, ['them w1', 'me w2', 'them w3', 'me w1'].map(function (k, i) { return '<div class="sx-b sx-bsk ' + k + '" data-key="bsk' + i + '" aria-hidden="true"></div>'; }).join(''));
+  }
+  // Actualités : cartes utiles (avant les publications de l'équipe, qui restent en bas, là où la page s'ouvre)
+  function TT() { return Object.assign({}, TIPS.en, TIPS[lg()] || {}); }
+  function tipsHtml() {
+    var T = TT();
+    return '<div class="sx-tips" data-key="tips">' + ['demo', 'action', 'myid', 'groups', 'duel', 'help'].map(function (k) {
+      var x = T[k] || TIPS.en[k];
+      return '<div class="sx-tip" data-key="tip' + k + '"><span class="sx-tipi">' + emblem(EMO_OF[TIP_ICO[k]] || TIP_EMO[TIP_ICO[k]]) + '</span><span class="sx-tipt"><b>' + esc(x[0]) + '</b><small>' + esc(x[1]) + '</small></span><button type="button" class="sx-btn sm" data-tip="' + k + '"><b class="fit">' + esc(x[2]) + '</b></button></div>';
+    }).join('') + '</div>';
+  }
+  function tipGo(k) {
+    if (k === 'action' || k === 'paris' || k === 'demo') {
+      if (D6.Live && D6.Live.close) D6.Live.close();
+      setTimeout(function () {
+        if (k === 'action' && D6.Casino && D6.Casino.open) D6.Casino.open(null, 'games');
+        else if (k === 'paris' && D6.Casino && D6.Casino.home) D6.Casino.home('sports');
+        else if (k === 'demo') { var d = document.getElementById('modeDemo'); if (d && !d.classList.contains('on')) d.click(); }
+      }, 80);
+      return;
+    }
+    if (k === 'help') { if (guest()) leave('guest', 'chat', true); else openConv('team'); return; }
+    if (guest() && D6.Live && D6.Live.toAuth) { D6.Live.toAuth('register'); return; }
+    closeConv();
+    seg = k === 'groups' ? 'groups' : 'friends'; hint = k === 'duel' ? t('duelHint') : '';
+    paintBody(true);
   }
   function bubble(m, prev) {
     var c = conv, mine = !!m.mine, cont = prev && !prev.sys && !!prev.mine === mine && (prev.who || '') === (m.who || '') && m.at - prev.at < 300;
@@ -892,7 +1042,7 @@
       else if (c.kind === 'group') tick = '<i class="sx-tick">' + ic('check') + '</i>';
       else tick = '<i class="sx-tick' + (m.read ? ' rd' : '') + '"><svg viewBox="0 0 28 24"><path d="M3 12.5l4.5 4.5L17 7.5"/>' + (m.read ? '<path d="M11 15.5l1.5 1.5L22 7.5"/>' : '') + '</svg></i>';
     }
-    var meta = '<span class="sx-meta">' + (m.at ? esc(hm(m.at)) : '') + tick + '</span>';
+    var meta = '<span class="sx-meta">' + (m.at ? esc(m.post ? dayLabel(m.at) + ' · ' + hm(m.at) : hm(m.at)) : '') + tick + '</span>';
     var foot = '';
     if (m.post) {
       var liked = (store('oro_live_liked') || []).indexOf(m.id) >= 0;
@@ -1126,6 +1276,8 @@
   }
   function groupInfo() {
     var c = conv, g = c && c.g, x = GX(); if (!g) return;
+    // liste des membres gardée trop vieille (on ne la redemande pas à chaque message) → mise à jour
+    if (!g.members || g.members.length !== Math.min(g.n, 300)) call('gGet', { gid: g.id }).then(function (r) { if (r && r.ok && conv === c && c.g) { c.g.members = r.g.members || []; c.g.n = r.g.n; if (c.g.members.length === Math.min(c.g.n, 300) && $('sxGiAdd')) groupInfo(); } });
     var p = panel('<header class="sx-hd"><button type="button" class="sx-ib sx-bk" id="sxPBack" aria-label="Back">' + ic('back') + '</button><b class="sx-ttl fit">' + esc(t('groupInfo')) + '</b></header>' +
       '<div class="sx-pbody"><div class="sx-ghero">' + (g.owner ? '<button type="button" class="sx-mya big" id="sxGiPh" aria-label="' + esc(t('photo2')) + '">' + avatar({ group: 1, emoji: g.emoji, photo: g.photo }, true) + '<i class="sx-camb">' + ic('cam') + '</i></button>' : avatar({ group: 1, emoji: g.emoji, photo: g.photo }, true)) +
       '<b class="sx-ell">' + esc(g.name) + '</b><small class="fit">' + esc(t('group') + ' · ' + members(g.n)) + '</small></div>' +
@@ -1286,6 +1438,7 @@
     if ($('sxBody')) paintBody();
     listPoll();
     pendAfterLogin();
+    prefetch();
     return true;
   }
   async function openGroup(gid) { if (!active) await open('groups'); seg = 'groups'; await load(); paintBody(); openConv('g:' + gid); }

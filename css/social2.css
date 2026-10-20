@@ -350,7 +350,7 @@ html[dir=rtl] #liveModal .sx .sx-ell{text-align:right}
 /* Social s'ouvre sans glisser (comme Paris / Jeux) */
 html body #liveModal#liveModal.active > .modal-box{animation:none!important}
 /* écran bloqué : rien ne défile derrière, jamais de largeur en trop */
-html.sx-lock,html.sx-lock body{overflow:hidden!important;overscroll-behavior:none}
+html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflow:hidden!important;overscroll-behavior:none}
 #liveModal .sx{max-width:100%;overflow:hidden;overflow-wrap:anywhere}
 #liveModal .sx-scr,#liveModal .sx-panel,#liveModal .sx-hd,#liveModal .sx-comp,#liveModal .sx-msgs,#liveModal .sx-body{max-width:100%;min-width:0}
 #liveModal .sx-msgs{overflow-x:hidden;touch-action:pan-y}
@@ -447,4 +447,26 @@ html.sx-lock,html.sx-lock body{overflow:hidden!important;overscroll-behavior:non
 #liveModal .sx-bt{overflow-wrap:anywhere;word-break:break-word}
 #liveModal .sx-empty .sx-yn{justify-content:center;flex-wrap:wrap}
 #liveModal .sx-empty .sx-yn .sx-btn{flex:1 1 0;min-width:0;max-width:200px}
+/* première ouverture d'une discussion : bulles grises (jamais d'écran vide) */
+#liveModal .sx-bsk{height:38px;box-shadow:none!important;background:rgba(255,255,255,.07)!important;border:0!important}
+#liveModal .sx-bsk.me{background:rgba(139,92,246,.28)!important}
+#liveModal .sx-bsk.w1{width:46%}#liveModal .sx-bsk.w2{width:62%}#liveModal .sx-bsk.w3{width:38%}
+/* nom dans l'en-tête d'une discussion : coupé par « … », le badge vérifié reste visible */
+#liveModal #sxWn{display:flex!important;align-items:center;min-width:0;overflow:hidden}
+#liveModal #sxWn .sx-wnt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#liveModal #sxWn .sx-ver{flex:0 0 auto}
+/* Actualités : une page d'infos (pas un fil de discussion) */
+#liveModal .sx-newsp{background-image:none;padding-top:4px}
+#liveModal .sx-newsp .sx-b.post{align-self:stretch;max-width:none;margin-top:10px;border-radius:18px}
+#liveModal .sx-newsp .sx-good{padding:14px 4px 4px}
+/* Actualités : cartes utiles */
+#liveModal .sx-tips{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px}
+#liveModal .sx-tip{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 10px;border-radius:18px;background:linear-gradient(135deg,rgba(139,92,246,.20),rgba(242,169,59,.07));border:1px solid rgba(255,255,255,.08)}
+#liveModal .sx-tipi{flex:0 0 auto;width:46px;height:46px;display:block}
+#liveModal .sx-tipi .sx-emb{width:46px;height:46px;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+#liveModal .sx-tipt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+#liveModal .sx-tipt b{font-size:14.5px;font-weight:800;line-height:1.25;color:var(--sx-txt)}
+#liveModal .sx-tipt small{font-size:12.5px;line-height:1.35;color:var(--sx-sub)}
+#liveModal .sx-tip .sx-btn.sm{flex:0 0 104px;width:104px;padding:0 10px;font-size:13px}
+@media (max-width:360px){#liveModal .sx-tip .sx-btn.sm{flex-basis:88px;width:88px}#liveModal .sx-tip{gap:9px;padding:9px 8px}#liveModal .sx-tipi,#liveModal .sx-tipi .sx-emb{width:40px;height:40px}}
 @media (max-width:360px){#liveModal .sx-logo{display:none}#liveModal .sx-emos button .sx-emb{width:40px;height:40px}#liveModal .sx-aud{min-width:170px}}

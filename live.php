@@ -231,13 +231,17 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
     if ($action === 'find') live_out(['ok' => true, 'peer' => ['id' => $peer['id'], 'name' => $peer['name'], 'ph' => (string) ($peer['ph'] ?? '')]]);
     if ($action === 'friendAnswer') { live_dm_answer($uid, $p, !empty($req['yes'])); live_out(['ok' => true]); } // v2796
     if ($action === 'dm') {
-      live_inbox_read($uid, $p);
+      // v2905 : « peek » = lecture en avance (Social prépare les discussions) → ne marque rien comme lu
+      if (empty($req['peek'])) live_inbox_read($uid, $p);
+      // v2905 : « since » = seulement les messages après celui-là (ouverture instantanée, petites réponses)
+      $thr = live_dm_thread($uid, $p); $since = (string) ($req['since'] ?? ''); $delta = false;
+      if ($since !== '') { foreach ($thr as $ix => $mm) if ((string) ($mm['id'] ?? '') === $since) { $thr = array_slice($thr, $ix + 1); $delta = true; break; } }
       // v2796 : « lu » (✓✓) = l'ami n'a plus de message non lu de moi ; s'il m'a bloqué, rien n'apparaît jamais lu
       $peerUn = live_is_blocked($p, $uid) ? 9999 : (int) ((live_inbox($p)[$uid] ?? [])['un'] ?? 0);
       $myRow = (array) (live_inbox($uid)[$p] ?? []);
       live_out(['ok' => true, 'peer' => ['id' => $peer['id'], 'name' => $peer['name'], 'ph' => (string) ($peer['ph'] ?? '')], 'blocked' => live_is_blocked($uid, $p),
         'on' => live_seen_on($p), 'peerUn' => $peerUn, 'req' => live_dm_is_request($uid, $myRow, live_dm_thread($uid, $p)),
-        'msgs' => array_map(static fn($m) => $dmOut($m, $uid, $peer['id']), array_slice(live_dm_thread($uid, $p), -80)),
+        'delta' => $delta, 'msgs' => array_map(static fn($m) => $dmOut($m, $uid, $peer['id']), array_slice($thr, -80)),
         'duel' => $duelOut(live_duel_last($uid, $p), $uid), 'stats' => live_duel_stats($uid), 'hisStats' => live_duel_stats($p)]);
     }
     if ($action === 'duelCreate') {
@@ -307,8 +311,10 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
   $uid = (string) $me['id'];
   live_seen_touch($uid); // v2796
   live_oro_id($me); // le joueur a un identifiant (nom visible dans les groupes)
-  $gOut = static function (array $g, string $uid, bool $withMsgs) {
+  $gOut = static function (array $g, string $uid, bool $withMsgs, string $since = '') {
     $g = live_group_norm($g);
+    $delta = false;
+    if ($withMsgs && $since !== '') { foreach ($g['msgs'] as $ix => $mm) if ((string) ($mm['id'] ?? '') === $since) { $g['msgs'] = array_slice($g['msgs'], $ix + 1); $delta = true; break; } }
     $o = ['id' => $g['id'], 'name' => $g['name'], 'emoji' => $g['emoji'] !== '' ? $g['emoji'] : '💬', 'n' => count($g['members']),
       'owner' => $g['owner'] === $uid, 'canWrite' => $g['owner'] === $uid, 'at' => $g['at'], 'link' => $g['tok'] !== '' ? 'https://orolado.com/?g=' . rawurlencode($g['tok']) : ''];
     if (!empty($g['photo'])) $o['photo'] = 'live.php?p=' . rawurlencode((string) $g['photo']);
@@ -323,7 +329,8 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
         if (!empty($m['wh'])) $x['wh'] = (string) $m['wh'];
         return $x;
       }, array_slice($g['msgs'], -80));
-      $o['members'] = array_map(static function ($m) use ($g) { $w = live_who_uid((string) $m); return ['name' => (string) ($w['name'] ?? 'Joueur'), 'id' => (string) ($w['id'] ?? ''), 'ph' => (string) ($w['ph'] ?? ''), 'owner' => (string) $m === $g['owner']]; }, array_slice($g['members'], 0, 300));
+      $o['delta'] = $delta;
+      if (!$delta) $o['members'] = array_map(static function ($m) use ($g) { $w = live_who_uid((string) $m); return ['name' => (string) ($w['name'] ?? 'Joueur'), 'id' => (string) ($w['id'] ?? ''), 'ph' => (string) ($w['ph'] ?? ''), 'owner' => (string) $m === $g['owner']]; }, array_slice($g['members'], 0, 300));
     }
     return $o;
   };
@@ -363,7 +370,7 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
   }
   if ($action === 'gGet') {
     if ($g['owner'] === $uid) $g = live_group_ensure_tok($g); // v2905 : le lien d'invitation du créateur marche toujours
-    live_out(['ok' => true, 'g' => $gOut($g, $uid, true)]);
+    live_out(['ok' => true, 'g' => $gOut($g, $uid, true, (string) ($req['since'] ?? ''))]);
   }
   if ($action === 'gLeave') live_out(live_group_leave($uid, $gid));
   if ($action === 'gDelete') live_out(live_group_delete($uid, $gid));

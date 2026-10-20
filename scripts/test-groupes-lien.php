@@ -71,6 +71,18 @@ $chk(live_quota_ok('uA', 'gday', LIVE_GROUP_DAY, 86400), 'limite du jour : repar
 live_write_json($q, ['t' => 'abîmé']);
 $chk(live_quota_ok('uA', 'gday', LIVE_GROUP_DAY, 86400), 'compteur abîmé : on peut quand même publier');
 
+// --- diffusion : chaque membre (entré par le lien ou par invitation) reçoit les publications ; plus rien après le départ
+$g3 = live_group_create('uK', 'Diffusion', '⚡')['g'];
+live_group_join('uB', $g3['tok']); live_group_invite('uK', $g3['id'], 'uC'); live_group_answer('uC', $g3['id'], true);
+live_group_send('uK', $g3['id'], 'Annonce 1');
+$seen = static function (string $uid, string $gid): array { $g = live_group_get($gid); if (!$g || !in_array($uid, $g['members'], true) || !in_array($gid, live_ugroups_all($uid), true)) return []; return array_column($g['msgs'], 't'); };
+$chk(in_array('Annonce 1', $seen('uB', $g3['id']), true) && in_array('Annonce 1', $seen('uC', $g3['id']), true), 'la publication arrive chez le membre entré par lien ET chez l’invité');
+live_group_leave('uB', $g3['id']);
+live_group_send('uK', $g3['id'], 'Annonce 2');
+$chk($seen('uB', $g3['id']) === [] && in_array('Annonce 2', $seen('uC', $g3['id']), true), 'après son départ, B ne reçoit plus rien ; C reçoit toujours');
+live_group_delete('uK', $g3['id']);
+$chk($seen('uC', $g3['id']) === [] && $seen('uK', $g3['id']) === [], 'groupe supprimé : plus personne ne reçoit rien');
+
 // --- limites : discussion libre, rafales de robot arrêtées ---
 $n = 0; for ($i = 0; $i < 25; $i++) if (live_burst_ok('uB')) $n++;
 $chk($n === LIVE_BURST_N, 'rafale : 20 messages passent en 10 s, le 21e est freiné');

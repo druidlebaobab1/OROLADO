@@ -140,7 +140,7 @@
     var x = X(), link = cur.link;
     if (!copyOnly) { try { if (navigator.share) { await navigator.share({ text: x.shareText + cur.name, url: link }); return; } } catch (e) { return; } }
     try { await navigator.clipboard.writeText(x.shareText + cur.name + ' ' + link); } catch (e) { /* ignore */ }
-    toast(x.copied);
+    // v2905 (propriétaire) : plus de notification « Lien copié ✓ Envoie-le… » (la messagerie montre un ✓ sur le bouton)
   }
   function info() {
     var x = X(), el = $('lgInfo'); if (!el || !cur) return;
