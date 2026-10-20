@@ -15,7 +15,7 @@ const LIVE_IMG_DAY = 60;          // photos par joueur et par jour (v2905 : 10 �
 const LIVE_MSG_HOUR = 120;        // messages à l'équipe par joueur et par heure (v2905 : 30 → 120)
 const LIVE_BURST_N = 20;          // v2905 : anti-robot — au plus 20 messages en 10 s (un humain n'y arrive pas)
 const LIVE_BURST_SEC = 10;
-const LIVE_THREAD_KEEP = 200;     // derniers messages gardés par conversation
+const LIVE_THREAD_KEEP = 5000;    // derniers messages gardés par conversation (2026-10-20, propriétaire : rien ne doit s'effacer ; avant 200)
 
 function live_dir(string $sub = ''): string {
   $d = rtrim(str_replace('\\', '/', orolado_data_dir()), '/') . '/live' . ($sub !== '' ? '/' . $sub : '');

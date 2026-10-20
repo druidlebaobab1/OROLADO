@@ -3874,7 +3874,7 @@
   function paintMyAvatar(u) {
     var av = $('profAvatar'); if (!av || !u) return;
     var guest = isGuest(u), ph = guest ? '' : myPhGet(u), ini = (u.displayName || 'OR').slice(0, 2).toUpperCase();
-    var sig = (guest ? 'g' : 'm') + '|' + ph + '|' + ini;
+    var sig = (guest ? 'g' : 'm') + '|' + ph + '|' + ini + '|' + document.documentElement.lang + '|' + !!(D6.Social2 && D6.Social2.t);
     if (av._sig === sig) return;
     av._sig = sig;
     av.classList.toggle('has-ph', !!ph);
@@ -3885,6 +3885,14 @@
     if (im) im.addEventListener('error', function () { myPhSet(u, ''); av._sig = ''; paintMyAvatar(u); });
     if (!guest) { av.setAttribute('role', 'button'); av.setAttribute('tabindex', '0'); av.setAttribute('aria-label', D6.Social2 && D6.Social2.t ? D6.Social2.t('myPhoto') : 'Photo'); }
     else { av.removeAttribute('role'); av.removeAttribute('tabindex'); }
+    // petit lien doré sous le nom : « Ajouter une photo » / « Changer la photo » (12 langues, textes de Social)
+    var hint = $('profPhHint');
+    if (hint) {
+      var S2 = D6.Social2 && D6.Social2.t ? D6.Social2 : null;
+      hint.hidden = guest || !S2;
+      if (S2) hint.innerHTML = CAM_SVG + '<span>' + String(S2.t(ph ? 'photo2' : 'photoAdd')).replace(/</g, '&lt;') + '</span>';
+      else if (!guest && !paintMyAvatar._later) { paintMyAvatar._later = 1; setTimeout(function () { av._sig = ''; paintMyAvatar(user()); }, 2500); }
+    }
     bindMyAvatar();
   }
   function bindMyAvatar() {
@@ -3898,6 +3906,7 @@
       inp.click();
     };
     av.addEventListener('click', pick);
+    if ($('profPhHint')) $('profPhHint').addEventListener('click', pick);
     av.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
     inp.addEventListener('change', async function () {
       var fl = inp.files && inp.files[0]; inp.value = ''; if (!fl) return;
