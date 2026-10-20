@@ -18,7 +18,8 @@ function loadTerms() {
   ctx.window = ctx; ctx.self = ctx;
   vm.createContext(ctx);
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  const files = [...html.matchAll(/<script[^>]+src="(js\/[^"?]+)/g)].map(m => m[1]).filter(s => /i18n|learn-txt/i.test(s));
+  // 2026-10-20 : textes lus dans les SOURCES des traductions (le site charge js/i18n/core.js + une langue, générés par scripts/gen-i18n.js).
+  const files = ['js/translations.js', 'js/i18n-zh.js', 'js/i18n-src.js'].concat([...html.matchAll(/<script[^>]+src="(js\/[^"?]+)/g)].map(m => m[1]).filter(s => /learn-txt/i.test(s)));
   for (const f of files) vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
   const I = ctx.D6.I18N, out = {};
   const keys = ['termsTitle', 'tcGiftsT', 'tcMoreT'];

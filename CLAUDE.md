@@ -21,3 +21,6 @@
 - Ne changer QUE ce qui est demandé (ex. « la croix du profil » ≠ toutes les croix du site).
 - Google, pages par langue (/en/, /es/… /zh/) : générées depuis index.html. Après CHAQUE modification de index.html :
   `php scripts/gen-lang.php` (contrôle : `php scripts/gen-lang.php --check` doit afficher « OK »).
+- Traductions : le site charge `js/i18n/core.js` + `js/i18n/<langue>.js` (générés). Textes à modifier dans `js/i18n-src.js`,
+  `js/translations.js`, `js/i18n-zh.js` (logique : `scripts/i18n-core.js`), puis TOUJOURS `node scripts/gen-i18n.js`
+  et `php scripts/gen-lang.php` (contrôle : `node scripts/gen-i18n.js --check` doit afficher « OK »).
