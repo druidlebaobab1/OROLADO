@@ -1534,9 +1534,15 @@ function orolado_ensure_balance_uuid(string $uid, ?string $password = null): str
  */
 function orolado_sync_official_real(string $uid, float $jsonReal): float {
   $jsonReal = orolado_money($jsonReal);
-  $db = function_exists('load_db') ? load_db() : [];
-  if (!is_array($db)) $db = [];
-  $uuid = orolado_balance_uuid($db, $uid);
+  // Id déjà au format Supabase : orolado_balance_uuid le rend tel quel sans regarder le fichier → pas de relecture
+  // complète de orolado.json (2026-10-20, tenue de charge : « me » toutes les 20 s par joueur).
+  if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid)) {
+    $uuid = $uid;
+  } else {
+    $db = function_exists('load_db') ? load_db() : [];
+    if (!is_array($db)) $db = [];
+    $uuid = orolado_balance_uuid($db, $uid);
+  }
   $look = $uuid !== '' ? supabase_vault_lookup($uuid) : ['state' => 'skip', 'real' => 0.0];
   $state = (string) ($look['state'] ?? 'skip');
   $GLOBALS['OROLADO_VAULT_READ_OK'] = $state === 'ok';
@@ -2455,17 +2461,67 @@ function orolado_public_origin(): string {
   return ($https ? 'https://' : 'http://') . $host;
 }
 
+/*
+ * 2026-10-20 (tenue de charge, mesuré en local : 100 joueurs, orolado.json de 2 Mo → verrou attendu jusqu'à 17 s,
+ * tout le site bloqué) : deux corrections SANS changer les données ni leur format.
+ *
+ * 1) File d'attente des écritures (« tourniquet », fichier orolado.json.turn) : avant, une écriture (trade, règlement…)
+ *    attendait que PLUS PERSONNE ne lise le fichier ; avec des dizaines de lecteurs qui se relaient, elle pouvait attendre
+ *    sans fin (toutes les demandes s'empilaient, puis expiraient). Maintenant, une écriture qui attend passe avant les
+ *    NOUVELLES lectures : les lectures en cours finissent, l'écriture passe, puis les lectures reprennent.
+ *    Le verrou de orolado.json reste exactement le même (une ancienne copie du code, pendant une mise en ligne, reste
+ *    donc protégée comme avant). L'attente au tourniquet est limitée (5 s) : il ne peut jamais bloquer le site.
+ * 2) Décodage mémorisé pendant la demande : relire le MÊME contenu ne le redécode pas (« me » le décodait 2 à 5 fois).
+ */
+/** Passage au tourniquet. Lecteur (LOCK_SH) : passe et repart (null). Écrivain (LOCK_EX) : le garde (rendu par l'appelant). */
+function orolado_db_turn_wait(string $file, int $mode) {
+  $t = @fopen($file . '.turn', 'c') ?: @fopen($file . '.turn', 'r'); // 'r' : fichier créé par un autre utilisateur
+  if (!$t) return null;
+  $until = microtime(true) + 5.0;
+  $pause = 500;
+  while (!flock($t, $mode | LOCK_NB)) {
+    if (microtime(true) > $until) { fclose($t); return null; } // jamais bloquant : on continue comme avant
+    usleep($pause);
+    $pause = min(4000, $pause * 2);
+  }
+  if ($mode !== LOCK_EX) { flock($t, LOCK_UN); fclose($t); return null; }
+  return $t;
+}
+
+/** Verrou d'ÉCRITURE de orolado.json (même verrou qu'avant, plus la priorité sur les nouvelles lectures). */
+function orolado_db_lock_ex($fp, string $file): void {
+  $t = orolado_db_turn_wait($file, LOCK_EX);
+  flock($fp, LOCK_EX);
+  if ($t) { flock($t, LOCK_UN); fclose($t); }
+}
+
+/** Verrou de LECTURE de orolado.json : attend d'abord qu'une écriture en attente soit passée. */
+function orolado_db_lock_sh($fp, string $file): void {
+  orolado_db_turn_wait($file, LOCK_SH);
+  flock($fp, LOCK_SH);
+}
+
+/** json_decode du fichier, mémorisé : même contenu (octet pour octet) → même résultat, sans redécoder. */
+function orolado_db_decode(string $file, $raw) {
+  $raw = is_string($raw) ? $raw : '';
+  $m = $GLOBALS['OROLADO_DB_DECODED'][$file] ?? null;
+  if (is_array($m) && $m[0] === $raw) return $m[1];
+  $data = json_decode($raw, true);
+  $GLOBALS['OROLADO_DB_DECODED'][$file] = [$raw, $data];
+  return $data;
+}
+
 function load_db(?string $file = null): array {
   $file = $file ?: orolado_data_file();
   $data = null;
   if (is_file($file)) {
     $fp = fopen($file, 'r');
     if ($fp) {
-      flock($fp, LOCK_SH);
+      orolado_db_lock_sh($fp, $file);
       $raw = stream_get_contents($fp);
       flock($fp, LOCK_UN);
       fclose($fp);
-      $data = json_decode($raw ?: '', true);
+      $data = orolado_db_decode($file, $raw);
     }
   }
   $core = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
@@ -2489,7 +2545,7 @@ function orolado_store_has_legacy(array $core): bool {
 function orolado_store_migrate_file(string $file): array {
   $fp = fopen($file, 'c+');
   if (!$fp) return blank_db();
-  flock($fp, LOCK_EX);
+  orolado_db_lock_ex($fp, $file);
   $raw = stream_get_contents($fp);
   $data = json_decode($raw ?: '', true);
   $core = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
@@ -2582,9 +2638,9 @@ function orolado_db_merge3(array $base, array $mine, array $cur): array {
 function save_db(string $file, array $db): bool {
   $fp = fopen($file, 'c+');
   if (!$fp) return false;
-  flock($fp, LOCK_EX);
+  orolado_db_lock_ex($fp, $file);
   $raw = stream_get_contents($fp);
-  $cur = json_decode($raw ?: '', true);
+  $cur = orolado_db_decode($file, $raw);
   $curCore = is_array($cur) ? array_merge(blank_db(), $cur) : null;
   if (is_array($curCore) && orolado_store_has_legacy($curCore)) $curCore = orolado_store_migrate_core($curCore, $file);
   // Fiches (joueurs, soldes, connexions, codes) : seules celles modifiées sont écrites.
@@ -2614,9 +2670,9 @@ function with_db_lock(callable $fn) {
   $file = orolado_data_file();
   $fp = fopen($file, 'c+');
   if (!$fp) return ['ok' => false, 'reason' => 'Stockage indisponible'];
-  flock($fp, LOCK_EX);
+  orolado_db_lock_ex($fp, $file);
   $raw = stream_get_contents($fp);
-  $data = json_decode($raw ?: '', true);
+  $data = orolado_db_decode($file, $raw);
   $core = is_array($data) ? array_merge(blank_db(), $data) : blank_db();
   $migrated = false;
   if (orolado_store_has_legacy($core)) { $core = orolado_store_migrate_core($core, $file); $migrated = true; }
@@ -3582,7 +3638,7 @@ function credit_paid_deposit(array $hit): array {
   $file = orolado_data_file();
   $fp = fopen($file, 'c+');
   if (!$fp) return ['ok' => false, 'reason' => 'db'];
-  flock($fp, LOCK_EX);
+  orolado_db_lock_ex($fp, $file);
   // Lecture sous verrou, fiches branchées (joueurs, soldes, connexions hors du gros fichier).
   $db = orolado_store_read_locked($fp, $file);
   if (!isset($db['deposits']) || !is_array($db['deposits'])) $db['deposits'] = [];

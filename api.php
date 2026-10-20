@@ -335,10 +335,21 @@ if ($action === 'ping') {
 if ($action === 'presence') {
   $me = session_user($db, $token);
   if ($me && !empty($me['id'])) {
-    $db['users'][$me['id']]['lastSeen'] = date('c');
-    save_db($file, $db);
-    if (function_exists('supabase_touch_last_seen')) {
-      supabase_touch_last_seen((string) $me['id']);
+    // 2026-10-20 (tenue de charge) : envoyé toutes les 20 s par chaque joueur, il réécrivait à chaque fois sous le verrou
+    // global et appelait Supabase. Même règle que « me » : « vu en ligne » noté seulement s'il date de 45 s ou plus
+    // (le compteur « en ligne » de l'admin regarde 90 s). Écriture sous verrou sur la fiche À JOUR (avant : la copie lue
+    // au début de la demande pouvait écraser un changement fait entre-temps sur la fiche du joueur).
+    $uidSeen = (string) $me['id'];
+    $seenAge = time() - (strtotime((string) ($me['lastSeen'] ?? '')) ?: 0);
+    if ($seenAge >= 45) {
+      with_db_lock(function ($box) use ($uidSeen) {
+        if (!isset($box->db['users'][$uidSeen]) || !is_array($box->db['users'][$uidSeen])) return ['ok' => true, 'skip_write' => true];
+        $box->db['users'][$uidSeen]['lastSeen'] = date('c');
+        return ['ok' => true];
+      });
+      if (function_exists('supabase_touch_last_seen')) {
+        supabase_touch_last_seen($uidSeen);
+      }
     }
   }
   echo json_encode(['ok' => true, 'server' => true]);
@@ -2454,7 +2465,7 @@ if ($action === 'me') {
   orolado_repair_overwritten_reals_once();
   // Trades expirés pendant l'absence (F5, onglet fermé) : réglés ici, au prix réel d'expiration.
   try {
-    if (orolado_trade_settle_due($uid) > 0) $db = load_db($file);
+    if (orolado_trade_settle_due($uid, 25, $db) > 0) $db = load_db($file);
     // Au plus toutes les 10 min : range les vieux trades en archive (site rapide sur des années).
     if (orolado_archive_orders() > 0) $db = load_db($file);
   } catch (Throwable $eDue) {
