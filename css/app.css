@@ -12933,3 +12933,9 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-flag{width:14px!important;height:10px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-code{font-size:10px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;font-size:16px!important;opacity:.9}
+/* Profil : plus de grosses planètes en fond (propriétaire : « ça encombre ») — fond calme, juste un léger halo violet */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile{background:radial-gradient(120% 40% at 50% 0%,rgba(124,58,237,.22),transparent 70%),linear-gradient(180deg,rgb(19,15,54),rgb(10,10,32))!important;background-color:#0D0B26!important}
+/* langue encore un peu plus petite */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:22px!important;padding:1px 5px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-flag{width:13px!important;height:9px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-code{font-size:9.5px!important}
