@@ -13069,3 +13069,7 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
    décollées du bord) ni d'ombre noire en bas */
 html:root body #txFeed#txFeed,html:root body #historySheet#historySheet .sheet-feed{scrollbar-width:none!important;padding-right:4px!important;box-shadow:none!important;-webkit-mask-image:none!important;mask-image:none!important}
 html:root body #txFeed#txFeed::-webkit-scrollbar,html:root body #historySheet#historySheet .sheet-feed::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+/* v2940 — Profil : photo un peu plus grande, un peu plus haut, décollée du nom */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar{width:104px!important;height:104px!important;min-width:104px!important;margin-top:-6px!important;margin-bottom:6px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar .pav-cam{width:30px!important;height:30px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-nav .drawer-item{box-sizing:border-box!important}
