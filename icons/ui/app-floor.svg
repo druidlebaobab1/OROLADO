@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 46" width="390" height="46" preserveAspectRatio="xMidYMax slice">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B1E44"/><stop offset="1" stop-color="#22172F"/></linearGradient>
+<radialGradient id="bl" cx="32%" cy="28%" r="78%"><stop offset="0" stop-color="#E0F2FE"/><stop offset=".25" stop-color="#7DD3FC"/><stop offset=".6" stop-color="#2563EB"/><stop offset="1" stop-color="#172554"/></radialGradient>
+<radialGradient id="gr" cx="32%" cy="28%" r="78%"><stop offset="0" stop-color="#ECFCCB"/><stop offset=".3" stop-color="#86EFAC"/><stop offset=".65" stop-color="#15803D"/><stop offset="1" stop-color="#052E16"/></radialGradient>
+<radialGradient id="vi" cx="32%" cy="28%" r="78%"><stop offset="0" stop-color="#F5D0FE"/><stop offset=".35" stop-color="#C084FC"/><stop offset=".7" stop-color="#7C3AED"/><stop offset="1" stop-color="#2E1065"/></radialGradient>
+<radialGradient id="mo" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#CBD5E1"/><stop offset="1" stop-color="#64748B"/></radialGradient>
+<radialGradient id="ha" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#60A5FA" stop-opacity=".35"/><stop offset="1" stop-color="#60A5FA" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="390" height="46" fill="url(#bg)"/>
+<g fill="#fff"><circle cx="34" cy="14" r=".8" opacity=".55"/><circle cx="104" cy="32" r=".7" opacity=".45"/><circle cx="150" cy="12" r=".9" opacity=".5"/>
+<circle cx="240" cy="30" r=".7" opacity=".45"/><circle cx="270" cy="9" r=".8" opacity=".5"/><circle cx="374" cy="36" r=".7" opacity=".45"/></g>
+<circle cx="322" cy="25" r="22" fill="url(#ha)"/>
+<circle cx="322" cy="25" r="12" fill="url(#bl)"/>
+<ellipse cx="317" cy="20" rx="4.6" ry="2.6" fill="#fff" opacity=".3" transform="rotate(-25 317 20)"/>
+<circle cx="345" cy="10" r="2.8" fill="url(#mo)"/>
+<circle cx="196" cy="47" r="9" fill="url(#gr)"/>
+<ellipse cx="192" cy="42" rx="3.2" ry="1.8" fill="#fff" opacity=".3" transform="rotate(-25 192 42)"/>
+<circle cx="60" cy="28" r="5" fill="url(#vi)"/>
+</svg>
