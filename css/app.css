@@ -12759,3 +12759,6 @@ html body #portalModal#portalModal#portalModal #topRows{align-content:start!impo
 /* 2026-10-20 (QA, iPhone SE) : « Se déconnecter » reste collé en bas du profil ; son fond était transparent → la liste qui
    défile passait à travers (« Changer d'adresse e-mail » superposé à « Se déconnecter »). Fond opaque sous le dégradé rouge. */
 html:root body #drawerProfile#drawerProfile #btnLogout#btnLogout{background-color:#140f2c!important}
+/* 2026-10-20 (QA, iPhone SE 320 px) : « PLEIN ÉCRAN » / « ПОЛНЫЙ ЭКРАН » était coupé (case de 50 px) → sur les écrans de
+   moins de 351 px, le bouton plein écran garde seulement son icône (son nom reste lu par l'aide à l'écran). */
+@media (max-width:350px){html:root body #btnChartFs#btnChartFs .chart-fs-label,html:root body #tradeWrap#tradeWrap #btnChartFs.chart-fs-btn > .chart-fs-label{display:none!important}html:root body #btnChartFs#btnChartFs{padding-right:4px!important;min-width:28px!important}}
