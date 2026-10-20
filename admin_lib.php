@@ -1177,10 +1177,14 @@ function admin_profiles(): array {
   }
   // Bonus séparés de l'argent réellement payé : « depositTotal » = argent déposé seulement.
   $bonusBy = admin_bonus_by_user();
+  // 2026-10-20 (propriétaire : joueur RB739RQQW, dépôt carte 3 $ COMPLETED mais alerte « retrait sans dépôt payé ») :
+  // le total du profil ne contient pas toujours les bonus ; les retrancher donnait 0 (3 $ − 3,85 $ de bonus). On garde
+  // au moins la somme des VRAIS dépôts payés (liste des dépôts, hors bonus) — la même que « Argent déposé » de la fiche.
+  $paidBy = admin_paid_dep_by_user(); // (pas admin_deposits() : elle relit les profils → boucle sans fin)
   foreach ($list as $i => $row) {
     $b = (float) ($bonusBy[(string) ($row['id'] ?? '')] ?? 0);
     $list[$i]['bonusTotal'] = round($b, 2);
-    $list[$i]['depositTotal'] = round(max(0.0, (float) ($row['depositTotal'] ?? 0) - $b), 2);
+    $list[$i]['depositTotal'] = round(max(0.0, (float) ($row['depositTotal'] ?? 0) - $b, (float) ($paidBy[(string) ($row['id'] ?? '')] ?? 0)), 2);
   }
   admin_cache_set('profiles_epoch2', ['list' => $list]);
   return admin_apply_live_seen($list);
@@ -1190,6 +1194,30 @@ function admin_profiles(): array {
  * Total des bonus envoyés par l'admin, par joueur (opérateur « admin » / réf. adm_…).
  * Lu directement (sans passer par admin_deposits, qui dépend de la liste des joueurs).
  */
+/** 2026-10-20 — Vrais dépôts payés (hors bonus) par joueur, lus à la source (comme admin_bonus_by_user). */
+function admin_paid_dep_by_user(): array {
+  $cached = admin_cache_get('paid_dep_by_user', 20);
+  if (is_array($cached)) return $cached;
+  $seen = [];
+  $by = [];
+  $add = static function (array $d) use (&$seen, &$by): void {
+    $id = (string) ($d['id'] ?? $d['ref'] ?? $d['reference'] ?? '');
+    if ($id === '' || isset($seen[$id]) || !admin_dep_is_paid($d)) return;
+    $seen[$id] = true;
+    $uid = (string) ($d['userId'] ?? $d['user_id'] ?? '');
+    if ($uid === '') return;
+    $by[$uid] = ($by[$uid] ?? 0.0) + (float) ($d['amount'] ?? 0);
+  };
+  foreach (admin_sb_all('deposits', 'id,user_id,amount,status,operator,reference', 'created_at.desc', 1000, 'status=in.(COMPLETED,PAID,SUCCESS,CONFIRMED,completed,paid,success,confirmed)') as $d) {
+    if (is_array($d)) $add($d);
+  }
+  foreach ((admin_local_db()['deposits'] ?? []) as $d) {
+    if (is_array($d)) $add($d);
+  }
+  admin_cache_set('paid_dep_by_user', $by);
+  return $by;
+}
+
 function admin_bonus_by_user(): array {
   $cached = admin_cache_get('bonus_by_user', 20);
   if (is_array($cached)) return $cached;
