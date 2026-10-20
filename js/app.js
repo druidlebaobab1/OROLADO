@@ -1422,7 +1422,7 @@
       if (!ios || !app) return;
       var root = document.documentElement;
       root.classList.add('ios-app');
-      root.style.setProperty('background-color', '#22172F', 'important');
+      root.style.setProperty('background-color', '#0F102E', 'important');
       var paint = function () {
         try {
           // Hauteur réelle de l'écran (l'appli iPhone a une fenêtre plus courte que l'écran) : utilisée par le profil.
@@ -1459,7 +1459,7 @@
             }
           }
           if (document.body) {
-            document.body.style.setProperty('background-color', '#22172F', 'important');
+            document.body.style.setProperty('background-color', '#0F102E', 'important');
             // 2026-10-20 (d) : le dessin est AUSSI posé tout en bas du fond du body (c'est peut-être lui qui peint la bande
             // sous la fenêtre de l'appli sur certains iPhone) ; caché derrière le site s'il ne descend pas jusque-là.
             var bh = parseInt(getComputedStyle(root).getPropertyValue('--ios-floor-h'), 10) || 56;
