@@ -13091,3 +13091,6 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html.is-android:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-item.drawer-logout{min-height:34px!important}
 /* v2949 — Historique financier / des trades : fond uni (avant, il foncait vers le bas : « lueur noire ») et liste jusqu'en bas */
 html:root body #financeModal#financeModal#financeModal > .modal-box,html:root body #historySheet#historySheet#historySheet > .modal-box{background:linear-gradient(180deg,#140D33 0%,#120C30 100%)!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important}
+/* v2950 — Cadeaux : la roue un tout petit peu plus petite et un peu plus bas (elle touchait presque la barre du haut) */
+html:root body #portalModal#portalModal .gh-grid.gh-imm .gh-hero{margin-top:14px!important}
+html:root body #portalModal#portalModal .gh-grid.gh-imm .gh-hero-w{width:min(164px,44vw,21vh)!important}
