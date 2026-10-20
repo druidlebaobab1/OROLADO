@@ -12863,3 +12863,39 @@ html:root body #drawerProfile .prof-ph-hint:active{transform:scale(.96)}
   html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-hero .prof-name{font-size:1.02rem!important}
 }
 @media (max-width:360px){html:root body #drawerProfile .prof-ph-hint{display:none!important}}
+/* 2026-10-20 (c) (propriétaire : « tout est collé en haut, un vide en bas ») — Retrait, téléphones : le titre et les logos descendent
+   un peu et les cases sont un peu plus hautes, selon la HAUTEUR de l'écran (rien ne défile jamais). Les réglages (b) plus haut
+   étaient écrasés par une règle plus forte (#withdrawModal#withdrawModal .wd-card) : ceux-ci passent devant. */
+@media (max-width:859px) and (min-height:830px){
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-modal-head{margin-top:16px!important;margin-bottom:10px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-card-grid .wd-card{min-height:42px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-card-grid{row-gap:8px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-group-label{margin-top:14px!important;margin-bottom:8px!important}
+}
+@media (max-width:859px) and (min-height:760px) and (max-height:829px){
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-modal-head{margin-top:10px!important;margin-bottom:8px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-card-grid .wd-card{min-height:40px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-card-grid{row-gap:7px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-group-label{margin-top:10px!important;margin-bottom:6px!important}
+}
+@media (max-width:859px) and (min-height:700px) and (max-height:759px){
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-modal-head{margin-top:6px!important;margin-bottom:6px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-card-grid .wd-card{min-height:37px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-card-grid{row-gap:6px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-group-label{margin-top:8px!important;margin-bottom:5px!important}
+}
+@media (max-width:859px) and (max-height:659px){
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-card-grid .wd-card{min-height:30px!important;padding-top:2px!important;padding-bottom:2px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-card-grid{row-gap:4px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal .wd-group-label{margin-top:4px!important;margin-bottom:3px!important}
+}
+/* 2026-10-20 (c) — Retrait, écran du formulaire (après avoir touché un logo), grands téléphones : le titre descend un peu et les
+   cases respirent (un peu plus d'espace entre elles, cases et bouton un peu plus hauts). Petits écrans : rien ne change. */
+@media (max-width:859px) and (min-height:760px){
+  html:root body #withdrawModal#withdrawModal#withdrawModal .withdraw-box.is-wd-form .wd-modal-head{margin-top:12px!important;margin-bottom:10px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .wd-selected{margin-top:6px!important;margin-bottom:8px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .field{margin-top:10px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .field input,
+  html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .field select{min-height:50px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal #btnSendWithdraw{min-height:54px!important;margin-top:14px!important}
+}
