@@ -1,0 +1,11 @@
+# OROLADO — réglage PHP-FPM pour la foule (2026-10-20). Lancer sur le VPS : wget -qO- orolado.com/fpm.txt | bash
+P=/etc/php/8.3/fpm/pool.d/www.conf
+[ -f "$P" ] || { echo "Fichier $P introuvable"; exit 1; }
+cp "$P" "$P.bak-orolado"
+sed -i '/^listen.backlog/d;/^request_terminate_timeout/d' "$P"
+printf 'listen.backlog = 4096\nrequest_terminate_timeout = 30s\n' >> "$P"
+if php-fpm8.3 -t 2>/dev/null; then
+  systemctl restart php8.3-fpm && echo "OROLADO-OK"
+else
+  cp "$P.bak-orolado" "$P"; echo "ERREUR : rien n'a change (ancien reglage remis)"
+fi
