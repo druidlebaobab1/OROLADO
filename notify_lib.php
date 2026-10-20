@@ -52,7 +52,7 @@ function orolado_notify_player(string $uid, string $kind, float $amount, string 
     $u = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
     $lang = strtolower(substr((string) ($u['lang'] ?? $u['language'] ?? 'fr'), 0, 2));
     $email = trim((string) ($u['email'] ?? ''));
-    if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) && function_exists('brevo_send_smtp')
+    if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) && function_exists('orolado_mail_send')
       && !(function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($email))) {
       [$t, $b] = orolado_notify_texts($kind, $lang, $amt, $from);
       $hi = ['fr' => 'Bonjour', 'es' => 'Hola', 'pt' => 'Olá', 'de' => 'Hallo', 'tr' => 'Merhaba', 'id' => 'Halo', 'vi' => 'Xin chào', 'ru' => 'Здравствуйте', 'ar' => 'مرحبًا', 'hi' => 'नमस्ते', 'zh' => '您好'][$lang] ?? 'Hello';
@@ -70,12 +70,11 @@ function orolado_notify_player(string $uid, string $kind, float $amount, string 
         '</table></td></tr></table></body></html>';
       $text = $greet . "\n\n" . $b . "\n\nOROLADO\nhttps://orolado.com\n";
       if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) ($GLOBALS['OROLADO_FAKE_MAIL'])($email, $t, $text);
-      else brevo_send_smtp([
-        'sender' => ['email' => brevo_env('BREVO_SENDER_EMAIL', 'contact@mail.orolado.com'), 'name' => 'OROLADO'],
-        'to' => [['email' => $email, 'name' => $name !== '' ? $name : $email]],
-        'subject' => $t, 'htmlContent' => $html, 'textContent' => $text,
-        'replyTo' => ['email' => 'support@orolado.com', 'name' => 'OROLADO'],
-      ]);
+      else {
+        // v2955 : même chemin que les codes e-mail (Resend, puis Brevo en secours) — avant : Brevo seul
+        $r = orolado_mail_send($email, $name, $t, $html, $text);
+        if (empty($r['ok'])) error_log('OROLADO mail ' . $kind . ' non envoyé : ' . (string) ($r['reason'] ?? '?'));
+      }
     }
   } catch (Throwable $e) { /* jamais bloquant */ }
   try {

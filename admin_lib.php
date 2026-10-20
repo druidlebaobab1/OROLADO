@@ -3245,12 +3245,8 @@ function admin_mail_wd_paid(string $to, string $name, string $subject, string $h
     '</table></td></tr></table></body></html>';
   $text = $hi . ($who !== '' ? ' ' . $who : '') . ",\n\n" . $msg . ($first !== '' ? "\n\n" . $first : '') . "\n\nOROLADO\nhttps://orolado.com\n";
   if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) return ($GLOBALS['OROLADO_FAKE_MAIL'])($to, $subject, $text);
-  return brevo_send_smtp([
-    'sender' => ['email' => brevo_env('BREVO_SENDER_EMAIL', 'contact@mail.orolado.com'), 'name' => 'OROLADO'],
-    'to' => [['email' => $to, 'name' => $who !== '' ? $who : $to]],
-    'subject' => $subject,
-    'htmlContent' => $html,
-    'textContent' => $text,
-    'replyTo' => ['email' => 'support@orolado.com', 'name' => 'OROLADO'],
-  ]);
+  // v2955 : même chemin que les codes e-mail (Resend, puis Brevo en secours) — avant : Brevo seul (silencieux si sa clé manque)
+  $r = orolado_mail_send($to, $who, $subject, $html, $text);
+  if (empty($r['ok'])) error_log('OROLADO mail retrait payé non envoyé : ' . (string) ($r['reason'] ?? '?'));
+  return $r;
 }
