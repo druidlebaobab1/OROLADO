@@ -1433,6 +1433,11 @@
           root.style.setProperty('background-position', '0 ' + (fullH - flH) + 'px', 'important');
           if (document.body) {
             document.body.style.setProperty('background-color', '#22172F', 'important');
+            // le corps de la page couvre toute la fenêtre de l'appli : le dessin est posé au bas du corps (= bas de l'écran)
+            document.body.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2888")', 'important');
+            document.body.style.setProperty('background-repeat', 'no-repeat', 'important');
+            document.body.style.setProperty('background-size', '100% auto', 'important');
+            document.body.style.setProperty('background-position', 'center bottom', 'important');
             // v2822 : plus de hauteur minimale forcée sur le body (il est fixé sur la fenêtre, css/app.css « VERROU ») :
             // une hauteur plus grande que la fenêtre poussait ACHETER / VENDRE hors de l'écran.
           }
