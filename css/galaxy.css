@@ -2147,3 +2147,9 @@ html.ios-app:not(.fs-trade) body:not(#z1):not(#z2) #oroIosFloor#oroIosFloor#oroI
   display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:auto!important;top:var(--ios-floor-top,100vh)!important;
   height:var(--ios-floor-h,0px)!important;z-index:3!important;pointer-events:none!important;
   background:url("../icons/ui/app-floor.svg?v=2913") center bottom/cover no-repeat,#22172F!important}
+
+/* 2026-10-20 (propriétaire) — APPLI iPhone, PLEIN ÉCRAN : la fenêtre de l'appli s'arrête avant le bas de l'écran ; le plein écran
+   descend maintenant jusqu'au VRAI bas (même méthode que le Profil : --ios-full-h, mesuré par js/app.js) : mise / ACHETER / VENDRE
+   reviennent en bas, juste au-dessus de la barre d'accueil, sans bande noire dessous. Safari et Android : rien ne change. */
+html.ios-app.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay.on{top:0!important;bottom:auto!important;height:var(--ios-full-h,100vh)!important;max-height:none!important}
+html.ios-app.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap > .pad.pad{bottom:calc(0px - var(--ios-under,0px))!important}
