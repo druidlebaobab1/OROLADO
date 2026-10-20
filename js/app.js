@@ -6947,6 +6947,35 @@
     var wdBox = document.querySelector('#withdrawModal .withdraw-box');
     if (wdBox) wdBox.classList.toggle('is-wd-form', step === 'form');
     setHidden($('closeWithdraw'), step === 'form');
+    fitWdForm();
+  }
+
+  // v2928 — le formulaire de retrait tient toujours dans l'écran : s'il dépasse (Virement : 4 champs,
+  // petit iPhone), il est réduit juste ce qu'il faut ; le bouton « Confirmer » n'est jamais coupé.
+  var wdFitObs = null;
+  function fitWdForm() {
+    var form = $('wdStepForm');
+    var box = document.querySelector('#withdrawModal .withdraw-box');
+    if (!form || !box) return;
+    if (!wdFitObs && typeof MutationObserver === 'function') {
+      wdFitObs = new MutationObserver(function () { fitWdForm(); });
+      wdFitObs.observe(form, { attributes: true, attributeFilter: ['class'], subtree: true });
+      window.addEventListener('resize', function () { fitWdForm(); });
+    }
+    var run = function () {
+      if (form.classList.contains('hidden')) { form.style.zoom = ''; return; }
+      form.style.zoom = '';
+      var btn = $('btnSendWithdraw');
+      var br = box.getBoundingClientRect();
+      var limit = Math.min(br.bottom, window.innerHeight || br.bottom) - 6;
+      var over = btn ? btn.getBoundingClientRect().bottom - limit : 0;
+      var h = form.getBoundingClientRect().height;
+      if (over > 1 && h > 0) {
+        var z = Math.max(0.72, (h - over - 4) / h);
+        form.style.zoom = String(Math.round(z * 1000) / 1000);
+      }
+    };
+    if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
   }
 
   function updateWithdrawMinHint() {

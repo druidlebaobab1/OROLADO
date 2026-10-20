@@ -12945,3 +12945,24 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;font-size:14px!important;box-shadow:none!important;opacity:.85}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer::before,html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer::after{content:none!important;display:none!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:20px!important;padding:0 5px!important;border-color:rgba(253,230,138,.25)!important;background:transparent!important;opacity:.8}
+
+/* v2928 — Mot de passe / e-mail : contenu descendu un peu (la croix ne bouge pas) */
+html:root body #passModal#passModal#passModal > .modal-box,html:root body #emailModal#emailModal#emailModal > .modal-box{padding-top:calc(env(safe-area-inset-top,0px) + clamp(30px,10vh,110px))!important}
+
+/* v2928 — Retrait : le formulaire tient dans l'écran, bouton jamais coupé (Virement : 4 champs) */
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm:has(#wdBankFields:not(.hidden)) input,
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm:has(#wdBankFields:not(.hidden)) select{min-height:38px!important;height:38px!important;padding-top:6px!important;padding-bottom:6px!important;margin-bottom:5px!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm:has(#wdBankFields:not(.hidden)) label{margin-bottom:3px!important;margin-top:2px!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm:has(#wdBankFields:not(.hidden)) .field{margin-bottom:4px!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm:has(#wdBankFields:not(.hidden)) .wd-selected{margin:0 0 6px!important;padding-top:3px!important;padding-bottom:3px!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm:has(#wdBankFields:not(.hidden)) .wd-trust{margin:2px 0 6px!important}
+@media (max-height:700px){
+  html:root body #withdrawModal#withdrawModal#withdrawModal:has(#wdStepForm:not(.hidden)) .wd-bal{display:flex!important;flex-direction:row!important;height:auto!important;align-items:center;justify-content:center;gap:10px;padding:4px 10px!important;min-height:0!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal:has(#wdStepForm:not(.hidden)) .wd-bal-amt{font-size:1rem!important;margin:0!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal:has(#wdStepForm:not(.hidden)) .wd-bal-secure{margin:0!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .hint-min{margin-top:2px!important}
+}
+@media (max-height:600px){
+  html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm input,html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm select{min-height:36px!important;height:36px!important;margin-bottom:4px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .btn-wd-confirm{min-height:42px!important;height:42px!important}
+}
