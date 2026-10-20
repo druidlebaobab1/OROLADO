@@ -294,7 +294,7 @@
     try { r = JSON.parse(sessionStorage.getItem(RKEY) || 'null'); } catch (e) { r = null; }
     // lien avec une intention précise (notification, retour de paiement, casino=1…) : il passe avant
     var q = location.search || '';
-    if (/[?&](live|casino|deposit|payment|tx_ref|transaction_id|status|reset|verify|r|ref)=/i.test(q)) return unveil();
+    if (/[?&](live|casino|deposit|payment|tx_ref|transaction_id|status|reset|verify|r|ref|g)=/i.test(q) || D6.SxJoinWait) return unveil();
     if (!r || !r.s || r.s === 'trade' || r.s === 'auth' || !r.t || Date.now() - r.t > 12 * 3600 * 1000) return unveil();
     if (!(await wait(ready, 9000))) return unveil();
     if (authShown() || anyOpen()) return unveil(); // une autre page s'est déjà ouverte (inscription, reçu…)
