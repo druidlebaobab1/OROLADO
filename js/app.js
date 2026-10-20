@@ -7010,6 +7010,8 @@
     var run = function () {
       parts.forEach(function (el) { el.style.zoom = ''; });
       Array.prototype.forEach.call(d.querySelectorAll('.drawer-nav .drawer-item, #profWalletCard .wallet-tab, #btnExpressCrypto, #profWalletCard .wallet-addr-row, #profWalletBal'), function (el) { el.style.removeProperty('min-height'); });
+      var lgl = d.querySelector('.drawer-legal'); if (lgl) lgl.classList.remove('prof-tight');
+      var nv0 = d.querySelector('.drawer-nav'); if (nv0) nv0.style.removeProperty('flex');
       if (!d.classList.contains('on')) return;
       // v2944 — mesure par la position réelle du bas du contenu (fiable aussi sur les Chrome Android) :
       // « free » = place vide sous la dernière ligne
@@ -7042,35 +7044,42 @@
         }
         setZ(Math.round(lo * 1000) / 1000);
       }
-      // la place vide qui reste nourrit : le solde, le bouton Recharger, les réseaux, la ligne de l'adresse
-      // et les lignes du menu (Historique financier, Retirer, …)
+      // v2952 (propriétaire) : on garde la taille trouvée, puis on récupère le petit vide sous « Se déconnecter »
+      // (marge de la ligne ©) et on le donne seulement à certaines cases, avec un poids :
+      //  iPhone  : Recharger (surtout), case de l'adresse, solde ;  Android : case de l'adresse et Retirer des fonds (surtout), solde.
+      var legal = d.querySelector('.drawer-legal');
+      if (legal) legal.classList.add('prof-tight'); // sur la ligne © (pas sur le tiroir : l'observateur des classes du tiroir relancerait l'ajustement)
       var wal = $('profWalletCard');
-      var els = [];
-      if (wal) {
-        [$('profWalletBal'), $('btnExpressCrypto'), wal.querySelector('.wallet-addr-row')].forEach(function (g) { if (g) els.push(g); });
-        Array.prototype.forEach.call(wal.querySelectorAll('.wallet-tab'), function (t) { els.push(t); });
+      var isAnd = document.documentElement.classList.contains('is-android');
+      var targets = [];
+      var pushT = function (el, wgt) { if (el) targets.push([el, wgt]); };
+      if (isAnd) {
+        pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('btnWithdraw'), 2); pushT($('profWalletBal'), 1);
+      } else {
+        pushT($('btnExpressCrypto'), 3); pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('profWalletBal'), 1);
       }
-      Array.prototype.forEach.call(items, function (it) { els.push(it); });
-      var groups = (wal ? 4 : 0) + items.length; // les 4 réseaux comptent pour une seule ligne
-      var free = freeNow();
-      if (els.length && groups && free > 10) {
-        var base = els.map(function (el) { return el.getBoundingClientRect().height / curZ; });
-        var add = Math.min(22, Math.floor((free - 6) / groups / curZ));
-        // « Se déconnecter » part de la même hauteur que les autres lignes du menu
-        var lo = $('btnLogout'), fi = $('btnFinance');
-        if (lo && fi) { var li = els.indexOf(lo), fiI = els.indexOf(fi); if (li >= 0 && fiI >= 0) base[li] = Math.max(base[li], base[fiI]); }
-        var apply = function (n) {
-          els.forEach(function (el, i) {
-            if (n > 0) el.style.setProperty('min-height', Math.round(base[i] + n) + 'px', 'important');
-            else el.style.removeProperty('min-height');
+      // le menu (drawer-nav) s'étire pour remplir : la vraie place libre est le vide sous « Se déconnecter »
+      var navEl = d.querySelector('.drawer-nav'), loEl = $('btnLogout');
+      var navGap = function () {
+        if (!navEl || !loEl) return 0;
+        return navEl.getBoundingClientRect().bottom - loEl.getBoundingClientRect().bottom - 2;
+      };
+      // le menu ne s'étire plus tout seul (sinon il avale la place) : on la mesure sous la ligne ©
+      if (navEl) navEl.style.setProperty('flex', '0 0 auto', 'important');
+      var free = Math.max(freeNow(), navGap());
+      if (targets.length && free > 4) {
+        var wSum = targets.reduce(function (s2, tw) { return s2 + tw[1]; }, 0);
+        var base = targets.map(function (tw) { return tw[0].getBoundingClientRect().height / curZ; });
+        var apply = function (k) {
+          targets.forEach(function (tw, i) {
+            var add = Math.floor((free - 3) / curZ * tw[1] / wSum * k);
+            if (add > 0) tw[0].style.setProperty('min-height', Math.round(base[i] + Math.min(add, 26)) + 'px', 'important');
+            else tw[0].style.removeProperty('min-height');
           });
         };
-        while (add >= 1) {
-          apply(add);
-          if (fits()) break;
-          add = Math.floor(add / 2);
-        }
-        if (add < 1) apply(0);
+        var k = 1;
+        while (k > 0.1) { apply(k); if (fits() && navGap() >= -1) break; k = k / 2; }
+        if (!(k > 0.1)) apply(0);
       }
     };
     if (window.requestAnimationFrame) requestAnimationFrame(run); else run();

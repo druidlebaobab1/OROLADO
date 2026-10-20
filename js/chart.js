@@ -4472,6 +4472,21 @@
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText(c.label, ccx, ccy + 0.5);
+      if (c.n > 1) {
+        // compteur des trades regroupés sur ce rond (petite pastille dorée en haut à droite)
+        var nTxt = '×' + c.n, bx = ccx + cr - 2, by = ccy - cr + 1;
+        g.font = '800 7.5px "Hanken Grotesk", sans-serif';
+        var bw = Math.max(13, g.measureText(nTxt).width + 6);
+        g.fillStyle = '#F5C518';
+        g.strokeStyle = 'rgba(0,0,0,0.45)';
+        g.lineWidth = 1;
+        g.beginPath();
+        if (g.roundRect) g.roundRect(bx - bw / 2, by - 5.5, bw, 11, 5.5); else g.rect(bx - bw / 2, by - 5.5, bw, 11);
+        g.fill();
+        g.stroke();
+        g.fillStyle = '#1A1205';
+        g.fillText(nTxt, bx, by + 0.5);
+      }
       g.restore();
     }
     chronoQueue.length = 0;
@@ -4896,29 +4911,23 @@
         var ty = ey - timerH / 2; // v2557 : pile sur la ligne / le rond du trade (avant : tagY, décalé pour empiler)
         ty = Math.max(plotTop + 2, Math.min(plotBot - timerH - 2, ty));
         // v2557 (propriétaire) : chaque chrono reste COLLÉ sur la ligne de son trade, jamais décalé ailleurs.
-        // v2828 (propriétaire : « même si la personne a cliqué plusieurs fois, tout va s'afficher ») : plusieurs trades
-        // au même niveau → leurs chronos se rangent CÔTE À CÔTE sur la ligne (avant : superposés, un seul visible).
-        // Première place libre en partant de la gauche (aucun rond ne recouvre un autre), jusqu'aux étiquettes de droite ;
-        // ligne pleine (des dizaines de trades au même niveau) : rangée juste en dessous, puis au-dessus.
-        var slotW = timerW + 3, maxX = Math.max(leftX + slotW, cssW - 110), ci, ri, placed = false;
-        var rows = [0, timerH + 2, -(timerH + 2), 2 * (timerH + 2), -2 * (timerH + 2)];
-        for (ri = 0; ri < rows.length && !placed; ri++) {
-          var ry = ty + rows[ri];
-          if (ry < plotTop + 2 || ry > plotBot - timerH - 2) continue;
-          var cx0 = leftX, busy = true;
-          while (busy && cx0 <= maxX) {
-            busy = false;
-            for (ci = 0; ci < chronoPlaced.length; ci++) {
-              var cp = chronoPlaced[ci];
-              if (Math.abs(cp.y - ry) < timerH - 2 && Math.abs(cp.x - cx0) < timerW) { busy = true; cx0 = cp.x + slotW; break; }
-            }
-          }
-          if (cx0 <= maxX) { leftX = cx0; ty = ry; placed = true; }
-        }
-        chronoPlaced.push({ x: leftX, y: ty });
-        // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
+        // v2952 (propriétaire) : le chrono reste à GAUCHE, sur la ligne de son trade (comme avant). Plusieurs trades au
+        // même niveau ne s'étalent plus sur la courbe : ils s'ajoutent au même rond, avec un compteur « ×2, ×3… »
+        // (comme les objectifs). Le rond montre le temps le plus court.
         var durT = Number(trade.duration) || 0;
-        chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label, call: isCall, frac: durT > 0 ? Math.max(0, Math.min(1, secs / durT)) : 1, k: zoneK });
+        var fracT = durT > 0 ? Math.max(0, Math.min(1, secs / durT)) : 1;
+        var mergeQ = null, qi;
+        for (qi = 0; qi < chronoQueue.length; qi++) {
+          if (Math.abs(chronoQueue[qi].y - ty) < timerH - 2) { mergeQ = chronoQueue[qi]; break; }
+        }
+        if (mergeQ) {
+          mergeQ.n = (mergeQ.n || 1) + 1;
+          if (secs < mergeQ.secs) { mergeQ.secs = secs; mergeQ.label = label; mergeQ.call = isCall; mergeQ.frac = fracT; }
+        } else {
+          chronoPlaced.push({ x: leftX, y: ty });
+          // Dessiné APRÈS tous les traits (drawChronos) : les lignes ACHAT / VENTE passent dessous.
+          chronoQueue.push({ g: g, x: leftX, y: ty, w: timerW, h: timerH, label: label, call: isCall, frac: fracT, k: zoneK, secs: secs, n: 1 });
+        }
       }
     }
   }
