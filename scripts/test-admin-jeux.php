@@ -12,7 +12,7 @@ $tmp = sys_get_temp_dir() . '/orolado_admjeux_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data/archive', 0755, true);
 mkdir($tmp . '/casino_ext', 0755, true);
 foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'aff_lib.php', 'casino_lib.php', 'casino_ext.php', 'admin_lib.php', 'admin_games_lib.php',
-  'history_lib.php', 'wipe_lib.php', 'admin_gift_lib.php', 'push_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php'] as $f) {
+  'history_lib.php', 'wipe_lib.php', 'admin_gift_lib.php', 'push_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php', 'sports_lib.php'] as $f) {
   if (is_file(__DIR__ . '/../' . $f)) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 }
 foreach (glob(__DIR__ . '/../casino_ext/*.php') ?: [] as $f) copy($f, $tmp . '/casino_ext/' . basename($f));
@@ -167,6 +167,23 @@ $code = 'chdir(' . var_export($tmp, true) . '); $GLOBALS["OROLADO_FAKE_RPC"] = f
 $out = shell_exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg('putenv("SUPABASE_URL=https://fake.supabase.test"); putenv("SUPABASE_SERVICE_ROLE_KEY=x"); ' . $code) . ' 2>&1');
 $z = admin_gm_feed('', '', 'zztest', 0, 5);
 check('nouveau jeu joué → dans le journal, section Casino', trim((string) $out) === 'true' && count($z['rows']) === 1 && $z['rows'][0]['sec'] === 'casino', (string) $out);
+
+// v2955 — contrôle « solde plus élevé que dépôts + bonus + gains » : les gains aux Jeux et aux Paris (réel) comptent
+$C = 'cccccccc-1111-2222-3333-444444444444';
+$db2 = load_db();
+$db2['users']['u_c'] = ['id' => 'u_c', 'email' => 'c@test.com', 'role' => 'user', 'sbId' => $C, 'publicId' => 'ORO-103'];
+save_db(orolado_data_file(), $db2);
+casino_round_log('u_c', ['g' => 'mines', 'm' => 'real', 's' => 1, 'w' => 7]);   // +6 aux jeux
+casino_round_log('u_c', ['g' => 'dice', 'm' => 'demo', 's' => 1, 'w' => 50]);   // démo : ne compte pas
+require_once $tmp . '/sports_lib.php';
+sp_with('bets.json', static function (array &$st) {
+  $st['b'][] = ['id' => 'sp1', 'uid' => 'u_c', 'mode' => 'real', 'stake' => 2, 'win' => 5, 'status' => 'won', 'at' => time()];   // +3
+  $st['b'][] = ['id' => 'sp2', 'uid' => 'u_c', 'mode' => 'real', 'stake' => 1, 'win' => 0, 'status' => 'open', 'at' => time()];  // −1 (en cours)
+  $st['b'][] = ['id' => 'sp3', 'uid' => 'u_c', 'mode' => 'real', 'stake' => 4, 'win' => 0, 'status' => 'pend', 'at' => time()];  // réservé : ignoré
+  return true;
+});
+$pn = admin_play_net('u_c', 'c@test.com');
+check('gains réels Jeux + Paris comptés pour le contrôle du solde (6 + 3 − 1 = 8)', abs($pn - 8.0) < 0.001, (string) $pn);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
