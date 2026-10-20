@@ -1311,6 +1311,16 @@
       return (Date.now() - tickToLocal(f.last)) <= 1200;
     },
 
+    /**
+     * 2026-10-20 (propriétaire : « simulations qui dorment ») : prix de ce marché reçus JUSQU'À MAINTENANT (au plus
+     * ~2 prix de retard, comme en direct normal). Le graphique attend cela avant de montrer la courbe à l'arrivée
+     * (ouverture, retour sur l'onglet, changement d'indice) : on ne voit jamais une courbe figée qui saute ensuite.
+     */
+    feedFresh: function (id) {
+      var f = feeds[canonAssetId(id)];
+      return !!(f && f.loaded && Date.now() - tickToLocal(f.last) <= 500);
+    },
+
     /** Prix affiché (dernier tick visible). */
     lastPrice: function (id) {
       var m = markets[canonAssetId(id)];
