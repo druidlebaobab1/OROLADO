@@ -2146,7 +2146,7 @@ html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#
 html.ios-app:not(.fs-trade) body:not(#z1):not(#z2) #oroIosFloor#oroIosFloor#oroIosFloor{
   display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:auto!important;top:var(--ios-floor-top,100vh)!important;
   height:var(--ios-floor-h,0px)!important;z-index:3!important;pointer-events:none!important;
-  background:url("../icons/ui/app-floor.svg?v=2913") center bottom/cover no-repeat,#22172F!important}
+  background:url("../icons/ui/app-floor.svg?v=2919") center bottom/cover no-repeat,#22172F!important}
 
 /* 2026-10-20 (propriétaire) — APPLI iPhone, PLEIN ÉCRAN : la fenêtre de l'appli s'arrête avant le bas de l'écran ; le plein écran
    descend maintenant jusqu'au VRAI bas (même méthode que le Profil : --ios-full-h, mesuré par js/app.js) : mise / ACHETER / VENDRE

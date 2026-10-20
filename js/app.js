@@ -1448,7 +1448,7 @@
               // 2026-10-20 (c) : sur l'iPhone, cette bande est EN DEHORS de la fenêtre de la page : seul le fond de l'écran
               // (fond de html) y est dessiné. index.html pose ce fond en style direct (« background », prioritaire) : le petit
               // monde de planètes est donc posé de la même façon, exactement sous le terminal (jamais sur les boutons).
-              root.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2916")', 'important');
+              root.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2919")', 'important');
               root.style.setProperty('background-repeat', 'no-repeat', 'important');
               root.style.setProperty('background-position', 'center ' + Math.round(pb) + 'px', 'important');
               root.style.setProperty('background-size', '100% ' + gap + 'px', 'important');
