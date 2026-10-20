@@ -2100,6 +2100,10 @@ html[lang="de"] body #screenTrade#screenTrade #previewMult#previewMult{font-size
    navigateur. Plus d'espace en bas du profil pour qu'on puisse toujours la faire remonter et la lire. */
 html.is-android body #drawerProfile#drawerProfile{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 64px)!important}
 html.is-android body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:28px!important}
+/* v2945 — le profil fait maintenant la hauteur visible (100dvh) et s'ajuste tout seul : la marge de 64 px en bas
+   n'était plus que du vide sur Android (capture du propriétaire, 360x663) ; elle revient à une petite marge. */
+html.is-android body #drawerProfile#drawerProfile#drawerProfile{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important}
+html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{padding-bottom:8px!important}
 /* v2827 (propriétaire, captures iPhone : « bande sous ACHETER / VENDRE ») : plus de plancher bleu fixe posé PAR-DESSUS le bas de
    l'écran. Le terminal descend lui-même jusqu'au bas de la fenêtre (son fond finit dans le même bleu que la page, #1A2A68) ;
    sous la barre de Safari, c'est le fond de la page, du même bleu : aucune limite visible. */
