@@ -13094,3 +13094,27 @@ html:root body #financeModal#financeModal#financeModal > .modal-box,html:root bo
 /* v2950 — Cadeaux : la roue un tout petit peu plus petite et un peu plus bas (elle touchait presque la barre du haut) */
 html:root body #portalModal#portalModal .gh-grid.gh-imm .gh-hero{margin-top:14px!important}
 html:root body #portalModal#portalModal .gh-grid.gh-imm .gh-hero-w{width:min(164px,44vw,21vh)!important}
+
+/* v2951 — Historique financier : mêmes cartes que l'historique des trades */
+html:root body #financeModal#financeModal .hc.fx{grid-template-columns:38px minmax(0,1fr) auto 32px!important;padding:11px 10px!important;margin:0!important;
+  background:linear-gradient(90deg,rgba(56,189,248,.14),rgba(124,77,255,.07))!important;border:1px solid rgba(125,211,252,.3)!important;border-radius:14px!important}
+html:root body #financeModal#financeModal .hc.fx .hc-ico{width:38px!important;height:38px!important}
+html:root body #financeModal#financeModal .fx-ico{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff}
+html:root body #financeModal#financeModal .fx-ico svg{width:19px!important;height:19px!important}
+html:root body #financeModal#financeModal .fx-deposit{background:radial-gradient(circle at 35% 30%,#6EE7B7,#059669 70%);box-shadow:0 0 10px rgba(16,185,129,.35)}
+html:root body #financeModal#financeModal .fx-withdraw{background:radial-gradient(circle at 35% 30%,#FDBA74,#EA580C 70%);box-shadow:0 0 10px rgba(234,88,12,.35)}
+html:root body #financeModal#financeModal .fx-bonus{background:radial-gradient(circle at 35% 30%,#F0ABFC,#9333EA 70%);box-shadow:0 0 10px rgba(147,51,234,.35)}
+html:root body #financeModal#financeModal .hc.fx .hc-name{font-size:14px!important}
+html:root body #financeModal#financeModal .hc.fx .hc-meta{font-size:11.5px!important}
+html:root body #financeModal#financeModal .hc.fx .hc-pnl{font-size:15px!important}
+html:root body #financeModal#financeModal .hc.fx .hc-st{text-transform:none!important;letter-spacing:0!important;margin-top:4px!important}
+html:root body #financeModal#financeModal .hc.fx .tx-st{display:inline-block;margin:0!important;font-size:10.5px!important;padding:2px 8px!important}
+html:root body #financeModal#financeModal .hc.fx .rc-dlbtn{width:32px!important;height:32px!important}
+html:root body #financeModal#financeModal .fx-list{gap:8px!important}
+
+/* v2951 — Historique des trades : le NOUVEAU logo de l'indice (le même que dans la barre des marchés), sans l'ancienne boule */
+html:root body #historySheet#historySheet .hc-ico{width:38px!important;height:38px!important}
+html:root body #historySheet#historySheet .hc-ico .hc-globe{width:38px!important;height:38px!important;background:none!important;box-shadow:none!important;border-radius:0!important}
+html:root body #historySheet#historySheet .hc-ico .hc-globe svg{width:100%!important;height:100%!important;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))!important}
+html:root body #historySheet#historySheet .hc{grid-template-columns:38px minmax(0,1fr) auto 30px!important}
+html:root body #financeModal#financeModal .hc.fx .hc-meta{white-space:normal!important;overflow:visible!important;line-height:1.3!important}
