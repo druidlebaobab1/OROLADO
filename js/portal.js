@@ -106,6 +106,11 @@
     var s = state;
     var guest = guestGift();
     var on = !!(s && s.enabled) || guest;
+    // 2026-10-20 (propriétaire : « sur les vieux téléphones l'ancien en-tête OROLADO réapparaît ») : tant que l'état n'est pas
+    // encore lu (connexion, serveur lent), on garde l'en-tête actuel au lieu de remontrer l'ancien ; état connu → mémorisé
+    // (index.html le pose dès la première image).
+    if (!s && !guest && document.documentElement.classList.contains('portal-on')) on = true;
+    else { try { localStorage.setItem('oro_portal_on', on ? '1' : '0'); } catch (eP) { /* ignore */ } }
     show($('btnPortal'), on);
     if (!on || guest) hud(null);
     document.documentElement.classList.toggle('portal-on', on);

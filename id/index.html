@@ -5,8 +5,10 @@
   <script>try{sessionStorage.setItem("orolado_lang_session","id")}catch(e){}try{if(!/bot|crawl|spider|slurp|lighthouse/i.test(navigator.userAgent))history.replaceState(null,"","/"+location.search+location.hash)}catch(e){}</script>
   <base href="/">
   <meta charset="UTF-8">
-  <script>/* 2026-10-20 (propriétaire : « sur Android, Installer affiche un message au lieu d'installer ») : Chrome annonce
+  <script>/* 2026-10-20 : en-tête actuel dès la première image (portal-on mémorisé par js/portal.js ; défaut : actuel).
+     2026-10-20 (propriétaire : « sur Android, Installer affiche un message au lieu d'installer ») : Chrome annonce
      « installable » très tôt, souvent AVANT le code du site → l'annonce était perdue. Elle est gardée ici dès le début. */
+  try{if(localStorage.getItem('oro_portal_on')!=='0')document.documentElement.classList.add('portal-on')}catch(e){}
   try{window.addEventListener('beforeinstallprompt',function(e){try{e.preventDefault()}catch(x){}window.__oroBip=e;try{window.dispatchEvent(new Event('oro-bip'))}catch(x){}})}catch(e){}</script>
   <script>/* v2622 — retour de paiement Mobile Money chargé DANS la fenêtre de paiement d'OROLADO : on prévient la page
      principale (qui vérifie le dépôt) et on n'affiche pas une 2e fois le site dans la fenêtre. */
@@ -674,8 +676,12 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
         busy = false;
         var m = /orolado-v(\d+)/.exec(t || '');
         var live = m ? parseInt(m[1], 10) : 0;
-        var cur = mine();
-        if (!cur || !(live > cur)) return;
+        // 2026-10-20 : on compare sw.js avec sw.js (numéro lu à l'ouverture de CETTE page), plus avec app.js?v= :
+        // les deux numéros montent séparément (ex. sw v2963 / app.js v2962) et chaque visite Android rechargeait
+        // la page une fois pour rien (« le chargement finit puis recommence »).
+        if (!live || !mine()) return;
+        if (!(window.__oroSwBase > 0)) { window.__oroSwBase = live; return; }
+        if (!(live > window.__oroSwBase)) return;
         var tried = '';
         try { tried = sessionStorage.getItem('oro_upd_try') || ''; } catch (e2) { tried = ''; }
         if (tried === String(live)) return;
@@ -691,7 +697,6 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   </script>
   <script>
   document.addEventListener('click', function (e) {
-    try { console.log('CLICK DETECTED ON:', e.target); } catch (err) { /* ignore */ }
   });
   </script>
   <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="svg-sprite">
@@ -2327,8 +2332,8 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="/js/receipt.js?v=2951"></script>
   <script src="/js/back.js?v=2912"></script>
   <script src="/js/push.js?v=2790"></script>
-  <script src="/js/app.js?v=2964"></script>
-  <script src="/js/portal.js?v=2891"></script>
+  <script src="/js/app.js?v=2965"></script>
+  <script src="/js/portal.js?v=2965"></script>
   <script src="/js/live-ui.js?v=2910"></script>
   <script src="/js/live.js?v=2953"></script>
   <script src="/js/live-quiz-data.js?v=2790"></script>

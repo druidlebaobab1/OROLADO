@@ -9702,8 +9702,13 @@
       if (newer || typeof fetch !== 'function') return;
       fetch('sw.js?nc=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r && r.ok ? r.text() : ''; })
         .then(function (txt) {
+          // 2026-10-20 : sw.js comparé à sw.js (numéro lu à l'ouverture de la page, partagé avec le contrôle
+          // Android de index.html), plus à app.js?v= : les deux montent séparément → rechargements pour rien.
           var m2 = /orolado-v(\d+)/.exec(String(txt || ''));
-          if (m2 && Number(m2[1]) > mine) newer = true;
+          var live = m2 ? Number(m2[1]) : 0;
+          if (!live) return;
+          if (!(window.__oroSwBase > 0)) { window.__oroSwBase = live; return; }
+          if (live > window.__oroSwBase) newer = true;
         }).catch(function () { /* hors ligne : on réessaiera */ });
     }
     function openTrades() {
@@ -9715,7 +9720,7 @@
       try { location.reload(); } catch (eR) { reloading = false; }
     }
     setInterval(check, 5 * 60 * 1000);
-    setTimeout(check, 60 * 1000);
+    setTimeout(check, 8 * 1000); // relève le numéro de départ tôt (une mise en ligne dans la 1re minute n'est plus manquée)
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) check();
       else maybeReload();
