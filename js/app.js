@@ -7012,7 +7012,16 @@
       Array.prototype.forEach.call(items, function (it) { it.style.minHeight = ''; });
       if (!d.classList.contains('on')) return;
       var fits = function () { return d.scrollHeight - d.clientHeight <= 1; };
-      var setZ = function (z) { parts.forEach(function (el) { el.style.zoom = z >= 1 ? '' : String(z); }); };
+      // la photo garde sa vraie taille (104 px) même quand le reste est réduit
+      var av = $('profAvatar');
+      var avT = d.clientHeight < 600 ? 84 : 104; // très petit écran (iPhone SE) : photo un peu moins grande
+      var setZ = function (z) {
+        parts.forEach(function (el) { el.style.zoom = z >= 1 ? '' : String(z); });
+        if (av) ['width', 'height', 'min-width'].forEach(function (k) {
+          if (z >= 1) av.style.removeProperty(k); else av.style.setProperty(k, Math.round(avT / z) + 'px', 'important');
+        });
+      };
+      setZ(1);
       if (!fits()) {
         var lo = 0.66, hi = 1;
         for (var k = 0; k < 7; k++) {
