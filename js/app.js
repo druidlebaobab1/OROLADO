@@ -3409,7 +3409,7 @@
     if (!u) return;
     loadRecvCache(u);
     $('profName').textContent = isGuest(u) ? t('m_guest') : (u.displayName || 'Trader');
-    $('profAvatar').textContent = (u.displayName || 'OR').slice(0, 2).toUpperCase();
+    paintMyAvatar(u);
     // v2777 (propriétaire) : UN SEUL identifiant partout — « R » + 3 lettres + 3 chiffres au hasard (ex. RKBT482), donné par le serveur
     if ($('profPublicId')) showMyRid(u);
     $('profEmail').textContent = u.email;
@@ -3864,6 +3864,63 @@
   }
 
   // v2777 : identifiant R… du joueur (gardé en mémoire du téléphone, redemandé au serveur à chaque ouverture du profil)
+  /* 2026-10-20 (propriétaire) : PHOTO DE PROFIL dans la boule du Profil. C'est la même photo que dans Social (amis, discussions,
+     recherche) : elle est enregistrée sur le serveur (live.php setPhoto) et tous les amis la voient. Toucher la boule = choisir
+     une photo ; un petit appareil photo doré montre qu'on peut la changer. Les visiteurs gardent les initiales. */
+  var CAM_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.4-2h6.2l1.4 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.4"/></svg>';
+  function myPhKey(u) { return 'oro_my_ph_' + ((u && u.id) || ''); }
+  function myPhGet(u) { try { return localStorage.getItem(myPhKey(u)) || ''; } catch (e) { return ''; } }
+  function myPhSet(u, ph) { try { if (ph) localStorage.setItem(myPhKey(u), ph); else localStorage.removeItem(myPhKey(u)); } catch (e) { /* ignore */ } }
+  function paintMyAvatar(u) {
+    var av = $('profAvatar'); if (!av || !u) return;
+    var guest = isGuest(u), ph = guest ? '' : myPhGet(u), ini = (u.displayName || 'OR').slice(0, 2).toUpperCase();
+    var sig = (guest ? 'g' : 'm') + '|' + ph + '|' + ini;
+    if (av._sig === sig) return;
+    av._sig = sig;
+    av.classList.toggle('has-ph', !!ph);
+    av.classList.toggle('can-ph', !guest);
+    av.innerHTML = (ph ? '<img src="' + String(ph).replace(/"/g, '&quot;') + '" alt="" decoding="async">' : '<span class="pav-ini">' + ini.replace(/</g, '&lt;') + '</span>') +
+      (guest ? '' : '<i class="pav-cam">' + CAM_SVG + '</i>');
+    var im = av.querySelector('img');
+    if (im) im.addEventListener('error', function () { myPhSet(u, ''); av._sig = ''; paintMyAvatar(u); });
+    if (!guest) { av.setAttribute('role', 'button'); av.setAttribute('tabindex', '0'); av.setAttribute('aria-label', D6.Social2 && D6.Social2.t ? D6.Social2.t('myPhoto') : 'Photo'); }
+    else { av.removeAttribute('role'); av.removeAttribute('tabindex'); }
+    bindMyAvatar();
+  }
+  function bindMyAvatar() {
+    var av = $('profAvatar'); if (!av || av._oroPh) return;
+    av._oroPh = true;
+    var inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.hidden = true; inp.id = 'profPhotoIn';
+    av.parentNode.appendChild(inp);
+    var pick = function () {
+      var u = user(); if (!u || isGuest(u) || av.classList.contains('busy')) return;
+      if (!(D6.Social2 && D6.Social2.photoPrep)) return;
+      inp.click();
+    };
+    av.addEventListener('click', pick);
+    av.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    inp.addEventListener('change', async function () {
+      var fl = inp.files && inp.files[0]; inp.value = ''; if (!fl) return;
+      var u = user(); if (!u || isGuest(u)) return;
+      var S = D6.Social2, d;
+      try { d = await S.photoPrep(fl); } catch (e) { toast(S.t('badImg'), 'err'); return; }
+      var old = av.innerHTML;
+      av.classList.add('busy', 'has-ph');
+      var im0 = av.querySelector('img, .pav-ini'); if (im0) im0.outerHTML = '<img src="' + d + '" alt="">';
+      var j = null;
+      try {
+        var r = await fetch('live.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', cache: 'no-store',
+          body: JSON.stringify({ action: 'setPhoto', img: d, token: (D6.Api && D6.Api.token) ? D6.Api.token() : '' }) });
+        j = await r.json();
+      } catch (e) { j = null; }
+      av.classList.remove('busy');
+      if (!j || !j.ok) { av.innerHTML = old; av.classList.toggle('has-ph', !!myPhGet(u)); toast(S.err ? S.err(j) : S.t('badImg'), 'err'); return; }
+      myPhSet(u, j.ph || ''); av._sig = ''; paintMyAvatar(u);
+      if (S.myPhoto) S.myPhoto(j.ph || '');
+    });
+  }
+  document.addEventListener('oro:myphoto', function (e) { var u = user(); if (!u || isGuest(u)) return; myPhSet(u, (e.detail && e.detail.ph) || ''); var av = $('profAvatar'); if (av) av._sig = ''; paintMyAvatar(u); });
+
   function showMyRid(u) {
     var el = $('profPublicId'), key = 'oro_rid_' + (u.id || '');
     if (isGuest(u) || !u.id) { el.textContent = '—'; return; }
@@ -3877,6 +3934,7 @@
         if (!j || !j.ok || !/^R[0-9A-Z]{6,9}$/.test(String(j.id || ''))) { if (el.textContent === '…') el.textContent = '—'; return; }
         el.textContent = j.id;
         try { localStorage.setItem(key, j.id); } catch (e) { /* ignore */ }
+        if (typeof j.ph === 'string' && j.ph !== myPhGet(u)) { myPhSet(u, j.ph); var av = $('profAvatar'); if (av) av._sig = ''; paintMyAvatar(u); }
       })
       .catch(function () { if (el.textContent === '…') el.textContent = '—'; });
   }
