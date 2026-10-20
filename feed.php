@@ -26,6 +26,24 @@ require_once __DIR__ . '/feed_live_lib.php';
  * visiteurs du jour (tableau admin), et faire tourner le moteur des prix seulement quand
  * quelqu'un regarde. Très léger : un fichier touché, aucune base de données.
  */
+// 2026-10-20 : relevé de santé du serveur (lecture seule, aucune donnée de joueur) : charge, mémoire, processus PHP.
+if (isset($_GET['diag'])) {
+  $la = function_exists('sys_getloadavg') ? sys_getloadavg() : [0, 0, 0];
+  $cpu = 0; $mem = [];
+  if (is_readable('/proc/cpuinfo')) $cpu = substr_count((string) @file_get_contents('/proc/cpuinfo'), 'processor');
+  if (is_readable('/proc/meminfo')) foreach (explode("\n", (string) @file_get_contents('/proc/meminfo')) as $ln) {
+    if (preg_match('/^(MemTotal|MemAvailable|SwapTotal|SwapFree):\s+(\d+)/', $ln, $m)) $mem[$m[1]] = round(((int) $m[2]) / 1024);
+  }
+  $fpm = 0; $fpmBusy = 0;
+  foreach ((array) @glob('/proc/[0-9]*/stat') as $f) {
+    $st = (string) @file_get_contents($f);
+    if (strpos($st, '(php-fpm') !== false) { $fpm++; if (preg_match('/\) ([RD]) /', $st)) $fpmBusy++; }
+  }
+  $dbf = __DIR__ . '/data/orolado.json';
+  echo json_encode(['ok' => true, 'load' => $la, 'cpus' => $cpu, 'memMo' => $mem, 'phpFpm' => $fpm, 'phpFpmActifs' => $fpmBusy,
+    'dbMo' => is_file($dbf) ? round(filesize($dbf) / 1048576, 2) : null, 'disqueLibreGo' => round((float) @disk_free_space(__DIR__) / 1073741824, 1), 'a' => date('H:i:s')]);
+  exit;
+}
 if (isset($_GET['hb'])) {
   $vid = substr(preg_replace('/[^a-f0-9]/', '', strtolower((string) ($_GET['v'] ?? ''))) ?? '', 0, 32);
   // Appareil de l'admin (a=1) : ni compté comme connecté, ni comme visiteur.
