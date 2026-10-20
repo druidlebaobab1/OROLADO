@@ -2242,6 +2242,19 @@ if ($action === 'withdraw') {
       );
     } catch (Throwable $e) { /* jamais bloquant */ }
   }
+  // v2959 (propriétaire) — alerte Telegram à l'admin (robot relié dans l'admin → Notifications → Telegram)
+  if (is_file(__DIR__ . '/tg_lib.php')) {
+    if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ } }
+    try {
+      require_once __DIR__ . '/tg_lib.php';
+      $pidTg = (string) ($db['users'][(string) $me['id']]['publicId'] ?? $me['publicId'] ?? '');
+      tg_notify_admin(($suspect ? '⚠️ ' : '💸 ') . 'Retrait à payer : ' . number_format($amount, 2, ',', ' ') . " $\n" .
+        'Joueur : ' . ($pidTg !== '' ? $pidTg : (string) $me['id']) . "\n" .
+        'Moyen : ' . ucfirst((string) $operator) . ' ' . (string) $destination . "\n" .
+        '≈ ' . number_format($amount * 580, 0, ',', ' ') . " F\n" .
+        ($suspect ? "À vérifier dans l'admin avant de payer.\n" : '') . 'https://orolado.com/admin.php');
+    } catch (Throwable $e) { /* jamais bloquant */ }
+  }
   exit;
 }
 

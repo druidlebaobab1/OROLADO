@@ -1,0 +1,78 @@
+<?php
+declare(strict_types=1);
+/**
+ * v2959 (propriétaire) — ALERTES TELEGRAM pour l'admin : un message dès qu'un joueur demande un retrait.
+ * Le code du robot (token) n'est JAMAIS dans le dépôt : l'admin le colle une fois dans l'admin (Notifications → Telegram),
+ * il est rangé dans data/telegram.json (hors GitHub). Le compte Telegram de l'admin est relié en envoyant /start au robot.
+ * Jamais bloquant : une erreur Telegram ne change rien au retrait.
+ */
+require_once __DIR__ . '/orolado_lib.php';
+
+function tg_file(): string { return rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'telegram.json'; }
+function tg_conf(): array {
+  $c = json_decode((string) @file_get_contents(tg_file()), true);
+  return is_array($c) ? $c : [];
+}
+function tg_save(array $c): bool {
+  $ok = @file_put_contents(tg_file(), json_encode($c, JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+  @chmod(tg_file(), 0600);
+  return $ok;
+}
+function tg_token_ok(string $t): bool { return (bool) preg_match('/^\d{6,12}:[A-Za-z0-9_-]{30,60}$/', $t); }
+
+/** Appel de l'API Telegram (POST JSON). */
+function tg_api(string $token, string $method, array $data = [], int $timeout = 8): array {
+  if (!tg_token_ok($token) || !function_exists('curl_init')) return ['ok' => false];
+  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_TG']) && is_callable($GLOBALS['OROLADO_FAKE_TG'])) return ($GLOBALS['OROLADO_FAKE_TG'])($method, $data);
+  $ch = curl_init('https://api.telegram.org/bot' . $token . '/' . $method);
+  if ($ch === false) return ['ok' => false];
+  curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => $timeout,
+    CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_POSTFIELDS => json_encode($data, JSON_UNESCAPED_UNICODE)]);
+  $raw = curl_exec($ch);
+  curl_close($ch);
+  $j = json_decode((string) $raw, true);
+  return is_array($j) ? $j : ['ok' => false];
+}
+
+/** Admin : enregistre le code du robot et cherche le compte qui lui a envoyé /start (le plus récent). */
+function tg_link(string $token = ''): array {
+  $c = tg_conf();
+  if ($token !== '') {
+    if (!tg_token_ok($token)) return ['ok' => false, 'reason' => 'Code du robot invalide (copiez toute la ligne donnée par BotFather).'];
+    $me = tg_api($token, 'getMe');
+    if (empty($me['ok'])) return ['ok' => false, 'reason' => 'Telegram refuse ce code. Vérifiez-le dans BotFather.'];
+    $c['token'] = $token;
+    $c['bot'] = (string) ($me['result']['username'] ?? '');
+  }
+  $tok = (string) ($c['token'] ?? '');
+  if ($tok === '') return ['ok' => false, 'reason' => 'Collez d’abord le code du robot.'];
+  $up = tg_api($tok, 'getUpdates', ['limit' => 50, 'timeout' => 0]);
+  $chat = '';
+  foreach (array_reverse((array) ($up['result'] ?? [])) as $u) {
+    $m = $u['message'] ?? $u['my_chat_member'] ?? null;
+    if (is_array($m) && isset($m['chat']['id']) && ($m['chat']['type'] ?? '') === 'private') { $chat = (string) $m['chat']['id']; break; }
+  }
+  if ($chat === '' && empty($c['chat'])) {
+    tg_save($c);
+    return ['ok' => false, 'saved' => true, 'reason' => 'Code enregistré. Ouvrez maintenant le robot @' . ($c['bot'] ?? '') . ' dans Telegram, touchez DÉMARRER (/start), puis revenez appuyer sur « Relier ».'];
+  }
+  if ($chat !== '') $c['chat'] = $chat;
+  $c['on'] = 1;
+  tg_save($c);
+  $t = tg_api($tok, 'sendMessage', ['chat_id' => $c['chat'], 'text' => "✅ OROLADO relié.\nVous recevrez ici une alerte à chaque demande de retrait."]);
+  return ['ok' => !empty($t['ok']), 'bot' => $c['bot'] ?? '', 'reason' => !empty($t['ok']) ? '' : 'Relié, mais le message de test n’est pas parti.'];
+}
+
+function tg_status(): array {
+  $c = tg_conf();
+  return ['ok' => true, 'has' => !empty($c['token']), 'linked' => !empty($c['chat']) && !empty($c['on']), 'bot' => (string) ($c['bot'] ?? '')];
+}
+
+/** Envoi à l'admin (texte simple). */
+function tg_notify_admin(string $text): bool {
+  $c = tg_conf();
+  if (empty($c['on']) || empty($c['token']) || empty($c['chat'])) return false;
+  $r = tg_api((string) $c['token'], 'sendMessage', ['chat_id' => $c['chat'], 'text' => $text, 'disable_web_page_preview' => true], 6);
+  if (empty($r['ok'])) error_log('OROLADO telegram : envoi refusé');
+  return !empty($r['ok']);
+}
