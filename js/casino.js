@@ -218,6 +218,14 @@
       if (w > 0) D6.Sfx.win(st > 0 ? w / st : (Number(r.mult) || Number(r.out) || 2), S.game); else D6.Sfx.lose();
     } catch (e) { /* ignore */ }
   }
+  var TROPHY = '<svg viewBox="0 0 32 32"><defs><linearGradient id="ctTrG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".45" stop-color="#FCD34D"/><stop offset="1" stop-color="#C47A0A"/></linearGradient>' +
+    '<radialGradient id="ctTrB" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#23306E"/><stop offset="1" stop-color="#0B1233"/></radialGradient></defs>' +
+    '<circle cx="16" cy="16" r="15" fill="url(#ctTrB)" stroke="url(#ctTrG)" stroke-width="1.8"/>' +
+    '<path d="M10.2 9.2H7.4v1.6a3.6 3.6 0 0 0 3.4 3.6M21.8 9.2h2.8v1.6a3.6 3.6 0 0 1-3.4 3.6" fill="none" stroke="url(#ctTrG)" stroke-width="1.7" stroke-linecap="round"/>' +
+    '<path d="M10 7.6h12v4.6a6 6 0 0 1-12 0z" fill="url(#ctTrG)"/><path d="M14.6 17.6h2.8v3h-2.8z" fill="#E7A51A"/>' +
+    '<rect x="11.2" y="20.4" width="9.6" height="3.4" rx="1" fill="url(#ctTrG)"/>' +
+    '<path d="M16 9.3l.95 1.95 2.15.3-1.55 1.5.37 2.12L16 14.2l-1.92 1 .37-2.13-1.55-1.5 2.15-.3z" fill="#fff" opacity=".95"/>' +
+    '<path d="M6.2 5.4l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5zM25.8 21.8l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4z" fill="#FFF6C8"/></svg>';
   function resultLine(box, r, extra) {
     sfxResult(r);
     var x = X(), host = box.querySelector('.cg-stage') || box.querySelector('.cs-stage') || box;
@@ -226,7 +234,7 @@
     t.className = 'cs-toast ' + (win ? 'win' : 'lose');
     // v2794 (propriétaire) : comme le trading, SANS mots — seulement le montant : gagné = « +$ 12.50 » (vert, total encaissé),
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
-    t.innerHTML = (win ? '<i class="ct-coin" aria-hidden="true"></i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(r.win) : '0') + '</b>'; // dir=ltr : en arabe on lit bien « +$ 0 »
+    t.innerHTML = (win ? '<i class="ct-coin ct-trophy" aria-hidden="true">' + TROPHY + '</i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(r.win) : '0') + '</b>'; // dir=ltr : en arabe on lit bien « +$ 0 »
     host.appendChild(t);
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
     // v2805 (propriétaire : jamais rien de superposé) — pendant que la pastille est là, les petits textes du jeu qu'elle couvre
