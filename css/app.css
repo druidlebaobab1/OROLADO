@@ -12927,3 +12927,9 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-code{font-size:11px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;font-size:19px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile > .prof-card{margin-top:0!important}
+/* langue et croix encore plus discrètes, poussées dans les coins : c'est la carte du joueur qu'on voit */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head{padding-left:8px!important;padding-right:8px!important;min-height:32px!important;padding-top:2px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:24px!important;padding:2px 6px!important;gap:3px!important;border-width:1px!important;opacity:.85}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-flag{width:14px!important;height:10px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-code{font-size:10px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;font-size:16px!important;opacity:.9}
