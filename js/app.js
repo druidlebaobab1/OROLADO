@@ -4032,6 +4032,7 @@
       dr.setAttribute('aria-hidden', 'false');
     }
     document.documentElement.classList.add('oro-profile-open');
+    fitProfileDrawer();
     closeModal('logoutModal');
   }
   function closeDrawer() {
@@ -6989,6 +6990,33 @@
     if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
     setTimeout(run, 120);
     setTimeout(run, 420);
+  }
+
+  // v2934 — Profil : si le contenu dépasse la hauteur du téléphone, il est réduit juste ce qu'il faut (au plus 28 %, petit iPhone)
+  // pour que tout le menu se voie, jusqu'à « Déconnecter mes autres appareils » et « Se déconnecter ».
+  var profFitObs = null;
+  function fitProfileDrawer() {
+    var d = $('drawerProfile');
+    if (!d) return;
+    var parts = Array.prototype.filter.call(d.children, function (el) { return !el.classList.contains('drawer-head'); });
+    if (!profFitObs && typeof MutationObserver === 'function') {
+      profFitObs = new MutationObserver(function () { fitProfileDrawer(); });
+      profFitObs.observe(d, { attributes: true, attributeFilter: ['class'] });
+      window.addEventListener('resize', function () { fitProfileDrawer(); });
+    }
+    var run = function () {
+      parts.forEach(function (el) { el.style.zoom = ''; });
+      if (!d.classList.contains('on')) return;
+      var over = d.scrollHeight - d.clientHeight;
+      if (!(over > 1)) return;
+      var h = 0;
+      parts.forEach(function (el) { h += el.getBoundingClientRect().height; });
+      if (!(h > 0)) return;
+      var z = Math.max(0.72, (h - over - 6) / h);
+      parts.forEach(function (el) { el.style.zoom = String(Math.round(z * 1000) / 1000); });
+    };
+    if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
+    setTimeout(run, 200);
   }
 
   function updateWithdrawMinHint() {
