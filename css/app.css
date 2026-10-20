@@ -12756,3 +12756,6 @@ html.is-ios #oddsRow .odds-chip[data-odds="10"],html.is-ios .odds-row .odds-chip
 /* 2026-10-19 (propriétaire : « le classement ne défile plus, 2 lignes énormes ») : les lignes du classement gardent leur hauteur
    normale (avant : avec peu de joueurs, chaque ligne s'étirait pour remplir le cadre) ; la liste défile quand elle est longue. */
 html body #portalModal#portalModal#portalModal #topRows{align-content:start!important;grid-auto-rows:max-content!important}
+/* 2026-10-20 (QA, iPhone SE) : « Se déconnecter » reste collé en bas du profil ; son fond était transparent → la liste qui
+   défile passait à travers (« Changer d'adresse e-mail » superposé à « Se déconnecter »). Fond opaque sous le dégradé rouge. */
+html:root body #drawerProfile#drawerProfile #btnLogout#btnLogout{background-color:#140f2c!important}
