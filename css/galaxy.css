@@ -2144,6 +2144,6 @@ html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#
    tout en bas de l'écran, haut exactement comme l'espace libre sous le terminal (--ios-floor-h, mesuré par js/app.js) :
    jamais sur ACHETER / VENDRE, et visible aussi sous Profil, Historique, Jeux, Paris. Safari et Android : rien ne change. */
 html.ios-app:not(.fs-trade) body:not(#z1):not(#z2) #oroIosFloor#oroIosFloor#oroIosFloor{
-  display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;
+  display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:auto!important;top:var(--ios-floor-top,100vh)!important;
   height:var(--ios-floor-h,0px)!important;z-index:3!important;pointer-events:none!important;
-  background:url("../icons/ui/app-floor.svg?v=2905") center bottom/cover no-repeat,#22172F!important}
+  background:url("../icons/ui/app-floor.svg?v=2906") center bottom/cover no-repeat,#22172F!important}

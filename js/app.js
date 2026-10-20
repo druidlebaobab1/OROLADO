@@ -1426,9 +1426,21 @@
           root.style.setProperty('--ios-full-h', fullH + 'px');
           // 2026-10-20 : le petit monde de planètes est un bandeau fixé tout en bas (#oroIosFloor), haut exactement comme
           // l'espace libre sous le terminal (jamais sur ACHETER / VENDRE) ; visible aussi sous Profil, Historique, Jeux…
-          var pad = document.querySelector('#tradeWrap > .pad'), gap = 0;
-          if (pad && pad.offsetParent !== null) gap = Math.round((window.innerHeight || 0) - pad.getBoundingClientRect().bottom);
-          if (gap > 6 && gap < 160) root.style.setProperty('--ios-floor-h', gap + 'px');
+          // 2026-10-20 (b) : l'appli iPhone a une fenêtre plus courte que l'écran : la bande prune est SOUS la fenêtre.
+          // Le terminal est « position:fixed » (offsetParent toujours nul) : on mesure sa position réelle et le bandeau
+          // part du bas du terminal jusqu'au vrai bas de l'écran (comme le profil, qui descend déjà jusque-là).
+          var pad = document.querySelector('#tradeWrap > .pad');
+          var land = (window.innerWidth || 0) > (window.innerHeight || 0);
+          var scrH = screen ? (land ? Math.min(screen.width || 0, screen.height || 0) : Math.max(screen.width || 0, screen.height || 0)) : 0;
+          var screenBottom = Math.max(window.innerHeight || 0, scrH);
+          if (pad && getComputedStyle(pad).display !== 'none') {
+            var pb = pad.getBoundingClientRect().bottom;
+            var gap = Math.round(screenBottom - pb);
+            if (pb > 0 && gap > 6 && gap < 160) {
+              root.style.setProperty('--ios-floor-top', Math.round(pb) + 'px');
+              root.style.setProperty('--ios-floor-h', gap + 'px');
+            }
+          }
           if (document.body) {
             document.body.style.setProperty('background-color', '#22172F', 'important');
             // v2822 : plus de hauteur minimale forcée sur le body (il est fixé sur la fenêtre, css/app.css « VERROU ») :
