@@ -1699,6 +1699,37 @@ function admin_orders(): array {
   return $list;
 }
 
+/**
+ * v2955 — Gains nets en ARGENT RÉEL aux Jeux (journal des parties) et aux Paris (coupons), pour le contrôle
+ * « solde plus élevé que dépôts + bonus + gains ». Lecture seule : rien ne touche à l'argent.
+ */
+function admin_play_net(string $uid, string $email = ''): float {
+  if ($uid === '') return 0.0;
+  $net = 0.0;
+  try {
+    require_once __DIR__ . '/admin_games_lib.php';
+    $g = admin_gm_player($uid, $email, 'real', 0, 1);
+    $net += (float) ($g['tot']['out'] ?? 0) - (float) ($g['tot']['in'] ?? 0);
+    static $bets = null;
+    if ($bets === null) {
+      require_once __DIR__ . '/sports_lib.php';
+      $bets = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
+    }
+    $ids = array_flip(admin_gm_player_ids($uid, $email));
+    $sb = (string) ((admin_local_db()['users'][$uid]['sbId'] ?? '') ?: '');
+    if ($sb !== '') $ids[$sb] = 1;
+    foreach ($bets as $b) {
+      if (!is_array($b) || ($b['mode'] ?? '') !== 'real' || !isset($ids[(string) ($b['uid'] ?? '')])) continue;
+      $st = (string) ($b['status'] ?? '');
+      if ($st === 'pend') continue; // réservé, pas encore payé
+      $net += ($st === 'open' ? 0.0 : (float) ($b['win'] ?? 0)) - (float) ($b['stake'] ?? 0);
+    }
+  } catch (\Throwable $e) {
+    error_log('OROLADO admin_play_net: ' . $e->getMessage());
+  }
+  return round($net, 2);
+}
+
 /** Tous les trades réels d'UN joueur (fiche joueur, contrôle anti-fraude). */
 function admin_orders_for_user(string $uid): array {
   if ($uid === '') return [];
@@ -2757,6 +2788,10 @@ function admin_suspects(): array {
       // v2486 : l'argent d'invitation (libre) compte dans ce qui est attendu.
       $ctx['affEarned'] = admin_aff_earned((string) $uid);
       $expected += $ctx['affEarned'];
+      // v2955 (propriétaire : « presque tout le monde est suspect ») : les gains (ou pertes) aux JEUX et aux PARIS en
+      // argent réel comptent aussi dans ce qui est attendu. Avant, un joueur qui gagnait aux Jeux était marqué rouge.
+      $ctx['playNet'] = admin_play_net((string) $uid, (string) ($p['email'] ?? ''));
+      $expected += $ctx['playNet'];
       if ($real > $expected + 1) $ctx['excess'] = round($real - $expected, 2);
     }
     $ip = trim((string) ($p['ip'] ?? ''));
