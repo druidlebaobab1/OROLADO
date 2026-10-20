@@ -7004,16 +7004,35 @@
       profFitObs.observe(d, { attributes: true, attributeFilter: ['class'] });
       window.addEventListener('resize', function () { fitProfileDrawer(); });
     }
+    // v2940 — on cherche la plus grande taille qui tient (mesure réelle, marche aussi sur les vieux Chrome Android),
+    // puis la place qui reste en bas est donnée aux lignes du menu (Historique, Retirer, …) : plus de vide en bas.
+    var items = d.querySelectorAll('.drawer-nav .drawer-item');
     var run = function () {
       parts.forEach(function (el) { el.style.zoom = ''; });
+      Array.prototype.forEach.call(items, function (it) { it.style.minHeight = ''; });
       if (!d.classList.contains('on')) return;
-      var over = d.scrollHeight - d.clientHeight;
-      if (!(over > 1)) return;
-      var h = 0;
-      parts.forEach(function (el) { h += el.getBoundingClientRect().height; });
-      if (!(h > 0)) return;
-      var z = Math.max(0.72, (h - over - 6) / h);
-      parts.forEach(function (el) { el.style.zoom = String(Math.round(z * 1000) / 1000); });
+      var fits = function () { return d.scrollHeight - d.clientHeight <= 1; };
+      var setZ = function (z) { parts.forEach(function (el) { el.style.zoom = z >= 1 ? '' : String(z); }); };
+      if (!fits()) {
+        var lo = 0.66, hi = 1;
+        for (var k = 0; k < 7; k++) {
+          var mid = (lo + hi) / 2;
+          setZ(mid);
+          if (fits()) lo = mid; else hi = mid;
+        }
+        setZ(Math.round(lo * 1000) / 1000);
+        return;
+      }
+      var last = parts[parts.length - 1];
+      var padB = parseFloat(getComputedStyle(d).paddingBottom) || 0;
+      var free = last ? d.clientHeight - padB - (last.getBoundingClientRect().bottom - d.getBoundingClientRect().top + d.scrollTop) - 4 : 0;
+      if (items.length && free > 8) {
+        var add = Math.min(18, Math.floor((free - 6) / items.length));
+        Array.prototype.forEach.call(items, function (it) {
+          it.style.minHeight = Math.round(it.getBoundingClientRect().height + add) + 'px';
+        });
+        if (!fits()) Array.prototype.forEach.call(items, function (it) { it.style.minHeight = ''; });
+      }
     };
     if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
     setTimeout(run, 200);
