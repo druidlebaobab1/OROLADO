@@ -625,6 +625,22 @@ function admin_bonus_by(array $by, string $uid, array $p): array {
   return $by;
 }
 
+/** v2961 (propriétaire) — dépôts / retraits PAR PAYS : [pays, nombre, total $] (trié par nombre), et filtre « un seul pays ». */
+function admin_money_by_country(array $list, array $pmap, array $req, callable $countryOf): array {
+  $by = [];
+  foreach ($list as $r) {
+    $c = $countryOf($r);
+    if (!isset($by[$c])) $by[$c] = [$c, 0, 0.0];
+    $by[$c][1]++;
+    $by[$c][2] += abs((float) ($r['amount'] ?? 0));
+  }
+  usort($by, static fn($a, $b) => ($b[1] <=> $a[1]) ?: ($b[2] <=> $a[2]));
+  $by = array_map(static fn($x) => [$x[0], $x[1], round($x[2], 2)], array_values($by));
+  $want = trim((string) ($req['country'] ?? ''));
+  if ($want !== '') $list = array_values(array_filter($list, static fn($r) => $countryOf($r) === $want));
+  return [$list, $by, $want];
+}
+
 function admin_list_payload(string $view, array $req): array {
   // v2426 — rubrique F · Cadeaux (lecture seule).
   if (str_starts_with($view, 'gift_')) return admin_gift_payload($view, $req, admin_profiles());
@@ -886,6 +902,7 @@ function admin_list_payload(string $view, array $req): array {
       $enriched[] = $d;
     }
     $enriched = admin_apply_filters($enriched, $req, 'createdAt');
+    [$enriched, $countries, $wantC] = admin_money_by_country($enriched, $pmap, $req, static fn($d) => admin_country_cell(admin_user_lookup((string) ($d['userId'] ?? ''), $pmap)));
     $sum = 0.0;
     foreach ($enriched as $d) $sum += (float) $d['amount'];
     [$slice, $total, $page, $pages] = admin_page($enriched, $req);
@@ -906,7 +923,7 @@ function admin_list_payload(string $view, array $req): array {
         'pending' => admin_dep_is_pending($d),
       ];
     }
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' dépôt(s) · ' . admin_money($sum), 'actions' => $actions];
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' dépôt(s) · ' . admin_money($sum) . ($wantC !== '' ? ' · ' . $wantC : (count($countries) > 1 ? ' · ' . count($countries) . ' pays' : '')), 'actions' => $actions, 'countries' => $countries];
   }
 
   // Bonus envoyés depuis l'admin : jamais mélangés aux dépôts (ce n'est pas de l'argent reçu).
@@ -1082,9 +1099,11 @@ function admin_list_payload(string $view, array $req): array {
         $tmp = admin_apply_filters([$w], $req, 'createdAt');
         if ($tmp === []) continue;
       }
-      $sum += (float) $w['amount'];
       $enriched[] = $w;
     }
+    $wdCty = static fn($w) => admin_country_cell(($pmap[(string) ($w['userId'] ?? '')] ?? []) + ['countryCode' => (string) ($w['countryCode'] ?? ''), 'phone' => (string) ($w['phone'] ?? '')]);
+    [$enriched, $countries, $wantC] = admin_money_by_country($enriched, $pmap, $req, $wdCty);
+    foreach ($enriched as $w) $sum += (float) $w['amount'];
     [$slice, $total, $page, $pages] = admin_page($enriched, $req);
     foreach ($slice as $w) {
       $open = admin_wd_is_open($w);
@@ -1120,8 +1139,8 @@ function admin_list_payload(string $view, array $req): array {
         'flag' => $suspect ? ($lvl === 'red' ? 'suspect' : 'watch') : 'ok',
       ];
     }
-    $summary = $total . ' retrait(s) · ' . admin_money($sum);
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions];
+    $summary = $total . ' retrait(s) · ' . admin_money($sum) . ($wantC !== '' ? ' · ' . $wantC : (count($countries) > 1 ? ' · ' . count($countries) . ' pays' : ''));
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'countries' => $countries];
   }
 
   if ($view === 'top_winners') {
@@ -3052,9 +3071,11 @@ function paintCountries(j) {
   if (!list) { sel.style.display = 'none'; bar.hidden = true; if (sel.value) sel.value = ''; return; }
   const cur = sel.value;
   const all = list, tot = all.reduce((a, c) => a + c[1], 0); // le serveur compte TOUS les pays de la période (avant le choix du pays)
-  sel.innerHTML = '<option value="">🌍 Tous les pays ('+tot+')</option>' + all.map(c => '<option value="'+esc(c[0])+'">'+esc(c[0])+' — '+c[1]+'</option>').join('');
+  // v2961 : dépôts / retraits → nombre ET total en $ par pays (c[2])
+  const amt = c => (c.length > 2 ? ' · ' + money(c[2]) : '');
+  sel.innerHTML = '<option value="">🌍 Tous les pays ('+tot+')</option>' + all.map(c => '<option value="'+esc(c[0])+'">'+esc(c[0])+' — '+c[1]+amt(c)+'</option>').join('');
   sel.value = cur; sel.style.display = '';
-  bar.innerHTML = all.slice(0, 8).map(c => '<button type="button" class="cty'+(c[0]===cur?' on':'')+'" data-c="'+esc(c[0])+'">'+esc(c[0])+' <b>'+c[1]+'</b></button>').join('') +
+  bar.innerHTML = all.slice(0, 12).map(c => '<button type="button" class="cty'+(c[0]===cur?' on':'')+'" data-c="'+esc(c[0])+'">'+esc(c[0])+' <b>'+c[1]+(c.length > 2 ? '×' : '')+'</b>'+(c.length > 2 ? ' <small>'+esc(money(c[2]))+'</small>' : '')+'</button>').join('') +
     (cur ? '<button type="button" class="cty clr" data-c="">✕ Tous</button>' : '');
   bar.hidden = all.length < 2 && !cur;
 }
