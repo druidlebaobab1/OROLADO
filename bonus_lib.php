@@ -131,7 +131,8 @@ function orolado_bonus_scan(array $db, string $uid, array &$w, bool $demo): void
     }
     $w['archAt'] = $now;
   }
-  foreach (($db['orders'] ?? []) as $o) orolado_bonus_add_order($w, $o, $uid, $from, $to, $demo);
+  // Ordres du fichier + ordres réglés rangés hors du fichier (chaque trade compté une seule fois par son id).
+  foreach (orolado_orders_recent($db, [$uid], $demo ? 'demo' : 'real', true) as $o) orolado_bonus_add_order($w, $o, $uid, $from, $to, $demo);
   $w['scanAt'] = $now;
 }
 

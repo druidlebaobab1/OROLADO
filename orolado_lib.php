@@ -1280,7 +1280,7 @@ function orolado_user_real_wagered(array $db, array $user): float {
   }
   $fromOrders = 0.0;
   $seen = [];
-  foreach (($db['orders'] ?? []) as $o) {
+  foreach (orolado_orders_recent($db, $ids ?: [$uid], 'real') as $o) {
     if (!is_array($o)) continue;
     $owner = (string) ($o['userId'] ?? $o['user_id'] ?? '');
     if ($owner === '' || ($ids && !in_array($owner, $ids, true)) || (!$ids && $owner !== $uid)) continue;
@@ -1402,7 +1402,7 @@ function orolado_real_from_books(array $db, string $uid, array $user = []): ?flo
   $credits = 0.0;
   $n = 0;
   $seen = [];
-  foreach (($db['orders'] ?? []) as $o) {
+  foreach (orolado_orders_recent($db, $ids, 'real') as $o) {
     if (!is_array($o)) continue;
     $owner = (string) ($o['userId'] ?? $o['user_id'] ?? '');
     if ($owner === '' || !in_array($owner, $ids, true)) continue;
@@ -2631,6 +2631,10 @@ function orolado_db_merge3(array $base, array $mine, array $cur): array {
   // Autres clés du fichier que cette requête ne connaissait pas : on les garde.
   foreach ($cur as $k => $v) {
     if (!array_key_exists($k, $out) && !array_key_exists($k, $base)) $out[$k] = $v;
+  }
+  // Heure de coupe des ordres rangés (orolado_orders_maintain) : ne recule jamais (vieille copie).
+  if (isset($cur['ordersArchCut']) && (float) $cur['ordersArchCut'] > (float) ($out['ordersArchCut'] ?? 0)) {
+    $out['ordersArchCut'] = $cur['ordersArchCut'];
   }
   return $out;
 }
@@ -7512,3 +7516,560 @@ function orolado_flutterwave_callback(array $q): void {
   exit;
 }
 
+
+/*
+ * ============================================================================================
+ * ORDRES RÉGLÉS HORS DE orolado.json (2026-10-20, tenue de charge)
+ *
+ * orolado.json est relu (et réécrit à chaque trade) en entier : il ne doit garder que les ordres
+ * OUVERTS et ceux réglés depuis moins de OROLADO_ORDERS_HOT_SEC (10 s). Les ordres réglés plus
+ * anciens partent, sous le verrou global, dans un rangement « ajout seulement » :
+ *   data/orders/day/AAAA-MM-JJ.<real|demo|x>.jsonl  (jour UTC du règlement, une ligne JSON par ordre)
+ *   data/orders/day/AAAA-MM-JJ.idx                  (résumé léger pour les statistiques de l'admin)
+ *   data/orders/user/xx/<sha1 joueur>.<mode>.jsonl  (les mêmes lignes, par joueur : historique rapide)
+ * puis, comme avant, dans data/archive/orders-AAAA-MM.jsonl quand ils ont plus de 2 jours.
+ *
+ * Pour le code du site RIEN ne change : orolado_orders_recent() rend exactement la liste que
+ * $db['orders'] contenait avant (ordres du fichier + ordres rangés pas encore « archivés », c.-à-d.
+ * réglés après $db['ordersArchCut'], l'heure de coupe du dernier archivage de 2 jours).
+ * Un ordre rangé est toujours réglé : il ne peut plus être réglé ni payé une 2e fois, et
+ * orolado_trade_find() le retrouve encore (règlement redemandé → même réponse qu'avant ;
+ * même ordre renvoyé → « doublon », jamais un 2e ordre).
+ * ============================================================================================
+ */
+// Délai avant rangement d'un ordre réglé, et fréquence des passages. Court exprès : avec 600 joueurs
+// (≈ 30 trades/s), chaque seconde gardée pèse ≈ 20 Ko dans orolado.json, réécrit à CHAQUE trade
+// (mesuré, 600 joueurs : 30 s / 10 s → p95 ≈ 5 s ; 10 s / 5 s → p95 ≈ 0,26 s).
+// Aucun lecteur n'a besoin que l'ordre soit encore dans le fichier (tout passe par orolado_orders_recent).
+if (!defined('OROLADO_ORDERS_HOT_SEC')) define('OROLADO_ORDERS_HOT_SEC', 10);
+if (!defined('OROLADO_ORDERS_MOVE_EVERY')) define('OROLADO_ORDERS_MOVE_EVERY', 5);
+// Travail borné par passage (premier passage sur un gros fichier : migration en plusieurs fois).
+if (!defined('OROLADO_ORDERS_MOVE_MAX')) define('OROLADO_ORDERS_MOVE_MAX', 3000);
+const OROLADO_ORDERS_DONE = ['won', 'lost', 'void', 'closed'];
+
+function orolado_orders_dir(): string {
+  return orolado_data_dir() . '/orders';
+}
+
+/** Heure de référence d'un ordre réglé (la même que l'archivage de 2 jours). */
+function orolado_order_key($o): float {
+  return is_array($o) ? (float) ($o['settledAt'] ?? $o['at'] ?? 0) : 0.0;
+}
+
+function orolado_order_owner(array $o): string {
+  $u = $o['userId'] ?? $o['user_id'] ?? '';
+  return is_scalar($u) ? (string) $u : '';
+}
+
+/** Rangement par compte : 'real', 'demo', ou 'x' (ancien ordre sans compte clair, lu avec les deux). */
+function orolado_order_tag(array $o): string {
+  $m = $o['mode'] ?? $o['accountType'] ?? '';
+  return $m === 'real' ? 'real' : ($m === 'demo' ? 'demo' : 'x');
+}
+
+function orolado_orders_user_file(string $uid, string $tag): string {
+  $h = sha1($uid);
+  return orolado_orders_dir() . '/user/' . substr($h, 0, 2) . '/' . $h . '.' . $tag . '.jsonl';
+}
+
+function orolado_orders_day_file(string $day, string $tag): string {
+  return orolado_orders_dir() . '/day/' . $day . '.' . $tag . '.jsonl';
+}
+
+/** Contenu brut d'un fichier rangé, mémorisé pendant la requête (relu seulement s'il a changé). */
+function orolado_orders_raw(string $f): string {
+  clearstatcache(true, $f);
+  $st = @stat($f);
+  if (!$st) {
+    unset($GLOBALS['OROLADO_ORD_RAW'][$f]);
+    return '';
+  }
+  $sig = $st['ino'] . ':' . $st['size'] . ':' . $st['mtime'];
+  $c = $GLOBALS['OROLADO_ORD_RAW'][$f] ?? null;
+  if (is_array($c) && $c['sig'] === $sig) return $c['raw'];
+  $raw = (string) @file_get_contents($f);
+  if (count($GLOBALS['OROLADO_ORD_RAW'] ?? []) >= 256) $GLOBALS['OROLADO_ORD_RAW'] = [];
+  $GLOBALS['OROLADO_ORD_RAW'][$f] = ['sig' => $sig, 'raw' => $raw, 'rows' => null];
+  return $raw;
+}
+
+/** Ordres d'un fichier rangé (lignes JSON ; une ligne abîmée est ignorée). */
+function orolado_orders_rows(string $f): array {
+  $raw = orolado_orders_raw($f);
+  if ($raw === '') return [];
+  if (is_array($GLOBALS['OROLADO_ORD_RAW'][$f]['rows'] ?? null)) return $GLOBALS['OROLADO_ORD_RAW'][$f]['rows'];
+  $rows = [];
+  foreach (explode("\n", $raw) as $line) {
+    if ($line === '') continue;
+    $o = json_decode($line, true);
+    if (is_array($o)) $rows[] = $o;
+  }
+  $GLOBALS['OROLADO_ORD_RAW'][$f]['rows'] = $rows;
+  return $rows;
+}
+
+/** Ajout en fin de fichier ; recommence toujours sur une nouvelle ligne (jamais collé à une ligne coupée). */
+function orolado_orders_append(string $f, string $body): bool {
+  if ($body === '') return true;
+  $dir = dirname($f);
+  if (!is_dir($dir)) @mkdir($dir, 0755, true);
+  $fh = @fopen($f, 'a+b');
+  if (!$fh) return false;
+  flock($fh, LOCK_EX);
+  $size = (int) (fstat($fh)['size'] ?? 0);
+  if ($size > 0) {
+    fseek($fh, $size - 1);
+    if (fread($fh, 1) !== "\n") $body = "\n" . $body;
+  }
+  $len = strlen($body);
+  $done = 0;
+  while ($done < $len) {
+    $w = fwrite($fh, substr($body, $done));
+    if ($w === false || $w === 0) break;
+    $done += $w;
+  }
+  fflush($fh);
+  flock($fh, LOCK_UN);
+  fclose($fh);
+  unset($GLOBALS['OROLADO_ORD_RAW'][$f]);
+  return $done === $len;
+}
+
+/** Ajout dans le fichier d'un joueur ; au passage, retire ses lignes plus vieilles que $pruneBefore. */
+function orolado_orders_user_append(string $f, string $body, float $pruneBefore): bool {
+  if ($pruneBefore > 0 && is_file($f)) {
+    $fh = @fopen($f, 'rb');
+    $first = $fh ? fgets($fh) : false;
+    if ($fh) fclose($fh);
+    $j = is_string($first) ? json_decode($first, true) : null;
+    if (is_array($j) && orolado_order_key($j) < $pruneBefore) {
+      $keep = '';
+      foreach (@file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+        $o = json_decode((string) $line, true);
+        if (!is_array($o) || orolado_order_key($o) < $pruneBefore) continue;
+        $keep .= $line . "\n";
+      }
+      unset($GLOBALS['OROLADO_ORD_RAW'][$f]);
+      return orolado_store_write_file($f, $keep . $body);
+    }
+  }
+  return orolado_orders_append($f, $body);
+}
+
+/** Le rangement a-t-il déjà servi ? */
+function orolado_orders_store_used(): bool {
+  return (bool) (glob(orolado_orders_dir() . '/day/*.jsonl') ?: []);
+}
+
+/**
+ * LA liste des ordres telle que $db['orders'] la contenait avant le rangement : ordres du fichier
+ * + ordres rangés pas encore archivés (réglés après $db['ordersArchCut']), sans doublon, dans
+ * l'ordre des heures d'ouverture (celui du fichier).
+ *   $uids  : seulement les ordres rangés de ces joueurs (rapide) ; null = tous (admin).
+ *            Les ordres du fichier sont TOUS rendus : chaque appelant garde son propre filtre.
+ *   $mode  : 'real' / 'demo' : seulement ce compte côté rangement (+ anciens ordres sans compte clair).
+ *   $all   : true = aussi les ordres rangés déjà passés l'heure de coupe (lecteurs qui relisent
+ *            l'archive et dédoublonnent eux-mêmes par identifiant : bonus).
+ */
+function orolado_orders_recent(array $db, ?array $uids = null, ?string $mode = null, bool $all = false): array {
+  $main = $db['orders'] ?? [];
+  if (!is_array($main)) return [];
+  $main = array_values($main);
+  $tags = $mode === null ? ['real', 'demo', 'x'] : [$mode === 'real' ? 'real' : 'demo', 'x'];
+  $files = [];
+  if ($uids !== null) {
+    foreach (array_unique(array_map('strval', $uids)) as $u) {
+      if ($u === '') continue;
+      foreach ($tags as $t) $files[] = orolado_orders_user_file($u, $t);
+    }
+  } else {
+    foreach ($tags as $t) foreach (glob(orolado_orders_dir() . '/day/*.' . $t . '.jsonl') ?: [] as $f) $files[] = $f;
+  }
+  if (!$files) return $main;
+  $cut = $all ? null : (float) ($db['ordersArchCut'] ?? 0);
+  $seen = [];
+  foreach ($main as $o) {
+    if (is_array($o) && isset($o['id'])) $seen[orolado_order_owner($o) . "\0" . (is_scalar($o['id']) ? (string) $o['id'] : '')] = 1;
+  }
+  $store = [];
+  foreach ($files as $f) {
+    foreach (orolado_orders_rows($f) as $o) {
+      if ($cut !== null && orolado_order_key($o) < $cut) continue;
+      $k = orolado_order_owner($o) . "\0" . (is_scalar($o['id'] ?? null) ? (string) $o['id'] : '');
+      if (isset($seen[$k])) continue;
+      $seen[$k] = 1;
+      $store[] = $o;
+    }
+  }
+  if (!$store) return $main;
+  usort($store, static fn($a, $b) => ((float) ($a['at'] ?? 0)) <=> ((float) ($b['at'] ?? 0)));
+  // Fusion par heure d'ouverture : les ordres du fichier gardent exactement leur ordre entre eux.
+  $out = [];
+  $i = 0;
+  $j = 0;
+  $ns = count($store);
+  $nm = count($main);
+  while ($i < $ns && $j < $nm) {
+    $ma = is_array($main[$j]) ? (float) ($main[$j]['at'] ?? 0) : 0.0;
+    if ((float) ($store[$i]['at'] ?? 0) < $ma) $out[] = $store[$i++];
+    else $out[] = $main[$j++];
+  }
+  while ($i < $ns) $out[] = $store[$i++];
+  while ($j < $nm) $out[] = $main[$j++];
+  return $out;
+}
+
+/** Un ordre rangé de ce joueur (null si absent ou déjà archivé). Lecture sans décoder tout le fichier. */
+function orolado_orders_store_find(array $db, string $uid, string $oid): ?array {
+  if ($uid === '' || $oid === '') return null;
+  $needle = '"id":' . json_encode($oid, JSON_UNESCAPED_UNICODE);
+  $cut = (float) ($db['ordersArchCut'] ?? 0);
+  foreach (['real', 'demo', 'x'] as $tag) {
+    $raw = orolado_orders_raw(orolado_orders_user_file($uid, $tag));
+    if ($raw === '') continue;
+    $pos = 0;
+    while (($p = strpos($raw, $needle, $pos)) !== false) {
+      $pos = $p + 1;
+      $ls = $p === 0 ? false : strrpos(substr($raw, 0, $p), "\n");
+      $ls = $ls === false ? 0 : $ls + 1;
+      $le = strpos($raw, "\n", $p);
+      $o = json_decode(substr($raw, $ls, $le === false ? null : $le - $ls), true);
+      if (!is_array($o) || (string) ($o['id'] ?? '') !== $oid || orolado_order_owner($o) !== $uid) continue;
+      if (orolado_order_key($o) < $cut) continue;
+      return $o;
+    }
+  }
+  return null;
+}
+
+/** Ligne du résumé léger (statistiques de l'admin) : joueur, id, heure de coupe, actif, durée, compte. */
+function orolado_orders_idx_line(array $o): string {
+  return rawurlencode(orolado_order_owner($o)) . "\t" . rawurlencode(is_scalar($o['id'] ?? null) ? (string) $o['id'] : '') . "\t"
+    . orolado_order_key($o) . "\t" . rawurlencode((string) ($o['assetId'] ?? $o['asset_id'] ?? 'v100')) . "\t"
+    . (int) ($o['duration'] ?? 0) . "\t" . ((($o['mode'] ?? 'demo') === 'real') ? 'real' : 'demo');
+}
+
+/**
+ * Statistiques « jeux » du tableau admin (par actif, par durée, par compte) sur la même liste
+ * qu'avant (ordres du fichier + ordres rangés pas encore archivés). Même calcul, même résultat.
+ */
+function orolado_orders_game_stats(array $db): ?array {
+  $orders = $db['orders'] ?? [];
+  if (!is_array($orders)) $orders = [];
+  $byAsset = [];
+  $byDur = [];
+  $byAssetMode = ['real' => [], 'demo' => []];
+  $byDurMode = ['real' => [], 'demo' => []];
+  $total = 0;
+  $add = static function (string $aid, int $dur, string $mode) use (&$byAsset, &$byDur, &$byAssetMode, &$byDurMode): void {
+    if (!isset($byAsset[$aid])) $byAsset[$aid] = 0;
+    $byAsset[$aid]++;
+    if (!isset($byDur[$dur])) $byDur[$dur] = 0;
+    $byDur[$dur]++;
+    if (!isset($byAssetMode[$mode][$aid])) $byAssetMode[$mode][$aid] = 0;
+    $byAssetMode[$mode][$aid]++;
+    if (!isset($byDurMode[$mode][$dur])) $byDurMode[$mode][$dur] = 0;
+    $byDurMode[$mode][$dur]++;
+  };
+  $seen = [];
+  foreach ($orders as $o) {
+    $total++;
+    if (!is_array($o)) continue;
+    if (isset($o['id'])) $seen[orolado_order_owner($o) . "\0" . (is_scalar($o['id']) ? (string) $o['id'] : '')] = 1;
+    $add((string) ($o['assetId'] ?? $o['asset_id'] ?? 'v100'), (int) ($o['duration'] ?? 0), (($o['mode'] ?? 'demo') === 'real') ? 'real' : 'demo');
+  }
+  $cut = (float) ($db['ordersArchCut'] ?? 0);
+  foreach (glob(orolado_orders_dir() . '/day/*.idx') ?: [] as $f) {
+    $h = @fopen($f, 'rb');
+    if (!$h) continue;
+    while (($line = fgets($h)) !== false) {
+      $c = explode("\t", rtrim($line, "\r\n"));
+      if (count($c) < 6 || (float) $c[2] < $cut) continue;
+      $k = rawurldecode($c[0]) . "\0" . rawurldecode($c[1]);
+      if (isset($seen[$k])) continue;
+      $seen[$k] = 1;
+      $total++;
+      $add(rawurldecode($c[3]), (int) $c[4], $c[5] === 'real' ? 'real' : 'demo');
+    }
+    fclose($h);
+  }
+  if ($total === 0) return null;
+  return ['byAsset' => $byAsset, 'byDuration' => $byDur, 'byAssetMode' => $byAssetMode, 'byDurationMode' => $byDurMode, 'total' => $total];
+}
+
+/**
+ * Rangement + archivage (appelé par « me », via orolado_archive_orders). Sous le verrou global :
+ *  - toutes les OROLADO_ORDERS_MOVE_EVERY s : ordres réglés depuis plus de 10 s → data/orders ;
+ *  - toutes les 10 min (comme avant) : ordres réglés depuis plus de 2 jours → data/archive, et
+ *    nouvelle heure de coupe ($db['ordersArchCut']).
+ * Les fichiers rangés sont écrits AVANT de retirer quoi que ce soit du fichier principal : en cas
+ * d'échec, rien n'est retiré (au pire une ligne en double, ignorée à la lecture). Au premier
+ * rangement, copie complète de orolado.json dans data/archive/. Rend le nombre d'ordres sortis.
+ */
+function orolado_orders_maintain(bool $force = false): int {
+  $dataDir = orolado_data_dir();
+  $archDir = $dataDir . '/archive';
+  $ordDir = orolado_orders_dir();
+  $archFlag = $archDir . '/.last';
+  $moveFlag = $ordDir . '/.move';
+  $now = time();
+  $doArch = $force || !is_file($archFlag) || $now - (int) @filemtime($archFlag) >= 600;
+  $doHot = $force || !is_file($moveFlag) || $now - (int) @filemtime($moveFlag) >= OROLADO_ORDERS_MOVE_EVERY;
+  if (!$doArch && !$doHot) return 0;
+  if (!is_dir($archDir)) @mkdir($archDir, 0755, true);
+  if (!is_dir($ordDir)) @mkdir($ordDir, 0755, true);
+  // Un seul passage à la fois (les autres requêtes ne l'attendent pas).
+  $lk = @fopen($ordDir . '/.move.lock', 'c');
+  if (!$lk) return 0;
+  if (!flock($lk, LOCK_EX | LOCK_NB)) { fclose($lk); return 0; }
+  if ($doArch) @touch($archFlag);
+  if ($doHot) @touch($moveFlag);
+  $nowF = microtime(true);
+  $cutArch = $nowF - 2 * 86400;
+  $cutHot = $nowF - OROLADO_ORDERS_HOT_SEC;
+  $max = max(1, (int) OROLADO_ORDERS_MOVE_MAX);
+  $res = with_db_lock(function ($box) use ($doArch, $doHot, $cutArch, $cutHot, $max, $archDir, $ordDir) {
+    $orders = $box->db['orders'] ?? [];
+    if (!is_array($orders)) return ['ok' => true, 'skip_write' => true, 'moved' => 0];
+    $keep = [];
+    $byMonth = [];
+    $toStore = [];
+    $n = 0;
+    foreach ($orders as $o) {
+      $done = is_array($o) && in_array((string) ($o['status'] ?? ''), OROLADO_ORDERS_DONE, true);
+      $at = $done ? orolado_order_key($o) : 0.0;
+      if ($done && $at > 0 && $at < $cutArch) {
+        // Plus de 2 jours : archive mensuelle (comme avant), seulement au passage des 10 min.
+        if ($doArch && $n < $max) {
+          $byMonth[date('Y-m', (int) ($o['at'] ?? time()))][] = json_encode($o, JSON_UNESCAPED_UNICODE);
+          $n++;
+          continue;
+        }
+      } else if ($doHot && $done && $at > 0 && $at < $cutHot && $n < $max && is_scalar($o['id'] ?? null) && (string) $o['id'] !== '') {
+        $line = json_encode($o, JSON_UNESCAPED_UNICODE);
+        if (is_string($line) && $line !== '') {
+          $toStore[] = [$o, $line];
+          $n++;
+          continue;
+        }
+      }
+      $keep[] = $o;
+    }
+    $oldCut = (float) ($box->db['ordersArchCut'] ?? 0);
+    $setCut = $doArch && $cutArch > $oldCut && ($toStore || isset($box->db['ordersArchCut']) || orolado_orders_store_used());
+    if (!$byMonth && !$toStore && !$setCut) return ['ok' => true, 'skip_write' => true, 'moved' => 0];
+    // Copie de sécurité complète avant le tout premier rangement.
+    if ($toStore && !is_file($ordDir . '/.backup-done')) {
+      $bak = $archDir . '/orolado-avant-ordres-' . date('Ymd-His') . '-' . bin2hex(random_bytes(2)) . '.json';
+      if (!@copy(orolado_data_file(), $bak) || (int) @filesize($bak) !== (int) @filesize(orolado_data_file())) {
+        return ['ok' => false, 'skip_write' => true, 'moved' => 0];
+      }
+      @file_put_contents($ordDir . '/.backup-done', basename($bak) . "\n");
+    }
+    // L'archive est écrite AVANT de retirer quoi que ce soit : en cas d'échec, on ne touche à rien.
+    foreach ($byMonth as $ym => $lines) {
+      $ok = @file_put_contents($archDir . '/orders-' . $ym . '.jsonl', implode("\n", $lines) . "\n", FILE_APPEND | LOCK_EX);
+      if ($ok === false) return ['ok' => false, 'skip_write' => true, 'moved' => 0];
+    }
+    if ($toStore) {
+      $byDay = [];
+      $idx = [];
+      $byUser = [];
+      foreach ($toStore as [$o, $line]) {
+        $tag = orolado_order_tag($o);
+        $day = gmdate('Y-m-d', (int) orolado_order_key($o));
+        $byDay[$day][$tag] = ($byDay[$day][$tag] ?? '') . $line . "\n";
+        $idx[$day] = ($idx[$day] ?? '') . orolado_orders_idx_line($o) . "\n";
+        $u = orolado_order_owner($o);
+        $byUser[$u][$tag] = ($byUser[$u][$tag] ?? '') . $line . "\n";
+      }
+      foreach ($byDay as $day => $parts) {
+        foreach ($parts as $tag => $body) {
+          if (!orolado_orders_append(orolado_orders_day_file((string) $day, (string) $tag), $body)) return ['ok' => false, 'skip_write' => true, 'moved' => 0];
+        }
+        if (!orolado_orders_append($ordDir . '/day/' . $day . '.idx', $idx[$day])) return ['ok' => false, 'skip_write' => true, 'moved' => 0];
+      }
+      $prune = max($oldCut, $doArch ? $cutArch : 0.0) - 86400;
+      foreach ($byUser as $u => $parts) {
+        foreach ($parts as $tag => $body) {
+          if (!orolado_orders_user_append(orolado_orders_user_file((string) $u, (string) $tag), $body, $prune)) return ['ok' => false, 'skip_write' => true, 'moved' => 0];
+        }
+      }
+    }
+    $box->db['orders'] = $keep;
+    if ($setCut) $box->db['ordersArchCut'] = $cutArch;
+    return ['ok' => true, 'moved' => $n, 'full' => $n >= $max, 'cut' => $setCut ? $cutArch : $oldCut];
+  });
+  $moved = (int) ($res['moved'] ?? 0);
+  // Encore du travail (migration d'un gros fichier) : le prochain passage peut venir tout de suite.
+  if (!empty($res['full'])) @touch($moveFlag, $now - OROLADO_ORDERS_MOVE_EVERY - 1);
+  flock($lk, LOCK_UN);
+  fclose($lk);
+  if ($doArch && !empty($res['ok']) && (float) ($res['cut'] ?? 0) > 0) {
+    $cut = (float) $res['cut'];
+    if (orolado_orders_transfer_due($cut)) {
+      if (PHP_SAPI === 'cli') {
+        orolado_orders_transfer_old($cut);
+      } else {
+        register_shutdown_function(static function () use ($cut) {
+          if (function_exists('fastcgi_finish_request')) @fastcgi_finish_request();
+          try { orolado_orders_transfer_old($cut); } catch (Throwable $e) { error_log('OROLADO orders transfer ' . $e->getMessage()); }
+        });
+      }
+    }
+  }
+  return $moved;
+}
+
+/** Fin (UTC) du jour d'un fichier rangé « AAAA-MM-JJ.… ». */
+function orolado_orders_file_day_end(string $f): int {
+  $day = substr(basename($f), 0, 10);
+  $t = strtotime($day . ' 00:00:00 UTC');
+  return $t === false ? PHP_INT_MAX : $t + 86399;
+}
+
+function orolado_orders_transfer_due(float $cut): bool {
+  $lim = $cut - 86400;
+  $day = orolado_orders_dir() . '/day';
+  if (glob($day . '/*.arch') ?: []) return true;
+  foreach (glob($day . '/*.jsonl') ?: [] as $f) if (orolado_orders_file_day_end($f) < $lim) return true;
+  return false;
+}
+
+/**
+ * Jours rangés entièrement plus vieux que (coupe − 1 jour) → archive mensuelle (même format
+ * qu'avant), une fois par jour environ, hors du verrou global. Ordre : renommage (.arch), ajout à
+ * l'archive, effacement ; si le serveur s'arrête au milieu, le .arch est repris au passage suivant.
+ */
+function orolado_orders_transfer_old(float $cut): int {
+  $ordDir = orolado_orders_dir();
+  $dayDir = $ordDir . '/day';
+  $archDir = orolado_data_dir() . '/archive';
+  if (!is_dir($archDir)) @mkdir($archDir, 0755, true);
+  $lk = @fopen($ordDir . '/.arch.lock', 'c');
+  if (!$lk) return 0;
+  if (!flock($lk, LOCK_EX | LOCK_NB)) { fclose($lk); return 0; }
+  $lim = $cut - 86400;
+  foreach (glob($dayDir . '/*.jsonl') ?: [] as $f) {
+    if (orolado_orders_file_day_end($f) < $lim) @rename($f, $f . '.arch');
+  }
+  $n = 0;
+  foreach (glob($dayDir . '/*.jsonl.arch') ?: [] as $f) {
+    $h = @fopen($f, 'rb');
+    if (!$h) continue;
+    $buf = [];
+    $ok = true;
+    $flush = static function () use (&$buf, &$ok, $archDir): void {
+      foreach ($buf as $ym => $body) {
+        if (@file_put_contents($archDir . '/orders-' . $ym . '.jsonl', $body, FILE_APPEND | LOCK_EX) === false) $ok = false;
+      }
+      $buf = [];
+    };
+    $i = 0;
+    while (($line = fgets($h)) !== false) {
+      $line = rtrim($line, "\r\n");
+      if ($line === '') continue;
+      $o = json_decode($line, true);
+      if (!is_array($o)) continue;
+      $ym = date('Y-m', (int) ($o['at'] ?? time()));
+      $buf[$ym] = ($buf[$ym] ?? '') . $line . "\n";
+      $n++;
+      if (++$i % 2000 === 0) $flush();
+    }
+    $flush();
+    fclose($h);
+    if ($ok) @unlink($f);
+  }
+  foreach (glob($dayDir . '/*.idx') ?: [] as $f) {
+    if (orolado_orders_file_day_end($f) < $lim) @unlink($f);
+  }
+  // Fichiers de joueurs dont toutes les lignes sont plus vieilles que la limite (dernier ajout avant elle).
+  foreach (glob($ordDir . '/user/*/*.jsonl') ?: [] as $f) {
+    if ((int) @filemtime($f) < $lim) @unlink($f);
+  }
+  flock($lk, LOCK_UN);
+  fclose($lk);
+  $GLOBALS['OROLADO_ORD_RAW'] = [];
+  return $n;
+}
+
+/**
+ * Nettoyage des comptes (effacement admin) : garde seulement les ordres rangés des joueurs que
+ * $keepUid accepte. À appeler sous le verrou global (comme le reste du nettoyage du fichier).
+ */
+function orolado_orders_store_filter(callable $keepUid): int {
+  $ordDir = orolado_orders_dir();
+  if (!is_dir($ordDir)) return 0;
+  $lk = @fopen($ordDir . '/.arch.lock', 'c');
+  if ($lk) flock($lk, LOCK_EX);
+  $n = 0;
+  foreach (array_merge(glob($ordDir . '/day/*.jsonl') ?: [], glob($ordDir . '/day/*.jsonl.arch') ?: []) as $f) {
+    $keep = '';
+    $drop = 0;
+    foreach (@file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+      $o = json_decode((string) $line, true);
+      if (is_array($o) && $keepUid(orolado_order_owner($o))) $keep .= $line . "\n";
+      else $drop++;
+    }
+    if ($drop === 0) continue;
+    $n += $drop;
+    if ($keep === '') @unlink($f);
+    else orolado_store_write_file($f, $keep);
+  }
+  foreach (glob($ordDir . '/day/*.idx') ?: [] as $f) {
+    $keep = '';
+    $drop = 0;
+    foreach (@file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+      $c = explode("\t", (string) $line);
+      if ($keepUid(rawurldecode($c[0]))) $keep .= $line . "\n";
+      else $drop++;
+    }
+    if ($drop === 0) continue;
+    if ($keep === '') @unlink($f);
+    else orolado_store_write_file($f, $keep);
+  }
+  foreach (glob($ordDir . '/user/*/*.jsonl') ?: [] as $f) {
+    $fh = @fopen($f, 'rb');
+    $owner = null;
+    while ($fh && ($line = fgets($fh)) !== false) {
+      $o = json_decode($line, true);
+      if (is_array($o)) { $owner = orolado_order_owner($o); break; }
+    }
+    if ($fh) fclose($fh);
+    if ($owner === null || !$keepUid($owner)) @unlink($f);
+  }
+  if ($lk) { flock($lk, LOCK_UN); fclose($lk); }
+  $GLOBALS['OROLADO_ORD_RAW'] = [];
+  return $n;
+}
+
+/**
+ * Lit, depuis le dernier passage, les nouvelles lignes des jours rangés (fichiers « ajout
+ * seulement ») : $offs garde la position atteinte dans chaque fichier. Pour les compteurs qui
+ * dédoublonnent eux-mêmes par identifiant (classement de la semaine).
+ */
+function orolado_orders_tail(array &$offs, array $tags, string $needle, callable $fn): void {
+  $files = [];
+  foreach ($tags as $t) foreach (glob(orolado_orders_dir() . '/day/*.' . $t . '.jsonl') ?: [] as $f) $files[basename($f)] = $f;
+  foreach (array_keys($offs) as $k) if (!isset($files[$k])) unset($offs[$k]);
+  foreach ($files as $b => $f) {
+    clearstatcache(true, $f);
+    $st = @stat($f);
+    if (!$st) continue;
+    $ino = (int) $st['ino'];
+    $off = (isset($offs[$b][0], $offs[$b][1]) && (int) $offs[$b][0] === $ino && (int) $offs[$b][1] <= (int) $st['size']) ? (int) $offs[$b][1] : 0;
+    if ($off >= (int) $st['size']) { $offs[$b] = [$ino, $off]; continue; }
+    $h = @fopen($f, 'rb');
+    if (!$h) continue;
+    fseek($h, $off);
+    while (($line = fgets($h)) !== false) {
+      if (substr($line, -1) !== "\n") break; // ligne en cours d'écriture : reprise au prochain passage
+      $off += strlen($line);
+      if ($needle !== '' && strpos($line, $needle) === false) continue;
+      $o = json_decode($line, true);
+      if (is_array($o)) $fn($o);
+    }
+    fclose($h);
+    $offs[$b] = [$ino, $off];
+  }
+}

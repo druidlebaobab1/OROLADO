@@ -89,6 +89,14 @@ function orolado_top_scan(array $db, array $wk, bool $force = false): array {
       }
       $st['archAt'] = $now;
     }
+    // 2026-10-20 : trades réglés depuis plus de 10 s rangés hors du fichier (data/orders/day) : seules les
+    // lignes ajoutées depuis le passage précédent sont lues (position gardée dans 'dayOff').
+    if (function_exists('orolado_orders_tail')) {
+      if (!isset($st['dayOff']) || !is_array($st['dayOff'])) $st['dayOff'] = [];
+      orolado_orders_tail($st['dayOff'], ['demo', 'x'], '"demo"', static function (array $o) use (&$st, $wk): void {
+        orolado_top_add($st, $o, $wk['start'], $wk['end']);
+      });
+    }
     foreach (($db['orders'] ?? []) as $o) orolado_top_add($st, $o, $wk['start'], $wk['end']);
     $st['scanAt'] = $now;
     rewind($fp);

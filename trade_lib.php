@@ -117,7 +117,10 @@ function orolado_trade_find(array $db, string $uid, string $oid): ?array {
   foreach (($db['orders'] ?? []) as $o) {
     if (is_array($o) && ($o['id'] ?? '') === $oid && ($o['userId'] ?? '') === $uid) return $o;
   }
-  return null;
+  // Ordre réglé depuis plus de 10 s, rangé hors du fichier (orolado_orders_maintain) : toujours retrouvé,
+  // donc jamais recréé (même id renvoyé) ni « introuvable » au règlement redemandé (et il est déjà réglé).
+  $o = function_exists('orolado_orders_store_find') ? orolado_orders_store_find($db, $uid, $oid) : null;
+  return ($o && ($o['id'] ?? '') === $oid && ($o['userId'] ?? '') === $uid) ? $o : null;
 }
 
 /** Vue publique d'un ordre (ce que le navigateur reçoit). */
@@ -466,6 +469,9 @@ function orolado_trade_place(array $me, array $req): array {
         return ['ok' => true, 'duplicate' => true, 'order' => $o, 'skip_write' => true];
       }
     }
+    // Même id déjà réglé et rangé hors du fichier (sous le même verrou que le rangement : vue exacte).
+    $moved = function_exists('orolado_orders_store_find') ? orolado_orders_store_find($locked, $uid, (string) $order['id']) : null;
+    if ($moved && ($moved['userId'] ?? '') === $uid) return ['ok' => true, 'duplicate' => true, 'order' => $moved, 'skip_write' => true];
     if (!isset($locked['vault'][$uid]) || !is_array($locked['vault'][$uid])) {
       $locked['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
     }
