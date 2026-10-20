@@ -398,7 +398,10 @@
         'niuniu', 'oracle', 'twinwheel', 'crownanchor', 'holdem', 'amida', 'fantan', 'shipcrew', 'clocksol', 'dreidel', 'rpsduel', 'trente',
         // casa (round 6) : 12 machines à sous (casa1) alternées avec 12 jeux instantanés (casa2/3) ; mêmes mécaniques ≥ 6 places d'écart
         'hilorun', 'scarab', 'pickbox', 'kraken', 'colorwheel', 'cherrybar', 'egghunt', 'ufo', 'flip21', 'goldtrain', 'envelope', 'koi',
-        'shells', 'viking', 'ladder', 'safari', 'luckyten', 'donut', 'popdarts', 'rubymine', 'treasure', 'pumpkin', 'scratchwin', 'medusa'];
+        'shells', 'viking', 'ladder', 'safari', 'luckyten', 'donut', 'popdarts', 'rubymine', 'treasure', 'pumpkin', 'scratchwin', 'medusa',
+        // casc (round 7) : 12 machines à sous (casc1) alternées avec 12 jeux instantanés (casc2/3) ; même mécanique ≥ 6 places d'écart
+        'potion', 'mermaid', 'robobox', 'samurai', 'bottleflip', 'oasis', 'tarot', 'cybercity', 'curling', 'carnival', 'lantern', 'jazzclub',
+        'cargodrop', 'sushibar', 'gemfusion', 'fairy', 'mahjong', 'steampunk', 'stoneskip', 'arctic', 'meteor', 'disco', 'defuse', 'dinopark'];
       var moPos = function (k) { var i = MO_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.more.sort(function (a, b) { return moPos(a) - moPos(b); });
       // v2850 (propriétaire : « Live plein, 24 jeux ») : ordre fixe des jeux en direct (les catalogues arrivent dans n'importe quel ordre)
@@ -615,7 +618,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '2878'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '2885'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
@@ -647,7 +650,7 @@
     }, catDone ? 0 : 90);
   }
   // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
-  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa', 'cat-skill6', 'cat-live3'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
+  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa', 'cat-skill6', 'cat-live3', 'cat-casc'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
   function loadCatalog() {
     if (catAsked) return; catAsked = true;
     catLeft = CAT_FILES.length;
