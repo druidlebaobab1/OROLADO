@@ -13055,3 +13055,17 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row:last-child > strong{font-size:12px!important;font-weight:600!important;color:rgba(226,232,255,.85)!important}
 /* v2938 — Profil : langue et croix descendent encore un tout petit peu (plus collées au bord) ; rien d'autre ne change */
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head{padding-top:16px!important;padding-left:14px!important;padding-right:22px!important}
+
+/* v2939 — Profil : grande photo et grand nom remis (le style aimé) ; seules les lignes ID / E-mail / Membre depuis restent réduites */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar{width:92px!important;height:92px!important;min-width:92px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar .pav-cam{width:28px!important;height:28px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar .pav-cam svg{width:15px!important;height:15px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .prof-name{font-size:1.45rem!important;line-height:1.25!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-top{gap:6px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row{min-height:32px!important;padding:2px 4px 2px 12px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{height:24px!important;min-height:24px!important;min-width:56px!important;font-size:11.5px!important}
+
+/* v2939 — Historique financier / des trades : plus de bordure noire à droite (barre de défilement cachée, lignes
+   décollées du bord) ni d'ombre noire en bas */
+html:root body #txFeed#txFeed,html:root body #historySheet#historySheet .sheet-feed{scrollbar-width:none!important;padding-right:4px!important;box-shadow:none!important;-webkit-mask-image:none!important;mask-image:none!important}
+html:root body #txFeed#txFeed::-webkit-scrollbar,html:root body #historySheet#historySheet .sheet-feed::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
