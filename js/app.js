@@ -1362,6 +1362,10 @@
           '\nscrBas=' + (scr ? Math.round(scr.getBoundingClientRect().bottom) : '-') +
           '\nsafeBas=' + safeBottomPx() +
           '\npadBas=' + (pad ? Math.round(pad.getBoundingClientRect().bottom) : '-') +
+          '\niosapp=' + (document.documentElement.classList.contains('ios-app') ? 1 : 0) + ' fullH=' + (getComputedStyle(document.documentElement).getPropertyValue('--ios-full-h') || '-') +
+          ' sous=' + (getComputedStyle(document.documentElement).getPropertyValue('--ios-under') || '-') + ' sol=' + (getComputedStyle(document.documentElement).getPropertyValue('--ios-floor-top') || '-') + '/' + (getComputedStyle(document.documentElement).getPropertyValue('--ios-floor-h') || '-') +
+          '\nsolEl=' + (function () { var f = document.getElementById('oroIosFloor'); if (!f) return '-'; var r = f.getBoundingClientRect(); return Math.round(r.top) + '-' + Math.round(r.bottom) + ' ' + getComputedStyle(f).display; })() +
+          ' fs=' + (function () { var o = document.getElementById('fsTradeOverlay'); if (!o || !o.classList.contains('on')) return '-'; var r = o.getBoundingClientRect(); return Math.round(r.top) + '-' + Math.round(r.bottom); })() +
           '\nfill=' + ((scr || {}).className || '').indexOf('saf-fill') +
           '\nversion=' + (verM ? verM[1] : '?') + ' retard=' + (D6.Engine.displayDelay ? D6.Engine.displayDelay() : '?') +
           '\ntrade: serveur=' + (tr.conf ? Math.round(tr.conf - tr.click) : '-') + ' rond=' + (tr.first ? Math.round(tr.first - tr.click) : '-') +
@@ -1456,6 +1460,13 @@
           }
           if (document.body) {
             document.body.style.setProperty('background-color', '#22172F', 'important');
+            // 2026-10-20 (d) : le dessin est AUSSI posé tout en bas du fond du body (c'est peut-être lui qui peint la bande
+            // sous la fenêtre de l'appli sur certains iPhone) ; caché derrière le site s'il ne descend pas jusque-là.
+            var bh = parseInt(getComputedStyle(root).getPropertyValue('--ios-floor-h'), 10) || 56;
+            document.body.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2919")', 'important');
+            document.body.style.setProperty('background-repeat', 'no-repeat', 'important');
+            document.body.style.setProperty('background-position', 'center bottom', 'important');
+            document.body.style.setProperty('background-size', '100% ' + bh + 'px', 'important');
             // v2822 : plus de hauteur minimale forcée sur le body (il est fixé sur la fenêtre, css/app.css « VERROU ») :
             // une hauteur plus grande que la fenêtre poussait ACHETER / VENDRE hors de l'écran.
           }
