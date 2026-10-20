@@ -9,7 +9,7 @@
 /* ---------- fond de la page « Prédictions » : nuit violette (avant : page claire) ---------- */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal.pred-only > .modal-box{
   background:radial-gradient(120% 50% at 50% 0%,rgba(139,92,246,.28),transparent 70%),radial-gradient(80% 40% at 100% 100%,rgba(251,191,36,.07),transparent 70%),linear-gradient(180deg,#171038 0%,#0E0A26 100%)!important;color:var(--sp2-ink)!important}
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal.pred-only .cs-top{background:#1A1340!important;box-shadow:0 1px 0 rgba(255,255,255,.06)!important}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal.pred-only .cs-top{background:#1A1340!important;box-shadow:0 -80px 0 60px #1A1340,0 1px 0 rgba(255,255,255,.06)!important}
 
 html:root body #casinoModal #csView.sp2{display:block!important;gap:0;color:var(--sp2-ink);font-family:var(--sp2-font);--sp2-px:14px;--sp2-pb:18px}
 html:root body #casinoModal .sp2 .fit{display:block;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;min-width:0}
