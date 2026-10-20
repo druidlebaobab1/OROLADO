@@ -9796,7 +9796,9 @@
               if (D6.Chart && D6.Chart.flushOpenTradeVisuals) D6.Chart.flushOpenTradeVisuals();
             } catch (e3) { /* ignore */ }
           }, 600);
-          if (opts.openFullscreen) {
+          // 2026-10-20 (propriétaire) : plus jamais de plein écran forcé après inscription / connexion — le joueur arrive sur
+          // l'écran normal et choisit lui-même (le bouton PLEIN ÉCRAN clignote légèrement pour être vu).
+          if (false && opts.openFullscreen) {
             setTimeout(function () {
               try {
                 enterTradeFullscreen();
