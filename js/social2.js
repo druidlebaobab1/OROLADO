@@ -688,7 +688,7 @@
       if (!r || !r.ok) { $('sxPhM').textContent = errMsg(r); return; }
       closeSheet();
       if (g) { await refreshConv(); groupInfo(); refreshList(); }
-      else { if (D.fr) D.fr.ph = ph; paintBody(); }
+      else { if (D.fr) D.fr.ph = ph; paintBody(); try { document.dispatchEvent(new CustomEvent('oro:myphoto', { detail: { ph: ph || '' } })); } catch (e) { /* ignore */ } }
     };
     $('sxPhF').addEventListener('change', async function () {
       var fl = this.files && this.files[0]; this.value = ''; if (!fl) return;
@@ -1500,5 +1500,6 @@
   // v2812 : état (onglet, discussion ouverte) pour revenir au même endroit après une actualisation (js/back.js)
   D6.Social2 = { open: open, openGroup: openGroup, stop: stop, hide: hide, back: back, active: function () { return active; }, refresh: refreshList, t: t, joinPreview: joinPreview, emblem: emblem,
     state: function () { return { seg: seg, k: conv ? conv.k : '', grid: gridRet }; },
+    photoPrep: shrinkSq, err: errMsg, myPhoto: function (ph) { if (D.fr) D.fr.ph = ph; if (active && $('sxBody')) paintBody(); },
     openConv: function (k) { if (active && k) openConv(k); } };
 })(window.D6 = window.D6 || {});
