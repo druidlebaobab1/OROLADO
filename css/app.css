@@ -13006,3 +13006,8 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head{align-items:center!important;margin-top:-4px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;font-size:17px!important;opacity:1!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:28px!important;padding:0 9px!important;font-size:13px!important;opacity:1!important;border-color:rgba(253,230,138,.4)!important;background:rgba(255,255,255,.05)!important}
+
+/* v2932 — Historique des trades : la liste descend jusqu'en bas de l'écran (avant : coupée au milieu, vide dessous) ;
+   elle défile à l'intérieur, la dernière ligne reste au-dessus de la barre d'accueil iPhone */
+html:root body #historySheet#historySheet#historySheet > .modal-box{display:flex!important;flex-direction:column!important}
+html:root body #historySheet#historySheet#historySheet .sheet-feed{flex:1 1 auto!important;min-height:0!important;max-height:none!important;overflow-y:auto!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important}
