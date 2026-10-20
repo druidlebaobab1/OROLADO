@@ -18,7 +18,11 @@
   function readDemoLs(id) {
     if (!id) return null;
     try {
-      var n = Number(localStorage.getItem(demoLsKey(id)));
+      // 2026-10-20 : clé absente → null (avant : Number(null) = 0 → « Démo $ 0 » sur un nouveau téléphone pour un joueur
+      // qui a déjà tradé, alors que le serveur avait 999 984 $).
+      var raw = localStorage.getItem(demoLsKey(id));
+      if (raw == null || raw === '') return null;
+      var n = Number(raw);
       if (isFinite(n) && n >= 0) return n;
     } catch (eR) { /* ignore */ }
     return null;
@@ -461,7 +465,9 @@
           }
         }
         var keptDemo = readDemoLs(user.id);
-        if (keptDemo != null && (keptDemo > 0 || Number(user.demoTrades) > 0 || Number(user.trades) > 0)) {
+        var srvDemo = (vaultEntry.demo != null && isFinite(Number(vaultEntry.demo))) ? Number(vaultEntry.demo) : NaN;
+        // 2026-10-20 : un 0 gardé sur le téléphone ne cache plus le solde démo du serveur (argent fictif, le serveur décide).
+        if (keptDemo != null && !(keptDemo <= 0 && srvDemo > 0) && (keptDemo > 0 || Number(user.demoTrades) > 0 || Number(user.trades) > 0)) {
           next.demo = keptDemo;
         } else if (vaultEntry.demo != null && isFinite(Number(vaultEntry.demo)) && Number(vaultEntry.demo) >= 0) {
           next.demo = Number(vaultEntry.demo);
