@@ -41,6 +41,10 @@ sysctl --system >/dev/null
 POOL=/etc/php/8.3/fpm/pool.d/www.conf
 sed -i 's/^pm = .*/pm = dynamic/; s/^pm.max_children = .*/pm.max_children = 60/; s/^pm.start_servers = .*/pm.start_servers = 10/; s/^pm.min_spare_servers = .*/pm.min_spare_servers = 6/; s/^pm.max_spare_servers = .*/pm.max_spare_servers = 20/' "$POOL"
 grep -q '^pm.max_requests' "$POOL" || echo 'pm.max_requests = 2000' >> "$POOL"
+# 2026-10-20 (tenue de charge, test 1000 joueurs) : file d'attente de connexions plus longue (défaut 511 → refus « 502 »)
+# et une demande bloquée ne garde jamais un travailleur plus de 30 s.
+sed -i '/^listen.backlog/d;/^request_terminate_timeout/d' "$POOL"
+printf 'listen.backlog = 4096\nrequest_terminate_timeout = 30s\n' >> "$POOL"
 INI=/etc/php/8.3/fpm/conf.d/90-orolado.ini
 printf 'memory_limit = 256M\nupload_max_filesize = 10M\npost_max_size = 12M\nmax_execution_time = 120\nexpose_php = Off\nopcache.enable = 1\nopcache.memory_consumption = 128\nopcache.validate_timestamps = 1\nopcache.revalidate_freq = 2\n' > "$INI"
 cp "$INI" /etc/php/8.3/cli/conf.d/90-orolado.ini
