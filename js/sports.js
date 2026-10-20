@@ -722,7 +722,7 @@
       if ($('spGoAmt')) setTx($('spGoAmt'), money(stake));
     };
     var save = function () { try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } };
-    var set = function (v) { v = Math.round((Number(v) || 0) * 100) / 100; if (!(v >= 0.1)) v = 0.1; if (v > 100000) v = 100000; stake = v; inp.value = m2(v); save(); upd(); };
+    var set = function (v) { v = Math.round((Number(v) || 0) * 100) / 100; if (!(v >= 0.1)) v = 0.1; stake = v; inp.value = m2(v); save(); upd(); };
     inp.addEventListener('input', function () { var v = parseFloat(String(inp.value).replace(',', '.')); if (!(v > 0)) return; stake = Math.round(v * 100) / 100; save(); upd(); });
     inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); });
     inp.addEventListener('focus', function () { try { inp.select(); } catch (e) { /* ignore */ } });

@@ -115,8 +115,8 @@ for ($i = 0; $i < 200; $i++) { $r = casino_play(load_db(), load_db()['users']['u
 check('200 parties à 0,10 $ : le solde suit exactement mises et gains', abs(($before + $tot) - $bal[$U]) < 0.001, $before . ' + ' . round($tot, 2) . ' = ' . $bal[$U]);
 $dbx = load_db();
 check('les mises réelles comptent pour « miser ×2 » (20 $ misés)', abs((float) $dbx['users']['u_cs']['realStakeVolume'] - 20) < 0.001 && abs((float) $dbx['users']['u_cs']['wagerNeed'] - 20) < 0.001, $dbx['users']['u_cs']['realStakeVolume'] . ' / need ' . $dbx['users']['u_cs']['wagerNeed']);
-$r = casino_play(load_db(), $me, 'limbo', 'real', 20, ['target' => 1000]);
-check('limbo : gain possible au-delà du maximum caché → refusé', $r['ok'] === false && $r['reason'] === 'maxWin');
+$r = casino_play(load_db(), $me, 'limbo', 'real', 1, ['target' => 1000]);
+check('limbo : plus de plafond de gain (propriétaire 2026-10-20) → cible ×1000 acceptée', ($r['reason'] ?? '') !== 'maxWin', json_encode($r['reason'] ?? 'ok'));
 $r = casino_play(load_db(), null, 'dice', 'real', 5, ['chance' => 50]);
 check('visiteur : refusé (inscription obligatoire)', $r['ok'] === false && $r['reason'] === 'login');
 $d0 = load_db()['vault']['u_cs']['demo']; $b0 = $bal[$U];
@@ -348,7 +348,7 @@ check('Banque du baccara à 0,10 $ : 0,195 → 0,19 (plus 0,20)', casino_win(0.1
 check('limbo ×1,05 à 0,10 $ : 0,105 → 0,10', casino_win(0.10, 1.05) === 0.10);
 check('dés 89 % à 0,10 $ : 0,10561 → 0,10', casino_win(0.10, floor(CASINO_EDGE * 100 / 89 * 10000) / 10000) === 0.10);
 check('remboursement exact (égalité ×1) : 0,29 → 0,29', casino_win(0.29, 1.0) === 0.29 && casino_win(0.10, 1.0) === 0.10 && casino_win(7.77, 1.0) === 7.77);
-check('gain rond inchangé (2 $ × 1,94 = 3,88) et plafond respecté', casino_win(2, 1.94) === 3.88 && casino_win(1000, 1000) === CASINO_MAX_WIN && casino_win(1, 0) === 0.0);
+check('gain rond inchangé (2 $ × 1,94 = 3,88) et plafond respecté', casino_win(2, 1.94) === 3.88 && casino_win(1000, 1000) === 1000000.0 && casino_win(1, 0) === 0.0);
 $mults = [CASINO_COIN_MULT, CASINO_DICE_DUEL, CASINO_PENALTY_MULT, CASINO_RPS_MULT, 1.95, 2.85, 1.97, 4.7, 9.4, 0.5, 12.0, 9.0];
 foreach (CASINO_WHEEL as [$x]) $mults[] = (float) $x; foreach (CASINO_PLINKO as $x) $mults[] = (float) $x; foreach (CASINO_KENO as $x) $mults[] = (float) $x;
 for ($c = 2; $c <= 95; $c++) $mults[] = floor(CASINO_EDGE * 100 / $c * 10000) / 10000;

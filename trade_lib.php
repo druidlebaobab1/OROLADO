@@ -269,6 +269,9 @@ function orolado_trade_pick_entry(string $mode, string $side, int $arrivalTick, 
   }
   // 2026-10-19 (propriétaire : « comme mes jeux fonctionnaient avant ») : réel et démo, même fenêtre que le clic accepté
   // (OROLADO_CLICK_MAX_TICKS, 1,5 s), toutes mises.
+  // 2026-10-20 (propriétaire, faille robot mesurée : 107 % à 217 % de retour pour un script) : en RÉEL, toujours le prix
+  // d'ARRIVÉE de l'ordre (équitable pour tous, aucun choix possible). La mesure robot ci-dessus reste notée. Démo inchangée.
+  if ($mode === 'real') return $out;
   if ($demoTrusted) {
     $out['tick'] = $seenTick;
     $out['cents'] = $seenCents;
