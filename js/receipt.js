@@ -113,9 +113,6 @@
     } catch (e) { return Promise.resolve(null); }
   }
   function globeIcon(chip, art) {
-    var cs = getComputedStyle(chip);
-    var p1 = (cs.getPropertyValue('--p1') || '#C9B8FF').trim() || '#C9B8FF';
-    var p2 = (cs.getPropertyValue('--p2') || '#3B1D8F').trim() || '#3B1D8F';
     var c = art.cloneNode(true);
     c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     c.setAttribute('width', '96');
@@ -125,10 +122,8 @@
       var cv = document.createElement('canvas');
       cv.width = 96; cv.height = 96;
       var g = cv.getContext('2d');
-      var gr = g.createRadialGradient(36, 32, 4, 48, 48, 48);
-      gr.addColorStop(0, p1); gr.addColorStop(0.62, p2); gr.addColorStop(1, '#07051A');
-      g.fillStyle = gr; g.beginPath(); g.arc(48, 48, 47, 0, Math.PI * 2); g.fill();
-      if (im) g.drawImage(im, 17, 17, 62, 62);
+      // v2951 : le nouveau logo de l'indice en entier (comme dans la barre des marchés), sans l'ancienne boule
+      if (im) g.drawImage(im, 2, 2, 92, 92);
       return cv;
     });
   }

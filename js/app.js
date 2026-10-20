@@ -7584,18 +7584,33 @@
     });
     rows.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
     rows = rows.slice(0, 20);
-    var html = rows.length ? rows.map(function (r, rcfIdx) {
+    var html = rows.length ? '<div class="hc-list fx-list">' + rows.map(function (r, rcfIdx) {
       var st = r.status || { label: t('txPending'), cls: 'pending' };
-      return '<div class="tx-feed-row rc-open" data-rcf="' + rcfIdx + '"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
-        fmtWhen(r.at) + ' · ' + adminEsc(r.gateway || '—') + ' · ' + adminEsc(r.ref || '—') +
-        '</div>' + (st.hint && st.hint !== 'txWdRejectedHint' ? '<div class="tx-hint">' + st.hint + '</div>' : '') +
-        '</div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
-        (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
-        st.label + '</span></div><button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></div></div>';
-    }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';
+      return financeRowHtml(r, st, rcfIdx);
+    }).join('') + '</div>' : '<div class="empty-feed">' + t('txEmpty') + '</div>';
     tx.innerHTML = html;
     bindFinanceReceipts(tx, rows);
     return html;
+  }
+
+  // v2951 — Historique financier au même style que l'historique des trades (cartes) : icône à gauche
+  // (dépôt / retrait / bonus), type + date · moyen, montant et statut à droite, bouton reçu au bout.
+  var FX_ICO = {
+    deposit: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    withdraw: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V8m0 0-4.5 4.5M12 8l4.5 4.5M5 4h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    bonus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1.2C7 7 9.5 7 12 7zm0 0c1.5-3 5-3.5 5-1.2C17 7 14.5 7 12 7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'
+  };
+  function financeRowHtml(r, st, idx) {
+    var kind = r.kind === 'withdraw' ? 'withdraw' : (r.kind === 'bonus' ? 'bonus' : 'deposit');
+    var amt = Number(r.amount) || 0;
+    return '<div class="hc fx rc-open" data-rcf="' + idx + '">' +
+      '<div class="hc-ico"><span class="fx-ico fx-' + kind + '">' + FX_ICO[kind] + '</span></div>' +
+      '<div class="hc-main"><div class="hc-name">' + r.label + '</div>' +
+      '<div class="hc-meta">' + fmtWhen(r.at) + ' · ' + adminEsc(r.gateway || '—') + '</div>' +
+      (st.hint && st.hint !== 'txWdRejectedHint' ? '<div class="tx-hint">' + st.hint + '</div>' : '') + '</div>' +
+      '<div class="hc-res"><div class="hc-pnl ' + (amt >= 0 ? 'w' : 'l') + '">' + (amt >= 0 ? '+' : '') + D6.fmtFCFA(amt) + '</div>' +
+      '<div class="hc-st"><span class="tx-st ' + st.cls + '">' + st.label + '</span></div></div>' +
+      '<button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></div>';
   }
 
   // Reçu d'une opération (dépôt, retrait, bonus) : moyen résumé (Crypto / Instant), jamais le détail.
@@ -7672,15 +7687,10 @@
 
   function paintFinancePage(tx) {
     var rows = financePage.rows;
-    var html = rows.length ? rows.map(function (r, rcfIdx) {
+    var html = rows.length ? '<div class="hc-list fx-list">' + rows.map(function (r, rcfIdx) {
       var st = r.status || { label: t('txPending'), cls: 'pending' };
-      return '<div class="tx-feed-row rc-open" data-rcf="' + rcfIdx + '"><div><div class="tx-type">' + r.label + '</div><div class="tx-meta">' +
-        fmtWhen(r.at) + ' · ' + adminEsc(r.gateway || '—') + ' · ' + adminEsc(r.ref || '—') +
-        '</div>' + (st.hint && st.hint !== 'txWdRejectedHint' ? '<div class="tx-hint">' + st.hint + '</div>' : '') +
-        '</div><div style="display:flex;align-items:center;gap:8px"><div><div class="tx-amt ' + (r.amount >= 0 ? 'w' : 'l') + '">' +
-        (r.amount >= 0 ? '+' : '') + D6.fmtFCFA(r.amount) + '</div><span class="tx-st ' + st.cls + '">' +
-        st.label + '</span></div><button type="button" class="rc-dlbtn" aria-label="receipt">' + (D6.ReceiptIcon || '') + '</button></div></div>';
-    }).join('') : '<div class="empty-feed">' + t('txEmpty') + '</div>';
+      return financeRowHtml(r, st, rcfIdx);
+    }).join('') + '</div>' : '<div class="empty-feed">' + t('txEmpty') + '</div>';
     if (rows.length < financePage.total) {
       html += '<button type="button" class="btn-ghost tx-more" id="txMore">' + (t('seeMore') !== 'seeMore' ? t('seeMore') : t('m_seeMore')) + '</button>';
     }
