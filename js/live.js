@@ -416,6 +416,7 @@
     }).join('');
     g.querySelectorAll('[data-k]').forEach(function (b) { b.addEventListener('click', function () { tileGo(b.getAttribute('data-k')); }); });
     paintMsgBar();
+    fitHome();
   }
   function homeBadges(g) {
     var team = $('liveBadge') ? $('liveBadge').textContent : '';
@@ -448,6 +449,28 @@
       '<span class="lh-mt"><b class="fit">' + esc(MSGW[l] || MSGW.en) + '</b><small>' + esc(MSGS[l] || MSGS.en) + '</small></span>' +
       (n > 0 ? '<i class="lh-mb">' + (n > 99 ? '99+' : n) + '</i>' : '') + '<span class="lh-mc" aria-hidden="true">›</span>';
   }
+  /* v2953 (propriétaire) : le menu Social tient dans l'écran SANS défiler (vu sur Android 360x663 : 46 px de trop).
+     S'il dépasse, la grille des logos est réduite juste ce qu'il faut (au plus 25 %) ; sinon rien ne change. */
+  function fitHome() {
+    var pane = $('livePaneHome'), g = $('liveHomeGrid'); if (!pane || !g) return;
+    var run = function () {
+      g.style.zoom = '';
+      if (pane.hidden || !pane.offsetParent) return;
+      var over = pane.scrollHeight - pane.clientHeight;
+      if (!(over > 1)) return;
+      var lo = 0.75, hi = 1, k;
+      for (k = 0; k < 7; k++) {
+        var mid = (lo + hi) / 2;
+        g.style.zoom = String(mid);
+        if (pane.scrollHeight - pane.clientHeight <= 1) lo = mid; else hi = mid;
+      }
+      g.style.zoom = String(Math.round(lo * 1000) / 1000);
+    };
+    if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
+    setTimeout(run, 250);
+  }
+  window.addEventListener('resize', function () { fitHome(); });
+
   function tileGo(k) {
     if (k === 'dms') { if (guest()) { show('guest', 'friends'); return; } if (D6.Social2) { D6.Social2.open('', true); return; } show('friends'); return; }
     if (guest() && k !== 'news' && k !== 'gifts' && k !== 'learn') { show('guest', k); return; }
@@ -509,6 +532,7 @@
     tab = w; curSub = sub || '';
     var h = H(), home = w === 'home';
     $('livePaneHome').hidden = !home;
+    if (home) fitHome();
     $('liveBar').hidden = false;
     $('liveModal').classList.toggle('lv-at-home', home);
     $('liveBarT').textContent = home ? ((D6.Social2 && D6.Social2.t ? D6.Social2.t('title') : '') || 'Social') : (sub && h[sub] ? h[sub][0] : (w === 'fun' && D6.LiveFun ? D6.LiveFun.title(sub) : (h[w] ? h[w][0] : '')));
