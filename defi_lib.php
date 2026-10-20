@@ -102,7 +102,7 @@ function orolado_defi_progress(array $db, string $uid, array $st, string $mode):
   $to = (float) ($st['expiresAt'] ?? 0);
   $market = (string) ($st['market'] ?? '');
   $rows = [];
-  foreach (($db['orders'] ?? []) as $o) {
+  foreach (orolado_orders_recent($db, [$uid], $mode) as $o) {
     if (!is_array($o) || (string) ($o['userId'] ?? '') !== $uid) continue;
     if ((string) ($o['assetId'] ?? '') !== $market) continue;
     if ((string) ($o['mode'] ?? $o['accountType'] ?? '') !== $mode) continue;

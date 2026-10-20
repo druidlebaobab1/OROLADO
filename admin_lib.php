@@ -1719,7 +1719,8 @@ function admin_orders(): array {
     $byId[$id] = $o;
   }
   $cut = time() - ADMIN_ORDERS_DAYS * 86400;
-  foreach (($local['orders'] ?? []) as $o) {
+  // Ordres du fichier + ordres réglés rangés hors du fichier (même liste qu'avant le rangement).
+  foreach (orolado_orders_recent($local, null, 'real') as $o) {
     if (!is_array($o)) continue;
     $row = admin_local_order_row($o);
     if ($row['id'] === '' || isset($byId[$row['id']]) || $row['mode'] !== 'real') continue;
@@ -1783,7 +1784,7 @@ function admin_orders_for_user(string $uid): array {
       if ($id !== '') $byId[$id] = $o;
     }
   }
-  foreach ((admin_local_db()['orders'] ?? []) as $o) {
+  foreach (orolado_orders_recent(admin_local_db(), [$uid], 'real') as $o) {
     if (!is_array($o)) continue;
     $row = admin_local_order_row($o);
     if ($row['id'] === '' || isset($byId[$row['id']]) || $row['mode'] !== 'real' || $row['user_id'] !== $uid) continue;
@@ -2091,6 +2092,8 @@ function admin_keep_purge_tick(): array {
     }
   }
   save_db(orolado_data_file(), $db);
+  // Ordres réglés rangés hors du fichier (data/orders) : même tri que ceux du fichier.
+  if (function_exists('orolado_orders_store_filter')) with_db_lock(static function () use ($keep) { orolado_orders_store_filter(static fn(string $u): bool => $u !== '' && isset($keep[$u])); return ['ok' => true, 'skip_write' => true]; });
 
   $sb = ['vaults' => false, 'profiles' => false, 'orders' => false, 'deposits' => false, 'withdrawals' => false, 'auth' => 0];
   $in = implode(',', $keepUuid);
@@ -2363,6 +2366,8 @@ function admin_wipe_except_admin(): array {
     }
   }
   save_db(orolado_data_file(), $db);
+  // Ordres réglés rangés hors du fichier (data/orders) : effacés comme ceux du fichier.
+  if (function_exists('orolado_orders_store_filter')) with_db_lock(static function () { orolado_orders_store_filter(static fn(string $u): bool => false); return ['ok' => true, 'skip_write' => true]; });
 
   $kickDir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'kicks';
   foreach (glob($kickDir . DIRECTORY_SEPARATOR . '*.kick') ?: [] as $f) {

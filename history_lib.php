@@ -167,7 +167,7 @@ function orolado_trade_history(array $db, string $uid, int $offset, int $limit):
   }
   // Secours : si la base ne répond pas, les trades récents du fichier local.
   if (!$rows && $offset === 0) {
-    foreach (array_reverse($db['orders'] ?? []) as $o) {
+    foreach (array_reverse(orolado_orders_recent($db, $ids, 'real')) as $o) {
       if (!is_array($o) || ($o['mode'] ?? '') !== 'real' || !in_array((string) ($o['userId'] ?? ''), $ids, true)) continue;
       $st = (string) ($o['status'] ?? '');
       if (!in_array($st, ['won', 'lost', 'void'], true)) continue;
@@ -183,35 +183,10 @@ function orolado_trade_history(array $db, string $uid, int $offset, int $limit):
  * Archivage : les trades terminés depuis plus de 2 jours quittent orolado.json (relu à chaque
  * action) pour des fichiers mensuels data/archive/orders-AAAA-MM.jsonl. Le site reste rapide
  * même avec des milliers de joueurs par jour ; rien n'est perdu (Supabase + archives).
+ * 2026-10-20 : en plus, les trades réglés depuis plus de 10 s sont rangés dans data/orders/
+ * (voir orolado_orders_maintain dans orolado_lib.php) ; tous les lecteurs passent par
+ * orolado_orders_recent(), qui rend la même liste qu'avant.
  */
 function orolado_archive_orders(): int {
-  $flag = orolado_data_dir() . '/archive/.last';
-  if (is_file($flag) && time() - (int) @filemtime($flag) < 600) return 0;
-  if (!is_dir(orolado_data_dir() . '/archive')) @mkdir(orolado_data_dir() . '/archive', 0755, true);
-  @touch($flag);
-  $cut = microtime(true) - 2 * 86400;
-  $moved = 0;
-  with_db_lock(function ($box) use ($cut, &$moved) {
-    $keep = [];
-    $byMonth = [];
-    foreach (($box->db['orders'] ?? []) as $o) {
-      $done = is_array($o) && in_array((string) ($o['status'] ?? ''), ['won', 'lost', 'void', 'closed'], true);
-      $at = is_array($o) ? (float) ($o['settledAt'] ?? $o['at'] ?? 0) : 0;
-      if ($done && $at > 0 && $at < $cut) {
-        $byMonth[date('Y-m', (int) ($o['at'] ?? time()))][] = json_encode($o, JSON_UNESCAPED_UNICODE);
-      } else {
-        $keep[] = $o;
-      }
-    }
-    if (!$byMonth) return ['ok' => true, 'skip_write' => true];
-    // L'archive est écrite AVANT de retirer quoi que ce soit : en cas d'échec, on ne touche à rien.
-    foreach ($byMonth as $ym => $lines) {
-      $ok = @file_put_contents(orolado_data_dir() . '/archive/orders-' . $ym . '.jsonl', implode("\n", $lines) . "\n", FILE_APPEND | LOCK_EX);
-      if ($ok === false) return ['ok' => false, 'skip_write' => true];
-    }
-    $moved = count($box->db['orders']) - count($keep);
-    $box->db['orders'] = $keep;
-    return ['ok' => true];
-  });
-  return $moved;
+  return orolado_orders_maintain();
 }

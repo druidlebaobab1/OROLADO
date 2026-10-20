@@ -184,6 +184,8 @@ function orolado_wipe_run(bool $keepGmail, string $confirm, ?array $only = null)
       $db[$list] = array_values(array_filter($db[$list], static fn($r) => is_array($r) && $isKept((string) ($r['userId'] ?? $r['user_id'] ?? ''))));
       $n[$list] = $before - count($db[$list]);
     }
+    // Ordres réglés rangés hors du fichier (data/orders) : même tri, sous le même verrou.
+    if (function_exists('orolado_orders_store_filter')) $n['orders'] = ($n['orders'] ?? 0) + orolado_orders_store_filter(static fn(string $uid): bool => $isKept($uid));
     foreach (['pendingRegistrations', 'pendingPasswordOtps', 'withdrawOtps'] as $map) {
       foreach (orolado_map_keys($db[$map] ?? []) as $k) {
         $em = strtolower((string) $k);

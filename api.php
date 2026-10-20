@@ -1764,35 +1764,8 @@ if ($action === 'admin') {
   $depsPaid = array_slice($depsPaid, 0, 200);
   $msgs = array_slice(array_reverse($db['support_messages'] ?? []), 0, 60);
 
-  $gameStats = null;
-  $orders = $db['orders'] ?? [];
-  if (is_array($orders) && count($orders) > 0) {
-    $byAsset = [];
-    $byDur = [];
-    $byAssetMode = ['real' => [], 'demo' => []];
-    $byDurMode = ['real' => [], 'demo' => []];
-    foreach ($orders as $o) {
-      if (!is_array($o)) continue;
-      $aid = (string) ($o['assetId'] ?? $o['asset_id'] ?? 'v100');
-      $dur = (int) ($o['duration'] ?? 0);
-      $mode = (($o['mode'] ?? 'demo') === 'real') ? 'real' : 'demo';
-      if (!isset($byAsset[$aid])) $byAsset[$aid] = 0;
-      $byAsset[$aid]++;
-      if (!isset($byDur[$dur])) $byDur[$dur] = 0;
-      $byDur[$dur]++;
-      if (!isset($byAssetMode[$mode][$aid])) $byAssetMode[$mode][$aid] = 0;
-      $byAssetMode[$mode][$aid]++;
-      if (!isset($byDurMode[$mode][$dur])) $byDurMode[$mode][$dur] = 0;
-      $byDurMode[$mode][$dur]++;
-    }
-    $gameStats = [
-      'byAsset' => $byAsset,
-      'byDuration' => $byDur,
-      'byAssetMode' => $byAssetMode,
-      'byDurationMode' => $byDurMode,
-      'total' => count($orders)
-    ];
-  }
+  // Même liste qu'avant : ordres du fichier + ordres réglés rangés hors du fichier (orolado_orders_maintain).
+  $gameStats = orolado_orders_game_stats($db);
 
   $traffic = [];
   foreach ($list as $u) {
@@ -2536,7 +2509,7 @@ if ($action === 'me') {
   ];
   $openOrders = [];
   $recentPositions = [];
-  foreach (($db['orders'] ?? []) as $o) {
+  foreach (orolado_orders_recent($db, [$uid]) as $o) {
     if (($o['userId'] ?? '') !== $uid) continue;
     $st = (string) ($o['status'] ?? '');
     $opened = (float) ($o['openedAt'] ?? $o['at'] ?? 0);

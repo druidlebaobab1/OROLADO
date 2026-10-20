@@ -590,7 +590,7 @@ function live_duel_answer(string $id, string $uid, bool $accept): array {
 /** Gain net DÉMO de $uid sur les trades ouverts entre start et end (réglés). */
 function live_duel_score(array $db, string $uid, int $start, int $end): array {
   $net = 0.0; $n = 0; $w = 0;
-  foreach ((array) ($db['orders'] ?? []) as $o) {
+  foreach (orolado_orders_recent(['orders' => (array) ($db['orders'] ?? [])] + $db, [$uid], 'demo') as $o) {
     if (!is_array($o) || (string) ($o['userId'] ?? '') !== $uid || ($o['mode'] ?? '') !== 'demo') continue;
     $at = (float) ($o['at'] ?? $o['openedAt'] ?? 0);
     if ($at < $start || $at > $end) continue;
@@ -739,7 +739,7 @@ function live_my_stats(string $uid): array {
   $n = 0; $w = 0; $best = 0; $cur = 0; $mk = []; $real = 0; $realVol = 0.0; $wkReal = 0;
   $wkStart = (int) strtotime('monday this week 00:00:00 UTC'); if ($wkStart > time()) $wkStart -= 7 * 86400;
   $wkN = 0; $wkMk = []; $wkBest = 0; $wkCur = 0;
-  $rows = array_values(array_filter((array) ($db['orders'] ?? []), static fn($o) => is_array($o) && (string) ($o['userId'] ?? '') === $uid && isset($o['net'])));
+  $rows = array_values(array_filter(orolado_orders_recent(['orders' => (array) ($db['orders'] ?? [])] + $db, [$uid]), static fn($o) => is_array($o) && (string) ($o['userId'] ?? '') === $uid && isset($o['net'])));
   usort($rows, static fn($a, $b) => ((float) ($a['at'] ?? 0)) <=> ((float) ($b['at'] ?? 0)));
   $uRow = $db['users'][$uid] ?? [];
   $isAdm = function_exists('orolado_is_admin_user') && is_array($uRow) && orolado_is_admin_user($uRow + ['id' => $uid]);
