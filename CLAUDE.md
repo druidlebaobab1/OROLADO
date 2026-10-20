@@ -19,3 +19,5 @@
 - Profil : style validé = grande photo 104 px au centre, nom normal (1,15 rem), ID / E-mail en lignes fines, pas de grand cadre ;
   fitProfileDrawer (js/app.js) ajuste à la hauteur ; la place libre va au solde, Recharger, adresse et lignes du menu.
 - Ne changer QUE ce qui est demandé (ex. « la croix du profil » ≠ toutes les croix du site).
+- Google, pages par langue (/en/, /es/… /zh/) : générées depuis index.html. Après CHAQUE modification de index.html :
+  `php scripts/gen-lang.php` (contrôle : `php scripts/gen-lang.php --check` doit afficher « OK »).
