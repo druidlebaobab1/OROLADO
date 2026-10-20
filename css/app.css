@@ -12935,7 +12935,6 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
    et au code, tout au bout à gauche : la carte du joueur respire */
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head{padding-left:4px!important;padding-right:4px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important;font-size:14px!important;box-shadow:none!important;opacity:.85}
-html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer::before,html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer::after{content:none!important;display:none!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:20px!important;padding:0 5px!important;border-color:rgba(253,230,138,.25)!important;background:transparent!important;opacity:.8}
 
 /* v2928 — Mot de passe / e-mail : contenu descendu un peu (la croix ne bouge pas) */
@@ -13004,8 +13003,8 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 
 /* v2931 — Profil (propriétaire) : langue et croix un peu plus grandes et bien visibles, sur la même ligne tout en haut */
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head{align-items:center!important;margin-top:-4px!important}
-html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;font-size:17px!important;opacity:1!important}
-html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:28px!important;padding:0 9px!important;font-size:13px!important;opacity:1!important;border-color:rgba(253,230,138,.4)!important;background:rgba(255,255,255,.05)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;font-size:18px!important;opacity:1!important;box-shadow:0 0 10px rgba(124,108,242,.45)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:31px!important;padding:0 11px!important;font-size:14px!important;opacity:1!important;border-color:rgba(253,230,138,.4)!important;background:rgba(255,255,255,.05)!important}
 
 /* v2932 — Historique des trades : la liste descend jusqu'en bas de l'écran (avant : coupée au milieu, vide dessous) ;
    elle défile à l'intérieur, la dernière ligne reste au-dessus de la barre d'accueil iPhone */
@@ -13036,3 +13035,6 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row,
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row:last-child{min-height:34px!important;padding:3px 0!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{height:26px!important;min-height:26px!important;min-width:60px!important;font-size:12px!important}
+/* v2935 — Profil : croix de profil avec son anneau doré (comme avant), un peu plus grande ; langue un peu plus grande ;
+   les deux sur la même ligne en haut, l'anneau n'est plus coupé au bord */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head{margin-top:0!important;padding-top:4px!important;padding-left:8px!important;padding-right:14px!important}
