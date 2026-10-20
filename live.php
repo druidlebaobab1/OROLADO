@@ -141,13 +141,34 @@ $dmOut = static function (array $m, string $me, string $peerOid): array {
   if (!empty($m['wh'])) $o['wh'] = (string) $m['wh'];
   return $o;
 };
-$pushTo = static function (string $uid, string $title, string $body): void {
+// 2026-10-20 : textes des alertes aux joueurs dans la langue de leur téléphone (avant : français pour tous).
+// Ordre : fr, en, es, pt, ar, tr, vi, id, ru, de, hi, zh ; langue inconnue → anglais.
+$pushTxt = static function (string $key, string $lang, array $v = []): string {
+  static $T = [
+    'friend' => ['Un ami', 'A friend', 'Un amigo', 'Um amigo', 'صديق', 'Bir arkadaş', 'Một người bạn', 'Seorang teman', 'Друг', 'Ein Freund', 'एक दोस्त', '一位好友'],
+    'duel' => ['Défi en démo : {n} min · touche pour accepter', 'Demo challenge: {n} min · tap to accept', 'Reto en demo: {n} min · toca para aceptar', 'Desafio em demo: {n} min · toque para aceitar', 'تحدٍّ تجريبي: {n} د · اضغط للقبول', 'Demo düellosu: {n} dk · kabul etmek için dokun', 'Thách đấu demo: {n} phút · chạm để nhận', 'Tantangan demo: {n} mnt · ketuk untuk menerima', 'Вызов в демо: {n} мин · нажмите, чтобы принять', 'Demo-Duell: {n} Min · tippen zum Annehmen', 'डेमो चुनौती: {n} मिनट · स्वीकार करने के लिए टैप करें', '模拟挑战：{n} 分钟 · 点击接受'],
+    'group' => ['{name} t’invite dans le groupe', '{name} invites you to the group', '{name} te invita al grupo', '{name} convidou você para o grupo', '{name} يدعوك إلى المجموعة', '{name} seni gruba davet ediyor', '{name} mời bạn vào nhóm', '{name} mengundangmu ke grup', '{name} приглашает вас в группу', '{name} lädt dich in die Gruppe ein', '{name} आपको ग्रुप में बुला रहे हैं', '{name} 邀请你加入群组'],
+    'voice' => ['🎤 Note vocale', '🎤 Voice note', '🎤 Nota de voz', '🎤 Mensagem de voz', '🎤 رسالة صوتية', '🎤 Sesli mesaj', '🎤 Tin nhắn thoại', '🎤 Pesan suara', '🎤 Голосовое сообщение', '🎤 Sprachnachricht', '🎤 वॉइस नोट', '🎤 语音消息'],
+    'photo' => ['📷 Photo', '📷 Photo', '📷 Foto', '📷 Foto', '📷 صورة', '📷 Fotoğraf', '📷 Ảnh', '📷 Foto', '📷 Фото', '📷 Foto', '📷 फ़ोटो', '📷 照片'],
+  ];
+  $i = array_search($lang, ['fr', 'en', 'es', 'pt', 'ar', 'tr', 'vi', 'id', 'ru', 'de', 'hi', 'zh'], true);
+  $s = (string) ($T[$key][$i === false ? 1 : $i] ?? '');
+  foreach ($v as $k => $x) $s = str_replace('{' . $k . '}', (string) $x, $s);
+  return $s;
+};
+/** $title / $body : texte, ou fonction (langue du téléphone) → texte. */
+$pushTo = static function (string $uid, $title, $body): void {
   if (!is_file(__DIR__ . '/push_lib.php')) return;
   try {
     require_once __DIR__ . '/push_lib.php';
-    $rows = [];
-    foreach (push_sub_files() as $pf) { $r = json_decode((string) @file_get_contents($pf), true); if (is_array($r) && (string) ($r['uid'] ?? '') === $uid) $rows[] = $r; }
-    if ($rows) push_send_rows($rows, push_payload($title, $body, '/?live=amis'));
+    foreach (push_sub_files() as $pf) {
+      $r = json_decode((string) @file_get_contents($pf), true);
+      if (!is_array($r) || (string) ($r['uid'] ?? '') !== $uid) continue;
+      $lg = (string) ($r['lang'] ?? 'fr');
+      $t = is_callable($title) ? (string) $title($lg) : (string) $title;
+      $b = is_callable($body) ? (string) $body($lg) : (string) $body;
+      push_send_rows([$r], push_payload($t, $b, '/?live=amis'));
+    }
   } catch (Throwable $e) { /* jamais bloquant */ }
 };
 
@@ -259,7 +280,8 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
       echo json_encode(['ok' => true, 'duel' => $duelOut($r['duel'], $uid)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
       if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
       $fromW = live_who_uid($uid);
-      $pushTo($p, '⚔️ ' . (string) ($fromW['name'] ?? 'Un ami'), 'Défi en démo : ' . (int) $r['duel']['min'] . ' min · touche pour accepter');
+      $dMin = (int) $r['duel']['min'];
+      $pushTo($p, static fn(string $l): string => '⚔️ ' . (string) ($fromW['name'] ?? $pushTxt('friend', $l)), static fn(string $l): string => $pushTxt('duel', $l, ['n' => $dMin]));
       exit;
     }
     if ($action === 'duelAnswer') {
@@ -303,7 +325,8 @@ if (in_array($action, ['friends', 'find', 'dm', 'dmSend', 'block', 'report', 'du
       if (!empty($r['delivered'])) {
         if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
         $fromW = live_who_uid($uid);
-        $pushTo($p, '💬 ' . (string) ($fromW['name'] ?? 'OROLADO'), live_media_label(['t' => $text, 'img' => $img]));
+        $pushTo($p, '💬 ' . (string) ($fromW['name'] ?? 'OROLADO'), (string) $text !== '' ? (string) $text
+          : static fn(string $l): string => $pushTxt(live_is_audio((string) $img) ? 'voice' : 'photo', $l));
       }
       exit;
     }
@@ -422,7 +445,7 @@ if (in_array($action, ['groups', 'gCreate', 'gJoin', 'gGet', 'gSend', 'gLeave', 
     if ($sent) {
       if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
       $fromW = live_who_uid($uid);
-      foreach ($sent as $pp) $pushTo($pp, '👪 ' . $g['name'], (string) ($fromW['name'] ?? 'Un ami') . ' t’invite dans le groupe');
+      foreach ($sent as $pp) $pushTo($pp, '👪 ' . $g['name'], static fn(string $l): string => $pushTxt('group', $l, ['name' => (string) ($fromW['name'] ?? $pushTxt('friend', $l))]));
     }
     exit;
   }

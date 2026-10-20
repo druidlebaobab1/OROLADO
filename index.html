@@ -1556,7 +1556,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
       <form id="formEmail" data-step="new" novalidate>
         <div class="field" id="emailStepNew">
           <label data-i18n="newEmailLabel">Nouvelle adresse e-mail</label>
-          <input id="newEmail" type="email" autocomplete="email" inputmode="email" placeholder="exemple@gmail.com">
+          <input id="newEmail" type="email" autocomplete="email" inputmode="email" data-i18n-placeholder="helpEmailPh" placeholder="example@gmail.com">
           <p class="err-msg" id="err-newEmail"></p>
         </div>
         <div class="field hidden" id="emailStepCode">
@@ -1665,7 +1665,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
         </div>
         <div class="field hidden" id="wdMobileFields">
           <label id="wdDialLabel" data-i18n="wdDial">Indicatif</label>
-          <select id="wdDial" aria-label="Indicatif international"></select>
+          <select id="wdDial" data-i18n-aria="wdDial" aria-label="Country code"></select>
           <div id="wdDialFixed" class="wd-dial-fixed hidden" aria-hidden="true">🇳🇬 +234</div>
           <label id="wdPhoneLabel" data-i18n="wdPhone">Numéro de téléphone</label>
           <input id="wdPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Ex: 0700000000">
@@ -1744,7 +1744,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
             <div class="momo-phone" id="momoPhoneRow">
               <!-- v2629 : 2 boutons-drapeaux dessinés (plus de liste blanche du téléphone). Burkina retiré : Wave n'y passe pas. -->
               <input type="hidden" id="momoDial" value="225">
-              <span class="wave-cc" role="radiogroup" aria-label="Indicatif">
+              <span class="wave-cc" role="radiogroup" data-i18n-aria="wdDial" aria-label="Country code">
                 <button type="button" class="wcc on" data-dial="225" data-ph="07 00 00 00 00" role="radio" aria-checked="true"><svg viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" fill="#F77F00"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#009E60"/></svg>+225</button>
                 <button type="button" class="wcc" data-dial="221" data-ph="77 000 00 00" role="radio" aria-checked="false"><svg viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" fill="#00853F"/><rect x="10" width="10" height="20" fill="#FDEF42"/><rect x="20" width="10" height="20" fill="#E31B23"/><path d="M15 6.2l1.05 3.2h3.36l-2.72 1.98 1.04 3.2L15 12.6l-2.73 1.98 1.04-3.2-2.72-1.98h3.36z" fill="#00853F"/></svg>+221</button>
               </span>
@@ -1906,13 +1906,13 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
         <span class="live-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><path d="M8.2 8.2a5.4 5.4 0 0 0 0 7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.4 5.4a9.3 9.3 0 0 0 0 13.2M18.6 5.4a9.3 9.3 0 0 1 0 13.2"/></svg></span>
         <div class="live-head-txt">
           <div class="live-title" id="liveTitle">OROLADO <b>Social</b></div>
-          <div class="live-sub"><i class="live-on"></i><span id="liveSub">En ligne · l'équipe te répond ici</span></div>
+          <div class="live-sub"><i class="live-on"></i><span id="liveSub">Online · the team answers you here</span></div>
         </div>
       </div>
       <div class="live-tabs" role="tablist">
-        <button type="button" class="live-tab on" id="liveTabNews" role="tab"><span id="liveTabNewsT">Actualités</span></button>
-        <button type="button" class="live-tab" id="liveTabFriends" role="tab"><span id="liveTabFriendsT">Amis</span><b class="live-badge" id="liveBadgeF"></b></button>
-        <button type="button" class="live-tab" id="liveTabChat" role="tab"><span id="liveTabChatT">Écris-nous</span><b class="live-badge" id="liveBadge"></b></button>
+        <button type="button" class="live-tab on" id="liveTabNews" role="tab"><span id="liveTabNewsT">News</span></button>
+        <button type="button" class="live-tab" id="liveTabFriends" role="tab"><span id="liveTabFriendsT">Friends</span><b class="live-badge" id="liveBadgeF"></b></button>
+        <button type="button" class="live-tab" id="liveTabChat" role="tab"><span id="liveTabChatT">Write to us</span><b class="live-badge" id="liveBadge"></b></button>
       </div>
       <div class="live-bar" id="liveBar" hidden><button type="button" class="live-back" id="liveBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b id="liveBarT"></b></div>
       <div class="live-pane live-home" id="livePaneHome"><div class="lh-grid" id="liveHomeGrid"></div></div>
@@ -2083,7 +2083,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
         </div>
         <div class="aff-full hidden" id="affFull">
           <div class="aff-lv-top">
-            <button type="button" class="aff-back" id="affBack" aria-label="Retour"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button type="button" class="aff-back" id="affBack" data-i18n-aria="authBack" aria-label="Back"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
             <b data-i18n="affListTitle">Mes amis invités</b>
           </div>
           <div class="aff-filter" id="affFilter">
@@ -2258,7 +2258,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/config.js?v=2810"></script>
   <script src="js/translations.js?v=2790"></script>
   <script src="js/i18n-zh.js?v=2910"></script>
-  <script src="js/i18n.js?v=2910"></script>
+  <script src="js/i18n.js?v=2961"></script>
   <script src="js/store.js?v=2790"></script>
   <script src="js/api.js?v=2790"></script>
   <!-- 2026-10-20 : Supabase servi par orolado.com (avant : cdn.jsdelivr.net, version non fixée, bloquait le chargement si lent) -->
@@ -2321,7 +2321,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/receipt.js?v=2951"></script>
   <script src="js/back.js?v=2912"></script>
   <script src="js/push.js?v=2790"></script>
-  <script src="js/app.js?v=2960"></script>
+  <script src="js/app.js?v=2961"></script>
   <script src="js/portal.js?v=2891"></script>
   <script src="js/live-ui.js?v=2910"></script>
   <script src="js/live.js?v=2953"></script>
@@ -2333,7 +2333,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/sports.js?v=2910"></script>
   <script src="js/casino-art.js?v=2873"></script>
   <script src="js/sfx.js?v=2885"></script>
-  <script src="js/casino.js?v=2959"></script>
+  <script src="js/casino.js?v=2961"></script>
   <script src="js/fit.js?v=2790"></script>
   <script src="js/learn-txt.js?v=2910"></script>
   <script src="js/learn-txt2.js?v=2910"></script>
