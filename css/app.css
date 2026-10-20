@@ -13161,7 +13161,7 @@ html.is-ios:root body #tradeWrap#tradeWrap#tradeWrap #oddsRow#oddsRow .odds-chip
 /* v2965 (propriétaire) — APPLI iPhone installée : la page descend jusqu'au vrai bas de l'écran (bande de 59 px sous la fenêtre),
    pour que le petit monde de planètes posé en fond (js/app.js) puisse y être dessiné. Le site lui-même (body fixé sur la fenêtre)
    ne bouge pas : ACHETER / VENDRE gardent leur place et leur marge de 6 px. Essai : non vérifié sur un vrai iPhone. */
-html.ios-app.is-ios:root:not(.fs-trade){min-height:calc(100% + var(--ios-under,0px))!important}
+/* 2026-10-21 : ANNULÉ — la page plus haute faisait passer le dessin du bas PAR-DESSUS ACHETER / VENDRE (vu sur l'iPhone du propriétaire). */
 
 /* 2026-10-20 : menu Cadeaux (accueil) : la carte du Top 50 n'y apparaît jamais (seulement dans « Tournoi démo ») */
 html:root body #portalModal#portalModal.gh-home .portal-box > #topCard{display:none!important}
@@ -13197,3 +13197,8 @@ html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal
 @keyframes oroFsLive{0%,100%{box-shadow:0 0 0 0 rgba(255,77,94,0),inset 0 0 0 1px rgba(255,77,94,.35)}50%{box-shadow:0 0 10px 1px rgba(255,77,94,.38),inset 0 0 0 1px rgba(255,77,94,.75)}}
 html:not(.fs-trade) body #btnChartFs#btnChartFs{animation:oroFsLive 1.8s ease-in-out infinite!important}
 @media (prefers-reduced-motion:reduce){html body #btnChartFs#btnChartFs{animation:none!important}}
+/* 2026-10-21 (propriétaire) : APPLI iPhone — langue et croix du profil un peu plus haut (elles étaient plus basses que dans Safari) */
+html.ios-app:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{translate:10px -11px!important}
+html.ios-app:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade{translate:-8px -11px!important}
+html.ios-app[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{translate:-10px -11px!important}
+html.ios-app[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade{translate:8px -11px!important}
