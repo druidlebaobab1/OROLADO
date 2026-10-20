@@ -6995,6 +6995,23 @@
   // v2934 — Profil : si le contenu dépasse la hauteur du téléphone, il est réduit juste ce qu'il faut (au plus 28 %, petit iPhone)
   // pour que tout le menu se voie, jusqu'à « Déconnecter mes autres appareils » et « Se déconnecter ».
   var profFitObs = null;
+  // v2957 (propriétaire) : l'ID public et l'e-mail s'affichent EN ENTIER dans leur ligne ; trop long → le texte
+  // rapetisse juste ce qu'il faut (comme les montants), jusqu'à 9 px ; au-delà seulement, « … ».
+  function fitProfIds() {
+    ['profEmail', 'profPublicId'].forEach(function (id) {
+      var el = $(id);
+      if (!el || !el.offsetParent) return;
+      el.style.removeProperty('font-size');
+      el.classList.remove('fit-on');
+      var base = parseFloat(getComputedStyle(el).fontSize) || 14;
+      var size = base;
+      while (el.scrollWidth > el.clientWidth + 0.5 && size > 9) {
+        size -= 0.5;
+        el.style.setProperty('font-size', size + 'px', 'important');
+      }
+      if (size < base && el.scrollWidth <= el.clientWidth + 0.5) el.classList.add('fit-on');
+    });
+  }
   function fitProfileDrawer() {
     var d = $('drawerProfile');
     if (!d) return;
@@ -7082,8 +7099,8 @@
         if (!(k > 0.1)) apply(0);
       }
     };
-    if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
-    setTimeout(run, 200);
+    if (window.requestAnimationFrame) requestAnimationFrame(function () { run(); fitProfIds(); }); else { run(); fitProfIds(); }
+    setTimeout(function () { run(); fitProfIds(); }, 200);
   }
 
   function updateWithdrawMinHint() {
