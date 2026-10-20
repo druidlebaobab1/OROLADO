@@ -112,8 +112,9 @@
     var md = S.adminTest ? 'demo' : 'real';
     // v2745 (propriétaire) : EXACTEMENT la carte « Compte réel » du trading (icône portefeuille verte, libellé vert, « $ » devant)
     var realLbl = (document.querySelector('#modeReal .mb-lbl') || {}).textContent || X().realAcc;
+    var demoLbl = (document.querySelector('#modeDemo .mb-lbl') || {}).textContent || 'DEMO';
     b.innerHTML = '<span class="cw-wal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17a1 1 0 0 1 1 1v1.5"/><rect x="3.5" y="7.5" width="17" height="12" rx="2.6"/><path d="M20.5 11.5h-4a2 2 0 0 0 0 4h4z"/><circle cx="16.6" cy="13.5" r=".9" fill="currentColor"/></svg></span>' +
-      '<span class="cw-t"><small>' + esc(S.adminTest ? 'TEST ADMIN' : realLbl) + '</small><b>$&nbsp;' + (S.bal[md] == null ? '—' : m2(S.bal[md])) + '</b></span><i class="cw-plus" aria-hidden="true">+</i>';
+      '<span class="cw-t"><small>' + esc(S.adminTest ? demoLbl : realLbl) + '</small><b>$&nbsp;' + (S.bal[md] == null ? '—' : m2(S.bal[md])) + '</b></span><i class="cw-plus" aria-hidden="true">+</i>';
     b.className = 'cs-wallet cw-same ' + md;
   }
   var vaultT = 0;
@@ -530,7 +531,7 @@
       var n = String(inp.value || inp.placeholder || '').length;
       if (n > 4) inp.style.setProperty('font-size', Math.max(10, baseFs * 5.4 / n).toFixed(1) + 'px', 'important');
     };
-    var set = function (v) { v = Math.max(0.1, Math.min(1000, Math.round((Number(v) || 0.1) * 100) / 100)); S.stake = v; inp.value = m2(v); fitInp(); box.dispatchEvent(new Event('stake')); };
+    var set = function (v) { v = Math.max(0.1, Math.round((Number(v) || 0.1) * 100) / 100); S.stake = v; inp.value = m2(v); fitInp(); box.dispatchEvent(new Event('stake')); };
     // v2807 (propriétaire, iPhone) : select() ne sélectionne pas sur iPhone → le montant tapé s'ajoutait derrière l'ancien
     // (« 0.105 »). Toucher la case la VIDE (l'ancien montant reste en gris) ; vide en sortant = l'ancien montant revient.
     var editing = false;
@@ -545,7 +546,7 @@
     inp.addEventListener('input', function () {
       var c = String(inp.value).replace(/[^0-9.,]/g, ''); if (c !== inp.value) inp.value = c; fitInp();
       var v = parseFloat(c.replace(',', '.'));
-      if (isFinite(v) && v >= 0.1) { S.stake = Math.min(1000, Math.round(v * 100) / 100); box.dispatchEvent(new Event('stake')); }
+      if (isFinite(v) && v >= 0.1) { S.stake = Math.round(v * 100) / 100; box.dispatchEvent(new Event('stake')); }
     });
     inp.addEventListener('blur', commit);
     inp.addEventListener('change', commit);
@@ -577,7 +578,7 @@
         if (op === 'half') set(S.stake / 2);
         else if (op === 'dbl') set(S.stake * 2);
         else if (op === 'clr') set(0.1);
-        else { var bal = S.bal[S.adminTest ? 'demo' : 'real']; set(Math.min(1000, bal != null && bal >= 0.1 ? Math.floor(bal * 100) / 100 : 1000)); }
+        else { var bal = S.bal[S.adminTest ? 'demo' : 'real']; set(bal != null && bal >= 0.1 ? Math.floor(bal * 100) / 100 : 0.1); }
       });
     });
     setTimeout(fitInp, 0);
