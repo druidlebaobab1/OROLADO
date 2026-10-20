@@ -13157,3 +13157,6 @@ html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z
 /* v2964 (propriétaire) — iPhone seulement : la bulle 5000 % (la plus grande) touchait VENDRE : un peu plus petite, rétrécie
    vers le haut (son haut ne bouge pas : jamais sur le cadre $ 1.90) → petit espace au-dessus de VENDRE */
 html.is-ios:root body #tradeWrap#tradeWrap#tradeWrap #oddsRow#oddsRow .odds-chip:last-child{scale:.95!important;translate:0 -2px!important;transform-origin:50% 0!important}
+
+/* 2026-10-20 : menu Cadeaux (accueil) : la carte du Top 50 n'y apparaît jamais (seulement dans « Tournoi démo ») */
+html:root body #portalModal#portalModal.gh-home .portal-box > #topCard{display:none!important}

@@ -587,9 +587,10 @@
     if ($('liveTabFriendsT')) $('liveTabFriendsT').textContent = x.friends;
     // v2855 (propriétaire : « au 1er clic après actualisation, le menu se remplit petit à petit ») : la 1re fois, la grille
     // reste invisible le temps que Safari ait tout dessiné, puis apparaît D'UN COUP (court fondu) — comme Cadeaux.
-    var gFirst = $('liveHomeGrid');
-    if (gFirst && !openedOnce) { openedOnce = true; gFirst.style.transition = 'none'; gFirst.style.opacity = '0';
-      requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(function () { gFirst.style.transition = 'opacity .18s ease-out'; gFirst.style.opacity = '1'; }, 90); }); }); }
+    // 2026-10-20 (propriétaire : « quand on clique sur Social, les logos arrivent après ») : plus de fondu retardé ; la grille
+    // est déjà dessinée (3 s après le chargement) et s'affiche tout de suite, comme Cadeaux et Paris.
+    if (!$('liveHomeGrid') || !$('liveHomeGrid').firstChild) { try { paintHome(); } catch (eP0) { /* ignore */ } }
+    openedOnce = true;
     if (D6.App && D6.App.openModal) D6.App.openModal('liveModal');
     // v2796 (propriétaire) : Social s'ouvre en MESSAGERIE (js/social2.js) ; l'ancienne page en tuiles reste dans « Plus »
     // v2808 (propriétaire) : le VISITEUR arrive sur le menu en tuiles (il voit tout ce qui existe ; chaque action demande l'inscription)
