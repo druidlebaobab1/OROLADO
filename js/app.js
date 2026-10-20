@@ -3180,7 +3180,10 @@
         '<button type="button" class="coach-go">' + esc(t('coachDepBtn')) + '</button><button type="button" class="coach-later">' + esc(t('coachLater')) + '</button>';
     }
     if (kind === 'calm') {
-      var tip = function (ico, key) { return '<div class="coach-tip"><i>' + COACH_ICO[ico] + '</i><span>' + esc(t(key)) + '</span></div>'; };
+      // 2026-10-20 (propriétaire) : nombre EXACT d'indices (« {n} marchés »), compté sur la liste réelle
+      var nIdx = 55;
+      try { nIdx = Object.keys(D6.CONFIG.ASSETS).length || nIdx; } catch (eN) { /* garde 55 */ }
+      var tip = function (ico, key) { return '<div class="coach-tip"><i>' + COACH_ICO[ico] + '</i><span>' + esc(String(t(key)).replace('{n}', nIdx)) + '</span></div>'; };
       return '<div class="coach-big">' + COACH_ICO.trophy + '</div><h2>' + esc(t('coachCalmT')) + '</h2><p>' + esc(t('coachCalmS')) + '</p>' +
         // v2678 (propriétaire) : plus de titre « Garde ton calme » ; 6 conseils utiles ; bouton « J'ai compris ».
         '<div class="coach-tips">' + tip('chart', 'coachCalm1') + tip('coin', 'coachCalm2') + tip('pad', 'coachCalm3') + tip('eye', 'coachCalm5') + tip('shield', 'coachCalm6') + tip('cap', 'coachCalm4') + '</div>' +
@@ -9608,6 +9611,9 @@
       deferredPrompt = e;
       showInstallBanner();
     });
+    // 2026-10-20 : annonce de Chrome reçue avant ce code (gardée par index.html) → bouton Installer = vraie installation
+    window.addEventListener('oro-bip', function () { if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; showInstallBanner(); } });
+    if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; showInstallBanner(); }
     if (isIos() && !isStandalone()) showInstallBanner();
     setTimeout(function () {
       if (!deferredPrompt && !isIos() && !isStandalone()) showInstallBanner();
@@ -9621,8 +9627,26 @@
             if (choice && choice.outcome === 'accepted') localStorage.setItem('oro_install_dismissed', '1');
           } catch (e) { /* ignore */ }
           deferredPrompt = null;
+          window.__oroBip = null;
           hideInstallBanner();
           return;
+        }
+        // Android / ordinateur : Chrome peut annoncer « installable » une seconde plus tard → on l'attend un peu
+        if (!isIos() && 'onbeforeinstallprompt' in window) {
+          var waited = await new Promise(function (res) {
+            var done = false;
+            var fin = function (v) { if (!done) { done = true; window.removeEventListener('oro-bip', onB); res(v); } };
+            var onB = function () { fin(window.__oroBip); };
+            window.addEventListener('oro-bip', onB);
+            setTimeout(function () { fin(window.__oroBip || null); }, 1500);
+          });
+          if (waited) {
+            deferredPrompt = null; window.__oroBip = null;
+            waited.prompt();
+            try { var ch = await waited.userChoice; if (ch && ch.outcome === 'accepted') localStorage.setItem('oro_install_dismissed', '1'); } catch (eW) { /* ignore */ }
+            hideInstallBanner();
+            return;
+          }
         }
         // v2493 : iPhone = 3 étapes iPhone ; Android (Chrome pas encore prêt) = 3 étapes Android dans la même fenêtre
         // (avant : petit message avec la consigne iPhone « Partager… », incompréhensible sur Android).
