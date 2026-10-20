@@ -167,13 +167,13 @@
           var el = list[i].target;
           if (!el || !el.classList) continue;
           var sg = sigOf(el);
-          if (el._oroSig !== sg) { el._oroSig = sg; navLock(); saveSoon(); }
+          if (el._oroSig !== sg) { el._oroSig = sg; navLock(); saveSoon(); retCheck(); }
         }
       });
       var hook = function () {
         document.querySelectorAll('.modal-backdrop, #drawerProfile, #rcptModal, #learnModal, #coachModal').forEach(function (el) {
           if (el._oroLv) return; el._oroLv = 1; el._oroSig = sigOf(el);
-          if (/\b(active|on)\b/.test(el._oroSig)) navLock(); // page créée et ouverte d'un coup (1re ouverture des Jeux…)
+          if (/\b(active|on)\b/.test(el._oroSig)) { navLock(); retCheck(); } // page créée et ouverte d'un coup (1re ouverture des Jeux…)
           mo.observe(el, { attributes: true, attributeFilter: ['class', 'data-g'] });
         });
       };
@@ -288,6 +288,26 @@
     } catch (e) { /* ignore */ }
     finally { setTimeout(unveil, 60); setTimeout(function () { restoring = false; restoredAt = Date.now(); save(); }, 900); }
   }
+  /* 2026-10-20 (propriétaire : « le retour doit revenir UNE étape en arrière, il doit se souvenir où la personne était ») :
+     une page ouverte DEPUIS Social (Jouer / Paris depuis Actualités, Déposer depuis Envoyer de l'argent, écrire par e-mail…)
+     ramène, quand on la ferme, exactement à la page Social d'où l'on venait (au lieu du trading). Affichage seulement. */
+  var socRet = null, retT = 0;
+  function socialReturn(target) {
+    try { if (!isOn('liveModal')) return; var r = route(); if (r.s !== 'social') return; socRet = { r: r, id: target, seen: false, at: Date.now() }; } catch (e) { socRet = null; }
+  }
+  function retCheck() {
+    if (!socRet) return;
+    if (Date.now() - socRet.at > 30 * 60 * 1000) { socRet = null; return; }
+    if (isOn(socRet.id)) { socRet.seen = true; return; }
+    if (!socRet.seen) { if (Date.now() - socRet.at > 6000) socRet = null; return; }
+    clearTimeout(retT);
+    retT = setTimeout(function () {
+      if (!socRet || isOn(socRet.id)) return;
+      var r = socRet.r; socRet = null;
+      if (isOn('liveModal') || anyOpen() || authShown()) return; // une autre page a pris la place : on ne force rien
+      restore(r);
+    }, 140);
+  }
   async function boot() {
     watchLevels();
     var r = null;
@@ -301,5 +321,5 @@
     restore(r);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  D6.Route = { save: save, get: route, lock: navLock, navMs: function (v) { if (v > 0 && v < 5000) NAV_MS = v; } }; // navMs : pour les tests seulement
+  D6.Route = { save: save, get: route, lock: navLock, socialReturn: socialReturn, navMs: function (v) { if (v > 0 && v < 5000) NAV_MS = v; } }; // navMs : pour les tests seulement
 })(window.D6 = window.D6 || {});

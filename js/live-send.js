@@ -64,18 +64,46 @@
     } catch (e) { return null; }
   }
   var st = null, busy = false;
-  async function status() { var r = await api('xferStatus'); if (r && r.ok !== false) st = r; return st; }
+  // 2026-10-20 : on se souvient (par compte) que l'envoi est ouvert → la tuile est là dès la 1re image du menu Social
+  function memKey() { var t = (D6.Api && D6.Api.token && D6.Api.token()) || ''; return 'oro_xfer_on_' + String(t).slice(-12); }
+  function memOn() { try { return localStorage.getItem(memKey()) === '1'; } catch (e) { return false; } }
+  async function status() { var r = await api('xferStatus'); if (r && r.ok !== false) { st = r; try { localStorage.setItem(memKey(), r.enabled ? '1' : '0'); } catch (e) { /* ignore */ } } return st; }
 
+  // 2026-10-20 (propriétaire : « la page met 1 à 3 secondes ») : la page s'affiche TOUT DE SUITE avec les dernières
+  // données connues (solde, amis, historique) ; le solde et les amis frais arrivent en même temps (2 appels en parallèle)
+  // et remplacent l'affichage seulement s'ils ont changé — jamais pendant que la personne remplit le formulaire.
+  var frCache = null;
   async function open(box, preId) {
     var x = X();
-    box.innerHTML = '<p class="ls-load">…</p>';
     var my = box._seq = (box._seq || 0) + 1;
-    await status();
+    var shown = '';
+    if (st && st.enabled) { shown = sig(frCache || []); paint(box, preId, frCache || []); }
+    else box.innerHTML = '<p class="ls-load">…</p>';
+    var res = await Promise.all([status(), live('friends', {})]);
     if (box._seq !== my) return;
+    var fr = res[1];
+    if (fr && fr.ok && fr.list) frCache = fr.list.slice(0, 20);
     if (!st || !st.enabled) { box.innerHTML = '<p class="lf-empty">' + esc(x.e_off) + '</p>'; return; }
-    var fr = await live('friends', {});
-    if (box._seq !== my) return;
-    var friends = (fr && fr.ok && fr.list) ? fr.list.slice(0, 20) : [];
+    var friends = frCache || [];
+    if (shown && shown === sig(friends)) return;
+    if (shown && !untouched(box, preId)) {
+      // la personne a déjà commencé : on ne touche qu'au solde et à l'historique
+      var cv = box.querySelector('.ls2-cv b'); if (cv) cv.innerHTML = m2(st.can) + ' <i>$</i>';
+      var h = box.querySelector('#lsHist'); if (h) { h.innerHTML = hist(); bindHist(box); }
+      return;
+    }
+    paint(box, preId, friends);
+  }
+  function sig(friends) { return JSON.stringify([st && st.can, st && st.min, st && st.log, friends.map(function (f) { return f.id + '|' + f.name; })]); }
+  function untouched(box, preId) {
+    var to = box.querySelector('#lsTo'), am = box.querySelector('#lsAmt'), sh = box.querySelector('#lsSheet');
+    if (sh && !sh.hidden) return false;
+    if (to && (to.value !== (preId || '') || document.activeElement === to)) return false;
+    if (am && (am.value || document.activeElement === am)) return false;
+    return true;
+  }
+  function paint(box, preId, friends) {
+    var x = X();
     var noDep = st.can < (st.min || 1);
     box.innerHTML = '<div class="ls2">' +
       // v2786 (propriétaire) : carte de solde comme les grandes applis d'envoi (petit hibou, disponible, 0 % de frais)
@@ -89,7 +117,7 @@
         '<button type="button" class="ls2-go" id="lsGo">' + esc(x.go) + ' <span aria-hidden="true">→</span></button>') +
       '</div><b class="ls2-h">' + esc(x.hist) + '</b><div class="ls2-hist" id="lsHist">' + hist() + '</div>' +
       '<div class="ls2-sheet" id="lsSheet" hidden></div>';
-    if ($('lsDep')) $('lsDep').addEventListener('click', function () { if (D6.Live) D6.Live.close(); if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); });
+    if ($('lsDep')) $('lsDep').addEventListener('click', function () { if (D6.Route && D6.Route.socialReturn) D6.Route.socialReturn('depositModal'); if (D6.Live) D6.Live.close(); if (D6.App && D6.App.openDeposit) D6.App.openDeposit(); });
     box.querySelectorAll('.ls2-fr button').forEach(function (b) {
       b.addEventListener('click', function () { $('lsTo').value = b.getAttribute('data-id'); box.querySelectorAll('.ls2-fr button').forEach(function (z) { z.classList.toggle('on', z === b); }); });
     });
@@ -195,5 +223,5 @@
       try { await navigator.clipboard.writeText(txt); toast(x.copied, 'ok'); } catch (e) { /* ignore */ }
     });
   }
-  D6.LiveSend = { open: open, title: function () { return X().title; }, sub: function () { return X().sub; }, status: status, enabled: function () { return !!(st && st.enabled); } };
+  D6.LiveSend = { open: open, title: function () { return X().title; }, sub: function () { return X().sub; }, status: status, warm: function () { return live('friends', {}).then(function (fr) { if (fr && fr.ok && fr.list) frCache = fr.list.slice(0, 20); }); }, enabled: function () { return st ? !!st.enabled : memOn(); } };
 })(window.D6 = window.D6 || {});
