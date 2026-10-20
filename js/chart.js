@@ -5607,9 +5607,12 @@
    * Au plus 6 s d'attente : réseau très lent → comportement d'avant (courbe figée puis le direct).
    */
   var lastBackdrop = null;
-  var arriveGate = true;
+  // 2026-10-20 (propriétaire : « depuis Google, la courbe restait vide 3-4 s, Chargement du marché ») : à l'OUVERTURE du
+  // site on n'attend plus (l'historique est montré tout de suite, comme avant) ; l'attente reste pour le retour sur
+  // l'onglet et le changement d'indice, et ne dépasse plus 1,2 s (avant : jusqu'à 6 s).
+  var arriveGate = false;
   var arriveSince = Date.now();
-  var ARRIVE_MAX_MS = 6000;
+  var ARRIVE_MAX_MS = 1200;
   var frameHeld = false;
   var arriveHidden = false;
   function armArrival() {
