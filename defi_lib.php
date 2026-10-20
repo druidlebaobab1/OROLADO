@@ -220,8 +220,7 @@ function orolado_defi_view(array $st, int $now, string $uid, string $mode): arra
 function orolado_defi_status(array &$db, array $user, bool $activate = false): array {
   $uid = (string) ($user['id'] ?? '');
   if ($uid === '' || !orolado_defi_allowed($user)) return ['ok' => true, 'enabled' => false];
-  // Le compte admin (testeur) joue le Défi en DÉMO : aucun argent réel pendant les essais.
-  $mode = orolado_defi_is_tester($user) ? 'demo' : 'real';
+  $mode = 'real';
   $now = time();
   return orolado_defi_with($uid, static function (&$st) use (&$db, $uid, $activate, $now, $mode) {
     if (!isset($st['history']) || !is_array($st['history'])) $st['history'] = [];
