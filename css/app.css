@@ -12806,3 +12806,11 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
   html:root body #withdrawModal .wd-card-grid{row-gap:3px!important}
   html:root body #withdrawModal .wd-group-label{margin-top:2px!important;margin-bottom:2px!important}
 }
+/* v2910 — Guide « Apprendre » : case « 50+ marchés » après 4 planètes, et icônes de l'étape Jeux / Paris / Social. */
+.learn-modal .lg-mk-i.lg-mk-more i{display:grid;place-items:center;font-style:normal;font-weight:900;font-size:13px;color:#FFD27A;background:rgba(251,191,36,.12);box-shadow:inset 0 0 0 1.5px rgba(251,191,36,.7)}
+.learn-modal .lg-mk-i.lg-mk-more small{color:#FFD27A}
+.learn-modal .lg-world .lg-i{width:24px;height:24px;color:#FFD27A;stroke-width:1.8}
+.learn-modal .lg-world small{font-weight:800;max-width:100%;overflow-wrap:anywhere}
+/* Noms des marchés et « 50+ » : écrits de gauche à droite, même police latine, aussi en arabe (« +50 », « VOLATILITY » coupé). */
+.learn-modal .lg-mk-i small{font-family:"Plus Jakarta Sans",system-ui,sans-serif}
+.learn-modal .lg-mk-i.lg-mk-more i,.learn-modal .lg-mk-i:not(.lg-mk-more) small{direction:ltr;unicode-bidi:isolate}

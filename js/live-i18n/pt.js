@@ -324,10 +324,11 @@
       mSub: 'Novas missões toda segunda · +{x} pontos cada',
       mDone: 'Feito ✓',
       m: {
-        trades: 'Faça 20 trades',
-        quiz: 'Responda 10 perguntas do quiz',
-        markets: 'Jogue em 3 mercados diferentes',
-        streak: 'Ganhe 3 trades seguidos'
+        trades: 'Faça 50 trades',
+        real: 'Faça 10 trades no real',
+        quiz: 'Responda 20 perguntas do quiz',
+        markets: 'Jogue em 5 mercados diferentes',
+        streak: 'Ganhe 5 trades seguidos'
       },
       sTrades: 'Trades',
       sRate: 'Acertos',
@@ -448,7 +449,7 @@
         'Grande medidor',
         'Encha e ganhe um grande presente'
       ],
-      wRule: 'Cada depósito de $10 ou mais dá 1 giro grátis.',
+      wRule: '1 giro grátis a cada $10 depositados. Exemplo: $100 depositados = 10 giros.',
       spin: 'Girar a roda',
       tickets: 'Você tem {n} giro(s) para jogar',
       ticket1: 'Você tem 1 giro para jogar',
@@ -915,7 +916,7 @@
         dice: ["Dados", "Escolha sua chance"],
         limbo: ["Limbo", "Mire até ×1000"],
         wheel: ["Roda do cassino", "Até ×50"],
-        race: ["Corrida de carros", "6 carros · ×5.7"],
+        race: ["Corrida de carros", "10 carros · ao vivo"],
         roulette: ["Roleta", "Vermelho, preto, número ×36"],
         slots: ["Caça-níqueis", "Até ×50"],
         plinko: ["Plinko", "Até ×12"],

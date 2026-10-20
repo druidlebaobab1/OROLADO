@@ -324,10 +324,11 @@
       mSub: 'Nhiệm vụ mới mỗi thứ Hai · +{x} điểm mỗi nhiệm vụ',
       mDone: 'Xong ✓',
       m: {
-        trades: 'Thực hiện 20 giao dịch',
-        quiz: 'Trả lời 10 câu đố',
-        markets: 'Chơi trên 3 thị trường khác nhau',
-        streak: 'Thắng 3 giao dịch liên tiếp'
+        trades: 'Thực hiện 50 giao dịch',
+        real: 'Thực hiện 10 giao dịch thật',
+        quiz: 'Trả lời 20 câu đố',
+        markets: 'Chơi trên 5 thị trường khác nhau',
+        streak: 'Thắng 5 giao dịch liên tiếp'
       },
       sTrades: 'Giao dịch',
       sRate: 'Tỷ lệ thắng',
@@ -448,7 +449,7 @@
         'Thanh lớn',
         'Làm đầy để nhận quà lớn'
       ],
-      wRule: 'Mỗi khoản nạp từ 10 $ trở lên cho bạn 1 lượt quay miễn phí.',
+      wRule: '1 lượt quay miễn phí cho mỗi 10 $ nạp vào. Ví dụ: nạp 100 $ = 10 lượt quay.',
       spin: 'Quay vòng quay',
       tickets: 'Bạn có {n} lượt quay để chơi',
       ticket1: 'Bạn có 1 lượt quay để chơi',
@@ -932,7 +933,7 @@
       ],
       "race": [
         "Đua xe",
-        "6 xe · ×5,7"
+        "10 xe · trực tiếp"
       ],
       "roulette": [
         "Roulette",
