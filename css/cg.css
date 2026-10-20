@@ -217,3 +217,9 @@ html:root body #casinoModal.pred-only .cs-top .cs-snd{display:none!important}
 
 /* v2876 (propriétaire) : le bouton du son seulement DANS les jeux, pas dans la salle des jeux */
 html:root body #casinoModal:not(.in-game) .cs-top #csSnd{display:none!important}
+/* v2882 (propriétaire) : pastille de gain — vrai trophée doré en médaillon (plus de boule jaune) */
+html:root body #casinoModal .cs-toast .ct-coin.ct-trophy{width:30px!important;height:30px!important;margin:-3px 0 -3px -2px;background:none!important;border-radius:50%;
+  box-shadow:0 0 0 2px rgba(255,255,255,.35),0 0 14px rgba(253,224,71,.75)!important;animation:ctTrIn .6s cubic-bezier(.2,1.6,.4,1) both}
+html:root body #casinoModal .cs-toast .ct-trophy svg{width:100%;height:100%;display:block}
+@keyframes ctTrIn{0%{transform:scale(.3) rotate(-25deg)}100%{transform:scale(1) rotate(0)}}
+html.oro-lite body #casinoModal .cs-toast .ct-trophy{animation:none}

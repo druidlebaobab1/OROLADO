@@ -770,8 +770,6 @@ function casino_check_stake(float $stake, string $game = ''): ?string {
   return null;
 }
 function casino_mode(string $m, bool $guest, ?array $user = null): string {
-  // v2690b : réel seulement pour les joueurs. Le compte ADMIN joue sur son solde de test (démo) pour vérifier les jeux en ligne.
-  if ($user && function_exists('orolado_is_admin_user') && orolado_is_admin_user($user)) return 'demo';
   return 'real';
 }
 

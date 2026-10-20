@@ -19,6 +19,11 @@ const OROLADO_DEFI_MULT = 3;
 const OROLADO_DEFI_MIN_STAKE = 1.0;
 
 function orolado_defi_markets(): array {
+  // Tous les indices disponibles (10 d'origine + indices nommés de indices.json)
+  if (function_exists('orolado_feed_assets')) {
+    $ids = array_keys(orolado_feed_assets());
+    if (count($ids) >= 10) return $ids;
+  }
   return ['v100', 'v75', 'stable', 'crash300', 'apex500', 'horizon50', 'goldtrend', 'boomspike', 'nexusprime', 'titanpulse'];
 }
 
@@ -215,8 +220,7 @@ function orolado_defi_view(array $st, int $now, string $uid, string $mode): arra
 function orolado_defi_status(array &$db, array $user, bool $activate = false): array {
   $uid = (string) ($user['id'] ?? '');
   if ($uid === '' || !orolado_defi_allowed($user)) return ['ok' => true, 'enabled' => false];
-  // Le compte admin (testeur) joue le Défi en DÉMO : aucun argent réel pendant les essais.
-  $mode = orolado_defi_is_tester($user) ? 'demo' : 'real';
+  $mode = 'real';
   $now = time();
   return orolado_defi_with($uid, static function (&$st) use (&$db, $uid, $activate, $now, $mode) {
     if (!isset($st['history']) || !is_array($st['history'])) $st['history'] = [];

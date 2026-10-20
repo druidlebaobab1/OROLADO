@@ -109,11 +109,11 @@
       $('csLogin').addEventListener('click', function (e) { e.stopPropagation(); toAuth('login'); });
       return;
     }
-    var md = S.adminTest ? 'demo' : 'real';
+    var md = 'real';
     // v2745 (propriétaire) : EXACTEMENT la carte « Compte réel » du trading (icône portefeuille verte, libellé vert, « $ » devant)
     var realLbl = (document.querySelector('#modeReal .mb-lbl') || {}).textContent || X().realAcc;
     b.innerHTML = '<span class="cw-wal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17a1 1 0 0 1 1 1v1.5"/><rect x="3.5" y="7.5" width="17" height="12" rx="2.6"/><path d="M20.5 11.5h-4a2 2 0 0 0 0 4h4z"/><circle cx="16.6" cy="13.5" r=".9" fill="currentColor"/></svg></span>' +
-      '<span class="cw-t"><small>' + esc(S.adminTest ? 'TEST ADMIN' : realLbl) + '</small><b>$&nbsp;' + (S.bal[md] == null ? '—' : m2(S.bal[md])) + '</b></span><i class="cw-plus" aria-hidden="true">+</i>';
+      '<span class="cw-t"><small>' + esc(realLbl) + '</small><b>$&nbsp;' + (S.bal[md] == null ? '—' : m2(S.bal[md])) + '</b></span><i class="cw-plus" aria-hidden="true">+</i>';
     b.className = 'cs-wallet cw-same ' + md;
   }
   var vaultT = 0;
@@ -218,6 +218,14 @@
       if (w > 0) D6.Sfx.win(st > 0 ? w / st : (Number(r.mult) || Number(r.out) || 2), S.game); else D6.Sfx.lose();
     } catch (e) { /* ignore */ }
   }
+  var TROPHY = '<svg viewBox="0 0 32 32"><defs><linearGradient id="ctTrG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF6C8"/><stop offset=".45" stop-color="#FCD34D"/><stop offset="1" stop-color="#C47A0A"/></linearGradient>' +
+    '<radialGradient id="ctTrB" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#23306E"/><stop offset="1" stop-color="#0B1233"/></radialGradient></defs>' +
+    '<circle cx="16" cy="16" r="15" fill="url(#ctTrB)" stroke="url(#ctTrG)" stroke-width="1.8"/>' +
+    '<path d="M10.2 9.2H7.4v1.6a3.6 3.6 0 0 0 3.4 3.6M21.8 9.2h2.8v1.6a3.6 3.6 0 0 1-3.4 3.6" fill="none" stroke="url(#ctTrG)" stroke-width="1.7" stroke-linecap="round"/>' +
+    '<path d="M10 7.6h12v4.6a6 6 0 0 1-12 0z" fill="url(#ctTrG)"/><path d="M14.6 17.6h2.8v3h-2.8z" fill="#E7A51A"/>' +
+    '<rect x="11.2" y="20.4" width="9.6" height="3.4" rx="1" fill="url(#ctTrG)"/>' +
+    '<path d="M16 9.3l.95 1.95 2.15.3-1.55 1.5.37 2.12L16 14.2l-1.92 1 .37-2.13-1.55-1.5 2.15-.3z" fill="#fff" opacity=".95"/>' +
+    '<path d="M6.2 5.4l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5zM25.8 21.8l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4z" fill="#FFF6C8"/></svg>';
   function resultLine(box, r, extra) {
     sfxResult(r);
     var x = X(), host = box.querySelector('.cg-stage') || box.querySelector('.cs-stage') || box;
@@ -226,7 +234,7 @@
     t.className = 'cs-toast ' + (win ? 'win' : 'lose');
     // v2794 (propriétaire) : comme le trading, SANS mots — seulement le montant : gagné = « +$ 12.50 » (vert, total encaissé),
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
-    t.innerHTML = (win ? '<i class="ct-coin" aria-hidden="true"></i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(r.win) : '0') + '</b>'; // dir=ltr : en arabe on lit bien « +$ 0 »
+    t.innerHTML = (win ? '<i class="ct-coin ct-trophy" aria-hidden="true">' + TROPHY + '</i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(r.win) : '0') + '</b>'; // dir=ltr : en arabe on lit bien « +$ 0 »
     host.appendChild(t);
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('in'); }); });
     // v2805 (propriétaire : jamais rien de superposé) — pendant que la pastille est là, les petits textes du jeu qu'elle couvre
@@ -533,7 +541,7 @@
       var n = String(inp.value || inp.placeholder || '').length;
       if (n > 4) inp.style.setProperty('font-size', Math.max(10, baseFs * 5.4 / n).toFixed(1) + 'px', 'important');
     };
-    var set = function (v) { v = Math.max(0.1, Math.min(1000, Math.round((Number(v) || 0.1) * 100) / 100)); S.stake = v; inp.value = m2(v); fitInp(); box.dispatchEvent(new Event('stake')); };
+    var set = function (v) { v = Math.max(0.1, Math.round((Number(v) || 0.1) * 100) / 100); S.stake = v; inp.value = m2(v); fitInp(); box.dispatchEvent(new Event('stake')); };
     // v2807 (propriétaire, iPhone) : select() ne sélectionne pas sur iPhone → le montant tapé s'ajoutait derrière l'ancien
     // (« 0.105 »). Toucher la case la VIDE (l'ancien montant reste en gris) ; vide en sortant = l'ancien montant revient.
     var editing = false;
@@ -548,7 +556,7 @@
     inp.addEventListener('input', function () {
       var c = String(inp.value).replace(/[^0-9.,]/g, ''); if (c !== inp.value) inp.value = c; fitInp();
       var v = parseFloat(c.replace(',', '.'));
-      if (isFinite(v) && v >= 0.1) { S.stake = Math.min(1000, Math.round(v * 100) / 100); box.dispatchEvent(new Event('stake')); }
+      if (isFinite(v) && v >= 0.1) { S.stake = Math.round(v * 100) / 100; box.dispatchEvent(new Event('stake')); }
     });
     inp.addEventListener('blur', commit);
     inp.addEventListener('change', commit);
@@ -580,7 +588,7 @@
         if (op === 'half') set(S.stake / 2);
         else if (op === 'dbl') set(S.stake * 2);
         else if (op === 'clr') set(0.1);
-        else { var bal = S.bal[S.adminTest ? 'demo' : 'real']; set(Math.min(1000, bal != null && bal >= 0.1 ? Math.floor(bal * 100) / 100 : 1000)); }
+        else { var bal = S.bal['real']; set(bal != null && bal >= 0.1 ? Math.floor(bal * 100) / 100 : 0.1); }
       });
     });
     setTimeout(fitInp, 0);
