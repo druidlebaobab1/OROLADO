@@ -109,7 +109,7 @@
       $('csLogin').addEventListener('click', function (e) { e.stopPropagation(); toAuth('login'); });
       return;
     }
-    var md = S.adminTest ? 'demo' : 'real';
+    var md = 'real';
     // v2745 (propriétaire) : EXACTEMENT la carte « Compte réel » du trading (icône portefeuille verte, libellé vert, « $ » devant)
     var realLbl = (document.querySelector('#modeReal .mb-lbl') || {}).textContent || X().realAcc;
     b.innerHTML = '<span class="cw-wal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17a1 1 0 0 1 1 1v1.5"/><rect x="3.5" y="7.5" width="17" height="12" rx="2.6"/><path d="M20.5 11.5h-4a2 2 0 0 0 0 4h4z"/><circle cx="16.6" cy="13.5" r=".9" fill="currentColor"/></svg></span>' +
@@ -577,7 +577,7 @@
         if (op === 'half') set(S.stake / 2);
         else if (op === 'dbl') set(S.stake * 2);
         else if (op === 'clr') set(0.1);
-        else { var bal = S.bal[S.adminTest ? 'demo' : 'real']; set(bal != null && bal >= 0.1 ? Math.floor(bal * 100) / 100 : 0.1); }
+        else { var bal = S.bal['real']; set(bal != null && bal >= 0.1 ? Math.floor(bal * 100) / 100 : 0.1); }
       });
     });
     setTimeout(fitInp, 0);
