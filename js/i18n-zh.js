@@ -120,7 +120,7 @@
  "changePass": "修改密码",
  "clearDigit": "删除一位数字",
  "closeLbl": "关闭",
- "coachCalm1": "50 多个市场：换一个试试",
+ "coachCalm1": "{n} 个市场：换一个试试",
  "coachCalm2": "小额投注：余额的 2% 至 5%",
  "coachCalm3": "使用 MA、BB 和 EMA 指标",
  "coachCalm4": "一步一步进步，成为高手",
