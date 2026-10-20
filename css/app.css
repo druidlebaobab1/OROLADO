@@ -13001,3 +13001,8 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
   html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .prof-id-row > strong{font-size:13px!important}
   html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{min-width:56px!important}
 }
+
+/* v2931 — Profil (propriétaire) : langue et croix un peu plus grandes et bien visibles, sur la même ligne tout en haut */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head{align-items:center!important;margin-top:-4px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;font-size:17px!important;opacity:1!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:28px!important;padding:0 9px!important;font-size:13px!important;opacity:1!important;border-color:rgba(253,230,138,.4)!important;background:rgba(255,255,255,.05)!important}

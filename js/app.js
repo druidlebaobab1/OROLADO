@@ -6960,22 +6960,35 @@
     if (!wdFitObs && typeof MutationObserver === 'function') {
       wdFitObs = new MutationObserver(function () { fitWdForm(); });
       wdFitObs.observe(form, { attributes: true, attributeFilter: ['class'], subtree: true });
+      if ($('withdrawModal')) wdFitObs.observe($('withdrawModal'), { attributes: true, attributeFilter: ['class'] });
       window.addEventListener('resize', function () { fitWdForm(); });
     }
-    var run = function () {
-      if (form.classList.contains('hidden')) { form.style.zoom = ''; return; }
-      form.style.zoom = '';
-      var btn = $('btnSendWithdraw');
+    // v2931 — même chose pour la grille des moyens (logos) : tout s'affiche sans défiler, sur tous les téléphones
+    var fit = function (el, last) {
+      if (!el) return;
+      el.style.zoom = '';
+      if (el.classList.contains('hidden') || !last) return;
       var br = box.getBoundingClientRect();
-      var limit = Math.min(br.bottom, window.innerHeight || br.bottom) - 6;
-      var over = btn ? btn.getBoundingClientRect().bottom - limit : 0;
-      var h = form.getBoundingClientRect().height;
+      if (!(br.height > 0)) return;
+      // bas utile = bas de la boîte moins sa marge intérieure (barre d'accueil iPhone), jamais sous l'écran
+      var padB = parseFloat(getComputedStyle(box).paddingBottom) || 0;
+      var limit = Math.min(br.bottom - padB, window.innerHeight || br.bottom) - 6;
+      var over = last.getBoundingClientRect().bottom - limit;
+      var h = el.getBoundingClientRect().height;
       if (over > 1 && h > 0) {
-        var z = Math.max(0.72, (h - over - 4) / h);
-        form.style.zoom = String(Math.round(z * 1000) / 1000);
+        var z = Math.max(0.6, (h - over - 4) / h);
+        el.style.zoom = String(Math.round(z * 1000) / 1000);
       }
     };
+    var run = function () {
+      fit(form, $('btnSendWithdraw'));
+      var grid = $('wdStepGrid');
+      var cards = grid ? grid.querySelectorAll('.wd-card') : [];
+      fit(grid, cards.length ? cards[cards.length - 1] : null);
+    };
     if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
+    setTimeout(run, 120);
+    setTimeout(run, 420);
   }
 
   function updateWithdrawMinHint() {
