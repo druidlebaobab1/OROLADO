@@ -12762,3 +12762,6 @@ html:root body #drawerProfile#drawerProfile #btnLogout#btnLogout{background-colo
 /* 2026-10-20 (QA, iPhone SE 320 px) : « PLEIN ÉCRAN » / « ПОЛНЫЙ ЭКРАН » était coupé (case de 50 px) → sur les écrans de
    moins de 351 px, le bouton plein écran garde seulement son icône (son nom reste lu par l'aide à l'écran). */
 @media (max-width:350px){html:root body #btnChartFs#btnChartFs .chart-fs-label,html:root body #tradeWrap#tradeWrap #btnChartFs.chart-fs-btn > .chart-fs-label{display:none!important}html:root body #btnChartFs#btnChartFs{padding-right:4px!important;min-width:28px!important}}
+/* 2026-10-20 (QA, iPhone SE 320 px) : « Apprendre à trader sur OROLADO » (fr, es, pt, tr, ru) finissait en « … » sur une ligne :
+   un peu plus petit sur les écrans étroits et courts, le titre se lit en entier dans les 12 langues. */
+@media (max-height:720px) and (orientation:portrait) and (max-width:350px){html body #screenAuth#screenAuth#screenAuth#screenAuth:not(#z1):not(#z2) .auth-learn .al-txt b{font-size:10.5px!important;letter-spacing:-.1px}}
