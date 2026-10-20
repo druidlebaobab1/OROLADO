@@ -1422,8 +1422,14 @@
       var paint = function () {
         try {
           // Hauteur réelle de l'écran (l'appli iPhone a une fenêtre plus courte que l'écran) : utilisée par le profil.
-          var fullH = Math.max(window.innerHeight || 0, (screen && screen.height) || 0);
+          // 2026-10-20 : en paysage, la hauteur de l'écran est sa petite dimension (avant : la grande, trop haut en paysage)
+          var landF = (window.innerWidth || 0) > (window.innerHeight || 0);
+          var scrF = screen ? (landF ? Math.min(screen.width || 0, screen.height || 0) : Math.max(screen.width || 0, screen.height || 0)) : 0;
+          var fullH = Math.max(window.innerHeight || 0, scrF);
           root.style.setProperty('--ios-full-h', fullH + 'px');
+          // hauteur cachée sous la fenêtre de l'appli (plein écran : ACHETER / VENDRE descendent jusque-là)
+          var under = Math.max(0, Math.min(120, fullH - (window.innerHeight || 0)));
+          root.style.setProperty('--ios-under', under + 'px');
           // 2026-10-20 : le petit monde de planètes est un bandeau fixé tout en bas (#oroIosFloor), haut exactement comme
           // l'espace libre sous le terminal (jamais sur ACHETER / VENDRE) ; visible aussi sous Profil, Historique, Jeux…
           // 2026-10-20 (b) : l'appli iPhone a une fenêtre plus courte que l'écran : la bande prune est SOUS la fenêtre.
