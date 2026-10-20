@@ -12910,14 +12910,6 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
   html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .field select{min-height:50px!important}
   html:root body #withdrawModal#withdrawModal#withdrawModal #btnSendWithdraw{min-height:54px!important;margin-top:14px!important}
 }
-/* 2026-10-20 (propriétaire) — Retrait : la croix descend un peu, pile à la hauteur du titre « Retrait » (avant : collée en haut) */
-html:root body #withdrawModal#withdrawModal#withdrawModal .wd-modal-head > .btn-close.btn-close:not(#oroX1):not(#oroX2){top:50%!important;bottom:auto!important;margin-top:0!important;translate:0 -50%}
-/* même chose pour les autres pages à titre à gauche : la croix descend pile à la hauteur du titre (téléphones) */
-@media (max-width:859px){
-  html:root body #financeModal#financeModal .btn-close.btn-close:not(#oroX1),html:root body #historySheet#historySheet .btn-close.btn-close:not(#oroX1){translate:0 13px}
-  html:root body #termsModal#termsModal .btn-close.btn-close:not(#oroX1){translate:0 16px}
-  html:root body #depositModal#depositModal .btn-close.btn-close:not(#oroX1){translate:0 8px}
-}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows,html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row{width:100%!important;max-width:none!important;align-self:stretch!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row > span{margin-right:auto!important}
 /* langue et croix un peu plus petites et plus hautes : la carte du joueur remonte (demande du propriétaire) */
@@ -12965,4 +12957,29 @@ html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm:has(#wdBan
 @media (max-height:600px){
   html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm input,html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm select{min-height:36px!important;height:36px!important;margin-bottom:4px!important}
   html:root body #withdrawModal#withdrawModal#withdrawModal #wdStepForm .btn-wd-confirm{min-height:42px!important;height:42px!important}
+}
+
+/* v2929 — Profil (choix du propriétaire) : grande photo au centre, nom dessous, puis un panneau net
+   ID public / E-mail / Membre depuis, valeurs alignées, boutons Copier identiques ; pas de planètes */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile > .prof-card{background:none!important;border:0!important;box-shadow:none!important;padding:2px 0 4px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile > .prof-card::before,html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile > .prof-card::after{display:none!important;content:none!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-top{flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:8px!important;text-align:center!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar{width:92px!important;height:92px!important;min-width:92px!important;font-size:1.7rem!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar .pav-cam{width:28px!important;height:28px!important;right:-2px!important;bottom:-2px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar .pav-cam svg{width:15px!important;height:15px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-who{align-items:center!important;width:100%!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .prof-name{font-size:1.45rem!important;text-align:center!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;max-width:92%!important;margin:0 auto!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows{margin-top:12px!important;padding:2px 12px!important;border-radius:16px!important;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03))!important;border:1px solid rgba(252,210,123,.28)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;min-height:44px!important;padding:6px 0!important;margin:0!important;background:none!important;border-radius:0!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row > span{flex:0 0 auto!important;font-size:12.5px!important;white-space:nowrap!important;margin-right:0!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .prof-id-row{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;min-width:0!important;flex:1 1 auto!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .prof-id-row > strong{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#fff!important;font-weight:700!important;font-size:13.5px!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .prof-uid-v{letter-spacing:.05em!important;font-weight:800!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row > strong{font-size:13.5px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;min-width:0!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{flex:0 0 auto!important;width:auto!important;min-width:62px!important;height:26px!important;min-height:26px!important;padding:0 10px!important;font-size:12px!important;border-radius:9px!important}
+@media (max-width:360px){
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar{width:76px!important;height:76px!important;min-width:76px!important}
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows{padding:2px 9px!important}
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .list-row > span{font-size:11.5px!important}
+  html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card-rows .btn-copy-id.btn-copy-id{min-width:52px!important;padding:0 7px!important}
 }
