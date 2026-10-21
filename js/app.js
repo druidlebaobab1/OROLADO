@@ -2323,6 +2323,7 @@
     // v2832 : un seul AudioContext pour tout le site (partagé avec js/sfx.js) ; 2026-10-21 : toujours le contexte actuel (js/sfx.js
     // peut le refaire quand le son de l'iPhone reste bloqué)
     audioCtx = window.__oroAC || (window.__oroAC = new AC());
+    window.__oroSndAt = Date.now(); // un son va jouer : pas de mise en veille du moteur (js/sfx.js)
     if (audioCtx.state !== 'running' && audioCtx.state !== 'closed') { try { audioCtx.resume(); } catch (eRs) { /* ignore */ } }
     return audioCtx;
   }
