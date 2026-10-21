@@ -2032,6 +2032,12 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code expiré. Demandez un nouveau code.', 'needOtp' => true, 'expired' => true]);
     exit;
   }
+  // 2026-10-21 (propriétaire) : anti-robot — au plus 30 essais de code par compte en 15 min, compté sous verrou de fichier
+  // (des centaines de demandes envoyées en même temps ne passent plus). Un humain n'atteint jamais ce chiffre.
+  if (!orolado_rate_ok('wdotp_try', $uidOtp, 30, 900)) {
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Trop de tentatives. Réessayez dans quelques minutes.', 'needOtp' => true]);
+    exit;
+  }
   $tries = (int) ($otpRow['attempts'] ?? 0);
   if ($tries >= 5) {
     unset($db['withdrawOtps'][$uidOtp]);
