@@ -1393,10 +1393,11 @@
   var diagOn = false;
   function startDiag() {
     try {
-      if (diagOn) return;
+      // 2026-10-21 : déjà ouvert → 5 touches le referment
+      if (diagOn) { var old = document.getElementById('oroDiagBox'); if (old) { old.hidden = !old.hidden; } return; }
       if (!document.body) { document.addEventListener('DOMContentLoaded', startDiag); return; }
       diagOn = true;
-      var box = document.createElement('div');
+      var box = document.createElement('div'); box.id = 'oroDiagBox';
       box.style.cssText = 'position:fixed;left:6px;top:60px;z-index:2176483647;background:rgba(0,0,0,.85);color:#0f0;font:11px/1.35 monospace;padding:6px 8px;border-radius:8px;pointer-events:none;white-space:pre';
       var probe = function (unit) {
         var p = document.createElement('div');
@@ -1650,6 +1651,10 @@
     document.addEventListener('touchend', function (e) {
       try {
         var t = e.changedTouches && e.changedTouches[0]; if (!t) return;
+        // 2026-10-21 (propriétaire) : jamais quand un jeu / une fenêtre est ouvert par-dessus (on tapait dans le jeu de tir)
+        if (document.querySelector('.modal-backdrop.active, #casinoModal.active')) return;
+        var top0 = document.elementFromPoint ? document.elementFromPoint(t.clientX, t.clientY) : null;
+        if (top0 && top0.closest && top0.closest('.modal-backdrop, #casinoModal')) return;
         var hit = false;
         document.querySelectorAll('.oro-sign').forEach(function (sg) {
           var r = sg.getBoundingClientRect();
