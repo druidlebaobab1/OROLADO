@@ -1627,7 +1627,8 @@
       window.addEventListener('load', function () { [300, 1200, 3000].forEach(function (ms) { setTimeout(paint, ms); }); });
     } catch (eIa) { /* ignore */ }
   })();
-  (function diagByTaps() {
+  // 2026-10-21 (propriétaire) : ouverture par 5 touches RETIRÉE (même admin) — seulement orolado.com/?diag=1 si besoin
+  false && (function diagByTaps() {
     var taps = [], signTaps = [];
     var count = function (arr) {
       var now = Date.now();
