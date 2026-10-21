@@ -64,7 +64,13 @@
   function code() {
     var u = null;
     try { u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null; } catch (e) { u = null; }
-    if (!u || u.guest) return '';
+    // visiteur (pas de compte) : même détection par la connexion puis le fuseau (propriétaire : « les visiteurs aussi »)
+    if (!u || u.guest) {
+      askGeo();
+      if (geoCC) return CC[geoCC] || '';
+      try { var tz0 = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').split('/'); if (tz0[0] === 'Africa' && TZ[tz0[1]]) return TZ[tz0[1]]; } catch (eT0) { /* ignore */ }
+      return '';
+    }
     // compte admin : JAMAIS automatique (propriétaire) ; seulement le lien de test ?simcur=…
     if (u.role === 'admin') { try { var sim = localStorage.getItem('oro_sim_cur') || ''; return CUR[sim] ? sim : ''; } catch (eS) { return ''; } }
     // 1) numéro de téléphone du compte (seulement s'il y a vraiment un numéro : l'indicatif seul peut être celui par défaut)
@@ -103,7 +109,7 @@
     host.classList.add('has-loc');
     // taille : ~62 % du montant (petit téléphone → télé), puis rapetisse jusqu'à tenir dans la case (jamais coupé)
     var fs = parseFloat(getComputedStyle(amtEl).fontSize) || 15, w = Math.round(amtEl.getBoundingClientRect().width);
-    var key = txt + '|' + fs + '|' + w + '|' + Math.round(host.getBoundingClientRect().width);
+    var key = txt + '|' + fs + '|' + w + '|' + Math.round(host.getBoundingClientRect().width) + '|' + host.className;
     if (tag.textContent !== txt) tag.textContent = txt;
     if (tag.__k === key) return;
     tag.__k = key;
@@ -116,6 +122,7 @@
       size = Math.round((size - 0.5) * 10) / 10;
       tag.style.fontSize = size + 'px'; tag.style.lineHeight = Math.round(size * 1.1) + 'px';
     }
+    if (fixed) fixBox(host, amtEl, tag);
     place(host, amtEl, tag);
   }
   // Jeux / Paris : le libellé et le montant du Compte réel rapetissent pour tenir à côté du « + » (gros soldes, petits écrans)
@@ -140,6 +147,19 @@
   // Placement (propriétaire : « droit, stylé, jamais sur le bord ») : la ligne est centrée SOUS le montant (même quand une
   // icône est à gauche, plein écran compris) et ne touche jamais le bas de la case : si la place manque, tout le texte
   // de la case monte un peu (sans sortir en haut), sinon la ligne rapetisse encore.
+  // mise en page fixe posée EN LIGNE (plus forte que toutes les règles du site, visiteur compris) — voir aussi app.css
+  function imp(el, k, v) { if (el) el.style.setProperty(k, v, 'important'); }
+  function fixBox(host, amtEl, tag) {
+    var fs = /^fsBtn/.test(host.id), lbl = host.querySelector('.mb-lbl');
+    imp(host, 'justify-content', 'center'); imp(host, 'padding-top', '0px'); imp(host, 'padding-bottom', fs ? '4px' : '7px'); imp(host, 'row-gap', '0px');
+    if (lbl) { imp(lbl, 'line-height', '8px'); imp(lbl, 'height', '8px'); imp(lbl, 'margin', '0px'); imp(lbl, 'flex', 'none'); }
+    imp(amtEl, 'line-height', '1'); imp(amtEl, 'margin', '0 0 1px'); imp(amtEl, 'flex', 'none'); if (!fs) imp(amtEl, 'zoom', '0.9');
+    imp(tag, 'line-height', '9px'); imp(tag, 'height', '9px'); imp(tag, 'flex', 'none'); imp(tag, 'overflow', 'visible');
+    // barre claire du bas de la case choisie : 1,5 px au lieu de 3 (la couleur reste celle du site)
+    host.style.removeProperty('box-shadow');
+    var sh = getComputedStyle(host).boxShadow || '';
+    if (/inset/.test(sh) && /-3px/.test(sh)) imp(host, 'box-shadow', sh.replace(/0px -3px 0px/g, '0px -1.5px 0px'));
+  }
   function place(host, amtEl, tag) {
     var lbl = host.querySelector('.mb-lbl, small');
     [tag, amtEl, lbl].forEach(function (e) { if (e) e.style.transform = ''; });
@@ -208,8 +228,14 @@
           if (sp.after && host.nextSibling) box.insertBefore(tag, host.nextSibling); else box.appendChild(tag);
         }
         var t = fmt(n, c);
-        if (tag.textContent !== t) tag.textContent = t;
         box.classList.add('has-loc2'); box.classList.toggle('loc2-ov', !!sp.ov);
+        if (tag.textContent !== t || tag.__w !== box.clientWidth) {
+          tag.textContent = t; tag.__w = box.clientWidth;
+          // élastique (propriétaire) : plus le montant est long, plus la ligne rapetisse ; jamais de débordement
+          tag.style.fontSize = '';
+          var f0 = parseFloat(getComputedStyle(tag).fontSize) || 9;
+          for (var k = 0; k < 16 && tag.clientWidth > 0 && tag.scrollWidth > tag.clientWidth + 1 && f0 > 6; k++) { f0 = Math.round((f0 - 0.5) * 10) / 10; tag.style.fontSize = f0 + 'px'; }
+        }
       }
     });
   }
@@ -239,7 +265,7 @@
         var el = document.getElementById(id);
         if (!el || (seen && seen.has(el))) return;
         if (seen) seen.add(el);
-        mo.observe(el, { subtree: true, childList: true, characterData: true });
+        mo.observe(el, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class'] });
       });
       soon();
     }
