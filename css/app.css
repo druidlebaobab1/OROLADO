@@ -13418,3 +13418,30 @@ html:root body #modeReal#modeReal#modeReal.has-loc .oro-loc,html:root body #mode
    montant légèrement réduit (zoom 0,9) quand l'équivalent est affiché ; identique dans les deux états */
 html:root body #modeReal#modeReal#modeReal.has-loc,html:root body #modeDemo#modeDemo#modeDemo.has-loc{padding-bottom:7px!important}
 html:root body #modeReal#modeReal#modeReal.has-loc .mb-amt,html:root body #modeDemo#modeDemo#modeDemo.has-loc .mb-amt{zoom:.9}
+/* 2026-10-21 (propriétaire) — autres « ≈ » (js/localcur.js, .oro-loc2) : mise et gain du trading, mise des jeux, Paris,
+   recharge, retrait. Cases à taille fixe : ligne posée en bas, chiffre en dollars réduit / remonté par transform (aucun
+   déplacement autour). */
+html body .oro-loc2{display:block;font:600 9px/1.05 "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:0;white-space:nowrap;color:rgba(190,245,215,.85);
+  -webkit-text-fill-color:rgba(190,245,215,.85);font-variant-numeric:tabular-nums;unicode-bidi:isolate;pointer-events:none;overflow:hidden;text-overflow:clip}
+html body .loc2-ov{position:relative}
+html body .loc2-ov > .oro-loc2{position:absolute;left:4px;right:4px;bottom:3px;text-align:center}
+html:root body #screenTrade .stake-field.loc2-ov #inputStake{transform:translateY(-5px) scale(.88);transform-origin:center}
+html:root body #screenTrade .win-preview.loc2-ov .amount{transform:translateY(-5px) scale(.9);transform-origin:center}
+html:root body #screenTrade .win-preview.loc2-ov .mult{transform:translateY(-5px) scale(.9);transform-origin:center}
+html:root body #screenTrade .win-preview.loc2-ov > .oro-loc2{bottom:2px}
+html:root body #casinoModal .cg-in.loc2-ov input{transform:translateY(-5px) scale(.88);transform-origin:center}
+html:root body #casinoModal .cg-in.loc2-ov > .oro-loc2{bottom:1px}
+html:root body #casinoModal .sp2-inw.loc2-ov .sp2-inv{transform:translateY(-4px)}
+html:root body #casinoModal .sp2-inw.loc2-ov > .oro-loc2{bottom:4px;text-align:left;left:14px}
+html:root body #casinoModal .sp2-sum p.win.has-loc2{flex-wrap:wrap}
+html:root body #casinoModal .sp2-sum p.win > .oro-loc2{flex:1 0 100%;text-align:right;font-size:11px;margin-top:2px}
+html:root body #casinoModal #spBalR > .oro-loc2{display:inline-block;font-size:11px;margin-left:6px;flex:none}
+html:root body #depositModal .amt-row.has-loc2{flex-wrap:wrap}
+html:root body #depositModal .amt-row > .oro-loc2{flex:1 0 100%;font-size:12px;margin-top:4px;color:#A7F3D0;-webkit-text-fill-color:#A7F3D0}
+html:root body #withdrawModal .oro-loc2{font-size:12px;margin-top:4px;color:#A7F3D0;-webkit-text-fill-color:#A7F3D0}
+/* case choisie (Compte réel / Démo) avec l'équivalent : barre claire du bas plus fine (1,5 px au lieu de 3) — propriétaire */
+html:root body #modeReal#modeReal#modeReal.has-loc.on,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(34,212,127),0 0 18px rgba(34,212,127,.38)!important}
+html:root body #modeDemo#modeDemo#modeDemo.has-loc.on,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(122,167,255),0 0 14px rgba(92,155,255,.35)!important}
+/* plein écran : la case de mise montre déjà le gain « ≈ $ 1.90 » dessous → pas de 2e ligne */
+html.fs-trade:root body #screenTrade .stake-field.loc2-ov > .oro-loc2{display:none!important}
+html.fs-trade:root body #screenTrade .stake-field.loc2-ov #inputStake{transform:none!important}

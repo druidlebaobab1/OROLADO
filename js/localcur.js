@@ -170,7 +170,51 @@
     var ty = (tag.style.transform.match(/translateY\(([-\d.]+)px\)/) || [0, 0])[1];
     tag.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + ty + 'px)';
   }
+  // 2026-10-21 (propriétaire) — d'autres « ≈ » aux endroits importants (affichage seulement, l'argent reste en dollars) :
+  // case de mise et gain du trading, mise des jeux, mise / gain / solde de Paris, recharge et retrait.
+  // Cases à taille fixe (trading, jeux, mise Paris) : petite ligne posée en bas de la case + chiffre en dollars un peu
+  // réduit et remonté par « transform » → rien ne bouge autour (terminal, ACHETER / VENDRE).
+  function numOf(el) {
+    if (!el) return null;
+    var v = el.tagName === 'INPUT' ? el.value : el.textContent;
+    v = String(v || '').replace(/[^\d.,]/g, '');
+    if (!v) return null;
+    if (/,\d{1,2}$/.test(v) && v.indexOf('.') < 0) v = v.replace(',', '.'); else v = v.replace(/,/g, '');
+    var n = parseFloat(v);
+    return isFinite(n) ? n : null;
+  }
+  var SPOTS = [
+    { host: '#screenTrade .stake-field', amt: '#inputStake', ov: 1 },
+    { host: '#screenTrade .win-preview', amt: '#previewGain', ov: 1 },
+    { host: '#casinoModal .cg-in', amt: '#csStake', ov: 1 },
+    { host: '#casinoModal .sp2-inw[for="spStake"]', amt: '#spStake', ov: 1 },
+    { host: '#casinoModal .sp2-sum p.win', amt: '#spPot' },
+    { host: '#casinoModal #spBalR', amt: '#spBalT' },
+    { host: '#depositModal .amt-row', amt: '#depositAmt' },
+    { host: '#withdrawModal #withdrawAmt', amt: '#withdrawAmt', after: 1 }
+  ];
+  function spots(c) {
+    SPOTS.forEach(function (sp) {
+      var hosts = document.querySelectorAll(sp.host);
+      for (var i = 0; i < hosts.length; i++) {
+        var host = hosts[i], amt = sp.amt === sp.host ? host : document.querySelector(sp.amt);
+        var box = sp.after ? host.parentNode : host;
+        if (!box) continue;
+        var tag = box.querySelector(':scope > .oro-loc2');
+        var n = c ? numOf(amt) : null;
+        if (!c || n == null) { if (tag) tag.remove(); box.classList.remove('has-loc2', 'loc2-ov'); continue; }
+        if (!tag) {
+          tag = document.createElement('span'); tag.className = 'oro-loc2'; tag.setAttribute('dir', 'ltr');
+          if (sp.after && host.nextSibling) box.insertBefore(tag, host.nextSibling); else box.appendChild(tag);
+        }
+        var t = fmt(n, c);
+        if (tag.textContent !== t) tag.textContent = t;
+        box.classList.add('has-loc2'); box.classList.toggle('loc2-ov', !!sp.ov);
+      }
+    });
+  }
   function paint() {
+    try { spots(code()); } catch (eP) { /* ignore */ }
     try { fitWallet(); } catch (eW) { /* ignore */ }
     put(document.getElementById('modeRealAmt'), document.getElementById('modeReal'));
     put(document.getElementById('fsRealAmt'), document.getElementById('fsBtnReal'));
@@ -200,7 +244,9 @@
       soon();
     }
     hook();
-    setInterval(hook, 1500); // fenêtre Jeux / Paris créée plus tard, connexion, changement de compte
+    setInterval(hook, 1500);
+    document.addEventListener('input', soon, true); document.addEventListener('click', function () { setTimeout(soon, 60); }, true);
+    setInterval(soon, 700); // gains / mises qui bougent (petit, sans effet si rien n'a changé) // fenêtre Jeux / Paris créée plus tard, connexion, changement de compte
   }
   D6.LocalCur = { code: code, fmt: fmt, paint: soon, list: function () { return Object.keys(CUR).filter(function (k) { return CUR[k]; }); } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
