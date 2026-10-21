@@ -816,6 +816,7 @@
         box.classList.add('out'); clearTimeout(box._t);
         setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 380);
       };
+      var shut0 = shut; shut = function () { var was = box.parentNode && !box.classList.contains('out'); shut0(); if (was) setTimeout(installAskCard, 450); };
       box.querySelector('.ow-x').addEventListener('click', shut);
       box.querySelector('.ow-go').addEventListener('click', shut);
       box.querySelector('.ow-dim').addEventListener('click', shut);
@@ -823,6 +824,56 @@
       box._t = setTimeout(shut, 9000);
     } catch (eW) { try { toast(t('accountCreated'), 'ok', 3000); } catch (eT) { /* ignore */ } }
   }
+  // 2026-10-21 (propriétaire) : juste après la carte de bienvenue (inscription), grande carte « Installer OROLADO »,
+  // même famille (étincelles, rayons). « Installer » = même effet que la bannière ; « Plus tard » ferme.
+  var INSTASK_T = {
+    fr: ['Installe OROLADO', 'Ouvre OROLADO en une touche depuis ton écran d\u2019accueil, comme une vraie application.', 'Installer', 'Plus tard'],
+    en: ['Install OROLADO', 'Open OROLADO in one tap from your home screen, like a real app.', 'Install', 'Later'],
+    es: ['Instala OROLADO', 'Abre OROLADO con un toque desde tu pantalla de inicio, como una app.', 'Instalar', 'Más tarde'],
+    pt: ['Instala o OROLADO', 'Abre o OROLADO com um toque no ecrã inicial, como uma app.', 'Instalar', 'Mais tarde'],
+    ar: ['\u062b\u0628\u0651\u062a OROLADO', '\u0627\u0641\u062a\u062d OROLADO \u0628\u0644\u0645\u0633\u0629 \u0648\u0627\u062d\u062f\u0629 \u0645\u0646 \u0634\u0627\u0634\u062a\u0643 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629\u060c \u0645\u062b\u0644 \u062a\u0637\u0628\u064a\u0642 \u062d\u0642\u064a\u0642\u064a.', '\u062a\u062b\u0628\u064a\u062a', '\u0644\u0627\u062d\u0642\u064b\u0627'],
+    tr: ['OROLADO\u2019yu y\u00fckle', 'OROLADO\u2019yu ana ekran\u0131ndan tek dokunu\u015fla a\u00e7, ger\u00e7ek bir uygulama gibi.', 'Y\u00fckle', 'Sonra'],
+    vi: ['C\u00e0i OROLADO', 'M\u1edf OROLADO ch\u1ec9 v\u1edbi m\u1ed9t ch\u1ea1m t\u1eeb m\u00e0n h\u00ecnh ch\u00ednh, nh\u01b0 m\u1ed9t \u1ee9ng d\u1ee5ng.', 'C\u00e0i \u0111\u1eb7t', '\u0110\u1ec3 sau'],
+    id: ['Pasang OROLADO', 'Buka OROLADO dengan satu sentuhan dari layar utama, seperti aplikasi.', 'Pasang', 'Nanti'],
+    ru: ['\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438 OROLADO', '\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0439 OROLADO \u043e\u0434\u043d\u0438\u043c \u043a\u0430\u0441\u0430\u043d\u0438\u0435\u043c \u0441 \u0433\u043b\u0430\u0432\u043d\u043e\u0433\u043e \u044d\u043a\u0440\u0430\u043d\u0430, \u043a\u0430\u043a \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435.', '\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c', '\u041f\u043e\u0437\u0436\u0435'],
+    de: ['Installiere OROLADO', '\u00d6ffne OROLADO mit einem Tipp vom Startbildschirm, wie eine echte App.', 'Installieren', 'Sp\u00e4ter'],
+    zh: ['\u5b89\u88c5 OROLADO', '\u50cf\u771f\u6b63\u7684\u5e94\u7528\u4e00\u6837\uff0c\u5728\u4e3b\u5c4f\u5e55\u4e00\u70b9\u5373\u5f00\u3002', '\u5b89\u88c5', '\u7a0d\u540e'],
+    hi: ['OROLADO \u0907\u0902\u0938\u094d\u091f\u0949\u0932 \u0915\u0930\u0947\u0902', '\u0939\u094b\u092e \u0938\u094d\u0915\u094d\u0930\u0940\u0928 \u0938\u0947 \u090f\u0915 \u091f\u091a \u092e\u0947\u0902 OROLADO \u0916\u094b\u0932\u0947\u0902, \u0905\u0938\u0932\u0940 \u0910\u092a \u0915\u0940 \u0924\u0930\u0939\u0964', '\u0907\u0902\u0938\u094d\u091f\u0949\u0932', '\u092c\u093e\u0926 \u092e\u0947\u0902']
+  };
+  function installAskCard() {
+    try {
+      var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+      var ios = /iP(hone|od|ad)/.test(navigator.userAgent || '');
+      if (sa || !(ios || deferredPrompt || window.__oroBip) || !$('btnInstall') || document.getElementById('oroInstAsk')) return;
+      var lg = String(document.documentElement.lang || 'en').slice(0, 2), W = INSTASK_T[lg] || INSTASK_T.en;
+      var box = document.createElement('div');
+      box.id = 'oroInstAsk'; box.className = 'oro-welcome oro-inst-ask'; box.setAttribute('role', 'dialog');
+      var sp = '';
+      if (!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        for (var i = 0; i < 18; i++) sp += '<i style="--a:' + Math.round(i * 360 / 18) + 'deg;--d:' + (110 + (i % 5) * 22) + 'px;--z:' + ((i % 7) * 0.05).toFixed(2) + 's"></i>';
+      }
+      var dl = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg>';
+      box.innerHTML = '<div class="ow-dim"></div><div class="ow-sp">' + sp + '</div><div class="ow-card"><button type="button" class="ow-x" aria-label="×">×</button>' +
+        '<div class="ow-rays"></div><div class="ow-logo oia-ico"><img src="icons/logo-ring.svg?v=2790" alt=""><i>' + dl + '</i></div>' +
+        '<h3 class="ow-t"></h3><p class="ow-s"></p>' +
+        '<button type="button" class="ow-go oia-go">' + dl + '<span></span></button><button type="button" class="oia-later"></button></div>';
+      box.querySelector('.ow-t').textContent = W[0];
+      box.querySelector('.ow-s').textContent = W[1];
+      box.querySelector('.oia-go span').textContent = W[2];
+      box.querySelector('.oia-later').textContent = W[3];
+      var shut = function () {
+        if (!box.parentNode || box.classList.contains('out')) return;
+        box.classList.add('out');
+        setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 380);
+      };
+      box.querySelector('.ow-x').addEventListener('click', shut);
+      box.querySelector('.oia-later').addEventListener('click', shut);
+      box.querySelector('.ow-dim').addEventListener('click', shut);
+      box.querySelector('.oia-go').addEventListener('click', function () { shut(); setTimeout(function () { if ($('btnInstall')) $('btnInstall').click(); }, 200); });
+      document.body.appendChild(box);
+    } catch (eI) { /* ignore */ }
+  }
+  D6.installAskCard = installAskCard;
   D6.welcomeCard = welcomeCard;
 
   function isGuest(u) {
