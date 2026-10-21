@@ -13204,3 +13204,6 @@ html.ios-app:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#
 html.ios-app:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade{translate:-8px -11px!important}
 html.ios-app[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{translate:-10px -11px!important}
 html.ios-app[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade{translate:8px -11px!important}
+/* 2026-10-21 (propriétaire) : rond de la bulle de gain du trading — plus de lueur blanche à l'intérieur (fond vert profond),
+   la montagne d'argent ressort nettement */
+html body .chart-stage .chart-outcome.win .oc-ic.oc-ic{background:radial-gradient(circle at 40% 32%,#1FA65A 0,#13804A 55%,#0B5E36 100%)!important}
