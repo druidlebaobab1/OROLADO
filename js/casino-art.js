@@ -629,7 +629,7 @@
       '<g clip-path="url(#IDc)">' + O(48, 18, 6, '#FEF3C7', .9) +
       P('M4 52Q20 48 32 51T62 50V64H4z', '#3B0764') + P('M8 52v-6a3.6 3.6 0 0 1 7.2 0v6zM47 52v-7a4 4 0 0 1 8 0v7z', '#6B7280') + L('M11.6 46.6v3M10 48h3.2M51 46v3.4M49.4 47.6h3.2', '#374151', .9) +
       P('M18 64Q19 49 32 48Q45 49 46 64Z', 'url(#IDsh)') + P('M24 52l3 3-3 3M40 54l-3 2 3 3', '#1E3A8A') +
-      L('M21 51L13 45L9.4 44', '#4ADE80', 3.4) + L('M43 51L50 46L54 45.6', '#4ADE80', 3.4) + L('M8.6 42.6l-1.6 1.2M8.6 44l-1.8.6M8.6 45.4l-1.6.2', '#4ADE80', 1.2) +
+      L('M21.5 52L16.6 46.6', '#2563EB', 4.2) + L('M42.5 52L47.4 46.6', '#2563EB', 4.2) + O(15.6, 45.4, 2.6, '#4ADE80') + O(48.4, 45.4, 2.6, '#4ADE80') + L('M13.6 43.6l-1-1.4M15.4 42.8l-.4-1.6M17.2 43.2l.4-1.4M50.4 43.6l1-1.4M48.6 42.8l.4-1.6M46.8 43.2l-.4-1.4', '#4ADE80', 1.2) +
       O(32, 34, 10.4, 'url(#IDzb)') + P('M22.8 31C22 24 26.6 22 30 23L32 21.4L34.6 23.2C38.6 22 42.4 25 41.2 31C39.6 27.4 35.6 26.6 32 27.6C28 26.4 24.6 27.6 22.8 31Z', '#3F3F46') +
       O(27.8, 33.6, 3.2, '#fff') + O(36.6, 33.2, 2.4, '#fff') + O(28.3, 34, 1.4, '#B91C1C') + O(36.9, 33.6, 1.1, '#B91C1C') +
       L('M27.4 40.6Q32 43.8 36.8 40.4', '#14532D', 1.2) + P('M29.4 41.6l1 1.4 1-1.2zM33.4 41.6l1 1.2.8-1.4z', '#fff') + L('M38.6 27.6L41 30.6M39 29.6L40.6 28.4M39.8 30.6L41.2 29.6', '#14532D', .7) +
@@ -655,7 +655,7 @@
     B.skyhopper = med('#BAE6FD', '#0284C7', '#FDE047', '#CA8A04', G('IDpl', '#F472B6', '#BE185D')) +
       '<g clip-path="url(#IDc)">' + P('M8 26a4 4 0 0 1 6-3.4 5 5 0 0 1 9 1.4 3.4 3.4 0 0 1 0 6.6H10a3.4 3.4 0 0 1-2-4.6z', '#fff', .7) + P('M44 46a4 4 0 0 1 6-3.4 5 5 0 0 1 9 1.4 3.4 3.4 0 0 1 0 6.6H46a3.4 3.4 0 0 1-2-4.6z', '#fff', .8) +
       '<rect x="40" y="18" width="14" height="3.6" rx="1.8" fill="#A78BFA"/>' + '<rect x="12" y="52" width="16" height="4" rx="2" fill="#A78BFA"/>' +
-      '<rect x="20" y="47" width="22" height="4.4" rx="2.2" fill="url(#IDpl)"/>' + L('M27 47L29 44.6L27 42.6L29 40.4', '#94A3B8', 1.4) + '<rect x="25.6" y="39" width="5" height="1.6" rx=".8" fill="#E11D48"/>' +
+      '<rect x="20" y="47" width="22" height="4.4" rx="2.2" fill="url(#IDpl)"/>' + L('M27.4 47L30 46L24.8 44.6L30 43.2L24.8 41.8L27.4 40.8', '#CBD5E1', 1.5) +
       L('M30 34.6L27.6 38.6', '#1D4ED8', 3.6) + L('M34 34.6L37 38', '#2563EB', 3.6) + E(27.4, 39.4, 2.4, 1.3, '#DC2626') + E(37.6, 38.6, 2.4, 1.3, '#DC2626') +
       '<rect x="27.4" y="24.6" width="9.4" height="11" rx="4" fill="#FACC15"/>' + L('M32 25.6v9', '#CA8A04', .8) +
       L('M28.4 27L23.6 21.6L22.8 18', '#FACC15', 3.2) + O(22.6, 17.4, 1.8, SK) + L('M35.8 27L40.6 21.6L41.4 18', '#EAB308', 3.2) + O(41.6, 17.4, 1.8, SK) +
@@ -687,9 +687,9 @@
       L('M23 42L20 52', SK, 3.8) + L('M28 42L31 52', SK, 3.8) + '<rect x="20.4" y="37.4" width="9.6" height="6" rx="2" fill="#1E3A8A"/>' + E(19.6, 53, 2.6, 1.3, '#111827') + E(31.4, 53, 2.6, 1.3, '#111827') +
       '<rect x="19.4" y="26.6" width="11.6" height="12" rx="4.4" fill="' + SK + '"/>' + P('M21 27h8.4v11.4H21z', '#DC2626') + L('M21 30h8.4M21 33h8.4M21 36h8.4', '#FEE2E2', 1) +
       L('M21 28.6L16.6 22.6L20 15.6', SK, 4) + L('M29.4 28.6L33 22.6L28 15.6', SK, 4) + O(19.4, 21.4, 2.2, '#FFD9C0') +
-      L('M24 15.2L35.6 6.6', '#92400E', 1.8) + '<g transform="rotate(-36 37 6)"><rect x="32" y="2.6" width="10" height="7" rx="1.6" fill="#64748B"/><rect x="32" y="2.6" width="10" height="2" rx="1" fill="#CBD5E1"/></g>' +
+      L('M24 16V9', '#92400E', 1.8) +
       face(25.2, 21.4, 4.6, 0, L('M23.2 23.8Q25.2 22.6 27.2 23.8', '#3F1D0B', 1.3)) + P('M20.6 20.2C20 15.6 22.6 16 25.2 16C28 16 30.4 16.6 29.8 20.2C28.4 18.4 22.2 18.4 20.6 20.2Z', '#3F1D0B') +
-      '</g>' + O(47.5, 10.4, 4.2, 'url(#IDbl)') + L('M41 7l-2-2M54 7l2-2M47.5 4.6V2.6', '#FDE047', 1.2) + E(47.5, 30, 3.6, 1.6, '#fff') + fin();
+      '</g>' + '<rect x="17.6" y="4.6" width="12.8" height="5.6" rx="1.8" fill="#64748B"/><rect x="17.6" y="4.6" width="12.8" height="1.8" rx=".9" fill="#CBD5E1"/>' + L('M14.6 5.6l-2-1M14.6 9l-2 1M33.4 5.6l2-1M33.4 9l2 1', '#FDE047', 1) + O(47.5, 10.4, 4.2, 'url(#IDbl)') + L('M41 7l-2-2M54 7l2-2M47.5 4.6V2.6', '#FDE047', 1.2) + E(47.5, 30, 3.6, 1.6, '#fff') + fin();
     // Jungle Dash : explorateur qui court vers nous sur le chemin du temple (pastille dorée « » » des jeux de course)
     B.jungledash = med('#99F6E4', '#065F46', '#FBBF24', '#92400E', G('IDtp', '#D6D3D1', '#78716C') + G('IDsh', '#38BDF8', '#0369A1')) +
       '<g clip-path="url(#IDc)">' + P('M20 31h24v-4h-3v-4h-3v-4H26v4h-3v4h-3z', 'url(#IDtp)') + P('M29.5 31v-5a2.5 2.5 0 0 1 5 0v5z', '#292524') + L('M21 27h22M24 23h16', '#57534E', .6) +
@@ -725,6 +725,86 @@
       L('M23 44L22 36M34 42L38 32', '#fff', 1, .5) + '</g>' +
       O(22, f(26.6), 9, '#A16207') + O(22, 25, 9, 'url(#IDcn)') + '<circle cx="22" cy="25" r="6.6" fill="none" stroke="#CA8A04" stroke-width="1"/>' + P('M17.6 27.6l1-5.4 2.2 2.4 1.2-3.6 1.2 3.6 2.2-2.4 1 5.4z', '#A16207') + L('M16 21Q18.4 17.6 22 17.4', '#fff', 1.2, .8) +
       '<g transform="rotate(24 43 22)">' + E(43, 23.4, 9, 4, '#A16207') + E(43, 22, 9, 4, 'url(#IDcn)') + '<ellipse cx="43" cy="22" rx="6.4" ry="2.6" fill="none" stroke="#CA8A04" stroke-width=".9"/>' + '</g>' + tw(51, 10, 2.4) + tw(10, 38, 1.8, .8) + fin();
+    /* --- lot B, 2e série (2026-10-21) --- */
+    // cheval au galop / en saut (repère : centre du corps en 0,0, tourné vers la droite), c = [robe, robe ombrée, crinière]
+    function horse(c) {
+      return P('M-11-2Q-18 0-19.5 8Q-15 4.6-10.6 2Z', c[2]) +
+        L('M-6 4L-11.6 9.6L-15.6 11', c[1], 3) + L('M-8.6 3L-14.6 7L-18.6 7.6', c[0], 3.2) + E(-19, 7.6, 1.5, 1.1, '#1F2937') + E(-16, 11.2, 1.5, 1.1, '#1F2937') +
+        L('M6 4L10 9L7.4 12.4', c[1], 3) + E(0, 0, 12.4, 6.6, c[0]) + L('M8.6 3L13.6 7L11.6 11', c[0], 3.2) + E(7, 12.8, 1.5, 1.1, '#1F2937') + E(11.2, 11.6, 1.5, 1.1, '#1F2937') +
+        P('M5.6-3.6Q9.6-12 15-15.4L19-11Q14-8 11.6-.6Z', c[0]) + '<ellipse cx="18.4" cy="-12.6" rx="5.8" ry="3.1" transform="rotate(32 18.4 -12.6)" fill="' + c[0] + '"/>' +
+        P('M13.8-16.2l.4-3.6 2.2 3z', c[1]) + L('M7.4-5Q10.6-12 14.6-15.6', c[2], 2.4) + O(16.8, -14, .85, '#111827') + O(21.4, -9.6, .6, '#111827') + L('M-6-4.6Q0-6.4 6-4.6', '#fff', .8, .35);
+    }
+    // cavalier assis (même repère que le cheval), j = veste, h = casque
+    function rider(j, h, br) {
+      return L('M1.4-6L4.6-1L3.4 2.4', br || '#F1F5F9', 2.8) + E(3.6, 3, 1.7, 1.1, '#111827') + L('M1.4-6L4.2-13', j, 4.6) +
+        L('M4.2-12L8-9.4L11-8.4', j, 2) + O(11.4, -8.2, 1.1, SK) + L('M11.4-8.2L16.6-12', '#78350F', .5) +
+        face(6, -17.2, 3.3, 1, '') + P('M2.6-17.4C2.4-21.8 9.4-21.8 9.4-17.8Z', h) + L('M9.2-17.8L11.2-17.2', h, 1.1);
+    }
+    // Horse Jumper : cheval bai et cavalière au-dessus de l'obstacle
+    B.horsejump = med('#BAE6FD', '#0369A1', '#FDE047', '#A16207') +
+      '<g clip-path="url(#IDc)">' + O(48, 16, 4, '#FEF9C3') + P('M8 22a3 3 0 0 1 5-2.4 4 4 0 0 1 7 1.4 2.6 2.6 0 0 1 0 5H9.6a2.6 2.6 0 0 1-1.6-4z', '#fff', .75) +
+      P('M4 50Q32 44 62 50V64H4z', '#22C55E') + P('M4 55Q32 50 62 55V64H4z', '#16A34A') +
+      '<rect x="20" y="38" width="2.6" height="16" rx="1" fill="#E2E8F0"/><rect x="42" y="38" width="2.6" height="16" rx="1" fill="#E2E8F0"/>' +
+      '<rect x="19" y="40" width="27" height="2.6" rx="1.3" fill="#DC2626"/>' + P('M24 40h3v2.6h-3zM31 40h3v2.6h-3zM38 40h3v2.6h-3z', '#fff') + '<rect x="19" y="46" width="27" height="2.6" rx="1.3" fill="#2563EB"/>' + P('M24 46h3v2.6h-3zM31 46h3v2.6h-3zM38 46h3v2.6h-3z', '#fff') +
+      '<g transform="translate(31 28) rotate(-12)">' + horse(['#7B4A2E', '#5B3520', '#1F1410']) + '<g transform="translate(-1 2)">' + rider('#1E3A8A', '#111827') + '</g></g>' +
+      '</g>' + tw(12, 34, 2.2, .9) + fin();
+    // Dice Derby : jockey en casaque rose au galop, gros dé rouge
+    B.derby = med('#BAE6FD', '#1D4ED8', '#FDE047', '#A16207', R('IDdi', '#FFFFFF', '#FCA5A5', '#B91C1C')) +
+      '<g clip-path="url(#IDc)">' + P('M4 44Q32 40 62 44V64H4z', '#6B3E1F') + L('M4 46Q32 42 62 46', '#FDE047', 1.2) + L('M4 56Q32 52 62 56', '#8B5A2B', .8, .7) +
+      L('M6 30H15M8 35H16', '#fff', 1.3, .7) +
+      '<g transform="translate(28 32) rotate(-4)">' + horse(['#4A2F22', '#33201A', '#0F0A08']) + '<g transform="translate(-1 2)">' + rider('#EC4899', '#EC4899', '#F8FAFC') + '</g></g>' +
+      '</g>' + '<g transform="rotate(-12 48 47)"><rect x="40" y="39.6" width="15" height="15" rx="3.6" fill="#7F1D1D"/><rect x="40" y="38" width="15" height="15" rx="3.6" fill="url(#IDdi)"/>' + O(44, 42, 1.4, '#fff') + O(47.5, 45.5, 1.4, '#fff') + O(51, 49, 1.4, '#fff') + '</g>' + fin();
+    // Cricket Live : batteur au casque bleu qui frappe la balle rouge, guichet, stade de nuit
+    B.cricketlive = med('#1E40AF', '#0B1026', '#38BDF8', '#1E3A8A', G('IDfd', '#4ADE80', '#15803D')) +
+      '<g clip-path="url(#IDc)">' + O(12, 14, 5, '#FEF9C3', .35) + O(52, 14, 5, '#FEF9C3', .35) + O(12, 14, 1.8, '#fff') + O(52, 14, 1.8, '#fff') +
+      P('M4 42Q32 36 62 42V64H4z', 'url(#IDfd)') + P('M22 64L27 40H37L42 64Z', '#D9C9A0') +
+      L('M15 38V52M18 38V52M21 38V52', '#FDE68A', 1.4) + L('M14.6 37.6h3.2M18 37.6h3.4', '#FBBF24', 1) +
+      L('M29 44L27 54.6', '#F8FAFC', 4.6) + L('M34 44L36.4 54.6', '#F8FAFC', 4.6) + L('M26 48h3.6M26 51h3.4M34.6 48h3.6M35.2 51h3.4', '#CBD5E1', .6) + E(26.6, 55.4, 2.4, 1.2, '#1F2937') + E(37, 55.4, 2.4, 1.2, '#1F2937') +
+      '<rect x="26.6" y="30" width="10.6" height="15" rx="4" fill="#2563EB"/>' + L('M27 36h10', '#FDE047', 1.2) +
+      L('M28 33L35 30.6L40 26.6', '#1D4ED8', 3.2) + L('M36 33L39.4 29L40.6 26.4', '#2563EB', 3.2) + O(40.6, 25.8, 1.9, '#F8FAFC') +
+      L('M40.8 25.6L43.6 21.6', '#1F2937', 1.8) + '<rect x="-2.6" y="-14" width="5.2" height="14" rx="2" fill="#FDE68A" stroke="#CA8A04" stroke-width=".5" transform="translate(43.6 21.6) rotate(38)"/>' +
+      face(31.8, 24, 4.8, .6, L('M31.4 26.6Q33 27.6 34.6 26.6', '#9F1239', .6)) + P('M26.8 23.4C26.4 17.6 29.6 17.4 32 17.4C35 17.4 37.4 19 37 23.2Z', '#1E3A8A') + L('M26.6 23.2H38.6', '#1E3A8A', 1.4) + L('M33.6 24.6V28.2M36 24.4V27.6M33 27.8h3.6', '#94A3B8', .5, .9) +
+      '</g>' + L('M44 31Q48 31 51 29.6', '#fff', 1.2, .5) + O(53.4, 28.6, 2.8, '#DC2626') + L('M52 26.6Q53.6 28.6 52.4 30.6', '#FEE2E2', .5) + tw(54, 44, 2, .8) + fin();
+    // Boxing Live : boxeur, gants rouges levés, ring et projecteurs
+    B.boxinglive = med('#FB7185', '#4C0519', '#FDE047', '#A16207', R('IDgv', '#FECACA', '#EF4444', '#7F1D1D')) +
+      '<g clip-path="url(#IDc)">' + P('M20 4L32 40L44 4Z', '#fff', .12) +
+      L('M4 44H62M4 50H62M4 56H62', '#F8FAFC', 1.2, .8) + '<rect x="8" y="40" width="3" height="24" fill="#2563EB"/><rect x="53" y="40" width="3" height="24" fill="#2563EB"/>' +
+      P('M18 64Q18 45 32 43.6Q46 45 46 64Z', SK) + P('M24 64V48Q32 51.6 40 48V64Z', '#1D4ED8') + L('M24 48Q32 51.6 40 48', '#FDE047', 1) +
+      L('M22.6 49L20 42', SK, 4.6) + L('M41.4 49L44 42', SK, 4.6) +
+      '<rect x="28.4" y="37" width="7.2" height="6" fill="' + SK + '"/>' + face(32, 31.6, 7.4, 0, L('M29.6 35.4H34.4', '#9F1239', 1)) + L('M27.4 28.6L30.4 29.6M36.6 28.6L33.6 29.6', '#3F1D0B', 1.3) +
+      P('M24.6 30C23.6 23 27.6 22.4 32 22.4C36.6 22.4 40.6 23.4 39.4 30C38 26.6 35.6 25.8 32 26.2C28.6 25.6 26 26.4 24.6 30Z', '#4A2C1A') +
+      '</g>' + '<rect x="15.6" y="40" width="7" height="4" rx="1.4" fill="#F8FAFC"/><rect x="41.4" y="40" width="7" height="4" rx="1.4" fill="#F8FAFC"/>' +
+      O(18.6, 34, 7, 'url(#IDgv)') + O(45.4, 34, 7, 'url(#IDgv)') + L('M14.6 30.6Q16.6 28 19.6 28.2M41.4 30.6Q43.4 28 46.4 28.2', '#fff', 1.1, .75) + tw(52, 18, 2.6) + tw(12, 20, 1.8, .8) + fin();
+    // Maze Muncher : petit monstre violet, grande bouche, qui avale les points du labyrinthe néon
+    B.mazechomp = med('#312E81', '#0B1026', '#60A5FA', '#1E3A8A', R('IDmo', '#F5D0FE', '#C084FC', '#6B21A8')) +
+      '<g clip-path="url(#IDc)">' + L('M10 16H26V24M38 10V20H54M10 50H22V58M42 46H58M46 46V58', '#3B82F6', 2.6) + L('M10 16H26V24M38 10V20H54M10 50H22V58M42 46H58M46 46V58', '#93C5FD', .8) +
+      O(44, 33, 1.6, '#FDE047') + O(50, 33, 1.6, '#FDE047') + O(56, 33, 1.6, '#FDE047') + O(32, 14, 1.4, '#FDE047') + O(16, 30, 1.4, '#FDE047') + O(32, 54, 2.6, '#F472B6') +
+      '</g>' + E(29, 46, 10, 2, '#000', .3) + O(29, 34, 11.4, 'url(#IDmo)') + P('M20 26l-2-4 4 2zM38 26l2-4-4 2z', '#A855F7') +
+      O(24.8, 28.6, 3.4, '#fff') + O(33.4, 28.6, 3.4, '#fff') + O(25.6, 29, 1.6, '#1F2937') + O(34.2, 29, 1.6, '#1F2937') + O(26, 28.4, .5, '#fff') + O(34.6, 28.4, .5, '#fff') +
+      E(29.4, 38.6, 6.4, 4.4, '#3B0764') + E(29.4, 41, 3.6, 1.8, '#F472B6') + P('M25.4 34.6h2.6l-1.3 2.4zM30.8 34.6h2.6l-1.3 2.4z', '#fff') + L('M19.6 27Q22 22.4 27 22', '#fff', 1.1, .6) + fin();
+    // Memory Flip : 4 cartes, deux retournées identiques (cœur-diamant), une en train de tourner
+    B.memoflip = med('#A5B4FC', '#312E81', '#F0ABFC', '#86198F', G('IDcb', '#8B5CF6', '#4C1D95') + G('IDcf', '#FFFFFF', '#E2E8F0')) +
+      '<g clip-path="url(#IDc)">' + O(14, 18, .9, '#fff') + O(52, 50, .8, '#fff') + '</g>' +
+      '<g transform="rotate(-8 22 22)"><rect x="13" y="10" width="17" height="22" rx="3" fill="url(#IDcf)" stroke="#CBD5E1" stroke-width=".6"/>' + P('M21.5 26C15.6 22 16.4 16.6 19.4 16.8 20.6 16.9 21.2 17.8 21.5 18.8 21.8 17.8 22.4 16.9 23.6 16.8 26.6 16.6 27.4 22 21.5 26Z', '#E11D48') + '</g>' +
+      '<g transform="rotate(8 42 22)"><rect x="34" y="10" width="17" height="22" rx="3" fill="url(#IDcf)" stroke="#CBD5E1" stroke-width=".6"/>' + P('M42.5 26C36.6 22 37.4 16.6 40.4 16.8 41.6 16.9 42.2 17.8 42.5 18.8 42.8 17.8 43.4 16.9 44.6 16.8 47.6 16.6 48.4 22 42.5 26Z', '#E11D48') + '</g>' +
+      '<g transform="rotate(-6 22 45)"><rect x="13" y="34" width="17" height="22" rx="3" fill="url(#IDcb)" stroke="#FDE047" stroke-width="1"/>' + P('M21.5 39l4 6-4 6-4-6z', '#FDE047') + P('M21.5 42l2 3-2 3-2-3z', '#7C3AED') + '</g>' +
+      '<g transform="rotate(6 42 45)"><rect x="38.6" y="34" width="8" height="22" rx="2" fill="url(#IDcb)" stroke="#FDE047" stroke-width="1"/>' + L('M36 45h-2M50 45h2', '#fff', 1, .7) + '</g>' +
+      L('M32 6.6l1 2.6M26 8l1.6 2.2M38 8l-1.6 2.2', '#FDE047', 1.2) + tw(32, 33, 2.4) + fin();
+    // Dominoes : deux grands dominos ivoire sur le tapis
+    function domB(x, y, rot, a, b) {
+      var pp = function (k, oy) { return PIP[k].map(function (q) { return O(f(x + 2 + q[0] * 10), f(y + oy + 2 + q[1] * 10), 1.25, '#111827'); }).join(''); };
+      return '<g transform="rotate(' + rot + ' ' + (x + 7) + ' ' + (y + 14) + ')"><rect x="' + (x + .6) + '" y="' + (y + 1.6) + '" width="14" height="28" rx="2.8" fill="#000" opacity=".35"/><rect x="' + x + '" y="' + y + '" width="14" height="28" rx="2.8" fill="url(#IDdm)" stroke="#CBD5E1" stroke-width=".6"/>' +
+        L('M' + (x + 2) + ' ' + (y + 14) + 'h10', '#64748B', .8) + O(x + 7, y + 14, 1, '#CA8A04') + pp(a, 0) + pp(b, 14) + L('M' + (x + 2) + ' ' + (y + 2.6) + 'h7', '#fff', .9, .9) + '</g>';
+    }
+    B.domino = med('#22D3EE', '#164E63', '#FDE047', '#A16207', G('IDdm', '#FFFFFF', '#FEF3C7', '#E7E5E4')) +
+      '<g clip-path="url(#IDc)">' + P('M4 50Q32 44 62 50V64H4z', '#155E75', .6) + '</g>' + domB(34, 16, 18, 3, 6) + domB(16, 13, -14, 6, 5) + tw(52, 14, 2.4) + tw(12, 44, 1.8, .8) + fin();
+    // Fan-Tan : plateau laqué rouge, tas de perles, gobelet doré soulevé, baguette qui compte par 4
+    B.fantan = med('#FCA5A5', '#7F1D1D', '#FDE047', '#A16207', R('IDcu', '#FFFBEB', '#FBBF24', '#92400E') + R('IDbn', '#FFFFFF', '#F1F5F9', '#94A3B8')) +
+      '<g clip-path="url(#IDc)">' + '<rect x="11" y="30" width="42" height="26" rx="4" fill="#991B1B" transform="rotate(0)"/><rect x="13" y="32" width="38" height="22" rx="3" fill="#DC2626" stroke="#FBBF24" stroke-width="1"/>' +
+      [[22, 44], [25, 42], [28, 45], [24, 47], [31, 43], [29, 48], [34, 46], [26, 45.2], [32, 49], [21, 48]].map(function (q) { return E(q[0], q[1], 1.8, 1.4, 'url(#IDbn)'); }).join('') +
+      L('M38 50L50 38', '#D6A06B', 1.6) + E(42, 47, 1.8, 1.4, 'url(#IDbn)') + E(45, 49, 1.8, 1.4, 'url(#IDbn)') + E(47, 46, 1.8, 1.4, 'url(#IDbn)') + E(44.6, 44, 1.8, 1.4, 'url(#IDbn)') +
+      '<text x="48" y="54" font-size="6" font-weight="900" font-family="system-ui,sans-serif" fill="#FDE047">4</text>' + '</g>' +
+      '<g transform="rotate(-18 34 20)">' + E(34, 27, 11, 3.2, '#92400E') + P('M23 27L26 12H42L45 27Z', 'url(#IDcu)') + E(34, 12, 8, 2.2, '#FDE68A') + L('M26.6 16L28 25', '#fff', 1, .6) + '</g>' + tw(52, 14, 2.4) + fin();
     Object.keys(B).forEach(function (k) { var s = B[k]; OBJ[k] = function () { return s; }; });
   })();
   OBJ.rps = function () {
