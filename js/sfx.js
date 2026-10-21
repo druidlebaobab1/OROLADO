@@ -65,8 +65,8 @@
     return null;
   }
   // 2026-10-21 (propriétaire : « le petit rond de son dans Safari ») : quand plus rien ne sonne, on met le moteur de son en
-  // veille → Safari n'affiche plus l'icône de son. Il repart tout seul au son suivant. ESSAI : compte admin seulement.
-  function idleOk() { try { var u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null; return !!(u && u.role === 'admin'); } catch (e) { return false; } }
+  // veille → Safari n'affiche plus l'icône de son. Il repart tout seul au son suivant. Validé : pour tout le monde.
+  function idleOk() { return true; } // essai admin validé par le propriétaire (2026-10-21) : pour tout le monde
   setInterval(function () {
     var c = window.__oroAC;
     if (!c || c.state !== 'running' || !idleOk()) return;
