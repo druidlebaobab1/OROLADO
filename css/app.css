@@ -13455,3 +13455,10 @@ html:root body #screenTrade .win-preview.loc2-ov .amount{transform:translateY(-3
 html:root body #screenTrade .win-preview.loc2-ov > .oro-loc2,html:root body #screenTrade .stake-field.loc2-ov > .oro-loc2{font-size:8.5px;bottom:4px}
 html:root body #casinoModal .cg-in.loc2-ov > .oro-loc2{bottom:4px}
 html:root body #casinoModal .cg-in.loc2-ov input{transform:translateY(-6px) scale(.86)}
+/* plein écran : « $1 » et « ≈ $ 1.90 » montent un peu, minuscule équivalent du gain dessous (couleur or clair) */
+html.fs-trade:root body .stake-field.has-fsl #inputStake{transform:translateY(-4px)!important}
+html.fs-trade:root body .stake-field.has-fsl #fsStakeWin{transform:translateY(-5px)!important}
+html.fs-trade:root body .stake-field.has-fsl > .oro-loc2.fsl{left:12%;right:12%;bottom:1px;font-size:7.5px;line-height:1;color:#FCD34D;-webkit-text-fill-color:#FCD34D;opacity:.9}
+/* Jeux / Paris : la case Compte réel du haut un peu plus haute (l'équivalent respire) */
+html:root body #casinoModal #csBal.cw-same{min-height:calc(100% + 0px);padding-top:3px!important;padding-bottom:3px!important}
+html:root body #casinoModal #csBal.cw-same .cw-t .oro-loc{margin-top:2px}

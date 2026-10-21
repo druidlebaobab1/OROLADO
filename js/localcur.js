@@ -242,6 +242,8 @@
   }
   var SPOTS = [
     { host: '.stake-field', amt: '#inputStake', ov: 1, noFs: 1 },
+    // plein écran : minuscule équivalent du GAIN sous « ≈ $ 1.90 » (propriétaire), autre couleur
+    { host: '.stake-field', amt: '#previewGain', ov: 1, fsOnly: 1, cls: 'fsl' },
     { host: '#screenTrade .win-preview', amt: '#previewGain', ov: 1 },
     { host: '#casinoModal .cg-in', amt: '#csStake', ov: 1 },
     { host: '#casinoModal .sp2-inw[for="spStake"]', amt: '#spStake', ov: 1 },
@@ -256,16 +258,17 @@
         var host = hosts[i], amt = sp.amt === sp.host ? host : document.querySelector(sp.amt);
         var box = sp.after ? host.parentNode : host;
         if (!box) continue;
-        var tag = box.querySelector(':scope > .oro-loc2');
+        var tag = box.querySelector(':scope > .oro-loc2' + (sp.cls ? '.' + sp.cls : ':not(.fsl)'));
         var n = c ? numOf(amt) : null;
-        if (sp.noFs && document.documentElement.classList.contains('fs-trade')) n = null; // plein écran : le gain « ≈ $ » est déjà sous la mise
-        if (!c || n == null) { if (tag) tag.remove(); box.classList.remove('has-loc2', 'loc2-ov'); continue; }
+        var fsOn = document.documentElement.classList.contains('fs-trade');
+        if ((sp.noFs && fsOn) || (sp.fsOnly && !fsOn)) n = null; // plein écran : le gain « ≈ $ » est déjà sous la mise
+        if (!c || n == null) { if (tag) tag.remove(); if (!box.querySelector(':scope > .oro-loc2')) box.classList.remove('has-loc2', 'loc2-ov'); if (sp.cls) box.classList.remove('has-' + sp.cls); continue; }
         if (!tag) {
-          tag = document.createElement('span'); tag.className = 'oro-loc2'; tag.setAttribute('dir', 'ltr');
+          tag = document.createElement('span'); tag.className = 'oro-loc2' + (sp.cls ? ' ' + sp.cls : ''); tag.setAttribute('dir', 'ltr');
           if (sp.after && host.nextSibling) box.insertBefore(tag, host.nextSibling); else box.appendChild(tag);
         }
         var t = fmt(n, c);
-        box.classList.add('has-loc2'); box.classList.toggle('loc2-ov', !!sp.ov);
+        box.classList.add('has-loc2'); box.classList.toggle('loc2-ov', !!sp.ov); if (sp.cls) box.classList.add('has-' + sp.cls);
         if (tag.textContent !== t || tag.__w !== box.clientWidth) {
           tag.textContent = t; tag.__w = box.clientWidth;
           // élastique (propriétaire) : plus le montant est long, plus la ligne rapetisse ; jamais de débordement
