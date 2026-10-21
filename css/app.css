@@ -13406,18 +13406,18 @@ html:root body #casinoModal #csBal.cw-same .cw-plus{flex:none!important}
 /* 2026-10-21 (propriétaire) — Compte réel / Démo avec l'équivalent local : mise en page FIXE, identique que la case soit
    choisie (barre claire de 3 px en bas) ou non → l'équivalent ne grandit / ne rétrécit plus et ne touche jamais le bas.
    3 lignes : libellé 8 px · montant (sa taille) · équivalent 9 px ; 4 px réservés en bas dans les deux états. */
-html:root body #modeReal#modeReal#modeReal.has-loc,html:root body #modeDemo#modeDemo#modeDemo.has-loc,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc{
+html:root body #modeReal#modeReal#modeReal#modeReal#modeReal#modeReal#modeReal.has-loc,html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc,html:root body #fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal.has-loc,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc{
   justify-content:center!important;padding-top:0!important;padding-bottom:4px!important;gap:0!important;row-gap:0!important}
-html:root body #modeReal#modeReal#modeReal.has-loc .mb-lbl,html:root body #modeDemo#modeDemo#modeDemo.has-loc .mb-lbl,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc .mb-lbl,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .mb-lbl{
+html:root body #modeReal#modeReal#modeReal#modeReal#modeReal#modeReal#modeReal.has-loc .mb-lbl,html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc .mb-lbl,html:root body #fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal.has-loc .mb-lbl,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .mb-lbl{
   line-height:8px!important;height:8px!important;margin:0!important;transform:none!important;flex:none!important}
-html:root body #modeReal#modeReal#modeReal.has-loc .mb-amt,html:root body #modeDemo#modeDemo#modeDemo.has-loc .mb-amt,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc .mb-amt,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .mb-amt{
+html:root body #modeReal#modeReal#modeReal#modeReal#modeReal#modeReal#modeReal.has-loc .mb-amt,html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc .mb-amt,html:root body #fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal.has-loc .mb-amt,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .mb-amt{
   line-height:1!important;height:auto!important;margin:0 0 1px!important;transform:none!important;flex:none!important}
-html:root body #modeReal#modeReal#modeReal.has-loc .oro-loc,html:root body #modeDemo#modeDemo#modeDemo.has-loc .oro-loc,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc .oro-loc,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .oro-loc{
+html:root body #modeReal#modeReal#modeReal#modeReal#modeReal#modeReal#modeReal.has-loc .oro-loc,html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc .oro-loc,html:root body #fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal.has-loc .oro-loc,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .oro-loc{
   font-size:9.5px!important;line-height:9px!important;height:9px!important;margin-top:0!important;flex:none!important;overflow:visible!important}
 /* écran normal : la barre claire du bas de la case choisie est plus épaisse → un peu plus de place réservée en bas,
    montant légèrement réduit (zoom 0,9) quand l'équivalent est affiché ; identique dans les deux états */
-html:root body #modeReal#modeReal#modeReal.has-loc,html:root body #modeDemo#modeDemo#modeDemo.has-loc{padding-bottom:7px!important}
-html:root body #modeReal#modeReal#modeReal.has-loc .mb-amt,html:root body #modeDemo#modeDemo#modeDemo.has-loc .mb-amt{zoom:.9}
+html:root body #modeReal#modeReal#modeReal#modeReal#modeReal#modeReal#modeReal.has-loc,html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc{padding-bottom:7px!important}
+html:root body #modeReal#modeReal#modeReal#modeReal#modeReal#modeReal#modeReal.has-loc .mb-amt,html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc .mb-amt{zoom:.9}
 /* 2026-10-21 (propriétaire) — autres « ≈ » (js/localcur.js, .oro-loc2) : mise et gain du trading, mise des jeux, Paris,
    recharge, retrait. Cases à taille fixe : ligne posée en bas, chiffre en dollars réduit / remonté par transform (aucun
    déplacement autour). */
@@ -13425,6 +13425,7 @@ html body .oro-loc2{display:block;font:600 9px/1.05 "Plus Jakarta Sans",system-u
   -webkit-text-fill-color:rgba(190,245,215,.85);font-variant-numeric:tabular-nums;unicode-bidi:isolate;pointer-events:none;overflow:hidden;text-overflow:clip}
 html body .loc2-ov{position:relative}
 html body .loc2-ov > .oro-loc2{position:absolute;left:4px;right:4px;bottom:3px;text-align:center}
+html:root body #screenTrade .stake-field.loc2-ov > .oro-loc2{left:28%;right:28%}
 html:root body #screenTrade .stake-field.loc2-ov #inputStake{transform:translateY(-5px) scale(.88);transform-origin:center}
 html:root body #screenTrade .win-preview.loc2-ov .amount{transform:translateY(-5px) scale(.9);transform-origin:center}
 html:root body #screenTrade .win-preview.loc2-ov .mult{transform:translateY(-5px) scale(.9);transform-origin:center}
@@ -13440,8 +13441,9 @@ html:root body #depositModal .amt-row.has-loc2{flex-wrap:wrap}
 html:root body #depositModal .amt-row > .oro-loc2{flex:1 0 100%;font-size:12px;margin-top:4px;color:#A7F3D0;-webkit-text-fill-color:#A7F3D0}
 html:root body #withdrawModal .oro-loc2{font-size:12px;margin-top:4px;color:#A7F3D0;-webkit-text-fill-color:#A7F3D0}
 /* case choisie (Compte réel / Démo) avec l'équivalent : barre claire du bas plus fine (1,5 px au lieu de 3) — propriétaire */
-html:root body #modeReal#modeReal#modeReal.has-loc.on,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(34,212,127),0 0 18px rgba(34,212,127,.38)!important}
-html:root body #modeDemo#modeDemo#modeDemo.has-loc.on,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(122,167,255),0 0 14px rgba(92,155,255,.35)!important}
+html:root body #modeReal#modeReal#modeReal#modeReal#modeReal#modeReal#modeReal.has-loc.on,html:root body #fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(34,212,127),0 0 18px rgba(34,212,127,.38)!important}
+html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc.on,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(122,167,255),0 0 14px rgba(92,155,255,.35)!important}
 /* plein écran : la case de mise montre déjà le gain « ≈ $ 1.90 » dessous → pas de 2e ligne */
 html.fs-trade:root body #screenTrade .stake-field.loc2-ov > .oro-loc2{display:none!important}
 html.fs-trade:root body #screenTrade .stake-field.loc2-ov #inputStake{transform:none!important}
+html:root body #casinoModal #spBalR > .oro-loc2{max-width:46%}
