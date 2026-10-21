@@ -427,7 +427,10 @@
       var LV_POS = ['crash', 'cryptox', 'roulette', 'jet', 'horses', 'race', 'rocket', 'planets', 'catwalk', 'fleets', 'gemcount', 'claw',
         'dtlive', 'moneywheel', 'football', 'kenolive', 'moonshot', 'sicbolive', 'pegdrop', 'hilolive', 'bullseye', 'lucky10', 'ladderlive', 'coinlive',
         // 2026-10-21 (live4) : cartes, dés et tirages
-        'baccaratlive', 'bingolive', 'diceduellive', 'andarlive', 'lotto649live', 'redblacklive', 'pokerlive', 'peryalive', 'bustlive', 'teenpattilive', 'megaballlive', 'lucky7live'];
+        'baccaratlive', 'bingolive', 'diceduellive', 'andarlive', 'lotto649live', 'redblacklive', 'pokerlive', 'peryalive', 'bustlive', 'teenpattilive', 'megaballlive', 'lucky7live',
+        // v3019 : 16 courses et sports en direct (js/games/cat-live5.js)
+        'dogracelive', 'penaltylive', 'camelracelive', 'boxinglive', 'monsterlive', 'basketlive', 'snailracelive', 'volcanolive',
+        'boatracelive', 'tennislive', 'chickenracelive', 'archerylive', 'spaceracelive', 'cricketlive', 'balloonlive', 'fishinglive'];
       var lvPos = function (k) { var i = LV_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.live.sort(function (a, b) { return lvPos(a) - lvPos(b); });
       var cur = curSec(); if (!bySec[cur].length) cur = SEC_ORDER.filter(function (x) { return bySec[x].length; })[0] || 'skill';
@@ -639,7 +642,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3018'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '3019'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
@@ -672,7 +675,7 @@
     }, catDone ? 0 : 90);
   }
   // v2806 : le catalogue des nouveaux jeux (logos + noms, ~50 Ko) se charge après l'affichage du site, ou à l'ouverture du Casino
-  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa', 'cat-skill6', 'cat-live3', 'cat-casc', 'cat-live4', 'cat-skill9'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
+  var CAT_FILES = ['cat-skill1', 'cat-skill2', 'cat-skill4', 'cat-more1', 'cat-more2', 'cat-more3', 'cat-more4', 'cat-live2', 'cat-casb', 'cat-casa', 'cat-skill6', 'cat-live3', 'cat-casc', 'cat-live4', 'cat-skill9', 'cat-live5'], catAsked = false; // v2807 : cat-more3 (Lucky Planets en direct, Star Bowling)
   // 2026-10-20 (vieux Android : « boules de couleur avant les logos ») : les photos des logos sont préchargées en douceur
   // dès que le catalogue est là (mêmes adresses → au 1er clic sur Jeux elles sortent de la mémoire du téléphone).
   var logosDone = false;
