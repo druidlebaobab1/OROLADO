@@ -13506,3 +13506,15 @@ html body .oro-inst-btn .oi-logo i{width:15px;height:15px;right:-3px;bottom:-3px
 html body .oro-inst-btn .oi-logo i svg{width:9px;height:9px;stroke-width:3}
 html body .oro-inst-ask .oia-ico > i{width:22px;height:22px;right:8px;bottom:8px;animation:none!important;box-shadow:0 0 0 2px #140A2A}
 html body .oro-inst-ask .oia-ico > i svg{width:12px;height:12px;stroke-width:3}
+/* 2026-10-21 (propriétaire) : à droite, dessin horizontal (téléphone + flèche qui descend), petit mouvement « clique-moi » ;
+   rond vert hors du triangle du logo */
+html body .oro-inst-btn .oi-go{width:auto;height:42px;padding:0 12px;gap:4px;border-radius:13px;display:flex;align-items:center;justify-content:center;animation:oiPulse 1.8s ease-in-out infinite}
+html body .oro-inst-btn .oi-go svg.oi-ph{width:15px;height:24px;stroke:#FFE7A3;stroke-width:2.4;fill:none}
+html body .oro-inst-btn .oi-go svg.oi-ar{width:22px;height:22px;stroke:#4ADE80;stroke-width:3;fill:none;animation:oiDrop 1.8s ease-in-out infinite}
+@keyframes oiPulse{0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,.55),0 0 0 0 rgba(255,231,163,.0)}50%{box-shadow:0 0 0 2px rgba(255,255,255,.75),0 0 0 6px rgba(255,231,163,.35)}}
+@keyframes oiDrop{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+@media (prefers-reduced-motion:reduce){html body .oro-inst-btn .oi-go,html body .oro-inst-btn .oi-go svg.oi-ar{animation:none}}
+html body .oro-inst-btn .oi-logo{overflow:visible}
+html body .oro-inst-btn .oi-logo i{right:-7px;bottom:-7px}
+html body .oro-inst-ask .oia-ico > i{right:-4px;bottom:-4px}
+html:not(.is-android).fs-trade:root body .stake-field.has-fsl #fsStakeWin{transform:translateY(-10.5px)!important}
