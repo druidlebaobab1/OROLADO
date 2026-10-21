@@ -2234,13 +2234,19 @@ html.ios-app body .learn-modal .lg-close.btn-close:not(#btnCloseDrawer):not(#oro
       couleur unie de la fenêtre (plus de planètes) ; trading, profil et historique gardent le dessin ;
    2) dans l'appli, le bas du site est déjà au-dessus de la barre d'accueil (la bande est dessous) : plus de marge « zone sûre »
       en bas de ces fenêtres → la case « Écris ton message… » et les boutons du bas descendent au bas du site. */
+/* (b) 2026-10-21 : ces fenêtres prennent TOUT l'écran (comme une vraie appli) : le site descend jusqu'au vrai bas, la fenêtre
+   aussi, et son contenu s'arrête au-dessus de la barre d'accueil (marge = hauteur de la bande) → plus de bande, plus de planètes. */
+html.ios-app.is-ios.ios-tall:root:has(.modal-backdrop.active:not(#historySheet):not(#financeModal)) body,
+html.ios-app.is-ios.ios-tall:root:has(#liveModal.active) body,
+html.ios-app.is-ios.ios-tall.learn-on:root body{height:var(--ios-screen-h,100%)!important}
 html.ios-app.is-ios:root:has(.modal-backdrop.active:not(#historySheet):not(#financeModal)),
-html.ios-app.is-ios:root:has(#liveModal.active),
-html.ios-app.is-ios.learn-on:root{background-image:none!important;background-color:#0F0A28!important}
-html.ios-app.is-ios:root:has(#casinoModal.active){background-image:none!important;background-color:#120E30!important}
+html.ios-app.is-ios:root:has(#liveModal.active),html.ios-app.is-ios.learn-on:root{background-image:none!important}
+html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active:not(#historySheet):not(#financeModal) > .modal-box{box-sizing:border-box!important;padding-bottom:var(--ios-under,0px)!important}
+html.ios-app.is-ios.ios-tall.learn-on:root body .learn-modal{padding-bottom:var(--ios-under,0px)!important;box-sizing:border-box!important}
 html.ios-app.is-ios:root body #liveModal .sx-panel{padding-bottom:0!important}
 html.ios-app.is-ios:root body #liveModal .sx-shin{padding-bottom:16px!important}
 html.ios-app.is-ios:root body #liveModal .lg-info{padding-bottom:20px!important}
 html.ios-app.is-ios:root body .learn-modal .lg-body{padding-bottom:30px!important}
 html.ios-app.is-ios:root body #liveModal .sx-comp{padding-bottom:8px!important}
 html.ios-app.is-ios:root body #liveModal #sxRoot.sx{padding-bottom:0!important}
+html.ios-app.is-ios.ios-tall:root body #liveModal #sxRoot.sx{padding-bottom:var(--ios-under,0px)!important}
