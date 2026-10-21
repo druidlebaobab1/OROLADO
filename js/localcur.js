@@ -107,7 +107,10 @@
     if (tag.textContent !== txt) tag.textContent = txt;
     if (tag.__k === key) return;
     tag.__k = key;
-    var size = Math.max(8, Math.min(14, Math.round(fs * 0.62 * 10) / 10));
+    // cases Compte réel / Démo (trading, plein écran) : taille FIXE, la même que la case soit choisie ou non (propriétaire :
+    // « elle ne doit ni grandir ni rétrécir quand on touche la case ») ; la place est réservée par app.css (.has-loc)
+    var fixed = !host.classList.contains('cw-t');
+    var size = fixed ? 9.5 : Math.max(8, Math.min(14, Math.round(fs * 0.62 * 10) / 10));
     tag.style.fontSize = size + 'px'; tag.style.lineHeight = Math.round(size * 1.1) + 'px';
     for (var k = 0; k < 14 && tag.clientWidth > 0 && tag.scrollWidth > tag.clientWidth + 1 && size > 6.5; k++) {
       size = Math.round((size - 0.5) * 10) / 10;
@@ -146,7 +149,7 @@
     var inB = 0; String(cs.boxShadow || '').split(/,(?![^(]*\))/).forEach(function (sh) { if (/inset/.test(sh)) { var m = sh.replace(/rgba?\([^)]*\)/, '').match(/(-?[\d.]+)px\s+(-?[\d.]+)px/); if (m && +m[2] < 0) inB = Math.max(inB, -m[2]); } });
     var safeB = H.bottom - (parseFloat(cs.borderBottomWidth) || 0) - inB - 3, safeT = H.top + (parseFloat(cs.borderTopWidth) || 0) + 1;
     var size = parseFloat(tag.style.fontSize) || 9;
-    for (var k = 0; k < 8; k++) {
+    for (var k = 0; k < 8 && host.classList.contains('cw-t'); k++) { // (Jeux / Paris seulement ; les cases du trading sont réglées par app.css)
       var T = tag.getBoundingClientRect(), over = T.bottom - safeB;
       if (over <= 0.5) break;
       var top = lbl ? lbl.getBoundingClientRect().top : amtEl.getBoundingClientRect().top, room = Math.max(0, top - safeT);

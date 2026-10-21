@@ -13403,3 +13403,18 @@ html:root body #casinoModal #csBal.cw-same .cw-t{min-width:0!important;flex:1 1 
 html:root body #casinoModal #csBal.cw-same .cw-t small,html:root body #casinoModal #csBal.cw-same .cw-t b{display:block;max-width:100%;overflow:hidden;white-space:nowrap}
 html:root body #casinoModal #csBal.cw-same .cw-plus{flex:none!important}
 @media (max-width:340px){html:root body #casinoModal #csBal.cw-same .cw-wal{display:none!important}}
+/* 2026-10-21 (propriétaire) — Compte réel / Démo avec l'équivalent local : mise en page FIXE, identique que la case soit
+   choisie (barre claire de 3 px en bas) ou non → l'équivalent ne grandit / ne rétrécit plus et ne touche jamais le bas.
+   3 lignes : libellé 8 px · montant (sa taille) · équivalent 9 px ; 4 px réservés en bas dans les deux états. */
+html:root body #modeReal#modeReal#modeReal.has-loc,html:root body #modeDemo#modeDemo#modeDemo.has-loc,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc{
+  justify-content:center!important;padding-top:0!important;padding-bottom:4px!important;gap:0!important;row-gap:0!important}
+html:root body #modeReal#modeReal#modeReal.has-loc .mb-lbl,html:root body #modeDemo#modeDemo#modeDemo.has-loc .mb-lbl,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc .mb-lbl,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .mb-lbl{
+  line-height:8px!important;height:8px!important;margin:0!important;transform:none!important;flex:none!important}
+html:root body #modeReal#modeReal#modeReal.has-loc .mb-amt,html:root body #modeDemo#modeDemo#modeDemo.has-loc .mb-amt,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc .mb-amt,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .mb-amt{
+  line-height:1!important;height:auto!important;margin:0 0 1px!important;transform:none!important;flex:none!important}
+html:root body #modeReal#modeReal#modeReal.has-loc .oro-loc,html:root body #modeDemo#modeDemo#modeDemo.has-loc .oro-loc,html:root body #fsBtnReal#fsBtnReal#fsBtnReal.has-loc .oro-loc,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc .oro-loc{
+  font-size:9.5px!important;line-height:9px!important;height:9px!important;margin-top:0!important;flex:none!important;overflow:visible!important}
+/* écran normal : la barre claire du bas de la case choisie est plus épaisse → un peu plus de place réservée en bas,
+   montant légèrement réduit (zoom 0,9) quand l'équivalent est affiché ; identique dans les deux états */
+html:root body #modeReal#modeReal#modeReal.has-loc,html:root body #modeDemo#modeDemo#modeDemo.has-loc{padding-bottom:7px!important}
+html:root body #modeReal#modeReal#modeReal.has-loc .mb-amt,html:root body #modeDemo#modeDemo#modeDemo.has-loc .mb-amt{zoom:.9}
