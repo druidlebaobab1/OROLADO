@@ -47,6 +47,9 @@ function orolado_notify_texts(string $kind, string $lang, string $amt, string $f
 function orolado_notify_player(string $uid, string $kind, float $amount, string $from = ''): void {
   if ($uid === '' || $amount <= 0) return;
   $amt = '$' . number_format($amount, 2, '.', ' ');
+  // 2026-10-21 : résultat de l'e-mail gardé pour qui veut le noter (paiement du Tournoi démo) — 'none' (pas d'e-mail
+  // valide), 'sent' ou 'failed'. Rien d'autre ne change : un e-mail raté ne bloque jamais le crédit.
+  $GLOBALS['OROLADO_NOTIFY_LAST'] = ['uid' => $uid, 'mail' => 'none', 'email' => ''];
   try {
     $db = load_db();
     $u = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
@@ -76,12 +79,15 @@ function orolado_notify_player(string $uid, string $kind, float $amount, string 
         '<tr><td style="padding:10px 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#A5B4D8;">OROLADO · <a href="https://orolado.com" style="color:#A5B4D8;">orolado.com</a></td></tr>' .
         '</table></td></tr></table></body></html>';
       $text = $greet . "\n\n" . $b . "\n\nOROLADO\nhttps://orolado.com\n";
-      if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) ($GLOBALS['OROLADO_FAKE_MAIL'])($email, $t, $text);
+      $GLOBALS['OROLADO_NOTIFY_LAST'] = ['uid' => $uid, 'mail' => 'failed', 'email' => $email];
+      if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) $r = ($GLOBALS['OROLADO_FAKE_MAIL'])($email, $t, $text);
       else {
         // v2955 : même chemin que les codes e-mail (Resend, puis Brevo en secours) — avant : Brevo seul
         $r = orolado_mail_send($email, $name, $t, $html, $text);
         if (empty($r['ok'])) error_log('OROLADO mail ' . $kind . ' non envoyé : ' . (string) ($r['reason'] ?? '?'));
       }
+      $GLOBALS['OROLADO_NOTIFY_LAST'] = ['uid' => $uid, 'mail' => (is_array($r) && !empty($r['ok'])) ? 'sent' : 'failed', 'email' => $email,
+        'reason' => is_array($r) ? (string) ($r['reason'] ?? '') : ''];
     }
   } catch (Throwable $e) { /* jamais bloquant */ }
   try {
