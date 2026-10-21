@@ -449,6 +449,284 @@
     ][i] || '';
     return vb ? '<svg viewBox="4 4 56 56" aria-hidden="true">' + d + '</svg>' : d;
   }
+  /* ===== LOGOS « LOT B » (2026-10-21, propriétaire : « les logos de beaucoup de jeux sont moches ») — BLOC À PART =====
+     Personnages bien dessinés (peau claire), couleurs vives, scène qui montre le jeu, dans un médaillon brillant 64×64
+     (même cadre que les autres logos). Un logo déclaré ici passe AVANT celui du catalogue (js/games/cat-*.js, voir addObj). */
+  (function () {
+    var C = ' stroke-linecap="round" stroke-linejoin="round" fill="none"';
+    function L(d, c, w, o) { return '<path d="' + d + '" stroke="' + c + '" stroke-width="' + w + '"' + C + (o ? ' opacity="' + o + '"' : '') + '/>'; }
+    function P(d, c, o) { return '<path d="' + d + '" fill="' + c + '"' + (o ? ' opacity="' + o + '"' : '') + '/>'; }
+    function O(x, y, r, c, o) { return '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + c + '"' + (o ? ' opacity="' + o + '"' : '') + '/>'; }
+    function E(x, y, rx, ry, c, o) { return '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="' + c + '"' + (o ? ' opacity="' + o + '"' : '') + '/>'; }
+    function G(id, a, b, c, h) { return '<linearGradient id="' + id + '" x1="0" y1="0" x2="' + (h ? 1 : 0) + '" y2="' + (h ? 0 : 1) + '"><stop offset="0" stop-color="' + a + '"/>' + (c ? '<stop offset=".5" stop-color="' + b + '"/><stop offset="1" stop-color="' + c + '"/>' : '<stop offset="1" stop-color="' + b + '"/>') + '</linearGradient>'; }
+    function R(id, a, b, c) { return '<radialGradient id="' + id + '" cx="36%" cy="30%" r="75%"><stop offset="0" stop-color="' + a + '"/><stop offset=".55" stop-color="' + b + '"/><stop offset="1" stop-color="' + c + '"/></radialGradient>'; }
+    function tw(x, y, s, o) { return '<path d="M' + x + ' ' + f(y - s) + 'Q' + x + ' ' + y + ' ' + f(x + s) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + f(y + s) + 'Q' + x + ' ' + y + ' ' + f(x - s) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + f(y - s) + 'Z" fill="#fff" opacity="' + (o || 1) + '"/>'; }
+    var SK = 'url(#IDsk)';
+    // médaillon : ombre, anneau brillant, décor rond (à dessiner dans <g clip-path="url(#IDc)">) ; fin() = reflet + liseré
+    function med(s1, s2, r1, r2, defs) {
+      return '<defs><clipPath id="IDc"><circle cx="32" cy="33" r="26.5"/></clipPath>' + G('IDbg', s1, s2) + G('IDrg', '#FFF7D6', r1, r2, 1) +
+        R('IDsk', '#FFF3EA', '#FFD9C0', '#EBB394') +
+        '<linearGradient id="IDgl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' + (defs || '') + '</defs>' +
+        '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDrg)"/><circle cx="32" cy="33" r="26.5" fill="url(#IDbg)"/>';
+    }
+    function fin() { return '<path d="M8.6 30A23.5 23.5 0 0 1 55.4 30Q32 19 8.6 30z" fill="url(#IDgl)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width=".9"/>'; }
+    // visage clair : yeux (regard dx −1…1), joues roses, sourire ; m = bouche à part ('' = aucune)
+    function face(x, y, r, dx, m) {
+      var e = r * .34, ey = y + r * .02, ox = x + (dx || 0) * r * .3;
+      return O(x, y, r, SK) + E(f(ox - e), f(ey), f(r * .12), f(r * .17), '#1F2937') + E(f(ox + e), f(ey), f(r * .12), f(r * .17), '#1F2937') +
+        O(f(ox - e + r * .05), f(ey - r * .07), f(r * .05), '#fff') + O(f(ox + e + r * .05), f(ey - r * .07), f(r * .05), '#fff') +
+        O(f(ox - e * 1.35), f(ey + r * .34), f(r * .15), '#FB7185', .35) + O(f(ox + e * 1.35), f(ey + r * .34), f(r * .15), '#FB7185', .35) +
+        (m != null ? m : L('M' + f(ox - r * .2) + ' ' + f(y + r * .42) + 'Q' + f(ox) + ' ' + f(y + r * .62) + ' ' + f(ox + r * .2) + ' ' + f(y + r * .42), '#9F1239', f(r * .11)));
+    }
+    // dalle isométrique (Tower Stack) : centre du dessus, demi-largeur a, épaisseur h, couleurs [dessus, gauche, droite]
+    function slab(x, y, a, h, c) {
+      var b = a / 2;
+      return P('M' + f(x - a) + ' ' + y + 'L' + x + ' ' + f(y + b) + 'L' + x + ' ' + f(y + b + h) + 'L' + f(x - a) + ' ' + f(y + h) + 'Z', c[1]) +
+        P('M' + x + ' ' + f(y + b) + 'L' + f(x + a) + ' ' + y + 'L' + f(x + a) + ' ' + f(y + h) + 'L' + x + ' ' + f(y + b + h) + 'Z', c[2]) +
+        P('M' + x + ' ' + f(y - b) + 'L' + f(x + a) + ' ' + y + 'L' + x + ' ' + f(y + b) + 'L' + f(x - a) + ' ' + y + 'Z', c[0]) +
+        L('M' + f(x - a + 1) + ' ' + y + 'L' + x + ' ' + f(y - b + .5) + 'L' + f(x + a - 1) + ' ' + y, '#fff', .7, .7);
+    }
+    var B = {};
+    // Commando Run : soldat qui court et tire dans la jungle
+    B.commando = med('#7DD3FC', '#1D4ED8', '#FBBF24', '#92400E', G('IDcm', '#84CC16', '#3F6212') + G('IDhm', '#65A30D', '#365314')) +
+      '<g clip-path="url(#IDc)">' + O(14, 18, 5, '#FEF9C3', .9) +
+      P('M4 46Q10 34 18 42Q24 30 34 41Q44 31 52 40Q58 34 62 38V64H4z', '#15803D') + P('M4 49Q16 42 30 49T62 47V64H4z', '#166534') +
+      P('M4 54H62V64H4z', '#7C4A1E') + P('M4 54H62V56H4z', '#A16207') +
+      L('M7 30H16M5 36H14M9 42H17', '#fff', 1.6, .55) +
+      L('M30 42L24 47L19 50.5', '#3F6212', 5) + P('M14.5 49.5h6a2.4 2.4 0 0 1 0 4h-6z', '#1F2937') +
+      L('M28 31L33 35.5L39 34.5', '#4D7C0F', 4) + O(39.8, 34.3, 2, SK) +
+      '<rect x="26" y="28" width="11" height="15" rx="4" fill="url(#IDcm)"/>' + P('M27.5 30.5l3 1.4-1 3-2.4-.6zM33 36l2.6-.8.6 2.6-2.4.6z', '#365314') +
+      '<rect x="26" y="38.5" width="11" height="2.6" rx="1" fill="#422006"/>' +
+      L('M33 42L39 46.5L40 53', '#4D7C0F', 5) + P('M37 52.5h6.5a2.2 2.2 0 0 1 0 3.8H37z', '#1F2937') +
+      '<rect x="31" y="30.6" width="23" height="3.6" rx="1.3" fill="#1F2937"/><rect x="28.5" y="30" width="6" height="5" rx="1.6" fill="#57534E"/><rect x="38" y="33.8" width="3" height="5.4" rx="1" fill="#111827"/>' + L('M34 31.4H52', '#94A3B8', .7) +
+      L('M34 30.5L39 33L44 33.4', '#65A30D', 4) + '<rect x="40" y="30.4" width="15" height="3.2" rx="1.2" fill="#1F2937"/>' + L('M42 31.2H54', '#94A3B8', .7) + O(44.6, 33, 2, SK) +
+      face(31, 23, 5.4, .9) +
+      P('M25.1 22.4C24.6 16.4 28 14.4 31.5 14.4C35.6 14.4 38.6 16.8 38.1 22Z', 'url(#IDhm)') + L('M24.4 22.2H38.8', '#365314', 1.7) + L('M27.5 17.5Q30 15.6 33 15.8', '#BEF264', 1, .7) +
+      '</g>' + '<path d="M54 26.5l2 3.6 4-1.2-2.3 3.4 3.6 2.1-4 .5.3 4-2.6-3-2.7 3 .4-4-4-.6 3.6-2-2.3-3.4 4 1.2z" fill="#FDE047"/>' + O(55.6, 32.4, 2, '#fff') + fin();
+    // Skate Tricks : skateur en l'air au-dessus de la rampe, coucher de soleil
+    B.skatetricks = med('#F9A8D4', '#6D28D9', '#22D3EE', '#0E7490', G('IDhp', '#67E8F9', '#0891B2') + G('IDbd', '#FDE047', '#EAB308', 0, 1)) +
+      '<g clip-path="url(#IDc)">' + O(46, 22, 7, '#FEF08A', .85) +
+      P('M4 44h6v-8h5v8h4v-12h6v12h4v-6h5v6h5v-10h6v10h5v-7h5v7h7v20H4z', '#4C1D95', .55) +
+      P('M4 47H13Q18 59 32 59Q46 59 51 47H62V64H4z', 'url(#IDhp)') + L('M4 47H13M51 47H62', '#E0F2FE', 1.6) + L('M17 53Q24 57 32 57', '#fff', 1, .5) +
+      '<g transform="rotate(-14 32 45)"><rect x="19.5" y="43.2" width="25" height="3.4" rx="1.7" fill="url(#IDbd)"/><rect x="19.5" y="43.2" width="25" height="1.1" rx=".55" fill="#1F2937" opacity=".6"/>' + O(24, 48.2, 1.9, '#E11D48') + O(40, 48.2, 1.9, '#E11D48') + '</g>' +
+      L('M29 35.5L25 39.5L26.5 43.8', '#1D4ED8', 4.2) + L('M34.5 35.5L38.5 38.5L37.5 41.8', '#2563EB', 4.2) +
+      E(26.5, 44.3, 2.6, 1.3, '#111827') + E(38, 42.2, 2.6, 1.3, '#111827') +
+      '<rect x="27" y="23.5" width="10.4" height="13.5" rx="4" fill="#EF4444"/>' + L('M32.2 25V36', '#B91C1C', 1) + P('M27 32h10.4v2H27z', '#FDE047', .9) +
+      L('M28.5 26.5L23 23.5L18.6 24.2', '#EF4444', 3.6) + O(18, 24.2, 1.9, SK) + L('M36 26.5L41.5 22.5L45.5 19.6', '#DC2626', 3.6) + O(46.2, 19.2, 1.9, SK) +
+      face(32.2, 18.2, 5.2, 0) + P('M26.9 17C27.1 12.4 29.8 11.3 32.3 11.3C35.4 11.3 37.6 13.3 37.5 16.6Z', '#1E3A8A') + L('M27 16.4L23.6 18', '#1E3A8A', 1.9) + L('M29 13.2Q32 12 35 13.2', '#60A5FA', 1, .8) +
+      '</g>' + tw(13, 22, 3, .9) + tw(52, 40, 2.4, .8) + fin();
+    // Ski Jump : sauteur à skis en vol (style V) au-dessus du tremplin
+    B.skijump = med('#BAE6FD', '#2563EB', '#E0F2FE', '#1D4ED8', G('IDsu', '#F87171', '#B91C1C', 0, 1)) +
+      '<g clip-path="url(#IDc)">' + O(48, 17, 5, '#FEF9C3') +
+      P('M4 44L16 30L24 38L34 26L46 40L54 33L62 41V64H4z', '#E0E7FF') + P('M16 30L19 34L17 36L13 34zM34 26L38 31L35 32L31 30z', '#fff') +
+      P('M4 47Q18 48 28 56L28 64H4z', '#F8FAFC') + L('M4 47Q18 48 28 56', '#93C5FD', 1.4) + L('M28 56V64', '#1E3A8A', 3) +
+      L('M10 53Q20 54 26 59', '#BFDBFE', 1, .8) +
+      L('M18 44L48 26', '#1E3A8A', 2.4) + L('M20 47L52 36', '#1E3A8A', 2.4) + L('M46 27L49.5 25M50 36.6L53.5 35.6', '#FACC15', 2.4) +
+      L('M27 42L39.5 33.5', 'url(#IDsu)', 7) + L('M28 42L25 44.5', '#B91C1C', 4.6) + L('M38 35L30 38.6', '#991B1B', 3) +
+      face(44.6, 29.4, 4.5, 1, '') + P('M40 29.4C40 25 42.4 24.4 44.6 24.4C47.4 24.4 49.2 26 49.1 28.4L40.4 30.4Z', '#1D4ED8') +
+      '<rect x="43.6" y="27.4" width="6.2" height="2.6" rx="1.3" fill="#FACC15" stroke="#1F2937" stroke-width=".6"/>' + L('M43 32.4Q45 33.6 47 32.6', '#9F1239', .6) +
+      L('M8 30H17M6 36H14', '#fff', 1.4, .7) + '</g>' + tw(54, 46, 2.5, .9) + fin();
+    // Snowboard Jump : surfeur des neiges qui attrape sa planche en plein saut
+    B.snowjump = med('#C4B5FD', '#3730A3', '#F0ABFC', '#7E22CE', G('IDbd', '#FB7185', '#BE123C', 0, 1) + G('IDjk', '#22D3EE', '#0E7490')) +
+      '<g clip-path="url(#IDc)">' + O(15, 18, 1, '#fff') + O(50, 14, .9, '#fff') + O(22, 12, .8, '#fff') +
+      P('M4 50L18 34L26 42L38 28L50 42L56 37L62 44V64H4z', '#A5B4FC') + P('M18 34L21.5 38L19 39L15.5 37.5zM38 28L42 33L39 34.5L35 32z', '#fff') +
+      P('M4 52Q30 46 62 54V64H4z', '#F1F5F9') + L('M4 52Q30 46 62 54', '#C7D2FE', 1.2) +
+      '<g transform="rotate(-18 32 45)"><rect x="17.5" y="42.6" width="29" height="5" rx="2.5" fill="url(#IDbd)"/>' + L('M21 45.1H43', '#FDE047', 1.3) + '</g>' +
+      L('M29 35.5L24 40L26 43.5', '#334155', 4.4) + L('M35 35.5L40 39L38.5 42', '#1E293B', 4.4) +
+      '<rect x="26.5" y="23.5" width="11" height="13.5" rx="4" fill="url(#IDjk)"/>' + L('M32 24.5V36', '#164E63', .9) + L('M27 30.5h10.5', '#FDE047', 1.2) +
+      L('M28 27.5L23.5 34L26.5 41', '#0891B2', 3.6) + O(26.8, 41.2, 1.9, SK) + L('M36.5 26.5L42 21L45.5 16.8', '#06B6D4', 3.6) + O(46, 16.2, 1.9, SK) +
+      face(32, 18, 5, 0) + P('M26.8 17.1C26.8 12.1 29.5 11 32 11C34.5 11 37.2 12.1 37.2 17.1Z', '#E11D48') + '<rect x="26.6" y="15.2" width="10.8" height="2.2" rx="1.1" fill="#FDE047"/>' + O(32, 10.6, 1.9, '#FEF3C7') +
+      O(16, 52, 1.6, '#fff') + O(20, 49, 1.1, '#fff') + O(13, 47.5, .9, '#fff') + '</g>' + tw(52, 26, 2.6, .9) + fin();
+    // Rooftop Ninja : ninja qui saute d'un toit à l'autre devant la grande lune
+    B.rooftopninja = med('#6366F1', '#0F172A', '#A78BFA', '#4C1D95', R('IDmn', '#FFFBEB', '#FDE68A', '#F59E0B')) +
+      '<g clip-path="url(#IDc)">' + O(38, 25, 13, 'url(#IDmn)') + O(34, 21, 2, '#FCD34D', .6) + O(43, 29, 2.6, '#FCD34D', .5) + O(12, 15, .9, '#fff') + O(20, 11, .7, '#fff') + O(55, 42, .8, '#fff') +
+      P('M4 46H22V64H4z', '#0B0B24') + P('M3 44H23L22 47H4z', '#3730A3') + P('M44 42H62V64H44z', '#0B0B24') + P('M43 40H63L62 43H44z', '#3730A3') +
+      P('M8 50h3v3H8zM14 50h3v3h-3zM8 57h3v3H8zM48 46h3v3h-3zM54 46h3v3h-3zM54 53h3v3h-3z', '#FDE047', .85) +
+      L('M24 22L36 36', '#E2E8F0', 1.6) + L('M22.5 20.5L25.2 23.3', '#7C3AED', 2.4) +
+      L('M28.5 36.5L22.5 37.5L18.5 41.5', '#334155', 4.2) + L('M32.5 36.5L37 41L34 45', '#475569', 4.2) + E(18, 42, 1.8, 1.2, '#7C3AED') + E(33.6, 45.6, 1.8, 1.2, '#7C3AED') +
+      L('M28.5 36L33.5 28.5', '#475569', 8) + P('M27 33.5l7.2-3.8.8 1.6-7.2 3.8z', '#7C3AED') +
+      L('M33.5 29L39.5 27.5L44.5 24', '#334155', 3.4) + L('M30.5 30L24.5 27L20 27.6', '#475569', 3.4) +
+      O(36.2, 21.6, 5.2, '#334155') + '<rect x="32.4" y="19.6" width="8" height="3.4" rx="1.7" fill="url(#IDsk)"/>' + O(35, 21.3, .75, '#111827') + O(38.4, 21.3, .75, '#111827') +
+      L('M31.5 18.4L41 17.6', '#EF4444', 1.8) + L('M31.6 18.6Q27 17.4 23.5 19.6', '#EF4444', 1.5) + L('M31.6 18.8Q27.6 20.6 25 23.4', '#DC2626', 1.3) +
+      '</g>' + tw(14, 28, 2.6, .9) + tw(53, 18, 2.2, .8) + fin();
+    // Star Archer : astronaute archer qui vise la cible lumineuse
+    B.archer = med('#7C3AED', '#0F172A', '#FB7185', '#9F1239', G('IDsu', '#FFFFFF', '#A5B4FC') + R('IDtg', '#FFFFFF', '#FDE68A', '#F59E0B')) +
+      '<g clip-path="url(#IDc)">' + O(12, 20, .9, '#fff') + O(24, 11, .7, '#fff') + O(58, 44, .8, '#fff') + O(40, 52, .7, '#fff') +
+      O(10, 66, 16, '#3B82F6', .9) + O(10, 66, 16, 'none') + P('M-4 58Q10 50 26 56', '#93C5FD', .5) +
+      '<g transform="translate(51 20)">' + O(0, 0, 8.4, '#E11D48') + O(0, 0, 6.4, '#fff') + O(0, 0, 4.4, '#E11D48') + O(0, 0, 2.4, 'url(#IDtg)') + '</g>' +
+      L('M20 40L18 48L16 54', '#CBD5E1', 4.8) + L('M25 40L28.5 47L29.5 54', '#E2E8F0', 4.8) + E(15.6, 55, 3, 1.6, '#4F46E5') + E(30.4, 55, 3, 1.6, '#4F46E5') +
+      '<rect x="16.5" y="27" width="11" height="14" rx="4.5" fill="url(#IDsu)"/>' + '<rect x="19" y="30" width="6" height="4" rx="1.2" fill="#4F46E5"/>' + O(20.5, 32, .8, '#22D3EE') + O(23, 32, .8, '#F472B6') +
+      '<g transform="rotate(-20 31 30)">' + L('M33.5 16.5Q43 30 33.5 43.5', '#FBBF24', 2.4) + L('M33.5 16.5L26.5 30L33.5 43.5', '#fff', .7) +
+      L('M26 30H47', '#FDE047', 1.5) + P('M50 30l-4-2.6v5.2z', '#FDE047') + P('M26 30l-2.6-2h3l2 2-2 2h-3z', '#22D3EE') + L('M30 30H47', '#fff', .5, .9) + '</g>' +
+      L('M25.5 29.6L31.5 27.5', '#E2E8F0', 3.6) + L('M19 29.5L22 33L26.6 31.6', '#CBD5E1', 3.6) +
+      O(22.4, 21, 6.6, '#E2E8F0') + O(22.4, 21, 6.6, 'none') + O(23.2, 21.4, 5, '#1E1B4B') + face(23.4, 21.6, 4.3, .8) + L('M19.6 18.8Q21.6 16.8 24.6 17', '#fff', 1, .8) +
+      '</g>' + tw(42, 44, 2.6, .9) + tw(14, 30, 1.8, .7) + fin();
+    // Penalty Live : gardien qui plonge, ballon qui file dans la lucarne
+    B.penaltylive = med('#1E40AF', '#0B1026', '#38BDF8', '#1E3A8A', G('IDj', '#C084FC', '#6D28D9') + G('IDpt', '#4ADE80', '#15803D')) +
+      '<g clip-path="url(#IDc)">' + O(12, 12, 6, '#FEF9C3', .35) + O(52, 12, 6, '#FEF9C3', .35) + O(12, 12, 2.2, '#fff') + O(52, 12, 2.2, '#fff') +
+      P('M4 44H62V64H4z', 'url(#IDpt)') + P('M4 50H62V54H4zM4 58H62V62H4z', '#166534', .35) +
+      '<path d="M11 44V18H53V44" stroke="#F8FAFC" stroke-width="2.4" fill="none"/>' +
+      L('M15 18V44M20 18V44M25 18V44M30 18V44M35 18V44M40 18V44M45 18V44M50 18V44M11 23H53M11 28H53M11 33H53M11 38H53', '#CBD5E1', .5, .55) +
+      L('M35 37.5L41 40.5L47 40', '#1E293B', 4.2) + L('M35 38.5L39 44L44.5 45.5', '#1E293B', 4.2) + E(48.5, 39.8, 2.4, 1.4, '#F43F5E') + E(46, 45.8, 2.4, 1.4, '#F43F5E') +
+      L('M36 37L26 29', 'url(#IDj)', 9) + L('M33 32.5L29 30', '#FDE047', 1.2, .9) +
+      L('M27 28L20 23.5L16.5 20', '#7C3AED', 3.4) + O(16, 19.6, 2.8, '#FDE047') + L('M26 30L19.5 27.5L15.5 27', '#6D28D9', 3.4) + O(15, 27, 2.8, '#FACC15') +
+      face(25.5, 34.5, 4.6, -.8) + P('M21 33.2C20.5 29.6 23.2 29.4 25.4 29.6C28.2 29.8 30 31.4 29.6 33.2C27.6 31.6 24.5 31.8 21 33.2Z', '#78350F') +
+      '</g>' + L('M30 26Q38 21 44 20.5', '#fff', 1.4, .55) + '<g transform="translate(48 21)">' + O(0, 0, 4.6, '#fff') + P('M0-1.7l1.6 1.2-.6 1.9h-2l-.6-1.9z', '#111827') + P('M-4.4-.8l1.6-.6.8 1.6-1 1.4-1.5-.3zM4.4-.8l-1.6-.6-.8 1.6 1 1.4 1.5-.3zM-1.4 4.4l.4-1.6h2l.4 1.6zM0-4.6l-1.6.9.2 1.2 1.4-.4 1.4.4.2-1.2z', '#111827', .85) + O(-1.4, -1.6, 1.1, '#fff', .9) + '</g>' + fin();
+    // Ace Serve : joueuse qui sert, balle lancée en l'air
+    B.tennis = med('#7DD3FC', '#1D4ED8', '#F9A8D4', '#BE185D', R('IDbl', '#F7FEE7', '#D9F99D', '#65A30D')) +
+      '<g clip-path="url(#IDc)">' + P('M4 46H62V64H4z', '#2563EB') + P('M10 64L18 46H46L54 64', '#3B82F6') + L('M10 64L18 46H46L54 64M14 55H50', '#E0F2FE', 1) + P('M4 42H62V47H4z', '#1E3A8A', .8) + L('M4 42H62', '#fff', 1.2) + L('M8 44h48', '#93C5FD', .4) +
+      L('M29.5 43L27.5 53.5', SK, 3.6) + L('M34 43L37 53', SK, 3.6) + E(27, 54.5, 2.4, 1.3, '#F8FAFC') + E(37.6, 54, 2.4, 1.3, '#F8FAFC') +
+      P('M27.2 38.5H36.2L38.6 45H24.8Z', '#F8FAFC') + L('M26 44.6H37.6', '#F9A8D4', 1) +
+      '<rect x="27.5" y="28" width="8.6" height="11.5" rx="3.6" fill="#EC4899"/>' + L('M29.5 30H34', '#FBCFE8', 1) +
+      L('M28.5 30.5L23.5 25.5L22.6 20.5', SK, 3) + L('M35 30.5L40.5 25L42 20', SK, 3) +
+      L('M42 20L43 15.6', '#1F2937', 2) + '<g transform="rotate(14 44.5 10.5)"><ellipse cx="44.5" cy="10.5" rx="4.2" ry="5.4" fill="#FCE7F3" fill-opacity=".45" stroke="#DB2777" stroke-width="1.6"/>' + L('M42 8.5h5M41.6 11h5.8M42 13.5h5M43 6v9.4M46 6v9.4', '#BE185D', .4, .8) + '</g>' +
+      face(31.8, 23, 4.6, .3) + P('M27.1 22.4C26.4 17.6 29.4 17.4 31.8 17.4C34.6 17.4 36.9 19 36.4 22C34.6 20.3 30.2 20.2 27.1 22.4Z', '#5B3A1E') + L('M27.6 20.4Q23 19.6 22 24.4', '#5B3A1E', 2.4) + L('M27.4 20.4Q31.8 18.8 36.2 20.4', '#F472B6', 1.2) +
+      '</g>' + O(20.5, 13.6, 3.4, 'url(#IDbl)') + L('M18 12.4Q20.5 14.6 23 12.4', '#fff', .7) + tw(13, 26, 2, .8) + fin();
+    // Wild West : cow-boy souriant, chapeau, foulard, étoile de shérif, désert au soleil couchant
+    B.wildwest = med('#F0ABFC', '#6D28D9', '#FBBF24', '#92400E', G('IDht', '#B45309', '#5C2E0E') + R('IDst', '#FFFBEB', '#FDE047', '#CA8A04')) +
+      '<g clip-path="url(#IDc)">' + O(50, 30, 6, '#FDE68A', .9) + P('M4 44h8l2-6h9l2 6h10V40h9l2 4h16v20H4z', '#7E22CE', .6) +
+      P('M13 64Q14 49 32 48Q50 49 51 64Z', '#2563EB') + P('M13 64Q14 50 23 48.6L27 64ZM51 64Q50 50 41 48.6L37 64Z', '#78350F') +
+      P('M25.5 46.5L32 55L38.5 46.5Z', '#DC2626') + O(30, 49, .7, '#FEE2E2') + O(34, 49, .7, '#FEE2E2') + O(32, 52, .7, '#FEE2E2') +
+      P('M42 54l1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.4-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z', 'url(#IDst)') +
+      P('M27.5 44h9v4h-9z', SK) + face(32, 35, 8.6, 0, '') + L('M28.6 39.4Q32 41.8 35.4 39.4', '#9F1239', .9) + L('M26.5 32L30 31.4M37.5 32L34 31.4', '#5C2E0E', 1.1) + P('M29.6 38.4Q32 36.6 34.4 38.4Q32 39.2 29.6 38.4Z', '#78350F') +
+      P('M23.6 33C23.4 30 24.6 28.6 26 28.4L25.6 35ZM40.4 33C40.6 30 39.4 28.6 38 28.4L38.4 35Z', '#78350F') +
+      P('M10 28.6Q12 25.4 18 26.6Q32 29.4 46 26.6Q52 25.4 54 28.6Q50 31.4 32 31Q14 31.4 10 28.6Z', 'url(#IDht)') +
+      P('M21.5 27.6C21 17.6 25 13.4 28.6 15.4L32 17L35.4 15.4C39 13.4 43 17.6 42.5 27.6Q32 29.6 21.5 27.6Z', 'url(#IDht)') + P('M21.8 24.6Q32 26.6 42.2 24.6L42.4 27.4Q32 29.4 21.6 27.4Z', '#FBBF24') + L('M25 18.6Q27 16.4 29 17.2', '#FDE68A', 1, .6) +
+      '</g>' + fin();
+    // Samouraï : guerrier au casque laqué, armure rouge, katana, soleil rouge et fleurs de cerisier
+    B.samurai = med('#312E81', '#1E1B4B', '#FCA5A5', '#991B1B', G('IDar', '#EF4444', '#991B1B') + G('IDkb', '#475569', '#0F172A')) +
+      '<g clip-path="url(#IDc)">' + O(32, 26, 15, '#DC2626', .9) +
+      L('M12 58L50 13', '#E2E8F0', 2.4) + L('M13 56.6L50 13', '#fff', .6) + E(13.6, 56.6, 2.8, 1.2, '#FBBF24') + L('M8 63L12.6 57.6', '#1F2937', 3) +
+      P('M13 64Q13 50 32 49Q51 50 51 64Z', 'url(#IDar)') + L('M16 55H48M14.6 59.4H49.4', '#FBBF24', .9) + L('M22 50.5V64M32 49V64M42 50.5V64', '#7F1D1D', .7, .8) +
+      P('M27.5 44h9v5.5h-9z', SK) + face(32, 37.6, 8.2, 0, '') + L('M29.5 42.4H34.5', '#9F1239', 1) + L('M26 34.4L30 35.6M38 34.4L34 35.6', '#111827', 1.5) +
+      P('M20.6 37C19.6 27 24.6 21.6 32 21.6C39.4 21.6 44.4 27 43.4 37L47 39.6L43.2 42C42 35.6 39.4 31.8 32 31.8C24.6 31.8 22 35.6 20.8 42L17 39.6Z', 'url(#IDkb)') +
+      L('M21 33Q32 28.6 43 33', '#FBBF24', 1.1) + P('M32 23.4L22.6 9.4Q26.4 19 29.6 23.4ZM32 23.4L41.4 9.4Q37.6 19 34.4 23.4Z', '#FBBF24') + O(32, 24.6, 2.4, '#FDE047') + O(32, 24.6, 1.1, '#DC2626') +
+      '</g>' + P('M51 44c1.6-1.6 3.6 0 2 1.6 1.6 1.6-.4 3.6-2 2-1.6 1.6-3.6-.4-2-2-1.6-1.6.4-3.6 2-1.6z', '#F9A8D4') + P('M12 21c1.2-1.2 2.7 0 1.5 1.2 1.2 1.2-.3 2.7-1.5 1.5-1.2 1.2-2.7-.3-1.5-1.5-1.2-1.2.3-2.7 1.5-1.5z', '#FBCFE8') + fin();
+    // Viking Raid : viking blond au casque à cornes, bouclier, mer et drakkar
+    B.viking = med('#7DD3FC', '#1E3A8A', '#FDE68A', '#A16207', G('IDhl', '#E2E8F0', '#64748B') + G('IDhn', '#FFFBEB', '#D6D3D1')) +
+      '<g clip-path="url(#IDc)">' + P('M4 46Q18 42 32 46T62 46V64H4z', '#1D4ED8', .8) + P('M42 41h14l-2 4H44z', '#78350F') + L('M48 41V32', '#78350F', 1) + P('M48.4 32.4l6 4.6-6 1.4z', '#DC2626') +
+      O(13, 50, 10, '#B91C1C') + O(13, 50, 7.4, '#1D4ED8') + L('M13 40v20M3 50h20', '#FBBF24', 1.6) + O(13, 50, 2.4, '#FDE047') +
+      P('M16 64Q17 50 32 49Q47 50 48 64Z', '#7C2D12') + P('M16 64Q17 52 24 50.4L26 64ZM48 64Q47 52 40 50.4L38 64Z', '#57534E') +
+      face(32, 36.6, 8.2, 0, '') + L('M27 33.6L30.2 34.2M37 33.6L33.8 34.2', '#A16207', 1.2) +
+      P('M23.8 38Q24 49 32 53Q40 49 40.2 38Q37 42.4 32 42.4Q27 42.4 23.8 38Z', '#FCD34D') + P('M28 40.4Q32 38 36 40.4Q32 42 28 40.4Z', '#EAB308') + L('M29.4 43.6Q32 45 34.6 43.6', '#9F1239', .9) + L('M28 46.5V51M36 46.5V51', '#CA8A04', .8) +
+      P('M22.6 34.6C22 25.6 26 21 32 21C38 21 42 25.6 41.4 34.6Z', 'url(#IDhl)') + '<rect x="22" y="31.6" width="20" height="3.4" rx="1.4" fill="#A16207"/>' + L('M32 21.4V35', '#94A3B8', 1.6) + L('M25 26Q27.6 22.8 30.6 22.6', '#fff', 1.1, .7) +
+      P('M23.4 28.6Q15 28 13.6 18Q18 24.6 24.4 25Z', 'url(#IDhn)') + P('M40.6 28.6Q49 28 50.4 18Q46 24.6 39.6 25Z', 'url(#IDhn)') +
+      '</g>' + tw(53, 22, 2.2, .9) + fin();
+    // Mermaid Lagoon : sirène aux cheveux roses, queue turquoise, bulles et rayons de lumière
+    B.mermaid = med('#67E8F9', '#1E3A8A', '#F0ABFC', '#86198F', G('IDtl', '#5EEAD4', '#0F766E') + G('IDhr', '#F472B6', '#9D174D')) +
+      '<g clip-path="url(#IDc)">' + P('M16 6L24 6L14 64H4zM34 6L40 6L36 64H28z', '#fff', .1) +
+      P('M4 56Q14 50 22 56T42 54T62 56V64H4z', '#FDE68A', .85) + P('M46 56Q47 46 51 44Q54 48 54 56z', '#EC4899') + P('M51 44Q55 40 57 44', '#F472B6') +
+      P('M27.2 26C21.4 29 17 36 19.4 45.6L23 44C21.8 37 24 32 29.4 30Z', 'url(#IDhr)') +
+      '<path d="M33 37Q34 46 40 50Q46 53 50 50" stroke="url(#IDtl)" stroke-width="7.6"' + C + '/>' + L('M35 41.6l2 1.4M37.6 45.6l2 1.2M41.6 48.8l1.8.8', '#99F6E4', .8, .9) +
+      P('M49 50.6Q52 42.6 57.6 44.6Q54 48 53.6 51.6Q56.6 55.6 55 60.6Q50.6 55 49 50.6Z', '#2DD4BF') +
+      '<rect x="27.6" y="27" width="9" height="11.6" rx="4" fill="' + SK + '"/>' + E(30, 30.4, 2.2, 1.8, '#A855F7') + E(34.4, 30.4, 2.2, 1.8, '#A855F7') +
+      L('M28.6 29.6L23.6 35.2L24 39.6', SK, 2.8) + L('M36 29L41 24.4L43.6 20.6', SK, 2.8) +
+      face(32, 21.6, 5.4, 0) + P('M26.4 22C25.6 15.6 29.2 14.6 32 14.6C35.6 14.6 38.6 16.6 37.6 22C36.4 18.6 33.6 18.4 32 19.4C30 18.4 27.6 19 26.4 22Z', 'url(#IDhr)') +
+      P('M37.4 20.6C40 24 40 28.4 37.6 31L36.2 27.6C37.6 25.6 37.4 23 36.4 21.2Z', 'url(#IDhr)') + O(28, 16.4, 1.3, '#FDE047') +
+      '</g>' + O(48, 22, 2.2, '#fff', .35) + O(51, 16, 1.4, '#fff', .45) + O(47.4, 12.6, 1, '#fff', .55) + O(16, 18, 1.4, '#fff', .4) + fin();
+    // Zombie Siege : zombie de dessin animé (vert) dans le viseur, nuit, lune et tombes
+    B.zombiesiege = med('#8B5CF6', '#1E1B4B', '#F87171', '#7F1D1D', R('IDzb', '#D9F99D', '#86EFAC', '#15803D') + G('IDsh', '#60A5FA', '#1E3A8A')) +
+      '<g clip-path="url(#IDc)">' + O(48, 18, 6, '#FEF3C7', .9) +
+      P('M4 52Q20 48 32 51T62 50V64H4z', '#3B0764') + P('M8 52v-6a3.6 3.6 0 0 1 7.2 0v6zM47 52v-7a4 4 0 0 1 8 0v7z', '#6B7280') + L('M11.6 46.6v3M10 48h3.2M51 46v3.4M49.4 47.6h3.2', '#374151', .9) +
+      P('M18 64Q19 49 32 48Q45 49 46 64Z', 'url(#IDsh)') + P('M24 52l3 3-3 3M40 54l-3 2 3 3', '#1E3A8A') +
+      L('M21 51L13 45L9.4 44', '#4ADE80', 3.4) + L('M43 51L50 46L54 45.6', '#4ADE80', 3.4) + L('M8.6 42.6l-1.6 1.2M8.6 44l-1.8.6M8.6 45.4l-1.6.2', '#4ADE80', 1.2) +
+      O(32, 34, 10.4, 'url(#IDzb)') + P('M22.8 31C22 24 26.6 22 30 23L32 21.4L34.6 23.2C38.6 22 42.4 25 41.2 31C39.6 27.4 35.6 26.6 32 27.6C28 26.4 24.6 27.6 22.8 31Z', '#3F3F46') +
+      O(27.8, 33.6, 3.2, '#fff') + O(36.6, 33.2, 2.4, '#fff') + O(28.3, 34, 1.4, '#B91C1C') + O(36.9, 33.6, 1.1, '#B91C1C') +
+      L('M27.4 40.6Q32 43.8 36.8 40.4', '#14532D', 1.2) + P('M29.4 41.6l1 1.4 1-1.2zM33.4 41.6l1 1.2.8-1.4z', '#fff') + L('M38.6 27.6L41 30.6M39 29.6L40.6 28.4M39.8 30.6L41.2 29.6', '#14532D', .7) +
+      '</g>' + '<g opacity=".95">' + '<circle cx="32" cy="34" r="12.6" fill="none" stroke="#EF4444" stroke-width="1.6"/>' + L('M32 18.4V24M32 44V49.6M16.4 34H22M42 34H47.6', '#EF4444', 1.6) + O(32, 34, 1, '#EF4444') + '</g>' + fin();
+    // Chicken Road : poule astronaute qui saute d'une voie à l'autre entre les vaisseaux
+    B.chicken = med('#3B82F6', '#0B1026', '#FDE047', '#A16207', R('IDck', '#FFFFFF', '#F1F5F9', '#CBD5E1') + G('IDsp', '#F472B6', '#9D174D', 0, 1)) +
+      '<g clip-path="url(#IDc)">' + O(14, 16, .9, '#fff') + O(50, 12, .8, '#fff') + O(56, 30, .7, '#fff') + O(10, 34, .7, '#fff') +
+      P('M4 44H62V54H4zM4 24H62V27H4z', '#334155') + L('M6 49H14M22 49H30M38 49H46M54 49H62', '#FDE047', 1.2) + P('M4 44H62V45H4zM4 53H62V54H4z', '#64748B') +
+      '<g transform="translate(8 46)">' + P('M0 3Q2-1 10-1L18 1.6Q20 3 18 4.4L10 7Q2 7 0 3Z', 'url(#IDsp)') + E(10, 2, 3, 1.8, '#7DD3FC') + L('M-1 3H-6', '#22D3EE', 1.6, .8) + '</g>' +
+      L('M30 41l-1 4.6M35 41l1 4.6', '#FACC15', 1.4) + L('M27.6 45.6h3M34.6 45.6h3', '#FACC15', 1.2) +
+      E(32.5, 33.4, 9.6, 8.6, 'url(#IDck)') + P('M27 33.4Q24 38.6 29 40Q32.6 37.6 31 33.4Z', '#E2E8F0') + P('M41 30q4-2 3.6 3-2.4-.6-3.6-3z', '#F1F5F9') +
+      O(31, 22.6, 6.6, 'url(#IDck)') + P('M27.6 16.6q1-3.4 2.6-1.2 1-3 2.6-.6 1.6-2.4 2.4 1.4-2.2 1.6-7.6.4z', '#EF4444') +
+      P('M36.6 23.4l4.4 1.4-4.4 1.6z', '#FACC15') + P('M35.4 26.4q1.4 2.6-.4 3.6-1.2-1.6.4-3.6z', '#EF4444') + O(33.6, 21.6, 1.3, '#111827') + O(34, 21.2, .45, '#fff') + O(35, 24.6, 1, '#FB7185', .4) +
+      '<circle cx="31.4" cy="22.6" r="8.6" fill="#BAE6FD" fill-opacity=".18" stroke="#E0F2FE" stroke-width=".9"/>' + L('M25.6 18.6Q27.6 15.6 31 15', '#fff', 1.1, .8) +
+      '</g>' + tw(48, 18, 2.4, .9) + fin();
+    // Tower Stack : tour de dalles brillantes, la dernière tombe pile au-dessus
+    B.stack = med('#C4B5FD', '#4C1D95', '#F0ABFC', '#86198F') +
+      '<g clip-path="url(#IDc)">' + O(14, 20, .9, '#fff') + O(50, 16, .8, '#fff') + O(52, 30, .7, '#fff') +
+      slab(32, 50, 15, 5, ['#93C5FD', '#2563EB', '#1E40AF']) + slab(32, 44, 15, 5, ['#86EFAC', '#16A34A', '#166534']) + slab(32, 38, 15, 5, ['#FDE047', '#CA8A04', '#A16207']) +
+      slab(32, 32, 15, 5, ['#F9A8D4', '#DB2777', '#9D174D']) + slab(32, 26, 15, 5, ['#C4B5FD', '#7C3AED', '#5B21B6']) +
+      '</g>' + slab(35, 13, 15, 5, ['#67E8F9', '#0891B2', '#155E75']) + L('M18 18v4M50 18v4', '#fff', .9, .6) + tw(53, 10, 2.6) + tw(11, 32, 2, .8) + fin();
+    // Sky Hopper : petit héros qui rebondit de nuage en nuage (ressort)
+    B.skyhopper = med('#BAE6FD', '#0284C7', '#FDE047', '#CA8A04', G('IDpl', '#F472B6', '#BE185D')) +
+      '<g clip-path="url(#IDc)">' + P('M8 26a4 4 0 0 1 6-3.4 5 5 0 0 1 9 1.4 3.4 3.4 0 0 1 0 6.6H10a3.4 3.4 0 0 1-2-4.6z', '#fff', .7) + P('M44 46a4 4 0 0 1 6-3.4 5 5 0 0 1 9 1.4 3.4 3.4 0 0 1 0 6.6H46a3.4 3.4 0 0 1-2-4.6z', '#fff', .8) +
+      '<rect x="40" y="18" width="14" height="3.6" rx="1.8" fill="#A78BFA"/>' + '<rect x="12" y="52" width="16" height="4" rx="2" fill="#A78BFA"/>' +
+      '<rect x="20" y="47" width="22" height="4.4" rx="2.2" fill="url(#IDpl)"/>' + L('M27 47L29 44.6L27 42.6L29 40.4', '#94A3B8', 1.4) + '<rect x="25.6" y="39" width="5" height="1.6" rx=".8" fill="#E11D48"/>' +
+      L('M30 34.6L27.6 38.6', '#1D4ED8', 3.6) + L('M34 34.6L37 38', '#2563EB', 3.6) + E(27.4, 39.4, 2.4, 1.3, '#DC2626') + E(37.6, 38.6, 2.4, 1.3, '#DC2626') +
+      '<rect x="27.4" y="24.6" width="9.4" height="11" rx="4" fill="#FACC15"/>' + L('M32 25.6v9', '#CA8A04', .8) +
+      L('M28.4 27L23.6 21.6L22.8 18', '#FACC15', 3.2) + O(22.6, 17.4, 1.8, SK) + L('M35.8 27L40.6 21.6L41.4 18', '#EAB308', 3.2) + O(41.6, 17.4, 1.8, SK) +
+      face(32, 19, 5.4, 0, L('M29.8 21Q32 24.4 34.2 21Z', '#9F1239', .9)) + P('M26.6 18.6C26 13 29.4 12.6 32 12.6C35 12.6 38.4 13.6 37.4 18.6C36 16.4 34.2 15.8 32.6 16.6C30.4 15.4 28.2 16 26.6 18.6Z', '#7C2D12') +
+      '<rect x="27.6" y="14.8" width="8.8" height="2.6" rx="1.3" fill="#22D3EE" stroke="#0E7490" stroke-width=".5"/>' +
+      L('M17 44v-4M47 42v-5M14 36v-3', '#fff', 1.1, .7) + '</g>' + tw(51, 30, 2.4, .9) + fin();
+    // City Shield : bouclier d'énergie en dôme qui protège la ville colorée des météores
+    B.cityshield = med('#4338CA', '#0B1026', '#67E8F9', '#0E7490', R('IDfb', '#FFFFFF', '#FDE047', '#EF4444') + '<linearGradient id="IDtr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F43F5E" stop-opacity="0"/><stop offset="1" stop-color="#FDE047"/></linearGradient>') +
+      '<g clip-path="url(#IDc)">' + O(14, 14, .8, '#fff') + O(28, 10, .7, '#fff') + O(50, 24, .8, '#fff') +
+      P('M12 60V44h6v16zM26 60V46h5v14zM40 60V42h6v18z', '#7C3AED') + P('M19 60V38h6v22zM32 60V34h7v26zM47 60V47h6v13z', '#4F46E5') +
+      P('M13 46h1.6v1.6H13zM15.6 50h1.6v1.6h-1.6zM20.4 40h1.6v1.6h-1.6zM22.6 45h1.6v1.6h-1.6zM20.4 50h1.6v1.6h-1.6zM33.6 37h1.6v1.6h-1.6zM36.4 41h1.6v1.6h-1.6zM33.6 46h1.6v1.6h-1.6zM36.4 51h1.6v1.6h-1.6zM41.6 45h1.6v1.6h-1.6zM43.6 50h1.6v1.6h-1.6zM48.6 50h1.6v1.6h-1.6zM27.6 49h1.6v1.6h-1.6z', '#FDE047') +
+      P('M19 38h6v2h-6zM32 34h7v2h-7z', '#EC4899') + P('M40 42h6v2h-6zM12 44h6v2h-6z', '#22D3EE') + P('M4 59H62V64H4z', '#1E1B4B') +
+      '<path d="M7 59A25 25 0 0 1 57 59" fill="#22D3EE" fill-opacity=".2" stroke="#67E8F9" stroke-width="2"/>' + '<path d="M11 57A21 21 0 0 1 30 37" stroke="#fff" stroke-opacity=".55" stroke-width="1" fill="none"/>' +
+      P('M12 7L23.4 23.6L25.8 22L15 6Z', 'url(#IDtr)') + P('M55 5L44 24L46.6 25L57 6.6Z', 'url(#IDtr)') + O(24.6, 26, 2.6, '#FDE047', .5) + '</g>' +
+      '<g transform="translate(45 26)">' + P('M0-7l1.8 4.4 4.6-1.6-2.8 3.8 4.2 2.6-4.8.4.4 4.8-3.4-3.4-3.4 3.4.4-4.8-4.8-.4 4.2-2.6-2.8-3.8 4.6 1.6z', 'url(#IDfb)') + '</g>' + O(24.6, 26, 2.2, '#A8A29E') + O(24, 25.4, .8, '#E7E5E4') + fin();
+    // Meteor Blaster : vaisseau qui pulvérise un météore au laser
+    B.meteorblast = med('#6D28D9', '#0B1026', '#C4B5FD', '#5B21B6', G('IDsh', '#F8FAFC', '#94A3B8', 0, 1) + R('IDrk', '#D6D3D1', '#78716C', '#3F3F46') + R('IDfb', '#FFFFFF', '#FDE047', '#F43F5E')) +
+      '<g clip-path="url(#IDc)">' + O(12, 24, .9, '#fff') + O(22, 12, .7, '#fff') + O(54, 40, .8, '#fff') + O(46, 54, .7, '#fff') +
+      O(14, 42, 5, 'url(#IDrk)') + O(12.6, 41, 1.2, '#57534E') + O(16, 44, .9, '#57534E') + O(52, 30, 3.4, 'url(#IDrk)') +
+      L('M32 40V18', '#22D3EE', 3.6, .5) + L('M32 40V18', '#fff', 1.4) +
+      '<g transform="translate(32 16)">' + P('M0-9l2.4 5.6 6-2-3.6 4.8 5.6 3.2-6.4.6.6 6.2-4.6-4.4-4.6 4.4.6-6.2-6.4-.6 5.6-3.2-3.6-4.8 6 2z', 'url(#IDfb)') + '</g>' + O(22, 12, 1.6, '#A8A29E') + O(42, 10, 1.3, '#78716C') + O(41, 20, 1.1, '#A8A29E') +
+      P('M32 36Q37 41 37 50H27Q27 41 32 36Z', 'url(#IDsh)') + P('M27 46l-6 6 1 3 5-2zM37 46l6 6-1 3-5-2z', '#E11D48') + E(32, 44, 2.2, 3, '#38BDF8') + O(31.4, 43, .8, '#fff') +
+      P('M28.6 50h6.8l-1.6 6.4h-3.6z', '#FDE047') + P('M30.2 50h3.6l-1 4h-1.6z', '#fff') + '</g>' + fin();
+    // Strongman : hercule moustachu qui abat le maillet, la palette monte jusqu'à la cloche
+    B.striker = med('#FDA4AF', '#9F1239', '#FDE047', '#A16207', G('IDtw', '#FDE047', '#22C55E', '#3B82F6') + R('IDbl', '#FFFBEB', '#FBBF24', '#A16207')) +
+      '<g clip-path="url(#IDc)">' + P('M4 52H62V64H4z', '#7F1D1D') + O(14, 16, 1, '#fff') + O(24, 10, .8, '#fff') +
+      '<rect x="44" y="14" width="7" height="40" rx="2" fill="url(#IDtw)"/>' + L('M45.6 20h3.8M45.6 26h3.8M45.6 32h3.8M45.6 38h3.8M45.6 44h3.8', '#fff', .7, .8) + '<rect x="43" y="17" width="9" height="3" rx="1.4" fill="#F43F5E"/>' +
+      '<rect x="39" y="51" width="17" height="4" rx="1.4" fill="#78350F"/>' +
+      L('M23 42L20 52', SK, 3.8) + L('M28 42L31 52', SK, 3.8) + '<rect x="20.4" y="37.4" width="9.6" height="6" rx="2" fill="#1E3A8A"/>' + E(19.6, 53, 2.6, 1.3, '#111827') + E(31.4, 53, 2.6, 1.3, '#111827') +
+      '<rect x="19.4" y="26.6" width="11.6" height="12" rx="4.4" fill="' + SK + '"/>' + P('M21 27h8.4v11.4H21z', '#DC2626') + L('M21 30h8.4M21 33h8.4M21 36h8.4', '#FEE2E2', 1) +
+      L('M21 28.6L16.6 22.6L20 15.6', SK, 4) + L('M29.4 28.6L33 22.6L28 15.6', SK, 4) + O(19.4, 21.4, 2.2, '#FFD9C0') +
+      L('M24 15.2L35.6 6.6', '#92400E', 1.8) + '<g transform="rotate(-36 37 6)"><rect x="32" y="2.6" width="10" height="7" rx="1.6" fill="#64748B"/><rect x="32" y="2.6" width="10" height="2" rx="1" fill="#CBD5E1"/></g>' +
+      face(25.2, 21.4, 4.6, 0, L('M23.2 23.8Q25.2 22.6 27.2 23.8', '#3F1D0B', 1.3)) + P('M20.6 20.2C20 15.6 22.6 16 25.2 16C28 16 30.4 16.6 29.8 20.2C28.4 18.4 22.2 18.4 20.6 20.2Z', '#3F1D0B') +
+      '</g>' + O(47.5, 10.4, 4.2, 'url(#IDbl)') + L('M41 7l-2-2M54 7l2-2M47.5 4.6V2.6', '#FDE047', 1.2) + E(47.5, 30, 3.6, 1.6, '#fff') + fin();
+    // Jungle Dash : explorateur qui court vers nous sur le chemin du temple (pastille dorée « » » des jeux de course)
+    B.jungledash = med('#99F6E4', '#065F46', '#FBBF24', '#92400E', G('IDtp', '#D6D3D1', '#78716C') + G('IDsh', '#38BDF8', '#0369A1')) +
+      '<g clip-path="url(#IDc)">' + P('M20 31h24v-4h-3v-4h-3v-4H26v4h-3v4h-3z', 'url(#IDtp)') + P('M29.5 31v-5a2.5 2.5 0 0 1 5 0v5z', '#292524') + L('M21 27h22M24 23h16', '#57534E', .6) +
+      P('M4 20Q12 18 16 26Q10 24 8 30Q14 30 18 36Q10 36 4 40z', '#15803D') + P('M60 18Q52 18 47 26Q54 24 56 30Q50 30 46 36Q54 36 60 42z', '#166534') +
+      P('M26 31H38L54 64H10Z', '#E7E5E4') + L('M24 38H40M21 46H43M17 55H47M32 31V64', '#A8A29E', .8) + P('M4 44Q10 40 14 46L10 64H4zM60 44Q54 40 50 46L54 64H60z', '#14532D') +
+      L('M29.4 41L26.6 45.6', SK, 3.8) + L('M26.6 45.6L29 49.6', SK, 3.4) + E(29.6, 50.4, 2.4, 1.4, '#57534E') +
+      L('M34.6 41L35.8 47.6L35.4 53.6', SK, 3.6) + E(35.6, 54.6, 2.6, 1.5, '#57534E') +
+      '<rect x="27" y="37.6" width="10" height="5" rx="1.6" fill="#A16207"/>' +
+      '<rect x="27" y="28" width="10" height="11" rx="4" fill="url(#IDsh)"/>' + L('M28.6 28.6L30 38.6M35.4 28.6L34 38.6', '#78350F', 1.1) +
+      L('M28 30.6L23.6 35.6L24.6 39.6', SK, 3) + L('M36 30.6L40.4 26.6L41.4 22.6', SK, 3) +
+      face(32, 23, 5, 0, L('M30 25Q32 27.2 34 25Z', '#9F1239', .8)) +
+      E(32, 19.4, 8.6, 2, '#B08442') + P('M26.8 19.6C26.8 14.4 29.4 13.6 32 13.6C34.6 13.6 37.2 14.4 37.2 19.6Z', '#C9A063') + '<rect x="26.8" y="17.6" width="10.4" height="1.8" fill="#78350F"/>' +
+      '</g>' + coinB(42, 19.6, 3.2) + '<g transform="translate(42 2)"><rect width="20" height="12" rx="6" fill="#FBBF24" stroke="#FFF7ED" stroke-width="1.2"/><path d="M6 3.4l3 2.6-3 2.6M11 3.4l3 2.6-3 2.6" stroke="#3B2300" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>' + fin();
+    function coinB(x, y, r) { return O(x, f(y + r * .2), r, '#A16207') + O(x, y, r, '#FDE047') + O(x, y, f(r * .62), 'none') + '<circle cx="' + x + '" cy="' + y + '" r="' + f(r * .64) + '" fill="none" stroke="#CA8A04" stroke-width="' + f(r * .16) + '"/>' + O(f(x - r * .35), f(y - r * .35), f(r * .2), '#fff', .9); }
+    // Beat Tap : 4 couloirs néon, notes qui descendent vers la ligne à toucher
+    B.beattap = med('#9D174D', '#1E1B4B', '#F472B6', '#7E22CE') +
+      '<g clip-path="url(#IDc)">' + P('M26 8H38L56 62H8Z', '#0F0A2E', .7) + L('M26 8L8 62M29 8L22 62M32 8V62M35 8L42 62M38 8L56 62', '#A78BFA', .7, .7) +
+      '<g transform="translate(0 0)">' + '<rect x="27.4" y="15" width="3.6" height="2.4" rx="1.2" fill="#22D3EE"/><rect x="33.6" y="21" width="5" height="3" rx="1.5" fill="#FDE047"/><rect x="22" y="30" width="7" height="3.6" rx="1.8" fill="#F472B6"/><rect x="37" y="36" width="8.4" height="4" rx="2" fill="#A3E635"/><rect x="24.4" y="42" width="7.4" height="4.2" rx="2.1" fill="#22D3EE"/></g>' +
+      L('M8 52H56', '#fff', 1.2, .8) + '<ellipse cx="18" cy="52" rx="6" ry="2.6" fill="none" stroke="#F472B6" stroke-width="1.6"/><ellipse cx="27" cy="52" rx="5" ry="2.4" fill="none" stroke="#22D3EE" stroke-width="1.4"/><ellipse cx="37" cy="52" rx="5" ry="2.4" fill="#FDE047" stroke="#fff" stroke-width="1.4"/><ellipse cx="46" cy="52" rx="6" ry="2.6" fill="none" stroke="#A3E635" stroke-width="1.6"/>' +
+      L('M37 49l-3-4M37 49l3-4M37 49v-5', '#FDE047', 1, .9) + '</g>' +
+      P('M46.6 11v10.6a3.4 2.8 0 1 1-2-2.4V9.4h1.2q1 3.6 5.4 4.4v1.6q-3-.2-4.6-2z', '#fff') + tw(14, 22, 2.4, .9) + fin();
+    // Piano Keys : rangées de touches noires qui tombent, une touchée qui brille, notes de musique
+    B.pianokeys = med('#C7D2FE', '#4338CA', '#E2E8F0', '#475569', G('IDtk', '#475569', '#0F172A') + G('IDhi', '#67E8F9', '#0891B2')) +
+      '<g clip-path="url(#IDc)">' + P('M14 4H50V64H14z', '#F8FAFC') + L('M23 4V64M32 4V64M41 4V64', '#CBD5E1', .8) +
+      '<rect x="14.6" y="6" width="7.8" height="13" rx="1.4" fill="url(#IDtk)"/><rect x="32.6" y="16" width="7.8" height="13" rx="1.4" fill="url(#IDtk)"/><rect x="23.6" y="30" width="7.8" height="13" rx="1.4" fill="url(#IDtk)"/><rect x="41.6" y="42" width="7.8" height="13" rx="1.4" fill="url(#IDhi)"/>' +
+      L('M16 8h4M34 18h4M25 32h4', '#94A3B8', .9, .8) + '<circle cx="45.5" cy="48.5" r="6.5" fill="none" stroke="#fff" stroke-width="1.2" opacity=".8"/>' + O(45.5, 48.5, 2, '#fff') +
+      P('M4 54H62V64H4z', '#1E1B4B') + L('M14 54H50', '#F43F5E', 1.6) + '</g>' +
+      P('M52 16v9.4a3 2.6 0 1 1-1.6-2.2V18.6l-5 1.4v7.4a3 2.6 0 1 1-1.6-2.2V17.6z', '#FDE047') + P('M12.6 30v7a2.6 2.2 0 1 1-1.4-1.9V30z', '#F472B6') + fin();
+    // Two-Up : deux pièces d'or lancées au-dessus de la palette en bois (« kip »)
+    B.twoup = med('#F0ABFC', '#6B21A8', '#FDE047', '#A16207', R('IDcn', '#FFFBEB', '#FACC15', '#A16207') + G('IDkp', '#D6A06B', '#78350F', 0, 1)) +
+      '<g clip-path="url(#IDc)">' + O(14, 16, .9, '#fff') + O(50, 44, .8, '#fff') + P('M4 52Q32 44 62 52V64H4z', '#4C1D95', .6) +
+      '<g transform="rotate(-14 32 50)"><rect x="12" y="47" width="34" height="6" rx="3" fill="url(#IDkp)"/><rect x="44" y="48.4" width="12" height="3.2" rx="1.6" fill="#78350F"/>' + O(23, 50, 2.6, '#FDE047', .8) + O(33, 50, 2.6, '#FDE047', .8) + '</g>' +
+      L('M23 44L22 36M34 42L38 32', '#fff', 1, .5) + '</g>' +
+      O(22, f(26.6), 9, '#A16207') + O(22, 25, 9, 'url(#IDcn)') + '<circle cx="22" cy="25" r="6.6" fill="none" stroke="#CA8A04" stroke-width="1"/>' + P('M17.6 27.6l1-5.4 2.2 2.4 1.2-3.6 1.2 3.6 2.2-2.4 1 5.4z', '#A16207') + L('M16 21Q18.4 17.6 22 17.4', '#fff', 1.2, .8) +
+      '<g transform="rotate(24 43 22)">' + E(43, 23.4, 9, 4, '#A16207') + E(43, 22, 9, 4, 'url(#IDcn)') + '<ellipse cx="43" cy="22" rx="6.4" ry="2.6" fill="none" stroke="#CA8A04" stroke-width=".9"/>' + '</g>' + tw(51, 10, 2.4) + tw(10, 38, 1.8, .8) + fin();
+    Object.keys(B).forEach(function (k) { var s = B[k]; OBJ[k] = function () { return s; }; });
+  })();
   OBJ.rps = function () {
     return '<g transform="translate(-2 20) scale(.52)">' + rpsSvg(0) + '</g><g transform="translate(17 -2) scale(.52)">' + rpsSvg(1) + '</g><g transform="translate(34 22) scale(.52)">' + rpsSvg(2) + '</g>';
   };
