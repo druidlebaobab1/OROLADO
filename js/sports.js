@@ -77,6 +77,8 @@
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
   function m2(v) { return (Number(v) || 0).toFixed(2); }
+  // case de mise : « 1 » et pas « 1.00 » (propriétaire : les zéros trompent) ; « 1.5 », « 0.8 » gardent leurs décimales utiles
+  function sv(v) { return String(Math.round((Number(v) || 0) * 100) / 100); }
   // v2696 : petites icônes de sport dessinées (plus d'émojis)
   var SICO = {
     foot: '<circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 7.5l3.2 2.3-1.2 3.8h-4l-1.2-3.8z" fill="#111"/><path d="M12 7.5V3.3M15.2 9.8l3.9-1.3M14 13.6l2.4 3.4M10 13.6l-2.4 3.4M8.8 9.8L4.9 8.5" stroke="#111" stroke-width="1.2"/>',
@@ -801,7 +803,7 @@
     var guestBtn = String(x.guestBet || '').replace(/^🔒\s*/, '').trim(); // « 🔒 Inscris-toi pour parier (c'est gratuit) » sans le cadenas
     var bal = ctx.guest ? null : curBal(), q = qk(), main = each ? (slip.every(function (z) { return stOf(z) === stOf(slip[0]); }) ? stOf(slip[0]) : 0) : stake;
     var stk = '<div class="sp2-stk">' +
-      '<div class="sp2-amt"><label class="sp2-inw" for="spStake"><span class="sp2-inl"><span class="fit">' + esc(each ? x.eachL : x.stakeL) + '</span></span><span class="sp2-inv"><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + (main > 0 ? m2(main) : '') + '" placeholder="0.00" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></span></label><button type="button" class="sp2-pm plus" id="spPlus" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>' +
+      '<div class="sp2-amt"><label class="sp2-inw" for="spStake"><span class="sp2-inl"><span class="fit">' + esc(each ? x.eachL : x.stakeL) + '</span></span><span class="sp2-inv"><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + (main > 0 ? sv(main) : '') + '" placeholder="0" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></span></label><button type="button" class="sp2-pm plus" id="spPlus" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>' +
         '<button type="button" class="sp2-clr" id="spClr"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="fit">' + esc(x.clrSt) + '</span></button></div>' +
       '<div class="sp2-qk4">' + q.map(function (v) { return '<button type="button" data-q="' + v + '"><span class="fit">' + esc(qtxt(v)) + '</span></button>'; }).join('') +
         '<button type="button" data-q="max" class="mx"><span class="fit">' + esc(x.maxL) + '</span></button></div>' +
@@ -843,7 +845,7 @@
       v = Math.max(0, Math.round((Number(v) || 0) * 100) / 100);
       if (each) { slip.forEach(function (z) { z.st = v; }); box.querySelectorAll('[data-st]').forEach(function (i) { i.value = v > 0 ? m2(v) : ''; }); }
       else { stake = v; if (v >= 0.1) lsSet('oro_sp_stake', String(v)); }
-      if (write) inp.value = v > 0 ? m2(v) : '';
+      if (write) inp.value = v > 0 ? sv(v) : '';
       upd();
     };
     inp.addEventListener('input', function () { setAll(num(inp.value), false); });
