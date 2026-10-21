@@ -358,8 +358,12 @@
         var vv = window.visualViewport, vis = window.innerHeight || 0;
         if (vv && vv.height > 200) vis = Math.min(vis, vv.height + (vv.offsetTop || 0));
         var ih = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ios-site-h')) || 0;
-        if (document.documentElement.classList.contains('ios-app') && ih > 200) vis = Math.min(vis, ih);
-        var lift = Math.max(0, Math.min(140, Math.round(mb.getBoundingClientRect().bottom - vis)));
+        var app = document.documentElement.classList.contains('ios-app');
+        if (app && ih > 200) vis = Math.min(vis, ih);
+        // propriétaire (iPhone Safari) : la barre du ticket montait très haut avec un grand bloc noir dessous quand on
+        // choisissait un match → dans le navigateur, plus de remontée (Safari place déjà la fenêtre au-dessus de sa barre) ;
+        // seulement dans l'appli iPhone installée (bande du bas).
+        var lift = app ? Math.max(0, Math.min(140, Math.round(mb.getBoundingClientRect().bottom - vis))) : 0;
         box.style.setProperty('--sp2-lift', lift + 'px');
       }
     } catch (e) { /* ignore */ }
@@ -806,7 +810,7 @@
       '<div class="sp2-sum">' + (each ? '<p><span class="fit">' + esc(x.totSt) + '</span><b id="spTot"></b></p>' : '<p><span class="fit">' + esc(x.totalOdd) + '</span><b id="spOdd">' + odd.toFixed(2) + '</b></p>') +
         '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b id="spPot"></b></p></div>' +
       '<button type="button" class="sp2-place' + (ctx.guest ? ' guest' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? guestBtn || x.guestBtn : each ? fmt(x.placeN, { n: slip.length }) : x.placeB) + '</span>' +
-        (ctx.guest ? '' : '<b class="fit" id="spGoAmt"></b>') + '</button>' +
+        '</button>' + // propriétaire : « Placer le pari » seul, sans le montant dans le bouton
       '<p class="sp2-min"><span class="fit">' + esc(x.minNote) + '</span></p></div>';
     box.innerHTML = '<div class="sp2-page sp2-slip ' + md + '">' + slipHead() + expl + list + stk + '</div>';
     slipTop(); fitAll(box); startTick();
