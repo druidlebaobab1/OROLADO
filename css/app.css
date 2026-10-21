@@ -13466,3 +13466,6 @@ html:root body #casinoModal #csBal.cw-same .cw-t .oro-loc{margin-top:2px}
 /* jeux : petit équivalent sous le montant du bouton ENCAISSER (le texte du bouton remonte un peu) */
 html:root body #casinoModal #csGo.has-gol{padding-bottom:12px!important}
 html:root body #casinoModal .has-gol > .oro-loc2.gol{position:absolute;bottom:auto;text-align:center;font-size:9.5px;color:#5B3A00;-webkit-text-fill-color:#5B3A00;font-weight:800;pointer-events:none;z-index:3;right:auto}
+/* Android seulement (propriétaire) : en plein écran, « ≈ $ 1.90 » un peu plus haut, plus d'espace avec l'équivalent */
+html.is-android.fs-trade:root body .stake-field.has-fsl #fsStakeWin{transform:translateY(-10px)!important}
+html.is-android.fs-trade:root body .stake-field.has-fsl #inputStake{transform:translateY(-6px)!important}
