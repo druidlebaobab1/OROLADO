@@ -5189,6 +5189,7 @@
     setDepositPayMethod('card');
     paintPayLocal();
     try { paintMomoMode(); } catch (eMm) { /* ignore */ }
+    try { if (momoLink && momoLink.key !== momoKeyNow()) clearMomoLink(); scheduleMomoPrep(); } catch (eMp) { /* ignore */ } // v3021 : numéro déjà rempli
   // v2543 — mot « Banque » dans la langue du joueur (et à chaque changement de langue).
   var BANK_WORD = { fr: 'Banque', en: 'Bank', es: 'Banco', pt: 'Banco', ar: 'بنك', tr: 'Banka', vi: 'Ngân hàng', id: 'Bank', ru: 'Банк', de: 'Bank', hi: 'बैंक', zh: '银行' };
   function paintBankWord() {
@@ -6623,17 +6624,58 @@
     var ds = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
     var dg = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
     if (dg.indexOf(ds) === 0 && dg.length > 10) dg = dg.slice(ds.length);
-    return ds + dg;
+    var am = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    return ds + dg + '|' + am; // v3021 : le montant fait partie de la clé (lien préparé = ce montant exact)
   }
+  // v3021 (propriétaire : « avant, on mettait son numéro, on touchait Payer et Wave s'ouvrait DIRECTEMENT, sans le
+  // message blanc Ouvrir dans Wave ? ») : l'iPhone n'ouvre Wave directement que si le lien est ouvert DANS le toucher.
+  // Le lien Flutterwave est donc préparé en silence dès que le numéro est complet (même appel serveur qu'au toucher) ;
+  // le toucher l'ouvre tout de suite. Numéro ou montant changé → lien jeté, un nouveau est préparé.
+  var momoPrepTimer = 0, momoPrepKey = '';
+  function momoReadyToPrep() {
+    var ds = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
+    var dg = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
+    if (dg.indexOf(ds) === 0 && dg.length > 10) dg = dg.slice(ds.length);
+    var am = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    return dg.length === (ds === '221' ? 9 : 10) && am >= 1 && !isGuest() && !!user();
+  }
+  function scheduleMomoPrep() {
+    clearTimeout(momoPrepTimer);
+    momoPrepTimer = setTimeout(async function () {
+      if (!momoReadyToPrep() || momoBusy || momoInflight || depositing) return;
+      var key = momoKeyNow();
+      if ((momoLink && momoLink.key === key && Date.now() - momoLink.at < 540000) || momoPrepKey === key) return;
+      momoPrepKey = key;
+      try {
+        var tok = await ensureApiToken();
+        if (!tok || momoKeyNow() !== key) return;
+        var parts = key.split('|')[0], dial = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
+        var r = await D6.Api.post('flutterwaveMomo', { token: tok, amount: Number(key.split('|')[1]), network: 'wave', phone: parts.slice(0, dial.length) + parts.slice(dial.length) }, 30000);
+        if (r && r.ok && /^https:\/\//i.test(String(r.redirect || '')) && momoKeyNow() === key) {
+          momoLink = { key: key, url: String(r.redirect), ref: String(r.ref || ''), at: Date.now() };
+        }
+      } catch (eP) { /* le toucher refera l'appel normal */ } finally { if (momoPrepKey === key) momoPrepKey = ''; }
+    }, 700);
+  }
+  document.addEventListener('input', function (e) { if (e.target && (e.target.id === 'momoPhone' || e.target.id === 'depositAmt')) scheduleMomoPrep(); });
+  document.addEventListener('click', function (e) { if (e.target && e.target.closest && e.target.closest('#payMomoBox .wcc')) { if (momoLink) clearMomoLink(); scheduleMomoPrep(); } });
   function clearMomoLink() {
     momoLink = null;
     var b = $('btnMomoDeposit');
     if (b) { b.classList.remove('ready'); var sp = b.querySelector('span'); if (sp && !momoBusy) sp.textContent = t('payWaveBtn'); }
   }
-  document.addEventListener('input', function (e) { if (e.target && e.target.id === 'momoPhone' && momoLink) clearMomoLink(); });
+  document.addEventListener('input', function (e) { if (e.target && (e.target.id === 'momoPhone' || e.target.id === 'depositAmt') && momoLink && momoLink.key !== momoKeyNow()) clearMomoLink(); });
   async function startMomoDeposit() {
-    if (momoLink && momoLink.key === momoKeyNow() && Date.now() - momoLink.at < 600000) {
-      window.location.href = momoLink.url;
+    if (momoLink && momoLink.key === momoKeyNow() && Date.now() - momoLink.at < 540000) {
+      // v3021 : lien déjà prêt → ouvert DANS le toucher (Wave s'ouvre directement sur iPhone)
+      var lk = momoLink;
+      try { sessionStorage.setItem('oro_dep_ref', lk.ref); } catch (e1) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', lk.ref); } catch (e2) { /* ignore */ }
+      depositRef = lk.ref;
+      depositApplied = false;
+      try { metaTrack('InitiateCheckout', { value: Number(lk.key.split('|')[1]) || 0, currency: 'USD' }); } catch (eM) { /* ignore */ }
+      momoLink = null;
+      window.location.href = lk.url;
       return;
     }
     if (momoLink) clearMomoLink();
