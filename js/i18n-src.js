@@ -2920,6 +2920,8 @@
     s_openMax: ['Wait for a trade to finish', 'Attendez la fin d’un trade', 'Espera a que termine una operación', 'Aguarde o fim de uma operação', 'انتظر انتهاء صفقة', 'Дождитесь окончания сделки', 'Bir işlemin bitmesini bekleyin', 'Chờ một lệnh kết thúc', 'Tunggu satu trade selesai', 'Warte, bis ein Trade endet', 'किसी ट्रेड के खत्म होने तक रुकें'],
     s_supportRate: ['Message received, reply soon', 'Message bien reçu, réponse bientôt', 'Mensaje recibido, respuesta pronto', 'Mensagem recebida, resposta em breve', 'تم استلام رسالتك، سنرد قريبًا', 'Сообщение получено, скоро ответим', 'Mesaj alındı, yakında yanıt', 'Đã nhận tin, sẽ trả lời sớm', 'Pesan diterima, segera dibalas', 'Nachricht erhalten, Antwort folgt', 'संदेश मिला, जल्द जवाब'],
     s_emailUsed: ['Email already used', 'E-mail déjà utilisé', 'Correo ya utilizado', 'E-mail já utilizado', 'البريد مستخدم من قبل', 'Почта уже использована', 'E-posta zaten kullanıldı', 'Email đã được dùng', 'Email sudah dipakai', 'E-Mail bereits verwendet', 'ईमेल पहले से उपयोग में'],
+    s_passUpdated: ['Password changed', 'Mot de passe modifié', 'Contraseña cambiada', 'Senha alterada', 'تم تغيير كلمة المرور', 'Пароль изменён', 'Şifre değiştirildi', 'Đã đổi mật khẩu', 'Kata sandi diubah', 'Passwort geändert', 'पासवर्ड बदल गया'],
+    s_emailChanged: ['Email address changed', 'Adresse e-mail modifiée', 'Correo electrónico cambiado', 'E-mail alterado', 'تم تغيير البريد الإلكتروني', 'Адрес почты изменён', 'E-posta adresi değiştirildi', 'Đã đổi địa chỉ email', 'Alamat email diubah', 'E-Mail-Adresse geändert', 'ईमेल पता बदल गया'],
     s_nameShort: ['Nickname too short', 'Pseudo trop court', 'Apodo demasiado corto', 'Apelido muito curto', 'الاسم قصير جدًا', 'Слишком короткое имя', 'Takma ad çok kısa', 'Biệt danh quá ngắn', 'Nama panggilan terlalu pendek', 'Spitzname zu kurz', 'उपनाम बहुत छोटा']
   };
   // clé du dictionnaire OU clé de message serveur → texte court
@@ -2928,6 +2930,7 @@
     sessionExpiredMsg: 's_sessionExp', passMismatch: 's_passMismatch', logoutOthersDone: 's_logoutOthers',
     helpRetry: 's_sendFail', depositPending: 's_payPending', cryptoErrPending: 's_payPending', wdDestErr: 's_destReq',
     wdCardErr: 's_cardErr', tradeFailed: 's_tradeFail', passOtpNeed: 's_validate',
+    passUpdated: 's_passUpdated', emailChanged: 's_emailChanged',
     m_codeInvalid: 's_codeInvalid', m_codeExpired: 's_codeInvalid', m_enterCode6: 's_enterCode',
     m_tooManyAttempts: 's_tooManyAttempts', m_tooMany: 's_tooMany', m_busy: 's_busy', m_assetMax: 's_assetMax',
     m_supportRate: 's_supportRate', m_emailRetired: 's_emailUsed', m_nameReq: 's_nameShort', m_payUnavailable: 's_cardOff',
@@ -2939,7 +2942,8 @@
     var row = SHORT_TABLE[k];
     if (!row) return null;
     var i = MSG_LANGS.indexOf(lang);
-    return row[i >= 0 ? i : 0] || row[0];
+    if (i < 0) return null; // v3047 : langue sans texte court (zh) → message complet traduit
+    return row[i] || row[0];
   }
   /** Texte court pour une notification, ou null si le message est déjà court. */
   function shortMsg(text) {
