@@ -1,0 +1,1 @@
+{"data":{"symbol":"TSLA","totalRecords":1,"tradesTable":{"asOf":null,"headers":{"date":"Date","close":"Close/Last","volume":"Volume","open":"Open","high":"High","low":"Low"},"rows":[{"date":"10/16/2026","close":"$354.72","volume":"62,067,340","open":"$369.145","high":"$370.50","low":"$349.33"}]}},"message":null,"status":{"rCode":200,"bCodeMessage":null,"developerMessage":null}}
