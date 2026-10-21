@@ -10700,3 +10700,41 @@
     D6.App.boot();
   }
 })(window.D6 = window.D6 || {});
+
+/* 2026-10-21 (propriétaire : « quand on maintient le + ou le −, ça doit monter / descendre vite, de plus en plus vite ») —
+   boutons + / − de la mise du trading (écran normal et plein écran) et des jeux : doigt gardé appuyé = le bouton se
+   répète tout seul et accélère ; au trading, les pas grandissent aussi (1 → 5 → 10 $). Un simple toucher ne change pas. */
+(function () {
+  'use strict';
+  var SEL = '.stake-pm, #casinoModal .cg-step';
+  var btn = null, tm = 0, n = 0, gap = 0;
+  function stop() {
+    clearTimeout(tm);
+    if (btn && btn.__add0 != null) { btn.dataset.add = btn.__add0; btn.__add0 = null; }
+    btn = null;
+  }
+  function rep() {
+    if (!btn || !btn.isConnected || btn.disabled) { stop(); return; }
+    n++;
+    if (btn.classList.contains('stake-pm')) {
+      if (btn.__add0 == null) btn.__add0 = btn.dataset.add;
+      var sg = Number(btn.__add0) < 0 ? -1 : 1;
+      btn.dataset.add = String(sg * (n > 40 ? 10 : n > 15 ? 5 : 1));
+    }
+    try { btn.click(); } catch (e) { stop(); return; }
+    gap = Math.max(45, gap * 0.85);
+    tm = setTimeout(rep, gap);
+  }
+  document.addEventListener('pointerdown', function (e) {
+    if (e.button > 0) return;
+    var b = e.target && e.target.closest ? e.target.closest(SEL) : null;
+    if (!b) return;
+    stop(); btn = b; n = 0; gap = 170;
+    tm = setTimeout(rep, 420);
+  }, true);
+  ['pointerup', 'pointercancel'].forEach(function (ev) { window.addEventListener(ev, stop, true); });
+  window.addEventListener('blur', function (e) { if (e.target === window) stop(); }); // (pas le « blur » d'un bouton)
+  document.addEventListener('pointerout', function (e) { if (btn && e.target && (e.target === btn || btn.contains(e.target)) && !(e.relatedTarget && btn.contains(e.relatedTarget))) stop(); }, true);
+  document.addEventListener('visibilitychange', stop);
+  document.addEventListener('contextmenu', function (e) { if (e.target && e.target.closest && e.target.closest(SEL)) e.preventDefault(); }, true);
+})();
