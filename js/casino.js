@@ -364,7 +364,7 @@
     var v = $('csView');
     if (S.view === 'sports') {
       v.className = 'cs-sports';
-      if (D6.Sports && D6.Sports.paint) D6.Sports.paint(v, { guest: guest(), signup: signup, toast: toast, afterPlay: afterPlay, stake: function () { return S.stake; } });
+      if (D6.Sports && D6.Sports.paint) D6.Sports.paint(v, { guest: guest(), signup: signup, toast: toast, afterPlay: afterPlay, stake: function () { return S.stake; }, bal: function () { return S.bal.real; }, deposit: deposit });
     } else {
       v.className = 'cs-grid';
       // v2953 (propriétaire, vieux Android) : tant que le catalogue des jeux n'est pas arrivé, un petit rond de chargement

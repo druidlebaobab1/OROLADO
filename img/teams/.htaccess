@@ -1,0 +1,11 @@
+# 2026-10-21 (propriétaire : « les logos n'arrêtent pas de revenir ») : écussons des équipes gardés 7 jours par le téléphone
+# (ils ne changent pas ; un nouvel écusson = un nouveau nom de fichier).
+<IfModule mod_headers.c>
+  <FilesMatch "\.png$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/png "access plus 7 days"
+</IfModule>
