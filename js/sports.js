@@ -171,18 +171,18 @@
   })();
   // nouveaux petits textes (12 langues)
   var NT = {
-    en: { results: 'Results', inPlay: 'In play', oddsChg: 'Odds updated', sending: 'Sending…', qOnly: 'Predictions: single bets only.', e_single: 'Predictions are single bets only: they can’t be combined.', e_corr: 'These picks are linked: they can’t be in the same slip.', e_cap: 'Limit reached on this choice: lower your stake.', more: 'Show more', singleX: 'One pick: your win = stake × odds.' },
-    fr: { results: 'Résultats', inPlay: 'En jeu', oddsChg: 'Cotes mises à jour', sending: 'Envoi…', qOnly: 'Prédiction : pari simple uniquement.', e_single: 'Les prédictions se jouent seules : pas de combiné.', e_corr: 'Ces choix sont liés : pas dans le même coupon.', e_cap: 'Limite atteinte sur ce choix : baisse la mise.', more: 'Afficher plus', singleX: 'Un seul choix : gain = mise × cote.' },
-    es: { results: 'Resultados', inPlay: 'En juego', oddsChg: 'Cuotas actualizadas', sending: 'Enviando…', qOnly: 'Predicciones: solo apuesta simple.', e_single: 'Las predicciones son solo apuestas simples: no se combinan.', e_corr: 'Estas selecciones están relacionadas: no pueden ir en el mismo boleto.', e_cap: 'Límite alcanzado en esta opción: baja la apuesta.', more: 'Ver más', singleX: 'Una sola selección: ganancia = apuesta × cuota.' },
-    pt: { results: 'Resultados', inPlay: 'Em jogo', oddsChg: 'Odds atualizadas', sending: 'Enviando…', qOnly: 'Previsões: só aposta simples.', e_single: 'Previsões são só apostas simples: não podem ser combinadas.', e_corr: 'Essas escolhas estão ligadas: não podem ficar no mesmo bilhete.', e_cap: 'Limite atingido nesta opção: diminua a aposta.', more: 'Ver mais', singleX: 'Uma só escolha: ganho = aposta × odd.' },
-    ar: { results: 'النتائج', inPlay: 'جارٍ الآن', oddsChg: 'تم تحديث الاحتمالات', sending: 'جارٍ الإرسال…', qOnly: 'التوقعات: رهان فردي فقط.', e_single: 'التوقعات رهانات فردية فقط: لا يمكن دمجها.', e_corr: 'هذه الاختيارات مترابطة: لا يمكن وضعها في نفس القسيمة.', e_cap: 'تم بلوغ الحد لهذا الاختيار: خفّض المبلغ.', more: 'عرض المزيد', singleX: 'اختيار واحد: الربح = المبلغ × الاحتمال.' },
-    tr: { results: 'Sonuçlar', inPlay: 'Oynanıyor', oddsChg: 'Oranlar güncellendi', sending: 'Gönderiliyor…', qOnly: 'Tahminler: yalnızca tekli bahis.', e_single: 'Tahminler yalnızca tekli bahistir: kombine yapılamaz.', e_corr: 'Bu seçimler bağlantılı: aynı kupona eklenemez.', e_cap: 'Bu seçimde limite ulaşıldı: bahsi düşür.', more: 'Daha fazla', singleX: 'Tek seçim: kazanç = bahis × oran.' },
-    vi: { results: 'Kết quả', inPlay: 'Đang diễn ra', oddsChg: 'Tỷ lệ đã cập nhật', sending: 'Đang gửi…', qOnly: 'Dự đoán: chỉ cược đơn.', e_single: 'Dự đoán chỉ được cược đơn: không thể cược xiên.', e_corr: 'Các lựa chọn này liên quan nhau: không thể chung một phiếu.', e_cap: 'Đã đạt giới hạn cho lựa chọn này: hãy giảm tiền cược.', more: 'Xem thêm', singleX: 'Một lựa chọn: tiền thắng = tiền cược × tỷ lệ.' },
-    id: { results: 'Hasil', inPlay: 'Berlangsung', oddsChg: 'Odds diperbarui', sending: 'Mengirim…', qOnly: 'Prediksi: hanya taruhan tunggal.', e_single: 'Prediksi hanya taruhan tunggal: tidak bisa digabung.', e_corr: 'Pilihan ini saling terkait: tidak bisa dalam satu slip.', e_cap: 'Batas tercapai untuk pilihan ini: kurangi taruhan.', more: 'Lihat lagi', singleX: 'Satu pilihan: kemenangan = taruhan × odds.' },
-    ru: { results: 'Результаты', inPlay: 'Идёт игра', oddsChg: 'Коэффициенты обновлены', sending: 'Отправка…', qOnly: 'Прогнозы: только одиночная ставка.', e_single: 'Прогнозы — только одиночные ставки, без экспресса.', e_corr: 'Эти исходы связаны: их нельзя ставить в один купон.', e_cap: 'Лимит по этому исходу исчерпан: уменьшите ставку.', more: 'Показать ещё', singleX: 'Один исход: выигрыш = ставка × коэффициент.' },
-    de: { results: 'Ergebnisse', inPlay: 'Läuft', oddsChg: 'Quoten aktualisiert', sending: 'Wird gesendet…', qOnly: 'Prognosen: nur Einzelwette.', e_single: 'Prognosen nur als Einzelwette: keine Kombi möglich.', e_corr: 'Diese Tipps hängen zusammen: nicht im selben Wettschein.', e_cap: 'Limit für diese Auswahl erreicht: Einsatz senken.', more: 'Mehr anzeigen', singleX: 'Ein Tipp: Gewinn = Einsatz × Quote.' },
-    hi: { results: 'नतीजे', inPlay: 'जारी है', oddsChg: 'ऑड्स अपडेट हुए', sending: 'भेजा जा रहा है…', qOnly: 'भविष्यवाणी: सिर्फ़ एकल दांव।', e_single: 'भविष्यवाणियाँ सिर्फ़ एकल दांव हैं: इन्हें जोड़ा नहीं जा सकता।', e_corr: 'ये चुनाव आपस में जुड़े हैं: एक ही स्लिप में नहीं रख सकते।', e_cap: 'इस विकल्प की सीमा पूरी हो गई: दांव कम करें।', more: 'और देखें', singleX: 'एक चुनाव: जीत = दांव × ऑड्स।' },
-    zh: { results: '结果', inPlay: '进行中', oddsChg: '赔率已更新', sending: '发送中…', qOnly: '预测：仅限单关。', e_single: '预测只能单关投注，不能串关。', e_corr: '这些选择相互关联，不能放在同一投注单。', e_cap: '该选项已达上限，请降低投注额。', more: '显示更多', singleX: '单个选择：可赢 = 投注 × 赔率。' }
+    en: { results: 'Results', inPlay: 'In play', oddsChg: 'Odds updated', sending: 'Sending…', qOnly: 'Predictions: single bets only.', e_single: 'Predictions are single bets only: they can’t be combined.', e_corr: 'These picks are linked: they can’t be in the same slip.', e_cap: 'Limit reached on this choice: lower your stake.', more: 'Show more', singleX: 'One pick: your win = stake × odds.', balL: 'Balance', depL: 'Top up', errBal: 'Not enough balance for this stake.', e_odds: 'Odds have changed: check your slip and confirm again.', tabS: 'Single', tabC: 'Multiple', mkt3: 'Match result (1X2)', mkt2: 'Winner', mktQ: 'Prediction', clrSt: 'Clear', maxL: 'Max', setT: 'Bet slip settings', accT: 'If the odds change', accAny: 'Accept any change', accUp: 'Accept higher odds only', accNone: 'Always ask me', keepT: 'Keep selections after placing', qkT: 'Quick stakes', okL: 'OK', eachL: 'Stake per bet', totSt: 'Total stake', placeN: 'Place {n} bets', placeB: 'Place bet', doneN: '{n} bets placed!', partial: '{ok} of {n} bets placed', singleN: 'One bet per selection, each with its own stake.' },
+    fr: { results: 'Résultats', inPlay: 'En jeu', oddsChg: 'Cotes mises à jour', sending: 'Envoi…', qOnly: 'Prédiction : pari simple uniquement.', e_single: 'Les prédictions se jouent seules : pas de combiné.', e_corr: 'Ces choix sont liés : pas dans le même coupon.', e_cap: 'Limite atteinte sur ce choix : baisse la mise.', more: 'Afficher plus', singleX: 'Un seul choix : gain = mise × cote.', balL: 'Solde', depL: 'Recharger', errBal: 'Solde insuffisant pour cette mise.', e_odds: 'Les cotes ont changé : vérifie ton ticket puis confirme.', tabS: 'Simple', tabC: 'Combiné', mkt3: 'Résultat du match (1X2)', mkt2: 'Vainqueur', mktQ: 'Prédiction', clrSt: 'Effacer', maxL: 'Max', setT: 'Réglages du ticket', accT: 'Si la cote change', accAny: 'Accepter tous les changements', accUp: 'Accepter seulement les hausses', accNone: 'Toujours me demander', keepT: 'Garder les sélections après le pari', qkT: 'Montants rapides', okL: 'OK', eachL: 'Mise par pari', totSt: 'Mise totale', placeN: 'Placer {n} paris', placeB: 'Placer le pari', doneN: '{n} paris enregistrés !', partial: '{ok} sur {n} paris enregistrés', singleN: 'Un pari par sélection, chacun avec sa mise.' },
+    es: { results: 'Resultados', inPlay: 'En juego', oddsChg: 'Cuotas actualizadas', sending: 'Enviando…', qOnly: 'Predicciones: solo apuesta simple.', e_single: 'Las predicciones son solo apuestas simples: no se combinan.', e_corr: 'Estas selecciones están relacionadas: no pueden ir en el mismo boleto.', e_cap: 'Límite alcanzado en esta opción: baja la apuesta.', more: 'Ver más', singleX: 'Una sola selección: ganancia = apuesta × cuota.', balL: 'Saldo', depL: 'Recargar', errBal: 'Saldo insuficiente para esta apuesta.', e_odds: 'Las cuotas han cambiado: revisa tu boleto y confirma.', tabS: 'Simple', tabC: 'Combinada', mkt3: 'Resultado (1X2)', mkt2: 'Ganador', mktQ: 'Predicción', clrSt: 'Borrar', maxL: 'Máx', setT: 'Ajustes del boleto', accT: 'Si la cuota cambia', accAny: 'Aceptar cualquier cambio', accUp: 'Aceptar solo si sube', accNone: 'Preguntarme siempre', keepT: 'Mantener selecciones tras apostar', qkT: 'Importes rápidos', okL: 'OK', eachL: 'Apuesta por selección', totSt: 'Apuesta total', placeN: 'Hacer {n} apuestas', placeB: 'Hacer apuesta', doneN: '¡{n} apuestas realizadas!', partial: '{ok} de {n} apuestas realizadas', singleN: 'Una apuesta por selección, cada una con su importe.' },
+    pt: { results: 'Resultados', inPlay: 'Em jogo', oddsChg: 'Odds atualizadas', sending: 'Enviando…', qOnly: 'Previsões: só aposta simples.', e_single: 'Previsões são só apostas simples: não podem ser combinadas.', e_corr: 'Essas escolhas estão ligadas: não podem ficar no mesmo bilhete.', e_cap: 'Limite atingido nesta opção: diminua a aposta.', more: 'Ver mais', singleX: 'Uma só escolha: ganho = aposta × odd.', balL: 'Saldo', depL: 'Recarregar', errBal: 'Saldo insuficiente para esta aposta.', e_odds: 'As odds mudaram: confira seu bilhete e confirme.', tabS: 'Simples', tabC: 'Múltipla', mkt3: 'Resultado (1X2)', mkt2: 'Vencedor', mktQ: 'Previsão', clrSt: 'Limpar', maxL: 'Máx', setT: 'Ajustes do bilhete', accT: 'Se a odd mudar', accAny: 'Aceitar qualquer mudança', accUp: 'Aceitar só se subir', accNone: 'Sempre me perguntar', keepT: 'Manter seleções após apostar', qkT: 'Valores rápidos', okL: 'OK', eachL: 'Aposta por seleção', totSt: 'Aposta total', placeN: 'Fazer {n} apostas', placeB: 'Fazer aposta', doneN: '{n} apostas feitas!', partial: '{ok} de {n} apostas feitas', singleN: 'Uma aposta por seleção, cada uma com seu valor.' },
+    ar: { results: 'النتائج', inPlay: 'جارٍ الآن', oddsChg: 'تم تحديث الاحتمالات', sending: 'جارٍ الإرسال…', qOnly: 'التوقعات: رهان فردي فقط.', e_single: 'التوقعات رهانات فردية فقط: لا يمكن دمجها.', e_corr: 'هذه الاختيارات مترابطة: لا يمكن وضعها في نفس القسيمة.', e_cap: 'تم بلوغ الحد لهذا الاختيار: خفّض المبلغ.', more: 'عرض المزيد', singleX: 'اختيار واحد: الربح = المبلغ × الاحتمال.', balL: 'الرصيد', depL: 'شحن', errBal: 'الرصيد غير كافٍ لهذا المبلغ.', e_odds: 'تغيرت الاحتمالات: راجع قسيمتك ثم أكّد.', tabS: 'فردي', tabC: 'مركّب', mkt3: 'نتيجة المباراة (1X2)', mkt2: 'الفائز', mktQ: 'توقع', clrSt: 'مسح', maxL: 'الحد الأقصى', setT: 'إعدادات القسيمة', accT: 'إذا تغيّر الاحتمال', accAny: 'قبول أي تغيير', accUp: 'قبول الارتفاع فقط', accNone: 'اسألني دائمًا', keepT: 'الإبقاء على الاختيارات بعد الرهان', qkT: 'مبالغ سريعة', okL: 'موافق', eachL: 'المبلغ لكل رهان', totSt: 'المبلغ الإجمالي', placeN: 'ضع {n} رهانات', placeB: 'ضع الرهان', doneN: 'تم تسجيل {n} رهانات!', partial: 'تم تسجيل {ok} من {n} رهانات', singleN: 'رهان لكل اختيار، ولكل رهان مبلغه.' },
+    tr: { results: 'Sonuçlar', inPlay: 'Oynanıyor', oddsChg: 'Oranlar güncellendi', sending: 'Gönderiliyor…', qOnly: 'Tahminler: yalnızca tekli bahis.', e_single: 'Tahminler yalnızca tekli bahistir: kombine yapılamaz.', e_corr: 'Bu seçimler bağlantılı: aynı kupona eklenemez.', e_cap: 'Bu seçimde limite ulaşıldı: bahsi düşür.', more: 'Daha fazla', singleX: 'Tek seçim: kazanç = bahis × oran.', balL: 'Bakiye', depL: 'Yükle', errBal: 'Bu bahis için bakiye yetersiz.', e_odds: 'Oranlar değişti: kuponunu kontrol edip onayla.', tabS: 'Tekli', tabC: 'Kombine', mkt3: 'Maç sonucu (1X2)', mkt2: 'Kazanan', mktQ: 'Tahmin', clrSt: 'Temizle', maxL: 'Maks', setT: 'Kupon ayarları', accT: 'Oran değişirse', accAny: 'Her değişikliği kabul et', accUp: 'Sadece yükselişi kabul et', accNone: 'Her zaman sor', keepT: 'Bahisten sonra seçimleri koru', qkT: 'Hızlı tutarlar', okL: 'Tamam', eachL: 'Bahis başına tutar', totSt: 'Toplam tutar', placeN: '{n} bahis yap', placeB: 'Bahis yap', doneN: '{n} bahis alındı!', partial: '{n} bahisten {ok} tanesi alındı', singleN: 'Her seçim için ayrı bahis, her biri kendi tutarıyla.' },
+    vi: { results: 'Kết quả', inPlay: 'Đang diễn ra', oddsChg: 'Tỷ lệ đã cập nhật', sending: 'Đang gửi…', qOnly: 'Dự đoán: chỉ cược đơn.', e_single: 'Dự đoán chỉ được cược đơn: không thể cược xiên.', e_corr: 'Các lựa chọn này liên quan nhau: không thể chung một phiếu.', e_cap: 'Đã đạt giới hạn cho lựa chọn này: hãy giảm tiền cược.', more: 'Xem thêm', singleX: 'Một lựa chọn: tiền thắng = tiền cược × tỷ lệ.', balL: 'Số dư', depL: 'Nạp tiền', errBal: 'Số dư không đủ cho mức cược này.', e_odds: 'Tỷ lệ đã thay đổi: kiểm tra phiếu rồi xác nhận lại.', tabS: 'Đơn', tabC: 'Xiên', mkt3: 'Kết quả trận (1X2)', mkt2: 'Đội thắng', mktQ: 'Dự đoán', clrSt: 'Xóa', maxL: 'Tối đa', setT: 'Cài đặt phiếu cược', accT: 'Nếu tỷ lệ thay đổi', accAny: 'Chấp nhận mọi thay đổi', accUp: 'Chỉ chấp nhận khi tăng', accNone: 'Luôn hỏi tôi', keepT: 'Giữ lựa chọn sau khi cược', qkT: 'Số tiền nhanh', okL: 'OK', eachL: 'Tiền cược mỗi vé', totSt: 'Tổng tiền cược', placeN: 'Đặt {n} cược', placeB: 'Đặt cược', doneN: 'Đã đặt {n} cược!', partial: 'Đã đặt {ok}/{n} cược', singleN: 'Mỗi lựa chọn một cược, mỗi cược một số tiền.' },
+    id: { results: 'Hasil', inPlay: 'Berlangsung', oddsChg: 'Odds diperbarui', sending: 'Mengirim…', qOnly: 'Prediksi: hanya taruhan tunggal.', e_single: 'Prediksi hanya taruhan tunggal: tidak bisa digabung.', e_corr: 'Pilihan ini saling terkait: tidak bisa dalam satu slip.', e_cap: 'Batas tercapai untuk pilihan ini: kurangi taruhan.', more: 'Lihat lagi', singleX: 'Satu pilihan: kemenangan = taruhan × odds.', balL: 'Saldo', depL: 'Isi saldo', errBal: 'Saldo tidak cukup untuk taruhan ini.', e_odds: 'Odds berubah: periksa slip lalu konfirmasi lagi.', tabS: 'Tunggal', tabC: 'Kombinasi', mkt3: 'Hasil laga (1X2)', mkt2: 'Pemenang', mktQ: 'Prediksi', clrSt: 'Hapus', maxL: 'Maks', setT: 'Pengaturan slip', accT: 'Jika odds berubah', accAny: 'Terima semua perubahan', accUp: 'Terima jika naik saja', accNone: 'Selalu tanya saya', keepT: 'Simpan pilihan setelah taruhan', qkT: 'Nominal cepat', okL: 'OK', eachL: 'Taruhan per pilihan', totSt: 'Total taruhan', placeN: 'Pasang {n} taruhan', placeB: 'Pasang taruhan', doneN: '{n} taruhan terpasang!', partial: '{ok} dari {n} taruhan terpasang', singleN: 'Satu taruhan per pilihan, masing-masing dengan nominalnya.' },
+    ru: { results: 'Результаты', inPlay: 'Идёт игра', oddsChg: 'Коэффициенты обновлены', sending: 'Отправка…', qOnly: 'Прогнозы: только одиночная ставка.', e_single: 'Прогнозы — только одиночные ставки, без экспресса.', e_corr: 'Эти исходы связаны: их нельзя ставить в один купон.', e_cap: 'Лимит по этому исходу исчерпан: уменьшите ставку.', more: 'Показать ещё', singleX: 'Один исход: выигрыш = ставка × коэффициент.', balL: 'Баланс', depL: 'Пополнить', errBal: 'Недостаточно средств для этой ставки.', e_odds: 'Коэффициенты изменились: проверьте купон и подтвердите.', tabS: 'Ординар', tabC: 'Экспресс', mkt3: 'Исход матча (1X2)', mkt2: 'Победитель', mktQ: 'Прогноз', clrSt: 'Очистить', maxL: 'Макс', setT: 'Настройки купона', accT: 'Если коэффициент изменится', accAny: 'Принимать любые изменения', accUp: 'Принимать только повышение', accNone: 'Всегда спрашивать', keepT: 'Сохранять выбор после ставки', qkT: 'Быстрые суммы', okL: 'OK', eachL: 'Ставка на каждый', totSt: 'Общая ставка', placeN: 'Сделать {n} ставки', placeB: 'Сделать ставку', doneN: 'Принято ставок: {n}!', partial: 'Принято {ok} из {n}', singleN: 'Отдельная ставка на каждый исход, у каждой своя сумма.' },
+    de: { results: 'Ergebnisse', inPlay: 'Läuft', oddsChg: 'Quoten aktualisiert', sending: 'Wird gesendet…', qOnly: 'Prognosen: nur Einzelwette.', e_single: 'Prognosen nur als Einzelwette: keine Kombi möglich.', e_corr: 'Diese Tipps hängen zusammen: nicht im selben Wettschein.', e_cap: 'Limit für diese Auswahl erreicht: Einsatz senken.', more: 'Mehr anzeigen', singleX: 'Ein Tipp: Gewinn = Einsatz × Quote.', balL: 'Guthaben', depL: 'Aufladen', errBal: 'Guthaben reicht für diesen Einsatz nicht.', e_odds: 'Quoten haben sich geändert: Wettschein prüfen und bestätigen.', tabS: 'Einzel', tabC: 'Kombi', mkt3: 'Spielergebnis (1X2)', mkt2: 'Sieger', mktQ: 'Prognose', clrSt: 'Löschen', maxL: 'Max', setT: 'Wettschein-Einstellungen', accT: 'Wenn sich die Quote ändert', accAny: 'Alle Änderungen annehmen', accUp: 'Nur höhere Quoten annehmen', accNone: 'Immer nachfragen', keepT: 'Auswahl nach der Wette behalten', qkT: 'Schnellbeträge', okL: 'OK', eachL: 'Einsatz pro Wette', totSt: 'Gesamteinsatz', placeN: '{n} Wetten platzieren', placeB: 'Wette platzieren', doneN: '{n} Wetten platziert!', partial: '{ok} von {n} Wetten platziert', singleN: 'Eine Wette pro Tipp, jede mit eigenem Einsatz.' },
+    hi: { results: 'नतीजे', inPlay: 'जारी है', oddsChg: 'ऑड्स अपडेट हुए', sending: 'भेजा जा रहा है…', qOnly: 'भविष्यवाणी: सिर्फ़ एकल दांव।', e_single: 'भविष्यवाणियाँ सिर्फ़ एकल दांव हैं: इन्हें जोड़ा नहीं जा सकता।', e_corr: 'ये चुनाव आपस में जुड़े हैं: एक ही स्लिप में नहीं रख सकते।', e_cap: 'इस विकल्प की सीमा पूरी हो गई: दांव कम करें।', more: 'और देखें', singleX: 'एक चुनाव: जीत = दांव × ऑड्स।', balL: 'बैलेंस', depL: 'रिचार्ज', errBal: 'इस दांव के लिए बैलेंस कम है।', e_odds: 'ऑड्स बदल गए: अपनी स्लिप देखें और फिर पुष्टि करें।', tabS: 'सिंगल', tabC: 'मल्टीपल', mkt3: 'मैच नतीजा (1X2)', mkt2: 'विजेता', mktQ: 'भविष्यवाणी', clrSt: 'हटाएँ', maxL: 'अधिकतम', setT: 'स्लिप सेटिंग', accT: 'ऑड्स बदलें तो', accAny: 'हर बदलाव मानें', accUp: 'सिर्फ़ बढ़ने पर मानें', accNone: 'हमेशा पूछें', keepT: 'दांव के बाद चुनाव रखें', qkT: 'तेज़ रकम', okL: 'ठीक', eachL: 'हर दांव की रकम', totSt: 'कुल रकम', placeN: '{n} दांव लगाएँ', placeB: 'दांव लगाएँ', doneN: '{n} दांव लग गए!', partial: '{n} में से {ok} दांव लगे', singleN: 'हर चुनाव पर अलग दांव, हर एक की अपनी रकम।' },
+    zh: { results: '结果', inPlay: '进行中', oddsChg: '赔率已更新', sending: '发送中…', qOnly: '预测：仅限单关。', e_single: '预测只能单关投注，不能串关。', e_corr: '这些选择相互关联，不能放在同一投注单。', e_cap: '该选项已达上限，请降低投注额。', more: '显示更多', singleX: '单个选择：可赢 = 投注 × 赔率。', balL: '余额', depL: '充值', errBal: '余额不足以支付此投注。', e_odds: '赔率已变化：请检查投注单后再确认。', tabS: '单关', tabC: '串关', mkt3: '全场赛果 (1X2)', mkt2: '胜者', mktQ: '预测', clrSt: '清除', maxL: '最大', setT: '投注单设置', accT: '赔率变化时', accAny: '接受任何变化', accUp: '仅接受上升', accNone: '每次都询问我', keepT: '投注后保留选项', qkT: '快捷金额', okL: '确定', eachL: '每注金额', totSt: '总投注额', placeN: '投注 {n} 注', placeB: '确认投注', doneN: '已投注 {n} 注！', partial: '已投注 {ok}/{n} 注', singleN: '每个选择单独一注，各自金额。' }
   };
   function XX() { var l = lg(); return Object.assign(X(), NT.en, NT[l] || {}); }
   // petites icônes
@@ -194,6 +194,7 @@
     x: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>',
     back: '<svg class="sp2-i sp2-flip" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
     slip: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>',
+    gear: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
     trash: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>'
   };
   function loc() { var l = lg(); return l === 'ar' ? 'ar-u-nu-latn' : l; }
@@ -269,7 +270,7 @@
     box = container; ctx = c || {};
     if (!box) return;
     box.classList.add('sp2');
-    if (lastBet && view === 'slip') { lastBet = null; view = 'list'; }
+    if ((lastBet || lastBets) && view === 'slip') { lastBet = null; lastBets = null; view = 'list'; }
     // v2763 (propriétaire) : Paris s'affiche TOUT DE SUITE (dernière liste gardée en mémoire), puis se met à jour en silence
     // v2844 (propriétaire) : comme Cadeaux — si la même liste est déjà affichée, on ne reconstruit rien (plus d'« éclair »)
     var sig0 = (lastJson || '') + '|' + view + '|' + (document.documentElement.lang || '');
@@ -728,64 +729,94 @@
   }
 
   /* ---------- TICKET DE PARIS ----------
-     2026-10-21 (propriétaire : « le ticket n'a rien à voir avec les jeux ») — ticket façon grands bookmakers (Bet365, Betway,
-     Sportybet) : en-tête (nombre de sélections, Tout supprimer), type du pari expliqué (Simple / Combiné), une ligne par
-     sélection (match, choix, cote, retirer), puis JUSTE DESSOUS le bloc de mise : case « Mise » avec la monnaie, montants
-     rapides, cote totale, gain possible et un bouton « Parier ». Le bloc de mise reste collé en bas quand la liste est longue.
-     Plus de terminal du casino (− + / jetons), plus de grand vide au milieu, plus de 2e flèche retour (la flèche du haut
-     de la page ramène à la liste). Mêmes appels au serveur (spBet), mêmes contrôles qu'avant. */
-  var QUICK = [1, 5, 10, 25, 50, 100];
+     2026-10-21 (propriétaire : « un VRAI ticket de pro, comme 1xBet, Melbet, Betway, Premier Bet ») — même organisation que
+     les grands : onglets Simple / Combiné (Simple = une mise par sélection, un pari par sélection ; Combiné = une seule mise,
+     les cotes se multiplient), une ligne par sélection (choix, match, type de pari, cote, ×), « Tout effacer » en haut,
+     case de mise avec « effacer », 4 places rapides en bas (3 montants que le joueur change lui-même + Max = son solde),
+     solde affiché, réglages du ticket (⚙ : changements de cotes « tout accepter / seulement les hausses / toujours demander »,
+     « garder les sélections après le pari », montants rapides), cote totale, gain possible, grand bouton « Placer le pari »,
+     erreurs claires (mise > solde, mise minimum). Même serveur (spBet) : la cote affichée part avec chaque choix. */
+  function curBal() { try { var b = ctx.bal ? ctx.bal() : null; return b == null || !isFinite(+b) ? null : +b; } catch (e) { return null; } }
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
+  var slipMd = '', setOpen = false, lastBets = null;
+  var QK_DEF = [5, 10, 25];
+  function qk() { try { var a = JSON.parse(lsGet('oro_sp_qk', '[]')); if (Array.isArray(a) && a.length === 3 && a.every(function (v) { return v >= 0.1 && v <= 1e6; })) return a.map(Number); } catch (e) { /* ignore */ } return QK_DEF.slice(); }
+  function accMode() { var a = lsGet('oro_sp_acc', 'none'); return a === 'any' || a === 'up' ? a : 'none'; }
+  function keepSel() { return lsGet('oro_sp_keep', '0') === '1'; }
+  function mode() { return slip.length < 2 ? 'single' : (slipMd || 'combo'); }
+  function cur() { return '$'; } // monnaie affichée (la monnaie locale viendra ici)
+  function qtxt(v) { return (v % 1 ? m2(v) : String(v)) + ' ' + cur(); }
+  function mkt(e) { var x = XX(); if (!e) return ''; if (e.q || EVK[e.sport]) return x.mktQ; return e.opts && e.opts.length === 3 ? x.mkt3 : x.mkt2; }
+  function stOf(z) { return z.st == null ? stake : z.st; }
   function slipHead() {
-    var x = X();
+    var x = XX();
     return '<div class="sp2-sh"><span class="sp2-sh-ic">' + IC.slip + '</span><b class="fit">' + esc(x.coupon) + '</b>' +
-      (slip.length && !lastBet ? '<i class="sp2-badge">' + slip.length + '</i><button type="button" class="sp2-clear" id="spCpClear">' + IC.trash + '<span class="fit">' + esc(x.clearAll) + '</span></button>' : '') + '</div>';
+      (slip.length && !lastBet && !lastBets ? '<i class="sp2-badge">' + slip.length + '</i>' +
+        '<button type="button" class="sp2-gear' + (setOpen ? ' on' : '') + '" id="spSet" aria-label="' + esc(x.setT) + '" aria-expanded="' + setOpen + '">' + IC.gear + '</button>' +
+        '<button type="button" class="sp2-clear" id="spCpClear">' + IC.trash + '<span class="fit">' + esc(x.clearAll) + '</span></button>' : '') + '</div>';
   }
-  function backToList() { lastBet = null; view = 'list'; render(); }
+  function backToList() { lastBet = null; lastBets = null; view = 'list'; render(); }
   function slipTop() { try { var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; } catch (e) { /* ignore */ } }
+  function setPanel() {
+    var x = XX(), a = accMode(), q = qk();
+    var r = function (v, t) { return '<label class="sp2-rad"><input type="radio" name="spAcc" value="' + v + '"' + (a === v ? ' checked' : '') + '><i></i><span class="fit">' + esc(t) + '</span></label>'; };
+    return '<div class="sp2-set" id="spSetP"><p class="sp2-set-h"><span class="fit">' + esc(x.accT) + '</span></p>' + r('any', x.accAny) + r('up', x.accUp) + r('none', x.accNone) +
+      '<label class="sp2-tgl"><span class="fit">' + esc(x.keepT) + '</span><input type="checkbox" id="spKeep"' + (keepSel() ? ' checked' : '') + '><i></i></label>' +
+      '<p class="sp2-set-h"><span class="fit">' + esc(x.qkT) + '</span></p><div class="sp2-qke">' + q.map(function (v, i) { return '<label class="sp2-inw sm"><input data-qe="' + i + '" inputmode="decimal" value="' + (v % 1 ? m2(v) : v) + '"><em>' + cur() + '</em></label>'; }).join('') +
+      '<button type="button" class="sp2-cta" id="spSetOk"><span class="fit">' + esc(x.okL) + '</span></button></div></div>';
+  }
+  function renderDone() {
+    var x = XX(), bs = lastBets || [lastBet], one = bs.length === 1, lb = bs[0];
+    var tst = bs.reduce(function (a, b) { return a + b.stake; }, 0), tpot = bs.reduce(function (a, b) { return a + b.pot; }, 0);
+    box.innerHTML = '<div class="sp2-page sp2-donep">' + slipHead() + '<div class="sp2-done"><span class="sp2-done-ok">' + IC.ok + '</span><b class="fit sp2-done-t">' + esc(one ? x.done : fmt(x.doneN, { n: bs.length })) + '</b>' +
+      '<div class="sp2-done-c"><p><span class="fit">' + esc(one ? x.stakeL : x.totSt) + '</span><b class="fit">' + money(tst) + '</b></p>' + (one ? '<p><span class="fit">' + esc(x.oddL) + '</span><b class="fit">' + Number(lb.odd).toFixed(2) + '</b></p>' : '') +
+      '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b class="fit">' + money(tpot) + '</b></p></div>' +
+      (one ? '<small class="sp2-done-id fit">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small>' : '') +
+      '<div class="sp2-done-b">' + (one ? '<button type="button" class="sp2-cta" id="spSeeRc"><span class="fit">' + esc(x.rcSee) + '</span></button>' : '') +
+      '<div><button type="button" class="sp2-cta2" id="spSeeMine"><span class="fit">' + esc(x.mine) + '</span></button><button type="button" class="sp2-cta2" id="spCont"><span class="fit">' + esc(x.cont) + '</span></button></div></div></div></div>';
+    slipTop(); fitAll(box);
+    if ($('spSeeRc')) $('spSeeRc').addEventListener('click', function () { showReceipt(lb); });
+    $('spSeeMine').addEventListener('click', function () { lastBet = null; lastBets = null; view = 'mine'; render(); });
+    $('spCont').addEventListener('click', backToList);
+  }
   function renderSlip() {
     var x = XX();
     layoutVars();
-    if (lastBet) {
-      var lb = lastBet;
-      box.innerHTML = '<div class="sp2-page sp2-donep">' + slipHead() + '<div class="sp2-done"><span class="sp2-done-ok">' + IC.ok + '</span><b class="fit sp2-done-t">' + esc(x.done) + '</b>' +
-        '<div class="sp2-done-c"><p><span class="fit">' + esc(x.stakeL) + '</span><b class="fit">' + money(lb.stake) + '</b></p><p><span class="fit">' + esc(x.oddL) + '</span><b class="fit">' + Number(lb.odd).toFixed(2) + '</b></p>' +
-        '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b class="fit">' + money(lb.pot) + '</b></p></div>' +
-        '<small class="sp2-done-id fit">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small>' +
-        '<div class="sp2-done-b"><button type="button" class="sp2-cta" id="spSeeRc"><span class="fit">' + esc(x.rcSee) + '</span></button>' +
-        '<div><button type="button" class="sp2-cta2" id="spSeeMine"><span class="fit">' + esc(x.mine) + '</span></button><button type="button" class="sp2-cta2" id="spCont"><span class="fit">' + esc(x.cont) + '</span></button></div></div></div></div>';
-      slipTop(); fitAll(box);
-      $('spSeeRc').addEventListener('click', function () { showReceipt(lb); });
-      $('spSeeMine').addEventListener('click', function () { lastBet = null; view = 'mine'; render(); });
-      $('spCont').addEventListener('click', backToList);
-      return;
-    }
+    if (lastBet || lastBets) { renderDone(); return; }
     if (!slip.length) {
       box.innerHTML = '<div class="sp2-page">' + slipHead() + empty(x.emptySlip, x.seeBets, 'spCont') + '</div>';
       slipTop(); fitAll(box);
       $('spCont').addEventListener('click', backToList);
       return;
     }
-    var odd = totalOdd(), multi = slip.length > 1;
-    // type du pari : Simple (1 sélection) ou Combiné (toutes doivent gagner, les cotes se multiplient)
-    var type = '<div class="sp2-type ' + (multi ? 'combo' : 'single') + '"><em><span class="fit">' + esc(multi ? x.rcCombo + ' · ' + slip.length : x.rcSingle) + '</span></em>' +
-      '<div class="sp2-type-t">' + linesHtml(cap1(multi ? x.combo : (slip[0].q ? x.qOnly : x.singleX)), 'span', 34) + '</div></div>'; // v2810 : prédiction = simple seulement
+    var md = mode(), each = md === 'single' && slip.length > 1, odd = totalOdd();
+    var tabs2 = '<div class="sp2-md" role="tablist"><button type="button" role="tab" data-md="single" class="' + (md === 'single' ? 'on' : '') + '" aria-selected="' + (md === 'single') + '"><span class="fit">' + esc(x.tabS) + (slip.length > 1 ? ' · ' + slip.length : '') + '</span></button>' +
+      '<button type="button" role="tab" data-md="combo" class="' + (md === 'combo' ? 'on' : '') + '" aria-selected="' + (md === 'combo') + '"' + (slip.length < 2 ? ' disabled' : '') + '><span class="fit">' + esc(x.tabC) + '</span></button></div>';
+    var expl = '<div class="sp2-type-t sp2-expl">' + linesHtml(cap1(md === 'combo' ? x.combo : slip.length > 1 ? x.singleN : (slip[0].q ? x.qOnly : x.singleX)), 'span', 40) + '</div>';
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
-      var e = evById(z.ev);
-      return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><span class="sp2-sel-ic">' + sico(e ? qKind(e) : 'autre') + '</span>' +
-        '<div class="sp2-sel-t"><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b>' + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '</div>' +
-        '<em>' + (z.closed ? IC.lock : Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>';
+      var e = evById(z.ev), st = stOf(z);
+      return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><div class="sp2-sel-r"><span class="sp2-sel-ic">' + sico(e ? qKind(e) : 'autre') + '</span>' +
+        '<div class="sp2-sel-t"><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b>' + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '<small class="sp2-mkt fit">' + esc(mkt(e)) + '</small></div>' +
+        '<em>' + (z.closed ? IC.lock : Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>' +
+        (each ? '<div class="sp2-ss"><label class="sp2-inw sm"><input data-st="' + i + '" inputmode="decimal" autocomplete="off" value="' + (st > 0 ? m2(st) : '') + '" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></label>' +
+          '<span class="sp2-ssw"><small class="fit">' + esc(x.potL) + '</small><b class="fit" data-pw="' + i + '">' + money(sp2Pot(st, z.odd)) + '</b></span></div>' : '') + '</div>';
     }).join('') + '</div>';
-    var guestBtn = String(x.guestBet || '').replace(/^\uD83D\uDD12\s*/, '').trim(); // « 🔒 Inscris-toi pour parier (c'est gratuit) » sans le cadenas
+    var guestBtn = String(x.guestBet || '').replace(/^🔒\s*/, '').trim(); // « 🔒 Inscris-toi pour parier (c'est gratuit) » sans le cadenas
+    var bal = ctx.guest ? null : curBal(), q = qk(), main = each ? (slip.every(function (z) { return stOf(z) === stOf(slip[0]); }) ? stOf(slip[0]) : 0) : stake;
     var stk = '<div class="sp2-stk">' +
-      '<div class="sp2-amt"><label for="spStake"><span class="fit">' + esc(x.stakeL) + '</span></label>' +
-        '<div class="sp2-inw"><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + m2(stake) + '" aria-label="' + esc(x.stakeL) + '"><em>$</em></div></div>' +
-      '<div class="sp2-qk">' + QUICK.map(function (v) { return '<button type="button" data-q="' + v + '"' + (Math.abs(stake - v) < 0.001 ? ' class="on"' : '') + '>' + v + ' $</button>'; }).join('') + '</div>' +
-      '<div class="sp2-sum"><p><span class="fit">' + esc(x.totalOdd) + '</span><b id="spOdd">' + odd.toFixed(2) + '</b></p>' +
-        '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b id="spPot">' + money(sp2Pot(stake, odd)) + '</b></p></div>' +
-      '<button type="button" class="sp2-place' + (ctx.guest ? ' guest' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? guestBtn || x.guestBtn : x.bet) + '</span>' +
-        (ctx.guest ? '' : '<b class="fit" id="spGoAmt">' + money(stake) + '</b>') + '</button>' +
+      '<div class="sp2-amt"><label class="sp2-inw" for="spStake"><span class="sp2-inl"><span class="fit">' + esc(each ? x.eachL : x.stakeL) + '</span></span><span class="sp2-inv"><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + (main > 0 ? m2(main) : '') + '" placeholder="0.00" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></span></label>' +
+        '<button type="button" class="sp2-clr" id="spClr"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="fit">' + esc(x.clrSt) + '</span></button></div>' +
+      '<div class="sp2-qk4">' + q.map(function (v) { return '<button type="button" data-q="' + v + '"><span class="fit">' + esc(qtxt(v)) + '</span></button>'; }).join('') +
+        '<button type="button" data-q="max" class="mx"><span class="fit">' + esc(x.maxL) + '</span></button></div>' +
+      (bal == null ? '' : '<div class="sp2-balr" id="spBalR"><span class="fit" id="spBalT">' + esc(x.balL + (lg() === 'fr' ? ' : ' : ': ')) + money(bal) + '</span><button type="button" class="sp2-dep" id="spDep"><span class="fit">' + esc(x.depL) + '</span></button></div>') +
+      '<p class="sp2-err" id="spErr" hidden><span class="fit" id="spErrT"></span></p>' +
+      '<div class="sp2-sum">' + (each ? '<p><span class="fit">' + esc(x.totSt) + '</span><b id="spTot"></b></p>' : '<p><span class="fit">' + esc(x.totalOdd) + '</span><b id="spOdd">' + odd.toFixed(2) + '</b></p>') +
+        '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b id="spPot"></b></p></div>' +
+      '<button type="button" class="sp2-place' + (ctx.guest ? ' guest' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? guestBtn || x.guestBtn : each ? fmt(x.placeN, { n: slip.length }) : x.placeB) + '</span>' +
+        (ctx.guest ? '' : '<b class="fit" id="spGoAmt"></b>') + '</button>' +
       '<p class="sp2-min"><span class="fit">' + esc(x.minNote) + '</span></p></div>';
-    box.innerHTML = '<div class="sp2-page sp2-slip">' + slipHead() + type + list + stk + '</div>';
+    box.innerHTML = '<div class="sp2-page sp2-slip ' + md + (setOpen ? ' setting' : '') + '">' + slipHead() + tabs2 + (setOpen ? setPanel() : '') + expl + list + stk + '</div>';
     slipTop(); fitAll(box); startTick();
     slip.forEach(function (z) { z.chg = false; });
     $('spCpClear').addEventListener('click', function () {
@@ -794,20 +825,63 @@
       if (Date.now() - clearArm > 3000) { clearArm = Date.now(); setTx(bt.querySelector('span'), x.confirmClear); bt.classList.add('arm'); return; }
       clearArm = 0; slip = []; view = 'list'; render();
     });
+    $('spSet').addEventListener('click', function () { if (sending) return; setOpen = !setOpen; render(); });
+    if (setOpen) {
+      box.querySelectorAll('input[name="spAcc"]').forEach(function (r) { r.addEventListener('change', function () { lsSet('oro_sp_acc', r.value); }); });
+      $('spKeep').addEventListener('change', function () { lsSet('oro_sp_keep', this.checked ? '1' : '0'); });
+      $('spSetOk').addEventListener('click', function () {
+        var vals = [].map.call(box.querySelectorAll('[data-qe]'), function (i) { var v = Math.round((parseFloat(String(i.value).replace(',', '.')) || 0) * 100) / 100; return v >= 0.1 ? v : 0; });
+        if (vals.every(function (v) { return v > 0; })) lsSet('oro_sp_qk', JSON.stringify(vals));
+        setOpen = false; render();
+      });
+    }
+    box.querySelectorAll('.sp2-md [data-md]').forEach(function (b) { b.addEventListener('click', function () { if (sending || b.disabled) return; slipMd = b.getAttribute('data-md'); render(); }); });
     box.querySelectorAll('.sp2-x').forEach(function (bt) { bt.addEventListener('click', function () { if (sending) return; slip.splice(+bt.getAttribute('data-i'), 1); if (!slip.length) view = 'list'; render(); }); });
     var inp = $('spStake');
+    var total = function () { return each ? slip.reduce(function (a, z) { return a + stOf(z); }, 0) : stake; };
     var upd = function () {
-      setTx($('spPot'), money(sp2Pot(stake, totalOdd())));
-      if ($('spGoAmt')) setTx($('spGoAmt'), money(stake));
-      box.querySelectorAll('.sp2-qk [data-q]').forEach(function (b) { b.classList.toggle('on', Math.abs(stake - +b.getAttribute('data-q')) < 0.001); });
+      var t = Math.round(total() * 100) / 100;
+      var pot = each ? slip.reduce(function (a, z) { return a + sp2Pot(stOf(z), z.odd); }, 0) : sp2Pot(stake, totalOdd());
+      setTx($('spPot'), money(pot));
+      if ($('spTot')) setTx($('spTot'), money(t));
+      if ($('spGoAmt')) setTx($('spGoAmt'), money(t));
+      if (each) slip.forEach(function (z, i) { var w = box.querySelector('[data-pw="' + i + '"]'); if (w) setTx(w, money(sp2Pot(stOf(z), z.odd))); });
+      // erreurs claires : mise minimum, mise plus grande que le solde (bouton Recharger mis en avant)
+      var b = curBal(), low = !ctx.guest && (each ? slip.some(function (z) { return stOf(z) < 0.1 - 1e-9; }) : stake < 0.1 - 1e-9);
+      var over = !ctx.guest && !low && b != null && t > b + 1e-9, msg = low ? x.minNote : over ? x.errBal : '';
+      if ($('spErr')) { $('spErr').hidden = !msg; if (msg) { setTx($('spErrT'), msg); } }
+      var sk = box.querySelector('.sp2-stk'); sk.classList.toggle('over', over); sk.classList.toggle('bad', !!msg);
+      if ($('spBalT') && b != null) setTx($('spBalT'), x.balL + (lg() === 'fr' ? ' : ' : ': ') + money(b));
     };
-    var save = function () { try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } };
-    var set = function (v) { v = Math.round((Number(v) || 0) * 100) / 100; if (!(v >= 0.1)) v = 0.1; stake = v; inp.value = m2(v); save(); upd(); };
-    inp.addEventListener('input', function () { var v = parseFloat(String(inp.value).replace(',', '.')); if (!(v > 0)) return; stake = Math.round(v * 100) / 100; save(); upd(); });
-    inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); });
+    var num = function (s) { var v = parseFloat(String(s).replace(',', '.')); return v > 0 ? Math.round(v * 100) / 100 : 0; };
+    var setAll = function (v, write) {
+      v = Math.max(0, Math.round((Number(v) || 0) * 100) / 100);
+      if (each) { slip.forEach(function (z) { z.st = v; }); box.querySelectorAll('[data-st]').forEach(function (i) { i.value = v > 0 ? m2(v) : ''; }); }
+      else { stake = v; if (v >= 0.1) lsSet('oro_sp_stake', String(v)); }
+      if (write) inp.value = v > 0 ? m2(v) : '';
+      upd();
+    };
+    inp.addEventListener('input', function () { setAll(num(inp.value), false); });
+    inp.addEventListener('change', function () { setAll(num(inp.value), true); });
     inp.addEventListener('focus', function () { try { inp.select(); } catch (e) { /* ignore */ } });
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
-    box.querySelectorAll('.sp2-qk [data-q]').forEach(function (b) { b.addEventListener('click', function () { if (!sending) set(+b.getAttribute('data-q')); }); });
+    box.querySelectorAll('[data-st]').forEach(function (i) {
+      var z = slip[+i.getAttribute('data-st')];
+      i.addEventListener('input', function () { z.st = num(i.value); inp.value = ''; upd(); });
+      i.addEventListener('change', function () { z.st = num(i.value); i.value = z.st > 0 ? m2(z.st) : ''; upd(); });
+      i.addEventListener('focus', function () { try { i.select(); } catch (e) { /* ignore */ } });
+    });
+    $('spClr').addEventListener('click', function () { if (!sending) setAll(0, true); });
+    box.querySelectorAll('.sp2-qk4 [data-q]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (sending) return;
+        var v = b.getAttribute('data-q');
+        if (v === 'max') { var bl = curBal(); if (bl == null) return; v = Math.floor(bl / (each ? slip.length : 1) * 100 + 1e-6) / 100; }
+        setAll(+v, true);
+      });
+    });
+    if ($('spDep')) $('spDep').addEventListener('click', function () { if (ctx.deposit) ctx.deposit(); });
+    upd();
     if (sending) busy(true);
     $('spGo').addEventListener('click', place);
   }
@@ -815,12 +889,13 @@
   // gain possible affiché = celui que le serveur enregistrera (mise × cote, arrondi au cent INFÉRIEUR, comme sp_floor2)
   function sp2Pot(st, odd) { return Math.floor(st * odd * 100 + 1e-6) / 100; }
   /* Retour d'un cran (flèche ‹ de la page et bouton retour du téléphone, via js/casino.js) : reçu ouvert → fermé ;
-     ticket ou « Mes paris » → liste des matchs. Renvoie true si Paris a géré le retour. */
+     réglages du ticket → fermés ; ticket ou « Mes paris » → liste des matchs. Renvoie true si Paris a géré le retour. */
   function back() {
     var rc = document.getElementById('spRcpt');
     if (rc) { rc.classList.remove('on'); setTimeout(function () { rc.remove(); }, 220); return true; }
     if (!box || !box.isConnected || !box.classList.contains('sp2')) return false;
-    if (view === 'slip') { if (!sending) { lastBet = null; view = 'list'; render(); } return true; }
+    if (view === 'slip' && setOpen && !sending) { setOpen = false; render(); return true; }
+    if (view === 'slip') { if (!sending) { lastBet = null; lastBets = null; view = 'list'; render(); } return true; }
     if (view === 'mine') { view = 'list'; render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; return true; }
     return false;
   }
@@ -828,7 +903,7 @@
   function busy(on) {
     var g = $('spGo'), x = XX(); if (!g) return;
     g.disabled = on; g.classList.toggle('wait', on);
-    setTx($('spGoT'), on ? x.sending : x.bet);
+    setTx($('spGoT'), on ? x.sending : mode() === 'single' && slip.length > 1 ? fmt(x.placeN, { n: slip.length }) : x.placeB);
     box.querySelectorAll('.sp2-page button:not(#spGo), .sp2-page input').forEach(function (b) { b.disabled = on; });
   }
   // pas de réponse (réseau coupé, délai dépassé) : on regarde si le pari a quand même été enregistré avant de dire « échec »
@@ -839,33 +914,52 @@
       return !known[b.id] && b.at >= sentAt - 120 && Math.abs(b.stake - st) < 0.005 && b.sel.map(function (s) { return s.t; }).sort().join('|') === titles;
     })[0] || null;
   }
+  // un coupon envoyé au serveur (combiné = toutes les sélections ; simple = une sélection). Renvoie la réponse (ou celle retrouvée).
+  async function send1(zs, st) {
+    var sel = zs.map(function (z) { return { ev: z.ev, k: z.k, odd: z.odd }; });
+    var titles = zs.map(function (z) { var e = evById(z.ev); return e ? e.title : ''; }).sort().join('|');
+    var known = {}; (mineCache || []).forEach(function (b) { known[b.id] = 1; });
+    var sentAt = nowS(), r = null;
+    // 2026-10-21 : les cotes AFFICHÉES partent avec le pari, et le réglage du joueur pour les changements de cotes (acc)
+    try { r = await D6.Api.post('spBet', { mode: 'real', stake: st, sel: sel, acc: accMode() }, 20000); } catch (e) { r = null; }
+    if (!r) { var found = await recover(sentAt, st, titles, known); if (found) r = { ok: true, bet: found, bal: null }; }
+    return r;
+  }
   async function place() {
     var x = XX();
     if (ctx.guest) { guestNote(); if (ctx.signup) ctx.signup(); return; }
     if (sending || !slip.length) return;
     if (slip.some(function (z) { return z.closed; })) { if (ctx.toast) ctx.toast(x.e_closed); return; }
-    if (stake < 0.1) { if (ctx.toast) ctx.toast(x.e_min); return; }
+    var each = mode() === 'single' && slip.length > 1;
+    var jobs = each ? slip.map(function (z) { return { zs: [z], st: stOf(z) }; }) : [{ zs: slip.slice(), st: stake }];
+    if (jobs.some(function (j) { return j.st < 0.1 - 1e-9; })) { if (ctx.toast) ctx.toast(x.e_min); return; }
+    var tot = jobs.reduce(function (a, j) { return a + j.st; }, 0), b0 = curBal();
+    if (b0 != null && tot > b0 + 1e-9) { if (ctx.toast) ctx.toast(x.errBal); if (ctx.deposit) ctx.deposit(); return; }
     sending = true; busy(true);
-    var st = stake, sel = slip.map(function (z) { return { ev: z.ev, k: z.k }; });
-    var titles = slip.map(function (z) { var e = evById(z.ev); return e ? e.title : ''; }).sort().join('|');
-    var known = {}; (mineCache || []).forEach(function (b) { known[b.id] = 1; });
-    var sentAt = nowS(), r = null;
-    try { r = await D6.Api.post('spBet', { mode: 'real', stake: st, sel: sel }, 20000); } catch (e) { r = null; }
-    if (!r) { var found = await recover(sentAt, st, titles, known); if (found) r = { ok: true, bet: found, bal: null }; }
+    var okBets = [], fails = [], lastR = null, failR = null;
+    for (var i = 0; i < jobs.length; i++) {
+      var r = await send1(jobs[i].zs, jobs[i].st);
+      if (r && r.ok) { okBets.push(r.bet); lastR = r; jobs[i].done = true; } else { fails.push((r && r.reason) || 'unavailable'); failR = r; }
+      if (r && r.reason === 'odds') break; // cotes changées : on s'arrête, le joueur revoit son ticket
+    }
     sending = false;
-    if (!box || !box.isConnected) { if (r && r.ok) { slip = []; mineCache = null; } return; }
-    if (!r || !r.ok) {
-      busy(false);
-      var why = (r && r.reason) || 'unavailable';
-      if ((why === 'maxWin' || why === 'cap') && r.maxStake >= 0.1) { stake = Math.max(0.1, r.maxStake); try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } render(); }
-      if (why === 'closed') { var l = await fetchList(); if (l) { lastList = events = l; lastJson = JSON.stringify(l); syncSlip(); if (view === 'slip') render(); } }
-      if (ctx.toast) ctx.toast(x['e_' + why] || x.e_unavailable);
+    if (!box || !box.isConnected) { if (okBets.length && !keepSel()) { slip = []; mineCache = null; } return; }
+    if (okBets.length) {
+      if (ctx.afterPlay) ctx.afterPlay({ mode: 'real', bal: lastR.bal, win: 0, stake: okBets.reduce(function (a, b) { return a + b.stake; }, 0) });
+      if (mineCache) { var ids = {}; okBets.forEach(function (b) { ids[b.id] = 1; }); mineCache = okBets.slice().reverse().concat(mineCache.filter(function (b) { return !ids[b.id]; })); }
+      // sélections jouées retirées du ticket (sauf « garder les sélections ») ; celles qui ont échoué restent
+      if (!keepSel()) slip = slip.filter(function (z) { return !jobs.some(function (j) { return j.done && j.zs.indexOf(z) > -1; }); });
+    }
+    if (!fails.length) {
+      if (okBets.length === 1) lastBet = okBets[0]; else lastBets = okBets;
+      if (view === 'slip') render();
       return;
     }
-    if (ctx.afterPlay) ctx.afterPlay({ mode: (r.bet && r.bet.mode) || 'real', bal: r.bal, win: 0, stake: r.bet.stake });
-    slip = []; lastBet = r.bet;
-    if (mineCache) mineCache = [r.bet].concat(mineCache.filter(function (b) { return b.id !== r.bet.id; }));
+    var why = fails[fails.length - 1];
+    if ((why === 'maxWin' || why === 'cap') && failR && failR.maxStake >= 0.1) { var ms = Math.max(0.1, failR.maxStake); if (each) slip.forEach(function (z) { if (z.st == null || z.st > ms) z.st = ms; }); else { stake = ms; lsSet('oro_sp_stake', String(ms)); } }
+    if (why === 'odds' || why === 'closed') { var l = await fetchList(); if (l) { lastList = events = l; lastJson = JSON.stringify(l); syncSlip(); } }
     if (view === 'slip') render();
+    if (ctx.toast) ctx.toast((okBets.length ? fmt(x.partial, { ok: okBets.length, n: jobs.length }) + ' · ' : '') + (x['e_' + why] || x.e_unavailable));
   }
   D6.Sports = { paint: paint, receipt: showReceipt, back: back };
 })(window.D6 = window.D6 || {});

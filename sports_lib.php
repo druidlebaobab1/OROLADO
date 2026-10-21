@@ -116,6 +116,7 @@ function sp_public_events(int $now = 0): array {
   $out = [];
   foreach (sp_events() as $e) {
     $close = sp_close_at($e); // v2810 : question de prix fermée 72 h après ses cotes
+    if (!empty($e['hold']) && $e['status'] !== 'settled') continue; // 2026-10-21 : en attente de vraies cotes du marché → caché, aucun pari
     $open = $e['status'] === 'open' && $now < $close;
     if (!$open && !($e['status'] === 'settled' && (int) ($e['settledAt'] ?? 0) > $now - 3 * 86400)) continue;
     $out[] = ['id' => $e['id'], 'title' => $e['title'], 'league' => $e['league'], 'sport' => $e['sport'], 'start' => $close, 'open' => $open, 'q' => sp_is_question($e), 'grp' => sp_corr_groups($e),
@@ -177,6 +178,7 @@ function sp_admin_save(array $in): array {
         if (count($old) === count($opts)) foreach ($opts as $j => $o) $opts[$j]['k'] = (string) $old[$j]['k'];
         // cotes modifiables tant qu'aucun pari n'est pris sur l'ancienne cote (les paris gardent LEUR cote de toute façon)
         $s['e'][$i] = $fix(array_merge($e, ['title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start, 'opts' => $opts, 'maxStake' => $maxStake, 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []) + ($tr ? ['i18n' => $tr] : []) + ($cap > 0 ? ['cap' => $cap] : [])));
+        unset($s['e'][$i]['hold']); // 2026-10-21 : cotes reposées par l'admin → plus en attente
         return ['ok' => true, 'id' => $id];
       }
     }
@@ -550,6 +552,88 @@ function sp_suggestions5(): array {
     $foot('Sporting CP - Manchester United', '2026-11-25 20:00', 'Sporting', 'Man United', 0.43, 0.26, 0.31, 'sporting', 'man-united'),
   ];
 }
+/*
+ * 2026-10-21 (propriétaire : « les cotes ne doivent pas être nos estimations ») — VRAIES COTES DU MARCHÉ.
+ * Source : cote MOYENNE des bookmakers affichée par betexplorer.com (pages « fixtures » de chaque compétition, colonne 1 X 2,
+ * nombre de bookmakers indiqué), relevée le 21/10/2026 vers 05:00 UTC ; l'adresse de chaque match est gardée ci-dessous.
+ * Calcul (sp_mkt_odds) : cote moyenne → probabilité (1/cote), normalisée (somme = 1), puis cote OROLADO = 0,94 ÷ probabilité
+ * arrondie VERS LE BAS (marge maison 6 %), et toujours au moins 0,01 SOUS la cote moyenne du marché.
+ * Seuls les événements publiés par les séries (sp_suggestions…) changent. Ceux qui n'ont pas de cote du marché avec au moins
+ * 3 bookmakers (pas encore cotés, questions spéciales, MMA, F1, Ballon d'Or, box-office, NFL…) passent « en attente »
+ * (hold : cachés, aucun pari ; l'admin les rouvre en posant de vraies cotes). Paris déjà pris : intacts (chaque pari garde SA cote).
+ */
+function sp_market_2026_10_21(): array {
+  return [
+    'Como - Manchester United' => [[2.15, 3.81, 3.05], 11, 'https://www.betexplorer.com/football/europe/champions-league/como-manchester-united/UTWLyE6T/'],  // 11 bookmakers
+    'Lille - Galatasaray' => [[2.22, 3.70, 3.00], 11, 'https://www.betexplorer.com/football/europe/champions-league/lille-galatasaray/nRzlASTh/'],  // 11 bookmakers
+    'Bayern Munich - Arsenal' => [[2.04, 3.85, 3.28], 11, 'https://www.betexplorer.com/football/europe/champions-league/bayern-munich-arsenal/OIffEkYO/'],  // 11 bookmakers
+    'Club Brugge - RC Lens' => [[1.97, 4.06, 3.35], 11, 'https://www.betexplorer.com/football/europe/champions-league/club-brugge-lens/hC5ThCtS/'],  // 11 bookmakers
+    'Real Betis - Feyenoord' => [[1.57, 4.61, 5.00], 11, 'https://www.betexplorer.com/football/europe/champions-league/betis-feyenoord/CjRjR5nf/'],  // 11 bookmakers
+    'Miami Heat - Minnesota T-Wolves' => [[1.83, 1.99], 4, 'https://www.betexplorer.com/basketball/usa/nba/miami-heat-minnesota-timberwolves/p2lSBos3/'],  // 4 bookmakers
+    'Los Angeles Lakers - Golden State Warriors' => [[1.45, 2.81], 4, 'https://www.betexplorer.com/basketball/usa/nba/los-angeles-lakers-golden-state-warriors/WInzAPBF/'],  // 4 bookmakers
+    'Sturm Graz - Olympique de Marseille' => [[3.48, 3.63, 2.03], 3, 'https://www.betexplorer.com/football/europe/europa-league/sturm-graz-marseille/OKaB8iRE/'],  // 3 bookmakers
+    'Bournemouth - AC Milan' => [[2.07, 3.68, 3.30], 3, 'https://www.betexplorer.com/football/europe/europa-league/bournemouth-ac-milan/OWgU2DyA/'],  // 3 bookmakers
+    'Beşiktaş - Crystal Palace' => [[2.33, 3.62, 2.93], 3, 'https://www.betexplorer.com/football/europe/europa-league/besiktas-crystal-palace/WpNi9biD/'],  // 3 bookmakers
+    'Hoffenheim - Olympique Lyonnais' => [[2.10, 3.82, 3.18], 3, 'https://www.betexplorer.com/football/europe/europa-league/hoffenheim-lyon/0lLMoF1B/'],  // 3 bookmakers
+    'Celtic - Celta Vigo' => [[2.70, 3.50, 2.50], 3, 'https://www.betexplorer.com/football/europe/europa-league/celtic-celta-vigo/4CbZfmF5/'],  // 3 bookmakers
+    'Stade Brestois - OGC Nice' => [[2.21, 3.45, 3.09], 12, 'https://www.betexplorer.com/football/france/ligue-1/brest-nice/bXIA0PLG/'],  // 12 bookmakers
+    'Chelsea - Tottenham' => [[1.69, 4.22, 4.44], 10, 'https://www.betexplorer.com/football/england/premier-league/chelsea-tottenham/GKNFEr23/'],  // 10 bookmakers
+    'Coventry City - Fulham' => [[2.95, 3.47, 2.34], 10, 'https://www.betexplorer.com/football/england/premier-league/coventry-fulham/OpRNCMWF/'],  // 10 bookmakers
+    'Aston Villa - Manchester City' => [[4.42, 4.12, 1.71], 10, 'https://www.betexplorer.com/football/england/premier-league/aston-villa-manchester-city/lEVTjuAd/'],  // 10 bookmakers
+    'Cagliari - Bologna' => [[3.09, 3.07, 2.43], 12, 'https://www.betexplorer.com/football/italy/serie-a/cagliari-bologna/OnWnTsYg/'],  // 12 bookmakers
+    'Napoli - AS Roma' => [[2.78, 3.33, 2.48], 10, 'https://www.betexplorer.com/football/italy/serie-a/napoli-as-roma/SzXZwanC/'],  // 10 bookmakers
+    'Valencia - Villarreal' => [[3.21, 3.63, 2.13], 10, 'https://www.betexplorer.com/football/spain/laliga/valencia-villarreal/ELhT9X9m/'],  // 10 bookmakers
+    'RC Lens - Paris FC' => [[2.29, 3.59, 2.83], 12, 'https://www.betexplorer.com/football/france/ligue-1/lens-paris-fc/UJurrH5k/'],  // 12 bookmakers
+    'Crystal Palace - Newcastle' => [[2.86, 3.59, 2.36], 10, 'https://www.betexplorer.com/football/england/premier-league/crystal-palace-newcastle-utd/fXmefEGl/'],  // 10 bookmakers
+    'Hull City - Brentford' => [[4.35, 3.89, 1.76], 10, 'https://www.betexplorer.com/football/england/premier-league/hull-city-brentford/tln3hho1/'],  // 10 bookmakers
+    'Sunderland - Leeds United' => [[2.90, 3.23, 2.51], 10, 'https://www.betexplorer.com/football/england/premier-league/sunderland-leeds/ImWz7i0f/'],  // 10 bookmakers
+    'Manchester United - Bournemouth' => [[1.86, 3.86, 3.92], 10, 'https://www.betexplorer.com/football/england/premier-league/manchester-united-bournemouth/CjTS8DVs/'],  // 10 bookmakers
+    'Liverpool - Brighton' => [[2.13, 3.82, 3.12], 10, 'https://www.betexplorer.com/football/england/premier-league/liverpool-brighton/t8xcEZ7K/'],  // 10 bookmakers
+    'AS Monaco - LOSC Lille' => [[2.11, 3.36, 3.36], 12, 'https://www.betexplorer.com/football/france/ligue-1/monaco-lille/2Nzx4bS8/'],  // 12 bookmakers
+    'Hoffenheim - Bayer Leverkusen' => [[2.70, 3.98, 2.31], 10, 'https://www.betexplorer.com/football/germany/bundesliga/hoffenheim-bayer-leverkusen/WKgSBVY2/'],  // 10 bookmakers
+    'FC Barcelona - Real Madrid' => [[1.60, 5.38, 4.14], 10, 'https://www.betexplorer.com/football/spain/laliga/barcelona-real-madrid/6ZoODtBL/'],  // 10 bookmakers
+    'Chelsea - Manchester United' => [[1.89, 3.92, 3.69], 6, 'https://www.betexplorer.com/football/england/premier-league/chelsea-manchester-united/OWc65atm/'],  // 6 bookmakers
+    'Bayer Leverkusen - VfB Stuttgart' => [[1.78, 4.31, 3.72], 7, 'https://www.betexplorer.com/football/germany/bundesliga/bayer-leverkusen-vfb-stuttgart/nFCn4vXg/'],  // 7 bookmakers
+    'Liverpool - Arsenal' => [[3.19, 3.59, 2.14], 6, 'https://www.betexplorer.com/football/england/premier-league/liverpool-arsenal/xxDTaeAO/'],  // 6 bookmakers
+    'Athletic Bilbao - Real Sociedad' => [[2.01, 3.56, 3.58], 4, 'https://www.betexplorer.com/football/spain/laliga/ath-bilbao-real-sociedad/Mody8Bv0/'],  // 4 bookmakers
+  ];
+}
+/** cotes OROLADO depuis les cotes moyennes du marché (même ordre : 1 · N · 2, ou domicile · extérieur). */
+function sp_mkt_odds(array $m): array {
+  $inv = 0.0; foreach ($m as $v) $inv += 1 / (float) $v;
+  $out = [];
+  foreach ($m as $v) {
+    $p = (1 / (float) $v) / $inv;
+    $o = floor(0.94 / $p * 100 + 1e-6) / 100;
+    $o = min($o, floor((float) $v * 100 + 1e-6) / 100 - 0.01); // toujours SOUS la cote du marché
+    $out[] = max(1.01, round($o, 2));
+  }
+  return $out;
+}
+/** Applique les cotes du marché (une fois, voir sp_autoseed_once). Retour : ['priced' => n, 'held' => n]. */
+function sp_market_fix(int $now = 0): array {
+  $now = $now ?: time();
+  $seeded = [];
+  foreach ([sp_suggestions(), sp_suggestions2(), sp_suggestions3(), sp_suggestions4(), sp_suggestions5()] as $list) foreach ($list as $row) $seeded[sp_lower((string) $row[0])] = 1;
+  $mk = [];
+  foreach (sp_market_2026_10_21() as $t => $row) $mk[sp_lower((string) $t)] = $row;
+  return (array) sp_with('events.json', static function (array &$s) use ($seeded, $mk, $now) {
+    $priced = 0; $held = 0;
+    foreach ((array) ($s['e'] ?? []) as $i => $e) {
+      if (($e['status'] ?? '') !== 'open' || !isset($seeded[sp_lower((string) ($e['title'] ?? ''))])) continue; // événements de l'admin : pas touchés
+      $row = $mk[sp_lower((string) $e['title'])] ?? null;
+      $opts = array_values((array) ($e['opts'] ?? []));
+      $ok = $row && (int) $row[1] >= 3 && count($row[0]) === count($opts) && (count($opts) !== 3 || preg_match('/^(nul|draw|x)$/i', trim((string) $opts[1]['label'])));
+      if (!$ok) { if (empty($e['hold'])) { $s['e'][$i]['hold'] = 'market'; $held++; } continue; }
+      $odds = sp_mkt_odds($row[0]);
+      foreach ($opts as $j => $o) $s['e'][$i]['opts'][$j]['odd'] = $odds[$j]; // mêmes clés (o0 / oD / o1) : les paris pris gardent leur choix ET leur cote
+      $s['e'][$i]['mkt'] = ['src' => (string) $row[2], 'avg' => array_map('floatval', $row[0]), 'n' => (int) $row[1], 'at' => $now];
+      unset($s['e'][$i]['hold']);
+      $priced++;
+    }
+    return ['priced' => $priced, 'held' => $held];
+  });
+}
 /** v2787 : un événement est « serré » si chaque cote est entre 1,55 et 2,30 (pas de petite cote contre grosse cote). */
 function sp_is_tight(array $e): bool {
   foreach ((array) ($e['opts'] ?? []) as $o) { $v = (float) ($o['odd'] ?? 0); if ($v < 1.55 || $v > 2.30) return false; }
@@ -602,6 +686,13 @@ function sp_autoseed_once(): void {
     try { sp_admin_seed(sp_suggestions5()); } catch (Throwable $e) { @unlink($flag6); }
   }
   sp_draw_once(); // v2802 : le nul revient au football (matchs encore sans pari)
+  // 2026-10-21 (propriétaire : « pas nos propres estimations ») : vraies cotes du marché sur les événements publiés par les séries,
+  // ceux sans cote du marché sont mis en attente (cachés). Une seule fois, APRÈS toutes les séries et le nul.
+  $flag7 = sp_dir() . DIRECTORY_SEPARATOR . 'market-2026-10-21.done';
+  if (!is_file($flag7)) {
+    @file_put_contents($flag7, (string) time());
+    try { sp_market_fix(); } catch (Throwable $e) { @unlink($flag7); }
+  }
   // v2810 : questions de prix aux cotes périmées → fermées 72 h après leurs cotes (une seule fois ; la règle s'applique aussi à chaque pari)
   $flag4 = sp_dir() . DIRECTORY_SEPARATOR . 'stale-2026-10.done';
   if (!is_file($flag4)) {
@@ -766,6 +857,7 @@ function sp_admin_odds(string $eid, array $odds, ?float $cap = null, int $now = 
       if ($inv < 1.0 - 1e-9) return ['ok' => false, 'reason' => 'Cotes trop hautes : la maison perdrait à coup sûr (somme des 1/cote < 1). Marge conseillée : 6 % (cote = 0,94 ÷ chance).'];
       if ($cap !== null) { $c = max(0.0, min(100000.0, round($cap, 2))); if ($c > 0) $e['cap'] = $c; else unset($e['cap']); }
       $e['pricedAt'] = $now;
+      unset($e['hold']); // 2026-10-21 : l'admin a posé de nouvelles cotes → l'événement en attente de cotes réapparaît
       if (sp_is_price($e)) {
         $max = (int) ($e['closeMax'] ?? 0) ?: (int) $e['start'];
         $e['closeMax'] = $max;
@@ -786,7 +878,11 @@ function sp_title_teams(string $t): array {
 }
 
 /** Le joueur parie (coupon). $sel = [[ev, k], …]. */
-function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, int $now = 0): array {
+/** $acc (réglage du joueur « si la cote change ») : 'none' = toujours demander (refus « odds » si une cote a bougé),
+ *  'up' = accepter seulement les hausses (refus si une cote a BAISSÉ), 'any' = accepter tout changement. Le pari prend
+ *  toujours la cote ACTUELLE du serveur (jamais celle envoyée par le téléphone). */
+function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, int $now = 0, string $acc = 'none'): array {
+  $acc = in_array($acc, ['any', 'up'], true) ? $acc : 'none';
   $now = $now ?: time();
   $uid = (string) ($user['id'] ?? '');
   if ($uid === '') return ['ok' => false, 'reason' => 'login'];
@@ -796,13 +892,13 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   $sel = array_slice(array_values($sel), 0, SP_MAX_SEL + 1);
   if (!$sel || count($sel) > SP_MAX_SEL) return ['ok' => false, 'reason' => 'param'];
   $ev = []; foreach (sp_events() as $e) $ev[$e['id']] = $e;
-  $picked = []; $odd = 1.0; $seen = []; $grp = []; $caps = [];
+  $picked = []; $odd = 1.0; $seen = []; $grp = []; $caps = []; $chg = [];
   $multi = count($sel) > 1;
   foreach ($sel as $s) {
     $eid = (string) ($s['ev'] ?? $s[0] ?? ''); $k = (string) ($s['k'] ?? $s[1] ?? '');
     $e = $ev[$eid] ?? null;
     if (!$e || isset($seen[$eid])) return ['ok' => false, 'reason' => 'param'];
-    if ($e['status'] !== 'open' || $now >= sp_close_at($e)) return ['ok' => false, 'reason' => 'closed']; // v2810 : question de prix fermée 72 h après ses cotes
+    if ($e['status'] !== 'open' || !empty($e['hold']) || $now >= sp_close_at($e)) return ['ok' => false, 'reason' => 'closed']; // 2026-10-21 : « hold » = en attente de vraies cotes ; v2810 : question de prix fermée 72 h après ses cotes
     $o = null; foreach ($e['opts'] as $oo) if ($oo['k'] === $k) $o = $oo;
     if (!$o) return ['ok' => false, 'reason' => 'param'];
     // v2810 : une question (prédiction) se joue en SIMPLE seulement ; jamais deux choix d'un même groupe dans un coupon
@@ -810,17 +906,26 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
     foreach (sp_corr_groups($e) as $g) { if (isset($grp[$g])) return ['ok' => false, 'reason' => 'corr']; $grp[$g] = 1; }
     $seen[$eid] = 1;
     if (($c = sp_cap($e)) > 0) $caps[$eid . '|' . $k] = $c;
+    // 2026-10-21 (propriétaire) : le téléphone envoie la cote qu'il a AFFICHÉE ; si l'admin l'a changée entre-temps, refus
+    // « odds » (cotes changées) avec les nouvelles cotes — le joueur revoit son ticket et confirme. (Ancienne page sans cote : accepté.)
+    if (is_array($s) && isset($s['odd']) && is_numeric($s['odd']) && $acc !== 'any' && ($acc === 'up' ? (float) $o['odd'] < round((float) $s['odd'], 2) - 0.004 : abs(round((float) $s['odd'], 2) - (float) $o['odd']) > 0.004)) $chg[] =['ev' => $eid, 'k' => $k, 'odd' => (float) $o['odd']];
     $picked[] = ['ev' => $eid, 'k' => $k, 'odd' => (float) $o['odd'], 't' => $e['title'], 'l' => $o['label']];
     $odd *= (float) $o['odd'];
   }
+  if ($chg) return ['ok' => false, 'reason' => 'odds', 'odds' => $chg];
   $odd = floor($odd * 100 + 1e-6) / 100; // v2765 : 2,30 reste 2,30 (avant : 2,29 à cause de l arrondi)
   // v2779 (propriétaire) : pas de mise maximale ; seul le GAIN d'un coupon est plafonné (6 000 $)
   if ($mode === 'real' && $stake * $odd > SP_MAX_WIN + 1e-9) return ['ok' => false, 'reason' => 'maxWin', 'maxStake' => floor(SP_MAX_WIN / $odd * 100) / 100];
   $ref = 'sp_' . bin2hex(random_bytes(9));
   $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => sp_floor2(min(SP_MAX_WIN, $stake * $odd)), 'sel' => $picked, 'status' => 'open', 'at' => $now];
-  // v2810 : plafond de mises par choix — vérifié ET réservé sous le verrou des paris (deux paris en même temps ne passent pas tous les deux)
-  if ($mode === 'real' && $caps) {
-    $res = sp_with('bets.json', static function (array &$s) use ($bet, $caps) {
+  /* 2026-10-21 (propriétaire) — ORDRE SÛR pour TOUS les paris (avant : seulement les questions avec plafond) : 1) le coupon est
+     ÉCRIT d'abord (état « pend » : jamais montré, jamais réglé) sous le verrou des paris, avec le plafond de mises par choix
+     vérifié au même moment ; 2) la mise est retirée (casino_debit, une seule fois par référence) ; 3) le coupon passe « open ».
+     Refus net de la caisse (solde insuffisant…) → le coupon réservé est retiré (rien n'a été pris). Erreur inattendue pendant
+     le retrait (on ne sait pas si l'argent est parti) → le coupon reste « pend » marqué « chk » pour l'admin : jamais de
+     remboursement automatique, jamais d'effacement. */
+  $res = sp_with('bets.json', static function (array &$s) use ($bet, $caps, $mode) {
+    if ($mode === 'real' && $caps) { // v2810 : plafond de mises par choix — vérifié ET réservé sous le verrou (deux paris en même temps ne passent pas tous les deux)
       $used = [];
       foreach ((array) ($s['b'] ?? []) as $b) {
         if (($b['mode'] ?? '') !== 'real' || ($b['status'] ?? '') === 'void') continue;
@@ -829,25 +934,32 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
       $left = PHP_FLOAT_MAX;
       foreach ($caps as $key => $c) $left = min($left, $c - ($used[$key] ?? 0));
       if ($bet['stake'] > $left + 1e-9) return ['ok' => false, 'reason' => 'cap', 'maxStake' => max(0.0, sp_floor2($left))];
-      $bet['status'] = 'pend'; $s['b'][] = $bet; // réservé (pas encore payé : jamais réglé, jamais montré)
-      return ['ok' => true];
-    });
-    if (!is_array($res)) return ['ok' => false, 'reason' => 'unavailable'];
-    if (empty($res['ok'])) return $res;
-    $deb = null;
-    try { $deb = casino_debit($db, $uid, $mode, $stake, $ref); } finally {
-      $okD = !empty($deb['ok']);
-      sp_with('bets.json', static function (array &$s) use ($ref, $okD) {
-        foreach ((array) ($s['b'] ?? []) as $i => $b) if ($b['id'] === $ref) { if ($okD) $s['b'][$i]['status'] = 'open'; else array_splice($s['b'], $i, 1); break; }
-        return true;
-      });
     }
-    if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
-    return ['ok' => true, 'bet' => sp_bet_public($bet), 'bal' => $deb['real'] ?? ($deb['demo'] ?? null)];
+    $bet['status'] = 'pend'; $s['b'][] = $bet; // réservé (pas encore payé : jamais réglé, jamais montré)
+    return ['ok' => true];
+  });
+  if (!is_array($res)) return ['ok' => false, 'reason' => 'unavailable']; // rien d'écrit → rien n'est retiré
+  if (empty($res['ok'])) return $res;
+  $deb = null; $state = 'unknown';
+  try {
+    $deb = casino_debit($db, $uid, $mode, $stake, $ref);
+    // refus NET (solde insuffisant / démo occupée) → coupon retiré ; toute autre erreur = issue inconnue → gardé pour l'admin
+    $state = !empty($deb['ok']) ? 'open' : (in_array((string) ($deb['reason'] ?? ''), ['insufficient', 'busy'], true) ? 'refused' : 'unknown');
+  } finally {
+    $mark = static function (array &$s) use ($ref, $state) {
+      foreach ((array) ($s['b'] ?? []) as $i => $b) {
+        if (($b['id'] ?? '') !== $ref) continue;
+        if ($state === 'open') $s['b'][$i]['status'] = 'open';
+        elseif ($state === 'refused') array_splice($s['b'], $i, 1);
+        else $s['b'][$i]['chk'] = 1; // issue inconnue : gardé « pend » pour vérification par l'admin
+        return true;
+      }
+      return true;
+    };
+    if (sp_with('bets.json', $mark) !== true && $state === 'open') sp_with('bets.json', $mark); // une 2e tentative (fichier occupé)
   }
-  $deb = casino_debit($db, $uid, $mode, $stake, $ref);
   if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
-  sp_with('bets.json', static function (array &$s) use ($bet) { $s['b'][] = $bet; return true; });
+  $bet['status'] = 'open';
   return ['ok' => true, 'bet' => sp_bet_public($bet), 'bal' => $deb['real'] ?? ($deb['demo'] ?? null)];
 }
 

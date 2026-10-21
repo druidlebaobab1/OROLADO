@@ -21,7 +21,7 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function () { return []; };
 require $tmp . '/orolado_lib.php'; require $tmp . '/trade_lib.php'; require $tmp . '/aff_lib.php'; require $tmp . '/casino_lib.php'; require $tmp . '/sports_lib.php';
 @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10.done', '1');
 @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10c.done', '1'); @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10d.done', '1'); // v2807 : la 3e série a son propre test (test-paris-seed3.php)
-@file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10e.done', '1'); // 5e série : test-paris-seed5.php
+@file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10e.done', '1'); @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'market-2026-10-21.done', '1'); // 5e série : test-paris-seed5.php
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 $A = 'aaaaaaaa-1111-2222-3333-444444444444';

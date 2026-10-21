@@ -422,7 +422,7 @@ if ($action === 'spList' || $action === 'spBet' || $action === 'spMine') {
   if (in_array(strtolower((string) ($me['role'] ?? '')), ['suspended', 'banned', 'deleted'], true)) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'suspended']); exit; }
   try {
     if ($action === 'spMine') $res = ['ok' => true, 'bets' => sp_my_bets((string) $me['id'])];
-    else $res = sp_bet($db, $me, (string) ($req['mode'] ?? 'real'), (float) ($req['stake'] ?? 0), is_array($req['sel'] ?? null) ? $req['sel'] : []);
+    else $res = sp_bet($db, $me, (string) ($req['mode'] ?? 'real'), (float) ($req['stake'] ?? 0), is_array($req['sel'] ?? null) ? $req['sel'] : [], 0, (string) ($req['acc'] ?? 'none')); // 2026-10-21 : réglage « si la cote change »
   } catch (Throwable $eSp) {
     error_log('OROLADO sports ' . $eSp->getMessage());
     $res = ['ok' => false, 'reason' => 'busy'];
