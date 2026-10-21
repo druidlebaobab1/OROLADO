@@ -2141,6 +2141,12 @@ if ($isAjax) {
   if (str_starts_with($action, 'gm_')) {
     require_once __DIR__ . '/admin_games_lib.php';
     $gmMode = (string) ($req['mode'] ?? '');
+    // 2026-10-21 (propriétaire) : fiche joueur → ses PARIS (lecture seule)
+    if ($action === 'sp_player') {
+      $pid = (string) ($req['userId'] ?? '');
+      if ($pid === '' || !function_exists('sp_my_bets')) admin_json(['ok' => false, 'reason' => 'Joueur introuvable']);
+      admin_json(['ok' => true, 'bets' => sp_my_bets($pid)]);
+    }
     if ($action === 'gm_player') {
       $pid = (string) ($req['userId'] ?? '');
       if ($pid === '') admin_json(['ok' => false, 'reason' => 'Joueur introuvable']);
@@ -3277,10 +3283,11 @@ async function openUser(uid) {
     tbl('Dépôts NON payés (page ouverte, jamais payée)', (j.deposits||[]).filter(d => d.paid === false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Bonus reçus', j.bonuses || [], ['Réf','Montant','Motif','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.motif && d.motif !== 'Bonus' ? d.motif : '—')+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+esc(wdLoc(d))+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
-    gmPlayerBox()+
+    gmPlayerBox()+spPlayerBox()+
     tbl('Trades (argent réel)', j.games, ['Actif','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(fdate(d.at))+'</td></tr>');
   document.getElementById('userModal').classList.add('on');
   gmPlayerInit(u);
+  spPlayerInit(u);
   const go = async (sign) => {
     const motif = document.getElementById('adjMotif').value.trim() || (sign > 0 ? 'Crédit admin' : 'Débit admin');
     const amt = Number(document.getElementById('adjAmt').value);
@@ -3953,6 +3960,29 @@ function gmSeg(el, cb) {
 function gmSegVal(el) { const b = el.querySelector('button.on'); return b ? b.dataset.v : ''; }
 
 /* --- Fiche joueur : ses parties --- */
+// 2026-10-21 (propriétaire) : fiche joueur → ses paris sportifs (coupons, mise, cote, statut, gain) + totaux
+function spPlayerBox() {
+  return '<h3 class="panel-title">⚽ Paris</h3><div class="gm-tot" id="spPTot"></div><div id="spPList"><p class="muted" style="padding:12px">Chargement…</p></div>';
+}
+async function spPlayerInit(u) {
+  const list = document.getElementById('spPList'), tot = document.getElementById('spPTot');
+  if (!list) return;
+  let r; try { r = await ajax({action:'sp_player', userId:u.id}); } catch (e) { r = {ok:false, reason:'Réseau'}; }
+  if (!r.ok) { list.innerHTML = '<p class="muted" style="padding:12px">' + esc(r.reason || 'Erreur') + '</p>'; return; }
+  const bets = r.bets || [], real = bets.filter(b => b.mode === 'real');
+  const ST = {won:['✅ Gagné','#5CF59A'], lost:['❌ Perdu','#FF7A90'], void:['↺ Remboursé','#FCD34D'], open:['⏳ En cours','#94A3B8']};
+  const sum = (a, f) => a.reduce((x, b) => x + (+f(b) || 0), 0);
+  const inR = sum(real, b => b.stake), outR = sum(real, b => b.status === 'won' || b.status === 'void' ? b.win : 0), won = real.filter(b => b.status === 'won').length;
+  tot.innerHTML = '<div><span>Coupons (réel)</span><b>' + real.length + '</b></div><div><span>Total misé</span><b>' + gmMoney(inR) + '</b></div>' +
+    '<div><span>Total payé</span><b>' + gmMoney(outR) + '</b></div><div><span>Net maison</span><b class="' + (inR - outR >= 0 ? 'pos' : 'neg') + '">' + gmSigned(inR - outR) + '</b></div>' +
+    '<div><span>Coupons gagnés</span><b>' + won + (real.length ? ' (' + Math.round(won / real.length * 100) + ' %)' : '') + '</b></div>';
+  if (!bets.length) { list.innerHTML = '<p class="muted" style="padding:12px">Aucun pari.</p>'; return; }
+  list.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Matchs</th><th>Mode</th><th>Mise</th><th>Cote</th><th>Statut</th><th>Gain</th><th>Date</th></tr></thead><tbody>' +
+    bets.map(b => { const st = ST[b.status] || [esc(b.status || '—'), '#94A3B8'];
+      return '<tr><td style="white-space:normal;min-width:180px">' + (b.sel || []).map(x => esc(x.t) + ' → <b>' + esc(x.l) + '</b> (' + (+x.odd).toFixed(2) + ')').join('<br>') + '</td><td>' + (b.mode === 'real' ? 'Réel' : 'Démo') +
+        '</td><td>' + gmMoney(b.stake) + '</td><td>' + (+b.odd).toFixed(2) + '</td><td style="color:' + st[1] + ';white-space:nowrap">' + st[0] + '</td><td>' + (b.status === 'won' || b.status === 'void' ? gmMoney(b.win) : '—') +
+        '</td><td>' + esc(fdate(b.at ? new Date(b.at * 1000).toISOString() : '')) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+}
 function gmPlayerBox() {
   return '<h3 class="panel-title">🎮 Jeux (Action · Live · Casino)</h3>' +
     '<div class="gm-filt"><span class="gm-seg" id="gmPMode"><button type="button" data-v="" class="on">Tous</button><button type="button" data-v="real">Réel</button><button type="button" data-v="demo">Démo</button></span></div>' +
