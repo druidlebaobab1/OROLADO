@@ -225,14 +225,14 @@
         bg: function (img) { if (bgOn === img) return; bgOn = img; bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
         lv: function () { return Math.min(1.25, playT / 110); },            // difficulty: fair at the start, really hard after ~2 min
         live: function () { return phase === 'play'; },
-        idle: function () { return phase === 'idle'; },
+        idle: function () { return phase === 'idle' || phase === 'demo'; }, // the visitor's demo round = the attract autopilot
         fail: function (why) {                                              // the player's own mistake
           if (phase !== 'play') return false;
           phase = 'failing'; sx('fail'); amb(false); say(why || l.fail, 'lost'); setBtn(l.bet, '', 'wait'); btn.disabled = true;
           sendFail(); return true;
         },
         burst: function (x, y, n, cols, sp, life, sz, grav) {
-          if (phase === 'play' && !A._xb) K.sfx('hit'); // v2832 : un bon coup (fruit coupé, brique, pièce…) sonne ; jamais l'explosion d'une erreur
+          if ((phase === 'play' || phase === 'demo') && !A._xb) K.sfx('hit'); // v2832 : un bon coup (fruit coupé, brique, pièce…) sonne ; jamais l'explosion d'une erreur
           if (lite) n = Math.ceil(n / 3);
           for (var i = 0; i < n; i++) {
             if (P.length > 160) P.shift();
@@ -312,6 +312,7 @@
         if (document.hidden) { last = 0; return; }                      // paused while the tab is hidden
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         if (!W) { resize(); if (!W) return; }
+        if (D) demoTick(dt);                                            // visitor: a demo round plays by itself
         if (lite && phase === 'idle' && drawn && !P.length) return;      // old phones: still idle scene
         if (phase === 'play') { playT += dt; ambT += dt; if (ambT > 3) { ambT = 0; amb(true, 0.4 + 0.45 * Math.min(1, playT / 110)); } }
         if (phase === 'over') { overT -= dt; if (overT <= 0) toIdle(); }
@@ -394,6 +395,17 @@
         K.resultLine(box, r);
       }
       function toIdle() { phase = 'idle'; g.reset(false); say('', 'idle'); tx(mEl, xm(1)); mShown = ''; drawn = false; hintOn(true); }
+      // 2026-10-21 (owner) — VISITOR (not logged in): the scene looks like a real round playing by itself, calm like a video
+      // (the attract autopilot dodges everything, the multiplier climbs, the game's sounds; a soft cash-out sparkle, a fade, again).
+      // Never a hit or a loss. K.demo: no server, nothing saved.
+      var D = null;
+      function demoTick(dt) {
+        var ev = D.tick(dt);
+        if (ev === 'start') { phase = 'demo'; g.reset(false); P.length = 0; RG.length = 0; say('', ''); hintOn(false); mShown = ''; }
+        else if (ev === 'win') { if (g.win) g.win(); say(l.won + ' ' + xm(D.m()), 'won'); }
+        if (ev === 'win') { hist.unshift(D.m()); hist = hist.slice(0, 12); paintHist(); } // shown, never saved
+        if (phase === 'demo' && D.state === 'run') { var s = xm(D.m()); if (s !== mShown) { mShown = s; tx(mEl, s); } }
+      }
 
       /* ---- gestures on the WHOLE scene. tap / aim: act on the touch itself; lr / swipe4: a swipe acts as soon as the finger
          has moved ~16 px (no wait for the release), a short touch without movement = the left / right half; drag: the game
@@ -464,6 +476,7 @@
       });
 
       paintHist(); setBtn(l.bet); say('', 'idle'); hintOn(true);
+      D = K.demo ? K.demo(st) : null; // visitors only (null for a logged-in player)
       resize(); // draws the idle scene right away
       cancelAnimationFrame(K.S.raf || 0); K.S.raf = requestAnimationFrame(loop);
       // a round still running (page reloaded, game reopened): pick it up
@@ -1505,7 +1518,7 @@
         c.lineCap = 'round';
         for (i = 0; i < mis.length; i++) { m = mis[i]; var gr = c.createLinearGradient(m.x0, m.y0, m.x, m.y); gr.addColorStop(0, 'rgba(248,113,113,0)'); gr.addColorStop(1, 'rgba(248,113,113,.85)'); c.strokeStyle = gr; c.lineWidth = 2; c.beginPath(); c.moveTo(m.x0, m.y0); c.lineTo(m.x, m.y); c.stroke(); circ(c, m.x, m.y, 3.2, '#FEF2F2'); }
         for (i = 0; i < ints.length; i++) { var it = ints[i]; c.strokeStyle = 'rgba(125,211,252,.7)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(lx, ly); c.lineTo(it.x, it.y); c.stroke(); circ(c, it.x, it.y, 3, '#E0F2FE'); c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 1; c.beginPath(); c.moveTo(it.tx - 5, it.ty - 5); c.lineTo(it.tx + 5, it.ty + 5); c.moveTo(it.tx + 5, it.ty - 5); c.lineTo(it.tx - 5, it.ty + 5); c.stroke(); }
-        for (i = 0; i < blasts.length; i++) { var b = blasts[i]; if (!b.cr) continue; c.fillStyle = rg(c, b.x, b.y, b.cr, ['rgba(255,255,255,.95)', 'rgba(253,230,138,.8)', 'rgba(249,115,22,.25)']); c.beginPath(); c.arc(b.x, b.y, b.cr, 0, TAU); c.fill(); }
+        for (i = 0; i < blasts.length; i++) { var b = blasts[i]; if (!(b.cr > 0)) continue; /* 2026-10-21: a rounding −1e-16 radius threw in createRadialGradient */ c.fillStyle = rg(c, b.x, b.y, b.cr, ['rgba(255,255,255,.95)', 'rgba(253,230,138,.8)', 'rgba(249,115,22,.25)']); c.beginPath(); c.arc(b.x, b.y, b.cr, 0, TAU); c.fill(); }
         if (mega) { c.save(); c.translate(mega.x, mega.y); c.fillStyle = lg(c, -12, 0, 12, 0, ['#475569', '#E2E8F0', '#475569']); rr(c, -12, -60, 24, 60, 10); c.fill(); c.fillStyle = '#DC2626'; c.beginPath(); c.moveTo(-12, -2); c.lineTo(0, 22); c.lineTo(12, -2); c.fill(); circ(c, 0, -66, 10 + Math.random() * 6, 'rgba(251,146,60,.8)'); c.restore(); }
         // launcher barrel
         circ(c, lx, ly + 4, 8, '#A1A1AA');
