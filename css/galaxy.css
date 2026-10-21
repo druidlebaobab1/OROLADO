@@ -2239,8 +2239,8 @@ html.ios-app body .learn-modal .lg-close.btn-close:not(#btnCloseDrawer):not(#oro
 html.ios-app.is-ios.ios-tall:root:has(.modal-backdrop.active:not(#historySheet):not(#financeModal)) body,
 html.ios-app.is-ios.ios-tall:root:has(#liveModal.active) body,
 html.ios-app.is-ios.ios-tall.learn-on:root body{height:var(--ios-screen-h,100%)!important}
-html.ios-app.is-ios:root:has(.modal-backdrop.active:not(#historySheet):not(#financeModal)),
-html.ios-app.is-ios:root:has(#liveModal.active),html.ios-app.is-ios.learn-on:root{background-image:none!important}
+/* (c) 2026-10-21 (propriétaire : « pas de bande noire, garde ma planète ») : quand iOS ne donne pas tout l'écran, la bande du bas
+   garde le petit monde de planètes sous TOUTES les fenêtres (plus de couleur unie) ; avec tout l'écran, la fenêtre descend jusqu'en bas. */
 html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active:not(#historySheet):not(#financeModal) > .modal-box{box-sizing:border-box!important;padding-bottom:var(--ios-under,0px)!important}
 html.ios-app.is-ios.ios-tall.learn-on:root body .learn-modal{padding-bottom:var(--ios-under,0px)!important;box-sizing:border-box!important}
 html.ios-app.is-ios:root body #liveModal .sx-panel{padding-bottom:0!important}
