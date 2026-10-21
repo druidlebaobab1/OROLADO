@@ -864,6 +864,71 @@
       '<g transform="rotate(10 32 32)">' + '<rect x="30.4" y="8" width="3.2" height="8" rx="1.4" fill="#CBD5E1"/>' + P('M22 16H32V36H22z', 'url(#IDdl)') + P('M32 16H42V36H32z', 'url(#IDdr)') + P('M22 36H32L32 50Z', '#2563EB') + P('M32 36H42L32 50Z', '#1E3A8A') +
       L('M22 16H42', '#BFDBFE', 1.2) + '<path d="M24.6 21.6H29.4V31.4M24.6 31.4H29.4" stroke="#FDE047" stroke-width="1.8" fill="none" stroke-linecap="round"/>' + L('M23.6 18v15', '#fff', .9, .5) + '</g>' +
       O(15, 50, 5, '#A16207') + O(15, 49, 5, 'url(#IDgc)') + '<circle cx="15" cy="49" r="3.4" fill="none" stroke="#A16207" stroke-width=".7"/>' + O(49, 51, 4.4, '#A16207') + O(49, 50, 4.4, 'url(#IDgc)') + '<circle cx="49" cy="50" r="3" fill="none" stroke="#A16207" stroke-width=".7"/>' + tw(50, 24, 2.2) + fin();
+    /* --- lot B, 4e série (2026-10-21) --- */
+    // Robo Boxing : petit robot argenté aux gros gants qui frappe, « POW » doré
+    B.robobox = med('#38BDF8', '#312E81', '#FDE047', '#A16207', G('IDrb', '#F1F5F9', '#94A3B8') + R('IDgr', '#FECACA', '#EF4444', '#7F1D1D') + R('IDgb', '#BFDBFE', '#3B82F6', '#1E3A8A')) +
+      '<g clip-path="url(#IDc)">' + L('M4 46H62M4 52H62', '#F8FAFC', 1.2, .7) + '<rect x="6" y="42" width="3" height="22" fill="#E11D48"/><rect x="55" y="42" width="3" height="22" fill="#E11D48"/>' +
+      L('M26 46V56M36 46V56', '#64748B', 4) + E(25.6, 57, 3, 1.4, '#334155') + E(36.4, 57, 3, 1.4, '#334155') +
+      '<rect x="22" y="33" width="18" height="15" rx="4" fill="url(#IDrb)"/>' + O(31, 40, 3, '#0EA5E9') + O(31, 40, 1.4, '#E0F2FE') +
+      L('M23 37L17 40L13 38', '#94A3B8', 3) + L('M39 37L44 33L49 30', '#94A3B8', 3) + '</g>' +
+      L('M31 14V9', '#64748B', 1.2) + O(31, 8.4, 1.8, '#EF4444') + '<rect x="21" y="14" width="20" height="16" rx="5" fill="url(#IDrb)"/>' + '<rect x="24" y="18" width="14" height="7" rx="3.4" fill="#0F172A"/>' + O(28, 21.6, 1.8, '#22D3EE') + O(34, 21.6, 1.8, '#22D3EE') + L('M28.4 27.4H33.6', '#475569', 1) + L('M23 16.4Q26 15 30 15.2', '#fff', 1, .7) +
+      O(12, 39, 5.4, 'url(#IDgb)') + O(50, 28, 6.4, 'url(#IDgr)') + L('M46.6 25Q48 23 51 23.2M9.6 36.6Q10.6 35 12.6 35', '#fff', 1, .7) +
+      '<g transform="translate(51 46)">' + P('M0-7l2 4.6 5-1.4-3 4 4.4 2.8-5 .4.2 5-3.6-3.6-3.6 3.6.2-5-5-.4 4.4-2.8-3-4 5 1.4z', '#FDE047') + '<text x="0" y="1.8" text-anchor="middle" font-size="4" font-weight="900" font-family="system-ui,sans-serif" fill="#B91C1C">POW</text></g>' + fin();
+    // Oracle Ball : voyante au foulard violet, mains autour de la boule de cristal lumineuse
+    B.oracle = med('#7C3AED', '#1E1B4B', '#F0ABFC', '#86198F', R('IDcb', '#FFFFFF', '#A5F3FC', '#6366F1') + G('IDsc', '#C026D3', '#581C87')) +
+      '<g clip-path="url(#IDc)">' + O(14, 16, .9, '#fff') + O(52, 20, .8, '#fff') + O(46, 10, .7, '#fff') +
+      P('M14 64Q14 44 32 42Q50 44 50 64Z', 'url(#IDsc)') + L('M20 52H44', '#FDE047', 1, .7) +
+      face(32, 28, 7.4, 0, L('M29.6 31.6Q32 33.6 34.4 31.6', '#9F1239', .9)) + L('M27.6 26.4Q29 25.4 30.4 26.4M33.6 26.4Q35 25.4 36.4 26.4', '#111827', .9) +
+      P('M23 31C21.6 20 26 16.6 32 16.6C38 16.6 42.4 20 41 31C40.4 25 37.4 22 32 22C26.6 22 23.6 25 23 31Z', 'url(#IDsc)') + P('M22.6 30Q20 40 23 44L26 36Z', '#581C87') + P('M41.4 30Q44 40 41 44L38 36Z', '#581C87') +
+      '<rect x="24" y="20.6" width="16" height="2.4" rx="1.2" fill="#FDE047"/>' + O(32, 21.8, 1.6, '#22D3EE') +
+      '</g>' + '<rect x="23" y="55" width="18" height="4" rx="1.6" fill="#A16207"/>' + O(32, 46, 10, '#A5F3FC', .25) + O(32, 47, 8.6, 'url(#IDcb)') + L('M27.4 44.4Q28.6 41 32 40.4', '#fff', 1.2, .85) + tw(34, 48, 2) +
+      L('M21 52Q22 46 25 47M43 52Q42 46 39 47', SK, 3) + tw(52, 34, 2.2) + tw(12, 30, 1.8, .8) + fin();
+    // Steampunk : dirigeable en laiton, hélice et engrenages, ciel cuivré
+    function gear(x, y, r, c) { var d = ''; for (var i = 0; i < 8; i++) { var a = i * Math.PI / 4; d += '<rect x="' + f(x - r * .2) + '" y="' + f(y - r * 1.25) + '" width="' + f(r * .4) + '" height="' + f(r * .5) + '" fill="' + c + '" transform="rotate(' + (i * 45) + ' ' + x + ' ' + y + ')"/>'; } return d + O(x, y, r, c) + O(x, y, f(r * .4), '#1E1B4B'); }
+    B.steampunk = med('#C4B5FD', '#4C1D95', '#FDE047', '#A16207', G('IDbz', '#FDE68A', '#B45309', '#78350F') + G('IDbr', '#CA8A04', '#713F12')) +
+      '<g clip-path="url(#IDc)">' + P('M6 26a4 4 0 0 1 6-3.4 5 5 0 0 1 9 1.4 3.4 3.4 0 0 1 0 6.6H8a3.4 3.4 0 0 1-2-4.6z', '#fff', .55) + gear(14, 52, 6, '#A16207') + gear(50, 54, 5, '#CA8A04') + '</g>' +
+      E(32, 24, 19, 9, 'url(#IDbz)') + L('M15 24H49M18 19Q32 16 46 19M18 29Q32 32 46 29', '#78350F', .8, .7) + L('M20 19Q28 16.4 36 17', '#fff', 1.1, .6) +
+      P('M12 24L7 18V30Z', '#92400E') + L('M24 32L26 38M40 32L38 38', '#78350F', .9) + '<rect x="24" y="37" width="16" height="7" rx="2.4" fill="url(#IDbr)"/>' + O(28, 40.4, 1.4, '#7DD3FC') + O(32, 40.4, 1.4, '#7DD3FC') + O(36, 40.4, 1.4, '#7DD3FC') +
+      L('M51 24H54', '#57534E', 1.4) + E(55, 24, 1.4, 6, '#CBD5E1') + gear(32, 52, 4.4, '#FBBF24') + P('M44 40a2 2 0 0 1 3-1.6 2.6 2.6 0 0 1 4.4.8 1.6 1.6 0 0 1 0 3.2H45a1.6 1.6 0 0 1-1-2.4z', '#E7E5E4', .8) + tw(50, 12, 2.2) + fin();
+    // Gold Train : locomotive rouge et wagon plein de lingots d'or, fumée, rails
+    B.goldtrain = med('#7DD3FC', '#1D4ED8', '#FDE047', '#A16207', G('IDlo', '#F87171', '#991B1B', 0, 1) + G('IDgb', '#FEF08A', '#CA8A04', 0, 1)) +
+      '<g clip-path="url(#IDc)">' + P('M4 48Q32 44 62 48V64H4z', '#6D28D9', .55) + L('M4 54H62', '#57534E', 2) + L('M8 55.6V58M14 55.6V58M20 55.6V58M26 55.6V58M32 55.6V58M38 55.6V58M44 55.6V58M50 55.6V58M56 55.6V58', '#78350F', 1.6) + '</g>' +
+      O(17, 14, 3.4, '#F1F5F9', .9) + O(13, 9, 2.6, '#F1F5F9', .7) + O(22, 11, 2.2, '#F1F5F9', .7) +
+      '<rect x="15" y="17" width="5" height="9" rx="1" fill="#1F2937"/><rect x="13.6" y="16" width="7.8" height="2.4" rx="1" fill="#334155"/>' +
+      '<rect x="10" y="26" width="22" height="14" rx="4" fill="url(#IDlo)"/>' + '<rect x="24" y="18" width="10" height="22" rx="2" fill="#B91C1C"/><rect x="26" y="21" width="6" height="6" rx="1.2" fill="#BAE6FD"/>' + '<rect x="9" y="38" width="27" height="4" rx="1.4" fill="#1F2937"/>' + P('M6 42L10 36V42Z', '#FDE047') + O(11, 31, 2.4, '#FDE047') +
+      O(15, 45, 3.6, '#1F2937') + O(15, 45, 1.6, '#FBBF24') + O(29, 45, 3.6, '#1F2937') + O(29, 45, 1.6, '#FBBF24') +
+      '<rect x="37" y="30" width="20" height="10" rx="2" fill="#1E40AF"/>' + P('M38 30l3-4h4l2 4zM44 30l3-5h4l2 5zM40 26.4l3-3.6h4l1.6 3.6z', 'url(#IDgb)') + '<rect x="36" y="38" width="22" height="4" rx="1.4" fill="#1F2937"/>' + O(42, 45, 3.2, '#1F2937') + O(42, 45, 1.4, '#FBBF24') + O(52, 45, 3.2, '#1F2937') + O(52, 45, 1.4, '#FBBF24') + tw(52, 18, 2.4) + tw(44, 14, 1.6, .8) + fin();
+    // Horseshoes : fer à cheval doré qui tourne autour du piquet, étoiles
+    B.horseshoe = med('#A5B4FC', '#3730A3', '#FDE047', '#A16207', G('IDhs', '#FEF9C3', '#FACC15', '#A16207', 1)) +
+      '<g clip-path="url(#IDc)">' + E(32, 52, 22, 6, '#D6B98C') + E(32, 52, 14, 3.6, '#B08F5E') + '</g>' +
+      '<rect x="30.4" y="30" width="3.2" height="23" rx="1.4" fill="#78716C"/>' + L('M31.4 31V51', '#D6D3D1', .8) +
+      '<path d="M18 46A14 6 0 0 1 46 46" stroke="#fff" stroke-width="1" fill="none" stroke-dasharray="2 2" opacity=".6"/>' +
+      '<g transform="translate(6 9) scale(.78)"><g transform="rotate(-24 28 22)"><path d="M20 30C17 20 20 11 28 11C36 11 39 20 36 30" stroke="url(#IDhs)" stroke-width="5.4" fill="none" stroke-linecap="round"/>' + '<g fill="#92400E">' + [[19.6, 26], [19.6, 20], [22.6, 14.6], [36.4, 26], [36.4, 20], [33.4, 14.6]].map(function (q) { return '<circle cx="' + q[0] + '" cy="' + q[1] + '" r=".8"/>'; }).join('') + '</g>' + L('M20.6 22Q21 14 26 12.4', '#fff', 1, .7) + '</g></g>' +
+      tw(48, 18, 2.6) + tw(14, 36, 2, .9) + tw(46, 34, 1.6, .7) + fin();
+    // Lantern Festival : lanternes rouges qui s'envolent au-dessus du fleuve de nuit
+    function lanB(x, y, s) { return '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')">' + '<rect x="-5" y="-6" width="10" height="12" rx="4" fill="url(#IDln)"/>' + L('M-5-2H5M-5 2H5', '#7F1D1D', .5, .6) + '<rect x="-3" y="-7" width="6" height="1.6" rx=".6" fill="#FBBF24"/><rect x="-3" y="5.6" width="6" height="1.6" rx=".6" fill="#FBBF24"/>' + L('M0 7V10', '#FBBF24', .8) + O(-1.6, -2, 1.4, '#fff', .45) + '</g>'; }
+    B.lantern = med('#312E81', '#0B1026', '#FCA5A5', '#991B1B', R('IDln', '#FEF3C7', '#F43F5E', '#991B1B')) +
+      '<g clip-path="url(#IDc)">' + O(46, 14, 4, '#FEF9C3') + O(14, 22, .8, '#fff') + O(22, 12, .7, '#fff') +
+      P('M4 46h6l3-4 3 4h4l3-6 4 6h6l3-3 3 3h6l3-5 4 5h6v4H4z', '#1E1B4B') + P('M4 50H62V64H4z', '#1E3A8A') + L('M10 54h8M24 57h10M40 54h8M18 60h6M44 60h8', '#FDE047', .9, .6) +
+      lanB(20, 22, .9) + lanB(42, 30, .7) + lanB(14, 38, .55) + lanB(51, 42, .45) + '</g>' + lanB(31, 18, 1.15) + fin();
+    // Big Catch : pêcheur au ciré jaune dans sa barque, canne pliée, gros poisson qui saute
+    B.fishing = med('#7DD3FC', '#1E40AF', '#FDE047', '#A16207', G('IDfs', '#5EEAD4', '#0F766E') + G('IDbt', '#B45309', '#78350F', 0, 1)) +
+      '<g clip-path="url(#IDc)">' + O(48, 16, 4, '#FEF9C3') + P('M4 42Q12 40 20 42T36 42T52 42T62 42V64H4z', '#2563EB') + P('M4 48Q14 46 24 48T44 48T62 48V64H4z', '#1E3A8A') +
+      P('M8 40H30L27 47H11Z', 'url(#IDbt)') + L('M8 40H30', '#FDE68A', 1) +
+      L('M19 39L20.6 33', '#1D4ED8', 3.4) + '<rect x="15" y="27" width="8.4" height="10" rx="3.4" fill="#FACC15"/>' + L('M21.6 30L25 28L27.6 25.6', '#FACC15', 2.8) + O(27.8, 25.4, 1.5, SK) +
+      face(19, 22.6, 4.4, .6) + P('M13.6 21.6Q14 15.6 19 15.6Q24 15.6 24.4 21.6Q19 19.6 13.6 21.6Z', '#FACC15') + L('M13 21.4H25', '#EAB308', 1.2) +
+      '<path d="M27 26.6Q40 8 48 22" stroke="#78350F" stroke-width="1.2" fill="none"/>' + L('M48 22L46 32', '#E2E8F0', .5) + '</g>' +
+      '<g transform="translate(46 37) rotate(-30)">' + P('M-9 0Q-2-6 7-3.6Q11-1.6 11 0Q11 1.6 7 3.6Q-2 6-9 0Z', 'url(#IDfs)') + P('M-8 0L-14-5Q-12 0-14 5Z', '#14B8A6') + P('M-1-4.4Q1-8 5-8Q3-5.6 2-3.8Z', '#2DD4BF') + O(6, -1.2, 1, '#111827') + L('M-5-2Q0-4 5-2.6', '#fff', .7, .6) + '</g>' +
+      O(52, 46, 1.4, '#fff', .7) + O(40, 46, 1, '#fff', .7) + O(55, 41, .9, '#fff', .7) + fin();
+    // Goal : attaquant qui frappe, ballon qui file dans les filets
+    B.goal = med('#38BDF8', '#1E3A8A', '#FDE047', '#A16207', G('IDpt', '#4ADE80', '#15803D')) +
+      '<g clip-path="url(#IDc)">' + P('M4 44Q32 40 62 44V64H4z', 'url(#IDpt)') + P('M4 52Q32 48 62 52V56Q32 52 4 56z', '#166534', .35) +
+      '<path d="M36 44V20H58" stroke="#F8FAFC" stroke-width="2" fill="none"/>' + L('M40 20V44M44 20V44M48 20V44M52 20V44M56 20V44M36 25H60M36 30H60M36 35H60M36 40H60', '#CBD5E1', .45, .55) +
+      L('M19 41L14 47L10 46', SK, 3.4) + L('M21 41L25.6 47.6', SK, 3.4) + E(9.6, 46.4, 2.2, 1.2, '#111827') + E(26.4, 48.4, 2.2, 1.2, '#111827') +
+      '<rect x="16" y="35.6" width="8.6" height="6" rx="2" fill="#F8FAFC"/>' + '<rect x="15.6" y="25" width="9.4" height="12" rx="3.6" fill="#DC2626"/>' + '<text x="20.3" y="33.6" text-anchor="middle" font-size="5" font-weight="900" font-family="system-ui,sans-serif" fill="#fff">9</text>' +
+      L('M16.6 27.6L12 32L10.6 35', SK, 2.6) + L('M24 27.6L28 25L31 26.6', SK, 2.6) +
+      face(20.6, 20, 4.6, .6) + P('M15.8 19.4C15.2 14.4 18.4 14 20.8 14C23.6 14 26 15.4 25.4 19C24 17.4 22 17 20.4 17.6C18.8 17 17 17.6 15.8 19.4Z', '#3F2A1A') + '</g>' +
+      L('M28 48Q38 40 44 31', '#fff', 1.2, .5) + '<g transform="translate(46 29)">' + O(0, 0, 4.2, '#fff') + P('M0-1.6l1.5 1.1-.6 1.8h-1.8l-.6-1.8z', '#111827') + P('M-4-.8l1.5-.5.7 1.5-.9 1.3-1.4-.3zM4-.8l-1.5-.5-.7 1.5.9 1.3 1.4-.3zM0-4.2l-1.4.8.2 1.1 1.2-.4 1.2.4.2-1.1z', '#111827', .85) + '</g>' + tw(52, 14, 2.2) + fin();
     Object.keys(B).forEach(function (k) { var s = B[k]; OBJ[k] = function () { return s; }; });
   })();
   OBJ.rps = function () {
