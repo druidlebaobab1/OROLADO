@@ -21,7 +21,7 @@ $GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use (&$bal, &$key
 $GLOBALS['OROLADO_FAKE_HTTP'] = function () { return []; };
 require $tmp . '/orolado_lib.php'; require $tmp . '/trade_lib.php'; require $tmp . '/aff_lib.php'; require $tmp . '/casino_lib.php'; require $tmp . '/sports_lib.php';
 // seule la 4e série se publie toute seule pendant ce test
-foreach (['seed-2026-10.done', 'seed-2026-10b.done', 'seed-2026-10c.done', 'draw-2026-10.done', 'stale-2026-10.done'] as $f) @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . $f, '1');
+foreach (['seed-2026-10.done', 'seed-2026-10b.done', 'seed-2026-10c.done', 'seed-2026-10e.done', 'draw-2026-10.done', 'stale-2026-10.done'] as $f) @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . $f, '1');
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 $A = 'aaaaaaaa-1111-2222-3333-444444444444'; $B = 'bbbbbbbb-1111-2222-3333-444444444444';
