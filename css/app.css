@@ -13469,5 +13469,3 @@ html:root body #casinoModal .has-gol > .oro-loc2.gol{position:absolute;bottom:au
 /* Android seulement (propriétaire) : en plein écran, « ≈ $ 1.90 » un peu plus haut, plus d'espace avec l'équivalent */
 html.is-android.fs-trade:root body .stake-field.has-fsl #fsStakeWin{transform:translateY(-10px)!important}
 html.is-android.fs-trade:root body .stake-field.has-fsl #inputStake{transform:translateY(-6px)!important}
-/* 2026-10-21 : « ≈ FCFA » du gain dans la pastille verte des jeux */
-html:root body #casinoModal .cs-toast small.ct-loc{font-size:10.5px!important;font-weight:800;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;max-width:none;color:#ECFDF5}
