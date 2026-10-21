@@ -246,6 +246,9 @@
     { host: '.stake-field', amt: '#previewGain', ov: 1, fsOnly: 1, cls: 'fsl' },
     { host: '#screenTrade .win-preview', amt: '#previewGain', ov: 1 },
     { host: '#casinoModal .cg-in', amt: '#csStake', ov: 1 },
+    // bouton ENCAISSER des jeux : petit équivalent posé en bas du bouton (le bouton change de texte à chaque instant :
+    // la ligne est à côté de lui, dans son parent, et suit sa position)
+    { host: '#casinoModal #csGo', amt: '#csGo', btn: 1, cls: 'gol' },
     { host: '#casinoModal .sp2-inw[for="spStake"]', amt: '#spStake', ov: 1 },
     { host: '#casinoModal .sp2-sum p.win', amt: '#spPot' },
     { host: '#depositModal .amt-row', amt: '#depositAmt' },
@@ -256,12 +259,13 @@
       var hosts = document.querySelectorAll(sp.host);
       for (var i = 0; i < hosts.length; i++) {
         var host = hosts[i], amt = sp.amt === sp.host ? host : document.querySelector(sp.amt);
-        var box = sp.after ? host.parentNode : host;
+        var box = (sp.after || sp.btn) ? host.parentNode : host;
         if (!box) continue;
         var tag = box.querySelector(':scope > .oro-loc2' + (sp.cls ? '.' + sp.cls : ':not(.fsl)'));
         var n = c ? numOf(amt) : null;
         var fsOn = document.documentElement.classList.contains('fs-trade');
         if ((sp.noFs && fsOn) || (sp.fsOnly && !fsOn)) n = null; // plein écran : le gain « ≈ $ » est déjà sous la mise
+        if ((!c || n == null) && sp.btn) host.classList.remove('has-gol');
         if (!c || n == null) { if (tag) tag.remove(); if (!box.querySelector(':scope > .oro-loc2')) box.classList.remove('has-loc2', 'loc2-ov'); if (sp.cls) box.classList.remove('has-' + sp.cls); continue; }
         if (!tag) {
           tag = document.createElement('span'); tag.className = 'oro-loc2' + (sp.cls ? ' ' + sp.cls : ''); tag.setAttribute('dir', 'ltr');
@@ -269,6 +273,12 @@
         }
         var t = fmt(n, c);
         box.classList.add('has-loc2'); box.classList.toggle('loc2-ov', !!sp.ov); if (sp.cls) box.classList.add('has-' + sp.cls);
+        if (sp.btn) {
+          host.classList.add('has-gol');
+          if (getComputedStyle(box).position === 'static') box.style.position = 'relative';
+          var hr = host.getBoundingClientRect(), pr = box.getBoundingClientRect();
+          tag.style.left = (hr.left - pr.left) + 'px'; tag.style.width = hr.width + 'px'; tag.style.top = (hr.bottom - pr.top - 15) + 'px';
+        }
         if (tag.textContent !== t || tag.__w !== box.clientWidth) {
           tag.textContent = t; tag.__w = box.clientWidth;
           // élastique (propriétaire) : plus le montant est long, plus la ligne rapetisse ; jamais de débordement
