@@ -13394,8 +13394,9 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#scre
 
 /* 2026-10-21 (propriétaire, choix 1) — équivalent en monnaie locale, en tout petit sous le montant du Compte réel
    (js/localcur.js) : la case garde sa taille (la ligne prend la place laissée en bas), rien d'autre ne bouge. */
-html body .oro-loc{display:block;font-size:9px;line-height:10px;font-weight:600;letter-spacing:0;white-space:nowrap;color:rgba(190,245,215,.82);
-  -webkit-text-fill-color:rgba(190,245,215,.82);font-variant-numeric:tabular-nums;unicode-bidi:isolate;pointer-events:none;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+html body .oro-loc{display:block;font-size:9px;line-height:10px;width:auto;min-width:0;max-width:100%;text-align:center;font-weight:600;letter-spacing:0;white-space:nowrap;color:rgba(190,245,215,.82);
+  -webkit-text-fill-color:rgba(190,245,215,.82);font-variant-numeric:tabular-nums;unicode-bidi:isolate;pointer-events:none;overflow:hidden}
 html body #modeDemo .oro-loc,html body #fsBtnDemo .oro-loc{color:rgba(205,220,255,.82);-webkit-text-fill-color:rgba(205,220,255,.82)}
-/* démo : sa case a un bord bas plus épais → le texte monte de 3 px quand l'équivalent est là */
-html:root body #modeDemo#modeDemo.has-loc > *,html:root body #fsBtnDemo#fsBtnDemo.has-loc > *{transform:translateY(-3px)}
+html body #csBal .cw-t .oro-loc{text-align:left}
+/* démo : sa case a un bord bas plus épais → libellé « DÉMO » plus serré quand l'équivalent est là (le montant ne bouge pas) */
+html:root body #modeDemo#modeDemo.has-loc .mb-lbl,html:root body #fsBtnDemo#fsBtnDemo.has-loc .mb-lbl{line-height:8px!important;margin-top:-3px!important}
