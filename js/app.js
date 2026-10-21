@@ -5263,7 +5263,23 @@
     function later(ms) { clearTimeout(t); t = setTimeout(fit, ms || 120); }
     window.addEventListener('resize', function () { later(200); });
     document.addEventListener('oro:lang', function () { later(250); setTimeout(fit, 900); });
-    try { new MutationObserver(function () { later(150); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'lang'] }); } catch (eMo) { /* ignore */ }
+    // 2026-10-21 (propriétaire : « en quittant le PLEIN ÉCRAN, Paris et Social sautent ») : les décalages calculés pour la
+    // barre du plein écran restaient ~150 ms sur la barre normale. Quand une classe qui change la barre bascule
+    // (plein écran, visiteur, Cadeaux), on recalcule TOUT DE SUITE : l'observateur passe avant le dessin de l'image
+    // suivante → la barre réapparaît directement à sa place finale.
+    var NOW_CLS = /(^|\s)(fs-trade|is-fullscreen|oro-guest|portal-on|gift-guest-on)(?=\s|$)/g;
+    function clsKey(v) { return (String(v || '').match(NOW_CLS) || []).map(function (s) { return s.trim(); }).sort().join(' '); }
+    try {
+      new MutationObserver(function (list) {
+        var now = false;
+        for (var i = 0; i < list.length && !now; i++) {
+          var m = list[i];
+          if (m.attributeName === 'class' && clsKey(m.oldValue) !== clsKey(document.documentElement.className)) now = true;
+        }
+        if (now) fit();
+        later(150);
+      }).observe(document.documentElement, { attributes: true, attributeOldValue: true, attributeFilter: ['class', 'lang'] });
+    } catch (eMo) { /* ignore */ }
     setTimeout(fit, 800); setTimeout(fit, 2500);
     D6.fitTopBar = fit;
   })();
