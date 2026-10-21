@@ -319,8 +319,17 @@
       });
       soon();
     }
-    hook();
-    setInterval(hook, 1500);
+    // v3053 : bouton ENCAISSER des jeux — le montant en dollars bouge sans cesse (crash, jeux d'adresse) : l'équivalent suit
+    // en moins de 0,25 s (avant : jusqu'à 0,7 s de retard, « ≈ » d'un ancien montant) ; limité à 4 fois par seconde
+    var goT = 0, goMo = new MutationObserver(function () { if (goT) return; goT = setTimeout(function () { goT = 0; soon(); }, 220); });
+    function hookGo() {
+      var g = document.getElementById('csGo');
+      if (!g || (seen && seen.has(g))) return;
+      if (seen) seen.add(g);
+      goMo.observe(g, { subtree: true, childList: true, characterData: true });
+    }
+    hook(); hookGo();
+    setInterval(hook, 1500); setInterval(hookGo, 500);
     document.addEventListener('input', soon, true); document.addEventListener('click', function () { setTimeout(soon, 60); }, true);
     setInterval(soon, 700); // gains / mises qui bougent (petit, sans effet si rien n'a changé) // fenêtre Jeux / Paris créée plus tard, connexion, changement de compte
   }
