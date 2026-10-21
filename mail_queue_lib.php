@@ -31,7 +31,9 @@ function mailq_job_file(): string {
 
 /** Même règle que mail_send : id donné par la page (s'il est valide), sinon empreinte du groupe + objet + texte + bouton. */
 function mailq_id(string $group, string $subject, string $msg, string $btn, string $reqId = ''): string {
-  return preg_match('/^[a-z0-9]{6,24}$/', $reqId) ? $reqId : 'm' . substr(sha1($group . "\n" . $subject . "\n" . $msg . "\n" . $btn), 0, 16);
+  // 2026-10-22 : le bouton (texte / lien) ne compte plus : changer le bouton ne fait jamais renvoyer le même message
+  // (même empreinte qu'avant pour les envois faits depuis la page, qui envoyait toujours un bouton vide).
+  return preg_match('/^[a-z0-9]{6,24}$/', $reqId) ? $reqId : 'm' . substr(sha1($group . "\n" . $subject . "\n" . $msg . "\n"), 0, 16);
 }
 
 function mailq_log_file(string $id): string {
@@ -70,13 +72,13 @@ function mailq_unlock($h): void {
  * Envoie UN e-mail sous verrou : relit le journal, saute l'adresse si elle est déjà faite (par l'autre chemin),
  * envoie, note aussitôt. Renvoie null si sauté (déjà fait ou verrou occupé en mode non bloquant), sinon le résultat d'envoi.
  */
-function mailq_send_logged(string $id, string $em, string $subject, string $msg, bool $block = true): ?array {
+function mailq_send_logged(string $id, string $em, string $subject, string $msg, bool $block = true, string $btn = ''): ?array {
   $h = mailq_lock($id, $block);
   if ($h === null) return null;
   try {
     $done = mailq_log_read($id);
     if (isset($done[$em]) && mailq_skip($done[$em])) return null;
-    $r = admin_mail_plain($em, $subject, $msg);
+    $r = admin_mail_plain($em, $subject, $msg, $btn);
     $done = mailq_log_read($id); // relu : rien d'autre n'écrit sans le verrou, mais par prudence
     $done[$em] = !empty($r['ok']) ? 1 : time();
     mailq_log_write($id, $done);
@@ -102,12 +104,18 @@ function admin_mail_first_name(string $em): string {
  * 2026-10-22 (propriétaire) : « E-mail à tous » dans le cadre OROLADO (fond sombre, titre doré, gros bouton doré).
  * Le texte reste celui de l'admin (aucune traduction automatique) ; liens cliquables ; bouton FR ou EN selon la langue du texte.
  */
-function admin_mail_html(string $text): string {
+function admin_mail_html(string $text, string $btnSpec = ''): string {
   $e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
   $origin = function_exists('orolado_public_origin') ? rtrim((string) orolado_public_origin(), '/') : '';
   if ($origin === '') $origin = 'https://orolado.com';
   $fr = (bool) preg_match('/\b(le|la|les|tu|ton|ta|tes|vous|des|est|pour|jeux|joue[sz]?|dépôt|mise|salut|bonjour)\b/iu', $text);
-  $btn = $fr ? 'Jouer maintenant' : 'Play now';
+  // bouton choisi par l'admin : « texte\nlien » (lien https seulement, sinon l'accueil OROLADO)
+  [$bT, $bL] = array_pad(explode("\n", $btnSpec, 2), 2, '');
+  $btn = trim($bT) !== '' && !in_array(trim($bT), ['Ouvrir OROLADO', 'Open OROLADO'], true) ? trim($bT) : ($fr ? 'Jouer maintenant' : 'Play now');
+  $btn = $e(mb_substr($btn, 0, 40));
+  $href = $origin . '/';
+  $bL = trim($bL);
+  if ($bL !== '' && preg_match('~^https://[^\s<>"\']+$~i', $bL)) $href = $bL;
   $body = '';
   foreach (preg_split('/\n{2,}/', trim($text)) ?: [] as $para) {
     $h = $e($para);
@@ -121,11 +129,11 @@ function admin_mail_html(string $text): string {
     . '<tr><td style="padding:22px 22px 6px;text-align:center;"><div style="font-size:22px;font-weight:800;letter-spacing:.08em;color:#F5C518;">OROLADO</div>'
     . '<div style="height:3px;width:56px;margin:10px auto 0;background:#F5C518;border-radius:3px;"></div></td></tr>'
     . '<tr><td style="padding:14px 22px 6px;color:#E8EEF9;font-size:15px;line-height:1.6;">' . $body . '</td></tr>'
-    . '<tr><td style="padding:4px 22px 24px;text-align:center;"><a href="' . $e($origin . '/') . '" style="display:inline-block;background:#F59E0B;color:#111827;text-decoration:none;font-weight:800;font-size:16px;line-height:1.2;padding:14px 30px;border-radius:12px;border:1px solid #D97706;">' . $btn . '</a></td></tr>'
+    . '<tr><td style="padding:4px 22px 24px;text-align:center;"><a href="' . $e($href) . '" style="display:inline-block;background:#F59E0B;color:#111827;text-decoration:none;font-weight:800;font-size:16px;line-height:1.2;padding:14px 30px;border-radius:12px;border:1px solid #D97706;">' . $btn . '</a></td></tr>'
     . '</table><div style="color:#6B7A99;font-size:11px;margin-top:12px;">orolado.com</div></td></tr></table></body></html>';
 }
 
-function admin_mail_plain(string $to, string $subject, string $msg): array {
+function admin_mail_plain(string $to, string $subject, string $msg, string $btn = ''): array {
   $first = admin_mail_first_name($to);
   // {prenom}, (prenom) ou [prenom], avec ou sans accent : tous remplacés.
   $fill = static fn(string $s): string => (string) preg_replace('/(\s*)[\{\(\[]\s*pr[eé]nom\s*[\}\)\]]/iu', $first !== '' ? '$1' . $first : '', $s);
@@ -136,7 +144,7 @@ function admin_mail_plain(string $to, string $subject, string $msg): array {
     'sender' => ['email' => brevo_env('BREVO_SENDER_EMAIL', 'contact@mail.orolado.com'), 'name' => 'OROLADO'],
     'to' => [['email' => $to, 'name' => $first !== '' ? $first : $to]],
     'subject' => $subject,
-    'htmlContent' => admin_mail_html($text),
+    'htmlContent' => admin_mail_html($text, $btn),
     'textContent' => $text,
     'replyTo' => ['email' => 'support@orolado.com', 'name' => 'OROLADO'],
   ]);
@@ -297,7 +305,7 @@ function mail_queue_tick(): string {
       return $j;
     });
     $GLOBALS['OROLADO_MAIL_NAMES'] = array_merge((array) ($GLOBALS['OROLADO_MAIL_NAMES'] ?? []), (array) ($job['names'] ?? []));
-    $r = admin_mail_plain($em, (string) $job['subject'], (string) $job['message']);
+    $r = admin_mail_plain($em, (string) $job['subject'], (string) $job['message'], (string) ($job['button'] ?? ''));
     $ok = !empty($r['ok']);
     $done = mailq_log_read($id);
     $done[$em] = $ok ? 1 : time();
