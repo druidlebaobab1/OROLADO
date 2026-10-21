@@ -13252,3 +13252,17 @@ html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) .cs-top #csBal
 html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs::before{box-shadow:inset 0 0 0 1.5px #FF3B4E,inset 0 0 8px rgba(255,40,60,.35),0 0 8px rgba(255,40,60,.35)!important;animation:oroFsLive3 1.6s ease-in-out infinite!important}
 html.fs-trade:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs::before{animation:none!important;opacity:0!important}
 @media (prefers-reduced-motion:reduce){html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs::before{animation:none!important;opacity:.55!important}}
+/* 2026-10-21 (propriétaire : « réduire un tout petit peu la largeur du Compte réel, un peu d'espace avec le livre ») : Jeux, Paris
+   et dans un jeu, même largeur partout, toujours centré */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet{width:calc(100vw - 218px)!important;justify-self:center!important;margin-inline:auto!important}
+@media (max-width:399px){html:root body #casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet{width:calc(100vw - 212px)!important}}
+/* 2026-10-21 (propriétaire) : jeux live — le point ET le mot LIVE en rouge */
+html:root body #casinoModal#casinoModal :is(.lz-live,.l2-live,.l3-live,.lp-live),html:root body #casinoModal#casinoModal :is(.lz-live,.l2-live,.l3-live,.lp-live) b{color:#FF4D5E!important}
+/* 2026-10-21 (propriétaire : « un rouge simple, sans lueur ; juste le petit carré rouge autour, le mot et l'icône en rouge, qui clignote ») */
+html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::before{background:transparent!important;box-shadow:inset 0 0 0 1.5px #FF3B4E!important}
+html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::after{box-shadow:none!important}
+@keyframes oroFsDot2{0%,100%{opacity:.35}50%{opacity:1}}
+html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::after{animation:oroFsDot2 1.6s ease-in-out infinite!important}
+html.fs-trade:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::after{animation:none!important;opacity:0!important}
+@media (max-width:399px){html:root body #casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:15px!important;letter-spacing:-.01em!important}}
+@media (max-width:370px){html:root body #casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:14.5px!important}}
