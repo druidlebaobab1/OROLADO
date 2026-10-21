@@ -827,18 +827,18 @@
   // 2026-10-21 (propriétaire) : juste après la carte de bienvenue (inscription), grande carte « Installer OROLADO »,
   // même famille (étincelles, rayons). « Installer » = même effet que la bannière ; « Plus tard » ferme.
   var INSTASK_T = {
-    fr: ['Installe OROLADO', 'Ouvre OROLADO en une touche depuis ton écran d\u2019accueil, comme une vraie application.', 'Installer', 'Plus tard'],
-    en: ['Install OROLADO', 'Open OROLADO in one tap from your home screen, like a real app.', 'Install', 'Later'],
-    es: ['Instala OROLADO', 'Abre OROLADO con un toque desde tu pantalla de inicio, como una app.', 'Instalar', 'Más tarde'],
-    pt: ['Instala o OROLADO', 'Abre o OROLADO com um toque no ecrã inicial, como uma app.', 'Instalar', 'Mais tarde'],
-    ar: ['\u062b\u0628\u0651\u062a OROLADO', '\u0627\u0641\u062a\u062d OROLADO \u0628\u0644\u0645\u0633\u0629 \u0648\u0627\u062d\u062f\u0629 \u0645\u0646 \u0634\u0627\u0634\u062a\u0643 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629\u060c \u0645\u062b\u0644 \u062a\u0637\u0628\u064a\u0642 \u062d\u0642\u064a\u0642\u064a.', '\u062a\u062b\u0628\u064a\u062a', '\u0644\u0627\u062d\u0642\u064b\u0627'],
-    tr: ['OROLADO\u2019yu y\u00fckle', 'OROLADO\u2019yu ana ekran\u0131ndan tek dokunu\u015fla a\u00e7, ger\u00e7ek bir uygulama gibi.', 'Y\u00fckle', 'Sonra'],
-    vi: ['C\u00e0i OROLADO', 'M\u1edf OROLADO ch\u1ec9 v\u1edbi m\u1ed9t ch\u1ea1m t\u1eeb m\u00e0n h\u00ecnh ch\u00ednh, nh\u01b0 m\u1ed9t \u1ee9ng d\u1ee5ng.', 'C\u00e0i \u0111\u1eb7t', '\u0110\u1ec3 sau'],
-    id: ['Pasang OROLADO', 'Buka OROLADO dengan satu sentuhan dari layar utama, seperti aplikasi.', 'Pasang', 'Nanti'],
-    ru: ['\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438 OROLADO', '\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0439 OROLADO \u043e\u0434\u043d\u0438\u043c \u043a\u0430\u0441\u0430\u043d\u0438\u0435\u043c \u0441 \u0433\u043b\u0430\u0432\u043d\u043e\u0433\u043e \u044d\u043a\u0440\u0430\u043d\u0430, \u043a\u0430\u043a \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435.', '\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c', '\u041f\u043e\u0437\u0436\u0435'],
-    de: ['Installiere OROLADO', '\u00d6ffne OROLADO mit einem Tipp vom Startbildschirm, wie eine echte App.', 'Installieren', 'Sp\u00e4ter'],
-    zh: ['\u5b89\u88c5 OROLADO', '\u50cf\u771f\u6b63\u7684\u5e94\u7528\u4e00\u6837\uff0c\u5728\u4e3b\u5c4f\u5e55\u4e00\u70b9\u5373\u5f00\u3002', '\u5b89\u88c5', '\u7a0d\u540e'],
-    hi: ['OROLADO \u0907\u0902\u0938\u094d\u091f\u0949\u0932 \u0915\u0930\u0947\u0902', '\u0939\u094b\u092e \u0938\u094d\u0915\u094d\u0930\u0940\u0928 \u0938\u0947 \u090f\u0915 \u091f\u091a \u092e\u0947\u0902 OROLADO \u0916\u094b\u0932\u0947\u0902, \u0905\u0938\u0932\u0940 \u0910\u092a \u0915\u0940 \u0924\u0930\u0939\u0964', '\u0907\u0902\u0938\u094d\u091f\u0949\u0932', '\u092c\u093e\u0926 \u092e\u0947\u0902']
+    fr: ['Installe OROLADO', 'Ouvre OROLADO en une touche depuis ton écran d\u2019accueil.', 'Installer', 'Plus tard'],
+    en: ['Install OROLADO', 'Open OROLADO in one tap from your home screen.', 'Install', 'Later'],
+    es: ['Instala OROLADO', 'Abre OROLADO con un toque desde tu pantalla de inicio.', 'Instalar', 'Más tarde'],
+    pt: ['Instala o OROLADO', 'Abre o OROLADO com um toque no ecrã inicial.', 'Instalar', 'Mais tarde'],
+    ar: ['\u062b\u0628\u0651\u062a OROLADO', '\u0627\u0641\u062a\u062d OROLADO \u0628\u0644\u0645\u0633\u0629 \u0648\u0627\u062d\u062f\u0629 \u0645\u0646 \u0634\u0627\u0634\u062a\u0643 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629.', '\u062a\u062b\u0628\u064a\u062a', '\u0644\u0627\u062d\u0642\u064b\u0627'],
+    tr: ['OROLADO\u2019yu y\u00fckle', 'OROLADO\u2019yu ana ekran\u0131ndan tek dokunu\u015fla a\u00e7.', 'Y\u00fckle', 'Sonra'],
+    vi: ['C\u00e0i OROLADO', 'M\u1edf OROLADO ch\u1ec9 v\u1edbi m\u1ed9t ch\u1ea1m t\u1eeb m\u00e0n h\u00ecnh ch\u00ednh.', 'C\u00e0i \u0111\u1eb7t', '\u0110\u1ec3 sau'],
+    id: ['Pasang OROLADO', 'Buka OROLADO dengan satu sentuhan dari layar utama.', 'Pasang', 'Nanti'],
+    ru: ['\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438 OROLADO', '\u041e\u0442\u043a\u0440\u044b\u0432\u0430\u0439 OROLADO \u043e\u0434\u043d\u0438\u043c \u043a\u0430\u0441\u0430\u043d\u0438\u0435\u043c \u0441 \u0433\u043b\u0430\u0432\u043d\u043e\u0433\u043e \u044d\u043a\u0440\u0430\u043d\u0430.', '\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c', '\u041f\u043e\u0437\u0436\u0435'],
+    de: ['Installiere OROLADO', '\u00d6ffne OROLADO mit einem Tipp vom Startbildschirm.', 'Installieren', 'Sp\u00e4ter'],
+    zh: ['\u5b89\u88c5 OROLADO', '\u5728\u4e3b\u5c4f\u5e55\u4e00\u70b9\u5373\u5f00 OROLADO\u3002', '\u5b89\u88c5', '\u7a0d\u540e'],
+    hi: ['OROLADO \u0907\u0902\u0938\u094d\u091f\u0949\u0932 \u0915\u0930\u0947\u0902', '\u0939\u094b\u092e \u0938\u094d\u0915\u094d\u0930\u0940\u0928 \u0938\u0947 \u090f\u0915 \u091f\u091a \u092e\u0947\u0902 OROLADO \u0916\u094b\u0932\u0947\u0902\u0964', '\u0907\u0902\u0938\u094d\u091f\u0949\u0932', '\u092c\u093e\u0926 \u092e\u0947\u0902']
   };
   function installAskCard() {
     try {

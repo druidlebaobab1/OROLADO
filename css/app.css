@@ -13498,3 +13498,11 @@ html body .oro-inst-ask .oia-go svg{width:20px;height:20px;stroke:#2A1800;stroke
 html body .oro-inst-ask .oia-later{display:block;margin:10px auto 0;padding:8px 16px;border:0;background:none;color:rgba(233,230,255,.7);font:700 14px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer}
 @media (max-height:600px){html body .oro-inst-ask .ow-s{display:block}}
 @keyframes oiaBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+/* 2026-10-21 (propriétaire) : flèche de droite plus grande et nette (on voit que c'est cliquable) ; rond vert plus discret, immobile */
+html body .oro-inst-btn .oi-go{width:44px;height:44px;background:linear-gradient(180deg,#5A3600,#2A1700);box-shadow:0 0 0 2px rgba(255,255,255,.55),0 6px 14px -6px rgba(42,23,0,.9),inset 0 1px 0 rgba(255,255,255,.18)}
+html body .oro-inst-btn .oi-go svg{width:24px;height:24px;stroke:#FFE7A3;stroke-width:2.8}
+html body .oro-inst-btn:active{transform:scale(.98)}
+html body .oro-inst-btn .oi-logo i{width:15px;height:15px;right:-3px;bottom:-3px;box-shadow:0 0 0 1.5px #FDE68A}
+html body .oro-inst-btn .oi-logo i svg{width:9px;height:9px;stroke-width:3}
+html body .oro-inst-ask .oia-ico > i{width:22px;height:22px;right:8px;bottom:8px;animation:none!important;box-shadow:0 0 0 2px #140A2A}
+html body .oro-inst-ask .oia-ico > i svg{width:12px;height:12px;stroke-width:3}
