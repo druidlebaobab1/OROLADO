@@ -599,8 +599,12 @@
     bedLoop();
     return true;
   }
-  document.addEventListener('visibilitychange', function () { if (document.hidden) bedKill(0.03); else if (B) bedLoop(); });
-  window.addEventListener('pagehide', function () { bedKill(0.03); });
+  // 2026-10-21 (propriétaire : « le rond rouge quand on sort de l'appli ») : site caché / quitté → moteur de son mis en veille
+  // (pour tout le monde) ; il repart au retour (premier toucher ou son suivant).
+  function sleepNow() { var c = window.__oroAC; if (!c || c.state !== 'running') return; try { c.__oroIdle = true; var pr = c.suspend(); if (pr && pr.catch) pr.catch(function () { /* ignore */ }); } catch (e) { /* ignore */ } }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) { bedKill(0.03); setTimeout(function () { if (document.hidden) sleepNow(); }, 60); } else if (B) bedLoop(); });
+  window.addEventListener('pagehide', function () { bedKill(0.03); sleepNow(); });
+  window.addEventListener('blur', function () { setTimeout(function () { if (document.hidden) sleepNow(); }, 300); });
 
   /* ---------- bouton muet ---------- */
   var LBL = { en: 'Sound', fr: 'Son', es: 'Sonido', pt: 'Som', ar: 'الصوت', tr: 'Ses', vi: 'Âm thanh', id: 'Suara', ru: 'Звук', de: 'Ton', hi: 'ध्वनि', zh: '声音' };
