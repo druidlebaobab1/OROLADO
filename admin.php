@@ -2127,6 +2127,11 @@ if ($isAjax) {
       if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'sports', 0, 'Cotes mises à jour : ' . (string) ($req['id'] ?? '') . ' ' . json_encode($req['odds'] ?? []) . (isset($req['cap']) ? ' plafond ' . (string) $req['cap'] : ''));
       admin_json($r);
     }
+    // 2026-10-21 (propriétaire) : RÉSULTATS PROPOSÉS (ESPN / TheSportsDB, lecture seule) — l'admin valide ensuite avec sp_settle
+    if ($action === 'sp_results') {
+      require_once __DIR__ . '/sports_results.php';
+      admin_json(spr_admin_proposals());
+    }
     if ($action === 'sp_close') admin_json(sp_admin_close((string) ($req['id'] ?? '')));
     if ($action === 'sp_settle') admin_json(sp_admin_settle(admin_local_db(), (string) ($req['id'] ?? ''), (string) ($req['k'] ?? '')));
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
@@ -2829,6 +2834,17 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
               <span id="spSt" class="muted"></span>
             </div>
           </div>
+        </div>
+        <div class="nt-card" id="spResCard" style="margin-top:10px;border-color:rgba(56,189,248,.55)">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+            <b style="min-width:0">🤖 Résultats proposés</b>
+            <span style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="mini ok" type="button" id="spResGo">🔎 Chercher les résultats</button>
+              <button class="mini" type="button" id="spResAll" hidden>✅ Valider tout ce qui est sûr</button>
+            </span>
+          </div>
+          <p class="muted" style="margin:4px 0 0">Matchs finis (début il y a plus de 2 h) pas encore réglés : le score final est lu sur ESPN et TheSportsDB (gratuits). Rien n'est payé sans votre clic « Valider » (même action que le bouton « … a gagné » plus bas). « Sûr » = les 2 sources d'accord, ou une source avec les mêmes noms d'équipe.</p>
+          <div id="spRes"></div>
         </div>
         <div id="spList" style="margin-top:10px"><p class="muted">Chargement…</p></div>
       </div>
@@ -3793,6 +3809,57 @@ setInterval(() => {
     $c('spSeed').disabled = false;
     $c('spSt').textContent = r.ok ? ('✓ ' + r.added + ' ajoutée(s)' + (r.skipped ? ' · ' + r.skipped + ' déjà là ou passée(s)' : '')) : (r.reason || 'Échec');
     if (r.ok) list();
+  };
+  // 2026-10-21 (propriétaire) : RÉSULTATS PROPOSÉS — lecture des scores (serveur, lecture seule) ; « Valider » = action EXISTANTE sp_settle
+  let spResList = [];
+  const spSettle = async (id, k) => ajax({action:'sp_settle', id, k});
+  async function spResults() {
+    const box = $c('spRes'); $c('spResGo').disabled = true; $c('spResAll').hidden = true;
+    box.innerHTML = '<p class="muted">Recherche des scores… (quelques secondes)</p>';
+    let j;
+    try { j = await ajax({action:'sp_results'}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
+    $c('spResGo').disabled = false;
+    if (!j.ok) { box.innerHTML = '<p class="muted">' + esc(j.reason || 'Erreur') + '</p>'; return; }
+    spResList = j.list || [];
+    const when = t => new Date(t * 1000).toLocaleString([], {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+    const sure = spResList.filter(p => p.conf === 'sur' && p.k);
+    const row = p => {
+      const badge = p.conf === 'sur' ? '<b style="color:#5CF59A;white-space:nowrap">● sûr</b>' : p.conf === 'verifier' ? '<b style="color:#FCD34D;white-space:nowrap">● à vérifier</b>' : '<span class="muted" style="white-space:nowrap">—</span>';
+      const srcs = (p.srcs || []).map(s => '<div class="muted" style="overflow-wrap:anywhere">' + esc(s.src) + ' : ' + esc(s.home) + ' ' + (s.hs == null ? '?' : s.hs) + ' - ' + (s.as == null ? '?' : s.as) + ' ' + esc(s.away) + ' · ' + esc(s.final ? 'fini' : (s.st || 'pas fini')) + (s.exact ? '' : ' · noms ressemblants (' + Math.round(s.sim * 100) + ' %)') + '</div>').join('') || '<div class="muted">Aucune source n’a ce match.</div>';
+      const prop = p.k ? '<div style="margin-top:4px">' + esc(p.market || 'Résultat') + ' → <b style="color:#5CF59A">' + esc(p.label) + '</b></div>' : '<div class="muted" style="margin-top:4px">' + esc(p.why || 'À valider à la main') + '</div>';
+      const btn = p.k ? '<button class="mini ok" type="button" data-resok="' + esc(p.id) + '" style="margin-top:6px">✅ Valider : ' + esc(p.label) + '</button>' : '';
+      return '<div style="border-top:1px solid rgba(255,255,255,.08);padding:8px 0" data-resrow="' + esc(p.id) + '"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b style="min-width:0;overflow-wrap:anywhere">' + (ICO[p.sport] || '🏆') + ' ' + esc(p.title) + '</b>' + badge + '</div>' +
+        '<div class="muted">' + esc(p.league) + ' · ' + when(p.start) + (p.score ? ' · score <b style="color:#E5E7EB">' + p.score[0] + ' - ' + p.score[1] + '</b>' : '') + '</div>' + srcs + prop + btn + '</div>';
+    };
+    box.innerHTML = (spResList.length ? '<p class="muted" style="margin:8px 0 0">' + spResList.length + ' événement(s) fini(s) · ' + sure.length + ' sûr(s)' + (j.manual ? ' · ' + j.manual + ' autre(s) à valider à la main plus bas (prix, F1, questions…)' : '') + '</p>' + spResList.map(row).join('')
+      : '<p class="muted" style="margin:8px 0 0">Aucun match fini à régler' + (j.manual ? ' (' + j.manual + ' événement(s) à valider à la main plus bas)' : '') + '.</p>');
+    $c('spResAll').hidden = !sure.length;
+    $c('spResAll').textContent = '✅ Valider tout ce qui est sûr (' + sure.length + ')';
+    box.querySelectorAll('[data-resok]').forEach(b => b.onclick = async () => {
+      const p = spResList.find(x => x.id === b.dataset.resok); if (!p) return;
+      if (!confirm(p.title + '\n' + (p.score ? 'Score ' + p.score[0] + ' - ' + p.score[1] + '\n' : '') + 'Résultat : ' + p.label + '\n\nConfirmer ? Les gagnants seront payés tout de suite.')) return;
+      b.disabled = true;
+      const r = await spSettle(p.id, p.k);
+      alert(r.ok ? ('Réglé ✓ — coupons gagnés : ' + r.won + ' · perdus : ' + r.lost + (r.retry ? ' · ' + r.retry + ' paiement(s) à refaire (base injoignable) : recliquez plus tard' : '')) : (r.reason || 'Échec'));
+      if (r.ok) { const rw = box.querySelector('[data-resrow="' + p.id + '"]'); if (rw) rw.remove(); spResList = spResList.filter(x => x.id !== p.id); }
+      else b.disabled = false;
+      list();
+    });
+  }
+  $c('spResGo').onclick = spResults;
+  $c('spResAll').onclick = async () => {
+    const sure = spResList.filter(p => p.conf === 'sur' && p.k);
+    if (!sure.length) return;
+    if (!confirm('Valider ' + sure.length + ' résultat(s) « sûr » ?\n\n' + sure.map(p => '• ' + p.title + (p.score ? ' (' + p.score[0] + '-' + p.score[1] + ')' : '') + ' → ' + p.label).join('\n') + '\n\nLes gagnants seront payés tout de suite.')) return;
+    $c('spResAll').disabled = true;
+    let ok = 0, won = 0, lost = 0, retry = 0; const bad = [];
+    for (const p of sure) { // un par un, même action que le clic à la main
+      let r; try { r = await spSettle(p.id, p.k); } catch (e) { r = {ok:false, reason:'Réseau'}; }
+      if (r.ok) { ok++; won += r.won || 0; lost += r.lost || 0; retry += r.retry || 0; } else bad.push(p.title + ' : ' + (r.reason || 'Échec'));
+    }
+    $c('spResAll').disabled = false;
+    alert('Réglé ✓ ' + ok + ' événement(s) — coupons gagnés : ' + won + ' · perdus : ' + lost + (retry ? ' · ' + retry + ' paiement(s) à refaire (base injoignable) : recliquez plus tard' : '') + (bad.length ? '\n\nPas réglé :\n' + bad.join('\n') : ''));
+    list(); spResults();
   };
   $c('spAddOpt').onclick = () => { if ($c('spOpts').children.length < 6) optRow('', ''); };
   // v2706 : événement / crypto / politique → 2 choix Oui / Non prêts (modifiables) au lieu de Équipe / Nul / Équipe

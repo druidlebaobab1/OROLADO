@@ -1,0 +1,31 @@
+{
+    "_note": "Exemple FABRIQUÉ (même format que la vraie réponse ESPN scoreboard) pour scripts/test-sp-results.php : fini, nul, en cours, pas commencé, prolongation, accents.",
+    "leagues": [{"slug": "uefa.europa"}],
+    "events": [
+        {"id": "9001", "date": "2026-10-22T19:00Z", "name": "AC Milan at Bournemouth",
+         "status": {"type": {"name": "STATUS_FULL_TIME", "state": "post", "completed": true, "detail": "FT"}},
+         "competitions": [{"competitors": [
+            {"homeAway": "home", "score": "1", "team": {"displayName": "AFC Bournemouth", "shortDisplayName": "Bournemouth", "name": "Bournemouth", "location": "Bournemouth"}},
+            {"homeAway": "away", "score": "1", "team": {"displayName": "AC Milan", "shortDisplayName": "Milan", "name": "Milan", "location": "Milan"}}]}]},
+        {"id": "9002", "date": "2026-10-22T19:00Z", "name": "Crystal Palace at Beşiktaş",
+         "status": {"type": {"name": "STATUS_FULL_TIME", "state": "post", "completed": true, "detail": "FT"}},
+         "competitions": [{"competitors": [
+            {"homeAway": "home", "score": "2", "team": {"displayName": "Beşiktaş JK", "shortDisplayName": "Beşiktaş", "name": "Besiktas", "location": "Istanbul"}},
+            {"homeAway": "away", "score": "1", "team": {"displayName": "Crystal Palace", "shortDisplayName": "C Palace", "name": "Crystal Palace", "location": "Crystal Palace"}}]}]},
+        {"id": "9003", "date": "2026-10-22T16:45Z", "name": "Marseille at Sturm Graz",
+         "status": {"type": {"name": "STATUS_SECOND_HALF", "state": "in", "completed": false, "detail": "67'"}},
+         "competitions": [{"competitors": [
+            {"homeAway": "home", "score": "0", "team": {"displayName": "SK Sturm Graz", "shortDisplayName": "Sturm Graz", "name": "Sturm Graz", "location": "Graz"}},
+            {"homeAway": "away", "score": "1", "team": {"displayName": "Marseille", "shortDisplayName": "Marseille", "name": "Marseille", "location": "Marseille"}}]}]},
+        {"id": "9004", "date": "2026-10-22T19:00Z", "name": "Celta Vigo at Celtic",
+         "status": {"type": {"name": "STATUS_SCHEDULED", "state": "pre", "completed": false, "detail": "Sat"}},
+         "competitions": [{"competitors": [
+            {"homeAway": "home", "score": "0", "team": {"displayName": "Celtic", "shortDisplayName": "Celtic", "name": "Celtic", "location": "Glasgow"}},
+            {"homeAway": "away", "score": "0", "team": {"displayName": "Celta Vigo", "shortDisplayName": "Celta", "name": "Celta Vigo", "location": "Vigo"}}]}]},
+        {"id": "9005", "date": "2026-10-22T19:00Z", "name": "Lyon at Hoffenheim",
+         "status": {"type": {"name": "STATUS_FINAL_AET", "state": "post", "completed": true, "detail": "AET"}},
+         "competitions": [{"competitors": [
+            {"homeAway": "home", "score": "3", "team": {"displayName": "TSG Hoffenheim", "shortDisplayName": "Hoffenheim", "name": "Hoffenheim", "location": "Sinsheim"}},
+            {"homeAway": "away", "score": "2", "team": {"displayName": "Olympique Lyonnais", "shortDisplayName": "Lyon", "name": "Lyon", "location": "Lyon"}}]}]}
+    ]
+}
