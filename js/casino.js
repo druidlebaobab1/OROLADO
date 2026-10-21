@@ -2094,7 +2094,15 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   // v2812 : D6.Casino.home() marche aussi casino fermé (juste après le chargement de la page) : il ouvre la salle de jeux
   function homePub(view) { var cm = $('casinoModal'); if (!cm || !cm.classList.contains('active')) { open(null, view === 'pred' ? 'pred' : (view || 'games')); if (view === 'sports') home('sports'); return; } S.pend = ''; home(view); }
-  D6.Casino = { open: open, close: close, home: homePub, openPred: openPred };
+  // 2026-10-21 : nombre de jeux de la salle (mêmes règles que la salle : jeux cachés exclus) — pour la carte de bienvenue
+  function gameCount() {
+    try {
+      var HID = { highcard: 1, war: 1, reddog: 1, goal: 1, luckydice: 1 };
+      var all = ORDER.filter(function (k) { return GAMES[k] && NAMES[k]; }).concat(CAT.filter(function (k) { return ORDER.indexOf(k) < 0; }));
+      return all.filter(function (k) { return !HID[k]; }).length;
+    } catch (e) { return 0; }
+  }
+  D6.Casino = { open: open, close: close, home: homePub, openPred: openPred, count: gameCount, catReady: function () { return catDone; } };
   // v2795 — boîte à outils partagée par les jeux refaits (js/games/*.js)
   D6.CasinoKit = { GAMES: GAMES, MODS: MODS, S: S, X: X, LX: LX, $: $, esc: esc, fmt: fmt, m2: m2, dec: dec, sleep: sleep, toast: toast, guest: guest,
     play: play, multi: multi, resultLine: resultLine, sfx: sfx, sfxBeat: sfxBeat, amb: amb, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
