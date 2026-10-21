@@ -43,7 +43,7 @@
       (document.body||h).appendChild(p);var t=p.offsetHeight||0;p.remove();if(t>=12&&t<=120)u=t}
     if(u<0)u=gap>=0&&gap<=120?gap:0;
     if(mem[key]==null&&u>0)mem[key]=u;
-    var site=sh-u,st=h.style;
+    var site=sh-u,st=h.style;h.classList.toggle('ios-tall',H>=sh-2&&u>0);
     st.setProperty('--ios-screen-h',sh+'px');st.setProperty('--ios-full-h',sh+'px');st.setProperty('--ios-under',u+'px');
     st.setProperty('--ios-site-h',site+'px');st.setProperty('--ios-floor-top',site+'px');st.setProperty('--ios-floor-h',u+'px');
     st.removeProperty('background');st.removeProperty('background-image');st.setProperty('background-color','#0B0A20','important');
@@ -224,7 +224,7 @@
     <link rel="stylesheet" href="css/app.css?v=3008">
     <link rel="stylesheet" href="css/auth.css?v=2790">
     <link rel="stylesheet" href="css/tv.css?v=2790">
-    <link rel="stylesheet" href="css/galaxy.css?v=3010">
+    <link rel="stylesheet" href="css/galaxy.css?v=3011">
     <link rel="stylesheet" href="css/cg.css?v=2887">
     <link rel="stylesheet" href="css/lobby.css?v=2842">
     <link rel="stylesheet" href="css/sports2.css?v=2882">
