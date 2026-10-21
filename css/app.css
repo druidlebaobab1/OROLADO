@@ -13295,3 +13295,48 @@ html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTr
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay #chart.chart-card{box-shadow:0 6px 0 0 #0C0C23!important}
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay #chart.chart-card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:18px;pointer-events:none;z-index:3;
   background:linear-gradient(180deg,rgba(12,12,35,0),rgba(12,12,35,.82))}
+/* 2026-10-21 (propriétaire : « Profil : le i et le l sont collés ») : la police dessinait « fi » / « fl » en un seul signe
+   (ligature) → partout sur le site, chaque lettre est écrite séparément */
+html,html body,html body *{font-variant-ligatures:no-common-ligatures}
+/* 2026-10-21 (propriétaire : « la couleur du mot PLEIN ÉCRAN et de son petit carré attire trop l'attention ») : même battement,
+   couleur un peu plus douce */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#C65663!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-ico{opacity:.72!important}
+@keyframes oroFsDot3{0%,100%{opacity:.25}50%{opacity:.7}}
+html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::after{animation:oroFsDot3 1.6s ease-in-out infinite!important}
+html.fs-trade:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::after{animation:none!important;opacity:0!important}
+/* 2026-10-21 (propriétaire, modèle A) : carte de bienvenue après la création du compte (js/app.js welcomeCard) */
+html body .oro-welcome{position:fixed;inset:0;z-index:2147482000;display:grid;place-items:center;font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:#fff;animation:owIn .32s ease-out}
+html body .oro-welcome.out{animation:owOut .36s ease-in forwards;pointer-events:none}
+@keyframes owIn{from{opacity:0}to{opacity:1}}
+@keyframes owOut{to{opacity:0}}
+html body .oro-welcome .ow-dim{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 38%,rgba(40,24,90,.5),rgba(3,4,14,.86))}
+html body .oro-welcome .ow-card{position:relative;width:min(340px,calc(100vw - 40px));max-height:calc(100% - 110px);overflow:visible;padding:78px 20px 18px;border-radius:26px;text-align:center;
+  background:radial-gradient(130% 70% at 50% 0%,rgba(251,191,36,.30),rgba(18,14,48,.97) 62%),#120E30;border:1px solid rgba(253,230,138,.55);
+  box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,0 0 40px rgba(251,191,36,.35),0 24px 60px rgba(0,0,0,.6);margin-top:54px;animation:owPop .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes owPop{from{transform:translateY(18px) scale(.86)}to{transform:none}}
+html body .oro-welcome .ow-rays{position:absolute;left:50%;top:-104px;width:220px;height:220px;margin-left:-110px;border-radius:50%;pointer-events:none;
+  background:repeating-conic-gradient(rgba(253,224,71,.28) 0 7deg,transparent 7deg 22deg);-webkit-mask:radial-gradient(circle,#000 30%,transparent 70%);mask:radial-gradient(circle,#000 30%,transparent 70%);animation:owSpin 14s linear infinite}
+@keyframes owSpin{to{transform:rotate(360deg)}}
+html body .oro-welcome .ow-logo{position:absolute;left:50%;top:-54px;width:112px;height:112px;margin-left:-56px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2A2170,#0B0A24);
+  box-shadow:0 0 0 3px #FCD34D,0 0 0 7px rgba(252,211,77,.25),0 0 36px rgba(251,191,36,.75);display:grid;place-items:center}
+html body .oro-welcome .ow-logo img{width:80px;height:80px}
+html body .oro-welcome .ow-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font:400 22px/32px system-ui;padding:0;cursor:pointer;z-index:2}
+html[dir=rtl] body .oro-welcome .ow-x{right:auto;left:10px}
+html body .oro-welcome .ow-t{margin:0;font-size:25px;font-weight:900;line-height:1.15;background:linear-gradient(90deg,#FFE7A3,#fff 45%,#FDE68A);-webkit-background-clip:text;background-clip:text;color:transparent}
+html body .oro-welcome .ow-n{margin:4px 0 0;font-size:16px;font-weight:700;line-height:1.3;color:#E9E6FF;overflow-wrap:anywhere}
+html body .oro-welcome .ow-s{margin:9px 0 12px;font-size:13px;line-height:1.45;color:rgba(233,230,255,.78)}
+html body .oro-welcome .ow-demo{display:flex;align-items:center;gap:10px;justify-content:center;margin:0 auto 10px;padding:9px 12px;border-radius:14px;background:rgba(34,197,94,.14);border:1px solid rgba(74,222,128,.45)}
+html body .oro-welcome .ow-demo b{font-size:18px;color:#86EFAC;white-space:nowrap}
+html body .oro-welcome .ow-demo span{font-size:12px;color:#D1FAE5;text-align:start;line-height:1.25}
+html body .oro-welcome .ow-tips{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:6px;text-align:start}
+html body .oro-welcome .ow-tips li{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#E9E6FF}
+html body .oro-welcome .ow-tips svg{flex:none;width:18px;height:18px;padding:2px;border-radius:50%;background:rgba(251,191,36,.18);fill:none;stroke:#FCD34D;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+html body .oro-welcome .ow-go{display:block;width:100%;height:50px;border:0;border-radius:15px;font:900 17px/50px "Plus Jakarta Sans",system-ui,sans-serif;color:#2A1800;cursor:pointer;
+  background:linear-gradient(180deg,#FFE08A,#F5B300 55%,#E08A00);box-shadow:0 8px 20px -6px rgba(245,179,0,.75),inset 0 1px 0 rgba(255,255,255,.6)}
+html body .oro-welcome .ow-sp{position:absolute;inset:0;pointer-events:none}
+html body .oro-welcome .ow-sp i{position:absolute;left:50%;top:44%;width:6px;height:6px;border-radius:50%;background:#FDE68A;box-shadow:0 0 8px #FCD34D;opacity:0;animation:owSp 1.6s ease-out var(--z) 1 forwards}
+@keyframes owSp{0%{opacity:0;transform:rotate(var(--a)) translate(20px)}25%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translate(var(--d))}}
+@media (max-height:600px){html body .oro-welcome .ow-card{padding-top:64px;margin-top:40px}html body .oro-welcome .ow-logo{width:92px;height:92px;margin-left:-46px;top:-46px}html body .oro-welcome .ow-logo img{width:66px;height:66px}html body .oro-welcome .ow-s{display:none}}
+html.oro-lite body .oro-welcome .ow-rays,html.oro-lite body .oro-welcome .ow-sp{animation:none;display:none}
+html body .oro-welcome .ow-demo b{direction:ltr;unicode-bidi:isolate}
