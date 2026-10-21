@@ -958,67 +958,206 @@
      v2860 (owner: "amateur") — ONLY the drawing changed (same lanes, same rows, same timing, same hit test): a real furry hamster
      seen from behind with a 6-frame gallop, inside a glossy rainbow play-tube whose rings, floor bands, sawdust and speed
      streaks rush past (faster as the multiplier climbs); toy-block walls and mousetraps; a toy-brick wall for the end.
-     Every sprite is pre-drawn once per size. */
+     Every sprite is pre-drawn once per size.
+     v3103 (owner: advertising video, "the hamster looks silly, a blob sliding") — DRAWING ONLY again (same lanes, rows,
+     speeds, spawn rules, hit test, fail / boom / win calls): the hamster is now a RIG of pre-drawn fur parts (body, head,
+     ears, hind feet with pink soles, front paws) put together each frame: an alternating scurry (feet kick back showing
+     their soles, front paws reach out), body bob + squash-and-stretch, side sway, ears and cheeks bouncing behind the
+     body; the cycle speeds up with the run speed. Wooden planks + side beams scroll with perspective, dust puffs from
+     every kick, a soft moving shadow, a slight camera zoom / tremble at high speed, an eased hop + lean on a lane change,
+     a stumble-and-fall (dizzy stars) instead of the pop, and a happy hop + confetti on a cash-out. Lite mode: fewer particles. */
   boot('hamster', function (A) {
-    var W, H, u, dpr, T, bg, hamS = [], obS = [], hy, ny, lw, F = 5, lane = 0, hx = 0, obs = [], rowT = 0, ringP = 0, dead = false, wall = null, t = 0, won = 0, spd = 0.5, lastFree = 0;
-    var ringN = 0, rph = 0, SD = [], wallS = null, floorG = null, shadeG = null, sfx = 0; // drawing only
+    var W, H, u, dpr, T, bg, obS = [], hy, ny, lw, F = 5, lane = 0, hx = 0, obs = [], rowT = 0, ringP = 0, dead = false, wall = null, t = 0, won = 0, spd = 0.5, lastFree = 0;
+    var ringN = 0, SD = [], wallS = null, floorG = null, fogG = null, shadeG = null, sfx = 0; // drawing only
+    var HR = null, cyc = 0, lx0 = 0, vX = 0, lean = 0, vPrev = 0, PF = [], CF = [], crash = null, scrollK = 1, cfOn = 0; // drawing only (v3103)
     var TUBE = ['#F472B6', '#FB923C', '#FACC15', '#4ADE80', '#22D3EE', '#818CF8', '#C084FC'];
+    var WOOD = ['#C98A4B', '#D69A5C', '#BD7E41', '#DDA567', '#C68647'];
     function P(z) { return 1 / (1 + F * z); }
     function SY(z) { return hy + (ny - hy) * P(z); }
     function SX(lx, z) { return W / 2 + lx * lw * P(z); }
     function sh(hex, k) { return D6.Rig ? D6.Rig.shade(hex, k) : hex; }
-    // the hamster seen from behind: fur (gradient + hundreds of short strands), round ears, pink soles kicking, a tiny tail
-    function hamSprite(f, n) {
-      var w = lw * 0.82, h = w * 1.08, ph = f / n * TAU;
-      return mkc(w, h, dpr, function (c) {
-        var x = w / 2, bob = Math.sin(ph * 2) * h * 0.025, sq = 1 + Math.cos(ph * 2) * 0.04, by = h * 0.6 + bob, rx = w * 0.42 * sq, ry = h * 0.33 / sq;
-        var fL = Math.sin(ph), fR = Math.sin(ph + Math.PI);
-        // back feet (behind / under the body): the one pushing off shows its pink sole
-        [[-1, fL], [1, fR]].forEach(function (q) {
-          var s = q[0], up = Math.max(0, q[1]), fx = x + s * w * 0.2, fy = h * 0.93 - up * h * 0.1;
-          c.fillStyle = '#E9A0A8'; c.beginPath(); c.ellipse(fx, fy, w * 0.085, h * (0.045 + up * 0.03), s * 0.2, 0, TAU); c.fill();
-          c.fillStyle = '#C97880'; for (var k = -1; k <= 1; k++) { c.beginPath(); c.arc(fx + k * w * 0.035, fy - h * (0.03 + up * 0.02), w * 0.016, 0, TAU); c.fill(); }
+    function hsh(n) { n = (n * 2654435761) >>> 0; n ^= n >>> 13; n = (n * 1274126177) >>> 0; return (n >>> 8) / 16777216; } // stable 0..1 per plank
+
+    /* ---- the hamster rig: fur parts drawn ONCE per size (gradients + hundreds of strands), then only drawImage each frame */
+    // a furry blob: shape from fn(a) → [x, y], filled with layers, clipped strands, then soft fluff crossing the silhouette
+    function fur(c, cx, cy, s, fn, o) {
+      var N = 72, pts = [], i, a;
+      for (i = 0; i < N; i++) pts.push(fn(i / N * TAU));
+      function path() { c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (var j = 1; j < N; j++) c.lineTo(pts[j][0], pts[j][1]); c.closePath(); }
+      var top = Infinity, bot = -Infinity; pts.forEach(function (p) { top = Math.min(top, p[1]); bot = Math.max(bot, p[1]); });
+      // fluff under the silhouette (drawn first so the body edge looks soft, not cut out)
+      c.lineCap = 'round';
+      for (i = 0; i < N * 2; i++) {
+        a = i / (N * 2) * TAU; var p = fn(a), q = fn(a + 0.02), nx = q[1] - p[1], ny2 = p[0] - q[0], nl = Math.hypot(nx, ny2) || 1; nx /= -nl; ny2 /= -nl;
+        var k = (p[1] - top) / (bot - top), L = s * (0.022 + 0.022 * ((i * 7) % 5) / 4);
+        if (k > o.cream) L *= 0.55; // short soft fluff on the cream underside (no comb-like fringe)
+        c.strokeStyle = k > o.cream ? 'rgba(226,204,176,.6)' : (p[0] < cx && k < 0.5 ? 'rgba(214,150,84,.95)' : 'rgba(150,84,34,.95)');
+        c.lineWidth = Math.max(0.8, s * (k > o.cream ? 0.022 : 0.016));
+        c.beginPath(); c.moveTo(p[0] - nx * L * 0.6, p[1] - ny2 * L * 0.6); c.lineTo(p[0] + nx * L + o.flow * L * 0.3 * (p[0] < cx ? -1 : 1), p[1] + ny2 * L + L * 0.35); c.stroke();
+      }
+      c.save(); path(); c.clip();
+      var g = c.createRadialGradient(cx - s * 0.16, top + (bot - top) * 0.28, s * 0.02, cx, cy, s * o.r);
+      g.addColorStop(0, '#F6CB8A'); g.addColorStop(0.35, '#E19A4E'); g.addColorStop(0.72, '#B9692C'); g.addColorStop(1, '#7A3C14');
+      c.fillStyle = g; c.fillRect(cx - s, top - s, s * 2, s * 3);
+      o.layers(c, top, bot);
+      // strands: flow outward + downward from the spine, dark and light hairs mixed
+      var R = o.seed, n = A.lite ? o.n / 2 : o.n;
+      for (i = 0; i < n; i++) {
+        R = (R * 9301 + 49297) % 233280; var px = cx - s + R / 233280 * s * 2; R = (R * 9301 + 49297) % 233280; var py = top + R / 233280 * (bot - top);
+        var k2 = (py - top) / (bot - top), dir = Math.atan2(py - (top - s * 0.25), (px - cx) * 1.3), L2 = s * (0.026 + 0.03 * ((i % 7) / 6));
+        R = (R * 9301 + 49297) % 233280; var r3 = R / 233280;
+        c.strokeStyle = k2 > o.cream ? (r3 < 0.5 ? 'rgba(255,252,245,.55)' : 'rgba(190,160,130,.35)') : (r3 < 0.55 ? 'rgba(110,52,16,.32)' : r3 < 0.85 ? 'rgba(255,224,170,.42)' : 'rgba(60,26,6,.3)');
+        c.lineWidth = Math.max(0.6, s * (0.005 + 0.004 * r3));
+        c.beginPath(); c.moveTo(px, py); c.quadraticCurveTo(px + Math.cos(dir + 0.3) * L2 * 0.6, py + Math.sin(dir + 0.3) * L2 * 0.6, px + Math.cos(dir) * L2, py + Math.sin(dir) * L2); c.stroke();
+      }
+      // contact shade at the bottom + soft key light top-left
+      var ao = c.createLinearGradient(0, bot - (bot - top) * 0.25, 0, bot); ao.addColorStop(0, 'rgba(60,30,10,0)'); ao.addColorStop(1, 'rgba(60,30,10,.35)'); c.fillStyle = ao; c.fillRect(cx - s, top, s * 2, bot - top + 2);
+      var kl = c.createRadialGradient(cx - s * 0.18, top + (bot - top) * 0.22, 0, cx - s * 0.18, top + (bot - top) * 0.22, s * 0.35); kl.addColorStop(0, 'rgba(255,246,225,.38)'); kl.addColorStop(1, 'rgba(255,246,225,0)'); c.fillStyle = kl; c.fillRect(cx - s, top, s * 2, bot - top);
+      c.restore();
+      // rim light on the upper-left edge
+      c.strokeStyle = 'rgba(255,238,205,.5)'; c.lineWidth = Math.max(1, s * 0.012); c.beginPath();
+      for (i = 0; i <= 14; i++) { var pp = fn(Math.PI * (1.05 + i / 14 * 0.42)); if (i) c.lineTo(pp[0], pp[1]); else c.moveTo(pp[0], pp[1]); } c.stroke();
+    }
+    function rig(s) {
+      var R = {};
+      // body: a pear seen from behind (wide rump at the bottom, narrower shoulders), golden back, cream flanks / underside
+      R.bw = s * 1.2; R.bh = s * 1.0;
+      R.body = mkc(R.bw, R.bh, dpr, function (c, w, h) {
+        var cx = w / 2, cy = h * 0.53;
+        fur(c, cx, cy, s, function (a) { var sa = Math.sin(a), ca = Math.cos(a); return [cx + ca * s * 0.52 * (1 - 0.16 * Math.max(0, -sa)) * (1 + 0.03 * sa), cy + sa * s * 0.42 * (sa > 0 ? 0.9 : 1)]; }, {
+          r: 0.62, cream: 0.72, flow: 1, seed: 17, n: 1100,
+          layers: function (c, top, bot) {
+            var cr = c.createRadialGradient(cx, bot + s * 0.08, s * 0.1, cx, bot, s * 0.5); cr.addColorStop(0, 'rgba(252,244,232,1)'); cr.addColorStop(0.45, 'rgba(246,230,208,.9)'); cr.addColorStop(1, 'rgba(246,230,208,0)');
+            c.fillStyle = cr; c.fillRect(cx - s, top, s * 2, bot - top + 4);
+            [-1, 1].forEach(function (sd) { var q = c.createRadialGradient(cx + sd * s * 0.42, bot - s * 0.12, 0, cx + sd * s * 0.42, bot - s * 0.12, s * 0.22); q.addColorStop(0, 'rgba(250,238,220,.85)'); q.addColorStop(1, 'rgba(250,238,220,0)'); c.fillStyle = q; c.fillRect(cx - s, top, s * 2, bot - top); });
+            var ds = c.createRadialGradient(cx, top + s * 0.12, 0, cx, top + s * 0.2, s * 0.32); ds.addColorStop(0, 'rgba(120,58,18,.32)'); ds.addColorStop(1, 'rgba(120,58,18,0)'); c.fillStyle = ds; c.fillRect(cx - s, top, s * 2, bot - top);
+            // haunches: two rounded thighs, lit on top
+            [-1, 1].forEach(function (sd) { var q = c.createRadialGradient(cx + sd * s * 0.24, bot - s * 0.3, s * 0.02, cx + sd * s * 0.24, bot - s * 0.24, s * 0.24); q.addColorStop(0, 'rgba(255,214,150,.28)'); q.addColorStop(0.7, 'rgba(255,214,150,0)'); q.addColorStop(1, 'rgba(90,40,10,.1)'); c.fillStyle = q; c.fillRect(cx - s, top, s * 2, bot - top); });
+          }
         });
-        // body
-        var g = c.createRadialGradient(x - rx * 0.35, by - ry * 0.55, rx * 0.1, x, by, rx * 1.15);
-        g.addColorStop(0, '#F8D49A'); g.addColorStop(0.35, '#E3A15A'); g.addColorStop(0.75, '#B86A2A'); g.addColorStop(1, '#6E3712');
-        c.fillStyle = g; c.beginPath(); c.ellipse(x, by, rx, ry, 0, 0, TAU); c.fill();
-        // white flanks / belly fur at the bottom
-        c.save(); c.beginPath(); c.ellipse(x, by, rx, ry, 0, 0, TAU); c.clip();
-        var wg = c.createLinearGradient(0, by + ry * 0.1, 0, by + ry); wg.addColorStop(0, 'rgba(255,247,237,0)'); wg.addColorStop(0.5, 'rgba(255,247,237,.85)'); wg.addColorStop(1, '#F1E4D3');
-        c.fillStyle = wg; c.fillRect(x - rx, by, rx * 2, ry);
-        // fur strands following the body
-        var R = 13 + f * 7;
-        for (var i = 0; i < 260; i++) {
-          R = (R * 9301 + 49297) % 233280; var a = R / 233280 * TAU; R = (R * 9301 + 49297) % 233280; var d = Math.sqrt(R / 233280);
-          var px = x + Math.cos(a) * rx * d, py = by + Math.sin(a) * ry * d, L = w * (0.025 + 0.02 * d), ang = a + 0.4;
-          c.strokeStyle = i % 3 ? 'rgba(110,55,18,.28)' : 'rgba(255,236,200,.4)'; c.lineWidth = Math.max(0.6, w * 0.006);
-          c.beginPath(); c.moveTo(px, py); c.lineTo(px + Math.cos(ang) * L * 0.4 + Math.cos(a) * L, py + Math.sin(ang) * L * 0.4 + Math.sin(a) * L); c.stroke();
-        }
-        // dark dorsal stripe (Syrian hamster) + rim light
-        c.fillStyle = 'rgba(110,55,18,.22)'; c.beginPath(); c.ellipse(x, by - ry * 0.35, rx * 0.16, ry * 0.55, 0, 0, TAU); c.fill();
-        c.restore();
-        c.strokeStyle = 'rgba(255,240,210,.55)'; c.lineWidth = Math.max(1, w * 0.012); c.beginPath(); c.ellipse(x, by, rx * 0.985, ry * 0.985, 0, Math.PI * 1.05, Math.PI * 1.45); c.stroke();
-        // tail
-        c.fillStyle = '#F5DFC5'; c.beginPath(); c.ellipse(x, by + ry * 0.82, w * 0.04, h * 0.03, 0, 0, TAU); c.fill();
-        // head (back of it) + cheeks + ears
-        var hy0 = by - ry * 0.8 - bob * 0.3, hr = w * 0.25;
-        [-1, 1].forEach(function (s) { c.fillStyle = '#E8B074'; c.beginPath(); c.ellipse(x + s * hr * 0.85, hy0 + hr * 0.35, hr * 0.42, hr * 0.38, 0, 0, TAU); c.fill(); });
-        var hg = c.createRadialGradient(x - hr * 0.35, hy0 - hr * 0.4, hr * 0.1, x, hy0, hr * 1.1); hg.addColorStop(0, '#F6CF92'); hg.addColorStop(0.55, '#D38942'); hg.addColorStop(1, '#8A4A1A');
-        c.fillStyle = hg; c.beginPath(); c.ellipse(x, hy0, hr, hr * 0.88, 0, 0, TAU); c.fill();
-        [-1, 1].forEach(function (s) {
-          var ex = x + s * hr * 0.62, ey = hy0 - hr * 0.68 + (s > 0 ? Math.sin(ph * 2) : Math.cos(ph * 2)) * hr * 0.03;
-          c.fillStyle = '#9A5420'; c.beginPath(); c.ellipse(ex, ey, hr * 0.32, hr * 0.34, s * 0.4, 0, TAU); c.fill();
-          c.fillStyle = '#F2A7B3'; c.beginPath(); c.ellipse(ex + s * hr * 0.02, ey + hr * 0.03, hr * 0.2, hr * 0.22, s * 0.4, 0, TAU); c.fill();
-          c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(ex - hr * 0.08, ey - hr * 0.1, hr * 0.07, hr * 0.05, 0, 0, TAU); c.fill();
-        });
-        c.strokeStyle = 'rgba(110,55,18,.3)'; c.lineWidth = Math.max(0.6, w * 0.006);
-        for (i = 0; i < 40; i++) { var a2 = Math.PI * (1.1 + i / 40 * 0.8), d2 = 0.4 + (i % 5) * 0.12; c.beginPath(); c.moveTo(x + Math.cos(a2) * hr * d2, hy0 + Math.sin(a2) * hr * d2 * 0.88); c.lineTo(x + Math.cos(a2) * hr * (d2 + 0.16), hy0 + Math.sin(a2) * hr * (d2 + 0.16) * 0.88); c.stroke(); }
-        c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.ellipse(x - hr * 0.3, hy0 - hr * 0.45, hr * 0.28, hr * 0.12, -0.5, 0, TAU); c.fill();
-        // front paws flicking out at the sides on each stride
-        var pf = Math.max(0, Math.sin(ph * 2 + 1));
-        [-1, 1].forEach(function (s) { c.fillStyle = '#F1C9A5'; c.beginPath(); c.ellipse(x + s * rx * (0.92 + pf * 0.08), by - ry * 0.15, w * 0.045, h * 0.03, s * 0.6, 0, TAU); c.fill(); });
       });
+      R.boy = R.bh * 0.53 + s * 0.42 * 0.9; // body sprite: y of its bottom
+      // head (back of it, seen a little from above): cheek pouches bulge at the sides, a few whiskers poke out
+      R.hw = s * 0.95; R.hh = s * 0.68;
+      R.head = mkc(R.hw, R.hh, dpr, function (c, w, h) {
+        var cx = w / 2, cy = h * 0.5;
+        c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = Math.max(0.6, s * 0.006); c.lineCap = 'round';
+        [-1, 1].forEach(function (sd) { for (var i = 0; i < 4; i++) { c.beginPath(); c.moveTo(cx + sd * s * 0.3, cy + s * 0.1 + i * s * 0.015); c.quadraticCurveTo(cx + sd * s * 0.4, cy + s * 0.05 + i * s * 0.03, cx + sd * s * (0.46 - i * 0.012), cy + s * (0.02 + i * 0.05)); c.stroke(); } });
+        fur(c, cx, cy, s * 0.75, function (a) { var sa = Math.sin(a), ca = Math.cos(a); return [cx + ca * s * 0.31 * (1 + 0.14 * Math.max(0, sa)), cy + sa * s * 0.25]; }, {
+          r: 0.55, cream: 0.78, flow: 0.6, seed: 91, n: 420,
+          layers: function (c, top, bot) {
+            [-1, 1].forEach(function (sd) { var q = c.createRadialGradient(cx + sd * s * 0.28, bot - s * 0.05, 0, cx + sd * s * 0.28, bot - s * 0.05, s * 0.17); q.addColorStop(0, 'rgba(250,236,214,.95)'); q.addColorStop(1, 'rgba(250,236,214,0)'); c.fillStyle = q; c.fillRect(cx - s, top, s * 2, bot - top); });
+            var cw = c.createRadialGradient(cx, top + s * 0.06, 0, cx, top + s * 0.08, s * 0.2); cw.addColorStop(0, 'rgba(110,52,16,.3)'); cw.addColorStop(1, 'rgba(110,52,16,0)'); c.fillStyle = cw; c.fillRect(cx - s, top, s * 2, bot - top);
+          }
+        });
+      });
+      // ear (back side: thin dark-grey skin with fine fur, a pink edge on the outer rim); the right ear is the mirror
+      R.ew = s * 0.24; R.eh = s * 0.26;
+      R.ear = mkc(R.ew, R.eh, dpr, function (c, w, h) {
+        var cx = w / 2, cy = h * 0.48, rx = w * 0.42, ry = h * 0.44;
+        c.fillStyle = '#E79AA5'; c.beginPath(); c.ellipse(cx - w * 0.04, cy, rx, ry, -0.2, 0, TAU); c.fill();
+        var g = c.createRadialGradient(cx + w * 0.05, cy - h * 0.12, w * 0.02, cx + w * 0.06, cy, rx * 1.1); g.addColorStop(0, '#B5866A'); g.addColorStop(0.6, '#8A5D45'); g.addColorStop(1, '#5A3A2A');
+        c.fillStyle = g; c.beginPath(); c.ellipse(cx + w * 0.04, cy + h * 0.02, rx * 0.92, ry * 0.95, -0.2, 0, TAU); c.fill();
+        c.strokeStyle = 'rgba(255,225,215,.45)'; c.lineWidth = Math.max(0.8, w * 0.04); c.beginPath(); c.ellipse(cx + w * 0.04, cy + h * 0.02, rx * 0.88, ry * 0.9, -0.2, Math.PI * 1.1, Math.PI * 1.6); c.stroke();
+        c.fillStyle = 'rgba(214,150,84,.9)'; c.beginPath(); c.ellipse(cx + w * 0.04, h * 0.9, rx * 0.8, h * 0.14, 0, 0, TAU); c.fill(); // fur at the base
+      });
+      // hind foot, sole towards the camera (heel up, five toes down): pink skin, darker pads, cream fur on the heel
+      R.fw = s * 0.22; R.fh = s * 0.3;
+      R.foot = mkc(R.fw, R.fh, dpr, function (c, w, h) {
+        var cx = w / 2;
+        var g = c.createLinearGradient(0, h * 0.1, 0, h); g.addColorStop(0, '#F6C3C3'); g.addColorStop(1, '#E58E99');
+        c.fillStyle = g; c.beginPath(); c.ellipse(cx, h * 0.55, w * 0.33, h * 0.38, 0, 0, TAU); c.fill();
+        c.fillStyle = '#C96B79';
+        [[-0.3, 0.86], [-0.15, 0.93], [0, 0.95], [0.15, 0.93], [0.3, 0.86]].forEach(function (q) { c.beginPath(); c.ellipse(cx + q[0] * w, q[1] * h, w * 0.075, h * 0.05, 0, 0, TAU); c.fill(); });
+        c.fillStyle = 'rgba(201,107,121,.75)'; [[-0.14, 0.62], [0.14, 0.62], [0, 0.7]].forEach(function (q) { c.beginPath(); c.ellipse(cx + q[0] * w, q[1] * h, w * 0.08, h * 0.06, 0, 0, TAU); c.fill(); });
+        c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(cx - w * 0.1, h * 0.42, w * 0.08, h * 0.12, -0.2, 0, TAU); c.fill();
+        var fg = c.createLinearGradient(0, 0, 0, h * 0.35); fg.addColorStop(0, '#E8C79F'); fg.addColorStop(1, 'rgba(246,230,208,0)');
+        c.fillStyle = fg; c.beginPath(); c.ellipse(cx, h * 0.2, w * 0.42, h * 0.22, 0, 0, TAU); c.fill();
+      });
+      // front paw (little pink hand, cream cuff)
+      R.pw = s * 0.15; R.ph = s * 0.16;
+      R.paw = mkc(R.pw, R.ph, dpr, function (c, w, h) {
+        c.fillStyle = '#EFA7AF'; c.beginPath(); c.ellipse(w / 2, h * 0.62, w * 0.34, h * 0.28, 0, 0, TAU); c.fill();
+        c.fillStyle = '#D87F8C'; for (var i = 0; i < 4; i++) { c.beginPath(); c.ellipse(w * (0.24 + i * 0.17), h * 0.88, w * 0.07, h * 0.08, 0, 0, TAU); c.fill(); }
+        c.fillStyle = '#F1E0C8'; c.beginPath(); c.ellipse(w / 2, h * 0.32, w * 0.36, h * 0.26, 0, 0, TAU); c.fill();
+      });
+      // soft shadow + dust puff
+      R.shd = mkc(s * 1.3, s * 0.34, dpr, function (c, w, h) { c.save(); c.scale(1, h / w); var q = c.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); q.addColorStop(0, 'rgba(60,24,4,.55)'); q.addColorStop(0.55, 'rgba(60,24,4,.25)'); q.addColorStop(1, 'rgba(60,24,4,0)'); c.fillStyle = q; c.fillRect(0, 0, w, w); c.restore(); });
+      R.puff = mkc(48, 48, 1, function (c) { var q = c.createRadialGradient(24, 24, 0, 24, 24, 24); q.addColorStop(0, 'rgba(250,232,196,.75)'); q.addColorStop(0.5, 'rgba(236,206,160,.4)'); q.addColorStop(1, 'rgba(236,206,160,0)'); c.fillStyle = q; c.fillRect(0, 0, 48, 48); });
+      return R;
+    }
+    function hamW() { return lw * 0.82; }
+    function star5(c, x, y, r, col) { c.fillStyle = col; c.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } c.closePath(); c.fill(); }
+    // one frame of the hamster at ground point (x, gy): run cycle / cash-out hops / stumble and fall
+    function drawHam(c, x, gy) {
+      var s = hamW(), R = HR, ph = cyc % 1, a2 = 4 * Math.PI * ph, amp = 0.75 + 0.6 * clamp((spd - 0.3) / 0.6, 0, 1);
+      var b = 0.5 - 0.5 * Math.cos(a2), bob = b * 0.06 * s * amp, sq = (0.5 - b) * 0.08 * amp, sx = 1 + sq, sy = 1 - sq;
+      var sway = Math.sin(TAU * ph) * 0.022 * s * amp, roll = Math.sin(TAU * ph) * 0.045 * amp + lean, hop = 0, mv = lane - lx0, lk = mv ? clamp((hx - lx0) / mv, 0, 1) : 1;
+      hop += Math.sin(Math.PI * lk) * 0.07 * s * (mv ? 1 : 0);
+      var arms = 0, pivot = 0, earK = 0;
+      if (won && !crash) { var wk = won < 1.7 ? Math.abs(Math.sin(won * Math.PI * 2.1)) : 0; hop += wk * 0.34 * s; arms = won < 1.9 ? 1 : 0; sq = wk < 0.15 && won < 1.7 ? 0.08 : -0.03 * wk; sx = 1 + sq; sy = 1 - sq; earK = 0.25; }
+      var cr = 0;
+      if (crash) {
+        var ct = crash.t, sd = crash.s, k;
+        if (ct < 0.12) { k = ct / 0.12; sx = 1 + 0.2 * k; sy = 1 - 0.22 * k; roll = 0; sway = 0; earK = -0.5 * k; }
+        else if (ct < 0.62) { k = (ct - 0.12) / 0.5; var e = ease(k); cr = sd * 1.3 * e; hop = Math.sin(Math.PI * Math.min(1, k * 1.15)) * 0.32 * s; sx = 1 + 0.2 * (1 - e); sy = 1 - 0.22 * (1 - e); roll = 0; sway = 0; earK = -0.4; }
+        else { var k3 = ct - 0.62; cr = sd * (1.3 + Math.sin(k3 * 15) * Math.exp(-k3 * 5) * 0.14); hop = Math.abs(Math.sin(k3 * 12)) * Math.exp(-k3 * 6) * 0.08 * s; roll = 0; sway = 0; earK = 0.1 * Math.sin(k3 * 3); }
+        pivot = sd * 0.44 * s; bob *= 0.4;
+      }
+      // soft shadow: smaller and lighter when the body is in the air
+      var lift = (hop + bob) / s, shW = s * (crash && cr ? 1.15 : 1) * (1 - lift * 0.5);
+      c.globalAlpha = clamp(1 - lift * 1.2, 0.35, 1); c.drawImage(R.shd, x + pivot * Math.min(1, Math.abs(cr)) * 0.6 - shW * 0.6, gy - shW * 0.12, shW * 1.2, shW * 0.3); c.globalAlpha = 1;
+      c.save(); c.translate(x + sway + pivot, gy - hop); c.rotate(roll + cr); c.translate(-pivot, 0);
+      var i, fp, fk, fx, fy;
+      // front paws (under the chest, behind the body): reach out at the sides, alternating
+      for (i = -1; i <= 1; i += 2) {
+        fp = (ph + (i > 0 ? 0.5 : 0) + 0.25) % 1; var reach = Math.sin(TAU * fp);
+        if (arms) { fx = i * s * 0.5; fy = -s * (0.92 + 0.06 * Math.sin(won * 18 + i)); c.save(); c.translate(fx, fy); c.rotate(i * 0.3); c.drawImage(R.paw, -R.pw / 2, -R.ph / 2, R.pw, R.ph); c.restore(); continue; }
+        fx = i * s * (0.42 + 0.05 * Math.max(0, reach)); fy = -s * (0.05 + 0.07 * Math.max(0, reach)) - bob * 0.5;
+        c.save(); c.translate(fx, fy); c.rotate(i * (0.5 + 0.3 * reach)); c.drawImage(R.paw, -R.pw / 2, -R.ph / 2, R.pw, R.ph); c.restore();
+      }
+      // head, lagging the body's bob a little; ears spring behind it
+      var bh = 0.5 - 0.5 * Math.cos(a2 - 0.9), hyH = -s * 0.8 - bob - bh * 0.035 * s * amp * (crash ? 0 : 1), hxH = -sway * 0.5 - lean * 0.12 * s;
+      for (i = -1; i <= 1; i += 2) {
+        var er = i * (0.32 + 0.1 * Math.sin(a2 - 1.7) * amp + earK) ;
+        c.save(); c.translate(hxH + i * s * 0.2, hyH - s * 0.12); c.rotate(er); if (i > 0) c.scale(-1, 1); c.drawImage(R.ear, -R.ew / 2, -R.eh * 0.95, R.ew, R.eh); c.restore();
+      }
+      c.save(); c.translate(hxH, hyH); c.scale(1 + sq * 0.5, 1 - sq * 0.5); c.drawImage(R.head, -R.hw / 2, -R.hh / 2, R.hw, R.hh); c.restore();
+      // body (squash / stretch from the ground up)
+      c.save(); c.translate(0, -bob); c.scale(sx, sy); c.drawImage(R.body, -R.bw / 2, -R.boy - s * 0.03, R.bw, R.bh); c.restore();
+      // tiny tail
+      var tx0 = Math.sin(a2) * 0.01 * s, ty0 = -s * 0.13 - bob * sy;
+      c.fillStyle = '#E9C9A6'; c.beginPath(); c.ellipse(tx0, ty0, s * 0.045, s * 0.035, 0, 0, TAU); c.fill();
+      c.fillStyle = '#F2B9B4'; c.beginPath(); c.ellipse(tx0, ty0 + s * 0.012, s * 0.022, s * 0.016, 0, 0, TAU); c.fill();
+      // hind feet: on the ground they hide under the rump (edge-on); kicking back they lift and show their pink soles
+      var fsp = crash ? Math.max(0.15, Math.exp(-crash.t * 1.5)) : 1;
+      for (i = -1; i <= 1; i += 2) {
+        fp = (ph + (i > 0 ? 0.5 : 0)) % 1;
+        var up, show;
+        if (fp < 0.5) { fk = fp / 0.5; up = 0; show = 0.32 + 0.25 * fk; }
+        else { fk = (fp - 0.5) / 0.5; up = Math.sin(Math.PI * fk) * 0.15 * s * amp; show = 1 - 0.55 * fk; }
+        if (crash && crash.t > 0.12) { up = (0.08 + 0.06 * Math.sin(cyc * TAU * 2 + i)) * s * fsp; show = 0.9; }
+        if (won && arms) { up *= 0.4; }
+        fx = i * s * (0.21 + 0.02 * show); fy = -up - bob * 0.3 + s * 0.02;
+        var fh = R.fh * show;
+        c.save(); c.translate(fx, fy); c.rotate(i * (0.12 + 0.1 * show)); c.drawImage(R.foot, -R.fw / 2, -fh, R.fw, fh); c.restore();
+      }
+      c.restore();
+      // dizzy stars above the fallen hamster's head
+      if (crash && crash.t > 0.5) {
+        var ang = cr, hx2 = x + pivot + Math.cos(ang) * (-pivot) - Math.sin(ang) * (-1.1 * s), hy2 = gy - hop + Math.sin(ang) * (-pivot) + Math.cos(ang) * (-1.1 * s);
+        c.globalAlpha = Math.min(1, (crash.t - 0.5) * 3);
+        for (i = 0; i < 3; i++) { var sa2 = crash.t * 4 + i * TAU / 3, zz = Math.sin(sa2); star5(c, hx2 + Math.cos(sa2) * s * 0.3, hy2 - s * 0.12 + zz * s * 0.07, s * (0.055 + 0.015 * zz), i % 2 ? '#FDE68A' : '#FFFFFF'); }
+        c.globalAlpha = 1;
+      }
+    }
+    // drawing only: what happens on screen when the run ends (k 0 = an obstacle, 1 = the end wall)
+    function hitFx(k) {
+      crash = { t: 0, s: hx > 0 ? -1 : hx < 0 ? 1 : (Math.random() < 0.5 ? -1 : 1) };
+      A.shake(k ? 0.5 : 0.32); A.flash(k ? 0.25 : 0.1);
+      var x = SX(hx, 0), n = A.lite ? 4 : 10;
+      for (var i = 0; i < n; i++) PF.push({ x: x + rnd(-0.4, 0.4) * lw, y: ny - rnd(0, 0.25) * lw, vx: rnd(-1, 1) * lw * 0.8, vy: -rnd(0.2, 0.7) * lw, r: lw * rnd(0.12, 0.22), gr: lw * 0.5, t: 0, m: rnd(0.5, 0.9) });
+      A._xb = 1; A.burst(x, ny - lw * 0.2, k ? 18 : 12, ['#FDE68A', '#F5D0A9', '#E0A85A', '#FFF7ED'], 170 * (k ? 1.4 : 1), 0.6, 2.6); A._xb = 0;
     }
     function obSprite(k) {
       var w = lw * 0.84, h = k ? w * 0.62 : w * 0.95;
@@ -1065,8 +1204,8 @@
           var q2 = c.createRadialGradient(W / 2, hy, 0, W / 2, hy, lw * 1.4); q2.addColorStop(0, 'rgba(255,251,235,1)'); q2.addColorStop(0.2, 'rgba(253,230,138,.85)'); q2.addColorStop(0.6, 'rgba(244,114,182,.25)'); q2.addColorStop(1, 'rgba(244,114,182,0)');
           c.fillStyle = q2; c.fillRect(0, 0, W, H);
         });
-        floorG = null; shadeG = null;
-        var n = A.lite ? 4 : 6; hamS = []; for (var i = 0; i < n; i++) hamS.push(hamSprite(i, n));
+        floorG = null; fogG = null; shadeG = null;
+        HR = rig(hamW());
         obS = [obSprite(0), obSprite(1)];
         wallS = mkc(lw * 3.4, lw * 1.6, dpr, function (c, w, h) { // toy-brick wall (end of the round)
           var cols = ['#F43F5E', '#FACC15', '#3B82F6', '#22C55E', '#F97316', '#A855F7'], bw = w / 6, bh = h / 4;
@@ -1075,14 +1214,15 @@
             c.fillStyle = sh(cl, 0.3); c.beginPath(); c.arc(x0 + bw * 0.3, y0 + bh * 0.5, bh * 0.16, 0, TAU); c.arc(x0 + bw * 0.7, y0 + bh * 0.5, bh * 0.16, 0, TAU); c.fill(); }
         });
       },
-      reset: function (live) { obs = []; lane = 0; hx = 0; dead = false; wall = null; won = 0; rowT = live ? 1.2 : 0.8; lastFree = 0; },
+      reset: function (live) { obs = []; lane = 0; hx = 0; dead = false; wall = null; won = 0; rowT = live ? 1.2 : 0.8; lastFree = 0; lx0 = 0; vX = 0; lean = 0; vPrev = 0; crash = null; scrollK = 1; CF.length = 0; cfOn = 0; },
       step: function (dt, live) {
         t += dt;
         var lv = A.lv(), playing = A.live();
         spd = (live ? 0.48 + 0.4 * lv : 0.32) * (won ? 1.6 : 1);
         var rp0 = ringP;
-        ringP = (ringP + dt * spd / 0.14) % 1;
-        if (ringP < rp0) ringN++; rph = (rph + dt * spd * 9) % 1; sfx += ((live ? 0.3 + lv * 0.7 : 0.15) - sfx) * Math.min(1, dt * 2); // drawing only
+        scrollK += ((crash ? 0.12 : 1) - scrollK) * Math.min(1, dt * (crash ? 3 : 2)); // drawing only: the floor slows down after a fall
+        ringP = (ringP + dt * spd / 0.14 * scrollK) % 1;
+        if (ringP < rp0) ringN++; sfx += ((live ? 0.3 + lv * 0.7 : 0.15) - sfx) * Math.min(1, dt * 2); // drawing only
         var tgt = lane, dx = tgt - hx, st = dt * 8.5;
         hx = Math.abs(dx) <= st ? tgt : hx + Math.sign(dx) * st;
         if (live && !wall) {
@@ -1097,19 +1237,41 @@
         }
         for (var i = obs.length - 1; i >= 0; i--) {
           var o = obs[i], z0 = o.z; o.z -= spd * dt;
-          if (z0 > 0.02 && o.z <= 0.02 && playing && !dead && Math.abs(o.ln - hx) < 0.5) { if (A.fail(A.l.fail)) { dead = true; A.explode(SX(hx, 0), ny - lw * 0.35, 1.2); } }
+          if (z0 > 0.02 && o.z <= 0.02 && playing && !dead && Math.abs(o.ln - hx) < 0.5) { if (A.fail(A.l.fail)) { dead = true; hitFx(0); } }
           if (o.z < -0.07) obs.splice(i, 1);
         }
-        if (wall) { var w0 = wall.z; wall.z -= wall.v * dt; if (w0 > 0.02 && wall.z <= 0.02) { dead = true; A.explode(SX(hx, 0), ny - lw * 0.35, 1.8); } if (wall.z < -0.07) wall = null; }
+        if (wall) { var w0 = wall.z; wall.z -= wall.v * dt; if (w0 > 0.02 && wall.z <= 0.02) { dead = true; hitFx(1); } if (wall.z < -0.07) wall = null; }
         if (won) won += dt;
+        // ---- drawing only from here (v3103): eased lane slide + lean, gait cycle, dust, confetti
+        var mv = lane - lx0, lk = mv ? clamp((hx - lx0) / mv, 0, 1) : 1;
+        vX = lx0 + mv * lk * lk * (3 - 2 * lk);
+        var vel = dt > 0 ? (vX - vPrev) / dt : 0; vPrev = vX;
+        lean += (clamp(vel * 0.045, -0.32, 0.32) - lean) * Math.min(1, dt * 16);
+        if (crash) crash.t += dt;
+        var c0 = cyc;
+        cyc += dt * (crash ? 7 * Math.exp(-crash.t * 1.2) + 0.5 : 1.6 + 6.5 * spd);
+        // a puff of dust each time a hind foot pushes off (twice per cycle)
+        if (!crash && Math.floor(c0 * 2 + 0.5) !== Math.floor(cyc * 2 + 0.5) && PF.length < (A.lite ? 5 : 16)) {
+          var s = hamW(), fs = (Math.floor(cyc * 2 + 0.5) % 2) ? 1 : -1, px = SX(vX, 0) + fs * s * 0.22;
+          PF.push({ x: px, y: ny - s * 0.02, vx: fs * lw * rnd(0.05, 0.25), vy: lw * rnd(0.05, 0.25) * (0.5 + spd), r: s * rnd(0.08, 0.13), gr: s * (0.25 + spd * 0.4), t: 0, m: rnd(0.35, 0.55) * (A.lite ? 0.8 : 1) });
+        }
+        for (i = PF.length - 1; i >= 0; i--) { var f = PF[i]; f.t += dt; if (f.t > f.m) { PF.splice(i, 1); continue; } f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= 0.96; f.r += f.gr * dt; }
+        if (won && !cfOn) { cfOn = 1; // cash-out: a little confetti pop above the hamster
+          var cx0 = SX(vX, 0), cy0 = ny - hamW() * 1.1, cc = ['#FACC15', '#F472B6', '#4ADE80', '#22D3EE', '#FB923C', '#FFFFFF', '#A78BFA'];
+          for (i = 0; i < (A.lite ? 16 : 46); i++) { var an = -Math.PI / 2 + rnd(-1.1, 1.1), sp = lw * rnd(1.6, 3.4); CF.push({ x: cx0, y: cy0, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp, r: rnd(3, 6), a: rnd(0, TAU), va: rnd(-12, 12), c: cc[i % cc.length], t: 0, m: rnd(1.2, 1.9) }); }
+        }
+        for (i = CF.length - 1; i >= 0; i--) { var q2 = CF[i]; q2.t += dt; if (q2.t > q2.m) { CF.splice(i, 1); continue; } q2.x += q2.vx * dt; q2.y += q2.vy * dt; q2.vx *= 0.97; q2.vy = q2.vy * 0.97 + lw * 4 * dt; q2.a += q2.va * dt; }
         // sawdust kicked up behind the hamster (drawing only)
-        if (!dead && !A.lite || (!dead && SD.length < 6)) { if (Math.random() < dt * (8 + 20 * spd)) SD.push({ x: SX(hx, 0) + rnd(-1, 1) * lw * 0.15, y: ny - lw * 0.02, vx: rnd(-1, 1) * lw * 0.6, vy: -rnd(0.3, 0.9) * lw, t: 0, m: rnd(0.3, 0.6), c: Math.random() < 0.5 ? '#FDE68A' : '#F5D0A9' }); }
+        if (!dead && !A.lite || (!dead && SD.length < 6)) { if (Math.random() < dt * (8 + 20 * spd)) SD.push({ x: SX(vX, 0) + rnd(-1, 1) * lw * 0.15, y: ny - lw * 0.02, vx: rnd(-1, 1) * lw * 0.6, vy: -rnd(0.3, 0.9) * lw, t: 0, m: rnd(0.3, 0.6), c: Math.random() < 0.5 ? '#FDE68A' : '#F5D0A9' }); }
         for (i = SD.length - 1; i >= 0; i--) { var q = SD[i]; q.t += dt; if (q.t > q.m) { SD.splice(i, 1); continue; } q.x += q.vx * dt; q.y += q.vy * dt; q.vy += lw * 3 * dt; }
       },
       draw: function (c) {
         A.bg(bg);
         var i, z, p, n = A.lite ? 7 : 12, tr = (ny - hy) * 1.0, cyN = ny - tr * 0.55, cx = W / 2;
         function cy(pp) { return hy + (cyN - hy) * pp; }
+        // camera: a touch of zoom (wider "FOV" feel) and a light tremble as the run gets fast; a soft step bob
+        var hs = clamp((sfx - 0.2) / 0.8, 0, 1), zm = 1 + 0.05 * hs, jx = (Math.sin(t * 37) + Math.sin(t * 23.3)) * 0.6 * hs * hs, jy = (Math.sin(t * 41.7) + Math.cos(t * 29.1)) * 0.5 * hs * hs + (crash ? 0 : (0.5 - 0.5 * Math.cos(4 * Math.PI * (cyc % 1))) * 1.2 * (0.4 + hs));
+        c.save(); c.translate(cx, hy); c.scale(zm, zm); c.translate(-cx + jx, -hy + jy);
         // tube segments, far → near: translucent coloured plastic, a bright connector ring, a glossy highlight
         for (i = 0; i < n + 2; i++) {
           var z1 = (n - 1 - i + 1 - ringP) * 0.14, z0 = z1 + 0.14; if (z0 < -0.12) continue;
@@ -1126,40 +1288,63 @@
         c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = 1.2;
         for (i = 0; i < 12; i++) { var aa = Math.PI * (0.78 + i * 0.12); c.beginPath(); c.moveTo(cx + Math.cos(aa) * tr * pf, cy(pf) + Math.sin(aa) * tr * pf); c.lineTo(cx + Math.cos(aa) * tr * pn, cy(pn) + Math.sin(aa) * tr * pn); c.stroke(); }
         if (!shadeG) { shadeG = c.createRadialGradient(cx, cy(1), tr * 0.35, cx, cy(1), tr * 1.25); shadeG.addColorStop(0, 'rgba(20,6,40,0)'); shadeG.addColorStop(1, 'rgba(20,6,40,.45)'); }
-        c.fillStyle = shadeG; c.fillRect(0, 0, W, H);
+        c.fillStyle = shadeG; c.fillRect(-W * 0.1, -H * 0.1, W * 1.2, H * 1.2);
         // speed streaks on the tube wall (longer / brighter as the multiplier climbs)
         if (sfx > 0.08) {
           c.strokeStyle = 'rgba(255,255,255,' + (0.22 * sfx).toFixed(3) + ')'; c.lineWidth = 1.5; c.lineCap = 'round';
           for (i = 0; i < (A.lite ? 6 : 14); i++) { var a = Math.PI * (0.85 + (i * 0.618 % 1) * 1.3), k = (t * (1.5 + spd * 2) + i * 0.37) % 1, r0 = tr * (0.15 + k * 0.9), r1 = r0 + tr * 0.25 * sfx * k; c.beginPath(); c.moveTo(cx + Math.cos(a) * r0, cy(1) + (hy - cy(1)) * (1 - k) * 0.6 + Math.sin(a) * r0 * 0.9); c.lineTo(cx + Math.cos(a) * r1, cy(1) + (hy - cy(1)) * (1 - k) * 0.6 + Math.sin(a) * r1 * 0.9); c.stroke(); }
         }
-        // floor: a sawdust-yellow runway with bands that scroll with the rings, lane grooves, seeds
-        if (!floorG) { floorG = c.createLinearGradient(0, hy, 0, H); floorG.addColorStop(0, '#FDE68A'); floorG.addColorStop(0.15, '#F59E0B'); floorG.addColorStop(1, '#B45309'); }
-        c.fillStyle = floorG; c.beginPath(); c.moveTo(SX(-1.55, 8), SY(8)); c.lineTo(SX(1.55, 8), SY(8)); c.lineTo(SX(1.55, -0.08), SY(-0.08)); c.lineTo(SX(-1.55, -0.08), SY(-0.08)); c.closePath(); c.fill();
+        // floor (v3103): a wooden runway — planks across the track, dark joints, staggered board ends, grain, warm haze far away
+        if (!floorG) { floorG = c.createLinearGradient(0, hy, 0, H); floorG.addColorStop(0, '#F3C88A'); floorG.addColorStop(0.2, '#D69A5C'); floorG.addColorStop(1, '#A8682F'); }
+        if (!fogG) { fogG = c.createLinearGradient(0, hy, 0, hy + (ny - hy) * 0.45); fogG.addColorStop(0, 'rgba(255,240,200,.75)'); fogG.addColorStop(1, 'rgba(255,240,200,0)'); }
+        var XL = -1.55, XR = 1.55;
+        c.fillStyle = floorG; c.beginPath(); c.moveTo(SX(XL, 8), SY(8)); c.lineTo(SX(XR, 8), SY(8)); c.lineTo(SX(XR, -0.08), SY(-0.08)); c.lineTo(SX(XL, -0.08), SY(-0.08)); c.closePath(); c.fill();
         for (i = 0; i < n; i++) {
-          z = (n - 1 - i + 1 - ringP) * 0.14; if (z < -0.08) continue;
-          var za = Math.max(-0.08, z), zb = z + 0.07;
-          c.fillStyle = (ringN + n - i) % 2 ? 'rgba(255,255,255,.12)' : 'rgba(120,53,15,.12)'; c.beginPath(); c.moveTo(SX(-1.55, za), SY(za)); c.lineTo(SX(1.55, za), SY(za)); c.lineTo(SX(1.55, zb), SY(zb)); c.lineTo(SX(-1.55, zb), SY(zb)); c.closePath(); c.fill();
-          var R = (ringN + n - i) * 7 + 3;
-          for (var s = 0; s < 4; s++) { R = (R * 9301 + 49297) % 233280; var sx = -1.4 + R / 233280 * 2.8; R = (R * 9301 + 49297) % 233280; var sz = z + R / 233280 * 0.14; if (sz < -0.08) continue; var sp = P(sz); c.fillStyle = s % 2 ? '#4B2E12' : '#FFF7D6'; c.beginPath(); c.ellipse(SX(sx, sz), SY(sz), 3.5 * sp + 0.5, 1.6 * sp + 0.3, 0.3, 0, TAU); c.fill(); }
+          z = (n - 1 - i + 1 - ringP) * 0.14;
+          for (var hb = 0; hb < 2; hb++) {
+            var za = z + hb * 0.07, zb = za + 0.07; if (zb < -0.08) continue; za = Math.max(-0.08, za);
+            var id = (ringN + n - i) * 2 + hb, hv = hsh(id + 7), pa = P(za), pb = P(zb), ya = SY(za), yb = SY(zb);
+            c.globalAlpha = 0.55; c.fillStyle = WOOD[(hv * WOOD.length) | 0];
+            c.beginPath(); c.moveTo(SX(XL, za), ya); c.lineTo(SX(XR, za), ya); c.lineTo(SX(XR, zb), yb); c.lineTo(SX(XL, zb), yb); c.closePath(); c.fill();
+            c.globalAlpha = 1;
+            if (pa > 0.3) { // grain lines along the plank + a board end
+              c.strokeStyle = 'rgba(110,58,20,.16)'; c.lineWidth = Math.max(0.5, 1.1 * pa);
+              for (var gi = 1; gi <= 2; gi++) { var zg = za + (zb - za) * (gi / 3 + (hsh(id * 3 + gi) - 0.5) * 0.15), x0g = XL + hsh(id + gi * 11) * 1.2, x1g = x0g + 0.8 + hsh(id + gi * 13) * 1.2; c.beginPath(); c.moveTo(SX(x0g, zg), SY(zg)); c.lineTo(SX(Math.min(XR, x1g), zg), SY(zg)); c.stroke(); }
+              var xe = XL + 0.4 + hsh(id + 99) * 2.3; c.strokeStyle = 'rgba(70,32,8,.45)'; c.lineWidth = Math.max(0.6, 1.6 * pa); c.beginPath(); c.moveTo(SX(xe, za), ya); c.lineTo(SX(xe, zb), yb); c.stroke();
+            }
+            // the joint at the near edge of the plank (dark gap + a lit lip)
+            if (za > -0.08) { c.strokeStyle = 'rgba(70,32,8,.6)'; c.lineWidth = Math.max(0.6, 2.4 * pa); c.beginPath(); c.moveTo(SX(XL, za), ya); c.lineTo(SX(XR, za), ya); c.stroke();
+              if (pa > 0.25) { c.strokeStyle = 'rgba(255,226,170,.35)'; c.lineWidth = Math.max(0.5, 1.2 * pa); c.beginPath(); c.moveTo(SX(XL, za + 0.004), ya - 1.6 * pa); c.lineTo(SX(XR, za + 0.004), ya - 1.6 * pa); c.stroke(); } }
+          }
+          var R = (ringN + n - i) * 7 + 3; // a few sunflower seeds on the planks
+          for (var s = 0; s < 2; s++) { R = (R * 9301 + 49297) % 233280; var sx = -1.4 + R / 233280 * 2.8; R = (R * 9301 + 49297) % 233280; var sz = z + R / 233280 * 0.14; if (sz < -0.08) continue; var sp = P(sz); c.fillStyle = s % 2 ? '#3B2410' : '#F4EBD0'; c.beginPath(); c.ellipse(SX(sx, sz), SY(sz), 3.6 * sp + 0.5, 1.6 * sp + 0.3, 0.3, 0, TAU); c.fill(); if (s % 2) { c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(SX(sx, sz) - 2 * sp, SY(sz) - 0.4 * sp, 4 * sp, 0.8 * sp + 0.2); } }
         }
-        [-1.5, 1.5].forEach(function (lx) { c.strokeStyle = '#7C2D12'; c.lineWidth = 3; c.beginPath(); c.moveTo(SX(lx, 8), SY(8)); c.lineTo(SX(lx, -0.08), SY(-0.08)); c.stroke(); });
-        [-0.5, 0.5].forEach(function (lx) { c.strokeStyle = 'rgba(120,53,15,.35)'; c.lineWidth = 2; c.beginPath(); c.moveTo(SX(lx, 8), SY(8)); c.lineTo(SX(lx, -0.08), SY(-0.08)); c.stroke(); });
+        c.fillStyle = fogG; c.beginPath(); c.moveTo(SX(XL, 8), SY(8)); c.lineTo(SX(XR, 8), SY(8)); c.lineTo(SX(XR, -0.08), SY(-0.08)); c.lineTo(SX(XL, -0.08), SY(-0.08)); c.closePath(); c.fill(); // warm haze far away
+        // side beams: a raised wooden edge with posts that rush past
+        [-1, 1].forEach(function (sd) {
+          var xi = sd * 1.5, xo = sd * 1.66, zf = 8, zn = -0.08, bhh = lw * 0.12;
+          c.fillStyle = '#7A3F16'; c.beginPath(); c.moveTo(SX(xi, zf), SY(zf)); c.lineTo(SX(xi, zn), SY(zn)); c.lineTo(SX(xo, zn), SY(zn) + 2); c.lineTo(SX(xo, zf), SY(zf)); c.closePath(); c.fill();
+          c.fillStyle = '#B4733A'; c.beginPath(); c.moveTo(SX(xi, zf), SY(zf)); c.lineTo(SX(xi, zn), SY(zn)); c.lineTo(SX(xi, zn), SY(zn) - bhh * P(zn)); c.lineTo(SX(xi, zf), SY(zf) - bhh * P(zf)); c.closePath(); c.fill();
+          c.strokeStyle = 'rgba(255,220,160,.55)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(SX(xi, zf), SY(zf) - bhh * P(zf)); c.lineTo(SX(xi, zn), SY(zn) - bhh * P(zn)); c.stroke();
+          for (var j = 0; j < n; j++) { var zp = (n - 1 - j + 1 - ringP) * 0.14 + 0.03; if (zp < -0.08) continue; var pp = P(zp), px = SX(xi, zp), py = SY(zp); c.fillStyle = '#6B3612'; c.fillRect(px - (sd > 0 ? 0 : 3.5 * pp), py - bhh * pp * 1.25, 3.5 * pp + 0.6, bhh * pp * 1.25); c.fillStyle = 'rgba(255,214,150,.5)'; c.fillRect(px - (sd > 0 ? 0 : 3.5 * pp), py - bhh * pp * 1.25, 3.5 * pp + 0.6, 1.2 * pp + 0.4); }
+        });
+        [-0.5, 0.5].forEach(function (lx) { c.strokeStyle = 'rgba(90,40,10,.28)'; c.lineWidth = 2; c.beginPath(); c.moveTo(SX(lx, 8), SY(8)); c.lineTo(SX(lx, -0.08), SY(-0.08)); c.stroke(); });
         var sorted = obs.slice().sort(function (a, b) { return b.z - a.z; });
         function drawOb(o) { var pp = P(o.z), img = obS[o.k], w = lw * 0.84 * pp, hh = w * img.height / img.width; c.drawImage(img, SX(o.ln, o.z) - w / 2, SY(o.z) - hh, w, hh); }
         function drawWall() { var pp = P(wall.z), x0 = SX(-1.7, wall.z), x1 = SX(1.7, wall.z), y1 = SY(wall.z), hh = lw * 1.6 * pp; c.drawImage(wallS, x0, y1 - hh, x1 - x0, hh); }
         for (i = 0; i < sorted.length; i++) if (sorted[i].z > 0.02) drawOb(sorted[i]);
         if (wall && wall.z > 0.02) drawWall();
         for (i = 0; i < SD.length; i++) { var q = SD[i]; c.globalAlpha = 1 - q.t / q.m; c.fillStyle = q.c; c.fillRect(q.x - 1.5, q.y - 1, 3, 2); }
+        for (i = 0; i < PF.length; i++) { var f = PF[i], fk = f.t / f.m; c.globalAlpha = (1 - fk) * Math.min(1, fk * 6) * 0.9; c.drawImage(HR.puff, f.x - f.r, f.y - f.r, f.r * 2, f.r * 2); }
         c.globalAlpha = 1;
-        if (!dead) {
-          var img = hamS[((rph * hamS.length) | 0) % hamS.length], hw = lw * 0.82, hh2 = hw * 1.08, x = SX(hx, 0), lean = (lane - hx) * 0.35, jy = won ? Math.abs(Math.sin(won * 8)) * 10 : 0;
-          c.fillStyle = 'rgba(80,30,5,.35)'; c.beginPath(); c.ellipse(x, ny - 2, hw * 0.45, hw * 0.08, 0, 0, TAU); c.fill();
-          c.save(); c.translate(x, ny - jy); c.rotate(lean); c.drawImage(img, -hw / 2, -hh2, hw, hh2); c.restore();
-        }
+        drawHam(c, SX(vX, 0), ny);
         for (i = 0; i < sorted.length; i++) if (sorted[i].z <= 0.02) drawOb(sorted[i]);
         if (wall && wall.z <= 0.02) drawWall();
+        for (i = 0; i < CF.length; i++) { var cf = CF[i]; c.globalAlpha = Math.min(1, (cf.m - cf.t) * 3); c.save(); c.translate(cf.x, cf.y); c.rotate(cf.a); c.fillStyle = cf.c; c.fillRect(-cf.r / 2, -cf.r / 4, cf.r, cf.r / 2); c.restore(); }
+        c.globalAlpha = 1;
+        c.restore();
       },
-      down: function (x) { if (dead || wall) return; lane = clamp(lane + (x < W / 2 ? -1 : 1), -1, 1); },
+      down: function (x) { if (dead || wall) return; lx0 = hx; lane = clamp(lane + (x < W / 2 ? -1 : 1), -1, 1); },
       boom: function () { wall = { z: 0.75, v: 2.6 }; obs = obs.filter(function (o) { return o.z > 0.75; }); },
       win: function () { won = 0.001; obs = []; }
     };

@@ -642,7 +642,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3101'; // v3089+ : logos lot E (fin de logos-a.js, v3095 : 3e lot, v3099 : 4e et dernier lot) + lot F (js/games/logos-f.js, v3093 : 2e lot, v3097 : 3e lot, v3101 : 4e et dernier lot) ; v3077+ : lot D ; v3069–3075 : lot C
+  var MOD_V = '3103'; // v3103 : Hamster Run (skill2.js) redessiné ; v3089+ : logos lot E (fin de logos-a.js, v3095 : 3e lot, v3099 : 4e et dernier lot) + lot F (js/games/logos-f.js, v3093 : 2e lot, v3097 : 3e lot, v3101 : 4e et dernier lot) ; v3077+ : lot D ; v3069–3075 : lot C
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
