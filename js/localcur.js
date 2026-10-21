@@ -78,8 +78,62 @@
       size = Math.round((size - 0.5) * 10) / 10;
       tag.style.fontSize = size + 'px'; tag.style.lineHeight = Math.round(size * 1.1) + 'px';
     }
+    place(host, amtEl, tag);
+  }
+  // Jeux / Paris : le libellé et le montant du Compte réel rapetissent pour tenir à côté du « + » (gros soldes, petits écrans)
+  function shrink(el, min) {
+    if (!el) return;
+    el.style.fontSize = '';
+    var fs = parseFloat(getComputedStyle(el).fontSize) || 14;
+    for (var k = 0; k < 24 && el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 1 && fs > min; k++) {
+      fs = Math.max(min, Math.round((fs - 0.5) * 10) / 10);
+      el.style.setProperty('font-size', fs + 'px', 'important');
+    }
+  }
+  function fitWallet() {
+    var cw = document.querySelector('#csBal.cw-same .cw-t');
+    if (!cw) return;
+    var key = cw.textContent + '|' + Math.round(cw.getBoundingClientRect().width);
+    if (cw.__k === key) return;
+    cw.__k = key;
+    shrink(cw.querySelector('small'), 6.5);
+    shrink(cw.querySelector('b'), 9);
+  }
+  // Placement (propriétaire : « droit, stylé, jamais sur le bord ») : la ligne est centrée SOUS le montant (même quand une
+  // icône est à gauche, plein écran compris) et ne touche jamais le bas de la case : si la place manque, tout le texte
+  // de la case monte un peu (sans sortir en haut), sinon la ligne rapetisse encore.
+  function place(host, amtEl, tag) {
+    var lbl = host.querySelector('.mb-lbl, small');
+    [tag, amtEl, lbl].forEach(function (e) { if (e) e.style.transform = ''; });
+    if (lbl && lbl.__tight) { lbl.__tight = 0; lbl.style.removeProperty('line-height'); }
+    var H = host.getBoundingClientRect(), cs = getComputedStyle(host);
+    // bord bas dessiné par une ombre intérieure (case Démo bleue : barre claire en bas) → on le compte aussi
+    var inB = 0; String(cs.boxShadow || '').split(/,(?![^(]*\))/).forEach(function (sh) { if (/inset/.test(sh)) { var m = sh.replace(/rgba?\([^)]*\)/, '').match(/(-?[\d.]+)px\s+(-?[\d.]+)px/); if (m && +m[2] < 0) inB = Math.max(inB, -m[2]); } });
+    var safeB = H.bottom - (parseFloat(cs.borderBottomWidth) || 0) - inB - 3, safeT = H.top + (parseFloat(cs.borderTopWidth) || 0) + 1;
+    var size = parseFloat(tag.style.fontSize) || 9;
+    for (var k = 0; k < 8; k++) {
+      var T = tag.getBoundingClientRect(), over = T.bottom - safeB;
+      if (over <= 0.5) break;
+      var top = lbl ? lbl.getBoundingClientRect().top : amtEl.getBoundingClientRect().top, room = Math.max(0, top - safeT);
+      var up = Math.min(over, room);
+      if (up > 0.5) { [tag, amtEl, lbl].forEach(function (e) { if (e) e.style.transform = 'translateY(' + (-up).toFixed(1) + 'px)'; }); }
+      if (over - up <= 0.5 || size <= 6.5) break;
+      // encore trop bas : le libellé (COMPTE RÉEL / DÉMO) se serre d'abord, puis la ligne rapetisse
+      if (lbl && !lbl.__tight) { lbl.__tight = 1; var lf = parseFloat(getComputedStyle(lbl).fontSize) || 10; lbl.style.setProperty('line-height', Math.round(lf * 0.9) + 'px', 'important'); [tag, amtEl, lbl].forEach(function (e) { if (e) e.style.transform = ''; }); continue; }
+      [tag, amtEl, lbl].forEach(function (e) { if (e) e.style.transform = ''; });
+      size = Math.round((size - 0.5) * 10) / 10;
+      tag.style.fontSize = size + 'px'; tag.style.lineHeight = Math.round(size * 1.1) + 'px';
+    }
+    // centré sous le montant (reste dans la case)
+    var A = amtEl.getBoundingClientRect(), T2 = tag.getBoundingClientRect();
+    var dx = host.classList.contains('cw-t') ? A.left - T2.left : (A.left + A.width / 2) - (T2.left + T2.width / 2); // Jeux / Paris : aligné à gauche comme le montant
+    var minL = H.left + 3 - T2.left, maxR = H.right - 3 - T2.right;
+    dx = Math.max(minL, Math.min(maxR, dx));
+    var ty = (tag.style.transform.match(/translateY\(([-\d.]+)px\)/) || [0, 0])[1];
+    tag.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + ty + 'px)';
   }
   function paint() {
+    try { fitWallet(); } catch (eW) { /* ignore */ }
     put(document.getElementById('modeRealAmt'), document.getElementById('modeReal'));
     put(document.getElementById('fsRealAmt'), document.getElementById('fsBtnReal'));
     // démo aussi (propriétaire) : même calcul, même taux
