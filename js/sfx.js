@@ -26,22 +26,44 @@
   }
   function ensure() {
     if (!AC) return null;
-    if (!ctx) { try { ctx = window.__oroAC || (window.__oroAC = new AC()); } catch (e) { ctx = null; } }
+    // 2026-10-21 : le contexte partagé a pu être refait (son bloqué sur iPhone) → on suit toujours le contexte du site
+    if (window.__oroAC && ctx !== window.__oroAC) { ctx = window.__oroAC; out = null; }
+    if (!ctx || ctx.state === 'closed') { try { ctx = window.__oroAC = new AC(); out = null; } catch (e) { ctx = null; } }
     return ctx;
+  }
+  // 2026-10-21 (propriétaire : « je dois souvent actualiser la page pour retrouver le son ») : sur iPhone, après un appel, une
+  // autre appli ou la veille, le son peut rester « interrompu » et ne revient jamais. À chaque toucher, on le relance ; s'il
+  // ne repart pas, on refait un contexte neuf (pendant le toucher, ce qui est permis), sans recharger la page.
+  function revive() {
+    if (!isOn() || !AC) return;
+    var c = ensure(); if (!c) return;
+    if (c.state === 'running') return;
+    try { var pr = c.resume(); if (pr && pr.catch) pr.catch(function () { /* ignore */ }); } catch (e) { /* ignore */ }
+    try { var b = c.createBuffer(1, 1, 22050), sN = c.createBufferSource(); sN.buffer = b; sN.connect(c.destination); sN.start(0); } catch (e) { /* ignore */ }
+    if (c.state === 'running') return;
+    // pas reparti tout de suite : contexte neuf, créé et lancé PENDANT ce toucher
+    try {
+      var old = c, nc = new AC();
+      window.__oroAC = nc; ctx = nc; out = null;
+      try { bedKill(0); } catch (eK) { /* ignore */ }
+      try { nc.resume(); } catch (eR) { /* ignore */ }
+      try { var b2 = nc.createBuffer(1, 1, 22050), s2 = nc.createBufferSource(); s2.buffer = b2; s2.connect(nc.destination); s2.start(0); } catch (e2) { /* ignore */ }
+      setTimeout(function () { try { if (old && old.state !== 'closed' && old !== window.__oroAC) old.close(); } catch (eC) { /* ignore */ } }, 400);
+    } catch (eN) { /* ignore */ }
   }
   // contexte prêt à jouer maintenant (sinon : rien, jamais de sons en retard qui sortiraient d'un coup)
   function ready() {
     if (!isOn() || document.hidden) return null;
     var c = ensure(); if (!c) return null;
     if (c.state === 'running') return c;
-    if (c.state === 'suspended') {
+    if (c.state !== 'closed') { // suspendu ou « interrompu » (iPhone)
       try { c.resume(); } catch (e) { /* ignore */ }
       var ua = navigator.userActivation;
       if (ua && ua.isActive) return c;
     }
     return null;
   }
-  function base() { return lite() ? 0.26 : 0.3; }
+  function base() { return lite() ? 0.5 : 0.58; } // 2026-10-21 (propriétaire : « augmente bien le son ») : ~2× plus fort
   function bus(c) {
     if (out && out.context === c) return out;
     var g = c.createGain(); g.gain.value = isOn() ? base() : 0;
@@ -583,7 +605,7 @@
     if (out) { try { out.gain.cancelScheduledValues(out.context.currentTime); out.gain.setValueAtTime(on ? base() : 0, out.context.currentTime); } catch (e) { /* ignore */ } }
     paintBtns();
     bedMute(!on);
-    if (on) { var c = ensure(); if (c && c.state === 'suspended') { try { c.resume(); } catch (e) { /* ignore */ } } setTimeout(function () { var c2 = ready(); if (c2) { INS.glass(c2, 784, 0, 0.09, 0.25); INS.glass(c2, 1047, 0.08, 0.08, 0.35); note2log('ui', '', 'on'); } }, 30); }
+    if (on) { revive(); var c = ensure(); setTimeout(function () { var c2 = ready(); if (c2) { INS.glass(c2, 784, 0, 0.09, 0.25); INS.glass(c2, 1047, 0.08, 0.08, 0.35); note2log('ui', '', 'on'); } }, 30); }
   }
   function button(b) {
     if (!b || b._sfx) return b;
@@ -596,15 +618,8 @@
   if (window.MutationObserver) new MutationObserver(paintBtns).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
   // déverrouillage au premier geste (iPhone : un son muet joué pendant le toucher)
-  var unl = false;
-  function unlock() {
-    if (!isOn()) return;
-    var c = ensure(); if (!c) return;
-    if (c.state === 'suspended') { try { c.resume(); } catch (e) { /* ignore */ } }
-    if (unl) return; unl = true;
-    try { var b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); } catch (e) { /* ignore */ }
-  }
-  ['pointerdown', 'touchend', 'keydown'].forEach(function (ev) { document.addEventListener(ev, unlock, { passive: true, capture: true }); });
+  function unlock() { revive(); }
+  ['pointerdown', 'touchend', 'click', 'keydown'].forEach(function (ev) { document.addEventListener(ev, unlock, { passive: true, capture: true }); });
 
   D6.Sfx = { play: play, win: win, lose: lose, on: isOn, set: set, button: button, theme: theme, amb: amb, bed: bedInfo,
     game: function (k) { cur = k || ''; }, log: LOG, vib: function () { return vibN; }, fam: function (k) { return theme(k).fam; } };
