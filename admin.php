@@ -2265,7 +2265,9 @@ if ($isAjax) {
     if ($subject === '' || $msg === '' || mb_strlen($subject) > 120 || mb_strlen($msg) > 2000) {
       admin_json(['ok' => false, 'reason' => 'Objet (120 lettres max) et message (2000 max) obligatoires.']);
     }
-    if ($btn === '') $btn = $group === 'fr' ? 'Ouvrir OROLADO' : 'Open OROLADO';
+    if ($btn === '') $btn = $group === 'fr' ? 'Jouer maintenant' : 'Play now';
+    $btnLink = trim((string) ($req['link'] ?? ''));
+    if ($btnLink !== '') { if (!preg_match('~^https://[^\s<>"\']+$~i', $btnLink) || mb_strlen($btnLink) > 300) admin_json(['ok' => false, 'reason' => 'Lien du bouton : il doit commencer par https://']); $btn .= "\n" . $btnLink; }
     if ($target === 'all' && (string) ($req['confirm'] ?? '') !== 'ENVOYER') admin_json(['ok' => false, 'reason' => 'Confirmation manquante.']);
     @set_time_limit(55);
     if ($target === 'test') {
@@ -2274,7 +2276,7 @@ if ($isAjax) {
       if ($to === '') $to = strtolower(trim((string) ($me['email'] ?? '')));
       if (!filter_var($to, FILTER_VALIDATE_EMAIL)) admin_json(['ok' => false, 'reason' => 'Adresse du test incorrecte.']);
       admin_mail_groups(); // charge les prénoms (si l'adresse du test est celle d'un joueur)
-      $r = admin_mail_plain($to, $subject, $msg);
+      $r = admin_mail_plain($to, $subject, $msg, $btn);
       admin_json(['ok' => !empty($r['ok']), 'id' => $id, 'sent' => !empty($r['ok']) ? 1 : 0, 'fail' => empty($r['ok']) ? 1 : 0, 'more' => false, 'reason' => (string) ($r['reason'] ?? '')]);
     }
     $list = admin_mail_groups()[$group];
@@ -2291,7 +2293,7 @@ if ($isAjax) {
       if ($n >= 5) break;
       if ($n > 0) sleep(random_int(5, 8));
       // v3000 — sous verrou partagé avec l'envoi en arrière-plan : journal relu, adresse sautée si l'autre l'a déjà faite.
-      $r = mailq_send_logged($id, $em, $subject, $msg, true);
+      $r = mailq_send_logged($id, $em, $subject, $msg, true, $btn);
       if ($r === null) continue;
       $n++;
       if (!empty($r['ok'])) $sent++; else { $fail++; $err = (string) ($r['reason'] ?? ''); }
@@ -2310,7 +2312,9 @@ if ($isAjax) {
     if ($subject === '' || $msg === '' || mb_strlen($subject) > 120 || mb_strlen($msg) > 2000) {
       admin_json(['ok' => false, 'reason' => 'Objet (120 lettres max) et message (2000 max) obligatoires.']);
     }
-    if ($btn === '') $btn = $group === 'fr' ? 'Ouvrir OROLADO' : 'Open OROLADO';
+    if ($btn === '') $btn = $group === 'fr' ? 'Jouer maintenant' : 'Play now';
+    $btnLink = trim((string) ($req['link'] ?? ''));
+    if ($btnLink !== '') { if (!preg_match('~^https://[^\s<>"\']+$~i', $btnLink) || mb_strlen($btnLink) > 300) admin_json(['ok' => false, 'reason' => 'Lien du bouton : il doit commencer par https://']); $btn .= "\n" . $btnLink; }
     if ((string) ($req['confirm'] ?? '') !== 'ENVOYER') admin_json(['ok' => false, 'reason' => 'Confirmation manquante.']);
     $list = admin_mail_groups()[$group];
     if (!$list) admin_json(['ok' => false, 'reason' => 'Aucun joueur dans ce groupe.']);
@@ -2740,7 +2744,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <label class="nt-lab">Message</label>
         <textarea id="mlBody" maxlength="2000" rows="8" class="nt-in" placeholder="Bonjour {prenom},&#10;&#10;Les marchés bougent bien aujourd'hui. Passe faire quelques trades : orolado.com&#10;&#10;À bientôt,&#10;L'équipe OROLADO"></textarea>
         <p class="muted" style="margin:4px 0 0">E-mail simple, comme écrit à la main (meilleure chance d'arriver dans « Principale »). Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte. Envoi lent : environ 1 e-mail toutes les 5 à 8 secondes (« 2. Envoyer à tous » : laissez la page ouverte ; « 📨 en arrière-plan » : vous pouvez la fermer).</p>
-        <input id="mlBtn" type="hidden" value="">
+        <label class="nt-lab">Texte du bouton orange (vide = « Jouer maintenant » / « Play now »)</label><input id="mlBtn" maxlength="40" class="nt-in" placeholder="Jouer maintenant"><label class="nt-lab">Lien du bouton (vide = orolado.com)</label><input id="mlLink" maxlength="300" class="nt-in" placeholder="https://orolado.com/" inputmode="url">
         <label class="nt-lab">Envoyer le test à (votre vraie adresse e-mail)</label>
         <input id="mlTestTo" type="email" maxlength="120" class="nt-in" placeholder="exemple@gmail.com" autocomplete="email">
         <p style="margin-top:12px">
@@ -3661,7 +3665,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   };
   $m('closeMail').onclick = () => $m('mailModal').classList.remove('on');
   async function send(target) {
-    const subject = $m('mlSubject').value.trim(), message = $m('mlBody').value.trim(), button = $m('mlBtn').value.trim(), group = $m('mlGroup').value;
+    const subject = $m('mlSubject').value.trim(), message = $m('mlBody').value.trim(), button = $m('mlBtn').value.trim(), link = $m('mlLink').value.trim(), group = $m('mlGroup').value;
     if (!subject || !message) { $m('mlSt').textContent = 'Écrivez l’objet et le message.'; return; }
     const testTo = $m('mlTestTo').value.trim();
     if (target === 'test') {
@@ -3680,11 +3684,11 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       // v2668 — « Envoyer à tous » : l'adresse du propriétaire (case du test) reçoit d'abord une copie, pour voir que c'est parti.
       if (target === 'all' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) {
         $m('mlSt').textContent = 'Copie envoyée à ' + testTo + '…';
-        try { await ajax({action:'mail_send', target:'test', group, subject, message, button, testTo}); } catch (eCopy) { /* ignore */ }
+        try { await ajax({action:'mail_send', target:'test', group, subject, message, button, link, testTo}); } catch (eCopy) { /* ignore */ }
       }
       do {
         $m('mlSt').textContent = 'Envoi en cours… ' + (already > 0 ? already + ' déjà reçu(s) avant, ' : '') + sent + ' e-mail(s) parti(s)' + (j && j.total ? ' sur ' + j.total : '') + (j && j.left ? ' · environ ' + Math.max(1, Math.round(j.left * 7.5 / 60)) + ' min restante(s)' : '') + '. Gardez la page ouverte.';
-        j = await ajax({action:'mail_send', target, group, subject, message, button, id, confirm: confirmTxt, testTo});
+        j = await ajax({action:'mail_send', target, group, subject, message, button, link, id, confirm: confirmTxt, testTo});
         if (!j.ok) { $m('mlSt').textContent = 'Échec : ' + (j.reason || 'pas de réponse du serveur d\'e-mails'); break; }
         if (already < 0) already = j.already || 0;
         id = j.id; sent += j.sent || 0; fail += j.fail || 0; if (j.err) err = j.err;
@@ -3723,7 +3727,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     } catch (e) { clearTimeout(qTimer); qTimer = setTimeout(qStatus, 10000); }
   }
   $m('btnMlBg').onclick = async () => {
-    const subject = $m('mlSubject').value.trim(), message = $m('mlBody').value.trim(), button = $m('mlBtn').value.trim(), group = $m('mlGroup').value;
+    const subject = $m('mlSubject').value.trim(), message = $m('mlBody').value.trim(), button = $m('mlBtn').value.trim(), link = $m('mlLink').value.trim(), group = $m('mlGroup').value;
     if (!subject || !message) { $m('mlSt').textContent = 'Écrivez l’objet et le message.'; return; }
     const testTo = $m('mlTestTo').value.trim();
     const c = prompt('Envoyer « ' + subject + ' » EN ARRIÈRE-PLAN à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nEnvoi lent (1 e-mail toutes les 6 à 9 s au plus) : vous pouvez fermer la page.\nAvez-vous fait « 1. M’envoyer un test » ?\nTapez ENVOYER pour confirmer :') || '';
@@ -3731,8 +3735,8 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     $m('btnMlBg').disabled = true;
     try {
       // Comme « Envoyer à tous » : l'adresse du test reçoit d'abord une copie.
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) { try { await ajax({action:'mail_send', target:'test', group, subject, message, button, testTo}); } catch (eCopy) { /* ignore */ } }
-      const j = await ajax({action:'mail_queue_start', group, subject, message, button, confirm:'ENVOYER'});
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) { try { await ajax({action:'mail_send', target:'test', group, subject, message, button, link, testTo}); } catch (eCopy) { /* ignore */ } }
+      const j = await ajax({action:'mail_queue_start', group, subject, message, button, link, confirm:'ENVOYER'});
       $m('mlSt').textContent = j.ok ? 'C’est parti : le serveur envoie seul, lentement. Vous pouvez fermer la page.' : (j.reason || 'Échec');
       if (j.status) qPaint(j.status);
       qStatus();
