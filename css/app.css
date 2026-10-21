@@ -13389,5 +13389,5 @@ html:root body #casinoModal .cs-try.cs-try2 .cs-try-ico svg{width:100%;height:10
 html:root body #casinoModal .cs-try.cs-try2 .cs-try-live{filter:drop-shadow(0 0 10px rgba(255,77,94,.45))}
 /* 2026-10-21 (propriétaire : « le mot PLEIN ÉCRAN aussi léger que ses voisins (loupes, flèche) ») : même couleur que les icônes
    voisines (#D9DBF5), écriture un peu moins grasse ; il garde un clignotement très doux, le petit carré rouge ne change pas */
-@keyframes oroFsSoft2{0%,100%{opacity:.92}50%{opacity:.7}}
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#D9DBF5!important;-webkit-text-fill-color:#D9DBF5!important;font-weight:700!important;text-shadow:none!important;animation:oroFsSoft2 2s ease-in-out infinite!important}
+@keyframes oroFsSoft2{0%,100%{opacity:.78}50%{opacity:.55}}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#9EA2C8!important;-webkit-text-fill-color:#9EA2C8!important;font-weight:700!important;text-shadow:none!important;animation:oroFsSoft2 2s ease-in-out infinite!important}
