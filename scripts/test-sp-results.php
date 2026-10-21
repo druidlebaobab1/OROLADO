@@ -167,7 +167,7 @@ check('Beşiktaş – Palace : sources en désaccord (2-1 / 2-0) → rien propos
 check('Sturm Graz – Marseille en cours → rien proposé', isset($P['estg']) && $P['estg']['k'] === null && $P['estg']['score'] === null);
 check('Hoffenheim – Lyon après prolongation → rien proposé', isset($P['ehof']) && $P['ehof']['k'] === null);
 check('Manchester United – AEK : pas relié à Man City – AEK → rien proposé', isset($P['emun']) && $P['emun']['k'] === null && !$P['emun']['srcs'], json_encode($P['emun']['srcs'] ?? null));
-check('Bitcoin / F1 : pas cherchés (à la main)', !isset($P['ebtc']) && !isset($P['ef1']) && $r['manual'] === 2);
+check('Bitcoin (réponse le 23/10, pas encore l’heure) : pas listé ; F1 : à la main avec la raison', !isset($P['ebtc']) && !isset($P['ef1']) && $r['waiting'] === 1 && $r['manual'] === 1 && str_contains($r['manualList'][0]['why'] ?? '', 'F1'), json_encode($r['manualList'], JSON_UNESCAPED_UNICODE));
 check('commencé il y a moins de 2 h : pas listé', !isset($P['esoon']));
 check('déjà réglé : pas listé', !isset($P['edone']));
 check('chaque adresse demandée une seule fois', count($asked) === count(array_unique($asked)), count($asked) . ' demandes');
