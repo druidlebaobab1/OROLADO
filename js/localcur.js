@@ -2,7 +2,8 @@
  * 2026-10-21 (propriétaire, choix 1 « simple ») — ÉQUIVALENT EN MONNAIE LOCALE sous le Compte réel.
  * Rien ne change à l'argent : le solde, les mises, les gains restent en dollars (serveur et admin). On écrit seulement,
  * en petit sous le montant du Compte réel et du Démo (trading, plein écran, Jeux / Paris), « ≈ 141 240 FCFA » pour les joueurs
- * des pays de la liste. Le pays vient de l'indicatif du téléphone du compte (+225, +221…), sinon du fuseau horaire.
+ * des pays de la liste. Le pays vient du numéro de téléphone du compte (+225, +221…), sinon de la connexion (geo.php),
+ * sinon du fuseau horaire. Compte admin : jamais automatique (lien de test ?simcur=XOF).
  * Pas trouvé → rien n'est ajouté (dollars seuls, comme avant).
  * Taux FIXES : FCFA / Naira / Cedi / Shilling kényan / Rand = les mêmes que les paiements Mobile Money (orolado_lib.php,
  * USD_FCFA_RATE etc.) ; les autres = arrondis, affichage seulement. Même liste côté serveur : orolado_local_cur() (retraits).
@@ -30,15 +31,49 @@
     Kinshasa: 'CDF', Lubumbashi: 'CDF', Conakry: 'GNF', Casablanca: 'MAD', Algiers: 'DZD', Tunis: 'TND', Cairo: 'EGP',
     Lusaka: 'ZMW', Blantyre: 'MWK', Maputo: 'MZN'
   };
+  // pays (ISO) → monnaie, pour le pays de la CONNEXION (geo.php)
+  var CC = {
+    CI: 'XOF', SN: 'XOF', ML: 'XOF', BF: 'XOF', BJ: 'XOF', TG: 'XOF', NE: 'XOF', GW: 'XOF',
+    CM: 'XAF', GA: 'XAF', CG: 'XAF', TD: 'XAF', CF: 'XAF', GQ: 'XAF',
+    NG: 'NGN', GH: 'GHS', KE: 'KES', ZA: 'ZAR', UG: 'UGX', TZ: 'TZS', RW: 'RWF', CD: 'CDF', GN: 'GNF', MA: 'MAD', DZ: 'DZD',
+    TN: 'TND', EG: 'EGP', ZM: 'ZMW', MW: 'MWK', MZ: 'MZN'
+  };
+  // lien de test du propriétaire (compte admin seulement) : orolado.com/?simcur=XOF (NGN, GHS, KES, ZAR…) ; ?simcur=off = arrêt
+  try {
+    var qm = /[?&]simcur=([A-Za-z]{2,4})/.exec(location.search);
+    if (qm) {
+      var qv = qm[1].toUpperCase();
+      if (qv === 'OFF') localStorage.removeItem('oro_sim_cur'); else if (CUR[qv]) localStorage.setItem('oro_sim_cur', qv);
+      history.replaceState(null, '', location.pathname + location.search.replace(/([?&])simcur=[^&]*&?/, '$1').replace(/[?&]$/, '') + location.hash);
+    }
+  } catch (eQ) { /* ignore */ }
+  // pays de la connexion : demandé une fois, gardé 7 jours
+  var geoCC = '';
+  try { var gs = JSON.parse(localStorage.getItem('oro_geo') || 'null'); if (gs && Date.now() - gs.t < 7 * 864e5) geoCC = String(gs.cc || ''); else geoCC = null; } catch (eG) { geoCC = null; }
+  function askGeo() {
+    if (geoCC !== null) return;
+    geoCC = '';
+    try {
+      fetch('geo.php', { credentials: 'omit', cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) {
+        geoCC = String((j && j.cc) || '').toUpperCase();
+        try { localStorage.setItem('oro_geo', JSON.stringify({ cc: geoCC, t: Date.now() })); } catch (eS) { /* ignore */ }
+        soon();
+      }).catch(function () { /* hors ligne : on réessaiera au prochain chargement */ });
+    } catch (eF) { /* ignore */ }
+  }
   function code() {
     var u = null;
     try { u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null; } catch (e) { u = null; }
     if (!u || u.guest) return '';
-    // compte admin : « Simuler pays » (localStorage oro_sim_cur = XOF, NGN… ; vide = automatique)
-    try { var sim = localStorage.getItem('oro_sim_cur') || ''; if (sim && u.role === 'admin') return CUR[sim] ? sim : ''; } catch (eS) { /* ignore */ }
-    var dial = String(u.countryCode || '').replace(/\D/g, '');
-    if (dial && DIAL[dial]) return DIAL[dial];
-    if (dial) return ''; // indicatif connu d'un autre pays → dollars
+    // compte admin : JAMAIS automatique (propriétaire) ; seulement le lien de test ?simcur=…
+    if (u.role === 'admin') { try { var sim = localStorage.getItem('oro_sim_cur') || ''; return CUR[sim] ? sim : ''; } catch (eS) { return ''; } }
+    // 1) numéro de téléphone du compte (seulement s'il y a vraiment un numéro : l'indicatif seul peut être celui par défaut)
+    var dial = String(u.countryCode || '').replace(/\D/g, ''), ph = String(u.phone || '').replace(/\D/g, '');
+    if (ph.length >= 6 && dial) return DIAL[dial] || '';
+    // 2) pays de la connexion
+    askGeo();
+    if (geoCC) return CC[geoCC] || '';
+    // 3) fuseau horaire du téléphone (Afrique)
     try {
       var tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').split('/');
       if (tz[0] === 'Africa' && TZ[tz[1]]) return TZ[tz[1]];
