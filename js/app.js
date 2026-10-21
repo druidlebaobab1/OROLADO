@@ -766,6 +766,60 @@
   ];
 
   function user() { return D6.Auth.current(); }
+  // 2026-10-21 (propriétaire, modèle A validé) : à la création du compte, une belle carte de bienvenue (même famille que les
+  // notifications des dépôts / défis) : grand logo doré, « Bienvenue ! <nom>, ton compte est prêt », 3 repères utiles,
+  // le compte Démo offert, bouton « Commencer ». Elle se ferme d'un toucher (bouton, croix ou à côté) et seule après 9 s.
+  var WELCOME_T = {
+    en: ['Welcome!', '{n}, your account is ready', 'You are now part of the OROLADO family. Practise for free, then play for real whenever you like.', 'Demo account', 'to practise', 'Free practice, no risk', 'Fast deposits & withdrawals', 'A team listening in Social', 'Start'],
+    fr: ['Bienvenue !', '{n}, ton compte est prêt', 'Tu fais maintenant partie de la famille OROLADO. Entraîne-toi gratuitement, puis joue pour de vrai quand tu veux.', 'de compte Démo', 'pour t’entraîner', 'Entraînement gratuit, sans risque', 'Dépôts et retraits rapides', 'Une équipe à ton écoute dans Social', 'Commencer'],
+    es: ['¡Bienvenido!', '{n}, tu cuenta está lista', 'Ya formas parte de la familia OROLADO. Practica gratis y juega de verdad cuando quieras.', 'de cuenta Demo', 'para practicar', 'Práctica gratis, sin riesgo', 'Depósitos y retiros rápidos', 'Un equipo a tu escucha en Social', 'Empezar'],
+    pt: ['Bem-vindo!', '{n}, sua conta está pronta', 'Agora você faz parte da família OROLADO. Treine de graça e jogue de verdade quando quiser.', 'de conta Demo', 'para treinar', 'Treino grátis, sem risco', 'Depósitos e saques rápidos', 'Uma equipe ouvindo você no Social', 'Começar'],
+    ar: ['أهلاً بك!', '{n}، حسابك جاهز', 'أصبحت الآن من عائلة OROLADO. تدرّب مجاناً، ثم العب بأموال حقيقية متى شئت.', 'في الحساب التجريبي', 'للتدرّب', 'تدريب مجاني بلا مخاطرة', 'إيداع وسحب سريعان', 'فريق يستمع إليك في Social', 'ابدأ'],
+    tr: ['Hoş geldin!', '{n}, hesabın hazır', 'Artık OROLADO ailesindesin. Ücretsiz pratik yap, istediğin zaman gerçek oyna.', 'Demo hesap', 'pratik için', 'Ücretsiz, risksiz pratik', 'Hızlı yatırma ve çekme', 'Social’da seni dinleyen bir ekip', 'Başla'],
+    vi: ['Chào mừng!', '{n}, tài khoản đã sẵn sàng', 'Bạn đã là thành viên gia đình OROLADO. Luyện tập miễn phí, rồi chơi thật bất cứ lúc nào.', 'tài khoản Demo', 'để luyện tập', 'Luyện tập miễn phí, không rủi ro', 'Nạp và rút tiền nhanh', 'Đội ngũ luôn lắng nghe trong Social', 'Bắt đầu'],
+    id: ['Selamat datang!', '{n}, akunmu siap', 'Kamu kini bagian dari keluarga OROLADO. Latihan gratis, lalu main sungguhan kapan saja.', 'akun Demo', 'untuk latihan', 'Latihan gratis, tanpa risiko', 'Deposit & penarikan cepat', 'Tim siap mendengar di Social', 'Mulai'],
+    ru: ['Добро пожаловать!', '{n}, ваш аккаунт готов', 'Теперь вы в семье OROLADO. Тренируйтесь бесплатно и играйте по-настоящему, когда захотите.', 'на демо-счёте', 'для тренировки', 'Бесплатная тренировка без риска', 'Быстрые пополнения и выводы', 'Команда на связи в Social', 'Начать'],
+    de: ['Willkommen!', '{n}, dein Konto ist bereit', 'Du gehörst jetzt zur OROLADO-Familie. Übe kostenlos und spiele echt, wann du willst.', 'Demokonto', 'zum Üben', 'Kostenlos üben, ohne Risiko', 'Schnelle Ein- und Auszahlungen', 'Ein Team für dich in Social', 'Los geht’s'],
+    hi: ['स्वागत है!', '{n}, आपका खाता तैयार है', 'अब आप OROLADO परिवार का हिस्सा हैं। मुफ़्त में अभ्यास करें, फिर जब चाहें असली खेलें।', 'डेमो खाते में', 'अभ्यास के लिए', 'मुफ़्त अभ्यास, कोई जोखिम नहीं', 'तेज़ जमा और निकासी', 'Social में आपकी सुनने वाली टीम', 'शुरू करें'],
+    zh: ['欢迎！', '{n}，你的账户已就绪', '你已成为 OROLADO 大家庭的一员。先免费练习，随时可以真实游戏。', '模拟账户', '用于练习', '免费练习，零风险', '快速充值与提现', 'Social 中随时有团队为你服务', '开始']
+  };
+  function welcomeCard() {
+    try {
+      var lg = String(document.documentElement.lang || 'en').slice(0, 2), W = WELCOME_T[lg] || WELCOME_T.en;
+      var u = user() || {}, nm = String(u.displayName || '').trim() || 'Trader';
+      var old = document.getElementById('oroWelcome'); if (old) old.remove();
+      var box = document.createElement('div');
+      box.id = 'oroWelcome'; box.className = 'oro-welcome'; box.setAttribute('role', 'dialog');
+      var sp = '';
+      if (!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        for (var i = 0; i < 22; i++) sp += '<i style="--a:' + Math.round(i * 360 / 22) + 'deg;--d:' + (120 + (i % 5) * 22) + 'px;--z:' + ((i % 7) * 0.05).toFixed(2) + 's"></i>';
+      }
+      var chk = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+      box.innerHTML = '<div class="ow-dim"></div><div class="ow-sp">' + sp + '</div><div class="ow-card"><button type="button" class="ow-x" aria-label="×">×</button>' +
+        '<div class="ow-rays"></div><div class="ow-logo"><img src="/icons/logo-ring.svg" alt=""></div><h2 class="ow-t"></h2><p class="ow-n"></p><p class="ow-s"></p>' +
+        '<div class="ow-demo"><b>$ 1 000 000</b><span><span class="ow-d1"></span><br><span class="ow-d2"></span></span></div>' +
+        '<ul class="ow-tips"><li>' + chk + '<span></span></li><li>' + chk + '<span></span></li><li>' + chk + '<span></span></li></ul>' +
+        '<button type="button" class="ow-go"></button></div>';
+      box.querySelector('.ow-t').textContent = W[0];
+      box.querySelector('.ow-n').textContent = W[1].replace('{n}', nm);
+      box.querySelector('.ow-s').textContent = W[2];
+      box.querySelector('.ow-d1').textContent = W[3];
+      box.querySelector('.ow-d2').textContent = W[4];
+      var tips = box.querySelectorAll('.ow-tips span'); tips[0].textContent = W[5]; tips[1].textContent = W[6]; tips[2].textContent = W[7];
+      box.querySelector('.ow-go').textContent = W[8];
+      var shut = function () {
+        if (!box.parentNode || box.classList.contains('out')) return;
+        box.classList.add('out'); clearTimeout(box._t);
+        setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 380);
+      };
+      box.querySelector('.ow-x').addEventListener('click', shut);
+      box.querySelector('.ow-go').addEventListener('click', shut);
+      box.querySelector('.ow-dim').addEventListener('click', shut);
+      document.body.appendChild(box);
+      box._t = setTimeout(shut, 9000);
+    } catch (eW) { try { toast(t('accountCreated'), 'ok', 3000); } catch (eT) { /* ignore */ } }
+  }
+  D6.welcomeCard = welcomeCard;
 
   function isGuest(u) {
     u = u || user();
@@ -8001,8 +8055,8 @@
         return;
       }
       metaTrack('CompleteRegistration');
-      toast(t('accountCreated'), 'ok', 3000);
       enterApp({ openFullscreen: true });
+      welcomeCard();
       setTimeout(function () { if ($('toast')) placeToast($('toast')); }, 80);
     });
     var forgotOtpToken = '';
@@ -8339,8 +8393,8 @@
         }
         closeOtpModal();
         metaTrack('CompleteRegistration');
-        toast(t('accountCreated'), 'ok', 3000);
         enterApp({ openFullscreen: true });
+        welcomeCard();
         setTimeout(function () { if ($('toast')) placeToast($('toast')); }, 80);
       });
     }
