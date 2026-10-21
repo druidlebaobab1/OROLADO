@@ -2201,3 +2201,29 @@ html.ios-app.is-ios:root:has(#oroLoader:not(.off)){
   background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important}
 /* plein écran : la fenêtre du plein écran s'arrête au bas du site (rien ne passe dans la bande, rien au-dessus d'ACHETER) */
 html.ios-app.is-ios:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay{top:0!important;bottom:auto!important;height:100%!important;max-height:100%!important}
+
+/* 2026-10-21 (propriétaire : « dans les APPLIS installées, des barres cachent des choses, des croix collées tout en haut qu'on ne
+   peut pas toucher ») — APPLIS seulement (iPhone : .ios-app ; Android : appli en plein écran / standalone). Le navigateur ne change pas.
+   1) iPhone : les grandes pages (Social, Cadeaux, Recharger, Retirer, Historique, Conditions, mot de passe, e-mail, aide) et la page
+      Connexion / Inscription faisaient 100dvh = l'écran ENTIER (932) alors que le site s'arrête à 873 : leur bas passait dans la bande
+      (bouton crayon de Social coupé à moitié, case « Écris ton message », « Créer » du nouveau groupe). Elles s'arrêtent au bas du site. */
+@media (max-width:859px){
+  html.ios-app.is-ios:root body #financeModal#financeModal > .modal-box,html.ios-app.is-ios:root body #withdrawModal#withdrawModal > .modal-box,
+  html.ios-app.is-ios:root body #depositModal#depositModal > .modal-box,html.ios-app.is-ios:root body #liveModal#liveModal > .modal-box,
+  html.ios-app.is-ios:root body #portalModal#portalModal > .modal-box,html.ios-app.is-ios:root body #termsModal#termsModal > .modal-box,
+  html.ios-app.is-ios:root body #historySheet#historySheet > .modal-box,html.ios-app.is-ios:root body #passModal#passModal > .modal-box,
+  html.ios-app.is-ios:root body #emailModal#emailModal > .modal-box,html.ios-app.is-ios:root body #helpModal#helpModal > .modal-box{
+    height:100%!important;max-height:100%!important}
+  /* messagerie (js/social2.js) : hauteur visible de l'écran (clavier) mais jamais plus bas que le site */
+  html.ios-app.is-ios:root body #liveModal#liveModal#liveModal.sx-on > .modal-box{height:min(var(--sx-vh,100%),100%)!important}
+}
+html.ios-app.is-ios:root body #screenAuth#screenAuth.screen{height:100%!important;max-height:100%!important}
+/* 2) Guide « Apprendre à trader » : la croix restait à 6 px du haut (sous l'heure / la batterie, impossible à toucher) ; elle se
+      place sur la ligne du titre, sous la barre de l'heure (iPhone : centrée sur l'icône du titre ; Android : + la zone de la caméra). */
+html.ios-app body .learn-modal .lg-close.btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2){top:calc(env(safe-area-inset-top,0px) + 12px)!important}
+@media (display-mode: standalone),(display-mode: fullscreen){
+  html.is-android body .learn-modal .lg-close.btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2){top:calc(env(safe-area-inset-top,0px) + 6px)!important}
+  /* 3) Android (appli en plein écran : plus de barre d'état, le haut de l'écran peut être la zone de la caméra) : le Profil commence
+        sous cette zone, comme sur iPhone (0 quand le téléphone n'a pas de zone réservée → rien ne bouge). */
+  html.is-android:not(.ios-app) body #drawerProfile#drawerProfile#drawerProfile{padding-top:env(safe-area-inset-top,0px)!important}
+}

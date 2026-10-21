@@ -13271,9 +13271,11 @@ html.fs-trade:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs:
 html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::before{display:none!important;animation:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#E0505E!important}
 /* 2026-10-21 (propriétaire) : langue de la page Connexion / Inscription = même forme que la langue du profil (sans cadre, petit
-   mot « Langue » dessous), plus petite, sur la même ligne que le bouton retour (même hauteur 36 px, même marge au bord) */
+   mot « Langue » dessous), plus petite, sur la même ligne que le bouton retour (même hauteur 36 px, même marge au bord).
+   Appli installée (2026-10-21) : + la barre de l'heure (env(), 0 dans le navigateur) — avant, la langue restait sous l'heure / la
+   batterie alors que le bouton retour, lui, descendait. */
 html:root body #langBarAuth#langBarAuth#langBarAuth#langBarAuth#langBarAuth#langBarAuth{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;width:auto!important;min-width:0!important;max-width:none!important;
-  top:12px!important;bottom:auto!important;height:36px!important;right:12px!important;display:flex!important;align-items:center!important;overflow:visible!important}
+  top:calc(12px + env(safe-area-inset-top,0px))!important;bottom:auto!important;height:36px!important;right:12px!important;display:flex!important;align-items:center!important;overflow:visible!important}
 html:root body #langBarAuth#langBarAuth#langBarAuth#langBarAuth#langBarAuth#langBarAuth > .lang-dd-btn{background:none!important;border:0!important;box-shadow:none!important;display:inline-flex!important;flex-direction:row!important;flex-wrap:wrap!important;
   align-items:center!important;justify-content:center!important;row-gap:2px!important;column-gap:5px!important;height:auto!important;min-height:0!important;width:auto!important;max-width:none!important;padding:0 2px!important;opacity:.92}
 html:root body #langBarAuth#langBarAuth#langBarAuth#langBarAuth#langBarAuth#langBarAuth::before,html:root body #langBarAuth#langBarAuth#langBarAuth#langBarAuth#langBarAuth#langBarAuth::after{content:none!important;display:none!important}

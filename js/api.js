@@ -97,4 +97,16 @@
       }
     }
   };
+
+  /* 2026-10-21 (propriétaire, appli iPhone : « une photo de la conversation s'affiche en rectangle blanc ») : les photos de
+     Social (live.php?i=…) sont lues avec le cookie oro_token. iOS efface au bout de 7 jours un cookie écrit par la page
+     (et l'appli de l'écran d'accueil a ses propres cookies) alors que la connexion, elle, reste dans le stockage → photos
+     refusées (404). À chaque ouverture, le cookie est remis s'il manque ou diffère (rien d'autre ne change). */
+  try {
+    var tk = localStorage.getItem('oro_token') || '';
+    var ck = document.cookie.match(/(?:^|;\s*)oro_token=([^;]+)/);
+    if (tk && (!ck || decodeURIComponent(ck[1]) !== tk)) {
+      document.cookie = 'oro_token=' + encodeURIComponent(tk) + '; Max-Age=' + (5 * 365 * 24 * 60 * 60) + '; Path=/; SameSite=Lax';
+    }
+  } catch (eCk) { /* ignore */ }
 })(window.D6 = window.D6 || {});

@@ -9828,8 +9828,8 @@
     var newer = false;
     var reloading = false;
     function check() {
-      if (newer || typeof fetch !== 'function') return;
-      fetch('sw.js?nc=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r && r.ok ? r.text() : ''; })
+      if (newer || typeof fetch !== 'function') return Promise.resolve();
+      return fetch('sw.js?nc=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r && r.ok ? r.text() : ''; })
         .then(function (txt) {
           // 2026-10-20 : sw.js comparé à sw.js (numéro lu à l'ouverture de la page, partagé avec le contrôle
           // Android de index.html), plus à app.js?v= : les deux montent séparément → rechargements pour rien.
@@ -9844,17 +9844,55 @@
       try { return D6.Engine && D6.Engine.liveCount ? Number(D6.Engine.liveCount()) || 0 : 0; } catch (eL) { return 0; }
     }
     function maybeReload() {
-      if (!newer || reloading || document.hidden || openTrades() > 0) return;
+      if (!newer || reloading || document.hidden || openTrades() > 0 || busyElsewhere()) return;
       reloading = true;
       try { location.reload(); } catch (eR) { reloading = false; }
     }
     setInterval(check, 5 * 60 * 1000);
     setTimeout(check, 8 * 1000); // relève le numéro de départ tôt (une mise en ligne dans la 1re minute n'est plus manquée)
+    // 2026-10-21 (propriétaire : « les changements du site n'arrivent pas dans l'appli iPhone ») : l'appli de l'écran
+    // d'accueil n'est presque jamais rechargée — iOS la remet telle quelle au premier plan (page gardée en mémoire, minuteries
+    // gelées), et la lecture lancée au moment où elle passe en arrière-plan est souvent coupée. Avant, le retour ne faisait que
+    // regarder un résultat déjà connu → l'ancienne version restait des heures / des jours. Maintenant, au RETOUR dans l'appli
+    // (ou le site), on relit tout de suite le numéro en ligne et on recharge s'il est plus récent (jamais pendant un trade).
+    function checkThenReload() {
+      if (newer) { maybeReload(); return; }
+      var p = check(); if (p && p.then) p.then(maybeReload, function () { /* ignore */ });
+    }
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) check();
-      else maybeReload();
+      else checkThenReload();
     });
     window.addEventListener('focus', maybeReload);
+    window.addEventListener('pageshow', function (ev) { if (ev && ev.persisted) checkThenReload(); });
+    // jamais de rechargement pendant une partie de jeu, une discussion ou une saisie en cours
+    function busyElsewhere() {
+      try {
+        var cm = $('casinoModal'); if (cm && cm.classList.contains('active') && cm.classList.contains('in-game')) return true;
+        var ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName || '')) return true;
+      } catch (eB) { /* ignore */ }
+      return false;
+    }
+    // 2026-10-21 (propriétaire : « après un long moment dans une autre appli / téléphone en veille, en revenant, les courbes
+    // dorment puis sautent ») : absent plus de 90 s → la page se rafraîchit d'elle-même (écran de chargement, puis courbes
+    // fraîches) — seulement sur l'écran de trading, sans trade ouvert, sans fenêtre ouverte, sans partie ni saisie en cours.
+    // En dessous de 90 s, le réveil habituel des courbes suffit (rien ne change).
+    var awayAt = 0;
+    function backFromAway() {
+      var gone = awayAt ? Date.now() - awayAt : 0; awayAt = 0;
+      if (gone < 90000 || reloading || openTrades() > 0 || busyElsewhere()) return;
+      try {
+        var st = $('screenTrade'); if (!st || st.classList.contains('hidden') || !st.offsetWidth) return;
+        if (document.querySelector('.modal-backdrop.active, #drawerProfile.on, .oro-welcome')) return;
+        if (document.documentElement.classList.contains('fs-trade')) return;
+      } catch (eA) { return; }
+      reloading = true;
+      try { var L = $('oroLoader'); if (L) L.classList.remove('off'); } catch (eL) { /* ignore */ }
+      try { location.reload(); } catch (eR2) { reloading = false; }
+    }
+    document.addEventListener('visibilitychange', function () { if (document.hidden) awayAt = Date.now(); else backFromAway(); });
+    window.addEventListener('pagehide', function () { if (!awayAt) awayAt = Date.now(); });
+    window.addEventListener('pageshow', function (ev) { if (ev && ev.persisted) backFromAway(); });
   }
 
   function lockGestures() { /* no global capture / stopPropagation */ }
