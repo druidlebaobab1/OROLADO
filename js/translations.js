@@ -77,7 +77,7 @@
       tradeLocked: '2 खुली पोज़ीशन — समाप्ति का इंतजार करें',
       lastTrades: 'हाल के ट्रेड',
       noTradesHint: 'अभी कोई पोज़ीशन नहीं।',
-      helpBtn: 'मदद',
+      helpBtn: 'सोशल',
       helpTitle: 'मदद और सहायता',
       helpCopy: 'प्राथमिकता सहायता — 24/7',
       helpSubject: 'विषय',
