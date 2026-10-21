@@ -240,7 +240,7 @@
       return c;
     },
     art: function (w, k) {
-      var R = D6.Rig, suit = { suit: 1, skin: '#D9A066' };
+      var R = D6.Rig, suit = { suit: 1, skin: '#F3CDAA' };
       var ridge = function (wu, hu, seed, cols, rough, snow) {
         return sprite(wu, hu, k, function (c) {
           var r = srnd(seed), x = 0, pts = [];
@@ -744,7 +744,7 @@
       x.fillStyle = grad(x, 0, 0, 0, fy, ['#05040F', '#120B2E', '#1F1240']); x.fillRect(0, 0, W, fy);
       for (i = 0; i < Math.round(W * H / 3000); i++) { x.fillStyle = 'rgba(255,255,255,' + (0.2 + r() * 0.5).toFixed(2) + ')'; x.fillRect(r() * W, r() * H * 0.25, 1, 1); }
       // stands: tiers of seats with a crowd of faint heads and camera flashes
-      for (var t = 0; t < 6; t++) { var ty = H * (0.32 + t * 0.065); x.fillStyle = t % 2 ? '#1A1238' : '#221848'; x.fillRect(0, ty, W, H * 0.065); for (var px = 2; px < W; px += 7) { var hc = ['#F97316', '#3B82F6', '#E2E8F0', '#A855F7', '#FBBF24', '#22C55E', '#F43F5E'][((px * 7 + t * 13) >> 2) % 7]; x.fillStyle = 'rgba(15,10,35,.9)'; x.fillRect(px - 2.6 + (t % 2) * 3, ty + H * 0.034, 5.2, H * 0.03); x.fillStyle = hc; x.globalAlpha = 0.55; x.fillRect(px - 2.4 + (t % 2) * 3, ty + H * 0.036, 4.8, H * 0.02); x.globalAlpha = 1; x.fillStyle = '#C08552'; x.beginPath(); x.arc(px + (t % 2) * 3, ty + H * 0.026, 2, 0, PI2); x.fill(); } }
+      for (var t = 0; t < 6; t++) { var ty = H * (0.32 + t * 0.065); x.fillStyle = t % 2 ? '#1A1238' : '#221848'; x.fillRect(0, ty, W, H * 0.065); for (var px = 2; px < W; px += 7) { var hc = ['#F97316', '#3B82F6', '#E2E8F0', '#A855F7', '#FBBF24', '#22C55E', '#F43F5E'][((px * 7 + t * 13) >> 2) % 7]; x.fillStyle = 'rgba(15,10,35,.9)'; x.fillRect(px - 2.6 + (t % 2) * 3, ty + H * 0.034, 5.2, H * 0.03); x.fillStyle = hc; x.globalAlpha = 0.55; x.fillRect(px - 2.4 + (t % 2) * 3, ty + H * 0.036, 4.8, H * 0.02); x.globalAlpha = 1; x.fillStyle = '#F3CBA8'; x.beginPath(); x.arc(px + (t % 2) * 3, ty + H * 0.026, 2, 0, PI2); x.fill(); } }
       for (i = 0; i < 14; i++) { var fx = r() * W, fyy = H * (0.33 + r() * 0.38); x.fillStyle = rgrad(x, fx, fyy, 3.5, ['rgba(255,255,255,.95)', 'rgba(255,255,255,0)']); x.fillRect(fx - 4, fyy - 4, 8, 8); }
       // roof truss + spotlights with cones
       x.strokeStyle = '#3F3A5E'; x.lineWidth = 3; x.beginPath(); x.moveTo(0, H * 0.06); x.lineTo(W, H * 0.06); x.moveTo(0, H * 0.1); x.lineTo(W, H * 0.1); x.stroke(); x.lineWidth = 1.2; for (i = 0; i < W; i += 14) { x.beginPath(); x.moveTo(i, H * 0.06); x.lineTo(i + 7, H * 0.1); x.lineTo(i + 14, H * 0.06); x.stroke(); }
@@ -881,8 +881,8 @@
           c.fillStyle = 'rgba(253,230,138,.9)'; c.fillRect(0, 0, 16, 0.5);
           [[2, 5, 3], [12.5, 8, 2.4], [6, 18, 2]].forEach(function (k2) { c.fillStyle = grad(c, k2[0] - 1, 0, k2[0] + 1, 0, ['#A7F3D0', '#10B981', '#065F46']); c.beginPath(); c.moveTo(k2[0] - 1, k2[1] + k2[2]); c.lineTo(k2[0], k2[1]); c.lineTo(k2[0] + 1, k2[1] + k2[2]); c.closePath(); c.fill(); });
         }),
-        walk: D6.Rig ? D6.Rig.sheet(12, 16, k, { view: 'side', pose: 'walk', pal: { suit: 1, skin: '#D9A066' } }, lite() ? 6 : 8) : [],
-        stand: D6.Rig ? D6.Rig.one(12, 16, k, { view: 'side', pose: 'stand', pal: { suit: 1, skin: '#D9A066' } }) : null,
+        walk: D6.Rig ? D6.Rig.sheet(12, 16, k, { view: 'side', pose: 'walk', pal: { suit: 1, skin: '#F3CDAA' } }, lite() ? 6 : 8) : [],
+        stand: D6.Rig ? D6.Rig.one(12, 16, k, { view: 'side', pose: 'stand', pal: { suit: 1, skin: '#F3CDAA' } }) : null,
       };
     },
     py: function (w) { return Math.max(w.VH * 0.6, w.top + 30); },

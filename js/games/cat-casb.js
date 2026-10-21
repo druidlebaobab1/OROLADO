@@ -69,7 +69,7 @@
       '<path d="M32 16v42" stroke="#1E3A8A" stroke-width="1" opacity=".5"/><path d="M20 24h8v10M20 34h8" stroke="#FDE68A" stroke-width="2.6" fill="none" stroke-linecap="round"/>' + tw(52, 10),
     oracle: '<defs>' + rg('IDo', '#4B5563', '#111827', '#000000') + lg('IDt', '#60A5FA', '#1E3A8A') + '</defs>' + sh(22) + '<circle cx="32" cy="31" r="25" fill="url(#IDo)"/>' + hi(32, 31, 25) +
       '<circle cx="32" cy="33" r="12" fill="#0B1437" stroke="#334155"/><path d="M24 28h16l-8 13z" fill="url(#IDt)"/><path d="M14 8l3 3M50 8l-3 3" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round"/>' + tw(54, 52, .8),
-    rpsduel: '<defs>' + lg('IDs', '#FDE1D3', '#D9A07B') + lg('IDr', '#C4B5FD', '#5B21B6') + '</defs>' + sh(24) +
+    rpsduel: '<defs>' + lg('IDs', '#FDE1D3', '#F3CDAE') + lg('IDr', '#C4B5FD', '#5B21B6') + '</defs>' + sh(24) +
       '<g transform="translate(18 34) rotate(-12)"><rect x="-11" y="-10" width="22" height="20" rx="7" fill="url(#IDs)" stroke="#92400E" stroke-width="1"/><path d="M-6-10v6M0-10v6M6-10v6" stroke="#92400E" stroke-width="1"/></g>' +
       '<g transform="translate(46 30) rotate(14)"><rect x="-10" y="-6" width="20" height="18" rx="6" fill="url(#IDr)"/><path d="M-6-6l-4-14M0-6l2-15" stroke="url(#IDr)" stroke-width="5.4" stroke-linecap="round"/></g>' +
       '<path d="M32 8l3 6-3 6-3-6z" fill="#FDE68A"/>',

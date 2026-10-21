@@ -177,9 +177,9 @@
   }
   /* v2860 (owner: "amateur", "varied skin tones"): every round a different keeper — skin tone, hair, kit — and limbs drawn as
      tapered, muscled shapes (filled capsules) instead of straight strokes. Drawing only: the poses and the dives are unchanged. */
-  var KSKIN = [['#F7DCC6', '#E2B48F'], ['#EBC09B', '#C9936B'], ['#D29A6A', '#A86E44'], ['#B07A4F', '#875632'], ['#8A5A3A', '#653E25'], ['#6B4129', '#4A2A18'], ['#4E2F1D', '#331D11']];
+  var KSKIN = [['#F7DCC6', '#E2B48F'], ['#F9E1CF', '#E6BC9C'], ['#F3D2B8', '#DDAA86'], ['#F5D8C0', '#E0B08E']]; // v3046 (propriétaire) : gardiens à la peau claire
   var KHAIR = ['#1A1110', '#2B1B10', '#4A2E1A', '#7B4A26', '#C08A3E', '#E2C27A', '#8C2F1B'];
-  var KKIT = [['#FDE047', '#F59E0B', '#262262', '#F59E0B'], ['#34D399', '#059669', '#064E3B', '#059669'], ['#F472B6', '#DB2777', '#1F2937', '#F472B6'], ['#60A5FA', '#2563EB', '#111827', '#93C5FD'], ['#F97316', '#C2410C', '#1C1917', '#FDBA74'], ['#A3E635', '#4D7C0F', '#14532D', '#A3E635']];
+  var KKIT = [['#FDE047', '#EAB308', '#1E3A8A', '#FDE047'], ['#EF4444', '#B91C1C', '#111827', '#EF4444'], ['#F472B6', '#DB2777', '#1F2937', '#F472B6'], ['#60A5FA', '#2563EB', '#111827', '#93C5FD'], ['#A78BFA', '#6D28D9', '#1E1B4B', '#A78BFA'], ['#38BDF8', '#0369A1', '#0C4A6E', '#38BDF8']]; // v3046 : ni orange, ni vert, ni blanc
   function hairSvg(st, hc) {
     var dk = hc;
     if (st === 0) return ['', '<path d="M-6.1-36.2Q-6.8-44 0-44.2Q6.8-44 6.1-36.2Q5.4-40.2 2.4-40.8Q-1.6-39.2-4.4-40.6Q-5.6-39.6-6.1-36.2Z" fill="' + hc + '"/>']; // short
@@ -202,7 +202,7 @@
     };
     var arm = function (s) {
       return '<path id="kUa' + s + '" class="kp-sleeve" stroke-width="6.8"/><path id="kFa' + s + '" class="kp-sleeve2" stroke-width="5.8"/>' +
-        '<g id="kGl' + s + '"><path d="' + gloveD() + '" fill="#F8FAFC" stroke="#94A3B8" stroke-width=".5"/><path d="M-4.4 1.4H4.4" stroke="#16A34A" stroke-width="2.4"/>' +
+        '<g id="kGl' + s + '"><path d="' + gloveD() + '" fill="#F8FAFC" stroke="#94A3B8" stroke-width=".5"/><path d="M-4.4 1.4H4.4" stroke="#2563EB" stroke-width="2.4"/>' +
         '<path d="M-1.6-8V-2M1.6-8V-2" stroke="#CBD5E1" stroke-width=".6"/><ellipse cx="' + (s === 'L' ? 4.6 : -4.6) + '" cy="-2.6" rx="1.7" ry="3" fill="#E2E8F0" transform="rotate(' + (s === 'L' ? 28 : -28) + ' ' + (s === 'L' ? 4.6 : -4.6) + ' -2.6)"/></g>';
     };
     return '<g id="pkShadow"><ellipse rx="20" ry="3.4" fill="#000" opacity=".38"/></g>' +
@@ -272,8 +272,8 @@
     var KW = { Th: [3.7, 2.7], Sn: [2.8, 1.9], Sk: [2.95, 2.05], Sh: [5.3, 4.5], Ua: [3.5, 2.8], Fa: [3.0, 2.3] };
     var seg = function (el, a, b) { var k = el.id.slice(1, 3), w = KW[k]; el.setAttribute('d', w ? capsule(a, b, w[0], w[1]) : 'M' + a[0].toFixed(2) + ' ' + a[1].toFixed(2) + 'L' + b[0].toFixed(2) + ' ' + b[1].toFixed(2)); };
     function dressKeeper() { // a new keeper look (skin, hair, kit)
-      var r = function (n) { return (Math.random() * n) | 0; }, sk = KSKIN[r(KSKIN.length)], hc = KHAIR[r(KHAIR.length)], kit = KKIT[r(KKIT.length)], st = r(5);
-      if (sk === KSKIN[5] || sk === KSKIN[6]) hc = KHAIR[r(2)];
+      var r = function (n) { return (Math.random() * n) | 0; }, sk = KSKIN[r(KSKIN.length)], hc = KHAIR[r(KHAIR.length)], kit = KKIT[r(KKIT.length)], st = [0, 1, 3, 4][r(4)];
+      
       var sg = $('pkSkin'); if (sg) { sg.children[0].setAttribute('stop-color', sk[0]); sg.children[1].setAttribute('stop-color', sk[1]); }
       var sh = $('pkShirt'); if (sh) { sh.children[0].setAttribute('stop-color', kit[0]); sh.children[1].setAttribute('stop-color', kit[1]); }
       var so = $('pkShortG'); if (so) { so.children[0].setAttribute('stop-color', kit[2]); so.children[1].setAttribute('stop-color', kit[2]); }

@@ -955,9 +955,9 @@
           circ(c, m, cyc, 5, rg(c, m - 1, cyc - 2, 6, ['#F8FAFC', '#94A3B8', '#475569'])); circ(c, W - m, cyc, 5, rg(c, W - m - 1, cyc - 2, 6, ['#F8FAFC', '#94A3B8', '#475569']));
           c.fillStyle = '#E2E8F0'; c.fillRect(0, cyc - 1, m - 3, 2); c.fillRect(W - m + 3, cyc - 1, m - 3, 2);
         });
-        var pal = { skin: '#C68B5E', hair: '#1A1110', top: ['#F97316', '#C2410C'], bottom: ['#1E3A8A', '#172554'], shoe: '#F8FAFC' };
+        var pal = { skin: '#F2C9A6', hair: '#1A1110', top: ['#F97316', '#C2410C'], bottom: ['#1E3A8A', '#172554'], shoe: '#F8FAFC' };
         sk = rigOne(hs, { view: 'side', pose: 'ready', pal: pal });
-        if (!sk) sk = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, -hs * 0.1, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#1E3A8A'); limb(c, 0, -hs * 0.5, hs * 0.05, -hs * 0.8, hs * 0.2, hs * 0.18, '#F97316'); circ(c, hs * 0.07, -hs * 0.9, hs * 0.1, '#C68B5E'); });
+        if (!sk) sk = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, -hs * 0.1, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#1E3A8A'); limb(c, 0, -hs * 0.5, hs * 0.05, -hs * 0.8, hs * 0.2, hs * 0.18, '#F97316'); circ(c, hs * 0.07, -hs * 0.9, hs * 0.1, '#F2C9A6'); });
       },
       reset: function (live) { reset(live); },
       step: function (dt, live) {

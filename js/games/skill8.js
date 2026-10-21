@@ -494,8 +494,8 @@
     c.moveTo(x0 + nx * w0 / 2, y0 + ny * w0 / 2); c.lineTo(x1 + nx * w1 / 2, y1 + ny * w1 / 2); c.lineTo(x1 - nx * w1 / 2, y1 - ny * w1 / 2); c.lineTo(x0 - nx * w0 / 2, y0 - ny * w0 / 2); c.closePath(); c.fill();
     circ(c, x0, y0, w0 / 2, col); circ(c, x1, y1, w1 / 2, col);
   }
-  var UNI = { light: '#6B7B3E', mid: '#4E5A2B', dark: '#353D1C', vest: '#3F4422', skin: '#C68B5E', skinD: '#9A6440', boot: '#1C1917', gun: '#27272A', gunL: '#52525B', strap: '#5C4033' };
-  var UNE = { light: '#8A8F98', mid: '#5E636B', dark: '#3D4148', vest: '#2E3238', skin: '#D9A07A', skinD: '#A86F4E', boot: '#111111', gun: '#1F1F22', gunL: '#4B4B52', strap: '#3B2A20' };
+  var UNI = { light: '#6B7B3E', mid: '#4E5A2B', dark: '#353D1C', vest: '#3F4422', skin: '#F2C9A6', skinD: '#D9A27C', boot: '#1C1917', gun: '#27272A', gunL: '#52525B', strap: '#5C4033' };
+  var UNE = { light: '#8A8F98', mid: '#5E636B', dark: '#3D4148', vest: '#2E3238', skin: '#F5D0B0', skinD: '#DDA982', boot: '#111111', gun: '#1F1F22', gunL: '#4B4B52', strap: '#3B2A20' };
   // side view, facing right. ph = run phase 0..1, mode: 'run' | 'jump' | 'slide' | 'aim'
   function soldierSide(c, h, ph, mode, P) {
     P = P || UNI;
@@ -981,7 +981,7 @@
      release to fly. Real pendulum physics; the hooks drift further apart with time. The ground is lava. */
   boot('ropeswing', function (A) {
     var W, H, T, dpr, bg, hr, p = { x: 0, y: 0, vx: 0, vy: 0 }, hooks = [], rope = null, cam = 0, lastX = 0, dead = 0, won = 0, snap = null, t = 0, G4, reach, held = false, fr = [], aiT = 0, ph = 0, lava;
-    var HERO = { light: '#3B82F6', mid: '#1D4ED8', dark: '#1E3A8A', vest: '#B91C1C', skin: '#E0A47A', skinD: '#B9784F', boot: '#111827', gun: 'rgba(0,0,0,0)', gunL: 'rgba(0,0,0,0)', strap: '#FACC15' };
+    var HERO = { light: '#3B82F6', mid: '#1D4ED8', dark: '#1E3A8A', vest: '#B91C1C', skin: '#F5D2B4', skinD: '#DFAE88', boot: '#111827', gun: 'rgba(0,0,0,0)', gunL: 'rgba(0,0,0,0)', strap: '#FACC15' };
     function addHook(live) { var lv = live ? A.lv() : 0.15; lastX += reach * rnd(0.5 + 0.2 * lv, 0.72 + 0.2 * lv); hooks.push({ x: lastX, y: T + (H - T) * rnd(0.08, 0.3) }); }
     function grab() {
       if (rope || dead || snap) return;
@@ -992,7 +992,7 @@
     return {
       size: function (w, h, uu, d, top) {
         W = w; H = h; dpr = d; T = top; hr = clamp((H - T) * 0.2, 50, 130); G4 = (H - T) * 2.0; reach = clamp((H - T) * 0.75, 150, 520); lava = H - (H - T) * 0.06;
-        var RP = { skin: '#E0A47A', hair: '#2B1B10', top: ['#2563EB', '#1E3A8A'], bottom: ['#334155', '#1E293B'], shoe: '#111827', gloves: '#7C2D12', bag: ['#B91C1C', '#7F1D1D'] };
+        var RP = { skin: '#F5D2B4', hair: '#2B1B10', top: ['#2563EB', '#1E3A8A'], bottom: ['#334155', '#1E293B'], shoe: '#111827', gloves: '#7C2D12', bag: ['#B91C1C', '#7F1D1D'] };
         fr = D6.Rig ? [rigFrames(hr, 1, function (c) { D6.Rig.draw(c, hr, { view: 'side', pose: 'jump', ph: 0.2, pal: RP }); })[0], rigFrames(hr, 1, function (c) { D6.Rig.draw(c, hr, { view: 'side', pose: 'run', ph: 0.25, pal: RP }); })[0]]
           : [rigFrames(hr, 1, function (c) { soldierSide(c, hr, 0.2, 'jump', HERO); })[0], rigFrames(hr, 1, function (c) { soldierSide(c, hr, 0.6, 'jump', HERO); })[0]];
         bg = mkc(W, H, dpr, function (c) {
@@ -1173,14 +1173,29 @@
         var i, o, off = dist % 40;
         c.strokeStyle = 'rgba(148,163,184,.25)'; c.lineWidth = 1; for (i = 0; i < 6; i++) { var yy = T + ((i * 90 - dist * 1) % (H - T + 90) + (H - T + 90)) % (H - T + 90); c.beginPath(); c.moveTo(0, yy); c.quadraticCurveTo(W / 2, yy - 20, W, yy); c.stroke(); } void off;
         var list = objs.slice().sort(function (a, b) { return a.y - b.y; }), drawn = false;
+        // v3046 (propriétaire : le skieur « descendait » bizarrement) : skieur vu de face, qui file vers le bas de la pente (vers nous) :
+        // skis vers le bas, corps droit, tête casquée + masque en haut — dessin seulement, mêmes position, collisions et virages
         var skier = function () {
-          c.save(); c.translate(sx, sy); c.rotate(-ang * 0.8);
-          c.strokeStyle = '#0F172A'; c.lineWidth = sz * 0.1; c.lineCap = 'round'; c.beginPath(); c.moveTo(-sz * 0.22, -sz * 0.6); c.lineTo(-sz * 0.22, sz * 0.75); c.moveTo(sz * 0.22, -sz * 0.6); c.lineTo(sz * 0.22, sz * 0.75); c.stroke(); // skis
-          c.strokeStyle = '#94A3B8'; c.lineWidth = sz * 0.05; c.beginPath(); c.moveTo(-sz * 0.45, -sz * 0.1); c.lineTo(-sz * 0.55, sz * 0.6); c.moveTo(sz * 0.45, -sz * 0.1); c.lineTo(sz * 0.55, sz * 0.6); c.stroke(); // poles
-          c.fillStyle = lg(c, -sz * 0.4, 0, sz * 0.4, 0, ['#991B1B', '#EF4444', '#991B1B']); rr(c, -sz * 0.36, -sz * 0.35, sz * 0.72, sz * 0.62, sz * 0.25); c.fill(); // jacket
-          c.fillStyle = '#1E3A8A'; c.fillRect(-sz * 0.3, sz * 0.2, sz * 0.6, sz * 0.25);
-          circ(c, 0, -sz * 0.05, sz * 0.24, rg(c, -sz * 0.08, -sz * 0.12, sz * 0.26, ['#FDE68A', '#F59E0B', '#B45309'])); // helmet from above
-          c.fillStyle = 'rgba(15,23,42,.8)'; c.fillRect(-sz * 0.18, sz * 0.08, sz * 0.36, sz * 0.07);
+          var u = sz;
+          c.save(); c.translate(sx, sy); c.rotate(-ang * 0.55);
+          c.fillStyle = 'rgba(15,23,42,.13)'; c.beginPath(); c.ellipse(0, u * 0.62, u * 0.5, u * 0.14, 0, 0, TAU); c.fill();
+          c.lineCap = 'round';
+          [-1, 1].forEach(function (q) { // skis (pointes vers le bas = vers la descente)
+            c.strokeStyle = '#1D4ED8'; c.lineWidth = u * 0.11; c.beginPath(); c.moveTo(q * u * 0.19, -u * 0.25); c.lineTo(q * u * 0.21, u * 0.7); c.stroke();
+            c.strokeStyle = '#93C5FD'; c.lineWidth = u * 0.05; c.beginPath(); c.moveTo(q * u * 0.21, u * 0.55); c.lineTo(q * u * 0.22, u * 0.74); c.stroke();
+          });
+          c.strokeStyle = '#94A3B8'; c.lineWidth = u * 0.045; c.beginPath(); c.moveTo(-u * 0.46, -u * 0.22); c.lineTo(-u * 0.6, u * 0.42); c.moveTo(u * 0.46, -u * 0.22); c.lineTo(u * 0.6, u * 0.42); c.stroke(); // bâtons
+          c.strokeStyle = '#1E3A8A'; c.lineWidth = u * 0.17; c.beginPath(); c.moveTo(-u * 0.13, -u * 0.2); c.lineTo(-u * 0.19, u * 0.02); c.lineTo(-u * 0.19, u * 0.16); c.moveTo(u * 0.13, -u * 0.2); c.lineTo(u * 0.19, u * 0.02); c.lineTo(u * 0.19, u * 0.16); c.stroke(); // jambes fléchies
+          c.fillStyle = '#111827'; rr(c, -u * 0.28, u * 0.12, u * 0.18, u * 0.13, u * 0.04); c.fill(); rr(c, u * 0.1, u * 0.12, u * 0.18, u * 0.13, u * 0.04); c.fill(); // chaussures
+          c.fillStyle = lg(c, -u * 0.32, 0, u * 0.32, 0, ['#991B1B', '#EF4444', '#B91C1C']); rr(c, -u * 0.31, -u * 0.68, u * 0.62, u * 0.52, u * 0.18); c.fill(); // veste
+          c.fillStyle = '#F8FAFC'; c.fillRect(-u * 0.31, -u * 0.44, u * 0.62, u * 0.06);
+          c.strokeStyle = '#DC2626'; c.lineWidth = u * 0.13; c.beginPath(); c.moveTo(-u * 0.27, -u * 0.6); c.lineTo(-u * 0.42, -u * 0.38); c.lineTo(-u * 0.46, -u * 0.22); c.moveTo(u * 0.27, -u * 0.6); c.lineTo(u * 0.42, -u * 0.38); c.lineTo(u * 0.46, -u * 0.22); c.stroke(); // bras
+          circ(c, -u * 0.46, -u * 0.22, u * 0.07, '#1F2937'); circ(c, u * 0.46, -u * 0.22, u * 0.07, '#1F2937'); // gants
+          circ(c, 0, -u * 0.86, u * 0.21, rg(c, -u * 0.06, -u * 0.9, u * 0.24, ['#FFEDE2', '#F8D9C2', '#E6B996'])); // visage (peau claire)
+          c.fillStyle = lg(c, 0, -u * 1.1, 0, -u * 0.86, ['#FDE68A', '#F59E0B']); c.beginPath(); c.arc(0, -u * 0.88, u * 0.235, Math.PI, TAU); c.fill(); // casque
+          c.fillStyle = '#0F172A'; rr(c, -u * 0.2, -u * 0.9, u * 0.4, u * 0.11, u * 0.05); c.fill(); // masque
+          c.fillStyle = lg(c, -u * 0.17, 0, u * 0.17, 0, ['#FB923C', '#FDE047', '#38BDF8']); rr(c, -u * 0.17, -u * 0.885, u * 0.34, u * 0.08, u * 0.04); c.fill();
+          c.fillStyle = '#E11D48'; c.beginPath(); c.ellipse(0, -u * 0.72, u * 0.05, u * 0.025, 0, 0, TAU); c.fill(); // sourire
           c.restore();
         };
         for (i = 0; i < list.length; i++) {

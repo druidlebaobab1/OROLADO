@@ -165,7 +165,7 @@
   function amb(on, v) { try { if (D6.Sfx && D6.Sfx.amb) D6.Sfx.amb('cometqueen', on, v); } catch (e) { /* ignore */ } }
   // la reine assise sur sa comète (sprite dessiné une fois) — repère : centre de la comète en (0, 0), unité u
   // ---- la reine (sprite dessiné UNE fois par vol, à la taille de l'écran) — repère : centre de la comète (0, 0), unité s
-  var CQ_SKIN = [['#FBE3D3', '#E9B99A'], ['#F1C7A5', '#D69A72'], ['#D9A27A', '#B27650'], ['#A8704B', '#7E4E31'], ['#7A4B2E', '#563220']];
+  var CQ_SKIN = [['#FBE3D3', '#E9B99A'], ['#F1C7A5', '#D69A72'], ['#F7D6C0', '#E2AE8A'], ['#FFE8DA', '#EDC3A6'], ['#F3CFB4', '#DCA784']];
   var CQ_HAIR = [['#2B1B12', '#5B3A26'], ['#7C2D12', '#C2410C'], ['#E8C26A', '#FEF3C7'], ['#0F0A1E', '#3B2F63'], ['#9F1239', '#F43F5E'], ['#D6D3E8', '#FFFFFF']];
   var CQ_GOWN = [['#FBCFE8', '#EC4899', '#831843'], ['#E9D5FF', '#A855F7', '#4C1D95'], ['#CCFBF1', '#14B8A6', '#134E4A'], ['#FEF3C7', '#F59E0B', '#78350F'], ['#FECDD3', '#E11D48', '#4C0519']];
   function look() { return { skin: CQ_SKIN[rnd(CQ_SKIN.length)], hair: CQ_HAIR[rnd(CQ_HAIR.length)], gown: CQ_GOWN[rnd(CQ_GOWN.length)] }; }

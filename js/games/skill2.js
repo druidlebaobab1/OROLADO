@@ -479,7 +479,7 @@
         });
         tgS.k = 2.9;
         var mw = Math.max(40, 16 * u);
-        man = D6.Rig ? D6.Rig.one(mw * 1.45, mw * 2.4, dpr, { view: 'back', pose: 'archer', pal: { suit: 1, skin: '#D9A066' } }) : mkc(mw, mw, dpr, function () {});
+        man = D6.Rig ? D6.Rig.one(mw * 1.45, mw * 2.4, dpr, { view: 'back', pose: 'archer', pal: { suit: 1, skin: '#F3CDAA' } }) : mkc(mw, mw, dpr, function () {});
         deckS = mkc(W, mw * 1.2, dpr, function (c, w2, h2) { // the launch deck at the bottom: metal plates, rim light, hazard edge
           var g = c.createLinearGradient(0, 0, 0, h2); g.addColorStop(0, '#6B7194'); g.addColorStop(0.2, '#3E4266'); g.addColorStop(1, '#14152A'); c.fillStyle = g;
           c.beginPath(); c.moveTo(0, h2 * 0.3); c.quadraticCurveTo(w2 / 2, -h2 * 0.05, w2, h2 * 0.3); c.lineTo(w2, h2); c.lineTo(0, h2); c.closePath(); c.fill();

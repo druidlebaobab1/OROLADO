@@ -646,9 +646,9 @@
             c.fillStyle = 'rgba(255,255,255,.85)'; pk.forEach(function (q) { var f = 0.35; c.beginPath(); c.moveTo(q[0], q[1]); c.lineTo(q[0] - q[2] / 2 * f, q[1] + q[3] * f); c.lineTo(q[0] - q[2] * 0.05, q[1] + q[3] * f * 0.8); c.lineTo(q[0] + q[2] / 2 * f, q[1] + q[3] * f); c.closePath(); c.fill(); });
           }
         });
-        var pal = { skin: '#E0A47A', hair: '#4A2E1A', top: ['#A855F7', '#6B21A8'], bottom: ['#0EA5E9', '#075985'], shoe: '#111827' };
+        var pal = { skin: '#F5D2B4', hair: '#4A2E1A', top: ['#A855F7', '#6B21A8'], bottom: ['#0EA5E9', '#075985'], shoe: '#111827' };
         sk = rigOne(hs, { view: 'side', pose: 'ready', pal: pal });
-        if (!sk) sk = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, 0, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#0EA5E9'); limb(c, 0, -hs * 0.5, 0, -hs * 0.8, hs * 0.2, hs * 0.18, '#A855F7'); circ(c, 0, -hs * 0.9, hs * 0.1, '#E0A47A'); });
+        if (!sk) sk = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, 0, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#0EA5E9'); limb(c, 0, -hs * 0.5, 0, -hs * 0.8, hs * 0.2, hs * 0.18, '#A855F7'); circ(c, 0, -hs * 0.9, hs * 0.1, '#F5D2B4'); });
         reset(false);
       },
       reset: function (live) { reset(live); },
@@ -766,9 +766,9 @@
           for (var i = 0; i < 26; i++) circ(c, W * rnd(0, 0.2), yC + b * rnd(0.3, 0.6), rnd(2, 6), 'rgba(255,255,255,.6)'); // spray at the foot of the tube
           c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 2; for (i = 0; i < 8; i++) { var ly = yC + b * (0.15 + i * 0.11); c.beginPath(); c.moveTo(W * 0.2, ly); c.quadraticCurveTo(W * 0.6, ly - 8, W, ly + 4); c.stroke(); }
         });
-        var pal = { skin: '#9C6640', hair: '#1A1110', top: ['#FACC15', '#CA8A04'], bottom: ['#DB2777', '#9D174D'], legs: 'shorts', shoe: '#9C6640' };
+        var pal = { skin: '#F0C6A2', hair: '#1A1110', top: ['#FACC15', '#CA8A04'], bottom: ['#DB2777', '#9D174D'], legs: 'shorts', shoe: '#F0C6A2' };
         sk = rigOne(hs, { view: 'side', pose: 'ready', pal: pal });
-        if (!sk) sk = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, 0, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#9C6640'); limb(c, 0, -hs * 0.5, 0, -hs * 0.8, hs * 0.2, hs * 0.18, '#FACC15'); circ(c, 0, -hs * 0.9, hs * 0.1, '#9C6640'); });
+        if (!sk) sk = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, 0, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#F0C6A2'); limb(c, 0, -hs * 0.5, 0, -hs * 0.8, hs * 0.2, hs * 0.18, '#FACC15'); circ(c, 0, -hs * 0.9, hs * 0.1, '#F0C6A2'); });
         foam = []; for (var f = 0; f < 14; f++) foam.push({ x: Math.random() * W, y: yC + Math.random() * (yB - yC), l: rnd(20, 60) });
         reset(false);
       },
