@@ -19,6 +19,14 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
   ]);
 }
 
+// v3000 — « E-mail à tous » en arrière-plan : chaque requête admin fait aussi un tic APRÈS sa réponse
+// (la page admin ouverte appelle mail_queue_status toutes les 10 s : l'envoi avance même sans joueurs).
+register_shutdown_function(static function (): void {
+  if (!is_file(orolado_data_dir() . '/mail_job.json')) return;
+  // Sans fastcgi_finish_request, seul mail_queue_status fait le tic (l'admin attend quelques secondes au plus).
+  mail_queue_after_response((string) ($GLOBALS['OROLADO_ADMIN_ACTION'] ?? '') !== 'mail_queue_status');
+});
+
 function admin_json(array $payload, int $code = 200): void {
   http_response_code($code);
   header('Content-Type: application/json; charset=utf-8');
@@ -1788,6 +1796,7 @@ if ($isAjax) {
   $req = json_decode($raw, true);
   if (!is_array($req)) $req = $_POST;
   $action = (string) ($req['action'] ?? '');
+  $GLOBALS['OROLADO_ADMIN_ACTION'] = $action;
 
   if ($action === 'login') {
     $gate = function_exists('orolado_login_gate') ? orolado_login_gate('admin') : ['ok' => true];
@@ -2223,7 +2232,7 @@ if ($isAjax) {
     $group = in_array((string) ($req['group'] ?? ''), ['fr', 'en'], true) ? (string) $req['group'] : 'fr';
     // v2667 — même message (groupe + objet + texte + bouton) = même journal : si l'admin quitte la page
     // ou retouche « Envoyer à tous », l'envoi REPREND là où il s'était arrêté, jamais de doublon.
-    $id = preg_match('/^[a-z0-9]{6,24}$/', (string) ($req['id'] ?? '')) ? (string) $req['id'] : 'm' . substr(sha1($group . "\n" . $subject . "\n" . $msg . "\n" . $btn), 0, 16);
+    $id = mailq_id($group, $subject, $msg, $btn, (string) ($req['id'] ?? ''));
     if ($subject === '' || $msg === '' || mb_strlen($subject) > 120 || mb_strlen($msg) > 2000) {
       admin_json(['ok' => false, 'reason' => 'Objet (120 lettres max) et message (2000 max) obligatoires.']);
     }
@@ -2240,10 +2249,9 @@ if ($isAjax) {
       admin_json(['ok' => !empty($r['ok']), 'id' => $id, 'sent' => !empty($r['ok']) ? 1 : 0, 'fail' => empty($r['ok']) ? 1 : 0, 'more' => false, 'reason' => (string) ($r['reason'] ?? '')]);
     }
     $list = admin_mail_groups()[$group];
-    $logF = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'mail_' . $id . '.json';
-    $done = is_file($logF) ? (json_decode((string) @file_get_contents($logF), true) ?: []) : [];
+    $done = mailq_log_read($id);
     // 1 = reçu ; sinon heure de l'échec (réessayé au prochain « Envoyer à tous », pas dans la même minute).
-    $skip = static fn($v): bool => $v === 1 || (is_int($v) && $v > time() - 120);
+    $skip = static fn($v): bool => mailq_skip($v);
     $already = count(array_filter($done, static fn($v): bool => $v === 1));
     // Le paquet en cours se termine même si l'admin quitte la page, et chaque e-mail est noté aussitôt.
     @ignore_user_abort(true);
@@ -2253,16 +2261,35 @@ if ($isAjax) {
       // v2668/v2670 — envoi LENT, pas à pas (pause variable de 5 à 8 s, 5 par paquet) : ressemble moins à une campagne.
       if ($n >= 5) break;
       if ($n > 0) sleep(random_int(5, 8));
+      // v3000 — sous verrou partagé avec l'envoi en arrière-plan : journal relu, adresse sautée si l'autre l'a déjà faite.
+      $r = mailq_send_logged($id, $em, $subject, $msg, true);
+      if ($r === null) continue;
       $n++;
-      $r = admin_mail_plain($em, $subject, $msg);
-      $done[$em] = !empty($r['ok']) ? 1 : time();
       if (!empty($r['ok'])) $sent++; else { $fail++; $err = (string) ($r['reason'] ?? ''); }
-      @file_put_contents($logF, json_encode($done), LOCK_EX);
     }
-    @file_put_contents($logF, json_encode($done), LOCK_EX);
+    $done = mailq_log_read($id);
     $left = count(array_filter($list, static fn($em): bool => !isset($done[$em]) || !$skip($done[$em])));
     admin_json(['ok' => true, 'id' => $id, 'sent' => $sent, 'fail' => $fail, 'err' => $err, 'already' => $already, 'more' => $left > 0 && $n > 0, 'left' => $left, 'total' => count($list)]);
   }
+  // v3000 (propriétaire) — « E-mail à tous » EN ARRIÈRE-PLAN : l'admin peut fermer la page, le serveur continue
+  // lentement (1 e-mail toutes les 6 à 9 s au plus, à chaque passage de joueurs ou de l'admin). Voir mail_queue_lib.php.
+  if ($action === 'mail_queue_start') {
+    $subject = trim((string) ($req['subject'] ?? ''));
+    $msg = trim((string) ($req['message'] ?? ''));
+    $btn = trim((string) ($req['button'] ?? ''));
+    $group = in_array((string) ($req['group'] ?? ''), ['fr', 'en'], true) ? (string) $req['group'] : 'fr';
+    if ($subject === '' || $msg === '' || mb_strlen($subject) > 120 || mb_strlen($msg) > 2000) {
+      admin_json(['ok' => false, 'reason' => 'Objet (120 lettres max) et message (2000 max) obligatoires.']);
+    }
+    if ($btn === '') $btn = $group === 'fr' ? 'Ouvrir OROLADO' : 'Open OROLADO';
+    if ((string) ($req['confirm'] ?? '') !== 'ENVOYER') admin_json(['ok' => false, 'reason' => 'Confirmation manquante.']);
+    $list = admin_mail_groups()[$group];
+    if (!$list) admin_json(['ok' => false, 'reason' => 'Aucun joueur dans ce groupe.']);
+    admin_json(mailq_start($group, $subject, $msg, $btn, $list, (array) ($GLOBALS['OROLADO_MAIL_NAMES'] ?? [])));
+  }
+  if ($action === 'mail_queue_status') admin_json(['ok' => true, 'status' => mailq_status()]);
+  if ($action === 'mail_queue_stop') admin_json(['ok' => true, 'status' => mailq_set_active(false)]);
+  if ($action === 'mail_queue_resume') admin_json(['ok' => true, 'status' => mailq_set_active(true)]);
   // v2607 — Notifications : chiffres, abonnement test de l'appareil admin, envoi par paquets.
   if ($action === 'push_stats') {
     $v = push_vapid();
@@ -2660,15 +2687,24 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <input id="mlSubject" maxlength="120" class="nt-in" placeholder="Ex. : Volatility est en mouvement sur OROLADO">
         <label class="nt-lab">Message</label>
         <textarea id="mlBody" maxlength="2000" rows="8" class="nt-in" placeholder="Bonjour {prenom},&#10;&#10;Les marchés bougent bien aujourd'hui. Passe faire quelques trades : orolado.com&#10;&#10;À bientôt,&#10;L'équipe OROLADO"></textarea>
-        <p class="muted" style="margin:4px 0 0">E-mail simple, comme écrit à la main (meilleure chance d'arriver dans « Principale »). Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte. Envoi lent : environ 1 e-mail toutes les 5 à 8 secondes (laissez la page ouverte).</p>
+        <p class="muted" style="margin:4px 0 0">E-mail simple, comme écrit à la main (meilleure chance d'arriver dans « Principale »). Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte. Envoi lent : environ 1 e-mail toutes les 5 à 8 secondes (« 2. Envoyer à tous » : laissez la page ouverte ; « 📨 en arrière-plan » : vous pouvez la fermer).</p>
         <input id="mlBtn" type="hidden" value="">
         <label class="nt-lab">Envoyer le test à (votre vraie adresse e-mail)</label>
         <input id="mlTestTo" type="email" maxlength="120" class="nt-in" placeholder="exemple@gmail.com" autocomplete="email">
         <p style="margin-top:12px">
           <button class="mini ok" type="button" id="btnMlTest">1. M’envoyer un test</button>
           <button class="mini bad" type="button" id="btnMlAll">2. Envoyer à tous</button>
+          <button class="mini bad" type="button" id="btnMlBg" style="margin-top:6px">📨 Envoyer à tous en arrière-plan (je peux fermer la page)</button>
         </p>
         <p class="muted" id="mlSt"></p>
+        <div id="mlQ" hidden style="margin-top:10px;padding:10px;border:1px solid #2A3550;border-radius:10px;overflow-wrap:anywhere">
+          <b>📨 Envoi en arrière-plan</b> <span class="muted" id="mlQSubj"></span>
+          <p id="mlQLine" style="margin:6px 0"></p>
+          <p class="muted" id="mlQErr" style="margin:4px 0;color:#FCA5A5"></p>
+          <p class="muted" style="margin:4px 0">Envoi lent pour ne pas être classé spam : 1 e-mail toutes les 6 à 9 secondes au plus (environ 400 à 600 par heure), seulement quand des joueurs (ou cette page) passent sur le site. Vous pouvez fermer la page.</p>
+          <button class="mini" type="button" id="btnMlQStop">⏸ Pause</button>
+          <button class="mini ok" type="button" id="btnMlQGo">▶ Reprendre</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3530,6 +3566,51 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   }
   $m('btnMlTest').onclick = () => send('test');
   $m('btnMlAll').onclick = () => send('all');
+  // v3000 — envoi EN ARRIÈRE-PLAN : le serveur continue seul (page fermée) ; ici on montre l'avancement
+  // et, tant que la page est ouverte, on demande l'état toutes les 10 s (ce qui fait aussi avancer l'envoi).
+  let qTimer = 0;
+  const qPaint = s => {
+    if (!s || !s.job) { $m('mlQ').hidden = true; return false; }
+    $m('mlQ').hidden = false;
+    $m('mlQSubj').textContent = '« ' + s.subject + ' » (' + (s.group === 'fr' ? 'pays francophones' : 'autres pays') + ')';
+    const rate = s.perHour || 0;
+    const left = s.left || 0;
+    $m('mlQLine').textContent = (s.active ? '🟢 En cours' : (left ? '⏸ En pause' : '✅ Terminé')) + ' — Envoyés ' + s.received + ' / ' + s.total + ' — restant ' + left
+      + (rate ? ' — ~' + rate + ' par heure' : ' — ~400 à 600 par heure') + (s.fail ? ' — ' + s.fail + ' échec(s)' : '');
+    $m('mlQErr').textContent = [s.reason && s.reason !== 'Terminé.' ? s.reason : '', s.lastError ? 'Dernière erreur : ' + s.lastError : ''].filter(Boolean).join(' · ');
+    $m('btnMlQStop').hidden = !s.active; $m('btnMlQGo').hidden = s.active || !left;
+    return !!s.active;
+  };
+  async function qStatus() {
+    try {
+      const j = await ajax({action:'mail_queue_status'});
+      const on = j && j.ok ? qPaint(j.status) : false;
+      clearTimeout(qTimer);
+      if (on || $m('mailModal').classList.contains('on')) qTimer = setTimeout(qStatus, 10000);
+    } catch (e) { clearTimeout(qTimer); qTimer = setTimeout(qStatus, 10000); }
+  }
+  $m('btnMlBg').onclick = async () => {
+    const subject = $m('mlSubject').value.trim(), message = $m('mlBody').value.trim(), button = $m('mlBtn').value.trim(), group = $m('mlGroup').value;
+    if (!subject || !message) { $m('mlSt').textContent = 'Écrivez l’objet et le message.'; return; }
+    const testTo = $m('mlTestTo').value.trim();
+    const c = prompt('Envoyer « ' + subject + ' » EN ARRIÈRE-PLAN à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nEnvoi lent (1 e-mail toutes les 6 à 9 s au plus) : vous pouvez fermer la page.\nAvez-vous fait « 1. M’envoyer un test » ?\nTapez ENVOYER pour confirmer :') || '';
+    if (c.trim().toUpperCase() !== 'ENVOYER') { $m('mlSt').textContent = 'Envoi annulé.'; return; }
+    $m('btnMlBg').disabled = true;
+    try {
+      // Comme « Envoyer à tous » : l'adresse du test reçoit d'abord une copie.
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) { try { await ajax({action:'mail_send', target:'test', group, subject, message, button, testTo}); } catch (eCopy) { /* ignore */ } }
+      const j = await ajax({action:'mail_queue_start', group, subject, message, button, confirm:'ENVOYER'});
+      $m('mlSt').textContent = j.ok ? 'C’est parti : le serveur envoie seul, lentement. Vous pouvez fermer la page.' : (j.reason || 'Échec');
+      if (j.status) qPaint(j.status);
+      qStatus();
+    } catch (e) { $m('mlSt').textContent = 'Échec : ' + (e && e.message ? e.message : e); }
+    $m('btnMlBg').disabled = false;
+  };
+  $m('btnMlQStop').onclick = async () => { try { const j = await ajax({action:'mail_queue_stop'}); if (j.ok) qPaint(j.status); } catch (e) { /* ignore */ } };
+  $m('btnMlQGo').onclick = async () => { try { const j = await ajax({action:'mail_queue_resume'}); if (j.ok) qPaint(j.status); qStatus(); } catch (e) { /* ignore */ } };
+  const openMail = $m('btnMail').onclick;
+  $m('btnMail').onclick = () => { openMail(); qStatus(); };
+  qStatus(); // page ouverte : si un envoi tourne, on suit (et on le fait avancer) toutes les 10 s
 })();
 // v2607 — Notifications : chiffres, test sur l'appareil admin, envoi à tous (par paquets de 100).
 (function () {

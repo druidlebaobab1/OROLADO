@@ -11,7 +11,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 $tmp = sys_get_temp_dir() . '/orolado_admjeux_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data/archive', 0755, true);
 mkdir($tmp . '/casino_ext', 0755, true);
-foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'aff_lib.php', 'casino_lib.php', 'casino_ext.php', 'admin_lib.php', 'admin_games_lib.php',
+foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'aff_lib.php', 'casino_lib.php', 'casino_ext.php', 'admin_lib.php', 'mail_queue_lib.php', 'admin_games_lib.php',
   'history_lib.php', 'wipe_lib.php', 'admin_gift_lib.php', 'push_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php', 'sports_lib.php'] as $f) {
   if (is_file(__DIR__ . '/../' . $f)) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 }
