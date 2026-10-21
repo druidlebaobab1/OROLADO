@@ -1,0 +1,11 @@
+{
+    "_note": "Exemple FABRIQUÉ (même format que TheSportsDB eventsday.php) : Bournemouth – Milan d'accord avec ESPN, Beşiktaş – Palace PAS d'accord (2-0 au lieu de 2-1), Celtic – Celta pas commencé.",
+    "events": [
+        {"idEvent": "8001", "strEvent": "Bournemouth vs Milan", "strSport": "Soccer", "strLeague": "UEFA Europa League", "strHomeTeam": "Bournemouth", "strAwayTeam": "Milan",
+         "intHomeScore": "1", "intAwayScore": "1", "dateEvent": "2026-10-22", "strTimestamp": "2026-10-22T19:00:00", "strTime": "19:00:00", "strStatus": "FT"},
+        {"idEvent": "8002", "strEvent": "Besiktas vs Crystal Palace", "strSport": "Soccer", "strLeague": "UEFA Europa League", "strHomeTeam": "Besiktas", "strAwayTeam": "Crystal Palace",
+         "intHomeScore": "2", "intAwayScore": "0", "dateEvent": "2026-10-22", "strTimestamp": "2026-10-22T19:00:00", "strTime": "19:00:00", "strStatus": "FT"},
+        {"idEvent": "8003", "strEvent": "Celtic vs Celta Vigo", "strSport": "Soccer", "strLeague": "UEFA Europa League", "strHomeTeam": "Celtic", "strAwayTeam": "Celta Vigo",
+         "intHomeScore": null, "intAwayScore": null, "dateEvent": "2026-10-22", "strTimestamp": "2026-10-22T19:00:00", "strTime": "19:00:00", "strStatus": "NS"}
+    ]
+}

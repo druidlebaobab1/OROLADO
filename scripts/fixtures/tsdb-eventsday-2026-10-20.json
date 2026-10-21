@@ -1,0 +1,46 @@
+{
+    "events": [
+        {
+            "idEvent": "2398136",
+            "strTimestamp": "2026-10-20T00:15:00",
+            "strEvent": "Deportivo Riestra vs Unión",
+            "strSport": "Soccer",
+            "strLeague": "Argentinian Primera Division",
+            "strHomeTeam": "Deportivo Riestra",
+            "strAwayTeam": "Unión",
+            "intHomeScore": "1",
+            "intAwayScore": "1",
+            "dateEvent": "2026-10-20",
+            "strTime": "00:15:00",
+            "strStatus": "FT"
+        },
+        {
+            "idEvent": "2412701",
+            "strTimestamp": "2026-10-20T17:00:00",
+            "strEvent": "Norrköping vs Örebro",
+            "strSport": "Soccer",
+            "strLeague": "Swedish Superettan",
+            "strHomeTeam": "Norrköping",
+            "strAwayTeam": "Örebro",
+            "intHomeScore": "2",
+            "intAwayScore": "2",
+            "dateEvent": "2026-10-20",
+            "strTime": "17:00:00",
+            "strStatus": "FT"
+        },
+        {
+            "idEvent": "2431501",
+            "strTimestamp": "2026-10-20T22:30:00",
+            "strEvent": "Londrina vs Cuiabá",
+            "strSport": "Soccer",
+            "strLeague": "Brazilian Serie B",
+            "strHomeTeam": "Londrina",
+            "strAwayTeam": "Cuiabá",
+            "intHomeScore": "1",
+            "intAwayScore": "0",
+            "dateEvent": "2026-10-20",
+            "strTime": "22:30:00",
+            "strStatus": "FT"
+        }
+    ]
+}

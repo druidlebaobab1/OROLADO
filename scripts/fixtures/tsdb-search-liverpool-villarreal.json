@@ -1,0 +1,18 @@
+{
+    "event": [
+        {
+            "idEvent": "2594542",
+            "strTimestamp": "2026-10-20T19:00:00",
+            "strEvent": "Liverpool vs Villarreal",
+            "strSport": "Soccer",
+            "strLeague": "UEFA Champions League",
+            "strHomeTeam": "Liverpool",
+            "strAwayTeam": "Villarreal",
+            "intHomeScore": "4",
+            "intAwayScore": "3",
+            "dateEvent": "2026-10-20",
+            "strTime": "19:00:00",
+            "strStatus": "FT"
+        }
+    ]
+}

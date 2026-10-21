@@ -1,0 +1,414 @@
+{
+    "leagues": [
+        {
+            "slug": "uefa.champions"
+        }
+    ],
+    "events": [
+        {
+            "id": "401915403",
+            "date": "2026-10-20T16:45Z",
+            "name": "Slavia Prague at Fenerbahce",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": false,
+                            "score": "2",
+                            "team": {
+                                "displayName": "Fenerbahce",
+                                "shortDisplayName": "Fenerbahce",
+                                "name": "Fenerbahce",
+                                "abbreviation": "FEN",
+                                "location": "Fenerbahce"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": false,
+                            "score": "2",
+                            "team": {
+                                "displayName": "Slavia Prague",
+                                "shortDisplayName": "Slavia Prague",
+                                "name": "Slavia Prague",
+                                "abbreviation": "SLP",
+                                "location": "Slavia Prague"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "401915404",
+            "date": "2026-10-20T16:45Z",
+            "name": "Borussia Dortmund at Sabah FK",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": false,
+                            "score": "1",
+                            "team": {
+                                "displayName": "Sabah FK",
+                                "shortDisplayName": "Sabah",
+                                "name": "Sabah FK",
+                                "abbreviation": "SAB",
+                                "location": "Sabah FK"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": true,
+                            "score": "2",
+                            "team": {
+                                "displayName": "Borussia Dortmund",
+                                "shortDisplayName": "Dortmund",
+                                "name": "Borussia Dortmund",
+                                "abbreviation": "DOR",
+                                "location": "Borussia Dortmund"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "401915402",
+            "date": "2026-10-20T19:00Z",
+            "name": "Slovan Bratislava at AS Roma",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": true,
+                            "score": "4",
+                            "team": {
+                                "displayName": "AS Roma",
+                                "shortDisplayName": "AS Roma",
+                                "name": "AS Roma",
+                                "abbreviation": "ROMA",
+                                "location": "AS Roma"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": false,
+                            "score": "0",
+                            "team": {
+                                "displayName": "Slovan Bratislava",
+                                "shortDisplayName": "S Bratislava",
+                                "name": "Slovan Bratislava",
+                                "abbreviation": "SLB",
+                                "location": "Slovan Bratislava"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "401915398",
+            "date": "2026-10-20T19:00Z",
+            "name": "PSV Eindhoven at FC Porto",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": false,
+                            "score": "0",
+                            "team": {
+                                "displayName": "FC Porto",
+                                "shortDisplayName": "FC Porto",
+                                "name": "FC Porto",
+                                "abbreviation": "FCP",
+                                "location": "FC Porto"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": true,
+                            "score": "1",
+                            "team": {
+                                "displayName": "PSV Eindhoven",
+                                "shortDisplayName": "PSV",
+                                "name": "PSV Eindhoven",
+                                "abbreviation": "PSV",
+                                "location": "PSV Eindhoven"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "401915397",
+            "date": "2026-10-20T19:00Z",
+            "name": "Villarreal at Liverpool",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": true,
+                            "score": "4",
+                            "team": {
+                                "displayName": "Liverpool",
+                                "shortDisplayName": "Liverpool",
+                                "name": "Liverpool",
+                                "abbreviation": "LIV",
+                                "location": "Liverpool"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": false,
+                            "score": "3",
+                            "team": {
+                                "displayName": "Villarreal",
+                                "shortDisplayName": "Villarreal",
+                                "name": "Villarreal",
+                                "abbreviation": "VIL",
+                                "location": "Villarreal"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "401915401",
+            "date": "2026-10-20T19:00Z",
+            "name": "AEK Athens at Manchester City",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": true,
+                            "score": "5",
+                            "team": {
+                                "displayName": "Manchester City",
+                                "shortDisplayName": "Man City",
+                                "name": "Manchester City",
+                                "abbreviation": "MNC",
+                                "location": "Manchester City"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": false,
+                            "score": "1",
+                            "team": {
+                                "displayName": "AEK Athens",
+                                "shortDisplayName": "AEK Athens",
+                                "name": "AEK Athens",
+                                "abbreviation": "AEK",
+                                "location": "AEK Athens"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "401915400",
+            "date": "2026-10-20T19:00Z",
+            "name": "Bodo/Glimt at Napoli",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": true,
+                            "score": "4",
+                            "team": {
+                                "displayName": "Napoli",
+                                "shortDisplayName": "Napoli",
+                                "name": "Napoli",
+                                "abbreviation": "NAP",
+                                "location": "Napoli"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": false,
+                            "score": "3",
+                            "team": {
+                                "displayName": "Bodo/Glimt",
+                                "shortDisplayName": "Bodo/Glimt",
+                                "name": "Bodo/Glimt",
+                                "abbreviation": "BODO",
+                                "location": "Bodo/Glimt"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "401915399",
+            "date": "2026-10-20T19:00Z",
+            "name": "Barcelona at Paris Saint-Germain",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": true,
+                            "score": "4",
+                            "team": {
+                                "displayName": "Paris Saint-Germain",
+                                "shortDisplayName": "PSG",
+                                "name": "Paris Saint-Germain",
+                                "abbreviation": "PSG",
+                                "location": "Paris Saint-Germain"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": false,
+                            "score": "2",
+                            "team": {
+                                "displayName": "Barcelona",
+                                "shortDisplayName": "Barcelona",
+                                "name": "Barcelona",
+                                "abbreviation": "BAR",
+                                "location": "Barcelona"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "401915392",
+            "date": "2026-10-20T19:00Z",
+            "name": "Atlético Madrid at VfB Stuttgart",
+            "status": {
+                "type": {
+                    "id": "28",
+                    "name": "STATUS_FULL_TIME",
+                    "state": "post",
+                    "completed": true,
+                    "description": "Full Time",
+                    "detail": "FT"
+                }
+            },
+            "competitions": [
+                {
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "winner": false,
+                            "score": "1",
+                            "team": {
+                                "displayName": "VfB Stuttgart",
+                                "shortDisplayName": "Stuttgart",
+                                "name": "VfB Stuttgart",
+                                "abbreviation": "VFB",
+                                "location": "VfB Stuttgart"
+                            }
+                        },
+                        {
+                            "homeAway": "away",
+                            "winner": false,
+                            "score": "1",
+                            "team": {
+                                "displayName": "Atlético Madrid",
+                                "shortDisplayName": "Atlético",
+                                "name": "Atlético Madrid",
+                                "abbreviation": "ATM",
+                                "location": "Atlético Madrid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
