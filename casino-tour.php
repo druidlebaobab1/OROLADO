@@ -10,7 +10,8 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 $g = (string) ($_GET['g'] ?? '');
-if (!in_array($g, ['crash', 'jet', 'rocket', 'cryptox', 'horses', 'roulette', 'race', 'planets', 'catwalk', 'fleets', 'gemcount', 'claw', // v2850 : + 12 jeux live3
+if (is_file(__DIR__ . '/casino_live4.php')) require_once __DIR__ . '/casino_live4.php'; // v2900 : LIVE 4 (constantes et fonctions pures)
+if (!in_array($g, defined('CASINO_LIVE4_KEYS') ? CASINO_LIVE4_KEYS : [], true) && !in_array($g, ['crash', 'jet', 'rocket', 'cryptox', 'horses', 'roulette', 'race', 'planets', 'catwalk', 'fleets', 'gemcount', 'claw', // v2850 : + 12 jeux live3
   'dtlive', 'hilolive', 'sicbolive', 'kenolive', 'lucky10', 'moneywheel', 'coinlive', 'pegdrop', 'football', 'bullseye', 'ladderlive', 'moonshot'], true)) { echo '{"ok":false}'; exit; }
 require_once __DIR__ . '/orolado_lib.php';
 require_once __DIR__ . '/casino_lib.php';
