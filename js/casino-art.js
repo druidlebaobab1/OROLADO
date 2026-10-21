@@ -805,6 +805,65 @@
       L('M38 50L50 38', '#D6A06B', 1.6) + E(42, 47, 1.8, 1.4, 'url(#IDbn)') + E(45, 49, 1.8, 1.4, 'url(#IDbn)') + E(47, 46, 1.8, 1.4, 'url(#IDbn)') + E(44.6, 44, 1.8, 1.4, 'url(#IDbn)') +
       '<text x="48" y="54" font-size="6" font-weight="900" font-family="system-ui,sans-serif" fill="#FDE047">4</text>' + '</g>' +
       '<g transform="rotate(-18 34 20)">' + E(34, 27, 11, 3.2, '#92400E') + P('M23 27L26 12H42L45 27Z', 'url(#IDcu)') + E(34, 12, 8, 2.2, '#FDE68A') + L('M26.6 16L28 25', '#fff', 1, .6) + '</g>' + tw(52, 14, 2.4) + fin();
+    /* --- lot B, 3e série (2026-10-21) --- */
+    // 30 & 40 : deux rangées de cartes « noir » / « rouge » et leurs grands losanges, chiffres dorés
+    B.trente = med('#BE123C', '#3B0764', '#FDE047', '#A16207', G('IDrd', '#FB7185', '#9F1239') + G('IDbk', '#64748B', '#0F172A')) +
+      card(13, 9, -14, 'K', 's', false, 16, 22) + card(24, 7, 0, '9', 'h', true, 16, 22) + card(35, 9, 14, 'Q', 'd', true, 16, 22) +
+      P('M20 34l8 9-8 9-8-9z', 'url(#IDbk)') + P('M44 34l8 9-8 9-8-9z', 'url(#IDrd)') + L('M14.4 42.4l5.6-6.2M38.4 42.4l5.6-6.2', '#fff', .9, .6) +
+      '<text x="20" y="46" text-anchor="middle" font-size="7.4" font-weight="900" font-family="system-ui,sans-serif" fill="#FDE047">30</text>' +
+      '<text x="44" y="46" text-anchor="middle" font-size="7.4" font-weight="900" font-family="system-ui,sans-serif" fill="#FDE047">40</text>' +
+      '<g transform="translate(32 53)">' + P('M-4.2 0l4.2-4.2 4.2 4.2-4.2 4.2z', '#FDE047') + '</g>' + tw(54, 26, 2) + fin();
+    // Lucky Ladder : enfant qui grimpe l'échelle dorée vers l'étoile, multiplicateurs sur les barreaux
+    B.ladder = med('#7DD3FC', '#4338CA', '#FDE047', '#A16207', G('IDld', '#FDE68A', '#CA8A04', 0, 1) + R('IDst', '#FFFFFF', '#FDE047', '#CA8A04')) +
+      '<g clip-path="url(#IDc)">' + P('M8 50a4 4 0 0 1 6-3.4 5 5 0 0 1 9 1.4 3.4 3.4 0 0 1 0 6.6H10a3.4 3.4 0 0 1-2-4.6z', '#fff', .7) + P('M42 54a4 4 0 0 1 6-3.4 5 5 0 0 1 9 1.4 3.4 3.4 0 0 1 0 6.6H44a3.4 3.4 0 0 1-2-4.6z', '#fff', .8) +
+      L('M22 64L27 12M42 64L37 12', 'url(#IDld)', 2.6) + L('M23.4 52H40.6M24.6 41H39.4M25.6 30H38.4M26.6 20H37.4', '#FBBF24', 2) +
+      '<text x="48" y="43" font-size="5.6" font-weight="900" font-family="system-ui,sans-serif" fill="#fff">×5</text><text x="9" y="33" font-size="5.6" font-weight="900" font-family="system-ui,sans-serif" fill="#FDE047">×10</text>' +
+      L('M30 44L28.6 51.6', '#1D4ED8', 3.2) + L('M34 44L36 40.6', '#2563EB', 3.2) + E(28.4, 52.2, 2, 1.1, '#E11D48') + E(36.6, 40.4, 2, 1.1, '#E11D48') +
+      '<rect x="27.6" y="33" width="8.8" height="12" rx="3.6" fill="#EC4899"/>' + L('M28.6 35L27 30.4M35.4 35L37.2 23', SK, 2.6) + O(27, 30, 1.5, SK) + O(37.2, 22.4, 1.5, SK) +
+      face(32, 28.4, 4.6, .4) + P('M27.2 28C26.6 23 29.6 22.8 32 22.8C34.6 22.8 37.2 24 36.6 27.6C35 26 33 25.6 31.6 26.4C30 25.6 28.4 26.2 27.2 28Z', '#5B3A1E') +
+      '</g>' + '<path d="' + star(32, 9.6, 6.4, 2.8) + '" fill="url(#IDst)" stroke="#fff" stroke-width=".6"/>' + tw(46, 16, 2) + fin();
+    // Cups & Balls : trois gobelets rouges, celui du milieu soulevé sur la balle jaune, baguette magique
+    function cupB(x, y, c1, c2) { return E(x, y + 12, 7.4, 1.8, '#000', .3) + P('M' + (x - 7) + ' ' + (y + 12) + 'L' + (x - 4.6) + ' ' + y + 'H' + (x + 4.6) + 'L' + (x + 7) + ' ' + (y + 12) + 'Z', c1) + E(x, y + 12, 7, 1.6, c2) + E(x, y, 4.6, 1.2, c2) + L('M' + (x - 6) + ' ' + (y + 8.6) + 'H' + (x + 6), '#FDE047', 1) + L('M' + (x - 3.6) + ' ' + (y + 2) + 'L' + (x - 4.8) + ' ' + (y + 9), '#fff', .9, .6); }
+    B.cups = med('#93C5FD', '#1E3A8A', '#FDE047', '#A16207', G('IDcp', '#F87171', '#991B1B', 0, 1) + R('IDbl', '#FFFFFF', '#FDE047', '#CA8A04')) +
+      '<g clip-path="url(#IDc)">' + P('M4 46H62V64H4z', '#1E40AF') + L('M4 46H62', '#60A5FA', 1) + '</g>' +
+      cupB(15, 33, 'url(#IDcp)', '#7F1D1D') + cupB(49, 33, 'url(#IDcp)', '#7F1D1D') + O(32, 42.6, 3.6, 'url(#IDbl)') + E(32, 46.2, 3.6, .9, '#000', .3) +
+      '<g transform="rotate(-10 32 24)">' + cupB(32, 18, 'url(#IDcp)', '#7F1D1D') + '</g>' +
+      L('M40 58L54 46', '#111827', 2.4) + L('M52.4 47.4L54 46', '#fff', 2.4) + L('M28 36l-2-2M36 36l2-2M32 35v-3', '#FDE047', 1, .9) + tw(12, 18, 2.2) + tw(52, 20, 1.8, .8) + fin();
+    // Thimbles : trois dés à coudre dorés sur le velours, l'un soulevé sur la perle bleue
+    function thB(x, y) { return E(x, y + 11, 6, 1.5, '#000', .3) + P('M' + (x - 5.6) + ' ' + (y + 11) + 'Q' + (x - 6) + ' ' + y + ' ' + x + ' ' + (y - 1) + 'Q' + (x + 6) + ' ' + y + ' ' + (x + 5.6) + ' ' + (y + 11) + 'Z', 'url(#IDth)') + E(x, y + 11, 5.6, 1.4, '#A16207') + '<g fill="#92400E" opacity=".55">' + [[-2.4, 3], [0, 2.4], [2.4, 3], [-3, 6], [-1, 5.6], [1, 5.6], [3, 6], [-2, 8.6], [0, 8.4], [2, 8.6]].map(function (q) { return '<circle cx="' + f(x + q[0]) + '" cy="' + f(y + q[1]) + '" r=".55"/>'; }).join('') + '</g>' + L('M' + (x - 3.6) + ' ' + (y + 2) + 'Q' + (x - 4.4) + ' ' + (y + 5) + ' ' + (x - 4.2) + ' ' + (y + 9), '#fff', .9, .7); }
+    B.thimbles = med('#C084FC', '#3B0764', '#FDE047', '#A16207', G('IDth', '#FEF9C3', '#FACC15', '#A16207', 1) + R('IDpl', '#FFFFFF', '#7DD3FC', '#1D4ED8')) +
+      '<g clip-path="url(#IDc)">' + P('M4 44H62V64H4z', '#6B21A8') + L('M4 44H62', '#C084FC', 1) + '</g>' +
+      thB(15, 32) + thB(49, 32) + O(32, 42.4, 3.2, 'url(#IDpl)') + E(32, 45.6, 3.2, .8, '#000', .3) + '<g transform="rotate(12 32 22)">' + thB(32, 16) + '</g>' +
+      L('M27 37l-2-2M37 37l2-2', '#FDE047', 1) + tw(12, 20, 2.2) + tw(52, 18, 2) + fin();
+    // Crab Shells : crabe rouge souriant, trois coquillages, l'un soulevé sur la perle
+    function shB(x, y, c) { return E(x, y + 7, 7, 1.6, '#000', .25) + P('M' + (x - 7) + ' ' + (y + 6) + 'Q' + (x - 7) + ' ' + (y - 5) + ' ' + x + ' ' + (y - 5) + 'Q' + (x + 7) + ' ' + (y - 5) + ' ' + (x + 7) + ' ' + (y + 6) + 'Z', c) + L('M' + x + ' ' + (y - 4.4) + 'V' + (y + 6) + 'M' + x + ' ' + (y - 4) + 'L' + (x - 4.6) + ' ' + (y + 6) + 'M' + x + ' ' + (y - 4) + 'L' + (x + 4.6) + ' ' + (y + 6), '#BE185D', .6, .6) + '<rect x="' + (x - 3) + '" y="' + (y + 5) + '" width="6" height="2.4" rx="1" fill="#F9A8D4"/>'; }
+    B.shells = med('#67E8F9', '#1E40AF', '#FDE047', '#A16207', G('IDsh', '#FBCFE8', '#EC4899') + R('IDcr', '#FECACA', '#EF4444', '#991B1B') + R('IDpl', '#FFFFFF', '#F1F5F9', '#C4B5FD')) +
+      '<g clip-path="url(#IDc)">' + P('M4 46Q32 40 62 46V64H4z', '#FDE68A') + O(12, 52, .8, '#CA8A04') + O(50, 56, .8, '#CA8A04') + O(30, 58, .7, '#CA8A04') +
+      shB(15, 45, 'url(#IDsh)') + shB(49, 45, 'url(#IDsh)') + O(32, 49.6, 2.8, 'url(#IDpl)') + '</g>' + '<g transform="rotate(-16 36 42)">' + shB(36, 39, 'url(#IDsh)') + '</g>' +
+      L('M22 26L14 20M42 26L50 20', '#DC2626', 2.4) + P('M14 20q-6-2-4-8 3 4 6 3-2 3-2 5zM50 20q6-2 4-8-3 4-6 3 2 3 2 5z', 'url(#IDcr)') +
+      L('M24 30l-5 3M24 33l-5 4M40 30l5 3M40 33l5 4', '#B91C1C', 1.6) + E(32, 30, 9.6, 6.6, 'url(#IDcr)') + L('M28 24l-1-5M36 24l1-5', '#B91C1C', 1.2) + O(27, 18.6, 2.2, '#fff') + O(37, 18.6, 2.2, '#fff') + O(27.4, 18.8, 1.1, '#111827') + O(37.4, 18.8, 1.1, '#111827') +
+      L('M29 31.6Q32 34 35 31.6', '#7F1D1D', 1) + O(26.6, 30, 1.2, '#FDA4AF', .7) + O(37.4, 30, 1.2, '#FDA4AF', .7) + L('M25.6 27Q28 25 31 25', '#fff', .9, .6) + fin();
+    // Lucky Nails : main claire aux ongles roses brillants, flacon de vernis, paillettes
+    B.nails = med('#FBCFE8', '#9D174D', '#FDE047', '#A16207', G('IDnl', '#F9A8D4', '#BE185D') + G('IDbt', '#F472B6', '#831843')) +
+      '<g clip-path="url(#IDc)">' + O(14, 18, .9, '#fff') + O(50, 50, .9, '#fff') +
+      '<rect x="40" y="30" width="12" height="18" rx="3.4" fill="url(#IDbt)"/><rect x="42.6" y="20" width="6.8" height="10.6" rx="1.6" fill="#1F2937"/>' + L('M42.4 33V45', '#fff', 1.2, .55) + '<rect x="40" y="38" width="12" height="3" fill="#FDE047" opacity=".85"/>' +
+      P('M14 58Q12 46 16 40L18 30Q18.6 27.6 20.6 28.2Q22.2 28.8 22 31L21.4 37 23 24Q23.6 21.6 25.6 22 27.6 22.4 27.4 25L26.6 36 28.4 22Q29 19.6 31 20 33 20.4 32.8 23L31.6 36.4 33.6 25.6Q34.2 23.4 36 23.8 37.8 24.4 37.4 26.6L35.6 40Q38 37 40.6 37.6 42 38.6 40.6 40.6L35 48Q32 54 30 58Z', SK) +
+      [[20.3, 29.6, -8], [25.3, 23.6, -6], [30.6, 21.6, 0], [35.6, 25.4, 6]].map(function (q) { return '<ellipse cx="' + q[0] + '" cy="' + q[1] + '" rx="1.8" ry="2.6" transform="rotate(' + q[2] + ' ' + q[0] + ' ' + q[1] + ')" fill="url(#IDnl)"/>' + O(f(q[0] - .5), f(q[1] - 1), .5, '#fff', .9); }).join('') +
+      L('M18 44Q22 42 26 44', '#EBB394', .6, .7) + '</g>' + tw(48, 14, 2.4) + tw(12, 30, 2, .9) + tw(54, 54, 1.6, .8) + fin();
+    // Koi Fortune : deux carpes (rouge et blanche / dorée) qui tournent dans l'étang bleu, fleur de lotus rose
+    function koiB(c, spot) { return P('M-11 0L-17.6-5.4Q-15.2 0-17.6 5.4Z', c) + P('M-12 0Q-4-6.4 6-4.4Q12.4-2.6 12.4 0Q12.4 2.6 6 4.4Q-4 6.4-12 0Z', c) + P('M-2-4.6Q0-8.6 4-9Q3-6 2-4.4zM-2 4.6Q0 8.6 4 9Q3 6 2 4.4z', c, .85) + (spot || '') + O(8, -1.6, 1, '#111827') + L('M12.2 1.4L14 2.6', '#B91C1C', .6) + L('M-6-2.6Q0-4.6 6-3.4', '#fff', .8, .55); }
+    B.koi = med('#7DD3FC', '#1E3A8A', '#FDE047', '#A16207', G('IDgk', '#FEF9C3', '#FACC15')) +
+      '<g clip-path="url(#IDc)">' + '<circle cx="32" cy="33" r="18" fill="none" stroke="#BAE6FD" stroke-width=".8" opacity=".5"/><circle cx="32" cy="33" r="11" fill="none" stroke="#BAE6FD" stroke-width=".6" opacity=".4"/>' + '</g>' +
+      '<g transform="translate(26 22) rotate(-160)">' + koiB('#F8FAFC', P('M-6-3.6Q0-1 2-4.6Q-2-6-6-3.6zM2 1Q5 4 8 1.6Q5-1 2 1z', '#DC2626')) + '</g>' +
+      '<g transform="translate(38 44) rotate(20)">' + koiB('url(#IDgk)', P('M-5 2Q0 4.6 4 1.6Q0-1-5 2z', '#E11D48', .8)) + '</g>' +
+      '<g transform="translate(47 22)">' + [0, 72, 144, 216, 288].map(function (a) { return '<ellipse cx="0" cy="-4" rx="2.6" ry="4.4" fill="#F9A8D4" transform="rotate(' + a + ')"/>'; }).join('') + O(0, 0, 2.2, '#FDE047') + '</g>' +
+      O(16, 44, 1.4, '#fff', .5) + O(19, 48, 1, '#fff', .5) + tw(14, 30, 1.8, .8) + fin();
+    // Dreidel : toupie bleu et argent qui tourne, lettre dorée, pièces en chocolat
+    B.dreidel = med('#93C5FD', '#1E3A8A', '#E2E8F0', '#475569', G('IDdl', '#60A5FA', '#1D4ED8', 0, 1) + G('IDdr', '#1E40AF', '#172554', 0, 1) + R('IDgc', '#FFFBEB', '#FBBF24', '#A16207')) +
+      '<g clip-path="url(#IDc)">' + O(14, 18, .9, '#fff') + O(50, 14, .8, '#fff') + L('M10 48Q32 58 54 48', '#BFDBFE', 1.4, .5) + L('M14 53Q32 61 50 53', '#BFDBFE', 1, .4) + '</g>' +
+      '<g transform="rotate(10 32 32)">' + '<rect x="30.4" y="8" width="3.2" height="8" rx="1.4" fill="#CBD5E1"/>' + P('M22 16H32V36H22z', 'url(#IDdl)') + P('M32 16H42V36H32z', 'url(#IDdr)') + P('M22 36H32L32 50Z', '#2563EB') + P('M32 36H42L32 50Z', '#1E3A8A') +
+      L('M22 16H42', '#BFDBFE', 1.2) + '<path d="M24.6 21.6H29.4V31.4M24.6 31.4H29.4" stroke="#FDE047" stroke-width="1.8" fill="none" stroke-linecap="round"/>' + L('M23.6 18v15', '#fff', .9, .5) + '</g>' +
+      O(15, 50, 5, '#A16207') + O(15, 49, 5, 'url(#IDgc)') + '<circle cx="15" cy="49" r="3.4" fill="none" stroke="#A16207" stroke-width=".7"/>' + O(49, 51, 4.4, '#A16207') + O(49, 50, 4.4, 'url(#IDgc)') + '<circle cx="49" cy="50" r="3" fill="none" stroke="#A16207" stroke-width=".7"/>' + tw(50, 24, 2.2) + fin();
     Object.keys(B).forEach(function (k) { var s = B[k]; OBJ[k] = function () { return s; }; });
   })();
   OBJ.rps = function () {
