@@ -440,11 +440,11 @@ html:root body #casinoModal .sp2 .sp2-slip.setting > .sp2-stk,html:root body #ca
 html:root body #casinoModal .sp2 .sp2-gear .sp2-i{stroke-width:1.9}
 /* le bloc de mise suit la liste des sélections (il ne la cache jamais) — sur petit écran on fait défiler jusqu'à lui */
 html:root body #casinoModal .sp2 .sp2-stk{position:relative;bottom:auto}
-/* 2026-10-21 (propriétaire) : boutons − / + de la mise (petits pas, appui long = ça accélère) */
-html:root body #casinoModal .sp2 .sp2-pm{flex:none;width:44px;height:56px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:14px;
+/* 2026-10-21 (propriétaire) : bouton + de la mise, collé à la case (petits pas, appui long = ça accélère) */
+html:root body #casinoModal .sp2 .sp2-pm{flex:none;width:52px;height:56px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:14px;
   color:#E9E5FF;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);touch-action:manipulation;-webkit-user-select:none;user-select:none;cursor:pointer}
 html:root body #casinoModal .sp2 .sp2-pm.plus{color:#3B2300;background:linear-gradient(180deg,#FFD66B,#F2B33D);box-shadow:0 2px 0 #B9700C}
 html:root body #casinoModal .sp2 .sp2-pm svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round}
 html:root body #casinoModal .sp2 .sp2-pm:active{transform:scale(.94)}
-@media (max-width:390px){html:root body #casinoModal .sp2 .sp2-pm{width:38px}html:root body #casinoModal .sp2 .sp2-amt{gap:6px}html:root body #casinoModal .sp2 .sp2-inw{padding:0 10px}}
+@media (max-width:390px){html:root body #casinoModal .sp2 .sp2-pm{width:46px}html:root body #casinoModal .sp2 .sp2-amt{gap:6px}html:root body #casinoModal .sp2 .sp2-inw{padding:0 10px}}
 @media (max-height:600px){html:root body #casinoModal .sp2 .sp2-pm{height:50px}}

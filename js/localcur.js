@@ -65,8 +65,19 @@
     if (!c || n == null) { if (tag) tag.remove(); host.classList.remove('has-loc'); return; }
     if (!tag) { tag = document.createElement('span'); tag.className = 'oro-loc'; tag.setAttribute('dir', 'ltr'); host.appendChild(tag); }
     var txt = fmt(n, c);
-    if (tag.textContent !== txt) tag.textContent = txt;
     host.classList.add('has-loc');
+    // taille : ~62 % du montant (petit téléphone → télé), puis rapetisse jusqu'à tenir dans la case (jamais coupé)
+    var fs = parseFloat(getComputedStyle(amtEl).fontSize) || 15, w = Math.round(amtEl.getBoundingClientRect().width);
+    var key = txt + '|' + fs + '|' + w + '|' + Math.round(host.getBoundingClientRect().width);
+    if (tag.textContent !== txt) tag.textContent = txt;
+    if (tag.__k === key) return;
+    tag.__k = key;
+    var size = Math.max(8, Math.min(14, Math.round(fs * 0.62 * 10) / 10));
+    tag.style.fontSize = size + 'px'; tag.style.lineHeight = Math.round(size * 1.1) + 'px';
+    for (var k = 0; k < 14 && tag.clientWidth > 0 && tag.scrollWidth > tag.clientWidth + 1 && size > 6.5; k++) {
+      size = Math.round((size - 0.5) * 10) / 10;
+      tag.style.fontSize = size + 'px'; tag.style.lineHeight = Math.round(size * 1.1) + 'px';
+    }
   }
   function paint() {
     put(document.getElementById('modeRealAmt'), document.getElementById('modeReal'));

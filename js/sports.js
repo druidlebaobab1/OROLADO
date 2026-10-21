@@ -805,7 +805,7 @@
     var guestBtn = String(x.guestBet || '').replace(/^🔒\s*/, '').trim(); // « 🔒 Inscris-toi pour parier (c'est gratuit) » sans le cadenas
     var bal = ctx.guest ? null : curBal(), q = qk(), main = each ? (slip.every(function (z) { return stOf(z) === stOf(slip[0]); }) ? stOf(slip[0]) : 0) : stake;
     var stk = '<div class="sp2-stk">' +
-      '<div class="sp2-amt"><button type="button" class="sp2-pm" id="spMinus" aria-label="−"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button><label class="sp2-inw" for="spStake"><span class="sp2-inl"><span class="fit">' + esc(each ? x.eachL : x.stakeL) + '</span></span><span class="sp2-inv"><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + (main > 0 ? m2(main) : '') + '" placeholder="0.00" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></span></label><button type="button" class="sp2-pm plus" id="spPlus" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>' +
+      '<div class="sp2-amt"><label class="sp2-inw" for="spStake"><span class="sp2-inl"><span class="fit">' + esc(each ? x.eachL : x.stakeL) + '</span></span><span class="sp2-inv"><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + (main > 0 ? m2(main) : '') + '" placeholder="0.00" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></span></label><button type="button" class="sp2-pm plus" id="spPlus" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>' +
         '<button type="button" class="sp2-clr" id="spClr"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="fit">' + esc(x.clrSt) + '</span></button></div>' +
       '<div class="sp2-qk4">' + q.map(function (v) { return '<button type="button" data-q="' + v + '"><span class="fit">' + esc(qtxt(v)) + '</span></button>'; }).join('') +
         '<button type="button" data-q="max" class="mx"><span class="fit">' + esc(x.maxL) + '</span></button></div>' +
@@ -872,8 +872,8 @@
       i.addEventListener('focus', function () { try { i.select(); } catch (e) { /* ignore */ } });
     });
     $('spClr').addEventListener('click', function () { if (!sending) setAll(0, true); });
-    // 2026-10-21 (propriétaire : « des boutons + et − pour ajouter des petits montants, de plus en plus vite, sans
-    // taper au clavier ») : + / − par petits pas (0.10 $ au début, puis plus grands quand la mise grandit) ;
+    // 2026-10-21 (propriétaire : « un bouton + pour ajouter des petits montants, de plus en plus vite, sans taper au
+    // clavier ») : + par petits pas (0.10 $ au début, puis plus grands quand la mise grandit) ;
     // doigt gardé appuyé = ça continue et ça accélère.
     var stepOf = function (v) { return v < 1 ? 0.1 : v < 5 ? 0.5 : v < 20 ? 1 : v < 100 ? 5 : v < 500 ? 10 : 50; };
     var curSt = function () { return each ? (num(inp.value) || stOf(slip[0])) : stake; };
@@ -887,7 +887,7 @@
       if (dir > 0 && bl != null && !ctx.guest) { var cap = Math.floor(bl / (each ? slip.length : 1) * 100 + 1e-6) / 100; if (cap >= 0.1 && n > cap) n = cap; }
       setAll(n, true);
     };
-    [['spMinus', -1], ['spPlus', 1]].forEach(function (pr) {
+    [['spPlus', 1]].forEach(function (pr) { // propriétaire : pas de « − » (« Effacer » suffit)
       var bt = $(pr[0]); if (!bt) return;
       var tm = 0, iv = 0, gap = 0, down = false;
       var stop = function () { down = false; clearTimeout(tm); clearTimeout(iv); };
