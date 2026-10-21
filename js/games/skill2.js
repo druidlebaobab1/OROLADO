@@ -226,14 +226,14 @@
         bg: function (img) { if (bgOn === img) return; bgOn = img; bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
         lv: function () { return Math.min(1, playT / 110); },              // v2812: difficulty rises over ~2 min (fair start, really hard later)
         live: function () { return phase === 'play'; },
-        idle: function () { return phase === 'idle'; },
+        idle: function () { return phase === 'idle' || phase === 'demo'; }, // the visitor's demo round = the attract autopilot
         fail: function (why) {                                              // the player's own mistake
           if (phase !== 'play') return false;
           phase = 'failing'; say(why, 'lost'); setBtn(l.bet, '', 'wait'); btn.disabled = true;
           sendFail(); return true;
         },
         burst: function (x, y, n, cols, sp, life, sz) {
-          if (phase === 'play' && !A._xb) K.sfx('hit'); // v2832 : un bon coup (fruit coupé, brique, pièce…) sonne ; jamais l'explosion d'une erreur
+          if ((phase === 'play' || phase === 'demo') && !A._xb) K.sfx('hit'); // v2832 : un bon coup (fruit coupé, brique, pièce…) sonne ; jamais l'explosion d'une erreur
           if (lite) n = Math.ceil(n / 3);
           for (var i = 0; i < n; i++) {
             if (P.length > 160) P.shift();
@@ -292,6 +292,7 @@
         if (document.hidden) { last = 0; return; }                      // paused while the tab is hidden
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         if (!W) { resize(); if (!W) return; }
+        if (D) demoTick(dt);                                            // visitor: a demo round plays by itself
         if (lite && phase === 'idle' && drawn && !P.length) return;      // old phones: still idle scene
         var moving = phase !== 'idle' || !lite;
         if (phase === 'play') playT += dt;
@@ -388,6 +389,17 @@
         K.resultLine(box, r);
       }
       function toIdle() { phase = 'idle'; g.reset(false); say('', 'idle'); tx(mEl, xm(1)); mShown = ''; drawn = false; hintOn(true); }
+      // 2026-10-21 (owner) — VISITOR (not logged in): the scene looks like a real round playing by itself, calm like a video
+      // (the attract autopilot dodges everything, the multiplier climbs, the game's sounds; a soft cash-out sparkle, a fade, again).
+      // Never a hit or a loss. K.demo: no server, nothing saved.
+      var D = null;
+      function demoTick(dt) {
+        var ev = D.tick(dt);
+        if (ev === 'start') { phase = 'demo'; g.reset(false); P.length = 0; RG.length = 0; say('', ''); hintOn(false); mShown = ''; }
+        else if (ev === 'win') { if (g.win) g.win(); say(l.won + ' ' + xm(D.m()), 'won'); }
+        if (ev === 'win') { hist.unshift(D.m()); hist = hist.slice(0, 12); paintHist(); } // shown, never saved
+        if (phase === 'demo' && D.state === 'run') { var s = xm(D.m()); if (s !== mShown) { mShown = s; tx(mEl, s); } }
+      }
 
       // ONE gesture on the WHOLE scene (pointer events, no 300 ms delay); v2812: no ripple — the game itself answers
       function pt(e) { var r = rect || st.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
@@ -422,6 +434,7 @@
       });
 
       paintHist(); setBtn(l.bet); say('', 'idle'); hintOn(true);
+      D = K.demo ? K.demo(st) : null; // visitors only (null for a logged-in player)
       requestAnimationFrame(function () { resize(); cancelAnimationFrame(K.S.raf || 0); K.S.raf = requestAnimationFrame(loop); });
       // a round still running (page reloaded, game reopened): pick it up
       if (!K.guest()) K.multi(key, 'state', null, true).then(function (r) { if (r && !r.done && r.t0 && box.isConnected && phase === 'idle') { r.resume = 1; requestAnimationFrame(function () { begin(r); }); } });

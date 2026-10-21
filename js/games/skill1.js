@@ -1020,7 +1020,7 @@
       };
       var status = function (t, cls) { sEl.className = 'sk-st fit' + (cls ? ' ' + cls : ''); K.setText(sEl, t || ''); };
       var paintHist = function () {
-        var h = HIST[key] || [];
+        var h = D ? dh : HIST[key] || []; // visitor: the demo rounds' chips (never mixed with real rounds)
         $('skHist').innerHTML = h.slice(0, 24).map(function (v, i) { return '<i class="' + (v < 2 ? 'lo' : v < 10 ? 'mid' : 'hi') + (i === 0 && h.fresh ? ' new' : '') + '">' + fx(v) + '×</i>'; }).join('');
         h.fresh = 0;
       };
@@ -1084,7 +1084,8 @@
         K.S.raf = 0;
         if (!alive() || hidden) return;
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
-        w.mode = phase === 'play' ? (busy ? 'hold' : 'play') : phase === 'idle' ? 'idle' : 'post';
+        if (D) demoTick(dt); // visitor: a demo round plays by itself (attract autopilot), see K.demo
+        w.mode = phase === 'play' ? (busy ? 'hold' : 'play') : phase === 'idle' || phase === 'demo' ? 'idle' : 'post';
         if (phase === 'play') { w.e = Math.max(0, nowS() - R.t0); w.t = w.e * DK; }
         var why = G.step(w, dt, w.mode);
         if (why && phase === 'play' && !busy) fail(why);
@@ -1098,7 +1099,7 @@
         }
         draw();
         // idle scene in lite mode: one still frame only (old phones)
-        if (phase === 'idle' && lite()) return;
+        if (phase === 'idle' && lite() && !D) return;
         K.S.raf = requestAnimationFrame(frame);
       };
       var run = function () { if (!K.S.raf && alive() && !hidden) { last = 0; K.S.raf = requestAnimationFrame(frame); } };
@@ -1124,6 +1125,17 @@
         clearTimeout(idleT); idleT = setTimeout(function () { if (alive() && phase !== 'play' && !busy) toIdle(); }, 3200);
       };
       var idleT = 0;
+      // 2026-10-21 (owner) — VISITOR (not logged in): the scene looks like a real round playing by itself, calm like a video
+      // (the attract autopilot, the multiplier climbs, the game's sounds; a soft cash-out sparkle, a fade, again).
+      // Never a hit or a loss. K.demo: no server, nothing saved.
+      var D = null, dh = [];
+      var demoTick = function (dt) {
+        var ev = D.tick(dt);
+        if (ev === 'start') { setPhase('demo'); parts = []; met = null; w.gone = 0; G.reset(w); mTxt = ''; mEl.className = 'sk-m fit'; status(''); hint.classList.add('off'); }
+        else if (ev === 'win') { mEl.className = 'sk-m fit w'; burst(G.focus(w).x, G.focus(w).y, 18, ['#FDE68A', '#FBBF24', '#fff'], 40); }
+        if (ev === 'win') { dh.unshift(D.m()); dh.length = Math.min(dh.length, 30); dh.fresh = 1; paintHist(); }
+        if (phase === 'demo' && D.state === 'run') { var txt = fx(D.m()) + '×'; if (txt !== mTxt) { var rel = txt.length !== mTxt.length; mTxt = txt; mEl.textContent = txt; if (rel) K.fitEl(mEl); } }
+      };
       var toIdle = function () { // the attract scene comes back with the gesture hint
         setPhase('idle'); parts = []; met = null; w.gone = 0; G.reset(w); mEl.className = 'sk-m fit'; status(''); hint.classList.remove('off'); run();
       };
@@ -1230,6 +1242,7 @@
       document.addEventListener('visibilitychange', onVis);
       if (window.ResizeObserver) { var ro = new ResizeObserver(function () { if (!alive()) { ro.disconnect(); return; } measure(); if (phase === 'idle' && lite()) draw(); }); ro.observe(st); }
 
+      D = K.demo ? K.demo(st) : null; // visitors only (null for a logged-in player)
       setPhase('idle'); paintHist(); measure(); run();
       // a round still running (page reloaded / came back): the player takes it back
       if (!watch) K.multi(key, 'state', null, true).then(function (r) { if (alive() && r && !r.done && r.t0 && phase === 'idle') { r.now = r.now || Date.now() / 1000; begin(r); } });

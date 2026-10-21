@@ -639,7 +639,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3013'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
+  var MOD_V = '3017'; // v2822 (round 4) : cards1 (Andar Bahar plus rapide) ; v2821 : onglets ; v2818 : montant de mise qui rapetisse
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
@@ -2120,11 +2120,39 @@
     } catch (e) { return 0; }
   }
   D6.Casino = { open: open, close: close, home: homePub, openPred: openPred, count: gameCount, catReady: function () { return catDone; } };
+  /* 2026-10-21 (propriétaire : « le visiteur doit voir l'action, comme une vidéo ») — jeux « Action » pour le VISITEUR :
+     l'écran a l'air d'une vraie partie qui se joue toute seule, calme, comme une vidéo : le pilote auto du jeu (sa scène
+     d'accueil) évite tout, le multiplicateur monte doucement (×e^(rate·s)), l'ambiance sonore du jeu suit (comme une vraie
+     partie), puis après 10 à 18 s une petite étincelle « encaissé » (jamais de choc ni de perte), un fondu et ça repart.
+     Rien n'est envoyé au serveur ni enregistré. Le jeu appelle d.tick(dt) à chaque image (dt réel : en pause quand l'onglet
+     est caché) et reçoit 'start' (remettre la scène à zéro) | 'win' (étincelle) ; d.m() = multiplicateur à afficher. */
+  function demo(stage, o) {
+    if (!guest() || !stage) return null;
+    o = o || {};
+    var k = S.game, n = 0;
+    var d = { rate: o.rate || 0.03, e: 0, len: 0, state: 'wait', w: 0.6,
+      m: function () { return Math.max(1, Math.floor(Math.exp(d.rate * d.e) * 100 + 1e-9) / 100); },
+      tick: function (dt) {
+        if (d.state === 'run') {
+          d.e += dt;
+          if (d.e < d.len) return '';
+          d.state = 'wait'; d.w = 1.8; sfx('cashout', null, k);
+          return 'win';
+        }
+        d.w -= dt;
+        if (d.w > 0) return '';
+        d.state = 'run'; d.e = 0; d.len = 10 + Math.random() * 8;
+        amb(k, true, null, { src: 'kit', fresh: n ? 0 : 1, clk: { rate: d.rate, t0: Date.now() / 1000, off: 0 } }); // same sound bed as a real round
+        if (n++ && stage.animate) stage.querySelectorAll('canvas').forEach(function (c) { try { c.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: 'ease-out' }); } catch (e) { /* ignore */ } }); // soft fade-in
+        return 'start';
+      } };
+    return d;
+  }
   // v2795 — boîte à outils partagée par les jeux refaits (js/games/*.js)
   D6.CasinoKit = { GAMES: GAMES, MODS: MODS, S: S, X: X, LX: LX, $: $, esc: esc, fmt: fmt, m2: m2, dec: dec, sleep: sleep, toast: toast, guest: guest,
     play: play, multi: multi, resultLine: resultLine, sfx: sfx, sfxBeat: sfxBeat, amb: amb, stakePanel: stakePanel, bindStake: bindStake, needAccount: needAccount, signup: signup,
     afterPlay: afterPlay, stopAll: stopAll, fitEl: fitEl, fitAll: fitAll, setText: setText, ART: ART, pal: pal, gicon: gicon, name: name,
-    seeded: seeded, easeOut: easeOut, lang: function () { return (document.documentElement.lang || 'en').slice(0, 2); },
+    seeded: seeded, easeOut: easeOut, demo: demo, lang: function () { return (document.documentElement.lang || 'en').slice(0, 2); },
     /* register(clé, fonction(box, x), { rules: { en: '…', fr: '…', … } }) */
     register: function (k, fn, o) { fn.v2 = 1; if (o && o.rules) fn.rules = o.rules; GAMES[k] = fn; } };
   // v2740 (propriétaire) : bouton du haut = manette + « Jeux », traduit en un seul mot dans chaque langue
