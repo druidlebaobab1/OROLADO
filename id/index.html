@@ -224,10 +224,10 @@
   <!-- 2026-10-20 : polices Google chargées SANS bloquer la page (avant : tout, même l'écran de chargement, les attendait) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="/css/app.css?v=3004">
+    <link rel="stylesheet" href="/css/app.css?v=3005">
     <link rel="stylesheet" href="/css/auth.css?v=2790">
     <link rel="stylesheet" href="/css/tv.css?v=2790">
-    <link rel="stylesheet" href="/css/galaxy.css?v=2992">
+    <link rel="stylesheet" href="/css/galaxy.css?v=3005">
     <link rel="stylesheet" href="/css/cg.css?v=2887">
     <link rel="stylesheet" href="/css/lobby.css?v=2842">
     <link rel="stylesheet" href="/css/sports2.css?v=2882">
@@ -2324,7 +2324,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
        (avant : les 12 langues à chaque visite). Textes : js/i18n-src.js, js/translations.js, js/i18n-zh.js → node scripts/gen-i18n.js -->
   <script src="/js/i18n/core.js?v=df19d83d68"></script>
   <script src="/js/store.js?v=2978"></script>
-  <script src="/js/api.js?v=2790"></script>
+  <script src="/js/api.js?v=3005"></script>
   <!-- 2026-10-20 : Supabase servi par orolado.com (avant : cdn.jsdelivr.net, version non fixée, bloquait le chargement si lent) -->
   <script src="/js/vendor/supabase-js-2.118.0.js"></script>
   <script src="/js/supabase.js?v=2810"></script>
@@ -2385,7 +2385,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="/js/receipt.js?v=2951"></script>
   <script src="/js/back.js?v=2912"></script>
   <script src="/js/push.js?v=2790"></script>
-  <script src="/js/app.js?v=3002"></script>
+  <script src="/js/app.js?v=3005"></script>
   <script src="/js/portal.js?v=2966"></script>
   <script src="/js/live-ui.js?v=2910"></script>
   <script src="/js/live.js?v=2996"></script>
@@ -2422,7 +2422,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
     function busy() {
       try {
         if (window.D6 && D6.Engine && D6.Engine.liveCount && D6.Engine.liveCount() > 0) return true;
-        var m = document.getElementById('casinoModal'); if (m && m.offsetParent !== null && m.classList.contains('in-game')) return true; // salle des jeux : on peut recharger
+        var m = document.getElementById('casinoModal'); if (m && m.classList.contains('active') && m.classList.contains('in-game')) return true; // salle des jeux : on peut recharger
         var a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
         if (document.querySelector('.modal.open, .modal.show, .sheet.open, [role="dialog"][open]')) return true;
       } catch (e) { return true; }
