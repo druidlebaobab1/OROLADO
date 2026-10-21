@@ -145,8 +145,10 @@
     return '';
   }
   function crest(n, lg, sp) {
-    if (lg && /^img\/teams\//.test(lg)) return logoHtml(lg, 'sp-crest sp-logo');
-    if (lg && /^[a-f0-9]{16}$/.test(lg)) return '<img class="sp-crest sp-logo" src="sp-logo.php?k=' + lg + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">'; // v2713 : vrai logo
+    // 2026-10-21 : taille fixée dans la balise (aucun saut à l'arrivée de l'image) ; plus de « loading=lazy » (le logo apparaissait
+    // en retard pendant le défilement) — les logos sont déjà préchargés (warmLogos)
+    if (lg && /^img\/teams\/[a-z0-9-]+\.png$/.test(lg)) return '<img class="sp-crest sp-logo" src="' + lg + '" alt="" width="44" height="44" decoding="async">';
+    if (lg && /^[a-f0-9]{16}$/.test(lg)) return '<img class="sp-crest sp-logo" src="sp-logo.php?k=' + lg + '" alt="" width="44" height="44" decoding="async" onerror="this.style.visibility=\'hidden\'">'; // v2713 : vrai logo
     var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; });
     // v2807 : combat / tennis sans photo → pastille avec l'icône du sport (gant, balle) au lieu d'une simple lettre
     if (sp === 'mma' || sp === 'boxe' || sp === 'tennis') return '<i class="sp-crest sp-crest-ico" style="--cc:' + CREST[h % CREST.length] + '">' + sico(sp) + '</i>';
@@ -169,18 +171,18 @@
   })();
   // nouveaux petits textes (12 langues)
   var NT = {
-    en: { results: 'Results', inPlay: 'In play', oddsChg: 'Odds updated', sending: 'Sending…', qOnly: 'Predictions: single bets only.', e_single: 'Predictions are single bets only: they can’t be combined.', e_corr: 'These picks are linked: they can’t be in the same slip.', e_cap: 'Limit reached on this choice: lower your stake.' },
-    fr: { results: 'Résultats', inPlay: 'En jeu', oddsChg: 'Cotes mises à jour', sending: 'Envoi…', qOnly: 'Prédiction : pari simple uniquement.', e_single: 'Les prédictions se jouent seules : pas de combiné.', e_corr: 'Ces choix sont liés : pas dans le même coupon.', e_cap: 'Limite atteinte sur ce choix : baisse la mise.' },
-    es: { results: 'Resultados', inPlay: 'En juego', oddsChg: 'Cuotas actualizadas', sending: 'Enviando…', qOnly: 'Predicciones: solo apuesta simple.', e_single: 'Las predicciones son solo apuestas simples: no se combinan.', e_corr: 'Estas selecciones están relacionadas: no pueden ir en el mismo boleto.', e_cap: 'Límite alcanzado en esta opción: baja la apuesta.' },
-    pt: { results: 'Resultados', inPlay: 'Em jogo', oddsChg: 'Odds atualizadas', sending: 'Enviando…', qOnly: 'Previsões: só aposta simples.', e_single: 'Previsões são só apostas simples: não podem ser combinadas.', e_corr: 'Essas escolhas estão ligadas: não podem ficar no mesmo bilhete.', e_cap: 'Limite atingido nesta opção: diminua a aposta.' },
-    ar: { results: 'النتائج', inPlay: 'جارٍ الآن', oddsChg: 'تم تحديث الاحتمالات', sending: 'جارٍ الإرسال…', qOnly: 'التوقعات: رهان فردي فقط.', e_single: 'التوقعات رهانات فردية فقط: لا يمكن دمجها.', e_corr: 'هذه الاختيارات مترابطة: لا يمكن وضعها في نفس القسيمة.', e_cap: 'تم بلوغ الحد لهذا الاختيار: خفّض المبلغ.' },
-    tr: { results: 'Sonuçlar', inPlay: 'Oynanıyor', oddsChg: 'Oranlar güncellendi', sending: 'Gönderiliyor…', qOnly: 'Tahminler: yalnızca tekli bahis.', e_single: 'Tahminler yalnızca tekli bahistir: kombine yapılamaz.', e_corr: 'Bu seçimler bağlantılı: aynı kupona eklenemez.', e_cap: 'Bu seçimde limite ulaşıldı: bahsi düşür.' },
-    vi: { results: 'Kết quả', inPlay: 'Đang diễn ra', oddsChg: 'Tỷ lệ đã cập nhật', sending: 'Đang gửi…', qOnly: 'Dự đoán: chỉ cược đơn.', e_single: 'Dự đoán chỉ được cược đơn: không thể cược xiên.', e_corr: 'Các lựa chọn này liên quan nhau: không thể chung một phiếu.', e_cap: 'Đã đạt giới hạn cho lựa chọn này: hãy giảm tiền cược.' },
-    id: { results: 'Hasil', inPlay: 'Berlangsung', oddsChg: 'Odds diperbarui', sending: 'Mengirim…', qOnly: 'Prediksi: hanya taruhan tunggal.', e_single: 'Prediksi hanya taruhan tunggal: tidak bisa digabung.', e_corr: 'Pilihan ini saling terkait: tidak bisa dalam satu slip.', e_cap: 'Batas tercapai untuk pilihan ini: kurangi taruhan.' },
-    ru: { results: 'Результаты', inPlay: 'Идёт игра', oddsChg: 'Коэффициенты обновлены', sending: 'Отправка…', qOnly: 'Прогнозы: только одиночная ставка.', e_single: 'Прогнозы — только одиночные ставки, без экспресса.', e_corr: 'Эти исходы связаны: их нельзя ставить в один купон.', e_cap: 'Лимит по этому исходу исчерпан: уменьшите ставку.' },
-    de: { results: 'Ergebnisse', inPlay: 'Läuft', oddsChg: 'Quoten aktualisiert', sending: 'Wird gesendet…', qOnly: 'Prognosen: nur Einzelwette.', e_single: 'Prognosen nur als Einzelwette: keine Kombi möglich.', e_corr: 'Diese Tipps hängen zusammen: nicht im selben Wettschein.', e_cap: 'Limit für diese Auswahl erreicht: Einsatz senken.' },
-    hi: { results: 'नतीजे', inPlay: 'जारी है', oddsChg: 'ऑड्स अपडेट हुए', sending: 'भेजा जा रहा है…', qOnly: 'भविष्यवाणी: सिर्फ़ एकल दांव।', e_single: 'भविष्यवाणियाँ सिर्फ़ एकल दांव हैं: इन्हें जोड़ा नहीं जा सकता।', e_corr: 'ये चुनाव आपस में जुड़े हैं: एक ही स्लिप में नहीं रख सकते।', e_cap: 'इस विकल्प की सीमा पूरी हो गई: दांव कम करें।' },
-    zh: { results: '结果', inPlay: '进行中', oddsChg: '赔率已更新', sending: '发送中…', qOnly: '预测：仅限单关。', e_single: '预测只能单关投注，不能串关。', e_corr: '这些选择相互关联，不能放在同一投注单。', e_cap: '该选项已达上限，请降低投注额。' }
+    en: { results: 'Results', inPlay: 'In play', oddsChg: 'Odds updated', sending: 'Sending…', qOnly: 'Predictions: single bets only.', e_single: 'Predictions are single bets only: they can’t be combined.', e_corr: 'These picks are linked: they can’t be in the same slip.', e_cap: 'Limit reached on this choice: lower your stake.', more: 'Show more', singleX: 'One pick: your win = stake × odds.' },
+    fr: { results: 'Résultats', inPlay: 'En jeu', oddsChg: 'Cotes mises à jour', sending: 'Envoi…', qOnly: 'Prédiction : pari simple uniquement.', e_single: 'Les prédictions se jouent seules : pas de combiné.', e_corr: 'Ces choix sont liés : pas dans le même coupon.', e_cap: 'Limite atteinte sur ce choix : baisse la mise.', more: 'Afficher plus', singleX: 'Un seul choix : gain = mise × cote.' },
+    es: { results: 'Resultados', inPlay: 'En juego', oddsChg: 'Cuotas actualizadas', sending: 'Enviando…', qOnly: 'Predicciones: solo apuesta simple.', e_single: 'Las predicciones son solo apuestas simples: no se combinan.', e_corr: 'Estas selecciones están relacionadas: no pueden ir en el mismo boleto.', e_cap: 'Límite alcanzado en esta opción: baja la apuesta.', more: 'Ver más', singleX: 'Una sola selección: ganancia = apuesta × cuota.' },
+    pt: { results: 'Resultados', inPlay: 'Em jogo', oddsChg: 'Odds atualizadas', sending: 'Enviando…', qOnly: 'Previsões: só aposta simples.', e_single: 'Previsões são só apostas simples: não podem ser combinadas.', e_corr: 'Essas escolhas estão ligadas: não podem ficar no mesmo bilhete.', e_cap: 'Limite atingido nesta opção: diminua a aposta.', more: 'Ver mais', singleX: 'Uma só escolha: ganho = aposta × odd.' },
+    ar: { results: 'النتائج', inPlay: 'جارٍ الآن', oddsChg: 'تم تحديث الاحتمالات', sending: 'جارٍ الإرسال…', qOnly: 'التوقعات: رهان فردي فقط.', e_single: 'التوقعات رهانات فردية فقط: لا يمكن دمجها.', e_corr: 'هذه الاختيارات مترابطة: لا يمكن وضعها في نفس القسيمة.', e_cap: 'تم بلوغ الحد لهذا الاختيار: خفّض المبلغ.', more: 'عرض المزيد', singleX: 'اختيار واحد: الربح = المبلغ × الاحتمال.' },
+    tr: { results: 'Sonuçlar', inPlay: 'Oynanıyor', oddsChg: 'Oranlar güncellendi', sending: 'Gönderiliyor…', qOnly: 'Tahminler: yalnızca tekli bahis.', e_single: 'Tahminler yalnızca tekli bahistir: kombine yapılamaz.', e_corr: 'Bu seçimler bağlantılı: aynı kupona eklenemez.', e_cap: 'Bu seçimde limite ulaşıldı: bahsi düşür.', more: 'Daha fazla', singleX: 'Tek seçim: kazanç = bahis × oran.' },
+    vi: { results: 'Kết quả', inPlay: 'Đang diễn ra', oddsChg: 'Tỷ lệ đã cập nhật', sending: 'Đang gửi…', qOnly: 'Dự đoán: chỉ cược đơn.', e_single: 'Dự đoán chỉ được cược đơn: không thể cược xiên.', e_corr: 'Các lựa chọn này liên quan nhau: không thể chung một phiếu.', e_cap: 'Đã đạt giới hạn cho lựa chọn này: hãy giảm tiền cược.', more: 'Xem thêm', singleX: 'Một lựa chọn: tiền thắng = tiền cược × tỷ lệ.' },
+    id: { results: 'Hasil', inPlay: 'Berlangsung', oddsChg: 'Odds diperbarui', sending: 'Mengirim…', qOnly: 'Prediksi: hanya taruhan tunggal.', e_single: 'Prediksi hanya taruhan tunggal: tidak bisa digabung.', e_corr: 'Pilihan ini saling terkait: tidak bisa dalam satu slip.', e_cap: 'Batas tercapai untuk pilihan ini: kurangi taruhan.', more: 'Lihat lagi', singleX: 'Satu pilihan: kemenangan = taruhan × odds.' },
+    ru: { results: 'Результаты', inPlay: 'Идёт игра', oddsChg: 'Коэффициенты обновлены', sending: 'Отправка…', qOnly: 'Прогнозы: только одиночная ставка.', e_single: 'Прогнозы — только одиночные ставки, без экспресса.', e_corr: 'Эти исходы связаны: их нельзя ставить в один купон.', e_cap: 'Лимит по этому исходу исчерпан: уменьшите ставку.', more: 'Показать ещё', singleX: 'Один исход: выигрыш = ставка × коэффициент.' },
+    de: { results: 'Ergebnisse', inPlay: 'Läuft', oddsChg: 'Quoten aktualisiert', sending: 'Wird gesendet…', qOnly: 'Prognosen: nur Einzelwette.', e_single: 'Prognosen nur als Einzelwette: keine Kombi möglich.', e_corr: 'Diese Tipps hängen zusammen: nicht im selben Wettschein.', e_cap: 'Limit für diese Auswahl erreicht: Einsatz senken.', more: 'Mehr anzeigen', singleX: 'Ein Tipp: Gewinn = Einsatz × Quote.' },
+    hi: { results: 'नतीजे', inPlay: 'जारी है', oddsChg: 'ऑड्स अपडेट हुए', sending: 'भेजा जा रहा है…', qOnly: 'भविष्यवाणी: सिर्फ़ एकल दांव।', e_single: 'भविष्यवाणियाँ सिर्फ़ एकल दांव हैं: इन्हें जोड़ा नहीं जा सकता।', e_corr: 'ये चुनाव आपस में जुड़े हैं: एक ही स्लिप में नहीं रख सकते।', e_cap: 'इस विकल्प की सीमा पूरी हो गई: दांव कम करें।', more: 'और देखें', singleX: 'एक चुनाव: जीत = दांव × ऑड्स।' },
+    zh: { results: '结果', inPlay: '进行中', oddsChg: '赔率已更新', sending: '发送中…', qOnly: '预测：仅限单关。', e_single: '预测只能单关投注，不能串关。', e_corr: '这些选择相互关联，不能放在同一投注单。', e_cap: '该选项已达上限，请降低投注额。', more: '显示更多', singleX: '单个选择：可赢 = 投注 × 赔率。' }
   };
   function XX() { var l = lg(); return Object.assign(X(), NT.en, NT[l] || {}); }
   // petites icônes
@@ -348,8 +350,24 @@
       var tp = document.querySelector('#casinoModal .cs-top'), mb = box.closest('.modal-box');
       if (tp) box.style.setProperty('--sp-top', Math.max(40, tp.offsetHeight - 6) + 'px');
       if (mb) { var cs = getComputedStyle(mb); box.style.setProperty('--sp2-px', (parseFloat(cs.paddingLeft) || 14) + 'px'); box.style.setProperty('--sp2-pb', (parseFloat(cs.paddingBottom) || 18) + 'px'); }
+      // 2026-10-21 : la barre du ticket et le bloc de mise restent AU-DESSUS du bas réellement visible (barre de Safari,
+      // bande du bas de l'appli iPhone) : si la page descend plus bas que ce qui se voit, on les remonte d'autant
+      var ae = document.activeElement, typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName || '');
+      if (mb && !typing) { // (clavier ouvert : rien ne bouge)
+        var vv = window.visualViewport, vis = window.innerHeight || 0;
+        if (vv && vv.height > 200) vis = Math.min(vis, vv.height + (vv.offsetTop || 0));
+        var ih = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ios-site-h')) || 0;
+        if (document.documentElement.classList.contains('ios-app') && ih > 200) vis = Math.min(vis, ih);
+        var lift = Math.max(0, Math.min(140, Math.round(mb.getBoundingClientRect().bottom - vis)));
+        box.style.setProperty('--sp2-lift', lift + 'px');
+      }
     } catch (e) { /* ignore */ }
   }
+  (function () {
+    var t = 0, again = function () { clearTimeout(t); t = setTimeout(function () { if (box && box.isConnected && box.classList.contains('sp2')) layoutVars(); }, 120); };
+    window.addEventListener('resize', again);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', again);
+  })();
   function bindTabs() {
     layoutVars();
     box.querySelectorAll('.sp2-tabs [data-sv]').forEach(function (b) { b.addEventListener('click', function () { var v = b.getAttribute('data-sv'); if (v === view) return; view = v; render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; }); });
@@ -361,22 +379,24 @@
   }
 
   // ---------- liste des matchs ----------
-  function timeChip(e) {
+  // bare = true : la « forme » de la carte seulement (sans cotes, sans compte à rebours, sans choix du coupon) — sert à savoir
+  // si une carte déjà dessinée peut être GARDÉE telle quelle (logos jamais recréés) ; les cotes / minutes sont mises à jour sur place.
+  function timeChip(e, bare) {
     var x = XX();
     if (e.status === 'settled') return '<em class="sp2-chip res">' + IC.ok + '<span class="fit">' + esc(x.result) + '</span></em>';
     if (!e.open) return '<em class="sp2-chip shut">' + IC.lock + '<span class="fit">' + esc(x.closed) + '</span></em>';
     var s = e.start - nowS();
-    if (s < 86400) return '<em class="sp2-chip cd' + (s < 3600 ? ' soon' : '') + '" data-ts="' + e.start + '">' + IC.clock + '<span class="fit">' + cd(s) + '</span></em>';
+    if (s < 86400) return '<em class="sp2-chip cd' + (s < 3600 && !bare ? ' soon' : '') + '" data-ts="' + e.start + '">' + IC.clock + '<span class="fit">' + (bare ? '' : cd(s)) + '</span></em>';
     return '<em class="sp2-chip">' + IC.cal + '<span class="fit">' + esc(when2(e.start)) + '</span></em>';
   }
-  function card(e, ins) {
+  function card(e, ins, bare) {
     var x = XX(), q = !!EVK[e.sport], tm = q ? null : teams(e.title), settled = e.status === 'settled', three = e.opts.length === 3;
     var opts = e.opts.map(function (o, i) {
-      var on = inSlip(e.id, o.k), win = settled && e.result === o.k, lose = settled && e.result && e.result !== 'void' && e.result !== o.k;
+      var on = !bare && inSlip(e.id, o.k), win = settled && e.result === o.k, lose = settled && e.result && e.result !== 'void' && e.result !== o.k;
       var lbl = trO(o.label);
       if (three && i === 1 && /^(nul|draw|x|n|match nul)$/i.test(String(o.label).trim())) lbl = x.draw;
       return '<button type="button" class="sp2-o' + (on ? ' on' : '') + (win ? ' win' : '') + (lose ? ' lose' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '" aria-pressed="' + on + '"' + (e.open ? '' : ' disabled') + '>' +
-        '<span class="fit" dir="auto">' + esc(lbl) + '</span><b>' + (win ? IC.ok : '') + Number(o.odd).toFixed(2) + '</b></button>';
+        '<span class="fit" dir="auto">' + esc(lbl) + '</span><b>' + (win ? IC.ok : '') + '<i class="sp2-ov">' + (bare ? '' : Number(o.odd).toFixed(2)) + '</i></b></button>';
     }).join('');
     var head;
     if (tm) {
@@ -388,7 +408,7 @@
       if (!img) img = '<span class="sp2-qimg sp2-qico">' + sico(qKind(e)) + '</span>';
       head = '<div class="sp2-q">' + img + '<div class="sp2-qt">' + linesHtml(trT(e), 'b', 40, true) + '</div></div>';
     }
-    var chip = tm && e.open && e.start - nowS() >= 86400 ? '' : timeChip(e);
+    var chip = tm && e.open && e.start - nowS() >= 86400 ? '' : timeChip(e, bare);
     // « Ligue 1 · nul = remboursé » : le nom de la ligue en haut, la petite règle (« nul = remboursé ») en dessous des équipes
     var lgAll = e.league ? trW(e.league) : '', cut = lgAll.indexOf(' · '), lgName = cut > 0 ? lgAll.slice(0, cut) : lgAll, note = cut > 0 ? lgAll.slice(cut + 3) : '';
     return '<article class="sp2-ev' + (q ? ' sp2-isq' : '') + (ins ? ' sp2-ins' : '') + (e.open ? '' : ' shut') + (settled ? ' done' : '') + '" data-card="' + esc(e.id) + '">' +
@@ -427,25 +447,60 @@
     while (qi < qs.length) out.push({ e: qs[qi++], tail: 1 });
     return out.concat(res.map(function (e) { return { e: e, res: 1 }; }));
   }
+  /* 2026-10-21 (propriétaire : « les logos n'arrêtent pas de bouger, de revenir ») — chaque carte de match déjà dessinée est
+     GARDÉE (mêmes éléments, mêmes images décodées) : en revenant sur Paris, à l'arrivée d'une nouvelle liste, au retour du
+     coupon ou de « Mes paris », seules les cotes et les minutes changent sur place. Une carte n'est refaite que si sa forme
+     change (match fermé, résultat, autre langue). Avant : toute la liste (et tous les logos) était recréée à chaque fois. */
+  var cardCache = {}, fitW = 0;
+  function patchCard(el, e) {
+    var x = XX(), n = nowS();
+    e.opts.forEach(function (o) {
+      var b = el.querySelector('.sp2-o[data-k="' + o.k + '"]'); if (!b) return;
+      var v = b.querySelector('.sp2-ov'), t = Number(o.odd).toFixed(2);
+      if (v && v.textContent !== t) v.textContent = t;
+      var on = inSlip(e.id, o.k); b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on));
+    });
+    var c = el.querySelector('.sp2-chip[data-ts]');
+    if (c) { var s = +c.getAttribute('data-ts') - n; c.classList.toggle('soon', s < 3600); var sp = c.querySelector('span'); var tx = s > 0 ? cd(s) : x.inPlay; if (sp && sp.textContent !== tx) sp.textContent = tx; }
+  }
+  function cardEl(e, ins, fresh) {
+    var sig = card(e, ins, true), c = cardCache[e.id];
+    if (c && c.sig === sig) { patchCard(c.el, e); return c.el; }
+    var t = document.createElement('div'); t.innerHTML = card(e, ins, false);
+    var el = t.firstElementChild; cardCache[e.id] = { sig: sig, el: el }; fresh.push(el);
+    return el;
+  }
   function renderList() {
     var x = XX();
     if (!events.length) { box.innerHTML = tabs() + empty(x.none); bindTabs(); fitAll(box); return; }
+    // colonnes de la grille calculées AVANT le dessin (même règle que css/sports2.css : cartes de 330 px au moins, 10 px d'écart)
+    var bw = box.clientWidth || 0; if (bw > 0) gridCols = Math.max(1, Math.floor((bw + 10) / 340));
     var items = feed(events, gridCols);
     // en-tête de jour : seulement les matchs (une prédiction glissée entre deux matchs ne change pas de jour)
     var key = function (it) { return it.res ? 'res' : it.tail ? 'q' : it.ins ? null : new Date(it.e.start * 1000).toDateString(); };
     var cnt = {}, cur = '';
     items.forEach(function (it) { var k = key(it); if (k) cur = k; if (!it.ins) cnt[cur] = (cnt[cur] || 0) + 1; });
-    var html = '', last = '';
+    var list = document.createElement('div'), last = '', fresh = [], keep = {};
+    list.className = 'sp2-list';
     items.forEach(function (it) {
       var k = key(it), e = it.e;
-      if (k && k !== last) { last = k; html += '<h4 class="sp2-day' + (k === 'q' ? ' sp2-dq' : '') + '"><span class="fit">' + esc(k === 'res' ? x.results : k === 'q' ? x.sport.event : dayLabel(e.start)) + '</span><i>' + cnt[k] + '</i></h4>'; }
-      html += card(e, it.ins);
+      if (k && k !== last) { last = k; list.insertAdjacentHTML('beforeend', '<h4 class="sp2-day' + (k === 'q' ? ' sp2-dq' : '') + '"><span class="fit">' + esc(k === 'res' ? x.results : k === 'q' ? x.sport.event : dayLabel(e.start)) + '</span><i>' + cnt[k] + '</i></h4>'); }
+      keep[e.id] = 1;
+      list.appendChild(cardEl(e, it.ins, fresh));
     });
-    box.innerHTML = tabs() + '<div class="sp2-list">' + html + '</div>' + slipBar();
-    var gc = 1; try { gc = Math.max(1, getComputedStyle(box.querySelector('.sp2-list')).gridTemplateColumns.split(' ').filter(Boolean).length); } catch (e) { /* ignore */ }
-    if (gc !== gridCols) { gridCols = gc; renderList(); return; } // même rendu synchrone : rien ne saute à l'écran
-    box.querySelector('.sp2-list').addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.sp2-o'); if (b && !b.disabled) pick(b); });
-    bindTabs(); bindSlip(); fitAll(box); startTick();
+    Object.keys(cardCache).forEach(function (id) { if (!keep[id]) delete cardCache[id]; });
+    box.innerHTML = tabs();
+    box.appendChild(list);
+    var bar = slipBar(); if (bar) box.insertAdjacentHTML('beforeend', bar);
+    var gc = 1; try { gc = Math.max(1, getComputedStyle(list).gridTemplateColumns.split(' ').filter(Boolean).length); } catch (e) { /* ignore */ }
+    if (gc !== gridCols) { gridCols = gc; renderList(); return; } // (rare) mêmes cartes gardées : rien ne saute à l'écran
+    list.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.sp2-o'); if (b && !b.disabled) pick(b); });
+    bindTabs(); bindSlip();
+    // textes élastiques : toute la page si la largeur a changé, sinon seulement les cartes neuves (moins de travail, rien ne bouge)
+    var w = box.clientWidth || 0;
+    if (w !== fitW) { fitW = w; fitAll(box); }
+    else { fitAll(box.querySelector('.sp2-tabs')); list.querySelectorAll('.sp2-day').forEach(fitAll); fresh.forEach(fitAll); fitAll($('spSbar')); }
+    startTick();
   }
   // toucher une cote : on l'ajoute / l'enlève du coupon SANS redessiner toute la liste (rapide, la page ne saute pas)
   function pick(b) {
@@ -521,22 +576,37 @@
     var ic = r === 'won' ? IC.ok : r === 'lost' ? IC.x : r === 'void' ? '↺' : '';
     return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst">' + linesHtml(e ? trT(e) : s.t, 'small', right ? 20 : 34, true) + '<b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
   }
+  /* 2026-10-21 (propriétaire : « Mes paris : chaque pari tout ouvert, pas pro ») — une LIGNE compacte par pari, comme les
+     grands sites : état, type (« Combiné · 3 »), date, les choix sur une ligne, mise · cote · gain. Toucher la ligne l'ouvre
+     (chaque sélection avec son résultat, numéro, « Voir le reçu »). 30 paris affichés, puis « Afficher plus ». */
+  var rcOpen = {}, rcLimit = 30;
   function receipts(bets) {
     var x = XX();
     if (!bets.length) return empty(x.noBets, x.seeBets, null, 'list');
     var ST = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL };
-    return bets.map(function (bt, bi) {
-      var st = bt.status || 'open';
+    var html = bets.slice(0, rcLimit).map(function (bt, bi) {
+      var st = bt.status || 'open', id = String(bt.id || ''), on = !!rcOpen[id];
       var big = st === 'won' ? '+' + money(bt.win) : st === 'lost' ? '−' + money(bt.stake) : money(st === 'void' ? bt.stake : bt.pot);
       var lab = st === 'won' ? x.wonL : st === 'lost' ? x.lostL : st === 'void' ? x.voidL : x.potL;
-      var kind = bt.sel.length > 1 ? x.rcCombo + ' · ' + bt.sel.length : x.rcSingle;
-      return '<div class="sp2-bet st-' + esc(st) + '" data-rc="' + bi + '" role="button" tabindex="0">' +
-        '<div class="sp2-bh"><em class="sp2-pill"><span class="fit">' + esc(ST[st] || st) + '</span></em><span class="fit sp2-kind">' + esc(kind) + '</span><small class="fit">' + esc(bt.at ? when2(bt.at) : '') + '</small></div>' +
-        bt.sel.map(selRow).join('') +
-        '<div class="sp2-bf"><span><small class="fit">' + esc(x.stakeL) + '</small><b class="fit">' + money(bt.stake) + '</b></span><span><small class="fit">' + esc(x.oddL) + '</small><b class="fit">' + Number(bt.odd).toFixed(2) + '</b></span>' +
-        '<span class="big"><small class="fit">' + esc(lab) + '</small><b class="fit">' + big + '</b></span></div>' +
-        '<div class="sp2-bid"><span class="fit">#' + esc(String(bt.id || '').slice(-8).toUpperCase()) + '</span><em class="fit">' + esc(x.rcOpen) + ' ›</em></div></div>';
+      var multi = bt.sel.length > 1, kind = multi ? x.rcCombo + ' · ' + bt.sel.length : x.rcSingle;
+      var s0 = bt.sel[0] || { t: '', l: '' }, e0 = evByTitle(s0.t);
+      var sum = multi ? bt.sel.map(function (s) { return esc(trO(s.l)); }).join('<i> · </i>')
+        : '<b>' + esc(trO(s0.l)) + '</b><i> · </i>' + esc(e0 ? trT(e0) : s0.t);
+      return '<div class="sp2-bet st-' + esc(st) + (on ? ' on' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' +
+        '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
+          '<span class="sp2-bh"><em class="sp2-pill"><span class="fit">' + esc(ST[st] || st) + '</span></em><span class="fit sp2-kind">' + esc(kind) + '</span><small class="fit">' + esc(bt.at ? when2(bt.at) : '') + '</small></span>' +
+          '<span class="sp2-bsum" dir="auto">' + sum + '</span>' +
+          '<span class="sp2-bf"><span><small class="fit">' + esc(x.stakeL) + '</small><b class="fit">' + money(bt.stake) + '</b></span><span><small class="fit">' + esc(x.oddL) + '</small><b class="fit">' + Number(bt.odd).toFixed(2) + '</b></span>' +
+          '<span class="big"><small class="fit">' + esc(lab) + '</small><b class="fit">' + big + '</b></span><i class="sp2-chev">' + IC.back + '</i></span></button>' +
+        (on ? rcBody(bt) : '') + '</div>';
     }).join('');
+    if (bets.length > rcLimit) html += '<button type="button" class="sp2-more" id="spMore"><span class="fit">' + esc(x.more) + ' (' + (bets.length - rcLimit) + ')</span></button>';
+    return html;
+  }
+  function rcBody(bt) {
+    var x = XX();
+    return '<div class="sp2-bx">' + bt.sel.map(selRow).join('') +
+      '<div class="sp2-bid"><span class="fit">#' + esc(String(bt.id || '').slice(-8).toUpperCase()) + '</span><button type="button" class="sp2-rcv" data-rcv="1"><span class="fit">' + esc(x.rcSee) + '</span>' + IC.back + '</button></div></div>';
   }
   async function renderMine() {
     var x = XX();
@@ -590,10 +660,22 @@
   }
   function bindRc() {
     box.querySelectorAll('.sp2-cta[data-sv]').forEach(function (b) { b.addEventListener('click', function () { view = 'list'; render(); }); });
-    box.querySelectorAll('.sp2-bet[data-rc]').forEach(function (c) {
-      var go = function () { var bt = (shown && shown.length ? shown : (mineCache || []))[+c.getAttribute('data-rc')]; if (bt) showReceipt(bt); };
-      c.addEventListener('click', go);
-      c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    var rcs = $('spRcs'); if (!rcs || rcs.dataset.bound) return;
+    rcs.dataset.bound = '1';
+    rcs.addEventListener('click', function (ev) {
+      var t = ev.target;
+      if (t.closest('#spMore')) { rcLimit += 30; paintMine(); return; }
+      var c = t.closest('.sp2-bet[data-rc]'); if (!c) return;
+      var bt = (shown && shown.length ? shown : (mineCache || []))[+c.getAttribute('data-rc')]; if (!bt) return;
+      if (t.closest('[data-rcv]')) { showReceipt(bt); return; }
+      if (!t.closest('.sp2-bhd')) return;
+      // ouvrir / fermer la ligne sur place (les autres lignes ne bougent pas)
+      var id = String(bt.id || ''), on = !rcOpen[id], hd = c.querySelector('.sp2-bhd');
+      if (on) rcOpen[id] = 1; else delete rcOpen[id];
+      c.classList.toggle('on', on); if (hd) hd.setAttribute('aria-expanded', String(on));
+      var bx = c.querySelector('.sp2-bx');
+      if (on && !bx) { c.insertAdjacentHTML('beforeend', rcBody(bt)); fitAll(c.querySelector('.sp2-bx')); }
+      else if (!on && bx) bx.remove();
     });
   }
   /* v2779 (propriétaire) — LE REÇU D'UN PARI, comme un vrai ticket : en-tête OROLADO.com, état (en cours / gagné / perdu /
@@ -645,25 +727,21 @@
     renderList();
   }
 
-  // ---------- COUPON (grande page) : choix, cote totale, terminal de mise du casino, gain possible, « Parier » ----------
-  var QUICK = [1, 5, 10, 50];
-  function stepOf(v, up) { return up ? (v < 1 ? 0.1 : v < 10 ? 1 : v < 100 ? 5 : 50) : (v <= 1 ? 0.1 : v <= 10 ? 1 : v <= 100 ? 5 : 50); }
-  // la page du coupon tient dans l'écran (seule la liste des choix défile s'il y en a beaucoup)
-  function fitPage() {
-    try {
-      var mb = box.closest('.modal-box'); if (!mb) return;
-      mb.scrollTop = 0;
-      var top = box.getBoundingClientRect().top - mb.getBoundingClientRect().top + mb.scrollTop;
-      var pb = parseFloat(getComputedStyle(mb).paddingBottom) || 18;
-      box.style.setProperty('--sp2-h', Math.max(300, Math.floor(mb.clientHeight - top - pb)) + 'px');
-    } catch (e) { /* ignore */ }
-  }
+  /* ---------- TICKET DE PARIS ----------
+     2026-10-21 (propriétaire : « le ticket n'a rien à voir avec les jeux ») — ticket façon grands bookmakers (Bet365, Betway,
+     Sportybet) : en-tête (nombre de sélections, Tout supprimer), type du pari expliqué (Simple / Combiné), une ligne par
+     sélection (match, choix, cote, retirer), puis JUSTE DESSOUS le bloc de mise : case « Mise » avec la monnaie, montants
+     rapides, cote totale, gain possible et un bouton « Parier ». Le bloc de mise reste collé en bas quand la liste est longue.
+     Plus de terminal du casino (− + / jetons), plus de grand vide au milieu, plus de 2e flèche retour (la flèche du haut
+     de la page ramène à la liste). Mêmes appels au serveur (spBet), mêmes contrôles qu'avant. */
+  var QUICK = [1, 5, 10, 25, 50, 100];
   function slipHead() {
     var x = X();
-    return '<div class="sp2-sh"><button type="button" class="sp2-back" id="spCpBack" aria-label="‹">' + IC.back + '</button><b class="fit">' + esc(x.myCoupon) + '</b>' +
+    return '<div class="sp2-sh"><span class="sp2-sh-ic">' + IC.slip + '</span><b class="fit">' + esc(x.coupon) + '</b>' +
       (slip.length && !lastBet ? '<i class="sp2-badge">' + slip.length + '</i><button type="button" class="sp2-clear" id="spCpClear">' + IC.trash + '<span class="fit">' + esc(x.clearAll) + '</span></button>' : '') + '</div>';
   }
   function backToList() { lastBet = null; view = 'list'; render(); }
+  function slipTop() { try { var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; } catch (e) { /* ignore */ } }
   function renderSlip() {
     var x = XX();
     layoutVars();
@@ -675,43 +753,41 @@
         '<small class="sp2-done-id fit">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small>' +
         '<div class="sp2-done-b"><button type="button" class="sp2-cta" id="spSeeRc"><span class="fit">' + esc(x.rcSee) + '</span></button>' +
         '<div><button type="button" class="sp2-cta2" id="spSeeMine"><span class="fit">' + esc(x.mine) + '</span></button><button type="button" class="sp2-cta2" id="spCont"><span class="fit">' + esc(x.cont) + '</span></button></div></div></div></div>';
-      fitPage(); fitAll(box);
+      slipTop(); fitAll(box);
       $('spSeeRc').addEventListener('click', function () { showReceipt(lb); });
-      $('spCpBack').addEventListener('click', backToList);
       $('spSeeMine').addEventListener('click', function () { lastBet = null; view = 'mine'; render(); });
       $('spCont').addEventListener('click', backToList);
       return;
     }
     if (!slip.length) {
       box.innerHTML = '<div class="sp2-page">' + slipHead() + empty(x.emptySlip, x.seeBets, 'spCont') + '</div>';
-      fitPage(); fitAll(box);
-      $('spCpBack').addEventListener('click', backToList);
+      slipTop(); fitAll(box);
       $('spCont').addEventListener('click', backToList);
       return;
     }
-    var odd = totalOdd(), multi = slip.length > 1, anyClosed = slip.some(function (z) { return z.closed; });
-    var type = '<div class="sp2-type ' + (multi ? 'combo' : 'single') + '"><em><span class="fit">' + esc(multi ? x.rcCombo : x.rcSingle) + '</span></em>' +
-      (multi ? '<div class="sp2-type-t">' + linesHtml(x.combo, 'span', 30) + '</div>' : '<div class="sp2-type-t"><span class="fit">' + esc(slip[0].q ? x.qOnly : x.single) + '</span></div>') + '</div>'; // v2810 : prédiction = simple seulement
+    var odd = totalOdd(), multi = slip.length > 1;
+    // type du pari : Simple (1 sélection) ou Combiné (toutes doivent gagner, les cotes se multiplient)
+    var type = '<div class="sp2-type ' + (multi ? 'combo' : 'single') + '"><em><span class="fit">' + esc(multi ? x.rcCombo + ' · ' + slip.length : x.rcSingle) + '</span></em>' +
+      '<div class="sp2-type-t">' + linesHtml(cap1(multi ? x.combo : (slip[0].q ? x.qOnly : x.singleX)), 'span', 34) + '</div></div>'; // v2810 : prédiction = simple seulement
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
       var e = evById(z.ev);
       return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><span class="sp2-sel-ic">' + sico(e ? qKind(e) : 'autre') + '</span>' +
-        '<div class="sp2-sel-t">' + linesHtml(e ? trT(e) : z.t, 'small', 40, true) + '<b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b></div>' +
+        '<div class="sp2-sel-t"><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b>' + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '</div>' +
         '<em>' + (z.closed ? IC.lock : Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>';
     }).join('') + '</div>';
-    var tot = '<div class="sp2-tot"><div><small class="fit">' + esc(x.totalOdd) + '</small><b class="fit" id="spOdd">' + odd.toFixed(2) + '</b></div>' +
-      '<div class="win"><small class="fit">' + esc(x.potL) + '</small><b class="fit" id="spPot">' + money(stake * odd) + '</b></div></div>';
-    var term = '<div class="cs-panel cg-panel sp2-term"><div class="cg-term"><div class="cg-tl">' +
-      '<div class="cg-amt"><button type="button" class="cg-step" data-sk="dn" aria-label="−"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>' +
-      '<label class="cg-in"><input id="spStake" inputmode="decimal" autocomplete="off" value="' + m2(stake) + '" aria-label="' + esc(x.stakeL) + '">' +
-      '<button type="button" class="cg-clr" data-sk="clr" aria-label="0.10"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg></button></label>' +
-      '<button type="button" class="cg-step" data-sk="up" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button></div>' +
-      '<div class="cg-quick">' + QUICK.map(function (v) { return '<button type="button" data-q="' + v + '">' + v + '</button>'; }).join('') + '</div></div>' +
-      '<button type="button" class="cs-go cg-go sp2-go' + (ctx.guest ? ' cash' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? x.guestBtn : x.bet) + '</span>' +
-      (ctx.guest ? '' : '<small class="fit" id="spGoAmt">' + money(stake) + '</small>') + '</button></div></div>';
-    box.innerHTML = '<div class="sp2-page">' + slipHead() + type + (ctx.guest ? '<p class="sp2-guest"><span class="fit">' + esc(x.guestBet) + '</span></p>' : '') + list + tot + term + '</div>';
-    fitPage(); fitAll(box); startTick();
+    var guestBtn = String(x.guestBet || '').replace(/^\uD83D\uDD12\s*/, '').trim(); // « 🔒 Inscris-toi pour parier (c'est gratuit) » sans le cadenas
+    var stk = '<div class="sp2-stk">' +
+      '<div class="sp2-amt"><label for="spStake"><span class="fit">' + esc(x.stakeL) + '</span></label>' +
+        '<div class="sp2-inw"><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + m2(stake) + '" aria-label="' + esc(x.stakeL) + '"><em>$</em></div></div>' +
+      '<div class="sp2-qk">' + QUICK.map(function (v) { return '<button type="button" data-q="' + v + '"' + (Math.abs(stake - v) < 0.001 ? ' class="on"' : '') + '>' + v + ' $</button>'; }).join('') + '</div>' +
+      '<div class="sp2-sum"><p><span class="fit">' + esc(x.totalOdd) + '</span><b id="spOdd">' + odd.toFixed(2) + '</b></p>' +
+        '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b id="spPot">' + money(sp2Pot(stake, odd)) + '</b></p></div>' +
+      '<button type="button" class="sp2-place' + (ctx.guest ? ' guest' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? guestBtn || x.guestBtn : x.bet) + '</span>' +
+        (ctx.guest ? '' : '<b class="fit" id="spGoAmt">' + money(stake) + '</b>') + '</button>' +
+      '<p class="sp2-min"><span class="fit">' + esc(x.minNote) + '</span></p></div>';
+    box.innerHTML = '<div class="sp2-page sp2-slip">' + slipHead() + type + list + stk + '</div>';
+    slipTop(); fitAll(box); startTick();
     slip.forEach(function (z) { z.chg = false; });
-    $('spCpBack').addEventListener('click', function () { if (sending) return; view = 'list'; render(); });
     $('spCpClear').addEventListener('click', function () {
       if (sending) return;
       var bt = this;
@@ -721,24 +797,32 @@
     box.querySelectorAll('.sp2-x').forEach(function (bt) { bt.addEventListener('click', function () { if (sending) return; slip.splice(+bt.getAttribute('data-i'), 1); if (!slip.length) view = 'list'; render(); }); });
     var inp = $('spStake');
     var upd = function () {
-      setTx($('spPot'), money(stake * totalOdd()));
+      setTx($('spPot'), money(sp2Pot(stake, totalOdd())));
       if ($('spGoAmt')) setTx($('spGoAmt'), money(stake));
+      box.querySelectorAll('.sp2-qk [data-q]').forEach(function (b) { b.classList.toggle('on', Math.abs(stake - +b.getAttribute('data-q')) < 0.001); });
     };
     var save = function () { try { localStorage.setItem('oro_sp_stake', String(stake)); } catch (e) { /* ignore */ } };
     var set = function (v) { v = Math.round((Number(v) || 0) * 100) / 100; if (!(v >= 0.1)) v = 0.1; stake = v; inp.value = m2(v); save(); upd(); };
     inp.addEventListener('input', function () { var v = parseFloat(String(inp.value).replace(',', '.')); if (!(v > 0)) return; stake = Math.round(v * 100) / 100; save(); upd(); });
     inp.addEventListener('change', function () { set(String(inp.value).replace(',', '.')); });
     inp.addEventListener('focus', function () { try { inp.select(); } catch (e) { /* ignore */ } });
-    box.querySelectorAll('.sp2-term [data-sk]').forEach(function (b) {
-      b.addEventListener('click', function (e) {
-        e.preventDefault(); if (sending) return;
-        var k = b.getAttribute('data-sk');
-        if (k === 'clr') set(0.1); else if (k === 'up') set(stake + stepOf(stake, true)); else set(stake - stepOf(stake, false));
-      });
-    });
-    box.querySelectorAll('.sp2-term .cg-quick [data-q]').forEach(function (b) { b.addEventListener('click', function () { if (!sending) set(+b.getAttribute('data-q')); }); });
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+    box.querySelectorAll('.sp2-qk [data-q]').forEach(function (b) { b.addEventListener('click', function () { if (!sending) set(+b.getAttribute('data-q')); }); });
     if (sending) busy(true);
     $('spGo').addEventListener('click', place);
+  }
+  function cap1(t) { t = String(t || ''); return t.charAt(0).toUpperCase() + t.slice(1); }
+  // gain possible affiché = celui que le serveur enregistrera (mise × cote, arrondi au cent INFÉRIEUR, comme sp_floor2)
+  function sp2Pot(st, odd) { return Math.floor(st * odd * 100 + 1e-6) / 100; }
+  /* Retour d'un cran (flèche ‹ de la page et bouton retour du téléphone, via js/casino.js) : reçu ouvert → fermé ;
+     ticket ou « Mes paris » → liste des matchs. Renvoie true si Paris a géré le retour. */
+  function back() {
+    var rc = document.getElementById('spRcpt');
+    if (rc) { rc.classList.remove('on'); setTimeout(function () { rc.remove(); }, 220); return true; }
+    if (!box || !box.isConnected || !box.classList.contains('sp2')) return false;
+    if (view === 'slip') { if (!sending) { lastBet = null; view = 'list'; render(); } return true; }
+    if (view === 'mine') { view = 'list'; render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; return true; }
+    return false;
   }
   // pendant l'envoi : tout est bloqué (pas de double pari, pas de choix retiré en route)
   function busy(on) {
@@ -783,5 +867,5 @@
     if (mineCache) mineCache = [r.bet].concat(mineCache.filter(function (b) { return b.id !== r.bet.id; }));
     if (view === 'slip') render();
   }
-  D6.Sports = { paint: paint, receipt: showReceipt };
+  D6.Sports = { paint: paint, receipt: showReceipt, back: back };
 })(window.D6 = window.D6 || {});

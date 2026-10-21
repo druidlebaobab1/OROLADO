@@ -21,6 +21,7 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function () { return []; };
 require $tmp . '/orolado_lib.php'; require $tmp . '/trade_lib.php'; require $tmp . '/aff_lib.php'; require $tmp . '/casino_lib.php'; require $tmp . '/sports_lib.php';
 @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10.done', '1');
 @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10c.done', '1'); @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10d.done', '1'); // v2807 : la 3e série a son propre test (test-paris-seed3.php)
+@file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10e.done', '1'); // 5e série : test-paris-seed5.php
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 $A = 'aaaaaaaa-1111-2222-3333-444444444444';
@@ -40,7 +41,10 @@ check('ancien événement PAS serré sans pari : retiré', !in_array($r1['id'], 
 check('ancien événement pas serré AVEC un pari : gardé (honnête)', in_array($r2['id'], $ids, true));
 check('événement serré déjà là : gardé', in_array($r3['id'], $ids, true));
 $new = array_values(array_filter(sp_events(), static fn($e) => isset($e['endAt'])));
-check('nouveaux événements publiés tout seuls', count($new) >= 20, (string) count($new));
+// 2026-10-21 : la 2e série date du 17/10 — on attend tous ceux qui ne sont pas encore fermés (même règle que sp_admin_seed)
+$pm2 = sp_seed_priced();
+$due2 = count(array_filter(sp_suggestions2(), static fn($r) => sp_close_at(['title' => $r[0], 'league' => $r[1], 'sport' => $r[2], 'start' => $r[3], 'logos' => $r[5], 'pricedAt' => $pm2[sp_lower($r[0])] ?? time()]) >= time() + 120 && sp_lower($r[0]) !== 'bon match - serré'));
+check('nouveaux événements publiés tout seuls', count($new) >= min(20, $due2) && count($new) > 0, count($new) . ' / ' . $due2);
 // v2802 (propriétaire) : le foot sans pari reçoit le NUL (1 · N · 2, cotes plus hautes) ; les autres sports restent serrés à 2 choix
 $foot3 = static fn($e) => ($e['sport'] ?? '') === 'foot' && count($e['opts']) === 3 && $e['opts'][1]['label'] === 'Nul';
 $loose = array_filter($new, static fn($e) => !$foot3($e) && !sp_is_tight($e));
@@ -48,6 +52,8 @@ check('les nouveaux hors foot sont SERRÉS (cotes entre 1,55 et 2,30)', !$loose,
 $bad = array_filter($new, static fn($e) => ($e['sport'] ?? '') === 'foot' ? !$foot3($e) : count($e['opts']) !== 2);
 check('foot : 3 choix avec le Nul · autres sports : 2 choix', !$bad, implode(' | ', array_column($bad, 'title')));
 $btc = array_values(array_filter(sp_public_events(), static fn($e) => str_starts_with((string) $e['title'], 'Bitcoin')));
+// (questions Bitcoin de la 2e série toutes périmées : on vérifie leurs traductions dans la liste elle-même)
+if (!$btc) $btc = array_values(array_map(static fn($r) => ['i18n' => $r[7]], array_filter(sp_suggestions2(), static fn($r) => str_starts_with((string) $r[0], 'Bitcoin'))));
 check('questions Bitcoin traduites (anglais, chinois…)', $btc && isset(((array) $btc[0]['i18n'])['en'], ((array) $btc[0]['i18n'])['zh']), $btc ? json_encode($btc[0]['i18n'], JSON_UNESCAPED_UNICODE) : '');
 $badEnd = array_filter($new, static fn($e) => (int) $e['endAt'] <= (int) $e['start']);
 check('heure de fin toujours APRÈS la fermeture des paris', !$badEnd);

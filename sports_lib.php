@@ -510,6 +510,46 @@ function sp_suggestions4(): array {
        'hi' => 'PSG – ल्यों: मैच में 3 या ज़्यादा गोल?', 'zh' => '巴黎圣日耳曼 – 里昂：全场 3 球或以上？']),
   ];
 }
+/*
+ * 2026-10-21 (propriétaire : « 15-20 nouveaux grands événements avant la pub ») — 5e SÉRIE : Ligue des champions,
+ * journées 4 (mar. 3 et mer. 4/11) et 5 (mar. 24 et mer. 25/11). Affiches et heures vérifiées le 21/10/2026 sur la page
+ * officielle UEFA « 2026/27 Champions League: all the league phase fixtures » (21 h heure de Paris sauf 18 h 45 indiqué ;
+ * novembre = heure d'hiver : 21 h = 20 h UTC, 18 h 45 = 17 h 45 UTC). Seuls les matchs pas encore publiés (les séries 3/4 ont
+ * déjà Atlético – Bayern, Villarreal – PSG, Dortmund – Betis, Leipzig – City, Brugge – Liverpool).
+ * Cotes : chances 1 · N · 2 estimées (niveau des équipes, domicile), cote = 0,94 ÷ chance arrondie VERS LE BAS (sp_p2o) :
+ * la maison garde toujours au moins 6 % (somme des 1/cote ≥ 1/0,94), comme les séries 3 / 4. Fin réelle = coup d'envoi + 2 h.
+ */
+function sp_suggestions5(): array {
+  $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
+  $foot = static function (string $title, string $ko, string $h, string $a, float $ph, float $pd, float $pa, string $lh, string $la) use ($t): array {
+    $k = $t($ko);
+    return [$title, 'Ligue des champions', 'foot', $k, [[$h, sp_p2o($ph)], ['Nul', sp_p2o($pd)], [$a, sp_p2o($pa)]], ['img/teams/' . $lh . '.png', 'img/teams/' . $la . '.png'], $k + 7200];
+  };
+  return [
+    // J4 — mardi 3 novembre
+    $foot('Galatasaray - VfB Stuttgart', '2026-11-03 17:45', 'Galatasaray', 'Stuttgart', 0.40, 0.26, 0.34, 'galatasaray', 'stuttgart'),
+    $foot('FC Barcelona - Aston Villa', '2026-11-03 20:00', 'Barcelona', 'Aston Villa', 0.62, 0.20, 0.18, 'barcelona', 'aston-villa'),
+    $foot('Feyenoord - Inter', '2026-11-03 20:00', 'Feyenoord', 'Inter', 0.28, 0.26, 0.46, 'feyenoord', 'inter'),
+    $foot('Manchester United - AS Roma', '2026-11-03 20:00', 'Man United', 'Roma', 0.47, 0.27, 0.26, 'man-united', 'roma'),
+    // J4 — mercredi 4 novembre
+    $foot('AEK Athens - Real Madrid', '2026-11-04 17:45', 'AEK', 'Real Madrid', 0.16, 0.20, 0.64, 'aek-athens', 'real-madrid'),
+    $foot('Fenerbahçe - Liverpool', '2026-11-04 17:45', 'Fenerbahçe', 'Liverpool', 0.25, 0.24, 0.51, 'fenerbahce', 'liverpool'),
+    $foot('FC Porto - Napoli', '2026-11-04 20:00', 'Porto', 'Napoli', 0.38, 0.29, 0.33, 'porto', 'napoli'),
+    $foot('PSV Eindhoven - Club Brugge', '2026-11-04 20:00', 'PSV', 'Club Brugge', 0.50, 0.25, 0.25, 'psv', 'club-brugge'),
+    $foot('RC Lens - Como', '2026-11-04 20:00', 'Lens', 'Como', 0.42, 0.28, 0.30, 'lens', 'como'),
+    $foot('Slavia Prague - Arsenal', '2026-11-04 20:00', 'Slavia', 'Arsenal', 0.17, 0.23, 0.60, 'slavia-praha', 'arsenal'),
+    // J5 — mardi 24 novembre
+    $foot('Galatasaray - Aston Villa', '2026-11-24 17:45', 'Galatasaray', 'Aston Villa', 0.38, 0.26, 0.36, 'galatasaray', 'aston-villa'),
+    $foot('Arsenal - Borussia Dortmund', '2026-11-24 20:00', 'Arsenal', 'Dortmund', 0.58, 0.22, 0.20, 'arsenal', 'dortmund'),
+    $foot('Manchester City - Napoli', '2026-11-24 20:00', 'Man City', 'Napoli', 0.57, 0.23, 0.20, 'man-city', 'napoli'),
+    $foot('Real Madrid - PSV Eindhoven', '2026-11-24 20:00', 'Real Madrid', 'PSV', 0.65, 0.19, 0.16, 'real-madrid', 'psv'),
+    // J5 — mercredi 25 novembre
+    $foot('Inter - VfB Stuttgart', '2026-11-25 20:00', 'Inter', 'Stuttgart', 0.55, 0.24, 0.21, 'inter', 'stuttgart'),
+    $foot('LOSC Lille - Bayern Munich', '2026-11-25 20:00', 'Lille', 'Bayern', 0.22, 0.23, 0.55, 'lille', 'bayern'),
+    $foot('PSG - AS Roma', '2026-11-25 20:00', 'PSG', 'Roma', 0.60, 0.22, 0.18, 'psg', 'roma'),
+    $foot('Sporting CP - Manchester United', '2026-11-25 20:00', 'Sporting', 'Man United', 0.43, 0.26, 0.31, 'sporting', 'man-united'),
+  ];
+}
 /** v2787 : un événement est « serré » si chaque cote est entre 1,55 et 2,30 (pas de petite cote contre grosse cote). */
 function sp_is_tight(array $e): bool {
   foreach ((array) ($e['opts'] ?? []) as $o) { $v = (float) ($o['odd'] ?? 0); if ($v < 1.55 || $v > 2.30) return false; }
@@ -554,6 +594,12 @@ function sp_autoseed_once(): void {
   if (!is_file($flag5)) {
     @file_put_contents($flag5, (string) time());
     try { sp_admin_seed(sp_suggestions4()); } catch (Throwable $e) { @unlink($flag5); }
+  }
+  // 2026-10-21 (b) : 5e série (Ligue des champions J4 et J5, 18 matchs), une seule fois aussi
+  $flag6 = sp_dir() . DIRECTORY_SEPARATOR . 'seed-2026-10e.done';
+  if (!is_file($flag6)) {
+    @file_put_contents($flag6, (string) time());
+    try { sp_admin_seed(sp_suggestions5()); } catch (Throwable $e) { @unlink($flag6); }
   }
   sp_draw_once(); // v2802 : le nul revient au football (matchs encore sans pari)
   // v2810 : questions de prix aux cotes périmées → fermées 72 h après leurs cotes (une seule fois ; la règle s'applique aussi à chaque pari)
@@ -669,7 +715,7 @@ function sp_seed_priced(): array {
   static $m = null;
   if ($m !== null) return $m;
   $m = [];
-  foreach ([[sp_suggestions(), '2026-10-17 00:00'], [sp_suggestions2(), '2026-10-17 00:00'], [sp_suggestions3(), '2026-10-18 00:00'], [sp_suggestions4(), '2026-10-20 12:00']] as [$list, $d])
+  foreach ([[sp_suggestions(), '2026-10-17 00:00'], [sp_suggestions2(), '2026-10-17 00:00'], [sp_suggestions3(), '2026-10-18 00:00'], [sp_suggestions4(), '2026-10-20 12:00'], [sp_suggestions5(), '2026-10-21 00:00']] as [$list, $d])
     foreach ($list as $row) { $k = sp_lower((string) $row[0]); $m[$k] = min($m[$k] ?? PHP_INT_MAX, (int) strtotime($d . ' UTC')); }
   return $m;
 }

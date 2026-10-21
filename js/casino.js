@@ -295,7 +295,10 @@
   function nowOf(e) { return e && e.timeStamp > 0 && e.timeStamp < 1e11 ? e.timeStamp : performance.now(); }
   function navBusy(e, ms) { return nowOf(e) - navAt < (ms || 450); }
   function navMark() { navAt = performance.now(); }
-  function backStep(e) { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (navBusy(e, S.game ? 450 : 650)) return; navMark(); if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
+  function backStep(e) { if (!$('csSheet').hidden) { $('csSheet').hidden = true; return; } if (navBusy(e, S.game ? 450 : 650)) return; navMark();
+    // 2026-10-21 (propriétaire : « deux flèches retour ») : dans Paris, la flèche du haut recule d'un cran (reçu → ticket / Mes paris → liste) avant de fermer
+    if (!S.game && S.view === 'sports' && D6.Sports && D6.Sports.back && D6.Sports.back()) return;
+    if (S.game) { home(); var mb = $('casinoModal').querySelector('.modal-box'); if (mb) mb.scrollTop = S.homeY || 0; } else close(); }
   // v2756 (propriétaire) : « Prédictions » ouvre SA page (sans les onglets) ; « Jeux » ouvre les 24 jeux
   function open(game, view) {
     ensure(); readBal(); loadCatalog();

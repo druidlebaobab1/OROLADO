@@ -19,7 +19,7 @@ $GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use (&$bal, &$key
 };
 $GLOBALS['OROLADO_FAKE_HTTP'] = function () { return []; };
 require $tmp . '/orolado_lib.php'; require $tmp . '/trade_lib.php'; require $tmp . '/aff_lib.php'; require $tmp . '/casino_lib.php'; require $tmp . '/sports_lib.php';
-foreach (['seed-2026-10.done', 'seed-2026-10b.done', 'seed-2026-10d.done', 'draw-2026-10.done'] as $f) @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . $f, '1');
+foreach (['seed-2026-10.done', 'seed-2026-10b.done', 'seed-2026-10d.done', 'seed-2026-10e.done', 'draw-2026-10.done'] as $f) @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . $f, '1');
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 $A = 'aaaaaaaa-1111-2222-3333-444444444444'; $B = 'bbbbbbbb-1111-2222-3333-444444444444';
@@ -30,7 +30,9 @@ save_db(orolado_data_file(), $db); $bal[$A] = 100.0; $bal[$B] = 100.0;
 
 $list = sp_suggestions3();
 $now = time();
-$future = array_values(array_filter($list, static fn($r) => $r[3] >= $now + 120));
+// (2026-10-21 : une question de PRIX aux cotes du 18/10 ferme 72 h après — même règle que sp_admin_seed)
+$pm3 = sp_seed_priced();
+$future = array_values(array_filter($list, static fn($r) => sp_close_at(['title' => $r[0], 'league' => $r[1], 'sport' => $r[2], 'start' => $r[3], 'logos' => $r[5], 'pricedAt' => $pm3[sp_lower($r[0])] ?? $now]) >= $now + 120));
 // --- la liste elle-même ---
 check('au moins 40 événements dans la 3e série', count($list) >= 40, (string) count($list));
 $cats = []; foreach ($list as $r) { $k = $r[2] === 'event' ? (string) ($r[5][0] ?? '') : $r[2]; $cats[$k] = ($cats[$k] ?? 0) + 1; }

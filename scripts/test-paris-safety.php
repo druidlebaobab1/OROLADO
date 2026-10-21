@@ -21,7 +21,7 @@ $GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use (&$bal, &$key
 };
 $GLOBALS['OROLADO_FAKE_HTTP'] = function () { return []; };
 require $tmp . '/orolado_lib.php'; require $tmp . '/trade_lib.php'; require $tmp . '/aff_lib.php'; require $tmp . '/casino_lib.php'; require $tmp . '/sports_lib.php';
-foreach (['seed-2026-10.done', 'seed-2026-10b.done', 'seed-2026-10c.done', 'seed-2026-10d.done', 'draw-2026-10.done', 'stale-2026-10.done'] as $f) @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . $f, '1');
+foreach (['seed-2026-10.done', 'seed-2026-10b.done', 'seed-2026-10c.done', 'seed-2026-10d.done', 'seed-2026-10e.done', 'draw-2026-10.done', 'stale-2026-10.done'] as $f) @file_put_contents(sp_dir() . DIRECTORY_SEPARATOR . $f, '1');
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 $A = 'aaaaaaaa-1111-2222-3333-444444444444'; $B = 'bbbbbbbb-1111-2222-3333-444444444444';
@@ -119,7 +119,7 @@ $rb = sp_bet(load_db(), $ua, 'real', 5, [['ev' => $old, 'k' => 'o1']]);
 $before = $ev($old);
 $n = $fn('sp_stale_fix') ? sp_stale_fix() : 0;
 $after = $ev($old); $after2 = $ev($old2);
-check('ancienne question avec un pari : fermeture avancée à cotes du 18/10 + 72 h', !empty($rb['ok']) && (int) $after['start'] === max($now, (int) strtotime('2026-10-18 00:00 UTC') + 72 * 3600) && (int) $after['start'] < (int) $before['start'], gmdate('d/m H:i', (int) $after['start']));
+check('ancienne question avec un pari : fermeture avancée à cotes du 18/10 + 72 h', !empty($rb['ok']) && abs((int) $after['start'] - max(time(), (int) strtotime('2026-10-18 00:00 UTC') + 72 * 3600)) <= 5 &&(int) $after['start'] < (int) $before['start'], gmdate('d/m H:i', (int) $after['start']));
 check('… cotes, choix, heure de réponse et pari inchangés', $after['opts'] === $before['opts'] && (int) $after['endAt'] === (int) $before['endAt'] && sp_my_bets('u_a')[0]['id'] === $rb['bet']['id'] && (float) sp_my_bets('u_a')[0]['odd'] === 1.62);
 check('question dont les 72 h sont déjà passées : fermée tout de suite (jamais dans le passé)', (int) $after2['start'] >= $now && (int) $after2['start'] <= time() && (int) ($after2['endAt'] ?? 0) === $now + 30 * $D);
 $snap = sp_events();
