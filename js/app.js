@@ -9893,7 +9893,7 @@
         sl.hidden = false;
         if (!sl.firstChild || sl.getAttribute('data-t') !== txt) {
           sl.setAttribute('data-t', txt);
-          sl.innerHTML = '<button type="button" class="oro-inst-btn"><span class="oi-logo" aria-hidden="true"><img src="icons/logo-ring.svg?v=2790" alt=""><i><svg viewBox="0 0 24 24"><path d="M12 5v10M7.5 11l4.5 4.5 4.5-4.5M6 19.5h12"/></svg></i></span><b></b><span class="oi-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v10M7.5 11l4.5 4.5 4.5-4.5M6 19.5h12"/></svg></span></button>';
+          sl.innerHTML = '<button type="button" class="oro-inst-btn"><span class="oi-logo" aria-hidden="true"><img src="icons/logo-ring.svg?v=2790" alt=""><i><svg viewBox="0 0 24 24"><path d="M12 5v10M7.5 11l4.5 4.5 4.5-4.5M6 19.5h12"/></svg></i></span><b></b><span class="oi-go" aria-hidden="true"><svg class="oi-ph" viewBox="0 0 20 32"><rect x="2" y="2" width="16" height="28" rx="4"/><path d="M8 26.5h4"/></svg><svg class="oi-ar" viewBox="0 0 24 24"><path d="M12 4v12M6.5 10.5l5.5 5.5 5.5-5.5"/></svg></span></button>';
           var sp = document.createElement('span'); sp.setAttribute('data-i18n', 'installApp'); sp.textContent = txt; var bb = sl.querySelector('b'); bb.appendChild(sp); bb.appendChild(document.createTextNode(' OROLADO'));
         }
       }

@@ -5,6 +5,9 @@ Options -Indexes
   RewriteEngine On
 # v2428 — lien d'invitation court : /r/CODE -> /?ref=CODE
 RewriteRule ^r/([A-Za-z0-9]{8})/?$ /?ref=$1 [R=302,L]
+  # 2026-10-21 : fichiers .js / .css avec numéro de version (?v=…) = gardés 1 jour par le téléphone (ouverture plus rapide)
+  RewriteCond %{QUERY_STRING} (^|&)v=[0-9]
+  RewriteRule \.(js|css)$ - [E=ORO_VER:1]
   RewriteCond %{HTTPS} !=on
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   RewriteRule ^admin/?$ admin.php [L,QSA]
@@ -49,6 +52,8 @@ RewriteRule ^r/([A-Za-z0-9]{8})/?$ /?ref=$1 [R=302,L]
   </FilesMatch>
   <FilesMatch "\.(js)$">
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
+    Header set Cache-Control "public, max-age=86400" env=ORO_VER
+    Header set Cache-Control "public, max-age=86400" env=REDIRECT_ORO_VER
   </FilesMatch>
 </IfModule>
 
@@ -82,6 +87,8 @@ RewriteRule ^r/([A-Za-z0-9]{8})/?$ /?ref=$1 [R=302,L]
   </FilesMatch>
   <FilesMatch "\.(js)$">
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
+    Header set Cache-Control "public, max-age=86400" env=ORO_VER
+    Header set Cache-Control "public, max-age=86400" env=REDIRECT_ORO_VER
   </FilesMatch>
 </IfModule>
 
