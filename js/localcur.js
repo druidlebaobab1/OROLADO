@@ -184,10 +184,14 @@
   function imp(el, k, v) { if (el) el.style.setProperty(k, v, 'important'); }
   function fixBox(host, amtEl, tag) {
     var fs = /^fsBtn/.test(host.id), lbl = host.querySelector('.mb-lbl');
-    imp(host, 'justify-content', 'center'); imp(host, 'padding-top', '0px'); imp(host, 'padding-bottom', fs ? '4px' : '7px'); imp(host, 'row-gap', '0px');
-    if (lbl) { imp(lbl, 'line-height', '8px'); imp(lbl, 'height', '8px'); imp(lbl, 'margin', '0px'); imp(lbl, 'flex', 'none'); }
-    imp(amtEl, 'line-height', '1'); imp(amtEl, 'margin', '0 0 1px'); imp(amtEl, 'flex', 'none'); if (!fs) imp(amtEl, 'zoom', '0.9');
-    imp(tag, 'line-height', '9px'); imp(tag, 'height', '9px'); imp(tag, 'flex', 'none'); imp(tag, 'overflow', 'visible');
+    // propriétaire : « donne un peu de hauteur » → la case grandit de 6 px vers le bas, les 3 lignes respirent
+    if (!host.__h0) { host.style.removeProperty('height'); host.style.removeProperty('min-height'); host.__h0 = host.offsetHeight || 38; }
+    var H = host.__h0 + 6;
+    imp(host, 'height', H + 'px'); imp(host, 'min-height', H + 'px');
+    imp(host, 'justify-content', 'center'); imp(host, 'padding-top', '1px'); imp(host, 'padding-bottom', '5px'); imp(host, 'row-gap', '0px');
+    if (lbl) { imp(lbl, 'line-height', '9px'); imp(lbl, 'height', '9px'); imp(lbl, 'margin', '0 0 2px'); imp(lbl, 'flex', 'none'); }
+    imp(amtEl, 'line-height', '1'); imp(amtEl, 'margin', '0 0 2px'); imp(amtEl, 'flex', 'none'); imp(amtEl, 'zoom', fs ? '1' : '0.95');
+    imp(tag, 'line-height', '9px'); imp(tag, 'height', '9px'); imp(tag, 'flex', 'none'); imp(tag, 'overflow', 'visible'); imp(tag, 'font-size', '9px');
     // barre claire du bas de la case choisie : 1,5 px au lieu de 3 (la couleur reste celle du site)
     host.style.removeProperty('box-shadow');
     var sh = getComputedStyle(host).boxShadow || '';
@@ -237,12 +241,11 @@
     return isFinite(n) ? n : null;
   }
   var SPOTS = [
-    { host: '#screenTrade .stake-field', amt: '#inputStake', ov: 1 },
+    { host: '.stake-field', amt: '#inputStake', ov: 1, noFs: 1 },
     { host: '#screenTrade .win-preview', amt: '#previewGain', ov: 1 },
     { host: '#casinoModal .cg-in', amt: '#csStake', ov: 1 },
     { host: '#casinoModal .sp2-inw[for="spStake"]', amt: '#spStake', ov: 1 },
     { host: '#casinoModal .sp2-sum p.win', amt: '#spPot' },
-    { host: '#casinoModal #spBalR', amt: '#spBalT' },
     { host: '#depositModal .amt-row', amt: '#depositAmt' },
     { host: '#withdrawModal #withdrawAmt', amt: '#withdrawAmt', after: 1 }
   ];
@@ -255,6 +258,7 @@
         if (!box) continue;
         var tag = box.querySelector(':scope > .oro-loc2');
         var n = c ? numOf(amt) : null;
+        if (sp.noFs && document.documentElement.classList.contains('fs-trade')) n = null; // plein écran : le gain « ≈ $ » est déjà sous la mise
         if (!c || n == null) { if (tag) tag.remove(); box.classList.remove('has-loc2', 'loc2-ov'); continue; }
         if (!tag) {
           tag = document.createElement('span'); tag.className = 'oro-loc2'; tag.setAttribute('dir', 'ltr');

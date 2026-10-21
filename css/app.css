@@ -13447,3 +13447,11 @@ html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.h
 html.fs-trade:root body #screenTrade .stake-field.loc2-ov > .oro-loc2{display:none!important}
 html.fs-trade:root body #screenTrade .stake-field.loc2-ov #inputStake{transform:none!important}
 html:root body #casinoModal #spBalR > .oro-loc2{max-width:46%}
+/* 2026-10-21 (propriétaire) — Paris : plus de ligne « Solde » ni d'équivalent à côté (déjà en haut) ; trading : la case du gain
+   respire (« Payout 90 % » est déjà sur les pastilles dessous) ; mise et gain : même petite taille ; jeux : ligne moins collée au bord */
+html:root body #casinoModal #spBalR{display:none!important}
+html:root body #screenTrade .win-preview.loc2-ov .mult{display:none!important}
+html:root body #screenTrade .win-preview.loc2-ov .amount{transform:translateY(-3px) scale(.92)!important}
+html:root body #screenTrade .win-preview.loc2-ov > .oro-loc2,html:root body #screenTrade .stake-field.loc2-ov > .oro-loc2{font-size:8.5px;bottom:4px}
+html:root body #casinoModal .cg-in.loc2-ov > .oro-loc2{bottom:4px}
+html:root body #casinoModal .cg-in.loc2-ov input{transform:translateY(-6px) scale(.86)}
