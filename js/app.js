@@ -9831,6 +9831,30 @@
         if (isIos()) installHelp('ios');
       });
     }
+    // 2026-10-21 (propriétaire) : bouton « Installer OROLADO » à la fin d'Apprendre et des Conditions (même effet que la bannière)
+    function fillInstSlots() {
+      var slots = document.querySelectorAll('.oro-inst-slot'); if (!slots.length) return;
+      var ok = !isStandalone() && (isIos() || !!(deferredPrompt || window.__oroBip));
+      var lb = document.querySelector('#btnInstall [data-i18n="installApp"]'), txt = lb ? lb.textContent : 'Install';
+      for (var i = 0; i < slots.length; i++) {
+        var sl = slots[i];
+        if (!ok) { sl.innerHTML = ''; sl.hidden = true; continue; }
+        sl.hidden = false;
+        if (!sl.firstChild || sl.getAttribute('data-t') !== txt) {
+          sl.setAttribute('data-t', txt);
+          sl.innerHTML = '<button type="button" class="oro-inst-btn"><span class="oi-logo" aria-hidden="true"><img src="icons/logo-ring.svg?v=2790" alt=""><i><svg viewBox="0 0 24 24"><path d="M12 5v10M7.5 11l4.5 4.5 4.5-4.5M6 19.5h12"/></svg></i></span><b></b><span class="oi-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v10M7.5 11l4.5 4.5 4.5-4.5M6 19.5h12"/></svg></span></button>';
+          var sp = document.createElement('span'); sp.setAttribute('data-i18n', 'installApp'); sp.textContent = txt; var bb = sl.querySelector('b'); bb.appendChild(sp); bb.appendChild(document.createTextNode(' OROLADO'));
+        }
+      }
+    }
+    window.oroInstSlots = fillInstSlots;
+    document.addEventListener('click', function (e) {
+      var b = e.target && e.target.closest && e.target.closest('.oro-inst-btn');
+      if (b && $('btnInstall')) { e.preventDefault(); $('btnInstall').click(); }
+    });
+    window.addEventListener('oro-bip', fillInstSlots);
+    window.addEventListener('appinstalled', fillInstSlots);
+    setTimeout(fillInstSlots, 1200);
     if ($('btnInstallClose')) {
       $('btnInstallClose').addEventListener('click', function () {
         bumpClose();

@@ -305,7 +305,9 @@
       '<div class="lg-done">' + ['n1', 'n2', 'n3', 'n4', 'n7', 'n5', 'n6'].map(function (k) { return '<span>' + I('check') + ' ' + esc(T(k)) + '</span>'; }).join('') + '</div>' +
       '<button type="button" class="lg-cta" data-learn-close>' + esc(T('endBtn')) + '</button>' +
       '<p class="lg-sign">© 2026 OROLADO.COM</p></div>';
+    h += '<div class="oro-inst-slot lg-inst" hidden></div>';
     box.innerHTML = h;
+    if (window.oroInstSlots) window.oroInstSlots();
     var ttl = document.getElementById('learnTitle');
     if (ttl) ttl.textContent = T('title');
   }

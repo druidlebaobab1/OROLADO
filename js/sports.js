@@ -823,9 +823,9 @@
       if (sending) return;
       var bt = this;
       if (Date.now() - clearArm > 3000) { clearArm = Date.now(); setTx(bt.querySelector('span'), x.confirmClear); bt.classList.add('arm'); return; }
-      clearArm = 0; slip = []; view = 'list'; render();
+      clearArm = 0; slip = []; render(); // propriétaire : on reste sur le ticket (vide), pas de saut
     });
-    box.querySelectorAll('.sp2-x').forEach(function (bt) { bt.addEventListener('click', function () { if (sending) return; slip.splice(+bt.getAttribute('data-i'), 1); if (!slip.length) view = 'list'; render(); }); });
+    box.querySelectorAll('.sp2-x').forEach(function (bt) { bt.addEventListener('click', function () { if (sending) return; slip.splice(+bt.getAttribute('data-i'), 1); render(); }); });
     var inp = $('spStake');
     var total = function () { return each ? slip.reduce(function (a, z) { return a + stOf(z); }, 0) : stake; };
     var upd = function () {
