@@ -5244,6 +5244,8 @@
     function equal(row) {
       var ids = ['btnPortal', 'btnCasino', 'btnGames', 'btnHelp', 'btnProfile'];
       var els = ids.map($);
+      // 2026-10-21 : pendant le plein écran la barre est cachée → on garde les écarts tels quels (sinon ils seraient faux au retour)
+      if (document.documentElement.classList.contains('fs-trade')) return;
       els.forEach(function (e) { if (e) e.style.removeProperty('translate'); });
       var guest = document.documentElement.classList.contains('oro-guest') || document.body.classList.contains('oro-guest');
       if (guest || window.innerWidth > window.innerHeight || els.some(function (e) { return !e || !e.offsetWidth; })) return;
@@ -5261,7 +5263,7 @@
       }
     }
     function later(ms) { clearTimeout(t); t = setTimeout(fit, ms || 120); }
-    window.addEventListener('resize', function () { later(200); });
+    window.addEventListener('resize', function () { requestAnimationFrame(fit); later(200); }); // 2026-10-21 : recalcul dès l'image suivante (plus de saut de 200 ms)
     document.addEventListener('oro:lang', function () { later(250); setTimeout(fit, 900); });
     // 2026-10-21 (propriétaire : « en quittant le PLEIN ÉCRAN, Paris et Social sautent ») : les décalages calculés pour la
     // barre du plein écran restaient ~150 ms sur la barre normale. Quand une classe qui change la barre bascule
