@@ -236,6 +236,9 @@
     tankbattle: 'shoot', sniper: 'shoot', gunship: 'shoot', dogfight: 'shoot',
     trenchdef: 'shoot', commando: 'run', alienwave: 'shoot', cityshield: 'shoot', neonpong: 'arcade', meteorblast: 'shoot', skyhopper: 'fly', fruitcatch: 'arcade',
     beattap: 'arcade', ropeswing: 'fly', minigolf: 'throwg', skislalom: 'run' });
+  /* v3013 : 12 courses (skill9) */
+  Object.assign(MAP, { motowheelie: 'run', driftking: 'run', horsejump: 'run', jetskirace: 'run', kartdash: 'run', desertrally: 'run',
+    surfrider: 'fly', penguinslide: 'fly', skatetricks: 'fly', snowjump: 'fly', rooftopninja: 'fly', lavaescape: 'fly' });
   /* ---------- v2850 : 12 jeux en direct live3 (bloc à part) ---------- */
   Object.assign(MAP, { dtlive: 'cards', hilolive: 'cards', sicbolive: 'dice', kenolive: 'balls', lucky10: 'balls', moneywheel: 'wheel', coinlive: 'coin',
     pegdrop: 'balls', football: 'sport', bullseye: 'throwg', ladderlive: 'cups', moonshot: 'crash' });
