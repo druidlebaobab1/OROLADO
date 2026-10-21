@@ -9738,6 +9738,10 @@
     window.addEventListener('oro-bip', function () { if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; showInstallBanner(); } });
     if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; showInstallBanner(); }
     if (isIos() && !isStandalone()) showInstallBanner();
+    // 2026-10-21 (propriétaire : « sur Android le message Installer ne vient plus ») : Chrome n'annonce « installable » qu'après
+    // un moment (et jamais dans certains cas) → sur Android, la bannière revient aussi au bout de 8 s sans annonce. Le bouton
+    // installe vraiment si Chrome le permet à ce moment (il attend encore un peu l'annonce), sinon il montre les 3 étapes.
+    if (/android/i.test(navigator.userAgent || '') && !isIos()) setTimeout(function () { if (!deferredPrompt && !window.__oroBip && !isStandalone()) showInstallBanner(); }, 8000);
     // 2026-10-20 (propriétaire : « sur Android, Installer affiche les étapes au lieu d'installer ») : Chrome ne permet
     // l'installation qu'après un petit temps sur le site (≈ 30 s et un toucher). Avant, la bannière apparaissait au bout de
     // 2,5 s, trop tôt : le bouton ne pouvait que montrer les étapes. Maintenant, sur Android et ordinateur, la bannière
