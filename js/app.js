@@ -1238,7 +1238,9 @@
       var html = document.documentElement;
       var ih = window.innerHeight || 0;
       var fullScreenH = window.screen && window.screen.height ? window.screen.height : 0;
-      var under = !!(UA_SAFARI_IOS && fullScreenH > 0 && ih >= fullScreenH - 4 && window.innerWidth < window.innerHeight);
+      // 2026-10-21 : jamais dans l'appli iPhone installée (pas de barre de Safari ; iOS y agrandit parfois la fenêtre jusqu'au
+      // bas de l'écran : « saf-under » s'allumait alors et changeait la mise en page quelques secondes plus tard)
+      var under = !!(UA_SAFARI_IOS && !html.classList.contains('ios-app') && fullScreenH > 0 && ih >= fullScreenH - 4 && window.innerWidth < window.innerHeight);
       html.classList.toggle('saf-under', under);
       var visible = under ? ih - safeBottomPx() - 70 : ih;
       html.classList.toggle('auth-tight', window.innerWidth < 860 && window.innerWidth < ih && (visible < 860));
@@ -1414,13 +1416,33 @@
 
   // Application iPhone installée (écran d'accueil) : la page se prolonge jusqu'au vrai bas de l'écran et
   // tout le fond est le bleu du terminal (avant : bande sombre / noire sous ACHETER / VENDRE).
+  // 2026-10-21 (propriétaire) : le calcul est fait dans index.html (window.__oroIosFloor, dès la 1re image, écran de chargement
+  // compris) : hauteur du site = écran − bande du bas (jamais la fenêtre du moment : si iOS agrandit la fenêtre de l'appli
+  // jusqu'au vrai bas, rien ne bouge), bande du bas = fond de page d'une seule couleur calme SOUS le site (css/galaxy.css,
+  // « SOL DE L'APPLI iPhone »). Ici : seulement les recalculs (rotation, retour dans l'appli, chargement). Plus aucune mesure du terminal
+  // (avant : bande posée au bas du terminal → quand iOS agrandissait la fenêtre, le dessin passait sur ACHETER / VENDRE).
   (function iosAppFloor() {
     try {
+      var root = document.documentElement;
+      var paintNew = window.__oroIosFloor;
+      if (root.classList.contains('ios-app') && typeof paintNew === 'function') {
+        if (document.body) ['background-image', 'background-repeat', 'background-position', 'background-size'].forEach(function (k) { document.body.style.removeProperty(k); });
+        var soon = function () { paintNew(); requestAnimationFrame(function () { paintNew(); }); };
+        if (document.body) paintNew(); else document.addEventListener('DOMContentLoaded', paintNew);
+        window.addEventListener('resize', soon);
+        window.addEventListener('orientationchange', function () { [60, 300, 800].forEach(function (ms) { setTimeout(paintNew, ms); }); });
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', soon);
+        window.addEventListener('pageshow', function () { setTimeout(paintNew, 60); });
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(paintNew, 80); });
+        document.addEventListener('focusout', function () { setTimeout(paintNew, 450); }, true);
+        window.addEventListener('load', function () { [300, 1200, 3000].forEach(function (ms) { setTimeout(paintNew, ms); }); });
+        return;
+      }
+      // (ancienne page index.html encore en cache, sans __oroIosFloor : ancien comportement ci-dessous)
       var ua = navigator.userAgent || '';
       var ios = /iP(hone|od|ad)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       var app = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
       if (!ios || !app) return;
-      var root = document.documentElement;
       root.classList.add('ios-app');
       root.style.setProperty('background-color', '#0F102E', 'important');
       var paint = function () {

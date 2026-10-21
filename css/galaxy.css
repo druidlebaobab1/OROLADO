@@ -2158,3 +2158,36 @@ html.ios-app:not(.fs-trade) body:not(#z1):not(#z2) #oroIosFloor#oroIosFloor#oroI
 
 /* 2026-10-20 (propriétaire) — APPLI iPhone, PLEIN ÉCRAN : mise / ACHETER / VENDRE restent dans la fenêtre de l'appli
    (les descendre plus bas les coupait sous l'écran). */
+
+/* =====================================================================
+   2026-10-21 (propriétaire) — SOL DE L'APPLI iPhone installée (écran d'accueil ; classe .ios-app posée dans index.html).
+   Mesures (index.html, window.__oroIosFloor) : --ios-screen-h = hauteur de l'écran, --ios-under = bande du bas que la fenêtre de
+   l'appli ne couvre pas (iPhone 430x932 : 59 px), --ios-site-h = écran − bande (873).
+   1) la page est aussi haute que l'écran : iOS agrandit alors la fenêtre de l'appli jusqu'au vrai bas (vu sur l'iPhone du
+      propriétaire) et la bande du bas peut être dessinée ;
+   2) le SITE (body) garde une hauteur FIXE = écran − bande, quelle que soit la fenêtre du moment : ACHETER / VENDRE restent à
+      6 px au-dessus de la bande, rien ne bouge quand iOS agrandit ou raccourcit la fenêtre (plus de « saut » au bout de quelques s) ;
+   3) tout ce qui est « fixé » (écran de chargement, plein écran, Profil, Jeux, fenêtres) se place dans le site (body =
+      cadre de référence), jamais dans la bande ;
+   4) la bande = le fond de la page (posé par index.html), SOUS le site : elle ne peut couvrir aucun bouton. Propriétaire
+      (2026-10-21, plein écran : « une palette de couleurs en bas ») : UNE seule couleur calme, sans dessin ni lueur, celle du
+      bas de l'écran affiché (--ios-floor-c ci-dessous) → aucun raccord visible sous ACHETER / VENDRE.
+   Safari et Android : rien ne change (règles seulement sous .ios-app). */
+html.ios-app.is-ios:root{--ios-floor-c:#101437}
+html.ios-app.is-ios.fs-trade:root{--ios-floor-c:#0D0C25}
+html.ios-app.is-ios:root:has(.modal-backdrop.active){--ios-floor-c:#100C26}
+html.ios-app.is-ios:root:has(#drawerProfile.on){--ios-floor-c:#0A0A20}
+html.ios-app.is-ios:root:has(#oroLoader:not(.off)){--ios-floor-c:#0B0D26}
+/* écran de chargement (fond dégradé bleu) : son bas se fond doucement dans la bande → pas de raccord net */
+html.ios-app.is-ios:root body #oroLoader::after{content:"";position:absolute;left:0;right:0;bottom:0;height:64px;pointer-events:none;z-index:5;
+  background:linear-gradient(180deg,rgba(11,13,38,0),var(--ios-floor-c,#0B0D26))}
+html.ios-app.is-ios:root{min-height:var(--ios-screen-h,100%)!important}
+html.ios-app.is-ios:root body{top:0!important;bottom:auto!important;height:min(100%,var(--ios-site-h,100%))!important;max-height:none!important;
+  transform:translateZ(0)!important;background-image:none!important}
+html.ios-app.is-ios:root body #screenTrade#screenTrade{min-height:0!important}
+html.ios-app.is-ios:root body #drawerProfile#drawerProfile#drawerProfile{top:0!important;bottom:auto!important;height:100%!important;max-height:100%!important;
+  padding-bottom:6px!important}
+html.ios-app.is-ios:root body #drawerBackdrop#drawerBackdrop,html.ios-app.is-ios:root body .drawer-backdrop.drawer-backdrop{top:0!important;bottom:auto!important;height:100%!important}
+html.ios-app body:not(#z1):not(#z2):not(#z3) #oroIosFloor#oroIosFloor#oroIosFloor{display:none!important}
+/* (svh / dvh = tout l'écran quand iOS agrandit la fenêtre : le jeu reste dans le site) */
+html.ios-app.is-ios:root body #screenTrade#screenTrade .trade-shell,html.ios-app.is-ios:root body #screenTrade#screenTrade .trade-wrap{min-height:0!important;max-height:100%!important}
