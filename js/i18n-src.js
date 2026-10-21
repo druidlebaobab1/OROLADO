@@ -3040,7 +3040,7 @@
           "wagerBlocked": "निकासी से पहले आपको अपनी जमा राशि का 2x दांव लगाना होगा।",
           "lastTrades": "हाल के ट्रेड",
           "noTradesHint": "अभी कोई पोज़िशन नहीं।",
-          "helpBtn": "सहायता",
+          "helpBtn": "सोशल",
           "helpTitle": "सहायता और सपोर्ट",
           "helpSubject": "विषय",
           "helpMessage": "संदेश",
