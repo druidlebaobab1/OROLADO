@@ -2227,3 +2227,20 @@ html.ios-app body .learn-modal .lg-close.btn-close:not(#btnCloseDrawer):not(#oro
         sous cette zone, comme sur iPhone (0 quand le téléphone n'a pas de zone réservée → rien ne bouge). */
   html.is-android:not(.ios-app) body #drawerProfile#drawerProfile#drawerProfile{padding-top:env(safe-area-inset-top,0px)!important}
 }
+
+/* 2026-10-21 (propriétaire, appli iPhone : « dans Social / le guide, la case pour écrire est trop haute, et le dessin des
+   planètes ne doit rester que là où il y avait du vide : trading, profil, historique ») :
+   1) fenêtres pleine page ouvertes (Social, guide, Jeux / Paris, Recharger, Retirer, Cadeaux…) : la bande du bas devient une
+      couleur unie de la fenêtre (plus de planètes) ; trading, profil et historique gardent le dessin ;
+   2) dans l'appli, le bas du site est déjà au-dessus de la barre d'accueil (la bande est dessous) : plus de marge « zone sûre »
+      en bas de ces fenêtres → la case « Écris ton message… » et les boutons du bas descendent au bas du site. */
+html.ios-app.is-ios:root:has(.modal-backdrop.active:not(#historySheet):not(#financeModal)),
+html.ios-app.is-ios:root:has(#liveModal.active),
+html.ios-app.is-ios.learn-on:root{background-image:none!important;background-color:#0F0A28!important}
+html.ios-app.is-ios:root:has(#casinoModal.active){background-image:none!important;background-color:#120E30!important}
+html.ios-app.is-ios:root body #liveModal .sx-panel{padding-bottom:0!important}
+html.ios-app.is-ios:root body #liveModal .sx-shin{padding-bottom:16px!important}
+html.ios-app.is-ios:root body #liveModal .lg-info{padding-bottom:20px!important}
+html.ios-app.is-ios:root body .learn-modal .lg-body{padding-bottom:30px!important}
+html.ios-app.is-ios:root body #liveModal .sx-comp{padding-bottom:8px!important}
+html.ios-app.is-ios:root body #liveModal #sxRoot.sx{padding-bottom:0!important}
