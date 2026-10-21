@@ -13517,4 +13517,5 @@ html body .oro-inst-btn .oi-go svg.oi-ar{width:22px;height:22px;stroke:#4ADE80;s
 html body .oro-inst-btn .oi-logo{overflow:visible}
 html body .oro-inst-btn .oi-logo i{right:-7px;bottom:-7px}
 html body .oro-inst-ask .oia-ico > i{right:-4px;bottom:-4px}
-html:not(.is-android).fs-trade:root body .stake-field.has-fsl #fsStakeWin{transform:translateY(-10.5px)!important}
+/* 2026-10-21 (propriétaire) : titre du jeu (nom + logo) remonté de 1 px */
+html body #casinoModal .cs-game > .cs-gname{position:relative;top:-1px}
