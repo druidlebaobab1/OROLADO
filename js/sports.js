@@ -6,7 +6,7 @@
   var T = {
     fr: { none: 'Pas encore de prédiction. Les prochaines questions arrivent bientôt ici.', coupon: 'Ticket de paris', sel: '{n} sélection(s)', odd: 'Cote', stake: 'Mise', pot: 'Gain possible', bet: 'Parier', clear: 'Vider',
       placed: '✅ Pari enregistré · gain possible {p} $', mine: 'Mes paris', noBets: 'Aucun pari pour l’instant.', open: 'En cours', won: 'Gagné', lost: 'Perdu', void: 'Annulé',
-      closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '10 matchs au maximum dans un coupon.',
+      closed: 'Paris fermés', result: 'Résultat', starts: 'Début', today: 'Aujourd’hui', tomorrow: 'Demain', draw: 'Nul', max10: '50 matchs au maximum dans un coupon.',
       e_min: 'Mise minimum 0,10 $.', e_max: 'Mise trop élevée pour ce match.', e_maxWin: 'Gain trop élevé : baisse la mise.', e_closed: 'Ce match a déjà commencé.', e_insufficient: 'Solde insuffisant.', e_unavailable: 'Indisponible, réessaie.', e_param: 'Coupon invalide.', e_login: 'Connecte-toi pour parier.', e_busy: 'Un instant…', e_suspended: 'Compte suspendu.',
       guestBet: '🔒 Inscris-toi pour parier (c’est gratuit)',
       myCoupon: 'Ticket de paris', clearAll: 'Tout supprimer', confirmClear: 'Sûr ? Touche encore', comboT: 'Combiné :', combo: 'tous tes choix doivent être gagnants. Les cotes se multiplient.', singleT: 'Simple :', single: 'un seul choix.', totalOdd: 'Cote totale', see: 'Voir', minNote: 'Mise minimum 0,10 $', done: 'Pari enregistré !', cont: 'Continuer', emptySlip: 'Ton coupon est vide. Touche une cote pour commencer.',
@@ -14,7 +14,7 @@
       all: 'Tous', drawCode: 'N', sport: { foot: 'Football', basket: 'Basket', boxe: 'Boxe', tennis: 'Tennis', mma: 'MMA', event: 'Prédictions', crypto: 'Crypto', politique: 'Politique', autre: 'Sport' } },
     en: { none: 'No match right now. Big matches are coming here soon.', coupon: 'Bet slip', sel: '{n} selection(s)', odd: 'Odds', stake: 'Stake', pot: 'Potential win', bet: 'Place bet', clear: 'Clear',
       placed: '✅ Bet placed! Potential win: ${p}', mine: 'My bets', noBets: 'No bet yet.', open: 'Open', won: 'Won', lost: 'Lost', void: 'Void',
-      closed: 'Betting closed', result: 'Result', starts: 'Starts', today: 'Today', tomorrow: 'Tomorrow', draw: 'Draw', max10: 'Maximum 10 matches in a slip.',
+      closed: 'Betting closed', result: 'Result', starts: 'Starts', today: 'Today', tomorrow: 'Tomorrow', draw: 'Draw', max10: 'Maximum 50 matches in a slip.',
       e_min: 'Minimum stake $0.10.', e_max: 'Stake too high for this match.', e_maxWin: 'Win too high: lower the stake.', e_closed: 'This match has already started.', e_insufficient: 'Insufficient balance.', e_unavailable: 'Unavailable, try again.', e_param: 'Invalid slip.', e_login: 'Log in to bet.', e_busy: 'One moment…', e_suspended: 'Account suspended.',
       guestBet: '🔒 Sign up to bet (it’s free)',
       myCoupon: 'My bet slip', clearAll: 'Remove all', confirmClear: 'Sure? Tap again', comboT: 'Multiple:', combo: 'all your picks must win. The odds multiply.', singleT: 'Single:', single: 'one pick.', totalOdd: 'Total odds', see: 'Open', minNote: 'Minimum stake $0.10', done: 'Bet placed!', cont: 'Continue', emptySlip: 'Your bet slip is empty. Tap an odd to start.',
@@ -509,7 +509,7 @@
     if (!e || !e.open || nowS() >= e.start) return;
     var o = e.opts.filter(function (z) { return z.k === k; })[0]; if (!o) return;
     var had = inSlip(ev, k), n0 = slip.length;
-    if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 10) { if (ctx.toast) ctx.toast(x.max10); return; }
+    if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 50) { if (ctx.toast) ctx.toast(x.max10); return; } // 2026-10-21 : 50 matchs (avant 10)
     // v2810 : une prédiction se joue SEULE ; deux choix liés (même groupe : même match, même actif…) jamais dans le même coupon
     if (!had) {
       var xx = XX(), others = slip.filter(function (s) { return s.ev !== ev; }).map(function (s) { return evById(s.ev) || { q: !!s.q, grp: s.grp || [] }; });
@@ -739,33 +739,27 @@
   function curBal() { try { var b = ctx.bal ? ctx.bal() : null; return b == null || !isFinite(+b) ? null : +b; } catch (e) { return null; } }
   function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
-  var slipMd = '', setOpen = false, lastBets = null;
-  var QK_DEF = [5, 10, 25];
-  function qk() { try { var a = JSON.parse(lsGet('oro_sp_qk', '[]')); if (Array.isArray(a) && a.length === 3 && a.every(function (v) { return v >= 0.1 && v <= 1e6; })) return a.map(Number); } catch (e) { /* ignore */ } return QK_DEF.slice(); }
-  function accMode() { var a = lsGet('oro_sp_acc', 'none'); return a === 'any' || a === 'up' ? a : 'none'; }
-  function keepSel() { return lsGet('oro_sp_keep', '0') === '1'; }
-  function mode() { return slip.length < 2 ? 'single' : (slipMd || 'combo'); }
+  var lastBets = null; // (plusieurs paris d'un coup : plus utilisé, gardé pour l'écran « paris enregistrés »)
+  /* 2026-10-21 (propriétaire : « on a trop compliqué ») : comme avant — 1 match = pari simple, 2 matchs ou plus = combiné
+     automatique dans UN coupon, UNE seule mise ; montants rapides fixes 5 / 10 / 25 / Max ; plus de réglages (⚙) :
+     la cote affichée part toujours avec le pari (acc = « none ») et le serveur refuse si elle a changé (« cotes changées »). */
+  var QK = [5, 10, 25];
+  function qk() { return QK.slice(); }
+  function accMode() { return 'none'; }
+  function keepSel() { return false; }
+  function mode() { return slip.length < 2 ? 'single' : 'combo'; }
   function cur() { return '$'; } // monnaie affichée (la monnaie locale viendra ici)
   function qtxt(v) { return (v % 1 ? m2(v) : String(v)) + ' ' + cur(); }
   function mkt(e) { var x = XX(); if (!e) return ''; if (e.q || EVK[e.sport]) return x.mktQ; return e.opts && e.opts.length === 3 ? x.mkt3 : x.mkt2; }
-  function stOf(z) { return z.st == null ? stake : z.st; }
+  function stOf() { return stake; }
   function slipHead() {
     var x = XX();
     return '<div class="sp2-sh"><span class="sp2-sh-ic">' + IC.slip + '</span><b class="fit">' + esc(x.coupon) + '</b>' +
       (slip.length && !lastBet && !lastBets ? '<i class="sp2-badge">' + slip.length + '</i>' +
-        '<button type="button" class="sp2-gear' + (setOpen ? ' on' : '') + '" id="spSet" aria-label="' + esc(x.setT) + '" aria-expanded="' + setOpen + '">' + IC.gear + '</button>' +
         '<button type="button" class="sp2-clear" id="spCpClear">' + IC.trash + '<span class="fit">' + esc(x.clearAll) + '</span></button>' : '') + '</div>';
   }
   function backToList() { lastBet = null; lastBets = null; view = 'list'; render(); }
   function slipTop() { try { var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; } catch (e) { /* ignore */ } }
-  function setPanel() {
-    var x = XX(), a = accMode(), q = qk();
-    var r = function (v, t) { return '<label class="sp2-rad"><input type="radio" name="spAcc" value="' + v + '"' + (a === v ? ' checked' : '') + '><i></i><span class="fit">' + esc(t) + '</span></label>'; };
-    return '<div class="sp2-set" id="spSetP"><p class="sp2-set-h"><span class="fit">' + esc(x.accT) + '</span></p>' + r('any', x.accAny) + r('up', x.accUp) + r('none', x.accNone) +
-      '<label class="sp2-tgl"><span class="fit">' + esc(x.keepT) + '</span><input type="checkbox" id="spKeep"' + (keepSel() ? ' checked' : '') + '><i></i></label>' +
-      '<p class="sp2-set-h"><span class="fit">' + esc(x.qkT) + '</span></p><div class="sp2-qke">' + q.map(function (v, i) { return '<label class="sp2-inw sm"><input data-qe="' + i + '" inputmode="decimal" value="' + (v % 1 ? m2(v) : v) + '"><em>' + cur() + '</em></label>'; }).join('') +
-      '<button type="button" class="sp2-cta" id="spSetOk"><span class="fit">' + esc(x.okL) + '</span></button></div></div>';
-  }
   function renderDone() {
     var x = XX(), bs = lastBets || [lastBet], one = bs.length === 1, lb = bs[0];
     var tst = bs.reduce(function (a, b) { return a + b.stake; }, 0), tpot = bs.reduce(function (a, b) { return a + b.pot; }, 0);
@@ -790,9 +784,7 @@
       $('spCont').addEventListener('click', backToList);
       return;
     }
-    var md = mode(), each = md === 'single' && slip.length > 1, odd = totalOdd();
-    var tabs2 = '<div class="sp2-md" role="tablist"><button type="button" role="tab" data-md="single" class="' + (md === 'single' ? 'on' : '') + '" aria-selected="' + (md === 'single') + '"><span class="fit">' + esc(x.tabS) + (slip.length > 1 ? ' · ' + slip.length : '') + '</span></button>' +
-      '<button type="button" role="tab" data-md="combo" class="' + (md === 'combo' ? 'on' : '') + '" aria-selected="' + (md === 'combo') + '"' + (slip.length < 2 ? ' disabled' : '') + '><span class="fit">' + esc(x.tabC) + '</span></button></div>';
+    var md = mode(), each = false, odd = totalOdd();
     var expl = '<div class="sp2-type-t sp2-expl">' + linesHtml(cap1(md === 'combo' ? x.combo : slip.length > 1 ? x.singleN : (slip[0].q ? x.qOnly : x.singleX)), 'span', 40) + '</div>';
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
       var e = evById(z.ev), st = stOf(z);
@@ -809,14 +801,14 @@
         '<button type="button" class="sp2-clr" id="spClr"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="fit">' + esc(x.clrSt) + '</span></button></div>' +
       '<div class="sp2-qk4">' + q.map(function (v) { return '<button type="button" data-q="' + v + '"><span class="fit">' + esc(qtxt(v)) + '</span></button>'; }).join('') +
         '<button type="button" data-q="max" class="mx"><span class="fit">' + esc(x.maxL) + '</span></button></div>' +
-      (bal == null ? '' : '<div class="sp2-balr" id="spBalR"><span class="fit" id="spBalT">' + esc(x.balL + (lg() === 'fr' ? ' : ' : ': ')) + money(bal) + '</span><button type="button" class="sp2-dep" id="spDep"><span class="fit">' + esc(x.depL) + '</span></button></div>') +
+      (bal == null ? '' : '<div class="sp2-balr" id="spBalR"><span class="fit" id="spBalT">' + esc(x.balL + (lg() === 'fr' ? ' : ' : ': ')) + money(bal) + '</span></div>') +
       '<p class="sp2-err" id="spErr" hidden><span class="fit" id="spErrT"></span></p>' +
       '<div class="sp2-sum">' + (each ? '<p><span class="fit">' + esc(x.totSt) + '</span><b id="spTot"></b></p>' : '<p><span class="fit">' + esc(x.totalOdd) + '</span><b id="spOdd">' + odd.toFixed(2) + '</b></p>') +
         '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b id="spPot"></b></p></div>' +
       '<button type="button" class="sp2-place' + (ctx.guest ? ' guest' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? guestBtn || x.guestBtn : each ? fmt(x.placeN, { n: slip.length }) : x.placeB) + '</span>' +
         (ctx.guest ? '' : '<b class="fit" id="spGoAmt"></b>') + '</button>' +
       '<p class="sp2-min"><span class="fit">' + esc(x.minNote) + '</span></p></div>';
-    box.innerHTML = '<div class="sp2-page sp2-slip ' + md + (setOpen ? ' setting' : '') + '">' + slipHead() + tabs2 + (setOpen ? setPanel() : '') + expl + list + stk + '</div>';
+    box.innerHTML = '<div class="sp2-page sp2-slip ' + md + '">' + slipHead() + expl + list + stk + '</div>';
     slipTop(); fitAll(box); startTick();
     slip.forEach(function (z) { z.chg = false; });
     $('spCpClear').addEventListener('click', function () {
@@ -825,17 +817,6 @@
       if (Date.now() - clearArm > 3000) { clearArm = Date.now(); setTx(bt.querySelector('span'), x.confirmClear); bt.classList.add('arm'); return; }
       clearArm = 0; slip = []; view = 'list'; render();
     });
-    $('spSet').addEventListener('click', function () { if (sending) return; setOpen = !setOpen; render(); });
-    if (setOpen) {
-      box.querySelectorAll('input[name="spAcc"]').forEach(function (r) { r.addEventListener('change', function () { lsSet('oro_sp_acc', r.value); }); });
-      $('spKeep').addEventListener('change', function () { lsSet('oro_sp_keep', this.checked ? '1' : '0'); });
-      $('spSetOk').addEventListener('click', function () {
-        var vals = [].map.call(box.querySelectorAll('[data-qe]'), function (i) { var v = Math.round((parseFloat(String(i.value).replace(',', '.')) || 0) * 100) / 100; return v >= 0.1 ? v : 0; });
-        if (vals.every(function (v) { return v > 0; })) lsSet('oro_sp_qk', JSON.stringify(vals));
-        setOpen = false; render();
-      });
-    }
-    box.querySelectorAll('.sp2-md [data-md]').forEach(function (b) { b.addEventListener('click', function () { if (sending || b.disabled) return; slipMd = b.getAttribute('data-md'); render(); }); });
     box.querySelectorAll('.sp2-x').forEach(function (bt) { bt.addEventListener('click', function () { if (sending) return; slip.splice(+bt.getAttribute('data-i'), 1); if (!slip.length) view = 'list'; render(); }); });
     var inp = $('spStake');
     var total = function () { return each ? slip.reduce(function (a, z) { return a + stOf(z); }, 0) : stake; };
@@ -905,7 +886,6 @@
         setAll(+v, true);
       });
     });
-    if ($('spDep')) $('spDep').addEventListener('click', function () { if (ctx.deposit) ctx.deposit(); });
     upd();
     if (sending) busy(true);
     $('spGo').addEventListener('click', place);
@@ -919,7 +899,6 @@
     var rc = document.getElementById('spRcpt');
     if (rc) { rc.classList.remove('on'); setTimeout(function () { rc.remove(); }, 220); return true; }
     if (!box || !box.isConnected || !box.classList.contains('sp2')) return false;
-    if (view === 'slip' && setOpen && !sending) { setOpen = false; render(); return true; }
     if (view === 'slip') { if (!sending) { lastBet = null; lastBets = null; view = 'list'; render(); } return true; }
     if (view === 'mine') { view = 'list'; render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; return true; }
     return false;

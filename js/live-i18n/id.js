@@ -1061,7 +1061,7 @@
     "today": "Hari ini",
     "tomorrow": "Besok",
     "draw": "Seri",
-    "max10": "Maksimal 10 pertandingan dalam satu kupon.",
+    "max10": "Maksimal 50 pertandingan dalam satu kupon.",
     "e_min": "Taruhan minimum $0.10.",
     "e_max": "Taruhan terlalu tinggi untuk pertandingan ini.",
     "e_maxWin": "Kemenangan terlalu besar: turunkan taruhan.",

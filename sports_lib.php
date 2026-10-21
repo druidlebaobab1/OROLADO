@@ -11,7 +11,7 @@ declare(strict_types=1);
  */
 
 const SP_MIN = 0.10; // v2779 (propriétaire) : mise minimum 0,10 $ (retour comme avant)
-const SP_MAX_SEL = 10;
+const SP_MAX_SEL = 50; // 2026-10-21 (propriétaire : « autant de matchs qu'ils veulent ») : 50 matchs par coupon (avant 10) ; gain toujours plafonné (SP_MAX_WIN)
 const SP_MAX_WIN = 1000000000.0; // 2026-10-20 (propriétaire) : aucune limite (mise ni gain) ; v2779 : 6 000 $
 const SP_DEFAULT_MAX_STAKE = 50.0; // (plus utilisé depuis v2779 : pas de mise maximale ; gardé pour les anciens matchs)
 const SP_MY_BETS = 300;            // v2779 : « Mes paris » montre les 300 derniers coupons
