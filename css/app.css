@@ -13289,3 +13289,9 @@ html body .cs-pl > svg.cs-obj-top,html body #casinoModal .cs-pl > svg.cs-obj-top
 /* 2026-10-21 (propriétaire : « en plein écran, les montants doivent être bien droits, sous leur titre ») : Compte réel et Démo
    du plein écran — le montant centré exactement sous son titre (comme hors plein écran) */
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay .fs-mode-switch .fs-mode-btn .mb-amt{align-self:stretch!important;width:auto!important;max-width:none!important;text-align:center!important;justify-content:center!important;margin-inline:0!important}
+/* 2026-10-21 (propriétaire : « en plein écran, le bas du graphique doit se marier avec la zone ACHETER / VENDRE, sans trait ») :
+   le petit vide entre le graphique et la mise (fond plus clair = le trait) est rempli de la couleur du bas du graphique, et les
+   derniers pixels du graphique se fondent doucement dans cette couleur. Rien ne bouge. */
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #chart.chart-card{box-shadow:0 6px 0 0 #0C0C23!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #chart.chart-card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:18px;pointer-events:none;z-index:3;
+  background:linear-gradient(180deg,rgba(12,12,35,0),rgba(12,12,35,.82))}
