@@ -290,6 +290,39 @@ function orolado_usd_fcfa_rate(): float {
   return $r > 0 ? $r : 600.0;
 }
 
+/**
+ * 2026-10-21 (propriétaire) — monnaie locale d'un indicatif (+225 → FCFA…), pour AFFICHER l'équivalent d'un montant en
+ * dollars (retraits dans l'admin, alerte Telegram). Aucun calcul d'argent ne l'utilise. Mêmes taux que js/localcur.js ;
+ * FCFA / Naira / Cedi / Shilling kényan / Rand = taux des paiements Mobile Money (.env).
+ * Retour : ['cur' => 'XOF', 'sym' => 'FCFA', 'rate' => 600.0] ou null (pays sans monnaie de la liste → dollars).
+ */
+function orolado_local_cur(string $dial): ?array {
+  $d = preg_replace('/\D/', '', $dial);
+  $map = [
+    'XOF' => ['225', '221', '223', '226', '229', '228', '227', '245'], 'XAF' => ['237', '241', '242', '235', '236', '240'],
+    'NGN' => ['234'], 'GHS' => ['233'], 'KES' => ['254'], 'ZAR' => ['27'], 'UGX' => ['256'], 'TZS' => ['255'], 'RWF' => ['250'],
+    'CDF' => ['243'], 'GNF' => ['224'], 'MAD' => ['212'], 'DZD' => ['213'], 'TND' => ['216'], 'EGP' => ['20'], 'ZMW' => ['260'],
+    'MWK' => ['265'], 'MZN' => ['258'],
+  ];
+  $cur = '';
+  foreach ($map as $c => $dials) if (in_array($d, $dials, true)) { $cur = $c; break; }
+  if ($cur === '') return null;
+  $fix = ['UGX' => ['USh', 3700], 'TZS' => ['TSh', 2600], 'RWF' => ['RF', 1400], 'CDF' => ['FC', 2800], 'GNF' => ['GNF', 8600], 'MAD' => ['DH', 9.5],
+    'DZD' => ['DA', 130], 'TND' => ['DT', 3], 'EGP' => ['E£', 48], 'ZMW' => ['K', 25], 'MWK' => ['MK', 1700], 'MZN' => ['MT', 63]];
+  if ($cur === 'XOF' || $cur === 'XAF') return ['cur' => $cur, 'sym' => 'FCFA', 'rate' => orolado_usd_fcfa_rate()];
+  if ($cur === 'NGN') return ['cur' => $cur, 'sym' => '₦', 'rate' => orolado_flw_rate('USD_NGN_RATE', 1500)];
+  if ($cur === 'GHS') return ['cur' => $cur, 'sym' => 'GH₵', 'rate' => orolado_flw_rate('USD_GHS_RATE', 12)];
+  if ($cur === 'KES') return ['cur' => $cur, 'sym' => 'KSh', 'rate' => orolado_flw_rate('USD_KES_RATE', 130)];
+  if ($cur === 'ZAR') return ['cur' => $cur, 'sym' => 'R', 'rate' => orolado_flw_rate('USD_ZAR_RATE', 18)];
+  return ['cur' => $cur, 'sym' => $fix[$cur][0], 'rate' => (float) $fix[$cur][1]];
+}
+
+/** « 10.00 $ · 6 000 FCFA (taux 600) » — texte d'affichage pour l'admin (rien si pas de monnaie locale). */
+function orolado_local_txt(float $usd, string $cur, float $rate, string $sym): string {
+  if ($cur === '' || $rate <= 0) return '';
+  return number_format(floor($usd * $rate + 1e-6), 0, ',', ' ') . ' ' . $sym . ' (taux ' . rtrim(rtrim(number_format($rate, 2, '.', ''), '0'), '.') . ')';
+}
+
 function orolado_usd_to_fcfa($usd): int {
   return (int) round(orolado_money($usd) * orolado_usd_fcfa_rate());
 }

@@ -59,6 +59,21 @@ function admin_money($n): string {
   return '$ ' . number_format((float) $n, 2, '.', ' ');
 }
 
+/**
+ * 2026-10-21 (propriétaire) — « · 6 000 FCFA (taux 600) » après le montant d'un retrait : montant exact à payer dans la
+ * monnaie du joueur, au taux enregistré avec la demande (anciens retraits : pays du numéro, taux actuel). Affichage seul.
+ */
+function admin_wd_local(array $w): string {
+  $usd = (float) ($w['amount'] ?? 0);
+  $cur = (string) ($w['locCur'] ?? ''); $rate = (float) ($w['locRate'] ?? 0); $sym = (string) ($w['locSym'] ?? '');
+  if (($cur === '' || $rate <= 0) && function_exists('orolado_local_cur')) {
+    $l = orolado_local_cur((string) ($w['countryCode'] ?? ''));
+    if ($l) { $cur = $l['cur']; $rate = (float) $l['rate']; $sym = $l['sym']; }
+  }
+  if ($cur === '' || $rate <= 0 || !function_exists('orolado_local_txt')) return '';
+  return ' · ' . orolado_local_txt($usd, $cur, $rate, $sym);
+}
+
 function admin_esc(string $s): string {
   return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }

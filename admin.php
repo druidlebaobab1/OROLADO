@@ -1123,7 +1123,7 @@ function admin_list_payload(string $view, array $req): array {
           (string) ($w['publicId'] ?? ''),
           (string) ($w['name'] ?? '—'),
           (string) ($w['email'] ?? ''),
-          admin_money($w['amount']),
+          admin_money($w['amount']) . admin_wd_local($w),
           $method !== '' ? $method : '—',
           $dest,
           $suspect ? ($lvl === 'red' ? 'Ne pas payer' : 'À suivre') : 'Vérifié',
