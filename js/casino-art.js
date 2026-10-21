@@ -458,7 +458,20 @@
   /* planète + objet posé dessus (sans carré) */
   function planet(k, cls) {
     var p = PAL[k] || PAL.coin;
-    return '<span class="cs-pl' + (cls ? ' ' + cls : '') + '" style="--p1:' + p[0] + ';--p2:' + p[1] + '"><i></i>' + obj(k) + '</span>';
+    return '<span class="cs-pl' + (cls ? ' ' + cls : '') + '" style="--p1:' + p[0] + ';--p2:' + p[1] + '"><i></i>' + photo(obj(k)) + '</span>';
+  }
+  // 2026-10-21 (propriétaire : « les logos des jeux Action s'actualisent et montrent un fond bleu / jaune avant l'image ») :
+  // l'image du médaillon (img/games/<jeu>.webp) était une <image> SVG, dessinée en différé à chaque affichage (fond coloré
+  // visible un instant). Elle devient une vraie image (<img>, affichée tout de suite depuis la mémoire), posée entre le dessous
+  // du médaillon (ombre, anneau) et son dessus (reflet, contour, badge) ; sous l'image, un disque sombre au lieu du dégradé coloré.
+  var IMG_RE = /<image href="(img\/games\/[^"]+)" x="5\.5" y="6\.5" width="53" height="53" clip-path="url\(#[^)]*\)" preserveAspectRatio="xMidYMid slice"\s*\/?>(<\/image>)?/;
+  function photo(svg) {
+    var m = IMG_RE.exec(svg);
+    if (!m) return svg;
+    var head = svg.slice(0, m.index), tail = svg.slice(m.index + m[0].length);
+    return head + '<circle cx="32" cy="33" r="26.5" fill="#120F2E"/></svg>' +
+      '<img class="cs-photo" src="' + m[1] + '" alt="" decoding="sync" draggable="false">' +
+      '<svg class="cs-obj cs-obj-top" viewBox="0 0 64 64" aria-hidden="true">' + tail;
   }
   // v2804 : les nouveaux jeux apportent leur logo (SVG 64×64, sans balise <svg>) et leurs couleurs — js/games/cat-*.js
   function addObj(k, svgInner, pal) { if (!k || OBJ[k]) return; OBJ[k] = function () { return String(svgInner || ''); }; if (pal && !PAL[k]) PAL[k] = pal; }
