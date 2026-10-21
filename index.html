@@ -24,7 +24,7 @@
      La fenêtre de l'appli est souvent plus courte que l'écran (iPhone 430x932 : fenêtre 873, 59 px dessous) et iOS l'agrandit
      parfois jusqu'au vrai bas. Le site est donc posé sur une hauteur FIXE tirée de l'écran (écran − bande du bas = 873),
      ACHETER / VENDRE ne bougent jamais, et la bande du bas est le fond de la page, SOUS le site : une seule couleur calme,
-     celle du bas de l'écran affiché (--ios-floor-c, css/galaxy.css) — pas de dessin, pas de bande de couleurs, pas de raccord.
+     voir css/galaxy.css (chargement : suite de son image ; ensuite : petit monde de planètes) — jamais sur les boutons.
      Mesures : screen / innerHeight (bande retenue par orientation dans localStorage), sinon env(safe-area-inset-top).
      Posé ici dès la 1re image (écran de chargement compris) ; js/app.js relance __oroIosFloor (rotation, retour…). */
   (function(){try{var ua=navigator.userAgent||'';if(!(/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)))return;
@@ -46,8 +46,7 @@
     var site=sh-u,st=h.style;
     st.setProperty('--ios-screen-h',sh+'px');st.setProperty('--ios-full-h',sh+'px');st.setProperty('--ios-under',u+'px');
     st.setProperty('--ios-site-h',site+'px');st.setProperty('--ios-floor-top',site+'px');st.setProperty('--ios-floor-h',u+'px');
-    st.setProperty('background-color','var(--ios-floor-c,#101437)','important');
-    st.setProperty('background-image','none','important');
+    st.removeProperty('background');st.removeProperty('background-image');st.setProperty('background-color','#0B0A20','important');
   }catch(e){}};var f=window.__oroIosFloor;f();try{requestAnimationFrame(f)}catch(e){}
   document.addEventListener('DOMContentLoaded',f);window.addEventListener('resize',f)}catch(e){}})();</script>
   <meta name="mobile-web-app-capable" content="yes">
@@ -225,7 +224,7 @@
     <link rel="stylesheet" href="css/app.css?v=2990">
     <link rel="stylesheet" href="css/auth.css?v=2790">
     <link rel="stylesheet" href="css/tv.css?v=2790">
-    <link rel="stylesheet" href="css/galaxy.css?v=2991">
+    <link rel="stylesheet" href="css/galaxy.css?v=2992">
     <link rel="stylesheet" href="css/cg.css?v=2887">
     <link rel="stylesheet" href="css/lobby.css?v=2842">
     <link rel="stylesheet" href="css/sports2.css?v=2882">

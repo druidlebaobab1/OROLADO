@@ -2171,16 +2171,8 @@ html.ios-app:not(.fs-trade) body:not(#z1):not(#z2) #oroIosFloor#oroIosFloor#oroI
       cadre de référence), jamais dans la bande ;
    4) la bande = le fond de la page (posé par index.html), SOUS le site : elle ne peut couvrir aucun bouton. Propriétaire
       (2026-10-21, plein écran : « une palette de couleurs en bas ») : UNE seule couleur calme, sans dessin ni lueur, celle du
-      bas de l'écran affiché (--ios-floor-c ci-dessous) → aucun raccord visible sous ACHETER / VENDRE.
+      bas de l'écran affiché → remplacé le 2026-10-21 (b) : voir le bloc suivant (décor du chargement, puis petit monde de planètes).
    Safari et Android : rien ne change (règles seulement sous .ios-app). */
-html.ios-app.is-ios:root{--ios-floor-c:#101437}
-html.ios-app.is-ios.fs-trade:root{--ios-floor-c:#0D0C25}
-html.ios-app.is-ios:root:has(.modal-backdrop.active){--ios-floor-c:#100C26}
-html.ios-app.is-ios:root:has(#drawerProfile.on){--ios-floor-c:#0A0A20}
-html.ios-app.is-ios:root:has(#oroLoader:not(.off)){--ios-floor-c:#0B0D26}
-/* écran de chargement (fond dégradé bleu) : son bas se fond doucement dans la bande → pas de raccord net */
-html.ios-app.is-ios:root body #oroLoader::after{content:"";position:absolute;left:0;right:0;bottom:0;height:64px;pointer-events:none;z-index:5;
-  background:linear-gradient(180deg,rgba(11,13,38,0),var(--ios-floor-c,#0B0D26))}
 html.ios-app.is-ios:root{min-height:var(--ios-screen-h,100%)!important}
 html.ios-app.is-ios:root body{top:0!important;bottom:auto!important;height:min(100%,var(--ios-site-h,100%))!important;max-height:none!important;
   transform:translateZ(0)!important;background-image:none!important}
@@ -2191,3 +2183,21 @@ html.ios-app.is-ios:root body #drawerBackdrop#drawerBackdrop,html.ios-app.is-ios
 html.ios-app body:not(#z1):not(#z2):not(#z3) #oroIosFloor#oroIosFloor#oroIosFloor{display:none!important}
 /* (svh / dvh = tout l'écran quand iOS agrandit la fenêtre : le jeu reste dans le site) */
 html.ios-app.is-ios:root body #screenTrade#screenTrade .trade-shell,html.ios-app.is-ios:root body #screenTrade#screenTrade .trade-wrap{min-height:0!important;max-height:100%!important}
+
+/* 2026-10-21 (propriétaire : « l'écran de chargement prend TOUT l'écran, même le bas, comme une vraie appli ; ensuite un joli dessin
+   en bas, sous ACHETER / VENDRE, aussi sous Profil, Historique, plein écran ; jamais de couleurs qui changent ») — APPLI iPhone :
+   la bande du bas (écran − site) est le fond de la page (html), SOUS le site : elle ne peut couvrir aucun bouton.
+   - pendant le chargement : le MÊME décor que l'écran de chargement, dessiné à la taille de l'écran entier pour les deux → le bas
+     est la suite exacte de l'image (aucun raccord) ;
+   - ensuite : le petit monde de planètes (app-floor.svg) posé exactement dans la bande (sous le site), partout, plein écran compris.
+   Une seule couleur de fond (#0B0A20, posée dès la 1re image par index.html) : plus de noirs différents au lancement. */
+html.ios-app.is-ios:root body #oroLoader#oroLoader{background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important;background-repeat:no-repeat!important}
+html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=2919")!important;background-repeat:no-repeat!important;
+  background-position:center top var(--ios-site-h,100%)!important;background-size:100% var(--ios-under,0px)!important}
+html.ios-app.is-ios:root:has(#oroLoader:not(.off)){
+  background-image:radial-gradient(ellipse at 50% 44%,rgba(60,40,12,.85) 0%,rgba(20,16,40,.35) 34%,rgba(0,0,0,0) 60%),url("galaxy-loader.svg?v=2790"),
+    radial-gradient(120% 55% at 0% 0%,rgba(124,58,237,.28),transparent 62%),radial-gradient(110% 55% at 50% 112%,rgba(46,84,220,.22),transparent 62%),
+    linear-gradient(180deg,#0E0B28 0%,#080817 100%)!important;
+  background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important}
+/* plein écran : la fenêtre du plein écran s'arrête au bas du site (rien ne passe dans la bande, rien au-dessus d'ACHETER) */
+html.ios-app.is-ios:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay{top:0!important;bottom:auto!important;height:100%!important;max-height:100%!important}
