@@ -13396,3 +13396,6 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#scre
    (js/localcur.js) : la case garde sa taille (la ligne prend la place laissée en bas), rien d'autre ne bouge. */
 html body .oro-loc{display:block;font-size:9px;line-height:10px;font-weight:600;letter-spacing:0;white-space:nowrap;color:rgba(190,245,215,.82);
   -webkit-text-fill-color:rgba(190,245,215,.82);font-variant-numeric:tabular-nums;unicode-bidi:isolate;pointer-events:none;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+html body #modeDemo .oro-loc,html body #fsBtnDemo .oro-loc{color:rgba(205,220,255,.82);-webkit-text-fill-color:rgba(205,220,255,.82)}
+/* démo : sa case a un bord bas plus épais → le texte monte de 3 px quand l'équivalent est là */
+html:root body #modeDemo#modeDemo.has-loc > *,html:root body #fsBtnDemo#fsBtnDemo.has-loc > *{transform:translateY(-3px)}

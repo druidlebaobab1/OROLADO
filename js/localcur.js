@@ -1,7 +1,7 @@
 /*
  * 2026-10-21 (propriétaire, choix 1 « simple ») — ÉQUIVALENT EN MONNAIE LOCALE sous le Compte réel.
  * Rien ne change à l'argent : le solde, les mises, les gains restent en dollars (serveur et admin). On écrit seulement,
- * en petit sous le montant du Compte réel (trading, plein écran, Jeux / Paris), « ≈ 141 240 FCFA » pour les joueurs
+ * en petit sous le montant du Compte réel et du Démo (trading, plein écran, Jeux / Paris), « ≈ 141 240 FCFA » pour les joueurs
  * des pays de la liste. Le pays vient de l'indicatif du téléphone du compte (+225, +221…), sinon du fuseau horaire.
  * Pas trouvé → rien n'est ajouté (dollars seuls, comme avant).
  * Taux FIXES : FCFA / Naira / Cedi / Shilling kényan / Rand = les mêmes que les paiements Mobile Money (orolado_lib.php,
@@ -71,6 +71,9 @@
   function paint() {
     put(document.getElementById('modeRealAmt'), document.getElementById('modeReal'));
     put(document.getElementById('fsRealAmt'), document.getElementById('fsBtnReal'));
+    // démo aussi (propriétaire) : même calcul, même taux
+    put(document.getElementById('modeDemoAmt'), document.getElementById('modeDemo'));
+    put(document.getElementById('fsDemoAmt'), document.getElementById('fsBtnDemo'));
     var cw = document.querySelector('#csBal.cw-same .cw-t');
     if (cw) put(cw.querySelector('b'), cw);
   }
@@ -85,7 +88,7 @@
       }
     });
     function hook() {
-      ['modeReal', 'fsBtnReal', 'csBal'].forEach(function (id) {
+      ['modeReal', 'fsBtnReal', 'modeDemo', 'fsBtnDemo', 'csBal'].forEach(function (id) {
         var el = document.getElementById(id);
         if (!el || (seen && seen.has(el))) return;
         if (seen) seen.add(el);
