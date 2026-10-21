@@ -57,7 +57,7 @@ check('défi en cours sur ORO 999, 2 / 5, 1 défi gagné avant', count($r['rows'
 
 echo "4) Tournoi démo\n";
 $r = admin_gift_payload('gift_top', [], $people);
-check('vue du tournoi sans erreur (personne de classé ici)', $r['ok'] === true && count($r['cols']) === 9, $r['summary']);
+check('vue du tournoi sans erreur (personne de classé ici)', $r['ok'] === true && count($r['cols']) === 10 && end($r['cols']) === 'Payé', $r['summary']);
 
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);

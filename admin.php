@@ -1783,6 +1783,107 @@ function admin_manual_credit(array &$db, string $uid, float $delta, string $moti
   return ['ok' => true, 'real' => $got, 'delta' => $delta, 'ref' => $ref];
 }
 
+/**
+ * Crédit / débit admin du solde RÉEL d'un joueur (corps de l'action « adjust », sorti tel quel en fonction
+ * pour servir aussi au paiement du Tournoi démo). Mêmes contrôles : une seule caisse (UUID), anti-doublon
+ * 2 minutes (même joueur + montant + motif), journal admin, notification au joueur si crédit.
+ * Retour : ['ok' => true, 'real' => solde] ou ['ok' => false, 'reason' => …].
+ */
+function admin_credit_player(string $uid, float $delta, string $motif, array $hint = [], string $adminEmail = ''): array {
+  $motif = trim($motif);
+  if ($motif === '') $motif = 'Crédit admin';
+  if ($uid === '' || abs($delta) < 0.0001) {
+    return ['ok' => false, 'reason' => 'Montant obligatoire'];
+  }
+  $db = admin_local_db();
+  $hint = [
+    'id' => $uid,
+    'email' => strtolower(trim((string) ($hint['email'] ?? ''))),
+    'publicId' => strtoupper(trim((string) ($hint['publicId'] ?? ''))),
+  ];
+  $found = admin_user_lookup($uid, admin_profile_map());
+  if ((string) ($found['email'] ?? '') === '' && $hint['email'] !== '') $found['email'] = $hint['email'];
+  if ((string) ($found['publicId'] ?? '') === '' && $hint['publicId'] !== '') $found['publicId'] = $hint['publicId'];
+  if ((string) ($found['id'] ?? '') !== '') $uid = (string) $found['id'];
+  $resolved = admin_resolve_player_uuid($uid, $found);
+  if (admin_is_uuid($resolved)) $uid = $resolved;
+  $targets = admin_credit_target_ids($uid, $found);
+  if (!$targets) {
+    return ['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.'];
+  }
+  // UNE CAISSE : un seul id (UUID), jamais une boucle multi-cibles.
+  $targets = [$targets[0]];
+  // Si la cible n’est pas un UUID, dernière passe e-mail / publicId.
+  if (!admin_is_uuid((string) $targets[0]) && (string) $targets[0] !== 'admin_master') {
+    $retry = admin_resolve_player_uuid((string) $targets[0], $found + $hint);
+    if (admin_is_uuid($retry)) $targets = [$retry];
+  }
+  // Anti-doublon : un même crédit/débit (même joueur, même montant, même motif) ne passe qu'une
+  // fois en 2 minutes, même si le bouton est touché 2 fois ou si 4 demandes arrivent ensemble.
+  // Création de fichier « x » = atomique : une seule demande gagne. (Avant : fenêtre à la minute
+  // pile, franchie à 20h39 → 20h40, et pas de blocage des demandes simultanées.)
+  $claimF = '';
+  if (function_exists('orolado_cash_ops_dir')) {
+    $claimF = orolado_cash_ops_dir() . DIRECTORY_SEPARATOR . hash('sha256', 'admclaim:' . $targets[0] . ':' . sprintf('%.2f', $delta) . ':' . strtolower($motif)) . '.lock';
+    if (is_file($claimF) && (time() - (int) @filemtime($claimF)) >= 120) @unlink($claimF);
+    $h = @fopen($claimF, 'x');
+    if ($h === false) {
+      return ['ok' => false, 'reason' => 'Ce même montant vient déjà d’être envoyé à ce joueur (il y a moins de 2 minutes). Vérifiez son solde avant de recommencer.'];
+    }
+    fclose($h);
+  }
+  $ok = false;
+  $lastReal = 0.0;
+  $reason = 'Échec';
+  foreach ($targets as $tid) {
+    if ($delta > 0) {
+      $res = admin_manual_credit($db, $tid, $delta, $motif, $found + $hint);
+    } else if (admin_is_uuid($tid) && function_exists('orolado_ledger_apply')) {
+      $res = orolado_ledger_apply($db, $tid, $delta, $motif, false);
+    } else {
+      $cur = orolado_money($db['vault'][$tid]['real'] ?? 0);
+      if ($cur + $delta < -0.009) {
+        $res = ['ok' => false, 'reason' => 'Solde insuffisant', 'real' => $cur];
+      } else {
+        $res = ['ok' => true, 'real' => orolado_money(max(0, $cur + $delta)), 'delta' => $delta];
+      }
+    }
+    if (!empty($res['ok'])) {
+      $ok = true;
+      $lastReal = orolado_money($res['real'] ?? 0);
+      if ($delta < 0) {
+        admin_persist_json_real($tid, $lastReal, [
+          'id' => 'adm_' . bin2hex(random_bytes(4)),
+          'at' => date('c'),
+          'type' => 'debit',
+          'amount' => abs($delta),
+          'note' => $motif,
+          'mode' => 'real',
+          'status' => 'COMPLETED',
+        ]);
+      }
+      break;
+    } else {
+      $reason = (string) ($res['reason'] ?? $reason);
+    }
+  }
+  if (!$ok) {
+    if ($claimF !== '') @unlink($claimF);
+    return ['ok' => false, 'reason' => $reason];
+  }
+  admin_persist_admin_log(
+    $adminEmail,
+    (string) ($found['publicId'] ?? $uid),
+    $delta >= 0 ? 'credit' : 'debit',
+    $delta,
+    $motif
+  );
+  admin_bust_cache();
+  // 2026-10-19 : argent / bonus envoyé par l'admin → le joueur est prévenu (notification + e-mail)
+  if ($delta > 0) { require_once __DIR__ . '/notify_lib.php'; orolado_notify_player((string) $targets[0], 'bonus', $delta); }
+  return ['ok' => true, 'real' => $lastReal];
+}
+
 $isAjax = ($_SERVER['REQUEST_METHOD'] === 'POST') && (
   (($_GET['ajax'] ?? '') === '1')
   || str_contains((string) ($_SERVER['CONTENT_TYPE'] ?? ''), 'application/json')
@@ -1856,100 +1957,28 @@ if ($isAjax) {
     admin_json(admin_profile_payload((string) ($req['userId'] ?? '')));
   }
   if ($action === 'adjust') {
-    $uid = (string) ($req['userId'] ?? '');
-    $delta = (float) ($req['delta'] ?? 0);
-    $motif = trim((string) ($req['motif'] ?? ''));
-    if ($motif === '') $motif = 'Crédit admin';
-    if ($uid === '' || abs($delta) < 0.0001) {
-      admin_json(['ok' => false, 'reason' => 'Montant obligatoire']);
-    }
-    $db = admin_local_db();
-    $hint = [
-      'id' => $uid,
-      'email' => strtolower(trim((string) ($req['email'] ?? ''))),
-      'publicId' => strtoupper(trim((string) ($req['publicId'] ?? ''))),
-    ];
-    $found = admin_user_lookup($uid, admin_profile_map());
-    if ((string) ($found['email'] ?? '') === '' && $hint['email'] !== '') $found['email'] = $hint['email'];
-    if ((string) ($found['publicId'] ?? '') === '' && $hint['publicId'] !== '') $found['publicId'] = $hint['publicId'];
-    if ((string) ($found['id'] ?? '') !== '') $uid = (string) $found['id'];
-    $resolved = admin_resolve_player_uuid($uid, $found);
-    if (admin_is_uuid($resolved)) $uid = $resolved;
-    $targets = admin_credit_target_ids($uid, $found);
-    if (!$targets) {
-      admin_json(['ok' => false, 'reason' => 'Joueur introuvable (id invalide). Rouvre la fiche puis réessaie.']);
-    }
-    // UNE CAISSE : un seul id (UUID), jamais une boucle multi-cibles.
-    $targets = [$targets[0]];
-    // Si la cible n’est pas un UUID, dernière passe e-mail / publicId.
-    if (!admin_is_uuid((string) $targets[0]) && (string) $targets[0] !== 'admin_master') {
-      $retry = admin_resolve_player_uuid((string) $targets[0], $found + $hint);
-      if (admin_is_uuid($retry)) $targets = [$retry];
-    }
-    // Anti-doublon : un même crédit/débit (même joueur, même montant, même motif) ne passe qu'une
-    // fois en 2 minutes, même si le bouton est touché 2 fois ou si 4 demandes arrivent ensemble.
-    // Création de fichier « x » = atomique : une seule demande gagne. (Avant : fenêtre à la minute
-    // pile, franchie à 20h39 → 20h40, et pas de blocage des demandes simultanées.)
-    $claimF = '';
-    if (function_exists('orolado_cash_ops_dir')) {
-      $claimF = orolado_cash_ops_dir() . DIRECTORY_SEPARATOR . hash('sha256', 'admclaim:' . $targets[0] . ':' . sprintf('%.2f', $delta) . ':' . strtolower($motif)) . '.lock';
-      if (is_file($claimF) && (time() - (int) @filemtime($claimF)) >= 120) @unlink($claimF);
-      $h = @fopen($claimF, 'x');
-      if ($h === false) {
-        admin_json(['ok' => false, 'reason' => 'Ce même montant vient déjà d’être envoyé à ce joueur (il y a moins de 2 minutes). Vérifiez son solde avant de recommencer.']);
-      }
-      fclose($h);
-    }
-    $ok = false;
-    $lastReal = 0.0;
-    $reason = 'Échec';
-    foreach ($targets as $tid) {
-      if ($delta > 0) {
-        $res = admin_manual_credit($db, $tid, $delta, $motif, $found + $hint);
-      } else if (admin_is_uuid($tid) && function_exists('orolado_ledger_apply')) {
-        $res = orolado_ledger_apply($db, $tid, $delta, $motif, false);
-      } else {
-        $cur = orolado_money($db['vault'][$tid]['real'] ?? 0);
-        if ($cur + $delta < -0.009) {
-          $res = ['ok' => false, 'reason' => 'Solde insuffisant', 'real' => $cur];
-        } else {
-          $res = ['ok' => true, 'real' => orolado_money(max(0, $cur + $delta)), 'delta' => $delta];
-        }
-      }
-      if (!empty($res['ok'])) {
-        $ok = true;
-        $lastReal = orolado_money($res['real'] ?? 0);
-        if ($delta < 0) {
-          admin_persist_json_real($tid, $lastReal, [
-            'id' => 'adm_' . bin2hex(random_bytes(4)),
-            'at' => date('c'),
-            'type' => 'debit',
-            'amount' => abs($delta),
-            'note' => $motif,
-            'mode' => 'real',
-            'status' => 'COMPLETED',
-          ]);
-        }
-        break;
-      } else {
-        $reason = (string) ($res['reason'] ?? $reason);
-      }
-    }
-    if (!$ok) {
-      if ($claimF !== '') @unlink($claimF);
-      admin_json(['ok' => false, 'reason' => $reason]);
-    }
-    admin_persist_admin_log(
-      (string) ($me['email'] ?? ''),
-      (string) ($found['publicId'] ?? $uid),
-      $delta >= 0 ? 'credit' : 'debit',
-      $delta,
-      $motif
-    );
-    admin_bust_cache();
-    // 2026-10-19 : argent / bonus envoyé par l'admin → le joueur est prévenu (notification + e-mail)
-    if ($delta > 0) { require_once __DIR__ . '/notify_lib.php'; orolado_notify_player((string) $targets[0], 'bonus', $delta); }
-    admin_json(['ok' => true, 'real' => $lastReal]);
+    admin_json(admin_credit_player(
+      (string) ($req['userId'] ?? ''),
+      (float) ($req['delta'] ?? 0),
+      (string) ($req['motif'] ?? ''),
+      ['email' => (string) ($req['email'] ?? ''), 'publicId' => (string) ($req['publicId'] ?? '')],
+      (string) ($me['email'] ?? '')
+    ));
+  }
+  // 2026-10-21 (propriétaire) — Tournoi démo : payer tous les classés (petits bonus décroissants, 0,90 $ → 0,20 $).
+  if ($action === 'gift_top_pay_preview') {
+    admin_json(admin_top_pay_preview($req));
+  }
+  if ($action === 'gift_top_pay_run') {
+    @set_time_limit(0);
+    ignore_user_abort(true); // une fois lancé, un versement va au bout et s'inscrit au registre, même si la page se ferme
+    // Un petit paquet par appel (5 par défaut, 10 au plus) : chaque e-mail peut prendre plusieurs secondes ; la page rappelle tant que « more ».
+    $adminEmail = (string) ($me['email'] ?? '');
+    admin_json(admin_top_pay_run($req, static fn(string $id, float $amt, string $motif, array $hint): array
+      => admin_credit_player($id, $amt, $motif, $hint, $adminEmail), max(1, min(10, (int) ($req['limit'] ?? 5) ?: 5))));
+  }
+  if ($action === 'gift_top_mark') {
+    admin_json(admin_top_pay_mark($req));
   }
   if ($action === 'suspend') {
     $uid = (string) ($req['userId'] ?? '');
@@ -2468,6 +2497,14 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .cty-bar .cty.clr{color:var(--muted,#9aa3b2)}
     .filters input,.filters select{min-height:38px;border-radius:10px;border:1px solid var(--line);background:#0E1420;color:var(--text);padding:6px 10px;font:inherit}
     .filters input[type=search]{flex:1;min-width:180px}
+    .top-pay{border:1px solid rgba(245,158,11,.45);border-radius:12px;padding:10px;margin:6px 0 12px;background:rgba(245,158,11,.06)}
+    .top-pay .tp-row{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+    .top-pay label{display:flex;flex-direction:column;gap:3px;font-size:.72rem;color:var(--muted);font-weight:800;flex:1 1 110px;min-width:0}
+    .top-pay input{min-height:38px;border-radius:10px;border:1px solid var(--line);background:#0E1420;color:var(--text);padding:6px 10px;font:inherit;width:100%;box-sizing:border-box}
+    .top-pay .mini{min-height:38px;white-space:normal}
+    .top-pay .tp-msg{margin:8px 0 0;font-weight:700;overflow-wrap:anywhere}
+    .top-pay .tp-msg.bad{color:var(--red)} .top-pay .tp-msg.good{color:var(--green)}
+    .top-pay .table-wrap{margin-top:8px;max-height:40vh}
     .panel-title{color:var(--gold);font-size:.8rem;margin:8px 0}
     .table-wrap{overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:10px}
     table{width:100%;border-collapse:collapse;font-size:.72rem}
@@ -2646,6 +2683,21 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="cty-bar" id="ctyBar" hidden></div>
     <div class="panel-title" id="viewTitle">Inscrits</div>
     <p class="muted" id="viewSum"></p>
+    <div class="top-pay" id="topPay" hidden>
+      <div class="panel-title" style="margin-top:0">💰 Bonus tournoi démo : payer tout le classement</div>
+      <div class="tp-row">
+        <label>À partir du rang<input id="tpFrom" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+        <label>Montant du premier ($)<input id="tpMax" type="number" min="0.01" max="5" step="0.01" value="0.90" inputmode="decimal"></label>
+        <label>Montant du dernier ($)<input id="tpMin" type="number" min="0.01" max="5" step="0.01" value="0.20" inputmode="decimal"></label>
+      </div>
+      <div class="tp-row" style="margin-top:8px">
+        <button class="mini" type="button" id="tpPreview">Aperçu</button>
+        <button class="mini ok" type="button" id="tpRun" disabled>💰 Payer tout le monde</button>
+        <button class="mini" type="button" id="tpMark">Marquer 1 à 3 comme déjà payés</button>
+      </div>
+      <p class="muted tp-msg" id="tpMsg"></p>
+      <div id="tpTable"></div>
+    </div>
     <div class="table-wrap" id="panel"><p class="muted" style="padding:12px">Choisissez un bouton…</p></div>
     <div class="pager" id="pager"></div>
   </div>
@@ -3150,6 +3202,7 @@ function renderList(j) {
   const panel = document.getElementById('panel');
   if (!j.ok) { panel.innerHTML = '<p class="muted" style="padding:12px">'+esc(j.reason||'Erreur')+'</p>'; return; }
   document.getElementById('viewSum').textContent = j.summary || '';
+  topPayShow();
   paintCountries(j);
   let html = '<table><thead><tr>'+(j.cols||[]).map(c=>'<th>'+esc(c)+'</th>').join('');
   if (j.actions) html += '<th></th>';
@@ -3243,8 +3296,88 @@ function renderList(j) {
     bustList(); loadBadges(); loadList(true);
   }));
 }
+// 2026-10-21 (propriétaire) — Tournoi démo : « Payer tout le monde » (bonus décroissants du rang choisi jusqu’au dernier).
+let tpPlan = null, tpBusy = false;
+function tpWeek() { return view === 'gift_top_prev' ? 'prev' : 'cur'; }
+function tpParams() {
+  return {week: tpWeek(), fromRank: document.getElementById('tpFrom').value, max: document.getElementById('tpMax').value, min: document.getElementById('tpMin').value};
+}
+function tpSay(t, cls) { const m = document.getElementById('tpMsg'); m.textContent = t || ''; m.className = 'muted tp-msg' + (cls ? ' ' + cls : ''); }
+function topPayShow() {
+  const box = document.getElementById('topPay');
+  const on = view === 'gift_top' || view === 'gift_top_prev';
+  if (!on) { box.hidden = true; return; }
+  if (box.hidden || (tpPlan && tpPlan.weekSel !== tpWeek())) { tpPlan = null; document.getElementById('tpTable').innerHTML = ''; document.getElementById('tpRun').disabled = true; tpSay(''); }
+  box.hidden = false;
+}
+function tpPaint(j) {
+  const STATE = {todo:'À payer', paid:'Déjà payé', check:'⚠ À vérifier'};
+  document.getElementById('tpTable').innerHTML = !(j.rows||[]).length ? '<p class="muted">Personne de classé à partir de ce rang.</p>' :
+    '<div class="table-wrap"><table><thead><tr><th>Rang</th><th>ID</th><th>Nom</th><th>E-mail</th><th>Points</th><th>Montant</th><th>État</th></tr></thead><tbody>' +
+    j.rows.map(r => '<tr><td>'+r.rank+'</td><td>'+esc(r.id)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.email||'—')+'</td><td>'+r.points+'</td><td>'+esc(money(r.amount))+'</td><td>'+esc(r.state === 'todo' ? STATE.todo : (r.paid || STATE[r.state] || ''))+'</td></tr>').join('') +
+    '</tbody></table></div>';
+}
+async function tpPreview() {
+  tpSay('Calcul…');
+  const j = await ajax(Object.assign({action:'gift_top_pay_preview'}, tpParams()));
+  if (!j.ok) { tpPlan = null; document.getElementById('tpRun').disabled = true; tpSay(j.reason || 'Erreur', 'bad'); return null; }
+  j.weekSel = tpWeek();
+  tpPlan = j;
+  tpPaint(j);
+  document.getElementById('tpRun').disabled = !(j.count > 0);
+  tpSay('Semaine ' + j.week + (j.running ? ' (EN COURS : le classement peut encore changer)' : '') + ' · ' + j.count + ' joueur(s) à payer · total ' + money(j.total)
+    + (j.already ? ' · ' + j.already + ' déjà payé(s)' : '') + (j.check ? ' · ' + j.check + ' à vérifier (paiement interrompu : vérifier le solde)' : ''), j.check ? 'bad' : '');
+  return j;
+}
+async function tpRun() {
+  if (tpBusy || !tpPlan || !(tpPlan.count > 0)) return;
+  const plan = tpPlan;
+  const c = prompt('Payer ' + plan.count + ' joueur(s) du Tournoi démo (semaine ' + plan.week + '), rang ' + plan.fromRank + ' et suivants,\n'
+    + 'de ' + money(plan.max) + ' à ' + money(plan.min) + ' — TOTAL ' + money(plan.total) + ' (argent réel, sur leur solde).\n'
+    + (plan.running ? '⚠ Cette semaine n’est pas finie : le classement peut encore changer.\n' : '')
+    + 'Tapez PAYER pour confirmer :') || '';
+  if (c.trim() !== 'PAYER') { tpSay('Annulé : rien n’a été payé.'); return; }
+  tpBusy = true;
+  const btns = ['tpRun', 'tpPreview', 'tpMark'].map(id => document.getElementById(id));
+  btns.forEach(b => b.disabled = true);
+  let paid = 0, total = 0, last = null; const mailBad = [];
+  try {
+    for (let guard = 0; guard < 2000; guard++) {
+      tpSay('Paiement en cours… ' + paid + ' / ' + plan.count + ' payé(s) · ' + money(total) + ' — gardez la page ouverte.');
+      const j = await ajax(Object.assign({action:'gift_top_pay_run', confirm:'PAYER', sig: plan.sig, limit: 5}, tpParams()));
+      last = j;
+      paid += j.paid || 0; total += j.total || 0;
+      (j.mailFailed || []).forEach(n => mailBad.push(n));
+      if (!j.ok || !j.more || !(j.paid > 0)) break;
+    }
+  } catch (e) {
+    last = {ok:false, reason:'Connexion perdue : refaites « Aperçu » (ce qui est payé est noté, rien ne sera payé deux fois).'};
+  }
+  btns.forEach(b => b.disabled = false);
+  tpBusy = false;
+  const msg = paid + ' joueur(s) payé(s) · ' + money(total)
+    + (last && last.ok ? (last.remaining > 0 ? ' · il en reste ' + last.remaining + ' (refaites Aperçu)' : ' · tout le monde est payé ✓') : ' · ARRÊT : ' + ((last && last.reason) || 'erreur'))
+    + (mailBad.length ? ' · ⚠ e-mail non parti (crédit fait) : rang ' + mailBad.join(', ') : '');
+  bustList(); loadList(true);
+  await tpPreview();
+  tpSay(msg, last && last.ok ? 'good' : 'bad');
+}
+async function tpMark() {
+  if (!confirm('Noter les rangs 1, 2 et 3 (semaine ' + (tpWeek() === 'prev' ? 'dernière' : 'en cours') + ') comme « déjà payés à la main » ?\nRien n’est versé ; ils ne seront jamais payés par le bouton.')) return;
+  const j = await ajax({action:'gift_top_mark', week: tpWeek(), ranks:[1,2,3]});
+  if (!j.ok) { tpSay(j.reason || 'Erreur', 'bad'); return; }
+  bustList(); loadList(true);
+  if (tpPlan) await tpPreview();
+  tpSay('Semaine ' + j.week + ' : ' + (j.marked.length ? 'rang(s) ' + j.marked.join(', ') + ' notés « payés à la main »' : 'rien de nouveau')
+    + (j.already.length ? ' · déjà notés : ' + j.already.join(', ') : '') + (j.missing.length ? ' · pas de joueur au rang ' + j.missing.join(', ') : ''), 'good');
+}
+document.getElementById('tpPreview').onclick = tpPreview;
+document.getElementById('tpRun').onclick = tpRun;
+document.getElementById('tpMark').onclick = tpMark;
+['tpFrom', 'tpMax', 'tpMin'].forEach(id => document.getElementById(id).addEventListener('input', () => { tpPlan = null; document.getElementById('tpRun').disabled = true; }));
 async function loadList(force) {
   const my = ++listReq;
+  topPayShow();
   document.getElementById('viewTitle').textContent = TITLES[view] || view;
   document.querySelectorAll('.metric-btn[data-view]').forEach(btn => {
     btn.classList.toggle('on', btn.getAttribute('data-view') === view);
