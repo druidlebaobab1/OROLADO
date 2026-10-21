@@ -1095,7 +1095,10 @@
     try {
       ['#modeReal .mb-lbl', '#modeReal .mb-amt', '#modeDemo .mb-lbl', '#modeDemo .mb-amt'].forEach(function (sel) {
         var el = document.querySelector(sel);
-        if (!el) return;
+        // 2026-10-21 (propriétaire : « en quittant le plein écran, le montant du compte réel grandit puis rapetisse ») : barre
+        // cachée (plein écran) → on ne touche à rien ; avant, la taille ajustée était effacée pendant le plein écran et le
+        // montant réapparaissait en grand puis rapetissait.
+        if (!el || !el.offsetWidth || !el.getClientRects().length || document.documentElement.classList.contains('fs-trade')) return;
         el.style.removeProperty('font-size');
         if (!el.clientWidth || el.scrollWidth <= el.clientWidth + 1) return;
         var fs = parseFloat(getComputedStyle(el).fontSize) || 12;

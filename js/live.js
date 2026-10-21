@@ -408,7 +408,7 @@
     var sig = list.map(function (t) { return t.k; }).join(',') + '|' + document.documentElement.lang;
     if (g.dataset.sig === sig && g.firstChild) { homeBadges(g); paintMsgBar(); return; }
     g.dataset.sig = sig;
-    g.className = 'lh-grid lh-free';
+    g.className = 'lh-grid lh-free' + (list.length % 3 === 2 ? ' lh-r2' : list.length % 3 === 1 ? ' lh-r1' : ''); // 2026-10-21 : dernière rangée centrée (jamais de trou)
     g.innerHTML = list.map(function (t) {
       var badge = (t.k === 'friends' && dmUn > 0) ? '<i class="lh-b">' + dmUn + '</i>' : (t.k === 'chat' && $('liveBadge') && $('liveBadge').textContent) ? '<i class="lh-b">' + esc($('liveBadge').textContent) + '</i>' : '';
       var tt = h[t.k] || (t.k === 'send' && D6.LiveSend ? [D6.LiveSend.title(), D6.LiveSend.sub()] : null) || (t.k === 'groups' && D6.LiveGroups ? [D6.LiveGroups.title(), D6.LiveGroups.sub()] : [D6.LiveFun ? D6.LiveFun.title(t.k) : t.k, D6.LiveFun ? D6.LiveFun.sub(t.k) : '']);
@@ -604,6 +604,15 @@
   var openedOnce = false;
   // v2855 : le menu Social est préparé dès que le site est chargé (DOM + dessins prêts avant le 1er clic)
   setTimeout(function () { try { if ($('liveHomeGrid') && !$('liveHomeGrid').firstChild) paintHome(); prefitHome(); } catch (eP) { /* ignore */ } }, 3000);
+  // 2026-10-21 (propriétaire : « dans Social, une case reste vide quelques secondes puis se remplit ») : la case « Envoyer de
+  // l'argent » dépend d'une réponse du serveur ; elle est demandée en avance (2 s après l'ouverture du site) pour que le menu
+  // soit déjà complet au premier toucher.
+  setTimeout(function () {
+    try {
+      if (guest() || !(D6.LiveSend && D6.LiveSend.status)) return;
+      D6.LiveSend.status().then(function () { try { if ($('liveHomeGrid') && $('liveHomeGrid').firstChild) { paintHome(); prefitHome(); } } catch (eS) { /* ignore */ } }, function () { /* ignore */ });
+    } catch (eT) { /* ignore */ }
+  }, 2000);
   function open(w) {
     var x = L();
     $('liveSub').textContent = x.sub; $('liveTabNewsT').textContent = x.news; $('liveTabChatT').textContent = x.chat; $('liveText').placeholder = x.ph;

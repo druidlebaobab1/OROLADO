@@ -13373,3 +13373,13 @@ html,html body,html body *,html body *::before,html body *::after{font-feature-s
 html.fs-trade body .fs-top-bal.fs-top-bal,html.is-fullscreen body .fs-top-bal.fs-top-bal{font-feature-settings:"liga" 0,"clig" 0,"tnum" 1!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row :is(#btnPortal .pw-lbl,#btnHelp .hb-txt,#btnProfile .pf-txt,#btnCasino .cb-lbl,#btnGames b),
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) .topbar-row :is(#btnPortal,#btnHelp,#btnProfile,#btnCasino,#btnGames) *{font-variant-ligatures:no-common-ligatures!important;font-feature-settings:"liga" 0,"clig" 0!important}
+/* 2026-10-21 (propriétaire : « un vide dans Social ») : menu Social sur 6 demi-colonnes ; quand la dernière rangée n'a que 1 ou
+   2 cases, elle est centrée (jamais de trou sur le côté) */
+html body #liveModal #liveHomeGrid.lh-free.lh-free{grid-template-columns:repeat(6,1fr)!important}
+html body #liveModal #liveHomeGrid.lh-free.lh-free > .lh-f{grid-column:span 2}
+html body #liveModal #liveHomeGrid.lh-free.lh-r2 > .lh-f:nth-last-child(2){grid-column:2/span 2}
+html body #liveModal #liveHomeGrid.lh-free.lh-r2 > .lh-f:last-child{grid-column:4/span 2}
+html body #liveModal #liveHomeGrid.lh-free.lh-r1 > .lh-f:last-child{grid-column:3/span 2}
+/* 2026-10-21 (propriétaire) : PLEIN ÉCRAN — le mot garde son blanc doux et clignote doucement, sans jamais devenir blanc pur */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#E8E6F5!important;-webkit-text-fill-color:#E8E6F5!important;animation:oroFsSoft 1.8s ease-in-out infinite!important}
+@keyframes oroFsSoft{0%,100%{opacity:.95}50%{opacity:.6}}
