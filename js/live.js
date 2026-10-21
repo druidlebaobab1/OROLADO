@@ -451,11 +451,18 @@
   }
   /* v2953 (propriétaire) : le menu Social tient dans l'écran SANS défiler (vu sur Android 360x663 : 46 px de trop).
      S'il dépasse, la grille des logos est réduite juste ce qu'il faut (au plus 25 %) ; sinon rien ne change. */
+  // 2026-10-21 (propriétaire : « quand on clique sur Social, ça tarde avant d'afficher les pages ») : cette recherche
+  // (8 mises en page complètes) était refaite à CHAQUE ouverture avant que Social ne s'affiche, puis encore 250 ms
+  // après. Maintenant elle est faite une fois, en avance (prefitHome, après le chargement) ; à l'ouverture, même
+  // écran + même menu → rien à refaire. Même réduction qu'avant à l'écran.
   function fitHome() {
     var pane = $('livePaneHome'), g = $('liveHomeGrid'); if (!pane || !g) return;
     var run = function () {
-      g.style.zoom = '';
       if (pane.hidden || !pane.offsetParent) return;
+      var key = pane.clientWidth + 'x' + pane.clientHeight + '|' + (g.dataset.sig || '');
+      if (g._fitKey === key && pane.scrollHeight - pane.clientHeight <= 1) return;
+      g._fitKey = key;
+      g.style.zoom = '';
       var over = pane.scrollHeight - pane.clientHeight;
       if (!(over > 1)) return;
       var lo = 0.75, hi = 1, k;
@@ -466,10 +473,26 @@
       }
       g.style.zoom = String(Math.round(lo * 1000) / 1000);
     };
+    if (fitHome.now) { fitHome.now = false; run(); return; }
     if (window.requestAnimationFrame) requestAnimationFrame(run); else run();
     setTimeout(run, 250);
   }
-  window.addEventListener('resize', function () { fitHome(); });
+  // Menu ajusté en avance, Social encore fermé : la fenêtre est posée invisible dans l'état « menu » le temps de la
+  // mesure (même tâche, rien n'est dessiné), puis tout est remis comme avant.
+  function prefitHome() {
+    var m = $('liveModal'), pane = $('livePaneHome'), g = $('liveHomeGrid'), bar = $('liveBar'), news = $('livePaneNews');
+    if (!m || !pane || !g || !g.firstChild || m.classList.contains('active')) return;
+    var st = m.getAttribute('style'), ph = pane.hidden, bh = bar ? bar.hidden : true, nh = news ? news.hidden : true;
+    try {
+      m.style.setProperty('display', 'block', 'important'); m.style.setProperty('visibility', 'hidden', 'important');
+      pane.hidden = false; if (bar) bar.hidden = false; if (news) news.hidden = true;
+      fitHome.now = true; fitHome();
+    } catch (eF) { /* ignore */ }
+    fitHome.now = false;
+    pane.hidden = ph; if (bar) bar.hidden = bh; if (news) news.hidden = nh;
+    if (st === null) m.removeAttribute('style'); else m.setAttribute('style', st);
+  }
+  window.addEventListener('resize', function () { fitHome(); clearTimeout(prefitHome.t); prefitHome.t = setTimeout(prefitHome, 400); });
 
   function tileGo(k) {
     if (k === 'dms') { if (guest()) { show('guest', 'friends'); return; } if (D6.Social2) { D6.Social2.open('', true); return; } show('friends'); return; }
@@ -580,7 +603,7 @@
 
   var openedOnce = false;
   // v2855 : le menu Social est préparé dès que le site est chargé (DOM + dessins prêts avant le 1er clic)
-  setTimeout(function () { try { if ($('liveHomeGrid') && !$('liveHomeGrid').firstChild) paintHome(); } catch (eP) { /* ignore */ } }, 3000);
+  setTimeout(function () { try { if ($('liveHomeGrid') && !$('liveHomeGrid').firstChild) paintHome(); prefitHome(); } catch (eP) { /* ignore */ } }, 3000);
   function open(w) {
     var x = L();
     $('liveSub').textContent = x.sub; $('liveTabNewsT').textContent = x.news; $('liveTabChatT').textContent = x.chat; $('liveText').placeholder = x.ph;
