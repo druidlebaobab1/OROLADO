@@ -1625,12 +1625,22 @@
           casino: ['🎰 OROLADO 赌场', '快速公平的游戏：下注、开玩，奖金立即到账。'],
           end: '免费创建账户，充值后即可真钱游戏，每局最低 0.10 美元。', btn: '免费创建账户' }
   };
+  var TRY_ICO = {
+    // manette dorée (jeux Action)
+    skill: '<svg viewBox="0 0 64 64"><defs><linearGradient id="tyS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4B5FD"/><stop offset=".55" stop-color="#7C3AED"/><stop offset="1" stop-color="#4C1D95"/></linearGradient></defs><path d="M18 20h28c8 0 13 6 14 15l1 9c1 6-5 9-9 5l-6-6H18l-6 6c-4 4-10 1-9-5l1-9c1-9 6-15 14-15z" fill="url(#tyS)" stroke="#EDE9FE" stroke-width="1.6"/><path d="M14 28c2-3 5-4 9-4" stroke="#fff" stroke-opacity=".6" stroke-width="2.4" fill="none" stroke-linecap="round"/><rect x="15" y="29" width="12" height="4.4" rx="2" fill="#FDE68A"/><rect x="18.8" y="25.2" width="4.4" height="12" rx="2" fill="#FDE68A"/><circle cx="44" cy="28" r="3.2" fill="#34D399"/><circle cx="50" cy="33" r="3.2" fill="#F87171"/><circle cx="38" cy="33" r="3.2" fill="#60A5FA"/><circle cx="44" cy="38" r="3.2" fill="#FBBF24"/></svg>',
+    // antenne « en direct » rouge (jeux Live)
+    live: '<svg viewBox="0 0 64 64"><defs><radialGradient id="tyL" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FFE4E6"/><stop offset=".45" stop-color="#FF4D5E"/><stop offset="1" stop-color="#9F1239"/></radialGradient></defs><path d="M17 15a24 24 0 0 0 0 34M47 15a24 24 0 0 1 0 34" stroke="#FF4D5E" stroke-width="4" fill="none" stroke-linecap="round" opacity=".55"/><path d="M23 21a15 15 0 0 0 0 22M41 21a15 15 0 0 1 0 22" stroke="#FF6B7A" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="32" cy="32" r="8.5" fill="url(#tyL)" stroke="#FFE4E6" stroke-width="1.6"/><circle cx="29.5" cy="29.5" r="2.4" fill="#fff" opacity=".8"/></svg>',
+    // jetons dorés (Casino)
+    casino: '<svg viewBox="0 0 64 64"><defs><radialGradient id="tyC" cx="38%" cy="30%" r="75%"><stop offset="0" stop-color="#FFF6C9"/><stop offset=".5" stop-color="#FBBF24"/><stop offset="1" stop-color="#B45309"/></radialGradient></defs><ellipse cx="32" cy="48" rx="20" ry="7" fill="#7C2D12" opacity=".55"/><ellipse cx="32" cy="44" rx="20" ry="7" fill="#B45309"/><ellipse cx="32" cy="40" rx="20" ry="7" fill="url(#tyC)" stroke="#FEF3C7" stroke-width="1.2"/><ellipse cx="32" cy="40" rx="12" ry="4" fill="none" stroke="#92400E" stroke-width="1.6" stroke-dasharray="3 3"/><circle cx="36" cy="22" r="13" fill="url(#tyC)" stroke="#FEF3C7" stroke-width="1.4"/><circle cx="36" cy="22" r="8.5" fill="none" stroke="#92400E" stroke-width="1.6" stroke-dasharray="3 2.6"/><path d="M36 16.5l1.7 3.6 3.9.5-2.9 2.7.8 3.9-3.5-1.9-3.5 1.9.8-3.9-2.9-2.7 3.9-.5z" fill="#92400E"/></svg>'
+  };
   function needAccount(box, x) {
     if (!guest()) return false;
     var gl = (document.documentElement.lang || 'fr').slice(0, 2), gm = GUEST_MSG[gl] || GUEST_MSG.en;
     var gk = S.game || '', sec = SECTION[gk] === 'skill' ? 'skill' : ((SECTION[gk] === 'live' || LIVE_GAMES[gk]) ? 'live' : 'casino');
     var gt = gm[sec];
-    box.innerHTML = '<div class="cs-try big cs-try2"><b class="cs-try-t">' + esc(gt[0]) + '</b><span>' + esc(gt[1]) + '</span><span class="cs-try-e">' + esc(gm.end) + '</span><button type="button" id="csSign2">' + esc(gm.btn) + '</button></div>';
+    // 2026-10-21 (propriétaire : « pas d'émoji simple, un vrai dessin ») : l'émoji du titre est remplacé par un logo dessiné
+    var tt = String(gt[0]).replace(/^[^A-Za-z0-9\u00C0-\u024F\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u4E00-\u9FFF]+/, '');
+    box.innerHTML = '<div class="cs-try big cs-try2"><i class="cs-try-ico cs-try-' + sec + '" aria-hidden="true">' + TRY_ICO[sec] + '</i><b class="cs-try-t">' + esc(tt) + '</b><span>' + esc(gt[1]) + '</span><span class="cs-try-e">' + esc(gm.end) + '</span><button type="button" id="csSign2">' + esc(gm.btn) + '</button></div>';
     $('csSign2').addEventListener('click', function () { toAuth('register'); });
     return true;
   }
