@@ -1061,18 +1061,33 @@
         c.strokeStyle = 'rgba(255,225,215,.45)'; c.lineWidth = Math.max(0.8, w * 0.04); c.beginPath(); c.ellipse(cx + w * 0.04, cy + h * 0.02, rx * 0.88, ry * 0.9, -0.2, Math.PI * 1.1, Math.PI * 1.6); c.stroke();
         c.fillStyle = 'rgba(214,150,84,.9)'; c.beginPath(); c.ellipse(cx + w * 0.04, h * 0.9, rx * 0.8, h * 0.14, 0, 0, TAU); c.fill(); // fur at the base
       });
-      // hind foot, sole towards the camera (heel up, five toes down): pink skin, darker pads, cream fur on the heel
-      R.fw = s * 0.22; R.fh = s * 0.3;
-      R.foot = mkc(R.fw, R.fh, dpr, function (c, w, h) {
-        var cx = w / 2;
-        var g = c.createLinearGradient(0, h * 0.1, 0, h); g.addColorStop(0, '#F6C3C3'); g.addColorStop(1, '#E58E99');
-        c.fillStyle = g; c.beginPath(); c.ellipse(cx, h * 0.55, w * 0.33, h * 0.38, 0, 0, TAU); c.fill();
-        c.fillStyle = '#C96B79';
-        [[-0.3, 0.86], [-0.15, 0.93], [0, 0.95], [0.15, 0.93], [0.3, 0.86]].forEach(function (q) { c.beginPath(); c.ellipse(cx + q[0] * w, q[1] * h, w * 0.075, h * 0.05, 0, 0, TAU); c.fill(); });
-        c.fillStyle = 'rgba(201,107,121,.75)'; [[-0.14, 0.62], [0.14, 0.62], [0, 0.7]].forEach(function (q) { c.beginPath(); c.ellipse(cx + q[0] * w, q[1] * h, w * 0.08, h * 0.06, 0, 0, TAU); c.fill(); });
-        c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(cx - w * 0.1, h * 0.42, w * 0.08, h * 0.12, -0.2, 0, TAU); c.fill();
-        var fg = c.createLinearGradient(0, 0, 0, h * 0.35); fg.addColorStop(0, '#E8C79F'); fg.addColorStop(1, 'rgba(246,230,208,0)');
-        c.fillStyle = fg; c.beginPath(); c.ellipse(cx, h * 0.2, w * 0.42, h * 0.22, 0, 0, TAU); c.fill();
+      // v3107 (owner: "the feet are pink blobs stuck on the fur") — real hind legs: a short furry leg (darker golden-brown,
+      // fading into the rump at the top) ending in a foot that is either PLANTED (seen from behind: light fur on top, a pink
+      // heel edge, flat on the ground) or KICKED BACK (sole to the camera: long pink sole, heel pad, 3 toe pads, fur edges)
+      R.lw2 = s * 0.25; R.lh2 = s * 0.3;
+      R.leg = mkc(R.lw2, R.lh2, dpr, function (c, w, h) {
+        var g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(214,150,84,0)'); g.addColorStop(0.3, '#CF904F'); g.addColorStop(1, '#A4612C');
+        c.fillStyle = g; c.beginPath(); c.moveTo(w * 0.04, 0); c.lineTo(w * 0.96, 0); c.quadraticCurveTo(w * 0.92, h * 0.6, w * 0.72, h); c.lineTo(w * 0.28, h); c.quadraticCurveTo(w * 0.08, h * 0.6, w * 0.04, 0); c.fill();
+        var hl = c.createLinearGradient(0, 0, w, 0); hl.addColorStop(0, 'rgba(255,220,160,.35)'); hl.addColorStop(0.45, 'rgba(255,220,160,0)'); hl.addColorStop(1, 'rgba(60,25,5,.25)'); c.fillStyle = hl; c.fill();
+        c.lineCap = 'round'; c.lineWidth = Math.max(0.6, s * 0.006);
+        for (var i = 0; i < 46; i++) { var px = w * (0.15 + ((i * 37) % 70) / 100), py = h * (0.2 + ((i * 53) % 78) / 100); c.strokeStyle = i % 3 ? 'rgba(90,42,12,.35)' : 'rgba(255,214,150,.35)'; c.beginPath(); c.moveTo(px, py); c.lineTo(px + (px < w / 2 ? -1 : 1) * w * 0.05, py + h * 0.06); c.stroke(); }
+      });
+      R.ftw = s * 0.2; R.fth = s * 0.12;
+      R.ftop = mkc(R.ftw, R.fth, dpr, function (c, w, h) { // planted foot from behind
+        c.fillStyle = '#E39AA3'; c.beginPath(); c.ellipse(w / 2, h * 0.7, w * 0.4, h * 0.28, 0, 0, TAU); c.fill();
+        var g = c.createLinearGradient(0, 0, 0, h * 0.8); g.addColorStop(0, '#F6E6D0'); g.addColorStop(1, '#D9BC98');
+        c.fillStyle = g; c.beginPath(); c.ellipse(w / 2, h * 0.45, w * 0.44, h * 0.38, 0, 0, TAU); c.fill();
+        c.strokeStyle = 'rgba(150,110,80,.35)'; c.lineWidth = Math.max(0.6, s * 0.005); for (var i = -1; i <= 1; i++) { c.beginPath(); c.moveTo(w / 2 + i * w * 0.14, h * 0.3); c.lineTo(w / 2 + i * w * 0.17, h * 0.7); c.stroke(); }
+      });
+      R.sw2 = s * 0.15; R.sh2 = s * 0.25;
+      R.sole = mkc(R.sw2, R.sh2, dpr, function (c, w, h) { // kicked-back foot: sole to the camera, heel at the top, toes at the bottom
+        c.fillStyle = '#EBD7BC'; c.beginPath(); c.ellipse(w / 2, h * 0.5, w * 0.48, h * 0.48, 0, 0, TAU); c.fill();
+        var g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#F3B8BC'); g.addColorStop(1, '#E48E9A');
+        c.fillStyle = g; c.beginPath(); c.ellipse(w / 2, h * 0.52, w * 0.34, h * 0.42, 0, 0, TAU); c.fill();
+        c.fillStyle = '#CB6E7C'; c.beginPath(); c.ellipse(w / 2, h * 0.24, w * 0.16, h * 0.08, 0, 0, TAU); c.fill(); // heel pad
+        c.beginPath(); c.ellipse(w / 2, h * 0.6, w * 0.2, h * 0.07, 0, 0, TAU); c.fill();
+        [[-0.2, 0.82], [0, 0.88], [0.2, 0.82]].forEach(function (q) { c.beginPath(); c.ellipse(w / 2 + q[0] * w, q[1] * h, w * 0.09, h * 0.065, 0, 0, TAU); c.fill(); }); // 3 toe pads
+        c.fillStyle = 'rgba(255,255,255,.3)'; c.beginPath(); c.ellipse(w * 0.4, h * 0.4, w * 0.07, h * 0.12, 0, 0, TAU); c.fill();
       });
       // front paw (little pink hand, cream cuff)
       R.pw = s * 0.15; R.ph = s * 0.16;
@@ -1113,34 +1128,41 @@
       for (i = -1; i <= 1; i += 2) {
         fp = (ph + (i > 0 ? 0.5 : 0) + 0.25) % 1; var reach = Math.sin(TAU * fp);
         if (arms) { fx = i * s * 0.5; fy = -s * (0.92 + 0.06 * Math.sin(won * 18 + i)); c.save(); c.translate(fx, fy); c.rotate(i * 0.3); c.drawImage(R.paw, -R.pw / 2, -R.ph / 2, R.pw, R.ph); c.restore(); continue; }
-        fx = i * s * (0.42 + 0.05 * Math.max(0, reach)); fy = -s * (0.05 + 0.07 * Math.max(0, reach)) - bob * 0.5;
-        c.save(); c.translate(fx, fy); c.rotate(i * (0.5 + 0.3 * reach)); c.drawImage(R.paw, -R.pw / 2, -R.ph / 2, R.pw, R.ph); c.restore();
+        if (reach < 0.15) continue; // v3107: seen only while reaching forward, at the sides
+        fx = i * s * (0.43 + 0.06 * reach); fy = -s * (0.1 + 0.06 * reach) - bob * 0.5;
+        c.globalAlpha = Math.min(1, (reach - 0.15) * 3); c.save(); c.translate(fx, fy); c.rotate(i * (0.6 + 0.3 * reach)); c.drawImage(R.paw, -R.pw / 2, -R.ph / 2, R.pw * 0.9, R.ph * 0.9); c.restore(); c.globalAlpha = 1;
       }
       // head, lagging the body's bob a little; ears spring behind it
-      var bh = 0.5 - 0.5 * Math.cos(a2 - 0.9), hyH = -s * 0.8 - bob - bh * 0.035 * s * amp * (crash ? 0 : 1), hxH = -sway * 0.5 - lean * 0.12 * s;
+      var bh = 0.5 - 0.5 * Math.cos(a2 - 0.9), hyH = -s * 0.85 - bob - bh * 0.035 * s * amp * (crash ? 0 : 1), hxH = -sway * 0.5 - lean * 0.12 * s;
       for (i = -1; i <= 1; i += 2) {
         var er = i * (0.32 + 0.1 * Math.sin(a2 - 1.7) * amp + earK) ;
         c.save(); c.translate(hxH + i * s * 0.2, hyH - s * 0.12); c.rotate(er); if (i > 0) c.scale(-1, 1); c.drawImage(R.ear, -R.ew / 2, -R.eh * 0.95, R.ew, R.eh); c.restore();
       }
       c.save(); c.translate(hxH, hyH); c.scale(1 + sq * 0.5, 1 - sq * 0.5); c.drawImage(R.head, -R.hw / 2, -R.hh / 2, R.hw, R.hh); c.restore();
       // body (squash / stretch from the ground up)
-      c.save(); c.translate(0, -bob); c.scale(sx, sy); c.drawImage(R.body, -R.bw / 2, -R.boy - s * 0.03, R.bw, R.bh); c.restore();
+      c.save(); c.translate(0, -bob); c.scale(sx, sy); c.drawImage(R.body, -R.bw / 2, -R.boy - s * 0.085, R.bw, R.bh); c.restore();
       // tiny tail
-      var tx0 = Math.sin(a2) * 0.01 * s, ty0 = -s * 0.13 - bob * sy;
+      var tx0 = Math.sin(a2) * 0.01 * s, ty0 = -s * 0.19 - bob * sy;
       c.fillStyle = '#E9C9A6'; c.beginPath(); c.ellipse(tx0, ty0, s * 0.045, s * 0.035, 0, 0, TAU); c.fill();
       c.fillStyle = '#F2B9B4'; c.beginPath(); c.ellipse(tx0, ty0 + s * 0.012, s * 0.022, s * 0.016, 0, 0, TAU); c.fill();
-      // hind feet: on the ground they hide under the rump (edge-on); kicking back they lift and show their pink soles
+      // hind legs (v3107): alternate — one foot planted under the body (moving back toward the camera as the body goes
+      // forward), the other pushing off: heel rises, the sole turns to the camera, the foot lifts, then swings forward to land
       var fsp = crash ? Math.max(0.15, Math.exp(-crash.t * 1.5)) : 1;
       for (i = -1; i <= 1; i += 2) {
         fp = (ph + (i > 0 ? 0.5 : 0)) % 1;
-        var up, show;
-        if (fp < 0.5) { fk = fp / 0.5; up = 0; show = 0.32 + 0.25 * fk; }
-        else { fk = (fp - 0.5) / 0.5; up = Math.sin(Math.PI * fk) * 0.15 * s * amp; show = 1 - 0.55 * fk; }
-        if (crash && crash.t > 0.12) { up = (0.08 + 0.06 * Math.sin(cyc * TAU * 2 + i)) * s * fsp; show = 0.9; }
-        if (won && arms) { up *= 0.4; }
-        fx = i * s * (0.21 + 0.02 * show); fy = -up - bob * 0.3 + s * 0.02;
-        var fh = R.fh * show;
-        c.save(); c.translate(fx, fy); c.rotate(i * (0.12 + 0.1 * show)); c.drawImage(R.foot, -R.fw / 2, -fh, R.fw, fh); c.restore();
+        var up, sole, back;
+        if (fp < 0.55) { fk = fp / 0.55; up = 0; back = fk; sole = fk > 0.7 ? (fk - 0.7) / 0.3 * 0.7 : 0; }
+        else { fk = (fp - 0.55) / 0.45; up = Math.sin(Math.PI * Math.min(1, fk * 1.1)) * 0.075 * s * amp; back = 1 - fk; sole = fk < 0.6 ? 0.7 + 0.3 * Math.sin(fk / 0.6 * Math.PI) : (1 - fk) / 0.4 * 0.7; }
+        if (crash && crash.t > 0.12) { up = (0.1 + 0.06 * Math.sin(cyc * TAU * 2 + i)) * s * fsp; sole = 1; back = 0.5; }
+        if (won && arms) { up *= 0.5; }
+        var sc = 0.9 + 0.2 * back, footX = i * s * (0.2 + 0.02 * back), footY = -up + s * 0.035 * back, hipX = i * s * 0.16, hipY = -s * 0.15 - bob;
+        if (!crash && up < s * 0.02) { c.globalAlpha = 0.45; c.drawImage(R.shd, footX - s * 0.11, footY - s * 0.025, s * 0.22, s * 0.06); c.globalAlpha = 1; } // contact shadow
+        var heelY = footY - (sole > 0.3 ? R.sh2 * 0.85 * sc : R.fth * 0.5 * sc), dxL = footX - hipX, dyL = heelY - hipY, Ll = Math.max(s * 0.05, Math.hypot(dxL, dyL));
+        c.save(); c.translate(hipX, hipY); c.rotate(Math.atan2(dyL, dxL) - Math.PI / 2); c.drawImage(R.leg, -R.lw2 / 2 * sc, 0, R.lw2 * sc, Ll + s * 0.02); c.restore();
+        c.save(); c.translate(footX, footY); c.rotate(i * 0.08);
+        if (sole < 1) { c.globalAlpha = 1 - sole; c.drawImage(R.ftop, -R.ftw * sc / 2, -R.fth * sc, R.ftw * sc, R.fth * sc); }
+        if (sole > 0) { c.globalAlpha = Math.min(1, sole * 1.6); var shh = R.sh2 * sc * (0.55 + 0.45 * sole); c.drawImage(R.sole, -R.sw2 * sc / 2, -shh, R.sw2 * sc, shh); }
+        c.globalAlpha = 1; c.restore();
       }
       c.restore();
       // dizzy stars above the fallen hamster's head
@@ -1308,16 +1330,15 @@
             c.beginPath(); c.moveTo(SX(XL, za), ya); c.lineTo(SX(XR, za), ya); c.lineTo(SX(XR, zb), yb); c.lineTo(SX(XL, zb), yb); c.closePath(); c.fill();
             c.globalAlpha = 1;
             if (pa > 0.3) { // grain lines along the plank + a board end
-              c.strokeStyle = 'rgba(110,58,20,.16)'; c.lineWidth = Math.max(0.5, 1.1 * pa);
-              for (var gi = 1; gi <= 2; gi++) { var zg = za + (zb - za) * (gi / 3 + (hsh(id * 3 + gi) - 0.5) * 0.15), x0g = XL + hsh(id + gi * 11) * 1.2, x1g = x0g + 0.8 + hsh(id + gi * 13) * 1.2; c.beginPath(); c.moveTo(SX(x0g, zg), SY(zg)); c.lineTo(SX(Math.min(XR, x1g), zg), SY(zg)); c.stroke(); }
+              c.strokeStyle = 'rgba(255,228,180,.13)'; c.lineWidth = Math.max(0.5, 1.4 * pa); // soft light grain across the whole board
+              for (var gi = 1; gi <= 2; gi++) { var zg = za + (zb - za) * (gi / 3 + (hsh(id * 3 + gi) - 0.5) * 0.15); c.beginPath(); c.moveTo(SX(XL, zg), SY(zg)); c.lineTo(SX(XR, zg), SY(zg)); c.stroke(); }
+              if (hv > 0.55) { var kx = XL + 0.3 + hsh(id + 41) * 2.5, kz = (za + zb) / 2, kr = lw * 0.09 * pa; c.fillStyle = 'rgba(255,226,175,.2)'; c.beginPath(); c.ellipse(SX(kx, kz), SY(kz), kr, kr * 0.32, 0, 0, TAU); c.fill(); c.strokeStyle = 'rgba(140,80,30,.18)'; c.lineWidth = Math.max(0.5, pa); c.beginPath(); c.ellipse(SX(kx, kz), SY(kz), kr * 0.55, kr * 0.17, 0, 0, TAU); c.stroke(); } // a pale wood knot
               var xe = XL + 0.4 + hsh(id + 99) * 2.3; c.strokeStyle = 'rgba(70,32,8,.45)'; c.lineWidth = Math.max(0.6, 1.6 * pa); c.beginPath(); c.moveTo(SX(xe, za), ya); c.lineTo(SX(xe, zb), yb); c.stroke();
             }
             // the joint at the near edge of the plank (dark gap + a lit lip)
             if (za > -0.08) { c.strokeStyle = 'rgba(70,32,8,.6)'; c.lineWidth = Math.max(0.6, 2.4 * pa); c.beginPath(); c.moveTo(SX(XL, za), ya); c.lineTo(SX(XR, za), ya); c.stroke();
               if (pa > 0.25) { c.strokeStyle = 'rgba(255,226,170,.35)'; c.lineWidth = Math.max(0.5, 1.2 * pa); c.beginPath(); c.moveTo(SX(XL, za + 0.004), ya - 1.6 * pa); c.lineTo(SX(XR, za + 0.004), ya - 1.6 * pa); c.stroke(); } }
           }
-          var R = (ringN + n - i) * 7 + 3; // a few sunflower seeds on the planks
-          for (var s = 0; s < 2; s++) { R = (R * 9301 + 49297) % 233280; var sx = -1.4 + R / 233280 * 2.8; R = (R * 9301 + 49297) % 233280; var sz = z + R / 233280 * 0.14; if (sz < -0.08) continue; var sp = P(sz); c.fillStyle = s % 2 ? '#3B2410' : '#F4EBD0'; c.beginPath(); c.ellipse(SX(sx, sz), SY(sz), 3.6 * sp + 0.5, 1.6 * sp + 0.3, 0.3, 0, TAU); c.fill(); if (s % 2) { c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(SX(sx, sz) - 2 * sp, SY(sz) - 0.4 * sp, 4 * sp, 0.8 * sp + 0.2); } }
         }
         c.fillStyle = fogG; c.beginPath(); c.moveTo(SX(XL, 8), SY(8)); c.lineTo(SX(XR, 8), SY(8)); c.lineTo(SX(XR, -0.08), SY(-0.08)); c.lineTo(SX(XL, -0.08), SY(-0.08)); c.closePath(); c.fill(); // warm haze far away
         // side beams: a raised wooden edge with posts that rush past
