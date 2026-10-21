@@ -23,6 +23,36 @@
   <meta name="theme-color" content="#13113A">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script>/* 2026-10-21 (propriétaire) — APPLI iPhone installée (écran d'accueil) : « sol » du bas de l'écran.
+     La fenêtre de l'appli est souvent plus courte que l'écran (iPhone 430x932 : fenêtre 873, 59 px dessous) et iOS l'agrandit
+     parfois jusqu'au vrai bas. Le site est donc posé sur une hauteur FIXE tirée de l'écran (écran − bande du bas = 873),
+     ACHETER / VENDRE ne bougent jamais, et la bande du bas est le fond de la page, SOUS le site : une seule couleur calme,
+     celle du bas de l'écran affiché (--ios-floor-c, css/galaxy.css) — pas de dessin, pas de bande de couleurs, pas de raccord.
+     Mesures : screen / innerHeight (bande retenue par orientation dans localStorage), sinon env(safe-area-inset-top).
+     Posé ici dès la 1re image (écran de chargement compris) ; js/app.js relance __oroIosFloor (rotation, retour…). */
+  (function(){try{var ua=navigator.userAgent||'';if(!(/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)))return;
+  if(!(navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)))return;
+  var h=document.documentElement,mem={};h.classList.add('ios-app');
+  window.__oroIosFloor=function(){try{
+    var W=window.innerWidth||0,H=window.innerHeight||0,s=window.screen||{},land=W>H;
+    var sh=land?Math.min(s.width||0,s.height||0):Math.max(s.width||0,s.height||0);
+    if(H<200||!(sh>0)||W>Math.max(s.width||0,s.height||0)+2)return;if(sh<H)sh=H;
+    var key='oro_ios_under_'+(land?'l':'p')+sh,gap=sh-H,u=-1,ae=document.activeElement;
+    var typing=!!(ae&&(/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName||'')||ae.isContentEditable));
+    if(gap>=12&&gap<=120&&!typing){u=gap;mem[key]=gap;try{localStorage.setItem(key,String(gap))}catch(e){}}
+    else if(mem[key]!=null)u=mem[key];
+    else{try{var c=parseInt(localStorage.getItem(key),10);if(c>=12&&c<=120)u=c}catch(e){}}
+    if(u<0&&gap<2&&!land&&W<600){var p=document.createElement('div');p.style.cssText='position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none';
+      (document.body||h).appendChild(p);var t=p.offsetHeight||0;p.remove();if(t>=12&&t<=120)u=t}
+    if(u<0)u=gap>=0&&gap<=120?gap:0;
+    if(mem[key]==null&&u>0)mem[key]=u;
+    var site=sh-u,st=h.style;
+    st.setProperty('--ios-screen-h',sh+'px');st.setProperty('--ios-full-h',sh+'px');st.setProperty('--ios-under',u+'px');
+    st.setProperty('--ios-site-h',site+'px');st.setProperty('--ios-floor-top',site+'px');st.setProperty('--ios-floor-h',u+'px');
+    st.setProperty('background-color','var(--ios-floor-c,#101437)','important');
+    st.setProperty('background-image','none','important');
+  }catch(e){}};var f=window.__oroIosFloor;f();try{requestAnimationFrame(f)}catch(e){}
+  document.addEventListener('DOMContentLoaded',f);window.addEventListener('resize',f)}catch(e){}})();</script>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="description" content="Negocie índices sintéticos 24h por dia, jogue mais de 200 jogos de cassino ao vivo e aposte em esportes. Converse com seus amigos. Conta demo grátis.">
   <meta name="application-name" content="Orolado">
@@ -198,7 +228,7 @@
     <link rel="stylesheet" href="/css/app.css?v=2990">
     <link rel="stylesheet" href="/css/auth.css?v=2790">
     <link rel="stylesheet" href="/css/tv.css?v=2790">
-    <link rel="stylesheet" href="/css/galaxy.css?v=2980">
+    <link rel="stylesheet" href="/css/galaxy.css?v=2991">
     <link rel="stylesheet" href="/css/cg.css?v=2887">
     <link rel="stylesheet" href="/css/lobby.css?v=2842">
     <link rel="stylesheet" href="/css/sports2.css?v=2882">
@@ -2356,7 +2386,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="/js/receipt.js?v=2951"></script>
   <script src="/js/back.js?v=2912"></script>
   <script src="/js/push.js?v=2790"></script>
-  <script src="/js/app.js?v=2989"></script>
+  <script src="/js/app.js?v=2991"></script>
   <script src="/js/portal.js?v=2966"></script>
   <script src="/js/live-ui.js?v=2910"></script>
   <script src="/js/live.js?v=2969"></script>
