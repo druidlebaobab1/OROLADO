@@ -679,7 +679,68 @@
     });
   }
 
+  /* 2026-10-21 (propriétaire : « un seul reçu, le BLANC ; Télécharger enregistre vraiment ») — image du reçu de pari BLANC,
+     dessinée comme le reçu affiché dans Paris (bandeau violet OROLADO, état, montant, matchs, mise / cote / gain / date / n°). */
+  function drawBetLight(bt, x, icons) {
+    var W = 540, sel = bt.sel || [], st = bt.status || 'open';
+    var COL = { open: '#5B21B6', won: '#16A34A', lost: '#E11D48', void: '#64748B' }, col = COL[st] || '#5B21B6';
+    var n2 = function (v) { return (Number(v) || 0).toFixed(2); };
+    var top = 150, selH = 60, rowsTop = 360 + sel.length * selH + 34, H = rowsTop + 5 * 44 + 150;
+    var c = canvasFor(W, H), g = c.g;
+    g.fillStyle = '#EDE9FE'; g.fillRect(0, 0, W, H);
+    rr(g, 20, 20, W - 40, H - 40, 28); g.fillStyle = '#FFFFFF'; g.fill();
+    g.save(); rr(g, 20, 20, W - 40, 110, 28); g.clip();
+    var hb = g.createLinearGradient(20, 0, W - 20, 0); hb.addColorStop(0, '#3B1D8F'); hb.addColorStop(1, '#6D28D9');
+    g.fillStyle = hb; g.fillRect(20, 20, W - 40, 110); g.restore();
+    if (icons && icons.logo) { try { g.drawImage(icons.logo, 44, 42, 66, 66); } catch (e) { /* ignore */ } }
+    g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = '#FFFFFF'; g.font = '800 30px ' + FONT; g.fillText('OROLADO', 124, 66);
+    g.font = '500 17px ' + FONT; g.fillStyle = 'rgba(255,255,255,0.85)'; g.fillText('orolado.com', 124, 96);
+    var stTxt = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL }[st] || st;
+    var bigLab = st === 'won' ? x.rcPaid : st === 'lost' ? x.rcLostTxt : st === 'void' ? x.rcBack : x.potL;
+    var big = st === 'won' ? n2(bt.win) : st === 'lost' ? n2(0) : st === 'void' ? n2(bt.stake) : n2(bt.pot);
+    g.textAlign = 'center'; g.font = '800 20px ' + FONT;
+    var tw = g.measureText(String(stTxt).toUpperCase()).width + 40;
+    rr(g, (W - tw) / 2, top + 10, tw, 38, 19); g.fillStyle = '#F3E8FF'; g.fill();
+    g.fillStyle = col; g.fillText(String(stTxt || '').toUpperCase(), W / 2, top + 30);
+    g.fillStyle = '#64748B'; g.font = '500 19px ' + FONT; g.fillText(bigLab || '', W / 2, top + 80);
+    g.fillStyle = '#0F172A'; g.font = '800 56px ' + FONT; g.fillText(big + ' $', W / 2, top + 132);
+    g.strokeStyle = '#CBD5E1'; g.setLineDash([8, 8]); g.lineWidth = 2; g.beginPath(); g.moveTo(44, 315); g.lineTo(W - 44, 315); g.stroke(); g.setLineDash([]);
+    g.textAlign = 'left'; g.fillStyle = '#64748B'; g.font = '800 16px ' + FONT;
+    g.fillText(((sel.length > 1 ? x.rcCombo : x.rcSingle) || '').toUpperCase() + ' · ' + sel.length, 44, 340);
+    sel.forEach(function (sv, i) {
+      var y = 360 + i * selH;
+      g.fillStyle = '#64748B'; g.font = '500 16px ' + FONT; g.fillText(String(sv.t || '').slice(0, 42), 44, y + 14);
+      g.fillStyle = '#0F172A'; g.font = '800 20px ' + FONT; g.fillText(String(sv.l || '').slice(0, 30), 44, y + 40);
+      g.textAlign = 'right'; g.fillStyle = '#4C1D95'; g.font = '800 22px ' + FONT; g.fillText(Number(sv.odd).toFixed(2), W - 44, y + 28); g.textAlign = 'left';
+    });
+    rr(g, 40, rowsTop - 10, W - 80, 5 * 44 + 20, 18); g.fillStyle = '#F8FAFC'; g.fill();
+    var no = String(bt.id || '').slice(-10).toUpperCase();
+    var d = new Date((bt.at || 0) * 1000), pad = function (v) { return (v < 10 ? '0' : '') + v; };
+    var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], [x.rcNo, no]].forEach(function (r, i) {
+      var y = rowsTop + 14 + i * 44;
+      g.textAlign = 'left'; g.fillStyle = '#64748B'; g.font = '500 19px ' + FONT; g.fillText(r[0] || '', 64, y);
+      g.textAlign = 'right'; g.fillStyle = '#0F172A'; g.font = (i === 4 ? '700 18px ' + MONO : '800 19px ' + FONT); g.fillText(r[1], W - 64, y);
+    });
+    var by = rowsTop + 5 * 44 + 30;
+    g.fillStyle = '#0F172A';
+    for (var k = 0, bx = W / 2 - 110; k < 44 && bx < W / 2 + 110; k++) { var bw = 1 + ((no.charCodeAt(k % (no.length || 1)) || 7) + k) % 3; g.fillRect(bx, by, bw, 44); bx += bw + 2; }
+    g.textAlign = 'center'; g.fillStyle = '#94A3B8'; g.font = '600 16px ' + FONT; g.fillText('o r o l a d o . c o m', W / 2, by + 68);
+    return c.canvas || c.cv || c;
+  }
+
   D6.Receipt = {
+    // reçu de pari BLANC : image préparée à l'ouverture (le toucher « Télécharger » part tout de suite, iPhone compris)
+    prepBet: function (bt, x) {
+      if (!bt) return;
+      return Promise.all([fontsReady(), logo()]).then(function (res) {
+        var cv = drawBetLight(bt, x || {}, { logo: res[1] });
+        current.canvas = cv; current.name = 'orolado-pari-' + String(bt.id || Date.now()).slice(-8) + '.png'; current.blob = null;
+        try { cv.toBlob(function (bb) { if (current.canvas === cv) current.blob = bb; }, 'image/png'); } catch (e) { /* ignore */ }
+      });
+    },
+    saveBet: function () { return download(); },
+    dlLabel: function () { return L().dl; },
     trade: function (p, mode) {
       if (!p) return;
       var demo = mode !== 'real';
