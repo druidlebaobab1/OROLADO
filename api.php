@@ -2143,6 +2143,9 @@ if ($action === 'withdraw') {
   // v2359 : gagne trop souvent grâce au prix du clic (robot ?) → retrait signalé dans l'admin.
   if (function_exists('orolado_click_robot_reason') && orolado_click_robot_reason($me) !== '') $suspect = true; // 2026-10-20 : + mesure pondérée
   $amountFcfa = orolado_usd_to_fcfa($amount);
+  // 2026-10-21 (propriétaire) : équivalent en monnaie locale (pays du numéro de retrait, sinon du compte) + taux utilisé,
+  // gardés avec le retrait pour que l'admin paie le montant exact. Affichage seulement : le débit reste en dollars.
+  $locWd = function_exists('orolado_local_cur') ? (orolado_local_cur($countryCode) ?? orolado_local_cur((string) ($me['countryCode'] ?? ''))) : null;
   // Le code est « consommé » sous verrou juste avant le débit : deux demandes envoyées en même
   // temps avec le même code ne peuvent pas passer toutes les deux.
   $claimed = with_db_lock(function ($box) use ($uidOtp, $otpCode) {
@@ -2174,6 +2177,10 @@ if ($action === 'withdraw') {
     'amount' => $amount,
     'amountFcfa' => $amountFcfa,
     'currency' => 'USD',
+    'locCur' => $locWd ? $locWd['cur'] : '',
+    'locSym' => $locWd ? $locWd['sym'] : '',
+    'locRate' => $locWd ? (float) $locWd['rate'] : 0,
+    'locAmount' => $locWd ? (int) floor($amount * (float) $locWd['rate'] + 1e-6) : 0,
     'status' => 'pending',
     'suspect' => $suspect,
     'operator' => $operator,
@@ -2241,7 +2248,7 @@ if ($action === 'withdraw') {
       }
       $insTg = strtotime((string) ($uTg['createdAt'] ?? '')) ?: 0;
       $L = [];
-      $L[] = ($suspect ? '⚠️ ' : '💸 ') . 'RETRAIT À PAYER : ' . number_format($amount, 2, ',', ' ') . ' $ (≈ ' . number_format((float) ($amountFcfa ?: $amount * 580), 0, ',', ' ') . ' F)';
+      $L[] = ($suspect ? '⚠️ ' : '💸 ') . 'RETRAIT À PAYER : ' . number_format($amount, 2, ',', ' ') . ' $' . ($locWd ? ' = ' . orolado_local_txt($amount, $locWd['cur'], (float) $locWd['rate'], $locWd['sym']) : '');
       $L[] = '';
       $L[] = '👤 Nom : ' . ($nmTg !== '' ? $nmTg : '—');
       $L[] = '🆔 ID : ' . ($pidTg !== '' ? $pidTg : (string) $me['id']);

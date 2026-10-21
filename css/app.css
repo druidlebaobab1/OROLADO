@@ -13391,3 +13391,8 @@ html:root body #casinoModal .cs-try.cs-try2 .cs-try-live{filter:drop-shadow(0 0 
    voisines (#D9DBF5), écriture un peu moins grasse ; il garde un clignotement très doux, le petit carré rouge ne change pas */
 @keyframes oroFsSoft2{0%,100%{opacity:.78}50%{opacity:.55}}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#9EA2C8!important;-webkit-text-fill-color:#9EA2C8!important;font-weight:700!important;text-shadow:none!important;animation:oroFsSoft2 2s ease-in-out infinite!important}
+
+/* 2026-10-21 (propriétaire, choix 1) — équivalent en monnaie locale, en tout petit sous le montant du Compte réel
+   (js/localcur.js) : la case garde sa taille (la ligne prend la place laissée en bas), rien d'autre ne bouge. */
+html body .oro-loc{display:block;font-size:9px;line-height:10px;font-weight:600;letter-spacing:0;white-space:nowrap;color:rgba(190,245,215,.82);
+  -webkit-text-fill-color:rgba(190,245,215,.82);font-variant-numeric:tabular-nums;unicode-bidi:isolate;pointer-events:none;overflow:hidden;text-overflow:ellipsis;max-width:100%}
