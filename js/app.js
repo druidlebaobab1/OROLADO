@@ -5096,7 +5096,7 @@
     return D6.CONFIG.MIN_DEPOSIT || 5;
   }
   function minCardDeposit() {
-    return 3;
+    return 1; // v3020 (propriétaire) : 1 $ carte et Mobile Money (crypto : inchangé)
   }
 
   function withdrawMinFor(method) {
@@ -5185,7 +5185,7 @@
     });
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
-    if (hint) hint.textContent = 'Minimum $\u00a0\u00a03';
+    if (hint) hint.textContent = 'Minimum $\u00a0\u00a01';
     setDepositPayMethod('card');
     paintPayLocal();
     try { paintMomoMode(); } catch (eMm) { /* ignore */ }
@@ -6542,7 +6542,7 @@
   function paintMomoMode() { /* rien à repeindre */ }
   async function startFlwMomo() {
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < 3) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3')); return; }
+    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
     // v2628 : indicatif choisi par le joueur (+225 / +221 / +226), pas de détection automatique.
     var dialSel = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
     var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
@@ -6646,8 +6646,8 @@
     var u = user();
     if (!u || !requireAccount()) return;
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < 3) {
-      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3'));
+    if (amt < 1) {
+      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1'));
       return;
     }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
@@ -6737,8 +6737,8 @@
     var min = minCardDeposit();
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
-      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3'));
-      toast('Le dépôt minimum est de $3.', 'err');
+      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1'));
+      toast(t('m_minDeposit').replace('{n}', '1'), 'err');
       return;
     }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
