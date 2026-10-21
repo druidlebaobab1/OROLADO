@@ -1134,6 +1134,9 @@
      the two flags of every gate, avoid trees and rocks. The slope gets steeper and faster. */
   boot('skislalom', function (A) {
     var W, H, T, dpr, bg, sy, sx, tx, ang = 0, sp = 0, objs = [], dist = 0, nextG = 0, gateSide = 0, dead = 0, won = 0, aval = null, t = 0, drag = null, spray = [], trees = [], gates = 0, sz, treeS, rockS;
+    // v3053 (propriétaire) : vue de DOS, le skieur file vers le HAUT de l'écran et portes / sapins arrivent du haut.
+    // Simple miroir vertical de l'AFFICHAGE (fy) : la simulation (positions, vitesses, collisions, hasard) est identique.
+    function fy(y) { return T + H - y; }
     function addRow(live) {
       var lv = live ? A.lv() : 0.2, y = H + sz * 2, gw = W * Math.max(0.22, 0.42 - 0.18 * lv), gx = clamp(W / 2 + rnd(-W * 0.3, W * 0.3), gw / 2 + 10, W - gw / 2 - 10);
       gateSide ^= 1; objs.push({ k: 'gate', x: gx, w: gw, y: y, c: gateSide ? '#EF4444' : '#2563EB', done: 0 });
@@ -1151,7 +1154,7 @@
       reset: function (live) { objs = []; dist = 0; nextG = 0; for (var k = 0; k < 6; k++) objs.push({ k: Math.random() < 0.75 ? 'tree' : 'rock', x: Math.random() < 0.5 ? rnd(sz, W * 0.22) : rnd(W * 0.78, W - sz), y: T + (H - T) * (0.15 + k * 0.17) }); void live; dead = 0; won = 0; aval = null; sx = W / 2; tx = sx; ang = 0; spray = []; trees = []; gates = 0; drag = null; },
       step: function (dt, live) {
         t += dt; var lv = live ? A.lv() : 0.2, i, o;
-        if (aval) { aval.t += dt; aval.y += (H - T) * 0.9 * dt; if (!aval.hit && aval.y > sy) { aval.hit = 1; dead = 1; A.burst(sx, sy, 24, ['#FFFFFF', '#E2E8F0'], 220, 0.8, 4); A.shake(0.5); } return; }
+        if (aval) { aval.t += dt; aval.y += (H - T) * 0.9 * dt; if (!aval.hit && aval.y > sy) { aval.hit = 1; dead = 1; A.burst(sx, fy(sy), 24, ['#FFFFFF', '#E2E8F0'], 220, 0.8, 4); A.shake(0.5); } return; }
         if (dead || won) { sp *= Math.max(0, 1 - dt * 3); }
         else sp = (H - T) * (0.5 + 0.5 * lv) * (1 - Math.abs(ang) * 0.35);
         if (A.idle() && !dead) { var g = objs.filter(function (q) { return q.k === 'gate' && !q.done && q.y > sy; }).sort(function (a, b) { return a.y - b.y; })[0]; tx = g ? g.x : W / 2; }
@@ -1163,59 +1166,61 @@
           o = objs[i]; o.y -= sp * dt;
           if (o.y < T - sz * 4) { objs.splice(i, 1); continue; }
           if (dead) continue;
-          if (o.k === 'gate' && !o.done && o.y <= sy) { o.done = 1; if (Math.abs(sx - o.x) < o.w / 2 - sz * 0.15) { gates++; A.burst(o.x, sy, 6, [o.c, '#fff'], 100, 0.4, 2.4, 0); } else { if (A.live()) { if (A.fail(A.l.fail2)) { dead = 1; } } } }
+          if (o.k === 'gate' && !o.done && o.y <= sy) { o.done = 1; if (Math.abs(sx - o.x) < o.w / 2 - sz * 0.15) { gates++; A.burst(o.x, fy(sy), 6, [o.c, '#fff'], 100, 0.4, 2.4, 0); } else { if (A.live()) { if (A.fail(A.l.fail2)) { dead = 1; } } } }
           if (o.k === 'gate') { for (var q = -1; q <= 1; q += 2) { var fx = o.x + q * o.w / 2; if (Math.abs(sx - fx) < sz * 0.3 && Math.abs(sy - o.y) < sz * 0.4 && A.live()) { if (A.fail(A.l.fail)) dead = 1; } } }
-          else if (Math.abs(sx - o.x) < sz * (o.k === 'tree' ? 0.45 : 0.6) && o.y - sy < sz * 0.3 && o.y - sy > -sz * 0.5) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.burst(sx, sy, 16, ['#FFFFFF', '#E2E8F0', '#1D4ED8'], 180, 0.6, 3); A.shake(0.3); } } }
+          else if (Math.abs(sx - o.x) < sz * (o.k === 'tree' ? 0.45 : 0.6) && o.y - sy < sz * 0.3 && o.y - sy > -sz * 0.5) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.burst(sx, fy(sy), 16, ['#FFFFFF', '#E2E8F0', '#1D4ED8'], 180, 0.6, 3); A.shake(0.3); } } }
         }
       },
       draw: function (c) {
         A.bg(bg);
         var i, o, off = dist % 40;
-        c.strokeStyle = 'rgba(148,163,184,.25)'; c.lineWidth = 1; for (i = 0; i < 6; i++) { var yy = T + ((i * 90 - dist * 1) % (H - T + 90) + (H - T + 90)) % (H - T + 90); c.beginPath(); c.moveTo(0, yy); c.quadraticCurveTo(W / 2, yy - 20, W, yy); c.stroke(); } void off;
-        var list = objs.slice().sort(function (a, b) { return a.y - b.y; }), drawn = false;
-        // v3046 (propriétaire : le skieur « descendait » bizarrement) : skieur vu de face, qui file vers le bas de la pente (vers nous) :
-        // skis vers le bas, corps droit, tête casquée + masque en haut — dessin seulement, mêmes position, collisions et virages
+        c.strokeStyle = 'rgba(148,163,184,.25)'; c.lineWidth = 1; for (i = 0; i < 6; i++) { var yy = T + ((i * 90 - dist * 1) % (H - T + 90) + (H - T + 90)) % (H - T + 90); yy = fy(yy); c.beginPath(); c.moveTo(0, yy); c.quadraticCurveTo(W / 2, yy - 20, W, yy); c.stroke(); } void off;
+        var list = objs.slice().sort(function (a, b) { return b.y - a.y; }), drawn = false, SY = fy(sy);
+        // v3053 (propriétaire : « on ne comprend pas, il vient vers nous ») : skieur vu de DOS qui file vers le haut de l'écran :
+        // pointes des skis vers le haut, dos de la veste rouge, arrière du casque (aucune peau visible) — dessin seulement
         var skier = function () {
           var u = sz;
-          c.save(); c.translate(sx, sy); c.rotate(-ang * 0.55);
-          c.fillStyle = 'rgba(15,23,42,.13)'; c.beginPath(); c.ellipse(0, u * 0.62, u * 0.5, u * 0.14, 0, 0, TAU); c.fill();
+          c.save(); c.translate(sx, SY); c.rotate(ang * 0.55);
+          c.fillStyle = 'rgba(15,23,42,.13)'; c.beginPath(); c.ellipse(0, u * 0.5, u * 0.5, u * 0.14, 0, 0, TAU); c.fill();
           c.lineCap = 'round';
-          [-1, 1].forEach(function (q) { // skis (pointes vers le bas = vers la descente)
-            c.strokeStyle = '#1D4ED8'; c.lineWidth = u * 0.11; c.beginPath(); c.moveTo(q * u * 0.19, -u * 0.25); c.lineTo(q * u * 0.21, u * 0.7); c.stroke();
-            c.strokeStyle = '#93C5FD'; c.lineWidth = u * 0.05; c.beginPath(); c.moveTo(q * u * 0.21, u * 0.55); c.lineTo(q * u * 0.22, u * 0.74); c.stroke();
+          [-1, 1].forEach(function (q) { // skis (pointes vers le haut = vers où il va)
+            c.strokeStyle = '#1D4ED8'; c.lineWidth = u * 0.11; c.beginPath(); c.moveTo(q * u * 0.33, u * 0.6); c.lineTo(q * u * 0.31, -u * 0.78); c.stroke();
+            c.strokeStyle = '#93C5FD'; c.lineWidth = u * 0.05; c.beginPath(); c.moveTo(q * u * 0.31, -u * 0.6); c.lineTo(q * u * 0.305, -u * 0.82); c.stroke();
           });
-          c.strokeStyle = '#94A3B8'; c.lineWidth = u * 0.045; c.beginPath(); c.moveTo(-u * 0.46, -u * 0.22); c.lineTo(-u * 0.6, u * 0.42); c.moveTo(u * 0.46, -u * 0.22); c.lineTo(u * 0.6, u * 0.42); c.stroke(); // bâtons
-          c.strokeStyle = '#1E3A8A'; c.lineWidth = u * 0.17; c.beginPath(); c.moveTo(-u * 0.13, -u * 0.2); c.lineTo(-u * 0.19, u * 0.02); c.lineTo(-u * 0.19, u * 0.16); c.moveTo(u * 0.13, -u * 0.2); c.lineTo(u * 0.19, u * 0.02); c.lineTo(u * 0.19, u * 0.16); c.stroke(); // jambes fléchies
-          c.fillStyle = '#111827'; rr(c, -u * 0.28, u * 0.12, u * 0.18, u * 0.13, u * 0.04); c.fill(); rr(c, u * 0.1, u * 0.12, u * 0.18, u * 0.13, u * 0.04); c.fill(); // chaussures
-          c.fillStyle = lg(c, -u * 0.32, 0, u * 0.32, 0, ['#991B1B', '#EF4444', '#B91C1C']); rr(c, -u * 0.31, -u * 0.68, u * 0.62, u * 0.52, u * 0.18); c.fill(); // veste
+          c.strokeStyle = '#94A3B8'; c.lineWidth = u * 0.045; c.beginPath(); c.moveTo(-u * 0.44, -u * 0.3); c.lineTo(-u * 0.62, u * 0.5); c.moveTo(u * 0.44, -u * 0.3); c.lineTo(u * 0.62, u * 0.5); c.stroke(); // bâtons (traînent derrière)
+          circ(c, -u * 0.62, u * 0.5, u * 0.05, '#64748B'); circ(c, u * 0.62, u * 0.5, u * 0.05, '#64748B');
+          c.fillStyle = '#111827'; rr(c, -u * 0.42, u * 0.2, u * 0.19, u * 0.16, u * 0.04); c.fill(); rr(c, u * 0.23, u * 0.2, u * 0.19, u * 0.16, u * 0.04); c.fill(); // talons des chaussures
+          c.strokeStyle = '#1E3A8A'; c.lineWidth = u * 0.18; c.beginPath(); c.moveTo(-u * 0.14, -u * 0.18); c.lineTo(-u * 0.3, u * 0.04); c.lineTo(-u * 0.33, u * 0.2); c.moveTo(u * 0.14, -u * 0.18); c.lineTo(u * 0.3, u * 0.04); c.lineTo(u * 0.33, u * 0.2); c.stroke(); // jambes fléchies (de dos)
+          c.strokeStyle = '#DC2626'; c.lineWidth = u * 0.13; c.beginPath(); c.moveTo(-u * 0.26, -u * 0.6); c.lineTo(-u * 0.4, -u * 0.42); c.lineTo(-u * 0.44, -u * 0.3); c.moveTo(u * 0.26, -u * 0.6); c.lineTo(u * 0.4, -u * 0.42); c.lineTo(u * 0.44, -u * 0.3); c.stroke(); // bras
+          c.fillStyle = lg(c, -u * 0.32, 0, u * 0.32, 0, ['#991B1B', '#EF4444', '#B91C1C']); rr(c, -u * 0.31, -u * 0.7, u * 0.62, u * 0.56, u * 0.18); c.fill(); // dos de la veste
+          c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(-u * 0.015, -u * 0.62, u * 0.03, u * 0.42); // couture du dos
           c.fillStyle = '#F8FAFC'; c.fillRect(-u * 0.31, -u * 0.44, u * 0.62, u * 0.06);
-          c.strokeStyle = '#DC2626'; c.lineWidth = u * 0.13; c.beginPath(); c.moveTo(-u * 0.27, -u * 0.6); c.lineTo(-u * 0.42, -u * 0.38); c.lineTo(-u * 0.46, -u * 0.22); c.moveTo(u * 0.27, -u * 0.6); c.lineTo(u * 0.42, -u * 0.38); c.lineTo(u * 0.46, -u * 0.22); c.stroke(); // bras
-          circ(c, -u * 0.46, -u * 0.22, u * 0.07, '#1F2937'); circ(c, u * 0.46, -u * 0.22, u * 0.07, '#1F2937'); // gants
-          circ(c, 0, -u * 0.86, u * 0.21, rg(c, -u * 0.06, -u * 0.9, u * 0.24, ['#FFEDE2', '#F8D9C2', '#E6B996'])); // visage (peau claire)
-          c.fillStyle = lg(c, 0, -u * 1.1, 0, -u * 0.86, ['#FDE68A', '#F59E0B']); c.beginPath(); c.arc(0, -u * 0.88, u * 0.235, Math.PI, TAU); c.fill(); // casque
-          c.fillStyle = '#0F172A'; rr(c, -u * 0.2, -u * 0.9, u * 0.4, u * 0.11, u * 0.05); c.fill(); // masque
-          c.fillStyle = lg(c, -u * 0.17, 0, u * 0.17, 0, ['#FB923C', '#FDE047', '#38BDF8']); rr(c, -u * 0.17, -u * 0.885, u * 0.34, u * 0.08, u * 0.04); c.fill();
-          c.fillStyle = '#E11D48'; c.beginPath(); c.ellipse(0, -u * 0.72, u * 0.05, u * 0.025, 0, 0, TAU); c.fill(); // sourire
+          circ(c, -u * 0.44, -u * 0.3, u * 0.07, '#1F2937'); circ(c, u * 0.44, -u * 0.3, u * 0.07, '#1F2937'); // gants
+          c.fillStyle = '#7F1D1D'; rr(c, -u * 0.13, -u * 0.76, u * 0.26, u * 0.09, u * 0.04); c.fill(); // col
+          circ(c, 0, -u * 0.9, u * 0.23, rg(c, -u * 0.07, -u * 0.98, u * 0.26, ['#FDE68A', '#FBBF24', '#D97706'])); // arrière du casque
+          c.fillStyle = '#0F172A'; rr(c, -u * 0.235, -u * 0.92, u * 0.47, u * 0.07, u * 0.03); c.fill(); // sangle du masque (vue de dos)
+          c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(-u * 0.08, -u * 1.03, u * 0.08, u * 0.04, -0.4, 0, TAU); c.fill(); // reflet
           c.restore();
         };
         for (i = 0; i < list.length; i++) {
           o = list[i];
-          if (!drawn && o.y > sy) { if (!dead || !aval) skier(); drawn = true; }
-          if (o.k === 'tree') c.drawImage(treeS, o.x - sz * 1.2, o.y - sz * 3, sz * 2.4, sz * 3);
-          else if (o.k === 'rock') c.drawImage(rockS, o.x - sz * 0.9, o.y - sz * 1.2, sz * 1.8, sz * 1.2);
-          else { for (var q = -1; q <= 1; q += 2) { var fx = o.x + q * o.w / 2; c.strokeStyle = '#334155'; c.lineWidth = 2; c.beginPath(); c.moveTo(fx, o.y); c.lineTo(fx, o.y - sz * 1.3); c.stroke(); c.fillStyle = o.c; c.beginPath(); c.moveTo(fx, o.y - sz * 1.3); c.lineTo(fx - q * sz * 0.7, o.y - sz * 1.05); c.lineTo(fx, o.y - sz * 0.8); c.fill(); } if (!o.done) { c.strokeStyle = 'rgba(100,116,139,.25)'; c.setLineDash([4, 6]); c.beginPath(); c.moveTo(o.x - o.w / 2, o.y); c.lineTo(o.x + o.w / 2, o.y); c.stroke(); c.setLineDash([]); } }
+          if (!drawn && fy(o.y) > SY) { if (!dead || !aval) skier(); drawn = true; }
+          var oy = fy(o.y);
+          if (o.k === 'tree') c.drawImage(treeS, o.x - sz * 1.2, oy - sz * 3, sz * 2.4, sz * 3);
+          else if (o.k === 'rock') c.drawImage(rockS, o.x - sz * 0.9, oy - sz * 1.2, sz * 1.8, sz * 1.2);
+          else { for (var q = -1; q <= 1; q += 2) { var fx = o.x + q * o.w / 2; c.strokeStyle = '#334155'; c.lineWidth = 2; c.beginPath(); c.moveTo(fx, oy); c.lineTo(fx, oy - sz * 1.3); c.stroke(); c.fillStyle = o.c; c.beginPath(); c.moveTo(fx, oy - sz * 1.3); c.lineTo(fx - q * sz * 0.7, oy - sz * 1.05); c.lineTo(fx, oy - sz * 0.8); c.fill(); } if (!o.done) { c.strokeStyle = 'rgba(100,116,139,.25)'; c.setLineDash([4, 6]); c.beginPath(); c.moveTo(o.x - o.w / 2, oy); c.lineTo(o.x + o.w / 2, oy); c.stroke(); c.setLineDash([]); } }
         }
         if (!drawn && (!dead || !aval)) skier();
-        for (i = 0; i < spray.length; i++) { c.globalAlpha = 1 - spray[i].t / 0.5; circ(c, spray[i].x, spray[i].y, 2.5, '#FFFFFF'); } c.globalAlpha = 1;
-        if (aval) { c.fillStyle = lg(c, 0, aval.y - (H - T) * 0.4, 0, aval.y, ['rgba(255,255,255,0)', '#FFFFFF']); c.fillRect(0, T, W, aval.y - T); for (i = 0; i < 8; i++) circ(c, (i + 0.5) * W / 8, aval.y, W / 10, '#F8FAFC'); }
+        for (i = 0; i < spray.length; i++) { c.globalAlpha = 1 - spray[i].t / 0.5; circ(c, spray[i].x, fy(spray[i].y - sz), 2.5, '#FFFFFF'); } c.globalAlpha = 1;
+        if (aval) { var ay = fy(aval.y); c.fillStyle = lg(c, 0, ay + (H - T) * 0.4, 0, ay, ['rgba(255,255,255,0)', '#FFFFFF']); c.fillRect(0, ay, W, H - ay); for (i = 0; i < 8; i++) circ(c, (i + 0.5) * W / 8, ay, W / 10, '#F8FAFC'); }
       },
       down: function (x) { drag = { x: x, s: tx }; },
       move: function (x) { if (drag && !dead) tx = clamp(drag.s + (x - drag.x) * 1.4, 0, W); },
       up: function () { drag = null; },
       key: function (k) { if (k === 'left') tx = Math.max(0, tx - W * 0.15); else if (k === 'right') tx = Math.min(W, tx + W * 0.15); },
       boom: function () { aval = { t: 0, y: T - (H - T) * 0.3 }; drag = null; A.shake(0.2); },
-      win: function () { won = 0.001; drag = null; A.burst(sx, sy, 16, ['#FDE68A', '#EF4444', '#2563EB'], 150, 0.6, 3); },
+      win: function () { won = 0.001; drag = null; A.burst(sx, fy(sy), 16, ['#FDE68A', '#EF4444', '#2563EB'], 150, 0.6, 3); },
       dbg: function () { return { sx: sx, sy: sy, ang: ang, sz: sz, objs: objs.map(function (o) { return [o.k, o.x | 0, o.y | 0, o.w | 0, o.done ? 1 : 0]; }), dead: dead, gates: gates }; }
     };
-  }, 'drag', 0.62);
+  }, 'drag', 0.45); // v3053 : l'aide « glisse » au-dessus du skieur (il est maintenant en bas)
 })(window.D6 = window.D6 || {});
