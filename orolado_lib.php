@@ -5027,8 +5027,11 @@ function brevo_send_smtp(array $payload): array {
   if ($code >= 200 && $code < 300) {
     return ['ok' => true, 'messageId' => is_array($decoded) ? ($decoded['messageId'] ?? null) : null];
   }
-  $reason = is_array($decoded) ? (string) ($decoded['message'] ?? $decoded['error'] ?? 'Erreur Brevo') : 'Erreur Brevo';
-  return ['ok' => false, 'reason' => $reason, 'http' => $code];
+  $reason = is_array($decoded) ? trim((string) ($decoded['message'] ?? $decoded['error'] ?? '')) : '';
+  // 2026-10-21 (propriétaire : « Échec » sans explication) : toujours une raison lisible + le code HTTP de Brevo
+  if ($reason === '') $reason = 'Erreur Brevo' . ($raw !== '' ? ' : ' . mb_substr(preg_replace('/\s+/', ' ', (string) $raw), 0, 160) : '');
+  if (is_array($decoded) && !empty($decoded['code'])) $reason .= ' [' . $decoded['code'] . ']';
+  return ['ok' => false, 'reason' => $reason . ' (HTTP ' . $code . ')', 'http' => $code];
 }
 
 function brevo_send_welcome(string $email, string $name): array {

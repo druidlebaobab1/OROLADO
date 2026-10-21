@@ -3552,7 +3552,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       do {
         $m('mlSt').textContent = 'Envoi en cours… ' + (already > 0 ? already + ' déjà reçu(s) avant, ' : '') + sent + ' e-mail(s) parti(s)' + (j && j.total ? ' sur ' + j.total : '') + (j && j.left ? ' · environ ' + Math.max(1, Math.round(j.left * 7.5 / 60)) + ' min restante(s)' : '') + '. Gardez la page ouverte.';
         j = await ajax({action:'mail_send', target, group, subject, message, button, id, confirm: confirmTxt, testTo});
-        if (!j.ok) { $m('mlSt').textContent = j.reason || 'Échec'; break; }
+        if (!j.ok) { $m('mlSt').textContent = 'Échec : ' + (j.reason || 'pas de réponse du serveur d\'e-mails'); break; }
         if (already < 0) already = j.already || 0;
         id = j.id; sent += j.sent || 0; fail += j.fail || 0; if (j.err) err = j.err;
       } while (j.more);
