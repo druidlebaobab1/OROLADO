@@ -11,33 +11,65 @@
 (function () {
   'use strict';
   var D6 = window.D6 = window.D6 || {};
-  // monnaie → [symbole, devant ?, taux pour 1 $]
+  // monnaie → [symbole, devant ?, taux pour 1 $]. Afrique Mobile Money (XOF/XAF/NGN/GHS/KES/ZAR) = taux des paiements ;
+  // les autres = taux arrondis, AFFICHAGE SEULEMENT (2026-10-21, propriétaire : Amérique latine, pays arabes, pays des 12 langues)
   var CUR = {
     XOF: ['FCFA', false, 600], XAF: ['FCFA', false, 600], NGN: ['₦', true, 1500], GHS: ['GH₵', true, 12], KES: ['KSh', true, 130],
     ZAR: ['R', true, 18], UGX: ['USh', true, 3700], TZS: ['TSh', true, 2600], RWF: ['RF', true, 1400], CDF: ['FC', false, 2800],
     GNF: ['GNF', false, 8600], MAD: ['DH', false, 9.5], DZD: ['DA', false, 130], TND: ['DT', false, 3], EGP: ['E£', true, 48],
-    ZMW: ['K', true, 25], MWK: ['MK', true, 1700], MZN: ['MT', false, 63]
+    ZMW: ['K', true, 25], MWK: ['MK', true, 1700], MZN: ['MT', false, 63],
+    MXN: ['MX$', true, 18.5], COP: ['COL$', true, 4000], BRL: ['R$', true, 5.5], ARS: ['AR$', true, 1300], PEN: ['S/', true, 3.7],
+    CLP: ['CLP$', true, 930], BOB: ['Bs', true, 6.9], PYG: ['₲', true, 7300], UYU: ['$U', true, 40], GTQ: ['Q', true, 7.7],
+    HNL: ['L', true, 26], CRC: ['₡', true, 510], DOP: ['RD$', true, 60],
+    SAR: ['SAR', false, 3.75], AED: ['AED', false, 3.67], QAR: ['QAR', false, 3.64], KWD: ['KWD', false, 0.31], JOD: ['JOD', false, 0.71],
+    IQD: ['IQD', false, 1310], OMR: ['OMR', false, 0.385], BHD: ['BHD', false, 0.376],
+    INR: ['₹', true, 85], IDR: ['Rp', true, 16300], TRY: ['₺', true, 41], VND: ['₫', false, 26000], RUB: ['₽', false, 80], CNY: ['¥', true, 7.2],
+    EUR: ['€', false, 0.88]
   };
   var DIAL = {
     '225': 'XOF', '221': 'XOF', '223': 'XOF', '226': 'XOF', '229': 'XOF', '228': 'XOF', '227': 'XOF', '245': 'XOF',
     '237': 'XAF', '241': 'XAF', '242': 'XAF', '235': 'XAF', '236': 'XAF', '240': 'XAF',
     '234': 'NGN', '233': 'GHS', '254': 'KES', '27': 'ZAR', '256': 'UGX', '255': 'TZS', '250': 'RWF', '243': 'CDF', '224': 'GNF',
-    '212': 'MAD', '213': 'DZD', '216': 'TND', '20': 'EGP', '260': 'ZMW', '265': 'MWK', '258': 'MZN'
+    '212': 'MAD', '213': 'DZD', '216': 'TND', '20': 'EGP', '260': 'ZMW', '265': 'MWK', '258': 'MZN',
+    '52': 'MXN', '57': 'COP', '55': 'BRL', '54': 'ARS', '51': 'PEN', '56': 'CLP', '591': 'BOB', '595': 'PYG', '598': 'UYU',
+    '502': 'GTQ', '504': 'HNL', '506': 'CRC', '1809': 'DOP', '966': 'SAR', '971': 'AED', '974': 'QAR', '965': 'KWD', '962': 'JOD',
+    '964': 'IQD', '968': 'OMR', '973': 'BHD', '91': 'INR', '62': 'IDR', '90': 'TRY', '84': 'VND', '7': 'RUB', '86': 'CNY',
+    '33': 'EUR', '32': 'EUR', '49': 'EUR', '34': 'EUR', '351': 'EUR', '39': 'EUR', '352': 'EUR', '43': 'EUR', '31': 'EUR', '353': 'EUR',
+    '358': 'EUR', '30': 'EUR'
   };
-  var TZ = {
-    Abidjan: 'XOF', Dakar: 'XOF', Bamako: 'XOF', Ouagadougou: 'XOF', 'Porto-Novo': 'XOF', Lome: 'XOF', Niamey: 'XOF', Bissau: 'XOF',
-    Douala: 'XAF', Libreville: 'XAF', Brazzaville: 'XAF', Ndjamena: 'XAF', Bangui: 'XAF', Malabo: 'XAF',
-    Lagos: 'NGN', Accra: 'GHS', Nairobi: 'KES', Johannesburg: 'ZAR', Kampala: 'UGX', Dar_es_Salaam: 'TZS', Kigali: 'RWF',
-    Kinshasa: 'CDF', Lubumbashi: 'CDF', Conakry: 'GNF', Casablanca: 'MAD', Algiers: 'DZD', Tunis: 'TND', Cairo: 'EGP',
-    Lusaka: 'ZMW', Blantyre: 'MWK', Maputo: 'MZN'
-  };
+  // fuseau horaire du téléphone (Zone/Ville) → monnaie : un VPN change la connexion, pas le fuseau
+  var TZ = {};
+  [['XOF', 'Africa/Abidjan Africa/Dakar Africa/Bamako Africa/Ouagadougou Africa/Porto-Novo Africa/Lome Africa/Niamey Africa/Bissau'],
+   ['XAF', 'Africa/Douala Africa/Libreville Africa/Brazzaville Africa/Ndjamena Africa/Bangui Africa/Malabo'],
+   ['NGN', 'Africa/Lagos'], ['GHS', 'Africa/Accra'], ['KES', 'Africa/Nairobi'], ['ZAR', 'Africa/Johannesburg'], ['UGX', 'Africa/Kampala'],
+   ['TZS', 'Africa/Dar_es_Salaam'], ['RWF', 'Africa/Kigali'], ['CDF', 'Africa/Kinshasa Africa/Lubumbashi'], ['GNF', 'Africa/Conakry'],
+   ['MAD', 'Africa/Casablanca'], ['DZD', 'Africa/Algiers'], ['TND', 'Africa/Tunis'], ['EGP', 'Africa/Cairo'], ['ZMW', 'Africa/Lusaka'],
+   ['MWK', 'Africa/Blantyre'], ['MZN', 'Africa/Maputo'],
+   ['MXN', 'America/Mexico_City America/Monterrey America/Cancun America/Tijuana America/Merida America/Chihuahua America/Hermosillo America/Mazatlan America/Matamoros America/Bahia_Banderas'],
+   ['COP', 'America/Bogota'],
+   ['BRL', 'America/Sao_Paulo America/Fortaleza America/Recife America/Manaus America/Bahia America/Belem America/Cuiaba America/Maceio America/Campo_Grande America/Porto_Velho America/Araguaina'],
+   ['ARS', 'America/Argentina/Buenos_Aires America/Buenos_Aires America/Argentina/Cordoba America/Cordoba America/Argentina/Mendoza'],
+   ['PEN', 'America/Lima'], ['CLP', 'America/Santiago'], ['BOB', 'America/La_Paz'], ['PYG', 'America/Asuncion'], ['UYU', 'America/Montevideo'],
+   ['GTQ', 'America/Guatemala'], ['HNL', 'America/Tegucigalpa'], ['CRC', 'America/Costa_Rica'], ['DOP', 'America/Santo_Domingo'],
+   ['SAR', 'Asia/Riyadh'], ['AED', 'Asia/Dubai'], ['QAR', 'Asia/Qatar'], ['KWD', 'Asia/Kuwait'], ['JOD', 'Asia/Amman'], ['IQD', 'Asia/Baghdad'],
+   ['OMR', 'Asia/Muscat'], ['BHD', 'Asia/Bahrain'], ['INR', 'Asia/Kolkata Asia/Calcutta'], ['IDR', 'Asia/Jakarta Asia/Makassar Asia/Jayapura Asia/Pontianak'],
+   ['TRY', 'Europe/Istanbul Asia/Istanbul'], ['VND', 'Asia/Ho_Chi_Minh Asia/Saigon'],
+   ['RUB', 'Europe/Moscow Europe/Samara Asia/Yekaterinburg Asia/Novosibirsk Europe/Volgograd Asia/Vladivostok'],
+   ['CNY', 'Asia/Shanghai Asia/Chongqing Asia/Urumqi Asia/Harbin'],
+   ['EUR', 'Europe/Paris Europe/Brussels Europe/Berlin Europe/Madrid Europe/Lisbon Europe/Rome Europe/Luxembourg Europe/Vienna Europe/Amsterdam Europe/Dublin Europe/Helsinki Europe/Athens Europe/Bratislava Europe/Ljubljana Europe/Tallinn Europe/Riga Europe/Vilnius Europe/Malta Europe/Zagreb Atlantic/Canary']
+  ].forEach(function (r) { r[1].split(' ').forEach(function (z) { TZ[z] = r[0]; }); });
   // pays (ISO) → monnaie, pour le pays de la CONNEXION (geo.php)
   var CC = {
     CI: 'XOF', SN: 'XOF', ML: 'XOF', BF: 'XOF', BJ: 'XOF', TG: 'XOF', NE: 'XOF', GW: 'XOF',
     CM: 'XAF', GA: 'XAF', CG: 'XAF', TD: 'XAF', CF: 'XAF', GQ: 'XAF',
     NG: 'NGN', GH: 'GHS', KE: 'KES', ZA: 'ZAR', UG: 'UGX', TZ: 'TZS', RW: 'RWF', CD: 'CDF', GN: 'GNF', MA: 'MAD', DZ: 'DZD',
-    TN: 'TND', EG: 'EGP', ZM: 'ZMW', MW: 'MWK', MZ: 'MZN'
+    TN: 'TND', EG: 'EGP', ZM: 'ZMW', MW: 'MWK', MZ: 'MZN',
+    MX: 'MXN', CO: 'COP', BR: 'BRL', AR: 'ARS', PE: 'PEN', CL: 'CLP', BO: 'BOB', PY: 'PYG', UY: 'UYU', GT: 'GTQ', HN: 'HNL', CR: 'CRC', DO: 'DOP',
+    SA: 'SAR', AE: 'AED', QA: 'QAR', KW: 'KWD', JO: 'JOD', IQ: 'IQD', OM: 'OMR', BH: 'BHD', IN: 'INR', ID: 'IDR', TR: 'TRY', VN: 'VND',
+    RU: 'RUB', CN: 'CNY', FR: 'EUR', BE: 'EUR', DE: 'EUR', ES: 'EUR', PT: 'EUR', IT: 'EUR', LU: 'EUR', AT: 'EUR', NL: 'EUR', IE: 'EUR',
+    FI: 'EUR', GR: 'EUR', SK: 'EUR', SI: 'EUR', EE: 'EUR', LV: 'EUR', LT: 'EUR', MT: 'EUR', CY: 'EUR', HR: 'EUR'
   };
+  var AFR = { XOF: 1, XAF: 1, NGN: 1, GHS: 1, KES: 1, ZAR: 1, UGX: 1, TZS: 1, RWF: 1, CDF: 1, GNF: 1, MAD: 1, DZD: 1, TND: 1, EGP: 1, ZMW: 1, MWK: 1, MZN: 1 };
   // lien de test du propriétaire (compte admin seulement) : orolado.com/?simcur=XOF (NGN, GHS, KES, ZAR…) ; ?simcur=off = arrêt
   try {
     var qm = /[?&]simcur=([A-Za-z]{2,4})/.exec(location.search);
@@ -61,35 +93,36 @@
       }).catch(function () { /* hors ligne : on réessaiera au prochain chargement */ });
     } catch (eF) { /* ignore */ }
   }
+  // Sans numéro de téléphone : le FUSEAU HORAIRE du téléphone décide (un VPN change la connexion, pas le fuseau) ;
+  // la connexion sert seulement à préciser en Afrique (plusieurs pays partagent un fuseau) ou quand le fuseau est inconnu.
+  function tzCode() { try { return String(Intl.DateTimeFormat().resolvedOptions().timeZone || ''); } catch (e) { return ''; } }
+  function byPlace() {
+    askGeo();
+    var tz = tzCode(), t = TZ[tz] || '', g = geoCC ? (CC[geoCC] || '') : '';
+    if (t && g) return AFR[t] && AFR[g] ? g : t;
+    if (t) return t;
+    if (tz && tz.indexOf('/') > 0 && !/^(Etc|UTC)/.test(tz)) return ''; // fuseau d'un pays hors liste → dollars, même si la connexion (VPN) dit autre chose
+    return g;
+  }
   function code() {
     var u = null;
     try { u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null; } catch (e) { u = null; }
-    // visiteur (pas de compte) : même détection par la connexion puis le fuseau (propriétaire : « les visiteurs aussi »)
-    if (!u || u.guest) {
-      askGeo();
-      if (geoCC) return CC[geoCC] || '';
-      try { var tz0 = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').split('/'); if (tz0[0] === 'Africa' && TZ[tz0[1]]) return TZ[tz0[1]]; } catch (eT0) { /* ignore */ }
-      return '';
-    }
-    // compte admin : JAMAIS automatique (propriétaire) ; seulement le lien de test ?simcur=…
-    if (u.role === 'admin') { try { var sim = localStorage.getItem('oro_sim_cur') || ''; return CUR[sim] ? sim : ''; } catch (eS) { return ''; } }
-    // 1) numéro de téléphone du compte (seulement s'il y a vraiment un numéro : l'indicatif seul peut être celui par défaut)
+    var sim = ''; try { sim = localStorage.getItem('oro_sim_cur') || ''; } catch (eS) { sim = ''; }
+    // lien de test ?simcur=… (affichage seulement) : visiteur ou admin
+    if (sim && CUR[sim] && (!u || u.guest || u.role === 'admin')) return sim;
+    if (!u || u.guest) return byPlace();
+    // compte admin : JAMAIS automatique (propriétaire)
+    if (u.role === 'admin') return '';
+    // 1) numéro de téléphone donné à l'inscription (s'il y a vraiment un numéro)
     var dial = String(u.countryCode || '').replace(/\D/g, ''), ph = String(u.phone || '').replace(/\D/g, '');
     if (ph.length >= 6 && dial) return DIAL[dial] || '';
-    // 2) pays de la connexion
-    askGeo();
-    if (geoCC) return CC[geoCC] || '';
-    // 3) fuseau horaire du téléphone (Afrique)
-    try {
-      var tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').split('/');
-      if (tz[0] === 'Africa' && TZ[tz[1]]) return TZ[tz[1]];
-    } catch (eT) { /* ignore */ }
-    return '';
+    // 2) fuseau horaire puis connexion
+    return byPlace();
   }
   function fmt(usd, c) {
     var d = CUR[c]; if (!d) return '';
-    var v = Math.floor(Math.max(0, usd) * d[2] + 1e-6);
-    var s = String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    var dec = d[2] < 20 && usd * d[2] < 1000 ? 2 : 0, v = Math.floor(Math.max(0, usd) * d[2] * Math.pow(10, dec) + 1e-6) / Math.pow(10, dec);
+    var parts = v.toFixed(dec).split('.'), s = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (dec ? '.' + parts[1] : '');
     return '≈ ' + (d[1] ? d[0] + ' ' + s : s + ' ' + d[0]);
   }
   function usdOf(el) {
