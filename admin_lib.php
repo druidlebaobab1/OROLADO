@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/mail_queue_lib.php';
+
 /**
  * Couche données du dashboard admin.php — lecture Supabase (service_role)
  * + fusion du JSON local. Aucun DROP / TRUNCATE.
@@ -777,33 +779,7 @@ function admin_mail_groups(): array {
   return $out;
 }
 
-/** v2668 — prénom du joueur pour « {prenom} » : premier mot du nom, seulement s'il ressemble à un vrai prénom. */
-function admin_mail_first_name(string $em): string {
-  $n = trim((string) ($GLOBALS['OROLADO_MAIL_NAMES'][strtolower(trim($em))] ?? ''));
-  $w = (string) (preg_split('/[\s._\-]+/u', $n)[0] ?? '');
-  if (!preg_match('/^\p{L}{2,20}$/u', $w)) return '';
-  return mb_strtoupper(mb_substr($w, 0, 1)) . mb_strtolower(mb_substr($w, 1));
-}
-
-/**
- * v2668 — e-mail SIMPLE, comme écrit par une personne (propriétaire : arriver dans « Principale », pas « Promotions ») :
- * texte seul (pas de design, pas de bouton, pas de pixel ni de lien suivi), prénom du joueur à la place de {prenom}.
- */
-function admin_mail_plain(string $to, string $subject, string $msg): array {
-  $first = admin_mail_first_name($to);
-  // {prenom}, (prenom) ou [prenom], avec ou sans accent : tous remplacés.
-  $fill = static fn(string $s): string => (string) preg_replace('/(\s*)[\{\(\[]\s*pr[eé]nom\s*[\}\)\]]/iu', $first !== '' ? '$1' . $first : '', $s);
-  $text = str_replace("\r\n", "\n", $fill($msg)) . "\n";
-  $subject = $fill($subject);
-  if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) return ($GLOBALS['OROLADO_FAKE_MAIL'])($to, $subject, $text);
-  return brevo_send_smtp([
-    'sender' => ['email' => brevo_env('BREVO_SENDER_EMAIL', 'contact@mail.orolado.com'), 'name' => 'OROLADO'],
-    'to' => [['email' => $to, 'name' => $first !== '' ? $first : $to]],
-    'subject' => $subject,
-    'textContent' => $text,
-    'replyTo' => ['email' => 'support@orolado.com', 'name' => 'OROLADO'],
-  ]);
-}
+// v3000 — admin_mail_first_name() et admin_mail_plain() sont dans mail_queue_lib.php (partagées avec l'envoi en arrière-plan).
 
 /** v2664 — un e-mail de la campagne : sobre (peu de mots « publicitaires »), gros bouton vers le site. */
 function admin_mail_one(string $to, string $subject, string $msg, string $btn, string $id, string $group): array {

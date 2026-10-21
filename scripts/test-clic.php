@@ -13,7 +13,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 
 $tmp = sys_get_temp_dir() . '/orolado_clic_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
-foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'admin_lib.php', 'history_lib.php', 'wipe_lib.php'] as $f) {
+foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'admin_lib.php', 'mail_queue_lib.php', 'history_lib.php', 'wipe_lib.php'] as $f) {
   if (is_file(__DIR__ . '/../' . $f)) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 }
 require $tmp . '/orolado_lib.php';

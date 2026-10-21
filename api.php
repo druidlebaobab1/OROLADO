@@ -34,6 +34,14 @@ if (is_file(__DIR__ . '/casino_lib.php')) require_once __DIR__ . '/casino_lib.ph
 if (is_file(__DIR__ . '/sports_lib.php')) require_once __DIR__ . '/sports_lib.php';
 orolado_load_env();
 
+// v3000 — « E-mail à tous » en arrière-plan : APRÈS la réponse au joueur (fastcgi_finish_request), au plus 1 e-mail
+// toutes les 6 à 9 s. Sans envoi en cours : un seul is_file(). Sans fastcgi_finish_request : rien (jamais ralentir un joueur).
+register_shutdown_function(static function (): void {
+  if (!is_file(orolado_data_dir() . '/mail_job.json') || !is_file(__DIR__ . '/mail_queue_lib.php')) return;
+  require_once __DIR__ . '/mail_queue_lib.php';
+  mail_queue_after_response(true);
+});
+
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
 register_shutdown_function(static function (): void {
   $e = error_get_last();

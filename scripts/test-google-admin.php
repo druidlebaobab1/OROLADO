@@ -8,7 +8,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
  */
 $tmp = sys_get_temp_dir() . '/orolado_ggl_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
-foreach (['admin_lib.php', 'wipe_lib.php', 'aff_lib.php', 'api.php', 'orolado_lib.php', 'trade_lib.php', 'history_lib.php', 'account_lib.php', 'feed_lib.php', 'fair_table.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
+foreach (['admin_lib.php', 'mail_queue_lib.php', 'wipe_lib.php', 'aff_lib.php', 'api.php', 'orolado_lib.php', 'trade_lib.php', 'history_lib.php', 'account_lib.php', 'feed_lib.php', 'fair_table.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 putenv('SUPABASE_URL=https://fake.supabase.test');
 putenv('SUPABASE_SERVICE_ROLE_KEY=fake-service-key');
 putenv('SUPABASE_ANON_KEY=fake-anon-key');
