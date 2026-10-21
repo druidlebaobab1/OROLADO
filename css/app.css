@@ -13340,3 +13340,12 @@ html body .oro-welcome .ow-sp i{position:absolute;left:50%;top:44%;width:6px;hei
 @media (max-height:600px){html body .oro-welcome .ow-card{padding-top:64px;margin-top:40px}html body .oro-welcome .ow-logo{width:92px;height:92px;margin-left:-46px;top:-46px}html body .oro-welcome .ow-logo img{width:66px;height:66px}html body .oro-welcome .ow-s{display:none}}
 html.oro-lite body .oro-welcome .ow-rays,html.oro-lite body .oro-welcome .ow-sp{animation:none;display:none}
 html body .oro-welcome .ow-demo b{direction:ltr;unicode-bidi:isolate}
+/* 2026-10-21 (propriétaire) : bienvenue — la case Démo dessinée comme la vraie carte DÉMO du site (bleue), avec « pour
+   t'entraîner au trading » ; le logo de l'entreprise remplacé par un cœur de bienvenue */
+html body .oro-welcome .ow-demo{display:flex;flex-direction:column;align-items:center;gap:2px;margin:0 auto 12px;padding:9px 12px 11px;border-radius:14px;border:0;
+  background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22));box-shadow:inset 0 -3px 0 #7AA7FF,0 0 14px rgba(92,155,255,.35)}
+html body .oro-welcome .ow-demo .ow-d1{font-size:10px;font-weight:800;letter-spacing:.12em;color:#A9C4FF;text-transform:uppercase}
+html body .oro-welcome .ow-demo b{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.1}
+html body .oro-welcome .ow-demo .ow-d2{font-size:11.5px;font-weight:600;color:#DCE7FF;text-align:center;line-height:1.3}
+html body .oro-welcome .ow-logo{background:radial-gradient(circle at 35% 30%,#3A1F5E,#140A2A)}
+html body .oro-welcome .ow-logo svg{width:76%;height:76%;filter:drop-shadow(0 4px 10px rgba(255,95,162,.55))}
