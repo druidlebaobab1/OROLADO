@@ -13517,8 +13517,8 @@ html body .oro-inst-btn .oi-go svg.oi-ar{width:22px;height:22px;stroke:#4ADE80;s
 html body .oro-inst-btn .oi-logo{overflow:visible}
 html body .oro-inst-btn .oi-logo i{right:-7px;bottom:-7px}
 html body .oro-inst-ask .oia-ico > i{right:-4px;bottom:-4px}
-/* 2026-10-21 (propriétaire) : titre du jeu (nom + logo) remonté de 1 px */
-html body #casinoModal .cs-game > .cs-gname{position:relative;top:-1px}
+/* 2026-10-21 (propriétaire) : mot « Jeux » du menu du haut remonté de 2 px */
+html:root body #btnGames#btnGames #gamesLbl#gamesLbl{position:relative!important;top:-2px!important}
 /* ================= v3047 (propriétaire) : NOTIFICATIONS (info / réussi / erreur) = vraies cartes pleines aux couleurs OROLADO,
    petite icône ronde, coins nets (pas une pastille), 1 ligne ou 2 lignes équilibrées (js/app.js : fitToast).
    Ne touche PAS : .micro, .toast-bal (solde), .tie (égalité), ni la pastille de gain du jeu (.cs-toast). ================= */
