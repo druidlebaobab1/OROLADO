@@ -2999,6 +2999,10 @@ function filters() {
 let listCache = {};
 let listReq = 0;
 function bustList() { listCache = {}; }
+// 2026-10-21 (propriétaire) : équivalent en monnaie locale du retrait (affichage seulement ; taux enregistré au retrait, sinon FCFA 600)
+function wdLoc(d) { var a = +d.amount || 0, r = +d.locRate || 0, sym = d.locSym || '';
+  if (!(r > 0) && /^(225|221|223|226|229|228|227|245|237|241|242|235|236|240)$/.test(String(d.countryCode || '').replace(/\D/g, ''))) { r = 600; sym = 'FCFA'; }
+  return r > 0 ? ' · ' + Math.floor(a * r + 1e-6).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g, ' ') + ' ' + sym + ' (taux ' + r + ')' : ''; }
 function fdate(s) { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? String(s) : d.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}); }
 function money(n) { return '$ ' + (Number(n)||0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
@@ -3256,7 +3260,7 @@ async function openUser(uid) {
     tbl('Dépôts (argent payé)', (j.deposits||[]).filter(d => d.paid !== false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Dépôts NON payés (page ouverte, jamais payée)', (j.deposits||[]).filter(d => d.paid === false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Bonus reçus', j.bonuses || [], ['Réf','Montant','Motif','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.motif && d.motif !== 'Bonus' ? d.motif : '—')+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
-    tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
+    tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+esc(wdLoc(d))+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
     gmPlayerBox()+
     tbl('Trades (argent réel)', j.games, ['Actif','Mise','Net','Résultat','Date'], d => '<tr><td>'+esc(d.game)+'</td><td>'+esc(d.stake)+'</td><td>'+esc(d.net)+'</td><td>'+(d.won===true?'gagné':d.won===false?'perdu':esc(d.mode))+'</td><td>'+esc(fdate(d.at))+'</td></tr>');
   document.getElementById('userModal').classList.add('on');
