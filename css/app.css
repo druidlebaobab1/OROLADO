@@ -13487,3 +13487,14 @@ html body #termsModal #termsTitle{font-size:12.5px!important;margin-right:46px!i
 html body #casinoModal .sp2-st button span.fit,html body .sp2-st button span.fit{line-height:1.3!important;padding-bottom:1px;overflow:visible}
 /* iPhone plein écran : « ≈ $ 1.90 » (blanc) un tout petit peu plus haut ; l'équivalent ne bouge pas */
 html:not(.is-android).fs-trade:root body .stake-field.has-fsl #fsStakeWin{transform:translateY(-9.5px)!important}
+/* 2026-10-21 : carte « Installer OROLADO » après l'inscription (même famille que la bienvenue) */
+html body .oro-inst-ask .oia-ico{display:grid;place-items:center}
+html body .oro-inst-ask .oia-ico > img{width:78%;height:78%}
+html body .oro-inst-ask .oia-ico > i{position:absolute;right:2px;bottom:2px;width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,#4ADE80,#16A34A);display:grid;place-items:center;box-shadow:0 0 0 3px #140A2A,0 6px 14px -4px rgba(34,197,94,.8);animation:oiaBob 1.6s ease-in-out infinite}
+html body .oro-inst-ask svg{fill:none;stroke-linecap:round;stroke-linejoin:round}
+html body .oro-inst-ask .oia-ico > i svg{width:19px;height:19px;stroke:#fff;stroke-width:2.6}
+html body .oro-inst-ask .oia-go{display:flex;align-items:center;justify-content:center;gap:9px;line-height:1}
+html body .oro-inst-ask .oia-go svg{width:20px;height:20px;stroke:#2A1800;stroke-width:2.6;flex:none}
+html body .oro-inst-ask .oia-later{display:block;margin:10px auto 0;padding:8px 16px;border:0;background:none;color:rgba(233,230,255,.7);font:700 14px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer}
+@media (max-height:600px){html body .oro-inst-ask .ow-s{display:block}}
+@keyframes oiaBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
