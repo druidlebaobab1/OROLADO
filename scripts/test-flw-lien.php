@@ -111,8 +111,8 @@ foreach ($cas as [$ph, $ok, $want, $label]) {
 }
 $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '123']);
 check('numéro invalide : refusé avant Flutterwave', empty($r['ok']) && ($r['code'] ?? '') === 'phone', json_encode($r));
-$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 1, 'network' => 'wave', 'phone' => '0701020304']);
-check('moins de 3 $ : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'min');
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 0.5, 'network' => 'wave', 'phone' => '0701020304']);
+check('v3020 : moins de 1 $ : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'min');
 $r = orolado_flutterwave_momo_charge(['token' => 'mauvais', 'amount' => 3, 'network' => 'wave', 'phone' => '0701020304']);
 check('sans connexion : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'session');
 
