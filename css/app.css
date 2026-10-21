@@ -13239,3 +13239,16 @@ html:root body #btnChartFs#btnChartFs#btnChartFs::after{animation-duration:1.6s!
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#FF5D6C!important;animation:oroLive 1.6s ease-in-out -.8s infinite!important}
 html.fs-trade:root body #btnChartFs#btnChartFs#btnChartFs::before,html.fs-trade:root body #btnChartFs#btnChartFs#btnChartFs::after{animation:none!important;opacity:0!important}
 @media (prefers-reduced-motion:reduce){html:root body #btnChartFs#btnChartFs#btnChartFs::before{animation:none!important;opacity:.7!important}}
+/* 2026-10-21 (propriétaire : « la même forme que dans le jeu, partout ») : Compte réel du menu des jeux et de Paris = exactement
+   le format de la case dans un jeu (même largeur, même hauteur, même icône, même +), centré */
+html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) .cs-top #csBal#csBal.cs-wallet{justify-self:center!important;width:calc(100vw - 204px)!important;max-width:250px!important;margin-inline:auto!important;min-height:48px!important;padding:4px 5px 4px 10px!important;gap:6px!important}
+html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:18px!important}
+html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) .cs-top #csBal#csBal.cs-wallet .cw-t small{white-space:nowrap!important;font-size:10px!important;letter-spacing:.05em!important}
+html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) .cs-top #csBal#csBal.cs-wallet .cw-plus{width:34px!important;height:34px!important;min-width:34px!important;font-size:22px!important}
+html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) .cs-top #csBal#csBal.cs-wallet .cw-wal{width:32px!important;height:32px!important;flex-basis:32px!important;background-size:28px 28px,auto!important}
+@media (max-width:380px){html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) .cs-top #csBal#csBal.cs-wallet .cw-wal{display:none!important}}
+/* PLEIN ÉCRAN : même rouge, battement un peu plus doux (moins fort que le reste du site) */
+@keyframes oroFsLive3{0%,100%{opacity:.12}50%{opacity:.72}}
+html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs::before{box-shadow:inset 0 0 0 1.5px #FF3B4E,inset 0 0 8px rgba(255,40,60,.35),0 0 8px rgba(255,40,60,.35)!important;animation:oroFsLive3 1.6s ease-in-out infinite!important}
+html.fs-trade:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs::before{animation:none!important;opacity:0!important}
+@media (prefers-reduced-motion:reduce){html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs::before{animation:none!important;opacity:.55!important}}
