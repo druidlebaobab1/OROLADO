@@ -239,6 +239,8 @@
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
     t.innerHTML = (win ? '<i class="ct-ic" aria-hidden="true">' + CASH + '</i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : got > 0 ? m2(got) : '0') + '</b>';
     if (win) { var wl = ('+$ ' + m2(Number(r.win) || 0)).length; t.style.setProperty('--ctfs', (wl <= 9 ? 20 : wl <= 12 ? 17 : wl <= 15 ? 14.5 : 12.5) + 'px'); }
+    // 2026-10-21 (propriétaire) : petit « ≈ monnaie locale » du gain à côté du montant (affichage seulement, l'argent reste en $)
+    if (win) { try { var lc = window.D6 && D6.LocalCur, lcc = lc && lc.code(), lct = lcc ? lc.fmt(Number(r.win) || 0, lcc) : ''; if (lct) { var lcs = document.createElement('small'); lcs.className = 'ct-loc'; lcs.setAttribute('dir', 'ltr'); lcs.textContent = lct; t.appendChild(lcs); } } catch (eL) { /* ignore */ } }
     host.appendChild(t);
     // 2026-10-20 (QA) : le compteur démarre APRÈS l'ajout à l'écran (avant : pastille pas encore affichée → le compteur
     // s'arrêtait dès la 1re image et le gain restait « +$ 0.00 » vert)
