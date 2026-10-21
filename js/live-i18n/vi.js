@@ -1061,7 +1061,7 @@
     "today": "Hôm nay",
     "tomorrow": "Ngày mai",
     "draw": "Hòa",
-    "max10": "Tối đa 10 trận trong một phiếu.",
+    "max10": "Tối đa 50 trận trong một phiếu.",
     "e_min": "Cược tối thiểu $0.10.",
     "e_max": "Tiền cược quá cao cho trận này.",
     "e_maxWin": "Tiền thắng quá cao: hãy giảm cược.",

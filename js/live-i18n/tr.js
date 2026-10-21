@@ -1061,7 +1061,7 @@
     "today": "Bugün",
     "tomorrow": "Yarın",
     "draw": "Beraberlik",
-    "max10": "Bir kuponda en fazla 10 maç.",
+    "max10": "Bir kuponda en fazla 50 maç.",
     "e_min": "Minimum bahis 0,10 $.",
     "e_max": "Bu maç için bahis çok yüksek.",
     "e_maxWin": "Kazanç çok yüksek: bahsi düşür.",

@@ -1061,7 +1061,7 @@
     "today": "Heute",
     "tomorrow": "Morgen",
     "draw": "Unentschieden",
-    "max10": "Maximal 10 Spiele pro Schein.",
+    "max10": "Maximal 50 Spiele pro Schein.",
     "e_min": "Mindesteinsatz $0.10.",
     "e_max": "Einsatz zu hoch für dieses Spiel.",
     "e_maxWin": "Gewinn zu hoch: senke den Einsatz.",
