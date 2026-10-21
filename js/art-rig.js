@@ -24,6 +24,16 @@
     return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
   }
 
+  // v3046 (propriétaire) : tous les personnages à la peau claire — une teinte trop foncée est éclaircie (les zombies gardent la leur)
+  function fair(hex) {
+    if (!hex || hex.charAt(0) !== '#' || hex.length < 7) return hex;
+    var n = parseInt(hex.slice(1, 7), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255, L = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    if (L >= 0.78) return hex;
+    var t = Math.min(1, (0.86 - L) / 0.25), R = 0xF6, G = 0xD3, Bb = 0xB8;
+    r = Math.round(r + (R - r) * t); g = Math.round(g + (G - g) * t); b = Math.round(b + (Bb - b) * t);
+    return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+  }
+
   /* ------------------------------------------------------------------ POSE — 3D joints (y down from the top of the head, unit = height) */
   function pose(o) {
     var p = o.pal || {}, fem = p.build === 'f', k = o.pose || 'stand', ph = (o.ph || 0) * T2;
@@ -127,7 +137,7 @@
   /* ------------------------------------------------------------------ DRAW */
   function draw(c, h, o) {
     var p = o.pal || {}, v = o.view || 'back', J = pose(o), B = build(J), fem = J.fem, k = J.k;
-    var suit = !!p.suit, skin = p.skin || '#D9A066', top = p.top || ['#64748B', '#334155'], bot = p.bottom || ['#334155', '#1E293B'], legsOf = p.legs || 'pants';
+    var suit = !!p.suit, skin = p.zombie ? p.skin : fair(p.skin || '#F3CDAA'), top = p.top || ['#64748B', '#334155'], bot = p.bottom || ['#334155', '#1E293B'], legsOf = p.legs || 'pants';
     var LIGHT = v === 'front' ? 1 : -1; // light from the upper left of the screen
     var BK = J.big ? 1.3 : 1; // brute: thicker limbs
     // projection: y grows downwards, unit = h, origin at the top of the head; the canvas origin is at the feet
@@ -530,7 +540,7 @@
     for (var i = 0; i < n; i++) fr.push(one(w, h, dpr, Object.assign({}, o, { ph: i / n })));
     return fr;
   }
-  var SKINS = ['#F6D3B8', '#EBB98F', '#D9A066', '#C08552', '#9C6640', '#7A4A2C', '#5A3520', '#3F2516'];
+  var SKINS = ['#F6D3B8', '#FBE0CC', '#F3CDAA', '#F7D9C2', '#EFC6A4', '#FCE3D3', '#F4D0B4', '#F9DCC6']; // v3046 : peaux claires
   var HAIRS = ['#1A1110', '#2B1B10', '#4A2E1A', '#7B4A26', '#B07A3E', '#D9B26A', '#8C2F1B', '#3B3B3B'];
   D6.Rig = { draw: draw, one: one, sheet: sheet, shade: shade, warm: warm, SKINS: SKINS, HAIRS: HAIRS, pose: pose };
 })();

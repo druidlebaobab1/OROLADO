@@ -816,7 +816,7 @@
         '<rect x="324" y="40" width="6" height="156" fill="#475569"/><rect x="310" y="56" width="6" height="52" rx="2" fill="#F8FAFC" stroke="#94A3B8"/><rect x="311" y="76" width="4" height="14" fill="none" stroke="#EF4444" stroke-width="1.2"/>' +
         '<path d="M283 92L288 116H304L309 92" stroke="#F8FAFC" stroke-opacity=".8" stroke-width="1" fill="none"/><path d="M286 98L306 110M306 98L286 110M288 104H304" stroke="#F8FAFC" stroke-opacity=".5" stroke-width=".8"/>' +
         '<g class="bk-pl" transform="translate(74 196)"><path d="M-4-30L-6 0M4-30L6 0" stroke="#FDE2C4" stroke-width="4.4" stroke-linecap="round"/><rect x="-8" y="-50" width="16" height="22" rx="5" fill="#F97316"/><text y="-36" text-anchor="middle" font-size="8" fill="#fff">23</text>' +
-        '<g class="bk-arm"><path d="M5-46L14-58" stroke="#FDE2C4" stroke-width="3.6" stroke-linecap="round"/></g><circle cy="-56" r="6.5" fill="#7C4A2D"/></g>' +
+        '<g class="bk-arm"><path d="M5-46L14-58" stroke="#FDE2C4" stroke-width="3.6" stroke-linecap="round"/></g><circle cy="-56" r="6.5" fill="#E2AE88"/></g>' +
         '<g class="bk-b" transform="translate(88 138)"><circle r="6.5" fill="url(#bkB' + uid + ')"/><path d="M-6.5 0H6.5M0-6.5V6.5M-4.6-4.6Q0 0-4.6 4.6M4.6-4.6Q0 0 4.6 4.6" stroke="#431407" stroke-width=".8" fill="none"/></g>' +
         '<path d="M282 92H310" stroke="#EF4444" stroke-width="3" stroke-linecap="round"/>' +
         '<g class="bk-sb"><rect x="70" y="6" width="220" height="30" rx="10" fill="rgba(2,6,23,.78)" stroke="#FDE68A" stroke-opacity=".4"/>';
@@ -859,10 +859,10 @@
   var BX_0 = .4, BX_R = 1.7;
   function bxRounds(res) { var n = +res.n; return n === 0 || n === 4 ? +res.r : 6; }
   function boxer(cl, col, trunk) {
-    return '<g class="bx ' + cl + '"><g class="bx-in"><path d="M-6-34L-9 0M6-34L8 0" stroke="#7C4A2D" stroke-width="6" stroke-linecap="round"/><rect x="-11" y="-44" width="22" height="13" rx="4" fill="' + trunk + '"/>' +
-      '<path d="M-10-74Q0-80 10-74L11-44H-11Z" fill="#9A6B4B"/><circle cy="-84" r="9" fill="#9A6B4B"/><path d="M-9-87Q0-97 9-87V-84H-9Z" fill="' + col + '"/>' +
-      '<g class="bx-g2"><path d="M4-70L12-62" stroke="#9A6B4B" stroke-width="5" stroke-linecap="round"/><circle cx="13" cy="-62" r="6.5" fill="' + col + '" stroke="#fff" stroke-opacity=".5"/></g>' +
-      '<g class="bx-g1"><path d="M6-72L16-74" stroke="#9A6B4B" stroke-width="5" stroke-linecap="round"/><circle cx="18" cy="-74" r="7" fill="' + col + '" stroke="#fff" stroke-opacity=".6"/></g></g></g>';
+    return '<g class="bx ' + cl + '"><g class="bx-in"><path d="M-6-34L-9 0M6-34L8 0" stroke="#E2AE88" stroke-width="6" stroke-linecap="round"/><rect x="-11" y="-44" width="22" height="13" rx="4" fill="' + trunk + '"/>' +
+      '<path d="M-10-74Q0-80 10-74L11-44H-11Z" fill="#F0C4A0"/><circle cy="-84" r="9" fill="#F0C4A0"/><path d="M-9-87Q0-97 9-87V-84H-9Z" fill="' + col + '"/>' +
+      '<g class="bx-g2"><path d="M4-70L12-62" stroke="#F0C4A0" stroke-width="5" stroke-linecap="round"/><circle cx="13" cy="-62" r="6.5" fill="' + col + '" stroke="#fff" stroke-opacity=".5"/></g>' +
+      '<g class="bx-g1"><path d="M6-72L16-74" stroke="#F0C4A0" stroke-width="5" stroke-linecap="round"/><circle cx="18" cy="-74" r="7" fill="' + col + '" stroke="#fff" stroke-opacity=".6"/></g></g></g>';
   }
   live('boxinglive', {
     lab: 'fg', bev: 'act', show: function (res) { return BX_0 + bxRounds(res) * BX_R + 2.8; },
@@ -1033,7 +1033,7 @@
         '<g transform="translate(298 152)"><path d="M-4-18V6M0-18V6M4-18V6" stroke="#FDE68A" stroke-width="2"/><path d="M-5-19H5" stroke="#F59E0B" stroke-width="2"/></g>' +
         '<g class="ck-bt" transform="translate(84 160)"><path d="M-3-14L-5 0M3-14L4 0" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/><rect x="-7" y="-30" width="14" height="17" rx="4" fill="#F8FAFC"/><circle cy="-35" r="5.5" fill="#1E3A8A"/>' +
         '<g class="ck-bat"><path d="M4-22L18-34" stroke="#B45309" stroke-width="4" stroke-linecap="round"/></g></g>' +
-        '<g class="ck-bw" transform="translate(320 160)"><path d="M-3-14L-5 0M3-14L4 0" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/><rect x="-7" y="-30" width="14" height="17" rx="4" fill="#0EA5E9"/><circle cy="-35" r="5.5" fill="#7C4A2D"/></g>' +
+        '<g class="ck-bw" transform="translate(320 160)"><path d="M-3-14L-5 0M3-14L4 0" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/><rect x="-7" y="-30" width="14" height="17" rx="4" fill="#0EA5E9"/><circle cy="-35" r="5.5" fill="#E2AE88"/></g>' +
         '<g class="ck-rn" opacity="0"><path d="M-3-14L-5 0M3-14L4 0" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/><rect x="-7" y="-30" width="14" height="17" rx="4" fill="#F8FAFC"/><circle cy="-35" r="5.5" fill="#1E3A8A"/></g>' +
         '<ellipse class="ck-sh" rx="3.5" ry="1.5" fill="#000" opacity=".3"/><circle class="ck-b" r="3.4" fill="#DC2626" stroke="#7F1D1D" stroke-width=".7"/>' +
         '<g class="ck-sb"><rect x="58" y="4" width="244" height="30" rx="10" fill="rgba(2,6,23,.8)" stroke="#FDE68A" stroke-opacity=".4"/>';

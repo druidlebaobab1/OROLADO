@@ -858,7 +858,7 @@
 
   /* ================================================================== 2. JUNGLE DASH — explorer on the stone path of a lost temple */
   var EXPLORER = {
-    skin: '#D9A066', hair: '#5B3A1E', style: 'short', top: ['#EAD7A4', '#B58F52'], sleeve: 'short', bottom: ['#7A5C3A', '#4F3A22'], legs: 'pants', shoe: '#4A2E1A', sole: '#C49A6C', bag: ['#B45309', '#7C2D12'],
+    skin: '#F3CDAA', hair: '#5B3A1E', style: 'short', top: ['#EAD7A4', '#B58F52'], sleeve: 'short', bottom: ['#7A5C3A', '#4F3A22'], legs: 'pants', shoe: '#4A2E1A', sole: '#C49A6C', bag: ['#B45309', '#7C2D12'],
     hat: function (c, x, y, r, v) { // fedora
       c.fillStyle = '#7C4A1E'; c.beginPath(); c.ellipse(x, y - r * 0.42, r * 1.7, r * 0.42, 0, 0, TAU); c.fill();
       c.fillStyle = lg(c, x - r, 0, x + r, 0, ['#B07A3E', '#8A5A28']); rr(c, x - r * 0.9, y - r * 1.35, r * 1.8, r * 1.0, r * 0.45); c.fill();

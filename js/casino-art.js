@@ -119,11 +119,12 @@
     },
     // Penalty — v2860 (owner: logos must match the new game art): a round medallion with the redrawn keeper in his goal and the ball
     // (image rendered from the game itself: img/games/penalty.webp), glossy green ring, same 64×64 frame.
+    // v3046 (propriétaire) : gardien à la peau claire, maillot rouge (ni orange, ni blanc, ni vert), anneau bleu
     penalty: function () {
-      return '<defs><clipPath id="IDm"><circle cx="32" cy="33" r="26.5"/></clipPath><linearGradient id="IDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7D6"/><stop offset=".45" stop-color="#4ADE80"/><stop offset="1" stop-color="#14532D"/></linearGradient>' +
+      return '<defs><clipPath id="IDm"><circle cx="32" cy="33" r="26.5"/></clipPath><linearGradient id="IDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#DBEAFE"/><stop offset=".45" stop-color="#3B82F6"/><stop offset="1" stop-color="#1E3A8A"/></linearGradient>' +
         '<linearGradient id="IDs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
         '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDg)"/>' +
-        '<image href="img/games/penalty.webp?v=2866" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
+        '<image href="img/games/penalty.webp?v=3046" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
         '<circle cx="32" cy="33" r="26.5" fill="url(#IDs)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>';
     },
     // Golden Orchard : pomme-bijou en or à facettes, cœur rubis, 2 feuilles, étincelles

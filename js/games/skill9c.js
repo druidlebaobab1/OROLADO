@@ -839,9 +839,10 @@
         var th = (H - T) * 0.3, ww2 = Math.max(16, W * 0.06);
         wallS = mkc(ww2, th, dpr, function (c, w, h) { c.fillStyle = lg(c, 0, 0, w, 0, ['#1C1917', '#44403C', '#292524']); c.fillRect(0, 0, w, h); c.strokeStyle = '#F97316'; c.lineWidth = 1.6; c.globalAlpha = 0.7; c.beginPath(); c.moveTo(w * 0.3, 0); c.lineTo(w * 0.6, h * 0.3); c.lineTo(w * 0.2, h * 0.55); c.lineTo(w * 0.7, h); c.stroke(); c.globalAlpha = 1; });
         wallS.w = ww2; wallS.h = th;
-        var pal = { skin: '#C08552', hair: '#2B1B10', top: ['#0EA5E9', '#0369A1'], bottom: ['#78350F', '#451A03'], shoe: '#1C1917' };
-        hero = rigOne(hs, { view: 'side', pose: 'stand', pal: pal }); heroJ = rigOne(hs, { view: 'side', pose: 'jump', pal: pal });
-        if (!hero) { hero = heroJ = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, 0, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#78350F'); limb(c, 0, -hs * 0.5, 0, -hs * 0.8, hs * 0.2, hs * 0.18, '#0EA5E9'); circ(c, 0, -hs * 0.9, hs * 0.1, '#C08552'); }); }
+        // v3046 (propriétaire) : héros à la peau claire, vu de face (visage, volume), plus grand à l'écran — dessin seulement
+        var pal = { skin: '#F8D9C2', hair: '#8A5A2B', style: 'short', top: ['#38BDF8', '#0369A1'], sleeve: 'short', bottom: ['#3B5B8C', '#1E3A5F'], legs: 'pants', shoe: '#F8FAFC', sole: '#EF4444', eyes: '#2563EB' };
+        hero = rigOne(hs * 1.3, { view: 'front', pose: 'stand', pal: pal }); heroJ = rigOne(hs * 1.3, { view: 'front', pose: 'jump', pal: pal });
+        if (!hero) { hero = heroJ = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, 0, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#78350F'); limb(c, 0, -hs * 0.5, 0, -hs * 0.8, hs * 0.2, hs * 0.18, '#0EA5E9'); circ(c, 0, -hs * 0.9, hs * 0.1, '#F3CBA8'); }); }
         lavaS = mkc(W, (H - T) * 0.45, dpr, function (c, w, h) { c.fillStyle = lg(c, 0, 0, 0, h, ['#FDE047', '#F97316', '#B91C1C', '#450A0A']); c.fillRect(0, 0, w, h); });
         emb = []; for (var e = 0; e < 18; e++) emb.push({ x: Math.random() * W, y: Math.random(), s: rnd(0.3, 1) });
         reset(false);
@@ -893,7 +894,7 @@
         if (dead) { feet = dead.y; hx2 = dead.x; im = heroJ; }
         else if (jump) { var q = Math.min(1, jump.t / JT), y0 = ledges[jump.from].y, y1 = ledges[jump.to].y; feet = y0 + (y1 - y0) * q - Math.sin(q * Math.PI) * DY * 0.5; im = heroJ; }
         else feet = ledges[k].y;
-        if (!(dead && dead.burn && dead.t > 0.3)) { c.save(); c.translate(hx2, Y(feet)); if (dead) c.rotate(dead.t * 5); c.drawImage(im, -im.w / 2, -im.h + hs * 0.04, im.w, im.h); c.restore(); }
+        if (!(dead && dead.burn && dead.t > 0.3)) { c.save(); c.translate(hx2, Y(feet)); if (dead) c.rotate(dead.t * 5); c.drawImage(im, -im.w / 2, -im.h + hs * 0.05, im.w, im.h); c.restore(); }
         // lava
         var ly = Y(lava);
         if (ly < H + 20) {
