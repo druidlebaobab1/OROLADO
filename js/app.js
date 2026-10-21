@@ -1498,7 +1498,12 @@
       var now = Date.now();
       while (arr.length && now - arr[0] > 2500) arr.shift();
       arr.push(now);
-      if (arr.length >= 5) { arr.length = 0; startDiag(); }
+      // 2026-10-21 (propriétaire) : le panneau de mesures (5 touches) seulement pour le compte ADMIN, jamais pour les joueurs
+      if (arr.length >= 5) {
+        arr.length = 0;
+        var au = null; try { au = user(); } catch (eU) { au = null; }
+        if (au && (au.role === 'admin' || au.isAdmin === true || String(au.email || '').toLowerCase() === 'admin@orolado.com')) startDiag();
+      }
     };
     document.addEventListener('click', function (e) {
       try {
