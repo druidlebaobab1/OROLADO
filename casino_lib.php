@@ -15,13 +15,17 @@ declare(strict_types=1);
 const CASINO_MIN = 0.10;
 const CASINO_MAX_STAKE = 1000000000.0; // 2026-10-20 (propriétaire) : aucune limite de mise sur le site
 const CASINO_MAX_WIN = 1000000000.0;  // 2026-10-20 (propriétaire) : aucun plafond de gain
+if (is_file(__DIR__ . '/casino_live4.php')) require_once __DIR__ . '/casino_live4.php'; // v2900 : LIVE 4 (12 jeux en direct, fichier à part)
+if (!defined('CASINO_LIVE4')) { define('CASINO_LIVE4', []); define('CASINO_LIVE4_KEYS', []); }
 const CASINO_GAMES = ['crash', 'jet', 'rocket', 'coin', 'dice', 'limbo', 'wheel', 'race', 'roulette', 'slots', 'plinko', 'keno', 'scratch', 'hilo', 'penalty', 'colors', 'mines', 'apple',
   'tower', 'dragon', 'baccarat', 'sicbo', 'chests', 'balloon', 'darts', 'cryptox', 'horses', 'rps', 'lotto', 'planets',
   'catwalk', 'fleets', 'gemcount', 'claw', // v2830 : 4 nouveaux jeux en direct (CASINO_LIVE2)
-  'dtlive', 'hilolive', 'sicbolive', 'kenolive', 'lucky10', 'moneywheel', 'coinlive', 'pegdrop', 'football', 'bullseye', 'ladderlive', 'moonshot']; // v2850 : 12 nouveaux jeux en direct (CASINO_LIVE3)
+  'dtlive', 'hilolive', 'sicbolive', 'kenolive', 'lucky10', 'moneywheel', 'coinlive', 'pegdrop', 'football', 'bullseye', 'ladderlive', 'moonshot', // v2850 : 12 nouveaux jeux en direct (CASINO_LIVE3)
+  ...CASINO_LIVE4_KEYS]; // v2900 : LIVE 4
 const CASINO_MULTI = ['crash', 'jet', 'rocket', 'hilo', 'mines', 'apple', 'tower', 'balloon', 'penalty', 'cryptox', 'horses', 'roulette', 'race', 'planets',
   'catwalk', 'fleets', 'gemcount', 'claw', // jeux en plusieurs étapes (état gardé par le serveur)
-  'dtlive', 'hilolive', 'sicbolive', 'kenolive', 'lucky10', 'moneywheel', 'coinlive', 'pegdrop', 'football', 'bullseye', 'ladderlive', 'moonshot']; // v2850 : CASINO_LIVE3
+  'dtlive', 'hilolive', 'sicbolive', 'kenolive', 'lucky10', 'moneywheel', 'coinlive', 'pegdrop', 'football', 'bullseye', 'ladderlive', 'moonshot', // v2850 : CASINO_LIVE3
+  ...CASINO_LIVE4_KEYS]; // v2900 : LIVE 4
 /*
  * v2718 (propriétaire) — JEUX EN DIRECT À TIRAGE : le serveur fait un tirage commun à heure fixe, tout le monde voit le même.
  *  - période P secondes ; tour n° i = floor(maintenant / P) ; mises ouvertes de i·P à i·P + B ; à i·P + B le résultat est
@@ -56,7 +60,7 @@ const CASINO_LIVE2 = ['catwalk' => [200, 120], 'fleets' => [180, 120], 'gemcount
 const CASINO_CATWALK_W = [30, 22, 17, 13, 10, 8]; // chances (%) par rang : favorite → outsider
 const CASINO_CLAW_W = [30, 24, 18, 13, 9, 6];     // ourson, canard, robot, fusée, couronne, diamant
 /** v2830 — [P, B] d'un jeu en direct (anciens : CASINO_DRAW, nouveaux : CASINO_LIVE2). */
-function casino_draw_pb(string $g): array { return CASINO_DRAW[$g] ?? CASINO_LIVE2[$g] ?? CASINO_LIVE3[$g]; } // v2850 : + CASINO_LIVE3
+function casino_draw_pb(string $g): array { return CASINO_DRAW[$g] ?? CASINO_LIVE2[$g] ?? CASINO_LIVE3[$g] ?? CASINO_LIVE4[$g]; } // v2850 : + CASINO_LIVE3 ; v2900 : + CASINO_LIVE4
 function casino_live2_odd(float $p): float { return floor(CASINO_EDGE / $p * 100 + 1e-6) / 100; }
 /** Choix possibles et leur chance exacte (catwalk : chance du mannequin dans CE tour, lue dans le résultat ; sans résultat 1/6). */
 function casino_live2_probs(string $g, array $out = []): array {
@@ -291,7 +295,7 @@ function casino_roulette_mult(string $bet, int $n): ?float {
 }
 
 /* ---------------------------------------------------------------- v2718 : tirages en direct */
-function casino_is_draw(string $g): bool { return isset(CASINO_DRAW[$g]) || isset(CASINO_LIVE2[$g]) || isset(CASINO_LIVE3[$g]); } // v2830 : + CASINO_LIVE2 ; v2850 : + CASINO_LIVE3
+function casino_is_draw(string $g): bool { return isset(CASINO_DRAW[$g]) || isset(CASINO_LIVE2[$g]) || isset(CASINO_LIVE3[$g]) || isset(CASINO_LIVE4[$g]); } // v2830 : + CASINO_LIVE2 ; v2850 : + CASINO_LIVE3 ; v2900 : + CASINO_LIVE4
 /** Résultat secret du tour $i (tiré une seule fois, sous verrou ; on garde les 60 derniers).
  *  v2810 : un tour PLUS ANCIEN que ceux gardés n'est jamais re-tiré (il rendrait un autre résultat que celui montré) :
  *  on renvoie [] — le pari garde de toute façon son propre résultat (casino_draw_act), voir casino_draw_settle. */
@@ -308,6 +312,7 @@ function casino_draw_many(string $g, array $ids): array {
         elseif ($g === 'planets') $s[$k] = ['n' => casino_planets_draw()];
         elseif (isset(CASINO_LIVE2[$g])) $s[$k] = casino_live2_draw($g); // v2830
         elseif (isset(CASINO_LIVE3[$g])) $s[$k] = casino_live3_draw($g); // v2850
+        elseif (isset(CASINO_LIVE4[$g])) $s[$k] = casino_live4_draw($g); // v2900
         elseif ($g === 'horses' || $g === 'race') { $pr = casino_runner_probs(); $s[$k] = casino_runner_card($g, $pr) + ['order' => casino_runner_order($pr)]; }
         else $s[$k] = ['n' => random_int(0, 36)];
         if (count($s) > 60) { $ks = array_map('intval', array_keys($s)); sort($ks); foreach (array_slice($ks, 0, count($ks) - 60) as $old) unset($s[(string) $old]); }
@@ -329,6 +334,7 @@ function casino_draw_keep(string $sel, array $out): array {
 function casino_draw_mult(string $g, string $sel, array $out): ?float {
   if (isset(CASINO_LIVE2[$g])) { $od = casino_live2_odds($g, $out); if (!isset($od[$sel])) return null; return $out ? (casino_live2_hit($g, $sel, $out) ? (float) $od[$sel] : 0.0) : 0.0; } // v2830
   if (isset(CASINO_LIVE3[$g])) { $od = casino_live3_odds($g, $out); if (!isset($od[$sel])) return null; return $out ? (casino_live3_hit($g, $sel, $out) ? (float) $od[$sel] : 0.0) : 0.0; } // v2850
+  if (isset(CASINO_LIVE4[$g])) { $od = casino_live4_odds($g, $out); if (!isset($od[$sel])) return null; return $out ? (casino_live4_hit($g, $sel, $out) ? (float) $od[$sel] : 0.0) : 0.0; } // v2900
   if ($g === 'cryptox') { if (!preg_match('/^\d{1,2}$/', $sel) || (int) $sel >= CASINO_CRYPTOX_N) return null; return $out ? ((int) $sel === (int) $out['n'] ? CASINO_CRYPTOX_MULT : 0.0) : 0.0; }
   if ($g === 'planets') { if (!preg_match('/^[0-5]$/', $sel)) return null; return $out ? ((int) $sel === (int) $out['n'] ? (float) casino_planets_odds()[(int) $sel] : 0.0) : 0.0; }
   if ($g === 'race') { if (!preg_match('/^\d$/', $sel)) return null; return $out ? ((int) $sel === (int) $out['order'][0] ? (float) ($out['o'][(int) $sel] ?? 0) : 0.0) : 0.0; }
@@ -358,6 +364,7 @@ function casino_draw_public(string $g, float $now): array {
   if ($g === 'planets') $o['odds'] = casino_planets_odds();
   if (isset(CASINO_LIVE2[$g])) $o['odds'] = casino_live2_odds($g, $cur); // v2830 : catwalk = cotes de CE tour (gagnante secrète)
   if (isset(CASINO_LIVE3[$g])) { $o['odds'] = casino_live3_odds($g, $cur); if ($pre = casino_live3_pre($g, $cur)) $o['pre'] = $pre; } // v2850 : High-Low = carte de base visible
+  if (isset(CASINO_LIVE4[$g])) { $o['odds'] = casino_live4_odds($g, $cur); if ($pre = casino_live4_pre($g, $cur)) $o['pre'] = $pre; } // v2900 : Bingo / Mega Ball = carte commune visible
   if ($now >= $t0 + $B) { $o['res'] = $cur; unset($o['res']['p'], $o['res']['c']); }
   $last = [];
   for ($k = 1; $k <= 6; $k++) { $r = $all[$i - $k] ?? []; $last[] = isset($r['order']) ? (int) $r['order'][0] : (int) ($r['n'] ?? 0); }

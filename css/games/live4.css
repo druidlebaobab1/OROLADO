@@ -1,0 +1,188 @@
+/* v2900 — LIVE 4: 12 live games "cards, dice & draws" (shared live layout + 12 scenes, js/games/live4.js). */
+html:root body #casinoModal .cg-live4 .l4-stage{display:flex;flex-direction:column;gap:6px;padding:8px;overflow:hidden;background:#0B0720}
+/* head: small red dot + LIVE, one-line status, timer */
+html:root body #casinoModal .cg-live4 .l4-head{flex:0 0 auto;display:flex;align-items:center;gap:10px;min-width:0;height:24px}
+html:root body #casinoModal .cg-live4 .l4-live{flex:none;display:flex;align-items:center;gap:5px;height:20px;color:#fff;font:800 11px/1 var(--cg-font);letter-spacing:.12em}
+html:root body #casinoModal .cg-live4 .l4-live i{width:7px;height:7px;border-radius:50%;background:#EF4444;box-shadow:0 0 6px rgba(239,68,68,.9);animation:l4Blink 1.6s ease-in-out infinite}
+html:root body #casinoModal .cg-live4 .l4-live b{font:inherit;color:inherit}
+@keyframes l4Blink{50%{opacity:.25}}
+html:root body #casinoModal .cg-live4 .l4-ph{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;font:800 14px/1.2 var(--cg-font);color:#fff}
+html:root body #casinoModal .cg-live4 .l4-tm{flex:none;white-space:nowrap;font:900 15px/1.2 var(--cg-font);font-style:normal;color:var(--cg-gold);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+html:root body #casinoModal .cg-live4 .l4-tm:empty{display:none}
+html:root body #casinoModal .cg-live4 .l4-stage[data-ph="warn"] .l4-tm{color:#FB7185}
+html:root body #casinoModal .cg-live4 .l4-stage[data-ph="shut"] .l4-ph{color:#FDE68A}
+html:root body #casinoModal .cg-live4 .l4-bar{flex:0 0 auto;display:block;height:4px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.1)}
+html:root body #casinoModal .cg-live4 .l4-bar b{display:block;height:100%;border-radius:inherit;background:var(--cg-green);transform-origin:0 50%;transition:background .3s}
+html:root body #casinoModal .cg-live4 .l4-bar.warn b{background:var(--cg-gold)}
+html[dir="rtl"] body #casinoModal .cg-live4 .l4-bar b{transform-origin:100% 50%}
+html:root body #casinoModal .cg-live4 .l4-scene{position:relative;flex:1 1 auto;min-height:0;border-radius:14px;overflow:hidden}
+html:root body #casinoModal .cg-live4 .l4-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+html:root body #casinoModal .cg-live4 .l4-svg [data-s]{cursor:pointer}
+html:root body #casinoModal .cg-live4 .l4-svg text{font-family:var(--cg-font);font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+/* history */
+html:root body #casinoModal .cg-live4 .l4-last{flex:0 0 auto;display:flex;gap:4px;height:26px;overflow:hidden;direction:ltr}
+html:root body #casinoModal .cg-live4 .l4-li{flex:none;min-width:26px;height:26px;border-radius:13px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px var(--cg-line);display:flex;align-items:center;justify-content:center;font-style:normal}
+html:root body #casinoModal .cg-live4 .l4-li svg{width:22px;height:22px}
+html:root body #casinoModal .cg-live4 .l4-li.new{box-shadow:inset 0 0 0 1.5px var(--cg-gold),0 0 10px -2px rgba(251,191,36,.8)}
+/* option board (above the terminal) */
+html:root body #casinoModal .cg-live4 .l4-board{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+html:root body #casinoModal .cg-live4 .l4-board button{position:relative;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;height:52px!important;min-height:0!important;padding:2px!important;
+  border:0!important;border-radius:12px!important;background:rgba(0,0,0,.32)!important;box-shadow:inset 0 0 0 1px var(--cg-line)!important;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s,background .2s;color:#fff}
+html:root body #casinoModal .cg-live4 .l4-board button:active{transform:scale(.95)}
+html:root body #casinoModal .cg-live4 .l4-board svg{width:26px;height:26px;flex:none}
+html:root body #casinoModal .cg-live4 .l4-board b{display:block;max-width:100%;white-space:nowrap;font:900 12px/1.1 var(--cg-font);color:#FDE68A;font-variant-numeric:tabular-nums;direction:ltr}
+html:root body #casinoModal .cg-live4 .l4-board button.on{background:linear-gradient(180deg,rgba(251,191,36,.35),rgba(245,158,11,.12))!important;box-shadow:inset 0 0 0 1.6px var(--cg-gold),0 0 14px -4px rgba(251,191,36,.9)!important}
+html:root body #casinoModal .cg-live4 .l4-board button.on b{color:#fff}
+html:root body #casinoModal .cg-live4 .l4-board button.mine::after{content:"";position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--cg-green);box-shadow:0 0 0 2px #0B0720}
+html:root body #casinoModal .cg-live4 .l4-board button.win{box-shadow:inset 0 0 0 1.6px var(--cg-green),0 0 14px -3px rgba(34,197,94,.9)!important}
+html:root body #casinoModal .cg-live4 .l4-board button.off{opacity:.45;pointer-events:none}
+html:root body #casinoModal .cg-live4 .l4-board button span{display:block;max-width:100%;white-space:nowrap;font:800 11.5px/1.1 var(--cg-font);color:#E0E7FF}
+html:root body #casinoModal .cg-live4 .l4-board button i{display:block;font:700 9.5px/1 var(--cg-font);font-style:normal;color:#A5B4FC;white-space:nowrap;direction:ltr}
+html:root body #casinoModal .cg-live4 .l4-li span{font:900 12px/1 var(--cg-font);padding:0 5px;white-space:nowrap;direction:ltr}
+html:root body #casinoModal .cg-live4 .l4-svg .warn{fill:#FB7185!important}
+html:root body #casinoModal .cg-live4 .cd-r{font-size:12px;font-weight:900}
+/* scene banner: countdown during bets, result at the end */
+html:root body #casinoModal .cg-live4 .bn rect{fill:rgba(2,6,23,.78);stroke:#FDE68A;stroke-opacity:.55;stroke-width:1.2}
+html:root body #casinoModal .cg-live4 .bn text{fill:#FDE68A;font-size:16px;font-weight:900;letter-spacing:.01em}
+html:root body #casinoModal .cg-live4 .bn.cd text{fill:#fff;font-size:17px}
+html:root body #casinoModal .cg-live4 .bn.warn rect{stroke:#FB7185;stroke-opacity:.9}
+html:root body #casinoModal .cg-live4 .bn.n0 rect{stroke:#86EFAC;stroke-opacity:.9}html:root body #casinoModal .cg-live4 .bn.n1 rect{stroke:#86EFAC;stroke-opacity:.9}html:root body #casinoModal .cg-live4 .bn.n2 rect{stroke:#86EFAC;stroke-opacity:.9}
+/* history chips (letters) */
+html:root body #casinoModal .cg-live4 .h-c{display:flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 4px;border-radius:10px;font:900 11.5px/1 var(--cg-font);color:#fff;white-space:nowrap;direction:ltr}
+html:root body #casinoModal .cg-live4 .h-c.ba0,html:root body #casinoModal .cg-live4 .h-c.tp0{background:#2563EB}html:root body #casinoModal .cg-live4 .h-c.ba1{background:#DC2626}html:root body #casinoModal .cg-live4 .h-c.ba2{background:#16A34A}
+html:root body #casinoModal .cg-live4 .h-c.aa{background:#B45309}html:root body #casinoModal .cg-live4 .h-c.ab{background:#7C3AED}html:root body #casinoModal .cg-live4 .h-c.tp1{background:#0D9488}html:root body #casinoModal .cg-live4 .h-c.tp0{background:#7C3AED}
+/* stage colours */
+html:root body #casinoModal .cg-baccaratlive .l4-stage{background:#021A10}html:root body #casinoModal .cg-andarlive .l4-stage{background:#170303}html:root body #casinoModal .cg-teenpattilive .l4-stage{background:#0F0420}html:root body #casinoModal .cg-pokerlive .l4-stage{background:#011A12}
+/* Baccarat */
+html:root body #casinoModal .cg-baccaratlive .l4-board{grid-template-columns:repeat(5,minmax(0,1fr))}
+html:root body #casinoModal .cg-baccaratlive .ba-b.pl{background:linear-gradient(180deg,rgba(37,99,235,.42),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-baccaratlive .ba-b.bk{background:linear-gradient(180deg,rgba(220,38,38,.42),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-baccaratlive .ba-b.tie{background:linear-gradient(180deg,rgba(22,163,74,.38),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-baccaratlive .ba-b.pp span,html:root body #casinoModal .cg-baccaratlive .ba-b.bp span{font-size:10.5px}
+html:root body #casinoModal .cg-baccaratlive .ba-n{fill:#fff;font-size:13px;font-weight:900;letter-spacing:.04em}
+html:root body #casinoModal .cg-baccaratlive .ba-sc.p{fill:#1D4ED8;stroke:#BFDBFE;stroke-width:1.4}html:root body #casinoModal .cg-baccaratlive .ba-sc.b{fill:#B91C1C;stroke:#FECACA;stroke-width:1.4}
+html:root body #casinoModal .cg-baccaratlive .ba-s{fill:#fff;font-size:14px;font-weight:900}
+html:root body #casinoModal .cg-baccaratlive .ba-slot{fill:none;stroke:#FDE68A;stroke-opacity:.35;stroke-dasharray:3 3}
+/* Andar Bahar */
+html:root body #casinoModal .cg-andarlive .l4-board{grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+html:root body #casinoModal .cg-andarlive .l4-board button.w{grid-column:span 5;height:40px!important;flex-direction:row;gap:8px}
+html:root body #casinoModal .cg-andarlive .l4-board button.k{grid-column:span 2;height:40px!important}
+html:root body #casinoModal .cg-andarlive .l4-board button.w span{font-size:13px;color:#fff}html:root body #casinoModal .cg-andarlive .l4-board button.w b{font-size:13px}
+html:root body #casinoModal .cg-andarlive .ab-b.a{background:linear-gradient(180deg,rgba(180,83,9,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-andarlive .ab-b.b{background:linear-gradient(180deg,rgba(124,58,237,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-andarlive .ab-r{fill:#000;fill-opacity:.25;stroke:#FDE68A;stroke-opacity:.45}
+html:root body #casinoModal .cg-andarlive .ab-row.a .ab-r{stroke:#F59E0B}html:root body #casinoModal .cg-andarlive .ab-row.b .ab-r{stroke:#A78BFA}
+html:root body #casinoModal .cg-andarlive .ab-n{fill:#FDE68A;font-size:12px;font-weight:900;letter-spacing:.06em}
+html:root body #casinoModal .cg-andarlive .ab-row.b .ab-n{fill:#DDD6FE}
+html:root body #casinoModal .cg-andarlive .ab-k{fill:#E0E7FF;font-size:11px;font-weight:800}
+html:root body #casinoModal .cg-andarlive .ab-j{fill:#FDE68A;font-size:11px;font-weight:900;letter-spacing:.06em}
+/* Teen Patti + Poker */
+html:root body #casinoModal .cg-teenpattilive .l4-board,html:root body #casinoModal .cg-pokerlive .l4-board{grid-template-columns:1.25fr 1fr 1fr 1.25fr}
+html:root body #casinoModal .cg-teenpattilive .du-b.a{background:linear-gradient(180deg,rgba(124,58,237,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-teenpattilive .du-b.b{background:linear-gradient(180deg,rgba(13,148,136,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-pokerlive .du-b.r{background:linear-gradient(180deg,rgba(220,38,38,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-pokerlive .du-b.b{background:linear-gradient(180deg,rgba(37,99,235,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-pokerlive .l4-board i.dot{width:9px;height:9px;border-radius:50%;display:block}html:root body #casinoModal .cg-pokerlive .l4-board i.dot.r{background:#EF4444}html:root body #casinoModal .cg-pokerlive .l4-board i.dot.b{background:#3B82F6}
+html:root body #casinoModal .cg-teenpattilive .l4-board i{font-size:10px;font-weight:900;color:#FDE68A}
+html:root body #casinoModal .cg-live4 .du-n{fill:#fff;font-size:13px;font-weight:900;letter-spacing:.03em}
+html:root body #casinoModal .cg-live4 .du-h{fill:#FDE68A;font-size:13px;font-weight:900}
+html:root body #casinoModal .cg-live4 .du-vs{fill:#FDE68A;font-size:13px;font-weight:900}
+html:root body #casinoModal .cg-redblacklive .l4-stage{background:#050102}html:root body #casinoModal .cg-lucky7live .l4-stage{background:#05081A}html:root body #casinoModal .cg-diceduellive .l4-stage{background:#06051A}html:root body #casinoModal .cg-peryalive .l4-stage{background:#14040D}
+html:root body #casinoModal .cg-live4 .h-c.rbr{background:#DC2626}html:root body #casinoModal .cg-live4 .h-c.rbk{background:#111827;box-shadow:inset 0 0 0 1px #6B7280}
+html:root body #casinoModal .cg-live4 .h-c.l7l{background:#2563EB}html:root body #casinoModal .cg-live4 .h-c.l7s{background:#CA8A04}html:root body #casinoModal .cg-live4 .h-c.l7h{background:#DC2626}
+html:root body #casinoModal .cg-live4 .h-c.ddh0{background:#DC2626;min-width:16px;height:16px;border-radius:4px}html:root body #casinoModal .cg-live4 .h-c.ddh1{background:#2563EB;min-width:16px;height:16px;border-radius:4px}html:root body #casinoModal .cg-live4 .h-c.ddh2{background:#16A34A}
+/* Red or Black */
+html:root body #casinoModal .cg-redblacklive .l4-board{grid-template-columns:1.2fr 1.2fr 1fr 1fr 1fr}
+html:root body #casinoModal .cg-redblacklive .l4-board svg,html:root body #casinoModal .cg-lucky7live .l4-board svg{width:16px;height:16px}
+html:root body #casinoModal .cg-redblacklive .rb-b.r{background:linear-gradient(180deg,rgba(220,38,38,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-redblacklive .rb-b.k{background:linear-gradient(180deg,rgba(75,85,99,.5),rgba(0,0,0,.35))!important}
+html:root body #casinoModal .cg-redblacklive .rb-b.r,html:root body #casinoModal .cg-redblacklive .rb-b.k{gap:1px}
+html:root body #casinoModal .cg-redblacklive .rb-slot{fill:none;stroke:#FCA5A5;stroke-opacity:.35;stroke-dasharray:3 3}
+html:root body #casinoModal .cg-redblacklive .rb-cr{fill:#B91C1C;stroke:#FECACA;stroke-width:1.6}html:root body #casinoModal .cg-redblacklive .rb-ck{fill:#111827;stroke:#9CA3AF;stroke-width:1.6}
+html:root body #casinoModal .cg-redblacklive .rb-cn{fill:#fff;font-size:22px;font-weight:900}
+html:root body #casinoModal .cg-redblacklive .rb-hp{fill:#EF4444}html:root body #casinoModal .cg-redblacklive .rb-sp{fill:#E5E7EB}
+/* Lucky 7 */
+html:root body #casinoModal .cg-lucky7live .l4-board .l7-b.s7{background:linear-gradient(180deg,rgba(202,138,4,.5),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-lucky7live .l4-board .l7-b.lo{background:linear-gradient(180deg,rgba(37,99,235,.4),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-lucky7live .l4-board .l7-b.hi{background:linear-gradient(180deg,rgba(220,38,38,.4),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-lucky7live .l7-bg{fill:#FDE68A;opacity:.06;font-size:200px;font-weight:900}
+html:root body #casinoModal .cg-lucky7live .l7-z rect{fill:rgba(0,0,0,.35);stroke-width:1.6}html:root body #casinoModal .cg-lucky7live .l7-z text{fill:#E0E7FF;font-size:14px;font-weight:900}
+html:root body #casinoModal .cg-lucky7live .l7-z.lo rect{stroke:#60A5FA}html:root body #casinoModal .cg-lucky7live .l7-z.s7 rect{stroke:#FBBF24}html:root body #casinoModal .cg-lucky7live .l7-z.hi rect{stroke:#F87171}
+html:root body #casinoModal .cg-lucky7live .l7-z.on.lo rect{fill:#1D4ED8}html:root body #casinoModal .cg-lucky7live .l7-z.on.s7 rect{fill:#CA8A04}html:root body #casinoModal .cg-lucky7live .l7-z.on.hi rect{fill:#B91C1C}html:root body #casinoModal .cg-lucky7live .l7-z.on text{fill:#fff}
+html:root body #casinoModal .cg-lucky7live .l7-ptr{fill:#FDE68A}
+/* Dice Duel */
+html:root body #casinoModal .cg-diceduellive .l4-board{grid-template-columns:repeat(5,minmax(0,1fr))}
+html:root body #casinoModal .cg-diceduellive .dd-b.r{background:linear-gradient(180deg,rgba(220,38,38,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-diceduellive .dd-b.b{background:linear-gradient(180deg,rgba(37,99,235,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-diceduellive .dd-b.x{background:linear-gradient(180deg,rgba(22,163,74,.4),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-diceduellive .dd-side.s0 .dd-r{fill:#7F1D1D;fill-opacity:.45;stroke:#F87171;stroke-opacity:.8;stroke-width:1.6}
+html:root body #casinoModal .cg-diceduellive .dd-side.s1 .dd-r{fill:#1E3A8A;fill-opacity:.45;stroke:#60A5FA;stroke-opacity:.8;stroke-width:1.6}
+html:root body #casinoModal .cg-diceduellive .dd-n{fill:#fff;font-size:14px;font-weight:900}
+html:root body #casinoModal .cg-diceduellive .dd-sc{fill:rgba(0,0,0,.45);stroke:#FDE68A;stroke-opacity:.6}html:root body #casinoModal .cg-diceduellive .dd-s{fill:#FDE68A;font-size:20px;font-weight:900}
+html:root body #casinoModal .cg-diceduellive .dd-vs{fill:#FDE68A;font-size:15px;font-weight:900}
+/* Perya */
+html:root body #casinoModal .cg-peryalive .l4-board{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+html:root body #casinoModal .cg-peryalive .l4-board button.c{height:40px!important}html:root body #casinoModal .cg-peryalive .l4-board button.w{grid-column:span 2;height:38px!important;flex-direction:row;gap:6px}
+html:root body #casinoModal .cg-peryalive .l4-board i.sw{width:20px;height:13px;border-radius:4px;box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.25)}
+html:root body #casinoModal .cg-peryalive .py-chute{fill:rgba(0,0,0,.28);stroke:#F472B6;stroke-opacity:.5;stroke-width:1.4}
+html:root body #casinoModal .cg-peryalive .py-bulbs circle{fill:#7C2D12}html:root body #casinoModal .cg-peryalive .py-bulbs circle.on{fill:#FDE68A}
+html:root body #casinoModal .cg-peryalive .py-tn{fill:#111827;font-size:17px;font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:3px}
+html:root body #casinoModal .cg-live4 .py-h{display:flex;gap:2px;padding:0 3px}html:root body #casinoModal .cg-live4 .py-h i{width:6px;height:12px;border-radius:2px;display:block}
+html:root body #casinoModal .cg-bingolive .l4-stage{background:#160602}html:root body #casinoModal .cg-lotto649live .l4-stage{background:#020A14}html:root body #casinoModal .cg-megaballlive .l4-stage{background:#07020F}html:root body #casinoModal .cg-bustlive .l4-stage{background:#011A12}
+html:root body #casinoModal .cg-live4 .h-c.bgh0{background:#2563EB}html:root body #casinoModal .cg-live4 .h-c.bgh1{background:#0D9488}html:root body #casinoModal .cg-live4 .h-c.bgh2{background:#CA8A04}html:root body #casinoModal .cg-live4 .h-c.bgh3{background:#EA580C}html:root body #casinoModal .cg-live4 .h-c.bgh4{background:#DC2626}
+html:root body #casinoModal .cg-live4 .h-c.loh0{background:#2563EB}html:root body #casinoModal .cg-live4 .h-c.loh1{background:#EA580C}html:root body #casinoModal .cg-live4 .h-c.loh2{background:#6B7280}
+html:root body #casinoModal .cg-live4 .h-c.mbh0{background:#4B5563}html:root body #casinoModal .cg-live4 .h-c.mbh1{background:#A21CAF}html:root body #casinoModal .cg-live4 .h-c.mbh2{background:#DB2777}html:root body #casinoModal .cg-live4 .h-c.mbh3{background:#CA8A04}
+html:root body #casinoModal .cg-live4 .h-c.buh0{background:#DC2626}html:root body #casinoModal .cg-live4 .h-c.buh1{background:#047857}html:root body #casinoModal .cg-live4 .h-c.buh2{background:#CA8A04}
+/* Bingo + Mega Ball cards */
+html:root body #casinoModal .cg-bingolive .l4-board,html:root body #casinoModal .cg-megaballlive .l4-board{grid-template-columns:repeat(5,minmax(0,1fr))}
+html:root body #casinoModal .cg-megaballlive .l4-board{grid-template-columns:repeat(4,minmax(0,1fr))}
+html:root body #casinoModal .cg-bingolive .l4-board button span,html:root body #casinoModal .cg-megaballlive .l4-board button span{font-size:13px;color:#fff;font-weight:900}
+html:root body #casinoModal .cg-bingolive .bg-card{fill:#FFF7ED;stroke:#FB923C;stroke-width:2}
+html:root body #casinoModal .cg-bingolive .bg-hd{fill:#fff;font-size:14px;font-weight:900}
+html:root body #casinoModal .cg-bingolive .bg-cl rect{fill:#fff;stroke:#FDBA74;stroke-width:1}html:root body #casinoModal .cg-bingolive .bg-cl text{fill:#1F2937;font-size:13px;font-weight:900}
+html:root body #casinoModal .cg-bingolive .bg-cl .dab{fill:#DC2626}html:root body #casinoModal .cg-bingolive .bg-cl.on text{fill:#fff}html:root body #casinoModal .cg-bingolive .bg-cl.free text{fill:#CA8A04;font-size:15px}html:root body #casinoModal .cg-bingolive .bg-cl.free.on text{fill:#FDE68A}
+html:root body #casinoModal .cg-bingolive .bg-cl.hot rect{stroke:#FBBF24;stroke-width:2.6}
+html:root body #casinoModal .cg-bingolive .bg-ln{stroke:#F59E0B;stroke-width:4;stroke-linecap:round;stroke-opacity:.5}
+html:root body #casinoModal .cg-bingolive .bg-drum{fill:rgba(255,255,255,.08);stroke:#FED7AA;stroke-opacity:.6;stroke-width:2}
+html:root body #casinoModal .cg-bingolive .bg-mb:nth-child(odd){fill:#FB923C}html:root body #casinoModal .cg-bingolive .bg-mb{fill:#FDE68A;stroke:#fff;stroke-opacity:.6}
+html:root body #casinoModal .cg-bingolive .bg-neck{fill:#7C2D12;stroke:#FDBA74;stroke-opacity:.5}
+html:root body #casinoModal .cg-bingolive .bg-cur .bg-ltr{fill:#C2410C;font-size:10px;font-weight:900}html:root body #casinoModal .cg-bingolive .bg-cur .bg-num{fill:#111827;font-size:15px;font-weight:900}
+html:root body #casinoModal .cg-bingolive .bg-cnt{fill:#FED7AA;font-size:12px;font-weight:800}
+html:root body #casinoModal .cg-megaballlive .mb-card{fill:rgba(0,0,0,.35);stroke:#E879F9;stroke-opacity:.7;stroke-width:1.6}
+html:root body #casinoModal .cg-megaballlive .mb-tray{fill:rgba(0,0,0,.3);stroke:#22D3EE;stroke-opacity:.5;stroke-width:1.4}
+html:root body #casinoModal .cg-megaballlive .mb-t{fill:#F0ABFC;font-size:13px;font-weight:900;letter-spacing:.3em}
+html:root body #casinoModal .cg-megaballlive .mb-cl rect{fill:#1E1B4B;stroke:#7C3AED;stroke-width:1}html:root body #casinoModal .cg-megaballlive .mb-cl text{fill:#E9D5FF;font-size:12.5px;font-weight:900}
+html:root body #casinoModal .cg-megaballlive .mb-cl .dab{fill:#C026D3}html:root body #casinoModal .cg-megaballlive .mb-cl.on text{fill:#fff}html:root body #casinoModal .cg-megaballlive .mb-cl.free text{fill:#FDE68A;font-size:14px}
+html:root body #casinoModal .cg-megaballlive .mb-cl.hot rect{stroke:#22D3EE;stroke-width:2.4}
+html:root body #casinoModal .cg-megaballlive .mb-ln{stroke:#22D3EE;stroke-width:4;stroke-linecap:round;stroke-opacity:.5}
+html:root body #casinoModal .cg-megaballlive .mb-bc{fill:#0E7490;stroke:#A5F3FC;stroke-width:1.2}html:root body #casinoModal .cg-megaballlive .mb-bc.mega{fill:#CA8A04;stroke:#FEF08A;stroke-width:2}
+html:root body #casinoModal .cg-megaballlive .mb-s text{fill:#fff;font-size:11px;font-weight:900}
+html:root body #casinoModal .cg-megaballlive .mb-lc{fill:#F0ABFC;font-size:14px;font-weight:900}
+html:root body #casinoModal .cg-megaballlive .l4-board button i,html:root body #casinoModal .cg-bingolive .l4-board button i{font-size:9.5px}
+/* Lotto */
+html:root body #casinoModal .cg-lotto649live .l4-board{grid-template-columns:repeat(5,minmax(0,1fr))}
+html:root body #casinoModal .cg-lotto649live .lo-glb{stroke:#E0F2FE;stroke-opacity:.6;stroke-width:2;opacity:.5}
+html:root body #casinoModal .cg-lotto649live .lo-m{stroke:#fff;stroke-opacity:.5}
+html:root body #casinoModal .cg-lotto649live .lo-base{fill:#0C4A6E;stroke:#38BDF8;stroke-opacity:.6}
+html:root body #casinoModal .cg-lotto649live .lo-tray{fill:rgba(0,0,0,.4);stroke:#38BDF8;stroke-opacity:.5}
+html:root body #casinoModal .cg-lotto649live .lo-slot{fill:rgba(255,255,255,.05);stroke:#7DD3FC;stroke-opacity:.35;stroke-dasharray:3 3}
+html:root body #casinoModal .cg-lotto649live .lo-n{fill:#111827;font-weight:900}
+/* Dealer Bust */
+html:root body #casinoModal .cg-bustlive .l4-board{grid-template-columns:1.3fr repeat(5,minmax(0,1fr)) 1.1fr;gap:4px}
+html:root body #casinoModal .cg-bustlive .bu-b.bu{background:linear-gradient(180deg,rgba(220,38,38,.45),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-bustlive .bu-b.bj{background:linear-gradient(180deg,rgba(202,138,4,.5),rgba(0,0,0,.3))!important}
+html:root body #casinoModal .cg-bustlive .l4-board button span{font-size:13px;color:#fff;font-weight:900}
+html:root body #casinoModal .cg-bustlive .bu-arc{fill:none;stroke:#FDE68A;stroke-opacity:.35;stroke-width:1.6}html:root body #casinoModal .cg-bustlive .bu-arc2{fill:none;stroke:#FDE68A;stroke-opacity:.18;stroke-width:1;stroke-dasharray:4 4}
+html:root body #casinoModal .cg-bustlive .bu-d{fill:#FDE68A;font-size:12px;font-weight:900;letter-spacing:.2em;opacity:.8}
+html:root body #casinoModal .cg-bustlive .bu-tc{fill:rgba(0,0,0,.5);stroke:#FDE68A;stroke-width:1.6}html:root body #casinoModal .cg-bustlive .bu-t{fill:#fff;font-size:19px;font-weight:900}
+html:root body #casinoModal .cg-bustlive .bu-st rect{fill:rgba(2,6,23,.82);stroke-width:3}html:root body #casinoModal .cg-bustlive .bu-st text{font-size:28px;font-weight:900;letter-spacing:.06em}
+html:root body #casinoModal .cg-bustlive .bu-st.x rect{stroke:#EF4444}html:root body #casinoModal .cg-bustlive .bu-st.x text{fill:#F87171}
+html:root body #casinoModal .cg-bustlive .bu-st.bj rect{stroke:#FBBF24}html:root body #casinoModal .cg-bustlive .bu-st.bj text{fill:#FDE68A}
+html:root body #casinoModal .cg-bustlive .bu-st.ok rect{stroke:#4ADE80}html:root body #casinoModal .cg-bustlive .bu-st.ok text{fill:#86EFAC}
+/* small phones */
+@media (max-width:380px){html:root body #casinoModal .cg-live4 .l4-board{gap:4px}html:root body #casinoModal .cg-live4 .l4-board button{height:46px!important}html:root body #casinoModal .cg-live4 .l4-board b{font-size:10.5px}html:root body #casinoModal .cg-live4 .l4-board button span{font-size:10.5px}
+  html:root body #casinoModal .cg-andarlive .l4-board button.w,html:root body #casinoModal .cg-andarlive .l4-board button.k{height:36px!important}html:root body #casinoModal .cg-baccaratlive .ba-b.pp span,html:root body #casinoModal .cg-baccaratlive .ba-b.bp span{font-size:9.5px}}
+@media (max-height:640px){html:root body #casinoModal .cg-live4 .l4-last{height:22px}html:root body #casinoModal .cg-live4 .l4-li{min-width:22px;height:22px}html:root body #casinoModal .cg-live4 .l4-li svg{width:18px;height:18px}html:root body #casinoModal .cg-live4 .h-c{min-width:17px;height:17px;font-size:10.5px}
+  html:root body #casinoModal .cg-andarlive .l4-board button.w,html:root body #casinoModal .cg-andarlive .l4-board button.k{height:34px!important}}
+/* old phones: no decorative animation */
+html.oro-lite body #casinoModal .cg-live4 .l4-live i{animation:none}

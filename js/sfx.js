@@ -199,6 +199,7 @@
     yatzy: 'dice', crownanchor: 'dice', derby: 'dice', ceelo: 'dice', shipcrew: 'dice', dblroul: 'wheel', twinwheel: 'wheel', twoup: 'coin', fantan: 'cups',
     pachinko: 'balls', skeeball: 'balls', amida: 'pick', ducks: 'cups', dreidel: 'wheel', oracle: 'show', rpsduel: 'cups', cometqueen: 'crash' });
   /* ---- casa (round 6) : 12 machines à sous + 12 jeux instantanés (js/games/casa1-3.js) ---- */
+  Object.assign(MAP, { baccaratlive: 'cards', andarlive: 'cards', teenpattilive: 'cards', pokerlive: 'cards', redblacklive: 'cards', lucky7live: 'cards', bustlive: 'cards', diceduellive: 'dice', peryalive: 'dice', bingolive: 'balls', lotto649live: 'balls', megaballlive: 'balls' }); // 2026-10-21 : live4
   Object.assign(MAP, { scarab: 'slots', kraken: 'slots', donut: 'slots', cherrybar: 'slots', ufo: 'slots', koi: 'slots', goldtrain: 'slots', viking: 'slots',
     safari: 'slots', rubymine: 'slots', pumpkin: 'slots', medusa: 'slots', scratchwin: 'scratch', pickbox: 'chests', ladder: 'pick', hilorun: 'cards',
     envelope: 'chests', treasure: 'pick', flip21: 'cards', popdarts: 'throwg', egghunt: 'pick', shells: 'cups', colorwheel: 'wheel', luckyten: 'balls' });
