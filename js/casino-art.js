@@ -476,5 +476,7 @@
   }
   // v2804 : les nouveaux jeux apportent leur logo (SVG 64×64, sans balise <svg>) et leurs couleurs — js/games/cat-*.js
   function addObj(k, svgInner, pal) { if (!k || OBJ[k]) return; OBJ[k] = function () { return String(svgInner || ''); }; if (pal && !PAL[k]) PAL[k] = pal; }
-  D6.CasinoArt = { PAL: PAL, obj: obj, planet: planet, sym: sym, car: car, addObj: addObj, rps: function (i) { return rpsSvg(i, true); } };
+  // 2026-10-21 (propriétaire : logos plus beaux) : un logo redessiné (js/games/logos-*.js) remplace celui du catalogue
+  function setObj(k, svgInner, pal) { if (!k) return; OBJ[k] = function () { return String(svgInner || ''); }; if (pal) PAL[k] = pal; }
+  D6.CasinoArt = { PAL: PAL, obj: obj, planet: planet, sym: sym, car: car, addObj: addObj, setObj: setObj, rps: function (i) { return rpsSvg(i, true); } };
 })(window.D6 = window.D6 || {});
