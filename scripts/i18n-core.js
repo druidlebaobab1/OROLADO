@@ -383,7 +383,8 @@
     var row = SHORT_TABLE[k];
     if (!row) return null;
     var i = MSG_LANGS.indexOf(lang);
-    return row[i >= 0 ? i : 0] || row[0];
+    if (i < 0) return null; // v3047 : langue sans texte court (zh) → message complet traduit, plus d'anglais
+    return row[i] || row[0];
   }
   /** Texte court pour une notification, ou null si le message est déjà court. */
   function shortMsg(text) {

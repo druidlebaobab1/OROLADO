@@ -2093,6 +2093,31 @@
     holdScreenAwake();
   }
 
+  // v3047 : notification = 1 ligne, sinon 2 lignes bien remplies (jamais « une ligne + 2 mots ») ;
+  // texte plus petit seulement s'il faudrait 3 lignes ; la carte se resserre sur le texte.
+  function fitToast(el, txt, on) {
+    if (!on || !txt) return;
+    try {
+      var lh = function () { return parseFloat(getComputedStyle(txt).lineHeight) || 17; };
+      var lines = function () { return Math.round(txt.getBoundingClientRect().height / lh()); };
+      var sizes = [13.5, 12.5, 11.5];
+      for (var i = 0; i < sizes.length; i++) {
+        el.style.setProperty('--toast-fs', sizes[i] + 'px');
+        if (lines() <= 2) break;
+      }
+      var n = lines();
+      if (n < 2) return;
+      var full = el.getBoundingClientRect().width;
+      var lo = Math.round(full * 0.5), hi = Math.round(full);
+      while (hi - lo > 2) {
+        var mid = (lo + hi) >> 1;
+        el.style.setProperty('width', mid + 'px', 'important');
+        if (lines() > n || txt.scrollWidth > txt.clientWidth + 1) lo = mid; else hi = mid;
+      }
+      el.style.setProperty('width', hi + 'px', 'important');
+    } catch (eFit) { el.style.removeProperty('width'); }
+  }
+
   function toast(msg, kind, ms) {
     if (isSilentTradeMsg(msg)) return;
     // v2326 : texte court sur une ligne quand il existe (notifications par-dessus l'écran)
@@ -2121,6 +2146,8 @@
       requestAnimationFrame(function () { placeToast(el); });
     }
     clearTimeout(toastTimer);
+    el.style.removeProperty('width');
+    el.style.removeProperty('--toast-fs');
     if (micro) {
       el.className = 'toast lux-msg micro show';
       el.textContent = msg;
@@ -2131,6 +2158,7 @@
     el.innerHTML = '<span class="lux-msg-ico" aria-hidden="true"></span><span class="lux-msg-txt"></span>';
     var txt = el.querySelector('.lux-msg-txt');
     if (txt) txt.textContent = msg;
+    fitToast(el, txt, !isBal && tone !== 'tie');
     toastTimer = setTimeout(function () { el.className = 'toast lux-msg ' + tone + (isBal ? ' toast-bal' : ''); }, isBal ? Math.max(ms || 0, 4200) : (ms || 3000));
   }
 
