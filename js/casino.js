@@ -642,7 +642,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3083'; // v3077+ : logos lot D (fin de js/games/logos-a.js) ; v3069–3075 : logos lot C (fin de js/games/logos-a.js) ; v3068 (propriétaire) : Ski Slalom vu de dos ; v3052–3062 : logos redessinés (js/games/logos-a.js) ; v3046 : peaux claires, gardiens sans orange/vert
+  var MOD_V = '3085'; // v3077+ : logos lot D (fin de js/games/logos-a.js) ; v3069–3075 : logos lot C (fin de js/games/logos-a.js) ; v3068 (propriétaire) : Ski Slalom vu de dos ; v3052–3062 : logos redessinés (js/games/logos-a.js) ; v3046 : peaux claires, gardiens sans orange/vert
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
