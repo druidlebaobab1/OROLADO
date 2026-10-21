@@ -60,9 +60,19 @@
       try { c.resume(); } catch (e) { /* ignore */ }
       var ua = navigator.userActivation;
       if (ua && ua.isActive) return c;
+      if (c.state === 'suspended' && c.__oroIdle) return c; // mis en veille par nous (moteur déjà déverrouillé) : il repart
     }
     return null;
   }
+  // 2026-10-21 (propriétaire : « le petit rond de son dans Safari ») : quand plus rien ne sonne, on met le moteur de son en
+  // veille → Safari n'affiche plus l'icône de son. Il repart tout seul au son suivant. ESSAI : compte admin seulement.
+  function idleOk() { try { var u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null; return !!(u && u.role === 'admin'); } catch (e) { return false; } }
+  setInterval(function () {
+    var c = window.__oroAC;
+    if (!c || c.state !== 'running' || !idleOk()) return;
+    if (active > 0 || (B && B.nodes) || Date.now() - (window.__oroSndAt || 0) < 2500) return;
+    try { c.__oroIdle = true; var pr = c.suspend(); if (pr && pr.catch) pr.catch(function () { /* ignore */ }); } catch (e) { /* ignore */ }
+  }, 1500);
   function base() { return lite() ? 0.5 : 0.58; } // 2026-10-21 (propriétaire : « augmente bien le son ») : ~2× plus fort
   function bus(c) {
     if (out && out.context === c) return out;
@@ -78,7 +88,7 @@
   function cap() { return lite() ? 8 : 18; }
   function room(n, prio) { return active + n <= cap() * (prio ? 2 : 1); }
   function track(src) {
-    active++;
+    active++; window.__oroSndAt = Date.now();
     src.onended = function () { active = Math.max(0, active - 1); try { src.disconnect(); } catch (e) { /* ignore */ } };
   }
   // une note : attaque douce, extinction naturelle
