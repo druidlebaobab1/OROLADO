@@ -3126,7 +3126,7 @@ const TITLES = Object.fromEntries(TABS.map(t => [t.id, t.k]));
 function ajax(body) {
   return fetch('admin.php?ajax=1', {
     method: 'POST',
-    headers: {'Accept':'application/json','Content-Type':'application/json'},
+    headers: {'Accept':'application/json','Content-Type':'application/json','X-Admin-TZ': (function () { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } })()}, // 2026-10-22 : heure du téléphone à chaque demande
     body: JSON.stringify(body)
   }).then(r => r.json());
 }
