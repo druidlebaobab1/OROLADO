@@ -1829,7 +1829,7 @@ function sb_live_fx_public(string $id, array $v): array {
 function sb_live_count(?array $user, int $now): int {
   if (!sb_live_visible($user)) return -1;
   $L = sb_live_data();
-  if ($now - (int) ($L['fat'] ?? 0) <= 180) return count(array_filter((array) ($L['fx'] ?? []), static fn($r) => empty($r['end'])));
+  if ($now - (int) ($L['fat'] ?? 0) <= 180) { $od = (array) ($L['od'] ?? []); return count(array_filter((array) ($L['fx'] ?? []), static fn($r, $id) => empty($r['end']) && isset($od[(string) $id]), ARRAY_FILTER_USE_BOTH)); }
   $n = 0;
   foreach ([gmdate('Y-m-d', $now - 86400), gmdate('Y-m-d', $now)] as $d) foreach ((array) (sb_day($d)['fx'] ?? []) as $r) if (in_array((string) ($r['st'] ?? ''), SB_LIVE_ST, true) && (int) ($r['ts'] ?? 0) > $now - 4 * 3600) $n++;
   return $n;
@@ -1844,6 +1844,7 @@ function sb_live_list(?array $user, int $now = 0): array {
   foreach ((array) ($L['fx'] ?? []) as $id => $r) {
     $v = sb_live_view((string) $id, $L, $now, $cfg);
     if (!$v) continue;
+    if (!is_array($v['od']) && empty($r['end'])) continue; // 2026-10-22 (propriétaire : « jamais un match sans cotes ») : pas de cotes en direct → pas affiché
     $fx[] = sb_live_fx_public((string) $id, $v); $used[(int) ($r['lg'] ?? 0)] = 1;
   }
   $lgs = [];
