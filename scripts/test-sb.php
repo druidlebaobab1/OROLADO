@@ -58,10 +58,10 @@ $odd = static function (string $fid, string $mk, string $k): ?float { foreach ((
 
 echo "1) Réglages par défaut, visibilité\n";
 $c0 = sb_config(); // 1re lecture : Public allumé une seule fois (mise en ligne du 2026-10-22), marges au moins 15/20/30/20/15
-check('mise en ligne : Public allumé une fois ; marges 1 % avant-match (tous marchés, tous sports), 4 % en direct ; direct limité aux grands championnats', $c0['public'] === true && $c0['mMain'] == 1 && $c0['mSide'] == 1 && $c0['mExotic'] == 1 && $c0['mOther'] == 1 && $c0['mLive'] == 4 && $c0['liveAll'] === false);
+check('mise en ligne : Public allumé une fois ; marges 1 % avant-match (tous marchés, tous sports), 1 % en direct ; direct limité aux grands championnats', $c0['public'] === true && $c0['mMain'] == 1 && $c0['mSide'] == 1 && $c0['mExotic'] == 1 && $c0['mOther'] == 1 && $c0['mLive'] == 1 && $c0['liveAll'] === false);
 sb_config_save(['mMain' => 30]);
 check('marges : un réglage de l\'admin n\'est jamais écrasé ensuite', sb_config()['mMain'] == 30);
-sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'mig8' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
+sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
 $c = sb_config();
 check('défauts : public NON, résultats automatiques OUI, marges 15/20/30/20/15, alertes 50/500/200', $c['public'] === false && $c['autosettle'] === true && $c['mMain'] == 15 && $c['mSide'] == 20 && $c['mExotic'] == 30 && $c['mLive'] == 20 && $c['mOther'] == 15 && $c['alertStake'] == 50 && $c['alertPot'] == 500 && $c['alertWin'] == 200);
 $NOW = $at('2026-10-22 08:00');
@@ -500,6 +500,8 @@ $GLOBALS['SB_SLEEP'] = function (int $sec, int $now) use (&$slept, &$next, &$alt
 $oH = (float) sb_pick('sb:foot:9101:1x2', 'H', $ua, $B0)['sel']['odd'];
 $nOdds = $cnt('odds/live'); $b0 = $bal[$A];
 $next = $lodds(['g' => [2, 0]]);
+$fxIds = static fn(array $g, array $ev = []) => json_encode(['errors' => [], 'response' => [['fixture' => ['id' => 9101, 'status' => ['short' => '2H', 'elapsed' => 65]], 'goals' => ['home' => $g[0], 'away' => $g[1]], 'teams' => ['home' => ['id' => 501], 'away' => ['id' => 502]], 'events' => $ev]]]);
+$alt['fixtures?ids=9101'] = $fxIds([2, 0]);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $oH]], $B0);
 $bet = $r['bet'] ?? [];
 check('pari en direct : 15 s, contrôle toutes les 3 s (5 relectures de /odds/live et du match), accepté', $r['ok'] === true && $slept === [3, 3, 3, 3, 3] && $cnt('odds/live') === $nOdds + 5 && $cnt('fixtures?ids=9101') === 5 && abs($bal[$A] - ($b0 - 10)) < 0.001, json_encode([$r, $slept]));
@@ -513,15 +515,16 @@ check('but pendant l\'attente : refusé « susp » dès le 1er contrôle (3 s), 
 $B2 = $B1 + 40; $at(gmdate('Y-m-d H:i:s', $B2)); $alt['odds/live'] = $lodds(['g' => [2, 1]]); $alt['fixtures?live=all&timezone=UTC'] = $lfx(['g' => [2, 1], 'm' => 66]); sb_live_demand($B2); sb_live_tick($B2); sb_live_refresh_now($B2 + 1); sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp']); return true; });
 $B2 += 1; $oH2 = (float) sb_pick('sb:foot:9101:1x2', 'H', $ua, $B2)['sel']['odd'];
 $next = $lodds(['g' => [2, 1], 'h' => '1.36']); // petite variation (une grosse = cadenas)
+$alt['fixtures?ids=9101'] = $fxIds([2, 1]); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $oH2]], $B2);
 check('cote changée pendant les 5 s : refusé « odds » avec la nouvelle cote', $r['ok'] === false && $r['reason'] === 'odds' && $r['odds'][0]['odd'] < $oH2 && abs($bal[$A] - $b0) < 0.001, json_encode($r));
 $newH = (float) $r['odds'][0]['odd'];
 $B3 = $B2 + 6; $at(gmdate('Y-m-d H:i:s', $B3)); $next = $lodds(['g' => [2, 1], 'h' => '1.39']);
+$alt['fixtures?ids=9101'] = $fxIds([2, 1]); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $newH]], $B3, 'any');
 check('« tout accepter » : accepté à la cote relue après les 5 s', $r['ok'] === true && $r['bet']['odd'] > $newH, json_encode($r['bet']['odd'] ?? $r));
 // 2026-10-22 (propriétaire : « vu le but sur Flashscore, pari passé ») : le MATCH (fixtures?ids) dit déjà 2-2 alors que les cotes disent encore 2-1
 $slept = [];
-$fxIds = static fn(array $g, array $ev = []) => json_encode(['errors' => [], 'response' => [['fixture' => ['id' => 9101, 'status' => ['short' => '2H', 'elapsed' => 65]], 'goals' => ['home' => $g[0], 'away' => $g[1]], 'teams' => ['home' => ['id' => 501], 'away' => ['id' => 502]], 'events' => $ev]]]);
 $alt['fixtures?ids=9101'] = $fxIds([2, 2]); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $newH]], $B3 + 1, 'any');
 check('score du match déjà changé (cotes pas encore) : refusé « but » au 1er contrôle', $r['ok'] === false && $r['reason'] === 'susp' && ($r['why'] ?? '') === 'goal' && $slept === [3], json_encode([$r, $slept]));
@@ -530,6 +533,9 @@ $alt['fixtures?ids=9101'] = $fxIds([2, 1], [['time' => ['elapsed' => 65], 'team'
 @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $newH]], $B3 + 2, 'any');
 check('carton rouge depuis la minute du pari : refusé « événement »', $r['ok'] === false && ($r['why'] ?? '') === 'event' && $slept === [3], json_encode([$r, $slept]));
+$slept = []; $alt['fixtures?ids=9101'] = '{"errors":[],"response":[]}'; @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
+$r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $newH]], $B3 + 3, 'any');
+check('match impossible à relire pendant les 15 s : refusé (on ne prend pas le risque)', $r['ok'] === false && ($r['why'] ?? '') === 'event' && count($slept) === 5, json_encode([$r, $slept]));
 unset($alt['fixtures?ids=9101']); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $B4 = $B3 + 6; $at(gmdate('Y-m-d H:i:s', $B4)); $next = $lodds(['g' => [2, 1], 'h' => '1.33', 'susp' => true]);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:btts', 'k' => 'N']], $B4, 'any');

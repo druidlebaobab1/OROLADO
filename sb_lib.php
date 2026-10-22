@@ -128,6 +128,11 @@ function sb_config(): array {
     });
     $c = sb_read('config.json');
   }
+  // 2026-10-22 (propriétaire : « le direct est mieux géré, même marge que l'avant-match ») : une seule fois, direct à 1 %
+  if (empty($c['mig9'])) {
+    sb_with('config.json', static function (array &$s) { if (!empty($s['mig9'])) return true; $s['mLive'] = 1; $s['mig9'] = 1; return true; });
+    $c = sb_read('config.json');
+  }
   if (empty($c['mig4'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig4'])) return true; $s['sports'] = SB_CFG_DEFAULT['sports']; $s['mig4'] = 1; return true; });
     $c = sb_read('config.json');
@@ -144,7 +149,7 @@ function sb_config_save(array $in): array {
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['sports']) && is_array($in['sports'])) $cur['sports'] = array_values(array_intersect(SB_CFG_DEFAULT['sports'], array_map('strval', $in['sports'])));
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
@@ -1525,7 +1530,7 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
     }
   }
   [$h, $a] = [(int) ($sc[0] ?? 0), (int) ($sc[1] ?? 0)];
-  $m = max(0.02, min(0.4, (float) $cfg['mLive'] / 100));
+  $m = max(0.01, min(0.4, (float) $cfg['mLive'] / 100));
   $out = [];
   foreach ($raw as $mk => $ks) {
     $fam = sb_fam($mk); $x = (float) substr($mk, strlen($fam) + 1);
@@ -1970,13 +1975,23 @@ function sb_live_fx_fresh(array $ids, int $now): array {
     if (!is_array($r) || ($id = (int) ($r['fixture']['id'] ?? 0)) <= 0) continue;
     $g = $r['goals'] ?? [];
     $out[(string) $id] = ['sc' => is_numeric($g['home'] ?? null) && is_numeric($g['away'] ?? null) ? [(int) $g['home'], (int) $g['away']] : null,
-      'st' => (string) ($r['fixture']['status']['short'] ?? ''), 'ev' => sb_live_events($r)];
+      'st' => (string) ($r['fixture']['status']['short'] ?? ''), 'ev' => sb_live_events($r),
+      // penalty manqué (absent de sb_live_events) : compte aussi comme événement
+      'pm' => array_values(array_map(static fn($e) => (int) ($e['time']['elapsed'] ?? 0) + (int) ($e['time']['extra'] ?? 0), array_filter((array) ($r['events'] ?? []), static fn($e) => is_array($e) && stripos((string) ($e['detail'] ?? ''), 'missed') !== false)))];
   }
   return $out;
 }
 /** Un contrôle (null = rien à signaler). $final : dernier contrôle → les cotes relues sont prises. */
-function sb_live_check(array &$picked, string $acc, ?array $user, int $now, array $fx, bool $final): ?array {
+function sb_live_check(array &$picked, string $acc, ?array $user, int $now, array $fx, bool $final, array $base = []): ?array {
   $chg = []; $L = sb_live_data(); $cfg = sb_config(); $new = $picked;
+  // 2026-10-22 (propriétaire : « que le serveur pose beaucoup de questions ») : le bookmaker a bougé le 1 · X · 2 de ce match de
+  // 3 points ou plus depuis le début du pari (action dangereuse, penalty, but pas encore noté…) → refus, quel que soit le réglage
+  foreach ($base as $id => $pa) {
+    $pb = sb_live_p1x2((array) ($L['od'][$id]['r1'] ?? []));
+    if ($pa && $pb) foreach ($pb as $k => $pv) if (isset($pa[$k]) && abs($pv - $pa[$k]) >= 0.03) {
+      foreach ($picked as $p) if (!empty($p['lv']) && str_starts_with((string) $p['ev'], 'sb:foot:' . $id . ':')) return ['ok' => false, 'reason' => 'susp', 'why' => 'event', 'ev' => $p['ev']];
+    }
+  }
   foreach ($picked as $i => $p) {
     if (empty($p['lv'])) continue;
     $id = (string) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']);
@@ -1990,6 +2005,7 @@ function sb_live_check(array &$picked, string $acc, ?array $user, int $now, arra
         $big = $e['type'] === 'goal' || $e['type'] === 'var' || ($e['type'] === 'card' && $e['detail'] === 'red');
         if ($big && (int) $e['t'] + (int) $e['x'] >= $m0 - 1) return ['ok' => false, 'reason' => 'susp', 'why' => $e['type'] === 'goal' ? 'goal' : 'event', 'ev' => $p['ev']];
       }
+      foreach ((array) ($f['pm'] ?? []) as $t) if ((int) $t >= $m0 - 1) return ['ok' => false, 'reason' => 'susp', 'why' => 'event', 'ev' => $p['ev']]; // penalty (manqué) récent
     }
     $v = sb_live_view($id, $L, $now, $cfg);
     if ($v && $v['sc'] !== $p['sc']) return $goal;
@@ -2009,15 +2025,21 @@ function sb_live_check(array &$picked, string $acc, ?array $user, int $now, arra
 function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?array {
   $ids = [];
   foreach ($picked as $p) if (!empty($p['lv'])) $ids[] = (int) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']);
-  $t = $now; $done = 0;
+  $L0 = sb_live_data(); $base = [];
+  foreach (array_unique($ids) as $id) $base[(string) $id] = sb_live_p1x2((array) ($L0['od'][(string) $id]['r1'] ?? []));
+  $t = $now; $done = 0; $seen = 0;
   while ($done < SB_LIVE_HOLD) {
     $step = min(SB_LIVE_STEP, SB_LIVE_HOLD - $done);
     $t = sb_live_wait($step, $t); $done += $step;
     sb_live_refresh_now($t);
-    $r = sb_live_check($picked, $acc, $user, $t, sb_live_fx_fresh($ids, $t), $done >= SB_LIVE_HOLD);
+    $fx = sb_live_fx_fresh($ids, $t);
+    if (count($fx) >= count(array_unique($ids))) $seen++;
+    $r = sb_live_check($picked, $acc, $user, $t, $fx, $done >= SB_LIVE_HOLD, $base);
     if ($r !== null) { $now = $t; return $r; }
   }
   $now = $t;
+  // le match n'a pu être relu qu'une fois ou jamais pendant les 15 s (fournisseur muet) : on ne prend pas le risque
+  if ($seen < 2 && !defined('SB_LIVE_NO_FX_CHECK')) return ['ok' => false, 'reason' => 'susp', 'why' => 'event'];
   return null;
 }
 /** Admin : état du direct (diagnostic). */
