@@ -1956,6 +1956,13 @@ if ($isAjax) {
   if ($action === 'profile') {
     admin_json(admin_profile_payload((string) ($req['userId'] ?? '')));
   }
+  // 2026-10-22 (propriétaire) : recharge du compte admin DU SITE (e-mail admin), jamais un autre joueur
+  if ($action === 'self_topup') {
+    $amt = round((float) ($req['amount'] ?? 0), 2);
+    if ($amt <= 0 || $amt > 100000) admin_json(['ok' => false, 'reason' => 'Montant entre 1 et 100 000 $']);
+    $adm = orolado_admin_emails()[0] ?? 'admin@orolado.com';
+    admin_json(admin_credit_player('admin_master', $amt, 'Recharge test admin', ['email' => $adm], (string) ($me['email'] ?? '')));
+  }
   if ($action === 'adjust') {
     admin_json(admin_credit_player(
       (string) ($req['userId'] ?? ''),
@@ -2973,6 +2980,12 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
               <span id="spSt" class="muted"></span>
             </div>
           </div>
+        </div>
+        <div class="nt-card" id="selfTopCard" style="margin-top:10px;border-color:rgba(59,130,246,.55)">
+          <b>🧪 Recharger mon compte admin (tests)</b>
+          <p class="muted" style="margin:4px 0 6px">Crédite seulement le compte admin du site (motif « Recharge test admin »). Aucun joueur n'est touché.</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="selfTopIn" class="nt-in" type="number" inputmode="decimal" min="1" max="100000" step="1" value="100" style="width:110px"> <span class="muted">$</span>
+          <button class="mini ok" type="button" id="selfTopGo">Recharger</button> <span id="selfTopSt" class="muted"></span></div>
         </div>
         <div class="nt-card" id="apifKeyCard" style="margin-top:10px;border-color:rgba(245,197,24,.55)">
           <b>🔑 Clé API-Sports (API-Football)</b>
@@ -4124,6 +4137,15 @@ setInterval(() => {
       const k = inp.value.trim(); if (!k) { alert('Collez d\'abord la clé.'); return; }
       go.disabled = true; let j; try { j = await ajax({action:'apif_key_set', key:k}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
       go.disabled = false; if (!j.ok) { alert(j.reason || 'Échec'); return; } inp.value = ''; paint(j);
+    };
+  })();
+  // 2026-10-22 (propriétaire) : recharger le compte admin du site pour ses tests (jamais un joueur)
+  (function () {
+    const go = $c('selfTopGo'), inp = $c('selfTopIn'), st = $c('selfTopSt'); if (!go) return;
+    go.onclick = async () => {
+      const v = parseFloat(String(inp.value).replace(',', '.')); if (!(v > 0)) { alert('Montant ?'); return; }
+      go.disabled = true; st.textContent = '…'; let j; try { j = await ajax({action:'self_topup', amount:v}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
+      go.disabled = false; st.textContent = j.ok ? '✅ +' + v + ' $ crédités' : '❌ ' + (j.reason || 'Échec');
     };
   })();
   // 2026-10-22 : PARIS AUTOMATIQUES (API-Football) — réglages, budget, import, diagnostic, résultats à vérifier
