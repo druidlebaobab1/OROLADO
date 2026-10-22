@@ -526,6 +526,7 @@ sp_resolve(load_db());
 $byId = []; foreach (sp_my_bets('u_a') as $b) $byId[$b['id']] = $b;
 check('règlement : 1x2 H gagné à 3-1 (pari posé à 2-0, 63e), payé', ($byId[$live1['id']]['status'] ?? '') === 'won' && $bal[$A] > $balS);
 $paid = $bal[$A]; sp_resolve(load_db());
+check('historique : score FINAL du match (3-1) donné avec le choix du direct', ($byId[$live1['id']]['sel'][0]['fs'] ?? null) === [3, 1], json_encode($byId[$live1['id']]['sel'][0] ?? null));
 check('jamais payé deux fois', abs($bal[$A] - $paid) < 0.001);
 check('choix du direct : jamais « annulé » parce que posé après le coup d\'envoi', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'A', 'lv' => 1], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [0, 1]]], $B5, true) === 'won'
   && sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'A'], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [0, 1]]], $B5, true) === 'void');

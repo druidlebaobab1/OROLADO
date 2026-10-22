@@ -2431,7 +2431,12 @@
   }
   /* 2026-10-22 (propriétaire) — MES PARIS en cartes nettes : état (couleur), type, date · heure ; le(s) choix en entier
      (choix en gras, match dessous, « Direct 1-0 · 63’ » pour un pari en direct) ; mise · cote · gain. Toucher → détail + reçu. */
-  function liveTag(s) { var n = NX(), sc = Array.isArray(s.sc) ? ' ' + (+s.sc[0] || 0) + '-' + (+s.sc[1] || 0) : '', m = s.m != null && s.m !== '' ? ' · ' + s.m + '’' : ''; return n.nLive + sc + m; }
+  function liveTag(s) {
+    var n = NX(), p = function (a) { return (+a[0] || 0) + '-' + (+a[1] || 0); };
+    if (Array.isArray(s.fs)) return n.ft + ' ' + p(s.fs); // match fini : score final
+    if (Array.isArray(s.cs)) return n.nLive + ' ' + p(s.cs) + (s.cm != null && s.cm !== '' ? ' · ' + s.cm + '’' : ''); // en direct : score actuel
+    var sc = Array.isArray(s.sc) ? ' ' + p(s.sc) : '', m = s.m != null && s.m !== '' ? ' · ' + s.m + '’' : ''; return n.nLive + sc + m;
+  }
   function receipts(bets) {
     var x = XX(), n = NX();
     if (!bets.length) return empty(x.noBets, x.seeBets, null, 'home');
@@ -2444,7 +2449,7 @@
       var show = multi ? bt.sel.slice(0, 3) : bt.sel;
       var sels = show.map(function (s) {
         var e = s.mk ? null : evByTitle(s.t);
-        return '<span class="pz-bs1"><b dir="auto">' + esc(selLbl(s)) + '</b><small dir="auto">' + esc(e ? trT(e) : s.t) + (s.lv ? '</small><em class="pz-lvt">' + esc(liveTag(s)) + '</em>' : '</small>') + '</span>';
+        return '<span class="pz-bs1"><b dir="auto">' + esc(selLbl(s)) + '</b><small dir="auto">' + esc(e ? trT(e) : s.t) + (s.lv || s.fs || s.cs ? '</small><em class="pz-lvt' + (s.fs ? ' fin' : '') + '">' + esc(liveTag(s)) + '</em>' : '</small>') + '</span>';
       }).join('') + (multi && bt.sel.length > 3 ? '<small class="pz-bmore">+' + (bt.sel.length - 3) + '</small>' : '');
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
