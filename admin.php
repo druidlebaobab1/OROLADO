@@ -234,14 +234,16 @@ function admin_app_users_payload(): array {
   foreach ($d['users'] as $uid => $r) {
     if (!is_array($r)) continue;
     $first = (int) ($r['first'] ?? 0); $pl = (string) ($r['plat'] ?? 'pc');
-    $n['total']++;
-    if (isset($n[$pl])) $n[$pl]++;
-    if ($first > 0 && (new DateTimeImmutable('@' . $first))->setTimezone($tz)->format('Y-m-d') === $today) $n['today']++;
     $u = admin_user_lookup((string) $uid, $pmap);
     if (($u['email'] ?? '') === '' && is_array($loc[$uid] ?? null)) { // compte du site (pas encore relié) : fiche locale
       $lu = $loc[$uid];
       $u = ((string) ($lu['sbId'] ?? '')) !== '' && isset($pmap[(string) $lu['sbId']]) ? $pmap[(string) $lu['sbId']] : ['publicId' => (string) ($lu['publicId'] ?? $uid), 'email' => (string) ($lu['email'] ?? '')];
     }
+    // 2026-10-22 (propriétaire) : ses propres comptes admin ne comptent pas parmi les joueurs de l'appli
+    if (admin_is_house_account((string) $uid, is_array($loc[$uid] ?? null) ? $loc[$uid] : []) || admin_is_house_account((string) ($u['id'] ?? ''), $u)) continue;
+    $n['total']++;
+    if (isset($n[$pl])) $n[$pl]++;
+    if ($first > 0 && (new DateTimeImmutable('@' . $first))->setTimezone($tz)->format('Y-m-d') === $today) $n['today']++;
     $rows[] = ['id' => (string) $uid, 'publicId' => (string) ($u['publicId'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'plat' => $pl,
       'first' => $fmt($first), 'last' => $fmt((int) ($r['last'] ?? 0)), 'days' => (int) ($r['days'] ?? 0), '_t' => $first];
   }
@@ -416,7 +418,7 @@ function admin_persist_admin_log(string $adminEmail, string $targetPid, string $
 function admin_badges(): array {
   $cached = admin_cache_get('badges_epoch3', 12);
   if (is_array($cached) && isset($cached['inscrits'])) return $cached;
-  $people = admin_profiles();
+  $people = admin_stat_people(admin_profiles()); // 2026-10-22 (propriétaire) : comptes admin (maison) hors de TOUS les chiffres
   $wds = admin_withdrawals();
   $deps = admin_deposits();
   [$t0, $t1] = admin_day_bounds('today');
@@ -633,7 +635,7 @@ function admin_closed_accounts(array $people): array {
     $ban = $bans[$id] ?? null;
     $kind = in_array($role, ['suspended', 'banned'], true) ? 'suspended' : ($role === 'deleted' ? 'deleted' : '');
     if ($kind === '' && is_array($ban)) $kind = strtolower((string) ($ban['kind'] ?? '')) === 'deleted' ? 'deleted' : 'suspended';
-    if ($kind === '' || admin_is_protected_account($p, $id)) continue;
+    if ($kind === '' || admin_is_house_account($id, $p)) continue;
     $em = strtolower(trim((string) ($p['email'] ?? '')));
     if ($em !== '') $seenEmail[$em] = true;
     $out[] = ['kind' => $kind, 'id' => $id, 'publicId' => (string) ($p['publicId'] ?? ''), 'email' => $em,
@@ -699,6 +701,10 @@ function admin_list_payload(string $view, array $req): array {
   $vaults = $needVaults ? admin_vaults() : [];
   $pmap = [];
   foreach ($people as $p) $pmap[(string) $p['id']] = admin_enrich_user_row($p, $vaults);
+  // 2026-10-22 (propriétaire) : les comptes admin (maison) ne comptent dans AUCUN chiffre ; ils restent trouvables
+  // par la recherche (q) dans les listes de joueurs, et leurs noms restent lisibles ($pmap).
+  $peopleAll = $people;
+  $people = admin_stat_people($people);
   $wds = $needWds ? admin_withdrawals() : [];
   $deps = $needDeps ? admin_deposits() : [];
   $orders = $needOrders ? admin_orders() : [];
@@ -740,6 +746,7 @@ function admin_list_payload(string $view, array $req): array {
   }
 
   if (in_array($view, ['signup_today', 'signup_yesterday', 'signup_date', 'signup_google', 'signup_email', 'no_deposit', 'online', 'inactive', 'top_balances'], true)) {
+    if (trim((string) ($req['q'] ?? '')) !== '') $people = $peopleAll; // recherche : l'admin retrouve aussi son compte
     $cols = $userCols;
     $list = $people;
     if ($view === 'signup_today') {
@@ -1392,7 +1399,7 @@ function admin_list_payload(string $view, array $req): array {
 
   if ($view === 'payers') {
     $cols = $userCols;
-    $list = array_values(array_filter($people, static fn($p) => (float) ($p['depositTotal'] ?? 0) > 0));
+    $list = array_values(array_filter(trim((string) ($req['q'] ?? '')) !== '' ? $peopleAll : $people, static fn($p) => (float) ($p['depositTotal'] ?? 0) > 0));
     $list = admin_apply_filters($list, $req, 'createdAt');
     usort($list, static fn($a, $b) => ((float) ($b['depositTotal'] ?? 0) <=> (float) ($a['depositTotal'] ?? 0)));
     [$slice, $total, $page, $pages] = admin_page($list, $req);
@@ -2167,12 +2174,10 @@ if ($isAjax) {
     require_once __DIR__ . '/sports_lib.php';
     if ($action === 'cs_stats') {
       $st = casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'stats.json', static fn(array &$s) => $s) ?: [];
-      // 2026-10-22 (propriétaire : « 19 000 $ misés alors que les dépôts font moins de 300 $ ? ») : part des comptes admin (tests)
-      $adm = ['n' => 0, 'in' => 0.0];
-      $ldbA = admin_local_db(); $uidsA = ['admin_master'];
-      foreach ((array) ($ldbA['users'] ?? []) as $uA => $rowA) if (admin_is_admin_account((string) $uA, ['email' => (string) ($rowA['email'] ?? '')])) $uidsA[] = (string) $uA;
-      foreach (array_unique($uidsA) as $uA) { $tA = (array) (casino_admin_player($uA)['tot'] ?? []); $adm['n'] += (int) ($tA['n'] ?? 0); $adm['in'] += (float) ($tA['in'] ?? 0); }
-      admin_json(['ok' => true, 'adm' => $adm, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? [], 'limits' => casino_limits(), 'max' => CASINO_MAX_STAKE, 'games' => array_merge(CASINO_GAMES, casino_ext_keys()), 'names' => function_exists('casino_ext_names') ? casino_ext_names() : []]); // v2804 : nouveaux jeux
+      // 2026-10-22 (propriétaire) : les parties des comptes admin (tests) ne comptent dans AUCUN chiffre (retirées ici)
+      require_once __DIR__ . '/admin_games_lib.php';
+      [$csAll, $csToday] = admin_cs_stats_clean($st);
+      admin_json(['ok' => true, 'all' => $csAll, 'today' => $csToday, 'limits' => casino_limits(), 'max' => CASINO_MAX_STAKE, 'games' => array_merge(CASINO_GAMES, casino_ext_keys()), 'names' => function_exists('casino_ext_names') ? casino_ext_names() : []]); // v2804 : nouveaux jeux
     }
     // v2698 — joueurs du casino : liste (nom, e-mail, ID public) et détail d'un joueur (parties + paris sportifs)
     if ($action === 'cs_players' || $action === 'cs_player') {
@@ -2182,7 +2187,8 @@ if ($isAjax) {
         return ['name' => (string) ($u['displayName'] ?? $u['name'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? '')];
       };
       if ($action === 'cs_players') {
-        $list = array_map(static fn($r) => $r + $who($r['uid']), casino_admin_players(60));
+        // 2026-10-22 : jamais les comptes admin dans la liste « Joueurs du casino » (cherchables quand même par e-mail / ID)
+        $list = array_map(static fn($r) => $r + $who($r['uid']), admin_cs_players_list(60));
         admin_json(['ok' => true, 'players' => $list]);
       }
       $q = strtolower(trim((string) ($req['q'] ?? '')));
@@ -2199,7 +2205,7 @@ if ($isAjax) {
       admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'casino', 0, 'Mises maximales du casino : ' . json_encode($res['limits']));
       admin_json($res);
     }
-    if ($action === 'sp_list') admin_json(['ok' => true, 'events' => sp_admin_list()]);
+    if ($action === 'sp_list') admin_json(['ok' => true, 'events' => sp_admin_list(admin_house_skip())]); // 2026-10-22 : sans les paris des comptes admin
     if ($action === 'sp_save') admin_json(sp_admin_save((array) ($req['ev'] ?? [])));
     if ($action === 'sp_seed') admin_json(sp_admin_seed(array_merge(sp_suggestions2(), sp_suggestions3(), sp_suggestions4()))); // v2787/v2807 : les événements serrés (ceux qui manquent) ; 2026-10-21 : + 4e série
     // v2807 (propriétaire) : les paris d'un événement → qui a gagné, qui a perdu (lecture seule)
@@ -2224,7 +2230,7 @@ if ($isAjax) {
     // 2026-10-22 (propriétaire) — PRÉDICTIONS « Predict » (pred_lib.php) : liste, import du fichier JSON, règlement automatique maintenant
     if (in_array($action, ['sp_pred_list', 'sp_pred_import', 'sp_pred_run', 'sp_pred_edit'], true)) {
       if (!function_exists('pred_import')) admin_json(['ok' => false, 'reason' => 'Module des prédictions absent']);
-      if ($action === 'sp_pred_list') admin_json(pred_admin_list());
+      if ($action === 'sp_pred_list') admin_json(pred_admin_list(0, admin_house_skip()));
       if ($action === 'sp_pred_edit') admin_json(pred_admin_edit((string) ($req['id'] ?? ''), (array) ($req['ed'] ?? [])));
       if ($action === 'sp_pred_import') {
         $raw = (string) ($req['json'] ?? '');
@@ -2236,7 +2242,7 @@ if ($isAjax) {
       }
       @set_time_limit(60);
       $rp = pred_reprice_job(0, true);
-      admin_json(['repriced' => $rp['repriced'] ?? 0] + pred_auto_run(admin_local_db(), 0, true) + ['list' => pred_admin_list()]);
+      admin_json(['repriced' => $rp['repriced'] ?? 0] + pred_auto_run(admin_local_db(), 0, true) + ['list' => pred_admin_list(0, admin_house_skip())]);
     }
     // 2026-10-22 : corrigé (était dans le bloc gm_, jamais atteint → « Action inconnue ») ; 2026-10-21 (propriétaire) : fiche joueur → ses PARIS (lecture seule)
     if ($action === 'sp_player') {
@@ -4184,9 +4190,7 @@ setInterval(() => {
     const top = Object.entries(((j.all || {}).real) || {}).map(([g, v]) => ({g, n:v.n, i:v.in})).sort((a, b) => b.n - a.n || b.i - a.i);
     const topMax = top.length ? top[0].n : 1;
     const today = ((j.today || {}).real) || {};
-    const adm = j.adm || {};
     const topCard = '<div class="nt-card" style="margin-bottom:10px"><b style="font-size:1.05rem">🏆 Jeux les plus joués (argent réel)</b>' +
-      '<p class="muted" style="margin:4px 0 0">« Misés » = total de toutes les mises (un joueur rejoue ses gains plusieurs fois). Dont vos comptes admin (tests) : <b>' + m2(adm.in) + '</b> sur ' + (adm.n || 0) + ' parties.</p>' +
       (top.length ? top.map((r, k) => '<div style="display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;margin-top:8px"><b style="color:' + (k < 3 ? '#FCD34D' : 'var(--muted)') + '">' + (k + 1) + '</b>' +
         '<div><div style="display:flex;justify-content:space-between;gap:6px"><span>' + esc(GN[r.g] || r.g) + '</span><span class="muted">' + m2(r.i) + ' misés</span></div>' +
         '<i style="display:block;height:7px;border-radius:4px;margin-top:4px;background:linear-gradient(90deg,#22C55E,#5CF59A);width:' + Math.max(4, Math.round(r.n / topMax * 100)) + '%"></i></div>' +

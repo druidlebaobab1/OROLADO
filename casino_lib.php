@@ -668,9 +668,28 @@ function casino_credit(array $db, string $uid, string $mode, float $amount, stri
   return $got;
 }
 
-/** Statistiques pour l'admin (mises, gains versés, parties) — par jeu et par mode réel / démo. */
-function casino_stat(string $game, string $mode, float $stake, float $win): void {
+/**
+ * 2026-10-22 (propriétaire) — compte de la maison (admin_master, rôle admin, e-mail admin) : ses parties ne comptent pas
+ * dans les statistiques du casino de l'admin. Contrôle sans lecture de fichier ; la partie et le paiement ne changent pas.
+ */
+function casino_is_house(string $uid, ?array $user = null): bool {
+  if ($uid === '' || !function_exists('orolado_is_house_account')) return false;
+  return orolado_is_house_account($uid, is_array($user) ? $user : []);
+}
+
+/** Statistiques pour l'admin (mises, gains versés, parties) — par jeu et par mode réel / démo. Jamais les comptes admin (uid donné). */
+function casino_stat(string $game, string $mode, float $stake, float $win, string $uid = '', ?array $user = null): void {
   if ($mode === 'try') return;
+  if ($uid !== '' && casino_is_house($uid, $user)) {
+    // Le journal des parties (casino_hist_add) garde la partie. « hsFrom » = depuis quand les comptes admin ne sont plus
+    // comptés ici : l'admin retire des chiffres leurs parties d'AVANT (déjà comptées), jamais celles d'après (pas deux fois).
+    casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'stats.json', static function (array &$s) {
+      if (!empty($s['hsFrom'])) return false;
+      $s['hsFrom'] = round(microtime(true), 4);
+      return true;
+    });
+    return;
+  }
   casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'stats.json', static function (array &$s) use ($game, $mode, $stake, $win) {
     $day = gmdate('Y-m-d');
     foreach (['all', $day] as $k) {
@@ -679,7 +698,7 @@ function casino_stat(string $game, string $mode, float $stake, float $win): void
       $s[$k][$mode][$game]['out'] = casino_money((float) ($s[$k][$mode][$game]['out'] ?? 0) + $win);
     }
     // on garde 40 jours de détail
-    $days = array_values(array_filter(array_keys($s), static fn($k) => $k !== 'all'));
+    $days = array_values(array_filter(array_keys($s), static fn($k) => $k !== 'all' && $k !== 'hsFrom'));
     sort($days);
     while (count($days) > 40) unset($s[array_shift($days)]);
     return true;
@@ -824,7 +843,7 @@ function casino_play(array $db, ?array $user, string $game, string $mode, float 
     casino_with(casino_user_file($uid), static function (array &$st) use ($ref, $win) { $st['pend'][$ref] = $win; return true; });
   }
   if ($mode !== 'try') {
-    casino_stat($game, $mode, $stake, $win);
+    casino_stat($game, $mode, $stake, $win, $uid, $user);
     casino_hist_add($uid, ['g' => $game, 'm' => $mode, 's' => $stake, 'w' => $win, 'at' => time()], ['r' => $ref]);
   }
   return ['ok' => true, 'game' => $game, 'mode' => $mode, 'stake' => $stake, 'mult' => (float) $res['mult'], 'win' => $win, 'view' => $res['view'],
@@ -1210,7 +1229,7 @@ function casino_finish(array $db, string $uid, string $game, array $g, float $no
       // base injoignable : on réessaiera au prochain appel
       casino_with($file, static function (array &$st) use ($game) { $st['g'][$game]['paid'] = 0; return true; });
     } else {
-      casino_stat($game, (string) $g['mode'], (float) $g['stake'], (float) ($g['win'] ?? 0));
+      casino_stat($game, (string) $g['mode'], (float) $g['stake'], (float) ($g['win'] ?? 0), $uid, is_array($db['users'][$uid] ?? null) ? $db['users'][$uid] : null);
       casino_hist_add($uid, ['g' => $game, 'm' => $g['mode'], 's' => (float) $g['stake'], 'w' => (float) ($g['win'] ?? 0), 'at' => time()], ['r' => (string) ($g['ref'] ?? ''), 'v' => !empty($g['void'])]);
     }
   }

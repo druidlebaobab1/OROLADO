@@ -10,7 +10,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 $tmp = sys_get_temp_dir() . '/orolado_adm_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
 mkdir($tmp . '/feedcache', 0755, true);
-foreach (['orolado_lib.php', 'admin_lib.php', 'mail_queue_lib.php', 'admin.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'history_lib.php', 'wipe_lib.php', 'admin_gift_lib.php', 'push_lib.php', 'aff_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php'] as $f) {
+foreach (['orolado_lib.php', 'admin_lib.php', 'mail_queue_lib.php', 'admin.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'history_lib.php', 'wipe_lib.php', 'admin_gift_lib.php', 'push_lib.php', 'aff_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php', 'casino_lib.php', 'sports_lib.php', 'admin_games_lib.php'] as $f) {
   if (is_file(__DIR__ . '/../' . $f)) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 }
 putenv('SUPABASE_URL=https://fake.supabase.test');
@@ -89,6 +89,20 @@ $dep($p9, 10, 'admin', 'adm_p9');
 for ($n = 20; $n < 30; $n++) { $id = $mk($n, 0, 0, '102.0.0.1'); }
 $dep($U(20), 5, 'admin', 'adm_p20');
 
+// 2026-10-22 (propriétaire) — COMPTE ADMIN (maison) : son vrai dépôt carte, ses recharges « Recharger mon compte admin »
+// (self_topup → admin_credit_player('admin_master', …)), son retrait et son trade ne doivent changer AUCUN chiffre :
+// tous les totaux vérifiés plus bas restent ceux des vrais joueurs.
+$pAdm = $U(99);
+$T['profiles'][] = ['id' => $pAdm, 'email' => 'admin@orolado.com', 'display_name' => 'Admin', 'phone' => '', 'country_code' => '+977',
+  'role' => 'admin', 'created_at' => $iso($now - 600), 'last_seen' => $iso($now - 10), 'real_deposit_total' => 2500, 'real_trades' => 1];
+$T['vaults'][] = ['user_id' => $pAdm, 'real' => 5000, 'demo' => 1000000];
+$auth[] = ['id' => $pAdm, 'email' => 'admin@orolado.com', 'last_sign_in_ip' => '27.34.0.1', 'created_at' => $iso($now - 600), 'user_metadata' => []];
+$dep($pAdm, 500, 'flutterwave', 'd_adm');
+$dep('admin_master', 1000, 'admin', 'adm_self1');
+$dep($pAdm, 1000, 'admin', 'adm_self2');
+$wd($pAdm, 200, 'pending', '+9779800000000', 'w_adm');
+$ord($pAdm, 50, 45, 'call', 300);
+
 $GLOBALS['OROLADO_FAKE_SB'] = function (string $path, string $method, ?string $body, array $hdr) use (&$T, &$auth) {
   $ok = static fn(array $rows): array => ['ok' => true, 'code' => 200, 'rows' => $rows, 'count' => count($rows), 'raw' => json_encode($rows)];
   if (str_starts_with($path, '/auth/v1/admin/users')) {
@@ -129,6 +143,8 @@ $localUsers8 = ['ulocal8' => ['id' => 'ulocal8', 'email' => 'joueur8@test.com', 
 $p9 = $mk(9, 0, 0);
 $T['profiles'][count($T['profiles']) - 1]['created_at'] = $iso($now - 120);
 $auth[count($auth) - 1]['created_at'] = $iso($now - 120);
+$localUsers8['admin_master'] = ['id' => 'admin_master', 'email' => 'admin@orolado.com', 'role' => 'admin'];
+$localUsers8['uadmloc'] = ['id' => 'uadmloc', 'email' => 'admin@orolado.com', 'role' => 'admin', 'sbId' => $pAdm];
 $localUsers8['ulocal9'] = ['id' => 'ulocal9', 'email' => 'joueur9@test.com', 'sbId' => $p9, 'createdAt' => date('c', $now - 5 * 86400)];
 // Faux retrait écrit directement dans Supabase depuis un téléphone (aucun débit) : doit être bloqué.
 $T['withdrawals'][] = ['id' => 'wd_fake_phone', 'user_id' => $p1, 'amount' => 9999, 'status' => 'pending', 'operator' => 'wave', 'phone' => '0799999999',
@@ -255,10 +271,10 @@ check('compteur « Suspects » = nombre de lignes de la liste', (int) $b['wd_sus
 echo "4) Compteurs\n";
 [$d0, $d1] = admin_day_bounds('today');
 $wantToday = 0;
-foreach ($T['orders'] as $o) if (admin_in_range($o['created_at'], $d0, $d1)) $wantToday++;
+foreach ($T['orders'] as $o) if ($o['user_id'] !== $pAdm && admin_in_range($o['created_at'], $d0, $d1)) $wantToday++; // jamais le trade de l'admin
 check('compteurs figés supprimés (Temps de jeu / Payout = vrais trades du jour)', $b['trade_minutes'] === $b['games'] && $b['games'] === $wantToday + 1, 'trades du jour ' . $b['games'] . ' (attendu ' . ($wantToday + 1) . ', dont 1 local)');
 $netToday = [];
-foreach ($T['orders'] as $o) if (admin_in_range($o['created_at'], $d0, $d1)) $netToday[$o['user_id']] = ($netToday[$o['user_id']] ?? 0) + $o['net'];
+foreach ($T['orders'] as $o) if ($o['user_id'] !== $pAdm && admin_in_range($o['created_at'], $d0, $d1)) $netToday[$o['user_id']] = ($netToday[$o['user_id']] ?? 0) + $o['net'];
 $wantWin = count(array_filter($netToday, static fn($v) => $v > 0.009));
 check('Top gagnants du jour compté', $b['top_winners'] === $wantWin, $b['top_winners'] . ' (attendu ' . $wantWin . ')');
 check('Bonus Offerts compté', $b['dep_bonus'] === 4, (string) $b['dep_bonus']);
@@ -298,6 +314,8 @@ push_app_user_ping($p1, 'ios', $now - 3 * 86400 + 60); // même jour : pas un jo
 push_app_user_ping($p1, 'ios', $now - 60);
 push_app_user_ping($p2, 'android', $now - 30);
 push_app_user_ping('ulocal9', 'android', $now - 10);
+push_app_user_ping('admin_master', 'android', $now - 100); // comptes admin : jamais comptés dans l'appli
+push_app_user_ping($pAdm, 'ios', $now - 90);
 push_app_user_ping('', 'ios', $now - 5);
 push_app_user_ping('', 'android', $now - 4);
 check('identifiant invalide refusé', !push_app_user_ping('a b<script>', 'ios') && !push_app_user_ping($p1, 'tv'));
@@ -311,6 +329,92 @@ check('joueur 1 : 2 jours, e-mail et heures', $r1 && $r1['days'] === 2 && $r1['e
 check('liste : plus récents d’abord', ($ap['list'][0]['id'] ?? '') === 'ulocal9' && ($ap['list'][2]['id'] ?? '') === $p1);
 check('compte du site : e-mail retrouvé', ($ap['list'][0]['email'] ?? '') === 'joueur9@test.com', json_encode($ap['list'][0] ?? []));
 check('fichier jamais à moitié écrit (aucun .tmp restant)', !glob(dirname(push_app_users_file()) . '/app_users.json.tmp*'));
+
+echo "7) Comptes admin (maison) : dans AUCUN chiffre du tableau\n";
+check('un seul contrôle : admin_master, profil admin, fiche locale liée = maison ; un joueur non',
+  admin_is_house_account('admin_master') && admin_is_house_account($pAdm, ['id' => $pAdm, 'email' => 'admin@orolado.com'])
+  && admin_is_house_account($pAdm) && admin_is_house_account('uadmloc') && admin_is_house_account('x', ['email' => 'admin@6diablo.com'])
+  && !admin_is_house_account($p1, ['id' => $p1, 'email' => 'joueur1@test.com']) && !admin_is_house_account('ulocal8'));
+admin_bust_cache();
+$b = admin_badges();
+check('Bénéfice total = 225 $ (ni le dépôt carte de l’admin, ni ses recharges, ni son retrait)', abs((float) $b['profit_total'] - 225) < 0.01 && abs((float) $b['profit_today'] - 225) < 0.01, $b['profit_total'] . ' / ' . $b['profit_today']);
+check('Total des dépôts = 250 $, retraits validés = 25 $', abs((float) $b['sum_dep_all'] - 250) < 0.01 && abs((float) $b['sum_wd_paid'] - 25) < 0.01, $b['sum_dep_all'] . ' / ' . $b['sum_wd_paid']);
+check('compteurs dépôts : 6 payés, 6 aujourd’hui, bonus 4 (la recharge admin n’est pas un bonus)', $b['dep_all'] === 6 && $b['dep_today'] === 6 && $b['dep_bonus'] === 4, $b['dep_all'] . '/' . $b['dep_today'] . '/' . $b['dep_bonus']);
+$allIds = array_map(static fn($p) => (string) $p['id'], admin_profiles());
+check('l’admin reste dans la liste des comptes (gérable)', in_array($pAdm, $allIds, true));
+check('nombre d’inscrits sans l’admin', $b['inscrits'] === count($allIds) - 1 && admin_inscrits_count() === count($allIds) - 1, $b['inscrits'] . ' / ' . count($allIds));
+check('« Joueurs en ligne » : l’admin connecté ne compte pas', $b['online'] === 0 && admin_online_count() === 0, (string) $b['online']);
+check('« Inscriptions du Jour » : 0 (l’admin, inscrit il y a 10 min, ne compte pas)', $b['signup_today'] === 0, (string) $b['signup_today']);
+$vAdm = static function (string $view, array $req = []) use ($pAdm, $ids): bool { return !in_array($pAdm, $ids(admin_list_payload($view, $req + ['preset' => 'all', 'page' => 1])), true); };
+$okViews = [];
+foreach (['signup_today', 'signup_date', 'online', 'top_balances', 'payers', 'dep_all', 'dep_today', 'dep_bonus', 'dep_top', 'wd_pending', 'wd_all', 'top_winners', 'profit_total', 'wd_suspect'] as $v) if (!$vAdm($v)) $okViews[] = $v;
+check('aucune liste-chiffre ne contient l’admin', $okViews === [], implode(', ', $okViews));
+check('mais la recherche le retrouve (e-mail admin)', in_array($pAdm, $ids(admin_list_payload('signup_date', ['preset' => 'all', 'q' => 'admin@orolado.com'])), true));
+$jg = admin_list_payload('signup_geo', ['preset' => 'all']);
+check('pays des inscrits : pas de Népal (+977, l’admin)', !in_array('+977', array_map(static fn($r) => (string) $r['cells'][0], $jg['rows']), true) && $jg['total'] === count($allIds) - 1, (string) $jg['total']);
+$jt = admin_list_payload('games', ['preset' => 'all']);
+$stakeAll = 0.0; foreach ($T['orders'] as $o) if ($o['user_id'] !== $pAdm) $stakeAll += $o['stake'];
+$stakeGot = 0.0; foreach (admin_orders() as $o) $stakeGot += (float) $o['stake'];
+check('trades : la mise de 50 $ de l’admin n’est pas comptée', abs($stakeGot - $stakeAll - 3) < 0.01, $stakeGot . ' vs ' . $stakeAll . ' (+3 trade local)');
+check('« Application installée » : 3 joueurs (les 2 comptes admin ne comptent pas)', (admin_app_users_payload()['n']['total'] ?? -1) === 3);
+// Un VRAI joueur, lui, change les chiffres ; un nouveau dépôt / recharge de l'admin non.
+$dep($p1, 40, 'flutterwave', 'd1b');
+$dep($pAdm, 777, 'flutterwave', 'd_adm2');
+$dep('admin_master', 300, 'admin', 'adm_self3');
+admin_bust_cache();
+$b = admin_badges();
+check('dépôt d’un vrai joueur : +40 $ (250 → 290), dépôts de l’admin ignorés', abs((float) $b['sum_dep_all'] - 290) < 0.01 && abs((float) $b['profit_total'] - 265) < 0.01 && $b['dep_bonus'] === 4, $b['sum_dep_all'] . ' / ' . $b['profit_total']);
+
+echo "8) Casino : jeux les plus joués, aujourd’hui, depuis le début, joueurs — sans les parties des comptes admin\n";
+require_once $tmp . '/casino_lib.php';
+require_once $tmp . '/sports_lib.php';
+require_once $tmp . '/admin_games_lib.php';
+$day = gmdate('Y-m-d'); $yday = gmdate('Y-m-d', $now - 86400);
+$cell = static fn(int $n, float $in, float $out): array => ['n' => $n, 'in' => $in, 'out' => $out];
+// stats.json d'avant : 2 parties de dés d'un vrai joueur + 3 de l'admin aujourd'hui, 2 coin flip de l'admin hier, paris : 1 coupon de chacun
+file_put_contents(casino_dir() . '/stats.json', json_encode([
+  'all' => ['real' => ['dice' => $cell(5, 50, 40), 'coin' => $cell(2, 20, 30), 'sports' => $cell(2, 15, 20)], 'demo' => ['dice' => $cell(1, 1, 0)]],
+  $day => ['real' => ['dice' => $cell(5, 50, 40), 'sports' => $cell(1, 5, 0)]],
+  $yday => ['real' => ['coin' => $cell(2, 20, 30), 'sports' => $cell(1, 10, 20)]],
+]));
+$line = static fn(float $t, string $u, string $g, string $m, float $st, float $w): string => json_encode(['t' => $t, 'u' => $u, 'g' => $g, 'm' => $m, 's' => $st, 'w' => $w, 'x' => 0]) . "\n";
+file_put_contents(casino_round_user_file('ulocal8'), $line($now - 50, 'ulocal8', 'dice', 'real', 10, 10) . $line($now - 40, 'ulocal8', 'dice', 'real', 10, 10));
+file_put_contents(casino_round_user_file('admin_master'), $line($now - 86400, 'admin_master', 'coin', 'real', 10, 15) . $line($now - 86390, 'admin_master', 'coin', 'real', 10, 15)
+  . $line($now - 30, 'admin_master', 'dice', 'real', 10, 20) . $line($now - 20, 'admin_master', 'dice', 'demo', 1, 0));
+file_put_contents(casino_round_user_file('uadmloc'), $line($now - 25, 'uadmloc', 'dice', 'real', 10, 0) . $line($now - 15, 'uadmloc', 'dice', 'real', 10, 0));
+sp_with('bets.json', static function (array &$s) use ($now) {
+  $s['b'] = [['id' => 'sb1', 'uid' => 'admin_master', 'mode' => 'real', 'status' => 'won', 'stake' => 10, 'win' => 20, 'done' => $now - 86400, 'sel' => []],
+    ['id' => 'sb2', 'uid' => 'ulocal8', 'mode' => 'real', 'status' => 'lost', 'stake' => 5, 'win' => 0, 'done' => $now, 'sel' => []]];
+  return true;
+});
+$cs = static fn(): array => admin_cs_stats_clean(casino_with(casino_dir() . '/stats.json', static fn(array &$s) => $s) ?: [], $day);
+[$ca, $ct] = $cs();
+check('« Depuis le début » : dés = 2 parties / 20 $ misés / 20 $ payés (les 3 de l’admin retirées)', ($ca['real']['dice'] ?? null) == $cell(2, 20.0, 20.0), json_encode($ca['real']['dice'] ?? null));
+check('« Depuis le début » : coin flip (joué seulement par l’admin) disparaît', !isset($ca['real']['coin']), json_encode($ca['real'] ?? []));
+check('« Depuis le début » : paris = le coupon du vrai joueur seulement', ($ca['real']['sports'] ?? null) == $cell(1, 5.0, 0.0), json_encode($ca['real']['sports'] ?? null));
+check('« Aujourd’hui » : dés 2 parties / 20 $ ; paris 1 coupon / 5 $', ($ct['real']['dice'] ?? null) == $cell(2, 20.0, 20.0) && ($ct['real']['sports'] ?? null) == $cell(1, 5.0, 0.0), json_encode($ct));
+// Désormais casino_stat() ne compte plus l'admin : sa nouvelle partie n'est ni ajoutée, ni retirée deux fois
+casino_stat('dice', 'real', 10, 0, 'admin_master', ['id' => 'admin_master', 'email' => 'admin@orolado.com', 'role' => 'admin']);
+casino_stat('dice', 'real', 10, 0, 'uadmloc', ['id' => 'uadmloc', 'email' => 'admin@orolado.com']);
+usleep(2000);
+file_put_contents(casino_round_user_file('admin_master'), $line(microtime(true), 'admin_master', 'dice', 'real', 10, 0), FILE_APPEND);
+$raw = json_decode((string) file_get_contents(casino_dir() . '/stats.json'), true);
+check('partie d’un compte admin : stats.json inchangé (5 parties de dés)', (int) ($raw['all']['real']['dice']['n'] ?? 0) === 5 && !empty($raw['hsFrom']), json_encode($raw['all']['real']['dice'] ?? null));
+[$ca, $ct] = $cs();
+check('… et l’affichage reste 2 parties (jamais retirée deux fois)', ($ca['real']['dice'] ?? null) == $cell(2, 20.0, 20.0) && ($ct['real']['dice'] ?? null) == $cell(2, 20.0, 20.0), json_encode($ca['real']['dice'] ?? null));
+casino_stat('dice', 'real', 10, 5, 'ulocal8', ['id' => 'ulocal8', 'email' => 'joueur8@test.com']);
+[$ca, $ct] = $cs();
+check('partie d’un vrai joueur : comptée (3 parties / 30 $ misés / 25 $ payés)', ($ca['real']['dice'] ?? null) == $cell(3, 30.0, 25.0) && ($ct['real']['dice'] ?? null) == $cell(3, 30.0, 25.0), json_encode($ca['real']['dice'] ?? null));
+$src = (string) file_get_contents($tmp . '/casino_lib.php');
+check('les deux fins de partie du casino donnent le joueur à casino_stat()', substr_count($src, 'casino_stat($game, $mode, $stake, $win, $uid, $user)') === 1 && str_contains($src, "casino_stat(\$game, (string) \$g['mode'], (float) \$g['stake'], (float) (\$g['win'] ?? 0), \$uid,"));
+check('les paris donnent aussi le joueur à casino_stat()', str_contains((string) file_get_contents($tmp . '/sports_lib.php'), "casino_stat('sports', (string) \$p['mode'], (float) \$p['s'], (float) \$p['w'], (string) \$p['uid'],"));
+casino_hist_add('admin_master', ['g' => 'dice', 'm' => 'real', 's' => 500, 'w' => 0, 'at' => $now]);
+casino_hist_add('uadmloc', ['g' => 'dice', 'm' => 'real', 's' => 400, 'w' => 0, 'at' => $now]);
+casino_hist_add('ulocal8', ['g' => 'dice', 'm' => 'real', 's' => 10, 'w' => 5, 'at' => $now]);
+$cpl = array_map(static fn($r) => (string) $r['uid'], admin_cs_players_list(60));
+check('« Joueurs du casino » : le vrai joueur, jamais les comptes admin', in_array('ulocal8', $cpl, true) && !in_array('admin_master', $cpl, true) && !in_array('uadmloc', $cpl, true), implode(',', $cpl));
+$adm = (string) file_get_contents($tmp . '/admin.php');
+check('ligne « Dont vos comptes admin (tests) » retirée', !str_contains($adm, 'Dont vos comptes admin') && !str_contains($adm, "'adm' => \$adm"));
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
