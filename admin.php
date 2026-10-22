@@ -2998,19 +2998,21 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
             <label><input type="checkbox" id="sbLivePub"> Direct pour tous</label>
             <label>Direct : plus de pari dès la <input id="sbliveLastMin" class="nt-in" type="number" min="45" max="90" inputmode="numeric" style="width:56px">e minute</label>
           </div>
-          <p class="muted" style="margin:6px 0 2px">Marges (%) : principaux · autres · exotiques · direct · autres sports</p>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">
-            <input id="sbmMain" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
-            <input id="sbmSide" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
-            <input id="sbmExotic" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
-            <input id="sbmLive" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
-            <input id="sbmOther" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
+          <div style="margin:10px 0 4px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04)">
+            <b>Ta marge (ce que le site garde)</b>
+            <p class="muted" style="margin:4px 0 6px">Plus la marge est grande, plus les cotes montrées aux joueurs sont basses, et plus le site gagne sur chaque pari. Exemple avec 15 % : un pari dont la vraie cote est 2,00 est montré à 1,70. Écris le pourcentage voulu dans chaque case, puis « Enregistrer ».</p>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Paris principaux<br><small class="muted">1 · X · 2, double chance, buts, les deux marquent</small></span><input id="sbmMain" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Autres paris<br><small class="muted">handicap, mi-temps, buts par équipe…</small></span><input id="sbmSide" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Paris rares<br><small class="muted">score exact, mi-temps / fin de match…</small></span><input id="sbmExotic" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Paris en direct<br><small class="muted">pendant le match</small></span><input id="sbmLive" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Autres sports<br><small class="muted">basket, hockey…</small></span><input id="sbmOther" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
           </div>
-          <p class="muted" style="margin:6px 0 2px">Alertes ($) : mise ≥ · gain possible ≥ · gain versé ≥</p>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">
-            <input id="sbalertStake" class="nt-in" type="number" min="0" inputmode="decimal" style="width:80px">
-            <input id="sbalertPot" class="nt-in" type="number" min="0" inputmode="decimal" style="width:80px">
-            <input id="sbalertWin" class="nt-in" type="number" min="0" inputmode="decimal" style="width:80px">
+          <div style="margin:6px 0 4px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04)">
+            <b>Alertes sur ton téléphone</b>
+            <p class="muted" style="margin:4px 0 6px">Tu reçois une notification quand un joueur dépasse ces montants (en dollars). Ce ne sont pas des limites : les joueurs peuvent miser plus.</p>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Un joueur mise au moins<br><small class="muted"></small></span><input id="sbalertStake" class="nt-in" type="number" min="0" inputmode="decimal" style="width:90px"> <b>$</b></label>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Un pari peut rapporter au moins<br><small class="muted">gain possible</small></span><input id="sbalertPot" class="nt-in" type="number" min="0" inputmode="decimal" style="width:90px"> <b>$</b></label>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Un joueur a gagné au moins<br><small class="muted">gain payé</small></span><input id="sbalertWin" class="nt-in" type="number" min="0" inputmode="decimal" style="width:90px"> <b>$</b></label>
           </div>
           <p style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
             <button class="mini ok" type="button" id="sbSave">Enregistrer</button>
