@@ -1308,7 +1308,7 @@
     var more = Math.max(0, (f.n || 0) - 1);
     return '<div class="sb-row" data-fx="' + esc(f.id) + '"><div class="sb-t" data-open="' + esc(f.id) + '"><b>' + esc(hm24(f.ts)) + '</b></div>' +
       '<div class="sb-tms" data-open="' + esc(f.id) + '" role="button" tabindex="0"><p>' + logoImg(f.h.lo, 'sb-lo') + '<span dir="auto">' + esc(f.h.n) + '</span></p><p>' + logoImg(f.a.lo, 'sb-lo') + '<span dir="auto">' + esc(f.a.n) + '</span></p></div>' +
-      btn('H') + btn('D') + btn('A') + '<button type="button" class="sb-more" dir="ltr" data-open="' + esc(f.id) + '" aria-label="+' + more + '">' + (more ? '+' + more : '›') + '</button></div>';
+      btn('H') + btn('D') + btn('A') + '<button type="button" class="sb-more" dir="ltr" data-open="' + esc(f.id) + '" aria-label="+' + more + '">' + '›' + '</button></div>';
   }
   function footClick(ev) {
     var t = ev.target;
@@ -1434,10 +1434,9 @@
   function codeBox() {
     var x = SX();
     if (sbCode && sbCode.sig === slipSig()) {
-      var txt = x.codeT + sep() + sbCode.code + '\n' + codeLink(sbCode.code);
       return '<div class="sb-cp"><small class="fit">' + esc(x.codeT) + '</small><b class="sb-cv" dir="ltr">' + esc(sbCode.code) + '</b>' +
         '<div class="sb-cpb"><button type="button" id="sbCopy">' + IC.ok + '<span class="fit">' + esc(x.copy) + '</span></button>' +
-        '<a id="sbWa" class="sb-wa" href="https://wa.me/?text=' + encodeURIComponent(txt) + '" target="_blank" rel="noopener">' + SBIC.wa + '<span class="fit">WhatsApp</span></a></div>' +
+        '</div>' +
         '<p class="sb-cpn"><span class="fit">' + esc(x.valid7) + '</span></p></div>';
     }
     return '<button type="button" class="sb-shb" id="sbShare">' + SBIC.share + '<span class="fit">' + esc(x.share) + '</span></button>';
