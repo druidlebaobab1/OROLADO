@@ -860,7 +860,7 @@
     try {
       var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
       var ios = /iP(hone|od|ad)/.test(navigator.userAgent || '');
-      if (sa || !(ios || /Android/i.test(navigator.userAgent || '') || deferredPrompt || window.__oroBip) || !$('btnInstall') || document.getElementById('oroInstAsk')) return; // 2026-10-22 : Android aussi
+      if (sa || !(ios || deferredPrompt || window.__oroBip || (inAppBrowser() && /Android/i.test(navigator.userAgent || ''))) || !$('btnInstall') || document.getElementById('oroInstAsk')) return; // Android : seulement si Chrome peut installer (ou dans Facebook → Chrome)
       var lg = String(document.documentElement.lang || 'en').slice(0, 2), W = INSTASK_T[lg] || INSTASK_T.en;
       var box = document.createElement('div');
       box.id = 'oroInstAsk'; box.className = 'oro-welcome oro-inst-ask'; box.setAttribute('role', 'dialog');
@@ -9919,7 +9919,7 @@
           return;
         }
         if (deferredPrompt) {
-          try { deferredPrompt.prompt(); } catch (eP) { deferredPrompt = null; window.__oroBip = null; hideInstallBanner(); installHelp('and'); return; } // déjà utilisé : on explique
+          try { deferredPrompt.prompt(); } catch (eP) { deferredPrompt = null; window.__oroBip = null; hideInstallBanner(); return; } // déjà utilisé : rien (jamais d'explication sur Android)
           try {
             var choice = await deferredPrompt.userChoice;
             if (choice && choice.outcome === 'accepted') localStorage.setItem('oro_install_dismissed', '1');
@@ -9949,14 +9949,14 @@
         // v2493 : iPhone = 3 étapes iPhone ; Android (Chrome pas encore prêt) = 3 étapes Android dans la même fenêtre
         // (avant : petit message avec la consigne iPhone « Partager… », incompréhensible sur Android).
         hideInstallBanner();
-        // 2026-10-22 (propriétaire : « ça ne marche pas sur Android ») : Chrome n'a pas encore permis l'installation → les 3 étapes Android
-        installHelp(isIos() ? 'ios' : 'and');
+        // propriétaire : sur Android, jamais de fenêtre d'étapes — soit ça installe, soit rien ; iPhone : les 3 étapes (seule voie d'Apple)
+        if (isIos()) installHelp('ios');
       });
     }
     // 2026-10-21 (propriétaire) : bouton « Installer OROLADO » à la fin d'Apprendre et des Conditions (même effet que la bannière)
     function fillInstSlots() {
       var slots = document.querySelectorAll('.oro-inst-slot'); if (!slots.length) return;
-      var ok = !isStandalone() && (isIos() || /Android/i.test(navigator.userAgent || '') || !!(deferredPrompt || window.__oroBip)); // 2026-10-22 : Android toujours (installe, ou explique)
+      var ok = !isStandalone() && (isIos() || !!(deferredPrompt || window.__oroBip) || (inAppBrowser() && /Android/i.test(navigator.userAgent || ''))); // Android : seulement quand ça installe vraiment
       var lb = document.querySelector('#btnInstall [data-i18n="installApp"]'), txt = lb ? lb.textContent : 'Install';
       for (var i = 0; i < slots.length; i++) {
         var sl = slots[i];
