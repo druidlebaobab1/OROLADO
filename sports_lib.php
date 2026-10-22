@@ -1087,7 +1087,7 @@ function sp_resolve(array $db): array {
   foreach ($todo as $p) {
     $bal = casino_credit($db, (string) $p['uid'], (string) $p['mode'], (float) $p['w'], (string) $p['i']);
     if ($bal === null && $p['mode'] === 'real') { $paidFail++; sp_mark_unpaid((string) $p['i']); continue; }
-    casino_stat('sports', (string) $p['mode'], (float) $p['s'], (float) $p['w']);
+    casino_stat('sports', (string) $p['mode'], (float) $p['s'], (float) $p['w'], (string) $p['uid'], is_array($db['users'][(string) $p['uid']] ?? null) ? $db['users'][(string) $p['uid']] : null); // 2026-10-22 : jamais les comptes admin dans les chiffres
     if (!empty($p['sb']) && $p['w'] > 0 && $p['mode'] === 'real' && function_exists('sb_alert_win')) { try { sb_alert_win((float) $p['w']); } catch (Throwable $e) { /* jamais bloquant */ } }
     if ($p['w'] > 0) $won++; else $lostN++;
   }
@@ -1099,8 +1099,10 @@ function sp_mark_unpaid(string $id): void {
 }
 
 /** Admin : liste des matchs avec le total misé par choix (pour voir le risque). */
-function sp_admin_list(): array {
+function sp_admin_list(?callable $skipUid = null): array {
   $bets = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
+  // 2026-10-22 (propriétaire) : $skipUid = comptes admin (maison) à ne pas compter dans les chiffres (nombre, misé, à payer)
+  if ($skipUid) $bets = array_values(array_filter($bets, static fn($b) => !$skipUid((string) ($b['uid'] ?? ''))));
   $exp = [];
   foreach ($bets as $b) {
     if ($b['mode'] !== 'real') continue;

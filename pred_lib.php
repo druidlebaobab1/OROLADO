@@ -553,9 +553,11 @@ function pred_admin_edit(string $id, array $in): array {
 }
 
 /** Liste « Predict » de l'admin : à vérifier, à régler (heure passée), ouvertes, réglées (30 dernières). */
-function pred_admin_list(int $now = 0): array {
+function pred_admin_list(int $now = 0, ?callable $skipUid = null): array {
   $now = $now ?: time();
   $bets = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
+  // 2026-10-22 (propriétaire) : $skipUid = comptes admin (maison) hors des chiffres (paris, misé)
+  if ($skipUid) $bets = array_values(array_filter($bets, static fn($b) => !$skipUid((string) ($b['uid'] ?? ''))));
   $nb = []; $in = [];
   foreach ($bets as $b) foreach ((array) ($b['sel'] ?? []) as $x) {
     $ev = (string) ($x['ev'] ?? ''); if (!str_starts_with($ev, 'pd')) continue;

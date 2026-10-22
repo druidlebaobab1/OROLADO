@@ -377,10 +377,10 @@ function admin_auth_users_count(): int {
 }
 
 function admin_inscrits_count(): int {
-  $cached = admin_cache_get('inscrits_n_epoch2', 20);
+  $cached = admin_cache_get('inscrits_n_epoch3', 20);
   if (is_array($cached) && isset($cached['n']) && (int) $cached['n'] > 0) return (int) $cached['n'];
-  $n = count(admin_profiles());
-  admin_cache_set('inscrits_n_epoch2', ['n' => $n]);
+  $n = count(admin_stat_people(admin_profiles())); // 2026-10-22 : sans les comptes admin (maison)
+  admin_cache_set('inscrits_n_epoch3', ['n' => $n]);
   return $n;
 }
 
@@ -869,7 +869,7 @@ function admin_stat_visible_user_ids(): array {
   foreach (admin_profiles() as $p) {
     $id = (string) ($p['id'] ?? '');
     // Compte admin : ses trades, dépôts, crédits et retraits ne comptent pas dans les statistiques.
-    if ($id === '' || admin_is_protected_account($p, $id)) continue;
+    if ($id === '' || admin_is_house_account($id, $p)) continue;
     $ids[$id] = true;
   }
   return $ids;
@@ -1820,7 +1820,7 @@ function admin_enrich_user_row(array $p, array $vaults): array {
 function admin_online_count(): int {
   $cut = time() - 90;
   $nProf = 0;
-  foreach (admin_profiles() as $p) {
+  foreach (admin_stat_people(admin_profiles()) as $p) { // 2026-10-22 : l'admin connecté n'est pas un joueur en ligne
     $t = strtotime((string) ($p['lastSeen'] ?? '')) ?: 0;
     if ($t >= $cut) $nProf++;
   }
@@ -1926,7 +1926,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }
@@ -1941,6 +1941,120 @@ function admin_is_protected_account(array $u, string $id = ''): bool {
   if (function_exists('orolado_is_admin_user') && orolado_is_admin_user($u)) return true;
   $email = strtolower(trim((string) ($u['email'] ?? $u['originalEmail'] ?? '')));
   return $email !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($email);
+}
+
+/**
+ * 2026-10-22 (propriétaire : « mes propres comptes ne doivent apparaître dans AUCUN chiffre ») — UN SEUL contrôle pour
+ * toutes les statistiques du tableau : compte admin_master, rôle admin, e-mails admin (orolado_admin_emails, réservés,
+ * admin@6diablo.com), le compte de la session admin, et les fiches liées à un compte admin (sbId / même id).
+ * Chiffres seulement : l'admin voit et gère toujours son compte (recherche, fiche, recharge).
+ */
+function admin_is_house_account(string $uid, array $row = []): bool {
+  if (function_exists('orolado_is_house_account') && orolado_is_house_account($uid, $row)) return true;
+  if ($row && admin_is_protected_account($row, $uid)) return true;
+  if ($uid !== '' && isset($_SESSION['admin_uid']) && $uid === (string) $_SESSION['admin_uid']) return true;
+  return $uid !== '' && isset(admin_house_ids()[$uid]);
+}
+
+/** Ids (fichier local + compte de la base lié) de tous les comptes de la maison. Même durée de vie que admin_local_db(). */
+function admin_house_ids(): array {
+  static $memo = null, $key = null;
+  $users = admin_local_db()['users'] ?? [];
+  $k = is_countable($users) ? count($users) : -1;
+  if ($memo !== null && $key === $k) return $memo;
+  $ids = ['admin_master' => true];
+  if (isset($_SESSION['admin_uid']) && (string) $_SESSION['admin_uid'] !== '') $ids[(string) $_SESSION['admin_uid']] = true;
+  foreach ((is_iterable($users) ? $users : []) as $id => $u) {
+    if (!is_array($u)) continue;
+    $lid = (string) ($u['id'] ?? $id);
+    $isHouse = (function_exists('orolado_is_house_account') && orolado_is_house_account($lid, $u)) || admin_is_protected_account($u, $lid);
+    if (!$isHouse) continue;
+    $ids[(string) $id] = true;
+    $ids[$lid] = true;
+    $sb = (string) ($u['sbId'] ?? '');
+    if ($sb !== '') $ids[$sb] = true;
+  }
+  unset($ids['']);
+  $key = $k;
+  return $memo = $ids;
+}
+
+/** Filtre « compte de la maison ? » par identifiant seul (paris, parties…), pour les modules hors admin. */
+function admin_house_skip(): callable {
+  $local = admin_local_db()['users'] ?? [];
+  return static function (string $uid) use ($local): bool {
+    if ($uid === '') return false;
+    $row = $local[$uid] ?? null;
+    return admin_is_house_account($uid, is_array($row) ? $row : []);
+  };
+}
+
+/**
+ * 2026-10-22 (propriétaire) — statistiques du casino SANS les comptes admin. data/casino/stats.json contient encore les
+ * anciennes parties des comptes admin : on retire leur part jeu par jeu (« Depuis le début » et « Aujourd'hui », jour UTC
+ * comme stats.json), lue dans leur journal des parties (casino_round_user_file, jamais réécrit ; argent réel seulement)
+ * et, pour les Paris (jeu « sports »), dans leurs coupons réglés. Seulement ce qui date d'avant « hsFrom » (moment où
+ * casino_stat() a cessé de les compter) : jamais retiré deux fois. Lecture seule : rien ne change pour les joueurs.
+ * Retour : [all, today] au même format que stats.json.
+ */
+function admin_cs_stats_clean(array $st, string $day = ''): array {
+  $day = $day !== '' ? $day : gmdate('Y-m-d');
+  $all = is_array($st['all'] ?? null) ? $st['all'] : [];
+  $today = is_array($st[$day] ?? null) ? $st[$day] : [];
+  $from = (float) ($st['hsFrom'] ?? 0); // 0 : aucun compte admin écarté encore → toutes leurs parties sont dans stats.json
+  $sub = static function (array &$b, string $g, float $s, float $w): void {
+    if (!isset($b['real'][$g]) || !is_array($b['real'][$g])) return;
+    $r = &$b['real'][$g];
+    $r['n'] = max(0, (int) ($r['n'] ?? 0) - 1);
+    $r['in'] = max(0.0, round((float) ($r['in'] ?? 0) - $s, 2));
+    $r['out'] = max(0.0, round((float) ($r['out'] ?? 0) - $w, 2));
+    if ($r['n'] === 0) unset($b['real'][$g]);
+    unset($r);
+  };
+  $take = static function (float $t) use ($from): bool { return $from <= 0 || $t < $from; };
+  if (function_exists('casino_round_user_file')) {
+    foreach (array_keys(admin_house_ids()) as $uid) {
+      $f = casino_round_user_file((string) $uid);
+      if (!is_file($f) || !($fh = @fopen($f, 'r'))) continue;
+      while (($line = fgets($fh)) !== false) {
+        $r = function_exists('admin_gm_parse') ? admin_gm_parse($line) : null;
+        if ($r === null) {
+          $j = json_decode(trim($line), true);
+          if (!is_array($j) || !isset($j['t'], $j['g'], $j['m'])) continue;
+          $r = ['t' => (float) $j['t'], 'g' => (string) $j['g'], 'm' => (string) $j['m'], 's' => (float) ($j['s'] ?? 0), 'w' => (float) ($j['w'] ?? 0)];
+        }
+        if ($r['m'] !== 'real' || !$take((float) $r['t'])) continue;
+        $sub($all, $r['g'], (float) $r['s'], (float) $r['w']);
+        if (gmdate('Y-m-d', (int) $r['t']) === $day) $sub($today, $r['g'], (float) $r['s'], (float) $r['w']);
+      }
+      fclose($fh);
+    }
+  }
+  if (function_exists('sp_with')) {
+    $skip = admin_house_skip();
+    foreach ((array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []) as $b) {
+      if (!is_array($b) || ($b['mode'] ?? '') !== 'real' || !$skip((string) ($b['uid'] ?? ''))) continue;
+      if (!in_array((string) ($b['status'] ?? ''), ['won', 'lost', 'void'], true)) continue;
+      $done = (float) ($b['done'] ?? 0);
+      if ($done <= 0 || !$take($done)) continue;
+      $sub($all, 'sports', (float) ($b['stake'] ?? 0), (float) ($b['win'] ?? 0));
+      if (gmdate('Y-m-d', (int) $done) === $day) $sub($today, 'sports', (float) ($b['stake'] ?? 0), (float) ($b['win'] ?? 0));
+    }
+  }
+  return [$all, $today];
+}
+
+/** « Joueurs du casino (argent réel) » de l'admin, plus gros misés d'abord, SANS les comptes admin (maison). */
+function admin_cs_players_list(int $limit = 60): array {
+  if (!function_exists('casino_admin_players')) return [];
+  $skip = admin_house_skip();
+  $rows = array_values(array_filter(casino_admin_players(100000), static fn($r) => !$skip((string) ($r['uid'] ?? ''))));
+  return array_slice($rows, 0, $limit);
+}
+
+/** Les joueurs comptés dans les chiffres (sans les comptes de la maison). */
+function admin_stat_people(array $people): array {
+  return array_values(array_filter($people, static fn($p) => is_array($p) && !admin_is_house_account((string) ($p['id'] ?? ''), $p)));
 }
 
 /** Comptes à conserver lors du nettoyage : admin, client 50 $, Alain Nda. */
@@ -2196,7 +2310,7 @@ function admin_board_issues_raw(): array {
       if ($t >= time() - 86400 && ($r['status'] ?? '') !== 'échec') $codes++;
     }
     $newUsers = 0;
-    foreach (admin_profiles() as $p) {
+    foreach (admin_stat_people(admin_profiles()) as $p) {
       $t = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
       if ($t >= time() - 86400) $newUsers++;
     }
@@ -2787,7 +2901,7 @@ function admin_suspects(): array {
   $dayAgo = time() - 86400;
   $out = [];
   foreach ($pmap as $uid => $p) {
-    if ($uid === '' || admin_is_protected_account($p, (string) $uid)) continue; // jamais le compte admin parmi les suspects
+    if ($uid === '' || admin_is_house_account((string) $uid, $p)) continue; // jamais le compte admin parmi les suspects
     $open = $openBy[$uid] ?? [];
     $ctx = ['wdPaid' => $wdPaidBy[$uid] ?? 0.0, 'lastDepAt' => $lastDepBy[$uid] ?? 0, 'wd24' => $wd24By[$uid] ?? 0];
     if (!$isBanned($p)) {

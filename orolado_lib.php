@@ -2459,6 +2459,21 @@ function orolado_is_admin_user(?array $me): bool {
   return orolado_is_reserved_admin_email($email);
 }
 
+/**
+ * 2026-10-22 (propriétaire) — COMPTE DE LA MAISON : les comptes admin du propriétaire (admin_master, rôle admin,
+ * e-mails admin réservés) ne comptent JAMAIS dans les chiffres du tableau admin (dépôts, retraits, bénéfice, joueurs,
+ * casino, paris, trades…), comme les comptes de test des grandes plateformes. Ne change rien aux droits ni à l'argent.
+ * Vérification sans lecture de fichier (utilisable partout, même pendant une partie). L'admin, lui, passe par
+ * admin_is_house_account() (admin_lib.php), qui ajoute les comptes liés (sbId) et la session admin.
+ */
+function orolado_is_house_account(string $uid, array $row = []): bool {
+  if ($uid === 'admin_master' || (string) ($row['id'] ?? '') === 'admin_master') return true;
+  if (!$row) return false;
+  if (orolado_is_admin_user($row)) return true;
+  $em = strtolower(trim((string) ($row['email'] ?? $row['originalEmail'] ?? '')));
+  return $em !== '' && ($em === 'admin@6diablo.com' || orolado_is_reserved_admin_email($em));
+}
+
 function orolado_public_user(array $user): array {
   unset($user['passwordHash'], $user['password'], $user['is_admin'], $user['pwTag']);
   return $user;

@@ -128,7 +128,7 @@ function admin_gm_who(string $uid): array {
   elseif ($loc && isset($idx['p'][(string) ($loc['sbId'] ?? '')])) $pid = (string) $loc['sbId'];
   elseif ($loc) $pid = $idx['em'][strtolower(trim((string) ($loc['email'] ?? '')))] ?? '';
   $p = $pid !== '' ? $idx['p'][$pid] : [];
-  $adm = admin_is_protected_account($loc ?: $p, $uid) || ($p && admin_is_protected_account($p, $pid));
+  $adm = admin_is_house_account($uid, $loc ?: $p) || ($p && admin_is_house_account($pid, $p)); // 2026-10-22 : même contrôle partout
   return $memo[$uid] = [
     'pid' => $pid,
     'publicId' => (string) ($p['publicId'] ?? ($loc['publicId'] ?? '')),
