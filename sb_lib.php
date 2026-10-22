@@ -35,10 +35,6 @@ const SB_FX_ODDS_TTL = 600;          // /odds?fixture à la demande (match ouver
 const SB_LIVE_IDS_TTL = 60;          // /fixtures?live=all gardé 60 s (contrôle des paris à moins de 30 min du début)
 const SB_LATE = 1800;                // à moins de 30 min du coup d'envoi : contrôle « déjà commencé ? »
 const SB_PST_VOID = 172800;          // reporté / pas joué dans les 48 h : annulé
-// 2026-10-22 (propriétaire : « le direct est en retard de 1 à 2 min, on a pu parier après un but ») : un pari EN DIRECT est
-// ANNULÉ (remboursé) si un but (ou un carton rouge) a eu lieu AVANT ou JUSTE APRÈS la minute affichée au moment du pari
-// (+ SB_LIVE_GRACE min, retard du flux) et n'était pas dans le score affiché. Règle des grands bookmakers.
-const SB_LIVE_GRACE = 2;
 const SB_FINAL = ['FT', 'AET', 'PEN'];
 const SB_VOID_ST = ['AWD', 'WO'];
 const SB_WAIT_ST = ['PST', 'CANC', 'ABD', 'SUSP', 'INT', 'NS', 'TBD'];
@@ -162,11 +158,21 @@ function sb_alert(string $title, string $body, int $now = 0): void {
 
 /* ------------------------------------------------------------- lecture de l'API (budget, cache) --------------------- */
 
+/**
+ * Plafond du jour : SB_FOOT_CAP (abonnement Pro, 7 500 / jour), ou PLUS si l'abonnement a été monté (Ultra, Mega…) :
+ * l'API renvoie ce qui reste dans la journée (« rem ») → plafond = utilisé + reste − 300 (marge), jamais sous SB_FOOT_CAP.
+ */
+function sb_foot_cap(int $now = 0): int {
+  $now = $now ?: sb_now();
+  $b = sb_read('budget-foot.json');
+  if (($b['day'] ?? '') !== gmdate('Y-m-d', $now) || !is_numeric($b['rem'] ?? null)) return SB_FOOT_CAP;
+  return max(SB_FOOT_CAP, (int) ($b['n'] ?? 0) + (int) $b['rem'] - 300);
+}
 function sb_budget_take(int $now): bool {
-  $day = gmdate('Y-m-d', $now);
-  return (bool) sb_with('budget-foot.json', static function (array &$s) use ($day) {
+  $day = gmdate('Y-m-d', $now); $cap = sb_foot_cap($now);
+  return (bool) sb_with('budget-foot.json', static function (array &$s) use ($day, $cap) {
     if (($s['day'] ?? '') !== $day) { $s['day'] = $day; $s['n'] = 0; $s['warned'] = 0; }
-    if ((int) $s['n'] >= SB_FOOT_CAP) return false;
+    if ((int) $s['n'] >= $cap) return false;
     $s['n'] = (int) $s['n'] + 1;
     return true;
   });
@@ -175,7 +181,8 @@ function sb_budget(int $now = 0): array {
   $now = $now ?: sb_now();
   $b = sb_read('budget-foot.json');
   $used = ($b['day'] ?? '') === gmdate('Y-m-d', $now) ? (int) ($b['n'] ?? 0) : 0;
-  return ['used' => $used, 'cap' => SB_FOOT_CAP, 'left' => max(0, SB_FOOT_CAP - $used), 'rem' => $b['rem'] ?? null];
+  $cap = sb_foot_cap($now);
+  return ['used' => $used, 'cap' => $cap, 'left' => max(0, $cap - $used), 'rem' => $b['rem'] ?? null];
 }
 /**
  * Une lecture (chemin relatif). Null = pas de clé, budget épuisé, réseau ou erreur API (gardée pour l'admin).
@@ -193,7 +200,7 @@ function sb_get(string $path, int $now = 0, string $sp = 'foot', string $kind = 
   if ($o) {
     if (!sb_o_budget_take($sp, $now, $kind)) return null; // plafond du jour (jamais dépassé)
   } else {
-    if (!sb_budget_take($now)) { $err('Budget du jour atteint (' . SB_FOOT_CAP . ' lectures) : reprise à 0 h UTC'); return null; }
+    if (!sb_budget_take($now)) { $err('Budget du jour atteint (' . sb_foot_cap($now) . ' lectures) : reprise à 0 h UTC'); return null; }
     $b = sb_budget($now);
     if ($b['left'] < 300) sb_with('budget-foot.json', static function (array &$s) use ($now) {
       if (!empty($s['warned'])) return false;
@@ -513,36 +520,6 @@ function sb_valid_k(string $fam): array {
   }
   return [];
 }
-/** /fixtures/events → [[minute, 'g'|'r'], …] (buts marqués, contre son camp compris ; cartons rouges / 2e jaune). */
-function sb_live_evs(array $resp, array $ti): array {
-  $out = [];
-  foreach ($resp as $e) {
-    if (!is_array($e)) continue;
-    $type = strtolower((string) ($e['type'] ?? '')); $det = strtolower((string) ($e['detail'] ?? ''));
-    $min = (int) ($e['time']['elapsed'] ?? -1);
-    if ($min < 0) continue;
-    if ($type === 'goal' && strpos($det, 'missed') === false) $out[] = [$min, 'g'];
-    elseif ($type === 'card' && (strpos($det, 'red') !== false || strpos($det, 'second yellow') !== false)) $out[] = [$min, 'r'];
-  }
-  return $out;
-}
-/**
- * Pari EN DIRECT déjà fini : null = règle normale ; 'void' = un but n'était pas encore dans le score affiché au moment du
- * pari (but à la minute du pari + SB_LIVE_GRACE au plus), ou un carton rouge juste autour (minute − 1 … + SB_LIVE_GRACE).
- * Sans la liste des buts : 'wait' n'existe pas ici → null si inconnue (le règlement attend la lecture).
- */
-function sb_live_late(array $sel, array $r) {
-  if (!isset($r['evs']) || !is_array($r['evs'])) return 'pending';
-  $m = (int) ($sel['m'] ?? 0); $sc = (array) ($sel['sc'] ?? []);
-  $seen = (int) ($sc[0] ?? 0) + (int) ($sc[1] ?? 0);
-  $before = 0;
-  foreach ($r['evs'] as $e) {
-    $em = (int) ($e[0] ?? 0); $t = (string) ($e[1] ?? '');
-    if ($t === 'g' && $em <= $m + SB_LIVE_GRACE) $before++;
-    if ($t === 'r' && $em >= $m - 1 && $em <= $m + SB_LIVE_GRACE) return 'void';
-  }
-  return $before > $seen ? 'void' : null;
-}
 function sb_results(): array { return (array) (sb_read('results.json')['fx'] ?? []); }
 /**
  * Un choix SB d'un coupon : 'won' | 'lost' | 'void' | null (pas encore réglable). $betAt = heure du pari.
@@ -565,7 +542,6 @@ function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bo
     if ($ts <= 0) return null;
     if ($ko > 0 && $ts > $ko + SB_PST_VOID) return 'void';
     if ($betAt >= $ts && empty($sel['lv'])) return 'void'; // pari posé après le vrai coup d'envoi (sauf pari EN DIRECT : c'est voulu)
-    if (!empty($sel['lv']) && empty($r['man'])) { $lv = sb_live_late($sel, $r); if ($lv === 'pending') return null; if ($lv !== null) return $lv; } // l'admin (score saisi) décide seul
     return sb_settle_mk(substr((string) $sel['ev'], strlen('sb:foot:' . $m[1] . ':')), (string) ($sel['k'] ?? ''), (array) ($r['ft'] ?? []), isset($r['ht']) ? (array) $r['ht'] : null);
   }
   if ($v === 'wait' && $auto && $ko > 0 && $now > $ko + SB_PST_VOID && (int) ($r['at'] ?? 0) > $now - 7200) return 'void';
@@ -693,7 +669,7 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
     $log[] = 'fx ' . $day . (sb_import_fixtures($day, $now) ? '' : ' ✗');
   }
   // jour chargé (week-end) : si les lectures du jour vont plus vite que prévu, cotes du jour toutes les 2 h (le direct garde sa part)
-  $bud = sb_budget($now); $tight = $bud['used'] > SB_FOOT_CAP * 0.75 * min(1.0, ($now % 86400) / 86400 + 0.15);
+  $bud = sb_budget($now); $tight = $bud['used'] > $bud['cap'] * 0.75 * min(1.0, ($now % 86400) / 86400 + 0.15);
   $oddsEvery = [$d0 => $tight ? 7200 : 1800, $d1 => 10800, $d2 => 10800] + array_fill_keys($mid, 43200) + array_fill_keys($lat, 86400); // cotes : J toutes les 30 min (2026-10-22, marge 2,5 %) ; J+3…J+7 12 h ; J+8…J+14 24 h
   $pages = 0;
   foreach (array_merge([$d0, $d1, $d2], $far) as $day) {
@@ -808,7 +784,7 @@ function sb_open_fixtures(): array {
     foreach ((array) ($b['sel'] ?? []) as $s) {
       if (!preg_match('/^sb:foot:(\d+):/', (string) ($s['ev'] ?? ''), $m) || isset($s['r'])) continue;
       $o = $out[$m[1]] ?? ['ko' => PHP_INT_MAX, 'ti' => $s['ti'] ?? null, 't' => (string) ($s['t'] ?? ''), 'n' => 0];
-      $o['ko'] = min($o['ko'], (int) ($s['ko'] ?? 0)); $o['n']++; if (!empty($s['lv'])) $o['lv'] = 1;
+      $o['ko'] = min($o['ko'], (int) ($s['ko'] ?? 0)); $o['n']++;
       $out[$m[1]] = $o;
     }
   }
@@ -843,7 +819,6 @@ function sb_results_job(int $now, int $maxCalls = 3, ?array $db = null): array {
   $need = []; $upd = []; $calls = 0;
   foreach ($open as $id => $o) {
     $k = $known[$id] ?? null;
-    if (is_array($k) && ($k['v'] ?? '') === 'fin' && !empty($o['lv']) && !isset($k['evs']) && empty($k['man'])) { $upd[$id] = $k; continue; } // direct : il manque les buts
     if (is_array($k) && in_array($k['v'] ?? '', ['fin', 'void'], true)) continue; // déjà connu (le règlement suit)
     if (is_array($k) && !empty($k['man'])) continue;
     if ($o['ko'] > $now) continue; // pas encore commencé
@@ -858,18 +833,6 @@ function sb_results_job(int $now, int $maxCalls = 3, ?array $db = null): array {
     $seen = [];
     foreach ((array) ($j['response'] ?? []) as $r) if (is_array($r) && ($row = sb_fx_row($r))) { $id = (string) (int) $r['fixture']['id']; if (isset($open[$id])) { $upd[$id] = sb_classify($row, $open[$id]['ti'], $open[$id]['ko'], $now); $seen[$id] = 1; } }
     foreach ($chunk as $id) if (!isset($seen[$id]) && $now > $open[$id]['ko'] + 6 * 3600) $upd[$id] = ['v' => 'chk', 'why' => 'Match introuvable dans l\'API', 'at' => $now, 'ts' => 0, 'st' => ''];
-  }
-  // paris EN DIRECT : les buts / cartons rouges avec leur minute (1 lecture par match fini) — sans eux, pas de règlement
-  foreach ($upd as $id => $r) {
-    if (($r['v'] ?? '') !== 'fin' || empty($open[$id]['lv'])) continue;
-    if (isset($known[$id]['evs'])) { $upd[$id]['evs'] = $known[$id]['evs']; continue; }
-    $ev = $calls < max(0, $maxCalls) ? sb_get_cached('fixtures/events?fixture=' . $id, 600, $now) : null;
-    if ($ev !== null) $calls++;
-    if ($ev === null || !isset($ev['response']) || !is_array($ev['response'])) {
-      if ($now > (int) ($r['ts'] ?? $now) + 6 * 3600) $upd[$id] = ['v' => 'chk', 'why' => 'Buts du match introuvables (paris en direct)'] + $r; else unset($upd[$id]);
-      continue;
-    }
-    $upd[$id]['evs'] = sb_live_evs((array) $ev['response'], (array) ($r['ti'] ?? []));
   }
   $newFinal = 0; $newChk = [];
   if ($upd) {
@@ -1569,6 +1532,20 @@ function sb_live_store_odds(array $j, int $now): int {
 }
 function sb_live_budget_ok(int $now, int $left = SB_LIVE_RESERVE): bool { return sb_budget($now)['left'] > $left; }
 /**
+ * 2026-10-22 (propriétaire : « le direct verrouille 1 à 2 min trop tard ») : rythme du direct selon les lectures qui restent
+ * aujourd'hui — le plus vite possible (cotes toutes les 5 s, matchs toutes les 10 s) sans jamais vider le budget ;
+ * au plus lent : 15 s / 30 s (comme avant). Abonnement monté (plus de lectures) → automatiquement plus rapide.
+ */
+function sb_live_ttls(int $now): array {
+  $b = sb_budget($now);
+  $secLeft = max(600, 86400 - ($now % 86400));
+  $avail = $b['left'] - SB_LIVE_RESERVE - (int) (2500 * $secLeft / 86400); // avant-match + résultats du reste de la journée
+  if ($avail <= 0) return [SB_LIVE_ODDS_TTL, SB_LIVE_FX_TTL];
+  $t = (int) ceil(1.5 * 0.6 * $secLeft / $avail); // 1 lecture de cotes / t s + 1 de matchs / 2t s, regardé ~60 % du temps
+  $t = max(5, min(SB_LIVE_ODDS_TTL, $t));
+  return [$t, max(10, min(SB_LIVE_FX_TTL, 2 * $t))];
+}
+/**
  * Tâche du direct (APRÈS la réponse) : seulement s'il y a de la demande (60 s), un seul lecteur à la fois (verrou non
  * bloquant), jamais dans la réserve. Retour : liste des lectures faites (tests / admin).
  */
@@ -1580,15 +1557,16 @@ function sb_live_tick(int $now = 0): array {
   $done = [];
   try {
     $L = sb_live_data();
+    [$ttlO, $ttlF] = sb_live_ttls($now);
     $fat = (int) ($L['fat'] ?? 0);
-    if ($now - $fat >= SB_LIVE_FX_TTL && (!empty($L['fx']) || sb_live_maybe($now) || $now - $fat >= 300)) {
+    if ($now - $fat >= $ttlF && (!empty($L['fx']) || sb_live_maybe($now) || $now - $fat >= 300)) {
       $j = sb_get('fixtures?live=all&timezone=UTC', $now);
       if ($j !== null) { sb_live_store_fixtures($j, $now); $done[] = 'fixtures'; }
       else sb_with('live.json', static function (array &$s) use ($now) { $s['fat'] = $now; return true; }); // erreur : pas de nouvel essai avant 30 s
       $L = sb_live_data();
     }
     $live = array_filter((array) ($L['fx'] ?? []), static fn($r) => empty($r['end']));
-    if ($live && $now - (int) ($L['at'] ?? 0) >= SB_LIVE_ODDS_TTL && sb_live_budget_ok($now)) {
+    if ($live && $now - (int) ($L['at'] ?? 0) >= $ttlO && sb_live_budget_ok($now)) {
       $j = sb_get('odds/live', $now);
       if ($j !== null) { sb_live_store_odds($j, $now); $done[] = 'odds'; }
     }
@@ -1629,7 +1607,8 @@ function sb_cache_peek(string $path, int $ttl, int $now): ?array {
 function sb_live_stats(string $id, array $row, int $now): ?array {
   $j = sb_cache_peek('fixtures/statistics?fixture=' . (int) $id, 900, $now);
   if (!$j) return null;
-  $map = ['total shots' => 'shots', 'shots on goal' => 'shotsOn', 'ball possession' => 'poss', 'corner kicks' => 'corners', 'yellow cards' => 'yellow', 'red cards' => 'red', 'attacks' => 'attacks', 'dangerous attacks' => 'dangerous'];
+  $map = ['total shots' => 'shots', 'shots on goal' => 'shotsOn', 'ball possession' => 'poss', 'corner kicks' => 'corners', 'yellow cards' => 'yellow', 'red cards' => 'red', 'attacks' => 'attacks', 'dangerous attacks' => 'dangerous',
+    'fouls' => 'fouls', 'offsides' => 'offsides', 'goalkeeper saves' => 'saves']; // 2026-10-22 : + fautes, hors-jeu, arrêts (onglet Informations)
   $out = [];
   foreach ((array) ($j['response'] ?? []) as $t) {
     if (!is_array($t)) continue;
@@ -1644,6 +1623,76 @@ function sb_live_stats(string $id, array $row, int $now): ?array {
     }
   }
   return $out ?: null;
+}
+
+/*
+ * 2026-10-22 (propriétaire : « sous les logos, c'est vide ; mets les statistiques du match comme les grands ») — sbStats :
+ * statistiques d'un match EN DIRECT dont la page est ouverte (onglet « Informations »). Réponse immédiate avec ce qui est gardé
+ * (≤ 15 min) ; si la lecture gardée a plus de 60 s, UNE lecture /fixtures/statistics?fixture=ID (verrou non bloquant par match,
+ * au plus une tentative par minute et par match, même en cas d'erreur), APRÈS la réponse quand le serveur le permet (sinon
+ * dans cette requête-ci, qui n'est pas celle de la page). Comptée dans le budget du jour (sb_get) et jamais dans la réserve
+ * (il doit rester plus de SB_LIVE_RESERVE lectures). Cartons : comptés aussi à partir des événements déjà lus (aucun appel).
+ * Rien d'autre que des statistiques publiques du match ; la clé n'est jamais renvoyée.
+ */
+const SB_LIVE_STATS_KEYS = ['poss', 'shots', 'shotsOn', 'corners', 'attacks', 'dangerous', 'fouls', 'offsides', 'saves', 'yellow', 'red'];
+function sb_live_stats_lockf(string $id): string {
+  $d = sb_dir() . DIRECTORY_SEPARATOR . 'cache'; if (!is_dir($d)) @mkdir($d, 0750, true);
+  return $d . DIRECTORY_SEPARATOR . 'st-' . (int) $id . '.try';
+}
+/** Une lecture des statistiques d'un match (si rien de frais, pas d'autre lecteur, pas d'essai depuis 60 s, budget hors réserve). */
+function sb_live_stats_fetch(string $id, int $now): bool {
+  $path = 'fixtures/statistics?fixture=' . (int) $id;
+  if (sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) !== null) return false;
+  if (!sb_has_key() || !sb_live_budget_ok($now)) return false;
+  $f = sb_live_stats_lockf($id);
+  $lk = @fopen($f, 'c');
+  if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return false; }
+  try {
+    clearstatcache(true, $f);
+    $tried = (int) @file_get_contents($f);
+    if ($tried > $now - SB_LIVE_STATS_TTL) return false; // déjà essayé dans la minute (réussi ou non)
+    if (sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) !== null) return false;
+    ftruncate($lk, 0); rewind($lk); fwrite($lk, (string) $now); fflush($lk);
+    return sb_get_cached($path, SB_LIVE_STATS_TTL, $now) !== null;
+  } finally { flock($lk, LOCK_UN); fclose($lk); }
+}
+/** Cartons jaunes / rouges comptés sur les événements gardés (h, a). */
+function sb_live_cards(array $row): array {
+  $y = [0, 0]; $r = [0, 0];
+  foreach ((array) ($row['ev'] ?? []) as $e) {
+    if (!is_array($e) || ($e['type'] ?? '') !== 'card') continue;
+    $i = ($e['team'] ?? '') === 'a' ? 1 : 0;
+    if (($e['detail'] ?? '') === 'red') $r[$i]++; else $y[$i]++;
+  }
+  return ['yellow' => $y, 'red' => $r];
+}
+function sb_live_stats_api(?array $user, string $fid, int $now = 0): array {
+  $now = $now ?: sb_now();
+  if (!preg_match('/^foot:(\d{1,12})$/', $fid, $m)) return ['ok' => false, 'reason' => 'bad'];
+  if (!sb_visible($user) || !sb_live_visible($user)) return ['ok' => false, 'reason' => 'off'];
+  $id = $m[1];
+  $v = sb_live_view($id, sb_live_data(), $now, sb_config());
+  if (!$v) return ['ok' => false, 'reason' => 'notLive'];
+  sb_live_demand($now);
+  $pend = 0;
+  $path = 'fixtures/statistics?fixture=' . (int) $id;
+  if (empty($v['row']['end']) && sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) === null && sb_has_key() && sb_live_budget_ok($now)) {
+    $after = PHP_SAPI !== 'cli' && PHP_SAPI !== 'cli-server' && function_exists('fastcgi_finish_request') && empty($GLOBALS['SB_STATS_INLINE']);
+    if ($after) {
+      $pend = 1;
+      register_shutdown_function(static function () use ($id, $now) {
+        try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ }
+        try { sb_live_stats_fetch($id, $now); } catch (Throwable $e) { /* jamais bloquant */ }
+      });
+    } else {
+      try { sb_live_stats_fetch($id, $now); } catch (Throwable $e) { sb_note_error('Statistiques : ' . $e->getMessage(), $now); }
+    }
+  }
+  $st = (array) (sb_live_stats($id, $v['row'], $now) ?? []);
+  if (!empty($v['row']['ev'])) foreach (sb_live_cards($v['row']) as $k => $p) if (!isset($st[$k]) || array_sum($p) > array_sum((array) $st[$k])) $st[$k] = $p;
+  $out = [];
+  foreach (SB_LIVE_STATS_KEYS as $k) if (isset($st[$k]) && is_array($st[$k])) $out[$k] = [0 + ($st[$k][0] ?? 0), 0 + ($st[$k][1] ?? 0)];
+  return ['ok' => true, 'id' => 'foot:' . $id, 'stats' => $out ?: null, 'pend' => $pend, 'at' => $now];
 }
 
 /**

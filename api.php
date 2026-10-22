@@ -301,6 +301,7 @@ $OROLADO_RATE_RULES = [
   'sbList'            => [['i', 240, 60]],
   'sbMatch'           => [['i', 240, 60]],
   'sbLive'            => [['i', 240, 60]],
+  'sbStats'           => [['i', 120, 60]],
   'sbResults'         => [['i', 120, 60]],
   'sbCodeSave'        => [['t', 30, 600], ['i', 400, 600]],
   'sbCodeLoad'        => [['i', 240, 60]],
@@ -433,6 +434,15 @@ if ($action === 'affClick') {
 // les lectures de l'API se font APRÈS la réponse (sb_after_response). Admin seul tant que « Public » est éteint.
 // 2026-10-22 (étape 3) — sbLive : matchs EN DIRECT (fichier live.json ; lectures /odds/live et /fixtures?live=all APRÈS la réponse,
 // seulement s'il y a de la demande).
+// 2026-10-22 — sbStats : statistiques d'un match en direct (onglet « Informations »), lecture gardée ≥ 60 s par match.
+if ($action === 'sbStats') {
+  if (!function_exists('sb_live_stats_api')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  $me = $token !== '' ? session_user($db, $token) : null;
+  try { $res = sb_live_stats_api($me ?: null, (string) ($req['id'] ?? '')); }
+  catch (Throwable $eSb) { error_log('OROLADO sbStats ' . $eSb->getMessage()); $res = ['ok' => false, 'reason' => 'busy']; }
+  echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
 if ($action === 'sbList' || $action === 'sbMatch' || $action === 'sbLive' || $action === 'sbResults') {
   if (!function_exists('sb_list')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
   $me = $token !== '' ? session_user($db, $token) : null;

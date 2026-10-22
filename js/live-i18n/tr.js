@@ -1038,7 +1038,7 @@
       "see": "Aç",
       "minNote": "Minimum bahis 0,10 $",
       "done": "Bahis kaydedildi!",
-      "cont": "Devam",
+      "cont": "Kapat",
       "emptySlip": "Kuponun boş. Başlamak için bir orana dokun.",
     "none": "Şu an maç yok. Büyük maçlar çok yakında burada.",
     "coupon": "Kupon",

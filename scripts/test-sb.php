@@ -389,8 +389,10 @@ check('sbList : onglet Direct visible pour l\'admin (live ≥ 0), pas pour le jo
 $c0 = [$cnt('odds/live'), $cnt('fixtures?live=all&timezone=UTC')];
 $t = sb_live_tick($L0);
 check('demande : /fixtures?live=all puis /odds/live (1 fois chacun)', $t === ['fixtures', 'odds'] && $cnt('odds/live') === $c0[0] + 1 && $cnt('fixtures?live=all&timezone=UTC') === $c0[1] + 1, json_encode($t));
-check('relancé 10 s après : rien (odds ≤ 15 s, fixtures ≤ 30 s)', sb_live_tick($L0 + 10) === []);
-check('16 s après : /odds/live seulement', sb_live_tick($L0 + 16) === ['odds']);
+[$tO, $tF] = sb_live_ttls($L0);
+check('rythme du direct selon le budget : cotes 5…15 s, matchs 10…30 s (2 × cotes)', $tO >= 5 && $tO <= 15 && $tF === max(10, min(30, 2 * $tO)), json_encode([$tO, $tF]));
+check('relancé juste avant : rien', sb_live_tick($L0 + $tO - 1) === []);
+check('après ' . $tO . ' s : /odds/live seulement', sb_live_tick($L0 + $tO) === ['odds']);
 check('31 s après : /fixtures?live=all (et /odds/live, 15 s passées)', sb_live_tick($L0 + 31) === ['fixtures', 'odds']);
 check('plus de demande après 60 s : plus rien', sb_live_tick($L0 + 75) === [] );
 sb_with('budget-foot.json', static function (array &$s) use ($L0) { $s['day'] = gmdate('Y-m-d', $L0); $s['n'] = SB_FOOT_CAP - SB_LIVE_RESERVE; return true; });
@@ -418,6 +420,46 @@ $M2 = sb_match($ua, 'foot:9101', $L0 + 16);
 check('statistiques lues (match ouvert) : tirs, cadrés, possession, corners, rouges', ($M2['trk']['stats']['shots'] ?? null) === [11, 4] && $M2['trk']['stats']['poss'] === [58, 42] && $M2['trk']['stats']['red'] === [0, 1] && $cnt('fixtures/statistics?fixture=9101') === 1, json_encode($M2['trk']['stats']));
 sb_live_tick($L0 + 30);
 check('statistiques : pas relues avant 60 s', $cnt('fixtures/statistics?fixture=9101') === 1);
+
+// 2026-10-22 — sbStats (onglet « Informations » d'un match en direct) : à la demande, gardé ≥ 60 s, budget, jamais la clé
+echo "   sbStats\n";
+$dmF = sb_dir() . '/live-demand.at'; clearstatcache(true, $dmF); $dm0 = (int) @filemtime($dmF);
+$bud0 = (int) sb_read('budget-foot.json')['n'];
+$S1 = sb_live_stats_api($ua, 'foot:9101', $L0 + 30);
+check('sbStats : statistiques gardées (lues il y a 14 s) renvoyées, aucune lecture', $S1['ok'] === true && $S1['id'] === 'foot:9101' && ($S1['stats']['shots'] ?? null) === [11, 4] && $S1['stats']['poss'] === [58, 42] && $S1['stats']['shotsOn'] === [5, 1] && $S1['stats']['corners'] === [6, 2] && $cnt('fixtures/statistics?fixture=9101') === 1, json_encode($S1));
+check('sbStats : cartons (statistiques + événements déjà lus, sans appel)', ($S1['stats']['red'] ?? null) === [0, 1] && isset($S1['stats']['yellow']), json_encode($S1['stats']));
+$alt['fixtures/statistics?fixture=9101'] = json_encode(['errors' => [], 'response' => [
+  ['team' => ['id' => 501], 'statistics' => [['type' => 'Shots on Goal', 'value' => 6], ['type' => 'Total Shots', 'value' => 12], ['type' => 'Ball Possession', 'value' => '57%'], ['type' => 'Corner Kicks', 'value' => 7], ['type' => 'Fouls', 'value' => 9], ['type' => 'Offsides', 'value' => 2], ['type' => 'Goalkeeper Saves', 'value' => 1], ['type' => 'Yellow Cards', 'value' => 2], ['type' => 'Red Cards', 'value' => null], ['type' => 'expected_goals', 'value' => '1.42']]],
+  ['team' => ['id' => 502], 'statistics' => [['type' => 'Shots on Goal', 'value' => 1], ['type' => 'Total Shots', 'value' => 5], ['type' => 'Ball Possession', 'value' => '43%'], ['type' => 'Corner Kicks', 'value' => 2], ['type' => 'Fouls', 'value' => 13], ['type' => 'Offsides', 'value' => null], ['type' => 'Goalkeeper Saves', 'value' => 4], ['type' => 'Yellow Cards', 'value' => 3], ['type' => 'Red Cards', 'value' => 1]]]]]);
+$S2 = sb_live_stats_api($ua, 'foot:9101', $L0 + 80);
+check('sbStats : gardé depuis plus de 60 s → UNE lecture /fixtures/statistics, réponse à jour (fautes, hors-jeu, arrêts)', $cnt('fixtures/statistics?fixture=9101') === 2 && ($S2['stats']['shots'] ?? null) === [12, 5] && $S2['stats']['fouls'] === [9, 13] && $S2['stats']['offsides'] === [2, 0] && $S2['stats']['saves'] === [1, 4] && $S2['stats']['yellow'] === [2, 3] && !isset($S2['stats']['expected_goals']), json_encode($S2['stats'] ?? $S2));
+check('sbStats : budget du jour compté (+1)', (int) sb_read('budget-foot.json')['n'] === $bud0 + 1);
+for ($i = 0; $i < 5; $i++) sb_live_stats_api($i % 2 ? $ua : $uadm, 'foot:9101', $L0 + 81 + $i * 10);
+check('sbStats : 5 demandes dans la minute (plusieurs joueurs) → aucune lecture de plus (gardé 60 s par match)', $cnt('fixtures/statistics?fixture=9101') === 2);
+$alt['fixtures/statistics?fixture=9101'] = '{"errors":{"requests":"x"},"response":[]}';
+$S3 = sb_live_stats_api($ua, 'foot:9101', $L0 + 145);
+check('sbStats : erreur de l\'API → une tentative, les statistiques gardées restent affichées', $cnt('fixtures/statistics?fixture=9101') === 3 && ($S3['stats']['shots'] ?? null) === [12, 5]);
+sb_live_stats_api($ua, 'foot:9101', $L0 + 150); sb_live_stats_api($ua, 'foot:9101', $L0 + 170);
+check('sbStats : après une erreur, pas de nouvel essai avant 60 s (jamais en boucle)', $cnt('fixtures/statistics?fixture=9101') === 3);
+$lk = fopen(sb_live_stats_lockf('9101'), 'c'); flock($lk, LOCK_EX);
+check('sbStats : un autre lecteur en cours → aucune lecture, réponse tout de suite (non bloquant)', sb_live_stats_api($ua, 'foot:9101', $L0 + 230)['ok'] === true && $cnt('fixtures/statistics?fixture=9101') === 3);
+flock($lk, LOCK_UN); fclose($lk);
+sb_with('budget-foot.json', static function (array &$s) { $s['n'] = SB_FOOT_CAP - SB_LIVE_RESERVE; return true; });
+$S4 = sb_live_stats_api($ua, 'foot:9101', $L0 + 300);
+check('sbStats : réserve du budget atteinte → aucune lecture (jamais au-dessus du plafond)', $S4['ok'] === true && $cnt('fixtures/statistics?fixture=9101') === 3 && (int) sb_read('budget-foot.json')['n'] === SB_FOOT_CAP - SB_LIVE_RESERVE);
+sb_with('budget-foot.json', static function (array &$s) { $s['n'] = SB_FOOT_CAP; return true; });
+check('sbStats : plafond du jour atteint → toujours aucune lecture', sb_live_stats_fetch('9101', $L0 + 400) === false && $cnt('fixtures/statistics?fixture=9101') === 3 && (int) sb_read('budget-foot.json')['n'] === SB_FOOT_CAP);
+sb_with('budget-foot.json', static function (array &$s) use ($bud0) { $s['n'] = $bud0 + 2; return true; });
+check('sbStats : id invalide / match pas en direct refusés', sb_live_stats_api($ua, 'foot:abc', $L0 + 300)['ok'] === false && sb_live_stats_api($ua, 'foot:424242', $L0 + 300)['reason'] === 'notLive' && sb_live_stats_api($ua, 'basket:9101', $L0 + 300)['ok'] === false);
+sb_config_save(['livePublic' => false]);
+check('sbStats : direct pas visible pour ce joueur → refusé (admin ouvert)', sb_live_stats_api($ua, 'foot:9101', $L0 + 300)['reason'] === 'off' && sb_live_stats_api($uadm, 'foot:9101', $L0 + 300)['ok'] === true);
+sb_config_save(['livePublic' => true]);
+$js = json_encode([$S1, $S2, $S3, $S4, sb_live_stats_api($uadm, 'foot:9101', $L0 + 300)]);
+check('sbStats : la clé API n\'est jamais renvoyée (ni hôte, ni en-tête)', !str_contains($js, 'test-secret-key-123') && !str_contains($js, 'apisports') && !str_contains($js, 'api-sports.io'));
+check('sb_live_cards : jaunes / rouges comptés sur les événements', sb_live_cards(['ev' => [['type' => 'card', 'team' => 'h', 'detail' => 'yellow'], ['type' => 'card', 'team' => 'a', 'detail' => 'red'], ['type' => 'card', 'team' => 'a', 'detail' => 'yellow'], ['type' => 'goal', 'team' => 'h']]]) === ['yellow' => [1, 1], 'red' => [0, 1]]);
+$apiS = (string) file_get_contents(__DIR__ . '/../api.php');
+check('api.php : action sbStats (limite par IP) qui appelle sb_live_stats_api', str_contains($apiS, "'sbStats'           => [['i', 120, 60]]") && str_contains($apiS, 'sb_live_stats_api($me ?: null'));
+if ($dm0) touch($dmF, $dm0); // la suite des tests garde son horloge de « demande »
 
 // suspension
 $cfg = sb_config();
@@ -479,22 +521,14 @@ check('admin : état du direct', ($la = sb_live_admin($B5))['fx'] === 1 && $la['
 
 // règlement (score des 90 min), jamais annulé « posé après le coup d'envoi »
 $live1 = $bet; $balS = $bal[$A];
-sb_with('results.json', static function (array &$s) use ($LT, $B5) { $s['fx']['9101'] = ['v' => 'fin', 'st' => 'FT', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [3, 1], 'ht' => [1, 0], 'at' => $B5, 't' => 'Live Rovers - Direct FC', 'evs' => [[20, 'g'], [50, 'g'], [75, 'g'], [88, 'g']]]; return true; });
+sb_with('results.json', static function (array &$s) use ($LT, $B5) { $s['fx']['9101'] = ['v' => 'fin', 'st' => 'FT', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [3, 1], 'ht' => [1, 0], 'at' => $B5, 't' => 'Live Rovers - Direct FC']; return true; });
 sp_resolve(load_db());
 $byId = []; foreach (sp_my_bets('u_a') as $b) $byId[$b['id']] = $b;
 check('règlement : 1x2 H gagné à 3-1 (pari posé à 2-0, 63e), payé', ($byId[$live1['id']]['status'] ?? '') === 'won' && $bal[$A] > $balS);
 $paid = $bal[$A]; sp_resolve(load_db());
 check('jamais payé deux fois', abs($bal[$A] - $paid) < 0.001);
-check('choix du direct : jamais « annulé » parce que posé après le coup d\'envoi', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'A', 'lv' => 1], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [0, 1], 'evs' => []]], $B5, true) === 'won'
+check('choix du direct : jamais « annulé » parce que posé après le coup d\'envoi', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'A', 'lv' => 1], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [0, 1]]], $B5, true) === 'won'
   && sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'A'], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [0, 1]]], $B5, true) === 'void');
-// 2026-10-22 : flux en retard — but déjà marqué mais pas encore dans le score affiché au moment du pari → annulé (remboursé)
-$rLate = ['9101' => ['v' => 'fin', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [2, 1], 'evs' => [[10, 'g'], [30, 'g'], [42, 'g']]]];
-check('direct en retard : but à la 42e, pari à la 41e avec 1-1 affiché → annulé', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, $rLate, $B5, true) === 'void');
-check('but 5 min APRÈS le pari (46e, pari à 41e) : réglé normalement', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [2, 1], 'evs' => [[10, 'g'], [30, 'g'], [46, 'g']]]], $B5, true) === 'won');
-check('carton rouge juste avant le pari (40e, pari à 41e) → annulé', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [2, 1], 'evs' => [[10, 'g'], [30, 'g'], [40, 'r'], [60, 'g']]]], $B5, true) === 'void');
-check('liste des buts pas encore lue : pas de règlement (attente)', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [2, 1]]], $B5, true) === null);
-check('score saisi par l\'admin : réglé sans liste des buts', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [2, 1], 'man' => 1]], $B5, true) === 'won');
-check('avant-match : la règle du direct ne s\'applique pas', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H'], $LT - 100, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [2, 1]]], $B5, true) === 'won');
 // fin du match : gardé 10 min, suspendu
 $alt['fixtures?live=all&timezone=UTC'] = '{"errors":[],"response":[]}';
 sb_with('live.json', static function (array &$s) { $s['fx']['9101']['m'] = 90; return true; });

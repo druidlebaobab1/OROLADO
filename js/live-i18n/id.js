@@ -1038,7 +1038,7 @@
       "see": "Buka",
       "minNote": "Taruhan minimum $0.10",
       "done": "Taruhan tercatat!",
-      "cont": "Lanjut",
+      "cont": "Tutup",
       "emptySlip": "Kuponmu kosong. Ketuk odds untuk mulai.",
     "none": "Belum ada pertandingan. Pertandingan besar segera hadir di sini.",
     "coupon": "Kupon",

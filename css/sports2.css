@@ -169,8 +169,18 @@ html:root body #casinoModal .sp2 .sp2-place > b{flex:0 1 auto;min-width:0;paddin
 html:root body #casinoModal .sp2 .sp2-place.guest{color:#fff;background:linear-gradient(180deg,#8B5CF6,#6D28D9);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 10px 24px -12px rgba(139,92,246,.95)}
 html:root body #casinoModal .sp2 .sp2-place.guest > span{max-width:100%}
 html:root body #casinoModal .sp2 .sp2-place:not(:disabled):active{transform:scale(.98)}
-html:root body #casinoModal .sp2 .sp2-place.wait > span::before{content:"";display:inline-block;width:13px;height:13px;margin-inline-end:7px;vertical-align:-1px;border-radius:50%;border:2.5px solid rgba(42,24,0,.25);border-top-color:#2A1800;animation:sp2Spin .8s linear infinite}
-@keyframes sp2Spin{to{transform:rotate(360deg)}}
+/* 2026-10-22 (propriétaire) : envoi = barre claire qui se remplit dans le bouton (plus de petite roue « figée » sur iPhone) */
+html:root body #casinoModal .sp2 .sp2-place{position:relative;overflow:hidden;isolation:isolate}
+html:root body #casinoModal .sp2 .sp2-place > span{position:relative;z-index:1}
+/* (l'animation est posée en ligne par busy() : elle bouge aussi en mode léger html.oro-lite) */
+html:root body #casinoModal .sp2 .sp2-prog{position:absolute;inset:0;z-index:0;pointer-events:none;transform-origin:0 50%;transform:scaleX(.04);background:rgba(255,255,255,.30);will-change:transform}
+html:root body #casinoModal .sp2 .sp2-prog > i{position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.45),rgba(255,255,255,0));will-change:transform}
+html:root[dir="rtl"] body #casinoModal .sp2 .sp2-prog{transform-origin:100% 50%}
+@keyframes sp2Fill{from{transform:scaleX(.04)}to{transform:scaleX(.92)}}
+@keyframes sp2Sweep{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+html:root body #casinoModal .sp2 .sp2-place.okd .sp2-prog > i,html:root body #casinoModal .sp2 .sp2-place.kod .sp2-prog > i{display:none}
+html:root body #casinoModal .sp2 .sp2-place.kod .sp2-prog{background:rgba(190,18,60,.55)}
+html:root body #casinoModal .sp2 .sp2-place.kod{color:#fff}
 html:root body #casinoModal .sp2 .sp2-min{margin:-2px 0 0;display:flex;justify-content:center;color:var(--sp2-mute);font:600 11.5px/1.1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sp2-min span{max-width:100%}
 html:root body #casinoModal .sp2 .sp2-page button:disabled:not(.sp2-place){opacity:.5}
@@ -880,6 +890,16 @@ html:root body #casinoModal .sp2 .pz-gov small{color:#fff;font:700 11.5px/1.2 va
 html:root body #casinoModal .sp2 .pz-gov.on{animation:pzGov 3s ease-out both}
 @keyframes pzGov{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}12%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}20%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0}}
 html:root body #casinoModal .sp2 .pz-tvm small[hidden]{display:none}
+/* 2026-10-22 (propriétaire : « sous les logos c'est vide ») — Informations : statistiques du match en 2 colonnes, compactes ;
+   la mini télé prend la hauteur du volet affiché (tvFit) */
+html:root body #casinoModal .sp2 .pz-tvs{align-items:flex-start;transition:height .25s ease;background:#160F3A}
+html:root body #casinoModal .sp2 .pz-tvx{display:flex;flex-direction:column;gap:7px;padding-top:2px}
+html:root body #casinoModal .sp2 .pz-tvst.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5px 14px}
+html:root body #casinoModal .sp2 .pz-tvst p b.hi{color:#FDE68A}
+html:root body #casinoModal .sp2 .pz-tvst p span{white-space:normal}
+html:root body #casinoModal .sp2 .pz-tvst .pz-sbar{margin-top:1px}
+html:root body #casinoModal .sp2 .pz-tvev{flex-direction:row;flex-wrap:wrap;gap:3px 12px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08)}
+@media (prefers-reduced-motion:reduce){html:root body #casinoModal .sp2 .pz-tvs{transition:none}}
 @media (max-width:380px){html:root body #casinoModal .sp2 .pz-pitch{height:136px}}
 @media (min-width:900px){html:root body #casinoModal .sp2 .pz-pitch{height:220px}}
 @media (prefers-reduced-motion:reduce){html:root body #casinoModal .sp2 .pz-gov.on{animation:none}}
