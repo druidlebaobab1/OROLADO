@@ -2372,7 +2372,7 @@
   function pollDelay() {
     if (view === 'live') return 5000;
     if (view === 'match') { var f = curFx(); return f && f.live && !f.end ? 5000 : 60000; }
-    if (view === 'home') return sbOn && sport === 'foot' && (per === 'top' || per === 'all') && !sbQ && liveShown() ? 15000 : 60000;
+    if (view === 'home') return sbOn && sport === 'foot' && (per === 'top' || per === 'all') && !sbQ && liveShown() ? 5000 : 60000; // direct de l'accueil : mêmes cotes / cadenas que la page du match
     if (view === 'slip' && slip.some(function (s) { return s.lv; })) return 10000;
     return -1;
   }
