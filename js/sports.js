@@ -736,7 +736,7 @@
     g.disabled = on; g.classList.toggle('wait', on); g.setAttribute('aria-busy', on ? 'true' : 'false');
     var p = g.querySelector('.sp2-prog');
     if (on) {
-      if (!sendT0) { sendT0 = Date.now(); sendDur = live ? 9500 : 1600; }
+      if (!sendT0) { sendT0 = Date.now(); sendDur = live ? 15500 : 1600; } // direct : jusqu'à 15 s de contrôles (le serveur répond plus tôt s'il refuse)
       if (!p) { p = document.createElement('i'); p.className = 'sp2-prog'; p.setAttribute('aria-hidden', 'true'); p.innerHTML = '<i></i>'; g.insertBefore(p, g.firstChild); }
       // bouton refait pendant l'envoi (cotes qui bougent) : la barre reprend où elle en était. En ligne et « important » :
       // elle bouge aussi en mode léger (html.oro-lite, retenu 7 jours sur un téléphone lent : c'est ce qui figeait la roue).
@@ -770,7 +770,7 @@
     var known = {}; (mineCache || []).forEach(function (b) { known[b.id] = 1; });
     var sentAt = nowS(), r = null;
     // 2026-10-21 : les cotes AFFICHÉES partent avec le pari, et le réglage du joueur pour les changements de cotes (acc)
-    try { r = await D6.Api.post('spBet', { mode: 'real', stake: st, sel: sel, acc: accMode() }, 20000); } catch (e) { r = null; }
+    try { r = await D6.Api.post('spBet', { mode: 'real', stake: st, sel: sel, acc: accMode() }, zs.some(function (z) { return z.lv; }) ? 35000 : 20000); } catch (e) { r = null; }
     if (!r) { var found = await recover(sentAt, st, titles, known); if (found) r = { ok: true, bet: found, bal: null }; }
     return r;
   }
@@ -806,13 +806,27 @@
       if (view === 'slip') render();
       return;
     }
-    var why = fails[fails.length - 1];
+    var why = fails[fails.length - 1], wasLive = jobs.some(function (j) { return !j.done && j.zs.some(function (z) { return z.lv; }); });
     if ((why === 'maxWin' || why === 'cap') && failR && failR.maxStake >= 0.1) { var ms = Math.max(0.1, failR.maxStake); if (each) slip.forEach(function (z) { if (z.st == null || z.st > ms) z.st = ms; }); else { stake = ms; lsSet('oro_sp_stake', String(ms)); } }
     if (why === 'odds' && failR && Array.isArray(failR.odds)) failR.odds.forEach(function (o) { slip.forEach(function (z) { if (z.ev === o.ev && z.k === o.k && Math.abs(z.odd - o.odd) > 1e-9) { z.prev = z.odd; z.odd = +o.odd; z.chg = true; } }); }); // nouvelles cotes du serveur
     if ((why === 'odds' || why === 'closed' || why === 'susp') && slip.some(function (z) { return z.sb; })) await sbRefreshSlip();
     if (why === 'odds' || why === 'closed') { var l = await fetchList(); if (l) { lastList = events = l; lastJson = JSON.stringify(l); syncSlip(); } }
     if (view === 'slip') render();
+    if (wasLive && (why === 'susp' || why === 'odds' || why === 'closed')) { refuseCard(why === 'odds' ? 'odds' : 'ev', okBets.length ? fmt(x.partial, { ok: okBets.length, n: jobs.length }) : ''); return; }
     if (ctx.toast) ctx.toast((okBets.length ? fmt(x.partial, { ok: okBets.length, n: jobs.length }) + ' · ' : '') + (x['e_' + why] || NX()['e_' + why] || x.e_unavailable));
+  }
+  /* 2026-10-22 (propriétaire : « un vrai message, pas un SMS ; comme les grandes plateformes, sans fâcher ») — pari en direct
+     refusé : petite carte au centre (icône, titre, une phrase, « Compris »), sur le ticket. */
+  function refuseCard(kind, extra) {
+    var n = NX(), old = box.querySelector('.pz-rf'); if (old) old.remove();
+    var el = document.createElement('div'); el.className = 'pz-rf'; el.setAttribute('role', 'alertdialog');
+    el.innerHTML = '<div class="pz-rfc"><i class="pz-rfi" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 7.2v5.6M12 16.3v.4"/></svg></i>' +
+      '<b dir="auto">' + esc(n.rfT) + '</b><p dir="auto">' + esc(kind === 'odds' ? n.rfOd : n.rfEv) + '</p>' + (extra ? '<small dir="auto">' + esc(extra) + '</small>' : '') +
+      '<button type="button"><span class="fit">' + esc(n.rfOk) + '</span></button></div>';
+    var close = function () { el.classList.add('out'); setTimeout(function () { el.remove(); }, 180); };
+    el.addEventListener('click', function (e) { if (e.target === el || e.target.closest('button')) close(); });
+    box.appendChild(el); fitAll(el);
+    var b = el.querySelector('button'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
   }
   /* ==========================================================================================================
      2026-10-22 (étape 2) — PARIS AUTOMATIQUES (sb_lib.php, api.php sbList / sbMatch / sbCodeSave / sbCodeLoad) :
@@ -904,56 +918,56 @@
   /* 2026-10-22 — PARIS v2 : petits textes de la nouvelle interface (barre du bas, direct, résultats…), 12 langues */
   var NBK = ['nHome', 'nLive', 'nSlip', 'nMine', 'nMenu', 'live', 'seeAll', 'soon', 'topM', 'allM', 'inX', 'hour', 'fromH', 'startsIn', 'ht', 'ft', 'goal', 'red', 'endM',
     'tEv', 'tSt', 'noEv', 'noLive', 'susp', 'e_susp', 'share', 'code', 'back', 'sports', 'rulesT', 'liveWait', 'poss', 'shots', 'shotsOn', 'corners', 'yellow', 'reds', 'attacks',
-    'dangerous', 'pen', 'og', 'var', 'sub', 'kick', 'results', 'yday', 'dbef', 'htS', 'noRes', 'guestMineS', 'ftS'];
+    'dangerous', 'pen', 'og', 'var', 'sub', 'kick', 'results', 'yday', 'dbef', 'htS', 'noRes', 'guestMineS', 'ftS', 'rfT', 'rfEv', 'rfOd', 'rfOk', 'selAll', 'selLess', 'lvSrch'];
   var NBL = {
     fr: ['Populaire', 'Direct', 'Coupon', 'Mes paris', 'Menu', 'En direct', 'Tout voir', 'Commence bientôt', 'Top matchs', 'Tous les matchs', 'Dans {x}', 'Heure', 'Dès {h}', 'Commence dans', 'Mi-temps', 'Terminé', 'BUT !', 'Carton rouge', 'Fin du match',
       'Événements', 'Statistiques', 'Pas encore d’événement.', 'Aucun match en direct pour l’instant.', 'Suspendu', 'Cotes suspendues (but ou action en cours) : réessaie dans un instant.', 'Partager le code', 'Code', 'Retour', 'Sports', 'Règles', 'Validation en direct…',
       'Possession', 'Tirs', 'Tirs cadrés', 'Corners', 'Cartons jaunes', 'Cartons rouges', 'Attaques', 'Attaques dangereuses', 'pen.', 'c.s.c.', 'VAR', 'Remplacement', 'Coup d’envoi', 'Résultats', 'Hier', 'Avant-hier', 'MT', 'Aucun résultat pour ce jour.',
-      'Inscris-toi pour parier et retrouver tes paris ici.', 'Fin'],
+      'Inscris-toi pour parier et retrouver tes paris ici.', 'Fin', 'Pari non accepté', 'Un événement vient de se produire dans ce match. Les cotes se mettent à jour : réessayez dans un instant.', 'Les cotes ont changé pendant la validation. Vérifiez votre ticket puis confirmez à nouveau.', 'Compris', 'Voir les {n} sélections', 'Réduire', 'Rechercher un match en direct'],
     en: ['Popular', 'Live', 'Bet slip', 'My bets', 'Menu', 'Live now', 'See all', 'Starting soon', 'Top matches', 'All matches', 'In {x}', 'Hour', 'From {h}', 'Starts in', 'Half-time', 'Finished', 'GOAL!', 'Red card', 'Full time',
       'Events', 'Statistics', 'No event yet.', 'No live match right now.', 'Suspended', 'Odds suspended (goal or action in progress): try again in a moment.', 'Share code', 'Code', 'Back', 'Sports', 'Rules', 'Live check…',
       'Possession', 'Shots', 'Shots on target', 'Corners', 'Yellow cards', 'Red cards', 'Attacks', 'Dangerous attacks', 'pen.', 'o.g.', 'VAR', 'Substitution', 'Kick-off', 'Results', 'Yesterday', '2 days ago', 'HT', 'No result for this day.',
-      'Sign up to bet and find your bets here.', 'FT'],
+      'Sign up to bet and find your bets here.', 'FT', 'Bet not accepted', 'Something just happened in this match. The odds are being updated: try again in a moment.', 'The odds changed while your bet was being checked. Review your slip and confirm again.', 'Got it', 'Show all {n} selections', 'Show less', 'Search a live match'],
     es: ['Popular', 'En vivo', 'Boleto', 'Mis apuestas', 'Menú', 'En vivo ahora', 'Ver todo', 'Empieza pronto', 'Partidos top', 'Todos los partidos', 'En {x}', 'Hora', 'Desde {h}', 'Empieza en', 'Descanso', 'Terminado', '¡GOL!', 'Tarjeta roja', 'Final del partido',
       'Eventos', 'Estadísticas', 'Aún no hay eventos.', 'Ningún partido en vivo ahora.', 'Suspendido', 'Cuotas suspendidas (gol o jugada en curso): inténtalo en un momento.', 'Compartir código', 'Código', 'Volver', 'Deportes', 'Reglas', 'Validación en vivo…',
       'Posesión', 'Tiros', 'Tiros a puerta', 'Córners', 'Tarjetas amarillas', 'Tarjetas rojas', 'Ataques', 'Ataques peligrosos', 'pen.', 'p.p.', 'VAR', 'Cambio', 'Saque inicial', 'Resultados', 'Ayer', 'Anteayer', 'Desc.', 'Ningún resultado para este día.',
-      'Regístrate para apostar y ver tus apuestas aquí.', 'Fin'],
+      'Regístrate para apostar y ver tus apuestas aquí.', 'Fin', 'Apuesta no aceptada', 'Acaba de ocurrir algo en este partido. Las cuotas se están actualizando: inténtalo de nuevo en un momento.', 'Las cuotas cambiaron durante la validación. Revisa tu boleto y confirma de nuevo.', 'Entendido', 'Ver las {n} selecciones', 'Ver menos', 'Buscar un partido en vivo'],
     pt: ['Popular', 'Ao vivo', 'Bilhete', 'Minhas apostas', 'Menu', 'Ao vivo agora', 'Ver tudo', 'Começa em breve', 'Jogos top', 'Todos os jogos', 'Em {x}', 'Hora', 'A partir das {h}', 'Começa em', 'Intervalo', 'Encerrado', 'GOL!', 'Cartão vermelho', 'Fim de jogo',
       'Eventos', 'Estatísticas', 'Ainda sem eventos.', 'Nenhum jogo ao vivo agora.', 'Suspenso', 'Odds suspensas (gol ou lance em andamento): tente de novo em instantes.', 'Partilhar código', 'Código', 'Voltar', 'Esportes', 'Regras', 'Validação ao vivo…',
       'Posse de bola', 'Chutes', 'Chutes no gol', 'Escanteios', 'Cartões amarelos', 'Cartões vermelhos', 'Ataques', 'Ataques perigosos', 'pên.', 'g.c.', 'VAR', 'Substituição', 'Pontapé inicial', 'Resultados', 'Ontem', 'Anteontem', 'Int.', 'Nenhum resultado para este dia.',
-      'Cadastre-se para apostar e ver suas apostas aqui.', 'Fim'],
+      'Cadastre-se para apostar e ver suas apostas aqui.', 'Fim', 'Aposta não aceita', 'Algo acabou de acontecer nesta partida. As odds estão sendo atualizadas: tente novamente em instantes.', 'As odds mudaram durante a validação. Confira seu bilhete e confirme de novo.', 'Entendi', 'Ver as {n} seleções', 'Ver menos', 'Buscar uma partida ao vivo'],
     ar: ['الأكثر شعبية', 'مباشر', 'القسيمة', 'رهاناتي', 'القائمة', 'مباشر الآن', 'عرض الكل', 'تبدأ قريبًا', 'أبرز المباريات', 'كل المباريات', 'خلال {x}', 'الساعة', 'من {h}', 'تبدأ خلال', 'استراحة', 'انتهت', 'هدف!', 'بطاقة حمراء', 'نهاية المباراة',
       'الأحداث', 'الإحصائيات', 'لا أحداث بعد.', 'لا توجد مباراة مباشرة الآن.', 'معلّق', 'الاحتمالات معلّقة (هدف أو هجمة جارية): أعد المحاولة بعد لحظة.', 'مشاركة الرمز', 'الرمز', 'رجوع', 'الرياضات', 'القواعد', 'تحقق مباشر…',
       'الاستحواذ', 'التسديدات', 'تسديدات على المرمى', 'الركنيات', 'بطاقات صفراء', 'بطاقات حمراء', 'الهجمات', 'هجمات خطيرة', 'جزاء', 'عكسي', 'VAR', 'تبديل', 'انطلاق المباراة', 'النتائج', 'أمس', 'أول أمس', 'ش1', 'لا توجد نتائج لهذا اليوم.',
-      'سجّل لتراهن وتجد رهاناتك هنا.', 'انتهت'],
+      'سجّل لتراهن وتجد رهاناتك هنا.', 'انتهت', 'لم يُقبل الرهان', 'حدث شيء للتو في هذه المباراة. يتم تحديث الاحتمالات: حاول مرة أخرى بعد لحظة.', 'تغيرت الاحتمالات أثناء التحقق. راجع قسيمتك ثم أكّد من جديد.', 'حسنًا', 'عرض الاختيارات الـ {n}', 'عرض أقل', 'ابحث عن مباراة مباشرة'],
     tr: ['Popüler', 'Canlı', 'Kupon', 'Bahislerim', 'Menü', 'Şimdi canlı', 'Tümünü gör', 'Yakında başlıyor', 'Önemli maçlar', 'Tüm maçlar', '{x} içinde', 'Saat', '{h} sonrası', 'Başlamasına', 'Devre arası', 'Bitti', 'GOL!', 'Kırmızı kart', 'Maç sonu',
       'Olaylar', 'İstatistikler', 'Henüz olay yok.', 'Şu an canlı maç yok.', 'Askıda', 'Oranlar askıda (gol veya pozisyon var): birazdan tekrar dene.', 'Kodu paylaş', 'Kod', 'Geri', 'Sporlar', 'Kurallar', 'Canlı kontrol…',
       'Topla oynama', 'Şut', 'İsabetli şut', 'Korner', 'Sarı kart', 'Kırmızı kart', 'Atak', 'Tehlikeli atak', 'pen.', 'k.k.', 'VAR', 'Oyuncu değişikliği', 'Başlama', 'Sonuçlar', 'Dün', 'Önceki gün', 'İY', 'Bu gün için sonuç yok.',
-      'Bahis yapmak ve bahislerini burada görmek için kaydol.', 'MS'],
+      'Bahis yapmak ve bahislerini burada görmek için kaydol.', 'MS', 'Bahis kabul edilmedi', 'Bu maçta az önce bir olay oldu. Oranlar güncelleniyor: birazdan tekrar dene.', 'Doğrulama sırasında oranlar değişti. Kuponunu kontrol edip yeniden onayla.', 'Anladım', '{n} seçimin tümünü gör', 'Daha az göster', 'Canlı maç ara'],
     vi: ['Phổ biến', 'Trực tiếp', 'Phiếu cược', 'Cược của tôi', 'Menu', 'Đang diễn ra', 'Xem tất cả', 'Sắp bắt đầu', 'Trận nổi bật', 'Tất cả trận', 'Trong {x}', 'Giờ', 'Từ {h}', 'Bắt đầu sau', 'Nghỉ giữa hiệp', 'Kết thúc', 'VÀO!', 'Thẻ đỏ', 'Hết trận',
       'Diễn biến', 'Thống kê', 'Chưa có diễn biến.', 'Hiện không có trận trực tiếp.', 'Tạm khóa', 'Tỷ lệ tạm khóa (có bàn thắng hoặc tình huống): thử lại sau giây lát.', 'Chia sẻ mã', 'Mã', 'Quay lại', 'Môn thể thao', 'Luật', 'Đang xác nhận…',
       'Kiểm soát bóng', 'Sút', 'Sút trúng đích', 'Phạt góc', 'Thẻ vàng', 'Thẻ đỏ', 'Tấn công', 'Tấn công nguy hiểm', 'pen', 'phản lưới', 'VAR', 'Thay người', 'Giờ bóng lăn', 'Kết quả', 'Hôm qua', 'Hôm kia', 'H1', 'Không có kết quả cho ngày này.',
-      'Đăng ký để đặt cược và xem cược của bạn tại đây.', 'KT'],
+      'Đăng ký để đặt cược và xem cược của bạn tại đây.', 'KT', 'Cược không được chấp nhận', 'Vừa có diễn biến trong trận này. Tỷ lệ đang được cập nhật: hãy thử lại sau giây lát.', 'Tỷ lệ đã thay đổi trong lúc xác nhận. Kiểm tra phiếu rồi xác nhận lại.', 'Đã hiểu', 'Xem cả {n} lựa chọn', 'Thu gọn', 'Tìm trận đang diễn ra'],
     id: ['Populer', 'Live', 'Kupon', 'Taruhanku', 'Menu', 'Live sekarang', 'Lihat semua', 'Segera dimulai', 'Laga top', 'Semua laga', 'Dalam {x}', 'Jam', 'Mulai {h}', 'Mulai dalam', 'Turun minum', 'Selesai', 'GOL!', 'Kartu merah', 'Laga selesai',
       'Kejadian', 'Statistik', 'Belum ada kejadian.', 'Tidak ada laga live saat ini.', 'Ditangguhkan', 'Odds ditangguhkan (gol atau aksi berlangsung): coba lagi sebentar.', 'Bagikan kode', 'Kode', 'Kembali', 'Olahraga', 'Aturan', 'Validasi live…',
       'Penguasaan bola', 'Tembakan', 'Tepat sasaran', 'Sepak pojok', 'Kartu kuning', 'Kartu merah', 'Serangan', 'Serangan berbahaya', 'pen.', 'b.d.', 'VAR', 'Pergantian', 'Kick-off', 'Hasil', 'Kemarin', 'Kemarin lusa', 'Bbk 1', 'Tidak ada hasil untuk hari ini.',
-      'Daftar untuk bertaruh dan melihat taruhanmu di sini.', 'Sls'],
+      'Daftar untuk bertaruh dan melihat taruhanmu di sini.', 'Sls', 'Taruhan tidak diterima', 'Baru saja terjadi sesuatu di laga ini. Odds sedang diperbarui: coba lagi sebentar lagi.', 'Odds berubah saat taruhan diperiksa. Periksa slip lalu konfirmasi lagi.', 'Mengerti', 'Lihat semua {n} pilihan', 'Lebih sedikit', 'Cari laga live'],
     ru: ['Популярное', 'Live', 'Купон', 'Мои ставки', 'Меню', 'Сейчас в эфире', 'Все', 'Скоро начало', 'Топ-матчи', 'Все матчи', 'Через {x}', 'Час', 'С {h}', 'Начало через', 'Перерыв', 'Завершён', 'ГОЛ!', 'Красная карточка', 'Конец матча',
       'События', 'Статистика', 'Пока нет событий.', 'Сейчас нет матчей в эфире.', 'Приостановлено', 'Коэффициенты приостановлены (гол или опасный момент): попробуйте чуть позже.', 'Поделиться кодом', 'Код', 'Назад', 'Виды спорта', 'Правила', 'Проверка live…',
       'Владение', 'Удары', 'Удары в створ', 'Угловые', 'Жёлтые карточки', 'Красные карточки', 'Атаки', 'Опасные атаки', 'пен.', 'автогол', 'VAR', 'Замена', 'Начало матча', 'Результаты', 'Вчера', 'Позавчера', '1-й т.', 'Нет результатов за этот день.',
-      'Зарегистрируйтесь, чтобы делать ставки и видеть их здесь.', 'Кон.'],
+      'Зарегистрируйтесь, чтобы делать ставки и видеть их здесь.', 'Кон.', 'Ставка не принята', 'В этом матче только что произошло событие. Коэффициенты обновляются: попробуйте ещё раз через мгновение.', 'Коэффициенты изменились во время проверки. Проверьте купон и подтвердите снова.', 'Понятно', 'Показать все {n} выбора', 'Свернуть', 'Найти матч в прямом эфире'],
     de: ['Beliebt', 'Live', 'Wettschein', 'Meine Wetten', 'Menü', 'Jetzt live', 'Alle', 'Beginnt bald', 'Top-Spiele', 'Alle Spiele', 'In {x}', 'Uhrzeit', 'Ab {h}', 'Beginnt in', 'Halbzeit', 'Beendet', 'TOR!', 'Rote Karte', 'Spielende',
       'Ereignisse', 'Statistiken', 'Noch keine Ereignisse.', 'Gerade kein Live-Spiel.', 'Gesperrt', 'Quoten gesperrt (Tor oder Aktion läuft): gleich noch einmal versuchen.', 'Code teilen', 'Code', 'Zurück', 'Sportarten', 'Regeln', 'Live-Prüfung…',
       'Ballbesitz', 'Schüsse', 'Schüsse aufs Tor', 'Ecken', 'Gelbe Karten', 'Rote Karten', 'Angriffe', 'Gefährliche Angriffe', 'Elfm.', 'ET', 'VAR', 'Wechsel', 'Anstoß', 'Ergebnisse', 'Gestern', 'Vorgestern', 'HZ', 'Keine Ergebnisse für diesen Tag.',
-      'Registriere dich, um zu wetten und deine Wetten hier zu sehen.', 'Ende'],
+      'Registriere dich, um zu wetten und deine Wetten hier zu sehen.', 'Ende', 'Wette nicht angenommen', 'In diesem Spiel ist gerade etwas passiert. Die Quoten werden aktualisiert: versuche es gleich noch einmal.', 'Die Quoten haben sich während der Prüfung geändert. Prüfe deinen Schein und bestätige erneut.', 'Verstanden', 'Alle {n} Tipps anzeigen', 'Weniger anzeigen', 'Live-Spiel suchen'],
     zh: ['热门', '直播', '投注单', '我的投注', '菜单', '正在直播', '查看全部', '即将开始', '焦点赛事', '全部比赛', '{x}内', '时间', '{h} 起', '距开赛', '中场休息', '已结束', '进球！', '红牌', '全场结束',
       '事件', '技术统计', '暂无事件。', '当前没有直播比赛。', '暂停', '赔率暂停（进球或进攻中）：请稍后再试。', '分享代码', '代码', '返回', '运动项目', '规则', '直播确认中…',
       '控球率', '射门', '射正', '角球', '黄牌', '红牌', '进攻', '危险进攻', '点球', '乌龙', 'VAR', '换人', '开球', '赛果', '昨天', '前天', '半场', '这一天没有赛果。',
-      '注册后即可投注，并在这里查看你的投注。', '完场'],
+      '注册后即可投注，并在这里查看你的投注。', '完场', '投注未被接受', '这场比赛刚刚发生了事件。赔率正在更新：请稍后再试。', '验证期间赔率已变化。请检查投注单后再次确认。', '知道了', '查看全部 {n} 个选择', '收起', '搜索直播比赛'],
     hi: ['लोकप्रिय', 'लाइव', 'कूपन', 'मेरे दांव', 'मेनू', 'अभी लाइव', 'सभी देखें', 'जल्द शुरू', 'टॉप मैच', 'सभी मैच', '{x} में', 'समय', '{h} से', 'शुरू होने में', 'हाफ़-टाइम', 'समाप्त', 'गोल!', 'लाल कार्ड', 'मैच समाप्त',
       'घटनाएँ', 'आँकड़े', 'अभी कोई घटना नहीं।', 'अभी कोई लाइव मैच नहीं।', 'निलंबित', 'ऑड्स निलंबित (गोल या हमला जारी): थोड़ी देर में फिर कोशिश करें।', 'कोड शेयर करें', 'कोड', 'वापस', 'खेल', 'नियम', 'लाइव जाँच…',
       'कब्ज़ा', 'शॉट', 'निशाने पर शॉट', 'कॉर्नर', 'पीले कार्ड', 'लाल कार्ड', 'हमले', 'ख़तरनाक हमले', 'पेन.', 'आत्मघाती', 'VAR', 'बदलाव', 'किक-ऑफ़', 'नतीजे', 'कल', 'परसों', 'हाफ़', 'इस दिन का कोई नतीजा नहीं।',
-      'दांव लगाने और अपने दांव यहाँ देखने के लिए साइन अप करें।', 'ख़त्म']
+      'दांव लगाने और अपने दांव यहाँ देखने के लिए साइन अप करें।', 'ख़त्म', 'दांव स्वीकार नहीं हुआ', 'इस मैच में अभी कुछ हुआ है। ऑड्स अपडेट हो रहे हैं: थोड़ी देर में फिर कोशिश करें।', 'जांच के दौरान ऑड्स बदल गए। अपनी स्लिप देखें और फिर से पुष्टि करें।', 'समझ गया', 'सभी {n} चयन देखें', 'कम दिखाएं', 'लाइव मैच खोजें']
   };
   function NX() { var a = NBL[lg()] || NBL.en, o = {}; NBK.forEach(function (k, i) { o[k] = a[i] != null ? a[i] : NBL.en[i]; }); return o; }
   // noms des sports (le serveur envoie un code : foot, basket, hockey…)
@@ -1635,18 +1649,29 @@
   // ---------- DIRECT ----------
   function renderLive() {
     var n = NX();
-    shell(bar(n.live) + '<div id="pzLive" class="pz-body"></div>');
+    // 2026-10-22 (propriétaire : « enlève le titre En direct, mets une belle barre de recherche ») : recherche dans le direct
+    shell('<div class="pz-lvq"><label class="pz-q">' + SBIC.search + '<input id="pzLq" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(n.lvSrch) + '" value="' + esc(lvQ) + '">' +
+      '<button type="button" class="pz-qx" id="pzLqx" aria-label="✕"' + (lvQ ? '' : ' hidden') + '>' + IC.x + '</button></label></div><div id="pzLive" class="pz-body"></div>');
+    (function () {
+      var q = $('pzLq'), qx = $('pzLqx'); if (!q) return;
+      q.addEventListener('input', function () { lvQ = q.value; if (qx) qx.hidden = !lvQ; paintLive(); });
+      q.addEventListener('keydown', function (e) { if (e.key === 'Enter') q.blur(); });
+      if (qx) qx.addEventListener('click', function () { lvQ = ''; q.value = ''; qx.hidden = true; paintLive(); });
+    })();
     paintLive();
     if (!liveData || Date.now() - liveData.at > 4000) liveProbe(true).then(function () { if (view === 'live') paintLive(); });
   }
+  var lvQ = '';
   function paintLive() {
     var el = $('pzLive'); if (!el || view !== 'live') return;
     if (!liveData) { if (!el.firstChild) el.innerHTML = skelRows(); return; }
-    var fx = liveFx(), sig = lg() + '|' + fx.map(function (f) { return f.id + (f.end ? 'e' : ''); }).join(',') + '|' + JSON.stringify(sbOpen);
+    var lq = normS(lvQ).trim(), lgN = {}; (liveData.r.lg || []).forEach(function (l) { lgN[l.id] = normS((l.n || '') + ' ' + (l.c || '')); });
+    var fx = liveFx().filter(function (f) { return !lq || normS(f.h.n + ' ' + f.a.n).indexOf(lq) > -1 || (lgN[f.lg] || '').indexOf(lq) > -1; }), sig = lq + '|' + lg() + '|' + fx.map(function (f) { return f.id + (f.end ? 'e' : ''); }).join(',') + '|' + JSON.stringify(sbOpen);
     if (el.dataset.sig === sig) { patchAll(el); return; }
     el.dataset.sig = sig;
     if (!fx.length) {
       var c0 = sbData['foot|0'], soon = c0 && c0.r ? c0.r.fx.filter(function (f) { return f.ts > nowS() && f.ts - nowS() <= 7200; }).slice(0, 6) : [];
+      if (lq) { el.innerHTML = '<p class="pz-none">' + esc(SX().noMatch) + '</p>'; return; }
       el.innerHTML = '<p class="pz-none">' + esc(NX().noLive) + '</p>' + (soon.length ? '<section class="pz-blk"><div class="pz-bh"><b>' + esc(NX().soon) + '</b></div><div class="pz-lgb">' + soon.map(function (f) { return rowHtml(f, { lg: 1, soon: 1 }); }).join('') + '</div></section>' : '');
       return;
     }
@@ -2120,7 +2145,11 @@
   function bindTv() {
     var sc = $('pzTvs'), d = $('pzTvSeg'); if (!sc || !d) return;
     var paint = function () { var i = Math.round(sc.scrollLeft / Math.max(1, sc.clientWidth)); i = Math.abs(i) > 0 ? 1 : 0; TV.pane = i; d.querySelectorAll('[data-tvp]').forEach(function (b) { var on = +b.getAttribute('data-tvp') === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); }); tvFit(); };
-    sc.addEventListener('scroll', function () { clearTimeout(sc._t); sc._t = setTimeout(paint, 60); }, { passive: true });
+    // 2026-10-22 (propriétaire : « ça saute, ça doit glisser ») : la pastille blanche GLISSE sous le doigt (--tvx = 0 … 1), sans saut
+    var ind = function (f) { d.style.setProperty('--tvx', String(Math.max(0, Math.min(1, f)))); };
+    ind(TV.pane || 0);
+    sc.addEventListener('scroll', function () { ind(Math.abs(sc.scrollLeft) / Math.max(1, sc.clientWidth)); clearTimeout(sc._t); sc._t = setTimeout(paint, 60); }, { passive: true });
+    d.addEventListener('pointerdown', function (ev) { var b = ev.target.closest && ev.target.closest('[data-tvp]'); if (b) { ind(+b.getAttribute('data-tvp')); d.querySelectorAll('[data-tvp]').forEach(function (x) { x.classList.toggle('on', x === b); }); } });
     d.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('[data-tvp]'); if (!b) return; var i = +b.getAttribute('data-tvp'), rtl = document.documentElement.dir === 'rtl'; sc.scrollTo({ left: (rtl ? -1 : 1) * i * sc.clientWidth, behavior: 'smooth' }); d.querySelectorAll('[data-tvp]').forEach(function (z) { z.classList.toggle('on', z === b); z.setAttribute('aria-selected', String(z === b)); }); TV.pane = i; tvFit(); });
     tvFit();
   }
@@ -2443,6 +2472,13 @@
     if (Array.isArray(s.cs)) return n.nLive + ' ' + p(s.cs) + (s.cm != null && s.cm !== '' ? ' · ' + s.cm + '’' : ''); // en direct : score actuel
     var sc = Array.isArray(s.sc) ? ' ' + p(s.sc) : '', m = s.m != null && s.m !== '' ? ' · ' + s.m + '’' : ''; return n.nLive + sc + m;
   }
+  // 2026-10-22 (propriétaire : « enlève Direct collé au score, sépare, fais propre ») : score en grand · minute (ou Terminé) à part
+  function liveChip(s) {
+    var n = NX(), p = function (a) { return '<b dir="ltr">' + (+a[0] || 0) + '<i>–</i>' + (+a[1] || 0) + '</b>'; };
+    if (Array.isArray(s.fs)) return '<em class="pz-lvt fin">' + p(s.fs) + '<small>' + esc(n.ftS || n.ft) + '</small></em>';
+    var sc = Array.isArray(s.cs) ? s.cs : Array.isArray(s.sc) ? s.sc : [0, 0], m = Array.isArray(s.cs) ? s.cm : s.m;
+    return '<em class="pz-lvt">' + p(sc) + (m != null && m !== '' ? '<small dir="ltr"><i class="pz-lvd"></i>' + esc(String(m)) + '’</small>' : '') + '</em>';
+  }
   function receipts(bets) {
     var x = XX(), n = NX();
     if (!bets.length) return empty(x.noBets, x.seeBets, null, 'home');
@@ -2455,11 +2491,11 @@
       var show = multi ? bt.sel.slice(0, 3) : bt.sel;
       var sels = show.map(function (s) {
         var e = s.mk ? null : evByTitle(s.t);
-        return '<span class="pz-bs1"><b dir="auto">' + esc(selLbl(s)) + '</b><small dir="auto">' + esc(e ? trT(e) : s.t) + (s.lv || s.fs || s.cs ? '</small><em class="pz-lvt' + (s.fs ? ' fin' : '') + '">' + esc(liveTag(s)) + '</em>' : '</small>') + '</span>';
-      }).join('') + (multi && bt.sel.length > 3 ? '<small class="pz-bmore">+' + (bt.sel.length - 3) + '</small>' : '');
+        return '<span class="pz-bs1"><b dir="auto">' + esc(selLbl(s)) + '</b><small dir="auto">' + esc(e ? trT(e) : s.t) + (s.lv || s.fs || s.cs ? '</small>' + liveChip(s) : '</small>') + '</span>';
+      }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
-          '<span class="pz-b1"><em class="sp2-pill">' + esc(ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + (bt.live ? ' · ' + esc(n.nLive) : '') + '</span><time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
+          '<span class="pz-b1"><em class="sp2-pill">' + esc(ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + (bt.live ? '<i class="pz-blv"><i></i>' + esc(n.nLive) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
           '<span class="pz-bsel">' + sels + '</span>' +
           '<span class="sp2-bf"><span><small class="fit">' + esc(x.stakeL) + '</small><b class="fit">' + money(bt.stake) + '</b></span><span><small class="fit">' + esc(x.oddL) + '</small><b class="fit">' + Number(bt.odd).toFixed(2) + '</b></span>' +
           '<span class="big"><small class="fit">' + esc(lab) + '</small><b class="fit">' + big + '</b></span><i class="sp2-chev">' + IC.back + '</i></span></button>' +

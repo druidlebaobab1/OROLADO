@@ -1400,7 +1400,7 @@ function sb_code_load(?array $user, string $code, int $now = 0, ?array $sel = nu
 const SB_LIVE_ODDS_TTL = 15;        // /odds/live : au plus toutes les 15 s (partagé)
 const SB_LIVE_FX_TTL = 30;          // /fixtures?live=all : au plus toutes les 30 s
 const SB_LIVE_STALE = 20;           // données de plus de 20 s : suspendu
-const SB_LIVE_DELAY = 8;            // délai d'acceptation d'un pari en direct (2026-10-22 : 8 s, avant 5)
+const SB_LIVE_DELAY = 15;           // durée d'acceptation d'un pari en direct (2026-10-22 : 15 s avec contrôles toutes les 3 s ; avant 8)
 const SB_LIVE_DEMAND = 60;          // quelqu'un a regardé le direct dans les 60 s
 const SB_LIVE_RESERVE = 1000;       // lectures gardées pour l'avant-match et les résultats
 const SB_LIVE_STATS_TTL = 60;       // statistiques d'un match ouvert : au plus toutes les 60 s
@@ -1825,10 +1825,14 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
   // cotes de ce match en retard de plus de 90 s sur les autres matchs du flux (fournisseur figé pour ce match) → cadenas
   $odStale = is_array($od) && (int) ($od['lag'] ?? 0) > 180; // (un match calme n'a pas de raison de changer de cote : seulement un flux vraiment figé)
   $jumped = is_array($od) && (int) ($od['jmp'] ?? 0) > $now - SB_LIVE_JUMP_LOCK;
-  $susp = !$fresh || $odStale || $jumped || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
+  // 2026-10-22 (propriétaire : « à la mi-temps tout est verrouillé ») : à la mi-temps rien ne se passe et chaque pari est
+  // contrôlé 15 s → ni « cotes qui ne bougent plus », ni pause du fournisseur, ni saut ne verrouillent pendant la pause.
+  if ($st === 'HT') { $odStale = false; $jumped = false; }
+  $susp = !$fresh || $odStale || $jumped || (!empty($od['blk']) && $st !== 'HT') || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
     || !in_array($st, ['1H', 'HT', '2H'], true); // prolongation / tirs au but : plus de pari (règlement sur les 90 min)
   if (!empty($row['end'])) $sc = is_array($row['g'] ?? null) ? array_map('intval', $row['g']) : $sc;
   $mk = is_array($od) ? (array) $od['mk'] : [];
+  if ($st === 'HT') foreach ($mk as $k => $o) foreach ((array) $o as $i => $z) if (is_array($z)) $mk[$k][$i][2] = 0; // mi-temps : choix rouverts (contrôle de 15 s)
   // marchés de la 1re mi-temps : seulement pendant la 1re mi-temps, jusqu'à la 42e
   if ($st !== '1H' || $m >= 43) foreach (array_keys($mk) as $k) if (in_array(sb_fam((string) $k), ['ht1x2', 'htou'], true)) unset($mk[$k]);
   return ['row' => $row, 'od' => $od, 'sc' => $sc, 'm' => $m, 'st' => $st, 'susp' => $susp, 'mk' => $mk];
@@ -1948,29 +1952,73 @@ function sb_live_wait(int $sec, int $now): int {
   return max($now + $sec, time());
 }
 /**
- * Pari avec des choix EN DIRECT (sp_bet, avant de prendre l'argent) : ATTENTE de 5 s, relecture forcée de /odds/live, puis
- * chaque choix du direct relu : suspendu / fermé / score changé → refus « susp » ; cote changée → règle $acc (refus « odds »
- * avec les nouvelles cotes, sinon la nouvelle cote est prise). Retour null = accepté ($picked = cotes relues, $now = après).
+ * 2026-10-22 (propriétaire : « j'ai vu le but sur Flashscore, j'ai parié, c'est passé ») — Pari avec des choix EN DIRECT
+ * (sp_bet, avant de prendre l'argent) : jusqu'à SB_LIVE_HOLD (15 s), toutes les SB_LIVE_STEP (3 s), le serveur REDEMANDE au
+ * fournisseur les cotes (/odds/live) ET le match lui-même (/fixtures?ids : score, buts, cartons rouges, vidéo).
+ * Dès qu'un problème apparaît → refus tout de suite : score différent / but, carton rouge ou vidéo depuis la minute du pari,
+ * match suspendu → « susp » ; cote changée → règle $acc (« odds »). Rien trouvé au bout des 15 s → accepté (cotes relues).
  */
-function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?array {
-  $now2 = sb_live_wait(SB_LIVE_DELAY, $now);
-  sb_live_refresh_now($now2);
-  $chg = []; $L = sb_live_data(); $cfg = sb_config();
+const SB_LIVE_HOLD = 15;
+const SB_LIVE_STEP = 3;
+/** Le match lui-même, relu chez le fournisseur (gardé 2 s : plusieurs paris en même temps = une seule lecture). */
+function sb_live_fx_fresh(array $ids, int $now): array {
+  $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+  if (!$ids || !sb_live_budget_ok($now)) return [];
+  $j = sb_get_cached('fixtures?ids=' . implode('-', array_slice($ids, 0, 20)), 2, $now);
+  $out = [];
+  foreach ((array) ($j['response'] ?? []) as $r) {
+    if (!is_array($r) || ($id = (int) ($r['fixture']['id'] ?? 0)) <= 0) continue;
+    $g = $r['goals'] ?? [];
+    $out[(string) $id] = ['sc' => is_numeric($g['home'] ?? null) && is_numeric($g['away'] ?? null) ? [(int) $g['home'], (int) $g['away']] : null,
+      'st' => (string) ($r['fixture']['status']['short'] ?? ''), 'ev' => sb_live_events($r)];
+  }
+  return $out;
+}
+/** Un contrôle (null = rien à signaler). $final : dernier contrôle → les cotes relues sont prises. */
+function sb_live_check(array &$picked, string $acc, ?array $user, int $now, array $fx, bool $final): ?array {
+  $chg = []; $L = sb_live_data(); $cfg = sb_config(); $new = $picked;
   foreach ($picked as $i => $p) {
     if (empty($p['lv'])) continue;
     $id = (string) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']);
-    $v = sb_live_view($id, $L, $now2, $cfg);
-    if ($v && $v['sc'] !== $p['sc']) return ['ok' => false, 'reason' => 'susp', 'why' => 'goal', 'ev' => $p['ev']]; // but pendant l'attente
-    $r = sb_pick((string) $p['ev'], (string) $p['k'], $user, $now2);
+    $goal = ['ok' => false, 'reason' => 'susp', 'why' => 'goal', 'ev' => $p['ev']];
+    $f = $fx[$id] ?? null;
+    if ($f) {
+      if (is_array($f['sc']) && $f['sc'] !== $p['sc']) return $goal; // le match dit déjà un autre score
+      if ($f['st'] !== '' && !in_array($f['st'], ['1H', 'HT', '2H'], true)) return ['ok' => false, 'reason' => 'susp', 'ev' => $p['ev']];
+      $m0 = (int) ($p['m'] ?? 0);
+      foreach ((array) $f['ev'] as $e) {
+        $big = $e['type'] === 'goal' || $e['type'] === 'var' || ($e['type'] === 'card' && $e['detail'] === 'red');
+        if ($big && (int) $e['t'] + (int) $e['x'] >= $m0 - 1) return ['ok' => false, 'reason' => 'susp', 'why' => $e['type'] === 'goal' ? 'goal' : 'event', 'ev' => $p['ev']];
+      }
+    }
+    $v = sb_live_view($id, $L, $now, $cfg);
+    if ($v && $v['sc'] !== $p['sc']) return $goal;
+    $r = sb_pick((string) $p['ev'], (string) $p['k'], $user, $now);
     if (empty($r['ok']) || empty($r['live'])) return ['ok' => false, 'reason' => 'susp', 'ev' => $p['ev']];
     $n = $r['sel'];
-    if ($n['sc'] !== $p['sc']) return ['ok' => false, 'reason' => 'susp', 'why' => 'goal', 'ev' => $p['ev']];
-    $new = (float) $n['odd']; $old = (float) $p['odd'];
-    if (abs($new - $old) > 0.004 && ($acc === 'none' || ($acc === 'up' && $new < $old))) { $chg[] = ['ev' => $p['ev'], 'k' => $p['k'], 'odd' => $new]; continue; }
-    $picked[$i] = $n;
+    if ($n['sc'] !== $p['sc']) return $goal;
+    $nw = (float) $n['odd']; $old = (float) $p['odd'];
+    if (abs($nw - $old) > 0.004 && ($acc === 'none' || ($acc === 'up' && $nw < $old))) { $chg[] = ['ev' => $p['ev'], 'k' => $p['k'], 'odd' => $nw]; continue; }
+    $n['m'] = $p['m'] ?? $n['m']; // minute du pari (pas celle de la relecture)
+    $new[$i] = $n;
   }
-  $now = $now2;
-  return $chg ? ['ok' => false, 'reason' => 'odds', 'odds' => $chg] : null;
+  if ($chg) return ['ok' => false, 'reason' => 'odds', 'odds' => $chg];
+  if ($final) $picked = $new;
+  return null;
+}
+function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?array {
+  $ids = [];
+  foreach ($picked as $p) if (!empty($p['lv'])) $ids[] = (int) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']);
+  $t = $now; $done = 0;
+  while ($done < SB_LIVE_HOLD) {
+    $step = min(SB_LIVE_STEP, SB_LIVE_HOLD - $done);
+    $t = sb_live_wait($step, $t); $done += $step;
+    sb_live_refresh_now($t);
+    $r = sb_live_check($picked, $acc, $user, $t, sb_live_fx_fresh($ids, $t), $done >= SB_LIVE_HOLD);
+    if ($r !== null) { $now = $t; return $r; }
+  }
+  $now = $t;
+  return null;
 }
 /** Admin : état du direct (diagnostic). */
 function sb_live_admin(int $now): array {
