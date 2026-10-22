@@ -158,11 +158,21 @@ function sb_alert(string $title, string $body, int $now = 0): void {
 
 /* ------------------------------------------------------------- lecture de l'API (budget, cache) --------------------- */
 
+/**
+ * Plafond du jour : SB_FOOT_CAP (abonnement Pro, 7 500 / jour), ou PLUS si l'abonnement a été monté (Ultra, Mega…) :
+ * l'API renvoie ce qui reste dans la journée (« rem ») → plafond = utilisé + reste − 300 (marge), jamais sous SB_FOOT_CAP.
+ */
+function sb_foot_cap(int $now = 0): int {
+  $now = $now ?: sb_now();
+  $b = sb_read('budget-foot.json');
+  if (($b['day'] ?? '') !== gmdate('Y-m-d', $now) || !is_numeric($b['rem'] ?? null)) return SB_FOOT_CAP;
+  return max(SB_FOOT_CAP, (int) ($b['n'] ?? 0) + (int) $b['rem'] - 300);
+}
 function sb_budget_take(int $now): bool {
-  $day = gmdate('Y-m-d', $now);
-  return (bool) sb_with('budget-foot.json', static function (array &$s) use ($day) {
+  $day = gmdate('Y-m-d', $now); $cap = sb_foot_cap($now);
+  return (bool) sb_with('budget-foot.json', static function (array &$s) use ($day, $cap) {
     if (($s['day'] ?? '') !== $day) { $s['day'] = $day; $s['n'] = 0; $s['warned'] = 0; }
-    if ((int) $s['n'] >= SB_FOOT_CAP) return false;
+    if ((int) $s['n'] >= $cap) return false;
     $s['n'] = (int) $s['n'] + 1;
     return true;
   });
@@ -171,7 +181,8 @@ function sb_budget(int $now = 0): array {
   $now = $now ?: sb_now();
   $b = sb_read('budget-foot.json');
   $used = ($b['day'] ?? '') === gmdate('Y-m-d', $now) ? (int) ($b['n'] ?? 0) : 0;
-  return ['used' => $used, 'cap' => SB_FOOT_CAP, 'left' => max(0, SB_FOOT_CAP - $used), 'rem' => $b['rem'] ?? null];
+  $cap = sb_foot_cap($now);
+  return ['used' => $used, 'cap' => $cap, 'left' => max(0, $cap - $used), 'rem' => $b['rem'] ?? null];
 }
 /**
  * Une lecture (chemin relatif). Null = pas de clé, budget épuisé, réseau ou erreur API (gardée pour l'admin).
@@ -189,7 +200,7 @@ function sb_get(string $path, int $now = 0, string $sp = 'foot', string $kind = 
   if ($o) {
     if (!sb_o_budget_take($sp, $now, $kind)) return null; // plafond du jour (jamais dépassé)
   } else {
-    if (!sb_budget_take($now)) { $err('Budget du jour atteint (' . SB_FOOT_CAP . ' lectures) : reprise à 0 h UTC'); return null; }
+    if (!sb_budget_take($now)) { $err('Budget du jour atteint (' . sb_foot_cap($now) . ' lectures) : reprise à 0 h UTC'); return null; }
     $b = sb_budget($now);
     if ($b['left'] < 300) sb_with('budget-foot.json', static function (array &$s) use ($now) {
       if (!empty($s['warned'])) return false;
@@ -658,7 +669,7 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
     $log[] = 'fx ' . $day . (sb_import_fixtures($day, $now) ? '' : ' ✗');
   }
   // jour chargé (week-end) : si les lectures du jour vont plus vite que prévu, cotes du jour toutes les 2 h (le direct garde sa part)
-  $bud = sb_budget($now); $tight = $bud['used'] > SB_FOOT_CAP * 0.75 * min(1.0, ($now % 86400) / 86400 + 0.15);
+  $bud = sb_budget($now); $tight = $bud['used'] > $bud['cap'] * 0.75 * min(1.0, ($now % 86400) / 86400 + 0.15);
   $oddsEvery = [$d0 => $tight ? 7200 : 1800, $d1 => 10800, $d2 => 10800] + array_fill_keys($mid, 43200) + array_fill_keys($lat, 86400); // cotes : J toutes les 30 min (2026-10-22, marge 2,5 %) ; J+3…J+7 12 h ; J+8…J+14 24 h
   $pages = 0;
   foreach (array_merge([$d0, $d1, $d2], $far) as $day) {
@@ -1521,6 +1532,20 @@ function sb_live_store_odds(array $j, int $now): int {
 }
 function sb_live_budget_ok(int $now, int $left = SB_LIVE_RESERVE): bool { return sb_budget($now)['left'] > $left; }
 /**
+ * 2026-10-22 (propriétaire : « le direct verrouille 1 à 2 min trop tard ») : rythme du direct selon les lectures qui restent
+ * aujourd'hui — le plus vite possible (cotes toutes les 5 s, matchs toutes les 10 s) sans jamais vider le budget ;
+ * au plus lent : 15 s / 30 s (comme avant). Abonnement monté (plus de lectures) → automatiquement plus rapide.
+ */
+function sb_live_ttls(int $now): array {
+  $b = sb_budget($now);
+  $secLeft = max(600, 86400 - ($now % 86400));
+  $avail = $b['left'] - SB_LIVE_RESERVE - (int) (2500 * $secLeft / 86400); // avant-match + résultats du reste de la journée
+  if ($avail <= 0) return [SB_LIVE_ODDS_TTL, SB_LIVE_FX_TTL];
+  $t = (int) ceil(1.5 * 0.6 * $secLeft / $avail); // 1 lecture de cotes / t s + 1 de matchs / 2t s, regardé ~60 % du temps
+  $t = max(5, min(SB_LIVE_ODDS_TTL, $t));
+  return [$t, max(10, min(SB_LIVE_FX_TTL, 2 * $t))];
+}
+/**
  * Tâche du direct (APRÈS la réponse) : seulement s'il y a de la demande (60 s), un seul lecteur à la fois (verrou non
  * bloquant), jamais dans la réserve. Retour : liste des lectures faites (tests / admin).
  */
@@ -1532,15 +1557,16 @@ function sb_live_tick(int $now = 0): array {
   $done = [];
   try {
     $L = sb_live_data();
+    [$ttlO, $ttlF] = sb_live_ttls($now);
     $fat = (int) ($L['fat'] ?? 0);
-    if ($now - $fat >= SB_LIVE_FX_TTL && (!empty($L['fx']) || sb_live_maybe($now) || $now - $fat >= 300)) {
+    if ($now - $fat >= $ttlF && (!empty($L['fx']) || sb_live_maybe($now) || $now - $fat >= 300)) {
       $j = sb_get('fixtures?live=all&timezone=UTC', $now);
       if ($j !== null) { sb_live_store_fixtures($j, $now); $done[] = 'fixtures'; }
       else sb_with('live.json', static function (array &$s) use ($now) { $s['fat'] = $now; return true; }); // erreur : pas de nouvel essai avant 30 s
       $L = sb_live_data();
     }
     $live = array_filter((array) ($L['fx'] ?? []), static fn($r) => empty($r['end']));
-    if ($live && $now - (int) ($L['at'] ?? 0) >= SB_LIVE_ODDS_TTL && sb_live_budget_ok($now)) {
+    if ($live && $now - (int) ($L['at'] ?? 0) >= $ttlO && sb_live_budget_ok($now)) {
       $j = sb_get('odds/live', $now);
       if ($j !== null) { sb_live_store_odds($j, $now); $done[] = 'odds'; }
     }

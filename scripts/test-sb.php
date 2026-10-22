@@ -389,8 +389,10 @@ check('sbList : onglet Direct visible pour l\'admin (live ≥ 0), pas pour le jo
 $c0 = [$cnt('odds/live'), $cnt('fixtures?live=all&timezone=UTC')];
 $t = sb_live_tick($L0);
 check('demande : /fixtures?live=all puis /odds/live (1 fois chacun)', $t === ['fixtures', 'odds'] && $cnt('odds/live') === $c0[0] + 1 && $cnt('fixtures?live=all&timezone=UTC') === $c0[1] + 1, json_encode($t));
-check('relancé 10 s après : rien (odds ≤ 15 s, fixtures ≤ 30 s)', sb_live_tick($L0 + 10) === []);
-check('16 s après : /odds/live seulement', sb_live_tick($L0 + 16) === ['odds']);
+[$tO, $tF] = sb_live_ttls($L0);
+check('rythme du direct selon le budget : cotes 5…15 s, matchs 10…30 s (2 × cotes)', $tO >= 5 && $tO <= 15 && $tF === max(10, min(30, 2 * $tO)), json_encode([$tO, $tF]));
+check('relancé juste avant : rien', sb_live_tick($L0 + $tO - 1) === []);
+check('après ' . $tO . ' s : /odds/live seulement', sb_live_tick($L0 + $tO) === ['odds']);
 check('31 s après : /fixtures?live=all (et /odds/live, 15 s passées)', sb_live_tick($L0 + 31) === ['fixtures', 'odds']);
 check('plus de demande après 60 s : plus rien', sb_live_tick($L0 + 75) === [] );
 sb_with('budget-foot.json', static function (array &$s) use ($L0) { $s['day'] = gmdate('Y-m-d', $L0); $s['n'] = SB_FOOT_CAP - SB_LIVE_RESERVE; return true; });
