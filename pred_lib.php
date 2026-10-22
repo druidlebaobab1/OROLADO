@@ -459,9 +459,62 @@ function pred_maybe_run(): void {
   try {
     $mark = sp_dir() . DIRECTORY_SEPARATOR . 'pred-seed-2026-10-22.done'; $src = __DIR__ . '/scripts/fixtures/pred-2026-10-22.json';
     if (!is_file($mark) && is_file($src) && @file_put_contents($mark, (string) time(), LOCK_EX) !== false) pred_import((string) file_get_contents($src));
+    // 2026-10-22 (propriétaire : « pas de publicité pour d'autres plateformes ») : UNE fois, explications des événements déjà importés
+    // réécrites depuis le fichier nettoyé (même id) + plus aucun « Binance / kline / UTC » ; cotes et paris inchangés
+    $mk2 = sp_dir() . DIRECTORY_SEPARATOR . 'pred-desc-2026-10-22b.done';
+    if (is_file($mark) && !is_file($mk2) && is_file($src) && @file_put_contents($mk2, (string) time(), LOCK_EX) !== false) pred_desc_migrate((string) file_get_contents($src));
   } catch (Throwable $e) { /* jamais bloquant */ }
   try { pred_reprice_job(); } catch (Throwable $e) { /* jamais bloquant */ }
   try { pred_auto_run(); } catch (Throwable $e) { /* jamais bloquant */ }
+}
+
+/* ------------------------------------------------------------- textes affichés ------------------------------------ */
+/**
+ * 2026-10-22 (propriétaire) : aucun nom d'une autre plateforme ni mot technique dans les textes vus par les joueurs
+ * (Binance, data-api, kline, UTC, dates ISO) — l'admin garde ses sources. « minuit UTC » → « minuit (GMT) ».
+ */
+function pred_clean_desc(string $s): string {
+  if ($s === '') return '';
+  $s = (string) preg_replace('/\b(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(:\d{2})?Z\b/', '$1', $s);
+  $s = (string) preg_replace('/\(\s*(minuit|midnight)\s+UTC\s*\)/iu', '($1 GMT)', $s);
+  $s = (string) preg_replace('/\b(minuit|midnight)\s+UTC\b/iu', '$1 (GMT)', $s);
+  $s = (string) preg_replace('/\bUTC\b/u', 'GMT', $s);
+  $s = (string) preg_replace('/\s*\([^()]*\b(binance|kline|data-api)[^()]*\)/iu', '', $s);
+  $s = (string) preg_replace('/\s+(sur|on|chez|from|via|de|du)\s+(data-api\.)?binance(\.vision|\.com)?\b/iu', '', $s);
+  $s = (string) preg_replace('/\b(data-api\.)?binance(\.vision|\.com)?\s*/iu', '', $s);
+  $s = (string) preg_replace('/\bklines?\b\s*/iu', '', $s);
+  $s = (string) preg_replace('/\s{2,}/u', ' ', $s);
+  $s = (string) preg_replace('/[ \t]+([.,)])/u', '$1', $s);
+  $s = (string) preg_replace('/(\([^()]+\))(\s*\1)+/u', '$1', $s);
+  return trim($s);
+}
+/**
+ * Migration (une fois) : explication fr / en des prédictions déjà en ligne remplacée par celle du fichier nettoyé (même id),
+ * les autres nettoyées (pred_clean_desc). Ne touche NI aux cotes, NI aux choix, NI aux paris. Retour : nombre modifié.
+ */
+function pred_desc_migrate(string $json): int {
+  $list = json_decode($json, true);
+  if (isset($list['events']) && is_array($list['events'])) $list = $list['events'];
+  $by = [];
+  foreach ((array) $list as $r) {
+    if (!is_array($r)) continue;
+    $sid = substr((string) preg_replace('/[^a-z0-9]/', '', sp_lower((string) ($r['id'] ?? ''))), 0, 40);
+    if ($sid === '') continue;
+    $by['pd' . $sid] = array_filter(['fr' => sp_clean((string) ($r['desc_fr'] ?? ''), 400), 'en' => sp_clean((string) ($r['desc_en'] ?? ''), 400)], 'strlen');
+  }
+  return (int) sp_with('events.json', static function (array &$s) use ($by) {
+    $n = 0;
+    foreach ((array) ($s['e'] ?? []) as $i => $e) {
+      if (!pred_is($e)) continue;
+      $old = (array) ($e['desc'] ?? []);
+      $d = isset($by[$e['id']]) && $by[$e['id']] ? $by[$e['id']] : $old;
+      $d = array_filter(array_map(static fn($v) => pred_clean_desc((string) $v), $d), 'strlen');
+      if ($d === $old) continue;
+      if ($d) $s['e'][$i]['desc'] = $d; else unset($s['e'][$i]['desc']);
+      $n++;
+    }
+    return $n;
+  });
 }
 
 /* ------------------------------------------------------------- admin ------------------------------------------------ */

@@ -96,7 +96,7 @@ sb_config_save(['mPred' => 20]);
 check('cotes qui feraient perdre la maison à coup sûr : refusées', $tight['added'] === 0 && str_contains((string) ($tight['skipped'][0]['reason'] ?? ''), 'perdrait'), json_encode($tight, JSON_UNESCAPED_UNICODE));
 
 
-check('fiche : explication fr / en, source, heure de la réponse, auto + actif envoyés au téléphone', ($pub[$btc]['desc']->fr ?? '') !== '' && ($pub[$btc]['desc']->en ?? '') !== '' && $pub[$btc]['src'] !== '' && $pub[$btc]['end'] === $R2 && $pub[$btc]['auto'] === true && $pub[$btc]['asset'] === 'BTCUSDT');
+check('fiche : explication fr / en, heure de la réponse, auto + actif envoyés au téléphone ; lien de la source JAMAIS envoyé (admin seulement)', ($pub[$btc]['desc']->fr ?? '') !== '' && ($pub[$btc]['desc']->en ?? '') !== '' && !array_key_exists('src', $pub[$btc]) && $pub[$btc]['end'] === $R2 && $pub[$btc]['auto'] === true && $pub[$btc]['asset'] === 'BTCUSDT');
 check('best_performer (« meilleure crypto ») : refusé à l’import', str_contains((string) (pred_import([['id' => 'best1', 'cat' => 'crypto', 'title_fr' => 'Meilleure crypto ?', 'options' => [['k' => 'btc', 'fr' => 'BTC', 'p' => 0.5], ['k' => 'eth', 'fr' => 'ETH', 'p' => 0.5]], 'closeAt' => $iso($C1), 'resolveAt' => $iso($R2), 'auto' => true, 'asset' => 'BTCUSDT', 'rule' => ['type' => 'best_performer']]])['skipped'][0]['reason'] ?? ''), 'meilleure'));
 
 echo "3) Crypto : cotes recalculées sur le prix ACTUEL (jamais des cotes fixes pendant des semaines)\n";
@@ -252,6 +252,21 @@ $pr = sp_prune_events($list);
 check('rangement (300 au plus) : seuls des événements RÉGLÉS partent', count($pr) === 300 && count(array_filter($pr, static fn($x) => $x['status'] === 'open')) === 160);
 $opens = []; for ($i = 0; $i < 320; $i++) $opens[] = ['id' => 'o' . $i, 'status' => 'open'];
 check('… jamais un ouvert (même au-delà de 300)', count(sp_prune_events($opens)) === 320);
+
+echo "9) Textes vus par les joueurs : aucun nom de plateforme (Binance, kline, UTC) — migration unique des explications\n";
+check('nettoyage : « sur Binance », « (minuit UTC) », kline, dates ISO', pred_clean_desc('Oui si le prix de clôture sur Binance est supérieur à 82 000 $ (minuit UTC).') === 'Oui si le prix de clôture est supérieur à 82 000 $ (minuit GMT).'
+  && pred_clean_desc('Yes if the Binance closing price is above $1 (midnight UTC).') === 'Yes if the closing price is above $1 (midnight GMT).' && pred_clean_desc('Entre 2026-11-02T00:00:00Z et X. Égalité : remboursement.') === 'Entre 2026-11-02 et X. Égalité : remboursement.'
+  && !preg_match('/binance|kline|UTC/i', pred_clean_desc('Bougie kline 1m lue sur data-api.binance.vision (Binance spot, minuit UTC).')));
+sp_with('events.json', static function (array &$s) use ($fed) { foreach ($s['e'] as $i => $e) if ($e['id'] === $fed) $s['e'][$i]['desc'] = ['fr' => 'Taux lu sur Binance (minuit UTC).', 'en' => 'Rate read on Binance (midnight UTC).']; return true; });
+$optsB = json_encode($ev('pdethrange1')['opts'] ?? []); $optsF = json_encode($ev($fed)['opts']); $betsN = count(sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
+$nm = pred_desc_migrate(json_encode([['id' => 'eth-range-1', 'desc_fr' => 'La tranche qui contient le prix de clôture de l’Ethereum gagne.', 'desc_en' => 'The bracket containing the Ethereum closing price wins.']]));
+$pubM = []; foreach (sp_public_events() as $x) $pubM[$x['id']] = $x;
+check('migration : explication réécrite depuis le fichier (même id), les autres nettoyées', $nm >= 1 && ($ev('pdethrange1')['desc']['fr'] ?? '') === 'La tranche qui contient le prix de clôture de l’Ethereum gagne.' && ($ev($fed)['desc']['fr'] ?? '') === 'Taux lu (minuit GMT).' && ($ev($fed)['desc']['en'] ?? '') === 'Rate read (midnight GMT).', json_encode([$nm, $ev('pdethrange1')['desc'] ?? null, $ev($fed)['desc'] ?? null], JSON_UNESCAPED_UNICODE));
+check('migration : cotes, choix et paris inchangés ; rien de « Binance » envoyé au téléphone', json_encode($ev('pdethrange1')['opts'] ?? []) === $optsB && json_encode($ev($fed)['opts']) === $optsF && count(sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []) === $betsN && !preg_match('/binance|kline|UTC/i', json_encode(array_values($pubM), JSON_UNESCAPED_UNICODE)));
+check('migration rejouée : plus rien à changer', pred_desc_migrate(json_encode([])) === 0);
+$fx = json_decode((string) file_get_contents(__DIR__ . '/fixtures/pred-2026-10-22.json'), true);
+$badTxt = array_filter($fx, static fn($r) => preg_match('/binance|kline|data-api|\bUTC\b/i', ($r['desc_fr'] ?? '') . ' ' . ($r['desc_en'] ?? '')) || preg_match('/^(Oui si|Yes if)/', ($r['desc_fr'] ?? '') . '|' . ($r['desc_en'] ?? '')));
+check('fichier des premiers événements : explications neutres (ni plateforme, ni « Oui si… »)', !$badTxt, implode(', ', array_column($badTxt, 'id')));
 
 echo "\n" . ($fail ? "ÉCHEC : $fail test(s), $pass OK\n" : "Tout est OK ($pass tests)\n");
 exit($fail ? 1 : 0);

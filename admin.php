@@ -4354,14 +4354,25 @@ setInterval(() => {
     const CAT = {crypto:'Crypto', politique:'Politique', economie:'Économie', divertissement:'Divertissement', sport:'Sport', tech:'Tech', monde:'Monde'};
     const when = t => t ? new Date(t * 1000).toLocaleString('fr-FR', {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
     const ruleTxt = r => !r ? '' : r.type === 'range' ? 'tranches ' + r.ranges.map(x => '[' + (x[0] == null ? '−∞' : x[0]) + ' ; ' + (x[1] == null ? '+∞' : x[1]) + ']').join(' ') : (r.type === 'above' ? 'au-dessus de ' : 'en dessous de ') + r.value;
+    // 2026-10-22 (propriétaire : « chaque matin, valider d'un clic ») : heure de la réponse passée → UNE ligne claire —
+    // crypto : gagnant calculé + prix de clôture ; autres : « À vérifier » + lien de la source (admin seulement)
+    const pxN = v => Number(v).toLocaleString('fr-FR', {maximumFractionDigits: Math.abs(v) < 10 ? 6 : 2});
+    const srcA = e => e.src ? '<a href="' + esc(e.src) + '" target="_blank" rel="noopener noreferrer" style="color:#93C5FD;font-weight:700">Voir la source ↗</a>' : '<span style="color:#FCD34D">pas de source</span>';
+    const verdict = e => {
+      if (e.grp !== 'chk' && e.grp !== 'due') return '';
+      const lab = k => esc((e.opts.find(o => o.k === k) || {}).label || k), box = (c, h) => '<div style="margin:4px 0 6px;padding:8px 10px;border-radius:10px;background:' + c + '">' + h + '</div>';
+      if (e.auto && e.chk && e.chk.sug) return box('rgba(92,245,154,.10)', '<b style="color:#5CF59A">Résultat proposé : ' + lab(e.chk.sug) + '</b> · prix de clôture <b>' + pxN(e.chk.px) + '</b>' + (e.chk.src ? ' <span class="muted">(' + esc(e.chk.src) + ')</span>' : '') + '<div class="muted">Lu ' + when(e.chk.at) + ' · vérifiez puis touchez « Confirmer » (payé une seule fois) · ' + srcA(e) + '</div>');
+      if (e.auto && e.chk) return box('rgba(251,191,36,.10)', '<b style="color:#FCD34D">✋ À vérifier</b> — ' + esc(e.chk.why) + (e.chk.px != null ? ' · prix lu <b>' + pxN(e.chk.px) + '</b>' : '') + ' · ' + when(e.chk.at) + '<div>' + srcA(e) + '</div>');
+      if (e.auto) return box('rgba(148,163,184,.10)', '⏳ Prix de clôture en cours de lecture (1 à 5 min après l’heure de la réponse) · ' + srcA(e));
+      return box('rgba(251,191,36,.10)', '<b style="color:#FCD34D">✋ À vérifier</b> — résultat à lire sur la source, puis touchez le gagnant · ' + srcA(e));
+    };
     const row = e => {
       const settle = e.grp === 'chk' || e.grp === 'due';
       const head = '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b style="min-width:0">' + esc(e.title) + '</b><span class="muted" style="white-space:nowrap">' + e.nb + ' pari(s)' + (e.in ? ' · ' + m2(e.in) + ' $' : '') + '</span></div>' +
         (e.en ? '<div class="muted" style="font-size:.9em">' + esc(e.en) + '</div>' : '') +
         '<div class="muted" style="margin:2px 0 4px">' + esc(CAT[e.cat] || e.cat) + ' · paris fermés ' + when(e.close) + (e.close < e.closeAt ? ' (cotes de plus de 72 h)' : '') + ' · réponse ' + when(e.endAt) +
         (e.auto ? ' · auto ' + esc(e.asset) + ' ' + esc(ruleTxt(e.rule)) : ' · à la main') + (e.src ? ' · <a href="' + esc(e.src) + '" target="_blank" rel="noopener noreferrer" style="color:#93C5FD">source ↗</a>' : ' · <span style="color:#FCD34D">pas de source</span>') + '</div>' +
-        (e.chk ? '<div style="color:#FCD34D;margin:2px 0 4px">✋ ' + esc(e.chk.why) + (e.chk.px != null ? ' · prix lu ' + esc(String(e.chk.px)) + ' (' + esc(e.chk.src || '') + ')' : '') + ' · ' + when(e.chk.at) +
-          (e.chk.sug ? '<br><b style="color:#5CF59A">Proposé : ' + esc((e.opts.find(o => o.k === e.chk.sug) || {}).label || e.chk.sug) + '</b> — vérifiez sur la source puis confirmez.' : '') + '</div>' : '') +
+        verdict(e) +
         (e.auto && e.grp === 'open' ? '<div class="muted">' + (e.susp ? '<span style="color:#FCA5A5">🔒 Paris suspendus : cotes pas encore calculées sur le prix actuel (ou prix introuvable)</span>' : 'Cotes recalculées ' + when(e.pxAt) + ' · prix ' + esc(String(e.px0)) + ' · volatilité/jour ' + (Math.round(e.vol * 10000) / 100) + ' %') + '</div>' : '') +
         (e.px && !e.chk ? '<div class="muted">Prix lu : ' + esc(String(e.px.px)) + ' (' + esc(e.px.src) + ')</div>' : '');
       if (e.grp === 'done') {
@@ -4383,11 +4394,12 @@ setInterval(() => {
     const paint = j => {
       if (!j || !j.ok) { $c('predList').innerHTML = '<p class="muted">' + esc((j && j.reason) || 'Erreur') + '</p>'; return; }
       const L = j.events || [], g = k => L.filter(e => e.grp === k);
-      const chk = g('chk'), due = g('due'), open = g('open'), done = g('done');
-      $c('predSt').textContent = 'Marge Predict : ' + String(j.margin).replace('.', ',') + ' % · ' + open.length + ' ouverte(s) · ' + (chk.length + due.length) + ' à régler · tout est réglé par vous (jamais de paiement automatique)';
+      // heure de la réponse passée (crypto proposée ou non, autres catégories) : UNE seule liste « À vérifier », la plus ancienne d'abord
+      const chk = L.filter(e => e.grp === 'chk' || e.grp === 'due').sort((a, b) => a.endAt - b.endAt), open = g('open'), done = g('done');
+      const nSug = chk.filter(e => e.chk && e.chk.sug).length;
+      $c('predSt').textContent = 'Marge Predict : ' + String(j.margin).replace('.', ',') + ' % · ' + open.length + ' ouverte(s) · ' + chk.length + ' à vérifier (' + nSug + ' avec résultat proposé) · tout est réglé par vous (jamais de paiement automatique)';
       $c('predList').innerHTML =
-        '<h4 style="margin:6px 0">✋ À vérifier (' + chk.length + ')</h4>' + (chk.length ? chk.map(row).join('') : '<p class="muted">Rien.</p>') +
-        '<h4 style="margin:12px 0 6px">🔔 À régler — heure de la réponse passée (' + due.length + ')</h4>' + (due.length ? '<p class="muted" style="margin:0 0 6px">Vérifiez le vrai résultat sur la source, puis touchez le gagnant (payé une seule fois).</p>' + due.map(row).join('') : '<p class="muted">Rien.</p>') +
+        '<h4 style="margin:6px 0">✋ À vérifier — heure de la réponse passée (' + chk.length + ')</h4>' + (chk.length ? chk.map(row).join('') : '<p class="muted">Rien.</p>') +
         '<h4 style="margin:12px 0 6px">🟢 Ouvertes (' + open.length + ')</h4>' + (open.length ? open.map(row).join('') : '<p class="muted">Aucune. Importez un fichier ci-dessus.</p>') +
         '<details style="margin-top:10px"><summary class="muted" style="cursor:pointer">✅ Réglées (' + done.length + ')</summary>' + done.map(row).join('') + '</details>';
       // image : réduite par le navigateur (carré 160 px, PNG ≤ 200 Ko) puis gardée chez nous (sp-logo.php)
