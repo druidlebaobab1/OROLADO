@@ -512,6 +512,7 @@ function sb_fx_row(array $r): ?array {
   if ($id <= 0 || $hid <= 0 || $aid <= 0 || (int) ($f['timestamp'] ?? 0) <= 0) return null;
   $sc = (array) ($r['score'] ?? []);
   return ['ts' => (int) $f['timestamp'], 'st' => strtoupper((string) ($f['status']['short'] ?? '')), 'm' => is_numeric($f['status']['elapsed'] ?? null) ? (int) $f['status']['elapsed'] : null,
+    'mx' => is_numeric($f['status']['extra'] ?? null) ? (int) $f['status']['extra'] : 0, // arrêts de jeu annoncés (« +6 min »)
     'lg' => (int) ($lg['id'] ?? 0),
     'h' => [$hid, mb_substr((string) ($tm['home']['name'] ?? ''), 0, 60), (string) ($tm['home']['logo'] ?? '')],
     'a' => [$aid, mb_substr((string) ($tm['away']['name'] ?? ''), 0, 60), (string) ($tm['away']['logo'] ?? '')],
@@ -592,8 +593,8 @@ function sb_import_fixture_odds(int $id, int $now): bool {
   return true;
 }
 /** J-1 … J+2 (UTC). */
-// 2026-10-22 (propriétaire) : avant-match jusqu'à J+7 → J-1, J, J+1 … J+7 (UTC)
-const SB_DAYS_AHEAD = 7;
+// 2026-10-22 (propriétaire) : avant-match jusqu'à J+14 → J-1, J, J+1 … J+14 (UTC) ; jamais un match sans cotes
+const SB_DAYS_AHEAD = 14;
 function sb_days(int $now): array { $o = []; for ($i = -1; $i <= SB_DAYS_AHEAD; $i++) $o[] = gmdate('Y-m-d', $now + $i * 86400); return $o; }
 
 /* ------------------------------------------------------------- tâche de fond ---------------------------------------- */
@@ -604,9 +605,9 @@ function sb_days(int $now): array { $o = []; for ($i = -1; $i <= SB_DAYS_AHEAD; 
  */
 function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
   $calls = 0; $log = [];
-  $D = sb_days($now); [$dm1, $d0, $d1, $d2] = $D; $far = array_slice($D, 4); // J+3 … J+7
+  $D = sb_days($now); [$dm1, $d0, $d1, $d2] = $D; $mid = array_slice($D, 4, 5); $lat = array_slice($D, 9); $far = array_merge($mid, $lat); // J+3…J+7 · J+8…J+14
   $st = sb_state();
-  $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($far, 21600); // J+3…J+7 : toutes les 6 h
+  $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($mid, 21600) + array_fill_keys($lat, 43200); // J+3…J+7 : 6 h ; J+8…J+14 : 12 h
   foreach (array_merge([$d0, $dm1, $d1, $d2], $far) as $day) {
     if ($calls >= $max) break;
     $idx = sb_day($day);
@@ -616,7 +617,7 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
     $calls++;
     $log[] = 'fx ' . $day . (sb_import_fixtures($day, $now) ? '' : ' ✗');
   }
-  $oddsEvery = [$d0 => 7200, $d1 => 10800, $d2 => 10800] + array_fill_keys($far, 43200); // J+3…J+7 : cotes toutes les 12 h
+  $oddsEvery = [$d0 => 7200, $d1 => 10800, $d2 => 10800] + array_fill_keys($mid, 43200) + array_fill_keys($lat, 86400); // cotes : J+3…J+7 12 h ; J+8…J+14 24 h
   $pages = 0;
   foreach (array_merge([$d0, $d1, $d2], $far) as $day) {
     if ($calls >= $max || $pages >= SB_ODDS_PAGES_RUN) break;
@@ -893,18 +894,21 @@ function sb_fx_public(string $id, array $r): array {
 function sb_bettable_row(array $r, int $now): bool {
   return in_array((string) ($r['st'] ?? ''), ['NS', 'TBD'], true) && (int) ($r['ts'] ?? 0) > $now && (int) ($r['n'] ?? 0) > 0 && (int) ($r['oat'] ?? 0) > $now - sb_odds_max_age((int) ($r['ts'] ?? 0), $now);
 }
-/** Âge maximal des cotes : 8 h ; match à plus de 60 h (J+3 … J+7, relu toutes les 12 h) : 13 h. */
-function sb_odds_max_age(int $ko, int $now): int { return $ko - $now > 216000 ? 46800 : SB_ODDS_MAX_AGE; }
+/** Âge maximal des cotes : 8 h ; match à plus de 60 h (relu toutes les 12 h) : 13 h ; à plus de 7 jours (relu toutes les 24 h) : 25 h. */
+function sb_odds_max_age(int $ko, int $now): int { return $ko - $now > 604800 ? 90000 : ($ko - $now > 216000 ? 46800 : SB_ODDS_MAX_AGE); }
 /** sbList : day 0|1|2 = aujourd'hui / demain / après-demain dans le fuseau du joueur ($tz minutes à l'est d'UTC, ex. 345). */
 function sb_list(?array $user, $day, int $tz = 0, int $now = 0, bool $cnt = false): array {
   $now = $now ?: sb_now();
   if (!sb_visible($user)) return ['ok' => false, 'reason' => 'off'];
   $tz = max(-720, min(840, $tz)) * 60;
   if ($day === 'live') return sb_live_list($user, $now);
-  $d = max(0, min(SB_DAYS_AHEAD, (int) $day));
-  $from = (int) (floor(($now + $tz) / 86400) * 86400) - $tz + $d * 86400; $to = $from + 86400;
+  // « Tout » (day = 'all') : tous les matchs ouverts aux paris, de maintenant à J+14 (une seule réponse)
+  $all = $day === 'all';
+  $d = $all ? 0 : max(0, min(SB_DAYS_AHEAD, (int) $day));
+  $from = (int) (floor(($now + $tz) / 86400) * 86400) - $tz + $d * 86400; $to = $from + ($all ? (SB_DAYS_AHEAD + 1) * 86400 : 86400);
   $fx = []; $lgs = []; $lgUsed = [];
-  foreach (array_unique([gmdate('Y-m-d', $from), gmdate('Y-m-d', $to - 1)]) as $dd) {
+  $dates = []; for ($t = $from; $t < $to; $t += 86400) $dates[] = gmdate('Y-m-d', $t); $dates[] = gmdate('Y-m-d', $to - 1);
+  foreach (array_unique($dates) as $dd) {
     $j = sb_day($dd);
     foreach ((array) ($j['fx'] ?? []) as $id => $r) {
       $ts = (int) ($r['ts'] ?? 0);
@@ -923,7 +927,7 @@ function sb_list(?array $user, $day, int $tz = 0, int $now = 0, bool $cnt = fals
   if ($cnt) $out['days'] = sb_day_counts($tz, $now);
   return $out;
 }
-/** Nombre de matchs ouverts aux paris par jour du joueur (0 … 7) — le « 📅 Date » de Populaire ; gardé 2 min par fuseau. */
+/** Nombre de matchs ouverts aux paris par jour du joueur (0 … 14) — le « 📅 Date » de Populaire ; gardé 2 min par fuseau. */
 function sb_day_counts(int $tzSec, int $now): array {
   $f = sb_dir() . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'daycnt' . $tzSec . '.json';
   clearstatcache(true, $f);
@@ -1572,7 +1576,7 @@ function sb_live_fx_public(string $id, array $v): array {
   return ['id' => 'foot:' . $id, 'lg' => (int) ($r['lg'] ?? 0), 'ts' => (int) ($r['ts'] ?? 0), 'st' => $v['st'], 'm' => $v['m'],
     'h' => ['n' => (string) ($r['h'][1] ?? ''), 'lo' => (string) ($r['h'][2] ?? '')], 'a' => ['n' => (string) ($r['a'][1] ?? ''), 'lo' => (string) ($r['a'][2] ?? '')],
     'sc' => $v['sc'], 'o' => $o, 'n' => count($mk), 'live' => 1, 'susp' => $s1 ? 1 : 0, 'rc' => (array) ($r['rc'] ?? [0, 0]), 'end' => !empty($r['end']) ? 1 : 0,
-    'ofd' => is_array($v['od']) ? 1 : 0, 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
+    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
 }
 /** Nombre de matchs du direct (onglet « Direct ») — aucun appel ; -1 = pas d'onglet Direct pour ce joueur. */
 function sb_live_count(?array $user, int $now): int {

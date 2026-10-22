@@ -304,7 +304,7 @@
       }
     } catch (e) { /* ignore */ }
   }
-  setTimeout(function () { if (D6.Api && D6.Api.post) { fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); warmLogos(lastJson); } }); sbFetch(0); } }, 1500);
+  setTimeout(function () { if (D6.Api && D6.Api.post) { fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); warmLogos(lastJson); } }); sbFetch('all'); } }, 1500);
   (function () {
     var t = 0, again = function () { clearTimeout(t); t = setTimeout(function () { if (box && box.isConnected && box.classList.contains('sp2')) layoutVars(); }, 120); };
     window.addEventListener('resize', again);
@@ -1007,7 +1007,7 @@
      tout se visite comme un membre (coupon compris) ; seul « Placer le pari » / « Mes paris » demande l'inscription.
      ====================================================================================================================== */
   var view = 'home', mineCache = null;
-  var sbOn = null, liveOn = null, liveCnt = -1, sbSports = [], sport = 'foot', per = 'top', hourF = -1, sbQ = '', sbData = {}, sbOpen = {};
+  var sbOn = null, liveOn = null, liveCnt = -1, sbSports = [], sport = 'foot', per = 'all', hourF = -1, sbQ = '', sbData = {}, sbOpen = {};
   var sbMid = '', sbM = null, mGrp = 'main', mkOpen = {}, trkTab = '', matchFrom = 'home', slipFrom = 'home', resDay = 0, resData = {};
   var liveData = null, livePend = null, scrollMem = {}, sbCode = null, pendCode = '';
   function lv() { return 'home'; }
@@ -1088,7 +1088,7 @@
     if (!box) return;
     if (sending && view === 'slip') return;
     var mb = mbox();
-    if (v === view && v !== 'slip') { if (mb) mb.scrollTop = 0; if (v === 'home' && (per !== 'top' || sbQ || hourF >= 0 || sport !== 'foot')) { per = 'top'; sbQ = ''; hourF = -1; render(); } return; }
+    if (v === view && v !== 'slip') { if (mb) mb.scrollTop = 0; if (v === 'home' && (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot')) { per = 'all'; sbQ = ''; hourF = -1; render(); } return; }
     if (mb) scrollMem[view] = mb.scrollTop;
     if (v === 'slip') { if (view !== 'slip') slipFrom = view; lastBet = null; lastBets = null; }
     view = v; render();
@@ -1109,7 +1109,7 @@
     if (view === 'results') { go('menu'); return true; }
     if (view !== 'home') { go('home'); return true; }
     // Populaire filtré (période, recherche, autre sport) : on revient d'abord à Populaire tel qu'à l'ouverture
-    if (per !== 'top' || sbQ || hourF >= 0 || sport !== 'foot') { go('home'); return true; }
+    if (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot') { go('home'); return true; }
     return false;
   }
   function render() {
@@ -1185,7 +1185,8 @@
     return livePend;
   }
   // une journée (0 / 1 / 2) d'un sport : gardée 60 s ; false = refusé (pas visible pour ce joueur) ; null = réseau
-  function needDays() { if (sbQ || per === 'fav') return [0, 1, 2]; var m = /^d([0-7])$/.exec(per); if (m) return [+m[1]]; return [0, 1]; }
+  // « Tout », recherche, favoris : une seule lecture (tous les jours, J … J+14) ; un jour : ce jour ; périodes courtes : J et J+1
+  function needDays() { if (sbQ || per === 'fav' || per === 'all' || per === 'top') return ['all']; var m = /^d(\d{1,2})$/.exec(per); if (m && +m[1] <= 14) return [+m[1]]; return [0, 1]; }
   function sbFetch(day, force, sp) {
     sp = sp || sport;
     var key = sp + '|' + day, c = sbData[key] || (sbData[key] = {});
@@ -1285,6 +1286,17 @@
       '<span class="pz-cols" aria-hidden="true"><i>1</i><i>' + (two ? '' : 'X') + '</i><i>2</i></span><i class="pz-chev">' + SBIC.chev + '</i></button>' +
       '<div class="pz-lgb">' + list.map(function (f) { return rowHtml(f, rowOpt); }).join('') + '</div></section>';
   }
+  // GRANDS matchs (« Top ») : grandes compétitions + au moins un grand club ; sélections : Côte d'Ivoire / Sénégal partout, grandes nations en compétition internationale
+  var BIGC = /\b(real madrid|barcelona|atletico madrid|manchester city|manchester united|liverpool|arsenal|chelsea|tottenham|newcastle|bayern|borussia dortmund|dortmund|bayer leverkusen|leverkusen|rb leipzig|paris saint germain|psg|marseille|lyon|monaco|lille|juventus|inter|ac milan|milan|napoli|as roma|roma|lazio|atalanta|benfica|fc porto|porto|sporting cp|ajax|psv|feyenoord|galatasaray|fenerbahce|besiktas|celtic|rangers|al hilal|al nassr|al ahly|zamalek|esperance|wydad|raja|mamelodi sundowns|tp mazembe|asec mimosas|flamengo|palmeiras|boca juniors|river plate)\b/;
+  var BIGN = /\b(ivory coast|cote d ivoire|senegal)\b/, BIGW = /\b(france|brazil|argentina|spain|england|germany|portugal|italy|netherlands|belgium|morocco|nigeria|cameroon|egypt|algeria|ghana|mali|tunisia)\b/;
+  function isBig(f) {
+    var l = sbLg(f.lg) || {}, h = normS(f.h.n).replace(/[^a-z0-9]+/g, ' '), a = normS(f.a.n).replace(/[^a-z0-9]+/g, ' '), t = ' ' + h + ' | ' + a + ' ';
+    if (BIGN.test(t)) return true; // Côte d'Ivoire, Sénégal : toujours
+    var p = +l.p || 100, intl = /qualif|world cup|friendl|nations|africa cup|euro|copa|olymp/i.test(String(l.n || ''));
+    if (intl && BIGW.test(t)) return true;
+    return p <= 20 && BIGC.test(t);
+  }
+  function whenShort(t) { var d = new Date(t * 1000), o = Math.round((new Date(d).setHours(12, 0, 0, 0) - new Date().setHours(12, 0, 0, 0)) / 864e5); return o === 0 ? '' : o === 1 ? SX().tomorrow : cap1(d.toLocaleDateString(loc(), { weekday: 'short', day: 'numeric' })); } // aujourd'hui : l'heure suffit
   // jours → championnats (favoris, grands d'abord) → matchs ; renvoie la liste des blocs (dessinés par paquets)
   function dayBlocks(fx, lgs, opt) {
     opt = opt || {};
@@ -1317,14 +1329,14 @@
   }
   /* 2026-10-22 (propriétaire) — périodes : Top · Dans 30 min · 1 h · 2 h · 3 h · 6 h · 12 h · Aujourd'hui · Demain · Après-demain ·
      « 📅 Date » (petite feuille : les jours suivants qui ont des matchs, avec leur nombre). Plus de sélecteur « Heure ». */
-  var DATEW = { fr: ['Date', '{n} matchs', '1 match'], en: ['Date', '{n} matches', '1 match'], es: ['Fecha', '{n} partidos', '1 partido'], pt: ['Data', '{n} jogos', '1 jogo'],
-    ar: ['التاريخ', '{n} مباراة', 'مباراة واحدة'], tr: ['Tarih', '{n} maç', '1 maç'], vi: ['Ngày', '{n} trận', '1 trận'], id: ['Tanggal', '{n} laga', '1 laga'],
-    ru: ['Дата', 'Матчей: {n}', '1 матч'], de: ['Datum', '{n} Spiele', '1 Spiel'], zh: ['日期', '{n} 场比赛', '1 场比赛'], hi: ['तारीख', '{n} मैच', '1 मैच'] };
+  var DATEW = { fr: ['Date', '{n} matchs', '1 match', 'Tout'], en: ['Date', '{n} matches', '1 match', 'All'], es: ['Fecha', '{n} partidos', '1 partido', 'Todo'], pt: ['Data', '{n} jogos', '1 jogo', 'Tudo'],
+    ar: ['التاريخ', '{n} مباراة', 'مباراة واحدة', 'الكل'], tr: ['Tarih', '{n} maç', '1 maç', 'Tümü'], vi: ['Ngày', '{n} trận', '1 trận', 'Tất cả'], id: ['Tanggal', '{n} laga', '1 laga', 'Semua'],
+    ru: ['Дата', 'Матчей: {n}', '1 матч', 'Все'], de: ['Datum', '{n} Spiele', '1 Spiel', 'Alle'], zh: ['日期', '{n} 场比赛', '1 场比赛', '全部'], hi: ['तारीख', '{n} मैच', '1 मैच', 'सभी'] };
   function DW() { return DATEW[lg()] || DATEW.en; }
   function dayName(i) { var x = SX(); if (i === 0) return x.today; if (i === 1) return x.tomorrow; if (i === 2) return x.after; try { return cap1(offDate(i).toLocaleDateString(loc(), { weekday: 'short', day: 'numeric', month: 'short' })); } catch (e) { return isoDay(offDate(i)); } }
   function persHtml() {
-    var x = SX(), n = NX(), fv = favs(), w = DW(), dm = /^d([3-7])$/.exec(per);
-    var P = [['top', x.top], ['m30', fmt(n.inX, { x: dur('minute', 30) })], ['h1', dur('hour', 1)], ['h2', dur('hour', 2)], ['h3', dur('hour', 3)], ['h6', dur('hour', 6)], ['h12', dur('hour', 12)], ['d0', x.today], ['d1', x.tomorrow], ['d2', x.after]];
+    var x = SX(), n = NX(), fv = favs(), w = DW(), dm = /^d([3-9]|1[0-4])$/.exec(per);
+    var P = [['all', w[3]], ['d0', x.today], ['top', x.top], ['d1', x.tomorrow], ['d2', x.after], ['m30', fmt(n.inX, { x: dur('minute', 30) })], ['h1', dur('hour', 1)], ['h2', dur('hour', 2)], ['h3', dur('hour', 3)], ['h6', dur('hour', 6)], ['h12', dur('hour', 12)]];
     return P.map(function (p) { return '<button type="button" data-per="' + p[0] + '" class="' + (per === p[0] && !sbQ ? 'on' : '') + '"><span>' + esc(p[1]) + '</span></button>'; }).join('') +
       '<button type="button" class="pz-datec' + (dm && !sbQ ? ' on' : '') + '" data-dsheet="1" aria-haspopup="dialog">' + IC.cal + '<span dir="auto">' + esc(dm && !sbQ ? dayName(+dm[1]) : w[0]) + '</span></button>' +
       (fv.l.length || fv.f.length ? '<button type="button" data-per="fav" class="pz-favc' + (per === 'fav' && !sbQ ? ' on' : '') + '" aria-label="' + esc(x.fav) + '"><span>★ ' + esc(x.fav) + '</span></button>' : '');
@@ -1333,8 +1345,9 @@
   var dayCnt = null;
   function sheetRows() {
     var w = DW(), c = dayCnt && dayCnt.sp === sport ? dayCnt.c : null, h = '';
-    for (var i = 0; i <= 7; i++) {
-      var k = c ? +c[i] || 0 : -1; if (c && !k) continue;
+    if (!c) return '<div class="pz-shr pz-skel"></div><div class="pz-shr pz-skel"></div><div class="pz-shr pz-skel"></div>';
+    for (var i = 3; i < c.length && i <= 14; i++) {
+      var k = +c[i] || 0; if (!k) continue;
       h += '<button type="button" class="pz-shr' + (per === 'd' + i && !sbQ ? ' on' : '') + '" data-per="d' + i + '"><span dir="auto">' + esc(dayName(i)) + '</span>' + (k > 0 ? '<em dir="auto">' + esc(k === 1 ? w[2] : fmt(w[1], { n: k })) + '</em>' : '') + '</button>';
     }
     return h || '<p class="pz-none">' + esc(SX().noMatch) + '</p>';
@@ -1390,29 +1403,21 @@
       });
       return;
     }
-    var H = homeFx(rs), top = per === 'top' && !sbQ, lf = top && sport === 'foot' && liveShown() ? liveFx().filter(function (f) { return !f.end; }) : [];
+    var H = homeFx(rs), top = per === 'top' && !sbQ, allP = per === 'all' && !sbQ, lf = (top || allP) && sport === 'foot' && liveShown() ? liveFx().filter(function (f) { return !f.end; }) : [];
     var sig = [sport, per, hourF, sbQ, lg(), H.fx.map(function (f) { return f.id; }).join(','), lf.map(function (f) { return f.id; }).join(','), JSON.stringify(sbOpen)].join('|');
     if (body.dataset.sig === sig) { patchAll(body); return; }
     body.dataset.sig = sig;
     var blocks = [];
-    if (top) {
-      var n = NX(), x = SX();
-      if (lf.length) {
-        var ls = lf.slice().sort(function (a, b) { var A = sbLg(a.lg) || {}, B = sbLg(b.lg) || {}; return (A.p || 100) - (B.p || 100); }).slice(0, 3);
-        blocks.push('<section class="pz-blk pz-blive"><div class="pz-bh"><b><i class="pz-ld"></i>' + esc(n.live) + '<em>' + liveN() + '</em></b><button type="button" class="pz-more" data-go="live"><span>' + esc(n.seeAll) + '</span>' + SBIC.chev + '</button></div>' +
-          '<div class="pz-lgb">' + ls.map(function (f) { return rowHtml(f, { lg: 1 }); }).join('') + '</div></section>');
-      }
-      var soon = H.fx.filter(function (f) { return f.ts - nowS() <= 7200; }).slice(0, 5), sid = {};
-      soon.forEach(function (f) { sid[f.id] = 1; });
-      if (soon.length) blocks.push('<section class="pz-blk"><div class="pz-bh"><b>' + esc(n.soon) + '</b><button type="button" class="pz-more" data-per="h2"><span>' + esc(n.seeAll) + '</span>' + SBIC.chev + '</button></div><div class="pz-lgb">' +
-        soon.map(function (f) { return rowHtml(f, { lg: 1, soon: 1 }); }).join('') + '</div></section>');
-      var fv = favs(), rest = H.fx.filter(function (f) { return !sid[f.id]; }), big = rest.filter(function (f) { return ((H.lgs[f.lg] || {}).p || 100) < 100 || fv.l.indexOf(f.lg) > -1 || fv.f.indexOf(f.id) > -1; });
-      if (!big.length) big = rest.filter(function (f) { return new Date(f.ts * 1000).toDateString() === new Date().toDateString(); });
-      if (big.length) { blocks.push('<h3 class="pz-sec"><span>' + esc(n.topM) + '</span></h3>'); blocks = blocks.concat(dayBlocks(big, H.lgs, { dayHead: true, k: 't' })); }
-      if (H.fx.length) blocks.push('<button type="button" class="pz-all" data-per="d0"><span>' + esc(n.allM) + '</span>' + SBIC.chev + '</button>');
-      if (!soon.length && !big.length && !lf.length) blocks = ['<p class="pz-none">' + esc(x.noMatch) + '</p>'];
+    if (top) { // 2026-10-22 (propriétaire) : « Top » = seulement les GRANDS matchs (grands clubs, classiques, derbys, Côte d'Ivoire / Sénégal), 20 au plus
+      var n = NX(), x = SX(), big = lf.filter(isBig).concat(H.fx.filter(isBig)).slice(0, 20);
+      blocks = big.length ? ['<section class="pz-blk pz-btop"><div class="pz-bh"><b>★ ' + esc(n.topM) + '</b></div><div class="pz-lgb">' + big.map(function (f) { return rowHtml(f, { lg: 1, when: f.live ? '' : whenShort(f.ts), soon: 1 }); }).join('') + '</div></section>'] : ['<p class="pz-none">' + esc(x.noMatch) + '</p>'];
     } else {
-      blocks = H.fx.length ? dayBlocks(H.fx, H.lgs, { dayHead: /^d[0-7]$/.test(per) }) : ['<p class="pz-none">' + esc(per === 'fav' && !sbQ ? SX().noFav : SX().noMatch) + '</p>'];
+      if (allP && lf.length) { // « Tout » : le direct d'abord (3 matchs), puis tous les matchs, jour par jour, championnat par championnat
+        var n2 = NX(), ls2 = lf.slice().sort(function (a, b) { var A = sbLg(a.lg) || {}, B = sbLg(b.lg) || {}; return (A.p || 100) - (B.p || 100); }).slice(0, 3);
+        blocks.push('<section class="pz-blk pz-blive"><div class="pz-bh"><b><i class="pz-ld"></i>' + esc(n2.live) + '<em>' + liveN() + '</em></b><button type="button" class="pz-more" data-go="live"><span>' + esc(n2.seeAll) + '</span>' + SBIC.chev + '</button></div>' +
+          '<div class="pz-lgb">' + ls2.map(function (f) { return rowHtml(f, { lg: 1 }); }).join('') + '</div></section>');
+      }
+      blocks = blocks.concat(H.fx.length ? dayBlocks(H.fx, H.lgs, { dayHead: /^d\d+$/.test(per) || allP }) : ['<p class="pz-none">' + esc(per === 'fav' && !sbQ ? SX().noFav : SX().noMatch) + '</p>']);
     }
     putBlocks(body, blocks);
   }
@@ -1680,18 +1685,18 @@
   /* 2026-10-22 (propriétaire) — DIRECT « mini télé » : petits textes (12 langues) */
   var TVK = ['att', 'dang', 'cor', 'card', 'el', 'h1', 'h2', 'pitch', 'info'];
   var TVL = {
-    fr: ['ATTAQUE', 'ATTAQUE DANGEREUSE', 'CORNER', 'CARTON', 'Temps écoulé', '1re mi-temps', '2e mi-temps', 'Terrain', 'Infos'],
-    en: ['ATTACK', 'DANGEROUS ATTACK', 'CORNER', 'CARD', 'Time played', '1st half', '2nd half', 'Pitch', 'Info'],
-    es: ['ATAQUE', 'ATAQUE PELIGROSO', 'CÓRNER', 'TARJETA', 'Tiempo jugado', '1.ª parte', '2.ª parte', 'Campo', 'Info'],
-    pt: ['ATAQUE', 'ATAQUE PERIGOSO', 'ESCANTEIO', 'CARTÃO', 'Tempo de jogo', '1.º tempo', '2.º tempo', 'Campo', 'Info'],
-    ar: ['هجمة', 'هجمة خطيرة', 'ركنية', 'بطاقة', 'الوقت المنقضي', 'الشوط الأول', 'الشوط الثاني', 'الملعب', 'معلومات'],
-    tr: ['ATAK', 'TEHLİKELİ ATAK', 'KORNER', 'KART', 'Geçen süre', '1. yarı', '2. yarı', 'Saha', 'Bilgi'],
-    vi: ['TẤN CÔNG', 'TẤN CÔNG NGUY HIỂM', 'PHẠT GÓC', 'THẺ PHẠT', 'Thời gian', 'Hiệp 1', 'Hiệp 2', 'Sân', 'Thông tin'],
-    id: ['SERANGAN', 'SERANGAN BERBAHAYA', 'SEPAK POJOK', 'KARTU', 'Waktu berjalan', 'Babak 1', 'Babak 2', 'Lapangan', 'Info'],
-    ru: ['АТАКА', 'ОПАСНАЯ АТАКА', 'УГЛОВОЙ', 'КАРТОЧКА', 'Прошло времени', '1-й тайм', '2-й тайм', 'Поле', 'Инфо'],
-    de: ['ANGRIFF', 'GEFÄHRLICHER ANGRIFF', 'ECKE', 'KARTE', 'Gespielte Zeit', '1. Halbzeit', '2. Halbzeit', 'Spielfeld', 'Infos'],
-    zh: ['进攻', '危险进攻', '角球', '出牌', '比赛时间', '上半场', '下半场', '球场', '信息'],
-    hi: ['हमला', 'ख़तरनाक हमला', 'कॉर्नर', 'कार्ड', 'खेला गया समय', 'पहला हाफ़', 'दूसरा हाफ़', 'मैदान', 'जानकारी']
+    fr: ['ATTAQUE', 'ATTAQUE DANGEREUSE', 'CORNER', 'CARTON', 'Temps écoulé', '1re mi-temps', '2e mi-temps', 'Diffusion', 'Informations'],
+    en: ['ATTACK', 'DANGEROUS ATTACK', 'CORNER', 'CARD', 'Time played', '1st half', '2nd half', 'Live view', 'Information'],
+    es: ['ATAQUE', 'ATAQUE PELIGROSO', 'CÓRNER', 'TARJETA', 'Tiempo jugado', '1.ª parte', '2.ª parte', 'Transmisión', 'Información'],
+    pt: ['ATAQUE', 'ATAQUE PERIGOSO', 'ESCANTEIO', 'CARTÃO', 'Tempo de jogo', '1.º tempo', '2.º tempo', 'Transmissão', 'Informações'],
+    ar: ['هجمة', 'هجمة خطيرة', 'ركنية', 'بطاقة', 'الوقت المنقضي', 'الشوط الأول', 'الشوط الثاني', 'البث', 'معلومات'],
+    tr: ['ATAK', 'TEHLİKELİ ATAK', 'KORNER', 'KART', 'Geçen süre', '1. yarı', '2. yarı', 'Yayın', 'Bilgi'],
+    vi: ['TẤN CÔNG', 'TẤN CÔNG NGUY HIỂM', 'PHẠT GÓC', 'THẺ PHẠT', 'Thời gian', 'Hiệp 1', 'Hiệp 2', 'Trực tiếp', 'Thông tin'],
+    id: ['SERANGAN', 'SERANGAN BERBAHAYA', 'SEPAK POJOK', 'KARTU', 'Waktu berjalan', 'Babak 1', 'Babak 2', 'Siaran', 'Informasi'],
+    ru: ['АТАКА', 'ОПАСНАЯ АТАКА', 'УГЛОВОЙ', 'КАРТОЧКА', 'Прошло времени', '1-й тайм', '2-й тайм', 'Трансляция', 'Информация'],
+    de: ['ANGRIFF', 'GEFÄHRLICHER ANGRIFF', 'ECKE', 'KARTE', 'Gespielte Zeit', '1. Halbzeit', '2. Halbzeit', 'Live-Ansicht', 'Infos'],
+    zh: ['进攻', '危险进攻', '角球', '出牌', '比赛时间', '上半场', '下半场', '直播', '信息'],
+    hi: ['हमला', 'ख़तरनाक हमला', 'कॉर्नर', 'कार्ड', 'खेला गया समय', 'पहला हाफ़', 'दूसरा हाफ़', 'प्रसारण', 'जानकारी']
   };
   function TX() { var a = TVL[lg()] || TVL.en, o = {}; TVK.forEach(function (k, i) { o[k] = a[i] != null ? a[i] : TVL.en[i]; }); return o; }
   /* 2026-10-22 (propriétaire, références des grandes applis) — DIRECT : « MINI TÉLÉ » à 2 volets (glisser, points dessous).
@@ -1701,10 +1706,17 @@
      quelle — jamais un but / carton / corner inventé. Volet 2 « Infos » : logos, score, temps écoulé, période (score de la
      mi-temps), derniers événements, petites statistiques. Petit (≈ 180 px de haut sur téléphone) : les cotes restent juste dessous. */
   var TV = { fid: '', q: [], hold: 0, side: 'h', mode: 0, seen: {}, cor: null, sc: null, poss: 0.5, base: null, iv: 0, f: null, pane: 0 };
-  var PITCH = '<svg class="pz-pl" viewBox="0 0 280 100" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2">' +
-    '<rect x="3" y="3" width="274" height="94" rx="1"/><path d="M140 3v94"/><ellipse cx="140" cy="50" rx="17" ry="17"/><circle cx="140" cy="50" r="1.3" fill="rgba(255,255,255,.7)"/>' +
-    '<rect x="3" y="24" width="34" height="52"/><rect x="3" y="38" width="12" height="24"/><rect x="243" y="24" width="34" height="52"/><rect x="265" y="38" width="12" height="24"/>' +
-    '<path d="M37 40a12 12 0 0 1 0 20M243 40a12 12 0 0 0 0 20"/><path d="M0 43h3v14H0M280 43h-3v14h3" stroke-width="1.6"/></g></svg>';
+  // terrain 240 × 110 : pelouse rayée, lignes, buts avec filets (cages à l'intérieur du dessin : le ballon reste dedans)
+  var PF = { x0: 12, x1: 228, y0: 6, y1: 104, w: 240, h: 110 };
+  var PITCH = '<svg class="pz-pl" viewBox="0 0 240 110" preserveAspectRatio="none" aria-hidden="true"><defs><pattern id="pzNet" width="2.4" height="2.4" patternUnits="userSpaceOnUse"><path d="M0 0L2.4 2.4M2.4 0L0 2.4" stroke="rgba(255,255,255,.55)" stroke-width=".35"/></pattern></defs>' +
+    '<rect width="240" height="110" fill="#3B8A37"/><rect x="12" y="6" width="21.6" height="98" fill="#4FA84A"/><rect x="33" y="6" width="21.6" height="98" fill="#469C42"/><rect x="55" y="6" width="21.6" height="98" fill="#4FA84A"/><rect x="76" y="6" width="21.6" height="98" fill="#469C42"/><rect x="98" y="6" width="21.6" height="98" fill="#4FA84A"/><rect x="120" y="6" width="21.6" height="98" fill="#469C42"/><rect x="141" y="6" width="21.6" height="98" fill="#4FA84A"/><rect x="163" y="6" width="21.6" height="98" fill="#469C42"/><rect x="184" y="6" width="21.6" height="98" fill="#4FA84A"/><rect x="206" y="6" width="21.6" height="98" fill="#469C42"/>' +
+    '<g fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1"><rect x="12" y="6" width="216" height="98"/><path d="M120 6v98"/><ellipse cx="120" cy="55" rx="13" ry="13"/>' +
+    '<rect x="12" y="30" width="27" height="50"/><rect x="12" y="44" width="9" height="22"/><rect x="201" y="30" width="27" height="50"/><rect x="219" y="44" width="9" height="22"/>' +
+    '<path d="M39 47a9 9 0 0 1 0 16M201 47a9 9 0 0 0 0 16"/></g><circle cx="120" cy="55" r="1.1" fill="#fff"/><circle cx="30" cy="55" r=".9" fill="#fff"/><circle cx="210" cy="55" r=".9" fill="#fff"/>' +
+    '<rect x="5" y="47" width="7" height="16" fill="url(#pzNet)" stroke="#fff" stroke-width=".9"/><rect x="228" y="47" width="7" height="16" fill="url(#pzNet)" stroke="#fff" stroke-width=".9"/></svg>';
+  // maillot (petite icône) pour l'en-tête
+  function shirt(c) { return '<svg class="pz-shirt" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3.5 4 5.6 2.3 10l3.2 1.6V20.5h13V11.6l3.2-1.6L20 5.6 16 3.5c-.6 1.6-2.2 2.6-4 2.6S8.6 5.1 8 3.5z" fill="' + c + '" stroke="rgba(0,0,0,.35)" stroke-width=".8"/></svg>'; }
+  function scTxt2(f) { var s = f.sc || [0, 0]; return (+s[0] || 0) + ' : ' + (+s[1] || 0); }
   function evKey(e) { return [e.t, e.x, e.type, e.team, e.detail, e.player].join('|'); }
   function evIco(e) { return e.type === 'goal' ? '⚽' : e.type === 'card' ? (e.detail === 'red' ? '🟥' : '🟨') : e.type === 'subst' ? '🔁' : e.type === 'corner' ? '⛳' : 'VAR'; }
   function tvMin(f) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return n.ftS; if (f.st === 'HT') return n.htS; return null; }
@@ -1718,24 +1730,25 @@
   function tvPeriod(f) {
     var x = TX(), n = NX(), st = String(f.st || '');
     var per = st === '1H' ? x.h1 : st === '2H' ? x.h2 : st === 'HT' ? n.ht : (f.end || st === 'FT') ? n.endM : '';
-    var ht = Array.isArray(f.ht) && st !== '1H' ? ' (' + (+f.ht[0] || 0) + '-' + (+f.ht[1] || 0) + ')' : '';
+    var h1 = Array.isArray(f.ht) ? [+f.ht[0] || 0, +f.ht[1] || 0] : null, sc = [+(f.sc || [])[0] || 0, +(f.sc || [])[1] || 0];
+    var ht = h1 && st !== '1H' ? ' (' + h1[0] + '-' + h1[1] + (st === 'HT' ? '' : ', ' + Math.max(0, sc[0] - h1[0]) + '-' + Math.max(0, sc[1] - h1[1])) + ')' : '';
     return per + ht;
   }
   function tvHtml(f) {
     var x = TX(), n = NX(), rc = f.rc || [0, 0];
     var card = function (i) { return '<i class="pz-card r" data-rc="' + i + '"' + (+rc[i] ? '' : ' hidden') + '></i>'; };
-    return '<div class="pz-tv" id="pzTv"><div class="pz-tvs" id="pzTvs">' +
-      '<section class="pz-tvp pz-tv1" aria-label="' + esc(x.pitch) + '"><div class="pz-tvh" dir="ltr"><b class="pz-tvn h" dir="auto">' + esc(f.h.n) + card(0) + '</b>' +
-        '<span class="pz-tvsc"><b id="pzSc" dir="ltr">' + esc(scTxt(f)) + '</b><em id="pzClk" dir="ltr"></em></span><b class="pz-tvn a" dir="auto">' + card(1) + esc(f.a.n) + '</b></div>' +
+    return '<div class="pz-tv" id="pzTv"><div class="pz-tvseg" id="pzTvSeg" role="tablist"><button type="button" role="tab" data-tvp="0" class="on" aria-selected="true"><span dir="auto">' + esc(x.pitch) + '</span></button>' +
+        '<button type="button" role="tab" data-tvp="1" aria-selected="false"><span dir="auto">' + esc(x.info) + '</span></button></div><div class="pz-tvs" id="pzTvs">' +
+      '<section class="pz-tvp pz-tv1" aria-label="' + esc(x.pitch) + '"><div class="pz-tvh" dir="ltr"><b class="pz-tvn h">' + shirt('#22C55E') + '<span dir="auto">' + esc(f.h.n) + '</span>' + card(0) + '</b>' +
+        '<span class="pz-tvsc"><b id="pzSc" dir="ltr">' + esc(scTxt(f)) + '</b><em dir="ltr"><svg class="pz-clki" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span id="pzClk"></span></em></span><b class="pz-tvn a">' + card(1) + '<span dir="auto">' + esc(f.a.n) + '</span>' + shirt('#F8FAFC') + '</b></div>' +
         '<div class="pz-pitch" id="pzPitch" dir="ltr">' + PITCH + '<i class="pz-zone" id="pzZone"></i><i class="pz-ballw" id="pzBall"><i class="pz-ball"></i></i>' +
-          '<div class="pz-act" id="pzAct" hidden><small dir="auto"></small><b dir="auto"></b><em dir="auto"></em></div></div>' +
-        '<div class="pz-tick" id="pzTick"></div></section>' +
+          '<div class="pz-act" id="pzAct" hidden><small dir="auto"></small><b dir="auto"></b><em dir="auto"></em></div>' +
+          '<div class="pz-gov" id="pzGov" hidden><b dir="auto"></b><small dir="auto"></small></div></div></section>' +
       '<section class="pz-tvp pz-tv2" aria-label="' + esc(x.info) + '"><div class="pz-tvi" dir="ltr">' +
         '<span class="pz-tvt">' + tlogo(f.h.lo, 'pz-tvlo') + '<b dir="auto">' + esc(f.h.n) + '</b></span>' +
-        '<span class="pz-tvm"><b id="pzSc2" dir="ltr">' + esc(scTxt(f)) + '</b><small>' + esc(x.el) + '</small><em id="pzClk2" dir="ltr"></em><small id="pzPer" dir="auto"></small><i class="pz-mmin" id="pzMin" hidden><span id="pzMinT">' + esc(minTxt(f)) + '</span></i></span>' +
+        '<span class="pz-tvm"><b id="pzSc2" dir="ltr">' + esc(scTxt2(f)) + '</b><small id="pzAdd" dir="auto" hidden></small><small>' + esc(x.el) + '</small><em id="pzClk2" dir="ltr"></em><small id="pzPer" dir="auto"></small><i class="pz-mmin" id="pzMin" hidden><span id="pzMinT">' + esc(minTxt(f)) + '</span></i></span>' +
         '<span class="pz-tvt">' + tlogo(f.a.lo, 'pz-tvlo') + '<b dir="auto">' + esc(f.a.n) + '</b></span></div>' +
-        '<div class="pz-tvx" id="pzTvx"></div></section></div>' +
-      '<div class="pz-dots" id="pzDots"><button type="button" data-tvp="0" class="on" aria-label="' + esc(x.pitch) + '"></button><button type="button" data-tvp="1" aria-label="' + esc(x.info) + '"></button></div></div>';
+        '<div class="pz-tvx" id="pzTvx"></div></section></div></div>';
   }
   // à chaque lecture du match : score, horloge, infos, et les VRAIS changements mis dans la file d'animations
   function tvSync(f, r) {
@@ -1762,16 +1775,15 @@
     if (st && Array.isArray(st.poss)) { var ph = +st.poss[0] || 0, pa = +st.poss[1] || 0; TV.poss = ph + pa > 0 ? Math.max(0.2, Math.min(0.8, ph / (ph + pa))) : 0.5; } else TV.poss = 0.5;
     if (f.m != null && (!TV.base || TV.base.m !== +f.m)) TV.base = { m: +f.m, at: Date.now() };
     TV.f = f;
-    var sc2 = $('pzSc2'); if (sc2) sc2.textContent = scTxt(f);
+    var sc2 = $('pzSc2'); if (sc2 && sc2.textContent !== scTxt2(f)) { sc2.textContent = scTxt2(f); }
+    var ad = $('pzAdd'), mx = +f.mx || 0; if (ad) { ad.hidden = !(mx > 0); ad.textContent = mx > 0 ? '+' + mx + ' min' : ''; }
     var pe = $('pzPer'); if (pe) pe.textContent = tvPeriod(f);
     // ruban des derniers événements (volet 1) et infos (volet 2)
     var n = NX(), x = TX(), rec = ev.slice(-6).reverse();
     var line = function (e) { var det = e.type === 'goal' && e.detail === 'pen' ? ' (' + n.pen + ')' : e.type === 'goal' && e.detail === 'og' ? ' (' + n.og + ')' : ''; return '<span class="pz-te ' + (e.team === 'a' ? 'a' : 'h') + '"><em dir="ltr">' + (+e.t || 0) + (+e.x ? '+' + (+e.x) : '') + '’</em><i>' + evIco(e) + '</i><span dir="auto">' + esc((e.player || (e.type === 'subst' ? n.sub : e.type === 'var' ? 'VAR' : '')) + det) + '</span></span>'; };
-    var tk = rec.slice(0, 3).map(line).join('');
-    var tke = $('pzTick'); if (tke && tke.dataset.h !== tk) { tke.dataset.h = tk; tke.innerHTML = tk; tke.hidden = !tk; }
     var K = [['poss', n.poss, '%'], ['shots', n.shots], ['shotsOn', n.shotsOn], ['corners', n.corners]];
     var rows = st ? K.filter(function (k) { return Array.isArray(st[k[0]]); }) : [];
-    var ix = (rec.length ? '<div class="pz-tvev">' + rec.slice(0, 4).map(line).join('') + '</div>' : '') + (rows.length ? '<div class="pz-tvst">' + rows.map(function (k) {
+    var ix = (rec.length ? '<div class="pz-tvev">' + rec.slice(0, 5).map(line).join('') + '</div>' : '') + (rows.length ? '<div class="pz-tvst">' + rows.map(function (k) {
       var h = +st[k[0]][0] || 0, a = +st[k[0]][1] || 0, tot = h + a, p = tot ? h / tot * 100 : 50, u = k[2] || '';
       return '<p><b dir="ltr">' + h + u + '</b><span dir="auto">' + esc(k[1]) + '</span><b dir="ltr">' + a + u + '</b><i class="pz-sbar"><i style="width:' + p.toFixed(1) + '%"></i><i style="width:' + (100 - p).toFixed(1) + '%"></i></i></p>';
     }).join('') + '</div>' : '');
@@ -1780,21 +1792,25 @@
     if (!TV.iv) { TV.iv = setInterval(tvTick, 1700); tvTick(); }
   }
   function bindTv() {
-    var sc = $('pzTvs'), d = $('pzDots'); if (!sc || !d) return;
-    var paint = function () { var i = Math.round(sc.scrollLeft / Math.max(1, sc.clientWidth)); i = Math.abs(i) > 0 ? 1 : 0; TV.pane = i; d.querySelectorAll('[data-tvp]').forEach(function (b) { b.classList.toggle('on', +b.getAttribute('data-tvp') === i); }); };
+    var sc = $('pzTvs'), d = $('pzTvSeg'); if (!sc || !d) return;
+    var paint = function () { var i = Math.round(sc.scrollLeft / Math.max(1, sc.clientWidth)); i = Math.abs(i) > 0 ? 1 : 0; TV.pane = i; d.querySelectorAll('[data-tvp]').forEach(function (b) { var on = +b.getAttribute('data-tvp') === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); }); };
     sc.addEventListener('scroll', function () { clearTimeout(sc._t); sc._t = setTimeout(paint, 60); }, { passive: true });
-    d.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('[data-tvp]'); if (!b) return; var i = +b.getAttribute('data-tvp'), rtl = document.documentElement.dir === 'rtl'; sc.scrollTo({ left: (rtl ? -1 : 1) * i * sc.clientWidth, behavior: 'smooth' }); });
+    d.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('[data-tvp]'); if (!b) return; var i = +b.getAttribute('data-tvp'), rtl = document.documentElement.dir === 'rtl'; sc.scrollTo({ left: (rtl ? -1 : 1) * i * sc.clientWidth, behavior: 'smooth' }); d.querySelectorAll('[data-tvp]').forEach(function (z) { z.classList.toggle('on', z === b); z.setAttribute('aria-selected', String(z === b)); }); });
   }
   function tvClock() { var t = tvClockTxt(), a = $('pzClk'), b = $('pzClk2'); if (a && a.textContent !== t) a.textContent = t; if (b && b.textContent !== t) b.textContent = t; }
   function tvShow(side, x, y, team, act, who, kind) {
-    var ball = $('pzBall'), z = $('pzZone'), a = $('pzAct'), p = $('pzPitch'); if (!ball || !a) return;
-    ball.style.left = x + '%'; ball.style.top = y + '%';
+    var ball = $('pzBall'), z = $('pzZone'), a = $('pzAct'), p = $('pzPitch'), gv = $('pzGov'); if (!ball || !a) return;
+    x = Math.max(1.5, Math.min(98.5, x)); y = Math.max(3, Math.min(97, y));
+    var bx = (PF.x0 + x / 100 * (PF.x1 - PF.x0)) / PF.w * 100, by = (PF.y0 + y / 100 * (PF.y1 - PF.y0)) / PF.h * 100;
+    ball.style.left = bx.toFixed(2) + '%'; ball.style.top = by.toFixed(2) + '%';
+    if (gv) { gv.hidden = kind !== 'goal'; if (kind === 'goal') { gv.children[0].textContent = act; gv.children[1].textContent = team + (who ? ' · ' + who : ''); gv.classList.remove('on'); void gv.offsetWidth; gv.classList.add('on'); } }
+    if (kind === 'goal') { a.hidden = true; if (z) z.className = 'pz-zone'; return; }
     if (z) { z.className = 'pz-zone ' + (side ? (side === 'a' ? 'l' : 'r') : '') + (kind ? ' ' + kind : ''); }
     a.hidden = !act;
     a.className = 'pz-act ' + (kind || '') + (x > 50 ? ' rt' : ' lt');
     a.style.left = Math.max(4, Math.min(56, x > 50 ? x - 44 : x + 4)) + '%';
     var s = a.children; s[0].textContent = team || ''; s[1].textContent = act || ''; s[2].textContent = who || ''; s[2].hidden = !who; s[0].hidden = !team;
-    if (p) { p.classList.remove('fx-goal', 'fx-card', 'fx-red'); if (kind === 'goal' || kind === 'card' || kind === 'red') { void p.offsetWidth; p.classList.add('fx-' + kind); } }
+
   }
   function tvTick() {
     if (!alive() || view !== 'match' || !$('pzPitch')) { clearInterval(TV.iv); TV.iv = 0; return; }
@@ -1804,10 +1820,10 @@
     var e = TV.q.shift();
     if (e) { // VRAI changement : son animation, telle quelle
       var s = e.team === 'a' ? 'a' : 'h', gx = s === 'h' ? 97 : 3, y = 50, who = e.player || '';
-      if (e.type === 'goal') { TV.side = s === 'h' ? 'a' : 'h'; TV.mode = 0; tvShow(s, gx, 50, nm(s), '⚽ ' + n.goal, who, 'goal'); TV.hold = now + 5200; return; }
-      if (e.type === 'corner') { tvShow(s, s === 'h' ? 98 : 2, Math.random() < 0.5 ? 3 : 97, nm(s), '⛳ ' + x.cor, '', 'cor'); TV.side = s; TV.mode = 2; TV.hold = now + 3600; return; }
+      if (e.type === 'goal') { TV.side = s === 'h' ? 'a' : 'h'; TV.mode = 0; tvShow(s, gx, 50, nm(s), '⚽ ' + n.goal, who, 'goal'); TV.hold = now + 3200; return; }
+      if (e.type === 'corner') { tvShow(s, s === 'h' ? 98.5 : 1.5, Math.random() < 0.5 ? 3 : 97, nm(s), '⛳ ' + x.cor, '', 'cor'); TV.side = s; TV.mode = 2; TV.hold = now + 3600; return; }
       if (e.type === 'card') { tvShow(s, 50 + (s === 'h' ? -12 : 12), 45, nm(s), (e.detail === 'red' ? '🟥 ' : '🟨 ') + x.card, who, e.detail === 'red' ? 'red' : 'card'); TV.hold = now + 4200; return; }
-      if (e.type === 'subst') { tvShow(s, s === 'h' ? 28 : 72, 96, nm(s), '🔁 ' + String(n.sub).toUpperCase(), who, 'sub'); TV.hold = now + 3600; return; }
+      if (e.type === 'subst') { tvShow(s, s === 'h' ? 30 : 70, 95, nm(s), '🔁 ' + String(n.sub).toUpperCase(), who, 'sub'); TV.hold = now + 3600; return; }
       tvShow(s, 50, 50, nm(s), 'VAR', e.detail || who, 'var'); TV.hold = now + 3600; return;
     }
     var st = String(f.st || '');
@@ -1916,7 +1932,7 @@
     var sc = f.sc || [0, 0], rc = f.rc || [0, 0], p = lsc[f.id];
     var c = { h: +sc[0] || 0, a: +sc[1] || 0, rh: +rc[0] || 0, ra: +rc[1] || 0, st: String(f.st || ''), end: !!(f.end || f.st === 'FT') };
     lsc[f.id] = c;
-    if (!p || !alive() || !watched(f.id)) return;
+    if (!p || !alive() || !watched(f.id) || view === 'match') return; // page du match : la mini télé le montre (rien ne couvre les cotes)
     var n = NX(), mt = f.m != null && !c.end ? ' · ' + f.m + '’' : '', s = c.h + ' - ' + c.a;
     if (c.h > p.h) banner('goal', n.goal + ' ' + f.h.n, f.h.n + ' ' + s + ' ' + f.a.n + mt);
     if (c.a > p.a) banner('goal', n.goal + ' ' + f.a.n, f.h.n + ' ' + s + ' ' + f.a.n + mt);
@@ -2010,7 +2026,7 @@
   function pollDelay() {
     if (view === 'live') return 5000;
     if (view === 'match') { var f = curFx(); return f && f.live && !f.end ? 5000 : 60000; }
-    if (view === 'home') return sbOn && sport === 'foot' && per === 'top' && !sbQ && liveShown() ? 15000 : 60000;
+    if (view === 'home') return sbOn && sport === 'foot' && (per === 'top' || per === 'all') && !sbQ && liveShown() ? 15000 : 60000;
     if (view === 'slip' && slip.some(function (s) { return s.lv; })) return 10000;
     return -1;
   }
@@ -2029,7 +2045,7 @@
       else if (v === 'match') { await loadMatch(sbMid, false); }
       else if (v === 'home' && sbOn) {
         var jobs = [sbLoad(false)];
-        if (per === 'top' && sport === 'foot' && liveShown()) jobs.push(liveProbe(true));
+        if ((per === 'top' || per === 'all') && sport === 'foot' && liveShown()) jobs.push(liveProbe(true));
         await Promise.all(jobs); if (view === 'home') paintHome();
       } else if (v === 'slip' && !sending && !lastBet && !lastBets) {
         await liveProbe(true);
