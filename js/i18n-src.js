@@ -4256,6 +4256,23 @@
     hi: { sbM12: 'विजेता (ओवरटाइम सहित)', sbM12mma: 'मुक़ाबले का विजेता', sbM1x2reg: '1X2 (निर्धारित समय)', sbMtotPts: 'कुल अंक', sbMtotGoals: 'कुल गोल', sbMtotRuns: 'कुल रन', sbMhcp: 'हैंडिकैप', sbMhcpSets: 'सेट हैंडिकैप', sbGTot: 'कुल', sbSpAmfoot: 'अमेरिकी फ़ुटबॉल', sbSpAfl: 'AFL', sbSpMma: 'MMA' }
   };
   Object.keys(SBO_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBO_TR[l]); });
+  // 2026-10-22 (propriétaire) — Paris : section des prédictions. NOM AFFICHÉ = PRED_NAME (un seul endroit, le même mot dans les 12 langues).
+  var PRED_NAME = 'Predict';
+  var PRED_TR = {
+    fr: { predName: PRED_NAME, predAll: 'Tout', predCrypto: 'Crypto', predPol: 'Politique', predEco: 'Économie', predEnt: 'Divertissement', predSport: 'Sport', predTech: 'Tech', predWorld: 'Monde', predNone: 'Aucune prédiction pour l’instant. Les prochaines arrivent bientôt.', predSrc: 'Source officielle', predNow: 'Prix actuel' },
+    en: { predName: PRED_NAME, predAll: 'All', predCrypto: 'Crypto', predPol: 'Politics', predEco: 'Economy', predEnt: 'Entertainment', predSport: 'Sport', predTech: 'Tech', predWorld: 'World', predNone: 'No predictions right now. New ones are coming soon.', predSrc: 'Official source', predNow: 'Current price' },
+    es: { predName: PRED_NAME, predAll: 'Todo', predCrypto: 'Cripto', predPol: 'Política', predEco: 'Economía', predEnt: 'Entretenimiento', predSport: 'Deporte', predTech: 'Tecnología', predWorld: 'Mundo', predNone: 'No hay predicciones por ahora. Pronto llegarán nuevas.', predSrc: 'Fuente oficial', predNow: 'Precio actual' },
+    pt: { predName: PRED_NAME, predAll: 'Tudo', predCrypto: 'Cripto', predPol: 'Política', predEco: 'Economia', predEnt: 'Entretenimento', predSport: 'Esporte', predTech: 'Tecnologia', predWorld: 'Mundo', predNone: 'Nenhuma previsão no momento. Novas chegam em breve.', predSrc: 'Fonte oficial', predNow: 'Preço atual' },
+    ar: { predName: PRED_NAME, predAll: 'الكل', predCrypto: 'كريبتو', predPol: 'سياسة', predEco: 'اقتصاد', predEnt: 'ترفيه', predSport: 'رياضة', predTech: 'تقنية', predWorld: 'العالم', predNone: 'لا توجد توقعات حاليًا. ستصل توقعات جديدة قريبًا.', predSrc: 'المصدر الرسمي', predNow: 'السعر الحالي' },
+    tr: { predName: PRED_NAME, predAll: 'Tümü', predCrypto: 'Kripto', predPol: 'Siyaset', predEco: 'Ekonomi', predEnt: 'Eğlence', predSport: 'Spor', predTech: 'Teknoloji', predWorld: 'Dünya', predNone: 'Şu an tahmin yok. Yenileri yakında.', predSrc: 'Resmî kaynak', predNow: 'Güncel fiyat' },
+    vi: { predName: PRED_NAME, predAll: 'Tất cả', predCrypto: 'Tiền mã hóa', predPol: 'Chính trị', predEco: 'Kinh tế', predEnt: 'Giải trí', predSport: 'Thể thao', predTech: 'Công nghệ', predWorld: 'Thế giới', predNone: 'Hiện chưa có dự đoán. Sắp có thêm.', predSrc: 'Nguồn chính thức', predNow: 'Giá hiện tại' },
+    id: { predName: PRED_NAME, predAll: 'Semua', predCrypto: 'Kripto', predPol: 'Politik', predEco: 'Ekonomi', predEnt: 'Hiburan', predSport: 'Olahraga', predTech: 'Teknologi', predWorld: 'Dunia', predNone: 'Belum ada prediksi. Yang baru segera hadir.', predSrc: 'Sumber resmi', predNow: 'Harga saat ini' },
+    ru: { predName: PRED_NAME, predAll: 'Все', predCrypto: 'Крипто', predPol: 'Политика', predEco: 'Экономика', predEnt: 'Развлечения', predSport: 'Спорт', predTech: 'Технологии', predWorld: 'Мир', predNone: 'Сейчас прогнозов нет. Скоро появятся новые.', predSrc: 'Официальный источник', predNow: 'Текущая цена' },
+    de: { predName: PRED_NAME, predAll: 'Alle', predCrypto: 'Krypto', predPol: 'Politik', predEco: 'Wirtschaft', predEnt: 'Unterhaltung', predSport: 'Sport', predTech: 'Tech', predWorld: 'Welt', predNone: 'Gerade keine Prognosen. Neue kommen bald.', predSrc: 'Offizielle Quelle', predNow: 'Aktueller Kurs' },
+    hi: { predName: PRED_NAME, predAll: 'सभी', predCrypto: 'क्रिप्टो', predPol: 'राजनीति', predEco: 'अर्थव्यवस्था', predEnt: 'मनोरंजन', predSport: 'खेल', predTech: 'टेक', predWorld: 'दुनिया', predNone: 'अभी कोई प्रेडिक्शन नहीं। नए जल्द आएँगे।', predSrc: 'आधिकारिक स्रोत', predNow: 'मौजूदा कीमत' },
+    zh: { predName: PRED_NAME, predAll: '全部', predCrypto: '加密货币', predPol: '政治', predEco: '经济', predEnt: '娱乐', predSport: '体育', predTech: '科技', predWorld: '国际', predNone: '暂无预测，新的即将上线。', predSrc: '官方来源', predNow: '当前价格' }
+  };
+  Object.keys(PRED_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], PRED_TR[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {

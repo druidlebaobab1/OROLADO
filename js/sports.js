@@ -72,7 +72,8 @@
   };
   function lg() { return (document.documentElement.lang || 'fr').slice(0, 2); }
   function trW(t) { var l = lg(); if (l === 'fr' || !t) return t; Object.keys(LGW).forEach(function (k) { if (LGW[k][l] && t.indexOf(k) > -1) t = t.split(k).join(LGW[k][l]); }); return t; }
-  function trT(e) { var l = lg(); return (l !== 'fr' && e.i18n && e.i18n[l]) || e.title; }
+  function trT(e) { var l = lg(); if (e && e.pred) return l === 'fr' ? e.title : ((e.i18n && (e.i18n[l] || e.i18n.en)) || e.title); return (l !== 'fr' && e.i18n && e.i18n[l]) || e.title; } // Predict : français, sinon anglais (sinon français)
+  function trOp(e, o) { return e && e.pred ? (lg() === 'fr' ? o.label : (o.en || o.label)) : trO(o.label); }
   function trO(lbl) { var l = lg(); return l !== 'fr' && LGW[lbl] && LGW[lbl][l] ? LGW[lbl][l] : lbl; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
@@ -272,7 +273,8 @@
       var e = evById(s.ev), o = e && e.opts.filter(function (z) { return z.k === s.k; })[0];
       if (!e || !o || !e.open || n >= e.start) { if (!s.closed) { s.closed = true; chg = true; } return; }
       if (Math.abs(o.odd - s.odd) > 1e-9) { s.odd = o.odd; s.chg = true; chg = true; }
-      s.t = trT(e); s.l = trO(o.label);
+      if (!!e.susp !== !!s.susp) { s.susp = !!e.susp; chg = true; } // Predict crypto : prix introuvable → suspendu (cadenas)
+      s.t = trT(e); s.l = trOp(e, o);
     });
     return chg;
   }
@@ -419,7 +421,7 @@
   // toucher une cote : on l'ajoute / l'enlève du coupon SANS redessiner toute la liste (rapide, la page ne saute pas)
   function pick(b) {
     var x = X(), ev = b.getAttribute('data-ev'), k = b.getAttribute('data-k'), e = evById(ev);
-    if (!e || !e.open || nowS() >= e.start) return;
+    if (!e || !e.open || e.susp || nowS() >= e.start) return;
     var o = e.opts.filter(function (z) { return z.k === k; })[0]; if (!o) return;
     var had = inSlip(ev, k), n0 = slip.length;
     if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 50) { if (ctx.toast) ctx.toast(x.max10); return; } // 2026-10-21 : 50 matchs (avant 10)
@@ -431,9 +433,9 @@
       if (others.some(function (z) { return (z.grp || []).some(function (y) { return g.indexOf(y) > -1; }); })) { if (ctx.toast) ctx.toast(xx.e_corr, 'info'); return; }
     }
     slip = slip.filter(function (s) { return s.ev !== ev; }); // un seul choix par match
-    if (!had) slip.push({ ev: ev, k: k, odd: o.odd, t: trT(e), l: trO(o.label), q: !!(e.q || EVK[e.sport]), grp: e.grp || [] });
-    var c = b.closest('.sp2-ev');
-    if (c) c.querySelectorAll('.sp2-o').forEach(function (z) { var on = inSlip(ev, z.getAttribute('data-k')); z.classList.toggle('on', on); z.setAttribute('aria-pressed', String(on)); });
+    if (!had) slip.push({ ev: ev, k: k, odd: o.odd, t: trT(e), l: trOp(e, o), q: !!(e.q || EVK[e.sport]), grp: e.grp || [] });
+    // (toutes les cotes de cet événement à l'écran)
+    (box || document).querySelectorAll('.sp2-o[data-ev="' + ev + '"]').forEach(function (z) { var on = inSlip(ev, z.getAttribute('data-k')); z.classList.toggle('on', on); z.setAttribute('aria-pressed', String(on)); });
     paintBar(slip.length > n0);
   }
 
@@ -1039,7 +1041,7 @@
     if (!box || !box.isConnected || !box.classList.contains('sp2')) return false;
     var m = box.closest('#casinoModal'); return !m || m.classList.contains('active');
   }
-  function hasQ() { return events.some(isQev); }
+  function hasQ() { return events.some(function (e) { return isQev(e) && !e.pred; }); } // (les prédictions Predict ont leur propre puce)
   function liveShown() { return liveOn === true || (liveOn === null && liveCnt > 0); }
   function liveFx() { return liveData ? (liveData.r.fx || []).filter(function (f) { return f.o && f.o.o && f.o.o.length; }) : []; }
   function liveN() { return liveData ? liveFx().filter(function (f) { return !f.end; }).length : Math.max(0, liveCnt); }
@@ -1052,7 +1054,7 @@
     mine: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v3h3"/><path d="M12 8v4.2l2.8 1.8"/></svg>',
     menu: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.6" height="6.6" rx="1.8"/><rect x="13.4" y="4" width="6.6" height="6.6" rx="1.8"/><rect x="4" y="13.4" width="6.6" height="6.6" rx="1.8"/><rect x="13.4" y="13.4" width="6.6" height="6.6" rx="1.8"/></svg>'
   };
-  function navOn(v) { return v === 'match' ? (matchFrom === 'live' ? 'live' : matchFrom === 'menu' || matchFrom === 'results' ? 'menu' : 'home') : v === 'news' ? 'home' : v === 'results' ? 'menu' : v; }
+  function navOn(v) { return v === 'match' ? (matchFrom === 'live' ? 'live' : matchFrom === 'menu' || matchFrom === 'results' ? 'menu' : 'home') : v === 'news' || v === 'pred' ? 'home' : v === 'results' ? 'menu' : v; }
   function navHtml() {
     var n = NX(), on = navOn(view), items = [['home', n.nHome]];
     if (liveShown()) items.push(['live', n.nLive]);
@@ -1143,6 +1145,7 @@
     if (view === 'menu') { renderMenu(); return; }
     if (view === 'results') { renderResults(); return; }
     if (view === 'news') { renderList(); return; }
+    if (view === 'pred') { renderPred(); return; }
     if (view === 'live') { if (liveOn === false) view = 'home'; else { renderLive(); return; } }
     if (view === 'match') { if (sbMid) { renderMatch(); return; } view = 'home'; }
     view = 'home'; renderHome();
@@ -1166,7 +1169,7 @@
       var hadQ = hasQ();
       lastList = events = r; lastJson = JSON.stringify(r);
       var chg = syncSlip();
-      if (!same && (view === 'news' || (view === 'home' && sbOn !== true))) render();
+      if (!same && (view === 'news' || view === 'pred' || (view === 'home' && sbOn !== true))) render();
       else if (view === 'home' && hadQ !== hasQ()) render();
       else if (view === 'slip' && chg && !sending && !lastBet) { render(); sbToast(XX().oddsChg); }
     } else if (!lastList && view === 'home' && sbOn === false) { events = []; render(); }
@@ -1352,7 +1355,8 @@
   // ---------- POPULAIRE ----------
   function sportsRow() {
     var sl = sbSports.length ? sbSports : [{ s: 'foot', n: 'Football' }];
-    var html = sl.map(function (s) { return '<button type="button" data-sp="' + esc(s.s) + '" class="' + (sport === s.s && view !== 'news' ? 'on' : '') + '">' + sico(spIco(s.s)) + '<span dir="auto">' + esc(spName(s)) + '</span></button>'; }).join('');
+    var html = sl.map(function (s) { return '<button type="button" data-sp="' + esc(s.s) + '" class="' + (sport === s.s && view !== 'news' && view !== 'pred' ? 'on' : '') + '">' + sico(spIco(s.s)) + '<span dir="auto">' + esc(spName(s)) + '</span></button>' + (s.s === 'foot' ? predChip() : ''); }).join('');
+    if (html.indexOf('data-sp="pred"') < 0) html = predChip() + html; // (Football absent : Predict en tête)
     if (hasQ()) html += '<button type="button" data-sp="news" class="' + (view === 'news' ? 'on' : '') + '">' + SBIC.news + '<span>' + esc(SX().news) + '</span></button>';
     return '<div class="pz-sports pz-hs">' + html + '</div>';
   }
@@ -1585,7 +1589,7 @@
   // ---------- ACTUALITÉ (questions : crypto, politique, événements) / ancienne liste quand les paris automatiques sont invisibles ----------
   function renderList() {
     var x = XX(), news = view === 'news';
-    var evs = sbOn ? events.filter(isQev) : events; // jamais les anciens matchs de l'admin en double (ils sont dans Football)
+    var evs = sbOn ? events.filter(function (e) { return isQev(e) && !e.pred; }) : events; // jamais les anciens matchs de l'admin en double (ils sont dans Football) ; Predict a sa page
     var head = news ? bar(SX().news) : (sbOn === null ? '' : '');
     if (!evs.length) { shell(head + (sbOn === null && !lastList ? skeleton() : empty(x.none))); fitAll(box); return; }
     var bw = box.clientWidth || 0; if (bw > 0) gridCols = Math.max(1, Math.floor((bw + 10) / 340));
@@ -1604,6 +1608,83 @@
     var at = $('pzListAt'); at.parentNode.replaceChild(list, at);
     list.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.sp2-o'); if (b && !b.disabled) pick(b); });
     fitAll(box); startTick();
+  }
+  /* ---------- PREDICT (2026-10-22, propriétaire) — prédictions façon Polymarket / Kalshi : crypto, politique, économie,
+     divertissement, sport, tech, monde. Puce spéciale juste après Football ; catégories ; carte = question entière (jamais
+     coupée), compte à rebours, explication courte, prix actuel pour la crypto (lu par NOTRE serveur, predPrice), GRANDS boutons
+     de choix en rangées de 2–3, petit lien vers la source. Tout est sur la carte (pas de fiche, pas de flèche). Nom : clé i18n predName. */
+  var PCATS = ['crypto', 'politique', 'economie', 'divertissement', 'sport', 'tech', 'monde'];
+  var PCK = { all: 'predAll', crypto: 'predCrypto', politique: 'predPol', economie: 'predEco', divertissement: 'predEnt', sport: 'predSport', tech: 'predTech', monde: 'predWorld' };
+  var PEN = { predName: 'Predict', predAll: 'All', predCrypto: 'Crypto', predPol: 'Politics', predEco: 'Economy', predEnt: 'Entertainment', predSport: 'Sport', predTech: 'Tech', predWorld: 'World',
+    predNone: 'No predictions right now. New ones are coming soon.', predSrc: 'Official source', predNow: 'Current price' };
+  function PT(k) { return T18(k, PEN[k] || k); }
+  var pcat = 'all';
+  // petit signe : un œil / cristal avec une étincelle (animée doucement par la feuille de style)
+  var PRED_IC = '<svg class="sp-ico pd-ic" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="pdIcG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FDE68A"/><stop offset="1" stop-color="#D97706"/></linearGradient></defs>' +
+    '<path d="M2.6 12.4C5 8.1 8.3 6 12 6s7 2.1 9.4 6.4c-2.4 4.3-5.7 6.4-9.4 6.4s-7-2.1-9.4-6.4z" fill="none" stroke="url(#pdIcG)" stroke-width="1.7" stroke-linejoin="round"/>' +
+    '<circle cx="12" cy="12.4" r="3.3" fill="url(#pdIcG)"/><circle cx="10.9" cy="11.3" r="1" fill="#1B1442" opacity=".55"/>' +
+    '<path class="pd-sp" d="M19.2 2.2l.6 1.6 1.6.6-1.6.6-.6 1.6-.6-1.6-1.6-.6 1.6-.6z" fill="#FDE68A"/></svg>';
+  function predEvs() { return events.filter(function (e) { return e.pred && e.open; }); }
+  function predChip() {
+    if (!predEvs().length) return '';
+    return '<button type="button" data-sp="pred" class="pd-chip' + (view === 'pred' ? ' on' : '') + '">' + PRED_IC + '<span dir="ltr">' + esc(PT('predName')) + '</span></button>';
+  }
+  function pcatName(c) { return PT(PCK[c] || 'predWorld'); }
+  function assetName(a) { var m = /^([A-Z0-9]+?)(USDT|USDC|FDUSD|BUSD|USD)$/.exec(a || ''); return m ? m[1] + '/' + m[2] : a; }
+  // nombres jamais coupés en fin de ligne (« 2 200 $ », « 12 h », « 85 000 $ »)
+  function nb(s) { return String(s).replace(/(\d) (?=\d{3}\b)/g, '$1\u00a0').replace(/(\d) (?=[$%€h]\b|[$%€])/g, '$1\u00a0').replace(/ (?=[?!:;»])/g, '\u00a0'); }
+  function pdOpts(e) {
+    var n = e.opts.length, cols = n === 2 || n === 4 ? 2 : 3, lk = !!e.susp;
+    return '<div class="sp2-odds pd-o pd-c' + cols + '">' + e.opts.map(function (o) {
+      var on = inSlip(e.id, o.k);
+      return '<button type="button" class="sp2-o pd-b' + (on ? ' on' : '') + (lk ? ' pd-lk' : '') + '" data-ev="' + esc(e.id) + '" data-k="' + esc(o.k) + '" aria-pressed="' + on + '"' + (e.open && !lk ? '' : ' disabled') + '>' +
+        '<span dir="auto">' + esc(nb(trOp(e, o))) + '</span><b>' + (lk ? IC.lock : '<i class="sp2-ov">' + Number(o.odd).toFixed(2) + '</i>') + '</b></button>';
+    }).join('') + '</div>';
+  }
+  function predCard(e) {
+    var l = lg(), d = e.desc ? (l === 'fr' ? e.desc.fr || e.desc.en : e.desc.en || e.desc.fr) : '', host = '', s = e.start - nowS();
+    try { host = e.src ? new URL(e.src).hostname.replace(/^www\./, '') : ''; } catch (er) { host = ''; }
+    return '<article class="sp2-ev pd-ev' + (e.open ? '' : ' shut') + '" data-card="' + esc(e.id) + '">' +
+      '<div class="pd-top"><span class="pd-cat c-' + esc(e.cat) + '"><i class="pd-dot"></i><span dir="auto">' + esc(pcatName(e.cat)) + '</span></span>' +
+      '<span class="pd-cd' + (s < 3600 ? ' soon' : '') + '">' + IC.clock + '<b data-pcd="' + e.start + '">' + esc(pcdTxt(s)) + '</b></span></div>' +
+      (/^[a-f0-9]{16}$/.test(e.img || '') ? '<div class="pd-hd"><img class="pd-im" src="sp-logo.php?k=' + e.img + '" alt="" loading="lazy" decoding="async"><p class="pd-t" dir="auto">' + esc(nb(trT(e))) + '</p></div>' : '<p class="pd-t" dir="auto">' + esc(nb(trT(e))) + '</p>') +
+      (d ? '<p class="pd-d" dir="auto">' + esc(nb(d)) + '</p>' : '') +
+      (e.asset ? '<p class="pd-px"><span dir="auto">' + esc(PT('predNow')) + '</span> <bdi>' + esc(assetName(e.asset)) + '</bdi> <b dir="ltr" data-px="' + esc(e.asset) + '">' + (pdPx[e.asset] ? pxCur(e.asset, pdPx[e.asset]) : '…') + '</b></p>' : '') +
+      pdOpts(e) +
+      (e.src ? '<a class="pd-src" href="' + esc(e.src) + '" target="_blank" rel="noopener noreferrer"><span dir="auto">' + esc(PT('predSrc')) + '</span> · <bdi>' + esc(host) + '</bdi></a>' : '') + '</article>';
+  }
+  function renderPred() {
+    var all = predEvs().sort(function (a, b) { return (b.auto ? 1 : 0) - (a.auto ? 1 : 0) || a.start - b.start; }); // priorité : réglées automatiquement (crypto)
+    var cnt = {}; all.forEach(function (e) { cnt[e.cat] = (cnt[e.cat] || 0) + 1; });
+    if (pcat !== 'all' && !cnt[pcat]) pcat = 'all';
+    var list = pcat === 'all' ? all : all.filter(function (e) { return e.cat === pcat; });
+    var chips = ['all'].concat(PCATS.filter(function (c) { return cnt[c]; })).map(function (c) {
+      return '<button type="button" data-pcat="' + c + '" class="' + (pcat === c ? 'on' : '') + '"><span dir="auto">' + esc(pcatName(c)) + '</span></button>';
+    }).join('');
+    shell('<div class="pz-home pz-pred">' + sportsRow() + '<div class="pz-pers pz-hs pd-cats">' + chips + '</div>' +
+      (list.length ? '<div class="sp2-list pd-list">' + list.map(predCard).join('') + '</div>' : empty(PT('predNone'))) + '</div>');
+    var l = box.querySelector('.pd-list');
+    if (l) l.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('.sp2-o'); if (b && !b.disabled) { ev.stopPropagation(); pick(b); } });
+    keepOn(box.querySelector('.pd-cats')); keepOn(box.querySelector('.pz-sports'));
+    fitAll(box); startTick(); pdPxLoad();
+  }
+  function pxTxt(v) { var n = Number(v); return n >= 100 ? n.toLocaleString(loc(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : n.toLocaleString(loc(), { maximumFractionDigits: n >= 1 ? 4 : 6 }); }
+  // compte à rebours jusqu'à la fermeture : « 2 j 04:12:33 » (jours dans la langue du joueur), puis « 04:12:33 »
+  function pcdTxt(s) { if (s <= 0) return XX().closed; var d = Math.floor(s / 86400); return (d ? '\u2068' + ufmt('day', d) + '\u2069 ' : '') + '\u2066' + clock(s % 86400) + '\u2069'; } // (isolés : bon ordre aussi en arabe)
+  // prix ACTUEL des actifs crypto : lu par NOTRE serveur (predPrice, gardé 30 s), relu toutes les 30 s seulement quand Predict est à l'écran
+  var pdPx = {}, pdPxT = 0;
+  function pxCur(a, v) { var m = /(USDT|USDC|FDUSD|BUSD|USD)$/.exec(a || ''), q = /^[A-Z0-9]+?(BTC|ETH|BNB|EUR)$/.exec(a || ''); return m ? '$' + pxTxt(v) : pxTxt(v) + (q ? ' ' + q[1] : ''); } // ETH/BTC : en BTC
+  function pdPxPaint() { if (!box) return; box.querySelectorAll('[data-px]').forEach(function (el) { var a = el.getAttribute('data-px'), v = pdPx[a]; var tx = v ? pxCur(a, v) : '…'; if (el.textContent !== tx) el.textContent = tx; }); }
+  function pdPxLoad() {
+    clearTimeout(pdPxT); pdPxT = 0;
+    if (!alive() || view !== 'pred') return;
+    if (!document.hidden) {
+      var as = {}; predEvs().forEach(function (e) { if (e.asset) as[e.asset] = 1; });
+      Object.keys(as).slice(0, 20).forEach(function (a) {
+        if (D6.Api && D6.Api.post) D6.Api.post('predPrice', { asset: a }, 10000).then(function (r) { if (r && r.ok && r.px > 0) { pdPx[a] = +r.px; pdPxPaint(); } }).catch(function () {});
+      });
+    }
+    pdPxT = setTimeout(pdPxLoad, 30000);
   }
   // ---------- PAGE D'UN MATCH ----------
   var GRP = [['main', 'gMain'], ['goals', 'gGoals'], ['tot', 'gTot'], ['half', 'gHalf'], ['hcp', 'gHcp'], ['cs', 'gCs'], ['combo', 'gCombo']];
@@ -2022,9 +2103,11 @@
     if ((b = t.closest('[data-sp]'))) {
       var s = b.getAttribute('data-sp');
       if (s === 'news') { go('news'); return; }
+      if (s === 'pred') { if (view === 'pred') { pcat = 'all'; renderPred(); } else go('pred'); return; }
       sport = s; if (view !== 'home') go('home'); else { box.querySelectorAll('.pz-sports [data-sp]').forEach(function (z) { z.classList.toggle('on', z === b); }); paintHome(); }
       return;
     }
+    if ((b = t.closest('[data-pcat]'))) { pcat = b.getAttribute('data-pcat'); renderPred(); var mb0 = mbox(); if (mb0) mb0.scrollTop = 0; return; }
     if ((b = t.closest('[data-shx]'))) { closeSheet(); return; }
     if ((b = t.closest('[data-dsheet]'))) { openSheet(); return; }
     if ((b = t.closest('[data-per]'))) {
@@ -2098,6 +2181,11 @@
       var n = nowS(), x = XX();
       if (view === 'match' && TV.f) tvClock();
       box.querySelectorAll('[data-cd]').forEach(function (el) { var s = +el.getAttribute('data-cd') - n, t = s > 0 ? clock(s) : x.inPlay; if (el.textContent !== t) el.textContent = t; });
+      box.querySelectorAll('[data-pcd]').forEach(function (el) { // Predict : compte à rebours jusqu'à la fermeture ; fermé → cotes grisées
+        var s = +el.getAttribute('data-pcd') - n, t = pcdTxt(s); if (el.textContent !== t) el.textContent = t;
+        if (s <= 0) { el.removeAttribute('data-pcd'); var c = el.closest('[data-card]'); if (c) { c.classList.add('shut'); c.querySelectorAll('.sp2-o').forEach(function (b) { b.disabled = true; }); var e = evById(c.getAttribute('data-card')); if (e) e.open = false; } }
+        else el.parentNode.classList.toggle('soon', s < 3600);
+      });
       if (++tickN % 20) return;
       box.querySelectorAll('[data-in]').forEach(function (el) { var s = +el.getAttribute('data-in') - n, t = s > 0 ? inShort(s) : x.inPlay; if (el.textContent !== t) el.textContent = t; });
       // match commencé : ses cotes d'avant-match se ferment

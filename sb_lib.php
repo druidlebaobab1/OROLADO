@@ -40,7 +40,7 @@ const SB_VOID_ST = ['AWD', 'WO'];
 const SB_WAIT_ST = ['PST', 'CANC', 'ABD', 'SUSP', 'INT', 'NS', 'TBD'];
 const SB_LIVE_ST = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
 const SB_CFG_DEFAULT = ['public' => false, 'live' => true, 'livePublic' => true, 'autosettle' => true, 'sports' => ['foot', 'basket', 'hockey', 'handball', 'volley', 'rugby', 'baseball', 'amfoot', 'afl', 'mma'],
-  'mMain' => 15, 'mSide' => 20, 'mExotic' => 30, 'mLive' => 20, 'mOther' => 15, 'alertStake' => 50, 'alertPot' => 500, 'alertWin' => 200, 'liveLastMin' => 88];
+  'mMain' => 15, 'mSide' => 20, 'mExotic' => 30, 'mLive' => 20, 'mOther' => 15, 'mPred' => 20, 'alertStake' => 50, 'alertPot' => 500, 'alertWin' => 200, 'liveLastMin' => 88]; // mPred : prédictions Predict (pred_lib.php)
 /** Compétitions en tête de liste (p petit = en haut) ; les autres : 100 (par pays). */
 const SB_TOP_LEAGUES = [2 => 1, 39 => 2, 140 => 3, 135 => 4, 78 => 5, 61 => 6, 3 => 7, 848 => 8, 1 => 9, 4 => 10, 6 => 11, 12 => 12, 20 => 13, 5 => 14, 9 => 15, 13 => 16, 94 => 17, 88 => 18, 203 => 19, 253 => 20];
 const SB_TOP_COUNTRIES = ['ivory-coast' => 30, 'cote-d-ivoire' => 30, 'senegal' => 31, 'cameroon' => 32, 'nigeria' => 33, 'ghana' => 34, 'morocco' => 35, 'france' => 36];
@@ -97,6 +97,11 @@ function sb_config(): array {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig5'])) return true; $s['mLive'] = 4; $s['mig5'] = 1; return true; });
     $c = sb_read('config.json');
   }
+  // 2026-10-22 (propriétaire) : une seule fois, marge des prédictions « Predict » 20 % (l'admin peut la changer ensuite)
+  if (empty($c['mig6'])) {
+    sb_with('config.json', static function (array &$s) { if (!empty($s['mig6'])) return true; $s['mPred'] = 20; $s['mig6'] = 1; return true; });
+    $c = sb_read('config.json');
+  }
   if (empty($c['mig4'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig4'])) return true; $s['sports'] = SB_CFG_DEFAULT['sports']; $s['mig4'] = 1; return true; });
     $c = sb_read('config.json');
@@ -109,11 +114,11 @@ function sb_config(): array {
 function sb_config_save(array $in): array {
   $cur = sb_config();
   foreach (['public', 'live', 'livePublic', 'autosettle'] as $k) if (array_key_exists($k, $in)) $cur[$k] = (bool) $in[$k];
-  foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(2.0, min(40.0, (float) $in[$k])), 1);
+  foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'mPred'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(2.0, min(40.0, (float) $in[$k])), 1);
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['sports']) && is_array($in['sports'])) $cur['sports'] = array_values(array_intersect(SB_CFG_DEFAULT['sports'], array_map('strval', $in['sports'])));
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
@@ -737,6 +742,7 @@ function sb_after_response(): void {
     try { sb_maybe_run(); } catch (Throwable $e) { /* jamais bloquant */ }
     try { sb_res_fetch_wanted(sb_now()); } catch (Throwable $e) { /* jamais bloquant */ }
     try { sb_o_maybe_run(); } catch (Throwable $e) { /* autres sports : jamais bloquant */ }
+    try { if (function_exists('pred_maybe_run')) pred_maybe_run(); } catch (Throwable $e) { /* prédictions Predict : jamais bloquant */ }
   });
 }
 /** Page d'un match ouverte, cotes de plus de 3 h → demandé (au plus une fois par 3 h et par match, 20 par heure en tout). */
@@ -1258,7 +1264,8 @@ function sb_sel_now(string $ev, string $k, ?array $user, int $now, ?array $manua
   if (!$e) return ['skip' => 'closed'];
   $close = function_exists('sp_close_at') ? sp_close_at($e) : (int) ($e['start'] ?? 0);
   if (($e['status'] ?? '') !== 'open' || !empty($e['hold']) || $now >= $close) return ['skip' => 'closed'];
-  foreach ((array) ($e['opts'] ?? []) as $o) if ((string) ($o['k'] ?? '') === $k)
+  if (function_exists('pred_stale') && ($e['sport'] ?? '') === 'pred' && pred_stale($e, $now)) return ['skip' => 'closed']; // Predict crypto suspendue
+  foreach ((array) ($e['opts'] ?? []) as $o) if ((string) ($o['k'] ?? '') === $k && empty($o['off']))
     return ['ev' => $ev, 'k' => $k, 'odd' => (float) $o['odd'], 't' => (string) $e['title'], 'l' => (string) $o['label'], 'ko' => $close,
       'q' => function_exists('sp_is_question') && sp_is_question($e), 'grp' => function_exists('sp_corr_groups') ? array_values(sp_corr_groups($e)) : []];
   return ['skip' => 'param'];
