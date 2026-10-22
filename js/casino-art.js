@@ -934,9 +934,19 @@
   OBJ.rps = function () {
     return '<g transform="translate(-2 20) scale(.52)">' + rpsSvg(0) + '</g><g transform="translate(17 -2) scale(.52)">' + rpsSvg(1) + '</g><g transform="translate(34 22) scale(.52)">' + rpsSvg(2) + '</g>';
   };
+  // 2026-10-22 (propriétaire : « certains logos ne rentrent pas dans le rond ») : le dessin posé SUR le médaillon (après son
+  // contour r = 26,5) est ramené à 86 % autour du centre — voiture, badges, cases du bas restent dans le rond. Médaillon inchangé.
+  var FIT_MK = /<circle cx="32" cy="33" r="26\.5" fill="none"[^>]*\/>/;
+  var FIT_X = { wheel2: 0.74, moneywheel: 0.8, claw: 0.8 }; // dessins plus larges : un peu plus petits
+  function fitIn(s, k) {
+    var m = FIT_MK.exec(s); if (!m) return s;
+    var i = m.index + m[0].length, tail = s.slice(i);
+    if ((tail.match(/<g[\s>]/g) || []).length !== (tail.match(/<\/g>/g) || []).length) return s; // contour dans un groupe : on ne touche pas
+    return s.slice(0, i) + '<g transform="translate(32 33) scale(' + (FIT_X[k] || 0.86) + ') translate(-32 -33)">' + tail + '</g>';
+  }
   function obj(k) {
     var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
-    return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + f().replace(/ID/g, id) + '</svg>';
+    return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + fitIn(f(), OBJ[k] ? k : 'coin').replace(/ID/g, id) + '</svg>';
   }
   /* planète + objet posé dessus (sans carré) */
   function planet(k, cls) {
