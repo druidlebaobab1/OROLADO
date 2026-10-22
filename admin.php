@@ -2167,7 +2167,12 @@ if ($isAjax) {
     require_once __DIR__ . '/sports_lib.php';
     if ($action === 'cs_stats') {
       $st = casino_with(casino_dir() . DIRECTORY_SEPARATOR . 'stats.json', static fn(array &$s) => $s) ?: [];
-      admin_json(['ok' => true, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? [], 'limits' => casino_limits(), 'max' => CASINO_MAX_STAKE, 'games' => array_merge(CASINO_GAMES, casino_ext_keys()), 'names' => function_exists('casino_ext_names') ? casino_ext_names() : []]); // v2804 : nouveaux jeux
+      // 2026-10-22 (propriétaire : « 19 000 $ misés alors que les dépôts font moins de 300 $ ? ») : part des comptes admin (tests)
+      $adm = ['n' => 0, 'in' => 0.0];
+      $ldbA = admin_local_db(); $uidsA = ['admin_master'];
+      foreach ((array) ($ldbA['users'] ?? []) as $uA => $rowA) if (admin_is_admin_account((string) $uA, ['email' => (string) ($rowA['email'] ?? '')])) $uidsA[] = (string) $uA;
+      foreach (array_unique($uidsA) as $uA) { $tA = (array) (casino_admin_player($uA)['tot'] ?? []); $adm['n'] += (int) ($tA['n'] ?? 0); $adm['in'] += (float) ($tA['in'] ?? 0); }
+      admin_json(['ok' => true, 'adm' => $adm, 'all' => $st['all'] ?? [], 'today' => $st[gmdate('Y-m-d')] ?? [], 'limits' => casino_limits(), 'max' => CASINO_MAX_STAKE, 'games' => array_merge(CASINO_GAMES, casino_ext_keys()), 'names' => function_exists('casino_ext_names') ? casino_ext_names() : []]); // v2804 : nouveaux jeux
     }
     // v2698 — joueurs du casino : liste (nom, e-mail, ID public) et détail d'un joueur (parties + paris sportifs)
     if ($action === 'cs_players' || $action === 'cs_player') {
@@ -4179,9 +4184,11 @@ setInterval(() => {
     const top = Object.entries(((j.all || {}).real) || {}).map(([g, v]) => ({g, n:v.n, i:v.in})).sort((a, b) => b.n - a.n || b.i - a.i);
     const topMax = top.length ? top[0].n : 1;
     const today = ((j.today || {}).real) || {};
+    const adm = j.adm || {};
     const topCard = '<div class="nt-card" style="margin-bottom:10px"><b style="font-size:1.05rem">🏆 Jeux les plus joués (argent réel)</b>' +
+      '<p class="muted" style="margin:4px 0 0">« Misés » = total de toutes les mises (un joueur rejoue ses gains plusieurs fois). Dont vos comptes admin (tests) : <b>' + m2(adm.in) + '</b> sur ' + (adm.n || 0) + ' parties.</p>' +
       (top.length ? top.map((r, k) => '<div style="display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;margin-top:8px"><b style="color:' + (k < 3 ? '#FCD34D' : 'var(--muted)') + '">' + (k + 1) + '</b>' +
-        '<div><div style="display:flex;justify-content:space-between;gap:6px"><span>' + esc(GN[r.g] || r.g) + '</span><span class="muted">' + m2(r.i) + ' $ misés</span></div>' +
+        '<div><div style="display:flex;justify-content:space-between;gap:6px"><span>' + esc(GN[r.g] || r.g) + '</span><span class="muted">' + m2(r.i) + ' misés</span></div>' +
         '<i style="display:block;height:7px;border-radius:4px;margin-top:4px;background:linear-gradient(90deg,#22C55E,#5CF59A);width:' + Math.max(4, Math.round(r.n / topMax * 100)) + '%"></i></div>' +
         '<b>' + r.n + '<small class="muted"> parties' + (today[r.g] ? ' · ' + today[r.g].n + " aujourd'hui" : '') + '</small></b></div>').join('')
         : '<p class="muted">Aucune partie en argent réel pour le moment.</p>') + '</div>';
