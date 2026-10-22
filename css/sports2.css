@@ -996,3 +996,16 @@ html[dir=rtl] body #casinoModal .sp2 .pd-srh > .sp2-i{transform:rotate(90deg)}
 html:root body #casinoModal .sp2 .pz-home > .pz-sports{padding-top:5px;padding-bottom:5px;margin-top:-3px;margin-bottom:-3px}
 html:root body #casinoModal .sp2 .pz-home > .pz-sports button,html:root body #casinoModal .sp2 .pz-home > .pz-pers button{position:relative}
 html:root body #casinoModal .sp2 .pz-home > .pz-sports button::after,html:root body #casinoModal .sp2 .pz-home > .pz-pers button::after{content:"";position:absolute;left:-3px;right:-3px;top:-5px;bottom:-5px}
+
+/* 2026-10-22 (propriétaire) — « Informations » : même hauteur que « Diffusion » (rien ne s'agrandit) ; en-tête compact, statistiques qui défilent dedans */
+html:root body #casinoModal .sp2 .pz-tv2{display:flex;flex-direction:column;overflow:hidden}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvi{flex:none;padding-top:2px;gap:6px}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvlo{width:24px;height:24px}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvt{gap:2px}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvt b{font-size:12px}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvm > b{font-size:19px}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvm em{font-size:12px}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvx{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;margin-top:6px;padding-right:2px;scrollbar-width:thin}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvst{gap:5px}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvst p b{font-size:11.5px}
+html:root body #casinoModal .sp2 .pz-tv2 .pz-tvst p span{font-size:10.5px}
