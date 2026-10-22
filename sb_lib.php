@@ -13,8 +13,8 @@ declare(strict_types=1);
  *  - Import : /fixtures?date=J (J-1 … J+2, toutes les compétitions) et /odds?date=J&page=N (toutes les compétitions avec
  *    cotes), /odds?fixture=ID à la demande (page d'un match, cotes de plus de 3 h).
  *  - Cotes : moyenne des bookmakers par choix (≥ 3 bookmakers pour 1x2 / dc / ou / btts, ≥ 2 pour le reste), groupe de choix
- *    complémentaires normalisé (seulement si sa somme ≥ attendu : toujours SÛR), marge du réglage, JAMAIS au-dessus de
- *    (moyenne − 0,01), jamais sous 1,01 (choix retiré).
+ *    complémentaires normalisé (seulement si sa somme ≥ attendu : toujours SÛR), marge du réglage (rien d'autre),
+ *    jamais sous 1,01 (choix retiré).
  *  - Règlement AUTOMATIQUE (config.autosettle, vrai par défaut) : score des 90 min (score.fulltime, aussi pour AET / PEN),
  *    mi-temps = score.halftime. ANNULÉ (mise rendue pour ce choix) : pari posé à / après le vrai coup d'envoi ; match reporté /
  *    annulé / arrêté (PST CANC ABD SUSP INT) pas joué dans les 48 h du coup d'envoi prévu ; AWD / WO. Seulement si le
@@ -410,7 +410,7 @@ function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
     foreach ($avg as $k => $a) {
       $p = (1 / $a) / $norm;
       $o = floor((1 - $m) / $p * 100 + 1e-6) / 100;
-      $o = min($o, floor(($a - 0.01) * 100 + 1e-6) / 100); // TOUJOURS au moins 0,01 sous la moyenne
+      // 2026-10-22 (propriétaire : « plus haut que 1xBet ») : plus de plafond « moyenne − 0,01 » ; seule la marge du réglage compte
       if ($o < 1.01) continue;
       $row[] = [(string) $k, round($o, 2)];
       if ($k === 'H') $pH[$mk] = $p;
@@ -2034,7 +2034,7 @@ function sb_o_markets(string $sp, array $bookmakers, array $cfg, array $names, a
     foreach ($avg as $k => $a) {
       $p = (1 / $a) / $norm;
       $o = floor((1 - $m) / $p * 100 + 1e-6) / 100;
-      $o = min($o, floor(($a - 0.01) * 100 + 1e-6) / 100); // TOUJOURS au moins 0,01 sous la moyenne
+      // 2026-10-22 (propriétaire : « plus haut que 1xBet ») : plus de plafond « moyenne − 0,01 » ; seule la marge du réglage compte
       if ($o < 1.01) continue;
       $row[] = [(string) $k, round($o, 2)];
       $pr[$mk][$k] = $p;
