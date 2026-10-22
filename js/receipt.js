@@ -151,11 +151,12 @@
 
   // ---------- Reçu de trade (format vertical, dessiné en double résolution : net partout) ----------
   var SC = 2;
-  function canvasFor(W, H) {
+  function canvasFor(W, H, sc) {
+    sc = sc || SC;
     var cv = document.createElement('canvas');
-    cv.width = W * SC; cv.height = H * SC;
+    cv.width = Math.round(W * sc); cv.height = Math.round(H * sc);
     var g = cv.getContext('2d');
-    g.scale(SC, SC);
+    g.scale(sc, sc);
     g.imageSmoothingEnabled = true;
     g.imageSmoothingQuality = 'high';
     return { cv: cv, g: g };
@@ -679,53 +680,130 @@
     });
   }
 
-  /* 2026-10-21 (propriétaire : « un seul reçu, le BLANC ; Télécharger enregistre vraiment ») — image du reçu de pari BLANC,
-     dessinée comme le reçu affiché dans Paris (bandeau violet OROLADO, état, montant, matchs, mise / cote / gain / date / n°). */
+  /* 2026-10-21 (propriétaire : « un seul reçu, le BLANC ; Télécharger enregistre vraiment ») — image du reçu de pari BLANC.
+     2026-10-22 (propriétaire : « pas de cadre lavande, coins carrés, sobre comme les grands bookmakers, imprimable ; beaucoup
+     de matchs ne doivent pas le rendre énorme ») — un simple RECTANGLE blanc jusqu'aux bords (WhatsApp ajoute son propre
+     cadre), bandeau violet carré en haut (logo, OROLADO, orolado.com, « Reçu de pari »), sections nettes séparées par des
+     filets fins, colonnes alignées (choix à gauche, cote à droite), rien d'arrondi ni de décoratif. Les choix se resserrent
+     avec leur nombre : ≤ 5 → 2 lignes (match, choix) ; 6 à 15 → une ligne « Match — Choix … cote » ; 16 à 30 → une ligne
+     plus petite ; 31 à 100 → 2 colonnes ; plus de 100 (jusqu'à 1 000) → 3 colonnes, l'image s'allonge (rien de coupé). */
+  function ell(g, txt, maxW) {
+    txt = String(txt || '');
+    if (maxW <= 8) return '';
+    if (g.measureText(txt).width <= maxW) return txt;
+    var lo = 0, hi = txt.length;
+    while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (g.measureText(txt.slice(0, mid) + '…').width <= maxW) lo = mid; else hi = mid - 1; }
+    return lo ? txt.slice(0, lo).replace(/\s+$/, '') + '…' : '…';
+  }
+  function betDensity(n) { return n <= 5 ? 0 : n <= 15 ? 1 : n <= 30 ? 2 : n <= 100 ? 3 : 4; }
   function drawBetLight(bt, x, icons) {
-    var W = 540, sel = bt.sel || [], st = bt.status || 'open';
-    var COL = { open: '#5B21B6', won: '#16A34A', lost: '#E11D48', void: '#64748B' }, col = COL[st] || '#5B21B6';
+    var W = 540, P = 24, sel = bt.sel || [], st = bt.status || 'open', n = sel.length;
+    var COL = { open: '#5B21B6', won: '#15803D', lost: '#B91C1C', void: '#475569' }, col = COL[st] || '#5B21B6';
+    var RC = { won: '#15803D', lost: '#B91C1C', void: '#64748B' };
+    var INK = '#0F172A', MUTE = '#64748B', LINE = '#E2E8F0', ODD = '#4C1D95';
     var n2 = function (v) { return (Number(v) || 0).toFixed(2); };
-    var top = 150, selH = 60, rowsTop = 360 + sel.length * selH + 34, H = rowsTop + 5 * 44 + 150;
-    var c = canvasFor(W, H), g = c.g;
-    g.fillStyle = '#EDE9FE'; g.fillRect(0, 0, W, H);
-    rr(g, 20, 20, W - 40, H - 40, 28); g.fillStyle = '#FFFFFF'; g.fill();
-    g.save(); rr(g, 20, 20, W - 40, 110, 28); g.clip();
-    var hb = g.createLinearGradient(20, 0, W - 20, 0); hb.addColorStop(0, '#3B1D8F'); hb.addColorStop(1, '#6D28D9');
-    g.fillStyle = hb; g.fillRect(20, 20, W - 40, 110); g.restore();
-    if (icons && icons.logo) { try { g.drawImage(icons.logo, 44, 42, 66, 66); } catch (e) { /* ignore */ } }
-    g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = '#FFFFFF'; g.font = '800 30px ' + FONT; g.fillText('OROLADO', 124, 66);
-    g.font = '500 17px ' + FONT; g.fillStyle = 'rgba(255,255,255,0.85)'; g.fillText('orolado.com', 124, 96);
-    var stTxt = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL }[st] || st;
+    var D = betDensity(n);
+    var nc = D === 4 ? 3 : D === 3 ? 2 : 1, rowH = [58, 30, 24, 36, 32][D], rows = Math.ceil(n / nc);
+    var HB = 96, stTop = HB, selHead = stTop + 158, selTop = selHead + 22, selEnd = selTop + rows * rowH;
+    var totTop = selEnd + 18, totRow = 34, H = totTop + 5 * totRow + 112;
+    // très long coupon (jusqu'à 1 000 choix) : résolution réduite pour rester sous les limites des téléphones (iPhone : ≈ 16 Mpx
+    // par image, 16 000 px de haut) — l'image s'allonge, tout reste dedans
+    var sc = Math.max(0.6, Math.min(SC, Math.sqrt(16e6 / (W * H)), 16000 / H));
+    var c = canvasFor(W, H, sc), g = c.g;
+    g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, W, H); // blanc jusqu'aux bords, coins carrés
+    var hb = g.createLinearGradient(0, 0, W, 0); hb.addColorStop(0, '#3B1D8F'); hb.addColorStop(1, '#6D28D9');
+    g.fillStyle = hb; g.fillRect(0, 0, W, HB);
+    if (icons && icons.logo) { try { g.drawImage(icons.logo, P, 18, 60, 60); } catch (e) { /* ignore */ } }
+    g.textBaseline = 'middle'; g.textAlign = 'left';
+    g.fillStyle = '#FFFFFF'; g.font = '800 28px ' + FONT; g.fillText('OROLADO', P + 74, 42);
+    g.fillStyle = 'rgba(255,255,255,0.82)'; g.font = '500 15px ' + FONT; g.fillText('orolado.com', P + 74, 70);
+    var tt = String(x.rcTitle || '').toUpperCase();
+    g.font = '800 13px ' + FONT; g.textAlign = 'right'; g.fillStyle = 'rgba(255,255,255,0.92)';
+    g.fillText(ell(g, spaced(tt), W - P - (P + 74 + g.measureText('OROLADO').width * 2.2 + 12)), W - P, 44);
+    // état + montant
+    var stTxt = String({ open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL }[st] || st).toUpperCase();
     var bigLab = st === 'won' ? x.rcPaid : st === 'lost' ? x.rcLostTxt : st === 'void' ? x.rcBack : x.potL;
-    var big = st === 'won' ? n2(bt.win) : st === 'lost' ? n2(0) : st === 'void' ? n2(bt.stake) : n2(bt.pot);
-    g.textAlign = 'center'; g.font = '800 20px ' + FONT;
-    var tw = g.measureText(String(stTxt).toUpperCase()).width + 40;
-    rr(g, (W - tw) / 2, top + 10, tw, 38, 19); g.fillStyle = '#F3E8FF'; g.fill();
-    g.fillStyle = col; g.fillText(String(stTxt || '').toUpperCase(), W / 2, top + 30);
-    g.fillStyle = '#64748B'; g.font = '500 19px ' + FONT; g.fillText(bigLab || '', W / 2, top + 80);
-    g.fillStyle = '#0F172A'; g.font = '800 56px ' + FONT; g.fillText(big + ' $', W / 2, top + 132);
-    g.strokeStyle = '#CBD5E1'; g.setLineDash([8, 8]); g.lineWidth = 2; g.beginPath(); g.moveTo(44, 315); g.lineTo(W - 44, 315); g.stroke(); g.setLineDash([]);
-    g.textAlign = 'left'; g.fillStyle = '#64748B'; g.font = '800 16px ' + FONT;
-    g.fillText(((sel.length > 1 ? x.rcCombo : x.rcSingle) || '').toUpperCase() + ' · ' + sel.length, 44, 340);
-    sel.forEach(function (sv, i) {
-      var y = 360 + i * selH;
-      g.fillStyle = '#64748B'; g.font = '500 16px ' + FONT; g.fillText(String(sv.t || '').slice(0, 42), 44, y + 14);
-      g.fillStyle = '#0F172A'; g.font = '800 20px ' + FONT; g.fillText(String(sv.l || '').slice(0, 30), 44, y + 40);
-      g.textAlign = 'right'; g.fillStyle = '#4C1D95'; g.font = '800 22px ' + FONT; g.fillText(Number(sv.odd).toFixed(2), W - 44, y + 28); g.textAlign = 'left';
+    var big = (st === 'won' ? n2(bt.win) : st === 'lost' ? n2(0) : st === 'void' ? n2(bt.stake) : n2(bt.pot)) + ' $';
+    g.textAlign = 'center'; g.font = '800 14px ' + FONT;
+    var sTxt = spaced(stTxt), sw = Math.min(W - 2 * P, g.measureText(sTxt).width + 28);
+    g.strokeStyle = col; g.lineWidth = 1.5; g.strokeRect((W - sw) / 2, stTop + 22, sw, 28);
+    g.fillStyle = col; g.fillText(ell(g, sTxt, sw - 16), W / 2, stTop + 37);
+    g.fillStyle = MUTE; g.font = '500 16px ' + FONT; g.fillText(ell(g, String(bigLab || ''), W - 2 * P), W / 2, stTop + 74);
+    g.fillStyle = INK; fitText(g, big, W - 2 * P, 46, '800', FONT); g.fillText(big, W / 2, stTop + 112);
+    var hr = function (y, c2, w) { g.fillStyle = c2 || LINE; g.fillRect(P, Math.round(y), W - 2 * P, w || 1); };
+    hr(selHead - 16, '#CBD5E1', 1.5);
+    // en-tête des choix : type · nombre | cote
+    g.textAlign = 'left'; g.fillStyle = MUTE; g.font = '800 12px ' + FONT;
+    g.fillText(spaced(String((n > 1 ? x.rcCombo : x.rcSingle) || '').toUpperCase() + ' · ' + n), P, selHead);
+    g.textAlign = 'right'; g.fillText(spaced(String(x.oddL || x.odd || '').toUpperCase()), W - P, selHead);
+    hr(selTop - 4);
+    var mark = function (s, xr, y, size) { // ✓ / ✕ / ↺ d'un choix réglé (avant la cote)
+      if (!RC[s.r]) return 0;
+      g.fillStyle = RC[s.r]; g.font = '800 ' + size + 'px ' + FONT; g.textAlign = 'right';
+      g.fillText(s.r === 'won' ? '✓' : s.r === 'lost' ? '✕' : '↺', xr, y); return size + 4;
+    };
+    var oneLine = function (s, x0, x1, y, fs) { // « Match — Choix ……… cote »
+      var odd = Number(s.odd).toFixed(2);
+      g.font = '800 ' + (fs + 1) + 'px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, x1, y);
+      var right = x1 - g.measureText(odd).width - 10;
+      right -= mark(s, right, y, fs);
+      var avail = right - x0 - 6;
+      g.textAlign = 'left';
+      g.font = '800 ' + fs + 'px ' + FONT;
+      var ch = String(s.l || ''), chW = g.measureText(ch).width;
+      g.font = '500 ' + fs + 'px ' + FONT;
+      var sep = ' — ', sepW = g.measureText(sep).width, mt = String(s.t || '');
+      var mW = Math.max(0, avail - Math.min(chW, avail * 0.62) - sepW);
+      var mTxt = mW >= 40 ? ell(g, mt, mW) : '';
+      var xx = x0;
+      if (mTxt) { g.fillStyle = MUTE; g.fillText(mTxt, xx, y); xx += g.measureText(mTxt).width; g.fillText(sep, xx, y); xx += sepW; }
+      g.font = '800 ' + fs + 'px ' + FONT; g.fillStyle = INK; g.fillText(ell(g, ch, x0 + avail - xx), xx, y);
+    };
+    if (D === 0) sel.forEach(function (s, i) {
+      var y = selTop + i * rowH, odd = Number(s.odd).toFixed(2);
+      if (i) hr(y);
+      g.font = '800 19px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, W - P, y + rowH / 2);
+      var right = W - P - g.measureText(odd).width - 12; right -= mark(s, right, y + rowH / 2, 16);
+      g.textAlign = 'left';
+      g.fillStyle = MUTE; g.font = '500 14px ' + FONT; g.fillText(ell(g, s.t, right - P - 4), P, y + 19);
+      g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, y + 41);
     });
-    rr(g, 40, rowsTop - 10, W - 80, 5 * 44 + 20, 18); g.fillStyle = '#F8FAFC'; g.fill();
+    else if (D === 1 || D === 2) sel.forEach(function (s, i) {
+      var y = selTop + i * rowH;
+      if (i) hr(y, '#EEF2F7');
+      oneLine(s, P, W - P, y + rowH / 2 + 1, D === 1 ? 14 : 12.5);
+    });
+    else { // 2 colonnes (31 à 100) ou 3 colonnes (plus de 100) : de haut en bas, puis colonne suivante
+      var gap = nc === 3 ? 12 : 18, cw = (W - 2 * P - gap * (nc - 1)) / nc, F = nc === 3 ? [9.5, 11, 11.5, 10] : [10.5, 12.5, 13, 11];
+      for (var cI = 1; cI < nc; cI++) { g.fillStyle = LINE; g.fillRect(P + cI * (cw + gap) - gap / 2, selTop, 1, rows * rowH - 4); }
+      sel.forEach(function (s, i) {
+        var col2 = Math.floor(i / rows), r = i - col2 * rows, x0 = P + col2 * (cw + gap), x1 = x0 + cw, y = selTop + r * rowH;
+        if (r) { g.fillStyle = '#EEF2F7'; g.fillRect(x0, y, cw, 1); }
+        var odd = Number(s.odd).toFixed(2);
+        g.font = '800 ' + F[2] + 'px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, x1, y + rowH / 2);
+        var right = x1 - g.measureText(odd).width - 6; right -= mark(s, right, y + rowH / 2, F[3]);
+        g.textAlign = 'left';
+        g.fillStyle = MUTE; g.font = '500 ' + F[0] + 'px ' + FONT; g.fillText(ell(g, s.t, right - x0 - 2), x0, y + rowH * 0.3);
+        g.fillStyle = INK; g.font = '800 ' + F[1] + 'px ' + FONT; g.fillText(ell(g, s.l, right - x0 - 2), x0, y + rowH * 0.72);
+      });
+    }
+    // totaux : mise, cote, gain, date, n°
+    hr(totTop - 4, '#CBD5E1', 1.5);
     var no = String(bt.id || '').slice(-10).toUpperCase();
     var d = new Date((bt.at || 0) * 1000), pad = function (v) { return (v < 10 ? '0' : '') + v; };
     var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], [x.rcNo, no]].forEach(function (r, i) {
-      var y = rowsTop + 14 + i * 44;
-      g.textAlign = 'left'; g.fillStyle = '#64748B'; g.font = '500 19px ' + FONT; g.fillText(r[0] || '', 64, y);
-      g.textAlign = 'right'; g.fillStyle = '#0F172A'; g.font = (i === 4 ? '700 18px ' + MONO : '800 19px ' + FONT); g.fillText(r[1], W - 64, y);
+      var y = totTop + i * totRow + totRow / 2;
+      if (i) hr(totTop + i * totRow, '#EEF2F7');
+      g.textAlign = 'right'; g.fillStyle = i === 2 ? ODD : INK; g.font = (i === 4 ? '700 15px ' + MONO : '800 16px ' + FONT); g.fillText(r[1], W - P, y);
+      var vw = g.measureText(r[1]).width;
+      g.textAlign = 'left'; g.fillStyle = MUTE; g.font = '500 15px ' + FONT; g.fillText(ell(g, r[0] || '', W - 2 * P - vw - 16), P, y);
     });
-    var by = rowsTop + 5 * 44 + 30;
-    g.fillStyle = '#0F172A';
-    for (var k = 0, bx = W / 2 - 110; k < 44 && bx < W / 2 + 110; k++) { var bw = 1 + ((no.charCodeAt(k % (no.length || 1)) || 7) + k) % 3; g.fillRect(bx, by, bw, 44); bx += bw + 2; }
-    g.textAlign = 'center'; g.fillStyle = '#94A3B8'; g.font = '600 16px ' + FONT; g.fillText('o r o l a d o . c o m', W / 2, by + 68);
+    hr(totTop + 5 * totRow, '#CBD5E1', 1.5);
+    var by = totTop + 5 * totRow + 22;
+    g.fillStyle = INK;
+    for (var k = 0, bx = W / 2 - 110; k < 44 && bx < W / 2 + 110; k++) { var bw = 1 + ((no.charCodeAt(k % (no.length || 1)) || 7) + k) % 3; g.fillRect(bx, by, bw, 40); bx += bw + 2; }
+    g.textAlign = 'center'; g.fillStyle = '#94A3B8'; g.font = '600 14px ' + FONT; g.fillText('o r o l a d o . c o m', W / 2, by + 62);
     return c.canvas || c.cv || c;
   }
 
@@ -757,6 +835,7 @@
       return show(function (lg) { return drawBet(bt, x || {}, { logo: lg }); }, 'orolado-pari-' + String(bt.id || Date.now()).slice(-8) + '.png');
     },
     _drawTrade: drawTrade,
+    _drawBetLight: drawBetLight,
     _drawMoney: drawMoney,
     close: close
   };

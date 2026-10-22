@@ -421,6 +421,46 @@ check('statistiques lues (match ouvert) : tirs, cadrés, possession, corners, ro
 sb_live_tick($L0 + 30);
 check('statistiques : pas relues avant 60 s', $cnt('fixtures/statistics?fixture=9101') === 1);
 
+// 2026-10-22 — sbStats (onglet « Informations » d'un match en direct) : à la demande, gardé ≥ 60 s, budget, jamais la clé
+echo "   sbStats\n";
+$dmF = sb_dir() . '/live-demand.at'; clearstatcache(true, $dmF); $dm0 = (int) @filemtime($dmF);
+$bud0 = (int) sb_read('budget-foot.json')['n'];
+$S1 = sb_live_stats_api($ua, 'foot:9101', $L0 + 30);
+check('sbStats : statistiques gardées (lues il y a 14 s) renvoyées, aucune lecture', $S1['ok'] === true && $S1['id'] === 'foot:9101' && ($S1['stats']['shots'] ?? null) === [11, 4] && $S1['stats']['poss'] === [58, 42] && $S1['stats']['shotsOn'] === [5, 1] && $S1['stats']['corners'] === [6, 2] && $cnt('fixtures/statistics?fixture=9101') === 1, json_encode($S1));
+check('sbStats : cartons (statistiques + événements déjà lus, sans appel)', ($S1['stats']['red'] ?? null) === [0, 1] && isset($S1['stats']['yellow']), json_encode($S1['stats']));
+$alt['fixtures/statistics?fixture=9101'] = json_encode(['errors' => [], 'response' => [
+  ['team' => ['id' => 501], 'statistics' => [['type' => 'Shots on Goal', 'value' => 6], ['type' => 'Total Shots', 'value' => 12], ['type' => 'Ball Possession', 'value' => '57%'], ['type' => 'Corner Kicks', 'value' => 7], ['type' => 'Fouls', 'value' => 9], ['type' => 'Offsides', 'value' => 2], ['type' => 'Goalkeeper Saves', 'value' => 1], ['type' => 'Yellow Cards', 'value' => 2], ['type' => 'Red Cards', 'value' => null], ['type' => 'expected_goals', 'value' => '1.42']]],
+  ['team' => ['id' => 502], 'statistics' => [['type' => 'Shots on Goal', 'value' => 1], ['type' => 'Total Shots', 'value' => 5], ['type' => 'Ball Possession', 'value' => '43%'], ['type' => 'Corner Kicks', 'value' => 2], ['type' => 'Fouls', 'value' => 13], ['type' => 'Offsides', 'value' => null], ['type' => 'Goalkeeper Saves', 'value' => 4], ['type' => 'Yellow Cards', 'value' => 3], ['type' => 'Red Cards', 'value' => 1]]]]]);
+$S2 = sb_live_stats_api($ua, 'foot:9101', $L0 + 80);
+check('sbStats : gardé depuis plus de 60 s → UNE lecture /fixtures/statistics, réponse à jour (fautes, hors-jeu, arrêts)', $cnt('fixtures/statistics?fixture=9101') === 2 && ($S2['stats']['shots'] ?? null) === [12, 5] && $S2['stats']['fouls'] === [9, 13] && $S2['stats']['offsides'] === [2, 0] && $S2['stats']['saves'] === [1, 4] && $S2['stats']['yellow'] === [2, 3] && !isset($S2['stats']['expected_goals']), json_encode($S2['stats'] ?? $S2));
+check('sbStats : budget du jour compté (+1)', (int) sb_read('budget-foot.json')['n'] === $bud0 + 1);
+for ($i = 0; $i < 5; $i++) sb_live_stats_api($i % 2 ? $ua : $uadm, 'foot:9101', $L0 + 81 + $i * 10);
+check('sbStats : 5 demandes dans la minute (plusieurs joueurs) → aucune lecture de plus (gardé 60 s par match)', $cnt('fixtures/statistics?fixture=9101') === 2);
+$alt['fixtures/statistics?fixture=9101'] = '{"errors":{"requests":"x"},"response":[]}';
+$S3 = sb_live_stats_api($ua, 'foot:9101', $L0 + 145);
+check('sbStats : erreur de l\'API → une tentative, les statistiques gardées restent affichées', $cnt('fixtures/statistics?fixture=9101') === 3 && ($S3['stats']['shots'] ?? null) === [12, 5]);
+sb_live_stats_api($ua, 'foot:9101', $L0 + 150); sb_live_stats_api($ua, 'foot:9101', $L0 + 170);
+check('sbStats : après une erreur, pas de nouvel essai avant 60 s (jamais en boucle)', $cnt('fixtures/statistics?fixture=9101') === 3);
+$lk = fopen(sb_live_stats_lockf('9101'), 'c'); flock($lk, LOCK_EX);
+check('sbStats : un autre lecteur en cours → aucune lecture, réponse tout de suite (non bloquant)', sb_live_stats_api($ua, 'foot:9101', $L0 + 230)['ok'] === true && $cnt('fixtures/statistics?fixture=9101') === 3);
+flock($lk, LOCK_UN); fclose($lk);
+sb_with('budget-foot.json', static function (array &$s) { $s['n'] = SB_FOOT_CAP - SB_LIVE_RESERVE; return true; });
+$S4 = sb_live_stats_api($ua, 'foot:9101', $L0 + 300);
+check('sbStats : réserve du budget atteinte → aucune lecture (jamais au-dessus du plafond)', $S4['ok'] === true && $cnt('fixtures/statistics?fixture=9101') === 3 && (int) sb_read('budget-foot.json')['n'] === SB_FOOT_CAP - SB_LIVE_RESERVE);
+sb_with('budget-foot.json', static function (array &$s) { $s['n'] = SB_FOOT_CAP; return true; });
+check('sbStats : plafond du jour atteint → toujours aucune lecture', sb_live_stats_fetch('9101', $L0 + 400) === false && $cnt('fixtures/statistics?fixture=9101') === 3 && (int) sb_read('budget-foot.json')['n'] === SB_FOOT_CAP);
+sb_with('budget-foot.json', static function (array &$s) use ($bud0) { $s['n'] = $bud0 + 2; return true; });
+check('sbStats : id invalide / match pas en direct refusés', sb_live_stats_api($ua, 'foot:abc', $L0 + 300)['ok'] === false && sb_live_stats_api($ua, 'foot:424242', $L0 + 300)['reason'] === 'notLive' && sb_live_stats_api($ua, 'basket:9101', $L0 + 300)['ok'] === false);
+sb_config_save(['livePublic' => false]);
+check('sbStats : direct pas visible pour ce joueur → refusé (admin ouvert)', sb_live_stats_api($ua, 'foot:9101', $L0 + 300)['reason'] === 'off' && sb_live_stats_api($uadm, 'foot:9101', $L0 + 300)['ok'] === true);
+sb_config_save(['livePublic' => true]);
+$js = json_encode([$S1, $S2, $S3, $S4, sb_live_stats_api($uadm, 'foot:9101', $L0 + 300)]);
+check('sbStats : la clé API n\'est jamais renvoyée (ni hôte, ni en-tête)', !str_contains($js, 'test-secret-key-123') && !str_contains($js, 'apisports') && !str_contains($js, 'api-sports.io'));
+check('sb_live_cards : jaunes / rouges comptés sur les événements', sb_live_cards(['ev' => [['type' => 'card', 'team' => 'h', 'detail' => 'yellow'], ['type' => 'card', 'team' => 'a', 'detail' => 'red'], ['type' => 'card', 'team' => 'a', 'detail' => 'yellow'], ['type' => 'goal', 'team' => 'h']]]) === ['yellow' => [1, 1], 'red' => [0, 1]]);
+$apiS = (string) file_get_contents(__DIR__ . '/../api.php');
+check('api.php : action sbStats (limite par IP) qui appelle sb_live_stats_api', str_contains($apiS, "'sbStats'           => [['i', 120, 60]]") && str_contains($apiS, 'sb_live_stats_api($me ?: null'));
+if ($dm0) touch($dmF, $dm0); // la suite des tests garde son horloge de « demande »
+
 // suspension
 $cfg = sb_config();
 $view = static fn(int $now) => sb_live_view('9101', sb_live_data(), $now, $cfg);

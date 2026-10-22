@@ -1038,7 +1038,7 @@
       "see": "Mở",
       "minNote": "Cược tối thiểu 0,10 $",
       "done": "Đã ghi nhận vé cược!",
-      "cont": "Tiếp tục",
+      "cont": "Đóng",
       "emptySlip": "Phiếu cược trống. Chạm vào một tỷ lệ để bắt đầu.",
     "none": "Hiện chưa có trận nào. Các trận đấu lớn sắp có ở đây.",
     "coupon": "Phiếu cược",

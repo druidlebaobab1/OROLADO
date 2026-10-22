@@ -1607,7 +1607,8 @@ function sb_cache_peek(string $path, int $ttl, int $now): ?array {
 function sb_live_stats(string $id, array $row, int $now): ?array {
   $j = sb_cache_peek('fixtures/statistics?fixture=' . (int) $id, 900, $now);
   if (!$j) return null;
-  $map = ['total shots' => 'shots', 'shots on goal' => 'shotsOn', 'ball possession' => 'poss', 'corner kicks' => 'corners', 'yellow cards' => 'yellow', 'red cards' => 'red', 'attacks' => 'attacks', 'dangerous attacks' => 'dangerous'];
+  $map = ['total shots' => 'shots', 'shots on goal' => 'shotsOn', 'ball possession' => 'poss', 'corner kicks' => 'corners', 'yellow cards' => 'yellow', 'red cards' => 'red', 'attacks' => 'attacks', 'dangerous attacks' => 'dangerous',
+    'fouls' => 'fouls', 'offsides' => 'offsides', 'goalkeeper saves' => 'saves']; // 2026-10-22 : + fautes, hors-jeu, arrêts (onglet Informations)
   $out = [];
   foreach ((array) ($j['response'] ?? []) as $t) {
     if (!is_array($t)) continue;
@@ -1622,6 +1623,76 @@ function sb_live_stats(string $id, array $row, int $now): ?array {
     }
   }
   return $out ?: null;
+}
+
+/*
+ * 2026-10-22 (propriétaire : « sous les logos, c'est vide ; mets les statistiques du match comme les grands ») — sbStats :
+ * statistiques d'un match EN DIRECT dont la page est ouverte (onglet « Informations »). Réponse immédiate avec ce qui est gardé
+ * (≤ 15 min) ; si la lecture gardée a plus de 60 s, UNE lecture /fixtures/statistics?fixture=ID (verrou non bloquant par match,
+ * au plus une tentative par minute et par match, même en cas d'erreur), APRÈS la réponse quand le serveur le permet (sinon
+ * dans cette requête-ci, qui n'est pas celle de la page). Comptée dans le budget du jour (sb_get) et jamais dans la réserve
+ * (il doit rester plus de SB_LIVE_RESERVE lectures). Cartons : comptés aussi à partir des événements déjà lus (aucun appel).
+ * Rien d'autre que des statistiques publiques du match ; la clé n'est jamais renvoyée.
+ */
+const SB_LIVE_STATS_KEYS = ['poss', 'shots', 'shotsOn', 'corners', 'attacks', 'dangerous', 'fouls', 'offsides', 'saves', 'yellow', 'red'];
+function sb_live_stats_lockf(string $id): string {
+  $d = sb_dir() . DIRECTORY_SEPARATOR . 'cache'; if (!is_dir($d)) @mkdir($d, 0750, true);
+  return $d . DIRECTORY_SEPARATOR . 'st-' . (int) $id . '.try';
+}
+/** Une lecture des statistiques d'un match (si rien de frais, pas d'autre lecteur, pas d'essai depuis 60 s, budget hors réserve). */
+function sb_live_stats_fetch(string $id, int $now): bool {
+  $path = 'fixtures/statistics?fixture=' . (int) $id;
+  if (sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) !== null) return false;
+  if (!sb_has_key() || !sb_live_budget_ok($now)) return false;
+  $f = sb_live_stats_lockf($id);
+  $lk = @fopen($f, 'c');
+  if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return false; }
+  try {
+    clearstatcache(true, $f);
+    $tried = (int) @file_get_contents($f);
+    if ($tried > $now - SB_LIVE_STATS_TTL) return false; // déjà essayé dans la minute (réussi ou non)
+    if (sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) !== null) return false;
+    ftruncate($lk, 0); rewind($lk); fwrite($lk, (string) $now); fflush($lk);
+    return sb_get_cached($path, SB_LIVE_STATS_TTL, $now) !== null;
+  } finally { flock($lk, LOCK_UN); fclose($lk); }
+}
+/** Cartons jaunes / rouges comptés sur les événements gardés (h, a). */
+function sb_live_cards(array $row): array {
+  $y = [0, 0]; $r = [0, 0];
+  foreach ((array) ($row['ev'] ?? []) as $e) {
+    if (!is_array($e) || ($e['type'] ?? '') !== 'card') continue;
+    $i = ($e['team'] ?? '') === 'a' ? 1 : 0;
+    if (($e['detail'] ?? '') === 'red') $r[$i]++; else $y[$i]++;
+  }
+  return ['yellow' => $y, 'red' => $r];
+}
+function sb_live_stats_api(?array $user, string $fid, int $now = 0): array {
+  $now = $now ?: sb_now();
+  if (!preg_match('/^foot:(\d{1,12})$/', $fid, $m)) return ['ok' => false, 'reason' => 'bad'];
+  if (!sb_visible($user) || !sb_live_visible($user)) return ['ok' => false, 'reason' => 'off'];
+  $id = $m[1];
+  $v = sb_live_view($id, sb_live_data(), $now, sb_config());
+  if (!$v) return ['ok' => false, 'reason' => 'notLive'];
+  sb_live_demand($now);
+  $pend = 0;
+  $path = 'fixtures/statistics?fixture=' . (int) $id;
+  if (empty($v['row']['end']) && sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) === null && sb_has_key() && sb_live_budget_ok($now)) {
+    $after = PHP_SAPI !== 'cli' && PHP_SAPI !== 'cli-server' && function_exists('fastcgi_finish_request') && empty($GLOBALS['SB_STATS_INLINE']);
+    if ($after) {
+      $pend = 1;
+      register_shutdown_function(static function () use ($id, $now) {
+        try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ }
+        try { sb_live_stats_fetch($id, $now); } catch (Throwable $e) { /* jamais bloquant */ }
+      });
+    } else {
+      try { sb_live_stats_fetch($id, $now); } catch (Throwable $e) { sb_note_error('Statistiques : ' . $e->getMessage(), $now); }
+    }
+  }
+  $st = (array) (sb_live_stats($id, $v['row'], $now) ?? []);
+  if (!empty($v['row']['ev'])) foreach (sb_live_cards($v['row']) as $k => $p) if (!isset($st[$k]) || array_sum($p) > array_sum((array) $st[$k])) $st[$k] = $p;
+  $out = [];
+  foreach (SB_LIVE_STATS_KEYS as $k) if (isset($st[$k]) && is_array($st[$k])) $out[$k] = [0 + ($st[$k][0] ?? 0), 0 + ($st[$k][1] ?? 0)];
+  return ['ok' => true, 'id' => 'foot:' . $id, 'stats' => $out ?: null, 'pend' => $pend, 'at' => $now];
 }
 
 /**

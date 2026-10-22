@@ -993,7 +993,7 @@
       "see": "Ver",
       "minNote": "Apuesta mínima $0.10",
       "done": "¡Apuesta registrada!",
-      "cont": "Continuar",
+      "cont": "Cerrar",
       "emptySlip": "Tu boleto está vacío. Toca una cuota para empezar.",
       none: 'Ningún partido por ahora. Los grandes partidos llegarán aquí pronto.',
       coupon: 'Boleto',

@@ -1038,7 +1038,7 @@
     "see": "Öffnen",
     "minNote": "Mindesteinsatz $0.10",
     "done": "Wette platziert!",
-    "cont": "Weiter",
+    "cont": "Schließen",
     "emptySlip": "Dein Wettschein ist leer. Tippe auf eine Quote.",
     "none": "Gerade kein Spiel. Große Spiele kommen bald hierher.",
     "coupon": "Wettschein",

@@ -993,7 +993,7 @@
       "see": "Ver",
       "minNote": "Aposta mínima $0.10",
       "done": "Aposta registrada!",
-      "cont": "Continuar",
+      "cont": "Fechar",
       "emptySlip": "Seu bilhete está vazio. Toque numa odd para começar.",
       none: 'Nenhuma partida agora. Os grandes jogos chegam aqui em breve.',
       coupon: 'Bilhete',

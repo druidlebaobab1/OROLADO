@@ -12414,6 +12414,28 @@ html[dir="rtl"] .sp-rcpt-rows p, html[dir="rtl"] .sp-rcpt-s { direction: rtl; }
 .sp-rcpt-rows p { padding: 3px 0; }
 .sp-rcpt-bars { height: 24px; margin-top: 10px; }
 .sp-rcpt-btns { padding: 12px 18px 16px; }
+/* 2026-10-22 (propriétaire : « un rectangle, coins carrés, sobre comme les grands bookmakers ; beaucoup de matchs ne doivent pas
+   le rendre énorme ») — le reçu affiché = l'image : coins carrés, bandeau violet carré, état dans un cadre fin carré, filets
+   fins (plus d'encoches ni de boîte grise arrondie) ; choix resserrés selon leur nombre (> 5 : une ligne « Match — Choix  cote »). */
+.sp-rcpt-card, .sp-rcpt-top { border-radius: 0; }
+.sp-rcpt-top span { border-radius: 0; background: transparent; padding: 0; }
+.sp-rcpt-st em, .sp-rcpt-st em.won, .sp-rcpt-st em.lost, .sp-rcpt-st em.void { border-radius: 0; background: transparent; box-shadow: inset 0 0 0 1.5px currentColor; }
+.sp-rcpt-cut { border-top: 1.5px solid #CBD5E1; margin: 2px 18px; }
+.sp-rcpt-cut::before, .sp-rcpt-cut::after { display: none; }
+.sp-rcpt-rows { margin: 6px 18px 0; padding: 0; border-radius: 0; background: transparent; border-top: 1.5px solid #CBD5E1; border-bottom: 1.5px solid #CBD5E1; }
+.sp-rcpt-rows p { padding: 6px 0; border-top: 1px solid #EEF2F7; }
+.sp-rcpt-rows p:first-child { border-top: 0; }
+.sp-rcpt-s i { border-radius: 0; background: transparent; color: #A78BFA; flex-basis: 14px; height: 14px; font-size: 13px; }
+.sp-rcpt-s i.ok { background: transparent; color: #15803D; } .sp-rcpt-s i.ko { background: transparent; color: #B91C1C; } .sp-rcpt-s i.vd { background: transparent; color: #64748B; }
+.sp-rcpt-card.dn .sp-rcpt-s { padding: 4px 0; gap: 6px; }
+.sp-rcpt-card.dn .sp-rcpt-s span { flex-direction: row; align-items: baseline; gap: 5px; min-width: 0; }
+.sp-rcpt-card.dn .sp-rcpt-s small { flex: 0 1000 auto; min-width: 0; font-size: 11px; }
+.sp-rcpt-card.dn .sp-rcpt-s small::after { content: ' —'; }
+.sp-rcpt-card.dn .sp-rcpt-s b { flex: 0 1 auto; min-width: 0; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 72%; }
+.sp-rcpt-card.dn .sp-rcpt-s em { font-size: 12.5px; }
+.sp-rcpt-card.dn2 .sp-rcpt-s { padding: 2px 0; }
+.sp-rcpt-card.dn2 .sp-rcpt-s small { font-size: 10px; }
+.sp-rcpt-card.dn2 .sp-rcpt-s b, .sp-rcpt-card.dn2 .sp-rcpt-s em { font-size: 11.5px; }
 
 /* ===== v2782 (propriétaire) — logos « VERRE » transparents et légers (Social + Cadeaux) ===== */
 html body #portalModal .gh-p .cs-pl.gh-glass { background: none !important; box-shadow: none !important; aspect-ratio: 1; display: grid; place-items: center; }
