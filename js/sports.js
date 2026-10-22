@@ -2118,10 +2118,9 @@
   function tvFit() {
     var sc = $('pzTvs'); if (!sc) return;
     var p1 = sc.querySelector('.pz-tv1'), p2 = sc.querySelector('.pz-tv2'); if (!p1 || !p2) return;
-    p2.style.minHeight = '';
-    var h1 = p1.offsetHeight, h2 = Math.max(h1, p2.offsetHeight);
-    p2.style.minHeight = h1 + 'px';
-    var h = TV.pane ? h2 : h1;
+    // 2026-10-22 (propriétaire) : « Informations » garde la MÊME taille que « Diffusion » ; les statistiques défilent dedans
+    var h1 = p1.offsetHeight, h = h1;
+    if (p2.style.height !== h1 + 'px') p2.style.height = h1 + 'px';
     if (sc.style.height !== h + 'px') sc.style.height = h + 'px';
   }
   function tvClock() { var t = tvClockTxt(), a = $('pzClk'), b = $('pzClk2'); if (a && a.textContent !== t) a.textContent = t; if (b && b.textContent !== t) b.textContent = t; }
