@@ -937,12 +937,15 @@
   // 2026-10-22 (propriétaire : « certains logos ne rentrent pas dans le rond ») : le dessin posé SUR le médaillon (après son
   // contour r = 26,5) est ramené à 86 % autour du centre — voiture, badges, cases du bas restent dans le rond. Médaillon inchangé.
   var FIT_MK = /<circle cx="32" cy="33" r="26\.5" fill="none"[^>]*\/>/;
-  var FIT_X = { wheel2: 0.74, moneywheel: 0.8, claw: 0.8 }; // dessins plus larges : un peu plus petits
+  // seulement les logos qui débordaient (les autres restent exactement comme avant)
+  var FIT_D = { mines: [5, 2.5] }; // dessin décalé : recentré (dx, dy)
+  var FIT_X = { mines: 0.92, race: 0.86, cryptox: 0.86, pegdrop: 0.86, plinko: 0.86, plinko2: 0.86, wheel2: 0.74, moneywheel: 0.8, claw: 0.8 };
   function fitIn(s, k) {
+    if (!FIT_X[k]) return s;
     var m = FIT_MK.exec(s); if (!m) return s;
     var i = m.index + m[0].length, tail = s.slice(i);
     if ((tail.match(/<g[\s>]/g) || []).length !== (tail.match(/<\/g>/g) || []).length) return s; // contour dans un groupe : on ne touche pas
-    return s.slice(0, i) + '<g transform="translate(32 33) scale(' + (FIT_X[k] || 0.86) + ') translate(-32 -33)">' + tail + '</g>';
+    return s.slice(0, i) + '<g transform="translate(' + (32 + (FIT_D[k] ? FIT_D[k][0] : 0)) + ' ' + (33 + (FIT_D[k] ? FIT_D[k][1] : 0)) + ') scale(' + FIT_X[k] + ') translate(-32 -33)">' + tail + '</g>';
   }
   function obj(k) {
     var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
