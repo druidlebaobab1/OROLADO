@@ -1,0 +1,73 @@
+{
+    "get": "fixtures",
+    "parameters": {
+        "ids": "9004"
+    },
+    "errors": [],
+    "results": 1,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "fixture": {
+                "id": 9004,
+                "referee": null,
+                "timezone": "UTC",
+                "date": "2026-10-23T19:00:00+00:00",
+                "timestamp": 1792782000,
+                "status": {
+                    "long": "PST",
+                    "short": "PST",
+                    "elapsed": null
+                }
+            },
+            "league": {
+                "id": 39,
+                "name": "Premier League",
+                "country": "England",
+                "logo": "https://media.api-sports.io/football/leagues/39.png",
+                "flag": "https://media.api-sports.io/flags/en.svg",
+                "season": 2026,
+                "round": "Regular Season - 9"
+            },
+            "teams": {
+                "home": {
+                    "id": 401,
+                    "name": "Tomorrow Rovers",
+                    "logo": "https://media.api-sports.io/football/teams/401.png",
+                    "winner": null
+                },
+                "away": {
+                    "id": 402,
+                    "name": "Next Albion",
+                    "logo": "https://media.api-sports.io/football/teams/402.png",
+                    "winner": null
+                }
+            },
+            "goals": {
+                "home": null,
+                "away": null
+            },
+            "score": {
+                "halftime": {
+                    "home": null,
+                    "away": null
+                },
+                "fulltime": {
+                    "home": null,
+                    "away": null
+                },
+                "extratime": {
+                    "home": null,
+                    "away": null
+                },
+                "penalty": {
+                    "home": null,
+                    "away": null
+                }
+            }
+        }
+    ]
+}

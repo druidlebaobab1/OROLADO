@@ -897,6 +897,18 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   $multi = count($sel) > 1;
   foreach ($sel as $s) {
     $eid = (string) ($s['ev'] ?? $s[0] ?? ''); $k = (string) ($s['k'] ?? $s[1] ?? '');
+    // 2026-10-22 — paris automatiques (sb_lib.php) : « sb:foot:<id>:<mk> » = choix d'un match de l'API (pas dans events.json)
+    if (str_starts_with($eid, 'sb:')) {
+      if (!function_exists('sb_pick') || isset($seen[$eid])) return ['ok' => false, 'reason' => 'param'];
+      $p = sb_pick($eid, $k, $user, $now);
+      if (empty($p['ok'])) return ['ok' => false, 'reason' => (string) ($p['reason'] ?? 'closed')];
+      if (isset($grp[$p['grp']])) return ['ok' => false, 'reason' => 'corr']; // jamais deux choix d'un même match
+      $grp[$p['grp']] = 1; $seen[$eid] = 1;
+      $o = $p['sel'];
+      if (is_array($s) && isset($s['odd']) && is_numeric($s['odd']) && $acc !== 'any' && ($acc === 'up' ? (float) $o['odd'] < round((float) $s['odd'], 2) - 0.004 : abs(round((float) $s['odd'], 2) - (float) $o['odd']) > 0.004)) $chg[] = ['ev' => $eid, 'k' => $k, 'odd' => (float) $o['odd']];
+      $picked[] = $o; $odd *= (float) $o['odd']; $sbN = ($sbN ?? 0) + 1;
+      continue;
+    }
     $e = $ev[$eid] ?? null;
     if (!$e || isset($seen[$eid])) return ['ok' => false, 'reason' => 'param'];
     if ($e['status'] !== 'open' || !empty($e['hold']) || $now >= sp_close_at($e)) return ['ok' => false, 'reason' => 'closed']; // 2026-10-21 : « hold » = en attente de vraies cotes ; v2810 : question de prix fermée 72 h après ses cotes
@@ -961,12 +973,14 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   }
   if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
   $bet['status'] = 'open';
+  if (!empty($sbN) && function_exists('sb_alert_bet')) { try { sb_alert_bet($bet, $now); } catch (Throwable $e) { /* jamais bloquant */ } }
   return ['ok' => true, 'bet' => sp_bet_public($bet), 'bal' => $deb['real'] ?? ($deb['demo'] ?? null)];
 }
 
 function sp_bet_public(array $b): array {
   return ['id' => $b['id'], 'mode' => $b['mode'], 'stake' => (float) $b['stake'], 'odd' => (float) $b['odd'], 'pot' => (float) $b['pot'], 'status' => $b['status'], 'win' => (float) ($b['win'] ?? 0), 'at' => (int) $b['at'], 'done' => (int) ($b['done'] ?? 0),
-    'sel' => array_map(static fn($s) => ['t' => $s['t'], 'l' => $s['l'], 'odd' => (float) $s['odd'], 'r' => $s['r'] ?? null], $b['sel'])];
+    'sel' => array_map(static fn($s) => ['t' => $s['t'], 'l' => $s['l'], 'odd' => (float) $s['odd'], 'r' => $s['r'] ?? null]
+      + (isset($s['mk']) ? ['mk' => (string) $s['mk'], 'k' => (string) $s['k'], 'sp' => (string) ($s['sp'] ?? ''), 'fx' => (string) ($s['fx'] ?? '')] : []), $b['sel'])]; // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
 }
 function sp_my_bets(string $uid): array {
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
@@ -1005,12 +1019,25 @@ function sp_admin_settle(array $db, string $eid, string $k): array {
 /** Règle les coupons prêts. Retour : nombre de coupons gagnés / perdus / payés. */
 function sp_resolve(array $db): array {
   $res = []; foreach (sp_events() as $e) if ($e['status'] === 'settled') $res[$e['id']] = $e['result'];
-  $todo = sp_with('bets.json', static function (array &$s) use ($res) {
+  // 2026-10-22 — choix SB (sb_lib.php) : réglés depuis data/sports/sb/results.json (même paiement, même référence unique)
+  $sbr = function_exists('sb_results') ? sb_results() : []; $sbAuto = function_exists('sb_config') ? (bool) sb_config()['autosettle'] : true; $sbNow = function_exists('sb_now') ? sb_now() : time();
+  $todo = sp_with('bets.json', static function (array &$s) use ($res, $sbr, $sbAuto, $sbNow) {
     $pay = [];
     foreach ((array) ($s['b'] ?? []) as $i => $b) {
       if ($b['status'] !== 'open') continue;
       $lost = false; $ready = true; $odd = 1.0; $live = 0;
+      $sb = false;
       foreach ($b['sel'] as $j => $sel) {
+        if (str_starts_with((string) $sel['ev'], 'sb:')) {
+          $sb = true;
+          $r = function_exists('sb_sel_result') ? sb_sel_result($sel, (int) ($b['at'] ?? 0), $sbr, $sbNow, $sbAuto) : null;
+          if ($r === null) { $ready = false; continue; }
+          $s['b'][$i]['sel'][$j]['r'] = $r;
+          if ($r === 'void') continue;
+          $live++;
+          if ($r !== 'won') $lost = true; else $odd *= (float) $sel['odd'];
+          continue;
+        }
         if (!isset($res[$sel['ev']])) { $ready = false; continue; }
         $rk = $res[$sel['ev']];
         $s['b'][$i]['sel'][$j]['r'] = $rk === 'void' ? 'void' : ($rk === $sel['k'] ? 'won' : 'lost');
@@ -1023,7 +1050,7 @@ function sp_resolve(array $db): array {
       $win = sp_floor2(min(SP_MAX_WIN, (float) $b['stake'] * (floor($odd * 100 + 1e-6) / 100))); // v2810 : arrondi au cent INFÉRIEUR
       // v2779 (propriétaire) : tous les matchs du coupon annulés → « Remboursé » (la mise revient, visible dans l'historique et le reçu)
       $s['b'][$i]['status'] = $live === 0 ? 'void' : 'won'; $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();
-      $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake']];
+      $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake'], 'sb' => $sb];
     }
     return $pay;
   }) ?: [];
@@ -1032,6 +1059,7 @@ function sp_resolve(array $db): array {
     $bal = casino_credit($db, (string) $p['uid'], (string) $p['mode'], (float) $p['w'], (string) $p['i']);
     if ($bal === null && $p['mode'] === 'real') { $paidFail++; sp_mark_unpaid((string) $p['i']); continue; }
     casino_stat('sports', (string) $p['mode'], (float) $p['s'], (float) $p['w']);
+    if (!empty($p['sb']) && $p['w'] > 0 && $p['mode'] === 'real' && function_exists('sb_alert_win')) { try { sb_alert_win((float) $p['w']); } catch (Throwable $e) { /* jamais bloquant */ } }
     if ($p['w'] > 0) $won++; else $lostN++;
   }
   return ['won' => $won, 'lost' => $lostN, 'retry' => $paidFail];
@@ -1087,3 +1115,6 @@ function sp_admin_event_bets(string $eid): array {
   usort($rows, static fn($a, $b) => $b['at'] <=> $a['at']);
   return ['ok' => true, 'ev' => ['id' => $ev['id'], 'title' => $ev['title'], 'status' => $ev['status'], 'result' => $ev['result'] ?? null, 'opts' => $ev['opts']], 'bets' => $rows];
 }
+
+// 2026-10-22 — paris automatiques API-Football (étape 1 : football avant-match). Sans ce fichier : paris manuels seulement.
+if (is_file(__DIR__ . '/sb_lib.php')) require_once __DIR__ . '/sb_lib.php';

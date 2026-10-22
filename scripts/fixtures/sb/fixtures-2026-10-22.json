@@ -1,0 +1,251 @@
+{
+    "get": "fixtures",
+    "parameters": {
+        "date": "2026-10-22",
+        "timezone": "UTC"
+    },
+    "errors": [],
+    "results": 4,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "fixture": {
+                "id": 9001,
+                "referee": null,
+                "timezone": "UTC",
+                "date": "2026-10-22T18:00:00+00:00",
+                "timestamp": 1792692000,
+                "status": {
+                    "long": "NS",
+                    "short": "NS",
+                    "elapsed": null
+                }
+            },
+            "league": {
+                "id": 39,
+                "name": "Premier League",
+                "country": "England",
+                "logo": "https://media.api-sports.io/football/leagues/39.png",
+                "flag": "https://media.api-sports.io/flags/en.svg",
+                "season": 2026,
+                "round": "Regular Season - 9"
+            },
+            "teams": {
+                "home": {
+                    "id": 101,
+                    "name": "Home FC",
+                    "logo": "https://media.api-sports.io/football/teams/101.png",
+                    "winner": null
+                },
+                "away": {
+                    "id": 102,
+                    "name": "Away FC",
+                    "logo": "https://media.api-sports.io/football/teams/102.png",
+                    "winner": null
+                }
+            },
+            "goals": {
+                "home": null,
+                "away": null
+            },
+            "score": {
+                "halftime": {
+                    "home": null,
+                    "away": null
+                },
+                "fulltime": {
+                    "home": null,
+                    "away": null
+                },
+                "extratime": {
+                    "home": null,
+                    "away": null
+                },
+                "penalty": {
+                    "home": null,
+                    "away": null
+                }
+            }
+        },
+        {
+            "fixture": {
+                "id": 9002,
+                "referee": null,
+                "timezone": "UTC",
+                "date": "2026-10-22T20:00:00+00:00",
+                "timestamp": 1792699200,
+                "status": {
+                    "long": "NS",
+                    "short": "NS",
+                    "elapsed": null
+                }
+            },
+            "league": {
+                "id": 386,
+                "name": "Ligue 1",
+                "country": "Ivory-Coast",
+                "logo": "https://media.api-sports.io/football/leagues/386.png",
+                "flag": "https://media.api-sports.io/flags/iv.svg",
+                "season": 2026,
+                "round": "Regular Season - 9"
+            },
+            "teams": {
+                "home": {
+                    "id": 201,
+                    "name": "ASEC Mimosas",
+                    "logo": "https://media.api-sports.io/football/teams/201.png",
+                    "winner": null
+                },
+                "away": {
+                    "id": 202,
+                    "name": "Africa Sports",
+                    "logo": "https://media.api-sports.io/football/teams/202.png",
+                    "winner": null
+                }
+            },
+            "goals": {
+                "home": null,
+                "away": null
+            },
+            "score": {
+                "halftime": {
+                    "home": null,
+                    "away": null
+                },
+                "fulltime": {
+                    "home": null,
+                    "away": null
+                },
+                "extratime": {
+                    "home": null,
+                    "away": null
+                },
+                "penalty": {
+                    "home": null,
+                    "away": null
+                }
+            }
+        },
+        {
+            "fixture": {
+                "id": 9003,
+                "referee": null,
+                "timezone": "UTC",
+                "date": "2026-10-22T08:20:00+00:00",
+                "timestamp": 1792657200,
+                "status": {
+                    "long": "NS",
+                    "short": "NS",
+                    "elapsed": null
+                }
+            },
+            "league": {
+                "id": 39,
+                "name": "Premier League",
+                "country": "England",
+                "logo": "https://media.api-sports.io/football/leagues/39.png",
+                "flag": "https://media.api-sports.io/flags/en.svg",
+                "season": 2026,
+                "round": "Regular Season - 9"
+            },
+            "teams": {
+                "home": {
+                    "id": 301,
+                    "name": "Early United",
+                    "logo": "https://media.api-sports.io/football/teams/301.png",
+                    "winner": null
+                },
+                "away": {
+                    "id": 302,
+                    "name": "Dawn City",
+                    "logo": "https://media.api-sports.io/football/teams/302.png",
+                    "winner": null
+                }
+            },
+            "goals": {
+                "home": null,
+                "away": null
+            },
+            "score": {
+                "halftime": {
+                    "home": null,
+                    "away": null
+                },
+                "fulltime": {
+                    "home": null,
+                    "away": null
+                },
+                "extratime": {
+                    "home": null,
+                    "away": null
+                },
+                "penalty": {
+                    "home": null,
+                    "away": null
+                }
+            }
+        },
+        {
+            "fixture": {
+                "id": 9005,
+                "referee": null,
+                "timezone": "UTC",
+                "date": "2026-10-22T15:00:00+00:00",
+                "timestamp": 1792681200,
+                "status": {
+                    "long": "NS",
+                    "short": "NS",
+                    "elapsed": null
+                }
+            },
+            "league": {
+                "id": 2000,
+                "name": "Liga Rara",
+                "country": "Nowhere",
+                "logo": "https://media.api-sports.io/football/leagues/2000.png",
+                "flag": "https://media.api-sports.io/flags/no.svg",
+                "season": 2026,
+                "round": "Regular Season - 9"
+            },
+            "teams": {
+                "home": {
+                    "id": 501,
+                    "name": "Sans Cotes",
+                    "logo": "https://media.api-sports.io/football/teams/501.png",
+                    "winner": null
+                },
+                "away": {
+                    "id": 502,
+                    "name": "Rien FC",
+                    "logo": "https://media.api-sports.io/football/teams/502.png",
+                    "winner": null
+                }
+            },
+            "goals": {
+                "home": null,
+                "away": null
+            },
+            "score": {
+                "halftime": {
+                    "home": null,
+                    "away": null
+                },
+                "fulltime": {
+                    "home": null,
+                    "away": null
+                },
+                "extratime": {
+                    "home": null,
+                    "away": null
+                },
+                "penalty": {
+                    "home": null,
+                    "away": null
+                }
+            }
+        }
+    ]
+}

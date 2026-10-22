@@ -297,6 +297,8 @@ $OROLADO_RATE_RULES = [
   'spList'            => [['i', 120, 60]],
   'spBet'             => [['t', 30, 60]],
   'spMine'            => [['t', 30, 60]],
+  'sbList'            => [['i', 240, 60]],
+  'sbMatch'           => [['i', 240, 60]],
   'xferSend'          => [['t', 10, 600]],
   'defiActivate'      => [['t', 10, 60]],
   'withdrawOtp'       => [['t', 8, 3600]],
@@ -422,8 +424,24 @@ if ($action === 'affClick') {
 
 // v2690 — CASINO (casino_lib.php) : jeux tirés et payés par le serveur. Visiteur : « essai » sans argent (csTry).
 // v2690 — PARIS SPORTIFS manuels (sports_lib.php) : liste publique, coupon (connecté), mes paris.
+// 2026-10-22 — PARIS AUTOMATIQUES (sb_lib.php, étape 1 : football avant-match) : lecture des fichiers locaux SEULEMENT ;
+// les lectures de l'API se font APRÈS la réponse (sb_after_response). Admin seul tant que « Public » est éteint.
+if ($action === 'sbList' || $action === 'sbMatch') {
+  if (!function_exists('sb_list')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  $me = $token !== '' ? session_user($db, $token) : null;
+  try {
+    $res = $action === 'sbList' ? sb_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0)) : sb_match($me ?: null, (string) ($req['id'] ?? ''));
+  } catch (Throwable $eSb) {
+    error_log('OROLADO sb ' . $eSb->getMessage());
+    $res = ['ok' => false, 'reason' => 'busy'];
+  }
+  if (function_exists('sb_after_response')) sb_after_response();
+  echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
 if ($action === 'spList' || $action === 'spBet' || $action === 'spMine') {
   if (!function_exists('sp_bet')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  if (function_exists('sb_after_response')) sb_after_response(); // import / résultats SB après la réponse (au plus 1 fois / min)
   if ($action === 'spList') { echo json_encode(['ok' => true, 'server' => true, 'events' => sp_public_events()]); exit; }
   $me = session_user($db, $token);
   if (!$me || empty($me['id'])) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'login']); exit; }
