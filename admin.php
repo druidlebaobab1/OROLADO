@@ -2166,6 +2166,28 @@ if ($isAjax) {
       admin_json($r);
     }
     // 2026-10-21 (propriétaire) : RÉSULTATS PROPOSÉS (ESPN / TheSportsDB ; prix : Coinbase / Binance / Kraken, Yahoo / Nasdaq ; lecture seule) — l'admin valide ensuite avec sp_settle
+    // 2026-10-22 (propriétaire, sur iPhone) : enregistrer la clé API-Sports SANS toucher au VPS → data/.env (refusé depuis
+    // internet : 403), jamais renvoyée en entier (4 derniers caractères seulement).
+    if ($action === 'apif_key_status' || $action === 'apif_key_set') {
+      $envF = orolado_data_dir() . '/.env';
+      $cur = (string) (getenv('APIFOOTBALL_KEY') ?: '');
+      if ($action === 'apif_key_set') {
+        $k = trim((string) ($req['key'] ?? ''));
+        if (!preg_match('/^[A-Za-z0-9]{20,80}$/', $k)) admin_json(['ok' => false, 'reason' => 'Clé invalide : collez seulement la clé (lettres et chiffres, sans espace).']);
+        $fh = @fopen($envF, 'c+');
+        if (!$fh) admin_json(['ok' => false, 'reason' => 'Impossible d\'écrire le fichier de réglages.']);
+        flock($fh, LOCK_EX);
+        $old = (string) stream_get_contents($fh);
+        $lines = array_values(array_filter(preg_split('/\r?\n/', $old) ?: [], static fn($l) => $l !== '' && !preg_match('/^\s*APIFOOTBALL_KEY\s*=/', $l)));
+        $lines[] = 'APIFOOTBALL_KEY=' . $k;
+        ftruncate($fh, 0); rewind($fh); fwrite($fh, implode("\n", $lines) . "\n"); fflush($fh); flock($fh, LOCK_UN); fclose($fh);
+        @chmod($envF, 0600);
+        putenv('APIFOOTBALL_KEY=' . $k);
+        admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'reglages', 0, 'Clé API-Sports enregistrée (…' . substr($k, -4) . ')');
+        $cur = $k;
+      }
+      admin_json(['ok' => true, 'set' => $cur !== '', 'end' => $cur !== '' ? substr($cur, -4) : '']);
+    }
     if ($action === 'sp_results') {
       require_once __DIR__ . '/sports_results.php';
       admin_json(spr_admin_proposals());
@@ -2932,6 +2954,12 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
               <span id="spSt" class="muted"></span>
             </div>
           </div>
+        </div>
+        <div class="nt-card" id="apifKeyCard" style="margin-top:10px;border-color:rgba(245,197,24,.55)">
+          <b>🔑 Clé API-Sports (API-Football)</b>
+          <p class="muted" style="margin:4px 0 6px" id="apifKeySt">…</p>
+          <input id="apifKeyIn" class="nt-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Collez ici votre clé (tableau API-Sports → profil)">
+          <p style="margin-top:6px"><button class="mini ok" type="button" id="apifKeyGo">Enregistrer la clé</button></p>
         </div>
         <div class="nt-card" id="spResCard" style="margin-top:10px;border-color:rgba(56,189,248,.55)">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
@@ -4035,6 +4063,17 @@ setInterval(() => {
     $c('spSt').textContent = r.ok ? ('✓ ' + r.added + ' ajoutée(s)' + (r.skipped ? ' · ' + r.skipped + ' déjà là ou passée(s)' : '')) : (r.reason || 'Échec');
     if (r.ok) list();
   };
+  // 2026-10-22 : clé API-Sports enregistrée depuis l'admin (iPhone), jamais affichée en entier
+  (function () {
+    const st = $c('apifKeySt'), inp = $c('apifKeyIn'), go = $c('apifKeyGo'); if (!st || !go) return;
+    const paint = j => { st.textContent = j && j.ok && j.set ? '✅ Clé enregistrée (…' + j.end + '). Le site peut l\'utiliser.' : 'Aucune clé enregistrée pour l\'instant.'; };
+    ajax({action:'apif_key_status'}).then(paint).catch(() => {});
+    go.onclick = async () => {
+      const k = inp.value.trim(); if (!k) { alert('Collez d\'abord la clé.'); return; }
+      go.disabled = true; let j; try { j = await ajax({action:'apif_key_set', key:k}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
+      go.disabled = false; if (!j.ok) { alert(j.reason || 'Échec'); return; } inp.value = ''; paint(j);
+    };
+  })();
   // 2026-10-21 (propriétaire) : RÉSULTATS PROPOSÉS — lecture des scores (serveur, lecture seule) ; « Valider » = action EXISTANTE sp_settle
   let spResList = [];
   const spSettle = async (id, k) => ajax({action:'sp_settle', id, k});
