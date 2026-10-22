@@ -490,19 +490,73 @@ sb_live_tick($B5 + 61 + 700);
 $lx = sb_live_list($uadm, $B5 + 61 + 700); check('… puis retiré après 10 min', $lx['fx'] === [], json_encode($lx));
 check('config : direct public par défaut + réglage de la dernière minute (borné 45…90)', SB_CFG_DEFAULT['livePublic'] === true && sb_config_save(['liveLastMin' => 120])['config']['liveLastMin'] == 90);
 
-// 2026-10-22 — sbResults : scores finaux des matchs terminés qui ont eu NOS cotes seulement (fichiers locaux)
+// 2026-10-22 (propriétaire) — DIRECT : plus de marchés (pair / impair, 1re mi-temps seulement pendant la 1re mi-temps)
+echo "10b) Direct : pair / impair, 1re mi-temps\n";
+$LV = static fn(string $v, string $odd, $hc = null) => ['value' => $v, 'odd' => $odd, 'handicap' => $hc, 'main' => null, 'suspended' => false];
+$unk = [];
+$lm = sb_live_markets(['odds' => [
+  ['id' => 59, 'name' => 'Fulltime Result', 'values' => [$LV('Home', '1.80'), $LV('Draw', '3.60'), $LV('Away', '4.80')]],
+  ['id' => 21, 'name' => 'Odd/Even', 'values' => [$LV('Odd', '1.95'), $LV('Even', '1.85')]],
+  ['id' => 20, 'name' => '1x2 (1st Half)', 'values' => [$LV('Home', '1.50'), $LV('Draw', '2.90'), $LV('Away', '9.00')]],
+  ['id' => 22, 'name' => 'Over/Under (1st Half)', 'values' => [$LV('Over', '1.01', '0.5'), $LV('Under', '12.0', '0.5'), $LV('Over', '2.60', '1.5'), $LV('Under', '1.45', '1.5')]],
+]], sb_config(), [1, 0], $unk);
+check('direct : pair / impair, 1x2 et buts de la 1re mi-temps lus ; htou:0.5 retiré (déjà joué à 1-0)', isset($lm['oe'], $lm['ht1x2'], $lm['htou:1.5']) && !isset($lm['htou:0.5']) && array_column($lm['oe'], 0) === ['O', 'E'] && !$unk, json_encode(array_keys($lm)) . json_encode($unk));
+$LL = ['at' => $T('2026-10-28 12:00:00'), 'fat' => $T('2026-10-28 12:00:00'), 'fx' => ['9301' => ['ts' => $T('2026-10-28 11:30:00'), 'st' => '1H', 'm' => 30, 'lg' => 39, 'h' => [701, 'Ht Home', ''], 'a' => [702, 'Ht Away', ''], 'g' => [1, 0]]],
+  'od' => ['9301' => ['sc' => [1, 0], 'm' => 30, 'ti' => [701, 702], 'blk' => 0, 'fin' => 0, 'chg' => 0, 'mk' => $lm]]];
+$v1 = sb_live_view('9301', $LL, $T('2026-10-28 12:00:05'), sb_config());
+$LL['fx']['9301']['st'] = '2H'; $LL['fx']['9301']['m'] = 50; $LL['od']['9301']['m'] = 50;
+$v2 = sb_live_view('9301', $LL, $T('2026-10-28 12:00:05'), sb_config());
+$LL['fx']['9301']['st'] = '1H'; $LL['fx']['9301']['m'] = 44; $LL['od']['9301']['m'] = 44;
+$v3 = sb_live_view('9301', $LL, $T('2026-10-28 12:00:05'), sb_config());
+check('1re mi-temps proposée pendant la 1re mi-temps seulement (retirée en 2e mi-temps et dès la 43e)', isset($v1['mk']['ht1x2'], $v1['mk']['htou:1.5'], $v1['mk']['oe']) && !isset($v2['mk']['ht1x2']) && !isset($v2['mk']['htou:1.5']) && isset($v2['mk']['oe']) && !isset($v3['mk']['ht1x2']));
+check('règlement : pair / impair (2-1 → impair), 1x2 de la 1re mi-temps', sb_settle_mk('oe', 'O', [2, 1], [1, 0]) === 'won' && sb_settle_mk('ht1x2', 'H', [2, 1], [1, 0]) === 'won' && sb_settle_mk('htou:1.5', 'U', [2, 1], [1, 0]) === 'won');
+$f9 = sb_live_fx_public('9301', ['row' => $LL['fx']['9301'], 'od' => $LL['od']['9301'], 'sc' => [1, 0], 'm' => 44, 'st' => '1H', 'susp' => false, 'mk' => ['oe' => $lm['oe']]]);
+check('match du flux sans 1 · X · 2 : gardé dans le direct (ofd, autres marchés comptés)', $f9['o'] === null && $f9['n'] === 1 && $f9['ofd'] === 1);
+
+// 2026-10-22 (propriétaire) — RÉSULTATS des 30 derniers jours : grands championnats + championnats de nos cotes, même sans nos cotes
+echo "11) Résultats : 7 puces + calendrier 30 jours, petits fichiers par jour, ≤ 1 lecture par date\n";
 $RN = $T('2026-11-03 20:00:00'); $GLOBALS['SB_NOW'] = $RN;
+sb_with('budget-foot.json', static function (array &$s) use ($RN) { $s['day'] = gmdate('Y-m-d', $RN); $s['n'] = 0; return true; });
 sb_with(sb_day_file('2026-11-02'), static function (array &$s) use ($T) {
-  $s = ['at' => $T('2026-11-02 23:00:00'), 'lg' => ['39' => ['n' => 'Premier League', 'c' => 'England', 'f' => '', 'lo' => '', 'p' => 2]], 'fx' => [
-    '8801' => ['ts' => $T('2026-11-02 15:00:00'), 'st' => 'FT', 'm' => 90, 'lg' => 39, 'h' => [1, 'Res Home', ''], 'a' => [2, 'Res Away', ''], 'g' => [2, 1], 'ht' => [1, 0], 'ft' => [2, 1], 'o' => [['H', 2.0], ['D', 3.2], ['A', 3.5]], 'n' => 12],
-    '8802' => ['ts' => $T('2026-11-02 16:00:00'), 'st' => 'FT', 'm' => 90, 'lg' => 39, 'h' => [3, 'Sans Cotes', ''], 'a' => [4, 'Jamais Vu', ''], 'g' => [0, 0], 'ht' => [0, 0], 'ft' => [0, 0]],
-    '8803' => ['ts' => $T('2026-11-02 18:00:00'), 'st' => '2H', 'm' => 70, 'lg' => 39, 'h' => [5, 'En Cours', ''], 'a' => [6, 'Pas Fini', ''], 'g' => [1, 1], 'o' => [['H', 2.0], ['D', 3.2], ['A', 3.5]], 'n' => 5]]];
+  $s = ['at' => $T('2026-11-02 23:00:00'), 'lg' => ['39' => ['n' => 'Premier League', 'c' => 'England', 'f' => '', 'lo' => '', 'p' => 2], '999' => ['n' => 'Petite Ligue', 'c' => 'Nowhere', 'f' => '', 'lo' => '', 'p' => 100], '998' => ['n' => 'Ligue Cotes', 'c' => 'Somewhere', 'f' => '', 'lo' => '', 'p' => 100]], 'fx' => [
+    '8801' => ['ts' => $T('2026-11-02 15:00:00'), 'st' => 'FT', 'm' => 90, 'lg' => 39, 'h' => [1, 'Res Home', ''], 'a' => [2, 'Res Away', ''], 'g' => [2, 1], 'ht' => [1, 0], 'ft' => [2, 1], 'o' => [['H', 2.0], ['D', 3.2], ['A', 3.5]], 'n' => 20],
+    '8802' => ['ts' => $T('2026-11-02 16:00:00'), 'st' => 'FT', 'm' => 90, 'lg' => 39, 'h' => [3, 'Sans Cotes', ''], 'a' => [4, 'Grand Championnat', ''], 'g' => [0, 0], 'ht' => [0, 0], 'ft' => [0, 0]],
+    '8803' => ['ts' => $T('2026-11-02 18:00:00'), 'st' => '2H', 'm' => 70, 'lg' => 39, 'h' => [5, 'En Cours', ''], 'a' => [6, 'Pas Fini', ''], 'g' => [1, 1], 'o' => [['H', 2.0], ['D', 3.2], ['A', 3.5]], 'n' => 5],
+    '8804' => ['ts' => $T('2026-11-02 12:00:00'), 'st' => 'FT', 'm' => 90, 'lg' => 999, 'h' => [7, 'Petit Club', ''], 'a' => [8, 'Inconnu', ''], 'g' => [3, 3], 'ht' => [1, 1], 'ft' => [3, 3]],
+    '8805' => ['ts' => $T('2026-11-02 13:00:00'), 'st' => 'AET', 'm' => 120, 'lg' => 998, 'h' => [9, 'Club Cotes', ''], 'a' => [10, 'Autre', ''], 'g' => [2, 2], 'ht' => [0, 1], 'ft' => [1, 1], 'o' => [['H', 2.0], ['D', 3.2], ['A', 3.5]], 'n' => 4],
+  ]];
   return true;
 });
 $rr = sb_results_list($uadm, -1, 0, $RN);
-check('sbResults hier : seulement le match terminé AVEC nos cotes (score final + mi-temps)', $rr['ok'] === true && array_column($rr['fx'], 'id') === ['foot:8801'] && $rr['fx'][0]['ft'] === [2, 1] && $rr['fx'][0]['ht'] === [1, 0] && count($rr['lg']) === 1, json_encode($rr));
-check('sbResults aujourd\'hui : rien', sb_results_list($uadm, 0, 0, $RN)['fx'] === []);
-check('sbResults : jour borné (-5 → -2) et invisible pour qui ne voit pas les paris', sb_results_list($uadm, -5, 0, $RN)['day'] === -2 && (sb_config()['public'] || sb_results_list(null, -1, 0, $RN)['reason'] === 'off'));
+check('hier : grands championnats (même sans nos cotes) + championnats de nos cotes ; pas les petits, pas les matchs en cours', $rr['ok'] === true && array_column($rr['fx'], 'id') === ['foot:8805', 'foot:8801', 'foot:8802'] && $rr['fx'][1]['ft'] === [2, 1] && $rr['fx'][1]['ht'] === [1, 0] && $rr['fx'][0]['ft'] === [1, 1] && $rr['pending'] === false, json_encode(array_column($rr['fx'], 'id')));
+check('hier : recopié en petit fichier du jour (équipes, logos, championnat, score final + mi-temps)', count((array) (sb_res_file('2026-11-02')['fx'] ?? [])) === 3 && (sb_res_file('2026-11-02')['lg']['39']['n'] ?? '') === 'Premier League');
+check('date choisie (calendrier) = même jour', array_column(sb_results_list($uadm, 0, 0, $RN, '2026-11-02')['fx'], 'id') === array_column($rr['fx'], 'id'));
+check('jour borné : 30 jours (-40 → -29), date future → aujourd\'hui', sb_results_list($uadm, -40, 0, $RN)['day'] === -29 && sb_results_list($uadm, 0, 0, $RN, '2026-12-25')['day'] === 0);
+check('invisible pour qui ne voit pas les paris', sb_config()['public'] || sb_results_list(null, -1, 0, $RN)['ok'] === false);
+// jour passé absent : demandé, lu UNE fois après la réponse
+$PD = '2026-10-25';
+$alt['fixtures?date=' . $PD . '&timezone=UTC'] = json_encode(['errors' => [], 'paging' => ['current' => 1, 'total' => 1], 'response' => [
+  ['fixture' => ['id' => 7701, 'timestamp' => $T($PD . ' 14:00:00'), 'status' => ['short' => 'FT', 'elapsed' => 90]], 'league' => ['id' => 140, 'name' => 'La Liga', 'country' => 'Spain', 'flag' => 'https://media.api-sports.io/flags/es.svg', 'logo' => ''],
+    'teams' => ['home' => ['id' => 541, 'name' => 'Real Madrid', 'logo' => 'https://media.api-sports.io/football/teams/541.png'], 'away' => ['id' => 529, 'name' => 'Barcelona', 'logo' => '']], 'goals' => ['home' => 3, 'away' => 2], 'score' => ['halftime' => ['home' => 1, 'away' => 1], 'fulltime' => ['home' => 3, 'away' => 2]]],
+  ['fixture' => ['id' => 7702, 'timestamp' => $T($PD . ' 16:00:00'), 'status' => ['short' => 'FT', 'elapsed' => 90]], 'league' => ['id' => 5555, 'name' => 'Regional', 'country' => 'Nowhere', 'flag' => '', 'logo' => ''],
+    'teams' => ['home' => ['id' => 11, 'name' => 'Petit A', 'logo' => ''], 'away' => ['id' => 12, 'name' => 'Petit B', 'logo' => '']], 'goals' => ['home' => 0, 'away' => 1], 'score' => ['halftime' => ['home' => 0, 'away' => 0], 'fulltime' => ['home' => 0, 'away' => 1]]],
+]]);
+$qd = 'fixtures?date=' . $PD . '&timezone=UTC'; $n0 = $cnt($qd);
+$r1 = sb_results_list($uadm, 0, 0, $RN, $PD);
+check('jour passé jamais lu : réponse tout de suite (vide, « en cours »), aucune lecture pendant la réponse', $r1['ok'] && $r1['fx'] === [] && $r1['pending'] === true && $cnt($qd) === $n0);
+sb_results_list($uadm, 0, 0, $RN + 2, $PD);
+$k1 = sb_res_fetch_wanted($RN + 3, 5);
+check('après la réponse : UNE lecture /fixtures?date=J (même demandé deux fois)', $k1 >= 1 && $cnt($qd) === $n0 + 1);
+$r2 = sb_results_list($uadm, 0, 0, $RN + 5, $PD);
+check('ensuite : le jour est là (grand championnat seulement), sans nouvelle lecture', array_column($r2['fx'], 'id') === ['foot:7701'] && $r2['fx'][0]['ft'] === [3, 2] && $r2['fx'][0]['ht'] === [1, 1] && $r2['fx'][0]['h']['lo'] !== '' && $r2['pending'] === false && $cnt($qd) === $n0 + 1);
+sb_results_list($uadm, 0, 0, $RN + 8 * 86400, $PD); sb_res_fetch_wanted($RN + 8 * 86400 + 1);
+check('jour complet : jamais relu (même 8 jours après)', $cnt($qd) === $n0 + 1 && !empty(sb_res_file($PD)['done']));
+// ménage : plus de 30 jours effacés ; index de plus de 3 jours gardé en petit fichier avant d'être effacé
+@unlink(sb_dir() . DIRECTORY_SEPARATOR . 'prune.at');
+sb_with(sb_res_name('2026-09-20'), static function (array &$s) { $s = ['at' => 1, 'done' => true, 'lg' => [], 'fx' => []]; return true; });
+@unlink(sb_dir() . DIRECTORY_SEPARATOR . 'res' . DIRECTORY_SEPARATOR . 'res-2026-11-02.json');
+sb_prune($T('2026-11-07 12:00:00'));
+check('ménage : résultats de plus de 30 jours effacés, index de plus de 3 jours recopié puis effacé', !is_file(sb_dir() . DIRECTORY_SEPARATOR . 'res' . DIRECTORY_SEPARATOR . 'res-2026-09-20.json') && !is_file(sb_dir() . DIRECTORY_SEPARATOR . sb_day_file('2026-11-02')) && count((array) (sb_res_file('2026-11-02')['fx'] ?? [])) === 3);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
