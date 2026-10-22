@@ -2032,11 +2032,11 @@
   function scTxt2(f) { var s = f.sc || [0, 0]; return (+s[0] || 0) + ' : ' + (+s[1] || 0); }
   function evKey(e) { return [e.t, e.x, e.type, e.team, e.detail, e.player].join('|'); }
   function evIco(e) { return e.type === 'goal' ? '⚽' : e.type === 'card' ? (e.detail === 'red' ? '🟥' : '🟨') : e.type === 'subst' ? '🔁' : e.type === 'corner' ? '⛳' : 'VAR'; }
-  function tvMin(f) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return n.ftS; if (f.st === 'HT') return n.htS; return null; }
+  function tvMin(f) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return n.ftS; if (f.st === 'HT') return '45:00'; return null; } // 2026-10-22 (propriétaire) : à la mi-temps, l'heure du match (45:00), pas « MT »
   function tvClockTxt() {
     var f = TV.f; if (!f) return '';
     var t = tvMin(f); if (t) return t;
-    if (!TV.base) return f.m != null ? f.m + '’' : '';
+    if (!TV.base) return f.m != null ? (f.m < 10 ? '0' : '') + f.m + ':00' : '';
     var s = TV.base.m * 60 + Math.min(119, Math.floor((Date.now() - TV.base.at) / 1000)), p = function (v) { return (v < 10 ? '0' : '') + v; };
     return p(Math.floor(s / 60)) + ':' + p(s % 60);
   }
@@ -2059,7 +2059,7 @@
           '<div class="pz-gov" id="pzGov" hidden><b dir="auto"></b><small dir="auto"></small></div></div></section>' +
       '<section class="pz-tvp pz-tv2" aria-label="' + esc(x.info) + '"><div class="pz-tvi" dir="ltr">' +
         '<span class="pz-tvt">' + tlogo(f.h.lo, 'pz-tvlo') + '<b dir="auto">' + esc(f.h.n) + '</b></span>' +
-        '<span class="pz-tvm"><b id="pzSc2" dir="ltr">' + esc(scTxt2(f)) + '</b><small id="pzAdd" dir="auto" hidden></small><small>' + esc(x.el) + '</small><em id="pzClk2" dir="ltr"></em><small id="pzPer" dir="auto"></small><i class="pz-mmin" id="pzMin" hidden><span id="pzMinT">' + esc(minTxt(f)) + '</span></i></span>' +
+        '<span class="pz-tvm"><b id="pzSc2" dir="ltr">' + esc(scTxt2(f)) + '</b><small id="pzAdd" dir="auto" hidden></small><em id="pzClk2" dir="ltr"></em><small id="pzPer" dir="auto"></small><i class="pz-mmin" id="pzMin" hidden><span id="pzMinT">' + esc(minTxt(f)) + '</span></i></span>' +
         '<span class="pz-tvt">' + tlogo(f.a.lo, 'pz-tvlo') + '<b dir="auto">' + esc(f.a.n) + '</b></span></div>' +
         '<div class="pz-tvx" id="pzTvx"></div></section></div></div>';
   }
@@ -2089,7 +2089,7 @@
     if (f.m != null && (!TV.base || TV.base.m !== +f.m)) TV.base = { m: +f.m, at: Date.now() };
     TV.f = f;
     var sc2 = $('pzSc2'); if (sc2 && sc2.textContent !== scTxt2(f)) { sc2.textContent = scTxt2(f); }
-    var ad = $('pzAdd'), mx = +f.mx || 0; if (ad) { ad.hidden = !(mx > 0); ad.textContent = mx > 0 ? '+' + mx + ' min' : ''; }
+    var ad = $('pzAdd'), mx = (f.st === '1H' || f.st === '2H') && !f.end ? +f.mx || 0 : 0; if (ad) { ad.hidden = !(mx > 0); ad.textContent = mx > 0 ? '+' + mx + ' min' : ''; } // arrêts de jeu : seulement pendant une mi-temps
     var pe = $('pzPer'); if (pe) pe.textContent = tvPeriod(f);
     // ruban des derniers événements (volet 1) et infos (volet 2)
     var n = NX(), x = TX(), rec = ev.slice(-6).reverse();
