@@ -390,7 +390,7 @@ $c0 = [$cnt('odds/live'), $cnt('fixtures?live=all&timezone=UTC')];
 $t = sb_live_tick($L0);
 check('demande : /fixtures?live=all puis /odds/live (1 fois chacun)', $t === ['fixtures', 'odds'] && $cnt('odds/live') === $c0[0] + 1 && $cnt('fixtures?live=all&timezone=UTC') === $c0[1] + 1, json_encode($t));
 [$tO, $tF] = sb_live_ttls($L0);
-check('rythme du direct selon le budget : cotes 5…15 s, matchs 10…30 s (2 × cotes)', $tO >= 5 && $tO <= 15 && $tF === max(10, min(30, 2 * $tO)), json_encode([$tO, $tF]));
+check('rythme du direct selon le budget : cotes 5…15 s, matchs 15…30 s (1,5 × cotes)', $tO >= 5 && $tO <= 15 && $tF === max(15, min(30, (int) ceil(1.5 * $tO))), json_encode([$tO, $tF]));
 check('relancé juste avant : rien', sb_live_tick($L0 + $tO - 1) === []);
 check('après ' . $tO . ' s : /odds/live seulement', sb_live_tick($L0 + $tO) === ['odds']);
 check('31 s après : /fixtures?live=all (et /odds/live, 15 s passées)', sb_live_tick($L0 + 31) === ['fixtures', 'odds']);

@@ -1602,9 +1602,9 @@ function sb_live_ttls(int $now): array {
   $secLeft = max(600, 86400 - ($now % 86400));
   $avail = $b['left'] - SB_LIVE_RESERVE - (int) (2500 * $secLeft / 86400); // avant-match + résultats du reste de la journée
   if ($avail <= 0) return [SB_LIVE_ODDS_TTL, SB_LIVE_FX_TTL];
-  $t = (int) ceil(1.5 * 0.35 * $secLeft / $avail); // le direct est regardé ~1/3 de la journée (lecture seulement s'il y a quelqu'un) 
+  $t = (int) ceil(1.67 * 0.35 * $secLeft / $avail); // le direct est regardé ~1/3 de la journée (lecture seulement s'il y a quelqu'un) 
   $t = max(5, min(SB_LIVE_ODDS_TTL, $t));
-  return [$t, max(10, min(SB_LIVE_FX_TTL, 2 * $t))];
+  return [$t, max(15, min(SB_LIVE_FX_TTL, (int) ceil(1.5 * $t)))]; // matchs : l'API les met à jour toutes les 15 s (doc)
 }
 /**
  * Tâche du direct (APRÈS la réponse) : seulement s'il y a de la demande (60 s), un seul lecteur à la fois (verrou non
