@@ -58,10 +58,10 @@ $odd = static function (string $fid, string $mk, string $k): ?float { foreach ((
 
 echo "1) Réglages par défaut, visibilité\n";
 $c0 = sb_config(); // 1re lecture : Public allumé une seule fois (mise en ligne du 2026-10-22), marges au moins 15/20/30/20/15
-check('mise en ligne : Public allumé une fois ; marges 2,5 % avant-match (tous marchés, tous sports), 4 % en direct', $c0['public'] === true && $c0['mMain'] == 2.5 && $c0['mSide'] == 2.5 && $c0['mExotic'] == 2.5 && $c0['mOther'] == 2.5 && $c0['mLive'] == 4);
+check('mise en ligne : Public allumé une fois ; marges 2 % avant-match (tous marchés, tous sports), 4 % en direct ; direct limité aux grands championnats', $c0['public'] === true && $c0['mMain'] == 2 && $c0['mSide'] == 2 && $c0['mExotic'] == 2 && $c0['mOther'] == 2 && $c0['mLive'] == 4 && $c0['liveAll'] === false);
 sb_config_save(['mMain' => 30]);
 check('marges : un réglage de l\'admin n\'est jamais écrasé ensuite', sb_config()['mMain'] == 30);
-sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1]; return true; }); // la suite teste le réglage « Public éteint »
+sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
 $c = sb_config();
 check('défauts : public NON, résultats automatiques OUI, marges 15/20/30/20/15, alertes 50/500/200', $c['public'] === false && $c['autosettle'] === true && $c['mMain'] == 15 && $c['mSide'] == 20 && $c['mExotic'] == 30 && $c['mLive'] == 20 && $c['mOther'] == 15 && $c['alertStake'] == 50 && $c['alertPot'] == 500 && $c['alertWin'] == 200);
 $NOW = $at('2026-10-22 08:00');
@@ -405,6 +405,13 @@ $lst = sb_live_list($ua, $L0); sb_live_tick($L0);
 $lst = sb_live_list($ua, $L0);
 $f = $lst['fx'][0] ?? [];
 check('sbLive (joueur, direct public) : match, score 1-0, minute 63, 1x2, compétition', $lst['ok'] && $lst['n'] === 1 && $f['id'] === 'foot:9101' && $f['sc'] === [1, 0] && $f['m'] === 63 && $f['live'] === 1 && $f['susp'] === 0 && ($f['o']['mk'] ?? '') === '1x2' && ($lst['lg'][0]['n'] ?? '') === 'Premier League' && $f['rc'] === [0, 1], json_encode($f));
+// 2026-10-22 (propriétaire : « direct seulement sur les grands championnats ») : réglage liveAll éteint
+sb_config_save(['liveAll' => false]);
+check('direct limité aux grands championnats : Premier League (39) toujours montrée', sb_live_list($ua, $L0)['n'] === 1 && sb_live_count($ua, $L0) === 1);
+sb_with('live.json', static function (array &$s) { $s['fx']['9101']['lg'] = 999; return true; });
+check('petit championnat : ni liste, ni compteur, ni match, ni pari (admin compris)', sb_live_list($ua, $L0)['n'] === 0 && sb_live_list($uadm, $L0)['n'] === 0 && sb_live_count($ua, $L0) === 0 && sb_live_match($ua, '9101', $L0) === null && (sb_live_pick('9101', '1x2', 'H', $ua, $L0)['reason'] ?? '') === 'closed');
+sb_with('live.json', static function (array &$s) { $s['fx']['9101']['lg'] = 39; return true; });
+sb_config_save(['liveAll' => true]);
 $M = sb_match($ua, 'foot:9101', $L0);
 $mks = array_column($M['mk'], 'mk');
 check('marchés du direct : 1x2, dc, dnb, ou:1.5 / 2.5 / 3.5, btts, tth:1.5', !array_diff(['1x2', 'dc', 'dnb', 'ou:1.5', 'ou:2.5', 'ou:3.5', 'btts', 'tth:1.5'], $mks), implode(',', $mks));

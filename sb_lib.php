@@ -39,8 +39,13 @@ const SB_FINAL = ['FT', 'AET', 'PEN'];
 const SB_VOID_ST = ['AWD', 'WO'];
 const SB_WAIT_ST = ['PST', 'CANC', 'ABD', 'SUSP', 'INT', 'NS', 'TBD'];
 const SB_LIVE_ST = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
-const SB_CFG_DEFAULT = ['public' => false, 'live' => true, 'livePublic' => true, 'autosettle' => true, 'sports' => ['foot', 'basket', 'hockey', 'handball', 'volley', 'rugby', 'baseball', 'amfoot', 'afl', 'mma'],
+const SB_CFG_DEFAULT = ['public' => false, 'live' => true, 'livePublic' => true, 'liveAll' => false, 'autosettle' => true, 'sports' => ['foot', 'basket', 'hockey', 'handball', 'volley', 'rugby', 'baseball', 'amfoot', 'afl', 'mma'],
   'mMain' => 15, 'mSide' => 20, 'mExotic' => 30, 'mLive' => 20, 'mOther' => 15, 'mPred' => 20, 'alertStake' => 50, 'alertPot' => 500, 'alertWin' => 200, 'liveLastMin' => 88]; // mPred : prédictions Predict (pred_lib.php)
+/**
+ * 2026-10-22 (propriétaire : « on retire le direct, on l'essaie seulement sur les grands championnats ») : direct limité à ces
+ * compétitions (données rapides) tant que le réglage « liveAll » est éteint (admin compris).
+ */
+const SB_LIVE_BIG = [2, 3, 848, 39, 140, 135, 78, 61, 94, 88, 203, 1, 4, 5, 6, 9, 15, 32, 34, 45, 48, 66, 81, 137, 143, 531];
 /** Compétitions en tête de liste (p petit = en haut) ; les autres : 100 (par pays). */
 const SB_TOP_LEAGUES = [2 => 1, 39 => 2, 140 => 3, 135 => 4, 78 => 5, 61 => 6, 3 => 7, 848 => 8, 1 => 9, 4 => 10, 6 => 11, 12 => 12, 20 => 13, 5 => 14, 9 => 15, 13 => 16, 94 => 17, 88 => 18, 203 => 19, 253 => 20];
 const SB_TOP_COUNTRIES = ['ivory-coast' => 30, 'cote-d-ivoire' => 30, 'senegal' => 31, 'cameroon' => 32, 'nigeria' => 33, 'ghana' => 34, 'morocco' => 35, 'france' => 36];
@@ -102,6 +107,17 @@ function sb_config(): array {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig6'])) return true; $s['mPred'] = 20; $s['mig6'] = 1; return true; });
     $c = sb_read('config.json');
   }
+  // 2026-10-22 (propriétaire : « plus de direct, de grosses cotes, marge 2 % sur tous les sports ») : une seule fois,
+  // marge 2 % avant-match (football et autres sports), direct limité aux grands championnats
+  if (empty($c['mig7'])) {
+    sb_with('config.json', static function (array &$s) {
+      if (!empty($s['mig7'])) return true;
+      $s['mig7'] = 1; $s['liveAll'] = false;
+      foreach (['mMain', 'mSide', 'mExotic', 'mOther'] as $k) $s[$k] = 2;
+      return true;
+    });
+    $c = sb_read('config.json');
+  }
   if (empty($c['mig4'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig4'])) return true; $s['sports'] = SB_CFG_DEFAULT['sports']; $s['mig4'] = 1; return true; });
     $c = sb_read('config.json');
@@ -113,12 +129,12 @@ function sb_config(): array {
 /** Admin : enregistre les réglages (seulement les champs connus, bornés). */
 function sb_config_save(array $in): array {
   $cur = sb_config();
-  foreach (['public', 'live', 'livePublic', 'autosettle'] as $k) if (array_key_exists($k, $in)) $cur[$k] = (bool) $in[$k];
+  foreach (['public', 'live', 'livePublic', 'liveAll', 'autosettle'] as $k) if (array_key_exists($k, $in)) $cur[$k] = (bool) $in[$k];
   foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'mPred'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(2.0, min(40.0, (float) $in[$k])), 1);
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['sports']) && is_array($in['sports'])) $cur['sports'] = array_values(array_intersect(SB_CFG_DEFAULT['sports'], array_map('strval', $in['sports'])));
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
@@ -659,6 +675,8 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
   $st = sb_state();
   // 2026-10-22 (propriétaire : « les cotes sont toujours basses ») : une seule fois, toutes les cotes J…J+14 relues tout de suite (marge 2,5 % partout)
   if (empty($st['rp1'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp1'])) return true; $s['od'] = []; $s['rp1'] = 1; return true; }); $st = sb_state(); }
+  // 2026-10-22 (propriétaire : « marge 2 % ») : une seule fois, toutes les cotes relues avec la nouvelle marge
+  if (empty($st['rp2'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp2'])) return true; $s['od'] = []; $s['rp2'] = 1; return true; }); $st = sb_state(); }
   $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($mid, 21600) + array_fill_keys($lat, 43200); // J+3…J+7 : 6 h ; J+8…J+14 : 12 h
   foreach (array_merge([$d0, $dm1, $d1, $d2], $far) as $day) {
     if ($calls >= $max) break;
@@ -1626,7 +1644,8 @@ function sb_live_tick(int $now = 0): array {
       else sb_with('live.json', static function (array &$s) use ($now) { $s['fat'] = $now; return true; }); // erreur : pas de nouvel essai avant 30 s
       $L = sb_live_data();
     }
-    $live = array_filter((array) ($L['fx'] ?? []), static fn($r) => empty($r['end']));
+    $cfgL = sb_config();
+    $live = array_filter((array) ($L['fx'] ?? []), static fn($r) => empty($r['end']) && sb_live_big((array) $r, $cfgL)); // pas de lecture des cotes pour les petits championnats
     if ($live && $now - (int) ($L['at'] ?? 0) >= $ttlO && sb_live_budget_ok($now)) {
       $j = sb_get('odds/live', $now);
       if ($j !== null) { sb_live_store_odds($j, $now); $done[] = 'odds'; }
@@ -1760,9 +1779,11 @@ function sb_live_stats_api(?array $user, string $fid, int $now = 0): array {
  * Vue d'un match en direct (fichier live.json, aucune lecture d'API) : null si ce match n'est pas dans le direct.
  * ['row' => ligne /fixtures, 'od' => ligne /odds/live|null, 'sc', 'm', 'st', 'susp' (match entier), 'mk' => [mk => [[k, cote, s]]]]
  */
+function sb_live_big(array $row, array $cfg): bool { return !empty($cfg['liveAll']) || in_array((int) ($row['lg'] ?? 0), SB_LIVE_BIG, true); }
 function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
   $row = $L['fx'][$id] ?? null;
   if (!is_array($row) || (!empty($row['end']) && (int) $row['end'] < $now - SB_LIVE_KEEP_END)) return null;
+  if (!sb_live_big($row, $cfg)) return null; // petits championnats : pas de direct (ni liste, ni match, ni pari)
   $od = $L['od'][$id] ?? null;
   $ti = [(int) ($row['h'][0] ?? 0), (int) ($row['a'][0] ?? 0)];
   if (is_array($od) && array_map('intval', (array) ($od['ti'] ?? [])) !== $ti) $od = null; // jamais un autre match
@@ -1829,9 +1850,10 @@ function sb_live_fx_public(string $id, array $v): array {
 function sb_live_count(?array $user, int $now): int {
   if (!sb_live_visible($user)) return -1;
   $L = sb_live_data();
-  if ($now - (int) ($L['fat'] ?? 0) <= 180) { $od = (array) ($L['od'] ?? []); return count(array_filter((array) ($L['fx'] ?? []), static fn($r, $id) => empty($r['end']) && isset($od[(string) $id]), ARRAY_FILTER_USE_BOTH)); }
+  $cfg = sb_config();
+  if ($now - (int) ($L['fat'] ?? 0) <= 180) { $od = (array) ($L['od'] ?? []); return count(array_filter((array) ($L['fx'] ?? []), static fn($r, $id) => empty($r['end']) && isset($od[(string) $id]) && sb_live_big((array) $r, $cfg), ARRAY_FILTER_USE_BOTH)); }
   $n = 0;
-  foreach ([gmdate('Y-m-d', $now - 86400), gmdate('Y-m-d', $now)] as $d) foreach ((array) (sb_day($d)['fx'] ?? []) as $r) if (in_array((string) ($r['st'] ?? ''), SB_LIVE_ST, true) && (int) ($r['ts'] ?? 0) > $now - 4 * 3600) $n++;
+  foreach ([gmdate('Y-m-d', $now - 86400), gmdate('Y-m-d', $now)] as $d) foreach ((array) (sb_day($d)['fx'] ?? []) as $r) if (in_array((string) ($r['st'] ?? ''), SB_LIVE_ST, true) && (int) ($r['ts'] ?? 0) > $now - 4 * 3600 && sb_live_big((array) $r, $cfg)) $n++;
   return $n;
 }
 /** sbLive / sbList day « live » : matchs en direct (par compétition) avec score, minute, cotes 1x2, cadenas. */
@@ -1883,6 +1905,7 @@ function sb_live_pick(string $id, string $mk, string $k, ?array $user, int $now)
   if (!isset($L['fx'][$id])) return null;
   if (!sb_live_visible($user)) return ['ok' => false, 'reason' => 'closed'];
   $v = sb_live_view($id, $L, $now, sb_config());
+  if (!$v) return ['ok' => false, 'reason' => 'closed']; // petit championnat (direct limité) ou match sorti du flux
   $fam = sb_fam($mk);
   if (!in_array($fam, SB_LIVE_FAMS, true) || !in_array($k, sb_valid_k($fam), true)) return ['ok' => false, 'reason' => 'closed'];
   if ($v['susp']) return ['ok' => false, 'reason' => 'susp'];
