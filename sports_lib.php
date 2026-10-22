@@ -11,8 +11,8 @@ declare(strict_types=1);
  */
 
 const SP_MIN = 0.10; // v2779 (propriétaire) : mise minimum 0,10 $ (retour comme avant)
-const SP_MAX_SEL = 50; // 2026-10-21 (propriétaire : « autant de matchs qu'ils veulent ») : 50 matchs par coupon (avant 10) ; gain toujours plafonné (SP_MAX_WIN)
-const SP_MAX_WIN = 1000000000.0; // 2026-10-20 (propriétaire) : aucune limite (mise ni gain) ; v2779 : 6 000 $
+const SP_MAX_SEL = 1000; // 2026-10-22 (propriétaire : « autant de matchs qu'ils veulent, aucune limite ») : 1000 ; 2026-10-21 (propriétaire : « autant de matchs qu'ils veulent ») : 50 matchs par coupon (avant 10) ; gain toujours plafonné (SP_MAX_WIN)
+const SP_MAX_WIN = PHP_FLOAT_MAX; // 2026-10-22 (propriétaire : « même des milliards, aucune limite de gain ») ; 2026-10-20 (propriétaire) : aucune limite (mise ni gain) ; v2779 : 6 000 $
 const SP_DEFAULT_MAX_STAKE = 50.0; // (plus utilisé depuis v2779 : pas de mise maximale ; gardé pour les anciens matchs)
 const SP_MY_BETS = 300;            // v2779 : « Mes paris » montre les 300 derniers coupons
 /*
@@ -957,7 +957,6 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   }
   $odd = floor($odd * 100 + 1e-6) / 100; // v2765 : 2,30 reste 2,30 (avant : 2,29 à cause de l arrondi)
   // v2779 (propriétaire) : pas de mise maximale ; seul le GAIN d'un coupon est plafonné (6 000 $)
-  if ($mode === 'real' && $stake * $odd > SP_MAX_WIN + 1e-9) return ['ok' => false, 'reason' => 'maxWin', 'maxStake' => floor(SP_MAX_WIN / $odd * 100) / 100];
   $ref = 'sp_' . bin2hex(random_bytes(9));
   $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => sp_floor2(min(SP_MAX_WIN, $stake * $odd)), 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []);
   /* 2026-10-21 (propriétaire) — ORDRE SÛR pour TOUS les paris (avant : seulement les questions avec plafond) : 1) le coupon est
