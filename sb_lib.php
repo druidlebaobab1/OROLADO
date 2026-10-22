@@ -1434,6 +1434,7 @@ function sb_live_store_fixtures(array $j, int $now): int {
     // reprise de la 2e mi-temps vue par nous (si l'API ne donne pas periods.second) : gardée d'une lecture à l'autre
     foreach ($fx as $id => $row) {
       $old = (array) ($s['fx'][$id] ?? []);
+      $fx[$id]['mt'] = isset($old['m'], $old['mt']) && $old['m'] === ($row['m'] ?? null) ? (int) $old['mt'] : $now; // quand NOUS avons vu cette minute pour la 1re fois
       if (!empty($old['p2o'])) $fx[$id]['p2o'] = (int) $old['p2o'];
       elseif (($row['st'] ?? '') === '2H' && in_array($old['st'] ?? '', ['HT', '1H'], true)) $fx[$id]['p2o'] = $now - 5;
     }
@@ -1525,6 +1526,7 @@ function sb_live_store_odds(array $j, int $now): int {
     $od[(string) $id] = ['sc' => $sc, 'm' => is_numeric($r['fixture']['status']['elapsed'] ?? null) ? (int) $r['fixture']['status']['elapsed'] : null,
       'ti' => [(int) ($r['teams']['home']['id'] ?? 0), (int) ($r['teams']['away']['id'] ?? 0)],
       'blk' => !empty($st['blocked']) || !empty($st['stopped']) ? 1 : 0, 'fin' => !empty($st['finished']) ? 1 : 0,
+      'sec' => preg_match('/^(\d{1,3}):(\d{2})$/', (string) ($r['fixture']['status']['seconds'] ?? ''), $sm) ? (int) $sm[1] * 60 + (int) $sm[2] : null, 'sat' => $now, // horloge du fournisseur (« 63:10 ») au moment de la lecture
       'up' => is_string($r['update'] ?? null) && ($u = strtotime((string) $r['update'])) ? (int) $u : 0, // dernière mise à jour des cotes de CE match chez le fournisseur
       'mk' => sb_live_markets($r, $cfg, $sc, $unk), 'r1' => sb_live_raw1x2($r)];
   }
@@ -1779,16 +1781,18 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
  * VRAI début de la mi-temps (fixture.periods), à la seconde près — et non depuis le moment où la minute a changé chez nous.
  * null si inconnu (le téléphone garde l'ancienne horloge).
  */
-function sb_live_clock(string $st, array $r, int $now): ?int {
-  $p1 = (int) ($r['p1'] ?? 0) ?: (int) ($r['ts'] ?? 0); // début réel, sinon coup d'envoi prévu
-  $p2 = (int) ($r['p2'] ?? 0) ?: (int) ($r['p2o'] ?? 0); // reprise réelle, sinon moment où NOUS avons vu la 2e mi-temps commencer
-  $m = $r['m'] ?? null;
-  if ($st === '1H' && $p1 > 0 && $now >= $p1) $k = $now - $p1;
-  elseif ($st === '2H' && $p2 > 0 && $now >= $p2) $k = 2700 + $now - $p2;
-  else return null;
-  if (is_numeric($m) && abs(intdiv($k, 60) - (int) $m) > 5) return null; // incohérent avec la minute de l'API : on ne s'en sert pas
-  if (is_numeric($m)) $k = max((int) $m * 60, min($k, ((int) $m + 2) * 60 - 1)); // jamais plus de 2 min devant ni derrière la minute de l'API
-  return $k;
+function sb_live_clock(string $st, array $r, int $now, ?array $od = null): ?int {
+  // 2026-10-22 (propriétaire : « l'horloge est en avance de plus de 2 min » / « elle recommence ») — ordre de confiance :
+  //  1) l'horloge du FOURNISSEUR des cotes (fixture.status.seconds « 63:10 », lue toutes les quelques secondes) ;
+  //  2) sinon la minute de l'API au moment où NOUS l'avons vue changer (mt) ; jamais l'heure prévue du coup d'envoi.
+  if (!in_array($st, ['1H', '2H', 'ET'], true)) return null;
+  $m = is_numeric($r['m'] ?? null) ? (int) $r['m'] : null;
+  if (is_array($od) && is_int($od['sec'] ?? null) && (int) ($od['sat'] ?? 0) > 0) {
+    $k = (int) $od['sec'] + max(0, $now - (int) $od['sat']);
+    if ($m === null || ($k >= ($m - 1) * 60 && $k < ($m + 3) * 60)) return $k;
+  }
+  if ($m !== null && (int) ($r['mt'] ?? 0) > 0) return $m * 60 + min(119, max(0, $now - (int) $r['mt']));
+  return null;
 }
 /** Forme commune (spec : fx) d'un match en direct. kz = heure (s) du « 0:00 » de l'horloge : le téléphone compte seul, sans jamais revenir en arrière. */
 function sb_live_fx_public(string $id, array $v): array {
@@ -1798,7 +1802,7 @@ function sb_live_fx_public(string $id, array $v): array {
   return ['id' => 'foot:' . $id, 'lg' => (int) ($r['lg'] ?? 0), 'ts' => (int) ($r['ts'] ?? 0), 'st' => $v['st'], 'm' => $v['m'],
     'h' => ['n' => (string) ($r['h'][1] ?? ''), 'lo' => (string) ($r['h'][2] ?? '')], 'a' => ['n' => (string) ($r['a'][1] ?? ''), 'lo' => (string) ($r['a'][2] ?? '')],
     'sc' => $v['sc'], 'o' => $o, 'n' => count($mk), 'live' => 1, 'susp' => $s1 ? 1 : 0, 'rc' => (array) ($r['rc'] ?? [0, 0]), 'end' => !empty($r['end']) ? 1 : 0,
-    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'k' => ($kk = sb_live_clock($v['st'], $r, sb_now())), 'kz' => $kk !== null ? sb_now() - $kk : null, 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
+    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'k' => ($kk = sb_live_clock($v['st'], $r, sb_now(), is_array($v['od']) ? $v['od'] : null)), 'kz' => $kk !== null ? sb_now() - $kk : null, 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
 }
 /** Nombre de matchs du direct (onglet « Direct ») — aucun appel ; -1 = pas d'onglet Direct pour ce joueur. */
 function sb_live_count(?array $user, int $now): int {
