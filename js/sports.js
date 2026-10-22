@@ -2098,7 +2098,7 @@
     var K = [['poss', n.poss, '%'], ['shotsOn', n.shotsOn], ['shots', n.shots], ['corners', n.corners], ['attacks', n.attacks], ['dangerous', n.dangerous],
       ['saves', x.saves], ['fouls', x.fouls], ['offsides', x.offs], ['yellow', n.yellow], ['red', n.reds]];
     var rows = st ? K.filter(function (k) { return Array.isArray(st[k[0]]); }) : [];
-    var ix = (rows.length ? '<div class="pz-tvst' + (rows.length > 4 ? ' two' : '') + '" dir="ltr">' + rows.map(function (k) {
+    var ix = (rows.length ? '<div class="pz-tvst" dir="ltr">' + rows.map(function (k) {
       var h = +st[k[0]][0] || 0, a = +st[k[0]][1] || 0, tot = h + a, p = tot ? h / tot * 100 : 50, u = k[2] || '';
       return '<p><b dir="ltr" class="' + (h > a ? 'hi' : '') + '">' + h + u + '</b><span dir="auto">' + esc(k[1]) + '</span><b dir="ltr" class="' + (a > h ? 'hi' : '') + '">' + a + u + '</b><i class="pz-sbar"><i style="width:' + p.toFixed(1) + '%"></i><i style="width:' + (100 - p).toFixed(1) + '%"></i></i></p>';
     }).join('') + '</div>' : '') + (rec.length ? '<div class="pz-tvev">' + rec.slice(0, 5).map(line).join('') + '</div>' : '');

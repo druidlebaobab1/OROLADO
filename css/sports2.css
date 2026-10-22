@@ -899,6 +899,12 @@ html:root body #casinoModal .sp2 .pz-tvst p b.hi{color:#FDE68A}
 html:root body #casinoModal .sp2 .pz-tvst p span{white-space:normal}
 html:root body #casinoModal .sp2 .pz-tvst .pz-sbar{margin-top:1px}
 html:root body #casinoModal .sp2 .pz-tvev{flex-direction:row;flex-wrap:wrap;gap:3px 12px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08)}
+/* 2026-10-22 (propriétaire) : statistiques sur UNE colonne (domicile à gauche, extérieur à droite) ; événements un par ligne, ceux de l'équipe à domicile à gauche, ceux de l'extérieur à droite */
+html:root body #casinoModal .sp2 .pz-tvst{gap:6px}
+html:root body #casinoModal .sp2 .pz-tvst p b{font-size:12px}
+html:root body #casinoModal .sp2 .pz-tvst p span{font-size:11px}
+html:root body #casinoModal .sp2 .pz-tvev{flex-direction:column;flex-wrap:nowrap;gap:3px}
+html:root body #casinoModal .sp2 .pz-tvev .pz-te.a{align-self:flex-end;flex-direction:row-reverse;text-align:right}
 @media (prefers-reduced-motion:reduce){html:root body #casinoModal .sp2 .pz-tvs{transition:none}}
 @media (max-width:380px){html:root body #casinoModal .sp2 .pz-pitch{height:136px}}
 @media (min-width:900px){html:root body #casinoModal .sp2 .pz-pitch{height:220px}}
