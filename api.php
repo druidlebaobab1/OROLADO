@@ -300,6 +300,7 @@ $OROLADO_RATE_RULES = [
   'sbList'            => [['i', 240, 60]],
   'sbMatch'           => [['i', 240, 60]],
   'sbLive'            => [['i', 240, 60]],
+  'sbResults'         => [['i', 120, 60]],
   'sbCodeSave'        => [['t', 30, 600], ['i', 400, 600]],
   'sbCodeLoad'        => [['i', 240, 60]],
   'xferSend'          => [['t', 10, 600]],
@@ -431,10 +432,11 @@ if ($action === 'affClick') {
 // les lectures de l'API se font APRÈS la réponse (sb_after_response). Admin seul tant que « Public » est éteint.
 // 2026-10-22 (étape 3) — sbLive : matchs EN DIRECT (fichier live.json ; lectures /odds/live et /fixtures?live=all APRÈS la réponse,
 // seulement s'il y a de la demande).
-if ($action === 'sbList' || $action === 'sbMatch' || $action === 'sbLive') {
+if ($action === 'sbList' || $action === 'sbMatch' || $action === 'sbLive' || $action === 'sbResults') {
   if (!function_exists('sb_list')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
   $me = $token !== '' ? session_user($db, $token) : null;
   try {
+    if ($action === 'sbResults') $res = sb_results_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0)); else // 2026-10-22 : résultats (fichiers locaux)
     $res = $action === 'sbList' ? sb_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0)) : ($action === 'sbLive' ? sb_live_list($me ?: null) : sb_match($me ?: null, (string) ($req['id'] ?? '')));
   } catch (Throwable $eSb) {
     error_log('OROLADO sb ' . $eSb->getMessage());
