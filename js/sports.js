@@ -2167,7 +2167,10 @@
     var st = String(f.st || '');
     if (st === 'HT') { tvShow('', 50, 50, '', n.ht.toUpperCase(), '', 'pause'); return; }
     if (f.end || st === 'FT' || st === 'AET' || st === 'PEN') { tvShow('', 50, 50, '', n.endM.toUpperCase(), '', 'pause'); return; }
-    // jeu simulé : l'équipe qui a le ballon (au prorata de la possession), possession → attaque → attaque dangereuse
+    // 2026-10-22 (propriétaire : « est-ce une vraie simulation ? ») : ATTAQUE DANGEREUSE seulement sur un VRAI signal (le bookmaker
+    // bouge ses cotes vers une équipe : f.dg) ; sinon le ballon circule au milieu, sans rien affirmer
+    if (f.dg === 'h' || f.dg === 'a') { var dx = 80 + Math.random() * 11, dy = 18 + Math.random() * 64; if (f.dg === 'a') dx = 100 - dx; TV.side = f.dg; tvShow(f.dg, dx, dy, nm(f.dg), x.dang, '', 'dang'); return; }
+    var bx0 = 38 + Math.random() * 24, by0 = 20 + Math.random() * 60; tvShow('', bx0, by0, '', '', '', 'idle'); return;
     var r = Math.random();
     if (r < 0.3) { var ns = Math.random() < TV.poss ? 'h' : 'a'; if (ns !== TV.side) { TV.side = ns; TV.mode = 0; } }
     else if (r < 0.75) TV.mode = Math.min(2, TV.mode + 1);
