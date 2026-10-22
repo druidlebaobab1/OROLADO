@@ -58,10 +58,10 @@ $odd = static function (string $fid, string $mk, string $k): ?float { foreach ((
 
 echo "1) Réglages par défaut, visibilité\n";
 $c0 = sb_config(); // 1re lecture : Public allumé une seule fois (mise en ligne du 2026-10-22), marges au moins 15/20/30/20/15
-check('mise en ligne : Public allumé une fois ; marges 1 % avant-match (tous marchés, tous sports), 1 % en direct ; direct limité aux grands championnats', $c0['public'] === true && $c0['mMain'] == 1 && $c0['mSide'] == 1 && $c0['mExotic'] == 1 && $c0['mOther'] == 1 && $c0['mLive'] == 1 && $c0['liveAll'] === false);
+check('mise en ligne : Public allumé une fois ; marges 1 % avant-match (tous marchés, tous sports), 1 % en direct ; direct sur tous les championnats', $c0['public'] === true && $c0['mMain'] == 1 && $c0['mSide'] == 1 && $c0['mExotic'] == 1 && $c0['mOther'] == 1 && $c0['mLive'] == 1 && $c0['liveAll'] === true);
 sb_config_save(['mMain' => 30]);
 check('marges : un réglage de l\'admin n\'est jamais écrasé ensuite', sb_config()['mMain'] == 30);
-sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
+sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
 $c = sb_config();
 check('défauts : public NON, résultats automatiques OUI, marges 15/20/30/20/15, alertes 50/500/200', $c['public'] === false && $c['autosettle'] === true && $c['mMain'] == 15 && $c['mSide'] == 20 && $c['mExotic'] == 30 && $c['mLive'] == 20 && $c['mOther'] == 15 && $c['alertStake'] == 50 && $c['alertPot'] == 500 && $c['alertWin'] == 200);
 $NOW = $at('2026-10-22 08:00');
