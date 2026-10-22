@@ -1526,13 +1526,23 @@ function sb_live_store_odds(array $j, int $now): int {
       'ti' => [(int) ($r['teams']['home']['id'] ?? 0), (int) ($r['teams']['away']['id'] ?? 0)],
       'blk' => !empty($st['blocked']) || !empty($st['stopped']) ? 1 : 0, 'fin' => !empty($st['finished']) ? 1 : 0,
       'up' => is_string($r['update'] ?? null) && ($u = strtotime((string) $r['update'])) ? (int) $u : 0, // dernière mise à jour des cotes de CE match chez le fournisseur
-      'mk' => sb_live_markets($r, $cfg, $sc, $unk)];
+      'mk' => sb_live_markets($r, $cfg, $sc, $unk), 'r1' => sb_live_raw1x2($r)];
   }
   $maxUp = 0; foreach ($od as $o) $maxUp = max($maxUp, (int) $o['up']);
   foreach ($od as $id => $o) $od[$id]['lag'] = $o['up'] > 0 && $maxUp > 0 ? $maxUp - $o['up'] : 0; // retard de CE match sur le plus frais du flux
-  sb_with('live.json', static function (array &$s) use ($od, $now) {
+  sb_with('live.json', static function (array &$s) use (&$od, $now) {
     $old = (array) ($s['od'] ?? []);
-    foreach ($od as $id => $o) $od[$id]['chg'] = isset($old[$id]['sc']) && $old[$id]['sc'] !== $o['sc'] ? 1 : 0;
+    foreach ($od as $id => $o) {
+      $od[$id]['chg'] = isset($old[$id]['sc']) && $old[$id]['sc'] !== $o['sc'] ? 1 : 0;
+      // 2026-10-22 (propriétaire : « verrouiller AVANT les autres ») : le bookmaker bouge ses cotes AVANT que le score / l'action
+      // n'apparaisse dans le flux. Saut brusque du 1 · X · 2 (chance d'un résultat qui bouge de 6 points ou plus d'une lecture
+      // à l'autre) → match verrouillé 30 s (« saut »). Même chose quand le flux bascule en « bloqué ».
+      $jmp = (int) ($old[$id]['jmp'] ?? 0);
+      $pa = sb_live_p1x2((array) ($old[$id]['r1'] ?? [])); $pb = sb_live_p1x2((array) ($o['r1'] ?? [])); // cotes BRUTES du fournisseur
+      if ($pa && $pb) foreach ($pb as $k => $p) if (isset($pa[$k]) && abs($p - $pa[$k]) >= 0.06) { $jmp = $now; break; }
+      if (!empty($o['blk']) && empty($old[$id]['blk'])) $jmp = $now;
+      if ($jmp) $od[$id]['jmp'] = $jmp;
+    }
     $s['od'] = $od; $s['at'] = $now;
     return true;
   });
@@ -1544,6 +1554,25 @@ function sb_live_store_odds(array $j, int $now): int {
   });
   return count($od);
 }
+/** Cotes brutes 1 · X · 2 du fournisseur pour un match du flux : [[k, cote], …]. */
+function sb_live_raw1x2(array $r): array {
+  foreach ((array) ($r['odds'] ?? []) as $b) {
+    $n = strtolower(trim((string) ($b['name'] ?? '')));
+    if (!in_array($n, ['fulltime result', 'match winner', '1x2', 'full time result', 'match result', '3way result'], true)) continue;
+    $out = [];
+    foreach ((array) ($b['values'] ?? []) as $v) { $lv = strtolower(trim((string) ($v['value'] ?? ''))); if (isset(SB_RES[$lv]) && is_numeric($v['odd'] ?? null)) $out[] = [SB_RES[$lv], (float) $v['odd']]; }
+    return $out;
+  }
+  return [];
+}
+/** 1 · X · 2 du direct → chances normalisées [k => p] (null si incomplet). */
+function sb_live_p1x2(array $row): ?array {
+  $inv = []; foreach ($row as $z) if (isset($z[0], $z[1]) && (float) $z[1] > 1.0) $inv[(string) $z[0]] = 1 / (float) $z[1];
+  if (count($inv) < 2) return null;
+  $t = array_sum($inv); foreach ($inv as $k => $v) $inv[$k] = $v / $t;
+  return $inv;
+}
+const SB_LIVE_JUMP_LOCK = 30; // secondes de cadenas après un saut de cote / un passage en « bloqué »
 function sb_live_budget_ok(int $now, int $left = SB_LIVE_RESERVE): bool { return sb_budget($now)['left'] > $left; }
 /**
  * 2026-10-22 (propriétaire : « le direct verrouille 1 à 2 min trop tard ») : rythme du direct selon les lectures qui restent
@@ -1736,7 +1765,8 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
   }
   // cotes de ce match en retard de plus de 90 s sur les autres matchs du flux (fournisseur figé pour ce match) → cadenas
   $odStale = is_array($od) && (int) ($od['lag'] ?? 0) > 90;
-  $susp = !$fresh || $odStale || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
+  $jumped = is_array($od) && (int) ($od['jmp'] ?? 0) > $now - SB_LIVE_JUMP_LOCK;
+  $susp = !$fresh || $odStale || $jumped || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
     || !in_array($st, ['1H', 'HT', '2H'], true); // prolongation / tirs au but : plus de pari (règlement sur les 90 min)
   if (!empty($row['end'])) $sc = is_array($row['g'] ?? null) ? array_map('intval', $row['g']) : $sc;
   $mk = is_array($od) ? (array) $od['mk'] : [];
