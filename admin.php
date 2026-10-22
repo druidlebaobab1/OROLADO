@@ -2179,6 +2179,12 @@ if ($isAjax) {
     }
     if ($action === 'sp_close') admin_json(sp_admin_close((string) ($req['id'] ?? '')));
     if ($action === 'sp_settle') admin_json(sp_admin_settle(admin_local_db(), (string) ($req['id'] ?? ''), (string) ($req['k'] ?? '')));
+    // 2026-10-22 : corrigé (était dans le bloc gm_, jamais atteint → « Action inconnue ») ; 2026-10-21 (propriétaire) : fiche joueur → ses PARIS (lecture seule)
+    if ($action === 'sp_player') {
+      $pid = (string) ($req['userId'] ?? '');
+      if ($pid === '' || !function_exists('sp_my_bets')) admin_json(['ok' => false, 'reason' => 'Joueur introuvable']);
+      admin_json(['ok' => true, 'bets' => array_values(array_filter(sp_my_bets($pid), static fn($b) => ($b['mode'] ?? '') === 'real'))]); // réel seulement
+    }
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
   }
 
@@ -2186,12 +2192,6 @@ if ($isAjax) {
   if (str_starts_with($action, 'gm_')) {
     require_once __DIR__ . '/admin_games_lib.php';
     $gmMode = (string) ($req['mode'] ?? '');
-    // 2026-10-21 (propriétaire) : fiche joueur → ses PARIS (lecture seule)
-    if ($action === 'sp_player') {
-      $pid = (string) ($req['userId'] ?? '');
-      if ($pid === '' || !function_exists('sp_my_bets')) admin_json(['ok' => false, 'reason' => 'Joueur introuvable']);
-      admin_json(['ok' => true, 'bets' => sp_my_bets($pid)]);
-    }
     if ($action === 'gm_player') {
       $pid = (string) ($req['userId'] ?? '');
       if ($pid === '') admin_json(['ok' => false, 'reason' => 'Joueur introuvable']);
@@ -2883,7 +2883,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <p class="muted" id="gmStart">Chaque partie jouée (Action, Live, Casino), comme les trades.</p>
       <div class="lvA-tabs gm-tabs"><button class="mini ok" type="button" data-gt="feed">🔴 En direct</button><button class="mini" type="button" data-gt="sum">📊 Par jeu</button><button class="mini" type="button" data-gt="cmp">⚖️ Trades ou jeux ?</button></div>
       <div id="gmPaneFeed">
-        <div class="gm-filt"><span class="gm-seg" id="gmFMode"><button type="button" data-v="" class="on">Tous</button><button type="button" data-v="real">Réel</button><button type="button" data-v="demo">Démo</button></span>
+        <div class="gm-filt"><span class="gm-seg" id="gmFMode" hidden><button type="button" data-v="real" class="on">Réel</button></span>
           <select id="gmFSec"><option value="">Toutes les sections</option><option value="action">Action</option><option value="live">Live</option><option value="casino">Casino</option></select></div>
         <p class="muted gm-live"><i class="gm-dot"></i><span id="gmFSt">Chargement…</span></p>
         <div class="gm-list gm-list-tall" id="gmFList"></div>
@@ -2891,7 +2891,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       </div>
       <div id="gmPaneSum" hidden>
         <div class="gm-filt"><span class="gm-seg" id="gmSPer"><button type="button" data-v="today">Aujourd'hui</button><button type="button" data-v="d7" class="on">7 jours</button><button type="button" data-v="d30">30 jours</button></span>
-          <span class="gm-seg" id="gmSMode"><button type="button" data-v="real" class="on">Réel</button><button type="button" data-v="demo">Démo</button></span></div>
+          <span class="gm-seg" id="gmSMode" hidden><button type="button" data-v="real" class="on">Réel</button></span></div>
         <div class="gm-cards" id="gmSSec"><p class="muted">Chargement…</p></div>
         <div class="gm-filt"><label class="muted" for="gmSSort">Trier</label><select id="gmSSort"><option value="in">Total misé</option><option value="n">Parties</option><option value="house">Net maison</option><option value="out">Total payé</option><option value="players">Joueurs</option><option value="name">Nom</option></select>
           <button class="mini" type="button" id="gmSDir">▼ Décroissant</button>
@@ -4380,7 +4380,7 @@ async function spPlayerInit(u) {
 }
 function gmPlayerBox() {
   return '<h3 class="panel-title">🎮 Jeux (Action · Live · Casino)</h3>' +
-    '<div class="gm-filt"><span class="gm-seg" id="gmPMode"><button type="button" data-v="" class="on">Tous</button><button type="button" data-v="real">Réel</button><button type="button" data-v="demo">Démo</button></span></div>' +
+    '<div class="gm-filt"><span class="gm-seg" id="gmPMode" hidden><button type="button" data-v="real" class="on">Réel</button></span></div>' +
     '<div class="gm-tot" id="gmPTot"></div><div class="gm-list" id="gmPList"><p class="muted" style="padding:12px">Chargement…</p></div>' +
     '<button class="mini gm-more" type="button" id="gmPMore" hidden>Charger plus</button>';
 }
