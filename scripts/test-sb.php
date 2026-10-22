@@ -57,6 +57,9 @@ $ua = $db['users']['u_a']; $ub = $db['users']['u_b']; $uadm = $db['users']['u_ad
 $odd = static function (string $fid, string $mk, string $k): ?float { foreach ((array) (sb_mk_file($fid)['mk'][$mk] ?? []) as $o) if ($o[0] === $k) return (float) $o[1]; return null; };
 
 echo "1) Réglages par défaut, visibilité\n";
+$c0 = sb_config(); // 1re lecture : Public allumé une seule fois (mise en ligne du 2026-10-22), marges au moins 15/20/30/20/15
+check('mise en ligne : Public allumé une fois, marges relevées', $c0['public'] === true && $c0['mMain'] == 15 && $c0['mExotic'] == 30);
+sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1]; return true; }); // la suite teste le réglage « Public éteint »
 $c = sb_config();
 check('défauts : public NON, résultats automatiques OUI, marges 15/20/30/20/15, alertes 50/500/200', $c['public'] === false && $c['autosettle'] === true && $c['mMain'] == 15 && $c['mSide'] == 20 && $c['mExotic'] == 30 && $c['mLive'] == 20 && $c['mOther'] == 15 && $c['alertStake'] == 50 && $c['alertPot'] == 500 && $c['alertWin'] == 200);
 $NOW = $at('2026-10-22 08:00');

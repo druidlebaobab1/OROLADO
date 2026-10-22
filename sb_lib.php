@@ -66,6 +66,16 @@ function sb_read(string $name): array {
 }
 function sb_config(): array {
   $c = sb_read('config.json');
+  // 2026-10-22 (propriétaire : « mettons en direct ») : une seule fois, Public allumé et marges au moins 15/20/30/20/15
+  if (empty($c['mig1'])) {
+    sb_with('config.json', static function (array &$s) {
+      if (!empty($s['mig1'])) return true;
+      $s['public'] = true; $s['mig1'] = 1;
+      foreach (['mMain' => 15, 'mSide' => 20, 'mExotic' => 30, 'mLive' => 20, 'mOther' => 15] as $k => $v) $s[$k] = max($v, (float) ($s[$k] ?? 0));
+      return true;
+    });
+    $c = sb_read('config.json');
+  }
   $out = SB_CFG_DEFAULT;
   foreach ($out as $k => $v) if (array_key_exists($k, $c)) $out[$k] = is_bool($v) ? (bool) $c[$k] : (is_array($v) ? (array) $c[$k] : (float) $c[$k]);
   return $out;
@@ -76,7 +86,7 @@ function sb_config_save(array $in): array {
   foreach (['public', 'live', 'livePublic', 'autosettle'] as $k) if (array_key_exists($k, $in)) $cur[$k] = (bool) $in[$k];
   foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(2.0, min(40.0, (float) $in[$k])), 1);
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {

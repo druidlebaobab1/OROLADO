@@ -513,7 +513,7 @@ html:root body #casinoModal .sp2 .sb-ob.fl-dn{box-shadow:inset 0 0 0 2px #F43F5E
 html:root body #casinoModal .sp2 .sb-ob.fl-up::after,html:root body #casinoModal .sp2 .sb-ob.fl-dn::after{position:absolute;top:2px;inset-inline-end:3px;font:900 8px/1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sb-ob.fl-up::after{content:"▲";color:#22C55E}
 html:root body #casinoModal .sp2 .sb-ob.fl-dn::after{content:"▼";color:#F43F5E}
-html:root body #casinoModal .sp2 .sb-more{min-width:0;height:40px;padding:0;border:0;border-radius:9px;background:transparent;color:#C4B5FD;font:800 11.5px/1 var(--sp2-font)}
+html:root body #casinoModal .sp2 .sb-more{min-width:0;height:40px;padding:0;border:0;border-radius:9px;background:transparent;color:#C4B5FD;font:800 20px/1 var(--sp2-font)}
 @media (hover:hover){html:root body #casinoModal .sp2 .sb-ob:not(.on):not(:disabled):not(.off):hover{background:rgba(255,255,255,.13)}}
 /* page d'un match */
 html:root body #casinoModal .sp2 .sb-mp{display:flex;flex-direction:column;gap:10px;min-width:0}
