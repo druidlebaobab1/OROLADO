@@ -4240,6 +4240,22 @@
   Object.keys(MISS_TR).forEach(function (k) {
     MISS_LANGS.forEach(function (l, i) { var v = MISS_TR[k][i]; if (DICT[l] && v != null) DICT[l][k] = v; });
   });
+  // 2026-10-22 (propriétaire) — Paris : AUTRES SPORTS (avant-match) — noms des marchés et des sports (js/sports.js, clés sb*)
+  var SBO_TR = {
+    fr: { sbM12: 'Vainqueur (prolongation comprise)', sbM12mma: 'Vainqueur du combat', sbM1x2reg: '1X2 (temps réglementaire)', sbMtotPts: 'Total de points', sbMtotGoals: 'Total de buts', sbMtotRuns: 'Total de points (runs)', sbMhcp: 'Handicap', sbMhcpSets: 'Handicap (sets)', sbGTot: 'Totaux', sbSpAmfoot: 'Foot US', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    en: { sbM12: 'Winner (incl. overtime)', sbM12mma: 'Fight winner', sbM1x2reg: '1X2 (regular time)', sbMtotPts: 'Total points', sbMtotGoals: 'Total goals', sbMtotRuns: 'Total runs', sbMhcp: 'Handicap', sbMhcpSets: 'Set handicap', sbGTot: 'Totals', sbSpAmfoot: 'Am. football', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    es: { sbM12: 'Ganador (incl. prórroga)', sbM12mma: 'Ganador del combate', sbM1x2reg: '1X2 (tiempo reglamentario)', sbMtotPts: 'Total de puntos', sbMtotGoals: 'Total de goles', sbMtotRuns: 'Total de carreras', sbMhcp: 'Hándicap', sbMhcpSets: 'Hándicap de sets', sbGTot: 'Totales', sbSpAmfoot: 'Fútbol am.', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    pt: { sbM12: 'Vencedor (incl. prorrogação)', sbM12mma: 'Vencedor da luta', sbM1x2reg: '1X2 (tempo regulamentar)', sbMtotPts: 'Total de pontos', sbMtotGoals: 'Total de gols', sbMtotRuns: 'Total de corridas', sbMhcp: 'Handicap', sbMhcpSets: 'Handicap de sets', sbGTot: 'Totais', sbSpAmfoot: 'Fut. americano', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    ar: { sbM12: 'الفائز (مع الوقت الإضافي)', sbM12mma: 'الفائز بالنزال', sbM1x2reg: '1X2 (الوقت الأصلي)', sbMtotPts: 'مجموع النقاط', sbMtotGoals: 'مجموع الأهداف', sbMtotRuns: 'مجموع النقاط (رَن)', sbMhcp: 'هانديكاب', sbMhcpSets: 'هانديكاب الأشواط', sbGTot: 'المجاميع', sbSpAmfoot: 'كرة أمريكية', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    tr: { sbM12: 'Kazanan (uzatmalar dahil)', sbM12mma: 'Dövüşün galibi', sbM1x2reg: '1X2 (normal süre)', sbMtotPts: 'Toplam sayı', sbMtotGoals: 'Toplam gol', sbMtotRuns: 'Toplam koşu', sbMhcp: 'Handikap', sbMhcpSets: 'Set handikapı', sbGTot: 'Toplamlar', sbSpAmfoot: 'Amerikan futbolu', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    vi: { sbM12: 'Đội thắng (gồm hiệp phụ)', sbM12mma: 'Người thắng trận', sbM1x2reg: '1X2 (thời gian chính thức)', sbMtotPts: 'Tổng điểm', sbMtotGoals: 'Tổng bàn thắng', sbMtotRuns: 'Tổng điểm (run)', sbMhcp: 'Chấp', sbMhcpSets: 'Chấp set', sbGTot: 'Tổng', sbSpAmfoot: 'Bóng bầu dục Mỹ', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    id: { sbM12: 'Pemenang (termasuk perpanjangan)', sbM12mma: 'Pemenang pertarungan', sbM1x2reg: '1X2 (waktu normal)', sbMtotPts: 'Total poin', sbMtotGoals: 'Total gol', sbMtotRuns: 'Total run', sbMhcp: 'Handicap', sbMhcpSets: 'Handicap set', sbGTot: 'Total', sbSpAmfoot: 'Sepak bola Amerika', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    ru: { sbM12: 'Победитель (с овертаймом)', sbM12mma: 'Победитель боя', sbM1x2reg: '1X2 (основное время)', sbMtotPts: 'Тотал очков', sbMtotGoals: 'Тотал голов', sbMtotRuns: 'Тотал ранов', sbMhcp: 'Фора', sbMhcpSets: 'Фора по сетам', sbGTot: 'Тоталы', sbSpAmfoot: 'Амер. футбол', sbSpAfl: 'AFL', sbSpMma: 'ММА' },
+    de: { sbM12: 'Sieger (inkl. Verlängerung)', sbM12mma: 'Sieger des Kampfes', sbM1x2reg: '1X2 (reguläre Spielzeit)', sbMtotPts: 'Punkte gesamt', sbMtotGoals: 'Tore gesamt', sbMtotRuns: 'Runs gesamt', sbMhcp: 'Handicap', sbMhcpSets: 'Satz-Handicap', sbGTot: 'Summen', sbSpAmfoot: 'Football', sbSpAfl: 'AFL', sbSpMma: 'MMA' },
+    zh: { sbM12: '胜者（含加时）', sbM12mma: '比赛胜者', sbM1x2reg: '1X2（常规时间）', sbMtotPts: '总分', sbMtotGoals: '总进球', sbMtotRuns: '总跑分', sbMhcp: '让分', sbMhcpSets: '局数让分', sbGTot: '总数', sbSpAmfoot: '美式橄榄球', sbSpAfl: '澳式足球', sbSpMma: '综合格斗' },
+    hi: { sbM12: 'विजेता (ओवरटाइम सहित)', sbM12mma: 'मुक़ाबले का विजेता', sbM1x2reg: '1X2 (निर्धारित समय)', sbMtotPts: 'कुल अंक', sbMtotGoals: 'कुल गोल', sbMtotRuns: 'कुल रन', sbMhcp: 'हैंडिकैप', sbMhcpSets: 'सेट हैंडिकैप', sbGTot: 'कुल', sbSpAmfoot: 'अमेरिकी फ़ुटबॉल', sbSpAfl: 'AFL', sbSpMma: 'MMA' }
+  };
+  Object.keys(SBO_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBO_TR[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {

@@ -113,6 +113,14 @@
       '<path d="' + seams + '" stroke="#9AA1B4" stroke-width=".7" stroke-linecap="round" fill="none" clip-path="url(#spBallC)"/><circle cx="12" cy="12" r="10.6" fill="none" stroke="rgba(15,23,42,.35)" stroke-width=".8"/>';
   })();
   SICO.foot = BALL;
+  // 2026-10-22 : petites icônes des autres sports (même style : dessinées, pas d'émojis)
+  SICO.hockey = '<path d="M4.5 3.5l7.2 12.6h6.6a1.7 1.7 0 0 1 0 3.4h-8.6L2.6 4.6z" fill="#93C5FD"/><path d="M11.7 16.1h6.6a1.7 1.7 0 0 1 0 3.4h-8.6" fill="#1D4ED8"/><ellipse cx="18.5" cy="9" rx="3.4" ry="1.5" fill="#111827"/><rect x="15.1" y="7.5" width="6.8" height="1.5" fill="#111827"/><ellipse cx="18.5" cy="7.5" rx="3.4" ry="1.5" fill="#374151"/>';
+  SICO.handball = '<circle cx="12" cy="12" r="9" fill="#FDE047"/><path d="M4 9.2c4.5 1.3 11.5 1.3 16 0M4 14.8c4.5-1.3 11.5-1.3 16 0M12 3c-2.2 5-2.2 13 0 18" stroke="#A16207" stroke-width="1.2" fill="none"/>';
+  SICO.volley = '<circle cx="12" cy="12" r="9" fill="#fff"/><path d="M12 3.2c.2 4.8 3 7.9 8.1 9.4M12 12c-3.9 1.8-5.8 4.7-6.1 8M12 12C10.6 8 7.6 5.5 3.5 5.6" stroke="#2563EB" stroke-width="1.7" fill="none"/><circle cx="12" cy="12" r="9" fill="none" stroke="#94A3B8" stroke-width=".8"/>';
+  SICO.rugby = '<ellipse cx="12" cy="12" rx="10" ry="6" transform="rotate(-35 12 12)" fill="#B45309"/><path d="M8.6 15.4l6.8-6.8M10.1 12.5l1.4 1.4M11.6 11l1.4 1.4M13.1 9.5l1.4 1.4" stroke="#fff" stroke-width="1.1"/>';
+  SICO.amfoot = '<ellipse cx="12" cy="12" rx="10" ry="6" transform="rotate(-35 12 12)" fill="#7C2D12"/><path d="M5.6 13.7l2.2 2.2M16.2 5.9l2.2 2.2M9.2 14.8l5.6-5.6M10.4 12.2l1.4 1.4M12 10.6l1.4 1.4" stroke="#fff" stroke-width="1.1"/>';
+  SICO.afl = '<ellipse cx="12" cy="12" rx="10" ry="6.4" transform="rotate(-35 12 12)" fill="#DC2626"/><path d="M8.6 15.4l6.8-6.8" stroke="#fff" stroke-width="1.2"/><path d="M10.1 12.5l1.4 1.4M11.6 11l1.4 1.4M13.1 9.5l1.4 1.4" stroke="#fff" stroke-width="1"/>';
+  SICO.baseball = '<circle cx="12" cy="12" r="9" fill="#fff"/><path d="M6.5 5.4c2.6 3.6 2.6 9.6 0 13.2M17.5 5.4c-2.6 3.6-2.6 9.6 0 13.2" stroke="#DC2626" stroke-width="1.3" fill="none" stroke-dasharray="1.6 1.2"/><circle cx="12" cy="12" r="9" fill="none" stroke="#94A3B8" stroke-width=".8"/>';
   // la catégorie d'une question vient de son image : ballon = Football, Bitcoin = Crypto, drapeau / urne = Politique
   function qKind(e) {
     if (!EVK[e.sport]) return e.sport || 'autre';
@@ -442,7 +450,7 @@
     var ic = r === 'won' ? IC.ok : r === 'lost' ? IC.x : r === 'void' ? '↺' : '';
     if (s.mk) { // 2026-10-22 : choix SB → choix en gras, match · marché en petit (traduits depuis mk / k)
       var tm = teams(s.t) || [s.t, ''];
-      return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(s.t) + '</small><b class="fit" dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="fit sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1])) + '</small></div><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+      return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(s.t) + '</small><b class="fit" dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="fit sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1], spOf(s))) + '</small></div><em>' + Number(s.odd).toFixed(2) + '</em></div>';
     }
     return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst">' + linesHtml(e ? trT(e) : s.t, 'small', right ? 20 : 34, true) + '<b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
   }
@@ -607,8 +615,8 @@
     var expl = '<div class="sp2-type-t sp2-expl">' + linesHtml(cap1(md === 'combo' ? x.combo : slip.length > 1 ? x.singleN : (slip[0].q ? x.qOnly : x.singleX)), 'span', 40) + '</div>';
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
       var e = z.sb ? null : evById(z.ev), st = stOf(z);
-      return '<div class="sp2-sel' + (z.closed || z.susp ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><div class="sp2-sel-r"><span class="sp2-sel-ic">' + sico(z.sb ? 'foot' : e ? qKind(e) : 'autre') + '</span>' +
-        '<div class="sp2-sel-t"><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.susp ? NX().susp : z.l) + '</b>' + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '<small class="sp2-mkt fit" dir="auto">' + esc((z.lv ? NX().nLive + ' · ' : '') + (z.sb ? sbMkName(z.mk, z.h.n, z.a.n) : mkt(e))) + '</small></div>' +
+      return '<div class="sp2-sel' + (z.closed || z.susp ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><div class="sp2-sel-r"><span class="sp2-sel-ic">' + sico(z.sb ? spIco(spOf(z)) : e ? qKind(e) : 'autre') + '</span>' +
+        '<div class="sp2-sel-t"><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.susp ? NX().susp : z.l) + '</b>' + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '<small class="sp2-mkt fit" dir="auto">' + esc((z.lv ? NX().nLive + ' · ' : '') + (z.sb ? sbMkName(z.mk, z.h.n, z.a.n, spOf(z)) : mkt(e))) + '</small></div>' +
         '<em' + (z.chg && z.prev ? ' class="' + (z.odd > z.prev ? 'up' : 'dn') + '"' : '') + '>' + (z.closed || z.susp ? IC.lock : (z.chg && z.prev ? '<s>' + Number(z.prev).toFixed(2) + '</s>' : '') + Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>' +
         (each ? '<div class="sp2-ss"><label class="sp2-inw sm"><input data-st="' + i + '" inputmode="decimal" autocomplete="off" value="' + (st > 0 ? m2(st) : '') + '" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></label>' +
           '<span class="sp2-ssw"><small class="fit">' + esc(x.potL) + '</small><b class="fit" data-pw="' + i + '">' + money(sp2Pot(st, z.odd)) + '</b></span></div>' : '') + '</div>';
@@ -930,8 +938,17 @@
     baseball: { fr: 'Baseball', en: 'Baseball', es: 'Béisbol', pt: 'Beisebol', ar: 'البيسبول', tr: 'Beyzbol', vi: 'Bóng chày', id: 'Bisbol', ru: 'Бейсбол', de: 'Baseball', zh: '棒球', hi: 'बेसबॉल' }
   };
   SPN.basketball = SPN.basket; SPN.volleyball = SPN.volley;
-  function spName(s) { if (s.s === 'foot') return SX().foot; var t = SPN[s.s]; return (t && (t[lg()] || t.en)) || s.n || s.s; }
-  function spIco(s) { return s === 'foot' ? 'foot' : s === 'basket' || s === 'basketball' ? 'basket' : s === 'mma' ? 'mma' : s === 'tennis' ? 'tennis' : 'autre'; }
+  // 2026-10-22 : textes des autres sports (12 langues) dans js/i18n-src.js (clés sb*) ; repli anglais si la traduction manque
+  function T18(k, fb) { try { var v = D6.I18N && D6.I18N.t ? D6.I18N.t(k) : ''; return v && v !== k ? v : fb; } catch (e) { return fb; } }
+  var SPN18 = { amfoot: ['sbSpAmfoot', 'Am. football'], afl: ['sbSpAfl', 'AFL'], mma: ['sbSpMma', 'MMA'] };
+  function spName(s) { if (s.s === 'foot') return SX().foot; if (SPN18[s.s]) return T18(SPN18[s.s][0], SPN18[s.s][1]); var t = SPN[s.s]; return (t && (t[lg()] || t.en)) || s.n || s.s; }
+  function spIco(s) { s = s === 'basketball' ? 'basket' : s === 'volleyball' ? 'volley' : s; return SICO[s] && !EVK[s] ? s : 'autre'; }
+  // sport d'un match / choix / pari : « basket:7001 », « sb:basket:7001:12 », {sp}, {fx} ; football par défaut
+  function spOf(o) {
+    if (!o) return 'foot';
+    if (typeof o === 'string') { var m = /^(?:sb:)?([a-z]+):\d/.exec(o); return m ? m[1] : 'foot'; }
+    return o.sp || spOf(o.fx || o.id || o.ev || '');
+  }
   function sbToast(m, k) { if (ctx && ctx.toast) ctx.toast(m, k || 'info'); else if (D6.App && D6.App.toast) D6.App.toast(m, k || 'info'); }
   function favs() { try { var f = JSON.parse(localStorage.getItem('oro_sb_fav') || '{}') || {}; return { l: Array.isArray(f.l) ? f.l : [], f: Array.isArray(f.f) ? f.f : [] }; } catch (e) { return { l: [], f: [] }; } }
   function favToggle(kind, id) {
@@ -945,8 +962,14 @@
   function numL(v) { var n = Number(v); return isFinite(n) ? n.toLocaleString(loc(), { maximumFractionDigits: 2 }) : String(v); }
   function sgn(v) { var n = Number(v); return (n > 0 ? '+' : n < 0 ? '−' : '') + numL(Math.abs(n)); }
   function mkParts(mk) { mk = String(mk || ''); var i = mk.indexOf(':'); return i < 0 ? [mk, ''] : [mk.slice(0, i), mk.slice(i + 1)]; }
-  function sbMkName(mk, h, a) {
+  function sbMkName(mk, h, a, sp) {
     var x = SX(), f = mkParts(mk)[0];
+    if (sp && sp !== 'foot') { // autres sports : 12 (prolongation comprise), 1x2 (temps réglementaire), total, handicap
+      if (f === '12') return sp === 'mma' ? T18('sbM12mma', 'Fight winner') : T18('sbM12', 'Winner (incl. overtime)');
+      if (f === '1x2') return T18('sbM1x2reg', '1X2 (regular time)');
+      if (f === 'ou') return sp === 'baseball' ? T18('sbMtotRuns', 'Total runs') : sp === 'hockey' || sp === 'handball' ? T18('sbMtotGoals', 'Total goals') : T18('sbMtotPts', 'Total points');
+      if (f === 'ah') return sp === 'volley' ? T18('sbMhcpSets', 'Set handicap') : T18('sbMhcp', 'Handicap');
+    }
     var N = { '1x2': x.m1x2, dc: x.mdc, dnb: x.mdnb, ou: x.mou, btts: x.mbtts, tth: fmt(x.mtt, { t: h }), tta: fmt(x.mtt, { t: a }), oe: x.moe, csh: fmt(x.mcs0, { t: h }), csa: fmt(x.mcs0, { t: a }),
       wnh: fmt(x.mwn, { t: h }), wna: fmt(x.mwn, { t: a }), eh: x.meh, ah: x.mah, ht1x2: x.mht1x2, htou: x.mhtou, htbtts: x.mhtbtts, '2h1x2': x.m2h1x2, htft: x.mhtft, cs: x.mcs, rbtts: x.mrbtts, rou: x.mrou, eg: x.meg, hsh: x.mhsh,
       htdc: x.mhtdc, '2hdc': x.m2hdc, '2hbtts': x.m2hbtts, htcs: x.mhtcs, htoe: x.mhtoe, '2hoe': x.m2hoe, '2hou': x.m2hou, httth: fmt(x.mhttt, { t: h }), httta: fmt(x.mhttt, { t: a }), htah: x.mhtah };
@@ -959,7 +982,7 @@
     var yn = function (c) { return c === 'Y' ? x.yes : x.no; };
     k = String(k);
     switch (f) {
-      case '1x2': case 'ht1x2': case '2h1x2': case 'dnb': return one(k);
+      case '1x2': case 'ht1x2': case '2h1x2': case 'dnb': case '12': return one(k);
       case 'eh': return (k === 'D' ? x.draw : one(k)) + ' (' + sgn(k === 'A' ? -ln : +ln) + ')';
       case 'ah': case 'htah': return one(k) + ' ' + sgn(k === 'A' ? -ln : +ln);
       case 'dc': case 'htdc': case '2hdc': return { HD: h + ' / ' + x.draw, HA: h + ' / ' + a, DA: x.draw + ' / ' + a }[k] || k;
@@ -978,7 +1001,7 @@
   function sep() { return lg() === 'fr' ? ' : ' : ': '; }
   // choix d'un pari (Mes paris, reçus, ticket) : traduit si mk / k sont là, sinon l'ancien libellé (inchangé)
   function selLbl(s) {
-    if (s && s.mk) { var tm = teams(s.t) || [s.t, '']; var o = sbOutL(s.mk, s.k, tm[0], tm[1]); return mkParts(s.mk)[0] === '1x2' ? o : sbMkName(s.mk, tm[0], tm[1]) + sep() + o; }
+    if (s && s.mk) { var tm = teams(s.t) || [s.t, ''], sp = spOf(s), f = mkParts(s.mk)[0]; var o = sbOutL(s.mk, s.k, tm[0], tm[1]); return (f === '1x2' && sp === 'foot') || f === '12' ? o : sbMkName(s.mk, tm[0], tm[1], sp) + sep() + o; }
     return trO(s ? s.l : '');
   }
 
@@ -1088,7 +1111,7 @@
     if (!box) return;
     if (sending && view === 'slip') return;
     var mb = mbox();
-    if (v === view && v !== 'slip') { if (mb) mb.scrollTop = 0; if (v === 'home' && (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot')) { per = 'all'; sbQ = ''; hourF = -1; render(); } return; }
+    if (v === view && v !== 'slip') { if (mb) mb.scrollTop = 0; if (v === 'home' && (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot')) { per = 'all'; sbQ = ''; hourF = -1; sport = 'foot'; render(); } return; }
     if (mb) scrollMem[view] = mb.scrollTop;
     if (v === 'slip') { if (view !== 'slip') slipFrom = view; lastBet = null; lastBets = null; }
     view = v; render();
@@ -1220,10 +1243,14 @@
     for (var d in sbData) { var r = sbData[d] && sbData[d].r; if (r) for (var i = 0; i < r.fx.length; i++) if (r.fx[i].id === fid) return r.fx[i]; }
     return null;
   }
-  function sbLg(id) {
-    var all = []; for (var d in sbData) if (sbData[d] && sbData[d].r) all.push(sbData[d].r.lg);
-    if (liveData) all.push(liveData.r.lg);
-    for (var k in resData) if (resData[k] && resData[k].r) all.push(resData[k].r.lg || []);
+  function sbLg(id, sp) {
+    // 2026-10-22 : les numéros de compétitions se répètent d'un sport à l'autre (NBA = 12, football 12…) → cherchés dans SON sport
+    sp = sp || 'foot';
+    var all = []; for (var d in sbData) if (sbData[d] && sbData[d].r && d.indexOf(sp + '|') === 0) all.push(sbData[d].r.lg);
+    if (sp === 'foot') {
+      if (liveData) all.push(liveData.r.lg);
+      for (var k in resData) if (resData[k] && resData[k].r) all.push(resData[k].r.lg || []);
+    }
     for (var a = 0; a < all.length; a++) for (var i = 0; i < all[a].length; i++) if (all[a][i].id === id) return all[a][i];
     return null;
   }
@@ -1270,7 +1297,7 @@
     var tcol = lv ? '<div class="pz-rt lv" data-open="' + esc(f.id) + '"><b class="pz-min">' + esc(minTxt(f, 1)) + '</b></div>'
       : '<div class="pz-rt" data-open="' + esc(f.id) + '"><b dir="ltr">' + esc(hm24(f.ts)) + '</b>' + (o.when ? '<small>' + esc(o.when) + '</small>' : '') +
         (o.soon && f.ts - nowS() < 7200 ? '<small class="pz-in" data-in="' + f.ts + '">' + esc(inShort(f.ts - nowS())) + '</small>' : '') + '</div>';
-    var l = o.lg ? sbLg(f.lg) : null;
+    var l = o.lg ? sbLg(f.lg, spOf(f)) : null;
     return '<div class="pz-row' + (lv ? ' lv' : '') + '" data-fx="' + esc(f.id) + '">' + tcol +
       '<div class="pz-rn" data-open="' + esc(f.id) + '">' + (l ? '<small class="pz-rl">' + lgImg(l) + '<span dir="auto">' + esc(l.n) + '</span></small>' : '') +
         '<p><span dir="auto">' + esc(f.h.n) + '</span>' + (lv ? '<b class="pz-sc">' + (+sc[0] || 0) + '</b>' : '') + '</p>' +
@@ -1291,6 +1318,7 @@
   var BIGC = /\b(real madrid|barcelona|atletico madrid|manchester city|manchester united|liverpool|arsenal|chelsea|tottenham|newcastle|bayern|borussia dortmund|dortmund|bayer leverkusen|leverkusen|rb leipzig|paris saint germain|psg|marseille|lyon|monaco|lille|juventus|inter|ac milan|milan|napoli|as roma|roma|lazio|atalanta|benfica|fc porto|porto|sporting cp|ajax|psv|feyenoord|galatasaray|fenerbahce|besiktas|celtic|rangers|al hilal|al nassr|al ahly|zamalek|esperance|wydad|raja|mamelodi sundowns|tp mazembe|asec mimosas|flamengo|palmeiras|boca juniors|river plate)\b/;
   var BIGN = /\b(ivory coast|cote d ivoire|senegal)\b/, BIGW = /\b(france|brazil|argentina|spain|england|germany|portugal|italy|netherlands|belgium|morocco|nigeria|cameroon|egypt|algeria|ghana|mali|tunisia)\b/;
   function isBig(f) {
+    if (spOf(f) !== 'foot') return (+(sbLg(f.lg, spOf(f)) || {}).p || 100) <= 20; // autres sports : grandes compétitions (NBA, NHL, NFL…)
     var l = sbLg(f.lg) || {}, h = normS(f.h.n).replace(/[^a-z0-9]+/g, ' '), a = normS(f.a.n).replace(/[^a-z0-9]+/g, ' '), t = ' ' + h + ' | ' + a + ' ';
     if (BIGN.test(t)) return true; // Côte d'Ivoire, Sénégal : toujours
     var p = +l.p || 100, intl = /qualif|world cup|friendl|nations|africa cup|euro|copa|olymp/i.test(String(l.n || ''));
@@ -1411,6 +1439,7 @@
     var blocks = [];
     if (top) { // 2026-10-22 (propriétaire) : « Top » = seulement les GRANDS matchs (grands clubs, classiques, derbys, Côte d'Ivoire / Sénégal), 20 au plus
       var n = NX(), x = SX(), big = lf.filter(isBig).concat(H.fx.filter(isBig)).slice(0, 20);
+      if (!big.length && sport !== 'foot') big = H.fx.slice(0, 10); // autres sports sans grande compétition ce jour-là : les plus proches
       blocks = big.length ? ['<section class="pz-blk pz-btop"><div class="pz-bh"><b>★ ' + esc(n.topM) + '</b></div><div class="pz-lgb">' + big.map(function (f) { return rowHtml(f, { lg: 1, when: f.live ? '' : whenShort(f.ts), soon: 1 }); }).join('') + '</div></section>'] : ['<p class="pz-none">' + esc(x.noMatch) + '</p>'];
     } else {
       if (allP && lf.length) { // « Tout » : le direct d'abord (3 matchs), puis tous les matchs, jour par jour, championnat par championnat
@@ -1577,9 +1606,10 @@
     fitAll(box); startTick();
   }
   // ---------- PAGE D'UN MATCH ----------
-  var GRP = [['main', 'gMain'], ['goals', 'gGoals'], ['half', 'gHalf'], ['hcp', 'gHcp'], ['cs', 'gCs'], ['combo', 'gCombo']];
-  function grpOf(mk) {
+  var GRP = [['main', 'gMain'], ['goals', 'gGoals'], ['tot', 'gTot'], ['half', 'gHalf'], ['hcp', 'gHcp'], ['cs', 'gCs'], ['combo', 'gCombo']];
+  function grpOf(mk, sp) {
     var f = mkParts(mk)[0];
+    if (sp && sp !== 'foot') return f === 'ou' ? 'tot' : f === 'ah' ? 'hcp' : 'main'; // autres sports : Principaux · Totaux · Handicap
     if (f === '1x2' || f === 'dc' || f === 'dnb' || f === 'btts' || f === '12' || mk === 'ou:2.5') return 'main';
     if (f === 'cs' || f === 'htcs') return 'cs';
     if (f === 'ah' || f === 'eh' || f === 'htah') return 'hcp';
@@ -1606,10 +1636,10 @@
   }
   function curFx() { return (sbM && sbM.fx) || sbFx(sbMid); }
   function renderMatch() {
-    var f = curFx(), l = f ? (sbLg(f.lg) || (sbM && sbM.fx ? { n: sbM.fx.lgn || '', c: sbM.fx.c || '', f: '' } : null)) : null;
+    var f = curFx(), l = f ? (sbLg(f.lg, spOf(f)) || (sbM && sbM.fx ? { n: sbM.fx.lgn || '', c: sbM.fx.c || '', f: '' } : null)) : null;
     var fv = favs(), isF = f && fv.f.indexOf(f.id) > -1;
     var star = f ? '<button type="button" class="pz-star' + (isF ? ' on' : '') + '" data-fav="' + esc(f.id) + '" aria-pressed="' + !!isF + '" aria-label="' + esc(SX().fav) + '">' + (isF ? '★' : '☆') + '</button>' : '';
-    shell(bar(l ? l.n : SX().foot, star, l && l.c ? l.c : '') + '<div id="pzMh"></div><div id="pzTrk"></div><div class="pz-gch pz-hs" id="pzG"></div><div id="pzMk" class="pz-mks"></div>'); // (propriétaire : aucune règle écrite dans la page du match)
+    shell(bar(l && l.n ? l.n : spName({ s: f ? spOf(f) : 'foot' }), star, l && l.c ? l.c : '') + '<div id="pzMh"></div><div id="pzTrk"></div><div class="pz-gch pz-hs" id="pzG"></div><div id="pzMk" class="pz-mks"></div>'); // (propriétaire : aucune règle écrite dans la page du match)
     paintMatch();
   }
   function paintMatch() {
@@ -1637,13 +1667,13 @@
     // le résultat du match (1 · X · 2) toujours là en football, cadenas si le marché manque
     if (r.ok && /^foot:/.test(f.id) && !r.mk.some(function (m) { return m.mk === '1x2'; }) && (r.mk.length || f.live)) r.mk.unshift({ mk: '1x2', o: [], s: 1 });
     if (!r.ok || !r.mk.length) { gc.innerHTML = ''; mk.innerHTML = '<p class="pz-none">' + esc(f.live ? NX().susp : x.closedM) + '</p>'; mk.dataset.sig = ''; return; }
-    var by = {}; r.mk.forEach(function (m) { var g = grpOf(m.mk); (by[g] = by[g] || []).push(m); });
+    var by = {}, fsp = spOf(f); r.mk.forEach(function (m) { var g = grpOf(m.mk, fsp); (by[g] = by[g] || []).push(m); });
     var gs = GRP.filter(function (g) { return by[g[0]]; });
     if (!by[mGrp]) mGrp = gs[0][0];
     var gsig = gs.map(function (g) { return g[0]; }).join(',') + '|' + mGrp + '|' + lg();
     if (gc.dataset.sig !== gsig) {
       gc.dataset.sig = gsig;
-      gc.innerHTML = gs.length > 1 ? gs.map(function (g) { return '<button type="button" data-g="' + g[0] + '" class="' + (g[0] === mGrp ? 'on' : '') + '"><span>' + esc(x[g[1]]) + '</span></button>'; }).join('') : '';
+      gc.innerHTML = gs.length > 1 ? gs.map(function (g) { return '<button type="button" data-g="' + g[0] + '" class="' + (g[0] === mGrp ? 'on' : '') + '"><span>' + esc(g[0] === 'tot' ? T18('sbGTot', 'Totals') : x[g[1]]) + '</span></button>'; }).join('') : '';
       gc.hidden = gs.length < 2;
       var gon = gc.querySelector('.on'); // la puce choisie reste visible dans sa rangée
       if (gon && gc.scrollWidth > gc.clientWidth) { var gr = gon.getBoundingClientRect(), cr = gc.getBoundingClientRect(); if (gr.left < cr.left || gr.right > cr.right) gc.scrollLeft += (gr.left + gr.width / 2) - (cr.left + cr.width / 2); }
@@ -1875,7 +1905,7 @@
         if (n === 1) cols = 1;
         return '<div class="pz-oo c' + cols + '">' + oo.map(function (o) { return obtn(ev, o[0], o[1], shortK(m.mk, o[0], f.h.n, f.a.n), s); }).join('') + '</div>';
       }).join('');
-      return '<section class="pz-mk' + (open ? ' on' : '') + '" data-mkk="' + esc(B.key) + '"><button type="button" class="pz-mkh" data-mkt="' + esc(B.key) + '" aria-expanded="' + open + '"><span dir="auto">' + esc(sbMkName(B.m[0].mk, f.h.n, f.a.n)) + '</span><i class="pz-chev">' + SBIC.chev + '</i></button>' +
+      return '<section class="pz-mk' + (open ? ' on' : '') + '" data-mkk="' + esc(B.key) + '"><button type="button" class="pz-mkh" data-mkt="' + esc(B.key) + '" aria-expanded="' + open + '"><span dir="auto">' + esc(sbMkName(B.m[0].mk, f.h.n, f.a.n, spOf(f))) + '</span><i class="pz-chev">' + SBIC.chev + '</i></button>' +
         '<div class="pz-mkb">' + legend + rows + '</div></section>';
     }).join('');
   }
