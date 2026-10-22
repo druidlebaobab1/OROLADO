@@ -2166,28 +2166,6 @@ if ($isAjax) {
       admin_json($r);
     }
     // 2026-10-21 (propriétaire) : RÉSULTATS PROPOSÉS (ESPN / TheSportsDB ; prix : Coinbase / Binance / Kraken, Yahoo / Nasdaq ; lecture seule) — l'admin valide ensuite avec sp_settle
-    // 2026-10-22 (propriétaire, sur iPhone) : enregistrer la clé API-Sports SANS toucher au VPS → data/.env (refusé depuis
-    // internet : 403), jamais renvoyée en entier (4 derniers caractères seulement).
-    if ($action === 'apif_key_status' || $action === 'apif_key_set') {
-      $envF = orolado_data_dir() . '/.env';
-      $cur = (string) (getenv('APIFOOTBALL_KEY') ?: '');
-      if ($action === 'apif_key_set') {
-        $k = trim((string) ($req['key'] ?? ''));
-        if (!preg_match('/^[A-Za-z0-9]{20,80}$/', $k)) admin_json(['ok' => false, 'reason' => 'Clé invalide : collez seulement la clé (lettres et chiffres, sans espace).']);
-        $fh = @fopen($envF, 'c+');
-        if (!$fh) admin_json(['ok' => false, 'reason' => 'Impossible d\'écrire le fichier de réglages.']);
-        flock($fh, LOCK_EX);
-        $old = (string) stream_get_contents($fh);
-        $lines = array_values(array_filter(preg_split('/\r?\n/', $old) ?: [], static fn($l) => $l !== '' && !preg_match('/^\s*APIFOOTBALL_KEY\s*=/', $l)));
-        $lines[] = 'APIFOOTBALL_KEY=' . $k;
-        ftruncate($fh, 0); rewind($fh); fwrite($fh, implode("\n", $lines) . "\n"); fflush($fh); flock($fh, LOCK_UN); fclose($fh);
-        @chmod($envF, 0600);
-        putenv('APIFOOTBALL_KEY=' . $k);
-        admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'reglages', 0, 'Clé API-Sports enregistrée (…' . substr($k, -4) . ')');
-        $cur = $k;
-      }
-      admin_json(['ok' => true, 'set' => $cur !== '', 'end' => $cur !== '' ? substr($cur, -4) : '']);
-    }
     if ($action === 'sp_results') {
       require_once __DIR__ . '/sports_results.php';
       admin_json(spr_admin_proposals());
@@ -2268,6 +2246,28 @@ if ($isAjax) {
       ], array_slice(live_reports(), 0, 100))]);
     }
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
+  }
+  // 2026-10-22 (propriétaire, sur iPhone) : enregistrer la clé API-Sports SANS toucher au VPS → data/.env (refusé depuis
+  // internet : 403), jamais renvoyée en entier (4 derniers caractères seulement).
+  if ($action === 'apif_key_status' || $action === 'apif_key_set') {
+    $envF = orolado_data_dir() . '/.env';
+    $cur = (string) (getenv('APIFOOTBALL_KEY') ?: '');
+    if ($action === 'apif_key_set') {
+      $k = trim((string) ($req['key'] ?? ''));
+      if (!preg_match('/^[A-Za-z0-9]{20,80}$/', $k)) admin_json(['ok' => false, 'reason' => 'Clé invalide : collez seulement la clé (lettres et chiffres, sans espace).']);
+      $fh = @fopen($envF, 'c+');
+      if (!$fh) admin_json(['ok' => false, 'reason' => 'Impossible d\'écrire le fichier de réglages.']);
+      flock($fh, LOCK_EX);
+      $old = (string) stream_get_contents($fh);
+      $lines = array_values(array_filter(preg_split('/\r?\n/', $old) ?: [], static fn($l) => $l !== '' && !preg_match('/^\s*APIFOOTBALL_KEY\s*=/', $l)));
+      $lines[] = 'APIFOOTBALL_KEY=' . $k;
+      ftruncate($fh, 0); rewind($fh); fwrite($fh, implode("\n", $lines) . "\n"); fflush($fh); flock($fh, LOCK_UN); fclose($fh);
+      @chmod($envF, 0600);
+      putenv('APIFOOTBALL_KEY=' . $k);
+      admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'reglages', 0, 'Clé API-Sports enregistrée (…' . substr($k, -4) . ')');
+      $cur = $k;
+    }
+    admin_json(['ok' => true, 'set' => $cur !== '', 'end' => $cur !== '' ? substr($cur, -4) : '']);
   }
   // v2664 (propriétaire) — E-mail à tous : français pour les pays francophones, anglais pour les autres.
   // Envoi par paquets de 40 (Brevo), sans doublon (journal par envoi), test sur l'e-mail de l'admin d'abord.
