@@ -736,7 +736,7 @@
     g.disabled = on; g.classList.toggle('wait', on); g.setAttribute('aria-busy', on ? 'true' : 'false');
     var p = g.querySelector('.sp2-prog');
     if (on) {
-      if (!sendT0) { sendT0 = Date.now(); sendDur = live ? 6500 : 1600; }
+      if (!sendT0) { sendT0 = Date.now(); sendDur = live ? 9500 : 1600; }
       if (!p) { p = document.createElement('i'); p.className = 'sp2-prog'; p.setAttribute('aria-hidden', 'true'); p.innerHTML = '<i></i>'; g.insertBefore(p, g.firstChild); }
       // bouton refait pendant l'envoi (cotes qui bougent) : la barre reprend où elle en était. En ligne et « important » :
       // elle bouge aussi en mode léger (html.oro-lite, retenu 7 jours sur un téléphone lent : c'est ce qui figeait la roue).

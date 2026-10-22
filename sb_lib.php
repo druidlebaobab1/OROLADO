@@ -1370,7 +1370,7 @@ function sb_code_load(?array $user, string $code, int $now = 0, ?array $sel = nu
 const SB_LIVE_ODDS_TTL = 15;        // /odds/live : au plus toutes les 15 s (partagé)
 const SB_LIVE_FX_TTL = 30;          // /fixtures?live=all : au plus toutes les 30 s
 const SB_LIVE_STALE = 20;           // données de plus de 20 s : suspendu
-const SB_LIVE_DELAY = 5;            // délai d'acceptation d'un pari en direct
+const SB_LIVE_DELAY = 8;            // délai d'acceptation d'un pari en direct (2026-10-22 : 8 s, avant 5)
 const SB_LIVE_DEMAND = 60;          // quelqu'un a regardé le direct dans les 60 s
 const SB_LIVE_RESERVE = 1000;       // lectures gardées pour l'avant-match et les résultats
 const SB_LIVE_STATS_TTL = 60;       // statistiques d'un match ouvert : au plus toutes les 60 s
@@ -1541,8 +1541,14 @@ function sb_live_store_odds(array $j, int $now): int {
       // à l'autre) → match verrouillé 30 s (« saut »). Même chose quand le flux bascule en « bloqué ».
       $jmp = (int) ($old[$id]['jmp'] ?? 0);
       $pa = sb_live_p1x2((array) ($old[$id]['r1'] ?? [])); $pb = sb_live_p1x2((array) ($o['r1'] ?? [])); // cotes BRUTES du fournisseur
-      if ($pa && $pb) foreach ($pb as $k => $p) if (isset($pa[$k]) && abs($p - $pa[$k]) >= 0.06) { $jmp = $now; break; }
+      if ($pa && $pb) foreach ($pb as $k => $p) if (isset($pa[$k]) && abs($p - $pa[$k]) >= 0.04) { $jmp = $now; break; }
       if (!empty($o['blk']) && empty($old[$id]['blk'])) $jmp = $now;
+      if ($od[$id]['chg']) $jmp = $now; // score changé : 90 s de cadenas
+      // horloge : « 0:00 » du fournisseur lissé (petits écarts ignorés, jamais de saut quand « seconds » manque)
+      $pz = isset($old[$id]['z']) ? (int) $old[$id]['z'] : null;
+      $nz = is_int($o['sec'] ?? null) ? $now - (int) $o['sec'] : null;
+      if ($nz !== null && ($pz === null || abs($nz - $pz) > 20)) $pz = $nz;
+      if ($pz !== null) $od[$id]['z'] = $pz;
       if ($jmp) $od[$id]['jmp'] = $jmp;
     }
     $s['od'] = $od; $s['at'] = $now;
@@ -1574,7 +1580,7 @@ function sb_live_p1x2(array $row): ?array {
   $t = array_sum($inv); foreach ($inv as $k => $v) $inv[$k] = $v / $t;
   return $inv;
 }
-const SB_LIVE_JUMP_LOCK = 30; // secondes de cadenas après un saut de cote / un passage en « bloqué »
+const SB_LIVE_JUMP_LOCK = 90; // secondes de cadenas après un saut de cote, un passage en « bloqué » ou un changement de score (propriétaire : « même 1 min 30, ce n'est pas grave »)
 function sb_live_budget_ok(int $now, int $left = SB_LIVE_RESERVE): bool { return sb_budget($now)['left'] > $left; }
 /**
  * 2026-10-22 (propriétaire : « le direct verrouille 1 à 2 min trop tard ») : rythme du direct selon les lectures qui restent
@@ -1766,7 +1772,8 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
     if (($ty === 'goal' || ($ty === 'card' && ($e['detail'] ?? '') === 'red')) && $et >= $m - 1) { $hot = true; break; }
   }
   // cotes de ce match en retard de plus de 90 s sur les autres matchs du flux (fournisseur figé pour ce match) → cadenas
-  $odStale = is_array($od) && (int) ($od['lag'] ?? 0) > 90;
+  $lgP = (int) (sb_lg_row(['id' => (int) ($row['lg'] ?? 0)])['p'] ?? 100); // petits championnats : flux souvent plus lent → plus strict
+  $odStale = is_array($od) && (int) ($od['lag'] ?? 0) > ($lgP >= 100 ? 30 : 45);
   $jumped = is_array($od) && (int) ($od['jmp'] ?? 0) > $now - SB_LIVE_JUMP_LOCK;
   $susp = !$fresh || $odStale || $jumped || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
     || !in_array($st, ['1H', 'HT', '2H'], true); // prolongation / tirs au but : plus de pari (règlement sur les 90 min)
@@ -1787,6 +1794,10 @@ function sb_live_clock(string $st, array $r, int $now, ?array $od = null): ?int 
   //  2) sinon la minute de l'API au moment où NOUS l'avons vue changer (mt) ; jamais l'heure prévue du coup d'envoi.
   if (!in_array($st, ['1H', '2H', 'ET'], true)) return null;
   $m = is_numeric($r['m'] ?? null) ? (int) $r['m'] : null;
+  if (is_array($od) && isset($od['z']) && is_numeric($od['z'])) {
+    $k = $now - (int) $od['z'];
+    if ($m === null || ($k >= ($m - 1) * 60 && $k < ($m + 3) * 60)) return $k;
+  }
   if (is_array($od) && is_int($od['sec'] ?? null) && (int) ($od['sat'] ?? 0) > 0) {
     $k = (int) $od['sec'] + max(0, $now - (int) $od['sat']);
     if ($m === null || ($k >= ($m - 1) * 60 && $k < ($m + 3) * 60)) return $k;

@@ -477,13 +477,15 @@ check('score changé depuis la lecture précédente (but) : suspendu', $view($ba
 $alt['odds/live'] = $lodds(['g' => [2, 0]]); sb_live_refresh_now($base + 10);
 check('… et toujours tant que /fixtures dit encore 1-0', $view($base + 10)['susp'] === true);
 $alt['fixtures?live=all&timezone=UTC'] = $lfx(['g' => [2, 0], 'm' => 64]); sb_live_demand($base + 60); sb_live_tick($base + 60);
+sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp']); return true; }); // 90 s de cadenas passées (simulé)
 check('scores d\'accord (2-0) : rouvert ; ou:1.5 retiré (déjà joué)', $view($base + 60)['susp'] === false && !isset($view($base + 60)['mk']['ou:1.5']));
 $alt['odds/live'] = $lodds(['ti' => [501, 999]]); sb_live_refresh_now($base + 62);
 check('équipes différentes dans /odds/live : jamais utilisé (suspendu)', $view($base + 62)['susp'] === true);
 $alt['odds/live'] = $lodds(['g' => [2, 0]]); sb_live_refresh_now($base + 64);
 sb_live_refresh_now($base + 66);
 
-// pari en direct : 5 s + relecture
+sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp']); return true; }); // 90 s de cadenas passées (simulé)
+// pari en direct : 8 s + relecture
 $B0 = $base + 66; $at(gmdate('Y-m-d H:i:s', $B0));
 $slept = [];
 $next = null; // réponse /odds/live servie APRÈS l'attente
@@ -493,23 +495,23 @@ $nOdds = $cnt('odds/live'); $b0 = $bal[$A];
 $next = $lodds(['g' => [2, 0]]);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $oH]], $B0);
 $bet = $r['bet'] ?? [];
-check('pari en direct : attente de 5 s, relecture de /odds/live, accepté', $r['ok'] === true && $slept === [5] && $cnt('odds/live') === $nOdds + 1 && abs($bal[$A] - ($b0 - 10)) < 0.001, json_encode($r));
+check('pari en direct : attente de 5 s, relecture de /odds/live, accepté', $r['ok'] === true && $slept === [SB_LIVE_DELAY] && $cnt('odds/live') === $nOdds + 1 && abs($bal[$A] - ($b0 - 10)) < 0.001, json_encode($r));
 $raw = null; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $b) if ($b['id'] === ($bet['id'] ?? '')) $raw = $b;
-check('coupon « live : 1 », choix lv = 1 avec score 2-0 et minute', ($raw['live'] ?? 0) === 1 && ($raw['sel'][0]['lv'] ?? 0) === 1 && $raw['sel'][0]['sc'] === [2, 0] && ($bet['live'] ?? 0) === 1 && ($bet['sel'][0]['lv'] ?? 0) === 1 && $raw['at'] === $B0 + 5);
+check('coupon « live : 1 », choix lv = 1 avec score 2-0 et minute', ($raw['live'] ?? 0) === 1 && ($raw['sel'][0]['lv'] ?? 0) === 1 && $raw['sel'][0]['sc'] === [2, 0] && ($bet['live'] ?? 0) === 1 && ($bet['sel'][0]['lv'] ?? 0) === 1 && $raw['at'] === $B0 + SB_LIVE_DELAY);
 $slept = []; $b0 = $bal[$A]; $B1 = $B0 + 20; $at(gmdate('Y-m-d H:i:s', $B1)); $alt['odds/live'] = $lodds(['g' => [2, 0]]); sb_live_refresh_now($B1);
 $next = $lodds(['g' => [2, 1]]);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $oH]], $B1);
-check('but pendant les 5 s : refusé « susp », rien retiré', $r['ok'] === false && $r['reason'] === 'susp' && $slept === [5] && abs($bal[$A] - $b0) < 0.001, json_encode($r));
-$B2 = $B1 + 40; $at(gmdate('Y-m-d H:i:s', $B2)); $alt['odds/live'] = $lodds(['g' => [2, 1]]); $alt['fixtures?live=all&timezone=UTC'] = $lfx(['g' => [2, 1], 'm' => 66]); sb_live_demand($B2); sb_live_tick($B2); sb_live_refresh_now($B2 + 1);
+check('but pendant les 5 s : refusé « susp », rien retiré', $r['ok'] === false && $r['reason'] === 'susp' && $slept === [SB_LIVE_DELAY] && abs($bal[$A] - $b0) < 0.001, json_encode($r));
+$B2 = $B1 + 40; $at(gmdate('Y-m-d H:i:s', $B2)); $alt['odds/live'] = $lodds(['g' => [2, 1]]); $alt['fixtures?live=all&timezone=UTC'] = $lfx(['g' => [2, 1], 'm' => 66]); sb_live_demand($B2); sb_live_tick($B2); sb_live_refresh_now($B2 + 1); sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp']); return true; });
 $B2 += 1; $oH2 = (float) sb_pick('sb:foot:9101:1x2', 'H', $ua, $B2)['sel']['odd'];
-$next = $lodds(['g' => [2, 1], 'h' => '1.20']);
+$next = $lodds(['g' => [2, 1], 'h' => '1.36']); // petite variation (une grosse = cadenas)
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $oH2]], $B2);
 check('cote changée pendant les 5 s : refusé « odds » avec la nouvelle cote', $r['ok'] === false && $r['reason'] === 'odds' && $r['odds'][0]['odd'] < $oH2 && abs($bal[$A] - $b0) < 0.001, json_encode($r));
 $newH = (float) $r['odds'][0]['odd'];
-$B3 = $B2 + 6; $at(gmdate('Y-m-d H:i:s', $B3)); $next = $lodds(['g' => [2, 1], 'h' => '1.25']);
+$B3 = $B2 + 6; $at(gmdate('Y-m-d H:i:s', $B3)); $next = $lodds(['g' => [2, 1], 'h' => '1.39']);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $newH]], $B3, 'any');
 check('« tout accepter » : accepté à la cote relue après les 5 s', $r['ok'] === true && $r['bet']['odd'] > $newH, json_encode($r['bet']['odd'] ?? $r));
-$B4 = $B3 + 6; $at(gmdate('Y-m-d H:i:s', $B4)); $next = $lodds(['g' => [2, 1], 'h' => '1.25', 'susp' => true]);
+$B4 = $B3 + 6; $at(gmdate('Y-m-d H:i:s', $B4)); $next = $lodds(['g' => [2, 1], 'h' => '1.33', 'susp' => true]);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:btts', 'k' => 'N']], $B4, 'any');
 check('btts retiré à 2-1 (déjà joué) : refusé', $r['ok'] === false);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:ou:3.5', 'k' => 'U']], $B4, 'any');
@@ -820,7 +822,7 @@ $TJ = $NOW + 900000;
 sb_live_store_odds(json_decode($lodds(['h' => '1.40']), true), $TJ);
 sb_live_store_odds(json_decode($lodds(['h' => '1.42']), true), $TJ + 6);
 $jm = (int) (sb_live_data()['od']['9101']['jmp'] ?? 0);
-check('petite variation de cote : pas de saut', $jm < $TJ);
+check('petite variation de cote : pas de nouveau saut', $jm <= $TJ);
 sb_live_store_odds(json_decode($lodds(['h' => '1.03']), true), $TJ + 12);
 $dj = sb_live_data()['od']['9101'] ?? []; check('saut brusque du 1 · X · 2 : verrou posé', (int) ($dj['jmp'] ?? 0) === $TJ + 12, json_encode([$dj['jmp'] ?? null, $dj['r1'] ?? null]));
 
