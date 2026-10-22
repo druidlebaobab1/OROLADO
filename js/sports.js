@@ -1397,7 +1397,7 @@
             (on ? '<div class="sb-gb">' + mkBlocks(ms, f) + '</div>' : '') + '</section>';
         });
       }
-      html += '<p class="sb-rules"><span>' + esc(x.rules) + '</span></p>';
+      // 2026-10-22 (propriétaire) : plus de ligne « Règles » en bas de la page du match
     }
     box.innerHTML = html + '</div>';
     var bar = slipBar(); if (bar) box.insertAdjacentHTML('beforeend', bar);
