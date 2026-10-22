@@ -887,12 +887,7 @@ html:root body #casinoModal .sp2 .pz-shr.pz-skel{min-height:50px;animation:sp2Pu
 
 /* 2026-10-22 (propriétaire) — PREDICT : un « petit monde » à part, calme et premium (or discret). Puce spéciale après Football,
    grandes cartes : question entière (jamais coupée), compte à rebours, explication, prix actuel (crypto), GRANDS boutons de choix. */
-html:root body #casinoModal .sp2 .pz-sports .pd-chip{position:relative;color:#FDE8B0;background:linear-gradient(180deg,rgba(251,191,36,.10),rgba(124,58,237,.10));
-  box-shadow:inset 0 0 0 1px rgba(251,191,36,.42),0 0 14px -6px rgba(251,191,36,.55)}
-html:root body #casinoModal .sp2 .pz-sports .pd-chip::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
-  background:linear-gradient(110deg,rgba(253,230,138,.85),rgba(217,119,6,.35) 45%,rgba(167,139,250,.55) 70%,rgba(253,230,138,.85));
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
-html:root body #casinoModal .sp2 .pz-sports .pd-chip.on{color:#FFF7E0;background:linear-gradient(180deg,rgba(251,191,36,.24),rgba(124,58,237,.22));box-shadow:inset 0 0 0 1.5px rgba(253,230,138,.9)}
+/* 2026-10-22 (propriétaire) : la puce Predict est une puce normale (pas de cadre doré : on croyait qu'elle était déjà choisie) */
 html:root body #casinoModal .sp2 .pd-ic{width:18px!important;height:18px!important;overflow:visible}
 html:root body #casinoModal .sp2 .pd-ic .pd-sp{transform-origin:19.2px 4.2px;animation:pdTw 3.2s ease-in-out infinite}
 @keyframes pdTw{0%,62%,100%{opacity:.25;transform:scale(.6)}74%{opacity:1;transform:scale(1.15)}86%{opacity:.6;transform:scale(.9)}}
