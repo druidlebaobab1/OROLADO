@@ -1635,7 +1635,7 @@ function sb_live_ttls(int $now): array {
   $secLeft = max(600, 86400 - ($now % 86400));
   $avail = $b['left'] - SB_LIVE_RESERVE - (int) (2500 * $secLeft / 86400); // avant-match + résultats du reste de la journée
   if ($avail <= 0) return [SB_LIVE_ODDS_TTL, SB_LIVE_FX_TTL];
-  $t = (int) ceil(1.67 * 0.35 * $secLeft / $avail); // le direct est regardé ~1/3 de la journée (lecture seulement s'il y a quelqu'un) 
+  $t = (int) ceil(1.67 * 0.25 * $secLeft / $avail); // grands matchs en direct ~1/4 de la journée (sinon : pas de lecture des cotes) // le direct est regardé ~1/3 de la journée (lecture seulement s'il y a quelqu'un) 
   $t = max(5, min(SB_LIVE_ODDS_TTL, $t));
   return [$t, max(15, min(SB_LIVE_FX_TTL, (int) ceil(1.5 * $t)))]; // matchs : l'API les met à jour toutes les 15 s (doc)
 }
@@ -1653,6 +1653,11 @@ function sb_live_tick(int $now = 0): array {
     $L = sb_live_data();
     [$ttlO, $ttlF] = sb_live_ttls($now);
     $fat = (int) ($L['fat'] ?? 0);
+    // 2026-10-22 : direct limité aux grands championnats → sans grand match en cours, /fixtures?live=all toutes les 60 s seulement
+    // (la place va aux cotes des grands matchs, relues plus souvent)
+    $cfg0 = sb_config();
+    $bigOn = (bool) array_filter((array) ($L['fx'] ?? []), static fn($r) => empty($r['end']) && sb_live_big((array) $r, $cfg0));
+    if (!$bigOn) $ttlF = max($ttlF, 60);
     if ($now - $fat >= $ttlF && (!empty($L['fx']) || sb_live_maybe($now) || $now - $fat >= 300)) {
       $j = sb_get('fixtures?live=all&timezone=UTC', $now);
       if ($j !== null) { sb_live_store_fixtures($j, $now); $done[] = 'fixtures'; }
