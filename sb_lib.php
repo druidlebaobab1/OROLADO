@@ -133,6 +133,11 @@ function sb_config(): array {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig9'])) return true; $s['mLive'] = 1; $s['mig9'] = 1; return true; });
     $c = sb_read('config.json');
   }
+  // 2026-10-22 (propriétaire : « avec les contrôles de 15 s, active tout ») : une seule fois, direct sur TOUS les championnats
+  if (empty($c['mig10'])) {
+    sb_with('config.json', static function (array &$s) { if (!empty($s['mig10'])) return true; $s['liveAll'] = true; $s['mig10'] = 1; return true; });
+    $c = sb_read('config.json');
+  }
   if (empty($c['mig4'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig4'])) return true; $s['sports'] = SB_CFG_DEFAULT['sports']; $s['mig4'] = 1; return true; });
     $c = sb_read('config.json');
@@ -149,7 +154,7 @@ function sb_config_save(array $in): array {
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['sports']) && is_array($in['sports'])) $cur['sports'] = array_values(array_intersect(SB_CFG_DEFAULT['sports'], array_map('strval', $in['sports'])));
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
