@@ -1297,7 +1297,7 @@
   function inTxt(s) { return fmt(NX().inX, { x: s >= 3600 ? dur('hour', Math.floor(s / 3600)) + (Math.floor(s % 3600 / 60) ? ' ' + dur('minute', Math.floor(s % 3600 / 60)) : '') : dur('minute', Math.max(1, Math.ceil(s / 60))) }); }
   function inShort(s) { var h = Math.floor(s / 3600), m = Math.max(1, Math.ceil(s % 3600 / 60)); if (m === 60) { h++; m = 0; } return h ? h + ' h ' + (m < 10 ? '0' : '') + m : dur('minute', m); }
   function scTxt(f) { var s = f.sc || [0, 0]; return (+s[0] || 0) + ' - ' + (+s[1] || 0); }
-  function minTxt(f, sh) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return sh ? n.ftS : n.ft; if (f.st === 'HT') return sh ? n.htS : n.ht; if (f.kz != null && isFinite(+f.kz)) return Math.max(1, Math.floor((Date.now() / 1000 - f.kz) / 60)) + '’'; return f.m != null && f.m !== '' ? f.m + '’' : n.nLive; } // minute exacte (kz) dans les listes aussi
+  function minTxt(f, sh) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return sh ? n.ftS : n.ft; if (f.st === 'HT') return sh ? n.htS : n.ht; if (f.kz != null && isFinite(+f.kz)) return Math.max(1, Math.floor((Date.now() / 1000 - (TVZ[f.id] != null ? TVZ[f.id] : f.kz)) / 60)) + '’'; return f.m != null && f.m !== '' ? f.m + '’' : n.nLive; } // minute exacte (kz) dans les listes aussi
   function skelRows() { var lk = '<span class="pz-ob lk na"><i class="pz-lki">' + LOCK + '</i></span>', s = ''; for (var i = 0; i < 6; i++) s += '<div class="pz-row pz-skel"><i></i><i></i><div class="pz-ro">' + lk + lk + lk + '</div></div>'; return '<div class="pz-lg">' + s + '</div>'; }
   function oddsBy(f) { var by = {}; ((f.o && f.o.o) || []).forEach(function (z) { by[z[0]] = z[1]; }); return by; }
   // bouton de cote : (libellé à gauche) cote à droite ; cadenas quand c'est suspendu
@@ -2032,6 +2032,7 @@
   function scTxt2(f) { var s = f.sc || [0, 0]; return (+s[0] || 0) + ' : ' + (+s[1] || 0); }
   function evKey(e) { return [e.t, e.x, e.type, e.team, e.detail, e.player].join('|'); }
   function evIco(e) { return e.type === 'goal' ? '⚽' : e.type === 'card' ? (e.detail === 'red' ? '🟥' : '🟨') : e.type === 'subst' ? '🔁' : e.type === 'corner' ? '⛳' : 'VAR'; }
+  var TVZ = {}; // « 0:00 » de l'horloge par match
   var TVM = {}; // horloge par match (sans kz) : ne recule jamais, même en sortant / revenant
   function tvMin(f) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return n.ftS; if (f.st === 'HT') return '45:00'; return null; } // 2026-10-22 (propriétaire) : à la mi-temps, l'heure du match (45:00), pas « MT »
   function tvClockTxt() {
@@ -2089,7 +2090,9 @@
     if (st && Array.isArray(st.poss)) { var ph = +st.poss[0] || 0, pa = +st.poss[1] || 0; TV.poss = ph + pa > 0 ? Math.max(0.2, Math.min(0.8, ph / (ph + pa))) : 0.5; } else TV.poss = 0.5;
     // 2026-10-22 (propriétaire : « en revenant sur le match, l'horloge revenait à 62:00 ») : horloge depuis l'heure du « 0:00 »
     // (kz, donnée par le serveur) → identique à chaque ouverture ; sinon minute de l'API, mais JAMAIS en arrière (mémoire par match)
-    if (f.kz != null && isFinite(+f.kz)) TV.base = { z: TV.base && TV.base.z != null && TV.fid === f.id ? Math.min(TV.base.z, +f.kz) : +f.kz }; // l'horloge n'avance que vers l'avant
+    // horloge : « 0:00 » donné par le serveur (horloge du fournisseur) ; petits écarts (≤ 15 s) ignorés pour qu'elle reste fluide,
+    // gros écart = correction (rare) ; gardé par match même en sortant / revenant
+    if (f.kz != null && isFinite(+f.kz)) { var oz = TVZ[f.id]; TVZ[f.id] = oz != null && Math.abs(oz - +f.kz) <= 15 ? oz : +f.kz; TV.base = { z: TVZ[f.id] }; }
     else if (f.m != null) {
       var mem = TVM[f.id], est = mem ? mem.s + Math.floor((Date.now() - mem.at) / 1000) : -1;
       if (!mem || +f.m * 60 > est + 60 || (+f.m * 60 > est && est - (+f.m) * 60 > 120)) TVM[f.id] = { s: +f.m * 60, at: Date.now() };

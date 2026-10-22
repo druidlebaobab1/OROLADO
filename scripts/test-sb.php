@@ -809,20 +809,11 @@ check('api.php : sbList passe « sport »', str_contains($api, "\$req['sport']")
 // budget théorique par jour (documenté) : ≤ 22 matchs + 45 cotes + 12 résultats < 90
 check('budget prévu par jour ≤ 79 < 90 (plafond dur)', 8 + 4 + 2 + 8 + SB_O_ODDS_DAY + SB_O_RES_DAY <= 79 && SB_O_CAP === 90);
 
-// horloge du direct depuis le vrai début de la mi-temps (fixture.periods)
-check('horloge : 1re mi-temps à la seconde (12:34)', sb_live_clock('1H', ['p1' => 1000, 'm' => 12], 1000 + 754) === 754);
-check('horloge : 2e mi-temps = 45:00 + temps depuis la reprise', sb_live_clock('2H', ['p1' => 1000, 'p2' => 5000, 'm' => 64], 5000 + 19 * 60 + 7) === 2700 + 19 * 60 + 7 && sb_live_clock('2H', ['p2' => 5000, 'm' => 60], 5000 + 19 * 60) === 61 * 60 + 59);
-check('horloge : sans début connu ou incohérente → rien (ancienne horloge)', sb_live_clock('2H', ['p2' => 0, 'm' => 64], 9000) === null && sb_live_clock('1H', ['p1' => 1000, 'm' => 40], 1000 + 60) === null && sb_live_clock('HT', ['p1' => 1000, 'm' => 45], 5000) === null);
-
-// moments chauds : vidéo (VAR) récente → cadenas
-$Lh = ['fx' => ['77' => ['h' => [1, 'A', ''], 'a' => [2, 'B', ''], 'st' => '2H', 'm' => 64, 'g' => [1, 0], 'ev' => [['t' => 63, 'x' => 0, 'type' => 'var', 'team' => 'h', 'detail' => 'Goal cancelled', 'player' => '']]]],
-  'od' => ['77' => ['ti' => [1, 2], 'sc' => [1, 0], 'm' => 64, 'mk' => []]], 'at' => $NOW, 'fat' => $NOW];
-check('VAR à la 63e, minute 64 : cadenas', sb_live_view('77', $Lh, $NOW, sb_config())['susp'] === true);
-$Lh['fx']['77']['ev'][0]['t'] = 55;
-check('VAR à la 55e, minute 64 : plus de cadenas', sb_live_view('77', $Lh, $NOW, sb_config())['susp'] === false, json_encode(sb_live_view('77', $Lh, $NOW, sb_config())['susp']));
-
-check('horloge : sans periods, 1re mi-temps depuis le coup d\'envoi prévu', sb_live_clock('1H', ['ts' => 1000, 'm' => 10], 1000 + 650) === 650);
-check('horloge : sans periods.second, reprise vue par nous (p2o)', sb_live_clock('2H', ['ts' => 1000, 'p2o' => 9000, 'm' => 50], 9000 + 300) === 2700 + 300);
+// horloge du direct : celle du fournisseur (seconds), sinon minute vue par nous
+check('horloge : fournisseur « 63:10 » lu il y a 5 s → 63:15', sb_live_clock('2H', ['m' => 63], 1005, ['sec' => 63 * 60 + 10, 'sat' => 1000]) === 63 * 60 + 15);
+check('horloge : fournisseur incohérent (40:00 pour la 63e) → minute vue par nous', sb_live_clock('2H', ['m' => 63, 'mt' => 1000], 1020, ['sec' => 2400, 'sat' => 1000]) === 63 * 60 + 20);
+check('horloge : sans fournisseur, minute vue il y a 30 s → 63:30', sb_live_clock('2H', ['m' => 63, 'mt' => 1000], 1030) === 63 * 60 + 30);
+check('horloge : mi-temps / inconnu → rien', sb_live_clock('HT', ['m' => 45, 'mt' => 1], 5) === null && sb_live_clock('1H', ['m' => 10], 5) === null);
 
 // saut de cote (le bookmaker bouge AVANT le score) → cadenas 30 s
 $TJ = $NOW + 900000;
