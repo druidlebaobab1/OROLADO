@@ -823,6 +823,15 @@ check('VAR à la 55e, minute 64 : plus de cadenas', sb_live_view('77', $Lh, $NOW
 check('horloge : sans periods, 1re mi-temps depuis le coup d\'envoi prévu', sb_live_clock('1H', ['ts' => 1000, 'm' => 10], 1000 + 650) === 650);
 check('horloge : sans periods.second, reprise vue par nous (p2o)', sb_live_clock('2H', ['ts' => 1000, 'p2o' => 9000, 'm' => 50], 9000 + 300) === 2700 + 300);
 
+// saut de cote (le bookmaker bouge AVANT le score) → cadenas 30 s
+$TJ = $NOW + 900000;
+sb_live_store_odds(json_decode($lodds(['h' => '1.40']), true), $TJ);
+sb_live_store_odds(json_decode($lodds(['h' => '1.42']), true), $TJ + 6);
+$jm = (int) (sb_live_data()['od']['9101']['jmp'] ?? 0);
+check('petite variation de cote : pas de saut', $jm < $TJ);
+sb_live_store_odds(json_decode($lodds(['h' => '1.03']), true), $TJ + 12);
+$dj = sb_live_data()['od']['9101'] ?? []; check('saut brusque du 1 · X · 2 : verrou posé', (int) ($dj['jmp'] ?? 0) === $TJ + 12, json_encode([$dj['jmp'] ?? null, $dj['r1'] ?? null]));
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);
