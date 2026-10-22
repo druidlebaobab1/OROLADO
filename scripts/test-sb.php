@@ -58,10 +58,10 @@ $odd = static function (string $fid, string $mk, string $k): ?float { foreach ((
 
 echo "1) Réglages par défaut, visibilité\n";
 $c0 = sb_config(); // 1re lecture : Public allumé une seule fois (mise en ligne du 2026-10-22), marges au moins 15/20/30/20/15
-check('mise en ligne : Public allumé une fois ; marges 2 % avant-match (tous marchés, tous sports), 4 % en direct ; direct limité aux grands championnats', $c0['public'] === true && $c0['mMain'] == 2 && $c0['mSide'] == 2 && $c0['mExotic'] == 2 && $c0['mOther'] == 2 && $c0['mLive'] == 4 && $c0['liveAll'] === false);
+check('mise en ligne : Public allumé une fois ; marges 1 % avant-match (tous marchés, tous sports), 4 % en direct ; direct limité aux grands championnats', $c0['public'] === true && $c0['mMain'] == 1 && $c0['mSide'] == 1 && $c0['mExotic'] == 1 && $c0['mOther'] == 1 && $c0['mLive'] == 4 && $c0['liveAll'] === false);
 sb_config_save(['mMain' => 30]);
 check('marges : un réglage de l\'admin n\'est jamais écrasé ensuite', sb_config()['mMain'] == 30);
-sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
+sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'mig8' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
 $c = sb_config();
 check('défauts : public NON, résultats automatiques OUI, marges 15/20/30/20/15, alertes 50/500/200', $c['public'] === false && $c['autosettle'] === true && $c['mMain'] == 15 && $c['mSide'] == 20 && $c['mExotic'] == 30 && $c['mLive'] == 20 && $c['mOther'] == 15 && $c['alertStake'] == 50 && $c['alertPot'] == 500 && $c['alertWin'] == 200);
 $NOW = $at('2026-10-22 08:00');
@@ -334,7 +334,7 @@ sb_with('budget-foot.json', static function (array &$s) use ($T) { $s['day'] = g
 $n0 = count($asked);
 check('budget de 7 000 atteint : plus aucune lecture', sb_get('status', $T('2026-10-26 11:00')) === null && count($asked) === $n0 && str_contains(sb_state()['err'], 'Budget'));
 check('statut admin : budget, config, à vérifier', ($s = sb_admin_status($T('2026-10-26 11:00')))['ok'] && $s['budget']['used'] === SB_FOOT_CAP && $s['budget']['cap'] === 7000 && $s['config']['public'] === true);
-check('réglages bornés (marge 99 → 40, négatif → 2)', ($cc = sb_config_save(['mMain' => 99, 'mSide' => -5])['config'])['mMain'] == 40 && $cc['mSide'] == 2);
+check('réglages bornés (marge 99 → 40, négatif → 1)', ($cc = sb_config_save(['mMain' => 99, 'mSide' => -5])['config'])['mMain'] == 40 && $cc['mSide'] == 1);
 $leak = false; foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tmp . '/data', FilesystemIterator::SKIP_DOTS)) as $fi) if (str_contains((string) file_get_contents((string) $fi), 'test-secret-key-123')) $leak = true;
 check('la clé n\'est écrite dans AUCUN fichier', !$leak);
 

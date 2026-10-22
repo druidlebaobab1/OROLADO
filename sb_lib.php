@@ -118,6 +118,16 @@ function sb_config(): array {
     });
     $c = sb_read('config.json');
   }
+  // 2026-10-22 (propriétaire : « essaie 1 % ») : une seule fois, marge avant-match 1 % (football et autres sports)
+  if (empty($c['mig8'])) {
+    sb_with('config.json', static function (array &$s) {
+      if (!empty($s['mig8'])) return true;
+      $s['mig8'] = 1;
+      foreach (['mMain', 'mSide', 'mExotic', 'mOther'] as $k) $s[$k] = 1;
+      return true;
+    });
+    $c = sb_read('config.json');
+  }
   if (empty($c['mig4'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig4'])) return true; $s['sports'] = SB_CFG_DEFAULT['sports']; $s['mig4'] = 1; return true; });
     $c = sb_read('config.json');
@@ -130,11 +140,11 @@ function sb_config(): array {
 function sb_config_save(array $in): array {
   $cur = sb_config();
   foreach (['public', 'live', 'livePublic', 'liveAll', 'autosettle'] as $k) if (array_key_exists($k, $in)) $cur[$k] = (bool) $in[$k];
-  foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'mPred'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(2.0, min(40.0, (float) $in[$k])), 1);
+  foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'mPred'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(1.0, min(40.0, (float) $in[$k])), 1);
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['sports']) && is_array($in['sports'])) $cur['sports'] = array_values(array_intersect(SB_CFG_DEFAULT['sports'], array_map('strval', $in['sports'])));
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
@@ -268,7 +278,7 @@ function sb_margin(string $fam, array $cfg): float {
   if (in_array($fam, ['1x2', 'dc', 'dnb', 'ou', 'btts'], true)) $m = $cfg['mMain'];
   elseif (in_array($fam, ['cs', 'htcs', 'htft', 'eg', 'rbtts', 'rou'], true)) $m = $cfg['mExotic'];
   else $m = $cfg['mSide'];
-  return max(0.02, min(0.4, (float) $m / 100));
+  return max(0.01, min(0.4, (float) $m / 100));
 }
 /** Ligne canonique : 2.5 → « 2.5 », -1 → « -1 », 0 → « 0 ». */
 function sb_line(float $x): string { if (abs($x) < 1e-9) return '0'; $s = rtrim(rtrim(number_format($x, 2, '.', ''), '0'), '.'); return $s; }
@@ -677,6 +687,8 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
   if (empty($st['rp1'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp1'])) return true; $s['od'] = []; $s['rp1'] = 1; return true; }); $st = sb_state(); }
   // 2026-10-22 (propriétaire : « marge 2 % ») : une seule fois, toutes les cotes relues avec la nouvelle marge
   if (empty($st['rp2'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp2'])) return true; $s['od'] = []; $s['rp2'] = 1; return true; }); $st = sb_state(); }
+  // 2026-10-22 (propriétaire : « 1 % ») : idem, relecture avec la marge 1 %
+  if (empty($st['rp3'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp3'])) return true; $s['od'] = []; $s['rp3'] = 1; return true; }); $st = sb_state(); }
   $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($mid, 21600) + array_fill_keys($lat, 43200); // J+3…J+7 : 6 h ; J+8…J+14 : 12 h
   foreach (array_merge([$d0, $dm1, $d1, $d2], $far) as $day) {
     if ($calls >= $max) break;
@@ -2230,7 +2242,7 @@ function sb_o_parse_bet(string $sp, string $name, array $values, array $names, a
   return $out;
 }
 /** Marge des autres sports : réglage « mOther » pour tous leurs marchés (2026-10-22 : 2,5 %). */
-function sb_o_margin(string $fam, array $cfg): float { return max(0.02, min(0.4, (float) $cfg['mOther'] / 100)); }
+function sb_o_margin(string $fam, array $cfg): float { return max(0.01, min(0.4, (float) $cfg['mOther'] / 100)); }
 /** Bookmakers d'un match → nos marchés mk => [[k, cote], …] (même formule et mêmes contrôles que le football). */
 function sb_o_markets(string $sp, array $bookmakers, array $cfg, array $names, array &$unk): array {
   $sum = []; $cnt = [];
