@@ -40,7 +40,7 @@ const SB_VOID_ST = ['AWD', 'WO'];
 const SB_WAIT_ST = ['PST', 'CANC', 'ABD', 'SUSP', 'INT', 'NS', 'TBD'];
 const SB_LIVE_ST = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
 const SB_CFG_DEFAULT = ['public' => false, 'live' => true, 'livePublic' => false, 'autosettle' => true, 'sports' => ['foot'],
-  'mMain' => 10, 'mSide' => 12, 'mExotic' => 18, 'mLive' => 12, 'mOther' => 10, 'alertStake' => 50, 'alertPot' => 500, 'alertWin' => 200];
+  'mMain' => 15, 'mSide' => 20, 'mExotic' => 30, 'mLive' => 20, 'mOther' => 15, 'alertStake' => 50, 'alertPot' => 500, 'alertWin' => 200];
 /** Compétitions en tête de liste (p petit = en haut) ; les autres : 100 (par pays). */
 const SB_TOP_LEAGUES = [2 => 1, 39 => 2, 140 => 3, 135 => 4, 78 => 5, 61 => 6, 3 => 7, 848 => 8, 1 => 9, 4 => 10, 6 => 11, 12 => 12, 20 => 13, 5 => 14, 9 => 15, 13 => 16, 94 => 17, 88 => 18, 203 => 19, 253 => 20];
 const SB_TOP_COUNTRIES = ['ivory-coast' => 30, 'cote-d-ivoire' => 30, 'senegal' => 31, 'cameroon' => 32, 'nigeria' => 33, 'ghana' => 34, 'morocco' => 35, 'france' => 36];
@@ -178,14 +178,15 @@ function sb_fam(string $mk): string { $p = strpos($mk, ':'); return $p === false
 /** Nombre de choix d'un groupe complet (null = ouvert : score exact). */
 function sb_group_size(string $fam): ?int {
   static $n = ['1x2' => 3, 'dc' => 3, 'dnb' => 2, 'ou' => 2, 'btts' => 2, 'tth' => 2, 'tta' => 2, 'oe' => 2, 'csh' => 2, 'csa' => 2, 'wnh' => 2, 'wna' => 2,
-    'eh' => 3, 'ah' => 2, 'ht1x2' => 3, 'htou' => 2, 'htbtts' => 2, '2h1x2' => 3, 'htft' => 9, 'rbtts' => 6, 'rou' => 6, 'eg' => 7, 'hsh' => 3];
+    'eh' => 3, 'ah' => 2, 'ht1x2' => 3, 'htou' => 2, 'htbtts' => 2, '2h1x2' => 3, 'htft' => 9, 'rbtts' => 6, 'rou' => 6, 'eg' => 7, 'hsh' => 3,
+    'htdc' => 3, '2hdc' => 3, '2hbtts' => 2, 'htoe' => 2, '2hoe' => 2, '2hou' => 2, 'httth' => 2, 'httta' => 2, 'htah' => 2];
   return $n[$fam] ?? null;
 }
-function sb_expected(string $fam): float { return $fam === 'dc' ? 2.0 : 1.0; }
+function sb_expected(string $fam): float { return in_array($fam, ['dc', 'htdc', '2hdc'], true) ? 2.0 : 1.0; }
 function sb_min_books(string $fam): int { return in_array($fam, ['1x2', 'dc', 'ou', 'btts'], true) ? 3 : 2; }
 function sb_margin(string $fam, array $cfg): float {
   if (in_array($fam, ['1x2', 'dc', 'dnb', 'ou', 'btts'], true)) $m = $cfg['mMain'];
-  elseif (in_array($fam, ['cs', 'htft', 'eg', 'rbtts', 'rou'], true)) $m = $cfg['mExotic'];
+  elseif (in_array($fam, ['cs', 'htcs', 'htft', 'eg', 'rbtts', 'rou'], true)) $m = $cfg['mExotic'];
   else $m = $cfg['mSide'];
   return max(0.02, min(0.4, (float) $m / 100));
 }
@@ -210,8 +211,13 @@ function sb_parse_bet(string $name, array $values, array &$unk): array {
   $n = strtolower(trim((string) preg_replace('/\s+/', ' ', $name)));
   $out = [];
   $bad = static function (string $v) use (&$unk, $name) { $k = mb_substr($name . ' = ' . $v, 0, 80); $unk[$k] = ($unk[$k] ?? 0) + 1; };
-  $line = static function (float $x, float $min, float $max, bool $half = true): bool { return $x >= $min - 1e-9 && $x <= $max + 1e-9 && (!$half || sb_half($x)); };
+  // 2026-10-22 : lignes entières / quarts (2.0, 2.25, ±0.75…) et lignes hors bornes : écartées EXPRÈS (pas réglables simplement)
+  // → pas dans le diagnostic « paris non reconnus » (elles le noyaient) ; seuls les noms / valeurs vraiment inconnus y vont.
+  $quiet = false;
+  $line = static function (float $x, float $min, float $max, bool $half = true) use (&$quiet): bool { $ok = $x >= $min - 1e-9 && $x <= $max + 1e-9 && (!$half || sb_half($x)); if (!$ok) $quiet = true; return $ok; };
+  $n = (string) preg_replace('/\s*\(\s*/', ' (', $n); // « Home Team Total Goals(1st Half) » → « home team total goals (1st half) »
   foreach ($values as $vv) {
+    $quiet = false;
     if (!is_array($vv)) continue;
     $v = trim((string) ($vv['value'] ?? ''));
     $odd = $vv['odd'] ?? null;
@@ -271,18 +277,43 @@ function sb_parse_bet(string $name, array $values, array &$unk): array {
       case 'highest scoring half':
         $hs = ['1st half' => '1', 'first half' => '1', '2nd half' => '2', 'second half' => '2', 'draw' => 'X', 'equal' => 'X', 'x' => 'X'];
         if (isset($hs[$lv])) $r = ['hsh', $hs[$lv]]; break;
+      // 2026-10-22 : marchés vus dans le vrai flux (réglés avec score.halftime + score.fulltime)
+      case 'goals over/under - second half': case 'goals over/under second half': case 'second half goals over/under':
+        if (($o = sb_ou_val($v)) && $line($o[1], 0.5, 4.5)) $r = ['2hou:' . sb_line($o[1]), $o[0]]; break;
+      case 'double chance - first half': case 'double chance first half':
+        $dc = ['home/draw' => 'HD', '1x' => 'HD', 'home/away' => 'HA', '12' => 'HA', 'draw/away' => 'DA', 'x2' => 'DA'];
+        if (isset($dc[$lv])) $r = ['htdc', $dc[$lv]]; break;
+      case 'double chance - second half': case 'double chance second half':
+        $dc = ['home/draw' => 'HD', '1x' => 'HD', 'home/away' => 'HA', '12' => 'HA', 'draw/away' => 'DA', 'x2' => 'DA'];
+        if (isset($dc[$lv])) $r = ['2hdc', $dc[$lv]]; break;
+      case 'both teams to score - second half': case 'both teams score - second half':
+        if (isset(SB_YN[$lv])) $r = ['2hbtts', SB_YN[$lv]]; break;
+      case 'correct score - first half': case 'exact score - first half':
+        if (preg_match('/^(\d{1,2})\s*[:\-]\s*(\d{1,2})$/', $v, $m) && (int) $m[1] <= 9 && (int) $m[2] <= 9) $r = ['htcs', (int) $m[1] . ':' . (int) $m[2]]; break;
+      case 'odd/even - first half':
+        if ($lv === 'odd') $r = ['htoe', 'O']; elseif ($lv === 'even') $r = ['htoe', 'E']; break;
+      case 'odd/even - second half':
+        if ($lv === 'odd') $r = ['2hoe', 'O']; elseif ($lv === 'even') $r = ['2hoe', 'E']; break;
+      case 'home team total goals (1st half)':
+        if (($o = sb_ou_val($v)) && $line($o[1], 0.5, 3.5)) $r = ['httth:' . sb_line($o[1]), $o[0]]; break;
+      case 'away team total goals (1st half)':
+        if (($o = sb_ou_val($v)) && $line($o[1], 0.5, 3.5)) $r = ['httta:' . sb_line($o[1]), $o[0]]; break;
+      case 'asian handicap first half':
+        if (preg_match('/^(home|away)\s*([+-]?\d+(?:\.\d+)?)$/i', $v, $m) && $line((float) $m[2], -3.5, 3.5))
+          $r = ['htah:' . sb_line((float) $m[2]), SB_RES[strtolower($m[1])]]; break;
       default:
         $unk[mb_substr($name, 0, 80)] = ($unk[mb_substr($name, 0, 80)] ?? 0) + 1;
         return [];
     }
-    if ($r === null) { $bad($v); continue; }
+    if ($r === null) { if (!$quiet) $bad($v); continue; }
     $out[] = [$r[0], $r[1], $odd];
   }
   return $out;
 }
 
 /** Ordre d'affichage des familles et des choix. */
-const SB_FAM_ORDER = ['1x2', 'dc', 'dnb', 'ou', 'btts', 'tth', 'tta', 'oe', 'csh', 'csa', 'wnh', 'wna', 'eh', 'ah', 'ht1x2', 'htou', 'htbtts', '2h1x2', 'htft', 'cs', 'rbtts', 'rou', 'eg', 'hsh'];
+const SB_FAM_ORDER = ['1x2', 'dc', 'dnb', 'ou', 'btts', 'tth', 'tta', 'oe', 'csh', 'csa', 'wnh', 'wna', 'eh', 'ah', 'ht1x2', 'htdc', 'htou', 'httth', 'httta', 'htbtts', 'htoe', 'htah',
+  '2h1x2', '2hdc', '2hou', '2hbtts', '2hoe', 'htft', 'cs', 'htcs', 'rbtts', 'rou', 'eg', 'hsh'];
 /** Rang d'un choix dans son marché (ordre de sb_valid_k ; score exact : 1:0, 2:0 … par buts domicile puis extérieur). */
 function sb_k_rank(string $k, string $fam = ''): int {
   if (preg_match('/^(\d+):(\d+)$/', $k, $m)) return 1000 + (int) $m[1] * 10 + (int) $m[2];
@@ -341,11 +372,12 @@ function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
     $out[$mk] = $row;
   }
   // handicaps : contrôle du signe contre 1x2 (ah:-0.5 H = victoire domicile ; une ligne négative ne peut pas être plus probable)
-  $p1 = $pH['1x2'] ?? null;
+  // (handicap 1re mi-temps « htah » : contrôlé contre le résultat à la mi-temps « ht1x2 »)
   foreach ($out as $mk => $row) {
     $fam = sb_fam($mk);
-    if ($fam !== 'ah' && $fam !== 'eh') continue;
-    $h = (float) substr($mk, 3); $p = $pH[$mk] ?? null;
+    if ($fam !== 'ah' && $fam !== 'eh' && $fam !== 'htah') continue;
+    $p1 = $pH[$fam === 'htah' ? 'ht1x2' : '1x2'] ?? null;
+    $h = (float) substr($mk, strlen($fam) + 1); $p = $pH[$mk] ?? null;
     $ok = $p1 !== null && $p !== null && ($h < 0 ? $p <= $p1 + 0.05 : ($h > 0 ? $p >= $p1 - 0.05 : abs($p - $p1) <= 0.05));
     if (!$ok) { unset($out[$mk]); $unk['(contrôle) ' . $fam . ' retiré : signe / convention à vérifier'] = ($unk['(contrôle) ' . $fam . ' retiré : signe / convention à vérifier'] ?? 0) + 1; }
   }
@@ -361,7 +393,7 @@ function sb_settle_mk(string $mk, string $k, array $ft, ?array $ht): ?string {
   [$h, $a] = [(int) $ft[0], (int) $ft[1]];
   $fam = sb_fam($mk); $x = (float) substr($mk, strlen($fam) + 1);
   $res = static fn(int $p, int $q): string => $p > $q ? 'H' : ($p < $q ? 'A' : 'D');
-  $needHt = in_array($fam, ['ht1x2', 'htou', 'htbtts', '2h1x2', 'htft', 'hsh'], true);
+  $needHt = in_array($fam, ['ht1x2', 'htou', 'htbtts', '2h1x2', 'htft', 'hsh', 'htdc', '2hdc', '2hbtts', 'htcs', 'htoe', '2hoe', '2hou', 'httth', 'httta', 'htah'], true);
   if ($needHt && ($ht === null || count($ht) !== 2 || !is_numeric($ht[0]) || !is_numeric($ht[1]))) return null;
   [$hh, $ha] = $needHt ? [(int) $ht[0], (int) $ht[1]] : [0, 0];
   if ($needHt && ($hh > $h || $ha > $a)) return null; // mi-temps incohérente : à vérifier
@@ -392,19 +424,30 @@ function sb_settle_mk(string $mk, string $k, array $ft, ?array $ht): ?string {
     case 'rou': $win = $r . '/' . ($t > $x ? 'O' : 'U'); break;
     case 'eg': $win = $t >= 6 ? '6+' : (string) $t; break;
     case 'hsh': $g1 = $hh + $ha; $g2 = $t - $g1; $win = $g1 > $g2 ? '1' : ($g1 < $g2 ? '2' : 'X'); break;
+    // 2026-10-22 : 1re mi-temps = score.halftime ; 2e mi-temps = score.fulltime − score.halftime (90 min)
+    case 'htdc': if (!in_array($k, ['HD', 'HA', 'DA'], true)) return null; return str_contains($k, $res($hh, $ha)) ? 'won' : 'lost';
+    case '2hdc': if (!in_array($k, ['HD', 'HA', 'DA'], true)) return null; return str_contains($k, $res($h - $hh, $a - $ha)) ? 'won' : 'lost';
+    case '2hbtts': $win = $h - $hh > 0 && $a - $ha > 0 ? 'Y' : 'N'; break;
+    case 'htcs': if (!preg_match('/^\d+:\d+$/', $k)) return null; $win = $hh . ':' . $ha; break;
+    case 'htoe': $win = ($hh + $ha) % 2 === 1 ? 'O' : 'E'; break;
+    case '2hoe': $win = ($t - $hh - $ha) % 2 === 1 ? 'O' : 'E'; break;
+    case '2hou': $win = $t - $hh - $ha > $x ? 'O' : 'U'; break;
+    case 'httth': $win = $hh > $x ? 'O' : 'U'; break;
+    case 'httta': $win = $ha > $x ? 'O' : 'U'; break;
+    case 'htah': if (!sb_half($x)) return null; $win = $hh + $x - $ha > 0 ? 'H' : 'A'; break;
     default: return null;
   }
-  if (!in_array($k, sb_valid_k($fam), true) && $fam !== 'cs') return null;
+  if (!in_array($k, sb_valid_k($fam), true) && $fam !== 'cs' && $fam !== 'htcs') return null;
   return $k === $win ? 'won' : 'lost';
 }
 function sb_valid_k(string $fam): array {
   switch ($fam) {
     case '1x2': case 'eh': case 'ht1x2': case '2h1x2': return ['H', 'D', 'A'];
-    case 'dc': return ['HD', 'HA', 'DA'];
-    case 'dnb': case 'ah': return ['H', 'A'];
-    case 'ou': case 'tth': case 'tta': case 'htou': return ['O', 'U'];
-    case 'oe': return ['O', 'E'];
-    case 'btts': case 'htbtts': case 'csh': case 'csa': case 'wnh': case 'wna': return ['Y', 'N'];
+    case 'dc': case 'htdc': case '2hdc': return ['HD', 'HA', 'DA'];
+    case 'dnb': case 'ah': case 'htah': return ['H', 'A'];
+    case 'ou': case 'tth': case 'tta': case 'htou': case '2hou': case 'httth': case 'httta': return ['O', 'U'];
+    case 'oe': case 'htoe': case '2hoe': return ['O', 'E'];
+    case 'btts': case 'htbtts': case '2hbtts': case 'csh': case 'csa': case 'wnh': case 'wna': return ['Y', 'N'];
     case 'htft': $o = []; foreach (['H', 'D', 'A'] as $p) foreach (['H', 'D', 'A'] as $q) $o[] = $p . '/' . $q; return $o;
     case 'rbtts': $o = []; foreach (['H', 'D', 'A'] as $p) foreach (['Y', 'N'] as $q) $o[] = $p . '/' . $q; return $o;
     case 'rou': $o = []; foreach (['H', 'D', 'A'] as $p) foreach (['O', 'U'] as $q) $o[] = $p . '/' . $q; return $o;
@@ -782,7 +825,10 @@ function sb_mk_name(string $mk): string {
     'tth' => 'Buts domicile (' . $x . ')', 'tta' => 'Buts extérieur (' . $x . ')', 'oe' => 'Total de buts pair/impair', 'csh' => 'Domicile n\'encaisse pas', 'csa' => 'Extérieur n\'encaisse pas',
     'wnh' => 'Domicile gagne sans encaisser', 'wna' => 'Extérieur gagne sans encaisser', 'eh' => 'Handicap (' . $x . ')', 'ah' => 'Handicap asiatique (' . $x . ')',
     'ht1x2' => 'Résultat à la mi-temps', 'htou' => 'Buts 1re mi-temps (' . $x . ')', 'htbtts' => 'Les deux marquent en 1re mi-temps', '2h1x2' => 'Résultat 2e mi-temps',
-    'htft' => 'Mi-temps / fin', 'cs' => 'Score exact', 'rbtts' => 'Résultat + les deux marquent', 'rou' => 'Résultat + buts (' . $x . ')', 'eg' => 'Nombre exact de buts', 'hsh' => 'Mi-temps la plus prolifique'];
+    'htft' => 'Mi-temps / fin', 'cs' => 'Score exact', 'rbtts' => 'Résultat + les deux marquent', 'rou' => 'Résultat + buts (' . $x . ')', 'eg' => 'Nombre exact de buts', 'hsh' => 'Mi-temps la plus prolifique',
+    'htdc' => 'Double chance 1re mi-temps', '2hdc' => 'Double chance 2e mi-temps', '2hbtts' => 'Les deux marquent en 2e mi-temps', 'htcs' => 'Score exact 1re mi-temps',
+    'htoe' => 'Buts pair/impair 1re mi-temps', '2hoe' => 'Buts pair/impair 2e mi-temps', '2hou' => 'Buts 2e mi-temps (' . $x . ')', 'httth' => 'Buts domicile 1re mi-temps (' . $x . ')',
+    'httta' => 'Buts extérieur 1re mi-temps (' . $x . ')', 'htah' => 'Handicap asiatique 1re mi-temps (' . $x . ')'];
   return $n[$fam] ?? $mk;
 }
 function sb_k_name(string $mk, string $k, string $home, string $away): string {
@@ -791,11 +837,12 @@ function sb_k_name(string $mk, string $k, string $home, string $away): string {
   $yn = static fn(string $c): string => $c === 'Y' ? 'Oui' : 'Non';
   $ou = static fn(string $c): string => $c === 'O' ? 'Plus' : 'Moins';
   switch ($fam) {
-    case '1x2': case 'eh': case 'ht1x2': case '2h1x2': case 'dnb': case 'ah': return $one($k);
-    case 'dc': return ['HD' => $home . ' ou nul', 'HA' => $home . ' ou ' . $away, 'DA' => 'Nul ou ' . $away][$k] ?? $k;
-    case 'ou': case 'tth': case 'tta': case 'htou': return $ou($k);
-    case 'oe': return $k === 'O' ? 'Impair' : 'Pair';
-    case 'btts': case 'htbtts': case 'csh': case 'csa': case 'wnh': case 'wna': return $yn($k);
+    case '1x2': case 'eh': case 'ht1x2': case '2h1x2': case 'dnb': case 'ah': case 'htah': return $one($k);
+    case 'dc': case 'htdc': case '2hdc': return ['HD' => $home . ' ou nul', 'HA' => $home . ' ou ' . $away, 'DA' => 'Nul ou ' . $away][$k] ?? $k;
+    case 'ou': case 'tth': case 'tta': case 'htou': case '2hou': case 'httth': case 'httta': return $ou($k);
+    case 'oe': case 'htoe': case '2hoe': return $k === 'O' ? 'Impair' : 'Pair';
+    case 'btts': case 'htbtts': case '2hbtts': case 'csh': case 'csa': case 'wnh': case 'wna': return $yn($k);
+    case 'htcs': return str_replace(':', ' - ', $k);
     case 'htft': $p = explode('/', $k); return count($p) === 2 ? $one($p[0]) . ' / ' . $one($p[1]) : $k;
     case 'rbtts': $p = explode('/', $k); return count($p) === 2 ? $one($p[0]) . ' + ' . ($p[1] === 'Y' ? 'les deux marquent' : 'pas les deux') : $k;
     case 'rou': $p = explode('/', $k); return count($p) === 2 ? $one($p[0]) . ' + ' . strtolower($ou($p[1])) : $k;
@@ -884,7 +931,7 @@ function sb_live_ids(int $now): ?array {
  * Un choix SB d'un coupon : contrôle (visibilité, match pas commencé, cotes fraîches) et cote ACTUELLE du serveur.
  * Retour ['ok' => true, 'sel' => [ev, k, odd, t, l, mk, sp, fx, ko, ti], 'grp' => 'fx:foot:ID'] ou ['ok' => false, 'reason'].
  */
-function sb_pick(string $ev, string $k, ?array $user, int $now): array {
+function sb_pick(string $ev, string $k, ?array $user, int $now, bool $liveCheck = true): array {
   if (!preg_match('/^sb:foot:(\d+):([a-z0-9]+(?::-?\d+(?:\.\d+)?)?)$/', $ev, $m)) return ['ok' => false, 'reason' => 'param'];
   if (!sb_visible($user)) return ['ok' => false, 'reason' => 'closed'];
   [$id, $mk] = [$m[1], $m[2]];
@@ -896,11 +943,12 @@ function sb_pick(string $ev, string $k, ?array $user, int $now): array {
   $odd = null;
   foreach ((array) ($mf['mk'][$mk] ?? []) as $o) if ((string) ($o[0] ?? '') === $k) $odd = (float) $o[1];
   if ($odd === null || $odd < 1.01) return ['ok' => false, 'reason' => 'param'];
-  if ((int) $row['ts'] - $now < SB_LATE) { $live = sb_live_ids($now); if ($live !== null && isset($live[$id])) return ['ok' => false, 'reason' => 'closed']; }
+  if ($liveCheck && (int) $row['ts'] - $now < SB_LATE) { $live = sb_live_ids($now); if ($live !== null && isset($live[$id])) return ['ok' => false, 'reason' => 'closed']; }
   $home = (string) ($row['h'][1] ?? ''); $away = (string) ($row['a'][1] ?? '');
   $kn = sb_k_name($mk, $k, $home, $away);
   return ['ok' => true, 'grp' => 'fx:foot:' . $id, 'sel' => ['ev' => $ev, 'k' => $k, 'odd' => $odd, 't' => $home . ' - ' . $away, 'l' => $mk === '1x2' ? $kn : sb_mk_name($mk) . ' : ' . $kn,
-    'mk' => $mk, 'sp' => 'foot', 'fx' => 'foot:' . $id, 'ko' => (int) $row['ts'], 'ti' => [(int) ($row['h'][0] ?? 0), (int) ($row['a'][0] ?? 0)]]];
+    'mk' => $mk, 'sp' => 'foot', 'fx' => 'foot:' . $id, 'ko' => (int) $row['ts'], 'ti' => [(int) ($row['h'][0] ?? 0), (int) ($row['a'][0] ?? 0)]],
+    'team' => ['h' => ['n' => $home, 'lo' => (string) ($row['h'][2] ?? '')], 'a' => ['n' => $away, 'lo' => (string) ($row['a'][2] ?? '')]]];
 }
 /** Alertes admin après un pari SB (grosse mise, gros gain possible). */
 function sb_alert_bet(array $bet, int $now = 0): void {
@@ -943,4 +991,95 @@ function sb_admin_import(int $now = 0): array {
   $r = sb_job_tick($now, 60);
   foreach (sb_take_wanted() as $id) if (sb_import_fixture_odds($id, $now)) $r['calls']++;
   return ['ok' => true] + $r + ['status' => sb_admin_status($now)];
+}
+
+/* ------------------------------------------------------------- code de coupon (« booking code ») -------------------- */
+/*
+ * 2026-10-22 (étape 2) — CODE DE COUPON comme Bet9ja / SportyBet : le ticket (choix seulement, jamais la mise) est gardé
+ * 7 jours sous un code de 6 caractères (A-Z 2-9, sans 0 / O / 1 / I). Un fichier par code : data/sports/sb/codes/XXXXXX.json
+ * (créé en exclusif : jamais deux tickets sous le même code). Choix acceptés : matchs SB (« sb:foot:<id>:<mk> ») encore
+ * ouverts avec ce choix dans leurs marchés, et les anciens matchs / questions de events.json (ids de spList) encore ouverts.
+ * Au chargement, les cotes sont RELUES (le pari prend toujours la cote actuelle du serveur) ; un match commencé / fermé, ou
+ * invisible pour ce joueur (SB pas encore public), est sauté et compté. Jamais d'appel à l'API ici.
+ */
+const SB_CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const SB_CODE_TTL = 604800;  // 7 jours
+const SB_CODE_MAX = 50;      // choix au plus (= SP_MAX_SEL)
+function sb_code_dir(): string { $d = sb_dir() . DIRECTORY_SEPARATOR . 'codes'; if (!is_dir($d)) @mkdir($d, 0750, true); return $d; }
+function sb_code_ok(string $c): bool { return (bool) preg_match('/^[' . SB_CODE_ABC . ']{6}$/', $c); }
+/** Un choix (ev, k) → forme du coupon avec la cote ACTUELLE, ou ['skip' => 'closed'|'hidden'|'param']. */
+function sb_sel_now(string $ev, string $k, ?array $user, int $now, ?array $manual): array {
+  if (str_starts_with($ev, 'sb:')) {
+    if (!preg_match('/^sb:foot:\d+:[a-z0-9]+(?::-?\d+(?:\.\d+)?)?$/', $ev) || !preg_match('/^[A-Za-z0-9:\/+]{1,8}$/', $k)) return ['skip' => 'param'];
+    if (!sb_visible($user)) return ['skip' => 'hidden'];
+    $p = sb_pick($ev, $k, $user, $now, false); // contrôle « déjà commencé ? » (API) refait au moment du pari
+    if (empty($p['ok'])) return ['skip' => ($p['reason'] ?? '') === 'param' ? 'param' : 'closed'];
+    $s = $p['sel'];
+    return ['ev' => $ev, 'k' => $k, 'odd' => (float) $s['odd'], 't' => $s['t'], 'l' => $s['l'], 'mk' => $s['mk'], 'fx' => $s['fx'], 'ko' => $s['ko'], 'h' => $p['team']['h'], 'a' => $p['team']['a']];
+  }
+  $e = $manual[$ev] ?? null;
+  if (!$e) return ['skip' => 'closed'];
+  $close = function_exists('sp_close_at') ? sp_close_at($e) : (int) ($e['start'] ?? 0);
+  if (($e['status'] ?? '') !== 'open' || !empty($e['hold']) || $now >= $close) return ['skip' => 'closed'];
+  foreach ((array) ($e['opts'] ?? []) as $o) if ((string) ($o['k'] ?? '') === $k)
+    return ['ev' => $ev, 'k' => $k, 'odd' => (float) $o['odd'], 't' => (string) $e['title'], 'l' => (string) $o['label'], 'ko' => $close,
+      'q' => function_exists('sp_is_question') && sp_is_question($e), 'grp' => function_exists('sp_corr_groups') ? array_values(sp_corr_groups($e)) : []];
+  return ['skip' => 'param'];
+}
+/** Choix → choix valides (un seul par match / groupe lié), cotes actuelles. Retour [sel, nombres sautés]. */
+function sb_sel_check(array $sel, ?array $user, int $now): array {
+  $manual = null; $out = []; $grp = []; $sk = ['closed' => 0, 'hidden' => 0, 'param' => 0];
+  foreach (array_slice(array_values($sel), 0, SB_CODE_MAX) as $s) {
+    $ev = is_array($s) ? (string) ($s['ev'] ?? $s[0] ?? '') : ''; $k = is_array($s) ? (string) ($s['k'] ?? $s[1] ?? '') : '';
+    if ($ev === '' || $k === '' || strlen($ev) > 80) { $sk['param']++; continue; }
+    if ($manual === null && !str_starts_with($ev, 'sb:')) { $manual = []; if (function_exists('sp_events')) foreach (sp_events() as $e) $manual[(string) $e['id']] = $e; }
+    $r = sb_sel_now($ev, $k, $user, $now, $manual);
+    if (isset($r['skip'])) { $sk[$r['skip']]++; continue; }
+    $g = isset($r['fx']) ? ['fx:' . $r['fx']] : ['ev:' . $ev];
+    foreach ((array) ($r['grp'] ?? []) as $gg) $g[] = (string) $gg;
+    if (array_intersect($g, array_keys($grp))) { $sk['param']++; continue; }
+    foreach ($g as $gg) $grp[$gg] = 1;
+    $out[] = $r;
+  }
+  return [$out, $sk];
+}
+/** sbCodeSave {sel:[{ev,k}]} → {ok, code, n, skip}. Visiteur accepté (aucun argent ici ; limite par connexion dans api.php). */
+function sb_code_save(?array $user, array $sel, int $now = 0): array {
+  $now = $now ?: sb_now();
+  if (!$sel || count($sel) > SB_CODE_MAX) return ['ok' => false, 'reason' => 'param'];
+  [$ok, $sk] = sb_sel_check($sel, $user, $now);
+  if (!$ok) return ['ok' => false, 'reason' => $sk['closed'] ? 'closed' : 'param'];
+  $keep = array_map(static fn($s) => [$s['ev'], $s['k']], $ok);
+  $dir = sb_code_dir();
+  if (random_int(1, 40) === 1) foreach ((array) glob($dir . DIRECTORY_SEPARATOR . '*.json') as $f) if ((int) @filemtime($f) < time() - SB_CODE_TTL - 86400) @unlink($f); // ménage de temps en temps
+  for ($i = 0; $i < 12; $i++) {
+    $c = ''; for ($j = 0; $j < 6; $j++) $c .= SB_CODE_ABC[random_int(0, strlen(SB_CODE_ABC) - 1)];
+    $f = $dir . DIRECTORY_SEPARATOR . $c . '.json';
+    $old = sb_code_read($c);
+    if ($old !== null && (int) ($old['at'] ?? 0) < $now - SB_CODE_TTL) @unlink($f); // code expiré : réutilisable
+    $fp = @fopen($f, 'x');
+    if (!$fp) continue;
+    fwrite($fp, json_encode(['at' => $now, 's' => $keep], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)); fclose($fp);
+    return ['ok' => true, 'code' => $c, 'n' => count($keep), 'skip' => array_sum($sk)];
+  }
+  return ['ok' => false, 'reason' => 'busy'];
+}
+function sb_code_read(string $c): ?array {
+  if (!sb_code_ok($c)) return null;
+  $f = sb_code_dir() . DIRECTORY_SEPARATOR . $c . '.json';
+  if (!is_file($f)) return null;
+  $j = json_decode((string) @file_get_contents($f), true);
+  return is_array($j) ? $j : null;
+}
+/** sbCodeLoad {code} → {ok, code, sel:[…cotes actuelles…], skip, hidden}. Aussi {sel:[…]} sans code : relire les cotes du ticket. */
+function sb_code_load(?array $user, string $code, int $now = 0, ?array $sel = null): array {
+  $now = $now ?: sb_now();
+  if ($sel === null) {
+    $code = strtoupper(trim($code));
+    $j = sb_code_read($code);
+    if ($j === null || (int) ($j['at'] ?? 0) < $now - SB_CODE_TTL) return ['ok' => false, 'reason' => 'nocode'];
+    $sel = (array) ($j['s'] ?? []);
+  } else { $code = ''; if (count($sel) > SB_CODE_MAX) return ['ok' => false, 'reason' => 'param']; }
+  [$ok, $sk] = sb_sel_check($sel, $user, $now);
+  return ['ok' => true, 'code' => $code, 'sel' => $ok, 'skip' => $sk['closed'] + $sk['param'], 'hidden' => $sk['hidden']];
 }

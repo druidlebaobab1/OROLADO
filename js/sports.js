@@ -259,6 +259,7 @@
   function syncSlip() {
     var chg = false, n = nowS();
     slip.forEach(function (s) {
+      if (s.sb) { if (!s.closed && n >= s.ko) { s.closed = true; chg = true; } s.l = sbOutL(s.mk, s.k, s.h.n, s.a.n); return; } // 2026-10-22 : choix SB (pas dans spList)
       var e = evById(s.ev), o = e && e.opts.filter(function (z) { return z.k === s.k; })[0];
       if (!e || !o || !e.open || n >= e.start) { if (!s.closed) { s.closed = true; chg = true; } return; }
       if (Math.abs(o.odd - s.odd) > 1e-9) { s.odd = o.odd; s.chg = true; chg = true; }
@@ -272,7 +273,10 @@
     box = container; ctx = c || {};
     if (!box) return;
     box.classList.add('sp2');
-    if ((lastBet || lastBets) && view === 'slip') { lastBet = null; lastBets = null; view = 'list'; }
+    if ((lastBet || lastBets) && view === 'slip') { lastBet = null; lastBets = null; view = lv(); }
+    if (sbOn && sbAuto && view === 'list') view = 'foot';
+    if (pendCode) { var pc = pendCode; pendCode = ''; loadCode(pc); }
+    sbProbe(container);
     // v2763 (propriétaire) : Paris s'affiche TOUT DE SUITE (dernière liste gardée en mémoire), puis se met à jour en silence
     // v2844 (propriétaire) : comme Cadeaux — si la même liste est déjà affichée, on ne reconstruit rien (plus d'« éclair »)
     var sig0 = (lastJson || '') + '|' + view + '|' + (document.documentElement.lang || '');
@@ -290,6 +294,22 @@
     if (view === 'list' && (!same || !box.querySelector('.sp2-list') || box.querySelector('.sp2-skel'))) render(); // la liste arrive : on remplace le squelette de chargement
     else if (view === 'slip' && chg && !sending && !lastBet) { render(); if (ctx.toast) ctx.toast(XX().oddsChg, 'info'); }
     if (!ctx.guest && mineCache === null) loadMine().then(function (m) { if (m) { mineCache = m; paintBadge(); } });
+  }
+  // 2026-10-22 : paris automatiques visibles pour ce joueur ? (sbList ok) — sinon Paris reste exactement comme avant
+  function sbProbe(container) {
+    var was = sbOn;
+    sbLoad(true).then(function () {
+      if (!box || box !== container || !box.isConnected || !box.classList.contains('sp2') || sending) return;
+      if (sbOn) {
+        if (sbAuto && view === 'list') { view = 'foot'; render(); }
+        else if (view === 'foot') { if ($('sbBody')) paintFoot(); else render(); }
+        else if (was !== true && (view === 'list' || view === 'mine')) render(); // onglets Football · Actualité · Mes paris
+      } else if (sbOn === false && was !== false) {
+        if (view === 'foot' || view === 'match') view = 'list';
+        if (view !== 'slip' && was === true) render();
+        else if (view === 'list' && !box.querySelector('.sp2-list')) render();
+      }
+    });
   }
   function fetchList() {
     if (fetching) return fetching;
@@ -330,13 +350,19 @@
       }
     } catch (e) { /* ignore */ }
   }
-  setTimeout(function () { if (D6.Api && D6.Api.post) fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); warmLogos(lastJson); } }); }, 1500);
+  setTimeout(function () { if (D6.Api && D6.Api.post) { fetchList().then(function (r) { if (r) { lastList = r; lastJson = JSON.stringify(r); warmLogos(lastJson); } }); sbFetch(0); } }, 1500);
 
   // v2765 (propriétaire) : deux onglets en HAUT de la page — « Paris » (les matchs) et « Mes paris » (mes reçus)
   var view = 'list', mineCache = null;
   function openCount() { return (mineCache || []).filter(function (b) { return b.status === 'open'; }).length; }
   function tabs() {
     var x = X(), n = openCount();
+    if (sbOn) { // 2026-10-22 : paris automatiques visibles → Football · Actualité · Mes paris
+      var s = SX();
+      return '<div class="sp2-tabs sb-tabs" role="tablist"><button type="button" role="tab" data-sv="foot" class="' + (isSbView() ? 'on' : '') + '">' + sico('foot') + '<span class="fit">' + esc(s.foot) + '</span></button>' +
+        '<button type="button" role="tab" data-sv="list" class="' + (view === 'list' ? 'on' : '') + '">' + SBIC.news + '<span class="fit">' + esc(s.news) + '</span></button>' +
+        '<button type="button" role="tab" data-sv="mine" class="' + (view === 'mine' ? 'on' : '') + '"><span class="fit">' + esc(x.mine) + '</span>' + (n ? '<i class="sp2-badge">' + n + '</i>' : '') + '</button></div>';
+    }
     return '<div class="sp2-tabs" role="tablist"><button type="button" role="tab" data-sv="list" class="' + (view !== 'mine' ? 'on' : '') + '"><span class="fit">' + esc(x.betsTab) + '</span></button>' +
       '<button type="button" role="tab" data-sv="mine" class="' + (view === 'mine' ? 'on' : '') + '"><span class="fit">' + esc(x.mine) + '</span>' + (n ? '<i class="sp2-badge">' + n + '</i>' : '') + '</button></div>';
   }
@@ -377,7 +403,7 @@
   })();
   function bindTabs() {
     layoutVars();
-    box.querySelectorAll('.sp2-tabs [data-sv]').forEach(function (b) { b.addEventListener('click', function () { var v = b.getAttribute('data-sv'); if (v === view) return; view = v; render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; }); });
+    box.querySelectorAll('.sp2-tabs [data-sv]').forEach(function (b) { b.addEventListener('click', function () { var v = b.getAttribute('data-sv'); sbAuto = false; if (v === view) return; if (v === 'foot' || v === 'list') listView = v; view = v; render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; }); });
   }
   function skeleton() { var s = ''; for (var i = 0; i < 4; i++) s += '<div class="sp2-ev sp2-skel"><i></i><i></i><i></i></div>'; return '<div class="sp2-list">' + s + '</div>'; }
   function empty(msg, btn, id, sv) {
@@ -535,7 +561,7 @@
   var lastBet = null, clearArm = 0, sending = false;
   function guestNote() { var x = X(); if (D6.App && D6.App.toast) D6.App.toast(x.guestBet, 'info'); }
   function slipBar() {
-    if (!slip.length || view !== 'list') return '';
+    if (!slip.length || (view !== 'list' && view !== 'foot' && view !== 'match')) return '';
     var x = X();
     return '<button type="button" class="sp2-bar" id="spSbar"><span class="sp2-bar-n">' + slip.length + '</span><span class="sp2-bar-t"><b class="fit">' + esc(x.coupon) + '</b><small class="fit">' + esc(fmt(x.sel, { n: slip.length })) + '</small></span>' +
       '<span class="sp2-bar-o"><small class="fit">' + esc(x.totalOdd) + '</small><b>' + totalOdd().toFixed(2) + '</b></span><em class="sp2-bar-go">' + IC.back + '</em></button>';
@@ -548,7 +574,7 @@
     if (bump && nb) nb.classList.add('bump');
   }
   function bindSlip() {
-    var b = $('spSbar'); if (b) b.addEventListener('click', function () { view = 'slip'; render(); });
+    var b = $('spSbar'); if (b) b.addEventListener('click', function () { if (view === 'foot' || view === 'match') listView = 'foot'; else if (view === 'list') listView = 'list'; view = 'slip'; render(); sbAfterSlipOpen(); });
   }
 
   // ---------- compte à rebours (un seul minuteur, arrêté dès qu'on quitte la page) ----------
@@ -568,7 +594,7 @@
         }
         el.classList.toggle('soon', s < 3600); setTx(sp, cd(s));
       });
-      if (view === 'slip' && !sending && !lastBet && slip.some(function (s) { var e = evById(s.ev); return !s.closed && e && n >= e.start; })) { syncSlip(); render(); }
+      if (view === 'slip' && !sending && !lastBet && slip.some(function (s) { var e = evById(s.ev); return !s.closed && (s.sb ? n >= s.ko : e && n >= e.start); })) { syncSlip(); render(); }
     }, 20000);
   }
 
@@ -581,6 +607,10 @@
       else if (e.status !== 'settled') right = '<span class="sp2-cd gone"><span class="fit">' + esc(x.inPlay) + '</span></span>';
     }
     var ic = r === 'won' ? IC.ok : r === 'lost' ? IC.x : r === 'void' ? '↺' : '';
+    if (s.mk) { // 2026-10-22 : choix SB → choix en gras, match · marché en petit (traduits depuis mk / k)
+      var tm = teams(s.t) || [s.t, ''];
+      return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(s.t) + '</small><b class="fit" dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="fit sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1])) + '</small></div><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+    }
     return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst">' + linesHtml(e ? trT(e) : s.t, 'small', right ? 20 : 34, true) + '<b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
   }
   /* 2026-10-21 (propriétaire : « Mes paris : chaque pari tout ouvert, pas pro ») — une LIGNE compacte par pari, comme les
@@ -597,8 +627,8 @@
       var lab = st === 'won' ? x.wonL : st === 'lost' ? x.lostL : st === 'void' ? x.voidL : x.potL;
       var multi = bt.sel.length > 1, kind = multi ? x.rcCombo + ' · ' + bt.sel.length : x.rcSingle;
       var s0 = bt.sel[0] || { t: '', l: '' }, e0 = evByTitle(s0.t);
-      var sum = multi ? bt.sel.map(function (s) { return esc(trO(s.l)); }).join('<i> · </i>')
-        : '<b>' + esc(trO(s0.l)) + '</b><i> · </i>' + esc(e0 ? trT(e0) : s0.t);
+      var sum = multi ? bt.sel.map(function (s) { return esc(selLbl(s)); }).join('<i> · </i>')
+        : '<b>' + esc(selLbl(s0)) + '</b><i> · </i>' + esc(e0 ? trT(e0) : s0.t);
       return '<div class="sp2-bet st-' + esc(st) + (on ? ' on' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
           '<span class="sp2-bh"><em class="sp2-pill"><span class="fit">' + esc(ST[st] || st) + '</span></em><span class="fit sp2-kind">' + esc(kind) + '</span><small class="fit">' + esc(bt.at ? when2(bt.at) : '') + '</small></span>' +
@@ -666,7 +696,7 @@
     if (day) day.addEventListener('change', function () { MF.day = day.value; paintMine(); });
   }
   function bindRc() {
-    box.querySelectorAll('.sp2-cta[data-sv]').forEach(function (b) { b.addEventListener('click', function () { view = 'list'; render(); }); });
+    box.querySelectorAll('.sp2-cta[data-sv]').forEach(function (b) { b.addEventListener('click', function () { view = lv(); render(); }); });
     var rcs = $('spRcs'); if (!rcs || rcs.dataset.bound) return;
     rcs.dataset.bound = '1';
     rcs.addEventListener('click', function (ev) {
@@ -705,14 +735,14 @@
       '<div class="sp-rcpt-st"><em class="' + esc(st) + '">' + esc(stTxt) + '</em><small>' + esc(bigLab) + '</small><strong>' + big + ' $</strong></div>' +
       '<div class="sp-rcpt-cut"></div>' +
       '<div class="sp-rcpt-sels"><p class="sp-rcpt-k">' + esc(bt.sel.length > 1 ? x.rcCombo : x.rcSingle) + ' · ' + bt.sel.length + '</p>' + bt.sel.map(function (s) {
-        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.l) + '</b></span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b></span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>' + m2(bt.stake) + ' $</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
       '<p><span>' + esc(x.potL) + '</span><b>' + m2(bt.pot) + ' $</b></p><p><span>' + esc(x.rcDate) + '</span><b>' + dt + '</b></p><p><span>' + esc(x.rcNo) + '</span><b class="mono">' + esc(no) + '</b></p></div>' +
       '<div class="sp-rcpt-bars" aria-hidden="true">' + bars + '</div><p class="sp-rcpt-foot">orolado.com</p>' +
       '<div class="sp-rcpt-btns"><button type="button" class="sp-rcpt-share">' + (D6.ReceiptIcon ? '<span class="sp-rcpt-dli">' + D6.ReceiptIcon + '</span>' : '') + esc((D6.Receipt && D6.Receipt.dlLabel && D6.Receipt.dlLabel()) || x.rcShare) + '</button><button type="button" class="sp-rcpt-close">' + esc(x.rcClose) + '</button></div></div>';
     document.body.appendChild(el);
-    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt, x); } catch (eP) { /* ignore */ }
+    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, x); } catch (eP) { /* ignore */ }
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
     var close = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); }, 220); };
     el.addEventListener('click', function (e) { if (e.target === el) close(); });
@@ -733,6 +763,9 @@
     box.classList.add('sp2');
     if (view === 'mine') { renderMine(); return; }
     if (view === 'slip') { renderSlip(); return; }
+    if ((view === 'foot' || view === 'match') && sbOn === false) view = 'list';
+    if (view === 'foot') { renderFoot(); return; }
+    if (view === 'match') { renderMatch(); return; }
     renderList();
   }
 
@@ -766,7 +799,7 @@
       (slip.length && !lastBet && !lastBets ? '<i class="sp2-badge">' + slip.length + '</i>' +
         '<button type="button" class="sp2-clear" id="spCpClear">' + IC.trash + '<span class="fit">' + esc(x.clearAll) + '</span></button>' : '') + '</div>';
   }
-  function backToList() { lastBet = null; lastBets = null; view = 'list'; render(); }
+  function backToList() { lastBet = null; lastBets = null; view = lv(); render(); }
   function slipTop() { try { var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; } catch (e) { /* ignore */ } }
   function renderDone() {
     var x = XX(), bs = lastBets || [lastBet], one = bs.length === 1, lb = bs[0];
@@ -787,17 +820,17 @@
     layoutVars();
     if (lastBet || lastBets) { renderDone(); return; }
     if (!slip.length) {
-      box.innerHTML = '<div class="sp2-page">' + slipHead() + empty(x.emptySlip, x.seeBets, 'spCont') + '</div>';
-      slipTop(); fitAll(box);
+      box.innerHTML = '<div class="sp2-page">' + slipHead() + empty(x.emptySlip, x.seeBets, 'spCont') + (sbOn ? '<div class="sb-code sb-load"><p class="sb-mkt"><span class="fit">' + esc(SX().loadCode) + '</span></p>' + codeRow() + '</div>' : '') + '</div>';
+      slipTop(); fitAll(box); bindCodeRow(box);
       $('spCont').addEventListener('click', backToList);
       return;
     }
     var md = mode(), each = false, odd = totalOdd();
     var expl = '<div class="sp2-type-t sp2-expl">' + linesHtml(cap1(md === 'combo' ? x.combo : slip.length > 1 ? x.singleN : (slip[0].q ? x.qOnly : x.singleX)), 'span', 40) + '</div>';
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
-      var e = evById(z.ev), st = stOf(z);
-      return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><div class="sp2-sel-r"><span class="sp2-sel-ic">' + sico(e ? qKind(e) : 'autre') + '</span>' +
-        '<div class="sp2-sel-t"><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b>' + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '<small class="sp2-mkt fit">' + esc(mkt(e)) + '</small></div>' +
+      var e = z.sb ? null : evById(z.ev), st = stOf(z);
+      return '<div class="sp2-sel' + (z.closed ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><div class="sp2-sel-r"><span class="sp2-sel-ic">' + sico(z.sb ? 'foot' : e ? qKind(e) : 'autre') + '</span>' +
+        '<div class="sp2-sel-t"><b class="fit" dir="auto">' + esc(z.closed ? x.closed : z.l) + '</b>' + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '<small class="sp2-mkt fit" dir="auto">' + esc(z.sb ? sbMkName(z.mk, z.h.n, z.a.n) : mkt(e)) + '</small></div>' +
         '<em>' + (z.closed ? IC.lock : Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>' +
         (each ? '<div class="sp2-ss"><label class="sp2-inw sm"><input data-st="' + i + '" inputmode="decimal" autocomplete="off" value="' + (st > 0 ? m2(st) : '') + '" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></label>' +
           '<span class="sp2-ssw"><small class="fit">' + esc(x.potL) + '</small><b class="fit" data-pw="' + i + '">' + money(sp2Pot(st, z.odd)) + '</b></span></div>' : '') + '</div>';
@@ -816,8 +849,8 @@
       '<button type="button" class="sp2-place' + (ctx.guest ? ' guest' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? guestBtn || x.guestBtn : each ? fmt(x.placeN, { n: slip.length }) : x.placeB) + '</span>' +
         '</button>' + // propriétaire : « Placer le pari » seul, sans le montant dans le bouton
       '<p class="sp2-min"><span class="fit">' + esc(x.minNote) + '</span></p></div>';
-    box.innerHTML = '<div class="sp2-page sp2-slip ' + md + '">' + slipHead() + expl + list + stk + '</div>';
-    slipTop(); fitAll(box); startTick();
+    box.innerHTML = '<div class="sp2-page sp2-slip ' + md + '">' + slipHead() + expl + list + (sbOn ? '<div class="sb-code" id="sbCode">' + codeBox() + '</div>' : '') + stk + '</div>';
+    slipTop(); fitAll(box); startTick(); if (sbOn) bindCodeBox();
     slip.forEach(function (z) { z.chg = false; });
     $('spCpClear').addEventListener('click', function () {
       if (sending) return;
@@ -907,8 +940,9 @@
     var rc = document.getElementById('spRcpt');
     if (rc) { rc.classList.remove('on'); setTimeout(function () { rc.remove(); }, 220); return true; }
     if (!box || !box.isConnected || !box.classList.contains('sp2')) return false;
-    if (view === 'slip') { if (!sending) { lastBet = null; lastBets = null; view = 'list'; render(); } return true; }
-    if (view === 'mine') { view = 'list'; render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; return true; }
+    if (view === 'slip') { if (!sending) { lastBet = null; lastBets = null; view = lv(); render(); } return true; }
+    if (view === 'match') { view = 'foot'; render(); return true; }
+    if (view === 'mine') { view = lv(); render(); var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; return true; }
     return false;
   }
   // pendant l'envoi : tout est bloqué (pas de double pari, pas de choix retiré en route)
@@ -929,7 +963,7 @@
   // un coupon envoyé au serveur (combiné = toutes les sélections ; simple = une sélection). Renvoie la réponse (ou celle retrouvée).
   async function send1(zs, st) {
     var sel = zs.map(function (z) { return { ev: z.ev, k: z.k, odd: z.odd }; });
-    var titles = zs.map(function (z) { var e = evById(z.ev); return e ? e.title : ''; }).sort().join('|');
+    var titles = zs.map(function (z) { var e = evById(z.ev); return e ? e.title : z.sb ? z.t : ''; }).sort().join('|');
     var known = {}; (mineCache || []).forEach(function (b) { known[b.id] = 1; });
     var sentAt = nowS(), r = null;
     // 2026-10-21 : les cotes AFFICHÉES partent avec le pari, et le réglage du joueur pour les changements de cotes (acc)
@@ -969,9 +1003,517 @@
     }
     var why = fails[fails.length - 1];
     if ((why === 'maxWin' || why === 'cap') && failR && failR.maxStake >= 0.1) { var ms = Math.max(0.1, failR.maxStake); if (each) slip.forEach(function (z) { if (z.st == null || z.st > ms) z.st = ms; }); else { stake = ms; lsSet('oro_sp_stake', String(ms)); } }
+    if (why === 'odds' && failR && Array.isArray(failR.odds)) failR.odds.forEach(function (o) { slip.forEach(function (z) { if (z.ev === o.ev && z.k === o.k && Math.abs(z.odd - o.odd) > 1e-9) { z.odd = +o.odd; z.chg = true; } }); }); // nouvelles cotes du serveur
+    if ((why === 'odds' || why === 'closed') && slip.some(function (z) { return z.sb; })) await sbRefreshSlip();
     if (why === 'odds' || why === 'closed') { var l = await fetchList(); if (l) { lastList = events = l; lastJson = JSON.stringify(l); syncSlip(); } }
     if (view === 'slip') render();
     if (ctx.toast) ctx.toast((okBets.length ? fmt(x.partial, { ok: okBets.length, n: jobs.length }) + ' · ' : '') + (x['e_' + why] || x.e_unavailable));
   }
-  D6.Sports = { paint: paint, receipt: showReceipt, back: back };
+  /* ==========================================================================================================
+     2026-10-22 (étape 2) — PARIS AUTOMATIQUES (sb_lib.php, api.php sbList / sbMatch / sbCodeSave / sbCodeLoad) :
+     FOOTBALL avant-match façon bet365 (sombre, dense, rapide, clair). Visible seulement quand sbList répond ok (admin, puis
+     tout le monde quand le propriétaire allume « Public ») ; sinon Paris reste EXACTEMENT comme avant (onglets Paris / Mes paris).
+     Onglets : Football · Actualité (l'ancienne liste spList, inchangée) · Mes paris. Football : Top / Aujourd'hui / Demain /
+     Après-demain / ★ Favoris + recherche (équipe, championnat, pays) ; championnats par pays (drapeau), les grands d'abord,
+     les autres repliés ; ligne de match = heure, équipes + logos, cotes 1 · X · 2, « +N » → page du match (tous les marchés
+     en groupes repliables). Cotes qui bougent : vert ▲ / rouge ▼ (3 s). Choix : {ev:'sb:foot:<id>:<mk>', k, odd} ; un seul
+     choix par match. Libellés traduits (12 langues) à partir de mk / k. CODE DE COUPON : « Partager / Code » dans le ticket,
+     « Charger un code » (visiteur aussi), lien https://orolado.com/?code=XXXXXX qui ouvre Paris avec le ticket chargé.
+     ========================================================================================================== */
+  var SBK = ['foot', 'news', 'top', 'today', 'tomorrow', 'after', 'fav', 'search', 'noMatch', 'noFav', 'rules', 'gMain', 'gGoals', 'gHalf', 'gCs', 'gHcp', 'gCombo', 'gDef',
+    'share', 'codeT', 'copy', 'copied', 'loadCode', 'load', 'codeBad', 'codeSkip', 'codeHidden', 'codeLoaded', 'valid7', 'codePh',
+    'over', 'under', 'yes', 'no', 'odd', 'even', 'draw', 'h1', 'h2', 'eq',
+    'm1x2', 'mdc', 'mdnb', 'mou', 'mbtts', 'mtt', 'moe', 'mcs0', 'mwn', 'meh', 'mah', 'mht1x2', 'mhtou', 'mhtbtts', 'm2h1x2', 'mhtft', 'mcs', 'mrbtts', 'mrou', 'meg', 'mhsh', 'loading', 'closedM',
+    'mhtdc', 'm2hdc', 'm2hbtts', 'mhtcs', 'mhtoe', 'm2hoe', 'm2hou', 'mhttt', 'mhtah'];
+  var SBL = {
+    fr: ['Football', 'Actualité', 'Top', 'Aujourd’hui', 'Demain', 'Après-demain', 'Favoris', 'Équipe ou championnat', 'Aucun match pour ce choix.', 'Touche ☆ sur un championnat ou un match pour le retrouver ici.',
+      'Règles : 90 min + arrêts de jeu (sans prolongation ni tirs au but) · paris fermés au coup d’envoi · match reporté et pas joué sous 48 h : remboursé.', 'Principaux', 'Buts', 'Mi-temps', 'Score exact', 'Handicap', 'Combinés', 'Défense',
+      'Partager / Code', 'Code du coupon', 'Copier', 'Copié !', 'Charger un code', 'Charger', 'Code inconnu ou expiré.', '{n} choix ignoré(s) : match commencé ou fermé.', '{n} choix pas encore disponible(s) pour toi.', 'Coupon chargé : {n} choix.', 'Valable 7 jours · la cote du moment est prise au pari', 'Ex. : K7M2QX',
+      'Plus de {x}', 'Moins de {x}', 'Oui', 'Non', 'Impair', 'Pair', 'Nul', '1re mi-temps', '2e mi-temps', 'Égalité',
+      'Résultat du match', 'Double chance', 'Remboursé si nul', 'Total de buts', 'Les deux équipes marquent', 'Buts de {t}', 'Total de buts pair / impair', '{t} n’encaisse pas de but', '{t} gagne sans encaisser', 'Handicap (3 issues)', 'Handicap asiatique', 'Résultat à la mi-temps', '1re mi-temps : total de buts', '1re mi-temps : les deux marquent', 'Résultat de la 2e mi-temps', 'Mi-temps / fin du match', 'Score exact', 'Résultat + les deux marquent', 'Résultat + total de buts', 'Nombre exact de buts', 'Mi-temps avec le plus de buts', 'Un instant…', 'Paris fermés pour ce match.', '1re mi-temps : double chance', '2e mi-temps : double chance', '2e mi-temps : les deux marquent', '1re mi-temps : score exact', '1re mi-temps : buts pair / impair', '2e mi-temps : buts pair / impair', '2e mi-temps : total de buts', '1re mi-temps : buts de {t}', '1re mi-temps : handicap asiatique'],
+    en: ['Football', 'News', 'Top', 'Today', 'Tomorrow', 'Day after', 'Favourites', 'Team or league', 'No match for this choice.', 'Tap ☆ on a league or a match to find it here.',
+      'Rules: 90 min + stoppage time (no extra time or penalties) · betting closes at kick-off · match postponed and not played within 48 h: refunded.', 'Main', 'Goals', 'Halves', 'Correct score', 'Handicap', 'Combos', 'Defence',
+      'Share / Code', 'Booking code', 'Copy', 'Copied!', 'Load a code', 'Load', 'Unknown or expired code.', '{n} pick(s) skipped: match started or closed.', '{n} pick(s) not available to you yet.', 'Slip loaded: {n} pick(s).', 'Valid 7 days · the current odds apply when you bet', 'E.g. K7M2QX',
+      'Over {x}', 'Under {x}', 'Yes', 'No', 'Odd', 'Even', 'Draw', '1st half', '2nd half', 'Equal',
+      'Match result', 'Double chance', 'Draw no bet', 'Total goals', 'Both teams to score', '{t} goals', 'Total goals odd / even', '{t} clean sheet', '{t} to win to nil', 'Handicap (3-way)', 'Asian handicap', 'Half-time result', '1st half: total goals', '1st half: both teams to score', '2nd half result', 'Half-time / full-time', 'Correct score', 'Result + both teams to score', 'Result + total goals', 'Exact total goals', 'Highest scoring half', 'One moment…', 'Betting closed for this match.', '1st half: double chance', '2nd half: double chance', '2nd half: both teams to score', '1st half: correct score', '1st half: goals odd / even', '2nd half: goals odd / even', '2nd half: total goals', '1st half: {t} goals', '1st half: Asian handicap'],
+    es: ['Fútbol', 'Actualidad', 'Top', 'Hoy', 'Mañana', 'Pasado mañana', 'Favoritos', 'Equipo o liga', 'Ningún partido para esta opción.', 'Toca ☆ en una liga o un partido para encontrarlo aquí.',
+      'Reglas: 90 min + descuento (sin prórroga ni penaltis) · apuestas cerradas al inicio · partido aplazado y no jugado en 48 h: reembolso.', 'Principales', 'Goles', 'Mitades', 'Resultado exacto', 'Hándicap', 'Combinadas', 'Defensa',
+      'Compartir / Código', 'Código de cupón', 'Copiar', '¡Copiado!', 'Cargar un código', 'Cargar', 'Código desconocido o caducado.', '{n} selección(es) omitida(s): partido empezado o cerrado.', '{n} selección(es) aún no disponible(s) para ti.', 'Cupón cargado: {n} selección(es).', 'Válido 7 días · se aplica la cuota del momento', 'Ej.: K7M2QX',
+      'Más de {x}', 'Menos de {x}', 'Sí', 'No', 'Impar', 'Par', 'Empate', '1.ª parte', '2.ª parte', 'Igual',
+      'Resultado del partido', 'Doble oportunidad', 'Empate no válido', 'Total de goles', 'Ambos equipos marcan', 'Goles de {t}', 'Total de goles par / impar', '{t} portería a cero', '{t} gana sin encajar', 'Hándicap (3 opciones)', 'Hándicap asiático', 'Resultado al descanso', '1.ª parte: total de goles', '1.ª parte: ambos marcan', 'Resultado 2.ª parte', 'Descanso / final', 'Resultado exacto', 'Resultado + ambos marcan', 'Resultado + total de goles', 'Número exacto de goles', 'Parte con más goles', 'Un momento…', 'Apuestas cerradas para este partido.', '1.ª parte: doble oportunidad', '2.ª parte: doble oportunidad', '2.ª parte: ambos marcan', '1.ª parte: resultado exacto', '1.ª parte: goles par / impar', '2.ª parte: goles par / impar', '2.ª parte: total de goles', '1.ª parte: goles de {t}', '1.ª parte: hándicap asiático'],
+    pt: ['Futebol', 'Atualidade', 'Top', 'Hoje', 'Amanhã', 'Depois de amanhã', 'Favoritos', 'Time ou liga', 'Nenhum jogo para esta opção.', 'Toque em ☆ numa liga ou num jogo para encontrá-lo aqui.',
+      'Regras: 90 min + acréscimos (sem prorrogação nem pênaltis) · apostas fechadas no início · jogo adiado e não disputado em 48 h: reembolso.', 'Principais', 'Gols', 'Tempos', 'Placar exato', 'Handicap', 'Combinadas', 'Defesa',
+      'Partilhar / Código', 'Código do bilhete', 'Copiar', 'Copiado!', 'Carregar um código', 'Carregar', 'Código desconhecido ou expirado.', '{n} seleção(ões) ignorada(s): jogo iniciado ou fechado.', '{n} seleção(ões) ainda indisponível(is) para você.', 'Bilhete carregado: {n} seleção(ões).', 'Válido 7 dias · vale a odd do momento', 'Ex.: K7M2QX',
+      'Mais de {x}', 'Menos de {x}', 'Sim', 'Não', 'Ímpar', 'Par', 'Empate', '1.º tempo', '2.º tempo', 'Igual',
+      'Resultado do jogo', 'Dupla chance', 'Empate anula', 'Total de gols', 'Ambas marcam', 'Gols de {t}', 'Total de gols par / ímpar', '{t} não sofre gol', '{t} vence sem sofrer gol', 'Handicap (3 resultados)', 'Handicap asiático', 'Resultado ao intervalo', '1.º tempo: total de gols', '1.º tempo: ambas marcam', 'Resultado do 2.º tempo', 'Intervalo / final', 'Placar exato', 'Resultado + ambas marcam', 'Resultado + total de gols', 'Número exato de gols', 'Tempo com mais gols', 'Um momento…', 'Apostas fechadas para este jogo.', '1.º tempo: dupla chance', '2.º tempo: dupla chance', '2.º tempo: ambas marcam', '1.º tempo: placar exato', '1.º tempo: gols par / ímpar', '2.º tempo: gols par / ímpar', '2.º tempo: total de gols', '1.º tempo: gols de {t}', '1.º tempo: handicap asiático'],
+    ar: ['كرة القدم', 'الأحداث', 'الأبرز', 'اليوم', 'غدًا', 'بعد غد', 'المفضلة', 'فريق أو دوري', 'لا توجد مباراة لهذا الاختيار.', 'اضغط ☆ على دوري أو مباراة لتجدها هنا.',
+      'القواعد: 90 دقيقة + الوقت بدل الضائع (بدون أشواط إضافية أو ركلات ترجيح) · تُغلق الرهانات عند انطلاق المباراة · مباراة مؤجلة ولم تُلعب خلال 48 ساعة: استرداد.', 'الرئيسية', 'الأهداف', 'الأشواط', 'النتيجة الصحيحة', 'الهانديكاب', 'مركّبة', 'الدفاع',
+      'مشاركة / رمز', 'رمز القسيمة', 'نسخ', 'تم النسخ!', 'تحميل رمز', 'تحميل', 'رمز غير معروف أو منتهي.', 'تم تجاهل {n} اختيار: المباراة بدأت أو أُغلقت.', '{n} اختيار غير متاح لك بعد.', 'تم تحميل القسيمة: {n} اختيار.', 'صالح 7 أيام · تُطبّق الاحتمالات الحالية عند الرهان', 'مثال: K7M2QX',
+      'أكثر من {x}', 'أقل من {x}', 'نعم', 'لا', 'فردي', 'زوجي', 'تعادل', 'الشوط الأول', 'الشوط الثاني', 'متساوٍ',
+      'نتيجة المباراة', 'فرصة مزدوجة', 'التعادل يلغي الرهان', 'مجموع الأهداف', 'كلا الفريقين يسجل', 'أهداف {t}', 'مجموع الأهداف فردي / زوجي', '{t} بشباك نظيفة', '{t} يفوز بشباك نظيفة', 'هانديكاب (3 نتائج)', 'هانديكاب آسيوي', 'نتيجة الشوط الأول', 'الشوط الأول: مجموع الأهداف', 'الشوط الأول: كلا الفريقين يسجل', 'نتيجة الشوط الثاني', 'الشوط الأول / نهاية المباراة', 'النتيجة الصحيحة', 'النتيجة + كلا الفريقين يسجل', 'النتيجة + مجموع الأهداف', 'العدد الدقيق للأهداف', 'الشوط الأكثر أهدافًا', 'لحظة…', 'الرهانات مغلقة لهذه المباراة.', 'الشوط الأول: فرصة مزدوجة', 'الشوط الثاني: فرصة مزدوجة', 'الشوط الثاني: كلا الفريقين يسجل', 'الشوط الأول: النتيجة الصحيحة', 'الشوط الأول: أهداف فردي / زوجي', 'الشوط الثاني: أهداف فردي / زوجي', 'الشوط الثاني: مجموع الأهداف', 'الشوط الأول: أهداف {t}', 'الشوط الأول: هانديكاب آسيوي'],
+    tr: ['Futbol', 'Gündem', 'Öne çıkan', 'Bugün', 'Yarın', 'Öbür gün', 'Favoriler', 'Takım veya lig', 'Bu seçim için maç yok.', 'Burada görmek için bir lig veya maçta ☆ simgesine dokun.',
+      'Kurallar: 90 dk + uzatma dakikaları (uzatma devresi ve penaltı yok) · bahisler başlama düdüğünde kapanır · ertelenip 48 saatte oynanmayan maç: iade.', 'Ana', 'Goller', 'Devreler', 'Doğru skor', 'Handikap', 'Kombine', 'Savunma',
+      'Paylaş / Kod', 'Kupon kodu', 'Kopyala', 'Kopyalandı!', 'Kod yükle', 'Yükle', 'Bilinmeyen veya süresi dolmuş kod.', '{n} seçim atlandı: maç başladı veya kapandı.', '{n} seçim henüz sana açık değil.', 'Kupon yüklendi: {n} seçim.', '7 gün geçerli · bahiste güncel oran geçerlidir', 'Örn.: K7M2QX',
+      '{x} üst', '{x} alt', 'Evet', 'Hayır', 'Tek', 'Çift', 'Beraberlik', '1. yarı', '2. yarı', 'Eşit',
+      'Maç sonucu', 'Çifte şans', 'Beraberlikte iade', 'Toplam gol', 'Karşılıklı gol', '{t} golleri', 'Toplam gol tek / çift', '{t} gol yemez', '{t} gol yemeden kazanır', 'Handikap (3 sonuç)', 'Asya handikapı', 'İlk yarı sonucu', '1. yarı: toplam gol', '1. yarı: karşılıklı gol', '2. yarı sonucu', 'İlk yarı / maç sonu', 'Doğru skor', 'Sonuç + karşılıklı gol', 'Sonuç + toplam gol', 'Tam gol sayısı', 'En çok gol olan yarı', 'Bir saniye…', 'Bu maç için bahisler kapandı.', '1. yarı: çifte şans', '2. yarı: çifte şans', '2. yarı: karşılıklı gol', '1. yarı: doğru skor', '1. yarı: gol tek / çift', '2. yarı: gol tek / çift', '2. yarı: toplam gol', '1. yarı: {t} golleri', '1. yarı: Asya handikapı'],
+    vi: ['Bóng đá', 'Thời sự', 'Nổi bật', 'Hôm nay', 'Ngày mai', 'Ngày kia', 'Yêu thích', 'Đội hoặc giải đấu', 'Không có trận nào cho lựa chọn này.', 'Chạm ☆ trên một giải hoặc trận đấu để tìm lại ở đây.',
+      'Luật: 90 phút + bù giờ (không tính hiệp phụ, luân lưu) · đóng cược khi bóng lăn · trận hoãn và không đá trong 48 giờ: hoàn tiền.', 'Chính', 'Bàn thắng', 'Hiệp', 'Tỷ số chính xác', 'Chấp', 'Kết hợp', 'Phòng ngự',
+      'Chia sẻ / Mã', 'Mã phiếu cược', 'Sao chép', 'Đã sao chép!', 'Nhập mã', 'Tải', 'Mã không tồn tại hoặc đã hết hạn.', 'Bỏ qua {n} lựa chọn: trận đã bắt đầu hoặc đã đóng.', '{n} lựa chọn chưa mở cho bạn.', 'Đã tải phiếu: {n} lựa chọn.', 'Hiệu lực 7 ngày · áp dụng tỷ lệ hiện tại khi cược', 'VD: K7M2QX',
+      'Tài {x}', 'Xỉu {x}', 'Có', 'Không', 'Lẻ', 'Chẵn', 'Hòa', 'Hiệp 1', 'Hiệp 2', 'Bằng nhau',
+      'Kết quả trận', 'Cơ hội kép', 'Hòa hoàn tiền', 'Tổng bàn thắng', 'Cả hai đội ghi bàn', 'Bàn thắng của {t}', 'Tổng bàn chẵn / lẻ', '{t} giữ sạch lưới', '{t} thắng và sạch lưới', 'Chấp châu Âu (3 cửa)', 'Chấp châu Á', 'Kết quả hiệp 1', 'Hiệp 1: tổng bàn thắng', 'Hiệp 1: cả hai đội ghi bàn', 'Kết quả hiệp 2', 'Hiệp 1 / cả trận', 'Tỷ số chính xác', 'Kết quả + cả hai ghi bàn', 'Kết quả + tổng bàn', 'Số bàn thắng chính xác', 'Hiệp nhiều bàn hơn', 'Chờ chút…', 'Đã đóng cược trận này.', 'Hiệp 1: cơ hội kép', 'Hiệp 2: cơ hội kép', 'Hiệp 2: cả hai đội ghi bàn', 'Hiệp 1: tỷ số chính xác', 'Hiệp 1: bàn chẵn / lẻ', 'Hiệp 2: bàn chẵn / lẻ', 'Hiệp 2: tổng bàn thắng', 'Hiệp 1: bàn thắng của {t}', 'Hiệp 1: chấp châu Á'],
+    id: ['Sepak bola', 'Aktual', 'Teratas', 'Hari ini', 'Besok', 'Lusa', 'Favorit', 'Tim atau liga', 'Tidak ada laga untuk pilihan ini.', 'Ketuk ☆ pada liga atau laga untuk menemukannya di sini.',
+      'Aturan: 90 menit + injury time (tanpa perpanjangan & adu penalti) · taruhan ditutup saat kick-off · laga ditunda dan tidak dimainkan dalam 48 jam: uang kembali.', 'Utama', 'Gol', 'Babak', 'Skor tepat', 'Handicap', 'Kombinasi', 'Pertahanan',
+      'Bagikan / Kode', 'Kode kupon', 'Salin', 'Disalin!', 'Muat kode', 'Muat', 'Kode tidak dikenal atau kedaluwarsa.', '{n} pilihan dilewati: laga sudah mulai atau ditutup.', '{n} pilihan belum tersedia untukmu.', 'Kupon dimuat: {n} pilihan.', 'Berlaku 7 hari · odds saat ini yang berlaku', 'Mis.: K7M2QX',
+      'Over {x}', 'Under {x}', 'Ya', 'Tidak', 'Ganjil', 'Genap', 'Seri', 'Babak 1', 'Babak 2', 'Sama',
+      'Hasil laga', 'Peluang ganda', 'Seri uang kembali', 'Total gol', 'Kedua tim mencetak gol', 'Gol {t}', 'Total gol ganjil / genap', '{t} tanpa kebobolan', '{t} menang tanpa kebobolan', 'Handicap (3 hasil)', 'Handicap Asia', 'Hasil babak 1', 'Babak 1: total gol', 'Babak 1: kedua tim cetak gol', 'Hasil babak 2', 'Babak 1 / akhir laga', 'Skor tepat', 'Hasil + kedua tim cetak gol', 'Hasil + total gol', 'Jumlah gol tepat', 'Babak dengan gol terbanyak', 'Sebentar…', 'Taruhan ditutup untuk laga ini.', 'Babak 1: peluang ganda', 'Babak 2: peluang ganda', 'Babak 2: kedua tim cetak gol', 'Babak 1: skor tepat', 'Babak 1: gol ganjil / genap', 'Babak 2: gol ganjil / genap', 'Babak 2: total gol', 'Babak 1: gol {t}', 'Babak 1: handicap Asia'],
+    ru: ['Футбол', 'События', 'Топ', 'Сегодня', 'Завтра', 'Послезавтра', 'Избранное', 'Команда или лига', 'Нет матчей для этого выбора.', 'Нажмите ☆ у лиги или матча, чтобы найти его здесь.',
+      'Правила: 90 мин + добавленное время (без овертайма и пенальти) · приём ставок до начала матча · матч перенесён и не сыгран за 48 ч: возврат.', 'Главные', 'Голы', 'Таймы', 'Точный счёт', 'Фора', 'Комбо', 'Защита',
+      'Поделиться / Код', 'Код купона', 'Копировать', 'Скопировано!', 'Загрузить код', 'Загрузить', 'Неизвестный или истёкший код.', 'Пропущено выборов: {n} (матч начался или закрыт).', 'Пока недоступно для вас: {n}.', 'Купон загружен: {n}.', 'Действует 7 дней · при ставке берётся текущий коэффициент', 'Напр.: K7M2QX',
+      'Больше {x}', 'Меньше {x}', 'Да', 'Нет', 'Нечёт', 'Чёт', 'Ничья', '1-й тайм', '2-й тайм', 'Поровну',
+      'Исход матча', 'Двойной шанс', 'Ничья — возврат', 'Тотал голов', 'Обе забьют', 'Голы: {t}', 'Тотал чёт / нечёт', '{t} — сухой матч', '{t} победит всухую', 'Фора (3 исхода)', 'Азиатская фора', 'Исход 1-го тайма', '1-й тайм: тотал голов', '1-й тайм: обе забьют', 'Исход 2-го тайма', 'Тайм / матч', 'Точный счёт', 'Исход + обе забьют', 'Исход + тотал', 'Точное число голов', 'Самый результативный тайм', 'Минутку…', 'Ставки на этот матч закрыты.', '1-й тайм: двойной шанс', '2-й тайм: двойной шанс', '2-й тайм: обе забьют', '1-й тайм: точный счёт', '1-й тайм: тотал чёт / нечёт', '2-й тайм: тотал чёт / нечёт', '2-й тайм: тотал голов', '1-й тайм: голы: {t}', '1-й тайм: азиатская фора'],
+    de: ['Fußball', 'Aktuelles', 'Top', 'Heute', 'Morgen', 'Übermorgen', 'Favoriten', 'Team oder Liga', 'Kein Spiel für diese Auswahl.', 'Tippe ☆ bei einer Liga oder einem Spiel, um es hier zu finden.',
+      'Regeln: 90 Min. + Nachspielzeit (ohne Verlängerung und Elfmeterschießen) · Wetten schließen beim Anpfiff · verlegtes Spiel, nicht binnen 48 Std. gespielt: Erstattung.', 'Haupt', 'Tore', 'Halbzeiten', 'Genaues Ergebnis', 'Handicap', 'Kombis', 'Defensive',
+      'Teilen / Code', 'Wettschein-Code', 'Kopieren', 'Kopiert!', 'Code laden', 'Laden', 'Code unbekannt oder abgelaufen.', '{n} Tipp(s) übersprungen: Spiel begonnen oder geschlossen.', '{n} Tipp(s) für dich noch nicht verfügbar.', 'Wettschein geladen: {n} Tipp(s).', '7 Tage gültig · es gilt die aktuelle Quote', 'Z. B. K7M2QX',
+      'Über {x}', 'Unter {x}', 'Ja', 'Nein', 'Ungerade', 'Gerade', 'Remis', '1. Halbzeit', '2. Halbzeit', 'Gleich',
+      'Spielergebnis', 'Doppelte Chance', 'Remis = Erstattung', 'Tore gesamt', 'Beide Teams treffen', 'Tore {t}', 'Tore gerade / ungerade', '{t} ohne Gegentor', '{t} gewinnt zu null', 'Handicap (3-Weg)', 'Asiatisches Handicap', 'Halbzeitergebnis', '1. Halbzeit: Tore gesamt', '1. Halbzeit: beide treffen', 'Ergebnis 2. Halbzeit', 'Halbzeit / Endstand', 'Genaues Ergebnis', 'Ergebnis + beide treffen', 'Ergebnis + Tore gesamt', 'Genaue Toranzahl', 'Torreichste Halbzeit', 'Einen Moment…', 'Wetten für dieses Spiel geschlossen.', '1. Halbzeit: doppelte Chance', '2. Halbzeit: doppelte Chance', '2. Halbzeit: beide treffen', '1. Halbzeit: genaues Ergebnis', '1. Halbzeit: Tore gerade / ungerade', '2. Halbzeit: Tore gerade / ungerade', '2. Halbzeit: Tore gesamt', '1. Halbzeit: Tore {t}', '1. Halbzeit: asiatisches Handicap'],
+    zh: ['足球', '热点', '热门', '今天', '明天', '后天', '收藏', '球队或联赛', '此选项暂无比赛。', '点击联赛或比赛上的 ☆，即可在这里找到。',
+      '规则：90 分钟 + 补时（不含加时和点球）· 开赛即停止投注 · 比赛延期且 48 小时内未进行：退款。', '主要', '进球', '半场', '正确比分', '让球', '组合', '防守',
+      '分享 / 代码', '投注单代码', '复制', '已复制！', '载入代码', '载入', '代码不存在或已过期。', '已跳过 {n} 项：比赛已开始或已关闭。', '{n} 项暂未对你开放。', '投注单已载入：{n} 项。', '7 天有效 · 投注时按当前赔率', '例：K7M2QX',
+      '大于 {x}', '小于 {x}', '是', '否', '单', '双', '平局', '上半场', '下半场', '相同',
+      '全场赛果', '双重机会', '平局退款', '总进球', '双方进球', '{t} 进球数', '总进球单双', '{t} 零失球', '{t} 零封取胜', '让球（三项）', '亚洲让球', '半场赛果', '上半场：总进球', '上半场：双方进球', '下半场赛果', '半场 / 全场', '正确比分', '赛果 + 双方进球', '赛果 + 总进球', '准确进球数', '进球最多的半场', '请稍候…', '本场比赛已停止投注。', '上半场：双重机会', '下半场：双重机会', '下半场：双方进球', '上半场：正确比分', '上半场：进球单双', '下半场：进球单双', '下半场：总进球', '上半场：{t} 进球数', '上半场：亚洲让球'],
+    hi: ['फ़ुटबॉल', 'ताज़ा', 'टॉप', 'आज', 'कल', 'परसों', 'पसंदीदा', 'टीम या लीग', 'इस विकल्प के लिए कोई मैच नहीं।', 'यहाँ पाने के लिए लीग या मैच पर ☆ दबाएँ।',
+      'नियम: 90 मिनट + इंजरी टाइम (एक्स्ट्रा टाइम और पेनल्टी नहीं) · किक-ऑफ़ पर दांव बंद · मैच टला और 48 घंटे में नहीं खेला गया: रिफंड।', 'मुख्य', 'गोल', 'हाफ़', 'सटीक स्कोर', 'हैंडीकैप', 'कॉम्बो', 'डिफ़ेंस',
+      'शेयर / कोड', 'कूपन कोड', 'कॉपी', 'कॉपी हो गया!', 'कोड लोड करें', 'लोड', 'अज्ञात या समाप्त कोड।', '{n} चयन छोड़े गए: मैच शुरू या बंद।', '{n} चयन अभी आपके लिए उपलब्ध नहीं।', 'कूपन लोड हुआ: {n} चयन।', '7 दिन मान्य · दांव पर मौजूदा ऑड्स लागू', 'उदा.: K7M2QX',
+      '{x} से ज़्यादा', '{x} से कम', 'हाँ', 'नहीं', 'विषम', 'सम', 'ड्रॉ', 'पहला हाफ़', 'दूसरा हाफ़', 'बराबर',
+      'मैच का नतीजा', 'डबल चांस', 'ड्रॉ पर रिफंड', 'कुल गोल', 'दोनों टीमें गोल करेंगी', '{t} के गोल', 'कुल गोल सम / विषम', '{t} क्लीन शीट', '{t} बिना गोल खाए जीतेगी', 'हैंडीकैप (3 नतीजे)', 'एशियन हैंडीकैप', 'हाफ़-टाइम नतीजा', 'पहला हाफ़: कुल गोल', 'पहला हाफ़: दोनों गोल करेंगी', 'दूसरे हाफ़ का नतीजा', 'हाफ़-टाइम / फ़ुल-टाइम', 'सटीक स्कोर', 'नतीजा + दोनों गोल करेंगी', 'नतीजा + कुल गोल', 'सटीक गोल संख्या', 'सबसे ज़्यादा गोल वाला हाफ़', 'एक पल…', 'इस मैच पर दांव बंद हैं।', 'पहला हाफ़: डबल चांस', 'दूसरा हाफ़: डबल चांस', 'दूसरा हाफ़: दोनों गोल करेंगी', 'पहला हाफ़: सटीक स्कोर', 'पहला हाफ़: गोल सम / विषम', 'दूसरा हाफ़: गोल सम / विषम', 'दूसरा हाफ़: कुल गोल', 'पहला हाफ़: {t} के गोल', 'पहला हाफ़: एशियन हैंडीकैप']
+  };
+  function SX() { var a = SBL[lg()] || SBL.en, o = {}; SBK.forEach(function (k, i) { o[k] = a[i] != null ? a[i] : SBL.en[i]; }); return o; }
+  var SBIC = {
+    news: '<svg class="sp-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="14" height="14.5" rx="2" fill="#E2E8F0"/><path d="M17.5 9h3v8.5a2 2 0 0 1-2 2h-1z" fill="#94A3B8"/><rect x="6" y="7.6" width="9" height="3.4" rx=".8" fill="#EF4444"/><path d="M6 13.4h9M6 16.4h6" stroke="#475569" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    search: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+    tick: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M10 8.5v10" stroke-dasharray="2 2"/></svg>',
+    share: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.7 10.8l6.6-4M8.7 13.2l6.6 4"/></svg>',
+    chev: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg>',
+    wa: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5a9.4 9.4 0 0 0-8.1 14.2L2.6 21.5l4.9-1.3A9.4 9.4 0 1 0 12 2.5zm5.5 13.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.7-1.1-4.5-3.9-4.6-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2z"/></svg>'
+  };
+  var sbOn = null, sbAuto = true, listView = 'foot', sbDay = 'top', sbQ = '', sbData = {}, sbOpen = {}, sbMid = '', sbM = null, sbGrp = { main: 1, goals: 1 };
+  var sbCode = null, sbCodeRow = false, sbPrev = {}, sbFlash = {}, pendCode = '';
+  function lv() { return sbOn ? listView : 'list'; }
+  function isSbView() { return view === 'foot' || view === 'match'; }
+  function sbToast(m, k) { if (ctx && ctx.toast) ctx.toast(m, k || 'info'); else if (D6.App && D6.App.toast) D6.App.toast(m, k || 'info'); }
+  function favs() { try { var f = JSON.parse(localStorage.getItem('oro_sb_fav') || '{}') || {}; return { l: Array.isArray(f.l) ? f.l : [], f: Array.isArray(f.f) ? f.f : [] }; } catch (e) { return { l: [], f: [] }; } }
+  function favToggle(kind, id) {
+    var f = favs(), a = f[kind], i = a.indexOf(id);
+    if (i > -1) a.splice(i, 1); else { a.push(id); if (a.length > 300) a.shift(); }
+    try { localStorage.setItem('oro_sb_fav', JSON.stringify(f)); } catch (e) { /* ignore */ }
+    return i < 0;
+  }
+  function tzMin() { return -new Date().getTimezoneOffset(); }
+  // une journée (0 / 1 / 2) : gardée 60 s ; false = refusé par le serveur (pas visible pour ce joueur) ; null = réseau
+  function sbFetch(day, force) {
+    var c = sbData[day] || (sbData[day] = {});
+    if (c.p) return c.p;
+    if (c.r && !force && Date.now() - c.at < 60000) return Promise.resolve(c.r);
+    c.p = (async function () {
+      var r = null;
+      try { r = await D6.Api.post('sbList', { day: day, tz: tzMin() }, 15000); } catch (e) { r = null; }
+      c.p = null;
+      if (r && r.ok) { sbOn = true; sbNote(c.r, r); c.r = r; c.at = Date.now(); return r; }
+      if (r && r.ok === false && !r.rate && r.reason !== 'busy') { sbOn = false; sbData = {}; return false; }
+      return null;
+    })();
+    return c.p;
+  }
+  function sbNeed() { return sbQ || sbDay === 'top' || sbDay === 'fav' ? [0, 1, 2] : [sbDay]; }
+  function sbLoad(force) { return Promise.all(sbNeed().map(function (d) { return sbFetch(d, force); })); }
+  // cotes qui bougent (comme bet365) : vert ▲ si elle monte, rouge ▼ si elle baisse, pendant 3 s
+  function sbNote(oldR, r) {
+    var now = Date.now();
+    (r.fx || []).forEach(function (f) {
+      ((f.o && f.o.o) || []).forEach(function (o) {
+        var key = 'sb:' + f.id + ':1x2|' + o[0], p = sbPrev[key];
+        if (p != null && Math.abs(p - o[1]) > 1e-9) sbFlash[key] = { d: o[1] > p ? 'up' : 'dn', t: now };
+        sbPrev[key] = o[1];
+      });
+    });
+  }
+  function sbFl(key) { var f = sbFlash[key]; if (!f) return ''; if (Date.now() - f.t > 3000) { delete sbFlash[key]; return ''; } return ' fl-' + f.d; }
+  function sbFlashEnd() { setTimeout(function () { if (box) box.querySelectorAll('.fl-up,.fl-dn').forEach(function (b) { b.classList.remove('fl-up', 'fl-dn'); }); }, 3100); }
+  function sbFx(fid) {
+    if (sbM && sbM.fx && sbM.fx.id === fid) return sbM.fx;
+    for (var d in sbData) { var r = sbData[d] && sbData[d].r; if (r) for (var i = 0; i < r.fx.length; i++) if (r.fx[i].id === fid) return r.fx[i]; }
+    return null;
+  }
+  function sbLg(id) { for (var d in sbData) { var r = sbData[d] && sbData[d].r; if (r) for (var i = 0; i < r.lg.length; i++) if (r.lg[i].id === id) return r.lg[i]; } return null; }
+
+  // ---------- libellés des marchés (12 langues) à partir de mk / k ----------
+  function numL(v) { var n = Number(v); return isFinite(n) ? n.toLocaleString(loc(), { maximumFractionDigits: 2 }) : String(v); }
+  function sgn(v) { var n = Number(v); return (n > 0 ? '+' : n < 0 ? '−' : '') + numL(Math.abs(n)); }
+  function mkParts(mk) { mk = String(mk || ''); var i = mk.indexOf(':'); return i < 0 ? [mk, ''] : [mk.slice(0, i), mk.slice(i + 1)]; }
+  function sbMkName(mk, h, a) {
+    var x = SX(), f = mkParts(mk)[0];
+    var N = { '1x2': x.m1x2, dc: x.mdc, dnb: x.mdnb, ou: x.mou, btts: x.mbtts, tth: fmt(x.mtt, { t: h }), tta: fmt(x.mtt, { t: a }), oe: x.moe, csh: fmt(x.mcs0, { t: h }), csa: fmt(x.mcs0, { t: a }),
+      wnh: fmt(x.mwn, { t: h }), wna: fmt(x.mwn, { t: a }), eh: x.meh, ah: x.mah, ht1x2: x.mht1x2, htou: x.mhtou, htbtts: x.mhtbtts, '2h1x2': x.m2h1x2, htft: x.mhtft, cs: x.mcs, rbtts: x.mrbtts, rou: x.mrou, eg: x.meg, hsh: x.mhsh,
+      htdc: x.mhtdc, '2hdc': x.m2hdc, '2hbtts': x.m2hbtts, htcs: x.mhtcs, htoe: x.mhtoe, '2hoe': x.m2hoe, '2hou': x.m2hou, httth: fmt(x.mhttt, { t: h }), httta: fmt(x.mhttt, { t: a }), htah: x.mhtah };
+    return N[f] || String(mk);
+  }
+  function sbOutL(mk, k, h, a) {
+    var x = SX(), p = mkParts(mk), f = p[0], ln = p[1], q;
+    var one = function (c) { return c === 'H' ? h : c === 'A' ? a : c === 'D' ? x.draw : c; };
+    var ou = function (c) { return fmt(c === 'O' ? x.over : x.under, { x: numL(ln) }); };
+    var yn = function (c) { return c === 'Y' ? x.yes : x.no; };
+    k = String(k);
+    switch (f) {
+      case '1x2': case 'ht1x2': case '2h1x2': case 'dnb': return one(k);
+      case 'eh': return (k === 'D' ? x.draw : one(k)) + ' (' + sgn(k === 'A' ? -ln : +ln) + ')';
+      case 'ah': case 'htah': return one(k) + ' ' + sgn(k === 'A' ? -ln : +ln);
+      case 'dc': case 'htdc': case '2hdc': return { HD: h + ' / ' + x.draw, HA: h + ' / ' + a, DA: x.draw + ' / ' + a }[k] || k;
+      case 'ou': case 'tth': case 'tta': case 'htou': case '2hou': case 'httth': case 'httta': return ou(k);
+      case 'oe': case 'htoe': case '2hoe': return k === 'O' ? x.odd : x.even;
+      case 'btts': case 'htbtts': case '2hbtts': case 'csh': case 'csa': case 'wnh': case 'wna': return yn(k);
+      case 'htcs': return k.replace(':', ' - ');
+      case 'htft': q = k.split('/'); return q.length === 2 ? one(q[0]) + ' / ' + one(q[1]) : k;
+      case 'rbtts': q = k.split('/'); return q.length === 2 ? one(q[0]) + ' + ' + yn(q[1]) : k;
+      case 'rou': q = k.split('/'); return q.length === 2 ? one(q[0]) + ' + ' + ou(q[1]) : k;
+      case 'cs': return k.replace(':', ' - ');
+      case 'hsh': return k === '1' ? x.h1 : k === '2' ? x.h2 : x.eq;
+    }
+    return k;
+  }
+  function sep() { return lg() === 'fr' ? ' : ' : ': '; }
+  // choix d'un pari (Mes paris, reçus, ticket) : traduit si mk / k sont là, sinon l'ancien libellé (inchangé)
+  function selLbl(s) {
+    if (s && s.mk) { var tm = teams(s.t) || [s.t, '']; var o = sbOutL(s.mk, s.k, tm[0], tm[1]); return mkParts(s.mk)[0] === '1x2' ? o : sbMkName(s.mk, tm[0], tm[1]) + sep() + o; }
+    return trO(s ? s.l : '');
+  }
+
+  // ---------- dates : « Aujourd'hui · jeu. 22 oct. », heures locales du joueur ----------
+  // heure locale du joueur sur 24 h (« 20:45 », jamais « 08:45 PM » qui ne tient pas dans la colonne)
+  function hm24(t) { try { return new Date(t * 1000).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); } catch (e) { return hm(t); } }
+  function dshort(t) { return new Date(t * 1000).toLocaleDateString(loc(), { weekday: 'short', day: 'numeric', month: 'short' }); }
+  function dayHead(t) {
+    var x = SX(), d = new Date(t * 1000), n = new Date(), k = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(n.getFullYear(), n.getMonth(), n.getDate())) / 86400000);
+    var rel = k === 0 ? x.today : k === 1 ? x.tomorrow : k === 2 ? x.after : '';
+    return rel ? rel + ' · ' + dshort(t) : cap1(dshort(t));
+  }
+  function logoImg(u, cls) { return u && /^https:\/\//.test(u) ? '<img class="' + cls + '" src="' + esc(u) + '" alt="" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'">' : '<i class="' + cls + ' sb-nolo"></i>'; }
+  function normS(s) { try { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); } catch (e) { return String(s || '').toLowerCase(); } }
+
+  // ---------- page Football ----------
+  function sbTool() {
+    var x = SX(), ch = [['top', x.top], [0, x.today], [1, x.tomorrow], [2, x.after]];
+    return '<div class="sb-tool"><div class="sb-chips" role="tablist">' + ch.map(function (c) { return '<button type="button" data-day="' + c[0] + '" class="' + (String(sbDay) === String(c[0]) && !sbQ ? 'on' : '') + '" style="flex-grow:' + (String(c[1]).length + 4) + '"><span class="fit">' + esc(c[1]) + '</span></button>'; }).join('') +
+      '<button type="button" data-day="fav" class="sb-favc' + (sbDay === 'fav' && !sbQ ? ' on' : '') + '" aria-label="' + esc(x.fav) + '"><span>★</span></button></div>' +
+      '<div class="sb-srch"><label class="sb-q">' + SBIC.search + '<input id="sbQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(x.search) + '" value="' + esc(sbQ) + '"></label>' +
+      '<button type="button" class="sb-codeb' + (sbCodeRow ? ' on' : '') + '" id="sbCodeT">' + SBIC.tick + '<span class="fit">' + esc(x.loadCode) + '</span></button></div>' +
+      (sbCodeRow ? codeRow() : '') + '</div>';
+  }
+  function codeRow() {
+    var x = SX();
+    return '<div class="sb-crow"><input id="sbCodeIn" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="' + esc(x.codePh) + '" aria-label="' + esc(x.loadCode) + '"><button type="button" id="sbCodeGo"><span class="fit">' + esc(x.load) + '</span></button></div>';
+  }
+  function bindCodeRow(root) {
+    var go = root.querySelector('#sbCodeGo'), inp = root.querySelector('#sbCodeIn');
+    if (!go || !inp) return;
+    var run = function () { if (inp.value.trim()) loadCode(inp.value); };
+    go.addEventListener('click', run);
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+    inp.addEventListener('input', function () { var v = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== inp.value) inp.value = v; });
+  }
+  // une rangée de puces : toutes à la même taille de texte (la plus petite après ajustement) — plus net
+  function sameSize(list) {
+    var min = 99; list.forEach(function (el) { min = Math.min(min, parseFloat(getComputedStyle(el).fontSize) || 99); });
+    if (min < 99) list.forEach(function (el) { el.style.fontSize = min + 'px'; });
+  }
+  function renderFoot() {
+    box.innerHTML = tabs() + sbTool() + '<div id="sbBody" class="sb-body"></div>';
+    var bar = slipBar(); if (bar) box.insertAdjacentHTML('beforeend', bar);
+    bindTabs(); bindSlip(); fitAll(box); sameSize(box.querySelectorAll('.sb-chips .fit'));
+    box.querySelectorAll('.sb-chips [data-day]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var d = b.getAttribute('data-day'); sbDay = /^\d$/.test(d) ? +d : d; sbQ = '';
+        var q = $('sbQ'); if (q) q.value = '';
+        box.querySelectorAll('.sb-chips [data-day]').forEach(function (z) { z.classList.toggle('on', z === b); });
+        paintFoot();
+      });
+    });
+    var q = $('sbQ'), qt = 0;
+    if (q) q.addEventListener('input', function () { clearTimeout(qt); qt = setTimeout(function () { sbQ = q.value.trim(); box.querySelectorAll('.sb-chips [data-day]').forEach(function (z) { z.classList.toggle('on', !sbQ && String(sbDay) === z.getAttribute('data-day')); }); paintFoot(); }, 180); });
+    $('sbCodeT').addEventListener('click', function () {
+      sbCodeRow = !sbCodeRow; this.classList.toggle('on', sbCodeRow);
+      var t = box.querySelector('.sb-tool'), old = t.querySelector('.sb-crow');
+      if (old) old.remove(); else { t.insertAdjacentHTML('beforeend', codeRow()); bindCodeRow(t); fitAll(t.querySelector('.sb-crow')); var i = $('sbCodeIn'); if (i) i.focus(); }
+    });
+    bindCodeRow(box.querySelector('.sb-tool'));
+    $('sbBody').addEventListener('click', footClick);
+    paintFoot();
+    startTick();
+  }
+  function paintFoot() {
+    var body = $('sbBody'); if (!body) return;
+    var days = sbNeed(), rs = days.map(function (d) { return sbData[d] && sbData[d].r; });
+    if (rs.some(function (r) { return !r; })) {
+      if (!body.firstChild) body.innerHTML = skeleton();
+      sbLoad().then(function (out) {
+        if (!box || !box.isConnected || view !== 'foot' || !$('sbBody')) return;
+        if (out.some(function (r) { return r === false; })) { view = 'list'; render(); return; }
+        if (out.every(function (r) { return r; })) paintFoot(); else $('sbBody').innerHTML = empty(XX().e_unavailable);
+      });
+      return;
+    }
+    body.innerHTML = footHtml(rs);
+    fitAll(body); sbFlashEnd();
+  }
+  function footHtml(rs) {
+    var x = SX(), fv = favs(), lgs = {}, all = [], seen = {}, q = normS(sbQ);
+    rs.forEach(function (r) { r.lg.forEach(function (l) { lgs[l.id] = l; }); r.fx.forEach(function (f) { if (!seen[f.id]) { seen[f.id] = 1; all.push(f); } }); });
+    var n = nowS(), fx = all.filter(function (f) { return f.ts > n; });
+    if (q) fx = fx.filter(function (f) { var l = lgs[f.lg] || {}; return normS(f.h.n + ' ' + f.a.n + ' ' + l.n + ' ' + l.c).indexOf(q) > -1; });
+    else if (sbDay === 'fav') fx = fx.filter(function (f) { return fv.l.indexOf(f.lg) > -1 || fv.f.indexOf(f.id) > -1; });
+    else if (sbDay === 'top') { var tp = fx.filter(function (f) { return (lgs[f.lg] || {}).p < 100 || fv.l.indexOf(f.lg) > -1; }); if (tp.length) fx = tp; }
+    if (!fx.length) return '<p class="sb-none"><span>' + esc(sbDay === 'fav' && !q ? x.noFav : x.noMatch) + '</span></p>';
+    fx.sort(function (a, b) { return a.ts - b.ts || (a.id < b.id ? -1 : 1); });
+    // jours (en-tête propre) → championnats (favoris, puis les grands, puis pays / nom) → matchs par heure
+    var byDay = [], dk = {};
+    fx.forEach(function (f) { var d = new Date(f.ts * 1000).toDateString(); if (!dk[d]) { dk[d] = { t: f.ts, f: [] }; byDay.push(dk[d]); } dk[d].f.push(f); });
+    var many = fx.length > 40, out = '';
+    byDay.forEach(function (D) {
+      var g = {}, order = [];
+      D.f.forEach(function (f) { if (!g[f.lg]) { g[f.lg] = []; order.push(f.lg); } g[f.lg].push(f); });
+      order.sort(function (a, b) {
+        var A = lgs[a] || { p: 100, c: '', n: '' }, B = lgs[b] || { p: 100, c: '', n: '' }, fa = fv.l.indexOf(a) > -1 ? 0 : 1, fb = fv.l.indexOf(b) > -1 ? 0 : 1;
+        return fa - fb || A.p - B.p || String(A.c).localeCompare(String(B.c)) || String(A.n).localeCompare(String(B.n));
+      });
+      out += '<h4 class="sp2-day sb-dayh"><span class="fit">' + esc(dayHead(D.t)) + '</span><i>' + D.f.length + '</i></h4>';
+      order.forEach(function (id) {
+        var l = lgs[id] || { id: id, n: '', c: '', f: '', p: 100 }, isF = fv.l.indexOf(id) > -1, key = D.t ? new Date(D.t * 1000).toDateString() + '|' + id : id;
+        var open = sbOpen[key] != null ? sbOpen[key] : (!!q || isF || l.p < 100 || sbDay === 'fav' || !many || order.length <= 3);
+        out += '<section class="sb-lg' + (open ? ' on' : '') + '" data-lgk="' + esc(key) + '"><div class="sb-lgh" role="button" tabindex="0" data-lgt="' + esc(key) + '" aria-expanded="' + open + '">' +
+          (l.f ? '<img class="sb-flag" src="' + esc(l.f) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' : logoImg(l.lo, 'sb-flag')) +
+          '<span class="sb-lgn"><b class="fit">' + esc(l.n) + '</b><small class="fit">' + esc(l.c) + '</small></span><i class="sb-cnt">' + g[id].length + '</i>' +
+          '<button type="button" class="sb-star' + (isF ? ' on' : '') + '" data-fl="' + id + '" aria-label="' + esc(x.fav) + '" aria-pressed="' + isF + '">' + (isF ? '★' : '☆') + '</button><i class="sb-chev">' + SBIC.chev + '</i></div>' +
+          (open ? '<div class="sb-cols" aria-hidden="true"><span></span><span></span><span>1</span><span>X</span><span>2</span><span></span></div>' + g[id].map(rowHtml).join('') : '') + '</section>';
+      });
+    });
+    return out;
+  }
+  function rowHtml(f) {
+    var o = (f.o && f.o.o) || [], by = {}; o.forEach(function (z) { by[z[0]] = z[1]; });
+    var btn = function (k) {
+      var ev = 'sb:' + f.id + ':1x2', v = by[k];
+      if (v == null) return '<span class="sb-ob off">—</span>';
+      var on = inSlip(ev, k), fl = sbFl(ev + '|' + k);
+      return '<button type="button" class="sb-ob' + (on ? ' on' : '') + fl + '" data-ev="' + ev + '" data-k="' + k + '" data-odd="' + v + '" aria-pressed="' + on + '"><b>' + Number(v).toFixed(2) + '</b></button>';
+    };
+    var more = Math.max(0, (f.n || 0) - 1);
+    return '<div class="sb-row" data-fx="' + esc(f.id) + '"><div class="sb-t" data-open="' + esc(f.id) + '"><b>' + esc(hm24(f.ts)) + '</b></div>' +
+      '<div class="sb-tms" data-open="' + esc(f.id) + '" role="button" tabindex="0"><p>' + logoImg(f.h.lo, 'sb-lo') + '<span dir="auto">' + esc(f.h.n) + '</span></p><p>' + logoImg(f.a.lo, 'sb-lo') + '<span dir="auto">' + esc(f.a.n) + '</span></p></div>' +
+      btn('H') + btn('D') + btn('A') + '<button type="button" class="sb-more" dir="ltr" data-open="' + esc(f.id) + '" aria-label="+' + more + '">' + (more ? '+' + more : '›') + '</button></div>';
+  }
+  function footClick(ev) {
+    var t = ev.target;
+    var st = t.closest('[data-fl]');
+    if (st) { ev.stopPropagation(); var id = +st.getAttribute('data-fl'), on = favToggle('l', id); st.classList.toggle('on', on); st.textContent = on ? '★' : '☆'; st.setAttribute('aria-pressed', String(on)); if (sbDay === 'fav' || sbDay === 'top') paintFoot(); return; }
+    var ob = t.closest('.sb-ob[data-ev]'); if (ob) { sbPick(ob); return; }
+    var op = t.closest('[data-open]'); if (op) { openMatch(op.getAttribute('data-open')); return; }
+    var lh = t.closest('[data-lgt]');
+    if (lh) { var k = lh.getAttribute('data-lgt'), sec = lh.parentNode, on2 = !sec.classList.contains('on'); sbOpen[k] = on2; paintFoot(); }
+  }
+  // toucher une cote SB : ajoutée / retirée du ticket sans redessiner la page (un seul choix par match)
+  function sbPick(b) {
+    var x = X(), xx = XX(), ev = b.getAttribute('data-ev'), k = b.getAttribute('data-k'), odd = +b.getAttribute('data-odd');
+    var m = /^sb:(foot:\d+):(.+)$/.exec(ev || ''); if (!m) return;
+    var fid = m[1], mk = m[2], f = sbFx(fid);
+    if (!f || nowS() >= f.ts) { sbToast(SX().closedM); return; }
+    var had = inSlip(ev, k), n0 = slip.length;
+    if (!had) {
+      if (slip.some(function (s) { return s.q; })) { sbToast(xx.e_single); return; }
+      if (slip.length >= 50 && !slip.some(function (s) { return s.fx === fid; })) { sbToast(x.max10); return; }
+    }
+    slip = slip.filter(function (s) { return s.fx !== fid; });
+    if (!had) slip.push({ ev: ev, k: k, odd: odd, sb: 1, mk: mk, fx: fid, ko: f.ts, t: f.h.n + ' - ' + f.a.n, h: f.h, a: f.a, grp: ['fx:' + fid], q: false, l: sbOutL(mk, k, f.h.n, f.a.n) });
+    box.querySelectorAll('[data-ev^="sb:' + fid + ':"]').forEach(function (z) { var on = inSlip(z.getAttribute('data-ev'), z.getAttribute('data-k')); z.classList.toggle('on', on); z.setAttribute('aria-pressed', String(on)); });
+    sbCode = null;
+    paintBar(slip.length > n0);
+  }
+
+  // ---------- page d'un match ----------
+  var GRP = [['main', 'gMain'], ['goals', 'gGoals'], ['half', 'gHalf'], ['cs', 'gCs'], ['hcp', 'gHcp'], ['combo', 'gCombo'], ['def', 'gDef']];
+  function grpOf(mk) {
+    var f = mkParts(mk)[0];
+    if (f === '1x2' || f === 'dc' || f === 'dnb' || f === 'btts' || mk === 'ou:2.5') return 'main';
+    if (f === 'ou' || f === 'tth' || f === 'tta' || f === 'oe' || f === 'eg') return 'goals';
+    if (f === 'cs' || f === 'htcs') return 'cs';
+    if (f === 'ah' || f === 'eh' || f === 'htah') return 'hcp';
+    if (/^(ht|2h)/.test(f) || f === 'hsh') return 'half'; // 1re / 2e mi-temps (ht1x2, htdc, htou, httth, 2hou, 2hbtts, htft…)
+    if (f === 'rbtts' || f === 'rou') return 'combo';
+    return 'def';
+  }
+  function openMatch(fid) {
+    sbMid = fid; sbM = null; view = 'match'; render();
+    var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0;
+    (async function () {
+      var r = null;
+      try { r = await D6.Api.post('sbMatch', { id: fid }, 15000); } catch (e) { r = null; }
+      if (sbMid !== fid || view !== 'match' || !box || !box.isConnected) return;
+      if (r && r.ok) {
+        var now = Date.now();
+        (r.mk || []).forEach(function (m) { (m.o || []).forEach(function (o) { var key = 'sb:' + fid + ':' + m.mk + '|' + o[0], p = sbPrev[key]; if (p != null && Math.abs(p - o[1]) > 1e-9) sbFlash[key] = { d: o[1] > p ? 'up' : 'dn', t: now }; sbPrev[key] = o[1]; }); });
+        sbM = r;
+      } else sbM = { ok: false, reason: r ? r.reason : 'unavailable' };
+      render();
+    })();
+  }
+  function matchHead(f, l) {
+    var x = SX(), xx = XX(), fv = favs(), isF = fv.f.indexOf(f.id) > -1, s = f.ts - nowS();
+    var when = cap1(dshort(f.ts)) + ' · ' + hm24(f.ts);
+    return '<div class="sb-mh"><div class="sb-mhl">' + (l && l.f ? '<img class="sb-flag" src="' + esc(l.f) + '" alt="" onerror="this.style.visibility=\'hidden\'">' : '') +
+      '<span class="fit">' + esc(l ? (l.c ? l.c + ' · ' : '') + l.n : '') + '</span>' +
+      '<button type="button" class="sb-star' + (isF ? ' on' : '') + '" id="sbFavM" aria-label="' + esc(x.fav) + '" aria-pressed="' + isF + '">' + (isF ? '★' : '☆') + '</button></div>' +
+      '<div class="sb-mht"><div class="sb-mtm">' + logoImg(f.h.lo, 'sb-mlo') + '<b class="fit" dir="auto">' + esc(f.h.n) + '</b></div>' +
+      '<div class="sb-mmid"><b class="fit">' + esc(hm24(f.ts)) + '</b>' + (s > 0 && s < 86400 ? '<em class="sp2-chip cd' + (s < 3600 ? ' soon' : '') + '" data-ts="' + f.ts + '">' + IC.clock + '<span class="fit">' + esc(cd(s)) + '</span></em>' : s <= 0 ? '<em class="sp2-chip shut">' + IC.lock + '<span class="fit">' + esc(xx.closed) + '</span></em>' : '') + '</div>' +
+      '<div class="sb-mtm">' + logoImg(f.a.lo, 'sb-mlo') + '<b class="fit" dir="auto">' + esc(f.a.n) + '</b></div></div>' +
+      '<p class="sb-mwhen"><span class="fit">' + esc(when) + '</span></p>' +
+      // emplacement du « match tracker » en direct (étape 3 : mini terrain, score, minute, stats, « BUT ! ») — vide avant-match
+      '<div class="sb-trk" id="sbTrk" data-fx="' + esc(f.id) + '" hidden></div></div>';
+  }
+  function renderMatch() {
+    var x = SX(), xx = XX(), r = sbM, f = (r && r.fx) || sbFx(sbMid);
+    var lgo = f ? sbLg(f.lg) : null;
+    if (r && r.fx && !lgo) lgo = { n: r.fx.lgn || '', c: r.fx.c || '', f: '' };
+    var html = tabs() + '<div class="sb-mp"><button type="button" class="sb-back" id="sbBack">' + IC.back + '<span class="fit">' + esc(x.foot) + '</span></button>';
+    if (!f) html += r ? empty(r.reason === 'closed' ? x.closedM : xx.e_unavailable) : skeleton();
+    else {
+      html += matchHead(f, lgo);
+      if (!r) html += '<div class="sb-g sp2-skel"><i></i><i></i><i></i></div>';
+      else if (!r.ok || !(r.mk || []).length) html += '<p class="sb-none"><span>' + esc(x.closedM) + '</span></p>';
+      else {
+        var by = {}; r.mk.forEach(function (m) { (by[grpOf(m.mk)] = by[grpOf(m.mk)] || []).push(m); });
+        GRP.forEach(function (g) {
+          var ms = by[g[0]]; if (!ms) return;
+          var on = !!sbGrp[g[0]];
+          html += '<section class="sb-g' + (on ? ' on' : '') + '"><button type="button" class="sb-gh" data-g="' + g[0] + '" aria-expanded="' + on + '"><b class="fit">' + esc(x[g[1]]) + '</b><i class="sb-cnt">' + ms.length + '</i><i class="sb-chev">' + SBIC.chev + '</i></button>' +
+            (on ? '<div class="sb-gb">' + mkBlocks(ms, f) + '</div>' : '') + '</section>';
+        });
+      }
+      html += '<p class="sb-rules"><span>' + esc(x.rules) + '</span></p>';
+    }
+    box.innerHTML = html + '</div>';
+    var bar = slipBar(); if (bar) box.insertAdjacentHTML('beforeend', bar);
+    bindTabs(); bindSlip(); fitAll(box); startTick(); sbFlashEnd();
+    $('sbBack').addEventListener('click', function () { view = 'foot'; render(); });
+    var fm = $('sbFavM'); if (fm && f) fm.addEventListener('click', function () { var on = favToggle('f', f.id); fm.classList.toggle('on', on); fm.textContent = on ? '★' : '☆'; fm.setAttribute('aria-pressed', String(on)); });
+    var mp = box.querySelector('.sb-mp');
+    mp.addEventListener('click', function (ev) {
+      var b = ev.target.closest('.sb-ob[data-ev]'); if (b) { sbPick(b); return; }
+      var gh = ev.target.closest('[data-g]'); if (gh) { var g = gh.getAttribute('data-g'); sbGrp[g] = !sbGrp[g]; renderMatch(); }
+    });
+  }
+  // marchés d'un groupe : une famille à lignes (buts 0,5 … 5,5, handicaps) = UN bloc avec une rangée par ligne
+  function mkBlocks(ms, f) {
+    var blocks = [], byF = {};
+    ms.forEach(function (m) { var fam = mkParts(m.mk)[0], key = mkParts(m.mk)[1] !== '' ? fam : m.mk; if (!byF[key]) { byF[key] = { fam: fam, m: [] }; blocks.push(byF[key]); } byF[key].m.push(m); });
+    return blocks.map(function (B) {
+      return '<div class="sb-mk"><p class="sb-mkt"><span class="fit" dir="auto">' + esc(sbMkName(B.m[0].mk, f.h.n, f.a.n)) + '</span></p>' + B.m.map(function (m) {
+        // colonnes selon la longueur des libellés (noms d'équipes longs : 2 ou 1 colonne, jamais de texte coupé)
+        var n = (m.o || []).length, ml = 0;
+        (m.o || []).forEach(function (o) { ml = Math.max(ml, sbOutL(m.mk, o[0], f.h.n, f.a.n).length); });
+        var cols = n % 3 === 0 && ml <= 15 ? 3 : ml <= 17 ? 2 : 1;
+        return '<div class="sb-oo c' + cols + '">' + (m.o || []).map(function (o) {
+          var ev = 'sb:' + f.id + ':' + m.mk, on = inSlip(ev, o[0]), fl = sbFl(ev + '|' + o[0]);
+          return '<button type="button" class="sb-ob sb-ob2' + (on ? ' on' : '') + fl + '" data-ev="' + esc(ev) + '" data-k="' + esc(o[0]) + '" data-odd="' + o[1] + '" aria-pressed="' + on + '"' + (m.s ? ' disabled' : '') + '>' +
+            '<span class="fit" dir="auto">' + esc(sbOutL(m.mk, o[0], f.h.n, f.a.n)) + '</span><b>' + (m.s ? IC.lock : Number(o[1]).toFixed(2)) + '</b></button>';
+        }).join('') + '</div>';
+      }).join('') + '</div>';
+    }).join('');
+  }
+
+  // ---------- code de coupon ----------
+  function slipSig() { return slip.map(function (s) { return s.ev + '|' + s.k; }).join(','); }
+  function codeLink(c) { return 'https://orolado.com/?code=' + c; }
+  function codeBox() {
+    var x = SX();
+    if (sbCode && sbCode.sig === slipSig()) {
+      var txt = x.codeT + sep() + sbCode.code + '\n' + codeLink(sbCode.code);
+      return '<div class="sb-cp"><small class="fit">' + esc(x.codeT) + '</small><b class="sb-cv" dir="ltr">' + esc(sbCode.code) + '</b>' +
+        '<div class="sb-cpb"><button type="button" id="sbCopy">' + IC.ok + '<span class="fit">' + esc(x.copy) + '</span></button>' +
+        '<a id="sbWa" class="sb-wa" href="https://wa.me/?text=' + encodeURIComponent(txt) + '" target="_blank" rel="noopener">' + SBIC.wa + '<span class="fit">WhatsApp</span></a></div>' +
+        '<p class="sb-cpn"><span class="fit">' + esc(x.valid7) + '</span></p></div>';
+    }
+    return '<button type="button" class="sb-shb" id="sbShare">' + SBIC.share + '<span class="fit">' + esc(x.share) + '</span></button>';
+  }
+  function bindCodeBox() {
+    var x = SX(), sh = $('sbShare'), cp = $('sbCopy');
+    if (sh) sh.addEventListener('click', async function () {
+      if (sh.disabled) return; sh.disabled = true;
+      var r = null;
+      try { r = await D6.Api.post('sbCodeSave', { sel: slip.map(function (s) { return { ev: s.ev, k: s.k }; }) }, 15000); } catch (e) { r = null; }
+      sh.disabled = false;
+      if (!r || !r.ok) { var xx = XX(); sbToast(r && r.reason ? (xx['e_' + r.reason] || xx.e_unavailable) : xx.e_unavailable, 'err'); return; }
+      sbCode = { code: r.code, sig: slipSig() };
+      var w = $('sbCode'); if (w) { w.innerHTML = codeBox(); fitAll(w); bindCodeBox(); }
+    });
+    if (cp) cp.addEventListener('click', function () {
+      var link = codeLink(sbCode ? sbCode.code : ''), done = function () { sbToast(x.copied, 'ok'); };
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(link).then(done, function () { fallback(); }); return; } } catch (e) { /* ignore */ }
+      fallback();
+      function fallback() { try { var ta = document.createElement('textarea'); ta.value = link; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); done(); } catch (e) { /* ignore */ } }
+    });
+  }
+  function fromServer(s) {
+    if (s.mk) return { ev: s.ev, k: s.k, odd: +s.odd, sb: 1, mk: s.mk, fx: s.fx, ko: s.ko, t: s.t, h: s.h, a: s.a, grp: ['fx:' + s.fx], q: false, l: sbOutL(s.mk, s.k, s.h.n, s.a.n) };
+    return { ev: s.ev, k: s.k, odd: +s.odd, t: s.t, l: trO(s.l), q: !!s.q, grp: s.grp || [], ko: s.ko };
+  }
+  async function loadCode(code) {
+    var x = SX(), xx = XX();
+    code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!/^[A-Z2-9]{6}$/.test(code)) { sbToast(x.codeBad, 'err'); return false; }
+    var r = null;
+    try { r = await D6.Api.post('sbCodeLoad', { code: code }, 15000); } catch (e) { r = null; }
+    if (!r || !r.ok) { sbToast(r && r.reason === 'nocode' ? x.codeBad : xx.e_unavailable, 'err'); return false; }
+    slip = (r.sel || []).map(fromServer); lastBet = null; lastBets = null; sbCodeRow = false;
+    sbCode = r.skip || r.hidden ? null : { code: code, sig: slipSig() };
+    var msg = [fmt(x.codeLoaded, { n: slip.length })];
+    if (r.skip) msg.push(fmt(x.codeSkip, { n: r.skip }));
+    if (r.hidden) msg.push(fmt(x.codeHidden, { n: r.hidden }));
+    sbToast(msg.join(' '), slip.length ? 'ok' : 'info');
+    if (box && box.isConnected && box.classList.contains('sp2')) { view = 'slip'; render(); }
+    return true;
+  }
+  // ticket : relire les cotes SB du serveur (en entrant dans le ticket, après un refus « cotes changées » / « fermé »)
+  async function sbRefreshSlip() {
+    var sb = slip.filter(function (s) { return s.sb; }); if (!sb.length) return false;
+    var r = null;
+    try { r = await D6.Api.post('sbCodeLoad', { sel: sb.map(function (s) { return { ev: s.ev, k: s.k }; }) }, 15000); } catch (e) { r = null; }
+    if (!r || !r.ok) return false;
+    var cur = {}, chg = false; (r.sel || []).forEach(function (s) { cur[s.ev + '|' + s.k] = s; });
+    sb.forEach(function (s) {
+      var c = cur[s.ev + '|' + s.k];
+      if (!c) { if (!s.closed) { s.closed = true; chg = true; } return; }
+      if (Math.abs(c.odd - s.odd) > 1e-9) { s.odd = +c.odd; s.chg = true; chg = true; }
+    });
+    return chg;
+  }
+  function sbAfterSlipOpen() {
+    if (!slip.some(function (s) { return s.sb; })) return;
+    sbRefreshSlip().then(function (chg) { if (chg && view === 'slip' && !sending && !lastBet && !lastBets) { render(); sbToast(XX().oddsChg); } });
+  }
+  // lien partagé https://orolado.com/?code=XXXXXX : Paris s'ouvre avec le ticket chargé (visiteur aussi)
+  (function () {
+    try {
+      var p = new URLSearchParams(location.search || ''), c = String(p.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (!/^[A-Z2-9]{6}$/.test(c)) return;
+      pendCode = c;
+      p.delete('code');
+      var qs = p.toString();
+      if (history.replaceState) history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+      var tries = 0, go = function () {
+        if (D6.Casino && D6.Casino.home && D6.Api && D6.Api.post && document.readyState !== 'loading') { D6.Casino.home('sports'); return; }
+        if (++tries < 40) setTimeout(go, 250);
+      };
+      setTimeout(go, 900);
+    } catch (e) { /* ignore */ }
+  })();
+
+  D6.Sports = { paint: paint, receipt: showReceipt, back: back, code: loadCode };
 })(window.D6 = window.D6 || {});

@@ -299,6 +299,8 @@ $OROLADO_RATE_RULES = [
   'spMine'            => [['t', 30, 60]],
   'sbList'            => [['i', 240, 60]],
   'sbMatch'           => [['i', 240, 60]],
+  'sbCodeSave'        => [['t', 30, 600], ['i', 400, 600]],
+  'sbCodeLoad'        => [['i', 240, 60]],
   'xferSend'          => [['t', 10, 600]],
   'defiActivate'      => [['t', 10, 60]],
   'withdrawOtp'       => [['t', 8, 3600]],
@@ -436,6 +438,21 @@ if ($action === 'sbList' || $action === 'sbMatch') {
     $res = ['ok' => false, 'reason' => 'busy'];
   }
   if (function_exists('sb_after_response')) sb_after_response();
+  echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
+// 2026-10-22 (étape 2) — CODE DE COUPON : enregistrer les choix du ticket (pas la mise) sous un code de 6 lettres (7 jours) ;
+// charger un code (visiteur aussi) → choix avec les cotes ACTUELLES ; sans code, {sel} relit les cotes du ticket.
+if ($action === 'sbCodeSave' || $action === 'sbCodeLoad') {
+  if (!function_exists('sb_code_save')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  $me = $token !== '' ? session_user($db, $token) : null;
+  $selIn = is_array($req['sel'] ?? null) ? $req['sel'] : null;
+  try {
+    $res = $action === 'sbCodeSave' ? sb_code_save($me ?: null, $selIn ?? []) : sb_code_load($me ?: null, (string) ($req['code'] ?? ''), 0, isset($req['code']) ? null : $selIn);
+  } catch (Throwable $eSb) {
+    error_log('OROLADO sbcode ' . $eSb->getMessage());
+    $res = ['ok' => false, 'reason' => 'busy'];
+  }
   echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   exit;
 }
