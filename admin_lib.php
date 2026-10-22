@@ -13,7 +13,10 @@ function admin_tz(): DateTimeZone {
   // cookie oro_admin_tz) ; sinon heure de Côte d'Ivoire comme avant.
   static $tz = null;
   if ($tz === null) {
-    $want = (string) ($_COOKIE['oro_admin_tz'] ?? '');
+    // 2026-10-22 (propriétaire, Népal : « certaines heures sont celles de Côte d'Ivoire ») : le fuseau arrive aussi avec CHAQUE
+    // demande de l'admin (en-tête X-Admin-TZ) — le cookie ne suffisait pas sur son iPhone
+    $want = (string) ($_SERVER['HTTP_X_ADMIN_TZ'] ?? '');
+    if ($want === '') $want = (string) ($_COOKIE['oro_admin_tz'] ?? '');
     $tz = new DateTimeZone('Africa/Abidjan');
     if ($want !== '' && preg_match('#^[A-Za-z_]+(/[A-Za-z0-9_+\-]+){0,2}$#', $want)) {
       try { $tz = new DateTimeZone($want); } catch (Throwable $e) { /* fuseau inconnu : Côte d'Ivoire */ }
