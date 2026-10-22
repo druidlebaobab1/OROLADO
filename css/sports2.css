@@ -1022,3 +1022,42 @@ html:root body #casinoModal .sp2 .pz-tv2 .pz-tvev .pz-te.a{grid-column:2;justify
 
 /* 2026-10-22 : historique — match fini : score final en vert calme (au lieu du rouge « direct ») */
 html:root body #casinoModal .sp2 .pz-lvt.fin{background:rgba(34,197,94,.14)!important;color:#86EFAC!important}
+/* 2026-10-22 (propriétaire) — MES PARIS : score du direct propre (score en grand, minute rouge qui pulse, « Terminé » vert),
+   badge « Direct » rouge dans l'en-tête, « Voir les N sélections » au lieu de « +1 » */
+html:root body #casinoModal .sp2 .pz-lvt{display:inline-flex!important;align-items:center;gap:8px;align-self:flex-start;margin-top:4px;padding:3px 4px 3px 10px!important;border-radius:9px!important;background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.08);color:#fff!important;font-style:normal}
+html:root body #casinoModal .sp2 .pz-lvt b{display:inline-flex;align-items:center;gap:5px;font:800 14px/1.1 var(--sp2-font);color:#fff;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+html:root body #casinoModal .sp2 .pz-lvt b i{font-style:normal;color:var(--pz-mute);font-weight:700}
+html:root body #casinoModal .sp2 .pz-lvt small{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:6px;background:rgba(239,68,68,.16);color:#FCA5A5;font:800 11.5px/1 var(--sp2-font);font-variant-numeric:tabular-nums;white-space:nowrap}
+html:root body #casinoModal .sp2 .pz-lvt.fin{background:rgba(34,197,94,.08)!important;border-color:rgba(34,197,94,.22)}
+html:root body #casinoModal .sp2 .pz-lvt.fin small{background:rgba(34,197,94,.16);color:#86EFAC}
+html:root body #casinoModal .sp2 .pz-lvd{width:6px;height:6px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 0 rgba(239,68,68,.6);animation:pzLvPulse 1.6s ease-out infinite}
+@keyframes pzLvPulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.55)}70%{box-shadow:0 0 0 6px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+html:root body #casinoModal .sp2 .pz-blv{flex:none;display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;background:rgba(239,68,68,.16);border:1px solid rgba(239,68,68,.35);color:#FCA5A5;font:800 11px/1 var(--sp2-font);font-style:normal;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+html:root body #casinoModal .sp2 .pz-blv > i{width:6px;height:6px;border-radius:50%;background:#EF4444;animation:pzLvPulse 1.6s ease-out infinite}
+html:root body #casinoModal .sp2 .pz-bmore{display:inline-block;margin-top:2px;color:#C4B5FD;font:700 12.5px/1.2 var(--sp2-font)}
+/* pari en direct refusé : carte au centre, sobre (pas un « SMS ») */
+html:root body #casinoModal .sp2 .pz-rf{position:fixed;inset:0;z-index:2147482000;display:flex;align-items:center;justify-content:center;padding:24px 18px;background:rgba(6,4,20,.62);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:pzRfIn .18s ease-out both}
+html:root body #casinoModal .sp2 .pz-rf.out{animation:pzRfOut .18s ease-in both}
+html:root body #casinoModal .sp2 .pz-rfc{width:100%;max-width:340px;box-sizing:border-box;padding:22px 20px 18px;border-radius:18px;background:linear-gradient(180deg,#221B4A,#17123A);border:1px solid rgba(255,255,255,.1);box-shadow:0 24px 60px rgba(0,0,0,.5);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+html:root body #casinoModal .sp2 .pz-rfi{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(251,191,36,.14);margin-bottom:4px}
+html:root body #casinoModal .sp2 .pz-rfi svg{width:26px;height:26px;fill:none;stroke:#FBBF24;stroke-width:2;stroke-linecap:round}
+html:root body #casinoModal .sp2 .pz-rfc b{color:#fff;font:800 17px/1.25 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-rfc p{margin:0;color:#C9C3E6;font:500 14px/1.45 var(--sp2-font);overflow-wrap:break-word}
+html:root body #casinoModal .sp2 .pz-rfc small{color:var(--pz-mute);font:600 12px/1.3 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-rfc button{margin-top:10px;width:100%;min-height:46px;border:0;border-radius:12px;background:#7C5CFF;color:#fff;font:800 15px/1 var(--sp2-font);cursor:pointer}
+@keyframes pzRfIn{from{opacity:0}to{opacity:1}}
+@keyframes pzRfOut{from{opacity:1}to{opacity:0}}
+html:root body #casinoModal .sp2 .pz-rf .pz-rfc{animation:pzRfPop .2s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes pzRfPop{from{transform:scale(.94);opacity:0}to{transform:none;opacity:1}}
+html:root body #casinoModal .sp2 .pz-lvq{padding:2px 0 8px}
+/* 2026-10-22 (propriétaire) — Diffusion / Informations : la pastille glisse (plus de saut) */
+html:root body #casinoModal .sp2 .pz-tvseg{position:relative;isolation:isolate}
+html:root body #casinoModal .sp2 .pz-tvseg::before{content:'';position:absolute;z-index:0;top:3px;bottom:3px;left:3px;width:calc(50% - 5px);border-radius:9px;background:#EDE9FE;box-shadow:0 2px 6px rgba(0,0,0,.25);transform:translateX(calc(var(--tvx,0) * (100% + 4px)));transition:transform .28s cubic-bezier(.3,.7,.2,1);will-change:transform}
+html[dir=rtl] body #casinoModal .sp2 .pz-tvseg::before{left:auto;right:3px;transform:translateX(calc(var(--tvx,0) * (-100% - 4px)))}
+html:root body #casinoModal .sp2 .pz-tvseg button{position:relative;z-index:1;transition:color .2s ease}
+html:root body #casinoModal .sp2 .pz-tvseg button.on{background:transparent!important;box-shadow:none!important;color:#1E1440}
+@media (prefers-reduced-motion:reduce){html:root body #casinoModal .sp2 .pz-tvseg::before{transition:none}}
+/* 2026-10-22 (propriétaire : « en bas, la liste défile sous la barre ») : la couleur de la barre du bas continue jusqu'au bord de
+   l'écran (application installée : la zone sous la barre ne montre plus la liste qui défile) */
+html:root body #casinoModal .sp2 .pz-nav{box-shadow:0 -1px 0 rgba(255,255,255,.08),0 -12px 24px -14px rgba(0,0,0,.9),0 70px 0 40px #140D32}
+html:root body #casinoModal .sp2 .pz-b1{flex-wrap:wrap;row-gap:4px}
