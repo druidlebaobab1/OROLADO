@@ -1279,11 +1279,12 @@
       '<span class="pz-rc" data-open="' + esc(f.id) + '" aria-hidden="true">' + SBIC.chev + '</span></div>';
   }
   // un championnat (repliable) : drapeau, nom, pays en petit ; 1 · X · 2 au-dessus des colonnes de cotes
-  function lgSection(key, l, list, open, rowOpt) {
+  function lgSection(key, l, list, open, rowOpt, fixed) { // fixed : toujours ouvert, sans flèche (« Tout »)
     var two = list.every(function (f) { return f.o && f.o.mk === '12'; });
-    return '<section class="pz-lg' + (open ? ' on' : '') + '" data-lgk="' + esc(key) + '"><button type="button" class="pz-lgh" data-lgt="' + esc(key) + '" aria-expanded="' + open + '">' + lgImg(l) +
+    if (fixed) open = true;
+    return '<section class="pz-lg' + (open ? ' on' : '') + '" data-lgk="' + esc(key) + '">' + (fixed ? '<div class="pz-lgh">' : '<button type="button" class="pz-lgh" data-lgt="' + esc(key) + '" aria-expanded="' + open + '">') + lgImg(l) +
       '<span class="pz-lgn"><b dir="auto">' + esc(l.n || '') + '</b>' + (l.c ? '<small dir="auto">' + esc(l.c) + '</small>' : '') + '</span>' +
-      '<span class="pz-cols" aria-hidden="true"><i>1</i><i>' + (two ? '' : 'X') + '</i><i>2</i></span><i class="pz-chev">' + SBIC.chev + '</i></button>' +
+      '<span class="pz-cols" aria-hidden="true"><i>1</i><i>' + (two ? '' : 'X') + '</i><i>2</i></span>' + (fixed ? '</div>' : '<i class="pz-chev">' + SBIC.chev + '</i></button>') +
       '<div class="pz-lgb">' + list.map(function (f) { return rowHtml(f, rowOpt); }).join('') + '</div></section>';
   }
   // GRANDS matchs (« Top ») : grandes compétitions + au moins un grand club ; sélections : Côte d'Ivoire / Sénégal partout, grandes nations en compétition internationale
@@ -1313,7 +1314,7 @@
       order.forEach(function (id, i) {
         var l = lgs[id] || { id: id, n: '', c: '', f: '', p: 100 }, key = (opt.k || '') + new Date(D.t * 1000).toDateString() + '|' + id;
         var open = sbOpen[key] != null ? sbOpen[key] : (!!sbQ || !many || (l.p || 100) < 100 || fv.l.indexOf(id) > -1 || i < 4);
-        out.push(lgSection(key, l, g[id], open, opt.row));
+        out.push(lgSection(key, l, g[id], open, opt.row, opt.fixed));
       });
     });
     return out;
@@ -1417,7 +1418,7 @@
         blocks.push('<section class="pz-blk pz-blive"><div class="pz-bh"><b><i class="pz-ld"></i>' + esc(n2.live) + '<em>' + liveN() + '</em></b><button type="button" class="pz-more" data-go="live"><span>' + esc(n2.seeAll) + '</span>' + SBIC.chev + '</button></div>' +
           '<div class="pz-lgb">' + ls2.map(function (f) { return rowHtml(f, { lg: 1 }); }).join('') + '</div></section>');
       }
-      blocks = blocks.concat(H.fx.length ? dayBlocks(H.fx, H.lgs, { dayHead: /^d\d+$/.test(per) || allP }) : ['<p class="pz-none">' + esc(per === 'fav' && !sbQ ? SX().noFav : SX().noMatch) + '</p>']);
+      blocks = blocks.concat(H.fx.length ? dayBlocks(H.fx, H.lgs, { dayHead: /^d\d+$/.test(per) || allP, fixed: allP }) : ['<p class="pz-none">' + esc(per === 'fav' && !sbQ ? SX().noFav : SX().noMatch) + '</p>']);
     }
     putBlocks(body, blocks);
   }
