@@ -9,7 +9,7 @@ declare(strict_types=1);
  * qui verse de petits montants décroissants aux classés par le même crédit que « Ajuster » (admin_credit_player,
  * passé en paramètre), avec un registre data/top_paid_<semaine>.json pour ne jamais payer deux fois.
  */
-foreach (['aff_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php'] as $giftLib) {
+foreach (['aff_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php', 'bonus_kick_lib.php'] as $giftLib) {
   if (is_file(__DIR__ . '/' . $giftLib)) require_once __DIR__ . '/' . $giftLib;
 }
 
@@ -496,7 +496,7 @@ function admin_all_pay_preview(array $req, array $players, ?int $now = null): ar
  * Verse, un par un, au plus $limit joueurs (l'écran rappelle tant que « more »). Réservation dans le registre AVANT le
  * crédit ; plantage pendant le crédit → « à vérifier », jamais reversé tout seul. S'arrête au premier refus.
  */
-function admin_all_pay_run(array $req, array $players, callable $pay, int $limit = 5, ?int $now = null): array {
+function admin_all_pay_run(array $req, array $players, callable $pay, int $limit = 5, ?int $now = null, int $maxSec = 20): array {
   if ((string) ($req['confirm'] ?? '') !== 'PAYER') return ['ok' => false, 'reason' => 'Confirmation manquante : tapez PAYER'];
   $p = admin_all_pay_params($req, $now);
   if (empty($p['ok'])) return $p;
@@ -504,12 +504,12 @@ function admin_all_pay_run(array $req, array $players, callable $pay, int $limit
   $lk = @fopen($file . '.run.lock', 'c');
   if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) {
     if ($lk) fclose($lk);
-    return ['ok' => false, 'reason' => 'Un envoi du bonus est déjà en cours (autre onglet ?). Attendez qu’il finisse.'];
+    return ['ok' => false, 'busy' => true, 'reason' => 'Un envoi du bonus est déjà en cours (autre onglet ?). Attendez qu’il finisse.'];
   }
   $paid = 0; $errors = []; $mailFailed = 0; $t0 = microtime(true);
   try {
     foreach ($players as $r) {
-      if ($paid >= $limit || microtime(true) - $t0 > 20) break;
+      if ($paid >= $limit || microtime(true) - $t0 > $maxSec) break;
       $uid = $r['id'];
       $go = admin_gift_led_with($file, static function (array &$led) use ($uid, $amt): bool {
         if (isset($led[$uid])) return false;
@@ -545,4 +545,65 @@ function admin_all_pay_run(array $req, array $players, callable $pay, int $limit
   return ['ok' => !$errors, 'paid' => $paid, 'total' => round($paid * $amt, 2), 'mailFailed' => $mailFailed, 'errors' => $errors,
     'remaining' => (int) ($left['count'] ?? 0), 'more' => !$errors && (int) ($left['count'] ?? 0) > 0,
     'reason' => $errors ? ('Arrêt (' . ($errors[0]['email'] ?: $errors[0]['id']) . ') : ' . $errors[0]['reason']) : ''];
+}
+
+/*
+ * Envoi EN ARRIÈRE-PLAN (propriétaire : « je ne peux pas rester sur la page ») : l'admin lance, peut fermer la page.
+ * data/bonus_all_job.json garde l'envoi en cours ; le serveur s'appelle lui-même (127.0.0.1, jeton secret de l'envoi)
+ * par paquets de ~15 s jusqu'à la fin. Si la chaîne s'arrête (redémarrage…), la page admin la relance (état > 60 s).
+ */
+function admin_all_job_file(): string {
+  return rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'bonus_all_job.json';
+}
+function admin_all_job_read(): array { return admin_gift_json(admin_all_job_file()); }
+function admin_all_job_update(callable $fn) { return admin_gift_led_with(admin_all_job_file(), $fn); }
+
+/** Nouvel envoi (refusé si un autre tourne encore). */
+function admin_all_job_start(array $req, string $adminUid, string $adminEmail, ?int $now = null): array {
+  if ((string) ($req['confirm'] ?? '') !== 'PAYER') return ['ok' => false, 'reason' => 'Confirmation manquante : tapez PAYER'];
+  $p = admin_all_pay_params($req, $now);
+  if (empty($p['ok'])) return $p;
+  $now = $now ?? time();
+  $token = bin2hex(random_bytes(16));
+  $busy = admin_all_job_update(static function (array &$j) use ($p, $now, $token, $adminUid, $adminEmail): bool {
+    if (!empty($j['active']) && (int) ($j['lastAt'] ?? 0) > $now - 120) return true;
+    $j = ['key' => $p['key'], 'amount' => $p['amount'], 'token' => $token, 'active' => true, 'uid' => $adminUid, 'by' => $adminEmail,
+      'startedAt' => $now, 'lastAt' => $now, 'paid' => 0, 'total' => 0.0, 'mailFailed' => 0, 'reason' => '', 'finishedAt' => 0];
+    return false;
+  });
+  if ($busy) return ['ok' => false, 'reason' => 'Un envoi du bonus est déjà en cours. Attendez qu’il finisse (ou mettez-le en pause).'];
+  if (function_exists('orolado_bonus_all_marker')) @touch(orolado_bonus_all_marker());
+  return ['ok' => true, 'token' => $token];
+}
+
+/** État pour la page (sans le jeton). */
+function admin_all_job_status(): array {
+  $j = admin_all_job_read();
+  if (!$j) return ['job' => false];
+  unset($j['token'], $j['uid']);
+  return ['job' => true] + $j;
+}
+
+/** Un paquet en arrière-plan ; renvoie 'next' (relancer), 'busy', 'done', 'stop' ou 'bad'. */
+function admin_all_job_step(string $token, array $players, callable $pay, ?int $now = null): string {
+  $j = admin_all_job_read();
+  if (!$j || empty($j['active']) || !hash_equals((string) ($j['token'] ?? ''), $token)) return 'bad';
+  admin_all_job_update(static function (array &$x) use ($token): void { if (hash_equals((string) ($x['token'] ?? ''), $token)) $x['lastAt'] = time(); });
+  if (function_exists('orolado_bonus_all_marker')) @touch(orolado_bonus_all_marker());
+  $r = admin_all_pay_run(['amount' => (string) $j['amount'], 'confirm' => 'PAYER'], $players, $pay, 200, $now, 15);
+  if (!empty($r['busy'])) return 'busy';
+  $out = 'next';
+  admin_all_job_update(static function (array &$x) use ($token, $r, &$out): void {
+    if (!hash_equals((string) ($x['token'] ?? ''), $token)) { $out = 'bad'; return; }
+    $x['paid'] = (int) ($x['paid'] ?? 0) + (int) $r['paid'];
+    $x['total'] = round((float) ($x['total'] ?? 0) + (float) $r['total'], 2);
+    $x['mailFailed'] = (int) ($x['mailFailed'] ?? 0) + (int) $r['mailFailed'];
+    $x['remaining'] = (int) $r['remaining'];
+    $x['lastAt'] = time();
+    if (empty($r['ok'])) { $x['active'] = false; $x['reason'] = 'Arrêt : ' . (string) $r['reason']; $out = 'stop'; }
+    elseif (empty($r['more'])) { $x['active'] = false; $x['finishedAt'] = time(); $x['reason'] = 'Terminé : tout le monde a reçu.'; $out = 'done'; }
+    elseif (empty($x['active'])) $out = 'stop'; // mis en pause pendant le paquet
+  });
+  if (function_exists('orolado_bonus_all_marker')) { if ($out === 'next') @touch(orolado_bonus_all_marker()); elseif ($out !== 'busy') @unlink(orolado_bonus_all_marker()); }
+  return $out;
 }
