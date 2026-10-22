@@ -1515,8 +1515,11 @@ function sb_live_store_odds(array $j, int $now): int {
     $od[(string) $id] = ['sc' => $sc, 'm' => is_numeric($r['fixture']['status']['elapsed'] ?? null) ? (int) $r['fixture']['status']['elapsed'] : null,
       'ti' => [(int) ($r['teams']['home']['id'] ?? 0), (int) ($r['teams']['away']['id'] ?? 0)],
       'blk' => !empty($st['blocked']) || !empty($st['stopped']) ? 1 : 0, 'fin' => !empty($st['finished']) ? 1 : 0,
+      'up' => is_string($r['update'] ?? null) && ($u = strtotime((string) $r['update'])) ? (int) $u : 0, // dernière mise à jour des cotes de CE match chez le fournisseur
       'mk' => sb_live_markets($r, $cfg, $sc, $unk)];
   }
+  $maxUp = 0; foreach ($od as $o) $maxUp = max($maxUp, (int) $o['up']);
+  foreach ($od as $id => $o) $od[$id]['lag'] = $o['up'] > 0 && $maxUp > 0 ? $maxUp - $o['up'] : 0; // retard de CE match sur le plus frais du flux
   sb_with('live.json', static function (array &$s) use ($od, $now) {
     $old = (array) ($s['od'] ?? []);
     foreach ($od as $id => $o) $od[$id]['chg'] = isset($old[$id]['sc']) && $old[$id]['sc'] !== $o['sc'] ? 1 : 0;
@@ -1721,7 +1724,9 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
     if ($ty === 'var' && $et >= $m - 2) { $hot = true; break; }
     if (($ty === 'goal' || ($ty === 'card' && ($e['detail'] ?? '') === 'red')) && $et >= $m - 1) { $hot = true; break; }
   }
-  $susp = !$fresh || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
+  // cotes de ce match en retard de plus de 90 s sur les autres matchs du flux (fournisseur figé pour ce match) → cadenas
+  $odStale = is_array($od) && (int) ($od['lag'] ?? 0) > 90;
+  $susp = !$fresh || $odStale || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
     || !in_array($st, ['1H', 'HT', '2H'], true); // prolongation / tirs au but : plus de pari (règlement sur les 90 min)
   if (!empty($row['end'])) $sc = is_array($row['g'] ?? null) ? array_map('intval', $row['g']) : $sc;
   $mk = is_array($od) ? (array) $od['mk'] : [];
