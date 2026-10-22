@@ -35,10 +35,6 @@ const SB_FX_ODDS_TTL = 600;          // /odds?fixture à la demande (match ouver
 const SB_LIVE_IDS_TTL = 60;          // /fixtures?live=all gardé 60 s (contrôle des paris à moins de 30 min du début)
 const SB_LATE = 1800;                // à moins de 30 min du coup d'envoi : contrôle « déjà commencé ? »
 const SB_PST_VOID = 172800;          // reporté / pas joué dans les 48 h : annulé
-// 2026-10-22 (propriétaire : « le direct est en retard de 1 à 2 min, on a pu parier après un but ») : un pari EN DIRECT est
-// ANNULÉ (remboursé) si un but (ou un carton rouge) a eu lieu AVANT ou JUSTE APRÈS la minute affichée au moment du pari
-// (+ SB_LIVE_GRACE min, retard du flux) et n'était pas dans le score affiché. Règle des grands bookmakers.
-const SB_LIVE_GRACE = 2;
 const SB_FINAL = ['FT', 'AET', 'PEN'];
 const SB_VOID_ST = ['AWD', 'WO'];
 const SB_WAIT_ST = ['PST', 'CANC', 'ABD', 'SUSP', 'INT', 'NS', 'TBD'];
@@ -513,36 +509,6 @@ function sb_valid_k(string $fam): array {
   }
   return [];
 }
-/** /fixtures/events → [[minute, 'g'|'r'], …] (buts marqués, contre son camp compris ; cartons rouges / 2e jaune). */
-function sb_live_evs(array $resp, array $ti): array {
-  $out = [];
-  foreach ($resp as $e) {
-    if (!is_array($e)) continue;
-    $type = strtolower((string) ($e['type'] ?? '')); $det = strtolower((string) ($e['detail'] ?? ''));
-    $min = (int) ($e['time']['elapsed'] ?? -1);
-    if ($min < 0) continue;
-    if ($type === 'goal' && strpos($det, 'missed') === false) $out[] = [$min, 'g'];
-    elseif ($type === 'card' && (strpos($det, 'red') !== false || strpos($det, 'second yellow') !== false)) $out[] = [$min, 'r'];
-  }
-  return $out;
-}
-/**
- * Pari EN DIRECT déjà fini : null = règle normale ; 'void' = un but n'était pas encore dans le score affiché au moment du
- * pari (but à la minute du pari + SB_LIVE_GRACE au plus), ou un carton rouge juste autour (minute − 1 … + SB_LIVE_GRACE).
- * Sans la liste des buts : 'wait' n'existe pas ici → null si inconnue (le règlement attend la lecture).
- */
-function sb_live_late(array $sel, array $r) {
-  if (!isset($r['evs']) || !is_array($r['evs'])) return 'pending';
-  $m = (int) ($sel['m'] ?? 0); $sc = (array) ($sel['sc'] ?? []);
-  $seen = (int) ($sc[0] ?? 0) + (int) ($sc[1] ?? 0);
-  $before = 0;
-  foreach ($r['evs'] as $e) {
-    $em = (int) ($e[0] ?? 0); $t = (string) ($e[1] ?? '');
-    if ($t === 'g' && $em <= $m + SB_LIVE_GRACE) $before++;
-    if ($t === 'r' && $em >= $m - 1 && $em <= $m + SB_LIVE_GRACE) return 'void';
-  }
-  return $before > $seen ? 'void' : null;
-}
 function sb_results(): array { return (array) (sb_read('results.json')['fx'] ?? []); }
 /**
  * Un choix SB d'un coupon : 'won' | 'lost' | 'void' | null (pas encore réglable). $betAt = heure du pari.
@@ -565,7 +531,6 @@ function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bo
     if ($ts <= 0) return null;
     if ($ko > 0 && $ts > $ko + SB_PST_VOID) return 'void';
     if ($betAt >= $ts && empty($sel['lv'])) return 'void'; // pari posé après le vrai coup d'envoi (sauf pari EN DIRECT : c'est voulu)
-    if (!empty($sel['lv']) && empty($r['man'])) { $lv = sb_live_late($sel, $r); if ($lv === 'pending') return null; if ($lv !== null) return $lv; } // l'admin (score saisi) décide seul
     return sb_settle_mk(substr((string) $sel['ev'], strlen('sb:foot:' . $m[1] . ':')), (string) ($sel['k'] ?? ''), (array) ($r['ft'] ?? []), isset($r['ht']) ? (array) $r['ht'] : null);
   }
   if ($v === 'wait' && $auto && $ko > 0 && $now > $ko + SB_PST_VOID && (int) ($r['at'] ?? 0) > $now - 7200) return 'void';
@@ -808,7 +773,7 @@ function sb_open_fixtures(): array {
     foreach ((array) ($b['sel'] ?? []) as $s) {
       if (!preg_match('/^sb:foot:(\d+):/', (string) ($s['ev'] ?? ''), $m) || isset($s['r'])) continue;
       $o = $out[$m[1]] ?? ['ko' => PHP_INT_MAX, 'ti' => $s['ti'] ?? null, 't' => (string) ($s['t'] ?? ''), 'n' => 0];
-      $o['ko'] = min($o['ko'], (int) ($s['ko'] ?? 0)); $o['n']++; if (!empty($s['lv'])) $o['lv'] = 1;
+      $o['ko'] = min($o['ko'], (int) ($s['ko'] ?? 0)); $o['n']++;
       $out[$m[1]] = $o;
     }
   }
@@ -843,7 +808,6 @@ function sb_results_job(int $now, int $maxCalls = 3, ?array $db = null): array {
   $need = []; $upd = []; $calls = 0;
   foreach ($open as $id => $o) {
     $k = $known[$id] ?? null;
-    if (is_array($k) && ($k['v'] ?? '') === 'fin' && !empty($o['lv']) && !isset($k['evs']) && empty($k['man'])) { $upd[$id] = $k; continue; } // direct : il manque les buts
     if (is_array($k) && in_array($k['v'] ?? '', ['fin', 'void'], true)) continue; // déjà connu (le règlement suit)
     if (is_array($k) && !empty($k['man'])) continue;
     if ($o['ko'] > $now) continue; // pas encore commencé
@@ -858,18 +822,6 @@ function sb_results_job(int $now, int $maxCalls = 3, ?array $db = null): array {
     $seen = [];
     foreach ((array) ($j['response'] ?? []) as $r) if (is_array($r) && ($row = sb_fx_row($r))) { $id = (string) (int) $r['fixture']['id']; if (isset($open[$id])) { $upd[$id] = sb_classify($row, $open[$id]['ti'], $open[$id]['ko'], $now); $seen[$id] = 1; } }
     foreach ($chunk as $id) if (!isset($seen[$id]) && $now > $open[$id]['ko'] + 6 * 3600) $upd[$id] = ['v' => 'chk', 'why' => 'Match introuvable dans l\'API', 'at' => $now, 'ts' => 0, 'st' => ''];
-  }
-  // paris EN DIRECT : les buts / cartons rouges avec leur minute (1 lecture par match fini) — sans eux, pas de règlement
-  foreach ($upd as $id => $r) {
-    if (($r['v'] ?? '') !== 'fin' || empty($open[$id]['lv'])) continue;
-    if (isset($known[$id]['evs'])) { $upd[$id]['evs'] = $known[$id]['evs']; continue; }
-    $ev = $calls < max(0, $maxCalls) ? sb_get_cached('fixtures/events?fixture=' . $id, 600, $now) : null;
-    if ($ev !== null) $calls++;
-    if ($ev === null || !isset($ev['response']) || !is_array($ev['response'])) {
-      if ($now > (int) ($r['ts'] ?? $now) + 6 * 3600) $upd[$id] = ['v' => 'chk', 'why' => 'Buts du match introuvables (paris en direct)'] + $r; else unset($upd[$id]);
-      continue;
-    }
-    $upd[$id]['evs'] = sb_live_evs((array) $ev['response'], (array) ($r['ti'] ?? []));
   }
   $newFinal = 0; $newChk = [];
   if ($upd) {
