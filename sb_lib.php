@@ -817,19 +817,23 @@ function sb_results_job(int $now, int $maxCalls = 3, ?array $db = null): array {
   $auto = (bool) sb_config()['autosettle'];
   $idx = [];
   foreach (sb_days($now) as $d) { $j = sb_day($d); if ((int) ($j['at'] ?? 0) > $now - 3600) foreach ((array) ($j['fx'] ?? []) as $id => $r) $idx[(string) $id] = $r; }
+  // 2026-10-22 (propriétaire : « payer vite ») : le flux du direct (lu toutes les ~10 s) donne la fin du match tout de suite
+  $Lv = sb_live_data();
+  if ($now - (int) ($Lv['fat'] ?? 0) <= 120) foreach ((array) ($Lv['fx'] ?? []) as $id => $r) if (in_array((string) ($r['st'] ?? ''), SB_FINAL, true) && is_array($r['ft'] ?? null)) $idx[(string) $id] = $r;
   $need = []; $upd = []; $calls = 0;
   foreach ($open as $id => $o) {
     $k = $known[$id] ?? null;
     if (is_array($k) && in_array($k['v'] ?? '', ['fin', 'void'], true)) continue; // déjà connu (le règlement suit)
     if (is_array($k) && !empty($k['man'])) continue;
     if ($o['ko'] > $now) continue; // pas encore commencé
-    if (isset($idx[$id])) $upd[$id] = sb_classify($idx[$id], $o['ti'], $o['ko'], $now);
+    $late = $now > $o['ko'] + 105 * 60 && !in_array((string) ($idx[$id]['st'] ?? ''), array_merge(SB_FINAL, SB_VOID_ST), true); // devrait être fini : relu directement
+    if (isset($idx[$id]) && !$late) $upd[$id] = sb_classify($idx[$id], $o['ti'], $o['ko'], $now);
     else $need[] = $id;
   }
   foreach (array_chunk($need, 20) as $chunk) {
     if ($calls >= max(0, $maxCalls)) break;
     $calls++;
-    $j = sb_get_cached('fixtures?ids=' . implode('-', $chunk) . '&timezone=UTC', 1800, $now);
+    $j = sb_get_cached('fixtures?ids=' . implode('-', $chunk) . '&timezone=UTC', 180, $now); // 3 min (avant 30) : gains payés vite
     if ($j === null) break;
     $seen = [];
     foreach ((array) ($j['response'] ?? []) as $r) if (is_array($r) && ($row = sb_fx_row($r))) { $id = (string) (int) $r['fixture']['id']; if (isset($open[$id])) { $upd[$id] = sb_classify($row, $open[$id]['ti'], $open[$id]['ko'], $now); $seen[$id] = 1; } }
@@ -1426,7 +1430,13 @@ function sb_live_store_fixtures(array $j, int $now): int {
     $fx[(string) (int) $r['fixture']['id']] = $row;
     if ($row['lg'] > 0) $lgs[(string) $row['lg']] = sb_lg_row((array) $r['league']);
   }
-  sb_with('live.json', static function (array &$s) use ($fx, $lgs, $now) {
+  sb_with('live.json', static function (array &$s) use (&$fx, $lgs, $now) {
+    // reprise de la 2e mi-temps vue par nous (si l'API ne donne pas periods.second) : gardée d'une lecture à l'autre
+    foreach ($fx as $id => $row) {
+      $old = (array) ($s['fx'][$id] ?? []);
+      if (!empty($old['p2o'])) $fx[$id]['p2o'] = (int) $old['p2o'];
+      elseif (($row['st'] ?? '') === '2H' && in_array($old['st'] ?? '', ['HT', '1H'], true)) $fx[$id]['p2o'] = $now - 5;
+    }
     foreach ((array) ($s['fx'] ?? []) as $id => $old) {
       if (isset($fx[$id])) continue;
       $end = (int) ($old['end'] ?? 0) ?: $now;
@@ -1545,7 +1555,7 @@ function sb_live_ttls(int $now): array {
   $secLeft = max(600, 86400 - ($now % 86400));
   $avail = $b['left'] - SB_LIVE_RESERVE - (int) (2500 * $secLeft / 86400); // avant-match + résultats du reste de la journée
   if ($avail <= 0) return [SB_LIVE_ODDS_TTL, SB_LIVE_FX_TTL];
-  $t = (int) ceil(1.5 * 0.6 * $secLeft / $avail); // 1 lecture de cotes / t s + 1 de matchs / 2t s, regardé ~60 % du temps
+  $t = (int) ceil(1.5 * 0.35 * $secLeft / $avail); // le direct est regardé ~1/3 de la journée (lecture seulement s'il y a quelqu'un) 
   $t = max(5, min(SB_LIVE_ODDS_TTL, $t));
   return [$t, max(10, min(SB_LIVE_FX_TTL, 2 * $t))];
 }
@@ -1740,7 +1750,9 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
  * null si inconnu (le téléphone garde l'ancienne horloge).
  */
 function sb_live_clock(string $st, array $r, int $now): ?int {
-  $p1 = (int) ($r['p1'] ?? 0); $p2 = (int) ($r['p2'] ?? 0); $m = $r['m'] ?? null;
+  $p1 = (int) ($r['p1'] ?? 0) ?: (int) ($r['ts'] ?? 0); // début réel, sinon coup d'envoi prévu
+  $p2 = (int) ($r['p2'] ?? 0) ?: (int) ($r['p2o'] ?? 0); // reprise réelle, sinon moment où NOUS avons vu la 2e mi-temps commencer
+  $m = $r['m'] ?? null;
   if ($st === '1H' && $p1 > 0 && $now >= $p1) $k = $now - $p1;
   elseif ($st === '2H' && $p2 > 0 && $now >= $p2) $k = 2700 + $now - $p2;
   else return null;
