@@ -2017,6 +2017,16 @@ if ($isAjax) {
     ));
   }
   // 2026-10-21 (propriétaire) — Tournoi démo : payer tous les classés (petits bonus décroissants, 0,90 $ → 0,20 $).
+  // 2026-10-22 (propriétaire) — 🎁 Bonus à tous : même montant pour tous les joueurs (crédit + e-mail, comme « Ajuster »).
+  if ($action === 'bonus_all_preview' || $action === 'bonus_all_run') {
+    $allPl = admin_all_pay_players(admin_profiles(), static fn(string $id, array $row): bool => admin_is_house_account($id, $row));
+    if ($action === 'bonus_all_preview') admin_json(admin_all_pay_preview($req, $allPl));
+    @set_time_limit(0);
+    ignore_user_abort(true);
+    $adminEmail = (string) ($me['email'] ?? '');
+    admin_json(admin_all_pay_run($req, $allPl, static fn(string $id, float $amt, string $motif, array $hint): array
+      => admin_credit_player($id, $amt, $motif, $hint, $adminEmail), max(1, min(10, (int) ($req['limit'] ?? 5) ?: 5))));
+  }
   if ($action === 'gift_top_pay_preview') {
     admin_json(admin_top_pay_preview($req));
   }
@@ -2764,6 +2774,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" id="btnSelfTop" type="button" style="border-color:#3B82F6;color:#93C5FD">🧪 Recharger mon compte</button>
       <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
+      <button class="mini" id="btnBonusAll" type="button" style="border-color:#4ADE80;color:#86EFAC">🎁 Bonus à tous</button>
       <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">💬 Social <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
       <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎮 Jeux &amp; Prédictions</button>
       <button class="mini" id="btnTopG" type="button" style="border-color:#FACC15;color:#FDE68A">🏆 Jeux les plus joués</button>
@@ -2855,6 +2866,22 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     </div>
   </div>
 
+  <div class="modal" id="bonusAllModal">
+    <div class="modal-box">
+      <button class="mini" type="button" id="closeBonusAll">Retour</button>
+      <h2 style="color:#86EFAC;margin:10px 0 4px">🎁 Bonus à tous les joueurs</h2>
+      <div class="nt-card">
+        <label class="nt-lab">Montant pour chaque joueur ($)</label>
+        <input id="baAmt" class="nt-in" type="number" min="0.01" max="5" step="0.01" value="0.20" inputmode="decimal" style="max-width:140px">
+        <p class="muted" style="margin:6px 0 0">Chaque joueur reçoit le montant sur son solde réel et un e-mail « Vous avez reçu … » (dans sa langue, avec son nom). Comptes admin, suspendus et bannis exclus. Un même jour, un même montant n’est jamais versé deux fois au même joueur. Gardez la page ouverte pendant l’envoi.</p>
+        <p style="margin-top:12px">
+          <button class="mini" type="button" id="baPreview">Aperçu</button>
+          <button class="mini ok" type="button" id="baRun" disabled>🎁 Envoyer à tous</button>
+        </p>
+        <p class="muted" id="baMsg" style="overflow-wrap:anywhere"></p>
+      </div>
+    </div>
+  </div>
   <div class="modal" id="mailModal">
     <div class="modal-box">
       <button class="mini" type="button" id="closeMail">Retour</button>
@@ -3940,6 +3967,45 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   };
   $m('btnMlQStop').onclick = async () => { try { const j = await ajax({action:'mail_queue_stop'}); if (j.ok) qPaint(j.status); } catch (e) { /* ignore */ } };
   $m('btnMlQGo').onclick = async () => { try { const j = await ajax({action:'mail_queue_resume'}); if (j.ok) qPaint(j.status); qStatus(); } catch (e) { /* ignore */ } };
+  // 2026-10-22 — 🎁 Bonus à tous
+  let baPlan = null, baBusy = false;
+  const baSay = (t, cls) => { const e = $m('baMsg'); e.textContent = t || ''; e.style.color = cls === 'bad' ? '#FCA5A5' : (cls === 'good' ? '#86EFAC' : ''); };
+  async function baPreview() {
+    baSay('Calcul…'); $m('baRun').disabled = true;
+    const j = await ajax({action:'bonus_all_preview', amount: $m('baAmt').value});
+    if (!j.ok) { baPlan = null; baSay(j.reason || 'Erreur', 'bad'); return; }
+    baPlan = j;
+    $m('baRun').disabled = !(j.count > 0);
+    baSay(j.count + ' joueur(s) à payer × ' + money(j.amount) + ' = TOTAL ' + money(j.total) + ' · ' + j.withMail + ' recevront un e-mail'
+      + (j.already ? ' · ' + j.already + ' déjà payé(s) aujourd’hui avec ce montant' : '') + (j.check ? ' · ⚠ ' + j.check + ' à vérifier' : ''));
+  }
+  async function baRun() {
+    if (baBusy || !baPlan || !(baPlan.count > 0)) return;
+    const plan = baPlan;
+    const c = prompt('Envoyer ' + money(plan.amount) + ' à ' + plan.count + ' joueur(s) — TOTAL ' + money(plan.total) + ' (argent réel, sur leur solde), avec un e-mail à chacun.\nTapez PAYER pour confirmer :') || '';
+    if (c.trim() !== 'PAYER') { baSay('Annulé : rien n’a été envoyé.'); return; }
+    baBusy = true; $m('baRun').disabled = true; $m('baPreview').disabled = true;
+    let paid = 0, total = 0, mailBad = 0, last = null;
+    try {
+      for (let guard = 0; guard < 5000; guard++) {
+        baSay('Envoi en cours… ' + paid + ' / ' + plan.count + ' · ' + money(total) + ' — gardez la page ouverte.');
+        const j = await ajax({action:'bonus_all_run', confirm:'PAYER', amount: plan.amount, limit: 5});
+        last = j; paid += j.paid || 0; total += j.total || 0; mailBad += j.mailFailed || 0;
+        if (!j.ok || !j.more || !(j.paid > 0)) break;
+      }
+    } catch (e) { last = {ok:false, reason:'Connexion perdue : refaites « Aperçu » puis « Envoyer » (personne ne sera payé deux fois).'}; }
+    baBusy = false; $m('baPreview').disabled = false;
+    const msg = paid + ' joueur(s) payé(s) · ' + money(total)
+      + (last && last.ok ? (last.remaining > 0 ? ' · il en reste ' + last.remaining + ' (refaites Aperçu puis Envoyer)' : ' · tout le monde a reçu ✓') : ' · ARRÊT : ' + ((last && last.reason) || 'erreur'))
+      + (mailBad ? ' · ⚠ ' + mailBad + ' e-mail(s) non parti(s) (le bonus est bien crédité)' : '');
+    await baPreview();
+    baSay(msg, last && last.ok ? 'good' : 'bad');
+  }
+  $m('btnBonusAll').onclick = () => { $m('bonusAllModal').classList.add('on'); baPlan = null; $m('baRun').disabled = true; baSay(''); };
+  $m('closeBonusAll').onclick = () => { if (!baBusy) $m('bonusAllModal').classList.remove('on'); };
+  $m('baPreview').onclick = baPreview;
+  $m('baRun').onclick = baRun;
+  $m('baAmt').addEventListener('input', () => { baPlan = null; $m('baRun').disabled = true; });
   const openMail = $m('btnMail').onclick;
   $m('btnMail').onclick = () => { openMail(); qStatus(); };
   qStatus(); // page ouverte : si un envoi tourne, on suit (et on le fait avancer) toutes les 10 s
