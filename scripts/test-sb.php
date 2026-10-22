@@ -72,7 +72,8 @@ check('admin : sbList ouvert (vide avant import)', sb_list($uadm, 0, 0, $NOW)['o
 echo "2) Import (fixtures J-1…J+2, cotes paginées)\n";
 $r = sb_admin_import($NOW);
 check('import : lectures fixtures + odds (pages 1 et 2 de J, J+1, J+2)', $r['ok'] && in_array('odds?date=2026-10-22&timezone=UTC&page=2', $asked, true) && in_array('fixtures?date=2026-10-21&timezone=UTC', $asked, true) && in_array('odds?date=2026-10-24&timezone=UTC&page=1', $asked, true), implode(' | ', $r['log']));
-check('budget compté', sb_budget($NOW)['used'] === count($asked), sb_budget($NOW)['used'] . ' / ' . count($asked));
+$askedFoot = count(array_filter($asked, static fn($p) => !preg_match('/^[a-z]+:/', $p))); // (les autres sports ont leur propre budget)
+check('budget compté', sb_budget($NOW)['used'] === $askedFoot, sb_budget($NOW)['used'] . ' / ' . $askedFoot);
 $idx = sb_day('2026-10-22');
 check('index du jour : 4 matchs, compétitions avec drapeau / logo / priorité', count($idx['fx']) === 4 && $idx['lg']['39']['p'] === 2 && $idx['lg']['386']['p'] === 30 && str_starts_with($idx['lg']['39']['f'], 'https://media.api-sports.io/'));
 check('match sans cotes (9005) : n = 0', (int) ($idx['fx']['9005']['n'] ?? 0) === 0);
@@ -610,6 +611,156 @@ sb_with(sb_day_file('2026-12-13'), static function (array &$s) use ($N7) { $s['f
 sb_with(sb_day_file('2026-12-07'), static function (array &$s) use ($N7) { $s['fx']['9901']['oat'] = $N7 - 3600; return true; });
 $la = sb_list($uadm, 'all', 0, $N7);
 check('« Tout » (day = all) : tous les matchs avec cotes de J à J+14 en une réponse, triés, jamais sans cotes', array_column($la['fx'], 'id') === ['foot:9901', 'foot:9921'] && count($la['lg']) === 2, json_encode(array_column($la['fx'], 'id')));
+
+// 2026-10-22 (propriétaire) — AUTRES SPORTS (avant-match seulement) : basket, hockey, handball, volley, rugby, baseball, football
+// américain, AFL, MMA — plans gratuits API-Sports (≤ 90 lectures / jour / sport), ids « sb:<sport>:<id>:<mk> », règlement automatique.
+echo "13) Autres sports : import, budget, cotes, liste, pari, règlement\n";
+$ON = $at('2026-12-10 10:00');
+sb_config_save(['public' => false, 'autosettle' => true, 'mOther' => 15]);
+$J = static fn(array $a): string => (string) json_encode($a);
+$bg = static function (int $id, string $ts, string $st, int $lg, string $lgn, array $h, array $a, array $extra = []) use ($T): array {
+  return ['id' => $id, 'date' => gmdate('c', $T($ts)), 'timestamp' => $T($ts), 'status' => ['long' => '', 'short' => $st], 'league' => ['id' => $lg, 'name' => $lgn, 'season' => '2026-2027', 'logo' => 'https://media.api-sports.io/basketball/leagues/' . $lg . '.png'],
+    'country' => ['id' => 5, 'name' => 'USA', 'code' => 'US', 'flag' => 'https://media.api-sports.io/flags/us.svg'], 'teams' => ['home' => ['id' => $h[0], 'name' => $h[1], 'logo' => ''], 'away' => ['id' => $a[0], 'name' => $a[1], 'logo' => '']]] + $extra;
+};
+$bq = static fn(array $q, int $ot = 0): array => ['quarter_1' => $q[0], 'quarter_2' => $q[1], 'quarter_3' => $q[2], 'quarter_4' => $q[3], 'over_time' => $ot ?: null, 'total' => array_sum($q) + $ot];
+$ok = '{"errors":[],"results":0,"paging":{"current":1,"total":1},"response":[]}';
+$alt['basket:games?date=2026-12-10&timezone=UTC'] = $J(['errors' => [], 'response' => [
+  $bg(7001, '2026-12-10 20:00', 'NS', 12, 'NBA', [71, 'Lakers'], [72, 'Celtics']),
+  $bg(7002, '2026-12-10 22:00', 'NS', 300, 'Petite Ligue', [73, 'Sans Cotes'], [74, 'Jamais Listé']),
+  $bg(7009, '2026-12-10 23:00', 'NS', 12, 'NBA', [75, 'Bulls'], [75, 'Bulls']), // même équipe des deux côtés : illisible, écarté
+]]);
+$alt['basket:games?date=2026-12-09&timezone=UTC'] = $J(['errors' => [], 'response' => [$bg(7003, '2026-12-09 20:00', 'FT', 12, 'NBA', [76, 'Heat'], [77, 'Knicks'], ['scores' => ['home' => $bq([20, 25, 30, 25]), 'away' => $bq([22, 22, 22, 22])]])]]);
+$bk = static fn(string $n, array $bets): array => ['id' => crc32($n) % 1000, 'name' => $n, 'bets' => $bets];
+$bet = static fn(string $n, array $v): array => ['id' => 1, 'name' => $n, 'values' => array_map(static fn($x) => ['value' => $x[0], 'odd' => (string) $x[1]], $v)];
+$books = [];
+foreach ([[1.60, 2.40, 1.90, 1.90, 1.95, 1.85, 12.0], [1.62, 2.36, 1.92, 1.88, 1.93, 1.87, 13.0], [1.58, 2.45, 1.88, 1.92, 1.97, 1.83, 12.5]] as $i => $q)
+  $books[] = $bk('Book' . $i, [$bet('Home/Away', [['Home', $q[0]], ['Away', $q[1]]]), $bet('Over/Under', [['Over 220.5', $q[2]], ['Under 220.5', $q[3]], ['Over 221', 1.9], ['Under 221', 1.9]]),
+    $bet('Asian Handicap', [['Home -4.5', $q[4]], ['Away -4.5', $q[5]]]), $bet('3Way Result', [['Home', 1.75], ['Draw', $q[6]], ['Away', 2.70]]), $bet('1st Quarter Winner', [['Home', 1.8], ['Away', 2.0]])]);
+$alt['basket:odds?league=12&season=2026-2027'] = $J(['errors' => [], 'paging' => ['current' => 1, 'total' => 1], 'response' => [['league' => ['id' => 12], 'game' => ['id' => 7001], 'bookmakers' => $books], ['game' => ['id' => 99999], 'bookmakers' => $books]]]);
+$fb0 = sb_budget($ON)['used'];
+$n0 = count($asked);
+$r = sb_o_tick('basket', $ON);
+$bA = array_values(array_filter(array_slice($asked, $n0), static fn($p) => str_starts_with($p, 'basket:')));
+check('basket : un passage ≤ 6 lectures (jours J, J+1, J-1, J+2 + cotes du championnat), chemins du plan gratuit', $r['calls'] <= SB_O_RUN && $r['calls'] === count($bA) && in_array('basket:games?date=2026-12-10&timezone=UTC', $bA, true) && in_array('basket:odds?league=12&season=2026-2027', $bA, true), json_encode($bA));
+check('budget à part (budget-basket.json) : 2 lectures de cotes (championnats 12 et 300) ; budget du football inchangé', sb_o_budget('basket', $ON)['used'] === count($bA) && sb_o_budget('basket', $ON)['odds'] === 2 && sb_budget($ON)['used'] === $fb0);
+$mb = sb_o_mk_file('basket', '7001')['mk'] ?? [];
+check('7001 : marchés 12, 1x2, ou:220.5, ah:-4.5 (lignes entières écartées, marché inconnu → diagnostic)', array_map('strval', array_keys($mb)) === ['12', '1x2', 'ou:220.5', 'ah:-4.5'] && isset(sb_state()['ounk']['basket · 1st Quarter Winner']), json_encode(array_keys($mb)));
+$avgH = (1.60 + 1.62 + 1.58) / 3; $avgA = (2.40 + 2.36 + 2.45) / 3; $S = 1 / $avgH + 1 / $avgA;
+$c = sb_config();
+$want = min(floor((1 - $c['mOther'] / 100) / ((1 / $avgH) / $S) * 100 + 1e-6) / 100, floor(($avgH - 0.01) * 100 + 1e-6) / 100);
+check('marge du réglage des autres sports (mOther) sur 12, ≤ moyenne − 0,01', abs($mb['12'][0][1] - $want) < 1e-9 && $mb['12'][0][1] <= $avgH - 0.01, $mb['12'][0][1] . ' / ' . $want);
+$wantO = floor((1 - $c['mOther'] / 100) / ((1 / ((1.90 + 1.92 + 1.88) / 3)) / (1 / 1.9 + 1 / 1.9)) * 100 + 1e-6) / 100;
+check('marge mOther aussi sur le total', abs($mb['ou:220.5'][0][1] - min($wantO, 1.89)) < 0.011, json_encode($mb['ou:220.5']));
+$idxB = sb_o_day('basket', '2026-12-10');
+check('index : 7001 avec 1 · 2 (om = 12), 7002 sans cotes, 7009 illisible écarté', ($idxB['fx']['7001']['om'] ?? '') === '12' && empty($idxB['fx']['7002']['n']) && !isset($idxB['fx']['7009']) && $idxB['lg']['12']['p'] === 1);
+check('visibilité : joueur refusé tant que Public est éteint', sb_list($ua, 'all', 0, $ON, false, 'basket')['ok'] === false);
+$Lb = sb_list($uadm, 'all', 0, $ON, false, 'basket');
+check('sbList sport = basket : SEULEMENT les matchs avec cotes, ids « basket:… », o.mk = 12', array_column($Lb['fx'], 'id') === ['basket:7001'] && $Lb['fx'][0]['o']['mk'] === '12' && count($Lb['fx'][0]['o']['o']) === 2 && $Lb['fx'][0]['live'] === 0 && $Lb['lg'][0]['n'] === 'NBA');
+$sps = array_column($Lb['sports'], 's');
+check('onglets : Football d\'abord, puis seulement les sports qui ont des matchs (basket), jamais un sport vide', $sps === ['foot', 'basket'] && $Lb['sports'][1]['c'] === 1, json_encode($Lb['sports']));
+check('sbList football : aussi la liste des sports ; aucun match de basket', array_column(sb_list($uadm, 'all', 0, $ON)['sports'], 's') === ['foot', 'basket'] && !array_filter(array_column(sb_list($uadm, 'all', 0, $ON)['fx'], 'id'), static fn($i) => str_starts_with($i, 'basket:')));
+check('périodes par sport : day 0 (aujourd\'hui) oui, day 1 non ; nombre par jour (📅 Date)', array_column(sb_list($uadm, 0, 0, $ON, false, 'basket')['fx'], 'id') === ['basket:7001'] && sb_list($uadm, 1, 0, $ON, false, 'basket')['fx'] === [] && sb_list($uadm, 0, 0, $ON, true, 'basket')['days'][0] === 1);
+check('fuseau Népal : 20:00 UTC = 01:45 le lendemain', sb_list($uadm, 1, 345, $ON, false, 'basket')['fx'][0]['id'] === 'basket:7001');
+check('sport inconnu / tennis : liste vide', sb_list($uadm, 'all', 0, $ON, false, 'tennis')['fx'] === []);
+$Mb = sb_match($uadm, 'basket:7001', $ON);
+check('sbMatch basket : 4 marchés, règles du sport, pas de direct', $Mb['ok'] && count($Mb['mk']) === 4 && $Mb['fx']['id'] === 'basket:7001' && str_contains($Mb['rules'], 'prolongation') && $Mb['fx']['live'] === 0);
+// handicap : conventions
+$u = [];
+$p1 = sb_o_parse_bet('basket', 'Asian Handicap', [['value' => 'Home -4.5', 'odd' => '1.9'], ['value' => 'Away +4.5', 'odd' => '1.9']], ['', ''], $u);
+$p2 = sb_o_parse_bet('basket', 'Asian Handicap', [['value' => 'Home -4.5', 'odd' => '1.9'], ['value' => 'Away -4.5', 'odd' => '1.9']], ['', ''], $u);
+$p3 = sb_o_parse_bet('basket', 'Asian Handicap', [['value' => 'Home -4.5', 'odd' => '1.9'], ['value' => 'Away +4.5', 'odd' => '1.9'], ['value' => 'Home +4.5', 'odd' => '1.9'], ['value' => 'Away -4.5', 'odd' => '1.9']], ['', ''], $u);
+check('handicap : « Away +4.5 » (équipe) et « Away -4.5 » (domicile) → même ah:-4.5 ; indécidable → écarté', $p1 === [['ah:-4.5', 'H', 1.9], ['ah:-4.5', 'A', 1.9]] && $p2 === $p1 && $p3 === [] && isset($u['basket · Asian Handicap (convention du handicap indécidable)']));
+$u = [];
+$bad = [$bk('X', [$bet('Home/Away', [['Home', 1.5], ['Away', 2.6]]), $bet('Asian Handicap', [['Home -9.5', 1.3], ['Away -9.5', 4.0]])]), $bk('Y', [$bet('Home/Away', [['Home', 1.5], ['Away', 2.6]]), $bet('Asian Handicap', [['Home -9.5', 1.3], ['Away -9.5', 4.0]])])];
+check('handicap plus probable que la victoire : retiré (signe / convention), jamais mal payé', !isset(sb_o_markets('basket', $bad, $c, ['', ''], $u)['ah:-9.5']));
+check('MMA : vainqueur seulement, valeurs = noms des combattants acceptés ; nul jamais en 2 choix', sb_o_parse_bet('mma', 'Home/Away', [['value' => 'Jon Jones', 'odd' => '1.5'], ['value' => 'Stipe Miocic', 'odd' => '2.6']], ['Jon Jones', 'Stipe Miocic'], $u) === [['12', 'H', 1.5], ['12', 'A', 2.6]]
+  && sb_o_parse_bet('mma', 'Over/Under', [['value' => 'Over 1.5', 'odd' => '1.5']], ['', ''], $u) === []);
+check('hockey : « Match Winner » avec un nul = 1x2 (temps réglementaire)', sb_o_parse_bet('hockey', 'Match Winner', [['value' => 'Home', 'odd' => '2.1'], ['value' => 'Draw', 'odd' => '4.0'], ['value' => 'Away', 'odd' => '2.9']], ['', ''], $u)[1] === ['1x2', 'D', 4.0]);
+// pari
+$ob = $mb['12'][0][1];
+$r = sp_bet(load_db(), $ua, 'real', 1, [['ev' => 'sb:basket:7001:12', 'k' => 'H', 'odd' => $ob]], $ON);
+check('pari joueur (Public éteint) : refusé', $r['ok'] === false && $r['reason'] === 'closed');
+sb_config_save(['public' => true]);
+$r = sp_bet(load_db(), $uadm, 'real', 1, [['ev' => 'sb:basket:7001:12', 'k' => 'H'], ['ev' => 'sb:basket:7001:ou:220.5', 'k' => 'O']], $ON);
+check('deux choix du même match : refusé (corr)', $r['ok'] === false && $r['reason'] === 'corr');
+$r = sp_bet(load_db(), $uadm, 'real', 1, [['ev' => 'sb:basket:7001:dc', 'k' => 'HD']], $ON);
+check('marché non proposé pour ce sport : refusé', $r['ok'] === false);
+$balA = $bal[$A];
+$q1 = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:basket:7001:12', 'k' => 'H', 'odd' => $ob]], $ON);
+$q2 = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:basket:7001:1x2', 'k' => 'D']], $ON);
+$q3 = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:basket:7001:ou:220.5', 'k' => 'O']], $ON);
+$q4 = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:basket:7001:ah:-4.5', 'k' => 'H'], ['ev' => 'sb:foot:9901:1x2', 'k' => 'H']], $ON); // 9901 : match de foot fermé depuis → refusé
+$q4 = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:basket:7001:ah:-4.5', 'k' => 'H']], $ON);
+check('public : 4 coupons basket acceptés, cote ACTUELLE du serveur', $q1['ok'] && $q2['ok'] && $q3['ok'] && $q4['ok'] && $q1['bet']['odd'] === $ob && abs($bal[$A] - ($balA - 40)) < 1e-9, json_encode([$q1['ok'], $q2, $q3['ok'], $q4['ok']]));
+$s1 = $q1['bet']['sel'][0];
+check('choix public : mk / k / sp = basket / fx', $s1['mk'] === '12' && $s1['k'] === 'H' && $s1['sp'] === 'basket' && $s1['fx'] === 'basket:7001' && $s1['t'] === 'Lakers - Celtics');
+$cd = sb_code_save($uadm, [['ev' => 'sb:basket:7001:12', 'k' => 'A']], $ON);
+check('code de coupon : choix d\'un autre sport accepté', $cd['ok'] && sb_code_load($ua, $cd['code'], $ON)['sel'][0]['ev'] === 'sb:basket:7001:12');
+$r = sp_bet(load_db(), $ua, 'real', 1, [['ev' => 'sb:basket:7001:12', 'k' => 'H']], $T('2026-12-10 20:00'));
+check('au début du match : fermé', $r['ok'] === false && $r['reason'] === 'closed');
+check('cotes de plus de 9 h : match retiré de la liste (jamais un vieux prix)', sb_list($uadm, 'all', 0, $T('2026-12-10 19:30'), false, 'basket')['fx'] === [] && count(sb_list($uadm, 'all', 0, $T('2026-12-10 18:30'), false, 'basket')['fx']) === 1);
+// règlement : prolongation (AOT) — 4 quart-temps 100-100, final 110-105
+$alt['basket:games?date=2026-12-10&timezone=UTC'] = $J(['errors' => [], 'response' => [$bg(7001, '2026-12-10 20:00', 'AOT', 12, 'NBA', [71, 'Lakers'], [72, 'Celtics'], ['scores' => ['home' => $bq([25, 25, 25, 25], 10), 'away' => $bq([30, 20, 25, 25], 5)]])]]);
+$RN2 = $at('2026-12-11 00:30');
+$balA = $bal[$A];
+$r = sb_o_tick('basket', $RN2);
+$res = sb_o_results('basket')['7001'] ?? [];
+check('résultat lu dans l\'index du jour : fin, final 110-105, temps réglementaire 100-100', ($res['v'] ?? '') === 'fin' && $res['fo'] === [110, 105] && $res['rg'] === [100, 100], json_encode($res));
+$bets = []; foreach ((array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? [])) as $b) $bets[$b['id']] = $b;
+$st = static fn($q) => $bets[$q['bet']['id']]['status'] ?? '?';
+check('réglé automatiquement : 12 H gagné (prolongation comprise), 1x2 nul gagné (temps réglementaire), plus de 220,5 perdu (215), handicap −4,5 gagné', $st($q1) === 'won' && $st($q2) === 'won' && $st($q3) === 'lost' && $st($q4) === 'won', json_encode([$st($q1), $st($q2), $st($q3), $st($q4)]));
+$o2 = (float) $q2['bet']['odd']; $o4 = (float) $q4['bet']['odd'];
+check('payé UNE fois, chemin existant (casino_credit)', abs($bal[$A] - ($balA + floor(10 * $ob * 100) / 100 + floor(10 * $o2 * 100) / 100 + floor(10 * $o4 * 100) / 100)) < 0.011);
+$credBefore = $credits; sp_resolve(load_db()); sb_o_tick('basket', $RN2 + 3600);
+check('relancer : jamais payé deux fois', $credits === $credBefore);
+// unités : chaque sport
+check('hockey : temps réglementaire depuis les périodes « 1-1 », 12 tirs au but compris, total sur 60 min', sb_o_scores('hockey', ['scores' => ['home' => 3, 'away' => 2], 'periods' => ['first' => '1-0', 'second' => '0-1', 'third' => '1-1', 'overtime' => '0-0', 'penalties' => '1-0']], [], 'AP') === ['fo' => [3, 2], 'rg' => [2, 2], 'pts' => null]
+  && sb_o_settle('hockey', '1x2', 'D', ['fo' => [3, 2], 'rg' => [2, 2]]) === 'won' && sb_o_settle('hockey', '12', 'H', ['fo' => [3, 2], 'rg' => [2, 2]]) === 'won' && sb_o_settle('hockey', 'ou:4.5', 'U', ['fo' => [3, 2], 'rg' => [2, 2]]) === 'won');
+check('hockey : prolongation sans périodes lisibles → temps réglementaire inconnu → à vérifier (null), jamais deviné', sb_o_scores('hockey', ['scores' => ['home' => 3, 'away' => 2]], [], 'AOT')['rg'] === null && sb_o_settle('hockey', '1x2', 'H', ['fo' => [3, 2], 'rg' => null]) === null);
+check('fini sans prolongation (FT) : temps réglementaire = final', sb_o_scores('handball', ['scores' => ['home' => 30, 'away' => 28]], [], 'FT')['rg'] === [30, 28]);
+check('volley : sets 3-1, points de tous les sets, handicap en sets', sb_o_scores('volley', ['scores' => ['home' => 3, 'away' => 1], 'periods' => ['first' => ['home' => 25, 'away' => 20], 'second' => ['home' => 22, 'away' => 25], 'third' => ['home' => 25, 'away' => 18], 'fourth' => ['home' => 25, 'away' => 23], 'fifth' => ['home' => null, 'away' => null]]], [], 'FT') === ['fo' => [3, 1], 'rg' => null, 'pts' => [97, 86]]
+  && sb_o_settle('volley', 'ou:180.5', 'O', ['fo' => [3, 1], 'pts' => [97, 86]]) === 'won' && sb_o_settle('volley', 'ah:-1.5', 'H', ['fo' => [3, 1]]) === 'won' && sb_o_settle('volley', 'ah:-2.5', 'H', ['fo' => [3, 1]]) === 'lost');
+check('12 à égalité (rugby, AFL) : remboursé ; 1x2 refusé pour le volley / baseball', sb_o_settle('rugby', '12', 'H', ['fo' => [20, 20]]) === 'void' && sb_o_settle('baseball', '1x2', 'H', ['fo' => [3, 2], 'rg' => [3, 2]]) === null);
+check('MMA : vainqueur via « winner » ; fini sans vainqueur → à vérifier', sb_o_scores('mma', ['fighters' => ['first' => ['id' => 1, 'winner' => false], 'second' => ['id' => 2, 'winner' => true]]], [], 'FT')['fo'] === [0, 1]
+  && sb_o_classify('mma', ['st' => 'FT', 'ts' => 1, 'h' => [1], 'a' => [2], 'fo' => null], [1, 2], 1, 2)['v'] === 'chk');
+check('football américain / AFL : forme {game:{id, date{timestamp}, status}} lue', ($p = sb_o_row('amfoot', ['game' => ['id' => 55, 'date' => ['timestamp' => $ON + 3600], 'status' => ['short' => 'NS']], 'league' => ['id' => 1, 'name' => 'NFL', 'season' => 2026, 'country' => ['name' => 'USA', 'flag' => '']], 'teams' => ['home' => ['id' => 1, 'name' => 'A'], 'away' => ['id' => 2, 'name' => 'B']]]))
+  && $p[0] === '55' && $p[1]['sea'] === '2026' && $p[2]['p'] === 1);
+check('règles d\'annulation : pari après le vrai début → remboursé ; équipes différentes → jamais réglé', sb_o_sel_result('basket', '7001', '12', ['k' => 'H', 'ko' => $T('2026-12-10 20:00'), 'ti' => [71, 72]], $T('2026-12-10 20:00'), $RN2, true) === 'void'
+  && sb_o_sel_result('basket', '7001', '12', ['k' => 'H', 'ko' => $T('2026-12-10 20:00'), 'ti' => [71, 99]], $ON, $RN2, true) === null);
+check('équipes différentes de celles du pari : « à vérifier »', sb_o_classify('basket', ['st' => 'FT', 'ts' => 1, 'h' => [1], 'a' => [9], 'fo' => [1, 0]], [1, 2], 1, 2)['v'] === 'chk');
+// plan gratuit : fenêtre de dates ; budget
+$alt['hockey:games?date=2026-12-12&timezone=UTC'] = '{"errors":{"plan":"Free plans do not have access to this date, try from 2026-12-09 to 2026-12-11."},"response":[]}';
+$n0 = count($asked);
+sb_o_tick('hockey', $ON);
+$h1 = array_values(array_filter(array_slice($asked, $n0), static fn($p) => str_starts_with($p, 'hockey:')));
+check('hockey : J+2 refusé par le plan → fenêtre retenue, erreur pour l\'admin', in_array('hockey:games?date=2026-12-12&timezone=UTC', $h1, true) && (sb_state()['owin']['hockey'][1] ?? '') === '2026-12-11' && str_contains(sb_o_admin($ON)['hockey']['err'], 'Free plans'));
+$n0 = count($asked);
+sb_o_tick('hockey', $ON + 13 * 3600);
+check('… et plus jamais redemandé pendant 24 h', !in_array('hockey:games?date=2026-12-12&timezone=UTC', array_slice($asked, $n0), true));
+sb_with('budget-handball.json', static function (array &$s) use ($ON) { $s = ['day' => gmdate('Y-m-d', $ON), 'n' => SB_O_CAP, 'od' => 0, 'rs' => 0]; return true; });
+$n0 = count($asked);
+check('plafond de 90 lectures / jour / sport : plus aucune lecture', sb_o_tick('handball', $ON)['calls'] === 0 && count($asked) === $n0);
+$OT = $ON + 4 * 3600;
+sb_with('budget-basket.json', static function (array &$s) use ($OT) { $s = ['day' => gmdate('Y-m-d', $OT), 'n' => 50, 'od' => SB_O_ODDS_DAY, 'rs' => 0]; return true; });
+sb_with('state.json', static function (array &$s) { unset($s['oo']['basket']); return true; });
+sb_with(sb_o_dayf('basket', gmdate('Y-m-d', $OT)), static function (array &$s) use ($OT) { $s['fx']['7011'] = ['ts' => $OT + 7200, 'st' => 'NS', 'lg' => 12, 'sea' => '2026-2027', 'h' => [71, 'Lakers', ''], 'a' => [72, 'Celtics', '']]; return true; });
+$n0 = count($asked); $lg0 = [];
+check('plafond des cotes (45 / jour) : aucune lecture de cotes de plus', count(sb_o_upcoming('basket', $OT)) > 0 && sb_o_odds_job('basket', $OT, 6, $lg0) === 0 && count($asked) === $n0);
+sb_with('budget-basket.json', static function (array &$s) { $s['od'] = 0; return true; });
+check('… sous le plafond : le championnat est relu (une lecture pour tous ses matchs)', sb_o_odds_job('basket', $OT, 6, $lg0) === 1 && $asked[$n0] === 'basket:odds?league=12&season=2026-2027');
+// tâche de fond : un sport par passage, au plus une fois par minute
+@unlink(sb_dir() . '/jobo.at');
+$n0 = count($asked);
+$j1 = sb_o_maybe_run($ON + 5 * 3600);
+$spA = array_unique(array_map(static fn($p) => explode(':', $p)[0], array_slice($asked, $n0)));
+check('sb_o_maybe_run : UN seul sport par passage, ≤ 6 lectures', $j1 !== null && count($spA) === 1 && $j1['calls'] <= SB_O_RUN, json_encode($spA));
+check('… pas deux passages dans la même minute', sb_o_maybe_run($ON + 5 * 3600 + 30) === null);
+check('erreur notée sans la clé', (sb_o_note_error('rugby', 'x test-secret-key-123 y', $ON) || true) && !str_contains((string) json_encode(sb_state()), 'test-secret-key-123'));
+check('admin : état par sport (budget / erreurs) + « à vérifier » des autres sports', isset(sb_admin_status($ON)['other']['basket']['budget']['cap']) && sb_admin_status($ON)['other']['basket']['budget']['cap'] === SB_O_CAP);
+$api = (string) file_get_contents(__DIR__ . '/../api.php');
+check('api.php : sbList passe « sport »', str_contains($api, "\$req['sport']"));
+// budget théorique par jour (documenté) : ≤ 22 matchs + 45 cotes + 12 résultats < 90
+check('budget prévu par jour ≤ 79 < 90 (plafond dur)', 8 + 4 + 2 + 8 + SB_O_ODDS_DAY + SB_O_RES_DAY <= 79 && SB_O_CAP === 90);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));

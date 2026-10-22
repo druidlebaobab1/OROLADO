@@ -4159,7 +4159,10 @@ setInterval(() => {
       F.forEach(k => { const el = $c('sb' + k); if (el && document.activeElement !== el) el.value = c[k]; });
       const b = j.budget || {};
       $c('sbSt').innerHTML = (j.key ? '' : '⚠️ Aucune clé. ') + 'Budget du jour : <b>' + b.used + ' / ' + b.cap + '</b> · Dernier import : ' + t(j.lastImport) +
-        ' · Matchs : ' + j.fixtures + ' (' + j.withOdds + ' avec cotes)' + (j.err ? '<br>Dernière erreur (' + t(j.errAt) + ') : ' + esc(j.err) : '');
+        ' · Matchs : ' + j.fixtures + ' (' + j.withOdds + ' avec cotes)' + (j.err ? '<br>Dernière erreur (' + t(j.errAt) + ') : ' + esc(j.err) : '') +
+        // 2026-10-22 : autres sports (plans gratuits, 90 lectures / jour chacun)
+        Object.values(j.other || {}).map(o => '<br><span class="muted">' + esc(o.n) + (o.on ? '' : ' (éteint)') + ' : ' + (o.budget || {}).used + ' / ' + (o.budget || {}).cap + ' lectures · ' + o.fixtures + ' matchs (' + o.withOdds + ' avec cotes)' +
+          (o.err ? ' · ⚠️ ' + t(o.errAt) + ' ' + esc(o.err) : '') + '</span>').join('');
       const L = j.check || [];
       $c('sbChk').innerHTML = !L.length ? 'Rien à vérifier.' : L.map(x => '<div style="border-top:1px solid rgba(255,255,255,.12);padding:6px 0">' +
         '<b>' + esc(x.t) + '</b> <span class="muted">(' + t(x.ko) + ' · ' + x.n + ' choix)</span><br>' + esc(x.why || x.v) + (x.ft ? ' · API : mi-temps ' + sc(x.ht) + ', fin ' + sc(x.ft) : '') +
@@ -4202,6 +4205,7 @@ setInterval(() => {
       $c('sbDiag').innerHTML = (s ? 'API : plan <b>' + esc(s.plan) + '</b>' + (s.active ? '' : ' (inactif !)') + ' · fin ' + esc(s.end) + ' · lectures ' + s.cur + ' / ' + s.max : 'API injoignable') +
         (r.err ? '<br>Dernière erreur (' + t(r.errAt) + ') : ' + esc(r.err) : '') +
         '<br>Paris non reconnus (' + u.length + ') :' + (u.length ? '<br>' + u.slice(0, 40).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun') +
+        ((uo => '<br>Autres sports, paris non reconnus (' + uo.length + ') :' + (uo.length ? '<br>' + uo.slice(0, 40).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun'))(Object.entries(r.unkOther || {}))) +
         (r.live ? '<br>Direct : ' + (r.live.on ? 'allumé' : 'éteint') + (r.live.wanted ? ' · regardé' : '') + ' · ' + r.live.fx + ' match(s) · cotes ' + r.live.od + ' · lu ' + t(r.live.at) : '') +
         ((ul => '<br>Direct, paris non reconnus (' + ul.length + ') :' + (ul.length ? '<br>' + ul.slice(0, 30).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun'))(Object.entries(r.unkLive || {})));
     };
