@@ -795,11 +795,13 @@
   function stOf() { return stake; }
   function slipHead() {
     var x = XX();
-    return '<div class="sp2-sh"><span class="sp2-sh-ic">' + IC.slip + '</span><b class="fit">' + esc(x.coupon) + '</b>' +
+    return '<div class="sp2-sh"><button type="button" class="sp2-shbk" id="spSlipBack" aria-label="←">' + IC.back + '</button><span class="sp2-sh-ic">' + IC.slip + '</span><b class="fit">' + esc(x.coupon) + '</b>' +
       (slip.length && !lastBet && !lastBets ? '<i class="sp2-badge">' + slip.length + '</i>' +
         '<button type="button" class="sp2-clear" id="spCpClear">' + IC.trash + '<span class="fit">' + esc(x.clearAll) + '</span></button>' : '') + '</div>';
   }
   function backToList() { lastBet = null; lastBets = null; view = lv(); render(); }
+  // 2026-10-22 (propriétaire : « on ne peut plus sortir ») : flèche retour dans le ticket, la page « pari enregistré » et le ticket vide
+  document.addEventListener('click', function (ev) { var b = ev.target && ev.target.closest && ev.target.closest('#spSlipBack'); if (b && !sending && box && box.contains(b)) backToList(); });
   function slipTop() { try { var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; } catch (e) { /* ignore */ } }
   function renderDone() {
     var x = XX(), bs = lastBets || [lastBet], one = bs.length === 1, lb = bs[0];
@@ -1238,7 +1240,7 @@
     });
     var q = $('sbQ'), qt = 0;
     if (q) q.addEventListener('input', function () { clearTimeout(qt); qt = setTimeout(function () { sbQ = q.value.trim(); box.querySelectorAll('.sb-chips [data-day]').forEach(function (z) { z.classList.toggle('on', !sbQ && String(sbDay) === z.getAttribute('data-day')); }); paintFoot(); }, 180); });
-    $('sbCodeT').addEventListener('click', function () {
+    var sct = $('sbCodeT'); if (sct) sct.addEventListener('click', function () {
       sbCodeRow = !sbCodeRow; this.classList.toggle('on', sbCodeRow);
       var t = box.querySelector('.sb-tool'), old = t.querySelector('.sb-crow');
       if (old) old.remove(); else { t.insertAdjacentHTML('beforeend', codeRow()); bindCodeRow(t); fitAll(t.querySelector('.sb-crow')); var i = $('sbCodeIn'); if (i) i.focus(); }
@@ -1422,7 +1424,7 @@
         // colonnes selon la longueur des libellés (noms d'équipes longs : 2 ou 1 colonne, jamais de texte coupé)
         var n = (m.o || []).length, ml = 0;
         (m.o || []).forEach(function (o) { ml = Math.max(ml, sbOutL(m.mk, o[0], f.h.n, f.a.n).length); });
-        var cols = n % 3 === 0 ? 3 : ml <= 17 ? 2 : 1, sh = n % 3 === 0 && ml > 15; // 2026-10-22 (propriétaire) : 1 · X · 2 toujours sur une ligne
+        var cols = n % 3 === 0 ? 3 : ml <= 17 ? 2 : 1, sh = n % 3 === 0; // 2026-10-22 (propriétaire) : 1 · X · 2 toujours sur une ligne
         return '<div class="sb-oo c' + cols + '">' + (m.o || []).map(function (o) {
           var ev = 'sb:' + f.id + ':' + m.mk, on = inSlip(ev, o[0]), fl = sbFl(ev + '|' + o[0]);
           return '<button type="button" class="sb-ob sb-ob2' + (on ? ' on' : '') + fl + '" data-ev="' + esc(ev) + '" data-k="' + esc(o[0]) + '" data-odd="' + o[1] + '" aria-pressed="' + on + '"' + (m.s ? ' disabled' : '') + '>' +
@@ -1441,7 +1443,7 @@
       return '<div class="sb-cp1"><span class="fit">' + esc(x.codeT) + '</span><b dir="ltr">' + esc(sbCode.code) + '</b>' +
         '<button type="button" id="sbCopy"><span class="fit">' + esc(x.copy) + '</span></button><button type="button" id="sbCodeX" aria-label="✕">✕</button></div>';
     }
-    return '<button type="button" class="sb-shb" id="sbShare">' + SBIC.share + '<span class="fit">' + esc(x.share) + '</span></button>';
+    return ''; // 2026-10-22 (propriétaire) : plus de bouton « Partager le code » dans le ticket pour l'instant
   }
   function bindCodeBox() {
     var x = SX(), sh = $('sbShare'), cp = $('sbCopy'), cx = $('sbCodeX');
