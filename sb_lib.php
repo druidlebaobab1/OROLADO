@@ -912,6 +912,39 @@ function sb_list(?array $user, $day, int $tz = 0, int $now = 0): array {
   sb_after_response();
   return ['ok' => true, 'at' => $now, 'sports' => [['s' => 'foot', 'n' => 'Football', 'live' => sb_live_count($user, $now)]], 'lg' => $lgs, 'fx' => $fx];
 }
+/**
+ * 2026-10-22 (propriétaire) — sbResults {day: 0|-1|-2} : scores finaux des matchs TERMINÉS de ce jour (fuseau du joueur),
+ * SEULEMENT ceux qui ont eu nos cotes (jamais un match sans cotes dans Paris). Fichiers locaux uniquement (aucun appel API).
+ * fx : {id, lg, ts, st, h:{n,lo}, a:{n,lo}, ft:[h,a], ht:[h,a]|null}.
+ */
+function sb_results_list(?array $user, $day, int $tz = 0, int $now = 0): array {
+  $now = $now ?: sb_now();
+  if (!sb_visible($user)) return ['ok' => false, 'reason' => 'off'];
+  $tz = max(-720, min(840, $tz)) * 60;
+  $d = max(-2, min(0, (int) $day));
+  $from = (int) (floor(($now + $tz) / 86400) * 86400) - $tz + $d * 86400; $to = $from + 86400;
+  $fx = []; $lgs = []; $used = [];
+  foreach (array_unique([gmdate('Y-m-d', $from), gmdate('Y-m-d', $to - 1)]) as $dd) {
+    $j = sb_day($dd);
+    foreach ((array) ($j['fx'] ?? []) as $id => $r) {
+      $ts = (int) ($r['ts'] ?? 0);
+      if ($ts < $from || $ts >= $to || !in_array((string) ($r['st'] ?? ''), SB_FINAL, true)) continue;
+      if (empty($r['o']) && (int) ($r['n'] ?? 0) <= 0) continue; // jamais un match sans nos cotes
+      $ft = is_array($r['ft'] ?? null) ? $r['ft'] : (is_array($r['g'] ?? null) ? $r['g'] : null);
+      if (!$ft) continue;
+      $fx[(string) $id] = ['id' => 'foot:' . $id, 'lg' => (int) ($r['lg'] ?? 0), 'ts' => $ts, 'st' => (string) $r['st'],
+        'h' => ['n' => (string) ($r['h'][1] ?? ''), 'lo' => (string) ($r['h'][2] ?? '')], 'a' => ['n' => (string) ($r['a'][1] ?? ''), 'lo' => (string) ($r['a'][2] ?? '')],
+        'ft' => [(int) $ft[0], (int) $ft[1]], 'ht' => is_array($r['ht'] ?? null) ? [(int) $r['ht'][0], (int) $r['ht'][1]] : null];
+      $used[(int) ($r['lg'] ?? 0)] = 1;
+    }
+    foreach ((array) ($j['lg'] ?? []) as $lid => $l) if (isset($used[(int) $lid]) && !isset($lgs[(int) $lid])) $lgs[(int) $lid] = ['id' => (int) $lid] + (array) $l;
+  }
+  $lgs = array_values(array_filter($lgs, static fn($l) => isset($used[$l['id']])));
+  usort($lgs, static fn($a, $b) => [(int) ($a['p'] ?? 100), (string) ($a['c'] ?? ''), (string) ($a['n'] ?? '')] <=> [(int) ($b['p'] ?? 100), (string) ($b['c'] ?? ''), (string) ($b['n'] ?? '')]);
+  $fx = array_values($fx);
+  usort($fx, static fn($a, $b) => [$a['ts'], $a['id']] <=> [$b['ts'], $b['id']]);
+  return ['ok' => true, 'at' => $now, 'day' => $d, 'lg' => $lgs, 'fx' => $fx];
+}
 /** Index + marchés d'un match (id API) ; null si inconnu. */
 function sb_find(string $id, int $now): ?array {
   foreach (sb_days($now) as $d) { $j = sb_day($d); if (isset($j['fx'][$id])) return ['row' => (array) $j['fx'][$id], 'lg' => (array) ($j['lg'][(string) $j['fx'][$id]['lg']] ?? []), 'day' => $d]; }

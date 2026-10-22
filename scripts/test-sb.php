@@ -490,6 +490,20 @@ sb_live_tick($B5 + 61 + 700);
 $lx = sb_live_list($uadm, $B5 + 61 + 700); check('… puis retiré après 10 min', $lx['fx'] === [], json_encode($lx));
 check('config : direct public par défaut + réglage de la dernière minute (borné 45…90)', SB_CFG_DEFAULT['livePublic'] === true && sb_config_save(['liveLastMin' => 120])['config']['liveLastMin'] == 90);
 
+// 2026-10-22 — sbResults : scores finaux des matchs terminés qui ont eu NOS cotes seulement (fichiers locaux)
+$RN = $T('2026-11-03 20:00:00'); $GLOBALS['SB_NOW'] = $RN;
+sb_with(sb_day_file('2026-11-02'), static function (array &$s) use ($T) {
+  $s = ['at' => $T('2026-11-02 23:00:00'), 'lg' => ['39' => ['n' => 'Premier League', 'c' => 'England', 'f' => '', 'lo' => '', 'p' => 2]], 'fx' => [
+    '8801' => ['ts' => $T('2026-11-02 15:00:00'), 'st' => 'FT', 'm' => 90, 'lg' => 39, 'h' => [1, 'Res Home', ''], 'a' => [2, 'Res Away', ''], 'g' => [2, 1], 'ht' => [1, 0], 'ft' => [2, 1], 'o' => [['H', 2.0], ['D', 3.2], ['A', 3.5]], 'n' => 12],
+    '8802' => ['ts' => $T('2026-11-02 16:00:00'), 'st' => 'FT', 'm' => 90, 'lg' => 39, 'h' => [3, 'Sans Cotes', ''], 'a' => [4, 'Jamais Vu', ''], 'g' => [0, 0], 'ht' => [0, 0], 'ft' => [0, 0]],
+    '8803' => ['ts' => $T('2026-11-02 18:00:00'), 'st' => '2H', 'm' => 70, 'lg' => 39, 'h' => [5, 'En Cours', ''], 'a' => [6, 'Pas Fini', ''], 'g' => [1, 1], 'o' => [['H', 2.0], ['D', 3.2], ['A', 3.5]], 'n' => 5]]];
+  return true;
+});
+$rr = sb_results_list($uadm, -1, 0, $RN);
+check('sbResults hier : seulement le match terminé AVEC nos cotes (score final + mi-temps)', $rr['ok'] === true && array_column($rr['fx'], 'id') === ['foot:8801'] && $rr['fx'][0]['ft'] === [2, 1] && $rr['fx'][0]['ht'] === [1, 0] && count($rr['lg']) === 1, json_encode($rr));
+check('sbResults aujourd\'hui : rien', sb_results_list($uadm, 0, 0, $RN)['fx'] === []);
+check('sbResults : jour borné (-5 → -2) et invisible pour qui ne voit pas les paris', sb_results_list($uadm, -5, 0, $RN)['day'] === -2 && (sb_config()['public'] || sb_results_list(null, -1, 0, $RN)['reason'] === 'off'));
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);
