@@ -1599,6 +1599,10 @@ function sb_live_store_odds(array $j, int $now): int {
       if ($pz !== null) $od[$id]['z'] = $pz;
       if ($jmp) $od[$id]['jmp'] = $jmp;
     }
+    // 2026-10-22 (propriétaire : « tous les matchs en direct ont disparu ») : /odds/live renvoie parfois une partie des matchs
+    // seulement (15 → 1 → 3 d'une lecture à l'autre) → un match absent d'UNE lecture reste affiché, verrouillé, jusqu'à 90 s
+    foreach ($od as $id => $o) $od[$id]['seen'] = $now;
+    foreach ($old as $id => $o) if (!isset($od[$id]) && is_array($o) && (int) ($o['seen'] ?? 0) > $now - 90) $od[$id] = ['miss' => 1] + $o;
     $s['od'] = $od; $s['at'] = $now;
     return true;
   });
@@ -1833,7 +1837,7 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
   // 2026-10-22 (propriétaire : « à la mi-temps tout est verrouillé ») : à la mi-temps rien ne se passe et chaque pari est
   // contrôlé 15 s → ni « cotes qui ne bougent plus », ni pause du fournisseur, ni saut ne verrouillent pendant la pause.
   if ($st === 'HT') { $odStale = false; $jumped = false; }
-  $susp = !$fresh || $odStale || $jumped || (!empty($od['blk']) && $st !== 'HT') || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
+  $susp = !$fresh || $odStale || !empty($od['miss']) || $jumped || (!empty($od['blk']) && $st !== 'HT') || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
     || !in_array($st, ['1H', 'HT', '2H'], true); // prolongation / tirs au but : plus de pari (règlement sur les 90 min)
   if (!empty($row['end'])) $sc = is_array($row['g'] ?? null) ? array_map('intval', $row['g']) : $sc;
   $mk = is_array($od) ? (array) $od['mk'] : [];
