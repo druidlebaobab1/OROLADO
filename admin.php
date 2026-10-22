@@ -2687,6 +2687,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <h1>Super Admin Dashboard</h1>
     <div>
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
+      <button class="mini" id="btnSelfTop" type="button" style="border-color:#3B82F6;color:#93C5FD">🧪 Recharger mon compte</button>
       <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
       <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">💬 Social <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
@@ -2980,12 +2981,6 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
               <span id="spSt" class="muted"></span>
             </div>
           </div>
-        </div>
-        <div class="nt-card" id="selfTopCard" style="margin-top:10px;border-color:rgba(59,130,246,.55)">
-          <b>🧪 Recharger mon compte admin (tests)</b>
-          <p class="muted" style="margin:4px 0 6px">Crédite seulement le compte admin du site (motif « Recharge test admin »). Aucun joueur n'est touché.</p>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="selfTopIn" class="nt-in" type="number" inputmode="decimal" min="1" max="100000" step="1" value="100" style="width:110px"> <span class="muted">$</span>
-          <button class="mini ok" type="button" id="selfTopGo">Recharger</button> <span id="selfTopSt" class="muted"></span></div>
         </div>
         <div class="nt-card" id="apifKeyCard" style="margin-top:10px;border-color:rgba(245,197,24,.55)">
           <b>🔑 Clé API-Sports (API-Football)</b>
@@ -4139,13 +4134,14 @@ setInterval(() => {
       go.disabled = false; if (!j.ok) { alert(j.reason || 'Échec'); return; } inp.value = ''; paint(j);
     };
   })();
-  // 2026-10-22 (propriétaire) : recharger le compte admin du site pour ses tests (jamais un joueur)
+  // 2026-10-22 (propriétaire) : recharger le compte admin du site pour ses tests (jamais un joueur) — bouton en haut
   (function () {
-    const go = $c('selfTopGo'), inp = $c('selfTopIn'), st = $c('selfTopSt'); if (!go) return;
+    const go = $c('btnSelfTop'); if (!go) return;
     go.onclick = async () => {
-      const v = parseFloat(String(inp.value).replace(',', '.')); if (!(v > 0)) { alert('Montant ?'); return; }
-      go.disabled = true; st.textContent = '…'; let j; try { j = await ajax({action:'self_topup', amount:v}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
-      go.disabled = false; st.textContent = j.ok ? '✅ +' + v + ' $ crédités' : '❌ ' + (j.reason || 'Échec');
+      const r = prompt('Montant à ajouter sur ton compte admin (tests), en $ :', '100'); if (r === null) return;
+      const v = parseFloat(String(r).replace(',', '.')); if (!(v > 0)) { alert('Montant invalide'); return; }
+      go.disabled = true; let j; try { j = await ajax({action:'self_topup', amount:v}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
+      go.disabled = false; alert(j.ok ? '✅ +' + v + ' $ ajoutés sur ton compte admin. Rouvre le site pour voir ton solde.' : '❌ ' + (j.reason || 'Échec'));
     };
   })();
   // 2026-10-22 : PARIS AUTOMATIQUES (API-Football) — réglages, budget, import, diagnostic, résultats à vérifier
