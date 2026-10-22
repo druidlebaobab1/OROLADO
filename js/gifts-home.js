@@ -249,7 +249,13 @@
     box.insertBefore(grid, tabs || null);
     ['ghWheel', 'ghJauge'].forEach(function (id) { var s = document.createElement('section'); s.className = 'gh-page'; s.id = id; s.hidden = true; box.insertBefore(s, tabs || null); });
     var cl = $('closePortal'); if (cl) cl.style.setProperty('display', 'none', 'important');
-    $('ghBack').addEventListener('click', function () { if (sub) home(); else close(); });
+    // 2026-10-22 (propriétaire : deux flèches retour dans « Inviter mes amis » → « Voir plus ») : une seule flèche (celle du haut),
+    // qui remonte d'un niveau : liste complète des amis → Invite tes amis → Cadeaux → fermé.
+    $('ghBack').addEventListener('click', function () {
+      var af = $('affFull');
+      if (sub === 'aff' && af && !af.classList.contains('hidden') && $('affBack')) { $('affBack').click(); return; }
+      if (sub) home(); else close();
+    });
     // À chaque ouverture de Cadeaux : retour à l'accueil des tuiles + état de la roue relu.
     new MutationObserver(function () {
       var on = m.classList.contains('active');

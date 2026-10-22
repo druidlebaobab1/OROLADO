@@ -13558,3 +13558,6 @@ html body #toast#toast.toast.lux-msg.ok:not(.micro):not(.toast-bal):not(.tie) .l
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='12' fill='%23fff'/><path d='M7.2 12.4l3.2 3.2 6.4-6.8' fill='none' stroke='%23138A55' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/22px 22px no-repeat!important}
 html body #toast#toast.toast.lux-msg.err:not(.micro):not(.toast-bal):not(.tie) .lux-msg-ico{
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='12' fill='%23fff'/><path d='M12 6.8v6.4' stroke='%23B91C47' stroke-width='2.6' stroke-linecap='round'/><circle cx='12' cy='17' r='1.55' fill='%23B91C47'/></svg>") center/22px 22px no-repeat!important}
+
+/* 2026-10-22 (propriétaire) : « Inviter mes amis » → « Voir plus » : une seule flèche retour (celle du haut, #ghBack) ; la flèche intérieure est cachée. */
+html:root body #portalModal#portalModal.gh-sub #affBack{display:none!important}
