@@ -878,3 +878,5 @@ html:root body #casinoModal .sp2 .pz-shr span{min-width:0;font:700 15px/1.2 var(
 html:root body #casinoModal .sp2 .pz-shr em{flex:none;padding:3px 9px;border-radius:999px;background:rgba(167,139,250,.16);color:#DDD6FE;font:700 12.5px/1.2 var(--sp2-font);font-style:normal}
 html:root body #casinoModal .sp2 .pz-shr.on{background:#EDE9FE;color:#1E1440}
 html:root body #casinoModal .sp2 .pz-shr.on em{background:rgba(30,20,64,.12);color:#1E1440}
+/* 2026-10-22 : logo de la compétition (Ligue des champions, Europa…) à la place du drapeau absent */
+html:root body #casinoModal .sp2 img.pz-lglo{width:20px!important;height:20px!important;object-fit:contain;border-radius:5px;background:#fff;padding:1px;box-shadow:none}

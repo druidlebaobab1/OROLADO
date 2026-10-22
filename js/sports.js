@@ -1228,7 +1228,12 @@
   }
   // ---------- petits morceaux communs ----------
   var LOCK = '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-  function lgImg(l) { return l && l.f && /^https:\/\//.test(l.f) ? '<img class="pz-flag" src="' + esc(l.f) + '" alt="" width="18" height="13" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'">' : '<i class="pz-flag pz-noflag"></i>'; }
+  // drapeau du pays ; compétitions internationales (Ligue des champions, Europa…, pays « World » sans drapeau) : logo de la compétition
+  function lgImg(l) {
+    if (l && l.f && /^https:\/\//.test(l.f)) return '<img class="pz-flag" src="' + esc(l.f) + '" alt="" width="18" height="13" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'">';
+    if (l && l.lo && /^https:\/\//.test(l.lo)) return '<img class="pz-flag pz-lglo" src="' + esc(l.lo) + '" alt="" width="18" height="18" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'">';
+    return '<i class="pz-flag pz-noflag"></i>';
+  }
   function tlogo(u, cls) { return u && /^https:\/\//.test(u) ? '<img class="' + cls + '" src="' + esc(u) + '" alt="" loading="lazy" decoding="async" onerror="this.style.visibility=\'hidden\'">' : '<i class="' + cls + ' pz-nolo"></i>'; }
   function dur(u, v) { try { return new Intl.NumberFormat(loc(), { style: 'unit', unit: u, unitDisplay: 'short' }).format(v).replace(/\s/g, ' '); } catch (e) { return v + (u === 'hour' ? ' h' : ' min'); } }
   function clock(sec) { sec = Math.max(0, Math.floor(sec)); var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60, p = function (v) { return (v < 10 ? '0' : '') + v; }; return (h ? p(h) + ':' : '') + p(m) + ':' + p(s); }
