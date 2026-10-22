@@ -207,6 +207,50 @@ function push_app_ping(string $dev, string $plat): bool {
   return @file_put_contents($f, json_encode($row)) !== false;
 }
 
+/**
+ * 2026-10-22 (propriétaire) — joueurs qui utilisent l'APPLICATION installée : par joueur {first, last, plat, days, day}
+ * (au plus une fois par jour et par appareil, côté téléphone), + heures des ouvertures sans compte (anon). Fichier
+ * data/push/app_users.json, écrit sous verrou puis remplacé d'un coup (jamais à moitié écrit).
+ */
+function push_app_users_file(): string {
+  return push_dir() . '/app_users.json';
+}
+
+function push_app_users(): array {
+  $j = json_decode((string) @file_get_contents(push_app_users_file()), true);
+  $j = is_array($j) ? $j : [];
+  return ['users' => is_array($j['users'] ?? null) ? $j['users'] : [], 'anon' => is_array($j['anon'] ?? null) ? $j['anon'] : []];
+}
+
+function push_app_user_ping(string $uid, string $plat, ?int $now = null): bool {
+  if (!in_array($plat, ['android', 'ios', 'pc'], true) || strlen($uid) > 80 || ($uid !== '' && !preg_match('/^[A-Za-z0-9_.@:\-]+$/', $uid))) return false;
+  $now = $now ?? time();
+  $day = gmdate('Y-m-d', $now);
+  $f = push_app_users_file();
+  $lk = @fopen($f . '.lock', 'c');
+  if ($lk) @flock($lk, LOCK_EX);
+  try {
+    $d = push_app_users();
+    if ($uid === '') {
+      // heures des ouvertures sans compte (8 derniers jours) : l'admin les compte à SON heure (aujourd'hui / hier)
+      $d['anon'] = array_values(array_filter(array_map('intval', $d['anon']), static fn($t) => $t > $now - 8 * 86400));
+      $d['anon'][] = $now;
+      if (count($d['anon']) > 20000) $d['anon'] = array_slice($d['anon'], -20000);
+    } else {
+      $o = is_array($d['users'][$uid] ?? null) ? $d['users'][$uid] : [];
+      $d['users'][$uid] = [
+        'first' => (int) ($o['first'] ?? $now), 'last' => $now, 'plat' => $plat,
+        'days' => (int) ($o['days'] ?? 0) + ((string) ($o['day'] ?? '') === $day ? 0 : 1), 'day' => $day,
+      ];
+    }
+    $tmp = $f . '.tmp' . bin2hex(random_bytes(3));
+    if (@file_put_contents($tmp, json_encode($d, JSON_UNESCAPED_SLASHES)) === false) return false;
+    return @rename($tmp, $f);
+  } finally {
+    if ($lk) { @flock($lk, LOCK_UN); @fclose($lk); }
+  }
+}
+
 /** Chiffres pour l'admin. */
 function push_stats(): array {
   $s = ['subs' => 0, 'android' => 0, 'ios' => 0, 'pc' => 0, 'test' => 0, 'langs' => [],

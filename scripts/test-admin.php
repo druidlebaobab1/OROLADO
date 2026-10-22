@@ -155,6 +155,8 @@ if (in_array('--preview', $argv ?? [], true)) {
   $resp = ['badges' => ['ok' => true, 'badges' => admin_badges(), 'board' => admin_board_watch()], 'list' => [], 'profile' => [], 'wipe' => ['ok' => true, 'keep' => [['email' => 'admin@orolado.com', 'name' => 'Admin', 'ids' => ['admin_master'], 'real' => 0, 'admin' => true, 'pid' => 'ORO-ADMIN'], ['email' => 'vraijoueur@gmail.com', 'name' => 'Vrai', 'ids' => ['g1'], 'real' => 12, 'admin' => false, 'pid' => 'ORO-2']], 'delete' => [['email' => 'cc33@laoia.com', 'name' => 'Faux 1', 'ids' => ['f1'], 'real' => 900, 'admin' => false, 'pid' => 'ORO-3'], ['email' => 'x9@tempmail.xyz', 'name' => 'Faux 2', 'ids' => ['f2'], 'real' => 5000, 'admin' => false, 'pid' => 'ORO-4']]]];
   foreach ($ADMIN_TABS as $ts) foreach ($ts as $t) $resp['list'][$t[0]] = admin_list_payload($t[0], ['preset' => 'all', 'page' => 1]);
   foreach ([$p1, $p2, $p3, $p7] as $uid) $resp['profile'][$uid] = admin_profile_payload($uid);
+  push_app_user_ping($p1, 'ios', $now - 2 * 86400); push_app_user_ping($p2, 'android', $now - 600); push_app_user_ping('', 'ios', $now - 60);
+  $resp['app'] = ['ok' => true] + admin_app_users_payload();
   $logged = true;
   ob_start();
   $html = (static function () use ($tmp, $ADMIN_TABS) {
@@ -164,7 +166,7 @@ if (in_array('--preview', $argv ?? [], true)) {
   eval('?>' . $html);
   $page = ob_get_clean();
   $inject = '<script>window.fetch = async (u, o) => { const b = JSON.parse(o.body); const R = ' . json_encode($resp, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) . ';'
-    . ' let j = {ok:false, reason:"aperçu"}; if (b.action === "badges") j = R.badges; else if (b.action === "list") j = R.list[b.view] || j; else if (b.action === "profile") j = R.profile[b.userId] || j; else if (b.action === "wipe_plan") j = R.wipe;'
+    . ' let j = {ok:false, reason:"aperçu"}; if (b.action === "badges") j = R.badges; else if (b.action === "list") j = R.list[b.view] || j; else if (b.action === "profile") j = R.profile[b.userId] || j; else if (b.action === "wipe_plan") j = R.wipe; else if (b.action === "app_users") j = R.app;'
     . ' return { json: async () => j }; };</script>';
   $page = preg_replace('/<script>/', $inject . '<script>', $page, 1);
   $out = __DIR__ . '/../admin-apercu.html';
@@ -288,6 +290,27 @@ $b = admin_badges();
 foreach ($h as $r) if (($r['level'] ?? '') === 'error') echo '     [panne] ' . $r['service'] . ' : ' . $r['message'] . "
 ";
 check('compteur Santé en rouge (pannes comptées à part)', ($b['alerts_err'] ?? 0) >= 1 && $b['alerts'] >= $b['alerts_err'], $b['alerts_err'] . ' panne(s), ' . $b['alerts'] . ' au total');
+
+echo "6) Application installée (joueurs, nouveaux du jour, iPhone / Android, sans compte)\n";
+check('vide au départ', (admin_app_users_payload()['n']['total'] ?? -1) === 0);
+push_app_user_ping($p1, 'ios', $now - 3 * 86400);
+push_app_user_ping($p1, 'ios', $now - 3 * 86400 + 60); // même jour : pas un jour de plus
+push_app_user_ping($p1, 'ios', $now - 60);
+push_app_user_ping($p2, 'android', $now - 30);
+push_app_user_ping('ulocal9', 'android', $now - 10);
+push_app_user_ping('', 'ios', $now - 5);
+push_app_user_ping('', 'android', $now - 4);
+check('identifiant invalide refusé', !push_app_user_ping('a b<script>', 'ios') && !push_app_user_ping($p1, 'tv'));
+$ap = admin_app_users_payload();
+$an = $ap['n'];
+check('3 joueurs dans l’appli (2 Android, 1 iPhone)', $an['total'] === 3 && $an['ios'] === 1 && $an['android'] === 2, json_encode($an));
+check('nouveaux aujourd’hui = 2 (le 1er est venu il y a 3 jours)', $an['today'] === 2, (string) $an['today']);
+check('2 ouvertures sans compte aujourd’hui', $an['anonToday'] === 2, (string) $an['anonToday']);
+$r1 = null; foreach ($ap['list'] as $r) if ($r['id'] === $p1) $r1 = $r;
+check('joueur 1 : 2 jours, e-mail et heures', $r1 && $r1['days'] === 2 && $r1['email'] === 'joueur1@test.com' && preg_match('#^\d\d/\d\d/\d{4} \d\d:\d\d$#', $r1['first']), json_encode($r1));
+check('liste : plus récents d’abord', ($ap['list'][0]['id'] ?? '') === 'ulocal9' && ($ap['list'][2]['id'] ?? '') === $p1);
+check('compte du site : e-mail retrouvé', ($ap['list'][0]['email'] ?? '') === 'joueur9@test.com', json_encode($ap['list'][0] ?? []));
+check('fichier jamais à moitié écrit (aucun .tmp restant)', !glob(dirname(push_app_users_file()) . '/app_users.json.tmp*'));
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

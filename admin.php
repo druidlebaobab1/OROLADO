@@ -221,6 +221,43 @@ function admin_user_lookup(string $id, array $pmap): array {
   return ['id' => $id, 'publicId' => $id, 'email' => '', 'name' => '', 'phone' => ''];
 }
 
+/** 2026-10-22 (propriétaire) — « Application installée » : chiffres + joueurs (plus récents d'abord, heures de l'admin). */
+function admin_app_users_payload(): array {
+  $d = push_app_users();
+  $tz = admin_tz();
+  $today = (new DateTimeImmutable('now', $tz))->format('Y-m-d');
+  $fmt = static fn(int $t): string => $t > 0 ? (new DateTimeImmutable('@' . $t))->setTimezone($tz)->format('d/m/Y H:i') : '';
+  $pmap = $d['users'] ? admin_profile_map() : [];
+  $loc = $d['users'] ? (admin_local_db()['users'] ?? []) : []; // carte (parfois un objet « store ») : lue par clé
+  $rows = [];
+  $n = ['total' => 0, 'today' => 0, 'ios' => 0, 'android' => 0, 'pc' => 0];
+  foreach ($d['users'] as $uid => $r) {
+    if (!is_array($r)) continue;
+    $first = (int) ($r['first'] ?? 0); $pl = (string) ($r['plat'] ?? 'pc');
+    $n['total']++;
+    if (isset($n[$pl])) $n[$pl]++;
+    if ($first > 0 && (new DateTimeImmutable('@' . $first))->setTimezone($tz)->format('Y-m-d') === $today) $n['today']++;
+    $u = admin_user_lookup((string) $uid, $pmap);
+    if (($u['email'] ?? '') === '' && is_array($loc[$uid] ?? null)) { // compte du site (pas encore relié) : fiche locale
+      $lu = $loc[$uid];
+      $u = ((string) ($lu['sbId'] ?? '')) !== '' && isset($pmap[(string) $lu['sbId']]) ? $pmap[(string) $lu['sbId']] : ['publicId' => (string) ($lu['publicId'] ?? $uid), 'email' => (string) ($lu['email'] ?? '')];
+    }
+    $rows[] = ['id' => (string) $uid, 'publicId' => (string) ($u['publicId'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'plat' => $pl,
+      'first' => $fmt($first), 'last' => $fmt((int) ($r['last'] ?? 0)), 'days' => (int) ($r['days'] ?? 0), '_t' => $first];
+  }
+  usort($rows, static fn($a, $b) => $b['_t'] <=> $a['_t']);
+  foreach ($rows as &$rw) unset($rw['_t']);
+  unset($rw);
+  // ouvertures sans compte (appareils, une par jour) : aujourd'hui et hier à l'heure de l'admin
+  $yday = (new DateTimeImmutable('now', $tz))->modify('-1 day')->format('Y-m-d');
+  $n['anonToday'] = 0; $n['anonYesterday'] = 0;
+  foreach ($d['anon'] as $t) {
+    $dd = (new DateTimeImmutable('@' . (int) $t))->setTimezone($tz)->format('Y-m-d');
+    if ($dd === $today) $n['anonToday']++; elseif ($dd === $yday) $n['anonYesterday']++;
+  }
+  return ['n' => $n, 'list' => array_slice($rows, 0, 500)];
+}
+
 function admin_is_uuid(string $id): bool {
   $id = strtolower(trim($id));
   return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $id);
@@ -2395,6 +2432,8 @@ if ($isAjax) {
     $v = push_vapid();
     admin_json(['ok' => true, 'stats' => push_stats(), 'journal' => push_log_list(), 'key' => (string) ($v['pub'] ?? '')]);
   }
+  // 2026-10-22 (propriétaire) — « Application installée » : joueurs qui ouvrent l'appli installée (heures de l'admin)
+  if ($action === 'app_users') admin_json(['ok' => true] + admin_app_users_payload());
   // v2959 — alertes Telegram (retraits) : code du robot + liaison du compte Telegram de l'admin
   if ($action === 'tg_status' || $action === 'tg_link' || $action === 'tg_test' || $action === 'tg_off') {
     require_once __DIR__ . '/tg_lib.php';
@@ -2533,6 +2572,11 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     :root{--gold:#F59E0B;--muted:#94A3B8;--bg:#0A0F1D;--card:#121A2B;--line:rgba(255,255,255,.08);--text:#E8EEF9;--red:#F43F5E;--green:#34D399}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,system-ui,sans-serif;background:linear-gradient(165deg,#0A0F1D,#121A2B);color:var(--text);min-height:100vh}
     .online-bar{padding:10px 16px 2px}
+    .app-bar{padding:8px 16px 2px}
+    .app-box{border-radius:14px;border:1px solid rgba(96,165,250,.55);background:rgba(59,130,246,.1);color:#BFDBFE;padding:10px 14px;max-width:100%}
+    .app-box summary{cursor:pointer;line-height:1.6;overflow-wrap:anywhere}
+    .app-box summary b{color:#fff}
+    .app-box table{margin-top:8px}
     .online-box{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;padding:14px 18px;min-height:64px;border-radius:14px;border:1px solid rgba(34,197,94,.55);background:rgba(34,197,94,.12);color:#4ADE80;vertical-align:middle;max-width:100%}
     .online-box b{font-size:clamp(1.6rem,6vw,2.4rem);line-height:1;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
     .online-box small{font-size:.8rem;color:#86EFAC;text-transform:uppercase;letter-spacing:.04em}
@@ -2718,6 +2762,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     </div>
   </header>
   <div class="online-bar"><div class="online-box" title="Personnes sur le site en ce moment (inscrites ou non, hors appareil admin)"><i class="dot"></i><b id="onlineNow">…</b><small>personnes connectées en direct sur le site</small></div></div>
+  <div class="app-bar"><details class="app-box" id="appInst"><summary>📲 Application installée : <b id="appInstN">…</b> joueur(s) · nouveaux aujourd’hui <b id="appInstToday">…</b> · iPhone <b id="appInstIos">…</b> · Android <b id="appInstAnd">…</b> · sans compte aujourd’hui <b id="appInstAnon">…</b></summary><div id="appInstList" class="table-wrap"></div></details></div>
   <div class="wrap">
     <div class="sec">A · Inscriptions &amp; suivi pubs</div>
     <div class="metrics" id="gA"><?php foreach ($ADMIN_TABS['gA'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
@@ -3292,6 +3337,22 @@ async function loadOnline() {
   } catch (e) { /* ignore */ }
 }
 if (document.getElementById('onlineNow')) { loadOnline(); setInterval(loadOnline, 10000); }
+// 2026-10-22 (propriétaire) — « Application installée » : chiffres + liste (plus récents d'abord, heure de l'admin)
+async function loadAppInst() {
+  try {
+    const j = await ajax({action:'app_users'});
+    if (!j || !j.ok) return;
+    const n = j.n || {}, set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v | 0); };
+    set('appInstN', n.total); set('appInstToday', n.today); set('appInstIos', n.ios); set('appInstAnd', n.android); set('appInstAnon', n.anonToday);
+    const pl = p => p === 'ios' ? 'iPhone' : (p === 'android' ? 'Android' : 'Ordinateur');
+    const L = j.list || [];
+    document.getElementById('appInstList').innerHTML = !L.length ? '<p class="muted">Aucun joueur pour l’instant.</p>' :
+      '<table><thead><tr><th>ID</th><th>E-mail</th><th>Téléphone</th><th>1re ouverture (appli)</th><th>Dernière ouverture</th><th>Jours</th></tr></thead><tbody>' +
+      L.map(r => '<tr><td>' + esc(r.publicId || r.id) + '</td><td>' + esc(r.email || '—') + '</td><td>' + pl(r.plat) + '</td><td>' + esc(r.first) + '</td><td>' + esc(r.last) + '</td><td>' + (r.days | 0) + '</td></tr>').join('') +
+      '</tbody></table>' + '<p class="muted">Sans compte (appareils) : aujourd’hui ' + (n.anonToday | 0) + ' · hier ' + (n.anonYesterday | 0) + '</p>';
+  } catch (e) { /* ignore */ }
+}
+if (document.getElementById('appInst')) { loadAppInst(); setInterval(loadAppInst, 120000); }
 async function loadBadges() {
   const j = await ajax({action:'badges'});
   if (!j.ok) return;
