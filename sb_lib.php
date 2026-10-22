@@ -1435,6 +1435,11 @@ function sb_live_store_fixtures(array $j, int $now): int {
     foreach ($fx as $id => $row) {
       $old = (array) ($s['fx'][$id] ?? []);
       $fx[$id]['mt'] = isset($old['m'], $old['mt']) && $old['m'] === ($row['m'] ?? null) ? (int) $old['mt'] : $now; // quand NOUS avons vu cette minute pour la 1re fois
+      // « 0:00 » estimé depuis la minute de l'API (vue ~30 s après son vrai début) ; gardé tant qu'il reste cohérent (horloge fluide)
+      if (is_numeric($row['m'] ?? null) && in_array((string) ($row['st'] ?? ''), ['1H', '2H', 'ET'], true)) {
+        $cand = $now - (int) $row['m'] * 60 - 30; $oz = isset($old['zf']) ? (int) $old['zf'] : null;
+        $fx[$id]['zf'] = $oz !== null && ($old['st'] ?? '') === $row['st'] && abs($cand - $oz) <= 45 ? $oz : $cand;
+      }
       if (!empty($old['p2o'])) $fx[$id]['p2o'] = (int) $old['p2o'];
       elseif (($row['st'] ?? '') === '2H' && in_array($old['st'] ?? '', ['HT', '1H'], true)) $fx[$id]['p2o'] = $now - 5;
     }
@@ -1802,6 +1807,7 @@ function sb_live_clock(string $st, array $r, int $now, ?array $od = null): ?int 
     $k = (int) $od['sec'] + max(0, $now - (int) $od['sat']);
     if ($m === null || ($k >= ($m - 1) * 60 && $k < ($m + 3) * 60)) return $k;
   }
+  if ($m !== null && isset($r['zf']) && is_numeric($r['zf'])) { $k = $now - (int) $r['zf']; if ($k >= ($m - 1) * 60 && $k < ($m + 2) * 60) return $k; }
   if ($m !== null && (int) ($r['mt'] ?? 0) > 0) return $m * 60 + min(119, max(0, $now - (int) $r['mt']));
   return null;
 }
