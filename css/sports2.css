@@ -574,3 +574,11 @@ html:root body #casinoModal .sp2 .sb-bsm{opacity:.85}
 @media (max-width:360px){html:root body #casinoModal .sp2 .sb-row,html:root body #casinoModal .sp2 .sb-cols{grid-template-columns:36px minmax(0,1fr) repeat(3,42px) 26px;gap:3px;padding:0 4px 0 6px}html:root body #casinoModal .sp2 .sb-ob{font-size:13px}}
 @media (min-width:640px){html:root body #casinoModal .sp2 .sb-row,html:root body #casinoModal .sp2 .sb-cols{grid-template-columns:48px minmax(0,1fr) repeat(3,minmax(64px,84px)) 44px;gap:6px;padding:0 10px 0 12px}
   html:root body #casinoModal .sp2 .sb-tms span{font-size:14px}html:root body #casinoModal .sp2 .sb-ob{font-size:15px}html:root body #casinoModal .sp2 .sb-oo.c1{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}html:root body #casinoModal .sp2 .sb-oo.c2{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}html:root body #casinoModal .sp2 .sb-oo.c3{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+/* 2026-10-22 (propriétaire) : lettres du bas (g, p, y) jamais coupées ; code du coupon sur une seule ligne discrète */
+html:root body #casinoModal .sp2 .fit{padding-bottom:.14em;margin-bottom:-.14em}
+html:root body #casinoModal .sp2 .sb-cp1{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);font:700 13px/1.2 var(--sp2-font);color:#C4B5FD}
+html:root body #casinoModal .sp2 .sb-cp1 > span{flex:0 1 auto;min-width:0}
+html:root body #casinoModal .sp2 .sb-cp1 > b{flex:none;color:var(--sp2-gold);font:900 16px/1 var(--sp2-font);letter-spacing:.12em}
+html:root body #casinoModal .sp2 .sb-cp1 > button{flex:none;height:32px;padding:0 12px;border:0;border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font:800 12.5px/1 var(--sp2-font)}
+html:root body #casinoModal .sp2 .sb-cp1 > #sbCopy{margin-left:auto;min-width:0;flex:0 1 auto}
+html:root body #casinoModal .sp2 .sb-cp1 > #sbCodeX{width:32px;padding:0;color:#A1A1AA}
