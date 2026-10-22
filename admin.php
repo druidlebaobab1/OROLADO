@@ -2986,6 +2986,9 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
           <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0">
             <label><input type="checkbox" id="sbPub"> Public (sinon : admin seul)</label>
             <label><input type="checkbox" id="sbAuto"> Résultats automatiques</label>
+            <label><input type="checkbox" id="sbLive"> Direct</label>
+            <label><input type="checkbox" id="sbLivePub"> Direct pour tous</label>
+            <label>Direct : plus de pari dès la <input id="sbliveLastMin" class="nt-in" type="number" min="45" max="90" inputmode="numeric" style="width:56px">e minute</label>
           </div>
           <p class="muted" style="margin:6px 0 2px">Marges (%) : principaux · autres · exotiques · direct · autres sports</p>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
@@ -4126,13 +4129,13 @@ setInterval(() => {
   // 2026-10-22 : PARIS AUTOMATIQUES (API-Football) — réglages, budget, import, diagnostic, résultats à vérifier
   (function () {
     const card = $c('sbCard'); if (!card) return;
-    const F = ['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'alertStake', 'alertPot', 'alertWin'];
+    const F = ['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'alertStake', 'alertPot', 'alertWin', 'liveLastMin'];
     const t = s => s ? new Date(s * 1000).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
     const sc = p => Array.isArray(p) ? p[0] + '-' + p[1] : '?';
     const paint = j => {
       if (!j || !j.ok) { $c('sbSt').textContent = (j && j.reason) || 'Erreur'; return; }
       const c = j.config || {};
-      $c('sbPub').checked = !!c.public; $c('sbAuto').checked = !!c.autosettle;
+      $c('sbPub').checked = !!c.public; $c('sbAuto').checked = !!c.autosettle; $c('sbLive').checked = !!c.live; $c('sbLivePub').checked = !!c.livePublic;
       F.forEach(k => { const el = $c('sb' + k); if (el && document.activeElement !== el) el.value = c[k]; });
       const b = j.budget || {};
       $c('sbSt').innerHTML = (j.key ? '' : '⚠️ Aucune clé. ') + 'Budget du jour : <b>' + b.used + ' / ' + b.cap + '</b> · Dernier import : ' + t(j.lastImport) +
@@ -4159,7 +4162,7 @@ setInterval(() => {
     };
     ajax({action:'sb_status'}).then(paint).catch(() => {});
     $c('sbSave').onclick = async () => {
-      const cfg = {public: $c('sbPub').checked, autosettle: $c('sbAuto').checked};
+      const cfg = {public: $c('sbPub').checked, autosettle: $c('sbAuto').checked, live: $c('sbLive').checked, livePublic: $c('sbLivePub').checked};
       F.forEach(k => { const v = parseFloat(String($c('sb' + k).value).replace(',', '.')); if (!isNaN(v)) cfg[k] = v; });
       if (cfg.public && !confirm('Rendre les paris automatiques visibles par TOUS les joueurs ?')) return;
       $c('sbSave').disabled = true; const r = await ajax({action:'sb_cfg', cfg}).catch(() => ({ok:false, reason:'Réseau'})); $c('sbSave').disabled = false;
@@ -4178,7 +4181,9 @@ setInterval(() => {
       const s = r.status, u = Object.entries(r.unk || {});
       $c('sbDiag').innerHTML = (s ? 'API : plan <b>' + esc(s.plan) + '</b>' + (s.active ? '' : ' (inactif !)') + ' · fin ' + esc(s.end) + ' · lectures ' + s.cur + ' / ' + s.max : 'API injoignable') +
         (r.err ? '<br>Dernière erreur (' + t(r.errAt) + ') : ' + esc(r.err) : '') +
-        '<br>Paris non reconnus (' + u.length + ') :' + (u.length ? '<br>' + u.slice(0, 40).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun');
+        '<br>Paris non reconnus (' + u.length + ') :' + (u.length ? '<br>' + u.slice(0, 40).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun') +
+        (r.live ? '<br>Direct : ' + (r.live.on ? 'allumé' : 'éteint') + (r.live.wanted ? ' · regardé' : '') + ' · ' + r.live.fx + ' match(s) · cotes ' + r.live.od + ' · lu ' + t(r.live.at) : '') +
+        ((ul => '<br>Direct, paris non reconnus (' + ul.length + ') :' + (ul.length ? '<br>' + ul.slice(0, 30).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun'))(Object.entries(r.unkLive || {})));
     };
   })();
   // 2026-10-21 (propriétaire) : RÉSULTATS PROPOSÉS — lecture des scores (serveur, lecture seule) ; « Valider » = action EXISTANTE sp_settle

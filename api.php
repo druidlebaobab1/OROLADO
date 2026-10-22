@@ -299,6 +299,7 @@ $OROLADO_RATE_RULES = [
   'spMine'            => [['t', 30, 60]],
   'sbList'            => [['i', 240, 60]],
   'sbMatch'           => [['i', 240, 60]],
+  'sbLive'            => [['i', 240, 60]],
   'sbCodeSave'        => [['t', 30, 600], ['i', 400, 600]],
   'sbCodeLoad'        => [['i', 240, 60]],
   'xferSend'          => [['t', 10, 600]],
@@ -428,11 +429,13 @@ if ($action === 'affClick') {
 // v2690 — PARIS SPORTIFS manuels (sports_lib.php) : liste publique, coupon (connecté), mes paris.
 // 2026-10-22 — PARIS AUTOMATIQUES (sb_lib.php, étape 1 : football avant-match) : lecture des fichiers locaux SEULEMENT ;
 // les lectures de l'API se font APRÈS la réponse (sb_after_response). Admin seul tant que « Public » est éteint.
-if ($action === 'sbList' || $action === 'sbMatch') {
+// 2026-10-22 (étape 3) — sbLive : matchs EN DIRECT (fichier live.json ; lectures /odds/live et /fixtures?live=all APRÈS la réponse,
+// seulement s'il y a de la demande).
+if ($action === 'sbList' || $action === 'sbMatch' || $action === 'sbLive') {
   if (!function_exists('sb_list')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
   $me = $token !== '' ? session_user($db, $token) : null;
   try {
-    $res = $action === 'sbList' ? sb_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0)) : sb_match($me ?: null, (string) ($req['id'] ?? ''));
+    $res = $action === 'sbList' ? sb_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0)) : ($action === 'sbLive' ? sb_live_list($me ?: null) : sb_match($me ?: null, (string) ($req['id'] ?? '')));
   } catch (Throwable $eSb) {
     error_log('OROLADO sb ' . $eSb->getMessage());
     $res = ['ok' => false, 'reason' => 'busy'];

@@ -907,6 +907,7 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
       $o = $p['sel'];
       if (is_array($s) && isset($s['odd']) && is_numeric($s['odd']) && $acc !== 'any' && ($acc === 'up' ? (float) $o['odd'] < round((float) $s['odd'], 2) - 0.004 : abs(round((float) $s['odd'], 2) - (float) $o['odd']) > 0.004)) $chg[] = ['ev' => $eid, 'k' => $k, 'odd' => (float) $o['odd']];
       $picked[] = $o; $odd *= (float) $o['odd']; $sbN = ($sbN ?? 0) + 1;
+      if (!empty($p['live'])) $sbLive = true; // 2026-10-22 (étape 3) : choix EN DIRECT → attente de 5 s + relecture plus bas
       continue;
     }
     $e = $ev[$eid] ?? null;
@@ -926,11 +927,18 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
     $odd *= (float) $o['odd'];
   }
   if ($chg) return ['ok' => false, 'reason' => 'odds', 'odds' => $chg];
+  // 2026-10-22 (étape 3) — PARIS EN DIRECT : ATTENTE de 5 s, relecture forcée des cotes du direct ; but / suspendu → refus
+  // « susp », cote changée → règle $acc. Rien n'est pris avant (l'argent n'est retiré qu'après ce contrôle).
+  if (!empty($sbLive) && function_exists('sb_live_accept')) {
+    $lr = sb_live_accept($picked, $acc, $user, $now);
+    if ($lr !== null) return $lr;
+    $odd = 1.0; foreach ($picked as $pp) $odd *= (float) $pp['odd'];
+  }
   $odd = floor($odd * 100 + 1e-6) / 100; // v2765 : 2,30 reste 2,30 (avant : 2,29 à cause de l arrondi)
   // v2779 (propriétaire) : pas de mise maximale ; seul le GAIN d'un coupon est plafonné (6 000 $)
   if ($mode === 'real' && $stake * $odd > SP_MAX_WIN + 1e-9) return ['ok' => false, 'reason' => 'maxWin', 'maxStake' => floor(SP_MAX_WIN / $odd * 100) / 100];
   $ref = 'sp_' . bin2hex(random_bytes(9));
-  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => sp_floor2(min(SP_MAX_WIN, $stake * $odd)), 'sel' => $picked, 'status' => 'open', 'at' => $now];
+  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => sp_floor2(min(SP_MAX_WIN, $stake * $odd)), 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []);
   /* 2026-10-21 (propriétaire) — ORDRE SÛR pour TOUS les paris (avant : seulement les questions avec plafond) : 1) le coupon est
      ÉCRIT d'abord (état « pend » : jamais montré, jamais réglé) sous le verrou des paris, avec le plafond de mises par choix
      vérifié au même moment ; 2) la mise est retirée (casino_debit, une seule fois par référence) ; 3) le coupon passe « open ».
@@ -980,7 +988,8 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
 function sp_bet_public(array $b): array {
   return ['id' => $b['id'], 'mode' => $b['mode'], 'stake' => (float) $b['stake'], 'odd' => (float) $b['odd'], 'pot' => (float) $b['pot'], 'status' => $b['status'], 'win' => (float) ($b['win'] ?? 0), 'at' => (int) $b['at'], 'done' => (int) ($b['done'] ?? 0),
     'sel' => array_map(static fn($s) => ['t' => $s['t'], 'l' => $s['l'], 'odd' => (float) $s['odd'], 'r' => $s['r'] ?? null]
-      + (isset($s['mk']) ? ['mk' => (string) $s['mk'], 'k' => (string) $s['k'], 'sp' => (string) ($s['sp'] ?? ''), 'fx' => (string) ($s['fx'] ?? '')] : []), $b['sel'])]; // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
+      + (isset($s['mk']) ? ['mk' => (string) $s['mk'], 'k' => (string) $s['k'], 'sp' => (string) ($s['sp'] ?? ''), 'fx' => (string) ($s['fx'] ?? '')] : [])
+      + (!empty($s['lv']) ? ['lv' => 1, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] : []), $b['sel'])] + (!empty($b['live']) ? ['live' => 1] : []); // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
 }
 function sp_my_bets(string $uid): array {
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
