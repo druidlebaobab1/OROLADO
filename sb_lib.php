@@ -1546,7 +1546,12 @@ function sb_live_store_odds(array $j, int $now): int {
       // à l'autre) → match verrouillé 30 s (« saut »). Même chose quand le flux bascule en « bloqué ».
       $jmp = (int) ($old[$id]['jmp'] ?? 0);
       $pa = sb_live_p1x2((array) ($old[$id]['r1'] ?? [])); $pb = sb_live_p1x2((array) ($o['r1'] ?? [])); // cotes BRUTES du fournisseur
-      if ($pa && $pb) foreach ($pb as $k => $p) if (isset($pa[$k]) && abs($p - $pa[$k]) >= 0.04) { $jmp = $now; break; }
+      $jsd = (string) ($old[$id]['jsd'] ?? '');
+      if ($pa && $pb) foreach ($pb as $k => $p) if (isset($pa[$k]) && abs($p - $pa[$k]) >= 0.04) {
+        $jmp = $now; $dh = ($pb['H'] ?? 0) - ($pa['H'] ?? 0); $da = ($pb['A'] ?? 0) - ($pa['A'] ?? 0);
+        $jsd = $dh >= $da ? 'h' : 'a'; break; // l'équipe dont la chance monte = celle qui attaque (vraie donnée du bookmaker)
+      }
+      if ($jsd !== '') $od[$id]['jsd'] = $jsd;
       if (!empty($o['blk']) && empty($old[$id]['blk'])) $jmp = $now;
       if ($od[$id]['chg']) $jmp = $now; // score changé : 90 s de cadenas
       // horloge : « 0:00 » du fournisseur lissé (petits écarts ignorés, jamais de saut quand « seconds » manque)
@@ -1777,8 +1782,7 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
     if (($ty === 'goal' || ($ty === 'card' && ($e['detail'] ?? '') === 'red')) && $et >= $m - 1) { $hot = true; break; }
   }
   // cotes de ce match en retard de plus de 90 s sur les autres matchs du flux (fournisseur figé pour ce match) → cadenas
-  $lgP = (int) (sb_lg_row(['id' => (int) ($row['lg'] ?? 0)])['p'] ?? 100); // petits championnats : flux souvent plus lent → plus strict
-  $odStale = is_array($od) && (int) ($od['lag'] ?? 0) > ($lgP >= 100 ? 30 : 45);
+  $odStale = is_array($od) && (int) ($od['lag'] ?? 0) > 180; // (un match calme n'a pas de raison de changer de cote : seulement un flux vraiment figé)
   $jumped = is_array($od) && (int) ($od['jmp'] ?? 0) > $now - SB_LIVE_JUMP_LOCK;
   $susp = !$fresh || $odStale || $jumped || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
     || !in_array($st, ['1H', 'HT', '2H'], true); // prolongation / tirs au but : plus de pari (règlement sur les 90 min)
@@ -1819,7 +1823,7 @@ function sb_live_fx_public(string $id, array $v): array {
   return ['id' => 'foot:' . $id, 'lg' => (int) ($r['lg'] ?? 0), 'ts' => (int) ($r['ts'] ?? 0), 'st' => $v['st'], 'm' => $v['m'],
     'h' => ['n' => (string) ($r['h'][1] ?? ''), 'lo' => (string) ($r['h'][2] ?? '')], 'a' => ['n' => (string) ($r['a'][1] ?? ''), 'lo' => (string) ($r['a'][2] ?? '')],
     'sc' => $v['sc'], 'o' => $o, 'n' => count($mk), 'live' => 1, 'susp' => $s1 ? 1 : 0, 'rc' => (array) ($r['rc'] ?? [0, 0]), 'end' => !empty($r['end']) ? 1 : 0,
-    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'k' => ($kk = sb_live_clock($v['st'], $r, sb_now(), is_array($v['od']) ? $v['od'] : null)), 'kz' => $kk !== null ? sb_now() - $kk : null, 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
+    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'dg' => is_array($v['od']) && (int) ($v['od']['jmp'] ?? 0) > sb_now() - 20 ? (string) ($v['od']['jsd'] ?? '') : '', 'k' => ($kk = sb_live_clock($v['st'], $r, sb_now(), is_array($v['od']) ? $v['od'] : null)), 'kz' => $kk !== null ? sb_now() - $kk : null, 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
 }
 /** Nombre de matchs du direct (onglet « Direct ») — aucun appel ; -1 = pas d'onglet Direct pour ce joueur. */
 function sb_live_count(?array $user, int $now): int {
