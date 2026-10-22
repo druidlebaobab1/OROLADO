@@ -810,7 +810,7 @@ check('budget prévu par jour ≤ 79 < 90 (plafond dur)', 8 + 4 + 2 + 8 + SB_O_O
 
 // horloge du direct depuis le vrai début de la mi-temps (fixture.periods)
 check('horloge : 1re mi-temps à la seconde (12:34)', sb_live_clock('1H', ['p1' => 1000, 'm' => 12], 1000 + 754) === 754);
-check('horloge : 2e mi-temps = 45:00 + temps depuis la reprise', sb_live_clock('2H', ['p1' => 1000, 'p2' => 5000, 'm' => 64], 5000 + 19 * 60 + 7) === 2700 + 19 * 60 + 7);
+check('horloge : 2e mi-temps = 45:00 + temps depuis la reprise', sb_live_clock('2H', ['p1' => 1000, 'p2' => 5000, 'm' => 64], 5000 + 19 * 60 + 7) === 2700 + 19 * 60 + 7 && sb_live_clock('2H', ['p2' => 5000, 'm' => 60], 5000 + 19 * 60) === 61 * 60 + 59);
 check('horloge : sans début connu ou incohérente → rien (ancienne horloge)', sb_live_clock('2H', ['p2' => 0, 'm' => 64], 9000) === null && sb_live_clock('1H', ['p1' => 1000, 'm' => 40], 1000 + 60) === null && sb_live_clock('HT', ['p1' => 1000, 'm' => 45], 5000) === null);
 
 // moments chauds : vidéo (VAR) récente → cadenas
