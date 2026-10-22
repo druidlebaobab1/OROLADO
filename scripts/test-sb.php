@@ -820,6 +820,9 @@ check('VAR à la 63e, minute 64 : cadenas', sb_live_view('77', $Lh, $NOW, sb_con
 $Lh['fx']['77']['ev'][0]['t'] = 55;
 check('VAR à la 55e, minute 64 : plus de cadenas', sb_live_view('77', $Lh, $NOW, sb_config())['susp'] === false, json_encode(sb_live_view('77', $Lh, $NOW, sb_config())['susp']));
 
+check('horloge : sans periods, 1re mi-temps depuis le coup d\'envoi prévu', sb_live_clock('1H', ['ts' => 1000, 'm' => 10], 1000 + 650) === 650);
+check('horloge : sans periods.second, reprise vue par nous (p2o)', sb_live_clock('2H', ['ts' => 1000, 'p2o' => 9000, 'm' => 50], 9000 + 300) === 2700 + 300);
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);
