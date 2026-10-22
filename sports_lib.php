@@ -118,7 +118,8 @@ function sp_public_events(int $now = 0): array {
     $close = sp_close_at($e); // v2810 : question de prix fermée 72 h après ses cotes
     if (!empty($e['hold']) && $e['status'] !== 'settled') continue; // 2026-10-21 : en attente de vraies cotes du marché → caché, aucun pari
     $open = $e['status'] === 'open' && $now < $close;
-    if (!$open && !($e['status'] === 'settled' && (int) ($e['settledAt'] ?? 0) > $now - 3 * 86400)) continue;
+    // 2026-10-22 (propriétaire) : un match fini disparaît de la liste (plus de « Résultats » affichés 3 jours) ; « Mes paris » garde l'historique
+    if (!$open) continue;
     $out[] = ['id' => $e['id'], 'title' => $e['title'], 'league' => $e['league'], 'sport' => $e['sport'], 'start' => $close, 'open' => $open, 'q' => sp_is_question($e), 'grp' => sp_corr_groups($e),
       'opts' => array_map(static fn($o) => ['k' => $o['k'], 'label' => $o['label'], 'odd' => (float) $o['odd']], $e['opts']), 'result' => $e['result'] ?? null, 'status' => $e['status'], 'logos' => array_values(array_map('strval', (array) ($e['logos'] ?? []))), 'i18n' => !empty($e['i18n']) ? (object) $e['i18n'] : null];
   }
