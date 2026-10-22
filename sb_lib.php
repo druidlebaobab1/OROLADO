@@ -1759,7 +1759,7 @@ function sb_live_clock(string $st, array $r, int $now): ?int {
   if (is_numeric($m) && abs(intdiv($k, 60) - (int) $m) > 5) return null; // incohérent avec la minute de l'API : on ne s'en sert pas
   return $k;
 }
-/** Forme commune (spec : fx) d'un match en direct. */
+/** Forme commune (spec : fx) d'un match en direct. kz = heure (s) du « 0:00 » de l'horloge : le téléphone compte seul, sans jamais revenir en arrière. */
 function sb_live_fx_public(string $id, array $v): array {
   $r = $v['row']; $mk = $v['mk'];
   $o = isset($mk['1x2']) ? ['mk' => '1x2', 'o' => array_map(static fn($z) => [$z[0], $z[1]], $mk['1x2'])] : null;
@@ -1767,7 +1767,7 @@ function sb_live_fx_public(string $id, array $v): array {
   return ['id' => 'foot:' . $id, 'lg' => (int) ($r['lg'] ?? 0), 'ts' => (int) ($r['ts'] ?? 0), 'st' => $v['st'], 'm' => $v['m'],
     'h' => ['n' => (string) ($r['h'][1] ?? ''), 'lo' => (string) ($r['h'][2] ?? '')], 'a' => ['n' => (string) ($r['a'][1] ?? ''), 'lo' => (string) ($r['a'][2] ?? '')],
     'sc' => $v['sc'], 'o' => $o, 'n' => count($mk), 'live' => 1, 'susp' => $s1 ? 1 : 0, 'rc' => (array) ($r['rc'] ?? [0, 0]), 'end' => !empty($r['end']) ? 1 : 0,
-    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'k' => sb_live_clock($v['st'], $r, sb_now()), 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
+    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'k' => ($kk = sb_live_clock($v['st'], $r, sb_now())), 'kz' => $kk !== null ? sb_now() - $kk : null, 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
 }
 /** Nombre de matchs du direct (onglet « Direct ») — aucun appel ; -1 = pas d'onglet Direct pour ce joueur. */
 function sb_live_count(?array $user, int $now): int {
