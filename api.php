@@ -437,7 +437,7 @@ if ($action === 'sbList' || $action === 'sbMatch' || $action === 'sbLive' || $ac
   $me = $token !== '' ? session_user($db, $token) : null;
   try {
     if ($action === 'sbResults') $res = sb_results_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0), 0, isset($req['date']) ? (string) $req['date'] : null); else // 2026-10-22 : résultats (fichiers locaux)
-    $res = $action === 'sbList' ? sb_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0)) : ($action === 'sbLive' ? sb_live_list($me ?: null) : sb_match($me ?: null, (string) ($req['id'] ?? '')));
+    $res = $action === 'sbList' ? sb_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0), 0, !empty($req['cnt'])) : ($action === 'sbLive' ? sb_live_list($me ?: null) : sb_match($me ?: null, (string) ($req['id'] ?? '')));
   } catch (Throwable $eSb) {
     error_log('OROLADO sb ' . $eSb->getMessage());
     $res = ['ok' => false, 'reason' => 'busy'];

@@ -592,7 +592,9 @@ function sb_import_fixture_odds(int $id, int $now): bool {
   return true;
 }
 /** J-1 … J+2 (UTC). */
-function sb_days(int $now): array { return [gmdate('Y-m-d', $now - 86400), gmdate('Y-m-d', $now), gmdate('Y-m-d', $now + 86400), gmdate('Y-m-d', $now + 172800)]; }
+// 2026-10-22 (propriétaire) : avant-match jusqu'à J+7 → J-1, J, J+1 … J+7 (UTC)
+const SB_DAYS_AHEAD = 7;
+function sb_days(int $now): array { $o = []; for ($i = -1; $i <= SB_DAYS_AHEAD; $i++) $o[] = gmdate('Y-m-d', $now + $i * 86400); return $o; }
 
 /* ------------------------------------------------------------- tâche de fond ---------------------------------------- */
 
@@ -602,10 +604,10 @@ function sb_days(int $now): array { return [gmdate('Y-m-d', $now - 86400), gmdat
  */
 function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
   $calls = 0; $log = [];
-  [$dm1, $d0, $d1, $d2] = sb_days($now);
+  $D = sb_days($now); [$dm1, $d0, $d1, $d2] = $D; $far = array_slice($D, 4); // J+3 … J+7
   $st = sb_state();
-  $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800];
-  foreach ([$d0, $dm1, $d1, $d2] as $day) {
+  $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($far, 21600); // J+3…J+7 : toutes les 6 h
+  foreach (array_merge([$d0, $dm1, $d1, $d2], $far) as $day) {
     if ($calls >= $max) break;
     $idx = sb_day($day);
     $age = $now - (int) ($idx['at'] ?? 0);
@@ -614,9 +616,9 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
     $calls++;
     $log[] = 'fx ' . $day . (sb_import_fixtures($day, $now) ? '' : ' ✗');
   }
-  $oddsEvery = [$d0 => 7200, $d1 => 10800, $d2 => 10800];
+  $oddsEvery = [$d0 => 7200, $d1 => 10800, $d2 => 10800] + array_fill_keys($far, 43200); // J+3…J+7 : cotes toutes les 12 h
   $pages = 0;
-  foreach ([$d0, $d1, $d2] as $day) {
+  foreach (array_merge([$d0, $d1, $d2], $far) as $day) {
     if ($calls >= $max || $pages >= SB_ODDS_PAGES_RUN) break;
     if (!is_file(sb_dir() . DIRECTORY_SEPARATOR . sb_day_file($day))) continue;
     $c = (array) ($st['od'][$day] ?? []);
@@ -889,15 +891,17 @@ function sb_fx_public(string $id, array $r): array {
     'sc' => $r['g'] ?? null, 'o' => !empty($r['o']) ? ['mk' => '1x2', 'o' => $r['o']] : null, 'n' => (int) ($r['n'] ?? 0), 'live' => 0, 'susp' => 0];
 }
 function sb_bettable_row(array $r, int $now): bool {
-  return in_array((string) ($r['st'] ?? ''), ['NS', 'TBD'], true) && (int) ($r['ts'] ?? 0) > $now && (int) ($r['n'] ?? 0) > 0 && (int) ($r['oat'] ?? 0) > $now - SB_ODDS_MAX_AGE;
+  return in_array((string) ($r['st'] ?? ''), ['NS', 'TBD'], true) && (int) ($r['ts'] ?? 0) > $now && (int) ($r['n'] ?? 0) > 0 && (int) ($r['oat'] ?? 0) > $now - sb_odds_max_age((int) ($r['ts'] ?? 0), $now);
 }
+/** Âge maximal des cotes : 8 h ; match à plus de 60 h (J+3 … J+7, relu toutes les 12 h) : 13 h. */
+function sb_odds_max_age(int $ko, int $now): int { return $ko - $now > 216000 ? 46800 : SB_ODDS_MAX_AGE; }
 /** sbList : day 0|1|2 = aujourd'hui / demain / après-demain dans le fuseau du joueur ($tz minutes à l'est d'UTC, ex. 345). */
-function sb_list(?array $user, $day, int $tz = 0, int $now = 0): array {
+function sb_list(?array $user, $day, int $tz = 0, int $now = 0, bool $cnt = false): array {
   $now = $now ?: sb_now();
   if (!sb_visible($user)) return ['ok' => false, 'reason' => 'off'];
   $tz = max(-720, min(840, $tz)) * 60;
   if ($day === 'live') return sb_live_list($user, $now);
-  $d = max(0, min(2, (int) $day));
+  $d = max(0, min(SB_DAYS_AHEAD, (int) $day));
   $from = (int) (floor(($now + $tz) / 86400) * 86400) - $tz + $d * 86400; $to = $from + 86400;
   $fx = []; $lgs = []; $lgUsed = [];
   foreach (array_unique([gmdate('Y-m-d', $from), gmdate('Y-m-d', $to - 1)]) as $dd) {
@@ -915,7 +919,24 @@ function sb_list(?array $user, $day, int $tz = 0, int $now = 0): array {
   $fx = array_values($fx);
   usort($fx, static fn($a, $b) => [$a['ts'], $a['id']] <=> [$b['ts'], $b['id']]);
   sb_after_response();
-  return ['ok' => true, 'at' => $now, 'sports' => [['s' => 'foot', 'n' => 'Football', 'live' => sb_live_count($user, $now)]], 'lg' => $lgs, 'fx' => $fx];
+  $out = ['ok' => true, 'at' => $now, 'sports' => [['s' => 'foot', 'n' => 'Football', 'live' => sb_live_count($user, $now)]], 'lg' => $lgs, 'fx' => $fx];
+  if ($cnt) $out['days'] = sb_day_counts($tz, $now);
+  return $out;
+}
+/** Nombre de matchs ouverts aux paris par jour du joueur (0 … 7) — le « 📅 Date » de Populaire ; gardé 2 min par fuseau. */
+function sb_day_counts(int $tzSec, int $now): array {
+  $f = sb_dir() . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'daycnt' . $tzSec . '.json';
+  clearstatcache(true, $f);
+  if (is_file($f) && filemtime($f) > $now - 120 && is_array($c = json_decode((string) @file_get_contents($f), true)) && count($c) === SB_DAYS_AHEAD + 1) return array_map('intval', $c);
+  $base = (int) (floor(($now + $tzSec) / 86400) * 86400) - $tzSec;
+  $c = array_fill(0, SB_DAYS_AHEAD + 1, 0);
+  foreach (sb_days($now) as $dd) foreach ((array) (sb_day($dd)['fx'] ?? []) as $r) {
+    $i = (int) floor(((int) ($r['ts'] ?? 0) - $base) / 86400);
+    if ($i >= 0 && $i <= SB_DAYS_AHEAD && sb_bettable_row((array) $r, $now)) $c[$i]++;
+  }
+  if (!is_dir(dirname($f))) @mkdir(dirname($f), 0750, true);
+  @file_put_contents($f, json_encode($c));
+  return $c;
 }
 /**
  * 2026-10-22 (propriétaire : « que les nouveaux voient que le site est actif ») — RÉSULTATS des 30 derniers jours :
@@ -1068,7 +1089,7 @@ function sb_match(?array $user, string $fid, int $now = 0): array {
   $f = sb_find($m[1], $now);
   if (!$f) return ['ok' => false, 'reason' => 'closed'];
   $mf = sb_mk_file($m[1]);
-  $open = sb_bettable_row($f['row'], $now) && (int) ($mf['at'] ?? 0) > $now - SB_ODDS_MAX_AGE;
+  $open = sb_bettable_row($f['row'], $now) && (int) ($mf['at'] ?? 0) > $now - sb_odds_max_age((int) $f['row']['ts'], $now);
   if ((int) ($mf['at'] ?? 0) < $now - SB_FX_ODDS_TTL && (int) $f['row']['ts'] > $now) sb_want_fixture((int) $m[1], $now);
   $mk = [];
   if ($open) foreach ((array) ($mf['mk'] ?? []) as $k => $o) $mk[] = ['mk' => (string) $k, 'o' => $o, 's' => 0];
@@ -1102,7 +1123,7 @@ function sb_pick(string $ev, string $k, ?array $user, int $now, bool $liveCheck 
   if (!$f) return ['ok' => false, 'reason' => 'closed'];
   $row = $f['row'];
   $mf = sb_mk_file($id);
-  if (!in_array((string) ($row['st'] ?? ''), ['NS', 'TBD'], true) || $now >= (int) $row['ts'] || (int) ($mf['at'] ?? 0) < $now - SB_ODDS_MAX_AGE) return ['ok' => false, 'reason' => 'closed'];
+  if (!in_array((string) ($row['st'] ?? ''), ['NS', 'TBD'], true) || $now >= (int) $row['ts'] || (int) ($mf['at'] ?? 0) < $now - sb_odds_max_age((int) $row['ts'], $now)) return ['ok' => false, 'reason' => 'closed'];
   $odd = null;
   foreach ((array) ($mf['mk'][$mk] ?? []) as $o) if ((string) ($o[0] ?? '') === $k) $odd = (float) $o[1];
   if ($odd === null || $odd < 1.01) return ['ok' => false, 'reason' => 'param'];
