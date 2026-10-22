@@ -840,11 +840,27 @@
     zh: ['\u5b89\u88c5 OROLADO', '\u5728\u4e3b\u5c4f\u5e55\u4e00\u70b9\u5373\u5f00 OROLADO\u3002', '\u5b89\u88c5', '\u7a0d\u540e'],
     hi: ['OROLADO \u0907\u0902\u0938\u094d\u091f\u0949\u0932 \u0915\u0930\u0947\u0902', '\u0939\u094b\u092e \u0938\u094d\u0915\u094d\u0930\u0940\u0928 \u0938\u0947 \u090f\u0915 \u091f\u091a \u092e\u0947\u0902 OROLADO \u0916\u094b\u0932\u0947\u0902\u0964', '\u0907\u0902\u0938\u094d\u091f\u0949\u0932', '\u092c\u093e\u0926 \u092e\u0947\u0902']
   };
+  // 2026-10-22 : navigateur intégré (Facebook, Instagram, TikTok, Messenger…) : l'installation n'y est pas possible
+  function inAppBrowser() { return /FBAN|FBAV|FB_IAB|FBIOS|FBSS|Instagram|Messenger|Line\/|TikTok|musical_ly|Bytedance|Snapchat|Twitter/i.test(navigator.userAgent || ''); }
+  var INAPP_T = {
+    fr: ['Tu es dans Facebook : ouvre d\u2019abord le site dans Safari.', 'Touche les trois points \u2022\u2022\u2022 (en haut ou en bas \u00e0 droite).', 'Choisis \u00ab Ouvrir dans Safari \u00bb (ou \u00ab Ouvrir dans le navigateur \u00bb).', 'Dans Safari, touche \u00ab Installer OROLADO \u00bb.'],
+    en: ['You are inside Facebook: open the site in Safari first.', 'Tap the three dots \u2022\u2022\u2022 (top or bottom right).', 'Choose \u201cOpen in Safari\u201d (or \u201cOpen in browser\u201d).', 'In Safari, tap \u201cInstall OROLADO\u201d.'],
+    es: ['Est\u00e1s dentro de Facebook: abre primero el sitio en Safari.', 'Toca los tres puntos \u2022\u2022\u2022 (arriba o abajo a la derecha).', 'Elige \u201cAbrir en Safari\u201d (o \u201cAbrir en el navegador\u201d).', 'En Safari, toca \u201cInstalar OROLADO\u201d.'],
+    pt: ['Voc\u00ea est\u00e1 dentro do Facebook: abra primeiro o site no Safari.', 'Toque nos tr\u00eas pontos \u2022\u2022\u2022 (em cima ou embaixo \u00e0 direita).', 'Escolha \u201cAbrir no Safari\u201d (ou \u201cAbrir no navegador\u201d).', 'No Safari, toque em \u201cInstalar OROLADO\u201d.'],
+    ar: ['\u0623\u0646\u062a \u062f\u0627\u062e\u0644 \u0641\u064a\u0633\u0628\u0648\u0643: \u0627\u0641\u062a\u062d \u0627\u0644\u0645\u0648\u0642\u0639 \u0641\u064a Safari \u0623\u0648\u0644\u064b\u0627.', '\u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0627\u0644\u0646\u0642\u0627\u0637 \u0627\u0644\u062b\u0644\u0627\u062b \u2022\u2022\u2022.', '\u0627\u062e\u062a\u0631 \u00ab\u0641\u062a\u062d \u0641\u064a Safari\u00bb.', '\u0641\u064a Safari\u060c \u0627\u0636\u063a\u0637 \u00ab\u062a\u062b\u0628\u064a\u062a OROLADO\u00bb.'],
+    tr: ['Facebook i\u00e7indesin: \u00f6nce siteyi Safari\u2019de a\u00e7.', '\u00dc\u00e7 noktaya \u2022\u2022\u2022 dokun.', '\u201cSafari\u2019de a\u00e7\u201d se\u00e7.', 'Safari\u2019de \u201cOROLADO\u2019yu y\u00fckle\u201d ye dokun.'],
+    vi: ['B\u1ea1n \u0111ang \u1edf trong Facebook: h\u00e3y m\u1edf trang b\u1eb1ng Safari tr\u01b0\u1edbc.', 'Ch\u1ea1m ba ch\u1ea5m \u2022\u2022\u2022.', 'Ch\u1ecdn \u201cM\u1edf b\u1eb1ng Safari\u201d.', 'Trong Safari, ch\u1ea1m \u201cC\u00e0i \u0111\u1eb7t OROLADO\u201d.'],
+    id: ['Kamu ada di dalam Facebook: buka situs di Safari dulu.', 'Ketuk tiga titik \u2022\u2022\u2022.', 'Pilih \u201cBuka di Safari\u201d.', 'Di Safari, ketuk \u201cInstal OROLADO\u201d.'],
+    ru: ['\u0412\u044b \u0432\u043d\u0443\u0442\u0440\u0438 Facebook: \u0441\u043d\u0430\u0447\u0430\u043b\u0430 \u043e\u0442\u043a\u0440\u043e\u0439\u0442\u0435 \u0441\u0430\u0439\u0442 \u0432 Safari.', '\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u0442\u0440\u0438 \u0442\u043e\u0447\u043a\u0438 \u2022\u2022\u2022.', '\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u00ab\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0432 Safari\u00bb.', '\u0412 Safari \u043d\u0430\u0436\u043c\u0438\u0442\u0435 \u00ab\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c OROLADO\u00bb.'],
+    de: ['Du bist in Facebook: \u00f6ffne die Seite zuerst in Safari.', 'Tippe auf die drei Punkte \u2022\u2022\u2022.', 'W\u00e4hle \u201eIn Safari \u00f6ffnen\u201c.', 'Tippe in Safari auf \u201eOROLADO installieren\u201c.'],
+    zh: ['\u4f60\u5728 Facebook \u5185\uff1a\u8bf7\u5148\u7528 Safari \u6253\u5f00\u7f51\u7ad9\u3002', '\u70b9\u51fb\u4e09\u4e2a\u70b9 \u2022\u2022\u2022\u3002', '\u9009\u62e9\u201c\u5728 Safari \u4e2d\u6253\u5f00\u201d\u3002', '\u5728 Safari \u4e2d\u70b9\u51fb\u201c\u5b89\u88c5 OROLADO\u201d\u3002'],
+    hi: ['\u0906\u092a Facebook \u0915\u0947 \u0905\u0902\u0926\u0930 \u0939\u0948\u0902: \u092a\u0939\u0932\u0947 \u0938\u093e\u0907\u091f Safari \u092e\u0947\u0902 \u0916\u094b\u0932\u0947\u0902\u0964', '\u0924\u0940\u0928 \u092c\u093f\u0902\u0926\u0941\u0913\u0902 \u2022\u2022\u2022 \u092a\u0930 \u091f\u0948\u092a \u0915\u0930\u0947\u0902\u0964', '\u201cSafari \u092e\u0947\u0902 \u0916\u094b\u0932\u0947\u0902\u201d \u091a\u0941\u0928\u0947\u0902\u0964', 'Safari \u092e\u0947\u0902 \u201cOROLADO \u0907\u0902\u0938\u094d\u091f\u0949\u0932 \u0915\u0930\u0947\u0902\u201d \u092a\u0930 \u091f\u0948\u092a \u0915\u0930\u0947\u0902\u0964']
+  };
   function installAskCard() {
     try {
       var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
       var ios = /iP(hone|od|ad)/.test(navigator.userAgent || '');
-      if (sa || !(ios || deferredPrompt || window.__oroBip) || !$('btnInstall') || document.getElementById('oroInstAsk')) return;
+      if (sa || !(ios || /Android/i.test(navigator.userAgent || '') || deferredPrompt || window.__oroBip) || !$('btnInstall') || document.getElementById('oroInstAsk')) return; // 2026-10-22 : Android aussi
       var lg = String(document.documentElement.lang || 'en').slice(0, 2), W = INSTASK_T[lg] || INSTASK_T.en;
       var box = document.createElement('div');
       box.id = 'oroInstAsk'; box.className = 'oro-welcome oro-inst-ask'; box.setAttribute('role', 'dialog');
@@ -9833,6 +9849,14 @@
     function installHelp(kind) {
       var box = $('iosInstallModal');
       if (!box) return;
+      if (kind === 'inapp') {
+        var lgI = String(document.documentElement.lang || 'en').slice(0, 2), W = INAPP_T[lgI] || INAPP_T.en;
+        var setI = function (sel, v) { var el = box.querySelector(sel); if (el) el.textContent = v; };
+        setI('.install-ios-lead', W[0]);
+        box.querySelectorAll('.install-ios-step span[data-i18n]').forEach(function (sp, i) { sp.textContent = W[i + 1] || ''; });
+        openModal('iosInstallModal');
+        return;
+      }
       var ios = kind === 'ios';
       var set = function (sel, key) { var el = box.querySelector(sel); if (el) el.textContent = t(key); };
       set('[data-i18n="installIosTitle"]', 'installIosTitle');
@@ -9882,8 +9906,20 @@
     // iPhone : inchangé (Apple ne permet que les étapes « Partager → Sur l'écran d'accueil »).
     if ($('btnInstall')) {
       $('btnInstall').addEventListener('click', async function () {
+        // 2026-10-22 (propriétaire : « Installer ne marche pas ») — les visiteurs des publicités arrivent DANS Facebook / Instagram /
+        // TikTok : l'installation y est impossible. Android : on rouvre la page dans Chrome (qui propose d'installer) ;
+        // iPhone : 3 étapes pour ouvrir dans Safari d'abord.
+        if (inAppBrowser()) {
+          hideInstallBanner();
+          if (/Android/i.test(navigator.userAgent || '')) {
+            location.href = 'intent://' + location.host + location.pathname + '?install=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(location.href) + ';end';
+            return;
+          }
+          installHelp('inapp');
+          return;
+        }
         if (deferredPrompt) {
-          deferredPrompt.prompt();
+          try { deferredPrompt.prompt(); } catch (eP) { deferredPrompt = null; window.__oroBip = null; hideInstallBanner(); installHelp('and'); return; } // déjà utilisé : on explique
           try {
             var choice = await deferredPrompt.userChoice;
             if (choice && choice.outcome === 'accepted') localStorage.setItem('oro_install_dismissed', '1');
@@ -9913,14 +9949,14 @@
         // v2493 : iPhone = 3 étapes iPhone ; Android (Chrome pas encore prêt) = 3 étapes Android dans la même fenêtre
         // (avant : petit message avec la consigne iPhone « Partager… », incompréhensible sur Android).
         hideInstallBanner();
-        // 2026-10-21 (propriétaire : « sur Android, pas de fenêtre d'étapes : soit ça installe, soit rien ») : iPhone seulement
-        if (isIos()) installHelp('ios');
+        // 2026-10-22 (propriétaire : « ça ne marche pas sur Android ») : Chrome n'a pas encore permis l'installation → les 3 étapes Android
+        installHelp(isIos() ? 'ios' : 'and');
       });
     }
     // 2026-10-21 (propriétaire) : bouton « Installer OROLADO » à la fin d'Apprendre et des Conditions (même effet que la bannière)
     function fillInstSlots() {
       var slots = document.querySelectorAll('.oro-inst-slot'); if (!slots.length) return;
-      var ok = !isStandalone() && (isIos() || !!(deferredPrompt || window.__oroBip));
+      var ok = !isStandalone() && (isIos() || /Android/i.test(navigator.userAgent || '') || !!(deferredPrompt || window.__oroBip)); // 2026-10-22 : Android toujours (installe, ou explique)
       var lb = document.querySelector('#btnInstall [data-i18n="installApp"]'), txt = lb ? lb.textContent : 'Install';
       for (var i = 0; i < slots.length; i++) {
         var sl = slots[i];
@@ -9934,10 +9970,12 @@
       }
     }
     window.oroInstSlots = fillInstSlots;
+    // 2026-10-22 (propriétaire : « Installer ne marche pas sur Android ») : dans les Conditions / Apprendre, un gestionnaire de la
+    // fenêtre arrêtait le clic avant qu'il arrive ici → écouté en phase de capture (avant tout le monde)
     document.addEventListener('click', function (e) {
       var b = e.target && e.target.closest && e.target.closest('.oro-inst-btn');
-      if (b && $('btnInstall')) { e.preventDefault(); $('btnInstall').click(); }
-    });
+      if (b && $('btnInstall')) { e.preventDefault(); e.stopPropagation(); $('btnInstall').click(); }
+    }, true);
     window.addEventListener('oro-bip', fillInstSlots);
     window.addEventListener('appinstalled', fillInstSlots);
     setTimeout(fillInstSlots, 1200);
