@@ -31,7 +31,7 @@ const SB_JOB_EVERY = 60;             // tâche de fond : au plus une fois par mi
 const SB_JOB_CALLS = 30;             // lectures au plus par passage de la tâche de fond
 const SB_ODDS_PAGES_RUN = 12;        // pages /odds?date au plus par passage
 const SB_ODDS_MAX_AGE = 28800;       // cotes de plus de 8 h : plus de pari (jamais un vieux prix)
-const SB_FX_ODDS_TTL = 10800;        // /odds?fixture à la demande : cotes de plus de 3 h
+const SB_FX_ODDS_TTL = 1800;         // /odds?fixture à la demande : cotes de plus de 30 min
 const SB_LIVE_IDS_TTL = 60;          // /fixtures?live=all gardé 60 s (contrôle des paris à moins de 30 min du début)
 const SB_LATE = 1800;                // à moins de 30 min du coup d'envoi : contrôle « déjà commencé ? »
 const SB_PST_VOID = 172800;          // reporté / pas joué dans les 48 h : annulé
@@ -81,6 +81,16 @@ function sb_config(): array {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig2'])) return true; $s['live'] = true; $s['livePublic'] = true; $s['mig2'] = 1; return true; });
     $c = sb_read('config.json');
   }
+  // 2026-10-22 (propriétaire : « 2,5 % pour tout, le direct un peu plus ») : une seule fois, 2,5 % avant-match (tous les marchés, tous les sports), 5 % en direct
+  if (empty($c['mig3'])) {
+    sb_with('config.json', static function (array &$s) {
+      if (!empty($s['mig3'])) return true;
+      $s['mig3'] = 1;
+      foreach (['mMain' => 2.5, 'mSide' => 2.5, 'mExotic' => 2.5, 'mLive' => 5, 'mOther' => 2.5] as $k => $v) $s[$k] = $v;
+      return true;
+    });
+    $c = sb_read('config.json');
+  }
   $out = SB_CFG_DEFAULT;
   foreach ($out as $k => $v) if (array_key_exists($k, $c)) $out[$k] = is_bool($v) ? (bool) $c[$k] : (is_array($v) ? (array) $c[$k] : (float) $c[$k]);
   return $out;
@@ -92,7 +102,7 @@ function sb_config_save(array $in): array {
   foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(2.0, min(40.0, (float) $in[$k])), 1);
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
@@ -617,7 +627,7 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
     $calls++;
     $log[] = 'fx ' . $day . (sb_import_fixtures($day, $now) ? '' : ' ✗');
   }
-  $oddsEvery = [$d0 => 7200, $d1 => 10800, $d2 => 10800] + array_fill_keys($mid, 43200) + array_fill_keys($lat, 86400); // cotes : J+3…J+7 12 h ; J+8…J+14 24 h
+  $oddsEvery = [$d0 => 1800, $d1 => 10800, $d2 => 10800] + array_fill_keys($mid, 43200) + array_fill_keys($lat, 86400); // cotes : J toutes les 30 min (2026-10-22, marge 2,5 %) ; J+3…J+7 12 h ; J+8…J+14 24 h
   $pages = 0;
   foreach (array_merge([$d0, $d1, $d2], $far) as $day) {
     if ($calls >= $max || $pages >= SB_ODDS_PAGES_RUN) break;

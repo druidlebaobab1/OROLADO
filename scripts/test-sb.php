@@ -58,8 +58,10 @@ $odd = static function (string $fid, string $mk, string $k): ?float { foreach ((
 
 echo "1) Réglages par défaut, visibilité\n";
 $c0 = sb_config(); // 1re lecture : Public allumé une seule fois (mise en ligne du 2026-10-22), marges au moins 15/20/30/20/15
-check('mise en ligne : Public allumé une fois, marges relevées', $c0['public'] === true && $c0['mMain'] == 15 && $c0['mExotic'] == 30);
-sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1]; return true; }); // la suite teste le réglage « Public éteint »
+check('mise en ligne : Public allumé une fois ; marges 2,5 % avant-match (tous marchés, tous sports), 5 % en direct', $c0['public'] === true && $c0['mMain'] == 2.5 && $c0['mSide'] == 2.5 && $c0['mExotic'] == 2.5 && $c0['mOther'] == 2.5 && $c0['mLive'] == 5);
+sb_config_save(['mMain' => 30]);
+check('marges : un réglage de l\'admin n\'est jamais écrasé ensuite', sb_config()['mMain'] == 30);
+sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1]; return true; }); // la suite teste le réglage « Public éteint »
 $c = sb_config();
 check('défauts : public NON, résultats automatiques OUI, marges 15/20/30/20/15, alertes 50/500/200', $c['public'] === false && $c['autosettle'] === true && $c['mMain'] == 15 && $c['mSide'] == 20 && $c['mExotic'] == 30 && $c['mLive'] == 20 && $c['mOther'] == 15 && $c['alertStake'] == 50 && $c['alertPot'] == 500 && $c['alertWin'] == 200);
 $NOW = $at('2026-10-22 08:00');
