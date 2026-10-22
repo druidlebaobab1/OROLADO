@@ -2092,7 +2092,7 @@
     // (kz, donnée par le serveur) → identique à chaque ouverture ; sinon minute de l'API, mais JAMAIS en arrière (mémoire par match)
     // horloge : « 0:00 » donné par le serveur (horloge du fournisseur) ; petits écarts (≤ 15 s) ignorés pour qu'elle reste fluide,
     // gros écart = correction (rare) ; gardé par match même en sortant / revenant
-    if (f.kz != null && isFinite(+f.kz)) { var oz = TVZ[f.id]; TVZ[f.id] = oz != null && Math.abs(oz - +f.kz) <= 45 ? oz : +f.kz; TV.base = { z: TVZ[f.id] }; }
+    if (f.kz != null && isFinite(+f.kz)) { var oz = TVZ[f.id]; TVZ[f.id] = oz != null && +f.kz > oz && +f.kz - oz <= 45 ? oz : +f.kz; /* 2026-10-22 : l'horloge avance tout de suite quand le serveur la corrige en avant ; elle ne recule jamais pour un petit écart */ TV.base = { z: TVZ[f.id] }; }
     else if (f.m != null) {
       var mem = TVM[f.id], est = mem ? mem.s + Math.floor((Date.now() - mem.at) / 1000) : -1;
       if (!mem || +f.m * 60 > est + 60 || (+f.m * 60 > est && est - (+f.m) * 60 > 120)) TVM[f.id] = { s: +f.m * 60, at: Date.now() };
