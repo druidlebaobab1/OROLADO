@@ -558,6 +558,40 @@ sb_with(sb_res_name('2026-09-20'), static function (array &$s) { $s = ['at' => 1
 sb_prune($T('2026-11-07 12:00:00'));
 check('ménage : résultats de plus de 30 jours effacés, index de plus de 3 jours recopié puis effacé', !is_file(sb_dir() . DIRECTORY_SEPARATOR . 'res' . DIRECTORY_SEPARATOR . 'res-2026-09-20.json') && !is_file(sb_dir() . DIRECTORY_SEPARATOR . sb_day_file('2026-11-02')) && count((array) (sb_res_file('2026-11-02')['fx'] ?? [])) === 3);
 
+// 2026-10-22 (propriétaire) — avant-match jusqu'à J+7 : J+3…J+7 matchs toutes les 6 h, cotes toutes les 12 h ; sbList day 0…7 ; « 📅 Date »
+echo "12) Avant-match jusqu'à J+7 (budget), sbList day 0…7, nombre de matchs par jour\n";
+$N7 = $T('2026-12-01 10:00:00'); $GLOBALS['SB_NOW'] = $N7;
+sb_with('budget-foot.json', static function (array &$s) use ($N7) { $s = ['day' => gmdate('Y-m-d', $N7), 'n' => 0]; return true; });
+sb_with('state.json', static function (array &$s) { unset($s['od']); return true; });
+$D7 = sb_days($N7);
+check('jours suivis : J-1, J, J+1 … J+7', count($D7) === 9 && $D7[0] === '2026-11-30' && $D7[8] === '2026-12-08');
+$q = static fn(string $d, string $k) => $k === 'fx' ? 'fixtures?date=' . $d . '&timezone=UTC' : 'odds?date=' . $d . '&timezone=UTC&page=1';
+$c1 = [$cnt($q('2026-12-05', 'fx')), $cnt($q('2026-12-05', 'od')), $cnt($q('2026-12-08', 'fx'))];
+sb_job_tick($N7, 60);
+check('1er passage : matchs et cotes de J+3 … J+7 lus', $cnt($q('2026-12-05', 'fx')) === $c1[0] + 1 && $cnt($q('2026-12-05', 'od')) === $c1[1] + 1 && $cnt($q('2026-12-08', 'fx')) === $c1[2] + 1);
+sb_job_tick($N7 + 5 * 3600, 60);
+check('5 h après : J+4 pas relu (6 h), J (10 min) relu', $cnt($q('2026-12-05', 'fx')) === $c1[0] + 1 && $cnt($q('2026-12-01', 'fx')) >= 2);
+sb_job_tick($N7 + 6 * 3600 + 60, 60);
+check('6 h après : matchs de J+4 relus, cotes de J+4 pas encore (12 h)', $cnt($q('2026-12-05', 'fx')) === $c1[0] + 2 && $cnt($q('2026-12-05', 'od')) === $c1[1] + 1);
+sb_job_tick($N7 + 12 * 3600 + 120, 60);
+check('12 h après : cotes de J+4 relues', $cnt($q('2026-12-05', 'od')) === $c1[1] + 2);
+check('budget : bien sous le plafond du jour (≤ 7 000, réserve du direct gardée)', sb_budget($N7)['used'] < 200, (string) sb_budget($N7)['used']);
+// un match à J+6 avec nos cotes : visible dans sbList day 6, compté pour « 📅 Date » ; cotes de 10 h encore bonnes (loin), de 14 h fermées
+$k6 = $T('2026-12-07 18:00:00');
+sb_with(sb_day_file('2026-12-07'), static function (array &$s) use ($k6, $N7) {
+  $s = ['at' => $N7, 'lg' => ['39' => ['n' => 'Premier League', 'c' => 'England', 'f' => '', 'lo' => '', 'p' => 2]], 'fx' => [
+    '9901' => ['ts' => $k6, 'st' => 'NS', 'm' => null, 'lg' => 39, 'h' => [1, 'Loin A', ''], 'a' => [2, 'Loin B', ''], 'o' => [['H', 2.1], ['D', 3.3], ['A', 3.4]], 'n' => 12, 'oat' => $N7 - 10 * 3600]]];
+  return true;
+});
+@unlink(sb_dir() . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'daycnt0.json');
+$l6 = sb_list($uadm, 6, 0, $N7, true);
+check('sbList day 6 : le match de J+6 (cotes de 10 h : match lointain, encore ouvert)', array_column($l6['fx'], 'id') === ['foot:9901'], json_encode(array_column($l6['fx'], 'id')));
+check('« 📅 Date » : nombre de matchs par jour (0 … 7)', count($l6['days'] ?? []) === 8 && $l6['days'][6] === 1, json_encode($l6['days'] ?? null));
+check('sbList : jour borné (9 → 7)', sb_list($uadm, 9, 0, $N7)['fx'] === []);
+sb_with(sb_day_file('2026-12-07'), static function (array &$s) use ($N7) { $s['fx']['9901']['oat'] = $N7 - 14 * 3600; return true; });
+check('cotes de 14 h : fermé (jamais un vieux prix)', sb_list($uadm, 6, 0, $N7)['fx'] === []);
+check('match proche : 8 h maximum (inchangé)', sb_odds_max_age($N7 + 3600, $N7) === SB_ODDS_MAX_AGE && sb_odds_max_age($k6, $N7) === 46800);
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);

@@ -1055,6 +1055,7 @@
       '<span class="pz-bt"><b dir="auto">' + esc(title) + '</b>' + (sub ? '<small dir="auto">' + esc(sub) + '</small>' : '') + '</span>' + (extra || '') + '</div>';
   }
   function shell(inner) {
+    closeSheet(true);
     box.innerHTML = '<div class="pz-page pz-v-' + view + '">' + inner + '</div>' + navHtml();
     box.dataset.pzv = view;
     bindBox(); layoutVars(); fitAll($('pzNav')); startTick();
@@ -1101,6 +1102,7 @@
     var rc = document.getElementById('spRcpt');
     if (rc) { rc.classList.remove('on'); setTimeout(function () { rc.remove(); }, 220); return true; }
     if (!alive()) return false;
+    if (closeSheet()) return true;
     if (sending) return true;
     if (view === 'match') { go(matchFrom && matchFrom !== 'match' ? matchFrom : 'home'); return true; }
     if (view === 'slip') { go(slipFrom && slipFrom !== 'slip' ? slipFrom : 'home'); return true; }
@@ -1183,7 +1185,7 @@
     return livePend;
   }
   // une journée (0 / 1 / 2) d'un sport : gardée 60 s ; false = refusé (pas visible pour ce joueur) ; null = réseau
-  function needDays() { if (sbQ || per === 'fav') return [0, 1, 2]; if (per === 'd1') return [1]; if (per === 'd2') return [2]; if (per === 'd0') return [0]; return [0, 1]; }
+  function needDays() { if (sbQ || per === 'fav') return [0, 1, 2]; var m = /^d([0-7])$/.exec(per); if (m) return [+m[1]]; return [0, 1]; }
   function sbFetch(day, force, sp) {
     sp = sp || sport;
     var key = sp + '|' + day, c = sbData[key] || (sbData[key] = {});
@@ -1308,15 +1310,44 @@
     if (hasQ()) html += '<button type="button" data-sp="news" class="' + (view === 'news' ? 'on' : '') + '">' + SBIC.news + '<span>' + esc(SX().news) + '</span></button>';
     return '<div class="pz-sports pz-hs">' + html + '</div>';
   }
+  /* 2026-10-22 (propriétaire) — périodes : Top · Dans 30 min · 1 h · 2 h · 3 h · 6 h · 12 h · Aujourd'hui · Demain · Après-demain ·
+     « 📅 Date » (petite feuille : les jours suivants qui ont des matchs, avec leur nombre). Plus de sélecteur « Heure ». */
+  var DATEW = { fr: ['Date', '{n} matchs', '1 match'], en: ['Date', '{n} matches', '1 match'], es: ['Fecha', '{n} partidos', '1 partido'], pt: ['Data', '{n} jogos', '1 jogo'],
+    ar: ['التاريخ', '{n} مباراة', 'مباراة واحدة'], tr: ['Tarih', '{n} maç', '1 maç'], vi: ['Ngày', '{n} trận', '1 trận'], id: ['Tanggal', '{n} laga', '1 laga'],
+    ru: ['Дата', 'Матчей: {n}', '1 матч'], de: ['Datum', '{n} Spiele', '1 Spiel'], zh: ['日期', '{n} 场比赛', '1 场比赛'], hi: ['तारीख', '{n} मैच', '1 मैच'] };
+  function DW() { return DATEW[lg()] || DATEW.en; }
+  function dayName(i) { var x = SX(); if (i === 0) return x.today; if (i === 1) return x.tomorrow; if (i === 2) return x.after; try { return cap1(offDate(i).toLocaleDateString(loc(), { weekday: 'short', day: 'numeric', month: 'short' })); } catch (e) { return isoDay(offDate(i)); } }
   function persHtml() {
-    var x = SX(), n = NX(), fv = favs();
-    var P = [['top', x.top], ['m30', fmt(n.inX, { x: dur('minute', 30) })], ['h1', dur('hour', 1)], ['h2', dur('hour', 2)], ['h3', dur('hour', 3)], ['d0', x.today], ['d1', x.tomorrow], ['d2', x.after]];
-    var opts = '<option value="-1">' + esc(n.hour) + '</option>';
-    for (var h = 0; h < 24; h++) { var hh = (h < 10 ? '0' : '') + h + ':00'; opts += '<option value="' + h + '"' + (hourF === h ? ' selected' : '') + '>' + esc(fmt(n.fromH, { h: hh })) + '</option>'; }
+    var x = SX(), n = NX(), fv = favs(), w = DW(), dm = /^d([3-7])$/.exec(per);
+    var P = [['top', x.top], ['m30', fmt(n.inX, { x: dur('minute', 30) })], ['h1', dur('hour', 1)], ['h2', dur('hour', 2)], ['h3', dur('hour', 3)], ['h6', dur('hour', 6)], ['h12', dur('hour', 12)], ['d0', x.today], ['d1', x.tomorrow], ['d2', x.after]];
     return P.map(function (p) { return '<button type="button" data-per="' + p[0] + '" class="' + (per === p[0] && !sbQ ? 'on' : '') + '"><span>' + esc(p[1]) + '</span></button>'; }).join('') +
-      '<label class="pz-hr' + (hourF >= 0 ? ' on' : '') + '">' + IC.clock + '<select id="pzHour" aria-label="' + esc(n.hour) + '">' + opts + '</select></label>' +
+      '<button type="button" class="pz-datec' + (dm && !sbQ ? ' on' : '') + '" data-dsheet="1" aria-haspopup="dialog">' + IC.cal + '<span dir="auto">' + esc(dm && !sbQ ? dayName(+dm[1]) : w[0]) + '</span></button>' +
       (fv.l.length || fv.f.length ? '<button type="button" data-per="fav" class="pz-favc' + (per === 'fav' && !sbQ ? ' on' : '') + '" aria-label="' + esc(x.fav) + '"><span>★ ' + esc(x.fav) + '</span></button>' : '');
   }
+  // « 📅 Date » : petite feuille dans la page (jamais un menu natif) — jours 0…7 du joueur avec le nombre de matchs
+  var dayCnt = null;
+  function sheetRows() {
+    var w = DW(), c = dayCnt && dayCnt.sp === sport ? dayCnt.c : null, h = '';
+    for (var i = 0; i <= 7; i++) {
+      var k = c ? +c[i] || 0 : -1; if (c && !k) continue;
+      h += '<button type="button" class="pz-shr' + (per === 'd' + i && !sbQ ? ' on' : '') + '" data-per="d' + i + '"><span dir="auto">' + esc(dayName(i)) + '</span>' + (k > 0 ? '<em dir="auto">' + esc(k === 1 ? w[2] : fmt(w[1], { n: k })) + '</em>' : '') + '</button>';
+    }
+    return h || '<p class="pz-none">' + esc(SX().noMatch) + '</p>';
+  }
+  function openSheet() {
+    closeSheet(true);
+    var el = document.createElement('div'); el.className = 'pz-sheet'; el.id = 'pzSheet';
+    el.innerHTML = '<div class="pz-shb" data-shx="1"></div><div class="pz-shc" role="dialog" aria-modal="true"><div class="pz-shh"><b>' + IC.cal + '<span dir="auto">' + esc(DW()[0]) + '</span></b><button type="button" class="pz-shx" data-shx="1" aria-label="✕">' + IC.x + '</button></div><div class="pz-shl" id="pzShL">' + sheetRows() + '</div></div>';
+    box.appendChild(el);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
+    if (!dayCnt || dayCnt.sp !== sport || Date.now() - dayCnt.at > 120000) {
+      var sp = sport;
+      D6.Api.post('sbList', { day: 0, tz: tzMin(), sport: sp, cnt: 1 }, 15000).then(function (r) {
+        if (r && r.ok && Array.isArray(r.days)) { dayCnt = { sp: sp, c: r.days, at: Date.now() }; var l = $('pzShL'); if (l && sport === sp) l.innerHTML = sheetRows(); }
+      }).catch(function () {});
+    }
+  }
+  function closeSheet(now) { var el = $('pzSheet'); if (!el) return false; if (now) { el.remove(); return true; } el.classList.remove('on'); setTimeout(function () { el.remove(); }, 200); return true; }
   function renderHome() {
     if (sbOn === false) { renderList(); return; } // paris automatiques invisibles pour ce joueur : l'ancienne liste
     var x = SX();
@@ -1327,16 +1358,18 @@
       q.addEventListener('input', function () { clearTimeout(qt); qt = setTimeout(function () { sbQ = q.value.trim(); paintPers(); paintHome(); }, 220); });
       q.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); q.blur(); } });
     }
+    keepOn($('pzPers'));
     paintHome();
   }
-  function paintPers() { var p = $('pzPers'); if (p) { p.innerHTML = persHtml(); } }
+  // la puce choisie reste visible dans sa rangée (ex. « Mar. 27 oct. » au bout de la rangée)
+  function keepOn(row) { var on = row && row.querySelector('.on'); if (!on || row.scrollWidth <= row.clientWidth) return; var a = on.getBoundingClientRect(), r = row.getBoundingClientRect(); if (a.left < r.left || a.right > r.right) row.scrollLeft += (a.left + a.width / 2) - (r.left + r.width / 2); }
+  function paintPers() { var p = $('pzPers'); if (p) { p.innerHTML = persHtml(); keepOn(p); } }
   function homeFx(rs) {
     var all = [], seen = {}, n = nowS(), q = normS(sbQ), fv = favs(), lgs = lgMap(rs);
     rs.forEach(function (r) { r.fx.forEach(function (f) { if (!seen[f.id] && f.ts > n) { seen[f.id] = 1; all.push(f); } }); });
     if (q) all = all.filter(function (f) { var l = lgs[f.lg] || {}; return normS(f.h.n + ' ' + f.a.n + ' ' + (l.n || '') + ' ' + (l.c || '')).indexOf(q) > -1; });
     else if (per === 'fav') all = all.filter(function (f) { return fv.l.indexOf(f.lg) > -1 || fv.f.indexOf(f.id) > -1; });
-    else if (/^(m30|h[123])$/.test(per)) { var lim = n + (per === 'm30' ? 1800 : +per.charAt(1) * 3600); all = all.filter(function (f) { return f.ts <= lim; }); }
-    if (hourF >= 0 && /^d[012]$/.test(per)) all = all.filter(function (f) { return new Date(f.ts * 1000).getHours() >= hourF; });
+    else if (/^(m30|h\d+)$/.test(per)) { var lim = n + (per === 'm30' ? 1800 : +per.slice(1) * 3600); all = all.filter(function (f) { return f.ts <= lim; }); }
     all.sort(function (a, b) { return a.ts - b.ts || (a.id < b.id ? -1 : 1); });
     return { fx: all, lgs: lgs };
   }
@@ -1374,7 +1407,7 @@
       if (H.fx.length) blocks.push('<button type="button" class="pz-all" data-per="d0"><span>' + esc(n.allM) + '</span>' + SBIC.chev + '</button>');
       if (!soon.length && !big.length && !lf.length) blocks = ['<p class="pz-none">' + esc(x.noMatch) + '</p>'];
     } else {
-      blocks = H.fx.length ? dayBlocks(H.fx, H.lgs, { dayHead: /^d[012]$/.test(per) }) : ['<p class="pz-none">' + esc(per === 'fav' && !sbQ ? SX().noFav : SX().noMatch) + '</p>'];
+      blocks = H.fx.length ? dayBlocks(H.fx, H.lgs, { dayHead: /^d[0-7]$/.test(per) }) : ['<p class="pz-none">' + esc(per === 'fav' && !sbQ ? SX().noFav : SX().noMatch) + '</p>'];
     }
     putBlocks(body, blocks);
   }
@@ -1687,12 +1720,12 @@
     var x = TX(), n = NX(), rc = f.rc || [0, 0];
     var card = function (i) { return '<i class="pz-card r" data-rc="' + i + '"' + (+rc[i] ? '' : ' hidden') + '></i>'; };
     return '<div class="pz-tv" id="pzTv"><div class="pz-tvs" id="pzTvs">' +
-      '<section class="pz-tvp pz-tv1" aria-label="' + esc(x.pitch) + '"><div class="pz-tvh"><b class="pz-tvn h" dir="auto">' + esc(f.h.n) + card(0) + '</b>' +
+      '<section class="pz-tvp pz-tv1" aria-label="' + esc(x.pitch) + '"><div class="pz-tvh" dir="ltr"><b class="pz-tvn h" dir="auto">' + esc(f.h.n) + card(0) + '</b>' +
         '<span class="pz-tvsc"><b id="pzSc" dir="ltr">' + esc(scTxt(f)) + '</b><em id="pzClk" dir="ltr"></em></span><b class="pz-tvn a" dir="auto">' + card(1) + esc(f.a.n) + '</b></div>' +
-        '<div class="pz-pitch" id="pzPitch">' + PITCH + '<i class="pz-zone" id="pzZone"></i><i class="pz-ballw" id="pzBall"><i class="pz-ball"></i></i>' +
+        '<div class="pz-pitch" id="pzPitch" dir="ltr">' + PITCH + '<i class="pz-zone" id="pzZone"></i><i class="pz-ballw" id="pzBall"><i class="pz-ball"></i></i>' +
           '<div class="pz-act" id="pzAct" hidden><small dir="auto"></small><b dir="auto"></b><em dir="auto"></em></div></div>' +
         '<div class="pz-tick" id="pzTick"></div></section>' +
-      '<section class="pz-tvp pz-tv2" aria-label="' + esc(x.info) + '"><div class="pz-tvi">' +
+      '<section class="pz-tvp pz-tv2" aria-label="' + esc(x.info) + '"><div class="pz-tvi" dir="ltr">' +
         '<span class="pz-tvt">' + tlogo(f.h.lo, 'pz-tvlo') + '<b dir="auto">' + esc(f.h.n) + '</b></span>' +
         '<span class="pz-tvm"><b id="pzSc2" dir="ltr">' + esc(scTxt(f)) + '</b><small>' + esc(x.el) + '</small><em id="pzClk2" dir="ltr"></em><small id="pzPer" dir="auto"></small><i class="pz-mmin" id="pzMin" hidden><span id="pzMinT">' + esc(minTxt(f)) + '</span></i></span>' +
         '<span class="pz-tvt">' + tlogo(f.a.lo, 'pz-tvlo') + '<b dir="auto">' + esc(f.a.n) + '</b></span></div>' +
@@ -1750,9 +1783,8 @@
   function tvClock() { var t = tvClockTxt(), a = $('pzClk'), b = $('pzClk2'); if (a && a.textContent !== t) a.textContent = t; if (b && b.textContent !== t) b.textContent = t; }
   function tvShow(side, x, y, team, act, who, kind) {
     var ball = $('pzBall'), z = $('pzZone'), a = $('pzAct'), p = $('pzPitch'); if (!ball || !a) return;
-    if (document.documentElement.dir === 'rtl') x = 100 - x;
     ball.style.left = x + '%'; ball.style.top = y + '%';
-    if (z) { z.className = 'pz-zone ' + (side ? ((document.documentElement.dir === 'rtl') !== (side === 'a') ? 'l' : 'r') : '') + (kind ? ' ' + kind : ''); }
+    if (z) { z.className = 'pz-zone ' + (side ? (side === 'a' ? 'l' : 'r') : '') + (kind ? ' ' + kind : ''); }
     a.hidden = !act;
     a.className = 'pz-act ' + (kind || '') + (x > 50 ? ' rt' : ' lt');
     a.style.left = Math.max(4, Math.min(56, x > 50 ? x - 44 : x + 4)) + '%';
@@ -1927,7 +1959,6 @@
     box.addEventListener('change', function (ev) {
       var t = ev.target;
       if (t && t.id === 'pzResCal') { var v = String(t.value || ''); if (/^\d{4}-\d{2}-\d{2}$/.test(v)) { var p = v.split('-'); resDay = Math.max(-29, Math.min(0, dayOff(new Date(+p[0], +p[1] - 1, +p[2], 12)))); paintResults(); } return; }
-      if (t && t.id === 'pzHour') { hourF = +t.value; if (hourF >= 0 && !/^d[012]$/.test(per)) per = 'd0'; sbQ = ''; var q = $('pzQ'); if (q) q.value = ''; paintPers(); paintHome(); }
     });
   }
   function onBoxClick(ev) {
@@ -1942,8 +1973,11 @@
       sport = s; if (view !== 'home') go('home'); else { box.querySelectorAll('.pz-sports [data-sp]').forEach(function (z) { z.classList.toggle('on', z === b); }); paintHome(); }
       return;
     }
+    if ((b = t.closest('[data-shx]'))) { closeSheet(); return; }
+    if ((b = t.closest('[data-dsheet]'))) { openSheet(); return; }
     if ((b = t.closest('[data-per]'))) {
-      per = b.getAttribute('data-per'); sbQ = ''; if (!/^d[012]$/.test(per)) hourF = -1;
+      per = b.getAttribute('data-per'); sbQ = ''; hourF = -1; closeSheet();
+      if (view !== 'home') { go('home'); return; }
       var q = $('pzQ'); if (q) q.value = '';
       paintPers(); paintHome();
       var mb = mbox(), body = $('pzBody'); if (mb && body && body.getBoundingClientRect().top < 0) mb.scrollTop += body.getBoundingClientRect().top - 120;
