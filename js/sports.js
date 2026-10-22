@@ -1921,7 +1921,7 @@
     var f = curFx(), l = f ? (sbLg(f.lg, spOf(f)) || (sbM && sbM.fx ? { n: sbM.fx.lgn || '', c: sbM.fx.c || '', f: '' } : null)) : null;
     var fv = favs(), isF = f && fv.f.indexOf(f.id) > -1;
     var star = f ? '<button type="button" class="pz-star' + (isF ? ' on' : '') + '" data-fav="' + esc(f.id) + '" aria-pressed="' + !!isF + '" aria-label="' + esc(SX().fav) + '">' + (isF ? '★' : '☆') + '</button>' : '';
-    shell(bar(l && l.n ? l.n : spName({ s: f ? spOf(f) : 'foot' }), star, l && l.c ? l.c : '') + '<div id="pzMh"></div><div id="pzTrk"></div><div class="pz-gch pz-hs" id="pzG"></div><div id="pzMk" class="pz-mks"></div>'); // (propriétaire : aucune règle écrite dans la page du match)
+    shell((f && f.live ? '' : bar(l && l.n ? l.n : spName({ s: f ? spOf(f) : 'foot' }), star, l && l.c ? l.c : '')) + '<div id="pzMh"></div><div id="pzTrk"></div><div class="pz-gch pz-hs" id="pzG"></div><div id="pzMk" class="pz-mks"></div>'); // (propriétaire : aucune règle écrite dans la page du match)
     paintMatch();
   }
   function paintMatch() {
@@ -2119,9 +2119,10 @@
   function tvFit() {
     var sc = $('pzTvs'); if (!sc) return;
     var p1 = sc.querySelector('.pz-tv1'), p2 = sc.querySelector('.pz-tv2'); if (!p1 || !p2) return;
-    // 2026-10-22 (propriétaire) : « Informations » garde la MÊME taille que « Diffusion » ; les statistiques défilent dedans
-    var h1 = p1.offsetHeight, h = h1;
-    if (p2.style.height !== h1 + 'px') p2.style.height = h1 + 'px';
+    // 2026-10-22 (propriétaire) : les deux volets ont la MÊME hauteur, assez grande pour TOUTES les statistiques (jamais de défilement)
+    p1.style.minHeight = ''; p2.style.height = ''; p2.style.minHeight = '';
+    var h = Math.max(p1.offsetHeight, p2.offsetHeight);
+    p1.style.minHeight = h + 'px'; p2.style.minHeight = h + 'px';
     if (sc.style.height !== h + 'px') sc.style.height = h + 'px';
   }
   function tvClock() { var t = tvClockTxt(), a = $('pzClk'), b = $('pzClk2'); if (a && a.textContent !== t) a.textContent = t; if (b && b.textContent !== t) b.textContent = t; }
