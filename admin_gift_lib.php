@@ -223,7 +223,11 @@ function admin_top_paid_read(string $key): array {
 
 /** Lecture-modification-écriture du registre, sous verrou (fichier écrit en entier, puis vidé sur disque). */
 function admin_top_paid_with(string $key, callable $fn) {
-  $file = admin_top_paid_file($key);
+  return admin_gift_led_with(admin_top_paid_file($key), $fn);
+}
+
+/** Registre (fichier JSON) lu-modifié-écrit sous verrou. */
+function admin_gift_led_with(string $file, callable $fn) {
   $fp = @fopen($file, 'c+');
   if (!$fp) throw new RuntimeException('Registre des paiements illisible : ' . basename($file));
   flock($fp, LOCK_EX);
@@ -432,4 +436,113 @@ function admin_top_pay_mark(array $req, ?array $db = null): array {
   });
   if (function_exists('admin_bust_cache')) admin_bust_cache();
   return ['ok' => true, 'week' => $wk['key'], 'marked' => $marked, 'already' => $already, 'missing' => $missing];
+}
+
+/* -------------------------------------------------------------------------------------------------------------------
+ * 2026-10-22 (propriétaire) — « 🎁 Bonus à tous » : le même petit bonus (ex. 0,20 $) à TOUS les joueurs, par le même
+ * crédit que « Ajuster » (admin_credit_player : solde réel + e-mail « Vous avez reçu … » dans sa langue).
+ * Registre data/bonus_all_<jour>-<cents>.json : un même jour, un même montant n'est JAMAIS versé deux fois au même joueur
+ * (double clic, page rechargée, deux onglets). Exclus : comptes de la maison / admin, suspendus, bannis, supprimés.
+ * ------------------------------------------------------------------------------------------------------------------- */
+const ADMIN_ALL_PAY_MAX = 5.0;
+
+function admin_all_paid_file(string $key): string {
+  return rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'bonus_all_' . preg_replace('/[^0-9-]/', '', $key) . '.json';
+}
+
+function admin_all_pay_params(array $req, ?int $now = null): array {
+  $raw = str_replace(',', '.', trim((string) ($req['amount'] ?? '')));
+  if ($raw === '' || !is_numeric($raw)) return ['ok' => false, 'reason' => 'Montant invalide'];
+  $amt = round((float) $raw, 2);
+  if ($amt < 0.01) return ['ok' => false, 'reason' => 'Le montant doit être d’au moins 0,01 $'];
+  if ($amt > ADMIN_ALL_PAY_MAX) return ['ok' => false, 'reason' => 'Montant trop grand (5 $ au plus par joueur)'];
+  return ['ok' => true, 'amount' => $amt, 'key' => gmdate('Ymd', $now ?? time()) . '-' . (int) round($amt * 100)];
+}
+
+/** Joueurs à qui verser : [['id' => uuid, 'email', 'name', 'publicId']] ; $players = liste des profils (admin_profiles()). */
+function admin_all_pay_players(array $players, callable $isHouse): array {
+  $out = []; $seen = [];
+  foreach ($players as $p) {
+    if (!is_array($p)) continue;
+    $id = (string) ($p['id'] ?? '');
+    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id) || isset($seen[$id])) continue;
+    if (in_array(strtolower((string) ($p['role'] ?? '')), ['suspended', 'banned', 'deleted', 'admin'], true)) continue;
+    $em = strtolower(trim((string) ($p['email'] ?? '')));
+    if ($em !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($em)) continue;
+    if ($isHouse($id, $p)) continue;
+    $seen[$id] = 1;
+    $out[] = ['id' => $id, 'email' => $em, 'name' => trim((string) ($p['name'] ?? '')), 'publicId' => (string) ($p['publicId'] ?? '')];
+  }
+  return $out;
+}
+
+/** Aperçu : combien de joueurs, total, déjà payés aujourd'hui avec ce montant. */
+function admin_all_pay_preview(array $req, array $players, ?int $now = null): array {
+  $p = admin_all_pay_params($req, $now);
+  if (empty($p['ok'])) return $p;
+  $led = admin_gift_json(admin_all_paid_file($p['key']));
+  $todo = 0; $paid = 0; $check = 0; $mail = 0;
+  foreach ($players as $r) {
+    $e = $led[$r['id']] ?? null;
+    if (is_array($e) && !empty($e['pending'])) $check++;
+    elseif (is_array($e) && !empty($e['ok'])) $paid++;
+    else { $todo++; if ($r['email'] !== '') $mail++; }
+  }
+  return ['ok' => true, 'key' => $p['key'], 'amount' => $p['amount'], 'players' => count($players), 'count' => $todo, 'withMail' => $mail,
+    'total' => round($todo * $p['amount'], 2), 'already' => $paid, 'check' => $check];
+}
+
+/**
+ * Verse, un par un, au plus $limit joueurs (l'écran rappelle tant que « more »). Réservation dans le registre AVANT le
+ * crédit ; plantage pendant le crédit → « à vérifier », jamais reversé tout seul. S'arrête au premier refus.
+ */
+function admin_all_pay_run(array $req, array $players, callable $pay, int $limit = 5, ?int $now = null): array {
+  if ((string) ($req['confirm'] ?? '') !== 'PAYER') return ['ok' => false, 'reason' => 'Confirmation manquante : tapez PAYER'];
+  $p = admin_all_pay_params($req, $now);
+  if (empty($p['ok'])) return $p;
+  $key = $p['key']; $amt = $p['amount']; $file = admin_all_paid_file($key);
+  $lk = @fopen($file . '.run.lock', 'c');
+  if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) {
+    if ($lk) fclose($lk);
+    return ['ok' => false, 'reason' => 'Un envoi du bonus est déjà en cours (autre onglet ?). Attendez qu’il finisse.'];
+  }
+  $paid = 0; $errors = []; $mailFailed = 0; $t0 = microtime(true);
+  try {
+    foreach ($players as $r) {
+      if ($paid >= $limit || microtime(true) - $t0 > 20) break;
+      $uid = $r['id'];
+      $go = admin_gift_led_with($file, static function (array &$led) use ($uid, $amt): bool {
+        if (isset($led[$uid])) return false;
+        $led[$uid] = ['amount' => $amt, 'at' => date('c'), 'ok' => false, 'pending' => true];
+        return true;
+      });
+      if (!$go) continue;
+      $GLOBALS['OROLADO_NOTIFY_LAST'] = null;
+      try {
+        $res = $pay($uid, $amt, 'Bonus offert à tous', ['email' => $r['email'], 'publicId' => $r['publicId']]);
+      } catch (Throwable $e) {
+        $errors[] = ['id' => $uid, 'email' => $r['email'], 'reason' => 'Erreur pendant le crédit (' . $e->getMessage() . ') : vérifiez le solde du joueur'];
+        break;
+      }
+      $ok = is_array($res) && !empty($res['ok']);
+      $reason = $ok ? '' : (string) (is_array($res) ? ($res['reason'] ?? 'Échec') : 'Échec');
+      $nl = $GLOBALS['OROLADO_NOTIFY_LAST'] ?? null;
+      $mail = $ok ? (is_array($nl) ? (string) ($nl['mail'] ?? 'none') : 'none') : '';
+      admin_gift_led_with($file, static function (array &$led) use ($uid, $amt, $ok, $reason, $mail): void {
+        if ($ok) $led[$uid] = ['amount' => $amt, 'at' => date('c'), 'ok' => true, 'mail' => $mail];
+        else unset($led[$uid]); // refusé (rien versé) : pourra être retenté
+      });
+      if (!$ok) { $errors[] = ['id' => $uid, 'email' => $r['email'], 'reason' => $reason]; break; }
+      if ($mail === 'failed') $mailFailed++;
+      $paid++;
+    }
+  } finally {
+    flock($lk, LOCK_UN);
+    fclose($lk);
+  }
+  if (function_exists('admin_bust_cache')) admin_bust_cache();
+  $left = admin_all_pay_preview($req, $players, $now);
+  return ['ok' => !$errors, 'paid' => $paid, 'total' => round($paid * $amt, 2), 'mailFailed' => $mailFailed, 'errors' => $errors,
+    'remaining' => (int) ($left['count'] ?? 0), 'more' => !$errors && (int) ($left['count'] ?? 0) > 0,
+    'reason' => $errors ? ('Arrêt (' . ($errors[0]['email'] ?: $errors[0]['id']) . ') : ' . $errors[0]['reason']) : ''];
 }
