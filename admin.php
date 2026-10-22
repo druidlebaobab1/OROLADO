@@ -4041,16 +4041,17 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     if (!b || !b.job) { box.hidden = true; return; }
     box.hidden = false;
     $m('baBgLine').textContent = money(b.amount) + ' par joueur · ' + (b.paid || 0) + ' payé(s) · ' + money(b.total || 0)
-      + (b.remaining != null ? ' · il en reste ' + b.remaining : '') + (b.mailFailed ? ' · ⚠ ' + b.mailFailed + ' e-mail(s) non parti(s) (bonus crédité)' : '');
+      + (b.remaining != null ? ' · il en reste ' + b.remaining : '') + (b.check ? ' · ' + b.check + ' en cours / à vérifier' : '') + (b.mailFailed ? ' · ⚠ ' + b.mailFailed + ' e-mail(s) non parti(s) (bonus crédité)' : '');
     $m('baBgState').textContent = b.active ? '⏳ En cours sur le serveur — vous pouvez fermer la page.' : (b.reason || 'Arrêté.');
     $m('baBgState').style.color = b.active ? '' : (/^Arrêt/.test(b.reason || '') ? '#FCA5A5' : '#86EFAC');
     $m('baPause').hidden = !b.active; $m('baResume').hidden = b.active || /^Terminé/.test(b.reason || '');
   }
   async function baStatus() {
     clearTimeout(baTimer);
-    const j = await ajax({action:'bonus_all_status'});
+    let j = null;
+    try { j = await ajax({action:'bonus_all_status'}); } catch (e) { j = null; } // réseau / serveur occupé : on réessaie
     if (j && j.ok) baBg(j.bg);
-    if ($m('bonusAllModal').classList.contains('on') && j && j.bg && j.bg.active) baTimer = setTimeout(baStatus, 5000);
+    if ($m('bonusAllModal').classList.contains('on') && (!j || (j.bg && j.bg.active))) baTimer = setTimeout(baStatus, 5000);
   }
   async function baRun() {
     if (baBusy || !baPlan || !(baPlan.count > 0)) return;

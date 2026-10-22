@@ -583,8 +583,9 @@ function admin_all_job_status(): array {
   unset($j['token'], $j['uid']);
   // compteur en direct : lu dans le registre (avance joueur par joueur, pas seulement à la fin d'un paquet)
   $led = admin_gift_json(admin_all_paid_file((string) ($j['key'] ?? '')));
-  $ok = 0; foreach ($led as $e) if (is_array($e) && !empty($e['ok'])) $ok++;
+  $ok = 0; $pend = 0; foreach ($led as $e) { if (is_array($e) && !empty($e['ok'])) $ok++; elseif (is_array($e) && !empty($e['pending'])) $pend++; }
   $j['paid'] = max((int) ($j['paid'] ?? 0), $ok);
+  $j['check'] = $pend;
   $j['total'] = round(max((float) ($j['total'] ?? 0), $ok * (float) ($j['amount'] ?? 0)), 2);
   return ['job' => true] + $j;
 }
@@ -595,7 +596,7 @@ function admin_all_job_step(string $token, array $players, callable $pay, ?int $
   if (!$j || empty($j['active']) || !hash_equals((string) ($j['token'] ?? ''), $token)) return 'bad';
   admin_all_job_update(static function (array &$x) use ($token): void { if (hash_equals((string) ($x['token'] ?? ''), $token)) $x['lastAt'] = time(); });
   if (function_exists('orolado_bonus_all_marker')) @touch(orolado_bonus_all_marker());
-  $r = admin_all_pay_run(['amount' => (string) $j['amount'], 'confirm' => 'PAYER'], $players, $pay, 200, $now, 15);
+  $r = admin_all_pay_run(['amount' => (string) $j['amount'], 'confirm' => 'PAYER'], $players, $pay, 4, $now, 8); // court : le serveur coupe une demande à 30 s
   if (!empty($r['busy'])) return 'busy';
   $out = 'next';
   admin_all_job_update(static function (array &$x) use ($token, $r, &$out): void {
