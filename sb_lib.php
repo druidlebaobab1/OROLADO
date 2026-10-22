@@ -650,7 +650,9 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
     $calls++;
     $log[] = 'fx ' . $day . (sb_import_fixtures($day, $now) ? '' : ' ✗');
   }
-  $oddsEvery = [$d0 => 1800, $d1 => 10800, $d2 => 10800] + array_fill_keys($mid, 43200) + array_fill_keys($lat, 86400); // cotes : J toutes les 30 min (2026-10-22, marge 2,5 %) ; J+3…J+7 12 h ; J+8…J+14 24 h
+  // jour chargé (week-end) : si les lectures du jour vont plus vite que prévu, cotes du jour toutes les 2 h (le direct garde sa part)
+  $bud = sb_budget($now); $tight = $bud['used'] > SB_FOOT_CAP * 0.75 * min(1.0, ($now % 86400) / 86400 + 0.15);
+  $oddsEvery = [$d0 => $tight ? 7200 : 1800, $d1 => 10800, $d2 => 10800] + array_fill_keys($mid, 43200) + array_fill_keys($lat, 86400); // cotes : J toutes les 30 min (2026-10-22, marge 2,5 %) ; J+3…J+7 12 h ; J+8…J+14 24 h
   $pages = 0;
   foreach (array_merge([$d0, $d1, $d2], $far) as $day) {
     if ($calls >= $max || $pages >= SB_ODDS_PAGES_RUN) break;
