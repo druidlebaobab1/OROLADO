@@ -479,14 +479,22 @@ check('admin : état du direct', ($la = sb_live_admin($B5))['fx'] === 1 && $la['
 
 // règlement (score des 90 min), jamais annulé « posé après le coup d'envoi »
 $live1 = $bet; $balS = $bal[$A];
-sb_with('results.json', static function (array &$s) use ($LT, $B5) { $s['fx']['9101'] = ['v' => 'fin', 'st' => 'FT', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [3, 1], 'ht' => [1, 0], 'at' => $B5, 't' => 'Live Rovers - Direct FC']; return true; });
+sb_with('results.json', static function (array &$s) use ($LT, $B5) { $s['fx']['9101'] = ['v' => 'fin', 'st' => 'FT', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [3, 1], 'ht' => [1, 0], 'at' => $B5, 't' => 'Live Rovers - Direct FC', 'evs' => [[20, 'g'], [50, 'g'], [75, 'g'], [88, 'g']]]; return true; });
 sp_resolve(load_db());
 $byId = []; foreach (sp_my_bets('u_a') as $b) $byId[$b['id']] = $b;
 check('règlement : 1x2 H gagné à 3-1 (pari posé à 2-0, 63e), payé', ($byId[$live1['id']]['status'] ?? '') === 'won' && $bal[$A] > $balS);
 $paid = $bal[$A]; sp_resolve(load_db());
 check('jamais payé deux fois', abs($bal[$A] - $paid) < 0.001);
-check('choix du direct : jamais « annulé » parce que posé après le coup d\'envoi', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'A', 'lv' => 1], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [0, 1]]], $B5, true) === 'won'
+check('choix du direct : jamais « annulé » parce que posé après le coup d\'envoi', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'A', 'lv' => 1], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [0, 1], 'evs' => []]], $B5, true) === 'won'
   && sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'A'], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [0, 1]]], $B5, true) === 'void');
+// 2026-10-22 : flux en retard — but déjà marqué mais pas encore dans le score affiché au moment du pari → annulé (remboursé)
+$rLate = ['9101' => ['v' => 'fin', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [2, 1], 'evs' => [[10, 'g'], [30, 'g'], [42, 'g']]]];
+check('direct en retard : but à la 42e, pari à la 41e avec 1-1 affiché → annulé', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, $rLate, $B5, true) === 'void');
+check('but 5 min APRÈS le pari (46e, pari à 41e) : réglé normalement', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [2, 1], 'evs' => [[10, 'g'], [30, 'g'], [46, 'g']]]], $B5, true) === 'won');
+check('carton rouge juste avant le pari (40e, pari à 41e) → annulé', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [2, 1], 'evs' => [[10, 'g'], [30, 'g'], [40, 'r'], [60, 'g']]]], $B5, true) === 'void');
+check('liste des buts pas encore lue : pas de règlement (attente)', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [2, 1]]], $B5, true) === null);
+check('score saisi par l\'admin : réglé sans liste des buts', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'sc' => [1, 1], 'm' => 41], $LT + 3000, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [2, 1], 'man' => 1]], $B5, true) === 'won');
+check('avant-match : la règle du direct ne s\'applique pas', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H'], $LT - 100, ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [2, 1]]], $B5, true) === 'won');
 // fin du match : gardé 10 min, suspendu
 $alt['fixtures?live=all&timezone=UTC'] = '{"errors":[],"response":[]}';
 sb_with('live.json', static function (array &$s) { $s['fx']['9101']['m'] = 90; return true; });
