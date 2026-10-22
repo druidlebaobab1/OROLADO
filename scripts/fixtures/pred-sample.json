@@ -1,0 +1,18 @@
+[
+  {"id": "btc-above-1", "cat": "crypto", "title_fr": "Le Bitcoin sera-t-il au-dessus de 80 000 $ le {D2} à 12 h (UTC) selon Binance (BTC/USDT) ?", "title_en": "Will Bitcoin be above $80,000 on {D2} at 12:00 UTC on Binance (BTC/USDT)?",
+   "options": [{"k": "yes", "fr": "Oui", "en": "Yes", "p": 0.5}, {"k": "no", "fr": "Non", "en": "No", "p": 0.5}],
+   "closeAt": "{C1}", "resolveAt": "{R2}", "desc_fr": "Prix de clôture Binance BTC/USDT de la minute qui se termine à l’heure dite.", "desc_en": "Closing price of the one-minute BTC/USDT candle on Binance at the stated time.", "auto": true, "asset": "BTCUSDT", "rule": {"type": "above", "value": 80000}, "source": "https://www.binance.com/en/trade/BTC_USDT"},
+  {"id": "eth-range-1", "cat": "crypto", "title_fr": "Où sera l’Ethereum (ETH/USDT, Binance) le {D2} à 12 h UTC ?", "title_en": "Where will Ethereum (ETH/USDT, Binance) be on {D2} at 12:00 UTC?",
+   "options": [{"k": "lo", "fr": "Moins de 2 300 $", "en": "Under $2,300", "p": 0.3}, {"k": "mid", "fr": "Entre 2 300 $ et 2 500 $", "en": "Between $2,300 and $2,500", "p": 0.45}, {"k": "hi", "fr": "Plus de 2 500 $", "en": "Over $2,500", "p": 0.25}],
+   "closeAt": "{C1}", "resolveAt": "{R2}", "auto": true, "asset": "ETHUSDT", "rule": {"type": "range", "ranges": [[null, 2300], [2300, 2500], [2500, null]]}, "source": "https://www.binance.com/en/trade/ETH_USDT"},
+  {"id": "fed-dec", "cat": "economie", "title_fr": "La Fed baissera-t-elle ses taux lors de sa réunion de décembre 2026 ?", "title_en": "Will the Fed cut rates at its December 2026 meeting?",
+   "options": [{"k": "cut", "fr": "Baisse", "en": "Cut", "p": 0.62}, {"k": "hold", "fr": "Pas de changement", "en": "No change", "p": 0.35}, {"k": "hike", "fr": "Hausse", "en": "Hike", "p": 0.03}],
+   "closeAt": "{C10}", "resolveAt": "{R12}", "auto": false, "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"},
+  {"id": "oscar-film", "cat": "divertissement", "title_fr": "Quel film remportera l’Oscar du meilleur film à la cérémonie de mars 2027, selon l’Académie des arts et des sciences du cinéma ?", "title_en": "Which film will win Best Picture at the March 2027 Oscars?",
+   "options": [{"k": "a", "fr": "Film A", "en": "Film A", "p": 0.3}, {"k": "b", "fr": "Film B", "en": "Film B", "p": 0.25}, {"k": "c", "fr": "Film C", "en": "Film C", "p": 0.2}, {"k": "d", "fr": "Film D", "en": "Film D", "p": 0.15}, {"k": "e", "fr": "Un autre film", "en": "Another film", "p": 0.1}],
+   "closeAt": "{C10}", "resolveAt": "{R12}", "auto": false, "source": "https://www.oscars.org/"},
+  {"id": "bad-cat", "cat": "astrologie", "title_fr": "Catégorie inconnue ?", "options": [{"k": "yes", "fr": "Oui", "p": 0.5}, {"k": "no", "fr": "Non", "p": 0.5}], "closeAt": "{C10}", "resolveAt": "{R12}", "auto": false},
+  {"id": "bad-sum", "cat": "monde", "title_fr": "Chances incomplètes ?", "options": [{"k": "yes", "fr": "Oui", "p": 0.4}, {"k": "no", "fr": "Non", "p": 0.3}], "closeAt": "{C10}", "resolveAt": "{R12}", "auto": false},
+  {"id": "bad-past", "cat": "monde", "title_fr": "Déjà fermé ?", "options": [{"k": "yes", "fr": "Oui", "p": 0.5}, {"k": "no", "fr": "Non", "p": 0.5}], "closeAt": "2020-01-01T00:00:00Z", "resolveAt": "2020-01-02T00:00:00Z", "auto": false},
+  {"id": "bad-auto", "cat": "crypto", "title_fr": "Auto sans règle ?", "options": [{"k": "yes", "fr": "Oui", "p": 0.5}, {"k": "no", "fr": "Non", "p": 0.5}], "closeAt": "{C1}", "resolveAt": "{R2}", "auto": true, "asset": "BTCUSDT"}
+]

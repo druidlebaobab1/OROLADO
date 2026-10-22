@@ -1,0 +1,3432 @@
+[
+ {
+  "id": "btc-above-2026-10-25",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-10-25T00:00:00Z",
+  "resolveAt": "2026-10-26T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1792972740000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin au-dessus de 82 000 $ le 25 oct. ?",
+  "title_en": "Bitcoin above $82,000 on Oct 25?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.533
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.467
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 82000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 82 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $82,000 (midnight UTC)."
+ },
+ {
+  "id": "brazil-pres-runoff-2026",
+  "cat": "politique",
+  "title_fr": "Présidentielle Brésil (2nd tour, 25 oct.) : qui gagne ?",
+  "title_en": "Brazil presidential runoff (Oct 25): who wins?",
+  "options": [
+   {
+    "k": "flavio",
+    "fr": "Flávio Bolsonaro",
+    "en": "Flávio Bolsonaro",
+    "p": 0.785
+   },
+   {
+    "k": "lula",
+    "fr": "Lula da Silva",
+    "en": "Lula da Silva",
+    "p": 0.215
+   }
+  ],
+  "closeAt": "2026-10-24T23:00:00Z",
+  "resolveAt": "2026-10-26T03:00:00Z",
+  "source": "https://resultados.tse.jus.br/",
+  "why": "Vote le 25 oct. ; mises fermées la veille ; résultat publié par le Tribunal supérieur électoral (TSE).",
+  "probSource": "Polymarket 'Brazil Presidential Election' (22 oct. 2026) : Flávio 78,8 %, Lula 21,5 %.",
+  "desc_fr": "Candidat déclaré élu au second tour du 25 octobre 2026 selon le TSE (Tribunal superior eleitoral).",
+  "desc_en": "Candidate declared winner of the 25 Oct 2026 runoff by Brazil's Superior Electoral Court (TSE).",
+  "auto": false
+ },
+ {
+  "id": "serbia-parl-2026",
+  "cat": "politique",
+  "title_fr": "Législatives Serbie (25 oct.) : quelle liste arrive 1re ?",
+  "title_en": "Serbia parliamentary election (Oct 25): top list?",
+  "options": [
+   {
+    "k": "sns",
+    "fr": "Serbie unie (Vučić)",
+    "en": "United Serbia (Vučić)",
+    "p": 0.67
+   },
+   {
+    "k": "students",
+    "fr": "Liste des étudiants",
+    "en": "Student list",
+    "p": 0.32
+   },
+   {
+    "k": "other",
+    "fr": "Autre",
+    "en": "Other",
+    "p": 0.01
+   }
+  ],
+  "closeAt": "2026-10-24T22:00:00Z",
+  "resolveAt": "2026-10-27T12:00:00Z",
+  "source": "https://www.rik.parlament.gov.rs/",
+  "why": "Vote le 25 oct. ; mises fermées la veille ; résultats de la Commission électorale de la République (RIK).",
+  "probSource": "Polymarket 'Serbia Parliamentary Election Winner' : Serbie unie 67,5 %, Liste étudiante 32,5 %.",
+  "desc_fr": "Liste ayant obtenu le plus de sièges à l'Assemblée nationale selon les résultats de la RIK.",
+  "desc_en": "Electoral list winning the most National Assembly seats per the Republic Electoral Commission (RIK).",
+  "auto": false
+ },
+ {
+  "id": "fed-2026-10",
+  "cat": "economie",
+  "title_fr": "Fed (28 oct.) : décision sur les taux ?",
+  "title_en": "Fed decision (Oct 28): rates?",
+  "options": [
+   {
+    "k": "hold",
+    "fr": "Statu quo",
+    "en": "No change",
+    "p": 0.875
+   },
+   {
+    "k": "hike25",
+    "fr": "Hausse de 0,25 pt",
+    "en": "25 bp hike",
+    "p": 0.115
+   },
+   {
+    "k": "other",
+    "fr": "Autre (baisse ou +0,50 pt)",
+    "en": "Other (cut or 50+ bp hike)",
+    "p": 0.01
+   }
+  ],
+  "closeAt": "2026-10-28T17:00:00Z",
+  "resolveAt": "2026-10-28T18:15:00Z",
+  "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+  "why": "Communiqué FOMC à 18:00 UTC ; mises fermées 1 h avant.",
+  "probSource": "Polymarket 'Fed Decision in October?' : statu quo 87,5 %, +25 pb 11,5 %.",
+  "desc_fr": "Variation de la borne haute de la fourchette des Fed funds annoncée dans le communiqué du FOMC du 28 octobre.",
+  "desc_en": "Change in the upper bound of the fed funds target range in the 28 Oct FOMC statement.",
+  "auto": false
+ },
+ {
+  "id": "us-gdp-q3-2026",
+  "cat": "economie",
+  "title_fr": "Croissance du PIB américain T3 2026 (1re estimation) ?",
+  "title_en": "US Q3 2026 GDP growth (advance estimate)?",
+  "options": [
+   {
+    "k": "lt25",
+    "fr": "Moins de 2,5 %",
+    "en": "Below 2.5%",
+    "p": 0.156
+   },
+   {
+    "k": "25-30",
+    "fr": "2,5 % à 3,0 %",
+    "en": "2.5% to 3.0%",
+    "p": 0.174
+   },
+   {
+    "k": "ge30",
+    "fr": "3,0 % ou plus",
+    "en": "3.0% or more",
+    "p": 0.67
+   }
+  ],
+  "closeAt": "2026-10-29T11:30:00Z",
+  "resolveAt": "2026-10-29T13:00:00Z",
+  "source": "https://www.bea.gov/data/gdp/gross-domestic-product",
+  "why": "Chiffre publié par le BEA le 29 oct. à 12:30 UTC ; mises fermées 1 h avant.",
+  "probSource": "Polymarket 'US GDP growth in Q3 2026?' : ≥3 % 63,5 %, 2,5–3 % 16,5 %, reste 14,8 %.",
+  "desc_fr": "Taux annualisé corrigé des variations saisonnières, estimation « advance » du BEA. Valeur pile sur une borne : tranche supérieure.",
+  "desc_en": "Seasonally adjusted annualised rate, BEA advance estimate. Value exactly on a boundary goes to the higher bracket.",
+  "auto": false
+ },
+ {
+  "id": "israel-knesset-2026",
+  "cat": "politique",
+  "title_fr": "Législatives Israël (27 oct.) : 1er parti en sièges ?",
+  "title_en": "Israel election (Oct 27): party with most seats?",
+  "options": [
+   {
+    "k": "yashar",
+    "fr": "Yashar (Eisenkot)",
+    "en": "Yashar (Eisenkot)",
+    "p": 0.68
+   },
+   {
+    "k": "likud",
+    "fr": "Likoud (Netanyahou)",
+    "en": "Likud (Netanyahu)",
+    "p": 0.31
+   },
+   {
+    "k": "other",
+    "fr": "Autre",
+    "en": "Other",
+    "p": 0.01
+   }
+  ],
+  "closeAt": "2026-10-26T21:00:00Z",
+  "resolveAt": "2026-10-30T12:00:00Z",
+  "source": "https://bechirot.gov.il/",
+  "why": "Vote le 27 oct. ; mises fermées la veille ; résultats officiels de la Commission électorale centrale. Report du scrutin = remboursement.",
+  "probSource": "Polymarket 'Israeli Legislative Election Winner' : Yashar 68,5 %, Likoud 31 %.",
+  "desc_fr": "Parti ou liste avec le plus de sièges à la Knesset selon les résultats officiels. Égalité de sièges : plus de voix.",
+  "desc_en": "Party/list with most Knesset seats per official results. Seat tie: most votes.",
+  "auto": false
+ },
+ {
+  "id": "btc-above-2026-10-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-10-31T00:00:00Z",
+  "resolveAt": "2026-11-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1793491140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin au-dessus de 85 000 $ le 31 oct. ?",
+  "title_en": "Bitcoin above $85,000 on Oct 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.27
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.73
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 85000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 85 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $85,000 (midnight UTC)."
+ },
+ {
+  "id": "btc-below-2026-10-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-10-31T00:00:00Z",
+  "resolveAt": "2026-11-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1793491140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin sous 78 000 $ le 31 oct. ?",
+  "title_en": "Bitcoin below $78,000 on Oct 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.175
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.825
+   }
+  ],
+  "rule": {
+   "type": "below",
+   "value": 78000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est inférieur à 78 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is below $78,000 (midnight UTC)."
+ },
+ {
+  "id": "eth-above-2026-10-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ETHUSDT",
+  "closeAt": "2026-10-31T00:00:00Z",
+  "resolveAt": "2026-11-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ETHUSDT&interval=1m&startTime=1793491140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 2 428 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Ethereum au-dessus de 2 500 $ le 31 oct. ?",
+  "title_en": "Ethereum above $2,500 on Oct 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.335
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.665
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 2500,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 2 500 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $2,500 (midnight UTC)."
+ },
+ {
+  "id": "world-series-2026",
+  "cat": "sport",
+  "title_fr": "Baseball : vainqueur des World Series 2026 ?",
+  "title_en": "Baseball: 2026 World Series winner?",
+  "options": [
+   {
+    "k": "mil",
+    "fr": "Milwaukee Brewers",
+    "en": "Milwaukee Brewers",
+    "p": 0.63
+   },
+   {
+    "k": "tb",
+    "fr": "Tampa Bay Rays",
+    "en": "Tampa Bay Rays",
+    "p": 0.37
+   }
+  ],
+  "closeAt": "2026-10-23T23:00:00Z",
+  "resolveAt": "2026-11-01T06:00:00Z",
+  "source": "https://www.mlb.com/postseason",
+  "why": "Série au meilleur des 7 matchs dès le 23 oct. (20h ET) ; mises fermées avant le match 1.",
+  "probSource": "Polymarket 'MLB World Series Champion 2026' : Brewers 63,1 %, Rays 36,9 %.",
+  "desc_fr": "Équipe qui remporte la finale de la Ligue majeure de baseball (4 victoires sur 7), selon MLB.com.",
+  "desc_en": "Team winning the best-of-seven MLB World Series, per MLB.com.",
+  "auto": false
+ },
+ {
+  "id": "goncourt-2026",
+  "cat": "divertissement",
+  "title_fr": "Prix Goncourt 2026 (3 nov.) : quel livre gagne ?",
+  "title_en": "Prix Goncourt 2026 (Nov 3): winning book?",
+  "options": [
+   {
+    "k": "jaenada",
+    "fr": "Jaenada – L'inconnue du quai de Javel",
+    "en": "Jaenada – L'inconnue du quai de Javel",
+    "p": 0.24
+   },
+   {
+    "k": "bergmann",
+    "fr": "Bergmann – Minotaure",
+    "en": "Bergmann – Minotaure",
+    "p": 0.14
+   },
+   {
+    "k": "haenel",
+    "fr": "Haenel – La solitude des professeurs…",
+    "en": "Haenel – La solitude des professeurs…",
+    "p": 0.14
+   },
+   {
+    "k": "prudhomme",
+    "fr": "Prudhomme – De l'autre côté du lac",
+    "en": "Prudhomme – De l'autre côté du lac",
+    "p": 0.12
+   },
+   {
+    "k": "godard",
+    "fr": "Godard – Nous aussi",
+    "en": "Godard – Nous aussi",
+    "p": 0.11
+   },
+   {
+    "k": "other",
+    "fr": "Autre (Devillers, Mélois, Rolin)",
+    "en": "Other (Devillers, Mélois, Rolin)",
+    "p": 0.25
+   }
+  ],
+  "closeAt": "2026-10-26T22:00:00Z",
+  "resolveAt": "2026-11-03T13:00:00Z",
+  "source": "https://www.academiegoncourt.com/",
+  "why": "Vote du jury le 3 nov. au Drouant ; mises fermées avant l'annonce des 4 finalistes (27 oct.).",
+  "probSource": "Estimation éditoriale : 2e sélection de 8 titres (Livres Hebdo 6 oct.), favoris cités par L'Éclaireur Fnac ; pas de marché coté.",
+  "desc_fr": "Roman couronné par l'Académie Goncourt le 3 novembre 2026 parmi les 8 titres de la 2e sélection.",
+  "desc_en": "Novel awarded the Prix Goncourt on 3 Nov 2026, among the 8 second-round titles.",
+  "auto": false
+ },
+ {
+  "id": "us-nfp-2026-10",
+  "cat": "economie",
+  "title_fr": "Emplois créés aux USA en octobre (rapport du 6 nov.) ?",
+  "title_en": "US jobs added in October (Nov 6 report)?",
+  "options": [
+   {
+    "k": "neg",
+    "fr": "Moins de 0 (pertes)",
+    "en": "Below 0",
+    "p": 0.092
+   },
+   {
+    "k": "0-50",
+    "fr": "0 à 50 000",
+    "en": "0 to 50k",
+    "p": 0.289
+   },
+   {
+    "k": "50-100",
+    "fr": "50 000 à 100 000",
+    "en": "50k to 100k",
+    "p": 0.318
+   },
+   {
+    "k": "100p",
+    "fr": "100 000 ou plus",
+    "en": "100k or more",
+    "p": 0.301
+   }
+  ],
+  "closeAt": "2026-11-06T12:30:00Z",
+  "resolveAt": "2026-11-06T14:00:00Z",
+  "source": "https://www.bls.gov/news.release/empsit.nr0.htm",
+  "why": "Publication BLS le 6 nov. à 13:30 UTC ; mises fermées 1 h avant.",
+  "probSource": "Polymarket 'How many jobs added in October?' (tranches regroupées).",
+  "desc_fr": "Variation de l'emploi salarié non agricole (Nonfarm payrolls) d'octobre, 1re publication BLS. Pile sur une borne : tranche supérieure.",
+  "desc_en": "October nonfarm payroll change, first BLS print. Exactly on a boundary: higher bracket.",
+  "auto": false
+ },
+ {
+  "id": "us-unemp-2026-10",
+  "cat": "economie",
+  "title_fr": "Taux de chômage USA en octobre (6 nov.) ?",
+  "title_en": "US unemployment rate for October (Nov 6)?",
+  "options": [
+   {
+    "k": "le41",
+    "fr": "4,1 % ou moins",
+    "en": "4.1% or lower",
+    "p": 0.336
+   },
+   {
+    "k": "42",
+    "fr": "4,2 %",
+    "en": "4.2%",
+    "p": 0.371
+   },
+   {
+    "k": "ge43",
+    "fr": "4,3 % ou plus",
+    "en": "4.3% or higher",
+    "p": 0.293
+   }
+  ],
+  "closeAt": "2026-11-06T12:30:00Z",
+  "resolveAt": "2026-11-06T14:00:00Z",
+  "source": "https://www.bls.gov/news.release/empsit.nr0.htm",
+  "why": "Publication BLS le 6 nov. à 13:30 UTC ; mises fermées 1 h avant.",
+  "probSource": "Polymarket 'October Unemployment Rate' : 4,2 % 39 %, 4,1 % 29,5 %, 4,3 % 27,5 %.",
+  "desc_fr": "Taux U-3 corrigé des variations saisonnières, arrondi à 0,1 pt, publié par le BLS.",
+  "desc_en": "Seasonally adjusted U-3 rate (one decimal) published by the BLS.",
+  "auto": false
+ },
+ {
+  "id": "best-week-2026-11-02",
+  "cat": "crypto",
+  "title_fr": "Meilleure crypto de la semaine du 2 au 8 nov. ?",
+  "title_en": "Best crypto of the week Nov 2–8?",
+  "options": [
+   {
+    "k": "btc",
+    "fr": "Bitcoin",
+    "en": "Bitcoin",
+    "p": 0.119
+   },
+   {
+    "k": "eth",
+    "fr": "Ethereum",
+    "en": "Ethereum",
+    "p": 0.146
+   },
+   {
+    "k": "sol",
+    "fr": "Solana",
+    "en": "Solana",
+    "p": 0.175
+   },
+   {
+    "k": "bnb",
+    "fr": "BNB",
+    "en": "BNB",
+    "p": 0.123
+   },
+   {
+    "k": "xrp",
+    "fr": "XRP",
+    "en": "XRP",
+    "p": 0.205
+   },
+   {
+    "k": "doge",
+    "fr": "Dogecoin",
+    "en": "Dogecoin",
+    "p": 0.232
+   }
+  ],
+  "closeAt": "2026-11-01T00:00:00Z",
+  "resolveAt": "2026-11-09T00:00:00Z",
+  "auto": true,
+  "asset": "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,DOGEUSDT",
+  "rule": {
+   "type": "best_performer",
+   "assets": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
+    "XRPUSDT",
+    "DOGEUSDT"
+   ],
+   "from": "2026-11-02T00:00:00Z",
+   "to": "2026-11-09T00:00:00Z",
+   "read": "perf = close(1m kline ending at 'to') / close(1m kline ending at 'from') - 1; highest perf wins; exact tie -> refund"
+  },
+  "source": "https://data-api.binance.vision/api/v3/klines (spot, interval=1m)",
+  "why": "Variation future de 6 cours publics Binance ; mise fermée 24 h avant le prix de départ.",
+  "probSource": "Simulation Monte-Carlo (200 000 tirages), volatilités réalisées Binance 30/90 j, corrélation 0,75 entre cryptos.",
+  "desc_fr": "Gagne la crypto (parmi 6) dont le prix Binance progresse le plus (en %) entre 2026-11-02T00:00:00Z et 2026-11-09T00:00:00Z. Prix de départ et d'arrivée = clôtures Binance à ces heures exactes. Égalité parfaite : remboursement (minuit UTC).",
+  "desc_en": "Wins the coin (of 6) whose Binance price gains most (in %) between 2026-11-02T00:00:00Z and 2026-11-09T00:00:00Z. Start/end = Binance closes at those exact times. Exact tie: refund (midnight UTC) (midnight UTC)."
+ },
+ {
+  "id": "btc-above-2026-11-08",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-11-08T00:00:00Z",
+  "resolveAt": "2026-11-09T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1794182340000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin au-dessus de 82 000 $ le 8 nov. ?",
+  "title_en": "Bitcoin above $82,000 on Nov 8?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.503
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.497
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 82000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 82 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $82,000 (midnight UTC)."
+ },
+ {
+  "id": "sol-above-2026-11-08",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "SOLUSDT",
+  "closeAt": "2026-11-08T00:00:00Z",
+  "resolveAt": "2026-11-09T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=SOLUSDT&interval=1m&startTime=1794182340000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 104.4 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Solana au-dessus de 100 $ le 8 nov. ?",
+  "title_en": "Solana above $100 on Nov 8?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.621
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.379
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 100,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 100 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $100 (midnight UTC)."
+ },
+ {
+  "id": "xrp-above-2026-11-08",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "XRPUSDT",
+  "closeAt": "2026-11-08T00:00:00Z",
+  "resolveAt": "2026-11-09T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=XRPUSDT&interval=1m&startTime=1794182340000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 1.3411 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "XRP au-dessus de 1,30 $ le 8 nov. ?",
+  "title_en": "XRP above $1.3 on Nov 8?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.568
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.432
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 1.3,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 1,30 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $1.3 (midnight UTC)."
+ },
+ {
+  "id": "us-cpi-2026-10",
+  "cat": "economie",
+  "title_fr": "Inflation USA d'octobre (CPI, sur 1 mois) ?",
+  "title_en": "US October CPI (month-on-month)?",
+  "options": [
+   {
+    "k": "le01",
+    "fr": "0,1 % ou moins",
+    "en": "0.1% or less",
+    "p": 0.148
+   },
+   {
+    "k": "02",
+    "fr": "0,2 %",
+    "en": "0.2%",
+    "p": 0.287
+   },
+   {
+    "k": "03",
+    "fr": "0,3 %",
+    "en": "0.3%",
+    "p": 0.351
+   },
+   {
+    "k": "ge04",
+    "fr": "0,4 % ou plus",
+    "en": "0.4% or more",
+    "p": 0.214
+   }
+  ],
+  "closeAt": "2026-11-10T12:30:00Z",
+  "resolveAt": "2026-11-10T14:00:00Z",
+  "source": "https://www.bls.gov/cpi/",
+  "why": "Publication BLS le 10 nov. à 13:30 UTC ; mises fermées 1 h avant.",
+  "probSource": "Polymarket 'October Inflation US - Monthly' (normalisé).",
+  "desc_fr": "Variation mensuelle de l'indice CPI-U corrigé des variations saisonnières, arrondie à 0,1 pt, publiée par le BLS.",
+  "desc_en": "Monthly change in seasonally adjusted CPI-U, one decimal, as published by the BLS.",
+  "auto": false
+ },
+ {
+  "id": "bnb-above-2026-11-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BNBUSDT",
+  "closeAt": "2026-11-15T00:00:00Z",
+  "resolveAt": "2026-11-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BNBUSDT&interval=1m&startTime=1794787140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 737.8 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "BNB au-dessus de 750 $ le 15 nov. ?",
+  "title_en": "BNB above $750 on Nov 15?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.412
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.588
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 750,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 750 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $750 (midnight UTC)."
+ },
+ {
+  "id": "btc-above-2026-11-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-11-15T00:00:00Z",
+  "resolveAt": "2026-11-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1794787140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin au-dessus de 90 000 $ le 15 nov. ?",
+  "title_en": "Bitcoin above $90,000 on Nov 15?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.146
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.854
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 90000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 90 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $90,000 (midnight UTC)."
+ },
+ {
+  "id": "doge-above-2026-11-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "DOGEUSDT",
+  "closeAt": "2026-11-15T00:00:00Z",
+  "resolveAt": "2026-11-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=DOGEUSDT&interval=1m&startTime=1794787140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 0.0797 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Dogecoin au-dessus de 0,08 $ le 15 nov. ?",
+  "title_en": "Dogecoin above $0.08 on Nov 15?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.457
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.543
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 0.08,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 0,08 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $0.08 (midnight UTC)."
+ },
+ {
+  "id": "eth-below-2026-11-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ETHUSDT",
+  "closeAt": "2026-11-15T00:00:00Z",
+  "resolveAt": "2026-11-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ETHUSDT&interval=1m&startTime=1794787140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 2 428 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Ethereum sous 2 200 $ le 15 nov. ?",
+  "title_en": "Ethereum below $2,200 on Nov 15?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.226
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.774
+   }
+  ],
+  "rule": {
+   "type": "below",
+   "value": 2200,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est inférieur à 2 200 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is below $2,200 (midnight UTC)."
+ },
+ {
+  "id": "link-above-2026-11-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "LINKUSDT",
+  "closeAt": "2026-11-15T00:00:00Z",
+  "resolveAt": "2026-11-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=LINKUSDT&interval=1m&startTime=1794787140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 12.2 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Chainlink au-dessus de 12 $ le 15 nov. ?",
+  "title_en": "Chainlink above $12 on Nov 15?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.493
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.507
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 12,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 12 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $12 (midnight UTC)."
+ },
+ {
+  "id": "grammy-aoty-madonna",
+  "cat": "divertissement",
+  "title_fr": "Grammys 2027 : Madonna nommée à l'album de l'année ?",
+  "title_en": "Grammys 2027: Madonna nominated for Album of the Year?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.41
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.59
+   }
+  ],
+  "closeAt": "2026-11-15T23:00:00Z",
+  "resolveAt": "2026-11-16T20:00:00Z",
+  "source": "https://www.grammy.com/",
+  "why": "Nominations annoncées le 16 nov. ; mises fermées la veille.",
+  "probSource": "Kalshi, cité par TheLines (13 oct. 2026) : 'Confessions II' 41 ¢.",
+  "desc_fr": "Oui si « Confessions II » de Madonna figure parmi les nommés « Album of the Year » du 16 novembre 2026.",
+  "desc_en": "Yes if Madonna's 'Confessions II' is among the Album of the Year nominees on 16 Nov 2026.",
+  "auto": false
+ },
+ {
+  "id": "grammy-aoty-rosalia",
+  "cat": "divertissement",
+  "title_fr": "Grammys 2027 : Rosalía nommée à l'album de l'année ?",
+  "title_en": "Grammys 2027: Rosalía nominated for Album of the Year?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.26
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.74
+   }
+  ],
+  "closeAt": "2026-11-15T23:00:00Z",
+  "resolveAt": "2026-11-16T20:00:00Z",
+  "source": "https://www.grammy.com/",
+  "why": "Nominations annoncées le 16 nov. par la Recording Academy ; mises fermées la veille.",
+  "probSource": "Kalshi, cité par TheLines (13 oct. 2026) : 'Lux' 26 ¢.",
+  "desc_fr": "Oui si l'album « Lux » de Rosalía figure parmi les nommés « Album of the Year » annoncés le 16 novembre 2026.",
+  "desc_en": "Yes if Rosalía's 'Lux' is among the Album of the Year nominees announced on 16 Nov 2026.",
+  "auto": false
+ },
+ {
+  "id": "afcon-q-grpc-j4",
+  "cat": "sport",
+  "title_fr": "Élim. CAN 2027 : leader du groupe C après la 4e journée ?",
+  "title_en": "AFCON 2027 qualifiers: Group C leader after matchday 4?",
+  "options": [
+   {
+    "k": "civ",
+    "fr": "Côte d'Ivoire",
+    "en": "Ivory Coast",
+    "p": 0.62
+   },
+   {
+    "k": "gam",
+    "fr": "Gambie",
+    "en": "Gambia",
+    "p": 0.3
+   },
+   {
+    "k": "other",
+    "fr": "Ghana ou Somalie",
+    "en": "Ghana or Somalia",
+    "p": 0.08
+   }
+  ],
+  "closeAt": "2026-11-10T23:00:00Z",
+  "resolveAt": "2026-11-18T12:00:00Z",
+  "source": "https://www.cafonline.com/",
+  "why": "Journées 3 et 4 les 11 et 15 nov. ; mises fermées avant la J3 ; classement officiel CAF.",
+  "probSource": "Estimation : CIV et Gambie à 6 pts après J2 ; Polymarket 'AFCON 2027 Qualifying: Group C Winner' : CIV 81,5 %, Gambie 16 %.",
+  "desc_fr": "Équipe 1re du groupe C au classement officiel CAF après les matchs de la fenêtre de novembre (critères CAF en cas d'égalité).",
+  "desc_en": "Team top of Group C in CAF's official table after the November window (CAF tie-breakers).",
+  "auto": false
+ },
+ {
+  "id": "hunger-games-opening",
+  "cat": "divertissement",
+  "title_fr": "Hunger Games (sortie 20 nov.) : recettes du 1er week-end USA ?",
+  "title_en": "Hunger Games: Sunrise… US opening weekend gross?",
+  "options": [
+   {
+    "k": "lt65",
+    "fr": "Moins de 65 M$",
+    "en": "Below $65M",
+    "p": 0.28
+   },
+   {
+    "k": "65-75",
+    "fr": "65 à 75 M$",
+    "en": "$65M–75M",
+    "p": 0.36
+   },
+   {
+    "k": "75-85",
+    "fr": "75 à 85 M$",
+    "en": "$75M–85M",
+    "p": 0.18
+   },
+   {
+    "k": "85-95",
+    "fr": "85 à 95 M$",
+    "en": "$85M–95M",
+    "p": 0.11
+   },
+   {
+    "k": "ge95",
+    "fr": "95 M$ ou plus",
+    "en": "$95M or more",
+    "p": 0.07
+   }
+  ],
+  "closeAt": "2026-11-19T18:00:00Z",
+  "resolveAt": "2026-11-24T00:00:00Z",
+  "source": "https://www.the-numbers.com/movie/Hunger-Games-Sunrise-on-the-Reaping-The-(2026)#tab=box-office",
+  "why": "Mises fermées avant les avant-premières du jeudi soir ; chiffres réels publiés le lundi.",
+  "probSource": "Polymarket 'Hunger Games… Opening Weekend Box Office' (lissé, marché peu liquide).",
+  "desc_fr": "Recettes USA/Canada du vendredi au dimanche (avant-premières du jeudi incluses), chiffres réels publiés lundi.",
+  "desc_en": "US/Canada Fri–Sun gross (incl. Thursday previews), actuals published Monday.",
+  "auto": false
+ },
+ {
+  "id": "nz-election-2026",
+  "cat": "politique",
+  "title_fr": "Législatives Nouvelle-Zélande (7 nov.) : 1er parti ?",
+  "title_en": "New Zealand election (Nov 7): largest party?",
+  "options": [
+   {
+    "k": "national",
+    "fr": "Parti national",
+    "en": "National Party",
+    "p": 0.55
+   },
+   {
+    "k": "labour",
+    "fr": "Parti travailliste",
+    "en": "Labour Party",
+    "p": 0.43
+   },
+   {
+    "k": "other",
+    "fr": "Autre",
+    "en": "Other",
+    "p": 0.02
+   }
+  ],
+  "closeAt": "2026-11-06T19:00:00Z",
+  "resolveAt": "2026-11-28T00:00:00Z",
+  "source": "https://www.electionresults.govt.nz/",
+  "why": "Bureaux ouverts le 7 nov. 9h NZ ; mises fermées avant ; décompte publié par l'Electoral Commission.",
+  "probSource": "Polymarket 'New Zealand legislative election winner?' : National 55 %, Labour 43 %.",
+  "desc_fr": "Parti avec le plus de sièges selon les résultats officiels de l'Electoral Commission. Égalité : plus de voix de parti.",
+  "desc_en": "Party with most seats per official Electoral Commission results. Tie: most party votes.",
+  "auto": false
+ },
+ {
+  "id": "ada-above-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ADAUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ADAUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 0.2175 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Cardano au-dessus de 0,2 $ le 30 nov. ?",
+  "title_en": "Cardano above $0.2 on Nov 30?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.574
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.426
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 0.2,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 0,2 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $0.2 (midnight UTC)."
+ },
+ {
+  "id": "bnb-above-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BNBUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BNBUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 737.8 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "BNB au-dessus de 800 $ le 30 nov. ?",
+  "title_en": "BNB above $800 on Nov 30?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.229
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.771
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 800,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 800 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $800 (midnight UTC)."
+ },
+ {
+  "id": "btc-below-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin sous 75 000 $ le 30 nov. ?",
+  "title_en": "Bitcoin below $75,000 on Nov 30?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.222
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.778
+   }
+  ],
+  "rule": {
+   "type": "below",
+   "value": 75000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est inférieur à 75 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is below $75,000 (midnight UTC)."
+ },
+ {
+  "id": "btc-range-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin : prix de clôture le 30 nov. ?",
+  "title_en": "Bitcoin: closing price on Nov 30?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 75 000 $",
+    "en": "Below $75,000",
+    "p": 0.221
+   },
+   {
+    "k": "r1",
+    "fr": "75 000 $ – 80 000 $",
+    "en": "$75,000 – $80,000",
+    "p": 0.202
+   },
+   {
+    "k": "r2",
+    "fr": "80 000 $ – 85 000 $",
+    "en": "$80,000 – $85,000",
+    "p": 0.212
+   },
+   {
+    "k": "r3",
+    "fr": "85 000 $ – 90 000 $",
+    "en": "$85,000 – $90,000",
+    "p": 0.168
+   },
+   {
+    "k": "r4",
+    "fr": "90 000 $ ou plus",
+    "en": "$90,000 or more",
+    "p": 0.197
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     75000
+    ],
+    [
+     75000,
+     80000
+    ],
+    [
+     80000,
+     85000
+    ],
+    [
+     85000,
+     90000
+    ],
+    [
+     90000,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "eth-range-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ETHUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ETHUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 2 428 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Ethereum : prix de clôture le 30 nov. ?",
+  "title_en": "Ethereum: closing price on Nov 30?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 2 000 $",
+    "en": "Below $2,000",
+    "p": 0.118
+   },
+   {
+    "k": "r1",
+    "fr": "2 000 $ – 2 300 $",
+    "en": "$2,000 – $2,300",
+    "p": 0.274
+   },
+   {
+    "k": "r2",
+    "fr": "2 300 $ – 2 600 $",
+    "en": "$2,300 – $2,600",
+    "p": 0.308
+   },
+   {
+    "k": "r3",
+    "fr": "2 600 $ – 2 900 $",
+    "en": "$2,600 – $2,900",
+    "p": 0.192
+   },
+   {
+    "k": "r4",
+    "fr": "2 900 $ ou plus",
+    "en": "$2,900 or more",
+    "p": 0.108
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     2000
+    ],
+    [
+     2000,
+     2300
+    ],
+    [
+     2300,
+     2600
+    ],
+    [
+     2600,
+     2900
+    ],
+    [
+     2900,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "ltc-above-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "LTCUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=LTCUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 59.85 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Litecoin au-dessus de 60 $ le 30 nov. ?",
+  "title_en": "Litecoin above $60 on Nov 30?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.45
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.55
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 60,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 60 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $60 (midnight UTC)."
+ },
+ {
+  "id": "sol-range-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "SOLUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=SOLUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 104.4 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Solana : prix de clôture le 30 nov. ?",
+  "title_en": "Solana: closing price on Nov 30?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 85 $",
+    "en": "Below $85",
+    "p": 0.14
+   },
+   {
+    "k": "r1",
+    "fr": "85 $ – 100 $",
+    "en": "$85 – $100",
+    "p": 0.298
+   },
+   {
+    "k": "r2",
+    "fr": "100 $ – 115 $",
+    "en": "$100 – $115",
+    "p": 0.3
+   },
+   {
+    "k": "r3",
+    "fr": "115 $ – 130 $",
+    "en": "$115 – $130",
+    "p": 0.171
+   },
+   {
+    "k": "r4",
+    "fr": "130 $ ou plus",
+    "en": "$130 or more",
+    "p": 0.091
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     85
+    ],
+    [
+     85,
+     100
+    ],
+    [
+     100,
+     115
+    ],
+    [
+     115,
+     130
+    ],
+    [
+     130,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "texas-senate-2026",
+  "cat": "politique",
+  "title_fr": "Sénatoriale Texas (3 nov.) : Talarico ou Paxton ?",
+  "title_en": "Texas Senate race (Nov 3): Talarico or Paxton?",
+  "options": [
+   {
+    "k": "talarico",
+    "fr": "James Talarico (D)",
+    "en": "James Talarico (D)",
+    "p": 0.675
+   },
+   {
+    "k": "paxton",
+    "fr": "Ken Paxton (R)",
+    "en": "Ken Paxton (R)",
+    "p": 0.325
+   }
+  ],
+  "closeAt": "2026-11-02T23:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://results.texas-election.com/",
+  "why": "Vote le 3 nov. ; mises fermées la veille ; résultats officiels du Secrétariat d'État du Texas.",
+  "probSource": "Polymarket 'Texas Senate Election Winner' : Talarico 67,5 %, Paxton 32,5 %.",
+  "desc_fr": "Vainqueur de l'élection au Sénat américain au Texas selon les résultats officiels de l'État.",
+  "desc_en": "Winner of the Texas U.S. Senate race per official state results.",
+  "auto": false
+ },
+ {
+  "id": "ton-above-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "TONUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=TONUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 1.6 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Toncoin au-dessus de 1,50 $ le 30 nov. ?",
+  "title_en": "Toncoin above $1.5 on Nov 30?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.498
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.502
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 1.5,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 1,50 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $1.5 (midnight UTC)."
+ },
+ {
+  "id": "xrp-above-2026-11-30",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "XRPUSDT",
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2026-12-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=XRPUSDT&interval=1m&startTime=1796083140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 1.3411 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "XRP au-dessus de 1,50 $ le 30 nov. ?",
+  "title_en": "XRP above $1.5 on Nov 30?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.252
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.748
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 1.5,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 1,50 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $1.5 (midnight UTC)."
+ },
+ {
+  "id": "best-week-2026-11-30",
+  "cat": "crypto",
+  "title_fr": "Meilleure crypto de la semaine du 30 nov. au 6 déc. ?",
+  "title_en": "Best crypto of the week Nov 30–Dec 6?",
+  "options": [
+   {
+    "k": "btc",
+    "fr": "Bitcoin",
+    "en": "Bitcoin",
+    "p": 0.119
+   },
+   {
+    "k": "eth",
+    "fr": "Ethereum",
+    "en": "Ethereum",
+    "p": 0.146
+   },
+   {
+    "k": "sol",
+    "fr": "Solana",
+    "en": "Solana",
+    "p": 0.175
+   },
+   {
+    "k": "bnb",
+    "fr": "BNB",
+    "en": "BNB",
+    "p": 0.123
+   },
+   {
+    "k": "xrp",
+    "fr": "XRP",
+    "en": "XRP",
+    "p": 0.205
+   },
+   {
+    "k": "doge",
+    "fr": "Dogecoin",
+    "en": "Dogecoin",
+    "p": 0.232
+   }
+  ],
+  "closeAt": "2026-11-29T00:00:00Z",
+  "resolveAt": "2026-12-07T00:00:00Z",
+  "auto": true,
+  "asset": "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,DOGEUSDT",
+  "rule": {
+   "type": "best_performer",
+   "assets": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
+    "XRPUSDT",
+    "DOGEUSDT"
+   ],
+   "from": "2026-11-30T00:00:00Z",
+   "to": "2026-12-07T00:00:00Z",
+   "read": "perf = close(1m kline ending at 'to') / close(1m kline ending at 'from') - 1; highest perf wins; exact tie -> refund"
+  },
+  "source": "https://data-api.binance.vision/api/v3/klines (spot, interval=1m)",
+  "why": "Variation future de 6 cours publics Binance ; mise fermée 24 h avant le prix de départ.",
+  "probSource": "Simulation Monte-Carlo (200 000 tirages), volatilités réalisées Binance 30/90 j, corrélation 0,75 entre cryptos.",
+  "desc_fr": "Gagne la crypto (parmi 6) dont le prix Binance progresse le plus (en %) entre 2026-11-30T00:00:00Z et 2026-12-07T00:00:00Z. Prix de départ et d'arrivée = clôtures Binance à ces heures exactes. Égalité parfaite : remboursement (minuit UTC).",
+  "desc_en": "Wins the coin (of 6) whose Binance price gains most (in %) between 2026-11-30T00:00:00Z and 2026-12-07T00:00:00Z. Start/end = Binance closes at those exact times. Exact tie: refund (midnight UTC) (midnight UTC)."
+ },
+ {
+  "id": "caf-poty-2026",
+  "cat": "sport",
+  "title_fr": "CAF Awards (7 déc.) : Joueur africain de l'année 2026 ?",
+  "title_en": "CAF Awards (Dec 7): 2026 African Player of the Year?",
+  "options": [
+   {
+    "k": "hakimi",
+    "fr": "Achraf Hakimi",
+    "en": "Achraf Hakimi",
+    "p": 0.55
+   },
+   {
+    "k": "salah",
+    "fr": "Mohamed Salah",
+    "en": "Mohamed Salah",
+    "p": 0.08
+   },
+   {
+    "k": "brahim",
+    "fr": "Brahim Díaz",
+    "en": "Brahim Díaz",
+    "p": 0.08
+   },
+   {
+    "k": "osimhen",
+    "fr": "Victor Osimhen",
+    "en": "Victor Osimhen",
+    "p": 0.07
+   },
+   {
+    "k": "other",
+    "fr": "Autre",
+    "en": "Other",
+    "p": 0.22
+   }
+  ],
+  "closeAt": "2026-12-06T23:00:00Z",
+  "resolveAt": "2026-12-08T06:00:00Z",
+  "source": "https://www.cafonline.com/caf-awards/",
+  "why": "Lauréat annoncé à la cérémonie de Lagos le 7 déc. ; mises fermées la veille.",
+  "probSource": "Estimation : Hakimi tenant du titre, vainqueur de la Ligue des champions et quart-de-finaliste du Mondial (africasoccer.com) ; pas de marché coté.",
+  "desc_fr": "Lauréat du trophée « Joueur africain de l'année » (hommes) des CAF Awards 2026, Lagos.",
+  "desc_en": "Winner of the men's African Player of the Year at the 2026 CAF Awards, Lagos.",
+  "auto": false
+ },
+ {
+  "id": "gambia-pres-2026",
+  "cat": "politique",
+  "title_fr": "Présidentielle Gambie (5 déc.) : qui gagne ?",
+  "title_en": "Gambia presidential election (Dec 5): winner?",
+  "options": [
+   {
+    "k": "barrow",
+    "fr": "Adama Barrow (NPP)",
+    "en": "Adama Barrow (NPP)",
+    "p": 0.65
+   },
+   {
+    "k": "darboe",
+    "fr": "Ousainou Darboe (UDP)",
+    "en": "Ousainou Darboe (UDP)",
+    "p": 0.25
+   },
+   {
+    "k": "other",
+    "fr": "Autre",
+    "en": "Other",
+    "p": 0.1
+   }
+  ],
+  "closeAt": "2026-12-04T23:00:00Z",
+  "resolveAt": "2026-12-09T00:00:00Z",
+  "source": "https://iec.gm/",
+  "why": "Vote le 5 déc. ; mises fermées la veille ; résultat proclamé par la Commission électorale indépendante (IEC).",
+  "probSource": "Polymarket 'Gambia Presidential Election Winner' : Barrow 65 %, Darboe ~24 % (milieu de fourchette).",
+  "desc_fr": "Candidat proclamé vainqueur par l'IEC de Gambie (élection à un tour, majorité relative).",
+  "desc_en": "Candidate declared winner by Gambia's IEC (single round, plurality).",
+  "auto": false
+ },
+ {
+  "id": "fed-2026-12",
+  "cat": "economie",
+  "title_fr": "Fed (9 déc.) : décision sur les taux ?",
+  "title_en": "Fed decision (Dec 9): rates?",
+  "options": [
+   {
+    "k": "hike25",
+    "fr": "Hausse de 0,25 pt",
+    "en": "25 bp hike",
+    "p": 0.785
+   },
+   {
+    "k": "hold",
+    "fr": "Statu quo",
+    "en": "No change",
+    "p": 0.185
+   },
+   {
+    "k": "other",
+    "fr": "Autre (baisse ou +0,50 pt)",
+    "en": "Other (cut or 50+ bp)",
+    "p": 0.03
+   }
+  ],
+  "closeAt": "2026-12-09T18:00:00Z",
+  "resolveAt": "2026-12-09T19:15:00Z",
+  "source": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+  "why": "Communiqué FOMC le 9 déc. à 19:00 UTC ; mises fermées 1 h avant.",
+  "probSource": "Polymarket 'Fed Decision in December?' : +25 pb 78,5 %, statu quo 18,5 %.",
+  "desc_fr": "Variation de la borne haute de la fourchette des Fed funds dans le communiqué du FOMC du 9 décembre.",
+  "desc_en": "Change in the fed funds upper bound in the 9 Dec FOMC statement.",
+  "auto": false
+ },
+ {
+  "id": "us-cpi-2026-11",
+  "cat": "economie",
+  "title_fr": "Inflation USA de novembre (CPI, sur 1 mois) ?",
+  "title_en": "US November CPI (month-on-month)?",
+  "options": [
+   {
+    "k": "le01",
+    "fr": "0,1 % ou moins",
+    "en": "0.1% or less",
+    "p": 0.17
+   },
+   {
+    "k": "02",
+    "fr": "0,2 %",
+    "en": "0.2%",
+    "p": 0.3
+   },
+   {
+    "k": "03",
+    "fr": "0,3 %",
+    "en": "0.3%",
+    "p": 0.33
+   },
+   {
+    "k": "ge04",
+    "fr": "0,4 % ou plus",
+    "en": "0.4% or more",
+    "p": 0.2
+   }
+  ],
+  "closeAt": "2026-12-10T12:30:00Z",
+  "resolveAt": "2026-12-10T14:00:00Z",
+  "source": "https://www.bls.gov/cpi/",
+  "why": "Publication BLS le 10 déc. à 13:30 UTC ; mises fermées 1 h avant.",
+  "probSource": "Estimation dérivée du marché Polymarket d'octobre (pas encore de marché coté pour novembre).",
+  "desc_fr": "Variation mensuelle du CPI-U corrigé des variations saisonnières, arrondie à 0,1 pt (BLS).",
+  "desc_en": "Monthly change in seasonally adjusted CPI-U, one decimal (BLS).",
+  "auto": false
+ },
+ {
+  "id": "game-awards-goty-2026",
+  "cat": "divertissement",
+  "title_fr": "The Game Awards (10 déc.) : jeu de l'année ?",
+  "title_en": "The Game Awards (Dec 10): Game of the Year?",
+  "options": [
+   {
+    "k": "gta6",
+    "fr": "Grand Theft Auto VI",
+    "en": "Grand Theft Auto VI",
+    "p": 0.81
+   },
+   {
+    "k": "other",
+    "fr": "Un autre jeu",
+    "en": "Another game",
+    "p": 0.19
+   }
+  ],
+  "closeAt": "2026-12-10T22:00:00Z",
+  "resolveAt": "2026-12-11T06:00:00Z",
+  "source": "https://thegameawards.com/",
+  "why": "Annonce en direct le 10 déc. (≈01:00 UTC le 11) ; mises fermées 3 h avant.",
+  "probSource": "Polymarket 'The Game Awards: Game of the Year' : GTA VI 81 %.",
+  "desc_fr": "Jeu annoncé « Game of the Year » aux Game Awards 2026. GTA VI non nommé = « Un autre jeu ».",
+  "desc_en": "Game named Game of the Year at The Game Awards 2026. If GTA VI is not nominated: 'Another game'.",
+  "auto": false
+ },
+ {
+  "id": "us-house-2026",
+  "cat": "politique",
+  "title_fr": "Midterms USA (3 nov.) : qui contrôle la Chambre ?",
+  "title_en": "US midterms (Nov 3): who wins the House?",
+  "options": [
+   {
+    "k": "dem",
+    "fr": "Démocrates",
+    "en": "Democrats",
+    "p": 0.915
+   },
+   {
+    "k": "rep",
+    "fr": "Républicains",
+    "en": "Republicans",
+    "p": 0.085
+   }
+  ],
+  "closeAt": "2026-11-02T23:00:00Z",
+  "resolveAt": "2026-12-15T00:00:00Z",
+  "source": "https://clerk.house.gov/",
+  "why": "Vote le 3 nov. ; mises fermées la veille ; majorité = 218 sièges selon les résultats certifiés par les États.",
+  "probSource": "Polymarket 'Which party will win the House in 2026?' : D 91,5 %, R 8,5 %.",
+  "desc_fr": "Parti qui remporte au moins 218 des 435 sièges de la Chambre des représentants (résultats certifiés des États).",
+  "desc_en": "Party winning at least 218 of 435 House seats per state-certified results.",
+  "auto": false
+ },
+ {
+  "id": "us-senate-2026",
+  "cat": "politique",
+  "title_fr": "Midterms USA (3 nov.) : qui contrôle le Sénat ?",
+  "title_en": "US midterms (Nov 3): who controls the Senate?",
+  "options": [
+   {
+    "k": "dem",
+    "fr": "Démocrates",
+    "en": "Democrats",
+    "p": 0.665
+   },
+   {
+    "k": "rep",
+    "fr": "Républicains",
+    "en": "Republicans",
+    "p": 0.335
+   }
+  ],
+  "closeAt": "2026-11-02T23:00:00Z",
+  "resolveAt": "2026-12-15T00:00:00Z",
+  "source": "https://www.senate.gov/",
+  "why": "Vote le 3 nov. ; mises fermées la veille ; sièges selon résultats certifiés (y compris un éventuel 2nd tour avant le 15 déc.).",
+  "probSource": "Polymarket 'Which party will win the Senate in 2026?' : D 66,5 %, R 33,5 %.",
+  "desc_fr": "Démocrates si ≥ 51 sièges (indépendants alliés inclus) ; 50-50 = parti du vice-président (Républicains).",
+  "desc_en": "Democrats if ≥51 seats (allied independents counted); 50-50 goes to the VP's party (Republicans).",
+  "auto": false
+ },
+ {
+  "id": "btc-above-2026-12-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-12-15T00:00:00Z",
+  "resolveAt": "2026-12-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1797379140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin au-dessus de 85 000 $ le 15 déc. ?",
+  "title_en": "Bitcoin above $85,000 on Dec 15?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.377
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.623
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 85000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 85 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $85,000 (midnight UTC)."
+ },
+ {
+  "id": "sol-below-2026-12-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "SOLUSDT",
+  "closeAt": "2026-12-15T00:00:00Z",
+  "resolveAt": "2026-12-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=SOLUSDT&interval=1m&startTime=1797379140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 104.4 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Solana sous 90 $ le 15 déc. ?",
+  "title_en": "Solana below $90 on Dec 15?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.269
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.731
+   }
+  ],
+  "rule": {
+   "type": "below",
+   "value": 90,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est inférieur à 90 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is below $90 (midnight UTC)."
+ },
+ {
+  "id": "xrp-below-2026-12-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "XRPUSDT",
+  "closeAt": "2026-12-15T00:00:00Z",
+  "resolveAt": "2026-12-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=XRPUSDT&interval=1m&startTime=1797379140000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 1.3411 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "XRP sous 1,20 $ le 15 déc. ?",
+  "title_en": "XRP below $1.2 on Dec 15?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.357
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.643
+   }
+  ],
+  "rule": {
+   "type": "below",
+   "value": 1.2,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est inférieur à 1,20 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is below $1.2 (midnight UTC)."
+ },
+ {
+  "id": "boe-2026-12",
+  "cat": "economie",
+  "title_fr": "Banque d'Angleterre (17 déc.) : décision sur les taux ?",
+  "title_en": "Bank of England (Dec 17): rate decision?",
+  "options": [
+   {
+    "k": "hold",
+    "fr": "Statu quo",
+    "en": "No change",
+    "p": 0.6
+   },
+   {
+    "k": "hike25",
+    "fr": "Hausse de 0,25 pt",
+    "en": "25 bp hike",
+    "p": 0.315
+   },
+   {
+    "k": "other",
+    "fr": "Autre (baisse ou +0,50 pt)",
+    "en": "Other (cut or 50+ bp)",
+    "p": 0.085
+   }
+  ],
+  "closeAt": "2026-12-17T11:00:00Z",
+  "resolveAt": "2026-12-17T12:15:00Z",
+  "source": "https://www.bankofengland.co.uk/monetary-policy/the-interest-rate-bank-rate",
+  "why": "Décision publiée à 12:00 UTC ; mises fermées 1 h avant.",
+  "probSource": "Polymarket 'Bank of England decision in December?' : statu quo 60 %, +25 pb 31,5 %.",
+  "desc_fr": "Variation du Bank Rate décidée par le Comité de politique monétaire de la Banque d'Angleterre le 17 décembre.",
+  "desc_en": "Change in Bank Rate decided by the BoE MPC on 17 Dec.",
+  "auto": false
+ },
+ {
+  "id": "ecb-2026-12",
+  "cat": "economie",
+  "title_fr": "BCE (17 déc.) : décision sur le taux de dépôt ?",
+  "title_en": "ECB (Dec 17): deposit rate decision?",
+  "options": [
+   {
+    "k": "hike25",
+    "fr": "Hausse de 0,25 pt",
+    "en": "25 bp hike",
+    "p": 0.815
+   },
+   {
+    "k": "hold",
+    "fr": "Statu quo",
+    "en": "No change",
+    "p": 0.145
+   },
+   {
+    "k": "other",
+    "fr": "Autre (baisse ou +0,50 pt)",
+    "en": "Other (cut or 50+ bp)",
+    "p": 0.04
+   }
+  ],
+  "closeAt": "2026-12-17T12:15:00Z",
+  "resolveAt": "2026-12-17T13:30:00Z",
+  "source": "https://www.ecb.europa.eu/press/govcdec/mopo/html/index.en.html",
+  "why": "Décision publiée à 14:15 heure de Francfort (13:15 UTC) ; mises fermées 1 h avant. Concerne aussi le FCFA (arrimé à l'euro).",
+  "probSource": "Polymarket 'ECB Interest Rates: December 2026' : +25 pb 81,5 %, statu quo 14,5 %.",
+  "desc_fr": "Variation du taux de la facilité de dépôt annoncée par la BCE le 17 décembre 2026.",
+  "desc_en": "Change in the ECB deposit facility rate announced on 17 Dec 2026.",
+  "auto": false
+ },
+ {
+  "id": "boj-2026-12",
+  "cat": "economie",
+  "title_fr": "Banque du Japon (18 déc.) : décision sur les taux ?",
+  "title_en": "Bank of Japan (Dec 18): rate decision?",
+  "options": [
+   {
+    "k": "hike25",
+    "fr": "Hausse de 0,25 pt",
+    "en": "25 bp hike",
+    "p": 0.71
+   },
+   {
+    "k": "hold",
+    "fr": "Statu quo",
+    "en": "No change",
+    "p": 0.255
+   },
+   {
+    "k": "other",
+    "fr": "Autre",
+    "en": "Other",
+    "p": 0.035
+   }
+  ],
+  "closeAt": "2026-12-17T23:00:00Z",
+  "resolveAt": "2026-12-18T08:00:00Z",
+  "source": "https://www.boj.or.jp/en/mopo/mpmdeci/index.htm",
+  "why": "Annonce le 18 déc. en matinée à Tokyo (heure non fixe) ; mises fermées la veille à 23:00 UTC.",
+  "probSource": "Polymarket 'Bank of Japan Decision in December?' : +25 pb 71 %, statu quo 25,5 %.",
+  "desc_fr": "Variation du taux directeur (taux au jour le jour non garanti) décidée par la BoJ le 18 décembre.",
+  "desc_en": "Change in the BoJ policy (uncollateralised overnight call) rate on 18 Dec.",
+  "auto": false
+ },
+ {
+  "id": "avengers-doomsday-opening",
+  "cat": "divertissement",
+  "title_fr": "Avengers: Doomsday (18 déc.) : 1er week-end aux USA ?",
+  "title_en": "Avengers: Doomsday (Dec 18): US opening weekend?",
+  "options": [
+   {
+    "k": "lt250",
+    "fr": "Moins de 250 M$",
+    "en": "Below $250M",
+    "p": 0.1
+   },
+   {
+    "k": "250-300",
+    "fr": "250 à 300 M$",
+    "en": "$250M–300M",
+    "p": 0.15
+   },
+   {
+    "k": "300-360",
+    "fr": "300 à 360 M$",
+    "en": "$300M–360M",
+    "p": 0.28
+   },
+   {
+    "k": "360-420",
+    "fr": "360 à 420 M$ (record)",
+    "en": "$360M–420M (record)",
+    "p": 0.3
+   },
+   {
+    "k": "ge420",
+    "fr": "420 M$ ou plus",
+    "en": "$420M or more",
+    "p": 0.17
+   }
+  ],
+  "closeAt": "2026-12-17T18:00:00Z",
+  "resolveAt": "2026-12-22T00:00:00Z",
+  "source": "https://www.the-numbers.com/movies/year/2026",
+  "why": "Mises fermées avant les avant-premières du jeudi ; chiffres réels publiés lundi 21 déc.",
+  "probSource": "Polymarket 'Which movie has biggest opening weekend in 2026?' : Avengers 47,5 % de battre le record de Spider-Man (360 M$) ; tranches estimées.",
+  "desc_fr": "Recettes USA/Canada vendredi-dimanche (avant-premières incluses), chiffres réels. Record actuel : 360 M$ (Spider-Man: Brand New Day).",
+  "desc_en": "US/Canada Fri–Sun actuals incl. previews. Current record: $360M (Spider-Man: Brand New Day).",
+  "auto": false
+ },
+ {
+  "id": "largest-company-2026",
+  "cat": "tech",
+  "title_fr": "Plus grosse capitalisation mondiale au 31 déc. 2026 ?",
+  "title_en": "World's largest company by market cap on Dec 31?",
+  "options": [
+   {
+    "k": "nvda",
+    "fr": "Nvidia",
+    "en": "Nvidia",
+    "p": 0.68
+   },
+   {
+    "k": "aapl",
+    "fr": "Apple",
+    "en": "Apple",
+    "p": 0.28
+   },
+   {
+    "k": "other",
+    "fr": "Autre (Alphabet, Microsoft…)",
+    "en": "Other (Alphabet, Microsoft…)",
+    "p": 0.04
+   }
+  ],
+  "closeAt": "2026-12-30T00:00:00Z",
+  "resolveAt": "2026-12-31T22:00:00Z",
+  "source": "https://companiesmarketcap.com/",
+  "why": "Dépend des cours de clôture de Wall Street le 31 déc. ; mises fermées ~2 jours avant.",
+  "probSource": "Polymarket 'Largest Company end of December 2026?' : Nvidia 68 %, Apple 28 %.",
+  "desc_fr": "Société cotée avec la plus grande capitalisation à la clôture du 31 décembre 2026 (cours × actions en circulation).",
+  "desc_en": "Listed company with the highest market cap at the 31 Dec 2026 close.",
+  "auto": false
+ },
+ {
+  "id": "nvidia-cap-2026",
+  "cat": "tech",
+  "title_fr": "Capitalisation de Nvidia au 31 déc. 2026 ?",
+  "title_en": "Nvidia market cap on Dec 31, 2026?",
+  "options": [
+   {
+    "k": "lt45",
+    "fr": "Moins de 4 500 Md$",
+    "en": "Below $4.5T",
+    "p": 0.15
+   },
+   {
+    "k": "45-50",
+    "fr": "4 500 à 5 000 Md$",
+    "en": "$4.5T–5.0T",
+    "p": 0.15
+   },
+   {
+    "k": "50-55",
+    "fr": "5 000 à 5 500 Md$",
+    "en": "$5.0T–5.5T",
+    "p": 0.259
+   },
+   {
+    "k": "55-60",
+    "fr": "5 500 à 6 000 Md$",
+    "en": "$5.5T–6.0T",
+    "p": 0.239
+   },
+   {
+    "k": "ge60",
+    "fr": "6 000 Md$ ou plus",
+    "en": "$6.0T or more",
+    "p": 0.202
+   }
+  ],
+  "closeAt": "2026-12-30T00:00:00Z",
+  "resolveAt": "2026-12-31T22:00:00Z",
+  "source": "https://companiesmarketcap.com/nvidia/marketcap/",
+  "why": "Dépend du cours de clôture du 31 déc. ; mises fermées ~2 jours avant.",
+  "probSource": "Polymarket 'Nvidia’s Market Cap end of 2026?' (normalisé).",
+  "desc_fr": "Capitalisation boursière de Nvidia à la clôture du dernier jour de bourse 2026. Pile sur une borne : tranche supérieure.",
+  "desc_en": "Nvidia market cap at the close of the last 2026 trading day. Exactly on a boundary: higher bracket.",
+  "auto": false
+ },
+ {
+  "id": "ada-above-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ADAUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ADAUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 0.2175 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Cardano au-dessus de 0,25 $ le 31 déc. ?",
+  "title_en": "Cardano above $0.25 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.284
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.716
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 0.25,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 0,25 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $0.25 (midnight UTC)."
+ },
+ {
+  "id": "avax-above-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "AVAXUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=AVAXUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 9.322 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Avalanche au-dessus de 10 $ le 31 déc. ?",
+  "title_en": "Avalanche above $10 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.354
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.646
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 10,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 10 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $10 (midnight UTC)."
+ },
+ {
+  "id": "best-month-2026-12",
+  "cat": "crypto",
+  "title_fr": "Meilleure crypto du mois de décembre 2026 ?",
+  "title_en": "Best crypto of December 2026?",
+  "options": [
+   {
+    "k": "btc",
+    "fr": "Bitcoin",
+    "en": "Bitcoin",
+    "p": 0.119
+   },
+   {
+    "k": "eth",
+    "fr": "Ethereum",
+    "en": "Ethereum",
+    "p": 0.146
+   },
+   {
+    "k": "sol",
+    "fr": "Solana",
+    "en": "Solana",
+    "p": 0.175
+   },
+   {
+    "k": "bnb",
+    "fr": "BNB",
+    "en": "BNB",
+    "p": 0.123
+   },
+   {
+    "k": "xrp",
+    "fr": "XRP",
+    "en": "XRP",
+    "p": 0.205
+   },
+   {
+    "k": "doge",
+    "fr": "Dogecoin",
+    "en": "Dogecoin",
+    "p": 0.232
+   }
+  ],
+  "closeAt": "2026-11-30T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "auto": true,
+  "asset": "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,DOGEUSDT",
+  "rule": {
+   "type": "best_performer",
+   "assets": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
+    "XRPUSDT",
+    "DOGEUSDT"
+   ],
+   "from": "2026-12-01T00:00:00Z",
+   "to": "2027-01-01T00:00:00Z",
+   "read": "perf = close(1m kline ending at 'to') / close(1m kline ending at 'from') - 1; highest perf wins; exact tie -> refund"
+  },
+  "source": "https://data-api.binance.vision/api/v3/klines (spot, interval=1m)",
+  "why": "Variation future de 6 cours publics Binance ; mise fermée 24 h avant le prix de départ.",
+  "probSource": "Simulation Monte-Carlo (200 000 tirages), volatilités réalisées Binance 30/90 j, corrélation 0,75 entre cryptos.",
+  "desc_fr": "Gagne la crypto (parmi 6) dont le prix Binance progresse le plus (en %) entre 2026-12-01T00:00:00Z et 2027-01-01T00:00:00Z. Prix de départ et d'arrivée = clôtures Binance à ces heures exactes. Égalité parfaite : remboursement (minuit UTC).",
+  "desc_en": "Wins the coin (of 6) whose Binance price gains most (in %) between 2026-12-01T00:00:00Z and 2027-01-01T00:00:00Z. Start/end = Binance closes at those exact times. Exact tie: refund (midnight UTC) (midnight UTC)."
+ },
+ {
+  "id": "bnb-range-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BNBUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BNBUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 737.8 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "BNB : prix de clôture le 31 déc. ?",
+  "title_en": "BNB: closing price on Dec 31?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 650 $",
+    "en": "Below $650",
+    "p": 0.235
+   },
+   {
+    "k": "r1",
+    "fr": "650 $ – 700 $",
+    "en": "$650 – $700",
+    "p": 0.165
+   },
+   {
+    "k": "r2",
+    "fr": "700 $ – 750 $",
+    "en": "$700 – $750",
+    "p": 0.173
+   },
+   {
+    "k": "r3",
+    "fr": "750 $ – 800 $",
+    "en": "$750 – $800",
+    "p": 0.15
+   },
+   {
+    "k": "r4",
+    "fr": "800 $ ou plus",
+    "en": "$800 or more",
+    "p": 0.277
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     650
+    ],
+    [
+     650,
+     700
+    ],
+    [
+     700,
+     750
+    ],
+    [
+     750,
+     800
+    ],
+    [
+     800,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "btc-above-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin au-dessus de 100 000 $ le 31 déc. ?",
+  "title_en": "Bitcoin above $100,000 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.085
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.915
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 100000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 100 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $100,000 (midnight UTC)."
+ },
+ {
+  "id": "btc-range-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin : prix de clôture le 31 déc. ?",
+  "title_en": "Bitcoin: closing price on Dec 31?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 70 000 $",
+    "en": "Below $70,000",
+    "p": 0.159
+   },
+   {
+    "k": "r1",
+    "fr": "70 000 $ – 80 000 $",
+    "en": "$70,000 – $80,000",
+    "p": 0.296
+   },
+   {
+    "k": "r2",
+    "fr": "80 000 $ – 90 000 $",
+    "en": "$80,000 – $90,000",
+    "p": 0.294
+   },
+   {
+    "k": "r3",
+    "fr": "90 000 $ – 100 000 $",
+    "en": "$90,000 – $100,000",
+    "p": 0.166
+   },
+   {
+    "k": "r4",
+    "fr": "100 000 $ ou plus",
+    "en": "$100,000 or more",
+    "p": 0.085
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     70000
+    ],
+    [
+     70000,
+     80000
+    ],
+    [
+     80000,
+     90000
+    ],
+    [
+     90000,
+     100000
+    ],
+    [
+     100000,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "doge-above-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "DOGEUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=DOGEUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 0.0797 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Dogecoin au-dessus de 0,1 $ le 31 déc. ?",
+  "title_en": "Dogecoin above $0.1 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.176
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.824
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 0.1,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 0,1 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $0.1 (midnight UTC)."
+ },
+ {
+  "id": "doge-range-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "DOGEUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=DOGEUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 0.0797 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Dogecoin : prix de clôture le 31 déc. ?",
+  "title_en": "Dogecoin: closing price on Dec 31?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 0,06 $",
+    "en": "Below $0.06",
+    "p": 0.2
+   },
+   {
+    "k": "r1",
+    "fr": "0,06 $ – 0,075 $",
+    "en": "$0.06 – $0.075",
+    "p": 0.273
+   },
+   {
+    "k": "r2",
+    "fr": "0,075 $ – 0,09 $",
+    "en": "$0.075 – $0.09",
+    "p": 0.241
+   },
+   {
+    "k": "r3",
+    "fr": "0,09 $ – 0,11 $",
+    "en": "$0.09 – $0.11",
+    "p": 0.182
+   },
+   {
+    "k": "r4",
+    "fr": "0,11 $ ou plus",
+    "en": "$0.11 or more",
+    "p": 0.104
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     0.06
+    ],
+    [
+     0.06,
+     0.075
+    ],
+    [
+     0.075,
+     0.09
+    ],
+    [
+     0.09,
+     0.11
+    ],
+    [
+     0.11,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "eth-above-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ETHUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ETHUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 2 428 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Ethereum au-dessus de 3 000 $ le 31 déc. ?",
+  "title_en": "Ethereum above $3,000 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.128
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.872
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 3000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 3 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $3,000 (midnight UTC)."
+ },
+ {
+  "id": "eth-range-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ETHUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ETHUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 2 428 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Ethereum : prix de clôture le 31 déc. ?",
+  "title_en": "Ethereum: closing price on Dec 31?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 2 000 $",
+    "en": "Below $2,000",
+    "p": 0.2
+   },
+   {
+    "k": "r1",
+    "fr": "2 000 $ – 2 400 $",
+    "en": "$2,000 – $2,400",
+    "p": 0.319
+   },
+   {
+    "k": "r2",
+    "fr": "2 400 $ – 2 800 $",
+    "en": "$2,400 – $2,800",
+    "p": 0.269
+   },
+   {
+    "k": "r3",
+    "fr": "2 800 $ – 3 200 $",
+    "en": "$2,800 – $3,200",
+    "p": 0.139
+   },
+   {
+    "k": "r4",
+    "fr": "3 200 $ ou plus",
+    "en": "$3,200 or more",
+    "p": 0.073
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     2000
+    ],
+    [
+     2000,
+     2400
+    ],
+    [
+     2400,
+     2800
+    ],
+    [
+     2800,
+     3200
+    ],
+    [
+     3200,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "ethbtc-above-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ETHBTC",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ETHBTC&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 0.0295033 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "ETH/BTC au-dessus de 0,03 BTC le 31 déc. ?",
+  "title_en": "ETH/BTC above 0.03 BTC on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.425
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.575
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 0.03,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 0,03 BTC (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above 0.03 BTC (midnight UTC)."
+ },
+ {
+  "id": "eur-above-2026-12-31",
+  "cat": "economie",
+  "auto": true,
+  "asset": "EURUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=EURUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 1.125 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "EUR/USD au-dessus de 1,12 le 31 déc. ?",
+  "title_en": "EUR/USD above 1.12 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.548
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.452
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 1.12,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 1,12 (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above 1.12 (midnight UTC)."
+ },
+ {
+  "id": "link-above-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "LINKUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=LINKUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 12.2 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Chainlink au-dessus de 15 $ le 31 déc. ?",
+  "title_en": "Chainlink above $15 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.218
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.782
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 15,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 15 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $15 (midnight UTC)."
+ },
+ {
+  "id": "paxg-above-2026-12-31",
+  "cat": "economie",
+  "auto": true,
+  "asset": "PAXGUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=PAXGUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 4 100 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Or (PAXG) au-dessus de 4 000 $ le 31 déc. ?",
+  "title_en": "Gold (PAXG) above $4,000 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.591
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.409
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 4000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 4 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $4,000 (midnight UTC)."
+ },
+ {
+  "id": "sol-above-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "SOLUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=SOLUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 104.4 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Solana au-dessus de 120 $ le 31 déc. ?",
+  "title_en": "Solana above $120 on Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.239
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.761
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 120,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 120 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $120 (midnight UTC)."
+ },
+ {
+  "id": "ton-range-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "TONUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=TONUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 1.6 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Toncoin : prix de clôture le 31 déc. ?",
+  "title_en": "Toncoin: closing price on Dec 31?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 1,20 $",
+    "en": "Below $1.2",
+    "p": 0.364
+   },
+   {
+    "k": "r1",
+    "fr": "1,20 $ – 1,50 $",
+    "en": "$1.2 – $1.5",
+    "p": 0.18
+   },
+   {
+    "k": "r2",
+    "fr": "1,50 $ – 1,80 $",
+    "en": "$1.5 – $1.8",
+    "p": 0.142
+   },
+   {
+    "k": "r3",
+    "fr": "1,80 $ – 2,20 $",
+    "en": "$1.8 – $2.2",
+    "p": 0.129
+   },
+   {
+    "k": "r4",
+    "fr": "2,20 $ ou plus",
+    "en": "$2.2 or more",
+    "p": 0.185
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     1.2
+    ],
+    [
+     1.2,
+     1.5
+    ],
+    [
+     1.5,
+     1.8
+    ],
+    [
+     1.8,
+     2.2
+    ],
+    [
+     2.2,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "xrp-range-2026-12-31",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "XRPUSDT",
+  "closeAt": "2026-12-31T00:00:00Z",
+  "resolveAt": "2027-01-01T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=XRPUSDT&interval=1m&startTime=1798761540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 1.3411 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "XRP : prix de clôture le 31 déc. ?",
+  "title_en": "XRP: closing price on Dec 31?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 1 $",
+    "en": "Below $1",
+    "p": 0.161
+   },
+   {
+    "k": "r1",
+    "fr": "1 $ – 1,25 $",
+    "en": "$1 – $1.25",
+    "p": 0.284
+   },
+   {
+    "k": "r2",
+    "fr": "1,25 $ – 1,50 $",
+    "en": "$1.25 – $1.5",
+    "p": 0.266
+   },
+   {
+    "k": "r3",
+    "fr": "1,50 $ – 1,75 $",
+    "en": "$1.5 – $1.75",
+    "p": 0.163
+   },
+   {
+    "k": "r4",
+    "fr": "1,75 $ ou plus",
+    "en": "$1.75 or more",
+    "p": 0.126
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     1.0
+    ],
+    [
+     1.0,
+     1.25
+    ],
+    [
+     1.25,
+     1.5
+    ],
+    [
+     1.5,
+     1.75
+    ],
+    [
+     1.75,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "france-budget-2027",
+  "cat": "politique",
+  "title_fr": "France : budget 2027 publié au JO avant le 31 déc. ?",
+  "title_en": "France: 2027 budget law published by Dec 31?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.56
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.44
+   }
+  ],
+  "closeAt": "2026-12-01T00:00:00Z",
+  "resolveAt": "2027-01-01T12:00:00Z",
+  "source": "https://www.legifrance.gouv.fr/",
+  "why": "Dépend des votes publics au Parlement ; mises fermées le 1er déc., un mois avant l'échéance.",
+  "probSource": "Polymarket 'Will France pass a national budget by December 31?' : Oui 56 %.",
+  "desc_fr": "Oui si la loi de finances pour 2027 adoptée par le Parlement (49.3 compris) est publiée au Journal officiel avant le 31/12/2026 23:59 (Paris). Ordonnance ou loi spéciale = Non.",
+  "desc_en": "Yes if the 2027 finance law, adopted by Parliament (incl. art. 49.3), is published in the Journal officiel by 31 Dec 2026 23:59 Paris. Ordinance or special law = No.",
+  "auto": false
+ },
+ {
+  "id": "best-week-2026-12-28",
+  "cat": "crypto",
+  "title_fr": "Meilleure crypto de la semaine du 28 déc. au 3 janv. ?",
+  "title_en": "Best crypto of the week Dec 28–Jan 3?",
+  "options": [
+   {
+    "k": "btc",
+    "fr": "Bitcoin",
+    "en": "Bitcoin",
+    "p": 0.119
+   },
+   {
+    "k": "eth",
+    "fr": "Ethereum",
+    "en": "Ethereum",
+    "p": 0.146
+   },
+   {
+    "k": "sol",
+    "fr": "Solana",
+    "en": "Solana",
+    "p": 0.175
+   },
+   {
+    "k": "bnb",
+    "fr": "BNB",
+    "en": "BNB",
+    "p": 0.123
+   },
+   {
+    "k": "xrp",
+    "fr": "XRP",
+    "en": "XRP",
+    "p": 0.205
+   },
+   {
+    "k": "doge",
+    "fr": "Dogecoin",
+    "en": "Dogecoin",
+    "p": 0.232
+   }
+  ],
+  "closeAt": "2026-12-27T00:00:00Z",
+  "resolveAt": "2027-01-04T00:00:00Z",
+  "auto": true,
+  "asset": "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,DOGEUSDT",
+  "rule": {
+   "type": "best_performer",
+   "assets": [
+    "BTCUSDT",
+    "ETHUSDT",
+    "SOLUSDT",
+    "BNBUSDT",
+    "XRPUSDT",
+    "DOGEUSDT"
+   ],
+   "from": "2026-12-28T00:00:00Z",
+   "to": "2027-01-04T00:00:00Z",
+   "read": "perf = close(1m kline ending at 'to') / close(1m kline ending at 'from') - 1; highest perf wins; exact tie -> refund"
+  },
+  "source": "https://data-api.binance.vision/api/v3/klines (spot, interval=1m)",
+  "why": "Variation future de 6 cours publics Binance ; mise fermée 24 h avant le prix de départ.",
+  "probSource": "Simulation Monte-Carlo (200 000 tirages), volatilités réalisées Binance 30/90 j, corrélation 0,75 entre cryptos.",
+  "desc_fr": "Gagne la crypto (parmi 6) dont le prix Binance progresse le plus (en %) entre 2026-12-28T00:00:00Z et 2027-01-04T00:00:00Z. Prix de départ et d'arrivée = clôtures Binance à ces heures exactes. Égalité parfaite : remboursement (minuit UTC).",
+  "desc_en": "Wins the coin (of 6) whose Binance price gains most (in %) between 2026-12-28T00:00:00Z and 2027-01-04T00:00:00Z. Start/end = Binance closes at those exact times. Exact tie: refund (midnight UTC) (midnight UTC)."
+ },
+ {
+  "id": "golden-globes-drama-2027",
+  "cat": "divertissement",
+  "title_fr": "Golden Globes (10 janv.) : meilleur film dramatique ?",
+  "title_en": "Golden Globes (Jan 10): Best Motion Picture – Drama?",
+  "options": [
+   {
+    "k": "odyssey",
+    "fr": "The Odyssey (Nolan)",
+    "en": "The Odyssey (Nolan)",
+    "p": 0.4
+   },
+   {
+    "k": "dune",
+    "fr": "Dune : Troisième partie",
+    "en": "Dune: Part Three",
+    "p": 0.12
+   },
+   {
+    "k": "other",
+    "fr": "Autre film",
+    "en": "Another film",
+    "p": 0.48
+   }
+  ],
+  "closeAt": "2027-01-10T22:00:00Z",
+  "resolveAt": "2027-01-11T06:00:00Z",
+  "source": "https://goldenglobes.com/",
+  "why": "Annonce en direct le 10 janv. (≈01:00 UTC le 11) ; mises fermées 3 h avant.",
+  "probSource": "Estimation dérivée de Polymarket 'most Oscar nominations' (The Odyssey 83,5 %, Dune 13,8 %) ; pas de marché coté.",
+  "desc_fr": "Lauréat du Golden Globe du meilleur film dramatique 2027. Film non nommé = « Autre film ».",
+  "desc_en": "Winner of the 2027 Golden Globe for Best Motion Picture – Drama. Not nominated = 'Another film'.",
+  "auto": false
+ },
+ {
+  "id": "measles-us-2026",
+  "cat": "monde",
+  "title_fr": "Rougeole aux USA : cas confirmés en 2026 (CDC) ?",
+  "title_en": "US measles: confirmed 2026 cases (CDC)?",
+  "options": [
+   {
+    "k": "lt65",
+    "fr": "Moins de 6 500",
+    "en": "Below 6,500",
+    "p": 0.16
+   },
+   {
+    "k": "65-70",
+    "fr": "6 500 à 6 999",
+    "en": "6,500–6,999",
+    "p": 0.235
+   },
+   {
+    "k": "70-75",
+    "fr": "7 000 à 7 499",
+    "en": "7,000–7,499",
+    "p": 0.355
+   },
+   {
+    "k": "ge75",
+    "fr": "7 500 ou plus",
+    "en": "7,500 or more",
+    "p": 0.25
+   }
+  ],
+  "closeAt": "2026-12-15T00:00:00Z",
+  "resolveAt": "2027-01-14T00:00:00Z",
+  "source": "https://www.cdc.gov/measles/data-research/index.html",
+  "why": "Compteur public hebdomadaire du CDC ; mises fermées mi-décembre.",
+  "probSource": "Polymarket 'Measles cases in U.S. in 2026?' : ≥6,5k 84 %, ≥7k 60,5 %, ≥7,5k 25 %.",
+  "desc_fr": "Total des cas confirmés pour 2026 dans la 1re mise à jour du CDC de janvier 2027.",
+  "desc_en": "Total confirmed 2026 cases in the CDC's first update of January 2027.",
+  "auto": false
+ },
+ {
+  "id": "bnb-above-2027-01-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BNBUSDT",
+  "closeAt": "2027-01-15T00:00:00Z",
+  "resolveAt": "2027-01-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BNBUSDT&interval=1m&startTime=1800057540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 737.8 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "BNB au-dessus de 700 $ le 15 janv. 2027 ?",
+  "title_en": "BNB above $700 on Jan 15, 2027?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.585
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.415
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 700,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 700 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $700 (midnight UTC)."
+ },
+ {
+  "id": "btc-range-2027-01-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2027-01-15T00:00:00Z",
+  "resolveAt": "2027-01-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1800057540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin : prix de clôture le 15 janv. 2027 ?",
+  "title_en": "Bitcoin: closing price on Jan 15, 2027?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 70 000 $",
+    "en": "Below $70,000",
+    "p": 0.186
+   },
+   {
+    "k": "r1",
+    "fr": "70 000 $ – 80 000 $",
+    "en": "$70,000 – $80,000",
+    "p": 0.278
+   },
+   {
+    "k": "r2",
+    "fr": "80 000 $ – 90 000 $",
+    "en": "$80,000 – $90,000",
+    "p": 0.269
+   },
+   {
+    "k": "r3",
+    "fr": "90 000 $ – 100 000 $",
+    "en": "$90,000 – $100,000",
+    "p": 0.163
+   },
+   {
+    "k": "r4",
+    "fr": "100 000 $ ou plus",
+    "en": "$100,000 or more",
+    "p": 0.104
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     70000
+    ],
+    [
+     70000,
+     80000
+    ],
+    [
+     80000,
+     90000
+    ],
+    [
+     90000,
+     100000
+    ],
+    [
+     100000,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "eth-above-2027-01-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "ETHUSDT",
+  "closeAt": "2027-01-15T00:00:00Z",
+  "resolveAt": "2027-01-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=ETHUSDT&interval=1m&startTime=1800057540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 2 428 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Ethereum au-dessus de 2 400 $ le 15 janv. 2027 ?",
+  "title_en": "Ethereum above $2,400 on Jan 15, 2027?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.475
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.525
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 2400,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 2 400 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $2,400 (midnight UTC)."
+ },
+ {
+  "id": "sol-range-2027-01-15",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "SOLUSDT",
+  "closeAt": "2027-01-15T00:00:00Z",
+  "resolveAt": "2027-01-16T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=SOLUSDT&interval=1m&startTime=1800057540000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 104.4 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Solana : prix de clôture le 15 janv. 2027 ?",
+  "title_en": "Solana: closing price on Jan 15, 2027?",
+  "options": [
+   {
+    "k": "r0",
+    "fr": "Moins de 80 $",
+    "en": "Below $80",
+    "p": 0.184
+   },
+   {
+    "k": "r1",
+    "fr": "80 $ – 100 $",
+    "en": "$80 – $100",
+    "p": 0.301
+   },
+   {
+    "k": "r2",
+    "fr": "100 $ – 120 $",
+    "en": "$100 – $120",
+    "p": 0.263
+   },
+   {
+    "k": "r3",
+    "fr": "120 $ – 140 $",
+    "en": "$120 – $140",
+    "p": 0.149
+   },
+   {
+    "k": "r4",
+    "fr": "140 $ ou plus",
+    "en": "$140 or more",
+    "p": 0.103
+   }
+  ],
+  "rule": {
+   "type": "range",
+   "ranges": [
+    [
+     null,
+     80
+    ],
+    [
+     80,
+     100
+    ],
+    [
+     100,
+     120
+    ],
+    [
+     120,
+     140
+    ],
+    [
+     140,
+     null
+    ]
+   ],
+   "bounds": "lo inclusive, hi exclusive; null = open",
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Gagne la tranche qui contient le prix de clôture sur Binance (minuit UTC).",
+  "desc_en": "The bracket containing the Binance closing price wins (midnight UTC)."
+ },
+ {
+  "id": "copernicus-2026-rank",
+  "cat": "monde",
+  "title_fr": "Climat : 2026, année la plus chaude jamais mesurée ?",
+  "title_en": "Climate: will 2026 be the hottest year on record?",
+  "options": [
+   {
+    "k": "1",
+    "fr": "Oui, 1re",
+    "en": "Yes, 1st",
+    "p": 0.78
+   },
+   {
+    "k": "2",
+    "fr": "Non, 2e",
+    "en": "No, 2nd",
+    "p": 0.19
+   },
+   {
+    "k": "3p",
+    "fr": "Non, 3e ou moins",
+    "en": "No, 3rd or lower",
+    "p": 0.03
+   }
+  ],
+  "closeAt": "2026-12-15T00:00:00Z",
+  "resolveAt": "2027-01-20T00:00:00Z",
+  "source": "https://climate.copernicus.eu/climate-bulletins",
+  "why": "Bilan annuel officiel Copernicus (C3S/ERA5) publié début janvier ; mises fermées mi-décembre.",
+  "probSource": "Polymarket 'Where will 2026 rank among the hottest years on record?' (NASA) : 1er 83,5 %, 2e 16 % ; ajusté pour ERA5.",
+  "desc_fr": "Rang de 2026 pour la température moyenne mondiale dans le bilan annuel « Global Climate Highlights » de Copernicus (ERA5).",
+  "desc_en": "2026 rank for global mean temperature in Copernicus' annual Global Climate Highlights (ERA5).",
+  "auto": false
+ },
+ {
+  "id": "oscars-most-noms-2027",
+  "cat": "divertissement",
+  "title_fr": "Oscars 2027 (21 janv.) : film avec le plus de nominations ?",
+  "title_en": "Oscars 2027 (Jan 21): film with most nominations?",
+  "options": [
+   {
+    "k": "odyssey",
+    "fr": "The Odyssey",
+    "en": "The Odyssey",
+    "p": 0.83
+   },
+   {
+    "k": "dune",
+    "fr": "Dune : Troisième partie",
+    "en": "Dune: Part Three",
+    "p": 0.14
+   },
+   {
+    "k": "other",
+    "fr": "Autre film ou égalité",
+    "en": "Other film or tie",
+    "p": 0.03
+   }
+  ],
+  "closeAt": "2027-01-20T23:00:00Z",
+  "resolveAt": "2027-01-21T16:00:00Z",
+  "source": "https://www.oscars.org/oscars",
+  "why": "Nominations annoncées par l'Académie le 21 janv. (~13:30 UTC) ; mises fermées la veille.",
+  "probSource": "Polymarket 'Which film will get the most Oscar nominations at the 99th Academy Awards?' : The Odyssey 83,5 %, Dune 13,8 %.",
+  "desc_fr": "Film ayant reçu le plus de nominations aux 99es Oscars. Égalité en tête : « Autre film ou égalité ».",
+  "desc_en": "Film with the most nominations at the 99th Oscars. Tie at the top: 'Other film or tie'.",
+  "auto": false
+ },
+ {
+  "id": "btc-above-2027-01-21",
+  "cat": "crypto",
+  "auto": true,
+  "asset": "BTCUSDT",
+  "closeAt": "2027-01-21T00:00:00Z",
+  "resolveAt": "2027-01-22T00:00:00Z",
+  "source": "https://data-api.binance.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&startTime=1800575940000&limit=1",
+  "why": "Prix de marché futur ; mise fermée 24 h avant la lecture ; personne ne peut connaître la clôture Binance à l'avance.",
+  "probSource": "Modèle log-normal sans dérive : spot Binance 82 279 (2026-10-22 ~07:30 UTC), volatilité journalière réalisée 30/90 j x1,1.",
+  "title_fr": "Bitcoin au-dessus de 75 000 $ le 21 janv. 2027 ?",
+  "title_en": "Bitcoin above $75,000 on Jan 21, 2027?",
+  "options": [
+   {
+    "k": "yes",
+    "fr": "Oui",
+    "en": "Yes",
+    "p": 0.676
+   },
+   {
+    "k": "no",
+    "fr": "Non",
+    "en": "No",
+    "p": 0.324
+   }
+  ],
+  "rule": {
+   "type": "above",
+   "value": 75000,
+   "read": "close of Binance spot 1m kline whose closeTime = resolveAt - 1 ms (daily close)"
+  },
+  "desc_fr": "Oui si le prix de clôture sur Binance est supérieur à 75 000 $ (minuit UTC).",
+  "desc_en": "Yes if the Binance closing price is above $75,000 (midnight UTC)."
+ }
+]

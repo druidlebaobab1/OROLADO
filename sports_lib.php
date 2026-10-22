@@ -26,7 +26,7 @@ const SP_MY_BETS = 300;            // v2779 : « Mes paris » montre les 300 der
  */
 const SP_Q_CAP = 500.0;            // total des mises réelles par choix d'une question (0 sur un match = pas de plafond)
 const SP_PRICE_TTL = 259200;       // 72 h : durée maximale d'ouverture d'une question de prix après la pose de ses cotes
-const SP_Q_SPORTS = ['event', 'crypto', 'politique'];
+const SP_Q_SPORTS = ['event', 'crypto', 'politique', 'pred']; // 2026-10-22 : « pred » = prédictions Predict (pred_lib.php)
 function sp_floor2(float $v): float { return floor($v * 100 + 1e-6) / 100; }
 function sp_is_question(array $e): bool { return in_array((string) ($e['sport'] ?? ''), SP_Q_SPORTS, true); }
 /** L'actif d'une question de prix (btc, eth, gold, tesla…), '' si aucun. */
@@ -43,6 +43,12 @@ function sp_asset(array $e): string {
 function sp_is_price(array $e): bool {
   if (!sp_is_question($e)) return false;
   if (($e['sport'] ?? '') === 'crypto') return true;
+  // 2026-10-22 — prédictions Predict : prix si un actif est suivi (crypto auto) ou catégorie crypto ; économie : d'après le titre ; le reste : non
+  if (($e['sport'] ?? '') === 'pred') {
+    $pc = (string) ($e['cat'] ?? '');
+    if (!empty($e['pred']['asset']) || $pc === 'crypto') return true;
+    if ($pc !== 'economie') return false;
+  }
   foreach ((array) ($e['logos'] ?? []) as $l) if (preg_match('/^q:(btc|eth|sol|xrp|doge|chart|gold)$/', (string) $l)) return true;
   if (sp_asset($e) !== '') return true;
   $t = sp_lower((string) ($e['title'] ?? '') . ' ' . (string) ($e['league'] ?? ''));
@@ -77,6 +83,7 @@ function sp_corr_groups(array $e): array {
 /** Heure réelle de fermeture des paris : le début, ou plus tôt pour une question de prix (72 h après la pose des cotes). */
 function sp_close_at(array $e): int {
   $c = (int) ($e['start'] ?? 0);
+  if (($e['sport'] ?? '') === 'pred' && !empty($e['pred']['auto'])) return $c; // Predict crypto : cotes recalculées toutes les 5 min (sinon suspendu : pred_stale)
   if (sp_is_price($e)) {
     $p = (int) ($e['pricedAt'] ?? $e['createdAt'] ?? 0);
     if ($p > 0) $c = min($c, $p + SP_PRICE_TTL);
@@ -121,7 +128,9 @@ function sp_public_events(int $now = 0): array {
     // 2026-10-22 (propriétaire) : un match fini disparaît de la liste (plus de « Résultats » affichés 3 jours) ; « Mes paris » garde l'historique
     if (!$open) continue;
     $out[] = ['id' => $e['id'], 'title' => $e['title'], 'league' => $e['league'], 'sport' => $e['sport'], 'start' => $close, 'open' => $open, 'q' => sp_is_question($e), 'grp' => sp_corr_groups($e),
-      'opts' => array_map(static fn($o) => ['k' => $o['k'], 'label' => $o['label'], 'odd' => (float) $o['odd']], $e['opts']), 'result' => $e['result'] ?? null, 'status' => $e['status'], 'logos' => array_values(array_map('strval', (array) ($e['logos'] ?? []))), 'i18n' => !empty($e['i18n']) ? (object) $e['i18n'] : null];
+      'opts' => array_values(array_map(static fn($o) => ['k' => $o['k'], 'label' => $o['label'], 'odd' => (float) $o['odd']] + (isset($o['en']) ? ['en' => (string) $o['en']] : []), array_filter((array) $e['opts'], static fn($o) => empty($o['off'])))), 'result' => $e['result'] ?? null, 'status' => $e['status'], 'logos' => array_values(array_map('strval', (array) ($e['logos'] ?? []))), 'i18n' => !empty($e['i18n']) ? (object) $e['i18n'] : null]
+      + (($e['sport'] ?? '') === 'pred' ? ['pred' => 1, 'cat' => (string) ($e['cat'] ?? ''), 'end' => (int) ($e['endAt'] ?? 0), 'src' => (string) ($e['pred']['src'] ?? ''), 'auto' => !empty($e['pred']['auto']),
+        'asset' => (string) ($e['pred']['asset'] ?? ''), 'susp' => function_exists('pred_stale') && pred_stale($e, $now), 'img' => preg_match('/^[a-f0-9]{16}$/', (string) ($e['img'] ?? '')) ? (string) $e['img'] : '', 'desc' => !empty($e['desc']) ? (object) $e['desc'] : null] : []); // 2026-10-22 : prédictions Predict (catégorie, textes fr / en, fiche : explication, source, réponse)
   }
   usort($out, static fn($a, $b) => [$b['open'], $a['start']] <=> [$a['open'], $b['start']]);
   return $out;
@@ -185,11 +194,20 @@ function sp_admin_save(array $in): array {
     }
     $s['e'][] = $fix(['id' => $id, 'title' => $title, 'league' => sp_clean((string) ($in['league'] ?? ''), 40), 'sport' => sp_clean((string) ($in['sport'] ?? 'foot'), 12), 'start' => $start,
       'opts' => $opts, 'maxStake' => $maxStake, 'status' => 'open', 'createdAt' => time(), 'logos' => $logos] + ($endAt ? ['endAt' => $endAt] : []) + ($tr ? ['i18n' => $tr] : []) + ($cap > 0 ? ['cap' => $cap] : []));
-    // on garde au plus 300 matchs (les plus anciens réglés partent)
-    if (count($s['e']) > 300) $s['e'] = array_slice($s['e'], -300);
+    // on garde au plus 300 matchs (les plus anciens réglés partent ; 2026-10-22 : jamais un événement pas encore réglé)
+    $s['e'] = sp_prune_events(array_values($s['e']));
     return ['ok' => true, 'id' => $id];
   });
 }
+/** Garde au plus $max événements : seuls les plus anciens RÉGLÉS partent (jamais un ouvert / fermé qui attend son résultat). */
+function sp_prune_events(array $list, int $max = 300): array {
+  $over = count($list) - $max;
+  if ($over <= 0) return $list;
+  $out = [];
+  foreach ($list as $e) { if ($over > 0 && ($e['status'] ?? '') === 'settled') { $over--; continue; } $out[] = $e; }
+  return $out;
+}
+
 function mb_strlen_safe(string $s): int { return (int) preg_match_all('/./us', $s); }
 function sp_lower(string $s): string { return function_exists('mb_strtolower') ? mb_strtolower($s, 'UTF-8') : strtolower($s); }
 
@@ -748,7 +766,7 @@ function sp_logo_fill_one(): void {
   @touch($lock);
   $todo = null;
   foreach (sp_events() as $e) {
-    if (($e['status'] ?? '') !== 'open' || in_array((string) ($e['sport'] ?? ''), ['event', 'crypto', 'politique'], true)) continue;
+    if (($e['status'] ?? '') !== 'open' || sp_is_question($e)) continue;
     $lg = array_values((array) ($e['logos'] ?? []));
     if (count(array_filter($lg)) === 2) continue;
     $tm = sp_title_teams((string) $e['title']); if (!$tm) continue;
@@ -772,7 +790,7 @@ function sp_remind_admin(int $now): void {
     foreach ((array) ($s['e'] ?? []) as $i => $e) {
       if (($e['status'] ?? '') !== 'open' && ($e['status'] ?? '') !== 'closed') continue;
       if (!empty($e['askedAt'])) continue;
-      $wait = in_array((string) ($e['sport'] ?? ''), ['event', 'crypto', 'politique'], true) ? 0 : 8100;
+      $wait = sp_is_question($e) ? 0 : 8100;
       if ($now < (!empty($e['endAt']) ? (int) $e['endAt'] : (int) $e['start'] + $wait)) continue; // v2787 : après la VRAIE fin
       $s['e'][$i]['askedAt'] = $now;
       $list[] = (string) $e['title'];
@@ -912,9 +930,12 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
     }
     $e = $ev[$eid] ?? null;
     if (!$e || isset($seen[$eid])) return ['ok' => false, 'reason' => 'param'];
-    if ($e['status'] !== 'open' || !empty($e['hold']) || $now >= sp_close_at($e)) return ['ok' => false, 'reason' => 'closed']; // 2026-10-21 : « hold » = en attente de vraies cotes ; v2810 : question de prix fermée 72 h après ses cotes
+    if ($e['status'] !== 'open' || !empty($e['hold']) || $now >= sp_close_at($e)) return ['ok' => false, 'reason' => 'closed'];
+    if (($e['sport'] ?? '') === 'pred' && $now >= (int) ($e['closeMax'] ?? $e['start'])) return ['ok' => false, 'reason' => 'closed']; // 2026-10-22 : prédiction Predict fermée à closeAt
+    if (($e['sport'] ?? '') === 'pred' && function_exists('pred_stale') && pred_stale($e, $now)) return ['ok' => false, 'reason' => 'susp']; // crypto : cotes pas à jour (prix introuvable) → suspendu // 2026-10-21 : « hold » = en attente de vraies cotes ; v2810 : question de prix fermée 72 h après ses cotes
     $o = null; foreach ($e['opts'] as $oo) if ($oo['k'] === $k) $o = $oo;
     if (!$o) return ['ok' => false, 'reason' => 'param'];
+    if (!empty($o['off'])) return ['ok' => false, 'reason' => 'closed']; // 2026-10-22 : choix presque certain retiré (Predict crypto)
     // v2810 : une question (prédiction) se joue en SIMPLE seulement ; jamais deux choix d'un même groupe dans un coupon
     if ($multi && sp_is_question($e)) return ['ok' => false, 'reason' => 'single'];
     foreach (sp_corr_groups($e) as $g) { if (isset($grp[$g])) return ['ok' => false, 'reason' => 'corr']; $grp[$g] = 1; }
@@ -1127,3 +1148,5 @@ function sp_admin_event_bets(string $eid): array {
 
 // 2026-10-22 — paris automatiques API-Football (étape 1 : football avant-match). Sans ce fichier : paris manuels seulement.
 if (is_file(__DIR__ . '/sb_lib.php')) require_once __DIR__ . '/sb_lib.php';
+// 2026-10-22 — prédictions « Predict » (import JSON, cotes depuis les chances, règlement automatique crypto via Binance)
+if (is_file(__DIR__ . '/pred_lib.php')) require_once __DIR__ . '/pred_lib.php';

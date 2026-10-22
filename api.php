@@ -295,6 +295,7 @@ $OROLADO_RATE_RULES = [
   'csTry'             => [['i', 300, 60]],
   'csHist'            => [['t', 30, 60]],
   'spList'            => [['i', 120, 60]],
+  'predPrice'         => [['i', 60, 60]], // 2026-10-22 : prix actuel (fiche Predict), gardé 30 s par le serveur
   'spBet'             => [['t', 30, 60]],
   'spMine'            => [['t', 30, 60]],
   'sbList'            => [['i', 240, 60]],
@@ -459,6 +460,12 @@ if ($action === 'sbCodeSave' || $action === 'sbCodeLoad') {
     $res = ['ok' => false, 'reason' => 'busy'];
   }
   echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
+// 2026-10-22 — prédictions « Predict » : prix ACTUEL d'un actif crypto pour la fiche (lu par le serveur, gardé 30 s)
+if ($action === 'predPrice') {
+  $res = function_exists('pred_price') ? pred_price((string) ($req['asset'] ?? '')) : ['ok' => false, 'reason' => 'off'];
+  echo json_encode(['server' => true] + $res);
   exit;
 }
 if ($action === 'spList' || $action === 'spBet' || $action === 'spMine') {

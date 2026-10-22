@@ -2179,6 +2179,23 @@ if ($isAjax) {
     }
     if ($action === 'sp_close') admin_json(sp_admin_close((string) ($req['id'] ?? '')));
     if ($action === 'sp_settle') admin_json(sp_admin_settle(admin_local_db(), (string) ($req['id'] ?? ''), (string) ($req['k'] ?? '')));
+    // 2026-10-22 (propriétaire) — PRÉDICTIONS « Predict » (pred_lib.php) : liste, import du fichier JSON, règlement automatique maintenant
+    if (in_array($action, ['sp_pred_list', 'sp_pred_import', 'sp_pred_run', 'sp_pred_edit'], true)) {
+      if (!function_exists('pred_import')) admin_json(['ok' => false, 'reason' => 'Module des prédictions absent']);
+      if ($action === 'sp_pred_list') admin_json(pred_admin_list());
+      if ($action === 'sp_pred_edit') admin_json(pred_admin_edit((string) ($req['id'] ?? ''), (array) ($req['ed'] ?? [])));
+      if ($action === 'sp_pred_import') {
+        $raw = (string) ($req['json'] ?? '');
+        if (strlen($raw) > 2000000) admin_json(['ok' => false, 'reason' => 'Fichier trop gros (2 Mo au plus)']);
+        $r = pred_import($raw);
+        if (!empty($r['ok'])) { try { $r['repriced'] = (int) (pred_reprice_job(0, true)['repriced'] ?? 0); } catch (Throwable $eRp) { $r['repriced'] = 0; } } // crypto : cotes calculées tout de suite sur le prix actuel
+        if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'sports', 0, 'Predict : import ' . $r['added'] . ' ajouté(s), ' . $r['updated'] . ' mis à jour, ' . count($r['skipped']) . ' refusé(s)');
+        admin_json($r);
+      }
+      @set_time_limit(60);
+      $rp = pred_reprice_job(0, true);
+      admin_json(['repriced' => $rp['repriced'] ?? 0] + pred_auto_run(admin_local_db(), 0, true) + ['list' => pred_admin_list()]);
+    }
     // 2026-10-22 : corrigé (était dans le bloc gm_, jamais atteint → « Action inconnue ») ; 2026-10-21 (propriétaire) : fiche joueur → ses PARIS (lecture seule)
     if ($action === 'sp_player') {
       $pid = (string) ($req['userId'] ?? '');
@@ -2286,7 +2303,9 @@ if ($isAjax) {
     if ($action === 'sb_diag') admin_json(sb_admin_diag());
     if ($action === 'sb_import') { @set_time_limit(120); admin_json(sb_admin_import()); }
     if ($action === 'sb_cfg') {
+      $mp0 = (float) (sb_config()['mPred'] ?? 15);
       $r = sb_config_save((array) ($req['cfg'] ?? []));
+      if (function_exists('pred_reprice') && abs((float) $r['config']['mPred'] - $mp0) > 1e-9) { $r['predRepriced'] = pred_reprice(); try { $r['predRepriced'] += (int) (pred_reprice_job(0, true)['repriced'] ?? 0); } catch (Throwable $eRp) { /* jamais bloquant */ } } // 2026-10-22 : marge Predict changée → cotes des prédictions ouvertes recalculées
       admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'reglages', 0, 'Paris automatiques : ' . json_encode($r['config'], JSON_UNESCAPED_UNICODE));
       admin_json($r + ['status' => sb_admin_status()]);
     }
@@ -3006,6 +3025,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
             <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Paris rares<br><small class="muted">score exact, mi-temps / fin de match…</small></span><input id="sbmExotic" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
             <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Paris en direct<br><small class="muted">pendant le match</small></span><input id="sbmLive" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
             <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Autres sports<br><small class="muted">basket, hockey…</small></span><input id="sbmOther" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
+            <label style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="flex:1;min-width:0">Prédictions (Predict)<br><small class="muted">cote = (1 − marge) ÷ chance · ex. 20 % : 50 % → 1,60</small></span><input id="sbmPred" class="nt-in" type="number" step="0.1" min="2" max="40" inputmode="decimal" style="width:70px"> <b>%</b></label>
           </div>
           <div style="margin:6px 0 4px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04)">
             <b>Alertes sur ton téléphone</b>
@@ -3022,6 +3042,19 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
           <div id="sbDiag" class="muted" style="font-size:.85em"></div>
           <b style="display:block;margin-top:8px">✋ Résultats à vérifier</b>
           <div id="sbChk" class="muted">…</div>
+        </div>
+        <div class="nt-card" id="predCard" style="margin-top:10px;border-color:rgba(251,191,36,.6);min-width:0;overflow-wrap:anywhere">
+          <b>🔮 Prédictions « Predict »</b>
+          <p class="muted" style="margin:4px 0 6px" id="predSt">…</p>
+          <p class="muted" style="margin:0 0 6px">Importer une liste JSON : <code>[{id, cat, title_fr, title_en, options:[{k, fr, en, p}], closeAt, resolveAt, auto, asset, rule, source}]</code>. Cote = (1 − marge Predict) ÷ chance, au moins 1,01 (marge : carte « Paris automatiques »). Même id déjà en ligne et ouvert = cotes remises à jour. Crypto « auto » : cotes recalculées toutes les 5 min sur le prix Binance (suspendues si le prix manque) ; après resolveAt, le résultat est PROPOSÉ avec le prix lu (bougie 1 min) dans « À vérifier » — rien n'est payé sans votre clic.</p>
+          <textarea id="predJson" class="nt-in" rows="4" spellcheck="false" placeholder="Collez ici le fichier JSON…" style="width:100%;box-sizing:border-box;font:12px/1.35 ui-monospace,monospace"></textarea>
+          <p style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+            <label class="mini" style="cursor:pointer">📄 Choisir un fichier<input id="predFile" type="file" accept=".json,application/json" hidden></label>
+            <button class="mini ok" type="button" id="predImp">Importer</button>
+            <button class="mini" type="button" id="predRun">⚙️ Lire les prix maintenant (cotes + résultats proposés)</button>
+          </p>
+          <div id="predMsg" class="muted" style="font-size:.85em"></div>
+          <div id="predList" style="margin-top:8px"><p class="muted">Chargement…</p></div>
         </div>
         <div class="nt-card" id="spResCard" style="margin-top:10px;border-color:rgba(56,189,248,.55)">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
@@ -3955,7 +3988,7 @@ setInterval(() => {
   if (!$c('btnCasA')) return;
   const esc = v => String(v == null ? '' : v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
   const m2 = v => (Number(v) || 0).toFixed(2) + ' $';
-  const ICO = {foot:'⚽', basket:'🏀', boxe:'🥊', tennis:'🎾', mma:'🥋', event:'🔮', crypto:'🔮', politique:'🔮', autre:'🏆'};
+  const ICO = {foot:'⚽', basket:'🏀', boxe:'🥊', tennis:'🎾', mma:'🥋', event:'🔮', crypto:'🔮', politique:'🔮', pred:'🔮', autre:'🏆'};
   // v2734 : image choisie par l'admin → réduite à 128 px (PNG) dans le navigateur avant l'envoi
   function spImg(input) {
     return new Promise(res => {
@@ -3978,7 +4011,7 @@ setInterval(() => {
     const j = await ajax({action:'sp_list'}); if (!j.ok) { $c('spList').innerHTML = '<p class="muted">' + esc(j.reason || 'Erreur') + '</p>'; return; }
     // v2787 (propriétaire) : tableau SIMPLE en 3 parties — 🔔 À VALIDER (fini, il faut donner le résultat) · 🟢 À VENIR / EN COURS · ✅ HISTORIQUE
     const now = Date.now() / 1000;
-    const isQ = e => ['event', 'crypto', 'politique'].includes(e.sport);
+    const isQ = e => ['event', 'crypto', 'politique', 'pred'].includes(e.sport);
     const endOf = e => e.endAt ? e.endAt : e.start + (isQ(e) ? 0 : 8100);
     const todo = j.events.filter(e => e.status !== 'settled' && now >= endOf(e)).sort((a, b) => endOf(a) - endOf(b));
     const live = j.events.filter(e => e.status !== 'settled' && now < endOf(e)).sort((a, b) => a.start - b.start);
@@ -3988,7 +4021,8 @@ setInterval(() => {
       const nb = Object.values(e.exp || {}).reduce((s, x) => s + (x.n || 0), 0);
       const head = '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b>' + (ICO[e.sport] || '🏆') + ' ' + esc(e.title) + '</b><span class="muted" style="white-space:nowrap">' + nb + ' coupon(s)</span></div>' +
         '<div class="muted" style="margin:2px 0 6px">' + esc(e.league || '') + ' · paris fermés ' + when(e.close || e.start) + (e.endAt ? ' · fin ' + when(e.endAt) : '') +
-        (mode !== 'done' && e.pricedAt ? ' · cotes du ' + when(e.pricedAt) : '') + (mode !== 'done' && e.capEff ? ' · plafond ' + m2(e.capEff) + ' $ par choix' : '') + (mode !== 'done' && e.isQ ? ' · simple seulement' : '') + '</div>';
+        (mode !== 'done' && e.pricedAt ? ' · cotes du ' + when(e.pricedAt) : '') + (mode !== 'done' && e.capEff ? ' · plafond ' + m2(e.capEff) + ' $ par choix' : '') + (mode !== 'done' && e.isQ ? ' · simple seulement' : '') +
+        (e.pred && e.pred.src ? ' · <a href="' + esc(e.pred.src) + '" target="_blank" rel="noopener noreferrer" style="color:#93C5FD">source ↗</a>' : '') + (e.pred ? ' · 🔮 Predict' + (e.pred.auto ? ' (auto ' + esc(e.pred.asset) + ')' : '') : '') + '</div>';
       // v2807 : bouton « qui a gagné / perdu » (liste des paris de l'événement) + résumé gagnants / perdants
       const nbA = e.nb || nb;
       const who = nbA ? '<button class="mini" type="button" data-who="' + esc(e.id) + '">👥 Voir les ' + nbA + ' pari(s)' + (mode === 'done' ? ' : gagnants / perdants' : '') + '</button><div class="spWho" data-whobox="' + esc(e.id) + '"></div>' : '';
@@ -4149,7 +4183,7 @@ setInterval(() => {
   // 2026-10-22 : PARIS AUTOMATIQUES (API-Football) — réglages, budget, import, diagnostic, résultats à vérifier
   (function () {
     const card = $c('sbCard'); if (!card) return;
-    const F = ['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'alertStake', 'alertPot', 'alertWin', 'liveLastMin'];
+    const F = ['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'mPred', 'alertStake', 'alertPot', 'alertWin', 'liveLastMin'];
     const t = s => s ? new Date(s * 1000).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
     const sc = p => Array.isArray(p) ? p[0] + '-' + p[1] : '?';
     const paint = j => {
@@ -4189,7 +4223,7 @@ setInterval(() => {
       F.forEach(k => { const v = parseFloat(String($c('sb' + k).value).replace(',', '.')); if (!isNaN(v)) cfg[k] = v; });
       if (cfg.public && !confirm('Rendre les paris automatiques visibles par TOUS les joueurs ?')) return;
       $c('sbSave').disabled = true; const r = await ajax({action:'sb_cfg', cfg}).catch(() => ({ok:false, reason:'Réseau'})); $c('sbSave').disabled = false;
-      if (!r.ok) { alert(r.reason || 'Échec'); return; } paint(r.status); $c('sbDiag').textContent = '✓ Réglages enregistrés';
+      if (!r.ok) { alert(r.reason || 'Échec'); return; } paint(r.status); $c('sbDiag').textContent = '✓ Réglages enregistrés' + (r.predRepriced ? ' · ' + r.predRepriced + ' prédiction(s) Predict recalculée(s)' : ''); if (window.predList) window.predList();
     };
     $c('sbImp').onclick = async () => {
       $c('sbImp').disabled = true; $c('sbDiag').textContent = 'Import en cours… (jusqu\'à 1 min)';
@@ -4253,6 +4287,89 @@ setInterval(() => {
     });
   }
   $c('spResGo').onclick = spResults;
+  // 2026-10-22 (propriétaire) — PRÉDICTIONS « Predict » : à vérifier · à régler · ouvertes · réglées ; import du fichier ; règlement crypto
+  (function () {
+    if (!$c('predCard')) return;
+    const CAT = {crypto:'Crypto', politique:'Politique', economie:'Économie', divertissement:'Divertissement', sport:'Sport', tech:'Tech', monde:'Monde'};
+    const when = t => t ? new Date(t * 1000).toLocaleString('fr-FR', {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) : '—';
+    const ruleTxt = r => !r ? '' : r.type === 'range' ? 'tranches ' + r.ranges.map(x => '[' + (x[0] == null ? '−∞' : x[0]) + ' ; ' + (x[1] == null ? '+∞' : x[1]) + ']').join(' ') : (r.type === 'above' ? 'au-dessus de ' : 'en dessous de ') + r.value;
+    const row = e => {
+      const settle = e.grp === 'chk' || e.grp === 'due';
+      const head = '<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b style="min-width:0">' + esc(e.title) + '</b><span class="muted" style="white-space:nowrap">' + e.nb + ' pari(s)' + (e.in ? ' · ' + m2(e.in) + ' $' : '') + '</span></div>' +
+        (e.en ? '<div class="muted" style="font-size:.9em">' + esc(e.en) + '</div>' : '') +
+        '<div class="muted" style="margin:2px 0 4px">' + esc(CAT[e.cat] || e.cat) + ' · paris fermés ' + when(e.close) + (e.close < e.closeAt ? ' (cotes de plus de 72 h)' : '') + ' · réponse ' + when(e.endAt) +
+        (e.auto ? ' · auto ' + esc(e.asset) + ' ' + esc(ruleTxt(e.rule)) : ' · à la main') + (e.src ? ' · <a href="' + esc(e.src) + '" target="_blank" rel="noopener noreferrer" style="color:#93C5FD">source ↗</a>' : ' · <span style="color:#FCD34D">pas de source</span>') + '</div>' +
+        (e.chk ? '<div style="color:#FCD34D;margin:2px 0 4px">✋ ' + esc(e.chk.why) + (e.chk.px != null ? ' · prix lu ' + esc(String(e.chk.px)) + ' (' + esc(e.chk.src || '') + ')' : '') + ' · ' + when(e.chk.at) +
+          (e.chk.sug ? '<br><b style="color:#5CF59A">Proposé : ' + esc((e.opts.find(o => o.k === e.chk.sug) || {}).label || e.chk.sug) + '</b> — vérifiez sur la source puis confirmez.' : '') + '</div>' : '') +
+        (e.auto && e.grp === 'open' ? '<div class="muted">' + (e.susp ? '<span style="color:#FCA5A5">🔒 Paris suspendus : cotes pas encore calculées sur le prix actuel (ou prix introuvable)</span>' : 'Cotes recalculées ' + when(e.pxAt) + ' · prix ' + esc(String(e.px0)) + ' · volatilité/jour ' + (Math.round(e.vol * 10000) / 100) + ' %') + '</div>' : '') +
+        (e.px && !e.chk ? '<div class="muted">Prix lu : ' + esc(String(e.px.px)) + ' (' + esc(e.px.src) + ')</div>' : '');
+      if (e.grp === 'done') {
+        const w = e.result === 'void' ? 'Annulé (mises rendues)' : ((e.opts.find(o => o.k === e.result) || {}).label || '?');
+        return '<div class="nt-card" style="margin-bottom:6px">' + head + '<div>Résultat : <b style="color:#5CF59A">' + esc(w) + '</b> · ' + when(e.settledAt) + '</div></div>';
+      }
+      const sug = e.chk && e.chk.sug;
+      const opts = e.opts.map(o => '<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.06);align-items:center;flex-wrap:wrap"><span style="min-width:0">' + esc(o.label) + ' <b style="color:#FFD27A">' + (o.off ? 'retiré (> 97 %)' : Number(o.odd).toFixed(2)) + '</b> <span class="muted">(' + Math.round(o.p * 1000) / 10 + ' %)</span></span>' +
+        (settle ? '<button class="mini' + (!sug || sug === o.k ? ' ok' : '') + '" type="button" data-pset="' + esc(e.id) + '" data-k="' + esc(o.k) + '"' + (sug === o.k ? ' style="box-shadow:0 0 0 2px #5CF59A"' : '') + '>' + (sug === o.k ? '✅ Confirmer : ' : '✅ ') + esc(o.label) + ' a gagné</button>' : '') + '</div>').join('');
+      const ed = '<details style="margin-top:6px"><summary class="muted" style="cursor:pointer">✏️ Image et explication' + (e.img ? ' · 🖼️' : '') + '</summary><div data-pedbox="' + esc(e.id) + '" style="display:flex;flex-direction:column;gap:6px;margin-top:6px">' +
+        (e.img ? '<span style="display:flex;align-items:center;gap:8px"><img src="sp-logo.php?k=' + esc(e.img) + '" alt="" style="width:44px;height:44px;border-radius:12px;object-fit:cover"><label><input type="checkbox" data-pednoimg> Retirer l’image</label></span>' : '') +
+        '<label class="muted">Image (facultative, carrée de préférence) <input type="file" accept="image/*" data-pedimg></label>' +
+        '<textarea class="nt-in" rows="2" data-peddf placeholder="Explication (français, 1–2 lignes)">' + esc((e.desc || {}).fr || '') + '</textarea>' +
+        '<textarea class="nt-in" rows="2" data-pedde placeholder="Explanation (English, 1–2 lines)">' + esc((e.desc || {}).en || '') + '</textarea>' +
+        '<span><button class="mini ok" type="button" data-pedsave="' + esc(e.id) + '">Enregistrer</button> <span class="muted" data-pedst></span></span></div></details>';
+      return '<div class="nt-card" style="margin-bottom:8px' + (e.grp === 'chk' ? ';border-color:rgba(251,191,36,.8)' : e.grp === 'due' ? ';border-color:rgba(251,191,36,.45)' : '') + '">' + head + opts +
+        (settle ? '<button class="mini" type="button" data-pset="' + esc(e.id) + '" data-k="void">↺ Annulé → mises rendues</button>' : '') + ed + '</div>';
+    };
+    const paint = j => {
+      if (!j || !j.ok) { $c('predList').innerHTML = '<p class="muted">' + esc((j && j.reason) || 'Erreur') + '</p>'; return; }
+      const L = j.events || [], g = k => L.filter(e => e.grp === k);
+      const chk = g('chk'), due = g('due'), open = g('open'), done = g('done');
+      $c('predSt').textContent = 'Marge Predict : ' + String(j.margin).replace('.', ',') + ' % · ' + open.length + ' ouverte(s) · ' + (chk.length + due.length) + ' à régler · tout est réglé par vous (jamais de paiement automatique)';
+      $c('predList').innerHTML =
+        '<h4 style="margin:6px 0">✋ À vérifier (' + chk.length + ')</h4>' + (chk.length ? chk.map(row).join('') : '<p class="muted">Rien.</p>') +
+        '<h4 style="margin:12px 0 6px">🔔 À régler — heure de la réponse passée (' + due.length + ')</h4>' + (due.length ? '<p class="muted" style="margin:0 0 6px">Vérifiez le vrai résultat sur la source, puis touchez le gagnant (payé une seule fois).</p>' + due.map(row).join('') : '<p class="muted">Rien.</p>') +
+        '<h4 style="margin:12px 0 6px">🟢 Ouvertes (' + open.length + ')</h4>' + (open.length ? open.map(row).join('') : '<p class="muted">Aucune. Importez un fichier ci-dessus.</p>') +
+        '<details style="margin-top:10px"><summary class="muted" style="cursor:pointer">✅ Réglées (' + done.length + ')</summary>' + done.map(row).join('') + '</details>';
+      // image : réduite par le navigateur (carré 160 px, PNG ≤ 200 Ko) puis gardée chez nous (sp-logo.php)
+      const toPng = f => new Promise(res => { const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => { const z = 160, c = document.createElement('canvas'); c.width = z; c.height = z; const s = Math.min(im.width, im.height); c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, z, z); res(c.toDataURL('image/png')); }; im.onerror = () => res(''); im.src = fr.result; }; fr.onerror = () => res(''); fr.readAsDataURL(f); });
+      $c('predList').querySelectorAll('[data-pedsave]').forEach(b => b.onclick = async () => {
+        const box = b.closest('[data-pedbox]'), st = box.querySelector('[data-pedst]'), f = box.querySelector('[data-pedimg]').files[0], no = box.querySelector('[data-pednoimg]');
+        const ed = {desc_fr: box.querySelector('[data-peddf]').value.trim(), desc_en: box.querySelector('[data-pedde]').value.trim()};
+        if (f) { ed.img = await toPng(f); if (!ed.img) { st.textContent = 'Image illisible'; return; } if (ed.img.length > 270000) { st.textContent = 'Image trop lourde'; return; } } else if (no && no.checked) ed.img = 'none';
+        b.disabled = true; st.textContent = '…';
+        const r = await ajax({action:'sp_pred_edit', id:b.dataset.pedsave, ed}).catch(() => ({ok:false, reason:'Réseau'})); b.disabled = false;
+        if (!r.ok) { st.textContent = '❌ ' + (r.reason || 'Échec'); return; } st.textContent = '✓ Enregistré'; load();
+      });
+      $c('predList').querySelectorAll('[data-pset]').forEach(b => b.onclick = async () => {
+        const msg = b.dataset.k === 'void' ? 'ANNULER cette prédiction : toutes les mises sont rendues (×1). Confirmer ?' : 'Confirmer : ' + b.textContent.replace('✅ ', '') + ' ? Les gagnants seront payés tout de suite.';
+        if (!confirm(msg)) return;
+        b.disabled = true;
+        const r = await ajax({action:'sp_settle', id:b.dataset.pset, k:b.dataset.k}).catch(() => ({ok:false, reason:'Réseau'}));
+        alert(r.ok ? ('Réglé ✓ — coupons gagnés : ' + r.won + ' · perdus : ' + r.lost + (r.retry ? ' · ' + r.retry + ' paiement(s) à refaire : recliquez plus tard' : '')) : (r.reason || 'Échec'));
+        load(); try { list(); } catch (e) { /* ignore */ }
+      });
+    };
+    const load = () => ajax({action:'sp_pred_list'}).then(paint).catch(() => paint({ok:false, reason:'Réseau'}));
+    window.predList = load;
+    $c('predFile').onchange = () => { const f = $c('predFile').files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { $c('predJson').value = String(rd.result || ''); $c('predMsg').textContent = '📄 ' + f.name + ' chargé : touchez « Importer ».'; }; rd.readAsText(f); };
+    $c('predImp').onclick = async () => {
+      const raw = $c('predJson').value.trim(); if (!raw) { alert('Collez le JSON ou choisissez un fichier.'); return; }
+      try { JSON.parse(raw); } catch (e) { alert('JSON invalide : ' + e.message); return; }
+      $c('predImp').disabled = true; $c('predMsg').textContent = 'Import…';
+      const r = await ajax({action:'sp_pred_import', json:raw}).catch(() => ({ok:false, reason:'Réseau'})); $c('predImp').disabled = false;
+      if (!r.ok) { $c('predMsg').textContent = '❌ ' + (r.reason || 'Échec'); return; }
+      $c('predMsg').innerHTML = '✓ ' + r.added + ' ajoutée(s) · ' + r.updated + ' mise(s) à jour · ' + r.skipped.length + ' refusée(s) (marge ' + String(r.margin).replace('.', ',') + ' %) · ' + (r.repriced || 0) + ' crypto calculée(s) sur le prix actuel' +
+        (r.skipped.length ? '<br>' + r.skipped.map(s => '• ' + esc(s.id) + ' : ' + esc(s.reason)).join('<br>') : '');
+      load(); try { list(); } catch (e) { /* ignore */ }
+    };
+    $c('predRun').onclick = async () => {
+      $c('predRun').disabled = true; $c('predMsg').textContent = 'Lecture des prix Binance…';
+      const r = await ajax({action:'sp_pred_run'}).catch(() => ({ok:false, reason:'Réseau'})); $c('predRun').disabled = false;
+      if (!r.ok) { $c('predMsg').textContent = '❌ ' + (r.reason || 'Échec'); return; }
+      $c('predMsg').innerHTML = '✓ ' + (r.repriced || 0) + ' cote(s) recalculée(s) · ' + (r.sug || 0) + ' résultat(s) proposé(s) · ' + (r.chk || 0) + ' à vérifier' + ((r.log || []).length ? '<br>' + r.log.map(esc).join('<br>') : '');
+      if (r.list) paint(r.list); try { list(); } catch (e) { /* ignore */ }
+    };
+    load();
+  })();
   $c('spResAll').onclick = async () => {
     const sure = spResList.filter(p => p.conf === 'sur' && p.k);
     if (!sure.length) return;
