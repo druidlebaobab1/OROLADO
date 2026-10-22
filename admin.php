@@ -27,6 +27,13 @@ register_shutdown_function(static function (): void {
   mail_queue_after_response((string) ($GLOBALS['OROLADO_ADMIN_ACTION'] ?? '') !== 'mail_queue_status');
 });
 
+/** 2026-10-22 — un paquet du « 🎁 Bonus à tous » (en arrière-plan ou depuis la page) ; même crédit que « Ajuster ». */
+function admin_bonus_all_step_here(string $tok, array $job): string {
+  $allPl = admin_all_pay_players(admin_profiles(), static fn(string $id, array $row): bool => admin_is_house_account($id, $row));
+  $by = (string) ($job['by'] ?? '');
+  return admin_all_job_step($tok, $allPl, static fn(string $id, float $amt, string $motif, array $hint): array => admin_credit_player($id, $amt, $motif, $hint, $by));
+}
+
 function admin_json(array $payload, int $code = 200): void {
   http_response_code($code);
   header('Content-Type: application/json; charset=utf-8');
@@ -1969,6 +1976,22 @@ if ($isAjax) {
     admin_json(['ok' => true]);
   }
 
+  // 2026-10-22 — « 🎁 Bonus à tous » en arrière-plan : appelé par le serveur lui-même (jeton secret de l'envoi, pas de session).
+  if ($action === 'bonus_all_bg') {
+    $tok = (string) ($req['token'] ?? '');
+    $job = admin_all_job_read();
+    if ($tok === '' || empty($job['active']) || !hash_equals((string) ($job['token'] ?? ''), $tok)) admin_json(['ok' => false], 403);
+    ignore_user_abort(true);
+    @set_time_limit(28);
+    header('Content-Type: application/json; charset=utf-8');
+    echo '{"ok":true}';
+    if (session_status() === PHP_SESSION_ACTIVE) @session_write_close();
+    if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
+    $_SESSION['admin_uid'] = (string) ($job['uid'] ?? ''); $_SESSION['admin_email'] = (string) ($job['by'] ?? '');
+    if (admin_bonus_all_step_here($tok, $job) === 'next') orolado_bonus_all_kick($tok);
+    exit;
+  }
+
   $me = admin_require();
   if ($action === 'online_now') {
     admin_json(['ok' => true, 'online' => admin_online_now()]);
@@ -2020,12 +2043,38 @@ if ($isAjax) {
   // 2026-10-22 (propriétaire) — 🎁 Bonus à tous : même montant pour tous les joueurs (crédit + e-mail, comme « Ajuster »).
   if ($action === 'bonus_all_preview' || $action === 'bonus_all_run') {
     $allPl = admin_all_pay_players(admin_profiles(), static fn(string $id, array $row): bool => admin_is_house_account($id, $row));
-    if ($action === 'bonus_all_preview') admin_json(admin_all_pay_preview($req, $allPl));
+    if ($action === 'bonus_all_preview') admin_json(admin_all_pay_preview($req, $allPl) + ['bg' => admin_all_job_status()]);
     @set_time_limit(0);
     ignore_user_abort(true);
     $adminEmail = (string) ($me['email'] ?? '');
     admin_json(admin_all_pay_run($req, $allPl, static fn(string $id, float $amt, string $motif, array $hint): array
       => admin_credit_player($id, $amt, $motif, $hint, $adminEmail), max(1, min(10, (int) ($req['limit'] ?? 5) ?: 5))));
+  }
+  if ($action === 'bonus_all_start') {
+    $r = admin_all_job_start($req, (string) ($me['id'] ?? ''), (string) ($me['email'] ?? ''));
+    if (!empty($r['ok'])) { admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'credit', 0, 'Bonus à tous lancé : ' . (string) ($req['amount'] ?? '') . ' $ par joueur'); orolado_bonus_all_kick((string) $r['token']); }
+    admin_json(['ok' => !empty($r['ok']), 'reason' => (string) ($r['reason'] ?? ''), 'bg' => admin_all_job_status()]);
+  }
+  if ($action === 'bonus_all_status') {
+    $j = admin_all_job_read();
+    if (!empty($j['active']) && (int) ($j['lastAt'] ?? 0) < time() - 60) {
+      // chaîne arrêtée → relancée ; déjà relancée sans résultat (relance impossible ?) → un paquet ici même (page ouverte)
+      $tok = (string) ($j['token'] ?? '');
+      if ((int) ($j['kickAt'] ?? 0) > (int) ($j['lastAt'] ?? 0) && (int) $j['kickAt'] < time() - 20) {
+        @set_time_limit(28);
+        if (admin_bonus_all_step_here($tok, $j) === 'next') orolado_bonus_all_kick($tok);
+      } elseif ((int) ($j['kickAt'] ?? 0) <= (int) ($j['lastAt'] ?? 0)) {
+        admin_all_job_update(static function (array &$x): void { $x['kickAt'] = time(); });
+        orolado_bonus_all_kick($tok);
+      }
+    }
+    admin_json(['ok' => true, 'bg' => admin_all_job_status()]);
+  }
+  if ($action === 'bonus_all_pause' || $action === 'bonus_all_resume') {
+    $on = $action === 'bonus_all_resume'; $tok = '';
+    admin_all_job_update(static function (array &$x) use ($on, &$tok): void { if (!$x) return; $x['active'] = $on; $x['reason'] = $on ? '' : 'Mis en pause par l’admin.'; if ($on) { $x['lastAt'] = time(); $tok = (string) ($x['token'] ?? ''); } });
+    if ($on && $tok !== '') { @touch(orolado_bonus_all_marker()); orolado_bonus_all_kick($tok); }
+    admin_json(['ok' => true, 'bg' => admin_all_job_status()]);
   }
   if ($action === 'gift_top_pay_preview') {
     admin_json(admin_top_pay_preview($req));
@@ -2873,12 +2922,19 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <div class="nt-card">
         <label class="nt-lab">Montant pour chaque joueur ($)</label>
         <input id="baAmt" class="nt-in" type="number" min="0.01" max="5" step="0.01" value="0.20" inputmode="decimal" style="max-width:140px">
-        <p class="muted" style="margin:6px 0 0">Chaque joueur reçoit le montant sur son solde réel et un e-mail « Vous avez reçu … » (dans sa langue, avec son nom). Comptes admin, suspendus et bannis exclus. Un même jour, un même montant n’est jamais versé deux fois au même joueur. Gardez la page ouverte pendant l’envoi.</p>
+        <p class="muted" style="margin:6px 0 0">Chaque joueur reçoit le montant sur son solde réel et un e-mail « Vous avez reçu … » (dans sa langue, avec son nom). Comptes admin, suspendus et bannis exclus. Un même jour, un même montant n’est jamais versé deux fois au même joueur. L’envoi continue sur le serveur : vous pouvez fermer la page.</p>
         <p style="margin-top:12px">
           <button class="mini" type="button" id="baPreview">Aperçu</button>
           <button class="mini ok" type="button" id="baRun" disabled>🎁 Envoyer à tous</button>
         </p>
         <p class="muted" id="baMsg" style="overflow-wrap:anywhere"></p>
+        <div id="baBg" hidden style="margin-top:10px;padding:10px;border:1px solid #2A3550;border-radius:10px;overflow-wrap:anywhere">
+          <b>🎁 Envoi en arrière-plan</b>
+          <p id="baBgLine" style="margin:6px 0"></p>
+          <p class="muted" id="baBgState" style="margin:4px 0"></p>
+          <button class="mini" type="button" id="baPause">⏸ Pause</button>
+          <button class="mini ok" type="button" id="baResume" hidden>▶ Reprendre</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3979,30 +4035,39 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     baSay(j.count + ' joueur(s) à payer × ' + money(j.amount) + ' = TOTAL ' + money(j.total) + ' · ' + j.withMail + ' recevront un e-mail'
       + (j.already ? ' · ' + j.already + ' déjà payé(s) aujourd’hui avec ce montant' : '') + (j.check ? ' · ⚠ ' + j.check + ' à vérifier' : ''));
   }
+  let baTimer = 0;
+  function baBg(b) {
+    const box = $m('baBg');
+    if (!b || !b.job) { box.hidden = true; return; }
+    box.hidden = false;
+    $m('baBgLine').textContent = money(b.amount) + ' par joueur · ' + (b.paid || 0) + ' payé(s) · ' + money(b.total || 0)
+      + (b.remaining != null ? ' · il en reste ' + b.remaining : '') + (b.mailFailed ? ' · ⚠ ' + b.mailFailed + ' e-mail(s) non parti(s) (bonus crédité)' : '');
+    $m('baBgState').textContent = b.active ? '⏳ En cours sur le serveur — vous pouvez fermer la page.' : (b.reason || 'Arrêté.');
+    $m('baBgState').style.color = b.active ? '' : (/^Arrêt/.test(b.reason || '') ? '#FCA5A5' : '#86EFAC');
+    $m('baPause').hidden = !b.active; $m('baResume').hidden = b.active || /^Terminé/.test(b.reason || '');
+  }
+  async function baStatus() {
+    clearTimeout(baTimer);
+    const j = await ajax({action:'bonus_all_status'});
+    if (j && j.ok) baBg(j.bg);
+    if ($m('bonusAllModal').classList.contains('on') && j && j.bg && j.bg.active) baTimer = setTimeout(baStatus, 5000);
+  }
   async function baRun() {
     if (baBusy || !baPlan || !(baPlan.count > 0)) return;
     const plan = baPlan;
-    const c = prompt('Envoyer ' + money(plan.amount) + ' à ' + plan.count + ' joueur(s) — TOTAL ' + money(plan.total) + ' (argent réel, sur leur solde), avec un e-mail à chacun.\nTapez PAYER pour confirmer :') || '';
+    const c = prompt('Envoyer ' + money(plan.amount) + ' à ' + plan.count + ' joueur(s) — TOTAL ' + money(plan.total) + ' (argent réel, sur leur solde), avec un e-mail à chacun.\nL’envoi continue sur le serveur : vous pourrez fermer la page.\nTapez PAYER pour confirmer :') || '';
     if (c.trim() !== 'PAYER') { baSay('Annulé : rien n’a été envoyé.'); return; }
-    baBusy = true; $m('baRun').disabled = true; $m('baPreview').disabled = true;
-    let paid = 0, total = 0, mailBad = 0, last = null;
-    try {
-      for (let guard = 0; guard < 5000; guard++) {
-        baSay('Envoi en cours… ' + paid + ' / ' + plan.count + ' · ' + money(total) + ' — gardez la page ouverte.');
-        const j = await ajax({action:'bonus_all_run', confirm:'PAYER', amount: plan.amount, limit: 5});
-        last = j; paid += j.paid || 0; total += j.total || 0; mailBad += j.mailFailed || 0;
-        if (!j.ok || !j.more || !(j.paid > 0)) break;
-      }
-    } catch (e) { last = {ok:false, reason:'Connexion perdue : refaites « Aperçu » puis « Envoyer » (personne ne sera payé deux fois).'}; }
-    baBusy = false; $m('baPreview').disabled = false;
-    const msg = paid + ' joueur(s) payé(s) · ' + money(total)
-      + (last && last.ok ? (last.remaining > 0 ? ' · il en reste ' + last.remaining + ' (refaites Aperçu puis Envoyer)' : ' · tout le monde a reçu ✓') : ' · ARRÊT : ' + ((last && last.reason) || 'erreur'))
-      + (mailBad ? ' · ⚠ ' + mailBad + ' e-mail(s) non parti(s) (le bonus est bien crédité)' : '');
-    await baPreview();
-    baSay(msg, last && last.ok ? 'good' : 'bad');
+    baBusy = true; $m('baRun').disabled = true;
+    const j = await ajax({action:'bonus_all_start', confirm:'PAYER', amount: plan.amount});
+    baBusy = false;
+    if (!j.ok) { baSay(j.reason || 'Erreur', 'bad'); $m('baRun').disabled = false; return; }
+    baSay('C’est parti ✓ L’envoi continue tout seul sur le serveur : vous pouvez fermer la page.', 'good');
+    baBg(j.bg); baTimer = setTimeout(baStatus, 3000);
   }
-  $m('btnBonusAll').onclick = () => { $m('bonusAllModal').classList.add('on'); baPlan = null; $m('baRun').disabled = true; baSay(''); };
-  $m('closeBonusAll').onclick = () => { if (!baBusy) $m('bonusAllModal').classList.remove('on'); };
+  $m('baPause').onclick = async () => { const j = await ajax({action:'bonus_all_pause'}); if (j.ok) baBg(j.bg); };
+  $m('baResume').onclick = async () => { const j = await ajax({action:'bonus_all_resume'}); if (j.ok) { baBg(j.bg); baTimer = setTimeout(baStatus, 3000); } };
+  $m('btnBonusAll').onclick = () => { $m('bonusAllModal').classList.add('on'); baPlan = null; $m('baRun').disabled = true; baSay(''); baStatus(); };
+  $m('closeBonusAll').onclick = () => { clearTimeout(baTimer); $m('bonusAllModal').classList.remove('on'); };
   $m('baPreview').onclick = baPreview;
   $m('baRun').onclick = baRun;
   $m('baAmt').addEventListener('input', () => { baPlan = null; $m('baRun').disabled = true; });

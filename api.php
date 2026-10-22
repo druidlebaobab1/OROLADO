@@ -42,6 +42,13 @@ register_shutdown_function(static function (): void {
   mail_queue_after_response(true);
 });
 
+// 2026-10-22 — « 🎁 Bonus à tous » en arrière-plan : chaîne arrêtée depuis 60 s → relancée (un is_file() sans envoi).
+register_shutdown_function(static function (): void {
+  if (!is_file(orolado_data_dir() . '/bonus_all_job.on') || !is_file(__DIR__ . '/bonus_kick_lib.php')) return;
+  require_once __DIR__ . '/bonus_kick_lib.php';
+  try { orolado_bonus_all_watchdog(); } catch (Throwable $e) { /* jamais bloquant */ }
+});
+
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
 register_shutdown_function(static function (): void {
   $e = error_get_last();

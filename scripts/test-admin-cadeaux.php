@@ -90,5 +90,19 @@ $pl2 = array_merge($pl, [['id' => $U(7), 'email' => 'p7@gmail.com', 'name' => ''
 $r4 = admin_all_pay_run(['amount' => '0.20', 'confirm' => 'PAYER'], $pl2, static fn() => ['ok' => false, 'reason' => 'Solde base indisponible'], 5);
 check('crédit refusé : arrêt, rien noté (pourra être retenté)', $r4['ok'] === false && $r4['paid'] === 0 && admin_all_pay_preview(['amount' => '0.20'], $pl2)['count'] === 1, json_encode($r4));
 
+echo "6) Bonus à tous en arrière-plan\n";
+$plB = [['id' => $U(11), 'email' => 'b1@gmail.com', 'name' => '', 'publicId' => ''], ['id' => $U(12), 'email' => '', 'name' => '', 'publicId' => '']];
+check('lancement sans PAYER : refusé', admin_all_job_start(['amount' => '0.30'], 'u_adm', 'adm@x.com')['ok'] === false);
+$js = admin_all_job_start(['amount' => '0.30', 'confirm' => 'PAYER'], 'u_adm', 'adm@x.com');
+check('lancé : jeton secret, état sans jeton', $js['ok'] && strlen($js['token']) === 32 && admin_all_job_status()['active'] === true && !isset(admin_all_job_status()['token']));
+check('2e lancement pendant l’envoi : refusé', admin_all_job_start(['amount' => '0.30', 'confirm' => 'PAYER'], 'u_adm', 'adm@x.com')['ok'] === false);
+$gotB = [];
+$payB = static function (string $id, float $amt) use (&$gotB): array { $gotB[] = $id; $GLOBALS['OROLADO_NOTIFY_LAST'] = ['mail' => 'sent']; return ['ok' => true]; };
+check('mauvais jeton : rien', admin_all_job_step('x', $plB, $payB) === 'bad' && $gotB === []);
+$st = admin_all_job_step($js['token'], $plB, $payB);
+$bs = admin_all_job_status();
+check('un paquet : tout le monde payé, envoi terminé', $st === 'done' && count($gotB) === 2 && $bs['active'] === false && $bs['paid'] === 2 && abs($bs['total'] - 0.6) < 1e-9 && str_starts_with($bs['reason'], 'Terminé'), json_encode($bs));
+check('terminé : relancer le même jeton ne paie rien', admin_all_job_step($js['token'], $plB, $payB) === 'bad' && count($gotB) === 2);
+
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
