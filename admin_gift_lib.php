@@ -581,6 +581,11 @@ function admin_all_job_status(): array {
   $j = admin_all_job_read();
   if (!$j) return ['job' => false];
   unset($j['token'], $j['uid']);
+  // compteur en direct : lu dans le registre (avance joueur par joueur, pas seulement à la fin d'un paquet)
+  $led = admin_gift_json(admin_all_paid_file((string) ($j['key'] ?? '')));
+  $ok = 0; foreach ($led as $e) if (is_array($e) && !empty($e['ok'])) $ok++;
+  $j['paid'] = max((int) ($j['paid'] ?? 0), $ok);
+  $j['total'] = round(max((float) ($j['total'] ?? 0), $ok * (float) ($j['amount'] ?? 0)), 2);
   return ['job' => true] + $j;
 }
 
