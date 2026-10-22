@@ -1014,7 +1014,20 @@ function sp_bet_public(array $b): array {
 function sp_my_bets(string $uid): array {
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
   $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid && ($b['status'] ?? '') !== 'pend'));
-  return array_map('sp_bet_public', array_slice(array_reverse($mine), 0, SP_MY_BETS));
+  $out = array_map('sp_bet_public', array_slice(array_reverse($mine), 0, SP_MY_BETS));
+  // 2026-10-22 (propriétaire : « match fini mais l'historique montre encore 1-1 · 41' ») : score FINAL (fs) des matchs finis,
+  // score et minute ACTUELS (cs, cm) des matchs en direct — l'historique suit le match
+  if (function_exists('sb_results')) {
+    $res = sb_results(); $L = function_exists('sb_live_data') ? sb_live_data() : [];
+    foreach ($out as $i => $b) foreach ($b['sel'] as $j => $sl) {
+      if (!preg_match('/^foot:(\d+)$/', (string) ($sl['fx'] ?? ''), $m)) continue;
+      $r = $res[$m[1]] ?? null; $lv = $L['fx'][$m[1]] ?? null;
+      if (is_array($r) && ($r['v'] ?? '') === 'fin' && is_array($r['ft'] ?? null)) $out[$i]['sel'][$j]['fs'] = array_map('intval', $r['ft']);
+      elseif (is_array($lv) && empty($lv['end']) && is_array($lv['g'] ?? null)) { $out[$i]['sel'][$j]['cs'] = array_map('intval', $lv['g']); $out[$i]['sel'][$j]['cm'] = $lv['m'] ?? null; }
+      elseif (is_array($lv) && !empty($lv['end']) && is_array($lv['g'] ?? null)) $out[$i]['sel'][$j]['fs'] = array_map('intval', $lv['g']);
+    }
+  }
+  return $out;
 }
 
 /** Admin : ferme les paris d'un match (plus personne ne peut parier dessus). */
