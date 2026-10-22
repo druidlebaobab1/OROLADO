@@ -1698,11 +1698,11 @@
   function renderMenu() {
     var n = NX(), x = SX(), xx = XX(), acc = accMode();
     var sl = sbSports.length ? sbSports : [{ s: 'foot', n: 'Football' }];
-    var sp = sbOn ? sl.map(function (s) { return '<button type="button" data-sp="' + esc(s.s) + '">' + sico(spIco(s.s)) + '<span dir="auto">' + esc(spName(s)) + '</span></button>'; }).join('') : '';
+    var sp = sbOn ? sl.map(function (s) { return '<button type="button" data-sp="' + esc(s.s) + '">' + sico(spIco(s.s)) + '<span dir="auto">' + esc(spName(s)) + '</span></button>' + (s.s === 'foot' ? predChip().replace(' on"', '"') : ''); }).join('') : ''; // 2026-10-22 : Predict aussi dans le Menu
     if (hasQ() && sbOn) sp += '<button type="button" data-sp="news">' + SBIC.news + '<span>' + esc(x.news) + '</span></button>';
     var row = function (act, ico, t) { return '<button type="button" class="pz-mrow" data-menu="' + act + '"><span class="pz-mi">' + ico + '</span><span class="pz-mt" dir="auto">' + esc(t) + '</span>' + SBIC.chev + '</button>'; };
     var html = bar(n.nMenu) + '<div class="pz-menu">' +
-      (sp ? '<p class="pz-mhd">' + esc(n.sports) + '</p><div class="pz-sports pz-hs">' + sp + '</div>' : '') +
+      (sp ? '<div class="pz-sports pz-hs">' + sp + '</div>' : '') + // 2026-10-22 (propriétaire) : sans le titre « Sports »
       // 2026-10-22 (propriétaire) : menu utile et court — Sports, Direct, Résultats, Mes paris, Favoris, Charger un code, Si la cote change
       '<div class="pz-mcard">' + (sbOn && liveShown() ? row('live', NAVI.live, n.nLive) : '') + (sbOn ? row('res', IC.ok, n.results) : '') + row('mine', NAVI.mine, n.nMine) + (sbOn ? row('fav', '<b class="pz-mstar">★</b>', x.fav) : '') + '</div>' +
       (sbOn ? '<div class="pz-mcard pz-mcode"><p class="pz-mt2">' + esc(x.loadCode) + '</p>' + codeRow() +
