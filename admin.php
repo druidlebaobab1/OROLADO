@@ -2269,6 +2269,25 @@ if ($isAjax) {
     }
     admin_json(['ok' => true, 'set' => $cur !== '', 'end' => $cur !== '' ? substr($cur, -4) : '']);
   }
+  // 2026-10-22 (propriétaire) — PARIS AUTOMATIQUES (sb_lib.php, API-Football) : réglages (config.json), import, diagnostic,
+  // résultats à vérifier (score saisi à la main ou annulation → règlement par le chemin existant sp_resolve).
+  if (in_array($action, ['sb_status', 'sb_cfg', 'sb_import', 'sb_diag', 'sb_result'], true)) {
+    require_once __DIR__ . '/casino_lib.php';
+    require_once __DIR__ . '/sports_lib.php';
+    if (!function_exists('sb_admin_status')) admin_json(['ok' => false, 'reason' => 'Module des paris automatiques absent']);
+    if ($action === 'sb_status') admin_json(sb_admin_status());
+    if ($action === 'sb_diag') admin_json(sb_admin_diag());
+    if ($action === 'sb_import') { @set_time_limit(120); admin_json(sb_admin_import()); }
+    if ($action === 'sb_cfg') {
+      $r = sb_config_save((array) ($req['cfg'] ?? []));
+      admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'reglages', 0, 'Paris automatiques : ' . json_encode($r['config'], JSON_UNESCAPED_UNICODE));
+      admin_json($r + ['status' => sb_admin_status()]);
+    }
+    $void = !empty($req['void']);
+    $r = sb_admin_result(admin_local_db(), (string) ($req['id'] ?? ''), is_array($req['ht'] ?? null) ? $req['ht'] : null, is_array($req['ft'] ?? null) ? $req['ft'] : null, $void);
+    if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'paris', 0, 'Résultat ' . (string) ($req['id'] ?? '') . ' : ' . ($void ? 'annulé' : json_encode([$req['ht'] ?? null, $req['ft'] ?? null])));
+    admin_json($r + ['status' => sb_admin_status()]);
+  }
   // v2664 (propriétaire) — E-mail à tous : français pour les pays francophones, anglais pour les autres.
   // Envoi par paquets de 40 (Brevo), sans doublon (journal par envoi), test sur l'e-mail de l'admin d'abord.
   if ($action === 'mail_stats') {
@@ -2960,6 +2979,36 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
           <p class="muted" style="margin:4px 0 6px" id="apifKeySt">…</p>
           <input id="apifKeyIn" class="nt-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Collez ici votre clé (tableau API-Sports → profil)">
           <p style="margin-top:6px"><button class="mini ok" type="button" id="apifKeyGo">Enregistrer la clé</button></p>
+        </div>
+        <div class="nt-card" id="sbCard" style="margin-top:10px;border-color:rgba(34,197,94,.55);min-width:0;overflow-wrap:anywhere">
+          <b>⚽ Paris automatiques (API-Football)</b>
+          <p class="muted" style="margin:4px 0 6px" id="sbSt">…</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0">
+            <label><input type="checkbox" id="sbPub"> Public (sinon : admin seul)</label>
+            <label><input type="checkbox" id="sbAuto"> Résultats automatiques</label>
+          </div>
+          <p class="muted" style="margin:6px 0 2px">Marges (%) : principaux · autres · exotiques · direct · autres sports</p>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <input id="sbmMain" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
+            <input id="sbmSide" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
+            <input id="sbmExotic" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
+            <input id="sbmLive" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
+            <input id="sbmOther" class="nt-in" type="number" step="0.5" min="2" max="40" inputmode="decimal" style="width:62px">
+          </div>
+          <p class="muted" style="margin:6px 0 2px">Alertes ($) : mise ≥ · gain possible ≥ · gain versé ≥</p>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <input id="sbalertStake" class="nt-in" type="number" min="0" inputmode="decimal" style="width:80px">
+            <input id="sbalertPot" class="nt-in" type="number" min="0" inputmode="decimal" style="width:80px">
+            <input id="sbalertWin" class="nt-in" type="number" min="0" inputmode="decimal" style="width:80px">
+          </div>
+          <p style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+            <button class="mini ok" type="button" id="sbSave">Enregistrer</button>
+            <button class="mini" type="button" id="sbImp">Importer maintenant</button>
+            <button class="mini" type="button" id="sbDiagGo">Diagnostic API</button>
+          </p>
+          <div id="sbDiag" class="muted" style="font-size:.85em"></div>
+          <b style="display:block;margin-top:8px">✋ Résultats à vérifier</b>
+          <div id="sbChk" class="muted">…</div>
         </div>
         <div class="nt-card" id="spResCard" style="margin-top:10px;border-color:rgba(56,189,248,.55)">
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between">
@@ -4072,6 +4121,64 @@ setInterval(() => {
       const k = inp.value.trim(); if (!k) { alert('Collez d\'abord la clé.'); return; }
       go.disabled = true; let j; try { j = await ajax({action:'apif_key_set', key:k}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
       go.disabled = false; if (!j.ok) { alert(j.reason || 'Échec'); return; } inp.value = ''; paint(j);
+    };
+  })();
+  // 2026-10-22 : PARIS AUTOMATIQUES (API-Football) — réglages, budget, import, diagnostic, résultats à vérifier
+  (function () {
+    const card = $c('sbCard'); if (!card) return;
+    const F = ['mMain', 'mSide', 'mExotic', 'mLive', 'mOther', 'alertStake', 'alertPot', 'alertWin'];
+    const t = s => s ? new Date(s * 1000).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—';
+    const sc = p => Array.isArray(p) ? p[0] + '-' + p[1] : '?';
+    const paint = j => {
+      if (!j || !j.ok) { $c('sbSt').textContent = (j && j.reason) || 'Erreur'; return; }
+      const c = j.config || {};
+      $c('sbPub').checked = !!c.public; $c('sbAuto').checked = !!c.autosettle;
+      F.forEach(k => { const el = $c('sb' + k); if (el && document.activeElement !== el) el.value = c[k]; });
+      const b = j.budget || {};
+      $c('sbSt').innerHTML = (j.key ? '' : '⚠️ Aucune clé. ') + 'Budget du jour : <b>' + b.used + ' / ' + b.cap + '</b> · Dernier import : ' + t(j.lastImport) +
+        ' · Matchs : ' + j.fixtures + ' (' + j.withOdds + ' avec cotes)' + (j.err ? '<br>Dernière erreur (' + t(j.errAt) + ') : ' + esc(j.err) : '');
+      const L = j.check || [];
+      $c('sbChk').innerHTML = !L.length ? 'Rien à vérifier.' : L.map(x => '<div style="border-top:1px solid rgba(255,255,255,.12);padding:6px 0">' +
+        '<b>' + esc(x.t) + '</b> <span class="muted">(' + t(x.ko) + ' · ' + x.n + ' choix)</span><br>' + esc(x.why || x.v) + (x.ft ? ' · API : mi-temps ' + sc(x.ht) + ', fin ' + sc(x.ft) : '') +
+        '<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:4px">Mi-temps <input class="nt-in" data-hh inputmode="numeric" style="width:38px" value="' + (x.ht ? x.ht[0] : '') + '">-<input class="nt-in" data-ha inputmode="numeric" style="width:38px" value="' + (x.ht ? x.ht[1] : '') + '">' +
+        ' Fin <input class="nt-in" data-fh inputmode="numeric" style="width:38px" value="' + (x.ft ? x.ft[0] : '') + '">-<input class="nt-in" data-fa inputmode="numeric" style="width:38px" value="' + (x.ft ? x.ft[1] : '') + '">' +
+        ' <button class="mini ok" type="button" data-sbok="' + esc(x.id) + '">Valider</button> <button class="mini bad" type="button" data-sbvoid="' + esc(x.id) + '">Annuler (rembourser)</button></div></div>').join('');
+      $c('sbChk').querySelectorAll('[data-sbok]').forEach(btn => btn.onclick = async () => {
+        const row = btn.parentNode, v = s => row.querySelector(s).value.trim();
+        const ht = [v('[data-hh]'), v('[data-ha]')], ft = [v('[data-fh]'), v('[data-fa]')];
+        if ([...ht, ...ft].some(x => !/^\d{1,2}$/.test(x))) { alert('Entrez le score de la mi-temps et de la fin.'); return; }
+        if (!confirm('Valider mi-temps ' + ht.join('-') + ', fin ' + ft.join('-') + ' ? Les paris seront réglés.')) return;
+        btn.disabled = true; const r = await ajax({action:'sb_result', id:btn.dataset.sbok, ht:ht.map(Number), ft:ft.map(Number)}).catch(() => ({ok:false, reason:'Réseau'}));
+        if (!r.ok) { btn.disabled = false; alert(r.reason || 'Échec'); return; } paint(r.status);
+      });
+      $c('sbChk').querySelectorAll('[data-sbvoid]').forEach(btn => btn.onclick = async () => {
+        if (!confirm('Annuler ce match ? Les choix sur ce match sont remboursés (×1).')) return;
+        btn.disabled = true; const r = await ajax({action:'sb_result', id:btn.dataset.sbvoid, void:1}).catch(() => ({ok:false, reason:'Réseau'}));
+        if (!r.ok) { btn.disabled = false; alert(r.reason || 'Échec'); return; } paint(r.status);
+      });
+    };
+    ajax({action:'sb_status'}).then(paint).catch(() => {});
+    $c('sbSave').onclick = async () => {
+      const cfg = {public: $c('sbPub').checked, autosettle: $c('sbAuto').checked};
+      F.forEach(k => { const v = parseFloat(String($c('sb' + k).value).replace(',', '.')); if (!isNaN(v)) cfg[k] = v; });
+      if (cfg.public && !confirm('Rendre les paris automatiques visibles par TOUS les joueurs ?')) return;
+      $c('sbSave').disabled = true; const r = await ajax({action:'sb_cfg', cfg}).catch(() => ({ok:false, reason:'Réseau'})); $c('sbSave').disabled = false;
+      if (!r.ok) { alert(r.reason || 'Échec'); return; } paint(r.status); $c('sbDiag').textContent = '✓ Réglages enregistrés';
+    };
+    $c('sbImp').onclick = async () => {
+      $c('sbImp').disabled = true; $c('sbDiag').textContent = 'Import en cours… (jusqu\'à 1 min)';
+      const r = await ajax({action:'sb_import'}).catch(() => ({ok:false, reason:'Réseau'})); $c('sbImp').disabled = false;
+      if (!r.ok) { $c('sbDiag').textContent = r.reason || 'Échec'; return; }
+      $c('sbDiag').innerHTML = '✓ ' + r.calls + ' lecture(s)' + ((r.log || []).length ? '<br>' + r.log.map(esc).join('<br>') : ''); paint(r.status);
+    };
+    $c('sbDiagGo').onclick = async () => {
+      $c('sbDiag').textContent = '…';
+      const r = await ajax({action:'sb_diag'}).catch(() => ({ok:false, reason:'Réseau'}));
+      if (!r.ok) { $c('sbDiag').textContent = r.reason || 'Échec'; return; }
+      const s = r.status, u = Object.entries(r.unk || {});
+      $c('sbDiag').innerHTML = (s ? 'API : plan <b>' + esc(s.plan) + '</b>' + (s.active ? '' : ' (inactif !)') + ' · fin ' + esc(s.end) + ' · lectures ' + s.cur + ' / ' + s.max : 'API injoignable') +
+        (r.err ? '<br>Dernière erreur (' + t(r.errAt) + ') : ' + esc(r.err) : '') +
+        '<br>Paris non reconnus (' + u.length + ') :' + (u.length ? '<br>' + u.slice(0, 40).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun');
     };
   })();
   // 2026-10-21 (propriétaire) : RÉSULTATS PROPOSÉS — lecture des scores (serveur, lecture seule) ; « Valider » = action EXISTANTE sp_settle

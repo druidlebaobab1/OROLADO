@@ -1,0 +1,73 @@
+{
+    "get": "fixtures",
+    "parameters": {
+        "live": "all"
+    },
+    "errors": [],
+    "results": 1,
+    "paging": {
+        "current": 1,
+        "total": 1
+    },
+    "response": [
+        {
+            "fixture": {
+                "id": 9003,
+                "referee": null,
+                "timezone": "UTC",
+                "date": "2026-10-22T07:58:00+00:00",
+                "timestamp": 1792655880,
+                "status": {
+                    "long": "1H",
+                    "short": "1H",
+                    "elapsed": null
+                }
+            },
+            "league": {
+                "id": 39,
+                "name": "Premier League",
+                "country": "England",
+                "logo": "https://media.api-sports.io/football/leagues/39.png",
+                "flag": "https://media.api-sports.io/flags/en.svg",
+                "season": 2026,
+                "round": "Regular Season - 9"
+            },
+            "teams": {
+                "home": {
+                    "id": 301,
+                    "name": "Early United",
+                    "logo": "https://media.api-sports.io/football/teams/301.png",
+                    "winner": null
+                },
+                "away": {
+                    "id": 302,
+                    "name": "Dawn City",
+                    "logo": "https://media.api-sports.io/football/teams/302.png",
+                    "winner": null
+                }
+            },
+            "goals": {
+                "home": 0,
+                "away": 0
+            },
+            "score": {
+                "halftime": {
+                    "home": null,
+                    "away": null
+                },
+                "fulltime": {
+                    "home": null,
+                    "away": null
+                },
+                "extratime": {
+                    "home": null,
+                    "away": null
+                },
+                "penalty": {
+                    "home": null,
+                    "away": null
+                }
+            }
+        }
+    ]
+}
