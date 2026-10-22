@@ -96,9 +96,15 @@
   }
 
   // Appli installée ouverte aujourd'hui : un signal par jour (pour compter Android / iPhone).
+  // 2026-10-22 : avec le compte connecté (liste « Application installée » de l'admin) ; une fois par jour, et encore une fois
+  // si le joueur se connecte dans la journée.
   function pingApp() {
     if (!isApp()) return;
-    var day = new Date().toISOString().slice(0, 10);
+    var tok = '';
+    try { tok = (D6.Api && D6.Api.token && D6.Api.token()) || ''; } catch (e) { tok = ''; }
+    var h = 0;
+    for (var k = 0; k < tok.length; k++) h = (h * 31 + tok.charCodeAt(k)) | 0;
+    var day = new Date().toISOString().slice(0, 10) + (tok ? '|' + h : '');
     if (ls('oro_app_ping') === day) return;
     var dev = ls('oro_dev');
     if (!dev || !/^[a-z0-9]{12,40}$/.test(dev)) {
@@ -106,7 +112,7 @@
       for (var i = 0; i < 24; i++) dev += 'abcdefghijklmnopqrstuvwxyz0123456789'.charAt(Math.floor(Math.random() * 36));
       ls('oro_dev', dev);
     }
-    post({ action: 'ping', dev: dev, plat: plat() }).then(function (j) { if (j && j.ok) ls('oro_app_ping', day); });
+    post({ action: 'ping', dev: dev, plat: plat(), token: tok }).then(function (j) { if (j && j.ok) ls('oro_app_ping', day); });
   }
 
   function hideCard(card) {
@@ -217,6 +223,7 @@
     },
     // Après une connexion : l'abonnement est relié au compte du joueur.
     relink: function () {
+      pingApp();
       if (!supported() || Notification.permission !== 'granted') return;
       var tok = '';
       try { tok = (D6.Api && D6.Api.token && D6.Api.token()) || ''; } catch (e) { tok = ''; }

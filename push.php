@@ -57,7 +57,17 @@ if ($action === 'unsub') {
 }
 
 if ($action === 'ping') {
-  push_out(['ok' => push_app_ping((string) ($req['dev'] ?? ''), $plat)]);
+  $ok = push_app_ping((string) ($req['dev'] ?? ''), $plat);
+  // 2026-10-22 : joueur connecté dans l'application installée (liste de l'admin) ; sans compte : simple nombre du jour
+  if ($ok) {
+    $uid = '';
+    $tok = trim((string) ($req['token'] ?? ''));
+    if ($tok !== '' && strlen($tok) <= 2000) {
+      try { $db = load_db(); $uid = orolado_token_user_id($db, $tok); } catch (Throwable $e) { $uid = ''; }
+    }
+    push_app_user_ping($uid, $plat);
+  }
+  push_out(['ok' => $ok]);
 }
 
 push_out(['ok' => false], 400);

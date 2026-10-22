@@ -885,7 +885,7 @@
       box.querySelector('.ow-x').addEventListener('click', shut);
       box.querySelector('.oia-later').addEventListener('click', shut);
       box.querySelector('.ow-dim').addEventListener('click', shut);
-      box.querySelector('.oia-go').addEventListener('click', function () { shut(); setTimeout(function () { if ($('btnInstall')) $('btnInstall').click(); }, 200); });
+      box.querySelector('.oia-go').addEventListener('click', function () { shut(); setTimeout(function () { if (D6.install) D6.install(); else if ($('btnInstall')) $('btnInstall').click(); }, 200); });
       document.body.appendChild(box);
     } catch (eI) { /* ignore */ }
   }
@@ -8911,6 +8911,7 @@
     function openTerms(e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       openModal('termsModal');
+      if (window.oroInstSlots) window.oroInstSlots(); // bouton « Installer » du bas : à jour (langue, appli déjà installée…)
     }
     if ($('btnOpenTerms')) {
       $('btnOpenTerms').addEventListener('click', openTerms);
@@ -9849,6 +9850,11 @@
     function installHelp(kind) {
       var box = $('iosInstallModal');
       if (!box) return;
+      // 2026-10-22 (propriétaire : « Installer ne fait rien » en bas d'Apprendre / des Conditions / après l'inscription) :
+      // la fenêtre des 3 étapes s'ouvrait DERRIÈRE la page déjà ouverte (Apprendre z 2147480000, Conditions placée après
+      // dans la page, carte d'inscription 2147482000) → invisible. Elle passe maintenant au-dessus de tout.
+      box.style.setProperty('z-index', '2147483000', 'important');
+      if (box.parentNode !== document.body || box !== document.body.lastElementChild) document.body.appendChild(box);
       if (kind === 'inapp') {
         var lgI = String(document.documentElement.lang || 'en').slice(0, 2), W = INAPP_T[lgI] || INAPP_T.en;
         var setI = function (sel, v) { var el = box.querySelector(sel); if (el) el.textContent = v; };
@@ -9904,8 +9910,10 @@
     // 2,5 s, trop tôt : le bouton ne pouvait que montrer les étapes. Maintenant, sur Android et ordinateur, la bannière
     // n'apparaît QUE quand Chrome dit « installable » (événement beforeinstallprompt) : « Installer » installe vraiment.
     // iPhone : inchangé (Apple ne permet que les étapes « Partager → Sur l'écran d'accueil »).
-    if ($('btnInstall')) {
-      $('btnInstall').addEventListener('click', async function () {
+    // 2026-10-22 : UN SEUL gestionnaire pour tous les boutons « Installer » (bannière, bas d'Apprendre / des Conditions,
+    // carte après l'inscription) : D6.install().
+    async function doInstall() {
+      {
         // 2026-10-22 (propriétaire : « Installer ne marche pas ») — les visiteurs des publicités arrivent DANS Facebook / Instagram /
         // TikTok : l'installation y est impossible. Android : on rouvre la page dans Chrome (qui propose d'installer) ;
         // iPhone : 3 étapes pour ouvrir dans Safari d'abord.
@@ -9927,6 +9935,7 @@
           deferredPrompt = null;
           window.__oroBip = null;
           hideInstallBanner();
+          fillInstSlots();
           return;
         }
         // Android / ordinateur : Chrome peut annoncer « installable » une seconde plus tard → on l'attend un peu
@@ -9943,6 +9952,7 @@
             waited.prompt();
             try { var ch = await waited.userChoice; if (ch && ch.outcome === 'accepted') localStorage.setItem('oro_install_dismissed', '1'); } catch (eW) { /* ignore */ }
             hideInstallBanner();
+            fillInstSlots();
             return;
           }
         }
@@ -9951,8 +9961,11 @@
         hideInstallBanner();
         // propriétaire : sur Android, jamais de fenêtre d'étapes — soit ça installe, soit rien ; iPhone : les 3 étapes (seule voie d'Apple)
         if (isIos()) installHelp('ios');
-      });
+        else fillInstSlots(); // plus d'installation possible : les boutons se cachent
+      }
     }
+    D6.install = function () { try { doInstall().catch(function () { /* ignore */ }); } catch (eI) { /* ignore */ } };
+    if ($('btnInstall')) $('btnInstall').addEventListener('click', D6.install);
     // 2026-10-21 (propriétaire) : bouton « Installer OROLADO » à la fin d'Apprendre et des Conditions (même effet que la bannière)
     function fillInstSlots() {
       var slots = document.querySelectorAll('.oro-inst-slot'); if (!slots.length) return;
@@ -9974,7 +9987,7 @@
     // fenêtre arrêtait le clic avant qu'il arrive ici → écouté en phase de capture (avant tout le monde)
     document.addEventListener('click', function (e) {
       var b = e.target && e.target.closest && e.target.closest('.oro-inst-btn');
-      if (b && $('btnInstall')) { e.preventDefault(); e.stopPropagation(); $('btnInstall').click(); }
+      if (b) { e.preventDefault(); e.stopPropagation(); D6.install(); }
     }, true);
     window.addEventListener('oro-bip', fillInstSlots);
     window.addEventListener('appinstalled', fillInstSlots);
