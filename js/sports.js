@@ -360,7 +360,7 @@
     if (sbOn) { // 2026-10-22 : paris automatiques visibles → Football · Actualité · Mes paris
       var s = SX();
       return '<div class="sp2-tabs sb-tabs" role="tablist"><button type="button" role="tab" data-sv="foot" class="' + (isSbView() ? 'on' : '') + '">' + sico('foot') + '<span class="fit">' + esc(s.foot) + '</span></button>' +
-        '<button type="button" role="tab" data-sv="list" class="' + (view === 'list' ? 'on' : '') + '">' + SBIC.news + '<span class="fit">' + esc(s.news) + '</span></button>' +
+        (events.some(isQev) ? '<button type="button" role="tab" data-sv="list" class="' + (view === 'list' ? 'on' : '') + '">' + SBIC.news + '<span class="fit">' + esc(s.news) + '</span></button>' : '') + // Actualité : seulement s'il y a des prédictions
         '<button type="button" role="tab" data-sv="mine" class="' + (view === 'mine' ? 'on' : '') + '"><span class="fit">' + esc(x.mine) + '</span>' + (n ? '<i class="sp2-badge">' + n + '</i>' : '') + '</button></div>';
     }
     return '<div class="sp2-tabs" role="tablist"><button type="button" role="tab" data-sv="list" class="' + (view !== 'mine' ? 'on' : '') + '"><span class="fit">' + esc(x.betsTab) + '</span></button>' +
@@ -504,11 +504,11 @@
     return el;
   }
   function renderList() {
-    var x = XX();
-    if (!events.length) { box.innerHTML = tabs() + empty(x.none); bindTabs(); fitAll(box); return; }
+    var x = XX(), evs = sbOn ? events.filter(isQev) : events; // 2026-10-22 : Actualité = prédictions seulement (les matchs sont dans Football)
+    if (!evs.length) { box.innerHTML = tabs() + empty(x.none); bindTabs(); fitAll(box); return; }
     // colonnes de la grille calculées AVANT le dessin (même règle que css/sports2.css : cartes de 330 px au moins, 10 px d'écart)
     var bw = box.clientWidth || 0; if (bw > 0) gridCols = Math.max(1, Math.floor((bw + 10) / 340));
-    var items = feed(events, gridCols);
+    var items = feed(evs, gridCols);
     // en-tête de jour : seulement les matchs (une prédiction glissée entre deux matchs ne change pas de jour)
     var key = function (it) { return it.res ? 'res' : it.tail ? 'q' : it.ins ? null : new Date(it.e.start * 1000).toDateString(); };
     var cnt = {}, cur = '';
@@ -1205,8 +1205,7 @@
     return '<div class="sb-tool"><div class="sb-chips" role="tablist">' + ch.map(function (c) { return '<button type="button" data-day="' + c[0] + '" class="' + (String(sbDay) === String(c[0]) && !sbQ ? 'on' : '') + '" style="flex-grow:' + (String(c[1]).length + 4) + '"><span class="fit">' + esc(c[1]) + '</span></button>'; }).join('') +
       '<button type="button" data-day="fav" class="sb-favc' + (sbDay === 'fav' && !sbQ ? ' on' : '') + '" aria-label="' + esc(x.fav) + '"><span>★</span></button></div>' +
       '<div class="sb-srch"><label class="sb-q">' + SBIC.search + '<input id="sbQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(x.search) + '" value="' + esc(sbQ) + '"></label>' +
-      '<button type="button" class="sb-codeb' + (sbCodeRow ? ' on' : '') + '" id="sbCodeT">' + SBIC.tick + '<span class="fit">' + esc(x.loadCode) + '</span></button></div>' +
-      (sbCodeRow ? codeRow() : '') + '</div>';
+      '</div></div>';
   }
   function codeRow() {
     var x = SX();
@@ -1409,6 +1408,11 @@
       var gh = ev.target.closest('[data-g]'); if (gh) { var g = gh.getAttribute('data-g'); sbGrp[g] = !sbGrp[g]; renderMatch(); }
     });
   }
+  // codes courts des marchés à 3 issues (comme les grands sites) : 1 · X · 2, 1X · 12 · X2 ; sinon le libellé normal
+  function shortL(mk, k, h, a) {
+    var C = { H: '1', D: 'X', A: '2', HD: '1X', HA: '12', DA: 'X2' };
+    return C[k] || sbOutL(mk, k, h, a);
+  }
   // marchés d'un groupe : une famille à lignes (buts 0,5 … 5,5, handicaps) = UN bloc avec une rangée par ligne
   function mkBlocks(ms, f) {
     var blocks = [], byF = {};
@@ -1418,11 +1422,11 @@
         // colonnes selon la longueur des libellés (noms d'équipes longs : 2 ou 1 colonne, jamais de texte coupé)
         var n = (m.o || []).length, ml = 0;
         (m.o || []).forEach(function (o) { ml = Math.max(ml, sbOutL(m.mk, o[0], f.h.n, f.a.n).length); });
-        var cols = n % 3 === 0 && ml <= 15 ? 3 : ml <= 17 ? 2 : 1;
+        var cols = n % 3 === 0 ? 3 : ml <= 17 ? 2 : 1, sh = n % 3 === 0 && ml > 15; // 2026-10-22 (propriétaire) : 1 · X · 2 toujours sur une ligne
         return '<div class="sb-oo c' + cols + '">' + (m.o || []).map(function (o) {
           var ev = 'sb:' + f.id + ':' + m.mk, on = inSlip(ev, o[0]), fl = sbFl(ev + '|' + o[0]);
           return '<button type="button" class="sb-ob sb-ob2' + (on ? ' on' : '') + fl + '" data-ev="' + esc(ev) + '" data-k="' + esc(o[0]) + '" data-odd="' + o[1] + '" aria-pressed="' + on + '"' + (m.s ? ' disabled' : '') + '>' +
-            '<span class="fit" dir="auto">' + esc(sbOutL(m.mk, o[0], f.h.n, f.a.n)) + '</span><b>' + (m.s ? IC.lock : Number(o[1]).toFixed(2)) + '</b></button>';
+            '<span class="fit" dir="auto">' + esc(sh ? shortL(m.mk, o[0], f.h.n, f.a.n) : sbOutL(m.mk, o[0], f.h.n, f.a.n)) + '</span><b>' + (m.s ? IC.lock : Number(o[1]).toFixed(2)) + '</b></button>';
         }).join('') + '</div>';
       }).join('') + '</div>';
     }).join('');
@@ -1434,15 +1438,14 @@
   function codeBox() {
     var x = SX();
     if (sbCode && sbCode.sig === slipSig()) {
-      return '<div class="sb-cp"><small class="fit">' + esc(x.codeT) + '</small><b class="sb-cv" dir="ltr">' + esc(sbCode.code) + '</b>' +
-        '<div class="sb-cpb"><button type="button" id="sbCopy">' + IC.ok + '<span class="fit">' + esc(x.copy) + '</span></button>' +
-        '</div>' +
-        '<p class="sb-cpn"><span class="fit">' + esc(x.valid7) + '</span></p></div>';
+      return '<div class="sb-cp1"><span class="fit">' + esc(x.codeT) + '</span><b dir="ltr">' + esc(sbCode.code) + '</b>' +
+        '<button type="button" id="sbCopy"><span class="fit">' + esc(x.copy) + '</span></button><button type="button" id="sbCodeX" aria-label="✕">✕</button></div>';
     }
     return '<button type="button" class="sb-shb" id="sbShare">' + SBIC.share + '<span class="fit">' + esc(x.share) + '</span></button>';
   }
   function bindCodeBox() {
-    var x = SX(), sh = $('sbShare'), cp = $('sbCopy');
+    var x = SX(), sh = $('sbShare'), cp = $('sbCopy'), cx = $('sbCodeX');
+    if (cx) cx.addEventListener('click', function () { sbCode = null; var w = $('sbCode'); if (w) { w.innerHTML = codeBox(); fitAll(w); bindCodeBox(); } });
     if (sh) sh.addEventListener('click', async function () {
       if (sh.disabled) return; sh.disabled = true;
       var r = null;
