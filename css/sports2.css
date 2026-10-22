@@ -582,3 +582,10 @@ html:root body #casinoModal .sp2 .sb-cp1 > b{flex:none;color:var(--sp2-gold);fon
 html:root body #casinoModal .sp2 .sb-cp1 > button{flex:none;height:32px;padding:0 12px;border:0;border-radius:9px;background:rgba(255,255,255,.08);color:#fff;font:800 12.5px/1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sb-cp1 > #sbCopy{margin-left:auto;min-width:0;flex:0 1 auto}
 html:root body #casinoModal .sp2 .sb-cp1 > #sbCodeX{width:32px;padding:0;color:#A1A1AA}
+/* 2026-10-22 (propriétaire) : noms d'équipes entiers (2 lignes au besoin, jamais « … ») ; cotes comme les grands sites : libellé à gauche, cote à droite */
+html:root body #casinoModal .sp2 .sb-tms span{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.18;padding-bottom:.08em}
+html:root body #casinoModal .sp2 .sb-oo.c3 .sb-ob2{flex-direction:row;justify-content:space-between;gap:4px;height:44px;padding:0 10px}
+html:root body #casinoModal .sp2 .sb-oo.c3 .sb-ob2 > span{flex:0 1 auto;text-align:start;font-size:12.5px;color:#A5A0C8}
+html:root body #casinoModal .sp2 .sb-oo.c3 .sb-ob2.on > span{color:#2A1800}
+html:root body #casinoModal .sp2 .sp2-shbk{flex:none;width:38px;height:38px;display:flex;align-items:center;justify-content:center;margin-inline-end:4px;padding:0;border:0;border-radius:11px;background:rgba(255,255,255,.06);color:#fff}
+html:root body #casinoModal .sp2 .sp2-shbk .sp2-i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
