@@ -348,10 +348,10 @@
     }
     var chip = tm && e.open && e.start - nowS() >= 86400 ? '' : timeChip(e, bare);
     // « Ligue 1 · nul = remboursé » : le nom de la ligue en haut, la petite règle (« nul = remboursé ») en dessous des équipes
-    var lgAll = e.league ? trW(e.league) : '', cut = lgAll.indexOf(' · '), lgName = cut > 0 ? lgAll.slice(0, cut) : lgAll, note = cut > 0 ? lgAll.slice(cut + 3) : '';
+    var lgAll = e.league ? trW(e.league) : '', cut = lgAll.indexOf(' · '), lgName = cut > 0 ? lgAll.slice(0, cut) : lgAll; // (propriétaire : plus de petite règle « nul = remboursé »)
     return '<article class="sp2-ev' + (q ? ' sp2-isq' : '') + (ins ? ' sp2-ins' : '') + (e.open ? '' : ' shut') + (settled ? ' done' : '') + '" data-card="' + esc(e.id) + '">' +
       '<div class="sp2-meta"><span class="sp2-lg">' + sico(qKind(e)) + '<span class="fit">' + esc(lgName || (x.sport[qKind(e)] || x.sport.autre)) + '</span></span>' + chip + '</div>' +
-      head + (note ? '<p class="sp2-note"><span class="fit">' + esc(note) + '</span></p>' : '') + '<div class="sp2-odds n' + e.opts.length + '">' + opts + '</div></article>';
+      head + '<div class="sp2-odds n' + e.opts.length + '">' + opts + '</div></article>';
   }
   // v2830 (propriétaire) : matchs et prédictions MÉLANGÉS dès le haut de la liste (une question toutes les 2–3 rencontres),
   // les prédictions qui ferment le plus tôt d'abord, jamais deux fois le même sujet à la suite (Bitcoin, F1, Bourse…).
@@ -1050,7 +1050,8 @@
   }
   function paintBar(bump) { paintNav(bump); } // (ancien nom, appelé par la liste « Actualité »)
   function bar(title, extra, sub) {
-    return '<div class="pz-bar"><button type="button" class="pz-bk" data-back="1" id="spSlipBack" aria-label="' + esc(NX().back) + '">' + IC.back + '</button>' +
+    // 2026-10-22 (propriétaire : « UN seul bouton retour ») : plus de flèche ‹ ici, la flèche du haut (casino) recule d'un cran
+    return '<div class="pz-bar">' +
       '<span class="pz-bt"><b dir="auto">' + esc(title) + '</b>' + (sub ? '<small dir="auto">' + esc(sub) + '</small>' : '') + '</span>' + (extra || '') + '</div>';
   }
   function shell(inner) {
@@ -1094,7 +1095,7 @@
     if (v === 'slip') sbAfterSlipOpen();
     schedule();
   }
-  /* Retour d'un cran (flèche ‹ de la page, flèche du casino, bouton retour du téléphone) : reçu → fermé ; match → liste
+  /* Retour d'un cran (flèche du haut du casino = le SEUL bouton retour, bouton retour du téléphone) : reçu → fermé ; match → liste
      d'où l'on vient ; coupon → écran d'avant ; Résultats → Menu ; autre écran → Populaire. Populaire : Paris se ferme. */
   function back() {
     var rc = document.getElementById('spRcpt');
@@ -1105,6 +1106,8 @@
     if (view === 'slip') { go(slipFrom && slipFrom !== 'slip' ? slipFrom : 'home'); return true; }
     if (view === 'results') { go('menu'); return true; }
     if (view !== 'home') { go('home'); return true; }
+    // Populaire filtré (période, recherche, autre sport) : on revient d'abord à Populaire tel qu'à l'ouverture
+    if (per !== 'top' || sbQ || hourF >= 0 || sport !== 'foot') { go('home'); return true; }
     return false;
   }
   function render() {
@@ -1231,14 +1234,26 @@
   function inShort(s) { var h = Math.floor(s / 3600), m = Math.max(1, Math.ceil(s % 3600 / 60)); if (m === 60) { h++; m = 0; } return h ? h + ' h ' + (m < 10 ? '0' : '') + m : dur('minute', m); }
   function scTxt(f) { var s = f.sc || [0, 0]; return (+s[0] || 0) + ' - ' + (+s[1] || 0); }
   function minTxt(f, sh) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return sh ? n.ftS : n.ft; if (f.st === 'HT') return sh ? n.htS : n.ht; return f.m != null && f.m !== '' ? f.m + '’' : n.nLive; }
-  function skelRows() { var s = ''; for (var i = 0; i < 6; i++) s += '<div class="pz-row pz-skel"><i></i><i></i><i></i></div>'; return '<div class="pz-lg">' + s + '</div>'; }
+  function skelRows() { var lk = '<span class="pz-ob lk na"><i class="pz-lki">' + LOCK + '</i></span>', s = ''; for (var i = 0; i < 6; i++) s += '<div class="pz-row pz-skel"><i></i><i></i><div class="pz-ro">' + lk + lk + lk + '</div></div>'; return '<div class="pz-lg">' + s + '</div>'; }
   function oddsBy(f) { var by = {}; ((f.o && f.o.o) || []).forEach(function (z) { by[z[0]] = z[1]; }); return by; }
   // bouton de cote : (libellé à gauche) cote à droite ; cadenas quand c'est suspendu
   function obtn(ev, k, v, lbl, susp) {
-    if (v == null) return '<span class="pz-ob off" aria-hidden="true"></span>';
+    // 2026-10-22 (propriétaire : « les cotes ne disparaissent jamais ») : choix indisponible → même bouton, cadenas, dans sa colonne
+    if (v == null) return '<button type="button" class="pz-ob lk na' + (lbl != null ? ' pz-ob2' : '') + '" data-ev="' + esc(ev) + '" data-k="' + esc(k) + '" data-odd="" aria-pressed="false" disabled>' +
+      (lbl != null ? '<span class="pz-ol" dir="auto">' + esc(lbl) + '</span>' : '') + '<b class="pz-ov"></b><i class="pz-lki">' + LOCK + '</i></button>';
     var on = inSlip(ev, k);
     return '<button type="button" class="pz-ob' + (lbl != null ? ' pz-ob2' : '') + (on ? ' on' : '') + (susp ? ' lk' : '') + '" data-ev="' + esc(ev) + '" data-k="' + esc(k) + '" data-odd="' + v + '" aria-pressed="' + on + '"' + (susp ? ' disabled' : '') + '>' +
       (lbl != null ? '<span class="pz-ol" dir="auto">' + esc(lbl) + '</span>' : '') + '<b class="pz-ov">' + Number(v).toFixed(2) + '</b><i class="pz-lki">' + LOCK + '</i></button>';
+  }
+  // jeux complets de choix par famille de marché : un choix absent garde sa place (cadenas)
+  var FULLK = { '1x2': 'H D A', eh: 'H D A', ht1x2: 'H D A', '2h1x2': 'H D A', dc: 'HD HA DA', htdc: 'HD HA DA', '2hdc': 'HD HA DA', dnb: 'H A', ah: 'H A', htah: 'H A', '12': 'H A',
+    ou: 'O U', tth: 'O U', tta: 'O U', htou: 'O U', '2hou': 'O U', httth: 'O U', httta: 'O U', oe: 'O E', htoe: 'O E', '2hoe': 'O E', btts: 'Y N', htbtts: 'Y N', '2hbtts': 'Y N', csh: 'Y N', csa: 'Y N', wnh: 'Y N', wna: 'Y N' };
+  function fullO(mk, o) {
+    var f = FULLK[mkParts(mk)[0]]; o = o || []; if (!f) return o;
+    var ks = f.split(' '), by = {};
+    if (!o.every(function (z) { return ks.indexOf(String(z[0])) > -1; })) return o;
+    o.forEach(function (z) { by[z[0]] = z; });
+    return ks.map(function (k) { return by[k] || [k, null]; });
   }
   // ligne d'un match : heure (ou minute du direct) · équipes en entier (2 lignes au besoin) · 1 · X · 2 · flèche
   function rowHtml(f, o) {
@@ -1453,19 +1468,19 @@
   // ---------- MENU ----------
   function accMode() { var a = lsGet('oro_sp_acc', 'none'); return a === 'up' || a === 'any' ? a : 'none'; }
   function renderMenu() {
-    var n = NX(), x = SX(), xx = XX(), acc = accMode(), fv = favs();
+    var n = NX(), x = SX(), xx = XX(), acc = accMode();
     var sl = sbSports.length ? sbSports : [{ s: 'foot', n: 'Football' }];
     var sp = sbOn ? sl.map(function (s) { return '<button type="button" data-sp="' + esc(s.s) + '">' + sico(spIco(s.s)) + '<span dir="auto">' + esc(spName(s)) + '</span></button>'; }).join('') : '';
     if (hasQ() && sbOn) sp += '<button type="button" data-sp="news">' + SBIC.news + '<span>' + esc(x.news) + '</span></button>';
     var row = function (act, ico, t) { return '<button type="button" class="pz-mrow" data-menu="' + act + '"><span class="pz-mi">' + ico + '</span><span class="pz-mt" dir="auto">' + esc(t) + '</span>' + SBIC.chev + '</button>'; };
     var html = bar(n.nMenu) + '<div class="pz-menu">' +
       (sp ? '<p class="pz-mhd">' + esc(n.sports) + '</p><div class="pz-sports pz-hs">' + sp + '</div>' : '') +
-      '<div class="pz-mcard">' + (sbOn ? row('res', IC.ok, n.results) : '') + (sbOn && (fv.l.length || fv.f.length) ? row('fav', '★', x.fav) : '') + row('mine', NAVI.mine, n.nMine) + '</div>' +
+      // 2026-10-22 (propriétaire) : menu utile et court — Sports, Direct, Résultats, Mes paris, Favoris, Charger un code, Si la cote change
+      '<div class="pz-mcard">' + (sbOn && liveShown() ? row('live', NAVI.live, n.nLive) : '') + (sbOn ? row('res', IC.ok, n.results) : '') + row('mine', NAVI.mine, n.nMine) + (sbOn ? row('fav', '<b class="pz-mstar">★</b>', x.fav) : '') + '</div>' +
       (sbOn ? '<div class="pz-mcard pz-mcode"><p class="pz-mt2">' + esc(x.loadCode) + '</p>' + codeRow() +
         (slip.some(function (s) { return s.sb; }) ? '<div class="sb-code" id="sbCode">' + codeBox(true) + '</div>' : '') + '</div>' : '') +
       '<div class="pz-mcard"><p class="pz-mt2">' + esc(xx.accT) + '</p>' + [['none', xx.accNone], ['up', xx.accUp], ['any', xx.accAny]].map(function (o) {
-        return '<label class="pz-rad"><input type="radio" name="pzAcc" value="' + o[0] + '"' + (acc === o[0] ? ' checked' : '') + '><i></i><span dir="auto">' + esc(o[1]) + '</span></label>'; }).join('') + '</div>' +
-      (sbOn ? '<details class="pz-mcard pz-rules"><summary>' + esc(n.rulesT) + SBIC.chev + '</summary><p>' + esc(x.rules) + '</p></details>' : '') + '</div>';
+        return '<label class="pz-rad"><input type="radio" name="pzAcc" value="' + o[0] + '"' + (acc === o[0] ? ' checked' : '') + '><i></i><span dir="auto">' + esc(o[1]) + '</span></label>'; }).join('') + '</div></div>'; // (propriétaire : aucune règle écrite dans Paris)
     shell(html);
     bindCodeRow(box); if (sbOn) bindCodeBox();
     box.querySelectorAll('input[name="pzAcc"]').forEach(function (i) { i.addEventListener('change', function () { if (i.checked) lsSet('oro_sp_acc', i.value); }); });
@@ -1473,6 +1488,7 @@
   function menuAct(a) {
     if (a === 'res') { go('results'); return; }
     if (a === 'mine') { go('mine'); return; }
+    if (a === 'live') { go('live'); return; }
     if (a === 'fav') { per = 'fav'; sbQ = ''; sport = 'foot'; go('home'); }
   }
 
@@ -1553,7 +1569,12 @@
     // direct : statistiques / événements
     var th = f.live && r && r.trk ? trkHtml(r) : '';
     if (tk.dataset.h !== th) { tk.dataset.h = th; tk.innerHTML = th; }
-    if (!r) { if (!mk.firstChild) mk.innerHTML = '<div class="pz-mk pz-skel"><i></i><i></i><i></i></div>'; return; }
+    if (!r) { // chargement : le 1 · X · 2 de la liste (ou des cadenas), jamais vide
+      if (!mk.firstChild) { var m0 = f.o && f.o.o && f.o.o.length ? f.o : { mk: '1x2', o: [] }; mk.innerHTML = mkCards([{ mk: m0.mk || '1x2', o: m0.o, s: f.live && (f.susp || f.end) ? 1 : 0 }], f); mk.dataset.sig = ''; }
+      return;
+    }
+    // le résultat du match (1 · X · 2) toujours là en football, cadenas si le marché manque
+    if (r.ok && /^foot:/.test(f.id) && !r.mk.some(function (m) { return m.mk === '1x2'; }) && (r.mk.length || f.live)) r.mk.unshift({ mk: '1x2', o: [], s: 1 });
     if (!r.ok || !r.mk.length) { gc.innerHTML = ''; mk.innerHTML = '<p class="pz-none">' + esc(f.live ? NX().susp : x.closedM) + '</p>'; mk.dataset.sig = ''; return; }
     var by = {}; r.mk.forEach(function (m) { var g = grpOf(m.mk); (by[g] = by[g] || []).push(m); });
     var gs = GRP.filter(function (g) { return by[g[0]]; });
@@ -1566,7 +1587,7 @@
       var gon = gc.querySelector('.on'); // la puce choisie reste visible dans sa rangée
       if (gon && gc.scrollWidth > gc.clientWidth) { var gr = gon.getBoundingClientRect(), cr = gc.getBoundingClientRect(); if (gr.left < cr.left || gr.right > cr.right) gc.scrollLeft += (gr.left + gr.width / 2) - (cr.left + cr.width / 2); }
     }
-    var msig = mGrp + '|' + by[mGrp].map(function (m) { return m.mk + ':' + m.o.map(function (o) { return o[0]; }).join('.'); }).join(',') + '|' + lg();
+    var msig = mGrp + '|' + by[mGrp].map(function (m) { return m.mk + ':' + fullO(m.mk, m.o).map(function (o) { return o[0]; }).join('.'); }).join(',') + '|' + lg();
     if (mk.dataset.sig !== msig) { mk.dataset.sig = msig; mk.innerHTML = mkCards(by[mGrp], f); }
     else patchAll(mk);
   }
@@ -1626,7 +1647,7 @@
       var open = mkOpen[B.key] != null ? mkOpen[B.key] : (mGrp === 'main' || i < 3);
       var legend = LEG[B.fam] ? '<p class="pz-mkl"><span><b>1</b><span dir="auto">' + esc(f.h.n) + '</span></span><span><b>2</b><span dir="auto">' + esc(f.a.n) + '</span></span></p>' : '';
       var rows = B.m.map(function (m) {
-        var ev = 'sb:' + f.id + ':' + m.mk, n = m.o.length, s = !!m.s || !!(f.live && (f.susp || f.end));
+        var ev = 'sb:' + f.id + ':' + m.mk, oo = fullO(m.mk, m.o), n = oo.length, s = !!m.s || !!(f.live && (f.susp || f.end));
         if (B.fam === 'cs' || B.fam === 'htcs') { // score exact : victoires 1 | nuls | victoires 2
           var col = [[], [], []];
           m.o.forEach(function (o) { var q = String(o[0]).split(':'), hh = +q[0], aa = +q[1]; col[q.length === 2 && isFinite(hh) && isFinite(aa) ? (hh > aa ? 0 : hh === aa ? 1 : 2) : 1].push(o); });
@@ -1634,7 +1655,7 @@
         }
         var cols = n === 2 || n === 4 || n === 6 && /^(rbtts|rou)$/.test(B.fam) ? 2 : 3;
         if (n === 1) cols = 1;
-        return '<div class="pz-oo c' + cols + '">' + m.o.map(function (o) { return obtn(ev, o[0], o[1], shortK(m.mk, o[0], f.h.n, f.a.n), s); }).join('') + '</div>';
+        return '<div class="pz-oo c' + cols + '">' + oo.map(function (o) { return obtn(ev, o[0], o[1], shortK(m.mk, o[0], f.h.n, f.a.n), s); }).join('') + '</div>';
       }).join('');
       return '<section class="pz-mk' + (open ? ' on' : '') + '" data-mkk="' + esc(B.key) + '"><button type="button" class="pz-mkh" data-mkt="' + esc(B.key) + '" aria-expanded="' + open + '"><span dir="auto">' + esc(sbMkName(B.m[0].mk, f.h.n, f.a.n)) + '</span><i class="pz-chev">' + SBIC.chev + '</i></button>' +
         '<div class="pz-mkb">' + legend + rows + '</div></section>';
@@ -1643,15 +1664,15 @@
 
   // ---------- cotes, score, minute : mis à jour SUR PLACE (rien ne saute) ----------
   function oddMap() {
-    var m = {}, s = {};
-    var add = function (f) { if (!f || !f.o || !f.o.o) return; var ev = 'sb:' + f.id + ':' + (f.o.mk || '1x2'); f.o.o.forEach(function (o) { m[ev + '|' + o[0]] = o[1]; }); if (f.live) s[ev] = !!(f.susp || f.end); };
+    var m = {}, s = {}, kn = {};
+    var add = function (f) { if (!f || !f.o || !f.o.o) return; var ev = 'sb:' + f.id + ':' + (f.o.mk || '1x2'); kn[ev] = 1; f.o.o.forEach(function (o) { if (o[1] != null) m[ev + '|' + o[0]] = o[1]; }); if (f.live) s[ev] = !!(f.susp || f.end); };
     for (var d in sbData) { var r = sbData[d] && sbData[d].r; if (r) r.fx.forEach(add); }
     if (liveData) liveData.r.fx.forEach(add);
     if (sbM && sbM.ok && sbM.fx) {
       var fl = !!(sbM.fx.live && (sbM.fx.susp || sbM.fx.end));
-      (sbM.mk || []).forEach(function (mk) { var ev = 'sb:' + sbM.fx.id + ':' + mk.mk; mk.o.forEach(function (o) { m[ev + '|' + o[0]] = o[1]; }); if (sbM.fx.live) s[ev] = !!mk.s || fl; });
+      (sbM.mk || []).forEach(function (mk) { var ev = 'sb:' + sbM.fx.id + ':' + mk.mk; kn[ev] = 1; mk.o.forEach(function (o) { if (o[1] != null) m[ev + '|' + o[0]] = o[1]; }); if (sbM.fx.live) s[ev] = !!mk.s || fl; });
     }
-    return { m: m, s: s };
+    return { m: m, s: s, kn: kn };
   }
   function patchAll(root) {
     if (!root) return;
@@ -1660,9 +1681,15 @@
     if (sbM && sbM.fx && sbM.fx.live) fxs[sbM.fx.id] = sbM.fx;
     root.querySelectorAll('.pz-ob[data-ev]').forEach(function (b) {
       var ev = b.getAttribute('data-ev'), key = ev + '|' + b.getAttribute('data-k'), v = M.m[key];
-      if (v == null) return;
-      var old = +b.getAttribute('data-odd');
-      if (Math.abs(old - v) > 1e-9) {
+      if (v == null) { // ce choix n'a plus de cote : il reste à sa place, avec un cadenas
+        if (M.kn[ev] && !b.classList.contains('lk')) { b.classList.add('lk'); b.disabled = true; b.classList.remove('fl-up', 'fl-dn'); } // (la dernière cote reste, grisée)
+        if (M.kn[ev]) b.setAttribute('data-na', '1');
+        return;
+      }
+      var old = +b.getAttribute('data-odd'), na = b.hasAttribute('data-na') || !old;
+      b.removeAttribute('data-na'); b.classList.remove('na');
+      if (na && Math.abs(old - v) > 1e-9) { b.setAttribute('data-odd', v); var o0 = b.querySelector('.pz-ov'); if (o0) o0.textContent = Number(v).toFixed(2); }
+      else if (Math.abs(old - v) > 1e-9) {
         b.setAttribute('data-odd', v);
         var o = b.querySelector('.pz-ov'); if (o) o.textContent = Number(v).toFixed(2);
         b.classList.remove('fl-up', 'fl-dn'); void b.offsetWidth; b.classList.add(v > old ? 'fl-up' : 'fl-dn');
@@ -1770,6 +1797,8 @@
     if ((b = t.closest('[data-res]'))) { resDay = +b.getAttribute('data-res'); paintResults(); return; }
     if ((b = t.closest('[data-menu]'))) { menuAct(b.getAttribute('data-menu')); return; }
     if ((b = t.closest('[data-open]'))) { openMatch(b.getAttribute('data-open')); return; }
+    // toute la ligne d'un match ouvre sa page (sauf la zone des cotes) : grande cible, plus de flèche minuscule
+    if ((b = t.closest('.pz-row[data-fx]')) && !t.closest('.pz-ro')) { openMatch(b.getAttribute('data-fx')); return; }
   }
 
   // ---------- mises à jour : direct toutes les 5 s quand on le regarde, en pause quand l'écran est caché ----------
