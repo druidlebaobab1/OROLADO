@@ -1587,7 +1587,10 @@ function sb_live_store_odds(array $j, int $now): int {
       // horloge : « 0:00 » du fournisseur lissé (petits écarts ignorés, jamais de saut quand « seconds » manque)
       $pz = isset($old[$id]['z']) ? (int) $old[$id]['z'] : null;
       $nz = is_int($o['sec'] ?? null) ? $now - (int) $o['sec'] : null;
-      if ($nz !== null && ($pz === null || abs($nz - $pz) > 20)) $pz = $nz;
+      // 2026-10-22 (mesure Kairat – Panathinaikos : « 0:00 » lu 55 s trop tard puis rattrapé) : une image en retard du fournisseur
+      // donne un « 0:00 » PLUS TARD que le vrai, jamais plus tôt → on garde le plus tôt vu (≤ 3 min d'écart) ; au-delà
+      // (2e mi-temps, prolongation, horloge remise) on prend le nouveau.
+      if ($nz !== null && ($pz === null || $nz < $pz || $nz - $pz > 180)) $pz = $nz;
       if ($pz !== null) $od[$id]['z'] = $pz;
       if ($jmp) $od[$id]['jmp'] = $jmp;
     }
