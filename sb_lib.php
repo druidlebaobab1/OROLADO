@@ -31,7 +31,7 @@ const SB_JOB_EVERY = 60;             // tâche de fond : au plus une fois par mi
 const SB_JOB_CALLS = 30;             // lectures au plus par passage de la tâche de fond
 const SB_ODDS_PAGES_RUN = 12;        // pages /odds?date au plus par passage
 const SB_ODDS_MAX_AGE = 28800;       // cotes de plus de 8 h : plus de pari (jamais un vieux prix)
-const SB_FX_ODDS_TTL = 1800;         // /odds?fixture à la demande : cotes de plus de 30 min
+const SB_FX_ODDS_TTL = 600;          // /odds?fixture à la demande (match ouvert) : cotes de plus de 10 min
 const SB_LIVE_IDS_TTL = 60;          // /fixtures?live=all gardé 60 s (contrôle des paris à moins de 30 min du début)
 const SB_LATE = 1800;                // à moins de 30 min du coup d'envoi : contrôle « déjà commencé ? »
 const SB_PST_VOID = 172800;          // reporté / pas joué dans les 48 h : annulé
@@ -92,6 +92,11 @@ function sb_config(): array {
     $c = sb_read('config.json');
   }
   // 2026-10-22 (propriétaire : « les autres sports ») : une seule fois, tous les sports allumés (avant : football seul enregistré)
+  // 2026-10-22 (propriétaire : « le direct à 4 ») : une seule fois, marge du direct 4 %
+  if (empty($c['mig5'])) {
+    sb_with('config.json', static function (array &$s) { if (!empty($s['mig5'])) return true; $s['mLive'] = 4; $s['mig5'] = 1; return true; });
+    $c = sb_read('config.json');
+  }
   if (empty($c['mig4'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig4'])) return true; $s['sports'] = SB_CFG_DEFAULT['sports']; $s['mig4'] = 1; return true; });
     $c = sb_read('config.json');
@@ -108,7 +113,7 @@ function sb_config_save(array $in): array {
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['sports']) && is_array($in['sports'])) $cur['sports'] = array_values(array_intersect(SB_CFG_DEFAULT['sports'], array_map('strval', $in['sports'])));
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
