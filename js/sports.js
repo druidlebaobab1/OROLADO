@@ -2089,7 +2089,7 @@
     if (st && Array.isArray(st.poss)) { var ph = +st.poss[0] || 0, pa = +st.poss[1] || 0; TV.poss = ph + pa > 0 ? Math.max(0.2, Math.min(0.8, ph / (ph + pa))) : 0.5; } else TV.poss = 0.5;
     // 2026-10-22 (propriétaire : « en revenant sur le match, l'horloge revenait à 62:00 ») : horloge depuis l'heure du « 0:00 »
     // (kz, donnée par le serveur) → identique à chaque ouverture ; sinon minute de l'API, mais JAMAIS en arrière (mémoire par match)
-    if (f.kz != null && isFinite(+f.kz)) TV.base = { z: +f.kz };
+    if (f.kz != null && isFinite(+f.kz)) TV.base = { z: TV.base && TV.base.z != null && TV.fid === f.id ? Math.min(TV.base.z, +f.kz) : +f.kz }; // l'horloge n'avance que vers l'avant
     else if (f.m != null) {
       var mem = TVM[f.id], est = mem ? mem.s + Math.floor((Date.now() - mem.at) / 1000) : -1;
       if (!mem || +f.m * 60 > est + 60 || (+f.m * 60 > est && est - (+f.m) * 60 > 120)) TVM[f.id] = { s: +f.m * 60, at: Date.now() };

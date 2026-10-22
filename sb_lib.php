@@ -1757,6 +1757,7 @@ function sb_live_clock(string $st, array $r, int $now): ?int {
   elseif ($st === '2H' && $p2 > 0 && $now >= $p2) $k = 2700 + $now - $p2;
   else return null;
   if (is_numeric($m) && abs(intdiv($k, 60) - (int) $m) > 5) return null; // incohérent avec la minute de l'API : on ne s'en sert pas
+  if (is_numeric($m)) $k = max((int) $m * 60, min($k, ((int) $m + 2) * 60 - 1)); // jamais plus de 2 min devant ni derrière la minute de l'API
   return $k;
 }
 /** Forme commune (spec : fx) d'un match en direct. kz = heure (s) du « 0:00 » de l'horloge : le téléphone compte seul, sans jamais revenir en arrière. */
