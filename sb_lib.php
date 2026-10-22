@@ -562,6 +562,7 @@ function sb_fx_row(array $r): ?array {
   $sc = (array) ($r['score'] ?? []);
   return ['ts' => (int) $f['timestamp'], 'st' => strtoupper((string) ($f['status']['short'] ?? '')), 'm' => is_numeric($f['status']['elapsed'] ?? null) ? (int) $f['status']['elapsed'] : null,
     'mx' => is_numeric($f['status']['extra'] ?? null) ? (int) $f['status']['extra'] : 0, // arrêts de jeu annoncés (« +6 min »)
+    'p1' => (int) ($f['periods']['first'] ?? 0), 'p2' => (int) ($f['periods']['second'] ?? 0), // début des mi-temps (horloge exacte à la seconde)
     'lg' => (int) ($lg['id'] ?? 0),
     'h' => [$hid, mb_substr((string) ($tm['home']['name'] ?? ''), 0, 60), (string) ($tm['home']['logo'] ?? '')],
     'a' => [$aid, mb_substr((string) ($tm['away']['name'] ?? ''), 0, 60), (string) ($tm['away']['logo'] ?? '')],
@@ -1712,13 +1713,34 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
   $fxFresh = $now - (int) ($L['fat'] ?? 0) <= 60;
   $scoreMoved = is_array($od) && (!empty($od['chg']) || ($fxFresh && is_array($row['g'] ?? null) && array_map('intval', $row['g']) !== $sc));
   $st = (string) ($row['st'] ?? '');
-  $susp = !$fresh || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved
+  // 2026-10-22 (propriétaire : « 1xBet verrouille pendant la vidéo, nous non ») : moments chauds → cadenas : vidéo (VAR) dans les
+  // 2 dernières minutes, but ou carton rouge dans la dernière minute (comme les grands sites)
+  $hot = false;
+  foreach (array_reverse((array) ($row['ev'] ?? [])) as $e) {
+    $et = (int) ($e['t'] ?? 0); $ty = (string) ($e['type'] ?? '');
+    if ($ty === 'var' && $et >= $m - 2) { $hot = true; break; }
+    if (($ty === 'goal' || ($ty === 'card' && ($e['detail'] ?? '') === 'red')) && $et >= $m - 1) { $hot = true; break; }
+  }
+  $susp = !$fresh || !empty($od['blk']) || !empty($od['fin']) || !empty($row['end']) || $m >= (int) $cfg['liveLastMin'] || $scoreMoved || $hot
     || !in_array($st, ['1H', 'HT', '2H'], true); // prolongation / tirs au but : plus de pari (règlement sur les 90 min)
   if (!empty($row['end'])) $sc = is_array($row['g'] ?? null) ? array_map('intval', $row['g']) : $sc;
   $mk = is_array($od) ? (array) $od['mk'] : [];
   // marchés de la 1re mi-temps : seulement pendant la 1re mi-temps, jusqu'à la 42e
   if ($st !== '1H' || $m >= 43) foreach (array_keys($mk) as $k) if (in_array(sb_fam((string) $k), ['ht1x2', 'htou'], true)) unset($mk[$k]);
   return ['row' => $row, 'od' => $od, 'sc' => $sc, 'm' => $m, 'st' => $st, 'susp' => $susp, 'mk' => $mk];
+}
+/**
+ * 2026-10-22 (propriétaire : « l'horloge a plus d'une minute de retard sur 1xBet ») : secondes de jeu calculées depuis le
+ * VRAI début de la mi-temps (fixture.periods), à la seconde près — et non depuis le moment où la minute a changé chez nous.
+ * null si inconnu (le téléphone garde l'ancienne horloge).
+ */
+function sb_live_clock(string $st, array $r, int $now): ?int {
+  $p1 = (int) ($r['p1'] ?? 0); $p2 = (int) ($r['p2'] ?? 0); $m = $r['m'] ?? null;
+  if ($st === '1H' && $p1 > 0 && $now >= $p1) $k = $now - $p1;
+  elseif ($st === '2H' && $p2 > 0 && $now >= $p2) $k = 2700 + $now - $p2;
+  else return null;
+  if (is_numeric($m) && abs(intdiv($k, 60) - (int) $m) > 5) return null; // incohérent avec la minute de l'API : on ne s'en sert pas
+  return $k;
 }
 /** Forme commune (spec : fx) d'un match en direct. */
 function sb_live_fx_public(string $id, array $v): array {
@@ -1728,7 +1750,7 @@ function sb_live_fx_public(string $id, array $v): array {
   return ['id' => 'foot:' . $id, 'lg' => (int) ($r['lg'] ?? 0), 'ts' => (int) ($r['ts'] ?? 0), 'st' => $v['st'], 'm' => $v['m'],
     'h' => ['n' => (string) ($r['h'][1] ?? ''), 'lo' => (string) ($r['h'][2] ?? '')], 'a' => ['n' => (string) ($r['a'][1] ?? ''), 'lo' => (string) ($r['a'][2] ?? '')],
     'sc' => $v['sc'], 'o' => $o, 'n' => count($mk), 'live' => 1, 'susp' => $s1 ? 1 : 0, 'rc' => (array) ($r['rc'] ?? [0, 0]), 'end' => !empty($r['end']) ? 1 : 0,
-    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
+    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'k' => sb_live_clock($v['st'], $r, sb_now()), 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
 }
 /** Nombre de matchs du direct (onglet « Direct ») — aucun appel ; -1 = pas d'onglet Direct pour ce joueur. */
 function sb_live_count(?array $user, int $now): int {

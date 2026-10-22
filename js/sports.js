@@ -2037,7 +2037,7 @@
     var f = TV.f; if (!f) return '';
     var t = tvMin(f); if (t) return t;
     if (!TV.base) return f.m != null ? (f.m < 10 ? '0' : '') + f.m + ':00' : '';
-    var s = TV.base.m * 60 + Math.min(119, Math.floor((Date.now() - TV.base.at) / 1000)), p = function (v) { return (v < 10 ? '0' : '') + v; };
+    var s = TV.base.s != null ? TV.base.s + Math.min(600, Math.floor((Date.now() - TV.base.at) / 1000)) : TV.base.m * 60 + Math.min(119, Math.floor((Date.now() - TV.base.at) / 1000)), p = function (v) { return (v < 10 ? '0' : '') + v; };
     return p(Math.floor(s / 60)) + ':' + p(s % 60);
   }
   function tvPeriod(f) {
@@ -2086,7 +2086,8 @@
       if (cor) TV.cor = cor; TV.sc = sc;
     }
     if (st && Array.isArray(st.poss)) { var ph = +st.poss[0] || 0, pa = +st.poss[1] || 0; TV.poss = ph + pa > 0 ? Math.max(0.2, Math.min(0.8, ph / (ph + pa))) : 0.5; } else TV.poss = 0.5;
-    if (f.m != null && (!TV.base || TV.base.m !== +f.m)) TV.base = { m: +f.m, at: Date.now() };
+    if (f.k != null && isFinite(+f.k)) TV.base = { m: Math.floor(+f.k / 60), s: +f.k, at: Date.now() }; // horloge exacte (début réel de la mi-temps)
+    else if (f.m != null && (!TV.base || TV.base.m !== +f.m)) TV.base = { m: +f.m, at: Date.now() };
     TV.f = f;
     var sc2 = $('pzSc2'); if (sc2 && sc2.textContent !== scTxt2(f)) { sc2.textContent = scTxt2(f); }
     var ad = $('pzAdd'), mx = (f.st === '1H' || f.st === '2H') && !f.end ? +f.mx || 0 : 0; if (ad) { ad.hidden = !(mx > 0); ad.textContent = mx > 0 ? '+' + mx + ' min' : ''; } // arrêts de jeu : seulement pendant une mi-temps
