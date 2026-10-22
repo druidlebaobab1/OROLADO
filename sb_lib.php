@@ -1295,7 +1295,7 @@ function sb_admin_import(int $now = 0): array {
  */
 const SB_CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const SB_CODE_TTL = 604800;  // 7 jours
-const SB_CODE_MAX = 50;      // choix au plus (= SP_MAX_SEL)
+const SB_CODE_MAX = 1000;    // choix au plus (= SP_MAX_SEL)
 function sb_code_dir(): string { $d = sb_dir() . DIRECTORY_SEPARATOR . 'codes'; if (!is_dir($d)) @mkdir($d, 0750, true); return $d; }
 function sb_code_ok(string $c): bool { return (bool) preg_match('/^[' . SB_CODE_ABC . ']{6}$/', $c); }
 /** Un choix (ev, k) → forme du coupon avec la cote ACTUELLE, ou ['skip' => 'closed'|'hidden'|'param']. */

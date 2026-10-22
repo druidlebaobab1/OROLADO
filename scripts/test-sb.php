@@ -176,7 +176,7 @@ $em = sp_events(); $emk = ''; foreach ($em as $e) if ($e['id'] === ($rm['id'] ??
 $r = sb_code_save(null, [['ev' => $rm['id'] ?? '', 'k' => $emk], ['ev' => 'evt_inconnu', 'k' => 'a']], time());
 $L5 = $r['ok'] ? sb_code_load(null, $r['code'], time()) : ['ok' => false];
 check('ancien match manuel (spList) : code visiteur accepté, rechargé avec sa cote', $r['ok'] === true && $r['n'] === 1 && $L5['ok'] && count($L5['sel']) === 1 && abs($L5['sel'][0]['odd'] - 1.7) < 1e-9 && $L5['sel'][0]['t'] === 'Code A – Code B', json_encode($r));
-check('plus de 50 choix : refusé', sb_code_save($uadm, array_fill(0, 51, ['ev' => 'sb:foot:9001:1x2', 'k' => 'H']), $NOW)['ok'] === false);
+check('plus de 1000 choix : refusé', sb_code_save($uadm, array_fill(0, 1001, ['ev' => 'sb:foot:9001:1x2', 'k' => 'H']), $NOW)['ok'] === false);
 $cs = []; for ($i = 0; $i < 25; $i++) { $x = sb_code_save($uadm, [['ev' => 'sb:foot:9002:1x2', 'k' => 'H']], $NOW); $cs[] = $x['code'] ?? ''; }
 check('25 codes : tous différents', count(array_unique(array_filter($cs))) === 25);
 check('aucune lecture de l\'API pour les codes', count($asked) === $nAsk);

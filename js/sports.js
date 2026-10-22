@@ -424,7 +424,7 @@
     if (!e || !e.open || e.susp || nowS() >= e.start) return;
     var o = e.opts.filter(function (z) { return z.k === k; })[0]; if (!o) return;
     var had = inSlip(ev, k), n0 = slip.length;
-    if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 50) { if (ctx.toast) ctx.toast(x.max10); return; } // 2026-10-21 : 50 matchs (avant 10)
+    if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 1000) { if (ctx.toast) ctx.toast(x.max10); return; } // 2026-10-21 : 50 matchs (avant 10)
     // v2810 : une prédiction se joue SEULE ; deux choix liés (même groupe : même match, même actif…) jamais dans le même coupon
     if (!had) {
       var xx = XX(), others = slip.filter(function (s) { return s.ev !== ev; }).map(function (s) { return evById(s.ev) || { q: !!s.q, grp: s.grp || [] }; });
@@ -2224,7 +2224,7 @@
     if (!had && (!f || (live ? (f.susp || f.end) : nowS() >= f.ts))) { sbToast(live ? NX().susp : SX().closedM); return; }
     if (!had) {
       if (slip.some(function (s) { return s.q; })) { sbToast(xx.e_single); return; }
-      if (slip.length >= 50 && !slip.some(function (s) { return s.fx === fid; })) { sbToast(x.max10); return; }
+      if (slip.length >= 1000 && !slip.some(function (s) { return s.fx === fid; })) { sbToast(x.max10); return; }
     }
     slip = slip.filter(function (s) { return s.fx !== fid; });
     if (!had) slip.push({ ev: ev, k: k, odd: odd, sb: 1, mk: mk, fx: fid, ko: f.ts, t: f.h.n + ' - ' + f.a.n, h: f.h, a: f.a, grp: ['fx:' + fid], q: false, l: sbOutL(mk, k, f.h.n, f.a.n), lv: live ? 1 : 0 });
