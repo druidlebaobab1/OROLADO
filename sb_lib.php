@@ -640,6 +640,8 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
   $calls = 0; $log = [];
   $D = sb_days($now); [$dm1, $d0, $d1, $d2] = $D; $mid = array_slice($D, 4, 5); $lat = array_slice($D, 9); $far = array_merge($mid, $lat); // J+3…J+7 · J+8…J+14
   $st = sb_state();
+  // 2026-10-22 (propriétaire : « les cotes sont toujours basses ») : une seule fois, toutes les cotes J…J+14 relues tout de suite (marge 2,5 % partout)
+  if (empty($st['rp1'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp1'])) return true; $s['od'] = []; $s['rp1'] = 1; return true; }); $st = sb_state(); }
   $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($mid, 21600) + array_fill_keys($lat, 43200); // J+3…J+7 : 6 h ; J+8…J+14 : 12 h
   foreach (array_merge([$d0, $dm1, $d1, $d2], $far) as $day) {
     if ($calls >= $max) break;
