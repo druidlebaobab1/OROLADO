@@ -932,61 +932,62 @@
     tick: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M10 8.5v10" stroke-dasharray="2 2"/></svg>',
     share: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.7 10.8l6.6-4M8.7 13.2l6.6 4"/></svg>',
     chev: '<svg class="sp2-i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg>',
+    trophy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4.5a5 5 0 0 1-10 0z" fill="currentColor"/><path d="M7 5.5H4.5v1.5A3 3 0 0 0 7.4 10M17 5.5h2.5v1.5a3 3 0 0 1-2.9 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 13.5v3.5M8.5 20h7l-.8-3h-5.4z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
     wa: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5a9.4 9.4 0 0 0-8.1 14.2L2.6 21.5l4.9-1.3A9.4 9.4 0 1 0 12 2.5zm5.5 13.3c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.7-1.1-4.5-3.9-4.6-4.1-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.2z"/></svg>'
   };
   /* 2026-10-22 — PARIS v2 : petits textes de la nouvelle interface (barre du bas, direct, résultats…), 12 langues */
   var NBK = ['nHome', 'nLive', 'nSlip', 'nMine', 'nMenu', 'live', 'seeAll', 'soon', 'topM', 'allM', 'inX', 'hour', 'fromH', 'startsIn', 'ht', 'ft', 'goal', 'red', 'endM',
     'tEv', 'tSt', 'noEv', 'noLive', 'susp', 'e_susp', 'share', 'code', 'back', 'sports', 'rulesT', 'liveWait', 'poss', 'shots', 'shotsOn', 'corners', 'yellow', 'reds', 'attacks',
-    'dangerous', 'pen', 'og', 'var', 'sub', 'kick', 'results', 'yday', 'dbef', 'htS', 'noRes', 'guestMineS', 'ftS', 'rfT', 'rfEv', 'rfOd', 'rfOk', 'selAll', 'selLess', 'lvSrch', 'resSrch', 'bstL', 'bstH'];
+    'dangerous', 'pen', 'og', 'var', 'sub', 'kick', 'results', 'yday', 'dbef', 'htS', 'noRes', 'guestMineS', 'ftS', 'rfT', 'rfEv', 'rfOd', 'rfOk', 'selAll', 'selLess', 'lvSrch', 'resSrch', 'bstL', 'bstH', 'favMax', 'favUp', 'favHint', 'favGst', 'resN'];
   var NBL = {
     fr: ['Populaire', 'Direct', 'Coupon', 'Mes paris', 'Menu', 'En direct', 'Tout voir', 'Commence bientôt', 'Top matchs', 'Tous les matchs', 'Dans {x}', 'Heure', 'Dès {h}', 'Commence dans', 'Mi-temps', 'Terminé', 'BUT !', 'Carton rouge', 'Fin du match',
       'Événements', 'Statistiques', 'Pas encore d’événement.', 'Aucun match en direct pour l’instant.', 'Suspendu', 'Cotes suspendues (but ou action en cours) : réessaie dans un instant.', 'Partager le code', 'Code', 'Retour', 'Sports', 'Règles', 'Validation en direct…',
       'Possession', 'Tirs', 'Tirs cadrés', 'Corners', 'Cartons jaunes', 'Cartons rouges', 'Attaques', 'Attaques dangereuses', 'pen.', 'c.s.c.', 'VAR', 'Remplacement', 'Coup d’envoi', 'Résultats', 'Hier', 'Avant-hier', 'MT', 'Aucun résultat pour ce jour.',
-      'Inscris-toi pour parier et retrouver tes paris ici.', 'Fin', 'Pari non accepté', 'Un événement vient de se produire dans ce match. Votre pari n’a pas été placé et votre solde reste intact.', 'Les cotes ont changé pendant la validation. Votre pari n’a pas été placé et votre solde reste intact.', 'Compris', 'Voir les {n} sélections', 'Réduire', 'Rechercher un match en direct', 'Rechercher un résultat', 'Bonus combiné', 'Bonus combiné : 3 matchs ou plus à cote 1,20+'],
+      'Inscris-toi pour parier et retrouver tes paris ici.', 'Fin', 'Pari non accepté', 'Un événement vient de se produire dans ce match. Votre pari n’a pas été placé et votre solde reste intact.', 'Les cotes ont changé pendant la validation. Votre pari n’a pas été placé et votre solde reste intact.', 'Compris', 'Voir les {n} sélections', 'Réduire', 'Rechercher un match en direct', 'Rechercher un résultat', 'Bonus combiné', 'Bonus combiné : 3 matchs ou plus à cote 1,20+', 'Maximum 50 favoris : retire une étoile pour en ajouter une.', 'À venir', 'Touche ☆ sur un match ou une prédiction pour le suivre ici. Un match terminé disparaît tout seul.', 'Sans compte, tes favoris restent jusqu’à la fermeture du site.', '{n} matchs terminés'],
     en: ['Popular', 'Live', 'Bet slip', 'My bets', 'Menu', 'Live now', 'See all', 'Starting soon', 'Top matches', 'All matches', 'In {x}', 'Hour', 'From {h}', 'Starts in', 'Half-time', 'Finished', 'GOAL!', 'Red card', 'Full time',
       'Events', 'Statistics', 'No event yet.', 'No live match right now.', 'Suspended', 'Odds suspended (goal or action in progress): try again in a moment.', 'Share code', 'Code', 'Back', 'Sports', 'Rules', 'Live check…',
       'Possession', 'Shots', 'Shots on target', 'Corners', 'Yellow cards', 'Red cards', 'Attacks', 'Dangerous attacks', 'pen.', 'o.g.', 'VAR', 'Substitution', 'Kick-off', 'Results', 'Yesterday', '2 days ago', 'HT', 'No result for this day.',
-      'Sign up to bet and find your bets here.', 'FT', 'Bet not accepted', 'Something just happened in this match. Your bet was not placed and your balance is unchanged.', 'The odds changed while your bet was being checked. Your bet was not placed and your balance is unchanged.', 'Got it', 'Show all {n} selections', 'Show less', 'Search a live match', 'Search a result', 'Acca boost', 'Acca boost: 3+ matches at odds 1.20+'],
+      'Sign up to bet and find your bets here.', 'FT', 'Bet not accepted', 'Something just happened in this match. Your bet was not placed and your balance is unchanged.', 'The odds changed while your bet was being checked. Your bet was not placed and your balance is unchanged.', 'Got it', 'Show all {n} selections', 'Show less', 'Search a live match', 'Search a result', 'Acca boost', 'Acca boost: 3+ matches at odds 1.20+', '50 favourites max: remove a star to add another.', 'Upcoming', 'Tap ☆ on a match or a prediction to follow it here. A finished match disappears on its own.', 'Without an account, your favourites stay until you close the site.', '{n} finished matches'],
     es: ['Popular', 'En vivo', 'Boleto', 'Mis apuestas', 'Menú', 'En vivo ahora', 'Ver todo', 'Empieza pronto', 'Partidos top', 'Todos los partidos', 'En {x}', 'Hora', 'Desde {h}', 'Empieza en', 'Descanso', 'Terminado', '¡GOL!', 'Tarjeta roja', 'Final del partido',
       'Eventos', 'Estadísticas', 'Aún no hay eventos.', 'Ningún partido en vivo ahora.', 'Suspendido', 'Cuotas suspendidas (gol o jugada en curso): inténtalo en un momento.', 'Compartir código', 'Código', 'Volver', 'Deportes', 'Reglas', 'Validación en vivo…',
       'Posesión', 'Tiros', 'Tiros a puerta', 'Córners', 'Tarjetas amarillas', 'Tarjetas rojas', 'Ataques', 'Ataques peligrosos', 'pen.', 'p.p.', 'VAR', 'Cambio', 'Saque inicial', 'Resultados', 'Ayer', 'Anteayer', 'Desc.', 'Ningún resultado para este día.',
-      'Regístrate para apostar y ver tus apuestas aquí.', 'Fin', 'Apuesta no aceptada', 'Acaba de ocurrir algo en este partido. Tu apuesta no se realizó y tu saldo no ha cambiado.', 'Las cuotas cambiaron durante la validación. Tu apuesta no se realizó y tu saldo no ha cambiado.', 'Entendido', 'Ver las {n} selecciones', 'Ver menos', 'Buscar un partido en vivo', 'Buscar un resultado', 'Bono combinada', 'Bono combinada: 3+ partidos con cuota 1,20+'],
+      'Regístrate para apostar y ver tus apuestas aquí.', 'Fin', 'Apuesta no aceptada', 'Acaba de ocurrir algo en este partido. Tu apuesta no se realizó y tu saldo no ha cambiado.', 'Las cuotas cambiaron durante la validación. Tu apuesta no se realizó y tu saldo no ha cambiado.', 'Entendido', 'Ver las {n} selecciones', 'Ver menos', 'Buscar un partido en vivo', 'Buscar un resultado', 'Bono combinada', 'Bono combinada: 3+ partidos con cuota 1,20+', 'Máximo 50 favoritos: quita una estrella para añadir otra.', 'Próximos', 'Toca ☆ en un partido o una predicción para seguirlo aquí. Un partido terminado desaparece solo.', 'Sin cuenta, tus favoritos se quedan hasta que cierres el sitio.', '{n} partidos terminados'],
     pt: ['Popular', 'Ao vivo', 'Bilhete', 'Minhas apostas', 'Menu', 'Ao vivo agora', 'Ver tudo', 'Começa em breve', 'Jogos top', 'Todos os jogos', 'Em {x}', 'Hora', 'A partir das {h}', 'Começa em', 'Intervalo', 'Encerrado', 'GOL!', 'Cartão vermelho', 'Fim de jogo',
       'Eventos', 'Estatísticas', 'Ainda sem eventos.', 'Nenhum jogo ao vivo agora.', 'Suspenso', 'Odds suspensas (gol ou lance em andamento): tente de novo em instantes.', 'Partilhar código', 'Código', 'Voltar', 'Esportes', 'Regras', 'Validação ao vivo…',
       'Posse de bola', 'Chutes', 'Chutes no gol', 'Escanteios', 'Cartões amarelos', 'Cartões vermelhos', 'Ataques', 'Ataques perigosos', 'pên.', 'g.c.', 'VAR', 'Substituição', 'Pontapé inicial', 'Resultados', 'Ontem', 'Anteontem', 'Int.', 'Nenhum resultado para este dia.',
-      'Cadastre-se para apostar e ver suas apostas aqui.', 'Fim', 'Aposta não aceita', 'Algo acabou de acontecer nesta partida. Sua aposta não foi feita e seu saldo não mudou.', 'As odds mudaram durante a validação. Sua aposta não foi feita e seu saldo não mudou.', 'Entendi', 'Ver as {n} seleções', 'Ver menos', 'Buscar uma partida ao vivo', 'Buscar um resultado', 'Bônus múltipla', 'Bônus múltipla: 3+ jogos com odd 1,20+'],
+      'Cadastre-se para apostar e ver suas apostas aqui.', 'Fim', 'Aposta não aceita', 'Algo acabou de acontecer nesta partida. Sua aposta não foi feita e seu saldo não mudou.', 'As odds mudaram durante a validação. Sua aposta não foi feita e seu saldo não mudou.', 'Entendi', 'Ver as {n} seleções', 'Ver menos', 'Buscar uma partida ao vivo', 'Buscar um resultado', 'Bônus múltipla', 'Bônus múltipla: 3+ jogos com odd 1,20+', 'Máximo 50 favoritos: tire uma estrela para adicionar outra.', 'Próximos', 'Toque em ☆ num jogo ou numa previsão para acompanhá-lo aqui. Um jogo terminado desaparece sozinho.', 'Sem conta, seus favoritos ficam até você fechar o site.', '{n} jogos encerrados'],
     ar: ['الأكثر شعبية', 'مباشر', 'القسيمة', 'رهاناتي', 'القائمة', 'مباشر الآن', 'عرض الكل', 'تبدأ قريبًا', 'أبرز المباريات', 'كل المباريات', 'خلال {x}', 'الساعة', 'من {h}', 'تبدأ خلال', 'استراحة', 'انتهت', 'هدف!', 'بطاقة حمراء', 'نهاية المباراة',
       'الأحداث', 'الإحصائيات', 'لا أحداث بعد.', 'لا توجد مباراة مباشرة الآن.', 'معلّق', 'الاحتمالات معلّقة (هدف أو هجمة جارية): أعد المحاولة بعد لحظة.', 'مشاركة الرمز', 'الرمز', 'رجوع', 'الرياضات', 'القواعد', 'تحقق مباشر…',
       'الاستحواذ', 'التسديدات', 'تسديدات على المرمى', 'الركنيات', 'بطاقات صفراء', 'بطاقات حمراء', 'الهجمات', 'هجمات خطيرة', 'جزاء', 'عكسي', 'VAR', 'تبديل', 'انطلاق المباراة', 'النتائج', 'أمس', 'أول أمس', 'ش1', 'لا توجد نتائج لهذا اليوم.',
-      'سجّل لتراهن وتجد رهاناتك هنا.', 'انتهت', 'لم يُقبل الرهان', 'حدث شيء للتو في هذه المباراة. لم يتم وضع رهانك ورصيدك لم يتغير.', 'تغيرت الاحتمالات أثناء التحقق. لم يتم وضع رهانك ورصيدك لم يتغير.', 'حسنًا', 'عرض الاختيارات الـ {n}', 'عرض أقل', 'ابحث عن مباراة مباشرة', 'ابحث عن نتيجة', 'مكافأة المجمّع', 'مكافأة المجمّع: 3 مباريات أو أكثر باحتمال 1.20+'],
+      'سجّل لتراهن وتجد رهاناتك هنا.', 'انتهت', 'لم يُقبل الرهان', 'حدث شيء للتو في هذه المباراة. لم يتم وضع رهانك ورصيدك لم يتغير.', 'تغيرت الاحتمالات أثناء التحقق. لم يتم وضع رهانك ورصيدك لم يتغير.', 'حسنًا', 'عرض الاختيارات الـ {n}', 'عرض أقل', 'ابحث عن مباراة مباشرة', 'ابحث عن نتيجة', 'مكافأة المجمّع', 'مكافأة المجمّع: 3 مباريات أو أكثر باحتمال 1.20+', '50 مفضلة كحد أقصى: أزل نجمة لإضافة أخرى.', 'قادمة', 'اضغط ☆ على مباراة أو توقع لمتابعته هنا. المباراة المنتهية تختفي تلقائيًا.', 'بدون حساب، تبقى مفضلاتك حتى تغلق الموقع.', '{n} مباراة منتهية'],
     tr: ['Popüler', 'Canlı', 'Kupon', 'Bahislerim', 'Menü', 'Şimdi canlı', 'Tümünü gör', 'Yakında başlıyor', 'Önemli maçlar', 'Tüm maçlar', '{x} içinde', 'Saat', '{h} sonrası', 'Başlamasına', 'Devre arası', 'Bitti', 'GOL!', 'Kırmızı kart', 'Maç sonu',
       'Olaylar', 'İstatistikler', 'Henüz olay yok.', 'Şu an canlı maç yok.', 'Askıda', 'Oranlar askıda (gol veya pozisyon var): birazdan tekrar dene.', 'Kodu paylaş', 'Kod', 'Geri', 'Sporlar', 'Kurallar', 'Canlı kontrol…',
       'Topla oynama', 'Şut', 'İsabetli şut', 'Korner', 'Sarı kart', 'Kırmızı kart', 'Atak', 'Tehlikeli atak', 'pen.', 'k.k.', 'VAR', 'Oyuncu değişikliği', 'Başlama', 'Sonuçlar', 'Dün', 'Önceki gün', 'İY', 'Bu gün için sonuç yok.',
-      'Bahis yapmak ve bahislerini burada görmek için kaydol.', 'MS', 'Bahis kabul edilmedi', 'Bu maçta az önce bir olay oldu. Bahsin alınmadı, bakiyen değişmedi.', 'Doğrulama sırasında oranlar değişti. Bahsin alınmadı, bakiyen değişmedi.', 'Anladım', '{n} seçimin tümünü gör', 'Daha az göster', 'Canlı maç ara', 'Sonuç ara', 'Kombine bonusu', 'Kombine bonusu: oranı 1,20+ olan 3+ maç'],
+      'Bahis yapmak ve bahislerini burada görmek için kaydol.', 'MS', 'Bahis kabul edilmedi', 'Bu maçta az önce bir olay oldu. Bahsin alınmadı, bakiyen değişmedi.', 'Doğrulama sırasında oranlar değişti. Bahsin alınmadı, bakiyen değişmedi.', 'Anladım', '{n} seçimin tümünü gör', 'Daha az göster', 'Canlı maç ara', 'Sonuç ara', 'Kombine bonusu', 'Kombine bonusu: oranı 1,20+ olan 3+ maç', 'En fazla 50 favori: eklemek için bir yıldızı kaldır.', 'Yaklaşan', 'Burada takip etmek için bir maçta veya tahminde ☆ simgesine dokun. Biten maç kendiliğinden kaybolur.', 'Hesap olmadan favorilerin site kapanana kadar kalır.', '{n} biten maç'],
     vi: ['Phổ biến', 'Trực tiếp', 'Phiếu cược', 'Cược của tôi', 'Menu', 'Đang diễn ra', 'Xem tất cả', 'Sắp bắt đầu', 'Trận nổi bật', 'Tất cả trận', 'Trong {x}', 'Giờ', 'Từ {h}', 'Bắt đầu sau', 'Nghỉ giữa hiệp', 'Kết thúc', 'VÀO!', 'Thẻ đỏ', 'Hết trận',
       'Diễn biến', 'Thống kê', 'Chưa có diễn biến.', 'Hiện không có trận trực tiếp.', 'Tạm khóa', 'Tỷ lệ tạm khóa (có bàn thắng hoặc tình huống): thử lại sau giây lát.', 'Chia sẻ mã', 'Mã', 'Quay lại', 'Môn thể thao', 'Luật', 'Đang xác nhận…',
       'Kiểm soát bóng', 'Sút', 'Sút trúng đích', 'Phạt góc', 'Thẻ vàng', 'Thẻ đỏ', 'Tấn công', 'Tấn công nguy hiểm', 'pen', 'phản lưới', 'VAR', 'Thay người', 'Giờ bóng lăn', 'Kết quả', 'Hôm qua', 'Hôm kia', 'H1', 'Không có kết quả cho ngày này.',
-      'Đăng ký để đặt cược và xem cược của bạn tại đây.', 'KT', 'Cược không được chấp nhận', 'Vừa có diễn biến trong trận này. Cược của bạn chưa được đặt và số dư không thay đổi.', 'Tỷ lệ đã thay đổi trong lúc xác nhận. Cược của bạn chưa được đặt và số dư không thay đổi.', 'Đã hiểu', 'Xem cả {n} lựa chọn', 'Thu gọn', 'Tìm trận đang diễn ra', 'Tìm kết quả', 'Thưởng cược xiên', 'Thưởng cược xiên: từ 3 trận, tỷ lệ 1,20+'],
+      'Đăng ký để đặt cược và xem cược của bạn tại đây.', 'KT', 'Cược không được chấp nhận', 'Vừa có diễn biến trong trận này. Cược của bạn chưa được đặt và số dư không thay đổi.', 'Tỷ lệ đã thay đổi trong lúc xác nhận. Cược của bạn chưa được đặt và số dư không thay đổi.', 'Đã hiểu', 'Xem cả {n} lựa chọn', 'Thu gọn', 'Tìm trận đang diễn ra', 'Tìm kết quả', 'Thưởng cược xiên', 'Thưởng cược xiên: từ 3 trận, tỷ lệ 1,20+', 'Tối đa 50 mục yêu thích: bỏ một sao để thêm mục khác.', 'Sắp diễn ra', 'Chạm ☆ trên trận đấu hoặc dự đoán để theo dõi tại đây. Trận đã kết thúc tự biến mất.', 'Không có tài khoản, mục yêu thích giữ đến khi bạn đóng trang.', '{n} trận đã kết thúc'],
     id: ['Populer', 'Live', 'Kupon', 'Taruhanku', 'Menu', 'Live sekarang', 'Lihat semua', 'Segera dimulai', 'Laga top', 'Semua laga', 'Dalam {x}', 'Jam', 'Mulai {h}', 'Mulai dalam', 'Turun minum', 'Selesai', 'GOL!', 'Kartu merah', 'Laga selesai',
       'Kejadian', 'Statistik', 'Belum ada kejadian.', 'Tidak ada laga live saat ini.', 'Ditangguhkan', 'Odds ditangguhkan (gol atau aksi berlangsung): coba lagi sebentar.', 'Bagikan kode', 'Kode', 'Kembali', 'Olahraga', 'Aturan', 'Validasi live…',
       'Penguasaan bola', 'Tembakan', 'Tepat sasaran', 'Sepak pojok', 'Kartu kuning', 'Kartu merah', 'Serangan', 'Serangan berbahaya', 'pen.', 'b.d.', 'VAR', 'Pergantian', 'Kick-off', 'Hasil', 'Kemarin', 'Kemarin lusa', 'Bbk 1', 'Tidak ada hasil untuk hari ini.',
-      'Daftar untuk bertaruh dan melihat taruhanmu di sini.', 'Sls', 'Taruhan tidak diterima', 'Baru saja terjadi sesuatu di laga ini. Taruhanmu tidak dipasang dan saldomu tetap utuh.', 'Odds berubah saat taruhan diperiksa. Taruhanmu tidak dipasang dan saldomu tetap utuh.', 'Mengerti', 'Lihat semua {n} pilihan', 'Lebih sedikit', 'Cari laga live', 'Cari hasil', 'Bonus parlay', 'Bonus parlay: 3+ laga dengan odds 1,20+'],
+      'Daftar untuk bertaruh dan melihat taruhanmu di sini.', 'Sls', 'Taruhan tidak diterima', 'Baru saja terjadi sesuatu di laga ini. Taruhanmu tidak dipasang dan saldomu tetap utuh.', 'Odds berubah saat taruhan diperiksa. Taruhanmu tidak dipasang dan saldomu tetap utuh.', 'Mengerti', 'Lihat semua {n} pilihan', 'Lebih sedikit', 'Cari laga live', 'Cari hasil', 'Bonus parlay', 'Bonus parlay: 3+ laga dengan odds 1,20+', 'Maksimal 50 favorit: hapus satu bintang untuk menambah.', 'Akan datang', 'Ketuk ☆ pada laga atau prediksi untuk mengikutinya di sini. Laga yang selesai hilang sendiri.', 'Tanpa akun, favoritmu tersimpan sampai situs ditutup.', '{n} laga selesai'],
     ru: ['Популярное', 'Live', 'Купон', 'Мои ставки', 'Меню', 'Сейчас в эфире', 'Все', 'Скоро начало', 'Топ-матчи', 'Все матчи', 'Через {x}', 'Час', 'С {h}', 'Начало через', 'Перерыв', 'Завершён', 'ГОЛ!', 'Красная карточка', 'Конец матча',
       'События', 'Статистика', 'Пока нет событий.', 'Сейчас нет матчей в эфире.', 'Приостановлено', 'Коэффициенты приостановлены (гол или опасный момент): попробуйте чуть позже.', 'Поделиться кодом', 'Код', 'Назад', 'Виды спорта', 'Правила', 'Проверка live…',
       'Владение', 'Удары', 'Удары в створ', 'Угловые', 'Жёлтые карточки', 'Красные карточки', 'Атаки', 'Опасные атаки', 'пен.', 'автогол', 'VAR', 'Замена', 'Начало матча', 'Результаты', 'Вчера', 'Позавчера', '1-й т.', 'Нет результатов за этот день.',
-      'Зарегистрируйтесь, чтобы делать ставки и видеть их здесь.', 'Кон.', 'Ставка не принята', 'В этом матче только что произошло событие. Ставка не принята, баланс не изменился.', 'Коэффициенты изменились во время проверки. Ставка не принята, баланс не изменился.', 'Понятно', 'Показать все {n} выбора', 'Свернуть', 'Найти матч в прямом эфире', 'Найти результат', 'Бонус экспресса', 'Бонус экспресса: от 3 матчей с коэф. 1,20+'],
+      'Зарегистрируйтесь, чтобы делать ставки и видеть их здесь.', 'Кон.', 'Ставка не принята', 'В этом матче только что произошло событие. Ставка не принята, баланс не изменился.', 'Коэффициенты изменились во время проверки. Ставка не принята, баланс не изменился.', 'Понятно', 'Показать все {n} выбора', 'Свернуть', 'Найти матч в прямом эфире', 'Найти результат', 'Бонус экспресса', 'Бонус экспресса: от 3 матчей с коэф. 1,20+', 'Не более 50 избранных: уберите звезду, чтобы добавить новую.', 'Скоро', 'Нажмите ☆ на матче или прогнозе, чтобы следить за ним здесь. Завершённый матч исчезает сам.', 'Без аккаунта избранное хранится до закрытия сайта.', 'Завершено матчей: {n}'],
     de: ['Beliebt', 'Live', 'Wettschein', 'Meine Wetten', 'Menü', 'Jetzt live', 'Alle', 'Beginnt bald', 'Top-Spiele', 'Alle Spiele', 'In {x}', 'Uhrzeit', 'Ab {h}', 'Beginnt in', 'Halbzeit', 'Beendet', 'TOR!', 'Rote Karte', 'Spielende',
       'Ereignisse', 'Statistiken', 'Noch keine Ereignisse.', 'Gerade kein Live-Spiel.', 'Gesperrt', 'Quoten gesperrt (Tor oder Aktion läuft): gleich noch einmal versuchen.', 'Code teilen', 'Code', 'Zurück', 'Sportarten', 'Regeln', 'Live-Prüfung…',
       'Ballbesitz', 'Schüsse', 'Schüsse aufs Tor', 'Ecken', 'Gelbe Karten', 'Rote Karten', 'Angriffe', 'Gefährliche Angriffe', 'Elfm.', 'ET', 'VAR', 'Wechsel', 'Anstoß', 'Ergebnisse', 'Gestern', 'Vorgestern', 'HZ', 'Keine Ergebnisse für diesen Tag.',
-      'Registriere dich, um zu wetten und deine Wetten hier zu sehen.', 'Ende', 'Wette nicht angenommen', 'In diesem Spiel ist gerade etwas passiert. Deine Wette wurde nicht platziert, dein Guthaben bleibt unverändert.', 'Die Quoten haben sich während der Prüfung geändert. Deine Wette wurde nicht platziert, dein Guthaben bleibt unverändert.', 'Verstanden', 'Alle {n} Tipps anzeigen', 'Weniger anzeigen', 'Live-Spiel suchen', 'Ergebnis suchen', 'Kombi-Bonus', 'Kombi-Bonus: ab 3 Spielen mit Quote 1,20+'],
+      'Registriere dich, um zu wetten und deine Wetten hier zu sehen.', 'Ende', 'Wette nicht angenommen', 'In diesem Spiel ist gerade etwas passiert. Deine Wette wurde nicht platziert, dein Guthaben bleibt unverändert.', 'Die Quoten haben sich während der Prüfung geändert. Deine Wette wurde nicht platziert, dein Guthaben bleibt unverändert.', 'Verstanden', 'Alle {n} Tipps anzeigen', 'Weniger anzeigen', 'Live-Spiel suchen', 'Ergebnis suchen', 'Kombi-Bonus', 'Kombi-Bonus: ab 3 Spielen mit Quote 1,20+', 'Höchstens 50 Favoriten: entferne einen Stern, um einen neuen hinzuzufügen.', 'Demnächst', 'Tippe ☆ bei einem Spiel oder einer Prognose, um es hier zu verfolgen. Ein beendetes Spiel verschwindet von selbst.', 'Ohne Konto bleiben deine Favoriten, bis du die Seite schließt.', '{n} beendete Spiele'],
     zh: ['热门', '直播', '投注单', '我的投注', '菜单', '正在直播', '查看全部', '即将开始', '焦点赛事', '全部比赛', '{x}内', '时间', '{h} 起', '距开赛', '中场休息', '已结束', '进球！', '红牌', '全场结束',
       '事件', '技术统计', '暂无事件。', '当前没有直播比赛。', '暂停', '赔率暂停（进球或进攻中）：请稍后再试。', '分享代码', '代码', '返回', '运动项目', '规则', '直播确认中…',
       '控球率', '射门', '射正', '角球', '黄牌', '红牌', '进攻', '危险进攻', '点球', '乌龙', 'VAR', '换人', '开球', '赛果', '昨天', '前天', '半场', '这一天没有赛果。',
-      '注册后即可投注，并在这里查看你的投注。', '完场', '投注未被接受', '这场比赛刚刚发生了事件。您的投注未被下单，余额没有变化。', '验证期间赔率已变化。您的投注未被下单，余额没有变化。', '知道了', '查看全部 {n} 个选择', '收起', '搜索直播比赛', '搜索赛果', '串关奖励', '串关奖励：3 场以上，赔率 1.20+'],
+      '注册后即可投注，并在这里查看你的投注。', '完场', '投注未被接受', '这场比赛刚刚发生了事件。您的投注未被下单，余额没有变化。', '验证期间赔率已变化。您的投注未被下单，余额没有变化。', '知道了', '查看全部 {n} 个选择', '收起', '搜索直播比赛', '搜索赛果', '串关奖励', '串关奖励：3 场以上，赔率 1.20+', '最多 50 个收藏：取消一个星标后才能再添加。', '即将开始', '点击比赛或预测上的 ☆ 即可在此关注。比赛结束后会自动消失。', '未登录时，收藏会保留到你关闭网站为止。', '{n} 场已结束'],
     hi: ['लोकप्रिय', 'लाइव', 'कूपन', 'मेरे दांव', 'मेनू', 'अभी लाइव', 'सभी देखें', 'जल्द शुरू', 'टॉप मैच', 'सभी मैच', '{x} में', 'समय', '{h} से', 'शुरू होने में', 'हाफ़-टाइम', 'समाप्त', 'गोल!', 'लाल कार्ड', 'मैच समाप्त',
       'घटनाएँ', 'आँकड़े', 'अभी कोई घटना नहीं।', 'अभी कोई लाइव मैच नहीं।', 'निलंबित', 'ऑड्स निलंबित (गोल या हमला जारी): थोड़ी देर में फिर कोशिश करें।', 'कोड शेयर करें', 'कोड', 'वापस', 'खेल', 'नियम', 'लाइव जाँच…',
       'कब्ज़ा', 'शॉट', 'निशाने पर शॉट', 'कॉर्नर', 'पीले कार्ड', 'लाल कार्ड', 'हमले', 'ख़तरनाक हमले', 'पेन.', 'आत्मघाती', 'VAR', 'बदलाव', 'किक-ऑफ़', 'नतीजे', 'कल', 'परसों', 'हाफ़', 'इस दिन का कोई नतीजा नहीं।',
-      'दांव लगाने और अपने दांव यहाँ देखने के लिए साइन अप करें।', 'ख़त्म', 'दांव स्वीकार नहीं हुआ', 'इस मैच में अभी कुछ हुआ है। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'जांच के दौरान ऑड्स बदल गए। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'समझ गया', 'सभी {n} चयन देखें', 'कम दिखाएं', 'लाइव मैच खोजें', 'नतीजा खोजें', 'कॉम्बो बोनस', 'कॉम्बो बोनस: 3+ मैच, ऑड्स 1.20+']
+      'दांव लगाने और अपने दांव यहाँ देखने के लिए साइन अप करें।', 'ख़त्म', 'दांव स्वीकार नहीं हुआ', 'इस मैच में अभी कुछ हुआ है। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'जांच के दौरान ऑड्स बदल गए। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'समझ गया', 'सभी {n} चयन देखें', 'कम दिखाएं', 'लाइव मैच खोजें', 'नतीजा खोजें', 'कॉम्बो बोनस', 'कॉम्बो बोनस: 3+ मैच, ऑड्स 1.20+', 'अधिकतम 50 पसंदीदा: नया जोड़ने के लिए एक स्टार हटाएं।', 'आने वाले', 'यहाँ फ़ॉलो करने के लिए किसी मैच या भविष्यवाणी पर ☆ दबाएं। ख़त्म हुआ मैच अपने आप हट जाता है।', 'बिना खाते के, पसंदीदा साइट बंद करने तक रहते हैं।', '{n} मैच समाप्त']
   };
   function NX() { var a = NBL[lg()] || NBL.en, o = {}; NBK.forEach(function (k, i) { o[k] = a[i] != null ? a[i] : NBL.en[i]; }); return o; }
   // noms des sports (le serveur envoie un code : foot, basket, hockey…)
@@ -1011,12 +1012,23 @@
     return o.sp || spOf(o.fx || o.id || o.ev || '');
   }
   function sbToast(m, k) { if (ctx && ctx.toast) ctx.toast(m, k || 'info'); else if (D6.App && D6.App.toast) D6.App.toast(m, k || 'info'); }
-  function favs() { try { var f = JSON.parse(localStorage.getItem('oro_sb_fav') || '{}') || {}; return { l: Array.isArray(f.l) ? f.l : [], f: Array.isArray(f.f) ? f.f : [] }; } catch (e) { return { l: [], f: [] }; } }
-  function favToggle(kind, id) {
-    var f = favs(), a = f[kind], i = a.indexOf(id);
-    if (i > -1) a.splice(i, 1); else { a.push(id); if (a.length > 300) a.shift(); }
-    try { localStorage.setItem('oro_sb_fav', JSON.stringify(f)); } catch (e) { /* ignore */ }
+  /* 2026-10-23 (propriétaire : « Favoris ne fonctionne pas, il n'y a même pas d'étoile ») : ☆ sur chaque match (avant-match,
+     direct) et chaque prédiction ; page Favoris (en direct · à venir · Predict) ; un match fini disparaît tout seul ; 50 au plus.
+     Visiteur sans compte : gardés le temps de la visite (sessionStorage), joueur connecté : sur le téléphone (localStorage). */
+  var FAV_MAX = 50;
+  function favSt() { try { return ctx && ctx.guest ? sessionStorage : localStorage; } catch (e) { return null; } }
+  function favs() { try { var f = JSON.parse(favSt().getItem('oro_sb_fav') || '{}') || {}; var A = function (a) { return Array.isArray(a) ? a.filter(function (v) { return typeof v === 'string' || typeof v === 'number'; }) : []; }; return { l: A(f.l), f: A(f.f), p: A(f.p) }; } catch (e) { return { l: [], f: [], p: [] }; } }
+  function favSave(f) { try { favSt().setItem('oro_sb_fav', JSON.stringify(f)); } catch (e) { /* ignore */ } }
+  function favN(f) { f = f || favs(); return f.f.length + f.p.length; }
+  function favToggle(kind, id) { // vrai = ajouté, faux = retiré, null = plein (50)
+    var f = favs(), a = f[kind] || (f[kind] = []), i = a.indexOf(id);
+    if (i > -1) a.splice(i, 1); else { if (kind !== 'l' && favN(f) >= FAV_MAX) return null; a.push(id); }
+    favSave(f);
     return i < 0;
+  }
+  function starB(kind, id) {
+    var on = (favs()[kind] || []).indexOf(id) > -1;
+    return '<button type="button" class="pz-fst' + (on ? ' on' : '') + '" data-fav="' + esc(id) + '" data-fk="' + kind + '" aria-pressed="' + on + '" aria-label="★"><svg viewBox="0 0 24 24"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg></button>';
   }
   function tzMin() { return -new Date().getTimezoneOffset(); }
   // ---------- libellés des marchés (12 langues) à partir de mk / k ----------
@@ -1190,7 +1202,7 @@
     if (sending) return true;
     if (view === 'match') { go(matchFrom && matchFrom !== 'match' ? matchFrom : 'home'); return true; }
     if (view === 'slip') { go(slipFrom && slipFrom !== 'slip' ? slipFrom : 'home'); return true; }
-    if (view === 'results') { go('menu'); return true; }
+    if (view === 'results' || view === 'fav') { go('menu'); return true; }
     if (view !== 'home') { go('home'); return true; }
     // Populaire filtré (période, recherche, autre sport) : on revient d'abord à Populaire tel qu'à l'ouverture
     if (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot') { go('home'); return true; }
@@ -1203,6 +1215,7 @@
     if (view === 'slip') { renderSlip(); return; }
     if (view === 'menu') { renderMenu(); return; }
     if (view === 'results') { renderResults(); return; }
+    if (view === 'fav') { renderFav(); return; }
     if (view === 'news') { renderList(); return; }
     if (view === 'pred') { renderPred(); return; }
     if (view === 'live') { if (liveOn === false) view = 'home'; else { renderLive(); return; } }
@@ -1356,9 +1369,9 @@
   function rowHtml(f, o) {
     o = o || {};
     var lv = !!f.live, by = oddsBy(f), mk = (f.o && f.o.mk) || '1x2', two = mk === '12', ev = 'sb:' + f.id + ':' + mk, susp = lv && (f.susp || f.end), sc = f.sc || [0, 0];
-    var tcol = lv ? '<div class="pz-rt lv" data-open="' + esc(f.id) + '"><b class="pz-min">' + esc(minTxt(f, 1)) + '</b></div>'
+    var tcol = lv ? '<div class="pz-rt lv" data-open="' + esc(f.id) + '"><b class="pz-min">' + esc(minTxt(f, 1)) + '</b>' + starB('f', f.id) + '</div>'
       : '<div class="pz-rt" data-open="' + esc(f.id) + '"><b dir="ltr">' + esc(hm24(f.ts)) + '</b>' + (o.when ? '<small class="fit pz-wh">' + esc(o.when) + '</small>' : '') +
-        (o.soon && f.ts - nowS() < 7200 ? '<small class="pz-in" data-in="' + f.ts + '">' + esc(inShort(f.ts - nowS())) + '</small>' : '') + '</div>';
+        (o.soon && f.ts - nowS() < 7200 ? '<small class="pz-in" data-in="' + f.ts + '">' + esc(inShort(f.ts - nowS())) + '</small>' : '') + starB('f', f.id) + '</div>';
     var l = o.lg ? sbLg(f.lg, spOf(f)) : null;
     return '<div class="pz-row' + (lv ? ' lv' : '') + '" data-fx="' + esc(f.id) + '">' + tcol +
       '<div class="pz-rn" data-open="' + esc(f.id) + '">' + (l ? '<small class="pz-rl">' + lgImg(l) + '<span dir="auto">' + esc(l.n) + '</span></small>' : '') +
@@ -1718,8 +1731,9 @@
   var resQ = '';
   function renderResults() {
     var n = NX();
-    shell('<div class="pz-lvq"><label class="pz-q">' + SBIC.search + '<input id="pzRq" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(n.resSrch) + '" value="' + esc(resQ) + '">' +
-      '<button type="button" class="pz-qx" id="pzRqx" aria-label="✕"' + (resQ ? '' : ' hidden') + '>' + IC.x + '</button></label><span class="pz-sect"><i class="pz-sect-r"></i>' + esc(n.results) + '</span></div>' +
+    // 2026-10-23 (propriétaire : « Résultats doit faire grande plateforme ») : en-tête trophée + nombre de matchs terminés
+    shell('<div class="pz-lvq pz-resq"><div class="pz-rhero"><span class="pz-rhero-i">' + SBIC.trophy + '</span><span class="pz-rhero-t"><b dir="auto">' + esc(n.results) + '</b><small id="pzResN" dir="auto"></small></span></div>' + '<label class="pz-q">' + SBIC.search + '<input id="pzRq" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(n.resSrch) + '" value="' + esc(resQ) + '">' +
+      '<button type="button" class="pz-qx" id="pzRqx" aria-label="✕"' + (resQ ? '' : ' hidden') + '>' + IC.x + '</button></label></div>' +
       '<div class="pz-pers pz-hs" id="pzResD">' + resChips() + '</div><div id="pzRes" class="pz-body"></div>');
     var q = $('pzRq'), qx = $('pzRqx');
     if (q) {
@@ -1780,21 +1794,62 @@
     var r = c.r, n = NX();
     var lgs = {}; (r.lg || []).forEach(function (l) { lgs[l.id] = l; });
     var rq = normS(resQ).trim(), fxs = r.fx.filter(function (f) { var l = lgs[f.lg] || {}; return !rq || normS(f.h.n + ' ' + f.a.n + ' ' + (l.n || '') + ' ' + (l.c || '')).indexOf(rq) > -1; });
+    var rn = $('pzResN'); if (rn) rn.textContent = (r.pending && !fxs.length) ? '…' : fmt(n.resN, { n: fxs.length }) + ' · ' + (resDay === 'all' ? DW()[3] : resLbl(resDay));
     if (!fxs.length) { el.innerHTML = r.pending ? skelRows() : '<p class="pz-none">' + esc(rq ? SX().noMatch : n.noRes) + '</p>'; return; }
     var g = {}, order = [];
     fxs.forEach(function (f) { if (!g[f.lg]) { g[f.lg] = []; order.push(f.lg); } g[f.lg].push(f); });
     order.sort(function (a, b) { return ((lgs[a] || {}).p || 100) - ((lgs[b] || {}).p || 100); });
     putBlocks(el, order.map(function (id) {
       var l = lgs[id] || { n: '' };
-      return '<section class="pz-lg on pz-reslg"><div class="pz-lgh">' + lgImg(l) + '<span class="pz-lgn"><b dir="auto">' + esc(l.n || '') + '</b>' + (l.c ? '<small dir="auto">' + esc(l.c) + '</small>' : '') + '</span></div><div class="pz-lgb">' +
+      return '<section class="pz-lg on pz-reslg"><div class="pz-lgh">' + lgImg(l) + '<span class="pz-lgn"><b dir="auto">' + esc(l.n || '') + '</b>' + (l.c ? '<small dir="auto">' + esc(l.c) + '</small>' : '') + '</span><em class="pz-lgc">' + g[id].length + '</em></div><div class="pz-lgb">' +
         g[id].map(function (f) {
-          var w = f.ft[0] > f.ft[1] ? 'h' : f.ft[1] > f.ft[0] ? 'a' : '';
-          return '<div class="pz-row pz-rres"><div class="pz-rt"><b dir="ltr">' + esc(hm24(f.ts)) + '</b><small>' + esc(r.all ? resDd(f.ts) : (n.ftS || n.ft)) + '</small></div><div class="pz-rn">' +
+          var w = f.ft[0] > f.ft[1] ? 'h' : f.ft[1] > f.ft[0] ? 'a' : 'd', wi = w === 'h' ? 0 : w === 'd' ? 1 : 2;
+          // dernières cotes 1 · X · 2 du match, l'issue gagnante en vert (comme les grands sites de résultats)
+          var od = Array.isArray(f.o) ? '<div class="pz-rodd">' + ['1', 'X', '2'].map(function (k, i) { var v = f.o[i]; return '<span class="' + (v == null ? 'na' : i === wi ? 'w' : '') + '"><i>' + k + '</i><b dir="ltr">' + (v == null ? '–' : Number(v).toFixed(2)) + '</b></span>'; }).join('') + '</div>' : '';
+          return '<div class="pz-row pz-rres' + (od ? ' od' : '') + '"><div class="pz-rt"><b dir="ltr">' + esc(hm24(f.ts)) + '</b><small>' + esc(r.all ? resDd(f.ts) : (n.ftS || n.ft)) + '</small></div><div class="pz-rn">' +
             '<p class="' + (w === 'h' ? 'w' : '') + '">' + tlogo(f.h.lo, 'pz-tlo') + '<span dir="auto">' + esc(f.h.n) + '</span><b class="pz-sc">' + f.ft[0] + '</b></p>' +
             '<p class="' + (w === 'a' ? 'w' : '') + '">' + tlogo(f.a.lo, 'pz-tlo') + '<span dir="auto">' + esc(f.a.n) + '</span><b class="pz-sc">' + f.ft[1] + '</b></p></div>' +
-            (f.ht ? '<small class="pz-ht" dir="ltr">' + esc(n.htS) + ' ' + f.ht[0] + '-' + f.ht[1] + '</small>' : '<i></i>') + '</div>';
+            (f.ht ? '<small class="pz-ht" dir="ltr">' + esc(n.htS) + ' ' + f.ht[0] + '-' + f.ht[1] + '</small>' : '<i></i>') + od + '</div>';
         }).join('') + '</div></section>';
     }));
+  }
+
+  // ---------- FAVORIS : en direct · à venir · Predict (un match fini ou une prédiction fermée s'en va tout seul) ----------
+  function favSports() { var o = {}; favs().f.forEach(function (id) { var m = /^([a-z]+):/.exec(String(id)); o[m ? m[1] : 'foot'] = 1; }); return Object.keys(o); }
+  function favLoad(force) {
+    var jobs = [];
+    if (favs().f.length && sbOn !== false) { favSports().forEach(function (sp) { jobs.push(sbFetch('all', force, sp)); }); if (liveShown()) jobs.push(liveProbe(force)); }
+    return Promise.all(jobs);
+  }
+  function renderFav() {
+    shell(bar(SX().fav) + '<div id="pzFav" class="pz-body pz-favp"></div>');
+    paintFav();
+    favLoad(false).then(function () { if (view === 'fav') paintFav(); });
+  }
+  function paintFav() {
+    var el = $('pzFav'); if (!el || view !== 'fav') return;
+    var f = favs(), n = NX(), now = nowS(), sps = favSports();
+    var lvAll = liveData ? liveData.r.fx : [], lvIds = {}, gone = {};
+    var lvF = lvAll.filter(function (z) { if (f.f.indexOf(z.id) < 0) return false; if (z.end) { gone[z.id] = 1; return false; } lvIds[z.id] = 1; return true; });
+    var up = [], seen = {}, loaded = sbOn !== false && (!f.f.length || ((liveData || !liveShown()) && sps.every(function (sp) { var c = sbData[sp + '|all']; return c && c.r; })));
+    sps.forEach(function (sp) { var c = sbData[sp + '|all']; if (c && c.r) c.r.fx.forEach(function (z) { if (seen[z.id] || lvIds[z.id] || gone[z.id] || f.f.indexOf(z.id) < 0 || z.ts < now - 3 * 3600) return; seen[z.id] = 1; up.push(z); }); });
+    up.sort(function (a, b) { return a.ts - b.ts; });
+    var pe = events.filter(function (e) { return e.pred && f.p.indexOf(e.id) > -1 && e.open; });
+    // ménage : match terminé (ou introuvable une fois tout chargé), prédiction fermée → retiré des favoris
+    var keepF = f.f.filter(function (id) { return lvIds[id] || seen[id] || (!loaded && !gone[id]); });
+    var keepP = events.length ? f.p.filter(function (id) { return pe.some(function (e) { return e.id === id; }); }) : f.p;
+    if (keepF.length !== f.f.length || keepP.length !== f.p.length) { f.f = keepF; f.p = keepP; favSave(f); }
+    var sig = [lg(), lvF.map(function (z) { return z.id; }).join(','), up.map(function (z) { return z.id; }).join(','), pe.map(function (e) { return e.id; }).join(','), loaded].join('|');
+    if (el.dataset.sig === sig) { patchAll(el); return; }
+    el.dataset.sig = sig;
+    var cnt = function (k) { return '<em>' + k + '</em>'; }, h = '';
+    if (lvF.length) h += '<section class="pz-blk pz-blive"><div class="pz-bh"><b><i class="pz-ld"></i>' + esc(n.live) + cnt(lvF.length) + '</b></div><div class="pz-lgb">' + lvF.map(function (z) { return rowHtml(z, { lg: 1 }); }).join('') + '</div></section>';
+    if (up.length) h += '<section class="pz-blk"><div class="pz-bh"><b>' + esc(n.favUp) + cnt(up.length) + '</b></div><div class="pz-lgb">' + up.map(function (z) { return rowHtml(z, { lg: 1, when: whenShort(z.ts), soon: 1 }); }).join('') + '</div></section>';
+    if (pe.length) h += '<section class="pz-fpd"><div class="pz-bh"><b>Predict' + cnt(pe.length) + '</b></div><div class="sp2-list pd-list">' + pe.map(predCard).join('') + '</div></section>';
+    if (!h && !loaded && f.f.length) { el.innerHTML = skelRows(); return; }
+    var star = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>';
+    el.innerHTML = (h || '<div class="pz-fempty"><span>' + star + '</span><p dir="auto">' + esc(n.favHint) + '</p></div>') +
+      (h ? '<p class="pz-fnote" dir="auto">' + esc(n.favHint) + '</p>' : '') + (ctx.guest ? '<p class="pz-fnote" dir="auto">' + esc(n.favGst) + '</p>' : '');
   }
 
   // ---------- MENU ----------
@@ -1808,7 +1863,10 @@
     var html = bar(n.nMenu) + '<div class="pz-menu">' +
       (sp ? '<div class="pz-sports pz-hs">' + sp + '</div>' : '') + // 2026-10-22 (propriétaire) : sans le titre « Sports »
       // 2026-10-22 (propriétaire) : menu utile et court — Sports, Direct, Résultats, Mes paris, Favoris, Charger un code, Si la cote change
-      '<div class="pz-mcard">' + (sbOn && liveShown() ? row('live', NAVI.live, n.nLive) : '') + (sbOn ? row('res', IC.ok, n.results) : '') + row('mine', NAVI.mine, n.nMine) + (sbOn ? row('fav', '<b class="pz-mstar">★</b>', x.fav) : '') + '</div>' +
+      // 2026-10-23 (propriétaire : « Résultats doit se sentir, plus en haut ; Favoris doit marcher ») : Résultats en premier, en avant
+      (sbOn ? '<button type="button" class="pz-mres" data-menu="res"><span class="pz-mres-i">' + SBIC.trophy + '</span><span class="pz-mres-t"><b dir="auto">' + esc(n.results) + '</b><small dir="auto">' + esc(x.today + ' · ' + n.yday + ' · 30 j') + '</small></span>' + SBIC.chev + '</button>' : '') +
+      '<div class="pz-mcard">' + (sbOn && liveShown() ? row('live', NAVI.live, n.nLive) : '') + row('mine', NAVI.mine, n.nMine) +
+        (sbOn ? row('fav', '<b class="pz-mstar">★</b>', x.fav).replace(SBIC.chev, '<em class="pz-favn">' + (favN() || '') + '</em>' + SBIC.chev) : '') + '</div>' +
       (sbOn ? '<div class="pz-mcard pz-mcode"><p class="pz-mt2">' + esc(x.loadCode) + '</p>' + codeRow() +
         (slip.some(function (s) { return s.sb; }) ? '<div class="sb-code" id="sbCode">' + codeBox(true) + '</div>' : '') + '</div>' : '') +
       '<div class="pz-mcard"><p class="pz-mt2">' + esc(xx.accT) + '</p>' + [['none', xx.accNone], ['up', xx.accUp], ['any', xx.accAny]].map(function (o) {
@@ -1821,7 +1879,7 @@
     if (a === 'res') { go('results'); return; }
     if (a === 'mine') { go('mine'); return; }
     if (a === 'live') { go('live'); return; }
-    if (a === 'fav') { per = 'fav'; sbQ = ''; sport = 'foot'; go('home'); }
+    if (a === 'fav') { go('fav'); }
   }
 
   // ---------- ACTUALITÉ (questions : crypto, politique, événements) / ancienne liste quand les paris automatiques sont invisibles ----------
@@ -1893,7 +1951,7 @@
     var l = lg(), d = e.desc ? (l === 'fr' ? e.desc.fr || e.desc.en : e.desc.en || e.desc.fr) : '', s = e.start - nowS();
     return '<article class="sp2-ev pd-ev' + (e.open ? '' : ' shut') + '" data-card="' + esc(e.id) + '">' +
       '<div class="pd-top"><span class="pd-cat c-' + esc(e.cat) + '"><i class="pd-dot"></i><span dir="auto">' + esc(pcatName(e.cat)) + '</span></span>' +
-      '<span class="pd-cd' + (s < 3600 ? ' soon' : '') + '">' + IC.clock + '<b data-pcd="' + e.start + '">' + esc(pcdTxt(s)) + '</b></span></div>' +
+      '<span class="pd-cd' + (s < 3600 ? ' soon' : '') + '">' + IC.clock + '<b data-pcd="' + e.start + '">' + esc(pcdTxt(s)) + '</b></span>' + starB('p', e.id) + '</div>' +
       (/^[a-f0-9]{16}$/.test(e.img || '') ? '<div class="pd-hd"><img class="pd-im" src="sp-logo.php?k=' + e.img + '" alt="" loading="lazy" decoding="async"><p class="pd-t" dir="auto">' + esc(nb(trT(e))) + '</p></div>' : '<p class="pd-t" dir="auto">' + esc(nb(trT(e))) + '</p>') +
       (d ? '<p class="pd-d" dir="auto">' + esc(nb(d)) + '</p>' : '') +
       (e.asset ? '<p class="pd-px"><span dir="auto">' + esc(PT('predNow')) + '</span><i aria-hidden="true">·</i><bdi>' + esc(assetName(e.asset)) + '</bdi> <b dir="ltr" data-px="' + esc(e.asset) + '">' + (pdPx[e.asset] ? pxCur(e.asset, pdPx[e.asset]) : '…') + '</b></p>' : '') +
@@ -2427,6 +2485,7 @@
     if ((b = t.closest('[data-dsheet]'))) { openSheet(); return; }
     if ((b = t.closest('[data-per]'))) {
       per = b.getAttribute('data-per'); hourF = -1; closeSheet();
+      if (per === 'fav') { per = 'all'; go('fav'); return; }
       if (view !== 'home') { topGo('home'); return; }
       if (qRaw) setQ('');
       paintPers(); paintHome(); listTop();
@@ -2441,7 +2500,18 @@
     if ((b = t.closest('[data-g]'))) { mGrp = b.getAttribute('data-g'); var g = $('pzG'); if (g) { g.dataset.sig = ''; } var mk = $('pzMk'); if (mk) mk.dataset.sig = ''; paintMatch(); return; }
     if ((b = t.closest('[data-mkt]'))) { var kk = b.getAttribute('data-mkt'), sc = b.closest('.pz-mk'), o2 = !sc.classList.contains('on'); mkOpen[kk] = o2; sc.classList.toggle('on', o2); b.setAttribute('aria-expanded', String(o2)); return; }
     if ((b = t.closest('[data-trk]'))) { if (!b.disabled) { trkTab = b.getAttribute('data-trk'); paintMatch(); } return; }
-    if ((b = t.closest('[data-fav]'))) { var id = b.getAttribute('data-fav'), f2 = favToggle('f', id); b.classList.toggle('on', f2); b.textContent = f2 ? '★' : '☆'; b.setAttribute('aria-pressed', String(f2)); return; }
+    if ((b = t.closest('[data-fav]'))) {
+      var id = b.getAttribute('data-fav'), fk = b.getAttribute('data-fk') || 'f', f2 = favToggle(fk, id);
+      if (f2 === null) { sbToast(NX().favMax, 'error'); return; }
+      box.querySelectorAll('[data-fav]').forEach(function (s2) {
+        if (s2.getAttribute('data-fav') !== id) return;
+        s2.classList.toggle('on', f2); s2.setAttribute('aria-pressed', String(f2));
+        if (s2.classList.contains('pz-star')) s2.textContent = f2 ? '★' : '☆'; // page du match (ancienne étoile)
+      });
+      if (view === 'fav' && !f2) paintFav();
+      if (view === 'menu') { var fc = box.querySelector('.pz-favn'); if (fc) fc.textContent = String(favN() || ''); }
+      return;
+    }
     if ((b = t.closest('[data-res]'))) { var rv = b.getAttribute('data-res'); resDay = rv === 'all' ? 'all' : +rv; paintResults(); return; }
     if ((b = t.closest('[data-menu]'))) { menuAct(b.getAttribute('data-menu')); return; }
     if ((b = t.closest('[data-open]'))) { openMatch(b.getAttribute('data-open')); return; }
@@ -2453,6 +2523,7 @@
   var pollT = 0;
   function pollDelay() {
     if (view === 'live') return 5000;
+    if (view === 'fav') return favs().f.length ? 10000 : -1;
     if (view === 'match') { var f = curFx(); return f && f.live && !f.end ? 5000 : 60000; }
     if (view === 'home') return sbOn && sport === 'foot' && (per === 'top' || per === 'all') && !sbQ && liveShown() ? 5000 : 60000; // direct de l'accueil : mêmes cotes / cadenas que la page du match
     if (view === 'slip' && slip.some(function (s) { return s.lv; })) return 10000;
@@ -2470,6 +2541,7 @@
     var v = view;
     try {
       if (v === 'live') { await liveProbe(true); if (view === 'live') paintLive(); }
+      else if (v === 'fav') { await favLoad(true); if (view === 'fav') paintFav(); }
       else if (v === 'match') { await loadMatch(sbMid, false); }
       else if (v === 'home' && sbOn) {
         var jobs = [sbLoad(false)];
