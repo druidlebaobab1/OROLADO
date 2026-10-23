@@ -22,16 +22,21 @@ function tg_token_ok(string $t): bool { return (bool) preg_match('/^\d{6,12}:[A-
 
 /** Appel de l'API Telegram (POST JSON). */
 function tg_api(string $token, string $method, array $data = [], int $timeout = 8): array {
-  if (!tg_token_ok($token) || !function_exists('curl_init')) return ['ok' => false];
+  // 2026-10-23 : chaque échec dit POURQUOI (« description ») — jamais le code du robot (diagnostic de l'admin).
+  if (!tg_token_ok($token)) return ['ok' => false, 'description' => 'code du robot absent ou invalide'];
   if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_TG']) && is_callable($GLOBALS['OROLADO_FAKE_TG'])) return ($GLOBALS['OROLADO_FAKE_TG'])($method, $data);
+  if (!function_exists('curl_init')) return ['ok' => false, 'description' => 'module PHP « curl » absent sur le serveur'];
   $ch = curl_init('https://api.telegram.org/bot' . $token . '/' . $method);
-  if ($ch === false) return ['ok' => false];
-  curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => $timeout,
+  if ($ch === false) return ['ok' => false, 'description' => 'curl indisponible'];
+  curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => $timeout, CURLOPT_CONNECTTIMEOUT => min(4, $timeout),
     CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_POSTFIELDS => json_encode($data, JSON_UNESCAPED_UNICODE)]);
   $raw = curl_exec($ch);
+  $err = $raw === false ? (string) curl_error($ch) : '';
+  $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
   curl_close($ch);
   $j = json_decode((string) $raw, true);
-  return is_array($j) ? $j : ['ok' => false];
+  if (is_array($j)) return $j;
+  return ['ok' => false, 'description' => $err !== '' ? 'Telegram injoignable depuis le serveur (' . substr($err, 0, 120) . ')' : 'réponse illisible de Telegram (HTTP ' . $code . ')'];
 }
 
 /** Admin : enregistre le code du robot et cherche le compte qui lui a envoyé /start (le plus récent). */
@@ -59,20 +64,43 @@ function tg_link(string $token = ''): array {
   if ($chat !== '') $c['chat'] = $chat;
   $c['on'] = 1;
   tg_save($c);
-  $t = tg_api($tok, 'sendMessage', ['chat_id' => $c['chat'], 'text' => "✅ OROLADO relié.\nVous recevrez ici une alerte à chaque demande de retrait."]);
+  $t = tg_api($tok, 'sendMessage', ['chat_id' => $c['chat'], 'text' => "✅ OROLADO relié.\nVous recevrez ici une alerte à chaque demande de retrait, nouveau message de joueur et gros dépôt."]);
   return ['ok' => !empty($t['ok']), 'bot' => $c['bot'] ?? '', 'reason' => !empty($t['ok']) ? '' : 'Relié, mais le message de test n’est pas parti.'];
 }
 
 function tg_status(): array {
   $c = tg_conf();
-  return ['ok' => true, 'has' => !empty($c['token']), 'linked' => !empty($c['chat']) && !empty($c['on']), 'bot' => (string) ($c['bot'] ?? '')];
+  return ['ok' => true, 'has' => !empty($c['token']), 'linked' => !empty($c['chat']) && !empty($c['on']), 'bot' => (string) ($c['bot'] ?? ''), 'mirror' => tg_mirror_on()];
+}
+
+/**
+ * 2026-10-23 — envoi à l'admin avec la raison d'un échec : ['ok' => bool, 'why' => texte simple pour l'admin].
+ * (Avant : un simple vrai / faux, l'admin ne savait jamais pourquoi rien n'arrivait.)
+ */
+function tg_send_admin(string $text): array {
+  $c = tg_conf();
+  if (empty($c['token'])) return ['ok' => false, 'why' => 'Telegram pas relié : aucun code de robot enregistré sur ce serveur (Notifications → Telegram → coller le code puis « Relier »).'];
+  if (empty($c['chat'])) return ['ok' => false, 'why' => 'Telegram pas relié : touchez DÉMARRER dans le robot puis « Relier » dans l’admin.'];
+  if (empty($c['on'])) return ['ok' => false, 'why' => 'Alertes Telegram coupées : appuyez sur « Relier » pour les remettre.'];
+  if (function_exists('mb_substr') && mb_strlen($text) > 4000) $text = mb_substr($text, 0, 3990) . '…';
+  $r = tg_api((string) $c['token'], 'sendMessage', ['chat_id' => $c['chat'], 'text' => $text, 'disable_web_page_preview' => true], 6);
+  if (!empty($r['ok'])) return ['ok' => true, 'why' => ''];
+  $d = (string) ($r['description'] ?? '');
+  $why = $d === '' ? 'Telegram a refusé l’envoi.' : 'Telegram a refusé : ' . $d;
+  if (stripos($d, 'blocked') !== false) $why = 'Le robot est bloqué dans votre Telegram : ouvrez-le, touchez « Débloquer » / DÉMARRER, puis « Relier ».';
+  elseif (stripos($d, 'unauthorized') !== false) $why = 'Code du robot refusé par Telegram (changé dans BotFather ?) : collez le nouveau code puis « Relier ».';
+  elseif (stripos($d, 'chat not found') !== false) $why = 'Conversation Telegram introuvable : touchez DÉMARRER dans le robot puis « Relier ».';
+  error_log('OROLADO telegram : ' . $why);
+  return ['ok' => false, 'why' => $why];
 }
 
 /** Envoi à l'admin (texte simple). */
 function tg_notify_admin(string $text): bool {
+  return !empty(tg_send_admin($text)['ok']);
+}
+
+/** 2026-10-23 : recopier aussi sur Telegram les autres alertes admin (messages, grosses mises, gros dépôts…). Oui par défaut. */
+function tg_mirror_on(): bool {
   $c = tg_conf();
-  if (empty($c['on']) || empty($c['token']) || empty($c['chat'])) return false;
-  $r = tg_api((string) $c['token'], 'sendMessage', ['chat_id' => $c['chat'], 'text' => $text, 'disable_web_page_preview' => true], 6);
-  if (empty($r['ok'])) error_log('OROLADO telegram : envoi refusé');
-  return !empty($r['ok']);
+  return !array_key_exists('mirror', $c) || !empty($c['mirror']);
 }
