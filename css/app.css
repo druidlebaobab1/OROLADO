@@ -13613,3 +13613,8 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-
 .install-priv .ip-url{flex:1 1 auto;min-width:0;padding:9px 11px;border-radius:10px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);font-weight:800;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .install-priv .ip-copy{flex:0 0 auto;max-width:58%;padding:9px 12px;border-radius:10px;border:0;background:linear-gradient(180deg,#FDBA4D,#F97316);color:#fff;font-family:inherit;font-weight:800;font-size:.8rem;line-height:1.15;cursor:pointer;white-space:normal;text-align:center}
 .install-priv .ip-copy:active{transform:scale(.96)}
+/* 2026-10-23 : bandeau « affichage zoomé » (zoom aA de Safari, aussi dans l'appli installée) */
+#oroZoomBar{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:2147483600;padding:12px 14px 12px;border-radius:16px;background:linear-gradient(180deg,#2A1E5C,#1A1440);border:1px solid rgba(251,146,60,.6);box-shadow:0 14px 40px rgba(0,0,0,.55);color:#F1F5F9;font-family:"Plus Jakarta Sans",system-ui,sans-serif;max-width:520px;margin:0 auto}
+#oroZoomBar b{display:block;color:#FDBA74;font-size:15px;font-weight:800;margin-bottom:4px}
+#oroZoomBar p{margin:0 0 10px;font-size:13px;line-height:1.45;font-weight:600}
+#oroZoomBar button{display:block;width:100%;padding:10px;border:0;border-radius:11px;background:linear-gradient(180deg,#FDBA4D,#F97316);color:#fff;font:800 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer}

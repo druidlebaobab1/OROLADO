@@ -9956,6 +9956,39 @@
       openModal('iosInstallModal');
     }
     function isAndroidUa() { return /android/i.test(navigator.userAgent || ''); }
+    /* 2026-10-23 (propriétaire : « j'ai touché aA dans Safari, et même l'appli installée est devenue grande / large ») : le zoom
+       « aA » de Safari vaut pour TOUT orolado.com, appli installée comprise, et l'appli n'a pas de bouton aA. Aucun site ne peut
+       changer ce zoom → on le DÉTECTE (largeur de la page ≠ largeur de l'écran de l'iPhone) et on dit comment revenir à 100 %. */
+    var ZOOM_T = {
+      fr: ['L’affichage est zoomé ({z} %).', 'Pour revenir à la normale : ouvre orolado.com dans Safari, touche « aA » à gauche de l’adresse, puis règle sur 100 %. Ou : Réglages → Safari → Zoom de la page → orolado.com. Puis rouvre l’application.', 'Fermer'],
+      en: ['The display is zoomed ({z}%).', 'To go back to normal: open orolado.com in Safari, tap “aA” left of the address and set it to 100%. Or: Settings → Safari → Page Zoom → orolado.com. Then reopen the app.', 'Close'],
+      es: ['La pantalla está ampliada ({z} %).', 'Para volver a la normalidad: abre orolado.com en Safari, toca «aA» a la izquierda de la dirección y ponlo en 100 %. O: Ajustes → Safari → Zoom de página → orolado.com. Luego vuelve a abrir la app.', 'Cerrar'],
+      pt: ['A tela está com zoom ({z} %).', 'Para voltar ao normal: abra orolado.com no Safari, toque em «aA» à esquerda do endereço e coloque 100 %. Ou: Ajustes → Safari → Zoom da página → orolado.com. Depois reabra o app.', 'Fechar'],
+      ar: ['العرض مكبّر ({z}٪).', 'للعودة إلى الوضع العادي: افتح orolado.com في Safari، واضغط «aA» يسار العنوان واضبطه على 100٪. أو: الإعدادات ← Safari ← تكبير الصفحة ← orolado.com. ثم أعد فتح التطبيق.', 'إغلاق'],
+      tr: ['Ekran yakınlaştırılmış (%{z}).', 'Normale dönmek için: Safari’de orolado.com’u aç, adresin solundaki “aA”ya dokun ve %100’e ayarla. Ya da: Ayarlar → Safari → Sayfa Yakınlaştırma → orolado.com. Sonra uygulamayı yeniden aç.', 'Kapat'],
+      vi: ['Màn hình đang bị phóng to/thu nhỏ ({z}%).', 'Để trở lại bình thường: mở orolado.com trong Safari, chạm “aA” bên trái địa chỉ và đặt 100%. Hoặc: Cài đặt → Safari → Thu phóng trang → orolado.com. Rồi mở lại ứng dụng.', 'Đóng'],
+      id: ['Tampilan sedang di-zoom ({z}%).', 'Untuk kembali normal: buka orolado.com di Safari, ketuk “aA” di kiri alamat lalu atur ke 100%. Atau: Pengaturan → Safari → Zoom Halaman → orolado.com. Lalu buka ulang aplikasinya.', 'Tutup'],
+      ru: ['Масштаб экрана изменён ({z} %).', 'Чтобы вернуть как было: откройте orolado.com в Safari, нажмите «aA» слева от адреса и поставьте 100 %. Или: Настройки → Safari → Масштаб страницы → orolado.com. Затем снова откройте приложение.', 'Закрыть'],
+      de: ['Die Anzeige ist gezoomt ({z} %).', 'Zurück zur normalen Ansicht: orolado.com in Safari öffnen, links neben der Adresse auf „aA“ tippen und 100 % wählen. Oder: Einstellungen → Safari → Seitenzoom → orolado.com. Danach die App neu öffnen.', 'Schließen'],
+      zh: ['页面已被缩放（{z}%）。', '恢复正常：在 Safari 中打开 orolado.com，点地址左侧的“aA”，设为 100%。或：设置 → Safari → 页面缩放 → orolado.com。然后重新打开应用。', '关闭'],
+      hi: ['डिस्प्ले ज़ूम है ({z}%)।', 'सामान्य करने के लिए: Safari में orolado.com खोलें, पते के बाईं ओर “aA” दबाएँ और 100% करें। या: सेटिंग्स → Safari → पेज ज़ूम → orolado.com। फिर ऐप दोबारा खोलें।', 'बंद करें']
+    };
+    function zoomCheck() {
+      try {
+        if (!isIos() || !/iphone|ipod/i.test(navigator.userAgent) || !window.screen || !screen.width) return;
+        if (sessionStorage.getItem('oro_zoom_ok') === '1' || document.getElementById('oroZoomBar')) return;
+        var land = window.innerWidth > window.innerHeight, sw = land ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+        var r = sw / Math.max(1, window.innerWidth); // 1 = 100 % ; 0,85 = « aA » réduit ; 1,15 = agrandi
+        if (Math.abs(r - 1) < 0.06) return;
+        var W = ZOOM_T[String(document.documentElement.lang || 'en').slice(0, 2)] || ZOOM_T.en;
+        var d = document.createElement('div'); d.id = 'oroZoomBar'; d.setAttribute('role', 'alert');
+        d.innerHTML = '<b></b><p></p><button type="button"></button>';
+        d.children[0].textContent = W[0].replace('{z}', String(Math.round(r * 100))); d.children[1].textContent = W[1]; d.children[2].textContent = W[2];
+        d.children[2].addEventListener('click', function () { try { sessionStorage.setItem('oro_zoom_ok', '1'); } catch (e) { /* ignore */ } d.remove(); });
+        document.body.appendChild(d);
+      } catch (e) { /* ignore */ }
+    }
+    setTimeout(zoomCheck, 1500);
     /* 2026-10-23 (propriétaire : « en navigation privée, Chrome n'installe pas ») : sous les 3 étapes Android, un bloc orange
        [titre, texte si on NE SAIT PAS, texte si le mode privé est détecté, bouton]. Chrome bloque l'installation en privé (aucun site
        ne peut la forcer) → le joueur copie le lien et l'ouvre dans un onglet normal. */
