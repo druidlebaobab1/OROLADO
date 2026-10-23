@@ -1058,7 +1058,7 @@ function sp_my_bets(string $uid): array {
     foreach ($mine as $bi => $b) foreach ((array) ($b['sel'] ?? []) as $si => $sl) {
       if (($sl['r'] ?? null) !== null || !preg_match('/^sb:foot:(\d+):/', (string) ($sl['ev'] ?? ''), $mm) || ($res0[$mm[1]]['v'] ?? '') !== 'fin') continue;
       try { $rr = sb_sel_result($sl, (int) ($b['at'] ?? 0), $res0); } catch (Throwable $e) { $rr = null; }
-      if (in_array($rr, ['won', 'lost', 'void'], true)) $mine[$bi]['sel'][$si]['r'] = $rr;
+      if (in_array($rr, ['won', 'lost', 'void', 'hwon', 'hlost'], true)) $mine[$bi]['sel'][$si]['r'] = $rr;
     }
   }
   // anciens paris sans code de pari : créé une fois (gardé dans bets.json)
@@ -1130,7 +1130,10 @@ function sp_resolve(array $db): array {
           $s['b'][$i]['sel'][$j]['r'] = $r;
           if ($r === 'void') continue;
           $live++;
-          if ($r !== 'won') $lost = true; else $odd *= (float) $sel['odd'];
+          // 2026-10-23 — lignes au quart : moitié gagnée → cote (1 + cote) / 2 ; moitié perdue → 0,5 (moitié de la mise rendue)
+          if ($r === 'hwon') $odd *= (1 + (float) $sel['odd']) / 2;
+          elseif ($r === 'hlost') $odd *= 0.5;
+          elseif ($r !== 'won') $lost = true; else $odd *= (float) $sel['odd'];
           continue;
         }
         if (!isset($res[$sel['ev']])) { $ready = false; continue; }
@@ -1152,7 +1155,8 @@ function sp_resolve(array $db): array {
         if ($bp > 0) { $bw = min($ver === 2 ? SP_BOOST_CAP : PHP_FLOAT_MAX, sp_floor2(max(0.0, $win - (float) $b['stake']) * $bp / 100)); $win = sp_floor2(min(SP_MAX_WIN, $win + $bw)); $s['b'][$i]['bw'] = $bw; }
       }
       // v2779 (propriétaire) : tous les matchs du coupon annulés → « Remboursé » (la mise revient, visible dans l'historique et le reçu)
-      $s['b'][$i]['status'] = $live === 0 ? 'void' : 'won'; $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();
+      // moitié perdue (cote finale < 1) : « perdu », mais la partie rendue est payée (win > 0)
+      $s['b'][$i]['status'] = $live === 0 ? 'void' : ($odd < 1 - 1e-9 ? 'lost' : 'won'); $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();
       $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake'], 'sb' => $sb];
     }
     return $pay;

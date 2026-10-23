@@ -453,7 +453,8 @@
       if (e.open && e.start > nowS()) right = '<span class="sp2-cd' + (e.start - nowS() < 3600 ? ' soon' : '') + '" data-ts="' + e.start + '">' + IC.clock + '<span class="fit">' + cd(e.start - nowS()) + '</span></span>';
       else if (e.status !== 'settled') right = '<span class="sp2-cd gone"><span class="fit">' + esc(x.inPlay) + '</span></span>';
     }
-    var ic = r === 'won' ? IC.ok : r === 'lost' ? IC.x : r === 'void' ? '↺' : '';
+    var ic = r === 'won' ? IC.ok : r === 'lost' ? IC.x : r === 'void' ? '↺' : r === 'hwon' ? '½' + IC.ok : r === 'hlost' ? '½' + IC.x : '';
+    if (r === 'hwon' || r === 'hlost') r = r === 'hwon' ? 'won' : 'lost'; // ligne au quart : moitié gagnée / perdue (couleur du gain / de la perte)
     if (s.mk) { // 2026-10-22 : choix SB → choix en gras, match · marché en petit (traduits depuis mk / k)
       var tm = teams(s.t) || [s.t, ''];
       return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(s.t) + '</small><b class="fit" dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="fit sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1], spOf(s))) + '</small>' + (s.fs || s.cs ? liveChip(s) : '') + '</div><em>' + Number(s.odd).toFixed(2) + '</em></div>';
@@ -555,9 +556,9 @@
     var x = X(), old = document.getElementById('spRcpt'); if (old) old.remove();
     var st = bt.status || 'open';
     var stTxt = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL }[st] || st;
-    var big = st === 'won' ? m2(bt.win) : st === 'lost' ? m2(0) : st === 'void' ? m2(bt.stake) : m2(bt.pot);
+    var big = st === 'won' ? m2(bt.win) : st === 'lost' ? m2(bt.win || 0) : st === 'void' ? m2(bt.stake) : m2(bt.pot);
     var bigLab = st === 'won' ? x.rcPaid : st === 'lost' ? x.rcLostTxt : st === 'void' ? x.rcBack : x.potL;
-    var ICO = { won: '<i class="ok">✓</i>', lost: '<i class="ko">✕</i>', void: '<i class="vd">↺</i>' };
+    var ICO = { won: '<i class="ok">✓</i>', lost: '<i class="ko">✕</i>', void: '<i class="vd">↺</i>', hwon: '<i class="ok">½✓</i>', hlost: '<i class="ko">½✕</i>' };
     var no = String(bt.id || '').slice(-10).toUpperCase();
     var d = new Date((bt.at || 0) * 1000), pad = function (n) { return (n < 10 ? '0' : '') + n; };
     var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -913,80 +914,93 @@
     'over', 'under', 'yes', 'no', 'odd', 'even', 'draw', 'h1', 'h2', 'eq',
     'm1x2', 'mdc', 'mdnb', 'mou', 'mbtts', 'mtt', 'moe', 'mcs0', 'mwn', 'meh', 'mah', 'mht1x2', 'mhtou', 'mhtbtts', 'm2h1x2', 'mhtft', 'mcs', 'mrbtts', 'mrou', 'meg', 'mhsh', 'loading', 'closedM',
     'mhtdc', 'm2hdc', 'm2hbtts', 'mhtcs', 'mhtoe', 'm2hoe', 'm2hou', 'mhttt', 'mhtah',
-    'gCorn', 'gCards', 'gScor', 'mhsg', 'mwb', 'mtoe', 'mhteh', 'm2hcs', 'mfts', 'mlts', 'mcou', 'mcout', 'mc1x2', 'mkou', 'mkout', 'mags', 'mfgs', 'mlgs', 'noGoal', 'noScorer'];
+    'gCorn', 'gCards', 'gScor', 'mhsg', 'mwb', 'mtoe', 'mhteh', 'm2hcs', 'mfts', 'mlts', 'mcou', 'mcout', 'mc1x2', 'mkou', 'mkout', 'mags', 'mfgs', 'mlgs', 'noGoal', 'noScorer',
+    'gPlay', 'm2htt', 'm2hah', 'msbh', 'm2hsg', 'mgn', 'mng', 'mrm', 'mg10', 'mco3', 'mceh', 'mcah', 'mngs', 'mp2g', 'mp3g', 'mpbk', 'mpsoff', 'mpsh', 'mpst', 'mpas', 'orMore', 'exactly', 'halfW', 'halfL'];
   var SBL = {
     fr: ['Football', 'Actualité', 'Top', 'Aujourd’hui', 'Demain', 'Après-demain', 'Favoris', 'Rechercher', 'Aucun match pour ce choix.', 'Touche ☆ sur un championnat ou un match pour le retrouver ici.',
       'Règles : 90 min + arrêts de jeu (sans prolongation ni tirs au but) · paris fermés au coup d’envoi · match reporté et pas joué sous 48 h : remboursé.', 'Principaux', 'Buts', 'Mi-temps', 'Score exact', 'Handicap', 'Combinés', 'Défense',
       'Partager / Code', 'Code du coupon', 'Copier', 'Copié !', 'Charger un code', 'Charger', 'Code inconnu ou expiré.', '{n} choix ignoré(s) : match commencé ou fermé.', '{n} choix pas encore disponible(s) pour toi.', 'Coupon chargé : {n} choix.', 'Valable 7 jours · la cote du moment est prise au pari', 'Ex. : K7M2QX',
       'Plus de {x}', 'Moins de {x}', 'Oui', 'Non', 'Impair', 'Pair', 'Nul', '1re mi-temps', '2e mi-temps', 'Égalité',
       'Résultat du match', 'Double chance', 'Remboursé si nul', 'Total de buts', 'Les deux équipes marquent', 'Buts de {t}', 'Total de buts pair / impair', '{t} n’encaisse pas de but', '{t} gagne sans encaisser', 'Handicap (3 issues)', 'Handicap asiatique', 'Résultat à la mi-temps', '1re mi-temps : total de buts', '1re mi-temps : les deux marquent', 'Résultat de la 2e mi-temps', 'Mi-temps / fin du match', 'Score exact', 'Résultat + les deux marquent', 'Résultat + total de buts', 'Nombre exact de buts', 'Mi-temps avec le plus de buts', 'Un instant…', 'Paris fermés pour ce match.', '1re mi-temps : double chance', '2e mi-temps : double chance', '2e mi-temps : les deux marquent', '1re mi-temps : score exact', '1re mi-temps : buts pair / impair', '2e mi-temps : buts pair / impair', '2e mi-temps : total de buts', '1re mi-temps : buts de {t}', '1re mi-temps : handicap asiatique',
-      'Corners', 'Cartons', 'Buteurs', '{t} marque', '{t} gagne les 2 mi-temps', 'Buts de {t} pair / impair', '1re mi-temps : handicap (3 issues)', '2e mi-temps : score exact', 'Première équipe à marquer', 'Dernière équipe à marquer', 'Corners : total', 'Corners de {t}', 'Le plus de corners', 'Cartons : total', 'Cartons de {t}', 'Buteur (à tout moment)', 'Premier buteur', 'Dernier buteur', 'Aucun but', 'Aucun buteur'],
+      'Corners', 'Cartons', 'Buteurs', '{t} marque', '{t} gagne les 2 mi-temps', 'Buts de {t} pair / impair', '1re mi-temps : handicap (3 issues)', '2e mi-temps : score exact', 'Première équipe à marquer', 'Dernière équipe à marquer', 'Corners : total', 'Corners de {t}', 'Le plus de corners', 'Cartons : total', 'Cartons de {t}', 'Buteur (à tout moment)', 'Premier buteur', 'Dernier buteur', 'Aucun but', 'Aucun buteur',
+      'Joueurs', '2e mi-temps : buts de {t}', '2e mi-temps : handicap asiatique', '{t} marque dans les 2 mi-temps', '2e mi-temps : {t} marque', 'Nombre de buts de {t}', 'But n° {n} : quelle équipe ?', 'Résultat après {n} min', 'But entre {a} et {b} min', 'Corners : total exact ({x})', 'Corners : handicap (3 issues)', 'Corners : handicap asiatique', 'Buteur du but n° {n}', 'Marque 2 buts ou plus', 'Marque 3 buts ou plus', 'Joueur averti (carton)', 'Joueur expulsé (rouge)', 'Tirs du joueur : plus de {x}', 'Tirs cadrés du joueur : plus de {x}', 'Passes décisives : plus de {x}', '{n} ou plus', 'Exactement {x}', '½ gagné', '½ perdu'],
     en: ['Football', 'News', 'Top', 'Today', 'Tomorrow', 'Day after', 'Favourites', 'Search', 'No match for this choice.', 'Tap ☆ on a league or a match to find it here.',
       'Rules: 90 min + stoppage time (no extra time or penalties) · betting closes at kick-off · match postponed and not played within 48 h: refunded.', 'Main', 'Goals', 'Halves', 'Correct score', 'Handicap', 'Combos', 'Defence',
       'Share / Code', 'Booking code', 'Copy', 'Copied!', 'Load a code', 'Load', 'Unknown or expired code.', '{n} pick(s) skipped: match started or closed.', '{n} pick(s) not available to you yet.', 'Slip loaded: {n} pick(s).', 'Valid 7 days · the current odds apply when you bet', 'E.g. K7M2QX',
       'Over {x}', 'Under {x}', 'Yes', 'No', 'Odd', 'Even', 'Draw', '1st half', '2nd half', 'Equal',
       'Match result', 'Double chance', 'Draw no bet', 'Total goals', 'Both teams to score', '{t} goals', 'Total goals odd / even', '{t} clean sheet', '{t} to win to nil', 'Handicap (3-way)', 'Asian handicap', 'Half-time result', '1st half: total goals', '1st half: both teams to score', '2nd half result', 'Half-time / full-time', 'Correct score', 'Result + both teams to score', 'Result + total goals', 'Exact total goals', 'Highest scoring half', 'One moment…', 'Betting closed for this match.', '1st half: double chance', '2nd half: double chance', '2nd half: both teams to score', '1st half: correct score', '1st half: goals odd / even', '2nd half: goals odd / even', '2nd half: total goals', '1st half: {t} goals', '1st half: Asian handicap',
-      'Corners', 'Cards', 'Scorers', '{t} to score', '{t} to win both halves', '{t} goals odd / even', '1st half: handicap (3-way)', '2nd half: correct score', 'First team to score', 'Last team to score', 'Corners: total', '{t} corners', 'Most corners', 'Cards: total', '{t} cards', 'Anytime goalscorer', 'First goalscorer', 'Last goalscorer', 'No goal', 'No goalscorer'],
+      'Corners', 'Cards', 'Scorers', '{t} to score', '{t} to win both halves', '{t} goals odd / even', '1st half: handicap (3-way)', '2nd half: correct score', 'First team to score', 'Last team to score', 'Corners: total', '{t} corners', 'Most corners', 'Cards: total', '{t} cards', 'Anytime goalscorer', 'First goalscorer', 'Last goalscorer', 'No goal', 'No goalscorer',
+      'Players', '2nd half: {t} goals', '2nd half: Asian handicap', '{t} to score in both halves', '2nd half: {t} to score', '{t} exact goals', 'Goal {n}: which team?', 'Result after {n} min', 'Goal between {a} and {b} min', 'Corners: exact total ({x})', 'Corners: handicap (3-way)', 'Corners: Asian handicap', 'Scorer of goal {n}', 'To score 2 or more', 'To score 3 or more', 'Player to be booked', 'Player to be sent off', 'Player shots: over {x}', 'Player shots on target: over {x}', 'Assists: over {x}', '{n} or more', 'Exactly {x}', '½ won', '½ lost'],
     es: ['Fútbol', 'Actualidad', 'Top', 'Hoy', 'Mañana', 'Pasado mañana', 'Favoritos', 'Buscar', 'Ningún partido para esta opción.', 'Toca ☆ en una liga o un partido para encontrarlo aquí.',
       'Reglas: 90 min + descuento (sin prórroga ni penaltis) · apuestas cerradas al inicio · partido aplazado y no jugado en 48 h: reembolso.', 'Principales', 'Goles', 'Mitades', 'Resultado exacto', 'Hándicap', 'Combinadas', 'Defensa',
       'Compartir / Código', 'Código de cupón', 'Copiar', '¡Copiado!', 'Cargar un código', 'Cargar', 'Código desconocido o caducado.', '{n} selección(es) omitida(s): partido empezado o cerrado.', '{n} selección(es) aún no disponible(s) para ti.', 'Cupón cargado: {n} selección(es).', 'Válido 7 días · se aplica la cuota del momento', 'Ej.: K7M2QX',
       'Más de {x}', 'Menos de {x}', 'Sí', 'No', 'Impar', 'Par', 'Empate', '1.ª parte', '2.ª parte', 'Igual',
       'Resultado del partido', 'Doble oportunidad', 'Empate no válido', 'Total de goles', 'Ambos equipos marcan', 'Goles de {t}', 'Total de goles par / impar', '{t} portería a cero', '{t} gana sin encajar', 'Hándicap (3 opciones)', 'Hándicap asiático', 'Resultado al descanso', '1.ª parte: total de goles', '1.ª parte: ambos marcan', 'Resultado 2.ª parte', 'Descanso / final', 'Resultado exacto', 'Resultado + ambos marcan', 'Resultado + total de goles', 'Número exacto de goles', 'Parte con más goles', 'Un momento…', 'Apuestas cerradas para este partido.', '1.ª parte: doble oportunidad', '2.ª parte: doble oportunidad', '2.ª parte: ambos marcan', '1.ª parte: resultado exacto', '1.ª parte: goles par / impar', '2.ª parte: goles par / impar', '2.ª parte: total de goles', '1.ª parte: goles de {t}', '1.ª parte: hándicap asiático',
-      'Córners', 'Tarjetas', 'Goleadores', '{t} marca', '{t} gana ambas partes', 'Goles de {t} par / impar', '1.ª parte: hándicap (3 opciones)', '2.ª parte: resultado exacto', 'Primer equipo en marcar', 'Último equipo en marcar', 'Córners: total', 'Córners de {t}', 'Más córners', 'Tarjetas: total', 'Tarjetas de {t}', 'Goleador (en cualquier momento)', 'Primer goleador', 'Último goleador', 'Sin goles', 'Sin goleador'],
+      'Córners', 'Tarjetas', 'Goleadores', '{t} marca', '{t} gana ambas partes', 'Goles de {t} par / impar', '1.ª parte: hándicap (3 opciones)', '2.ª parte: resultado exacto', 'Primer equipo en marcar', 'Último equipo en marcar', 'Córners: total', 'Córners de {t}', 'Más córners', 'Tarjetas: total', 'Tarjetas de {t}', 'Goleador (en cualquier momento)', 'Primer goleador', 'Último goleador', 'Sin goles', 'Sin goleador',
+      'Jugadores', '2.ª parte: goles de {t}', '2.ª parte: hándicap asiático', '{t} marca en ambas partes', '2.ª parte: {t} marca', 'Goles exactos de {t}', 'Gol n.º {n}: ¿qué equipo?', 'Resultado tras {n} min', 'Gol entre el {a} y el {b}', 'Córners: total exacto ({x})', 'Córners: hándicap (3 opciones)', 'Córners: hándicap asiático', 'Goleador del gol n.º {n}', 'Marca 2 o más', 'Marca 3 o más', 'Jugador amonestado', 'Jugador expulsado', 'Tiros del jugador: más de {x}', 'Tiros a puerta: más de {x}', 'Asistencias: más de {x}', '{n} o más', 'Exactamente {x}', '½ ganada', '½ perdida'],
     pt: ['Futebol', 'Atualidade', 'Top', 'Hoje', 'Amanhã', 'Depois de amanhã', 'Favoritos', 'Pesquisar', 'Nenhum jogo para esta opção.', 'Toque em ☆ numa liga ou num jogo para encontrá-lo aqui.',
       'Regras: 90 min + acréscimos (sem prorrogação nem pênaltis) · apostas fechadas no início · jogo adiado e não disputado em 48 h: reembolso.', 'Principais', 'Gols', 'Tempos', 'Placar exato', 'Handicap', 'Combinadas', 'Defesa',
       'Partilhar / Código', 'Código do bilhete', 'Copiar', 'Copiado!', 'Carregar um código', 'Carregar', 'Código desconhecido ou expirado.', '{n} seleção(ões) ignorada(s): jogo iniciado ou fechado.', '{n} seleção(ões) ainda indisponível(is) para você.', 'Bilhete carregado: {n} seleção(ões).', 'Válido 7 dias · vale a odd do momento', 'Ex.: K7M2QX',
       'Mais de {x}', 'Menos de {x}', 'Sim', 'Não', 'Ímpar', 'Par', 'Empate', '1.º tempo', '2.º tempo', 'Igual',
       'Resultado do jogo', 'Dupla chance', 'Empate anula', 'Total de gols', 'Ambas marcam', 'Gols de {t}', 'Total de gols par / ímpar', '{t} não sofre gol', '{t} vence sem sofrer gol', 'Handicap (3 resultados)', 'Handicap asiático', 'Resultado ao intervalo', '1.º tempo: total de gols', '1.º tempo: ambas marcam', 'Resultado do 2.º tempo', 'Intervalo / final', 'Placar exato', 'Resultado + ambas marcam', 'Resultado + total de gols', 'Número exato de gols', 'Tempo com mais gols', 'Um momento…', 'Apostas fechadas para este jogo.', '1.º tempo: dupla chance', '2.º tempo: dupla chance', '2.º tempo: ambas marcam', '1.º tempo: placar exato', '1.º tempo: gols par / ímpar', '2.º tempo: gols par / ímpar', '2.º tempo: total de gols', '1.º tempo: gols de {t}', '1.º tempo: handicap asiático',
-      'Escanteios', 'Cartões', 'Marcadores', '{t} marca', '{t} vence os dois tempos', 'Gols de {t} par / ímpar', '1.º tempo: handicap (3 resultados)', '2.º tempo: placar exato', 'Primeira equipe a marcar', 'Última equipe a marcar', 'Escanteios: total', 'Escanteios de {t}', 'Mais escanteios', 'Cartões: total', 'Cartões de {t}', 'Marcador (a qualquer momento)', 'Primeiro marcador', 'Último marcador', 'Sem gols', 'Sem marcador'],
+      'Escanteios', 'Cartões', 'Marcadores', '{t} marca', '{t} vence os dois tempos', 'Gols de {t} par / ímpar', '1.º tempo: handicap (3 resultados)', '2.º tempo: placar exato', 'Primeira equipe a marcar', 'Última equipe a marcar', 'Escanteios: total', 'Escanteios de {t}', 'Mais escanteios', 'Cartões: total', 'Cartões de {t}', 'Marcador (a qualquer momento)', 'Primeiro marcador', 'Último marcador', 'Sem gols', 'Sem marcador',
+      'Jogadores', '2.º tempo: gols de {t}', '2.º tempo: handicap asiático', '{t} marca nos dois tempos', '2.º tempo: {t} marca', 'Gols exatos de {t}', 'Gol n.º {n}: qual equipe?', 'Resultado após {n} min', 'Gol entre {a} e {b} min', 'Escanteios: total exato ({x})', 'Escanteios: handicap (3 resultados)', 'Escanteios: handicap asiático', 'Marcador do gol n.º {n}', 'Marca 2 ou mais', 'Marca 3 ou mais', 'Jogador advertido', 'Jogador expulso', 'Finalizações: mais de {x}', 'Chutes no gol: mais de {x}', 'Assistências: mais de {x}', '{n} ou mais', 'Exatamente {x}', '½ ganha', '½ perdida'],
     ar: ['كرة القدم', 'الأحداث', 'الأبرز', 'اليوم', 'غدًا', 'بعد غد', 'المفضلة', 'بحث', 'لا توجد مباراة لهذا الاختيار.', 'اضغط ☆ على دوري أو مباراة لتجدها هنا.',
       'القواعد: 90 دقيقة + الوقت بدل الضائع (بدون أشواط إضافية أو ركلات ترجيح) · تُغلق الرهانات عند انطلاق المباراة · مباراة مؤجلة ولم تُلعب خلال 48 ساعة: استرداد.', 'الرئيسية', 'الأهداف', 'الأشواط', 'النتيجة الصحيحة', 'الهانديكاب', 'مركّبة', 'الدفاع',
       'مشاركة / رمز', 'رمز القسيمة', 'نسخ', 'تم النسخ!', 'تحميل رمز', 'تحميل', 'رمز غير معروف أو منتهي.', 'تم تجاهل {n} اختيار: المباراة بدأت أو أُغلقت.', '{n} اختيار غير متاح لك بعد.', 'تم تحميل القسيمة: {n} اختيار.', 'صالح 7 أيام · تُطبّق الاحتمالات الحالية عند الرهان', 'مثال: K7M2QX',
       'أكثر من {x}', 'أقل من {x}', 'نعم', 'لا', 'فردي', 'زوجي', 'تعادل', 'الشوط الأول', 'الشوط الثاني', 'متساوٍ',
       'نتيجة المباراة', 'فرصة مزدوجة', 'التعادل يلغي الرهان', 'مجموع الأهداف', 'كلا الفريقين يسجل', 'أهداف {t}', 'مجموع الأهداف فردي / زوجي', '{t} بشباك نظيفة', '{t} يفوز بشباك نظيفة', 'هانديكاب (3 نتائج)', 'هانديكاب آسيوي', 'نتيجة الشوط الأول', 'الشوط الأول: مجموع الأهداف', 'الشوط الأول: كلا الفريقين يسجل', 'نتيجة الشوط الثاني', 'الشوط الأول / نهاية المباراة', 'النتيجة الصحيحة', 'النتيجة + كلا الفريقين يسجل', 'النتيجة + مجموع الأهداف', 'العدد الدقيق للأهداف', 'الشوط الأكثر أهدافًا', 'لحظة…', 'الرهانات مغلقة لهذه المباراة.', 'الشوط الأول: فرصة مزدوجة', 'الشوط الثاني: فرصة مزدوجة', 'الشوط الثاني: كلا الفريقين يسجل', 'الشوط الأول: النتيجة الصحيحة', 'الشوط الأول: أهداف فردي / زوجي', 'الشوط الثاني: أهداف فردي / زوجي', 'الشوط الثاني: مجموع الأهداف', 'الشوط الأول: أهداف {t}', 'الشوط الأول: هانديكاب آسيوي',
-      'الركنيات', 'البطاقات', 'الهدافون', '{t} يسجل', '{t} يفوز بالشوطين', 'أهداف {t} فردي / زوجي', 'الشوط الأول: هانديكاب (3 نتائج)', 'الشوط الثاني: النتيجة الصحيحة', 'أول فريق يسجل', 'آخر فريق يسجل', 'الركنيات: المجموع', 'ركنيات {t}', 'الأكثر ركنيات', 'البطاقات: المجموع', 'بطاقات {t}', 'هداف في أي وقت', 'أول هداف', 'آخر هداف', 'لا أهداف', 'لا هداف'],
+      'الركنيات', 'البطاقات', 'الهدافون', '{t} يسجل', '{t} يفوز بالشوطين', 'أهداف {t} فردي / زوجي', 'الشوط الأول: هانديكاب (3 نتائج)', 'الشوط الثاني: النتيجة الصحيحة', 'أول فريق يسجل', 'آخر فريق يسجل', 'الركنيات: المجموع', 'ركنيات {t}', 'الأكثر ركنيات', 'البطاقات: المجموع', 'بطاقات {t}', 'هداف في أي وقت', 'أول هداف', 'آخر هداف', 'لا أهداف', 'لا هداف',
+      'اللاعبون', 'الشوط الثاني: أهداف {t}', 'الشوط الثاني: هانديكاب آسيوي', '{t} يسجل في الشوطين', 'الشوط الثاني: {t} يسجل', 'عدد أهداف {t} بالضبط', 'الهدف رقم {n}: أي فريق؟', 'النتيجة بعد {n} دقيقة', 'هدف بين الدقيقة {a} و{b}', 'الركنيات: المجموع بالضبط ({x})', 'الركنيات: هانديكاب (3 نتائج)', 'الركنيات: هانديكاب آسيوي', 'مسجل الهدف رقم {n}', 'يسجل هدفين أو أكثر', 'يسجل 3 أهداف أو أكثر', 'لاعب يحصل على إنذار', 'لاعب يُطرد', 'تسديدات اللاعب: أكثر من {x}', 'تسديدات على المرمى: أكثر من {x}', 'تمريرات حاسمة: أكثر من {x}', '{n} أو أكثر', 'بالضبط {x}', '½ ربح', '½ خسارة'],
     tr: ['Futbol', 'Gündem', 'Öne çıkan', 'Bugün', 'Yarın', 'Öbür gün', 'Favoriler', 'Ara', 'Bu seçim için maç yok.', 'Burada görmek için bir lig veya maçta ☆ simgesine dokun.',
       'Kurallar: 90 dk + uzatma dakikaları (uzatma devresi ve penaltı yok) · bahisler başlama düdüğünde kapanır · ertelenip 48 saatte oynanmayan maç: iade.', 'Ana', 'Goller', 'Devreler', 'Doğru skor', 'Handikap', 'Kombine', 'Savunma',
       'Paylaş / Kod', 'Kupon kodu', 'Kopyala', 'Kopyalandı!', 'Kod yükle', 'Yükle', 'Bilinmeyen veya süresi dolmuş kod.', '{n} seçim atlandı: maç başladı veya kapandı.', '{n} seçim henüz sana açık değil.', 'Kupon yüklendi: {n} seçim.', '7 gün geçerli · bahiste güncel oran geçerlidir', 'Örn.: K7M2QX',
       '{x} üst', '{x} alt', 'Evet', 'Hayır', 'Tek', 'Çift', 'Beraberlik', '1. yarı', '2. yarı', 'Eşit',
       'Maç sonucu', 'Çifte şans', 'Beraberlikte iade', 'Toplam gol', 'Karşılıklı gol', '{t} golleri', 'Toplam gol tek / çift', '{t} gol yemez', '{t} gol yemeden kazanır', 'Handikap (3 sonuç)', 'Asya handikapı', 'İlk yarı sonucu', '1. yarı: toplam gol', '1. yarı: karşılıklı gol', '2. yarı sonucu', 'İlk yarı / maç sonu', 'Doğru skor', 'Sonuç + karşılıklı gol', 'Sonuç + toplam gol', 'Tam gol sayısı', 'En çok gol olan yarı', 'Bir saniye…', 'Bu maç için bahisler kapandı.', '1. yarı: çifte şans', '2. yarı: çifte şans', '2. yarı: karşılıklı gol', '1. yarı: doğru skor', '1. yarı: gol tek / çift', '2. yarı: gol tek / çift', '2. yarı: toplam gol', '1. yarı: {t} golleri', '1. yarı: Asya handikapı',
-      'Kornerler', 'Kartlar', 'Golcüler', '{t} gol atar', '{t} iki yarıyı da kazanır', '{t} golleri tek / çift', '1. yarı: handikap (3 sonuç)', '2. yarı: doğru skor', 'İlk golü atan takım', 'Son golü atan takım', 'Korner: toplam', '{t} kornerleri', 'En çok korner', 'Kart: toplam', '{t} kartları', 'Maçta gol atar', 'İlk golcü', 'Son golcü', 'Gol yok', 'Golcü yok'],
+      'Kornerler', 'Kartlar', 'Golcüler', '{t} gol atar', '{t} iki yarıyı da kazanır', '{t} golleri tek / çift', '1. yarı: handikap (3 sonuç)', '2. yarı: doğru skor', 'İlk golü atan takım', 'Son golü atan takım', 'Korner: toplam', '{t} kornerleri', 'En çok korner', 'Kart: toplam', '{t} kartları', 'Maçta gol atar', 'İlk golcü', 'Son golcü', 'Gol yok', 'Golcü yok',
+      'Oyuncular', '2. yarı: {t} golleri', '2. yarı: Asya handikapı', '{t} iki yarıda da gol atar', '2. yarı: {t} gol atar', '{t} tam gol sayısı', '{n}. gol: hangi takım?', '{n}. dakikadaki sonuç', '{a}-{b}. dakika arası gol', 'Korner: tam toplam ({x})', 'Korner: handikap (3 sonuç)', 'Korner: Asya handikapı', '{n}. golü atan', '2 veya daha fazla gol atar', '3 veya daha fazla gol atar', 'Kart gören oyuncu', 'Kırmızı kart gören oyuncu', 'Oyuncu şut: {x} üst', 'İsabetli şut: {x} üst', 'Asist: {x} üst', '{n} veya daha fazla', 'Tam {x}', '½ kazandı', '½ kaybetti'],
     vi: ['Bóng đá', 'Thời sự', 'Nổi bật', 'Hôm nay', 'Ngày mai', 'Ngày kia', 'Yêu thích', 'Tìm kiếm', 'Không có trận nào cho lựa chọn này.', 'Chạm ☆ trên một giải hoặc trận đấu để tìm lại ở đây.',
       'Luật: 90 phút + bù giờ (không tính hiệp phụ, luân lưu) · đóng cược khi bóng lăn · trận hoãn và không đá trong 48 giờ: hoàn tiền.', 'Chính', 'Bàn thắng', 'Hiệp', 'Tỷ số chính xác', 'Chấp', 'Kết hợp', 'Phòng ngự',
       'Chia sẻ / Mã', 'Mã phiếu cược', 'Sao chép', 'Đã sao chép!', 'Nhập mã', 'Tải', 'Mã không tồn tại hoặc đã hết hạn.', 'Bỏ qua {n} lựa chọn: trận đã bắt đầu hoặc đã đóng.', '{n} lựa chọn chưa mở cho bạn.', 'Đã tải phiếu: {n} lựa chọn.', 'Hiệu lực 7 ngày · áp dụng tỷ lệ hiện tại khi cược', 'VD: K7M2QX',
       'Tài {x}', 'Xỉu {x}', 'Có', 'Không', 'Lẻ', 'Chẵn', 'Hòa', 'Hiệp 1', 'Hiệp 2', 'Bằng nhau',
       'Kết quả trận', 'Cơ hội kép', 'Hòa hoàn tiền', 'Tổng bàn thắng', 'Cả hai đội ghi bàn', 'Bàn thắng của {t}', 'Tổng bàn chẵn / lẻ', '{t} giữ sạch lưới', '{t} thắng và sạch lưới', 'Chấp châu Âu (3 cửa)', 'Chấp châu Á', 'Kết quả hiệp 1', 'Hiệp 1: tổng bàn thắng', 'Hiệp 1: cả hai đội ghi bàn', 'Kết quả hiệp 2', 'Hiệp 1 / cả trận', 'Tỷ số chính xác', 'Kết quả + cả hai ghi bàn', 'Kết quả + tổng bàn', 'Số bàn thắng chính xác', 'Hiệp nhiều bàn hơn', 'Chờ chút…', 'Đã đóng cược trận này.', 'Hiệp 1: cơ hội kép', 'Hiệp 2: cơ hội kép', 'Hiệp 2: cả hai đội ghi bàn', 'Hiệp 1: tỷ số chính xác', 'Hiệp 1: bàn chẵn / lẻ', 'Hiệp 2: bàn chẵn / lẻ', 'Hiệp 2: tổng bàn thắng', 'Hiệp 1: bàn thắng của {t}', 'Hiệp 1: chấp châu Á',
-      'Phạt góc', 'Thẻ phạt', 'Cầu thủ ghi bàn', '{t} ghi bàn', '{t} thắng cả hai hiệp', 'Bàn của {t} chẵn / lẻ', 'Hiệp 1: chấp (3 cửa)', 'Hiệp 2: tỷ số chính xác', 'Đội ghi bàn đầu tiên', 'Đội ghi bàn cuối cùng', 'Phạt góc: tổng', 'Phạt góc của {t}', 'Nhiều phạt góc hơn', 'Thẻ phạt: tổng', 'Thẻ phạt của {t}', 'Ghi bàn bất kỳ lúc nào', 'Ghi bàn đầu tiên', 'Ghi bàn cuối cùng', 'Không có bàn', 'Không ai ghi bàn'],
+      'Phạt góc', 'Thẻ phạt', 'Cầu thủ ghi bàn', '{t} ghi bàn', '{t} thắng cả hai hiệp', 'Bàn của {t} chẵn / lẻ', 'Hiệp 1: chấp (3 cửa)', 'Hiệp 2: tỷ số chính xác', 'Đội ghi bàn đầu tiên', 'Đội ghi bàn cuối cùng', 'Phạt góc: tổng', 'Phạt góc của {t}', 'Nhiều phạt góc hơn', 'Thẻ phạt: tổng', 'Thẻ phạt của {t}', 'Ghi bàn bất kỳ lúc nào', 'Ghi bàn đầu tiên', 'Ghi bàn cuối cùng', 'Không có bàn', 'Không ai ghi bàn',
+      'Cầu thủ', 'Hiệp 2: bàn thắng của {t}', 'Hiệp 2: chấp châu Á', '{t} ghi bàn cả hai hiệp', 'Hiệp 2: {t} ghi bàn', 'Số bàn chính xác của {t}', 'Bàn thứ {n}: đội nào?', 'Kết quả sau {n} phút', 'Bàn thắng từ phút {a} đến {b}', 'Phạt góc: tổng chính xác ({x})', 'Phạt góc: chấp (3 cửa)', 'Phạt góc: chấp châu Á', 'Người ghi bàn thứ {n}', 'Ghi từ 2 bàn', 'Ghi từ 3 bàn', 'Cầu thủ nhận thẻ', 'Cầu thủ bị đuổi', 'Cú sút: trên {x}', 'Sút trúng đích: trên {x}', 'Kiến tạo: trên {x}', '{n} trở lên', 'Đúng {x}', 'Thắng ½', 'Thua ½'],
     id: ['Sepak bola', 'Aktual', 'Teratas', 'Hari ini', 'Besok', 'Lusa', 'Favorit', 'Cari', 'Tidak ada laga untuk pilihan ini.', 'Ketuk ☆ pada liga atau laga untuk menemukannya di sini.',
       'Aturan: 90 menit + injury time (tanpa perpanjangan & adu penalti) · taruhan ditutup saat kick-off · laga ditunda dan tidak dimainkan dalam 48 jam: uang kembali.', 'Utama', 'Gol', 'Babak', 'Skor tepat', 'Handicap', 'Kombinasi', 'Pertahanan',
       'Bagikan / Kode', 'Kode kupon', 'Salin', 'Disalin!', 'Muat kode', 'Muat', 'Kode tidak dikenal atau kedaluwarsa.', '{n} pilihan dilewati: laga sudah mulai atau ditutup.', '{n} pilihan belum tersedia untukmu.', 'Kupon dimuat: {n} pilihan.', 'Berlaku 7 hari · odds saat ini yang berlaku', 'Mis.: K7M2QX',
       'Over {x}', 'Under {x}', 'Ya', 'Tidak', 'Ganjil', 'Genap', 'Seri', 'Babak 1', 'Babak 2', 'Sama',
       'Hasil laga', 'Peluang ganda', 'Seri uang kembali', 'Total gol', 'Kedua tim mencetak gol', 'Gol {t}', 'Total gol ganjil / genap', '{t} tanpa kebobolan', '{t} menang tanpa kebobolan', 'Handicap (3 hasil)', 'Handicap Asia', 'Hasil babak 1', 'Babak 1: total gol', 'Babak 1: kedua tim cetak gol', 'Hasil babak 2', 'Babak 1 / akhir laga', 'Skor tepat', 'Hasil + kedua tim cetak gol', 'Hasil + total gol', 'Jumlah gol tepat', 'Babak dengan gol terbanyak', 'Sebentar…', 'Taruhan ditutup untuk laga ini.', 'Babak 1: peluang ganda', 'Babak 2: peluang ganda', 'Babak 2: kedua tim cetak gol', 'Babak 1: skor tepat', 'Babak 1: gol ganjil / genap', 'Babak 2: gol ganjil / genap', 'Babak 2: total gol', 'Babak 1: gol {t}', 'Babak 1: handicap Asia',
-      'Sepak pojok', 'Kartu', 'Pencetak gol', '{t} mencetak gol', '{t} menang di kedua babak', 'Gol {t} ganjil / genap', 'Babak 1: handicap (3 hasil)', 'Babak 2: skor tepat', 'Tim pertama mencetak gol', 'Tim terakhir mencetak gol', 'Sepak pojok: total', 'Sepak pojok {t}', 'Sepak pojok terbanyak', 'Kartu: total', 'Kartu {t}', 'Pencetak gol kapan saja', 'Pencetak gol pertama', 'Pencetak gol terakhir', 'Tanpa gol', 'Tanpa pencetak gol'],
+      'Sepak pojok', 'Kartu', 'Pencetak gol', '{t} mencetak gol', '{t} menang di kedua babak', 'Gol {t} ganjil / genap', 'Babak 1: handicap (3 hasil)', 'Babak 2: skor tepat', 'Tim pertama mencetak gol', 'Tim terakhir mencetak gol', 'Sepak pojok: total', 'Sepak pojok {t}', 'Sepak pojok terbanyak', 'Kartu: total', 'Kartu {t}', 'Pencetak gol kapan saja', 'Pencetak gol pertama', 'Pencetak gol terakhir', 'Tanpa gol', 'Tanpa pencetak gol',
+      'Pemain', 'Babak 2: gol {t}', 'Babak 2: handicap Asia', '{t} mencetak gol di kedua babak', 'Babak 2: {t} mencetak gol', 'Jumlah gol tepat {t}', 'Gol ke-{n}: tim mana?', 'Hasil setelah {n} menit', 'Gol antara menit {a} dan {b}', 'Sepak pojok: total tepat ({x})', 'Sepak pojok: handicap (3 hasil)', 'Sepak pojok: handicap Asia', 'Pencetak gol ke-{n}', 'Mencetak 2 gol atau lebih', 'Mencetak 3 gol atau lebih', 'Pemain kena kartu', 'Pemain diusir', 'Tembakan pemain: lebih dari {x}', 'Tembakan tepat sasaran: lebih dari {x}', 'Assist: lebih dari {x}', '{n} atau lebih', 'Tepat {x}', 'Menang ½', 'Kalah ½'],
     ru: ['Футбол', 'События', 'Топ', 'Сегодня', 'Завтра', 'Послезавтра', 'Избранное', 'Поиск', 'Нет матчей для этого выбора.', 'Нажмите ☆ у лиги или матча, чтобы найти его здесь.',
       'Правила: 90 мин + добавленное время (без овертайма и пенальти) · приём ставок до начала матча · матч перенесён и не сыгран за 48 ч: возврат.', 'Главные', 'Голы', 'Таймы', 'Точный счёт', 'Фора', 'Комбо', 'Защита',
       'Поделиться / Код', 'Код купона', 'Копировать', 'Скопировано!', 'Загрузить код', 'Загрузить', 'Неизвестный или истёкший код.', 'Пропущено выборов: {n} (матч начался или закрыт).', 'Пока недоступно для вас: {n}.', 'Купон загружен: {n}.', 'Действует 7 дней · при ставке берётся текущий коэффициент', 'Напр.: K7M2QX',
       'Больше {x}', 'Меньше {x}', 'Да', 'Нет', 'Нечёт', 'Чёт', 'Ничья', '1-й тайм', '2-й тайм', 'Поровну',
       'Исход матча', 'Двойной шанс', 'Ничья — возврат', 'Тотал голов', 'Обе забьют', 'Голы: {t}', 'Тотал чёт / нечёт', '{t} — сухой матч', '{t} победит всухую', 'Фора (3 исхода)', 'Азиатская фора', 'Исход 1-го тайма', '1-й тайм: тотал голов', '1-й тайм: обе забьют', 'Исход 2-го тайма', 'Тайм / матч', 'Точный счёт', 'Исход + обе забьют', 'Исход + тотал', 'Точное число голов', 'Самый результативный тайм', 'Минутку…', 'Ставки на этот матч закрыты.', '1-й тайм: двойной шанс', '2-й тайм: двойной шанс', '2-й тайм: обе забьют', '1-й тайм: точный счёт', '1-й тайм: тотал чёт / нечёт', '2-й тайм: тотал чёт / нечёт', '2-й тайм: тотал голов', '1-й тайм: голы: {t}', '1-й тайм: азиатская фора',
-      'Угловые', 'Карточки', 'Бомбардиры', '{t} забьёт', '{t} выиграет оба тайма', 'Голы {t}: чёт / нечёт', '1-й тайм: фора (3 исхода)', '2-й тайм: точный счёт', 'Первым забьёт', 'Последним забьёт', 'Угловые: тотал', 'Угловые: {t}', 'Больше угловых', 'Карточки: тотал', 'Карточки: {t}', 'Забьёт в матче', 'Первый гол забьёт', 'Последний гол забьёт', 'Без голов', 'Никто не забьёт'],
+      'Угловые', 'Карточки', 'Бомбардиры', '{t} забьёт', '{t} выиграет оба тайма', 'Голы {t}: чёт / нечёт', '1-й тайм: фора (3 исхода)', '2-й тайм: точный счёт', 'Первым забьёт', 'Последним забьёт', 'Угловые: тотал', 'Угловые: {t}', 'Больше угловых', 'Карточки: тотал', 'Карточки: {t}', 'Забьёт в матче', 'Первый гол забьёт', 'Последний гол забьёт', 'Без голов', 'Никто не забьёт',
+      'Игроки', '2-й тайм: голы {t}', '2-й тайм: азиатская фора', '{t} забьёт в обоих таймах', '2-й тайм: {t} забьёт', 'Точное число голов {t}', 'Гол № {n}: какая команда?', 'Исход после {n} мин', 'Гол с {a} по {b} мин', 'Угловые: точный тотал ({x})', 'Угловые: фора (3 исхода)', 'Угловые: азиатская фора', 'Автор гола № {n}', 'Забьёт 2 и более', 'Забьёт 3 и более', 'Игрок получит карточку', 'Игрок будет удалён', 'Удары игрока: больше {x}', 'Удары в створ: больше {x}', 'Голевые передачи: больше {x}', '{n} и более', 'Ровно {x}', '½ выигрыш', '½ проигрыш'],
     de: ['Fußball', 'Aktuelles', 'Top', 'Heute', 'Morgen', 'Übermorgen', 'Favoriten', 'Suchen', 'Kein Spiel für diese Auswahl.', 'Tippe ☆ bei einer Liga oder einem Spiel, um es hier zu finden.',
       'Regeln: 90 Min. + Nachspielzeit (ohne Verlängerung und Elfmeterschießen) · Wetten schließen beim Anpfiff · verlegtes Spiel, nicht binnen 48 Std. gespielt: Erstattung.', 'Haupt', 'Tore', 'Halbzeiten', 'Genaues Ergebnis', 'Handicap', 'Kombis', 'Defensive',
       'Teilen / Code', 'Wettschein-Code', 'Kopieren', 'Kopiert!', 'Code laden', 'Laden', 'Code unbekannt oder abgelaufen.', '{n} Tipp(s) übersprungen: Spiel begonnen oder geschlossen.', '{n} Tipp(s) für dich noch nicht verfügbar.', 'Wettschein geladen: {n} Tipp(s).', '7 Tage gültig · es gilt die aktuelle Quote', 'Z. B. K7M2QX',
       'Über {x}', 'Unter {x}', 'Ja', 'Nein', 'Ungerade', 'Gerade', 'Remis', '1. Halbzeit', '2. Halbzeit', 'Gleich',
       'Spielergebnis', 'Doppelte Chance', 'Remis = Erstattung', 'Tore gesamt', 'Beide Teams treffen', 'Tore {t}', 'Tore gerade / ungerade', '{t} ohne Gegentor', '{t} gewinnt zu null', 'Handicap (3-Weg)', 'Asiatisches Handicap', 'Halbzeitergebnis', '1. Halbzeit: Tore gesamt', '1. Halbzeit: beide treffen', 'Ergebnis 2. Halbzeit', 'Halbzeit / Endstand', 'Genaues Ergebnis', 'Ergebnis + beide treffen', 'Ergebnis + Tore gesamt', 'Genaue Toranzahl', 'Torreichste Halbzeit', 'Einen Moment…', 'Wetten für dieses Spiel geschlossen.', '1. Halbzeit: doppelte Chance', '2. Halbzeit: doppelte Chance', '2. Halbzeit: beide treffen', '1. Halbzeit: genaues Ergebnis', '1. Halbzeit: Tore gerade / ungerade', '2. Halbzeit: Tore gerade / ungerade', '2. Halbzeit: Tore gesamt', '1. Halbzeit: Tore {t}', '1. Halbzeit: asiatisches Handicap',
-      'Ecken', 'Karten', 'Torschützen', '{t} trifft', '{t} gewinnt beide Halbzeiten', 'Tore {t} gerade / ungerade', '1. Halbzeit: Handicap (3-Weg)', '2. Halbzeit: genaues Ergebnis', 'Erstes Tor', 'Letztes Tor', 'Ecken: gesamt', 'Ecken {t}', 'Mehr Ecken', 'Karten: gesamt', 'Karten {t}', 'Torschütze (jederzeit)', 'Erster Torschütze', 'Letzter Torschütze', 'Kein Tor', 'Kein Torschütze'],
+      'Ecken', 'Karten', 'Torschützen', '{t} trifft', '{t} gewinnt beide Halbzeiten', 'Tore {t} gerade / ungerade', '1. Halbzeit: Handicap (3-Weg)', '2. Halbzeit: genaues Ergebnis', 'Erstes Tor', 'Letztes Tor', 'Ecken: gesamt', 'Ecken {t}', 'Mehr Ecken', 'Karten: gesamt', 'Karten {t}', 'Torschütze (jederzeit)', 'Erster Torschütze', 'Letzter Torschütze', 'Kein Tor', 'Kein Torschütze',
+      'Spieler', '2. Halbzeit: Tore {t}', '2. Halbzeit: asiatisches Handicap', '{t} trifft in beiden Halbzeiten', '2. Halbzeit: {t} trifft', 'Genaue Toranzahl {t}', 'Tor Nr. {n}: welches Team?', 'Ergebnis nach {n} Min.', 'Tor zwischen Min. {a} und {b}', 'Ecken: genaue Anzahl ({x})', 'Ecken: Handicap (3-Weg)', 'Ecken: asiatisches Handicap', 'Torschütze von Tor Nr. {n}', 'Trifft 2-mal oder öfter', 'Trifft 3-mal oder öfter', 'Spieler sieht Karte', 'Spieler fliegt vom Platz', 'Schüsse: über {x}', 'Schüsse aufs Tor: über {x}', 'Vorlagen: über {x}', '{n} oder mehr', 'Genau {x}', '½ gewonnen', '½ verloren'],
     zh: ['足球', '热点', '热门', '今天', '明天', '后天', '收藏', '搜索', '此选项暂无比赛。', '点击联赛或比赛上的 ☆，即可在这里找到。',
       '规则：90 分钟 + 补时（不含加时和点球）· 开赛即停止投注 · 比赛延期且 48 小时内未进行：退款。', '主要', '进球', '半场', '正确比分', '让球', '组合', '防守',
       '分享 / 代码', '投注单代码', '复制', '已复制！', '载入代码', '载入', '代码不存在或已过期。', '已跳过 {n} 项：比赛已开始或已关闭。', '{n} 项暂未对你开放。', '投注单已载入：{n} 项。', '7 天有效 · 投注时按当前赔率', '例：K7M2QX',
       '大于 {x}', '小于 {x}', '是', '否', '单', '双', '平局', '上半场', '下半场', '相同',
       '全场赛果', '双重机会', '平局退款', '总进球', '双方进球', '{t} 进球数', '总进球单双', '{t} 零失球', '{t} 零封取胜', '让球（三项）', '亚洲让球', '半场赛果', '上半场：总进球', '上半场：双方进球', '下半场赛果', '半场 / 全场', '正确比分', '赛果 + 双方进球', '赛果 + 总进球', '准确进球数', '进球最多的半场', '请稍候…', '本场比赛已停止投注。', '上半场：双重机会', '下半场：双重机会', '下半场：双方进球', '上半场：正确比分', '上半场：进球单双', '下半场：进球单双', '下半场：总进球', '上半场：{t} 进球数', '上半场：亚洲让球',
-      '角球', '罚牌', '进球球员', '{t} 进球', '{t} 两个半场都赢', '{t} 进球单双', '上半场：让球（三项）', '下半场：正确比分', '首个进球球队', '最后进球球队', '角球：总数', '{t} 角球', '角球较多', '罚牌：总数', '{t} 罚牌', '任意时间进球', '首个进球', '最后进球', '无进球', '无人进球'],
+      '角球', '罚牌', '进球球员', '{t} 进球', '{t} 两个半场都赢', '{t} 进球单双', '上半场：让球（三项）', '下半场：正确比分', '首个进球球队', '最后进球球队', '角球：总数', '{t} 角球', '角球较多', '罚牌：总数', '{t} 罚牌', '任意时间进球', '首个进球', '最后进球', '无进球', '无人进球',
+      '球员', '下半场：{t} 进球数', '下半场：亚洲让球', '{t} 两个半场都进球', '下半场：{t} 进球', '{t} 准确进球数', '第 {n} 个进球：哪队？', '{n} 分钟后赛果', '{a} 至 {b} 分钟进球', '角球：准确总数（{x}）', '角球：让球（三项）', '角球：亚洲让球', '第 {n} 个进球的球员', '进 2 球或以上', '进 3 球或以上', '球员吃牌', '球员被罚下', '球员射门：大于 {x}', '球员射正：大于 {x}', '助攻：大于 {x}', '{n} 或以上', '正好 {x}', '赢一半', '输一半'],
     hi: ['फ़ुटबॉल', 'ताज़ा', 'टॉप', 'आज', 'कल', 'परसों', 'पसंदीदा', 'खोजें', 'इस विकल्प के लिए कोई मैच नहीं।', 'यहाँ पाने के लिए लीग या मैच पर ☆ दबाएँ।',
       'नियम: 90 मिनट + इंजरी टाइम (एक्स्ट्रा टाइम और पेनल्टी नहीं) · किक-ऑफ़ पर दांव बंद · मैच टला और 48 घंटे में नहीं खेला गया: रिफंड।', 'मुख्य', 'गोल', 'हाफ़', 'सटीक स्कोर', 'हैंडीकैप', 'कॉम्बो', 'डिफ़ेंस',
       'शेयर / कोड', 'कूपन कोड', 'कॉपी', 'कॉपी हो गया!', 'कोड लोड करें', 'लोड', 'अज्ञात या समाप्त कोड।', '{n} चयन छोड़े गए: मैच शुरू या बंद।', '{n} चयन अभी आपके लिए उपलब्ध नहीं।', 'कूपन लोड हुआ: {n} चयन।', '7 दिन मान्य · दांव पर मौजूदा ऑड्स लागू', 'उदा.: K7M2QX',
       '{x} से ज़्यादा', '{x} से कम', 'हाँ', 'नहीं', 'विषम', 'सम', 'ड्रॉ', 'पहला हाफ़', 'दूसरा हाफ़', 'बराबर',
       'मैच का नतीजा', 'डबल चांस', 'ड्रॉ पर रिफंड', 'कुल गोल', 'दोनों टीमें गोल करेंगी', '{t} के गोल', 'कुल गोल सम / विषम', '{t} क्लीन शीट', '{t} बिना गोल खाए जीतेगी', 'हैंडीकैप (3 नतीजे)', 'एशियन हैंडीकैप', 'हाफ़-टाइम नतीजा', 'पहला हाफ़: कुल गोल', 'पहला हाफ़: दोनों गोल करेंगी', 'दूसरे हाफ़ का नतीजा', 'हाफ़-टाइम / फ़ुल-टाइम', 'सटीक स्कोर', 'नतीजा + दोनों गोल करेंगी', 'नतीजा + कुल गोल', 'सटीक गोल संख्या', 'सबसे ज़्यादा गोल वाला हाफ़', 'एक पल…', 'इस मैच पर दांव बंद हैं।', 'पहला हाफ़: डबल चांस', 'दूसरा हाफ़: डबल चांस', 'दूसरा हाफ़: दोनों गोल करेंगी', 'पहला हाफ़: सटीक स्कोर', 'पहला हाफ़: गोल सम / विषम', 'दूसरा हाफ़: गोल सम / विषम', 'दूसरा हाफ़: कुल गोल', 'पहला हाफ़: {t} के गोल', 'पहला हाफ़: एशियन हैंडीकैप',
-      'कॉर्नर', 'कार्ड', 'गोल करने वाले', '{t} गोल करेगी', '{t} दोनों हाफ़ जीतेगी', '{t} के गोल सम / विषम', 'पहला हाफ़: हैंडीकैप (3 नतीजे)', 'दूसरा हाफ़: सटीक स्कोर', 'पहला गोल करने वाली टीम', 'आख़िरी गोल करने वाली टीम', 'कॉर्नर: कुल', '{t} के कॉर्नर', 'ज़्यादा कॉर्नर', 'कार्ड: कुल', '{t} के कार्ड', 'किसी भी समय गोल', 'पहला गोल करने वाला', 'आख़िरी गोल करने वाला', 'कोई गोल नहीं', 'कोई गोल करने वाला नहीं']
+      'कॉर्नर', 'कार्ड', 'गोल करने वाले', '{t} गोल करेगी', '{t} दोनों हाफ़ जीतेगी', '{t} के गोल सम / विषम', 'पहला हाफ़: हैंडीकैप (3 नतीजे)', 'दूसरा हाफ़: सटीक स्कोर', 'पहला गोल करने वाली टीम', 'आख़िरी गोल करने वाली टीम', 'कॉर्नर: कुल', '{t} के कॉर्नर', 'ज़्यादा कॉर्नर', 'कार्ड: कुल', '{t} के कार्ड', 'किसी भी समय गोल', 'पहला गोल करने वाला', 'आख़िरी गोल करने वाला', 'कोई गोल नहीं', 'कोई गोल करने वाला नहीं',
+      'खिलाड़ी', 'दूसरा हाफ़: {t} के गोल', 'दूसरा हाफ़: एशियन हैंडीकैप', '{t} दोनों हाफ़ में गोल करेगी', 'दूसरा हाफ़: {t} गोल करेगी', '{t} के सटीक गोल', 'गोल नंबर {n}: कौन-सी टीम?', '{n} मिनट के बाद नतीजा', '{a} से {b} मिनट के बीच गोल', 'कॉर्नर: सटीक कुल ({x})', 'कॉर्नर: हैंडीकैप (3 नतीजे)', 'कॉर्नर: एशियन हैंडीकैप', 'गोल नंबर {n} करने वाला', '2 या ज़्यादा गोल करेगा', '3 या ज़्यादा गोल करेगा', 'खिलाड़ी को कार्ड', 'खिलाड़ी बाहर (लाल कार्ड)', 'खिलाड़ी के शॉट: {x} से ज़्यादा', 'निशाने पर शॉट: {x} से ज़्यादा', 'असिस्ट: {x} से ज़्यादा', '{n} या ज़्यादा', 'ठीक {x}', '½ जीता', '½ हारा']
   };
   function SX() { var a = SBL[lg()] || SBL.en, o = {}; SBK.forEach(function (k, i) { o[k] = a[i] != null ? a[i] : SBL.en[i]; }); return o; }
   var SBIC = {
@@ -1116,7 +1130,7 @@
   function sgn(v) { var n = Number(v); return (n > 0 ? '+' : n < 0 ? '−' : '') + numL(Math.abs(n)); }
   function mkParts(mk) { mk = String(mk || ''); var i = mk.indexOf(':'); return i < 0 ? [mk, ''] : [mk.slice(0, i), mk.slice(i + 1)]; }
   function sbMkName(mk, h, a, sp) {
-    var x = SX(), f = mkParts(mk)[0];
+    var x = SX(), f = mkParts(mk)[0], ln = mkParts(mk)[1];
     if (sp && sp !== 'foot') { // autres sports : 12 (prolongation comprise), 1x2 (temps réglementaire), total, handicap
       if (f === '12') return sp === 'mma' ? T18('sbM12mma', 'Fight winner') : T18('sbM12', 'Winner (incl. overtime)');
       if (f === '1x2') return T18('sbM1x2reg', '1X2 (regular time)');
@@ -1128,7 +1142,11 @@
       htdc: x.mhtdc, '2hdc': x.m2hdc, '2hbtts': x.m2hbtts, htcs: x.mhtcs, htoe: x.mhtoe, '2hoe': x.m2hoe, '2hou': x.m2hou, httth: fmt(x.mhttt, { t: h }), httta: fmt(x.mhttt, { t: a }), htah: x.mhtah,
       hsg: fmt(x.mhsg, { t: h }), asg: fmt(x.mhsg, { t: a }), wbh: fmt(x.mwb, { t: h }), wba: fmt(x.mwb, { t: a }), hoe: fmt(x.mtoe, { t: h }), aoe: fmt(x.mtoe, { t: a }), hteh: x.mhteh, '2hcs': x.m2hcs,
       fts: x.mfts, lts: x.mlts, cou: x.mcou, couh: fmt(x.mcout, { t: h }), coua: fmt(x.mcout, { t: a }), c1x2: x.mc1x2, kou: x.mkou, kouh: fmt(x.mkout, { t: h }), koua: fmt(x.mkout, { t: a }),
-      ags: x.mags, fgs: x.mfgs, lgs: x.mlgs };
+      ags: x.mags, fgs: x.mfgs, lgs: x.mlgs,
+      '2htth': fmt(x.m2htt, { t: h }), '2htta': fmt(x.m2htt, { t: a }), '2hah': x.m2hah, hsbh: fmt(x.msbh, { t: h }), asbh: fmt(x.msbh, { t: a }), '2hhsg': fmt(x.m2hsg, { t: h }), '2hasg': fmt(x.m2hsg, { t: a }),
+      hgn: fmt(x.mgn, { t: h }), agn: fmt(x.mgn, { t: a }), ng: fmt(x.mng, { n: ln }), rm: fmt(x.mrm, { n: ln }), g10: fmt(x.mg10, { a: ln, b: (+ln || 0) + 10 }),
+      co3: fmt(x.mco3, { x: numL(ln) }), ceh: x.mceh, cah: x.mcah, ngs: fmt(x.mngs, { n: ln }), p2g: x.mp2g, p3g: x.mp3g, pbk: x.mpbk, psoff: x.mpsoff,
+      psh: fmt(x.mpsh, { x: numL(ln) }), pst: fmt(x.mpst, { x: numL(ln) }), pas: fmt(x.mpas, { x: numL(ln) }) };
     return N[f] || String(mk);
   }
   function sbOutL(mk, k, h, a) {
@@ -1139,14 +1157,20 @@
     k = String(k);
     switch (f) {
       case '1x2': case 'ht1x2': case '2h1x2': case 'dnb': case '12': case 'c1x2': return one(k);
-      case 'fts': case 'lts': return k === 'D' ? x.noGoal : one(k);
-      case 'ags': case 'fgs': case 'lgs': return k === '-' ? x.noScorer : k;
-      case 'eh': case 'hteh': return (k === 'D' ? x.draw : one(k)) + ' (' + sgn(k === 'A' ? -ln : +ln) + ')';
+      case 'fts': case 'lts': case 'ng': return k === 'D' ? x.noGoal : one(k);
+      case 'rm': return one(k);
+      case 'ags': case 'fgs': case 'lgs': case 'ngs': return k === '-' ? x.noScorer : k;
+      case 'p2g': case 'p3g': case 'pbk': case 'psoff': case 'psh': case 'pst': case 'pas': return k;
+      case 'co3': return k === 'E' ? fmt(x.exactly, { x: numL(ln) }) : ou(k);
+      case 'hgn': case 'agn': return /\+$/.test(k) ? fmt(x.orMore, { n: k.replace('+', '') }) : k;
+      case 'cah': case '2hah': return one(k) + ' ' + sgn(k === 'A' ? -ln : +ln);
+      case 'eh': case 'hteh': case 'ceh': return (k === 'D' ? x.draw : one(k)) + ' (' + sgn(k === 'A' ? -ln : +ln) + ')';
       case 'ah': case 'htah': return one(k) + ' ' + sgn(k === 'A' ? -ln : +ln);
       case 'dc': case 'htdc': case '2hdc': return { HD: h + ' / ' + x.draw, HA: h + ' / ' + a, DA: x.draw + ' / ' + a }[k] || k;
-      case 'ou': case 'tth': case 'tta': case 'htou': case '2hou': case 'httth': case 'httta': case 'cou': case 'couh': case 'coua': case 'kou': case 'kouh': case 'koua': return ou(k);
+      case 'ou': case 'tth': case 'tta': case 'htou': case '2hou': case 'httth': case 'httta': case 'cou': case 'couh': case 'coua': case 'kou': case 'kouh': case 'koua': case '2htth': case '2htta': return ou(k);
+      case 'g10': return k === 'O' ? x.yes : x.no; // un but dans ces 10 minutes : oui / non
       case 'oe': case 'htoe': case '2hoe': case 'hoe': case 'aoe': return k === 'O' ? x.odd : x.even;
-      case 'btts': case 'htbtts': case '2hbtts': case 'csh': case 'csa': case 'wnh': case 'wna': case 'hsg': case 'asg': case 'wbh': case 'wba': return yn(k);
+      case 'btts': case 'htbtts': case '2hbtts': case 'csh': case 'csa': case 'wnh': case 'wna': case 'hsg': case 'asg': case 'wbh': case 'wba': case 'hsbh': case 'asbh': case '2hhsg': case '2hasg': return yn(k);
       case 'htcs': case '2hcs': return k.replace(':', ' - ');
       case 'htft': q = k.split('/'); return q.length === 2 ? one(q[0]) + ' / ' + one(q[1]) : k;
       case 'rbtts': q = k.split('/'); return q.length === 2 ? one(q[0]) + ' + ' + yn(q[1]) : k;
@@ -1463,7 +1487,8 @@
   // jeux complets de choix par famille de marché : un choix absent garde sa place (cadenas)
   var FULLK = { '1x2': 'H D A', eh: 'H D A', ht1x2: 'H D A', '2h1x2': 'H D A', dc: 'HD HA DA', htdc: 'HD HA DA', '2hdc': 'HD HA DA', dnb: 'H A', ah: 'H A', htah: 'H A', '12': 'H A',
     ou: 'O U', tth: 'O U', tta: 'O U', htou: 'O U', '2hou': 'O U', httth: 'O U', httta: 'O U', oe: 'O E', htoe: 'O E', '2hoe': 'O E', btts: 'Y N', htbtts: 'Y N', '2hbtts': 'Y N', csh: 'Y N', csa: 'Y N', wnh: 'Y N', wna: 'Y N',
-    hsg: 'Y N', asg: 'Y N', wbh: 'Y N', wba: 'Y N', hoe: 'O E', aoe: 'O E', hteh: 'H D A', fts: 'H D A', lts: 'H D A', c1x2: 'H D A', cou: 'O U', couh: 'O U', coua: 'O U', kou: 'O U', kouh: 'O U', koua: 'O U' };
+    hsg: 'Y N', asg: 'Y N', wbh: 'Y N', wba: 'Y N', hoe: 'O E', aoe: 'O E', hteh: 'H D A', fts: 'H D A', lts: 'H D A', c1x2: 'H D A', cou: 'O U', couh: 'O U', coua: 'O U', kou: 'O U', kouh: 'O U', koua: 'O U',
+    '2htth': 'O U', '2htta': 'O U', '2hah': 'H A', cah: 'H A', hsbh: 'Y N', asbh: 'Y N', '2hhsg': 'Y N', '2hasg': 'Y N', ng: 'H D A', rm: 'H D A', g10: 'O U', co3: 'O E U', ceh: 'H D A' };
   function fullO(mk, o) {
     var f = FULLK[mkParts(mk)[0]]; o = o || []; if (!f) return o;
     var ks = f.split(' '), by = {};
@@ -2148,14 +2173,16 @@
     pdPxT = setTimeout(pdPxLoad, 30000);
   }
   // ---------- PAGE D'UN MATCH ----------
-  var GRP = [['main', 'gMain'], ['goals', 'gGoals'], ['scor', 'gScor'], ['corn', 'gCorn'], ['cards', 'gCards'], ['tot', 'gTot'], ['half', 'gHalf'], ['hcp', 'gHcp'], ['cs', 'gCs'], ['combo', 'gCombo']];
+  var GRP = [['main', 'gMain'], ['goals', 'gGoals'], ['scor', 'gScor'], ['play', 'gPlay'], ['corn', 'gCorn'], ['cards', 'gCards'], ['tot', 'gTot'], ['half', 'gHalf'], ['hcp', 'gHcp'], ['cs', 'gCs'], ['combo', 'gCombo']];
   function grpOf(mk, sp) {
     var f = mkParts(mk)[0];
     if (sp && sp !== 'foot') return f === 'ou' ? 'tot' : f === 'ah' ? 'hcp' : 'main'; // autres sports : Principaux · Totaux · Handicap
     if (f === '1x2' || f === 'dc' || f === 'dnb' || f === 'btts' || f === '12' || mk === 'ou:2.5') return 'main';
     if (f === 'cs' || f === 'htcs' || f === '2hcs') return 'cs';
-    if (/^(ags|fgs|lgs)$/.test(f)) return 'scor';
-    if (/^(cou|couh|coua|c1x2)$/.test(f)) return 'corn';
+    if (/^(ags|fgs|lgs|ngs)$/.test(f)) return 'scor';
+    if (/^(p2g|p3g|pbk|psoff|psh|pst|pas)$/.test(f)) return 'play';
+    if (/^(cou|couh|coua|c1x2|co3|ceh|cah)$/.test(f)) return 'corn';
+    if (f === 'hsbh' || f === 'asbh') return 'half';
     if (/^(kou|kouh|koua)$/.test(f)) return 'cards';
     if (f === 'wbh' || f === 'wba') return 'half';
     if (f === 'ah' || f === 'eh' || f === 'htah' || f === 'hteh') return 'hcp';
@@ -2502,15 +2529,16 @@
     tvShow(TV.side, bx, by, nm(TV.side), [String(n.poss).toUpperCase(), x.att, x.dang][TV.mode], '', TV.mode === 2 ? 'dang' : '');
   }
   // libellés courts des marchés (1 · X · 2, 1X · 12 · X2, « 1 −1,5 »…) ; les noms des équipes sont dans la légende de la carte
-  var LEG = { '1x2': 1, dc: 1, dnb: 1, eh: 1, ah: 1, ht1x2: 1, '2h1x2': 1, htdc: 1, '2hdc': 1, htah: 1, htft: 1, rbtts: 1, rou: 1, '12': 1, hteh: 1, fts: 1, lts: 1, c1x2: 1 };
+  var LEG = { '1x2': 1, dc: 1, dnb: 1, eh: 1, ah: 1, ht1x2: 1, '2h1x2': 1, htdc: 1, '2hdc': 1, htah: 1, htft: 1, rbtts: 1, rou: 1, '12': 1, hteh: 1, fts: 1, lts: 1, c1x2: 1, '2hah': 1, cah: 1, ceh: 1, ng: 1, rm: 1 };
   function shortK(mk, k, h, a) {
     var p = mkParts(mk), f = p[0], ln = p[1], x = SX(), C = { H: '1', D: 'X', A: '2' }, q;
     k = String(k);
     switch (f) {
-      case '1x2': case 'ht1x2': case '2h1x2': case 'dnb': case '12': case 'c1x2': return C[k] || k;
-      case 'fts': case 'lts': return k === 'D' ? x.noGoal : C[k] || k;
+      case '1x2': case 'ht1x2': case '2h1x2': case 'dnb': case '12': case 'c1x2': case 'rm': return C[k] || k;
+      case 'fts': case 'lts': case 'ng': return k === 'D' ? x.noGoal : C[k] || k;
+      case 'cah': case '2hah': return (C[k] || k) + ' ' + sgn(k === 'A' ? -ln : +ln);
       case 'dc': case 'htdc': case '2hdc': return { HD: '1X', HA: '12', DA: 'X2' }[k] || k;
-      case 'eh': case 'hteh': return (C[k] || k) + ' (' + sgn(k === 'A' ? -ln : +ln) + ')';
+      case 'eh': case 'hteh': case 'ceh': return (C[k] || k) + ' (' + sgn(k === 'A' ? -ln : +ln) + ')';
       case 'ah': case 'htah': return (C[k] || k) + ' ' + sgn(k === 'A' ? -ln : +ln);
       case 'htft': return k.split('/').map(function (z) { return C[z] || z; }).join('/');
       case 'rbtts': q = k.split('/'); return (C[q[0]] || q[0]) + ' · ' + (q[1] === 'Y' ? x.yes : x.no);
@@ -2522,7 +2550,7 @@
   }
   function mkCards(ms, f) {
     var blocks = [], byF = {};
-    ms.forEach(function (m) { var p = mkParts(m.mk), key = p[1] !== '' ? p[0] : m.mk; if (!byF[key]) { byF[key] = { key: key, fam: p[0], m: [] }; blocks.push(byF[key]); } byF[key].m.push(m); });
+    ms.forEach(function (m) { var p = mkParts(m.mk), key = p[1] !== '' && !/^(rm|ng|g10|ngs|co3|psh|pst|pas)$/.test(p[0]) ? p[0] : m.mk; /* minute / ligne dans le titre : une section chacun */ if (!byF[key]) { byF[key] = { key: key, fam: p[0], m: [] }; blocks.push(byF[key]); } byF[key].m.push(m); });
     return blocks.map(function (B, i) {
       var open = mkOpen[B.key] != null ? mkOpen[B.key] : (mGrp === 'main' || i < 3);
       var legend = LEG[B.fam] ? '<p class="pz-mkl"><span><b>1</b><span dir="auto">' + esc(f.h.n) + '</span></span><span><b>2</b><span dir="auto">' + esc(f.a.n) + '</span></span></p>' : '';
@@ -2534,7 +2562,7 @@
           return '<div class="pz-cs">' + col.map(function (c) { return '<div>' + c.map(function (o) { return obtn(ev, o[0], o[1], shortK(m.mk, o[0], f.h.n, f.a.n), s); }).join('') + '</div>'; }).join('') + '</div>';
         }
         var cols = n === 2 || n === 4 || n === 6 && /^(rbtts|rou)$/.test(B.fam) ? 2 : 3;
-        if (/^(ags|fgs|lgs)$/.test(B.fam)) cols = 2; // buteurs : noms longs → 2 colonnes
+        if (/^(ags|fgs|lgs|ngs|p2g|p3g|pbk|psoff|psh|pst|pas)$/.test(B.fam)) cols = 2; // joueurs : noms longs → 2 colonnes
         if (n === 1) cols = 1;
         return '<div class="pz-oo c' + cols + '">' + oo.map(function (o) { return obtn(ev, o[0], o[1], shortK(m.mk, o[0], f.h.n, f.a.n), s); }).join('') + '</div>';
       }).join('');
@@ -2812,13 +2840,13 @@
     var ST = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL };
     var html = bets.slice(0, rcLimit).map(function (bt, bi) {
       var st = bt.status || 'open', id = String(bt.id || ''), on = !!rcOpen[id];
-      var big = st === 'won' ? '+' + money(bt.win) : st === 'lost' ? '−' + money(bt.stake) : money(st === 'void' ? bt.stake : bt.pot);
+      var big = st === 'won' ? '+' + money(bt.win) : st === 'lost' ? '−' + money(bt.stake - (bt.win || 0)) : money(st === 'void' ? bt.stake : bt.pot); // moitié perdue : la partie rendue est déduite
       var lab = st === 'won' ? x.wonL : st === 'lost' ? x.lostL : st === 'void' ? x.voidL : x.potL;
       var multi = bt.sel.length > 1, kind = multi ? x.rcCombo + ' · ' + bt.sel.length : x.rcSingle;
       var show = multi ? bt.sel.slice(0, 3) : bt.sel;
       var sels = show.map(function (s) {
         var e = s.mk ? null : evByTitle(s.t);
-        var rr = s.r === 'won' ? ' won' : s.r === 'lost' ? ' lost' : s.r === 'void' ? ' void' : '';
+        var rr = s.r === 'won' || s.r === 'hwon' ? ' won' : s.r === 'lost' || s.r === 'hlost' ? ' lost' : s.r === 'void' ? ' void' : '';
         return '<span class="pz-bs1' + rr + '"><span class="pz-bs1t"><b dir="auto">' + esc(selLbl(s)) + '</b><small dir="auto">' + esc(e ? trT(e) : s.t) + '</small></span>' + (s.fs || s.cs || s.lv ? liveChip(s) : '') + '</span>';
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' +

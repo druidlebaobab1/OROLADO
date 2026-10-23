@@ -286,7 +286,8 @@ function sb_group_size(string $fam): ?int {
     'eh' => 3, 'ah' => 2, 'ht1x2' => 3, 'htou' => 2, 'htbtts' => 2, '2h1x2' => 3, 'htft' => 9, 'rbtts' => 6, 'rou' => 6, 'eg' => 7, 'hsh' => 3,
     'htdc' => 3, '2hdc' => 3, '2hbtts' => 2, 'htoe' => 2, '2hoe' => 2, '2hou' => 2, 'httth' => 2, 'httta' => 2, 'htah' => 2,
     'hsg' => 2, 'asg' => 2, 'wbh' => 2, 'wba' => 2, 'hoe' => 2, 'aoe' => 2, 'hteh' => 3, 'fts' => 3, 'lts' => 3,
-    'cou' => 2, 'couh' => 2, 'coua' => 2, 'c1x2' => 3, 'kou' => 2, 'kouh' => 2, 'koua' => 2];
+    'cou' => 2, 'couh' => 2, 'coua' => 2, 'c1x2' => 3, 'kou' => 2, 'kouh' => 2, 'koua' => 2,
+    '2htth' => 2, '2htta' => 2, '2hah' => 2, 'hsbh' => 2, 'asbh' => 2, '2hhsg' => 2, '2hasg' => 2, 'cah' => 2, 'co3' => 3, 'ceh' => 3, 'lts' => 3, 'ng' => 3, 'rm' => 3, 'g10' => 2];
   return $n[$fam] ?? null;
 }
 function sb_expected(string $fam): float { return in_array($fam, ['dc', 'htdc', '2hdc'], true) ? 2.0 : 1.0; }
@@ -311,6 +312,34 @@ function sb_wodd(float $p, float $m, float $sq, float $exp = 1.0): float {
 /** Ligne canonique : 2.5 → « 2.5 », -1 → « -1 », 0 → « 0 ». */
 function sb_line(float $x): string { if (abs($x) < 1e-9) return '0'; $s = rtrim(rtrim(number_format($x, 2, '.', ''), '0'), '.'); return $s; }
 function sb_half(float $x): bool { return abs(abs(fmod($x, 1.0)) - 0.5) < 1e-9; }
+/** Ligne au quart (0, 0,25, 0,5, 0,75…) : 2026-10-23 — lignes entières (remboursé si égalité) et quarts (moitié / moitié). */
+function sb_q(float $x): bool { return abs($x * 4 - round($x * 4)) < 1e-9; }
+/**
+ * Résultat d'un choix à ligne : $d = écart (buts du choix − buts adverses, ou total − ligne…) déjà compté avec la ligne $line.
+ * Ligne au quart (x,25 / x,75) : mise coupée en deux sur les deux lignes voisines → 'hwon' (moitié gagnée, moitié rendue) ou
+ * 'hlost' (moitié perdue, moitié rendue). Ligne entière à égalité → 'void' (remboursé).
+ */
+function sb_hres(float $d, float $line): string {
+  $one = static fn(float $v): string => $v > 1e-9 ? 'won' : ($v < -1e-9 ? 'lost' : 'void');
+  $fr = abs($line - floor($line));
+  if (abs($fr - 0.25) > 1e-9 && abs($fr - 0.75) > 1e-9) return $one($d);
+  $a = $one($d - 0.25); $b = $one($d + 0.25);
+  if ($a === $b) return $a;
+  $set = [$a, $b]; sort($set);
+  return $set === ['void', 'won'] ? 'hwon' : 'hlost'; // ['lost', 'void']
+}
+/** O / U à ligne : $k 'O' | 'U', $tot = total compté. */
+function sb_ou_res(string $k, float $tot, float $x): ?string {
+  if ($k === 'O') return sb_hres($tot - $x, $x);
+  if ($k === 'U') return sb_hres($x - $tot, $x);
+  return null;
+}
+/** Handicap asiatique (ligne du point de vue du DOMICILE) : $k 'H' | 'A', $m = buts domicile − buts extérieur. */
+function sb_ah_res(string $k, int $m, float $x): ?string {
+  if ($k === 'H') return sb_hres($m + $x, $x);
+  if ($k === 'A') return sb_hres(-($m + $x), $x);
+  return null;
+}
 /** « Over 2.5 » → ['O', 2.5] ; null si non reconnu. */
 function sb_ou_val(string $v): ?array {
   if (!preg_match('/^(over|under)\s*([0-9]+(?:\.[0-9]+)?)$/i', trim($v), $m)) return null;
@@ -332,7 +361,8 @@ function sb_parse_bet(string $name, array $values, array &$unk): array {
   // 2026-10-22 : lignes entières / quarts (2.0, 2.25, ±0.75…) et lignes hors bornes : écartées EXPRÈS (pas réglables simplement)
   // → pas dans le diagnostic « paris non reconnus » (elles le noyaient) ; seuls les noms / valeurs vraiment inconnus y vont.
   $quiet = false;
-  $line = static function (float $x, float $min, float $max, bool $half = true) use (&$quiet): bool { $ok = $x >= $min - 1e-9 && $x <= $max + 1e-9 && (!$half || sb_half($x)); if (!$ok) $quiet = true; return $ok; };
+  // 2026-10-23 : lignes entières et quarts acceptés (remboursé si égalité / moitié-moitié) ; seules les lignes hors bornes sont écartées
+  $line = static function (float $x, float $min, float $max, bool $half = true) use (&$quiet): bool { $ok = $x >= $min - 1e-9 && $x <= $max + 1e-9 && (!$half || sb_q($x)); if (!$ok) $quiet = true; return $ok; };
   $n = (string) preg_replace('/\s*\(\s*/', ' (', $n); // « Home Team Total Goals(1st Half) » → « home team total goals (1st half) »
   foreach ($values as $vv) {
     $quiet = false;
@@ -383,11 +413,11 @@ function sb_parse_bet(string $name, array $values, array &$unk): array {
       case 'ht/ft double': case 'halftime/fulltime':
         if (preg_match('/^(home|draw|away)\s*\/\s*(home|draw|away)$/i', $v, $m)) $r = ['htft', SB_RES[strtolower($m[1])] . '/' . SB_RES[strtolower($m[2])]]; break;
       case 'exact score': case 'correct score':
-        if (preg_match('/^(\d{1,2})\s*[:\-]\s*(\d{1,2})$/', $v, $m) && (int) $m[1] <= 9 && (int) $m[2] <= 9) $r = ['cs', (int) $m[1] . ':' . (int) $m[2]]; break;
+        if (preg_match('/^(\d{1,2})\s*[:\-]\s*(\d{1,2})$/', $v, $m)) { if ((int) $m[1] <= 9 && (int) $m[2] <= 9) $r = ['cs', (int) $m[1] . ':' . (int) $m[2]]; else $quiet = true; } break;
       case 'results/both teams score': case 'result/both teams score':
         if (preg_match('/^(home|draw|away)\s*\/\s*(yes|no)$/i', $v, $m)) $r = ['rbtts', SB_RES[strtolower($m[1])] . '/' . SB_YN[strtolower($m[2])]]; break;
       case 'result/total goals':
-        if (preg_match('/^(home|draw|away)\s*\/\s*(over|under)\s*([0-9.]+)$/i', $v, $m) && $line((float) $m[3], 0.5, 5.5))
+        if (preg_match('/^(home|draw|away)\s*\/\s*(over|under)\s*([0-9.]+)$/i', $v, $m) && $line((float) $m[3], 0.5, 5.5) && sb_half((float) $m[3]))
           $r = ['rou:' . sb_line((float) $m[3]), SB_RES[strtolower($m[1])] . '/' . (strtolower($m[2]) === 'over' ? 'O' : 'U')]; break;
       case 'exact goals number':
         if (preg_match('/^[0-5]$/', $lv)) $r = ['eg', $lv];
@@ -421,6 +451,19 @@ function sb_parse_bet(string $name, array $values, array &$unk): array {
           $r = ['htah:' . sb_line((float) $m[2]), SB_RES[strtolower($m[1])]]; break;
       // 2026-10-23 (propriétaire : « ajoute tout ce que l'API donne ») : corners, cartons, buteurs, équipe qui marque en premier…
       // (réglés avec les statistiques et les événements du match : sb_xs_build ; 90 min seulement)
+      case 'home team total goals (2nd half)':
+        if (($o = sb_ou_val($v)) && $line($o[1], 0.5, 4.5)) $r = ['2htth:' . sb_line($o[1]), $o[0]]; break;
+      case 'away team total goals (2nd half)':
+        if (($o = sb_ou_val($v)) && $line($o[1], 0.5, 4.5)) $r = ['2htta:' . sb_line($o[1]), $o[0]]; break;
+      case 'asian handicap (2nd half)': case 'asian handicap second half': case 'asian handicap 2nd half':
+        if (preg_match('/^(home|away)\s*([+-]?\d+(?:\.\d+)?)$/i', $v, $m) && $line((float) $m[2], -3.5, 3.5))
+          $r = ['2hah:' . sb_line((float) $m[2]), SB_RES[strtolower($m[1])]]; break;
+      case 'home team will score in both halves': case 'home team to score in both halves': if (isset(SB_YN[$lv])) $r = ['hsbh', SB_YN[$lv]]; break;
+      case 'away team will score in both halves': case 'away team to score in both halves': if (isset(SB_YN[$lv])) $r = ['asbh', SB_YN[$lv]]; break;
+      case 'corners asian handicap':
+        if (preg_match('/^(home|away)\s*([+-]?\d+(?:\.\d+)?)$/i', $v, $m) && $line((float) $m[2], -8.5, 8.5))
+          $r = ['cah:' . sb_line((float) $m[2]), SB_RES[strtolower($m[1])]]; break;
+      case 'total corners (1st half)': case 'total corners (3 way) (1st half)': $quiet = true; break; // corners par mi-temps : pas dans les statistiques → pas proposé
       case 'home team score a goal': if (isset(SB_YN[$lv])) $r = ['hsg', SB_YN[$lv]]; break;
       case 'away team score a goal': if (isset(SB_YN[$lv])) $r = ['asg', SB_YN[$lv]]; break;
       case 'home win both halves': if (isset(SB_YN[$lv])) $r = ['wbh', SB_YN[$lv]]; break;
@@ -467,7 +510,8 @@ function sb_parse_bet(string $name, array $values, array &$unk): array {
 /** Ordre d'affichage des familles et des choix. */
 const SB_FAM_ORDER = ['12', '1x2', 'dc', 'dnb', 'ou', 'btts', 'tth', 'tta', 'oe', 'csh', 'csa', 'wnh', 'wna', 'eh', 'ah', 'ht1x2', 'htdc', 'htou', 'httth', 'httta', 'htbtts', 'htoe', 'htah',
   '2h1x2', '2hdc', '2hou', '2hbtts', '2hoe', 'htft', 'cs', 'htcs', 'rbtts', 'rou', 'eg', 'hsh',
-  'hsg', 'asg', 'fts', 'lts', 'wbh', 'wba', 'hoe', 'aoe', 'hteh', '2hcs', 'cou', 'couh', 'coua', 'c1x2', 'kou', 'kouh', 'koua', 'ags', 'fgs', 'lgs'];
+  'hsg', 'asg', 'fts', 'lts', 'wbh', 'wba', 'hoe', 'aoe', 'hteh', '2hcs', 'cou', 'couh', 'coua', 'c1x2', 'kou', 'kouh', 'koua', 'ags', 'fgs', 'lgs',
+  '2htth', '2htta', '2hah', 'hsbh', 'asbh', '2hhsg', '2hasg', 'hgn', 'agn', 'ng', 'rm', 'g10', 'co3', 'ceh', 'cah', 'ngs', 'p2g', 'p3g', 'pbk', 'psoff', 'psh', 'pst', 'pas'];
 /** Rang d'un choix dans son marché (ordre de sb_valid_k ; score exact : 1:0, 2:0 … par buts domicile puis extérieur). */
 function sb_k_rank(string $k, string $fam = ''): int {
   if (preg_match('/^(\d+):(\d+)$/', $k, $m)) return 1000 + (int) $m[1] * 10 + (int) $m[2];
@@ -503,7 +547,7 @@ function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
       foreach ($ks as $k => $o) { $sum[$mk][$k] = ($sum[$mk][$k] ?? 0) + $o; $cnt[$mk][$k] = ($cnt[$mk][$k] ?? 0) + 1; }
     }
   }
-  $out = []; $pH = [];
+  $out = []; $pH = []; $pA = [];
   foreach ($sum as $mk => $ks) {
     $fam = sb_fam($mk);
     $avg = [];
@@ -522,6 +566,7 @@ function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
       if ($o < 1.01) continue;
       $row[] = [(string) $k, round($o, 2)];
       if ($k === 'H') $pH[$mk] = $p;
+      if ($k === 'A') $pA[$mk] = $p;
     }
     if (!$row) continue;
     usort($row, static fn($x, $y) => sb_k_rank($x[0], $fam) <=> sb_k_rank($y[0], $fam));
@@ -531,10 +576,15 @@ function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
   // (handicap 1re mi-temps « htah » : contrôlé contre le résultat à la mi-temps « ht1x2 »)
   foreach ($out as $mk => $row) {
     $fam = sb_fam($mk);
-    if ($fam !== 'ah' && $fam !== 'eh' && $fam !== 'htah') continue;
-    $p1 = $pH[$fam === 'htah' ? 'ht1x2' : '1x2'] ?? null;
+    $ref = ['ah' => '1x2', 'eh' => '1x2', 'htah' => 'ht1x2', '2hah' => '2h1x2', 'cah' => 'c1x2', 'hteh' => 'ht1x2'][$fam] ?? null;
+    if ($ref === null) continue;
+    $p1 = $pH[$ref] ?? null; $pa1 = $pA[$ref] ?? null;
     $h = (float) substr($mk, strlen($fam) + 1); $p = $pH[$mk] ?? null;
-    $ok = $p1 !== null && $p !== null && ($h < 0 ? $p <= $p1 + 0.05 : ($h > 0 ? $p >= $p1 - 0.05 : abs($p - $p1) <= 0.05));
+    $asian = $fam !== 'eh' && $fam !== 'hteh';
+    // asiatique : ligne ≤ −0,5 → pas plus probable que 1 ; −0,25 → pas plus que « remboursé si nul » (1 / (1 + 2)) ; ≥ 0 → pas moins que 1.
+    // 3 issues : ligne négative ≤ 1 ; positive ≥ 1 ; 0 = 1.
+    $dnb = $p1 !== null && $pa1 !== null && $p1 + $pa1 > 0 ? $p1 / ($p1 + $pa1) : $p1;
+    $ok = $p1 !== null && $p !== null && ($asian ? ($h <= -0.5 ? $p <= $p1 + 0.05 : ($h < 0 ? $p <= $dnb + 0.05 : $p >= $p1 - 0.05)) : ($h < 0 ? $p <= $p1 + 0.05 : ($h > 0 ? $p >= $p1 - 0.05 : abs($p - $p1) <= 0.05)));
     if (!$ok) { unset($out[$mk]); $unk['(contrôle) ' . $fam . ' retiré : signe / convention à vérifier'] = ($unk['(contrôle) ' . $fam . ' retiré : signe / convention à vérifier'] ?? 0) + 1; }
   }
   uksort($out, 'sb_mk_cmp');
@@ -550,7 +600,8 @@ function sb_settle_mk(string $mk, string $k, array $ft, ?array $ht, ?array $xs =
   $fam = sb_fam($mk); $x = (float) substr($mk, strlen($fam) + 1);
   if (in_array($fam, SB_XS_FAMS, true)) return sb_settle_xs($fam, $x, $k, $h, $a, $xs);
   $res = static fn(int $p, int $q): string => $p > $q ? 'H' : ($p < $q ? 'A' : 'D');
-  $needHt = in_array($fam, ['ht1x2', 'htou', 'htbtts', '2h1x2', 'htft', 'hsh', 'htdc', '2hdc', '2hbtts', 'htcs', 'htoe', '2hoe', '2hou', 'httth', 'httta', 'htah', 'wbh', 'wba', 'hteh', '2hcs'], true);
+  $needHt = in_array($fam, ['ht1x2', 'htou', 'htbtts', '2h1x2', 'htft', 'hsh', 'htdc', '2hdc', '2hbtts', 'htcs', 'htoe', '2hoe', '2hou', 'httth', 'httta', 'htah', 'wbh', 'wba', 'hteh', '2hcs',
+    '2htth', '2htta', '2hah', 'hsbh', 'asbh', '2hhsg', '2hasg'], true);
   if ($needHt && ($ht === null || count($ht) !== 2 || !is_numeric($ht[0]) || !is_numeric($ht[1]))) return null;
   [$hh, $ha] = $needHt ? [(int) $ht[0], (int) $ht[1]] : [0, 0];
   if ($needHt && ($hh > $h || $ha > $a)) return null; // mi-temps incohérente : à vérifier
@@ -560,19 +611,19 @@ function sb_settle_mk(string $mk, string $k, array $ft, ?array $ht, ?array $xs =
     case '1x2': $win = $r; break;
     case 'dc': if (!in_array($k, ['HD', 'HA', 'DA'], true)) return null; return str_contains($k, $r) ? 'won' : 'lost';
     case 'dnb': if ($r === 'D') return in_array($k, ['H', 'A'], true) ? 'void' : null; $win = $r; break;
-    case 'ou': $win = $t > $x ? 'O' : 'U'; break;
+    case 'ou': return sb_ou_res($k, $t, $x);
     case 'btts': $win = $h > 0 && $a > 0 ? 'Y' : 'N'; break;
-    case 'tth': $win = $h > $x ? 'O' : 'U'; break;
-    case 'tta': $win = $a > $x ? 'O' : 'U'; break;
+    case 'tth': return sb_ou_res($k, $h, $x);
+    case 'tta': return sb_ou_res($k, $a, $x);
     case 'oe': $win = $t % 2 === 1 ? 'O' : 'E'; break;
     case 'csh': $win = $a === 0 ? 'Y' : 'N'; break;
     case 'csa': $win = $h === 0 ? 'Y' : 'N'; break;
     case 'wnh': $win = $h > $a && $a === 0 ? 'Y' : 'N'; break;
     case 'wna': $win = $a > $h && $h === 0 ? 'Y' : 'N'; break;
     case 'eh': $d = $h + $x - $a; $win = $d > 0 ? 'H' : ($d < 0 ? 'A' : 'D'); break;
-    case 'ah': if (!sb_half($x)) return null; $win = $h + $x - $a > 0 ? 'H' : 'A'; break;
+    case 'ah': return sb_q($x) ? sb_ah_res($k, $h - $a, $x) : null;
     case 'ht1x2': $win = $res($hh, $ha); break;
-    case 'htou': $win = $hh + $ha > $x ? 'O' : 'U'; break;
+    case 'htou': return sb_ou_res($k, $hh + $ha, $x);
     case 'htbtts': $win = $hh > 0 && $ha > 0 ? 'Y' : 'N'; break;
     case '2h1x2': $win = $res($h - $hh, $a - $ha); break;
     case 'htft': $win = $res($hh, $ha) . '/' . $r; break;
@@ -588,10 +639,22 @@ function sb_settle_mk(string $mk, string $k, array $ft, ?array $ht, ?array $xs =
     case 'htcs': if (!preg_match('/^\d+:\d+$/', $k)) return null; $win = $hh . ':' . $ha; break;
     case 'htoe': $win = ($hh + $ha) % 2 === 1 ? 'O' : 'E'; break;
     case '2hoe': $win = ($t - $hh - $ha) % 2 === 1 ? 'O' : 'E'; break;
-    case '2hou': $win = $t - $hh - $ha > $x ? 'O' : 'U'; break;
-    case 'httth': $win = $hh > $x ? 'O' : 'U'; break;
-    case 'httta': $win = $ha > $x ? 'O' : 'U'; break;
-    case 'htah': if (!sb_half($x)) return null; $win = $hh + $x - $ha > 0 ? 'H' : 'A'; break;
+    case '2hou': return sb_ou_res($k, $t - $hh - $ha, $x);
+    case 'httth': return sb_ou_res($k, $hh, $x);
+    case 'httta': return sb_ou_res($k, $ha, $x);
+    case 'htah': return sb_q($x) ? sb_ah_res($k, $hh - $ha, $x) : null;
+    case '2htth': return sb_ou_res($k, $h - $hh, $x);
+    case '2htta': return sb_ou_res($k, $a - $ha, $x);
+    case '2hah': return sb_q($x) ? sb_ah_res($k, ($h - $hh) - ($a - $ha), $x) : null;
+    case 'hsbh': $win = $hh > 0 && $h - $hh > 0 ? 'Y' : 'N'; break;
+    case 'asbh': $win = $ha > 0 && $a - $ha > 0 ? 'Y' : 'N'; break;
+    case '2hhsg': $win = $h - $hh > 0 ? 'Y' : 'N'; break;
+    case '2hasg': $win = $a - $ha > 0 ? 'Y' : 'N'; break;
+    case 'hgn': case 'agn': // nombre exact de buts d'une équipe (« 3+ » = 3 ou plus)
+      $g = $fam === 'hgn' ? $h : $a;
+      if (preg_match('/^(\d)\+$/', $k, $mm)) return $g >= (int) $mm[1] ? 'won' : 'lost';
+      if (preg_match('/^\d$/', $k)) return $g === (int) $k ? 'won' : 'lost';
+      return null;
     case 'hsg': $win = $h > 0 ? 'Y' : 'N'; break;
     case 'asg': $win = $a > 0 ? 'Y' : 'N'; break;
     case 'hoe': $win = $h % 2 === 1 ? 'O' : 'E'; break;
@@ -618,16 +681,23 @@ function sb_valid_k(string $fam): array {
     case 'rou': $o = []; foreach (['H', 'D', 'A'] as $p) foreach (['O', 'U'] as $q) $o[] = $p . '/' . $q; return $o;
     case 'eg': return ['0', '1', '2', '3', '4', '5', '6+'];
     case 'hsh': return ['1', '2', 'X'];
-    case 'hsg': case 'asg': case 'wbh': case 'wba': return ['Y', 'N'];
+    case 'hsg': case 'asg': case 'wbh': case 'wba': case 'hsbh': case 'asbh': case '2hhsg': case '2hasg': return ['Y', 'N'];
+    case '2htth': case '2htta': return ['O', 'U'];
+    case '2hah': case 'cah': return ['H', 'A'];
     case 'hoe': case 'aoe': return ['O', 'E'];
-    case 'hteh': case 'fts': case 'lts': case 'c1x2': return ['H', 'D', 'A'];
+    case 'hteh': case 'fts': case 'lts': case 'c1x2': case 'ceh': case 'ng': case 'rm': return ['H', 'D', 'A'];
+    case 'co3': return ['O', 'E', 'U'];
+    case 'g10': return ['O', 'U'];
     case 'cou': case 'couh': case 'coua': case 'kou': case 'kouh': case 'koua': return ['O', 'U'];
   }
   return [];
 }
 /* 2026-10-23 — paris réglés avec les statistiques / événements du match (fixtures?ids : events, statistics, players) */
 const SB_XS_WAIT = 8 * 3600;
-const SB_XS_FAMS = ['fts', 'lts', 'cou', 'couh', 'coua', 'c1x2', 'kou', 'kouh', 'koua', 'ags', 'fgs', 'lgs'];
+const SB_XS_FAMS = ['fts', 'lts', 'cou', 'couh', 'coua', 'c1x2', 'kou', 'kouh', 'koua', 'ags', 'fgs', 'lgs',
+  'cah', 'co3', 'ceh', 'ng', 'rm', 'g10', 'ngs', 'p2g', 'p3g', 'pbk', 'psoff', 'psh', 'pst', 'pas'];
+/** Marchés dont le choix est un nom de joueur (ou « - » = aucun). */
+const SB_NAME_FAMS = ['ags', 'fgs', 'lgs', 'ngs', 'p2g', 'p3g', 'pbk', 'psoff', 'psh', 'pst', 'pas'];
 /** Nom de joueur propre (lettres, espaces, points, tirets, apostrophes ; 40 car.) ; '' si illisible. */
 function sb_pname_clean(string $v): string {
   $v = trim((string) preg_replace('/\s+/u', ' ', $v));
@@ -666,12 +736,22 @@ function sb_xs_build(array $r, array $row): array {
   }
   usort($gl, static fn($p, $q) => $p[1] <=> $q[1]);
   $xs['gl'] = $gl;
-  $pl = [];
+  $pl = []; $ps = [];
   foreach ((array) ($r['players'] ?? []) as $t) foreach ((array) ($t['players'] ?? []) as $p) {
-    $mn = $p['statistics'][0]['games']['minutes'] ?? null;
-    if (is_numeric($mn) && (int) $mn > 0 && ($nm = (string) ($p['player']['name'] ?? '')) !== '') $pl[] = mb_substr($nm, 0, 40);
+    $st0 = (array) ($p['statistics'][0] ?? []); $mn = $st0['games']['minutes'] ?? null;
+    if (!is_numeric($mn) || (int) $mn <= 0 || ($nm = (string) ($p['player']['name'] ?? '')) === '') continue;
+    $nm = mb_substr($nm, 0, 40); $pl[] = $nm;
+    // tirs, tirs cadrés, passes décisives, jaunes, rouges (match entier : prolongation comprise → marchés joueurs remboursés si prolongé)
+    $ps[$nm] = [(int) ($st0['shots']['total'] ?? 0), (int) ($st0['shots']['on'] ?? 0), (int) ($st0['goals']['assists'] ?? 0), (int) ($st0['cards']['yellow'] ?? 0), (int) ($st0['cards']['red'] ?? 0)];
   }
-  $xs['pl'] = $pl ?: null;
+  $xs['pl'] = $pl ?: null; $xs['ps'] = $ps ?: null;
+  $cd = [];
+  foreach ((array) ($r['events'] ?? []) as $e) {
+    if (!is_array($e) || strtolower((string) ($e['type'] ?? '')) !== 'card' || (int) ($e['time']['elapsed'] ?? 0) > 90) continue;
+    $det = strtolower((string) ($e['detail'] ?? ''));
+    $cd[] = [mb_substr((string) ($e['player']['name'] ?? ''), 0, 40), str_contains($det, 'red') || str_contains($det, 'second') ? 1 : 0];
+  }
+  $xs['ce'] = $cd; // cartons des 90 min [joueur, rouge]
   return $xs;
 }
 /** Buts des 90 min [côté marquant, minute, joueur, csc] cohérents avec le score (csc attribué dans le bon sens), sinon null. */
@@ -684,6 +764,13 @@ function sb_xs_goals(array $gl, int $h, int $a): ?array {
   }
   return null;
 }
+/** Joueur pas gagnant : 'lost' s'il est entré en jeu, 'void' sinon, null si la liste des joueurs manque. */
+function sb_played(array $xs, string $k): ?string {
+  $pl = $xs['pl'] ?? null;
+  if (!is_array($pl)) return null;
+  foreach ($pl as $n) if (sb_pname_eq((string) $n, $k)) return 'lost';
+  return 'void';
+}
 /** Règlement d'un pari « statistiques / événements » ; null = données pas (encore) là. 90 min : match prolongé → remboursé. */
 function sb_settle_xs(string $fam, float $x, string $k, int $h, int $a, ?array $xs): ?string {
   if (!is_array($xs)) return null;
@@ -694,14 +781,14 @@ function sb_settle_xs(string $fam, float $x, string $k, int $h, int $a, ?array $
       if ($et) return 'void'; // statistiques prolongation comprise
       if (!is_array($xs['co'] ?? null)) return null;
       [$ch, $ca] = $xs['co'];
-      $win = $fam === 'cou' ? $ou($ch + $ca) : ($fam === 'couh' ? $ou($ch) : ($fam === 'coua' ? $ou($ca) : ($ch > $ca ? 'H' : ($ch < $ca ? 'A' : 'D'))));
+      if ($fam !== 'c1x2') return sb_ou_res($k, $fam === 'cou' ? $ch + $ca : ($fam === 'couh' ? $ch : $ca), $x);
+      $win = $ch > $ca ? 'H' : ($ch < $ca ? 'A' : 'D');
       break;
     case 'kou': case 'kouh': case 'koua':
       if ($et) return 'void';
       if (!is_array($xs['cd'] ?? null)) return null;
       [$kh, $ka] = $xs['cd'];
-      $win = $fam === 'kou' ? $ou($kh + $ka) : ($fam === 'kouh' ? $ou($kh) : $ou($ka));
-      break;
+      return sb_ou_res($k, $fam === 'kou' ? $kh + $ka : ($fam === 'kouh' ? $kh : $ka), $x);
     case 'fts': case 'lts':
       if ($h + $a === 0) { $win = 'D'; break; }
       $g = sb_xs_goals((array) ($xs['gl'] ?? []), $h, $a);
@@ -709,6 +796,44 @@ function sb_settle_xs(string $fam, float $x, string $k, int $h, int $a, ?array $
       $p = $fam === 'fts' ? $g[0] : $g[count($g) - 1];
       $win = $p[0] === 'h' ? 'H' : 'A';
       break;
+    case 'cah': case 'co3': case 'ceh':
+      if ($et) return 'void';
+      if (!is_array($xs['co'] ?? null)) return null;
+      [$ch, $ca] = $xs['co'];
+      if ($fam === 'cah') return sb_q($x) ? sb_ah_res($k, $ch - $ca, $x) : null;
+      if ($fam === 'co3') { $win = $ch + $ca > $x ? 'O' : ($ch + $ca < $x ? 'U' : 'E'); break; }
+      $d = $ch + $x - $ca; $win = $d > 0 ? 'H' : ($d < 0 ? 'A' : 'D'); break;
+    case 'ng': case 'rm': case 'g10': // n-ième but ; résultat à la n-ième minute ; but entre la n-ième et la (n+10)-ième minute
+      $g = $h + $a === 0 ? [] : sb_xs_goals((array) ($xs['gl'] ?? []), $h, $a);
+      if ($g === null) return null;
+      $n = (int) round($x);
+      if ($fam === 'ng') { $win = isset($g[$n - 1]) ? ($g[$n - 1][0] === 'h' ? 'H' : 'A') : 'D'; break; }
+      if ($fam === 'rm') { $p = ['h' => 0, 'a' => 0]; foreach ($g as $q) if ((int) floor($q[1]) <= $n) $p[$q[0]]++; /* minute affichée ≤ n */ $win = $p['h'] > $p['a'] ? 'H' : ($p['h'] < $p['a'] ? 'A' : 'D'); break; }
+      $c = 0; foreach ($g as $q) { $mn = (int) floor($q[1]); if ($mn > $n && $mn <= $n + 10) $c++; }
+      $win = $c > 0 ? 'O' : 'U'; break;
+    case 'ngs':
+      $g = $h + $a === 0 ? [] : sb_xs_goals((array) ($xs['gl'] ?? []), $h, $a);
+      if ($g === null) return null;
+      $n = (int) round($x); $q = $g[$n - 1] ?? null;
+      if ($k === '-') return $q === null ? 'won' : 'lost';
+      if ($q !== null && $q[3]) return 'void'; // ce but est contre son camp
+      if ($q !== null && sb_pname_eq($q[2], $k)) return 'won';
+      return sb_played($xs, $k);
+    case 'p2g': case 'p3g':
+      $g = $h + $a === 0 ? [] : sb_xs_goals((array) ($xs['gl'] ?? []), $h, $a);
+      if ($g === null) return null;
+      $c = 0; foreach ($g as $q) if (!$q[3] && sb_pname_eq($q[2], $k)) $c++;
+      if ($c >= ($fam === 'p2g' ? 2 : 3)) return 'won';
+      return sb_played($xs, $k);
+    case 'pbk': case 'psoff':
+      if ($et) return 'void';
+      foreach ((array) ($xs['ce'] ?? []) as $c) if (sb_pname_eq((string) $c[0], $k) && ($fam === 'pbk' || $c[1])) return 'won';
+      return sb_played($xs, $k);
+    case 'psh': case 'pst': case 'pas':
+      if ($et) return 'void';
+      if (!is_array($xs['ps'] ?? null)) return null;
+      foreach ($xs['ps'] as $nm => $v) if (sb_pname_eq((string) $nm, $k)) return $v[$fam === 'psh' ? 0 : ($fam === 'pst' ? 1 : 2)] > $x ? 'won' : 'lost';
+      return 'void'; // pas entré en jeu
     case 'ags': case 'fgs': case 'lgs':
       $g = $h + $a === 0 ? [] : sb_xs_goals((array) ($xs['gl'] ?? []), $h, $a);
       if ($g === null) return null;
@@ -1160,7 +1285,13 @@ function sb_mk_name(string $mk): string {
     'hoe' => 'Buts domicile pair/impair', 'aoe' => 'Buts extérieur pair/impair', 'hteh' => 'Handicap 1re mi-temps (' . $x . ')', '2hcs' => 'Score exact 2e mi-temps',
     'fts' => 'Première équipe à marquer', 'lts' => 'Dernière équipe à marquer', 'cou' => 'Corners (plus/moins de ' . $x . ')', 'couh' => 'Corners domicile (' . $x . ')',
     'coua' => 'Corners extérieur (' . $x . ')', 'c1x2' => 'Le plus de corners', 'kou' => 'Cartons (plus/moins de ' . $x . ')', 'kouh' => 'Cartons domicile (' . $x . ')',
-    'koua' => 'Cartons extérieur (' . $x . ')', 'ags' => 'Buteur (à tout moment)', 'fgs' => 'Premier buteur', 'lgs' => 'Dernier buteur'];
+    'koua' => 'Cartons extérieur (' . $x . ')', 'ags' => 'Buteur (à tout moment)', 'fgs' => 'Premier buteur', 'lgs' => 'Dernier buteur',
+    '2htth' => 'Buts domicile 2e mi-temps (' . $x . ')', '2htta' => 'Buts extérieur 2e mi-temps (' . $x . ')', '2hah' => 'Handicap asiatique 2e mi-temps (' . $x . ')',
+    'hsbh' => 'Domicile marque dans les 2 mi-temps', 'asbh' => 'Extérieur marque dans les 2 mi-temps', '2hhsg' => 'Domicile marque en 2e mi-temps', '2hasg' => 'Extérieur marque en 2e mi-temps',
+    'hgn' => 'Nombre de buts domicile', 'agn' => 'Nombre de buts extérieur', 'ng' => 'But n° ' . $x . ' : quelle équipe', 'rm' => 'Résultat à la ' . $x . 'e minute',
+    'g10' => 'But entre la ' . $x . 'e et la ' . ((int) $x + 10) . 'e minute', 'co3' => 'Corners (' . $x . ')', 'ceh' => 'Corners : handicap (' . $x . ')', 'cah' => 'Corners : handicap asiatique (' . $x . ')',
+    'ngs' => 'Buteur du but n° ' . $x, 'p2g' => 'Marque 2 buts ou plus', 'p3g' => 'Marque 3 buts ou plus', 'pbk' => 'Joueur averti', 'psoff' => 'Joueur expulsé',
+    'psh' => 'Tirs du joueur (plus de ' . $x . ')', 'pst' => 'Tirs cadrés du joueur (plus de ' . $x . ')', 'pas' => 'Passes décisives (plus de ' . $x . ')'];
   return $n[$fam] ?? $mk;
 }
 function sb_k_name(string $mk, string $k, string $home, string $away): string {
@@ -1170,8 +1301,15 @@ function sb_k_name(string $mk, string $k, string $home, string $away): string {
   $ou = static fn(string $c): string => $c === 'O' ? 'Plus' : 'Moins';
   switch ($fam) {
     case '1x2': case 'eh': case 'ht1x2': case '2h1x2': case 'dnb': case 'ah': case 'htah': case '12': case 'hteh': case 'c1x2': return $one($k);
-    case 'fts': case 'lts': return $k === 'D' ? 'Aucun but' : $one($k);
-    case 'ags': case 'fgs': case 'lgs': return $k === '-' ? 'Aucun buteur' : $k;
+    case 'fts': case 'lts': case 'ng': return $k === 'D' ? 'Aucun but' : $one($k);
+    case 'rm': case 'ceh': return $one($k);
+    case 'ags': case 'fgs': case 'lgs': case 'ngs': return $k === '-' ? 'Aucun buteur' : $k;
+    case 'p2g': case 'p3g': case 'pbk': case 'psoff': case 'psh': case 'pst': case 'pas': return $k;
+    case 'co3': return ['O' => 'Plus', 'E' => 'Exactement', 'U' => 'Moins'][$k] ?? $k;
+    case 'g10': case '2htth': case '2htta': return $ou($k);
+    case 'cah': case '2hah': return $one($k);
+    case 'hsbh': case 'asbh': case '2hhsg': case '2hasg': return $yn($k);
+    case 'hgn': case 'agn': return str_ends_with($k, '+') ? rtrim($k, '+') . ' ou plus' : $k;
     case 'cou': case 'couh': case 'coua': case 'kou': case 'kouh': case 'koua': return $ou($k);
     case 'hsg': case 'asg': case 'wbh': case 'wba': return $yn($k);
     case 'hoe': case 'aoe': return $k === 'O' ? 'Impair' : 'Pair';
@@ -1721,7 +1859,9 @@ const SB_LIVE_STATS_TTL = 60;       // statistiques d'un match ouvert : au plus 
 const SB_LIVE_STATS_MIN_LEFT = 1500; // … seulement s'il reste plus de 1 500 lectures
 const SB_LIVE_KEEP_END = 600;       // match sorti du flux : gardé 10 min (« Fin du match »)
 // 2026-10-22 (propriétaire : « les joueurs adorent le direct ») : + pair / impair, 1re mi-temps (seulement pendant la 1re mi-temps, avant la 43e)
-const SB_LIVE_FAMS = ['1x2', 'dc', 'dnb', 'ou', 'btts', 'tth', 'tta', 'oe', 'ht1x2', 'htou'];
+const SB_LIVE_FAMS = ['1x2', 'dc', 'dnb', 'ou', 'btts', 'tth', 'tta', 'oe', 'ht1x2', 'htou',
+  'ah', 'eh', 'cs', 'htcs', 'htah', 'hteh', 'htft', 'htbtts', '2hbtts', '2h1x2', '2hhsg', '2hasg', 'hsg', 'asg', 'hsbh', 'asbh', 'hgn', 'agn', 'lts', 'fts', 'rbtts',
+  'cou', 'co3', 'c1x2', 'ceh', 'cah', 'kou', 'ags', 'ngs', 'p2g', 'p3g', 'pbk', 'psoff', 'psh', 'pst', 'pas', 'g10', 'ng', 'rm']; // 2026-10-23 : tous les paris du flux direct réglables
 
 function sb_live_visible(?array $user): bool {
   $c = sb_config();
@@ -1804,56 +1944,159 @@ function sb_live_store_fixtures(array $j, int $now): int {
  * odds[] = {id, name, values[{value, odd, handicap, main, suspended}]}. Noms / valeurs inconnus → $unk (jamais d'erreur).
  * $sc = score actuel [h, a] : les lignes déjà jouées sont retirées.
  */
-function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
-  $raw = [];
-  $names = ['1x2' => ['fulltime result', 'match winner', '1x2', 'full time result', 'match result', '3way result'], 'dc' => ['double chance'], 'dnb' => ['draw no bet', 'home/away'],
-    'ou' => ['over/under line', 'match goals', 'goals over/under', 'total goals', 'over/under', 'total - goals'], 'btts' => ['both teams to score', 'both teams score'],
+/**
+ * 2026-10-23 (propriétaire : « ajoute tout ce que l'API donne, en direct aussi ») — un pari du flux direct (nom, valeur, handicap)
+ * → [mk, k] ; false = écarté exprès (silencieux : ligne hors bornes, marché qu'on ne peut pas régler) ; null = inconnu (diagnostic).
+ * Mesure du 2026-10-23 sur le flux : handicaps du direct sur le score COMPLET du match (« Domicile +1 » à 1,04 quand on mène 2-1).
+ */
+function sb_live_parse(string $n, string $val, $hcp) {
+  $lv = strtolower(trim((string) preg_replace('/\s+/', ' ', $val)));
+  $hx = is_numeric($hcp) ? (float) $hcp : null;
+  $ou = static function () use ($val, $lv, $hx): ?array { $o = sb_ou_val($val); if ($o === null && in_array($lv, ['over', 'under'], true) && $hx !== null) $o = [$lv === 'over' ? 'O' : 'U', $hx]; return $o; };
+  $res = static fn(string $v): ?string => ['home' => 'H', '1' => 'H', 'draw' => 'D', 'x' => 'D', 'away' => 'A', '2' => 'A', 'no goal' => 'D', 'neither' => 'D'][$v] ?? null;
+  $nth = static fn(string $t): ?int => preg_match('/(\d+)(?:st|nd|rd|th)/', $t, $m) ? (int) $m[1] : null;
+  $lines = static fn(float $x, float $lo, float $hi): bool => $x >= $lo - 1e-9 && $x <= $hi + 1e-9 && sb_q($x);
+  $sets = [
+    '1x2' => ['fulltime result', 'match winner', '1x2', 'full time result', 'match result', '3way result'],
+    'dc' => ['double chance'], 'dnb' => ['draw no bet', 'home/away'],
+    'ou' => ['over/under line', 'match goals', 'goals over/under', 'total goals', 'over/under', 'total - goals', 'asian total', 'alternative total goals'],
+    'btts' => ['both teams to score', 'both teams score'],
     'tth' => ['home team total goals', 'home team goals', 'total - home', 'home team - total goals'], 'tta' => ['away team total goals', 'away team goals', 'total - away', 'away team - total goals'],
     'oe' => ['odd/even', 'goals odd/even', 'odd/even goals', 'total - odd/even'],
     'ht1x2' => ['1x2 (1st half)', '1st half winner', 'first half winner', 'half time result', '1x2 - 1st half', 'fulltime result (1st half)', '1st half - 1x2'],
-    'htou' => ['over/under (1st half)', 'over/under line (1st half)', '1st half goals', 'first half goals', 'goals over/under first half', '1st half - total goals', 'over/under 1st half']];
+    'htou' => ['over/under (1st half)', 'over/under line (1st half)', '1st half goals', 'first half goals', 'goals over/under first half', '1st half - total goals', 'over/under 1st half', 'match goals (1st half)'],
+    'ah' => ['asian handicap'], 'eh' => ['3-way handicap', 'european handicap', 'handicap result'],
+    'cs' => ['final score', 'correct score', 'exact score'], 'htcs' => ['correct score (1st half)', 'final score (1st half)'],
+    'htah' => ['asian handicap (1st half)'], 'hteh' => ['european handicap (1st half)', '3-way handicap (1st half)'],
+    'htft' => ['half time/full time', 'ht/ft double', 'halftime/fulltime'], 'htbtts' => ['both teams to score (1st half)', 'both teams score - first half'],
+    '2hbtts' => ['both teams to score (2nd half)'], '2h1x2' => ['to win 2nd half', '2nd half winner', '1x2 (2nd half)'],
+    '2hhsg' => ['home team score a goal (2nd half)'], '2hasg' => ['away team score a goal (2nd half)'],
+    'hsg' => ['home team score a goal', 'home team to score'], 'asg' => ['away team score a goal', 'away team to score'],
+    'hsbh' => ['home team to score in both halves'], 'asbh' => ['away team to score in both halves'],
+    'hgn' => ['how many goals will home team score?'], 'agn' => ['how many goals will away team score?'],
+    'lts' => ['last team to score (3 way)', 'last team to score'], 'fts' => ['first team to score', 'team to score first'],
+    'rbtts' => ['result / both teams to score', 'result/both teams score', 'results/both teams score'],
+    'cou' => ['total corners', 'asian corners', 'corners over/under', 'alternative corners'], 'co3' => ['match corners'], 'c1x2' => ['corners 1x2'],
+    'ceh' => ['corners european handicap'], 'cah' => ['corners asian handicap', 'asian handicap corners'],
+    'kou' => ['total cards', 'cards over/under'],
+    'ags' => ['anytime goal scorer', 'anytime goalscorer'], 'ngs' => ['goal scorer'], 'p2g' => ['to score 2 or more'], 'p3g' => ['to score 3 or more'],
+    'pbk' => ['player to be booked'], 'psoff' => ['player to be sent off'], 'psh' => ['player shots'], 'pst' => ['player shots on targets', 'player shots on target'], 'pas' => ['player assists'],
+    'g10' => ['next 10 minutes total'],
+  ];
+  $fam = null; foreach ($sets as $f => $l) if (in_array($n, $l, true)) { $fam = $f; break; }
+  // (0 = nom de pari inconnu ; null = valeur inconnue d'un pari connu)
+  if ($fam === null && preg_match('/^which team will score the (\d+)(?:st|nd|rd|th) goal\?$/', $n, $m)) { $fam = 'ng'; $hx = (float) $m[1]; }
+  if ($fam === null && preg_match('/^1x2 - (\d+) minutes$/', $n, $m)) { $fam = 'rm'; $hx = (float) $m[1]; }
+  if ($fam === null) {
+    // marchés qu'on ne peut pas régler (corners dans l'ordre, par mi-temps, façon de marquer, intervalles…) : écartés exprès
+    if (preg_match('/corner|method of|in interval|race to|1st half\)|2nd half\)|first half|second half|minutes|own goal|penalt|card|booking|half time|halftime/', $n)) return false;
+    return 0;
+  }
+  switch ($fam) {
+    case '1x2': case 'ht1x2': case '2h1x2': case 'c1x2': case 'lts': case 'fts': case 'ng': case 'rm':
+      $k = $res($lv); if ($k === null) return null;
+      if (($fam === '1x2' || $fam === 'ht1x2' || $fam === '2h1x2' || $fam === 'c1x2' || $fam === 'rm') && in_array($lv, ['no goal', 'neither'], true)) return null;
+      if ($fam === 'ng' || $fam === 'rm') { if ($hx === null || $hx < 1 || $hx > 90) return false; return [$fam . ':' . (int) $hx, $k]; }
+      return [$fam, $k];
+    case 'dc':
+      $dc = ['home/draw' => 'HD', '1x' => 'HD', 'home or draw' => 'HD', 'home/away' => 'HA', '12' => 'HA', 'home or away' => 'HA', 'draw/away' => 'DA', 'x2' => 'DA', 'away or draw' => 'DA', 'draw or away' => 'DA'];
+      return isset($dc[$lv]) ? ['dc', $dc[$lv]] : null;
+    case 'dnb': return $lv === 'home' || $lv === '1' ? ['dnb', 'H'] : ($lv === 'away' || $lv === '2' ? ['dnb', 'A'] : null);
+    case 'btts': case 'htbtts': case '2hbtts': case '2hhsg': case '2hasg': case 'hsg': case 'asg': case 'hsbh': case 'asbh':
+      return isset(SB_YN[$lv]) ? [$fam, SB_YN[$lv]] : null;
+    case 'oe': return $lv === 'odd' ? ['oe', 'O'] : ($lv === 'even' ? ['oe', 'E'] : null);
+    case 'ou': case 'tth': case 'tta': case 'htou': case 'cou': case 'kou':
+      $o = $ou(); if ($o === null) return null;
+      $hi = ['ou' => 9.5, 'tth' => 5.5, 'tta' => 5.5, 'htou' => 5.5, 'cou' => 25.5, 'kou' => 12.5][$fam];
+      return $lines($o[1], 0.5, $hi) ? [$fam . ':' . sb_line($o[1]), $o[0]] : false;
+    case 'co3':
+      if ($hx === null || abs($hx - round($hx)) > 1e-9 || $hx < 1 || $hx > 25) return false;
+      $k = ['over' => 'O', 'exactly' => 'E', 'under' => 'U'][$lv] ?? null;
+      return $k ? ['co3:' . (int) $hx, $k] : null;
+    case 'ah': case 'htah': case 'cah':
+      if ($hx === null || !in_array($lv, ['home', 'away', '1', '2'], true)) return null;
+      $hl = in_array($lv, ['home', '1'], true) ? $hx : -$hx; // ligne écrite du point de vue de CE choix → ligne domicile
+      if (!$lines($hl, $fam === 'cah' ? -12.5 : -5.5, $fam === 'cah' ? 12.5 : 5.5)) return false;
+      return [$fam . ':' . sb_line($hl), in_array($lv, ['home', '1'], true) ? 'H' : 'A'];
+    case 'eh': case 'hteh': case 'ceh':
+      $k = $res($lv); if ($k === null || $hx === null || $lv === 'no goal') return null;
+      $hl = $k === 'H' ? $hx : -$hx; // « Nul » et « Extérieur » portent la ligne de l'extérieur
+      if (abs($hl - round($hl)) > 1e-9 || abs($hl) > ($fam === 'ceh' ? 12 : 5)) return false;
+      return [$fam . ':' . sb_line($hl), $k];
+    case 'cs': case 'htcs':
+      if (!preg_match('/^(\d{1,2})\s*[:\-]\s*(\d{1,2})$/', $lv, $m)) return null;
+      if ((int) $m[1] > 9 || (int) $m[2] > 9) return false;
+      return [$fam, (int) $m[1] . ':' . (int) $m[2]];
+    case 'htft':
+      if (!preg_match('/^(home|draw|away|1|x|2)\s*\/\s*(home|draw|away|1|x|2)$/', $lv, $m)) return null;
+      return ['htft', $res($m[1]) . '/' . $res($m[2])];
+    case 'rbtts':
+      if (!preg_match('/^(home|draw|away|1|x|2)\s*(?:\/|&|and)\s*(yes|no)$/', $lv, $m)) return null;
+      return ['rbtts', $res($m[1]) . '/' . SB_YN[$m[2]]];
+    case 'hgn': case 'agn':
+      if ($lv === 'no goal' || $lv === '0') return [$fam, '0'];
+      if (preg_match('/^(\d)$/', $lv, $m)) return [$fam, $m[1]];
+      if (preg_match('/^(\d) or more$/', $lv, $m)) return [$fam, $m[1] . '+'];
+      return null;
+    case 'g10':
+      if (!preg_match('/^goals\s*\/\s*(over|under)\s+0\.5$/', $lv, $m)) return false; // corners : pas réglables
+      if ($hx === null || $hx < 0 || $hx > 80 || abs($hx - round($hx)) > 1e-9) return false;
+      return ['g10:' . (int) $hx, $m[1] === 'over' ? 'O' : 'U'];
+    case 'ags': case 'ngs': case 'p2g': case 'p3g': case 'pbk': case 'psoff':
+      if (preg_match('/^no\s*(goal\s*)?(scorer|goalscorer|goal)s?$/', $lv)) return in_array($fam, ['ags', 'ngs'], true) ? [$fam === 'ngs' ? 'ngs:' . (int) $hx : 'ags', '-'] : false;
+      if (($pn = sb_pname_clean($val)) === '') return false;
+      if ($fam === 'ngs') { if ($hx === null || $hx < 1 || $hx > 12) return false; return ['ngs:' . (int) $hx, $pn]; }
+      return [$fam, $pn];
+    case 'psh': case 'pst': case 'pas':
+      if (!preg_match('/^(.+?)\s*\/\s*over\s+(\d+(?:\.5))$/i', trim($val), $m) || ($pn = sb_pname_clean($m[1])) === '') return false;
+      return [$fam . ':' . sb_line((float) $m[2]), $pn];
+  }
+  return null;
+}
+function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
+  $raw = [];
   foreach ((array) ($r['odds'] ?? []) as $b) {
     if (!is_array($b)) continue;
     $name = (string) ($b['name'] ?? ''); $n = strtolower(trim((string) preg_replace('/\s+/', ' ', $name)));
-    $fam = null; foreach ($names as $f => $list) if (in_array($n, $list, true)) $fam = $f;
-    if ($fam === null) { $kk = mb_substr($name, 0, 80); $unk[$kk] = ($unk[$kk] ?? 0) + 1; continue; }
     foreach ((array) ($b['values'] ?? []) as $v) {
       if (!is_array($v) || !is_numeric($v['odd'] ?? null)) continue;
       $odd = (float) $v['odd']; if ($odd <= 1.0 || $odd > 1000) continue;
-      $val = trim((string) ($v['value'] ?? '')); $lv = strtolower($val); $s = !empty($v['suspended']) ? 1 : 0;
-      $mk = null; $k = null;
-      if (($fam === '1x2' || $fam === 'ht1x2') && isset(SB_RES[$lv])) { $mk = $fam; $k = SB_RES[$lv]; }
-      elseif ($fam === 'oe') { if ($lv === 'odd') { $mk = 'oe'; $k = 'O'; } elseif ($lv === 'even') { $mk = 'oe'; $k = 'E'; } }
-      elseif ($fam === 'dc') { $dc = ['home/draw' => 'HD', '1x' => 'HD', 'home/away' => 'HA', '12' => 'HA', 'draw/away' => 'DA', 'x2' => 'DA']; if (isset($dc[$lv])) { $mk = 'dc'; $k = $dc[$lv]; } }
-      elseif ($fam === 'dnb') { if ($lv === 'home' || $lv === '1') { $mk = 'dnb'; $k = 'H'; } elseif ($lv === 'away' || $lv === '2') { $mk = 'dnb'; $k = 'A'; } }
-      elseif ($fam === 'btts' && isset(SB_YN[$lv])) { $mk = 'btts'; $k = SB_YN[$lv]; }
-      elseif (in_array($fam, ['ou', 'tth', 'tta', 'htou'], true)) {
-        // « Over » + handicap « 2.5 », ou « Over 2.5 »
-        $o = sb_ou_val($val);
-        if ($o === null && in_array($lv, ['over', 'under'], true) && is_numeric($v['handicap'] ?? null)) $o = [$lv === 'over' ? 'O' : 'U', (float) $v['handicap']];
-        if ($o !== null && sb_half($o[1]) && $o[1] >= 0.5 && $o[1] <= ($fam === 'ou' ? 9.5 : 5.5)) { $mk = $fam . ':' . sb_line($o[1]); $k = $o[0]; }
-        elseif ($o !== null) continue; // ligne entière / quart : écartée exprès (silencieux)
-      }
-      if ($mk === null) { $kk = mb_substr($name . ' = ' . $val, 0, 80); $unk[$kk] = ($unk[$kk] ?? 0) + 1; continue; }
+      $val = trim((string) ($v['value'] ?? '')); $s = !empty($v['suspended']) ? 1 : 0;
+      $p = sb_live_parse($n, $val, $v['handicap'] ?? null);
+      if ($p === false) continue;
+      if ($p === 0) { $kk = mb_substr($name, 0, 80); $unk[$kk] = ($unk[$kk] ?? 0) + 1; break; } // pari inconnu : noté une fois
+      if ($p === null) { $kk = mb_substr($name . ' = ' . $val, 0, 80); $unk[$kk] = ($unk[$kk] ?? 0) + 1; continue; }
+      [$mk, $k] = $p;
       $raw[$mk][$k] = [$odd, $s];
     }
   }
   [$h, $a] = [(int) ($sc[0] ?? 0), (int) ($sc[1] ?? 0)];
+  $mn = (int) ($r['fixture']['status']['elapsed'] ?? 0);
   $m = max(0.01, min(0.4, (float) $cfg['mLive'] / 100));
   $out = [];
   foreach ($raw as $mk => $ks) {
     $fam = sb_fam($mk); $x = (float) substr($mk, strlen($fam) + 1);
-    if (count($ks) < (int) sb_group_size($fam)) continue; // groupe complet exigé
-    // déjà joué : retiré (jamais de « cadeau » sur un vieux prix)
-    if ((($fam === 'ou' || $fam === 'htou') && $h + $a > $x) || ($fam === 'tth' && $h > $x) || ($fam === 'tta' && $a > $x) || ($fam === 'btts' && $h > 0 && $a > 0)) continue;
+    // déjà joué / impossible : retiré (jamais de « cadeau » sur un vieux prix)
+    if (in_array($fam, ['ou', 'htou'], true) && $h + $a > $x - 0.5) continue;
+    if (($fam === 'tth' && $h > $x - 0.5) || ($fam === 'tta' && $a > $x - 0.5)) continue;
+    if (($fam === 'btts' && $h > 0 && $a > 0) || ($fam === 'hsg' && $h > 0) || ($fam === 'asg' && $a > 0) || ($fam === 'fts' && $h + $a > 0)) continue;
+    if (($fam === 'ng' && $x <= $h + $a) || (($fam === 'rm' || $fam === 'g10') && $mn >= $x)) continue;
+    if ($fam === 'cs' || $fam === 'htcs') $ks = array_filter($ks, static fn($z, $k) => (($q = explode(':', (string) $k)) && count($q) === 2) && (int) $q[0] >= $h && (int) $q[1] >= $a, ARRAY_FILTER_USE_BOTH);
+    if ($fam === 'hgn' || $fam === 'agn') { $g = $fam === 'hgn' ? $h : $a; $ks = array_filter($ks, static fn($z, $k) => str_ends_with((string) $k, '+') ? (int) $k > $g : (int) $k >= $g, ARRAY_FILTER_USE_BOTH); }
+    if (!$ks) continue;
+    $open = in_array($fam, SB_NAME_FAMS, true);
+    $size = sb_group_size($fam);
+    if ($size !== null && count($ks) < $size) continue; // groupe complet exigé
     $inv = 0.0; foreach ($ks as $z) $inv += 1 / $z[0];
     $exp = sb_expected($fam);
-    if ($inv < 0.98 * $exp || $inv > 1.35 * $exp) { $kk = '(contrôle) direct ' . $fam . ' incohérent'; $unk[$kk] = ($unk[$kk] ?? 0) + 1; continue; }
+    if ($size !== null && ($inv < 0.98 * $exp || $inv > 1.35 * $exp)) { $kk = '(contrôle) direct ' . $fam . ' incohérent'; $unk[$kk] = ($unk[$kk] ?? 0) + 1; continue; }
+    if ($open) { uasort($ks, static fn($p1, $p2) => $p1[0] <=> $p2[0]); $ks = array_slice($ks, 0, 40, true); }
     $norm = max(1.0, $inv / $exp);
     $row = []; $sq = 0.0; foreach ($ks as $z) $sq += ((1 / $z[0]) / $norm) ** 2;
     foreach ($ks as $k => $z) {
       $p = (1 / $z[0]) / $norm;
-      $our = sb_wodd($p, $m, $sq, $exp); // 2026-10-23 : marge du direct = réglage (4 %), plus le plafond « cote du flux − 0,01 »
+      // 2026-10-23 : marge du direct = réglage (4 %) ; joueurs / buteurs : chaque choix seul (cote du flux − marge)
+      $our = $open ? floor($z[0] * (1 - $m) * 100 + 1e-6) / 100 : sb_wodd($p, $m, $sq, $exp);
       if ($our < 1.01) continue;
       $row[] = [(string) $k, round($our, 2), $z[1]];
     }
@@ -1864,7 +2107,7 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
   uksort($out, 'sb_mk_cmp');
   return $out;
 }
-const SB_CLK_LAG = 20; // retard mesuré de l'horloge du fournisseur sur Flashscore (s), à la lecture d'une nouvelle valeur (mesures 2026-10-23 : 15 matchs)
+const SB_CLK_LAG = 26; // retard mesuré de l'horloge du fournisseur sur Flashscore (s), à la lecture d'une nouvelle valeur (mesures 2026-10-23 : 15 puis 12 matchs)
 /** Lectures « 0:00 » [heure, z] des 5 dernières minutes ; un saut de plus de 150 s (mi-temps, prolongation) repart de zéro. */
 function sb_clk_push(array $zs, ?int $z, int $now): array {
   $keep = array_values(array_filter($zs, static fn($p) => is_array($p) && (int) $p[0] > $now - 300));
@@ -1875,13 +2118,21 @@ function sb_clk_push(array $zs, ?int $z, int $now): array {
   $zs[] = [$now, $z];
   return array_slice($zs, -8);
 }
-/** « 0:00 » retenu : la plus tôt des lectures non aberrantes (≥ médiane basse − 40 s), moins SB_CLK_LAG ; une lecture isolée
- *  très différente ne déplace l'horloge qu'une fois confirmée par une 2e. */
+/**
+ * « 0:00 » retenu (mesure 2026-10-23, 12 matchs face à Flashscore : une lecture fausse du fournisseur, ~80 s trop tôt, revenait
+ * une fois sur deux) : VOTE — le groupe de lectures (à ±25 s) le plus nombreux gagne (égalité : celui de la lecture la plus
+ * récente) ; dans ce groupe, la plus tôt (= la plus fraîche), moins SB_CLK_LAG.
+ */
 function sb_clk_zero(array $zs): int {
-  $v = array_map(static fn($p) => (int) $p[1], $zs); sort($v);
-  $med = $v[intdiv(count($v) - 1, 2)];
-  foreach ($v as $z) if ($z >= $med - 40) return $z - SB_CLK_LAG;
-  return $med - SB_CLK_LAG;
+  $best = null; $bs = -1; $bt = -1;
+  foreach ($zs as $c) {
+    $sup = 0; $last = 0;
+    foreach ($zs as $q) if (abs((int) $q[1] - (int) $c[1]) <= 25) { $sup++; $last = max($last, (int) $q[0]); }
+    if ($sup > $bs || ($sup === $bs && $last > $bt)) { $best = (int) $c[1]; $bs = $sup; $bt = $last; }
+  }
+  $min = $best;
+  foreach ($zs as $q) if (abs((int) $q[1] - $best) <= 25) $min = min($min, (int) $q[1]);
+  return (int) $min - SB_CLK_LAG;
 }
 /** /odds/live → live.json (od) : score, minute, état, marchés ; « chg » = score différent de la lecture précédente. */
 function sb_live_store_odds(array $j, int $now): int {
@@ -2178,7 +2429,7 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
   $mk = is_array($od) ? (array) $od['mk'] : [];
   if ($st === 'HT') foreach ($mk as $k => $o) foreach ((array) $o as $i => $z) if (is_array($z)) $mk[$k][$i][2] = 0; // mi-temps : choix rouverts (contrôle de 15 s)
   // marchés de la 1re mi-temps : seulement pendant la 1re mi-temps, jusqu'à la 42e
-  if ($st !== '1H' || $m >= 43) foreach (array_keys($mk) as $k) if (in_array(sb_fam((string) $k), ['ht1x2', 'htou'], true)) unset($mk[$k]);
+  if ($st !== '1H' || $m >= 43) foreach (array_keys($mk) as $k) if (in_array(sb_fam((string) $k), ['ht1x2', 'htou', 'htcs', 'htah', 'hteh', 'htbtts'], true)) unset($mk[$k]);
   return ['row' => $row, 'od' => $od, 'sc' => $sc, 'm' => $m, 'st' => $st, 'susp' => $susp, 'mk' => $mk];
 }
 /**
@@ -2192,9 +2443,11 @@ function sb_live_clock(string $st, array $r, int $now, ?array $od = null): ?int 
   //  2) sinon la minute de l'API au moment où NOUS l'avons vue changer (mt) ; jamais l'heure prévue du coup d'envoi.
   if (!in_array($st, ['1H', '2H', 'ET'], true)) return null;
   $m = is_numeric($r['m'] ?? null) ? (int) $r['m'] : null;
+  // minute de l'API vieillie depuis qu'on l'a lue (direct pas relu depuis un moment : le contrôle ne rejette plus la bonne horloge)
+  $age = (int) ($r['mt'] ?? 0) > 0 ? max(0, $now - (int) $r['mt']) : 0;
   if (is_array($od) && isset($od['z']) && is_numeric($od['z'])) {
     $k = $now - (int) $od['z'];
-    if ($m === null || ($k >= ($m - 1) * 60 && $k < ($m + 3) * 60)) return $k;
+    if ($m === null || ($k >= ($m - 1) * 60 - 30 && $k < ($m + 3) * 60 + $age)) return $k;
   }
   if (is_array($od) && is_int($od['sec'] ?? null) && (int) ($od['sat'] ?? 0) > 0) {
     $k = (int) $od['sec'] + max(0, $now - (int) $od['sat']) + SB_CLK_LAG;
@@ -2277,7 +2530,7 @@ function sb_live_pick(string $id, string $mk, string $k, ?array $user, int $now)
   $v = sb_live_view($id, $L, $now, sb_config());
   if (!$v) return ['ok' => false, 'reason' => 'closed']; // petit championnat (direct limité) ou match sorti du flux
   $fam = sb_fam($mk);
-  if (!in_array($fam, SB_LIVE_FAMS, true) || !in_array($k, sb_valid_k($fam), true)) return ['ok' => false, 'reason' => 'closed'];
+  if (!in_array($fam, SB_LIVE_FAMS, true) || (sb_valid_k($fam) && !in_array($k, sb_valid_k($fam), true))) return ['ok' => false, 'reason' => 'closed']; // (choix libres : score exact, joueurs, nombre de buts → vérifiés dans les cotes)
   if ($v['susp']) return ['ok' => false, 'reason' => 'susp'];
   $odd = null; $s = 0;
   foreach ((array) ($v['mk'][$mk] ?? []) as $o) if ((string) $o[0] === $k) { $odd = (float) $o[1]; $s = (int) ($o[2] ?? 0); }
