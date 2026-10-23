@@ -41,7 +41,7 @@ function admin_paris_kind(array $b, array $predIds): string {
 function admin_paris_dash(string $per, array $bets, array $events, callable $isHouse, callable $who, ?int $now = null): array {
   [$from, $to] = admin_paris_period($per, $now);
   $bets = admin_paris_fill_r(array_values(array_filter($bets, static fn($b) => is_array($b) && (int) ($b['at'] ?? 0) >= $from && (int) ($b['at'] ?? 0) < $to)));
-  $predIds = [];
+  $predIds = []; $liveRed = [];
   foreach ($events as $e) if (is_array($e) && ($e['sport'] ?? '') === 'pred') $predIds[(string) ($e['id'] ?? '')] = (string) ($e['title'] ?? '');
   $z = static fn() => ['n' => 0, 'in' => 0.0, 'out' => 0.0, 'open' => 0, 'pot' => 0.0, 'won' => 0, 'lost' => 0];
   $tot = ['all' => $z(), 'live' => $z(), 'pre' => $z(), 'pred' => $z()];
@@ -69,6 +69,9 @@ function admin_paris_dash(string $per, array $bets, array $events, callable $isH
     if ($k === 'live') { $p['live']++; if ($st === 'won') $p['liveWon']++; }
     $players[$uid] = $p;
     $nSel = max(1, count((array) ($b['sel'] ?? [])));
+    // 2026-10-23 : pari en direct posé alors qu'un but était déjà marqué (pas encore dans notre score) → alerte rouge
+    foreach ((array) ($b['sel'] ?? []) as $s0) if (!empty($s0['lv']) && is_array($s0) && (admin_paris_live_info($s0)['flag'] ?? '') === 'red')
+      $liveRed[] = ['lvl' => 'red', 'uid' => $uid, 'txt' => 'Pari en direct de ' . number_format($stake, 2, ',', ' ') . ' $ sur « ' . ($s0['t'] ?? '') . ' » placé après un but déjà marqué (misé à ' . (admin_paris_live_info($s0)['clk0'] ?? '?') . ', score du pari ' . implode('-', (array) ($s0['sc'] ?? [])) . ') : à vérifier'];
     foreach ((array) ($b['sel'] ?? []) as $s) {
       $mid = (string) ($s['fx'] ?? '') !== '' ? (string) $s['fx'] : (string) ($s['ev'] ?? '');
       $m = $matches[$mid] ?? ['t' => (string) ($s['t'] ?? ''), 'n' => 0, 'in' => 0.0, 'out' => 0.0, 'live' => 0];
@@ -89,14 +92,14 @@ function admin_paris_dash(string $per, array $bets, array $events, callable $isH
     $row = ['id' => (string) ($b['id'] ?? ''), 'uid' => $uid, 'at' => $at, 'kind' => $k, 'stake' => $stake, 'odd' => (float) ($b['odd'] ?? 0), 'status' => $st, 'win' => $win,
       'pot' => (float) ($b['pot'] ?? 0),
       'sel' => array_map(static fn($s) => ['t' => (string) ($s['t'] ?? ''), 'l' => (string) ($s['l'] ?? ''), 'odd' => (float) ($s['odd'] ?? 0), 'r' => $s['r'] ?? null,
-        'lv' => !empty($s['lv']) ? 1 : 0, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null], array_slice((array) ($b['sel'] ?? []), 0, 30)), 'nSel' => $nSel];
+        'lv' => !empty($s['lv']) ? 1 : 0, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] + (!empty($s['lv']) ? admin_paris_live_info($s) : []), array_slice((array) ($b['sel'] ?? []), 0, 30)), 'nSel' => $nSel];
     $recent[] = $row;
     if ($st === 'won') $big[] = $row;
   }
   usort($recent, static fn($a, $b) => $b['at'] <=> $a['at']);
   usort($big, static fn($a, $b) => $b['win'] <=> $a['win']);
   // alertes
-  $alerts = [];
+  $alerts = array_slice($liveRed, 0, 10);
   foreach ($players as $p) {
     if ($p['live'] >= 3 && $p['liveWon'] / $p['live'] >= 0.7) $alerts[] = ['lvl' => 'red', 'uid' => $p['uid'], 'txt' => 'Gagne ' . $p['liveWon'] . ' paris en direct sur ' . $p['live'] . ' : à vérifier (paris placés après un but ?)'];
     elseif ($p['out'] - $p['in'] >= 50 && $p['in'] > 0 && $p['out'] / $p['in'] >= 5) $alerts[] = ['lvl' => 'orange', 'uid' => $p['uid'], 'txt' => 'Gain net +' . number_format($p['out'] - $p['in'], 2, ',', ' ') . ' $ pour ' . number_format($p['in'], 2, ',', ' ') . ' $ misés'];
@@ -130,6 +133,45 @@ function admin_paris_dash(string $per, array $bets, array $events, callable $isH
 }
 
 /** Coupons de la période, page par page (filtre : all | live | pre | pred | won | open | big). */
+/**
+ * 2026-10-23 (propriétaire : « voir l'heure exacte du match à laquelle il a misé, et si le but était déjà passé ») — pour un choix
+ * EN DIRECT : horloge du match au choix (k0) et à l'acceptation (ka), buts du match avec leur minute (fin du match : statistiques
+ * gardées ; match en cours : flux du direct) et signal : « red » = un but marqué AVANT la minute du pari n'était pas dans le score
+ * du pari (pari placé en avance sur nos données : à vérifier) ; « orange » = but dans la même minute ou la suivante.
+ */
+function admin_paris_live_info(array $s): array {
+  $clk = static fn($k) => is_numeric($k) && $k >= 0 ? sprintf('%d:%02d', intdiv((int) $k, 60), (int) $k % 60) : null;
+  $out = ['clk0' => $clk($s['k0'] ?? null), 'clka' => $clk($s['ka'] ?? null)];
+  if (!preg_match('/^sb:foot:(\d+):/', (string) ($s['ev'] ?? ''), $m) || !function_exists('sb_results')) return $out;
+  static $RES = null, $LIV = null;
+  if ($RES === null) $RES = sb_results();
+  $id = $m[1]; $goals = null;
+  $r = $RES[$id] ?? null;
+  if (is_array($r) && is_array($r['xs']['gl'] ?? null)) {
+    $ft = (array) ($r['ft'] ?? []);
+    $g = function_exists('sb_xs_goals') && count($ft) === 2 ? sb_xs_goals((array) $r['xs']['gl'], (int) $ft[0], (int) $ft[1]) : null;
+    if ($g !== null) $goals = array_map(static fn($q) => [$q[0], (int) floor($q[1]), (int) round(($q[1] - floor($q[1])) * 100)], $g);
+  }
+  if ($goals === null && function_exists('sb_live_data')) {
+    if ($LIV === null) $LIV = sb_live_data();
+    $row = $LIV['fx'][$id] ?? null;
+    if (is_array($row)) { $goals = []; foreach ((array) ($row['ev'] ?? []) as $e) if (($e['type'] ?? '') === 'goal') $goals[] = [(string) ($e['team'] ?? 'h'), (int) ($e['t'] ?? 0), (int) ($e['x'] ?? 0)]; }
+  }
+  if ($goals === null) return $out;
+  $out['goals'] = implode(' · ', array_map(static fn($q) => $q[1] . ($q[2] ? '+' . $q[2] : '') . '’ ' . ($q[0] === 'h' ? 'dom.' : 'ext.'), $goals));
+  $k0 = is_numeric($s['k0'] ?? null) ? (int) $s['k0'] : (is_numeric($s['m'] ?? null) ? ((int) $s['m'] - 1) * 60 : null);
+  $sc = (array) ($s['sc'] ?? []);
+  if ($k0 === null || count($sc) !== 2) return $out;
+  // début du but en secondes de jeu (minute affichée E = de (E − 1):00 à E:00 ; arrêts de jeu après 45:00 / 90:00)
+  $before = ['h' => 0, 'a' => 0]; $near = false;
+  foreach ($goals as [$sd, $el, $x]) {
+    $t0 = $x > 0 ? ($el * 60 + ($x - 1) * 60) : ($el - 1) * 60;
+    if ($t0 + 60 <= $k0) $before[$sd === 'a' ? 'a' : 'h']++; elseif ($t0 <= $k0 + 90) $near = true;
+  }
+  if ($before['h'] > (int) $sc[0] || $before['a'] > (int) $sc[1]) $out['flag'] = 'red';
+  elseif ($near) $out['flag'] = 'orange';
+  return $out;
+}
 function admin_paris_coupons(string $per, string $f, int $offset, array $bets, array $events, callable $isHouse, callable $who, ?int $now = null, string $q = ''): array {
   $nq = static fn(string $v): string => strtolower((string) (function_exists('iconv') ? (@iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $v) ?: $v) : $v));
   $q = trim($nq($q));
@@ -156,7 +198,7 @@ function admin_paris_coupons(string $per, string $f, int $offset, array $bets, a
     $rows[] = ['id' => (string) ($b['id'] ?? ''), 'uid' => $uid, 'at' => $at, 'kind' => $k, 'stake' => (float) ($b['stake'] ?? 0), 'odd' => (float) ($b['odd'] ?? 0), 'status' => $st,
       'win' => $st === 'open' ? 0.0 : (float) ($b['win'] ?? 0), 'pot' => (float) ($b['pot'] ?? 0), 'nSel' => $nSel,
       'sel' => array_map(static fn($s) => ['t' => (string) ($s['t'] ?? ''), 'l' => (string) ($s['l'] ?? ''), 'odd' => (float) ($s['odd'] ?? 0), 'r' => $s['r'] ?? null,
-        'lv' => !empty($s['lv']) ? 1 : 0, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null], array_slice((array) ($b['sel'] ?? []), 0, 30))];
+        'lv' => !empty($s['lv']) ? 1 : 0, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] + (!empty($s['lv']) ? admin_paris_live_info($s) : []), array_slice((array) ($b['sel'] ?? []), 0, 30))];
   }
   usort($rows, static fn($a, $b) => $b['at'] <=> $a['at']);
   $page = array_slice($rows, max(0, $offset), 50);

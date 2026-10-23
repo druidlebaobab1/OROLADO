@@ -1242,7 +1242,7 @@ function sb_open_fixtures(): array {
       if (!preg_match('/^sb:foot:(\d+):/', (string) ($s['ev'] ?? ''), $m) || isset($s['r'])) continue;
       $o = $out[$m[1]] ?? ['ko' => PHP_INT_MAX, 'ti' => $s['ti'] ?? null, 't' => (string) ($s['t'] ?? ''), 'n' => 0, 'x' => 0];
       $o['ko'] = min($o['ko'], (int) ($s['ko'] ?? 0)); $o['n']++;
-      if (in_array(sb_fam(substr((string) $s['ev'], strlen('sb:foot:' . $m[1] . ':'))), SB_XS_FAMS, true)) $o['x'] = 1; // a besoin des statistiques / événements
+      if (in_array(sb_fam(substr((string) $s['ev'], strlen('sb:foot:' . $m[1] . ':'))), SB_XS_FAMS, true) || !empty($s['lv'])) $o['x'] = 1; // a besoin des statistiques / événements (paris en direct : buts minute par minute pour l'admin)
       $out[$m[1]] = $o;
     }
   }
@@ -2667,7 +2667,7 @@ function sb_live_pick(string $id, string $mk, string $k, ?array $user, int $now)
   return ['ok' => true, 'live' => 1, 'grp' => 'fx:foot:' . $id, 'sel' => ['ev' => 'sb:foot:' . $id . ':' . $mk, 'k' => $k, 'odd' => $odd, 't' => $home . ' - ' . $away,
     'l' => ($mk === '1x2' ? $kn : sb_mk_name($mk) . ' : ' . $kn) . ' (direct ' . $v['sc'][0] . '-' . $v['sc'][1] . ', ' . $v['m'] . '\')',
     'mk' => $mk, 'sp' => 'foot', 'fx' => 'foot:' . $id, 'ko' => (int) ($row['ts'] ?? 0), 'ti' => [(int) ($row['h'][0] ?? 0), (int) ($row['a'][0] ?? 0)],
-    'lv' => 1, 'sc' => $v['sc'], 'm' => $v['m']],
+    'lv' => 1, 'sc' => $v['sc'], 'm' => $v['m'], 'k0' => sb_live_clock($v['st'], $row, $now, is_array($v['od']) ? $v['od'] : null), 'at0' => $now, 'st0' => $v['st']],
     'team' => ['h' => ['n' => $home, 'lo' => (string) ($row['h'][2] ?? '')], 'a' => ['n' => $away, 'lo' => (string) ($row['a'][2] ?? '')]]];
 }
 /** Attente d'acceptation (tests : $GLOBALS['SB_SLEEP'] remplace l'attente et renvoie l'heure d'après). */
@@ -2744,6 +2744,9 @@ function sb_live_check(array &$picked, string $acc, ?array $user, int $now, arra
     $nw = (float) $n['odd']; $old = (float) $p['odd'];
     if (abs($nw - $old) > 0.004 && ($acc === 'none' || ($acc === 'up' && $nw < $old))) { $chg[] = ['ev' => $p['ev'], 'k' => $p['k'], 'odd' => $nw]; continue; }
     $n['m'] = $p['m'] ?? $n['m']; // minute du pari (pas celle de la relecture)
+    // 2026-10-23 (propriétaire : « voir dans l'admin l'heure exacte du match au moment de la mise ») : horloge du match au choix (k0)
+    // et à l'acceptation après le contrôle (ka), en secondes de jeu
+    $n['ka'] = $n['k0'] ?? null; $n['k0'] = $p['k0'] ?? null; $n['at0'] = $p['at0'] ?? null; $n['st0'] = $p['st0'] ?? ($n['st0'] ?? null);
     $new[$i] = $n;
   }
   if ($chg) return ['ok' => false, 'reason' => 'odds', 'odds' => $chg];
