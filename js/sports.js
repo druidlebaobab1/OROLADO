@@ -2520,7 +2520,13 @@
     var paint = function () { var i = Math.round(sc.scrollLeft / Math.max(1, sc.clientWidth)); i = Math.abs(i) > 0 ? 1 : 0; TV.pane = i; d.querySelectorAll('[data-tvp]').forEach(function (b) { var on = +b.getAttribute('data-tvp') === i; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); }); tvFit(); };
     // 2026-10-22 (propriétaire : « ça saute, ça doit glisser ») : la pastille blanche GLISSE sous le doigt (--tvx = 0 … 1), sans saut
     var ind = function (f) { d.style.setProperty('--tvx', String(Math.max(0, Math.min(1, f)))); };
-    ind(TV.pane || 0);
+    // 2026-10-23 (propriétaire : « autre match : le bouton reste sur Informations mais on voit le terrain ») : nouveau match →
+    // Diffusion ; même match redessiné → l'onglet choisi, pastille ET contenu ensemble
+    var cf = curFx(), pane = cf && TV.fid === cf.id ? (TV.pane || 0) : 0, rtl0 = document.documentElement.dir === 'rtl';
+    TV.pane = pane;
+    if (pane) sc.scrollLeft = (rtl0 ? -1 : 1) * sc.clientWidth;
+    d.querySelectorAll('[data-tvp]').forEach(function (b) { var on = +b.getAttribute('data-tvp') === pane; b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); });
+    ind(pane);
     sc.addEventListener('scroll', function () { ind(Math.abs(sc.scrollLeft) / Math.max(1, sc.clientWidth)); clearTimeout(sc._t); sc._t = setTimeout(paint, 60); }, { passive: true });
     d.addEventListener('pointerdown', function (ev) { var b = ev.target.closest && ev.target.closest('[data-tvp]'); if (b) { ind(+b.getAttribute('data-tvp')); d.querySelectorAll('[data-tvp]').forEach(function (x) { x.classList.toggle('on', x === b); }); } });
     d.addEventListener('click', function (ev) { var b = ev.target.closest && ev.target.closest('[data-tvp]'); if (!b) return; var i = +b.getAttribute('data-tvp'), rtl = document.documentElement.dir === 'rtl'; sc.scrollTo({ left: (rtl ? -1 : 1) * i * sc.clientWidth, behavior: 'smooth' }); d.querySelectorAll('[data-tvp]').forEach(function (z) { z.classList.toggle('on', z === b); z.setAttribute('aria-selected', String(z === b)); }); TV.pane = i; tvFit(); });
