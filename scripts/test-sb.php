@@ -903,16 +903,17 @@ check('api.php : sbList passe « sport »', str_contains($api, "\$req['sport']")
 check('budget prévu par jour ≤ 79 < 90 (plafond dur)', 8 + 4 + 2 + 8 + SB_O_ODDS_DAY + SB_O_RES_DAY <= 79 && SB_O_CAP === 90);
 
 // horloge du direct : celle du fournisseur (seconds), sinon minute vue par nous
-check('horloge : fournisseur « 63:10 » lu il y a 5 s → 63:15 + retard mesuré (26 s)', sb_live_clock('2H', ['m' => 63], 1005, ['sec' => 63 * 60 + 10, 'sat' => 1000]) === 63 * 60 + 41);
+check('horloge : fournisseur « 63:10 » lu il y a 5 s → 63:15 + retard mesuré (16 s)', sb_live_clock('2H', ['m' => 63], 1005, ['sec' => 63 * 60 + 10, 'sat' => 1000]) === 63 * 60 + 31);
 // 2026-10-23 : « 0:00 » = plus tôt des lectures récentes non aberrantes − 15 s ; une lecture fausse (100 s trop tôt) ne colle plus
 $zs = sb_clk_push([], 1000, 2000); $zs = sb_clk_push($zs, 1018, 2060); $zs = sb_clk_push($zs, 1005, 2120);
-check('horloge : plus tôt des lectures récentes − 26 s', sb_clk_zero($zs) === 974);
+check('horloge : plus tôt des lectures récentes − 16 s', sb_clk_zero($zs) === 984);
 $zs = sb_clk_push($zs, 905, 2180);
-check('horloge : lecture aberrante (100 s trop tôt) écartée', sb_clk_zero($zs) === 974);
-check('horloge : vote — 3 lectures d\'accord contre 1 fausse 80 s plus tôt (dernière lue)', sb_clk_zero([[1, 1000], [2, 1010], [3, 1005], [4, 920]]) === 974);
-check('horloge : 2 lectures en désaccord → la plus récente', sb_clk_zero([[1, 1000], [2, 1130]]) === 1104);
+check('horloge : lecture aberrante (100 s trop tôt) écartée', sb_clk_zero($zs) === 984);
+check('horloge : vote — 3 lectures d\'accord contre 1 fausse 80 s plus tôt (dernière lue)', sb_clk_zero([[1, 1000], [2, 1010], [3, 1005], [4, 920]]) === 984);
+check('horloge : 2 lectures en désaccord → la plus récente', sb_clk_zero([[1, 1000], [2, 1130]]) === 1114);
 check('horloge : direct pas relu depuis 6 min (minute 63 vieillie) → la vraie horloge reste', sb_live_clock('2H', ['m' => 63, 'mt' => 1000], 1400, ['z' => 1400 - 69 * 60]) === 69 * 60);
-check('horloge : lectures de plus de 5 min oubliées (la dernière reste)', count(sb_clk_push($zs, null, 2600)) === 1);
+check('horloge : lectures gardées toute la mi-temps (1 h), puis seule la dernière reste', count(sb_clk_push($zs, null, 2600)) === 4 && count(sb_clk_push($zs, null, 6000)) === 1);
+check('horloge : une lecture fraîche (12 min plus tôt) reste retenue', sb_clk_zero(array_merge([[100, 1000]], array_map(static fn($i) => [800 + $i * 60, 1020 + $i % 3 * 5], range(1, 12)))) === 984);
 check('horloge : 2e mi-temps (saut > 150 s) → repart de zéro', count(sb_clk_push($zs, 1000 + 3600, 2200)) === 1);
 check('horloge : fournisseur incohérent (40:00 pour la 63e) → minute vue par nous', sb_live_clock('2H', ['m' => 63, 'mt' => 1000], 1020, ['sec' => 2400, 'sat' => 1000]) === 63 * 60 + 5);
 check('horloge : sans fournisseur, minute vue il y a 30 s → 63:15 (la minute 63 apparaît vers 62:45)', sb_live_clock('2H', ['m' => 63, 'mt' => 1000], 1030) === 63 * 60 + 15);
