@@ -225,6 +225,11 @@
     return d.toLocaleDateString(loc(), { weekday: 'short', day: 'numeric', month: 'short' });
   }
   function nowS() { return Date.now() / 1000; }
+  /* 2026-10-23 (propriétaire : « notre chrono a 15 s de retard sur 1xBet / Flashscore ») : le chrono du direct suit l'heure du
+     SERVEUR (pas celle du téléphone, qui peut être décalée) et avance de 15 s (le flux du fournisseur arrive avec ce retard) */
+  var SKEW = 0, CLK_ADV = 15;
+  function srvNow() { return Date.now() / 1000 + SKEW; }
+  function noteSrv(at) { var a = +at; if (a > 1.6e9 && a < 4e9) { var k = a - Date.now() / 1000; if (Math.abs(k) < 6 * 3600) SKEW = Math.abs(k) > 2 ? k : 0; } }
   function ufmt(u, v) { try { return new Intl.NumberFormat(loc(), { style: 'unit', unit: u, unitDisplay: 'narrow' }).format(v); } catch (e) { return v + { day: 'd', hour: 'h', minute: 'm' }[u]; } }
   // compte à rebours court : « 2h 15m », « 3d 4h », « 12m » (unités de la langue du joueur)
   function cd(sec) {
@@ -1351,7 +1356,7 @@
         var was = liveShown(); liveOn = true;
         r.fx = r.fx.filter(function (f) { return f && f.id && f.h && f.a; });
         r.lg = Array.isArray(r.lg) ? r.lg : [];
-        liveData = { r: r, at: Date.now() };
+        liveData = { r: r, at: Date.now() }; noteSrv(r.at);
         r.fx.forEach(function (f) { confSc(f); noteLive(f, 'list'); });
         if (was !== liveShown()) paintNav();
         return r;
@@ -1425,7 +1430,7 @@
   function inTxt(s) { return fmt(NX().inX, { x: s >= 3600 ? dur('hour', Math.floor(s / 3600)) + (Math.floor(s % 3600 / 60) ? ' ' + dur('minute', Math.floor(s % 3600 / 60)) : '') : dur('minute', Math.max(1, Math.ceil(s / 60))) }); }
   function inShort(s) { var h = Math.floor(s / 3600), m = Math.max(1, Math.ceil(s % 3600 / 60)); if (m === 60) { h++; m = 0; } return h ? h + ' h ' + (m < 10 ? '0' : '') + m : dur('minute', m); }
   function scTxt(f) { var s = f.sc || [0, 0]; return (+s[0] || 0) + ' - ' + (+s[1] || 0); }
-  function minTxt(f, sh) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return sh ? n.ftS : n.ft; if (f.st === 'HT') return sh ? n.htS : n.ht; if (f.kz != null && isFinite(+f.kz)) return Math.max(1, Math.floor((Date.now() / 1000 - (TVZ[f.id] != null ? TVZ[f.id] : f.kz)) / 60)) + '’'; return f.m != null && f.m !== '' ? f.m + '’' : n.nLive; } // minute exacte (kz) dans les listes aussi
+  function minTxt(f, sh) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return sh ? n.ftS : n.ft; if (f.st === 'HT') return sh ? n.htS : n.ht; if (f.kz != null && isFinite(+f.kz)) return Math.max(1, Math.floor((srvNow() + CLK_ADV - (TVZ[f.id] != null ? TVZ[f.id] : f.kz)) / 60)) + '’'; return f.m != null && f.m !== '' ? f.m + '’' : n.nLive; } // minute exacte (kz) dans les listes aussi
   function skelRows() { var lk = '<span class="pz-ob lk na"><i class="pz-lki">' + LOCK + '</i></span>', s = ''; for (var i = 0; i < 6; i++) s += '<div class="pz-row pz-skel"><i></i><i></i><div class="pz-ro">' + lk + lk + lk + '</div></div>'; return '<div class="pz-lg">' + s + '</div>'; }
   function oddsBy(f) { var by = {}; ((f.o && f.o.o) || []).forEach(function (z) { by[z[0]] = z[1]; }); return by; }
   // bouton de cote : (libellé à gauche) cote à droite ; cadenas quand c'est suspendu
@@ -2312,7 +2317,7 @@
     var f = TV.f; if (!f) return '';
     var t = tvMin(f); if (t) return t;
     if (!TV.base) return f.m != null ? (f.m < 10 ? '0' : '') + f.m + ':00' : '';
-    var s = TV.base.z != null ? Math.max(0, Math.floor(Date.now() / 1000 - TV.base.z)) : TV.base.s + Math.min(179, Math.floor((Date.now() - TV.base.at) / 1000)), p = function (v) { return (v < 10 ? '0' : '') + v; };
+    var s = TV.base.z != null ? Math.max(0, Math.floor(srvNow() + CLK_ADV - TV.base.z)) : TV.base.s + Math.min(179, Math.floor((Date.now() - TV.base.at) / 1000)), p = function (v) { return (v < 10 ? '0' : '') + v; };
     return p(Math.floor(s / 60)) + ':' + p(s % 60);
   }
   function tvPeriod(f) {
