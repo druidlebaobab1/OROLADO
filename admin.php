@@ -2313,8 +2313,28 @@ if ($isAjax) {
         $u = (array) ($ldbP['users'][$uid] ?? []);
         return ['name' => (string) ($u['displayName'] ?? $u['name'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? '')];
       };
+      $profP = [];
+      foreach (admin_profiles() as $pp) if (is_array($pp)) $profP[(string) ($pp['id'] ?? '')] = $pp;
+      $whoP = static function (string $uid) use ($ldbP, $profP): array {
+        $u = (array) ($ldbP['users'][$uid] ?? []); $q = (array) ($profP[$uid] ?? $profP[(string) ($u['sbId'] ?? '')] ?? []);
+        return ['name' => (string) ($u['displayName'] ?? $u['name'] ?? $q['name'] ?? ''), 'email' => (string) ($u['email'] ?? $q['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? $q['publicId'] ?? '')];
+      };
       $betsP = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
+      if (($req['what'] ?? '') === 'coupons') admin_json(admin_paris_coupons($per, (string) ($req['f'] ?? 'all'), max(0, (int) ($req['offset'] ?? 0)), $betsP, sp_events(), static fn(string $u): bool => $skip($u), $whoP));
       admin_json(admin_paris_dash($per, $betsP, sp_events(), static fn(string $u): bool => $skip($u), $whoP));
+    }
+    // 2026-10-23 (propriétaire) — 📈 Trading : tableau de bord (lecture seule), voir admin_trading_lib.php
+    if ($action === 'sp_trdash') {
+      require_once __DIR__ . '/admin_trading_lib.php';
+      $per = in_array((string) ($req['per'] ?? ''), ['today', 'yday', '7', '30'], true) ? (string) $req['per'] : 'today';
+      $ldbT = admin_local_db(); $profT = []; $bySb = [];
+      foreach (admin_profiles() as $pp) if (is_array($pp)) $profT[(string) ($pp['id'] ?? '')] = $pp;
+      foreach ((array) ($ldbT['users'] ?? []) as $lid => $u) if (is_array($u) && (string) ($u['sbId'] ?? '') !== '') $bySb[(string) $u['sbId']] = $u;
+      $whoT = static function (string $uid) use ($ldbT, $profT, $bySb): array {
+        $u = (array) ($ldbT['users'][$uid] ?? $bySb[$uid] ?? []); $q = (array) ($profT[$uid] ?? []);
+        return ['name' => (string) ($u['displayName'] ?? $u['name'] ?? $q['name'] ?? ''), 'email' => (string) ($u['email'] ?? $q['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? $q['publicId'] ?? '')];
+      };
+      admin_json(admin_trading_dash($per, admin_orders(), $whoT));
     }
     if ($action === 'sp_player') {
       $pid = (string) ($req['userId'] ?? '');
@@ -2844,6 +2864,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" id="btnBonusAll" type="button" style="border-color:#4ADE80;color:#86EFAC">🎁 Bonus à tous</button>
       <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">💬 Social <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
       <button class="mini" id="btnParisA" type="button" style="border-color:#60A5FA;color:#93C5FD">⚽ Paris</button>
+      <button class="mini" id="btnTradeA" type="button" style="border-color:#FBBF24;color:#FCD34D">📈 Trading</button>
       <button class="mini" id="btnPredA" type="button" style="border-color:#C084FC;color:#D8B4FE">🔮 Predict</button>
       <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎮 Jeux</button>
       <button class="mini" id="btnTopG" type="button" style="border-color:#FACC15;color:#FDE68A">🏆 Jeux les plus joués</button>
@@ -3129,9 +3150,10 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <div class="modal" id="parisModal">
     <div class="modal-box lvA-box">
       <button class="mini" type="button" id="closeParisA">Retour</button>
-      <h2 style="color:#93C5FD;margin:10px 0 4px">⚽ Paris</h2>
-      <p class="muted" style="margin:0 0 8px">Argent réel seulement, vos comptes admin non comptés. Heure de votre téléphone.</p>
-      <div class="lvA-tabs" id="pdPer"><button class="mini ok" type="button" data-per="today">Aujourd’hui</button><button class="mini" type="button" data-per="yday">Hier</button><button class="mini" type="button" data-per="7">7 jours</button><button class="mini" type="button" data-per="30">30 jours</button><button class="mini" type="button" id="pdSet" style="margin-left:auto">⚙️ Réglages des paris</button></div>
+      <h2 id="pdTitle" style="color:#93C5FD;margin:10px 0 2px">⚽ Paris</h2>
+      <p class="muted" style="margin:0 0 8px">Argent réel seulement · vos comptes admin ne comptent jamais · heure de votre téléphone.</p>
+      <div class="pd-row" id="pdPer"><button type="button" data-per="today" class="on">Aujourd’hui</button><button type="button" data-per="yday">Hier</button><button type="button" data-per="7">7 jours</button><button type="button" data-per="30">30 jours</button><button type="button" id="pdRef" title="Actualiser">↻</button></div>
+      <div class="pd-tabs" id="pdTabs"></div>
       <div id="pdBody"><p class="muted">Chargement…</p></div>
     </div>
   </div>
@@ -4667,69 +4689,157 @@ setInterval(() => {
 #casModal[data-mode] .lvA-tabs{display:none!important}
 #casModal[data-mode="paris"] #csPaneSp > :not(#apifKeyCard):not(#sbCard){display:none!important}
 #casModal[data-mode="pred"] #apifKeyCard,#casModal[data-mode="pred"] #sbCard{display:none!important}
-#parisModal .pd-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}
-#parisModal .pd-c{padding:10px 12px;border:1px solid #2A3550;border-radius:12px;background:rgba(255,255,255,.03);min-width:0}
-#parisModal .pd-c h4{margin:0 0 6px;font-size:.92rem;color:#C7D2FE}
-#parisModal .pd-c p{margin:2px 0;display:flex;justify-content:space-between;gap:8px;font-size:.85rem;color:#A5B4D8}
-#parisModal .pd-c p b{color:#fff;white-space:nowrap}
-#parisModal .pd-h{margin:16px 0 6px;font-size:1rem;color:#FBBF24}
+#parisModal .modal-box{max-width:1100px}
+#parisModal .pd-row,#parisModal .pd-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#parisModal .pd-row button,#parisModal .pd-tabs button{min-height:36px;padding:6px 12px;border-radius:10px;border:1px solid #2A3550;background:#111A2E;color:#C7D2FE;font-weight:800;font-size:.86rem;cursor:pointer}
+#parisModal .pd-row button.on{background:#1E3A5F;border-color:#60A5FA;color:#fff}
+#parisModal .pd-tabs{position:sticky;top:52px;z-index:4;padding:6px 0;background:rgba(10,15,26,.96)}
+#parisModal .pd-tabs button.on{background:#FBBF24;border-color:#FBBF24;color:#1F1306}
+#parisModal .pd-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:8px 0}
+#parisModal .pd-kpi div{padding:10px 12px;border:1px solid #2A3550;border-radius:12px;background:rgba(255,255,255,.03);min-width:0}
+#parisModal .pd-kpi small{display:block;color:#8FA0C4;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+#parisModal .pd-kpi b{display:block;margin-top:3px;color:#fff;font-size:1.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#parisModal .pd-kpi em{display:block;font-style:normal;color:#A5B4D8;font-size:.78rem;margin-top:2px}
+#parisModal .pd-h{margin:18px 0 6px;font-size:1rem;color:#FBBF24;font-weight:900}
+#parisModal .pd-sub{color:#8FA0C4;font-size:.8rem;margin:-2px 0 6px}
 #parisModal .pd-al{padding:8px 10px;border-radius:10px;margin:6px 0;font-size:.88rem;overflow-wrap:anywhere}
 #parisModal .pd-al.red{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#FCA5A5}
 #parisModal .pd-al.orange{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);color:#FCD34D}
-#parisModal .pd-hr{display:flex;align-items:flex-end;gap:2px;height:90px;padding:6px 0;border-bottom:1px solid #2A3550}
-#parisModal .pd-hr i{flex:1;min-width:0;background:#60A5FA;border-radius:3px 3px 0 0;opacity:.85}
+#parisModal .pd-al.ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);color:#86EFAC}
+#parisModal .pd-hr{display:flex;align-items:flex-end;gap:2px;height:110px;padding:6px 0;border-bottom:1px solid #2A3550}
+#parisModal .pd-hr i{flex:1;min-width:0;background:linear-gradient(#60A5FA,#3B82F6);border-radius:3px 3px 0 0}
 #parisModal .pd-hx{display:flex;gap:2px;font-size:9px;color:#6B7A99}#parisModal .pd-hx span{flex:1;text-align:center}
-#parisModal table{width:100%;border-collapse:collapse;font-size:.84rem}
-#parisModal td,#parisModal th{padding:6px 6px;border-bottom:1px solid #1E2A44;text-align:left;vertical-align:top;overflow-wrap:anywhere}
-#parisModal th{color:#8FA0C4;font-weight:700;font-size:.75rem;text-transform:uppercase}
-#parisModal .pd-k{display:inline-block;padding:1px 6px;border-radius:6px;font-size:.72rem;font-weight:800}
+#parisModal .pd-tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #1E2A44;border-radius:12px}
+#parisModal table{width:100%;min-width:560px;border-collapse:collapse;font-size:.84rem}
+#parisModal td,#parisModal th{white-space:nowrap;padding:7px 8px;border-bottom:1px solid #1E2A44;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+#parisModal th{color:#8FA0C4;font-weight:800;font-size:.72rem;text-transform:uppercase;background:#0F1729;position:sticky;top:0}
+#parisModal tr:last-child td{border-bottom:0}
+#parisModal td.wr{white-space:normal;min-width:160px;max-width:420px}
+#parisModal .pd-k{display:inline-block;padding:1px 6px;border-radius:6px;font-size:.72rem;font-weight:800;white-space:nowrap}
 #parisModal .pd-k.live{background:rgba(239,68,68,.18);color:#FCA5A5}#parisModal .pd-k.pre{background:rgba(96,165,250,.16);color:#93C5FD}#parisModal .pd-k.pred{background:rgba(192,132,252,.16);color:#D8B4FE}
 #parisModal .pos{color:#4ADE80}#parisModal .neg{color:#F87171}
-#parisModal .pd-sel{color:#A5B4D8;font-size:.78rem;margin-top:3px}
+#parisModal .pd-sel{color:#A5B4D8;font-size:.78rem;margin-top:3px;line-height:1.35}
+#parisModal .pd-who b{color:#fff}#parisModal .pd-who small{display:block;color:#8FA0C4}
+#parisModal .pd-x{border:1px solid rgba(239,68,68,.5);background:transparent;color:#FCA5A5;border-radius:8px;padding:3px 8px;font-weight:800;font-size:.75rem;cursor:pointer;white-space:nowrap}
+#parisModal .pd-more{display:block;width:100%;margin:10px 0;min-height:42px;border-radius:10px;border:1px solid #2A3550;background:#111A2E;color:#C7D2FE;font-weight:800}
 </style>
 <script>
-/* 2026-10-23 (propriétaire) — ⚽ PARIS : tableau de bord des paris (argent réel) pour suivre et repérer une faille */
+/* 2026-10-23 (propriétaire) — ⚽ PARIS et 📈 TRADING : tableaux de bord rangés par onglets (Résumé, Joueurs, Matchs & options,
+   Coupons) pour suivre et repérer une faille. Une seule fenêtre, deux sources (sp_dash / sp_trdash). Lecture seule, sauf
+   « Annuler ce match » (rembourse les choix du match par le règlement existant sb_result). */
 (function () {
   const $p = id => document.getElementById(id);
   if (!$p('btnParisA')) return;
-  let per = 'today', busy = false;
+  let src = 'paris', per = 'today', tab = 'sum', data = null, busy = false, cp = {f:'all', rows:[], more:false, total:0};
   const m = v => (Number(v) || 0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
   const sg = v => { v = Number(v) || 0; return '<b class="' + (v >= 0 ? 'pos' : 'neg') + '">' + (v > 0 ? '+' : v < 0 ? '−' : '') + m(Math.abs(v)) + '</b>'; };
   const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const hm = t => new Date(t * 1000).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+  const pct = (a, b) => b > 0 ? Math.round(a / b * 100) + ' %' : '—';
   const KN = {live:'Direct', pre:'Avant-match', pred:'Predict'};
-  const who = r => e(r.name || r.publicId || r.uid) + (r.publicId ? ' <span class="muted">' + e(r.publicId) + '</span>' : '');
-  const card = (title, t) => '<div class="pd-c"><h4>' + title + '</h4><p>Coupons <b>' + t.n + '</b></p><p>Misé <b>' + m(t.in) + '</b></p><p>Payé <b>' + m(t.out) + '</b></p><p>Net maison ' + sg(t.net) + '</p>' +
-    '<p>Gagnés / perdus <b>' + t.won + ' / ' + t.lost + '</b></p><p>En cours <b>' + t.open + (t.open ? ' · gain possible ' + m(t.pot) : '') + '</b></p></div>';
-  const selTxt = r => (r.sel || []).map(s => e(s.t) + ' → ' + e(s.l) + ' (' + Number(s.odd).toFixed(2) + ')' + (s.lv ? ' <span class="pd-k live">direct ' + (s.sc ? s.sc.join('-') : '') + (s.m != null ? ' · ' + s.m + '’' : '') + '</span>' : '') + (s.r === 'won' ? ' ✅' : s.r === 'lost' ? ' ❌' : '')).join('<br>') + (r.nSel > (r.sel || []).length ? '<br>+ ' + (r.nSel - r.sel.length) + ' autre(s)' : '');
-  const betRows = rows => '<table><thead><tr><th>Heure</th><th>Joueur</th><th>Type</th><th>Mise</th><th>Cote</th><th>État</th><th>Gain</th></tr></thead><tbody>' + rows.map(r =>
-    '<tr><td>' + hm(r.at) + '</td><td>' + who(r) + '<div class="pd-sel">' + selTxt(r) + '</div></td><td><span class="pd-k ' + r.kind + '">' + KN[r.kind] + '</span></td><td>' + m(r.stake) + '</td><td>' + Number(r.odd).toFixed(2) + '</td><td>' +
-    ({open:'⏳ En cours', won:'✅ Gagné', lost:'❌ Perdu', void:'↩️ Remboursé'}[r.status] || e(r.status)) + '</td><td>' + (r.status === 'open' ? '<span class="muted">' + m(r.pot) + '</span>' : m(r.win)) + '</td></tr>').join('') + '</tbody></table>';
-  const MK = {'1x2':'Résultat 1X2', dc:'Double chance', dnb:'Remboursé si nul', ou:'Plus / moins de buts', btts:'Les deux marquent', ah:'Handicap asiatique', eh:'Handicap', cs:'Score exact', ht1x2:'Mi-temps 1X2', htou:'Buts mi-temps', htft:'Mi-temps / fin', tth:'Buts équipe 1', tta:'Buts équipe 2', oe:'Pair / impair', pred:'Predict', autre:'Autres'};
-  function paint(j) {
-    const T = j.tot, mx = Math.max(1, ...j.hours.map(h => h.in));
-    let h = '<div class="pd-g">' + card('Tous les paris', T.all) + card('🔴 Direct', T.live) + card('Avant-match', T.pre) + card('🔮 Predict', T.pred) + '</div>';
-    h += '<div class="pd-h">⚠️ Alertes</div>' + (j.alerts.length ? j.alerts.map(a => '<div class="pd-al ' + a.lvl + '">' + (a.uid ? who(a) + ' — ' : '') + e(a.txt) + '</div>').join('') : '<p class="muted">Rien d’anormal sur la période.</p>');
-    h += '<div class="pd-h">🕒 Mises par heure</div><div class="pd-hr">' + j.hours.map((x, i) => '<i title="' + i + 'h : ' + x.n + ' coupon(s), ' + m(x.in) + '" style="height:' + Math.max(2, Math.round(x.in / mx * 100)) + '%"></i>').join('') + '</div><div class="pd-hx">' + j.hours.map((x, i) => '<span>' + (i % 3 ? '' : i + 'h') + '</span>').join('') + '</div>';
-    h += '<div class="pd-h">🏟️ Matchs les plus pariés</div>' + (j.matches.length ? '<table><thead><tr><th>Match</th><th>Choix</th><th>Misé</th><th>Payé</th><th>Net</th></tr></thead><tbody>' + j.matches.map(x => '<tr><td>' + e(x.t) + (x.live ? ' <span class="pd-k live">' + x.live + ' en direct</span>' : '') + '</td><td>' + x.n + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td></tr>').join('') + '</tbody></table>' : '<p class="muted">Aucun.</p>');
-    h += '<div class="pd-h">🎯 Options (marchés) qui font gagner</div>' + (j.markets.length ? '<table><thead><tr><th>Marché</th><th>Choix</th><th>Gagnés</th><th>Misé</th><th>Payé</th><th>Net</th></tr></thead><tbody>' + j.markets.map(x => '<tr><td>' + e(MK[x.mk] || x.mk) + '</td><td>' + x.n + '</td><td>' + x.won + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td></tr>').join('') + '</tbody></table>' : '<p class="muted">Aucun.</p>');
-    h += '<div class="pd-h">💰 Plus gros gains</div>' + (j.big.length ? betRows(j.big) : '<p class="muted">Aucun coupon gagné.</p>');
-    h += '<div class="pd-h">👤 Joueurs (du plus gagnant au plus perdant)</div>' + (j.players.length ? '<table><thead><tr><th>Joueur</th><th>Coupons</th><th>Direct</th><th>Misé</th><th>Payé</th><th>Net joueur</th></tr></thead><tbody>' + j.players.map(x => '<tr><td>' + who(x) + '</td><td>' + x.n + ' (' + x.won + ' gagnés)</td><td>' + x.live + (x.live ? ' (' + x.liveWon + ' gagnés)' : '') + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.out - x.in) + '</td></tr>').join('') + '</tbody></table>' : '<p class="muted">Aucun.</p>');
-    h += '<div class="pd-h">🧾 Derniers coupons</div>' + (j.recent.length ? betRows(j.recent) : '<p class="muted">Aucun coupon sur la période.</p>');
+  const who = r => '<span class="pd-who"><b>' + e(r.name || r.publicId || (r.uid || '').slice(0, 8)) + '</b>' + (r.publicId || r.email ? '<small>' + e([r.publicId, r.email].filter(Boolean).join(' · ')) + '</small>' : '') + '</span>';
+  const tbl = (head, rows) => rows.length ? '<div class="pd-tw"><table><thead><tr>' + head.map(h => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' : '<p class="muted">Rien sur la période.</p>';
+  const kpi = (l, v, sub) => '<div><small>' + l + '</small><b>' + v + '</b>' + (sub ? '<em>' + sub + '</em>' : '') + '</div>';
+  const hours = H => { const mx = Math.max(1, ...H.map(h => h.in)); return '<div class="pd-hr">' + H.map((x, i) => '<i title="' + i + 'h : ' + x.n + ' · ' + m(x.in) + '" style="height:' + (x.in > 0 ? Math.max(4, Math.round(x.in / mx * 100)) : 0) + '%"></i>').join('') + '</div><div class="pd-hx">' + H.map((x, i) => '<span>' + (i % 3 ? '' : i + 'h') + '</span>').join('') + '</div>'; };
+  const alerts = A => A.length ? A.map(a => '<div class="pd-al ' + a.lvl + '">' + (a.uid ? who(a) + ' — ' : '') + e(a.txt) + '</div>').join('') : '<div class="pd-al ok">✓ Rien d’anormal sur la période.</div>';
+  const selTxt = r => (r.sel || []).map(s => e(s.t) + ' → <b>' + e(s.l) + '</b> (' + Number(s.odd).toFixed(2) + ')' + (s.lv ? ' <span class="pd-k live">direct ' + (s.sc ? s.sc.join('-') : '') + (s.m != null ? ' · ' + s.m + '’' : '') + '</span>' : '') + (s.r === 'won' ? ' ✅' : s.r === 'lost' ? ' ❌' : s.r === 'void' ? ' ↩️' : '')).join('<br>') + (r.nSel > (r.sel || []).length ? '<br>+ ' + (r.nSel - r.sel.length) + ' autre(s)' : '');
+  const ST = {open:'⏳ En cours', won:'✅ Gagné', lost:'❌ Perdu', void:'↩️ Remboursé'};
+  const betRow = r => '<tr><td>' + hm(r.at) + '</td><td class="wr">' + who(r) + '<div class="pd-sel">' + selTxt(r) + '</div></td><td><span class="pd-k ' + r.kind + '">' + KN[r.kind] + '</span></td><td>' + m(r.stake) + '</td><td>' + Number(r.odd).toFixed(2) + '</td><td>' + (ST[r.status] || e(r.status)) + '</td><td>' + (r.status === 'open' ? '<span class="muted">' + m(r.pot) + '</span>' : m(r.win)) + '</td></tr>';
+  const BH = ['Heure', 'Joueur et choix', 'Type', 'Mise', 'Cote', 'État', 'Gain'];
+  const MK = {'1x2':'Résultat 1X2', dc:'Double chance', dnb:'Remboursé si nul', ou:'Plus / moins de buts', btts:'Les deux marquent', ah:'Handicap asiatique', eh:'Handicap', cs:'Score exact', ht1x2:'Mi-temps 1X2', htou:'Buts 1re mi-temps', htft:'Mi-temps / fin', tth:'Buts équipe 1', tta:'Buts équipe 2', oe:'Pair / impair', pred:'Predict', autre:'Autres'};
+  const TABS = {paris:[['sum','Résumé'],['pl','Joueurs'],['mo','Matchs & options'],['cp','Coupons'],['set','⚙️ Réglages']], trade:[['sum','Résumé'],['pl','Joueurs'],['as','Actifs'],['cp','Trades']]};
+  const plTable = (L, trade) => tbl(trade ? ['Joueur', 'Trades', 'Gagnés', 'Misé', 'Mise max', 'Net joueur', 'Préféré'] : ['Joueur', 'Coupons', 'Direct', 'Misé', 'Mise max', 'Payé', 'Net joueur'],
+    L.map(x => trade ? '<tr><td class="wr">' + who(x) + '</td><td>' + x.n + '</td><td>' + x.won + ' (' + pct(x.won, x.settled) + ')</td><td>' + m(x.in) + '</td><td>' + m(x.max) + '</td><td>' + sg(x.pnet) + '</td><td>' + e(x.fav) + '</td></tr>'
+      : '<tr><td class="wr">' + who(x) + '</td><td>' + x.n + ' (' + x.won + ' gagnés)</td><td>' + x.live + (x.live ? ' (' + x.liveWon + ' gagnés)' : '') + '</td><td>' + m(x.in) + '</td><td>' + m(x.max) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.out - x.in) + '</td></tr>'));
+  function paint() {
+    const j = data; if (!j) return;
+    $p('pdTabs').innerHTML = TABS[src].map(t => '<button type="button" data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>').join('');
+    let h = '';
+    if (src === 'paris') {
+      const T = j.tot;
+      if (tab === 'sum') {
+        h += '<div class="pd-h">⚠️ Alertes</div>' + alerts(j.alerts);
+        h += '<div class="pd-kpi">' + kpi('Coupons', T.all.n, T.all.open + ' en cours') + kpi('Total misé', m(T.all.in)) + kpi('Total payé', m(T.all.out)) + kpi('Net maison', sg(T.all.net), 'coupons réglés') + kpi('À payer si tout gagne', m(T.all.pot), 'coupons en cours') + kpi('Coupons gagnés', T.all.won + ' / ' + (T.all.won + T.all.lost), pct(T.all.won, T.all.won + T.all.lost)) + '</div>';
+        h += '<div class="pd-h">Par type</div>' + tbl(['Type', 'Coupons', 'Misé', 'Payé', 'Net maison', 'Gagnés', 'En cours (à payer)'], [['🔴 Direct', T.live], ['Avant-match', T.pre], ['🔮 Predict', T.pred]].map(x => '<tr><td><b>' + x[0] + '</b></td><td>' + x[1].n + '</td><td>' + m(x[1].in) + '</td><td>' + m(x[1].out) + '</td><td>' + sg(x[1].net) + '</td><td>' + x[1].won + ' / ' + (x[1].won + x[1].lost) + '</td><td>' + x[1].open + ' (' + m(x[1].pot) + ')</td></tr>'));
+        h += '<div class="pd-h">🕒 Mises par heure</div>' + hours(j.hours);
+        h += '<div class="pd-h">💰 Plus gros gains</div>' + tbl(BH, j.big.map(betRow));
+      } else if (tab === 'pl') {
+        h += '<div class="pd-h">🏆 Plus grands gagnants</div>' + plTable(j.pl.win);
+        h += '<div class="pd-h">📉 Plus grands perdants</div>' + plTable(j.pl.lose);
+        h += '<div class="pd-h">💵 Plus gros miseurs</div>' + plTable(j.pl.stake);
+        h += '<div class="pd-h">🔥 Plus actifs</div>' + plTable(j.pl.active);
+        h += '<div class="pd-h">🔴 Joueurs du direct</div><p class="pd-sub">À surveiller : beaucoup de paris en direct gagnés = paris peut-être placés après un but.</p>' + plTable(j.pl.live);
+      } else if (tab === 'mo') {
+        h += '<div class="pd-h">🎯 Options les plus misées</div><p class="pd-sub">« À payer » = ce que coûtera l’option si elle gagne (coupons en cours).</p>' + tbl(['Option', 'Coupons', 'À payer', 'Misé', 'Payé', 'Net'], j.options.map(o => '<tr><td class="wr"><b>' + e(o.l) + '</b>' + (o.live ? ' <span class="pd-k live">' + o.live + ' direct</span>' : '') + '<div class="pd-sel">' + e(o.t) + '</div></td><td>' + o.n + '</td><td>' + (o.exp ? '<b class="neg">' + m(o.exp) + '</b>' : '—') + '</td><td>' + m(o.in) + '</td><td>' + m(o.out) + '</td><td>' + sg(o.in - o.out) + '</td></tr>'));
+        h += '<div class="pd-h">🏟️ Matchs les plus pariés</div><p class="pd-sub">« Annuler » rembourse tous les choix faits sur ce match (en cas de cote en retard ou de problème).</p>' + tbl(['Match', 'Choix', 'Misé', 'Payé', 'Net', ''], j.matches.map(x => '<tr><td class="wr">' + e(x.t) + (x.live ? ' <span class="pd-k live">' + x.live + ' direct</span>' : '') + '</td><td>' + x.n + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td><td>' + (/^[a-z]+:\d+$/.test(x.fx || '') ? '<button type="button" class="pd-x" data-void="' + e(x.fx) + '" data-t="' + e(x.t) + '">Annuler</button>' : '') + '</td></tr>'));
+        h += '<div class="pd-h">📊 Marchés</div>' + tbl(['Marché', 'Choix', 'Gagnés', 'Misé', 'Payé', 'Net'], j.markets.map(x => '<tr><td>' + e(MK[x.mk] || x.mk) + '</td><td>' + x.n + '</td><td>' + x.won + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td></tr>'));
+      } else if (tab === 'cp') {
+        h += '<div class="pd-row" id="pdCf">' + [['all','Tous'],['live','🔴 Direct'],['pre','Avant-match'],['pred','🔮 Predict'],['open','⏳ En cours'],['won','✅ Gagnés'],['big','💵 Gros (≥ 10 $ misés ou ≥ 50 $ gagnés)']].map(f => '<button type="button" data-cf="' + f[0] + '" class="' + (cp.f === f[0] ? 'on' : '') + '">' + f[1] + '</button>').join('') + '</div>';
+        h += '<p class="pd-sub">' + cp.total + ' coupon(s)</p>' + tbl(BH, cp.rows.map(betRow)) + (cp.more ? '<button type="button" class="pd-more" id="pdCpMore">Charger plus</button>' : '');
+      }
+    } else {
+      const T = j.tot;
+      if (tab === 'sum') {
+        h += '<div class="pd-h">⚠️ Alertes</div>' + alerts(j.alerts);
+        h += '<div class="pd-kpi">' + kpi('Trades', T.n, T.open + ' en cours') + kpi('Joueurs', T.players) + kpi('Total misé', m(T.in)) + kpi('Net maison', sg(T.house)) + kpi('Trades gagnés', T.won + ' / ' + (T.won + T.lost), pct(T.won, T.won + T.lost)) + '</div>';
+        h += '<div class="pd-h">🕒 Mises par heure</div>' + hours(j.hours);
+      } else if (tab === 'pl') {
+        h += '<div class="pd-h">🏆 Plus grands gagnants</div>' + plTable(j.pl.win, 1);
+        h += '<div class="pd-h">📉 Plus grands perdants</div>' + plTable(j.pl.lose, 1);
+        h += '<div class="pd-h">💵 Plus gros miseurs</div>' + plTable(j.pl.stake, 1);
+        h += '<div class="pd-h">🔥 Plus actifs</div>' + plTable(j.pl.active, 1);
+      } else if (tab === 'as') {
+        h += '<div class="pd-h">📈 Actifs les plus joués</div>' + tbl(['Actif', 'Trades', 'Joueurs', 'Gagnés', 'Misé', 'Net maison'], j.assets.map(a => '<tr><td><b>' + e(a.a) + '</b></td><td>' + a.n + '</td><td>' + a.players + '</td><td>' + a.won + ' (' + pct(a.won, a.n) + ')</td><td>' + m(a.in) + '</td><td>' + sg(a.house) + '</td></tr>'));
+      } else if (tab === 'cp') {
+        h += '<p class="pd-sub">' + j.nRecent + ' trade(s) sur la période (les 80 derniers affichés)</p>' + tbl(['Heure', 'Joueur', 'Actif', 'Sens', 'Mise', 'Durée', 'Résultat'], j.recent.map(r => '<tr><td>' + hm(r.t) + '</td><td class="wr">' + who(r) + '</td><td>' + e(r.a) + '</td><td>' + e(r.side) + '</td><td>' + m(r.stake) + '</td><td>' + (r.dur ? r.dur + ' s' : '—') + '</td><td>' + (r.won === null ? '⏳' : sg(r.net)) + '</td></tr>'));
+      }
+    }
     $p('pdBody').innerHTML = h;
+  }
+  async function loadCoupons(reset) {
+    if (reset) cp = {f: cp.f, rows: [], more: false, total: 0};
+    let j; try { j = await ajax({action:'sp_dash', what:'coupons', per, f: cp.f, offset: cp.rows.length}); } catch (x) { j = null; }
+    if (j && j.ok) { cp.rows = cp.rows.concat(j.rows); cp.more = j.more; cp.total = j.total; }
+    paint();
   }
   async function load() {
     if (busy) return; busy = true;
-    document.querySelectorAll('#pdPer [data-per]').forEach(b => b.classList.toggle('ok', b.dataset.per === per));
-    let j; try { j = await ajax({action:'sp_dash', per}); } catch (x) { j = {ok:false, reason:'Réseau'}; }
+    document.querySelectorAll('#pdPer [data-per]').forEach(b => b.classList.toggle('on', b.dataset.per === per));
+    $p('pdBody').innerHTML = '<p class="muted">Chargement…</p>';
+    let j; try { j = await ajax({action: src === 'paris' ? 'sp_dash' : 'sp_trdash', per}); } catch (x) { j = {ok:false, reason:'Réseau'}; }
     busy = false;
     if (!j || !j.ok) { $p('pdBody').innerHTML = '<p class="muted">' + e((j && j.reason) || 'Erreur') + '</p>'; return; }
-    paint(j);
+    data = j;
+    if (src === 'paris' && tab === 'cp') return loadCoupons(true);
+    paint();
   }
-  $p('btnParisA').onclick = () => { $p('parisModal').classList.add('on'); load(); };
+  const open = (w) => {
+    src = w; tab = 'sum'; data = null; cp.f = 'all';
+    $p('pdTitle').textContent = w === 'paris' ? '⚽ Paris' : '📈 Trading'; $p('pdTitle').style.color = w === 'paris' ? '#93C5FD' : '#FCD34D';
+    $p('parisModal').classList.add('on'); load();
+  };
+  $p('btnParisA').onclick = () => open('paris');
+  $p('btnTradeA').onclick = () => open('trade');
   $p('closeParisA').onclick = () => $p('parisModal').classList.remove('on');
   document.querySelectorAll('#pdPer [data-per]').forEach(b => b.onclick = () => { per = b.dataset.per; load(); });
-  $p('pdSet').onclick = () => { $p('parisModal').classList.remove('on'); if (window.casOpen) window.casOpen('paris'); };
+  $p('pdRef').onclick = () => load();
+  $p('pdTabs').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-tab]'); if (!b) return;
+    if (b.dataset.tab === 'set') { $p('parisModal').classList.remove('on'); if (window.casOpen) window.casOpen('paris'); return; }
+    tab = b.dataset.tab; if (src === 'paris' && tab === 'cp') loadCoupons(true); else paint();
+  });
+  $p('pdBody').addEventListener('click', async ev => {
+    const f = ev.target.closest('[data-cf]'); if (f) { cp.f = f.dataset.cf; return loadCoupons(true); }
+    if (ev.target.closest('#pdCpMore')) return loadCoupons(false);
+    const v = ev.target.closest('[data-void]');
+    if (v) {
+      if (prompt('Annuler TOUS les paris sur « ' + v.dataset.t + ' » ?\nChaque choix fait sur ce match sera remboursé (les coupons combinés continuent sans ce match).\nTapez ANNULER pour confirmer :') !== 'ANNULER') return;
+      v.disabled = true;
+      let r; try { r = await ajax({action:'sb_result', id: v.dataset.void, void: 1}); } catch (x) { r = {ok:false, reason:'Réseau'}; }
+      alert(r && r.ok ? 'Match annulé ✓ : les choix sont remboursés.' : 'Échec : ' + ((r && r.reason) || 'erreur'));
+      load();
+    }
+  });
 })();
 </script>
 <script>
