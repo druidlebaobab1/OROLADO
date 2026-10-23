@@ -225,9 +225,9 @@
     return d.toLocaleDateString(loc(), { weekday: 'short', day: 'numeric', month: 'short' });
   }
   function nowS() { return Date.now() / 1000; }
-  /* 2026-10-23 (propriétaire : « notre chrono a 15 s de retard sur 1xBet / Flashscore ») : le chrono du direct suit l'heure du
-     SERVEUR (pas celle du téléphone, qui peut être décalée) et avance de 15 s (le flux du fournisseur arrive avec ce retard) */
-  var SKEW = 0, CLK_ADV = 15;
+  /* 2026-10-23 : le chrono du direct suit l'heure du SERVEUR (pas celle du téléphone, qui peut être décalée) ; le « 0:00 » de
+     chaque match (kz) est calé par le serveur sur les mesures faites face à Flashscore */
+  var SKEW = 0, CLK_ADV = 0;
   function srvNow() { return Date.now() / 1000 + SKEW; }
   function noteSrv(at) { var a = +at; if (a > 1.6e9 && a < 4e9) { var k = a - Date.now() / 1000; if (Math.abs(k) < 6 * 3600) SKEW = Math.abs(k) > 2 ? k : 0; } }
   function ufmt(u, v) { try { return new Intl.NumberFormat(loc(), { style: 'unit', unit: u, unitDisplay: 'narrow' }).format(v); } catch (e) { return v + { day: 'd', hour: 'h', minute: 'm' }[u]; } }
@@ -2379,7 +2379,7 @@
     // (kz, donnée par le serveur) → identique à chaque ouverture ; sinon minute de l'API, mais JAMAIS en arrière (mémoire par match)
     // horloge : « 0:00 » donné par le serveur (horloge du fournisseur) ; petits écarts (≤ 15 s) ignorés pour qu'elle reste fluide,
     // gros écart = correction (rare) ; gardé par match même en sortant / revenant
-    if (f.kz != null && isFinite(+f.kz)) { var oz = TVZ[f.id]; TVZ[f.id] = oz != null && +f.kz > oz && +f.kz - oz <= 45 ? oz : +f.kz; /* 2026-10-22 : l'horloge avance tout de suite quand le serveur la corrige en avant ; elle ne recule jamais pour un petit écart */ TV.base = { z: TVZ[f.id] }; }
+    if (f.kz != null && isFinite(+f.kz)) { var oz = TVZ[f.id]; TVZ[f.id] = oz != null && Math.abs(+f.kz - oz) <= 3 ? oz : +f.kz; /* 2026-10-23 : suit chaque correction du serveur (avant ou arrière), sauf ±3 s */ TV.base = { z: TVZ[f.id] }; }
     else if (f.m != null) {
       var mem = TVM[f.id], est = mem ? mem.s + Math.floor((Date.now() - mem.at) / 1000) : -1;
       if (!mem || +f.m * 60 > est + 60 || (+f.m * 60 > est && est - (+f.m) * 60 > 120)) TVM[f.id] = { s: +f.m * 60, at: Date.now() };

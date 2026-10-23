@@ -1582,9 +1582,9 @@ function sb_live_store_fixtures(array $j, int $now): int {
     foreach ($fx as $id => $row) {
       $old = (array) ($s['fx'][$id] ?? []);
       $fx[$id]['mt'] = isset($old['m'], $old['mt']) && $old['m'] === ($row['m'] ?? null) ? (int) $old['mt'] : $now; // quand NOUS avons vu cette minute pour la 1re fois
-      // « 0:00 » estimé depuis la minute de l'API (vue ~30 s après son vrai début) ; gardé tant qu'il reste cohérent (horloge fluide)
+      // « 0:00 » estimé depuis la minute de l'API (mesure 2026-10-23 face à Flashscore : la minute « m » apparaît chez nous vers (m − 1):45) ; gardé tant qu'il reste cohérent (horloge fluide)
       if (is_numeric($row['m'] ?? null) && in_array((string) ($row['st'] ?? ''), ['1H', '2H', 'ET'], true)) {
-        $cand = $now - (int) $row['m'] * 60 - 30; $oz = isset($old['zf']) ? (int) $old['zf'] : null;
+        $cand = $now - (int) $row['m'] * 60 + 15; $oz = isset($old['zf']) ? (int) $old['zf'] : null;
         $fx[$id]['zf'] = $oz !== null && ($old['st'] ?? '') === $row['st'] && abs($cand - $oz) <= 45 ? $oz : $cand;
       }
       if (!empty($old['p2o'])) $fx[$id]['p2o'] = (int) $old['p2o'];
@@ -1667,6 +1667,24 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
   uksort($out, 'sb_mk_cmp');
   return $out;
 }
+const SB_CLK_LAG = 15; // retard mesuré de l'horloge du fournisseur sur Flashscore (s), à la lecture d'une nouvelle valeur
+/** Lectures « 0:00 » [heure, z] des 5 dernières minutes ; un saut de plus de 150 s (mi-temps, prolongation) repart de zéro. */
+function sb_clk_push(array $zs, ?int $z, int $now): array {
+  $keep = array_values(array_filter($zs, static fn($p) => is_array($p) && (int) $p[0] > $now - 300));
+  if (!$keep && $zs && is_array(end($zs))) $keep = [end($zs)]; // fournisseur muet : la dernière lecture reste
+  $zs = $keep;
+  if ($z === null) return $zs;
+  if ($zs && abs($z - sb_clk_zero($zs) - SB_CLK_LAG) > 150) $zs = [];
+  $zs[] = [$now, $z];
+  return array_slice($zs, -8);
+}
+/** « 0:00 » retenu : la plus tôt des lectures non aberrantes (≥ médiane − 40 s), moins SB_CLK_LAG. */
+function sb_clk_zero(array $zs): int {
+  $v = array_map(static fn($p) => (int) $p[1], $zs); sort($v);
+  $med = $v[intdiv(count($v), 2)];
+  foreach ($v as $z) if ($z >= $med - 40) return $z - SB_CLK_LAG;
+  return $med - SB_CLK_LAG;
+}
 /** /odds/live → live.json (od) : score, minute, état, marchés ; « chg » = score différent de la lecture précédente. */
 function sb_live_store_odds(array $j, int $now): int {
   $cfg = sb_config(); $od = []; $unk = [];
@@ -1701,13 +1719,14 @@ function sb_live_store_odds(array $j, int $now): int {
       if (!empty($o['blk']) && empty($old[$id]['blk'])) $jmp = $now;
       if ($od[$id]['chg']) $jmp = $now; // score changé : 90 s de cadenas
       // horloge : « 0:00 » du fournisseur lissé (petits écarts ignorés, jamais de saut quand « seconds » manque)
-      $pz = isset($old[$id]['z']) ? (int) $old[$id]['z'] : null;
-      $nz = is_int($o['sec'] ?? null) ? $now - (int) $o['sec'] : null;
-      // 2026-10-22 (mesure Kairat – Panathinaikos : « 0:00 » lu 55 s trop tard puis rattrapé) : une image en retard du fournisseur
-      // donne un « 0:00 » PLUS TARD que le vrai, jamais plus tôt → on garde le plus tôt vu (≤ 3 min d'écart) ; au-delà
-      // (2e mi-temps, prolongation, horloge remise) on prend le nouveau.
-      if ($nz !== null && ($pz === null || $nz < $pz || $nz - $pz > 180)) $pz = $nz;
-      if ($pz !== null) $od[$id]['z'] = $pz;
+      // 2026-10-23 (mesures face à Flashscore, 7 matchs) : « seconds » du fournisseur n'est rafraîchi qu'~1 fois par minute ;
+      // à chaque NOUVELLE valeur, « maintenant − seconds » tombe 15 à 23 s après le vrai « 0:00 » (puis l'image vieillit).
+      // L'ancienne règle « le plus tôt vu pour tout le match » gardait une lecture fausse (−86 s : en avance) → remplacée par
+      // les nouvelles valeurs des 5 dernières minutes (zs), valeurs aberrantes écartées, moins le retard mesuré (SB_CLK_LAG).
+      $zs = (array) ($old[$id]['zs'] ?? []);
+      $sec = is_int($o['sec'] ?? null) ? (int) $o['sec'] : null;
+      $zs = $sec !== null && $sec !== ($old[$id]['sec'] ?? null) ? sb_clk_push($zs, $now - $sec, $now) : sb_clk_push($zs, null, $now);
+      if ($zs) { $od[$id]['zs'] = $zs; $od[$id]['z'] = sb_clk_zero($zs); }
       if ($jmp) $od[$id]['jmp'] = $jmp;
     }
     // 2026-10-22 (propriétaire : « tous les matchs en direct ont disparu ») : /odds/live renvoie parfois une partie des matchs
@@ -1977,11 +1996,11 @@ function sb_live_clock(string $st, array $r, int $now, ?array $od = null): ?int 
     if ($m === null || ($k >= ($m - 1) * 60 && $k < ($m + 3) * 60)) return $k;
   }
   if (is_array($od) && is_int($od['sec'] ?? null) && (int) ($od['sat'] ?? 0) > 0) {
-    $k = (int) $od['sec'] + max(0, $now - (int) $od['sat']);
+    $k = (int) $od['sec'] + max(0, $now - (int) $od['sat']) + SB_CLK_LAG;
     if ($m === null || ($k >= ($m - 1) * 60 && $k < ($m + 3) * 60)) return $k;
   }
   if ($m !== null && isset($r['zf']) && is_numeric($r['zf'])) { $k = $now - (int) $r['zf']; if ($k >= ($m - 1) * 60 && $k < ($m + 2) * 60) return $k; }
-  if ($m !== null && (int) ($r['mt'] ?? 0) > 0) return $m * 60 + min(119, max(0, $now - (int) $r['mt']));
+  if ($m !== null && (int) ($r['mt'] ?? 0) > 0) return $m * 60 - 15 + min(119, max(0, $now - (int) $r['mt']));
   return null;
 }
 /** Forme commune (spec : fx) d'un match en direct. kz = heure (s) du « 0:00 » de l'horloge : le téléphone compte seul, sans jamais revenir en arrière. */
