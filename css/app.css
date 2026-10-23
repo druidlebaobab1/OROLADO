@@ -13604,3 +13604,12 @@ html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-gues
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet.cs-guestw{overflow:visible!important;contain:none!important;clip-path:none!important}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-guestw .cs-auth{padding:2px 2px!important;overflow:visible!important;box-sizing:border-box}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-guestw .cs-in{border:1.5px solid rgba(255,255,255,.42)!important;background:rgba(255,255,255,.07)!important;background-clip:padding-box!important}
+/* 2026-10-23 : bloc « navigation privée » de la fenêtre Installer (Android) */
+.install-priv{margin:0 0 16px;padding:12px 13px;border-radius:14px;background:rgba(249,115,22,.14);border:1px solid rgba(251,146,60,.55);color:var(--text);text-align:start}
+.install-priv.on{margin:0 0 14px;background:rgba(249,115,22,.22)}
+.install-priv .ip-t{display:block;font-size:.84rem;font-weight:800;color:#FDBA74;margin-bottom:4px;line-height:1.3}
+.install-priv .ip-x{margin:0 0 10px;font-size:.78rem;line-height:1.42;font-weight:600;overflow-wrap:anywhere}
+.install-priv .ip-row{display:flex;align-items:center;gap:8px;min-width:0}
+.install-priv .ip-url{flex:1 1 auto;min-width:0;padding:9px 11px;border-radius:10px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);font-weight:800;font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.install-priv .ip-copy{flex:0 0 auto;max-width:58%;padding:9px 12px;border-radius:10px;border:0;background:linear-gradient(180deg,#FDBA4D,#F97316);color:#fff;font-family:inherit;font-weight:800;font-size:.8rem;line-height:1.15;cursor:pointer;white-space:normal;text-align:center}
+.install-priv .ip-copy:active{transform:scale(.96)}
