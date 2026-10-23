@@ -9930,6 +9930,7 @@
       box.style.setProperty('z-index', '2147483000', 'important');
       if (box.parentNode !== document.body || box !== document.body.lastElementChild) document.body.appendChild(box);
       if (kind === 'inapp') {
+        privBlock(box, false);
         var lgI = String(document.documentElement.lang || 'en').slice(0, 2), W = INAPP_T[lgI] || INAPP_T.en;
         var setI = function (sel, v) { var el = box.querySelector(sel); if (el) el.textContent = v; };
         setI('.install-ios-lead', W[0]);
@@ -9946,6 +9947,7 @@
         var sp = steps[i] && steps[i].querySelector('span[data-i18n]');
         if (sp) sp.textContent = t((ios ? 'installIos' : 'installAnd') + n);
       });
+      privBlock(box, !ios && isAndroidUa()); // Android : « tu ne vois pas Installer ? → navigation privée, copie le lien »
       var ico = steps[0] && steps[0].querySelector('.install-ios-ico');
       if (ico) {
         if (!ico.getAttribute('data-ios')) ico.setAttribute('data-ios', ico.innerHTML);
@@ -9954,6 +9956,53 @@
       openModal('iosInstallModal');
     }
     function isAndroidUa() { return /android/i.test(navigator.userAgent || ''); }
+    /* 2026-10-23 (propriétaire : « en navigation privée, Chrome n'installe pas ») : sous les 3 étapes Android, un bloc orange
+       [titre, texte si on NE SAIT PAS, texte si le mode privé est détecté, bouton]. Chrome bloque l'installation en privé (aucun site
+       ne peut la forcer) → le joueur copie le lien et l'ouvre dans un onglet normal. */
+    var PRIV_T = {
+      fr: ['Tu ne vois pas « Installer l’application » ?', 'Tu es sûrement en navigation privée : Chrome ne permet pas d’installer ici. Copie le lien, ouvre un onglet normal de Chrome et colle-le.', 'Tu es en navigation privée : l’installation est impossible ici. Copie le lien, ouvre un onglet normal de Chrome et colle-le : tu pourras installer OROLADO.', 'Copier le lien'],
+      en: ['Don’t see “Install app”?', 'You are probably in private (Incognito) mode: Chrome can’t install here. Copy the link, open a normal Chrome tab and paste it.', 'You are in private (Incognito) mode: installing is not possible here. Copy the link, open a normal Chrome tab and paste it: you can then install OROLADO.', 'Copy link'],
+      es: ['¿No ves «Instalar aplicación»?', 'Seguramente estás en navegación privada (incógnito): Chrome no permite instalar aquí. Copia el enlace, abre una pestaña normal de Chrome y pégalo.', 'Estás en navegación privada (incógnito): aquí no se puede instalar. Copia el enlace, abre una pestaña normal de Chrome y pégalo: podrás instalar OROLADO.', 'Copiar enlace'],
+      pt: ['Não vês «Instalar app»?', 'Deves estar em navegação privada (anónima): o Chrome não deixa instalar aqui. Copia o link, abre um separador normal do Chrome e cola-o.', 'Estás em navegação privada (anónima): aqui não é possível instalar. Copia o link, abre um separador normal do Chrome e cola-o: poderás instalar a OROLADO.', 'Copiar link'],
+      ar: ['لا ترى «تثبيت التطبيق»؟', 'أنت على الأرجح في وضع التصفح الخاص (المتخفي): لا يسمح Chrome بالتثبيت هنا. انسخ الرابط وافتح علامة تبويب عادية في Chrome والصقه.', 'أنت في وضع التصفح الخاص (المتخفي): التثبيت غير ممكن هنا. انسخ الرابط وافتح علامة تبويب عادية في Chrome والصقه: ستتمكن من تثبيت OROLADO.', 'نسخ الرابط'],
+      tr: ['“Uygulamayı yükle” görünmüyor mu?', 'Büyük ihtimalle gizli moddasın: Chrome burada yüklemeye izin vermez. Bağlantıyı kopyala, normal bir Chrome sekmesi aç ve yapıştır.', 'Gizli moddasın: burada yükleme yapılamaz. Bağlantıyı kopyala, normal bir Chrome sekmesi aç ve yapıştır: OROLADO’yu yükleyebilirsin.', 'Bağlantıyı kopyala'],
+      vi: ['Không thấy “Cài đặt ứng dụng”?', 'Có lẽ bạn đang ở chế độ ẩn danh: Chrome không cho cài đặt ở đây. Sao chép liên kết, mở một tab Chrome thường và dán vào.', 'Bạn đang ở chế độ ẩn danh: không thể cài đặt ở đây. Sao chép liên kết, mở một tab Chrome thường và dán vào: bạn sẽ cài được OROLADO.', 'Sao chép liên kết'],
+      id: ['Tidak melihat “Instal aplikasi”?', 'Kamu mungkin sedang di mode penyamaran: Chrome tidak bisa memasang di sini. Salin tautan, buka tab Chrome biasa, lalu tempel.', 'Kamu sedang di mode penyamaran: pemasangan tidak bisa di sini. Salin tautan, buka tab Chrome biasa, lalu tempel: kamu bisa memasang OROLADO.', 'Salin tautan'],
+      ru: ['Не видите «Установить приложение»?', 'Скорее всего, вы в режиме инкогнито: Chrome не даёт установить здесь. Скопируйте ссылку, откройте обычную вкладку Chrome и вставьте её.', 'Вы в режиме инкогнито: установка здесь невозможна. Скопируйте ссылку, откройте обычную вкладку Chrome и вставьте её — и установите OROLADO.', 'Копировать ссылку'],
+      de: ['„App installieren“ wird nicht angezeigt?', 'Du bist wahrscheinlich im Inkognito-Modus: Chrome kann hier nicht installieren. Kopiere den Link, öffne einen normalen Chrome-Tab und füge ihn ein.', 'Du bist im Inkognito-Modus: Hier ist keine Installation möglich. Kopiere den Link, öffne einen normalen Chrome-Tab und füge ihn ein: Dann kannst du OROLADO installieren.', 'Link kopieren'],
+      zh: ['看不到“安装应用”？', '你可能处于无痕模式：Chrome 不允许在这里安装。复制链接，打开普通的 Chrome 标签页并粘贴。', '你正处于无痕模式：这里无法安装。复制链接，打开普通的 Chrome 标签页并粘贴，即可安装 OROLADO。', '复制链接'],
+      hi: ['“ऐप इंस्टॉल करें” नहीं दिख रहा?', 'आप शायद इनकॉग्निटो (निजी) मोड में हैं: Chrome यहाँ इंस्टॉल नहीं करने देता। लिंक कॉपी करें, Chrome का सामान्य टैब खोलें और पेस्ट करें।', 'आप इनकॉग्निटो (निजी) मोड में हैं: यहाँ इंस्टॉल नहीं हो सकता। लिंक कॉपी करें, Chrome का सामान्य टैब खोलें और पेस्ट करें: फिर OROLADO इंस्टॉल कर सकेंगे।', 'लिंक कॉपी करें']
+    };
+    // mode privé de Chrome : très peu de stockage accordé au site (quota < 2 × mémoire JS) — indice, pas une certitude
+    function privMode() {
+      return new Promise(function (res) {
+        try {
+          if (!navigator.storage || !navigator.storage.estimate) return res(false);
+          navigator.storage.estimate().then(function (e) {
+            var lim = (performance && performance.memory && performance.memory.jsHeapSizeLimit) || 1073741824;
+            res(!!(e && e.quota && e.quota < 2 * lim));
+          }).catch(function () { res(false); });
+        } catch (e) { res(false); }
+      });
+    }
+    function copyTxt(v) {
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(v).catch(function () { copyOld(v); }); return; } } catch (e) { /* ignore */ }
+      copyOld(v);
+    }
+    function copyOld(v) {
+      try { var ta = document.createElement('textarea'); ta.value = v; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0'; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, v.length); document.execCommand('copy'); ta.remove(); } catch (e) { /* ignore */ }
+    }
+    function privBlock(box, show) {
+      var old = box.querySelector('.install-priv'); if (old) old.remove();
+      if (!show) return;
+      var W = PRIV_T[String(document.documentElement.lang || 'en').slice(0, 2)] || PRIV_T.en, url = 'https://orolado.com';
+      var d = document.createElement('div'); d.className = 'install-priv';
+      d.innerHTML = '<b class="ip-t"></b><p class="ip-x"></p><div class="ip-row"><span class="ip-url" dir="ltr">orolado.com</span><button type="button" class="ip-copy"></button></div>';
+      d.querySelector('.ip-t').textContent = W[0]; d.querySelector('.ip-x').textContent = W[1]; d.querySelector('.ip-copy').textContent = W[3];
+      d.querySelector('.ip-copy').addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); copyTxt(url); });
+      var steps = box.querySelector('.install-ios-steps'); if (steps && steps.parentNode) steps.parentNode.insertBefore(d, steps.nextSibling);
+      privMode().then(function (p) { if (!p || !d.isConnected) return; d.classList.add('on'); d.querySelector('.ip-t').style.display = 'none'; d.querySelector('.ip-x').textContent = '🔒 ' + W[2]; /* mode privé détecté : message direct, en haut */ if (steps && steps.parentNode) steps.parentNode.insertBefore(d, steps); });
+    }
     // 2026-10-23 : l'appli Android installée partage la mémoire du site avec Chrome → ouverte une fois, Chrome le sait
     // (plus de « Installer » dans Chrome pour un téléphone qui a déjà l'appli). Chrome qui annonce « installable » = plus installée.
     function appKnownInstalled() { try { return localStorage.getItem('oro_app_installed') === '1'; } catch (e) { return false; } }
