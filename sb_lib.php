@@ -1667,7 +1667,7 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
   uksort($out, 'sb_mk_cmp');
   return $out;
 }
-const SB_CLK_LAG = 15; // retard mesuré de l'horloge du fournisseur sur Flashscore (s), à la lecture d'une nouvelle valeur
+const SB_CLK_LAG = 20; // retard mesuré de l'horloge du fournisseur sur Flashscore (s), à la lecture d'une nouvelle valeur (mesures 2026-10-23 : 15 matchs)
 /** Lectures « 0:00 » [heure, z] des 5 dernières minutes ; un saut de plus de 150 s (mi-temps, prolongation) repart de zéro. */
 function sb_clk_push(array $zs, ?int $z, int $now): array {
   $keep = array_values(array_filter($zs, static fn($p) => is_array($p) && (int) $p[0] > $now - 300));
@@ -1678,10 +1678,11 @@ function sb_clk_push(array $zs, ?int $z, int $now): array {
   $zs[] = [$now, $z];
   return array_slice($zs, -8);
 }
-/** « 0:00 » retenu : la plus tôt des lectures non aberrantes (≥ médiane − 40 s), moins SB_CLK_LAG. */
+/** « 0:00 » retenu : la plus tôt des lectures non aberrantes (≥ médiane basse − 40 s), moins SB_CLK_LAG ; une lecture isolée
+ *  très différente ne déplace l'horloge qu'une fois confirmée par une 2e. */
 function sb_clk_zero(array $zs): int {
   $v = array_map(static fn($p) => (int) $p[1], $zs); sort($v);
-  $med = $v[intdiv(count($v), 2)];
+  $med = $v[intdiv(count($v) - 1, 2)];
   foreach ($v as $z) if ($z >= $med - 40) return $z - SB_CLK_LAG;
   return $med - SB_CLK_LAG;
 }
