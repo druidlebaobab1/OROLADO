@@ -1992,7 +1992,9 @@ function sb_live_fx_public(string $id, array $v): array {
   return ['id' => 'foot:' . $id, 'lg' => (int) ($r['lg'] ?? 0), 'ts' => (int) ($r['ts'] ?? 0), 'st' => $v['st'], 'm' => $v['m'],
     'h' => ['n' => (string) ($r['h'][1] ?? ''), 'lo' => (string) ($r['h'][2] ?? '')], 'a' => ['n' => (string) ($r['a'][1] ?? ''), 'lo' => (string) ($r['a'][2] ?? '')],
     'sc' => $v['sc'], 'o' => $o, 'n' => count($mk), 'live' => 1, 'susp' => $s1 ? 1 : 0, 'rc' => (array) ($r['rc'] ?? [0, 0]), 'end' => !empty($r['end']) ? 1 : 0,
-    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'dg' => is_array($v['od']) && (int) ($v['od']['jmp'] ?? 0) > sb_now() - 20 ? (string) ($v['od']['jsd'] ?? '') : '', 'k' => ($kk = sb_live_clock($v['st'], $r, sb_now(), is_array($v['od']) ? $v['od'] : null)), 'kz' => $kk !== null ? sb_now() - $kk : null, 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
+    'ofd' => is_array($v['od']) ? 1 : 0, 'mx' => (int) ($r['mx'] ?? 0), 'dg' => is_array($v['od']) && (int) ($v['od']['jmp'] ?? 0) > sb_now() - 20 ? (string) ($v['od']['jsd'] ?? '') : '', 'k' => ($kk = sb_live_clock($v['st'], $r, sb_now(), is_array($v['od']) ? $v['od'] : null)), 'kz' => $kk !== null ? sb_now() - $kk : null,
+    'ck' => [(int) ($r['p1'] ?? 0), (int) ($r['p2'] ?? 0), is_array($v['od']) && isset($v['od']['z']) ? (int) $v['od']['z'] : 0, is_array($v['od']) && is_int($v['od']['sec'] ?? null) ? (int) $v['od']['sec'] : -1, is_array($v['od']) ? (int) ($v['od']['sat'] ?? 0) : 0, (int) ($r['zf'] ?? 0), (int) ($r['mt'] ?? 0), (int) ($r['p2o'] ?? 0)], // 2026-10-23 : sources brutes de l'horloge (contrôle face aux grands sites)
+    'ht' => is_array($r['ht'] ?? null) ? array_map('intval', (array) $r['ht']) : null]; // dans le flux des cotes du direct (montré même sans 1 · X · 2 : cadenas)
 }
 /** Nombre de matchs du direct (onglet « Direct ») — aucun appel ; -1 = pas d'onglet Direct pour ce joueur. */
 function sb_live_count(?array $user, int $now): int {
