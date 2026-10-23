@@ -1737,13 +1737,22 @@ function admin_orders(): array {
  * « solde plus élevé que dépôts + bonus + gains ». Lecture seule : rien ne touche à l'argent.
  */
 function admin_play_net(string $uid, string $email = ''): float {
-  if ($uid === '') return 0.0;
-  $net = 0.0;
-  if (!is_file(__DIR__ . '/admin_games_lib.php') || !is_file(__DIR__ . '/sports_lib.php')) return 0.0;
+  $x = admin_play_summary($uid, $email);
+  return round(($x['cs']['out'] - $x['cs']['in']) + ($x['sp']['out'] - $x['sp']['in']), 2);
+}
+
+/**
+ * 2026-10-23 (propriétaire : « un retrait de 68 $ sans aucun trade, je ne vois pas à quoi il a joué ») — activité en ARGENT RÉEL
+ * d'un joueur hors trades : Jeux (parties) et Paris / Predict (coupons réglés ; les coupons ouverts comptent dans « open »).
+ * cs / sp = ['n' => nombre, 'in' => misé, 'out' => payé] ; sp['open'] = coupons pas encore réglés.
+ */
+function admin_play_summary(string $uid, string $email = ''): array {
+  $out = ['cs' => ['n' => 0, 'in' => 0.0, 'out' => 0.0], 'sp' => ['n' => 0, 'in' => 0.0, 'out' => 0.0, 'open' => 0, 'won' => 0, 'live' => 0]];
+  if ($uid === '' || !is_file(__DIR__ . '/admin_games_lib.php') || !is_file(__DIR__ . '/sports_lib.php')) return $out;
   try {
     require_once __DIR__ . '/admin_games_lib.php';
     $g = admin_gm_player($uid, $email, 'real', 0, 1);
-    $net += (float) ($g['tot']['out'] ?? 0) - (float) ($g['tot']['in'] ?? 0);
+    $out['cs'] = ['n' => (int) ($g['tot']['n'] ?? 0), 'in' => (float) ($g['tot']['in'] ?? 0), 'out' => (float) ($g['tot']['out'] ?? 0)];
     static $bets = null;
     if ($bets === null) {
       require_once __DIR__ . '/sports_lib.php';
@@ -1756,12 +1765,17 @@ function admin_play_net(string $uid, string $email = ''): float {
       if (!is_array($b) || ($b['mode'] ?? '') !== 'real' || !isset($ids[(string) ($b['uid'] ?? '')])) continue;
       $st = (string) ($b['status'] ?? '');
       if ($st === 'pend') continue; // réservé, pas encore payé
-      $net += ($st === 'open' ? 0.0 : (float) ($b['win'] ?? 0)) - (float) ($b['stake'] ?? 0);
+      $out['sp']['n']++; $out['sp']['in'] += (float) ($b['stake'] ?? 0);
+      if (!empty($b['live'])) $out['sp']['live']++;
+      if ($st === 'open') { $out['sp']['open']++; continue; }
+      $w = (float) ($b['win'] ?? 0); $out['sp']['out'] += $w;
+      if ($st === 'won') $out['sp']['won']++;
     }
   } catch (\Throwable $e) {
-    error_log('OROLADO admin_play_net: ' . $e->getMessage());
+    error_log('OROLADO admin_play_summary: ' . $e->getMessage());
   }
-  return round($net, 2);
+  foreach (['cs', 'sp'] as $k) { $out[$k]['in'] = round($out[$k]['in'], 2); $out[$k]['out'] = round($out[$k]['out'], 2); }
+  return $out;
 }
 
 /** Tous les trades réels d'UN joueur (fiche joueur, contrôle anti-fraude). */
@@ -2640,7 +2654,11 @@ function admin_legacy_reason(array $p, array $realOrders, ?array $wd = null, arr
   $n = count($realOrders);
   if ($trades <= 0) $trades = $n;
   $amt = $wd ? (float) ($wd['amount'] ?? 0) : 0.0;
-  if ($wd && $trades <= 0 && $amt >= 5 && !($aff > 0 && $amt <= $aff + 0.01)) return 'Retrait sans aucun trade réel';
+  // 2026-10-23 : jeux et paris en argent réel comptent aussi (avant : « sans aucun trade » pour un joueur qui avait gagné aux Paris)
+  $play = $wd && function_exists('admin_play_summary') ? admin_play_summary((string) ($p['id'] ?? ''), (string) ($p['email'] ?? '')) : null;
+  $games = $play ? (int) $play['cs']['n'] + (int) $play['sp']['n'] : 0;
+  if ($play) { $trades += $games; $wagered += (float) $play['cs']['in'] + (float) $play['sp']['in']; }
+  if ($wd && $trades <= 0 && $amt >= 5 && !($aff > 0 && $amt <= $aff + 0.01)) return 'Retrait sans aucun jeu réel (ni trade, ni jeu, ni pari)';
   if ($wd && $amt >= 50 && $wagered + 0.01 < $amt && $trades < 4) return 'Retrait supérieur aux mises';
   $created = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
   if ($wd && $created > 0 && (time() - $created) < 180 && $amt >= 5) return 'Retrait dans les 3 min après inscription';
@@ -2755,6 +2773,13 @@ function admin_alerts(array $p, array $realOrders, ?array $wd = null, array $ctx
   $legacy = admin_legacy_reason($p, $realOrders, $wd, $ctx);
   if ($legacy !== '') $add(admin_reason_level($legacy), $legacy);
   if (!empty($ctx['bannedHit'])) $add('red', (string) $ctx['bannedHit']);
+  // 2026-10-23 (propriétaire : « je ne vois pas à quoi il a joué ») : d'où vient l'argent d'un retrait (Paris / Jeux en argent réel)
+  if ($wd && function_exists('admin_play_summary')) {
+    $ps = admin_play_summary($uid, (string) ($p['email'] ?? '')); $bits = [];
+    if ($ps['sp']['n'] > 0) $bits[] = 'Paris ' . $ps['sp']['n'] . ' coupon(s)' . ($ps['sp']['live'] ? ' dont ' . $ps['sp']['live'] . ' en direct' : '') . ' : misé ' . admin_money($ps['sp']['in']) . ', payé ' . admin_money($ps['sp']['out']) . ($ps['sp']['open'] ? ' (' . $ps['sp']['open'] . ' en cours)' : '');
+    if ($ps['cs']['n'] > 0) $bits[] = 'Jeux ' . $ps['cs']['n'] . ' partie(s) : misé ' . admin_money($ps['cs']['in']) . ', payé ' . admin_money($ps['cs']['out']);
+    if ($bits) $add('orange', 'Argent réel hors trades — ' . implode(' · ', $bits));
+  }
   if (!empty($ctx['sameIp']) && $legacy === '' && empty($ctx['bannedHit'])) $add('orange', 'Même IP que ' . implode(', ', array_slice((array) $ctx['sameIp'], 0, 3)));
   if (!empty($ctx['excess']) && (float) $ctx['excess'] >= 1) $add('red', 'Solde plus élevé que dépôts + bonus + gains (+' . admin_money($ctx['excess']) . ')');
 

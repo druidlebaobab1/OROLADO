@@ -2307,7 +2307,13 @@ if ($isAjax) {
     if ($action === 'sp_player') {
       $pid = (string) ($req['userId'] ?? '');
       if ($pid === '' || !function_exists('sp_my_bets')) admin_json(['ok' => false, 'reason' => 'Joueur introuvable']);
-      admin_json(['ok' => true, 'bets' => array_values(array_filter(sp_my_bets($pid), static fn($b) => ($b['mode'] ?? '') === 'real'))]); // réel seulement
+      // 2026-10-23 (propriétaire : « les paris des joueurs n'apparaissent pas ») : un coupon est rangé sous l'identifiant LOCAL du joueur,
+      // la fiche donne souvent son identifiant de la base → on cherche sous TOUS ses identifiants (base, local, même e-mail)
+      require_once __DIR__ . '/admin_games_lib.php';
+      $all = [];
+      foreach (admin_gm_player_ids($pid, (string) ($req['email'] ?? '')) as $id2) foreach (sp_my_bets($id2) as $b) if (($b['mode'] ?? '') === 'real') $all[(string) ($b['id'] ?? '')] = $b;
+      $all = array_values($all); usort($all, static fn($a, $b) => (int) ($b['at'] ?? 0) <=> (int) ($a['at'] ?? 0));
+      admin_json(['ok' => true, 'bets' => $all]); // réel seulement
     }
     admin_json(['ok' => false, 'reason' => 'Action inconnue']);
   }
@@ -4699,7 +4705,7 @@ function spPlayerBox() {
 async function spPlayerInit(u) {
   const list = document.getElementById('spPList'), tot = document.getElementById('spPTot');
   if (!list) return;
-  let r; try { r = await ajax({action:'sp_player', userId:u.id}); } catch (e) { r = {ok:false, reason:'Réseau'}; }
+  let r; try { r = await ajax({action:'sp_player', userId:u.id, email:u.email || ''}); } catch (e) { r = {ok:false, reason:'Réseau'}; }
   if (!r.ok) { list.innerHTML = '<p class="muted" style="padding:12px">' + esc(r.reason || 'Erreur') + '</p>'; return; }
   const bets = r.bets || [], real = bets.filter(b => b.mode === 'real');
   const ST = {won:['✅ Gagné','#5CF59A'], lost:['❌ Perdu','#FF7A90'], void:['↺ Remboursé','#FCD34D'], open:['⏳ En cours','#94A3B8']};
