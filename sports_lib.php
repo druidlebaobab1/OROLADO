@@ -955,7 +955,7 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   $bst = sp_boost_pct($picked); $pot0 = sp_floor2(min(SP_MAX_WIN, $stake * $odd));
   // 2026-10-23 (propriétaire) : chaque pari a son CODE DE PARI (historique, reçu, publicité) — le même pour tout le monde
   $bcode = function_exists('sb_code_for_bet') ? sb_code_for_bet($picked, $now) : '';
-  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => $bst > 0 ? sp_floor2(min(SP_MAX_WIN, $pot0 + min(SP_BOOST_CAP, sp_floor2(($pot0 - $stake) * $bst / 100)))) : $pot0, 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []) + ($bst > 0 ? ['bst' => $bst, 'brv' => 2] : []) + ($bcode !== '' ? ['code' => $bcode] : []);
+  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => $bst > 0 ? sp_floor2(min(SP_MAX_WIN, $pot0 + sp_floor2(($pot0 - $stake) * $bst / 100))) : $pot0, 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []) + ($bst > 0 ? ['bst' => $bst, 'brv' => 3] : []) + ($bcode !== '' ? ['code' => $bcode] : []);
   /* 2026-10-21 (propriétaire) — ORDRE SÛR pour TOUS les paris (avant : seulement les questions avec plafond) : 1) le coupon est
      ÉCRIT d'abord (état « pend » : jamais montré, jamais réglé) sous le verrou des paris, avec le plafond de mises par choix
      vérifié au même moment ; 2) la mise est retirée (casino_debit, une seule fois par référence) ; 3) le coupon passe « open ».
@@ -1010,8 +1010,29 @@ const SP_BOOST_MIN = 4; const SP_BOOST_ODD = 1.50; const SP_BOOST_MAX = 15.0;
 // 2026-10-23 (propriétaire : « trop facile ; une grosse mise gagne un bonus énorme ») : 4 choix minimum à cote 1,50+, et le bonus
 // d'un coupon ne dépasse JAMAIS 100 $ (quelle que soit la mise)
 const SP_BOOST_CAP = 100.0;
-function sp_boost_pct(array $sels, bool $legacy = false): float {
-  $n = 0; $w = 0.0; $minOdd = $legacy ? 1.20 : SP_BOOST_ODD; $minN = $legacy ? 3 : SP_BOOST_MIN; // legacy : coupons joués avant le 2026-10-23 (promesse du reçu tenue)
+/**
+ * 2026-10-23 (propriétaire, version 3 : marge 4 % partout) — bonus sur TOUS les coupons, dès 1 match, toute cote : % du bénéfice
+ * selon le nombre de choix (le risque), jamais selon la mise, sans plafond. Points : 1 → 0,5 %, 2 → 1,5 %, 3 → 3 %, 5 → 7 %,
+ * 10 → 20 %, 20 → 50 %, 30 → 100 %, 40 et plus → 150 % (entre deux points : en ligne droite). Vérifié : avec 4 % de marge par choix,
+ * le coût moyen du bonus (0,96^n × %) reste sous la moitié de l'avantage maison (1 − 0,96^n) pour tout n.
+ * Anciennes versions gardées pour les coupons déjà joués (promesse du reçu) : 1 = 1,20+ et 3 choix ; 2 = 1,50+, 4 choix, plafond 100 $.
+ */
+/** Gain d'un coupon gagné de $n choix : mise × cote (au cent inférieur) + bonus du bénéfice (version 3). */
+function sp_pay(float $stake, float $odd, int $n = 1): float {
+  $g = sp_floor2($stake * (floor($odd * 100 + 1e-6) / 100));
+  return sp_floor2($g + sp_floor2(max(0.0, $g - $stake) * sp_boost_pct(array_fill(0, max(1, $n), ['odd' => 2.0])) / 100));
+}
+const SP_BOOST_TBL = [[1, 0.5], [2, 1.5], [3, 3.0], [5, 7.0], [10, 20.0], [20, 50.0], [30, 100.0], [40, 150.0]];
+function sp_boost_pct(array $sels, int $ver = 3): float {
+  if ($ver >= 3) {
+    $n = 0; foreach ($sels as $s) if (($s['r'] ?? null) !== 'void' && (float) ($s['odd'] ?? 0) > 1) $n++;
+    if ($n < 1) return 0.0;
+    $t = SP_BOOST_TBL; $last = $t[count($t) - 1];
+    if ($n >= $last[0]) return $last[1];
+    for ($i = 1; $i < count($t); $i++) if ($n <= $t[$i][0]) { [$a, $pa] = $t[$i - 1]; [$b, $pb] = $t[$i]; return round($pa + ($pb - $pa) * ($n - $a) / ($b - $a), 2); }
+    return 0.0;
+  }
+  $n = 0; $w = 0.0; $minOdd = $ver === 1 ? 1.20 : 1.50; $minN = $ver === 1 ? 3 : 4;
   foreach ($sels as $s) {
     if (($s['r'] ?? null) === 'void') continue;
     $o = (float) ($s['odd'] ?? 0); if ($o + 1e-9 < $minOdd) continue;
@@ -1126,9 +1147,9 @@ function sp_resolve(array $db): array {
       // jamais plus que le % promis sur le ticket
       $bw = 0.0;
       if ($live > 0 && !empty($b['bst'])) {
-        $old = empty($b['brv']); // coupon joué avec les anciennes règles : son bonus promis est tenu (sans plafond)
-        $bp = min((float) $b['bst'], sp_boost_pct($s['b'][$i]['sel'], $old));
-        if ($bp > 0) { $bw = min($old ? PHP_FLOAT_MAX : SP_BOOST_CAP, sp_floor2(max(0.0, $win - (float) $b['stake']) * $bp / 100)); $win = sp_floor2(min(SP_MAX_WIN, $win + $bw)); $s['b'][$i]['bw'] = $bw; }
+        $ver = (int) ($b['brv'] ?? 1); // règles du jour où le coupon a été joué : son bonus promis est tenu
+        $bp = min((float) $b['bst'], sp_boost_pct($s['b'][$i]['sel'], $ver));
+        if ($bp > 0) { $bw = min($ver === 2 ? SP_BOOST_CAP : PHP_FLOAT_MAX, sp_floor2(max(0.0, $win - (float) $b['stake']) * $bp / 100)); $win = sp_floor2(min(SP_MAX_WIN, $win + $bw)); $s['b'][$i]['bw'] = $bw; }
       }
       // v2779 (propriétaire) : tous les matchs du coupon annulés → « Remboursé » (la mise revient, visible dans l'historique et le reçu)
       $s['b'][$i]['status'] = $live === 0 ? 'void' : 'won'; $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();

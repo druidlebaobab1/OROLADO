@@ -41,7 +41,7 @@ check('les joueurs voient 2 matchs ouverts', count(array_filter(sp_public_events
 
 echo "2) Coupons\n";
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $e1, 'k' => 'o0'], ['ev' => $e2, 'k' => 'o1']]);
-check('coupon 2 matchs : cote 1,90 × 1,95 = 3,70, gain possible 37 $', $r['ok'] && abs($r['bet']['odd'] - 3.70) < 0.001 && abs($r['bet']['pot'] - 37) < 0.01 && $bal[$A] == 90.0, json_encode($r['bet'] ?? $r));
+check('coupon 2 matchs : cote 1,90 × 1,95 = 3,70, gain possible 37 $', $r['ok'] && abs($r['bet']['odd'] - 3.70) < 0.001 && abs($r['bet']['pot'] - sp_pay(10, 3.70, 2)) < 0.01 && $bal[$A] == 90.0, json_encode($r['bet'] ?? $r));
 $r = sp_bet(load_db(), $ub, 'real', 30, [['ev' => $e1, 'k' => 'o2']]);
 check('v2779 : AUCUNE mise maximale — B parie 30 $ sur Barça (ancienne limite du match : 20 $)', $r['ok'] === true && $bal[$B] == 70.0);
 $r = sp_bet(load_db(), $ub, 'real', 1, [['ev' => $e1, 'k' => 'o0'], ['ev' => $e1, 'k' => 'o2']]);
@@ -60,12 +60,12 @@ echo "3) Résultats et paiements\n";
 $r = sp_admin_settle(load_db(), $e1, 'o0'); // Real gagne
 check('résultat match 1 : Real — B (Barça) perd, coupon de A attend le match 2', $r['ok'] && $r['lost'] === 1 && abs($bal[$B] - 64.90) < 0.001 && $bal[$A] == 90.0, json_encode($r));
 $r = sp_admin_settle(load_db(), $e2, 'o1'); // Celtics gagne
-check('résultat match 2 : Celtics — A gagne 37 $', $r['ok'] && abs($bal[$A] - 127) < 0.001, (string) $bal[$A]);
+check('résultat match 2 : Celtics — A gagne 37 $ + bonus', $r['ok'] && abs($bal[$A] - (90 + sp_pay(10, 3.70, 2))) < 0.001, (string) $bal[$A]);
 check('paris de B sur Lakers perdus', abs($bal[$B] - 64.90) < 0.001);
 $r = sp_admin_settle(load_db(), $e2, 'o1');
-check('donner le résultat 2 fois : refusé, rien de payé en plus', $r['ok'] === false && abs($bal[$A] - 127) < 0.001);
+check('donner le résultat 2 fois : refusé, rien de payé en plus', $r['ok'] === false && abs($bal[$A] - (90 + sp_pay(10, 3.70, 2))) < 0.001);
 sp_resolve(load_db()); sp_resolve(load_db());
-check('relancer le règlement : jamais payé 2 fois', abs($bal[$A] - 127) < 0.001);
+check('relancer le règlement : jamais payé 2 fois', abs($bal[$A] - (90 + sp_pay(10, 3.70, 2))) < 0.001);
 $mine = sp_my_bets('u_a');
 check('« mes paris » : coupon gagné avec le détail', $mine[0]['status'] === 'won' && $mine[0]['sel'][0]['r'] === 'won' && $mine[0]['sel'][1]['r'] === 'won');
 
@@ -76,7 +76,7 @@ sp_bet(load_db(), $ub, 'real', 10, [['ev' => $e3, 'k' => 'o0'], ['ev' => $e4, 'k
 $b0 = $bal[$B];
 sp_admin_settle(load_db(), $e3, 'void');
 sp_admin_settle(load_db(), $e4, 'o0');
-check('boxe annulée + tennis gagné : gain = 10 × 2,0 = 20 $', abs($bal[$B] - ($b0 + 20)) < 0.001, (string) ($bal[$B] - $b0));
+check('boxe annulée + tennis gagné : gain = 10 × 2,0 = 20 $', abs($bal[$B] - ($b0 + sp_pay(10, 2.0, 1))) < 0.001, (string) ($bal[$B] - $b0));
 $r = sp_admin_save(['title' => 'Combat E – F', 'sport' => 'boxe', 'start' => $t, 'opts' => [['label' => 'E', 'odd' => 1.6], ['label' => 'F', 'odd' => 2.3]]]); $e6 = $r['id'];
 sp_bet(load_db(), $ub, 'real', 7, [['ev' => $e6, 'k' => 'o1']]);
 $b1 = $bal[$B];

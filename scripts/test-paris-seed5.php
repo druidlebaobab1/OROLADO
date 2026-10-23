@@ -63,8 +63,8 @@ $b2 = sp_bet(load_db(), $db['users']['u_b'], 'real', 3, [['ev' => $e1['id'], 'k'
 sp_admin_settle(load_db(), $e1['id'], 'o0');
 check('1er match réglé : combiné encore en cours, perdant payé 0', ($bal[$A] === 98.0) && $bal[$B] === 97.0, $bal[$A] . ' / ' . $bal[$B]);
 sp_admin_settle(load_db(), $e2['id'], $e2['opts'][1]['k']);
-check('2e match réglé : gain = mise × cote, payé une fois', abs($bal[$A] - round(98 + floor(2 * $want * 100 + 1e-6) / 100, 2)) < 0.001, (string) $bal[$A]);
+check('2e match réglé : gain = mise × cote + bonus, payé une fois', abs($bal[$A] - round(98 + sp_pay(2, $want, 2), 2)) < 0.001, (string) $bal[$A]);
 sp_resolve(load_db());
-check('re-règlement : rien payé deux fois', abs($bal[$A] - round(98 + floor(2 * $want * 100 + 1e-6) / 100, 2)) < 0.001);
+check('re-règlement : rien payé deux fois', abs($bal[$A] - round(98 + sp_pay(2, $want, 2), 2)) < 0.001);
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

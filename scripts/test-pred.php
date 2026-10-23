@@ -144,7 +144,7 @@ $m1 = sp_admin_save(['title' => 'Real Madrid - Barcelona', 'league' => 'LaLiga',
 $evs = []; foreach (sp_events() as $e0) $evs[$e0['id']] = $e0;
 check('combiné prédiction + match : autorisé (aucun groupe lié)', !array_intersect(sp_corr_groups($evs[$fed]), sp_corr_groups($evs[$m1])));
 $rf = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $fed, 'k' => 'cut']], $C10 - 60);
-check('pari 1 min avant closeAt (9 jours après l’import, pas une question de prix) : accepté', $rf['ok'] === true && abs($rf['bet']['pot'] - 12.90) < 1e-9, json_encode($rf));
+check('pari 1 min avant closeAt (9 jours après l’import, pas une question de prix) : accepté', $rf['ok'] === true && abs($rf['bet']['pot'] - sp_pay(10, 1.29, 1)) < 1e-9, json_encode($rf));
 $rl = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $fed, 'k' => 'cut']], $C10);
 check('pari à closeAt : refusé (« closed »)', $rl['ok'] === false && $rl['reason'] === 'closed');
 check('question crypto = question de prix (corrélation actif, fermeture ≤ cotes + 72 h)', sp_is_price($ev($btc)) && in_array('asset:btc', sp_corr_groups($ev($btc)), true) && !sp_is_price($ev($osc)));
@@ -176,11 +176,11 @@ $pl = pred_admin_list();
 $gB = array_values(array_filter($pl['events'], static fn($x) => $x['id'] === $btc))[0] ?? [];
 check('liste admin : « à vérifier » avec la proposition, le prix et la source', ($gB['grp'] ?? '') === 'chk' && ($gB['chk']['sug'] ?? '') === 'yes' && $gB['src'] !== '');
 $st = sp_admin_settle(load_db(), $btc, 'yes');
-check('l’admin confirme d’un clic : A payé 10 × ' . $ry['bet']['odd'] . ' (sa cote), B rien', !empty($st['ok']) && abs($bal[$A] - ($bA + sp_floor2(10 * $ry['bet']['odd']))) < 1e-9 && $bal[$B] === $bB);
+check('l’admin confirme d’un clic : A payé 10 × ' . $ry['bet']['odd'] . ' (sa cote), B rien', !empty($st['ok']) && abs($bal[$A] - ($bA + sp_pay(10, $ry['bet']['odd'], 1))) < 1e-9 && $bal[$B] === $bB);
 $bA2 = $bal[$A]; $cr1 = $credits;
 check('2e confirmation refusée : jamais payé deux fois', empty(sp_admin_settle(load_db(), $btc, 'no')['ok']) && $bal[$A] === $bA2 && $credits === $cr1);
 $st2 = sp_admin_settle(load_db(), $eth, 'hi');
-check('l’admin peut choisir un AUTRE résultat que la proposition (Ethereum : « Plus de 2 500 $ » → B payé)', !empty($st2['ok']) && abs($bal[$B] - ($bB + sp_floor2(10 * $re2['bet']['odd']))) < 1e-9 && $bal[$A] === $bA2);
+check('l’admin peut choisir un AUTRE résultat que la proposition (Ethereum : « Plus de 2 500 $ » → B payé)', !empty($st2['ok']) && abs($bal[$B] - ($bB + sp_pay(10, $re2['bet']['odd'], 1))) < 1e-9 && $bal[$A] === $bA2);
 check('Oscar (pas automatique) : toujours ouvert, jamais lu', $ev($osc)['status'] === 'open' && !preg_grep('/oscar/i', $ASK));
 
 echo "6) Prix pile sur la limite → « à vérifier » sans proposition (jamais deviné)\n";
