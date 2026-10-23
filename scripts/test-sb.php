@@ -169,6 +169,12 @@ check('code de plus de 7 jours : nocode', sb_code_load($uadm, $code, $NOW + 7 * 
 $ko1 = (int) sb_day('2026-10-22')['fx']['9001']['ts'];
 $L3 = sb_code_load($uadm, $code, $ko1);
 check('match commencé : sauté (compté)', $L3['ok'] && !in_array('sb:foot:9001:ou:2.5', array_column($L3['sel'], 'ev'), true) && $L3['skip'] >= 1);
+check('match commencé : rendu dans « off » (cadenas, équipes, état)', ($o3 = array_values(array_filter($L3['off'] ?? [], static fn($o) => $o['ev'] === 'sb:foot:9001:ou:2.5'))[0] ?? null) !== null && $o3['h']['n'] === 'Home FC' && in_array($o3['st'], ['closed', 'live', 'fin'], true) && $o3['mk'] === 'ou:2.5', json_encode($L3['off'] ?? null));
+// 2026-10-23 — code d'un pari placé : tous les choix, 30 jours
+$bc = sb_code_for_bet([['ev' => 'sb:foot:9001:1x2', 'k' => 'H'], ['ev' => 'sb:foot:9002:1x2', 'k' => 'D']], $NOW);
+$bj = sb_code_read($bc);
+check('code de pari (pari placé) : 6 caractères, 2 choix, valable 30 jours', sb_code_ok($bc) && count($bj['s']) === 2 && (int) $bj['ttl'] === 30 * 86400);
+check('code de pari : encore lisible après 8 jours, plus après 31', sb_code_load($uadm, $bc, $NOW + 8 * 86400)['ok'] === true && sb_code_load($uadm, $bc, $NOW + 31 * 86400)['reason'] === 'nocode');
 $L4 = sb_code_load($uadm, '', $NOW, [['ev' => 'sb:foot:9002:1x2', 'k' => 'D']]);
 check('sans code, {sel} : relit les cotes du ticket', $L4['ok'] && count($L4['sel']) === 1 && $L4['sel'][0]['odd'] === $odd('9002', '1x2', 'D'));
 $rm = sp_admin_save(['title' => 'Code A – Code B', 'league' => 'Liga', 'sport' => 'foot', 'start' => time() + 86400 * 3, 'opts' => [['label' => 'A', 'odd' => 2.1], ['label' => 'B', 'odd' => 1.7]]]);

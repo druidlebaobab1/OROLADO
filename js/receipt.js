@@ -792,7 +792,7 @@
     var no = String(bt.id || '').slice(-10).toUpperCase();
     var d = new Date((bt.at || 0) * 1000), pad = function (v) { return (v < 10 ? '0' : '') + v; };
     var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-    var TR = [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], [x.rcNo, no]];
+    var TR = [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], bt.code ? [x.betCode || 'Code', String(bt.code)] : [x.rcNo, no]]; // 2026-10-23 : « Code de pari » à la place du n°
     if (bt.bst) TR.splice(2, 0, [(x.bstL || 'Bonus') + ' +' + Math.round(bt.bst * 10) / 10 + ' %', st === 'won' ? '+' + n2(bt.bw) + ' $' : st === 'open' ? '✓' : '—']);
     var iPot = bt.bst ? 3 : 2, iNo = TR.length - 1;
     TR.forEach(function (r, i) {
@@ -807,6 +807,7 @@
     g.fillStyle = INK;
     for (var k = 0, bx = W / 2 - 110; k < 44 && bx < W / 2 + 110; k++) { var bw = 1 + ((no.charCodeAt(k % (no.length || 1)) || 7) + k) % 3; g.fillRect(bx, by, bw, 40); bx += bw + 2; }
     g.textAlign = 'center'; g.fillStyle = '#94A3B8'; g.font = '600 14px ' + FONT; g.fillText('o r o l a d o . c o m', W / 2, by + 62);
+    if (bt.code) { g.fillStyle = '#CBD5E1'; g.font = '500 11px ' + FONT; g.fillText((x.rcNoS || 'N°') + ' ' + no, W / 2, by + 84); } // numéro du reçu, tout petit
     return c.canvas || c.cv || c;
   }
 
