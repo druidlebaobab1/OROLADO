@@ -1499,7 +1499,15 @@
   function inTxt(s) { return fmt(NX().inX, { x: s >= 3600 ? dur('hour', Math.floor(s / 3600)) + (Math.floor(s % 3600 / 60) ? ' ' + dur('minute', Math.floor(s % 3600 / 60)) : '') : dur('minute', Math.max(1, Math.ceil(s / 60))) }); }
   function inShort(s) { var h = Math.floor(s / 3600), m = Math.max(1, Math.ceil(s % 3600 / 60)); if (m === 60) { h++; m = 0; } return h ? h + ' h ' + (m < 10 ? '0' : '') + m : dur('minute', m); }
   function scTxt(f) { var s = f.sc || [0, 0]; return (+s[0] || 0) + ' - ' + (+s[1] || 0); }
-  function minTxt(f, sh) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return sh ? n.ftS : n.ft; if (f.st === 'HT') return sh ? n.htS : n.ht; if (f.kz != null && isFinite(+f.kz)) return Math.max(1, Math.floor((srvNow() + CLK_ADV - (TVZ[f.id] != null ? TVZ[f.id] : f.kz)) / 60)) + '’'; return f.m != null && f.m !== '' ? f.m + '’' : n.nLive; } // minute exacte (kz) dans les listes aussi
+  /* 2026-10-23 (propriétaire : « comme les grands sites : la minute avec une apostrophe, sans les secondes ») : 2:30 → 3’ (minute
+     en cours, comme Flashscore), arrêts de jeu 45+2’ / 90+3’ */
+  function minOf(sec, st) {
+    var m = Math.max(1, Math.floor(Math.max(0, sec) / 60) + 1);
+    if (st === '1H' && m > 45) return '45+' + Math.min(m - 45, 15) + '’';
+    if (st === '2H' && m > 90) return '90+' + Math.min(m - 90, 20) + '’';
+    return m + '’';
+  }
+  function minTxt(f, sh) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return sh ? n.ftS : n.ft; if (f.st === 'HT') return sh ? n.htS : n.ht; if (f.kz != null && isFinite(+f.kz)) return minOf(srvNow() + CLK_ADV - (TVZ[f.id] != null ? TVZ[f.id] : f.kz), String(f.st || '')); return f.m != null && f.m !== '' ? f.m + '’' : n.nLive; } // minute exacte (kz) dans les listes aussi
   function skelRows() { var lk = '<span class="pz-ob lk na"><i class="pz-lki">' + LOCK + '</i></span>', s = ''; for (var i = 0; i < 6; i++) s += '<div class="pz-row pz-skel"><i></i><i></i><div class="pz-ro">' + lk + lk + lk + '</div></div>'; return '<div class="pz-lg">' + s + '</div>'; }
   function oddsBy(f) { var by = {}; ((f.o && f.o.o) || []).forEach(function (z) { by[z[0]] = z[1]; }); return by; }
   // bouton de cote : (libellé à gauche) cote à droite ; cadenas quand c'est suspendu
@@ -2390,16 +2398,27 @@
   function shirt(c) { return '<svg class="pz-shirt" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3.5 4 5.6 2.3 10l3.2 1.6V20.5h13V11.6l3.2-1.6L20 5.6 16 3.5c-.6 1.6-2.2 2.6-4 2.6S8.6 5.1 8 3.5z" fill="' + c + '" stroke="rgba(0,0,0,.35)" stroke-width=".8"/></svg>'; }
   function scTxt2(f) { var s = f.sc || [0, 0]; return (+s[0] || 0) + ' : ' + (+s[1] || 0); }
   function evKey(e) { return [e.t, e.x, e.type, e.team, e.detail, e.player].join('|'); }
+  /* 2026-10-23 (propriétaire : « la même bulle répétée 3, 4 fois ») : le fournisseur corrige ses événements (nom du joueur ajouté,
+     minute ±1) → c'était un « nouvel » événement à chaque fois. Carton / remplacement / VAR déjà vu (même équipe, même type,
+     minute à ±2) : pas remontré. */
+  function evSeen(e) {
+    if (TV.seen[evKey(e)]) return true;
+    if (e.type === 'goal') return false;
+    var t = +e.t || 0;
+    return (TV.seenF || []).some(function (q) { return q[0] === e.type && q[1] === e.team && Math.abs(q[2] - t) <= 2 && (e.type !== 'card' || q[3] === (e.detail === 'red')); });
+  }
+  function evMark(e) { TV.seen[evKey(e)] = 1; if (e.type !== 'goal') (TV.seenF = TV.seenF || []).push([e.type, e.team, +e.t || 0, e.detail === 'red']); }
   function evIco(e) { return e.type === 'goal' ? '⚽' : e.type === 'card' ? (e.detail === 'red' ? '🟥' : '🟨') : e.type === 'subst' ? '🔁' : e.type === 'corner' ? '⛳' : 'VAR'; }
   var TVZ = {}; // « 0:00 » de l'horloge par match
   var TVM = {}; // horloge par match (sans kz) : ne recule jamais, même en sortant / revenant
-  function tvMin(f) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return n.ftS; if (f.st === 'HT') return '45:00'; return null; } // 2026-10-22 (propriétaire) : à la mi-temps, l'heure du match (45:00), pas « MT »
+  function tvMin(f) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return n.ftS; if (f.st === 'HT') return n.htS; return null; } // 2026-10-22 (propriétaire) : à la mi-temps, l'heure du match (45:00), pas « MT »
   function tvClockTxt() {
     var f = TV.f; if (!f) return '';
     var t = tvMin(f); if (t) return t;
-    if (!TV.base) return f.m != null ? (f.m < 10 ? '0' : '') + f.m + ':00' : '';
-    var s = TV.base.z != null ? Math.max(0, Math.floor(srvNow() + CLK_ADV - TV.base.z)) : TV.base.s + Math.min(179, Math.floor((Date.now() - TV.base.at) / 1000)), p = function (v) { return (v < 10 ? '0' : '') + v; };
-    return p(Math.floor(s / 60)) + ':' + p(s % 60);
+    if (!TV.base) return f.m != null ? f.m + '’' : '';
+    // (sans « 0:00 » du serveur : la minute de l'API est déjà la minute en cours → m:00 compté comme (m − 1):00)
+    var s = TV.base.z != null ? Math.max(0, Math.floor(srvNow() + CLK_ADV - TV.base.z)) : TV.base.s - 60 + Math.min(179, Math.floor((Date.now() - TV.base.at) / 1000));
+    return minOf(s, String(f.st || '')); // minute seule (« 67’ »), plus de secondes
   }
   function tvPeriod(f) {
     var x = TX(), n = NX(), st = String(f.st || '');
@@ -2431,7 +2450,7 @@
     var st = liveStats(f, trk);
     var sc = [+(f.sc || [])[0] || 0, +(f.sc || [])[1] || 0], cor = st && Array.isArray(st.corners) ? [+st.corners[0] || 0, +st.corners[1] || 0] : null;
     if (TV.fid !== f.id || (!TV.ready && r)) { // 1re lecture complète : les événements déjà passés ne sont pas rejoués
-      TV.fid = f.id; TV.ready = !!r; TV.q = []; TV.hold = 0; TV.mode = 0; TV.seen = {}; ev.forEach(function (e) { TV.seen[evKey(e)] = 1; }); TV.cor = cor; TV.sc = sc; TV.base = null;
+      TV.fid = f.id; TV.ready = !!r; TV.q = []; TV.hold = 0; TV.mode = 0; TV.seen = {}; TV.seenF = []; TV.dgShown = f.dgt || 0; ev.forEach(evMark); TV.cor = cor; TV.sc = sc; TV.base = null;
       TV.side = Math.random() < 0.5 ? 'h' : 'a'; TV.pane = 0;
       var last = ev[ev.length - 1]; if (last && f.m != null && +f.m - (+last.t || 0) <= 2) TV.q.push(last); // action toute récente : montrée une fois
     } else {
@@ -2439,11 +2458,11 @@
       // un but annulé par la VAR disparaît de la liste et n'est jamais montré)
       var dSc = [sc[0] - (TV.sc ? TV.sc[0] : sc[0]), sc[1] - (TV.sc ? TV.sc[1] : sc[1])];
       var fresh = ev.filter(function (e) {
-        if (TV.seen[evKey(e)]) return false;
+        if (evSeen(e)) return false;
         if (e.type === 'goal' && dSc[e.team === 'a' ? 1 : 0] <= 0 && !(f.m != null && +f.m - (+e.t || 0) > 4)) return false;
         return true;
       });
-      fresh.forEach(function (e) { TV.seen[evKey(e)] = 1; });
+      fresh.forEach(evMark);
       fresh = fresh.filter(function (e) { return !(e.type === 'goal' && f.m != null && +f.m - (+e.t || 0) > 4 && dSc[e.team === 'a' ? 1 : 0] <= 0); }); // vieux but jamais vu : pas d'animation
       [0, 1].forEach(function (i) { // but vu au score mais pas encore dans les événements : c'est un vrai but
         var tm = i ? 'a' : 'h', d = sc[i] - (TV.sc ? TV.sc[i] : sc[i]);
@@ -2453,7 +2472,8 @@
       fresh.forEach(function (e) { TV.q.push(e); });
       if (cor && TV.cor) [0, 1].forEach(function (i) { for (var k = 0; k < Math.min(3, cor[i] - TV.cor[i]); k++) TV.q.push({ type: 'corner', team: i ? 'a' : 'h', t: f.m }); });
       if (TV.q.length > 6) TV.q = TV.q.slice(-6);
-      if (cor) TV.cor = cor; TV.sc = sc;
+      // corners : le plus grand nombre déjà vu (un compte qui hésite 6 → 5 → 6 ne rejoue plus le corner)
+      if (cor) TV.cor = TV.cor ? [Math.max(TV.cor[0], cor[0]), Math.max(TV.cor[1], cor[1])] : cor; TV.sc = sc;
     }
     if (st && Array.isArray(st.poss)) { var ph = +st.poss[0] || 0, pa = +st.poss[1] || 0; TV.poss = ph + pa > 0 ? Math.max(0.2, Math.min(0.8, ph / (ph + pa))) : 0.5; } else TV.poss = 0.5;
     // 2026-10-22 (propriétaire : « en revenant sur le match, l'horloge revenait à 62:00 ») : horloge depuis l'heure du « 0:00 »
@@ -2545,7 +2565,8 @@
     if (f.end || st === 'FT' || st === 'AET' || st === 'PEN') { tvShow('', 50, 50, '', n.endM.toUpperCase(), '', 'pause'); return; }
     // 2026-10-22 (propriétaire : « est-ce une vraie simulation ? ») : ATTAQUE DANGEREUSE seulement sur un VRAI signal (le bookmaker
     // bouge ses cotes vers une équipe : f.dg) ; sinon le ballon circule au milieu, sans rien affirmer
-    if (f.dg === 'h' || f.dg === 'a') { var dx = 80 + Math.random() * 11, dy = 18 + Math.random() * 64; if (f.dg === 'a') dx = 100 - dx; TV.side = f.dg; tvShow(f.dg, dx, dy, nm(f.dg), x.dang, '', 'dang'); return; }
+    // 2026-10-23 : une seule bulle par vrai signal (plus la même bulle à chaque tour)
+    if ((f.dg === 'h' || f.dg === 'a') && f.dgt && f.dgt !== TV.dgShown) { TV.dgShown = f.dgt; var dx = 80 + Math.random() * 11, dy = 18 + Math.random() * 64; if (f.dg === 'a') dx = 100 - dx; TV.side = f.dg; tvShow(f.dg, dx, dy, nm(f.dg), x.dang, '', 'dang'); TV.hold = now + 3500; return; }
     // pas d'action réelle : petites passes autour du rond central (le ballon ne saute pas d'un bout à l'autre)
     var cx = TV.bx != null ? TV.bx : 50, cy = TV.by != null ? TV.by : 50;
     var bx0 = Math.max(34, Math.min(66, cx + (Math.random() - 0.5) * 22)), by0 = Math.max(16, Math.min(84, cy + (Math.random() - 0.5) * 34));
