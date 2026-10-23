@@ -2288,7 +2288,7 @@
     if (!f) { mh.innerHTML = ''; mk.innerHTML = r ? '<p class="pz-none">' + esc(r.reason === 'closed' ? x.closedM : xx.e_unavailable) + '</p>' : skelRows(); return; }
     // en-tête : refait seulement si sa forme change (avant-match ↔ direct) ; score / minute changés sur place
     var hs = f.id + '|' + (f.live ? 1 : 0) + '|' + lg();
-    if (mh.dataset.sig !== hs) { mh.dataset.sig = hs; mh.innerHTML = f.live ? tvHtml(f) : mhHtml(f); if (f.live) { TV.fid = ''; bindTv(); } }
+    if (mh.dataset.sig !== hs) { mh.dataset.sig = hs; mh.innerHTML = f.live ? tvHtml(f) : mhHtml(f); if (f.live) bindTv(); } // (2026-10-23 : la mini télé garde sa mémoire du match : plus de but rejoué à chaque redessin)
     else if (f.live) {
       var sc = $('pzSc'), mi = $('pzMinT'), t = scTxt(f);
       if (sc && sc.textContent !== t) { sc.textContent = t; sc.classList.remove('pop'); void sc.offsetWidth; sc.classList.add('pop'); }
@@ -2411,6 +2411,10 @@
   function evIco(e) { return e.type === 'goal' ? '⚽' : e.type === 'card' ? (e.detail === 'red' ? '🟥' : '🟨') : e.type === 'subst' ? '🔁' : e.type === 'corner' ? '⛳' : 'VAR'; }
   var TVZ = {}; // « 0:00 » de l'horloge par match
   var TVM = {}; // horloge par match (sans kz) : ne recule jamais, même en sortant / revenant
+  /* 2026-10-23 (propriétaire : « 20 à 25 buts affichés pour un match à 2 ou 3 buts ») : GMX = plus haut score déjà ANNONCÉ par
+     équipe ; un but n'est montré (mini télé, bandeau) que si le score confirmé dépasse ce nombre → jamais plus d'animations que de
+     vrais buts, même si le flux hésite ou si la page se redessine. TVR = action récente déjà montrée à l'ouverture. */
+  var GMX = {}, TVR = {};
   function tvMin(f) { var n = NX(); if (f.end || f.st === 'FT' || f.st === 'AET' || f.st === 'PEN') return n.ftS; if (f.st === 'HT') return n.htS; return null; } // 2026-10-22 (propriétaire) : à la mi-temps, l'heure du match (45:00), pas « MT »
   function tvClockTxt() {
     var f = TV.f; if (!f) return '';
@@ -2450,9 +2454,12 @@
     var st = liveStats(f, trk);
     var sc = [+(f.sc || [])[0] || 0, +(f.sc || [])[1] || 0], cor = st && Array.isArray(st.corners) ? [+st.corners[0] || 0, +st.corners[1] || 0] : null;
     if (TV.fid !== f.id || (!TV.ready && r)) { // 1re lecture complète : les événements déjà passés ne sont pas rejoués
+      var same = TV.fid === f.id;
       TV.fid = f.id; TV.ready = !!r; TV.q = []; TV.hold = 0; TV.mode = 0; TV.seen = {}; TV.seenF = []; TV.dgShown = f.dgt || 0; ev.forEach(evMark); TV.cor = cor; TV.sc = sc; TV.base = null;
       TV.side = Math.random() < 0.5 ? 'h' : 'a'; TV.pane = 0;
-      var last = ev[ev.length - 1]; if (last && f.m != null && +f.m - (+last.t || 0) <= 2) TV.q.push(last); // action toute récente : montrée une fois
+      GMX[f.id] = GMX[f.id] || sc.slice(); // buts déjà comptés pour ce match : jamais rejoués
+      // action toute récente (pas un but) : montrée UNE fois par match et par visite
+      var last = ev[ev.length - 1]; if (!same && !TVR[f.id] && last && last.type !== 'goal' && f.m != null && +f.m - (+last.t || 0) <= 2) { TVR[f.id] = 1; TV.q.push(last); }
     } else {
       // but de la liste d'événements : montré seulement quand le score CONFIRMÉ a bougé (sinon gardé pour la lecture suivante ;
       // un but annulé par la VAR disparaît de la liste et n'est jamais montré)
@@ -2554,7 +2561,13 @@
     var e = TV.q.shift();
     if (e) { // VRAI changement : son animation, telle quelle
       var s = e.team === 'a' ? 'a' : 'h', gx = s === 'h' ? 97 : 3, y = 50, who = e.player || '';
-      if (e.type === 'goal') { TV.side = s === 'h' ? 'a' : 'h'; TV.mode = 0; tvShow(s, gx, 50, nm(s), '⚽ ' + n.goal, who, 'goal'); TV.hold = now + 3200; return; }
+      if (e.type === 'goal') {
+        var gi = s === 'a' ? 1 : 0, cur = +((f.sc || [])[gi]) || 0, g = GMX[f.id] || (GMX[f.id] = [0, 0]);
+        if (g[gi] >= cur) return; // déjà annoncé (ou score pas encore confirmé) : pas de 2e animation
+        g[gi]++;
+        TV.side = s === 'h' ? 'a' : 'h'; TV.mode = 0; tvShow(s, gx, 50, nm(s), '⚽ ' + n.goal, who, 'goal'); TV.hold = now + 3200; return;
+      }
+      if (e.type === 'var' && e.detail === NX().goalOff) { var g2 = GMX[f.id]; if (g2) { var j = s === 'a' ? 1 : 0; g2[j] = Math.min(g2[j], +((f.sc || [])[j]) || 0); } }
       if (e.type === 'corner') { tvShow(s, s === 'h' ? 98.5 : 1.5, Math.random() < 0.5 ? 3 : 97, nm(s), '⛳ ' + x.cor, '', 'cor'); TV.side = s; TV.mode = 2; TV.hold = now + 3600; return; }
       if (e.type === 'card') { tvShow(s, 50 + (s === 'h' ? -12 : 12), 45, nm(s), (e.detail === 'red' ? '🟥 ' : '🟨 ') + x.card, who, e.detail === 'red' ? 'red' : 'card'); TV.hold = now + 4200; return; }
       if (e.type === 'subst') { tvShow(s, s === 'h' ? 30 : 70, 95, nm(s), '🔁 ' + String(n.sub).toUpperCase(), who, 'sub'); TV.hold = now + 3600; return; }
@@ -2695,9 +2708,10 @@
     lsc[f.id] = c;
     if (!p || !alive() || !watched(f.id) || view === 'match') return; // page du match : la mini télé le montre (rien ne couvre les cotes)
     var n = NX(), mt = f.m != null && !c.end ? ' · ' + f.m + '’' : '', s = c.h + ' - ' + c.a;
-    if (c.h > p.h) banner('goal', n.goal + ' ' + f.h.n, f.h.n + ' ' + s + ' ' + f.a.n + mt);
-    if (c.a > p.a) banner('goal', n.goal + ' ' + f.a.n, f.h.n + ' ' + s + ' ' + f.a.n + mt);
-    if (c.h < p.h || c.a < p.a) banner('var', 'VAR', n.goalOff + ' · ' + f.h.n + ' ' + s + ' ' + f.a.n);
+    var g = GMX[f.id] || (GMX[f.id] = [p.h, p.a]); // plus haut score déjà annoncé : un but n'est annoncé qu'une fois
+    if (c.h > p.h && c.h > g[0]) { g[0] = c.h; banner('goal', n.goal + ' ' + f.h.n, f.h.n + ' ' + s + ' ' + f.a.n + mt); }
+    if (c.a > p.a && c.a > g[1]) { g[1] = c.a; banner('goal', n.goal + ' ' + f.a.n, f.h.n + ' ' + s + ' ' + f.a.n + mt); }
+    if ((c.h < p.h || c.a < p.a) && (c.h < g[0] || c.a < g[1])) { g[0] = c.h; g[1] = c.a; banner('var', 'VAR', n.goalOff + ' · ' + f.h.n + ' ' + s + ' ' + f.a.n); }
     if (c.rh > p.rh) banner('red', n.red, f.h.n + mt);
     if (c.ra > p.ra) banner('red', n.red, f.a.n + mt);
     if (c.st === 'HT' && p.st !== 'HT') banner('ht', n.ht, f.h.n + ' ' + s + ' ' + f.a.n);
