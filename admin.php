@@ -2320,7 +2320,7 @@ if ($isAjax) {
         return ['name' => (string) ($u['displayName'] ?? $u['name'] ?? $q['name'] ?? ''), 'email' => (string) ($u['email'] ?? $q['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? $q['publicId'] ?? '')];
       };
       $betsP = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
-      if (($req['what'] ?? '') === 'coupons') admin_json(admin_paris_coupons($per, (string) ($req['f'] ?? 'all'), max(0, (int) ($req['offset'] ?? 0)), $betsP, sp_events(), static fn(string $u): bool => $skip($u), $whoP));
+      if (($req['what'] ?? '') === 'coupons') admin_json(admin_paris_coupons($per, (string) ($req['f'] ?? 'all'), max(0, (int) ($req['offset'] ?? 0)), $betsP, sp_events(), static fn(string $u): bool => $skip($u), $whoP, null, mb_substr((string) ($req['q'] ?? ''), 0, 60)));
       admin_json(admin_paris_dash($per, $betsP, sp_events(), static fn(string $u): bool => $skip($u), $whoP));
     }
     // 2026-10-23 (propriétaire) — 📈 Trading : tableau de bord (lecture seule), voir admin_trading_lib.php
@@ -3153,6 +3153,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <h2 id="pdTitle" style="color:#93C5FD;margin:10px 0 2px">⚽ Paris</h2>
       <p class="muted" style="margin:0 0 8px">Argent réel seulement · vos comptes admin ne comptent jamais · heure de votre téléphone.</p>
       <div class="pd-row" id="pdPer"><button type="button" data-per="today" class="on">Aujourd’hui</button><button type="button" data-per="yday">Hier</button><button type="button" data-per="7">7 jours</button><button type="button" data-per="30">30 jours</button><button type="button" id="pdRef" title="Actualiser">↻</button></div>
+      <input id="pdQ" class="nt-in" type="search" autocomplete="off" placeholder="🔍 Rechercher un joueur (nom, e-mail, ID) ou un match…" style="margin:4px 0">
       <div class="pd-tabs" id="pdTabs"></div>
       <div id="pdBody"><p class="muted">Chargement…</p></div>
     </div>
@@ -4730,7 +4731,11 @@ setInterval(() => {
 (function () {
   const $p = id => document.getElementById(id);
   if (!$p('btnParisA')) return;
-  let src = 'paris', per = 'today', tab = 'sum', data = null, busy = false, cp = {f:'all', rows:[], more:false, total:0};
+  let src = 'paris', per = 'today', tab = 'sum', data = null, busy = false, cp = {f:'all', rows:[], more:false, total:0}, q = '';
+  const nq = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  // recherche : garde les lignes dont le joueur (nom, e-mail, ID) ou le match / l'option contient le texte tapé
+  const hit = r => !q || nq([r.name, r.email, r.publicId, r.uid, r.t, r.l, r.a].concat((r.sel || []).map(s => s.t + ' ' + s.l)).join(' ')).indexOf(q) > -1;
+  const F = a => (a || []).filter(hit);
   const m = v => (Number(v) || 0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
   const sg = v => { v = Number(v) || 0; return '<b class="' + (v >= 0 ? 'pos' : 'neg') + '">' + (v > 0 ? '+' : v < 0 ? '−' : '') + m(Math.abs(v)) + '</b>'; };
   const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -4744,7 +4749,7 @@ setInterval(() => {
   const alerts = A => A.length ? A.map(a => '<div class="pd-al ' + a.lvl + '">' + (a.uid ? who(a) + ' — ' : '') + e(a.txt) + '</div>').join('') : '<div class="pd-al ok">✓ Rien d’anormal sur la période.</div>';
   const selTxt = r => (r.sel || []).map(s => e(s.t) + ' → <b>' + e(s.l) + '</b> (' + Number(s.odd).toFixed(2) + ')' + (s.lv ? ' <span class="pd-k live">direct ' + (s.sc ? s.sc.join('-') : '') + (s.m != null ? ' · ' + s.m + '’' : '') + '</span>' : '') + (s.r === 'won' ? ' ✅' : s.r === 'lost' ? ' ❌' : s.r === 'void' ? ' ↩️' : '')).join('<br>') + (r.nSel > (r.sel || []).length ? '<br>+ ' + (r.nSel - r.sel.length) + ' autre(s)' : '');
   const ST = {open:'⏳ En cours', won:'✅ Gagné', lost:'❌ Perdu', void:'↩️ Remboursé'};
-  const betRow = r => '<tr><td>' + hm(r.at) + '</td><td class="wr">' + who(r) + '<div class="pd-sel">' + selTxt(r) + '</div></td><td><span class="pd-k ' + r.kind + '">' + KN[r.kind] + '</span></td><td>' + m(r.stake) + '</td><td>' + Number(r.odd).toFixed(2) + '</td><td>' + (ST[r.status] || e(r.status)) + '</td><td>' + (r.status === 'open' ? '<span class="muted">' + m(r.pot) + '</span>' : m(r.win)) + '</td></tr>';
+  const betRow = r => '<tr><td>' + hm(r.at) + '</td><td class="wr">' + who(r) + '<div class="pd-sel">' + selTxt(r) + '</div></td><td><span class="pd-k ' + r.kind + '">' + KN[r.kind] + '</span>' + (r.kind === 'live' && (r.sel || []).some(s => !s.lv) ? '<br><span class="pd-k pre">+ avant-match</span>' : '') + '</td><td>' + m(r.stake) + '</td><td>' + Number(r.odd).toFixed(2) + '</td><td>' + (ST[r.status] || e(r.status)) + '</td><td>' + (r.status === 'open' ? '<span class="muted">' + m(r.pot) + '</span>' : m(r.win)) + '</td></tr>';
   const BH = ['Heure', 'Joueur et choix', 'Type', 'Mise', 'Cote', 'État', 'Gain'];
   const MK = {'1x2':'Résultat 1X2', dc:'Double chance', dnb:'Remboursé si nul', ou:'Plus / moins de buts', btts:'Les deux marquent', ah:'Handicap asiatique', eh:'Handicap', cs:'Score exact', ht1x2:'Mi-temps 1X2', htou:'Buts 1re mi-temps', htft:'Mi-temps / fin', tth:'Buts équipe 1', tta:'Buts équipe 2', oe:'Pair / impair', pred:'Predict', autre:'Autres'};
   const TABS = {paris:[['sum','Résumé'],['pl','Joueurs'],['mo','Matchs & options'],['cp','Coupons'],['set','⚙️ Réglages']], trade:[['sum','Résumé'],['pl','Joueurs'],['as','Actifs'],['cp','Trades']]};
@@ -4758,20 +4763,20 @@ setInterval(() => {
     if (src === 'paris') {
       const T = j.tot;
       if (tab === 'sum') {
-        h += '<div class="pd-h">⚠️ Alertes</div>' + alerts(j.alerts);
+        h += '<div class="pd-h">⚠️ Alertes</div>' + alerts(F(j.alerts));
         h += '<div class="pd-kpi">' + kpi('Coupons', T.all.n, T.all.open + ' en cours') + kpi('Total misé', m(T.all.in)) + kpi('Total payé', m(T.all.out)) + kpi('Net maison', sg(T.all.net), 'coupons réglés') + kpi('À payer si tout gagne', m(T.all.pot), 'coupons en cours') + kpi('Coupons gagnés', T.all.won + ' / ' + (T.all.won + T.all.lost), pct(T.all.won, T.all.won + T.all.lost)) + '</div>';
         h += '<div class="pd-h">Par type</div>' + tbl(['Type', 'Coupons', 'Misé', 'Payé', 'Net maison', 'Gagnés', 'En cours (à payer)'], [['🔴 Direct', T.live], ['Avant-match', T.pre], ['🔮 Predict', T.pred]].map(x => '<tr><td><b>' + x[0] + '</b></td><td>' + x[1].n + '</td><td>' + m(x[1].in) + '</td><td>' + m(x[1].out) + '</td><td>' + sg(x[1].net) + '</td><td>' + x[1].won + ' / ' + (x[1].won + x[1].lost) + '</td><td>' + x[1].open + ' (' + m(x[1].pot) + ')</td></tr>'));
         h += '<div class="pd-h">🕒 Mises par heure</div>' + hours(j.hours);
-        h += '<div class="pd-h">💰 Plus gros gains</div>' + tbl(BH, j.big.map(betRow));
+        h += '<div class="pd-h">💰 Plus gros gains</div>' + tbl(BH, F(j.big).map(betRow));
       } else if (tab === 'pl') {
-        h += '<div class="pd-h">🏆 Plus grands gagnants</div>' + plTable(j.pl.win);
-        h += '<div class="pd-h">📉 Plus grands perdants</div>' + plTable(j.pl.lose);
-        h += '<div class="pd-h">💵 Plus gros miseurs</div>' + plTable(j.pl.stake);
-        h += '<div class="pd-h">🔥 Plus actifs</div>' + plTable(j.pl.active);
-        h += '<div class="pd-h">🔴 Joueurs du direct</div><p class="pd-sub">À surveiller : beaucoup de paris en direct gagnés = paris peut-être placés après un but.</p>' + plTable(j.pl.live);
+        h += '<div class="pd-h">🏆 Plus grands gagnants</div>' + plTable(F(j.pl.win));
+        h += '<div class="pd-h">📉 Plus grands perdants</div>' + plTable(F(j.pl.lose));
+        h += '<div class="pd-h">💵 Plus gros miseurs</div>' + plTable(F(j.pl.stake));
+        h += '<div class="pd-h">🔥 Plus actifs</div>' + plTable(F(j.pl.active));
+        h += '<div class="pd-h">🔴 Joueurs du direct</div><p class="pd-sub">À surveiller : beaucoup de paris en direct gagnés = paris peut-être placés après un but.</p>' + plTable(F(j.pl.live));
       } else if (tab === 'mo') {
-        h += '<div class="pd-h">🎯 Options les plus misées</div><p class="pd-sub">« À payer » = ce que coûtera l’option si elle gagne (coupons en cours).</p>' + tbl(['Option', 'Coupons', 'À payer', 'Misé', 'Payé', 'Net'], j.options.map(o => '<tr><td class="wr"><b>' + e(o.l) + '</b>' + (o.live ? ' <span class="pd-k live">' + o.live + ' direct</span>' : '') + '<div class="pd-sel">' + e(o.t) + '</div></td><td>' + o.n + '</td><td>' + (o.exp ? '<b class="neg">' + m(o.exp) + '</b>' : '—') + '</td><td>' + m(o.in) + '</td><td>' + m(o.out) + '</td><td>' + sg(o.in - o.out) + '</td></tr>'));
-        h += '<div class="pd-h">🏟️ Matchs les plus pariés</div><p class="pd-sub">« Annuler » rembourse tous les choix faits sur ce match (en cas de cote en retard ou de problème).</p>' + tbl(['Match', 'Choix', 'Misé', 'Payé', 'Net', ''], j.matches.map(x => '<tr><td class="wr">' + e(x.t) + (x.live ? ' <span class="pd-k live">' + x.live + ' direct</span>' : '') + '</td><td>' + x.n + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td><td>' + (/^[a-z]+:\d+$/.test(x.fx || '') ? '<button type="button" class="pd-x" data-void="' + e(x.fx) + '" data-t="' + e(x.t) + '">Annuler</button>' : '') + '</td></tr>'));
+        h += '<div class="pd-h">🎯 Options les plus misées</div><p class="pd-sub">« À payer » = ce que coûtera l’option si elle gagne (coupons en cours).</p>' + tbl(['Option', 'Coupons', 'À payer', 'Misé', 'Payé', 'Net'], F(j.options).map(o => '<tr><td class="wr"><b>' + e(o.l) + '</b>' + (o.live ? ' <span class="pd-k live">' + o.live + ' direct</span>' : '') + '<div class="pd-sel">' + e(o.t) + '</div></td><td>' + o.n + '</td><td>' + (o.exp ? '<b class="neg">' + m(o.exp) + '</b>' : '—') + '</td><td>' + m(o.in) + '</td><td>' + m(o.out) + '</td><td>' + sg(o.in - o.out) + '</td></tr>'));
+        h += '<div class="pd-h">🏟️ Matchs les plus pariés</div><p class="pd-sub">« Annuler » rembourse tous les choix faits sur ce match (en cas de cote en retard ou de problème).</p>' + tbl(['Match', 'Choix', 'Misé', 'Payé', 'Net', ''], F(j.matches).map(x => '<tr><td class="wr">' + e(x.t) + (x.live ? ' <span class="pd-k live">' + x.live + ' direct</span>' : '') + '</td><td>' + x.n + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td><td>' + (/^[a-z]+:\d+$/.test(x.fx || '') ? '<button type="button" class="pd-x" data-void="' + e(x.fx) + '" data-t="' + e(x.t) + '">Annuler</button>' : '') + '</td></tr>'));
         h += '<div class="pd-h">📊 Marchés</div>' + tbl(['Marché', 'Choix', 'Gagnés', 'Misé', 'Payé', 'Net'], j.markets.map(x => '<tr><td>' + e(MK[x.mk] || x.mk) + '</td><td>' + x.n + '</td><td>' + x.won + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td></tr>'));
       } else if (tab === 'cp') {
         h += '<div class="pd-row" id="pdCf">' + [['all','Tous'],['live','🔴 Direct'],['pre','Avant-match'],['pred','🔮 Predict'],['open','⏳ En cours'],['won','✅ Gagnés'],['big','💵 Gros (≥ 10 $ misés ou ≥ 50 $ gagnés)']].map(f => '<button type="button" data-cf="' + f[0] + '" class="' + (cp.f === f[0] ? 'on' : '') + '">' + f[1] + '</button>').join('') + '</div>';
@@ -4780,25 +4785,25 @@ setInterval(() => {
     } else {
       const T = j.tot;
       if (tab === 'sum') {
-        h += '<div class="pd-h">⚠️ Alertes</div>' + alerts(j.alerts);
+        h += '<div class="pd-h">⚠️ Alertes</div>' + alerts(F(j.alerts));
         h += '<div class="pd-kpi">' + kpi('Trades', T.n, T.open + ' en cours') + kpi('Joueurs', T.players) + kpi('Total misé', m(T.in)) + kpi('Net maison', sg(T.house)) + kpi('Trades gagnés', T.won + ' / ' + (T.won + T.lost), pct(T.won, T.won + T.lost)) + '</div>';
         h += '<div class="pd-h">🕒 Mises par heure</div>' + hours(j.hours);
       } else if (tab === 'pl') {
-        h += '<div class="pd-h">🏆 Plus grands gagnants</div>' + plTable(j.pl.win, 1);
-        h += '<div class="pd-h">📉 Plus grands perdants</div>' + plTable(j.pl.lose, 1);
-        h += '<div class="pd-h">💵 Plus gros miseurs</div>' + plTable(j.pl.stake, 1);
-        h += '<div class="pd-h">🔥 Plus actifs</div>' + plTable(j.pl.active, 1);
+        h += '<div class="pd-h">🏆 Plus grands gagnants</div>' + plTable(F(j.pl.win), 1);
+        h += '<div class="pd-h">📉 Plus grands perdants</div>' + plTable(F(j.pl.lose), 1);
+        h += '<div class="pd-h">💵 Plus gros miseurs</div>' + plTable(F(j.pl.stake), 1);
+        h += '<div class="pd-h">🔥 Plus actifs</div>' + plTable(F(j.pl.active), 1);
       } else if (tab === 'as') {
         h += '<div class="pd-h">📈 Actifs les plus joués</div>' + tbl(['Actif', 'Trades', 'Joueurs', 'Gagnés', 'Misé', 'Net maison'], j.assets.map(a => '<tr><td><b>' + e(a.a) + '</b></td><td>' + a.n + '</td><td>' + a.players + '</td><td>' + a.won + ' (' + pct(a.won, a.n) + ')</td><td>' + m(a.in) + '</td><td>' + sg(a.house) + '</td></tr>'));
       } else if (tab === 'cp') {
-        h += '<p class="pd-sub">' + j.nRecent + ' trade(s) sur la période (les 80 derniers affichés)</p>' + tbl(['Heure', 'Joueur', 'Actif', 'Sens', 'Mise', 'Durée', 'Résultat'], j.recent.map(r => '<tr><td>' + hm(r.t) + '</td><td class="wr">' + who(r) + '</td><td>' + e(r.a) + '</td><td>' + e(r.side) + '</td><td>' + m(r.stake) + '</td><td>' + (r.dur ? r.dur + ' s' : '—') + '</td><td>' + (r.won === null ? '⏳' : sg(r.net)) + '</td></tr>'));
+        h += '<p class="pd-sub">' + j.nRecent + ' trade(s) sur la période (les 80 derniers affichés)</p>' + tbl(['Heure', 'Joueur', 'Actif', 'Sens', 'Mise', 'Durée', 'Résultat'], F(j.recent).map(r => '<tr><td>' + hm(r.t) + '</td><td class="wr">' + who(r) + '</td><td>' + e(r.a) + '</td><td>' + e(r.side) + '</td><td>' + m(r.stake) + '</td><td>' + (r.dur ? r.dur + ' s' : '—') + '</td><td>' + (r.won === null ? '⏳' : sg(r.net)) + '</td></tr>'));
       }
     }
     $p('pdBody').innerHTML = h;
   }
   async function loadCoupons(reset) {
     if (reset) cp = {f: cp.f, rows: [], more: false, total: 0};
-    let j; try { j = await ajax({action:'sp_dash', what:'coupons', per, f: cp.f, offset: cp.rows.length}); } catch (x) { j = null; }
+    let j; try { j = await ajax({action:'sp_dash', what:'coupons', per, f: cp.f, q, offset: cp.rows.length}); } catch (x) { j = null; }
     if (j && j.ok) { cp.rows = cp.rows.concat(j.rows); cp.more = j.more; cp.total = j.total; }
     paint();
   }
@@ -4814,7 +4819,7 @@ setInterval(() => {
     paint();
   }
   const open = (w) => {
-    src = w; tab = 'sum'; data = null; cp.f = 'all';
+    src = w; tab = 'sum'; data = null; cp.f = 'all'; q = ''; $p('pdQ').value = '';
     $p('pdTitle').textContent = w === 'paris' ? '⚽ Paris' : '📈 Trading'; $p('pdTitle').style.color = w === 'paris' ? '#93C5FD' : '#FCD34D';
     $p('parisModal').classList.add('on'); load();
   };
@@ -4823,6 +4828,8 @@ setInterval(() => {
   $p('closeParisA').onclick = () => $p('parisModal').classList.remove('on');
   document.querySelectorAll('#pdPer [data-per]').forEach(b => b.onclick = () => { per = b.dataset.per; load(); });
   $p('pdRef').onclick = () => load();
+  let qT = 0;
+  $p('pdQ').addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => { q = nq($p('pdQ').value.trim()); if (src === 'paris' && tab === 'cp') loadCoupons(true); else paint(); }, 250); });
   $p('pdTabs').addEventListener('click', ev => {
     const b = ev.target.closest('[data-tab]'); if (!b) return;
     if (b.dataset.tab === 'set') { $p('parisModal').classList.remove('on'); if (window.casOpen) window.casOpen('paris'); return; }

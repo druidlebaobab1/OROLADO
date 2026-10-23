@@ -16,6 +16,21 @@ function admin_paris_period(string $per, ?int $now = null): array {
   return [$d0, $now + 1];
 }
 
+/** Résultat (affichage) des choix d'un combiné déjà réglé qui n'ont pas été notés : calculé sur le score final connu. */
+function admin_paris_fill_r(array $bets): array {
+  if (!function_exists('sb_sel_result') || !function_exists('sb_results')) return $bets;
+  $res = sb_results();
+  foreach ($bets as $bi => $b) {
+    if (!is_array($b) || ($b['status'] ?? '') === 'open') continue;
+    foreach ((array) ($b['sel'] ?? []) as $si => $sl) {
+      if (($sl['r'] ?? null) !== null || !preg_match('/^sb:foot:(\d+):/', (string) ($sl['ev'] ?? ''), $mm) || ($res[$mm[1]]['v'] ?? '') !== 'fin') continue;
+      try { $rr = sb_sel_result($sl, (int) ($b['at'] ?? 0), $res); } catch (Throwable $e) { $rr = null; }
+      if (in_array($rr, ['won', 'lost', 'void'], true)) $bets[$bi]['sel'][$si]['r'] = $rr;
+    }
+  }
+  return $bets;
+}
+
 /** Famille d'un coupon : 'live' | 'pred' | 'pre'. */
 function admin_paris_kind(array $b, array $predIds): string {
   if (!empty($b['live'])) return 'live';
@@ -25,6 +40,7 @@ function admin_paris_kind(array $b, array $predIds): string {
 
 function admin_paris_dash(string $per, array $bets, array $events, callable $isHouse, callable $who, ?int $now = null): array {
   [$from, $to] = admin_paris_period($per, $now);
+  $bets = admin_paris_fill_r(array_values(array_filter($bets, static fn($b) => is_array($b) && (int) ($b['at'] ?? 0) >= $from && (int) ($b['at'] ?? 0) < $to)));
   $predIds = [];
   foreach ($events as $e) if (is_array($e) && ($e['sport'] ?? '') === 'pred') $predIds[(string) ($e['id'] ?? '')] = (string) ($e['title'] ?? '');
   $z = static fn() => ['n' => 0, 'in' => 0.0, 'out' => 0.0, 'open' => 0, 'pot' => 0.0, 'won' => 0, 'lost' => 0];
@@ -114,7 +130,11 @@ function admin_paris_dash(string $per, array $bets, array $events, callable $isH
 }
 
 /** Coupons de la période, page par page (filtre : all | live | pre | pred | won | open | big). */
-function admin_paris_coupons(string $per, string $f, int $offset, array $bets, array $events, callable $isHouse, callable $who, ?int $now = null): array {
+function admin_paris_coupons(string $per, string $f, int $offset, array $bets, array $events, callable $isHouse, callable $who, ?int $now = null, string $q = ''): array {
+  $nq = static fn(string $v): string => strtolower((string) (function_exists('iconv') ? (@iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $v) ?: $v) : $v));
+  $q = trim($nq($q));
+  [$from0, $to0] = admin_paris_period($per, $now);
+  $bets = admin_paris_fill_r(array_values(array_filter($bets, static fn($b) => is_array($b) && (int) ($b['at'] ?? 0) >= $from0 && (int) ($b['at'] ?? 0) < $to0)));
   [$from, $to] = admin_paris_period($per, $now);
   $predIds = [];
   foreach ($events as $e) if (is_array($e) && ($e['sport'] ?? '') === 'pred') $predIds[(string) ($e['id'] ?? '')] = 1;
@@ -128,6 +148,10 @@ function admin_paris_coupons(string $per, string $f, int $offset, array $bets, a
     if ($f === 'won' && $st !== 'won') continue;
     if ($f === 'open' && $st !== 'open') continue;
     if ($f === 'big' && (float) ($b['stake'] ?? 0) < 10 && (float) ($b['win'] ?? 0) < 50) continue;
+    if ($q !== '') {
+      $w = $who($uid); $hay = $nq(implode(' ', [$uid, $w['name'] ?? '', $w['email'] ?? '', $w['publicId'] ?? '']) . ' ' . implode(' ', array_map(static fn($s) => ($s['t'] ?? '') . ' ' . ($s['l'] ?? ''), (array) ($b['sel'] ?? []))));
+      if (strpos($hay, $q) === false) continue;
+    }
     $nSel = max(1, count((array) ($b['sel'] ?? [])));
     $rows[] = ['id' => (string) ($b['id'] ?? ''), 'uid' => $uid, 'at' => $at, 'kind' => $k, 'stake' => (float) ($b['stake'] ?? 0), 'odd' => (float) ($b['odd'] ?? 0), 'status' => $st,
       'win' => $st === 'open' ? 0.0 : (float) ($b['win'] ?? 0), 'pot' => (float) ($b['pot'] ?? 0), 'nSel' => $nSel,

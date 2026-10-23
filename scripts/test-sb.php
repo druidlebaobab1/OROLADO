@@ -242,7 +242,18 @@ $cr = $credits; sp_resolve(load_db()); sb_job_tick($T('2026-10-22 23:30'));
 check('sp_resolve relancé : aucun paiement en plus', $credits === $cr && abs($bal[$A] - $expA) < 0.001);
 $r = sp_admin_settle(load_db(), $e1, 'o0');
 $b2 = null; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $b) if ($b['id'] === $r2['bet']['id']) $b2 = $b;
-check('match manuel réglé (ancien chemin) → combiné gagné, payé', $r['ok'] && $b2['status'] === 'won' && abs($b2['win'] - floor(5 * $b2['odd'] * 100 + 1e-6) / 100) < 0.001 && abs($bal[$A] - round($expA + $b2['win'], 2)) < 0.001);
+$base2 = floor(5 * $b2['odd'] * 100 + 1e-6) / 100; $bp2 = min((float) ($b2['bst'] ?? 0), sp_boost_pct($b2['sel'])); $bw2 = $bp2 > 0 ? sp_floor2(($base2 - 5) * $bp2 / 100) : 0.0;
+check('match manuel réglé (ancien chemin) → combiné gagné, payé (+ bonus combiné)', $r['ok'] && $b2['status'] === 'won' && abs($b2['win'] - round($base2 + $bw2, 2)) < 0.001 && abs($bal[$A] - round($expA + $b2['win'], 2)) < 0.001, json_encode([$b2['win'], $base2, $bw2]));
+// 2026-10-23 — bonus combiné : règles
+$S = static fn(array $o) => array_map(static fn($x) => ['odd' => $x], $o);
+check('bonus : simple / double → 0', sp_boost_pct($S([3.0])) == 0 && sp_boost_pct($S([3.0, 4.0])) == 0);
+check('bonus : cotes < 1,20 ne comptent pas', sp_boost_pct($S([1.1, 1.15, 1.19, 1.05])) == 0 && sp_boost_pct($S([1.5, 1.5, 1.1])) == 0);
+check('bonus : 3 choix 1,50 → 1,48 %', abs(sp_boost_pct($S([1.5, 1.5, 1.5])) - 1.48) < 0.001, (string) sp_boost_pct($S([1.5, 1.5, 1.5])));
+check('bonus : grandit avec les choix et les outsiders', sp_boost_pct($S(array_fill(0, 10, 1.5))) > sp_boost_pct($S(array_fill(0, 5, 1.5))) && sp_boost_pct($S([2.5, 2.5, 2.5])) > sp_boost_pct($S([1.5, 1.5, 1.5])));
+check('bonus : plafond 15 %', sp_boost_pct($S(array_fill(0, 200, 3.0))) == 15.0);
+$okEdge = true; foreach ([3, 5, 10, 20, 40] as $n) foreach ([1.3, 2.5] as $o) { $pc = sp_boost_pct($S(array_fill(0, $n, $o))) / 100; if ($pc * 0.99 ** $n >= 1 - 0.99 ** $n) $okEdge = false; }
+check('bonus : toujours sous l\'avantage maison (marge 1 %)', $okEdge);
+check('bonus : choix annulé retiré (4 → 3 → 2 choix)', sp_boost_pct([['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5, 'r' => 'void']]) == sp_boost_pct($S([1.5, 1.5, 1.5])) && sp_boost_pct([['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5, 'r' => 'void']]) == 0);
 $chk = sb_check_list($T('2026-10-22 23:30'));
 check('« à vérifier » : 9003 seulement', array_column($chk, 'id') === ['foot:9003'], json_encode($chk));
 check('saisie admin : mi-temps > fin refusée', sb_admin_result(load_db(), 'foot:9003', [2, 0], [1, 0], false)['ok'] === false);

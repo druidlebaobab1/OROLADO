@@ -705,7 +705,7 @@
     var D = betDensity(n);
     var nc = D === 4 ? 3 : D === 3 ? 2 : 1, rowH = [58, 30, 24, 36, 32][D], rows = Math.ceil(n / nc);
     var HB = 96, stTop = HB, selHead = stTop + 158, selTop = selHead + 22, selEnd = selTop + rows * rowH;
-    var totTop = selEnd + 18, totRow = 34, H = totTop + 5 * totRow + 112;
+    var totTop = selEnd + 18, totRow = 34, nT = bt.bst ? 6 : 5, H = totTop + nT * totRow + 112; // 2026-10-23 : + ligne « Bonus combiné »
     // très long coupon (jusqu'à 1 000 choix) : résolution réduite pour rester sous les limites des téléphones (iPhone : ≈ 16 Mpx
     // par image, 16 000 px de haut) — l'image s'allonge, tout reste dedans
     var sc = Math.max(0.6, Math.min(SC, Math.sqrt(16e6 / (W * H)), 16000 / H));
@@ -792,15 +792,18 @@
     var no = String(bt.id || '').slice(-10).toUpperCase();
     var d = new Date((bt.at || 0) * 1000), pad = function (v) { return (v < 10 ? '0' : '') + v; };
     var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-    [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], [x.rcNo, no]].forEach(function (r, i) {
+    var TR = [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], [x.rcNo, no]];
+    if (bt.bst) TR.splice(2, 0, [(x.bstL || 'Bonus') + ' +' + Math.round(bt.bst * 10) / 10 + ' %', st === 'won' ? '+' + n2(bt.bw) + ' $' : st === 'open' ? '✓' : '—']);
+    var iPot = bt.bst ? 3 : 2, iNo = TR.length - 1;
+    TR.forEach(function (r, i) {
       var y = totTop + i * totRow + totRow / 2;
       if (i) hr(totTop + i * totRow, '#EEF2F7');
-      g.textAlign = 'right'; g.fillStyle = i === 2 ? ODD : INK; g.font = (i === 4 ? '700 15px ' + MONO : '800 16px ' + FONT); g.fillText(r[1], W - P, y);
+      g.textAlign = 'right'; g.fillStyle = i === iPot ? ODD : bt.bst && i === 2 ? '#B45309' : INK; g.font = (i === iNo ? '700 15px ' + MONO : '800 16px ' + FONT); g.fillText(r[1], W - P, y);
       var vw = g.measureText(r[1]).width;
       g.textAlign = 'left'; g.fillStyle = MUTE; g.font = '500 15px ' + FONT; g.fillText(ell(g, r[0] || '', W - 2 * P - vw - 16), P, y);
     });
-    hr(totTop + 5 * totRow, '#CBD5E1', 1.5);
-    var by = totTop + 5 * totRow + 22;
+    hr(totTop + nT * totRow, '#CBD5E1', 1.5);
+    var by = totTop + nT * totRow + 22;
     g.fillStyle = INK;
     for (var k = 0, bx = W / 2 - 110; k < 44 && bx < W / 2 + 110; k++) { var bw = 1 + ((no.charCodeAt(k % (no.length || 1)) || 7) + k) % 3; g.fillRect(bx, by, bw, 40); bx += bw + 2; }
     g.textAlign = 'center'; g.fillStyle = '#94A3B8'; g.font = '600 14px ' + FONT; g.fillText('o r o l a d o . c o m', W / 2, by + 62);

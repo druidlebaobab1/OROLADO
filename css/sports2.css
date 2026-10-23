@@ -1061,3 +1061,34 @@ html:root body #casinoModal .sp2 .pz-tvseg button.on{background:transparent!impo
    l'écran (application installée : la zone sous la barre ne montre plus la liste qui défile) */
 html:root body #casinoModal .sp2 .pz-nav{box-shadow:0 -1px 0 rgba(255,255,255,.08),0 -12px 24px -14px rgba(0,0,0,.9),0 70px 0 40px #140D32}
 html:root body #casinoModal .sp2 .pz-b1{flex-wrap:wrap;row-gap:4px}
+/* 2026-10-23 (propriétaire : « Mes paris mal rangé ») — ligne de choix : nom + match à gauche, score à droite, résultat en couleur ;
+   carte ouverte = seulement la liste détaillée (plus de scores en double) ; « Direct » neutre une fois le match fini */
+html:root body #casinoModal .sp2 .pz-bs1{flex-direction:row!important;align-items:center;justify-content:space-between;gap:10px;padding:6px 0 6px 10px;border-left:3px solid rgba(255,255,255,.12)}
+html:root body #casinoModal .sp2 .pz-bs1.won{border-left-color:#22C55E}
+html:root body #casinoModal .sp2 .pz-bs1.lost{border-left-color:#EF4444}
+html:root body #casinoModal .sp2 .pz-bs1.lost .pz-bs1t b{color:#FCA5A5}
+html:root body #casinoModal .sp2 .pz-bs1.void{border-left-color:#94A3B8}
+html:root body #casinoModal .sp2 .pz-bs1t{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 auto}
+html:root body #casinoModal .sp2 .pz-bs1 .pz-lvt{flex:none;margin-top:0}
+html:root body #casinoModal .sp2 .pz-blv.off{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#C4BFE6}
+html:root body #casinoModal .sp2 .sp2-bst .pz-lvt{margin-top:5px}
+/* petit titre sous la barre de recherche (Direct : point rouge qui pulse ; Résultats : point vert) */
+html:root body #casinoModal .sp2 .pz-lvq{display:flex;flex-direction:column;gap:8px}
+html:root body #casinoModal .sp2 .pz-sect{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;color:#E9E5FF;font:800 12px/1 var(--sp2-font);letter-spacing:.06em;text-transform:uppercase}
+html:root body #casinoModal .sp2 .pz-sect i{width:7px;height:7px;border-radius:50%}
+html:root body #casinoModal .sp2 .pz-sect-l{background:#EF4444;animation:pzLvPulse 1.6s ease-out infinite}
+html:root body #casinoModal .sp2 .pz-sect-r{background:#22C55E}
+
+/* 2026-10-23 — bonus combiné : ligne du ticket, badge de l'historique, ligne du coupon ouvert */
+html:root body #casinoModal .sp2 .sp2-sum p.bst span{color:#FDE68A}
+html:root body #casinoModal .sp2 .sp2-sum p.bst b{color:#FACC15;font-size:15px}
+html:root body #casinoModal .sp2 .sp2-sum p.bst:not(.on) span{color:var(--sp2-mute);font-weight:600;font-size:12.5px}
+html:root body #casinoModal .sp2 .pz-bbst{flex:none;font-style:normal;padding:2px 7px;border-radius:999px;background:rgba(250,204,21,.14);border:1px solid rgba(250,204,21,.4);color:#FACC15;font:800 11px/1.3 var(--sp2-font);white-space:nowrap}
+html:root body #casinoModal .sp2 .pz-bstr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 0;padding:9px 12px;border-radius:10px;background:rgba(250,204,21,.08);border:1px dashed rgba(250,204,21,.35)}
+html:root body #casinoModal .sp2 .pz-bstr span{flex:1 1 auto;min-width:0;color:#FDE68A;font:700 13px/1.2 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-bstr b{flex:none;color:#FACC15;font:900 14px/1 var(--sp2-font);direction:ltr}
+html:root body #casinoModal .sp2 .pz-bstr.lost{opacity:.55}
+html:root body #casinoModal .sp2 .sp2-sum p[hidden]{display:none}
+html:root body .sp-rcpt-rows p.bst span{color:#92400E;font-weight:700}
+html:root body .sp-rcpt-rows p.bst b{color:#B45309}
+html:root body #casinoModal .sp2 .pz-bet.on .pz-bsel{display:none} /* coupon ouvert : chaque choix une seule fois (avec score + gagné / perdu) */
