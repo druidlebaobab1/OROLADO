@@ -227,7 +227,7 @@
     <link rel="stylesheet" href="css/galaxy.css?v=3014">
     <link rel="stylesheet" href="css/cg.css?v=2887">
     <link rel="stylesheet" href="css/lobby.css?v=2842">
-    <link rel="stylesheet" href="css/sports2.css?v=3153">
+    <link rel="stylesheet" href="css/sports2.css?v=3155">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -689,9 +689,26 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
       var now = Date.now();
       var t = e.target;
       var ctl = t && t.closest && t.closest('button,a,input,select,textarea,label,[onclick],[role="button"]');
-      if (!ctl && now - lastEnd < 350 && e.touches && e.touches.length === 0) e.preventDefault();
+      if (now - lastEnd < 350 && e.touches && e.touches.length === 0) {
+        if (!ctl) e.preventDefault();
+        // 2026-10-23 (propriétaire : « ça s'agrandit seul quand on clique vite ») : deux touches rapides sur un bouton →
+        // pas de zoom, mais le 2e clic part quand même (chaque toucher compte, comme avant)
+        else if (!/^(INPUT|SELECT|TEXTAREA|LABEL)$/.test(ctl.tagName)) { e.preventDefault(); try { ctl.click(); } catch (err) { /* ignore */ } }
+      }
       lastEnd = now;
     }, { passive: false });
+    // Si la page a quand même été agrandie (clavier, bug du téléphone) : retour à la taille normale dès que possible
+    var vm = document.querySelector('meta[name="viewport"]');
+    function unzoom() {
+      var vv = window.visualViewport;
+      if (!vm || !vv || vv.scale <= 1.01) return;
+      var a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return; // pendant la saisie : on attend
+      var c = vm.getAttribute('content');
+      vm.setAttribute('content', c.replace(/,\s*maximum-scale=[^,]*/, '') + ', maximum-scale=1.0001');
+      setTimeout(function () { vm.setAttribute('content', c); }, 60);
+    }
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', function () { clearTimeout(unzoom.t); unzoom.t = setTimeout(unzoom, 250); });
+    document.addEventListener('focusout', function () { setTimeout(unzoom, 300); });
   })();
   </script>
   <script>
@@ -2379,7 +2396,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/receipt.js?v=3152"></script>
+  <script src="js/receipt.js?v=3155"></script>
   <script src="js/back.js?v=2912"></script>
   <script src="js/push.js?v=3130"></script>
   <script src="js/app.js?v=3130"></script>
@@ -2391,7 +2408,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="js/live-groups.js?v=2905"></script>
   <script src="js/live-send.js?v=2912"></script>
   <script src="js/gifts-home.js?v=3128"></script>
-  <script src="js/sports.js?v=3154"></script>
+  <script src="js/sports.js?v=3155"></script>
   <script src="js/localcur.js?v=3068"></script>
   <script src="js/casino-art.js?v=3120"></script>
   <script src="js/sfx.js?v=3090"></script>

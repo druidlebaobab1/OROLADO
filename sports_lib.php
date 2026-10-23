@@ -959,7 +959,9 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   // v2779 (propriétaire) : pas de mise maximale ; seul le GAIN d'un coupon est plafonné (6 000 $)
   $ref = 'sp_' . bin2hex(random_bytes(9));
   $bst = sp_boost_pct($picked); $pot0 = sp_floor2(min(SP_MAX_WIN, $stake * $odd));
-  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => $bst > 0 ? sp_floor2(min(SP_MAX_WIN, $pot0 + sp_floor2(($pot0 - $stake) * $bst / 100))) : $pot0, 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []) + ($bst > 0 ? ['bst' => $bst] : []);
+  // 2026-10-23 (propriétaire) : chaque pari a son CODE DE PARI (historique, reçu, publicité) — le même pour tout le monde
+  $bcode = function_exists('sb_code_for_bet') ? sb_code_for_bet($picked, $now) : '';
+  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => $bst > 0 ? sp_floor2(min(SP_MAX_WIN, $pot0 + sp_floor2(($pot0 - $stake) * $bst / 100))) : $pot0, 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []) + ($bst > 0 ? ['bst' => $bst] : []) + ($bcode !== '' ? ['code' => $bcode] : []);
   /* 2026-10-21 (propriétaire) — ORDRE SÛR pour TOUS les paris (avant : seulement les questions avec plafond) : 1) le coupon est
      ÉCRIT d'abord (état « pend » : jamais montré, jamais réglé) sous le verrou des paris, avec le plafond de mises par choix
      vérifié au même moment ; 2) la mise est retirée (casino_debit, une seule fois par référence) ; 3) le coupon passe « open ».
@@ -1025,7 +1027,7 @@ function sp_bet_public(array $b): array {
   return ['id' => $b['id'], 'mode' => $b['mode'], 'stake' => (float) $b['stake'], 'odd' => (float) $b['odd'], 'pot' => (float) $b['pot'], 'status' => $b['status'], 'win' => (float) ($b['win'] ?? 0), 'at' => (int) $b['at'], 'done' => (int) ($b['done'] ?? 0),
     'sel' => array_map(static fn($s) => ['t' => $s['t'], 'l' => $s['l'], 'odd' => (float) $s['odd'], 'r' => $s['r'] ?? null]
       + (isset($s['mk']) ? ['mk' => (string) $s['mk'], 'k' => (string) $s['k'], 'sp' => (string) ($s['sp'] ?? ''), 'fx' => (string) ($s['fx'] ?? '')] : [])
-      + (!empty($s['lv']) ? ['lv' => 1, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] : []), $b['sel'])] + (!empty($b['live']) ? ['live' => 1] : []) + (!empty($b['bst']) ? ['bst' => (float) $b['bst'], 'bw' => (float) ($b['bw'] ?? 0)] : []); // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
+      + (!empty($s['lv']) ? ['lv' => 1, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] : []), $b['sel'])] + (!empty($b['live']) ? ['live' => 1] : []) + (!empty($b['bst']) ? ['bst' => (float) $b['bst'], 'bw' => (float) ($b['bw'] ?? 0)] : []) + (!empty($b['code']) ? ['code' => (string) $b['code']] : []); // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
 }
 function sp_my_bets(string $uid): array {
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
@@ -1040,6 +1042,12 @@ function sp_my_bets(string $uid): array {
       try { $rr = sb_sel_result($sl, (int) ($b['at'] ?? 0), $res0); } catch (Throwable $e) { $rr = null; }
       if (in_array($rr, ['won', 'lost', 'void'], true)) $mine[$bi]['sel'][$si]['r'] = $rr;
     }
+  }
+  // anciens paris sans code de pari : créé une fois (gardé dans bets.json)
+  if (function_exists('sb_code_for_bet')) {
+    $need = [];
+    foreach ($mine as $bi => $b) if (empty($b['code']) && !empty($b['sel']) && ($c = sb_code_for_bet((array) $b['sel'])) !== '') { $mine[$bi]['code'] = $c; $need[(string) $b['id']] = $c; }
+    if ($need) sp_with('bets.json', static function (array &$s) use ($need) { $n = 0; foreach ((array) ($s['b'] ?? []) as $i => $b) if (isset($need[(string) ($b['id'] ?? '')]) && empty($b['code'])) { $s['b'][$i]['code'] = $need[(string) $b['id']]; $n++; } return $n > 0; });
   }
   $out = array_map('sp_bet_public', $mine);
   // 2026-10-22 (propriétaire : « match fini mais l'historique montre encore 1-1 · 41' ») : score FINAL (fs) des matchs finis,

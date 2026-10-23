@@ -1311,6 +1311,7 @@ function sb_admin_import(int $now = 0): array {
  */
 const SB_CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const SB_CODE_TTL = 604800;  // 7 jours
+const SB_CODE_TTL_BET = 2592000; // 2026-10-23 : code d'un pari placé (historique, reçu, publicité) : 30 jours
 const SB_CODE_MAX = 1000;    // choix au plus (= SP_MAX_SEL)
 function sb_code_dir(): string { $d = sb_dir() . DIRECTORY_SEPARATOR . 'codes'; if (!is_dir($d)) @mkdir($d, 0750, true); return $d; }
 function sb_code_ok(string $c): bool { return (bool) preg_match('/^[' . SB_CODE_ABC . ']{6}$/', $c); }
@@ -1335,14 +1336,14 @@ function sb_sel_now(string $ev, string $k, ?array $user, int $now, ?array $manua
   return ['skip' => 'param'];
 }
 /** Choix → choix valides (un seul par match / groupe lié), cotes actuelles. Retour [sel, nombres sautés]. */
-function sb_sel_check(array $sel, ?array $user, int $now): array {
-  $manual = null; $out = []; $grp = []; $sk = ['closed' => 0, 'hidden' => 0, 'param' => 0];
+function sb_sel_check(array $sel, ?array $user, int $now, ?array &$off = null): array {
+  $manual = null; $out = []; $grp = []; $sk = ['closed' => 0, 'hidden' => 0, 'param' => 0]; $off = [];
   foreach (array_slice(array_values($sel), 0, SB_CODE_MAX) as $s) {
     $ev = is_array($s) ? (string) ($s['ev'] ?? $s[0] ?? '') : ''; $k = is_array($s) ? (string) ($s['k'] ?? $s[1] ?? '') : '';
     if ($ev === '' || $k === '' || strlen($ev) > 80) { $sk['param']++; continue; }
     if ($manual === null && !str_starts_with($ev, 'sb:')) { $manual = []; if (function_exists('sp_events')) foreach (sp_events() as $e) $manual[(string) $e['id']] = $e; }
     $r = sb_sel_now($ev, $k, $user, $now, $manual);
-    if (isset($r['skip'])) { $sk[$r['skip']]++; continue; }
+    if (isset($r['skip'])) { $sk[$r['skip']]++; if ($r['skip'] === 'closed' && count($off) < SB_CODE_MAX && ($o = sb_code_off($ev, $k, $now, $manual))) $off[] = $o; continue; }
     $g = isset($r['fx']) ? ['fx:' . $r['fx']] : ['ev:' . $ev];
     foreach ((array) ($r['grp'] ?? []) as $gg) $g[] = (string) $gg;
     if (array_intersect($g, array_keys($grp))) { $sk['param']++; continue; }
@@ -1350,6 +1351,46 @@ function sb_sel_check(array $sel, ?array $user, int $now): array {
     $out[] = $r;
   }
   return [$out, $sk];
+}
+/**
+ * 2026-10-23 (propriétaire : « le code affiche TOUS les matchs ; ceux qui ne sont plus disponibles avec un cadenas, il peut les
+ * retirer ») : un choix fermé d'un code → {ev, k, mk, fx, t, h, a, st: fin | live | closed, sc} (rien si le match est inconnu).
+ */
+function sb_code_off(string $ev, string $k, int $now, ?array $manual): ?array {
+  if (preg_match('/^sb:foot:(\d+):(.+)$/', $ev, $m)) {
+    $f = sb_find($m[1], $now); $row = $f['row'] ?? null; $res = sb_results()[$m[1]] ?? null; $lv = (sb_live_data()['fx'] ?? [])[$m[1]] ?? null;
+    $h = $row ? (string) ($row['h'][1] ?? '') : ''; $a = $row ? (string) ($row['a'][1] ?? '') : '';
+    if ($h === '' && is_array($lv)) { $h = (string) ($lv['h'][1] ?? $lv['h']['n'] ?? ''); $a = (string) ($lv['a'][1] ?? $lv['a']['n'] ?? ''); }
+    if ($h === '') return null;
+    $st = 'closed'; $sc = null;
+    if (is_array($res) && ($res['v'] ?? '') === 'fin' && is_array($res['ft'] ?? null)) { $st = 'fin'; $sc = array_map('intval', $res['ft']); }
+    elseif (is_array($lv) && is_array($lv['g'] ?? null)) { $st = empty($lv['end']) ? 'live' : 'fin'; $sc = array_map('intval', $lv['g']); }
+    elseif ($row && in_array((string) ($row['st'] ?? ''), SB_FINAL, true) && is_array($row['ft'] ?? $row['g'] ?? null)) { $st = 'fin'; $sc = array_map('intval', (array) ($row['ft'] ?? $row['g'])); }
+    return ['ev' => $ev, 'k' => $k, 'mk' => (string) $m[2], 'fx' => 'foot:' . $m[1], 't' => $h . ' - ' . $a, 'h' => ['n' => $h], 'a' => ['n' => $a], 'st' => $st, 'sc' => $sc, 'ko' => (int) ($row['ts'] ?? 0)];
+  }
+  $e = $manual[$ev] ?? null;
+  if (!$e) return null;
+  $l = ''; foreach ((array) ($e['opts'] ?? []) as $o) if ((string) ($o['k'] ?? '') === $k) $l = (string) ($o['label'] ?? '');
+  return ['ev' => $ev, 'k' => $k, 't' => (string) ($e['title'] ?? ''), 'l' => $l, 'st' => ($e['status'] ?? '') === 'settled' ? 'fin' : 'closed'];
+}
+/** Code d'un pari placé : TOUS ses choix gardés tels quels (même fermés plus tard), valable 30 jours. '' si impossible. */
+function sb_code_for_bet(array $sel, int $now = 0): string {
+  $now = $now ?: time();
+  $keep = [];
+  foreach (array_slice($sel, 0, SB_CODE_MAX) as $s) if (is_array($s) && isset($s['ev'], $s['k'])) $keep[] = [(string) $s['ev'], (string) $s['k']];
+  if (!$keep) return '';
+  $dir = sb_code_dir();
+  for ($i = 0; $i < 12; $i++) {
+    $c = ''; for ($j = 0; $j < 6; $j++) $c .= SB_CODE_ABC[random_int(0, strlen(SB_CODE_ABC) - 1)];
+    $f = $dir . DIRECTORY_SEPARATOR . $c . '.json';
+    $old = sb_code_read($c);
+    if ($old !== null && (int) ($old['at'] ?? 0) < $now - (int) ($old['ttl'] ?? SB_CODE_TTL)) @unlink($f);
+    $fp = @fopen($f, 'x');
+    if (!$fp) continue;
+    fwrite($fp, json_encode(['at' => $now, 'ttl' => SB_CODE_TTL_BET, 's' => $keep], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)); fclose($fp);
+    return $c;
+  }
+  return '';
 }
 /** sbCodeSave {sel:[{ev,k}]} → {ok, code, n, skip}. Visiteur accepté (aucun argent ici ; limite par connexion dans api.php). */
 function sb_code_save(?array $user, array $sel, int $now = 0): array {
@@ -1359,12 +1400,12 @@ function sb_code_save(?array $user, array $sel, int $now = 0): array {
   if (!$ok) return ['ok' => false, 'reason' => $sk['closed'] ? 'closed' : 'param'];
   $keep = array_map(static fn($s) => [$s['ev'], $s['k']], $ok);
   $dir = sb_code_dir();
-  if (random_int(1, 40) === 1) foreach ((array) glob($dir . DIRECTORY_SEPARATOR . '*.json') as $f) if ((int) @filemtime($f) < time() - SB_CODE_TTL - 86400) @unlink($f); // ménage de temps en temps
+  if (random_int(1, 40) === 1) foreach ((array) glob($dir . DIRECTORY_SEPARATOR . '*.json') as $f) if ((int) @filemtime($f) < time() - SB_CODE_TTL_BET - 86400) @unlink($f); // ménage de temps en temps (codes des paris : 30 jours)
   for ($i = 0; $i < 12; $i++) {
     $c = ''; for ($j = 0; $j < 6; $j++) $c .= SB_CODE_ABC[random_int(0, strlen(SB_CODE_ABC) - 1)];
     $f = $dir . DIRECTORY_SEPARATOR . $c . '.json';
     $old = sb_code_read($c);
-    if ($old !== null && (int) ($old['at'] ?? 0) < $now - SB_CODE_TTL) @unlink($f); // code expiré : réutilisable
+    if ($old !== null && (int) ($old['at'] ?? 0) < $now - (int) ($old['ttl'] ?? SB_CODE_TTL)) @unlink($f); // code expiré : réutilisable
     $fp = @fopen($f, 'x');
     if (!$fp) continue;
     fwrite($fp, json_encode(['at' => $now, 's' => $keep], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)); fclose($fp);
@@ -1385,11 +1426,11 @@ function sb_code_load(?array $user, string $code, int $now = 0, ?array $sel = nu
   if ($sel === null) {
     $code = strtoupper(trim($code));
     $j = sb_code_read($code);
-    if ($j === null || (int) ($j['at'] ?? 0) < $now - SB_CODE_TTL) return ['ok' => false, 'reason' => 'nocode'];
+    if ($j === null || (int) ($j['at'] ?? 0) < $now - (int) ($j['ttl'] ?? SB_CODE_TTL)) return ['ok' => false, 'reason' => 'nocode'];
     $sel = (array) ($j['s'] ?? []);
   } else { $code = ''; if (count($sel) > SB_CODE_MAX) return ['ok' => false, 'reason' => 'param']; }
-  [$ok, $sk] = sb_sel_check($sel, $user, $now);
-  return ['ok' => true, 'code' => $code, 'sel' => $ok, 'skip' => $sk['closed'] + $sk['param'], 'hidden' => $sk['hidden']];
+  [$ok, $sk] = sb_sel_check($sel, $user, $now, $off);
+  return ['ok' => true, 'code' => $code, 'sel' => $ok, 'skip' => $sk['closed'] + $sk['param'], 'hidden' => $sk['hidden']] + ($code !== '' ? ['off' => $off] : []);
 }
 
 /* ------------------------------------------------------------- PARIS EN DIRECT (étape 3) ---------------------------- */
