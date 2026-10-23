@@ -2953,5 +2953,18 @@
     } catch (e) { /* ignore */ }
   })();
 
-  D6.Sports = { paint: paint, receipt: showReceipt, back: back, code: loadCode, go: go };
+  /* 2026-10-23 (propriétaire : « j'actualise et ça me sort du match ») : l'écran de Paris (match ouvert, coupon, Mes paris,
+     Résultats, fiche…) est gardé par js/back.js ; après une actualisation, on revient exactement au même écran */
+  function navState() { return { v: view, mid: view === 'match' ? sbMid : '', per: per, sport: sport, res: view === 'resm' ? resMid : '', rd: resDay }; }
+  function navRestore(st) {
+    if (!st || !alive() || !st.v) return;
+    try {
+      if (st.per) per = String(st.per); if (st.sport) sport = String(st.sport);
+      if (st.rd != null) resDay = st.rd === 'all' ? 'all' : +st.rd || 0;
+      if (st.v === 'match' && st.mid) { openMatch(String(st.mid)); return; }
+      if (st.v === 'resm' && st.res) resMid = String(st.res);
+      if (/^(home|live|slip|mine|menu|results|resm|fav|pred|news)$/.test(st.v)) { if (st.v === view) render(); else go(st.v); }
+    } catch (e) { /* ignore */ }
+  }
+  D6.Sports = { paint: paint, receipt: showReceipt, back: back, code: loadCode, go: go, state: navState, restore: navRestore };
 })(window.D6 = window.D6 || {});
