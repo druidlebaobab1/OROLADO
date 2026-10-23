@@ -958,7 +958,8 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   $odd = floor($odd * 100 + 1e-6) / 100; // v2765 : 2,30 reste 2,30 (avant : 2,29 à cause de l arrondi)
   // v2779 (propriétaire) : pas de mise maximale ; seul le GAIN d'un coupon est plafonné (6 000 $)
   $ref = 'sp_' . bin2hex(random_bytes(9));
-  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => sp_floor2(min(SP_MAX_WIN, $stake * $odd)), 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []);
+  $bst = sp_boost_pct($picked); $pot0 = sp_floor2(min(SP_MAX_WIN, $stake * $odd));
+  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => $bst > 0 ? sp_floor2(min(SP_MAX_WIN, $pot0 + sp_floor2(($pot0 - $stake) * $bst / 100))) : $pot0, 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []) + ($bst > 0 ? ['bst' => $bst] : []);
   /* 2026-10-21 (propriétaire) — ORDRE SÛR pour TOUS les paris (avant : seulement les questions avec plafond) : 1) le coupon est
      ÉCRIT d'abord (état « pend » : jamais montré, jamais réglé) sous le verrou des paris, avec le plafond de mises par choix
      vérifié au même moment ; 2) la mise est retirée (casino_debit, une seule fois par référence) ; 3) le coupon passe « open ».
@@ -1005,16 +1006,42 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   return ['ok' => true, 'bet' => sp_bet_public($bet), 'bal' => $deb['real'] ?? ($deb['demo'] ?? null)];
 }
 
+/** 2026-10-23 (propriétaire) — BONUS COMBINÉ : % ajouté au GAIN NET (gain − mise) d'un combiné gagné.
+ *  Compte seulement les choix à cote ≥ 1,20 (pas de remplissage avec des cotes 1,05) ; 3 choix minimum (simple / double : rien) ;
+ *  un choix outsider (cote ≥ 2) compte 1,5. % = la MOITIÉ de l'avantage maison d'un combiné à 1 % de marge par choix
+ *  (1 − 0,99^n) → le bonus ne coûte jamais plus que ce que la marge rapporte ; plafond 15 %. Même calcul côté téléphone (js/sports.js). */
+const SP_BOOST_MIN = 3; const SP_BOOST_ODD = 1.20; const SP_BOOST_MAX = 15.0;
+function sp_boost_pct(array $sels): float {
+  $n = 0; $w = 0.0;
+  foreach ($sels as $s) {
+    if (($s['r'] ?? null) === 'void') continue;
+    $o = (float) ($s['odd'] ?? 0); if ($o + 1e-9 < SP_BOOST_ODD) continue;
+    $n++; $w += $o + 1e-9 >= 2.0 ? 1.5 : 1.0;
+  }
+  return $n < SP_BOOST_MIN ? 0.0 : min(SP_BOOST_MAX, floor(50 * (1 - 0.99 ** $w) * 100 + 1e-6) / 100);
+}
+
 function sp_bet_public(array $b): array {
   return ['id' => $b['id'], 'mode' => $b['mode'], 'stake' => (float) $b['stake'], 'odd' => (float) $b['odd'], 'pot' => (float) $b['pot'], 'status' => $b['status'], 'win' => (float) ($b['win'] ?? 0), 'at' => (int) $b['at'], 'done' => (int) ($b['done'] ?? 0),
     'sel' => array_map(static fn($s) => ['t' => $s['t'], 'l' => $s['l'], 'odd' => (float) $s['odd'], 'r' => $s['r'] ?? null]
       + (isset($s['mk']) ? ['mk' => (string) $s['mk'], 'k' => (string) $s['k'], 'sp' => (string) ($s['sp'] ?? ''), 'fx' => (string) ($s['fx'] ?? '')] : [])
-      + (!empty($s['lv']) ? ['lv' => 1, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] : []), $b['sel'])] + (!empty($b['live']) ? ['live' => 1] : []); // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
+      + (!empty($s['lv']) ? ['lv' => 1, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] : []), $b['sel'])] + (!empty($b['live']) ? ['live' => 1] : []) + (!empty($b['bst']) ? ['bst' => (float) $b['bst'], 'bw' => (float) ($b['bw'] ?? 0)] : []); // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
 }
 function sp_my_bets(string $uid): array {
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
   $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid && ($b['status'] ?? '') !== 'pend'));
-  $out = array_map('sp_bet_public', array_slice(array_reverse($mine), 0, SP_MY_BETS));
+  $mine = array_slice(array_reverse($mine), 0, SP_MY_BETS);
+  // 2026-10-23 (propriétaire : « des choix sans gagné / perdu alors que le match est fini ») : un combiné déjà perdu n'attend pas
+  // ses autres matchs → leur résultat (affichage seulement) est calculé ici dès que le score final est connu
+  if (function_exists('sb_sel_result') && function_exists('sb_results')) {
+    $res0 = sb_results();
+    foreach ($mine as $bi => $b) foreach ((array) ($b['sel'] ?? []) as $si => $sl) {
+      if (($sl['r'] ?? null) !== null || !preg_match('/^sb:foot:(\d+):/', (string) ($sl['ev'] ?? ''), $mm) || ($res0[$mm[1]]['v'] ?? '') !== 'fin') continue;
+      try { $rr = sb_sel_result($sl, (int) ($b['at'] ?? 0), $res0); } catch (Throwable $e) { $rr = null; }
+      if (in_array($rr, ['won', 'lost', 'void'], true)) $mine[$bi]['sel'][$si]['r'] = $rr;
+    }
+  }
+  $out = array_map('sp_bet_public', $mine);
   // 2026-10-22 (propriétaire : « match fini mais l'historique montre encore 1-1 · 41' ») : score FINAL (fs) des matchs finis,
   // score et minute ACTUELS (cs, cm) des matchs en direct — l'historique suit le match
   if (function_exists('sb_results')) {
@@ -1090,6 +1117,13 @@ function sp_resolve(array $db): array {
       if ($lost) { $s['b'][$i]['status'] = 'lost'; $s['b'][$i]['win'] = 0.0; $s['b'][$i]['done'] = time(); $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => 0.0, 's' => $b['stake']]; continue; }
       if (!$ready) continue;
       $win = sp_floor2(min(SP_MAX_WIN, (float) $b['stake'] * (floor($odd * 100 + 1e-6) / 100))); // v2810 : arrondi au cent INFÉRIEUR
+      // 2026-10-23 — bonus combiné : recalculé sur les choix restants (un match annulé le baisse, moins de 3 choix → aucun) ;
+      // jamais plus que le % promis sur le ticket
+      $bw = 0.0;
+      if ($live > 0 && !empty($b['bst'])) {
+        $bp = min((float) $b['bst'], sp_boost_pct($s['b'][$i]['sel']));
+        if ($bp > 0) { $bw = sp_floor2(max(0.0, $win - (float) $b['stake']) * $bp / 100); $win = sp_floor2(min(SP_MAX_WIN, $win + $bw)); $s['b'][$i]['bw'] = $bw; }
+      }
       // v2779 (propriétaire) : tous les matchs du coupon annulés → « Remboursé » (la mise revient, visible dans l'historique et le reçu)
       $s['b'][$i]['status'] = $live === 0 ? 'void' : 'won'; $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();
       $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake'], 'sb' => $sb];
