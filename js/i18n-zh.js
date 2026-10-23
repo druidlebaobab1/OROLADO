@@ -320,7 +320,7 @@
  "indMa": "MA",
  "indRsi": "RSI",
  "install": "安装 OROLADO",
- "installAnd1": "点击 Chrome 右上角的 ⋮ 菜单。",
+ "installAnd1": "点击 Chrome 的 ⋮ 菜单（右上角或右下角）。",
  "installAnd2": "选择“安装应用”或“添加到主屏幕”。",
  "installAnd3": "点击“安装”确认。",
  "installAndLead": "将应用添加到您的手机：",

@@ -13583,3 +13583,11 @@ html body #toast#toast.toast.lux-msg.err:not(.micro):not(.toast-bal):not(.tie) .
 
 /* 2026-10-22 (propriétaire) : « Inviter mes amis » → « Voir plus » : une seule flèche retour (celle du haut, #ghBack) ; la flèche intérieure est cachée. */
 html:root body #portalModal#portalModal.gh-sub #affBack{display:none!important}
+/* 2026-10-23 (propriétaire) : la grande carte « Installer OROLADO » s'installe d'un toucher n'importe où sur elle */
+html body .oro-inst-ask .ow-card{cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* 2026-10-23 (propriétaire, Android : « sans photo la boule est un ovale, avec photo elle devient énorme et Se déconnecter sort
+   de l'écran ») : la carte du profil est en colonne → l'ancien « flex:0 0 62px / 52px » de la photo fixait sa HAUTEUR (ovale,
+   46 px de haut pour 88 de large) et, avec une photo, la hauteur suivait l'image. La photo est maintenant un ROND parfait de
+   taille fixe (104 px, Android 88, petit écran 84 : js/app.js fitProfileDrawer), avec ou sans photo, sur tous les téléphones. */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar{flex:0 0 auto!important;min-height:0!important;max-height:none!important;aspect-ratio:1/1;box-sizing:border-box!important;position:relative}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .prof-card .avatar > img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:cover!important;border-radius:50%!important}

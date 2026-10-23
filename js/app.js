@@ -435,6 +435,7 @@
       resetG();
       if (res && res.ok && D6.Auth.current() && !isGuest()) {
         if (res.isNew) metaTrack('CompleteRegistration');
+        if (res.isNew) { try { if (D6.installAfterSignup) D6.installAfterSignup(); } catch (eIg) { /* ignore */ } } // 2026-10-23 : inscription Google aussi
         enterApp({ openFullscreen: true });
         authReturnDone();
         return;
@@ -677,7 +678,18 @@
     if (IS_ANDROID) {
       el.style.pointerEvents = 'auto';
       el.style.touchAction = 'manipulation';
-      el.addEventListener('touchend', run, { passive: false });
+      // 2026-10-23 (propriétaire : « des pages s'ouvrent seules, Recharger… ») : un doigt qui GLISSE (défilement du profil,
+      // d'une liste) et se lève sur le bouton n'est pas un toucher → avant, il ouvrait quand même la page (ex. Recharger).
+      // Seul un vrai toucher (doigt immobile, levé sur le bouton) déclenche ; le défilement reste normal.
+      var sx = 0, sy = 0, mv = false;
+      el.addEventListener('touchstart', function (e) { var p = e.touches && e.touches[0]; mv = false; if (p) { sx = p.clientX; sy = p.clientY; } }, { passive: true });
+      el.addEventListener('touchmove', function (e) { var p = e.touches && e.touches[0]; if (p && (Math.abs(p.clientX - sx) > 10 || Math.abs(p.clientY - sy) > 10)) mv = true; }, { passive: true });
+      el.addEventListener('touchend', function (e) {
+        if (mv) return;
+        var p = e.changedTouches && e.changedTouches[0];
+        if (p) { var r = el.getBoundingClientRect(); if (p.clientX < r.left - 4 || p.clientX > r.right + 4 || p.clientY < r.top - 4 || p.clientY > r.bottom + 4) return; }
+        run(e);
+      }, { passive: false });
     }
   }
 
@@ -688,7 +700,9 @@
     var last = 0;
     function run(e) {
       var now = Date.now();
-      if (now - last < 250) return;
+      // 2026-10-23 : pointerdown, touchstart puis click arrivent pour le MÊME toucher : les suivants sont aussi arrêtés (avant,
+      // seul le 1er l'était → la fenêtre fermée dès le pointerdown laissait le « click » tomber sur le bouton du dessous).
+      if (now - last < 250) { if (e) { if (e.cancelable) e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); } return; }
       last = now;
       if (e) {
         if (e.cancelable) e.preventDefault();
@@ -817,13 +831,15 @@
         box.classList.add('out'); clearTimeout(box._t);
         setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 380);
       };
-      var shut0 = shut; shut = function () { var was = box.parentNode && !box.classList.contains('out'); shut0(); if (was) setTimeout(installAskCard, 450); };
       box.querySelector('.ow-x').addEventListener('click', shut);
       box.querySelector('.ow-go').addEventListener('click', shut);
       box.querySelector('.ow-dim').addEventListener('click', shut);
       document.body.appendChild(box);
       box._t = setTimeout(shut, 9000);
     } catch (eW) { try { toast(t('accountCreated'), 'ok', 3000); } catch (eT) { /* ignore */ } }
+    // 2026-10-23 (propriétaire) : la grande carte « Installer OROLADO » vient 40 s après la bienvenue (avant : dès sa fermeture,
+    // et seulement si la carte se fermait dans CET onglet). Échéance gardée dans l'onglet : un rechargement ne la perd plus.
+    try { if (D6.installAfterSignup) D6.installAfterSignup(); } catch (eIs) { /* ignore */ }
   }
   // 2026-10-21 (propriétaire) : juste après la carte de bienvenue (inscription), grande carte « Installer OROLADO »,
   // même famille (étincelles, rayons). « Installer » = même effet que la bannière ; « Plus tard » ferme.
@@ -857,11 +873,14 @@
     zh: ['\u4f60\u5728 Facebook \u5185\uff1a\u8bf7\u5148\u7528 Safari \u6253\u5f00\u7f51\u7ad9\u3002', '\u70b9\u51fb\u4e09\u4e2a\u70b9 \u2022\u2022\u2022\u3002', '\u9009\u62e9\u201c\u5728 Safari \u4e2d\u6253\u5f00\u201d\u3002', '\u5728 Safari \u4e2d\u70b9\u51fb\u201c\u5b89\u88c5 OROLADO\u201d\u3002'],
     hi: ['\u0906\u092a Facebook \u0915\u0947 \u0905\u0902\u0926\u0930 \u0939\u0948\u0902: \u092a\u0939\u0932\u0947 \u0938\u093e\u0907\u091f Safari \u092e\u0947\u0902 \u0916\u094b\u0932\u0947\u0902\u0964', '\u0924\u0940\u0928 \u092c\u093f\u0902\u0926\u0941\u0913\u0902 \u2022\u2022\u2022 \u092a\u0930 \u091f\u0948\u092a \u0915\u0930\u0947\u0902\u0964', '\u201cSafari \u092e\u0947\u0902 \u0916\u094b\u0932\u0947\u0902\u201d \u091a\u0941\u0928\u0947\u0902\u0964', 'Safari \u092e\u0947\u0902 \u201cOROLADO \u0907\u0902\u0938\u094d\u091f\u0949\u0932 \u0915\u0930\u0947\u0902\u201d \u092a\u0930 \u091f\u0948\u092a \u0915\u0930\u0947\u0902\u0964']
   };
-  function installAskCard() {
+  // 2026-10-23 (propriétaire : « la notification Installer est trop petite, on ne la voit pas ») : cette grande carte remplace
+  // aussi la petite pastille « Installer » du graphique (nouvelles connexions). Toucher n'importe où sur la carte = installer
+  // (Android : vraie installation de Chrome ; iPhone : les étapes « Partager → Sur l'écran d'accueil ») ; ×, « Plus tard » ou à
+  // côté = fermer. Les règles (quand, combien de fois) sont dans bindInstall ; opts.onClose(true) = fermée sans installer.
+  function installAskCard(opts) {
+    opts = opts || {};
     try {
-      var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
-      var ios = /iP(hone|od|ad)/.test(navigator.userAgent || '');
-      if (sa || !(ios || deferredPrompt || window.__oroBip || (inAppBrowser() && /Android/i.test(navigator.userAgent || ''))) || !$('btnInstall') || document.getElementById('oroInstAsk')) return; // Android : seulement si Chrome peut installer (ou dans Facebook → Chrome)
+      if (document.getElementById('oroInstAsk')) return false;
       var lg = String(document.documentElement.lang || 'en').slice(0, 2), W = INSTASK_T[lg] || INSTASK_T.en;
       var box = document.createElement('div');
       box.id = 'oroInstAsk'; box.className = 'oro-welcome oro-inst-ask'; box.setAttribute('role', 'dialog');
@@ -878,17 +897,32 @@
       box.querySelector('.ow-s').textContent = W[1];
       box.querySelector('.oia-go span').textContent = W[2];
       box.querySelector('.oia-later').textContent = W[3];
-      var shut = function () {
+      // Anti « toucher fantôme » : la carte arrive seule ; un doigt déjà posé (ou un 2e toucher rapide) au moment où elle
+      // apparaît ne doit ni installer ni la fermer. Seul un toucher COMMENCÉ sur la carte, 0,6 s après son arrivée, compte.
+      var shownAt = Date.now(), downAt = 0;
+      box.addEventListener('pointerdown', function () { downAt = Date.now(); }, true);
+      box.addEventListener('touchstart', function () { downAt = Date.now(); }, { capture: true, passive: true });
+      var real = function (e) { return Date.now() - shownAt > 600 && (downAt > shownAt + 250 || (e && e.detail === 0)); };
+      var shut = function (dismissed) {
         if (!box.parentNode || box.classList.contains('out')) return;
         box.classList.add('out');
         setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 380);
+        try { if (opts.onClose) opts.onClose(!!dismissed); } catch (eC) { /* ignore */ }
       };
-      box.querySelector('.ow-x').addEventListener('click', shut);
-      box.querySelector('.oia-later').addEventListener('click', shut);
-      box.querySelector('.ow-dim').addEventListener('click', shut);
-      box.querySelector('.oia-go').addEventListener('click', function () { shut(); setTimeout(function () { if (D6.install) D6.install(); else if ($('btnInstall')) $('btnInstall').click(); }, 200); });
+      var no = function (e) { if (e) { e.preventDefault(); e.stopPropagation(); } if (real(e)) shut(true); };
+      box.querySelector('.ow-x').addEventListener('click', no);
+      box.querySelector('.oia-later').addEventListener('click', no);
+      box.querySelector('.ow-dim').addEventListener('click', no);
+      box.querySelector('.ow-card').addEventListener('click', function (e) {
+        if (e.target && e.target.closest && e.target.closest('.ow-x, .oia-later')) return;
+        e.preventDefault(); e.stopPropagation();
+        if (!real(e)) return;
+        shut(false);
+        if (D6.install) D6.install(); else if ($('btnInstall')) $('btnInstall').click();
+      });
       document.body.appendChild(box);
-    } catch (eI) { /* ignore */ }
+      return true;
+    } catch (eI) { return false; }
   }
   D6.installAskCard = installAskCard;
   D6.welcomeCard = welcomeCard;
@@ -3462,6 +3496,10 @@
     if (m && m.classList.contains('on') && coachKind) coachMark(coachKind, 'dismiss');
     coachClose();
   }
+  function coachArmed(m, e) {
+    var at = m._shownAt || 0;
+    return Date.now() - at > 600 && ((m._downAt || 0) > at + 250 || (e && e.detail === 0));
+  }
   // Affiche un message. force = demandé par le joueur (COMPTE RÉEL) : sans les limites.
   function coachShow(kind, onGo, force) {
     try {
@@ -3479,12 +3517,19 @@
         m.id = 'coachModal';
         m.innerHTML = '<div class="coach-dim"></div><div class="coach-card" role="dialog" aria-modal="true"><div class="coach-rays"></div><div class="coach-body"></div></div>';
         document.body.appendChild(m);
-        m.querySelector('.coach-dim').addEventListener('click', coachDismiss);
+        // 2026-10-23 (propriétaire : « Recharger s'ouvre tout seul ») : ce message monte du BAS, juste au-dessus d'ACHETER /
+        // VENDRE, 1,6 s après un trade : un toucher déjà en cours (ou un 2e toucher rapide) tombait sur « Recharger » (coach-go).
+        // Seul un toucher COMMENCÉ sur le message, 0,6 s après son arrivée, compte.
+        m.addEventListener('pointerdown', function () { m._downAt = Date.now(); }, true);
+        m.addEventListener('touchstart', function () { m._downAt = Date.now(); }, { capture: true, passive: true });
+        m.querySelector('.coach-dim').addEventListener('click', function (e) { if (coachArmed(m, e)) coachDismiss(); });
       }
       coachKind = kind;
+      m._shownAt = Date.now();
       m.querySelector('.coach-body').innerHTML = coachHtml(kind);
-      m.querySelector('.coach-later').addEventListener('click', coachDismiss);
-      m.querySelector('.coach-go').addEventListener('click', function () {
+      m.querySelector('.coach-later').addEventListener('click', function (e) { if (coachArmed(m, e)) coachDismiss(); });
+      m.querySelector('.coach-go').addEventListener('click', function (e) {
+        if (!coachArmed(m, e)) return;
         coachClose();
         if (typeof onGo === 'function') { onGo(); return; }
         if (kind === 'calm') return;
@@ -7350,7 +7395,10 @@
         });
       };
       setZ(1);
-      if (!fits()) {
+      // 2026-10-23 : la photo est maintenant un vrai rond (avant, sur Android, un ovale moitié moins haut) ; si même la plus
+      // petite taille ne tient pas (iPhone SE), la photo rapetisse un peu (jamais sous 64 px) : jamais de défilement.
+      for (var tries = 0; tries < 4 && !fits(); tries++) {
+        if (tries) { avT = Math.max(64, avT - 7); setZ(1); if (fits()) break; }
         var lo = 0.66, hi = 1;
         for (var k = 0; k < 8; k++) {
           var mid = (lo + hi) / 2;
@@ -7358,6 +7406,7 @@
           if (fits()) lo = mid; else hi = mid;
         }
         setZ(Math.round(lo * 1000) / 1000);
+        if (avT <= 64) break;
       }
       // v2952 (propriétaire) : on garde la taille trouvée, puis on récupère le petit vide sous « Se déconnecter »
       // (marge de la ligne ©) et on le donne seulement à certaines cases, avec un poids :
@@ -9904,27 +9953,81 @@
       }
       openModal('iosInstallModal');
     }
-    function showInstallBanner() {
-      // 2026-10-20 : ordinateur aussi, mais seulement quand Chrome / Edge ont dit « installable » (vraie installation)
-      if ((!isMobileUi() && !deferredPrompt) || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install') || !window.__oroInstallDue()) return;
-      var el = $('installBanner');
-      if (!el) return;
-      window.__oroInstallMark();
-      el.classList.remove('hidden', 'fade-out');
-      if (installHideTimer) clearTimeout(installHideTimer);
-      installHideTimer = setTimeout(function () {
-        hideInstallBanner();
-        try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e) { /* ignore */ }
-      }, 10000); // v2441 : 10 s
+    function isAndroidUa() { return /android/i.test(navigator.userAgent || ''); }
+    // 2026-10-23 : l'appli Android installée partage la mémoire du site avec Chrome → ouverte une fois, Chrome le sait
+    // (plus de « Installer » dans Chrome pour un téléphone qui a déjà l'appli). Chrome qui annonce « installable » = plus installée.
+    function appKnownInstalled() { try { return localStorage.getItem('oro_app_installed') === '1'; } catch (e) { return false; } }
+    try { if (isStandalone()) localStorage.setItem('oro_app_installed', '1'); } catch (eMk) { /* ignore */ }
+    // Peut-on proposer l'installation ici ? strict = Android seulement quand Chrome a dit « installable » (vraie installation).
+    function canInstallHere(strict) {
+      if (isStandalone()) return false;
+      if (isIos()) return true;
+      if (deferredPrompt || window.__oroBip) return true;
+      if (inAppBrowser() && isAndroidUa()) return true;
+      return !strict && isAndroidUa() && !appKnownInstalled();
     }
+    // Jamais par-dessus une autre fenêtre, l'écran de connexion, un trade en cours ou une saisie : la carte attend.
+    function cardBlocked() {
+      try {
+        if (document.hidden) return true;
+        if (document.querySelector('.oro-welcome, .modal-backdrop.active, .modal.active, #coachModal.on, #drawerProfile.on')) return true;
+        if (document.documentElement.classList.contains('learn-on')) return true;
+        var st = $('screenTrade'); if (!st || st.classList.contains('hidden') || !st.offsetWidth) return true;
+        if (D6.Engine && D6.Engine.liveCount && Number(D6.Engine.liveCount()) > 0) return true;
+        var ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName || '')) return true;
+      } catch (eB) { return true; }
+      return false;
+    }
+    // Carte en attente (gardée dans l'onglet : survit à un rechargement) : { at: heure prévue, why: 'signup' | 'conn' }
+    var PEND_K = 'oro_inst_pending', pendT = 0;
+    function pendGet() { try { return JSON.parse(sessionStorage.getItem(PEND_K) || 'null'); } catch (e) { return null; } }
+    function pendSet(p) { try { if (p) sessionStorage.setItem(PEND_K, JSON.stringify(p)); else sessionStorage.removeItem(PEND_K); } catch (e) { /* ignore */ } }
+    function pendTick() {
+      clearTimeout(pendT); pendT = 0;
+      var p = pendGet(); if (!p || !p.at) return;
+      var now = Date.now();
+      if (now < p.at) { pendT = setTimeout(pendTick, Math.min(p.at - now + 50, 60000)); return; }
+      if (now - p.at > 20 * 60 * 1000) { pendSet(null); return; } // trop tard : on n'insiste pas
+      var signup = p.why === 'signup';
+      if (!signup && (installDismissedForever() || sessionStorage.getItem('oro_hide_install') || !window.__oroInstallDue())) { pendSet(null); return; }
+      // Android, après l'inscription : on laisse encore 20 s à Chrome pour dire « installable » (vraie installation) ;
+      // ensuite la carte vient quand même (le bouton montre alors les 3 étapes de Chrome).
+      var strict = !signup || now < p.at + 20000;
+      if (!canInstallHere(strict)) {
+        if (!canInstallHere(false)) { pendSet(null); return; }
+        pendT = setTimeout(pendTick, 3000); return;
+      }
+      if (cardBlocked()) { pendT = setTimeout(pendTick, 2500); return; }
+      pendSet(null);
+      if (!signup) window.__oroInstallMark();
+      installAskCard({ why: p.why, onClose: function (dismissed) { if (dismissed && !signup) { bumpClose(); try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e) { /* ignore */ } } } });
+    }
+    // Nouvelle connexion / ouverture : au plus 1 fois / 24 h, jamais après 2 refus, jamais dans l'appli (règles inchangées).
+    function showInstallBanner() {
+      if ((!isMobileUi() && !deferredPrompt && !window.__oroBip) || isStandalone() || installDismissedForever() || sessionStorage.getItem('oro_hide_install') || !window.__oroInstallDue()) return;
+      var p = pendGet();
+      if (p && p.at) { pendTick(); return; } // déjà prévue (ex. après l'inscription)
+      pendSet({ at: Date.now() + 2500, why: 'conn' });
+      pendTick();
+    }
+    window.__oroInstallConn = showInstallBanner;
+    // Après l'inscription : 40 s après la carte de bienvenue (règle des 24 h / refus ignorée : nouveau compte).
+    D6.installAfterSignup = function () {
+      if (isStandalone()) return;
+      pendSet({ at: Date.now() + 40000, why: 'signup' });
+      pendTick();
+    };
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && pendGet()) pendTick(); });
+    setTimeout(function () { if (pendGet()) pendTick(); }, 1500);
     window.addEventListener('beforeinstallprompt', function (e) {
       e.preventDefault();
       deferredPrompt = e;
+      try { localStorage.removeItem('oro_app_installed'); } catch (eRm) { /* ignore */ }
       showInstallBanner();
     });
     // 2026-10-20 : annonce de Chrome reçue avant ce code (gardée par index.html) → bouton Installer = vraie installation
-    window.addEventListener('oro-bip', function () { if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; showInstallBanner(); } });
-    if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; showInstallBanner(); }
+    window.addEventListener('oro-bip', function () { if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; try { localStorage.removeItem('oro_app_installed'); } catch (eRm) { /* ignore */ } showInstallBanner(); } if (pendGet()) pendTick(); });
+    if (window.__oroBip && !deferredPrompt) { deferredPrompt = window.__oroBip; try { localStorage.removeItem('oro_app_installed'); } catch (eRm) { /* ignore */ } showInstallBanner(); }
     if (isIos() && !isStandalone()) showInstallBanner();
     // 2026-10-21 (propriétaire : « sur Android le message Installer ne vient plus ») : Chrome n'annonce « installable » qu'après
     // un moment (et jamais dans certains cas) → sur Android, la bannière revient aussi au bout de 8 s sans annonce. Le bouton
@@ -9984,8 +10087,11 @@
         // v2493 : iPhone = 3 étapes iPhone ; Android (Chrome pas encore prêt) = 3 étapes Android dans la même fenêtre
         // (avant : petit message avec la consigne iPhone « Partager… », incompréhensible sur Android).
         hideInstallBanner();
-        // propriétaire : sur Android, jamais de fenêtre d'étapes — soit ça installe, soit rien ; iPhone : les 3 étapes (seule voie d'Apple)
+        // iPhone : les 3 étapes (seule voie d'Apple). 2026-10-23 (propriétaire : « le bouton Installer des Conditions existe sur
+        // iPhone mais pas sur Android ») : Android a maintenant les mêmes boutons ; quand Chrome ne propose pas (encore)
+        // l'installation directe, ils montrent les 3 étapes de Chrome (menu ⋮ → Installer l'application).
         if (isIos()) installHelp('ios');
+        else if (isAndroidUa() && !isStandalone()) installHelp('and');
         else fillInstSlots(); // plus d'installation possible : les boutons se cachent
       }
     }
@@ -9994,7 +10100,7 @@
     // 2026-10-21 (propriétaire) : bouton « Installer OROLADO » à la fin d'Apprendre et des Conditions (même effet que la bannière)
     function fillInstSlots() {
       var slots = document.querySelectorAll('.oro-inst-slot'); if (!slots.length) return;
-      var ok = !isStandalone() && (isIos() || !!(deferredPrompt || window.__oroBip) || (inAppBrowser() && /Android/i.test(navigator.userAgent || ''))); // Android : seulement quand ça installe vraiment
+      var ok = canInstallHere(false); // 2026-10-23 : Android comme iPhone (sauf appli déjà installée sur ce téléphone)
       var lb = document.querySelector('#btnInstall [data-i18n="installApp"]'), txt = lb ? lb.textContent : 'Install';
       for (var i = 0; i < slots.length; i++) {
         var sl = slots[i];
@@ -10079,6 +10185,9 @@
     }
     function maybeReload() {
       if (!newer || reloading || document.hidden || openTrades() > 0 || busyElsewhere()) return;
+      // 2026-10-23 (propriétaire : « la page se recharge toute seule ») : jamais pendant qu'une fenêtre / page est ouverte
+      // (Recharger, Paris, Casino, profil…) : la nouvelle version attend le prochain retour sur l'écran de trading.
+      try { if (document.querySelector('.modal-backdrop.active, .modal.active, #drawerProfile.on, .oro-welcome, #coachModal.on') || document.documentElement.classList.contains('learn-on')) return; } catch (eQ) { /* ignore */ }
       reloading = true;
       try { location.reload(); } catch (eR) { reloading = false; }
     }
@@ -10213,34 +10322,9 @@
       checkDepositReturn();
       syncTradeButtons();
       startAdminPresence();
-      setTimeout(function () {
-        try {
-          var standalone = !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches || window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: minimal-ui)').matches);
-          var mobile = window.matchMedia('(max-width: 859px)').matches || /android|iphone|ipad|ipod/i.test(navigator.userAgent || '');
-          var forever = false;
-          try {
-            forever = localStorage.getItem('oro_install_dismissed') === '1'
-              || (parseInt(localStorage.getItem('orolado_install_dismissed_count') || '0', 10) || 0) >= 2;
-          } catch (e0) { forever = false; }
-          // 2026-10-20 : Android / ordinateur → seulement quand Chrome dit « installable » ; iPhone : étapes (inchangé)
-          var canInst = /iP(hone|od|ad)/.test(navigator.userAgent || '') || !!(deferredPrompt || window.__oroBip);
-          if (canInst && mobile && !standalone && !forever && !sessionStorage.getItem('oro_hide_install') && $('installBanner') && (!window.__oroInstallDue || window.__oroInstallDue())) {
-            if (window.__oroInstallMark) window.__oroInstallMark();
-            var ban = $('installBanner');
-            ban.classList.remove('hidden', 'fade-out');
-            setTimeout(function () {
-              if ($('installBanner')) $('installBanner').classList.add('fade-out');
-              setTimeout(function () {
-                if ($('installBanner')) {
-                  $('installBanner').classList.add('hidden');
-                  $('installBanner').classList.remove('fade-out');
-                }
-              }, 450);
-              try { sessionStorage.setItem('oro_hide_install', '1'); } catch (e1) { /* ignore */ }
-            }, 10000); // v2441 : 10 s au lieu de 5 (demande du propriétaire)
-          }
-        } catch (eInst) { /* ignore */ }
-      }, 1800);
+      // 2026-10-23 : nouvelle connexion → grande carte « Installer OROLADO » (avant : petite pastille sur le graphique, 10 s,
+      // souvent invisible). Mêmes règles : 1 fois / 24 h, jamais après 2 refus, jamais dans l'appli ; Android : quand Chrome peut installer.
+      setTimeout(function () { try { if (window.__oroInstallConn) window.__oroInstallConn(); } catch (eInst) { /* ignore */ } }, 1800);
       if (u && !isGuest(u) && D6.Supabase && D6.Supabase.startRealtime) {
         try { D6.Supabase.startRealtime(u.id); } catch (eRt) { /* ignore */ }
       }
@@ -10841,6 +10925,7 @@
             try { g = await D6.Auth.googleFinish(); } catch (eG) { g = null; }
             if (g && g.ok && D6.Auth.current() && !isGuest()) {
               if (g.isNew) metaTrack('CompleteRegistration');
+              if (g.isNew) { try { if (D6.installAfterSignup) D6.installAfterSignup(); } catch (eIg) { /* ignore */ } } // 2026-10-23 : inscription Google aussi
               enterApp();
               authReturnDone();
               return;
@@ -10870,6 +10955,21 @@
             enterApp();
             return;
           }
+          // 2026-10-23 (propriétaire : « que les joueurs ne soient pas déconnectés facilement ») : Safari (iPhone) efface la
+          // mémoire du site après 7 jours sans visite, mais garde le cookie de connexion posé par le serveur (5 ans). Avant, le
+          // joueur se retrouvait déconnecté alors que sa connexion était encore valable : on la reprend avec ce cookie.
+          try {
+            var ckTok = D6.Api && D6.Api.token ? D6.Api.token() : '';
+            if (ckTok && ckTok.indexOf('eyJ') !== 0 && (!D6.Auth.current() || isGuest())) {
+              var meR = await D6.Api.post('me', {}, 6000);
+              if (meR && meR.ok && meR.user && meR.user.id && !meR.user.guest && String(meR.user.email || '').indexOf('@orolado.local') < 0 && D6.Api.token() === ckTok && (!D6.Auth.current() || isGuest())) {
+                D6.Store.importRemote(meR.user, meR.vault, { official: true });
+                D6.Api.setToken(ckTok);
+                D6.Store.setSession({ userId: meR.user.id, at: D6.nowIso(), exp: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000 });
+                if (D6.Auth.current() && !isGuest()) { enterApp(); return; }
+              }
+            }
+          } catch (eCk) { /* ignore */ }
           finishBoot();
         } catch (eBoot) {
           try { console.warn('Mobile display fallback:', eBoot); } catch (e) { /* ignore */ }

@@ -224,13 +224,13 @@
   <!-- 2026-10-20 : polices Google chargées SANS bloquer la page (avant : tout, même l'écran de chargement, les attendait) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="/css/app.css?v=3135">
+    <link rel="stylesheet" href="/css/app.css?v=3163">
     <link rel="stylesheet" href="/css/auth.css?v=2790">
     <link rel="stylesheet" href="/css/tv.css?v=2790">
     <link rel="stylesheet" href="/css/galaxy.css?v=3014">
     <link rel="stylesheet" href="/css/cg.css?v=2887">
     <link rel="stylesheet" href="/css/lobby.css?v=2842">
-    <link rel="stylesheet" href="/css/sports2.css?v=3162">
+    <link rel="stylesheet" href="/css/sports2.css?v=3163">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -687,18 +687,31 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
     document.addEventListener('touchmove', function (e) {
       if ((e.touches && e.touches.length > 1) || (typeof e.scale === 'number' && e.scale !== 1)) e.preventDefault();
     }, { passive: false });
-    var lastEnd = 0;
+    var lastEnd = 0, lastCtl = null, sx = 0, sy = 0, moved = false;
+    document.addEventListener('touchstart', function (e) {
+      var p = e.touches && e.touches[0]; moved = false;
+      if (p) { sx = p.clientX; sy = p.clientY; }
+    }, { passive: true, capture: true });
+    document.addEventListener('touchmove', function (e) {
+      var p = e.touches && e.touches[0];
+      if (p && (Math.abs(p.clientX - sx) > 10 || Math.abs(p.clientY - sy) > 10)) moved = true;
+    }, { passive: true, capture: true });
     document.addEventListener('touchend', function (e) {
       var now = Date.now();
       var t = e.target;
       var ctl = t && t.closest && t.closest('button,a,input,select,textarea,label,[onclick],[role="button"]');
+      // un glissement (défilement) n'est pas un toucher : il ne compte pas comme 1er toucher et ne clique jamais
+      if (moved) { lastEnd = 0; lastCtl = null; return; }
       if (now - lastEnd < 350 && e.touches && e.touches.length === 0) {
         if (!ctl) e.preventDefault();
         // 2026-10-23 (propriétaire : « ça s'agrandit seul quand on clique vite ») : deux touches rapides sur un bouton →
         // pas de zoom, mais le 2e clic part quand même (chaque toucher compte, comme avant)
-        else if (!/^(INPUT|SELECT|TEXTAREA|LABEL)$/.test(ctl.tagName)) { e.preventDefault(); try { ctl.click(); } catch (err) { /* ignore */ } }
+        // 2026-10-23 (propriétaire : « des pages s'ouvrent seules, Recharger… ») : le 2e clic n'est envoyé QUE si c'est le MÊME
+        // bouton que le 1er toucher. Avant, si le 1er toucher changeait l'écran (fenêtre fermée, page ouverte), le 2e toucher
+        // cliquait le bouton apparu sous le doigt (ex. « + » Recharger) : clic fantôme. Autre bouton → rien (ni zoom ni clic).
+        else if (!/^(INPUT|SELECT|TEXTAREA|LABEL)$/.test(ctl.tagName)) { e.preventDefault(); if (ctl === lastCtl && ctl.isConnected) { try { ctl.click(); } catch (err) { /* ignore */ } } }
       }
-      lastEnd = now;
+      lastEnd = now; lastCtl = ctl;
     }, { passive: false });
     // Si la page a quand même été agrandie (clavier, bug du téléphone) : retour à la taille normale dès que possible
     var vm = document.querySelector('meta[name="viewport"]');
@@ -725,7 +738,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
     // Version de CETTE page, lue au moment de la vérification (la ligne qui la porte est plus bas dans la page).
     function mine() {
       try {
-        var sc = document.querySelector('script[src*="js/app.js?v=3160"]');
+        var sc = document.querySelector('script[src*="js/app.js?v=3163"]');
         return sc ? parseInt(String(sc.getAttribute('src')).split('v=')[1], 10) || 0 : 0;
       } catch (e0) { return 0; }
     }
@@ -734,6 +747,8 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
       try {
         var ae = document.activeElement;
         if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return false;
+        // 2026-10-23 (propriétaire : « la page se recharge toute seule ») : jamais avec une fenêtre / page ouverte (Recharger, profil…)
+        if (document.querySelector('.modal-backdrop.active, .modal.active, #drawerProfile.on, .oro-welcome, #coachModal.on, html.learn-on')) return false;
         var n = 0;
         if (window.D6 && D6.Engine && D6.Engine.forEachOpen) D6.Engine.forEachOpen(function () { n++; });
         return n === 0;
@@ -2339,7 +2354,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="/js/config.js?v=2810"></script>
   <!-- 2026-10-20 (vieux Android) : traductions par langue — le noyau écrit juste après lui js/i18n/en.js + la langue du joueur
        (avant : les 12 langues à chaque visite). Textes : js/i18n-src.js, js/translations.js, js/i18n-zh.js → node scripts/gen-i18n.js -->
-  <script src="/js/i18n/core.js?v=e3d109bf12"></script>
+  <script src="/js/i18n/core.js?v=5190388f81"></script>
   <script src="/js/store.js?v=2978"></script>
   <script src="/js/api.js?v=3005"></script>
   <!-- 2026-10-20 : Supabase servi par orolado.com (avant : cdn.jsdelivr.net, version non fixée, bloquait le chargement si lent) -->
@@ -2402,7 +2417,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="/js/receipt.js?v=3155"></script>
   <script src="/js/back.js?v=3160"></script>
   <script src="/js/push.js?v=3130"></script>
-  <script src="/js/app.js?v=3160"></script>
+  <script src="/js/app.js?v=3163"></script>
   <script src="/js/portal.js?v=2966"></script>
   <script src="/js/live-ui.js?v=3135"></script>
   <script src="/js/live.js?v=3160"></script>
@@ -2443,23 +2458,27 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
         var m = document.getElementById('casinoModal'); if (m && m.classList.contains('active') && m.classList.contains('in-game')) return true; // salle des jeux : on peut recharger
         var a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
         if (document.querySelector('.modal.open, .modal.show, .sheet.open, [role="dialog"][open]')) return true;
+        // 2026-10-23 : les vraies fenêtres du site (la ligne au-dessus ne les voyait pas → rechargement pendant Recharger, Paris…)
+        if (document.querySelector('.modal-backdrop.active, .modal.active, #drawerProfile.on, .oro-welcome, #coachModal.on, html.learn-on')) return true;
       } catch (e) { return true; }
       return false;
     }
     function apply() { if (want && !document.hidden && !busy()) { want = false; location.reload(); } }
-    function check() {
+    // 2026-10-23 (propriétaire : « la page se recharge toute seule ») : la nouvelle version n'est appliquée qu'au RETOUR sur le
+    // site (onglet / appli rouverts), plus jamais au milieu de l'utilisation (avant : relevé toutes les 30 min → rechargement immédiat).
+    function check(now) {
       last = Date.now();
       if (!mine || !window.fetch) return;
       fetch('/?u=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.text() : ''; }).then(function (t) {
-        var s = t && sig(t); if (s && s !== mine) { want = true; apply(); }
+        var s = t && sig(t); if (s && s !== mine) { want = true; if (now) apply(); }
       }).catch(function () {});
     }
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) { hiddenAt = Date.now(); return; }
-      if (hiddenAt && Date.now() - hiddenAt > 120000) check(); else apply();
+      if (hiddenAt && Date.now() - hiddenAt > 120000) check(true); else apply();
     });
-    window.addEventListener('pageshow', function (e) { if (e && e.persisted) check(); });
-    setInterval(function () { if (want) apply(); else if (!document.hidden && Date.now() - last > 1800000) check(); }, 20000);
+    window.addEventListener('pageshow', function (e) { if (e && e.persisted) check(true); });
+    setInterval(function () { if (!want && !document.hidden && Date.now() - last > 1800000) check(false); }, 20000);
   })();
   </script>
 </body>
