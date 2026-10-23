@@ -1216,3 +1216,25 @@ html:root body #casinoModal .sp2 .pz-zone.dang.l{background:linear-gradient(270d
 html:root body #casinoModal .sp2 .pz-tvs{scroll-behavior:smooth}
 html:root body #casinoModal .sp2 .pz-tvp{transition:opacity .35s ease}
 @media (prefers-reduced-motion:reduce){html:root body #casinoModal .sp2 .pz-ballw.roll .pz-bsv,html:root body #casinoModal .sp2 .pz-ballw.roll .pz-ball{animation:none!important}}
+/* 2026-10-23 (propriétaire : « le bonus, on doit le sentir ») : carte orange pleine, reflet qui passe, éclat quand le bonus grandit */
+html:root body #casinoModal .sp2 .pz-bstb:not(.hint){position:relative;overflow:hidden;border:0;background:linear-gradient(120deg,#F59E0B 0%,#F97316 55%,#EA580C 100%);box-shadow:0 8px 22px -6px rgba(249,115,22,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+html:root body #casinoModal .sp2 .pz-bstb:not(.hint)::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:35%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.35),rgba(255,255,255,0));transform:skewX(-18deg);animation:pzShine 3.2s ease-in-out infinite;pointer-events:none}
+@keyframes pzShine{0%,55%{left:-40%}100%{left:130%}}
+html:root body #casinoModal .sp2 .pz-bstb:not(.hint) .pz-bstb-i{background:#fff;box-shadow:0 3px 10px rgba(124,45,18,.35)}
+html:root body #casinoModal .sp2 .pz-bstb:not(.hint) .pz-bstb-i svg{color:#EA580C}
+html:root body #casinoModal .sp2 .pz-bstb:not(.hint) .pz-bstb-t b{color:#fff;font-size:15px;text-shadow:0 1px 2px rgba(124,45,18,.35)}
+html:root body #casinoModal .sp2 .pz-bstb:not(.hint) .pz-bstb-t small{color:#FFF7ED;font-weight:700}
+html:root body #casinoModal .sp2 .pz-bstb:not(.hint) > em{color:#fff;font-size:19px;padding:6px 10px;border-radius:10px;background:rgba(124,45,18,.28);text-shadow:0 1px 2px rgba(124,45,18,.4)}
+html:root body #casinoModal .sp2 .pz-bstb.won > em{background:rgba(5,150,105,.85)}
+html:root body #casinoModal .sp2 .pz-bstb.lost{filter:grayscale(.7)}
+html:root body #casinoModal .sp2 .pz-bstb.bump{animation:pzBump .6s cubic-bezier(.2,1.6,.4,1)}
+html:root body #casinoModal .sp2 .pz-bstb.bump > em{animation:pzBumpV .6s ease-out}
+@keyframes pzBump{40%{transform:scale(1.035)}}
+@keyframes pzBumpV{30%{transform:scale(1.25)}}
+html:root body #casinoModal .sp2 .pz-bstb.hint{border:1.5px dashed rgba(249,115,22,.65);background:rgba(249,115,22,.08)}
+html:root body #casinoModal .sp2 .pz-bstb.hint .pz-bstb-i{background:linear-gradient(145deg,#FDBA74,#F97316)}
+html:root body #casinoModal .sp2 .pz-bstb.hint small{color:#FED7AA;font-weight:700}
+@media (prefers-reduced-motion:reduce){html:root body #casinoModal .sp2 .pz-bstb::after,html:root body #casinoModal .sp2 .pz-bstb.bump{animation:none!important}}
+/* notifications de Paris : un peu moins hautes (posées sous l'en-tête du casino par js/sports.js) */
+html body #toast#toast.toast.lux-msg.pz-t:not(.micro):not(.toast-bal):not(.tie){min-height:36px!important;padding:6px 12px 6px 8px!important;gap:8px!important;border-radius:11px!important}
+html body #toast#toast.toast.lux-msg.pz-t:not(.micro):not(.toast-bal):not(.tie) .lux-msg-ico{width:20px!important;height:20px!important;flex-basis:20px!important;background-size:20px 20px!important}
