@@ -214,6 +214,7 @@
         if (!r.g) { try { r.g = sessionStorage.getItem('oro_cg') || ''; } catch (e) { /* ignore */ } }
       }
       r.mine = !!cm.querySelector('.sp2-tabs [data-sv="mine"].on');
+      try { if ((r.v === 'sports' || r.v === 'pred') && !r.g && D6.Sports && D6.Sports.state) r.sp = D6.Sports.state(); } catch (e) { /* ignore */ } // écran de Paris (match, coupon…)
     } else if (isOn('drawerProfile', 'on')) r = { s: 'profile' };
     if (isOn('depositModal') && r.s !== 'learn') r.dep = 1;
     if (r.s === 'trade' && r.dep) r = { s: 'deposit' };
@@ -256,7 +257,9 @@
           }
           if (!isOn('casinoModal', 'in-game') && isOn('casinoModal') && D6.Casino.home) D6.Casino.home('games'); // jeu retiré : la salle de jeux
         } else { D6.Casino.open(null, 'games'); if (r.v === 'sports' && D6.Casino.home) D6.Casino.home('sports'); }
-        if (r.mine) {
+        if (r.sp && (r.v === 'sports' || r.v === 'pred')) { // 2026-10-23 : retour au même écran de Paris (match en direct compris)
+          if (await wait(function () { return D6.Sports && D6.Sports.restore && document.querySelector('#casinoModal .sp2'); }, 5000)) D6.Sports.restore(r.sp);
+        } else if (r.mine) {
           await wait(function () { return document.querySelector('#casinoModal .sp2-tabs [data-sv="mine"]'); }, 4000);
           var mb = document.querySelector('#casinoModal .sp2-tabs [data-sv="mine"]'); if (mb && !mb.classList.contains('on')) mb.click();
         }
