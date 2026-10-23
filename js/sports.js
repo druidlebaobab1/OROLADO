@@ -1351,13 +1351,16 @@
       try { if (pv.v === 'match' && pv.mid) openMatch(pv.mid); else go(pv.v); } finally { navBk = false; }
       return true;
     }
-    if (view === 'match') { go(matchFrom && matchFrom !== 'match' ? matchFrom : 'home'); return true; }
-    if (view === 'slip') { go(slipFrom && slipFrom !== 'slip' ? slipFrom : 'home'); return true; }
-    if (view === 'resm') { go('results'); return true; }
-    if (view === 'results' || view === 'fav') { go('menu'); return true; }
-    if (view !== 'home') { go('home'); return true; }
+    // 2026-10-23 (propriétaire : « dans Paris on ne peut plus sortir ») : un retour ne s'empile JAMAIS lui-même (sinon Populaire ↔
+    // onglet en boucle) → bgo = aller sans noter l'écran quitté
+    var bgo = function (v) { navBk = true; try { go(v); } finally { navBk = false; } return true; };
+    if (view === 'match') return bgo(matchFrom && matchFrom !== 'match' ? matchFrom : 'home');
+    if (view === 'slip') return bgo(slipFrom && slipFrom !== 'slip' ? slipFrom : 'home');
+    if (view === 'resm') return bgo('results');
+    if (view === 'results' || view === 'fav') return bgo('menu');
+    if (view !== 'home') return bgo('home');
     // Populaire filtré (période, recherche, autre sport) : on revient d'abord à Populaire tel qu'à l'ouverture
-    if (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot') { go('home'); return true; }
+    if (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot') return bgo('home');
     return false;
   }
   function render() {
@@ -2723,7 +2726,14 @@
     var t = ev.target, b;
     if (!t || !t.closest) return;
     if ((b = t.closest('[data-back]'))) { ev.preventDefault(); back(); return; }
-    if ((b = t.closest('.pz-nav [data-sv], .sp2-cta[data-sv], [data-go]'))) { var v = b.getAttribute('data-sv') || b.getAttribute('data-go'); if (v === 'list') v = 'home'; go(v); return; }
+    if ((b = t.closest('.pz-nav [data-sv], .sp2-cta[data-sv], [data-go]'))) {
+      var v = b.getAttribute('data-sv') || b.getAttribute('data-go'); if (v === 'list') v = 'home';
+      // 2026-10-23 (propriétaire : « dans Paris on ne peut plus sortir ») : un onglet du bas (Populaire, Direct, Mes paris, Menu) repart
+      // d'une pile vide → retour = Populaire, puis Paris se ferme (le pas-à-pas reste pour match, coupon, résultats)
+      if (b.closest('.pz-nav') && v !== 'slip') navStk = [];
+      go(v); if (b.closest('.pz-nav') && v !== 'slip') navStk = [];
+      return;
+    }
     if ((b = t.closest('.pz-ob[data-ev]'))) { if (!b.disabled) sbPick(b); return; }
     if ((b = t.closest('.pd-b[data-ev]'))) { if (!b.disabled) pick(b); return; } // choix Predict (carte ou résultat de recherche)
     if ((b = t.closest('#pzQx'))) { ev.preventDefault(); setQ(''); var qi = $('pzQ'); if (qi) qi.blur(); return; }
