@@ -33,6 +33,7 @@ if ($action === 'key') {
 
 if ($action === 'sub') {
   $uid = '';
+  $isAdm = false;
   $tok = trim((string) ($req['token'] ?? ''));
   if ($tok !== '' && strlen($tok) <= 200) {
     try {
@@ -41,11 +42,13 @@ if ($action === 'sub') {
       if (isset($db['sessions'][$tok])) {
         $me = orolado_session_user($db, $tok);
         if (is_array($me)) $uid = (string) ($me['id'] ?? '');
+        // 2026-10-23 : téléphone connecté avec le compte ADMIN → il reçoit les alertes admin (retraits, messages…)
+        if (is_array($me) && function_exists('orolado_is_admin_user')) $isAdm = orolado_is_admin_user(array_merge($me, (array) ($db['users'][$uid] ?? [])));
       }
     } catch (Throwable $e) { $uid = ''; }
   }
   $ok = push_save_sub(is_array($req['sub'] ?? null) ? $req['sub'] : [], [
-    'plat' => $plat, 'app' => !empty($req['app']), 'lang' => (string) ($req['lang'] ?? ''), 'uid' => $uid,
+    'plat' => $plat, 'app' => !empty($req['app']), 'lang' => (string) ($req['lang'] ?? ''), 'uid' => $uid, 'admin' => $isAdm ? 1 : 0,
   ]);
   push_out(['ok' => $ok]);
 }

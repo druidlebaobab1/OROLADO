@@ -2380,8 +2380,11 @@ if ($isAjax) {
       $th = live_thread($uid);
       live_mark_read($uid, 'a');
       admin_json(['ok' => true, 'uid' => $uid, 'name' => (string) ($th['name'] ?? ''), 'publicId' => (string) ($th['publicId'] ?? ''), 'email' => (string) ($th['email'] ?? ''),
-        'msgs' => array_map($imgOut, array_slice((array) ($th['msgs'] ?? []), -120))]);
+        'ph' => live_photo_of($uid), 'unread' => live_unread_admin(),
+        'msgs' => array_map(static fn(array $m): array => $imgOut($m) + (!empty($m['auto']) ? ['auto' => 1] : []), array_slice((array) ($th['msgs'] ?? []), -120))]);
     }
+    // 2026-10-23 (propriétaire) : remettre une conversation en « non lu » (à traiter plus tard)
+    if ($action === 'live_unread') admin_json(['ok' => live_mark_unread_admin(live_safe_id((string) ($req['uid'] ?? ''))), 'unread' => live_unread_admin()]);
     if ($action === 'live_reply') {
       $uid = live_safe_id((string) ($req['uid'] ?? ''));
       $text = live_clean_text((string) ($req['text'] ?? ''));
@@ -2537,6 +2540,7 @@ if ($isAjax) {
   if ($action === 'mail_queue_resume') admin_json(['ok' => true, 'status' => mailq_set_active(true)]);
   // v2607 — Notifications : chiffres, abonnement test de l'appareil admin, envoi par paquets.
   if ($action === 'push_stats') {
+    push_admin_uid_note((string) ($me['id'] ?? ''));
     $v = push_vapid();
     admin_json(['ok' => true, 'stats' => push_stats(), 'journal' => push_log_list(), 'key' => (string) ($v['pub'] ?? '')]);
   }
@@ -2547,14 +2551,45 @@ if ($isAjax) {
     require_once __DIR__ . '/tg_lib.php';
     if ($action === 'tg_status') admin_json(tg_status());
     if ($action === 'tg_link') admin_json(tg_link(trim((string) ($req['token'] ?? ''))));
-    if ($action === 'tg_test') admin_json(['ok' => tg_notify_admin("🔔 Test OROLADO : les alertes de retrait arriveront ici."), 'reason' => 'Non relié : refaites « Relier ».']);
+    if ($action === 'tg_test') { $r = tg_send_admin("🔔 Test OROLADO : les alertes de retrait, de messages et de gros dépôts arriveront ici."); admin_json(['ok' => !empty($r['ok']), 'reason' => (string) ($r['why'] ?? '')]); }
     if ($action === 'tg_off') { $c = tg_conf(); $c['on'] = 0; tg_save($c); admin_json(['ok' => true]); }
+  }
+  // 2026-10-23 (propriétaire : « je ne reçois plus les alertes ») — TESTER LES NOTIFICATIONS : un message part sur chaque
+  // canal (Telegram, téléphone(s) admin) et l'admin voit lequel a échoué et pourquoi ; journal des dernières alertes ;
+  // réglages (gros dépôt, record, recopier sur Telegram).
+  if ($action === 'alert_test') {
+    push_admin_uid_note((string) ($me['id'] ?? ''));
+    $res = push_notify_admin('🔔 Test OROLADO', 'Les alertes admin (retraits, messages, gros dépôts) arrivent bien sur ce téléphone.', '/admin.php',
+      "🔔 Test OROLADO : Telegram fonctionne.\nLes alertes de retrait, de messages de joueurs et de gros dépôts arriveront ici.");
+    $tg = $res['tg'] ?? ['ok' => false, 'why' => is_file(__DIR__ . '/tg_lib.php') ? 'Erreur Telegram' : 'Module Telegram absent du serveur'];
+    admin_json(['ok' => true,
+      'tg' => ['ok' => !empty($tg['ok']), 'why' => (string) ($tg['why'] ?? '')],
+      'push' => ['ok' => (int) ($res['sent'] ?? 0) > 0, 'devices' => (int) ($res['devices'] ?? 0), 'sent' => (int) ($res['sent'] ?? 0), 'gone' => (int) ($res['gone'] ?? 0), 'why' => push_why($res)],
+      'server' => ['curl' => function_exists('curl_init'), 'fpm' => function_exists('fastcgi_finish_request'), 'push_dir' => is_writable(push_dir()), 'vapid' => (string) (push_vapid()['pub'] ?? '') !== ''],
+      'log' => push_alert_log_list()]);
+  }
+  if ($action === 'alert_info' || $action === 'alert_cfg') {
+    if (!is_file(__DIR__ . '/tg_lib.php')) admin_json(['ok' => false, 'reason' => 'Module Telegram absent du serveur (tg_lib.php)']);
+    require_once __DIR__ . '/tg_lib.php';
+    if ($action === 'alert_cfg') {
+      $cfgIn = (array) ($req['cfg'] ?? []);
+      orolado_alert_cfg_save(array_intersect_key($cfgIn, ['depBig' => 1, 'depRecord' => 1]));
+      if (array_key_exists('mirror', $cfgIn)) { $c = tg_conf(); $c['mirror'] = !empty($cfgIn['mirror']) ? 1 : 0; tg_save($c); }
+      admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'reglages', 0, 'Alertes admin : ' . json_encode(orolado_alert_cfg() + ['mirror' => tg_mirror_on()], JSON_UNESCAPED_UNICODE));
+    }
+    $ac = orolado_alert_cfg();
+    admin_json(['ok' => true, 'cfg' => ['depBig' => $ac['depBig'], 'depRecord' => $ac['depRecord'], 'record' => $ac['record'], 'recordAt' => $ac['recordAt'], 'mirror' => tg_mirror_on()],
+      'tg' => tg_status(), 'devices' => count(push_admin_rows()), 'log' => push_alert_log_list()]);
   }
   if ($action === 'push_test_sub') {
     $ok = push_save_sub(is_array($req['sub'] ?? null) ? $req['sub'] : [], [
       'plat' => (string) ($req['plat'] ?? 'pc'), 'app' => !empty($req['app']), 'lang' => 'fr',
-      'uid' => (string) ($me['id'] ?? ''), 'test' => 1,
+      'uid' => (string) ($me['id'] ?? ''), 'test' => 1, 'admin' => 1,
     ]);
+    if ($ok) push_admin_uid_note((string) ($me['id'] ?? ''));
+    // ancien abonnement de cet appareil (fait avec une ancienne clé) : retiré, il ne ferait qu'échouer
+    $oldEp = (string) ($req['oldEp'] ?? '');
+    if ($ok && $oldEp !== '' && $oldEp !== (string) ($req['sub']['endpoint'] ?? '') && push_endpoint_ok($oldEp)) push_drop_sub($oldEp);
     admin_json(['ok' => $ok, 'reason' => $ok ? '' : 'Abonnement refusé par le serveur']);
   }
   if ($action === 'push_send') {
@@ -3019,18 +3054,24 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <div class="lvA-tabs"><button class="mini ok" type="button" id="lvTabMsg">💬 Conversations <b id="lvUnread"></b></button><button class="mini" type="button" id="lvTabPost">📢 Publier une actualité</button><button class="mini" type="button" id="lvTabRep">🚩 Signalements</button></div>
       <div id="lvPaneRep" hidden><div class="nt-card"><b>Joueurs signalés par d'autres joueurs</b><p class="muted" style="margin:4px 0 8px">Celui qui signale bloque aussitôt l'autre. Regardez les messages ; en cas d'arnaque, suspendez le compte depuis sa fiche.</p><div id="lvReps">Chargement…</div></div></div>
       <div id="lvPaneMsg">
-        <div class="lvA-grid">
-          <div class="lvA-list" id="lvList"><p class="muted">Chargement…</p></div>
-          <div class="lvA-conv">
-            <div class="lvA-head" id="lvHead">Choisissez une conversation</div>
-            <div class="lvA-msgs" id="lvMsgs"></div>
-            <div class="lvA-send">
-              <label class="mini lvA-cam" title="Photo">📷<input type="file" id="lvImg" accept="image/*" hidden></label>
-              <textarea id="lvText" rows="2" maxlength="1000" class="nt-in" placeholder="Votre réponse…"></textarea>
-              <button class="mini ok" type="button" id="lvSend">Envoyer</button>
-            </div>
-            <p class="muted" id="lvSt" style="margin:4px 0 0"></p>
-          </div>
+        <!-- 2026-10-23 (propriétaire) : boîte de messages comme une vraie messagerie — NON LUS en haut (pastille, gras),
+             puis déjà lus ; toucher une conversation ouvre la page de discussion (bulles, heures, grande zone de réponse). -->
+        <input id="lvSearch" class="lvI-search" type="search" placeholder="🔎 Chercher (nom, ID, e-mail)" autocomplete="off" enterkeyhint="search">
+        <div id="lvList" class="lvI-list"><p class="muted">Chargement…</p></div>
+      </div>
+      <div class="lvC" id="lvChat" hidden role="dialog" aria-modal="true" aria-labelledby="lvName">
+        <div class="lvC-top">
+          <button type="button" class="lvC-back" id="lvBack" aria-label="Retour aux conversations">‹</button>
+          <span class="lvI-av" id="lvAv" aria-hidden="true"></span>
+          <div class="lvC-id"><b id="lvName">…</b><small id="lvSub"></small></div>
+          <button type="button" class="lvC-unr" id="lvMarkUnread" title="Marquer comme non lu">Non lu</button>
+        </div>
+        <div class="lvC-msgs" id="lvMsgs"></div>
+        <div class="lvC-st" id="lvSt" aria-live="polite"></div>
+        <div class="lvC-bar">
+          <label class="lvC-cam" title="Envoyer une photo" aria-label="Envoyer une photo">📷<input type="file" id="lvImg" accept="image/*" hidden></label>
+          <div class="lvC-in"><span class="lvC-file" id="lvFile" hidden></span><textarea id="lvText" rows="1" maxlength="1000" placeholder="Écrire une réponse…" enterkeyhint="send"></textarea></div>
+          <button type="button" class="lvC-send" id="lvSend" aria-label="Envoyer">Envoyer</button>
         </div>
       </div>
       <div id="lvPanePost" hidden>
@@ -3053,23 +3094,71 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .lvA-tabs{display:flex;gap:8px;margin:8px 0}
     .lvA-tabs b{background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px;font-size:.75rem}
     .lvA-tabs b:empty{display:none}
-    .lvA-grid{display:grid;grid-template-columns:280px 1fr;gap:10px;min-height:60vh}
-    @media (max-width:760px){.lvA-grid{grid-template-columns:1fr}.lvA-list{max-height:30vh}}
-    .lvA-list{border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:68vh;background:#0E1420}
-    .lvA-it{padding:9px 10px;border-bottom:1px solid var(--line);cursor:pointer}
-    .lvA-it:hover,.lvA-it.on{background:#1A2234}
-    .lvA-it b{display:block;font-size:.85rem}.lvA-it small{color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .lvA-it.unread b::after{content:" ●";color:#F43F6E}
-    .lvA-conv{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:#0E1420;min-height:60vh}
-    .lvA-head{padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700}
-    .lvA-msgs{flex:1;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:6px;max-height:52vh}
-    .lvA-m{max-width:78%;padding:7px 10px;border-radius:12px;font-size:.88rem;white-space:pre-wrap;word-break:break-word}
-    .lvA-m.u{align-self:flex-start;background:#1E293B}
-    .lvA-m.a{align-self:flex-end;background:linear-gradient(145deg,#F43F6E,#C8174C);color:#fff}
-    .lvA-m img{display:block;max-width:220px;border-radius:9px;margin-bottom:4px;cursor:zoom-in}
-    .lvA-m small{display:block;opacity:.6;font-size:.68rem;margin-top:3px}
-    .lvA-send{display:flex;gap:6px;align-items:flex-end;padding:8px;border-top:1px solid var(--line)}
-    .lvA-cam{cursor:pointer;font-size:1.1rem}
+    /* 2026-10-23 — Social : liste des conversations (non lus en haut) + page de discussion plein écran (iPhone 375–430 px) */
+    #liveModal .lvI-search{display:block;width:100%!important;min-height:44px;margin:0 0 10px;font-size:16px!important}
+    .lvI-list{display:flex;flex-direction:column;gap:6px;padding-bottom:20px}
+    .lvI-sec{display:flex;align-items:center;gap:8px;margin:10px 2px 2px;font-size:.78rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#A5B4D8}
+    .lvI-sec.new{color:#FF7AA8}
+    .lvI-sec b{background:#F43F6E;color:#fff;border-radius:10px;padding:1px 8px;font-size:.75rem;letter-spacing:0}
+    .lvI{display:flex;align-items:center;gap:11px;width:100%;min-width:0;box-sizing:border-box;padding:10px 12px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.03);color:inherit;font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .lvI:active{background:rgba(255,255,255,.08)}
+    .lvI.unread{background:rgba(244,63,110,.10);border-color:rgba(244,63,110,.45)}
+    .lvI-av{position:relative;flex:0 0 44px;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#8B5CF6,#EC4899);color:#fff;font-weight:900;font-size:1rem;overflow:hidden}
+    .lvI-av img{width:100%;height:100%;object-fit:cover;display:block}
+    .lvI.unread .lvI-av::after{content:"";position:absolute;right:0;top:0;width:12px;height:12px;border-radius:50%;background:#F43F6E;box-shadow:0 0 0 2px #121A2B}
+    .lvI-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+    .lvI-row{display:flex;align-items:center;gap:8px;min-width:0}
+    .lvI-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.95rem;font-weight:600;color:#E8EEF9}
+    .lvI.unread .lvI-name{font-weight:900;color:#fff}
+    .lvI-time{flex:0 0 auto;font-size:.72rem;color:#8B96B5;white-space:nowrap}
+    .lvI.unread .lvI-time{color:#FF7AA8;font-weight:800}
+    .lvI-prev{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.84rem;color:#9AA6C4}
+    .lvI.unread .lvI-prev{color:#F1F5FF;font-weight:700}
+    .lvI-n{flex:0 0 auto;min-width:20px;height:20px;padding:0 6px;box-sizing:border-box;border-radius:10px;background:#F43F6E;color:#fff;font-size:.72rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+    .lvI-id{font-size:.72rem;color:#7C88A8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lvC{position:fixed;left:0;right:0;top:0;height:100%;z-index:260;display:flex;flex-direction:column;background:#0B1120;color:#E8EEF9}
+    .lvC[hidden]{display:none!important}
+    .lvC-top{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 4px;padding-top:max(10px,env(safe-area-inset-top));background:rgba(15,20,36,.97);border-bottom:1px solid rgba(255,255,255,.08)}
+    .lvC-back{flex:0 0 auto;width:44px;height:44px;border:0;border-radius:12px;background:transparent;color:#FCD34D;font-size:2rem;line-height:1;cursor:pointer;padding:0 0 4px}
+    .lvC-top .lvI-av{flex-basis:40px;width:40px;height:40px;font-size:.95rem}
+    .lvC-id{flex:1 1 auto;min-width:0;display:flex;flex-direction:column}
+    .lvC-id b{font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lvC-id small{font-size:.74rem;color:#8B96B5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lvC-unr{flex:0 0 auto;min-height:36px;padding:0 10px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:transparent;color:#C9CFE6;font:inherit;font-size:.76rem;font-weight:800;cursor:pointer}
+    .lvC-msgs{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:12px 12px 8px;display:flex;flex-direction:column;gap:6px}
+    .lvC-day{align-self:center;margin:8px 0 4px;padding:3px 10px;border-radius:10px;background:rgba(255,255,255,.07);color:#A5B4D8;font-size:.72rem;font-weight:800}
+    .lvC-m{max-width:82%;padding:8px 11px 6px;border-radius:16px;font-size:.95rem;line-height:1.38;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+    .lvC-m.u{align-self:flex-start;background:#1E293B;border-bottom-left-radius:5px}
+    .lvC-m.a{align-self:flex-end;background:linear-gradient(145deg,#F43F6E,#C8174C);color:#fff;border-bottom-right-radius:5px}
+    .lvC-m.auto{opacity:.62}
+    .lvC-m img{display:block;max-width:100%;width:240px;border-radius:11px;margin-bottom:4px;cursor:zoom-in}
+    .lvC-m audio{display:block;max-width:100%;width:240px;margin-bottom:4px}
+    .lvC-m small{display:block;text-align:right;opacity:.7;font-size:.68rem;margin-top:3px;white-space:nowrap}
+    .lvC-st{flex:0 0 auto;min-height:0;padding:0 14px;font-size:.78rem;color:#A5B4D8}
+    .lvC-st:not(:empty){padding:4px 14px}
+    .lvC-bar{flex:0 0 auto;display:flex;align-items:flex-end;gap:8px;padding:8px 10px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));background:rgba(15,20,36,.97);border-top:1px solid rgba(255,255,255,.08)}
+    .lvC-cam{flex:0 0 auto;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,.07);font-size:1.25rem;cursor:pointer}
+    .lvC-in{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:4px}
+    .lvC-file{font-size:.74rem;color:#FCD34D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #liveModal .lvC-in textarea{display:block;width:100%!important;min-height:48px!important;max-height:160px;resize:none;margin:0;padding:13px 16px!important;border-radius:24px!important;font-size:16px!important;line-height:1.35;overflow-y:auto}
+    .lvC-send{flex:0 0 auto;min-width:84px;height:48px;padding:0 14px;border:0;border-radius:24px;background:linear-gradient(135deg,#F43F6E,#C8174C);color:#fff;font:inherit;font-size:.92rem;font-weight:900;cursor:pointer}
+    .lvC-send:disabled{opacity:.55}
+    @media (max-width:360px){.lvC-send{min-width:0;padding:0 12px}.lvC-unr{padding:0 8px}}
+    .al-res{margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
+    .al-res:empty{display:none}
+    .al-ln{padding:9px 11px;border-radius:12px;font-size:.86rem;line-height:1.4;overflow-wrap:anywhere;background:rgba(255,255,255,.05)}
+    .al-ln.ok{background:rgba(34,197,94,.12);color:#BBF7D0}
+    .al-ln.bad{background:rgba(244,63,94,.13);color:#FECDD3}
+    .al-cfg{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+    .al-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.86rem}
+    .al-amt{display:inline-flex;align-items:center;gap:6px}
+    #notifModal .al-amt input{width:110px!important;min-height:40px}
+    .al-chk{align-items:flex-start;flex-wrap:nowrap}
+    .al-chk input{flex:0 0 auto;width:20px;height:20px;margin:2px 0 0}
+    .al-chk span{flex:1 1 auto;min-width:0}
+    .al-log{margin-top:10px;font-size:.82rem}
+    .al-log summary{cursor:pointer;color:#FCD34D;font-weight:800;padding:6px 0}
+    .al-it{padding:7px 0;border-top:1px solid rgba(255,255,255,.07);overflow-wrap:anywhere}
     .lvA-post{border-bottom:1px solid var(--line);padding:8px 0;font-size:.86rem;white-space:pre-wrap}
     .lvA-post img{max-width:200px;border-radius:9px;display:block;margin:4px 0}
   </style>
@@ -3269,6 +3358,20 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" type="button" id="closeNotif">Retour</button>
       <h2 style="color:#FCD34D;margin:10px 0 4px">🔔 Notifications sur les téléphones</h2>
       <div class="nt-stats" id="ntStats">Chargement…</div>
+      <!-- 2026-10-23 (propriétaire : « je ne reçois plus les alertes ») : test de chaque canal + raison d'un échec + journal -->
+      <div class="nt-card al-card">
+        <b>🚨 Vos alertes admin (retraits, messages, gros dépôts, grosses mises)</b>
+        <p class="muted" style="margin:4px 0 8px">Elles partent sur Telegram et sur votre téléphone (application installée). Appuyez sur le bouton : un message de test part sur chaque canal, et vous voyez ici lequel ne marche pas et quoi faire.</p>
+        <button class="mini ok" type="button" id="btnAlTest">🔔 Tester les notifications</button>
+        <div id="alRes" class="al-res"></div>
+        <div class="al-cfg">
+          <label class="al-row"><span>Gros dépôt : m’alerter à partir de</span><span class="al-amt"><input id="alDepBig" type="number" min="0" step="1" inputmode="decimal"> $</span></label>
+          <label class="al-row al-chk"><input type="checkbox" id="alDepRec"> <span>M’alerter aussi pour chaque <b>dépôt record</b> (plus gros dépôt jamais reçu) <small class="muted" id="alRecNow"></small></span></label>
+          <label class="al-row al-chk"><input type="checkbox" id="alMirror"> <span>Recevoir aussi sur Telegram les messages des joueurs, grosses mises, gros gains et gros dépôts (les retraits y arrivent toujours)</span></label>
+          <button class="mini" type="button" id="btnAlSave">Enregistrer</button> <span class="muted" id="alCfgSt"></span>
+        </div>
+        <details class="al-log"><summary>Dernières alertes envoyées</summary><div id="alLog" class="muted">—</div></details>
+      </div>
       <div class="nt-card">
         <b>Cet appareil (pour vos tests)</b>
         <p class="muted" style="margin:4px 0 8px">iPhone : ouvrez l’admin depuis l’application OROLADO installée sur l’écran d’accueil (pas dans Safari).</p>
@@ -3929,27 +4032,115 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       fr.onerror = rej; fr.readAsDataURL(file);
     });
   }
-  async function badge() { try { const j = await ajax({action:'live_threads'}); if (j.ok) { $l('lvBadge').textContent = j.unread || ''; $l('lvUnread').textContent = j.unread || ''; return j; } } catch (e) { /* ignore */ } return null; }
+  // 2026-10-23 (propriétaire) — messagerie : liste (NON LUS en haut, pastille + gras), puis page de discussion plein écran.
+  let threads = [], sig = '', chatTimer = 0;
+  const pad2 = n => String(n).padStart(2, '0');
+  const dayKey = d => d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+  const shortWhen = t => {
+    if (!t) return '';
+    const d = new Date(t * 1000), now = new Date(), y = new Date(now); y.setDate(now.getDate() - 1);
+    if (dayKey(d) === dayKey(now)) return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    if (dayKey(d) === dayKey(y)) return 'Hier';
+    return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + (d.getFullYear() !== now.getFullYear() ? '/' + String(d.getFullYear()).slice(2) : '');
+  };
+  const dayLabel = t => {
+    const d = new Date(t * 1000), now = new Date(), y = new Date(now); y.setDate(now.getDate() - 1);
+    if (dayKey(d) === dayKey(now)) return 'Aujourd’hui';
+    if (dayKey(d) === dayKey(y)) return 'Hier';
+    return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined});
+  };
+  const hm = t => { const d = new Date(t * 1000); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
+  const nameOf = t => (t.name || '').trim() || (t.publicId || '').trim() || 'Joueur';
+  const avatar = t => t.ph ? '<img src="' + esc(t.ph) + '" alt="" loading="lazy">' : esc((nameOf(t).match(/[A-Za-zÀ-ÿ0-9]/) || ['?'])[0].toUpperCase());
+  function setBadges(n) { $l('lvBadge').textContent = n || ''; $l('lvUnread').textContent = n || ''; }
+  async function badge() { try { const j = await ajax({action:'live_threads'}); if (j.ok) { setBadges(j.unread); return j; } } catch (e) { /* ignore */ } return null; }
+  function item(t) {
+    const n = t.unread | 0;
+    return '<button type="button" class="lvI' + (n ? ' unread' : '') + '" data-u="' + esc(t.uid) + '">' +
+      '<span class="lvI-av" aria-hidden="true">' + avatar(t) + '</span>' +
+      '<span class="lvI-main">' +
+        '<span class="lvI-row"><span class="lvI-name">' + esc(nameOf(t)) + '</span><span class="lvI-time">' + esc(shortWhen(t.at)) + '</span></span>' +
+        '<span class="lvI-row"><span class="lvI-prev">' + esc(t.prev || t.last || '') + '</span>' + (n ? '<span class="lvI-n" aria-label="' + n + ' non lu(s)">' + (n > 99 ? '99+' : n) + '</span>' : '') + '</span>' +
+        '<span class="lvI-id">' + esc([t.publicId, t.email].filter(Boolean).join(' · ')) + '</span>' +
+      '</span></button>';
+  }
+  function paintList() {
+    const q = ($l('lvSearch').value || '').trim().toLowerCase();
+    const rows = threads.filter(t => !q || [t.name, t.publicId, t.email, t.uid].some(v => String(v || '').toLowerCase().includes(q)));
+    const un = rows.filter(t => (t.unread | 0) > 0), rd = rows.filter(t => !((t.unread | 0) > 0));
+    let h = '';
+    if (un.length) h += '<div class="lvI-sec new">● Non lus <b>' + un.length + '</b></div>' + un.map(item).join('');
+    if (rd.length) h += '<div class="lvI-sec">' + (un.length ? 'Déjà lus' : 'Conversations') + '</div>' + rd.map(item).join('');
+    if (!h) h = '<p class="muted" style="padding:10px">' + (q ? 'Aucun joueur trouvé.' : 'Aucun message pour le moment.') + '</p>';
+    $l('lvList').innerHTML = h;
+    $l('lvList').querySelectorAll('.lvI').forEach(el => el.onclick = () => open(el.dataset.u));
+  }
   async function list() {
     const j = await badge(); if (!j) return;
-    $l('lvList').innerHTML = j.threads.length ? j.threads.map(t => '<div class="lvA-it'+(t.unread?' unread':'')+(t.uid===cur?' on':'')+'" data-u="'+esc(t.uid)+'"><b>'+esc((t.publicId||'')+' '+(t.name||''))+'</b><small>'+esc(t.last)+'</small><small>'+when(t.at)+'</small></div>').join('') : '<p class="muted" style="padding:10px">Aucun message pour le moment.</p>';
-    $l('lvList').querySelectorAll('.lvA-it').forEach(el => el.onclick = () => open(el.dataset.u));
+    threads = j.threads || [];
+    paintList();
   }
-  async function open(uid) {
-    cur = uid; const j = await ajax({action:'live_thread', uid}); if (!j.ok) return;
-    $l('lvHead').textContent = (j.publicId || '') + ' ' + (j.name || '') + (j.email ? ' · ' + j.email : '');
-    $l('lvMsgs').innerHTML = j.msgs.map(m => '<div class="lvA-m '+(m.f==='a'?'a':'u')+'">'+(m.img?(/\.(webm|m4a|ogg)$/.test(m.img)?'<audio controls preload="none" src="'+esc(m.img)+'" style="display:block;max-width:240px;margin-bottom:4px"></audio>':'<img src="'+esc(m.img)+'" alt="" onclick="window.open(this.src)">'):'')+esc(m.t)+'<small>'+when(m.at)+'</small></div>').join('');
-    $l('lvMsgs').scrollTop = 1e9; list();
+  // Hauteur de la page de discussion = partie visible de l'écran (le clavier de l'iPhone ne cache plus la zone de réponse).
+  function fitChat() {
+    const c = $l('lvChat'); if (!c || c.hidden) return;
+    const vv = window.visualViewport;
+    c.style.height = (vv ? vv.height : window.innerHeight) + 'px';
+    c.style.top = (vv ? vv.offsetTop : 0) + 'px';
   }
+  if (window.visualViewport) { visualViewport.addEventListener('resize', fitChat); visualViewport.addEventListener('scroll', fitChat); }
+  window.addEventListener('resize', fitChat);
+  function bubble(m) {
+    const media = m.img ? (/\.(webm|m4a|ogg)$/.test(m.img) ? '<audio controls preload="none" src="' + esc(m.img) + '"></audio>' : '<img src="' + esc(m.img) + '" alt="Photo" onclick="window.open(this.src)">') : '';
+    return '<div class="lvC-m ' + (m.f === 'a' ? 'a' : 'u') + (m.auto ? ' auto' : '') + '">' + media + esc(m.t || '') +
+      '<small>' + (m.auto ? 'Réponse automatique · ' : '') + hm(m.at) + '</small></div>';
+  }
+  function paintMsgs(msgs) {
+    let h = '', last = '';
+    msgs.forEach(m => { const k = dayKey(new Date(m.at * 1000)); if (k !== last) { h += '<div class="lvC-day">' + esc(dayLabel(m.at)) + '</div>'; last = k; } h += bubble(m); });
+    return h || '<p class="muted" style="text-align:center;margin-top:30px">Aucun message.</p>';
+  }
+  async function open(uid, refresh) {
+    if (!uid) return;
+    const first = !refresh || cur !== uid;
+    cur = uid;
+    const c = $l('lvChat');
+    if (first) {
+      const t = threads.find(x => x.uid === uid) || {uid};
+      $l('lvName').textContent = nameOf(t); $l('lvSub').textContent = [t.publicId, t.email].filter(Boolean).join(' · ');
+      $l('lvAv').innerHTML = avatar(t); $l('lvSt').textContent = ''; sig = '';
+      if (c.hidden) { $l('lvMsgs').innerHTML = '<p class="muted" style="text-align:center;margin-top:30px">Chargement…</p>'; $l('lvText').value = ''; clearFile(); }
+      c.hidden = false; fitChat();
+      clearInterval(chatTimer); chatTimer = setInterval(() => { if (cur && !$l('lvChat').hidden) open(cur, true); }, 10000);
+    }
+    let j;
+    try { j = await ajax({action:'live_thread', uid}); } catch (e) { if (first) $l('lvSt').textContent = 'Échec du chargement : ' + (e.message || e); return; }
+    if (!j || !j.ok || cur !== uid || c.hidden) return;
+    setBadges(j.unread);
+    const t = {name: j.name, publicId: j.publicId, ph: j.ph};
+    $l('lvName').textContent = nameOf(t); $l('lvSub').textContent = [j.publicId, j.email].filter(Boolean).join(' · '); $l('lvAv').innerHTML = avatar(t);
+    const msgs = j.msgs || [], ns = msgs.length + ':' + (msgs.length ? msgs[msgs.length - 1].id : '');
+    if (ns === sig) return;
+    const box = $l('lvMsgs'), atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    sig = ns; box.innerHTML = paintMsgs(msgs);
+    if (first || atEnd) { box.scrollTop = box.scrollHeight; box.querySelectorAll('img').forEach(im => im.addEventListener('load', () => { if (box.scrollHeight - box.scrollTop - box.clientHeight < 400) box.scrollTop = box.scrollHeight; }, {once: true})); }
+    const it = threads.find(x => x.uid === uid); if (it) it.unread = 0;
+  }
+  function closeChat() {
+    $l('lvChat').hidden = true; clearInterval(chatTimer); cur = ''; sig = '';
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    paintList(); list();
+  }
+  function clearFile() { $l('lvImg').value = ''; $l('lvFile').hidden = true; $l('lvFile').textContent = ''; }
+  function grow() { const ta = $l('lvText'); ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight + 2) + 'px'; }
   async function send() {
-    if (!cur) { $l('lvSt').textContent = 'Choisissez d’abord une conversation.'; return; }
+    if (!cur) return;
     const text = $l('lvText').value.trim(); const f = $l('lvImg').files[0];
-    if (!text && !f) return;
+    if (!text && !f) { $l('lvText').focus(); return; }
     $l('lvSend').disabled = true; $l('lvSt').textContent = 'Envoi…';
     try {
       const img = f ? await shrink(f) : '';
       const j = await ajax({action:'live_reply', uid: cur, text, img});
-      if (j.ok) { $l('lvText').value = ''; $l('lvImg').value = ''; $l('lvSt').textContent = j.pushed ? 'Envoyé ✓ (notification envoyée sur son téléphone)' : 'Envoyé ✓ (il le verra dans Live)'; open(cur); }
+      if (j.ok) { $l('lvText').value = ''; grow(); clearFile(); $l('lvSt').textContent = j.pushed ? 'Envoyé ✓ — notification envoyée sur son téléphone' : 'Envoyé ✓ — il le verra dans Social'; open(cur, true); setTimeout(() => { if ($l('lvSt').textContent.startsWith('Envoyé')) $l('lvSt').textContent = ''; }, 4000); }
       else $l('lvSt').textContent = j.reason || 'Échec';
     } catch (e) { $l('lvSt').textContent = 'Échec : ' + (e.message || e); }
     $l('lvSend').disabled = false;
@@ -3976,11 +4167,23 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     $l('lvReps').innerHTML = j.reports.length ? j.reports.map(r => '<div class="lvA-post"><b>'+esc(r.by)+'</b> a signalé <b style="color:#FCA5A5">'+esc(r.who)+'</b> · <small class="muted">'+when(r.at)+'</small>'+(r.why?'<br>Motif : '+esc(r.why):'')+'<div class="muted" style="margin-top:4px;font-size:.8rem">'+r.snap.map(m => (m.f==='signalé'?'🚩 ':'• ')+esc(m.t)).join('<br>')+'</div></div>').join('') : '<p class="muted">Aucun signalement.</p>';
   }
   const tab = w => { $l('lvPaneMsg').hidden = w !== 'msg'; $l('lvPanePost').hidden = w !== 'post'; $l('lvPaneRep').hidden = w !== 'rep'; $l('lvTabMsg').classList.toggle('ok', w === 'msg'); $l('lvTabPost').classList.toggle('ok', w === 'post'); $l('lvTabRep').classList.toggle('ok', w === 'rep'); if (w === 'post') posts(); if (w === 'rep') reps(); };
-  $l('btnLiveA').onclick = () => { $l('liveModal').classList.add('on'); tab('msg'); list(); clearInterval(timer); timer = setInterval(() => { list(); if (cur) open(cur); }, 20000); };
-  $l('closeLiveA').onclick = () => { $l('liveModal').classList.remove('on'); clearInterval(timer); };
+  const openInbox = () => { $l('liveModal').classList.add('on'); tab('msg'); list(); clearInterval(timer); timer = setInterval(() => { if ($l('lvChat').hidden) list(); }, 20000); };
+  $l('btnLiveA').onclick = openInbox;
+  $l('closeLiveA').onclick = () => { $l('lvChat').hidden = true; clearInterval(chatTimer); cur = ''; $l('liveModal').classList.remove('on'); clearInterval(timer); };
   $l('lvTabMsg').onclick = () => tab('msg'); $l('lvTabPost').onclick = () => tab('post'); $l('lvTabRep').onclick = () => tab('rep');
   $l('lvSend').onclick = send; $l('lvPostBtn').onclick = publish;
-  $l('lvText').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) send(); });
+  $l('lvBack').onclick = closeChat;
+  $l('lvSearch').addEventListener('input', paintList);
+  $l('lvText').addEventListener('input', grow);
+  $l('lvText').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey || (!e.shiftKey && matchMedia('(hover:hover) and (pointer:fine)').matches))) { e.preventDefault(); send(); } });
+  $l('lvImg').addEventListener('change', () => { const f = $l('lvImg').files[0]; $l('lvFile').hidden = !f; $l('lvFile').textContent = f ? '📎 ' + f.name + ' (touchez Envoyer)' : ''; });
+  $l('lvMarkUnread').onclick = async () => { if (!cur) return; try { const j = await ajax({action:'live_unread', uid: cur}); if (j.ok) { setBadges(j.unread); const it = threads.find(x => x.uid === cur); if (it) it.unread = Math.max(1, it.unread | 0); closeChat(); } } catch (e) { $l('lvSt').textContent = 'Échec : ' + (e.message || e); } };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$l('lvChat').hidden) closeChat(); });
+  // Alerte « 💬 Message de … » touchée sur le téléphone : /admin.php?live=<joueur> ouvre directement cette conversation.
+  try {
+    const want = new URLSearchParams(location.search).get('live');
+    if (want && /^[A-Za-z0-9_-]{1,80}$/.test(want)) { openInbox(); open(want); history.replaceState(null, '', location.pathname); }
+  } catch (e) { /* ignore */ }
   badge(); setInterval(badge, 60000);
 })();
 // v2664 — E-mail à tous (français pour les pays francophones, anglais pour les autres), par paquets de 40.
@@ -4175,12 +4378,51 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   $n('ntLang').onchange = paintWho;
   $n('ntTitle').oninput = preview;
   $n('ntBody').oninput = preview;
-  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; loadStats(); tgPaint(); };
+  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; $n('alRes').innerHTML = ''; loadStats(); tgPaint(); alInfo(); };
   $n('closeNotif').onclick = () => $n('notifModal').classList.remove('on');
   // v2959 — Telegram
   const tgPaint = async () => { try { const j = await ajax({action:'tg_status'}); $n('tgSt').textContent = j.linked ? 'Relié ✓' + (j.bot ? ' (@' + j.bot + ')' : '') : (j.has ? 'Code enregistré — touchez DÉMARRER dans le robot puis « Relier ».' : 'Pas encore relié.'); } catch (e) { /* ignore */ } };
   $n('btnTgLink').onclick = async () => { $n('tgSt').textContent = '…'; const j = await ajax({action:'tg_link', token: $n('tgToken').value.trim()}); $n('tgToken').value = ''; $n('tgSt').textContent = j.ok ? 'Relié ✓ — un message de test vient d’arriver dans Telegram.' : (j.reason || 'Échec'); };
   $n('btnTgTest').onclick = async () => { const j = await ajax({action:'tg_test'}); $n('tgSt').textContent = j.ok ? 'Test envoyé ✓' : (j.reason || 'Échec'); };
+  // 2026-10-23 — alertes admin : test de chaque canal, réglages (gros dépôt, record, recopier sur Telegram), journal.
+  const alWhen = t => { const d = new Date(t * 1000); return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'}) + ' ' + d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}); };
+  const alLog = log => {
+    $n('alLog').innerHTML = !(log || []).length ? 'Aucune alerte envoyée pour l’instant.' : log.map(l => '<div class="al-it"><b>' + esc(l.t) + '</b> · ' + esc(alWhen(l.at)) + '<br>' + esc(l.b || '') + '<br>' +
+      (l.tg ? (l.tg.ok ? '✅ Telegram' : '❌ Telegram : ' + esc(l.tg.why || 'échec')) : '— Telegram non utilisé') + ' · ' +
+      (l.push && l.push.sent ? '✅ Téléphone (' + l.push.sent + ')' : '❌ Téléphone : ' + esc((l.push && l.push.why) || 'échec')) + '</div>').join('');
+  };
+  async function alInfo() {
+    try {
+      const j = await ajax({action:'alert_info'}); if (!j.ok) { $n('alCfgSt').textContent = j.reason || ''; return; }
+      $n('alDepBig').value = j.cfg.depBig; $n('alDepRec').checked = !!j.cfg.depRecord; $n('alMirror').checked = !!j.cfg.mirror;
+      $n('alRecNow').textContent = j.cfg.record > 0 ? '(record actuel : ' + Number(j.cfg.record).toLocaleString('fr-FR', {maximumFractionDigits: 2}) + ' $)' : '';
+      alLog(j.log);
+    } catch (e) { /* ignore */ }
+  }
+  $n('btnAlTest').onclick = async () => {
+    const b = $n('btnAlTest'), out = $n('alRes');
+    b.disabled = true; out.innerHTML = '<div class="al-ln">Envoi des tests…</div>';
+    try {
+      const j = await ajax({action:'alert_test'});
+      const L = [];
+      L.push(j.tg.ok ? ['ok', '✅ Telegram : message de test envoyé. Regardez votre Telegram.'] : ['bad', '❌ Telegram : ' + (j.tg.why || 'échec')]);
+      L.push(j.push.ok ? ['ok', '✅ Téléphone : envoyé à ' + j.push.sent + ' appareil(s) admin.'] : ['bad', '❌ Téléphone : ' + (j.push.why || 'échec') + (j.push.devices ? ' (' + j.push.devices + ' appareil(s) admin enregistré(s))' : '')]);
+      if (j.server && !j.server.curl) L.push(['bad', '❌ Serveur : le module PHP « curl » manque (rien ne peut partir). À installer sur le VPS : apt install php8.3-curl']);
+      if (j.server && !j.server.push_dir) L.push(['bad', '❌ Serveur : le dossier data/push n’est pas inscriptible.']);
+      if (j.tg.ok && j.push.ok) L.push(['ok', 'Tout fonctionne. Si une alerte manque encore, ouvrez « Dernières alertes envoyées » ci-dessous.']);
+      out.innerHTML = L.map(([c, t]) => '<div class="al-ln ' + c + '">' + esc(t) + '</div>').join('');
+      alLog(j.log);
+    } catch (e) { out.innerHTML = '<div class="al-ln bad">' + esc('Échec : ' + (e && e.message ? e.message : e)) + '</div>'; }
+    b.disabled = false;
+  };
+  $n('btnAlSave').onclick = async () => {
+    $n('alCfgSt').textContent = '…';
+    try {
+      const j = await ajax({action:'alert_cfg', cfg: {depBig: Number($n('alDepBig').value) || 0, depRecord: $n('alDepRec').checked ? 1 : 0, mirror: $n('alMirror').checked ? 1 : 0}});
+      $n('alCfgSt').textContent = j.ok ? 'Enregistré ✓' : (j.reason || 'Échec');
+      if (j.ok) alLog(j.log);
+    } catch (e) { $n('alCfgSt').textContent = 'Échec : ' + (e && e.message ? e.message : e); }
+  };
   $n('btnNtDevice').onclick = async () => {
     const st = $n('ntDeviceSt');
     try {
@@ -4195,8 +4437,15 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       await navigator.serviceWorker.ready;
       const raw = atob(pubKey.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((pubKey.length + 3) % 4));
       const key = Uint8Array.from(raw, c => c.charCodeAt(0));
-      const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: key}));
-      const j = await ajax({action:'push_test_sub', sub: sub.toJSON(), plat: plat(), app: isApp() ? 1 : 0});
+      // 2026-10-23 : abonnement fait avec une AUTRE clé (changement de serveur) → refusé par Apple / Google à chaque envoi :
+      // on le recrée avec la clé actuelle (avant : l'ancien était réutilisé, les alertes ne partaient jamais).
+      let sub = await reg.pushManager.getSubscription(), oldEp = '';
+      if (sub) {
+        const k0 = sub.options && sub.options.applicationServerKey ? new Uint8Array(sub.options.applicationServerKey) : null;
+        if (k0 && (k0.length !== key.length || k0.some((v, i) => v !== key[i]))) { oldEp = sub.endpoint || ''; try { await sub.unsubscribe(); } catch (eU) { /* ignore */ } sub = null; try { localStorage.setItem('oro_push_key', pubKey); } catch (eL) { /* ignore */ } }
+      }
+      if (!sub) sub = await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: key});
+      const j = await ajax({action:'push_test_sub', sub: sub.toJSON(), plat: plat(), app: isApp() ? 1 : 0, oldEp});
       st.textContent = j.ok ? 'Cet appareil recevra les tests ✓' : (j.reason || 'Échec');
       loadStats();
     } catch (e) { st.textContent = 'Échec : ' + (e && e.message ? e.message : e); }

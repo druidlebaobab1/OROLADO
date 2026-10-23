@@ -2296,57 +2296,56 @@ if ($action === 'withdraw') {
     ], JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION), 'POST');
   }
   echo json_encode(['ok' => true, 'server' => true, 'suspect' => $suspect, 'vault' => $db['vault'][$me['id']], 'id' => $wdId, 'amount' => $amount]);
-  // v2674 (propriétaire) : notification sur le téléphone ADMIN pour payer vite (après la réponse au joueur :
-  // son retrait n'attend jamais l'envoi).
+  // v2674 / v2959 (propriétaire) : alerte ADMIN pour payer vite — Telegram (fiche complète) + téléphone(s) admin, après la
+  // réponse au joueur (son retrait n'attend jamais l'envoi).
+  // 2026-10-23 : un seul envoi (push_notify_admin) qui part sur Telegram D'ABORD puis sur les téléphones admin, et qui est
+  // noté dans le journal des alertes (avant : Telegram après les téléphones, parfois coupé ; aucun moyen de savoir pourquoi).
+  if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
   if (is_file(__DIR__ . '/push_lib.php')) {
-    if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
     try {
       require_once __DIR__ . '/push_lib.php';
+      $tgText = true;
+      try {
+        // v2960 (propriétaire) : fiche complète, comme dans l'admin
+        $uTg = (array) ($db['users'][(string) $me['id']] ?? []);
+        $pidTg = (string) ($uTg['publicId'] ?? $me['publicId'] ?? '');
+        $nmTg = trim((string) ($uTg['displayName'] ?? $uTg['name'] ?? $me['displayName'] ?? ''));
+        $wdTg = 0;
+        foreach ((array) ($db['withdrawals'] ?? []) as $wx) {
+          if (is_array($wx) && (string) ($wx['userId'] ?? '') === (string) $me['id'] && in_array(strtolower((string) ($wx['status'] ?? '')), ['approved', 'paid', 'completed'], true)) $wdTg++;
+        }
+        $insTg = strtotime((string) ($uTg['createdAt'] ?? '')) ?: 0;
+        $L = [];
+        $L[] = ($suspect ? '⚠️ ' : '💸 ') . 'RETRAIT À PAYER : ' . number_format($amount, 2, ',', ' ') . ' $' . ($locWd ? ' = ' . orolado_local_txt($amount, $locWd['cur'], (float) $locWd['rate'], $locWd['sym']) : '');
+        $L[] = '';
+        $L[] = '👤 Nom : ' . ($nmTg !== '' ? $nmTg : '—');
+        $L[] = '🆔 ID : ' . ($pidTg !== '' ? $pidTg : (string) $me['id']);
+        $L[] = '✉️ E-mail : ' . ((string) ($uTg['email'] ?? $me['email'] ?? '') ?: '—');
+        if (!empty($uTg['phone'])) $L[] = '📞 Téléphone du compte : ' . (string) $uTg['phone'];
+        $ctyTg = strtoupper(trim((string) ($uTg['country'] ?? '')));
+        $L[] = '🌍 Pays : ' . (preg_match('/^[A-Z]{2}$/', $ctyTg) ? $ctyTg . ' · ' : '') . 'indicatif ' . (string) $countryCode;
+        if ($insTg) $L[] = '📅 Inscrit le : ' . gmdate('d/m/Y H:i', $insTg) . ' (GMT)';
+        $L[] = '';
+        $L[] = '🏦 Moyen : ' . (trim((string) ($req['methodName'] ?? '')) ?: ucfirst((string) $operator));
+        $L[] = '📲 Numéro / adresse : ' . (string) $destination;
+        if (trim((string) $beneficiary) !== '') $L[] = '🧾 Bénéficiaire : ' . (string) $beneficiary;
+        $L[] = '💰 Solde restant : ' . number_format((float) ($db['vault'][(string) $me['id']]['real'] ?? 0), 2, ',', ' ') . ' $';
+        $L[] = '📤 Retraits déjà payés à ce joueur : ' . $wdTg;
+        $L[] = '🔖 Réf. retrait : ' . (string) $wdId;
+        if ($suspect) { $L[] = ''; $L[] = '⚠️ À vérifier dans l’admin avant de payer.'; }
+        $L[] = '';
+        $L[] = '👉 https://orolado.com/admin.php';
+        $tgText = implode("\n", $L);
+      } catch (Throwable $e) { $tgText = true; /* fiche incomplète : le texte court part quand même */ }
       $pidWd = (string) ($db['users'][(string) $me['id']]['publicId'] ?? $me['publicId'] ?? '');
       $opWd = ucfirst($operator);
       push_notify_admin(
         ($suspect ? '⚠️ ' : '💸 ') . 'Retrait ' . number_format($amount, 2, ',', ' ') . ' $ à payer',
         trim($pidWd . ' · ' . $opWd . ' ' . $destination . ' · ' . number_format($amount * 580, 0, ',', ' ') . ' F'),
-        '/admin.php'
+        '/admin.php',
+        $tgText
       );
-    } catch (Throwable $e) { /* jamais bloquant */ }
-  }
-  // v2959 (propriétaire) — alerte Telegram à l'admin (robot relié dans l'admin → Notifications → Telegram)
-  if (is_file(__DIR__ . '/tg_lib.php')) {
-    if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ } }
-    try {
-      require_once __DIR__ . '/tg_lib.php';
-      // v2960 (propriétaire) : fiche complète, comme dans l'admin
-      $uTg = (array) ($db['users'][(string) $me['id']] ?? []);
-      $pidTg = (string) ($uTg['publicId'] ?? $me['publicId'] ?? '');
-      $nmTg = trim((string) ($uTg['displayName'] ?? $uTg['name'] ?? $me['displayName'] ?? ''));
-      $wdTg = 0;
-      foreach ((array) ($db['withdrawals'] ?? []) as $wx) {
-        if (is_array($wx) && (string) ($wx['userId'] ?? '') === (string) $me['id'] && in_array(strtolower((string) ($wx['status'] ?? '')), ['approved', 'paid', 'completed'], true)) $wdTg++;
-      }
-      $insTg = strtotime((string) ($uTg['createdAt'] ?? '')) ?: 0;
-      $L = [];
-      $L[] = ($suspect ? '⚠️ ' : '💸 ') . 'RETRAIT À PAYER : ' . number_format($amount, 2, ',', ' ') . ' $' . ($locWd ? ' = ' . orolado_local_txt($amount, $locWd['cur'], (float) $locWd['rate'], $locWd['sym']) : '');
-      $L[] = '';
-      $L[] = '👤 Nom : ' . ($nmTg !== '' ? $nmTg : '—');
-      $L[] = '🆔 ID : ' . ($pidTg !== '' ? $pidTg : (string) $me['id']);
-      $L[] = '✉️ E-mail : ' . ((string) ($uTg['email'] ?? $me['email'] ?? '') ?: '—');
-      if (!empty($uTg['phone'])) $L[] = '📞 Téléphone du compte : ' . (string) $uTg['phone'];
-      $ctyTg = strtoupper(trim((string) ($uTg['country'] ?? '')));
-      $L[] = '🌍 Pays : ' . (preg_match('/^[A-Z]{2}$/', $ctyTg) ? $ctyTg . ' · ' : '') . 'indicatif ' . (string) $countryCode;
-      if ($insTg) $L[] = '📅 Inscrit le : ' . gmdate('d/m/Y H:i', $insTg) . ' (GMT)';
-      $L[] = '';
-      $L[] = '🏦 Moyen : ' . (trim((string) ($req['methodName'] ?? '')) ?: ucfirst((string) $operator));
-      $L[] = '📲 Numéro / adresse : ' . (string) $destination;
-      if (trim((string) $beneficiary) !== '') $L[] = '🧾 Bénéficiaire : ' . (string) $beneficiary;
-      $L[] = '💰 Solde restant : ' . number_format((float) ($db['vault'][(string) $me['id']]['real'] ?? 0), 2, ',', ' ') . ' $';
-      $L[] = '📤 Retraits déjà payés à ce joueur : ' . $wdTg;
-      $L[] = '🔖 Réf. retrait : ' . (string) $wdId;
-      if ($suspect) { $L[] = ''; $L[] = '⚠️ À vérifier dans l’admin avant de payer.'; }
-      $L[] = '';
-      $L[] = '👉 https://orolado.com/admin.php';
-      tg_notify_admin(implode("\n", $L));
-    } catch (Throwable $e) { /* jamais bloquant */ }
+    } catch (Throwable $e) { error_log('OROLADO alerte retrait : ' . $e->getMessage()); /* jamais bloquant */ }
   }
   exit;
 }

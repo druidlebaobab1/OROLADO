@@ -245,6 +245,17 @@ function live_mark_read(string $uid, string $who): void {
   });
 }
 
+/** 2026-10-23 — l'admin remet une conversation en « non lu » (à traiter plus tard). */
+function live_mark_unread_admin(string $uid): bool {
+  $f = live_thread_file($uid);
+  if ($uid === '' || !is_file($f)) return false;
+  $r = live_update($f, function ($th) {
+    $th['unreadAdmin'] = max(1, (int) ($th['unreadAdmin'] ?? 0));
+    return ['ok' => true, '__write' => $th];
+  });
+  return !empty($r['ok']);
+}
+
 /** Liste des conversations pour l'admin (plus récentes d'abord). */
 function live_threads(int $limit = 200): array {
   $out = [];
@@ -252,10 +263,17 @@ function live_threads(int $limit = 200): array {
     $th = live_read_json($f, []);
     if (!$th || empty($th['msgs'])) continue;
     $last = end($th['msgs']);
+    // 2026-10-23 (propriétaire) : l'aperçu montre le dernier VRAI message (pas la réponse automatique « Merci pour ton
+    // message 🙏 », qui cachait ce que le joueur avait écrit).
+    $show = $last;
+    foreach (array_reverse((array) $th['msgs']) as $mm) { if (is_array($mm) && empty($mm['auto'])) { $show = $mm; break; } }
     $out[] = [
       'uid' => (string) ($th['uid'] ?? ''), 'publicId' => (string) ($th['publicId'] ?? ''), 'name' => (string) ($th['name'] ?? ''),
       'email' => (string) ($th['email'] ?? ''), 'at' => (int) ($th['at'] ?? 0), 'unread' => (int) ($th['unreadAdmin'] ?? 0),
       'last' => is_array($last) ? (($last['f'] === 'a' ? 'Vous : ' : '') . live_media_label($last)) : '',
+      'prev' => is_array($show) ? (($show['f'] === 'a' ? 'Vous : ' : '') . live_media_label($show)) : '',
+      'from' => is_array($show) ? (($show['f'] ?? 'u') === 'a' ? 'a' : 'u') : 'u',
+      'ph' => function_exists('live_photo_of') ? live_photo_of((string) ($th['uid'] ?? '')) : '',
     ];
   }
   usort($out, static fn($a, $b) => [$b['unread'] > 0, $b['at']] <=> [$a['unread'] > 0, $a['at']]);

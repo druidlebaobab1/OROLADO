@@ -3906,7 +3906,70 @@ function credit_paid_deposit(array $hit): array {
       'ua' => (string) ($dep['userAgent'] ?? ''),
     ]);
   }
+  // 2026-10-23 (propriétaire) : GROS DÉPÔT / RECORD → alerte admin (Telegram + téléphone admin), après la réponse.
+  if (!$alreadyCredited && $amount > 0) {
+    try { orolado_deposit_alert($db, $uid, $amount, $refId, $op, $idx); } catch (Throwable $e) { /* jamais bloquant */ }
+  }
   return ['ok' => true, 'amount' => $amount, 'userId' => $uid, 'real' => $got];
+}
+
+/**
+ * 2026-10-23 (propriétaire) — réglages des alertes admin (data/alert_cfg.json, réglables dans Admin → 🔔 Notifications) :
+ *   depBig    : dépôt à partir duquel l'admin est prévenu (en $, 0 = jamais) ;
+ *   depRecord : prévenir aussi quand un dépôt bat le plus gros dépôt jamais reçu.
+ */
+function orolado_alert_cfg_file(): string { return orolado_data_dir() . '/alert_cfg.json'; }
+function orolado_alert_cfg(): array {
+  $j = json_decode((string) @file_get_contents(orolado_alert_cfg_file()), true);
+  $j = is_array($j) ? $j : [];
+  return ['depBig' => max(0.0, (float) ($j['depBig'] ?? 500)), 'depRecord' => !array_key_exists('depRecord', $j) || !empty($j['depRecord']),
+    'record' => max(0.0, (float) ($j['record'] ?? 0)), 'recordAt' => (string) ($j['recordAt'] ?? '')];
+}
+function orolado_alert_cfg_save(array $in): array {
+  $c = orolado_alert_cfg();
+  if (isset($in['depBig'])) $c['depBig'] = min(1000000.0, max(0.0, round((float) $in['depBig'], 2)));
+  if (array_key_exists('depRecord', $in)) $c['depRecord'] = !empty($in['depRecord']);
+  if (array_key_exists('record', $in)) { $c['record'] = max(0.0, (float) $in['record']); $c['recordAt'] = (string) ($in['recordAt'] ?? date('c')); }
+  $tmp = orolado_alert_cfg_file() . '.tmp' . bin2hex(random_bytes(3));
+  if (@file_put_contents($tmp, json_encode($c)) !== false) @rename($tmp, orolado_alert_cfg_file());
+  return $c;
+}
+
+/** Dépôt crédité : gros dépôt (≥ seuil) ou record → une alerte admin. Les comptes admin (maison) ne comptent pas. */
+function orolado_deposit_alert(array $db, string $uid, float $amount, string $ref, string $op, int $skipIdx = -1): void {
+  $u = (array) ($db['users'][$uid] ?? []);
+  if (orolado_is_house_account($uid, $u)) return;
+  $cfg = orolado_alert_cfg();
+  // Plus gros dépôt connu avant celui-ci : record noté + dépôts terminés du fichier (le 1er passage part de l'historique).
+  $prev = (float) $cfg['record'];
+  foreach ((array) ($db['deposits'] ?? []) as $i => $d) {
+    if ($i === $skipIdx || !is_array($d)) continue;
+    if (!in_array(strtoupper((string) ($d['status'] ?? '')), ['COMPLETED', 'PAID'], true)) continue;
+    $du = (string) ($d['userId'] ?? '');
+    if ($du !== '' && orolado_is_house_account($du, (array) ($db['users'][$du] ?? []))) continue;
+    $prev = max($prev, (float) ($d['amount'] ?? 0));
+  }
+  $isRecord = $prev > 0 && $amount > $prev + 0.004;
+  if ($amount > $prev) orolado_alert_cfg_save(['record' => $amount, 'recordAt' => date('c')]);
+  $isBig = $cfg['depBig'] > 0 && $amount + 1e-9 >= $cfg['depBig'];
+  if (!$isBig && !($isRecord && $cfg['depRecord'])) return;
+  $who = trim((string) ($u['publicId'] ?? '') . ' ' . (string) ($u['displayName'] ?? $u['name'] ?? ''));
+  $amt = number_format($amount, 2, ',', ' ') . ' $';
+  $title = ($isRecord && $cfg['depRecord'] ? '🏆 DÉPÔT RECORD : ' : '💰 Gros dépôt : ') . $amt;
+  $body = ($who !== '' ? $who : 'Joueur') . ' · ' . ($op !== '' ? ucfirst($op) : 'dépôt') . ($isRecord ? ' · ancien record ' . number_format($prev, 2, ',', ' ') . ' $' : '');
+  $tg = $title . "\n\n👤 " . ($who !== '' ? $who : $uid) . "\n✉️ " . ((string) ($u['email'] ?? '') ?: '—') . "\n🏦 " . ($op !== '' ? ucfirst($op) : '—')
+    . "\n🔖 Réf. : " . ($ref !== '' ? $ref : '—') . ($isRecord ? "\n📈 Ancien record : " . number_format($prev, 2, ',', ' ') . ' $' : '') . "\n\n👉 https://orolado.com/admin.php";
+  orolado_admin_alert_later($title, $body, $tg);
+}
+
+/** Alerte admin envoyée APRÈS la réponse (le joueur / le service de paiement n'attend jamais Telegram ni les téléphones). */
+function orolado_admin_alert_later(string $title, string $body, $telegram = true): void {
+  if (!is_file(__DIR__ . '/push_lib.php')) return;
+  if (isset($GLOBALS['OROLADO_FAKE_ADMIN_ALERT']) && is_callable($GLOBALS['OROLADO_FAKE_ADMIN_ALERT'])) { ($GLOBALS['OROLADO_FAKE_ADMIN_ALERT'])($title, $body, $telegram); return; }
+  register_shutdown_function(static function () use ($title, $body, $telegram) {
+    if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ } }
+    try { require_once __DIR__ . '/push_lib.php'; push_notify_admin($title, $body, '/admin.php', $telegram); } catch (Throwable $e) { /* jamais bloquant */ }
+  });
 }
 
 function maketou_api_url(): string {

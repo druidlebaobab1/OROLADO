@@ -177,6 +177,8 @@ function push_save_sub(array $sub, array $info): bool {
     'lang' => preg_match('/^[a-z]{2}$/', (string) ($info['lang'] ?? '')) ? $info['lang'] : 'fr',
     'uid' => (string) ($info['uid'] ?? '') !== '' ? (string) $info['uid'] : (string) ($old['uid'] ?? ''),
     'test' => !empty($info['test']) || !empty($old['test']) ? 1 : 0,
+    // 2026-10-23 : appareil du compte ADMIN (connecté au site avec le compte admin) → reçoit aussi les alertes admin
+    'admin' => !empty($info['admin']) || !empty($old['admin']) ? 1 : 0,
     'at' => (string) ($old['at'] ?? date('c')),
     'seen' => date('c'),
   ];
@@ -368,14 +370,91 @@ function push_payload(string $title, string $body, string $url = '/'): string {
  * v2674 (propriétaire) — notification sur le(s) téléphone(s) ADMIN seulement (abonnés « test », bouton Test de
  * l'admin) : par ex. « nouvelle demande de retrait » pour payer vite. Jamais envoyée aux joueurs.
  */
-function push_notify_admin(string $title, string $body, string $url = '/admin.php'): array {
+function push_notify_admin(string $title, string $body, string $url = '/admin.php', $telegram = true): array {
+  // 2026-10-23 (propriétaire : « je ne reçois plus rien ») — 1) Telegram D'ABORD (rapide, 6 s max ; avant, il partait après
+  // les téléphones et pouvait être coupé par la limite de 30 s du serveur) ; 2) téléphones admin : appareils « test » ET
+  // appareils connectés avec un compte admin (avant : « test » seulement — un iPhone réabonné, appli réinstallée,
+  // perdait les alertes sans rien dire) ; 3) chaque alerte est notée (journal de l'admin, avec la raison d'un échec).
+  // $telegram : true = même texte sur Telegram (si « recopier » est activé), chaîne = texte Telegram complet (retrait), false = non.
+  $tg = null;
+  if ($telegram !== false && is_file(__DIR__ . '/tg_lib.php')) {
+    try {
+      require_once __DIR__ . '/tg_lib.php';
+      if (is_string($telegram)) $tg = tg_send_admin($telegram);
+      elseif (tg_mirror_on()) $tg = tg_send_admin(trim($title) . "\n" . trim($body) . "\n\n👉 https://orolado.com" . ($url !== '' && $url[0] === '/' ? $url : '/admin.php'));
+    } catch (Throwable $e) { $tg = ['ok' => false, 'why' => 'Erreur interne Telegram']; }
+  }
+  $rows = push_admin_rows();
+  $res = $rows ? push_send_rows($rows, push_payload($title, $body, $url)) : ['sent' => 0, 'gone' => 0, 'fail' => 0, 'codes' => []];
+  $res['devices'] = count($rows);
+  if ($tg !== null) $res['tg'] = $tg;
+  push_alert_log_add($title, $body, $tg, $res);
+  return $res;
+}
+
+/** 2026-10-23 — appareils qui reçoivent les alertes admin : « test » (bouton de l'admin), compte admin, ou identifiant admin noté. */
+function push_admin_rows(): array {
+  $uids = push_admin_uids();
   $rows = [];
   foreach (push_sub_files() as $f) {
     $r = json_decode((string) @file_get_contents($f), true);
-    if (is_array($r) && !empty($r['test'])) $rows[] = $r;
+    if (!is_array($r)) continue;
+    if (!empty($r['test']) || !empty($r['admin']) || ((string) ($r['uid'] ?? '') !== '' && isset($uids[(string) $r['uid']]))) $rows[] = $r;
   }
-  if (!$rows) return ['sent' => 0, 'gone' => 0, 'fail' => 0, 'codes' => []];
-  return push_send_rows($rows, push_payload($title, $body, $url));
+  return $rows;
+}
+
+function push_admin_uids_file(): string { return push_dir() . '/admin_uids.json'; }
+function push_admin_uids(): array {
+  $j = json_decode((string) @file_get_contents(push_admin_uids_file()), true);
+  return is_array($j) ? array_filter($j, 'is_string', ARRAY_FILTER_USE_KEY) : [];
+}
+/** Note l'identifiant d'un compte admin (écrit seulement s'il est nouveau). */
+function push_admin_uid_note(string $uid): void {
+  if ($uid === '' || strlen($uid) > 80 || !preg_match('/^[A-Za-z0-9_.@:\-]+$/', $uid)) return;
+  $u = push_admin_uids();
+  if (isset($u[$uid])) return;
+  $u[$uid] = date('c');
+  $tmp = push_admin_uids_file() . '.tmp' . bin2hex(random_bytes(3));
+  if (@file_put_contents($tmp, json_encode($u)) !== false) @rename($tmp, push_admin_uids_file());
+}
+
+/** 2026-10-23 — raison simple d'un échec d'envoi vers les téléphones (pour l'admin). */
+function push_why(array $res): string {
+  if ((int) ($res['devices'] ?? 1) === 0) return 'Aucun téléphone admin abonné : dans l’application installée, Admin → 🔔 Notifications → « Activer les notifications sur cet appareil ».';
+  if ((int) ($res['sent'] ?? 0) > 0) return '';
+  if (!empty($res['codes']['cle'])) return 'Clé de notification du serveur absente (dossier data/push non inscriptible ?).';
+  $err = (string) ($res['err'] ?? '');
+  if ((int) ($res['gone'] ?? 0) > 0 && $err === '') return 'Votre téléphone s’est désabonné (application supprimée ou notifications coupées) : refaites « Activer les notifications sur cet appareil ».';
+  if (preg_match('/^(400|401|403)\b/', $err) || stripos($err, 'vapid') !== false || stripos($err, 'jwt') !== false)
+    return 'Abonnement fait avec une ancienne clé (changement de serveur ?) : refaites « Activer les notifications sur cet appareil » (l’abonnement sera recréé).';
+  if (!empty($res['codes']['0'])) return 'Le serveur n’arrive pas à joindre Apple / Google' . ($err !== '' ? ' (' . $err . ')' : '') . '.';
+  return 'Envoi refusé' . ($err !== '' ? ' (' . $err . ')' : '') . '.';
+}
+
+/** 2026-10-23 — journal des alertes admin (40 dernières) : quoi, quand, Telegram / téléphones partis ou non, et pourquoi. */
+function push_alert_log_file(): string { return push_dir() . '/admin_alerts_log.json'; }
+function push_alert_log_add(string $title, string $body, ?array $tg, array $res): void {
+  $row = ['at' => time(), 't' => push_cut($title, 80), 'b' => push_cut($body, 160),
+    'tg' => $tg === null ? null : ['ok' => !empty($tg['ok']), 'why' => (string) ($tg['why'] ?? '')],
+    'push' => ['devices' => (int) ($res['devices'] ?? 0), 'sent' => (int) ($res['sent'] ?? 0), 'why' => push_why($res)]];
+  $f = push_alert_log_file();
+  $fp = @fopen($f, 'c+');
+  if (!$fp) return;
+  flock($fp, LOCK_EX);
+  $list = json_decode((string) stream_get_contents($fp), true);
+  $list = is_array($list) ? $list : [];
+  array_unshift($list, $row);
+  rewind($fp);
+  ftruncate($fp, 0);
+  fwrite($fp, json_encode(array_slice($list, 0, 40), JSON_UNESCAPED_UNICODE));
+  fflush($fp);
+  flock($fp, LOCK_UN);
+  fclose($fp);
+}
+function push_alert_log_list(): array {
+  $j = json_decode((string) @file_get_contents(push_alert_log_file()), true);
+  return is_array($j) ? $j : [];
 }
 
 /** 2026-10-19 — notification à UN joueur (tous ses appareils abonnés), texte dans la langue de chaque appareil. */

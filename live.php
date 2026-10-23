@@ -128,7 +128,8 @@ if ($action === 'send') {
     try {
       require_once __DIR__ . '/push_lib.php';
       $who = trim((string) ($me['publicId'] ?? '') . ' ' . (string) ($me['displayName'] ?? ''));
-      push_notify_admin('💬 Live · ' . ($who !== '' ? $who : 'Joueur'), live_media_label($m), '/admin.php');
+      // 2026-10-23 : aussi sur Telegram (push_notify_admin) ; toucher l'alerte ouvre directement CETTE conversation dans l'admin
+      push_notify_admin('💬 Message de ' . ($who !== '' ? $who : 'Joueur'), live_media_label($m), '/admin.php?live=' . rawurlencode($uid));
     } catch (Throwable $e) { /* jamais bloquant */ }
   }
   exit;
