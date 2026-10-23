@@ -1068,7 +1068,7 @@ function sb_odds_to_rows(array $j, array &$unk): array {
   }
   return $out;
 }
-const SB_UNK_V = 3; // version de la liste des paris connus (diagnostic « paris non lus » remis à zéro à chaque version)
+const SB_UNK_V = 4; // version de la liste des paris connus (diagnostic « paris non lus » remis à zéro à chaque version)
 /** Échantillon brut d'un match (diagnostic admin : forme exacte des paris du fournisseur), gardé ≤ 1 fois / 10 min. */
 function sb_raw_sample(string $file, array $data, int $now): void {
   $f = sb_dir() . DIRECTORY_SEPARATOR . $file; clearstatcache(true, $f);
@@ -2222,21 +2222,24 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
   uksort($out, 'sb_mk_cmp');
   return $out;
 }
-const SB_CLK_LAG = 26; // retard mesuré de l'horloge du fournisseur sur Flashscore (s), à la lecture d'une nouvelle valeur (mesures 2026-10-23 : 15 puis 12 matchs)
-/** Lectures « 0:00 » [heure, z] des 5 dernières minutes ; un saut de plus de 150 s (mi-temps, prolongation) repart de zéro. */
+const SB_CLK_LAG = 16; // retard de l'horloge du fournisseur sur Flashscore (s) pour la lecture la plus fraîche (mesures 2026-10-23 : 3 séries, 32 matchs)
+/**
+ * Lectures « 0:00 » [heure, z] de TOUTE la mi-temps en cours (l'horloge d'une mi-temps tourne sans s'arrêter : son « 0:00 » ne
+ * bouge pas ; plus on garde de lectures, plus on en a une fraîche) ; un saut de plus de 150 s (mi-temps, prolongation) repart de zéro.
+ */
 function sb_clk_push(array $zs, ?int $z, int $now): array {
-  $keep = array_values(array_filter($zs, static fn($p) => is_array($p) && (int) $p[0] > $now - 300));
+  $keep = array_values(array_filter($zs, static fn($p) => is_array($p) && (int) $p[0] > $now - 3600));
   if (!$keep && $zs && is_array(end($zs))) $keep = [end($zs)]; // fournisseur muet : la dernière lecture reste
   $zs = $keep;
   if ($z === null) return $zs;
   if ($zs && abs($z - sb_clk_zero($zs) - SB_CLK_LAG) > 150) $zs = [];
   $zs[] = [$now, $z];
-  return array_slice($zs, -8);
+  return array_slice($zs, -40);
 }
 /**
  * « 0:00 » retenu (mesure 2026-10-23, 12 matchs face à Flashscore : une lecture fausse du fournisseur, ~80 s trop tôt, revenait
  * une fois sur deux) : VOTE — le groupe de lectures (à ±25 s) le plus nombreux gagne (égalité : celui de la lecture la plus
- * récente) ; dans ce groupe, la plus tôt (= la plus fraîche), moins SB_CLK_LAG.
+ * récente) ; autour de lui (±40 s), la plus tôt (= la plus fraîche : une image en retard donne un « 0:00 » plus tard), moins SB_CLK_LAG.
  */
 function sb_clk_zero(array $zs): int {
   $best = null; $bs = -1; $bt = -1;
@@ -2246,7 +2249,7 @@ function sb_clk_zero(array $zs): int {
     if ($sup > $bs || ($sup === $bs && $last > $bt)) { $best = (int) $c[1]; $bs = $sup; $bt = $last; }
   }
   $min = $best;
-  foreach ($zs as $q) if (abs((int) $q[1] - $best) <= 25) $min = min($min, (int) $q[1]);
+  foreach ($zs as $q) if (abs((int) $q[1] - $best) <= 40) $min = min($min, (int) $q[1]);
   return (int) $min - SB_CLK_LAG;
 }
 /** /odds/live → live.json (od) : score, minute, état, marchés ; « chg » = score différent de la lecture précédente. */
