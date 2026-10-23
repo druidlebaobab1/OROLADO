@@ -49,6 +49,16 @@ register_shutdown_function(static function (): void {
   try { orolado_bonus_all_watchdog(); } catch (Throwable $e) { /* jamais bloquant */ }
 });
 
+// 2026-10-23 — notifications automatiques (2 par jour, notif_daily_lib.php) : APRÈS la réponse ; sans créneau dû : deux stat().
+register_shutdown_function(static function (): void {
+  if (!is_file(__DIR__ . '/notif_daily_lib.php')) return;
+  try {
+    require_once __DIR__ . '/push_lib.php';
+    require_once __DIR__ . '/notif_daily_lib.php';
+    nd_after_response();
+  } catch (Throwable $e) { /* jamais bloquant */ }
+});
+
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
 register_shutdown_function(static function (): void {
   $e = error_get_last();
@@ -454,6 +464,7 @@ if ($action === 'sbList' || $action === 'sbMatch' || $action === 'sbLive' || $ac
   if (!function_exists('sb_list')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
   $me = $token !== '' ? session_user($db, $token) : null;
   try {
+    if ($action === 'sbResults' && isset($req['id']) && function_exists('sb_res_match')) $res = sb_res_match($me ?: null, (string) $req['id']); else // 2026-10-23 : fiche d'un match terminé
     if ($action === 'sbResults') $res = sb_results_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0), 0, isset($req['date']) ? (string) $req['date'] : null); else // 2026-10-22 : résultats (fichiers locaux)
     $res = $action === 'sbList' ? sb_list($me ?: null, $req['day'] ?? 0, (int) ($req['tz'] ?? 0), 0, !empty($req['cnt']), preg_match('/^[a-z]{2,16}$/', (string) ($req['sport'] ?? '')) ? (string) $req['sport'] : 'foot') : ($action === 'sbLive' ? sb_live_list($me ?: null) : sb_match($me ?: null, (string) ($req['id'] ?? '')));
   } catch (Throwable $eSb) {

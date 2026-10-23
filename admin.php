@@ -26,6 +26,11 @@ register_shutdown_function(static function (): void {
   // Sans fastcgi_finish_request, seul mail_queue_status fait le tic (l'admin attend quelques secondes au plus).
   mail_queue_after_response((string) ($GLOBALS['OROLADO_ADMIN_ACTION'] ?? '') !== 'mail_queue_status');
 });
+// 2026-10-23 — notifications automatiques (2 par jour) : aussi après les requêtes admin (voir notif_daily_lib.php).
+if (is_file(__DIR__ . '/notif_daily_lib.php')) {
+  require_once __DIR__ . '/notif_daily_lib.php';
+  register_shutdown_function(static function (): void { try { nd_after_response(); } catch (Throwable $e) { /* jamais bloquant */ } });
+}
 
 /** 2026-10-22 — un paquet du « 🎁 Bonus à tous » (en arrière-plan ou depuis la page) ; même crédit que « Ajuster ». */
 function admin_bonus_all_step_here(string $tok, array $job): string {
@@ -2544,6 +2549,17 @@ if ($isAjax) {
     $v = push_vapid();
     admin_json(['ok' => true, 'stats' => push_stats(), 'journal' => push_log_list(), 'key' => (string) ($v['pub'] ?? '')]);
   }
+  // 2026-10-23 (propriétaire) — notifications automatiques (2 par jour) : état, marche / arrêt, test sur les appareils admin
+  if ($action === 'nd_info' || $action === 'nd_set' || $action === 'nd_test') {
+    if (!function_exists('nd_info')) admin_json(['ok' => false, 'reason' => 'Module absent du serveur (notif_daily_lib.php)']);
+    if ($action === 'nd_set') {
+      $ndOn = !empty($req['on']);
+      admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'reglages', 0, 'Notifications automatiques : ' . ($ndOn ? 'allumées' : 'éteintes'));
+      admin_json(nd_set_on($ndOn));
+    }
+    if ($action === 'nd_test') { push_admin_uid_note((string) ($me['id'] ?? '')); @set_time_limit(40); admin_json(nd_test_admin() + ['info' => nd_info()]); }
+    admin_json(nd_info());
+  }
   // 2026-10-22 (propriétaire) — « Application installée » : joueurs qui ouvrent l'appli installée (heures de l'admin)
   if ($action === 'app_users') admin_json(['ok' => true] + admin_app_users_payload());
   // v2959 — alertes Telegram (retraits) : code du robot + liaison du compte Telegram de l'admin
@@ -3371,6 +3387,15 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
           <button class="mini" type="button" id="btnAlSave">Enregistrer</button> <span class="muted" id="alCfgSt"></span>
         </div>
         <details class="al-log"><summary>Dernières alertes envoyées</summary><div id="alLog" class="muted">—</div></details>
+      </div>
+      <!-- 2026-10-23 (propriétaire) : notifications automatiques, 2 par jour à tous les abonnés (notif_daily_lib.php) -->
+      <div class="nt-card">
+        <b>🤖 Notifications automatiques (2 par jour)</b>
+        <p class="muted" style="margin:4px 0 8px">À tous les abonnés (vos appareils compris), dans leur langue : Paris ou Trade, avec les vraies données du site. Si un jour rien n’arrive, quelque chose est cassé.</p>
+        <label class="al-row al-chk"><input type="checkbox" id="ndOn"> <span>Activées</span></label>
+        <div id="ndInfo" class="muted" style="margin:8px 0;font-size:.86rem;line-height:1.5;overflow-wrap:anywhere">Chargement…</div>
+        <button class="mini ok" type="button" id="btnNdTest">Envoyer maintenant à mes appareils (test)</button>
+        <div id="ndRes" class="al-res"></div>
       </div>
       <div class="nt-card">
         <b>Cet appareil (pour vos tests)</b>
@@ -4378,7 +4403,34 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   $n('ntLang').onchange = paintWho;
   $n('ntTitle').oninput = preview;
   $n('ntBody').oninput = preview;
-  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; $n('alRes').innerHTML = ''; loadStats(); tgPaint(); alInfo(); };
+  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; $n('alRes').innerHTML = ''; $n('ndRes').innerHTML = ''; loadStats(); tgPaint(); alInfo(); ndInfo(); };
+  // 2026-10-23 — notifications automatiques (2 par jour) : marche / arrêt, prochain créneau, dernier envoi, test
+  const ND_ST = {sent:'✅ envoyée', off:'⏸ éteintes', late:'⏭ sautée (aucune visite à l’heure)', nodata:'⏭ pas de données réelles', cap:'⏭ déjà 2 aujourd’hui'};
+  const ndPaint = j => {
+    if (!j || !j.ok) { $n('ndInfo').textContent = (j && j.reason) || 'Erreur'; return; }
+    $n('ndOn').checked = !!j.on;
+    const L = [];
+    L.push('Créneaux : ' + (j.slotsUtc || []).join(' et ') + ' UTC — prochain : <b>' + esc(alWhen(j.next.at)) + '</b> (heure de ce téléphone)' + (j.on ? '' : ' — <b>éteintes</b>'));
+    const l = j.last;
+    if (l) L.push('Dernier envoi : <b>' + esc(alWhen(l.at)) + '</b> — « ' + esc(l.t) + ' » ' + esc(l.b) + '<br>' + (l.done ? 'Reçues : ' : 'En cours… reçues : ') + (l.sent | 0) + ' / ' + (l.devices | 0) + ' appareil(s) · échecs : ' + (l.fail | 0) + ' · partis : ' + (l.gone | 0) + (l.err ? ' <small>(' + esc(l.err) + ')</small>' : ''));
+    else L.push('Dernier envoi : aucun pour l’instant.');
+    if ((j.hist || []).length) L.push('Derniers créneaux : ' + j.hist.map(h => esc(h.key.replace('#1', ' midi').replace('#2', ' soir')) + ' ' + esc(ND_ST[h.st] || h.st)).join(' · '));
+    if (!j.fpm) L.push('<span style="color:#FECDD3">❌ Serveur sans PHP-FPM (fastcgi_finish_request) : les envois automatiques ne peuvent pas partir.</span>');
+    $n('ndInfo').innerHTML = L.join('<br>');
+  };
+  async function ndInfo() { try { ndPaint(await ajax({action:'nd_info'})); } catch (e) { /* ignore */ } }
+  $n('ndOn').onchange = async () => { try { ndPaint(await ajax({action:'nd_set', on: $n('ndOn').checked ? 1 : 0})); } catch (e) { ndInfo(); } };
+  $n('btnNdTest').onclick = async () => {
+    const b = $n('btnNdTest'), out = $n('ndRes');
+    b.disabled = true; out.innerHTML = '<div class="al-ln">Envoi…</div>';
+    try {
+      const j = await ajax({action:'nd_test'});
+      if (j.title) out.innerHTML = '<div class="al-ln ' + (j.ok ? 'ok' : 'bad') + '">' + esc((j.ok ? '✅ Envoyé à ' + j.res.sent + ' appareil(s) admin : ' : '❌ ' + (j.why || 'Échec') + ' — message : ') + '« ' + j.title + ' » ' + j.body) + '</div>';
+      else out.innerHTML = '<div class="al-ln bad">' + esc(j.reason || 'Échec') + '</div>';
+      if (j.info) ndPaint(j.info);
+    } catch (e) { out.innerHTML = '<div class="al-ln bad">' + esc('Échec : ' + (e && e.message ? e.message : e)) + '</div>'; }
+    b.disabled = false;
+  };
   $n('closeNotif').onclick = () => $n('notifModal').classList.remove('on');
   // v2959 — Telegram
   const tgPaint = async () => { try { const j = await ajax({action:'tg_status'}); $n('tgSt').textContent = j.linked ? 'Relié ✓' + (j.bot ? ' (@' + j.bot + ')' : '') : (j.has ? 'Code enregistré — touchez DÉMARRER dans le robot puis « Relier ».' : 'Pas encore relié.'); } catch (e) { /* ignore */ } };

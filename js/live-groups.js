@@ -235,24 +235,34 @@
      groupe » (la messagerie n'était pas encore chargée) puis faisait entrer le joueur TOUT SEUL dans le groupe. Maintenant :
      on attend que le site et la messagerie soient prêts, puis on montre l'APERÇU du groupe (js/social2.js joinPreview) ;
      le joueur choisit lui-même « Rejoindre ». Le code est retiré de l'adresse (une actualisation ne rejoue rien). */
+  /* 2026-10-23 (propriétaire) : le visiteur qui a touché « Inscris-toi pour rejoindre » puis s'est inscrit avec Google (la
+     page est rechargée au retour de Google) : on rouvre ce groupe et il y entre (js/social2.js, « oro_gjoin », 30 min). */
   function bootJoin() {
-    var m = /[?&]g=([a-f0-9]{8,40})(?:&|#|$)/i.exec(location.search);
-    if (!m) return;
-    var tok = m[1].toLowerCase();
-    try { var qs = location.search.replace(/([?&])g=[^&]*(&|$)/, '$1').replace(/[?&]$/, ''); history.replaceState(history.state, '', location.pathname + qs + location.hash); } catch (e) { /* ignore */ }
+    var m = /[?&]g=([a-f0-9]{8,40})(?:&|#|$)/i.exec(location.search), tok = '', pend = false, pv = '';
+    if (m) {
+      tok = m[1].toLowerCase();
+      try { var qs = location.search.replace(/([?&])g=[^&]*(&|$)/, '$1').replace(/[?&]$/, ''); history.replaceState(history.state, '', location.pathname + qs + location.hash); } catch (e) { /* ignore */ }
+    } else {
+      try { pv = sessionStorage.getItem('oro_gjoin') || ''; } catch (e) { pv = ''; }
+      var pa = pv.split('|'), at = +pa[1] || 0;
+      if (!/^[a-f0-9]{8,40}$/.test(pa[0] || '') || !(at > 0 && Date.now() - at < 30 * 60 * 1000)) return;
+      tok = pa[0]; pend = true;
+    }
     D6.SxJoinWait = tok;
     var t0 = Date.now(), injected = false;
     (function wait() {
       var h = document.documentElement, st = $('screenTrade');
       var ready = h.classList.contains('oro-booted') && st && !st.classList.contains('hidden') && D6.Live && D6.App && D6.App.openModal;
-      if (ready && D6.Social2 && D6.Social2.joinPreview) { if (D6.SxJoinWait === tok) { D6.SxJoinWait = ''; D6.Social2.joinPreview(tok); } return; }
+      if (pend && ready && guest()) ready = false; // encore visiteur (connexion pas finie) : on attend, on ne montre rien
+      if (ready && pend) { var still = ''; try { still = sessionStorage.getItem('oro_gjoin') || ''; } catch (e) { still = ''; } if (still !== pv) { if (D6.SxJoinWait === tok) D6.SxJoinWait = ''; return; } } // déjà fait par la messagerie
+      if (ready && D6.Social2 && D6.Social2.joinPreview) { if (D6.SxJoinWait === tok) { D6.SxJoinWait = ''; D6.Social2.joinPreview(tok, pend); } return; }
       if (ready && !D6.Social2 && !injected && Date.now() - t0 > 1200 && !document.querySelector('script[src*="js/social2.js"]')) {
         injected = true;
         var v = ((document.querySelector('script[src*="js/live.js"]') || {}).src || '').replace(/^.*[?&]v=(\d+).*$/, '$1') || '1';
         var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'css/social2.css?v=' + v; document.head.appendChild(l);
         var s = document.createElement('script'); s.src = 'js/social2.js?v=' + v; s.async = true; document.head.appendChild(s);
       }
-      if (Date.now() - t0 < 25000) setTimeout(wait, 150);
+      if (Date.now() - t0 < 25000) setTimeout(wait, 150); else if (D6.SxJoinWait === tok) D6.SxJoinWait = '';
     })();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootJoin); else bootJoin();

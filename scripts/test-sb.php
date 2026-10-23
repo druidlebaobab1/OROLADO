@@ -654,6 +654,23 @@ sb_prune($T('2026-11-07 12:00:00'));
 check('ménage : résultats de plus de 30 jours effacés, index de plus de 3 jours recopié puis effacé', !is_file(sb_dir() . DIRECTORY_SEPARATOR . 'res' . DIRECTORY_SEPARATOR . 'res-2026-09-20.json') && !is_file(sb_dir() . DIRECTORY_SEPARATOR . sb_day_file('2026-11-02')) && count((array) (sb_res_file('2026-11-02')['fx'] ?? [])) === 3);
 
 // 2026-10-22 (propriétaire) — avant-match jusqu'à J+7 : J+3…J+7 matchs toutes les 6 h, cotes toutes les 12 h ; sbList day 0…7 ; « 📅 Date »
+// 2026-10-23 — cotes 1 X 2 dans les résultats ; fiche d'un match terminé (une lecture, gardée)
+check('résultats : cotes 1 · X · 2 du match quand nous en avions', ($rr['fx'][1]['o'] ?? null) === [2.0, 3.2, 3.5] && !isset($rr['fx'][2]['o']), json_encode($rr['fx'][1]['o'] ?? null));
+$alt['fixtures?id=8801'] = json_encode(['errors' => [], 'response' => [['fixture' => ['id' => 8801, 'timestamp' => $T('2026-11-02 15:00:00'), 'status' => ['short' => 'FT', 'elapsed' => 90], 'venue' => ['name' => 'Stade', 'city' => 'Ville'], 'referee' => 'M. Arbitre'],
+  'league' => ['id' => 39, 'name' => 'Premier League', 'country' => 'England', 'flag' => '', 'logo' => ''], 'teams' => ['home' => ['id' => 1, 'name' => 'Res Home', 'logo' => ''], 'away' => ['id' => 2, 'name' => 'Res Away', 'logo' => '']],
+  'goals' => ['home' => 2, 'away' => 1], 'score' => ['halftime' => ['home' => 1, 'away' => 0], 'fulltime' => ['home' => 2, 'away' => 1]],
+  'events' => [['time' => ['elapsed' => 12, 'extra' => null], 'team' => ['id' => 1], 'player' => ['name' => 'Buteur A'], 'type' => 'Goal', 'detail' => 'Normal Goal'], ['time' => ['elapsed' => 40, 'extra' => null], 'team' => ['id' => 2], 'player' => ['name' => 'Joueur B'], 'type' => 'Card', 'detail' => 'Yellow Card']],
+  'statistics' => [['team' => ['id' => 1], 'statistics' => [['type' => 'Ball Possession', 'value' => '58%'], ['type' => 'Total Shots', 'value' => 14]]], ['team' => ['id' => 2], 'statistics' => [['type' => 'Ball Possession', 'value' => '42%'], ['type' => 'Total Shots', 'value' => 7]]]]]]]);
+$q1 = 'fixtures?id=8801'; $c0 = $cnt($q1);
+$M1 = sb_res_match($uadm, 'foot:8801', $RN);
+check('fiche du match : score, buteur, carton, possession, tirs, stade, arbitre, cotes', $M1['ok'] && $M1['fx']['ft'] === [2, 1] && $M1['ev'][0]['player'] === 'Buteur A' && $M1['ev'][0]['type'] === 'goal' && $M1['ev'][1]['type'] === 'card' && $M1['st']['poss'] === [58, 42] && $M1['st']['shots'] === [14, 7] && $M1['venue'] === 'Stade, Ville' && $M1['ref'] === 'M. Arbitre' && ($M1['fx']['o'] ?? null) == [2.0, 3.2, 3.5], json_encode($M1));
+$M2 = sb_res_match($uadm, '8801', $RN + 86400);
+check('fiche gardée : relue sans nouvel appel', $M2['ok'] && $cnt($q1) === $c0 + 1);
+check('fiche : id invalide refusé', sb_res_match($uadm, '../x', $RN)['ok'] === false);
+sb_with(sb_day_file('2026-11-02'), static function (array &$s) use ($T) { $s = ['at' => $T('2026-11-02 23:00:00'), 'lg' => ['39' => ['n' => 'Premier League', 'c' => 'England', 'f' => '', 'lo' => '', 'p' => 2]], 'fx' => ['8801' => ['ts' => $T('2026-11-02 15:00:00'), 'st' => 'FT', 'm' => 90, 'lg' => 39, 'h' => [1, 'Res Home', ''], 'a' => [2, 'Res Away', ''], 'g' => [2, 1], 'ht' => [1, 0], 'ft' => [2, 1], 'o' => [['H', 2.0], ['D', 3.2], ['A', 3.5]], 'n' => 20]]]; return true; });
+sb_with(sb_res_name('2026-11-02'), static function (array &$s) { unset($s['v']); $s['at'] = PHP_INT_MAX - 1; foreach ($s['fx'] as $k => $v) unset($s['fx'][$k]['o']); return true; });
+$rr2 = sb_results_list($uadm, -1, 0, $RN);
+check('ancien fichier de résultats sans cotes : refait depuis l\'index (v2)', ($rr2['fx'][0]['o'] ?? null) === [2.0, 3.2, 3.5], json_encode($rr2['fx'] ?? null));
 echo "12) Avant-match jusqu'à J+14 (budget), sbList day 0…14, nombre de matchs par jour\n";
 $N7 = $T('2026-12-01 10:00:00'); $GLOBALS['SB_NOW'] = $N7;
 sb_with('budget-foot.json', static function (array &$s) use ($N7) { $s = ['day' => gmdate('Y-m-d', $N7), 'n' => 0]; return true; });

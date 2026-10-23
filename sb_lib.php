@@ -1099,14 +1099,14 @@ function sb_res_from_index(string $day, array $idx, int $now): array {
     $fx[(string) $id] = $row;
     $lgs[(string) $row['lg']] = ['n' => (string) ($l['n'] ?? ''), 'c' => (string) ($l['c'] ?? ''), 'f' => (string) ($l['f'] ?? ''), 'p' => (int) ($l['p'] ?? 100)];
   }
-  return ['at' => $now, 'done' => $day < gmdate('Y-m-d', $now) && ($open === 0 || $day < gmdate('Y-m-d', $now - 2 * 86400)), 'lg' => $lgs, 'fx' => $fx];
+  return ['v' => 2, 'at' => $now, 'done' => $day < gmdate('Y-m-d', $now) && ($open === 0 || $day < gmdate('Y-m-d', $now - 2 * 86400)), 'lg' => $lgs, 'fx' => $fx];
 }
 /** Résultats d'un jour UTC : index (s'il existe) recopié dans le petit fichier ; sinon le petit fichier ; sinon demandé. */
 function sb_res_day(string $day, int $now, bool &$pending): array {
   $idx = sb_day($day);
   if ($idx && !empty($idx['fx'])) {
     $old = sb_res_file($day);
-    if ($old && (int) ($old['at'] ?? 0) >= (int) ($idx['at'] ?? 0)) return $old;
+    if ($old && (int) ($old['at'] ?? 0) >= (int) ($idx['at'] ?? 0) && (int) ($old['v'] ?? 1) >= 2) return $old; // v2 (2026-10-23) : avec les cotes 1 · X · 2
     $res = sb_res_from_index($day, $idx, (int) ($idx['at'] ?? 0) ?: $now);
     sb_with(sb_res_name($day), static function (array &$s) use ($res) { $s = $res; return true; });
     return $res;
@@ -1159,6 +1159,7 @@ function sb_res_fetch_wanted(int $now, int $max = 1): int {
 function sb_res_prune(int $now): void {
   $lim = gmdate('Y-m-d', $now - SB_RES_DAYS * 86400);
   foreach ((array) glob(sb_res_dir() . DIRECTORY_SEPARATOR . 'res-*.json') as $p) if (preg_match('/res-(\d{4}-\d{2}-\d{2})\.json$/', (string) $p, $m) && $m[1] < $lim) @unlink((string) $p);
+  foreach ((array) glob(sb_res_dir() . DIRECTORY_SEPARATOR . 'fx-*.*') as $p) if ((int) @filemtime((string) $p) < $now - SB_RES_DAYS * 86400) @unlink((string) $p); // fiches de matchs
 }
 function sb_results_list(?array $user, $day, int $tz = 0, int $now = 0, $date = null): array {
   $now = $now ?: sb_now();
@@ -1188,6 +1189,47 @@ function sb_results_list(?array $user, $day, int $tz = 0, int $now = 0, $date = 
   usort($fx, static fn($a, $b) => [$a['ts'], $a['id']] <=> [$b['ts'], $b['id']]);
   if ($pending) sb_after_response();
   return ['ok' => true, 'at' => $now, 'day' => $d, 'date' => gmdate('Y-m-d', $from + $tz), 'pending' => $pending, 'lg' => $lgs, 'fx' => $fx];
+}
+/**
+ * 2026-10-23 (propriétaire : « les résultats cliquables : buteurs, cartons, statistiques, comme un site pro ») — sbResults {id} :
+ * fiche d'un match TERMINÉ. Une seule lecture /fixtures?id=ID (événements + statistiques en une fois), gardée pour toujours
+ * (res/fx-ID.json, effacée avec les résultats de plus de 30 jours) ; jamais dans la réserve du direct ; verrou par match.
+ */
+function sb_res_match(?array $user, string $fid, int $now = 0): array {
+  $now = $now ?: sb_now();
+  if (!sb_visible($user)) return ['ok' => false, 'reason' => 'off'];
+  if (!preg_match('/^(?:foot:)?(\d{1,10})$/', $fid, $m)) return ['ok' => false, 'reason' => 'param'];
+  $id = $m[1]; $name = 'res' . DIRECTORY_SEPARATOR . 'fx-' . $id . '.json';
+  sb_res_dir();
+  $c = sb_read($name);
+  if (!$c || (empty($c['fin']) && (int) ($c['at'] ?? 0) < $now - 600)) {
+    $lk = @fopen(sb_res_dir() . DIRECTORY_SEPARATOR . 'fx-' . $id . '.lock', 'c');
+    if ($lk && flock($lk, LOCK_EX | LOCK_NB)) {
+      $c2 = sb_read($name);
+      if ($c2 && (!empty($c2['fin']) || (int) ($c2['at'] ?? 0) >= $now - 600)) $c = $c2;
+      elseif (sb_budget($now)['left'] > SB_LIVE_RESERVE) {
+        $j = sb_get('fixtures?id=' . $id, $now);
+        $r = is_array($j) ? (($j['response'] ?? [])[0] ?? null) : null;
+        if (is_array($r) && ($row = sb_fx_row($r))) {
+          $c = ['at' => $now, 'fin' => in_array($row['st'], SB_FINAL, true) ? 1 : 0, 'row' => $row, 'lg' => sb_lg_row((array) ($r['league'] ?? [])),
+            'ev' => sb_live_events($r), 'st' => sb_stats_parse((array) ($r['statistics'] ?? []), $row),
+            'venue' => mb_substr(trim((string) ($r['fixture']['venue']['name'] ?? '') . ((string) ($r['fixture']['venue']['city'] ?? '') !== '' ? ', ' . $r['fixture']['venue']['city'] : '')), 0, 80),
+            'ref' => mb_substr((string) ($r['fixture']['referee'] ?? ''), 0, 60)];
+          sb_with($name, static function (array &$s) use ($c) { $s = $c; return true; });
+        }
+      }
+      flock($lk, LOCK_UN);
+    } elseif (!$c) { if ($lk) fclose($lk); return ['ok' => true, 'pending' => true]; }
+    if ($lk) fclose($lk);
+  }
+  if (!$c || empty($c['row'])) return ['ok' => false, 'reason' => 'unavailable'];
+  $row = $c['row'];
+  $o = null; foreach ([gmdate('Y-m-d', (int) $row['ts']), gmdate('Y-m-d', (int) $row['ts'] - 86400), gmdate('Y-m-d', (int) $row['ts'] + 86400)] as $d) { $rf = sb_res_file($d); if (isset($rf['fx'][$id]['o'])) { $o = $rf['fx'][$id]['o']; break; } }
+  if ($o === null) { $f = sb_find($id, $now); if ($f) $o = sb_res_odds($f['row']['o'] ?? null); }
+  return ['ok' => true, 'fx' => ['id' => 'foot:' . $id, 'ts' => (int) $row['ts'], 'st' => (string) $row['st'], 'h' => ['n' => (string) ($row['h'][1] ?? ''), 'lo' => (string) ($row['h'][2] ?? '')],
+      'a' => ['n' => (string) ($row['a'][1] ?? ''), 'lo' => (string) ($row['a'][2] ?? '')], 'ft' => $row['ft'] ?? $row['g'] ?? null, 'ht' => $row['ht'] ?? null] + ($o ? ['o' => $o] : []),
+    'lg' => ['n' => (string) ($c['lg']['n'] ?? ''), 'c' => (string) ($c['lg']['c'] ?? ''), 'f' => (string) ($c['lg']['f'] ?? ''), 'lo' => (string) ($c['lg']['lo'] ?? '')],
+    'ev' => (array) ($c['ev'] ?? []), 'st' => $c['st'] ?? null, 'venue' => (string) ($c['venue'] ?? ''), 'ref' => (string) ($c['ref'] ?? '')];
 }
 /** Index + marchés d'un match (id API) ; null si inconnu. */
 function sb_find(string $id, int $now): ?array {
@@ -1770,10 +1812,14 @@ function sb_cache_peek(string $path, int $ttl, int $now): ?array {
 function sb_live_stats(string $id, array $row, int $now): ?array {
   $j = sb_cache_peek('fixtures/statistics?fixture=' . (int) $id, 900, $now);
   if (!$j) return null;
+  return sb_stats_parse((array) ($j['response'] ?? []), $row);
+}
+/** Statistiques API ([{team, statistics:[{type, value}]}]) → {shots:[h,a], poss:[h,a], …}. */
+function sb_stats_parse(array $resp, array $row): ?array {
   $map = ['total shots' => 'shots', 'shots on goal' => 'shotsOn', 'ball possession' => 'poss', 'corner kicks' => 'corners', 'yellow cards' => 'yellow', 'red cards' => 'red', 'attacks' => 'attacks', 'dangerous attacks' => 'dangerous',
     'fouls' => 'fouls', 'offsides' => 'offsides', 'goalkeeper saves' => 'saves']; // 2026-10-22 : + fautes, hors-jeu, arrêts (onglet Informations)
   $out = [];
-  foreach ((array) ($j['response'] ?? []) as $t) {
+  foreach ($resp as $t) {
     if (!is_array($t)) continue;
     $tid = (int) ($t['team']['id'] ?? 0);
     $side = $tid === (int) ($row['h'][0] ?? -1) ? 0 : ($tid === (int) ($row['a'][0] ?? -1) ? 1 : -1);
