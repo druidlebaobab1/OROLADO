@@ -104,7 +104,12 @@
       var tl = ($('btnGoLogin') || {}).textContent || 'Connexion', tr = ($('btnGoRegister') || {}).textContent || X().signup;
       b.innerHTML = '<span class="cs-auth"><span role="button" tabindex="0" class="cs-in fit" id="csLogin">' + esc(tl) + '</span><span role="button" tabindex="0" class="cs-join fit" id="csJoin">' + esc(tr) + '</span></span>';
       b.className = 'cs-wallet cs-guestw';
-      requestAnimationFrame(function () { fitEl($('csLogin')); fitEl($('csJoin')); }); // v2819 : « Connexion / Inscription » rapetissent (arabe, allemand… sur iPhone SE)
+      var fitAuth = function () { fitEl($('csLogin')); fitEl($('csJoin')); };
+      requestAnimationFrame(fitAuth); // v2819 : « Connexion / Inscription » rapetissent (arabe, allemand… sur iPhone SE)
+      // 2026-10-23 : la police du site arrive après le 1er calcul (plus large) → recalculé quand elle est là, et à chaque rotation
+      try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { requestAnimationFrame(fitAuth); }); } catch (eF) { /* ignore */ }
+      setTimeout(fitAuth, 600); setTimeout(fitAuth, 2000);
+      if (!S.fitAuthR) { S.fitAuthR = 1; window.addEventListener('resize', function () { if (guest() && $('csLogin')) requestAnimationFrame(function () { fitEl($('csLogin')); fitEl($('csJoin')); }); }); }
       $('csJoin').addEventListener('click', function (e) { e.stopPropagation(); signup(); });
       $('csLogin').addEventListener('click', function (e) { e.stopPropagation(); toAuth('login'); });
       return;
