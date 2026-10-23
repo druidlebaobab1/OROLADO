@@ -192,12 +192,45 @@
     }).join('') + '</div>';
   }
 
+  /* 2026-10-23 (propriétaire : « le visiteur voit beaucoup de choses, comme les grandes plateformes ») : le VISITEUR parcourt
+     les 12 niveaux, les badges et les missions de la semaine (rien de personnel : tout est au départ, 0) ; seul « gagner »
+     demande l'inscription (bouton en bas → inscription, puis retour sur cette même page). */
+  function guestCta(kind) {
+    var G = (D6.LIVE_T && D6.LIVE_T.guest) || {}, l = (document.documentElement.lang || 'en').slice(0, 2), g = G[l] || G.en || {};
+    return '<div class="lgu lfun-gcta" style="--tc:' + (D6.LiveColor ? D6.LiveColor(kind) : '#7a5cff') + '"><button type="button" class="lgu-go" data-a="register">' + esc(g.btn || 'Create my free account') + '</button>' +
+      '<button type="button" class="lgu-have" data-a="login">' + esc(g.have || 'I already have an account') + '</button></div>';
+  }
+  function guestPeek(box, kind) {
+    var x = X(), h = '';
+    if (kind === 'levels') {
+      h = '<div class="lv2"><div class="lv2-head" style="--lc1:' + TIER[0][0] + ';--lc2:' + TIER[0][1] + '">' + medal(0) + '<div class="lv2-t"><small>' + esc(fmt(x.lvl, { n: 1 })) + '</small><b>' + esc(x.names[0] || '') + '</b><div class="lv-bar"><i style="width:0%"></i></div></div></div>' +
+        '<div class="lv2-grid">' + x.names.map(function (n, i) {
+          return '<div class="lv2-c ' + (i === 0 ? 'cur' : 'next') + '" style="--lc1:' + TIER[i][0] + ';--lc2:' + TIER[i][1] + '">' + medal(i) + '<span><b>' + esc(n) + '</b><small>' + esc(fmt(x.lvl, { n: i + 1 })) + '</small></span></div>';
+        }).join('') + '</div></div>';
+    } else if (kind === 'badges') {
+      var keys = Object.keys(x.b);
+      h = '<div class="bd-head"><b>0 / ' + keys.length + '</b><div class="lv-bar"><i style="width:0%"></i></div></div><div class="lfun-badges">' + keys.map(function (k) {
+        return '<div class="lfun-badge"><span class="bd-i">' + ico(BADGE_ICO[k] || 'badges') + '</span><b>' + esc(x.b[k][0]) + '</b><small>' + esc(x.b[k][1]) + '</small></div>';
+      }).join('') + '</div>';
+    } else {
+      var MI = { trades: 'stats', real: 'bonus', quiz: 'quiz', markets: 'target', streak: 'jauge' }, MC = { trades: '#38BDF8', real: '#22C55E', markets: '#A78BFA', streak: '#F97316', quiz: '#F472B6' };
+      var mk = Object.keys(x.m || {});
+      h = '<div class="ms2"><div class="ms2-head"><div class="ms2-ring" style="--p:0"><b>0/' + mk.length + '</b></div><div><b>' + esc(x.mTitle) + '</b><small>' + esc(fmt(x.mSub, { x: 15 })) + '</small></div></div>' +
+        mk.map(function (k) {
+          return '<div class="ms2-row" style="--mc:' + (MC[k] || '#A78BFA') + '"><span class="ms2-i">' + ico(MI[k] || 'target') + '</span><div class="ms2-t"><b>' + esc(x.m[k] || k) + '</b><div class="ms2-bar"><i style="width:0%"></i></div></div><em></em></div>';
+        }).join('') + '</div>';
+    }
+    box.innerHTML = h + guestCta(kind);
+    box.querySelectorAll('.lfun-gcta [data-a]').forEach(function (b) {
+      b.addEventListener('click', function () { if (D6.Live && D6.Live.toAuth) D6.Live.toAuth(b.getAttribute('data-a')); });
+    });
+  }
   function open(kind) {
     var box = $('liveFun');
     if (!box) return;
     box.innerHTML = '';
     box._seq = (box._seq || 0) + 1; // (partagé avec live-send.js) une page plus récente remplace toujours une réponse en retard
-    if (guest()) { if (D6.LiveGuest) D6.LiveGuest(box, kind === 'levels' || kind === 'missions' ? 'stats' : kind); return; }
+    if (guest()) { if (kind === 'levels' || kind === 'badges' || kind === 'missions') { guestPeek(box, kind); return; } if (D6.LiveGuest) D6.LiveGuest(box, kind === 'levels' || kind === 'missions' ? 'stats' : kind); return; }
     if (kind === 'quiz') quiz(box); else if (kind === 'stats') stats(box); else if (kind === 'levels') levels(box); else if (kind === 'missions') missions(box); else badges(box);
   }
   D6.LiveFun = { open: open, title: function (k) { var x = X(); return x[k] ? x[k][0] : ''; }, sub: function (k) { var x = X(); return x[k] ? x[k][1] : ''; } };

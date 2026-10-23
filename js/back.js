@@ -314,6 +314,13 @@
     try { r = JSON.parse(sessionStorage.getItem(RKEY) || 'null'); } catch (e) { r = null; }
     // lien avec une intention précise (notification, retour de paiement, casino=1…) : il passe avant
     var q = location.search || '';
+    // 2026-10-23 — notifications automatiques (notif_daily_lib.php) : ?paris=1 ouvre Paris, ?trade=1 reste sur le trading
+    if (/[?&](paris|trade)=1(&|$)/.test(q)) {
+      try { history.replaceState(history.state, '', location.pathname + (q.replace(/([?&])(paris|trade)=1(&|$)/, '$1').replace(/[?&]$/, '')) + location.hash); } catch (eP) { /* ignore */ }
+      unveil();
+      if (/[?&]paris=1/.test(q) && (await wait(function () { return ready() && D6.Casino && D6.Casino.home; }, 9000)) && !authShown()) D6.Casino.home('sports');
+      return;
+    }
     if (/[?&](live|casino|deposit|payment|tx_ref|transaction_id|status|reset|verify|r|ref|g)=/i.test(q) || D6.SxJoinWait) return unveil();
     if (!r || !r.s || r.s === 'trade' || r.s === 'auth' || !r.t || Date.now() - r.t > 12 * 3600 * 1000) return unveil();
     if (!(await wait(ready, 9000))) return unveil();
@@ -321,5 +328,5 @@
     restore(r);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  D6.Route = { save: save, get: route, lock: navLock, socialReturn: socialReturn, navMs: function (v) { if (v > 0 && v < 5000) NAV_MS = v; } }; // navMs : pour les tests seulement
+  D6.Route = { save: save, get: route, restore: restore, lock: navLock, socialReturn: socialReturn, navMs: function (v) { if (v > 0 && v < 5000) NAV_MS = v; } }; // navMs : pour les tests seulement
 })(window.D6 = window.D6 || {});

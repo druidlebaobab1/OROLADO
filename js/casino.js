@@ -143,7 +143,9 @@
   // v2762 (propriétaire) : le visiteur qui part s'inscrire depuis un jeu y REVIENT s'il touche « Retour »
   function toAuth(tab) {
     var r = { game: S.game || '', pred: !!($('casinoModal') && $('casinoModal').classList.contains('pred-only')) };
-    if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { if (r.pred) openPred(); else open(r.game || null, r.game ? undefined : 'games'); });
+    // 2026-10-23 (propriétaire) : depuis Paris (ticket, Mes paris) on revient sur Paris — même écran, ticket gardé (js/sports.js)
+    r.sports = !r.game && !r.pred && S.view === 'sports';
+    if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { if (r.pred) openPred(); else if (r.sports) { open(null, 'games'); home('sports'); } else open(r.game || null, r.game ? undefined : 'games'); });
     close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(tab || 'register');
   }
   function signup() { toAuth('register'); }

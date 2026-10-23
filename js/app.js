@@ -436,6 +436,7 @@
       if (res && res.ok && D6.Auth.current() && !isGuest()) {
         if (res.isNew) metaTrack('CompleteRegistration');
         enterApp({ openFullscreen: true });
+        authReturnDone();
         return;
       }
       toast((res && res.reason) || t('googleFail'), 'err', 4000);
@@ -944,11 +945,33 @@
 
   // v2763 (propriétaire) : « Retour » sur la page d'inscription ramène le visiteur EXACTEMENT où il était
   // (Social / Défie ton ami, Cadeaux, Paris, un jeu…). Chaque monde dit où revenir juste avant d'ouvrir l'inscription.
-  var authReturnFn = null, authReturnAt = 0, authReturnArmed = null;
+  var authReturnFn = null, authReturnAt = 0, authReturnArmed = null, authReturnRoute = null;
+  // 2026-10-23 (propriétaire) : APRÈS l'inscription ou la connexion aussi, on revient là où l'on était (même page, même
+  // section : Social, groupe, Paris avec le ticket, Cadeaux, jeu…), plus sur l'accueil. Même fonction que « Retour ».
+  // Si la page a été rechargée entre-temps (Google), on utilise la page retenue (js/back.js) gardée dans cet onglet.
+  var AUTH_RET_K = 'oro_auth_ret';
+  function authReturnClear() {
+    authReturnArmed = null;
+    try { sessionStorage.removeItem(AUTH_RET_K); } catch (eRc) { /* ignore */ }
+  }
+  function authReturnDone() {
+    var fn = authReturnArmed, saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem(AUTH_RET_K) || 'null'); } catch (eRs) { saved = null; }
+    authReturnClear();
+    if (fn) { setTimeout(function () { try { fn(); } catch (eFn) { /* ignore */ } }, 150); return; }
+    try { if (sessionStorage.getItem('oro_gjoin')) return; } catch (eGj) { /* ignore */ } // lien de groupe : js/live-groups.js s'en charge
+    if (saved && saved.r && saved.r.s && saved.r.s !== 'trade' && saved.r.s !== 'auth' && Date.now() - (saved.t || 0) < 30 * 60 * 1000 && D6.Route && D6.Route.restore) {
+      setTimeout(function () { try { D6.Route.restore(saved.r); } catch (eRr) { /* ignore */ } }, 400);
+    }
+  }
   function showAuthScreen(tab, opts) {
     opts = opts || {};
     authReturnArmed = (authReturnFn && Date.now() - authReturnAt < 2500) ? authReturnFn : null;
-    authReturnFn = null;
+    try {
+      if (authReturnArmed && authReturnRoute) sessionStorage.setItem(AUTH_RET_K, JSON.stringify({ r: authReturnRoute, t: Date.now() }));
+      else sessionStorage.removeItem(AUTH_RET_K);
+    } catch (eRw) { /* ignore */ }
+    authReturnFn = null; authReturnRoute = null;
     try { sessionStorage.setItem('oro_auth_tab', tab === 'login' ? 'login' : 'register'); } catch (eTab) { /* ignore */ }
     showScreen('screenAuth');
     markBootReady();
@@ -8131,7 +8154,7 @@
         if (loginBtn) { loginBtn.disabled = false; loginBtn.classList.remove('busy'); loginBtn.textContent = loginLabel; }
       }
       if (!res.ok) { showFieldError(res.field || 'loginId', res.reason); return; }
-      setTimeout(function () { enterApp({ openFullscreen: true }); }, 80);
+      setTimeout(function () { enterApp({ openFullscreen: true }); authReturnDone(); }, 80);
     });
     // v2395 — « Continuer avec Google » (Connexion et Inscription).
     document.querySelectorAll('[data-google-login]').forEach(function (gBtn) {
@@ -8209,6 +8232,7 @@
       }
       metaTrack('CompleteRegistration');
       enterApp({ openFullscreen: true });
+      authReturnDone();
       welcomeCard();
       setTimeout(function () { if ($('toast')) placeToast($('toast')); }, 80);
     });
@@ -8547,6 +8571,7 @@
         closeOtpModal();
         metaTrack('CompleteRegistration');
         enterApp({ openFullscreen: true });
+        authReturnDone();
         welcomeCard();
         setTimeout(function () { if ($('toast')) placeToast($('toast')); }, 80);
       });
@@ -10603,7 +10628,12 @@
     closeModal: function (id) { closeModal(id); },
     toast: function (m, k, ms) { toast(m, k, ms); },
     showAuth: function (w) { try { showAuthScreen(w || 'register'); } catch (e) { /* ignore */ } },
-    authReturn: function (fn) { authReturnFn = typeof fn === 'function' ? fn : null; authReturnAt = Date.now(); },
+    authReturn: function (fn) {
+      authReturnFn = typeof fn === 'function' ? fn : null; authReturnAt = Date.now();
+      // la page encore ouverte (avant que la section se ferme) : pour y revenir même après un rechargement (Google)
+      authReturnRoute = null;
+      try { if (authReturnFn && D6.Route && D6.Route.get) authReturnRoute = D6.Route.get(); } catch (eRg) { authReturnRoute = null; }
+    },
     openDeposit: function () { try { openDeposit(); } catch (e) { /* ignore */ } }, // v2689 — roue / jauge (js/gifts-home.js)
     refreshVault: function () { try { return refreshRemoteVault(); } catch (e) { /* ignore */ } }, // v2690 — casino (js/casino.js)
     onRemoteAccount: function () {
@@ -10761,6 +10791,7 @@
       if ($('btnGoRegister')) $('btnGoRegister').addEventListener('click', function () { showAuthScreen('register'); });
       if ($('brandLockup')) $('brandLockup').addEventListener('click', function () {
         try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (eB) { /* ignore */ }
+        authReturnClear(); // le logo = « aller à l'accueil » : plus de retour vers la page d'avant
         if (D6.Auth.current() && !isGuest(D6.Auth.current())) { enterApp(); return; }
         ensureGuest();
         enterApp();
@@ -10771,7 +10802,7 @@
         try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (ePrev) { /* ignore */ }
         // v2767 (propriétaire) : on rouvre la page d'avant (jeu, Paris, Social, Cadeaux) EN PREMIER, avant d'enlever
         // l'inscription : le joueur ne voit plus l'écran de trading passer entre les deux.
-        var back = authReturnArmed; authReturnArmed = null;
+        var back = authReturnArmed; authReturnClear();
         if (back) { try { back(); } catch (eBk) { /* ignore */ } }
         ensureGuest();
         enterApp();
@@ -10811,6 +10842,7 @@
             if (g && g.ok && D6.Auth.current() && !isGuest()) {
               if (g.isNew) metaTrack('CompleteRegistration');
               enterApp();
+              authReturnDone();
               return;
             }
             finishBoot();

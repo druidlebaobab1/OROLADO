@@ -496,7 +496,8 @@
 
   function tileGo(k) {
     if (k === 'dms') { if (guest()) { show('guest', 'friends'); return; } if (D6.Social2) { D6.Social2.open('', true); return; } show('friends'); return; }
-    if (guest() && k !== 'news' && k !== 'gifts' && k !== 'learn') { show('guest', k); return; }
+    // 2026-10-23 : le visiteur parcourt aussi Niveaux, Badges et Missions (rien de personnel) ; le reste demande l'inscription
+    if (guest() && ['news', 'gifts', 'learn', 'levels', 'badges', 'missions'].indexOf(k) < 0) { show('guest', k); return; }
     // v2760 (propriétaire) : Cadeaux s'ouvre PAR-DESSUS Social (on ne voit plus l'écran de trading entre les deux)
     // v2812 (propriétaire, round 4) : Social RESTE ouvert dessous → en fermant Cadeaux / Apprendre on retrouve le menu Social
     // tout de suite, sans voir passer l'écran de trading.
@@ -783,7 +784,13 @@
   // v2763 (propriétaire) : le visiteur qui part s'inscrire depuis Social revient sur la même page s'il touche « Retour »
   function toAuth(a) {
     var t = tab, s2 = curSub;
-    if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { open('home'); if (t !== 'home') show(t, s2 || undefined); });
+    // 2026-10-23 : depuis une page « Inscris-toi » (visiteur), on revient sur la VRAIE page demandée une fois inscrit
+    // (Mes amis, Groupes, Quiz…) — retour sans inscription : la même page visiteur, comme avant.
+    if (D6.App && D6.App.authReturn) D6.App.authReturn(function () {
+      open('home');
+      if (t === 'guest' && s2 && !guest()) tileGo(s2);
+      else if (t !== 'home') show(t, s2 || undefined);
+    });
     close(); if (D6.App && D6.App.showAuth) D6.App.showAuth(a || 'register');
   }
   // v2796 : pastilles (bouton Social) mises à jour par la messagerie

@@ -585,7 +585,7 @@
       var x = LT('live'), gx = GX();
       if (el.hasAttribute('data-act')) {
         var a = el.getAttribute('data-act');
-        if (a === 'signup') { if (D6.Live && D6.Live.toAuth) D6.Live.toAuth('register'); }
+        if (a === 'signup') sxAuth('register');
         else if (a === 'toReq' || a === 'toFriends') { seg = 'friends'; paintBody(true); }
         else if (a === 'newGroup') createSheet();
         else if (a === 'copyMe') copyFx(el, (D.fr && D.fr.me) || '');
@@ -1069,7 +1069,7 @@
       return;
     }
     if (k === 'help') { if (guest()) leave('guest', 'chat', true); else { stepFrom(); openConv('team'); } return; }
-    if (guest() && D6.Live && D6.Live.toAuth) { D6.Live.toAuth('register'); return; }
+    if (guest()) { sxAuth('register', { seg: k === 'groups' ? 'groups' : 'friends', k: '' }); return; }
     stepFrom();
     closeConv();
     seg = k === 'groups' ? 'groups' : 'friends'; hint = k === 'duel' ? t('duelHint') : '';
@@ -1157,7 +1157,7 @@
       return;
     }
     p.st = 'fail'; paintMsgs();
-    if (j && j.login && D6.Live) { D6.Live.toAuth('login'); return; }
+    if (j && j.login) { sxAuth('login'); return; }
     toast(errMsg(j), 'err');
   }
   function retry(id) { var c = conv; if (!c) return; var p = c.pend.filter(function (z) { return z.id === id; })[0]; if (!p) return; p.st = 'sending'; paintMsgs(); deliver(c, p); }
@@ -1410,9 +1410,12 @@
   /* ---------- v2905 (propriétaire) : LIEN D'INVITATION orolado.com/?g=… — aperçu comme WhatsApp ----------
      Logo, nom, membres, créateur, grand bouton « Rejoindre ». On n'entre JAMAIS dans un groupe sans toucher ce bouton
      (avant, un code gardé en mémoire faisait entrer le joueur tout seul, plus tard). Visiteur : « Inscris-toi pour
-     rejoindre », et après l'inscription ou la connexion on revient sur ce même aperçu. Déjà membre : le groupe s'ouvre. */
-  var PEND = 'oro_gjoin';
-  async function joinPreview(tok) {
+     rejoindre », et après l'inscription ou la connexion on revient sur ce même aperçu. Déjà membre : le groupe s'ouvre.
+     2026-10-23 (propriétaire) : le visiteur qui a touché « Inscris-toi pour rejoindre » (ou « J'ai déjà un compte ») ENTRE
+     dans le groupe dès qu'il est inscrit / connecté (il l'a demandé : pas une 2e touche). Ce choix ne vaut que 30 min et
+     seulement juste après l'inscription (auto) ; un lien ouvert plus tard montre toujours l'aperçu. */
+  var PEND = 'oro_gjoin', PEND_MS = 30 * 60 * 1000;
+  async function joinPreview(tok, auto) {
     tok = String(tok || '').toLowerCase().replace(/[^a-f0-9]/g, '');
     if (!tok) return;
     ss(PEND, null);
@@ -1435,33 +1438,54 @@
     }
     var g = r.g;
     if (g.member && !guest()) { closePanel(); await load(); if (active) { paintBody(); openConv('g:' + g.id); } return; }
+    var toAuth = function (mode) {
+      ss(PEND, tok + '|' + Date.now()); // pour rejoindre juste après l'inscription (aussi après un rechargement : Google)
+      if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { joinPreview(tok, true); });
+      if (D6.Live && D6.Live.close) D6.Live.close();
+      if (D6.App && D6.App.showAuth) D6.App.showAuth(mode);
+    };
+    var doJoin = async function (btn) {
+      if (guest()) { toAuth('register'); return; }
+      if (btn) btn.disabled = true;
+      var j = await call('gJoin', { tok: tok });
+      if (j && j.login) { if (btn) btn.disabled = false; toAuth('login'); return; }
+      if (!j || !j.ok) { if (btn) btn.disabled = false; if ($('sxJm')) $('sxJm').textContent = j && j.reason === 'gGone' ? t('gBadS') : errMsg(j); return; }
+      if (p.getAttribute('data-join') !== tok) return;
+      closePanel(); await load(); seg = 'groups'; paintBody(); openConv('g:' + j.g.id);
+    };
     box.innerHTML = avatar({ group: 1, emoji: g.emoji, photo: g.photo }, true) + '<b class="sx-jn sx-ell">' + esc(g.name) + '</b><small class="fit">' + esc(t('group') + ' · ' + members(g.n)) + '</small>' +
       (g.admin ? '<span class="sx-jby">' + avatar({ name: g.admin, ph: g.adminPh }) + '<span class="fit">' + esc(t('joinBy', { a: g.admin })) + '</span></span>' : '') +
       (guest() ? '<button type="button" class="sx-btn gold wide" id="sxJgo"><b class="fit">' + esc(t('joinSign')) + '</b></button><button type="button" class="sx-lnk" id="sxJlog">' + esc(t('haveAcc')) + '</button>'
         : '<button type="button" class="sx-btn gold wide" id="sxJgo"><b class="fit">' + esc(t('join')) + '</b></button>') + '<p class="sx-msg" id="sxJm"></p>';
-    var toAuth = function (mode) {
-      ss(PEND, tok); // seulement pour REMONTRER l'aperçu après l'inscription — jamais pour entrer tout seul
-      if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { joinPreview(tok); });
-      if (D6.Live && D6.Live.close) D6.Live.close();
-      if (D6.App && D6.App.showAuth) D6.App.showAuth(mode);
-    };
-    $('sxJgo').addEventListener('click', async function () {
-      if (guest()) { toAuth('register'); return; }
-      this.disabled = true;
-      var j = await call('gJoin', { tok: tok });
-      if (j && j.login) { this.disabled = false; toAuth('login'); return; }
-      if (!j || !j.ok) { this.disabled = false; $('sxJm').textContent = j && j.reason === 'gGone' ? t('gBadS') : errMsg(j); return; }
-      closePanel(); await load(); seg = 'groups'; paintBody(); openConv('g:' + j.g.id);
-    });
+    $('sxJgo').addEventListener('click', function () { doJoin(this); });
     if ($('sxJlog')) $('sxJlog').addEventListener('click', function () { toAuth('login'); });
     fitAll(box);
+    if (auto && !guest()) doJoin($('sxJgo')); // inscrit / connecté depuis cet aperçu : il entre tout de suite
   }
-  // après l'inscription / la connexion : l'aperçu revient (le joueur choisit lui-même de rejoindre)
+  // après l'inscription / la connexion (même si la page a été rechargée) : on revient sur le groupe et on y entre
+  function pendRead() { var v = ss(PEND).split('|'), at = +v[1] || 0; return { raw: ss(PEND), tok: v[0], auto: at > 0 && Date.now() - at < PEND_MS }; }
   function pendAfterLogin() {
-    var tok = ss(PEND); if (!tok || guest()) return;
-    setTimeout(function () { if (!guest() && ss(PEND) === tok) joinPreview(tok); }, 600);
+    var pd = pendRead(); if (!pd.tok || guest()) return;
+    setTimeout(function () { if (!guest() && ss(PEND) === pd.raw) joinPreview(pd.tok, pd.auto); }, 600);
   }
   try { new MutationObserver(function () { if (!guest()) pendAfterLogin(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] }); } catch (e) { /* ignore */ }
+
+  /* 2026-10-23 (propriétaire) : « Inscris-toi » depuis la messagerie → une fois inscrit / connecté (ou avec « Retour »), on
+     revient EXACTEMENT ici (même onglet, même discussion), pas sur l'accueil ni sur le menu Social. */
+  function sxAuth(mode, st) {
+    st = st || { seg: seg, k: conv ? conv.k : '', grid: gridRet };
+    if (st.grid === undefined) st.grid = gridRet;
+    if (D6.App && D6.App.authReturn) D6.App.authReturn(function () { reopen(st); });
+    if (D6.Live && D6.Live.close) D6.Live.close();
+    if (D6.App && D6.App.showAuth) D6.App.showAuth(mode || 'register');
+  }
+  async function reopen(st) {
+    if (D6.Live && D6.Live.open && !$('liveModal').classList.contains('active')) D6.Live.open('grid');
+    var w = st.seg === 'groups' ? 'groups' : st.seg === 'friends' ? 'friends' : '';
+    if (st.k === 'team') w = 'chat'; else if (st.k === 'news') w = 'news';
+    await open(w, st.grid !== false);
+    if (st.k && st.k !== 'team' && st.k !== 'news' && active) openConv(st.k);
+  }
 
   /* =========================== OUVERTURE =========================== */
   // v2808 (propriétaire) : page ouverte depuis le menu en tuiles (« Plus ») → la flèche ‹ ramène à ce menu, un niveau à la fois
