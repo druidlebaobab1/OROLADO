@@ -48,8 +48,7 @@ $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $q1, 'k' => 'o1'], ['ev' => $q
 check('BTC 80k NON + BTC 85k NON dans un combiné : refusé', $r['ok'] === false, json_encode($r));
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $q1, 'k' => 'o1'], ['ev' => $q2, 'k' => 'o1'], ['ev' => $q3, 'k' => 'o1']]);
 check('BTC + BTC + ETH (cote ×11 pour ~27 % de chance) : refusé', $r['ok'] === false && in_array($r['reason'] ?? '', ['single', 'corr'], true), json_encode($r));
-$r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $q3, 'k' => 'o0'], ['ev' => $m2, 'k' => 'o0']]);
-check('question + match dans un combiné : refusé (« single »)', $r['ok'] === false && ($r['reason'] ?? '') === 'single', json_encode($r));
+check('question + match : combinables (2026-10-23, aucun groupe lié)', !array_intersect(sp_corr_groups($ev($q3)), sp_corr_groups($ev($m2))));
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $m1, 'k' => 'o0'], ['ev' => $m1b, 'k' => 'o1']]);
 check('le même match publié deux fois (PSG - Barça / Barça - PSG) : refusé (« corr »)', $r['ok'] === false && ($r['reason'] ?? '') === 'corr', json_encode($r));
 check('aucun argent pris sur les coupons refusés', abs($bal[$A] - $b0) < 0.001);
@@ -59,7 +58,7 @@ $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $q1, 'k' => 'o1']]);
 check('une question seule (simple) : acceptée', $r['ok'] === true);
 $g = static fn(string $id) => $fn('sp_corr_groups') ? sp_corr_groups($ev($id)) : [];
 check('groupes : 2 questions Bitcoin = même actif', in_array('asset:btc', $g($q1), true) && in_array('asset:btc', $g($q2), true));
-check('groupes : Bitcoin et Ethereum = même groupe « crypto »', in_array('crypto', $g($q1), true) && in_array('crypto', $g($q3), true));
+check('groupes : deux questions Bitcoin = même actif (jamais ensemble) ; Bitcoin + Ethereum combinables', in_array('asset:btc', $g($q1), true) && in_array('asset:btc', $g($q2), true) && !array_intersect($g($q1), $g($q3)));
 check('groupes : 2 matchs différents = aucun groupe commun', $g($m1) && !array_intersect($g($m1), $g($m2)));
 $pub = []; foreach (sp_public_events() as $e) $pub[$e['id']] = $e;
 check('le téléphone reçoit « question » et les groupes (pour prévenir avant l’envoi)', !empty($pub[$q1]['q']) && in_array('asset:btc', (array) ($pub[$q1]['grp'] ?? []), true) && empty($pub[$m1]['q']));

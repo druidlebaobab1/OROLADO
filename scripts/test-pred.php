@@ -140,8 +140,9 @@ check('prix actuel (carte) : servi par le serveur, gardé 30 s ; actif inconnu r
 
 echo "4) Paris : simple seulement, fermeture à closeAt\n";
 $m1 = sp_admin_save(['title' => 'Real Madrid - Barcelona', 'league' => 'LaLiga', 'sport' => 'foot', 'start' => $now + 3 * 86400, 'opts' => [['label' => 'Real', 'odd' => 2.1], ['label' => 'Nul', 'odd' => 3.3], ['label' => 'Barça', 'odd' => 3.0]]])['id'];
-$rc = sp_bet(load_db(), $ua, 'real', 5, [['ev' => $fed, 'k' => 'cut'], ['ev' => $m1, 'k' => 'o0']]);
-check('combiné prédiction + match : refusé (« single »)', $rc['ok'] === false && $rc['reason'] === 'single');
+// 2026-10-23 (propriétaire) : les prédictions se combinent → aucun groupe commun entre une prédiction et un match
+$evs = []; foreach (sp_events() as $e0) $evs[$e0['id']] = $e0;
+check('combiné prédiction + match : autorisé (aucun groupe lié)', !array_intersect(sp_corr_groups($evs[$fed]), sp_corr_groups($evs[$m1])));
 $rf = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $fed, 'k' => 'cut']], $C10 - 60);
 check('pari 1 min avant closeAt (9 jours après l’import, pas une question de prix) : accepté', $rf['ok'] === true && abs($rf['bet']['pot'] - 12.90) < 1e-9, json_encode($rf));
 $rl = sp_bet(load_db(), $ua, 'real', 10, [['ev' => $fed, 'k' => 'cut']], $C10);

@@ -61,14 +61,7 @@ function sp_corr_groups(array $e): array {
   $t = sp_lower((string) ($e['title'] ?? '') . ' ' . (string) ($e['league'] ?? ''));
   $day = gmdate('Y-m-d', (int) ($e['start'] ?? 0));
   if (sp_is_question($e)) {
-    $g[] = 'q'; // toutes les questions ensemble (de toute façon : simples seulement)
-    if (sp_is_price($e)) {
-      $g[] = 'px';
-      $a = sp_asset($e);
-      if ($a !== '') $g[] = 'asset:' . $a;
-      if (in_array($a, ['btc', 'eth', 'sol', 'xrp', 'doge'], true) || ($e['sport'] ?? '') === 'crypto' || str_contains($t, 'crypto')) $g[] = 'crypto';
-      elseif ($a !== '' && $a !== 'gold') $g[] = 'stocks';
-    }
+    if (sp_is_price($e)) { $a = sp_asset($e); if ($a !== '') $g[] = 'asset:' . $a; } // même actif (BTC + BTC) : jamais ensemble
     if (preg_match('/\bf1\b|formule 1|formula 1|grand prix|\bgp\b/u', $t)) { $g[] = 'f1'; $g[] = 'f1:' . $day; }
     if (preg_match('/ballon d|award|oscar|trophée|trophy|\bmvp\b|golden boy|élection|election/u', $t)) $g[] = 'award';
   }
@@ -937,7 +930,8 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
     if (!$o) return ['ok' => false, 'reason' => 'param'];
     if (!empty($o['off'])) return ['ok' => false, 'reason' => 'closed']; // 2026-10-22 : choix presque certain retiré (Predict crypto)
     // v2810 : une question (prédiction) se joue en SIMPLE seulement ; jamais deux choix d'un même groupe dans un coupon
-    if ($multi && sp_is_question($e)) return ['ok' => false, 'reason' => 'single'];
+    // 2026-10-23 (propriétaire : « pourquoi un seul pari en crypto ? plus de choix = plus de chances de perdre ») : les prédictions
+    // se COMBINENT (avec des matchs aussi) ; seuls les choix vraiment liés (même actif, même course, même groupe) restent séparés
     foreach (sp_corr_groups($e) as $g) { if (isset($grp[$g])) return ['ok' => false, 'reason' => 'corr']; $grp[$g] = 1; }
     $seen[$eid] = 1;
     if (($c = sp_cap($e)) > 0) $caps[$eid . '|' . $k] = $c;
@@ -961,7 +955,7 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
   $bst = sp_boost_pct($picked); $pot0 = sp_floor2(min(SP_MAX_WIN, $stake * $odd));
   // 2026-10-23 (propriétaire) : chaque pari a son CODE DE PARI (historique, reçu, publicité) — le même pour tout le monde
   $bcode = function_exists('sb_code_for_bet') ? sb_code_for_bet($picked, $now) : '';
-  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => $bst > 0 ? sp_floor2(min(SP_MAX_WIN, $pot0 + sp_floor2(($pot0 - $stake) * $bst / 100))) : $pot0, 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []) + ($bst > 0 ? ['bst' => $bst] : []) + ($bcode !== '' ? ['code' => $bcode] : []);
+  $bet = ['id' => $ref, 'uid' => $uid, 'mode' => $mode, 'stake' => $stake, 'odd' => $odd, 'pot' => $bst > 0 ? sp_floor2(min(SP_MAX_WIN, $pot0 + min(SP_BOOST_CAP, sp_floor2(($pot0 - $stake) * $bst / 100)))) : $pot0, 'sel' => $picked, 'status' => 'open', 'at' => $now] + (!empty($sbLive) ? ['live' => 1] : []) + ($bst > 0 ? ['bst' => $bst, 'brv' => 2] : []) + ($bcode !== '' ? ['code' => $bcode] : []);
   /* 2026-10-21 (propriétaire) — ORDRE SÛR pour TOUS les paris (avant : seulement les questions avec plafond) : 1) le coupon est
      ÉCRIT d'abord (état « pend » : jamais montré, jamais réglé) sous le verrou des paris, avec le plafond de mises par choix
      vérifié au même moment ; 2) la mise est retirée (casino_debit, une seule fois par référence) ; 3) le coupon passe « open ».
@@ -1012,15 +1006,18 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
  *  Compte seulement les choix à cote ≥ 1,20 (pas de remplissage avec des cotes 1,05) ; 3 choix minimum (simple / double : rien) ;
  *  un choix outsider (cote ≥ 2) compte 1,5. % = la MOITIÉ de l'avantage maison d'un combiné à 1 % de marge par choix
  *  (1 − 0,99^n) → le bonus ne coûte jamais plus que ce que la marge rapporte ; plafond 15 %. Même calcul côté téléphone (js/sports.js). */
-const SP_BOOST_MIN = 3; const SP_BOOST_ODD = 1.20; const SP_BOOST_MAX = 15.0;
-function sp_boost_pct(array $sels): float {
-  $n = 0; $w = 0.0;
+const SP_BOOST_MIN = 4; const SP_BOOST_ODD = 1.50; const SP_BOOST_MAX = 15.0;
+// 2026-10-23 (propriétaire : « trop facile ; une grosse mise gagne un bonus énorme ») : 4 choix minimum à cote 1,50+, et le bonus
+// d'un coupon ne dépasse JAMAIS 100 $ (quelle que soit la mise)
+const SP_BOOST_CAP = 100.0;
+function sp_boost_pct(array $sels, bool $legacy = false): float {
+  $n = 0; $w = 0.0; $minOdd = $legacy ? 1.20 : SP_BOOST_ODD; $minN = $legacy ? 3 : SP_BOOST_MIN; // legacy : coupons joués avant le 2026-10-23 (promesse du reçu tenue)
   foreach ($sels as $s) {
     if (($s['r'] ?? null) === 'void') continue;
-    $o = (float) ($s['odd'] ?? 0); if ($o + 1e-9 < SP_BOOST_ODD) continue;
+    $o = (float) ($s['odd'] ?? 0); if ($o + 1e-9 < $minOdd) continue;
     $n++; $w += $o + 1e-9 >= 2.0 ? 1.5 : 1.0;
   }
-  return $n < SP_BOOST_MIN ? 0.0 : min(SP_BOOST_MAX, floor(50 * (1 - 0.99 ** $w) * 100 + 1e-6) / 100);
+  return $n < $minN ? 0.0 : min(SP_BOOST_MAX, floor(50 * (1 - 0.99 ** $w) * 100 + 1e-6) / 100);
 }
 
 function sp_bet_public(array $b): array {
@@ -1129,8 +1126,9 @@ function sp_resolve(array $db): array {
       // jamais plus que le % promis sur le ticket
       $bw = 0.0;
       if ($live > 0 && !empty($b['bst'])) {
-        $bp = min((float) $b['bst'], sp_boost_pct($s['b'][$i]['sel']));
-        if ($bp > 0) { $bw = sp_floor2(max(0.0, $win - (float) $b['stake']) * $bp / 100); $win = sp_floor2(min(SP_MAX_WIN, $win + $bw)); $s['b'][$i]['bw'] = $bw; }
+        $old = empty($b['brv']); // coupon joué avec les anciennes règles : son bonus promis est tenu (sans plafond)
+        $bp = min((float) $b['bst'], sp_boost_pct($s['b'][$i]['sel'], $old));
+        if ($bp > 0) { $bw = min($old ? PHP_FLOAT_MAX : SP_BOOST_CAP, sp_floor2(max(0.0, $win - (float) $b['stake']) * $bp / 100)); $win = sp_floor2(min(SP_MAX_WIN, $win + $bw)); $s['b'][$i]['bw'] = $bw; }
       }
       // v2779 (propriétaire) : tous les matchs du coupon annulés → « Remboursé » (la mise revient, visible dans l'historique et le reçu)
       $s['b'][$i]['status'] = $live === 0 ? 'void' : 'won'; $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();

@@ -115,8 +115,8 @@ $f0 = $foot[0]; $f1 = $foot[1];
 $b1 = sp_bet(load_db(), $db['users']['u_a'], 'real', 2, [['ev' => $f0['id'], 'k' => $f0['opts'][1]['k']]]); // le nul
 $b2 = sp_bet(load_db(), $db['users']['u_b'], 'real', 3, [['ev' => $f0['id'], 'k' => $f0['opts'][0]['k']]]);
 check('deux joueurs parient (nul / domicile)', !empty($b1['ok']) && !empty($b2['ok']));
-$cq = sp_bet(load_db(), $db['users']['u_a'], 'real', 1, [['ev' => $q[0]['id'], 'k' => 'o0'], ['ev' => $f1['id'], 'k' => 'o0']]);
-check('une question ne va pas dans un combiné', empty($cq['ok']) && ($cq['reason'] ?? '') === 'single');
+$evs4 = []; foreach (sp_events() as $e0) $evs4[$e0['id']] = $e0;
+check('une question peut aller dans un combiné (2026-10-23 : aucun groupe lié avec un match)', !array_intersect(sp_corr_groups($evs4[$q[0]['id']]), sp_corr_groups($evs4[$f1['id']])));
 $sq = sp_bet(load_db(), $db['users']['u_b'], 'real', 1, [['ev' => $q[0]['id'], 'k' => 'o1']]);
 check('une question se joue en simple', !empty($sq['ok']));
 $cb = $bk ? sp_bet(load_db(), $db['users']['u_a'], 'real', 1, [['ev' => $bk[0]['id'], 'k' => 'o0'], ['ev' => $f1['id'], 'k' => 'o2']]) : ['ok' => false];
