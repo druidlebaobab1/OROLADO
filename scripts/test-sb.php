@@ -911,6 +911,7 @@ $zs = sb_clk_push($zs, 905, 2180);
 check('horloge : lecture aberrante (100 s trop tôt) écartée', sb_clk_zero($zs) === 984);
 check('horloge : vote — 3 lectures d\'accord contre 1 fausse 80 s plus tôt (dernière lue)', sb_clk_zero([[1, 1000], [2, 1010], [3, 1005], [4, 920]]) === 984);
 check('horloge : 2 lectures en désaccord → la plus récente', sb_clk_zero([[1, 1000], [2, 1130]]) === 1114);
+check('horloge : fournisseur 75 s en avance sur la minute de l\'API → minute de l\'API', sb_live_clock('1H', ['m' => 11, 'mt' => 1000, 'zf' => 1000 - 600], 1010, ['z' => 1000 - 675]) === 610 && sb_live_clock('1H', ['m' => 11, 'mt' => 1000, 'zf' => 1000 - 600], 1010, ['z' => 1000 - 630]) === 640);
 check('horloge : direct pas relu depuis 6 min (minute 63 vieillie) → la vraie horloge reste', sb_live_clock('2H', ['m' => 63, 'mt' => 1000], 1400, ['z' => 1400 - 69 * 60]) === 69 * 60);
 check('horloge : lectures gardées toute la mi-temps (1 h), puis seule la dernière reste', count(sb_clk_push($zs, null, 2600)) === 4 && count(sb_clk_push($zs, null, 6000)) === 1);
 check('horloge : une lecture fraîche (12 min plus tôt) reste retenue', sb_clk_zero(array_merge([[100, 1000]], array_map(static fn($i) => [800 + $i * 60, 1020 + $i % 3 * 5], range(1, 12)))) === 984);

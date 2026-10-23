@@ -2565,6 +2565,9 @@ function sb_live_clock(string $st, array $r, int $now, ?array $od = null): ?int 
   $age = (int) ($r['mt'] ?? 0) > 0 ? max(0, $now - (int) $r['mt']) : 0;
   if (is_array($od) && isset($od['z']) && is_numeric($od['z'])) {
     $k = $now - (int) $od['z'];
+    // 2026-10-23 (mesure Al Arabi : horloge du fournisseur des cotes 74 s en avance, minute d'API-Football juste) : plus d'une
+    // minute d'écart avec le « 0:00 » tiré de la minute de l'API → la minute de l'API gagne
+    if ($m !== null && isset($r['zf']) && is_numeric($r['zf']) && abs((int) $od['z'] - (int) $r['zf']) > 60) { $kf = $now - (int) $r['zf']; if ($kf >= ($m - 1) * 60 - 30 && $kf < ($m + 3) * 60 + $age) return $kf; }
     if ($m === null || ($k >= ($m - 1) * 60 - 30 && $k < ($m + 3) * 60 + $age)) return $k;
   }
   if (is_array($od) && is_int($od['sec'] ?? null) && (int) ($od['sat'] ?? 0) > 0) {
