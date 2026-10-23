@@ -772,12 +772,15 @@
   function sp2Pot(st, odd) { return Math.floor(st * odd * 100 + 1e-6) / 100; }
   // 2026-10-23 (propriétaire) — bonus combiné : même calcul que le serveur (sp_boost_pct, sports_lib.php) : choix à cote ≥ 1,50 (4 minimum, plafond 100 $),
   // 3 minimum, outsider (≥ 2) = 1,5 ; % = moitié de l'avantage maison (1 − 0,99^n), plafond 15 % ; ajouté au gain net
-  function bstPct(sels) {
-    var n = 0, w = 0;
-    (sels || []).forEach(function (s) { var o = Number(s.odd) || 0; if (s.r === 'void' || o + 1e-9 < 1.5) return; n++; w += o + 1e-9 >= 2 ? 1.5 : 1; });
-    return n < 4 ? 0 : Math.min(15, Math.floor(50 * (1 - Math.pow(0.99, w)) * 100 + 1e-6) / 100);
+  function bstPct(sels) { // version 3 (= sp_boost_pct, sports_lib.php) : dès 1 match, toute cote, selon le nombre de choix
+    var n = 0, T = [[1, 0.5], [2, 1.5], [3, 3], [5, 7], [10, 20], [20, 50], [30, 100], [40, 150]];
+    (sels || []).forEach(function (s) { if (s.r !== 'void' && (Number(s.odd) || 0) > 1 && !s.closed) n++; });
+    if (n < 1) return 0; if (n >= 40) return 150;
+    for (var i = 1; i < T.length; i++) if (n <= T[i][0]) return Math.round((T[i - 1][1] + (T[i][1] - T[i - 1][1]) * (n - T[i - 1][0]) / (T[i][0] - T[i - 1][0])) * 100) / 100;
+    return 0;
   }
-  function bstAmt(st, pot0, pct) { return pct > 0 ? Math.min(100, Math.floor(Math.max(0, pot0 - st) * pct + 1e-6) / 100) : 0; } // plafond 100 $ (= SP_BOOST_CAP)
+
+  function bstAmt(st, pot0, pct) { return pct > 0 ? Math.floor(Math.max(0, pot0 - st) * pct + 1e-6) / 100 : 0; } // sans plafond (version 3)
   // 2026-10-23 (propriétaire : « on doit voir qu'il a gagné un plus ») : bandeau cadeau « Bonus combiné +1,7 % · +0,97 $ ajoutés à ton gain »
   var GIFT = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8.5" width="17" height="4" rx="1" fill="currentColor"/><rect x="5" y="12.5" width="14" height="8" rx="1.2" fill="currentColor" opacity=".85"/><path d="M12 8.5v12" stroke="#7C2D12" stroke-width="2"/><path d="M12 8.3C10 4.5 6.5 5 7.3 7.2c.5 1.3 2.8 1.3 4.7 1.1zM12 8.3c2-3.8 5.5-3.3 4.7-1.1-.5 1.3-2.8 1.3-4.7 1.1z" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
   function bstBanner(pct, amt, cls) {

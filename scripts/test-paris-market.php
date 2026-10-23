@@ -64,7 +64,7 @@ $eP = $ev($idP); $want = sp_mkt_odds($market[$tp][0]);
 check('nouvelles cotes = 0,94 ÷ probabilité du marché (mêmes clés de choix)', array_column($eP['opts'], 'odd') === $want && array_column($eP['opts'], 'k') === ['o0', 'o1', 'o2'], json_encode(array_column($eP['opts'], 'odd')));
 check('source gardée sur l\'événement (betexplorer, moyenne, nombre de bookmakers)', ($eP['mkt']['src'] ?? '') === $market[$tp][2] && ($eP['mkt']['n'] ?? 0) === $market[$tp][1]);
 $mine = sp_my_bets('u_a');
-check('le pari déjà pris garde SA cote (2,38) et son gain possible', $mine && $mine[0]['odd'] === 2.38 && $mine[0]['sel'][0]['odd'] === 2.38 && abs($mine[0]['pot'] - 11.9) < 0.001);
+check('le pari déjà pris garde SA cote (2,38) et son gain possible', $mine && $mine[0]['odd'] === 2.38 && $mine[0]['sel'][0]['odd'] === 2.38 && abs($mine[0]['pot'] - sp_pay(5, 2.38, 1)) < 0.001);
 check('événement de l\'admin : pas touché', array_column($ev($idA)['opts'], 'odd') === [1.90, 3.30, 3.90] && empty($ev($idA)['hold']));
 $pub = array_column(sp_public_events(), 'id');
 check('événement sans cote du marché : caché aux joueurs', !in_array($idH, $pub, true) && in_array($idP, $pub, true) && in_array($idA, $pub, true));

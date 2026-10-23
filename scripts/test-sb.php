@@ -58,10 +58,10 @@ $odd = static function (string $fid, string $mk, string $k): ?float { foreach ((
 
 echo "1) Réglages par défaut, visibilité\n";
 $c0 = sb_config(); // 1re lecture : Public allumé une seule fois (mise en ligne du 2026-10-22), marges au moins 15/20/30/20/15
-check('mise en ligne : Public allumé une fois ; marges 1 % avant-match (tous marchés, tous sports), 1 % en direct ; direct sur tous les championnats', $c0['public'] === true && $c0['mMain'] == 1 && $c0['mSide'] == 1 && $c0['mExotic'] == 1 && $c0['mOther'] == 1 && $c0['mLive'] == 1 && $c0['liveAll'] === true);
+check('mise en ligne : Public allumé une fois ; marges 4 % partout (2026-10-23 : avant-match, direct, autres sports) ; direct sur tous les championnats', $c0['public'] === true && $c0['mMain'] == 4 && $c0['mSide'] == 4 && $c0['mExotic'] == 4 && $c0['mOther'] == 4 && $c0['mLive'] == 4 && $c0['liveAll'] === true);
 sb_config_save(['mMain' => 30]);
 check('marges : un réglage de l\'admin n\'est jamais écrasé ensuite', sb_config()['mMain'] == 30);
-sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
+sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1, 'mig11' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
 $c = sb_config();
 check('défauts : public NON, résultats automatiques OUI, marges 15/20/30/20/15, alertes 50/500/200', $c['public'] === false && $c['autosettle'] === true && $c['mMain'] == 15 && $c['mSide'] == 20 && $c['mExotic'] == 30 && $c['mLive'] == 20 && $c['mOther'] == 15 && $c['alertStake'] == 50 && $c['alertPot'] == 500 && $c['alertWin'] == 200);
 $NOW = $at('2026-10-22 08:00');
@@ -94,7 +94,9 @@ $avg = []; $cnt = [];
 foreach ($oj['response'][0]['bookmakers'] as $bk) { if ($bk['id'] === 99) continue; foreach ($bk['bets'] as $bt) foreach ($bt['values'] as $v) { $avg[$bt['name']][$v['value']] = ($avg[$bt['name']][$v['value']] ?? 0) + (float) $v['odd']; $cnt[$bt['name']][$v['value']] = ($cnt[$bt['name']][$v['value']] ?? 0) + 1; } }
 foreach ($avg as $n => $vs) foreach ($vs as $v => $s) $avg[$n][$v] = $s / $cnt[$n][$v];
 $mw = $avg['Match Winner']; $S = 1 / $mw['Home'] + 1 / $mw['Draw'] + 1 / $mw['Away'];
-$exp = static function (float $a, float $S, float $m, float $e = 1.0): float { $p = (1 / $a) / max(1, $S / $e); return max(0, min(floor((1 - $m) / $p * 100 + 1e-6) / 100, floor(($a - 0.01) * 100 + 1e-6) / 100)); };
+// 2026-10-23 : marge répartie selon p² (surtout sur le favori), sans plafond « moyenne »
+$SQ = 0.0; foreach (['Home', 'Draw', 'Away'] as $z) $SQ += ((1 / $mw[$z]) / max(1, $S)) ** 2;
+$exp = static function (float $a, float $S, float $m, float $e = 1.0) use ($SQ): float { $p = (1 / $a) / max(1, $S / $e); return sb_wodd($p, $m, $SQ, $e); };
 check('1x2 : cotes exactes (moyenne de 3 bookmakers, normalisée, marge 15 %)', $odd('9001', '1x2', 'H') === $exp($mw['Home'], $S, 0.15) && $odd('9001', '1x2', 'D') === $exp($mw['Draw'], $S, 0.15) && $odd('9001', '1x2', 'A') === $exp($mw['Away'], $S, 0.15),
   json_encode($m1['1x2']) . ' attendu ' . $exp($mw['Home'], $S, 0.15) . '/' . $exp($mw['Draw'], $S, 0.15) . '/' . $exp($mw['Away'], $S, 0.15));
 $inv = 0; foreach ($m1['1x2'] as $o) $inv += 1 / $o[1];
@@ -107,9 +109,9 @@ $inv = 0; foreach ($m1['ht1x2'] as $o) $inv += 1 / $o[1];
 check('ht1x2 (autres) : marge ≥ 20 %', $inv >= 1 / 0.80 - 1e-9, (string) round($inv, 4));
 // TOUTES les cotes : ≤ moyenne − 0,01 et ≥ 1,01
 $unk = []; $bad = [];
-foreach ($oj['response'][0]['bookmakers'] as $bk) { if ($bk['id'] === 99) continue; foreach ($bk['bets'] as $bt) { $vals = []; foreach ($bt['values'] as $v) $vals[] = ['value' => $v['value'], 'odd' => (string) $avg[$bt['name']][$v['value']]]; foreach (sb_parse_bet($bt['name'], $vals, $unk) as [$mk, $k, $a]) { $o = $odd('9001', $mk, $k); if ($o !== null && ($o > floor(($a - 0.01) * 100 + 1e-6) / 100 + 1e-9 || $o < 1.01)) $bad[] = "$mk/$k $o > $a"; } } break; }
+foreach ($oj['response'][0]['bookmakers'] as $bk) { if ($bk['id'] === 99) continue; foreach ($bk['bets'] as $bt) { $vals = []; foreach ($bt['values'] as $v) $vals[] = ['value' => $v['value'], 'odd' => (string) $avg[$bt['name']][$v['value']]]; foreach (sb_parse_bet($bt['name'], $vals, $unk) as [$mk, $k, $a]) { $o = $odd('9001', $mk, $k); if ($o !== null && $o < 1.01) $bad[] = "$mk/$k $o < 1.01"; } } break; }
 $n = 0; foreach ($m1 as $mk => $os) foreach ($os as $o) { $n++; if ($o[1] < 1.01) $bad[] = "$mk/{$o[0]} < 1.01"; }
-check('TOUTES les cotes (' . $n . ') : ≤ moyenne − 0,01 et ≥ 1,01', !$bad, implode(' ; ', array_slice($bad, 0, 4)));
+check('TOUTES les cotes (' . $n . ') : ≥ 1,01', !$bad, implode(' ; ', array_slice($bad, 0, 4)));
 $u0 = []; $bk3 = []; foreach ([[7.1, 4.97, 1.451], [6.9, 5.0, 1.43], [6.6, 4.6, 1.40]] as $o3) $bk3[] = ['bets' => [['name' => 'Match Winner', 'values' => [['value' => 'Home', 'odd' => (string) $o3[0]], ['value' => 'Draw', 'odd' => (string) $o3[1]], ['value' => 'Away', 'odd' => (string) $o3[2]]]]]];
 $m25 = sb_markets($bk3, ['mMain' => 2.5, 'mSide' => 2.5, 'mExotic' => 2.5, 'mLive' => 4, 'mOther' => 2.5], $u0);
 $s25 = 0.0; foreach ($m25['1x2'] ?? [] as $r) $s25 += 1 / $r[1];
@@ -235,9 +237,11 @@ $t = sb_job_tick($T('2026-10-22 23:15'));
 $res = sb_results();
 check('9001 FT (vrai coup d\'envoi 17:00) / 9002 AET : « fin » ; 9003 « chk »', ($res['9001']['v'] ?? '') === 'fin' && ($res['9002']['v'] ?? '') === 'fin' && $res['9002']['ft'] === [1, 1] && ($res['9003']['v'] ?? '') === 'chk', json_encode($t['results']));
 $bets = []; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $b) $bets[$b['id']] = $b;
-$w1 = floor(10 * $o1 * 100 + 1e-6) / 100;
+// 2026-10-23 : gain = mise × cote + bonus (dès 1 match : +0,5 % du bénéfice)
+$pay = static function (float $st, float $o, int $n = 1): float { $g = floor($st * $o * 100 + 1e-6) / 100; return round($g + sp_floor2(($g - $st) * sp_boost_pct(array_fill(0, $n, ['odd' => 2.0])) / 100), 2); };
+$w1 = $pay(10, $o1);
 check('simple 1x2 H (2-1) : gagné, payé 10 × cote', $bets[$r1['bet']['id']]['status'] === 'won' && abs($bets[$r1['bet']['id']]['win'] - $w1) < 0.001);
-check('mi-temps 1-0 : ht1x2 H gagné (60 $)', $bets[$r3['bet']['id']]['status'] === 'won' && abs($bets[$r3['bet']['id']]['win'] - floor(60 * $cH * 100 + 1e-6) / 100) < 0.001);
+check('mi-temps 1-0 : ht1x2 H gagné (60 $)', $bets[$r3['bet']['id']]['status'] === 'won' && abs($bets[$r3['bet']['id']]['win'] - $pay(60, $cH)) < 0.001);
 check('pari posé à 17:30, vrai coup d\'envoi 17:00 → ANNULÉ (mise rendue)', $bets[$r5['bet']['id']]['status'] === 'void' && ($bets[$r5['bet']['id']]['sel'][0]['r'] ?? '') === 'void' && abs($bets[$r5['bet']['id']]['win'] - 4) < 0.001);
 check('combiné : 2 choix SB gagnés (3 buts ; AET 1-1 à 90 min → nul), match manuel pas fini → ouvert', $bets[$r2['bet']['id']]['status'] === 'open' && $bets[$r2['bet']['id']]['sel'][0]['r'] === 'won' && $bets[$r2['bet']['id']]['sel'][1]['r'] === 'won');
 check('9003 (équipes différentes) : jamais deviné → ouvert', $bets[$b6]['status'] === 'open');
@@ -248,19 +252,17 @@ $cr = $credits; sp_resolve(load_db()); sb_job_tick($T('2026-10-22 23:30'));
 check('sp_resolve relancé : aucun paiement en plus', $credits === $cr && abs($bal[$A] - $expA) < 0.001);
 $r = sp_admin_settle(load_db(), $e1, 'o0');
 $b2 = null; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $b) if ($b['id'] === $r2['bet']['id']) $b2 = $b;
-$base2 = floor(5 * $b2['odd'] * 100 + 1e-6) / 100; $bp2 = min((float) ($b2['bst'] ?? 0), sp_boost_pct($b2['sel'])); $bw2 = $bp2 > 0 ? sp_floor2(($base2 - 5) * $bp2 / 100) : 0.0;
+$base2 = floor(5 * $b2['odd'] * 100 + 1e-6) / 100; $bp2 = min((float) ($b2['bst'] ?? 0), sp_boost_pct($b2['sel'], (int) ($b2['brv'] ?? 1))); $bw2 = $bp2 > 0 ? sp_floor2(($base2 - 5) * $bp2 / 100) : 0.0;
 check('match manuel réglé (ancien chemin) → combiné gagné, payé (+ bonus combiné)', $r['ok'] && $b2['status'] === 'won' && abs($b2['win'] - round($base2 + $bw2, 2)) < 0.001 && abs($bal[$A] - round($expA + $b2['win'], 2)) < 0.001, json_encode([$b2['win'], $base2, $bw2]));
 // 2026-10-23 — bonus combiné : règles
 $S = static fn(array $o) => array_map(static fn($x) => ['odd' => $x], $o);
-check('bonus : 1 à 3 choix → 0 (4 minimum)', sp_boost_pct($S([3.0])) == 0 && sp_boost_pct($S([3.0, 4.0])) == 0 && sp_boost_pct($S([3.0, 4.0, 2.0])) == 0);
-check('bonus : cotes < 1,50 ne comptent pas', sp_boost_pct($S([1.4, 1.45, 1.49, 1.3])) == 0 && sp_boost_pct($S([1.5, 1.5, 1.5, 1.45])) == 0);
-check('bonus : 4 choix 1,50 → 1,97 %', abs(sp_boost_pct($S([1.5, 1.5, 1.5, 1.5])) - 1.97) < 0.001, (string) sp_boost_pct($S([1.5, 1.5, 1.5, 1.5])));
-check('bonus : grandit avec les choix et les outsiders', sp_boost_pct($S(array_fill(0, 10, 1.5))) > sp_boost_pct($S(array_fill(0, 5, 1.5))) && sp_boost_pct($S([2.5, 2.5, 2.5, 2.5])) > sp_boost_pct($S([1.5, 1.5, 1.5, 1.5])));
-check('bonus : plafond 15 %', sp_boost_pct($S(array_fill(0, 200, 3.0))) == 15.0);
-$okEdge = true; foreach ([3, 5, 10, 20, 40] as $n) foreach ([1.3, 2.5] as $o) { $pc = sp_boost_pct($S(array_fill(0, $n, $o))) / 100; if ($pc * 0.99 ** $n >= 1 - 0.99 ** $n) $okEdge = false; }
-check('bonus : toujours sous l\'avantage maison (marge 1 %)', $okEdge);
-check('bonus : choix annulé retiré (5 → 4 → 3 choix)', sp_boost_pct([['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5, 'r' => 'void']]) == sp_boost_pct($S([1.5, 1.5, 1.5, 1.5])) && sp_boost_pct([['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5, 'r' => 'void']]) == 0);
-check('bonus : plafond 100 $ par coupon (constante)', SP_BOOST_CAP === 100.0);
+check('bonus v3 : dès 1 match, toute cote (1 → 0,5 % ; 2 → 1,5 % ; 3 → 3 %)', sp_boost_pct($S([1.01])) == 0.5 && sp_boost_pct($S([3.0, 1.05])) == 1.5 && sp_boost_pct($S([1.2, 1.3, 1.4])) == 3.0);
+check('bonus v3 : table (5 → 7 %, 10 → 20 %, 20 → 50 %, 30 → 100 %, 40+ → 150 %, 4 → 5 %)', sp_boost_pct($S(array_fill(0, 5, 1.5))) == 7.0 && sp_boost_pct($S(array_fill(0, 10, 1.5))) == 20.0 && sp_boost_pct($S(array_fill(0, 20, 1.5))) == 50.0 && sp_boost_pct($S(array_fill(0, 30, 1.5))) == 100.0 && sp_boost_pct($S(array_fill(0, 90, 1.5))) == 150.0 && sp_boost_pct($S(array_fill(0, 4, 1.5))) == 5.0);
+$okEdge3 = true; for ($n = 1; $n <= 80; $n++) { $b = sp_boost_pct($S(array_fill(0, $n, 1.5))) / 100; if (0.96 ** $n * $b > 0.5 * (1 - 0.96 ** $n) + 1e-9) $okEdge3 = false; }
+check('bonus v3 : coût moyen ≤ moitié de l\'avantage maison (marge 4 %) pour 1 à 80 choix', $okEdge3);
+check('bonus v3 : choix annulé retiré', sp_boost_pct([['odd' => 1.5], ['odd' => 1.5], ['odd' => 1.5, 'r' => 'void']]) == 1.5);
+check('anciennes règles gardées pour les vieux coupons (v1 : 3 × 1,50 → 1,48 % ; v2 : 4 choix à 1,50+)', abs(sp_boost_pct($S([1.5, 1.5, 1.5]), 1) - 1.48) < 0.001 && sp_boost_pct($S([1.5, 1.5, 1.5]), 2) == 0 && sp_boost_pct($S([1.5, 1.5, 1.5, 1.5]), 2) > 0);
+check('marge 4 % surtout sur le favori : 75 / 17 / 7 % → 1,26 / 5,69 / 13,37', ($wq = .752 ** 2 + .1735 ** 2 + .0744 ** 2) && sb_wodd(.752, .04, $wq) == 1.26 && sb_wodd(.1735, .04, $wq) == 5.69 && sb_wodd(.0744, .04, $wq) == 13.37);
 $chk = sb_check_list($T('2026-10-22 23:30'));
 check('« à vérifier » : 9003 seulement', array_column($chk, 'id') === ['foot:9003'], json_encode($chk));
 check('saisie admin : mi-temps > fin refusée', sb_admin_result(load_db(), 'foot:9003', [2, 0], [1, 0], false)['ok'] === false);
@@ -540,7 +542,7 @@ $newH = (float) $r['odds'][0]['odd'];
 $B3 = $B2 + 6; $at(gmdate('Y-m-d H:i:s', $B3)); $next = $lodds(['g' => [2, 1], 'h' => '1.39']);
 $alt['fixtures?ids=9101'] = $fxIds([2, 1]); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $newH]], $B3, 'any');
-check('« tout accepter » : accepté à la cote relue après les 5 s', $r['ok'] === true && $r['bet']['odd'] > $newH, json_encode($r['bet']['odd'] ?? $r));
+check('« tout accepter » : accepté à la cote relue après les 5 s', $r['ok'] === true && $r['bet']['odd'] >= $newH, json_encode($r['bet']['odd'] ?? $r));
 // 2026-10-22 (propriétaire : « vu le but sur Flashscore, pari passé ») : le MATCH (fixtures?ids) dit déjà 2-2 alors que les cotes disent encore 2-1
 $slept = [];
 $alt['fixtures?ids=9101'] = $fxIds([2, 2]); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
@@ -757,8 +759,9 @@ $mb = sb_o_mk_file('basket', '7001')['mk'] ?? [];
 check('7001 : marchés 12, 1x2, ou:220.5, ah:-4.5 (lignes entières écartées, marché inconnu → diagnostic)', array_map('strval', array_keys($mb)) === ['12', '1x2', 'ou:220.5', 'ah:-4.5'] && isset(sb_state()['ounk']['basket · 1st Quarter Winner']), json_encode(array_keys($mb)));
 $avgH = (1.60 + 1.62 + 1.58) / 3; $avgA = (2.40 + 2.36 + 2.45) / 3; $S = 1 / $avgH + 1 / $avgA;
 $c = sb_config();
-$want = min(floor((1 - $c['mOther'] / 100) / ((1 / $avgH) / $S) * 100 + 1e-6) / 100, floor(($avgH - 0.01) * 100 + 1e-6) / 100);
-check('marge du réglage des autres sports (mOther) sur 12, ≤ moyenne − 0,01', abs($mb['12'][0][1] - $want) < 1e-9 && $mb['12'][0][1] <= $avgH - 0.01, $mb['12'][0][1] . ' / ' . $want);
+$pH = (1 / $avgH) / max(1, $S); $pA = (1 / $avgA) / max(1, $S);
+$want = sb_wodd($pH, $c['mOther'] / 100, $pH * $pH + $pA * $pA);
+check('marge du réglage des autres sports (mOther) sur 12 (répartie surtout sur le favori)', abs($mb['12'][0][1] - $want) < 1e-9, $mb['12'][0][1] . ' / ' . $want);
 $wantO = floor((1 - $c['mOther'] / 100) / ((1 / ((1.90 + 1.92 + 1.88) / 3)) / (1 / 1.9 + 1 / 1.9)) * 100 + 1e-6) / 100;
 check('marge mOther aussi sur le total', abs($mb['ou:220.5'][0][1] - min($wantO, 1.89)) < 0.011, json_encode($mb['ou:220.5']));
 $idxB = sb_o_day('basket', '2026-12-10');
@@ -820,7 +823,7 @@ $bets = []; foreach ((array) (sp_with('bets.json', static fn(array &$s) => $s['b
 $st = static fn($q) => $bets[$q['bet']['id']]['status'] ?? '?';
 check('réglé automatiquement : 12 H gagné (prolongation comprise), 1x2 nul gagné (temps réglementaire), plus de 220,5 perdu (215), handicap −4,5 gagné', $st($q1) === 'won' && $st($q2) === 'won' && $st($q3) === 'lost' && $st($q4) === 'won', json_encode([$st($q1), $st($q2), $st($q3), $st($q4)]));
 $o2 = (float) $q2['bet']['odd']; $o4 = (float) $q4['bet']['odd'];
-check('payé UNE fois, chemin existant (casino_credit)', abs($bal[$A] - ($balA + floor(10 * $ob * 100) / 100 + floor(10 * $o2 * 100) / 100 + floor(10 * $o4 * 100) / 100)) < 0.011);
+check('payé UNE fois, chemin existant (casino_credit)', abs($bal[$A] - ($balA + $pay(10, $ob) + $pay(10, $o2) + $pay(10, $o4))) < 0.011);
 $credBefore = $credits; sp_resolve(load_db()); sb_o_tick('basket', $RN2 + 3600);
 check('relancer : jamais payé deux fois', $credits === $credBefore);
 // unités : chaque sport

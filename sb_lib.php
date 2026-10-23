@@ -133,6 +133,11 @@ function sb_config(): array {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig9'])) return true; $s['mLive'] = 1; $s['mig9'] = 1; return true; });
     $c = sb_read('config.json');
   }
+  // 2026-10-23 (propriétaire : « tout à 4 % : avant-match, direct, autres sports ») : une seule fois
+  if (empty($c['mig11'])) {
+    sb_with('config.json', static function (array &$s) { if (!empty($s['mig11'])) return true; foreach (['mMain', 'mSide', 'mExotic', 'mOther', 'mLive'] as $k) $s[$k] = 4; $s['mig11'] = 1; return true; });
+    $c = sb_read('config.json');
+  }
   // 2026-10-22 (propriétaire : « avec les contrôles de 15 s, active tout ») : une seule fois, direct sur TOUS les championnats
   if (empty($c['mig10'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig10'])) return true; $s['liveAll'] = true; $s['mig10'] = 1; return true; });
@@ -154,7 +159,7 @@ function sb_config_save(array $in): array {
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['sports']) && is_array($in['sports'])) $cur['sports'] = array_values(array_intersect(SB_CFG_DEFAULT['sports'], array_map('strval', $in['sports'])));
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1, 'mig11' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
@@ -289,6 +294,17 @@ function sb_margin(string $fam, array $cfg): float {
   elseif (in_array($fam, ['cs', 'htcs', 'htft', 'eg', 'rbtts', 'rou'], true)) $m = $cfg['mExotic'];
   else $m = $cfg['mSide'];
   return max(0.01, min(0.4, (float) $m / 100));
+}
+/**
+ * 2026-10-23 (propriétaire : « tout à 4 %, la marge surtout sur le favori, comme les grands ») — cote d'un choix de probabilité $p
+ * (sans marge) dans un groupe de somme $exp (1, ou 2 pour la double chance) dont la somme des p² vaut $sq : la marge totale vaut
+ * $m (même total qu'avant), répartie selon p² → le favori porte presque toute la marge, nul et outsider gardent de belles cotes.
+ */
+function sb_wodd(float $p, float $m, float $sq, float $exp = 1.0): float {
+  if ($p <= 0) return 0.0;
+  $M = $m / max(0.01, 1 - $m);
+  $d = $sq > 0 ? $M * $exp * $p * $p / $sq : $M * $p;
+  return floor(1 / ($p + $d) * 100 + 1e-6) / 100;
 }
 /** Ligne canonique : 2.5 → « 2.5 », -1 → « -1 », 0 → « 0 ». */
 function sb_line(float $x): string { if (abs($x) < 1e-9) return '0'; $s = rtrim(rtrim(number_format($x, 2, '.', ''), '0'), '.'); return $s; }
@@ -458,10 +474,10 @@ function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
     $inv = 0.0; foreach ($avg as $a) $inv += 1 / $a;
     $norm = max(1.0, $inv / sb_expected($fam));
     $m = sb_margin($fam, $cfg);
-    $row = [];
+    $row = []; $sq = 0.0; foreach ($avg as $a) $sq += ((1 / $a) / $norm) ** 2;
     foreach ($avg as $k => $a) {
       $p = (1 / $a) / $norm;
-      $o = floor((1 - $m) / $p * 100 + 1e-6) / 100;
+      $o = sb_wodd($p, $m, $sq, sb_expected($fam));
       // 2026-10-22 (propriétaire : « plus haut que 1xBet ») : plus de plafond « moyenne − 0,01 » ; seule la marge du réglage compte
       if ($o < 1.01) continue;
       $row[] = [(string) $k, round($o, 2)];
@@ -1637,11 +1653,10 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
     $exp = sb_expected($fam);
     if ($inv < 0.98 * $exp || $inv > 1.35 * $exp) { $kk = '(contrôle) direct ' . $fam . ' incohérent'; $unk[$kk] = ($unk[$kk] ?? 0) + 1; continue; }
     $norm = max(1.0, $inv / $exp);
-    $row = [];
+    $row = []; $sq = 0.0; foreach ($ks as $z) $sq += ((1 / $z[0]) / $norm) ** 2;
     foreach ($ks as $k => $z) {
       $p = (1 / $z[0]) / $norm;
-      $our = floor((1 - $m) / $p * 100 + 1e-6) / 100;
-      $our = min($our, floor(($z[0] - 0.01) * 100 + 1e-6) / 100);
+      $our = sb_wodd($p, $m, $sq, $exp); // 2026-10-23 : marge du direct = réglage (4 %), plus le plafond « cote du flux − 0,01 »
       if ($our < 1.01) continue;
       $row[] = [(string) $k, round($our, 2), $z[1]];
     }
@@ -2451,10 +2466,10 @@ function sb_o_markets(string $sp, array $bookmakers, array $cfg, array $names, a
     $inv = 0.0; foreach ($avg as $a) $inv += 1 / $a;
     $norm = max(1.0, $inv);
     $m = sb_o_margin($fam, $cfg);
-    $row = [];
+    $row = []; $sq = 0.0; foreach ($avg as $a) $sq += ((1 / $a) / $norm) ** 2;
     foreach ($avg as $k => $a) {
       $p = (1 / $a) / $norm;
-      $o = floor((1 - $m) / $p * 100 + 1e-6) / 100;
+      $o = sb_wodd($p, $m, $sq);
       // 2026-10-22 (propriétaire : « plus haut que 1xBet ») : plus de plafond « moyenne − 0,01 » ; seule la marge du réglage compte
       if ($o < 1.01) continue;
       $row[] = [(string) $k, round($o, 2)];
