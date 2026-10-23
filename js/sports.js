@@ -444,6 +444,9 @@
   }
 
   var lastBet = null, clearArm = 0, sending = false;
+  // grands championnats (même liste que le serveur, SB_LIVE_BIG) : 15 s de contrôle en direct ; les autres : 25 s
+  var LIVE_BIG = [2, 3, 848, 39, 140, 135, 78, 61, 94, 88, 203, 1, 4, 5, 6, 9, 15, 32, 34, 45, 48, 66, 81, 137, 143, 531];
+  function liveSmall() { return slip.some(function (s) { if (!s.lv) return false; var f = sbFx(s.fx); return !f || LIVE_BIG.indexOf(+f.lg) < 0; }); }
   function guestNote() { var x = X(); if (D6.App && D6.App.toast) D6.App.toast(x.guestBet, 'info'); }
   // ---------- MES PARIS ----------
   function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString(loc(), { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }); }
@@ -806,7 +809,7 @@
     g.disabled = on; g.classList.toggle('wait', on); g.setAttribute('aria-busy', on ? 'true' : 'false');
     var p = g.querySelector('.sp2-prog');
     if (on) {
-      if (!sendT0) { sendT0 = Date.now(); sendDur = live ? 15500 : 1600; } // direct : jusqu'à 15 s de contrôles (le serveur répond plus tôt s'il refuse)
+      if (!sendT0) { sendT0 = Date.now(); sendDur = live ? (liveSmall() ? 25500 : 15500) : 1600; } // direct : 15 s de contrôles (petits championnats : 25 s) ; le serveur répond plus tôt s'il refuse
       if (!p) { p = document.createElement('i'); p.className = 'sp2-prog'; p.setAttribute('aria-hidden', 'true'); p.innerHTML = '<i></i>'; g.insertBefore(p, g.firstChild); }
       // bouton refait pendant l'envoi (cotes qui bougent) : la barre reprend où elle en était. En ligne et « important » :
       // elle bouge aussi en mode léger (html.oro-lite, retenu 7 jours sur un téléphone lent : c'est ce qui figeait la roue).
@@ -840,7 +843,7 @@
     var known = {}; (mineCache || []).forEach(function (b) { known[b.id] = 1; });
     var sentAt = nowS(), r = null;
     // 2026-10-21 : les cotes AFFICHÉES partent avec le pari, et le réglage du joueur pour les changements de cotes (acc)
-    try { r = await D6.Api.post('spBet', { mode: 'real', stake: st, sel: sel, acc: accMode() }, zs.some(function (z) { return z.lv; }) ? 35000 : 20000); } catch (e) { r = null; }
+    try { r = await D6.Api.post('spBet', { mode: 'real', stake: st, sel: sel, acc: accMode() }, zs.some(function (z) { return z.lv; }) ? 55000 : 20000); } catch (e) { r = null; }
     if (!r) { var found = await recover(sentAt, st, titles, known); if (found) r = { ok: true, bet: found, bal: null }; }
     return r;
   }
