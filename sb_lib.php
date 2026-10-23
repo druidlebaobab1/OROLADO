@@ -834,16 +834,26 @@ function sb_odds_to_rows(array $j, array &$unk): array {
     if ($id <= 0) continue;
     $mk = sb_markets((array) ($r['bookmakers'] ?? []), $cfg, $unk);
     if ($mk) $out[(string) $id] = $mk;
+    $bk = null; foreach ((array) ($r['bookmakers'] ?? []) as $b) if (is_array($b) && count((array) ($b['bets'] ?? [])) > count((array) ($bk['bets'] ?? []))) $bk = $b;
+    if ($bk && count((array) $bk['bets']) >= 40) sb_raw_sample('raw-pre.json', ['fx' => $id, 'bk' => (string) ($bk['name'] ?? ''), 'bets' => $bk['bets']], sb_now());
   }
   return $out;
+}
+const SB_UNK_V = 3; // version de la liste des paris connus (diagnostic « paris non lus » remis à zéro à chaque version)
+/** Échantillon brut d'un match (diagnostic admin : forme exacte des paris du fournisseur), gardé ≤ 1 fois / 10 min. */
+function sb_raw_sample(string $file, array $data, int $now): void {
+  $f = sb_dir() . DIRECTORY_SEPARATOR . $file; clearstatcache(true, $f);
+  if (is_file($f) && filemtime($f) > $now - 600) return;
+  @file_put_contents($f, json_encode(['at' => $now] + $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
 }
 function sb_note_unknown(array $unk): void {
   if (!$unk) return;
   sb_with('state.json', static function (array &$s) use ($unk) {
+    if ((int) ($s['unkV'] ?? 0) !== SB_UNK_V) { $s['unk'] = []; $s['unkLive'] = []; $s['unkV'] = SB_UNK_V; } // remis à zéro quand le site apprend de nouveaux paris
     $u = (array) ($s['unk'] ?? []);
     foreach ($unk as $k => $n) $u[$k] = (int) ($u[$k] ?? 0) + (int) $n;
     arsort($u);
-    $s['unk'] = array_slice($u, 0, 80, true);
+    $s['unk'] = array_slice($u, 0, 250, true);
     return true;
   });
 }
@@ -1875,9 +1885,10 @@ function sb_clk_zero(array $zs): int {
 }
 /** /odds/live → live.json (od) : score, minute, état, marchés ; « chg » = score différent de la lecture précédente. */
 function sb_live_store_odds(array $j, int $now): int {
-  $cfg = sb_config(); $od = []; $unk = [];
+  $cfg = sb_config(); $od = []; $unk = []; $rawBest = null;
   foreach ((array) ($j['response'] ?? []) as $r) {
     if (!is_array($r) || ($id = (int) ($r['fixture']['id'] ?? 0)) <= 0) continue;
+    if (count((array) ($r['odds'] ?? [])) > count((array) ($rawBest['odds'] ?? []))) $rawBest = $r;
     $sc = [(int) ($r['teams']['home']['goals'] ?? 0), (int) ($r['teams']['away']['goals'] ?? 0)];
     $st = (array) ($r['status'] ?? []);
     $od[(string) $id] = ['sc' => $sc, 'm' => is_numeric($r['fixture']['status']['elapsed'] ?? null) ? (int) $r['fixture']['status']['elapsed'] : null,
@@ -1924,10 +1935,12 @@ function sb_live_store_odds(array $j, int $now): int {
     $s['od'] = $od; $s['at'] = $now;
     return true;
   });
+  if ($rawBest) sb_raw_sample('raw-live.json', ['fx' => $rawBest['fixture'] ?? null, 'teams' => $rawBest['teams'] ?? null, 'status' => $rawBest['status'] ?? null, 'odds' => $rawBest['odds'] ?? []], $now);
   if ($unk) sb_with('state.json', static function (array &$s) use ($unk) {
+    if ((int) ($s['unkV'] ?? 0) !== SB_UNK_V) { $s['unk'] = []; $s['unkLive'] = []; $s['unkV'] = SB_UNK_V; }
     $u = (array) ($s['unkLive'] ?? []);
     foreach ($unk as $k => $n) $u[$k] = (int) ($u[$k] ?? 0) + (int) $n;
-    arsort($u); $s['unkLive'] = array_slice($u, 0, 60, true);
+    arsort($u); $s['unkLive'] = array_slice($u, 0, 250, true);
     return true;
   });
   return count($od);

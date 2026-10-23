@@ -456,7 +456,9 @@ if ($action === 'affClick') {
 // 2026-10-23 — sbUnk : noms des paris du fournisseur que le site ne lit pas encore (diagnostic public, noms seulement, aucune clé)
 if ($action === 'sbUnk') {
   $stU = function_exists('sb_state') ? sb_state() : [];
-  echo json_encode(['ok' => true, 'server' => true, 'unk' => (array) ($stU['unk'] ?? []), 'unkLive' => (array) ($stU['unkLive'] ?? []), 'unkOther' => (array) ($stU['ounk'] ?? [])], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  $rawU = [];
+  if (!empty($req['raw']) && function_exists('sb_dir')) foreach (['pre' => 'raw-pre.json', 'live' => 'raw-live.json'] as $kU => $fU) { $jU = json_decode((string) @file_get_contents(sb_dir() . DIRECTORY_SEPARATOR . $fU), true); if (is_array($jU)) $rawU[$kU] = $jU; } // échantillon brut des cotes d'un match (forme exacte des paris)
+  echo json_encode(['ok' => true, 'server' => true, 'unk' => (array) ($stU['unk'] ?? []), 'unkLive' => (array) ($stU['unkLive'] ?? []), 'unkOther' => (array) ($stU['ounk'] ?? [])] + ($rawU ? ['raw' => $rawU] : []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   exit;
 }
 if ($action === 'sbStats') {
