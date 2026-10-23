@@ -1069,7 +1069,15 @@ function sb_res_row(array $r): ?array {
   $ft = is_array($r['ft'] ?? null) ? $r['ft'] : (is_array($r['g'] ?? null) ? $r['g'] : null);
   if (!$ft) return null;
   return ['ts' => (int) ($r['ts'] ?? 0), 'lg' => (int) ($r['lg'] ?? 0), 'st' => (string) $r['st'], 'h' => [(string) ($r['h'][1] ?? ''), (string) ($r['h'][2] ?? '')],
-    'a' => [(string) ($r['a'][1] ?? ''), (string) ($r['a'][2] ?? '')], 'ft' => [(int) $ft[0], (int) $ft[1]], 'ht' => is_array($r['ht'] ?? null) ? [(int) $r['ht'][0], (int) $r['ht'][1]] : null];
+    'a' => [(string) ($r['a'][1] ?? ''), (string) ($r['a'][2] ?? '')], 'ft' => [(int) $ft[0], (int) $ft[1]], 'ht' => is_array($r['ht'] ?? null) ? [(int) $r['ht'][0], (int) $r['ht'][1]] : null]
+    + (($o = sb_res_odds($r['o'] ?? null)) ? ['o' => $o] : []);
+}
+/** 2026-10-23 (propriétaire : « les cotes de la victoire, du nul, de l'adversaire » dans les résultats) : dernières cotes 1 · X · 2 connues. */
+function sb_res_odds($o): ?array {
+  if (!is_array($o)) return null;
+  $by = [];
+  foreach ($o as $z) if (is_array($z) && in_array((string) ($z[0] ?? ''), ['H', 'D', 'A'], true) && (float) ($z[1] ?? 0) > 1) $by[(string) $z[0]] = round((float) $z[1], 2);
+  return isset($by['H'], $by['A']) ? [$by['H'], $by['D'] ?? null, $by['A']] : null;
 }
 /** Index du jour {lg, fx} → fichier de résultats du jour (grands championnats + ceux de nos cotes). */
 function sb_res_from_index(string $day, array $idx, int $now): array {
@@ -1170,7 +1178,7 @@ function sb_results_list(?array $user, $day, int $tz = 0, int $now = 0, $date = 
       if ($ts < $from || $ts >= $to) continue;
       $fx[(string) $id] = ['id' => 'foot:' . $id, 'lg' => (int) $r['lg'], 'ts' => $ts, 'st' => (string) $r['st'],
         'h' => ['n' => (string) ($r['h'][0] ?? ''), 'lo' => (string) ($r['h'][1] ?? '')], 'a' => ['n' => (string) ($r['a'][0] ?? ''), 'lo' => (string) ($r['a'][1] ?? '')],
-        'ft' => array_map('intval', (array) $r['ft']), 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', $r['ht']) : null];
+        'ft' => array_map('intval', (array) $r['ft']), 'ht' => is_array($r['ht'] ?? null) ? array_map('intval', $r['ht']) : null] + (is_array($r['o'] ?? null) ? ['o' => $r['o']] : []);
       if (!isset($lgs[(int) $r['lg']]) && isset($j['lg'][(string) $r['lg']])) $lgs[(int) $r['lg']] = ['id' => (int) $r['lg']] + (array) $j['lg'][(string) $r['lg']];
     }
   }
