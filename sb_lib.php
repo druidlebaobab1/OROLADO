@@ -2685,6 +2685,13 @@ function sb_live_wait(int $sec, int $now): int {
  * match suspendu → « susp » ; cote changée → règle $acc (« odds »). Rien trouvé au bout des 15 s → accepté (cotes relues).
  */
 const SB_LIVE_HOLD = 15;
+/* 2026-10-23 (propriétaire : « les petits championnats à 25 secondes ») : hors de la liste des grands championnats (SB_LIVE_BIG :
+   coupes d'Europe, 8 grands championnats, coupes nationales, sélections), les données arrivent plus lentement → 25 s de contrôles */
+const SB_LIVE_HOLD_SMALL = 25;
+function sb_live_hold(array $ids, array $L): int {
+  foreach ($ids as $id) if (!in_array((int) ($L['fx'][(string) $id]['lg'] ?? 0), SB_LIVE_BIG, true)) return SB_LIVE_HOLD_SMALL;
+  return SB_LIVE_HOLD;
+}
 const SB_LIVE_STEP = 3;
 /** Le match lui-même, relu chez le fournisseur (gardé 2 s : plusieurs paris en même temps = une seule lecture). */
 function sb_live_fx_fresh(array $ids, int $now): array {
@@ -2748,14 +2755,15 @@ function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?
   foreach ($picked as $p) if (!empty($p['lv'])) $ids[] = (int) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']);
   $L0 = sb_live_data(); $base = [];
   foreach (array_unique($ids) as $id) $base[(string) $id] = sb_live_p1x2((array) ($L0['od'][(string) $id]['r1'] ?? []));
-  $t = $now; $done = 0; $seen = 0;
-  while ($done < SB_LIVE_HOLD) {
-    $step = min(SB_LIVE_STEP, SB_LIVE_HOLD - $done);
+  $t = $now; $done = 0; $seen = 0; $hold = sb_live_hold(array_unique($ids), $L0);
+  if (function_exists('set_time_limit')) @set_time_limit(90);
+  while ($done < $hold) {
+    $step = min(SB_LIVE_STEP, $hold - $done);
     $t = sb_live_wait($step, $t); $done += $step;
     sb_live_refresh_now($t);
     $fx = sb_live_fx_fresh($ids, $t);
     if (count($fx) >= count(array_unique($ids))) $seen++;
-    $r = sb_live_check($picked, $acc, $user, $t, $fx, $done >= SB_LIVE_HOLD, $base);
+    $r = sb_live_check($picked, $acc, $user, $t, $fx, $done >= $hold, $base);
     if ($r !== null) { $now = $t; return $r; }
   }
   $now = $t;

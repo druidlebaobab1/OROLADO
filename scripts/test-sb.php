@@ -1003,6 +1003,9 @@ $B2 = [['eg', '3', 'won'], ['eg', '4+', 'lost'], ['hteg', '1', 'won'], ['weh', '
 $bad = []; foreach ($B2 as [$mk, $k, $w]) { $g = sb_settle_mk($mk, $k, $FT4, $HT4, $xs3); if ($g !== $w) $bad[] = "$mk/$k=" . var_export($g, true) . "≠$w"; }
 check(count($B2) . ' règlements de la 2e série (mené 0-1, gagne 2-1)', !$bad, implode(' ; ', $bad));
 
+check('contrôle du direct : grand championnat (Premier League) 15 s ; petit championnat 25 s ; combiné avec un petit = 25 s',
+  sb_live_hold(['1'], ['fx' => ['1' => ['lg' => 39]]]) === 15 && sb_live_hold(['2'], ['fx' => ['2' => ['lg' => 383]]]) === 25 && sb_live_hold(['1', '2'], ['fx' => ['1' => ['lg' => 39], '2' => ['lg' => 383]]]) === 25);
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);
