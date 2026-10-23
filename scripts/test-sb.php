@@ -985,6 +985,22 @@ check('direct : score final, n-ième but, minute, 10 minutes, corners exacts', $
 check('direct : joueurs (buteur du 4e but, tirs « Nom/Over 1.5 », averti)', $P2('Goal Scorer', 'Tom Lawrence', '4') === ['ngs:4', 'Tom Lawrence'] && $P2('Player Shots', 'Justin Vidic/Over 1.5') === ['psh:1.5', 'Justin Vidic'] && $P2('Player to be Booked', 'Cher Deng') === ['pbk', 'Cher Deng']);
 check('direct : marchés non réglables écartés sans bruit ; nom inconnu = 0', $P2('Race to the 7th corner?', '1') === false && $P2('Method of 4th Goal', 'Header') === false && $P2('Last Corner', '1') === false && $P2('Something New', 'x') === 0);
 
+// 2026-10-23 — 2e série avant-match (échantillon Betano) : nombre exact « more N », mi-temps, penalty, revenu au score, tirs, cartons
+$uB = [];
+$eg = sb_parse_bet('Exact Goals Number', array_map(static fn($v) => ['value' => $v, 'odd' => '5'], [0, 1, 2, 3, 4, 5, 6, 'more 7']), $uB);
+$eg2 = sb_parse_bet('Exact Goals Number', array_map(static fn($v) => ['value' => $v, 'odd' => '5'], ['0', '1', '2', '3', '4', '5', 'more 5']), $uB);
+check('nombre exact : « more 7 » (7 pas proposé seul) = 7+ ; « more 5 » (5 proposé seul) = 6+', end($eg)[1] === '7+' && end($eg2)[1] === '6+', json_encode([end($eg), end($eg2)]));
+$xs3 = ['st' => 'FT', 'co' => [5, 4], 'cd' => [3, 1], 'sh' => [14, 9], 'so' => [6, 3], 'pm' => [['a', 55]],
+  'gl' => [['a', 20, 'X. Away', 0, 0], ['h', 50, 'Y. Home', 0, 1], ['h', 88, 'Z. Home', 0, 0]], 'ce' => [['P. A', 1, 'a', 30], ['P. B', 0, 'h', 70]], 'pl' => ['X. Away', 'Y. Home', 'Z. Home'], 'ps' => []];
+$FT4 = [2, 1]; $HT4 = [0, 1]; // mené 0-1 à la pause, gagne 2-1 (penalty à la 50e)
+$B2 = [['eg', '3', 'won'], ['eg', '4+', 'lost'], ['hteg', '1', 'won'], ['weh', 'H', 'won'], ['weh', 'A', 'won'], ['wbx', 'H', 'lost'], ['gbh', 'Y', 'won'], ['sd', 'N', 'won'],
+  ['oubt:2.5', 'O/Y', 'won'], ['oubt:2.5', 'O/N', 'lost'], ['htdnb', 'A', 'won'], ['2hdnb', 'H', 'won'], ['2heh:-1', 'H', 'won'], ['2heh:-2', 'D', 'won'],
+  ['htfts', 'A', 'won'], ['og', 'N', 'won'], ['pen', 'H', 'won'], ['pen', 'A', 'lost'], ['pmiss', 'A', 'won'], ['pmiss', 'H', 'lost'], ['hcfb', 'Y', 'won'], ['acfb', 'Y', 'lost'],
+  ['gi:15', 'O', 'won'], ['gi:30', 'O', 'lost'], ['gi:45', 'O', 'won'], ['htrc', 'Y', 'won'], ['kah:-1.5', 'H', 'won'], ['kah:-2', 'H', 'void'],
+  ['sog:8.5', 'O', 'won'], ['tsh:23', 'O', 'void'], ['tshh:13.5', 'O', 'won'], ['tsha:9.5', 'U', 'won'], ['rm:10', 'D', 'won'], ['rm:60', 'H', 'lost'], ['rm:60', 'D', 'won']];
+$bad = []; foreach ($B2 as [$mk, $k, $w]) { $g = sb_settle_mk($mk, $k, $FT4, $HT4, $xs3); if ($g !== $w) $bad[] = "$mk/$k=" . var_export($g, true) . "≠$w"; }
+check(count($B2) . ' règlements de la 2e série (mené 0-1, gagne 2-1)', !$bad, implode(' ; ', $bad));
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);
