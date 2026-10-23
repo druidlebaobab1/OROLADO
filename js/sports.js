@@ -424,13 +424,13 @@
     if (!e || !e.open || e.susp || nowS() >= e.start) return;
     var o = e.opts.filter(function (z) { return z.k === k; })[0]; if (!o) return;
     var had = inSlip(ev, k), n0 = slip.length;
-    if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 1000) { if (ctx.toast) ctx.toast(x.max10); return; } // 2026-10-21 : 50 matchs (avant 10)
+    if (!had && !slip.some(function (s) { return s.ev === ev; }) && slip.length >= 1000) { sbToast(x.max10, 'err'); return; } // 2026-10-21 : 50 matchs (avant 10)
     // v2810 : une prédiction se joue SEULE ; deux choix liés (même groupe : même match, même actif…) jamais dans le même coupon
     if (!had) {
       var xx = XX(), others = slip.filter(function (s) { return s.ev !== ev; }).map(function (s) { return evById(s.ev) || { q: !!s.q, grp: s.grp || [] }; });
       var isQ = function (z) { return !!(z && (z.q || EVK[z.sport])); }, g = e.grp || [];
-      if (others.length && (isQ(e) || others.some(isQ))) { if (ctx.toast) ctx.toast(xx.e_single, 'info'); return; }
-      if (others.some(function (z) { return (z.grp || []).some(function (y) { return g.indexOf(y) > -1; }); })) { if (ctx.toast) ctx.toast(xx.e_corr, 'info'); return; }
+      if (others.length && (isQ(e) || others.some(isQ))) { sbToast(xx.e_single, 'info'); return; }
+      if (others.some(function (z) { return (z.grp || []).some(function (y) { return g.indexOf(y) > -1; }); })) { sbToast(xx.e_corr, 'info'); return; }
     }
     slip = slip.filter(function (s) { return s.ev !== ev; }); // un seul choix par match
     if (!had) slip.push({ ev: ev, k: k, odd: o.odd, t: trT(e), l: trOp(e, o), q: !!(e.q || EVK[e.sport]), grp: e.grp || [] });
@@ -590,7 +590,7 @@
       var txt = 'OROLADO · ' + x.rcTitle + ' ' + no + (bt.code ? ' · ' + NX().betCode + ' ' + bt.code : '') + '\n' + bt.sel.map(function (s) { return '• ' + s.t + ' — ' + s.l + ' (' + Number(s.odd).toFixed(2) + ')'; }).join('\n') +
         '\n' + x.stakeL + ' ' + m2(bt.stake) + ' $ · ' + x.totalOdd + ' ' + Number(bt.odd).toFixed(2) + ' · ' + stTxt + '\nhttps://orolado.com';
       try { if (navigator.share) { navigator.share({ text: txt }).catch(function () { /* ignore */ }); return; } } catch (e) { /* ignore */ }
-      try { navigator.clipboard.writeText(txt); if (ctx && ctx.toast) ctx.toast('✓'); } catch (e) { /* ignore */ }
+      try { navigator.clipboard.writeText(txt); sbToast('✓', 'ok'); } catch (e) { /* ignore */ }
     });
   }
 
@@ -694,7 +694,11 @@
       var pot = each ? slip.reduce(function (a, z) { return a + sp2Pot(stOf(z), z.odd); }, 0) : sp2Pot(stake, totalOdd());
       if ($('spBst')) {
         var bp = bstPct(slip), ba = bstAmt(stake, pot, bp), bh = slip.length < 2 && !bp ? '' : bstBanner(bp, ba);
-        if ($('spBst').innerHTML !== bh) $('spBst').innerHTML = bh;
+        if ($('spBst').innerHTML !== bh) {
+          var grew = bp > 0 && (+$('spBst').getAttribute('data-p') || 0) < bp;
+          $('spBst').innerHTML = bh; $('spBst').setAttribute('data-p', String(bp));
+          var bb = $('spBst').querySelector('.pz-bstb'); if (bb && grew) { bb.classList.remove('bump'); void bb.offsetWidth; bb.classList.add('bump'); } // le bonus grandit : petit éclat
+        }
         pot = Math.floor((pot + ba) * 100 + 1e-6) / 100;
       }
       setTx($('spPot'), money(pot));
@@ -836,13 +840,13 @@
     var x = XX();
     if (ctx.guest) { guestNote(); if (ctx.signup) ctx.signup(); return; }
     if (sending || !slip.length) return;
-    if (slip.some(function (z) { return z.closed; })) { if (ctx.toast) ctx.toast(x.e_closed); return; }
-    if (slip.some(function (z) { return z.susp; })) { if (ctx.toast) ctx.toast(NX().e_susp); return; }
+    if (slip.some(function (z) { return z.closed; })) { sbToast(x.e_closed, 'err'); return; }
+    if (slip.some(function (z) { return z.susp; })) { sbToast(NX().e_susp, 'err'); return; }
     var each = mode() === 'single' && slip.length > 1;
     var jobs = each ? slip.map(function (z) { return { zs: [z], st: stOf(z) }; }) : [{ zs: slip.slice(), st: stake }];
-    if (jobs.some(function (j) { return j.st < 0.1 - 1e-9; })) { if (ctx.toast) ctx.toast(x.e_min); return; }
+    if (jobs.some(function (j) { return j.st < 0.1 - 1e-9; })) { sbToast(x.e_min, 'err'); return; }
     var tot = jobs.reduce(function (a, j) { return a + j.st; }, 0), b0 = curBal();
-    if (b0 != null && tot > b0 + 1e-9) { if (ctx.toast) ctx.toast(x.errBal); if (ctx.deposit) ctx.deposit(); return; }
+    if (b0 != null && tot > b0 + 1e-9) { sbToast(x.errBal, 'err'); if (ctx.deposit) ctx.deposit(); return; }
     sending = true; busy(true);
     var okBets = [], fails = [], lastR = null, failR = null;
     for (var i = 0; i < jobs.length; i++) {
@@ -871,7 +875,7 @@
     if (why === 'odds' || why === 'closed') { var l = await fetchList(); if (l) { lastList = events = l; lastJson = JSON.stringify(l); syncSlip(); } }
     if (view === 'slip') render();
     if (wasLive && (why === 'susp' || why === 'odds' || why === 'closed')) { refuseCard(why === 'odds' ? 'odds' : 'ev', okBets.length ? fmt(x.partial, { ok: okBets.length, n: jobs.length }) : ''); return; }
-    if (ctx.toast) ctx.toast((okBets.length ? fmt(x.partial, { ok: okBets.length, n: jobs.length }) + ' · ' : '') + (x['e_' + why] || NX()['e_' + why] || x.e_unavailable));
+    sbToast((okBets.length ? fmt(x.partial, { ok: okBets.length, n: jobs.length }) + ' · ' : '') + (x['e_' + why] || NX()['e_' + why] || x.e_unavailable), 'err');
   }
   /* 2026-10-22 (propriétaire : « un vrai message, pas un SMS ; comme les grandes plateformes, sans fâcher ») — pari en direct
      refusé : petite carte au centre (icône, titre, une phrase, « Compris »), sur le ticket. */
@@ -982,51 +986,51 @@
     fr: ['Populaire', 'Direct', 'Coupon', 'Mes paris', 'Menu', 'En direct', 'Tout voir', 'Commence bientôt', 'Top matchs', 'Tous les matchs', 'Dans {x}', 'Heure', 'Dès {h}', 'Commence dans', 'Mi-temps', 'Terminé', 'BUT !', 'Carton rouge', 'Fin du match',
       'Événements', 'Statistiques', 'Pas encore d’événement.', 'Aucun match en direct pour l’instant.', 'Suspendu', 'Cotes suspendues (but ou action en cours) : réessaie dans un instant.', 'Partager le code', 'Code', 'Retour', 'Sports', 'Règles', 'Validation en direct…',
       'Possession', 'Tirs', 'Tirs cadrés', 'Corners', 'Cartons jaunes', 'Cartons rouges', 'Attaques', 'Attaques dangereuses', 'pen.', 'c.s.c.', 'VAR', 'Remplacement', 'Coup d’envoi', 'Résultats', 'Hier', 'Avant-hier', 'MT', 'Aucun résultat pour ce jour.',
-      'Inscris-toi pour parier et retrouver tes paris ici.', 'Fin', 'Pari non accepté', 'Un événement vient de se produire dans ce match. Votre pari n’a pas été placé et votre solde reste intact.', 'Les cotes ont changé pendant la validation. Votre pari n’a pas été placé et votre solde reste intact.', 'Compris', 'Voir les {n} sélections', 'Réduire', 'Rechercher un match en direct', 'Rechercher un résultat', 'Bonus combiné', 'Bonus combiné : 3 matchs ou plus à cote 1,20+', 'Maximum 100 favoris : retire une étoile pour en ajouter une.', 'À venir', 'Touche ☆ sur un match ou une prédiction pour le suivre ici. Un match terminé disparaît tout seul.', 'Sans compte, tes favoris restent jusqu’à la fermeture du site.', '{n} matchs terminés', 'ajoutés à ton gain', 'Code de pari', 'Charger un code de pari', 'Télécharger', '{n} match(s) terminé(s) ou fermé(s) : cadenas. Retire-les pour parier.', 'N°', 'But annulé'],
+      'Inscris-toi pour parier et retrouver tes paris ici.', 'Fin', 'Pari non accepté', 'Un événement vient de se produire dans ce match. Votre pari n’a pas été placé et votre solde reste intact.', 'Les cotes ont changé pendant la validation. Votre pari n’a pas été placé et votre solde reste intact.', 'Compris', 'Voir les {n} sélections', 'Réduire', 'Rechercher un match en direct', 'Rechercher un résultat', 'Bonus combiné', 'Bonus combiné : 3 matchs ou plus à cote 1,20+', 'Maximum 100 favoris : retire une étoile pour en ajouter une.', 'À venir', 'Touche ☆ sur un match ou une prédiction pour le suivre ici. Un match terminé disparaît tout seul.', 'Sans compte, tes favoris restent jusqu’à la fermeture du site.', '{n} matchs terminés', 'ajoutés à ton gain', 'Code du coupon', 'Charger un coupon de pari', 'Télécharger', '{n} match(s) terminé(s) ou fermé(s) : cadenas. Retire-les pour parier.', 'N°', 'But annulé'],
     en: ['Popular', 'Live', 'Bet slip', 'My bets', 'Menu', 'Live now', 'See all', 'Starting soon', 'Top matches', 'All matches', 'In {x}', 'Hour', 'From {h}', 'Starts in', 'Half-time', 'Finished', 'GOAL!', 'Red card', 'Full time',
       'Events', 'Statistics', 'No event yet.', 'No live match right now.', 'Suspended', 'Odds suspended (goal or action in progress): try again in a moment.', 'Share code', 'Code', 'Back', 'Sports', 'Rules', 'Live check…',
       'Possession', 'Shots', 'Shots on target', 'Corners', 'Yellow cards', 'Red cards', 'Attacks', 'Dangerous attacks', 'pen.', 'o.g.', 'VAR', 'Substitution', 'Kick-off', 'Results', 'Yesterday', '2 days ago', 'HT', 'No result for this day.',
-      'Sign up to bet and find your bets here.', 'FT', 'Bet not accepted', 'Something just happened in this match. Your bet was not placed and your balance is unchanged.', 'The odds changed while your bet was being checked. Your bet was not placed and your balance is unchanged.', 'Got it', 'Show all {n} selections', 'Show less', 'Search a live match', 'Search a result', 'Acca boost', 'Acca boost: 3+ matches at odds 1.20+', '100 favourites max: remove a star to add another.', 'Upcoming', 'Tap ☆ on a match or a prediction to follow it here. A finished match disappears on its own.', 'Without an account, your favourites stay until you close the site.', '{n} finished matches', 'added to your winnings', 'Bet code', 'Load a bet code', 'Download', '{n} match(es) finished or closed: locked. Remove them to bet.', 'No.', 'Goal disallowed'],
+      'Sign up to bet and find your bets here.', 'FT', 'Bet not accepted', 'Something just happened in this match. Your bet was not placed and your balance is unchanged.', 'The odds changed while your bet was being checked. Your bet was not placed and your balance is unchanged.', 'Got it', 'Show all {n} selections', 'Show less', 'Search a live match', 'Search a result', 'Acca boost', 'Acca boost: 3+ matches at odds 1.20+', '100 favourites max: remove a star to add another.', 'Upcoming', 'Tap ☆ on a match or a prediction to follow it here. A finished match disappears on its own.', 'Without an account, your favourites stay until you close the site.', '{n} finished matches', 'added to your winnings', 'Betslip code', 'Load a betslip', 'Download', '{n} match(es) finished or closed: locked. Remove them to bet.', 'No.', 'Goal disallowed'],
     es: ['Popular', 'En vivo', 'Boleto', 'Mis apuestas', 'Menú', 'En vivo ahora', 'Ver todo', 'Empieza pronto', 'Partidos top', 'Todos los partidos', 'En {x}', 'Hora', 'Desde {h}', 'Empieza en', 'Descanso', 'Terminado', '¡GOL!', 'Tarjeta roja', 'Final del partido',
       'Eventos', 'Estadísticas', 'Aún no hay eventos.', 'Ningún partido en vivo ahora.', 'Suspendido', 'Cuotas suspendidas (gol o jugada en curso): inténtalo en un momento.', 'Compartir código', 'Código', 'Volver', 'Deportes', 'Reglas', 'Validación en vivo…',
       'Posesión', 'Tiros', 'Tiros a puerta', 'Córners', 'Tarjetas amarillas', 'Tarjetas rojas', 'Ataques', 'Ataques peligrosos', 'pen.', 'p.p.', 'VAR', 'Cambio', 'Saque inicial', 'Resultados', 'Ayer', 'Anteayer', 'Desc.', 'Ningún resultado para este día.',
-      'Regístrate para apostar y ver tus apuestas aquí.', 'Fin', 'Apuesta no aceptada', 'Acaba de ocurrir algo en este partido. Tu apuesta no se realizó y tu saldo no ha cambiado.', 'Las cuotas cambiaron durante la validación. Tu apuesta no se realizó y tu saldo no ha cambiado.', 'Entendido', 'Ver las {n} selecciones', 'Ver menos', 'Buscar un partido en vivo', 'Buscar un resultado', 'Bono combinada', 'Bono combinada: 3+ partidos con cuota 1,20+', 'Máximo 100 favoritos: quita una estrella para añadir otra.', 'Próximos', 'Toca ☆ en un partido o una predicción para seguirlo aquí. Un partido terminado desaparece solo.', 'Sin cuenta, tus favoritos se quedan hasta que cierres el sitio.', '{n} partidos terminados', 'añadidos a tu ganancia', 'Código de apuesta', 'Cargar un código de apuesta', 'Descargar', '{n} partido(s) terminado(s) o cerrado(s): bloqueados. Quítalos para apostar.', 'N.º', 'Gol anulado'],
+      'Regístrate para apostar y ver tus apuestas aquí.', 'Fin', 'Apuesta no aceptada', 'Acaba de ocurrir algo en este partido. Tu apuesta no se realizó y tu saldo no ha cambiado.', 'Las cuotas cambiaron durante la validación. Tu apuesta no se realizó y tu saldo no ha cambiado.', 'Entendido', 'Ver las {n} selecciones', 'Ver menos', 'Buscar un partido en vivo', 'Buscar un resultado', 'Bono combinada', 'Bono combinada: 3+ partidos con cuota 1,20+', 'Máximo 100 favoritos: quita una estrella para añadir otra.', 'Próximos', 'Toca ☆ en un partido o una predicción para seguirlo aquí. Un partido terminado desaparece solo.', 'Sin cuenta, tus favoritos se quedan hasta que cierres el sitio.', '{n} partidos terminados', 'añadidos a tu ganancia', 'Código del cupón', 'Cargar un cupón de apuesta', 'Descargar', '{n} partido(s) terminado(s) o cerrado(s): bloqueados. Quítalos para apostar.', 'N.º', 'Gol anulado'],
     pt: ['Popular', 'Ao vivo', 'Bilhete', 'Minhas apostas', 'Menu', 'Ao vivo agora', 'Ver tudo', 'Começa em breve', 'Jogos top', 'Todos os jogos', 'Em {x}', 'Hora', 'A partir das {h}', 'Começa em', 'Intervalo', 'Encerrado', 'GOL!', 'Cartão vermelho', 'Fim de jogo',
       'Eventos', 'Estatísticas', 'Ainda sem eventos.', 'Nenhum jogo ao vivo agora.', 'Suspenso', 'Odds suspensas (gol ou lance em andamento): tente de novo em instantes.', 'Partilhar código', 'Código', 'Voltar', 'Esportes', 'Regras', 'Validação ao vivo…',
       'Posse de bola', 'Chutes', 'Chutes no gol', 'Escanteios', 'Cartões amarelos', 'Cartões vermelhos', 'Ataques', 'Ataques perigosos', 'pên.', 'g.c.', 'VAR', 'Substituição', 'Pontapé inicial', 'Resultados', 'Ontem', 'Anteontem', 'Int.', 'Nenhum resultado para este dia.',
-      'Cadastre-se para apostar e ver suas apostas aqui.', 'Fim', 'Aposta não aceita', 'Algo acabou de acontecer nesta partida. Sua aposta não foi feita e seu saldo não mudou.', 'As odds mudaram durante a validação. Sua aposta não foi feita e seu saldo não mudou.', 'Entendi', 'Ver as {n} seleções', 'Ver menos', 'Buscar uma partida ao vivo', 'Buscar um resultado', 'Bônus múltipla', 'Bônus múltipla: 3+ jogos com odd 1,20+', 'Máximo 100 favoritos: tire uma estrela para adicionar outra.', 'Próximos', 'Toque em ☆ num jogo ou numa previsão para acompanhá-lo aqui. Um jogo terminado desaparece sozinho.', 'Sem conta, seus favoritos ficam até você fechar o site.', '{n} jogos encerrados', 'somados ao seu ganho', 'Código da aposta', 'Carregar um código de aposta', 'Baixar', '{n} jogo(s) encerrado(s) ou fechado(s): bloqueados. Remova-os para apostar.', 'N.º', 'Gol anulado'],
+      'Cadastre-se para apostar e ver suas apostas aqui.', 'Fim', 'Aposta não aceita', 'Algo acabou de acontecer nesta partida. Sua aposta não foi feita e seu saldo não mudou.', 'As odds mudaram durante a validação. Sua aposta não foi feita e seu saldo não mudou.', 'Entendi', 'Ver as {n} seleções', 'Ver menos', 'Buscar uma partida ao vivo', 'Buscar um resultado', 'Bônus múltipla', 'Bônus múltipla: 3+ jogos com odd 1,20+', 'Máximo 100 favoritos: tire uma estrela para adicionar outra.', 'Próximos', 'Toque em ☆ num jogo ou numa previsão para acompanhá-lo aqui. Um jogo terminado desaparece sozinho.', 'Sem conta, seus favoritos ficam até você fechar o site.', '{n} jogos encerrados', 'somados ao seu ganho', 'Código do cupom', 'Carregar um cupom de aposta', 'Baixar', '{n} jogo(s) encerrado(s) ou fechado(s): bloqueados. Remova-os para apostar.', 'N.º', 'Gol anulado'],
     ar: ['الأكثر شعبية', 'مباشر', 'القسيمة', 'رهاناتي', 'القائمة', 'مباشر الآن', 'عرض الكل', 'تبدأ قريبًا', 'أبرز المباريات', 'كل المباريات', 'خلال {x}', 'الساعة', 'من {h}', 'تبدأ خلال', 'استراحة', 'انتهت', 'هدف!', 'بطاقة حمراء', 'نهاية المباراة',
       'الأحداث', 'الإحصائيات', 'لا أحداث بعد.', 'لا توجد مباراة مباشرة الآن.', 'معلّق', 'الاحتمالات معلّقة (هدف أو هجمة جارية): أعد المحاولة بعد لحظة.', 'مشاركة الرمز', 'الرمز', 'رجوع', 'الرياضات', 'القواعد', 'تحقق مباشر…',
       'الاستحواذ', 'التسديدات', 'تسديدات على المرمى', 'الركنيات', 'بطاقات صفراء', 'بطاقات حمراء', 'الهجمات', 'هجمات خطيرة', 'جزاء', 'عكسي', 'VAR', 'تبديل', 'انطلاق المباراة', 'النتائج', 'أمس', 'أول أمس', 'ش1', 'لا توجد نتائج لهذا اليوم.',
-      'سجّل لتراهن وتجد رهاناتك هنا.', 'انتهت', 'لم يُقبل الرهان', 'حدث شيء للتو في هذه المباراة. لم يتم وضع رهانك ورصيدك لم يتغير.', 'تغيرت الاحتمالات أثناء التحقق. لم يتم وضع رهانك ورصيدك لم يتغير.', 'حسنًا', 'عرض الاختيارات الـ {n}', 'عرض أقل', 'ابحث عن مباراة مباشرة', 'ابحث عن نتيجة', 'مكافأة المجمّع', 'مكافأة المجمّع: 3 مباريات أو أكثر باحتمال 1.20+', '100 مفضلة كحد أقصى: أزل نجمة لإضافة أخرى.', 'قادمة', 'اضغط ☆ على مباراة أو توقع لمتابعته هنا. المباراة المنتهية تختفي تلقائيًا.', 'بدون حساب، تبقى مفضلاتك حتى تغلق الموقع.', '{n} مباراة منتهية', 'تضاف إلى أرباحك', 'رمز الرهان', 'تحميل رمز رهان', 'تنزيل', '{n} مباراة منتهية أو مغلقة: مقفلة. احذفها للمراهنة.', 'رقم', 'هدف ملغى'],
+      'سجّل لتراهن وتجد رهاناتك هنا.', 'انتهت', 'لم يُقبل الرهان', 'حدث شيء للتو في هذه المباراة. لم يتم وضع رهانك ورصيدك لم يتغير.', 'تغيرت الاحتمالات أثناء التحقق. لم يتم وضع رهانك ورصيدك لم يتغير.', 'حسنًا', 'عرض الاختيارات الـ {n}', 'عرض أقل', 'ابحث عن مباراة مباشرة', 'ابحث عن نتيجة', 'مكافأة المجمّع', 'مكافأة المجمّع: 3 مباريات أو أكثر باحتمال 1.20+', '100 مفضلة كحد أقصى: أزل نجمة لإضافة أخرى.', 'قادمة', 'اضغط ☆ على مباراة أو توقع لمتابعته هنا. المباراة المنتهية تختفي تلقائيًا.', 'بدون حساب، تبقى مفضلاتك حتى تغلق الموقع.', '{n} مباراة منتهية', 'تضاف إلى أرباحك', 'رمز القسيمة', 'تحميل قسيمة رهان', 'تنزيل', '{n} مباراة منتهية أو مغلقة: مقفلة. احذفها للمراهنة.', 'رقم', 'هدف ملغى'],
     tr: ['Popüler', 'Canlı', 'Kupon', 'Bahislerim', 'Menü', 'Şimdi canlı', 'Tümünü gör', 'Yakında başlıyor', 'Önemli maçlar', 'Tüm maçlar', '{x} içinde', 'Saat', '{h} sonrası', 'Başlamasına', 'Devre arası', 'Bitti', 'GOL!', 'Kırmızı kart', 'Maç sonu',
       'Olaylar', 'İstatistikler', 'Henüz olay yok.', 'Şu an canlı maç yok.', 'Askıda', 'Oranlar askıda (gol veya pozisyon var): birazdan tekrar dene.', 'Kodu paylaş', 'Kod', 'Geri', 'Sporlar', 'Kurallar', 'Canlı kontrol…',
       'Topla oynama', 'Şut', 'İsabetli şut', 'Korner', 'Sarı kart', 'Kırmızı kart', 'Atak', 'Tehlikeli atak', 'pen.', 'k.k.', 'VAR', 'Oyuncu değişikliği', 'Başlama', 'Sonuçlar', 'Dün', 'Önceki gün', 'İY', 'Bu gün için sonuç yok.',
-      'Bahis yapmak ve bahislerini burada görmek için kaydol.', 'MS', 'Bahis kabul edilmedi', 'Bu maçta az önce bir olay oldu. Bahsin alınmadı, bakiyen değişmedi.', 'Doğrulama sırasında oranlar değişti. Bahsin alınmadı, bakiyen değişmedi.', 'Anladım', '{n} seçimin tümünü gör', 'Daha az göster', 'Canlı maç ara', 'Sonuç ara', 'Kombine bonusu', 'Kombine bonusu: oranı 1,20+ olan 3+ maç', 'En fazla 100 favori: eklemek için bir yıldızı kaldır.', 'Yaklaşan', 'Burada takip etmek için bir maçta veya tahminde ☆ simgesine dokun. Biten maç kendiliğinden kaybolur.', 'Hesap olmadan favorilerin site kapanana kadar kalır.', '{n} biten maç', 'kazancına eklenir', 'Bahis kodu', 'Bahis kodu yükle', 'İndir', '{n} maç bitti veya kapandı: kilitli. Bahis için kaldır.', 'No.', 'Gol iptal'],
+      'Bahis yapmak ve bahislerini burada görmek için kaydol.', 'MS', 'Bahis kabul edilmedi', 'Bu maçta az önce bir olay oldu. Bahsin alınmadı, bakiyen değişmedi.', 'Doğrulama sırasında oranlar değişti. Bahsin alınmadı, bakiyen değişmedi.', 'Anladım', '{n} seçimin tümünü gör', 'Daha az göster', 'Canlı maç ara', 'Sonuç ara', 'Kombine bonusu', 'Kombine bonusu: oranı 1,20+ olan 3+ maç', 'En fazla 100 favori: eklemek için bir yıldızı kaldır.', 'Yaklaşan', 'Burada takip etmek için bir maçta veya tahminde ☆ simgesine dokun. Biten maç kendiliğinden kaybolur.', 'Hesap olmadan favorilerin site kapanana kadar kalır.', '{n} biten maç', 'kazancına eklenir', 'Kupon kodu', 'Kupon yükle', 'İndir', '{n} maç bitti veya kapandı: kilitli. Bahis için kaldır.', 'No.', 'Gol iptal'],
     vi: ['Phổ biến', 'Trực tiếp', 'Phiếu cược', 'Cược của tôi', 'Menu', 'Đang diễn ra', 'Xem tất cả', 'Sắp bắt đầu', 'Trận nổi bật', 'Tất cả trận', 'Trong {x}', 'Giờ', 'Từ {h}', 'Bắt đầu sau', 'Nghỉ giữa hiệp', 'Kết thúc', 'VÀO!', 'Thẻ đỏ', 'Hết trận',
       'Diễn biến', 'Thống kê', 'Chưa có diễn biến.', 'Hiện không có trận trực tiếp.', 'Tạm khóa', 'Tỷ lệ tạm khóa (có bàn thắng hoặc tình huống): thử lại sau giây lát.', 'Chia sẻ mã', 'Mã', 'Quay lại', 'Môn thể thao', 'Luật', 'Đang xác nhận…',
       'Kiểm soát bóng', 'Sút', 'Sút trúng đích', 'Phạt góc', 'Thẻ vàng', 'Thẻ đỏ', 'Tấn công', 'Tấn công nguy hiểm', 'pen', 'phản lưới', 'VAR', 'Thay người', 'Giờ bóng lăn', 'Kết quả', 'Hôm qua', 'Hôm kia', 'H1', 'Không có kết quả cho ngày này.',
-      'Đăng ký để đặt cược và xem cược của bạn tại đây.', 'KT', 'Cược không được chấp nhận', 'Vừa có diễn biến trong trận này. Cược của bạn chưa được đặt và số dư không thay đổi.', 'Tỷ lệ đã thay đổi trong lúc xác nhận. Cược của bạn chưa được đặt và số dư không thay đổi.', 'Đã hiểu', 'Xem cả {n} lựa chọn', 'Thu gọn', 'Tìm trận đang diễn ra', 'Tìm kết quả', 'Thưởng cược xiên', 'Thưởng cược xiên: từ 3 trận, tỷ lệ 1,20+', 'Tối đa 100 mục yêu thích: bỏ một sao để thêm mục khác.', 'Sắp diễn ra', 'Chạm ☆ trên trận đấu hoặc dự đoán để theo dõi tại đây. Trận đã kết thúc tự biến mất.', 'Không có tài khoản, mục yêu thích giữ đến khi bạn đóng trang.', '{n} trận đã kết thúc', 'cộng vào tiền thắng', 'Mã cược', 'Tải mã cược', 'Tải xuống', '{n} trận đã kết thúc hoặc đóng: bị khóa. Hãy xóa để đặt cược.', 'Số', 'Bàn thắng bị hủy'],
+      'Đăng ký để đặt cược và xem cược của bạn tại đây.', 'KT', 'Cược không được chấp nhận', 'Vừa có diễn biến trong trận này. Cược của bạn chưa được đặt và số dư không thay đổi.', 'Tỷ lệ đã thay đổi trong lúc xác nhận. Cược của bạn chưa được đặt và số dư không thay đổi.', 'Đã hiểu', 'Xem cả {n} lựa chọn', 'Thu gọn', 'Tìm trận đang diễn ra', 'Tìm kết quả', 'Thưởng cược xiên', 'Thưởng cược xiên: từ 3 trận, tỷ lệ 1,20+', 'Tối đa 100 mục yêu thích: bỏ một sao để thêm mục khác.', 'Sắp diễn ra', 'Chạm ☆ trên trận đấu hoặc dự đoán để theo dõi tại đây. Trận đã kết thúc tự biến mất.', 'Không có tài khoản, mục yêu thích giữ đến khi bạn đóng trang.', '{n} trận đã kết thúc', 'cộng vào tiền thắng', 'Mã phiếu cược', 'Tải phiếu cược', 'Tải xuống', '{n} trận đã kết thúc hoặc đóng: bị khóa. Hãy xóa để đặt cược.', 'Số', 'Bàn thắng bị hủy'],
     id: ['Populer', 'Live', 'Kupon', 'Taruhanku', 'Menu', 'Live sekarang', 'Lihat semua', 'Segera dimulai', 'Laga top', 'Semua laga', 'Dalam {x}', 'Jam', 'Mulai {h}', 'Mulai dalam', 'Turun minum', 'Selesai', 'GOL!', 'Kartu merah', 'Laga selesai',
       'Kejadian', 'Statistik', 'Belum ada kejadian.', 'Tidak ada laga live saat ini.', 'Ditangguhkan', 'Odds ditangguhkan (gol atau aksi berlangsung): coba lagi sebentar.', 'Bagikan kode', 'Kode', 'Kembali', 'Olahraga', 'Aturan', 'Validasi live…',
       'Penguasaan bola', 'Tembakan', 'Tepat sasaran', 'Sepak pojok', 'Kartu kuning', 'Kartu merah', 'Serangan', 'Serangan berbahaya', 'pen.', 'b.d.', 'VAR', 'Pergantian', 'Kick-off', 'Hasil', 'Kemarin', 'Kemarin lusa', 'Bbk 1', 'Tidak ada hasil untuk hari ini.',
-      'Daftar untuk bertaruh dan melihat taruhanmu di sini.', 'Sls', 'Taruhan tidak diterima', 'Baru saja terjadi sesuatu di laga ini. Taruhanmu tidak dipasang dan saldomu tetap utuh.', 'Odds berubah saat taruhan diperiksa. Taruhanmu tidak dipasang dan saldomu tetap utuh.', 'Mengerti', 'Lihat semua {n} pilihan', 'Lebih sedikit', 'Cari laga live', 'Cari hasil', 'Bonus parlay', 'Bonus parlay: 3+ laga dengan odds 1,20+', 'Maksimal 100 favorit: hapus satu bintang untuk menambah.', 'Akan datang', 'Ketuk ☆ pada laga atau prediksi untuk mengikutinya di sini. Laga yang selesai hilang sendiri.', 'Tanpa akun, favoritmu tersimpan sampai situs ditutup.', '{n} laga selesai', 'ditambahkan ke kemenanganmu', 'Kode taruhan', 'Muat kode taruhan', 'Unduh', '{n} laga selesai atau ditutup: terkunci. Hapus untuk bertaruh.', 'No.', 'Gol dianulir'],
+      'Daftar untuk bertaruh dan melihat taruhanmu di sini.', 'Sls', 'Taruhan tidak diterima', 'Baru saja terjadi sesuatu di laga ini. Taruhanmu tidak dipasang dan saldomu tetap utuh.', 'Odds berubah saat taruhan diperiksa. Taruhanmu tidak dipasang dan saldomu tetap utuh.', 'Mengerti', 'Lihat semua {n} pilihan', 'Lebih sedikit', 'Cari laga live', 'Cari hasil', 'Bonus parlay', 'Bonus parlay: 3+ laga dengan odds 1,20+', 'Maksimal 100 favorit: hapus satu bintang untuk menambah.', 'Akan datang', 'Ketuk ☆ pada laga atau prediksi untuk mengikutinya di sini. Laga yang selesai hilang sendiri.', 'Tanpa akun, favoritmu tersimpan sampai situs ditutup.', '{n} laga selesai', 'ditambahkan ke kemenanganmu', 'Kode kupon', 'Muat kupon taruhan', 'Unduh', '{n} laga selesai atau ditutup: terkunci. Hapus untuk bertaruh.', 'No.', 'Gol dianulir'],
     ru: ['Популярное', 'Live', 'Купон', 'Мои ставки', 'Меню', 'Сейчас в эфире', 'Все', 'Скоро начало', 'Топ-матчи', 'Все матчи', 'Через {x}', 'Час', 'С {h}', 'Начало через', 'Перерыв', 'Завершён', 'ГОЛ!', 'Красная карточка', 'Конец матча',
       'События', 'Статистика', 'Пока нет событий.', 'Сейчас нет матчей в эфире.', 'Приостановлено', 'Коэффициенты приостановлены (гол или опасный момент): попробуйте чуть позже.', 'Поделиться кодом', 'Код', 'Назад', 'Виды спорта', 'Правила', 'Проверка live…',
       'Владение', 'Удары', 'Удары в створ', 'Угловые', 'Жёлтые карточки', 'Красные карточки', 'Атаки', 'Опасные атаки', 'пен.', 'автогол', 'VAR', 'Замена', 'Начало матча', 'Результаты', 'Вчера', 'Позавчера', '1-й т.', 'Нет результатов за этот день.',
-      'Зарегистрируйтесь, чтобы делать ставки и видеть их здесь.', 'Кон.', 'Ставка не принята', 'В этом матче только что произошло событие. Ставка не принята, баланс не изменился.', 'Коэффициенты изменились во время проверки. Ставка не принята, баланс не изменился.', 'Понятно', 'Показать все {n} выбора', 'Свернуть', 'Найти матч в прямом эфире', 'Найти результат', 'Бонус экспресса', 'Бонус экспресса: от 3 матчей с коэф. 1,20+', 'Не более 100 избранных: уберите звезду, чтобы добавить новую.', 'Скоро', 'Нажмите ☆ на матче или прогнозе, чтобы следить за ним здесь. Завершённый матч исчезает сам.', 'Без аккаунта избранное хранится до закрытия сайта.', 'Завершено матчей: {n}', 'добавлено к выигрышу', 'Код ставки', 'Загрузить код ставки', 'Скачать', 'Матчей завершено или закрыто: {n} (замок). Удалите их, чтобы сделать ставку.', '№', 'Гол отменён'],
+      'Зарегистрируйтесь, чтобы делать ставки и видеть их здесь.', 'Кон.', 'Ставка не принята', 'В этом матче только что произошло событие. Ставка не принята, баланс не изменился.', 'Коэффициенты изменились во время проверки. Ставка не принята, баланс не изменился.', 'Понятно', 'Показать все {n} выбора', 'Свернуть', 'Найти матч в прямом эфире', 'Найти результат', 'Бонус экспресса', 'Бонус экспресса: от 3 матчей с коэф. 1,20+', 'Не более 100 избранных: уберите звезду, чтобы добавить новую.', 'Скоро', 'Нажмите ☆ на матче или прогнозе, чтобы следить за ним здесь. Завершённый матч исчезает сам.', 'Без аккаунта избранное хранится до закрытия сайта.', 'Завершено матчей: {n}', 'добавлено к выигрышу', 'Код купона', 'Загрузить купон', 'Скачать', 'Матчей завершено или закрыто: {n} (замок). Удалите их, чтобы сделать ставку.', '№', 'Гол отменён'],
     de: ['Beliebt', 'Live', 'Wettschein', 'Meine Wetten', 'Menü', 'Jetzt live', 'Alle', 'Beginnt bald', 'Top-Spiele', 'Alle Spiele', 'In {x}', 'Uhrzeit', 'Ab {h}', 'Beginnt in', 'Halbzeit', 'Beendet', 'TOR!', 'Rote Karte', 'Spielende',
       'Ereignisse', 'Statistiken', 'Noch keine Ereignisse.', 'Gerade kein Live-Spiel.', 'Gesperrt', 'Quoten gesperrt (Tor oder Aktion läuft): gleich noch einmal versuchen.', 'Code teilen', 'Code', 'Zurück', 'Sportarten', 'Regeln', 'Live-Prüfung…',
       'Ballbesitz', 'Schüsse', 'Schüsse aufs Tor', 'Ecken', 'Gelbe Karten', 'Rote Karten', 'Angriffe', 'Gefährliche Angriffe', 'Elfm.', 'ET', 'VAR', 'Wechsel', 'Anstoß', 'Ergebnisse', 'Gestern', 'Vorgestern', 'HZ', 'Keine Ergebnisse für diesen Tag.',
-      'Registriere dich, um zu wetten und deine Wetten hier zu sehen.', 'Ende', 'Wette nicht angenommen', 'In diesem Spiel ist gerade etwas passiert. Deine Wette wurde nicht platziert, dein Guthaben bleibt unverändert.', 'Die Quoten haben sich während der Prüfung geändert. Deine Wette wurde nicht platziert, dein Guthaben bleibt unverändert.', 'Verstanden', 'Alle {n} Tipps anzeigen', 'Weniger anzeigen', 'Live-Spiel suchen', 'Ergebnis suchen', 'Kombi-Bonus', 'Kombi-Bonus: ab 3 Spielen mit Quote 1,20+', 'Höchstens 100 Favoriten: entferne einen Stern, um einen neuen hinzuzufügen.', 'Demnächst', 'Tippe ☆ bei einem Spiel oder einer Prognose, um es hier zu verfolgen. Ein beendetes Spiel verschwindet von selbst.', 'Ohne Konto bleiben deine Favoriten, bis du die Seite schließt.', '{n} beendete Spiele', 'zu deinem Gewinn hinzugefügt', 'Wettcode', 'Wettcode laden', 'Herunterladen', '{n} Spiel(e) beendet oder geschlossen: gesperrt. Entferne sie, um zu wetten.', 'Nr.', 'Tor aberkannt'],
+      'Registriere dich, um zu wetten und deine Wetten hier zu sehen.', 'Ende', 'Wette nicht angenommen', 'In diesem Spiel ist gerade etwas passiert. Deine Wette wurde nicht platziert, dein Guthaben bleibt unverändert.', 'Die Quoten haben sich während der Prüfung geändert. Deine Wette wurde nicht platziert, dein Guthaben bleibt unverändert.', 'Verstanden', 'Alle {n} Tipps anzeigen', 'Weniger anzeigen', 'Live-Spiel suchen', 'Ergebnis suchen', 'Kombi-Bonus', 'Kombi-Bonus: ab 3 Spielen mit Quote 1,20+', 'Höchstens 100 Favoriten: entferne einen Stern, um einen neuen hinzuzufügen.', 'Demnächst', 'Tippe ☆ bei einem Spiel oder einer Prognose, um es hier zu verfolgen. Ein beendetes Spiel verschwindet von selbst.', 'Ohne Konto bleiben deine Favoriten, bis du die Seite schließt.', '{n} beendete Spiele', 'zu deinem Gewinn hinzugefügt', 'Wettschein-Code', 'Wettschein laden', 'Herunterladen', '{n} Spiel(e) beendet oder geschlossen: gesperrt. Entferne sie, um zu wetten.', 'Nr.', 'Tor aberkannt'],
     zh: ['热门', '直播', '投注单', '我的投注', '菜单', '正在直播', '查看全部', '即将开始', '焦点赛事', '全部比赛', '{x}内', '时间', '{h} 起', '距开赛', '中场休息', '已结束', '进球！', '红牌', '全场结束',
       '事件', '技术统计', '暂无事件。', '当前没有直播比赛。', '暂停', '赔率暂停（进球或进攻中）：请稍后再试。', '分享代码', '代码', '返回', '运动项目', '规则', '直播确认中…',
       '控球率', '射门', '射正', '角球', '黄牌', '红牌', '进攻', '危险进攻', '点球', '乌龙', 'VAR', '换人', '开球', '赛果', '昨天', '前天', '半场', '这一天没有赛果。',
-      '注册后即可投注，并在这里查看你的投注。', '完场', '投注未被接受', '这场比赛刚刚发生了事件。您的投注未被下单，余额没有变化。', '验证期间赔率已变化。您的投注未被下单，余额没有变化。', '知道了', '查看全部 {n} 个选择', '收起', '搜索直播比赛', '搜索赛果', '串关奖励', '串关奖励：3 场以上，赔率 1.20+', '最多 100 个收藏：取消一个星标后才能再添加。', '即将开始', '点击比赛或预测上的 ☆ 即可在此关注。比赛结束后会自动消失。', '未登录时，收藏会保留到你关闭网站为止。', '{n} 场已结束', '加到你的奖金中', '投注代码', '加载投注代码', '下载', '{n} 场比赛已结束或已关闭：已锁定。移除后即可投注。', '编号', '进球无效'],
+      '注册后即可投注，并在这里查看你的投注。', '完场', '投注未被接受', '这场比赛刚刚发生了事件。您的投注未被下单，余额没有变化。', '验证期间赔率已变化。您的投注未被下单，余额没有变化。', '知道了', '查看全部 {n} 个选择', '收起', '搜索直播比赛', '搜索赛果', '串关奖励', '串关奖励：3 场以上，赔率 1.20+', '最多 100 个收藏：取消一个星标后才能再添加。', '即将开始', '点击比赛或预测上的 ☆ 即可在此关注。比赛结束后会自动消失。', '未登录时，收藏会保留到你关闭网站为止。', '{n} 场已结束', '加到你的奖金中', '投注单代码', '加载投注单', '下载', '{n} 场比赛已结束或已关闭：已锁定。移除后即可投注。', '编号', '进球无效'],
     hi: ['लोकप्रिय', 'लाइव', 'कूपन', 'मेरे दांव', 'मेनू', 'अभी लाइव', 'सभी देखें', 'जल्द शुरू', 'टॉप मैच', 'सभी मैच', '{x} में', 'समय', '{h} से', 'शुरू होने में', 'हाफ़-टाइम', 'समाप्त', 'गोल!', 'लाल कार्ड', 'मैच समाप्त',
       'घटनाएँ', 'आँकड़े', 'अभी कोई घटना नहीं।', 'अभी कोई लाइव मैच नहीं।', 'निलंबित', 'ऑड्स निलंबित (गोल या हमला जारी): थोड़ी देर में फिर कोशिश करें।', 'कोड शेयर करें', 'कोड', 'वापस', 'खेल', 'नियम', 'लाइव जाँच…',
       'कब्ज़ा', 'शॉट', 'निशाने पर शॉट', 'कॉर्नर', 'पीले कार्ड', 'लाल कार्ड', 'हमले', 'ख़तरनाक हमले', 'पेन.', 'आत्मघाती', 'VAR', 'बदलाव', 'किक-ऑफ़', 'नतीजे', 'कल', 'परसों', 'हाफ़', 'इस दिन का कोई नतीजा नहीं।',
-      'दांव लगाने और अपने दांव यहाँ देखने के लिए साइन अप करें।', 'ख़त्म', 'दांव स्वीकार नहीं हुआ', 'इस मैच में अभी कुछ हुआ है। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'जांच के दौरान ऑड्स बदल गए। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'समझ गया', 'सभी {n} चयन देखें', 'कम दिखाएं', 'लाइव मैच खोजें', 'नतीजा खोजें', 'कॉम्बो बोनस', 'कॉम्बो बोनस: 3+ मैच, ऑड्स 1.20+', 'अधिकतम 100 पसंदीदा: नया जोड़ने के लिए एक स्टार हटाएं।', 'आने वाले', 'यहाँ फ़ॉलो करने के लिए किसी मैच या भविष्यवाणी पर ☆ दबाएं। ख़त्म हुआ मैच अपने आप हट जाता है।', 'बिना खाते के, पसंदीदा साइट बंद करने तक रहते हैं।', '{n} मैच समाप्त', 'आपकी जीत में जोड़ा गया', 'बेट कोड', 'बेट कोड लोड करें', 'डाउनलोड', '{n} मैच समाप्त या बंद: लॉक। दांव के लिए इन्हें हटाएं।', 'नं.', 'गोल रद्द']
+      'दांव लगाने और अपने दांव यहाँ देखने के लिए साइन अप करें।', 'ख़त्म', 'दांव स्वीकार नहीं हुआ', 'इस मैच में अभी कुछ हुआ है। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'जांच के दौरान ऑड्स बदल गए। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'समझ गया', 'सभी {n} चयन देखें', 'कम दिखाएं', 'लाइव मैच खोजें', 'नतीजा खोजें', 'कॉम्बो बोनस', 'कॉम्बो बोनस: 3+ मैच, ऑड्स 1.20+', 'अधिकतम 100 पसंदीदा: नया जोड़ने के लिए एक स्टार हटाएं।', 'आने वाले', 'यहाँ फ़ॉलो करने के लिए किसी मैच या भविष्यवाणी पर ☆ दबाएं। ख़त्म हुआ मैच अपने आप हट जाता है।', 'बिना खाते के, पसंदीदा साइट बंद करने तक रहते हैं।', '{n} मैच समाप्त', 'आपकी जीत में जोड़ा गया', 'कूपन कोड', 'बेट कूपन लोड करें', 'डाउनलोड', '{n} मैच समाप्त या बंद: लॉक। दांव के लिए इन्हें हटाएं।', 'नं.', 'गोल रद्द']
   };
   function NX() { var a = NBL[lg()] || NBL.en, o = {}; NBK.forEach(function (k, i) { o[k] = a[i] != null ? a[i] : NBL.en[i]; }); return o; }
   // noms des sports (le serveur envoie un code : foot, basket, hockey…)
@@ -1050,7 +1054,21 @@
     if (typeof o === 'string') { var m = /^(?:sb:)?([a-z]+):\d/.exec(o); return m ? m[1] : 'foot'; }
     return o.sp || spOf(o.fx || o.id || o.ev || '');
   }
-  function sbToast(m, k) { if (ctx && ctx.toast) ctx.toast(m, k || 'info'); else if (D6.App && D6.App.toast) D6.App.toast(m, k || 'info'); }
+  /* 2026-10-23 (propriétaire : « les notifications cachent le Compte réel ; toutes en couleur ») : toujours une couleur (réussi = vert,
+     erreur = rouge, info = violet OROLADO), un peu moins haute, posée SOUS l'en-tête du casino (jamais sur le solde) */
+  function sbToast(m, k) {
+    k = k === 'error' || k === 'err' ? 'err' : k === 'success' || k === 'ok' ? 'ok' : 'info';
+    if (ctx && ctx.toast) ctx.toast(m, k); else if (D6.App && D6.App.toast) D6.App.toast(m, k);
+    var place = function () {
+      try {
+        var el = document.getElementById('toast'), hd = box && box.closest('#casinoModal') && box.closest('#casinoModal').querySelector('.cs-top');
+        if (!el || !hd) return;
+        var r = hd.getBoundingClientRect(); if (r.bottom < 20) return;
+        el.style.setProperty('top', Math.round(r.bottom + 8) + 'px', 'important'); el.classList.add('pz-t');
+      } catch (e) { /* ignore */ }
+    };
+    place(); requestAnimationFrame(function () { requestAnimationFrame(place); });
+  }
   /* 2026-10-23 (propriétaire : « Favoris ne fonctionne pas, il n'y a même pas d'étoile ») : ☆ sur chaque match (avant-match,
      direct) et chaque prédiction ; page Favoris (en direct · à venir · Predict) ; un match fini disparaît tout seul ; 50 au plus.
      Visiteur sans compte : gardés le temps de la visite (sessionStorage), joueur connecté : sur le téléphone (localStorage). */
@@ -2523,10 +2541,10 @@
     var m = /^sb:([a-z]+:\d+):(.+)$/.exec(ev || ''); if (!m) return;
     var fid = m[1], mk = m[2], f = sbFx(fid), live = !!(f && f.live);
     var had = inSlip(ev, k), n0 = slip.length;
-    if (!had && (!f || (live ? (f.susp || f.end) : nowS() >= f.ts))) { sbToast(live ? NX().susp : SX().closedM); return; }
+    if (!had && (!f || (live ? (f.susp || f.end) : nowS() >= f.ts))) { sbToast(live ? NX().susp : SX().closedM, 'err'); return; }
     if (!had) {
-      if (slip.some(function (s) { return s.q; })) { sbToast(xx.e_single); return; }
-      if (slip.length >= 1000 && !slip.some(function (s) { return s.fx === fid; })) { sbToast(x.max10); return; }
+      if (slip.some(function (s) { return s.q; })) { sbToast(xx.e_single, 'err'); return; }
+      if (slip.length >= 1000 && !slip.some(function (s) { return s.fx === fid; })) { sbToast(x.max10, 'err'); return; }
     }
     slip = slip.filter(function (s) { return s.fx !== fid; });
     if (!had) slip.push({ ev: ev, k: k, odd: odd, sb: 1, mk: mk, fx: fid, ko: f.ts, t: f.h.n + ' - ' + f.a.n, h: f.h, a: f.a, grp: ['fx:' + fid], q: false, l: sbOutL(mk, k, f.h.n, f.a.n), lv: live ? 1 : 0 });
@@ -2744,7 +2762,7 @@
   }
   function codeRow() {
     var x = SX();
-    return '<div class="sb-crow"><input id="sbCodeIn" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="' + esc(x.codePh) + '" aria-label="' + esc(x.loadCode) + '"><button type="button" id="sbCodeGo"><span class="fit">' + esc(x.load) + '</span></button></div>';
+    return '<div class="sb-crow"><input id="sbCodeIn" maxlength="300" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="' + esc(x.codePh) + '" aria-label="' + esc(x.loadCode) + '"><button type="button" id="sbCodeGo"><span class="fit">' + esc(x.load) + '</span></button></div>';
   }
   function bindCodeRow(root) {
     var go2 = root.querySelector('#sbCodeGo'), inp = root.querySelector('#sbCodeIn');
@@ -2752,7 +2770,15 @@
     var run = function () { if (inp.value.trim()) loadCode(inp.value); };
     go2.addEventListener('click', run);
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); run(); } });
-    inp.addEventListener('input', function () { var v = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== inp.value) inp.value = v; });
+    // 2026-10-23 (propriétaire : « je colle, ça met HTTPS ») : le lien partagé (https://orolado.com/?code=XXXXXX) est reconnu →
+    // seul le code reste dans la case et le coupon se charge tout seul
+    inp.addEventListener('input', function () {
+      var raw = inp.value, c = codeOf(raw);
+      if (c && /[^A-Za-z0-9]/.test(raw)) { inp.value = c; loadCode(c); return; }
+      var v = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); if (v !== raw) inp.value = v;
+      if (v.length === 6 && /^[A-Z2-9]{6}$/.test(v) && raw.length > 1 && !inp._typed) { /* collé d'un coup */ loadCode(v); }
+    });
+    inp.addEventListener('keydown', function () { inp._typed = true; setTimeout(function () { inp._typed = false; }, 50); });
   }
   function codeBox(withShare) {
     var x = SX(), n = NX();
@@ -2794,9 +2820,17 @@
     z.closed = true; z.off = o.st || 'closed'; if (Array.isArray(o.sc)) z.osc = o.sc;
     return z;
   }
+  // code d'un coupon : « GKEBTE », « gkebte », ou le lien « https://orolado.com/?code=GKEBTE » (collé tel quel)
+  function codeOf(v) {
+    v = String(v || '').trim();
+    var m = /[?&#]code=([A-Za-z0-9]{6})(?![A-Za-z0-9])/i.exec(v);
+    if (m) return m[1].toUpperCase();
+    var w = v.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return /^[A-Z2-9]{6}$/.test(w) ? w : '';
+  }
   async function loadCode(code) {
     var x = SX(), xx = XX();
-    code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    code = codeOf(code) || String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (!/^[A-Z2-9]{6}$/.test(code)) { sbToast(x.codeBad, 'err'); return false; }
     var r = null;
     try { r = await D6.Api.post('sbCodeLoad', { code: code }, 15000); } catch (e) { r = null; }
