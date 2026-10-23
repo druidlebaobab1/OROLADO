@@ -82,7 +82,7 @@ $fams = array_unique(array_map('sb_fam', array_keys($m1)));
 $want = ['1x2', 'dc', 'dnb', 'ou', 'btts', 'tth', 'tta', 'oe', 'csh', 'csa', 'wnh', 'wna', 'eh', 'ah', 'ht1x2', 'htou', 'htbtts', '2h1x2', 'htft', 'cs', 'rbtts', 'rou', 'eg', 'hsh'];
 check('9001 : les 24 familles de marchés de la spec', !array_diff($want, $fams), implode(',', array_diff($want, $fams)));
 check('ordre : 1x2 en premier, ou:1.5 avant ou:2.5', array_keys($m1)[0] === '1x2' && array_search('ou:1.5', array_keys($m1)) < array_search('ou:2.5', array_keys($m1)));
-check('ah : demi-lignes seulement (-1.5, 0.5), pas -0.25', isset($m1['ah:-1.5'], $m1['ah:0.5']) && !isset($m1['ah:-0.25']));
+check('ah : demi-lignes (-1.5, 0.5) ; quarts et lignes entières aussi (2026-10-23)', isset($m1['ah:-1.5'], $m1['ah:0.5']));
 check('eh:-1 (3 choix) ; eg avec « 6+ » ; hsh 1/2/X', count($m1['eh:-1'] ?? []) === 3 && in_array('6+', array_column($m1['eg'] ?? [], 0), true) && array_column($m1['hsh'], 0) === ['1', '2', 'X']);
 check('ou:3.5 (1 seul bookmaker) : pas proposé', !isset($m1['ou:3.5']));
 $files = array_map('basename', glob(sb_dir() . '/*.json'));
@@ -255,6 +255,20 @@ $r = sp_admin_settle(load_db(), $e1, 'o0');
 $b2 = null; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $b) if ($b['id'] === $r2['bet']['id']) $b2 = $b;
 $base2 = floor(5 * $b2['odd'] * 100 + 1e-6) / 100; $bp2 = min((float) ($b2['bst'] ?? 0), sp_boost_pct($b2['sel'], (int) ($b2['brv'] ?? 1))); $bw2 = $bp2 > 0 ? sp_floor2(($base2 - 5) * $bp2 / 100) : 0.0;
 check('match manuel réglé (ancien chemin) → combiné gagné, payé (+ bonus combiné)', $r['ok'] && $b2['status'] === 'won' && abs($b2['win'] - round($base2 + $bw2, 2)) < 0.001 && abs($bal[$A] - round($expA + $b2['win'], 2)) < 0.001, json_encode([$b2['win'], $base2, $bw2]));
+// 2026-10-23 — lignes au quart de bout en bout : moitié gagnée (cote (1 + 2) / 2 = 1,5 → 15 $), moitié perdue (0,5 → 5 $ rendus), ligne entière nulle (remboursé)
+sb_with('results.json', static function (array &$s) { $s['fx']['7701'] = ['v' => 'fin', 'ts' => 1000, 'ft' => [2, 1], 'ht' => [1, 0], 'st' => 'FT', 'at' => time()]; return true; });
+sp_with('bets.json', static function (array &$s) {
+  foreach ([['bq1', 'ah:-0.75', 'H'], ['bq2', 'ah:-1.25', 'H'], ['bq3', 'ah:-1', 'H']] as [$id, $mk, $k])
+    $s['b'][] = ['id' => $id, 'uid' => 'u_a', 'mode' => 'real', 'stake' => 10.0, 'odd' => 2.0, 'pot' => 20.0, 'status' => 'open', 'at' => 900,
+      'sel' => [['ev' => 'sb:foot:7701:' . $mk, 'k' => $k, 'odd' => 2.0, 't' => 'X - Y', 'l' => $mk, 'mk' => $mk, 'ko' => 1000]]];
+  return true;
+});
+$balQ = $bal[$A]; sp_resolve(load_db());
+$bq = []; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $b) $bq[$b['id']] = $b;
+check('quart de ligne : -0,75 sur 2-1 → moitié gagnée, payé 15 $ (gagné)', $bq['bq1']['status'] === 'won' && abs($bq['bq1']['win'] - 15) < 0.001 && $bq['bq1']['sel'][0]['r'] === 'hwon', json_encode($bq['bq1']));
+check('quart de ligne : -1,25 sur 2-1 → moitié perdue, 5 $ rendus (perdu)', $bq['bq2']['status'] === 'lost' && abs($bq['bq2']['win'] - 5) < 0.001 && $bq['bq2']['sel'][0]['r'] === 'hlost', json_encode($bq['bq2']));
+check('ligne entière -1 sur 2-1 → remboursé (10 $)', $bq['bq3']['status'] === 'void' && abs($bq['bq3']['win'] - 10) < 0.001);
+check('solde : +15 +5 +10 = +30 $', abs($bal[$A] - ($balQ + 30)) < 0.001, (string) ($bal[$A] - $balQ));
 // 2026-10-23 — bonus combiné : règles
 $S = static fn(array $o) => array_map(static fn($x) => ['odd' => $x], $o);
 check('bonus v3 : dès 1 match, toute cote (1 → 0,5 % ; 2 → 1,5 % ; 3 → 3 %)', sp_boost_pct($S([1.01])) == 0.5 && sp_boost_pct($S([3.0, 1.05])) == 1.5 && sp_boost_pct($S([1.2, 1.3, 1.4])) == 3.0);
@@ -307,17 +321,26 @@ $feed = [
   ['Goals Over/Under', ['Over 2.25', 'Under 3.0', 'Over 2.5', 'Over abc']], ['Asian Handicap', ['Home -0.75', 'Home 0', 'Away -1']],
 ];
 foreach ($feed as [$nm, $vs]) foreach (sb_parse_bet($nm, array_map(static fn($v) => ['value' => $v, 'odd' => '1.90'], $vs), $unk) as $o) $P[] = $o[0] . '/' . $o[1];
-$wantP = ['2hou:1.5/O', '2hou:1.5/U', 'htdc/HD', 'htdc/HA', 'htdc/DA', '2hdc/HD', '2hdc/DA', '2hbtts/Y', '2hbtts/N', 'htcs/1:0', 'htcs/0:0', 'htoe/O', 'htoe/E', '2hoe/O',
-  'httth:0.5/O', 'httth:0.5/U', 'httta:0.5/U', 'htah:-0.5/H', 'htah:-0.5/A', 'ou:2.5/O'];
-check('10 nouveaux marchés lus (2hou, htdc, 2hdc, 2hbtts, htcs, htoe, 2hoe, httth, httta, htah demi-lignes)', $P === $wantP, implode(' ', array_diff($P, $wantP)) . ' | manque ' . implode(' ', array_diff($wantP, $P)));
-check('quarts / lignes entières (2.25, 3.0, -0.75, 0, -1, htah -0.25) : écartés SANS diagnostic ; valeur vraiment inconnue gardée', array_keys($unk) === ['Goals Over/Under = Over abc'], implode(' | ', array_keys($unk)));
+$wantP = ['2hou:1.5/O', '2hou:1.5/U', '2hou:1.25/O', '2hou:2/O', 'htdc/HD', 'htdc/HA', 'htdc/DA', '2hdc/HD', '2hdc/DA', '2hbtts/Y', '2hbtts/N', 'htcs/1:0', 'htcs/0:0', 'htoe/O', 'htoe/E', '2hoe/O',
+  'httth:0.5/O', 'httth:0.5/U', 'httta:0.5/U', 'htah:-0.5/H', 'htah:-0.5/A', 'htah:-0.25/H', 'htah:1/A', 'ou:2.25/O', 'ou:3/U', 'ou:2.5/O', 'ah:-0.75/H', 'ah:0/H', 'ah:-1/A'];
+check('nouveaux marchés lus, lignes entières et quarts compris (2026-10-23)', $P === $wantP, implode(' ', array_diff($P, $wantP)) . ' | manque ' . implode(' ', array_diff($wantP, $P)));
+check('valeur vraiment inconnue gardée dans le diagnostic', array_keys($unk) === ['Goals Over/Under = Over abc'], implode(' | ', array_keys($unk)));
 $HT2 = [1, 0]; $FT2 = [2, 2]; $bad = []; // 1re mi-temps 1-0, 2e mi-temps 1-2
 $cases = [['2hou:1.5', 'O', 'won'], ['2hou:1.5', 'U', 'lost'], ['htdc', 'HD', 'won'], ['htdc', 'DA', 'lost'], ['2hdc', 'DA', 'won'], ['2hdc', 'HD', 'lost'], ['2hbtts', 'Y', 'won'],
   ['htcs', '1:0', 'won'], ['htcs', '0:0', 'lost'], ['htoe', 'O', 'won'], ['2hoe', 'O', 'won'], ['2hoe', 'E', 'lost'], ['httth:0.5', 'O', 'won'], ['httta:0.5', 'U', 'won'],
   ['htah:-0.5', 'H', 'won'], ['htah:0.5', 'A', 'lost']];
 foreach ($cases as [$mk, $k, $w]) { $g = sb_settle_mk($mk, $k, $FT2, $HT2); if ($g !== $w) $bad[] = "$mk/$k=" . var_export($g, true) . "≠$w"; }
 check(count($cases) . ' cas (mi-temps 1-0, fin 2-2)', !$bad, implode(' ', $bad));
-check('nouveaux marchés sans score de mi-temps : pas réglés (null)', sb_settle_mk('2hou:1.5', 'O', $FT2, null) === null && sb_settle_mk('htcs', '1:0', $FT2, null) === null && sb_settle_mk('htah:0.25', 'H', $FT2, $HT2) === null);
+check('nouveaux marchés sans score de mi-temps : pas réglés (null)', sb_settle_mk('2hou:1.5', 'O', $FT2, null) === null && sb_settle_mk('htcs', '1:0', $FT2, null) === null);
+// 2026-10-23 — quarts et lignes entières : moitié gagnée / moitié perdue / remboursé
+$Q = [['ou:2.25', 'O', [1, 1], null, 'hlost'], ['ou:2.25', 'U', [1, 1], null, 'hwon'], ['ou:2.75', 'O', [2, 1], null, 'hwon'], ['ou:2.75', 'U', [2, 1], null, 'hlost'], ['ou:3', 'O', [2, 1], null, 'void'],
+  ['ou:3', 'O', [3, 1], null, 'won'], ['ou:2.25', 'O', [2, 1], null, 'won'], ['ah:-0.25', 'H', [1, 1], null, 'hlost'], ['ah:-0.25', 'A', [1, 1], null, 'hwon'], ['ah:0', 'H', [1, 1], null, 'void'],
+  ['ah:0', 'H', [2, 1], null, 'won'], ['ah:-0.75', 'H', [2, 1], null, 'hwon'], ['ah:-0.75', 'A', [2, 1], null, 'hlost'], ['ah:-1', 'H', [2, 1], null, 'void'], ['ah:-1', 'H', [3, 1], null, 'won'],
+  ['ah:-1.25', 'A', [2, 1], null, 'hwon'], ['ah:-1.25', 'H', [2, 1], null, 'hlost'], ['ah:-1.25', 'H', [3, 1], null, 'won'], ['tth:1', 'O', [1, 0], null, 'void'], ['htou:0.75', 'O', [2, 1], [1, 0], 'hwon'],
+  ['2htth:0.5', 'O', [2, 1], [1, 0], 'won'], ['2hah:-0.25', 'H', [2, 1], [1, 0], 'hlost'], ['hsbh', 'Y', [2, 1], [1, 0], 'won'], ['asbh', 'Y', [2, 1], [1, 0], 'lost'], ['2hasg', 'Y', [2, 1], [1, 0], 'won'],
+  ['hgn', '2', [2, 1], null, 'won'], ['agn', '0', [2, 1], null, 'lost'], ['hgn', '3+', [4, 1], null, 'won'], ['agn', '3+', [4, 1], null, 'lost']];
+$bad = []; foreach ($Q as [$mk, $k, $ft, $ht, $w]) { $g = sb_settle_mk($mk, $k, $ft, $ht); if ($g !== $w) $bad[] = "$mk/$k " . json_encode($ft) . '=' . var_export($g, true) . "≠$w"; }
+check(count($Q) . ' cas quarts / entières / 2e mi-temps', !$bad, implode(' ; ', $bad));
 $cf = sb_config();
 check('marges : htcs exotique (30 %), les autres de côté (20 %)', abs(sb_margin('htcs', $cf) - 0.30) < 1e-9 && abs(sb_margin('2hou', $cf) - 0.20) < 1e-9 && abs(sb_margin('htdc', $cf) - 0.20) < 1e-9);
 $bk = static fn(array $o) => ['bets' => [['name' => 'Double Chance - First Half', 'values' => [['value' => 'Home/Draw', 'odd' => $o[0]], ['value' => 'Home/Away', 'odd' => $o[1]], ['value' => 'Draw/Away', 'odd' => $o[2]]]]]];
@@ -325,7 +348,7 @@ $u2 = []; $mm = sb_markets([$bk(['1.25', '1.40', '1.60']), $bk(['1.27', '1.38', 
 $inv = 0; foreach ($mm['htdc'] ?? [] as $o) $inv += 1 / $o[1];
 check('htdc : groupe attendu 2 (Σ 1/cote ≥ 2/0,80)', count($mm['htdc'] ?? []) === 3 && $inv >= 2 / 0.80 - 1e-9, json_encode($mm));
 check('libellés français des nouveaux marchés', sb_mk_name('2hou:1.5') === 'Buts 2e mi-temps (1,5)' && sb_k_name('htdc', 'HD', 'A', 'B') === 'A ou nul' && sb_k_name('htcs', '1:0', 'A', 'B') === '1 - 0');
-check('choix invalide : pas réglé (null)', sb_settle_mk('1x2', 'Z', [1, 0], null) === null && sb_settle_mk('ah:-1', 'H', [3, 0], null) === null);
+check('choix invalide : pas réglé (null)', sb_settle_mk('1x2', 'Z', [1, 0], null) === null && sb_settle_mk('ah:-1.1', 'H', [3, 0], null) === null);
 
 echo "8) Règles d'annulation (unités)\n";
 $sel = ['ev' => 'sb:foot:777:1x2', 'k' => 'H', 'ko' => $T('2026-10-22 18:00'), 'ti' => [1, 2]];
@@ -436,9 +459,12 @@ sb_config_save(['liveAll' => true]);
 $M = sb_match($ua, 'foot:9101', $L0);
 $mks = array_column($M['mk'], 'mk');
 check('marchés du direct : 1x2, dc, dnb, ou:1.5 / 2.5 / 3.5, btts, tth:1.5', !array_diff(['1x2', 'dc', 'dnb', 'ou:1.5', 'ou:2.5', 'ou:3.5', 'btts', 'tth:1.5'], $mks), implode(',', $mks));
-check('retirés : ou:0.5 (déjà joué à 1-0), ligne entière ou:2, prochain but, handicap asiatique', !in_array('ou:0.5', $mks, true) && !in_array('ou:2', $mks, true) && !array_filter($mks, static fn($m) => str_starts_with($m, 'ah')));
+check('retiré : ou:0.5 (déjà joué à 1-0) ; 2026-10-23 : ligne entière ou:2 et handicap asiatique (score complet) proposés', !in_array('ou:0.5', $mks, true) && in_array('ou:2', $mks, true) && in_array('ah:-0.5', $mks, true), implode(',', $mks));
 $u = (array) (sb_state()['unkLive'] ?? []);
-check('noms inconnus du direct → diagnostic (Next Goal, Asian Handicap)', isset($u['Next Goal'], $u['Asian Handicap']) && isset(sb_admin_diag($L0)['unkLive']['Next Goal']));
+$pk = sb_live_pick('9101', 'ah:-0.5', 'H', $ua, $L0);
+check('pari direct sur le handicap asiatique : accepté (cote, score et minute du pari gardés)', !empty($pk['ok']) && ($pk['sel']['mk'] ?? '') === 'ah:-0.5' && ($pk['sel']['sc'] ?? null) === [1, 0], json_encode($pk));
+check('pari direct sur un choix inconnu : refusé', empty(sb_live_pick('9101', 'ah:-0.5', 'Z', $ua, $L0)['ok']) && empty(sb_live_pick('9101', 'cs', '5:0', $ua, $L0)['ok']));
+check('noms inconnus du direct → diagnostic (Next Goal) ; Asian Handicap connu', isset($u['Next Goal']) && !isset($u['Asian Handicap']) && isset(sb_admin_diag($L0)['unkLive']['Next Goal']), json_encode($u));
 $h1 = null; foreach ($M['mk'] as $m) if ($m['mk'] === '1x2') $h1 = $m['o'][0];
 check('marge du direct : H ≤ 1,40 − 0,01 et < cote du flux (marge mLive)', $h1[0] === 'H' && $h1[1] <= 1.39 && $h1[1] >= 1.01, json_encode($h1));
 check('tracker : buts / cartons / changement (penalty manqué ignoré)', count($M['trk']['events']) === 4 && $M['trk']['events'][0]['type'] === 'goal' && $M['trk']['events'][0]['team'] === 'h' && $M['trk']['events'][2]['detail'] === 'red' && $M['trk']['events'][3]['type'] === 'subst');
@@ -877,13 +903,15 @@ check('api.php : sbList passe « sport »', str_contains($api, "\$req['sport']")
 check('budget prévu par jour ≤ 79 < 90 (plafond dur)', 8 + 4 + 2 + 8 + SB_O_ODDS_DAY + SB_O_RES_DAY <= 79 && SB_O_CAP === 90);
 
 // horloge du direct : celle du fournisseur (seconds), sinon minute vue par nous
-check('horloge : fournisseur « 63:10 » lu il y a 5 s → 63:15 + retard mesuré (20 s)', sb_live_clock('2H', ['m' => 63], 1005, ['sec' => 63 * 60 + 10, 'sat' => 1000]) === 63 * 60 + 35);
+check('horloge : fournisseur « 63:10 » lu il y a 5 s → 63:15 + retard mesuré (26 s)', sb_live_clock('2H', ['m' => 63], 1005, ['sec' => 63 * 60 + 10, 'sat' => 1000]) === 63 * 60 + 41);
 // 2026-10-23 : « 0:00 » = plus tôt des lectures récentes non aberrantes − 15 s ; une lecture fausse (100 s trop tôt) ne colle plus
 $zs = sb_clk_push([], 1000, 2000); $zs = sb_clk_push($zs, 1018, 2060); $zs = sb_clk_push($zs, 1005, 2120);
-check('horloge : plus tôt des lectures récentes − 20 s', sb_clk_zero($zs) === 980);
+check('horloge : plus tôt des lectures récentes − 26 s', sb_clk_zero($zs) === 974);
 $zs = sb_clk_push($zs, 905, 2180);
-check('horloge : lecture aberrante (100 s trop tôt) écartée', sb_clk_zero($zs) === 980);
-check('horloge : 2 lectures, la 2e 130 s plus tard → pas encore suivie', sb_clk_zero([[1, 1000], [2, 1130]]) === 980);
+check('horloge : lecture aberrante (100 s trop tôt) écartée', sb_clk_zero($zs) === 974);
+check('horloge : vote — 3 lectures d\'accord contre 1 fausse 80 s plus tôt (dernière lue)', sb_clk_zero([[1, 1000], [2, 1010], [3, 1005], [4, 920]]) === 974);
+check('horloge : 2 lectures en désaccord → la plus récente', sb_clk_zero([[1, 1000], [2, 1130]]) === 1104);
+check('horloge : direct pas relu depuis 6 min (minute 63 vieillie) → la vraie horloge reste', sb_live_clock('2H', ['m' => 63, 'mt' => 1000], 1400, ['z' => 1400 - 69 * 60]) === 69 * 60);
 check('horloge : lectures de plus de 5 min oubliées (la dernière reste)', count(sb_clk_push($zs, null, 2600)) === 1);
 check('horloge : 2e mi-temps (saut > 150 s) → repart de zéro', count(sb_clk_push($zs, 1000 + 3600, 2200)) === 1);
 check('horloge : fournisseur incohérent (40:00 pour la 63e) → minute vue par nous', sb_live_clock('2H', ['m' => 63, 'mt' => 1000], 1020, ['sec' => 2400, 'sat' => 1000]) === 63 * 60 + 5);
@@ -925,6 +953,37 @@ check('buts incohérents avec le score → pas réglé (on ne devine pas)', sb_s
 check('sans statistiques → pas réglé ; 8 h après → remboursé', sb_settle_mk('cou:9.5', 'O', [1, 2], [0, 1], ['st' => 'FT', 'co' => null]) === null
   && sb_sel_result(['ev' => 'sb:foot:777:cou:9.5', 'k' => 'O', 'ko' => 1000], 900, ['777' => ['v' => 'fin', 'ts' => 1000, 'ft' => [1, 2], 'ht' => [0, 1]]], 1000 + SB_XS_WAIT + 60, true) === 'void');
 check('gagne les 2 mi-temps / 2e mi-temps score exact / domicile marque', sb_settle_mk('wbh', 'Y', [3, 1], [1, 0], null) === 'won' && sb_settle_mk('2hcs', '2:1', [3, 1], [1, 0], null) === 'won' && sb_settle_mk('hsg', 'N', [0, 1], [0, 0], null) === 'won');
+
+$bkQ = []; foreach ([0, 0.02, -0.02] as $e) $bkQ[] = ['bets' => [['name' => 'Match Winner', 'values' => [['value' => 'Home', 'odd' => (string) (2.2 + $e)], ['value' => 'Draw', 'odd' => '3.0'], ['value' => 'Away', 'odd' => '3.6']]],
+  ['name' => 'Asian Handicap', 'values' => [['value' => 'Home -0.25', 'odd' => '1.90'], ['value' => 'Away -0.25', 'odd' => '1.95'], ['value' => 'Home -0.75', 'odd' => '2.30'], ['value' => 'Away -0.75', 'odd' => '1.62']]]]];
+$uQ = []; $mQ = sb_markets($bkQ, ['mMain' => 4, 'mSide' => 4, 'mExotic' => 4, 'mLive' => 4, 'mOther' => 4], $uQ);
+check('avant-match : handicap asiatique -0,25 / -0,75 gardé sur un match à nul probable', isset($mQ['ah:-0.25'], $mQ['ah:-0.75']), json_encode(array_keys($mQ)) . json_encode($uQ));
+// 2026-10-23 — marchés du direct / statistiques : n-ième but, résultat à la n-ième minute, 10 minutes, corners exacts / handicap, joueurs
+$xs2 = ['st' => 'FT', 'co' => [6, 3], 'cd' => [2, 3], 'gl' => [['h', 12, 'A. One', 0], ['a', 45.02, 'B. Two', 0], ['h', 74, 'A. One', 0], ['h', 90.03, 'C. Three', 1]],
+  'pl' => ['A. One', 'B. Two', 'C. Three', 'D. Four'], 'ps' => ['A. One' => [5, 3, 0, 1, 0], 'B. Two' => [2, 1, 1, 0, 0], 'D. Four' => [0, 0, 2, 1, 1]],
+  'ce' => [['A. One', 0], ['D. Four', 0], ['D. Four', 1]]];
+// csc de C. Three (équipe extérieur dans le flux) → but pour le domicile ? Score final 3-1 : buts h = 12, 74 + csc (flip) ; a = 45+2
+$FT3 = [2, 2]; // score cohérent avec le csc attribué à l'extérieur (sans flip) : h 12, 74 ; a 45+2, 90+3 csc → 2-2
+$L = [['ng:1', 'H', 'won'], ['ng:2', 'A', 'won'], ['ng:3', 'H', 'won'], ['ng:5', 'D', 'won'], ['ng:4', 'A', 'won'],
+  ['rm:30', 'H', 'won'], ['rm:50', 'D', 'won'], ['rm:80', 'H', 'won'], ['g10:70', 'O', 'won'], ['g10:20', 'U', 'won'], ['g10:40', 'O', 'won'],
+  ['co3:9', 'E', 'won'], ['co3:8', 'O', 'won'], ['ceh:-3', 'D', 'won'], ['ceh:-2', 'H', 'won'], ['cah:-2.5', 'H', 'won'], ['cah:-3', 'H', 'void'], ['cah:-3.25', 'A', 'hwon'],
+  ['cou:9', 'O', 'void'], ['kou:4.5', 'O', 'won'], ['kouh:2.25', 'U', 'hwon'],
+  ['ngs:1', 'Aaron One', 'won'], ['ngs:2', 'Aaron One', 'lost'], ['ngs:4', 'Carl Three', 'void'], ['ngs:5', '-', 'won'], ['ngs:2', 'Zed Nobody', 'void'],
+  ['p2g', 'A. One', 'won'], ['p2g', 'B. Two', 'lost'], ['p3g', 'A. One', 'lost'], ['pbk', 'A. One', 'won'], ['pbk', 'B. Two', 'lost'], ['psoff', 'D. Four', 'won'], ['psoff', 'A. One', 'lost'], ['pbk', 'Zed Nobody', 'void'],
+  ['psh:4.5', 'A. One', 'won'], ['pst:3.5', 'A. One', 'lost'], ['pas:1.5', 'D. Four', 'won'], ['pas:0.5', 'C. Three', 'void'],
+  ['hgn', '2', 'won'], ['agn', '3+', 'lost']];
+$bad = []; foreach ($L as [$mk, $k, $w]) { $g = sb_settle_mk($mk, $k, $FT3, [1, 1], $xs2); if ($g !== $w) $bad[] = "$mk/$k=" . var_export($g, true) . "≠$w"; }
+check(count($L) . ' règlements du direct / statistiques (2-2, csc, arrêts de jeu)', !$bad, implode(' ; ', $bad));
+check('marchés joueurs / corners : match prolongé → remboursé', sb_settle_mk('pbk', 'A. One', $FT3, [1, 1], ['st' => 'AET'] + $xs2) === 'void' && sb_settle_mk('co3:9', 'E', $FT3, [1, 1], ['st' => 'PEN'] + $xs2) === 'void');
+// lecture du flux direct (forme réelle : valeur + handicap)
+$P2 = static fn($n, $v, $h = null) => sb_live_parse(strtolower($n), $v, $h);
+check('direct : handicap asiatique ligne du choix → ligne domicile', $P2('Asian Handicap', 'Home', '-1') === ['ah:-1', 'H'] && $P2('Asian Handicap', 'Away', '1') === ['ah:-1', 'A'] && $P2('Asian Handicap', 'Away', '-0.25') === ['ah:0.25', 'A']);
+check('direct : handicap 3 issues (nul / extérieur portent la ligne extérieur)', $P2('3-Way Handicap', 'Home', '1') === ['eh:1', 'H'] && $P2('3-Way Handicap', 'Draw', '-1') === ['eh:1', 'D'] && $P2('3-Way Handicap', 'Away', '-1') === ['eh:1', 'A']);
+check('direct : score final, n-ième but, minute, 10 minutes, corners exacts', $P2('Final Score', '2-1') === ['cs', '2:1'] && $P2('Which team will score the 4th goal?', 'No goal') === ['ng:4', 'D']
+  && $P2('1x2 - 80 minutes', 'Away') === ['rm:80', 'A'] && $P2('Next 10 Minutes Total', 'Goals/Over  0.5', '70') === ['g10:70', 'O'] && $P2('Next 10 Minutes Total', 'Corners 3-Way/Over  0.5', '70') === false
+  && $P2('Match Corners', 'Exactly', '8') === ['co3:8', 'E'] && $P2('Asian Corners', 'Over', '8') === ['cou:8', 'O']);
+check('direct : joueurs (buteur du 4e but, tirs « Nom/Over 1.5 », averti)', $P2('Goal Scorer', 'Tom Lawrence', '4') === ['ngs:4', 'Tom Lawrence'] && $P2('Player Shots', 'Justin Vidic/Over 1.5') === ['psh:1.5', 'Justin Vidic'] && $P2('Player to be Booked', 'Cher Deng') === ['pbk', 'Cher Deng']);
+check('direct : marchés non réglables écartés sans bruit ; nom inconnu = 0', $P2('Race to the 7th corner?', '1') === false && $P2('Method of 4th Goal', 'Header') === false && $P2('Last Corner', '1') === false && $P2('Something New', 'x') === 0);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
