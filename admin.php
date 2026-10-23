@@ -2304,6 +2304,18 @@ if ($isAjax) {
       admin_json(['repriced' => $rp['repriced'] ?? 0] + pred_auto_run(admin_local_db(), 0, true) + ['list' => pred_admin_list(0, admin_house_skip())]);
     }
     // 2026-10-22 : corrigé (était dans le bloc gm_, jamais atteint → « Action inconnue ») ; 2026-10-21 (propriétaire) : fiche joueur → ses PARIS (lecture seule)
+    // 2026-10-23 (propriétaire) — ⚽ Paris : tableau de bord (lecture seule), voir admin_paris_lib.php
+    if ($action === 'sp_dash') {
+      require_once __DIR__ . '/admin_paris_lib.php';
+      $per = in_array((string) ($req['per'] ?? ''), ['today', 'yday', '7', '30'], true) ? (string) $req['per'] : 'today';
+      $ldbP = admin_local_db(); $skip = admin_house_skip();
+      $whoP = static function (string $uid) use ($ldbP): array {
+        $u = (array) ($ldbP['users'][$uid] ?? []);
+        return ['name' => (string) ($u['displayName'] ?? $u['name'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? '')];
+      };
+      $betsP = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
+      admin_json(admin_paris_dash($per, $betsP, sp_events(), static fn(string $u): bool => $skip($u), $whoP));
+    }
     if ($action === 'sp_player') {
       $pid = (string) ($req['userId'] ?? '');
       if ($pid === '' || !function_exists('sp_my_bets')) admin_json(['ok' => false, 'reason' => 'Joueur introuvable']);
@@ -2831,7 +2843,9 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
       <button class="mini" id="btnBonusAll" type="button" style="border-color:#4ADE80;color:#86EFAC">🎁 Bonus à tous</button>
       <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">💬 Social <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
-      <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎮 Jeux &amp; Prédictions</button>
+      <button class="mini" id="btnParisA" type="button" style="border-color:#60A5FA;color:#93C5FD">⚽ Paris</button>
+      <button class="mini" id="btnPredA" type="button" style="border-color:#C084FC;color:#D8B4FE">🔮 Predict</button>
+      <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎮 Jeux</button>
       <button class="mini" id="btnTopG" type="button" style="border-color:#FACC15;color:#FDE68A">🏆 Jeux les plus joués</button>
       <button class="mini" id="btnGm" type="button" style="border-color:#A78BFA;color:#C4B5FD">🎲 Parties de jeux</button>
       <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
@@ -3112,10 +3126,20 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .gm-bar i{display:block;height:100%}
     .gm-verdict{font-size:.85rem;margin:4px 0 0}
   </style>
+  <div class="modal" id="parisModal">
+    <div class="modal-box lvA-box">
+      <button class="mini" type="button" id="closeParisA">Retour</button>
+      <h2 style="color:#93C5FD;margin:10px 0 4px">⚽ Paris</h2>
+      <p class="muted" style="margin:0 0 8px">Argent réel seulement, vos comptes admin non comptés. Heure de votre téléphone.</p>
+      <div class="lvA-tabs" id="pdPer"><button class="mini ok" type="button" data-per="today">Aujourd’hui</button><button class="mini" type="button" data-per="yday">Hier</button><button class="mini" type="button" data-per="7">7 jours</button><button class="mini" type="button" data-per="30">30 jours</button><button class="mini" type="button" id="pdSet" style="margin-left:auto">⚙️ Réglages des paris</button></div>
+      <div id="pdBody"><p class="muted">Chargement…</p></div>
+    </div>
+  </div>
   <div class="modal" id="casModal">
     <div class="modal-box lvA-box">
       <button class="mini" type="button" id="closeCasA">Retour</button>
-      <h2 style="color:#5CF59A;margin:10px 0 4px">🎮 Jeux &amp; Prédictions</h2>
+      <h2 id="casTitle" style="color:#5CF59A;margin:10px 0 4px">🎮 Jeux</h2>
+
       <div class="lvA-tabs"><button class="mini ok" type="button" id="csTabSp">🔮 Prédictions</button><button class="mini" type="button" id="csTabSt">📊 Jeux : gains / pertes</button></div>
       <div id="csPaneSp">
         <div class="nt-card">
@@ -4626,8 +4650,86 @@ setInterval(() => {
     $c('spSt').textContent = r.ok ? 'Publié ✓' : (r.reason || 'Échec');
     if (r.ok) { resetForm(); list(); }
   };
-  $c('btnCasA').onclick = () => { $c('casModal').classList.add('on'); resetForm(); tab('sp'); };
+  // 2026-10-23 (propriétaire : « séparer Jeux / Paris / Predict ») : même fenêtre, trois entrées séparées
+  const casOpen = (mode) => {
+    const m = $c('casModal'); m.dataset.mode = mode; m.classList.add('on');
+    $c('casTitle').textContent = mode === 'jeux' ? '🎮 Jeux' : mode === 'pred' ? '🔮 Predict' : '⚙️ Réglages des paris';
+    $c('casTitle').style.color = mode === 'jeux' ? '#5CF59A' : mode === 'pred' ? '#D8B4FE' : '#93C5FD';
+    if (mode === 'jeux') tab('st'); else { resetForm(); tab('sp'); }
+  };
+  window.casOpen = casOpen;
+  $c('btnCasA').onclick = () => casOpen('jeux');
+  $c('btnPredA').onclick = () => casOpen('pred');
   $c('closeCasA').onclick = () => $c('casModal').classList.remove('on');
+})();
+</script>
+<style>
+#casModal[data-mode] .lvA-tabs{display:none!important}
+#casModal[data-mode="paris"] #csPaneSp > :not(#apifKeyCard):not(#sbCard){display:none!important}
+#casModal[data-mode="pred"] #apifKeyCard,#casModal[data-mode="pred"] #sbCard{display:none!important}
+#parisModal .pd-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}
+#parisModal .pd-c{padding:10px 12px;border:1px solid #2A3550;border-radius:12px;background:rgba(255,255,255,.03);min-width:0}
+#parisModal .pd-c h4{margin:0 0 6px;font-size:.92rem;color:#C7D2FE}
+#parisModal .pd-c p{margin:2px 0;display:flex;justify-content:space-between;gap:8px;font-size:.85rem;color:#A5B4D8}
+#parisModal .pd-c p b{color:#fff;white-space:nowrap}
+#parisModal .pd-h{margin:16px 0 6px;font-size:1rem;color:#FBBF24}
+#parisModal .pd-al{padding:8px 10px;border-radius:10px;margin:6px 0;font-size:.88rem;overflow-wrap:anywhere}
+#parisModal .pd-al.red{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#FCA5A5}
+#parisModal .pd-al.orange{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.35);color:#FCD34D}
+#parisModal .pd-hr{display:flex;align-items:flex-end;gap:2px;height:90px;padding:6px 0;border-bottom:1px solid #2A3550}
+#parisModal .pd-hr i{flex:1;min-width:0;background:#60A5FA;border-radius:3px 3px 0 0;opacity:.85}
+#parisModal .pd-hx{display:flex;gap:2px;font-size:9px;color:#6B7A99}#parisModal .pd-hx span{flex:1;text-align:center}
+#parisModal table{width:100%;border-collapse:collapse;font-size:.84rem}
+#parisModal td,#parisModal th{padding:6px 6px;border-bottom:1px solid #1E2A44;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+#parisModal th{color:#8FA0C4;font-weight:700;font-size:.75rem;text-transform:uppercase}
+#parisModal .pd-k{display:inline-block;padding:1px 6px;border-radius:6px;font-size:.72rem;font-weight:800}
+#parisModal .pd-k.live{background:rgba(239,68,68,.18);color:#FCA5A5}#parisModal .pd-k.pre{background:rgba(96,165,250,.16);color:#93C5FD}#parisModal .pd-k.pred{background:rgba(192,132,252,.16);color:#D8B4FE}
+#parisModal .pos{color:#4ADE80}#parisModal .neg{color:#F87171}
+#parisModal .pd-sel{color:#A5B4D8;font-size:.78rem;margin-top:3px}
+</style>
+<script>
+/* 2026-10-23 (propriétaire) — ⚽ PARIS : tableau de bord des paris (argent réel) pour suivre et repérer une faille */
+(function () {
+  const $p = id => document.getElementById(id);
+  if (!$p('btnParisA')) return;
+  let per = 'today', busy = false;
+  const m = v => (Number(v) || 0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
+  const sg = v => { v = Number(v) || 0; return '<b class="' + (v >= 0 ? 'pos' : 'neg') + '">' + (v > 0 ? '+' : v < 0 ? '−' : '') + m(Math.abs(v)) + '</b>'; };
+  const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const hm = t => new Date(t * 1000).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+  const KN = {live:'Direct', pre:'Avant-match', pred:'Predict'};
+  const who = r => e(r.name || r.publicId || r.uid) + (r.publicId ? ' <span class="muted">' + e(r.publicId) + '</span>' : '');
+  const card = (title, t) => '<div class="pd-c"><h4>' + title + '</h4><p>Coupons <b>' + t.n + '</b></p><p>Misé <b>' + m(t.in) + '</b></p><p>Payé <b>' + m(t.out) + '</b></p><p>Net maison ' + sg(t.net) + '</p>' +
+    '<p>Gagnés / perdus <b>' + t.won + ' / ' + t.lost + '</b></p><p>En cours <b>' + t.open + (t.open ? ' · gain possible ' + m(t.pot) : '') + '</b></p></div>';
+  const selTxt = r => (r.sel || []).map(s => e(s.t) + ' → ' + e(s.l) + ' (' + Number(s.odd).toFixed(2) + ')' + (s.lv ? ' <span class="pd-k live">direct ' + (s.sc ? s.sc.join('-') : '') + (s.m != null ? ' · ' + s.m + '’' : '') + '</span>' : '') + (s.r === 'won' ? ' ✅' : s.r === 'lost' ? ' ❌' : '')).join('<br>') + (r.nSel > (r.sel || []).length ? '<br>+ ' + (r.nSel - r.sel.length) + ' autre(s)' : '');
+  const betRows = rows => '<table><thead><tr><th>Heure</th><th>Joueur</th><th>Type</th><th>Mise</th><th>Cote</th><th>État</th><th>Gain</th></tr></thead><tbody>' + rows.map(r =>
+    '<tr><td>' + hm(r.at) + '</td><td>' + who(r) + '<div class="pd-sel">' + selTxt(r) + '</div></td><td><span class="pd-k ' + r.kind + '">' + KN[r.kind] + '</span></td><td>' + m(r.stake) + '</td><td>' + Number(r.odd).toFixed(2) + '</td><td>' +
+    ({open:'⏳ En cours', won:'✅ Gagné', lost:'❌ Perdu', void:'↩️ Remboursé'}[r.status] || e(r.status)) + '</td><td>' + (r.status === 'open' ? '<span class="muted">' + m(r.pot) + '</span>' : m(r.win)) + '</td></tr>').join('') + '</tbody></table>';
+  const MK = {'1x2':'Résultat 1X2', dc:'Double chance', dnb:'Remboursé si nul', ou:'Plus / moins de buts', btts:'Les deux marquent', ah:'Handicap asiatique', eh:'Handicap', cs:'Score exact', ht1x2:'Mi-temps 1X2', htou:'Buts mi-temps', htft:'Mi-temps / fin', tth:'Buts équipe 1', tta:'Buts équipe 2', oe:'Pair / impair', pred:'Predict', autre:'Autres'};
+  function paint(j) {
+    const T = j.tot, mx = Math.max(1, ...j.hours.map(h => h.in));
+    let h = '<div class="pd-g">' + card('Tous les paris', T.all) + card('🔴 Direct', T.live) + card('Avant-match', T.pre) + card('🔮 Predict', T.pred) + '</div>';
+    h += '<div class="pd-h">⚠️ Alertes</div>' + (j.alerts.length ? j.alerts.map(a => '<div class="pd-al ' + a.lvl + '">' + (a.uid ? who(a) + ' — ' : '') + e(a.txt) + '</div>').join('') : '<p class="muted">Rien d’anormal sur la période.</p>');
+    h += '<div class="pd-h">🕒 Mises par heure</div><div class="pd-hr">' + j.hours.map((x, i) => '<i title="' + i + 'h : ' + x.n + ' coupon(s), ' + m(x.in) + '" style="height:' + Math.max(2, Math.round(x.in / mx * 100)) + '%"></i>').join('') + '</div><div class="pd-hx">' + j.hours.map((x, i) => '<span>' + (i % 3 ? '' : i + 'h') + '</span>').join('') + '</div>';
+    h += '<div class="pd-h">🏟️ Matchs les plus pariés</div>' + (j.matches.length ? '<table><thead><tr><th>Match</th><th>Choix</th><th>Misé</th><th>Payé</th><th>Net</th></tr></thead><tbody>' + j.matches.map(x => '<tr><td>' + e(x.t) + (x.live ? ' <span class="pd-k live">' + x.live + ' en direct</span>' : '') + '</td><td>' + x.n + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td></tr>').join('') + '</tbody></table>' : '<p class="muted">Aucun.</p>');
+    h += '<div class="pd-h">🎯 Options (marchés) qui font gagner</div>' + (j.markets.length ? '<table><thead><tr><th>Marché</th><th>Choix</th><th>Gagnés</th><th>Misé</th><th>Payé</th><th>Net</th></tr></thead><tbody>' + j.markets.map(x => '<tr><td>' + e(MK[x.mk] || x.mk) + '</td><td>' + x.n + '</td><td>' + x.won + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.in - x.out) + '</td></tr>').join('') + '</tbody></table>' : '<p class="muted">Aucun.</p>');
+    h += '<div class="pd-h">💰 Plus gros gains</div>' + (j.big.length ? betRows(j.big) : '<p class="muted">Aucun coupon gagné.</p>');
+    h += '<div class="pd-h">👤 Joueurs (du plus gagnant au plus perdant)</div>' + (j.players.length ? '<table><thead><tr><th>Joueur</th><th>Coupons</th><th>Direct</th><th>Misé</th><th>Payé</th><th>Net joueur</th></tr></thead><tbody>' + j.players.map(x => '<tr><td>' + who(x) + '</td><td>' + x.n + ' (' + x.won + ' gagnés)</td><td>' + x.live + (x.live ? ' (' + x.liveWon + ' gagnés)' : '') + '</td><td>' + m(x.in) + '</td><td>' + m(x.out) + '</td><td>' + sg(x.out - x.in) + '</td></tr>').join('') + '</tbody></table>' : '<p class="muted">Aucun.</p>');
+    h += '<div class="pd-h">🧾 Derniers coupons</div>' + (j.recent.length ? betRows(j.recent) : '<p class="muted">Aucun coupon sur la période.</p>');
+    $p('pdBody').innerHTML = h;
+  }
+  async function load() {
+    if (busy) return; busy = true;
+    document.querySelectorAll('#pdPer [data-per]').forEach(b => b.classList.toggle('ok', b.dataset.per === per));
+    let j; try { j = await ajax({action:'sp_dash', per}); } catch (x) { j = {ok:false, reason:'Réseau'}; }
+    busy = false;
+    if (!j || !j.ok) { $p('pdBody').innerHTML = '<p class="muted">' + e((j && j.reason) || 'Erreur') + '</p>'; return; }
+    paint(j);
+  }
+  $p('btnParisA').onclick = () => { $p('parisModal').classList.add('on'); load(); };
+  $p('closeParisA').onclick = () => $p('parisModal').classList.remove('on');
+  document.querySelectorAll('#pdPer [data-per]').forEach(b => b.onclick = () => { per = b.dataset.per; load(); });
+  $p('pdSet').onclick = () => { $p('parisModal').classList.remove('on'); if (window.casOpen) window.casOpen('paris'); };
 })();
 </script>
 <script>
