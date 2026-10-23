@@ -120,7 +120,8 @@ $m2 = sb_mk_file('9002')['mk'] ?? [];
 check('9002 : handicap asiatique à la convention inverse → retiré (contrôle contre 1x2)', isset($m2['1x2']) && !isset($m2['ah:-1.5']));
 check('9002 : ou:2.5 avec 2 bookmakers → pas proposé (3 exigés) ; tth:1.5 avec 2 → proposé', !isset($m2['ou:2.5']) && isset($m2['tth:1.5']));
 $st = sb_state();
-check('diagnostic : paris / valeurs inconnus gardés (Corners, Exact Score = Other, contrôle ah) ; quarts de ligne (AH -0.25) écartés SANS diagnostic', isset($st['unk']['Corners Over Under'], $st['unk']['Exact Score = Other']) && !isset($st['unk']['Asian Handicap = Home -0.25']) && isset($m1['ah:-1.5']) && (bool) array_filter(array_keys($st['unk']), static fn($k) => str_contains($k, 'ah retiré')), implode(' | ', array_keys($st['unk'] ?? [])));
+check('corners (2026-10-23) : « Corners Over Under 9.5 » reconnu, plus dans le diagnostic', !isset($st['unk']['Corners Over Under']) && isset(sb_mk_file('9001')['mk']['cou:9.5']), json_encode(array_keys(sb_mk_file('9001')['mk'] ?? [])));
+check('diagnostic : paris / valeurs inconnus gardés (Exact Score = Other, contrôle ah) ; quarts de ligne (AH -0.25) écartés SANS diagnostic', isset($st['unk']['Exact Score = Other']) && !isset($st['unk']['Asian Handicap = Home -0.25']) && isset($m1['ah:-1.5']) && (bool) array_filter(array_keys($st['unk']), static fn($k) => str_contains($k, 'ah retiré')), implode(' | ', array_keys($st['unk'] ?? [])));
 
 echo "3) sbList / sbMatch (formes de la spec)\n";
 $L = sb_list($uadm, 0, 0, $NOW);
@@ -346,7 +347,7 @@ check('équipes du pari différentes du résultat : pas réglé', sb_sel_result(
 
 echo "9) Budget, erreurs, diagnostic (jamais la clé)\n";
 $D = sb_admin_diag($T('2026-10-26 10:00'));
-check('diagnostic : plan Pro, lectures 12 / 7500, paris inconnus', $D['ok'] && $D['status']['plan'] === 'Pro' && $D['status']['max'] === 7500 && isset($D['unk']['Corners Over Under']));
+check('diagnostic : plan Pro, lectures 12 / 7500, paris inconnus', $D['ok'] && $D['status']['plan'] === 'Pro' && $D['status']['max'] === 7500 && isset($D['unk']['Exact Score = Other']));
 $alt['status'] = '{"errors":{"token":"bad key test-secret-key-123"},"response":[]}';
 sb_admin_diag($T('2026-10-26 10:01'));
 check('erreur API gardée pour l\'admin, clé masquée', str_contains(sb_state()['err'], 'API-Football') && !str_contains(sb_state()['err'], 'test-secret-key-123'), sb_state()['err']);
@@ -897,6 +898,33 @@ $jm = (int) (sb_live_data()['od']['9101']['jmp'] ?? 0);
 check('petite variation de cote : pas de nouveau saut', $jm <= $TJ);
 sb_live_store_odds(json_decode($lodds(['h' => '1.03']), true), $TJ + 12);
 $dj = sb_live_data()['od']['9101'] ?? []; check('saut brusque du 1 · X · 2 : verrou posé', (int) ($dj['jmp'] ?? 0) === $TJ + 12, json_encode([$dj['jmp'] ?? null, $dj['r1'] ?? null]));
+
+// 2026-10-23 — nouveaux paris (corners, cartons, buteurs, équipe qui marque en premier…)
+$u9 = [];
+$pb = sb_parse_bet('Team To Score First', [['value' => 'Home', 'odd' => '1.8'], ['value' => 'Draw', 'odd' => '9'], ['value' => 'Away', 'odd' => '2.6']], $u9);
+check('parse : première équipe à marquer (H / D / A)', array_column($pb, 1) === ['H', 'D', 'A'] && $pb[0][0] === 'fts');
+$pb = sb_parse_bet('Anytime Goal Scorer', [['value' => 'Mohamed Salah', 'odd' => '2.1'], ['value' => 'No goalscorer', 'odd' => '12'], ['value' => '<b>x</b>', 'odd' => '3']], $u9);
+check('parse : buteur (nom propre, « aucun buteur » = -, nom illisible ignoré)', count($pb) === 2 && $pb[0] === ['ags', 'Mohamed Salah', 2.1] && $pb[1][1] === '-');
+$pb = sb_parse_bet('Cards Over/Under', [['value' => 'Over 4.5', 'odd' => '1.9'], ['value' => 'Under 4.5', 'odd' => '1.9']], $u9);
+check('parse : cartons plus / moins', $pb[0][0] === 'kou:4.5');
+$bkA = []; foreach ([[2.0, 4.0], [2.2, 4.4]] as $oo) $bkA[] = ['bets' => [['name' => 'Anytime Goal Scorer', 'values' => [['value' => 'Salah', 'odd' => (string) $oo[0]], ['value' => 'Jota', 'odd' => (string) $oo[1]]]]]];
+$mA = sb_markets($bkA, ['mMain' => 4, 'mSide' => 4, 'mExotic' => 4, 'mLive' => 4, 'mOther' => 4], $u9);
+check('buteur : chaque joueur seul (cote moyenne − 4 %)', ($mA['ags'][0] ?? null) === ['Salah', 2.01] && ($mA['ags'][1] ?? null) === ['Jota', 4.03], json_encode($mA['ags'] ?? null));
+$xs = ['st' => 'FT', 'co' => [7, 4], 'cd' => [3, 2], 'gl' => [['a', 12, 'D. Núñez', 0], ['h', 30, 'M. Salah', 0], ['h', 88, 'V. van Dijk', 1]], 'pl' => ['M. Salah', 'D. Núñez', 'D. Jota', 'V. van Dijk']];
+// csc de van Dijk (équipe domicile) → but pour l'extérieur : 1 - 2
+check('corners : 11 > 9,5 → Plus gagne ; domicile 7 > 6,5', sb_settle_mk('cou:9.5', 'O', [1, 2], [0, 1], $xs) === 'won' && sb_settle_mk('couh:6.5', 'O', [1, 2], [0, 1], $xs) === 'won');
+check('corners 1X2 : domicile 7 - 4', sb_settle_mk('c1x2', 'H', [1, 2], [0, 1], $xs) === 'won' && sb_settle_mk('c1x2', 'D', [1, 2], [0, 1], $xs) === 'lost');
+check('cartons : 5 < 5,5 → Moins gagne', sb_settle_mk('kou:5.5', 'U', [1, 2], [0, 1], $xs) === 'won');
+check('cartons : match prolongé → remboursé', sb_settle_mk('kou:5.5', 'U', [1, 2], [0, 1], ['st' => 'AET'] + $xs) === 'void');
+check('1re équipe à marquer : extérieur ; dernière : extérieur (csc attribué dans le bon sens)', sb_settle_mk('fts', 'A', [1, 2], [0, 1], $xs) === 'won' && sb_settle_mk('lts', 'A', [1, 2], [0, 1], $xs) === 'won');
+check('0 - 0 : « aucune » (D) gagne', sb_settle_mk('fts', 'D', [0, 0], [0, 0], ['gl' => []] + $xs) === 'won');
+check('buteur : Salah (« Mohamed Salah ») gagne ; Jota a joué sans marquer → perdu', sb_settle_mk('ags', 'Mohamed Salah', [1, 2], [0, 1], $xs) === 'won' && sb_settle_mk('ags', 'Diogo Jota', [1, 2], [0, 1], $xs) === 'lost');
+check('buteur : n\'a pas joué → remboursé ; csc ne compte pas', sb_settle_mk('ags', 'Cody Gakpo', [1, 2], [0, 1], $xs) === 'void' && sb_settle_mk('ags', 'Virgil van Dijk', [1, 2], [0, 1], $xs) === 'lost');
+check('premier buteur : Núñez (accents) ; dernier buteur : Salah (le csc ne compte pas)', sb_settle_mk('fgs', 'Darwin Nunez', [1, 2], [0, 1], $xs) === 'won' && sb_settle_mk('lgs', 'Mohamed Salah', [1, 2], [0, 1], $xs) === 'won');
+check('buts incohérents avec le score → pas réglé (on ne devine pas)', sb_settle_mk('fts', 'A', [3, 2], [0, 1], $xs) === null);
+check('sans statistiques → pas réglé ; 8 h après → remboursé', sb_settle_mk('cou:9.5', 'O', [1, 2], [0, 1], ['st' => 'FT', 'co' => null]) === null
+  && sb_sel_result(['ev' => 'sb:foot:777:cou:9.5', 'k' => 'O', 'ko' => 1000], 900, ['777' => ['v' => 'fin', 'ts' => 1000, 'ft' => [1, 2], 'ht' => [0, 1]]], 1000 + SB_XS_WAIT + 60, true) === 'void');
+check('gagne les 2 mi-temps / 2e mi-temps score exact / domicile marque', sb_settle_mk('wbh', 'Y', [3, 1], [1, 0], null) === 'won' && sb_settle_mk('2hcs', '2:1', [3, 1], [1, 0], null) === 'won' && sb_settle_mk('hsg', 'N', [0, 1], [0, 0], null) === 'won');
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
