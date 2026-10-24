@@ -9,7 +9,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
  */
 $tmp = sys_get_temp_dir() . '/orolado_dep_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
-foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
+foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'notify_lib.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 putenv('SUPABASE_URL=https://fake.supabase.test');
 putenv('SUPABASE_SERVICE_ROLE_KEY=fake-service-key');
 require $tmp . '/orolado_lib.php';
@@ -39,6 +39,7 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $me
   return [];
 };
 
+$notes = []; $GLOBALS['OROLADO_FAKE_DEP_NOTIFY'] = function (string $u, float $a) use (&$notes) { $notes[] = [$u, $a]; };
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 
@@ -52,6 +53,7 @@ echo "1) Dépôt de 100 \$ crédité\n";
 $r = credit_paid_deposit(['ref' => 'oro_test_1', 'amount' => 100, 'paid' => true, 'creditReceived' => true, 'operator' => 'oxapay', 'extId' => 'TRK1']);
 check('crédit accepté', !empty($r['ok']), json_encode($r));
 check('solde 50 → 150', abs($bank['real'][$uuid] - 150) < 0.001, (string) $bank['real'][$uuid]);
+check('le joueur est prévenu « Dépôt réussi » (100 $)', count($notes) === 1 && $notes[0][1] == 100.0, json_encode($notes));
 
 echo "2) Pire cas forcé : une vieille copie écrasée telle quelle remet le dépôt en attente\n";
 // (save_db fusionne maintenant et l'empêcherait : on force l'écrasement brut pour tester
@@ -69,11 +71,22 @@ check('dépôt remis à COMPLETED', $after['deposits'][0]['status'] === 'COMPLET
 // L'historique financier affiché au joueur est construit à partir des dépôts (history_lib).
 $deps = array_filter($after['deposits'], fn($d) => ($d['id'] ?? '') === 'oro_test_1');
 check('le dépôt apparaît une seule fois dans l’historique', count($deps) === 1, (string) count($deps));
+check('retraité : pas de 2e « Dépôt réussi »', count($notes) === 1, (string) count($notes));
 
 echo "4) Un 2e dépôt différent est bien crédité\n";
 with_db_lock(function ($box) use ($uuid) { $box->db['deposits'][] = ['id' => 'oro_test_2', 'ref' => 'oro_test_2', 'userId' => $uuid, 'amount' => 20, 'status' => 'PENDING', 'operator' => 'flutterwave']; return ['ok' => true]; });
 credit_paid_deposit(['ref' => 'oro_test_2', 'amount' => 20, 'paid' => true, 'creditReceived' => true, 'operator' => 'flutterwave']);
 check('solde 150 → 170', abs($bank['real'][$uuid] - 170) < 0.001, (string) $bank['real'][$uuid]);
+check('2e dépôt : « Dépôt réussi » (20 $)', count($notes) === 2 && $notes[1][1] == 20.0, json_encode($notes));
+
+echo "5) L'e-mail « Dépôt réussi » : son nom + le montant\n";
+require_once $tmp . '/notify_lib.php';
+with_db_lock(function ($box) use ($uuid) { $box->db['users'][$uuid]['email'] = 'awa@example.com'; $box->db['users'][$uuid]['displayName'] = 'Awa'; $box->db['users'][$uuid]['lang'] = 'fr'; return ['ok' => true]; });
+$mails = []; $GLOBALS['OROLADO_FAKE_MAIL'] = function ($e, $t, $txt) use (&$mails) { $mails[] = [$e, $t, $txt]; return ['ok' => true]; };
+orolado_notify_player($uuid, 'dep', 50);
+check('e-mail envoyé au joueur', count($mails) === 1 && $mails[0][0] === 'awa@example.com', json_encode($mails));
+check('titre « Dépôt réussi ✅ »', ($mails[0][1] ?? '') === 'Dépôt réussi ✅', (string) ($mails[0][1] ?? ''));
+check('« Bonjour Awa » + « 50.00 »', str_contains($mails[0][2] ?? '', 'Bonjour Awa,') && str_contains($mails[0][2] ?? '', '$50.00'), (string) ($mails[0][2] ?? ''));
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
