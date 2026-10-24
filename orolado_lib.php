@@ -3910,6 +3910,14 @@ function credit_paid_deposit(array $hit): array {
   if (!$alreadyCredited && $amount > 0) {
     try { orolado_deposit_alert($db, $uid, $amount, $refId, $op, $idx); } catch (Throwable $e) { /* jamais bloquant */ }
   }
+  // 2026-10-24 (propriétaire) : le joueur reçoit « Dépôt réussi » (e-mail + notification) avec son nom et le montant, après la réponse.
+  if (!$alreadyCredited && $amount > 0 && is_file(__DIR__ . '/notify_lib.php')) {
+    if (isset($GLOBALS['OROLADO_FAKE_DEP_NOTIFY']) && is_callable($GLOBALS['OROLADO_FAKE_DEP_NOTIFY'])) ($GLOBALS['OROLADO_FAKE_DEP_NOTIFY'])($uid, $amount);
+    elseif (PHP_SAPI !== 'cli') register_shutdown_function(static function () use ($uid, $amount) {
+      if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ } }
+      try { require_once __DIR__ . '/notify_lib.php'; orolado_notify_player($uid, 'dep', $amount); } catch (Throwable $e) { /* jamais bloquant */ }
+    });
+  }
   return ['ok' => true, 'amount' => $amount, 'userId' => $uid, 'real' => $got];
 }
 

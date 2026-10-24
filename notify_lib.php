@@ -3,7 +3,8 @@ declare(strict_types=1);
 /**
  * 2026-10-19 (propriétaire) — le joueur est prévenu (notification sur son téléphone + e-mail soigné, sans pub) quand :
  *   - l'admin lui envoie de l'argent / un bonus (admin.php « adjust », montant positif) ;
- *   - un ami lui envoie de l'argent (api.php « xferSend »).
+ *   - un ami lui envoie de l'argent (api.php « xferSend ») ;
+ *   - son dépôt est validé (credit_paid_deposit, orolado_lib.php).
  * Jamais bloquant : une erreur d'e-mail ou de notification ne change rien à l'opération.
  */
 require_once __DIR__ . '/orolado_lib.php';
@@ -24,6 +25,21 @@ function orolado_notify_texts(string $kind, string $lang, string $amt, string $f
       'de' => ['Geschenk erhalten 🎁', 'Du hast %s auf dein OROLADO-Echtgeldkonto erhalten. Viel Spaß!'],
       'hi' => ['उपहार मिला 🎁', 'आपके OROLADO असली खाते में %s आए हैं। मज़े करें!'],
       'zh' => ['收到礼物 🎁', '您的 OROLADO 真实账户已收到 %s。祝您玩得开心！'],
+    ],
+    // 2026-10-24 (propriétaire) : dépôt validé (bouton Valider de l'admin ou paiement automatique) → « Dépôt réussi », son nom, le montant
+    'dep' => [
+      'fr' => ['Dépôt réussi ✅', 'Votre dépôt de %s a bien été crédité sur votre compte OROLADO. Bon jeu !'],
+      'en' => ['Deposit successful ✅', 'Your deposit of %s has been credited to your OROLADO account. Enjoy!'],
+      'es' => ['Depósito exitoso ✅', 'Tu depósito de %s ya está acreditado en tu cuenta OROLADO. ¡Buen juego!'],
+      'pt' => ['Depósito concluído ✅', 'Seu depósito de %s foi creditado na sua conta OROLADO. Bom jogo!'],
+      'ar' => ['تم الإيداع بنجاح ✅', 'تمت إضافة إيداعك بقيمة %s إلى حسابك على OROLADO. استمتع!'],
+      'tr' => ['Para yatırma başarılı ✅', '%s tutarındaki yatırımınız OROLADO hesabınıza eklendi. İyi oyunlar!'],
+      'vi' => ['Nạp tiền thành công ✅', 'Khoản nạp %s đã được cộng vào tài khoản OROLADO của bạn. Chúc chơi vui!'],
+      'id' => ['Deposit berhasil ✅', 'Deposit %s sudah masuk ke akun OROLADO kamu. Selamat bermain!'],
+      'ru' => ['Пополнение успешно ✅', 'Ваш депозит %s зачислен на счёт OROLADO. Приятной игры!'],
+      'de' => ['Einzahlung erfolgreich ✅', 'Deine Einzahlung von %s wurde deinem OROLADO-Konto gutgeschrieben. Viel Spaß!'],
+      'hi' => ['जमा सफल ✅', 'आपकी %s की जमा राशि आपके OROLADO खाते में आ गई है। मज़े करें!'],
+      'zh' => ['充值成功 ✅', '您充值的 %s 已到账 OROLADO 账户。祝您玩得开心！'],
     ],
     'xfer' => [
       'fr' => ['Argent reçu 💸', '%2$s vous a envoyé %1$s sur OROLADO.'],
