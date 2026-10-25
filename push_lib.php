@@ -386,7 +386,10 @@ function push_notify_admin(string $title, string $body, string $url = '/admin.ph
   }
   // 2026-10-25 : Pushover (alarme qui sonne jusqu'à « J'ai vu » pour un retrait), juste après Telegram
   $po = null;
-  if (is_file(__DIR__ . '/po_lib.php')) { try { require_once __DIR__ . '/po_lib.php'; if (po_ready() && po_prio($title) !== 1) $po = po_send($title, $body, $url); /* dépôts : déjà sonnés un par un (credit_paid_deposit) */ } catch (Throwable $e) { $po = ['ok' => false, 'why' => 'Erreur interne Pushover']; } }
+  if (is_file(__DIR__ . '/po_lib.php')) { try { require_once __DIR__ . '/po_lib.php'; $poP = po_prio($title);
+    // 2026-10-25 (propriétaire : « seulement l'important ») : Pushover = retraits (alarme, avec la fiche complète du retrait) et
+    // messages de joueurs ; les dépôts sonnent un par un ailleurs (credit_paid_deposit) ; le reste (résultats, gros paris) reste sur Telegram.
+    if (po_ready() && ($poP === 2 || str_starts_with($title, '💬'))) $po = po_send($title, $poP === 2 && is_string($telegram) ? trim(preg_replace('/\n*👉 https?:\S+\s*$/u', '', $telegram)) : $body, $url); } catch (Throwable $e) { $po = ['ok' => false, 'why' => 'Erreur interne Pushover']; } }
   $rows = push_admin_rows();
   $res = $rows ? push_send_rows($rows, push_payload($title, $body, $url)) : ['sent' => 0, 'gone' => 0, 'fail' => 0, 'codes' => []];
   $res['devices'] = count($rows);
