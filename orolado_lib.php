@@ -1231,6 +1231,32 @@ function orolado_user_deposit_total(array $db, string $uid, array $user = []): f
   return orolado_money(max($sum, $field));
 }
 
+/**
+ * 2026-10-25 (propriétaire : « un joueur qui n'a jamais déposé ne peut pas retirer ») : aucun retrait tant que le joueur n'a fait
+ * aucun dépôt validé (n'importe quel montant) — les cadeaux, bonus et tournois ne se retirent plus sans dépôt.
+ * Les comptes de la maison (admin) ne sont pas concernés. Retour : '' si le retrait est permis, sinon le message (langue du joueur).
+ */
+function orolado_wd_need_deposit_msg(array $db, string $uid, array $user = []): string {
+  if ($uid === '' || (function_exists('orolado_is_house_account') && orolado_is_house_account($uid, $user))) return '';
+  if (orolado_user_deposit_total($db, $uid, $user) > 0.009) return '';
+  $T = [
+    'fr' => 'Pour retirer, fais d’abord un dépôt (n’importe quel montant). Ensuite, tes gains — bonus compris — pourront être retirés.',
+    'en' => 'To withdraw, make a deposit first (any amount). After that, your winnings — bonuses included — can be withdrawn.',
+    'es' => 'Para retirar, primero haz un depósito (cualquier monto). Después podrás retirar tus ganancias, bonos incluidos.',
+    'pt' => 'Para sacar, faça primeiro um depósito (qualquer valor). Depois, seus ganhos — bônus incluídos — poderão ser sacados.',
+    'ar' => 'للسحب، قم أولاً بإيداع (أي مبلغ). بعد ذلك يمكنك سحب أرباحك، بما فيها المكافآت.',
+    'tr' => 'Para çekmek için önce bir yatırım yap (herhangi bir tutar). Sonra kazançlarını, bonuslar dahil, çekebilirsin.',
+    'vi' => 'Để rút tiền, hãy nạp tiền trước (số tiền bất kỳ). Sau đó bạn có thể rút tiền thắng, kể cả tiền thưởng.',
+    'id' => 'Untuk menarik dana, lakukan deposit dulu (berapa pun). Setelah itu kemenanganmu, termasuk bonus, bisa ditarik.',
+    'ru' => 'Чтобы вывести средства, сначала сделайте депозит (любую сумму). После этого выигрыш, включая бонусы, можно будет вывести.',
+    'de' => 'Um auszuzahlen, zahle zuerst ein (beliebiger Betrag). Danach kannst du deine Gewinne – inklusive Boni – auszahlen.',
+    'hi' => 'निकासी के लिए पहले एक जमा करें (कोई भी राशि)। उसके बाद आपकी जीत, बोनस सहित, निकाली जा सकेगी।',
+    'zh' => '提现前请先充值一次（任意金额）。之后即可提取您的奖金，包括奖励。',
+  ];
+  $l = strtolower(substr((string) ($user['lang'] ?? $user['language'] ?? 'fr'), 0, 2));
+  return $T[$l] ?? $T['en'];
+}
+
 function orolado_completed_deposit_list(array $db, string $uid, array $user = []): array {
   $list = [];
   foreach (($db['deposits'] ?? []) as $d) {

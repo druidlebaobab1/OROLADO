@@ -75,6 +75,7 @@ foreach ($users as $u => $i) {
   $db['vault'][$u] = ['demo' => 0, 'real' => 100];
   $db['sessions']['tok_' . $u] = ['userId' => $u, 'createdAt' => date('c')];
   $db['withdrawOtps'][$u] = ['codeHash' => orolado_wd_otp_hash($u, '123456'), 'expiresAt' => time() + 600, 'attempts' => 0];
+  $db['deposits'][] = ['id' => 'oro_dep_' . $u, 'ref' => 'oro_dep_' . $u, 'userId' => $u, 'amount' => 1, 'status' => 'COMPLETED', 'operator' => 'flutterwave']; // 2026-10-25 : un retrait demande un dépôt
 }
 save_db(orolado_data_file(), $db);
 file_put_contents($tmp . '/bank.json', json_encode(['c' => [$sb(1) => 10000, $sb(2) => 10000, $sb(3) => 10000]]));
