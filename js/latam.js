@@ -40,14 +40,14 @@
 
   var T = {
     es: {
-      nowB: 'Ahora', cpd: 'Dirección copiada', paste: 'Ya está copiada: pégala en {s}', paidQ: '¿Ya pagaste? Tu saldo sube solo en unos minutos. ¿Dudas? Mira el video.',
+      amtW: 'tu monto + 2 USDT', nowB: 'Ahora', cpd: 'Dirección copiada', paste: 'Ya está copiada: pégala en {s}', paidQ: '¿Ya pagaste? Tu saldo sube solo en unos minutos. ¿Dudas? Mira el video.',
       dep: 'Depositar', howMuch: '¿Cuánto quieres depositar?', rec: 'Recomendado 20 $ o más: la comisión pesa menos.',
       s1t: 'Copia tu dirección OROLADO', s1p: 'Es solo tuya. Válida 24 horas.', making: 'Creando tu dirección…',
       copy: 'Copiar', copied: 'Copiado ✓', toastCopy: 'Dirección copiada', retry: 'Reintentar',
       net: 'Usa siempre la red <b>Tron (TRC-20)</b>. Otra red = dinero perdido.',
       s2tG: 'Paga en pesos con {m}', s2tGc: 'Paga con tu tarjeta', s2tE: 'Paga con {m}',
-      s2pG: 'Se abre <b>Guardarian</b>. Compras <b>{a} USDT</b> y pegas tu dirección. Solo tu correo, sin crear cuenta.',
-      s2pE: 'Se abre <b>El Dorado</b>. Compras <b>{a} USDT</b> con {m} y los envías a tu dirección.',
+      s2pG: 'Se abre <b>Guardarian</b>. Compras <b>USDT</b> y pegas tu dirección. Solo tu correo, sin crear cuenta.',
+      s2pE: 'Se abre <b>El Dorado</b>. Compras <b>USDT</b> con {m} y los envías a tu dirección.',
       goG: 'Pagar con {m}', goGc: 'Pagar con tarjeta', goE: 'Abrir El Dorado',
       tagG: 'Sin cuenta · sin app', tagE: 'La primera vez: registro de 2 minutos con tu {id}',
       video: 'Ver video', steps: 'Paso a paso',
@@ -58,7 +58,7 @@
       pause: 'Pausa', play: 'Ver', again: 'Ver otra vez', yourCur: 'tu moneda',
       G: [
         ['Toca «{go}»', 'Se abre <b>Guardarian</b> en tu navegador. No hay nada que descargar.', 'Si no se abre, escribe guardarian.com en tu navegador.'],
-        ['Elige lo que compras', 'Arriba: <b>pagas en {cur}</b>. Abajo: <b>recibes USDT · TRC20</b>. Escribe el monto ({a} $) y toca <b>Comprar</b>.', 'Mira bien que diga <b>TRC20</b> al lado de USDT.'],
+        ['Elige lo que compras', 'Arriba: <b>pagas en {cur}</b>. Abajo: <b>recibes USDT · TRC20</b>. Escribe el monto y toca <b>Comprar</b>.', 'Mira bien que diga <b>TRC20</b> al lado de USDT.'],
         ['Escribe tu correo', 'Pon tu correo y el código de 6 cifras que te llega. No piden teléfono.', 'Revisa también la carpeta Spam.'],
         ['Pega tu dirección OROLADO', 'En «Dirección de billetera», mantén el dedo y toca <b>Pegar</b>. Empieza con <b>T</b>.', 'Si no está copiada, vuelve a OROLADO y toca Copiar.'],
         ['Paga con {m}', '{payG}', 'A veces Guardarian pide una foto de tu identificación. Es normal y se hace una sola vez.'],
@@ -68,7 +68,7 @@
       payGcard: 'Escribe los datos de tu tarjeta, o toca Apple Pay / Google Pay, y confirma.',
       E: [
         ['Crea tu cuenta (solo la 1ª vez)', 'Toca «Abrir El Dorado». Regístrate con tu correo y una foto de tu <b>{id}</b>. Tarda unos 2 minutos.', 'Después ya no hay que hacerlo otra vez.'],
-        ['Ve a P2P', 'Toca <b>P2P</b> y elige: <b>tengo {cur}, quiero USDT</b>. Escribe el monto: <b>{a2} USDT</b>.', 'Compra {a2} USDT: así cubres la comisión de envío.'],
+        ['Ve a P2P', 'Toca <b>P2P</b> y elige: <b>tengo {cur}, quiero USDT</b>. Escribe el monto: <b>{a2}</b>.', 'Compra {a2}: así cubres la comisión de envío.'],
         ['Elige {m} y un vendedor', 'Elige <b>{m}</b>. Toca un vendedor con muchas ventas y buena nota (★), luego <b>Comprar USDT</b>.', 'Mira que el vendedor tenga muchas operaciones.'],
         ['Paga y toca «Pagado»', 'Paga con <b>{m}</b> a la cuenta que te muestra El Dorado. Vuelve y toca <b>Pagado</b>.', 'Paga solo a la cuenta que aparece en El Dorado.'],
         ['Envía a OROLADO', 'Cuando lleguen tus USDT: <b>Billetera → Retirar</b>. Pega tu dirección OROLADO, elige la red <b>Tron (TRC-20)</b> y confirma.', 'La red debe ser Tron (TRC-20). Otra red = dinero perdido.'],
@@ -77,14 +77,14 @@
       ui: { pay: 'Pagas', get: 'Recibes', buy: 'Comprar', mail: 'Correo', code: 'Código', cont: 'Continuar', wal: 'Dirección de billetera USDT (TRC20)', exact: 'Monto exacto', card: 'Tarjeta', paid: 'Pago recibido', sent: 'Enviado', photo: 'Foto de tu', take: 'Tomar foto', create: 'Crear cuenta', wallet: 'Billetera', have: 'Tengo', want: 'Quiero', ops: 'operaciones', payTo: 'Paga con {m} a', amount: 'Monto', paidB: 'Pagado', withdraw: 'Retirar', addr: 'Dirección', net: 'Red', confirm: 'Confirmar', mailEx: 'tu@correo.com' }
     },
     pt: {
-      nowB: 'Agora', cpd: 'Endereço copiado', paste: 'Já está copiado: cole na {s}', paidQ: 'Já pagou? Seu saldo sobe sozinho em alguns minutos. Dúvidas? Veja o vídeo.',
+      amtW: 'seu valor + 2 USDT', nowB: 'Agora', cpd: 'Endereço copiado', paste: 'Já está copiado: cole na {s}', paidQ: 'Já pagou? Seu saldo sobe sozinho em alguns minutos. Dúvidas? Veja o vídeo.',
       dep: 'Depositar', howMuch: 'Quanto você quer depositar?', rec: 'Recomendado 20 $ ou mais: a taxa pesa menos.',
       s1t: 'Copie seu endereço OROLADO', s1p: 'É só seu. Válido por 24 horas.', making: 'Criando seu endereço…',
       copy: 'Copiar', copied: 'Copiado ✓', toastCopy: 'Endereço copiado', retry: 'Tentar de novo',
       net: 'Use sempre a rede <b>Tron (TRC-20)</b>. Outra rede = dinheiro perdido.',
       s2tG: 'Pague com {m}', s2tGc: 'Pague com seu cartão', s2tE: 'Pague com {m}',
-      s2pG: 'Abre a <b>Guardarian</b>. Você compra <b>{a} USDT</b> e cola seu endereço. Só seu e-mail, sem criar conta.',
-      s2pE: 'Abre o <b>El Dorado</b>. Você compra <b>{a} USDT</b> com {m} e envia para o seu endereço.',
+      s2pG: 'Abre a <b>Guardarian</b>. Você compra <b>USDT</b> e cola seu endereço. Só seu e-mail, sem criar conta.',
+      s2pE: 'Abre o <b>El Dorado</b>. Você compra <b>USDT</b> com {m} e envia para o seu endereço.',
       goG: 'Pagar com {m}', goGc: 'Pagar com cartão', goE: 'Abrir El Dorado',
       tagG: 'Sem conta · sem app', tagE: 'Na 1ª vez: cadastro de 2 minutos com seu {id}',
       video: 'Ver vídeo', steps: 'Passo a passo',
@@ -95,7 +95,7 @@
       pause: 'Pausar', play: 'Ver', again: 'Ver de novo', yourCur: 'sua moeda',
       G: [
         ['Toque em «{go}»', 'A <b>Guardarian</b> abre no seu navegador. Nada para baixar.', 'Se não abrir, digite guardarian.com no navegador.'],
-        ['Escolha o que comprar', 'Em cima: <b>você paga em {cur}</b>. Embaixo: <b>recebe USDT · TRC20</b>. Digite o valor ({a} $) e toque em <b>Comprar</b>.', 'Veja se aparece <b>TRC20</b> ao lado de USDT.'],
+        ['Escolha o que comprar', 'Em cima: <b>você paga em {cur}</b>. Embaixo: <b>recebe USDT · TRC20</b>. Digite o valor e toque em <b>Comprar</b>.', 'Veja se aparece <b>TRC20</b> ao lado de USDT.'],
         ['Digite seu e-mail', 'Seu e-mail e o código de 6 dígitos que chega. Não pedem telefone.', 'Olhe também no Spam.'],
         ['Cole seu endereço OROLADO', 'Em «Endereço da carteira», segure o dedo e toque em <b>Colar</b>. Começa com <b>T</b>.', 'Se não estiver copiado, volte à OROLADO e toque em Copiar.'],
         ['Pague com {m}', '{payG}', 'Às vezes a Guardarian pede foto do documento. É normal, só uma vez.'],
@@ -105,7 +105,7 @@
       payGcard: 'Digite os dados do cartão, ou toque em Apple Pay / Google Pay, e confirme.',
       E: [
         ['Crie sua conta (só na 1ª vez)', 'Toque em «Abrir El Dorado». Cadastre-se com seu e-mail e uma foto do seu <b>{id}</b>. Leva uns 2 minutos.', 'Depois não precisa fazer de novo.'],
-        ['Vá em P2P', 'Toque em <b>P2P</b> e escolha: <b>tenho {cur}, quero USDT</b>. Digite: <b>{a2} USDT</b>.', 'Compre {a2} USDT: assim cobre a taxa de envio.'],
+        ['Vá em P2P', 'Toque em <b>P2P</b> e escolha: <b>tenho {cur}, quero USDT</b>. Digite: <b>{a2}</b>.', 'Compre {a2}: assim cobre a taxa de envio.'],
         ['Escolha {m} e um vendedor', 'Escolha <b>{m}</b>. Toque em um vendedor com muitas vendas e boa nota (★), depois <b>Comprar USDT</b>.', 'Veja se o vendedor tem muitas operações.'],
         ['Pague e toque «Pago»', 'Pague por <b>{m}</b> para a conta mostrada no El Dorado. Volte e toque em <b>Pago</b>.', 'Pague só para a conta que aparece no El Dorado.'],
         ['Envie para a OROLADO', 'Quando os USDT chegarem: <b>Carteira → Sacar</b>. Cole seu endereço OROLADO, escolha a rede <b>Tron (TRC-20)</b> e confirme.', 'A rede deve ser Tron (TRC-20). Outra rede = dinheiro perdido.'],
@@ -114,14 +114,14 @@
       ui: { pay: 'Você paga', get: 'Recebe', buy: 'Comprar', mail: 'E-mail', code: 'Código', cont: 'Continuar', wal: 'Endereço da carteira USDT (TRC20)', exact: 'Valor exato', card: 'Cartão', paid: 'Pagamento recebido', sent: 'Enviado', photo: 'Foto do seu', take: 'Tirar foto', create: 'Criar conta', wallet: 'Carteira', have: 'Tenho', want: 'Quero', ops: 'operações', payTo: 'Pague por {m} para', amount: 'Valor', paidB: 'Pago', withdraw: 'Sacar', addr: 'Endereço', net: 'Rede', confirm: 'Confirmar', mailEx: 'voce@email.com' }
     },
     fr: {
-      nowB: 'Maintenant', cpd: 'Adresse copiée', paste: 'Elle est copiée : colle-la sur {s}', paidQ: 'Tu as payé ? Ton solde monte tout seul en quelques minutes. Un doute ? Regarde la vidéo.',
+      amtW: 'ton montant + 2 USDT', nowB: 'Maintenant', cpd: 'Adresse copiée', paste: 'Elle est copiée : colle-la sur {s}', paidQ: 'Tu as payé ? Ton solde monte tout seul en quelques minutes. Un doute ? Regarde la vidéo.',
       dep: 'Déposer', howMuch: 'Combien veux-tu déposer ?', rec: 'Conseillé 20 $ ou plus : les frais pèsent moins.',
       s1t: 'Copie ton adresse OROLADO', s1p: 'Elle est à toi seul. Valable 24 heures.', making: 'Création de ton adresse…',
       copy: 'Copier', copied: 'Copié ✓', toastCopy: 'Adresse copiée', retry: 'Réessayer',
       net: 'Utilise toujours le réseau <b>Tron (TRC-20)</b>. Autre réseau = argent perdu.',
       s2tG: 'Paie en pesos avec {m}', s2tGc: 'Paie avec ta carte', s2tE: 'Paie avec {m}',
-      s2pG: '<b>Guardarian</b> s\'ouvre. Tu achètes <b>{a} USDT</b> et tu colles ton adresse. Juste ton e-mail, sans compte.',
-      s2pE: '<b>El Dorado</b> s\'ouvre. Tu achètes <b>{a} USDT</b> avec {m} et tu les envoies à ton adresse.',
+      s2pG: '<b>Guardarian</b> s\'ouvre. Tu achètes <b>USDT</b> et tu colles ton adresse. Juste ton e-mail, sans compte.',
+      s2pE: '<b>El Dorado</b> s\'ouvre. Tu achètes <b>USDT</b> avec {m} et tu les envoies à ton adresse.',
       goG: 'Payer avec {m}', goGc: 'Payer par carte', goE: 'Ouvrir El Dorado',
       tagG: 'Sans compte · sans appli', tagE: '1re fois : inscription de 2 minutes avec ta {id}',
       video: 'Voir la vidéo', steps: 'Étape par étape',
@@ -132,7 +132,7 @@
       pause: 'Pause', play: 'Voir', again: 'Revoir', yourCur: 'ta monnaie',
       G: [
         ['Touche « {go} »', '<b>Guardarian</b> s\'ouvre dans le navigateur. Rien à télécharger.', 'Si ça ne s\'ouvre pas : tape guardarian.com dans le navigateur.'],
-        ['Choisis ce que tu achètes', 'En haut : <b>tu paies en {cur}</b>. En bas : <b>tu reçois USDT · TRC20</b>. Mets le montant ({a} $) et touche <b>Acheter</b>.', 'Vérifie bien qu\'il y a <b>TRC20</b> à côté de USDT.'],
+        ['Choisis ce que tu achètes', 'En haut : <b>tu paies en {cur}</b>. En bas : <b>tu reçois USDT · TRC20</b>. Mets le montant et touche <b>Acheter</b>.', 'Vérifie bien qu\'il y a <b>TRC20</b> à côté de USDT.'],
         ['Mets ton e-mail', 'Ton e-mail, puis le code à 6 chiffres reçu. Pas de téléphone demandé.', 'Regarde aussi dans les spams.'],
         ['Colle ton adresse OROLADO', 'Dans « Adresse du portefeuille », appuie longtemps puis <b>Coller</b>. Elle commence par <b>T</b>.', 'Si elle n\'est pas copiée : reviens sur OROLADO et touche Copier.'],
         ['Paie avec {m}', '{payG}', 'Parfois Guardarian demande une photo de la pièce d\'identité. C\'est normal, une seule fois.'],
@@ -142,7 +142,7 @@
       payGcard: 'Tape les chiffres de ta carte, ou touche Apple Pay / Google Pay, et confirme.',
       E: [
         ['Crée ton compte (1re fois seulement)', 'Touche « Ouvrir El Dorado ». Inscris-toi avec ton e-mail et une photo de ta <b>{id}</b>. Environ 2 minutes.', 'Ensuite plus besoin de le refaire.'],
-        ['Va dans P2P', 'Touche <b>P2P</b> et choisis : <b>j\'ai des {cur}, je veux des USDT</b>. Mets : <b>{a2} USDT</b>.', 'Achète {a2} USDT : ça couvre les frais d\'envoi.'],
+        ['Va dans P2P', 'Touche <b>P2P</b> et choisis : <b>j\'ai des {cur}, je veux des USDT</b>. Mets : <b>{a2}</b>.', 'Achète {a2} : ça couvre les frais d\'envoi.'],
         ['Choisis {m} et un vendeur', 'Choisis <b>{m}</b>. Touche un vendeur avec beaucoup de ventes et une bonne note (★), puis <b>Acheter USDT</b>.', 'Prends un vendeur avec beaucoup d\'opérations.'],
         ['Paie et touche « Payé »', 'Paie avec <b>{m}</b> le compte affiché par El Dorado. Reviens et touche <b>Payé</b>.', 'Paie seulement le compte affiché dans El Dorado.'],
         ['Envoie à OROLADO', 'Quand les USDT arrivent : <b>Portefeuille → Retirer</b>. Colle ton adresse OROLADO, choisis le réseau <b>Tron (TRC-20)</b> et confirme.', 'Le réseau doit être Tron (TRC-20). Autre réseau = argent perdu.'],
@@ -151,14 +151,14 @@
       ui: { pay: 'Tu paies', get: 'Tu reçois', buy: 'Acheter', mail: 'E-mail', code: 'Code', cont: 'Continuer', wal: 'Adresse du portefeuille USDT (TRC20)', exact: 'Montant exact', card: 'Carte', paid: 'Paiement reçu', sent: 'Envoyé', photo: 'Photo de ta', take: 'Prendre la photo', create: 'Créer le compte', wallet: 'Portefeuille', have: 'J\'ai', want: 'Je veux', ops: 'opérations', payTo: 'Paie avec {m} à', amount: 'Montant', paidB: 'Payé', withdraw: 'Retirer', addr: 'Adresse', net: 'Réseau', confirm: 'Confirmer', mailEx: 'toi@mail.com' }
     },
     en: {
-      nowB: 'Now', cpd: 'Address copied', paste: 'Already copied: paste it on {s}', paidQ: 'Paid already? Your balance goes up by itself in a few minutes. Unsure? Watch the video.',
+      amtW: 'your amount + 2 USDT', nowB: 'Now', cpd: 'Address copied', paste: 'Already copied: paste it on {s}', paidQ: 'Paid already? Your balance goes up by itself in a few minutes. Unsure? Watch the video.',
       dep: 'Deposit', howMuch: 'How much do you want to deposit?', rec: 'We suggest 20 $ or more: the fee weighs less.',
       s1t: 'Copy your OROLADO address', s1p: 'It is yours only. Valid 24 hours.', making: 'Creating your address…',
       copy: 'Copy', copied: 'Copied ✓', toastCopy: 'Address copied', retry: 'Try again',
       net: 'Always use the <b>Tron (TRC-20)</b> network. Another network = money lost.',
       s2tG: 'Pay in pesos with {m}', s2tGc: 'Pay with your card', s2tE: 'Pay with {m}',
-      s2pG: '<b>Guardarian</b> opens. You buy <b>{a} USDT</b> and paste your address. Just your email, no account.',
-      s2pE: '<b>El Dorado</b> opens. You buy <b>{a} USDT</b> with {m} and send them to your address.',
+      s2pG: '<b>Guardarian</b> opens. You buy <b>USDT</b> and paste your address. Just your email, no account.',
+      s2pE: '<b>El Dorado</b> opens. You buy <b>USDT</b> with {m} and send them to your address.',
       goG: 'Pay with {m}', goGc: 'Pay by card', goE: 'Open El Dorado',
       tagG: 'No account · no app', tagE: 'First time: 2-minute sign-up with your {id}',
       video: 'Watch video', steps: 'Step by step',
@@ -169,7 +169,7 @@
       pause: 'Pause', play: 'Play', again: 'Watch again', yourCur: 'your currency',
       G: [
         ['Tap «{go}»', '<b>Guardarian</b> opens in your browser. Nothing to download.', 'If it does not open, type guardarian.com in your browser.'],
-        ['Choose what you buy', 'Top: <b>you pay in {cur}</b>. Bottom: <b>you get USDT · TRC20</b>. Enter the amount ({a} $) and tap <b>Buy</b>.', 'Check that it says <b>TRC20</b> next to USDT.'],
+        ['Choose what you buy', 'Top: <b>you pay in {cur}</b>. Bottom: <b>you get USDT · TRC20</b>. Enter the amount and tap <b>Buy</b>.', 'Check that it says <b>TRC20</b> next to USDT.'],
         ['Enter your email', 'Your email, then the 6-digit code you receive. No phone needed.', 'Check your Spam folder too.'],
         ['Paste your OROLADO address', 'In «Wallet address», hold your finger and tap <b>Paste</b>. It starts with <b>T</b>.', 'If it is not copied, go back to OROLADO and tap Copy.'],
         ['Pay with {m}', '{payG}', 'Sometimes Guardarian asks for a photo of your ID. That is normal, only once.'],
@@ -179,7 +179,7 @@
       payGcard: 'Type your card details, or tap Apple Pay / Google Pay, and confirm.',
       E: [
         ['Create your account (first time only)', 'Tap «Open El Dorado». Sign up with your email and a photo of your <b>{id}</b>. About 2 minutes.', 'After that you never do it again.'],
-        ['Go to P2P', 'Tap <b>P2P</b> and choose: <b>I have {cur}, I want USDT</b>. Enter: <b>{a2} USDT</b>.', 'Buy {a2} USDT: that covers the sending fee.'],
+        ['Go to P2P', 'Tap <b>P2P</b> and choose: <b>I have {cur}, I want USDT</b>. Enter: <b>{a2}</b>.', 'Buy {a2}: that covers the sending fee.'],
         ['Choose {m} and a seller', 'Choose <b>{m}</b>. Tap a seller with many sales and a good rating (★), then <b>Buy USDT</b>.', 'Pick a seller with many trades.'],
         ['Pay and tap «Paid»', 'Pay with <b>{m}</b> to the account El Dorado shows. Come back and tap <b>Paid</b>.', 'Only pay the account shown in El Dorado.'],
         ['Send to OROLADO', 'When your USDT arrive: <b>Wallet → Withdraw</b>. Paste your OROLADO address, choose the <b>Tron (TRC-20)</b> network and confirm.', 'The network must be Tron (TRC-20). Another network = money lost.'],
@@ -190,14 +190,14 @@
   };
   // 2026-10-25 : les 8 autres langues du site (les écrans dessinés des sites de paiement restent en anglais : T.en.ui).
   T.de = {
-    nowB: 'Jetzt', cpd: 'Adresse kopiert', paste: 'Schon kopiert: bei {s} einfügen', paidQ: 'Schon bezahlt? Dein Guthaben steigt in wenigen Minuten von selbst. Unsicher? Sieh dir das Video an.',
+    amtW: 'deinen Betrag + 2 USDT', nowB: 'Jetzt', cpd: 'Adresse kopiert', paste: 'Schon kopiert: bei {s} einfügen', paidQ: 'Schon bezahlt? Dein Guthaben steigt in wenigen Minuten von selbst. Unsicher? Sieh dir das Video an.',
     dep: 'Einzahlen', howMuch: 'Wie viel möchtest du einzahlen?', rec: 'Empfohlen 20 $ oder mehr: die Gebühr fällt weniger ins Gewicht.',
     s1t: 'Kopiere deine OROLADO-Adresse', s1p: 'Sie gehört nur dir. 24 Stunden gültig.', making: 'Deine Adresse wird erstellt…',
     copy: 'Kopieren', copied: 'Kopiert ✓', toastCopy: 'Adresse kopiert', retry: 'Erneut',
     net: 'Nutze immer das Netzwerk <b>Tron (TRC-20)</b>. Anderes Netzwerk = Geld verloren.',
     s2tG: 'Bezahle in Pesos mit {m}', s2tGc: 'Bezahle mit deiner Karte', s2tE: 'Bezahle mit {m}',
-    s2pG: '<b>Guardarian</b> öffnet sich. Du kaufst <b>{a} USDT</b> und fügst deine Adresse ein. Nur deine E-Mail, kein Konto.',
-    s2pE: '<b>El Dorado</b> öffnet sich. Du kaufst <b>{a} USDT</b> mit {m} und sendest sie an deine Adresse.',
+    s2pG: '<b>Guardarian</b> öffnet sich. Du kaufst <b>USDT</b> und fügst deine Adresse ein. Nur deine E-Mail, kein Konto.',
+    s2pE: '<b>El Dorado</b> öffnet sich. Du kaufst <b>USDT</b> mit {m} und sendest sie an deine Adresse.',
     goG: 'Mit {m} bezahlen', goGc: 'Mit Karte bezahlen', goE: 'El Dorado öffnen',
     tagG: 'Kein Konto · keine App', tagE: 'Beim 1. Mal: 2 Minuten Anmeldung mit deinem {id}',
     video: 'Video ansehen', steps: 'Schritt für Schritt',
@@ -208,7 +208,7 @@
     pause: 'Pause', play: 'Abspielen', again: 'Nochmal ansehen', yourCur: 'deine Währung',
     G: [
       ['Tippe auf «{go}»', '<b>Guardarian</b> öffnet sich im Browser. Nichts herunterladen.', 'Öffnet es sich nicht: guardarian.com im Browser eingeben.'],
-      ['Wähle, was du kaufst', 'Oben: <b>du zahlst in {cur}</b>. Unten: <b>du bekommst USDT · TRC20</b>. Betrag ({a} $) eingeben und <b>Kaufen</b> tippen.', 'Prüfe, dass <b>TRC20</b> neben USDT steht.'],
+      ['Wähle, was du kaufst', 'Oben: <b>du zahlst in {cur}</b>. Unten: <b>du bekommst USDT · TRC20</b>. Betrag eingeben und <b>Kaufen</b> tippen.', 'Prüfe, dass <b>TRC20</b> neben USDT steht.'],
       ['Gib deine E-Mail ein', 'Deine E-Mail und den 6-stelligen Code, den du bekommst. Kein Telefon nötig.', 'Sieh auch im Spam nach.'],
       ['Füge deine OROLADO-Adresse ein', 'Bei «Wallet-Adresse» Finger halten und <b>Einfügen</b> tippen. Sie beginnt mit <b>T</b>.', 'Nicht kopiert? Zurück zu OROLADO und Kopieren tippen.'],
       ['Bezahle mit {m}', '{payG}', 'Manchmal will Guardarian ein Foto deines Ausweises. Das ist normal, nur einmal.'],
@@ -218,7 +218,7 @@
     payGcard: 'Gib deine Kartendaten ein oder tippe Apple Pay / Google Pay und bestätige.',
     E: [
       ['Konto erstellen (nur beim 1. Mal)', 'Tippe «El Dorado öffnen». Melde dich mit E-Mail und einem Foto deines <b>{id}</b> an. Etwa 2 Minuten.', 'Danach nie wieder.'],
-      ['Geh zu P2P', 'Tippe <b>P2P</b> und wähle: <b>ich habe {cur}, ich will USDT</b>. Eingeben: <b>{a2} USDT</b>.', 'Kaufe {a2} USDT: so ist die Versandgebühr gedeckt.'],
+      ['Geh zu P2P', 'Tippe <b>P2P</b> und wähle: <b>ich habe {cur}, ich will USDT</b>. Eingeben: <b>{a2}</b>.', 'Kaufe {a2}: so ist die Versandgebühr gedeckt.'],
       ['Wähle {m} und einen Verkäufer', 'Wähle <b>{m}</b>. Tippe einen Verkäufer mit vielen Verkäufen und guter Bewertung (★), dann <b>USDT kaufen</b>.', 'Nimm einen Verkäufer mit vielen Geschäften.'],
       ['Bezahlen und «Bezahlt» tippen', 'Zahle mit <b>{m}</b> an das Konto, das El Dorado zeigt. Komm zurück und tippe <b>Bezahlt</b>.', 'Zahle nur an das Konto in El Dorado.'],
       ['An OROLADO senden', 'Wenn die USDT da sind: <b>Wallet → Auszahlen</b>. OROLADO-Adresse einfügen, Netzwerk <b>Tron (TRC-20)</b> wählen und bestätigen.', 'Das Netzwerk muss Tron (TRC-20) sein. Anderes Netzwerk = Geld verloren.'],
@@ -226,14 +226,14 @@
     ]
   };
   T.ru = {
-    nowB: 'Сейчас', cpd: 'Адрес скопирован', paste: 'Уже скопирован: вставьте его в {s}', paidQ: 'Уже оплатили? Баланс сам пополнится через несколько минут. Сомневаетесь? Посмотрите видео.',
+    amtW: 'вашу сумму + 2 USDT', nowB: 'Сейчас', cpd: 'Адрес скопирован', paste: 'Уже скопирован: вставьте его в {s}', paidQ: 'Уже оплатили? Баланс сам пополнится через несколько минут. Сомневаетесь? Посмотрите видео.',
     dep: 'Пополнить', howMuch: 'Сколько вы хотите внести?', rec: 'Советуем от 20 $: комиссия заметна меньше.',
     s1t: 'Скопируйте ваш адрес OROLADO', s1p: 'Он только ваш. Действует 24 часа.', making: 'Создаём ваш адрес…',
     copy: 'Копировать', copied: 'Скопировано ✓', toastCopy: 'Адрес скопирован', retry: 'Повторить',
     net: 'Всегда сеть <b>Tron (TRC-20)</b>. Другая сеть = деньги потеряны.',
     s2tG: 'Оплатите в песо через {m}', s2tGc: 'Оплатите картой', s2tE: 'Оплатите через {m}',
-    s2pG: 'Откроется <b>Guardarian</b>. Вы покупаете <b>{a} USDT</b> и вставляете свой адрес. Только e-mail, без аккаунта.',
-    s2pE: 'Откроется <b>El Dorado</b>. Вы покупаете <b>{a} USDT</b> через {m} и отправляете на свой адрес.',
+    s2pG: 'Откроется <b>Guardarian</b>. Вы покупаете <b>USDT</b> и вставляете свой адрес. Только e-mail, без аккаунта.',
+    s2pE: 'Откроется <b>El Dorado</b>. Вы покупаете <b>USDT</b> через {m} и отправляете на свой адрес.',
     goG: 'Оплатить через {m}', goGc: 'Оплатить картой', goE: 'Открыть El Dorado',
     tagG: 'Без аккаунта · без приложения', tagE: 'Первый раз: регистрация 2 минуты с вашим {id}',
     video: 'Видео', steps: 'По шагам',
@@ -244,7 +244,7 @@
     pause: 'Пауза', play: 'Смотреть', again: 'Ещё раз', yourCur: 'ваша валюта',
     G: [
       ['Нажмите «{go}»', '<b>Guardarian</b> откроется в браузере. Ничего не скачивать.', 'Не открылось? Введите guardarian.com в браузере.'],
-      ['Выберите покупку', 'Сверху: <b>платите в {cur}</b>. Снизу: <b>получаете USDT · TRC20</b>. Введите сумму ({a} $) и нажмите <b>Купить</b>.', 'Проверьте, что рядом с USDT написано <b>TRC20</b>.'],
+      ['Выберите покупку', 'Сверху: <b>платите в {cur}</b>. Снизу: <b>получаете USDT · TRC20</b>. Введите сумму и нажмите <b>Купить</b>.', 'Проверьте, что рядом с USDT написано <b>TRC20</b>.'],
       ['Введите e-mail', 'Ваш e-mail и 6-значный код из письма. Телефон не нужен.', 'Проверьте и папку «Спам».'],
       ['Вставьте адрес OROLADO', 'В поле «Адрес кошелька» удерживайте палец и нажмите <b>Вставить</b>. Он начинается с <b>T</b>.', 'Не скопирован? Вернитесь в OROLADO и нажмите Копировать.'],
       ['Оплатите через {m}', '{payG}', 'Иногда Guardarian просит фото документа. Это нормально, один раз.'],
@@ -254,7 +254,7 @@
     payGcard: 'Введите данные карты или нажмите Apple Pay / Google Pay и подтвердите.',
     E: [
       ['Создайте аккаунт (только 1-й раз)', 'Нажмите «Открыть El Dorado». Зарегистрируйтесь с e-mail и фото вашего <b>{id}</b>. Около 2 минут.', 'Потом больше не нужно.'],
-      ['Откройте P2P', 'Нажмите <b>P2P</b> и выберите: <b>у меня {cur}, хочу USDT</b>. Введите: <b>{a2} USDT</b>.', 'Купите {a2} USDT: так покроете комиссию за отправку.'],
+      ['Откройте P2P', 'Нажмите <b>P2P</b> и выберите: <b>у меня {cur}, хочу USDT</b>. Введите: <b>{a2}</b>.', 'Купите {a2}: так покроете комиссию за отправку.'],
       ['Выберите {m} и продавца', 'Выберите <b>{m}</b>. Нажмите продавца с большим числом сделок и хорошей оценкой (★), затем <b>Купить USDT</b>.', 'Берите продавца с большим числом сделок.'],
       ['Оплатите и нажмите «Оплачено»', 'Оплатите через <b>{m}</b> на счёт из El Dorado. Вернитесь и нажмите <b>Оплачено</b>.', 'Платите только на счёт из El Dorado.'],
       ['Отправьте в OROLADO', 'Когда USDT придут: <b>Кошелёк → Вывести</b>. Вставьте адрес OROLADO, выберите сеть <b>Tron (TRC-20)</b> и подтвердите.', 'Сеть должна быть Tron (TRC-20). Другая сеть = деньги потеряны.'],
@@ -262,14 +262,14 @@
     ]
   };
   T.tr = {
-    nowB: 'Şimdi', cpd: 'Adres kopyalandı', paste: 'Kopyalandı: {s} sitesine yapıştır', paidQ: 'Ödedin mi? Bakiyen birkaç dakikada kendiliğinden yükselir. Emin değil misin? Videoyu izle.',
+    amtW: 'tutarın + 2 USDT', nowB: 'Şimdi', cpd: 'Adres kopyalandı', paste: 'Kopyalandı: {s} sitesine yapıştır', paidQ: 'Ödedin mi? Bakiyen birkaç dakikada kendiliğinden yükselir. Emin değil misin? Videoyu izle.',
     dep: 'Para yatır', howMuch: 'Ne kadar yatırmak istiyorsun?', rec: '20 $ ve üzeri önerilir: komisyon daha az etkiler.',
     s1t: 'OROLADO adresini kopyala', s1p: 'Sadece senin. 24 saat geçerli.', making: 'Adresin oluşturuluyor…',
     copy: 'Kopyala', copied: 'Kopyalandı ✓', toastCopy: 'Adres kopyalandı', retry: 'Tekrar dene',
     net: 'Her zaman <b>Tron (TRC-20)</b> ağını kullan. Başka ağ = para kaybı.',
     s2tG: '{m} ile peso öde', s2tGc: 'Kartınla öde', s2tE: '{m} ile öde',
-    s2pG: '<b>Guardarian</b> açılır. <b>{a} USDT</b> alırsın ve adresini yapıştırırsın. Sadece e-posta, hesap yok.',
-    s2pE: '<b>El Dorado</b> açılır. {m} ile <b>{a} USDT</b> alır ve adresine gönderirsin.',
+    s2pG: '<b>Guardarian</b> açılır. <b>USDT</b> alırsın ve adresini yapıştırırsın. Sadece e-posta, hesap yok.',
+    s2pE: '<b>El Dorado</b> açılır. {m} ile <b>USDT</b> alır ve adresine gönderirsin.',
     goG: '{m} ile öde', goGc: 'Kartla öde', goE: 'El Dorado\'yu aç',
     tagG: 'Hesap yok · uygulama yok', tagE: 'İlk sefer: {id} ile 2 dakikalık kayıt',
     video: 'Videoyu izle', steps: 'Adım adım',
@@ -280,7 +280,7 @@
     pause: 'Duraklat', play: 'İzle', again: 'Tekrar izle', yourCur: 'para birimin',
     G: [
       ['«{go}» düğmesine dokun', '<b>Guardarian</b> tarayıcıda açılır. İndirilecek bir şey yok.', 'Açılmazsa tarayıcıya guardarian.com yaz.'],
-      ['Ne alacağını seç', 'Üstte: <b>{cur} ile ödersin</b>. Altta: <b>USDT · TRC20 alırsın</b>. Tutarı ({a} $) yaz ve <b>Satın al</b>\'a dokun.', 'USDT\'nin yanında <b>TRC20</b> yazdığını kontrol et.'],
+      ['Ne alacağını seç', 'Üstte: <b>{cur} ile ödersin</b>. Altta: <b>USDT · TRC20 alırsın</b>. Tutarı yaz ve <b>Satın al</b>\'a dokun.', 'USDT\'nin yanında <b>TRC20</b> yazdığını kontrol et.'],
       ['E-postanı yaz', 'E-postanı ve gelen 6 haneli kodu yaz. Telefon istenmez.', 'Spam klasörüne de bak.'],
       ['OROLADO adresini yapıştır', '«Cüzdan adresi» alanında parmağını basılı tut ve <b>Yapıştır</b>\'a dokun. <b>T</b> ile başlar.', 'Kopyalı değilse OROLADO\'ya dön ve Kopyala\'ya dokun.'],
       ['{m} ile öde', '{payG}', 'Bazen Guardarian kimlik fotoğrafı ister. Normaldir, bir kez.'],
@@ -290,7 +290,7 @@
     payGcard: 'Kart bilgilerini yaz ya da Apple Pay / Google Pay\'e dokun ve onayla.',
     E: [
       ['Hesabını aç (sadece ilk sefer)', '«El Dorado\'yu aç»a dokun. E-posta ve <b>{id}</b> fotoğrafınla kaydol. Yaklaşık 2 dakika.', 'Sonra bir daha gerekmez.'],
-      ['P2P\'ye git', '<b>P2P</b>\'ye dokun ve seç: <b>{cur} var, USDT istiyorum</b>. Yaz: <b>{a2} USDT</b>.', '{a2} USDT al: gönderim ücretini karşılar.'],
+      ['P2P\'ye git', '<b>P2P</b>\'ye dokun ve seç: <b>{cur} var, USDT istiyorum</b>. Yaz: <b>{a2}</b>.', '{a2} al: gönderim ücretini karşılar.'],
       ['{m} ve bir satıcı seç', '<b>{m}</b> seç. Çok satışı ve iyi puanı (★) olan bir satıcıya dokun, sonra <b>USDT al</b>.', 'Çok işlemi olan satıcıyı seç.'],
       ['Öde ve «Ödendi»ye dokun', 'El Dorado\'nun gösterdiği hesaba <b>{m}</b> ile öde. Geri dön ve <b>Ödendi</b>\'ye dokun.', 'Sadece El Dorado\'daki hesaba öde.'],
       ['OROLADO\'ya gönder', 'USDT gelince: <b>Cüzdan → Çek</b>. OROLADO adresini yapıştır, <b>Tron (TRC-20)</b> ağını seç ve onayla.', 'Ağ Tron (TRC-20) olmalı. Başka ağ = para kaybı.'],
@@ -298,14 +298,14 @@
     ]
   };
   T.vi = {
-    nowB: 'Bây giờ', cpd: 'Đã sao chép địa chỉ', paste: 'Đã sao chép: dán vào {s}', paidQ: 'Đã thanh toán? Số dư tự tăng sau vài phút. Chưa rõ? Xem video.',
+    amtW: 'số tiền của bạn + 2 USDT', nowB: 'Bây giờ', cpd: 'Đã sao chép địa chỉ', paste: 'Đã sao chép: dán vào {s}', paidQ: 'Đã thanh toán? Số dư tự tăng sau vài phút. Chưa rõ? Xem video.',
     dep: 'Nạp tiền', howMuch: 'Bạn muốn nạp bao nhiêu?', rec: 'Nên nạp từ 20 $: phí sẽ nhẹ hơn.',
     s1t: 'Sao chép địa chỉ OROLADO', s1p: 'Chỉ của riêng bạn. Hiệu lực 24 giờ.', making: 'Đang tạo địa chỉ…',
     copy: 'Sao chép', copied: 'Đã chép ✓', toastCopy: 'Đã sao chép địa chỉ', retry: 'Thử lại',
     net: 'Luôn dùng mạng <b>Tron (TRC-20)</b>. Mạng khác = mất tiền.',
     s2tG: 'Trả bằng peso qua {m}', s2tGc: 'Trả bằng thẻ', s2tE: 'Trả qua {m}',
-    s2pG: '<b>Guardarian</b> mở ra. Bạn mua <b>{a} USDT</b> và dán địa chỉ. Chỉ cần email, không cần tài khoản.',
-    s2pE: '<b>El Dorado</b> mở ra. Bạn mua <b>{a} USDT</b> qua {m} rồi gửi về địa chỉ của bạn.',
+    s2pG: '<b>Guardarian</b> mở ra. Bạn mua <b>USDT</b> và dán địa chỉ. Chỉ cần email, không cần tài khoản.',
+    s2pE: '<b>El Dorado</b> mở ra. Bạn mua <b>USDT</b> qua {m} rồi gửi về địa chỉ của bạn.',
     goG: 'Trả qua {m}', goGc: 'Trả bằng thẻ', goE: 'Mở El Dorado',
     tagG: 'Không tài khoản · không ứng dụng', tagE: 'Lần đầu: đăng ký 2 phút với {id}',
     video: 'Xem video', steps: 'Từng bước',
@@ -316,7 +316,7 @@
     pause: 'Dừng', play: 'Xem', again: 'Xem lại', yourCur: 'tiền của bạn',
     G: [
       ['Chạm «{go}»', '<b>Guardarian</b> mở trong trình duyệt. Không cần tải gì.', 'Không mở? Gõ guardarian.com vào trình duyệt.'],
-      ['Chọn thứ bạn mua', 'Trên: <b>bạn trả bằng {cur}</b>. Dưới: <b>bạn nhận USDT · TRC20</b>. Nhập số tiền ({a} $) và chạm <b>Mua</b>.', 'Kiểm tra có chữ <b>TRC20</b> cạnh USDT.'],
+      ['Chọn thứ bạn mua', 'Trên: <b>bạn trả bằng {cur}</b>. Dưới: <b>bạn nhận USDT · TRC20</b>. Nhập số tiền và chạm <b>Mua</b>.', 'Kiểm tra có chữ <b>TRC20</b> cạnh USDT.'],
       ['Nhập email', 'Email và mã 6 số nhận được. Không cần số điện thoại.', 'Xem cả thư mục Spam.'],
       ['Dán địa chỉ OROLADO', 'Ở ô «Địa chỉ ví», giữ ngón tay rồi chạm <b>Dán</b>. Bắt đầu bằng <b>T</b>.', 'Chưa chép? Quay lại OROLADO và chạm Sao chép.'],
       ['Trả qua {m}', '{payG}', 'Đôi khi Guardarian xin ảnh giấy tờ. Bình thường, chỉ một lần.'],
@@ -326,7 +326,7 @@
     payGcard: 'Nhập thông tin thẻ, hoặc chạm Apple Pay / Google Pay, rồi xác nhận.',
     E: [
       ['Tạo tài khoản (chỉ lần đầu)', 'Chạm «Mở El Dorado». Đăng ký bằng email và ảnh <b>{id}</b>. Khoảng 2 phút.', 'Sau đó không cần làm lại.'],
-      ['Vào P2P', 'Chạm <b>P2P</b> và chọn: <b>tôi có {cur}, muốn USDT</b>. Nhập: <b>{a2} USDT</b>.', 'Mua {a2} USDT để đủ phí gửi.'],
+      ['Vào P2P', 'Chạm <b>P2P</b> và chọn: <b>tôi có {cur}, muốn USDT</b>. Nhập: <b>{a2}</b>.', 'Mua {a2} để đủ phí gửi.'],
       ['Chọn {m} và người bán', 'Chọn <b>{m}</b>. Chạm người bán có nhiều giao dịch và điểm tốt (★), rồi <b>Mua USDT</b>.', 'Chọn người bán có nhiều giao dịch.'],
       ['Trả tiền và chạm «Đã trả»', 'Trả qua <b>{m}</b> vào tài khoản El Dorado hiện. Quay lại và chạm <b>Đã trả</b>.', 'Chỉ trả vào tài khoản hiện trong El Dorado.'],
       ['Gửi về OROLADO', 'Khi USDT về: <b>Ví → Rút</b>. Dán địa chỉ OROLADO, chọn mạng <b>Tron (TRC-20)</b> và xác nhận.', 'Mạng phải là Tron (TRC-20). Mạng khác = mất tiền.'],
@@ -334,14 +334,14 @@
     ]
   };
   T.id = {
-    nowB: 'Sekarang', cpd: 'Alamat disalin', paste: 'Sudah disalin: tempel di {s}', paidQ: 'Sudah bayar? Saldo naik sendiri dalam beberapa menit. Ragu? Tonton videonya.',
+    amtW: 'jumlahmu + 2 USDT', nowB: 'Sekarang', cpd: 'Alamat disalin', paste: 'Sudah disalin: tempel di {s}', paidQ: 'Sudah bayar? Saldo naik sendiri dalam beberapa menit. Ragu? Tonton videonya.',
     dep: 'Setor', howMuch: 'Berapa yang ingin kamu setor?', rec: 'Disarankan 20 $ atau lebih: biaya terasa lebih ringan.',
     s1t: 'Salin alamat OROLADO-mu', s1p: 'Hanya milikmu. Berlaku 24 jam.', making: 'Membuat alamatmu…',
     copy: 'Salin', copied: 'Disalin ✓', toastCopy: 'Alamat disalin', retry: 'Coba lagi',
     net: 'Selalu pakai jaringan <b>Tron (TRC-20)</b>. Jaringan lain = uang hilang.',
     s2tG: 'Bayar peso dengan {m}', s2tGc: 'Bayar dengan kartu', s2tE: 'Bayar dengan {m}',
-    s2pG: '<b>Guardarian</b> terbuka. Kamu beli <b>{a} USDT</b> dan tempel alamatmu. Cukup email, tanpa akun.',
-    s2pE: '<b>El Dorado</b> terbuka. Kamu beli <b>{a} USDT</b> dengan {m} lalu kirim ke alamatmu.',
+    s2pG: '<b>Guardarian</b> terbuka. Kamu beli <b>USDT</b> dan tempel alamatmu. Cukup email, tanpa akun.',
+    s2pE: '<b>El Dorado</b> terbuka. Kamu beli <b>USDT</b> dengan {m} lalu kirim ke alamatmu.',
     goG: 'Bayar dengan {m}', goGc: 'Bayar dengan kartu', goE: 'Buka El Dorado',
     tagG: 'Tanpa akun · tanpa aplikasi', tagE: 'Pertama kali: daftar 2 menit dengan {id}',
     video: 'Tonton video', steps: 'Langkah demi langkah',
@@ -352,7 +352,7 @@
     pause: 'Jeda', play: 'Putar', again: 'Tonton lagi', yourCur: 'mata uangmu',
     G: [
       ['Ketuk «{go}»', '<b>Guardarian</b> terbuka di browser. Tidak perlu unduh apa pun.', 'Tidak terbuka? Ketik guardarian.com di browser.'],
-      ['Pilih yang kamu beli', 'Atas: <b>kamu bayar {cur}</b>. Bawah: <b>kamu terima USDT · TRC20</b>. Isi jumlah ({a} $) lalu ketuk <b>Beli</b>.', 'Pastikan ada <b>TRC20</b> di samping USDT.'],
+      ['Pilih yang kamu beli', 'Atas: <b>kamu bayar {cur}</b>. Bawah: <b>kamu terima USDT · TRC20</b>. Isi jumlah lalu ketuk <b>Beli</b>.', 'Pastikan ada <b>TRC20</b> di samping USDT.'],
       ['Isi email', 'Email dan kode 6 angka yang kamu terima. Tanpa nomor HP.', 'Cek juga folder Spam.'],
       ['Tempel alamat OROLADO', 'Di «Alamat dompet», tahan jari lalu ketuk <b>Tempel</b>. Diawali <b>T</b>.', 'Belum tersalin? Kembali ke OROLADO dan ketuk Salin.'],
       ['Bayar dengan {m}', '{payG}', 'Kadang Guardarian minta foto identitas. Itu normal, sekali saja.'],
@@ -362,7 +362,7 @@
     payGcard: 'Isi data kartu, atau ketuk Apple Pay / Google Pay, lalu konfirmasi.',
     E: [
       ['Buat akun (hanya pertama kali)', 'Ketuk «Buka El Dorado». Daftar dengan email dan foto <b>{id}</b>. Sekitar 2 menit.', 'Setelah itu tidak perlu lagi.'],
-      ['Buka P2P', 'Ketuk <b>P2P</b> dan pilih: <b>saya punya {cur}, mau USDT</b>. Isi: <b>{a2} USDT</b>.', 'Beli {a2} USDT agar biaya kirim tertutup.'],
+      ['Buka P2P', 'Ketuk <b>P2P</b> dan pilih: <b>saya punya {cur}, mau USDT</b>. Isi: <b>{a2}</b>.', 'Beli {a2} agar biaya kirim tertutup.'],
       ['Pilih {m} dan penjual', 'Pilih <b>{m}</b>. Ketuk penjual dengan banyak transaksi dan nilai bagus (★), lalu <b>Beli USDT</b>.', 'Pilih penjual dengan banyak transaksi.'],
       ['Bayar dan ketuk «Sudah bayar»', 'Bayar dengan <b>{m}</b> ke rekening yang ditampilkan El Dorado. Kembali dan ketuk <b>Sudah bayar</b>.', 'Bayar hanya ke rekening di El Dorado.'],
       ['Kirim ke OROLADO', 'Saat USDT masuk: <b>Dompet → Tarik</b>. Tempel alamat OROLADO, pilih jaringan <b>Tron (TRC-20)</b> lalu konfirmasi.', 'Jaringan harus Tron (TRC-20). Jaringan lain = uang hilang.'],
@@ -370,14 +370,14 @@
     ]
   };
   T.ar = {
-    nowB: 'الآن', cpd: 'تم نسخ العنوان', paste: 'تم النسخ: الصقه في {s}', paidQ: 'هل دفعت؟ يرتفع رصيدك تلقائياً خلال دقائق. غير متأكد؟ شاهد الفيديو.',
+    amtW: 'مبلغك + 2 USDT', nowB: 'الآن', cpd: 'تم نسخ العنوان', paste: 'تم النسخ: الصقه في {s}', paidQ: 'هل دفعت؟ يرتفع رصيدك تلقائياً خلال دقائق. غير متأكد؟ شاهد الفيديو.',
     dep: 'إيداع', howMuch: 'كم تريد أن تودع؟', rec: 'ننصح بـ 20 $ أو أكثر: الرسوم أخف.',
     s1t: 'انسخ عنوان OROLADO الخاص بك', s1p: 'خاص بك وحدك. صالح 24 ساعة.', making: 'جارٍ إنشاء عنوانك…',
     copy: 'نسخ', copied: 'تم النسخ ✓', toastCopy: 'تم نسخ العنوان', retry: 'إعادة المحاولة',
     net: 'استخدم دائماً شبكة <b>Tron (TRC-20)</b>. شبكة أخرى = خسارة المال.',
     s2tG: 'ادفع بالبيزو عبر {m}', s2tGc: 'ادفع ببطاقتك', s2tE: 'ادفع عبر {m}',
-    s2pG: 'يفتح <b>Guardarian</b>. تشتري <b>{a} USDT</b> وتلصق عنوانك. بريدك فقط، بلا حساب.',
-    s2pE: 'يفتح <b>El Dorado</b>. تشتري <b>{a} USDT</b> عبر {m} وترسلها إلى عنوانك.',
+    s2pG: 'يفتح <b>Guardarian</b>. تشتري <b>USDT</b> وتلصق عنوانك. بريدك فقط، بلا حساب.',
+    s2pE: 'يفتح <b>El Dorado</b>. تشتري <b>USDT</b> عبر {m} وترسلها إلى عنوانك.',
     goG: 'ادفع عبر {m}', goGc: 'ادفع بالبطاقة', goE: 'افتح El Dorado',
     tagG: 'بلا حساب · بلا تطبيق', tagE: 'أول مرة: تسجيل دقيقتين بـ {id}',
     video: 'شاهد الفيديو', steps: 'خطوة بخطوة',
@@ -388,7 +388,7 @@
     pause: 'إيقاف', play: 'تشغيل', again: 'شاهد مجدداً', yourCur: 'عملتك',
     G: [
       ['المس «{go}»', 'يفتح <b>Guardarian</b> في المتصفح. لا شيء للتنزيل.', 'إن لم يفتح: اكتب guardarian.com في المتصفح.'],
-      ['اختر ما تشتريه', 'في الأعلى: <b>تدفع بـ {cur}</b>. في الأسفل: <b>تستلم USDT · TRC20</b>. اكتب المبلغ ({a} $) والمس <b>شراء</b>.', 'تأكد من وجود <b>TRC20</b> بجانب USDT.'],
+      ['اختر ما تشتريه', 'في الأعلى: <b>تدفع بـ {cur}</b>. في الأسفل: <b>تستلم USDT · TRC20</b>. اكتب المبلغ والمس <b>شراء</b>.', 'تأكد من وجود <b>TRC20</b> بجانب USDT.'],
       ['اكتب بريدك', 'بريدك والرمز من 6 أرقام الذي يصلك. لا حاجة للهاتف.', 'افحص مجلد الرسائل غير المرغوبة أيضاً.'],
       ['الصق عنوان OROLADO', 'في «عنوان المحفظة» اضغط مطولاً ثم المس <b>لصق</b>. يبدأ بـ <b>T</b>.', 'لم يُنسخ؟ عد إلى OROLADO والمس نسخ.'],
       ['ادفع عبر {m}', '{payG}', 'أحياناً يطلب Guardarian صورة الهوية. هذا طبيعي، مرة واحدة.'],
@@ -398,7 +398,7 @@
     payGcard: 'اكتب بيانات البطاقة أو المس Apple Pay / Google Pay ثم أكّد.',
     E: [
       ['أنشئ حسابك (أول مرة فقط)', 'المس «افتح El Dorado». سجّل ببريدك وصورة <b>{id}</b>. نحو دقيقتين.', 'بعدها لا حاجة لذلك مجدداً.'],
-      ['اذهب إلى P2P', 'المس <b>P2P</b> واختر: <b>لدي {cur}، أريد USDT</b>. اكتب: <b>{a2} USDT</b>.', 'اشترِ {a2} USDT لتغطية رسوم الإرسال.'],
+      ['اذهب إلى P2P', 'المس <b>P2P</b> واختر: <b>لدي {cur}، أريد USDT</b>. اكتب: <b>{a2}</b>.', 'اشترِ {a2} لتغطية رسوم الإرسال.'],
       ['اختر {m} وبائعاً', 'اختر <b>{m}</b>. المس بائعاً بمبيعات كثيرة وتقييم جيد (★)، ثم <b>شراء USDT</b>.', 'اختر بائعاً بعمليات كثيرة.'],
       ['ادفع والمس «تم الدفع»', 'ادفع عبر <b>{m}</b> إلى الحساب الذي يعرضه El Dorado. عد والمس <b>تم الدفع</b>.', 'ادفع فقط للحساب الظاهر في El Dorado.'],
       ['أرسل إلى OROLADO', 'عند وصول USDT: <b>المحفظة ← سحب</b>. الصق عنوان OROLADO واختر شبكة <b>Tron (TRC-20)</b> ثم أكّد.', 'يجب أن تكون الشبكة Tron (TRC-20). شبكة أخرى = خسارة المال.'],
@@ -406,14 +406,14 @@
     ]
   };
   T.hi = {
-    nowB: 'अभी', cpd: 'पता कॉपी हो गया', paste: 'कॉपी हो चुका: {s} में पेस्ट करें', paidQ: 'भुगतान कर दिया? कुछ मिनट में बैलेंस अपने आप बढ़ेगा। संदेह है? वीडियो देखें।',
+    amtW: 'आपकी रक़म + 2 USDT', nowB: 'अभी', cpd: 'पता कॉपी हो गया', paste: 'कॉपी हो चुका: {s} में पेस्ट करें', paidQ: 'भुगतान कर दिया? कुछ मिनट में बैलेंस अपने आप बढ़ेगा। संदेह है? वीडियो देखें।',
     dep: 'जमा करें', howMuch: 'कितना जमा करना है?', rec: '20 $ या ज़्यादा सुझाया जाता है: शुल्क कम लगता है।',
     s1t: 'अपना OROLADO पता कॉपी करें', s1p: 'सिर्फ़ आपका। 24 घंटे मान्य।', making: 'आपका पता बन रहा है…',
     copy: 'कॉपी', copied: 'कॉपी ✓', toastCopy: 'पता कॉपी हुआ', retry: 'फिर कोशिश',
     net: 'हमेशा <b>Tron (TRC-20)</b> नेटवर्क चुनें। दूसरा नेटवर्क = पैसा खोया।',
     s2tG: '{m} से पेसो में भुगतान', s2tGc: 'कार्ड से भुगतान', s2tE: '{m} से भुगतान',
-    s2pG: '<b>Guardarian</b> खुलेगा। आप <b>{a} USDT</b> खरीदें और अपना पता पेस्ट करें। सिर्फ़ ईमेल, खाता नहीं।',
-    s2pE: '<b>El Dorado</b> खुलेगा। {m} से <b>{a} USDT</b> खरीदें और अपने पते पर भेजें।',
+    s2pG: '<b>Guardarian</b> खुलेगा। आप <b>USDT</b> खरीदें और अपना पता पेस्ट करें। सिर्फ़ ईमेल, खाता नहीं।',
+    s2pE: '<b>El Dorado</b> खुलेगा। {m} से <b>USDT</b> खरीदें और अपने पते पर भेजें।',
     goG: '{m} से भुगतान', goGc: 'कार्ड से भुगतान', goE: 'El Dorado खोलें',
     tagG: 'खाता नहीं · ऐप नहीं', tagE: 'पहली बार: {id} से 2 मिनट का रजिस्ट्रेशन',
     video: 'वीडियो देखें', steps: 'कदम दर कदम',
@@ -424,7 +424,7 @@
     pause: 'रोकें', play: 'चलाएँ', again: 'फिर देखें', yourCur: 'आपकी मुद्रा',
     G: [
       ['«{go}» दबाएँ', '<b>Guardarian</b> ब्राउज़र में खुलेगा। कुछ डाउनलोड नहीं।', 'न खुले तो ब्राउज़र में guardarian.com लिखें।'],
-      ['क्या ख़रीदना है चुनें', 'ऊपर: <b>आप {cur} में देंगे</b>। नीचे: <b>आपको USDT · TRC20 मिलेगा</b>। रक़म ({a} $) लिखें और <b>ख़रीदें</b> दबाएँ।', 'देखें कि USDT के पास <b>TRC20</b> लिखा हो।'],
+      ['क्या ख़रीदना है चुनें', 'ऊपर: <b>आप {cur} में देंगे</b>। नीचे: <b>आपको USDT · TRC20 मिलेगा</b>। रक़म लिखें और <b>ख़रीदें</b> दबाएँ।', 'देखें कि USDT के पास <b>TRC20</b> लिखा हो।'],
       ['ईमेल लिखें', 'ईमेल और आया हुआ 6 अंकों का कोड। फ़ोन नहीं चाहिए।', 'स्पैम फ़ोल्डर भी देखें।'],
       ['OROLADO पता पेस्ट करें', '«वॉलेट पता» में उंगली दबाए रखें और <b>पेस्ट</b> दबाएँ। यह <b>T</b> से शुरू होता है।', 'कॉपी नहीं हुआ? OROLADO पर लौटें और कॉपी दबाएँ।'],
       ['{m} से भुगतान करें', '{payG}', 'कभी-कभी Guardarian पहचान पत्र की फ़ोटो माँगता है। यह सामान्य है, एक बार।'],
@@ -434,7 +434,7 @@
     payGcard: 'कार्ड की जानकारी लिखें, या Apple Pay / Google Pay दबाएँ, और पुष्टि करें।',
     E: [
       ['खाता बनाएँ (सिर्फ़ पहली बार)', '«El Dorado खोलें» दबाएँ। ईमेल और अपने <b>{id}</b> की फ़ोटो से रजिस्टर करें। लगभग 2 मिनट।', 'उसके बाद दोबारा नहीं।'],
-      ['P2P पर जाएँ', '<b>P2P</b> दबाएँ और चुनें: <b>मेरे पास {cur} है, USDT चाहिए</b>। लिखें: <b>{a2} USDT</b>।', '{a2} USDT ख़रीदें: भेजने का शुल्क पूरा होगा।'],
+      ['P2P पर जाएँ', '<b>P2P</b> दबाएँ और चुनें: <b>मेरे पास {cur} है, USDT चाहिए</b>। लिखें: <b>{a2}</b>।', '{a2} ख़रीदें: भेजने का शुल्क पूरा होगा।'],
       ['{m} और विक्रेता चुनें', '<b>{m}</b> चुनें। ज़्यादा बिक्री और अच्छी रेटिंग (★) वाला विक्रेता दबाएँ, फिर <b>USDT ख़रीदें</b>।', 'ज़्यादा सौदों वाला विक्रेता चुनें।'],
       ['भुगतान करें और «भुगतान हुआ» दबाएँ', 'El Dorado में दिखे खाते में <b>{m}</b> से भुगतान करें। लौटकर <b>भुगतान हुआ</b> दबाएँ।', 'सिर्फ़ El Dorado में दिखे खाते में भुगतान करें।'],
       ['OROLADO को भेजें', 'USDT आने पर: <b>वॉलेट → निकालें</b>। OROLADO पता पेस्ट करें, <b>Tron (TRC-20)</b> नेटवर्क चुनें और पुष्टि करें।', 'नेटवर्क Tron (TRC-20) होना चाहिए। दूसरा नेटवर्क = पैसा खोया।'],
@@ -442,14 +442,14 @@
     ]
   };
   T.zh = {
-    nowB: '现在', cpd: '地址已复制', paste: '已复制：粘贴到 {s}', paidQ: '已付款？余额几分钟内自动到账。不确定？看视频。',
+    amtW: '你的金额 + 2 USDT', nowB: '现在', cpd: '地址已复制', paste: '已复制：粘贴到 {s}', paidQ: '已付款？余额几分钟内自动到账。不确定？看视频。',
     dep: '充值', howMuch: '你想充值多少？', rec: '建议 20 $ 以上：手续费占比更小。',
     s1t: '复制你的 OROLADO 地址', s1p: '只属于你。24 小时有效。', making: '正在生成地址…',
     copy: '复制', copied: '已复制 ✓', toastCopy: '地址已复制', retry: '重试',
     net: '始终使用 <b>Tron (TRC-20)</b> 网络。其他网络 = 资金丢失。',
     s2tG: '用 {m} 支付比索', s2tGc: '用银行卡支付', s2tE: '用 {m} 支付',
-    s2pG: '将打开 <b>Guardarian</b>。购买 <b>{a} USDT</b> 并粘贴你的地址。只需邮箱，无需账户。',
-    s2pE: '将打开 <b>El Dorado</b>。用 {m} 购买 <b>{a} USDT</b> 并发送到你的地址。',
+    s2pG: '将打开 <b>Guardarian</b>。购买 <b>USDT</b> 并粘贴你的地址。只需邮箱，无需账户。',
+    s2pE: '将打开 <b>El Dorado</b>。用 {m} 购买 <b>USDT</b> 并发送到你的地址。',
     goG: '用 {m} 支付', goGc: '用卡支付', goE: '打开 El Dorado',
     tagG: '无需账户 · 无需应用', tagE: '首次：用 {id} 注册 2 分钟',
     video: '看视频', steps: '分步说明',
@@ -460,7 +460,7 @@
     pause: '暂停', play: '播放', again: '再看一次', yourCur: '你的货币',
     G: [
       ['点「{go}」', '<b>Guardarian</b> 在浏览器中打开。无需下载。', '打不开？在浏览器输入 guardarian.com。'],
-      ['选择购买内容', '上方：<b>用 {cur} 支付</b>。下方：<b>收到 USDT · TRC20</b>。输入金额（{a} $）并点<b>购买</b>。', '确认 USDT 旁边写着 <b>TRC20</b>。'],
+      ['选择购买内容', '上方：<b>用 {cur} 支付</b>。下方：<b>收到 USDT · TRC20</b>。输入金额并点<b>购买</b>。', '确认 USDT 旁边写着 <b>TRC20</b>。'],
       ['输入邮箱', '输入邮箱和收到的 6 位验证码。不需要手机号。', '也看看垃圾邮件。'],
       ['粘贴 OROLADO 地址', '在「钱包地址」长按，点<b>粘贴</b>。地址以 <b>T</b> 开头。', '没复制？回到 OROLADO 点复制。'],
       ['用 {m} 支付', '{payG}', 'Guardarian 有时需要证件照片。这很正常，只需一次。'],
@@ -470,7 +470,7 @@
     payGcard: '输入卡信息，或点 Apple Pay / Google Pay，然后确认。',
     E: [
       ['创建账户（仅首次）', '点「打开 El Dorado」。用邮箱和 <b>{id}</b> 照片注册。约 2 分钟。', '之后不用再做。'],
-      ['进入 P2P', '点 <b>P2P</b> 并选择：<b>我有 {cur}，想要 USDT</b>。输入：<b>{a2} USDT</b>。', '买 {a2} USDT，足够支付发送费。'],
+      ['进入 P2P', '点 <b>P2P</b> 并选择：<b>我有 {cur}，想要 USDT</b>。输入：<b>{a2}</b>。', '买 {a2}，足够支付发送费。'],
       ['选择 {m} 和卖家', '选 <b>{m}</b>。点一个成交多、评分好（★）的卖家，再点<b>购买 USDT</b>。', '选成交次数多的卖家。'],
       ['付款并点「已付款」', '用 <b>{m}</b> 付款到 El Dorado 显示的账户。回来点<b>已付款</b>。', '只付款到 El Dorado 显示的账户。'],
       ['发送到 OROLADO', 'USDT 到账后：<b>钱包 → 提取</b>。粘贴 OROLADO 地址，选择 <b>Tron (TRC-20)</b> 网络并确认。', '网络必须是 Tron (TRC-20)。其他网络 = 资金丢失。'],
@@ -496,7 +496,7 @@
   function flag(cc) { return String.fromCodePoint(127397 + cc.charCodeAt(0), 127397 + cc.charCodeAt(1)); }
   function vars() {
     var c = C[st.cc], t = L();
-    var d = { m: payWord(c.m), cur: c.cur || t.yourCur, id: c.id || 'ID', a: st.amt, a2: st.amt + 2 };
+    var d = { m: payWord(c.m), cur: c.cur || t.yourCur, id: c.id || 'ID', a: st.amt, a2: t.amtW };
     d.go = fill(c.s === 'G' ? (c.card ? t.goGc : t.goG) : t.goE, d);
     d.payG = c.card ? t.payGcard : t.payGspei;
     return d;
@@ -685,9 +685,8 @@
         '<div class="la-wait"><span class="la-dot"></span>' + t.wait + '</div></div></div>';
     return head(t.dep, false, testSel()) + '<div class="la-bd la-p' + ph + '">' +
       '<div class="la-cty"><span class="fl">' + flag(st.cc) + '</span><span class="la-pays">' + c.pays.map(function (x) { return '<span>' + esc(payWord(x)) + '</span>'; }).join('') + '</span></div>' +
-      '<div class="la-lb">' + t.howMuch + '</div><div class="la-chips">' +
-        [10, 20, 50, 100].map(function (a) { return '<button data-act="amt" data-a="' + a + '" class="' + (a === st.amt ? 'on' : '') + '">' + a + ' $</button>'; }).join('') +
-      '</div><div class="la-nt">' + t.rec + (c.s === 'E' ? ' ' + fill(t.fee, { f: t.feeE }) : '') + '</div>' +
+      // 2026-10-25 (propriétaire) : plus de boutons 10 / 20 / 50 / 100 $ ici — le joueur tape SON montant chez Guardarian / El Dorado.
+
       s1 +
       '<div class="la-st ' + cls(2) + '"><div class="la-n">2</div><div class="la-c"><h4>' + fill(s2t, d) + (ph === 2 ? now : '') + '</h4><p>' + fill(s2p, d) + '</p>' +
         '<a class="la-go" data-act="go" href="' + site.url + '" target="_blank" rel="noopener">' + esc(d.go) + ' →</a>' +

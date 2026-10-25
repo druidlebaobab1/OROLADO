@@ -7021,7 +7021,7 @@
     if (latamScript) return latamScript;
     latamScript = new Promise(function (resolve) {
       var s = document.createElement('script');
-      s.src = 'js/latam.js?v=3190';
+      s.src = 'js/latam.js?v=3194';
       s.onload = function () { resolve(!!D6.Latam); };
       s.onerror = function () { latamScript = null; resolve(false); };
       document.head.appendChild(s);
