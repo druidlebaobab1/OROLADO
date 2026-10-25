@@ -147,6 +147,12 @@ function sb_config(): array {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig4'])) return true; $s['sports'] = SB_CFG_DEFAULT['sports']; $s['mig4'] = 1; return true; });
     $c = sb_read('config.json');
   }
+  // 2026-10-25 (propriétaire : « active tout ») — une seule fois : on RÉACTIVE TOUS les sports (au cas où certains auraient été
+  // décochés), et on remet le direct et le direct public en marche. Le chargement des matchs reste limité par le quota de l'API.
+  if (empty($c['mig12'])) {
+    sb_with('config.json', static function (array &$s) { if (!empty($s['mig12'])) return true; $s['sports'] = SB_CFG_DEFAULT['sports']; $s['live'] = true; $s['livePublic'] = true; $s['mig12'] = 1; return true; });
+    $c = sb_read('config.json');
+  }
   $out = SB_CFG_DEFAULT;
   foreach ($out as $k => $v) if (array_key_exists($k, $c)) $out[$k] = is_bool($v) ? (bool) $c[$k] : (is_array($v) ? (array) $c[$k] : (float) $c[$k]);
   return $out;
@@ -159,7 +165,7 @@ function sb_config_save(array $in): array {
   foreach (['alertStake', 'alertPot', 'alertWin'] as $k) if (isset($in[$k]) && is_numeric($in[$k])) $cur[$k] = round(max(0.0, min(1000000.0, (float) $in[$k])), 2);
   if (isset($in['sports']) && is_array($in['sports'])) $cur['sports'] = array_values(array_intersect(SB_CFG_DEFAULT['sports'], array_map('strval', $in['sports'])));
   if (isset($in['liveLastMin']) && is_numeric($in['liveLastMin'])) $cur['liveLastMin'] = (float) max(45, min(90, (int) $in['liveLastMin'])); // direct : plus de pari à partir de cette minute
-  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1, 'mig11' => 1]; return true; });
+  sb_with('config.json', static function (array &$s) use ($cur) { $s = $cur + ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig6' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1, 'mig11' => 1, 'mig12' => 1]; return true; });
   return ['ok' => true, 'config' => $cur];
 }
 function sb_visible(?array $user): bool {
