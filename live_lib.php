@@ -201,19 +201,21 @@ function live_add_msg(array $user, string $from, string $text, string $img = '',
  * « non lu » de l'admin (le message du joueur reste à traiter).
  */
 function live_auto_reply(string $uid, string $lang): ?array {
+  // v3199 (propriétaire) : réponse automatique plus chaleureuse — rassure que tout fonctionne (crédit automatique)
+  // et invite à joindre une capture + montant + date. Les joueurs sérieux envoient leur preuve ; les autres se filtrent.
   $txt = [
-    'fr' => 'Merci pour ton message 🙏 Il est bien reçu. Notre équipe te répondra ici dès que possible : merci de patienter un peu.',
-    'en' => 'Thanks for your message 🙏 We received it. Our team will answer you here as soon as possible: please be patient.',
-    'zh' => '感谢你的留言 🙏 我们已收到。团队会尽快在这里回复你，请耐心等待。',
-    'es' => 'Gracias por tu mensaje 🙏 Lo hemos recibido. Nuestro equipo te responderá aquí lo antes posible: ten un poco de paciencia.',
-    'pt' => 'Obrigado pela tua mensagem 🙏 Recebemos. A nossa equipa vai responder-te aqui o mais rápido possível: tem um pouco de paciência.',
-    'ar' => 'شكرًا على رسالتك 🙏 لقد استلمناها. سيرد عليك فريقنا هنا في أقرب وقت: يرجى الانتظار قليلًا.',
-    'tr' => 'Mesajın için teşekkürler 🙏 Aldık. Ekibimiz en kısa sürede burada yanıt verecek: lütfen biraz bekle.',
-    'vi' => 'Cảm ơn tin nhắn của bạn 🙏 Chúng tôi đã nhận được. Đội ngũ sẽ trả lời bạn tại đây sớm nhất: vui lòng chờ một chút.',
-    'id' => 'Terima kasih atas pesanmu 🙏 Sudah kami terima. Tim kami akan membalas di sini secepatnya: mohon tunggu sebentar.',
-    'ru' => 'Спасибо за сообщение 🙏 Мы его получили. Наша команда ответит здесь как можно скорее: пожалуйста, подождите.',
-    'de' => 'Danke für deine Nachricht 🙏 Sie ist angekommen. Unser Team antwortet dir hier so schnell wie möglich: bitte hab etwas Geduld.',
-    'hi' => 'आपके संदेश के लिए धन्यवाद 🙏 हमें मिल गया है। हमारी टीम जल्द से जल्द यहाँ जवाब देगी: कृपया थोड़ा इंतज़ार करें।',
+    'fr' => 'Merci pour ton message 🙏 Il est bien reçu. Sur OROLADO, les dépôts et les retraits sont crédités automatiquement et tout fonctionne normalement. Si tu as vraiment un souci avec un dépôt, envoie-nous ici une capture d\'écran de ton paiement, avec le montant et la date : notre équipe vérifiera et te répondra au plus vite. Merci de ta confiance 🙌',
+    'en' => 'Thank you for your message 🙏 We have received it. On OROLADO, deposits and withdrawals are credited automatically and everything is working normally. If you really have an issue with a deposit, please send us a screenshot of your payment here, with the amount and the date: our team will check and reply as soon as possible. Thank you for your trust 🙌',
+    'zh' => '感谢你的留言 🙏 我们已收到。在 OROLADO，存款和提款都会自动到账，一切运行正常。如果你的存款确实遇到问题，请在这里发送付款截图，并附上金额和日期：我们的团队会核实并尽快回复你。谢谢你的信任 🙌',
+    'es' => 'Gracias por tu mensaje 🙏 Lo hemos recibido. En OROLADO, los depósitos y retiros se acreditan automáticamente y todo funciona con normalidad. Si de verdad tienes un problema con un depósito, envíanos aquí una captura de tu pago, con el monto y la fecha: nuestro equipo lo revisará y te responderá lo antes posible. Gracias por tu confianza 🙌',
+    'pt' => 'Obrigado pela tua mensagem 🙏 Recebemos. Na OROLADO, os depósitos e levantamentos são creditados automaticamente e está tudo a funcionar normalmente. Se tens mesmo um problema com um depósito, envia-nos aqui uma captura de ecrã do teu pagamento, com o valor e a data: a nossa equipa vai verificar e responder o mais rápido possível. Obrigado pela tua confiança 🙌',
+    'ar' => 'شكرًا على رسالتك 🙏 لقد استلمناها. في OROLADO تتم إضافة الإيداعات والسحوبات تلقائيًا وكل شيء يعمل بشكل طبيعي. إذا كانت لديك فعلًا مشكلة في إيداع، أرسل لنا هنا لقطة شاشة لعملية الدفع مع المبلغ والتاريخ: سيتحقق فريقنا ويرد عليك في أقرب وقت. شكرًا لثقتك 🙌',
+    'tr' => 'Mesajın için teşekkürler 🙏 Aldık. OROLADO\'da para yatırma ve çekme işlemleri otomatik olarak hesaba geçer ve her şey normal çalışıyor. Bir para yatırma işleminde gerçekten sorun yaşıyorsan, ödemenin ekran görüntüsünü tutar ve tarihle birlikte buradan gönder: ekibimiz kontrol edip en kısa sürede yanıtlayacak. Güvenin için teşekkürler 🙌',
+    'vi' => 'Cảm ơn tin nhắn của bạn 🙏 Chúng tôi đã nhận được. Trên OROLADO, nạp và rút tiền được cộng tự động và mọi thứ hoạt động bình thường. Nếu bạn thật sự gặp vấn đề với một khoản nạp, hãy gửi cho chúng tôi ảnh chụp màn hình thanh toán kèm số tiền và ngày tại đây: đội ngũ sẽ kiểm tra và trả lời sớm nhất. Cảm ơn sự tin tưởng của bạn 🙌',
+    'id' => 'Terima kasih atas pesanmu 🙏 Sudah kami terima. Di OROLADO, deposit dan penarikan dikreditkan otomatis dan semuanya berjalan normal. Jika kamu benar-benar mengalami masalah dengan deposit, kirimkan tangkapan layar pembayaranmu di sini, beserta jumlah dan tanggalnya: tim kami akan memeriksa dan membalas secepatnya. Terima kasih atas kepercayaanmu 🙌',
+    'ru' => 'Спасибо за сообщение 🙏 Мы его получили. На OROLADO пополнения и выводы зачисляются автоматически, и всё работает нормально. Если у тебя действительно проблема с пополнением, пришли сюда скриншот платежа с суммой и датой: наша команда проверит и ответит как можно скорее. Спасибо за доверие 🙌',
+    'de' => 'Danke für deine Nachricht 🙏 Sie ist angekommen. Bei OROLADO werden Ein- und Auszahlungen automatisch gutgeschrieben und alles funktioniert normal. Wenn du wirklich ein Problem mit einer Einzahlung hast, schick uns hier einen Screenshot deiner Zahlung mit Betrag und Datum: unser Team prüft es und antwortet so schnell wie möglich. Danke für dein Vertrauen 🙌',
+    'hi' => 'आपके संदेश के लिए धन्यवाद 🙏 हमें मिल गया है। OROLADO पर जमा और निकासी अपने आप क्रेडिट होती है और सब कुछ सामान्य रूप से काम कर रहा है। अगर आपको सच में किसी जमा में दिक्कत है, तो यहाँ अपने भुगतान का स्क्रीनशॉट रक़म और तारीख के साथ भेजें: हमारी टीम जाँच करके जल्द से जल्द जवाब देगी। आपके भरोसे के लिए धन्यवाद 🙌',
   ];
   $t = $txt[$lang] ?? $txt['en'];
   return live_update(live_thread_file($uid), function ($th) use ($t) {
