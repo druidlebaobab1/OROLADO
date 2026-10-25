@@ -444,7 +444,7 @@ function admin_badges(): array {
     if (admin_in_range($p['createdAt'] ?? null, $t0, $t1)) $signupToday++;
     if (admin_in_range($p['createdAt'] ?? null, $y0, $y1)) $signupYest++;
     $paid = (float) ($p['depositTotal'] ?? 0);
-    if ($paid <= 0) $noDep++;
+    if ($paid > 0) $noDep++; // 2026-10-25 (propriétaire) : la case compte maintenant les joueurs AVEC dépôt (clé « no_deposit » gardée)
     if ($paid > 0) {
       $ls = strtotime((string) ($p['lastSeen'] ?? '')) ?: 0;
       if ($ls < $cut7) $inactive++;
@@ -769,7 +769,8 @@ function admin_list_payload(string $view, array $req): array {
     } else if ($view === 'signup_yesterday') {
       $list = array_values(array_filter($people, static fn($p) => admin_in_range($p['createdAt'] ?? null, $y0, $y1)));
     } else if ($view === 'no_deposit') {
-      $list = array_values(array_filter($people, static fn($p) => (float) ($p['depositTotal'] ?? 0) <= 0));
+      $list = array_values(array_filter($people, static fn($p) => (float) ($p['depositTotal'] ?? 0) > 0)); // joueurs AVEC dépôt (2026-10-25)
+      usort($list, static fn($a, $b) => (float) ($b['depositTotal'] ?? 0) <=> (float) ($a['depositTotal'] ?? 0));
     } else if ($view === 'online') {
       $cut = time() - 90;
       $list = array_values(array_filter($people, static function ($p) use ($cut) {
@@ -2675,7 +2676,7 @@ $ADMIN_TABS = [
     ['signup_hour', 'Inscriptions par Heure'],
     ['signup_geo', 'Inscriptions par Pays / IP'],
     ['visits', 'Visites du Site'],
-    ['no_deposit', 'Joueurs Sans Dépôt'],
+    ['no_deposit', 'Joueurs Avec Dépôt'],
     ['signup_closed', 'Comptes suspendus / supprimés'],
   ],
   'gB' => [
