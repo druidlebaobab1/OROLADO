@@ -3302,6 +3302,12 @@ function sb_o_maybe_run(int $now = 0): ?array {
     @touch($at, $now);
     $sps = array_values(array_filter(array_keys(SB_O_SPORTS), 'sb_o_ok'));
     if (!$sps) return null;
+    // v3201 (propriétaire : « ajoute basket ») — le BASKET est prioritaire : il est servi en PREMIER à chaque passage tant
+    // qu'il a du travail et du budget, pour rester visible malgré le petit quota gratuit. Les autres sports passent ensuite.
+    if (in_array('basket', $sps, true)) {
+      $rb = sb_o_tick('basket', $now);
+      if (($rb['calls'] ?? 0) > 0) return ['sport' => 'basket'] + $rb;
+    }
     $rr = (int) (sb_state()['orr'] ?? 0);
     for ($i = 0; $i < count($sps); $i++) {
       $sp = $sps[($rr + $i) % count($sps)];
