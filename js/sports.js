@@ -1324,6 +1324,13 @@
       }
     } catch (e) { /* ignore */ }
   }
+  // 2026-10-25 (propriétaire : « en revenant, l'ancien nom est encore dans la recherche ») : on quitte un écran → sa recherche est vidée
+  function leaveQ(from, to) {
+    if (from === to) return;
+    if (topView(from) && !topView(to)) { qRaw = ''; sbQ = ''; qMem = -1; }
+    if (from === 'live') lvQ = '';
+    if (from === 'results') resQ = '';
+  }
   // changer d'écran (barre du bas, liens) ; la position de la liste est gardée pour le retour
   function go(v) {
     if (!box) return;
@@ -1333,6 +1340,7 @@
     if (mb) scrollMem[view] = mb.scrollTop;
     if (v === 'slip') { if (view !== 'slip') slipFrom = view; lastBet = null; lastBets = null; }
     navPush();
+    leaveQ(view, v);
     view = v; render();
     if (mb) mb.scrollTop = v === 'home' || v === 'live' || v === 'mine' ? (scrollMem[v] || 0) : (v === 'match' ? (scrollMem['m:' + sbMid] || 0) : 0);
     if (v === 'slip') sbAfterSlipOpen();
@@ -1384,6 +1392,7 @@
   async function paint(container, c) {
     box = container; ctx = c || {}; navStk = [];
     if (!box) return;
+    qRaw = ''; sbQ = ''; qMem = -1; lvQ = ''; resQ = ''; // Paris rouvert : recherches vides
     box.classList.add('sp2');
     if ((lastBet || lastBets) && view === 'slip') { lastBet = null; lastBets = null; view = slipFrom === 'slip' ? 'home' : slipFrom; }
     if (view === 'match' && !sbMid) view = 'home';
@@ -2249,7 +2258,7 @@
   function openMatch(fid) {
     var mb = mbox();
     if (view !== 'match' || sbMid !== fid) navPush();
-    if (view !== 'match') { matchFrom = view; if (mb) scrollMem[view] = mb.scrollTop; }
+    if (view !== 'match') { matchFrom = view; if (mb) scrollMem[view] = mb.scrollTop; leaveQ(view, 'match'); }
     sbMid = fid; sbM = null; mGrp = 'main'; trkTab = ''; view = 'match'; render();
     if (mb) mb.scrollTop = 0;
     loadMatch(fid, true);
