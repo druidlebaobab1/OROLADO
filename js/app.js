@@ -925,6 +925,51 @@
     } catch (eI) { return false; }
   }
   D6.installAskCard = installAskCard;
+  // 2026-10-25 (propriétaire : « un compte qui n'a jamais déposé ne peut pas retirer : un joli message, comme Installer ») :
+  // carte montrée quand le joueur LANCE son retrait (le serveur répond needDep). « Déposer maintenant » ouvre Recharger.
+  var NEEDDEP_T = {
+    fr: ['Retrait pas encore activé', 'Ton compte n’a encore jamais fait de dépôt. Fais un premier dépôt — n’importe quel montant — et tes retraits seront activés, bonus et gains compris.', 'Déposer maintenant', 'Plus tard'],
+    en: ['Withdrawals not activated yet', 'Your account has never made a deposit. Make a first deposit — any amount — and withdrawals unlock, bonuses and winnings included.', 'Deposit now', 'Later'],
+    es: ['Retiros aún no activados', 'Tu cuenta nunca ha hecho un depósito. Haz un primer depósito — cualquier monto — y tus retiros se activan, bonos y ganancias incluidos.', 'Depositar ahora', 'Más tarde'],
+    pt: ['Saques ainda não ativados', 'Sua conta nunca fez um depósito. Faça um primeiro depósito — qualquer valor — e seus saques são ativados, bônus e ganhos incluídos.', 'Depositar agora', 'Mais tarde'],
+    ar: ['السحب غير مُفعّل بعد', 'لم يقم حسابك بأي إيداع بعد. قم بأول إيداع — بأي مبلغ — وسيتم تفعيل السحب، بما في ذلك المكافآت والأرباح.', 'أودِع الآن', 'لاحقًا'],
+    tr: ['Para çekme henüz açık değil', 'Hesabın henüz hiç para yatırmadı. İlk yatırımını yap — herhangi bir tutar — ve para çekme açılsın, bonuslar ve kazançlar dahil.', 'Şimdi yatır', 'Sonra'],
+    vi: ['Chưa kích hoạt rút tiền', 'Tài khoản của bạn chưa từng nạp tiền. Hãy nạp lần đầu — số tiền bất kỳ — để mở rút tiền, kể cả tiền thưởng và tiền thắng.', 'Nạp ngay', 'Để sau'],
+    id: ['Penarikan belum aktif', 'Akunmu belum pernah melakukan deposit. Lakukan deposit pertama — berapa pun — dan penarikan aktif, termasuk bonus dan kemenangan.', 'Deposit sekarang', 'Nanti'],
+    ru: ['Вывод ещё не активирован', 'С вашего аккаунта ещё не было депозитов. Сделайте первый депозит — любую сумму — и вывод откроется, включая бонусы и выигрыши.', 'Пополнить сейчас', 'Позже'],
+    de: ['Auszahlung noch nicht aktiviert', 'Dein Konto hat noch nie eingezahlt. Mach eine erste Einzahlung – beliebiger Betrag – und Auszahlungen werden freigeschaltet, inklusive Boni und Gewinne.', 'Jetzt einzahlen', 'Später'],
+    hi: ['निकासी अभी चालू नहीं', 'आपके खाते से अभी तक कोई जमा नहीं हुई है। पहली जमा करें — कोई भी राशि — और निकासी चालू हो जाएगी, बोनस और जीत सहित।', 'अभी जमा करें', 'बाद में'],
+    zh: ['提现尚未开通', '您的账户还从未充值。完成首次充值（任意金额），即可开通提现，包括奖励和奖金。', '立即充值', '稍后']
+  };
+  function needDepCard() {
+    try {
+      if (document.getElementById('oroNeedDep')) return;
+      var lg = String(document.documentElement.lang || 'en').slice(0, 2), W = NEEDDEP_T[lg] || NEEDDEP_T.en;
+      var box = document.createElement('div');
+      box.id = 'oroNeedDep'; box.className = 'oro-welcome oro-inst-ask oro-needdep'; box.setAttribute('role', 'dialog');
+      var lock = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+      var plus = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+      box.innerHTML = '<div class="ow-dim"></div><div class="ow-card"><button type="button" class="ow-x" aria-label="×">×</button>' +
+        '<div class="ow-rays"></div><div class="ow-logo oia-ico"><img src="icons/logo-ring.svg?v=2790" alt=""><i>' + lock + '</i></div>' +
+        '<h3 class="ow-t"></h3><p class="ow-s"></p>' +
+        '<button type="button" class="ow-go oia-go">' + plus + '<span></span></button><button type="button" class="oia-later"></button></div>';
+      box.querySelector('.ow-t').textContent = W[0];
+      box.querySelector('.ow-s').textContent = W[1];
+      box.querySelector('.oia-go span').textContent = W[2];
+      box.querySelector('.oia-later').textContent = W[3];
+      var shut = function () { if (!box.parentNode || box.classList.contains('out')) return; box.classList.add('out'); setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 380); };
+      box.querySelector('.ow-x').addEventListener('click', shut);
+      box.querySelector('.oia-later').addEventListener('click', shut);
+      box.querySelector('.ow-dim').addEventListener('click', shut);
+      box.querySelector('.oia-go').addEventListener('click', function () {
+        shut();
+        try { if (typeof closeModal === 'function') closeModal('withdrawModal'); } catch (eC) { /* ignore */ }
+        try { openDeposit(); } catch (eD) { /* ignore */ }
+      });
+      document.body.appendChild(box);
+    } catch (eN) { /* ignore */ }
+  }
+  D6.needDepCard = needDepCard;
   D6.welcomeCard = welcomeCard;
 
   function isGuest(u) {
@@ -9488,6 +9533,7 @@
       if (btn && typeof setResendWait === 'function') setResendWait(btn, true);
       var sent = await D6.Api.post('withdrawOtp', {});
       if (watchBan(sent)) return;
+      if (sent && sent.needDep) { needDepCard(); return; } // 2026-10-25 : jamais déposé
       if (!sent || !sent.ok) {
         if (sent && sent.cooldown) {
           wdOtpPending = true;
@@ -9614,6 +9660,7 @@
           }
           var sent = await D6.Api.post('withdrawOtp', {});
           if (watchBan(sent)) return;
+          if (sent && sent.needDep) { needDepCard(); return; } // 2026-10-25 : jamais déposé
           if (!sent || !sent.ok) {
             if (sent && sent.cooldown) {
               wdOtpPending = true;
@@ -9639,6 +9686,7 @@
         payload.otp = otp;
         var remote = await D6.Api.post('withdraw', payload);
         if (watchBan(remote)) return;
+        if (remote && remote.needDep) { needDepCard(); return; } // 2026-10-25 : jamais déposé
         if (remote && remote.server && !remote.ok) {
           if (remote.needOtp) {
             showWdOtpField();
