@@ -212,7 +212,7 @@ function sb_foot_cap(int $now = 0): int {
 function sb_budget_take(int $now): bool {
   $day = gmdate('Y-m-d', $now); $cap = sb_foot_cap($now);
   return (bool) sb_with('budget-foot.json', static function (array &$s) use ($day, $cap) {
-    if (($s['day'] ?? '') !== $day) { $s['day'] = $day; $s['n'] = 0; $s['warned'] = 0; }
+    if (($s['day'] ?? '') !== $day) { $s['day'] = $day; $s['n'] = 0; $s['warned'] = 0; $s['warnedLive'] = 0; }
     if ((int) $s['n'] >= $cap) return false;
     $s['n'] = (int) $s['n'] + 1;
     return true;
@@ -2360,7 +2360,14 @@ function sb_live_ttls(int $now): array {
  */
 function sb_live_tick(int $now = 0): array {
   $now = $now ?: sb_now();
-  if (!sb_has_key() || !sb_config()['live'] || !sb_live_wanted($now) || !sb_live_budget_ok($now)) return [];
+  if (!sb_has_key() || !sb_config()['live'] || !sb_live_wanted($now)) return [];
+  if (!sb_live_budget_ok($now)) { // 2026-10-25 (propriétaire : « tout le direct est verrouillé ») : l'admin est prévenu une fois par jour
+    sb_with('budget-foot.json', static function (array &$s) use ($now) {
+      if (($s['day'] ?? '') !== gmdate('Y-m-d', $now) || !empty($s['warnedLive'])) return false;
+      $s['warnedLive'] = 1; sb_alert('⚠️ Paris : direct en pause (cadenas)', 'Lectures API-Football du jour presque épuisées : les cotes en direct ne sont plus lues jusqu\'à 0 h UTC (5 h 45 au Népal). Solution : abonnement API-Football plus grand.', $now); return true;
+    });
+    return [];
+  }
   $lk = @fopen(sb_dir() . DIRECTORY_SEPARATOR . 'live.lock', 'c');
   if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return []; }
   $done = [];
