@@ -1052,15 +1052,13 @@
         });
       });
       // ear (back side: thin dark-grey skin with fine fur, a pink edge on the outer rim); the right ear is the mirror
-      R.ew = s * 0.29; R.eh = s * 0.3; // v3195 : oreilles plus grandes (fiche du propriétaire)
+      R.ew = s * 0.24; R.eh = s * 0.26;
       R.ear = mkc(R.ew, R.eh, dpr, function (c, w, h) {
         var cx = w / 2, cy = h * 0.48, rx = w * 0.42, ry = h * 0.44;
-        // v3193 (fiche du propriétaire) : oreille ronde, bord de fourrure dorée, intérieur rose bien visible
-        var g0 = c.createRadialGradient(cx - w * 0.08, cy - h * 0.1, w * 0.02, cx, cy, rx * 1.05); g0.addColorStop(0, '#F0C48E'); g0.addColorStop(1, '#B9723A');
-        c.fillStyle = g0; c.beginPath(); c.ellipse(cx, cy, rx, ry, -0.15, 0, TAU); c.fill();
-        var g = c.createRadialGradient(cx - w * 0.04, cy - h * 0.06, w * 0.02, cx, cy + h * 0.02, rx * 0.8); g.addColorStop(0, '#FFD3DA'); g.addColorStop(0.55, '#F2A2B0'); g.addColorStop(1, '#D9798C');
-        c.fillStyle = g; c.beginPath(); c.ellipse(cx + w * 0.02, cy + h * 0.03, rx * 0.7, ry * 0.72, -0.15, 0, TAU); c.fill();
-        c.strokeStyle = 'rgba(255,240,235,.6)'; c.lineWidth = Math.max(0.8, w * 0.035); c.beginPath(); c.ellipse(cx + w * 0.02, cy + h * 0.03, rx * 0.62, ry * 0.64, -0.15, Math.PI * 1.1, Math.PI * 1.55); c.stroke();
+        c.fillStyle = '#E79AA5'; c.beginPath(); c.ellipse(cx - w * 0.04, cy, rx, ry, -0.2, 0, TAU); c.fill();
+        var g = c.createRadialGradient(cx + w * 0.05, cy - h * 0.12, w * 0.02, cx + w * 0.06, cy, rx * 1.1); g.addColorStop(0, '#B5866A'); g.addColorStop(0.6, '#8A5D45'); g.addColorStop(1, '#5A3A2A');
+        c.fillStyle = g; c.beginPath(); c.ellipse(cx + w * 0.04, cy + h * 0.02, rx * 0.92, ry * 0.95, -0.2, 0, TAU); c.fill();
+        c.strokeStyle = 'rgba(255,225,215,.45)'; c.lineWidth = Math.max(0.8, w * 0.04); c.beginPath(); c.ellipse(cx + w * 0.04, cy + h * 0.02, rx * 0.88, ry * 0.9, -0.2, Math.PI * 1.1, Math.PI * 1.6); c.stroke();
         c.fillStyle = 'rgba(214,150,84,.9)'; c.beginPath(); c.ellipse(cx + w * 0.04, h * 0.9, rx * 0.8, h * 0.14, 0, 0, TAU); c.fill(); // fur at the base
       });
       // v3107 (owner: "the feet are pink blobs stuck on the fur") — real hind legs: a short furry leg (darker golden-brown,
@@ -1138,36 +1136,19 @@
       var bh = 0.5 - 0.5 * Math.cos(a2 - 0.9), hyH = -s * 0.79 - bob - bh * 0.035 * s * amp * (crash ? 0 : 1), hxH = -sway * 0.5 - lean * 0.12 * s;
       for (i = -1; i <= 1; i += 2) {
         var er = i * (0.32 + 0.1 * Math.sin(a2 - 1.7) * amp + earK) ;
-        c.save(); c.translate(hxH + i * s * 0.21, hyH - s * 0.11); c.rotate(er); if (i > 0) c.scale(-1, 1); c.drawImage(R.ear, -R.ew / 2, -R.eh * 0.95, R.ew, R.eh); c.restore();
+        c.save(); c.translate(hxH + i * s * 0.2, hyH - s * 0.12); c.rotate(er); if (i > 0) c.scale(-1, 1); c.drawImage(R.ear, -R.ew / 2, -R.eh * 0.95, R.ew, R.eh); c.restore();
       }
-      c.save(); c.translate(hxH, hyH); c.scale(1 + sq * 0.5, 1 - sq * 0.5); c.drawImage(R.head, -R.hw / 2, -R.hh / 2, R.hw, R.hh);
-      // v3193 : les yeux se devinent sur les côtés de la tête (ronds, noirs, un éclat blanc), comme sur la fiche du propriétaire
-      for (i = -1; i <= 1; i += 2) {
-        var ex = i * s * 0.29, ey = s * 0.01, er2 = s * 0.055; // v3195 : yeux plus grands, plus « mignons »
-        c.fillStyle = '#1B0F0A'; c.beginPath(); c.ellipse(ex, ey, er2 * 0.8, er2, i * 0.25, 0, TAU); c.fill();
-        c.fillStyle = 'rgba(255,255,255,.9)'; c.beginPath(); c.arc(ex - i * er2 * 0.15, ey - er2 * 0.4, er2 * 0.3, 0, TAU); c.fill();
-      }
-      c.restore();
-      // v3193 : pattes avant (plus petites), ATTACHÉES au corps : un petit bras de fourrure qui part sous l'épaule et une main
-      // rose posée près du sol ; elles alternent (l'une monte quand l'autre appuie) pour équilibrer la foulée
-      if (!arms && !(crash && crash.t > 0.12)) {
-        for (i = -1; i <= 1; i += 2) {
-          var fq = (ph + (i > 0 ? 0 : 0.5) + 0.25) % 1, fl = Math.max(0, Math.sin(TAU * fq)) * 0.07 * s * amp;
-          var shX = i * s * 0.36, shY = -s * 0.36 - bob, pX = i * s * (0.42 + 0.02 * Math.sin(TAU * fq)), pY = -s * 0.03 - fl;
-          var dxA = pX - shX, dyA = pY - shY, La = Math.hypot(dxA, dyA);
-          c.save(); c.translate(shX, shY); c.rotate(Math.atan2(dyA, dxA) - Math.PI / 2); c.drawImage(R.leg, -R.lw2 * 0.32, 0, R.lw2 * 0.64, La); c.restore();
-          c.save(); c.translate(pX, pY); c.rotate(i * 0.35); c.drawImage(R.paw, -R.pw * 0.45, -R.ph * 0.55, R.pw * 0.9, R.ph * 0.9); c.restore();
-        }
-      }
+      c.save(); c.translate(hxH, hyH); c.scale(1 + sq * 0.5, 1 - sq * 0.5); c.drawImage(R.head, -R.hw / 2, -R.hh / 2, R.hw, R.hh); c.restore();
       // body (squash / stretch from the ground up)
       c.save(); c.translate(0, -bob); c.scale(sx, sy); c.drawImage(R.body, -R.bw / 2, -R.boy - s * 0.085, R.bw, R.bh); c.restore();
-      // v3195 : petite queue duveteuse (comme sur la fiche) qui frétille, + reflet de lumière sur le dos
-      var tx0 = Math.sin(a2) * 0.018 * s, ty0 = -s * 0.2 - bob * sy, tg2 = c.createRadialGradient(tx0 - s * 0.015, ty0 - s * 0.02, s * 0.005, tx0, ty0, s * 0.07);
-      tg2.addColorStop(0, '#F7E3C6'); tg2.addColorStop(0.6, '#DDB083'); tg2.addColorStop(1, 'rgba(190,130,70,0)');
-      c.fillStyle = tg2; c.beginPath(); c.ellipse(tx0, ty0, s * 0.07, s * 0.06, 0, 0, TAU); c.fill();
+      // v3198 (propriétaire) : léger reflet de lumière sur le dos (volume) ; pas d'yeux visibles de dos
       var hl2 = c.createRadialGradient(-s * 0.12, -s * 0.66 - bob, 0, -s * 0.12, -s * 0.66 - bob, s * 0.26);
-      hl2.addColorStop(0, 'rgba(255,240,210,.32)'); hl2.addColorStop(1, 'rgba(255,240,210,0)');
+      hl2.addColorStop(0, 'rgba(255,240,210,.22)'); hl2.addColorStop(1, 'rgba(255,240,210,0)');
       c.fillStyle = hl2; c.beginPath(); c.ellipse(-s * 0.12, -s * 0.66 - bob, s * 0.26, s * 0.18, -0.3, 0, TAU); c.fill();
+      // tiny tail
+      var tx0 = Math.sin(a2) * 0.01 * s, ty0 = -s * 0.19 - bob * sy;
+      c.fillStyle = '#E9C9A6'; c.beginPath(); c.ellipse(tx0, ty0, s * 0.045, s * 0.035, 0, 0, TAU); c.fill();
+      c.fillStyle = '#F2B9B4'; c.beginPath(); c.ellipse(tx0, ty0 + s * 0.012, s * 0.022, s * 0.016, 0, 0, TAU); c.fill();
       // hind legs (v3107): alternate — one foot planted under the body (moving back toward the camera as the body goes
       // forward), the other pushing off: heel rises, the sole turns to the camera, the foot lifts, then swings forward to land
       var fsp = crash ? Math.max(0.15, Math.exp(-crash.t * 1.5)) : 1;
@@ -1182,10 +1163,6 @@
         if (!crash && up < s * 0.02) { c.globalAlpha = 0.45; c.drawImage(R.shd, footX - s * 0.11, footY - s * 0.025, s * 0.22, s * 0.06); c.globalAlpha = 1; } // contact shadow
         var heelY = footY - (sole > 0.3 ? R.sh2 * 0.85 * sc : R.fth * 0.5 * sc), dxL = footX - hipX, dyL = heelY - hipY, Ll = Math.max(s * 0.05, Math.hypot(dxL, dyL));
         c.save(); c.translate(hipX, hipY); c.rotate(Math.atan2(dyL, dxL) - Math.PI / 2); c.drawImage(R.leg, -R.lw2 / 2 * sc, 0, R.lw2 * sc, Ll + s * 0.02); c.restore();
-        // v3193 : cuisse ronde et musclée qui bombe sur le côté du derrière quand la patte pousse
-        var th = 0.85 + 0.35 * (1 - back); c.save(); c.translate(hipX + i * s * 0.05, hipY + s * 0.02); c.scale(th, th);
-        var tg = c.createRadialGradient(-i * s * 0.03, -s * 0.05, s * 0.01, 0, 0, s * 0.16); tg.addColorStop(0, 'rgba(236,186,126,.7)'); tg.addColorStop(0.6, 'rgba(206,140,76,.45)'); tg.addColorStop(1, 'rgba(176,104,46,0)');
-        c.fillStyle = tg; c.beginPath(); c.ellipse(0, 0, s * 0.15, s * 0.13, 0, 0, TAU); c.fill(); c.restore();
         c.save(); c.translate(footX, footY); c.rotate(i * 0.08);
         if (sole < 1) { c.globalAlpha = 1 - sole; c.drawImage(R.ftop, -R.ftw * sc / 2, -R.fth * sc, R.ftw * sc, R.fth * sc); }
         if (sole > 0) { c.globalAlpha = Math.min(1, sole * 1.6); var shh = R.sh2 * sc * (0.55 + 0.45 * sole); c.drawImage(R.sole, -R.sw2 * sc / 2, -shh, R.sw2 * sc, shh); }
