@@ -1106,8 +1106,8 @@
     // one frame of the hamster at ground point (x, gy): run cycle / cash-out hops / stumble and fall
     function drawHam(c, x, gy) {
       var s = hamW(), R = HR, ph = cyc % 1, a2 = 4 * Math.PI * ph, amp = 0.75 + 0.6 * clamp((spd - 0.3) / 0.6, 0, 1);
-      var b = 0.5 - 0.5 * Math.cos(a2), bob = b * 0.06 * s * amp, sq = (0.5 - b) * 0.08 * amp, sx = 1 + sq, sy = 1 - sq;
-      var sway = Math.sin(TAU * ph) * 0.022 * s * amp, roll = Math.sin(TAU * ph) * 0.045 * amp + lean, hop = 0, mv = lane - lx0, lk = mv ? clamp((hx - lx0) / mv, 0, 1) : 1;
+      var b = 0.5 - 0.5 * Math.cos(a2), bob = b * 0.085 * s * amp, sq = (0.5 - b) * 0.1 * amp, sx = 1 + sq, sy = 1 - sq;
+      var sway = Math.sin(TAU * ph) * 0.03 * s * amp, roll = Math.sin(TAU * ph) * 0.06 * amp + lean, hop = 0, mv = lane - lx0, lk = mv ? clamp((hx - lx0) / mv, 0, 1) : 1;
       hop += Math.sin(Math.PI * lk) * 0.07 * s * (mv ? 1 : 0);
       var arms = 0, pivot = 0, earK = 0;
       if (won && !crash) { var wk = won < 1.7 ? Math.abs(Math.sin(won * Math.PI * 2.1)) : 0; hop += wk * 0.34 * s; arms = won < 1.9 ? 1 : 0; sq = wk < 0.15 && won < 1.7 ? 0.08 : -0.03 * wk; sx = 1 + sq; sy = 1 - sq; earK = 0.25; }
@@ -1128,12 +1128,12 @@
       for (i = -1; i <= 1; i += 2) {
         fp = (ph + (i > 0 ? 0.5 : 0) + 0.25) % 1; var reach = Math.sin(TAU * fp);
         if (arms) { fx = i * s * 0.5; fy = -s * (0.92 + 0.06 * Math.sin(won * 18 + i)); c.save(); c.translate(fx, fy); c.rotate(i * 0.3); c.drawImage(R.paw, -R.pw / 2, -R.ph / 2, R.pw, R.ph); c.restore(); continue; }
-        if (reach < 0.15) continue; // v3107: seen only while reaching forward, at the sides
+        continue; // v3192 : pendant la course, les pattes avant restent cachées sous la poitrine (elles flottaient sur les côtés)
         fx = i * s * (0.43 + 0.06 * reach); fy = -s * (0.1 + 0.06 * reach) - bob * 0.5;
         c.globalAlpha = Math.min(1, (reach - 0.15) * 3); c.save(); c.translate(fx, fy); c.rotate(i * (0.6 + 0.3 * reach)); c.drawImage(R.paw, -R.pw / 2, -R.ph / 2, R.pw * 0.9, R.ph * 0.9); c.restore(); c.globalAlpha = 1;
       }
       // head, lagging the body's bob a little; ears spring behind it
-      var bh = 0.5 - 0.5 * Math.cos(a2 - 0.9), hyH = -s * 0.85 - bob - bh * 0.035 * s * amp * (crash ? 0 : 1), hxH = -sway * 0.5 - lean * 0.12 * s;
+      var bh = 0.5 - 0.5 * Math.cos(a2 - 0.9), hyH = -s * 0.79 - bob - bh * 0.035 * s * amp * (crash ? 0 : 1), hxH = -sway * 0.5 - lean * 0.12 * s;
       for (i = -1; i <= 1; i += 2) {
         var er = i * (0.32 + 0.1 * Math.sin(a2 - 1.7) * amp + earK) ;
         c.save(); c.translate(hxH + i * s * 0.2, hyH - s * 0.12); c.rotate(er); if (i > 0) c.scale(-1, 1); c.drawImage(R.ear, -R.ew / 2, -R.eh * 0.95, R.ew, R.eh); c.restore();
@@ -1152,10 +1152,10 @@
         fp = (ph + (i > 0 ? 0.5 : 0)) % 1;
         var up, sole, back;
         if (fp < 0.55) { fk = fp / 0.55; up = 0; back = fk; sole = fk > 0.7 ? (fk - 0.7) / 0.3 * 0.7 : 0; }
-        else { fk = (fp - 0.55) / 0.45; up = Math.sin(Math.PI * Math.min(1, fk * 1.1)) * 0.075 * s * amp; back = 1 - fk; sole = fk < 0.6 ? 0.7 + 0.3 * Math.sin(fk / 0.6 * Math.PI) : (1 - fk) / 0.4 * 0.7; }
+        else { fk = (fp - 0.55) / 0.45; up = Math.sin(Math.PI * Math.min(1, fk * 1.1)) * 0.13 * s * amp; back = 1 - fk; sole = fk < 0.6 ? 0.7 + 0.3 * Math.sin(fk / 0.6 * Math.PI) : (1 - fk) / 0.4 * 0.7; }
         if (crash && crash.t > 0.12) { up = (0.1 + 0.06 * Math.sin(cyc * TAU * 2 + i)) * s * fsp; sole = 1; back = 0.5; }
         if (won && arms) { up *= 0.5; }
-        var sc = 0.9 + 0.2 * back, footX = i * s * (0.2 + 0.02 * back), footY = -up + s * 0.035 * back, hipX = i * s * 0.16, hipY = -s * 0.15 - bob;
+        var sc = 1.15 + 0.3 * back, footX = i * s * (0.21 + 0.03 * back), footY = -up + s * 0.05 * back, hipX = i * s * 0.17, hipY = -s * 0.17 - bob;
         if (!crash && up < s * 0.02) { c.globalAlpha = 0.45; c.drawImage(R.shd, footX - s * 0.11, footY - s * 0.025, s * 0.22, s * 0.06); c.globalAlpha = 1; } // contact shadow
         var heelY = footY - (sole > 0.3 ? R.sh2 * 0.85 * sc : R.fth * 0.5 * sc), dxL = footX - hipX, dyL = heelY - hipY, Ll = Math.max(s * 0.05, Math.hypot(dxL, dyL));
         c.save(); c.translate(hipX, hipY); c.rotate(Math.atan2(dyL, dxL) - Math.PI / 2); c.drawImage(R.leg, -R.lw2 / 2 * sc, 0, R.lw2 * sc, Ll + s * 0.02); c.restore();
@@ -1292,7 +1292,7 @@
         var i, z, p, n = A.lite ? 7 : 12, tr = (ny - hy) * 1.0, cyN = ny - tr * 0.55, cx = W / 2;
         function cy(pp) { return hy + (cyN - hy) * pp; }
         // camera: a touch of zoom (wider "FOV" feel) and a light tremble as the run gets fast; a soft step bob
-        var hs = clamp((sfx - 0.2) / 0.8, 0, 1), zm = 1 + 0.05 * hs, jx = (Math.sin(t * 37) + Math.sin(t * 23.3)) * 0.6 * hs * hs, jy = (Math.sin(t * 41.7) + Math.cos(t * 29.1)) * 0.5 * hs * hs + (crash ? 0 : (0.5 - 0.5 * Math.cos(4 * Math.PI * (cyc % 1))) * 1.2 * (0.4 + hs));
+        var hs = clamp((sfx - 0.2) / 0.8, 0, 1), zm = 1 + 0.05 * hs, jx = 0, jy = 0; // v3192 (propriétaire : « pas stable ») : caméra fixe, plus de tremblement ni de rebond du décor
         c.save(); c.translate(cx, hy); c.scale(zm, zm); c.translate(-cx + jx, -hy + jy);
         // tube segments, far → near: translucent coloured plastic, a bright connector ring, a glossy highlight
         for (i = 0; i < n + 2; i++) {
