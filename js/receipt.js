@@ -793,7 +793,7 @@
     var d = new Date((bt.at || 0) * 1000), pad = function (v) { return (v < 10 ? '0' : '') + v; };
     var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     var TR = [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], bt.code ? [x.betCode || 'Code', String(bt.code)] : [x.rcNo, no]]; // 2026-10-23 : « Code de pari » à la place du n°
-    if (bt.bst) TR.splice(2, 0, [(x.bstL || 'Bonus') + ' +' + Math.round(bt.bst * 10) / 10 + ' %', st === 'won' ? '+' + n2(bt.bw) + ' $' : st === 'open' ? '+' + n2(Math.max(0, bt.pot - Math.floor(bt.stake * bt.odd * 100 + 1e-6) / 100)) + ' $' : '—']);
+    if (bt.bst) TR.splice(2, 0, [(x.bstL || 'Bonus'), st === 'won' ? '+' + n2(bt.bw) + ' $' : st === 'open' ? '+' + n2(Math.max(0, bt.pot - Math.floor(bt.stake * bt.odd * 100 + 1e-6) / 100)) + ' $' : '—']);
     var iPot = bt.bst ? 3 : 2, iNo = TR.length - 1;
     TR.forEach(function (r, i) {
       var y = totTop + i * totRow + totRow / 2;

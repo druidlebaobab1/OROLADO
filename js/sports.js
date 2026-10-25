@@ -654,7 +654,7 @@
         return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b></span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>' + m2(bt.stake) + ' $</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
-      (bt.bst ? '<p class="bst"><span>' + esc(NX().bstL + ' ' + pctTx(bt.bst)) + '</span><b>' + (st === 'won' ? '+' + m2(bt.bw || 0) + ' $' : st === 'open' ? '+' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + ' $' : '—') + '</b></p>' : '') +
+      (bt.bst ? '<p class="bst"><span>' + esc(NX().bstL) + '</span><b>' + (st === 'won' ? '+' + m2(bt.bw || 0) + ' $' : st === 'open' ? '+' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + ' $' : '—') + '</b></p>' : '') +
       '<p><span>' + esc(x.potL) + '</span><b>' + m2(bt.pot) + ' $</b></p><p><span>' + esc(x.rcDate) + '</span><b>' + dt + '</b></p>' +
       // 2026-10-23 (propriétaire) : « Code de pari » à la place du numéro (on le copie pour rejouer le coupon) ; le numéro en tout petit en bas
       (bt.code ? '<p class="code"><span>' + esc(NX().betCode) + '</span><b class="mono">' + esc(bt.code) + '</b></p>' : '<p><span>' + esc(x.rcNo) + '</span><b class="mono">' + esc(no) + '</b></p>') + '</div>' +
@@ -872,7 +872,7 @@
   function bstBanner(pct, amt, cls) {
     var n = NX();
     if (!(pct > 0)) return '<div class="pz-bstb hint"><span class="pz-bstb-i">' + GIFT + '</span><span class="pz-bstb-t"><small dir="auto">' + esc(n.bstH) + '</small></span></div>';
-    return '<div class="pz-bstb' + (cls ? ' ' + cls : '') + '"><span class="pz-bstb-i">' + GIFT + '</span><span class="pz-bstb-t"><b dir="auto">' + esc(n.bstL + ' ' + pctTx(pct)) + '</b><small dir="auto">' + esc((cls === 'lost' ? '' : '+' + money(amt) + ' ') + n.bstAdd) + '</small></span><em dir="ltr">' + (cls === 'lost' ? '—' : '+' + money(amt)) + '</em></div>';
+    return '<div class="pz-bstb' + (cls ? ' ' + cls : '') + '"><span class="pz-bstb-i">' + GIFT + '</span><span class="pz-bstb-t"><b dir="auto">' + esc(n.bstL) + '</b><small dir="auto">' + esc((cls === 'lost' ? '' : '+' + money(amt) + ' ') + n.bstAdd) + '</small></span><em dir="ltr">' + (cls === 'lost' ? '—' : '+' + money(amt)) + '</em></div>';
   }
   function pctTx(p) { return '+' + (Math.round(p * 10) / 10).toLocaleString(lg() === 'fr' ? 'fr-FR' : 'en-US') + ' %'; }
   /* 2026-10-22 (propriétaire : « sur iPhone la petite roue a l'air figée, les joueurs touchent encore ») — pendant l'envoi,
@@ -3037,7 +3037,7 @@
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + (delSel[id] ? ' pz-dchk' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' + '<i class="pz-dck" aria-hidden="true"></i>' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
-          '<span class="pz-b1"><em class="sp2-pill">' + esc(ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + (bt.bst ? '<i class="pz-bbst" dir="ltr">' + esc(pctTx(bt.bst)) + '</i>' : '') + (st === 'open' && bt.sel.some(function (s) { return Array.isArray(s.cs); }) ? '<i class="pz-blv"><i></i>' + esc(n.live) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
+          '<span class="pz-b1"><em class="sp2-pill">' + esc(ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + (bt.bst ? '<i class="pz-bbst" aria-label="' + esc(NX().bstL) + '">🎁</i>' : '') + (st === 'open' && bt.sel.some(function (s) { return Array.isArray(s.cs); }) ? '<i class="pz-blv"><i></i>' + esc(n.live) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
           (on ? '' : '<span class="pz-bsel">' + sels + '</span>') +
           '<span class="sp2-bf"><span><small class="fit">' + esc(x.stakeL) + '</small><b class="fit">' + money(bt.stake) + '</b></span><span><small class="fit">' + esc(x.oddL) + '</small><b class="fit">' + Number(bt.odd).toFixed(2) + '</b></span>' +
           '<span class="big"><small class="fit">' + esc(lab) + '</small><b class="fit">' + big + '</b></span><i class="sp2-chev">' + IC.back + '</i></span></button>' +
