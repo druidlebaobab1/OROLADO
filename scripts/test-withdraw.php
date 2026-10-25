@@ -99,6 +99,11 @@ save_db(orolado_data_file(), $db);
 $setBank(['c' => [$sb => 10000]]);
 $wd = fn(float $amt) => ['action' => 'withdraw', 'token' => 'tokW', 'otp' => '123456', 'amount' => $amt, 'operator' => 'wave', 'destination' => '0700000000', 'beneficiary' => 'Test Retrait', 'countryCode' => '+225'];
 
+echo "0) Jamais déposé : aucun retrait (2026-10-25, cadeaux / bonus / tournois)\n";
+$r = $call($wd(10));
+check('jamais déposé : retrait refusé, « fais d’abord un dépôt »', empty($r['ok']) && !empty($r['needDep']), (string) ($r['reason'] ?? json_encode($r)));
+check('… caisse intacte (100 $)', (($bank()['c'][$sb] ?? 0) === 10000));
+with_db_lock(function ($box) { $box->db['deposits'][] = ['id' => 'oro_wd_dep1', 'ref' => 'oro_wd_dep1', 'userId' => 'u_legacy', 'amount' => 1, 'status' => 'COMPLETED', 'operator' => 'flutterwave']; return ['ok' => true]; });
 echo "1) Plus de fabrication d'argent\n";
 $r = $call($wd(4000));
 check('retrait de 4 000 $ refusé (la vraie caisse n’a que 100 $, le fichier en annonçait 5 000)', empty($r['ok']) && ($r['reason'] ?? '') === 'Solde insuffisant', (string) ($r['reason'] ?? json_encode($r)));

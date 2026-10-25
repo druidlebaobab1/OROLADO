@@ -2057,6 +2057,8 @@ if ($action === 'withdrawOtp') {
   $freshOtp = (isset($db['users'][$uid]) && is_array($db['users'][$uid]))
     ? array_merge(is_array($me) ? $me : [], $db['users'][$uid])
     : $me;
+  $wdDep = function_exists('orolado_wd_need_deposit_msg') ? orolado_wd_need_deposit_msg($db, $uid, is_array($freshOtp) ? $freshOtp : []) : '';
+  if ($wdDep !== '') { echo json_encode(['ok' => false, 'server' => true, 'needDep' => true, 'reason' => $wdDep], JSON_UNESCAPED_UNICODE); exit; } // 2026-10-25 : jamais déposé → pas de retrait
   $otpBal = function_exists('orolado_official_real') ? orolado_official_real($db, $uid) : null;
   $wagerOtp = function_exists('orolado_wager_check')
     ? orolado_wager_check($db, is_array($freshOtp) ? $freshOtp : [], $otpBal)
@@ -2231,6 +2233,9 @@ if ($action === 'withdraw') {
     echo json_encode(orolado_block_payload('suspended'));
     exit;
   }
+  $wdUser = (isset($db['users'][$uidOtp]) && is_array($db['users'][$uidOtp])) ? array_merge($me, $db['users'][$uidOtp]) : $me;
+  $wdDep = function_exists('orolado_wd_need_deposit_msg') ? orolado_wd_need_deposit_msg($db, $uidOtp, is_array($wdUser) ? $wdUser : []) : '';
+  if ($wdDep !== '') { echo json_encode(['ok' => false, 'server' => true, 'needDep' => true, 'reason' => $wdDep], JSON_UNESCAPED_UNICODE); exit; } // 2026-10-25 : jamais déposé → pas de retrait
   // v2486 (accord du propriétaire) : on ne signale plus un simple GAGNANT (retrait plus grand que le total misé :
   // normal quand on gagne). Reste signalé : aucun trade réel du tout, SAUF si le retrait est couvert par l'argent
   // d'invitation (libre, retirable sans jouer). La règle « jouer ×2 les dépôts » ne change pas.
