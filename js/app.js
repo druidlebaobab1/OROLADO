@@ -5625,11 +5625,12 @@
     '<i class="pl-logo pl-telecel">telecel</i>' +
     // 1Voucher : logo actuel (carré orange avec « 1 » blanc + « Voucher » orange).
     '<i class="pl-logo pl-1voucher"><b>1</b>Voucher</i>' +
-    // 2026-10-25 (propriétaire) : une rangée Amérique latine (SPEI, PIX, Nequi, Yape, Mercado Pago). Visible seulement
+    // 2026-10-25 (propriétaire) : une rangée Amérique latine (Pago Móvil, Nequi, SPEI, Yape, Mercado Pago). Visible seulement
     // quand le dépôt Amérique latine est ouvert (html.oro-latam ; pour l'instant le compte admin).
-    '<i class="pl-logo pl-la pl-spei">SPEI</i>' +
-    '<i class="pl-logo pl-la pl-pix"><b></b>pix</i>' +
+    // Ordre : Venezuela (Pago Móvil), Colombie (Nequi), Mexique (SPEI) d'abord.
+    '<i class="pl-logo pl-la pl-pmovil"><b>Pago</b>Móvil</i>' +
     '<i class="pl-logo pl-la pl-nequi">Nequi</i>' +
+    '<i class="pl-logo pl-la pl-spei">SPEI</i>' +
     '<i class="pl-logo pl-la pl-yape">yape</i>' +
     '<i class="pl-logo pl-la pl-mpago"><b>Mercado</b>Pago</i>';
   function paintPayLocal() {
@@ -7014,7 +7015,7 @@
     if (latamScript) return latamScript;
     latamScript = new Promise(function (resolve) {
       var s = document.createElement('script');
-      s.src = 'js/latam.js?v=3189';
+      s.src = 'js/latam.js?v=3190';
       s.onload = function () { resolve(!!D6.Latam); };
       s.onerror = function () { latamScript = null; resolve(false); };
       document.head.appendChild(s);

@@ -12,19 +12,26 @@
     G: { name: 'Guardarian', url: 'https://guardarian.com/buy-usdt', host: 'guardarian.com' },
     E: { name: 'El Dorado', url: 'https://app.eldorado.io/', host: 'app.eldorado.io' }
   };
+  // 2026-10-25 (propriétaire) : Venezuela, Colombie, Mexique en tête (là où s'inscrivent le plus de joueurs).
   var C = {
-    MX: { n: 'México', s: 'G', pays: ['SPEI', 'Tarjeta', 'Apple Pay'], m: 'SPEI', cur: 'MXN', spei: 1 },
+    VE: { n: 'Venezuela', s: 'E', pays: ['Pago Móvil', 'Zinli', 'Banco'], m: 'Pago Móvil', cur: 'VES', id: 'cédula' },
     CO: { n: 'Colombia', s: 'E', pays: ['Nequi', 'Bancolombia', 'Daviplata'], m: 'Nequi', cur: 'COP', id: 'cédula' },
+    MX: { n: 'México', s: 'G', pays: ['SPEI', 'Tarjeta', 'Apple Pay'], m: 'SPEI', cur: 'MXN', spei: 1 },
     PE: { n: 'Perú', s: 'E', pays: ['Yape', 'Plin', 'BCP'], m: 'Yape', cur: 'PEN', id: 'DNI' },
     AR: { n: 'Argentina', s: 'E', pays: ['Mercado Pago', 'Ualá', 'CVU'], m: 'Mercado Pago', cur: 'ARS', id: 'DNI' },
-    VE: { n: 'Venezuela', s: 'E', pays: ['Pago Móvil', 'Zinli', 'Banco'], m: 'Pago Móvil', cur: 'VES', id: 'cédula' },
+    EC: { n: 'Ecuador', s: 'G', card: 1 },
+    CL: { n: 'Chile', s: 'G', card: 1 },
     BO: { n: 'Bolivia', s: 'E', pays: ['QR', 'Tigo Money', 'Banco'], m: 'QR', cur: 'BOB', id: 'CI' },
-    PY: { n: 'Paraguay', s: 'E', pays: ['Transferencia', 'Tigo Money'], m: 'Transferencia', cur: 'PYG', id: 'CI' },
     DO: { n: 'Rep. Dominicana', s: 'E', pays: ['Transferencia', 'Banreservas'], m: 'Transferencia', cur: 'DOP', id: 'cédula' },
+    PY: { n: 'Paraguay', s: 'E', pays: ['Transferencia', 'Tigo Money'], m: 'Transferencia', cur: 'PYG', id: 'CI' },
     BR: { n: 'Brasil', s: 'E', pays: ['PIX', 'Nubank', 'Banco'], m: 'PIX', cur: 'BRL', id: 'CPF' },
-    CL: { n: 'Chile', s: 'G', card: 1 }, EC: { n: 'Ecuador', s: 'G', card: 1 }, GT: { n: 'Guatemala', s: 'G', card: 1 },
-    CR: { n: 'Costa Rica', s: 'G', card: 1 }, HN: { n: 'Honduras', s: 'G', card: 1 }, SV: { n: 'El Salvador', s: 'G', card: 1 },
-    NI: { n: 'Nicaragua', s: 'G', card: 1 }, PA: { n: 'Panamá', s: 'G', card: 1 }, UY: { n: 'Uruguay', s: 'G', card: 1 }
+    GT: { n: 'Guatemala', s: 'G', card: 1 },
+    CR: { n: 'Costa Rica', s: 'G', card: 1 },
+    HN: { n: 'Honduras', s: 'G', card: 1 },
+    SV: { n: 'El Salvador', s: 'G', card: 1 },
+    NI: { n: 'Nicaragua', s: 'G', card: 1 },
+    PA: { n: 'Panamá', s: 'G', card: 1 },
+    UY: { n: 'Uruguay', s: 'G', card: 1 }
   };
   Object.keys(C).forEach(function (k) {
     var c = C[k];
@@ -562,7 +569,8 @@
     '#oroLatam .la-prog i.run::after{content:"";position:absolute;inset:0;background:#F59E0B;transform-origin:left;animation:laBar var(--d,5s) linear forwards}' +
     '@keyframes laBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}' +
     '#oroLatam .la-gs{font-size:12px;color:#F59E0B;font-weight:800;letter-spacing:.04em;text-transform:uppercase}' +
-    '#oroLatam .la-gt{margin:0;font-size:18px;line-height:1.25}' +
+    '#oroLatam .la-gt{margin:0;font-size:18px;line-height:1.25;display:flex;align-items:center;gap:10px}' +
+    '#oroLatam .la-ico{flex:0 0 auto;font-size:30px;line-height:1}' +
     '#oroLatam .la-gp{margin:0;font-size:13.5px;color:#cbd5e1;line-height:1.45}' +
     '#oroLatam .la-gp b{color:#F8FAFC}' +
     '#oroLatam .la-tip{background:rgba(245,158,11,.12);border-radius:8px;padding:7px 10px;font-size:12.5px;line-height:1.4;color:#fde68a}' +
@@ -703,12 +711,13 @@
     return head(SITES[c.s].name + ' · ' + flag(st.cc), true) + '<div class="la-bd">' +
       '<div class="la-prog">' + prog + '</div>' +
       '<div class="la-gs">' + fill(t.step, { i: i + 1, n: arr.length }) + '</div>' +
-      '<div class="la-vcap"><h3 class="la-gt">' + fill(s[0], d) + '</h3></div>' +
+      '<div class="la-vcap"><h3 class="la-gt"><span class="la-ico">' + ICO[c.s][i] + '</span>' + fill(s[0], d) + '</h3></div>' +
       '<p class="la-gp">' + fill(s[1], d) + '</p>' +
       '<div class="la-ph">' + phone(i, demo) + '</div>' +
       '<div class="la-tip">💡 ' + fill(s[2], d) + '</div>' + nav + '</div>';
   }
 
+  var ICO = { G: ['👆', '💵', '✉️', '📋', '🏦', '✅'], E: ['🪪', '🔄', '🙋', '💸', '📤', '✅'] };
   var DEMO_MS = 5000;
   function demoTick() {
     clearTimeout(st.demoT);
