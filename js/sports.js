@@ -653,7 +653,7 @@
       return;
     }
     var md = mode(), each = false, odd = totalOdd();
-    var expl = '<div class="sp2-type-t sp2-expl">' + linesHtml(cap1(md === 'combo' ? x.combo : slip.length > 1 ? x.singleN : x.singleX), 'span', 40) + '</div>';
+    var expl = '<div class="sp2-type-t sp2-expl">' + linesHtml(cap1(md === 'combo' ? x.combo : slip.length > 1 ? x.singleN : x.singleX), 'span', 64) + '</div>'; // 2026-10-25 : sur une ligne (coupon plus court)
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
       var e = z.sb ? null : evById(z.ev), st = stOf(z);
       return '<div class="sp2-sel' + (z.closed || z.susp ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><div class="sp2-sel-r"><span class="sp2-sel-ic">' + sico(z.sb ? spIco(spOf(z)) : e ? qKind(e) : 'autre') + '</span>' +
@@ -678,14 +678,14 @@
       '<button type="button" class="sp2-place' + (ctx.guest ? ' guest' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? guestBtn || x.guestBtn : each ? fmt(x.placeN, { n: slip.length }) : x.placeB) + '</span>' +
         '</button>' + // propriétaire : « Placer le pari » seul, sans le montant dans le bouton
       '<p class="sp2-min"><span class="fit">' + esc(x.minNote) + '</span></p></div>';
-    var cb = sbOn ? codeBox(false) : '';
+    var cb = sbOn !== false ? codeBox(false) : ''; // 2026-10-25 : coupon ouvert par un lien (sbOn pas encore connu) → code et « Télécharger » aussi
     // 2026-10-23 (propriétaire) : « Charger un code de pari » (souligné) à gauche, « Télécharger » à droite = créer le code de ce coupon
     shell('<div class="sp2-page sp2-slip ' + md + '">' + slipHead() + expl + list +
       (sbOn !== false ? '<div class="pz-cbar"><button type="button" class="pz-cload" id="pzCLoad" aria-expanded="false"><span dir="auto">' + esc(NX().loadBC) + '</span></button>' +
-        (sbOn ? '<button type="button" class="pz-cdl" id="sbShare">' + DLIC + '<span dir="auto">' + esc(NX().dlCode) + '</span></button>' : '') + '</div>' +
+        (sbOn !== false ? '<button type="button" class="pz-cdl" id="sbShare">' + DLIC + '<span dir="auto">' + esc(NX().dlCode) + '</span></button>' : '') + '</div>' +
         '<div class="pz-cin" id="pzCIn" hidden>' + codeRow() + '</div>' : '') +
       '<div class="sb-code" id="sbCode">' + cb + '</div>' + stk + '</div>');
-    slipTop(); fitAll(box); startTick(); if (sbOn) bindCodeBox(); bindCodeRow(box);
+    slipTop(); fitAll(box); startTick(); if (sbOn !== false) bindCodeBox(); bindCodeRow(box);
     if ($('pzCLoad')) $('pzCLoad').addEventListener('click', function () { var ci = $('pzCIn'), on = ci.hidden; ci.hidden = !on; this.setAttribute('aria-expanded', String(on)); if (on) { var ip = $('sbCodeIn'); if (ip) ip.focus(); } });
     slip.forEach(function (z) { z.chg = false; z.prev = 0; });
     $('spCpClear').addEventListener('click', function () {
