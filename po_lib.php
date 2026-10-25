@@ -41,8 +41,8 @@ function po_send(string $title, string $body, string $url = '/admin.php', ?int $
   $c = po_cfg(); $prio = $prio ?? po_prio($title);
   $f = ['token' => $c['token'], 'user' => $c['user'], 'title' => mb_substr($title, 0, 250), 'message' => mb_substr($body !== '' ? $body : $title, 0, 1000),
     'url' => 'https://orolado.com' . ($url !== '' && $url[0] === '/' ? $url : '/admin.php'), 'url_title' => 'Ouvrir l’admin', 'priority' => (string) $prio,
-    'sound' => $prio >= 2 ? 'siren' : ($prio === 1 ? 'cashregister' : 'pushover')];
-  if ($prio >= 2) { $f['retry'] = '30'; $f['expire'] = '3600'; }
+    'sound' => $prio >= 2 ? PO_ALARM_SOUND : ($prio === 1 ? 'cashregister' : 'pushover')];
+  if ($prio >= 2) { $f['retry'] = '30'; $f['expire'] = (string) PO_EXPIRE; }
   if (isset($GLOBALS['PO_FAKE']) && is_callable($GLOBALS['PO_FAKE'])) return ($GLOBALS['PO_FAKE'])($f);
   $ok = false; $why = '';
   if (function_exists('curl_init')) {
@@ -51,9 +51,49 @@ function po_send(string $title, string $body, string $url = '/admin.php', ?int $
     $raw = (string) curl_exec($ch); $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
     $j = json_decode($raw, true);
     $ok = $code === 200 && (int) ($j['status'] ?? 0) === 1;
+    if ($ok && $prio >= 2 && !empty($j['receipt'])) po_pend_add((string) $j['receipt'], $title, (string) $f['message'], $url);
     if (!$ok) $why = is_array($j) && !empty($j['errors']) ? implode(' · ', array_map('strval', (array) $j['errors'])) : ('HTTP ' . $code);
   } else $why = 'curl absent';
   $c2 = po_cfg(); $c2['last'] = ['at' => time(), 'ok' => $ok, 'why' => $why, 't' => mb_substr($title, 0, 80)];
   @file_put_contents(po_file(), json_encode($c2, JSON_UNESCAPED_UNICODE));
   return ['ok' => $ok, 'why' => $why];
+}
+
+/* 2026-10-25 (propriétaire : « 1 h ne suffit pas, je dors 6 à 8 h ; un son plus long, plusieurs bips ») — son long
+   « Alien Alarm » (plusieurs bips d'affilée) ; Pushover arrête une alarme au bout de 3 h au plus → si personne n'a touché
+   « Acknowledge », le site la RELANCE (jusqu'à 9 h après la demande). Vérifié après les requêtes du site (au plus toutes les 5 min). */
+const PO_ALARM_SOUND = 'alien';
+const PO_EXPIRE = 10800;       // 3 h : maximum permis par Pushover
+const PO_KEEP = 32400;         // relances pendant 9 h
+function po_pend_file(): string { return dirname(po_file()) . '/pushover_pend.json'; }
+function po_pend_read(): array { $j = json_decode((string) @file_get_contents(po_pend_file()), true); return is_array($j) ? $j : []; }
+function po_pend_write(array $p): void { $tmp = po_pend_file() . '.tmp' . bin2hex(random_bytes(3)); if (@file_put_contents($tmp, json_encode(array_slice($p, -50, null, true), JSON_UNESCAPED_UNICODE)) !== false) @rename($tmp, po_pend_file()); }
+function po_pend_add(string $rc, string $t, string $m, string $url): void {
+  $p = po_pend_read(); $first = (int) ($GLOBALS['PO_FIRST'] ?? 0) ?: time();
+  foreach ($p as $k => $v) if (($v['t0'] ?? '') === $t && ($v['m'] ?? '') === $m) { $first = (int) ($v['first'] ?? $first); unset($p[$k]); } // relance : garde l'heure de la 1re alarme
+  $p[$rc] = ['at' => time(), 'first' => $first, 't0' => $t, 'm' => $m, 'url' => $url];
+  po_pend_write($p);
+}
+function po_after_response(): void {
+  $f = po_pend_file(); clearstatcache(true, $f);
+  if (!is_file($f) || filemtime($f) > time() - 300) return; // rien en attente, ou vérifié il y a moins de 5 min
+  @touch($f);
+  if (!po_ready() || !function_exists('curl_init')) return;
+  if (PHP_SAPI !== 'cli' && function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ } } // le joueur n'attend jamais
+  $p = po_pend_read(); $now = time(); $c = po_cfg(); $ch = false;
+  foreach ($p as $rc => $v) {
+    if ($now - (int) ($v['at'] ?? 0) < PO_EXPIRE - 120) continue; // l'alarme sonne encore
+    $h = curl_init('https://api.pushover.net/1/receipts/' . rawurlencode((string) $rc) . '.json?token=' . rawurlencode($c['token']));
+    curl_setopt_array($h, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 5, CURLOPT_CONNECTTIMEOUT => 3]);
+    $j = json_decode((string) curl_exec($h), true); curl_close($h);
+    unset($p[$rc]); $ch = true;
+    if (!empty($j['acknowledged']) || $now - (int) ($v['first'] ?? 0) >= PO_KEEP) continue; // vu, ou plus de 9 h : fini
+    po_pend_write($p);
+    $t0 = (string) ($v['t0'] ?? 'Retrait à payer');
+    $GLOBALS['PO_FIRST'] = (int) ($v['first'] ?? $now); // l'heure de la 1re alarme est gardée (arrêt après 9 h)
+    po_send(str_starts_with($t0, '⏰') ? $t0 : '⏰ ' . $t0, (string) ($v['m'] ?? ''), (string) ($v['url'] ?? '/admin.php'), 2);
+    unset($GLOBALS['PO_FIRST']);
+    $p = po_pend_read();
+  }
+  if ($ch) po_pend_write($p);
 }
