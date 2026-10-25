@@ -1310,7 +1310,6 @@ html:root body #casinoModal .sp2 .sp2-slip .sp2-qk4 button{height:34px}
 html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb{gap:8px;margin:0;padding:6px 8px 6px 7px;border-radius:12px}
 html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb-i{width:28px;height:28px;border-radius:9px}
 html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb-i svg{width:17px;height:17px}
-html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb-t small{display:none}
 html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb-t b{font-size:14px;line-height:1.15}
 html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb > em{font-size:16px;padding:5px 8px;border-radius:9px}
 html:root body #casinoModal .sp2 .sp2-slip .sp2-sum{gap:5px;padding:8px 12px}
@@ -1378,3 +1377,6 @@ html:root body #casinoModal .sp2 .pz-dgo.arm{background:#E11D48;box-shadow:0 0 0
 html:root body #casinoModal .sp2 .pz-dgo .sp2-i{width:17px;height:17px;flex:none}
 html:root body #casinoModal .sp2 .pz-delr button:disabled{opacity:.45;cursor:default}
 html:root body #casinoModal .sp2 .pz-delr button span{max-width:100%}
+html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb-t{gap:1px}
+html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb-t small{font-size:11.5px;line-height:1.2}
+html:root body #casinoModal .sp2 .pz-menu{gap:6px}
