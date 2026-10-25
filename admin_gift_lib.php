@@ -108,7 +108,10 @@ function admin_gift_payload(string $view, array $req, array $people): array {
     if (function_exists('orolado_top_week')) {
       $wk = orolado_top_week($view === 'gift_top' ? time() : time() - 7 * 86400);
       $st = orolado_top_scan($db, $wk);
-      $rank = orolado_top_rank($db, $st);
+      // 2026-10-26 (propriétaire) — c'est un Top 50 : l'admin ne garde QUE les 50 premiers (rang 1 → 50), comme la liste
+      // que voient les joueurs. Avant, la vue montrait TOUS les qualifiés (≥ 20 trades) : « ça ajoutait des personnes ».
+      $rankAll = orolado_top_rank($db, $st);
+      $rank = array_slice($rankAll, 0, OROLADO_TOP_SHOW);
       $cols = ['Rang', 'ID', 'Nom', 'E-mail', 'Points ORO', 'Trades démo', 'Gagnés', 'Misé (démo)', 'Gain net (démo)', 'Payé'];
       $paid = admin_top_paid_read($wk['key']);
       $nPaid = 0; $sumPaid = 0.0;
@@ -120,8 +123,9 @@ function admin_gift_payload(string $view, array $req, array $people): array {
         $rows[] = $row([(string) $r['rank'], $who['id'], $who['name'], $who['email'] !== '' ? $who['email'] : '—', (string) $r['points'],
           (string) $r['trades'], (string) $r['wins'], admin_money($a['stake'] ?? 0), admin_money($a['net'] ?? 0), admin_top_paid_label($pe)], $who);
       }
-      $summary = 'Semaine ' . $wk['key'] . ' (' . date('d/m', $wk['start']) . ' → ' . date('d/m', $wk['end']) . ') · ' . count($rank)
-        . ' joueur(s) classés (20 trades démo minimum) · Points = 1000 × gain net ÷ total misé · ' . $nPaid . ' déjà payé(s)'
+      $summary = 'Semaine ' . $wk['key'] . ' (' . date('d/m', $wk['start']) . ' → ' . date('d/m', $wk['end']) . ') · Top '
+        . OROLADO_TOP_SHOW . ' : ' . count($rank) . ' joueur(s) classés' . (count($rankAll) > count($rank) ? ' (sur ' . count($rankAll) . ' qualifiés ≥ 20 trades démo ; seuls les ' . OROLADO_TOP_SHOW . ' premiers sont récompensés)' : ' (20 trades démo minimum)')
+        . ' · Points = 1000 × gain net ÷ total misé · ' . $nPaid . ' déjà payé(s)'
         . ($sumPaid > 0 ? ' (' . admin_money($sumPaid) . ' par le bouton)' : '');
     }
   }
@@ -297,7 +301,10 @@ function admin_top_pay_plan(array $db, array $p, ?int $now = null): array {
   if (!function_exists('orolado_top_week')) return ['ok' => false, 'reason' => 'Tournoi indisponible'];
   $wk = admin_top_pay_week($p['week'], $now);
   $st = orolado_top_scan($db, $wk);
-  $rank = array_values(array_filter(orolado_top_rank($db, $st), static fn($r) => (int) $r['rank'] >= $p['fromRank']));
+  // 2026-10-26 (propriétaire) — Top 50 : on ne paie QUE les 50 premiers (rang 1 → 50), jamais au-delà, même si plus de
+  // joueurs sont qualifiés. On garde d'abord le Top 50, puis on applique le rang de départ choisi.
+  $top = array_slice(orolado_top_rank($db, $st), 0, OROLADO_TOP_SHOW);
+  $rank = array_values(array_filter($top, static fn($r) => (int) $r['rank'] >= $p['fromRank']));
   $amounts = admin_top_pay_amounts(count($rank), $p['max'], $p['min']);
   $led = admin_top_paid_read($wk['key']);
   $rows = [];
@@ -421,7 +428,8 @@ function admin_top_pay_mark(array $req, ?array $db = null): array {
   $db = $db ?? load_db();
   $wk = admin_top_pay_week($week);
   $byRank = [];
-  foreach (orolado_top_rank($db, orolado_top_scan($db, $wk)) as $r) $byRank[(int) $r['rank']] = (string) $r['uid'];
+  // Top 50 seulement : on ne marque que des rangs réellement récompensés (1 → 50).
+  foreach (array_slice(orolado_top_rank($db, orolado_top_scan($db, $wk)), 0, OROLADO_TOP_SHOW) as $r) $byRank[(int) $r['rank']] = (string) $r['uid'];
   $marked = []; $already = []; $missing = [];
   admin_top_paid_with($wk['key'], static function (array &$led) use ($ranks, $byRank, &$marked, &$already, &$missing): void {
     foreach ($ranks as $n) {

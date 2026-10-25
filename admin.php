@@ -2973,7 +2973,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="panel-title" id="viewTitle">Inscrits</div>
     <p class="muted" id="viewSum"></p>
     <div class="top-pay" id="topPay" hidden>
-      <div class="panel-title" style="margin-top:0">💰 Bonus tournoi démo : payer tout le classement</div>
+      <div class="panel-title" style="margin-top:0">💰 Bonus tournoi démo : payer le Top 50 (du rang 1 au 50e)</div>
       <div class="tp-row">
         <label>À partir du rang<input id="tpFrom" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
         <label>Montant du premier ($)<input id="tpMax" type="number" min="0.01" max="5" step="0.01" value="0.90" inputmode="decimal"></label>
