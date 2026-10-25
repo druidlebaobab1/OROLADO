@@ -177,7 +177,7 @@ html:root body #casinoModal#casinoModal #csView.cs-grid.cs-grid3 .cs-g b > .cs-o
 html:root body #casinoModal#casinoModal #csBody .cs-game::before{bottom:0!important}
 /* v2812 (round 4) : iPhone SE (320 px) — le « + » du portefeuille chevauchait le livre des règles : sur petit écran, l'icône
    portefeuille s'efface, les écarts se resserrent et le montant peut rapetisser ; rien ne dépasse de la case */
-@media (max-width:380px){
+@media (max-width:340px){
   html:root body #casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet{max-width:100%;overflow:hidden;gap:6px!important;padding-inline:8px 4px!important}
   html:root body #casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-wal{display:none!important}
   html:root body #casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t{min-width:0;flex:1 1 auto;overflow:hidden}
