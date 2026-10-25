@@ -13618,3 +13618,7 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-
 #oroZoomBar b{display:block;color:#FDBA74;font-size:15px;font-weight:800;margin-bottom:4px}
 #oroZoomBar p{margin:0 0 10px;font-size:13px;line-height:1.45;font-weight:600}
 #oroZoomBar button{display:block;width:100%;padding:10px;border:0;border-radius:11px;background:linear-gradient(180deg,#FDBA4D,#F97316);color:#fff;font:800 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;cursor:pointer}
+/* 2026-10-25 : carte « Retrait pas encore activé » (compte sans dépôt) — même famille que « Installe OROLADO », cadenas doré */
+html body .oro-needdep .oia-ico > i{background:linear-gradient(180deg,#FBBF24,#F59E0B)}
+html body .oro-needdep .oia-ico > i svg,html body .oro-needdep .oia-go svg{fill:none;stroke-linecap:round;stroke-linejoin:round}
+html body .oro-needdep .ow-s{line-height:1.45}
