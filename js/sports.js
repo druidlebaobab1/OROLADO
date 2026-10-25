@@ -533,6 +533,83 @@
       MF.day = b.getAttribute('data-mday'); dz.querySelectorAll('[data-mday]').forEach(function (z) { z.classList.toggle('on', z === b); }); paintMine();
     });
   }
+  /* 2026-10-25 (propriétaire : « le joueur doit pouvoir supprimer ses paris terminés ») : bouton « Supprimer » → on coche les
+     paris TERMINÉS (gagné, perdu, remboursé ; jamais un pari en cours) → « Supprimer (n) », toucher encore pour confirmer.
+     Les paris disparaissent de « Mes paris » du joueur ; rien n'est effacé côté site (l'admin les voit toujours). */
+  var DELK = ['del', 'delT', 'all', 'none', 'go', 'ok', 'done', 'cancel'];
+  var DELL = {
+    fr: ['Supprimer', 'Choisis les paris terminés à supprimer', 'Tout sélectionner', 'Tout désélectionner', 'Supprimer ({n})', 'Confirmer ?', '{n} pari(s) supprimé(s)', 'Annuler'],
+    en: ['Delete', 'Pick finished bets to delete', 'Select all', 'Deselect all', 'Delete ({n})', 'Confirm?', '{n} bet(s) deleted', 'Cancel'],
+    es: ['Eliminar', 'Elige las apuestas terminadas que quieres eliminar', 'Seleccionar todo', 'Quitar selección', 'Eliminar ({n})', '¿Confirmar?', '{n} apuesta(s) eliminada(s)', 'Cancelar'],
+    pt: ['Excluir', 'Escolha as apostas encerradas para excluir', 'Selecionar tudo', 'Desmarcar tudo', 'Excluir ({n})', 'Confirmar?', '{n} aposta(s) excluída(s)', 'Cancelar'],
+    ar: ['حذف', 'اختر الرهانات المنتهية لحذفها', 'تحديد الكل', 'إلغاء التحديد', 'حذف ({n})', 'تأكيد؟', 'تم حذف {n} رهان', 'إلغاء'],
+    tr: ['Sil', 'Silinecek bitmiş kuponları seç', 'Tümünü seç', 'Seçimi kaldır', 'Sil ({n})', 'Onaylıyor musun?', '{n} kupon silindi', 'İptal'],
+    vi: ['Xóa', 'Chọn các cược đã kết thúc để xóa', 'Chọn tất cả', 'Bỏ chọn tất cả', 'Xóa ({n})', 'Xác nhận?', 'Đã xóa {n} cược', 'Hủy'],
+    id: ['Hapus', 'Pilih taruhan yang sudah selesai untuk dihapus', 'Pilih semua', 'Batal pilih semua', 'Hapus ({n})', 'Konfirmasi?', '{n} taruhan dihapus', 'Batal'],
+    ru: ['Удалить', 'Выберите завершённые ставки для удаления', 'Выбрать все', 'Снять выбор', 'Удалить ({n})', 'Подтвердить?', 'Удалено ставок: {n}', 'Отмена'],
+    de: ['Löschen', 'Wähle beendete Wetten zum Löschen', 'Alle auswählen', 'Auswahl aufheben', 'Löschen ({n})', 'Bestätigen?', '{n} Wette(n) gelöscht', 'Abbrechen'],
+    hi: ['हटाएँ', 'हटाने के लिए खत्म हो चुके दांव चुनें', 'सभी चुनें', 'चयन हटाएँ', 'हटाएँ ({n})', 'पक्का करें?', '{n} दांव हटाए गए', 'रद्द करें'],
+    zh: ['删除', '选择要删除的已结束投注', '全选', '取消全选', '删除（{n}）', '确认？', '已删除 {n} 笔投注', '取消']
+  };
+  function DX() { var a = DELL[lg()] || DELL.en, o = {}; DELK.forEach(function (k, i) { o[k] = a[i]; }); return o; }
+  var delMode = false, delSel = {}, delArm = 0, delBusy = false;
+  function isDone(b) { return b && (b.status === 'won' || b.status === 'lost' || b.status === 'void'); }
+  function delN() { return Object.keys(delSel).length; }
+  function delHead() {
+    var d = DX();
+    if (delMode) return '<button type="button" class="pz-delx" id="pzDelX"><span class="fit">' + esc(d.cancel) + '</span></button>';
+    return (mineCache || []).some(isDone) ? '<button type="button" class="sp2-clear pz-delb" id="pzDel">' + IC.trash + '<span class="fit">' + esc(d.del) + '</span></button>' : '';
+  }
+  function delBar() {
+    if (!delMode) return '';
+    var d = DX(), n = delN(), done = (shown || []).filter(isDone), allOn = done.length && done.every(function (b) { return delSel[b.id]; });
+    return '<div class="pz-delbar" id="pzDelBar"><p class="pz-delt" dir="auto">' + esc(d.delT) + '</p><div class="pz-delr">' +
+      '<button type="button" class="pz-dall" id="pzDelAll"' + (done.length ? '' : ' disabled') + '><span class="fit">' + esc(allOn ? d.none : d.all) + '</span></button>' +
+      '<button type="button" class="pz-dgo' + (delArm && Date.now() - delArm < 3000 ? ' arm' : '') + '" id="pzDelGo"' + (n ? '' : ' disabled') + '>' + IC.trash + '<span class="fit">' + esc(delArm && Date.now() - delArm < 3000 ? d.ok : fmt(d.go, { n: n })) + '</span></button></div></div>';
+  }
+  function delPaint() {
+    var h = box && box.querySelector('.pz-bar'), old = $('pzDel') || $('pzDelX');
+    if (old) old.outerHTML = delHead(); else if (h && delHead()) h.insertAdjacentHTML('beforeend', delHead());
+    var b = $('pzDelBar'), nh = delBar();
+    if (b) { if (nh) b.outerHTML = nh; else b.remove(); } else if (nh && $('spRcs')) $('spRcs').insertAdjacentHTML('afterend', nh);
+    if (box) box.classList.toggle('pz-delm', delMode);
+    // barre posée juste au-dessus de la barre du bas (toujours visible pendant qu'on coche), la liste garde la place en dessous
+    var db = $('pzDelBar'), nav = box && box.querySelector('.pz-nav'), rc = $('spRcs');
+    if (db && box) { var BR = box.getBoundingClientRect(), nt = nav ? nav.getBoundingClientRect().top : innerHeight; db.style.left = (BR.left + 10) + 'px'; db.style.width = (BR.width - 20) + 'px'; db.style.bottom = Math.max(8, innerHeight - nt + 8) + 'px'; }
+    if (rc) rc.style.paddingBottom = db ? (db.offsetHeight + 12) + 'px' : '';
+    box && box.querySelectorAll('.pz-bet[data-id]').forEach(function (c) { c.classList.toggle('pz-dchk', !!delSel[c.getAttribute('data-id')]); });
+    fitAll(box);
+  }
+  async function delRun() {
+    var ids = Object.keys(delSel); if (!ids.length || delBusy) return;
+    delBusy = true;
+    var r = null; try { r = await D6.Api.post('spHide', { ids: ids }, 15000); } catch (e) { r = null; }
+    delBusy = false; delArm = 0;
+    if (!r || !r.ok) { sbToast(XX().e_unavailable, 'err'); delPaint(); return; }
+    var gone = {}; ids.forEach(function (id) { gone[id] = 1; });
+    mineCache = (mineCache || []).filter(function (b) { return !gone[b.id]; });
+    delSel = {}; delMode = false;
+    sbToast(fmt(DX().done, { n: r.hidden != null ? r.hidden : ids.length }), 'ok');
+    if (view === 'mine') { paintMine(); delPaint(); }
+  }
+  function bindDel() {
+    if (!box || box._delB) return; box._delB = 1;
+    box.addEventListener('click', function (ev) {
+      if (view !== 'mine') return;
+      var t = ev.target;
+      if (t.closest('#pzDel')) { delMode = true; delSel = {}; delArm = 0; Object.keys(rcOpen).forEach(function (k) { delete rcOpen[k]; }); paintMine(); delPaint(); return; }
+      if (t.closest('#pzDelX')) { delMode = false; delSel = {}; delArm = 0; delPaint(); return; }
+      if (t.closest('#pzDelAll')) { var done = (shown || []).filter(isDone), allOn = done.every(function (b) { return delSel[b.id]; }); done.forEach(function (b) { if (allOn) delete delSel[b.id]; else delSel[b.id] = 1; }); delArm = 0; delPaint(); return; }
+      if (t.closest('#pzDelGo')) { if (delArm && Date.now() - delArm < 3000) delRun(); else { delArm = Date.now(); delPaint(); setTimeout(function () { if (delArm && Date.now() - delArm >= 3000) { delArm = 0; if (view === 'mine') delPaint(); } }, 3100); } return; }
+      if (!delMode) return;
+      var c = t.closest('.pz-bet[data-id]'); if (!c) return;
+      ev.preventDefault(); ev.stopPropagation();
+      var bt = (mineCache || []).filter(function (b) { return String(b.id) === c.getAttribute('data-id'); })[0];
+      if (!isDone(bt)) return;
+      if (delSel[bt.id]) delete delSel[bt.id]; else delSel[bt.id] = 1;
+      delArm = 0; delPaint();
+    }, true);
+  }
   function bindRc() {
     var rcs = $('spRcs'); if (!rcs || rcs.dataset.bound) return;
     rcs.dataset.bound = '1';
@@ -1330,6 +1407,7 @@
     if (topView(from) && !topView(to)) { qRaw = ''; sbQ = ''; qMem = -1; }
     if (from === 'live') lvQ = '';
     if (from === 'results') resQ = '';
+    if (from === 'mine') { delMode = false; delSel = {}; delArm = 0; if (box) box.classList.remove('pz-delm'); }
   }
   // changer d'écran (barre du bas, liens) ; la position de la liste est gardée pour le retour
   function go(v) {
@@ -2957,7 +3035,7 @@
         var rr = s.r === 'won' || s.r === 'hwon' ? ' won' : s.r === 'lost' || s.r === 'hlost' ? ' lost' : s.r === 'void' ? ' void' : '';
         return '<span class="pz-bs1' + rr + '"><span class="pz-bs1t"><b dir="auto">' + esc(selLbl(s)) + '</b><small dir="auto">' + esc(e ? trT(e) : s.t) + '</small></span>' + (s.fs || s.cs || s.lv ? liveChip(s) : '') + '</span>';
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
-      return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' +
+      return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + (delSel[id] ? ' pz-dchk' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' + '<i class="pz-dck" aria-hidden="true"></i>' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
           '<span class="pz-b1"><em class="sp2-pill">' + esc(ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + (bt.bst ? '<i class="pz-bbst" dir="ltr">' + esc(pctTx(bt.bst)) + '</i>' : '') + (st === 'open' && bt.sel.some(function (s) { return Array.isArray(s.cs); }) ? '<i class="pz-blv"><i></i>' + esc(n.live) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
           (on ? '' : '<span class="pz-bsel">' + sels + '</span>') +
@@ -2975,11 +3053,11 @@
       fitAll(box); if ($('spMineSign')) $('spMineSign').addEventListener('click', function () { if (ctx.signup) ctx.signup(); });
       return;
     }
-    shell(bar(x.mine) + mineBar() + '<div class="sp2-bets" id="spRcs">' + (mineCache ? receipts(shown = filt(mineCache)) : '<div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div><div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div>') + '</div>');
-    bindRc(); bindMine(); fitAll(box);
+    shell(bar(x.mine, delHead()) + mineBar() + '<div class="sp2-bets" id="spRcs">' + (mineCache ? receipts(shown = filt(mineCache)) : '<div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div><div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div>') + '</div>');
+    bindRc(); bindMine(); bindDel(); delPaint(); fitAll(box);
     var r = await loadMine();
     if (view !== 'mine' || !$('spRcs')) return;
-    if (r) { mineCache = r; paintMine(); }
+    if (r) { mineCache = r; paintMine(); delPaint(); }
     else if (!mineCache) $('spRcs').innerHTML = '<p class="sp2-none fit">' + esc(x.e_unavailable) + '</p>';
   }
   // ticket : en-tête = flèche retour · « Coupon » · nombre · Tout supprimer

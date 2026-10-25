@@ -1354,3 +1354,27 @@ html:root body #casinoModal .sp2 .pz-rmpane.pz-rmscr{overflow-y:auto;overscroll-
 html:root body #casinoModal .sp2 .pz-rme p{padding:4px 0}
 html:root body #casinoModal .sp2 .pz-rmst{gap:4px}
 html:root body #casinoModal .sp2 .pz-rmw i{min-width:16px;text-align:center}
+/* 2026-10-25 (propriétaire) — « Mes paris » : supprimer des paris terminés (cases à cocher, barre « Supprimer (n) » en bas) */
+html:root body #casinoModal .sp2 .pz-delb{color:#FDA4AF}
+html:root body #casinoModal .sp2 .pz-delx{flex:none;height:32px;margin-inline-start:auto;padding:0 14px;border:0;border-radius:999px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);color:#fff;font:800 13px/1 var(--sp2-font);cursor:pointer}
+html:root body #casinoModal .sp2 .pz-bet{position:relative}
+html:root body #casinoModal .sp2 .pz-dck{display:none}
+html:root body #casinoModal .sp2.pz-delm .pz-bet .sp2-bhd{padding-inline-start:44px}
+html:root body #casinoModal .sp2.pz-delm .pz-dck{display:block;position:absolute;z-index:2;top:14px;inset-inline-start:12px;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px #A78BFA;pointer-events:none}
+html:root body #casinoModal .sp2.pz-delm .pz-bet.st-open{opacity:.4}
+html:root body #casinoModal .sp2.pz-delm .pz-bet.st-open .pz-dck{box-shadow:inset 0 0 0 2px rgba(255,255,255,.2)}
+html:root body #casinoModal .sp2.pz-delm .pz-bet.pz-dchk{box-shadow:inset 0 0 0 2px #F43F5E}
+html:root body #casinoModal .sp2.pz-delm .pz-bet.pz-dchk .pz-dck{background:#F43F5E;box-shadow:none}
+html:root body #casinoModal .sp2.pz-delm .pz-bet.pz-dchk .pz-dck::after{content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+html:root body #casinoModal .sp2.pz-delm .pz-bet .sp2-chev{visibility:hidden}
+html:root body #casinoModal .sp2 .pz-delbar{position:fixed;z-index:30;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;margin-top:10px;padding:10px;border-radius:16px;
+  background:linear-gradient(180deg,#2C1D66,#18103C);box-shadow:inset 0 0 0 1px rgba(244,63,94,.45),0 -6px 24px rgba(0,0,0,.7)}
+html:root body #casinoModal .sp2 .pz-delt{margin:0 2px;color:#D9D5F2;font:600 12.5px/1.25 var(--sp2-font);text-align:center;overflow-wrap:anywhere}
+html:root body #casinoModal .sp2 .pz-delr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:8px}
+html:root body #casinoModal .sp2 .pz-delr button{min-width:0;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;margin:0;padding:0 10px;border:0;border-radius:12px;font:800 14px/1.1 var(--sp2-font);cursor:pointer}
+html:root body #casinoModal .sp2 .pz-dall{color:#EDE9FE;background:rgba(139,92,246,.22);box-shadow:inset 0 0 0 1px rgba(167,139,250,.5)}
+html:root body #casinoModal .sp2 .pz-dgo{color:#fff;background:linear-gradient(180deg,#F43F5E,#BE123C);box-shadow:0 6px 16px -8px rgba(244,63,94,.9)}
+html:root body #casinoModal .sp2 .pz-dgo.arm{background:#E11D48;box-shadow:0 0 0 3px rgba(251,113,133,.45)}
+html:root body #casinoModal .sp2 .pz-dgo .sp2-i{width:17px;height:17px;flex:none}
+html:root body #casinoModal .sp2 .pz-delr button:disabled{opacity:.45;cursor:default}
+html:root body #casinoModal .sp2 .pz-delr button span{max-width:100%}
