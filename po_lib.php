@@ -41,7 +41,7 @@ function po_send(string $title, string $body, string $url = '/admin.php', ?int $
   $c = po_cfg(); $prio = $prio ?? po_prio($title);
   $f = ['token' => $c['token'], 'user' => $c['user'], 'title' => mb_substr($title, 0, 250), 'message' => mb_substr($body !== '' ? $body : $title, 0, 1000),
     'url' => 'https://orolado.com' . ($url !== '' && $url[0] === '/' ? $url : '/admin.php'), 'url_title' => 'Ouvrir l’admin', 'priority' => (string) $prio,
-    'sound' => $prio >= 2 ? PO_ALARM_SOUND : ($prio === 1 ? 'cashregister' : 'pushover')];
+    'sound' => $prio >= 2 ? PO_CUSTOM_SOUND : ($prio === 1 ? 'cashregister' : 'pushover')];
   if ($prio >= 2) { $f['retry'] = '30'; $f['expire'] = (string) PO_EXPIRE; }
   if (isset($GLOBALS['PO_FAKE']) && is_callable($GLOBALS['PO_FAKE'])) return ($GLOBALS['PO_FAKE'])($f);
   $ok = false; $why = '';
@@ -50,6 +50,14 @@ function po_send(string $title, string $body, string $url = '/admin.php', ?int $
     curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => http_build_query($f), CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 5, CURLOPT_CONNECTTIMEOUT => 3]);
     $raw = (string) curl_exec($ch); $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
     $j = json_decode($raw, true);
+    // son maison « oroalarme » pas encore ajouté dans Pushover → on renvoie aussitôt avec le son long intégré (l'alarme part toujours)
+    if ($code !== 200 && $f['sound'] === PO_CUSTOM_SOUND && stripos($raw, 'sound') !== false) {
+      $f['sound'] = PO_ALARM_SOUND;
+      $ch = curl_init('https://api.pushover.net/1/messages.json');
+      curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => http_build_query($f), CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 5, CURLOPT_CONNECTTIMEOUT => 3]);
+      $raw = (string) curl_exec($ch); $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+      $j = json_decode($raw, true);
+    }
     $ok = $code === 200 && (int) ($j['status'] ?? 0) === 1;
     if ($ok && $prio >= 2 && !empty($j['receipt'])) po_pend_add((string) $j['receipt'], $title, (string) $f['message'], $url);
     if (!$ok) $why = is_array($j) && !empty($j['errors']) ? implode(' · ', array_map('strval', (array) $j['errors'])) : ('HTTP ' . $code);
@@ -63,6 +71,7 @@ function po_send(string $title, string $body, string $url = '/admin.php', ?int $
    « Alien Alarm » (plusieurs bips d'affilée) ; Pushover arrête une alarme au bout de 3 h au plus → si personne n'a touché
    « Acknowledge », le site la RELANCE (jusqu'à 9 h après la demande). Vérifié après les requêtes du site (au plus toutes les 5 min). */
 const PO_ALARM_SOUND = 'alien';
+const PO_CUSTOM_SOUND = 'oroalarme'; // 2026-10-25 : son maison très fort (pushover.net → Your Custom Sounds → nom « oroalarme »)
 const PO_EXPIRE = 10800;       // 3 h : maximum permis par Pushover
 const PO_KEEP = 32400;         // relances pendant 9 h
 function po_pend_file(): string { return dirname(po_file()) . '/pushover_pend.json'; }
