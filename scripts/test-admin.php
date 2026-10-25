@@ -244,7 +244,7 @@ check('« Bonus Offerts » : 4 bonus, 65 $ depuis le début', ($j['total'] ?? 0)
 $j = admin_list_payload('payers', ['preset' => 'all']);
 check('« Payeurs » : sans les joueurs qui n’ont reçu qu’un bonus', !in_array($p2, $ids($j), true) && !in_array($p6, $ids($j), true) && in_array($p1, $ids($j), true));
 $j = admin_list_payload('no_deposit', ['preset' => 'all']);
-check('« Sans dépôt » : inclut les joueurs « bonus seulement »', in_array($p2, $ids($j), true) && in_array($p6, $ids($j), true));
+check('« Avec dépôt » (2026-10-25) : seulement les joueurs qui ont vraiment déposé, jamais « bonus seulement »', in_array($p1, $ids($j), true) && !in_array($p2, $ids($j), true) && !in_array($p6, $ids($j), true));
 $j = admin_list_payload('profit_total', ['preset' => 'all']);
 check('Bénéfice = 250 − 25 = 225 $, bonus à part', str_contains($j['summary'], 'Bénéfice $ 225') && !in_array('Bonus', array_map(static fn($r) => $r['cells'][0], $j['rows']), true), $j['summary'] ?? '');
 $pp = admin_profile_payload($p2);
