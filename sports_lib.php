@@ -1067,9 +1067,9 @@ function sp_hide_bets(string $uid, array $ids): array {
   });
   return ['ok' => true, 'hidden' => $n];
 }
-function sp_my_bets(string $uid): array {
+function sp_my_bets(string $uid, bool $withHidden = false): array { // $withHidden : l'admin voit aussi les paris que le joueur a supprimés
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
-  $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid && ($b['status'] ?? '') !== 'pend' && empty($b['hid'])));
+  $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid && ($b['status'] ?? '') !== 'pend' && ($withHidden || empty($b['hid']))));
   $mine = array_slice(array_reverse($mine), 0, SP_MY_BETS);
   // 2026-10-23 (propriétaire : « des choix sans gagné / perdu alors que le match est fini ») : un combiné déjà perdu n'attend pas
   // ses autres matchs → leur résultat (affichage seulement) est calculé ici dès que le score final est connu
