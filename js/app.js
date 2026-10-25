@@ -5403,6 +5403,7 @@
     if (hint) hint.textContent = 'Minimum $\u00a0\u00a01';
     setDepositPayMethod('card');
     paintPayLocal();
+    paintLatamLogos();
     try { paintMomoMode(); } catch (eMm) { /* ignore */ }
     try { if (momoLink && momoLink.key !== momoKeyNow()) clearMomoLink(); scheduleMomoPrep(); } catch (eMp) { /* ignore */ } // v3021 : numéro déjà rempli
   // v2543 — mot « Banque » dans la langue du joueur (et à chaque changement de langue).
@@ -5623,7 +5624,14 @@
     '<i class="pl-logo pl-op2 pl-opay2"><img src="icons/pay/opay.svg?v=2632" alt="">OPay</i>' +
     '<i class="pl-logo pl-telecel">telecel</i>' +
     // 1Voucher : logo actuel (carré orange avec « 1 » blanc + « Voucher » orange).
-    '<i class="pl-logo pl-1voucher"><b>1</b>Voucher</i>';
+    '<i class="pl-logo pl-1voucher"><b>1</b>Voucher</i>' +
+    // 2026-10-25 (propriétaire) : une rangée Amérique latine (SPEI, PIX, Nequi, Yape, Mercado Pago). Visible seulement
+    // quand le dépôt Amérique latine est ouvert (html.oro-latam ; pour l'instant le compte admin).
+    '<i class="pl-logo pl-la pl-spei">SPEI</i>' +
+    '<i class="pl-logo pl-la pl-pix"><b></b>pix</i>' +
+    '<i class="pl-logo pl-la pl-nequi">Nequi</i>' +
+    '<i class="pl-logo pl-la pl-yape">yape</i>' +
+    '<i class="pl-logo pl-la pl-mpago"><b>Mercado</b>Pago</i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
     if (!card || card.querySelector('.pay-local')) return;
@@ -6611,6 +6619,7 @@
           applyUsdtCredit(remote);
           setCryptoOkCopy(remote.amount);
           showDepositStep('ok');
+          try { if (D6.Latam && D6.Latam.isOpen()) D6.Latam.paid(remote.amount); } catch (eLa) { /* ignore */ }
         }
       } catch (e) { /* keep waiting */ }
     }, 6000);
@@ -6973,7 +6982,76 @@
     checkDepositReturn();
   });
 
+  // 2026-10-25 (propriétaire) — Amérique latine : « Payer par carte / Mobile Money » ouvre la page de dépôt en pesos
+  // (js/latam.js : copier l'adresse USDT TRC20 du joueur, payer chez Guardarian ou El Dorado, crédit automatique).
+  // Décidé par le PAYS ENREGISTRÉ à l'inscription (pas un VPN du moment) ; un compte au numéro africain (+2…) ne
+  // l'a jamais. Tous les autres : Flutterwave comme avant. Ouvert pour l'instant au compte admin seulement
+  // (test : ?paycc=MX, CO, PE…) ; pour tous : D6.CONFIG.LATAM_PUBLIC = true.
+  var LATAM_CC = { MX: 1, CO: 1, PE: 1, AR: 1, VE: 1, BO: 1, PY: 1, DO: 1, BR: 1, CL: 1, EC: 1, GT: 1, CR: 1, HN: 1, SV: 1, NI: 1, PA: 1, UY: 1 };
+  function latamAdmin() {
+    var u = user();
+    return !!(u && (u.role === 'admin' || u.isAdmin === true || String(u.email || '').toLowerCase() === 'admin@orolado.com'));
+  }
+  function latamOn() { return !!(D6.CONFIG && D6.CONFIG.LATAM_PUBLIC === true) || latamAdmin(); }
+  function latamCountry() {
+    if (!latamOn()) return '';
+    var u = user() || {};
+    if (latamAdmin()) {
+      var mT = /[?&]paycc=([A-Za-z]{2})\b/.exec(location.search);
+      if (mT) return LATAM_CC[mT[1].toUpperCase()] ? mT[1].toUpperCase() : '';
+    }
+    var cc = String(u.country || u.countryIso || '').toUpperCase().replace(/[^A-Z]/g, '');
+    if (cc.length !== 2) { try { cc = String(sessionStorage.getItem('oro_pay_cc') || ''); } catch (eS) { cc = ''; } }
+    if (!LATAM_CC[cc]) return '';
+    var dial = String(u.countryCode || '').replace(/\s/g, '');
+    if (String(u.phone || '').replace(/\D/g, '').length >= 6 && /^\+2/.test(dial)) return '';
+    return cc;
+  }
+  function paintLatamLogos() { document.documentElement.classList.toggle('oro-latam', latamOn()); }
+  var latamScript = null;
+  function loadLatam() {
+    if (D6.Latam) return Promise.resolve(true);
+    if (latamScript) return latamScript;
+    latamScript = new Promise(function (resolve) {
+      var s = document.createElement('script');
+      s.src = 'js/latam.js?v=3188';
+      s.onload = function () { resolve(!!D6.Latam); };
+      s.onerror = function () { latamScript = null; resolve(false); };
+      document.head.appendChild(s);
+    });
+    return latamScript;
+  }
+  // Adresse USDT TRC20 du joueur (la même que Dépôt crypto) + suivi : le crédit arrive tout seul.
+  async function latamInvoice(amt) {
+    var tok = await ensureApiToken();
+    stopOxaPoll();
+    oxaAsset = 'usdt'; oxaNet = 'TRC20'; oxaCoin = 'usdt_trc20';
+    depositSendConfirmed = true;
+    var remote = await postOxaInvoice({ token: tok || '', amount: Math.max(oxaMinUsd(), Number(amt) || 0), coin: 'usdt_trc20', confirmed: true });
+    if (!remote || !remote.ok || !remote.address) return { ok: false, reason: String((remote && remote.reason) || t('cryptoErrPending')) };
+    paintOxaInvoice(remote);
+    startOxaPoll();
+    return remote;
+  }
+  function openLatam(cc) {
+    loadLatam().then(function (ok) {
+      if (!ok || !D6.Latam) { confirmDeposit(); return; }
+      D6.Latam.open({
+        cc: cc,
+        amount: 20,
+        admin: latamAdmin(),
+        invoice: latamInvoice,
+        toast: toast,
+        fallback: function () { confirmDeposit(); }
+      });
+    });
+  }
+
   function onConfirmDepositClick() {
+    if (depositPayMethod !== 'usdt') {
+      var lcc = latamCountry();
+      if (lcc) { depositSendConfirmed = true; openLatam(lcc); return; }
+    }
     if (depositPayMethod === 'usdt') {
       depositSendConfirmed = true;
       metaTrack('InitiateCheckout', { value: oxaMinUsd(), currency: 'USD' });

@@ -7739,7 +7739,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap
 /* ===== v2460 — Plein écran : case de la mise un peu plus large (pris sur ACHETER / VENDRE), − et + bien touchables ===== */
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .stake-line{flex:0 0 clamp(108px,31vw,128px)!important;width:clamp(108px,31vw,128px)!important;max-width:none!important;min-width:0!important}
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .stake-field{width:100%!important;max-width:none!important;min-width:0!important}
-html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .qbtn.stake-pm{width:23px!important;height:23px!important;min-height:23px!important;max-height:23px!important;top:4px!important;font-size:16px!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .qbtn.stake-pm{width:23px!important;height:22px!important;min-height:22px!important;max-height:23px!important;top:4px!important;font-size:16px!important}
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) #inputStake{left:26px!important;right:26px!important}
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2) > .pad .trade-row{flex:1 1 auto!important;min-width:0!important}
 html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-txt{font-size:clamp(12px,3.6vw,15px)!important;letter-spacing:.01em!important}
@@ -7896,7 +7896,7 @@ html body #termsModal#termsModal h3[data-i18n="tc22t"]::before{background-image:
 
 /* ===== v2465 — iPhone : bouton « Installer » un peu moins haut (32 → 27 px), même largeur et même style. ===== */
 html.is-ios body #installBanner.install-banner{min-height:27px!important;padding:2px 3px!important}
-html.is-ios body #installBanner #btnInstall{height:23px!important;min-height:23px!important;font-size:13px!important}
+html.is-ios body #installBanner #btnInstall{height:22px!important;min-height:22px!important;font-size:13px!important}
 html.is-ios body #installBanner .install-ico{width:23px!important;height:23px!important;max-width:23px!important;max-height:23px!important;flex-basis:23px!important}
 html.is-ios body #installBanner .install-logo{width:22px!important;height:22px!important}
 html.is-ios body #installBanner .install-dl{width:13px!important;height:13px!important;right:-3px!important;bottom:-3px!important}
@@ -13622,3 +13622,16 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-
 html body .oro-needdep .oia-ico > i{background:linear-gradient(180deg,#FBBF24,#F59E0B)}
 html body .oro-needdep .oia-ico > i svg,html body .oro-needdep .oia-go svg{fill:none;stroke-linecap:round;stroke-linejoin:round}
 html body .oro-needdep .ow-s{line-height:1.45}
+/* 2026-10-25 (propriétaire) — rangée Amérique latine dans « Carte & Mobile Money » (SPEI, PIX, Nequi, Yape, Mercado Pago).
+   Cachée sauf html.oro-latam (dépôt Amérique latine ouvert). Rangées un peu serrées pour garder la même hauteur de fenêtre. */
+html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-la{display:none!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-la{display:inline-flex!important;border:0!important;background:#fff!important;font-weight:900!important;font-style:normal!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos{gap:4px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{height:22px!important;min-height:22px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-spei{color:#1B3F8F!important;font-size:10.5px!important;letter-spacing:.06em!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix{color:#1E9E92!important;font-size:11px!important;gap:4px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix b{width:8px;height:8px;flex:0 0 8px;background:#32BCAD;border-radius:2px;transform:rotate(45deg)}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-nequi{color:#DA0081!important;font-size:10.5px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-yape{background:#742284!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago{background:#00B1EA!important;color:#fff!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago b{font-size:7.5px;font-weight:800;color:#fff}
