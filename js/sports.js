@@ -1987,7 +1987,7 @@
   }
 
   // ---------- FICHE D'UN MATCH TERMINÉ (Résultats → toucher un match) : score, cotes, buteurs, cartons, statistiques ----------
-  var resMid = '', resM = {};
+  var resMid = '', resM = {}, resTab = 'st';
   function renderResMatch() {
     shell('<div id="pzRm" class="pz-body pz-rmp">' + skelRows() + '</div>');
     var id = resMid, tries = 0;
@@ -2011,21 +2011,35 @@
       '<span class="pz-rmc"><b>' + ft[0] + '<i>–</i>' + ft[1] + '</b><small>' + esc(n.ftS || n.ft) + (Array.isArray(f.ht) ? ' · ' + esc(n.htS) + ' ' + f.ht[0] + '-' + f.ht[1] : '') + '</small></span>' +
       '<span class="pz-rmt' + (w === 2 ? ' w' : '') + '">' + tlogo(f.a.lo, 'pz-rmlo') + '<b dir="auto">' + esc(f.a.n) + '</b></span></div>' +
       '<p class="pz-rmd">' + esc(dt) + '</p>' +
+      // 2026-10-25 (propriétaire : « la page du match fini ne doit pas défiler ») : stade et arbitre en une petite ligne sous la date
+      (r.venue || r.ref ? '<p class="pz-rmd pz-rmv" dir="auto">' + esc([r.venue ? n.venueL + ' : ' + r.venue : '', r.ref ? n.refL + ' : ' + r.ref : ''].filter(Boolean).join(' · ')) + '</p>' : '') +
       (Array.isArray(f.o) ? '<div class="pz-rodd">' + ['1', 'X', '2'].map(function (k, i) { var v = f.o[i]; return '<span class="' + (v == null ? 'na' : i === w ? 'w' : '') + '"><i>' + k + '</i><b dir="ltr">' + (v == null ? '–' : Number(v).toFixed(2)) + '</b></span>'; }).join('') + '</div>' : '') + '</section>';
     var ev = (r.ev || []).slice().sort(function (a, b) { return (a.t - b.t) || ((a.x || 0) - (b.x || 0)); });
-    var evH = ev.length ? '<section class="pz-rmb"><h3>' + esc(n.tEv) + '</h3><div class="pz-rme">' + ev.map(function (e) {
+    var evH = ev.length ? '<section class="pz-rmb pz-rmpane" data-rt="ev"><div class="pz-rme">' + ev.map(function (e) {
       var det = e.type === 'goal' && e.detail === 'pen' ? ' (' + n.pen + ')' : e.type === 'goal' && e.detail === 'og' ? ' (' + n.og + ')' : e.type === 'var' && e.detail ? ' · ' + e.detail : '';
       var who = '<span class="pz-rmw"><i>' + evIco(e) + '</i><span dir="auto">' + esc((e.player || (e.type === 'subst' ? n.sub : e.type === 'var' ? 'VAR' : '')) + det) + '</span></span>';
       return '<p class="' + (e.type === 'goal' ? 'g ' : '') + (e.team === 'a' ? 'a' : 'h') + '">' + (e.team === 'a' ? '<span></span>' : who) + '<em dir="ltr">' + (+e.t || 0) + (+e.x ? '+' + (+e.x) : '') + '’</em>' + (e.team === 'a' ? who : '<span></span>') + '</p>';
     }).join('') + '</div></section>' : '';
     var st = r.st, K = [['poss', n.poss, '%'], ['shotsOn', n.shotsOn], ['shots', n.shots], ['corners', n.corners], ['saves', x.saves], ['fouls', x.fouls], ['offsides', x.offs], ['yellow', n.yellow], ['red', n.reds]];
     var rows = st ? K.filter(function (k) { return Array.isArray(st[k[0]]); }) : [];
-    var stH = rows.length ? '<section class="pz-rmb"><h3>' + esc(n.tSt) + '</h3><div class="pz-rmst" dir="ltr">' + rows.map(function (k) {
+    var stH = rows.length ? '<section class="pz-rmb pz-rmpane" data-rt="st"><div class="pz-rmst" dir="ltr">' + rows.map(function (k) {
       var h = +st[k[0]][0] || 0, a = +st[k[0]][1] || 0, tot = h + a, p = tot ? h / tot * 100 : 50, u = k[2] || '';
       return '<p><b class="' + (h > a ? 'hi' : '') + '">' + h + u + '</b><span dir="auto">' + esc(k[1]) + '</span><b class="' + (a > h ? 'hi' : '') + '">' + a + u + '</b><i class="pz-sbar"><i style="width:' + p.toFixed(1) + '%"></i><i style="width:' + (100 - p).toFixed(1) + '%"></i></i></p>';
     }).join('') + '</div></section>' : '';
-    var inf = r.venue || r.ref ? '<section class="pz-rmb pz-rmi">' + (r.venue ? '<p><span>' + esc(n.venueL) + '</span><b dir="auto">' + esc(r.venue) + '</b></p>' : '') + (r.ref ? '<p><span>' + esc(n.refL) + '</span><b dir="auto">' + esc(r.ref) + '</b></p>' : '') + '</section>' : '';
-    el.innerHTML = head + evH + stH + inf + (!evH && !stH ? '<p class="pz-none">' + esc(n.noEv) + '</p>' : '');
+    // onglets Statistiques / Événements (une seule partie à la fois : la page tient sur l'écran ; une très longue liste défile seule)
+    var tab = resTab === 'ev' ? (evH ? 'ev' : 'st') : (stH ? 'st' : 'ev');
+    var tabs = evH && stH ? '<div class="pz-rmtab" role="tablist">' + [['st', n.tSt], ['ev', n.tEv]].map(function (t) { return '<button type="button" role="tab" data-rt="' + t[0] + '" aria-selected="' + (t[0] === tab) + '"' + (t[0] === tab ? ' class="on"' : '') + '><span dir="auto">' + esc(t[1]) + '</span></button>'; }).join('') + '</div>'
+      : (evH || stH ? '<h3 class="pz-rmt1" dir="auto">' + esc(evH ? n.tEv : n.tSt) + '</h3>' : '');
+    el.innerHTML = head + tabs + (tab === 'st' ? stH : evH) + (!evH && !stH ? '<p class="pz-none">' + esc(n.noEv) + '</p>' : '');
+    el.querySelectorAll('.pz-rmtab [data-rt]').forEach(function (b) { b.addEventListener('click', function () { resTab = b.getAttribute('data-rt'); paintResMatch(r); }); });
+    fitResPane(el);
+  }
+  // la partie affichée prend la hauteur qui reste au-dessus de la barre du bas ; si elle est plus longue, elle défile seule
+  function fitResPane(el) {
+    var pn = el.querySelector('.pz-rmpane'), mb = box && box.closest('.modal-box'); if (!pn || !mb) return;
+    pn.style.maxHeight = ''; pn.classList.remove('pz-rmscr');
+    var over = mb.scrollHeight - mb.clientHeight; // ce qui dépasse l'écran (barre du bas comprise)
+    if (over > 0) { pn.style.maxHeight = Math.max(150, pn.offsetHeight - over - 1) + 'px'; pn.classList.add('pz-rmscr'); }
   }
 
   // ---------- FAVORIS : en direct · à venir · Predict (un match fini ou une prédiction fermée s'en va tout seul) ----------
