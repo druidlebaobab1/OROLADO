@@ -315,6 +315,7 @@ $OROLADO_RATE_RULES = [
   'predPrice'         => [['i', 60, 60]], // 2026-10-22 : prix actuel (fiche Predict), gardé 30 s par le serveur
   'spBet'             => [['t', 30, 60]],
   'spMine'            => [['t', 30, 60]],
+  'spHide'            => [['t', 20, 60]],
   'sbList'            => [['i', 240, 60]],
   'sbMatch'           => [['i', 240, 60]],
   'sbLive'            => [['i', 240, 60]],
@@ -505,7 +506,7 @@ if ($action === 'predPrice') {
   echo json_encode(['server' => true] + $res);
   exit;
 }
-if ($action === 'spList' || $action === 'spBet' || $action === 'spMine') {
+if ($action === 'spList' || $action === 'spBet' || $action === 'spMine' || $action === 'spHide') {
   if (!function_exists('sp_bet')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
   if (function_exists('sb_after_response')) sb_after_response(); // import / résultats SB après la réponse (au plus 1 fois / min)
   if ($action === 'spList') { echo json_encode(['ok' => true, 'server' => true, 'events' => sp_public_events()]); exit; }
@@ -514,6 +515,7 @@ if ($action === 'spList' || $action === 'spBet' || $action === 'spMine') {
   if (in_array(strtolower((string) ($me['role'] ?? '')), ['suspended', 'banned', 'deleted'], true)) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'suspended']); exit; }
   try {
     if ($action === 'spMine') $res = ['ok' => true, 'bets' => sp_my_bets((string) $me['id'])];
+    elseif ($action === 'spHide') $res = sp_hide_bets((string) $me['id'], is_array($req['ids'] ?? null) ? $req['ids'] : []); // 2026-10-25 : effacer des paris terminés de « Mes paris »
     else $res = sp_bet($db, $me, (string) ($req['mode'] ?? 'real'), (float) ($req['stake'] ?? 0), is_array($req['sel'] ?? null) ? $req['sel'] : [], 0, (string) ($req['acc'] ?? 'none')); // 2026-10-21 : réglage « si la cote change »
   } catch (Throwable $eSp) {
     error_log('OROLADO sports ' . $eSp->getMessage());

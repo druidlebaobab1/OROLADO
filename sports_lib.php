@@ -1047,9 +1047,29 @@ function sp_bet_public(array $b): array {
       + (isset($s['mk']) ? ['mk' => (string) $s['mk'], 'k' => (string) $s['k'], 'sp' => (string) ($s['sp'] ?? ''), 'fx' => (string) ($s['fx'] ?? '')] : [])
       + (!empty($s['lv']) ? ['lv' => 1, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] : []), $b['sel'])] + (!empty($b['live']) ? ['live' => 1] : []) + (!empty($b['bst']) ? ['bst' => (float) $b['bst'], 'bw' => (float) ($b['bw'] ?? 0)] : []) + (!empty($b['code']) ? ['code' => (string) $b['code']] : []); // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
 }
-function sp_my_bets(string $uid): array {
+/**
+ * 2026-10-25 (propriétaire : « le joueur doit pouvoir supprimer ses paris terminés ») : les paris TERMINÉS choisis (gagné,
+ * perdu, remboursé) disparaissent de « Mes paris » du joueur. Rien n'est effacé : le pari reste dans bets.json (marqué « hid »),
+ * l'admin le voit toujours ; un pari en cours ne peut jamais être caché. Retour : nombre de paris cachés.
+ */
+function sp_hide_bets(string $uid, array $ids): array {
+  $want = [];
+  foreach (array_slice($ids, 0, 500) as $id) if (is_string($id) && $id !== '' && strlen($id) <= 80) $want[$id] = 1;
+  if ($uid === '' || !$want) return ['ok' => false, 'reason' => 'none'];
+  $n = 0;
+  sp_with('bets.json', static function (array &$s) use ($uid, $want, &$n) {
+    foreach ((array) ($s['b'] ?? []) as $i => $b) {
+      if (($b['uid'] ?? '') !== $uid || !isset($want[(string) ($b['id'] ?? '')]) || !empty($b['hid'])) continue;
+      if (!in_array((string) ($b['status'] ?? ''), ['won', 'lost', 'void'], true)) continue;
+      $s['b'][$i]['hid'] = time(); $n++;
+    }
+    return $n > 0;
+  });
+  return ['ok' => true, 'hidden' => $n];
+}
+function sp_my_bets(string $uid, bool $withHidden = false): array { // $withHidden : l'admin voit aussi les paris que le joueur a supprimés
   $all = (array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []);
-  $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid && ($b['status'] ?? '') !== 'pend'));
+  $mine = array_values(array_filter($all, static fn($b) => ($b['uid'] ?? '') === $uid && ($b['status'] ?? '') !== 'pend' && ($withHidden || empty($b['hid']))));
   $mine = array_slice(array_reverse($mine), 0, SP_MY_BETS);
   // 2026-10-23 (propriétaire : « des choix sans gagné / perdu alors que le match est fini ») : un combiné déjà perdu n'attend pas
   // ses autres matchs → leur résultat (affichage seulement) est calculé ici dès que le score final est connu

@@ -2261,7 +2261,7 @@ if ($isAjax) {
         if ($q !== '' && ($q === strtolower((string) $id) || $q === strtolower((string) ($u['email'] ?? '')) || $q === strtolower((string) ($u['publicId'] ?? '')))) { $uid = (string) $id; break; }
       }
       if ($uid === '') admin_json(['ok' => false, 'reason' => 'Joueur introuvable (e-mail ou ID OR…)']);
-      admin_json(['ok' => true, 'uid' => $uid] + $who($uid) + casino_admin_player($uid) + ['bets' => sp_my_bets($uid)]);
+      admin_json(['ok' => true, 'uid' => $uid] + $who($uid) + casino_admin_player($uid) + ['bets' => sp_my_bets($uid, true)]);
     }
     // v2698 — mise maximale jeu par jeu (vide = mise maximale normale)
     if ($action === 'cs_limits_save') {
@@ -2348,7 +2348,7 @@ if ($isAjax) {
       // la fiche donne souvent son identifiant de la base → on cherche sous TOUS ses identifiants (base, local, même e-mail)
       require_once __DIR__ . '/admin_games_lib.php';
       $all = [];
-      foreach (admin_gm_player_ids($pid, (string) ($req['email'] ?? '')) as $id2) foreach (sp_my_bets($id2) as $b) if (($b['mode'] ?? '') === 'real') $all[(string) ($b['id'] ?? '')] = $b;
+      foreach (admin_gm_player_ids($pid, (string) ($req['email'] ?? '')) as $id2) foreach (sp_my_bets($id2, true) as $b) if (($b['mode'] ?? '') === 'real') $all[(string) ($b['id'] ?? '')] = $b;
       $all = array_values($all); usort($all, static fn($a, $b) => (int) ($b['at'] ?? 0) <=> (int) ($a['at'] ?? 0));
       admin_json(['ok' => true, 'bets' => $all]); // réel seulement
     }

@@ -96,5 +96,20 @@ $r = sp_bet(load_db(), $ua, 'real', 900, [['ev' => $e5, 'k' => 'o1']]);
 check('v2779 : grosse mise 900 $ à cote 1,01 : acceptée (pas de mise max)', $r['ok'] === true);
 check('v2779 : « Mes paris » garde jusqu’à 300 coupons', SP_MY_BETS === 300);
 
+echo "6) Supprimer des paris terminés de « Mes paris » (2026-10-25)\n";
+$mb = sp_my_bets('u_b'); $n0 = count($mb);
+$done = array_values(array_filter($mb, fn($b) => in_array($b['status'], ['won', 'lost', 'void'], true)));
+$openB = array_values(array_filter($mb, fn($b) => $b['status'] === 'open'));
+$r = sp_hide_bets('u_b', [$done[0]['id']]);
+$mb2 = sp_my_bets('u_b');
+check('un pari terminé choisi disparaît de la liste du joueur', $r['ok'] && $r['hidden'] === 1 && count($mb2) === $n0 - 1 && !in_array($done[0]['id'], array_column($mb2, 'id'), true));
+$all = sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []);
+check('… mais il reste enregistré (l\'admin le voit toujours)', (bool) array_filter($all, fn($b) => $b['id'] === $done[0]['id'] && !empty($b['hid'])) && in_array($done[0]['id'], array_column(sp_my_bets('u_b', true), 'id'), true));
+$r = sp_hide_bets('u_a', [$done[1]['id'] ?? 'x']);
+check('un joueur ne peut pas cacher le pari d\'un autre', $r['hidden'] === 0 && count(sp_my_bets('u_b')) === $n0 - 1);
+if ($openB) { $r = sp_hide_bets('u_b', [$openB[0]['id']]); check('un pari EN COURS ne peut jamais être supprimé', $r['hidden'] === 0 && in_array($openB[0]['id'], array_column(sp_my_bets('u_b'), 'id'), true)); }
+else { $o = sp_with('bets.json', static function (array &$s) { foreach ($s['b'] as $i => $b) if (($b['uid'] ?? '') === 'u_b' && ($b['status'] ?? '') !== 'open' && empty($b['hid'])) { $s['b'][$i]['status'] = 'open'; return $b['id']; } return ''; });
+  $r = sp_hide_bets('u_b', [$o]); check('un pari EN COURS ne peut jamais être supprimé', $r['hidden'] === 0 && in_array($o, array_column(sp_my_bets('u_b'), 'id'), true)); }
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
