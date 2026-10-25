@@ -654,7 +654,7 @@
         return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b></span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>' + m2(bt.stake) + ' $</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
-      (bt.bst ? '<p class="bst"><span>' + esc(NX().bstL) + '</span><b>' + (st === 'won' ? '+' + m2(bt.bw || 0) + ' $' : st === 'open' ? '+' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + ' $' : '—') + '</b></p>' : '') +
+      (bt.bst ? '<p class="bst"><span>' + esc(bstLabel(bt)) + '</span><b>' + (st === 'won' ? '+' + m2(bt.bw || 0) + ' $' : st === 'open' ? '+' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + ' $' : '—') + '</b></p>' : '') +
       '<p><span>' + esc(x.potL) + '</span><b>' + m2(bt.pot) + ' $</b></p><p><span>' + esc(x.rcDate) + '</span><b>' + dt + '</b></p>' +
       // 2026-10-23 (propriétaire) : « Code de pari » à la place du numéro (on le copie pour rejouer le coupon) ; le numéro en tout petit en bas
       (bt.code ? '<p class="code"><span>' + esc(NX().betCode) + '</span><b class="mono">' + esc(bt.code) + '</b></p>' : '<p><span>' + esc(x.rcNo) + '</span><b class="mono">' + esc(no) + '</b></p>') + '</div>' +
@@ -663,7 +663,7 @@
     // dans Paris : le reçu est posé DANS la fenêtre du casino (le bouton retour du téléphone le ferme, sans fermer Paris)
     var host = box && box.isConnected && box.closest('#casinoModal') ? box.closest('#casinoModal') : document.body;
     host.appendChild(el);
-    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: NX().bstL, betCode: NX().betCode, rcNoS: NX().rcNoS })); } catch (eP) { /* ignore */ }
+    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS })); } catch (eP) { /* ignore */ }
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
     var close = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); }, 220); };
     el.addEventListener('click', function (e) { if (e.target === el) close(); });
@@ -1160,6 +1160,10 @@
       'दांव लगाने और अपने दांव यहाँ देखने के लिए साइन अप करें।', 'ख़त्म', 'दांव स्वीकार नहीं हुआ', 'इस मैच में अभी कुछ हुआ है। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'जांच के दौरान ऑड्स बदल गए। आपका दांव नहीं लगा और आपका बैलेंस नहीं बदला।', 'समझ गया', 'सभी {n} चयन देखें', 'कम दिखाएं', 'लाइव मैच खोजें', 'नतीजा खोजें', 'कॉम्बो बोनस', 'कॉम्बो बोनस: 4+ मैच, ऑड्स 1.50+ (100 $ तक)', 'अधिकतम 100 पसंदीदा: नया जोड़ने के लिए एक स्टार हटाएं।', 'आने वाले', 'यहाँ फ़ॉलो करने के लिए किसी मैच या भविष्यवाणी पर ☆ दबाएं। ख़त्म हुआ मैच अपने आप हट जाता है।', 'बिना खाते के, पसंदीदा साइट बंद करने तक रहते हैं।', '{n} मैच समाप्त', 'आपकी जीत में जोड़ा गया', 'कूपन कोड', 'बेट कूपन लोड करें', 'डाउनलोड', '{n} मैच समाप्त या बंद: लॉक। दांव के लिए इन्हें हटाएं।', 'नं.', 'गोल रद्द', 'स्टेडियम', 'रेफ़री']
   };
   function NX() { var a = NBL[lg()] || NBL.en, o = {}; NBK.forEach(function (k, i) { o[k] = a[i] != null ? a[i] : NBL.en[i]; }); return o; }
+  // 2026-10-26 (propriétaire) : « Bonus combiné » seulement pour un vrai combiné (2 sélections ou plus) ; un pari simple
+  // affiche juste « Bonus ».
+  var BONUS1 = { fr: 'Bonus', en: 'Bonus', es: 'Bono', pt: 'Bónus', de: 'Bonus', tr: 'Bonus', id: 'Bonus', vi: 'Thưởng', ru: 'Бонус', ar: 'مكافأة', hi: 'बोनस', zh: '奖金' };
+  function bstLabel(bt) { return (bt && bt.sel && bt.sel.length >= 2) ? NX().bstL : (BONUS1[lg()] || BONUS1.en); }
   // noms des sports (le serveur envoie un code : foot, basket, hockey…)
   var SPN = {
     basket: { fr: 'Basket', en: 'Basketball', es: 'Baloncesto', pt: 'Basquete', ar: 'كرة السلة', tr: 'Basketbol', vi: 'Bóng rổ', id: 'Bola basket', ru: 'Баскетбол', de: 'Basketball', zh: '篮球', hi: 'बास्केटबॉल' },
@@ -3037,7 +3041,7 @@
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + (delSel[id] ? ' pz-dchk' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' + '<i class="pz-dck" aria-hidden="true"></i>' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
-          '<span class="pz-b1"><em class="sp2-pill">' + esc(ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + (bt.bst ? '<i class="pz-bbst" aria-label="' + esc(NX().bstL) + '">🎁</i>' : '') + (st === 'open' && bt.sel.some(function (s) { return Array.isArray(s.cs); }) ? '<i class="pz-blv"><i></i>' + esc(n.live) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
+          '<span class="pz-b1"><em class="sp2-pill">' + esc(ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + (bt.bst ? '<i class="pz-bbst" aria-label="' + esc(bstLabel(bt)) + '">🎁</i>' : '') + (st === 'open' && bt.sel.some(function (s) { return Array.isArray(s.cs); }) ? '<i class="pz-blv"><i></i>' + esc(n.live) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
           (on ? '' : '<span class="pz-bsel">' + sels + '</span>') +
           '<span class="sp2-bf"><span><small class="fit">' + esc(x.stakeL) + '</small><b class="fit">' + money(bt.stake) + '</b></span><span><small class="fit">' + esc(x.oddL) + '</small><b class="fit">' + Number(bt.odd).toFixed(2) + '</b></span>' +
           '<span class="big"><small class="fit">' + esc(lab) + '</small><b class="fit">' + big + '</b></span><i class="sp2-chev">' + IC.back + '</i></span></button>' +
