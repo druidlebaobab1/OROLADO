@@ -3936,6 +3936,15 @@ function credit_paid_deposit(array $hit): array {
   if (!$alreadyCredited && $amount > 0) {
     try { orolado_deposit_alert($db, $uid, $amount, $refId, $op, $idx); } catch (Throwable $e) { /* jamais bloquant */ }
   }
+  // 2026-10-25 (propriétaire : « s'il y a des dépôts, ça sonne ») : chaque dépôt crédité → Pushover (important, son « caisse »), après la réponse
+  if (!$alreadyCredited && $amount > 0 && PHP_SAPI !== 'cli' && is_file(__DIR__ . '/po_lib.php') && !orolado_is_house_account($uid, (array) ($db['users'][$uid] ?? []))) {
+    $poWho = trim((string) ($db['users'][$uid]['publicId'] ?? '') . ' ' . (string) ($db['users'][$uid]['displayName'] ?? ''));
+    $poT = '💰 Dépôt reçu : ' . number_format($amount, 2, ',', ' ') . ' $'; $poB = ($poWho !== '' ? $poWho : 'Joueur') . ' · ' . ($op !== '' ? ucfirst($op) : 'dépôt');
+    register_shutdown_function(static function () use ($poT, $poB) {
+      if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ } }
+      try { require_once __DIR__ . '/push_lib.php'; require_once __DIR__ . '/po_lib.php'; po_send($poT, $poB, '/admin.php', 1); } catch (Throwable $e) { /* jamais bloquant */ }
+    });
+  }
   // 2026-10-24 (propriétaire) : le joueur reçoit « Dépôt réussi » (e-mail + notification) avec son nom et le montant, après la réponse.
   if (!$alreadyCredited && $amount > 0 && is_file(__DIR__ . '/notify_lib.php')) {
     if (isset($GLOBALS['OROLADO_FAKE_DEP_NOTIFY']) && is_callable($GLOBALS['OROLADO_FAKE_DEP_NOTIFY'])) ($GLOBALS['OROLADO_FAKE_DEP_NOTIFY'])($uid, $amount);
