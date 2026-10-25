@@ -13645,3 +13645,6 @@ html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-davi{background:#E30613!important;color:#fff!important;font-size:8.6px!important;letter-spacing:-.03em!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-plin{background:#00C6D7!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-zinli{background:#5B2BE0!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
+/* 2026-10-25 (propriétaire : « le petit tiret colle au titre Recharger ») : la barre de prise des fenêtres remonte tout en
+   haut (3 px du bord, 4 px d'épaisseur) — un vrai espace avec le titre, sur tout le site, sans bouger la page. */
+html body .modal-backdrop > .modal-box > i.bp-grip.bp-grip.bp-grip{top:calc(env(safe-area-inset-top,0px) + 3px)!important;height:4px!important}
