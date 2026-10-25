@@ -2562,6 +2562,14 @@ if ($isAjax) {
   }
   // 2026-10-22 (propriétaire) — « Application installée » : joueurs qui ouvrent l'appli installée (heures de l'admin)
   if ($action === 'app_users') admin_json(['ok' => true] + admin_app_users_payload());
+  // 2026-10-25 — Pushover : alarme qui sonne (retrait = jusqu'à « J'ai vu »), réglage + test
+  if ($action === 'po_status' || $action === 'po_save' || $action === 'po_test') {
+    if (!is_file(__DIR__ . '/po_lib.php')) admin_json(['ok' => false, 'reason' => 'Module Pushover absent du serveur (po_lib.php)']);
+    require_once __DIR__ . '/push_lib.php'; require_once __DIR__ . '/po_lib.php';
+    if ($action === 'po_save') { $r = po_save(['user' => (string) ($req['user'] ?? ''), 'token' => (string) ($req['token'] ?? ''), 'on' => !isset($req['on']) || !empty($req['on'])]); admin_persist_admin_log((string) ($me['email'] ?? ''), 'TOUS', 'reglages', 0, 'Pushover réglé'); admin_json($r); }
+    if ($action === 'po_test') { $r = po_send('💸 Test : retrait à payer', 'Si votre téléphone sonne encore, touchez « Acknowledge » (J’ai vu) dans Pushover pour arrêter l’alarme.', '/admin.php', 2); admin_json(['ok' => !empty($r['ok']), 'reason' => (string) ($r['why'] ?? '')] + ['st' => po_status()]); }
+    admin_json(po_status());
+  }
   // v2959 — alertes Telegram (retraits) : code du robot + liaison du compte Telegram de l'admin
   if ($action === 'tg_status' || $action === 'tg_link' || $action === 'tg_test' || $action === 'tg_off') {
     require_once __DIR__ . '/tg_lib.php';
@@ -3402,6 +3410,15 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <p class="muted" style="margin:4px 0 8px">iPhone : ouvrez l’admin depuis l’application OROLADO installée sur l’écran d’accueil (pas dans Safari).</p>
         <button class="mini ok" type="button" id="btnNtDevice">Activer les notifications sur cet appareil</button>
         <span class="muted" id="ntDeviceSt"></span>
+      </div>
+      <div class="nt-card">
+        <b>Pushover — alarme qui sonne (retraits, dépôts)</b>
+        <p class="muted" style="margin:4px 0 8px">Retrait demandé : le téléphone sonne toutes les 30 s jusqu’à « Acknowledge ». Dépôt reçu : son « caisse ». 1) User Key : écran d’accueil de l’appli Pushover. 2) API Token : pushover.net → « Create an Application/API Token » (nom : OROLADO). 3) iPhone : Réglages → Notifications → Pushover → autoriser les « Alertes critiques » pour sonner même en silencieux.</p>
+        <input id="poUser" placeholder="User Key (30 caractères)" autocomplete="off" style="width:100%;margin-bottom:6px">
+        <input type="password" id="poToken" placeholder="API Token de l’application (30 caractères)" autocomplete="off" style="width:100%;margin-bottom:8px">
+        <button class="mini ok" type="button" id="btnPoSave">Enregistrer</button>
+        <button class="mini" type="button" id="btnPoTest">Tester l’alarme</button>
+        <span class="muted" id="poSt"></span>
       </div>
       <div class="nt-card">
         <b>Telegram — alerte à chaque demande de retrait</b>
@@ -4402,7 +4419,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   $n('ntLang').onchange = paintWho;
   $n('ntTitle').oninput = preview;
   $n('ntBody').oninput = preview;
-  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; $n('alRes').innerHTML = ''; $n('ndRes').innerHTML = ''; loadStats(); tgPaint(); alInfo(); ndInfo(); };
+  $n('btnNotif').onclick = () => { $n('notifModal').classList.add('on'); $n('ntSt').textContent = ''; $n('alRes').innerHTML = ''; $n('ndRes').innerHTML = ''; loadStats(); tgPaint(); poPaint(); alInfo(); ndInfo(); };
   // 2026-10-23 — notifications automatiques (2 par jour) : marche / arrêt, prochain créneau, dernier envoi, test
   const ND_ST = {sent:'✅ envoyée', off:'⏸ éteintes', late:'⏭ sautée (aucune visite à l’heure)', nodata:'⏭ pas de données réelles', cap:'⏭ déjà 2 aujourd’hui'};
   const ndPaint = j => {
@@ -4431,6 +4448,10 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     b.disabled = false;
   };
   $n('closeNotif').onclick = () => $n('notifModal').classList.remove('on');
+  // 2026-10-25 — Pushover
+  const poPaint = async () => { try { const j = await ajax({action:'po_status'}); $n('poSt').textContent = j.ready ? 'Relié ✓ (' + j.user + ')' + (j.last && j.last.at ? ' — dernier envoi : ' + (j.last.ok ? 'OK' : 'échec ' + (j.last.why || '')) : '') : (j.user ? 'API Token manquant' : 'Pas encore réglé'); } catch (e) { /* ignore */ } };
+  $n('btnPoSave').onclick = async () => { $n('poSt').textContent = '…'; const j = await ajax({action:'po_save', user: $n('poUser').value.trim(), token: $n('poToken').value.trim()}); $n('poToken').value = ''; $n('poSt').textContent = j.ready ? 'Relié ✓ — touchez « Tester l’alarme »' : 'Vérifiez la User Key et l’API Token (30 caractères chacun)'; };
+  $n('btnPoTest').onclick = async () => { $n('poSt').textContent = 'Envoi…'; const j = await ajax({action:'po_test'}); $n('poSt').textContent = j.ok ? 'Alarme envoyée ✓ (touchez « Acknowledge » dans Pushover pour l’arrêter)' : 'Échec : ' + (j.reason || '?'); };
   // v2959 — Telegram
   const tgPaint = async () => { try { const j = await ajax({action:'tg_status'}); $n('tgSt').textContent = j.linked ? 'Relié ✓' + (j.bot ? ' (@' + j.bot + ')' : '') : (j.has ? 'Code enregistré — touchez DÉMARRER dans le robot puis « Relier ».' : 'Pas encore relié.'); } catch (e) { /* ignore */ } };
   $n('btnTgLink').onclick = async () => { $n('tgSt').textContent = '…'; const j = await ajax({action:'tg_link', token: $n('tgToken').value.trim()}); $n('tgToken').value = ''; $n('tgSt').textContent = j.ok ? 'Relié ✓ — un message de test vient d’arriver dans Telegram.' : (j.reason || 'Échec'); };

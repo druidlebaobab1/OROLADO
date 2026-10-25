@@ -384,10 +384,14 @@ function push_notify_admin(string $title, string $body, string $url = '/admin.ph
       elseif (tg_mirror_on()) $tg = tg_send_admin(trim($title) . "\n" . trim($body) . "\n\n👉 https://orolado.com" . ($url !== '' && $url[0] === '/' ? $url : '/admin.php'));
     } catch (Throwable $e) { $tg = ['ok' => false, 'why' => 'Erreur interne Telegram']; }
   }
+  // 2026-10-25 : Pushover (alarme qui sonne jusqu'à « J'ai vu » pour un retrait), juste après Telegram
+  $po = null;
+  if (is_file(__DIR__ . '/po_lib.php')) { try { require_once __DIR__ . '/po_lib.php'; if (po_ready() && po_prio($title) !== 1) $po = po_send($title, $body, $url); /* dépôts : déjà sonnés un par un (credit_paid_deposit) */ } catch (Throwable $e) { $po = ['ok' => false, 'why' => 'Erreur interne Pushover']; } }
   $rows = push_admin_rows();
   $res = $rows ? push_send_rows($rows, push_payload($title, $body, $url)) : ['sent' => 0, 'gone' => 0, 'fail' => 0, 'codes' => []];
   $res['devices'] = count($rows);
   if ($tg !== null) $res['tg'] = $tg;
+  if ($po !== null) $res['po'] = $po;
   push_alert_log_add($title, $body, $tg, $res);
   return $res;
 }
