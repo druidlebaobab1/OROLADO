@@ -1052,7 +1052,7 @@
         });
       });
       // ear (back side: thin dark-grey skin with fine fur, a pink edge on the outer rim); the right ear is the mirror
-      R.ew = s * 0.24; R.eh = s * 0.26;
+      R.ew = s * 0.29; R.eh = s * 0.3; // v3195 : oreilles plus grandes (fiche du propriétaire)
       R.ear = mkc(R.ew, R.eh, dpr, function (c, w, h) {
         var cx = w / 2, cy = h * 0.48, rx = w * 0.42, ry = h * 0.44;
         // v3193 (fiche du propriétaire) : oreille ronde, bord de fourrure dorée, intérieur rose bien visible
@@ -1138,12 +1138,12 @@
       var bh = 0.5 - 0.5 * Math.cos(a2 - 0.9), hyH = -s * 0.79 - bob - bh * 0.035 * s * amp * (crash ? 0 : 1), hxH = -sway * 0.5 - lean * 0.12 * s;
       for (i = -1; i <= 1; i += 2) {
         var er = i * (0.32 + 0.1 * Math.sin(a2 - 1.7) * amp + earK) ;
-        c.save(); c.translate(hxH + i * s * 0.2, hyH - s * 0.12); c.rotate(er); if (i > 0) c.scale(-1, 1); c.drawImage(R.ear, -R.ew / 2, -R.eh * 0.95, R.ew, R.eh); c.restore();
+        c.save(); c.translate(hxH + i * s * 0.21, hyH - s * 0.11); c.rotate(er); if (i > 0) c.scale(-1, 1); c.drawImage(R.ear, -R.ew / 2, -R.eh * 0.95, R.ew, R.eh); c.restore();
       }
       c.save(); c.translate(hxH, hyH); c.scale(1 + sq * 0.5, 1 - sq * 0.5); c.drawImage(R.head, -R.hw / 2, -R.hh / 2, R.hw, R.hh);
       // v3193 : les yeux se devinent sur les côtés de la tête (ronds, noirs, un éclat blanc), comme sur la fiche du propriétaire
       for (i = -1; i <= 1; i += 2) {
-        var ex = i * s * 0.285, ey = s * 0.015, er2 = s * 0.042;
+        var ex = i * s * 0.29, ey = s * 0.01, er2 = s * 0.055; // v3195 : yeux plus grands, plus « mignons »
         c.fillStyle = '#1B0F0A'; c.beginPath(); c.ellipse(ex, ey, er2 * 0.8, er2, i * 0.25, 0, TAU); c.fill();
         c.fillStyle = 'rgba(255,255,255,.9)'; c.beginPath(); c.arc(ex - i * er2 * 0.15, ey - er2 * 0.4, er2 * 0.3, 0, TAU); c.fill();
       }
@@ -1161,10 +1161,13 @@
       }
       // body (squash / stretch from the ground up)
       c.save(); c.translate(0, -bob); c.scale(sx, sy); c.drawImage(R.body, -R.bw / 2, -R.boy - s * 0.085, R.bw, R.bh); c.restore();
-      // tiny tail
-      var tx0 = Math.sin(a2) * 0.01 * s, ty0 = -s * 0.19 - bob * sy;
-      c.fillStyle = '#E9C9A6'; c.beginPath(); c.ellipse(tx0, ty0, s * 0.045, s * 0.035, 0, 0, TAU); c.fill();
-      c.fillStyle = '#F2B9B4'; c.beginPath(); c.ellipse(tx0, ty0 + s * 0.012, s * 0.022, s * 0.016, 0, 0, TAU); c.fill();
+      // v3195 : petite queue duveteuse (comme sur la fiche) qui frétille, + reflet de lumière sur le dos
+      var tx0 = Math.sin(a2) * 0.018 * s, ty0 = -s * 0.2 - bob * sy, tg2 = c.createRadialGradient(tx0 - s * 0.015, ty0 - s * 0.02, s * 0.005, tx0, ty0, s * 0.07);
+      tg2.addColorStop(0, '#F7E3C6'); tg2.addColorStop(0.6, '#DDB083'); tg2.addColorStop(1, 'rgba(190,130,70,0)');
+      c.fillStyle = tg2; c.beginPath(); c.ellipse(tx0, ty0, s * 0.07, s * 0.06, 0, 0, TAU); c.fill();
+      var hl2 = c.createRadialGradient(-s * 0.12, -s * 0.66 - bob, 0, -s * 0.12, -s * 0.66 - bob, s * 0.26);
+      hl2.addColorStop(0, 'rgba(255,240,210,.32)'); hl2.addColorStop(1, 'rgba(255,240,210,0)');
+      c.fillStyle = hl2; c.beginPath(); c.ellipse(-s * 0.12, -s * 0.66 - bob, s * 0.26, s * 0.18, -0.3, 0, TAU); c.fill();
       // hind legs (v3107): alternate — one foot planted under the body (moving back toward the camera as the body goes
       // forward), the other pushing off: heel rises, the sole turns to the camera, the foot lifts, then swings forward to land
       var fsp = crash ? Math.max(0.15, Math.exp(-crash.t * 1.5)) : 1;
