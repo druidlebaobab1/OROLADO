@@ -217,14 +217,40 @@ function live_auto_reply(string $uid, string $lang): ?array {
     'de' => 'Danke für deine Nachricht 🙏 Sie ist angekommen. Bei OROLADO werden Ein- und Auszahlungen automatisch gutgeschrieben und alles funktioniert normal. Wenn du wirklich ein Problem mit einer Einzahlung hast, schick uns hier einen Screenshot deiner Zahlung mit Betrag und Datum: unser Team prüft es und antwortet so schnell wie möglich. Danke für dein Vertrauen 🙌',
     'hi' => 'आपके संदेश के लिए धन्यवाद 🙏 हमें मिल गया है। OROLADO पर जमा और निकासी अपने आप क्रेडिट होती है और सब कुछ सामान्य रूप से काम कर रहा है। अगर आपको सच में किसी जमा में दिक्कत है, तो यहाँ अपने भुगतान का स्क्रीनशॉट रक़म और तारीख के साथ भेजें: हमारी टीम जाँच करके जल्द से जल्द जवाब देगी। आपके भरोसे के लिए धन्यवाद 🙌',
   ];
-  $t = $txt[$lang] ?? $txt['en'];
-  return live_update(live_thread_file($uid), function ($th) use ($t) {
+  // v3199 (propriétaire) : 2e message automatique, FERME et respectueux. Il part SEULEMENT si le joueur revient écrire
+  // (au moins 2 min après le 1er message auto) et tant qu'aucun humain n'a répondu. Ensuite plus d'auto : le silence répond.
+  $txt2 = [
+    'fr' => 'On a bien reçu ta demande et on l\'examine en ce moment 🔎 Si ton paiement est confirmé de notre côté, tu recevras ici une réponse avec la suite. Pour aller plus vite, joins une capture d\'écran de ton dépôt (montant, date, moyen de paiement). Sans preuve, nous ne pouvons pas donner suite. Merci de ta compréhension 🙏',
+    'en' => 'We have received your request and we are reviewing it right now 🔎 If your payment is confirmed on our side, you will get a reply here with the next steps. To speed things up, attach a screenshot of your deposit (amount, date, payment method). Without proof, we cannot take it further. Thank you for your understanding 🙏',
+    'zh' => '我们已收到你的请求，正在核实中 🔎 如果你的付款在我们这边得到确认，我们会在这里回复你后续处理。为了更快，请附上你存款的截图（金额、日期、付款方式）。没有凭证，我们无法继续处理。感谢你的理解 🙏',
+    'es' => 'Hemos recibido tu solicitud y la estamos revisando ahora mismo 🔎 Si tu pago se confirma de nuestro lado, recibirás aquí una respuesta con los siguientes pasos. Para ir más rápido, adjunta una captura de tu depósito (monto, fecha, método de pago). Sin pruebas, no podemos dar seguimiento. Gracias por tu comprensión 🙏',
+    'pt' => 'Recebemos o teu pedido e estamos a analisá-lo neste momento 🔎 Se o teu pagamento for confirmado do nosso lado, receberás aqui uma resposta com os próximos passos. Para ser mais rápido, anexa uma captura do teu depósito (valor, data, método de pagamento). Sem provas, não podemos dar seguimento. Obrigado pela tua compreensão 🙏',
+    'ar' => 'لقد استلمنا طلبك ونقوم بمراجعته الآن 🔎 إذا تم تأكيد دفعتك من جانبنا، فستصلك هنا رسالة بالخطوات التالية. لتسريع الأمر، أرفق لقطة شاشة لإيداعك (المبلغ، التاريخ، وسيلة الدفع). بدون إثبات، لا يمكننا المتابعة. شكرًا لتفهمك 🙏',
+    'tr' => 'Talebini aldık ve şu anda inceliyoruz 🔎 Ödemen bizim tarafımızda doğrulanırsa, sonraki adımlarla ilgili burada bir yanıt alacaksın. Daha hızlı olması için yatırdığın paranın ekran görüntüsünü ekle (tutar, tarih, ödeme yöntemi). Kanıt olmadan işleme devam edemeyiz. Anlayışın için teşekkürler 🙏',
+    'vi' => 'Chúng tôi đã nhận yêu cầu của bạn và đang xem xét ngay bây giờ 🔎 Nếu khoản thanh toán của bạn được xác nhận từ phía chúng tôi, bạn sẽ nhận được phản hồi với các bước tiếp theo tại đây. Để nhanh hơn, hãy đính kèm ảnh chụp màn hình khoản nạp của bạn (số tiền, ngày, phương thức thanh toán). Không có bằng chứng, chúng tôi không thể xử lý tiếp. Cảm ơn bạn đã thông cảm 🙏',
+    'id' => 'Kami sudah menerima permintaanmu dan sedang memeriksanya sekarang 🔎 Jika pembayaranmu dikonfirmasi dari sisi kami, kamu akan mendapat balasan di sini dengan langkah selanjutnya. Agar lebih cepat, lampirkan tangkapan layar depositmu (jumlah, tanggal, metode pembayaran). Tanpa bukti, kami tidak dapat melanjutkan. Terima kasih atas pengertianmu 🙏',
+    'ru' => 'Мы получили твой запрос и сейчас его проверяем 🔎 Если твой платёж подтвердится с нашей стороны, ты получишь здесь ответ с дальнейшими шагами. Чтобы ускорить, приложи скриншот своего пополнения (сумма, дата, способ оплаты). Без доказательства мы не можем продолжить. Спасибо за понимание 🙏',
+    'de' => 'Wir haben deine Anfrage erhalten und prüfen sie gerade 🔎 Wenn deine Zahlung auf unserer Seite bestätigt wird, bekommst du hier eine Antwort mit den nächsten Schritten. Damit es schneller geht, füge einen Screenshot deiner Einzahlung bei (Betrag, Datum, Zahlungsmethode). Ohne Nachweis können wir nichts weiter tun. Danke für dein Verständnis 🙏',
+    'hi' => 'हमें आपका अनुरोध मिल गया है और हम अभी इसकी जाँच कर रहे हैं 🔎 अगर आपका भुगतान हमारी ओर से पुष्ट होता है, तो आपको यहाँ अगले क़दम के साथ जवाब मिलेगा। जल्दी के लिए, अपने जमा का स्क्रीनशॉट (रक़म, तारीख, भुगतान का तरीका) लगाएँ। बिना सबूत के हम आगे कुछ नहीं कर सकते। आपकी समझ के लिए धन्यवाद 🙏',
+  ];
+  $t1 = $txt[$lang] ?? $txt['en'];
+  $t2 = $txt2[$lang] ?? $txt2['en'];
+  return live_update(live_thread_file($uid), function ($th) use ($t1, $t2) {
     $now = time();
-    foreach (array_reverse((array) ($th['msgs'] ?? [])) as $m) {
-      if (($m['f'] ?? '') === 'a') {
-        if ((int) ($m['at'] ?? 0) > $now - 12 * 3600) return ['ok' => false];
-        break;
-      }
+    $autoCount = 0; $lastAuto = 0; $humanReply = false;
+    foreach ((array) ($th['msgs'] ?? []) as $m) {
+      if (($m['f'] ?? '') !== 'a') continue;
+      if (!empty($m['auto'])) { $autoCount++; $lastAuto = max($lastAuto, (int) ($m['at'] ?? 0)); }
+      else { $humanReply = true; }
+    }
+    // Un humain a déjà répondu → on ne met plus de message automatique (le cas est suivi à la main).
+    if ($humanReply) return ['ok' => false];
+    if ($autoCount === 0) {
+      $t = $t1;                                   // 1er message : chaleureux, « envoie une capture »
+    } elseif ($autoCount === 1 && $lastAuto > 0 && $lastAuto <= $now - 120) {
+      $t = $t2;                                   // 2e message : ferme, seulement si le joueur revient 2 min+ après
+    } else {
+      return ['ok' => false];                     // déjà 2 messages auto, ou trop rapproché → silence
     }
     $msg = ['id' => 'm' . bin2hex(random_bytes(6)), 'f' => 'a', 't' => $t, 'at' => $now, 'auto' => 1];
     $th['msgs'] = array_slice(array_merge((array) ($th['msgs'] ?? []), [$msg]), -LIVE_THREAD_KEEP);
