@@ -7,6 +7,8 @@
     CURRENCY_SYMBOL: '$',
     /** Taux fixe paiement local : 1 USD = 600 FCFA (ex. 3 $ = 1 800 FCFA). */
     USD_FCFA_RATE: 600,
+    /** 2026-10-25 (propriétaire, validé) : dépôt Amérique latine (js/latam.js) ouvert à tous les comptes d'Amérique latine. */
+    LATAM_PUBLIC: true,
     DEMO_START: 1000000,
     REAL_START: 0,
     MIN_STAKE: 1,
