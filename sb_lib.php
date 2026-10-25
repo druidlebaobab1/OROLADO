@@ -1606,7 +1606,7 @@ function sb_res_fetch_wanted(int $now, int $max = 1): int {
   $n = 0;
   foreach ($days as $day) {
     if (!is_string($day) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) || $day < gmdate('Y-m-d', $now - SB_RES_DAYS * 86400) || $day > gmdate('Y-m-d', $now)) continue;
-    if (sb_budget($now)['left'] <= SB_LIVE_RESERVE) break; // jamais dans la réserve
+    if (sb_budget($now)['left'] <= 300) break; // 2026-10-25 : les résultats (paiement des paris) passent avant le direct
     $j = sb_get('fixtures?date=' . $day . '&timezone=UTC', $now);
     $n++;
     if ($j === null) continue;
@@ -1673,7 +1673,7 @@ function sb_res_match(?array $user, string $fid, int $now = 0): array {
     if ($lk && flock($lk, LOCK_EX | LOCK_NB)) {
       $c2 = sb_read($name);
       if ($c2 && (!empty($c2['fin']) || (int) ($c2['at'] ?? 0) >= $now - 600)) $c = $c2;
-      elseif (sb_budget($now)['left'] > SB_LIVE_RESERVE) {
+      elseif (sb_budget($now)['left'] > 300) {
         $j = sb_get('fixtures?id=' . $id, $now);
         $r = is_array($j) ? (($j['response'] ?? [])[0] ?? null) : null;
         if (is_array($r) && ($row = sb_fx_row($r))) {
@@ -1966,6 +1966,7 @@ function sb_code_load(?array $user, string $code, int $now = 0, ?array $sel = nu
  */
 const SB_LIVE_ODDS_TTL = 15;        // /odds/live : au plus toutes les 15 s (partagé)
 const SB_LIVE_FX_TTL = 30;          // /fixtures?live=all : au plus toutes les 30 s
+const SB_LIVE_ODDS_SLOW = 25;       // 2026-10-25 : rythme le plus lent des cotes quand le budget du jour est serré
 const SB_LIVE_STALE = 20;           // données de plus de 20 s : suspendu
 const SB_LIVE_DELAY = 15;           // durée d'acceptation d'un pari en direct (2026-10-22 : 15 s avec contrôles toutes les 3 s ; avant 8)
 const SB_LIVE_DEMAND = 60;          // quelqu'un a regardé le direct dans les 60 s
@@ -2339,7 +2340,11 @@ function sb_live_p1x2(array $row): ?array {
   return $inv;
 }
 const SB_LIVE_JUMP_LOCK = 90; // secondes de cadenas après un saut de cote, un passage en « bloqué » ou un changement de score (propriétaire : « même 1 min 30, ce n'est pas grave »)
-function sb_live_budget_ok(int $now, int $left = SB_LIVE_RESERVE): bool { return sb_budget($now)['left'] > $left; }
+function sb_live_budget_ok(int $now, int $left = -1): bool { return sb_budget($now)['left'] > ($left < 0 ? sb_live_reserve($now) : $left); }
+/** 2026-10-25 : réserve gardée pour l'avant-match et les résultats : 1 000 le matin, de moins en moins vers 0 h UTC (au moins 300). */
+function sb_live_reserve(int $now): int { return max(300, (int) ceil(SB_LIVE_RESERVE * (86400 - ($now % 86400)) / 86400)); }
+/** Âge maximal des cotes en direct avant cadenas : 20 s, ou le rythme de lecture + 12 s quand le budget oblige à ralentir. */
+function sb_live_stale(int $now): int { return max(SB_LIVE_STALE, sb_live_ttls($now)[0] + 12); }
 /**
  * 2026-10-22 (propriétaire : « le direct verrouille 1 à 2 min trop tard ») : rythme du direct selon les lectures qui restent
  * aujourd'hui — le plus vite possible (cotes toutes les 5 s, matchs toutes les 10 s) sans jamais vider le budget ;
@@ -2348,11 +2353,13 @@ function sb_live_budget_ok(int $now, int $left = SB_LIVE_RESERVE): bool { return
 function sb_live_ttls(int $now): array {
   $b = sb_budget($now);
   $secLeft = max(600, 86400 - ($now % 86400));
-  $avail = $b['left'] - SB_LIVE_RESERVE - (int) (2500 * $secLeft / 86400); // avant-match + résultats du reste de la journée
-  if ($avail <= 0) return [SB_LIVE_ODDS_TTL, SB_LIVE_FX_TTL];
-  $t = (int) ceil(1.67 * 0.25 * $secLeft / $avail); // grands matchs en direct ~1/4 de la journée (sinon : pas de lecture des cotes) // le direct est regardé ~1/3 de la journée (lecture seulement s'il y a quelqu'un) 
-  $t = max(5, min(SB_LIVE_ODDS_TTL, $t));
-  return [$t, max(15, min(SB_LIVE_FX_TTL, (int) ceil(1.5 * $t)))]; // matchs : l'API les met à jour toutes les 15 s (doc)
+  $avail = $b['left'] - sb_live_reserve($now) - (int) (2500 * $secLeft / 86400); // avant-match + résultats du reste de la journée
+  // 2026-10-25 (propriétaire : « tout le direct cadenassé le soir ») : budget serré → on ralentit (cotes jusqu'à 25 s, matchs 60 s)
+  // au lieu de tout dépenser puis de s'arrêter ; le direct reste ouvert jusqu'à 0 h UTC.
+  if ($avail <= 0) return [SB_LIVE_ODDS_SLOW, 60];
+  $t = (int) ceil(1.67 * 0.35 * $secLeft / $avail); // le direct est regardé ~1/3 de la journée (lecture seulement s'il y a quelqu'un)
+  $t = max(5, min(SB_LIVE_ODDS_SLOW, $t));
+  return [$t, max(15, min(60, (int) ceil(($t > SB_LIVE_ODDS_TTL ? 2.4 : 1.5) * $t)))]; // matchs : l'API les met à jour toutes les 15 s (doc)
 }
 /**
  * Tâche du direct (APRÈS la réponse) : seulement s'il y a de la demande (60 s), un seul lecteur à la fois (verrou non
@@ -2469,7 +2476,7 @@ function sb_live_stats_lockf(string $id): string {
 function sb_live_stats_fetch(string $id, int $now): bool {
   $path = 'fixtures/statistics?fixture=' . (int) $id;
   if (sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) !== null) return false;
-  if (!sb_has_key() || !sb_live_budget_ok($now)) return false;
+  if (!sb_has_key() || !sb_live_budget_ok($now, SB_LIVE_RESERVE)) return false;
   $f = sb_live_stats_lockf($id);
   $lk = @fopen($f, 'c');
   if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return false; }
@@ -2502,7 +2509,7 @@ function sb_live_stats_api(?array $user, string $fid, int $now = 0): array {
   sb_live_demand($now);
   $pend = 0;
   $path = 'fixtures/statistics?fixture=' . (int) $id;
-  if (empty($v['row']['end']) && sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) === null && sb_has_key() && sb_live_budget_ok($now)) {
+  if (empty($v['row']['end']) && sb_cache_peek($path, SB_LIVE_STATS_TTL, $now) === null && sb_has_key() && sb_live_budget_ok($now, SB_LIVE_RESERVE)) {
     $after = PHP_SAPI !== 'cli' && PHP_SAPI !== 'cli-server' && function_exists('fastcgi_finish_request') && empty($GLOBALS['SB_STATS_INLINE']);
     if ($after) {
       $pend = 1;
@@ -2533,7 +2540,7 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
   $od = $L['od'][$id] ?? null;
   $ti = [(int) ($row['h'][0] ?? 0), (int) ($row['a'][0] ?? 0)];
   if (is_array($od) && array_map('intval', (array) ($od['ti'] ?? [])) !== $ti) $od = null; // jamais un autre match
-  $fresh = is_array($od) && $now - (int) ($L['at'] ?? 0) <= SB_LIVE_STALE;
+  $fresh = is_array($od) && $now - (int) ($L['at'] ?? 0) <= sb_live_stale($now);
   $sc = is_array($od) ? (array) $od['sc'] : (is_array($row['g'] ?? null) ? (array) $row['g'] : [0, 0]);
   $sc = [(int) ($sc[0] ?? 0), (int) ($sc[1] ?? 0)];
   $m = is_array($od) && $od['m'] !== null ? (int) $od['m'] : (int) ($row['m'] ?? 0);
