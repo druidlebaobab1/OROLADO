@@ -5625,14 +5625,20 @@
     '<i class="pl-logo pl-telecel">telecel</i>' +
     // 1Voucher : logo actuel (carré orange avec « 1 » blanc + « Voucher » orange).
     '<i class="pl-logo pl-1voucher"><b>1</b>Voucher</i>' +
-    // 2026-10-25 (propriétaire) : une rangée Amérique latine (Pago Móvil, Nequi, SPEI, Yape, Mercado Pago). Visible seulement
+    // 2026-10-25 (propriétaire) : une rangée Amérique latine (Pago Móvil, Nequi, SPEI, Mercado Pago, PIX, Yape, Bancolombia, Daviplata, Plin, Zinli). Visible seulement
     // quand le dépôt Amérique latine est ouvert (html.oro-latam ; pour l'instant le compte admin).
-    // Ordre : Venezuela (Pago Móvil), Colombie (Nequi), Mexique (SPEI) d'abord.
+    // Ordre : Venezuela (Pago Móvil), Colombie (Nequi), Mexique (SPEI) d'abord, puis les plus grands de chaque pays
+    // que Guardarian / El Dorado prennent (Mercado Pago, PIX, Yape, Bancolombia, Daviplata, Plin, Zinli). 2 rangées de 5.
     '<i class="pl-logo pl-la pl-pmovil"><b>Pago</b>Móvil</i>' +
     '<i class="pl-logo pl-la pl-nequi">Nequi</i>' +
     '<i class="pl-logo pl-la pl-spei">SPEI</i>' +
+    '<i class="pl-logo pl-la pl-mpago"><b>Mercado</b>Pago</i>' +
+    '<i class="pl-logo pl-la pl-pix"><b></b>pix</i>' +
     '<i class="pl-logo pl-la pl-yape">yape</i>' +
-    '<i class="pl-logo pl-la pl-mpago"><b>Mercado</b>Pago</i>';
+    '<i class="pl-logo pl-la pl-bancol">Bancolombia</i>' +
+    '<i class="pl-logo pl-la pl-davi">Daviplata</i>' +
+    '<i class="pl-logo pl-la pl-plin">plin</i>' +
+    '<i class="pl-logo pl-la pl-zinli">zinli</i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
     if (!card || card.querySelector('.pay-local')) return;

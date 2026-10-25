@@ -13638,3 +13638,10 @@ html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo
 /* 2026-10-25 : Pago Móvil (Venezuela) à la place de PIX dans la rangée Amérique latine. */
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil{background:#0D3B8C!important;color:#FFD200!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil b{font-size:7.5px;font-weight:800;color:#fff}
+/* 2026-10-25 : 2e rangée Amérique latine (PIX, Yape, Bancolombia, Daviplata, Plin, Zinli) ; rangées encore serrées (6 rangées). */
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos{gap:3px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{height:20px!important;min-height:20px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-bancol{background:#FDDA24!important;color:#111!important;font-size:7.8px!important;letter-spacing:-.04em!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-davi{background:#E30613!important;color:#fff!important;font-size:8.6px!important;letter-spacing:-.03em!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-plin{background:#00C6D7!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-zinli{background:#5B2BE0!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
