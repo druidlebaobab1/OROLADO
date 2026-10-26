@@ -13647,7 +13647,7 @@ html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-zinli{background:#5B2BE0!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
 /* 2026-10-25 (propriétaire : « le petit tiret colle au titre Recharger ») : la barre de prise des fenêtres remonte tout en
    haut (3 px du bord, 4 px d'épaisseur) — un vrai espace avec le titre, sur tout le site, sans bouger la page. */
-html body .modal-backdrop > .modal-box > i.bp-grip.bp-grip.bp-grip{top:calc(env(safe-area-inset-top,0px) + 3px)!important;height:4px!important}
+html body .modal-backdrop > .modal-box > i.bp-grip.bp-grip.bp-grip{top:calc(env(safe-area-inset-top,0px) + 9px)!important;height:4px!important;width:44px!important;background:rgba(255,255,255,.34)!important}
 /* 2026-10-26 (propriétaire) — bandeau « Compte réel » du Jeu et des Paris (pas le trading) : un petit espace entre le titre
    « COMPTE RÉEL » et le montant, pour qu'ils ne collent pas (surtout sur Android). Le logo d'argent revient dès 360 px (ci-dessus). */
 html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t small{margin-bottom:2px!important}
@@ -13665,3 +13665,12 @@ html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wall
   html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:16px!important;letter-spacing:-.01em!important}
   html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-plus{width:32px!important;height:32px!important;min-width:32px!important;font-size:21px!important}
 }
+/* 2026-10-26 (propriétaire) — Jeu et Paris : on RETIRE le titre « COMPTE RÉEL » de la case du haut (le trading et son plein
+   écran gardent leur titre, eux). On ne laisse que le montant, bien centré et mis en valeur, comme les grands sites
+   (Stake, 1xBet…). Plus de titre à caser → le montant respire et peut être un peu plus grand. localcur.js ajuste encore. */
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t > small{display:none!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t{justify-content:center!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:22px!important;line-height:1.05!important}
+/* 2026-10-26 (propriétaire) — Android : la croix de « Recharger » bien placée dans le coin, un peu détachée du bord haut
+   (barre du téléphone) au lieu d'être collée tout en haut. iPhone : sa croix (déjà bien) n'est pas touchée. */
+html.is-android:root body #depositModal#depositModal#depositModal .btn-close#closeDeposit#closeDeposit{top:14px!important;right:12px!important;width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important}

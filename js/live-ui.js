@@ -129,7 +129,12 @@
       // Seulement depuis le haut de la page (zone du titre / poignée), et si la page est tout en haut.
       // v2787 (propriétaire) : la page reste BLOQUÉE comme une vraie appli — on ne la tire vers le bas que depuis le petit
       // trait tout en haut (avant : les 86 premiers pixels → en défilant Paris, toute la page descendait et on voyait le trading dessous)
-      if (ty > 30 || box.scrollTop > 2) return;
+      // 2026-10-26 (propriétaire) : la zone suit la poignée (placée sous l'encoche par env(safe-area)). Avant, elle était figée
+      // aux 30 premiers pixels : sur iPhone, la page part en haut de l'écran DERRIÈRE l'encoche, donc le petit trait visible
+      // (≈ 50 px plus bas) tombait HORS de la zone → « on dirait que ça ne glisse pas ». Maintenant on peut tirer depuis le trait.
+      var zone = 30, g = box.querySelector('.bp-grip');
+      if (g && getComputedStyle(g).display !== 'none') { var gr = g.getBoundingClientRect(); if (gr.height) zone = Math.max(30, (gr.bottom - r.top) + 26); }
+      if (ty > zone || box.scrollTop > 2) return;
       if (e.target.closest && e.target.closest('input,textarea,select,.lf-duelcard')) return;
       on = true; y0 = e.touches[0].clientY; dy = 0; box.style.transition = 'none';
     }, { passive: true });
