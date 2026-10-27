@@ -151,7 +151,9 @@ function writeJs(doc) {
 const doc = JSON.parse(fs.readFileSync(DEF, 'utf8'));
 if (process.argv.indexOf('--js') < 0) {
   const t0 = Date.now();
+  const ONLY_MISSING = process.argv.indexOf('--missing') >= 0;
   doc.indices.forEach((e, i) => {
+    if (ONLY_MISSING && e.fair && e.fair['5'] && e.fair['5'].length) return; // garde les tables déjà calibrées (anciens indices verrouillés)
     e.fair = fairRows(e.model, 20261018 + i * 7919);
     process.stdout.write(e.id + ' ');
   });
