@@ -1032,13 +1032,8 @@
   window.addEventListener('orientationchange', function () { setTimeout(function () { winWCache = window.innerWidth || 0; }, 300); }, { passive: true });
   var backdropCoinsOk = false; // v2569 : une fois toutes chargées, plus besoin de revérifier à chaque image
   function backdropCoinsReady() {
-    if (backdropCoinsOk) return true;
-    var i;
-    for (i = 0; i < BACKDROP_COINS.length; i++) {
-      var img = coinImg(BACKDROP_COINS[i]);
-      if (img && !(img.complete && img.naturalWidth)) return false;
-    }
-    backdropCoinsOk = true;
+    // v3224 (propriétaire) : plus AUCUN logo crypto dans le fond → inutile de précharger les
+    // 27 icônes. Le fond se construit tout de suite, plus léger.
     return true;
   }
 
@@ -1053,16 +1048,10 @@
   var GALAXY_TURNS = 1.6;
 
   function cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr) {
-    function halo(x, y, r, col) {
-      var rg = g.createRadialGradient(x, y, 0, x, y, r);
-      rg.addColorStop(0, col);
-      rg.addColorStop(1, 'rgba(0,0,0,0)');
-      g.fillStyle = rg;
-      g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
-    }
-    // v3216 (propriétaire) : plus de planètes décoratives en trop. De petits anneaux blancs
-    // très légers posés sur quelques planètes du fond → on voit que ce sont des planètes
-    // (pas des cryptos), sans alourdir.
+    // v3224 (propriétaire) : fond CALME et LÉGER. On ne garde QUE de petits anneaux blancs
+    // discrets, un par planète restante → on voit que ce sont des planètes, pas des cryptos.
+    // Plus de galaxie spirale au centre, plus de cœur lumineux, plus aucun logo crypto :
+    // le fond ne bouge plus « dans tous les sens », donc la courbe paraît mieux avancer.
     function lightRing(x, y, rr) {
       g.save();
       g.globalAlpha = 0.12;
@@ -1073,61 +1062,9 @@
       g.stroke();
       g.restore();
     }
-    [0, 1, 4, 5, 7, 10].forEach(function (i) {
-      var p = planets[i];
-      if (p) lightRing(p.x, p.y, p.r);
-    });
-    // Spirale ronde au centre ; son bord s'arrête avant la grande planète.
-    // v2377 (propriétaire) : le « cœur » de la courbe, au centre exact du graphique, un peu plus petit,
-    // et toujours un espace libre avant l'anneau de la grande planète.
-    // v2378 : centre de TOUT l'espace du graphique (colonne des prix comprise), un peu plus petite.
-    var cx = cssW * 0.5, cy = cssH * 0.5;
-    var R = Math.min(cssW * 0.30, cssH * 0.40);
-    var p0 = planets[0];
-    var room = Math.hypot(p0.x - cx, p0.y - cy) - p0.r * 1.45;
-    // bout gauche de l'anneau (incliné de -0.32) + quelques points de l'anneau côté spirale
-    var ra;
-    for (ra = 2.4; ra <= 3.9; ra += 0.1) {
-      var ex = Math.cos(ra) * p0.r * 1.95, ey = Math.sin(ra) * p0.r * 0.42;
-      var rx = p0.x + ex * Math.cos(-0.32) - ey * Math.sin(-0.32);
-      var ry = p0.y + ex * Math.sin(-0.32) + ey * Math.cos(-0.32);
-      room = Math.min(room, Math.hypot(rx - cx, ry - cy) - 6);
-    }
-    if (room < R) R = Math.max(30, room);
-    function spiral(arm, t) {
-      var ang = arm * Math.PI + t * Math.PI * 2 * GALAXY_TURNS;
-      var rad = R * (0.05 + 0.95 * t);
-      return { x: cx + Math.cos(ang) * rad, y: cy + Math.sin(ang) * rad };
-    }
-    halo(cx, cy, R * 1.05, 'rgba(120,80,255,0.06)');
-    halo(cx, cy, R * 0.45, 'rgba(180,120,255,0.06)');
-    var arm, t, q;
-    for (arm = 0; arm < 2; arm++) {
-      g.save();
-      g.lineCap = 'round';
-      for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(200,170,255,0.05)' : 'rgba(120,90,255,0.04)';
-        g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
-        g.beginPath();
-        for (t = 0; t <= 1.0001; t += 0.01) {
-          var pp = spiral(arm, t);
-          if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y);
-        }
-        g.stroke();
-      }
-      g.restore();
-      for (t = 0.02; t < 1; t += 0.004) {
-        var sp = spiral(arm, t);
-        var jx = (rnd() - 0.5) * R * 0.07, jy = (rnd() - 0.5) * R * 0.07;
-        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.10 + t * 0.16).toFixed(2) + ')';
-        g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
-      }
-    }
-    // v3221 (propriétaire) : cœur doux au centre, mais plus de BTC ni de cryptos qui glissent
-    // dans la galaxie → fond plus calme et sérieux.
-    halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.10)');
-    halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.10)');
-    galaxy = { cx: cx, cy: cy, R: R, coins: [] };
+    var i;
+    for (i = 0; i < planets.length; i++) { if (planets[i]) lightRing(planets[i].x, planets[i].y, planets[i].r); }
+    galaxy = null;
   }
 
   // Les petites cryptos glissent doucement vers le centre (un trajet en 3 min), de plus en plus petites.
@@ -1330,40 +1267,23 @@
       g.restore();
     }
     var pr = Math.max(14, small * 0.12);
+    // v3224 (propriétaire) : fond ALLÉGÉ. On passe de 12 planètes à 5, toutes posées dans les
+    // coins/bords — hors de la zone de la courbe (centre) et de la colonne des prix (droite) —
+    // pour ne plus gêner le trading. Petites et peu visibles ; chacune reçoit un petit anneau
+    // blanc (cryptoWorld) pour qu'on lise « planète », pas « crypto ». Plus de galaxie, plus de
+    // logos crypto : le fond est calme, la courbe paraît mieux avancer.
     var planets = [
-      // v2373 (propriétaire) : un peu à droite, plus bas et un peu plus petite → la tête de la courbe
-      // (60–62 % de la largeur) ne rentre plus dans la planète ; l'anneau reste hors des prix.
-      // v3216 (propriétaire) : toutes les planètes réduites ; une seule reste un peu plus
-      // grande, en haut (planets[0]), elle-même réduite légèrement. Petits ronds blancs
-      // discrets sur les petites → on voit que ce sont des planètes, pas des cryptos.
-      { x: pad.l + w * 0.86, y: pad.t + h * 0.18, r: pr * 0.24 },
-      { x: pad.l + w * 0.13, y: pad.t + h * 0.85, r: pr * 0.15 },
-      { x: pad.l + w * 0.40, y: pad.t + h * 0.09, r: pr * 0.13 },
-      { x: pad.l + w * 0.60, y: pad.t + h * 0.66, r: pr * 0.12 },
-      { x: pad.l + w * 0.03, y: pad.t + h * 0.42, r: pr * 0.16 },
-      { x: pad.l + w * 0.88, y: pad.t + h * 0.88, r: pr * 0.12 },
-      { x: pad.l + w * 0.26, y: pad.t + h * 0.30, r: pr * 0.10 },
-      { x: pad.l + w * 0.93, y: pad.t + h * 0.50, r: pr * 0.12 },
-      { x: pad.l + w * 0.36, y: pad.t + h * 0.74, r: pr * 0.10 },
-      { x: pad.l + w * 0.70, y: pad.t + h * 0.05, r: pr * 0.11 },
-      { x: pad.l + w * 0.08, y: pad.t + h * 0.12, r: pr * 0.12 },
-      { x: pad.l + w * 0.80, y: pad.t + h * 0.70, r: pr * 0.09 }
+      { x: pad.l + w * 0.11, y: pad.t + h * 0.12, r: pr * 0.15 },
+      { x: pad.l + w * 0.83, y: pad.t + h * 0.13, r: pr * 0.14 },
+      { x: pad.l + w * 0.15, y: pad.t + h * 0.87, r: pr * 0.13 },
+      { x: pad.l + w * 0.86, y: pad.t + h * 0.86, r: pr * 0.12 },
+      { x: pad.l + w * 0.31, y: pad.t + h * 0.24, r: pr * 0.10 }
     ];
-    // v3221 (propriétaire) : petite galaxie plate du bas retirée (fond plus épuré et sérieux).
-    planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.2, false);
+    planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.22, false);
     planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
-    planet(planets[2].x, planets[2].y, planets[2].r, '#EEDCFF', 'rgba(139,92,246,1)', '#26105A', 0.5, false);
-    planet(planets[3].x, planets[3].y, planets[3].r, '#FFD0C8', 'rgba(220,80,70,1)', '#3A0B0B', 0.35, false);
-    planet(planets[4].x, planets[4].y, planets[4].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.22, false);
-    planet(planets[5].x, planets[5].y, planets[5].r, '#D9FFC8', 'rgba(101,190,60,1)', '#12300A', 0.42, false);
-    planet(planets[6].x, planets[6].y, planets[6].r, '#FFF2C8', 'rgba(230,190,90,1)', '#3A2A08', 0.4, false);
-    planet(planets[7].x, planets[7].y, planets[7].r, '#D6F6FF', 'rgba(56,189,248,1)', '#082A44', 0.4, false);
-    planet(planets[8].x, planets[8].y, planets[8].r, '#FFD9EC', 'rgba(236,72,153,1)', '#3A0820', 0.38, false);
-    planet(planets[9].x, planets[9].y, planets[9].r, '#E8E4FF', 'rgba(160,150,230,1)', '#1E1A44', 0.4, false);
-    planet(planets[10].x, planets[10].y, planets[10].r, '#FFE9C8', 'rgba(240,150,70,1)', '#3A1A06', 0.28, false);
-    planet(planets[11].x, planets[11].y, planets[11].r, '#C8FFE6', 'rgba(40,200,150,1)', '#05301E', 0.4, false);
-    // v3221 (propriétaire) : plus AUCUN logo crypto en fond (ni les 3 en orbite autour de la
-    // planète, ni ceux éparpillés). Fond plus sérieux et plus calme, qui ne gêne pas le trading.
+    planet(planets[2].x, planets[2].y, planets[2].r, '#EEDCFF', 'rgba(139,92,246,1)', '#26105A', 0.30, false);
+    planet(planets[3].x, planets[3].y, planets[3].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.24, false);
+    planet(planets[4].x, planets[4].y, planets[4].r, '#FFF2C8', 'rgba(230,190,90,1)', '#3A2A08', 0.22, false);
     g.globalAlpha = 1;
     galaxy = null;
     try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
