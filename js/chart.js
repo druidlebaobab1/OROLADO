@@ -1267,17 +1267,18 @@
       g.restore();
     }
     var pr = Math.max(14, small * 0.12);
-    // v3224 (propriétaire) : fond ALLÉGÉ. On passe de 12 planètes à 5, toutes posées dans les
-    // coins/bords — hors de la zone de la courbe (centre) et de la colonne des prix (droite) —
-    // pour ne plus gêner le trading. Petites et peu visibles ; chacune reçoit un petit anneau
-    // blanc (cryptoWorld) pour qu'on lise « planète », pas « crypto ». Plus de galaxie, plus de
-    // logos crypto : le fond est calme, la courbe paraît mieux avancer.
+    // v3224/v3227 (propriétaire) : fond ALLÉGÉ, 5 planètes. v3227 : placement ASYMÉTRIQUE et stylé
+    // (avant elles formaient un carré, trop rigide). Réparties dans les zones calmes — au-dessus et
+    // en dessous de la trajectoire de la courbe, hors de la tête (~55-65 % de la largeur) et de la
+    // colonne des prix — avec des tailles variées. Discrètes mais présentes ; chacune reçoit un
+    // petit anneau blanc (cryptoWorld). Jamais alignées : rien qui gêne le trading ou laisse croire
+    // que la courbe n'avance pas.
     var planets = [
-      { x: pad.l + w * 0.11, y: pad.t + h * 0.12, r: pr * 0.15 },
-      { x: pad.l + w * 0.83, y: pad.t + h * 0.13, r: pr * 0.14 },
-      { x: pad.l + w * 0.15, y: pad.t + h * 0.87, r: pr * 0.13 },
-      { x: pad.l + w * 0.86, y: pad.t + h * 0.86, r: pr * 0.12 },
-      { x: pad.l + w * 0.31, y: pad.t + h * 0.24, r: pr * 0.10 }
+      { x: pad.l + w * 0.075, y: pad.t + h * 0.19, r: pr * 0.165 },
+      { x: pad.l + w * 0.355, y: pad.t + h * 0.075, r: pr * 0.095 },
+      { x: pad.l + w * 0.915, y: pad.t + h * 0.125, r: pr * 0.12 },
+      { x: pad.l + w * 0.705, y: pad.t + h * 0.905, r: pr * 0.14 },
+      { x: pad.l + w * 0.195, y: pad.t + h * 0.815, r: pr * 0.085 }
     ];
     planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.22, false);
     planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
