@@ -1123,21 +1123,11 @@
         g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
       }
     }
-    // Cœur doré (adouci) + BTC au centre.
-    halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.15)');
-    halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.16)');
-    var core = coinImg('ico-btc');
-    var cs = Math.max(12, R * 0.16);
-    if (core && core.complete && core.naturalWidth) {
-      g.globalAlpha = 0.22;
-      g.drawImage(core, cx - cs / 2, cy - cs / 2, cs, cs);
-      g.globalAlpha = 1;
-    }
-    var coins = [], k;
-    for (arm = 0; arm < 2; arm++) {
-      for (k = 0; k < 7; k++) coins.push({ arm: arm, u0: k / 7 + arm * 0.07, id: GALAXY_COINS[arm * 7 + k] });
-    }
-    galaxy = { cx: cx, cy: cy, R: R, coins: coins };
+    // v3221 (propriétaire) : cœur doux au centre, mais plus de BTC ni de cryptos qui glissent
+    // dans la galaxie → fond plus calme et sérieux.
+    halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.10)');
+    halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.10)');
+    galaxy = { cx: cx, cy: cy, R: R, coins: [] };
   }
 
   // Les petites cryptos glissent doucement vers le centre (un trajet en 3 min), de plus en plus petites.
@@ -1359,41 +1349,7 @@
       { x: pad.l + w * 0.08, y: pad.t + h * 0.12, r: pr * 0.12 },
       { x: pad.l + w * 0.80, y: pad.t + h * 0.70, r: pr * 0.09 }
     ];
-    // Petite galaxie spirale, très douce (décor).
-    (function () {
-      var gx = pad.l + w * 0.56;
-      var gy = pad.t + h * 0.90;
-      var gr = Math.max(18, small * 0.16);
-      g.save();
-      g.translate(gx, gy);
-      g.rotate(-0.42);
-      g.scale(1, 0.38);
-      var sg = g.createRadialGradient(0, 0, 0, 0, 0, gr);
-      sg.addColorStop(0, 'rgba(255,236,210,0.55)');
-      sg.addColorStop(0.18, 'rgba(200,170,255,0.30)');
-      sg.addColorStop(0.6, 'rgba(120,90,230,0.10)');
-      sg.addColorStop(1, 'rgba(0,0,0,0)');
-      g.fillStyle = sg;
-      g.beginPath();
-      g.arc(0, 0, gr, 0, Math.PI * 2);
-      g.fill();
-      g.strokeStyle = 'rgba(210,190,255,0.16)';
-      g.lineWidth = 2;
-      var ga;
-      for (ga = 0; ga < 2; ga++) {
-        g.beginPath();
-        var gt;
-        for (gt = 0; gt <= 1.0001; gt += 0.05) {
-          var ang = ga * Math.PI + gt * Math.PI * 1.6;
-          var rad = gr * (0.15 + gt * 0.8);
-          var px = Math.cos(ang) * rad;
-          var py = Math.sin(ang) * rad;
-          if (gt === 0) g.moveTo(px, py); else g.lineTo(px, py);
-        }
-        g.stroke();
-      }
-      g.restore();
-    })();
+    // v3221 (propriétaire) : petite galaxie plate du bas retirée (fond plus épuré et sérieux).
     planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.2, false);
     planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
     planet(planets[2].x, planets[2].y, planets[2].r, '#EEDCFF', 'rgba(139,92,246,1)', '#26105A', 0.5, false);
@@ -1406,50 +1362,8 @@
     planet(planets[9].x, planets[9].y, planets[9].r, '#E8E4FF', 'rgba(160,150,230,1)', '#1E1A44', 0.4, false);
     planet(planets[10].x, planets[10].y, planets[10].r, '#FFE9C8', 'rgba(240,150,70,1)', '#3A1A06', 0.28, false);
     planet(planets[11].x, planets[11].y, planets[11].r, '#C8FFE6', 'rgba(40,200,150,1)', '#05301E', 0.4, false);
-    // Cryptos : quelques-unes en orbite autour de la grande planète, les autres semées
-    // très discrètement dans l'espace (jamais sur une planète ni sur la colonne des prix).
-    var orbit = ['ico-btc', 'ico-eth', 'ico-usdt'];
-    var p0 = planets[0];
-    // v2374 (propriétaire) : les 3 logos passent en haut à droite de la planète, un peu plus petits,
-    // sans toucher les prix (avant : à gauche, sur le chemin de la tête de la courbe).
-    var orbitMaxX = pad.l + w - 6;
-    for (k = 0; k < orbit.length; k++) {
-      var oa = -1.2 + k * 0.5;
-      var os = Math.max(8, p0.r * 0.27);
-      var ox = Math.min(p0.x + Math.cos(oa) * p0.r * 1.32, orbitMaxX - os / 2);
-      var oy = p0.y + Math.sin(oa) * p0.r * 1.32;
-      var oimg = coinImg(orbit[k]);
-      if (oimg && oimg.complete && oimg.naturalWidth) {
-        g.globalAlpha = 0.42;
-        g.drawImage(oimg, ox - os / 2, oy - os / 2, os, os);
-      }
-    }
-    g.globalAlpha = 1;
-    var nCoins = Math.max(8, Math.round(w * h / 6800)); // v3216 : moins de logos crypto en fond (plutôt des planètes)
-    var ci = 0;
-    var tries = 0;
-    var placed = 0;
-    while (placed < nCoins && tries < nCoins * 6) {
-      tries++;
-      var cSize = 14 + rnd() * 7;
-      var cx2 = pad.l + cSize + rnd() * Math.max(1, w - cSize * 2.2);
-      var cy2 = pad.t + cSize + rnd() * Math.max(1, h - cSize * 2);
-      var hit = false;
-      var pi;
-      for (pi = 0; pi < planets.length; pi++) {
-        var dx = cx2 - planets[pi].x;
-        var dy = cy2 - planets[pi].y;
-        if (Math.sqrt(dx * dx + dy * dy) < planets[pi].r * (pi === 0 ? 2.3 : 1.6) + cSize) { hit = true; break; }
-      }
-      if (hit) continue;
-      var img = coinImg(BACKDROP_COINS[ci % BACKDROP_COINS.length]);
-      ci += 5;
-      placed++;
-      if (img && img.complete && img.naturalWidth) {
-        g.globalAlpha = 0.085;
-        g.drawImage(img, cx2 - cSize / 2, cy2 - cSize / 2, cSize, cSize);
-      }
-    }
+    // v3221 (propriétaire) : plus AUCUN logo crypto en fond (ni les 3 en orbite autour de la
+    // planète, ni ceux éparpillés). Fond plus sérieux et plus calme, qui ne gêne pas le trading.
     g.globalAlpha = 1;
     galaxy = null;
     try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
