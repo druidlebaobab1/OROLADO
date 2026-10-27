@@ -1273,18 +1273,19 @@
     // colonne des prix — avec des tailles variées. Discrètes mais présentes ; chacune reçoit un
     // petit anneau blanc (cryptoWorld). Jamais alignées : rien qui gêne le trading ou laisse croire
     // que la courbe n'avance pas.
+    // v3228 (propriétaire) : 4 planètes (une de moins), dispersées SANS former de carré. Deux en
+    // haut (hauteurs/tailles différentes), une en haut à gauche, une en bas à gauche ; côté droit-
+    // milieu laissé libre (tête de la courbe + colonne des prix). Discrètes, stylées, calmes.
     var planets = [
-      { x: pad.l + w * 0.075, y: pad.t + h * 0.19, r: pr * 0.165 },
-      { x: pad.l + w * 0.355, y: pad.t + h * 0.075, r: pr * 0.095 },
-      { x: pad.l + w * 0.915, y: pad.t + h * 0.125, r: pr * 0.12 },
-      { x: pad.l + w * 0.705, y: pad.t + h * 0.905, r: pr * 0.14 },
-      { x: pad.l + w * 0.195, y: pad.t + h * 0.815, r: pr * 0.085 }
+      { x: pad.l + w * 0.080, y: pad.t + h * 0.185, r: pr * 0.165 },
+      { x: pad.l + w * 0.515, y: pad.t + h * 0.070, r: pr * 0.085 },
+      { x: pad.l + w * 0.905, y: pad.t + h * 0.130, r: pr * 0.115 },
+      { x: pad.l + w * 0.300, y: pad.t + h * 0.895, r: pr * 0.130 }
     ];
     planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.22, false);
     planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
     planet(planets[2].x, planets[2].y, planets[2].r, '#EEDCFF', 'rgba(139,92,246,1)', '#26105A', 0.30, false);
     planet(planets[3].x, planets[3].y, planets[3].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.24, false);
-    planet(planets[4].x, planets[4].y, planets[4].r, '#FFF2C8', 'rgba(230,190,90,1)', '#3A2A08', 0.22, false);
     g.globalAlpha = 1;
     galaxy = null;
     try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
