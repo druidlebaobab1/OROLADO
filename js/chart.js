@@ -1060,28 +1060,23 @@
       g.fillStyle = rg;
       g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
     }
-    // Deux planètes discrètes, hors de la spirale.
-    planet(pad.l + w * 0.74, pad.t + h * 0.60, pr * 0.28, '#D8FFF8', 'rgba(45,212,191,1)', '#04302A', 0.12, false);
-    planet(pad.l + w * 0.25, pad.t + h * 0.95, pr * 0.24, '#FFE0F4', 'rgba(217,70,239,1)', '#33093A', 0.11, false);
-    // v3215 (propriétaire) : plus de GROSSE planète à anneau en haut à droite (trop lourde) ; à la place
-    // une petite planète légère. Des petits anneaux blancs discrets viennent habiller quelques planètes.
-    planet(pad.l + w * 0.90, pad.t + h * 0.09, pr * 0.13, '#EAF2FF', 'rgba(150,170,255,1)', '#141A4A', 0.13, false);
-    planet(pad.l + w * 0.78, pad.t + h * 0.95, pr * 0.24, '#FFE2EC', 'rgba(244,114,182,1)', '#3A0A22', 0.14, false);
-    planet(pad.l + w * 0.95, pad.t + h * 0.72, pr * 0.12, '#FFF4D0', 'rgba(250,204,21,1)', '#3A2E05', 0.16, false);
-    planet(pad.l + w * 0.67, pad.t + h * 0.80, pr * 0.10, '#E0FFF4', 'rgba(52,211,153,1)', '#06301F', 0.14, false);
-    // Petits anneaux blancs très légers (discrets) autour de quelques petites planètes.
+    // v3216 (propriétaire) : plus de planètes décoratives en trop. De petits anneaux blancs
+    // très légers posés sur quelques planètes du fond → on voit que ce sont des planètes
+    // (pas des cryptos), sans alourdir.
     function lightRing(x, y, rr) {
       g.save();
-      g.globalAlpha = 0.10;
+      g.globalAlpha = 0.12;
       g.strokeStyle = 'rgba(255,255,255,0.9)';
-      g.lineWidth = Math.max(0.8, rr * 0.07);
+      g.lineWidth = Math.max(0.8, rr * 0.08);
       g.beginPath();
-      g.ellipse(x, y, rr * 1.7, rr * 0.5, -0.3, 0, Math.PI * 2);
+      g.ellipse(x, y, rr * 1.8, rr * 0.52, -0.3, 0, Math.PI * 2);
       g.stroke();
       g.restore();
     }
-    lightRing(pad.l + w * 0.90, pad.t + h * 0.09, pr * 0.13);
-    lightRing(pad.l + w * 0.74, pad.t + h * 0.60, pr * 0.28);
+    [0, 1, 4, 5, 7, 10].forEach(function (i) {
+      var p = planets[i];
+      if (p) lightRing(p.x, p.y, p.r);
+    });
     // Spirale ronde au centre ; son bord s'arrête avant la grande planète.
     // v2377 (propriétaire) : le « cœur » de la courbe, au centre exact du graphique, un peu plus petit,
     // et toujours un espace libre avant l'anneau de la grande planète.
@@ -1348,17 +1343,20 @@
     var planets = [
       // v2373 (propriétaire) : un peu à droite, plus bas et un peu plus petite → la tête de la courbe
       // (60–62 % de la largeur) ne rentre plus dans la planète ; l'anneau reste hors des prix.
-      { x: pad.l + w * 0.86, y: pad.t + h * 0.22, r: pr * 0.30 },
-      { x: pad.l + w * 0.13, y: pad.t + h * 0.82, r: pr * 0.44 },
-      { x: pad.l + w * 0.40, y: pad.t + h * 0.10, r: pr * 0.26 },
-      { x: pad.l + w * 0.60, y: pad.t + h * 0.66, r: pr * 0.16 },
-      { x: pad.l + w * 0.02, y: pad.t + h * 0.40, r: pr * 0.52 },
-      { x: pad.l + w * 0.88, y: pad.t + h * 0.88, r: pr * 0.24 },
-      { x: pad.l + w * 0.26, y: pad.t + h * 0.30, r: pr * 0.13 },
-      { x: pad.l + w * 0.93, y: pad.t + h * 0.50, r: pr * 0.15 },
-      { x: pad.l + w * 0.36, y: pad.t + h * 0.74, r: pr * 0.11 },
-      { x: pad.l + w * 0.70, y: pad.t + h * 0.05, r: pr * 0.12 },
-      { x: pad.l + w * 0.08, y: pad.t + h * 0.12, r: pr * 0.20 },
+      // v3216 (propriétaire) : toutes les planètes réduites ; une seule reste un peu plus
+      // grande, en haut (planets[0]), elle-même réduite légèrement. Petits ronds blancs
+      // discrets sur les petites → on voit que ce sont des planètes, pas des cryptos.
+      { x: pad.l + w * 0.86, y: pad.t + h * 0.18, r: pr * 0.24 },
+      { x: pad.l + w * 0.13, y: pad.t + h * 0.85, r: pr * 0.15 },
+      { x: pad.l + w * 0.40, y: pad.t + h * 0.09, r: pr * 0.13 },
+      { x: pad.l + w * 0.60, y: pad.t + h * 0.66, r: pr * 0.12 },
+      { x: pad.l + w * 0.03, y: pad.t + h * 0.42, r: pr * 0.16 },
+      { x: pad.l + w * 0.88, y: pad.t + h * 0.88, r: pr * 0.12 },
+      { x: pad.l + w * 0.26, y: pad.t + h * 0.30, r: pr * 0.10 },
+      { x: pad.l + w * 0.93, y: pad.t + h * 0.50, r: pr * 0.12 },
+      { x: pad.l + w * 0.36, y: pad.t + h * 0.74, r: pr * 0.10 },
+      { x: pad.l + w * 0.70, y: pad.t + h * 0.05, r: pr * 0.11 },
+      { x: pad.l + w * 0.08, y: pad.t + h * 0.12, r: pr * 0.12 },
       { x: pad.l + w * 0.80, y: pad.t + h * 0.70, r: pr * 0.09 }
     ];
     // Petite galaxie spirale, très douce (décor).
@@ -1427,7 +1425,7 @@
       }
     }
     g.globalAlpha = 1;
-    var nCoins = Math.max(14, Math.round(w * h / 4200));
+    var nCoins = Math.max(8, Math.round(w * h / 6800)); // v3216 : moins de logos crypto en fond (plutôt des planètes)
     var ci = 0;
     var tries = 0;
     var placed = 0;
