@@ -278,7 +278,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "classic",
+    "kind": "capsule",
     "line": "#D833DB",
     "rise": "#ED86EE",
     "fall": "#992483",
@@ -365,7 +365,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "hollow",
+    "kind": "bricks",
     "line": "#CFFC5A",
     "rise": "#EBFEB8",
     "fall": "#87F014",
@@ -452,7 +452,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "classic",
+    "kind": "glass",
     "line": "#438DEF",
     "rise": "#9EC6FA",
     "fall": "#1B43C5",
@@ -625,7 +625,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "hollow",
+    "kind": "coinstack",
     "line": "#E1374F",
     "rise": "#F28C9B",
     "fall": "#A52A22",
@@ -712,7 +712,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "capsule",
+    "kind": "gears",
     "line": "#54F86C",
     "rise": "#B3FEBF",
     "fall": "#14E65E",
@@ -971,7 +971,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "bricks",
+    "kind": "scales",
     "line": "#741CE3",
     "rise": "#AB72F3",
     "fall": "#681A93",
@@ -1143,7 +1143,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "capsule",
+    "kind": "jaws",
     "line": "#EABC3E",
     "rise": "#F7DE97",
     "fall": "#B8AE1E",
@@ -1230,7 +1230,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "bricks",
+    "kind": "sundisc",
     "line": "#4CF1F6",
     "rise": "#AAFBFD",
     "fall": "#16AEDA",
@@ -1402,7 +1402,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "capsule",
+    "kind": "hammers",
     "line": "#DB33A6",
     "rise": "#EE86CD",
     "fall": "#99245C",
@@ -1575,7 +1575,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "bricks",
+    "kind": "hive",
     "line": "#99FC5A",
     "rise": "#D4FEB8",
     "fall": "#3EF014",
@@ -1748,7 +1748,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "glass",
+    "kind": "grass",
     "line": "#4354EF",
     "rise": "#9EA7FA",
     "fall": "#2C1BC5",
@@ -1835,7 +1835,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "coinstack",
+    "kind": "tombstones",
     "line": "#E15837",
     "rise": "#F2A08C",
     "fall": "#A55522",
@@ -2008,7 +2008,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "glass",
+    "kind": "chevrons",
     "line": "#54F8A3",
     "rise": "#B3FED8",
     "fall": "#14E6A4",
@@ -2182,7 +2182,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "coinstack",
+    "kind": "chain",
     "line": "#B71CE3",
     "rise": "#D672F3",
     "fall": "#911A93",
@@ -2355,7 +2355,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "glass",
+    "kind": "lava",
     "line": "#DEEA3E",
     "rise": "#F1F797",
     "fall": "#8FB81E",
@@ -2442,7 +2442,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "coinstack",
+    "kind": "banners",
     "line": "#4CB8F6",
     "rise": "#AADFFD",
     "fall": "#166CDA",
@@ -2615,7 +2615,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "hammers",
+    "kind": "crowns",
     "line": "#DB336E",
     "rise": "#EE86AA",
     "fall": "#992435",
@@ -2789,7 +2789,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "sundisc",
+    "kind": "dunes",
     "line": "#63FC5A",
     "rise": "#BCFEB8",
     "fall": "#14F034",
@@ -2876,7 +2876,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "hammers",
+    "kind": "speed",
     "line": "#6C43EF",
     "rise": "#B49EFA",
     "fall": "#651BC5",
@@ -3220,7 +3220,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "sundisc",
+    "kind": "classic",
     "line": "#E19137",
     "rise": "#F2C28C",
     "fall": "#A58122",
@@ -3307,7 +3307,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "hammers",
+    "kind": "hollow",
     "line": "#54F8DA",
     "rise": "#B3FEF1",
     "fall": "#14E2E6",
@@ -3481,7 +3481,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "sundisc",
+    "kind": "capsule",
     "line": "#E31CCD",
     "rise": "#F372E4",
     "fall": "#931A6E",
@@ -3655,7 +3655,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "flames",
+    "kind": "bricks",
     "line": "#A4EA3E",
     "rise": "#D0F797",
     "fall": "#5BB81E",
@@ -3828,7 +3828,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "gears",
+    "kind": "glass",
     "line": "#4C80F6",
     "rise": "#AAC3FD",
     "fall": "#162ADA",
@@ -3915,7 +3915,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "flames",
+    "kind": "coinstack",
     "line": "#DB3335",
     "rise": "#EE8687",
     "fall": "#993A24",
@@ -4262,7 +4262,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "flames",
+    "kind": "scales",
     "line": "#A543EF",
     "rise": "#D29EFA",
     "fall": "#9E1BC5",
@@ -4435,7 +4435,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "gears",
+    "kind": "jaws",
     "line": "#E1CA37",
     "rise": "#F2E48C",
     "fall": "#9DA522",
@@ -4522,7 +4522,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "scales",
+    "kind": "sundisc",
     "line": "#54DFF8",
     "rise": "#B3F3FE",
     "fall": "#149CE6",
@@ -4694,7 +4694,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "jaws",
+    "kind": "hammers",
     "line": "#E31C8A",
     "rise": "#F372B9",
     "fall": "#931A45",
@@ -4868,7 +4868,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "scales",
+    "kind": "hive",
     "line": "#6BEA3E",
     "rise": "#B0F797",
     "fall": "#28B81E",
@@ -4955,7 +4955,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "jaws",
+    "kind": "grass",
     "line": "#514CF6",
     "rise": "#ACAAFD",
     "fall": "#4316DA",
@@ -5128,7 +5128,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "scales",
+    "kind": "tombstones",
     "line": "#DB6933",
     "rise": "#EEA786",
     "fall": "#996124",
@@ -5301,7 +5301,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "jaws",
+    "kind": "chevrons",
     "line": "#5AFCBD",
     "rise": "#B8FEE3",
     "fall": "#14F0C7",
@@ -5474,7 +5474,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "arrows",
+    "kind": "chain",
     "line": "#DE43EF",
     "rise": "#F19EFA",
     "fall": "#C51BB4",
@@ -5561,7 +5561,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "grass",
+    "kind": "lava",
     "line": "#C0E137",
     "rise": "#DEF28C",
     "fall": "#71A522",
@@ -5735,7 +5735,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "arrows",
+    "kind": "banners",
     "line": "#54A8F8",
     "rise": "#B3DAFE",
     "fall": "#1455E6",
@@ -5908,7 +5908,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "grass",
+    "kind": "crowns",
     "line": "#E31C48",
     "rise": "#F3728E",
     "fall": "#931A1C",
@@ -6081,7 +6081,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "arrows",
+    "kind": "dunes",
     "line": "#3EEA4B",
     "rise": "#97F79E",
     "fall": "#1EB848",
@@ -6168,7 +6168,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "grass",
+    "kind": "speed",
     "line": "#8A4CF6",
     "rise": "#C8AAFD",
     "fall": "#8416DA",
@@ -6341,7 +6341,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "petrify",
+    "kind": "classic",
     "line": "#DBA133",
     "rise": "#EECA86",
     "fall": "#998824",
@@ -6428,7 +6428,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "drops",
+    "kind": "hollow",
     "line": "#5AFCF3",
     "rise": "#B8FEFB",
     "fall": "#14D0F0",
@@ -6601,7 +6601,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "petrify",
+    "kind": "capsule",
     "line": "#EF43C6",
     "rise": "#FA9EE4",
     "fall": "#C51B7B",
@@ -6688,7 +6688,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "drops",
+    "kind": "bricks",
     "line": "#87E137",
     "rise": "#BCF28C",
     "fall": "#45A522",
@@ -6948,7 +6948,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "petrify",
+    "kind": "glass",
     "line": "#5471F8",
     "rise": "#B3C1FE",
     "fall": "#1914E6",
@@ -7035,7 +7035,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "drops",
+    "kind": "coinstack",
     "line": "#E3331C",
     "rise": "#F38172",
     "fall": "#93401A",
@@ -7208,7 +7208,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "hearts",
+    "kind": "gears",
     "line": "#3EEA84",
     "rise": "#97F7BE",
     "fall": "#1EB87C",
@@ -7382,7 +7382,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "feathers",
+    "kind": "scales",
     "line": "#C24CF6",
     "rise": "#E4AAFD",
     "fall": "#C616DA",
@@ -7556,7 +7556,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "hearts",
+    "kind": "jaws",
     "line": "#DBD933",
     "rise": "#EEED86",
     "fall": "#839924",
@@ -7643,7 +7643,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "feathers",
+    "kind": "sundisc",
     "line": "#5ACEFC",
     "rise": "#B8EBFE",
     "fall": "#1486F0",
@@ -7816,7 +7816,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "hearts",
+    "kind": "hammers",
     "line": "#EF438C",
     "rise": "#FA9EC5",
     "fall": "#C51B42",
@@ -7989,7 +7989,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "feathers",
+    "kind": "hive",
     "line": "#4EE137",
     "rise": "#9AF28C",
     "fall": "#22A52A",
@@ -8164,7 +8164,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "ankh",
+    "kind": "grass",
     "line": "#6D54F8",
     "rise": "#BFB3FE",
     "fall": "#5F14E6",
@@ -8251,7 +8251,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "fans",
+    "kind": "tombstones",
     "line": "#E3751C",
     "rise": "#F3AC72",
     "fall": "#93691A",
@@ -8425,7 +8425,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "ankh",
+    "kind": "chevrons",
     "line": "#3EEABD",
     "rise": "#97F7DE",
     "fall": "#1EB8AF",
@@ -8598,7 +8598,7 @@
     "jumpMax": 0
    },
    "look": {
-    "kind": "fans",
+    "kind": "chain",
     "line": "#F64CF0",
     "rise": "#FDAAFB",
     "fall": "#DA16AC",
@@ -8771,7 +8771,7 @@
     "jumpMax": 0.0045
    },
    "look": {
-    "kind": "ankh",
+    "kind": "lava",
     "line": "#A5DB33",
     "rise": "#CDEE86",
     "fall": "#5B9924",
@@ -8858,7 +8858,7 @@
     "jumpMax": 0.0065
    },
    "look": {
-    "kind": "fans",
+    "kind": "banners",
     "line": "#5A98FC",
     "rise": "#B8D3FE",
     "fall": "#143DF0",
