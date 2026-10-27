@@ -5260,9 +5260,14 @@ async function spPlayerInit(u) {
     '<div><span>Total payé</span><b>' + gmMoney(outR) + '</b></div><div><span>Net maison</span><b class="' + (inR - outR >= 0 ? 'pos' : 'neg') + '">' + gmSigned(inR - outR) + '</b></div>' +
     '<div><span>Coupons gagnés</span><b>' + won + (real.length ? ' (' + Math.round(won / real.length * 100) + ' %)' : '') + '</b></div>';
   if (!bets.length) { list.innerHTML = '<p class="muted" style="padding:12px">Aucun pari.</p>'; return; }
-  list.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Matchs</th><th>Mode</th><th>Mise</th><th>Cote</th><th>Statut</th><th>Gain</th><th>Date</th></tr></thead><tbody>' +
+  // 2026-10-27 (propriétaire) : une coche PAR ÉQUIPE dans le coupon (✅ validée, ❌ ratée, ↺ remboursée, ⏳ pas encore finie),
+  // pour suivre un joueur : voir s'il valide souvent, ou s'il lui manque toujours une équipe sur ses gros codes.
+  const LEG = {won:['✅','#5CF59A'], lost:['❌','#FF7A90'], void:['↺','#FCD34D'], hwon:['½✅','#5CF59A'], hlost:['½❌','#FF7A90']};
+  const leg = x => { const r = LEG[x.r] || ['⏳', '#94A3B8']; return '<span style="color:' + r[1] + ';font-weight:700">' + r[0] + '</span> ' + esc(x.t) + ' → <b>' + esc(x.l) + '</b> (' + (+x.odd).toFixed(2) + ')'; };
+  list.innerHTML = '<p class="muted" style="padding:0 2px 8px;font-size:.8rem">Par équipe : ✅ validée · ❌ ratée · ↺ remboursée · ⏳ pas encore finie</p>' +
+    '<div class="table-wrap"><table><thead><tr><th>Matchs (coche par équipe)</th><th>Mode</th><th>Mise</th><th>Cote</th><th>Statut</th><th>Gain</th><th>Date</th></tr></thead><tbody>' +
     bets.map(b => { const st = ST[b.status] || [esc(b.status || '—'), '#94A3B8'];
-      return '<tr><td style="white-space:normal;min-width:180px">' + (b.sel || []).map(x => esc(x.t) + ' → <b>' + esc(x.l) + '</b> (' + (+x.odd).toFixed(2) + ')').join('<br>') + '</td><td>' + (b.mode === 'real' ? 'Réel' : 'Démo') +
+      return '<tr><td style="white-space:normal;min-width:180px">' + (b.sel || []).map(leg).join('<br>') + '</td><td>' + (b.mode === 'real' ? 'Réel' : 'Démo') +
         '</td><td>' + gmMoney(b.stake) + '</td><td>' + (+b.odd).toFixed(2) + '</td><td style="color:' + st[1] + ';white-space:nowrap">' + st[0] + '</td><td>' + (b.status === 'won' || b.status === 'void' ? gmMoney(b.win) : '—') +
         '</td><td>' + esc(fdate(b.at ? new Date(b.at * 1000).toISOString() : '')) + '</td></tr>'; }).join('') + '</tbody></table></div>';
 }
