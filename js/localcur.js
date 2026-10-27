@@ -71,11 +71,15 @@
   };
   var AFR = { XOF: 1, XAF: 1, NGN: 1, GHS: 1, KES: 1, ZAR: 1, UGX: 1, TZS: 1, RWF: 1, CDF: 1, GNF: 1, MAD: 1, DZD: 1, TND: 1, EGP: 1, ZMW: 1, MWK: 1, MZN: 1 };
   // lien de test du propriétaire (compte admin seulement) : orolado.com/?simcur=XOF (NGN, GHS, KES, ZAR…) ; ?simcur=off = arrêt
+  // 2026-10-27 (propriétaire) : l'aperçu de monnaie ne COLLE PLUS pour toujours. Avant, ?simcur=XOF restait en FCFA à chaque
+  // ouverture (gênant pour la pub : impossible de voir le site en pesos / en dollars). Maintenant un aperçu ne dure que la
+  // SESSION (fermer l'onglet = retour normal), et on nettoie au passage l'ancien réglage permanent resté coincé en FCFA.
+  try { localStorage.removeItem('oro_sim_cur'); } catch (eMig) { /* ignore */ }
   try {
     var qm = /[?&]simcur=([A-Za-z]{2,4})/.exec(location.search);
     if (qm) {
       var qv = qm[1].toUpperCase();
-      if (qv === 'OFF') localStorage.removeItem('oro_sim_cur'); else if (CUR[qv]) localStorage.setItem('oro_sim_cur', qv);
+      if (qv === 'OFF') sessionStorage.removeItem('oro_sim_cur'); else if (CUR[qv]) sessionStorage.setItem('oro_sim_cur', qv);
       history.replaceState(null, '', location.pathname + location.search.replace(/([?&])simcur=[^&]*&?/, '$1').replace(/[?&]$/, '') + location.hash);
     }
   } catch (eQ) { /* ignore */ }
@@ -107,7 +111,7 @@
   function code() {
     var u = null;
     try { u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null; } catch (e) { u = null; }
-    var sim = ''; try { sim = localStorage.getItem('oro_sim_cur') || ''; } catch (eS) { sim = ''; }
+    var sim = ''; try { sim = sessionStorage.getItem('oro_sim_cur') || ''; } catch (eS) { sim = ''; }
     // lien de test ?simcur=… (affichage seulement) : visiteur ou admin
     if (sim && CUR[sim] && (!u || u.guest || u.role === 'admin')) return sim;
     if (!u || u.guest) return byPlace();
