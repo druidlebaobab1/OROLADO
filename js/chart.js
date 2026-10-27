@@ -1061,13 +1061,27 @@
       g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
     }
     // Deux planètes discrètes, hors de la spirale.
-    planet(pad.l + w * 0.74, pad.t + h * 0.60, pr * 0.32, '#D8FFF8', 'rgba(45,212,191,1)', '#04302A', 0.13, false);
-    planet(pad.l + w * 0.25, pad.t + h * 0.95, pr * 0.26, '#FFE0F4', 'rgba(217,70,239,1)', '#33093A', 0.12, false);
-    // À droite, là où la courbe n'arrive jamais : 2e planète à anneau en haut, petites planètes en bas.
-    planet(pad.l + w * 0.90, pad.t + h * 0.055, pr * 0.40, '#E4F4FF', 'rgba(110,140,255,1)', '#141A4A', 0.34, true);
-    planet(pad.l + w * 0.78, pad.t + h * 0.95, pr * 0.30, '#FFE2EC', 'rgba(244,114,182,1)', '#3A0A22', 0.20, false);
-    planet(pad.l + w * 0.95, pad.t + h * 0.72, pr * 0.14, '#FFF4D0', 'rgba(250,204,21,1)', '#3A2E05', 0.22, false);
-    planet(pad.l + w * 0.67, pad.t + h * 0.80, pr * 0.10, '#E0FFF4', 'rgba(52,211,153,1)', '#06301F', 0.16, false);
+    planet(pad.l + w * 0.74, pad.t + h * 0.60, pr * 0.28, '#D8FFF8', 'rgba(45,212,191,1)', '#04302A', 0.12, false);
+    planet(pad.l + w * 0.25, pad.t + h * 0.95, pr * 0.24, '#FFE0F4', 'rgba(217,70,239,1)', '#33093A', 0.11, false);
+    // v3215 (propriétaire) : plus de GROSSE planète à anneau en haut à droite (trop lourde) ; à la place
+    // une petite planète légère. Des petits anneaux blancs discrets viennent habiller quelques planètes.
+    planet(pad.l + w * 0.90, pad.t + h * 0.09, pr * 0.13, '#EAF2FF', 'rgba(150,170,255,1)', '#141A4A', 0.13, false);
+    planet(pad.l + w * 0.78, pad.t + h * 0.95, pr * 0.24, '#FFE2EC', 'rgba(244,114,182,1)', '#3A0A22', 0.14, false);
+    planet(pad.l + w * 0.95, pad.t + h * 0.72, pr * 0.12, '#FFF4D0', 'rgba(250,204,21,1)', '#3A2E05', 0.16, false);
+    planet(pad.l + w * 0.67, pad.t + h * 0.80, pr * 0.10, '#E0FFF4', 'rgba(52,211,153,1)', '#06301F', 0.14, false);
+    // Petits anneaux blancs très légers (discrets) autour de quelques petites planètes.
+    function lightRing(x, y, rr) {
+      g.save();
+      g.globalAlpha = 0.10;
+      g.strokeStyle = 'rgba(255,255,255,0.9)';
+      g.lineWidth = Math.max(0.8, rr * 0.07);
+      g.beginPath();
+      g.ellipse(x, y, rr * 1.7, rr * 0.5, -0.3, 0, Math.PI * 2);
+      g.stroke();
+      g.restore();
+    }
+    lightRing(pad.l + w * 0.90, pad.t + h * 0.09, pr * 0.13);
+    lightRing(pad.l + w * 0.74, pad.t + h * 0.60, pr * 0.28);
     // Spirale ronde au centre ; son bord s'arrête avant la grande planète.
     // v2377 (propriétaire) : le « cœur » de la courbe, au centre exact du graphique, un peu plus petit,
     // et toujours un espace libre avant l'anneau de la grande planète.
@@ -1334,11 +1348,11 @@
     var planets = [
       // v2373 (propriétaire) : un peu à droite, plus bas et un peu plus petite → la tête de la courbe
       // (60–62 % de la largeur) ne rentre plus dans la planète ; l'anneau reste hors des prix.
-      { x: pad.l + w * 0.84, y: pad.t + h * 0.26, r: pr * 0.85 },
-      { x: pad.l + w * 0.13, y: pad.t + h * 0.82, r: pr * 0.62 },
-      { x: pad.l + w * 0.40, y: pad.t + h * 0.10, r: pr * 0.30 },
-      { x: pad.l + w * 0.60, y: pad.t + h * 0.66, r: pr * 0.18 },
-      { x: pad.l + w * 0.02, y: pad.t + h * 0.40, r: pr * 0.85 },
+      { x: pad.l + w * 0.86, y: pad.t + h * 0.22, r: pr * 0.30 },
+      { x: pad.l + w * 0.13, y: pad.t + h * 0.82, r: pr * 0.44 },
+      { x: pad.l + w * 0.40, y: pad.t + h * 0.10, r: pr * 0.26 },
+      { x: pad.l + w * 0.60, y: pad.t + h * 0.66, r: pr * 0.16 },
+      { x: pad.l + w * 0.02, y: pad.t + h * 0.40, r: pr * 0.52 },
       { x: pad.l + w * 0.88, y: pad.t + h * 0.88, r: pr * 0.24 },
       { x: pad.l + w * 0.26, y: pad.t + h * 0.30, r: pr * 0.13 },
       { x: pad.l + w * 0.93, y: pad.t + h * 0.50, r: pr * 0.15 },
@@ -1382,8 +1396,8 @@
       }
       g.restore();
     })();
-    planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.5, true);
-    planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.45, false);
+    planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.2, false);
+    planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
     planet(planets[2].x, planets[2].y, planets[2].r, '#EEDCFF', 'rgba(139,92,246,1)', '#26105A', 0.5, false);
     planet(planets[3].x, planets[3].y, planets[3].r, '#FFD0C8', 'rgba(220,80,70,1)', '#3A0B0B', 0.35, false);
     planet(planets[4].x, planets[4].y, planets[4].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.22, false);
@@ -1392,7 +1406,7 @@
     planet(planets[7].x, planets[7].y, planets[7].r, '#D6F6FF', 'rgba(56,189,248,1)', '#082A44', 0.4, false);
     planet(planets[8].x, planets[8].y, planets[8].r, '#FFD9EC', 'rgba(236,72,153,1)', '#3A0820', 0.38, false);
     planet(planets[9].x, planets[9].y, planets[9].r, '#E8E4FF', 'rgba(160,150,230,1)', '#1E1A44', 0.4, false);
-    planet(planets[10].x, planets[10].y, planets[10].r, '#FFE9C8', 'rgba(240,150,70,1)', '#3A1A06', 0.32, true);
+    planet(planets[10].x, planets[10].y, planets[10].r, '#FFE9C8', 'rgba(240,150,70,1)', '#3A1A06', 0.28, false);
     planet(planets[11].x, planets[11].y, planets[11].r, '#C8FFE6', 'rgba(40,200,150,1)', '#05301E', 0.4, false);
     // Cryptos : quelques-unes en orbite autour de la grande planète, les autres semées
     // très discrètement dans l'espace (jamais sur une planète ni sur la colonne des prix).

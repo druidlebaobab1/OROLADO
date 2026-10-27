@@ -264,8 +264,8 @@
   },
   {
    "id": "indra",
-   "name": "INDRA",
-   "tag": "Foudre du ciel",
+   "name": "TARANIS",
+   "tag": "Maître de la foudre",
    "family": "B",
    "base": 8260.1,
    "model": {
@@ -438,8 +438,8 @@
   },
   {
    "id": "garuda",
-   "name": "GARUDA",
-   "tag": "Aigle divin",
+   "name": "AQUILA",
+   "tag": "L’aigle céleste",
    "family": "E",
    "base": 6890.55,
    "model": {
@@ -1388,8 +1388,8 @@
   },
   {
    "id": "durga",
-   "name": "DURGA",
-   "tag": "Lotus guerrier",
+   "name": "BELLATRIX",
+   "tag": "L’étoile guerrière",
    "family": "F",
    "base": 8880.8,
    "model": {
@@ -1561,8 +1561,8 @@
   },
   {
    "id": "vishnu",
-   "name": "VISHNU",
-   "tag": "Le préservateur",
+   "name": "ATLAS",
+   "tag": "Porteur des cieux",
    "family": "D",
    "base": 9480.88,
    "model": {
@@ -1734,8 +1734,8 @@
   },
   {
    "id": "susanoo",
-   "name": "SUSANOO",
-   "tag": "Lame de tempête",
+   "name": "STRIBOG",
+   "tag": "Souffle des vents",
    "family": "B",
    "base": 8120.44,
    "model": {
@@ -1821,8 +1821,8 @@
   },
   {
    "id": "ganesha",
-   "name": "GANESHA",
-   "tag": "Brise-obstacles",
+   "name": "ORION",
+   "tag": "Chasseur d’étoiles",
    "family": "A",
    "base": 7340.1,
    "model": {
@@ -1994,8 +1994,8 @@
   },
   {
    "id": "agni",
-   "name": "AGNI",
-   "tag": "Feu sacré",
+   "name": "PROMETHEUS",
+   "tag": "Porteur du feu",
    "family": "E",
    "base": 6210.7,
    "model": {
@@ -2168,8 +2168,8 @@
   },
   {
    "id": "shango",
-   "name": "SHANGO",
-   "tag": "Hache du tonnerre",
+   "name": "ADAD",
+   "tag": "Voix de l’orage",
    "family": "C",
    "base": 7760.25,
    "model": {
@@ -2341,8 +2341,8 @@
   },
   {
    "id": "ogun",
-   "name": "OGUN",
-   "tag": "Fer de guerre",
+   "name": "NINURTA",
+   "tag": "Lame de fer",
    "family": "D",
    "base": 8900.55,
    "model": {
@@ -3206,8 +3206,8 @@
   },
   {
    "id": "krishna",
-   "name": "KRISHNA",
-   "tag": "Flûte divine",
+   "name": "HELIOS",
+   "tag": "Char du soleil",
    "family": "A",
    "base": 8820.33,
    "model": {
@@ -3293,8 +3293,8 @@
   },
   {
    "id": "hanuman",
-   "name": "HANUMAN",
-   "tag": "Massue de force",
+   "name": "HYPERION",
+   "tag": "Titan de lumière",
    "family": "E",
    "base": 7210.55,
    "model": {
@@ -3467,8 +3467,8 @@
   },
   {
    "id": "yama",
-   "name": "YAMA",
-   "tag": "Juge des morts",
+   "name": "THANATOS",
+   "tag": "Souffle de la fin",
    "family": "F",
    "base": 6140.18,
    "model": {
@@ -3641,8 +3641,8 @@
   },
   {
    "id": "bishamon",
-   "name": "BISHAMON",
-   "tag": "Gardien guerrier",
+   "name": "PERSEUS",
+   "tag": "Héros des cieux",
    "family": "D",
    "base": 9120.7,
    "model": {
@@ -3814,8 +3814,8 @@
   },
   {
    "id": "inari",
-   "name": "INARI",
-   "tag": "Renard d'or",
+   "name": "VEGA",
+   "tag": "Astre brillant",
    "family": "B",
    "base": 7680.24,
    "model": {
@@ -3901,8 +3901,8 @@
   },
   {
    "id": "ryujin",
-   "name": "RYUJIN",
-   "tag": "Perle des mers",
+   "name": "TRITON",
+   "tag": "Trident des mers",
    "family": "B",
    "base": 10220.8,
    "model": {
@@ -5547,7 +5547,7 @@
   },
   {
    "id": "pachamama",
-   "name": "PACHAMAMA",
+   "name": "GAIA",
    "tag": "Terre mère",
    "family": "F",
    "base": 9480.1,
@@ -5721,8 +5721,8 @@
   },
   {
    "id": "oshun",
-   "name": "OSHUN",
-   "tag": "Rivière d'amour",
+   "name": "HATHOR",
+   "tag": "Grâce dorée",
    "family": "F",
    "base": 6240.8,
    "model": {
@@ -5894,7 +5894,7 @@
   },
   {
    "id": "yemoja",
-   "name": "YEMOJA",
+   "name": "TETHYS",
    "tag": "Mère des océans",
    "family": "F",
    "base": 10120.33,
