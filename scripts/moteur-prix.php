@@ -32,6 +32,14 @@ $file = $dir . '/live.json';
 $base = ['ok' => true, 'tickMs' => OROLADO_TICK_MS, 'direct' => 1];
 $mem = [];
 $lastStat = 0;
+// 2026-10-27 : la liste des marchés est figée au démarrage (cache statique de orolado_feed_assets()).
+// Quand indices.json change (nouveaux indices mis en ligne), ce moteur ne les voit pas et n'écrit
+// PAS leur fichier direct (feedcache/a/<id>.js) → sur mobile ces indices « tic-tic » (lecture lente
+// au lieu du direct). Solution : on surveille la date de indices.json ; dès qu'elle change, on sort,
+// et direct.js relance aussitôt un moteur neuf qui relit indices.json et diffuse TOUS les marchés.
+$idxPath = dirname(__DIR__) . '/indices.json';
+clearstatcache(true, $idxPath);
+$idxMtime = @filemtime($idxPath) ?: 0;
 $stat = ['tours' => 0, 'travail_moy' => 0.0, 'travail_max' => 0.0, 'prix_moy' => 0.0, 'prix_max' => 0.0];
 $out = fopen('php://stdout', 'w');
 
@@ -52,6 +60,14 @@ while (true) {
       @file_put_contents($dir . '/pump.stat', json_encode(array_map(static fn($v) => is_float($v) ? round($v) : $v, $stat) + ['moteur' => 'vps', 'a' => date('H:i:s')]));
       // Mesure « depuis le démarrage » remise à zéro chaque heure : on voit les à-coups récents.
       if ($stat['tours'] > 14400) $stat = ['tours' => 0, 'travail_moy' => 0.0, 'travail_max' => 0.0, 'prix_moy' => 0.0, 'prix_max' => 0.0];
+      // indices.json a-t-il changé ? (nouveaux marchés mis en ligne) → sortir pour être relancé neuf.
+      clearstatcache(true, $idxPath);
+      $mt = @filemtime($idxPath) ?: 0;
+      if ($mt !== 0 && $mt !== $idxMtime) {
+        error_log('OROLADO moteur-prix : indices.json a changé → relance (prise en compte des nouveaux indices)');
+        fflush($out);
+        exit(0); // direct.js relance aussitôt un moteur neuf (relit indices.json)
+      }
     }
   } catch (Throwable $e) {
     error_log('OROLADO moteur-prix ' . $e->getMessage());
