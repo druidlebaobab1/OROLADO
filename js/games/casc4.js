@@ -490,4 +490,82 @@
       '<path d="M0 -8l10 4-4 12h-12l-4-12z" fill="url(#r5dia)" stroke="#0891B2" stroke-width="1"/>' +
       '</g>'
   });
+
+  /* ---- casc5 vague 2 ---- */
+  function pip(x, y) { return '<circle cx="' + x + '" cy="' + y + '" r="4" fill="#1C1917"/>'; }
+  /* Dice Roll (RA) */
+  rgame({
+    key: 'diceroll', verb: V.tap, rows: RA, sfx: 'show', cy: 110,
+    scene: '<defs>' + GDEFS + '<linearGradient id="r5f2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14532D"/><stop offset="1" stop-color="#052e16"/></linearGradient></defs>' + r5bg('url(#r5f2)') + r5glow() +
+      '<ellipse cx="150" cy="168" rx="80" ry="14" fill="#000" opacity=".3"/>' +
+      '<g id="cyObj" transform="translate(150 110)">' +
+      '<g transform="translate(-34 0) rotate(-10)"><rect x="-26" y="-26" width="52" height="52" rx="10" fill="#FEFCE8" stroke="#CA8A04" stroke-width="2"/>' + pip(-12, -12) + pip(12, -12) + pip(-12, 12) + pip(12, 12) + pip(0, 0) + '</g>' +
+      '<g transform="translate(36 2) rotate(14)"><rect x="-24" y="-24" width="48" height="48" rx="9" fill="#FEFCE8" stroke="#CA8A04" stroke-width="2"/>' + pip(-11, -11) + pip(11, 11) + pip(0, 0) + '</g>' +
+      '</g>'
+  });
+  /* Royal Card (RB) */
+  rgame({
+    key: 'royalcard', verb: V.tap, rows: RB, sfx: 'show', cy: 108,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(16) + r5glow() +
+      '<g id="cyObj" transform="translate(150 108)">' +
+      '<rect x="-40" y="-56" width="80" height="112" rx="9" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>' +
+      '<rect x="-33" y="-49" width="66" height="98" rx="6" fill="url(#r5vel)"/>' +
+      '<rect x="-33" y="-49" width="66" height="98" rx="6" fill="none" stroke="url(#cyGold)" stroke-width="2"/>' +
+      STAR(18, 'url(#cyGold)').replace('<path', '<path transform="translate(0 -14)"') +
+      '<text y="40" text-anchor="middle" font-size="22" font-weight="900" fill="url(#cyGold)" font-family="var(--cg-font),Arial">A</text>' +
+      '<text x="-27" y="-32" text-anchor="middle" font-size="12" font-weight="900" fill="#FDE68A" font-family="var(--cg-font),Arial">A</text>' +
+      '</g>'
+  });
+  /* Genie Lamp (RA) */
+  rgame({
+    key: 'genielamp', verb: V.tap, rows: RA, sfx: 'show', cy: 112,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(16) + r5glow() +
+      '<ellipse cx="150" cy="170" rx="70" ry="12" fill="#000" opacity=".35"/>' +
+      '<g id="cyObj" transform="translate(150 112)">' +
+      '<path d="M-52 18q-6-30 30-30 40 0 54 8 8 4 0 8-18 6-54 6h-30z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
+      '<ellipse cx="-6" cy="-6" rx="34" ry="18" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
+      '<path d="M-10 -22q6-10 2-16" fill="none" stroke="url(#cyGold)" stroke-width="5" stroke-linecap="round"/>' +
+      '<circle cx="-6" cy="-24" r="4" fill="#FDE68A"/>' +
+      '<path d="M44 2q22-4 26 8-14 2-26-2z" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
+      '<ellipse cx="-14" cy="-10" rx="10" ry="5" fill="#FFF7D6" opacity=".5"/>' +
+      '</g>'
+  });
+  /* Jackpot Bell (RB) */
+  rgame({
+    key: 'jackpotbell', verb: V.tap, rows: RB, sfx: 'show', cy: 104,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(16) + r5glow() +
+      '<g id="cyObj" transform="translate(150 104)">' +
+      '<circle cx="0" cy="-48" r="6" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
+      '<path d="M-44 36q0-78 44-78 44 0 44 78z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
+      '<rect x="-52" y="34" width="104" height="12" rx="6" fill="#B45309" stroke="#78350F" stroke-width="1.5"/>' +
+      '<circle cx="0" cy="52" r="8" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
+      '<ellipse cx="-16" cy="-8" rx="9" ry="26" fill="#FFF7D6" opacity=".45"/>' +
+      '<text y="12" text-anchor="middle" font-size="20" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">7</text>' +
+      '</g>'
+  });
+  /* Oyster Pearl (RA) */
+  rgame({
+    key: 'oysterpearl', verb: V.open, rows: RA, sfx: 'chests', cy: 110,
+    scene: '<defs>' + GDEFS + '<radialGradient id="r5pl" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#E0F2FE"/><stop offset="1" stop-color="#A5B4FC"/></radialGradient><linearGradient id="r5sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E7490"/><stop offset="1" stop-color="#083344"/></linearGradient></defs>' + r5bg('url(#r5sea)') + r5glow() +
+      '<g id="cyObj" transform="translate(150 110)">' +
+      '<path d="M-56 10a56 44 0 0 1 112 0z" fill="#CBD5E1" stroke="#64748B" stroke-width="2"/>' +
+      '<path d="M-56 10q56 24 112 0a56 40 0 0 0-112 0z" fill="#E2E8F0"/>' +
+      '<path d="M-48 10q48 20 96 0" fill="none" stroke="#94A3B8" stroke-width="1.5"/>' +
+      (function () { var p = ''; for (var i = 0; i < 7; i++) { var x = -44 + i * 14.6; p += '<path d="M' + x.toFixed(0) + ' 10q4 -18 7 0z" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>'; } return p; })() +
+      '<circle cx="0" cy="4" r="16" fill="url(#r5pl)"/><circle cx="-5" cy="-1" r="5" fill="#fff" opacity=".6"/>' +
+      '</g>'
+  });
+  /* Crown Jewel (RB) */
+  rgame({
+    key: 'crownjewel', verb: V.tap, rows: RB, sfx: 'show', cy: 112,
+    scene: '<defs>' + GDEFS + '<radialGradient id="r5ru" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FDA4AF"/><stop offset=".6" stop-color="#E11D48"/><stop offset="1" stop-color="#881337"/></radialGradient></defs>' + r5bg() + stars(16) + r5glow() +
+      '<ellipse cx="150" cy="168" rx="64" ry="12" fill="#000" opacity=".35"/>' +
+      '<g id="cyObj" transform="translate(150 112)">' +
+      '<path d="M-52 24L-52 -10 -26 10 0 -24 26 10 52 -10 52 24z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
+      '<rect x="-54" y="24" width="108" height="14" rx="4" fill="#B45309" stroke="#78350F" stroke-width="1.5"/>' +
+      '<circle cx="-52" cy="-10" r="5" fill="#FDE68A"/><circle cx="0" cy="-24" r="6" fill="url(#r5ru)"/><circle cx="52" cy="-10" r="5" fill="#FDE68A"/>' +
+      '<circle cx="-26" cy="14" r="5" fill="#67E8F9"/><circle cx="26" cy="14" r="5" fill="#67E8F9"/><circle cx="0" cy="18" r="6" fill="url(#r5ru)"/>' +
+      '<rect x="-54" y="30" width="108" height="3" fill="#FEF3C7" opacity=".5"/>' +
+      '</g>'
+  });
 })(window.D6 = window.D6 || {});

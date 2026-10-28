@@ -286,6 +286,8 @@
     ['cannonx', 'Treasure Cannon', 'casc4', ['#CBD5E1', '#334155']], ['luckylift', 'Lucky Lift', 'casc4', ['#FDE68A', '#B45309']], ['magichat', 'Magic Hat', 'casc4', ['#DDD6FE', '#7C3AED']],
     ['chestgold', 'Treasure Chest', 'casc4', ['#FDE68A', '#B45309']], ['fortunewheel', 'Fortune Wheel', 'casc4', ['#FCA5A5', '#B91C1C']], ['goldenegg', 'Golden Egg', 'casc4', ['#FDE68A', '#A16207']],
     ['mysterybox', 'Mystery Box', 'casc4', ['#DDD6FE', '#6D28D9']], ['crystalorb', 'Crystal Orb', 'casc4', ['#A5F3FC', '#0E7490']], ['diamondvault', 'Diamond Vault', 'casc4', ['#CBD5E1', '#0891B2']],
+    ['diceroll', 'Dice Roll', 'casc4', ['#FEF3C7', '#15803D']], ['royalcard', 'Royal Card', 'casc4', ['#FDE68A', '#4C1D95']], ['genielamp', 'Genie Lamp', 'casc4', ['#FDE68A', '#B45309']],
+    ['jackpotbell', 'Jackpot Bell', 'casc4', ['#FDE68A', '#B45309']], ['oysterpearl', 'Oyster Pearl', 'casc4', ['#E0F2FE', '#0E7490']], ['crownjewel', 'Crown Jewel', 'casc4', ['#FDE68A', '#B91C1C']],
     ['westgold', 'Gold Rush', 'casc1', ['#FED7AA', '#C2410C']], ['piratecove', 'Pirate Cove', 'casc1', ['#99F6E4', '#0D9488']], ['shamrock', 'Clover Riches', 'casc1', ['#BBF7D0', '#16A34A']],
     ['candypop', 'Candy Pop', 'casc1', ['#FBCFE8', '#DB2777']], ['olympus', 'Zeus Fury', 'casc1', ['#BFDBFE', '#2563EB']], ['vegasneon', 'Vegas Nights', 'casc1', ['#E9D5FF', '#A855F7']],
     ['samurai', 'Samurai', 'casc1', ['#FFE4E6', '#BE123C']], ['mermaid', 'Mermaid Lagoon', 'casc1', ['#CCFBF1', '#0D9488']], ['carnival', 'Carnival', 'casc1', ['#FAE8FF', '#A21CAF']],
