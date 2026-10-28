@@ -107,7 +107,7 @@
     piratecove: '<defs>' + rg('IDw', '#FFFFFF', '#E5E7EB', '#94A3B8') + '</defs>' +
       '<path d="M32 6C18 6 10 16 10 28c0 7 3 11 7 14v8h6v-5h5v5h8v-5h5v5h6v-8c4-3 7-7 7-14C54 16 46 6 32 6z" fill="url(#IDw)" stroke="#475569" stroke-width="1.6"/>' +
       '<circle cx="24" cy="28" r="5.5" fill="#111827"/><circle cx="40" cy="28" r="5.5" fill="#111827"/><path d="M29 40l3-5 3 5z" fill="#475569"/><path d="M8 50l48 10M8 60l48-10" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round"/>',
-    clover: '<defs>' + rg('IDc', '#86EFAC', '#22C55E', '#15803D') + '</defs>' + sh(18) +
+    shamrock: '<defs>' + rg('IDc', '#86EFAC', '#22C55E', '#15803D') + '</defs>' + sh(18) +
       '<path d="M32 36v20" stroke="#166534" stroke-width="4" stroke-linecap="round"/>' +
       [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(function (q) { return '<path d="M32 32q' + (q[0] * 16) + ' ' + (q[1] * 3) + ' ' + (q[0] * 12) + ' ' + (q[1] * 16) + 'q' + (-q[0] * 3) + ' ' + (q[1] * 3) + ' ' + (-q[0] * 12) + ' ' + (-q[1] * 12) + 'z" fill="url(#IDc)" stroke="#14532D" stroke-width="1.4"/>'; }).join(''),
     candypop: '<defs>' + rg('IDl', '#FFFFFF', '#F9A8D4', '#BE185D') + '</defs>' + sh(16) +
@@ -138,10 +138,33 @@
       '<path d="M16 14q-5-9-2-14 5 5 7 12M48 14q5-9 2-14-5 5-7 12z" fill="url(#IDh)" stroke="#7F1D1D"/><path d="M14 20c-3 13 2 32 18 32s21-19 18-32c-5 6-9 6-13 2-3 7-13 7-16 0-4 4-7 4-13-2z" fill="url(#IDd)" stroke="#450A0A" stroke-width="1.6"/>' +
       '<path d="M24 32l5 4-5 2zM44 32l-5 4 5 2z" fill="#1A0505"/><path d="M26 44q6 5 12 0l-3 5h-6z" fill="#1A0505"/><path d="M29 46l1 3M32 46v3M35 46l-1 3" stroke="#fff" stroke-width="1"/>'
   });
+  Object.assign(ICONS, {
+    aztecsun: '<defs>' + rg('IDas', '#FFF4C2', '#D97706', '#5C2E0E') + GOLD + '</defs>' + sh(22) +
+      '<circle cx="32" cy="30" r="22" fill="url(#IDas)" stroke="#5C2E0E" stroke-width="1.6"/>' + (function () { var s = ''; for (var i = 0; i < 8; i++) { var a = i * Math.PI / 4; s += '<path d="M' + (32 + Math.cos(a) * 22).toFixed(1) + ' ' + (30 + Math.sin(a) * 22).toFixed(1) + 'l' + (Math.cos(a) * 6).toFixed(1) + ' ' + (Math.sin(a) * 6).toFixed(1) + '" stroke="url(#IDg)" stroke-width="4" stroke-linecap="round"/>'; } return s; })() + '<circle cx="32" cy="30" r="11" fill="url(#IDg)" stroke="#5C2E0E" stroke-width="1.2"/><rect x="27" y="25" width="3.5" height="4.5" fill="#2A1206"/><rect x="33.5" y="25" width="3.5" height="4.5" fill="#2A1206"/><path d="M29 35h6l-3 4z" fill="#2A1206"/>',
+    dragongold: '<defs>' + rg('IDdg', '#FDE68A', '#D97706', '#7C2D12') + GOLD + '</defs>' + sh(20) +
+      '<path d="M43 22c7-5 14-5 20-1-5-1-10 0-14 4zM47 27c7-4 14-3 19 1-5-1-10 0-14 3z" fill="url(#IDg)" stroke="#5C1A0A" stroke-width=".8" stroke-linejoin="round"/>' +
+      '<path d="M46 26c-4-4-10-5-16-3-7 2-12 8-12 16 0 3 1 6 3 8-5 1-9 0-12-3 1 6 6 9 11 9-3 3-7 4-11 3 3 5 9 6 14 4 3 6 11 7 17 3-5 0-9-3-10-7 7-1 13-7 13-16 0-7-4-13-10-16 4-1 8 0 11 3-1-5-4-8-8-9 3-1 6-1 9 1-2-4-6-6-9-6z" fill="url(#IDdg)" stroke="#5C1A0A" stroke-width="1.4"/>' +
+      '<circle cx="30" cy="30" r="3.4" fill="#FEF08A"/><circle cx="30" cy="30" r="1.6" fill="#1A0505"/><circle cx="21" cy="34" r="1.3" fill="#5C1A0A"/><path d="M16 39l4 1M22 41l3 2" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/><path d="M15 31q-7-1-9-6" stroke="#B91C1C" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
+    fruitburst: '<defs>' + rg('IDfb', '#FF8FA3', '#E11D48', '#881337') + '</defs>' + sh(18) +
+      '<path d="M28 18q3-9 11-11M40 20q3-9 11-11" stroke="#15803D" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="24" cy="40" r="12" fill="url(#IDfb)" stroke="#881337" stroke-width="1.2"/><circle cx="44" cy="43" r="12" fill="url(#IDfb)" stroke="#881337" stroke-width="1.2"/>' + hi(20, 35, 5) + hi(40, 38, 5),
+    horuseye: '<defs>' + lg('IDph', '#FDE68A', '#D97706') + lg('IDpb', '#60A5FA', '#1D4ED8') + '</defs>' + sh(20) +
+      '<path d="M14 24q0-14 18-14t18 14l-3 22q-2 14-15 20-13-6-15-20z" fill="url(#IDph)" stroke="#5C2E0E" stroke-width="1.4"/><path d="M14 24q18-9 36 0l-2 8q-16-7-32 0z" fill="url(#IDpb)"/><rect x="24" y="30" width="5.5" height="5" rx="1" fill="#0C1428"/><rect x="34.5" y="30" width="5.5" height="5" rx="1" fill="#0C1428"/><path d="M27 42h10l-5 5z" fill="#B45309"/><rect x="29" y="50" width="6" height="9" fill="url(#IDpb)"/>',
+    cosmicgems: '<defs>' + lg('IDcg', '#E9D5FF', '#A855F7') + '</defs>' + sh(18) +
+      '<path d="M32 10l16 14-16 28-16-28z" fill="url(#IDcg)" stroke="#6D28D9" stroke-width="1.4" stroke-linejoin="round"/><path d="M16 24h32M32 10v42M24 24l8 28M40 24l-8 28" stroke="#F5F3FF" stroke-width="1" opacity=".7" fill="none"/>' + tw(50, 14, .7),
+    savanna: '<defs>' + lg('IDsf', '#FCD34D', '#B45309') + '</defs>' + sh(22) +
+      (function () { var s = ''; for (var i = 0; i < 11; i++) { var a = i * Math.PI / 5.5; s += '<circle cx="' + (32 + Math.cos(a) * 18).toFixed(1) + '" cy="' + (30 + Math.sin(a) * 18).toFixed(1) + '" r="7" fill="#92400E"/>'; } return s; })() +
+      '<circle cx="20" cy="19" r="5" fill="#B45309"/><circle cx="44" cy="19" r="5" fill="#B45309"/><circle cx="20" cy="19" r="2.2" fill="#78350F"/><circle cx="44" cy="19" r="2.2" fill="#78350F"/>' +
+      '<circle cx="32" cy="30" r="15" fill="url(#IDsf)" stroke="#78350F" stroke-width="1.4"/>' +
+      '<circle cx="26" cy="27" r="2.2" fill="#1A1206"/><circle cx="38" cy="27" r="2.2" fill="#1A1206"/>' +
+      '<ellipse cx="32" cy="38" rx="9" ry="7" fill="#FEF3C7"/><path d="M32 33l-3.5 4.5h7z" fill="#7C2D12"/><path d="M32 38v4M32 42q-3.5 2-6 0M32 42q3.5 2 6 0" stroke="#7C2D12" stroke-width="1.5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M23 37l-9-1M23 40l-8 2M41 37l9-1M41 40l8 2" stroke="#78350F" stroke-width="1" opacity=".55"/>'
+  });
   var L = [
     ['phoenix', 'Phoenix Rising', 'casc1', ['#FED7AA', '#DC2626']], ['buffalo', 'Buffalo Gold', 'casc1', ['#FDE68A', '#B45309']], ['joker', 'Jokers Wild', 'casc1', ['#E9D5FF', '#9333EA']],
     ['bookgold', 'Book of Gold', 'casc1', ['#FDE68A', '#A16207']], ['lotus', 'Lotus Zen', 'casc1', ['#99F6E4', '#0D9488']], ['inferno', 'Inferno', 'casc1', ['#FECACA', '#DC2626']],
-    ['westgold', 'Gold Rush', 'casc1', ['#FED7AA', '#C2410C']], ['piratecove', 'Pirate Cove', 'casc1', ['#99F6E4', '#0D9488']], ['clover', 'Lucky Clover', 'casc1', ['#BBF7D0', '#16A34A']],
+    ['aztecsun', 'Aztec Sun', 'casc1', ['#FDE68A', '#B45309']], ['dragongold', 'Golden Dragon', 'casc1', ['#FDE68A', '#B91C1C']], ['fruitburst', 'Fruit Burst', 'casc1', ['#FECACA', '#E11D48']],
+    ['horuseye', 'Eye of Pharaoh', 'casc1', ['#BAE6FD', '#2563EB']], ['cosmicgems', 'Cosmic Gems', 'casc1', ['#E9D5FF', '#7C3AED']], ['savanna', 'Wild Safari', 'casc1', ['#FDE68A', '#A16207']],
+    ['westgold', 'Gold Rush', 'casc1', ['#FED7AA', '#C2410C']], ['piratecove', 'Pirate Cove', 'casc1', ['#99F6E4', '#0D9488']], ['shamrock', 'Clover Riches', 'casc1', ['#BBF7D0', '#16A34A']],
     ['candypop', 'Candy Pop', 'casc1', ['#FBCFE8', '#DB2777']], ['olympus', 'Zeus Fury', 'casc1', ['#BFDBFE', '#2563EB']], ['vegasneon', 'Vegas Nights', 'casc1', ['#E9D5FF', '#A855F7']],
     ['samurai', 'Samurai', 'casc1', ['#FFE4E6', '#BE123C']], ['mermaid', 'Mermaid Lagoon', 'casc1', ['#CCFBF1', '#0D9488']], ['carnival', 'Carnival', 'casc1', ['#FAE8FF', '#A21CAF']],
     ['jazzclub', 'Jazz Club', 'casc1', ['#FEF3C7', '#92400E']], ['oasis', 'Desert Oasis', 'casc1', ['#FFEDD5', '#C2410C']], ['arctic', 'Arctic', 'casc1', ['#E0F2FE', '#0284C7']],
