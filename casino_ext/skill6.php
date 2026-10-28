@@ -43,4 +43,6 @@ return [
   // jeux « qu'on contrôle » (propriétaire) — guerre + conduite / pilotage — js/games/skill8.js
   'grenade'     => ['type' => 'skill', 'name' => 'Grenade Toss',   'rate' => 0.03],
   'canyon'      => ['type' => 'skill', 'name' => 'Canyon Dash',    'rate' => 0.03],
+  'tankrush'    => ['type' => 'skill', 'name' => 'Tank Rush',      'rate' => 0.03],
+  'speedboat'   => ['type' => 'skill', 'name' => 'Speed Boat',     'rate' => 0.03],
 ];

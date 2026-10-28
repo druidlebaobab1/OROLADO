@@ -223,6 +223,34 @@
       de: ['Tippen zum Steigen', 'An den Felsen zerschellt!', 'Steinschlag!', 'Tippe, damit dein Jet steigt; loslassen, dann sinkt er. Fliege durch die Lücken in den Schluchtwänden, ohne den Fels zu berühren. Es wird schneller und die Lücken enger. Den Fels zu berühren beendet die Runde.'],
       hi: ['ऊपर जाने को छुएं', 'चट्टानों से टकराए!', 'भूस्खलन!', 'अपने जेट को ऊपर उठाने को छुएं; छोड़ें तो नीचे गोता लगाता है। घाटी की दीवारों के बीच के खाली हिस्सों से चट्टान छुए बिना निकलें। यह तेज़ होता है और अंतराल सँकरे होते हैं। चट्टान से टकराना राउंड खत्म कर देता है।'],
       zh: ['点击上升', '撞上岩石了！', '山体滑坡！', '点击让你的战机爬升；松开它就俯冲。穿过峡谷岩壁之间的缺口，不要碰到岩石。速度越来越快，缺口越来越窄。碰到岩石，本回合结束。']
+    },
+    tankrush: {
+      en: ['Drag to drive your tank', 'They got through!', 'Air strike!', 'Drag left or right to drive your tank along the bottom. It fires upward on its own — line it up under the enemy vehicles to blast them before they reach the bottom. They come faster and in greater numbers. One getting past you ends the round.'],
+      fr: ['Glisse pour conduire ton char', 'Ils sont passés !', 'Frappe aérienne !', 'Glisse à gauche ou à droite pour conduire ton char en bas. Il tire tout seul vers le haut — place-le sous les véhicules ennemis pour les détruire avant qu’ils arrivent en bas. Ils arrivent plus vite et plus nombreux. Un seul qui passe termine la partie.'],
+      es: ['Desliza para conducir tu tanque', '¡Se colaron!', '¡Ataque aéreo!', 'Desliza a izquierda o derecha para conducir tu tanque abajo. Dispara solo hacia arriba — colócalo bajo los vehículos enemigos para destruirlos antes de que lleguen abajo. Vienen más rápido y en mayor número. Que uno pase termina la ronda.'],
+      pt: ['Deslize para dirigir seu tanque', 'Eles passaram!', 'Ataque aéreo!', 'Deslize para a esquerda ou direita para dirigir seu tanque embaixo. Ele atira sozinho para cima — alinhe-o sob os veículos inimigos para destruí-los antes que cheguem embaixo. Vêm mais rápido e em maior número. Um passar encerra a rodada.'],
+      ar: ['اسحب لقيادة دبابتك', 'لقد عبروا!', 'ضربة جوية!', 'اسحب يسارًا أو يمينًا لقيادة دبابتك في الأسفل. تطلق النار تلقائيًا للأعلى — ضعها تحت مركبات العدو لتدميرها قبل أن تصل للأسفل. يأتون أسرع وأكثر عددًا. عبور واحد ينهي الجولة.'],
+      tr: ['Tankını sürmek için kaydır', 'Geçtiler!', 'Hava saldırısı!', 'Tankını altta sürmek için sola ya da sağa kaydır. Kendi kendine yukarı ateş eder — düşman araçlarının altına getir ve aşağı ulaşmadan vur. Daha hızlı ve kalabalık gelirler. Biri geçerse tur biter.'],
+      vi: ['Kéo để lái xe tăng', 'Chúng lọt qua!', 'Không kích!', 'Kéo trái hoặc phải để lái xe tăng ở dưới. Nó tự bắn lên — canh dưới xe địch để hạ chúng trước khi tới đáy. Chúng đến nhanh và đông hơn. Một chiếc lọt qua là kết thúc ván.'],
+      id: ['Geser untuk mengendarai tank', 'Mereka lolos!', 'Serangan udara!', 'Geser ke kiri atau kanan untuk mengendarai tankmu di bawah. Ia menembak ke atas sendiri — sejajarkan di bawah kendaraan musuh untuk menghancurkannya sebelum sampai bawah. Datang makin cepat dan banyak. Satu lolos mengakhiri ronde.'],
+      ru: ['Веди, чтобы управлять танком', 'Они прорвались!', 'Авиаудар!', 'Веди влево или вправо, чтобы вести танк внизу. Он сам стреляет вверх — подводи его под вражескую технику, чтобы сбить до того, как она дойдёт до низа. Их больше и они быстрее. Один прорвавшийся завершает раунд.'],
+      de: ['Ziehen, um den Panzer zu fahren', 'Sie sind durch!', 'Luftangriff!', 'Ziehe nach links oder rechts, um deinen Panzer unten zu fahren. Er feuert von selbst nach oben — bring ihn unter die feindlichen Fahrzeuge, um sie abzuschießen, bevor sie unten ankommen. Sie kommen schneller und zahlreicher. Kommt einer durch, endet die Runde.'],
+      hi: ['टैंक चलाने को खींचें', 'वे निकल गए!', 'हवाई हमला!', 'नीचे अपना टैंक चलाने के लिए बाएँ या दाएँ खींचें। यह खुद ऊपर गोली चलाता है — दुश्मन वाहनों के नीचे लाकर उन्हें नीचे पहुँचने से पहले उड़ा दें। वे तेज़ और ज़्यादा आते हैं। एक भी निकल गया तो राउंड खत्म।'],
+      zh: ['拖动驾驶你的坦克', '它们冲过去了！', '空袭！', '左右拖动驾驶底部的坦克。它会自动向上开火——对准敌方车辆下方，在它们到达底部前消灭。它们会越来越快、越来越多。放过一辆，本回合结束。']
+    },
+    speedboat: {
+      en: ['Drag to steer your boat', 'Wrecked!', 'Whirlpool!', 'Drag left or right to steer your speedboat and weave between the buoys and rocks on the river. It gets faster and busier. Hitting anything ends the round.'],
+      fr: ['Glisse pour piloter ton bateau', 'Naufrage !', 'Tourbillon !', 'Glisse à gauche ou à droite pour piloter ton hors-bord et te faufiler entre les bouées et les rochers de la rivière. Ça devient plus rapide et plus chargé. Toucher quelque chose termine la partie.'],
+      es: ['Desliza para pilotar tu lancha', '¡Naufragio!', '¡Remolino!', 'Desliza a izquierda o derecha para pilotar tu lancha y esquivar las boyas y rocas del río. Se vuelve más rápido y concurrido. Chocar con algo termina la ronda.'],
+      pt: ['Deslize para pilotar seu barco', 'Naufrágio!', 'Redemoinho!', 'Deslize para a esquerda ou direita para pilotar sua lancha e desviar das boias e pedras do rio. Fica mais rápido e cheio. Bater em algo encerra a rodada.'],
+      ar: ['اسحب لقيادة قاربك', 'تحطّم!', 'دوّامة!', 'اسحب يسارًا أو يمينًا لقيادة قاربك السريع والتفافه بين العوّامات والصخور في النهر. يصبح أسرع وأكثر ازدحامًا. اصطدامك بأي شيء ينهي الجولة.'],
+      tr: ['Tekneni sürmek için kaydır', 'Battın!', 'Girdap!', 'Sürat tekneni sürmek ve nehirdeki şamandıra ile kayaların arasından geçmek için sola ya da sağa kaydır. Daha hızlı ve kalabalık olur. Bir şeye çarpmak turu bitirir.'],
+      vi: ['Kéo để lái thuyền', 'Đắm rồi!', 'Xoáy nước!', 'Kéo trái hoặc phải để lái ca nô và luồn lách giữa phao và đá trên sông. Ngày càng nhanh và đông. Va vào bất cứ thứ gì là kết thúc ván.'],
+      id: ['Geser untuk mengemudikan perahu', 'Karam!', 'Pusaran air!', 'Geser ke kiri atau kanan untuk mengemudikan perahu cepatmu dan menghindari pelampung serta batu di sungai. Makin cepat dan ramai. Menabrak apa pun mengakhiri ronde.'],
+      ru: ['Веди, чтобы управлять катером', 'Крушение!', 'Водоворот!', 'Веди влево или вправо, чтобы управлять катером и лавировать между буями и камнями на реке. Становится быстрее и плотнее. Столкновение с чем-либо завершает раунд.'],
+      de: ['Ziehen, um das Boot zu steuern', 'Havariert!', 'Strudel!', 'Ziehe nach links oder rechts, um dein Schnellboot zu steuern und zwischen den Bojen und Felsen im Fluss hindurchzuschlängeln. Es wird schneller und voller. Etwas zu treffen beendet die Runde.'],
+      hi: ['नाव चलाने को खींचें', 'डूब गई!', 'भँवर!', 'अपनी स्पीडबोट चलाने और नदी की बोया व चट्टानों के बीच से निकलने के लिए बाएँ या दाएँ खींचें। यह तेज़ और व्यस्त होता जाता है। किसी से टकराना राउंड खत्म कर देता है।'],
+      zh: ['拖动驾驶你的快艇', '翻船了！', '漩涡！', '左右拖动驾驶你的快艇，在河面的浮标和礁石之间穿梭。会越来越快、越来越挤。撞到任何东西，本回合结束。']
     }
   };
   function L(key) {
@@ -1788,4 +1816,142 @@
       dbg: function () { return { jx: jx | 0, jy: jy | 0, cols: cols.length, dead: dead, passed: passed }; }
     };
   }, 'tap', 0.45);
+
+  /* ================================================================== TANK RUSH (jeux de guerre, propriétaire) — conduis ton
+     char en bas, il tire tout seul vers le haut : place-le sous les véhicules ennemis pour les détruire avant qu'ils passent.
+     Un ennemi qui passe termine. Ça accélère et se densifie. La fin secrète = une frappe aérienne. */
+  boot('tankrush', function (A) {
+    var W, H, T, dpr, bg, px, py, tw, foes = [], bul = [], cool = 0, dead = 0, won = 0, strike = null, t = 0, spT = 0, kills = 0, drag = null, tankS, foeS;
+    function tankSprite(cols, up) {
+      var w = tw, h = tw * 0.8;
+      return mkc(w + 6, h + 10, dpr, function (c, cw2, ch2) {
+        c.translate(cw2 / 2, ch2 / 2);
+        c.fillStyle = '#1C2416'; rr(c, -w / 2, h * 0.1, w, h * 0.32, 4); c.fill();
+        for (var tr2 = -1; tr2 <= 1; tr2++) circ(c, tr2 * w * 0.3, h * 0.26, w * 0.1, '#111');
+        c.fillStyle = lg(c, -w / 2, -h / 2, w / 2, h / 2, cols); rr(c, -w * 0.42, -h * 0.18, w * 0.84, h * 0.4, 5); c.fill();
+        c.fillStyle = cols[1]; rr(c, -w * 0.2, -h * 0.42, w * 0.4, h * 0.32, 4); c.fill();
+        c.fillStyle = cols[2]; c.fillRect(-w * 0.07, up ? -h * 0.9 : -h * 0.18, w * 0.14, up ? h * 0.5 : h * 0.72);
+        c.fillStyle = 'rgba(255,255,255,.15)'; rr(c, -w * 0.38, -h * 0.14, w * 0.3, h * 0.12, 3); c.fill();
+      });
+    }
+    function spawn(live) {
+      var lv = live ? A.lv() : 0.2, x = rnd(W * 0.12, W * 0.88);
+      for (var i = 0; i < foes.length; i++) if (foes[i].y < T + tw * 1.5 && Math.abs(foes[i].x - x) < tw * 1.1) return;
+      foes.push({ x: x, y: T - tw, vy: (H - T) * (0.08 + 0.1 * lv) * rnd(0.85, 1.2), hp: 1 });
+    }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; dpr = d; T = top; tw = clamp(Math.min(W, H - T) * 0.13, 30, 76); py = H - clamp((H - T) * 0.09, 18, 52) - tw * 0.4; if (px == null) px = W / 2;
+        tankS = tankSprite(['#A3B18A', '#6B7A4F', '#3F4A2E'], true); foeS = tankSprite(['#D1A3A3', '#9E5C5C', '#5C2E2E'], false);
+        bg = mkc(W, H, dpr, function (c) {
+          c.fillStyle = lg(c, 0, 0, 0, H, ['#8B7355', '#A1875F', '#7A6344']); c.fillRect(0, 0, W, H);
+          c.fillStyle = 'rgba(70,50,25,.35)'; for (var q = 0; q < (A.lite ? 6 : 14); q++) { var cx3 = rnd(0, W), cy3 = rnd(T, H); circ(c, cx3, cy3, rnd(5, 15), 'rgba(90,70,40,.4)'); circ(c, cx3, cy3, rnd(2, 6), 'rgba(60,45,22,.45)'); }
+          c.strokeStyle = 'rgba(60,45,25,.3)'; c.lineWidth = 2; for (var k = 0; k < 6; k++) { c.beginPath(); c.moveTo(rnd(0, W), rnd(T, H)); c.lineTo(rnd(0, W), rnd(T, H)); c.stroke(); }
+          c.fillStyle = lg(c, 0, T, 0, T + (H - T) * 0.18, ['rgba(120,113,108,.5)', 'rgba(120,113,108,0)']); c.fillRect(0, T, W, (H - T) * 0.18);
+        });
+      },
+      reset: function () { foes = []; bul = []; dead = 0; won = 0; strike = null; spT = 0.5; kills = 0; px = W / 2; drag = null; cool = 0; },
+      step: function (dt, live) {
+        t += dt; cool = Math.max(0, cool - dt); var lv = live ? A.lv() : 0.2, i, f, b;
+        if (strike) { strike.t += dt; strike.sh = strike.sh || []; if (strike.t < 0.8 && Math.random() < 0.5) strike.sh.push({ x: rnd(0, W), y: T, vy: (H - T) * 2.2 }); for (i = strike.sh.length - 1; i >= 0; i--) { var sh = strike.sh[i]; sh.y += sh.vy * dt; if (sh.y >= py) { boomFx(A, sh.x, py, 0.9); strike.sh.splice(i, 1); } } if (strike.t > 0.35 && !strike.hit) { strike.hit = 1; dead = 1; } return; }
+        if (dead || won) return;
+        if (A.idle()) { var near = foes.slice().sort(function (a2, b2) { return b2.y - a2.y; })[0]; if (near) px += clamp(near.x - px, -W * 1.1 * dt, W * 1.1 * dt); }
+        px = clamp(px, tw * 0.5, W - tw * 0.5);
+        if (cool <= 0 && !dead) { cool = 0.26; bul.push({ x: px, y: py - tw * 0.6, vy: -(H - T) * 1.6 }); A.sx('gun', { k: 'tank', v: 0.35 }); }
+        spT -= dt; if (spT <= 0 && foes.length < 3 + Math.round(5 * lv)) { spawn(live); spT = Math.max(0.5, 1.8 - 1.1 * lv) * rnd(0.7, 1.3); }
+        for (i = bul.length - 1; i >= 0; i--) { b = bul[i]; b.y += b.vy * dt; if (b.y < T - 20) { bul.splice(i, 1); continue; } for (var j = foes.length - 1; j >= 0; j--) { f = foes[j]; if (Math.abs(b.x - f.x) < tw * 0.5 && Math.abs(b.y - f.y) < tw * 0.5) { bul.splice(i, 1); foes.splice(j, 1); kills++; boomFx(A, f.x, f.y, 0.7); break; } } }
+        for (i = foes.length - 1; i >= 0; i--) { f = foes[i]; f.y += f.vy * dt; if (f.y + tw * 0.4 > py) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, f.x, py, 1.2); A.shake(0.5); } return; } foes.splice(i, 1); } }
+      },
+      draw: function (c) {
+        A.bg(bg); var i, f, b;
+        c.strokeStyle = '#FDE68A'; c.lineWidth = 4; c.lineCap = 'round'; for (i = 0; i < bul.length; i++) { b = bul[i]; c.beginPath(); c.moveTo(b.x, b.y); c.lineTo(b.x, b.y + 14); c.stroke(); }
+        for (i = 0; i < foes.length; i++) { f = foes[i]; c.drawImage(foeS, f.x - foeS.w / 2, f.y - foeS.h / 2, foeS.w, foeS.h); }
+        if (strike && strike.sh) { c.strokeStyle = '#FB923C'; c.lineWidth = 3; for (i = 0; i < strike.sh.length; i++) { var sh = strike.sh[i]; c.beginPath(); c.moveTo(sh.x, sh.y); c.lineTo(sh.x, sh.y - 16); c.stroke(); } }
+        if (!dead) c.drawImage(tankS, px - tankS.w / 2, py - tankS.h / 2, tankS.w, tankS.h);
+      },
+      down: function (x) { drag = { x: x, s: px }; },
+      move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, tw * 0.5, W - tw * 0.5); },
+      up: function () { drag = null; },
+      key: function (k) { if (k === 'left') px -= tw * 0.6; else if (k === 'right') px += tw * 0.6; px = clamp(px, tw * 0.5, W - tw * 0.5); },
+      boom: function () { strike = { t: 0 }; drag = null; A.sx('engine', { k: 'jet' }); },
+      win: function () { won = 0.001; drag = null; A.burst(px, py - tw * 0.5, 16, ['#A3B18A', '#FFFFFF', '#FDE68A'], 160, 0.6, 3); },
+      dbg: function () { return { px: px | 0, py: py | 0, foes: foes.length, dead: dead, kills: kills }; }
+    };
+  }, 'drag', 0.5);
+
+  /* ================================================================== SPEED BOAT (conduite / pilotage, propriétaire) — pilote
+     un hors-bord et faufile-toi entre les bouées et les rochers de la rivière. Toucher quelque chose termine. Ça accélère et se
+     densifie. La fin secrète = un tourbillon. */
+  boot('speedboat', function (A) {
+    var W, H, T, dpr, bg, rx0, rx1, bw, bh, px, py, obs = [], t = 0, spT = 0, dead = 0, won = 0, whirl = null, drag = null, dash = 0, boatS, buoyS, rockS;
+    function boatSprite() {
+      return mkc(bw + 6, bh + 6, dpr, function (c, cw2, ch2) {
+        c.translate(cw2 / 2, ch2 / 2);
+        c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(0, bh * 0.1, bw * 0.5, bh * 0.5, 0, 0, TAU); c.fill();
+        c.fillStyle = lg(c, 0, -bh / 2, 0, bh / 2, ['#F1F5F9', '#CBD5E1', '#64748B']);
+        c.beginPath(); c.moveTo(0, -bh * 0.5); c.quadraticCurveTo(bw * 0.5, -bh * 0.1, bw * 0.4, bh * 0.45); c.lineTo(-bw * 0.4, bh * 0.45); c.quadraticCurveTo(-bw * 0.5, -bh * 0.1, 0, -bh * 0.5); c.fill();
+        c.fillStyle = '#0EA5E9'; rr(c, -bw * 0.26, -bh * 0.12, bw * 0.52, bh * 0.3, 4); c.fill();
+        c.fillStyle = '#0369A1'; rr(c, -bw * 0.16, -bh * 0.05, bw * 0.32, bh * 0.16, 3); c.fill();
+        c.fillStyle = '#F87171'; c.fillRect(-bw * 0.04, -bh * 0.4, bw * 0.08, bh * 0.2);
+      });
+    }
+    function buoySprite() {
+      return mkc(bw * 0.7, bw * 0.9, dpr, function (c, w, h) { c.translate(w / 2, h / 2); var r = w * 0.32; c.fillStyle = lg(c, 0, -r, 0, r, ['#F87171', '#B91C1C']); circ(c, 0, 0, r, c.fillStyle); c.fillStyle = '#fff'; c.fillRect(-r, -r * 0.3, r * 2, r * 0.3); c.fillStyle = '#7F1D1D'; rr(c, -r * 0.2, -r * 1.3, r * 0.4, r * 0.5, 2); c.fill(); });
+    }
+    function rockSprite() {
+      return mkc(bw * 0.9, bw * 0.8, dpr, function (c, w, h) { c.translate(w / 2, h / 2); var r = w * 0.4; c.fillStyle = lg(c, 0, -r, 0, r, ['#94A3B8', '#475569', '#1E293B']); poly(c, [-r, r * 0.4, -r * 0.6, -r * 0.5, 0, -r * 0.7, r * 0.7, -r * 0.4, r, r * 0.5], c.fillStyle); c.fill(); c.fillStyle = 'rgba(255,255,255,.2)'; poly(c, [-r * 0.6, -r * 0.5, 0, -r * 0.7, -r * 0.1, -r * 0.2], 'rgba(255,255,255,.2)'); c.fill(); });
+    }
+    function spawn(live) {
+      var lv = live ? A.lv() : 0.2, lane = (Math.random() * 4) | 0, laneW = (rx1 - rx0) / 4, x = rx0 + laneW * (lane + 0.5);
+      for (var i = 0; i < obs.length; i++) if (obs[i].y < T + bh * 1.6 && Math.abs(obs[i].x - x) < bw) return;
+      obs.push({ x: x, y: T - bh, vy: (H - T) * (0.4 + 0.5 * lv) * rnd(0.9, 1.15), rock: Math.random() < 0.5 });
+    }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; dpr = d; T = top; rx0 = W * 0.08; rx1 = W * 0.92; bw = clamp((rx1 - rx0) / 4 * 0.72, 30, 80); bh = bw * 1.25; py = H - bh * 0.9; if (px == null) px = W / 2;
+        boatS = boatSprite(); buoyS = buoySprite(); rockS = rockSprite();
+        bg = mkc(W, H, dpr, function (c) {
+          c.fillStyle = lg(c, 0, 0, 0, H, ['#0C4A6E', '#0369A1', '#0EA5E9']); c.fillRect(0, 0, W, H);
+          c.fillStyle = '#16A34A'; c.fillRect(0, 0, rx0, H); c.fillRect(rx1, 0, W - rx1, H);
+          c.fillStyle = '#15803D'; c.fillRect(rx0 - 5, 0, 5, H); c.fillRect(rx1, 0, 5, H);
+          c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 2; for (var y = 0; y < H; y += 26) { c.beginPath(); for (var x = rx0; x <= rx1; x += 8) c.lineTo(x, y + Math.sin(x * 0.05 + y) * 3); c.stroke(); }
+        });
+      },
+      reset: function () { obs = []; dead = 0; won = 0; whirl = null; spT = 0.5; px = W / 2; drag = null; dash = 0; },
+      step: function (dt, live) {
+        t += dt; var lv = live ? A.lv() : 0.2, i, e, spd = (H - T) * (0.5 + 0.55 * lv); dash += spd * dt;
+        if (whirl) { whirl.t += dt; for (i = 0; i < obs.length; i++) { var a = Math.atan2(obs[i].y - py, obs[i].x - px) + dt * 4; var rr2 = Math.max(4, Math.hypot(obs[i].x - px, obs[i].y - py) - W * 0.4 * dt); obs[i].x = px + Math.cos(a) * rr2; obs[i].y = py + Math.sin(a) * rr2; } return; }
+        if (dead || won) return;
+        if (A.idle()) {
+          var ahead = obs.filter(function (q) { return q.y > T && q.y < py && q.y > py - bh * 4; }), best = px, bd = -1;
+          for (var gx = rx0 + bw; gx <= rx1 - bw; gx += (rx1 - rx0 - 2 * bw) / 6) { var dmin = 1e9; ahead.forEach(function (q) { var dd = Math.hypot((q.x - gx) * 1.4, q.y - py); if (dd < dmin) dmin = dd; }); if (dmin > bd) { bd = dmin; best = gx; } }
+          px += clamp(best - px, -W * 1.1 * dt, W * 1.1 * dt);
+        }
+        px = clamp(px, rx0 + bw * 0.5, rx1 - bw * 0.5);
+        spT -= dt; if (spT <= 0) { spawn(live); if (live && lv > 0.5 && Math.random() < 0.4) spawn(live); spT = Math.max(0.34, 1.2 - 0.8 * lv) * rnd(0.7, 1.25); }
+        for (i = obs.length - 1; i >= 0; i--) {
+          e = obs[i]; e.y += (e.vy + spd * 0.15) * dt;
+          if (e.y - bh * 0.5 > H) { obs.splice(i, 1); continue; }
+          if (Math.abs(e.x - px) < bw * 0.7 && Math.abs(e.y - py) < bh * 0.7) { boomFx(A, (e.x + px) / 2, (e.y + py) / 2, 0.9); A.shake(0.4); if (A.live()) { if (A.fail(A.l.fail)) dead = 1; } obs.splice(i, 1); return; }
+        }
+      },
+      draw: function (c) {
+        A.bg(bg); var i, e;
+        c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = Math.max(2, bw * 0.06); c.setLineDash([bh * 0.3, bh * 0.7]); c.lineDashOffset = -(dash % (bh));
+        c.beginPath(); c.moveTo(W / 2, -bh); c.lineTo(W / 2, H + bh); c.stroke(); c.setLineDash([]);
+        for (i = 0; i < obs.length; i++) { e = obs[i]; var img = e.rock ? rockS : buoyS; c.drawImage(img, e.x - img.w / 2, e.y - img.h / 2, img.w, img.h); }
+        if (!dead) {
+          c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 2; c.beginPath(); c.moveTo(px - bw * 0.3, py + bh * 0.4); c.lineTo(px - bw * 0.7, py + bh * 1.1); c.moveTo(px + bw * 0.3, py + bh * 0.4); c.lineTo(px + bw * 0.7, py + bh * 1.1); c.stroke();
+          c.drawImage(boatS, px - boatS.w / 2, py - boatS.h / 2, boatS.w, boatS.h);
+        }
+      },
+      down: function (x) { drag = { x: x, s: px }; },
+      move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, rx0 + bw * 0.5, rx1 - bw * 0.5); },
+      up: function () { drag = null; },
+      key: function (k) { if (k === 'left') px -= bw * 0.7; else if (k === 'right') px += bw * 0.7; px = clamp(px, rx0 + bw * 0.5, rx1 - bw * 0.5); },
+      boom: function () { whirl = { t: 0 }; drag = null; A.explode(px, py, 1.2); },
+      win: function () { won = 0.001; drag = null; A.burst(px, py - bh * 0.5, 16, ['#7DD3FC', '#FFFFFF', '#FDE68A'], 160, 0.6, 3); },
+      dbg: function () { return { px: px | 0, py: py | 0, obs: obs.length, dead: dead }; }
+    };
+  }, 'drag', 0.5);
 })(window.D6 = window.D6 || {});
