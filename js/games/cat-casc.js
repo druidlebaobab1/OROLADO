@@ -120,7 +120,27 @@
       '<text x="32" y="42" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="22" fill="#FDE047" stroke="#B45309" stroke-width="1">777</text>' +
       '<circle cx="14" cy="54" r="3" fill="#F472B6"/><circle cx="32" cy="56" r="3" fill="#67E8F9"/><circle cx="50" cy="54" r="3" fill="#FDE047"/>'
   });
+  // case (round 9) : logos travaillés des 6 machines à sous de plus
+  Object.assign(ICONS, {
+    phoenix: '<defs>' + rg('IDf', '#FFF3C7', '#F97316', '#B91C1C') + '</defs>' + sh(16) +
+      '<path d="M32 14c-3 4-4 8-3 12-6-6-16-6-21 0 5 2 9 7 14 9-8 1-14 7-15 15 7-3 13-3 19-1-3 3-5 7-5 11 4-2 8-6 11-11 3 5 7 9 11 11 0-4-2-8-5-11 6-2 12-2 19 1-1-8-7-14-15-15 5-2 9-7 14-9-5-6-15-6-21 0 1-4 0-8-3-12z" fill="url(#IDf)" stroke="#7F1D1D" stroke-width="1.3"/><circle cx="32" cy="20" r="2" fill="#1A0505"/>' + tw(52, 14, .7),
+    buffalo: '<defs>' + rg('IDb', '#8B5A2B', '#5C3A1A', '#2E1C0C') + GOLD + '</defs>' + sh(22) +
+      '<path d="M14 18C8 18 6 24 8 30c-4 1-5 6-2 10 3-1 4-5 4-5 2 7 9 11 22 11s20-4 22-11c0 0 1 4 4 5 3-4 2-9-2-10 2-6 0-12-6-12-4 0-6 3-8 5-2-3-5-5-8-5s-6 2-8 5c-2-2-4-5-8-5z" fill="url(#IDb)" stroke="#1C1206" stroke-width="1.6"/>' +
+      '<path d="M14 18q-8-2-12 2 6 0 8 4M50 18q8-2 12 2-6 0-8 4" stroke="url(#IDg)" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="26" cy="30" r="2.6" fill="#FDE68A"/><circle cx="38" cy="30" r="2.6" fill="#FDE68A"/><path d="M28 40q4 3 8 0" stroke="#1C1206" stroke-width="1.6" fill="none"/>' + hi(22, 26, 6),
+    joker: '<defs>' + lg('IDj', '#A855F7', '#6D28D9') + GOLD + '</defs>' + sh(20) +
+      '<path d="M18 16q14-7 28 0-3 12-14 12T18 16z" fill="url(#IDj)" stroke="#2E1065" stroke-width="1.4"/><circle cx="15" cy="14" r="4.5" fill="url(#IDg)"/><circle cx="49" cy="14" r="4.5" fill="#F472B6"/><circle cx="32" cy="9" r="4.5" fill="#34D399"/>' +
+      '<ellipse cx="32" cy="38" rx="15" ry="16" fill="#FFF7ED" stroke="#92400E" stroke-width="1.2"/><circle cx="27" cy="35" r="2.4" fill="#111"/><circle cx="37" cy="35" r="2.4" fill="#111"/><path d="M26 44q6 5 12 0" stroke="#B91C1C" stroke-width="2" fill="none" stroke-linecap="round"/>',
+    bookgold: '<defs>' + GOLD + '</defs>' + sh(20) +
+      '<path d="M10 18q22-9 44 0v32q-22-8-44 0z" fill="url(#IDg)" stroke="#5C3A0A" stroke-width="1.8"/><path d="M32 18v32" stroke="#5C3A0A" stroke-width="2.4"/><ellipse cx="32" cy="34" rx="7" ry="5" fill="#1C1206"/><circle cx="32" cy="34" r="2.4" fill="#FDE68A"/><path d="M18 26q6-3 10 0M36 26q6-3 10 0" stroke="#FFF7D6" stroke-width="1.4" fill="none" opacity=".7"/>' + tw(52, 12, .7),
+    lotus: '<defs>' + rg('IDl', '#FBCFE8', '#F472B6', '#BE185D') + lg('IDw', '#5EEAD4', '#0D9488') + '</defs>' + sh(16) +
+      '<ellipse cx="32" cy="50" rx="26" ry="7" fill="url(#IDw)"/>' + (function () { var s = ''; for (var i = 0; i < 7; i++) { var a = (i - 3) * 0.42; s += '<path d="M32 48q' + (Math.sin(a) * 22).toFixed(1) + ' -18 ' + (Math.sin(a) * 7).toFixed(1) + ' -26q' + (-Math.sin(a) * 7).toFixed(1) + ' 8 ' + (-Math.sin(a) * 14).toFixed(1) + ' 26z" fill="url(#IDl)" stroke="#9D174D" stroke-width=".6"/>'; } return s; })() + '<circle cx="32" cy="42" r="4" fill="#FDE68A"/>',
+    inferno: '<defs>' + rg('IDd', '#F87171', '#B91C1C', '#450A0A') + lg('IDh', '#FCA5A5', '#B91C1C') + '</defs>' + sh(20) +
+      '<path d="M16 14q-5-9-2-14 5 5 7 12M48 14q5-9 2-14-5 5-7 12z" fill="url(#IDh)" stroke="#7F1D1D"/><path d="M14 20c-3 13 2 32 18 32s21-19 18-32c-5 6-9 6-13 2-3 7-13 7-16 0-4 4-7 4-13-2z" fill="url(#IDd)" stroke="#450A0A" stroke-width="1.6"/>' +
+      '<path d="M24 32l5 4-5 2zM44 32l-5 4 5 2z" fill="#1A0505"/><path d="M26 44q6 5 12 0l-3 5h-6z" fill="#1A0505"/><path d="M29 46l1 3M32 46v3M35 46l-1 3" stroke="#fff" stroke-width="1"/>'
+  });
   var L = [
+    ['phoenix', 'Phoenix Rising', 'casc1', ['#FED7AA', '#DC2626']], ['buffalo', 'Buffalo Gold', 'casc1', ['#FDE68A', '#B45309']], ['joker', 'Jokers Wild', 'casc1', ['#E9D5FF', '#9333EA']],
+    ['bookgold', 'Book of Gold', 'casc1', ['#FDE68A', '#A16207']], ['lotus', 'Lotus Zen', 'casc1', ['#99F6E4', '#0D9488']], ['inferno', 'Inferno', 'casc1', ['#FECACA', '#DC2626']],
     ['westgold', 'Gold Rush', 'casc1', ['#FED7AA', '#C2410C']], ['piratecove', 'Pirate Cove', 'casc1', ['#99F6E4', '#0D9488']], ['clover', 'Lucky Clover', 'casc1', ['#BBF7D0', '#16A34A']],
     ['candypop', 'Candy Pop', 'casc1', ['#FBCFE8', '#DB2777']], ['olympus', 'Zeus Fury', 'casc1', ['#BFDBFE', '#2563EB']], ['vegasneon', 'Vegas Nights', 'casc1', ['#E9D5FF', '#A855F7']],
     ['samurai', 'Samurai', 'casc1', ['#FFE4E6', '#BE123C']], ['mermaid', 'Mermaid Lagoon', 'casc1', ['#CCFBF1', '#0D9488']], ['carnival', 'Carnival', 'casc1', ['#FAE8FF', '#A21CAF']],
