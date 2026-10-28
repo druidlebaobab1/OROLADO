@@ -206,7 +206,22 @@
     icon: '<defs><linearGradient id="IDcy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DD3FC"/><stop offset=".55" stop-color="#FCD34D"/><stop offset="1" stop-color="#F59E0B"/></linearGradient><linearGradient id="IDrk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#92400E"/><stop offset="1" stop-color="#451A03"/></linearGradient></defs>' +
       '<rect width="64" height="64" fill="url(#IDcy)"/>' +
       '<path d="M0 0h64v16L50 20 40 12 26 18 12 10 0 16Z" fill="url(#IDrk)"/><path d="M0 64h64V44L50 40 38 50 24 42 10 52 0 46Z" fill="url(#IDrk)"/>' +
-      '<g transform="translate(26 32)"><path d="M12 0L-6 -6-11 -3-11 3-6 6Z" fill="#CBD5E1"/><path d="M-2 0L-9 -8-4 0Z" fill="#475569"/><path d="M-2 0L-9 8-4 0Z" fill="#475569"/><ellipse cx="4" cy="-0.5" rx="3" ry="2" fill="#7DD3FC"/><path d="M-8 0L-16 -2-16 2Z" fill="#FDBA74"/></g>' }
+      '<g transform="translate(26 32)"><path d="M12 0L-6 -6-11 -3-11 3-6 6Z" fill="#CBD5E1"/><path d="M-2 0L-9 -8-4 0Z" fill="#475569"/><path d="M-2 0L-9 8-4 0Z" fill="#475569"/><ellipse cx="4" cy="-0.5" rx="3" ry="2" fill="#7DD3FC"/><path d="M-8 0L-16 -2-16 2Z" fill="#FDBA74"/></g>' },
+  { k: 'tankrush', name: 'Tank Rush', sec: 'skill', file: 'skill8', pal: ['#A3B18A', '#3F4A2E'],
+    nm: { en: 'Tank Rush', fr: 'Tank Rush', es: 'Tank Rush', pt: 'Tank Rush', ar: 'Tank Rush', tr: 'Tank Rush', vi: 'Tank Rush', id: 'Tank Rush', ru: 'Tank Rush', de: 'Tank Rush', hi: 'Tank Rush', zh: 'Tank Rush' },
+    icon: '<defs><linearGradient id="IDtk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A3B18A"/><stop offset="1" stop-color="#3F4A2E"/></linearGradient><linearGradient id="IDtg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6B5A38"/><stop offset="1" stop-color="#3B2E1E"/></linearGradient></defs>' +
+      '<rect width="64" height="64" fill="url(#IDtg)"/><g fill="rgba(40,30,15,.4)"><circle cx="14" cy="18" r="5"/><circle cx="48" cy="14" r="6"/><circle cx="40" cy="30" r="4"/></g>' +
+      '<rect x="28" y="4" width="8" height="22" rx="2" fill="#D1A3A3"/><g transform="translate(18 14)"><rect x="-6" y="-4" width="12" height="9" rx="2" fill="#9E5C5C"/><rect x="-2" y="-9" width="4" height="7" fill="#5C2E2E"/></g>' +
+      '<g transform="translate(32 50)"><rect x="-17" y="2" width="34" height="9" rx="4" fill="#1C2416"/><circle cx="-11" cy="6.5" r="3.5" fill="#111"/><circle cx="0" cy="6.5" r="3.5" fill="#111"/><circle cx="11" cy="6.5" r="3.5" fill="#111"/><rect x="-15" y="-5" width="30" height="9" rx="4" fill="url(#IDtk)"/><rect x="-7" y="-12" width="14" height="9" rx="3" fill="#6B7A4F"/><rect x="-2" y="-24" width="4" height="13" fill="#3F4A2E"/></g>' +
+      '<rect x="30" y="26" width="4" height="7" fill="#FDE68A"/>' },
+  { k: 'speedboat', name: 'Speed Boat', sec: 'skill', file: 'skill8', pal: ['#7DD3FC', '#0369A1'],
+    nm: { en: 'Speed Boat', fr: 'Speed Boat', es: 'Speed Boat', pt: 'Speed Boat', ar: 'Speed Boat', tr: 'Speed Boat', vi: 'Speed Boat', id: 'Speed Boat', ru: 'Speed Boat', de: 'Speed Boat', hi: 'Speed Boat', zh: 'Speed Boat' },
+    icon: '<defs><linearGradient id="IDwa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0C4A6E"/><stop offset=".5" stop-color="#0369A1"/><stop offset="1" stop-color="#0EA5E9"/></linearGradient><linearGradient id="IDbt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F5F9"/><stop offset="1" stop-color="#64748B"/></linearGradient></defs>' +
+      '<rect width="64" height="64" fill="url(#IDwa)"/><rect x="0" y="0" width="8" height="64" fill="#16A34A"/><rect x="56" y="0" width="8" height="64" fill="#16A34A"/>' +
+      '<g stroke="rgba(255,255,255,.18)" stroke-width="1.5" fill="none"><path d="M10 14h44"/><path d="M10 24h44"/><path d="M10 54h44"/></g>' +
+      '<g transform="translate(26 20)"><circle r="5" fill="#B91C1C"/><rect x="-5" y="-1.5" width="10" height="3" fill="#fff"/><rect x="-1.5" y="-10" width="3" height="5" fill="#7F1D1D"/></g>' +
+      '<path d="M40 40l-5-6 6 2z" fill="#475569"/><circle cx="44" cy="42" r="5" fill="#64748B"/>' +
+      '<g transform="translate(30 46)"><path d="M0 -14 Q9 -6 7 10 L-7 10 Q-9 -6 0 -14Z" fill="url(#IDbt)"/><rect x="-5" y="-4" width="10" height="7" rx="2" fill="#0EA5E9"/><rect x="-1" y="-13" width="2" height="5" fill="#F87171"/><path d="M-5 11l-5 9M5 11l5 9" stroke="rgba(255,255,255,.6)" stroke-width="2"/></g>' }
 ]);
   var V = ''; try { V = ((document.currentScript && document.currentScript.src) || '').split('?v=')[1] || ''; } catch (e) { V = ''; }
   var warmed = false, warmT = 0;
