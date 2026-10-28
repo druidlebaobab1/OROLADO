@@ -1099,6 +1099,15 @@
     }
     halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.09)');
     halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.09)');
+    // v3230 (propriétaire) : remettre le « rond » autour de la spirale — anneau circulaire fin et discret.
+    g.save();
+    g.strokeStyle = 'rgba(180,160,255,0.14)';
+    g.lineWidth = Math.max(1, R * 0.012);
+    g.beginPath(); g.arc(cx, cy, R * 0.98, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(150,130,255,0.07)';
+    g.lineWidth = Math.max(1, R * 0.03);
+    g.beginPath(); g.arc(cx, cy, R * 0.98, 0, Math.PI * 2); g.stroke();
+    g.restore();
     galaxy = null;
   }
 
