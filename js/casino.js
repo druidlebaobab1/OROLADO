@@ -398,7 +398,8 @@
             ? '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<img class="cs-art-photo" src="' + ph[1] + '" alt="" decoding="async" loading="lazy" draggable="false"></span>'
             : '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<span class="cs-objbig">' + ((ART.objFull ? ART.objFull(k) : objsvg) || gicon(k)) + '</span></span>';
         }
-        return '<button type="button" class="cs-g cs-big" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' +
+        var p = pal(k);
+        return '<button type="button" class="cs-g cs-big" data-g="' + k + '" style="--tc:' + p[1] + ';--p1:' + p[0] + ';--p2:' + p[1] + '">' +
           art + live(k) +
           '<b><span class="fit">' + esc(name(k)) + '</span></b></button>';
       };
