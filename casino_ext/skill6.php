@@ -94,4 +94,11 @@ return [
   'coffeecatch' => ['type' => 'skill', 'name' => 'Coffee Catch',   'rate' => 0.03],
   'burgercatch' => ['type' => 'skill', 'name' => 'Burger Catch',   'rate' => 0.03],
   'sushicatch'  => ['type' => 'skill', 'name' => 'Sushi Catch',    'rate' => 0.03],
+  // vague 8 « qu'on contrôle » — js/games/skill8.js
+  'beefly'        => ['type' => 'skill', 'name' => 'Bee Fly',        'rate' => 0.03],
+  'fireflylight'  => ['type' => 'skill', 'name' => 'Firefly',        'rate' => 0.03],
+  'subwaydash'    => ['type' => 'skill', 'name' => 'Subway Dash',    'rate' => 0.03],
+  'icecreamcatch' => ['type' => 'skill', 'name' => 'Ice Cream Catch','rate' => 0.03],
+  'popcorncatch'  => ['type' => 'skill', 'name' => 'Popcorn Catch',  'rate' => 0.03],
+  'veggiecatch'   => ['type' => 'skill', 'name' => 'Veggie Catch',   'rate' => 0.03],
 ];
