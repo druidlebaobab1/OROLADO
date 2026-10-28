@@ -243,7 +243,8 @@
   /* ---- casc lots 1-3 (rounds 8-10) : 18 machines à sous de plus ---- */
   Object.assign(MAP, { westgold: 'slots', piratecove: 'slots', shamrock: 'slots', candypop: 'slots', olympus: 'slots', vegasneon: 'slots',
     phoenix: 'slots', buffalo: 'slots', joker: 'slots', bookgold: 'slots', lotus: 'slots', inferno: 'slots',
-    aztecsun: 'slots', dragongold: 'slots', fruitburst: 'slots', horuseye: 'slots', cosmicgems: 'slots', savanna: 'slots' });
+    aztecsun: 'slots', dragongold: 'slots', fruitburst: 'slots', horuseye: 'slots', cosmicgems: 'slots', savanna: 'slots',
+    valhalla: 'slots', tigergold: 'slots', honeypot: 'slots', piggybank: 'slots', atlantis: 'slots', wizard: 'slots' });
   /* ---- fin casc ---- */
   /* v2850 — round 6 « Tu contrôles » (js/games/skill6.js, skill7.js, skill8.js) : famille de sons de chaque jeu */
   Object.assign(MAP, { blockfall: 'build', merge2048: 'build', mazechomp: 'arcade', bubblepop: 'arcade', gemswap: 'arcade', memoflip: 'build', echopads: 'arcade', pianokeys: 'build',
