@@ -59,4 +59,11 @@ return [
   'eggcatch'    => ['type' => 'skill', 'name' => 'Egg Catch',      'rate' => 0.03],
   'gifthaul'    => ['type' => 'skill', 'name' => 'Gift Haul',      'rate' => 0.03],
   'coincatch'   => ['type' => 'skill', 'name' => 'Coin Catch',     'rate' => 0.03],
+  // vague 3 « qu'on contrôle » (vol / esquive / attrape) — js/games/skill8.js
+  'jetpack'     => ['type' => 'skill', 'name' => 'Jet Pack',       'rate' => 0.03],
+  'bubblesub'   => ['type' => 'skill', 'name' => 'Bubble Sub',     'rate' => 0.03],
+  'moonrover'   => ['type' => 'skill', 'name' => 'Moon Rover',     'rate' => 0.03],
+  'toxicrun'    => ['type' => 'skill', 'name' => 'Toxic Run',      'rate' => 0.03],
+  'applecatch'  => ['type' => 'skill', 'name' => 'Apple Catch',    'rate' => 0.03],
+  'acorncatch'  => ['type' => 'skill', 'name' => 'Acorn Catch',    'rate' => 0.03],
 ];
