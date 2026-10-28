@@ -449,7 +449,9 @@
         // case (round 9) : 6 machines à sous de plus
         'phoenix', 'buffalo', 'joker', 'bookgold', 'lotus', 'inferno',
         // casc lot 3 (round 10) : 6 machines à sous de plus
-        'aztecsun', 'dragongold', 'fruitburst', 'horuseye', 'cosmicgems', 'savanna'];
+        'aztecsun', 'dragongold', 'fruitburst', 'horuseye', 'cosmicgems', 'savanna',
+        // casc lot 4 (round 11) : 6 machines à sous de plus
+        'valhalla', 'tigergold', 'honeypot', 'piggybank', 'atlantis', 'wizard'];
       var moPos = function (k) { var i = MO_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.more.sort(function (a, b) { return moPos(a) - moPos(b); });
       // v2850 (propriétaire : « Live plein, 24 jeux ») : ordre fixe des jeux en direct (les catalogues arrivent dans n'importe quel ordre)
@@ -673,7 +675,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3250'; // v3250 : casino, lot 3 (+6 machines : Aztec Sun, Golden Dragon, Fruit Burst, Eye of Pharaoh, Cosmic Gems, Wild Safari) ; v3198 : Hamster, retour sans yeux ni pattes avant flottantes (propriétaire) ; v3195 : Hamster, oreilles / yeux plus grands, queue duveteuse, reflet ; v3193 : Hamster Run d'après la fiche du propriétaire (oreilles roses, yeux, 4 pattes, cuisses) ; v3192 : Hamster Run, caméra fixe, foulée plus grande, plus de pattes avant flottantes ; v3107 : Hamster Run, vraies pattes arrière + piste sans taches ; v3103 : Hamster Run (skill2.js) redessiné ; v3089+ : logos lot E (fin de logos-a.js, v3095 : 3e lot, v3099 : 4e et dernier lot) + lot F (js/games/logos-f.js, v3093 : 2e lot, v3097 : 3e lot, v3101 : 4e et dernier lot) ; v3077+ : lot D ; v3069–3075 : lot C
+  var MOD_V = '3252'; // v3252 : casino, lot 4 (+6 machines : Valhalla Gold, Tiger Fortune, Honey Money, Piggy Bank, Atlantis Deep, Wizard Magic) ; v3250 : casino, lot 3 (+6 machines : Aztec Sun, Golden Dragon, Fruit Burst, Eye of Pharaoh, Cosmic Gems, Wild Safari) ; v3198 : Hamster, retour sans yeux ni pattes avant flottantes (propriétaire) ; v3195 : Hamster, oreilles / yeux plus grands, queue duveteuse, reflet ; v3193 : Hamster Run d'après la fiche du propriétaire (oreilles roses, yeux, 4 pattes, cuisses) ; v3192 : Hamster Run, caméra fixe, foulée plus grande, plus de pattes avant flottantes ; v3107 : Hamster Run, vraies pattes arrière + piste sans taches ; v3103 : Hamster Run (skill2.js) redessiné ; v3089+ : logos lot E (fin de logos-a.js, v3095 : 3e lot, v3099 : 4e et dernier lot) + lot F (js/games/logos-f.js, v3093 : 2e lot, v3097 : 3e lot, v3101 : 4e et dernier lot) ; v3077+ : lot D ; v3069–3075 : lot C
   var modState = {};
   /* v2804 (propriétaire) — CATALOGUE des nouveaux jeux : chaque groupe déclare ses jeux (js/games/cat-*.js) :
      { k: clé, name: nom, sec: 'live' | 'skill' | 'more', file: fichier du jeu, pal: [clair, foncé], icon: '<svg intérieur 64×64>' }.
