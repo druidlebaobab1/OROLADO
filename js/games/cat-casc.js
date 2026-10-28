@@ -191,6 +191,20 @@
     knight: '<defs>' + lg('IDkn', '#E2E8F0', '#64748B') + GOLD + '</defs>' + sh(20) +
       '<path d="M20 26c0-9 5-14 12-14s12 5 12 14v22a6 6 0 0 1-6 6H26a6 6 0 0 1-6-6z" fill="url(#IDkn)" stroke="#334155" stroke-width="1.6"/><rect x="30" y="22" width="4" height="32" fill="#1E293B"/><path d="M23 30l7-2v3l-7 2zM41 30l-7-2v3l7 2z" fill="#1E293B"/><path d="M32 8q5 2 5 8H27q0-6 5-8z" fill="url(#IDg)" stroke="#78350F"/>' + hi(26, 28, 6)
   });
+  Object.assign(ICONS, {
+    tikigods: '<defs>' + lg('IDtk', '#A16207', '#44220A') + '</defs>' + sh(18) +
+      '<path d="M20 12h24v38a8 8 0 0 1-8 8h-8a8 8 0 0 1-8-8z" fill="url(#IDtk)" stroke="#2E1606" stroke-width="1.6"/><path d="M18 16h28l-3 6H21z" fill="#C2773B"/><path d="M22 26q6-5 10 0M32 26q6-5 10 0" fill="#1A0E04"/><circle cx="27" cy="26" r="3" fill="#FDE68A"/><circle cx="37" cy="26" r="3" fill="#FDE68A"/><circle cx="27" cy="26" r="1.3" fill="#1A0E04"/><circle cx="37" cy="26" r="1.3" fill="#1A0E04"/><path d="M28 34q4 3 8 0" stroke="#2E1606" stroke-width="1.6" fill="none"/><path d="M24 40h16l-3 8H27z" fill="#1A0E04"/><path d="M28 40v8M32 40v8M36 40v8" stroke="#FDE68A" stroke-width="1.2"/>',
+    icequeen: '<defs>' + lg('IDiq', '#E0F2FE', '#38BDF8') + '</defs>' + sh(16) +
+      (function () { var s = ''; for (var i = 0; i < 6; i++) { var a = i * Math.PI / 3, x2 = 32 + Math.cos(a) * 24, y2 = 32 + Math.sin(a) * 24, bx = 32 + Math.cos(a) * 14, by = 32 + Math.sin(a) * 14; s += '<path d="M32 32L' + x2.toFixed(1) + ' ' + y2.toFixed(1) + '" stroke="url(#IDiq)" stroke-width="3" stroke-linecap="round"/><path d="M' + bx.toFixed(1) + ' ' + by.toFixed(1) + 'l' + (Math.cos(a + 1) * 7).toFixed(1) + ' ' + (Math.sin(a + 1) * 7).toFixed(1) + 'M' + bx.toFixed(1) + ' ' + by.toFixed(1) + 'l' + (Math.cos(a - 1) * 7).toFixed(1) + ' ' + (Math.sin(a - 1) * 7).toFixed(1) + '" stroke="url(#IDiq)" stroke-width="2.2" stroke-linecap="round"/>'; } return s; })() + '<circle cx="32" cy="32" r="4.5" fill="#F0F9FF" stroke="#38BDF8"/>',
+    caishen: '<defs>' + GOLD + '</defs>' + sh(22) +
+      '<circle cx="32" cy="32" r="24" fill="url(#IDg)" stroke="#78350F" stroke-width="2"/><circle cx="32" cy="32" r="18" fill="#B91C1C" stroke="#78350F" stroke-width="1.4"/><text x="32" y="40" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="20" fill="#FDE68A">福</text>' + hi(24, 24, 7),
+    luchador: '<defs>' + lg('IDlu', '#EF4444', '#B91C1C') + GOLD + '</defs>' + sh(20) +
+      '<path d="M14 32c0-13 8-21 18-21s18 8 18 21c0 9-4 15-9 20H23c-5-5-9-11-9-20z" fill="url(#IDlu)" stroke="#450A0A" stroke-width="1.6"/><path d="M32 11v41M15 30h34" stroke="url(#IDg)" stroke-width="1.6" opacity=".5"/><path d="M19 28q7-5 13 0 6-5 13 0l-3 6q-5-3-10 0-5-3-10 0z" fill="url(#IDg)" stroke="#78350F"/><ellipse cx="26" cy="30" rx="3.4" ry="4.2" fill="#1A0810"/><ellipse cx="38" cy="30" rx="3.4" ry="4.2" fill="#1A0810"/><path d="M26 44h12l-3 6h-6z" fill="#1A0810"/><path d="M29 44v6M35 44v6" stroke="#fff" stroke-width="1"/>',
+    fiesta: '<defs>' + lg('IDfs', '#FCD34D', '#B45309') + '</defs>' + sh(24) +
+      '<ellipse cx="32" cy="42" rx="28" ry="11" fill="url(#IDfs)" stroke="#5C2E0E" stroke-width="1.6"/><path d="M20 42c0-14 5-24 12-24s12 10 12 24z" fill="url(#IDfs)" stroke="#5C2E0E" stroke-width="1.4"/><ellipse cx="32" cy="20" rx="8" ry="4" fill="#B45309"/><path d="M8 42q24 8 48 0" fill="none" stroke="#E11D48" stroke-width="2.6"/><path d="M24 32q8-3 16 0" stroke="#15803D" stroke-width="2" fill="none"/>' + hi(26, 26, 6),
+    genie: '<defs>' + GOLD + '</defs>' + sh(20) +
+      '<path d="M8 44q0-9 18-11 2-6 8-6t8 6q16 2 16 11-4 4-12 4H20q-8 0-12-4z" fill="url(#IDg)" stroke="#78350F" stroke-width="1.8"/><path d="M50 40q10-2 13-9-2 7-7 11" fill="none" stroke="url(#IDg)" stroke-width="3" stroke-linecap="round"/><ellipse cx="26" cy="39" rx="12" ry="4.5" fill="url(#IDg)"/><circle cx="32" cy="29" r="3" fill="url(#IDg)"/>' + hi(20, 40, 7) + '<path d="M48 18l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z" fill="#C4B5FD"/>'
+  });
   var L = [
     ['phoenix', 'Phoenix Rising', 'casc1', ['#FED7AA', '#DC2626']], ['buffalo', 'Buffalo Gold', 'casc1', ['#FDE68A', '#B45309']], ['joker', 'Jokers Wild', 'casc1', ['#E9D5FF', '#9333EA']],
     ['bookgold', 'Book of Gold', 'casc1', ['#FDE68A', '#A16207']], ['lotus', 'Lotus Zen', 'casc1', ['#99F6E4', '#0D9488']], ['inferno', 'Inferno', 'casc1', ['#FECACA', '#DC2626']],
@@ -200,6 +214,8 @@
     ['piggybank', 'Piggy Bank', 'casc1', ['#FBCFE8', '#DB2777']], ['atlantis', 'Atlantis Deep', 'casc1', ['#99F6E4', '#0D9488']], ['wizard', 'Wizard Magic', 'casc1', ['#DDD6FE', '#7C3AED']],
     ['royalcrown', 'Royal Crown', 'casc1', ['#FDE68A', '#A16207']], ['luckycat', 'Lucky Cat', 'casc1', ['#FECACA', '#DC2626']], ['wolfmoon', 'Wolf Moon', 'casc1', ['#C7D2FE', '#4F46E5']],
     ['vampire', 'Vampire Night', 'casc1', ['#FBCFE8', '#9F1239']], ['peacock', 'Jade Peacock', 'casc1', ['#99F6E4', '#0D9488']], ['knight', 'Dragon Knight', 'casc1', ['#CBD5E1', '#475569']],
+    ['tikigods', 'Tiki Gods', 'casc1', ['#FDBA74', '#C2410C']], ['icequeen', 'Frozen Queen', 'casc1', ['#BAE6FD', '#0EA5E9']], ['caishen', 'God of Wealth', 'casc1', ['#FECACA', '#B91C1C']],
+    ['luchador', 'Lucha Legends', 'casc1', ['#FECACA', '#DC2626']], ['fiesta', 'Fiesta Mariachi', 'casc1', ['#FDBA74', '#EA580C']], ['genie', 'Magic Genie', 'casc1', ['#E9D5FF', '#9333EA']],
     ['westgold', 'Gold Rush', 'casc1', ['#FED7AA', '#C2410C']], ['piratecove', 'Pirate Cove', 'casc1', ['#99F6E4', '#0D9488']], ['shamrock', 'Clover Riches', 'casc1', ['#BBF7D0', '#16A34A']],
     ['candypop', 'Candy Pop', 'casc1', ['#FBCFE8', '#DB2777']], ['olympus', 'Zeus Fury', 'casc1', ['#BFDBFE', '#2563EB']], ['vegasneon', 'Vegas Nights', 'casc1', ['#E9D5FF', '#A855F7']],
     ['samurai', 'Samurai', 'casc1', ['#FFE4E6', '#BE123C']], ['mermaid', 'Mermaid Lagoon', 'casc1', ['#CCFBF1', '#0D9488']], ['carnival', 'Carnival', 'casc1', ['#FAE8FF', '#A21CAF']],
