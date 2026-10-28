@@ -1053,7 +1053,7 @@
     // centre. Toujours AUCUN logo crypto. Spirale un peu plus légère qu'avant.
     function lightRing(x, y, rr) {
       g.save();
-      g.globalAlpha = 0.12;
+      g.globalAlpha = 0.08;
       g.strokeStyle = 'rgba(255,255,255,0.9)';
       g.lineWidth = Math.max(0.8, rr * 0.08);
       g.beginPath();
@@ -1076,14 +1076,14 @@
       var rad = R * (0.05 + 0.95 * t);
       return { x: cx + Math.cos(ang) * rad, y: cy + Math.sin(ang) * rad };
     }
-    halo(cx, cy, R * 1.05, 'rgba(120,80,255,0.05)');
-    halo(cx, cy, R * 0.45, 'rgba(180,120,255,0.05)');
+    halo(cx, cy, R * 1.05, 'rgba(120,80,255,0.032)');
+    halo(cx, cy, R * 0.45, 'rgba(180,120,255,0.032)');
     var arm, t, q;
     for (arm = 0; arm < 2; arm++) {
       g.save();
       g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(200,170,255,0.045)' : 'rgba(120,90,255,0.035)';
+        g.strokeStyle = q ? 'rgba(200,170,255,0.028)' : 'rgba(120,90,255,0.022)';
         g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
         g.beginPath();
         for (t = 0; t <= 1.0001; t += 0.01) { var pp = spiral(arm, t); if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y); }
@@ -1093,12 +1093,12 @@
       for (t = 0.02; t < 1; t += 0.004) {
         var sp = spiral(arm, t);
         var jx = (rnd() - 0.5) * R * 0.07, jy = (rnd() - 0.5) * R * 0.07;
-        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.08 + t * 0.12).toFixed(2) + ')';
+        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.05 + t * 0.07).toFixed(2) + ')';
         g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
       }
     }
-    halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.09)');
-    halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.09)');
+    halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.06)');
+    halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.06)');
     // v3232 (propriétaire) : plus de cercle autour de la spirale (il n'avait demandé que la pyramide).
     galaxy = null;
   }
@@ -1316,11 +1316,13 @@
     var planets = [
       { x: cssW * 0.180, y: pad.t + h * 0.155, r: pr * 0.165 },
       { x: cssW * 0.820, y: pad.t + h * 0.155, r: pr * 0.165 },
-      { x: cssW * 0.500, y: pad.t + h * 0.945, r: pr * 0.165 }
+      { x: cssW * 0.500, y: pad.t + h * 0.920, r: pr * 0.165 }
     ];
-    planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.22, false);
-    planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
-    planet(planets[2].x, planets[2].y, planets[2].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.24, false);
+    // v3236 (propriétaire) : intensité des planètes RÉDUITE (plus discrètes, relax) — on sent que
+    // ce sont des planètes mais sans qu'elles accrochent l'œil. Bas remonté d'un chouïa.
+    planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.15, false);
+    planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.16, false);
+    planet(planets[2].x, planets[2].y, planets[2].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.15, false);
     g.globalAlpha = 1;
     galaxy = null;
     try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
