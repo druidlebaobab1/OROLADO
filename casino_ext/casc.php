@@ -54,6 +54,19 @@ return [
   'sushibar' => $cascSlot('Sushi Bar', 'R33', [60, 25, 12, 6, 3, 1.5], [], 0.25),
   // Disco Night (3×3, 5 lines) — disco ball, roller skate, cassette, star glasses, lips, bolt
   'disco' => $cascSlot('Disco Night', 'R33', [50, 20, 10, 6, 4, 2], [], 0.22),
+  /* ------------------------------------------------------------------ casd (round 8) : 6 machines à sous de plus — mêmes helpers (RTP 93.8 %) */
+  // Gold Rush (5×3, 10 lines) — nugget, dynamite, pickaxe, wagon, A K Q; scatter = sheriff star
+  'westgold' => $cascSlot('Gold Rush', 'L5', [[8, 40, 250], [5, 15, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [10, 50], 0.29),
+  // Pirate Cove (243 ways) — skull, treasure chest, parrot, A K Q
+  'piratecove' => $cascSlot('Pirate Cove', 'W5', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 3, 12], [0.6, 2, 8], [0.4, 1.2, 5]], [], 0.32),
+  // Lucky Clover (3×3, 5 lines) — pot of gold, clover, horseshoe, hat, coin, pint
+  'clover' => $cascSlot('Lucky Clover', 'R33', [50, 20, 10, 6, 3, 2], [], 0.23),
+  // Candy Pop (5×4 pays anywhere: 6–7 / 8–9 / 10+ alike) — lollipop, jelly, donut, candy cane, gumdrop, star, heart
+  'candypop' => $cascSlot('Candy Pop', 'A', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 4, 12], [0.8, 2.5, 8], [0.5, 1.5, 5], [0.3, 1, 3]], [], 0.29),
+  // Zeus Fury (5×3, 10 lines) — Zeus, lightning bolt, temple, laurel, A K Q; scatter = golden eagle
+  'olympus' => $cascSlot('Zeus Fury', 'L5', [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [12, 60], 0.28),
+  // Vegas Nights (243 ways) — neon sign, cocktail, chips stack, A K Q
+  'vegasneon' => $cascSlot('Vegas Nights', 'W5', [[6, 25, 120], [3, 10, 50], [2, 6, 25], [1.2, 4, 12], [0.8, 2, 8], [0.4, 1.2, 5]], [], 0.31),
   /* ------------------------------------------------------------------ 12 instant games (casc2.js · casc3.js) */
   // Potion Lab — two ingredients fall into the cauldron, the brew becomes: smoke (lose), red ×0.5, blue ×1.2, green ×2, purple ×5, rainbow ×20, golden elixir ×100
   'potion' => $cascFill('Potion Lab', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
