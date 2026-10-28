@@ -67,6 +67,19 @@ return [
   'olympus' => $cascSlot('Zeus Fury', 'L5', [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [12, 60], 0.28),
   // Vegas Nights (243 ways) — neon sign, cocktail, chips stack, A K Q
   'vegasneon' => $cascSlot('Vegas Nights', 'W5', [[6, 25, 120], [3, 10, 50], [2, 6, 25], [1.2, 4, 12], [0.8, 2, 8], [0.4, 1.2, 5]], [], 0.31),
+  /* ------------------------------------------------------------------ case (round 9) : 6 machines à sous de plus */
+  // Phoenix Rising (5×3, 10 lines) — phoenix, flame, golden egg, feather, A K Q; scatter = sun
+  'phoenix' => $cascSlot('Phoenix Rising', 'L5', [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [12, 60], 0.28),
+  // Buffalo Gold (5×4 pays anywhere: 6–7 / 8–9 / 10+ alike) — buffalo, eagle, wolf, elk, A K Q
+  'buffalo' => $cascSlot('Buffalo Gold', 'A', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 4, 12], [0.8, 2.5, 8], [0.5, 1.5, 5], [0.3, 1, 3]], [], 0.29),
+  // Joker's Wild (3×3, 5 lines) — joker, lucky 7, bell, cherry, coin, star
+  'joker' => $cascSlot('Jokers Wild', 'R33', [50, 20, 10, 6, 3, 2], [], 0.23),
+  // Book of Gold (5×3, 10 lines) — explorer, idol, scarab, ankh, A K Q; scatter = golden book
+  'bookgold' => $cascSlot('Book of Gold', 'L5', [[8, 40, 250], [5, 15, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [10, 50], 0.29),
+  // Lotus Zen (243 ways) — golden buddha, lotus, koi, A K Q
+  'lotus' => $cascSlot('Lotus Zen', 'W5', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 3, 12], [0.6, 2, 8], [0.4, 1.2, 5]], [], 0.32),
+  // Inferno (5×3, 10 lines) — devil, flame, skull, pitchfork, A K Q; scatter = fireball
+  'inferno' => $cascSlot('Inferno', 'L5', [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [12, 60], 0.28),
   /* ------------------------------------------------------------------ 12 instant games (casc2.js · casc3.js) */
   // Potion Lab — two ingredients fall into the cauldron, the brew becomes: smoke (lose), red ×0.5, blue ×1.2, green ×2, purple ×5, rainbow ×20, golden elixir ×100
   'potion' => $cascFill('Potion Lab', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),

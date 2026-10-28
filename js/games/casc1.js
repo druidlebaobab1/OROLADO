@@ -379,10 +379,81 @@
           shd(26) + [66, 56, 46].map(function (y, i) { return '<ellipse cx="50" cy="' + y + '" rx="22" ry="7" fill="' + B.lg([['#F472B6', '#9D174D'], ['#60A5FA', '#1E3A8A'], ['#FBBF24', '#92400E']][i], 'h') + '" stroke="#1E1B4B" stroke-width="1.4"/><ellipse cx="50" cy="' + (y - 2) + '" rx="12" ry="3" fill="#fff" opacity=".45"/>'; }).join(''),
           royal(B, 'A', GOLD), royal(B, 'K', AMET), royal(B, 'Q', SILV)
         ];
+      } },
+    /* ---- case (round 9) : 6 machines à sous de plus ---- */
+    phoenix: { kind: 'L5', pays: [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], scat: [12, 60],
+      bg: 'radial-gradient(90% 60% at 50% 0%,rgba(244,63,94,.35),transparent 70%),linear-gradient(180deg,#2A0A08,#0B0505)', fr: ['#FED7AA', '#DC2626', '#3B0A06'], cell: '#1A0A08',
+      art: function (B) {
+        return [
+          shd(32) + '<path d="M50 14c-12 0-18 8-18 16 0 6 4 10 4 14-6-2-14-10-18-6 3 8 10 12 16 13-4 3-10 10-8 18 6-3 10-9 12-14 2 5 6 11 12 14 2-8-4-15-8-18 6-1 13-5 16-13-4-4-12 4-18 6 0-4 4-8 4-14 0-8-6-16-18-16z" fill="' + B.rg(['#FFF3C7', '#F97316', '#B91C1C']) + '" stroke="#7F1D1D" stroke-width="1.6"/><circle cx="44" cy="34" r="3" fill="#1A0A08"/><path d="M50 30l10-4-8 8z" fill="' + B.lg(GOLD) + '"/>' + sp(72, 22, 6),
+          shd(18) + '<path d="M50 10c8 14 18 20 18 36 0 16-10 28-18 28S32 62 32 46c0-16 10-22 18-36z" fill="' + B.lg(['#FFF2A8', '#F97316', '#B91C1C'], 'd') + '" stroke="#7F1D1D" stroke-width="1.4"/><path d="M50 30c4 8 10 10 10 20 0 9-5 16-10 16s-10-7-10-16c0-10 6-12 10-20z" fill="' + B.rg(['#FFF7D6', '#FBBF24', '#EA580C']) + '"/>',
+          shd(24) + '<ellipse cx="50" cy="56" rx="22" ry="24" fill="' + B.rg(GOLD) + '" stroke="#78350F" stroke-width="2"/>' + gl(42, 46, 8, 5, -20, 0.55) + '<path d="M38 50q12-8 24 0" stroke="#FFF7D6" stroke-width="2" fill="none" opacity=".7"/>',
+          shd(14) + '<path d="M50 14c-10 10-16 28-14 54 10-6 18-24 20-40 1-8-2-11-6-14z" fill="' + B.lg(['#FFE4C7', '#F97316', '#7C2D12'], 'd') + '" stroke="#7C2D12" stroke-width="1.2"/><path d="M48 24q2 20-6 38" stroke="#FFF7D6" stroke-width="1.4" fill="none" opacity=".6"/>',
+          royal(B, 'A', GOLD), royal(B, 'K', RUBY), royal(B, 'Q', ORNG),
+          '<circle cx="50" cy="50" r="44" fill="' + B.rg(['#FFF7D6', '#FBBF24', '#78350F'], '50%', '50%', '60%') + '" opacity=".3"/>' + (function () { var s = '<circle cx="50" cy="50" r="22" fill="' + B.rg(['#FFF7D6', '#FBBF24', '#EA580C']) + '"/>'; for (var i = 0; i < 12; i++) { var a = i * Math.PI / 6; s += '<path d="M' + (50 + Math.cos(a) * 24).toFixed(1) + ' ' + (50 + Math.sin(a) * 24).toFixed(1) + 'L' + (50 + Math.cos(a) * 42).toFixed(1) + ' ' + (50 + Math.sin(a) * 42).toFixed(1) + '" stroke="' + B.lg(GOLD) + '" stroke-width="4" stroke-linecap="round"/>'; } return s; })() + sp(80, 22, 6)
+        ];
+      } },
+    buffalo: { kind: 'A', cols: 5, rows: 4, bands: [6, 8, 10], pays: [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 4, 12], [0.8, 2.5, 8], [0.5, 1.5, 5], [0.3, 1, 3]], scat: [],
+      bg: 'radial-gradient(85% 60% at 50% 0%,rgba(217,119,6,.32),transparent 70%),linear-gradient(180deg,#2A1A08,#0B0905)', fr: ['#FDE68A', '#B45309', '#3B2406'], cell: '#1A1206',
+      art: function (B) {
+        return [
+          shd(26) + '<path d="M26 20C14 20 10 30 12 40c-6 2-8 10-4 16 6-2 8-8 8-8 4 10 14 16 34 16s30-6 34-16c0 0 2 6 8 8 4-6 2-14-4-16 2-10-2-20-14-20-6 0-10 4-12 8-2-4-6-8-12-8s-10 4-12 8c-2-4-6-8-12-8z" fill="' + B.lg(['#8B5A2B', '#5C3A1A', '#2E1C0C'], 'd') + '" stroke="#1C1206" stroke-width="1.6"/><circle cx="38" cy="40" r="3.4" fill="#FDE68A"/><circle cx="62" cy="40" r="3.4" fill="#FDE68A"/><path d="M42 52q8 5 16 0" stroke="#1C1206" stroke-width="2" fill="none"/>' + gl(34, 30, 8, 4, -20, 0.3),
+          shd(22) + '<path d="M50 16l-14 8 6 4-8 6 8 2-6 6 12-2v18l8-6 8 6V42l12 2-6-6 8-2-8-6 6-4z" fill="' + B.lg(['#E5E7EB', '#9CA3AF', '#4B5563'], 'd') + '" stroke="#374151" stroke-width="1.4"/><circle cx="46" cy="30" r="2.6" fill="#FBBF24"/><circle cx="54" cy="30" r="2.6" fill="#FBBF24"/><path d="M44 40h12l-6 8z" fill="#F59E0B"/>',
+          shd(24) + '<path d="M30 30c-8-4-16-2-18 2 6 0 8 4 8 4-6 6-4 16 2 22 2-4 6-6 6-6 2 10 10 14 16 14s14-4 16-14c0 0 4 2 6 6 6-6 8-16 2-22 0 0 2-4 8-4-2-4-10-6-18-2-2-6-10-10-14-10s-12 4-14 10z" fill="' + B.lg(['#9CA3AF', '#4B5563', '#1F2937'], 'd') + '" stroke="#111827" stroke-width="1.4"/><circle cx="42" cy="44" r="3" fill="#FCD34D"/><circle cx="58" cy="44" r="3" fill="#FCD34D"/><path d="M46 54l4 4 4-4z" fill="#111827"/>',
+          shd(20) + '<path d="M50 24c-6 0-10 5-10 11s4 13 10 25c6-12 10-19 10-25s-4-11-10-11z" fill="' + B.lg(['#C2773B', '#7C3F14'], 'd') + '" stroke="#3B2406" stroke-width="1.4"/><path d="M40 30q-14-8-22 0 8 0 16 10M60 30q14-8 22 0-8 0-16 10M42 24q-6-12-16-12 4 6 10 16M58 24q6-12 16-12-4 6-10 16" fill="none" stroke="' + B.lg(GOLD) + '" stroke-width="3" stroke-linecap="round"/>',
+          royal(B, 'A', GOLD), royal(B, 'K', COPPER), royal(B, 'Q', EMER)
+        ];
+      } },
+    joker: { kind: 'R33', pays: [50, 20, 10, 6, 3, 2], scat: [],
+      bg: 'radial-gradient(80% 60% at 50% 0%,rgba(147,51,234,.34),transparent 70%),linear-gradient(180deg,#1E0A33,#070312)', fr: ['#E9D5FF', '#9333EA', '#3B0764'], cell: '#130824',
+      art: function (B) {
+        return [
+          shd(24) + '<path d="M28 20q22-10 44 0-4 18-22 18T28 20z" fill="' + B.lg(['#A855F7', '#6D28D9', '#3B0764'], 'd') + '" stroke="#2E1065" stroke-width="1.4"/><circle cx="24" cy="18" r="6" fill="' + B.lg(GOLD) + '"/><circle cx="76" cy="18" r="6" fill="' + B.lg(['#F472B6', '#BE185D']) + '"/><circle cx="50" cy="12" r="6" fill="' + B.lg(['#34D399', '#15803D']) + '"/>' +
+            '<ellipse cx="50" cy="52" rx="20" ry="22" fill="' + B.rg(['#FFF7ED', '#FDE68A', '#D97706']) + '" stroke="#92400E" stroke-width="1.4"/><circle cx="42" cy="48" r="3" fill="#1C1206"/><circle cx="58" cy="48" r="3" fill="#1C1206"/><path d="M40 60q10 8 20 0" stroke="#B91C1C" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
+          shd(18) + '<path d="M50 10l12 24 26 3-18 18 5 26-25-14-25 14 5-26-18-18 26-3z" fill="' + B.lg(['#FECACA', '#EF4444', '#991B1B'], 'd') + '" stroke="#7F1D1D" stroke-width="1.6" stroke-linejoin="round"/><text x="50" y="58" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="26" fill="#fff">7</text>',
+          shd(20) + '<path d="M30 70V42a20 20 0 0 1 40 0v28z" fill="' + B.lg(GOLD) + '" stroke="#78350F" stroke-width="2"/><rect x="26" y="68" width="48" height="8" rx="3" fill="' + B.lg(GOLD) + '" stroke="#78350F"/><circle cx="50" cy="22" r="5" fill="' + B.lg(GOLD) + '" stroke="#78350F"/><circle cx="50" cy="80" r="4" fill="#78350F"/>' + gl(42, 40, 6, 3, -20, 0.5),
+          shd(18) + '<path d="M44 24q-4-10 4-14 2 6-2 12M56 24q4-10-4-14-2 6 2 12" stroke="#2F7D2F" stroke-width="3" fill="none"/><circle cx="40" cy="44" r="15" fill="' + B.rg(['#FF8FA3', '#E11D48', '#881337']) + '"/><circle cx="62" cy="50" r="15" fill="' + B.rg(['#FF8FA3', '#E11D48', '#881337']) + '"/>' + gl(36, 38, 5, 3, -20, 0.5),
+          '<circle cx="50" cy="50" r="30" fill="' + B.rg(GOLD) + '" stroke="#78350F" stroke-width="2"/><text x="50" y="62" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="30" fill="#78350F">$</text>' + gl(40, 40, 8, 4, -20, 0.5),
+          '<path d="' + (function () { var d = ''; for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 14 : 34; d += (i ? 'L' : 'M') + (50 + Math.cos(a) * r).toFixed(1) + ' ' + (50 + Math.sin(a) * r).toFixed(1); } return d; })() + 'z" fill="' + B.rg(['#FEF9C3', '#FACC15', '#A16207']) + '" stroke="#78350F" stroke-width="2" stroke-linejoin="round"/>' + gl(42, 42, 5, 3, 0, 0.6)
+        ];
+      } },
+    bookgold: { kind: 'L5', pays: [[8, 40, 250], [5, 15, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], scat: [10, 50],
+      bg: 'radial-gradient(90% 60% at 50% 0%,rgba(202,138,4,.3),transparent 70%),linear-gradient(180deg,#2A1E06,#0B0805)', fr: ['#FDE68A', '#A16207', '#3B2A06'], cell: '#1A1306',
+      art: function (B) {
+        return [
+          shd(24) + '<path d="M26 18h40l8 10v44H34l-8-10z" fill="' + B.lg(['#FDE68A', '#D97706', '#78350F'], 'd') + '" stroke="#5C3A0A" stroke-width="1.6"/><ellipse cx="48" cy="40" rx="12" ry="16" fill="#1C1206"/><circle cx="48" cy="34" r="6" fill="' + B.rg(['#FFE4C7', '#C2773B']) + '"/><path d="M40 52q8-6 16 0" stroke="' + B.lg(GOLD) + '" stroke-width="3" fill="none"/>',
+          shd(22) + '<path d="M30 76V40l20-22 20 22v36z" fill="' + B.lg(GOLD) + '" stroke="#78350F" stroke-width="1.6"/><ellipse cx="50" cy="40" rx="9" ry="13" fill="#1C1206"/><circle cx="50" cy="36" r="4.5" fill="' + B.rg(GOLD) + '"/><path d="M40 60h20M42 68h16" stroke="#78350F" stroke-width="2"/>' + gl(42, 34, 6, 3, -20, 0.5),
+          shd(22) + '<ellipse cx="50" cy="44" rx="20" ry="24" fill="' + B.rg(['#A7F3D0', '#10B981', '#065F46']) + '" stroke="#064E3B" stroke-width="1.6"/><path d="M50 20v-8M38 24l-4-6M62 24l4-6" stroke="#065F46" stroke-width="3" stroke-linecap="round"/><ellipse cx="50" cy="40" rx="11" ry="9" fill="#064E3B"/><circle cx="45" cy="38" r="2.4" fill="#A7F3D0"/><circle cx="55" cy="38" r="2.4" fill="#A7F3D0"/>' + gl(42, 36, 7, 4, -20, 0.5),
+          shd(16) + '<path d="M50 14q-6-8 0-12 6 4 0 12z" fill="' + B.lg(GOLD) + '" stroke="#5C3A0A"/><circle cx="50" cy="26" r="9" fill="none" stroke="' + B.lg(GOLD) + '" stroke-width="4"/><path d="M50 34v48M34 50h32" stroke="' + B.lg(GOLD) + '" stroke-width="5" stroke-linecap="round"/>',
+          royal(B, 'A', GOLD), royal(B, 'K', TURQ), royal(B, 'Q', RUBY),
+          '<circle cx="50" cy="50" r="44" fill="' + B.rg(['#FFF7D6', '#FBBF24', '#78350F'], '50%', '50%', '60%') + '" opacity=".3"/><path d="M20 26q30-12 60 0v42q-30-10-60 0z" fill="' + B.lg(['#FDE68A', '#D97706', '#78350F'], 'd') + '" stroke="#5C3A0A" stroke-width="2"/><path d="M50 28v38" stroke="#5C3A0A" stroke-width="2.6"/><path d="M28 36q10-4 18 0M54 36q10-4 18 0" stroke="#FFF7D6" stroke-width="1.6" fill="none" opacity=".6"/>' + sp(80, 22, 6)
+        ];
+      } },
+    lotus: { kind: 'W5', pays: [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 3, 12], [0.6, 2, 8], [0.4, 1.2, 5]], scat: [],
+      bg: 'radial-gradient(90% 60% at 50% 0%,rgba(20,184,166,.3),transparent 70%),linear-gradient(180deg,#07211F,#050B12)', fr: ['#99F6E4', '#0D9488', '#063B38'], cell: '#071A1A',
+      art: function (B) {
+        return [
+          shd(26) + '<path d="M30 78V58c0-14 9-26 20-26s20 12 20 26v20z" fill="' + B.lg(GOLD) + '" stroke="#78350F" stroke-width="1.6"/><circle cx="50" cy="40" r="15" fill="' + B.rg(['#FFF3C7', '#F5B700', '#8A5A08']) + '" stroke="#78350F" stroke-width="1.4"/><circle cx="45" cy="40" r="2.2" fill="#78350F"/><circle cx="55" cy="40" r="2.2" fill="#78350F"/><path d="M45 46q5 4 10 0" stroke="#78350F" stroke-width="1.6" fill="none"/><circle cx="50" cy="26" r="3" fill="' + B.lg(GOLD) + '"/>',
+          shd(22) + (function () { var s = '<ellipse cx="50" cy="56" rx="24" ry="7" fill="' + B.lg(['#5EEAD4', '#0D9488'], 'h') + '"/>'; for (var i = 0; i < 7; i++) { var a = (i - 3) * 0.42; s += '<path d="M50 56q' + (Math.sin(a) * 30).toFixed(1) + ' ' + (-24 + Math.abs(a) * 6).toFixed(1) + ' ' + (Math.sin(a) * 10).toFixed(1) + ' -30q' + (-Math.sin(a) * 10).toFixed(1) + ' 6 ' + (-Math.sin(a) * 20).toFixed(1) + ' 30z" fill="' + B.rg(['#FBCFE8', '#F472B6', '#BE185D']) + '" stroke="#9D174D" stroke-width=".7"/>'; } return s; })() + '<circle cx="50" cy="50" r="5" fill="' + B.lg(GOLD) + '"/>',
+          shd(20) + '<path d="M22 44c10-14 28-14 40-4 6 5 12 4 16-2-2 14-14 20-26 18 2 4 2 10-2 14-4-4-6-10-4-14-14-2-24-12-24-12z" fill="' + B.lg(['#FFB38A', '#F97316', '#B45309'], 'd') + '" stroke="#7C2D12" stroke-width="1.4"/><circle cx="30" cy="42" r="3" fill="#fff"/><circle cx="30" cy="42" r="1.4" fill="#111"/>' + [[40, 46], [52, 48], [62, 44]].map(function (p) { return '<path d="M' + p[0] + ' ' + p[1] + 'q4 4 8 0" stroke="#FFF7ED" stroke-width="1.2" fill="none"/>'; }).join(''),
+          royal(B, 'A', GOLD), royal(B, 'K', TEAL), royal(B, 'Q', PINK)
+        ];
+      } },
+    inferno: { kind: 'L5', pays: [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], scat: [12, 60],
+      bg: 'radial-gradient(90% 60% at 50% 70%,rgba(239,68,68,.4),transparent 70%),linear-gradient(180deg,#1A0505,#070202)', fr: ['#FECACA', '#DC2626', '#3B0606'], cell: '#180505',
+      art: function (B) {
+        return [
+          shd(26) + '<path d="M28 18q-6-10-2-16 6 6 8 14M72 18q6-10 2-16-6 6-8 14z" fill="' + B.lg(['#FCA5A5', '#B91C1C'], 'd') + '" stroke="#7F1D1D"/><path d="M26 24c-4 14 2 34 24 34s28-20 24-34c-6 6-10 6-14 2-4 8-16 8-20 0-4 4-8 4-14-2z" fill="' + B.rg(['#F87171', '#B91C1C', '#450A0A']) + '" stroke="#450A0A" stroke-width="1.6"/><path d="M38 36l6 4-6 3zM62 36l-6 4 6 3z" fill="#1A0505"/><path d="M40 48q10 6 20 0l-4 6h-12z" fill="#1A0505"/><path d="M44 50l1 4M50 51v4M56 50l-1 4" stroke="#fff" stroke-width="1.2"/>',
+          shd(16) + '<path d="M50 10c8 14 18 20 18 36 0 16-10 28-18 28S32 62 32 46c0-16 10-22 18-36z" fill="' + B.lg(['#FFF2A8', '#F97316', '#B91C1C'], 'd') + '" stroke="#7F1D1D" stroke-width="1.4"/><path d="M50 32c4 8 9 12 9 22 0 9-4 14-9 14s-9-5-9-14c0-10 5-14 9-22z" fill="' + B.rg(['#FFF7D6', '#FBBF24', '#EA580C']) + '"/>',
+          shd(22) + '<path d="M28 42c0-14 10-24 22-24s22 10 22 24c0 8-4 12-4 12l4 6-8 2v8H36v-8l-8-2 4-6s-4-4-4-12z" fill="' + B.rg(['#F3F4F6', '#D1D5DB', '#6B7280']) + '" stroke="#374151" stroke-width="1.6"/><ellipse cx="41" cy="44" rx="5" ry="6" fill="#111827"/><ellipse cx="59" cy="44" rx="5" ry="6" fill="#111827"/><path d="M44 62h12M46 68h8" stroke="#374151" stroke-width="2"/>',
+          shd(16) + '<path d="M50 20v50M36 30q14 6 28 0M34 44q16 6 32 0" fill="none" stroke="' + B.lg(GOLD) + '" stroke-width="4" stroke-linecap="round"/><path d="M34 30l-2-8M50 20l0-10M66 30l2-8" stroke="' + B.lg(GOLD) + '" stroke-width="4" stroke-linecap="round"/><rect x="47" y="68" width="6" height="14" rx="2" fill="' + B.lg(GOLD) + '"/>',
+          royal(B, 'A', GOLD), royal(B, 'K', RUBY), royal(B, 'Q', SILV),
+          '<circle cx="50" cy="52" r="26" fill="' + B.rg(['#FFF7D6', '#F97316', '#B91C1C']) + '" stroke="#7F1D1D" stroke-width="2"/>' + (function () { var s = ''; for (var i = 0; i < 10; i++) { var a = i * Math.PI / 5; s += '<path d="M' + (50 + Math.cos(a) * 24).toFixed(1) + ' ' + (52 + Math.sin(a) * 24).toFixed(1) + 'q' + (Math.cos(a) * 10).toFixed(1) + ' ' + (Math.sin(a) * 10).toFixed(1) + ' 0 ' + (16).toFixed(1) + '" fill="' + B.lg(['#FBBF24', '#EA580C']) + '" opacity=".8"/>'; } return s; })() + gl(42, 44, 7, 4, -20, 0.5) + sp(80, 22, 6)
+        ];
       } }
   };
   Object.keys(TH).forEach(function (k) { TH[k].scat = TH[k].scat || []; });
-  var ORDER = ['samurai', 'mermaid', 'carnival', 'jazzclub', 'oasis', 'arctic', 'steampunk', 'cybercity', 'fairy', 'dinopark', 'sushibar', 'disco', 'westgold', 'piratecove', 'clover', 'candypop', 'olympus', 'vegasneon'];
+  var ORDER = ['samurai', 'mermaid', 'carnival', 'jazzclub', 'oasis', 'arctic', 'steampunk', 'cybercity', 'fairy', 'dinopark', 'sushibar', 'disco', 'westgold', 'piratecove', 'clover', 'candypop', 'olympus', 'vegasneon', 'phoenix', 'buffalo', 'joker', 'bookgold', 'lotus', 'inferno'];
   var DIM = { L5: [5, 3], W5: [5, 3], R33: [3, 3], R3: [3, 3] };
   function dims(d) { return d.kind === 'A' ? [d.cols, d.rows] : DIM[d.kind]; }
   function nSym(d) { return d.kind === 'L5' ? d.pays.length + (d.scat.length ? 1 : 0) : d.pays.length; }
