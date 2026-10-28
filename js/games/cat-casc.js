@@ -205,6 +205,20 @@
     genie: '<defs>' + GOLD + '</defs>' + sh(20) +
       '<path d="M8 44q0-9 18-11 2-6 8-6t8 6q16 2 16 11-4 4-12 4H20q-8 0-12-4z" fill="url(#IDg)" stroke="#78350F" stroke-width="1.8"/><path d="M50 40q10-2 13-9-2 7-7 11" fill="none" stroke="url(#IDg)" stroke-width="3" stroke-linecap="round"/><ellipse cx="26" cy="39" rx="12" ry="4.5" fill="url(#IDg)"/><circle cx="32" cy="29" r="3" fill="url(#IDg)"/>' + hi(20, 40, 7) + '<path d="M48 18l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z" fill="#C4B5FD"/>'
   });
+  Object.assign(ICONS, {
+    bandits: '<defs>' + GOLD + '</defs>' + sh(22) +
+      '<path d="' + (function () { var d = ''; for (var i = 0; i < 12; i++) { var a = -Math.PI / 2 + i * Math.PI / 6, r = i % 2 ? 12 : 24; d += (i ? 'L' : 'M') + (32 + Math.cos(a) * r).toFixed(1) + ' ' + (32 + Math.sin(a) * r).toFixed(1); } return d; })() + 'z" fill="url(#IDg)" stroke="#78350F" stroke-width="1.6" stroke-linejoin="round"/><circle cx="32" cy="32" r="9" fill="none" stroke="#78350F" stroke-width="1.4"/>' + (function () { var s = ''; for (var i = 0; i < 6; i++) { var a = -Math.PI / 2 + i * Math.PI / 3; s += '<circle cx="' + (32 + Math.cos(a) * 18).toFixed(1) + '" cy="' + (32 + Math.sin(a) * 18).toFixed(1) + '" r="1.6" fill="#78350F"/>'; } return s; })() + hi(26, 26, 6),
+    farm: '<defs>' + lg('IDbn', '#EF4444', '#B91C1C') + '</defs>' + sh(22) +
+      '<path d="M12 32l20-18 20 18v24H12z" fill="url(#IDbn)" stroke="#450A0A" stroke-width="1.6"/><path d="M12 32l20-18 20 18" fill="none" stroke="#450A0A" stroke-width="1.6"/><rect x="26" y="38" width="12" height="18" fill="#FDE68A" stroke="#78350F"/><path d="M32 38v18M26 47h12" stroke="#78350F" stroke-width="1.4"/><path d="M16 36h8v8h-8z" fill="#FDE68A" stroke="#78350F"/>',
+    gladiator: '<defs>' + lg('IDgl', '#E5E7EB', '#64748B') + '</defs>' + sh(20) +
+      '<path d="M32 10c6 0 8 4 8 9l-2 14h-12l-2-14c0-5 2-9 8-9z" fill="#EF4444" stroke="#991B1B"/><path d="M20 54V34c0-11 5-18 12-18s12 7 12 18v20h-6V38h-3v14h-6V38h-3v16z" fill="url(#IDgl)" stroke="#334155" stroke-width="1.6"/><path d="M22 32h20" stroke="#334155" stroke-width="1.6"/><rect x="28" y="34" width="8" height="3" fill="#1F2937"/>' + hi(24, 26, 6),
+    santa: '<defs>' + lg('IDst', '#EF4444', '#B91C1C') + '</defs>' + sh(20) +
+      '<circle cx="32" cy="32" r="16" fill="#FFE4C7" stroke="#D1A878"/><path d="M14 30c0-10 8-18 18-18s18 8 18 14l-1 3c-5-3-10-1-10-1-1-4-9-4-10 0 0 0-5-2-10 1z" fill="url(#IDst)" stroke="#7F1D1D"/><path d="M48 14q6-2 7 3-4 0-6 3z" fill="#EF4444"/><circle cx="56" cy="16" r="3" fill="#fff"/><path d="M16 30h32v3H16z" fill="#fff"/><path d="M22 38c0 8 5 14 10 14s10-6 10-14c-4 3-7 3-10 1-3 2-6 2-10-1z" fill="#F8FAFC"/><circle cx="27" cy="33" r="1.8" fill="#1F2937"/><circle cx="37" cy="33" r="1.8" fill="#1F2937"/><circle cx="32" cy="38" r="2.4" fill="#FB7185"/>',
+    alien: '<defs>' + lg('IDal', '#86EFAC', '#15803D') + '</defs>' + sh(20) +
+      '<path d="M32 12c-11 0-16 8-16 19 0 10 7 17 16 17s16-7 16-17c0-11-5-19-16-19z" fill="url(#IDal)" stroke="#14532D" stroke-width="1.4"/><ellipse cx="25" cy="30" rx="5" ry="8" fill="#0A0A0A" transform="rotate(20 25 30)"/><ellipse cx="39" cy="30" rx="5" ry="8" fill="#0A0A0A" transform="rotate(-20 39 30)"/><ellipse cx="26" cy="28" rx="1.4" ry="2.2" fill="#86EFAC"/><ellipse cx="38" cy="28" rx="1.4" ry="2.2" fill="#86EFAC"/><path d="M28 42q4 2 8 0" stroke="#14532D" stroke-width="1.4" fill="none"/>',
+    goblin: '<defs>' + lg('IDgb', '#4ADE80', '#15803D') + '</defs>' + sh(20) +
+      '<path d="M32 12c-10 0-16 7-16 17 0 9 7 18 16 18s16-9 16-18c0-10-6-17-16-17z" fill="url(#IDgb)" stroke="#14532D" stroke-width="1.4"/><path d="M16 28q-9-4-12 2 6 1 7 6zM48 28q9-4 12 2-6 1-7 6z" fill="#4ADE80" stroke="#14532D"/><path d="M24 30l7 4-7 2zM40 30l-7 4 7 2z" fill="#FDE047"/><circle cx="27" cy="32" r="1.3" fill="#1A0505"/><circle cx="37" cy="32" r="1.3" fill="#1A0505"/><path d="M25 40q7 4 14 0l-2 4-3-2-4 2-3-2z" fill="#1A0505"/><path d="M30 24l2-4 2 4z" fill="#4ADE80"/>'
+  });
   var L = [
     ['phoenix', 'Phoenix Rising', 'casc1', ['#FED7AA', '#DC2626']], ['buffalo', 'Buffalo Gold', 'casc1', ['#FDE68A', '#B45309']], ['joker', 'Jokers Wild', 'casc1', ['#E9D5FF', '#9333EA']],
     ['bookgold', 'Book of Gold', 'casc1', ['#FDE68A', '#A16207']], ['lotus', 'Lotus Zen', 'casc1', ['#99F6E4', '#0D9488']], ['inferno', 'Inferno', 'casc1', ['#FECACA', '#DC2626']],
@@ -216,6 +230,8 @@
     ['vampire', 'Vampire Night', 'casc1', ['#FBCFE8', '#9F1239']], ['peacock', 'Jade Peacock', 'casc1', ['#99F6E4', '#0D9488']], ['knight', 'Dragon Knight', 'casc1', ['#CBD5E1', '#475569']],
     ['tikigods', 'Tiki Gods', 'casc1', ['#FDBA74', '#C2410C']], ['icequeen', 'Frozen Queen', 'casc1', ['#BAE6FD', '#0EA5E9']], ['caishen', 'God of Wealth', 'casc1', ['#FECACA', '#B91C1C']],
     ['luchador', 'Lucha Legends', 'casc1', ['#FECACA', '#DC2626']], ['fiesta', 'Fiesta Mariachi', 'casc1', ['#FDBA74', '#EA580C']], ['genie', 'Magic Genie', 'casc1', ['#E9D5FF', '#9333EA']],
+    ['bandits', 'Wild Bandits', 'casc1', ['#FDBA74', '#B45309']], ['farm', 'Farm Fortune', 'casc1', ['#BBF7D0', '#16A34A']], ['gladiator', 'Gladiator Arena', 'casc1', ['#FDE68A', '#A16207']],
+    ['santa', 'Santa Riches', 'casc1', ['#FECACA', '#DC2626']], ['alien', 'Alien Invasion', 'casc1', ['#86EFAC', '#22C55E']], ['goblin', 'Goblin Gold', 'casc1', ['#BBF7D0', '#16A34A']],
     ['westgold', 'Gold Rush', 'casc1', ['#FED7AA', '#C2410C']], ['piratecove', 'Pirate Cove', 'casc1', ['#99F6E4', '#0D9488']], ['shamrock', 'Clover Riches', 'casc1', ['#BBF7D0', '#16A34A']],
     ['candypop', 'Candy Pop', 'casc1', ['#FBCFE8', '#DB2777']], ['olympus', 'Zeus Fury', 'casc1', ['#BFDBFE', '#2563EB']], ['vegasneon', 'Vegas Nights', 'casc1', ['#E9D5FF', '#A855F7']],
     ['samurai', 'Samurai', 'casc1', ['#FFE4E6', '#BE123C']], ['mermaid', 'Mermaid Lagoon', 'casc1', ['#CCFBF1', '#0D9488']], ['carnival', 'Carnival', 'casc1', ['#FAE8FF', '#A21CAF']],
