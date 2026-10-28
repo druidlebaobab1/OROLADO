@@ -247,7 +247,8 @@
     valhalla: 'slots', tigergold: 'slots', honeypot: 'slots', piggybank: 'slots', atlantis: 'slots', wizard: 'slots',
     royalcrown: 'slots', luckycat: 'slots', wolfmoon: 'slots', vampire: 'slots', peacock: 'slots', knight: 'slots',
     tikigods: 'slots', icequeen: 'slots', caishen: 'slots', luchador: 'slots', fiesta: 'slots', genie: 'slots',
-    bandits: 'slots', farm: 'slots', gladiator: 'slots', santa: 'slots', alien: 'slots', goblin: 'slots' });
+    bandits: 'slots', farm: 'slots', gladiator: 'slots', santa: 'slots', alien: 'slots', goblin: 'slots',
+    circus: 'slots', soccer: 'slots', butterfly: 'slots', pizza: 'slots', beach: 'slots', owl: 'slots' });
   /* ---- fin casc ---- */
   /* v2850 — round 6 « Tu contrôles » (js/games/skill6.js, skill7.js, skill8.js) : famille de sons de chaque jeu */
   Object.assign(MAP, { blockfall: 'build', merge2048: 'build', mazechomp: 'arcade', bubblepop: 'arcade', gemswap: 'arcade', memoflip: 'build', echopads: 'arcade', pianokeys: 'build',

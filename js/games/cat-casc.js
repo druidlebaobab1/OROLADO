@@ -219,6 +219,20 @@
     goblin: '<defs>' + lg('IDgb', '#4ADE80', '#15803D') + '</defs>' + sh(20) +
       '<path d="M32 12c-10 0-16 7-16 17 0 9 7 18 16 18s16-9 16-18c0-10-6-17-16-17z" fill="url(#IDgb)" stroke="#14532D" stroke-width="1.4"/><path d="M16 28q-9-4-12 2 6 1 7 6zM48 28q9-4 12 2-6 1-7 6z" fill="#4ADE80" stroke="#14532D"/><path d="M24 30l7 4-7 2zM40 30l-7 4 7 2z" fill="#FDE047"/><circle cx="27" cy="32" r="1.3" fill="#1A0505"/><circle cx="37" cy="32" r="1.3" fill="#1A0505"/><path d="M25 40q7 4 14 0l-2 4-3-2-4 2-3-2z" fill="#1A0505"/><path d="M30 24l2-4 2 4z" fill="#4ADE80"/>'
   });
+  Object.assign(ICONS, {
+    circus: '<defs>' + lg('IDci', '#EF4444', '#B91C1C') + GOLD + '</defs>' + sh(22) +
+      '<path d="M12 28c0-9 9-16 20-16s20 7 20 16l-4 28H16z" fill="url(#IDci)" stroke="#7F1D1D" stroke-width="1.6"/><path d="M32 12v44M20 28l3 28M44 28l-3 28" fill="none" stroke="#FEF2F2" stroke-width="3"/><path d="M32 12l-6-6h12z" fill="url(#IDg)"/><path d="M24 56h16l-8-14z" fill="#FDE68A"/>',
+    soccer: '<defs></defs>' + sh(20) +
+      '<circle cx="32" cy="32" r="22" fill="#F8FAFC" stroke="#1F2937" stroke-width="1.6"/><path d="M32 22l9 6-3 11H26l-3-11z" fill="#1F2937"/><path d="M32 12l6 6M16 26l6 2M48 26l-6 2M24 50l3-8M40 50l-3-8" stroke="#1F2937" stroke-width="2"/>' + hi(26, 26, 6),
+    butterfly: '<defs></defs>' + sh(18) +
+      '<ellipse cx="24" cy="26" rx="12" ry="11" fill="#EC4899" stroke="#831843"/><ellipse cx="40" cy="26" rx="12" ry="11" fill="#EC4899" stroke="#831843"/><ellipse cx="26" cy="44" rx="9" ry="9" fill="#8B5CF6" stroke="#4C1D95"/><ellipse cx="38" cy="44" rx="9" ry="9" fill="#8B5CF6" stroke="#4C1D95"/><rect x="30" y="20" width="4" height="30" rx="2" fill="#1A0714"/><circle cx="24" cy="25" r="2.4" fill="#FEF9C3"/><circle cx="40" cy="25" r="2.4" fill="#FEF9C3"/><path d="M30 20q-4-7-9-7M34 20q4-7 9-7" stroke="#1A0714" stroke-width="1.4" fill="none"/>',
+    pizza: '<defs>' + lg('IDpz', '#FBBF24', '#D97706') + '</defs>' + sh(20) +
+      '<path d="M32 10l22 44H10z" fill="url(#IDpz)" stroke="#78350F" stroke-width="1.6"/><path d="M32 18l16 32H16z" fill="#FDE047"/><circle cx="27" cy="34" r="3.4" fill="#EF4444"/><circle cx="38" cy="38" r="3.4" fill="#EF4444"/><circle cx="31" cy="44" r="3.4" fill="#EF4444"/><circle cx="32" cy="26" r="2.2" fill="#15803D"/>',
+    beach: '<defs></defs>' + sh(20) +
+      '<path d="M30 30c2 10 0 22-3 28h10c-3-6-5-18-3-28z" fill="#A16207" stroke="#5C3A0A"/><path d="M32 28q-14-8-24-2 8 1 12 8M32 28q14-8 24-2-8 1-12 8M32 26q-6-13-18-13 6 5 9 15M32 26q6-13 18-13-6 5-9 15" fill="#22C55E" stroke="#14532D" stroke-width="1"/><circle cx="32" cy="28" r="3" fill="#B45309"/><path d="M8 58h48" stroke="#FDE68A" stroke-width="3"/>',
+    owl: '<defs>' + lg('IDow', '#A16207', '#5C3A0A') + '</defs>' + sh(20) +
+      '<path d="M32 12c-11 0-18 8-18 21 0 11 8 19 18 19s18-8 18-19c0-13-7-21-18-21z" fill="url(#IDow)" stroke="#2E1606" stroke-width="1.4"/><path d="M16 16l3-8 6 7M48 16l-3-8-6 7" fill="#A16207" stroke="#2E1606"/><circle cx="25" cy="28" r="8" fill="#FEF3C7" stroke="#78350F"/><circle cx="39" cy="28" r="8" fill="#FEF3C7" stroke="#78350F"/><circle cx="25" cy="28" r="3.6" fill="#1A0E04"/><circle cx="39" cy="28" r="3.6" fill="#1A0E04"/><path d="M32 32l-3 4h6z" fill="#FBBF24"/>'
+  });
   var L = [
     ['phoenix', 'Phoenix Rising', 'casc1', ['#FED7AA', '#DC2626']], ['buffalo', 'Buffalo Gold', 'casc1', ['#FDE68A', '#B45309']], ['joker', 'Jokers Wild', 'casc1', ['#E9D5FF', '#9333EA']],
     ['bookgold', 'Book of Gold', 'casc1', ['#FDE68A', '#A16207']], ['lotus', 'Lotus Zen', 'casc1', ['#99F6E4', '#0D9488']], ['inferno', 'Inferno', 'casc1', ['#FECACA', '#DC2626']],
@@ -232,6 +246,8 @@
     ['luchador', 'Lucha Legends', 'casc1', ['#FECACA', '#DC2626']], ['fiesta', 'Fiesta Mariachi', 'casc1', ['#FDBA74', '#EA580C']], ['genie', 'Magic Genie', 'casc1', ['#E9D5FF', '#9333EA']],
     ['bandits', 'Wild Bandits', 'casc1', ['#FDBA74', '#B45309']], ['farm', 'Farm Fortune', 'casc1', ['#BBF7D0', '#16A34A']], ['gladiator', 'Gladiator Arena', 'casc1', ['#FDE68A', '#A16207']],
     ['santa', 'Santa Riches', 'casc1', ['#FECACA', '#DC2626']], ['alien', 'Alien Invasion', 'casc1', ['#86EFAC', '#22C55E']], ['goblin', 'Goblin Gold', 'casc1', ['#BBF7D0', '#16A34A']],
+    ['circus', 'Big Top Circus', 'casc1', ['#FECACA', '#DC2626']], ['soccer', 'Soccer Star', 'casc1', ['#BBF7D0', '#16A34A']], ['butterfly', 'Butterfly Garden', 'casc1', ['#FBCFE8', '#EC4899']],
+    ['pizza', 'Pizza Party', 'casc1', ['#FDBA74', '#EA580C']], ['beach', 'Beach Party', 'casc1', ['#7DD3FC', '#0EA5E9']], ['owl', 'Night Owl', 'casc1', ['#C7D2FE', '#4F46E5']],
     ['westgold', 'Gold Rush', 'casc1', ['#FED7AA', '#C2410C']], ['piratecove', 'Pirate Cove', 'casc1', ['#99F6E4', '#0D9488']], ['shamrock', 'Clover Riches', 'casc1', ['#BBF7D0', '#16A34A']],
     ['candypop', 'Candy Pop', 'casc1', ['#FBCFE8', '#DB2777']], ['olympus', 'Zeus Fury', 'casc1', ['#BFDBFE', '#2563EB']], ['vegasneon', 'Vegas Nights', 'casc1', ['#E9D5FF', '#A855F7']],
     ['samurai', 'Samurai', 'casc1', ['#FFE4E6', '#BE123C']], ['mermaid', 'Mermaid Lagoon', 'casc1', ['#CCFBF1', '#0D9488']], ['carnival', 'Carnival', 'casc1', ['#FAE8FF', '#A21CAF']],
