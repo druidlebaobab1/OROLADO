@@ -66,4 +66,11 @@ return [
   'toxicrun'    => ['type' => 'skill', 'name' => 'Toxic Run',      'rate' => 0.03],
   'applecatch'  => ['type' => 'skill', 'name' => 'Apple Catch',    'rate' => 0.03],
   'acorncatch'  => ['type' => 'skill', 'name' => 'Acorn Catch',    'rate' => 0.03],
+  // vague 4 « qu'on contrôle » — js/games/skill8.js
+  'cavebat'     => ['type' => 'skill', 'name' => 'Cave Bat',       'rate' => 0.03],
+  'rocketcave'  => ['type' => 'skill', 'name' => 'Rocket Cave',    'rate' => 0.03],
+  'kayakrush'   => ['type' => 'skill', 'name' => 'Kayak Rush',     'rate' => 0.03],
+  'neonrider'   => ['type' => 'skill', 'name' => 'Neon Rider',     'rate' => 0.03],
+  'pizzacatch'  => ['type' => 'skill', 'name' => 'Pizza Catch',    'rate' => 0.03],
+  'petalcatch'  => ['type' => 'skill', 'name' => 'Petal Catch',    'rate' => 0.03],
 ];
