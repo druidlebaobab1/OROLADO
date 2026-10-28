@@ -180,4 +180,11 @@ return [
     return $o; })()],
   // Curling — the stone stops: past the house (lose), hits the guard (lose), 12-foot ring ×0.5, 8-foot ×1.2, 4-foot ×2.5, button ×6, button + rival stone out ×25, dead centre ×100
   'curling' => $cascFill('Curling', [[0, null], [0, 800], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [25, 40], [100, 3]]),
+  // casc5 (propriétaire) — jeux instantanés « révèle le gain », style premium (coffres, roue, œuf, boîte, boule, coffre-fort). js/games/casc4.js (moteur rgame)
+  'chestgold' => $cascFill('Treasure Chest', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'fortunewheel' => $cascFill('Fortune Wheel', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  'goldenegg' => $cascFill('Golden Egg', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  'mysterybox' => $cascFill('Mystery Box', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'crystalorb' => $cascFill('Crystal Orb', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'diamondvault' => $cascFill('Diamond Vault', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
 ];

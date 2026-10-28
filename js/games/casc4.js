@@ -344,4 +344,150 @@
       zh: '1. 设定金额并点击“施法”。\n2. 魔杖轻点帽子，奖品飘出。\n3. 奖励：×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150。空帽：输掉下注。'
     })
   });
+
+  /* ===================================================================== MOTEUR GÉNÉRIQUE « révèle le gain » (premium) ======
+     Chaque jeu : un décor soigné + un objet central (id cyObj) que le serveur fait « ouvrir / tourner » pour révéler le palier
+     tiré (view.i). Marge 6 %, mêmes tables que casc.php (cascFill). Style adulte (or, gemmes, velours) — pas enfantin. */
+  var REVEAL_RA = rules({
+    en: '1. Set your stake and tap the button.\n2. The round plays and lands on a prize tier.\n3. Win: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. Lowest tier: the stake is lost.',
+    fr: '1. Choisis ta mise et touche le bouton.\n2. La partie se joue et s’arrête sur un palier.\n3. Gain : ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. Palier le plus bas : la mise est perdue.',
+    es: '1. Elige tu apuesta y toca el botón.\n2. La ronda se juega y se detiene en un nivel.\n3. Premio: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. Nivel más bajo: pierdes la apuesta.',
+    pt: '1. Escolha o valor e toque no botão.\n2. A rodada joga e para num nível.\n3. Prémio: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. Nível mais baixo: a aposta é perdida.',
+    ar: '1. اختر رهانك والمس الزر.\n2. تُلعب الجولة وتتوقف عند مستوى.\n3. الربح: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. أدنى مستوى: تخسر الرهان.',
+    tr: '1. Bahsini seç ve düğmeye dokun.\n2. Tur oynanır ve bir kademede durur.\n3. Kazanç: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. En düşük kademe: bahis kaybedilir.',
+    vi: '1. Chọn mức cược rồi chạm nút.\n2. Ván chơi và dừng ở một mức.\n3. Thắng: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. Mức thấp nhất: mất tiền cược.',
+    id: '1. Atur taruhan lalu sentuh tombol.\n2. Ronde berjalan dan berhenti di satu tingkat.\n3. Menang: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. Tingkat terendah: taruhan hilang.',
+    ru: '1. Выберите ставку и нажмите кнопку.\n2. Раунд играется и останавливается на уровне.\n3. Выигрыш: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. Самый низкий уровень — ставка проиграна.',
+    de: '1. Wähle deinen Einsatz und tippe auf den Knopf.\n2. Die Runde läuft und hält auf einer Stufe.\n3. Gewinn: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. Unterste Stufe: Einsatz verloren.',
+    hi: '1. राशि चुनें और बटन छुएं।\n2. राउंड चलता है और एक स्तर पर रुकता है।\n3. जीत: ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100. सबसे निचला स्तर: राशि हार जाते हैं।',
+    zh: '1. 设定金额并点击按钮。\n2. 本回合进行并停在某一档。\n3. 奖励：×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100。最低档：输掉下注。'
+  });
+  var REVEAL_RB = rules({
+    en: '1. Set your stake and tap the button.\n2. The round plays and lands on a prize tier.\n3. Win: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. Lowest tier: the stake is lost.',
+    fr: '1. Choisis ta mise et touche le bouton.\n2. La partie se joue et s’arrête sur un palier.\n3. Gain : ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. Palier le plus bas : la mise est perdue.',
+    es: '1. Elige tu apuesta y toca el botón.\n2. La ronda se juega y se detiene en un nivel.\n3. Premio: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. Nivel más bajo: pierdes la apuesta.',
+    pt: '1. Escolha o valor e toque no botão.\n2. A rodada joga e para num nível.\n3. Prémio: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. Nível mais baixo: a aposta é perdida.',
+    ar: '1. اختر رهانك والمس الزر.\n2. تُلعب الجولة وتتوقف عند مستوى.\n3. الربح: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. أدنى مستوى: تخسر الرهان.',
+    tr: '1. Bahsini seç ve düğmeye dokun.\n2. Tur oynanır ve bir kademede durur.\n3. Kazanç: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. En düşük kademe: bahis kaybedilir.',
+    vi: '1. Chọn mức cược rồi chạm nút.\n2. Ván chơi và dừng ở một mức.\n3. Thắng: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. Mức thấp nhất: mất tiền cược.',
+    id: '1. Atur taruhan lalu sentuh tombol.\n2. Ronde berjalan dan berhenti di satu tingkat.\n3. Menang: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. Tingkat terendah: taruhan hilang.',
+    ru: '1. Выберите ставку и нажмите кнопку.\n2. Раунд играется и останавливается на уровне.\n3. Выигрыш: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. Самый низкий уровень — ставка проиграна.',
+    de: '1. Wähle deinen Einsatz und tippe auf den Knopf.\n2. Die Runde läuft und hält auf einer Stufe.\n3. Gewinn: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. Unterste Stufe: Einsatz verloren.',
+    hi: '1. राशि चुनें और बटन छुएं।\n2. राउंड चलता है और एक स्तर पर रुकता है।\n3. जीत: ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150. सबसे निचला स्तर: राशि हार जाते हैं।',
+    zh: '1. 设定金额并点击按钮。\n2. 本回合进行并停在某一档。\n3. 奖励：×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150。最低档：输掉下注。'
+  });
+  var GDEFS = GOLDG +
+    '<linearGradient id="r5vel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#312E81"/><stop offset=".5" stop-color="#1E1B4B"/><stop offset="1" stop-color="#0B1026"/></linearGradient>' +
+    '<linearGradient id="r5steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E2E8F0"/><stop offset=".5" stop-color="#94A3B8"/><stop offset="1" stop-color="#334155"/></linearGradient>' +
+    '<linearGradient id="r5wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B45309"/><stop offset="1" stop-color="#5C2E0E"/></linearGradient>' +
+    '<radialGradient id="r5glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FDE68A"/><stop offset="1" stop-color="rgba(253,230,138,0)"/></radialGradient>' +
+    '<radialGradient id="r5orb" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#A5F3FC"/><stop offset=".5" stop-color="#22D3EE"/><stop offset="1" stop-color="#0E7490"/></radialGradient>';
+  function r5bg(fill) { return '<rect x="-400" y="-400" width="1100" height="1100" fill="' + (fill || 'url(#r5vel)') + '"/>'; }
+  function r5glow() { return '<circle id="cyGlow" cx="150" cy="108" r="70" fill="url(#r5glow)" opacity="0"/>'; }
+  function rgame(o) {
+    game({
+      key: o.key, verb: o.verb, rows: o.rows, prizeAt: o.prizeAt || [150, 108],
+      chips: chips6(o.rows), chipOf: chipOf6(o.rows), vb: '0 0 300 220',
+      scene: o.scene, init: o.init,
+      reset: function (c) { var g = c.id('cyObj'); if (g) tr(g, o.cx || 150, o.cy || 108, 1, 0); var gl = c.id('cyGlow'); if (gl) gl.setAttribute('opacity', '0'); if (o.reset) o.reset(c); },
+      act: function (c, tier) {
+        var g = c.id('cyObj'), gl = c.id('cyGlow'), cx = o.cx || 150, cy = o.cy || 108;
+        c.snd(o.sfx || 'show', {});
+        return tw(c.box, 1300, function (k) {
+          if (gl) gl.setAttribute('opacity', (Math.sin(k * Math.PI) * 0.85).toFixed(2));
+          if (!g) return;
+          if (o.spin) { tr(g, cx, cy, 1, (1 - Math.pow(1 - k, 3)) * (1080 + tier * 16)); }
+          else { var amp = 7 * Math.sin(k * Math.PI), sh = Math.sin(k * 42) * amp; tr(g, cx + sh, cy, 1 + Math.sin(k * Math.PI) * 0.07, 0); }
+        }).then(function () { return burst(c, (o.prizeAt || [150, 108])[0], (o.prizeAt || [150, 108])[1], o.burst || '#FBBF24'); });
+      },
+      rules: o.rows === RB ? REVEAL_RB : REVEAL_RA
+    });
+  }
+
+  /* ---- Treasure Chest (RA) ---- */
+  rgame({
+    key: 'chestgold', verb: V.open, rows: RA, sfx: 'chests', cy: 112,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(18) + r5glow() +
+      '<ellipse cx="150" cy="178" rx="96" ry="16" fill="#000" opacity=".35"/>' +
+      '<g id="cyObj" transform="translate(150 112)">' +
+      '<rect x="-62" y="-6" width="124" height="52" rx="8" fill="url(#r5wood)" stroke="#3E1F08" stroke-width="2"/>' +
+      '<path d="M-62 2a62 30 0 0 1 124 0v-4a62 34 0 0 0-124 0z" fill="#92400E"/>' +
+      '<path d="M-62 -4a62 34 0 0 1 124 0l0 6a62 30 0 0 0-124 0z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
+      '<rect x="-66" y="12" width="132" height="10" rx="3" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
+      '<rect x="-8" y="8" width="16" height="22" rx="3" fill="url(#cyGold)" stroke="#5C2E0E" stroke-width="2"/><circle cx="0" cy="19" r="3.5" fill="#3E1F08"/>' +
+      '<circle cx="-40" cy="-18" r="2.4" fill="#FEF3C7"/><circle cx="24" cy="-24" r="2" fill="#FEF3C7"/>' +
+      '</g>'
+  });
+
+  /* ---- Fortune Wheel (RB, spin) ---- */
+  rgame({
+    key: 'fortunewheel', verb: { en: 'Spin', fr: 'Tourner', es: 'Girar', pt: 'Girar', ar: 'أدر', tr: 'Çevir', vi: 'Quay', id: 'Putar', ru: 'Крутить', de: 'Drehen', hi: 'घुमाएँ', zh: '旋转' },
+    rows: RB, spin: true, sfx: 'show', cy: 106,
+    scene: '<defs>' + GDEFS + '<linearGradient id="r5felt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14532D"/><stop offset="1" stop-color="#052e16"/></linearGradient></defs>' + r5bg('url(#r5felt)') + r5glow() +
+      '<g id="cyObj" transform="translate(150 106)">' +
+      (function () { var seg = ''; var cols = ['#DC2626', '#1E293B', '#B45309', '#065F46', '#6D28D9', '#B91C1C', '#1E3A8A', '#92400E']; for (var i = 0; i < 8; i++) { var a0 = i / 8 * Math.PI * 2 - Math.PI / 2, a1 = (i + 1) / 8 * Math.PI * 2 - Math.PI / 2, R = 62; seg += '<path d="M0 0L' + (Math.cos(a0) * R).toFixed(1) + ' ' + (Math.sin(a0) * R).toFixed(1) + 'A' + R + ' ' + R + ' 0 0 1 ' + (Math.cos(a1) * R).toFixed(1) + ' ' + (Math.sin(a1) * R).toFixed(1) + 'Z" fill="' + cols[i] + '"/>'; } return seg; })() +
+      '<circle r="62" fill="none" stroke="url(#cyGold)" stroke-width="5"/><circle r="62" fill="none" stroke="#78350F" stroke-width="1.5"/>' +
+      '<circle r="12" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
+      (function () { var p = ''; for (var i = 0; i < 8; i++) { var a = i / 8 * Math.PI * 2; p += '<circle cx="' + (Math.cos(a) * 62).toFixed(1) + '" cy="' + (Math.sin(a) * 62).toFixed(1) + '" r="2.5" fill="#FEF3C7"/>'; } return p; })() +
+      '</g>' +
+      '<path d="M150 36l-8-14h16z" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>'
+  });
+
+  /* ---- Golden Egg (RB) ---- */
+  rgame({
+    key: 'goldenegg', verb: V.tap, rows: RB, sfx: 'chests', cy: 110,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(16) + r5glow() +
+      '<ellipse cx="150" cy="176" rx="60" ry="12" fill="#000" opacity=".35"/>' +
+      '<path d="M120 150h60l-6 14h-48z" fill="#5C2E0E"/><rect x="112" y="162" width="76" height="8" rx="3" fill="#78350F"/>' +
+      '<g id="cyObj" transform="translate(150 110)">' +
+      '<ellipse cx="0" cy="0" rx="38" ry="50" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
+      '<path d="M-38 -6q38 16 76 0" fill="none" stroke="#78350F" stroke-width="2" opacity=".5"/>' +
+      '<path d="M-34 18q34 14 68 0" fill="none" stroke="#78350F" stroke-width="2" opacity=".5"/>' +
+      '<path d="M0 -50v100M-30 -20q30 10 60 0M-34 10q34 10 68 0" fill="none" stroke="#B45309" stroke-width="1" opacity=".4"/>' +
+      '<ellipse cx="-12" cy="-22" rx="8" ry="14" fill="#FFF7D6" opacity=".55"/>' +
+      '</g>'
+  });
+
+  /* ---- Mystery Box (RA) ---- */
+  rgame({
+    key: 'mysterybox', verb: V.open, rows: RA, sfx: 'chests', cy: 112,
+    scene: '<defs>' + GDEFS + '<linearGradient id="r5box" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#4C1D95"/></linearGradient></defs>' + r5bg() + stars(16) + r5glow() +
+      '<ellipse cx="150" cy="176" rx="74" ry="13" fill="#000" opacity=".35"/>' +
+      '<g id="cyObj" transform="translate(150 112)">' +
+      '<rect x="-48" y="-8" width="96" height="56" rx="6" fill="url(#r5box)" stroke="#2E1065" stroke-width="2"/>' +
+      '<rect x="-52" y="-22" width="104" height="18" rx="5" fill="#6D28D9" stroke="#2E1065" stroke-width="2"/>' +
+      '<rect x="-8" y="-22" width="16" height="70" fill="url(#cyGold)" opacity=".92"/>' +
+      '<rect x="-52" y="-10" width="104" height="10" fill="url(#cyGold)" opacity=".92"/>' +
+      '<path d="M0 -22q-18 -20-4 -6q-14 -14 4 -2q18 -12 4 2q14 -14-4 6z" fill="url(#cyGold)"/>' +
+      '<circle r="5" cx="0" cy="-22" fill="#FEF3C7"/>' +
+      '</g>'
+  });
+
+  /* ---- Crystal Orb (RA) ---- */
+  rgame({
+    key: 'crystalorb', verb: V.tap, rows: RA, sfx: 'show', cy: 104,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(20) + r5glow() +
+      '<ellipse cx="150" cy="182" rx="56" ry="12" fill="#000" opacity=".35"/>' +
+      '<path d="M120 150q30 22 60 0l8 20h-76z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
+      '<g id="cyObj" transform="translate(150 104)">' +
+      '<circle r="46" fill="url(#r5orb)" stroke="#155E75" stroke-width="2"/>' +
+      '<ellipse cx="-14" cy="-16" rx="14" ry="20" fill="#fff" opacity=".45"/>' +
+      '<circle cx="12" cy="14" r="8" fill="#fff" opacity=".2"/>' +
+      '<circle r="46" fill="none" stroke="#A5F3FC" stroke-width="1" opacity=".5"/>' +
+      '</g>'
+  });
+
+  /* ---- Diamond Vault (RB) ---- */
+  rgame({
+    key: 'diamondvault', verb: V.open, rows: RB, sfx: 'show', cy: 108,
+    scene: '<defs>' + GDEFS + '<radialGradient id="r5dia" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#E0F2FE"/><stop offset=".5" stop-color="#67E8F9"/><stop offset="1" stop-color="#0891B2"/></radialGradient></defs>' + r5bg('#0F172A') +
+      '<rect x="40" y="18" width="220" height="184" rx="10" fill="#1E293B"/>' + r5glow() +
+      '<g id="cyObj" transform="translate(150 108)">' +
+      '<rect x="-64" y="-64" width="128" height="128" rx="12" fill="url(#r5steel)" stroke="#0F172A" stroke-width="3"/>' +
+      '<circle r="52" fill="#334155" stroke="#0F172A" stroke-width="2"/><circle r="52" fill="none" stroke="#64748B" stroke-width="1"/>' +
+      '<circle r="18" fill="url(#r5steel)" stroke="#0F172A" stroke-width="2"/>' +
+      (function () { var p = ''; for (var i = 0; i < 6; i++) { var a = i / 6 * Math.PI * 2; p += '<rect x="-3" y="-34" width="6" height="16" rx="2" fill="#475569" transform="rotate(' + (i * 60) + ')"/>'; } return p; })() +
+      '<path d="M0 -8l10 4-4 12h-12l-4-12z" fill="url(#r5dia)" stroke="#0891B2" stroke-width="1"/>' +
+      '</g>'
+  });
 })(window.D6 = window.D6 || {});
