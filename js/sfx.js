@@ -257,7 +257,7 @@
   Object.assign(MAP, { blockfall: 'build', merge2048: 'build', mazechomp: 'arcade', bubblepop: 'arcade', gemswap: 'arcade', memoflip: 'build', echopads: 'arcade', pianokeys: 'build',
     tankbattle: 'shoot', sniper: 'shoot', gunship: 'shoot', dogfight: 'shoot',
     trenchdef: 'shoot', commando: 'run', alienwave: 'shoot', cityshield: 'shoot', neonpong: 'arcade', meteorblast: 'shoot', skyhopper: 'fly', fruitcatch: 'arcade',
-    beattap: 'arcade', ropeswing: 'fly', minigolf: 'throwg', skislalom: 'run' });
+    beattap: 'arcade', ropeswing: 'fly', minigolf: 'throwg', skislalom: 'run', roadrace: 'cars', airraid: 'shoot' });
   /* v3019 : 16 jeux en direct live5 */
   Object.assign(MAP, { dogracelive: 'horses', camelracelive: 'horses', snailracelive: 'show', chickenracelive: 'horses', monsterlive: 'cars',
     boatracelive: 'cars', spaceracelive: 'cars', penaltylive: 'sport', basketlive: 'sport', boxinglive: 'sport', tennislive: 'sport',

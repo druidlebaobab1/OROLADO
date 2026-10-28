@@ -139,6 +139,34 @@
       de: ['Ziehen, um den Skifahrer zu lenken', 'Sturz!', 'Lawine!', 'Ziehe nach links oder rechts: Der Skifahrer schwingt zu deinem Finger. Fahre zwischen den zwei Fahnen jedes Tors durch und weiche Bäumen und Felsen aus. Der Hang wird steiler und schneller. Ein verpasstes Tor oder ein Hindernis beendet die Runde.', 'Tor verpasst!'],
       hi: ['स्कीयर चलाने को खींचें', 'टक्कर!', 'हिमस्खलन!', 'बाएँ या दाएँ खींचें: स्कीयर उँगली की ओर मुड़ता है। हर गेट के दो झंडों के बीच से निकलें और पेड़ों व चट्टानों से बचें। ढलान तेज़ होती जाती है। गेट छूटा या टक्कर हुई तो राउंड खत्म।', 'गेट छूट गया!'],
       zh: ['拖动控制滑雪者', '撞上了！', '雪崩！', '左右拖动：滑雪者会转向手指方向。从每道旗门的两面旗之间穿过，避开树木和岩石。坡道会越来越陡、越来越快。漏过旗门或撞到障碍，本回合结束。', '漏过旗门！']
+    },
+    roadrace: {
+      en: ['Drag to steer your car', 'Crash!', 'Pile-up!', 'Drag left or right to steer your car and weave through the oncoming traffic. The road gets faster and busier. Hitting another car ends the round.'],
+      fr: ['Glisse pour conduire ta voiture', 'Accident !', 'Carambolage !', 'Glisse à gauche ou à droite pour conduire ta voiture et te faufiler dans la circulation. La route devient plus rapide et plus chargée. Toucher une autre voiture termine la partie.'],
+      es: ['Desliza para conducir tu coche', '¡Choque!', '¡Accidente múltiple!', 'Desliza a la izquierda o derecha para conducir tu coche y esquivar el tráfico. La carretera se vuelve más rápida y concurrida. Chocar con otro coche termina la ronda.'],
+      pt: ['Deslize para dirigir seu carro', 'Batida!', 'Engavetamento!', 'Deslize para a esquerda ou direita para dirigir seu carro e desviar do trânsito. A estrada fica mais rápida e cheia. Bater em outro carro encerra a rodada.'],
+      ar: ['اسحب لقيادة سيارتك', 'تحطّم!', 'حادث متسلسل!', 'اسحب يسارًا أو يمينًا لقيادة سيارتك والتفافها بين السيارات القادمة. يصبح الطريق أسرع وأكثر ازدحامًا. اصطدامك بسيارة أخرى ينهي الجولة.'],
+      tr: ['Arabanı sürmek için kaydır', 'Kaza!', 'Zincirleme kaza!', 'Arabanı sürüp gelen trafiğin arasından geçmek için sola ya da sağa kaydır. Yol hızlanır ve kalabalıklaşır. Başka bir arabaya çarpmak turu bitirir.'],
+      vi: ['Kéo để lái xe', 'Tông rồi!', 'Dồn toa!', 'Kéo trái hoặc phải để lái xe và luồn lách qua dòng xe ngược chiều. Đường ngày càng nhanh và đông. Đâm vào xe khác là kết thúc ván.'],
+      id: ['Geser untuk menyetir mobilmu', 'Tabrakan!', 'Tabrakan beruntun!', 'Geser ke kiri atau kanan untuk menyetir mobilmu dan menyalip lalu lintas. Jalan makin cepat dan ramai. Menabrak mobil lain mengakhiri ronde.'],
+      ru: ['Веди — рули машиной', 'Авария!', 'Массовое ДТП!', 'Веди влево или вправо, чтобы рулить машиной и лавировать в потоке встречных. Дорога становится быстрее и плотнее. Столкновение с другой машиной завершает раунд.'],
+      de: ['Ziehen, um zu lenken', 'Crash!', 'Massenkarambolage!', 'Ziehe nach links oder rechts, um dein Auto zu lenken und durch den Gegenverkehr zu schlängeln. Die Straße wird schneller und voller. Ein Zusammenstoß beendet die Runde.'],
+      hi: ['कार चलाने को खींचें', 'टक्कर!', 'भिड़ंत!', 'अपनी कार चलाने और आती ट्रैफ़िक से बचने के लिए बाएँ या दाएँ खींचें। सड़क तेज़ और व्यस्त होती जाती है। दूसरी कार से टकराना राउंड खत्म कर देता है।'],
+      zh: ['拖动驾驶你的车', '撞车了！', '连环追尾！', '左右拖动驾驶你的车，在迎面车流中穿梭。道路会越来越快、越来越挤。撞到别的车，本回合结束。']
+    },
+    airraid: {
+      en: ['Tap a plane to shoot it', 'Base destroyed!', 'Carpet bombing!', 'Tap the enemy planes to shoot them down before they reach your base at the bottom. They come faster and in greater numbers. A plane reaching your base ends the round.'],
+      fr: ['Touche un avion pour tirer', 'Base détruite !', 'Bombardement !', 'Touche les avions ennemis pour les abattre avant qu’ils atteignent ta base en bas. Ils arrivent plus vite et plus nombreux. Un avion qui atteint ta base termine la partie.'],
+      es: ['Toca un avión para disparar', '¡Base destruida!', '¡Bombardeo!', 'Toca los aviones enemigos para derribarlos antes de que lleguen a tu base abajo. Vienen más rápido y en mayor número. Un avión que llega a tu base termina la ronda.'],
+      pt: ['Toque num avião para atirar', 'Base destruída!', 'Bombardeio!', 'Toque nos aviões inimigos para abatê-los antes que cheguem à sua base embaixo. Vêm mais rápido e em maior número. Um avião que chega à base encerra a rodada.'],
+      ar: ['المس طائرة لإطلاق النار', 'دُمّرت القاعدة!', 'قصف مكثّف!', 'المس طائرات العدو لإسقاطها قبل أن تصل إلى قاعدتك في الأسفل. تأتي أسرع وأكثر عددًا. طائرة تصل إلى قاعدتك تنهي الجولة.'],
+      tr: ['Vurmak için uçağa dokun', 'Üs yok edildi!', 'Halı bombardımanı!', 'Düşman uçaklarını, alttaki üssüne ulaşmadan vurmak için dokun. Daha hızlı ve kalabalık gelirler. Üsse ulaşan bir uçak turu bitirir.'],
+      vi: ['Chạm vào máy bay để bắn', 'Căn cứ bị phá!', 'Rải bom!', 'Chạm vào máy bay địch để bắn hạ trước khi chúng tới căn cứ ở dưới. Chúng đến nhanh và đông hơn. Một máy bay tới căn cứ là kết thúc ván.'],
+      id: ['Ketuk pesawat untuk menembak', 'Markas hancur!', 'Pengeboman!', 'Ketuk pesawat musuh untuk menembaknya sebelum mencapai markasmu di bawah. Mereka datang lebih cepat dan banyak. Satu pesawat mencapai markas mengakhiri ronde.'],
+      ru: ['Коснись самолёта, чтобы сбить', 'База уничтожена!', 'Ковровая бомбёжка!', 'Касайся вражеских самолётов, чтобы сбивать их, пока они не достигли базы внизу. Они летят быстрее и их больше. Самолёт, долетевший до базы, завершает раунд.'],
+      de: ['Tippe ein Flugzeug an zum Schuss', 'Basis zerstört!', 'Flächenbombardement!', 'Tippe die feindlichen Flugzeuge an, um sie abzuschießen, bevor sie deine Basis unten erreichen. Sie kommen schneller und zahlreicher. Ein Flugzeug an der Basis beendet die Runde.'],
+      hi: ['गोली चलाने को विमान छुएं', 'बेस तबाह!', 'कालीन बमबारी!', 'दुश्मन विमानों को नीचे अपने बेस तक पहुँचने से पहले मार गिराने के लिए उन्हें छुएं। वे तेज़ और ज़्यादा आते हैं। बेस तक पहुँचा विमान राउंड खत्म कर देता है।'],
+      zh: ['点击飞机开火', '基地被毁！', '地毯式轰炸！', '点击敌机，在它们抵达下方基地前将其击落。它们会越来越快、越来越多。一架飞机抵达基地，本回合结束。']
     }
   };
   function L(key) {
@@ -1223,4 +1251,168 @@
       dbg: function () { return { sx: sx, sy: sy, ang: ang, sz: sz, objs: objs.map(function (o) { return [o.k, o.x | 0, o.y | 0, o.w | 0, o.done ? 1 : 0]; }), dead: dead, gates: gates }; }
     };
   }, 'drag', 0.45); // v3053 : l'aide « glisse » au-dessus du skieur (il est maintenant en bas)
+
+  /* ================================================================== ROAD RACE (jeux « qu'on contrôle », propriétaire) — une
+     autoroute de nuit : glisse ta voiture pour te faufiler dans la circulation qui descend. La route accélère et se remplit ;
+     toucher une voiture termine. La fin secrète = un carambolage. */
+  boot('roadrace', function (A) {
+    var W, H, T, dpr, bg, cw, ch, px, py, rx0, rx1, cars = [], t = 0, spT = 0, dead = 0, won = 0, crash = null, dash = 0, drag = null, meS, carS = {};
+    var COLS = [['#FCA5A5', '#DC2626', '#7F1D1D'], ['#93C5FD', '#2563EB', '#1E3A8A'], ['#FDE68A', '#D97706', '#92400E'], ['#86EFAC', '#16A34A', '#14532D'], ['#E9D5FF', '#9333EA', '#4C1D95'], ['#F9A8D4', '#DB2777', '#831843'], ['#E5E7EB', '#9CA3AF', '#374151']];
+    function carSprite(w, h, cols, up) {
+      return mkc(w + 8, h + 8, dpr, function (c, cw2, ch2) {
+        c.translate(cw2 / 2, ch2 / 2);
+        c.fillStyle = 'rgba(0,0,0,.3)'; rr(c, -w / 2 + 2, -h / 2 + 4, w, h, w * 0.28); c.fill();
+        c.fillStyle = lg(c, -w / 2, -h / 2, w / 2, h / 2, cols); rr(c, -w / 2, -h / 2, w, h, w * 0.26); c.fill();
+        c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1.4; rr(c, -w / 2, -h / 2, w, h, w * 0.26); c.stroke();
+        c.fillStyle = 'rgba(15,23,42,.72)'; rr(c, -w * 0.32, up ? -h * 0.30 : -h * 0.02, w * 0.64, h * 0.34, w * 0.12); c.fill();
+        c.fillStyle = 'rgba(30,41,59,.5)'; rr(c, -w * 0.30, up ? h * 0.06 : -h * 0.40, w * 0.60, h * 0.30, w * 0.12); c.fill();
+        var ly = up ? -h / 2 + 2 : h / 2 - 2, back = up ? h / 2 - 2 : -h / 2 + 2;
+        circ(c, -w * 0.3, ly, w * 0.1, up ? '#FFFDE7' : '#FCA5A5'); circ(c, w * 0.3, ly, w * 0.1, up ? '#FFFDE7' : '#FCA5A5');
+        c.fillStyle = up ? '#F87171' : '#FECACA'; c.fillRect(-w * 0.42, back - 1.5, w * 0.16, 3); c.fillRect(w * 0.26, back - 1.5, w * 0.16, 3);
+        c.fillStyle = cols[1]; c.fillRect(-w / 2 - 3, -h * 0.06, 4, h * 0.13); c.fillRect(w / 2 - 1, -h * 0.06, 4, h * 0.13);
+      });
+    }
+    function spawn(live) {
+      var lv = live ? A.lv() : 0.2, lanes = 4, lane = (Math.random() * lanes) | 0, laneW = (rx1 - rx0) / lanes, x = rx0 + laneW * (lane + 0.5);
+      for (var i = 0; i < cars.length; i++) if (Math.abs(cars[i].x - x) < cw * 0.9 && cars[i].y < T + ch * 1.7) return;
+      cars.push({ x: x, y: T - ch, vy: (H - T) * (0.42 + 0.5 * lv) * rnd(0.9, 1.15), k: (Math.random() * COLS.length) | 0 });
+    }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; dpr = d; T = top; rx0 = W * 0.14; rx1 = W * 0.86;
+        cw = clamp((rx1 - rx0) / 4 * 0.74, 26, 72); ch = cw * 1.7; py = H - ch * 0.9; if (px == null) px = W / 2;
+        carS = {}; COLS.forEach(function (cl, i) { carS[i] = carSprite(cw, ch, cl, false); });
+        meS = carSprite(cw, ch, ['#BAE6FD', '#0EA5E9', '#075985'], true);
+        bg = mkc(W, H, dpr, function (c) {
+          c.fillStyle = '#0F2A17'; c.fillRect(0, 0, W, H);
+          c.fillStyle = lg(c, 0, T, 0, H, ['#1F2937', '#374151', '#1F2937']); c.fillRect(rx0, 0, rx1 - rx0, H);
+          c.fillStyle = '#E5E7EB'; c.fillRect(rx0 - 4, 0, 4, H); c.fillRect(rx1, 0, 4, H);
+          for (var q = 0; q < 34; q++) { var sx = (q * 61) % W; if (sx > rx0 - 10 && sx < rx1 + 10) continue; c.globalAlpha = 0.45 + Math.random() * 0.4; circ(c, sx, (q * 37) % (T + 20), q % 4 ? 0.8 : 1.4, '#fff'); } c.globalAlpha = 1;
+        });
+      },
+      reset: function () { cars = []; dead = 0; won = 0; crash = null; spT = 0.5; px = W / 2; dash = 0; drag = null; },
+      step: function (dt, live) {
+        t += dt; var lv = live ? A.lv() : 0.2, i, e, spd = (H - T) * (0.5 + 0.55 * lv);
+        dash += spd * dt;
+        if (crash) { crash.t += dt; for (i = cars.length - 1; i >= 0; i--) { cars[i].y += cars[i].vy * 0.3 * dt; cars[i].x += Math.sin(t * 8 + i) * W * 0.3 * dt; } return; }
+        if (dead || won) return;
+        if (A.idle()) {
+          var ahead = cars.filter(function (q) { return q.y > T && q.y < py && q.y > py - ch * 4; }), best = px, bd = -1;
+          for (var gx = rx0 + cw; gx <= rx1 - cw; gx += (rx1 - rx0 - 2 * cw) / 6) { var dmin = 1e9; ahead.forEach(function (q) { var dd = Math.hypot((q.x - gx) * 1.4, q.y - py); if (dd < dmin) dmin = dd; }); if (dmin > bd) { bd = dmin; best = gx; } }
+          px += clamp(best - px, -W * 1.1 * dt, W * 1.1 * dt);
+        }
+        px = clamp(px, rx0 + cw * 0.5, rx1 - cw * 0.5);
+        spT -= dt; if (spT <= 0) { spawn(live); if (live && lv > 0.5 && Math.random() < 0.4) spawn(live); spT = Math.max(0.32, 1.2 - 0.8 * lv) * rnd(0.7, 1.25); }
+        for (i = cars.length - 1; i >= 0; i--) {
+          e = cars[i]; e.y += (e.vy + spd * 0.15) * dt;
+          if (e.y - ch * 0.5 > H) { cars.splice(i, 1); continue; }
+          if (Math.abs(e.x - px) < cw * 0.82 && Math.abs(e.y - py) < ch * 0.84) {
+            boomFx(A, (e.x + px) / 2, (e.y + py) / 2, 1.2); A.shake(0.5);
+            if (A.live()) { if (A.fail(A.l.fail)) dead = 1; }
+            cars.splice(i, 1); return;
+          }
+        }
+      },
+      draw: function (c) {
+        A.bg(bg);
+        c.strokeStyle = 'rgba(253,230,138,.85)'; c.lineWidth = Math.max(3, cw * 0.1); c.setLineDash([ch * 0.6, ch * 0.5]); c.lineDashOffset = -(dash % (ch * 1.1));
+        for (var ln = 1; ln < 4; ln++) { var lx = rx0 + (rx1 - rx0) * ln / 4; c.beginPath(); c.moveTo(lx, -ch); c.lineTo(lx, H + ch); c.stroke(); }
+        c.setLineDash([]);
+        for (var i = 0; i < cars.length; i++) { var e = cars[i], img = carS[e.k]; c.drawImage(img, e.x - img.w / 2, e.y - img.h / 2, img.w, img.h); }
+        if (!dead) {
+          var g = c.createLinearGradient(px, py - ch, px, py); g.addColorStop(0, 'rgba(191,219,254,0)'); g.addColorStop(1, 'rgba(191,219,254,.16)');
+          c.fillStyle = g; c.beginPath(); c.moveTo(px - cw * 0.3, py - ch * 0.4); c.lineTo(px - cw * 1.1, py - ch * 2.4); c.lineTo(px + cw * 1.1, py - ch * 2.4); c.lineTo(px + cw * 0.3, py - ch * 0.4); c.fill();
+          c.drawImage(meS, px - meS.w / 2, py - meS.h / 2, meS.w, meS.h);
+        }
+      },
+      down: function (x) { drag = { x: x, s: px }; },
+      move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, rx0 + cw * 0.5, rx1 - cw * 0.5); },
+      up: function () { drag = null; },
+      key: function (k) { if (k === 'left') px -= cw * 0.7; else if (k === 'right') px += cw * 0.7; px = clamp(px, rx0 + cw * 0.5, rx1 - cw * 0.5); },
+      boom: function () { crash = { t: 0 }; drag = null; cars.forEach(function (e) { e.vy *= 0.4; }); A.explode(px, py - ch * 0.2, 1.3); },
+      win: function () { won = 0.001; drag = null; A.burst(px, py - ch * 0.5, 16, ['#BAE6FD', '#FFFFFF', '#FDE68A'], 160, 0.6, 3); },
+      dbg: function () { return { px: px | 0, py: py | 0, cars: cars.length, dead: dead }; }
+    };
+  }, 'drag', 0.5);
+
+  /* ================================================================== AIR RAID (jeux de guerre, propriétaire « j'aime les jeux de
+     guerre ») — une base de DCA la nuit : touche les avions ennemis pour les abattre avant qu'ils touchent la base en bas.
+     Ça accélère et se densifie ; un avion à la base termine. La fin secrète = un bombardement. */
+  boot('airraid', function (A) {
+    var W, H, T, dpr, bg, tx, ty, tr, planes = [], bul = [], ang = -Math.PI / 2, cool = 0, dead = 0, won = 0, raid = null, t = 0, spT = 0, kills = 0, aiT = 0, planeS;
+    function planeSprite() {
+      var s = tr * 1.9;
+      return mkc(s, s, dpr, function (c, w) {
+        c.translate(w / 2, w / 2);
+        c.fillStyle = lg(c, 0, -s * 0.4, 0, s * 0.4, ['#64748B', '#334155', '#1E293B']);
+        rr(c, -s * 0.09, -s * 0.35, s * 0.18, s * 0.72, s * 0.08); c.fill();
+        c.beginPath(); c.moveTo(0, s * 0.44); c.lineTo(s * 0.1, s * 0.28); c.lineTo(-s * 0.1, s * 0.28); c.closePath(); c.fill();
+        c.fillStyle = lg(c, -s * 0.45, 0, s * 0.45, 0, ['#475569', '#1E293B']); c.beginPath(); c.moveTo(-s * 0.46, 0); c.lineTo(s * 0.46, 0); c.lineTo(s * 0.12, s * 0.16); c.lineTo(-s * 0.12, s * 0.16); c.closePath(); c.fill();
+        c.beginPath(); c.moveTo(-s * 0.2, -s * 0.34); c.lineTo(s * 0.2, -s * 0.34); c.lineTo(s * 0.07, -s * 0.22); c.lineTo(-s * 0.07, -s * 0.22); c.closePath(); c.fill();
+        circ(c, 0, s * 0.02, s * 0.08, '#7DD3FC'); circ(c, 0, s * 0.42, s * 0.05, '#F87171');
+      });
+    }
+    function addPlane(live) {
+      var lv = live ? A.lv() : 0.2;
+      planes.push({ x: rnd(W * 0.12, W * 0.88), y: T - tr, vy: (H - T) * (0.1 + 0.14 * lv) * rnd(0.85, 1.2), vx: rnd(-0.4, 0.4) * W * 0.05, wob: rnd(0, TAU) });
+    }
+    function fire(x, y) {
+      if (cool > 0 || dead || raid || won) return;
+      ang = Math.atan2(y - ty, x - tx); cool = 0.18; var v = Math.max(W, H) * 1.4;
+      bul.push({ x: tx + Math.cos(ang) * tr, y: ty + Math.sin(ang) * tr, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, l: 1.1 });
+      A.sx('gun', { k: 'cannon', v: 0.5 });
+    }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; dpr = d; T = top; tx = W / 2; ty = H - clamp((H - T) * 0.1, 18, 54); tr = clamp(Math.min(W, H - T) * 0.06, 18, 40);
+        planeS = planeSprite();
+        bg = mkc(W, H, dpr, function (c) {
+          c.fillStyle = lg(c, 0, 0, 0, H, ['#030718', '#0B1026', '#241036']); c.fillRect(0, 0, W, H); stars(c, W, H, A.lite ? 45 : 110, 0, ty - (H - T) * 0.24);
+          c.fillStyle = lg(c, 0, ty - (H - T) * 0.3, 0, ty, ['rgba(244,63,94,0)', 'rgba(244,63,94,.16)', 'rgba(249,115,22,.3)']); c.fillRect(0, ty - (H - T) * 0.3, W, (H - T) * 0.3);
+          var baseY = ty - 1;
+          for (var bx2 = -4; bx2 < W;) { var bw2 = rnd(W * 0.07, W * 0.13), bh2 = rnd((H - T) * 0.1, (H - T) * 0.26); c.fillStyle = '#141C32'; c.fillRect(bx2, baseY - bh2, bw2, bh2); c.fillStyle = 'rgba(253,224,71,.5)'; for (var wy = baseY - bh2 + 6; wy < baseY - 6; wy += 11) for (var wx = bx2 + 4; wx < bx2 + bw2 - 4; wx += 9) if (Math.random() < 0.4) c.fillRect(wx, wy, 3, 4); bx2 += bw2 + 2; }
+          c.fillStyle = lg(c, 0, ty, 0, H, ['#1C2436', '#0E1322']); c.fillRect(0, ty, W, H - ty);
+          [0.22, 0.78].forEach(function (fx) { var g = c.createLinearGradient(W * fx, ty, W * fx + (fx < 0.5 ? -1 : 1) * W * 0.18, T); g.addColorStop(0, 'rgba(191,219,254,.16)'); g.addColorStop(1, 'rgba(191,219,254,0)'); c.fillStyle = g; c.beginPath(); c.moveTo(W * fx - 12, ty); c.lineTo(W * fx + 12, ty); c.lineTo(W * fx + (fx < 0.5 ? -1 : 1) * W * 0.24, T); c.closePath(); c.fill(); });
+        });
+      },
+      reset: function () { planes = []; bul = []; dead = 0; won = 0; raid = null; spT = 0.4; kills = 0; ang = -Math.PI / 2; },
+      step: function (dt, live) {
+        t += dt; cool = Math.max(0, cool - dt); var lv = live ? A.lv() : 0.2, i, j, p, b;
+        if (raid) { raid.t += dt; raid.x += W * 1.3 * dt; if (!raid.hit && raid.x > tx) { raid.hit = 1; dead = 1; boomFx(A, tx, ty, 1.8); A.shake(0.6); } return; }
+        if (dead || won) return;
+        spT -= dt; if (spT <= 0 && planes.length < 3 + Math.round(6 * lv)) { addPlane(live); spT = Math.max(0.5, 2 - 1.3 * lv) * rnd(0.7, 1.3); }
+        for (i = bul.length - 1; i >= 0; i--) {
+          b = bul[i]; b.x += b.vx * dt; b.y += b.vy * dt; b.l -= dt; if (b.l <= 0 || b.y < T - 40 || b.x < -40 || b.x > W + 40) { bul.splice(i, 1); continue; }
+          for (j = planes.length - 1; j >= 0; j--) { p = planes[j]; if (Math.hypot(b.x - p.x, b.y - p.y) < tr * 1.1) { bul.splice(i, 1); planes.splice(j, 1); kills++; boomFx(A, p.x, p.y, 0.9); break; } }
+        }
+        for (i = planes.length - 1; i >= 0; i--) {
+          p = planes[i]; p.wob += dt * 4; p.y += p.vy * dt; p.x += p.vx * dt + Math.sin(p.wob) * W * 0.02 * dt; p.x = clamp(p.x, tr, W - tr);
+          if (p.y + tr * 0.5 > ty) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, p.x, ty, 1.4); A.shake(0.5); } return; } planes.splice(i, 1); }
+        }
+        if (A.idle()) { aiT += dt; if (aiT > 0.3) { aiT = 0; var near = planes.slice().sort(function (a2, b2) { return b2.y - a2.y; })[0]; if (near) fire(near.x + near.vx * 0.1, near.y + near.vy * 0.12); } }
+      },
+      draw: function (c) {
+        A.bg(bg); var i, p, b;
+        c.strokeStyle = '#FDE68A'; c.lineWidth = 3; c.lineCap = 'round'; for (i = 0; i < bul.length; i++) { b = bul[i]; c.beginPath(); c.moveTo(b.x, b.y); c.lineTo(b.x - b.vx * 0.02, b.y - b.vy * 0.02); c.stroke(); }
+        for (i = 0; i < planes.length; i++) { p = planes[i]; c.save(); c.translate(p.x, p.y); c.rotate(Math.sin(p.wob) * 0.12); c.drawImage(planeS, -planeS.w / 2, -planeS.h / 2, planeS.w, planeS.h); c.restore(); }
+        if (raid) { var jx = raid.x, jy = T + 24; c.fillStyle = '#1E293B'; c.save(); c.translate(jx, jy); c.beginPath(); c.moveTo(-30, 0); c.lineTo(20, -8); c.lineTo(30, 0); c.lineTo(20, 8); c.closePath(); c.fill(); c.fillRect(-34, -3, 20, 6); c.restore(); }
+        var bw = tr * 2.2;
+        c.fillStyle = lg(c, 0, ty - tr, 0, ty + 30, ['#64748B', '#334155']); rr(c, tx - bw / 2, ty - tr * 0.5, bw, tr * 0.9 + 30, 6); c.fill();
+        for (var sb = -1; sb <= 1; sb++) { circ(c, tx + sb * tr * 0.7, ty + tr * 0.1, tr * 0.42, '#A8956B'); circ(c, tx + sb * tr * 0.7, ty + tr * 0.1, tr * 0.42, 'rgba(255,255,255,.12)'); }
+        if (!dead) {
+          c.save(); c.translate(tx, ty - tr * 0.2); c.rotate(ang + Math.PI / 2);
+          c.fillStyle = lg(c, -tr * 0.18, 0, tr * 0.18, 0, ['#94A3B8', '#475569']); rr(c, -tr * 0.18, -tr * 1.1, tr * 0.36, tr * 1.1, tr * 0.1); c.fill();
+          c.fillStyle = '#F59E0B'; c.fillRect(-tr * 0.11, -tr * 1.18, tr * 0.22, tr * 0.22);
+          if (cool > 0.12) circ(c, 0, -tr * 1.1, tr * 0.3, 'rgba(249,115,22,.7)');
+          c.restore();
+          circ(c, tx, ty - tr * 0.2, tr * 0.46, '#64748B'); circ(c, tx, ty - tr * 0.2, tr * 0.28, '#94A3B8');
+        }
+      },
+      act: function (k, x, y) { fire(x, y); },
+      key: function (k) { if (k === 'left') ang -= 0.3; else if (k === 'right') ang += 0.3; else if (k === 'up') fire(tx + Math.cos(ang) * 100, ty + Math.sin(ang) * 100); },
+      boom: function () { raid = { t: 0, x: -60 }; A.sx('engine', { k: 'jet' }); },
+      win: function () { won = 0.001; A.burst(tx, ty - tr, 16, ['#FDE68A', '#FFFFFF', '#86EFAC'], 160, 0.6, 3); },
+      dbg: function () { return { tx: tx, ty: ty, planes: planes.length, dead: dead, kills: kills }; }
+    };
+  }, 'aim', 0.3);
 })(window.D6 = window.D6 || {});
