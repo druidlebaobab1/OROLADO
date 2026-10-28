@@ -1316,7 +1316,7 @@
     var planets = [
       { x: cssW * 0.180, y: pad.t + h * 0.155, r: pr * 0.165 },
       { x: cssW * 0.820, y: pad.t + h * 0.155, r: pr * 0.165 },
-      { x: cssW * 0.500, y: pad.t + h * 0.905, r: pr * 0.165 }
+      { x: cssW * 0.500, y: pad.t + h * 0.945, r: pr * 0.165 }
     ];
     planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.22, false);
     planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
