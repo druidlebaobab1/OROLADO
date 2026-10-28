@@ -183,22 +183,22 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big{display:flex;flex-direction:column;gap:0;padding:0;border:0;background:transparent;border-radius:15px;overflow:visible;position:relative;transition:transform .14s ease}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big:active{transform:scale(.965)}
 /* la zone d'art : rectangle 160×112, l'art la remplit entièrement */
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art{position:relative;width:100%;aspect-ratio:1/1;border-radius:15px;overflow:hidden;background:#120e2b;
+/* carte un peu plus HAUTE (demande propriétaire) ; le FOND de la couleur du jeu remplit bord à bord ;
+   le dessin est posé dans un carré CENTRÉ avec une marge → il ne touche jamais les bords, sur tous les téléphones. */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art{position:relative;width:100%;aspect-ratio:1/1.09;border-radius:16px;overflow:hidden;
+  background:radial-gradient(84% 82% at 50% 36%,var(--p1,#3a2b6e),var(--p2,#1b1440) 66%,#17123a);
   box-shadow:inset 0 0 0 1px rgba(167,139,250,.22),inset 0 1px 0 rgba(255,255,255,.1),0 12px 22px -14px rgba(0,0,0,.95)}
+/* le carré du dessin : centré, marge autour (~4 % côtés, le reste en haut/bas vient de la carte plus haute) */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art > svg,
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art > .cs-poster{position:absolute;inset:0;width:100%;height:100%;display:block}
-/* léger voile en bas de l'art pour que le nom respire (dégradé sombre) */
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art::after{content:"";position:absolute;inset:auto 0 0 0;height:38%;pointer-events:none;
-  background:linear-gradient(180deg,transparent,rgba(10,7,26,.55));display:block!important}
-/* repli (pas de scène dédiée) : le médaillon rond au centre du panneau */
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f .cs-pl{position:absolute;top:50%;left:50%;width:66%!important;transform:translate(-50%,-50%)!important;transition:none}
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big:active .cs-art-f .cs-pl{transform:translate(-50%,-50%) scale(.95)!important}
-/* jeux « Action » : la photo remplit toute la vignette (comme les grandes plateformes) */
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f .cs-art-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:1}
-/* jeux sans scène dédiée : le DESSIN remplit la vignette (grand, pas un petit rond) */
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f .cs-objbig{position:absolute;inset:0;z-index:1;display:block}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f .cs-objbig,
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f .cs-art-photo{position:absolute;left:4%;right:4%;top:50%;transform:translateY(-50%);width:92%;aspect-ratio:1/1;height:auto;display:block;border-radius:12px;overflow:hidden}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f .cs-art-photo{object-fit:cover}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f .cs-objbig > svg.cs-obj{position:static;left:auto!important;top:auto!important;width:100%!important;height:100%!important;display:block}
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big:active .cs-art-f .cs-objbig{transform:scale(.95)}
+/* plus de voile ni d'ancien panneau SVG (le fond CSS suffit) */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art::after{display:none!important}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f > .cs-poster{display:none!important}
+/* repli médaillon (si objFull indisponible) : centré avec marge */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art-f .cs-pl{position:absolute;top:50%;left:50%;width:76%!important;transform:translate(-50%,-50%)!important;transition:none}
 /* la bande du nom, sous l'art */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big > b{display:flex;align-items:center;justify-content:center;width:100%;min-height:26px;margin:9px 0 0;padding:0 6px;
   font:800 clamp(13px,3.9vw,16px)/1.4 var(--lb-font);color:#F3F0FF;text-align:center}
