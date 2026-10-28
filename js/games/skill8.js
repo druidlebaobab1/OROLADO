@@ -167,6 +167,34 @@
       de: ['Tippe ein Flugzeug an zum Schuss', 'Basis zerstört!', 'Flächenbombardement!', 'Tippe die feindlichen Flugzeuge an, um sie abzuschießen, bevor sie deine Basis unten erreichen. Sie kommen schneller und zahlreicher. Ein Flugzeug an der Basis beendet die Runde.'],
       hi: ['गोली चलाने को विमान छुएं', 'बेस तबाह!', 'कालीन बमबारी!', 'दुश्मन विमानों को नीचे अपने बेस तक पहुँचने से पहले मार गिराने के लिए उन्हें छुएं। वे तेज़ और ज़्यादा आते हैं। बेस तक पहुँचा विमान राउंड खत्म कर देता है।'],
       zh: ['点击飞机开火', '基地被毁！', '地毯式轰炸！', '点击敌机，在它们抵达下方基地前将其击落。它们会越来越快、越来越多。一架飞机抵达基地，本回合结束。']
+    },
+    cupidaim: {
+      en: ['Tap a heart to shoot an arrow', 'A heart got away!', 'Heartbreak!', 'You are Cupid at the bottom: tap a floating heart to fire an arrow and match it into a couple. The hearts drift by faster and in greater numbers. A heart that floats off the top of the screen unmatched ends the round.'],
+      fr: ['Touche un cœur pour tirer une flèche', 'Un cœur s’est échappé !', 'Chagrin d’amour !', 'Tu es Cupidon en bas : touche un cœur qui flotte pour tirer une flèche et former un couple. Les cœurs passent de plus en plus vite et nombreux. Un cœur qui s’envole en haut de l’écran sans couple termine la partie.'],
+      es: ['Toca un corazón para lanzar una flecha', '¡Se escapó un corazón!', '¡Desamor!', 'Eres Cupido abajo: toca un corazón flotante para lanzar una flecha y formar una pareja. Los corazones pasan más rápido y en mayor número. Un corazón que se va por arriba sin pareja termina la ronda.'],
+      pt: ['Toque num coração para lançar a flecha', 'Um coração escapou!', 'Desgosto!', 'Você é o Cupido embaixo: toque num coração flutuante para lançar uma flecha e formar um casal. Os corações passam mais rápido e em maior número. Um coração que sobe para fora da tela sem par encerra a rodada.'],
+      ar: ['المس قلبًا لإطلاق سهم', 'أفلت قلب!', 'انكسار القلب!', 'أنت كيوبيد في الأسفل: المس قلبًا عائمًا لإطلاق سهم وتكوين ثنائي. تمرّ القلوب أسرع وأكثر عددًا. قلب يطير خارج أعلى الشاشة دون شريك ينهي الجولة.'],
+      tr: ['Ok atmak için bir kalbe dokun', 'Bir kalp kaçtı!', 'Kalp kırıklığı!', 'Altta Cupid sensin: ok atıp çift oluşturmak için uçuşan bir kalbe dokun. Kalpler daha hızlı ve kalabalık geçer. Ekranın üstünden eşsiz uçup giden bir kalp turu bitirir.'],
+      vi: ['Chạm vào trái tim để bắn mũi tên', 'Một trái tim bay mất!', 'Tan vỡ!', 'Bạn là thần Cupid ở dưới: chạm vào trái tim đang trôi để bắn mũi tên và ghép thành đôi. Các trái tim trôi qua nhanh và đông hơn. Một trái tim bay khỏi màn hình mà chưa có đôi là kết thúc ván.'],
+      id: ['Ketuk hati untuk menembak panah', 'Satu hati lolos!', 'Patah hati!', 'Kamu adalah Cupid di bawah: ketuk hati melayang untuk menembakkan panah dan menjodohkannya. Hati-hati itu lewat makin cepat dan banyak. Satu hati yang melayang keluar layar tanpa pasangan mengakhiri ronde.'],
+      ru: ['Коснись сердца — выпусти стрелу', 'Сердце ускользнуло!', 'Разбитое сердце!', 'Ты Купидон внизу: коснись парящего сердца, чтобы выпустить стрелу и создать пару. Сердца летят всё быстрее и их больше. Сердце, улетевшее за верх экрана без пары, завершает раунд.'],
+      de: ['Tippe ein Herz an für einen Pfeil', 'Ein Herz ist entwischt!', 'Liebeskummer!', 'Du bist Amor unten: tippe ein schwebendes Herz an, um einen Pfeil zu schießen und ein Paar zu bilden. Die Herzen ziehen schneller und zahlreicher vorbei. Ein Herz, das oben ohne Partner aus dem Bild schwebt, beendet die Runde.'],
+      hi: ['तीर चलाने को दिल छुएं', 'एक दिल निकल गया!', 'दिल टूटा!', 'नीचे आप कामदेव हैं: तैरते दिल को छूकर तीर चलाएँ और जोड़ी बनाएँ। दिल तेज़ और ज़्यादा संख्या में गुज़रते हैं। बिना जोड़ी स्क्रीन के ऊपर से निकल गया दिल राउंड खत्म कर देता है।'],
+      zh: ['点击爱心射出丘比特之箭', '一颗心飞走了！', '心碎！', '你是下方的丘比特：点击飘动的爱心射出箭，把它们配成一对。爱心会越来越快、越来越多地飘过。一颗爱心没配对就飘出屏幕上方，本回合结束。']
+    },
+    lovecatch: {
+      en: ['Drag to catch the hearts', 'Heart missed!', 'The date is over!', 'Drag left or right to move your basket and catch the falling roses and hearts your sweetheart tosses from the balcony. Dodge the broken hearts. It gets faster and busier. Missing a heart — or catching a broken one — ends the round.', 'Caught a broken heart!'],
+      fr: ['Glisse pour attraper les cœurs', 'Cœur raté !', 'Le rendez-vous est fini !', 'Glisse à gauche ou à droite pour bouger ton panier et attraper les roses et les cœurs que ta belle lance du balcon. Évite les cœurs brisés. Ça devient plus rapide et plus chargé. Rater un cœur — ou attraper un cœur brisé — termine la partie.', 'Cœur brisé attrapé !'],
+      es: ['Desliza para atrapar los corazones', '¡Corazón perdido!', '¡Se acabó la cita!', 'Desliza a izquierda o derecha para mover tu cesta y atrapar las rosas y corazones que tu amor lanza desde el balcón. Esquiva los corazones rotos. Se vuelve más rápido y concurrido. Fallar un corazón — o atrapar uno roto — termina la ronda.', '¡Atrapaste un corazón roto!'],
+      pt: ['Deslize para pegar os corações', 'Coração perdido!', 'O encontro acabou!', 'Deslize para a esquerda ou direita para mover sua cesta e pegar as rosas e corações que seu amor joga da sacada. Desvie dos corações partidos. Fica mais rápido e cheio. Perder um coração — ou pegar um partido — encerra a rodada.', 'Pegou um coração partido!'],
+      ar: ['اسحب لالتقاط القلوب', 'فاتك قلب!', 'انتهى الموعد!', 'اسحب يسارًا أو يمينًا لتحريك سلتك والتقاط الورود والقلوب التي يرميها حبيبك من الشرفة. تفادَ القلوب المكسورة. يصبح أسرع وأكثر ازدحامًا. تفويت قلب — أو التقاط قلب مكسور — ينهي الجولة.', 'التقطت قلبًا مكسورًا!'],
+      tr: ['Kalpleri yakalamak için kaydır', 'Kalp kaçtı!', 'Buluşma bitti!', 'Sevgilinin balkondan attığı gülleri ve kalpleri yakalamak için sepetini sola ya da sağa kaydır. Kırık kalplerden kaç. Daha hızlı ve kalabalık olur. Bir kalbi kaçırmak — ya da kırık bir kalbi yakalamak — turu bitirir.', 'Kırık kalp yakaladın!'],
+      vi: ['Kéo để hứng những trái tim', 'Hụt tim rồi!', 'Buổi hẹn kết thúc!', 'Kéo trái hoặc phải để di chuyển giỏ và hứng hoa hồng cùng trái tim mà người thương ném xuống từ ban công. Né những trái tim tan vỡ. Trò chơi nhanh và đông dần. Hụt một trái tim — hoặc hứng phải trái tim vỡ — là kết thúc ván.', 'Hứng phải trái tim vỡ!'],
+      id: ['Geser untuk menangkap hati', 'Hati terlewat!', 'Kencan selesai!', 'Geser ke kiri atau kanan untuk menggerakkan keranjangmu dan menangkap mawar serta hati yang dilempar kekasihmu dari balkon. Hindari hati yang patah. Makin cepat dan ramai. Melewatkan hati — atau menangkap yang patah — mengakhiri ronde.', 'Menangkap hati yang patah!'],
+      ru: ['Веди, чтобы ловить сердца', 'Сердце упущено!', 'Свидание окончено!', 'Веди влево или вправо, чтобы двигать корзину и ловить розы и сердца, что любимая бросает с балкона. Уклоняйся от разбитых сердец. Становится быстрее и плотнее. Упустить сердце — или поймать разбитое — завершает раунд.', 'Поймал разбитое сердце!'],
+      de: ['Ziehen, um die Herzen zu fangen', 'Herz verpasst!', 'Das Date ist vorbei!', 'Ziehe nach links oder rechts, um deinen Korb zu bewegen und die Rosen und Herzen zu fangen, die dein Schatz vom Balkon wirft. Weiche den gebrochenen Herzen aus. Es wird schneller und voller. Ein Herz zu verpassen — oder ein gebrochenes zu fangen — beendet die Runde.', 'Ein gebrochenes Herz gefangen!'],
+      hi: ['दिल पकड़ने को खींचें', 'दिल छूट गया!', 'मुलाक़ात खत्म!', 'अपनी टोकरी चलाने और बालकनी से आपके प्यार द्वारा फेंके गुलाब व दिल पकड़ने के लिए बाएँ या दाएँ खींचें। टूटे दिलों से बचें। यह तेज़ और व्यस्त होता जाता है। दिल चूकना — या टूटा दिल पकड़ना — राउंड खत्म कर देता है।', 'टूटा दिल पकड़ लिया!'],
+      zh: ['拖动接住爱心', '漏接了爱心！', '约会结束！', '左右拖动移动你的花篮，接住心上人从阳台抛下的玫瑰和爱心。躲开破碎的心。节奏会越来越快、越来越密。漏接一颗心——或接到破碎的心——本回合结束。', '接到了破碎的心！']
     }
   };
   function L(key) {
@@ -212,6 +240,8 @@
   function poly(c, pts, fill) { c.beginPath(); c.moveTo(pts[0], pts[1]); for (var i = 2; i < pts.length; i += 2) c.lineTo(pts[i], pts[i + 1]); c.closePath(); if (fill) { c.fillStyle = fill; c.fill(); } }
   // little sparkle star (4 points)
   function spark(c, x, y, r, col) { c.fillStyle = col; c.beginPath(); c.moveTo(x, y - r); c.quadraticCurveTo(x, y, x + r, y); c.quadraticCurveTo(x, y, x, y + r); c.quadraticCurveTo(x, y, x - r, y); c.quadraticCurveTo(x, y, x, y - r); c.fill(); }
+  // heart outline centred at origin: bottom tip at (0,r), two lobes above (used by the « drague » games)
+  function heartPath(c, r) { c.beginPath(); c.moveTo(0, r); c.bezierCurveTo(-r * 1.3, -r * 0.2, -r * 0.5, -r * 1.1, 0, -r * 0.4); c.bezierCurveTo(r * 0.5, -r * 1.1, r * 1.3, -r * 0.2, 0, r); c.closePath(); }
 
   /* hand hint: tap = finger; aim = finger on a target; lr = arrows left / right; drag = finger sliding; swipe4 = 4 arrows */
   var FINGER = '<path d="M11 21V9.5a2 2 0 0 1 4 0V16m0-2a2 2 0 0 1 4 0v2m0-1a2 2 0 0 1 4 0v5c0 4.5-3 8-7.5 8H14c-2.4 0-4-1-5.3-2.9L6 23a2 2 0 0 1 3.2-2.4L11 23"/>';
@@ -1415,4 +1445,177 @@
       dbg: function () { return { tx: tx, ty: ty, planes: planes.length, dead: dead, kills: kills }; }
     };
   }, 'aim', 0.3);
+
+  /* ================================================================== CUPID SHOT (jeux de drague / rencontre, propriétaire
+     « les jeux de gens qui draguent ») — bon enfant : tu es Cupidon en bas, les cœurs flottent vers le ciel ; touche-les pour
+     tirer une flèche et les marier avant qu'ils s'envolent par le haut. Ça accélère et se densifie. La fin secrète = un orage. */
+  boot('cupidaim', function (A) {
+    var W, H, T, dpr, bg, cx, cy, cr, hearts = [], arrows = [], ang = -Math.PI / 2, cool = 0, dead = 0, won = 0, storm = null, t = 0, spT = 0, matches = 0, aiT = 0, heartS;
+    function heartSprite(sz, cols) {
+      return mkc(sz, sz, dpr, function (c, w) {
+        c.translate(w / 2, w / 2); var r = sz * 0.3;
+        c.fillStyle = 'rgba(0,0,0,.18)'; c.save(); c.translate(1.5, 2); heartPath(c, r); c.fill(); c.restore();
+        c.fillStyle = lg(c, 0, -r, 0, r, cols); heartPath(c, r); c.fill();
+        c.fillStyle = 'rgba(255,255,255,.5)'; circ(c, -r * 0.32, -r * 0.42, r * 0.22, 'rgba(255,255,255,.55)');
+      });
+    }
+    function drawCupid(c) {
+      c.fillStyle = 'rgba(255,255,255,.85)';
+      c.beginPath(); c.ellipse(cx - cr * 0.85, cy - cr * 0.2, cr * 0.5, cr * 0.82, -0.5, 0, TAU); c.fill();
+      c.beginPath(); c.ellipse(cx + cr * 0.85, cy - cr * 0.2, cr * 0.5, cr * 0.82, 0.5, 0, TAU); c.fill();
+      circ(c, cx, cy, cr * 0.92, rg(c, cx - cr * 0.3, cy - cr * 0.3, cr * 0.92, ['#FFE8D2', '#FBCFA3']));
+      circ(c, cx - cr * 0.38, cy + cr * 0.08, cr * 0.17, 'rgba(244,114,182,.5)');
+      circ(c, cx + cr * 0.38, cy + cr * 0.08, cr * 0.17, 'rgba(244,114,182,.5)');
+      circ(c, cx - cr * 0.26, cy - cr * 0.12, cr * 0.09, '#3B2A2A'); circ(c, cx + cr * 0.26, cy - cr * 0.12, cr * 0.09, '#3B2A2A');
+      c.save(); c.translate(cx, cy); c.rotate(ang);
+      c.strokeStyle = '#92400E'; c.lineWidth = Math.max(3, cr * 0.16); c.lineCap = 'round';
+      c.beginPath(); c.arc(cr * 0.2, 0, cr * 1.05, -1.15, 1.15); c.stroke();
+      c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(cr * 0.2 + cr * 1.05 * Math.cos(-1.15), cr * 1.05 * Math.sin(-1.15)); c.lineTo(cr * 0.2 + cr * 1.05 * Math.cos(1.15), cr * 1.05 * Math.sin(1.15)); c.stroke();
+      c.restore();
+    }
+    function addHeart(live) {
+      var lv = live ? A.lv() : 0.2;
+      hearts.push({ x: rnd(W * 0.14, W * 0.86), y: cy - cr * 0.6, vy: -(H - T) * (0.08 + 0.1 * lv) * rnd(0.85, 1.2), vx: rnd(-0.35, 0.35) * W * 0.05, wob: rnd(0, TAU) });
+    }
+    function fire(x, y) {
+      if (cool > 0 || dead || storm || won) return;
+      ang = Math.atan2(y - cy, x - cx); if (ang > -0.08) ang = -0.08; cool = 0.2; var v = Math.max(W, H) * 1.3;
+      arrows.push({ x: cx + Math.cos(ang) * cr, y: cy + Math.sin(ang) * cr, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, l: 1.4 });
+      A.sx('gun', { k: 'bow', v: 0.4 });
+    }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; dpr = d; T = top; cx = W / 2; cy = H - clamp((H - T) * 0.12, 24, 64); cr = clamp(Math.min(W, H - T) * 0.07, 18, 42);
+        heartS = heartSprite(cr * 2.2, ['#FB7185', '#E11D48', '#9F1239']);
+        bg = mkc(W, H, dpr, function (c) {
+          c.fillStyle = lg(c, 0, 0, 0, H, ['#4C1D95', '#7C3AED', '#EC4899', '#FB923C', '#FDE68A']); c.fillRect(0, 0, W, H);
+          c.fillStyle = rg(c, W * 0.5, cy - (H - T) * 0.06, (H - T) * 0.55, ['rgba(255,247,237,.5)', 'rgba(253,186,116,0)']); c.fillRect(0, 0, W, H);
+          for (var i = 0; i < (A.lite ? 10 : 24); i++) { c.globalAlpha = 0.06 + Math.random() * 0.12; circ(c, Math.random() * W, T + Math.random() * (cy - T), rnd(3, 11), '#fff'); } c.globalAlpha = 1;
+          c.fillStyle = 'rgba(76,29,149,.4)'; c.beginPath(); c.moveTo(0, cy); for (var x = 0; x <= W; x += W / 7) c.lineTo(x, cy - (H - T) * 0.07 * (0.4 + Math.abs(Math.sin(x * 0.012)))); c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill();
+          c.fillStyle = lg(c, 0, cy - 2, 0, H, ['#3B0764', '#1E1035']); c.fillRect(0, cy - 2, W, H - cy + 2);
+        });
+      },
+      reset: function () { hearts = []; arrows = []; dead = 0; won = 0; storm = null; spT = 0.4; matches = 0; ang = -Math.PI / 2; },
+      step: function (dt, live) {
+        t += dt; cool = Math.max(0, cool - dt); var lv = live ? A.lv() : 0.2, i, j, h, a;
+        if (storm) { storm.t += dt; if (storm.t > 0.05 && !storm.hit) { storm.hit = 1; dead = 1; boomFx(A, cx, cy, 1.3); A.shake(0.5); } return; }
+        if (dead || won) return;
+        spT -= dt; if (spT <= 0 && hearts.length < 3 + Math.round(5 * lv)) { addHeart(live); spT = Math.max(0.55, 2 - 1.2 * lv) * rnd(0.7, 1.3); }
+        for (i = arrows.length - 1; i >= 0; i--) {
+          a = arrows[i]; a.x += a.vx * dt; a.y += a.vy * dt; a.l -= dt;
+          if (a.l <= 0 || a.y < T - 50 || a.x < -50 || a.x > W + 50) { arrows.splice(i, 1); continue; }
+          for (j = hearts.length - 1; j >= 0; j--) { h = hearts[j]; if (Math.hypot(a.x - h.x, a.y - h.y) < cr * 1.1) { arrows.splice(i, 1); hearts.splice(j, 1); matches++; A.burst(h.x, h.y, 12, ['#FCA5A5', '#F472B6', '#FFFFFF', '#FDE68A'], 170, 0.7, 3); A.ring(h.x, h.y, cr * 2, '#F9A8D4'); break; } }
+        }
+        for (i = hearts.length - 1; i >= 0; i--) {
+          h = hearts[i]; h.wob += dt * 3.5; h.y += h.vy * dt; h.x += h.vx * dt + Math.sin(h.wob) * W * 0.02 * dt; h.x = clamp(h.x, cr, W - cr);
+          if (h.y + cr * 0.4 < T) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); } return; } hearts.splice(i, 1); }
+        }
+        if (A.idle()) { aiT += dt; if (aiT > 0.35) { aiT = 0; var near = hearts.slice().sort(function (a2, b2) { return a2.y - b2.y; })[0]; if (near) fire(near.x + near.vx * 0.1, near.y + near.vy * 0.1); } }
+      },
+      draw: function (c) {
+        A.bg(bg); var i, h, a;
+        c.strokeStyle = '#FDE68A'; c.lineWidth = 3; c.lineCap = 'round';
+        for (i = 0; i < arrows.length; i++) { a = arrows[i]; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(a.x - a.vx * 0.03, a.y - a.vy * 0.03); c.stroke(); c.save(); c.translate(a.x, a.y); c.rotate(Math.atan2(a.vy, a.vx)); poly(c, [4, 0, -7, -4, -7, 4], '#F87171'); c.restore(); }
+        for (i = 0; i < hearts.length; i++) { h = hearts[i]; c.save(); c.translate(h.x, h.y); c.rotate(Math.sin(h.wob) * 0.14); c.drawImage(heartS, -heartS.w / 2, -heartS.h / 2, heartS.w, heartS.h); c.restore(); }
+        if (storm) { c.fillStyle = 'rgba(30,27,75,.5)'; c.fillRect(0, 0, W, H); }
+        if (!dead) drawCupid(c);
+      },
+      act: function (k, x, y) { fire(x, y); },
+      key: function (k) { if (k === 'left') ang -= 0.3; else if (k === 'right') ang += 0.3; else if (k === 'up') fire(cx + Math.cos(ang) * 100, cy + Math.sin(ang) * 100); ang = clamp(ang, -Math.PI + 0.1, -0.08); },
+      boom: function () { storm = { t: 0 }; A.sx('engine', { k: 'thunder' }); },
+      win: function () { won = 0.001; A.burst(cx, cy - cr, 16, ['#FCA5A5', '#FFFFFF', '#F472B6'], 160, 0.6, 3); },
+      dbg: function () { return { cx: cx, cy: cy, hearts: hearts.length, dead: dead, matches: matches }; }
+    };
+  }, 'aim', 0.4);
+
+  /* ================================================================== LOVE CATCH (jeux de drague / rencontre) — bon enfant :
+     ta belle lance des roses et des cœurs du balcon, glisse ton panier pour les attraper ; évite les cœurs brisés. Rater un
+     cœur ou attraper un cœur brisé termine. Ça accélère et se densifie. La fin secrète = la fin du rendez-vous. */
+  boot('lovecatch', function (A) {
+    var W, H, T, dpr, bg, bw, bh, isz, px, py, items = [], t = 0, spT = 0, dead = 0, won = 0, matches = 0, drag = null, over = null, heartS, roseS, brokeS;
+    function heartSprite() {
+      return mkc(isz, isz, dpr, function (c, w) { c.translate(w / 2, w / 2); var r = isz * 0.3; c.fillStyle = lg(c, 0, -r, 0, r, ['#FB7185', '#E11D48', '#9F1239']); heartPath(c, r); c.fill(); c.fillStyle = 'rgba(255,255,255,.5)'; circ(c, -r * 0.32, -r * 0.42, r * 0.2, 'rgba(255,255,255,.55)'); });
+    }
+    function roseSprite() {
+      return mkc(isz, isz, dpr, function (c, w) {
+        c.translate(w / 2, w / 2); var r = isz * 0.24;
+        c.strokeStyle = '#15803D'; c.lineWidth = isz * 0.06; c.lineCap = 'round'; c.beginPath(); c.moveTo(0, r * 0.4); c.lineTo(0, isz * 0.44); c.stroke();
+        c.fillStyle = '#22C55E'; c.beginPath(); c.ellipse(isz * 0.13, isz * 0.3, isz * 0.12, isz * 0.055, -0.6, 0, TAU); c.fill();
+        circ(c, 0, -isz * 0.04, r, lg(c, 0, -r, 0, r, ['#FB7185', '#BE123C']));
+        circ(c, 0, -isz * 0.04, r * 0.62, 'rgba(159,18,57,.5)'); circ(c, 0, -isz * 0.04, r * 0.3, 'rgba(190,24,60,.85)');
+        circ(c, -r * 0.3, -isz * 0.04 - r * 0.3, r * 0.2, 'rgba(255,255,255,.35)');
+      });
+    }
+    function brokeSprite() {
+      return mkc(isz, isz, dpr, function (c, w) {
+        c.translate(w / 2, w / 2); var r = isz * 0.3;
+        c.fillStyle = lg(c, 0, -r, 0, r, ['#94A3B8', '#475569']); heartPath(c, r); c.fill();
+        c.strokeStyle = '#1E293B'; c.lineWidth = isz * 0.055; c.lineJoin = 'round'; c.beginPath(); c.moveTo(0, -r * 0.42); c.lineTo(-r * 0.14, -r * 0.08); c.lineTo(r * 0.12, r * 0.16); c.lineTo(-r * 0.08, r * 0.46); c.lineTo(0, r); c.stroke();
+      });
+    }
+    function drawBasket(c) {
+      var bx = px - bw / 2, byTop = py - bh * 0.5;
+      c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(px, byTop + bh, bw * 0.5, bh * 0.18, 0, 0, TAU); c.fill();
+      c.fillStyle = lg(c, bx, byTop, bx, byTop + bh, ['#D97706', '#92400E']);
+      c.beginPath(); c.moveTo(bx, byTop); c.lineTo(bx + bw, byTop); c.lineTo(bx + bw * 0.85, byTop + bh); c.lineTo(bx + bw * 0.15, byTop + bh); c.closePath(); c.fill();
+      c.strokeStyle = 'rgba(69,26,3,.45)'; c.lineWidth = 1.4; for (var wy = byTop + 5; wy < byTop + bh - 2; wy += 5) { c.beginPath(); c.moveTo(bx + bw * 0.14, wy); c.lineTo(bx + bw * 0.86, wy); c.stroke(); }
+      c.fillStyle = '#B45309'; rr(c, bx - 3, byTop - 6, bw + 6, 10, 5); c.fill();
+      c.save(); c.translate(px, byTop - 2); heartPath(c, bh * 0.18); c.fillStyle = '#F472B6'; c.fill(); c.restore();
+    }
+    function spawn(live) {
+      var lv = live ? A.lv() : 0.2, x = rnd(bw * 0.6, W - bw * 0.6);
+      for (var i = 0; i < items.length; i++) if (items[i].y < T + isz * 2 && Math.abs(items[i].x - x) < isz * 1.2) return;
+      var bad = Math.random() < (0.12 + 0.2 * lv), kind = bad ? 'x' : (Math.random() < 0.5 ? 'h' : 'r');
+      items.push({ x: x, y: T - isz, vy: (H - T) * (0.34 + 0.46 * lv) * rnd(0.9, 1.15), rot: rnd(-0.25, 0.25), vr: rnd(-1.4, 1.4), bad: bad, kind: kind });
+    }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; dpr = d; T = top; bw = clamp(W * 0.2, 58, 150); bh = bw * 0.56; isz = clamp(W * 0.1, 26, 58);
+        py = H - clamp((H - T) * 0.08, 16, 46) - bh * 0.5; if (px == null) px = W / 2;
+        heartS = heartSprite(); roseS = roseSprite(); brokeS = brokeSprite();
+        bg = mkc(W, H, dpr, function (c) {
+          c.fillStyle = lg(c, 0, 0, 0, H, ['#312E81', '#6D28D9', '#DB2777', '#F59E0B']); c.fillRect(0, 0, W, H);
+          for (var i = 0; i < (A.lite ? 10 : 22); i++) { c.globalAlpha = 0.06 + Math.random() * 0.12; circ(c, Math.random() * W, T + Math.random() * (py - T) * 0.8, rnd(3, 10), '#fff'); } c.globalAlpha = 1;
+          var ly0 = T * 0.55 + 6; c.strokeStyle = 'rgba(255,255,255,.3)'; c.lineWidth = 2; c.beginPath(); for (var x = 0; x <= W; x += 6) c.lineTo(x, ly0 + Math.sin(x * 0.02) * 7); c.stroke();
+          for (var lx = 14; lx < W; lx += 46) { var ly = ly0 + Math.sin(lx * 0.02) * 7 + 7; circ(c, lx, ly, 4, ['#FDE68A', '#FCA5A5', '#A5B4FC'][((lx / 46) | 0) % 3]); }
+          c.fillStyle = lg(c, 0, py - bh, 0, H, ['#4C1D95', '#2E1065']); c.fillRect(0, py - bh * 0.3, W, H - py + bh * 0.3);
+        });
+      },
+      reset: function () { items = []; dead = 0; won = 0; over = null; spT = 0.5; px = W / 2; matches = 0; drag = null; },
+      step: function (dt, live) {
+        t += dt; var lv = live ? A.lv() : 0.2, i, e;
+        if (over) { over.t += dt; for (i = items.length - 1; i >= 0; i--) { items[i].y += items[i].vy * 0.3 * dt; items[i].rot += items[i].vr * dt; } return; }
+        if (dead || won) return;
+        if (A.idle()) {
+          var tgt = px, bd = 1e9;
+          for (i = 0; i < items.length; i++) { e = items[i]; if (e.bad) continue; if (e.y > T && e.y < py && e.y > py - bh * 7) { var d = Math.abs(e.x - px); if (d < bd) { bd = d; tgt = e.x; } } }
+          for (i = 0; i < items.length; i++) { e = items[i]; if (e.bad && e.y > py - bh * 3 && Math.abs(e.x - px) < bw * 0.55) tgt = px + (e.x < px ? bw : -bw); }
+          px += clamp(tgt - px, -W * 1.1 * dt, W * 1.1 * dt);
+        }
+        px = clamp(px, bw * 0.5, W - bw * 0.5);
+        spT -= dt; if (spT <= 0) { spawn(live); spT = Math.max(0.42, 1.25 - 0.8 * lv) * rnd(0.72, 1.25); }
+        for (i = items.length - 1; i >= 0; i--) {
+          e = items[i]; e.y += e.vy * dt; e.rot += e.vr * dt;
+          if (Math.abs(e.x - px) < bw * 0.52 && e.y > py - bh * 0.7 && e.y < py + bh * 0.3) {
+            if (e.bad) { items.splice(i, 1); A.shake(0.4); boomFx(A, e.x, py - bh * 0.2, 1); if (A.live()) { if (A.fail(A.l.fail2)) dead = 1; } return; }
+            items.splice(i, 1); matches++; A.burst(e.x, py - bh * 0.2, 10, ['#FCA5A5', '#F472B6', '#FFFFFF'], 150, 0.6, 3); A.ring(e.x, py - bh * 0.2, bw * 0.55, '#F9A8D4'); continue;
+          }
+          if (e.y - isz * 0.5 > H) { items.splice(i, 1); if (!e.bad) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); } } return; } }
+        }
+      },
+      draw: function (c) {
+        A.bg(bg); var i, e, img;
+        for (i = 0; i < items.length; i++) { e = items[i]; img = e.kind === 'h' ? heartS : e.kind === 'r' ? roseS : brokeS; c.save(); c.translate(e.x, e.y); c.rotate(e.rot); c.drawImage(img, -img.w / 2, -img.h / 2, img.w, img.h); c.restore(); }
+        if (!dead) drawBasket(c);
+      },
+      down: function (x) { drag = { x: x, s: px }; },
+      move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, bw * 0.5, W - bw * 0.5); },
+      up: function () { drag = null; },
+      key: function (k) { if (k === 'left') px -= bw * 0.6; else if (k === 'right') px += bw * 0.6; px = clamp(px, bw * 0.5, W - bw * 0.5); },
+      boom: function () { over = { t: 0 }; drag = null; A.explode(px, py - bh * 0.2, 1.1); },
+      win: function () { won = 0.001; drag = null; A.burst(px, py - bh * 0.5, 16, ['#FCA5A5', '#FFFFFF', '#FDE68A'], 160, 0.6, 3); },
+      dbg: function () { return { px: px | 0, py: py | 0, items: items.length, dead: dead, matches: matches }; }
+    };
+  }, 'drag', 0.5);
 })(window.D6 = window.D6 || {});
