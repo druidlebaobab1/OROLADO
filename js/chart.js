@@ -1099,15 +1099,7 @@
     }
     halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.09)');
     halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.09)');
-    // v3230 (propriétaire) : remettre le « rond » autour de la spirale — anneau circulaire fin et discret.
-    g.save();
-    g.strokeStyle = 'rgba(180,160,255,0.14)';
-    g.lineWidth = Math.max(1, R * 0.012);
-    g.beginPath(); g.arc(cx, cy, R * 0.98, 0, Math.PI * 2); g.stroke();
-    g.strokeStyle = 'rgba(150,130,255,0.07)';
-    g.lineWidth = Math.max(1, R * 0.03);
-    g.beginPath(); g.arc(cx, cy, R * 0.98, 0, Math.PI * 2); g.stroke();
-    g.restore();
+    // v3232 (propriétaire) : plus de cercle autour de la spirale (il n'avait demandé que la pyramide).
     galaxy = null;
   }
 
@@ -1317,12 +1309,13 @@
     // colonne des prix — avec des tailles variées. Discrètes mais présentes ; chacune reçoit un
     // petit anneau blanc (cryptoWorld). Jamais alignées : rien qui gêne le trading ou laisse croire
     // que la courbe n'avance pas.
-    // v3231 (propriétaire) : 3 planètes en PYRAMIDE RENVERSÉE (triangle pointe en bas) — 2 en haut
-    // (coins gauche/droite), 1 en bas au centre. Discrètes, chacune avec son petit anneau blanc.
+    // v3232 (propriétaire) : PYRAMIDE RENVERSÉE bien droite et SYMÉTRIQUE (pas penchée) — 2 en haut
+    // aux mêmes hauteur/taille (gauche/droite), 1 en bas pile au centre. Bien séparées, écartées de la
+    // spirale, mais pas collées aux bords. Même taille → triangle net.
     var planets = [
-      { x: pad.l + w * 0.140, y: pad.t + h * 0.150, r: pr * 0.150 },
-      { x: pad.l + w * 0.860, y: pad.t + h * 0.150, r: pr * 0.135 },
-      { x: pad.l + w * 0.500, y: pad.t + h * 0.880, r: pr * 0.145 }
+      { x: pad.l + w * 0.180, y: pad.t + h * 0.140, r: pr * 0.140 },
+      { x: pad.l + w * 0.820, y: pad.t + h * 0.140, r: pr * 0.140 },
+      { x: pad.l + w * 0.500, y: pad.t + h * 0.860, r: pr * 0.140 }
     ];
     planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.22, false);
     planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
