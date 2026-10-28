@@ -195,6 +195,34 @@
       de: ['Ziehen, um die Herzen zu fangen', 'Herz verpasst!', 'Das Date ist vorbei!', 'Ziehe nach links oder rechts, um deinen Korb zu bewegen und die Rosen und Herzen zu fangen, die dein Schatz vom Balkon wirft. Weiche den gebrochenen Herzen aus. Es wird schneller und voller. Ein Herz zu verpassen — oder ein gebrochenes zu fangen — beendet die Runde.', 'Ein gebrochenes Herz gefangen!'],
       hi: ['दिल पकड़ने को खींचें', 'दिल छूट गया!', 'मुलाक़ात खत्म!', 'अपनी टोकरी चलाने और बालकनी से आपके प्यार द्वारा फेंके गुलाब व दिल पकड़ने के लिए बाएँ या दाएँ खींचें। टूटे दिलों से बचें। यह तेज़ और व्यस्त होता जाता है। दिल चूकना — या टूटा दिल पकड़ना — राउंड खत्म कर देता है।', 'टूटा दिल पकड़ लिया!'],
       zh: ['拖动接住爱心', '漏接了爱心！', '约会结束！', '左右拖动移动你的花篮，接住心上人从阳台抛下的玫瑰和爱心。躲开破碎的心。节奏会越来越快、越来越密。漏接一颗心——或接到破碎的心——本回合结束。', '接到了破碎的心！']
+    },
+    grenade: {
+      en: ['Tap to throw a grenade', 'They broke through!', 'Artillery barrage!', 'You hold the trench on the left: tap where to lob a grenade — it explodes where it lands and clears the soldiers nearby. They advance faster and in greater numbers. A soldier reaching your trench ends the round.'],
+      fr: ['Touche pour lancer une grenade', 'Ils ont percé !', 'Tir d’artillerie !', 'Tu tiens la tranchée à gauche : touche où lancer une grenade — elle explose là où elle tombe et élimine les soldats autour. Ils avancent plus vite et plus nombreux. Un soldat qui atteint ta tranchée termine la partie.'],
+      es: ['Toca para lanzar una granada', '¡Rompieron la línea!', '¡Bombardeo de artillería!', 'Defiendes la trinchera a la izquierda: toca dónde lanzar una granada — explota donde cae y elimina a los soldados cercanos. Avanzan más rápido y en mayor número. Un soldado que llega a tu trinchera termina la ronda.'],
+      pt: ['Toque para lançar uma granada', 'Eles romperam!', 'Bombardeio de artilharia!', 'Você defende a trincheira à esquerda: toque onde lançar uma granada — ela explode onde cai e elimina os soldados por perto. Eles avançam mais rápido e em maior número. Um soldado que chega à sua trincheira encerra a rodada.'],
+      ar: ['المس لرمي قنبلة يدوية', 'لقد اخترقوا الخط!', 'قصف مدفعي!', 'تدافع عن الخندق على اليسار: المس مكان رمي القنبلة — تنفجر حيث تسقط وتقضي على الجنود القريبين. يتقدمون أسرع وأكثر عددًا. جندي يصل إلى خندقك ينهي الجولة.'],
+      tr: ['El bombası atmak için dokun', 'Hattı yardılar!', 'Topçu bombardımanı!', 'Soldaki siperi tutuyorsun: el bombasını nereye atacağına dokun — düştüğü yerde patlar ve yakındaki askerleri temizler. Daha hızlı ve kalabalık ilerlerler. Siperine ulaşan bir asker turu bitirir.'],
+      vi: ['Chạm để ném lựu đạn', 'Chúng chọc thủng rồi!', 'Pháo kích!', 'Bạn giữ chiến hào bên trái: chạm vào nơi muốn ném lựu đạn — nó nổ ở chỗ rơi và hạ các lính gần đó. Chúng tiến nhanh và đông hơn. Một người lính tới chiến hào của bạn là kết thúc ván.'],
+      id: ['Ketuk untuk melempar granat', 'Mereka menerobos!', 'Gempuran artileri!', 'Kamu menjaga parit di kiri: ketuk tempat melempar granat — meledak di tempat jatuh dan melumpuhkan tentara di dekatnya. Mereka maju makin cepat dan banyak. Satu tentara mencapai paritmu mengakhiri ronde.'],
+      ru: ['Коснись, чтобы бросить гранату', 'Они прорвались!', 'Артобстрел!', 'Ты держишь окоп слева: коснись, куда бросить гранату — она взрывается там, где падает, и сметает солдат рядом. Они идут всё быстрее и их больше. Солдат, дошедший до окопа, завершает раунд.'],
+      de: ['Tippen, um eine Granate zu werfen', 'Sie sind durchgebrochen!', 'Artilleriefeuer!', 'Du hältst den Graben links: tippe, wohin du eine Granate wirfst — sie explodiert, wo sie landet, und räumt die Soldaten in der Nähe. Sie rücken schneller und zahlreicher vor. Ein Soldat, der deinen Graben erreicht, beendet die Runde.'],
+      hi: ['ग्रेनेड फेंकने को छुएं', 'वे घुस आए!', 'तोपखाने की बमबारी!', 'आप बाईं ओर खाई संभालते हैं: जहाँ ग्रेनेड फेंकना है वहाँ छुएं — जहाँ गिरता है वहाँ फटता है और पास के सैनिकों को साफ़ करता है। वे तेज़ और ज़्यादा संख्या में बढ़ते हैं। खाई तक पहुँचा सैनिक राउंड खत्म कर देता है।'],
+      zh: ['点击投掷手榴弹', '他们突破了！', '炮火覆盖！', '你守着左侧战壕：点击投掷手榴弹的位置——它落地处爆炸，清除附近的士兵。他们会越来越快、越来越多地逼近。一名士兵冲到你的战壕，本回合结束。']
+    },
+    canyon: {
+      en: ['Tap to fly up', 'Crashed into the rocks!', 'Rockslide!', 'Tap to make your jet climb; let go and it dives. Fly through the gaps in the canyon walls without touching the rock. It gets faster and the gaps get tighter. Hitting the rock ends the round.'],
+      fr: ['Touche pour monter', 'Écrasé sur les rochers !', 'Éboulement !', 'Touche pour faire monter ton jet ; relâche et il plonge. Passe par les trous dans les parois du canyon sans toucher la roche. Ça accélère et les trous se resserrent. Toucher la roche termine la partie.'],
+      es: ['Toca para subir', '¡Te estrellaste en las rocas!', '¡Desprendimiento!', 'Toca para que tu jet suba; suelta y baja en picado. Pasa por los huecos de las paredes del cañón sin tocar la roca. Se vuelve más rápido y los huecos se estrechan. Tocar la roca termina la ronda.'],
+      pt: ['Toque para subir', 'Bateu nas rochas!', 'Deslizamento de rochas!', 'Toque para seu jato subir; solte e ele mergulha. Passe pelos vãos das paredes do cânion sem tocar na rocha. Fica mais rápido e os vãos apertam. Tocar na rocha encerra a rodada.'],
+      ar: ['المس للصعود', 'اصطدمت بالصخور!', 'انهيار صخري!', 'المس ليصعد طائرتك؛ اترك فيهبط. مُرّ عبر الفجوات في جدران الوادي دون لمس الصخر. يصبح أسرع وتضيق الفجوات. لمس الصخر ينهي الجولة.'],
+      tr: ['Yükselmek için dokun', 'Kayalara çarptın!', 'Kaya kayması!', 'Jetinin yükselmesi için dokun; bırak, dalışa geçer. Kayaya değmeden kanyon duvarlarındaki boşluklardan geç. Hızlanır ve boşluklar daralır. Kayaya çarpmak turu bitirir.'],
+      vi: ['Chạm để bay lên', 'Đâm vào vách đá!', 'Lở đá!', 'Chạm để phản lực bay lên; thả ra nó lao xuống. Bay qua các khe hở trên vách hẻm núi mà không chạm đá. Tốc độ tăng và khe hẹp dần. Chạm vào đá là kết thúc ván.'],
+      id: ['Ketuk untuk naik', 'Menabrak bebatuan!', 'Longsor batu!', 'Ketuk agar jetmu naik; lepas maka ia menukik. Lewati celah di dinding ngarai tanpa menyentuh batu. Makin cepat dan celah makin sempit. Menyentuh batu mengakhiri ronde.'],
+      ru: ['Коснись, чтобы подняться', 'Разбился о скалы!', 'Камнепад!', 'Касайся, чтобы джет набирал высоту; отпусти — он пикирует. Пролетай сквозь просветы в стенах каньона, не задевая скалу. Становится быстрее, просветы уже. Удар о скалу завершает раунд.'],
+      de: ['Tippen zum Steigen', 'An den Felsen zerschellt!', 'Steinschlag!', 'Tippe, damit dein Jet steigt; loslassen, dann sinkt er. Fliege durch die Lücken in den Schluchtwänden, ohne den Fels zu berühren. Es wird schneller und die Lücken enger. Den Fels zu berühren beendet die Runde.'],
+      hi: ['ऊपर जाने को छुएं', 'चट्टानों से टकराए!', 'भूस्खलन!', 'अपने जेट को ऊपर उठाने को छुएं; छोड़ें तो नीचे गोता लगाता है। घाटी की दीवारों के बीच के खाली हिस्सों से चट्टान छुए बिना निकलें। यह तेज़ होता है और अंतराल सँकरे होते हैं। चट्टान से टकराना राउंड खत्म कर देता है।'],
+      zh: ['点击上升', '撞上岩石了！', '山体滑坡！', '点击让你的战机爬升；松开它就俯冲。穿过峡谷岩壁之间的缺口，不要碰到岩石。速度越来越快，缺口越来越窄。碰到岩石，本回合结束。']
     }
   };
   function L(key) {
@@ -1618,4 +1646,146 @@
       dbg: function () { return { px: px | 0, py: py | 0, items: items.length, dead: dead, matches: matches }; }
     };
   }, 'drag', 0.5);
+
+  /* ================================================================== GRENADE TOSS (jeux de guerre, propriétaire) — tu tiens
+     la tranchée à gauche : touche où lancer une grenade, elle décrit un arc et explose au sol en nettoyant les soldats autour.
+     Ils avancent de plus en plus vite et nombreux ; un soldat à la tranchée termine. La fin secrète = un tir d'artillerie. */
+  boot('grenade', function (A) {
+    var W, H, T, dpr, bg, gx, gy, sr, soldiers = [], nades = [], cool = 0, dead = 0, won = 0, barrage = null, t = 0, spT = 0, kills = 0, aiT = 0, soldierS, GRAV;
+    function soldierSprite() {
+      var s = sr * 2;
+      return mkc(s, s * 1.3, dpr, function (c, w, h) {
+        c.translate(w / 2, h * 0.5);
+        c.fillStyle = '#3F4A2E'; rr(c, -s * 0.2, -s * 0.1, s * 0.4, s * 0.55, s * 0.08); c.fill();
+        circ(c, 0, -s * 0.28, s * 0.17, '#C7A17A');
+        c.fillStyle = '#4B5320'; c.beginPath(); c.arc(0, -s * 0.3, s * 0.2, Math.PI, 0); c.fill(); c.fillRect(-s * 0.22, -s * 0.32, s * 0.44, s * 0.06);
+        c.strokeStyle = '#2B3220'; c.lineWidth = s * 0.08; c.lineCap = 'round'; c.beginPath(); c.moveTo(-s * 0.08, s * 0.42); c.lineTo(-s * 0.08, s * 0.62); c.moveTo(s * 0.08, s * 0.42); c.lineTo(s * 0.08, s * 0.62); c.stroke();
+        c.strokeStyle = '#1F2937'; c.lineWidth = s * 0.06; c.beginPath(); c.moveTo(-s * 0.1, -s * 0.05); c.lineTo(-s * 0.4, -s * 0.18); c.stroke();
+      });
+    }
+    function throwAt(tx) {
+      if (cool > 0 || dead || barrage || won) return;
+      tx = clamp(tx, gx + sr, W - sr * 0.5); cool = 0.4;
+      var dist = tx - gx, tf = clamp(dist / (W * 0.55), 0.55, 1.4);
+      nades.push({ x: gx + sr * 0.3, y: gy - sr * 1.1, vx: dist / tf, vy: -GRAV * tf / 2, tx: tx });
+      A.sx('throw', { k: 'nade', v: 0.4 });
+    }
+    function blast(x) {
+      var r = W * 0.15; boomFx(A, x, gy, 1.2); A.shake(0.4);
+      for (var i = soldiers.length - 1; i >= 0; i--) if (Math.abs(soldiers[i].x - x) < r) { soldiers.splice(i, 1); kills++; }
+    }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; dpr = d; T = top; gy = H - clamp((H - T) * 0.14, 26, 80); sr = clamp(Math.min(W, H - T) * 0.05, 14, 32); gx = W * 0.1; GRAV = (H - T) * 2.4;
+        soldierS = soldierSprite();
+        bg = mkc(W, H, dpr, function (c) {
+          c.fillStyle = lg(c, 0, 0, 0, gy, ['#6B7280', '#9CA3AF', '#D6B98C']); c.fillRect(0, 0, W, gy);
+          c.fillStyle = 'rgba(120,53,15,.25)'; for (var q = 0; q < (A.lite ? 3 : 6); q++) { var cx2 = rnd(0, W), cy2 = rnd(T, gy * 0.6); circ(c, cx2, cy2, rnd(14, 40), 'rgba(75,85,99,.3)'); }
+          c.fillStyle = 'rgba(55,65,81,.5)'; c.beginPath(); c.moveTo(0, gy); for (var x = 0; x <= W; x += W / 6) c.lineTo(x, gy - (H - T) * 0.1 * (0.5 + Math.abs(Math.sin(x * 0.011)))); c.lineTo(W, gy); c.closePath(); c.fill();
+          c.fillStyle = lg(c, 0, gy, 0, H, ['#5B4A2E', '#3A2E1A']); c.fillRect(0, gy, W, H - gy);
+          c.strokeStyle = 'rgba(30,20,10,.4)'; c.lineWidth = 2; for (var k = 0; k < 5; k++) { c.beginPath(); c.moveTo(rnd(0, W), gy + rnd(4, (H - gy))); c.lineTo(rnd(0, W), gy + rnd(4, (H - gy))); c.stroke(); }
+        });
+      },
+      reset: function () { soldiers = []; nades = []; dead = 0; won = 0; barrage = null; spT = 0.4; kills = 0; cool = 0; },
+      step: function (dt, live) {
+        t += dt; cool = Math.max(0, cool - dt); var lv = live ? A.lv() : 0.2, i, s, n;
+        if (barrage) { barrage.t += dt; barrage.sh = barrage.sh || []; if (barrage.t < 0.9 && Math.random() < 0.5) barrage.sh.push({ x: rnd(0, W), y: T, vy: (H - T) * 2 }); for (i = barrage.sh.length - 1; i >= 0; i--) { var sh = barrage.sh[i]; sh.y += sh.vy * dt; if (sh.y >= gy) { boomFx(A, sh.x, gy, 0.9); barrage.sh.splice(i, 1); } } if (barrage.t > 0.4 && !barrage.hit) { barrage.hit = 1; dead = 1; } return; }
+        if (dead || won) return;
+        spT -= dt; if (spT <= 0 && soldiers.length < 3 + Math.round(6 * lv)) { soldiers.push({ x: W + sr, v: (W) * (0.05 + 0.06 * lv) * rnd(0.85, 1.2), bob: rnd(0, TAU) }); spT = Math.max(0.5, 1.9 - 1.2 * lv) * rnd(0.7, 1.3); }
+        for (i = nades.length - 1; i >= 0; i--) { n = nades[i]; n.x += n.vx * dt; n.vy += GRAV * dt; n.y += n.vy * dt; if (n.y >= gy) { blast(n.x); nades.splice(i, 1); } }
+        for (i = soldiers.length - 1; i >= 0; i--) {
+          s = soldiers[i]; s.x -= s.v * dt; s.bob += dt * 10;
+          if (s.x <= gx + sr * 0.6) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, gx, gy, 1.2); A.shake(0.5); } return; } soldiers.splice(i, 1); }
+        }
+        if (A.idle()) { aiT += dt; if (aiT > 0.45) { aiT = 0; var near = soldiers.slice().sort(function (a2, b2) { return a2.x - b2.x; })[0]; if (near) throwAt(near.x - near.v * 0.3); } }
+      },
+      draw: function (c) {
+        A.bg(bg); var i, s, n;
+        for (i = 0; i < soldiers.length; i++) { s = soldiers[i]; c.save(); c.translate(s.x, gy - soldierS.h * 0.32 + Math.sin(s.bob) * 2); c.drawImage(soldierS, -soldierS.w / 2, -soldierS.h / 2, soldierS.w, soldierS.h); c.restore(); }
+        c.fillStyle = '#A8956B'; for (var sb = 0; sb < 3; sb++) circ(c, gx - sr * 0.3 + sb * sr * 0.5, gy - sr * 0.1, sr * 0.45, '#A8956B');
+        if (!dead) { circ(c, gx, gy - sr * 0.9, sr * 0.5, '#C7A17A'); c.fillStyle = '#4B5320'; c.beginPath(); c.arc(gx, gy - sr * 1.05, sr * 0.55, Math.PI, 0); c.fill(); }
+        c.fillStyle = '#1F2937'; for (i = 0; i < nades.length; i++) { n = nades[i]; circ(c, n.x, n.y, sr * 0.3, '#1F2937'); c.fillStyle = '#16A34A'; c.fillRect(n.x - sr * 0.06, n.y - sr * 0.4, sr * 0.12, sr * 0.14); c.fillStyle = '#1F2937'; }
+        if (barrage && barrage.sh) { c.strokeStyle = '#FDE68A'; c.lineWidth = 3; c.lineCap = 'round'; for (i = 0; i < barrage.sh.length; i++) { var sh = barrage.sh[i]; c.beginPath(); c.moveTo(sh.x, sh.y); c.lineTo(sh.x, sh.y - 16); c.stroke(); } }
+      },
+      act: function (k, x, y) { throwAt(x); },
+      key: function (k) { if (k === 'left') throwAt(gx + W * 0.3); else if (k === 'right') throwAt(W * 0.8); else throwAt(W * 0.55); },
+      boom: function () { barrage = { t: 0 }; A.sx('engine', { k: 'whistle' }); },
+      win: function () { won = 0.001; A.burst(gx, gy - sr, 16, ['#FDE68A', '#FFFFFF', '#86EFAC'], 160, 0.6, 3); },
+      dbg: function () { return { gx: gx | 0, gy: gy | 0, soldiers: soldiers.length, dead: dead, kills: kills }; }
+    };
+  }, 'aim', 0.3);
+
+  /* ================================================================== CANYON DASH (conduite / pilotage, propriétaire « jeux
+     qu'on contrôle ») — pilote un jet à travers un canyon : touche pour monter, relâche pour plonger (gravité). Passe par les
+     trous des parois sans toucher la roche. Ça accélère, les trous se resserrent. La fin secrète = un éboulement. */
+  boot('canyon', function (A) {
+    var W, H, T, dpr, bg, jx, jy, vy, cols = [], scroll = 0, cw, t = 0, dead = 0, won = 0, slide = null, passed = 0, jetS, GRAV, IMP, nextX;
+    function jetSprite() {
+      var s = clamp(Math.min(W, H - T) * 0.09, 22, 54);
+      return mkc(s * 1.5, s, dpr, function (c, w, h) {
+        c.translate(w * 0.5, h * 0.5);
+        c.fillStyle = lg(c, -s * 0.6, 0, s * 0.7, 0, ['#E2E8F0', '#94A3B8', '#475569']);
+        c.beginPath(); c.moveTo(s * 0.7, 0); c.lineTo(-s * 0.3, -s * 0.22); c.lineTo(-s * 0.6, -s * 0.1); c.lineTo(-s * 0.6, s * 0.1); c.lineTo(-s * 0.3, s * 0.22); c.closePath(); c.fill();
+        c.fillStyle = '#334155'; c.beginPath(); c.moveTo(-s * 0.1, 0); c.lineTo(-s * 0.45, -s * 0.4); c.lineTo(-s * 0.2, 0); c.closePath(); c.fill(); c.beginPath(); c.moveTo(-s * 0.1, 0); c.lineTo(-s * 0.45, s * 0.4); c.lineTo(-s * 0.2, 0); c.closePath(); c.fill();
+        c.fillStyle = '#7DD3FC'; c.beginPath(); c.ellipse(s * 0.25, -s * 0.02, s * 0.16, s * 0.1, 0, 0, TAU); c.fill();
+      });
+    }
+    function addCol() {
+      var lv = A.live() || A.idle() ? A.lv() : 0.2, gapH = (H - T) * (0.46 - 0.14 * Math.min(1, lv)); gapH = Math.max(gapH, (H - T) * 0.26);
+      var gapY = rnd(T + gapH * 0.6, H - gapH * 0.6);
+      cols.push({ x: nextX, gapY: gapY, gapH: gapH, scored: 0 }); nextX += W * (0.62 - 0.08 * Math.min(1, lv));
+    }
+    function flap() { if (!dead && !slide && !won) vy = IMP; }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; dpr = d; T = top; jx = W * 0.3; cw = W * 0.14; GRAV = (H - T) * 2.6; IMP = -(H - T) * 0.62; if (jy == null) jy = (T + H) / 2;
+        jetS = jetSprite();
+        bg = mkc(W, H, dpr, function (c) {
+          c.fillStyle = lg(c, 0, 0, 0, H, ['#7DD3FC', '#38BDF8', '#FCD34D', '#F59E0B']); c.fillRect(0, 0, W, H);
+          c.fillStyle = 'rgba(255,255,255,.35)'; for (var q = 0; q < (A.lite ? 4 : 9); q++) { var cx2 = rnd(0, W), cy2 = rnd(T, H * 0.5), rr2 = rnd(16, 40); circ(c, cx2, cy2, rr2, 'rgba(255,255,255,.3)'); circ(c, cx2 + rr2 * 0.7, cy2 + rr2 * 0.2, rr2 * 0.7, 'rgba(255,255,255,.25)'); }
+          c.fillStyle = 'rgba(146,64,14,.22)'; c.beginPath(); c.moveTo(0, H); for (var x = 0; x <= W; x += W / 8) c.lineTo(x, H * 0.7 - (H - T) * 0.08 * Math.abs(Math.sin(x * 0.009))); c.lineTo(W, H); c.closePath(); c.fill();
+        });
+        nextX = W * 0.9; if (cols.length === 0) { for (var i = 0; i < 4; i++) addCol(); }
+      },
+      reset: function () { cols = []; dead = 0; won = 0; slide = null; passed = 0; jy = (T + H) / 2; vy = 0; scroll = 0; nextX = W * 0.9; for (var i = 0; i < 4; i++) addCol(); },
+      step: function (dt, live) {
+        t += dt; var lv = live ? A.lv() : 0.2, i, col, spd = W * (0.34 + 0.4 * lv);
+        if (slide) { slide.t += dt; jy += (vy += GRAV * dt) * dt; for (i = 0; i < cols.length; i++) cols[i].x -= spd * 0.3 * dt; if (slide.t > 0.3 && !slide.hit) { slide.hit = 1; } return; }
+        if (dead || won) return;
+        if (A.idle()) { var ahead = null; for (i = 0; i < cols.length; i++) { if (cols[i].x + cw > jx - cw) { ahead = cols[i]; break; } } if (ahead && jy > ahead.gapY + (H - T) * 0.01 && vy > -(H - T) * 0.1) flap(); if (jy < T + (H - T) * 0.08) { /* too high, let gravity pull */ } }
+        vy += GRAV * dt; jy += vy * dt;
+        for (i = cols.length - 1; i >= 0; i--) {
+          col = cols[i]; col.x -= spd * dt;
+          if (!col.scored && col.x + cw < jx) { col.scored = 1; passed++; A.burst(jx, jy, 5, ['#FDE68A', '#FFFFFF'], 90, 0.4, 2); }
+          if (col.x + cw < -cw) { cols.splice(i, 1); addCol(); continue; }
+          if (jx + jetS.w * 0.32 > col.x && jx - jetS.w * 0.32 < col.x + cw) {
+            if (jy - jetS.h * 0.32 < col.gapY - col.gapH / 2 || jy + jetS.h * 0.32 > col.gapY + col.gapH / 2) {
+              if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, jx, jy, 1.1); A.shake(0.5); } return; }
+            }
+          }
+        }
+        if (jy < T + jetS.h * 0.32 || jy > H - jetS.h * 0.32) {
+          jy = clamp(jy, T + jetS.h * 0.32, H - jetS.h * 0.32); vy = 0;
+          if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, jx, jy, 1); A.shake(0.4); } return; }
+        }
+      },
+      draw: function (c) {
+        A.bg(bg); var i, col;
+        for (i = 0; i < cols.length; i++) {
+          col = cols[i]; var topH = col.gapY - col.gapH / 2, botY = col.gapY + col.gapH / 2;
+          c.fillStyle = lg(c, col.x, 0, col.x + cw, 0, ['#92400E', '#78350F', '#451A03']);
+          c.fillRect(col.x, T - 4, cw, topH - T + 4); c.fillRect(col.x, botY, cw, H - botY);
+          c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(col.x + cw - 5, T - 4, 5, topH - T + 4); c.fillRect(col.x + cw - 5, botY, 5, H - botY);
+          c.fillStyle = '#A16207'; c.beginPath(); c.moveTo(col.x, topH); c.lineTo(col.x + cw, topH); c.lineTo(col.x + cw * 0.5, topH + 10); c.closePath(); c.fill();
+          c.beginPath(); c.moveTo(col.x, botY); c.lineTo(col.x + cw, botY); c.lineTo(col.x + cw * 0.5, botY - 10); c.closePath(); c.fill();
+        }
+        if (!dead) { c.save(); c.translate(jx, jy); c.rotate(clamp(vy / (H - T) * 0.6, -0.5, 0.6)); c.fillStyle = 'rgba(253,186,116,.7)'; c.beginPath(); c.moveTo(-jetS.w * 0.5, 0); c.lineTo(-jetS.w * 0.5 - rnd(8, 18), -3); c.lineTo(-jetS.w * 0.5 - rnd(8, 18), 3); c.closePath(); c.fill(); c.drawImage(jetS, -jetS.w / 2, -jetS.h / 2, jetS.w, jetS.h); c.restore(); }
+      },
+      act: function (k, x, y) { flap(); },
+      key: function (k) { if (k === 'up' || k === 'left' || k === 'right') flap(); },
+      boom: function () { slide = { t: 0 }; A.sx('engine', { k: 'rumble' }); },
+      win: function () { won = 0.001; A.burst(jx, jy, 16, ['#7DD3FC', '#FFFFFF', '#FDE68A'], 160, 0.6, 3); },
+      dbg: function () { return { jx: jx | 0, jy: jy | 0, cols: cols.length, dead: dead, passed: passed }; }
+    };
+  }, 'tap', 0.45);
 })(window.D6 = window.D6 || {});
