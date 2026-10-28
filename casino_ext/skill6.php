@@ -73,4 +73,11 @@ return [
   'neonrider'   => ['type' => 'skill', 'name' => 'Neon Rider',     'rate' => 0.03],
   'pizzacatch'  => ['type' => 'skill', 'name' => 'Pizza Catch',    'rate' => 0.03],
   'petalcatch'  => ['type' => 'skill', 'name' => 'Petal Catch',    'rate' => 0.03],
+  // vague 5 « qu'on contrôle » — js/games/skill8.js
+  'owlflight'   => ['type' => 'skill', 'name' => 'Owl Flight',     'rate' => 0.03],
+  'coralfish'   => ['type' => 'skill', 'name' => 'Coral Fish',     'rate' => 0.03],
+  'balloonup'   => ['type' => 'skill', 'name' => 'Balloon Up',     'rate' => 0.03],
+  'candycatch'  => ['type' => 'skill', 'name' => 'Candy Catch',    'rate' => 0.03],
+  'donutcatch'  => ['type' => 'skill', 'name' => 'Donut Catch',    'rate' => 0.03],
+  'pearlcatch'  => ['type' => 'skill', 'name' => 'Pearl Catch',    'rate' => 0.03],
 ];

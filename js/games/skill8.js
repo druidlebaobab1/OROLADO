@@ -587,6 +587,90 @@
       de: ['Ziehen zum Fangen', 'Verpasst!', 'Aus!', 'Ziehe nach links oder rechts, um die guten Dinge zu fangen, die fallen. Weiche den schlechten aus. Es wird schneller und voller. Eine gute zu verpassen — oder eine schlechte zu fangen — beendet die Runde.', 'Falsch gefangen!'],
       hi: ['पकड़ने को खींचें', 'चूक गए!', 'खत्म!', 'गिरती अच्छी चीज़ें पकड़ने के लिए बाएँ या दाएँ खींचें। बुरी से बचें। यह तेज़ और व्यस्त होता जाता है। अच्छी चूकना — या बुरी पकड़ना — राउंड खत्म कर देता है।', 'गलत पकड़!'],
       zh: ['拖动接取', '没接住！', '结束！', '左右拖动接住掉落的好东西，躲开坏的。会越来越快、越来越密。漏掉好的——或接到坏的——本回合结束。', '接错了！']
+    },
+    owlflight: {
+      en: ['Tap to fly up', 'Crashed!', 'Collapse!', 'Tap to rise; let go and you drop. Fly through the gaps without touching the walls. It gets faster and the gaps get tighter. Hitting a wall ends the round.'],
+      fr: ['Touche pour monter', 'Écrasé !', 'Effondrement !', 'Touche pour monter ; relâche et tu descends. Passe par les trous sans toucher les parois. Ça accélère et les trous se resserrent. Toucher une paroi termine la partie.'],
+      es: ['Toca para subir', '¡Te estrellaste!', '¡Derrumbe!', 'Toca para subir; suelta y bajas. Pasa por los huecos sin tocar las paredes. Se acelera y los huecos se estrechan. Tocar una pared termina la ronda.'],
+      pt: ['Toque para subir', 'Bateu!', 'Desabamento!', 'Toque para subir; solte e você desce. Passe pelos vãos sem tocar nas paredes. Acelera e os vãos apertam. Tocar numa parede encerra a rodada.'],
+      ar: ['المس للصعود', 'اصطدمت!', 'انهيار!', 'المس لتصعد؛ اترك فتهبط. مُرّ عبر الفجوات دون لمس الجدران. يتسارع وتضيق الفجوات. لمس جدار ينهي الجولة.'],
+      tr: ['Yükselmek için dokun', 'Çarptın!', 'Çöküş!', 'Yükselmek için dokun; bırak, düşersin. Duvarlara değmeden boşluklardan geç. Hızlanır ve boşluklar daralır. Bir duvara çarpmak turu bitirir.'],
+      vi: ['Chạm để bay lên', 'Đâm rồi!', 'Sập!', 'Chạm để bay lên; thả ra thì rơi. Bay qua các khe hở mà không chạm tường. Nhanh dần và khe hẹp dần. Chạm tường là kết thúc ván.'],
+      id: ['Ketuk untuk naik', 'Menabrak!', 'Runtuh!', 'Ketuk untuk naik; lepas maka turun. Lewati celah tanpa menyentuh dinding. Makin cepat dan celah menyempit. Menyentuh dinding mengakhiri ronde.'],
+      ru: ['Коснись, чтобы взлететь', 'Разбился!', 'Обвал!', 'Касайся, чтобы подниматься; отпусти — падаешь. Пролетай в просветы, не задевая стены. Быстрее, просветы уже. Удар о стену завершает раунд.'],
+      de: ['Tippen zum Steigen', 'Zerschellt!', 'Einsturz!', 'Tippe zum Steigen; loslassen, dann sinkst du. Flieg durch die Lücken, ohne die Wände zu berühren. Es wird schneller und enger. Eine Wand zu berühren beendet die Runde.'],
+      hi: ['ऊपर जाने को छुएं', 'टकरा गए!', 'ढह गया!', 'ऊपर उठने को छुएं; छोड़ें तो गिरते हैं। दीवार छुए बिना खाली जगहों से निकलें। तेज़ होता है, जगह सँकरी। दीवार से टकराना राउंड खत्म कर देता है।'],
+      zh: ['点击上升', '撞毁了！', '坍塌！', '点击上升，松开就下落。穿过缺口，不要碰到墙壁。会越来越快、缺口越来越窄。碰到墙壁，本回合结束。']
+    },
+    coralfish: {
+      en: ['Tap to fly up', 'Crashed!', 'Collapse!', 'Tap to rise; let go and you drop. Fly through the gaps without touching the walls. It gets faster and the gaps get tighter. Hitting a wall ends the round.'],
+      fr: ['Touche pour monter', 'Écrasé !', 'Effondrement !', 'Touche pour monter ; relâche et tu descends. Passe par les trous sans toucher les parois. Ça accélère et les trous se resserrent. Toucher une paroi termine la partie.'],
+      es: ['Toca para subir', '¡Te estrellaste!', '¡Derrumbe!', 'Toca para subir; suelta y bajas. Pasa por los huecos sin tocar las paredes. Se acelera y los huecos se estrechan. Tocar una pared termina la ronda.'],
+      pt: ['Toque para subir', 'Bateu!', 'Desabamento!', 'Toque para subir; solte e você desce. Passe pelos vãos sem tocar nas paredes. Acelera e os vãos apertam. Tocar numa parede encerra a rodada.'],
+      ar: ['المس للصعود', 'اصطدمت!', 'انهيار!', 'المس لتصعد؛ اترك فتهبط. مُرّ عبر الفجوات دون لمس الجدران. يتسارع وتضيق الفجوات. لمس جدار ينهي الجولة.'],
+      tr: ['Yükselmek için dokun', 'Çarptın!', 'Çöküş!', 'Yükselmek için dokun; bırak, düşersin. Duvarlara değmeden boşluklardan geç. Hızlanır ve boşluklar daralır. Bir duvara çarpmak turu bitirir.'],
+      vi: ['Chạm để bay lên', 'Đâm rồi!', 'Sập!', 'Chạm để bay lên; thả ra thì rơi. Bay qua các khe hở mà không chạm tường. Nhanh dần và khe hẹp dần. Chạm tường là kết thúc ván.'],
+      id: ['Ketuk untuk naik', 'Menabrak!', 'Runtuh!', 'Ketuk untuk naik; lepas maka turun. Lewati celah tanpa menyentuh dinding. Makin cepat dan celah menyempit. Menyentuh dinding mengakhiri ronde.'],
+      ru: ['Коснись, чтобы взлететь', 'Разбился!', 'Обвал!', 'Касайся, чтобы подниматься; отпусти — падаешь. Пролетай в просветы, не задевая стены. Быстрее, просветы уже. Удар о стену завершает раунд.'],
+      de: ['Tippen zum Steigen', 'Zerschellt!', 'Einsturz!', 'Tippe zum Steigen; loslassen, dann sinkst du. Flieg durch die Lücken, ohne die Wände zu berühren. Es wird schneller und enger. Eine Wand zu berühren beendet die Runde.'],
+      hi: ['ऊपर जाने को छुएं', 'टकरा गए!', 'ढह गया!', 'ऊपर उठने को छुएं; छोड़ें तो गिरते हैं। दीवार छुए बिना खाली जगहों से निकलें। तेज़ होता है, जगह सँकरी। दीवार से टकराना राउंड खत्म कर देता है।'],
+      zh: ['点击上升', '撞毁了！', '坍塌！', '点击上升，松开就下落。穿过缺口，不要碰到墙壁。会越来越快、缺口越来越窄。碰到墙壁，本回合结束。']
+    },
+    balloonup: {
+      en: ['Tap to fly up', 'Crashed!', 'Collapse!', 'Tap to rise; let go and you drop. Fly through the gaps without touching the walls. It gets faster and the gaps get tighter. Hitting a wall ends the round.'],
+      fr: ['Touche pour monter', 'Écrasé !', 'Effondrement !', 'Touche pour monter ; relâche et tu descends. Passe par les trous sans toucher les parois. Ça accélère et les trous se resserrent. Toucher une paroi termine la partie.'],
+      es: ['Toca para subir', '¡Te estrellaste!', '¡Derrumbe!', 'Toca para subir; suelta y bajas. Pasa por los huecos sin tocar las paredes. Se acelera y los huecos se estrechan. Tocar una pared termina la ronda.'],
+      pt: ['Toque para subir', 'Bateu!', 'Desabamento!', 'Toque para subir; solte e você desce. Passe pelos vãos sem tocar nas paredes. Acelera e os vãos apertam. Tocar numa parede encerra a rodada.'],
+      ar: ['المس للصعود', 'اصطدمت!', 'انهيار!', 'المس لتصعد؛ اترك فتهبط. مُرّ عبر الفجوات دون لمس الجدران. يتسارع وتضيق الفجوات. لمس جدار ينهي الجولة.'],
+      tr: ['Yükselmek için dokun', 'Çarptın!', 'Çöküş!', 'Yükselmek için dokun; bırak, düşersin. Duvarlara değmeden boşluklardan geç. Hızlanır ve boşluklar daralır. Bir duvara çarpmak turu bitirir.'],
+      vi: ['Chạm để bay lên', 'Đâm rồi!', 'Sập!', 'Chạm để bay lên; thả ra thì rơi. Bay qua các khe hở mà không chạm tường. Nhanh dần và khe hẹp dần. Chạm tường là kết thúc ván.'],
+      id: ['Ketuk untuk naik', 'Menabrak!', 'Runtuh!', 'Ketuk untuk naik; lepas maka turun. Lewati celah tanpa menyentuh dinding. Makin cepat dan celah menyempit. Menyentuh dinding mengakhiri ronde.'],
+      ru: ['Коснись, чтобы взлететь', 'Разбился!', 'Обвал!', 'Касайся, чтобы подниматься; отпусти — падаешь. Пролетай в просветы, не задевая стены. Быстрее, просветы уже. Удар о стену завершает раунд.'],
+      de: ['Tippen zum Steigen', 'Zerschellt!', 'Einsturz!', 'Tippe zum Steigen; loslassen, dann sinkst du. Flieg durch die Lücken, ohne die Wände zu berühren. Es wird schneller und enger. Eine Wand zu berühren beendet die Runde.'],
+      hi: ['ऊपर जाने को छुएं', 'टकरा गए!', 'ढह गया!', 'ऊपर उठने को छुएं; छोड़ें तो गिरते हैं। दीवार छुए बिना खाली जगहों से निकलें। तेज़ होता है, जगह सँकरी। दीवार से टकराना राउंड खत्म कर देता है।'],
+      zh: ['点击上升', '撞毁了！', '坍塌！', '点击上升，松开就下落。穿过缺口，不要碰到墙壁。会越来越快、缺口越来越窄。碰到墙壁，本回合结束。']
+    },
+    candycatch: {
+      en: ['Drag to catch', 'Missed it!', 'Over!', 'Drag left or right to move and catch the good things as they fall. Dodge the bad ones. It gets faster and busier. Missing a good one — or catching a bad one — ends the round.', 'Wrong catch!'],
+      fr: ['Glisse pour attraper', 'Raté !', 'Terminé !', 'Glisse à gauche ou à droite pour attraper les bonnes choses qui tombent. Évite les mauvaises. Ça devient plus rapide et plus chargé. Rater une bonne — ou attraper une mauvaise — termine la partie.', 'Mauvaise prise !'],
+      es: ['Desliza para atrapar', '¡Fallaste!', '¡Fin!', 'Desliza a izquierda o derecha para atrapar las cosas buenas que caen. Esquiva las malas. Se vuelve más rápido y concurrido. Fallar una buena — o atrapar una mala — termina la ronda.', '¡Mala atrapada!'],
+      pt: ['Deslize para pegar', 'Perdeu!', 'Fim!', 'Deslize para a esquerda ou direita para pegar as coisas boas que caem. Desvie das ruins. Fica mais rápido e cheio. Perder uma boa — ou pegar uma ruim — encerra a rodada.', 'Pegou a errada!'],
+      ar: ['اسحب للالتقاط', 'فاتك!', 'انتهى!', 'اسحب يسارًا أو يمينًا لالتقاط الأشياء الجيدة المتساقطة. تفادَ السيئة. يصبح أسرع وأكثر ازدحامًا. تفويت جيدة — أو التقاط سيئة — ينهي الجولة.', 'التقاط خاطئ!'],
+      tr: ['Yakalamak için kaydır', 'Kaçırdın!', 'Bitti!', 'Düşen iyi şeyleri yakalamak için sola ya da sağa kaydır. Kötülerden kaç. Daha hızlı ve kalabalık olur. İyisini kaçırmak — ya da kötüsünü yakalamak — turu bitirir.', 'Yanlış yakalama!'],
+      vi: ['Kéo để hứng', 'Hụt rồi!', 'Hết!', 'Kéo trái hoặc phải để hứng những thứ tốt đang rơi. Né những thứ xấu. Ngày càng nhanh và đông. Hụt thứ tốt — hoặc hứng thứ xấu — là kết thúc ván.', 'Hứng nhầm rồi!'],
+      id: ['Geser untuk menangkap', 'Terlewat!', 'Selesai!', 'Geser ke kiri atau kanan untuk menangkap benda bagus yang jatuh. Hindari yang buruk. Makin cepat dan ramai. Melewatkan yang bagus — atau menangkap yang buruk — mengakhiri ronde.', 'Salah tangkap!'],
+      ru: ['Веди, чтобы ловить', 'Мимо!', 'Конец!', 'Веди влево или вправо, чтобы ловить падающие хорошие вещи. Уклоняйся от плохих. Становится быстрее и плотнее. Упустить хорошую — или поймать плохую — завершает раунд.', 'Не то поймал!'],
+      de: ['Ziehen zum Fangen', 'Verpasst!', 'Aus!', 'Ziehe nach links oder rechts, um die guten Dinge zu fangen, die fallen. Weiche den schlechten aus. Es wird schneller und voller. Eine gute zu verpassen — oder eine schlechte zu fangen — beendet die Runde.', 'Falsch gefangen!'],
+      hi: ['पकड़ने को खींचें', 'चूक गए!', 'खत्म!', 'गिरती अच्छी चीज़ें पकड़ने के लिए बाएँ या दाएँ खींचें। बुरी से बचें। यह तेज़ और व्यस्त होता जाता है। अच्छी चूकना — या बुरी पकड़ना — राउंड खत्म कर देता है।', 'गलत पकड़!'],
+      zh: ['拖动接取', '没接住！', '结束！', '左右拖动接住掉落的好东西，躲开坏的。会越来越快、越来越密。漏掉好的——或接到坏的——本回合结束。', '接错了！']
+    },
+    donutcatch: {
+      en: ['Drag to catch', 'Missed it!', 'Over!', 'Drag left or right to move and catch the good things as they fall. Dodge the bad ones. It gets faster and busier. Missing a good one — or catching a bad one — ends the round.', 'Wrong catch!'],
+      fr: ['Glisse pour attraper', 'Raté !', 'Terminé !', 'Glisse à gauche ou à droite pour attraper les bonnes choses qui tombent. Évite les mauvaises. Ça devient plus rapide et plus chargé. Rater une bonne — ou attraper une mauvaise — termine la partie.', 'Mauvaise prise !'],
+      es: ['Desliza para atrapar', '¡Fallaste!', '¡Fin!', 'Desliza a izquierda o derecha para atrapar las cosas buenas que caen. Esquiva las malas. Se vuelve más rápido y concurrido. Fallar una buena — o atrapar una mala — termina la ronda.', '¡Mala atrapada!'],
+      pt: ['Deslize para pegar', 'Perdeu!', 'Fim!', 'Deslize para a esquerda ou direita para pegar as coisas boas que caem. Desvie das ruins. Fica mais rápido e cheio. Perder uma boa — ou pegar uma ruim — encerra a rodada.', 'Pegou a errada!'],
+      ar: ['اسحب للالتقاط', 'فاتك!', 'انتهى!', 'اسحب يسارًا أو يمينًا لالتقاط الأشياء الجيدة المتساقطة. تفادَ السيئة. يصبح أسرع وأكثر ازدحامًا. تفويت جيدة — أو التقاط سيئة — ينهي الجولة.', 'التقاط خاطئ!'],
+      tr: ['Yakalamak için kaydır', 'Kaçırdın!', 'Bitti!', 'Düşen iyi şeyleri yakalamak için sola ya da sağa kaydır. Kötülerden kaç. Daha hızlı ve kalabalık olur. İyisini kaçırmak — ya da kötüsünü yakalamak — turu bitirir.', 'Yanlış yakalama!'],
+      vi: ['Kéo để hứng', 'Hụt rồi!', 'Hết!', 'Kéo trái hoặc phải để hứng những thứ tốt đang rơi. Né những thứ xấu. Ngày càng nhanh và đông. Hụt thứ tốt — hoặc hứng thứ xấu — là kết thúc ván.', 'Hứng nhầm rồi!'],
+      id: ['Geser untuk menangkap', 'Terlewat!', 'Selesai!', 'Geser ke kiri atau kanan untuk menangkap benda bagus yang jatuh. Hindari yang buruk. Makin cepat dan ramai. Melewatkan yang bagus — atau menangkap yang buruk — mengakhiri ronde.', 'Salah tangkap!'],
+      ru: ['Веди, чтобы ловить', 'Мимо!', 'Конец!', 'Веди влево или вправо, чтобы ловить падающие хорошие вещи. Уклоняйся от плохих. Становится быстрее и плотнее. Упустить хорошую — или поймать плохую — завершает раунд.', 'Не то поймал!'],
+      de: ['Ziehen zum Fangen', 'Verpasst!', 'Aus!', 'Ziehe nach links oder rechts, um die guten Dinge zu fangen, die fallen. Weiche den schlechten aus. Es wird schneller und voller. Eine gute zu verpassen — oder eine schlechte zu fangen — beendet die Runde.', 'Falsch gefangen!'],
+      hi: ['पकड़ने को खींचें', 'चूक गए!', 'खत्म!', 'गिरती अच्छी चीज़ें पकड़ने के लिए बाएँ या दाएँ खींचें। बुरी से बचें। यह तेज़ और व्यस्त होता जाता है। अच्छी चूकना — या बुरी पकड़ना — राउंड खत्म कर देता है।', 'गलत पकड़!'],
+      zh: ['拖动接取', '没接住！', '结束！', '左右拖动接住掉落的好东西，躲开坏的。会越来越快、越来越密。漏掉好的——或接到坏的——本回合结束。', '接错了！']
+    },
+    pearlcatch: {
+      en: ['Drag to catch', 'Missed it!', 'Over!', 'Drag left or right to move and catch the good things as they fall. Dodge the bad ones. It gets faster and busier. Missing a good one — or catching a bad one — ends the round.', 'Wrong catch!'],
+      fr: ['Glisse pour attraper', 'Raté !', 'Terminé !', 'Glisse à gauche ou à droite pour attraper les bonnes choses qui tombent. Évite les mauvaises. Ça devient plus rapide et plus chargé. Rater une bonne — ou attraper une mauvaise — termine la partie.', 'Mauvaise prise !'],
+      es: ['Desliza para atrapar', '¡Fallaste!', '¡Fin!', 'Desliza a izquierda o derecha para atrapar las cosas buenas que caen. Esquiva las malas. Se vuelve más rápido y concurrido. Fallar una buena — o atrapar una mala — termina la ronda.', '¡Mala atrapada!'],
+      pt: ['Deslize para pegar', 'Perdeu!', 'Fim!', 'Deslize para a esquerda ou direita para pegar as coisas boas que caem. Desvie das ruins. Fica mais rápido e cheio. Perder uma boa — ou pegar uma ruim — encerra a rodada.', 'Pegou a errada!'],
+      ar: ['اسحب للالتقاط', 'فاتك!', 'انتهى!', 'اسحب يسارًا أو يمينًا لالتقاط الأشياء الجيدة المتساقطة. تفادَ السيئة. يصبح أسرع وأكثر ازدحامًا. تفويت جيدة — أو التقاط سيئة — ينهي الجولة.', 'التقاط خاطئ!'],
+      tr: ['Yakalamak için kaydır', 'Kaçırdın!', 'Bitti!', 'Düşen iyi şeyleri yakalamak için sola ya da sağa kaydır. Kötülerden kaç. Daha hızlı ve kalabalık olur. İyisini kaçırmak — ya da kötüsünü yakalamak — turu bitirir.', 'Yanlış yakalama!'],
+      vi: ['Kéo để hứng', 'Hụt rồi!', 'Hết!', 'Kéo trái hoặc phải để hứng những thứ tốt đang rơi. Né những thứ xấu. Ngày càng nhanh và đông. Hụt thứ tốt — hoặc hứng thứ xấu — là kết thúc ván.', 'Hứng nhầm rồi!'],
+      id: ['Geser untuk menangkap', 'Terlewat!', 'Selesai!', 'Geser ke kiri atau kanan untuk menangkap benda bagus yang jatuh. Hindari yang buruk. Makin cepat dan ramai. Melewatkan yang bagus — atau menangkap yang buruk — mengakhiri ronde.', 'Salah tangkap!'],
+      ru: ['Веди, чтобы ловить', 'Мимо!', 'Конец!', 'Веди влево или вправо, чтобы ловить падающие хорошие вещи. Уклоняйся от плохих. Становится быстрее и плотнее. Упустить хорошую — или поймать плохую — завершает раунд.', 'Не то поймал!'],
+      de: ['Ziehen zum Fangen', 'Verpasst!', 'Aus!', 'Ziehe nach links oder rechts, um die guten Dinge zu fangen, die fallen. Weiche den schlechten aus. Es wird schneller und voller. Eine gute zu verpassen — oder eine schlechte zu fangen — beendet die Runde.', 'Falsch gefangen!'],
+      hi: ['पकड़ने को खींचें', 'चूक गए!', 'खत्म!', 'गिरती अच्छी चीज़ें पकड़ने के लिए बाएँ या दाएँ खींचें। बुरी से बचें। यह तेज़ और व्यस्त होता जाता है। अच्छी चूकना — या बुरी पकड़ना — राउंड खत्म कर देता है।', 'गलत पकड़!'],
+      zh: ['拖动接取', '没接住！', '结束！', '左右拖动接住掉落的好东西，躲开坏的。会越来越快、越来越密。漏掉好的——或接到坏的——本回合结束。', '接错了！']
     }
   };
   function L(key) {
@@ -2673,4 +2757,55 @@
   function chiliS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.fillStyle = lg(c, -s * 0.1, 0, s * 0.1, 0, ['#F87171', '#B91C1C', '#7F1D1D']); c.beginPath(); c.moveTo(0, -s * 0.3); c.quadraticCurveTo(s * 0.22, -s * 0.1, s * 0.08, s * 0.34); c.quadraticCurveTo(-s * 0.06, s * 0.1, 0, -s * 0.3); c.fill(); c.fillStyle = '#16A34A'; c.beginPath(); c.moveTo(0, -s * 0.3); c.lineTo(s * 0.08, -s * 0.42); c.lineTo(-s * 0.04, -s * 0.36); c.fill(); }); }
   function petalS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.fillStyle = lg(c, 0, -s * 0.3, 0, s * 0.3, ['#FBCFE8', '#F472B6', '#DB2777']); c.beginPath(); c.moveTo(0, -s * 0.34); c.quadraticCurveTo(s * 0.22, -s * 0.1, 0, s * 0.3); c.quadraticCurveTo(-s * 0.22, -s * 0.1, 0, -s * 0.34); c.fill(); c.strokeStyle = 'rgba(190,24,93,.4)'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, -s * 0.3); c.lineTo(0, s * 0.26); c.stroke(); }); }
   function flowerS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.fillStyle = '#F9A8D4'; for (var p = 0; p < 6; p++) { var a = p / 6 * TAU; circ(c, Math.cos(a) * s * 0.2, Math.sin(a) * s * 0.2, s * 0.13, '#F9A8D4'); } c.fillStyle = '#FDE047'; circ(c, 0, 0, s * 0.14, '#FDE047'); c.fillStyle = 'rgba(217,119,6,.4)'; circ(c, 0, 0, s * 0.07, 'rgba(217,119,6,.4)'); }); }
+  /* ===== vague 5 : 3 « vol » (hibou, poisson, montgolfière) + 3 « attrape » (bonbons, beignets, perles) ===== */
+  boot('owlflight', flappy({
+    gap: 0.46, wall: ['#166534', '#14532D', '#052e16'], cap: '#15803D', trail: false, winCols: ['#FDE68A', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E1B4B', '#312E81', '#1E3A8A']); c.fillRect(0, 0, W, H); stars(c, W, H, A_lite() ? 20 : 50, 0, H * 0.6); c.fillStyle = rg(c, W * 0.8, H * 0.14, W * 0.18, ['#FEF3C7', '#FCD34D']); circ(c, W * 0.8, H * 0.14, W * 0.08, c.fillStyle); },
+    player: function (d, s) { return mkc(s * 1.2, s, d, function (c, w, h) { c.translate(w / 2, h / 2); c.fillStyle = lg(c, 0, -s * 0.3, 0, s * 0.3, ['#B45309', '#78350F']); c.beginPath(); c.ellipse(0, 0, s * 0.3, s * 0.36, 0, 0, TAU); c.fill(); c.fillStyle = '#FDE68A'; circ(c, -s * 0.12, -s * 0.12, s * 0.14, '#FEF3C7'); circ(c, s * 0.12, -s * 0.12, s * 0.14, '#FEF3C7'); c.fillStyle = '#1C1917'; circ(c, -s * 0.12, -s * 0.12, s * 0.07, '#1C1917'); circ(c, s * 0.12, -s * 0.12, s * 0.07, '#1C1917'); c.fillStyle = '#F59E0B'; c.beginPath(); c.moveTo(0, -s * 0.02); c.lineTo(-s * 0.06, s * 0.08); c.lineTo(s * 0.06, s * 0.08); c.fill(); c.fillStyle = '#92400E'; c.beginPath(); c.moveTo(-s * 0.18, -s * 0.28); c.lineTo(-s * 0.06, -s * 0.18); c.lineTo(-s * 0.1, -s * 0.3); c.fill(); c.beginPath(); c.moveTo(s * 0.18, -s * 0.28); c.lineTo(s * 0.06, -s * 0.18); c.lineTo(s * 0.1, -s * 0.3); c.fill(); }); }
+  }), 'tap', 0.45);
+
+  boot('coralfish', flappy({
+    gap: 0.48, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#7DD3FC', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#0369A1', '#075985', '#082F49']); c.fillRect(0, 0, W, H); for (var b = 0; b < (A_lite() ? 8 : 20); b++) { c.globalAlpha = 0.12; circ(c, Math.random() * W, Math.random() * H, rnd(2, 7), '#BAE6FD'); } c.globalAlpha = 1; },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { c.translate(w / 2, h / 2); c.fillStyle = lg(c, 0, -s * 0.2, 0, s * 0.2, ['#FB923C', '#EA580C', '#C2410C']); c.beginPath(); c.ellipse(s * 0.05, 0, s * 0.4, s * 0.26, 0, 0, TAU); c.fill(); c.fillStyle = '#FDBA74'; for (var st = 0; st < 3; st++) { c.beginPath(); c.ellipse(s * 0.05 - st * s * 0.16, 0, s * 0.03, s * 0.2, 0, 0, TAU); c.fill(); } c.fillStyle = '#EA580C'; c.beginPath(); c.moveTo(-s * 0.3, 0); c.lineTo(-s * 0.55, -s * 0.2); c.lineTo(-s * 0.55, s * 0.2); c.fill(); circ(c, s * 0.3, -s * 0.04, s * 0.06, '#fff'); circ(c, s * 0.31, -s * 0.04, s * 0.03, '#1C1917'); }); }
+  }), 'tap', 0.45);
+
+  boot('balloonup', flappy({
+    gap: 0.5, wall: ['#78716C', '#57534E', '#44403C'], cap: '#A8A29E', trail: false, winCols: ['#F87171', '#FDE68A'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#7DD3FC', '#BAE6FD', '#E0F2FE']); c.fillRect(0, 0, W, H); for (var q = 0; q < (A_lite() ? 5 : 11); q++) { c.globalAlpha = 0.5; var cx = rnd(0, W), cy = rnd(0, H * 0.7); circ(c, cx, cy, rnd(14, 30), 'rgba(255,255,255,.7)'); circ(c, cx + 18, cy + 4, rnd(12, 22), 'rgba(255,255,255,.6)'); } c.globalAlpha = 1; },
+    player: function (d, s) { return mkc(s, s * 1.3, d, function (c, w, h) { c.translate(w / 2, h / 2); c.fillStyle = lg(c, 0, -s * 0.5, 0, s * 0.2, ['#F87171', '#DC2626', '#991B1B']); c.beginPath(); c.arc(0, -s * 0.2, s * 0.42, 0, Math.PI); c.arc(0, -s * 0.2, s * 0.42, Math.PI, 0, true); c.ellipse(0, -s * 0.2, s * 0.42, s * 0.5, 0, 0, TAU); c.fill(); c.fillStyle = 'rgba(255,255,255,.25)'; c.beginPath(); c.ellipse(-s * 0.12, -s * 0.35, s * 0.1, s * 0.22, 0, 0, TAU); c.fill(); c.strokeStyle = '#78350F'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(-s * 0.2, s * 0.2); c.lineTo(-s * 0.12, s * 0.42); c.moveTo(s * 0.2, s * 0.2); c.lineTo(s * 0.12, s * 0.42); c.stroke(); c.fillStyle = '#92400E'; rr(c, -s * 0.16, s * 0.42, s * 0.32, s * 0.22, 3); c.fill(); }); }
+  }), 'tap', 0.45);
+
+  boot('candycatch', catcher({
+    winCols: ['#F9A8D4', '#67E8F9', '#FFFFFF'], ring: '#F9A8D4',
+    bg: function (c, W, H, T, py) { c.fillStyle = lg(c, 0, 0, 0, H, ['#FBCFE8', '#C4B5FD', '#A5F3FC']); c.fillRect(0, 0, W, H); c.fillStyle = 'rgba(236,72,153,.15)'; for (var q = 0; q < 8; q++) { c.save(); c.translate((q + 0.5) * W / 8, (q * 70) % py); c.rotate(0.6); rr(c, -6, -20, 12, 40, 6); c.fill(); c.restore(); } c.fillStyle = lg(c, 0, py - 8, 0, H, ['#DB2777', '#831843']); c.fillRect(0, py - 8, W, H - py + 8); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return lollipopS(d, s, ['#F472B6', '#A5F3FC']); }, function (d, s) { return candyS(d, s); }],
+    bad: [function (d, s) { return chiliS(d, s); }]
+  }), 'drag', 0.5);
+
+  boot('donutcatch', catcher({
+    winCols: ['#F9A8D4', '#FFFFFF'], ring: '#F472B6',
+    bg: function (c, W, H, T, py) { c.fillStyle = lg(c, 0, 0, 0, H, ['#FDE68A', '#FBCFE8', '#F9A8D4']); c.fillRect(0, 0, W, H); c.fillStyle = 'rgba(146,64,14,.3)'; c.fillRect(0, py - 10, W, H - py + 10); c.fillStyle = '#92400E'; for (var q = 0; q < 6; q++) c.fillRect((q + 0.5) * W / 6 - 3, py - 10, 6, H - py + 10); },
+    basket: function (c, px, py, bw, bh) { plateBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+
+  boot('pearlcatch', catcher({
+    winCols: ['#A5F3FC', '#FFFFFF', '#F9A8D4'], ring: '#A5F3FC',
+    bg: function (c, W, H, T, py) { c.fillStyle = lg(c, 0, 0, 0, H, ['#0E7490', '#155E75', '#083344']); c.fillRect(0, 0, W, H); for (var b = 0; b < (A_lite() ? 8 : 20); b++) { c.globalAlpha = 0.12; circ(c, Math.random() * W, Math.random() * py, rnd(2, 7), '#A5F3FC'); } c.globalAlpha = 1; c.fillStyle = '#F59E0B'; for (var q = 0; q < 5; q++) { c.beginPath(); c.moveTo((q + 0.3) * W / 5, py); c.lineTo((q + 0.4) * W / 5, py - (H - T) * 0.1); c.lineTo((q + 0.5) * W / 5, py); c.fill(); } c.fillStyle = '#064E3B'; c.fillRect(0, py - 4, W, H - py + 4); },
+    basket: function (c, px, py, bw, bh) { clamShell(c, px, py, bw, bh); },
+    good: [function (d, s) { return pearlS(d, s); }, function (d, s) { return starS(d, s, '#FDE68A'); }],
+    bad: [function (d, s) { return urchinS(d, s); }]
+  }), 'drag', 0.5);
+
+  /* ---- sprites vague 5 ---- */
+  function lollipopS(d, s, cols) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.strokeStyle = '#E2E8F0'; c.lineWidth = s * 0.07; c.lineCap = 'round'; c.beginPath(); c.moveTo(0, s * 0.05); c.lineTo(0, s * 0.42); c.stroke(); var r = s * 0.26; circ(c, 0, -s * 0.1, r, cols[0]); c.strokeStyle = cols[1]; c.lineWidth = s * 0.05; for (var a = 0; a < 4; a++) { c.beginPath(); c.arc(0, -s * 0.1, r * (0.3 + a * 0.22), a * 1.2, a * 1.2 + 4); c.stroke(); } c.fillStyle = 'rgba(255,255,255,.4)'; circ(c, -r * 0.3, -s * 0.1 - r * 0.3, r * 0.2, 'rgba(255,255,255,.4)'); }); }
+  function candyS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.rotate(0.4); c.fillStyle = lg(c, -s * 0.2, 0, s * 0.2, 0, ['#F472B6', '#DB2777']); rr(c, -s * 0.18, -s * 0.12, s * 0.36, s * 0.24, s * 0.1); c.fill(); c.fillStyle = '#FBCFE8'; for (var k = -1; k <= 1; k++) c.fillRect(k * s * 0.1 - s * 0.02, -s * 0.12, s * 0.04, s * 0.24); c.fillStyle = '#DB2777'; for (var e = -1; e <= 1; e += 2) { c.beginPath(); c.moveTo(e * s * 0.18, 0); c.lineTo(e * s * 0.34, -s * 0.12); c.lineTo(e * s * 0.34, s * 0.12); c.fill(); } }); }
+  function donutS(d, s, burnt) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); var r = s * 0.34; c.fillStyle = burnt ? '#44403C' : '#C4863E'; circ(c, 0, 0, r, c.fillStyle); c.fillStyle = burnt ? '#1C1917' : lg(c, 0, -r, 0, r * 0.3, ['#F9A8D4', '#EC4899']); c.beginPath(); c.arc(0, 0, r, 0, TAU); c.arc(0, 0, r * 0.4, 0, TAU, true); c.fill(); if (!burnt) { var sp = ['#FDE047', '#67E8F9', '#A5F3FC', '#FFFFFF']; for (var k = 0; k < 8; k++) { var a = k / 8 * TAU; c.save(); c.translate(Math.cos(a) * r * 0.68, Math.sin(a) * r * 0.68); c.rotate(a); c.fillStyle = sp[k % sp.length]; c.fillRect(-s * 0.02, -s * 0.05, s * 0.04, s * 0.1); c.restore(); } } c.fillStyle = burnt ? '#0C0A09' : '#C4863E'; circ(c, 0, 0, r * 0.4, c.fillStyle); }); }
+  function cupcakeS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.fillStyle = lg(c, 0, 0, 0, s * 0.4, ['#F59E0B', '#B45309']); c.beginPath(); c.moveTo(-s * 0.26, s * 0.02); c.lineTo(s * 0.26, s * 0.02); c.lineTo(s * 0.18, s * 0.38); c.lineTo(-s * 0.18, s * 0.38); c.closePath(); c.fill(); c.fillStyle = 'rgba(69,26,3,.4)'; for (var k = -1; k <= 1; k++) c.fillRect(k * s * 0.12 - s * 0.02, s * 0.02, s * 0.04, s * 0.36); c.fillStyle = lg(c, 0, -s * 0.3, 0, s * 0.05, ['#FBCFE8', '#F472B6']); c.beginPath(); c.arc(0, -s * 0.02, s * 0.28, Math.PI, 0); c.fill(); circ(c, -s * 0.1, -s * 0.12, s * 0.12, '#F9A8D4'); circ(c, s * 0.1, -s * 0.12, s * 0.12, '#F9A8D4'); circ(c, 0, -s * 0.22, s * 0.12, '#F9A8D4'); c.fillStyle = '#DC2626'; circ(c, 0, -s * 0.3, s * 0.06, '#DC2626'); }); }
+  function pearlS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); var r = s * 0.3; c.fillStyle = rg(c, -r * 0.3, -r * 0.3, r, ['#FFFFFF', '#E0F2FE', '#A5B4FC']); circ(c, 0, 0, r, c.fillStyle); c.fillStyle = 'rgba(255,255,255,.7)'; circ(c, -r * 0.3, -r * 0.3, r * 0.18, 'rgba(255,255,255,.7)'); }); }
+  function urchinS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); var r = s * 0.22; c.strokeStyle = '#1E1B4B'; c.lineWidth = 2; for (var k = 0; k < 12; k++) { var a = k / 12 * TAU; c.beginPath(); c.moveTo(Math.cos(a) * r, Math.sin(a) * r); c.lineTo(Math.cos(a) * r * 1.8, Math.sin(a) * r * 1.8); c.stroke(); } c.fillStyle = lg(c, 0, -r, 0, r, ['#4C1D95', '#1E1B4B']); circ(c, 0, 0, r, c.fillStyle); }); }
+  function clamShell(c, px, py, bw, bh) { var byTop = py - bh * 0.4; c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(px, byTop + bh * 0.5, bw * 0.5, bh * 0.16, 0, 0, TAU); c.fill(); c.fillStyle = lg(c, 0, byTop, 0, byTop + bh, ['#FBCFE8', '#F472B6', '#BE185D']); c.beginPath(); c.ellipse(px, byTop + bh * 0.3, bw * 0.5, bh * 0.5, 0, Math.PI, 0, true); c.fill(); c.strokeStyle = 'rgba(190,24,93,.5)'; c.lineWidth = 2; for (var r = 0; r < 5; r++) { c.beginPath(); c.moveTo(px, byTop + bh * 0.3); c.lineTo(px - bw * 0.4 + r * bw * 0.2, byTop - bh * 0.1); c.stroke(); } c.fillStyle = '#F8FAFC'; c.beginPath(); c.ellipse(px, byTop + bh * 0.3, bw * 0.4, bh * 0.14, 0, 0, TAU); c.fill(); }
 })(window.D6 = window.D6 || {});
