@@ -951,6 +951,21 @@
     var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
     return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + fitIn(f(), OBJ[k] ? k : 'coin').replace(/ID/g, id) + '</svg>';
   }
+  /* v-games (propriétaire : « enlève les ronds, le dessin prend tout le carré ») — les logos « médaillon » sont en fait
+     une SCÈNE découpée en rond (fond + objets). On remplace le découpage rond par un carré : la scène remplit la vignette,
+     l'anneau doré (dessiné dessous) est recouvert par le fond. Les logos non-médaillon ne sont pas touchés. */
+  function deround(s) {
+    s = s.replace(/<clipPath id="([^"]+)"><circle cx="32" cy="33" r="26\.5"\/><\/clipPath>/g, '<clipPath id="$1"><rect x="0" y="0" width="64" height="64" rx="5"/></clipPath>');
+    s = s.replace(/<circle cx="32" cy="3[0-9](?:\.[0-9]+)?" r="28\.5"[^>]*\/>/g, '');      // anneau + ombre du médaillon
+    s = s.replace(/<circle cx="32" cy="33" r="26\.5" fill="none"[^>]*\/>/g, '');            // liseré rond intérieur
+    s = s.replace(/<path d="M8 27A24\.5 24\.5 0 0 1 56 27Q32 20 8 27z"[^>]*\/>/g, '');       // reflet en dôme (haut du médaillon)
+    return s;
+  }
+  function objFull(k) {
+    var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
+    var inner = fitIn(f(), OBJ[k] ? k : 'coin').replace(/ID/g, id);
+    return '<svg class="cs-obj cs-objf" viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + deround(inner) + '</svg>';
+  }
   /* planète + objet posé dessus (sans carré) */
   function planet(k, cls) {
     var p = PAL[k] || PAL.coin;
@@ -973,5 +988,20 @@
   function addObj(k, svgInner, pal) { if (!k || OBJ[k]) return; OBJ[k] = function () { return String(svgInner || ''); }; if (pal && !PAL[k]) PAL[k] = pal; }
   // 2026-10-21 (propriétaire : logos plus beaux) : un logo redessiné (js/games/logos-*.js) remplace celui du catalogue
   function setObj(k, svgInner, pal) { if (!k) return; OBJ[k] = function () { return String(svgInner || ''); }; if (pal) PAL[k] = pal; }
-  D6.CasinoArt = { PAL: PAL, obj: obj, planet: planet, sym: sym, car: car, addObj: addObj, setObj: setObj, rps: function (i) { return rpsSvg(i, true); } };
+  /* v-games — SALLE EN GRANDES VIGNETTES (style 1xBet) : certains jeux ont une scène PLEIN CADRE (SVG 160×112,
+     js/games/scenes.js). scene(k) la renvoie telle quelle ; hasScene(k) dit si elle existe. Les jeux sans scène
+     gardent une vignette « médaillon » (fond dégradé de leur couleur + leur logo rond au centre) : jamais un rond recadré. */
+  var SCN = {};
+  function setScene(k, svg) { if (k) SCN[k] = String(svg || ''); }
+  function hasScene(k) { return !!SCN[k]; }
+  function scene(k) { return SCN[k] || ''; }
+  // vignette de repli : panneau dégradé (couleur du jeu) + logo rond centré, pour les jeux sans scène dédiée
+  function poster(k) {
+    var p = PAL[k] || PAL.coin, id = 'po' + (++n);
+    return '<svg class="cs-poster" viewBox="0 0 160 112" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+      '<defs><radialGradient id="' + id + '" cx="50%" cy="34%" r="82%"><stop offset="0" stop-color="' + p[0] + '"/><stop offset=".55" stop-color="' + p[1] + '"/><stop offset="1" stop-color="#0d0a24"/></radialGradient>' +
+      '<radialGradient id="' + id + 'v" cx="50%" cy="42%" r="70%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient></defs>' +
+      '<rect width="160" height="112" fill="url(#' + id + ')"/><rect width="160" height="112" fill="url(#' + id + 'v)"/></svg>';
+  }
+  D6.CasinoArt = { PAL: PAL, obj: obj, objFull: objFull, planet: planet, sym: sym, car: car, addObj: addObj, setObj: setObj, setScene: setScene, hasScene: hasScene, scene: scene, poster: poster, rps: function (i) { return rpsSvg(i, true); } };
 })(window.D6 = window.D6 || {});

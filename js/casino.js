@@ -384,8 +384,23 @@
         S.catWaitT = setTimeout(function () { S.catWaitDone = true; catRepaint(); }, 6000);
         return;
       }
+      // v-games (propriétaire) — SALLE EN GRANDES VIGNETTES façon 1xBet : 3 par rangée, art PLEIN CADRE (scène dédiée
+      // si elle existe, sinon panneau dégradé de la couleur du jeu avec son logo rond au centre), nom en bas.
+      var live = function (k) { return LIVE_GAMES[k] ? '<i class="cs-onair" aria-label="live"><svg viewBox="0 0 16 12"><circle cx="8" cy="6" r="2.2"/><path d="M4.6 2.6a4.8 4.8 0 0 0 0 6.8M11.4 2.6a4.8 4.8 0 0 1 0 6.8"/></svg></i>' : ''; };
       var tile = function (k) {
-        return '<button type="button" class="cs-g" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' + gicon(k) + '<b>' + (LIVE_GAMES[k] ? '<i class="cs-onair" aria-label="live"><svg viewBox="0 0 16 12"><circle cx="8" cy="6" r="2.2"/><path d="M4.6 2.6a4.8 4.8 0 0 0 0 6.8M11.4 2.6a4.8 4.8 0 0 1 0 6.8"/></svg></i>' : '') + '<span class="fit">' + esc(name(k)) + '</span></b></button>';
+        var art;
+        if (ART.hasScene && ART.hasScene(k)) {
+          art = '<span class="cs-art">' + ART.scene(k) + '</span>';
+        } else {
+          var objsvg = ART.obj ? ART.obj(k) : '';
+          var ph = /href="(img\/games\/[^"]+)"/.exec(objsvg); // jeux « Action » : vraie photo → plein cadre (carré, remplit la carte)
+          art = ph
+            ? '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<img class="cs-art-photo" src="' + ph[1] + '" alt="" decoding="async" loading="lazy" draggable="false"></span>'
+            : '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<span class="cs-objbig">' + ((ART.objFull ? ART.objFull(k) : objsvg) || gicon(k)) + '</span></span>';
+        }
+        return '<button type="button" class="cs-g cs-big" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' +
+          art + live(k) +
+          '<b><span class="fit">' + esc(name(k)) + '</span></b></button>';
       };
       // v2804 (propriétaire) : 3 listes — Live · Tu contrôles · Tous les jeux
       // v2812 (round 4) : la salle de jeux (~70 logos dessinés) est gardée telle quelle : revenir d'un jeu est instantané
@@ -497,6 +512,7 @@
   function evenNames(v) {
     if (!v || !v.querySelectorAll) return;
     v.querySelectorAll('.cs-sec-g').forEach(function (g) {
+      if (g.querySelector('.cs-big')) return; // grandes vignettes : taille du nom gérée en CSS
       // taille commune = celle qui va à 80 % des noms ; les quelques noms très longs restent un peu plus petits
       var sp = [].slice.call(g.querySelectorAll('.cs-g b > span')); if (!sp.length) return;
       var fs = sp.map(function (e) { return parseFloat(getComputedStyle(e).fontSize) || 12; });
@@ -507,6 +523,7 @@
   function balanceGrid(v) {
     if (!v || !v.querySelectorAll) return;
     v.querySelectorAll('.cs-sec-g').forEach(function (g) {
+      if (g.querySelector('.cs-big')) return; // grandes vignettes : nombre de colonnes fixé en CSS (responsive)
       g.style.removeProperty('grid-template-columns');
       var n = g.children.length; if (!n) return;
       var base = getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length || 4;
