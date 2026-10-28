@@ -129,6 +129,19 @@ return [
   'astro' => $cascSlot('Moon Explorer', 'A', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 4, 12], [0.8, 2.5, 8], [0.5, 1.5, 5], [0.3, 1, 3]], [], 0.29),
   'puppy' => $cascSlot('Lucky Puppy', 'W5', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 3, 12], [0.6, 2, 8], [0.4, 1.2, 5]], [], 0.32),
   'sweets' => $cascSlot('Sweet Treats', 'R33', [50, 20, 10, 6, 3, 2], [], 0.23),
+  /* ------------------------------------------------------------------ nouveaux types (casc4.js) : 6 jeux « révèle le palier » */
+  // Rocket Cash — la fusée grimpe la jauge et s'arrête : perte · ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100
+  'rocketcash' => $cascFill('Rocket Cash', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  // Gold Digger — la pioche fend le rocher : perte · ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150
+  'golddig' => $cascFill('Gold Digger', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  // Gift Rush — le cadeau s'ouvre : perte · ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100
+  'giftrush' => $cascFill('Gift Rush', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  // Treasure Cannon — la boule éclate : raté · raté · ×0.5 · ×1.2 · ×2.5 · ×6 · ×25 · ×100
+  'cannonx' => $cascFill('Treasure Cannon', [[0, null], [0, 800], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [25, 40], [100, 3]]),
+  // Lucky Lift — l'ascenseur s'arrête à un étage : perte · ×0.5 · ×1.2 · ×2 · ×5 · ×20 · ×100
+  'luckylift' => $cascFill('Lucky Lift', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  // Magic Hat — la baguette révèle le lot : perte · ×0.5 · ×1.2 · ×2.5 · ×6 · ×20 · ×150
+  'magichat' => $cascFill('Magic Hat', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
   /* ------------------------------------------------------------------ 12 instant games (casc2.js · casc3.js) */
   // Potion Lab — two ingredients fall into the cauldron, the brew becomes: smoke (lose), red ×0.5, blue ×1.2, green ×2, purple ×5, rainbow ×20, golden elixir ×100
   'potion' => $cascFill('Potion Lab', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
