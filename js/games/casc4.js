@@ -644,4 +644,116 @@
       '<g transform="translate(-40 -30)"><circle r="12" fill="#FEF3C7" stroke="#92400E" stroke-width="1.5"/><path d="M0 -9l3 9-3 9-3-9z" fill="#B91C1C"/><path d="M-9 0l9 3 9-3-9-3z" fill="#334155"/></g>' +
       '</g>'
   });
+
+  /* ---- casc5 vague 4 (finale → 232) ---- */
+  function goldbar(x, y, s) { return '<g transform="translate(' + x + ' ' + y + ') skewX(-18)"><rect x="' + (-18 * s) + '" y="' + (-7 * s) + '" width="' + (36 * s) + '" height="' + (14 * s) + '" rx="2" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/><rect x="' + (-18 * s) + '" y="' + (-7 * s) + '" width="' + (36 * s) + '" height="' + (4 * s) + '" fill="#FFF7D6" opacity=".4"/></g>'; }
+  /* Gold Bars (RA) */
+  rgame({
+    key: 'goldbars', verb: V.tap, rows: RA, sfx: 'chests', cy: 112,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(14) + r5glow() +
+      '<ellipse cx="150" cy="168" rx="70" ry="12" fill="#000" opacity=".35"/>' +
+      '<g id="cyObj" transform="translate(150 112)">' + goldbar(-20, 18, 1) + goldbar(22, 18, 1) + goldbar(0, 0, 1.1) + '</g>'
+  });
+  /* Poker Chip (RB) */
+  rgame({
+    key: 'pokerchip', verb: V.tap, rows: RB, sfx: 'show', cy: 106,
+    scene: '<defs>' + GDEFS + '<linearGradient id="r5f3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14532D"/><stop offset="1" stop-color="#052e16"/></linearGradient></defs>' + r5bg('url(#r5f3)') + r5glow() +
+      '<g id="cyObj" transform="translate(150 106)">' +
+      '<circle r="50" fill="#B91C1C" stroke="#7F1D1D" stroke-width="2"/>' +
+      (function () { var p = ''; for (var i = 0; i < 8; i++) { p += '<rect x="-7" y="-50" width="14" height="14" fill="#F8FAFC" transform="rotate(' + (i * 45) + ')"/>'; } return p; })() +
+      '<circle r="34" fill="#DC2626" stroke="url(#cyGold)" stroke-width="3"/>' +
+      '<circle r="22" fill="#B91C1C" stroke="url(#cyGold)" stroke-width="1.5"/>' +
+      '<text y="7" text-anchor="middle" font-size="18" font-weight="900" fill="url(#cyGold)" font-family="var(--cg-font),Arial">$</text>' +
+      '</g>'
+  });
+  /* Lucky Clover (RA) */
+  rgame({
+    key: 'luckyclover', verb: V.tap, rows: RA, sfx: 'show', cy: 108,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 108)">' +
+      (function () { var p = ''; for (var i = 0; i < 4; i++) { var a = i * 90; p += '<path d="M0 0C-16 -14-16 -36 0 -36 16 -36 16 -14 0 0z" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5" transform="rotate(' + (a + 45) + ')"/>'; } return p; })() +
+      '<path d="M0 0q4 20-10 36" fill="none" stroke="#B45309" stroke-width="4" stroke-linecap="round"/>' +
+      '<circle r="5" fill="#FEF3C7"/>' +
+      '</g>'
+  });
+  /* Ruby Heart (RB) */
+  rgame({
+    key: 'rubyheart', verb: V.tap, rows: RB, sfx: 'show', cy: 104,
+    scene: '<defs>' + GDEFS + '<radialGradient id="r5rb2" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FDA4AF"/><stop offset=".5" stop-color="#E11D48"/><stop offset="1" stop-color="#881337"/></radialGradient></defs>' + r5bg() + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 104)">' +
+      '<path d="M0 36C-44 4-40-40 0-20 40-40 44 4 0 36z" fill="url(#r5rb2)" stroke="#881337" stroke-width="2"/>' +
+      '<path d="M0 -20L-28-6 0 36 28-6z" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>' +
+      '<path d="M-28-6H28M0-20V36" stroke="rgba(255,255,255,.25)" stroke-width="1"/>' +
+      '<path d="M-16-10l8 8" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>' +
+      '</g>'
+  });
+  /* Money Bag (RA) */
+  rgame({
+    key: 'moneybag', verb: V.open, rows: RA, sfx: 'chests', cy: 108,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(12) + r5glow() +
+      '<ellipse cx="150" cy="170" rx="60" ry="12" fill="#000" opacity=".35"/>' +
+      '<g id="cyObj" transform="translate(150 108)">' +
+      '<path d="M-38 48q-14-46 10-62-10-6-4-14h64q6 8-4 14 24 16 10 62z" fill="#92400E" stroke="#5C2E0E" stroke-width="2"/>' +
+      '<path d="M-32-28h64" stroke="#5C2E0E" stroke-width="3"/>' +
+      '<ellipse cx="-14" cy="6" rx="10" ry="18" fill="#A16207" opacity=".5"/>' +
+      '<circle cx="0" cy="14" r="16" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
+      '<text y="20" text-anchor="middle" font-size="18" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">$</text>' +
+      '</g>'
+  });
+  /* Horseshoe (RA) */
+  rgame({
+    key: 'luckyshoe', verb: V.tap, rows: RA, sfx: 'show', cy: 108,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 108)">' +
+      '<path d="M-30 40V6a30 36 0 0 1 60 0v34h-14V8a16 22 0 0 0-32 0v32z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
+      (function () { var p = ''; var pts = [[-22, 34], [-26, 14], [-18, -8], [18, -8], [26, 14], [22, 34]]; pts.forEach(function (q) { p += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="2.4" fill="#5C2E0E"/>'; }); return p; })() +
+      '<path d="M-26 2a26 30 0 0 1 52 0" fill="none" stroke="#FFF7D6" stroke-width="1.5" opacity=".5"/>' +
+      '</g>'
+  });
+  /* Diamond Ring (RB) */
+  rgame({
+    key: 'diamondring', verb: V.tap, rows: RB, sfx: 'show', cy: 112,
+    scene: '<defs>' + GDEFS + '<radialGradient id="r5dr2" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#A5F3FC"/><stop offset="1" stop-color="#0891B2"/></radialGradient></defs>' + r5bg('url(#r5vel)') + stars(16) + r5glow() +
+      '<g id="cyObj" transform="translate(150 112)">' +
+      '<circle cx="0" cy="18" r="30" fill="none" stroke="url(#cyGold)" stroke-width="9"/>' +
+      '<circle cx="0" cy="18" r="30" fill="none" stroke="#78350F" stroke-width="1" opacity=".5"/>' +
+      '<path d="M-14-20L0-36 14-20 0 2z" fill="url(#r5dr2)" stroke="#0891B2" stroke-width="1"/>' +
+      '<path d="M-14-20H14M0-36 0 2M-7-20L0-36 7-20" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="0.8"/>' +
+      '<circle cx="-6" cy="-24" r="3" fill="#fff" opacity=".8"/>' +
+      '</g>'
+  });
+  /* Gold Trophy (RB) */
+  rgame({
+    key: 'goldtrophy', verb: V.tap, rows: RB, sfx: 'show', cy: 104,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 104)">' +
+      '<path d="M-28-40h56v14a28 30 0 0 1-56 0z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
+      '<path d="M-28-34c-18 0-20 20 2 22M28-34c18 0 20 20-2 22" fill="none" stroke="url(#cyGold)" stroke-width="4"/>' +
+      '<rect x="-6" y="-2" width="12" height="20" fill="url(#cyGold)"/>' +
+      '<path d="M-20 18h40l-4 14h-32z" fill="#B45309" stroke="#78350F" stroke-width="1.5"/>' +
+      '<rect x="-26" y="30" width="52" height="10" rx="2" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
+      '<ellipse cx="-10" cy="-26" rx="6" ry="14" fill="#FFF7D6" opacity=".45"/>' +
+      '<text y="-18" text-anchor="middle" font-size="12" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">1</text>' +
+      '</g>'
+  });
+  /* Sun Medallion (RA) */
+  rgame({
+    key: 'sunburst', verb: V.tap, rows: RA, sfx: 'show', cy: 106,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 106)">' +
+      (function () { var p = ''; for (var i = 0; i < 16; i++) { p += '<path d="M0 -42l5 10h-10z" fill="url(#cyGold)" transform="rotate(' + (i * 22.5) + ')"/>'; } return p; })() +
+      '<circle r="34" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
+      '<circle r="26" fill="none" stroke="#92400E" stroke-width="1.5" opacity=".5"/>' +
+      '<circle cx="-10" cy="-6" r="3.5" fill="#5C2E0E"/><circle cx="10" cy="-6" r="3.5" fill="#5C2E0E"/>' +
+      '<path d="M-10 8q10 10 20 0" fill="none" stroke="#5C2E0E" stroke-width="2.5" stroke-linecap="round"/>' +
+      '</g>'
+  });
+  /* Gem Trio (RB) */
+  rgame({
+    key: 'gemtrio', verb: V.open, rows: RB, sfx: 'chests', cy: 108,
+    scene: '<defs>' + GDEFS + '<radialGradient id="r5a" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FDA4AF"/><stop offset="1" stop-color="#BE123C"/></radialGradient><radialGradient id="r5b" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#86EFAC"/><stop offset="1" stop-color="#15803D"/></radialGradient><radialGradient id="r5c" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#A5F3FC"/><stop offset="1" stop-color="#0891B2"/></radialGradient></defs>' + r5bg() + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 108)">' +
+      (function () { function g(x, y, f, s) { return '<g transform="translate(' + x + ' ' + y + ')"><path d="M0 ' + (-18 * s) + 'l' + (16 * s) + ' ' + (6 * s) + 'l' + (-6 * s) + ' ' + (22 * s) + 'h' + (-20 * s) + 'l' + (-6 * s) + ' ' + (-22 * s) + 'z" fill="' + f + '" stroke="rgba(0,0,0,.3)" stroke-width="1"/><path d="M0 ' + (-18 * s) + 'v' + (40 * s) + 'M' + (-16 * s) + ' ' + (-12 * s) + 'H' + (16 * s) + '" stroke="rgba(255,255,255,.4)" stroke-width="0.8"/></g>'; } return g(-34, 6, 'url(#r5a)', 0.82) + g(32, 8, 'url(#r5c)', 0.78) + g(0, -4, 'url(#r5b)', 1); })() +
+      '</g>'
+  });
 })(window.D6 = window.D6 || {});
