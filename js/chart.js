@@ -1048,10 +1048,9 @@
   var GALAXY_TURNS = 1.6;
 
   function cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr) {
-    // v3224 (propriétaire) : fond CALME et LÉGER. On ne garde QUE de petits anneaux blancs
-    // discrets, un par planète restante → on voit que ce sont des planètes, pas des cryptos.
-    // Plus de galaxie spirale au centre, plus de cœur lumineux, plus aucun logo crypto :
-    // le fond ne bouge plus « dans tous les sens », donc la courbe paraît mieux avancer.
+    // v3229 (propriétaire) : on REMET la spirale centrale (il l'avait demandée en « plus léger »,
+    // pas retirée). Fond calme : petits anneaux blancs sur les planètes + une spirale douce au
+    // centre. Toujours AUCUN logo crypto. Spirale un peu plus légère qu'avant.
     function lightRing(x, y, rr) {
       g.save();
       g.globalAlpha = 0.12;
@@ -1062,8 +1061,44 @@
       g.stroke();
       g.restore();
     }
+    function halo(x, y, r, col) {
+      var rg = g.createRadialGradient(x, y, 0, x, y, r);
+      rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = rg; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+    }
     var i;
     for (i = 0; i < planets.length; i++) { if (planets[i]) lightRing(planets[i].x, planets[i].y, planets[i].r); }
+    // Spirale ronde au centre, légère et immobile (dessinée une fois dans le décor fixe).
+    var cx = cssW * 0.5, cy = cssH * 0.5;
+    var R = Math.min(cssW * 0.30, cssH * 0.40);
+    function spiral(arm, t) {
+      var ang = arm * Math.PI + t * Math.PI * 2 * GALAXY_TURNS;
+      var rad = R * (0.05 + 0.95 * t);
+      return { x: cx + Math.cos(ang) * rad, y: cy + Math.sin(ang) * rad };
+    }
+    halo(cx, cy, R * 1.05, 'rgba(120,80,255,0.05)');
+    halo(cx, cy, R * 0.45, 'rgba(180,120,255,0.05)');
+    var arm, t, q;
+    for (arm = 0; arm < 2; arm++) {
+      g.save();
+      g.lineCap = 'round';
+      for (q = 0; q < 2; q++) {
+        g.strokeStyle = q ? 'rgba(200,170,255,0.045)' : 'rgba(120,90,255,0.035)';
+        g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
+        g.beginPath();
+        for (t = 0; t <= 1.0001; t += 0.01) { var pp = spiral(arm, t); if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y); }
+        g.stroke();
+      }
+      g.restore();
+      for (t = 0.02; t < 1; t += 0.004) {
+        var sp = spiral(arm, t);
+        var jx = (rnd() - 0.5) * R * 0.07, jy = (rnd() - 0.5) * R * 0.07;
+        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.08 + t * 0.12).toFixed(2) + ')';
+        g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
+      }
+    }
+    halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.09)');
+    halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.09)');
     galaxy = null;
   }
 
