@@ -99,7 +99,30 @@
       '<ellipse cx="32" cy="46" rx="30" ry="14" fill="#2563EB"/><ellipse cx="32" cy="46" rx="20" ry="9.4" fill="#fff"/><ellipse cx="32" cy="46" rx="11" ry="5" fill="#DC2626"/><ellipse cx="32" cy="46" rx="4" ry="1.8" fill="#fff"/>' +
       '<ellipse cx="34" cy="30" rx="18" ry="11" fill="url(#IDs)" stroke="#374151" stroke-width="1.4"/><ellipse cx="34" cy="27" rx="13" ry="6.5" fill="#E5E7EB"/><rect x="26" y="20" width="16" height="5" rx="2.5" fill="#2563EB"/><path d="M38 22v-6h7" stroke="#2563EB" stroke-width="3" fill="none" stroke-linecap="round"/>' + hi(30, 28, 10) + tw(56, 10, .8)
   });
+  // casd (round 8) : logos des 6 machines à sous de plus (dessins pleins, pas de rond)
+  Object.assign(ICONS, {
+    westgold: '<defs>' + rg('IDn', '#FDE68A', '#F59E0B', '#92400E') + '</defs>' + sh(22) +
+      (function () { var d = ''; for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 12 : 28; d += (i ? 'L' : 'M') + (32 + Math.cos(a) * r).toFixed(1) + ' ' + (32 + Math.sin(a) * r).toFixed(1); } return '<path d="' + d + 'z" fill="url(#IDn)" stroke="#5C2E0E" stroke-width="2" stroke-linejoin="round"/>'; })() +
+      '<circle cx="32" cy="32" r="11" fill="#78350F"/><text x="32" y="38" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="15" fill="#FDE68A">$</text>' + hi(26, 24, 8),
+    piratecove: '<defs>' + rg('IDw', '#FFFFFF', '#E5E7EB', '#94A3B8') + '</defs>' +
+      '<path d="M32 6C18 6 10 16 10 28c0 7 3 11 7 14v8h6v-5h5v5h8v-5h5v5h6v-8c4-3 7-7 7-14C54 16 46 6 32 6z" fill="url(#IDw)" stroke="#475569" stroke-width="1.6"/>' +
+      '<circle cx="24" cy="28" r="5.5" fill="#111827"/><circle cx="40" cy="28" r="5.5" fill="#111827"/><path d="M29 40l3-5 3 5z" fill="#475569"/><path d="M8 50l48 10M8 60l48-10" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round"/>',
+    clover: '<defs>' + rg('IDc', '#86EFAC', '#22C55E', '#15803D') + '</defs>' + sh(18) +
+      '<path d="M32 36v20" stroke="#166534" stroke-width="4" stroke-linecap="round"/>' +
+      [[-1, -1], [1, -1], [-1, 1], [1, 1]].map(function (q) { return '<path d="M32 32q' + (q[0] * 16) + ' ' + (q[1] * 3) + ' ' + (q[0] * 12) + ' ' + (q[1] * 16) + 'q' + (-q[0] * 3) + ' ' + (q[1] * 3) + ' ' + (-q[0] * 12) + ' ' + (-q[1] * 12) + 'z" fill="url(#IDc)" stroke="#14532D" stroke-width="1.4"/>'; }).join(''),
+    candypop: '<defs>' + rg('IDl', '#FFFFFF', '#F9A8D4', '#BE185D') + '</defs>' + sh(16) +
+      '<rect x="30" y="34" width="4" height="26" rx="2" fill="#F9FAFB"/><circle cx="32" cy="24" r="18" fill="url(#IDl)"/>' +
+      (function () { var d = 'M32 24'; for (var i = 0; i <= 24; i++) { var a = i * 0.6, r = i * 0.6; d += 'L' + (32 + Math.cos(a) * r).toFixed(1) + ' ' + (24 + Math.sin(a) * r).toFixed(1); } return '<path d="' + d + '" fill="none" stroke="#fff" stroke-width="2.4" opacity=".85"/>'; })(),
+    olympus: '<defs>' + lg('IDb', '#FEF9C3', '#FACC15') + '</defs>' + sh(16) +
+      '<path d="M38 4L14 36h16l-6 24 28-34H38z" fill="url(#IDb)" stroke="#92400E" stroke-width="2" stroke-linejoin="round"/>' + hi(28, 18, 8),
+    vegasneon: '<defs>' + lg('IDv', '#E879F9', '#A21CAF') + '</defs>' +
+      '<rect x="8" y="16" width="48" height="32" rx="8" fill="#1A0A2E" stroke="url(#IDv)" stroke-width="2.5"/>' +
+      '<text x="32" y="42" text-anchor="middle" font-family="Georgia,serif" font-weight="900" font-size="22" fill="#FDE047" stroke="#B45309" stroke-width="1">777</text>' +
+      '<circle cx="14" cy="54" r="3" fill="#F472B6"/><circle cx="32" cy="56" r="3" fill="#67E8F9"/><circle cx="50" cy="54" r="3" fill="#FDE047"/>'
+  });
   var L = [
+    ['westgold', 'Gold Rush', 'casc1', ['#FED7AA', '#C2410C']], ['piratecove', 'Pirate Cove', 'casc1', ['#99F6E4', '#0D9488']], ['clover', 'Lucky Clover', 'casc1', ['#BBF7D0', '#16A34A']],
+    ['candypop', 'Candy Pop', 'casc1', ['#FBCFE8', '#DB2777']], ['olympus', 'Zeus Fury', 'casc1', ['#BFDBFE', '#2563EB']], ['vegasneon', 'Vegas Nights', 'casc1', ['#E9D5FF', '#A855F7']],
     ['samurai', 'Samurai', 'casc1', ['#FFE4E6', '#BE123C']], ['mermaid', 'Mermaid Lagoon', 'casc1', ['#CCFBF1', '#0D9488']], ['carnival', 'Carnival', 'casc1', ['#FAE8FF', '#A21CAF']],
     ['jazzclub', 'Jazz Club', 'casc1', ['#FEF3C7', '#92400E']], ['oasis', 'Desert Oasis', 'casc1', ['#FFEDD5', '#C2410C']], ['arctic', 'Arctic', 'casc1', ['#E0F2FE', '#0284C7']],
     ['steampunk', 'Steampunk', 'casc1', ['#FEF3C7', '#78350F']], ['cybercity', 'Cyber City', 'casc1', ['#F3E8FF', '#7E22CE']], ['fairy', 'Fairy Forest', 'casc1', ['#ECFCCB', '#4D7C0F']],
