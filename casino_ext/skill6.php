@@ -80,4 +80,11 @@ return [
   'candycatch'  => ['type' => 'skill', 'name' => 'Candy Catch',    'rate' => 0.03],
   'donutcatch'  => ['type' => 'skill', 'name' => 'Donut Catch',    'rate' => 0.03],
   'pearlcatch'  => ['type' => 'skill', 'name' => 'Pearl Catch',    'rate' => 0.03],
+  // vague 6 « qu'on contrôle » — js/games/skill8.js
+  'copterflight' => ['type' => 'skill', 'name' => 'Copter Flight', 'rate' => 0.03],
+  'dragonfly'   => ['type' => 'skill', 'name' => 'Dragonfly',      'rate' => 0.03],
+  'paperplane'  => ['type' => 'skill', 'name' => 'Paper Plane',    'rate' => 0.03],
+  'snowcatch'   => ['type' => 'skill', 'name' => 'Snow Catch',     'rate' => 0.03],
+  'tacocatch'   => ['type' => 'skill', 'name' => 'Taco Catch',     'rate' => 0.03],
+  'fruitpunch'  => ['type' => 'skill', 'name' => 'Fruit Punch',    'rate' => 0.03],
 ];
