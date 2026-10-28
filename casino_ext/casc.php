@@ -60,7 +60,7 @@ return [
   // Pirate Cove (243 ways) — skull, treasure chest, parrot, A K Q
   'piratecove' => $cascSlot('Pirate Cove', 'W5', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 3, 12], [0.6, 2, 8], [0.4, 1.2, 5]], [], 0.32),
   // Lucky Clover (3×3, 5 lines) — pot of gold, clover, horseshoe, hat, coin, pint
-  'clover' => $cascSlot('Lucky Clover', 'R33', [50, 20, 10, 6, 3, 2], [], 0.23),
+  'shamrock' => $cascSlot('Clover Riches', 'R33', [50, 20, 10, 6, 3, 2], [], 0.23),
   // Candy Pop (5×4 pays anywhere: 6–7 / 8–9 / 10+ alike) — lollipop, jelly, donut, candy cane, gumdrop, star, heart
   'candypop' => $cascSlot('Candy Pop', 'A', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 4, 12], [0.8, 2.5, 8], [0.5, 1.5, 5], [0.3, 1, 3]], [], 0.29),
   // Zeus Fury (5×3, 10 lines) — Zeus, lightning bolt, temple, laurel, A K Q; scatter = golden eagle
@@ -80,6 +80,13 @@ return [
   'lotus' => $cascSlot('Lotus Zen', 'W5', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 3, 12], [0.6, 2, 8], [0.4, 1.2, 5]], [], 0.32),
   // Inferno (5×3, 10 lines) — devil, flame, skull, pitchfork, A K Q; scatter = fireball
   'inferno' => $cascSlot('Inferno', 'L5', [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [12, 60], 0.28),
+  /* ------------------------------------------------------------------ lot 3 : 6 machines (casc1.js) */
+  'aztecsun' => $cascSlot('Aztec Sun', 'L5', [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [12, 60], 0.28),
+  'dragongold' => $cascSlot('Golden Dragon', 'W5', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 3, 12], [0.6, 2, 8], [0.4, 1.2, 5]], [], 0.32),
+  'fruitburst' => $cascSlot('Fruit Burst', 'R33', [50, 20, 10, 6, 3, 2], [], 0.23),
+  'horuseye' => $cascSlot('Eye of Pharaoh', 'L5', [[8, 40, 250], [5, 15, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], [10, 50], 0.29),
+  'cosmicgems' => $cascSlot('Cosmic Gems', 'A', [[6, 25, 120], [4, 12, 50], [2.5, 8, 25], [1.5, 5, 15], [1, 3, 10], [0.6, 2, 6], [0.4, 1.2, 4]], [], 0.28),
+  'savanna' => $cascSlot('Wild Safari', 'A', [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 4, 12], [0.8, 2.5, 8], [0.5, 1.5, 5], [0.3, 1, 3]], [], 0.29),
   /* ------------------------------------------------------------------ 12 instant games (casc2.js · casc3.js) */
   // Potion Lab — two ingredients fall into the cauldron, the brew becomes: smoke (lose), red ×0.5, blue ×1.2, green ×2, purple ×5, rainbow ×20, golden elixir ×100
   'potion' => $cascFill('Potion Lab', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
