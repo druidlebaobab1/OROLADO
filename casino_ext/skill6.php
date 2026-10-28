@@ -52,4 +52,11 @@ return [
   'dunebuggy'   => ['type' => 'skill', 'name' => 'Dune Buggy',     'rate' => 0.03],
   'starcatch'   => ['type' => 'skill', 'name' => 'Star Catch',     'rate' => 0.03],
   'gemcatch'    => ['type' => 'skill', 'name' => 'Gem Catch',      'rate' => 0.03],
+  // vague 2 « qu'on contrôle » — js/games/skill8.js
+  'lavarun'     => ['type' => 'skill', 'name' => 'Lava Run',       'rate' => 0.03],
+  'ghostdash'   => ['type' => 'skill', 'name' => 'Ghost Dash',     'rate' => 0.03],
+  'cityscoot'   => ['type' => 'skill', 'name' => 'City Scoot',     'rate' => 0.03],
+  'eggcatch'    => ['type' => 'skill', 'name' => 'Egg Catch',      'rate' => 0.03],
+  'gifthaul'    => ['type' => 'skill', 'name' => 'Gift Haul',      'rate' => 0.03],
+  'coincatch'   => ['type' => 'skill', 'name' => 'Coin Catch',     'rate' => 0.03],
 ];
