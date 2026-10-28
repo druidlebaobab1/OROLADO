@@ -388,9 +388,16 @@
       // si elle existe, sinon panneau dégradé de la couleur du jeu avec son logo rond au centre), nom en bas.
       var live = function (k) { return LIVE_GAMES[k] ? '<i class="cs-onair" aria-label="live"><svg viewBox="0 0 16 12"><circle cx="8" cy="6" r="2.2"/><path d="M4.6 2.6a4.8 4.8 0 0 0 0 6.8M11.4 2.6a4.8 4.8 0 0 1 0 6.8"/></svg></i>' : ''; };
       var tile = function (k) {
-        var art = ART.hasScene && ART.hasScene(k)
-          ? '<span class="cs-art">' + ART.scene(k) + '</span>'
-          : '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + gicon(k) + '</span>';
+        var art;
+        if (ART.hasScene && ART.hasScene(k)) {
+          art = '<span class="cs-art">' + ART.scene(k) + '</span>';
+        } else {
+          var objsvg = ART.obj ? ART.obj(k) : '';
+          var ph = /href="(img\/games\/[^"]+)"/.exec(objsvg); // jeux « Action » : vraie photo → plein cadre (carré, remplit la carte)
+          art = ph
+            ? '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<img class="cs-art-photo" src="' + ph[1] + '" alt="" decoding="async" loading="lazy" draggable="false"></span>'
+            : '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<span class="cs-objbig">' + (objsvg || gicon(k)) + '</span></span>';
+        }
         return '<button type="button" class="cs-g cs-big" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' +
           art + live(k) +
           '<b><span class="fit">' + esc(name(k)) + '</span></b></button>';
