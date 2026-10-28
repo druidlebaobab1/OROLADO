@@ -2923,6 +2923,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
       <button class="mini" id="btnBonusAll" type="button" style="border-color:#4ADE80;color:#86EFAC">🎁 Bonus à tous</button>
       <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">💬 Social <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
+      <button class="mini" id="btnAffA" type="button" style="border-color:#2DD4BF;color:#5EEAD4">🤝 Affiliation</button>
       <button class="mini" id="btnParisA" type="button" style="border-color:#60A5FA;color:#93C5FD">⚽ Paris</button>
       <button class="mini" id="btnTradeA" type="button" style="border-color:#FBBF24;color:#FCD34D">📈 Trading</button>
       <button class="mini" id="btnPredA" type="button" style="border-color:#C084FC;color:#D8B4FE">🔮 Predict</button>
@@ -3549,6 +3550,8 @@ function admOpenPage(btn) { admFrom = btn; document.body.classList.add('adm-page
   });
 })();
 document.getElementById('btnTopG').addEventListener('click', () => { document.getElementById('btnCasA').click(); setTimeout(() => { const t = document.getElementById('csTabSt'); if (t) t.click(); }, 60); });
+// Affiliation (propriétaire) : ouvre directement la liste des affiliés — qui invite des amis, qui a déposé, et ce que l'affilié a gagné (argent libre, retirable sans miser).
+(function () { var a = document.getElementById('btnAffA'); if (!a) return; a.addEventListener('click', function () { var b = document.querySelector('.metric-btn[data-view="gift_aff"]'); if (b) b.click(); }); })();
 document.getElementById('admBack').addEventListener('click', () => {
   document.body.classList.remove('adm-page');
   if (admFrom) admFrom.scrollIntoView({block: 'center'});
