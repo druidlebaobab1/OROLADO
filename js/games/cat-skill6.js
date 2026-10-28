@@ -192,7 +192,21 @@
     icon: '<defs><linearGradient id="IDdk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6D28D9"/><stop offset=".6" stop-color="#DB2777"/><stop offset="1" stop-color="#F59E0B"/></linearGradient><linearGradient id="IDbk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D97706"/><stop offset="1" stop-color="#92400E"/></linearGradient></defs>' +
       '<rect width="64" height="64" fill="url(#IDdk)"/><g fill="#fff" opacity=".3"><circle cx="48" cy="16" r="3"/><circle cx="16" cy="20" r="2.5"/></g>' +
       '<path d="M32 30C20 20 25 9 32 15 39 9 44 20 32 30Z" fill="#FB7185"/><circle cx="27" cy="17" r="2" fill="#fff" opacity=".55"/>' +
-      '<g transform="translate(32 48)"><rect x="-19" y="-4" width="38" height="7" rx="3.5" fill="#B45309"/><path d="M-16 2H16L12 18H-12Z" fill="url(#IDbk)"/><g stroke="#451A03" stroke-width="1" opacity=".45"><line x1="-13" y1="6" x2="13" y2="6"/><line x1="-13" y1="10" x2="13" y2="10"/><line x1="-12" y1="14" x2="12" y2="14"/></g><path d="M0 -3C-4 -7-2 -11 0 -9 2 -11 4 -7 0 -3Z" fill="#F472B6"/></g>' }
+      '<g transform="translate(32 48)"><rect x="-19" y="-4" width="38" height="7" rx="3.5" fill="#B45309"/><path d="M-16 2H16L12 18H-12Z" fill="url(#IDbk)"/><g stroke="#451A03" stroke-width="1" opacity=".45"><line x1="-13" y1="6" x2="13" y2="6"/><line x1="-13" y1="10" x2="13" y2="10"/><line x1="-12" y1="14" x2="12" y2="14"/></g><path d="M0 -3C-4 -7-2 -11 0 -9 2 -11 4 -7 0 -3Z" fill="#F472B6"/></g>' },
+  { k: 'grenade', name: 'Grenade Toss', sec: 'skill', file: 'skill8', pal: ['#A3B18A', '#3F4A2E'],
+    nm: { en: 'Grenade Toss', fr: 'Grenade Toss', es: 'Grenade Toss', pt: 'Grenade Toss', ar: 'Grenade Toss', tr: 'Grenade Toss', vi: 'Grenade Toss', id: 'Grenade Toss', ru: 'Grenade Toss', de: 'Grenade Toss', hi: 'Grenade Toss', zh: 'Grenade Toss' },
+    icon: '<defs><linearGradient id="IDgs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9CA3AF"/><stop offset=".6" stop-color="#B9A078"/><stop offset="1" stop-color="#5B4A2E"/></linearGradient><radialGradient id="IDgn" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#4B5563"/><stop offset="1" stop-color="#1F2937"/></radialGradient></defs>' +
+      '<rect width="64" height="64" fill="url(#IDgs)"/><path d="M0 46h64v18H0z" fill="#3A2E1A"/>' +
+      '<path d="M8 46a24 20 0 0 1 44 -6" fill="none" stroke="#FDE68A" stroke-width="2" stroke-dasharray="3 4" stroke-linecap="round"/>' +
+      '<g transform="translate(44 20)"><circle r="9" fill="url(#IDgn)"/><rect x="-3" y="-13" width="6" height="5" rx="1.5" fill="#16A34A"/><rect x="-5" y="-10" width="10" height="3" rx="1.5" fill="#15803D"/><g stroke="#111827" stroke-width="1" opacity=".5"><line x1="-6" y1="-2" x2="6" y2="-2"/><line x1="-7" y1="2" x2="7" y2="2"/><line x1="-6" y1="6" x2="6" y2="6"/></g></g>' +
+      '<g transform="translate(12 42)"><rect x="-5" y="-8" width="10" height="13" rx="2" fill="#3F4A2E"/><circle cx="0" cy="-11" r="4" fill="#C7A17A"/><path d="M-5 -13a5 4 0 0 1 10 0z" fill="#4B5320"/></g>' +
+      '<g fill="#A8956B"><circle cx="8" cy="48" r="4"/><circle cx="14" cy="48" r="4"/><circle cx="20" cy="48" r="4"/></g>' },
+  { k: 'canyon', name: 'Canyon Dash', sec: 'skill', file: 'skill8', pal: ['#BAE6FD', '#B45309'],
+    nm: { en: 'Canyon Dash', fr: 'Canyon Dash', es: 'Canyon Dash', pt: 'Canyon Dash', ar: 'Canyon Dash', tr: 'Canyon Dash', vi: 'Canyon Dash', id: 'Canyon Dash', ru: 'Canyon Dash', de: 'Canyon Dash', hi: 'Canyon Dash', zh: 'Canyon Dash' },
+    icon: '<defs><linearGradient id="IDcy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DD3FC"/><stop offset=".55" stop-color="#FCD34D"/><stop offset="1" stop-color="#F59E0B"/></linearGradient><linearGradient id="IDrk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#92400E"/><stop offset="1" stop-color="#451A03"/></linearGradient></defs>' +
+      '<rect width="64" height="64" fill="url(#IDcy)"/>' +
+      '<path d="M0 0h64v16L50 20 40 12 26 18 12 10 0 16Z" fill="url(#IDrk)"/><path d="M0 64h64V44L50 40 38 50 24 42 10 52 0 46Z" fill="url(#IDrk)"/>' +
+      '<g transform="translate(26 32)"><path d="M12 0L-6 -6-11 -3-11 3-6 6Z" fill="#CBD5E1"/><path d="M-2 0L-9 -8-4 0Z" fill="#475569"/><path d="M-2 0L-9 8-4 0Z" fill="#475569"/><ellipse cx="4" cy="-0.5" rx="3" ry="2" fill="#7DD3FC"/><path d="M-8 0L-16 -2-16 2Z" fill="#FDBA74"/></g>' }
 ]);
   var V = ''; try { V = ((document.currentScript && document.currentScript.src) || '').split('?v=')[1] || ''; } catch (e) { V = ''; }
   var warmed = false, warmT = 0;
