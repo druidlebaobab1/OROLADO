@@ -87,4 +87,11 @@ return [
   'snowcatch'   => ['type' => 'skill', 'name' => 'Snow Catch',     'rate' => 0.03],
   'tacocatch'   => ['type' => 'skill', 'name' => 'Taco Catch',     'rate' => 0.03],
   'fruitpunch'  => ['type' => 'skill', 'name' => 'Fruit Punch',    'rate' => 0.03],
+  // vague 7 « qu'on contrôle » — js/games/skill8.js
+  'ufoflight'   => ['type' => 'skill', 'name' => 'UFO Flight',     'rate' => 0.03],
+  'seagull'     => ['type' => 'skill', 'name' => 'Seagull',        'rate' => 0.03],
+  'raindash'    => ['type' => 'skill', 'name' => 'Rain Dash',      'rate' => 0.03],
+  'coffeecatch' => ['type' => 'skill', 'name' => 'Coffee Catch',   'rate' => 0.03],
+  'burgercatch' => ['type' => 'skill', 'name' => 'Burger Catch',   'rate' => 0.03],
+  'sushicatch'  => ['type' => 'skill', 'name' => 'Sushi Catch',    'rate' => 0.03],
 ];
