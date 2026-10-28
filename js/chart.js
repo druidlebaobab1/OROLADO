@@ -1057,7 +1057,7 @@
       g.strokeStyle = 'rgba(255,255,255,0.9)';
       g.lineWidth = Math.max(0.8, rr * 0.08);
       g.beginPath();
-      g.ellipse(x, y, rr * 1.8, rr * 0.52, -0.3, 0, Math.PI * 2);
+      g.ellipse(x, y, rr * 1.8, rr * 0.5, -0.15, 0, Math.PI * 2);
       g.stroke();
       g.restore();
     }
@@ -1309,13 +1309,14 @@
     // colonne des prix — avec des tailles variées. Discrètes mais présentes ; chacune reçoit un
     // petit anneau blanc (cryptoWorld). Jamais alignées : rien qui gêne le trading ou laisse croire
     // que la courbe n'avance pas.
-    // v3232 (propriétaire) : PYRAMIDE RENVERSÉE bien droite et SYMÉTRIQUE (pas penchée) — 2 en haut
-    // aux mêmes hauteur/taille (gauche/droite), 1 en bas pile au centre. Bien séparées, écartées de la
-    // spirale, mais pas collées aux bords. Même taille → triangle net.
+    // v3233 (propriétaire) : PYRAMIDE RENVERSÉE bien droite et SYMÉTRIQUE, centrée sur le VRAI centre
+    // de l'écran (cssW/2 = centre de la spirale), pas sur le centre des bougies (qui est décalé à gauche
+    // par la colonne des prix → ça paraissait penché). Celle du bas pile au centre, les 2 du haut
+    // symétriques, même taille, un peu plus grandes, et le bas moins serré.
     var planets = [
-      { x: pad.l + w * 0.180, y: pad.t + h * 0.140, r: pr * 0.140 },
-      { x: pad.l + w * 0.820, y: pad.t + h * 0.140, r: pr * 0.140 },
-      { x: pad.l + w * 0.500, y: pad.t + h * 0.860, r: pr * 0.140 }
+      { x: cssW * 0.180, y: pad.t + h * 0.155, r: pr * 0.165 },
+      { x: cssW * 0.820, y: pad.t + h * 0.155, r: pr * 0.165 },
+      { x: cssW * 0.500, y: pad.t + h * 0.800, r: pr * 0.165 }
     ];
     planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.22, false);
     planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.26, false);
