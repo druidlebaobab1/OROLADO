@@ -251,6 +251,90 @@
       de: ['Ziehen, um das Boot zu steuern', 'Havariert!', 'Strudel!', 'Ziehe nach links oder rechts, um dein Schnellboot zu steuern und zwischen den Bojen und Felsen im Fluss hindurchzuschlängeln. Es wird schneller und voller. Etwas zu treffen beendet die Runde.'],
       hi: ['नाव चलाने को खींचें', 'डूब गई!', 'भँवर!', 'अपनी स्पीडबोट चलाने और नदी की बोया व चट्टानों के बीच से निकलने के लिए बाएँ या दाएँ खींचें। यह तेज़ और व्यस्त होता जाता है। किसी से टकराना राउंड खत्म कर देता है।'],
       zh: ['拖动驾驶你的快艇', '翻船了！', '漩涡！', '左右拖动驾驶你的快艇，在河面的浮标和礁石之间穿梭。会越来越快、越来越挤。撞到任何东西，本回合结束。']
+    },
+    spacedash: {
+      en: ['Drag to steer', 'Crash!', 'Wipeout!', 'Drag left or right to steer and weave through the obstacles coming at you. It gets faster and more crowded. Touching anything ends the round.'],
+      fr: ['Glisse pour diriger', 'Accident !', 'Terminé !', 'Glisse à gauche ou à droite pour diriger et te faufiler entre les obstacles qui arrivent. Ça devient plus rapide et plus chargé. Toucher quelque chose termine la partie.'],
+      es: ['Desliza para dirigir', '¡Choque!', '¡Fuera!', 'Desliza a izquierda o derecha para dirigir y esquivar los obstáculos que vienen. Se vuelve más rápido y concurrido. Tocar algo termina la ronda.'],
+      pt: ['Deslize para dirigir', 'Batida!', 'Acabou!', 'Deslize para a esquerda ou direita para dirigir e desviar dos obstáculos que vêm. Fica mais rápido e cheio. Tocar em algo encerra a rodada.'],
+      ar: ['اسحب للتوجيه', 'تحطّم!', 'انتهى!', 'اسحب يسارًا أو يمينًا للتوجيه والتفاف بين العوائق القادمة. يصبح أسرع وأكثر ازدحامًا. لمس أي شيء ينهي الجولة.'],
+      tr: ['Yönlendirmek için kaydır', 'Kaza!', 'Bitti!', 'Yönlendirip gelen engellerin arasından geçmek için sola ya da sağa kaydır. Daha hızlı ve kalabalık olur. Bir şeye değmek turu bitirir.'],
+      vi: ['Kéo để lái', 'Tông rồi!', 'Hết!', 'Kéo trái hoặc phải để lái và né các chướng ngại vật đang lao tới. Ngày càng nhanh và đông. Chạm vào bất cứ thứ gì là kết thúc ván.'],
+      id: ['Geser untuk mengarah', 'Tabrakan!', 'Selesai!', 'Geser ke kiri atau kanan untuk mengarah dan menghindari rintangan yang datang. Makin cepat dan ramai. Menyentuh apa pun mengakhiri ronde.'],
+      ru: ['Веди, чтобы рулить', 'Авария!', 'Конец!', 'Веди влево или вправо, чтобы рулить и уклоняться от летящих препятствий. Становится быстрее и плотнее. Касание чего-либо завершает раунд.'],
+      de: ['Ziehen zum Lenken', 'Crash!', 'Aus!', 'Ziehe nach links oder rechts, um zu lenken und den entgegenkommenden Hindernissen auszuweichen. Es wird schneller und voller. Etwas zu berühren beendet die Runde.'],
+      hi: ['चलाने को खींचें', 'टक्कर!', 'खत्म!', 'चलाने और आ रही बाधाओं से बचने के लिए बाएँ या दाएँ खींचें। यह तेज़ और भीड़भाड़ वाला होता जाता है। किसी भी चीज़ को छूना राउंड खत्म कर देता है।'],
+      zh: ['拖动操控', '撞上了！', '结束！', '左右拖动操控，躲避迎面而来的障碍。会越来越快、越来越挤。碰到任何东西，本回合结束。']
+    },
+    sharkbay: {
+      en: ['Drag to steer', 'Crash!', 'Wipeout!', 'Drag left or right to steer and weave through the obstacles coming at you. It gets faster and more crowded. Touching anything ends the round.'],
+      fr: ['Glisse pour diriger', 'Accident !', 'Terminé !', 'Glisse à gauche ou à droite pour diriger et te faufiler entre les obstacles qui arrivent. Ça devient plus rapide et plus chargé. Toucher quelque chose termine la partie.'],
+      es: ['Desliza para dirigir', '¡Choque!', '¡Fuera!', 'Desliza a izquierda o derecha para dirigir y esquivar los obstáculos que vienen. Se vuelve más rápido y concurrido. Tocar algo termina la ronda.'],
+      pt: ['Deslize para dirigir', 'Batida!', 'Acabou!', 'Deslize para a esquerda ou direita para dirigir e desviar dos obstáculos que vêm. Fica mais rápido e cheio. Tocar em algo encerra a rodada.'],
+      ar: ['اسحب للتوجيه', 'تحطّم!', 'انتهى!', 'اسحب يسارًا أو يمينًا للتوجيه والتفاف بين العوائق القادمة. يصبح أسرع وأكثر ازدحامًا. لمس أي شيء ينهي الجولة.'],
+      tr: ['Yönlendirmek için kaydır', 'Kaza!', 'Bitti!', 'Yönlendirip gelen engellerin arasından geçmek için sola ya da sağa kaydır. Daha hızlı ve kalabalık olur. Bir şeye değmek turu bitirir.'],
+      vi: ['Kéo để lái', 'Tông rồi!', 'Hết!', 'Kéo trái hoặc phải để lái và né các chướng ngại vật đang lao tới. Ngày càng nhanh và đông. Chạm vào bất cứ thứ gì là kết thúc ván.'],
+      id: ['Geser untuk mengarah', 'Tabrakan!', 'Selesai!', 'Geser ke kiri atau kanan untuk mengarah dan menghindari rintangan yang datang. Makin cepat dan ramai. Menyentuh apa pun mengakhiri ronde.'],
+      ru: ['Веди, чтобы рулить', 'Авария!', 'Конец!', 'Веди влево или вправо, чтобы рулить и уклоняться от летящих препятствий. Становится быстрее и плотнее. Касание чего-либо завершает раунд.'],
+      de: ['Ziehen zum Lenken', 'Crash!', 'Aus!', 'Ziehe nach links oder rechts, um zu lenken und den entgegenkommenden Hindernissen auszuweichen. Es wird schneller und voller. Etwas zu berühren beendet die Runde.'],
+      hi: ['चलाने को खींचें', 'टक्कर!', 'खत्म!', 'चलाने और आ रही बाधाओं से बचने के लिए बाएँ या दाएँ खींचें। यह तेज़ और भीड़भाड़ वाला होता जाता है। किसी भी चीज़ को छूना राउंड खत्म कर देता है।'],
+      zh: ['拖动操控', '撞上了！', '结束！', '左右拖动操控，躲避迎面而来的障碍。会越来越快、越来越挤。碰到任何东西，本回合结束。']
+    },
+    snowdash: {
+      en: ['Drag to steer', 'Crash!', 'Wipeout!', 'Drag left or right to steer and weave through the obstacles coming at you. It gets faster and more crowded. Touching anything ends the round.'],
+      fr: ['Glisse pour diriger', 'Accident !', 'Terminé !', 'Glisse à gauche ou à droite pour diriger et te faufiler entre les obstacles qui arrivent. Ça devient plus rapide et plus chargé. Toucher quelque chose termine la partie.'],
+      es: ['Desliza para dirigir', '¡Choque!', '¡Fuera!', 'Desliza a izquierda o derecha para dirigir y esquivar los obstáculos que vienen. Se vuelve más rápido y concurrido. Tocar algo termina la ronda.'],
+      pt: ['Deslize para dirigir', 'Batida!', 'Acabou!', 'Deslize para a esquerda ou direita para dirigir e desviar dos obstáculos que vêm. Fica mais rápido e cheio. Tocar em algo encerra a rodada.'],
+      ar: ['اسحب للتوجيه', 'تحطّم!', 'انتهى!', 'اسحب يسارًا أو يمينًا للتوجيه والتفاف بين العوائق القادمة. يصبح أسرع وأكثر ازدحامًا. لمس أي شيء ينهي الجولة.'],
+      tr: ['Yönlendirmek için kaydır', 'Kaza!', 'Bitti!', 'Yönlendirip gelen engellerin arasından geçmek için sola ya da sağa kaydır. Daha hızlı ve kalabalık olur. Bir şeye değmek turu bitirir.'],
+      vi: ['Kéo để lái', 'Tông rồi!', 'Hết!', 'Kéo trái hoặc phải để lái và né các chướng ngại vật đang lao tới. Ngày càng nhanh và đông. Chạm vào bất cứ thứ gì là kết thúc ván.'],
+      id: ['Geser untuk mengarah', 'Tabrakan!', 'Selesai!', 'Geser ke kiri atau kanan untuk mengarah dan menghindari rintangan yang datang. Makin cepat dan ramai. Menyentuh apa pun mengakhiri ronde.'],
+      ru: ['Веди, чтобы рулить', 'Авария!', 'Конец!', 'Веди влево или вправо, чтобы рулить и уклоняться от летящих препятствий. Становится быстрее и плотнее. Касание чего-либо завершает раунд.'],
+      de: ['Ziehen zum Lenken', 'Crash!', 'Aus!', 'Ziehe nach links oder rechts, um zu lenken und den entgegenkommenden Hindernissen auszuweichen. Es wird schneller und voller. Etwas zu berühren beendet die Runde.'],
+      hi: ['चलाने को खींचें', 'टक्कर!', 'खत्म!', 'चलाने और आ रही बाधाओं से बचने के लिए बाएँ या दाएँ खींचें। यह तेज़ और भीड़भाड़ वाला होता जाता है। किसी भी चीज़ को छूना राउंड खत्म कर देता है।'],
+      zh: ['拖动操控', '撞上了！', '结束！', '左右拖动操控，躲避迎面而来的障碍。会越来越快、越来越挤。碰到任何东西，本回合结束。']
+    },
+    dunebuggy: {
+      en: ['Drag to steer', 'Crash!', 'Wipeout!', 'Drag left or right to steer and weave through the obstacles coming at you. It gets faster and more crowded. Touching anything ends the round.'],
+      fr: ['Glisse pour diriger', 'Accident !', 'Terminé !', 'Glisse à gauche ou à droite pour diriger et te faufiler entre les obstacles qui arrivent. Ça devient plus rapide et plus chargé. Toucher quelque chose termine la partie.'],
+      es: ['Desliza para dirigir', '¡Choque!', '¡Fuera!', 'Desliza a izquierda o derecha para dirigir y esquivar los obstáculos que vienen. Se vuelve más rápido y concurrido. Tocar algo termina la ronda.'],
+      pt: ['Deslize para dirigir', 'Batida!', 'Acabou!', 'Deslize para a esquerda ou direita para dirigir e desviar dos obstáculos que vêm. Fica mais rápido e cheio. Tocar em algo encerra a rodada.'],
+      ar: ['اسحب للتوجيه', 'تحطّم!', 'انتهى!', 'اسحب يسارًا أو يمينًا للتوجيه والتفاف بين العوائق القادمة. يصبح أسرع وأكثر ازدحامًا. لمس أي شيء ينهي الجولة.'],
+      tr: ['Yönlendirmek için kaydır', 'Kaza!', 'Bitti!', 'Yönlendirip gelen engellerin arasından geçmek için sola ya da sağa kaydır. Daha hızlı ve kalabalık olur. Bir şeye değmek turu bitirir.'],
+      vi: ['Kéo để lái', 'Tông rồi!', 'Hết!', 'Kéo trái hoặc phải để lái và né các chướng ngại vật đang lao tới. Ngày càng nhanh và đông. Chạm vào bất cứ thứ gì là kết thúc ván.'],
+      id: ['Geser untuk mengarah', 'Tabrakan!', 'Selesai!', 'Geser ke kiri atau kanan untuk mengarah dan menghindari rintangan yang datang. Makin cepat dan ramai. Menyentuh apa pun mengakhiri ronde.'],
+      ru: ['Веди, чтобы рулить', 'Авария!', 'Конец!', 'Веди влево или вправо, чтобы рулить и уклоняться от летящих препятствий. Становится быстрее и плотнее. Касание чего-либо завершает раунд.'],
+      de: ['Ziehen zum Lenken', 'Crash!', 'Aus!', 'Ziehe nach links oder rechts, um zu lenken und den entgegenkommenden Hindernissen auszuweichen. Es wird schneller und voller. Etwas zu berühren beendet die Runde.'],
+      hi: ['चलाने को खींचें', 'टक्कर!', 'खत्म!', 'चलाने और आ रही बाधाओं से बचने के लिए बाएँ या दाएँ खींचें। यह तेज़ और भीड़भाड़ वाला होता जाता है। किसी भी चीज़ को छूना राउंड खत्म कर देता है।'],
+      zh: ['拖动操控', '撞上了！', '结束！', '左右拖动操控，躲避迎面而来的障碍。会越来越快、越来越挤。碰到任何东西，本回合结束。']
+    },
+    starcatch: {
+      en: ['Drag to catch', 'Missed it!', 'Over!', 'Drag left or right to move and catch the good things as they fall. Dodge the bad ones. It gets faster and busier. Missing a good one — or catching a bad one — ends the round.', 'Wrong catch!'],
+      fr: ['Glisse pour attraper', 'Raté !', 'Terminé !', 'Glisse à gauche ou à droite pour attraper les bonnes choses qui tombent. Évite les mauvaises. Ça devient plus rapide et plus chargé. Rater une bonne — ou attraper une mauvaise — termine la partie.', 'Mauvaise prise !'],
+      es: ['Desliza para atrapar', '¡Fallaste!', '¡Fin!', 'Desliza a izquierda o derecha para atrapar las cosas buenas que caen. Esquiva las malas. Se vuelve más rápido y concurrido. Fallar una buena — o atrapar una mala — termina la ronda.', '¡Mala atrapada!'],
+      pt: ['Deslize para pegar', 'Perdeu!', 'Fim!', 'Deslize para a esquerda ou direita para pegar as coisas boas que caem. Desvie das ruins. Fica mais rápido e cheio. Perder uma boa — ou pegar uma ruim — encerra a rodada.', 'Pegou a errada!'],
+      ar: ['اسحب للالتقاط', 'فاتك!', 'انتهى!', 'اسحب يسارًا أو يمينًا لالتقاط الأشياء الجيدة المتساقطة. تفادَ السيئة. يصبح أسرع وأكثر ازدحامًا. تفويت جيدة — أو التقاط سيئة — ينهي الجولة.', 'التقاط خاطئ!'],
+      tr: ['Yakalamak için kaydır', 'Kaçırdın!', 'Bitti!', 'Düşen iyi şeyleri yakalamak için sola ya da sağa kaydır. Kötülerden kaç. Daha hızlı ve kalabalık olur. İyisini kaçırmak — ya da kötüsünü yakalamak — turu bitirir.', 'Yanlış yakalama!'],
+      vi: ['Kéo để hứng', 'Hụt rồi!', 'Hết!', 'Kéo trái hoặc phải để hứng những thứ tốt đang rơi. Né những thứ xấu. Ngày càng nhanh và đông. Hụt thứ tốt — hoặc hứng thứ xấu — là kết thúc ván.', 'Hứng nhầm rồi!'],
+      id: ['Geser untuk menangkap', 'Terlewat!', 'Selesai!', 'Geser ke kiri atau kanan untuk menangkap benda bagus yang jatuh. Hindari yang buruk. Makin cepat dan ramai. Melewatkan yang bagus — atau menangkap yang buruk — mengakhiri ronde.', 'Salah tangkap!'],
+      ru: ['Веди, чтобы ловить', 'Мимо!', 'Конец!', 'Веди влево или вправо, чтобы ловить падающие хорошие вещи. Уклоняйся от плохих. Становится быстрее и плотнее. Упустить хорошую — или поймать плохую — завершает раунд.', 'Не то поймал!'],
+      de: ['Ziehen zum Fangen', 'Verpasst!', 'Aus!', 'Ziehe nach links oder rechts, um die guten Dinge zu fangen, die fallen. Weiche den schlechten aus. Es wird schneller und voller. Eine gute zu verpassen — oder eine schlechte zu fangen — beendet die Runde.', 'Falsch gefangen!'],
+      hi: ['पकड़ने को खींचें', 'चूक गए!', 'खत्म!', 'गिरती अच्छी चीज़ें पकड़ने के लिए बाएँ या दाएँ खींचें। बुरी से बचें। यह तेज़ और व्यस्त होता जाता है। अच्छी चूकना — या बुरी पकड़ना — राउंड खत्म कर देता है।', 'गलत पकड़!'],
+      zh: ['拖动接取', '没接住！', '结束！', '左右拖动接住掉落的好东西，躲开坏的。会越来越快、越来越密。漏掉好的——或接到坏的——本回合结束。', '接错了！']
+    },
+    gemcatch: {
+      en: ['Drag to catch', 'Missed it!', 'Over!', 'Drag left or right to move and catch the good things as they fall. Dodge the bad ones. It gets faster and busier. Missing a good one — or catching a bad one — ends the round.', 'Wrong catch!'],
+      fr: ['Glisse pour attraper', 'Raté !', 'Terminé !', 'Glisse à gauche ou à droite pour attraper les bonnes choses qui tombent. Évite les mauvaises. Ça devient plus rapide et plus chargé. Rater une bonne — ou attraper une mauvaise — termine la partie.', 'Mauvaise prise !'],
+      es: ['Desliza para atrapar', '¡Fallaste!', '¡Fin!', 'Desliza a izquierda o derecha para atrapar las cosas buenas que caen. Esquiva las malas. Se vuelve más rápido y concurrido. Fallar una buena — o atrapar una mala — termina la ronda.', '¡Mala atrapada!'],
+      pt: ['Deslize para pegar', 'Perdeu!', 'Fim!', 'Deslize para a esquerda ou direita para pegar as coisas boas que caem. Desvie das ruins. Fica mais rápido e cheio. Perder uma boa — ou pegar uma ruim — encerra a rodada.', 'Pegou a errada!'],
+      ar: ['اسحب للالتقاط', 'فاتك!', 'انتهى!', 'اسحب يسارًا أو يمينًا لالتقاط الأشياء الجيدة المتساقطة. تفادَ السيئة. يصبح أسرع وأكثر ازدحامًا. تفويت جيدة — أو التقاط سيئة — ينهي الجولة.', 'التقاط خاطئ!'],
+      tr: ['Yakalamak için kaydır', 'Kaçırdın!', 'Bitti!', 'Düşen iyi şeyleri yakalamak için sola ya da sağa kaydır. Kötülerden kaç. Daha hızlı ve kalabalık olur. İyisini kaçırmak — ya da kötüsünü yakalamak — turu bitirir.', 'Yanlış yakalama!'],
+      vi: ['Kéo để hứng', 'Hụt rồi!', 'Hết!', 'Kéo trái hoặc phải để hứng những thứ tốt đang rơi. Né những thứ xấu. Ngày càng nhanh và đông. Hụt thứ tốt — hoặc hứng thứ xấu — là kết thúc ván.', 'Hứng nhầm rồi!'],
+      id: ['Geser untuk menangkap', 'Terlewat!', 'Selesai!', 'Geser ke kiri atau kanan untuk menangkap benda bagus yang jatuh. Hindari yang buruk. Makin cepat dan ramai. Melewatkan yang bagus — atau menangkap yang buruk — mengakhiri ronde.', 'Salah tangkap!'],
+      ru: ['Веди, чтобы ловить', 'Мимо!', 'Конец!', 'Веди влево или вправо, чтобы ловить падающие хорошие вещи. Уклоняйся от плохих. Становится быстрее и плотнее. Упустить хорошую — или поймать плохую — завершает раунд.', 'Не то поймал!'],
+      de: ['Ziehen zum Fangen', 'Verpasst!', 'Aus!', 'Ziehe nach links oder rechts, um die guten Dinge zu fangen, die fallen. Weiche den schlechten aus. Es wird schneller und voller. Eine gute zu verpassen — oder eine schlechte zu fangen — beendet die Runde.', 'Falsch gefangen!'],
+      hi: ['पकड़ने को खींचें', 'चूक गए!', 'खत्म!', 'गिरती अच्छी चीज़ें पकड़ने के लिए बाएँ या दाएँ खींचें। बुरी से बचें। यह तेज़ और व्यस्त होता जाता है। अच्छी चूकना — या बुरी पकड़ना — राउंड खत्म कर देता है।', 'गलत पकड़!'],
+      zh: ['拖动接取', '没接住！', '结束！', '左右拖动接住掉落的好东西，躲开坏的。会越来越快、越来越密。漏掉好的——或接到坏的——本回合结束。', '接错了！']
     }
   };
   function L(key) {
@@ -1954,4 +2038,177 @@
       dbg: function () { return { px: px | 0, py: py | 0, obs: obs.length, dead: dead }; }
     };
   }, 'drag', 0.5);
+
+  /* ================================================================== MOTEUR GÉNÉRIQUE « esquive » (dodger) — un véhicule/
+     personnage en bas (on glisse), des obstacles descendent dans des couloirs : en toucher un termine. Chaque jeu fournit son
+     décor et ses dessins (cfg). Même modèle d'argent que tous les « You're in control » : marge 6 %, loi de crash serveur. */
+  function dodger(cfg) {
+    return function (A) {
+      var W, H, T, dpr, bg, pw2, ph, rx0, rx1, px, py, obs = [], t = 0, spT = 0, dead = 0, won = 0, over = null, drag = null, dash = 0, pS, oS = [];
+      function mk() { pS = cfg.player(dpr, pw2, ph); oS = cfg.obs.map(function (f) { return f(dpr, pw2, ph); }); }
+      function spawn(live) {
+        var lv = live ? A.lv() : 0.2, lane = (Math.random() * cfg.lanes) | 0, laneW = (rx1 - rx0) / cfg.lanes, x = rx0 + laneW * (lane + 0.5);
+        for (var i = 0; i < obs.length; i++) if (obs[i].y < T + ph * 1.6 && Math.abs(obs[i].x - x) < pw2 * 0.95) return;
+        obs.push({ x: x, y: T - ph, vy: (H - T) * (0.4 + 0.5 * lv) * rnd(0.9, 1.15), k: (Math.random() * oS.length) | 0, rot: cfg.spin ? rnd(-0.3, 0.3) : 0, vr: cfg.spin ? rnd(-2, 2) : 0 });
+      }
+      return {
+        size: function (w, h, uu, d, top) {
+          W = w; H = h; dpr = d; T = top; rx0 = W * (cfg.margin || 0.1); rx1 = W * (1 - (cfg.margin || 0.1));
+          pw2 = clamp((rx1 - rx0) / cfg.lanes * 0.78, 26, 80); ph = pw2 * (cfg.ratio || 1.5); py = H - ph * 0.85; if (px == null) px = W / 2;
+          mk(); bg = mkc(W, H, dpr, function (c) { cfg.bg(c, W, H, T, rx0, rx1, A); });
+        },
+        reset: function () { obs = []; dead = 0; won = 0; over = null; spT = 0.5; px = W / 2; dash = 0; drag = null; },
+        step: function (dt, live) {
+          t += dt; var lv = live ? A.lv() : 0.2, i, e, spd = (H - T) * (0.5 + 0.55 * lv); dash += spd * dt;
+          if (over) { over.t += dt; for (i = obs.length - 1; i >= 0; i--) { obs[i].y += obs[i].vy * 0.3 * dt; obs[i].x += Math.sin(t * 8 + i) * W * 0.3 * dt; } return; }
+          if (dead || won) return;
+          if (A.idle()) {
+            var ahead = obs.filter(function (q) { return q.y > T && q.y < py && q.y > py - ph * 4; }), best = px, bd = -1;
+            for (var gx = rx0 + pw2; gx <= rx1 - pw2; gx += (rx1 - rx0 - 2 * pw2) / 6) { var dmin = 1e9; ahead.forEach(function (q) { var dd = Math.hypot((q.x - gx) * 1.4, q.y - py); if (dd < dmin) dmin = dd; }); if (dmin > bd) { bd = dmin; best = gx; } }
+            px += clamp(best - px, -W * 1.1 * dt, W * 1.1 * dt);
+          }
+          px = clamp(px, rx0 + pw2 * 0.5, rx1 - pw2 * 0.5);
+          spT -= dt; if (spT <= 0) { spawn(live); if (live && lv > 0.5 && Math.random() < 0.4) spawn(live); spT = Math.max(0.32, 1.2 - 0.8 * lv) * rnd(0.7, 1.25); }
+          for (i = obs.length - 1; i >= 0; i--) {
+            e = obs[i]; e.y += (e.vy + spd * 0.15) * dt; e.rot += e.vr * dt;
+            if (e.y - ph * 0.5 > H) { obs.splice(i, 1); continue; }
+            if (Math.abs(e.x - px) < pw2 * 0.78 && Math.abs(e.y - py) < ph * 0.8) { boomFx(A, (e.x + px) / 2, (e.y + py) / 2, 1); A.shake(0.45); if (A.live()) { if (A.fail(A.l.fail)) dead = 1; } obs.splice(i, 1); return; }
+          }
+        },
+        draw: function (c) {
+          A.bg(bg);
+          if (cfg.lines !== false) { c.strokeStyle = cfg.lineCol || 'rgba(255,255,255,.3)'; c.lineWidth = Math.max(2, pw2 * 0.08); c.setLineDash([ph * 0.5, ph * 0.6]); c.lineDashOffset = -(dash % (ph * 1.1)); for (var ln = 1; ln < cfg.lanes; ln++) { var lx = rx0 + (rx1 - rx0) * ln / cfg.lanes; c.beginPath(); c.moveTo(lx, -ph); c.lineTo(lx, H + ph); c.stroke(); } c.setLineDash([]); }
+          for (var i = 0; i < obs.length; i++) { var e = obs[i], img = oS[e.k]; if (e.rot) { c.save(); c.translate(e.x, e.y); c.rotate(e.rot); c.drawImage(img, -img.w / 2, -img.h / 2, img.w, img.h); c.restore(); } else c.drawImage(img, e.x - img.w / 2, e.y - img.h / 2, img.w, img.h); }
+          if (!dead) c.drawImage(pS, px - pS.w / 2, py - pS.h / 2, pS.w, pS.h);
+        },
+        down: function (x) { drag = { x: x, s: px }; },
+        move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, rx0 + pw2 * 0.5, rx1 - pw2 * 0.5); },
+        up: function () { drag = null; },
+        key: function (k) { if (k === 'left') px -= pw2 * 0.7; else if (k === 'right') px += pw2 * 0.7; px = clamp(px, rx0 + pw2 * 0.5, rx1 - pw2 * 0.5); },
+        boom: function () { over = { t: 0 }; drag = null; A.explode(px, py - ph * 0.2, 1.2); },
+        win: function () { won = 0.001; drag = null; A.burst(px, py - ph * 0.5, 16, cfg.winCols || ['#FFFFFF', '#FDE68A'], 160, 0.6, 3); },
+        dbg: function () { return { px: px | 0, py: py | 0, obs: obs.length, dead: dead }; }
+      };
+    };
+  }
+
+  /* ================================================================== MOTEUR GÉNÉRIQUE « attrape » (catcher) — un panier en
+     bas (on glisse), on attrape les bons objets qui tombent et on évite les mauvais. Rater un bon ou attraper un mauvais
+     termine. cfg fournit décor, panier, bons (good) et mauvais (bad). */
+  function catcher(cfg) {
+    return function (A) {
+      var W, H, T, dpr, bg, bw, bh, isz, px, py, items = [], t = 0, spT = 0, dead = 0, won = 0, over = null, drag = null, goodS = [], badS = [];
+      function mk() { goodS = cfg.good.map(function (f) { return f(dpr, isz); }); badS = cfg.bad.map(function (f) { return f(dpr, isz); }); }
+      function spawn(live) {
+        var lv = live ? A.lv() : 0.2, x = rnd(bw * 0.6, W - bw * 0.6);
+        for (var i = 0; i < items.length; i++) if (items[i].y < T + isz * 2 && Math.abs(items[i].x - x) < isz * 1.2) return;
+        var bad = Math.random() < (0.12 + 0.2 * lv);
+        items.push({ x: x, y: T - isz, vy: (H - T) * (0.34 + 0.46 * lv) * rnd(0.9, 1.15), rot: rnd(-0.25, 0.25), vr: rnd(-1.3, 1.3), bad: bad, k: (Math.random() * (bad ? badS.length : goodS.length)) | 0 });
+      }
+      return {
+        size: function (w, h, uu, d, top) {
+          W = w; H = h; dpr = d; T = top; bw = clamp(W * 0.2, 58, 150); bh = bw * 0.56; isz = clamp(W * 0.1, 26, 58);
+          py = H - clamp((H - T) * 0.08, 16, 46) - bh * 0.5; if (px == null) px = W / 2; mk();
+          bg = mkc(W, H, dpr, function (c) { cfg.bg(c, W, H, T, py, bh, A); });
+        },
+        reset: function () { items = []; dead = 0; won = 0; over = null; spT = 0.5; px = W / 2; drag = null; },
+        step: function (dt, live) {
+          t += dt; var lv = live ? A.lv() : 0.2, i, e;
+          if (over) { over.t += dt; for (i = items.length - 1; i >= 0; i--) { items[i].y += items[i].vy * 0.3 * dt; items[i].rot += items[i].vr * dt; } return; }
+          if (dead || won) return;
+          if (A.idle()) {
+            var tgt = px, bd = 1e9;
+            for (i = 0; i < items.length; i++) { e = items[i]; if (e.bad) continue; if (e.y > T && e.y < py && e.y > py - bh * 7) { var d = Math.abs(e.x - px); if (d < bd) { bd = d; tgt = e.x; } } }
+            for (i = 0; i < items.length; i++) { e = items[i]; if (e.bad && e.y > py - bh * 3 && Math.abs(e.x - px) < bw * 0.55) tgt = px + (e.x < px ? bw : -bw); }
+            px += clamp(tgt - px, -W * 1.1 * dt, W * 1.1 * dt);
+          }
+          px = clamp(px, bw * 0.5, W - bw * 0.5);
+          spT -= dt; if (spT <= 0) { spawn(live); spT = Math.max(0.42, 1.25 - 0.8 * lv) * rnd(0.72, 1.25); }
+          for (i = items.length - 1; i >= 0; i--) {
+            e = items[i]; e.y += e.vy * dt; e.rot += e.vr * dt;
+            if (Math.abs(e.x - px) < bw * 0.52 && e.y > py - bh * 0.7 && e.y < py + bh * 0.3) {
+              if (e.bad) { items.splice(i, 1); A.shake(0.4); boomFx(A, e.x, py - bh * 0.2, 1); if (A.live()) { if (A.fail(A.l.fail2)) dead = 1; } return; }
+              items.splice(i, 1); A.burst(e.x, py - bh * 0.2, 10, cfg.winCols || ['#FDE68A', '#FFFFFF'], 150, 0.6, 3); A.ring(e.x, py - bh * 0.2, bw * 0.55, cfg.ring || '#FDE68A'); continue;
+            }
+            if (e.y - isz * 0.5 > H) { items.splice(i, 1); if (!e.bad) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); } } return; } }
+          }
+        },
+        draw: function (c) {
+          A.bg(bg); var i, e, img;
+          for (i = 0; i < items.length; i++) { e = items[i]; img = e.bad ? badS[e.k] : goodS[e.k]; c.save(); c.translate(e.x, e.y); c.rotate(e.rot); c.drawImage(img, -img.w / 2, -img.h / 2, img.w, img.h); c.restore(); }
+          if (!dead) cfg.basket(c, px, py, bw, bh);
+        },
+        down: function (x) { drag = { x: x, s: px }; },
+        move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, bw * 0.5, W - bw * 0.5); },
+        up: function () { drag = null; },
+        key: function (k) { if (k === 'left') px -= bw * 0.6; else if (k === 'right') px += bw * 0.6; px = clamp(px, bw * 0.5, W - bw * 0.5); },
+        boom: function () { over = { t: 0 }; drag = null; A.explode(px, py - bh * 0.2, 1.1); },
+        win: function () { won = 0.001; drag = null; A.burst(px, py - bh * 0.5, 16, cfg.winCols || ['#FFFFFF', '#FDE68A'], 160, 0.6, 3); },
+        dbg: function () { return { px: px | 0, py: py | 0, items: items.length, dead: dead }; }
+      };
+    };
+  }
+
+  /* ---- petits dessins partagés par les configs ---- */
+  function fieldLines(c, W, H, T, rx0, rx1, side, edge) { c.fillStyle = side; c.fillRect(0, 0, rx0, H); c.fillRect(rx1, 0, W - rx1, H); c.fillStyle = edge; c.fillRect(rx0 - 4, 0, 4, H); c.fillRect(rx1, 0, 4, H); }
+
+  /* ===== vague 1 : 4 jeux « esquive » + 2 jeux « attrape » (décors variés) ===== */
+  boot('spacedash', dodger({
+    lanes: 4, spin: true, lineCol: 'rgba(148,163,184,.25)', winCols: ['#A5B4FC', '#FFFFFF', '#FDE68A'],
+    bg: function (c, W, H, T) { c.fillStyle = lg(c, 0, 0, 0, H, ['#05060F', '#0B1026', '#1E1B4B']); c.fillRect(0, 0, W, H); stars(c, W, H, A_lite(c) ? 50 : 130, 0, H); c.fillStyle = rg(c, W * 0.7, H * 0.2, W * 0.5, ['rgba(124,58,237,.25)', 'rgba(124,58,237,0)']); c.fillRect(0, 0, W, H); },
+    player: function (d, w, h) { return mkc(w + 8, h + 8, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = lg(c, 0, -h / 2, 0, h / 2, ['#E2E8F0', '#94A3B8', '#475569']); c.beginPath(); c.moveTo(0, -h / 2); c.quadraticCurveTo(w * 0.42, -h * 0.1, w * 0.3, h * 0.4); c.lineTo(-w * 0.3, h * 0.4); c.quadraticCurveTo(-w * 0.42, -h * 0.1, 0, -h / 2); c.fill(); c.fillStyle = '#7DD3FC'; circ(c, 0, -h * 0.1, w * 0.17, '#7DD3FC'); c.fillStyle = '#EF4444'; c.beginPath(); c.moveTo(-w * 0.3, h * 0.4); c.lineTo(-w * 0.46, h * 0.5); c.lineTo(-w * 0.26, h * 0.5); c.closePath(); c.fill(); c.beginPath(); c.moveTo(w * 0.3, h * 0.4); c.lineTo(w * 0.46, h * 0.5); c.lineTo(w * 0.26, h * 0.5); c.closePath(); c.fill(); c.fillStyle = 'rgba(253,186,116,.8)'; c.beginPath(); c.moveTo(-w * 0.14, h * 0.45); c.lineTo(0, h * 0.62); c.lineTo(w * 0.14, h * 0.45); c.fill(); }); },
+    obs: [function (d, w, h) { return astero(d, w * 0.82, ['#A8A29E', '#57534E', '#292524']); }, function (d, w, h) { return astero(d, w * 0.9, ['#94A3B8', '#475569', '#1E293B']); }]
+  }), 'drag', 0.5);
+
+  boot('sharkbay', dodger({
+    lanes: 4, lineCol: 'rgba(255,255,255,.18)', winCols: ['#7DD3FC', '#FFFFFF'],
+    bg: function (c, W, H, T) { c.fillStyle = lg(c, 0, 0, 0, H, ['#082F49', '#0C4A6E', '#0369A1']); c.fillRect(0, 0, W, H); c.strokeStyle = 'rgba(255,255,255,.08)'; c.lineWidth = 2; for (var y = 0; y < H; y += 24) { c.beginPath(); for (var x = 0; x <= W; x += 8) c.lineTo(x, y + Math.sin(x * 0.05 + y) * 3); c.stroke(); } for (var b = 0; b < (A_lite(c) ? 6 : 16); b++) { c.globalAlpha = 0.1 + Math.random() * 0.12; circ(c, Math.random() * W, Math.random() * H, rnd(2, 7), '#fff'); } c.globalAlpha = 1; },
+    player: function (d, w, h) { return mkc(w + 8, h + 8, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = lg(c, 0, -h / 2, 0, h / 2, ['#FDE68A', '#F59E0B', '#B45309']); c.beginPath(); c.moveTo(0, -h / 2); c.quadraticCurveTo(w * 0.5, 0, 0, h * 0.5); c.quadraticCurveTo(-w * 0.5, 0, 0, -h / 2); c.fill(); c.fillStyle = '#FB923C'; c.beginPath(); c.moveTo(0, h * 0.5); c.lineTo(-w * 0.24, h * 0.72); c.lineTo(w * 0.24, h * 0.72); c.fill(); circ(c, 0, -h * 0.14, w * 0.1, '#1E293B'); }); },
+    obs: [function (d, w, h) { return sharkfin(d, w, h); }, function (d, w, h) { return jelly(d, w, h); }]
+  }), 'drag', 0.5);
+
+  boot('snowdash', dodger({
+    lanes: 4, lineCol: 'rgba(255,255,255,.5)', winCols: ['#BAE6FD', '#FFFFFF'],
+    bg: function (c, W, H, T) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E0F2FE', '#BAE6FD', '#7DD3FC']); c.fillRect(0, 0, W, H); for (var s = 0; s < (A_lite(c) ? 20 : 50); s++) { c.globalAlpha = 0.4 + Math.random() * 0.5; circ(c, Math.random() * W, Math.random() * H, rnd(1, 3), '#fff'); } c.globalAlpha = 1; },
+    player: function (d, w, h) { return mkc(w + 8, h + 8, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = '#F87171'; rr(c, -w * 0.32, -h * 0.2, w * 0.64, h * 0.5, w * 0.14); c.fill(); c.fillStyle = '#B91C1C'; rr(c, -w * 0.32, h * 0.1, w * 0.64, h * 0.12, 3); c.fill(); circ(c, 0, -h * 0.34, w * 0.2, '#FBCFE8'); c.fillStyle = '#7C2D12'; circ(c, -w * 0.07, -h * 0.36, w * 0.03, '#1E293B'); circ(c, w * 0.07, -h * 0.36, w * 0.03, '#1E293B'); c.fillStyle = '#1E3A8A'; rr(c, -w * 0.36, h * 0.32, w * 0.72, h * 0.1, 4); c.fill(); }); },
+    obs: [function (d, w, h) { return pine(d, w, h); }, function (d, w, h) { return astero(d, w * 0.72, ['#94A3B8', '#475569', '#1E293B']); }]
+  }), 'drag', 0.5);
+
+  boot('dunebuggy', dodger({
+    lanes: 4, lineCol: 'rgba(120,53,15,.3)', winCols: ['#FDE68A', '#FFFFFF'],
+    bg: function (c, W, H, T) { c.fillStyle = lg(c, 0, 0, 0, H, ['#FDE68A', '#FBBF24', '#D97706']); c.fillRect(0, 0, W, H); c.fillStyle = 'rgba(180,120,40,.25)'; for (var q = 0; q < 5; q++) { c.beginPath(); c.moveTo(0, H * (0.3 + q * 0.14)); for (var x = 0; x <= W; x += W / 5) c.lineTo(x, H * (0.3 + q * 0.14) + Math.sin(x * 0.01 + q) * 10); c.lineTo(W, H); c.lineTo(0, H); c.fill(); } },
+    player: function (d, w, h) { return buggy(d, w, h); },
+    obs: [function (d, w, h) { return cactus(d, w, h); }, function (d, w, h) { return astero(d, w * 0.8, ['#A8A29E', '#78716C', '#44403C']); }]
+  }), 'drag', 0.5);
+
+  boot('starcatch', catcher({
+    winCols: ['#FDE68A', '#FFFFFF', '#A5B4FC'], ring: '#FDE68A',
+    bg: function (c, W, H, T, py) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E1B4B', '#312E81', '#4C1D95']); c.fillRect(0, 0, W, H); stars(c, W, H, A_lite(c) ? 30 : 80, 0, py); c.fillStyle = lg(c, 0, py - 10, 0, H, ['#3B0764', '#1E1035']); c.fillRect(0, py - 10, W, H - py + 10); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh, '#FDE68A'); },
+    good: [function (d, s) { return starS(d, s, '#FDE68A'); }, function (d, s) { return moonS(d, s); }],
+    bad: [function (d, s) { return cloudS(d, s); }]
+  }), 'drag', 0.5);
+
+  boot('gemcatch', catcher({
+    winCols: ['#67E8F9', '#FFFFFF', '#A5B4FC'], ring: '#67E8F9',
+    bg: function (c, W, H, T, py) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#334155', '#0F172A']); c.fillRect(0, 0, W, H); for (var q = 0; q < (A_lite(c) ? 8 : 18); q++) { c.globalAlpha = 0.1 + Math.random() * 0.15; circ(c, Math.random() * W, Math.random() * py, rnd(10, 28), '#475569'); } c.globalAlpha = 1; c.fillStyle = lg(c, 0, py - 10, 0, H, ['#1C2436', '#0B0F1A']); c.fillRect(0, py - 10, W, H - py + 10); },
+    basket: function (c, px, py, bw, bh) { mineCart(c, px, py, bw, bh); },
+    good: [function (d, s) { return gemS(d, s, ['#A5F3FC', '#06B6D4', '#0E7490']); }, function (d, s) { return gemS(d, s, ['#FDE68A', '#F59E0B', '#B45309']); }],
+    bad: [function (d, s) { return astero(d, s * 0.8, ['#A8A29E', '#57534E', '#292524']); }]
+  }), 'drag', 0.5);
+
+  /* ---- fabriques de sprites réutilisées par les configs ci-dessus ---- */
+  function A_lite() { return document.documentElement.classList.contains('oro-lite'); }
+  function astero(d, s, cols) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); var r = s * 0.42, n = 9, p = []; for (var i = 0; i < n; i++) { var a = i / n * TAU, rr2 = r * rnd(0.7, 1); p.push(Math.cos(a) * rr2, Math.sin(a) * rr2); } c.fillStyle = rg(c, -r * 0.2, -r * 0.2, r * 1.3, cols); poly(c, p, c.fillStyle); c.fill(); c.fillStyle = 'rgba(0,0,0,.25)'; circ(c, r * 0.2, r * 0.1, r * 0.18, 'rgba(0,0,0,.25)'); circ(c, -r * 0.25, r * 0.25, r * 0.12, 'rgba(0,0,0,.2)'); }); }
+  function sharkfin(d, w, h) { return mkc(w + 6, h + 6, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = lg(c, 0, -h / 2, 0, h / 2, ['#64748B', '#334155']); c.beginPath(); c.ellipse(0, h * 0.2, w * 0.5, h * 0.3, 0, 0, TAU); c.fill(); c.fillStyle = lg(c, 0, -h * 0.5, 0, 0, ['#94A3B8', '#475569']); c.beginPath(); c.moveTo(-w * 0.3, h * 0.15); c.quadraticCurveTo(w * 0.1, -h * 0.55, w * 0.32, h * 0.1); c.closePath(); c.fill(); c.fillStyle = 'rgba(255,255,255,.6)'; c.fillRect(-w * 0.35, h * 0.3, w * 0.7, 2); }); }
+  function jelly(d, w, h) { return mkc(w + 6, h + 6, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = lg(c, 0, -h * 0.3, 0, h * 0.2, ['#F0ABFC', '#D946EF', '#A21CAF']); c.beginPath(); c.arc(0, -h * 0.05, w * 0.4, Math.PI, 0); c.lineTo(w * 0.4, 0); c.lineTo(-w * 0.4, 0); c.fill(); c.strokeStyle = 'rgba(217,70,239,.7)'; c.lineWidth = 2; for (var t2 = -2; t2 <= 2; t2++) { c.beginPath(); c.moveTo(t2 * w * 0.16, 0); c.quadraticCurveTo(t2 * w * 0.16 + 4, h * 0.3, t2 * w * 0.16, h * 0.5); c.stroke(); } }); }
+  function pine(d, w, h) { return mkc(w + 6, h + 6, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = '#78350F'; c.fillRect(-w * 0.07, h * 0.2, w * 0.14, h * 0.3); c.fillStyle = lg(c, 0, -h / 2, 0, h * 0.3, ['#34D399', '#059669', '#065F46']); for (var k = 0; k < 3; k++) { var yy = -h * 0.4 + k * h * 0.26, ww = w * (0.24 + k * 0.14); c.beginPath(); c.moveTo(0, yy); c.lineTo(-ww, yy + h * 0.24); c.lineTo(ww, yy + h * 0.24); c.closePath(); c.fill(); } c.fillStyle = 'rgba(255,255,255,.5)'; circ(c, -w * 0.1, -h * 0.2, w * 0.05, 'rgba(255,255,255,.5)'); }); }
+  function cactus(d, w, h) { return mkc(w + 6, h + 6, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = lg(c, -w * 0.2, 0, w * 0.2, 0, ['#4ADE80', '#16A34A', '#166534']); rr(c, -w * 0.12, -h * 0.45, w * 0.24, h * 0.9, w * 0.1); c.fill(); rr(c, -w * 0.38, -h * 0.1, w * 0.16, h * 0.3, w * 0.07); c.fill(); rr(c, -w * 0.38, -h * 0.1, w * 0.1, h * 0.05, 2); rr(c, w * 0.22, -h * 0.2, w * 0.16, h * 0.3, w * 0.07); c.fill(); c.strokeStyle = 'rgba(255,255,255,.3)'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, -h * 0.4); c.lineTo(0, h * 0.4); c.stroke(); }); }
+  function buggy(d, w, h) { return mkc(w + 8, h + 8, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = '#1F2937'; circ(c, -w * 0.32, h * 0.32, w * 0.16, '#1F2937'); circ(c, w * 0.32, h * 0.32, w * 0.16, '#1F2937'); c.fillStyle = '#F59E0B'; rr(c, -w * 0.4, -h * 0.05, w * 0.8, h * 0.34, w * 0.1); c.fill(); c.fillStyle = '#EA580C'; rr(c, -w * 0.22, -h * 0.34, w * 0.44, h * 0.3, w * 0.08); c.fill(); c.fillStyle = '#0F172A'; rr(c, -w * 0.16, -h * 0.3, w * 0.32, h * 0.2, w * 0.05); c.fill(); c.strokeStyle = '#78350F'; c.lineWidth = 2; c.beginPath(); c.arc(0, h * 0.05, w * 0.3, Math.PI, TAU); c.stroke(); c.fillStyle = '#FDE68A'; circ(c, -w * 0.36, -h * 0.34, w * 0.07, '#FDE68A'); circ(c, w * 0.36, -h * 0.34, w * 0.07, '#FDE68A'); }); }
+  function starS(d, s, col) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); var R = s * 0.42, r = R * 0.45; c.fillStyle = lg(c, 0, -R, 0, R, [col, '#D97706']); c.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr2 = i % 2 ? r : R; c.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2); } c.closePath(); c.fill(); c.fillStyle = 'rgba(255,255,255,.5)'; circ(c, -R * 0.2, -R * 0.2, R * 0.14, 'rgba(255,255,255,.5)'); }); }
+  function moonS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); var r = s * 0.38; c.fillStyle = lg(c, -r * 0.3, -r * 0.3, 0, 0, ['#FEF3C7', '#FCD34D']); circ(c, 0, 0, r, c.fillStyle); c.fillStyle = 'rgba(217,119,6,.25)'; circ(c, r * 0.3, -r * 0.2, r * 0.12, 'rgba(217,119,6,.25)'); circ(c, -r * 0.1, r * 0.3, r * 0.1, 'rgba(217,119,6,.2)'); }); }
+  function cloudS(d, s) { return mkc(s * 1.1, s, d, function (c, w, h) { c.translate(w / 2, h / 2); c.fillStyle = lg(c, 0, -s * 0.2, 0, s * 0.2, ['#64748B', '#334155']); circ(c, -s * 0.22, 0, s * 0.2, c.fillStyle); circ(c, s * 0.22, 0, s * 0.2, c.fillStyle); circ(c, 0, -s * 0.1, s * 0.26, c.fillStyle); rr(c, -s * 0.42, 0, s * 0.84, s * 0.2, s * 0.1); c.fill(); c.strokeStyle = '#FDE68A'; c.lineWidth = 2; c.beginPath(); c.moveTo(-s * 0.05, s * 0.18); c.lineTo(-s * 0.14, s * 0.4); c.moveTo(s * 0.1, s * 0.18); c.lineTo(s * 0.02, s * 0.42); c.stroke(); }); }
+  function gemS(d, s, cols) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); var r = s * 0.36; c.fillStyle = lg(c, 0, -r, 0, r, cols); c.beginPath(); c.moveTo(0, -r); c.lineTo(r * 0.85, -r * 0.3); c.lineTo(r * 0.55, r * 0.8); c.lineTo(-r * 0.55, r * 0.8); c.lineTo(-r * 0.85, -r * 0.3); c.closePath(); c.fill(); c.strokeStyle = 'rgba(255,255,255,.4)'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, -r); c.lineTo(0, r * 0.8); c.moveTo(-r * 0.85, -r * 0.3); c.lineTo(r * 0.85, -r * 0.3); c.stroke(); c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.moveTo(0, -r); c.lineTo(r * 0.3, -r * 0.3); c.lineTo(-r * 0.3, -r * 0.3); c.fill(); }); }
+  function woodBasket(c, px, py, bw, bh, heartCol) { var bx = px - bw / 2, byTop = py - bh * 0.5; c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(px, byTop + bh, bw * 0.5, bh * 0.18, 0, 0, TAU); c.fill(); c.fillStyle = lg(c, bx, byTop, bx, byTop + bh, ['#D97706', '#92400E']); c.beginPath(); c.moveTo(bx, byTop); c.lineTo(bx + bw, byTop); c.lineTo(bx + bw * 0.85, byTop + bh); c.lineTo(bx + bw * 0.15, byTop + bh); c.closePath(); c.fill(); c.strokeStyle = 'rgba(69,26,3,.45)'; c.lineWidth = 1.4; for (var wy = byTop + 5; wy < byTop + bh - 2; wy += 5) { c.beginPath(); c.moveTo(bx + bw * 0.14, wy); c.lineTo(bx + bw * 0.86, wy); c.stroke(); } c.fillStyle = '#B45309'; rr(c, bx - 3, byTop - 6, bw + 6, 10, 5); c.fill(); }
+  function mineCart(c, px, py, bw, bh) { var bx = px - bw / 2, byTop = py - bh * 0.5; c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(px, byTop + bh, bw * 0.5, bh * 0.16, 0, 0, TAU); c.fill(); c.fillStyle = lg(c, bx, byTop, bx, byTop + bh, ['#94A3B8', '#475569']); c.beginPath(); c.moveTo(bx, byTop); c.lineTo(bx + bw, byTop); c.lineTo(bx + bw * 0.86, byTop + bh * 0.8); c.lineTo(bx + bw * 0.14, byTop + bh * 0.8); c.closePath(); c.fill(); c.fillStyle = '#334155'; for (var r = 0; r < 3; r++) c.fillRect(bx + 3, byTop + 4 + r * (bh * 0.22), bw - 6, 2); c.fillStyle = '#1E293B'; circ(c, bx + bw * 0.24, byTop + bh * 0.9, bh * 0.18, '#1E293B'); circ(c, bx + bw * 0.76, byTop + bh * 0.9, bh * 0.18, '#1E293B'); }
 })(window.D6 = window.D6 || {});

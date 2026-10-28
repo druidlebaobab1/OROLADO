@@ -45,4 +45,11 @@ return [
   'canyon'      => ['type' => 'skill', 'name' => 'Canyon Dash',    'rate' => 0.03],
   'tankrush'    => ['type' => 'skill', 'name' => 'Tank Rush',      'rate' => 0.03],
   'speedboat'   => ['type' => 'skill', 'name' => 'Speed Boat',     'rate' => 0.03],
+  // vague 1 « qu'on contrôle » (moteurs génériques esquive / attrape, décors variés) — js/games/skill8.js
+  'spacedash'   => ['type' => 'skill', 'name' => 'Space Dash',     'rate' => 0.03],
+  'sharkbay'    => ['type' => 'skill', 'name' => 'Shark Bay',      'rate' => 0.03],
+  'snowdash'    => ['type' => 'skill', 'name' => 'Snow Dash',      'rate' => 0.03],
+  'dunebuggy'   => ['type' => 'skill', 'name' => 'Dune Buggy',     'rate' => 0.03],
+  'starcatch'   => ['type' => 'skill', 'name' => 'Star Catch',     'rate' => 0.03],
+  'gemcatch'    => ['type' => 'skill', 'name' => 'Gem Catch',      'rate' => 0.03],
 ];

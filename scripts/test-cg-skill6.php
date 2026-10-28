@@ -121,8 +121,8 @@ echo "4) Argent : départ / encaisser / faute / fin secrète, pour chaque nouvea
 $U = 'aaaaaaaa-1111-2222-3333-444444444444';
 $db = blank_db();
 $db['users']['u_x'] = ['id' => 'u_x', 'email' => 'x@gmail.com', 'role' => 'user', 'sbId' => $U, 'realStakeVolume' => 0, 'wagerNeed' => 40];
-$db['vault']['u_x'] = ['demo' => 500, 'real' => 50];
-save_db(orolado_data_file(), $db); $bal[$U] = 50.0; $me = $db['users']['u_x'];
+$db['vault']['u_x'] = ['demo' => 500, 'real' => 500]; // v3276 : solde dimensionné pour le nombre de jeux (3 manches chacun)
+save_db(orolado_data_file(), $db); $bal[$U] = 500.0; $me = $db['users']['u_x'];
 $file = casino_user_file('u_x');
 foreach ($GAMES as $g) {
   $b0 = $bal[$U];
