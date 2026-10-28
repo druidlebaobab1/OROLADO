@@ -37,4 +37,7 @@ return [
   // jeux « qu'on contrôle » (propriétaire) — conduite / course + guerre — js/games/skill8.js
   'roadrace'    => ['type' => 'skill', 'name' => 'Road Race',      'rate' => 0.03],
   'airraid'     => ['type' => 'skill', 'name' => 'Air Raid',       'rate' => 0.03],
+  // jeux « qu'on contrôle » (propriétaire) — drague / rencontre (bon enfant) — js/games/skill8.js
+  'cupidaim'    => ['type' => 'skill', 'name' => 'Cupid Shot',     'rate' => 0.03],
+  'lovecatch'   => ['type' => 'skill', 'name' => 'Love Catch',     'rate' => 0.03],
 ];

@@ -180,7 +180,19 @@
       '<path d="M4 54h56v10H4z" fill="#0A0E1C"/><g fill="#334155"><rect x="8" y="42" width="7" height="14"/><rect x="20" y="36" width="7" height="20"/><rect x="48" y="40" width="7" height="16"/></g>' +
       '<g transform="translate(40 24)"><rect x="-3" y="-11" width="6" height="22" rx="2" fill="url(#IDp)"/><path d="M-14 0h28l-10 5h-8z" fill="#475569"/><path d="M-6 -11h12l-4 -4h-4z" fill="#475569"/><circle cx="0" cy="8" r="2" fill="#F87171"/></g>' +
       '<g transform="translate(32 52)"><path d="M-10 4h20l-3 8h-14z" fill="#4B5563"/><circle cx="-5" cy="4" r="4" fill="#78716C"/><circle cx="5" cy="4" r="4" fill="#78716C"/><rect x="-2" y="-12" width="4" height="14" rx="1.5" fill="#374151" transform="rotate(28 0 0)"/></g>' +
-      '<path d="M24 46l10-16" stroke="#FDE68A" stroke-width="2" stroke-linecap="round"/>' }
+      '<path d="M24 46l10-16" stroke="#FDE68A" stroke-width="2" stroke-linecap="round"/>' },
+  { k: 'cupidaim', name: 'Cupid Shot', sec: 'skill', file: 'skill8', pal: ['#FBCFE8', '#DB2777'],
+    nm: { en: 'Cupid Shot', fr: 'Cupid Shot', es: 'Cupid Shot', pt: 'Cupid Shot', ar: 'Cupid Shot', tr: 'Cupid Shot', vi: 'Cupid Shot', id: 'Cupid Shot', ru: 'Cupid Shot', de: 'Cupid Shot', hi: 'Cupid Shot', zh: 'Cupid Shot' },
+    icon: '<defs><linearGradient id="IDsk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset=".5" stop-color="#EC4899"/><stop offset="1" stop-color="#FB923C"/></linearGradient><linearGradient id="IDhe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FB7185"/><stop offset="1" stop-color="#9F1239"/></linearGradient></defs>' +
+      '<rect width="64" height="64" fill="url(#IDsk)"/><g fill="#fff" opacity=".35"><circle cx="12" cy="14" r="3"/><circle cx="52" cy="12" r="4"/><circle cx="46" cy="30" r="2.5"/></g>' +
+      '<path d="M32 51C7 32 14 11 32 23 50 11 57 32 32 51Z" fill="url(#IDhe)"/><circle cx="23" cy="25" r="4" fill="#fff" opacity=".5"/>' +
+      '<line x1="9" y1="45" x2="55" y2="19" stroke="#92400E" stroke-width="3" stroke-linecap="round"/><path d="M55 19l-9 1 4 6z" fill="#F87171"/><path d="M9 45l8-2-2 7z" fill="#FDE68A"/>' },
+  { k: 'lovecatch', name: 'Love Catch', sec: 'skill', file: 'skill8', pal: ['#FBCFE8', '#BE185D'],
+    nm: { en: 'Love Catch', fr: 'Love Catch', es: 'Love Catch', pt: 'Love Catch', ar: 'Love Catch', tr: 'Love Catch', vi: 'Love Catch', id: 'Love Catch', ru: 'Love Catch', de: 'Love Catch', hi: 'Love Catch', zh: 'Love Catch' },
+    icon: '<defs><linearGradient id="IDdk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6D28D9"/><stop offset=".6" stop-color="#DB2777"/><stop offset="1" stop-color="#F59E0B"/></linearGradient><linearGradient id="IDbk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D97706"/><stop offset="1" stop-color="#92400E"/></linearGradient></defs>' +
+      '<rect width="64" height="64" fill="url(#IDdk)"/><g fill="#fff" opacity=".3"><circle cx="48" cy="16" r="3"/><circle cx="16" cy="20" r="2.5"/></g>' +
+      '<path d="M32 30C20 20 25 9 32 15 39 9 44 20 32 30Z" fill="#FB7185"/><circle cx="27" cy="17" r="2" fill="#fff" opacity=".55"/>' +
+      '<g transform="translate(32 48)"><rect x="-19" y="-4" width="38" height="7" rx="3.5" fill="#B45309"/><path d="M-16 2H16L12 18H-12Z" fill="url(#IDbk)"/><g stroke="#451A03" stroke-width="1" opacity=".45"><line x1="-13" y1="6" x2="13" y2="6"/><line x1="-13" y1="10" x2="13" y2="10"/><line x1="-12" y1="14" x2="12" y2="14"/></g><path d="M0 -3C-4 -7-2 -11 0 -9 2 -11 4 -7 0 -3Z" fill="#F472B6"/></g>' }
 ]);
   var V = ''; try { V = ((document.currentScript && document.currentScript.src) || '').split('?v=')[1] || ''; } catch (e) { V = ''; }
   var warmed = false, warmT = 0;
