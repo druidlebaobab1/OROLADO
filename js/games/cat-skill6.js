@@ -167,7 +167,20 @@
       '<path d="M2 50q20-10 60-6v18H2z" fill="#E2E8F0"/><path d="M50 30l6 12H44z" fill="url(#IDt)"/><path d="M50 24l5 10H45z" fill="url(#IDt)"/><path d="M47 30l3-6 2 4z" fill="#fff"/><rect x="49" y="42" width="2" height="4" fill="#5C4033"/>' +
       '<path d="M10 22v16M28 20v16" stroke="#334155" stroke-width="1.6"/><path d="M10 22l6 2-6 3zM28 20l-6 2 6 3z" fill="#2563EB"/>' +
       '<g transform="translate(22 44) rotate(-25)"><path d="M-5-8v18M5-8v18" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/><rect x="-5" y="-5" width="10" height="9" rx="3" fill="url(#IDj)"/><circle cy="-6" r="3.6" fill="#F59E0B"/><path d="M-8 0l-2 8M8 0l2 8" stroke="#94A3B8" stroke-width="1.2"/></g>' +
-      '<path d="M8 56q6-4 10-2M14 60q8-6 14-4" stroke="#fff" stroke-width="1.6" fill="none"/>' }
+      '<path d="M8 56q6-4 10-2M14 60q8-6 14-4" stroke="#fff" stroke-width="1.6" fill="none"/>' },
+  { k: 'roadrace', name: 'Road Race', sec: 'skill', file: 'skill8', pal: ['#BAE6FD', '#0EA5E9'],
+    nm: { en: 'Road Race', fr: 'Road Race', es: 'Road Race', pt: 'Road Race', ar: 'Road Race', tr: 'Road Race', vi: 'Road Race', id: 'Road Race', ru: 'Road Race', de: 'Road Race', hi: 'Road Race', zh: 'Road Race' },
+    icon: '<defs><linearGradient id="IDr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#374151"/><stop offset="1" stop-color="#1F2937"/></linearGradient><linearGradient id="IDc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#BAE6FD"/><stop offset=".5" stop-color="#0EA5E9"/><stop offset="1" stop-color="#075985"/></linearGradient></defs>' +
+      '<rect x="8" y="0" width="48" height="64" fill="url(#IDr)"/><rect x="5" y="0" width="3" height="64" fill="#E5E7EB"/><rect x="56" y="0" width="3" height="64" fill="#E5E7EB"/><g fill="#FDE68A"><rect x="30.5" y="3" width="3" height="10" rx="1.5"/><rect x="30.5" y="22" width="3" height="10" rx="1.5"/><rect x="30.5" y="41" width="3" height="10" rx="1.5"/></g>' +
+      '<g transform="translate(32 40)"><rect x="-13" y="-20" width="26" height="40" rx="8" fill="url(#IDc)" stroke="#0B3A52" stroke-width="1.5"/><rect x="-9" y="-13" width="18" height="11" rx="4" fill="#0F172A" opacity=".8"/><rect x="-8" y="3" width="16" height="9" rx="4" fill="#1E293B" opacity=".7"/><circle cx="-8" cy="-18" r="2.4" fill="#FFFDE7"/><circle cx="8" cy="-18" r="2.4" fill="#FFFDE7"/><rect x="-11" y="16" width="5" height="3" fill="#F87171"/><rect x="6" y="16" width="5" height="3" fill="#F87171"/></g>' },
+  { k: 'airraid', name: 'Air Raid', sec: 'skill', file: 'skill8', pal: ['#CBD5E1', '#334155'],
+    nm: { en: 'Air Raid', fr: 'Air Raid', es: 'Air Raid', pt: 'Air Raid', ar: 'Air Raid', tr: 'Air Raid', vi: 'Air Raid', id: 'Air Raid', ru: 'Air Raid', de: 'Air Raid', hi: 'Air Raid', zh: 'Air Raid' },
+    icon: '<defs><linearGradient id="IDp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#64748B"/><stop offset="1" stop-color="#1E293B"/></linearGradient><radialGradient id="IDm" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#1E1B4B"/><stop offset="1" stop-color="#020617"/></radialGradient></defs>' +
+      '<rect x="0" y="0" width="64" height="64" fill="url(#IDm)"/><g fill="#fff"><circle cx="10" cy="10" r="1"/><circle cx="52" cy="8" r="1.2"/><circle cx="40" cy="16" r="0.8"/><circle cx="20" cy="20" r="0.9"/></g>' +
+      '<path d="M4 54h56v10H4z" fill="#0A0E1C"/><g fill="#334155"><rect x="8" y="42" width="7" height="14"/><rect x="20" y="36" width="7" height="20"/><rect x="48" y="40" width="7" height="16"/></g>' +
+      '<g transform="translate(40 24)"><rect x="-3" y="-11" width="6" height="22" rx="2" fill="url(#IDp)"/><path d="M-14 0h28l-10 5h-8z" fill="#475569"/><path d="M-6 -11h12l-4 -4h-4z" fill="#475569"/><circle cx="0" cy="8" r="2" fill="#F87171"/></g>' +
+      '<g transform="translate(32 52)"><path d="M-10 4h20l-3 8h-14z" fill="#4B5563"/><circle cx="-5" cy="4" r="4" fill="#78716C"/><circle cx="5" cy="4" r="4" fill="#78716C"/><rect x="-2" y="-12" width="4" height="14" rx="1.5" fill="#374151" transform="rotate(28 0 0)"/></g>' +
+      '<path d="M24 46l10-16" stroke="#FDE68A" stroke-width="2" stroke-linecap="round"/>' }
 ]);
   var V = ''; try { V = ((document.currentScript && document.currentScript.src) || '').split('?v=')[1] || ''; } catch (e) { V = ''; }
   var warmed = false, warmT = 0;

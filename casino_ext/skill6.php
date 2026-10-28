@@ -34,4 +34,7 @@ return [
   'ropeswing'   => ['type' => 'skill', 'name' => 'Rope Swing',     'rate' => 0.03],
   'minigolf'    => ['type' => 'skill', 'name' => 'Mini Golf',      'rate' => 0.03],
   'skislalom'   => ['type' => 'skill', 'name' => 'Ski Slalom',     'rate' => 0.03],
+  // jeux « qu'on contrôle » (propriétaire) — conduite / course + guerre — js/games/skill8.js
+  'roadrace'    => ['type' => 'skill', 'name' => 'Road Race',      'rate' => 0.03],
+  'airraid'     => ['type' => 'skill', 'name' => 'Air Raid',       'rate' => 0.03],
 ];
