@@ -396,7 +396,7 @@
           var ph = /href="(img\/games\/[^"]+)"/.exec(objsvg); // jeux « Action » : vraie photo → plein cadre (carré, remplit la carte)
           art = ph
             ? '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<img class="cs-art-photo" src="' + ph[1] + '" alt="" decoding="async" loading="lazy" draggable="false"></span>'
-            : '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<span class="cs-objbig">' + (objsvg || gicon(k)) + '</span></span>';
+            : '<span class="cs-art cs-art-f">' + (ART.poster ? ART.poster(k) : '') + '<span class="cs-objbig">' + ((ART.objFull ? ART.objFull(k) : objsvg) || gicon(k)) + '</span></span>';
         }
         return '<button type="button" class="cs-g cs-big" data-g="' + k + '" style="--tc:' + pal(k)[1] + '">' +
           art + live(k) +
