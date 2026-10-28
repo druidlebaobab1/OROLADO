@@ -187,4 +187,10 @@ return [
   'mysterybox' => $cascFill('Mystery Box', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
   'crystalorb' => $cascFill('Crystal Orb', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
   'diamondvault' => $cascFill('Diamond Vault', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  'diceroll' => $cascFill('Dice Roll', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'royalcard' => $cascFill('Royal Card', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  'genielamp' => $cascFill('Genie Lamp', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'jackpotbell' => $cascFill('Jackpot Bell', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  'oysterpearl' => $cascFill('Oyster Pearl', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'crownjewel' => $cascFill('Crown Jewel', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
 ];
