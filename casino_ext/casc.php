@@ -193,4 +193,10 @@ return [
   'jackpotbell' => $cascFill('Jackpot Bell', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
   'oysterpearl' => $cascFill('Oyster Pearl', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
   'crownjewel' => $cascFill('Crown Jewel', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  'geodegem' => $cascFill('Geode Gem', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  'moneytree' => $cascFill('Money Tree', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'lotteryball' => $cascFill('Lottery Ball', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'dragoncoin' => $cascFill('Dragon Coin', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
+  'fireworkgold' => $cascFill('Golden Firework', [[0, null], [0.5, 2600], [1.2, 2000], [2, 900], [5, 280], [20, 50], [100, 4]]),
+  'treasuremap' => $cascFill('Treasure Map', [[0, null], [0.5, 2600], [1.2, 2000], [2.5, 900], [6, 280], [20, 50], [150, 3]]),
 ];

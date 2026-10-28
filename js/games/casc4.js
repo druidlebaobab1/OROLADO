@@ -568,4 +568,80 @@
       '<rect x="-54" y="30" width="108" height="3" fill="#FEF3C7" opacity=".5"/>' +
       '</g>'
   });
+
+  /* ---- casc5 vague 3 ---- */
+  /* Geode Gem (RB) */
+  rgame({
+    key: 'geodegem', verb: V.open, rows: RB, sfx: 'chests', cy: 110,
+    scene: '<defs>' + GDEFS + '<radialGradient id="r5ge" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#F0ABFC"/><stop offset=".5" stop-color="#A855F7"/><stop offset="1" stop-color="#6D28D9"/></radialGradient></defs>' + r5bg() + stars(14) + r5glow() +
+      '<ellipse cx="150" cy="170" rx="66" ry="12" fill="#000" opacity=".35"/>' +
+      '<g id="cyObj" transform="translate(150 110)">' +
+      '<path d="M-48 10q-8-44 46-46 52 2 50 44-6 30-48 32-42-2-48-30z" fill="#57534E" stroke="#292524" stroke-width="2"/>' +
+      '<path d="M-34 6q-4-30 34-32 36 2 36 30-6 22-36 22-30 0-34-20z" fill="url(#r5ge)"/>' +
+      (function () { var p = ''; for (var i = 0; i < 8; i++) { var a = i / 8 * Math.PI * 2, R = 18 + (i % 2) * 6; p += '<path d="M0 0L' + (Math.cos(a) * R).toFixed(0) + ' ' + (Math.sin(a - 0.3) * R * 0.7).toFixed(0) + 'l4 4z" fill="rgba(255,255,255,.3)"/>'; } return p; })() +
+      '<path d="M0 -8l7 3-3 10h-8l-3-10z" fill="#E0F2FE" stroke="#A5F3FC" stroke-width="1"/>' +
+      '</g>'
+  });
+  /* Money Tree (RA) */
+  rgame({
+    key: 'moneytree', verb: V.tap, rows: RA, sfx: 'chests', cy: 100,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 100)">' +
+      '<path d="M-6 60V6q-16-6-14-24M6 60V-4q18-4 18-26" fill="none" stroke="#78350F" stroke-width="7" stroke-linecap="round"/>' +
+      '<rect x="-7" y="56" width="14" height="22" fill="#5C2E0E"/>' +
+      '<path d="M-30 64h60l-6 16h-48z" fill="#92400E" stroke="#5C2E0E" stroke-width="1.5"/>' +
+      (function () { var p = '<circle cx="0" cy="-24" r="40" fill="#14532D"/><circle cx="-26" cy="-10" r="26" fill="#166534"/><circle cx="26" cy="-10" r="26" fill="#166534"/>'; var pos = [[-22, -34], [0, -42], [22, -34], [-30, -14], [-8, -22], [14, -20], [30, -12], [-14, 2], [10, 4]]; pos.forEach(function (q) { p += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="7" fill="url(#cyGold)" stroke="#78350F" stroke-width="1"/><text x="' + q[0] + '" y="' + (q[1] + 3.5) + '" text-anchor="middle" font-size="8" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">$</text>'; }); return p; })() +
+      '</g>'
+  });
+  /* Lottery Ball (RA) */
+  rgame({
+    key: 'lotteryball', verb: V.tap, rows: RA, sfx: 'show', cy: 106,
+    scene: '<defs>' + GDEFS + '<radialGradient id="r5gl2" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".3" stop-color="#FDE68A"/><stop offset="1" stop-color="#B45309"/></radialGradient></defs>' + r5bg() + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 106)">' +
+      '<circle r="52" fill="rgba(165,243,252,.12)" stroke="#94A3B8" stroke-width="2"/>' +
+      '<circle r="52" fill="none" stroke="#E2E8F0" stroke-width="1" opacity=".4"/>' +
+      '<circle cx="-14" cy="-16" r="10" fill="#fff" opacity=".2"/>' +
+      '<circle cx="4" cy="6" r="24" fill="url(#r5gl2)" stroke="#78350F" stroke-width="1.5"/>' +
+      '<circle cx="4" cy="6" r="14" fill="#FFF7ED" opacity=".85"/>' +
+      '<text x="4" y="11" text-anchor="middle" font-size="16" font-weight="900" fill="#B45309" font-family="var(--cg-font),Arial">7</text>' +
+      '<circle cx="-24" cy="26" r="9" fill="#F87171" opacity=".6"/><circle cx="26" cy="-22" r="7" fill="#60A5FA" opacity=".6"/>' +
+      '</g>'
+  });
+  /* Dragon Coin (RB) */
+  rgame({
+    key: 'dragoncoin', verb: V.tap, rows: RB, sfx: 'chests', cy: 106,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
+      '<g id="cyObj" transform="translate(150 106)">' +
+      '<circle r="52" fill="url(#cyGold)" stroke="#78350F" stroke-width="3"/>' +
+      '<circle r="44" fill="none" stroke="#92400E" stroke-width="2" opacity=".6"/>' +
+      '<circle r="52" fill="none" stroke="#FEF3C7" stroke-width="1" opacity=".5"/>' +
+      '<path d="M-18 20q-14-14-6-30 6-12 20-8-10 4-10 14 0 12 14 10-8 12-18 14z M14 -22q16 4 14 22-2 14-16 14 8-6 6-16-2-12-16-10 6-10 12-10z" fill="#92400E"/>' +
+      '<circle cx="-8" cy="-6" r="3" fill="#B91C1C"/>' +
+      '<ellipse cx="-18" cy="-20" rx="12" ry="7" fill="#FFF7D6" opacity=".4"/>' +
+      '</g>'
+  });
+  /* Firework (RA) */
+  rgame({
+    key: 'fireworkgold', verb: V.launch, rows: RA, sfx: 'crash', cy: 150,
+    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#c4sky)') + stars(26) + r5glow() +
+      '<rect x="138" y="150" width="24" height="54" rx="4" fill="#78350F"/><rect x="138" y="150" width="24" height="10" rx="3" fill="#92400E"/>' +
+      '<g id="cyObj" transform="translate(150 150)">' +
+      '<ellipse cx="0" cy="0" rx="18" ry="30" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
+      '<path d="M0 -30q6-8 0-16" fill="none" stroke="#F87171" stroke-width="3" stroke-linecap="round"/>' +
+      '<circle cx="0" cy="-46" r="4" fill="#FB923C"/><circle cx="0" cy="-46" r="2" fill="#FEF08A"/>' +
+      '<path d="M-18 -4h36M-14 10h28" fill="none" stroke="#92400E" stroke-width="1.5" opacity=".5"/>' +
+      '<text y="6" text-anchor="middle" font-size="16" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">★</text>' +
+      '</g>'
+  });
+  /* Treasure Map (RB) */
+  rgame({
+    key: 'treasuremap', verb: V.open, rows: RB, sfx: 'show', cy: 108,
+    scene: '<defs>' + GDEFS + '<linearGradient id="r5pr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FEF3C7"/><stop offset="1" stop-color="#D6B98C"/></linearGradient></defs>' + r5bg() + stars(12) + r5glow() +
+      '<g id="cyObj" transform="translate(150 108)">' +
+      '<path d="M-66 -46q10 6 0 12 14 8 0 14 12 6 0 12 14 8 0 14 10 6 0 12 0 6 8 6h108q8 0 8-6 0-6 0-12 0-6-8-14 0-6 0-14 0-6-8-12 0-6 0-14 0-6-8-12H-58q-8 0-8 6z" fill="url(#r5pr)" stroke="#92400E" stroke-width="2"/>' +
+      '<path d="M-54 -20q30 10 60-4t44 10" fill="none" stroke="#92400E" stroke-width="1.5" stroke-dasharray="4 4" opacity=".6"/>' +
+      '<path d="M34 10l16 16M50 10l-16 16" stroke="#B91C1C" stroke-width="4" stroke-linecap="round"/>' +
+      '<g transform="translate(-40 -30)"><circle r="12" fill="#FEF3C7" stroke="#92400E" stroke-width="1.5"/><path d="M0 -9l3 9-3 9-3-9z" fill="#B91C1C"/><path d="M-9 0l9 3 9-3-9-3z" fill="#334155"/></g>' +
+      '</g>'
+  });
 })(window.D6 = window.D6 || {});
