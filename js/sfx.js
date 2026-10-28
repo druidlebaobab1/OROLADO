@@ -252,7 +252,7 @@
     ninja: 'slots', unicorn: 'slots', turbo: 'slots', astro: 'slots', puppy: 'slots', sweets: 'slots' });
   /* ---- casc4 : nouveaux types (révèle le palier) ---- */
   Object.assign(MAP, { rocketcash: 'crash', golddig: 'pick', giftrush: 'chests', cannonx: 'shoot', luckylift: 'show', magichat: 'pick' });
-  Object.assign(MAP, { chestgold: 'chests', fortunewheel: 'show', goldenegg: 'chests', mysterybox: 'chests', crystalorb: 'show', diamondvault: 'show', diceroll: 'show', royalcard: 'show', genielamp: 'show', jackpotbell: 'show', oysterpearl: 'chests', crownjewel: 'show' });
+  Object.assign(MAP, { chestgold: 'chests', fortunewheel: 'show', goldenegg: 'chests', mysterybox: 'chests', crystalorb: 'show', diamondvault: 'show', diceroll: 'show', royalcard: 'show', genielamp: 'show', jackpotbell: 'show', oysterpearl: 'chests', crownjewel: 'show', geodegem: 'chests', moneytree: 'chests', lotteryball: 'show', dragoncoin: 'chests', fireworkgold: 'crash', treasuremap: 'show' });
   /* ---- fin casc ---- */
   /* v2850 — round 6 « Tu contrôles » (js/games/skill6.js, skill7.js, skill8.js) : famille de sons de chaque jeu */
   Object.assign(MAP, { blockfall: 'build', merge2048: 'build', mazechomp: 'arcade', bubblepop: 'arcade', gemswap: 'arcade', memoflip: 'build', echopads: 'arcade', pianokeys: 'build',
