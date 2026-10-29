@@ -66,6 +66,9 @@ const CASINO_CLAW_W = [30, 24, 18, 13, 9, 6];     // ourson, canard, robot, fus�
 /** v2830 — [P, B] d'un jeu en direct (anciens : CASINO_DRAW, nouveaux : CASINO_LIVE2). */
 function casino_draw_pb(string $g): array { return CASINO_DRAW[$g] ?? CASINO_LIVE2[$g] ?? CASINO_LIVE3[$g] ?? CASINO_LIVE4[$g] ?? CASINO_LIVE5[$g]; } // v2850 : + CASINO_LIVE3 ; v2900 : + CASINO_LIVE4 ; v2901 : + CASINO_LIVE5
 function casino_live2_odd(float $p): float { return floor(CASINO_EDGE / $p * 100 + 1e-6) / 100; }
+// v3314 (propriétaire) : marge 10 % sur les PARIS EN DIRECT (courses/matchs live — casino_live4 / casino_live5).
+// Les jeux crash/casino (Aviator, Fusée, Limbo, Mines, Tour, Hi-Lo, Ballon…) gardent CASINO_EDGE (6 %).
+function casino_live_sport_odd(float $p): float { return floor(LIVE_SPORT_EDGE / $p * 100 + 1e-6) / 100; }
 /** Choix possibles et leur chance exacte (catwalk : chance du mannequin dans CE tour, lue dans le résultat ; sans résultat 1/6). */
 function casino_live2_probs(string $g, array $out = []): array {
   if ($g === 'catwalk') { $p = []; for ($m = 0; $m < 6; $m++) $p[(string) $m] = isset($out['w'][$m]) ? $out['w'][$m] / 100 : 1 / 6; return $p; }
@@ -267,6 +270,7 @@ const CASINO_DICE_DUEL = 1.92;                                                  
 const CASINO_COIN_MULT = 1.94;                                                                        // retour 97 % (v2781 : chance visible)
 const CASINO_PENALTY_MULT = 1.44;                                                                     // 3 zones, le gardien en couvre 1 : retour 96 % (v2781 : chance visible)
 const CASINO_EDGE = 0.94;                                                                             // v2780 (propriétaire) : marge 6 % — limbo, avion, jet, fusée, mines, hi-lo, tour, ballon, verger
+const LIVE_SPORT_EDGE = 0.90;                                                                         // v3314 (propriétaire) : marge 10 % — paris en direct (courses/matchs live : casino_live4 / casino_live5)
 // Machine à sous : [catégorie, multiplicateur, chances sur 1000] — retour 94 % (v2780)
 const CASINO_SLOTS = [['gem', 50, 1], ['seven', 20, 4], ['bell', 10, 10], ['lemon', 5, 30], ['cherry3', 3, 60], ['cherry2', 1.5, 253]];
 // Grattage : [multiplicateur, chances sur 1000] — retour 94 % (v2780)

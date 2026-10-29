@@ -146,12 +146,12 @@ foreach ($G as $g) {
       if ($g === 'lotto649live') { $part = in_array($sel, ['lo', 'hi'], true) ? 's' : 'o'; if ($out['part'] !== $part) continue; $p *= 2; }
       $m = casino_draw_mult($g, (string) $sel, $out); $rtp += $p * $m; if ($m > 0) $pw += $p; $wsum += $p;
     }
-    $ok = $rtp <= 0.94 + 1e-9 && $rtp >= 0.93 && abs($pw - $pr[$sel]) < 1e-9 && $o <= 1000 && $o > 1.01;
+    $ok = $rtp <= 0.90 + 1e-9 && $rtp >= 0.89 && abs($pw - $pr[$sel]) < 1e-9 && $o <= 1000 && $o > 1.01;
     if (!$ok) { $okR = false; $okG = false; }
     $txt[] = "$sel ×$o " . number_format($rtp * 100, 2) . '%' . ($ok ? '' : ' !!');
   }
   $rows[] = sprintf('     %-13s %s', $g, implode(' · ', $txt));
-  check("$g : chaque choix entre 93 % et 94 %, chance gagnante = chance déclarée, cote ≤ ×1000", $okG);
+  check("$g : chaque choix entre 89 % et 90 %, chance gagnante = chance déclarée, cote ≤ ×1000", $okG);
 }
 echo implode("\n", $rows) . "\n";
 check('Baccarat : chances exactes = énumération', abs(casino_live4_probs('baccaratlive')['pl'] - 2153464 / 4826809) < 1e-15 && array_sum(CASINO_BAC_N) === 4826809);

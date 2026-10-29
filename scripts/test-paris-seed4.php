@@ -51,8 +51,8 @@ $badT = array_filter($list, static fn($r) => $r[3] < strtotime('2026-10-21 00:00
 check('dates de la semaine (21/10 → 27/10/2026)', !$badT, implode(' | ', array_column($badT, 0)));
 $badE = array_filter($list, static fn($r) => (int) ($r[6] ?? 0) < $r[3] + 7200);
 check('heure de FIN ≥ 2 h après la fermeture des paris (foot +2 h, NBA +3 h)', !$badE, implode(' | ', array_column($badE, 0)));
-$badM = array_filter($list, static function ($r) { $s = 0; foreach ($r[4] as $o) $s += 1 / $o[1]; return $s < 1 / 0.94 - 1e-9; });
-check('marge maison ≥ 6 % sur chaque événement (somme des 1/cote ≥ 1/0,94)', !$badM, implode(' | ', array_column($badM, 0)));
+$badM = array_filter($list, static function ($r) { $s = 0; foreach ($r[4] as $o) $s += 1 / $o[1]; return $s < 1 / 0.90 - 1e-9; });
+check('marge maison ≥ 10 % sur chaque événement (somme des 1/cote ≥ 1/0,90)', !$badM, implode(' | ', array_column($badM, 0)));
 $mx = 0; foreach ($list as $r) { $s = 0; foreach ($r[4] as $o) $s += 1 / $o[1]; $mx = max($mx, $s); }
 check('marge pas absurde (somme des 1/cote ≤ 1,18)', $mx <= 1.18, (string) round($mx, 3));
 $ms = sp_mset([1.95, 3.75, 3.00]); $ms2 = sp_mset([2.15, 3.67, 3.40]);

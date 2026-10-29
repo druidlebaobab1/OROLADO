@@ -197,7 +197,7 @@ function casino_live5_probs(string $g, array $out = []): array {
   }
   return $memo[$g] = $p;
 }
-function casino_live5_odds(string $g, array $out = []): array { return array_map('casino_live2_odd', casino_live5_probs($g, $out)); }
+function casino_live5_odds(string $g, array $out = []): array { return array_map('casino_live_sport_odd', casino_live5_probs($g, $out)); }
 /** Choix gagnants d'un résultat. */
 function casino_live5_wins(string $g, array $out): array {
   $n = (int) ($out['n'] ?? -1);
