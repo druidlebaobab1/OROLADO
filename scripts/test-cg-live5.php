@@ -116,7 +116,7 @@ foreach ($G as $g) {
   foreach ($od as $sel => $o) {
     $rtp = 0.0; $pw = 0.0;
     foreach ($L as [$p, $out]) { $m = casino_draw_mult($g, (string) $sel, $out); $rtp += $p * $m; if ($m > 0) $pw += $p; }
-    $ok = $rtp <= 0.94 + 1e-9 && $rtp >= 0.93 && abs($pw - $pr[$sel]) < 1e-9 && $o <= 1000 && $o > 1.01; $maxO = max($maxO, $o);
+    $ok = $rtp <= 0.90 + 1e-9 && $rtp >= 0.89 && abs($pw - $pr[$sel]) < 1e-9 && $o <= 1000 && $o > 1.01; $maxO = max($maxO, $o);
     if (!$ok) { $okR = false; $okG = false; }
     $txt[] = "$sel ×$o " . number_format($rtp * 100, 2) . '%' . ($ok ? '' : ' !!');
   }

@@ -333,7 +333,7 @@ function sp_suggestions2(): array {
  * F1 « start times 2026 »), prix Coinbase (BTC 81 900 $, ETH 2 400 $, SOL 104 $, XRP 1,30 $, DOGE 0,079 $), Yahoo Finance
  * (S&P 500 7 660, or 4 200 $, NVDA 214 $, TSLA 355 $, AAPL 343 $), cotes Ballon d'Or (Yamal 10/11, Kane 6/5). Heures en UTC.
  */
-function sp_p2o(float $p): float { return max(1.01, floor(0.94 / $p * 100) / 100); }
+function sp_p2o(float $p): float { return max(1.01, floor(0.90 / $p * 100) / 100); } // v3314 (propriétaire) : marge maison 10 % (retour joueur 90 %) — avant : 6 %
 /** une question « prix au-dessus de … » dans les 12 langues ($v = valeur affichée telle quelle, $d = jj/mm, $h = heure UTC ou '' = clôture de la Bourse). */
 function sp_px_q(string $name, string $v, string $d, string $h): array {
   // « 2 400 $ » (écriture française) → « $2,400 » pour l'anglais, l'arabe, le turc, le hindi et le chinois (comme sp_btc_q)
@@ -458,9 +458,12 @@ function sp_m2o(float $m): float { $k = $m <= 2.5 ? 0.92 : ($m <= 4.0 ? 0.90 : 0
 /** Cotes d'un événement : si les cotes relevées gardent déjà une grosse marge (moyenne des bookmakers UK ≈ 8-11 %), on les
  *  ramène d'abord à une marge de bookmaker normale (4 %) puis on baisse avec sp_m2o — chaque cote reste SOUS la cote du marché. */
 function sp_mset(array $m): array {
+  // v3314 (propriétaire) : marge maison 10 % sur les paris réels — on vise un livre à somme des 1/cote = 1/0,90 ≈ 1,111
+  // (retour joueur 90 %), et chaque cote reste toujours AU MOINS 5 % sous la cote du marché.
   $s = 0.0; foreach ($m as $v) $s += 1 / $v;
-  $f = $s > 1.04 ? $s / 1.04 : 1.0;
-  return array_map(static fn($v) => min(sp_m2o($v * $f), floor($v * 0.95 * 100) / 100), $m);
+  $target = 1 / 0.90;
+  $f = (max($s, $target)) / $s;
+  return array_map(static fn($v) => max(1.01, min(floor($v / $f * 100) / 100, floor($v * 0.95 * 100) / 100)), $m);
 }
 function sp_suggestions4(): array {
   $t = static fn(string $s): int => (int) strtotime($s . ' UTC');
