@@ -5,7 +5,7 @@
 
 module.exports.PRIVACY = {
   fr: { title: 'Politique de confidentialité', intro: 'Votre confiance compte pour nous. Cette page explique, simplement, quelles informations OROLADO utilise, pourquoi, comment elles sont protégées et quels sont vos droits.', s: [
-    ['1. Qui sommes-nous', 'OROLADO est une plateforme en ligne de trading d’indices synthétiques, accessible sur orolado.com. Nous sommes responsables des informations que vous nous confiez.'],
+    ['1. Qui sommes-nous', 'OROLADO est une plateforme de divertissement et de jeu en ligne, accessible sur orolado.com. Elle propose le trading d’indices synthétiques, des jeux (adresse, direct et type casino) et des pronostics sportifs. Nous sommes responsables des informations que vous nous confiez.'],
     ['2. Informations que nous utilisons', 'Les informations de votre compte (adresse e-mail, nom d’affichage, numéro de joueur, pays), vos opérations (dépôts, retraits, trades, bonus, soldes), les informations nécessaires pour vous payer (par exemple un numéro de mobile money ou une adresse de portefeuille), et des informations techniques (type d’appareil, navigateur, langue, adresse IP).'],
     ['3. Pourquoi nous les utilisons', 'Pour créer et gérer votre compte, exécuter vos trades, créditer vos dépôts, payer vos retraits, vous envoyer les messages utiles (codes, confirmations), répondre à vos demandes, protéger les joueurs contre la fraude, améliorer le service et respecter nos obligations légales.'],
     ['4. Sur quelle base', 'Nous utilisons vos informations pour fournir le service que vous avez demandé (nos conditions d’utilisation), pour respecter la loi, pour la sécurité de la plateforme, et avec votre accord quand il est nécessaire.'],
@@ -21,7 +21,7 @@ module.exports.PRIVACY = {
     ['14. Nous contacter', 'Pour toute question sur vos informations : {MAIL}.']
   ] },
   en: { title: 'Privacy Policy', intro: 'Your trust matters to us. This page explains, simply, what information OROLADO uses, why, how it is protected and what your rights are.', s: [
-    ['1. Who we are', 'OROLADO is an online synthetic-indices trading platform, available at orolado.com. We are responsible for the information you entrust to us.'],
+    ['1. Who we are', 'OROLADO is an online entertainment and gaming platform, available at orolado.com. It offers synthetic-indices trading, games (skill, live and casino-style) and sports predictions. We are responsible for the information you entrust to us.'],
     ['2. Information we use', 'Your account information (e-mail address, display name, player number, country), your operations (deposits, withdrawals, trades, bonuses, balances), the details needed to pay you (for example a mobile money number or a wallet address), and technical information (device type, browser, language, IP address).'],
     ['3. Why we use it', 'To create and manage your account, execute your trades, credit your deposits, pay your withdrawals, send you useful messages (codes, confirmations), answer your requests, protect players against fraud, improve the service and meet our legal obligations.'],
     ['4. On what basis', 'We use your information to provide the service you asked for (our terms of use), to comply with the law, for the security of the platform, and with your consent when it is required.'],
@@ -37,7 +37,7 @@ module.exports.PRIVACY = {
     ['14. Contact us', 'For any question about your information: {MAIL}.']
   ] },
   es: { title: 'Política de privacidad', intro: 'Tu confianza es importante para nosotros. Esta página explica, de forma sencilla, qué información utiliza OROLADO, por qué, cómo se protege y cuáles son tus derechos.', s: [
-    ['1. Quiénes somos', 'OROLADO es una plataforma en línea de trading de índices sintéticos, disponible en orolado.com. Somos responsables de la información que nos confías.'],
+    ['1. Quiénes somos', 'OROLADO es una plataforma de entretenimiento y juego en línea, disponible en orolado.com. Ofrece trading de índices sintéticos, juegos (de habilidad, en vivo y tipo casino) y pronósticos deportivos. Somos responsables de la información que nos confías.'],
     ['2. Información que utilizamos', 'Los datos de tu cuenta (correo electrónico, nombre visible, número de jugador, país), tus operaciones (depósitos, retiros, trades, bonos, saldos), los datos necesarios para pagarte (por ejemplo un número de dinero móvil o una dirección de billetera) e información técnica (tipo de dispositivo, navegador, idioma, dirección IP).'],
     ['3. Para qué la utilizamos', 'Para crear y gestionar tu cuenta, ejecutar tus trades, acreditar tus depósitos, pagar tus retiros, enviarte mensajes útiles (códigos, confirmaciones), responder a tus solicitudes, proteger a los jugadores contra el fraude, mejorar el servicio y cumplir nuestras obligaciones legales.'],
     ['4. Con qué base', 'Utilizamos tu información para prestar el servicio que solicitaste (nuestras condiciones de uso), para cumplir la ley, por la seguridad de la plataforma y con tu consentimiento cuando sea necesario.'],
@@ -53,7 +53,7 @@ module.exports.PRIVACY = {
     ['14. Contacto', 'Para cualquier pregunta sobre tu información: {MAIL}.']
   ] },
   pt: { title: 'Política de privacidade', intro: 'A sua confiança é importante para nós. Esta página explica, de forma simples, que informações a OROLADO utiliza, porquê, como são protegidas e quais são os seus direitos.', s: [
-    ['1. Quem somos', 'A OROLADO é uma plataforma online de trading de índices sintéticos, disponível em orolado.com. Somos responsáveis pelas informações que nos confia.'],
+    ['1. Quem somos', 'A OROLADO é uma plataforma de entretenimento e jogo online, disponível em orolado.com. Oferece trading de índices sintéticos, jogos (de habilidade, ao vivo e tipo casino) e prognósticos desportivos. Somos responsáveis pelas informações que nos confia.'],
     ['2. Informações que utilizamos', 'Os dados da sua conta (e-mail, nome de exibição, número de jogador, país), as suas operações (depósitos, saques, trades, bônus, saldos), os dados necessários para lhe pagar (por exemplo um número de dinheiro móvel ou um endereço de carteira) e informações técnicas (tipo de aparelho, navegador, idioma, endereço IP).'],
     ['3. Por que as utilizamos', 'Para criar e gerir a sua conta, executar os seus trades, creditar os seus depósitos, pagar os seus saques, enviar mensagens úteis (códigos, confirmações), responder aos seus pedidos, proteger os jogadores contra fraudes, melhorar o serviço e cumprir as nossas obrigações legais.'],
     ['4. Com que base', 'Utilizamos as suas informações para prestar o serviço que pediu (os nossos termos de uso), para cumprir a lei, pela segurança da plataforma e com o seu consentimento quando necessário.'],
@@ -69,7 +69,7 @@ module.exports.PRIVACY = {
     ['14. Contacto', 'Para qualquer dúvida sobre as suas informações: {MAIL}.']
   ] },
   ar: { title: 'سياسة الخصوصية', intro: 'ثقتك مهمة لنا. توضّح هذه الصفحة ببساطة ما المعلومات التي تستخدمها أورولادو، ولماذا، وكيف تُحمى، وما هي حقوقك.', s: [
-    ['1. من نحن', 'أورولادو (OROLADO) منصة عبر الإنترنت لتداول المؤشرات الاصطناعية، متاحة على orolado.com. نحن مسؤولون عن المعلومات التي تأتمننا عليها.'],
+    ['1. من نحن', 'أورولادو (OROLADO) منصة ترفيه وألعاب عبر الإنترنت، متاحة على orolado.com. تقدّم تداول المؤشرات الاصطناعية، وألعابًا (مهارة، ومباشرة، ومن نوع الكازينو)، وتوقعات رياضية. نحن مسؤولون عن المعلومات التي تأتمننا عليها.'],
     ['2. المعلومات التي نستخدمها', 'معلومات حسابك (البريد الإلكتروني، الاسم الظاهر، رقم اللاعب، البلد)، وعملياتك (الإيداعات، السحوبات، الصفقات، المكافآت، الأرصدة)، والبيانات اللازمة لدفع مستحقاتك (مثل رقم المحفظة المتنقلة أو عنوان المحفظة)، ومعلومات تقنية (نوع الجهاز، المتصفح، اللغة، عنوان IP).'],
     ['3. لماذا نستخدمها', 'لإنشاء حسابك وإدارته، وتنفيذ صفقاتك، وإضافة إيداعاتك، ودفع سحوباتك، وإرسال الرسائل المفيدة (الرموز والتأكيدات)، والرد على طلباتك، وحماية اللاعبين من الاحتيال، وتحسين الخدمة، والوفاء بالتزاماتنا القانونية.'],
     ['4. على أي أساس', 'نستخدم معلوماتك لتقديم الخدمة التي طلبتها (شروط الاستخدام)، وللامتثال للقانون، ولأمان المنصة، وبموافقتك عند الحاجة.'],
@@ -85,7 +85,7 @@ module.exports.PRIVACY = {
     ['14. اتصل بنا', 'لأي سؤال بخصوص معلوماتك: {MAIL}.']
   ] },
   tr: { title: 'Gizlilik Politikası', intro: 'Güveniniz bizim için önemli. Bu sayfa, OROLADO’nun hangi bilgileri neden kullandığını, nasıl koruduğunu ve haklarınızı basitçe açıklar.', s: [
-    ['1. Biz kimiz', 'OROLADO, orolado.com adresinden erişilebilen çevrimiçi bir sentetik endeks işlem platformudur. Bize emanet ettiğiniz bilgilerden sorumluyuz.'],
+    ['1. Biz kimiz', 'OROLADO, orolado.com adresinden erişilebilen çevrimiçi bir eğlence ve oyun platformudur. Sentetik endeks işlemleri, oyunlar (beceri, canlı ve casino tarzı) ve spor tahminleri sunar. Bize emanet ettiğiniz bilgilerden sorumluyuz.'],
     ['2. Kullandığımız bilgiler', 'Hesap bilgileriniz (e-posta, görünen ad, oyuncu numarası, ülke), işlemleriniz (yatırımlar, çekimler, işlemler, bonuslar, bakiyeler), size ödeme yapmak için gereken bilgiler (örneğin mobil para numarası veya cüzdan adresi) ve teknik bilgiler (cihaz türü, tarayıcı, dil, IP adresi).'],
     ['3. Neden kullanıyoruz', 'Hesabınızı oluşturmak ve yönetmek, işlemlerinizi gerçekleştirmek, yatırımlarınızı yansıtmak, çekimlerinizi ödemek, size yararlı mesajlar (kodlar, onaylar) göndermek, taleplerinize yanıt vermek, oyuncuları dolandırıcılığa karşı korumak, hizmeti geliştirmek ve yasal yükümlülüklerimizi yerine getirmek için.'],
     ['4. Hangi temelde', 'Bilgilerinizi, talep ettiğiniz hizmeti sunmak (kullanım koşullarımız), yasalara uymak, platform güvenliği için ve gerektiğinde onayınızla kullanırız.'],
@@ -101,7 +101,7 @@ module.exports.PRIVACY = {
     ['14. Bize ulaşın', 'Bilgilerinizle ilgili her soru için: {MAIL}.']
   ] },
   de: { title: 'Datenschutzerklärung', intro: 'Ihr Vertrauen ist uns wichtig. Diese Seite erklärt einfach, welche Informationen OROLADO verwendet, warum, wie sie geschützt werden und welche Rechte Sie haben.', s: [
-    ['1. Wer wir sind', 'OROLADO ist eine Online-Handelsplattform für synthetische Indizes, erreichbar unter orolado.com. Wir sind für die Informationen verantwortlich, die Sie uns anvertrauen.'],
+    ['1. Wer wir sind', 'OROLADO ist eine Online-Unterhaltungs- und Spieleplattform, erreichbar unter orolado.com. Sie bietet Handel mit synthetischen Indizes, Spiele (Geschick, Live und im Casino-Stil) und Sportvorhersagen. Wir sind für die Informationen verantwortlich, die Sie uns anvertrauen.'],
     ['2. Welche Informationen wir verwenden', 'Ihre Kontodaten (E-Mail-Adresse, Anzeigename, Spielernummer, Land), Ihre Vorgänge (Einzahlungen, Auszahlungen, Trades, Boni, Guthaben), die für Auszahlungen nötigen Angaben (zum Beispiel eine Mobile-Money-Nummer oder eine Wallet-Adresse) sowie technische Informationen (Gerätetyp, Browser, Sprache, IP-Adresse).'],
     ['3. Wofür wir sie verwenden', 'Um Ihr Konto zu erstellen und zu verwalten, Ihre Trades auszuführen, Einzahlungen gutzuschreiben, Auszahlungen vorzunehmen, Ihnen nützliche Nachrichten (Codes, Bestätigungen) zu senden, Ihre Anfragen zu beantworten, Spieler vor Betrug zu schützen, den Dienst zu verbessern und gesetzliche Pflichten zu erfüllen.'],
     ['4. Auf welcher Grundlage', 'Wir verwenden Ihre Informationen, um den von Ihnen gewünschten Dienst zu erbringen (unsere Nutzungsbedingungen), um Gesetze einzuhalten, für die Sicherheit der Plattform und mit Ihrer Einwilligung, wenn diese erforderlich ist.'],
@@ -117,7 +117,7 @@ module.exports.PRIVACY = {
     ['14. Kontakt', 'Bei Fragen zu Ihren Informationen: {MAIL}.']
   ] },
   ru: { title: 'Политика конфиденциальности', intro: 'Ваше доверие важно для нас. На этой странице просто объясняется, какую информацию использует OROLADO, зачем, как она защищена и каковы ваши права.', s: [
-    ['1. Кто мы', 'OROLADO — онлайн-платформа для трейдинга синтетическими индексами, доступная на orolado.com. Мы отвечаем за информацию, которую вы нам доверяете.'],
+    ['1. Кто мы', 'OROLADO — онлайн-платформа развлечений и игр, доступная на orolado.com. Она предлагает трейдинг синтетическими индексами, игры (на умение, live и в стиле казино) и спортивные прогнозы. Мы отвечаем за информацию, которую вы нам доверяете.'],
     ['2. Какую информацию мы используем', 'Данные вашего аккаунта (e-mail, отображаемое имя, номер игрока, страна), ваши операции (пополнения, выводы, сделки, бонусы, балансы), данные, необходимые для выплат (например, номер мобильного кошелька или адрес кошелька), а также технические данные (тип устройства, браузер, язык, IP-адрес).'],
     ['3. Зачем мы её используем', 'Чтобы создавать и вести ваш аккаунт, исполнять сделки, зачислять пополнения, выплачивать выводы, отправлять полезные сообщения (коды, подтверждения), отвечать на ваши запросы, защищать игроков от мошенничества, улучшать сервис и выполнять требования закона.'],
     ['4. На каком основании', 'Мы используем вашу информацию для оказания запрошенного вами сервиса (наши условия использования), для соблюдения закона, для безопасности платформы и с вашего согласия, когда оно необходимо.'],
@@ -133,7 +133,7 @@ module.exports.PRIVACY = {
     ['14. Связаться с нами', 'По любым вопросам о вашей информации: {MAIL}.']
   ] },
   id: { title: 'Kebijakan Privasi', intro: 'Kepercayaan Anda penting bagi kami. Halaman ini menjelaskan dengan sederhana informasi apa yang digunakan OROLADO, mengapa, bagaimana informasi itu dilindungi, dan apa hak-hak Anda.', s: [
-    ['1. Siapa kami', 'OROLADO adalah platform online untuk trading indeks sintetis yang dapat diakses di orolado.com. Kami bertanggung jawab atas informasi yang Anda percayakan kepada kami.'],
+    ['1. Siapa kami', 'OROLADO adalah platform hiburan dan permainan online yang dapat diakses di orolado.com. OROLADO menawarkan trading indeks sintetis, permainan (keterampilan, langsung, dan bergaya kasino), serta prediksi olahraga. Kami bertanggung jawab atas informasi yang Anda percayakan kepada kami.'],
     ['2. Informasi yang kami gunakan', 'Informasi akun Anda (e-mail, nama tampilan, nomor pemain, negara), operasi Anda (deposit, penarikan, trading, bonus, saldo), data yang diperlukan untuk membayar Anda (misalnya nomor uang seluler atau alamat dompet), dan informasi teknis (jenis perangkat, peramban, bahasa, alamat IP).'],
     ['3. Mengapa kami menggunakannya', 'Untuk membuat dan mengelola akun Anda, menjalankan trading, mengkreditkan deposit, membayar penarikan, mengirim pesan yang berguna (kode, konfirmasi), menjawab permintaan Anda, melindungi pemain dari penipuan, meningkatkan layanan, dan memenuhi kewajiban hukum kami.'],
     ['4. Atas dasar apa', 'Kami menggunakan informasi Anda untuk menyediakan layanan yang Anda minta (ketentuan penggunaan kami), untuk mematuhi hukum, demi keamanan platform, dan dengan persetujuan Anda bila diperlukan.'],
@@ -149,7 +149,7 @@ module.exports.PRIVACY = {
     ['14. Hubungi kami', 'Untuk pertanyaan apa pun tentang informasi Anda: {MAIL}.']
   ] },
   vi: { title: 'Chính sách quyền riêng tư', intro: 'Sự tin tưởng của bạn rất quan trọng với chúng tôi. Trang này giải thích đơn giản OROLADO sử dụng những thông tin nào, vì sao, được bảo vệ ra sao và bạn có những quyền gì.', s: [
-    ['1. Chúng tôi là ai', 'OROLADO là nền tảng giao dịch chỉ số tổng hợp trực tuyến, truy cập tại orolado.com. Chúng tôi chịu trách nhiệm về thông tin bạn giao cho chúng tôi.'],
+    ['1. Chúng tôi là ai', 'OROLADO là nền tảng giải trí và trò chơi trực tuyến, truy cập tại orolado.com. OROLADO cung cấp giao dịch chỉ số tổng hợp, trò chơi (kỹ năng, trực tiếp và kiểu sòng bài) và dự đoán thể thao. Chúng tôi chịu trách nhiệm về thông tin bạn giao cho chúng tôi.'],
     ['2. Thông tin chúng tôi sử dụng', 'Thông tin tài khoản (e-mail, tên hiển thị, mã người chơi, quốc gia), các giao dịch của bạn (nạp, rút, lệnh giao dịch, thưởng, số dư), thông tin cần để thanh toán cho bạn (ví dụ số ví di động hoặc địa chỉ ví) và thông tin kỹ thuật (loại thiết bị, trình duyệt, ngôn ngữ, địa chỉ IP).'],
     ['3. Vì sao chúng tôi sử dụng', 'Để tạo và quản lý tài khoản, thực hiện giao dịch, ghi có tiền nạp, thanh toán tiền rút, gửi tin nhắn hữu ích (mã, xác nhận), trả lời yêu cầu của bạn, bảo vệ người chơi khỏi gian lận, cải thiện dịch vụ và tuân thủ nghĩa vụ pháp lý.'],
     ['4. Dựa trên cơ sở nào', 'Chúng tôi sử dụng thông tin của bạn để cung cấp dịch vụ bạn yêu cầu (điều khoản sử dụng), để tuân thủ pháp luật, vì an toàn của nền tảng và với sự đồng ý của bạn khi cần.'],
@@ -165,7 +165,7 @@ module.exports.PRIVACY = {
     ['14. Liên hệ', 'Mọi câu hỏi về thông tin của bạn: {MAIL}.']
   ] },
   hi: { title: 'गोपनीयता नीति', intro: 'आपका भरोसा हमारे लिए महत्वपूर्ण है। यह पेज सरल शब्दों में बताता है कि OROLADO कौन-सी जानकारी उपयोग करता है, क्यों, उसे कैसे सुरक्षित रखा जाता है और आपके अधिकार क्या हैं।', s: [
-    ['1. हम कौन हैं', 'OROLADO सिंथेटिक इंडेक्स का ऑनलाइन ट्रेडिंग प्लेटफ़ॉर्म है, जो orolado.com पर उपलब्ध है। आप जो जानकारी हमें सौंपते हैं, उसके लिए हम ज़िम्मेदार हैं।'],
+    ['1. हम कौन हैं', 'OROLADO एक ऑनलाइन मनोरंजन और गेमिंग प्लेटफ़ॉर्म है, जो orolado.com पर उपलब्ध है। यह सिंथेटिक इंडेक्स ट्रेडिंग, गेम (कौशल, लाइव और कैसीनो-शैली) और खेल भविष्यवाणियाँ प्रदान करता है। आप जो जानकारी हमें सौंपते हैं, उसके लिए हम ज़िम्मेदार हैं।'],
     ['2. हम कौन-सी जानकारी उपयोग करते हैं', 'आपके खाते की जानकारी (ई-मेल, प्रदर्शित नाम, खिलाड़ी नंबर, देश), आपके लेन-देन (जमा, निकासी, ट्रेड, बोनस, बैलेंस), आपको भुगतान के लिए आवश्यक विवरण (जैसे मोबाइल मनी नंबर या वॉलेट पता) और तकनीकी जानकारी (डिवाइस का प्रकार, ब्राउज़र, भाषा, IP पता)।'],
     ['3. हम इसका उपयोग क्यों करते हैं', 'आपका खाता बनाने और चलाने, आपके ट्रेड पूरे करने, जमा राशि जोड़ने, निकासी का भुगतान करने, उपयोगी संदेश (कोड, पुष्टि) भेजने, आपके अनुरोधों का उत्तर देने, खिलाड़ियों को धोखाधड़ी से बचाने, सेवा सुधारने और कानूनी दायित्व पूरे करने के लिए।'],
     ['4. किस आधार पर', 'हम आपकी जानकारी का उपयोग आपकी माँगी गई सेवा देने (हमारी उपयोग की शर्तें), कानून का पालन करने, प्लेटफ़ॉर्म की सुरक्षा के लिए, और आवश्यक होने पर आपकी सहमति से करते हैं।'],
@@ -261,4 +261,337 @@ module.exports.CONTACT = {
     'OROLADO आपसे कभी आपका पासवर्ड या कोड नहीं माँगेगा। इन्हें किसी से साझा न करें।',
     'साझेदार, सेवा प्रदाता और मीडिया: कृपया इसी पते पर लिखें।'
   ], back: 'OROLADO पर जाएँ' }
+};
+
+module.exports.ABOUT = {
+  "fr": {
+    "title": "À propos de nous",
+    "intro": "Voici qui nous sommes et ce qu’OROLADO propose.",
+    "s": [
+      [
+        "1. Qui nous sommes",
+        "OROLADO est une plateforme de divertissement et de jeu en ligne, accessible sur orolado.com. Elle propose le trading d’indices synthétiques, des jeux (adresse, direct et type casino) et des pronostics sportifs."
+      ],
+      [
+        "2. Ce que nous proposons",
+        "Le trading d’indices synthétiques et la prédiction de prix, avec un mode démo gratuit pour s’entraîner ; des jeux (adresse, direct et type casino) ; et des pronostics sportifs. Le joueur alimente son compte pour jouer et retire ses gains avec les moyens de paiement disponibles dans son pays."
+      ],
+      [
+        "3. Équitable et transparent",
+        "Nos jeux suivent des règles claires et fixes, avec une marge de la maison fixe et affichée. Les résultats sont générés équitablement et ne peuvent pas être modifiés une fois la partie lancée."
+      ],
+      [
+        "4. Jeu responsable",
+        "OROLADO est un divertissement, pas une source de revenus. Réservé aux personnes de 18 ans et plus. Nous proposons des outils pour fixer des limites et s’auto-exclure. Chaque joueur doit vérifier que ce type de service est autorisé là où il vit."
+      ],
+      [
+        "5. Sécurité et confidentialité",
+        "Nous protégeons votre compte et vos données avec des mesures de sécurité adaptées, et nous ne vendons jamais vos informations. Voir notre Politique de confidentialité et nos Conditions."
+      ],
+      [
+        "6. Nous contacter",
+        "Questions ou aide : {MAIL}, ou la rubrique « Aide » dans l’application. Nous répondons au plus vite."
+      ]
+    ]
+  },
+  "en": {
+    "title": "About Us",
+    "intro": "Here is who we are and what OROLADO offers.",
+    "s": [
+      [
+        "1. Who we are",
+        "OROLADO is an online entertainment and gaming platform, available at orolado.com. It offers synthetic-indices trading, games (skill, live and casino-style) and sports predictions."
+      ],
+      [
+        "2. What we offer",
+        "Synthetic-indices trading and price prediction, with a free demo mode to practise; games (skill, live and casino-style); and sports predictions. Players fund their account to play and withdraw their winnings using the payment methods available in their country."
+      ],
+      [
+        "3. Fair and transparent",
+        "Our games follow clear, fixed rules with a fixed, published house margin. Results are generated fairly and cannot be changed once a round has started."
+      ],
+      [
+        "4. Responsible gaming",
+        "OROLADO is entertainment, not a source of income. It is only for people aged 18 and over. We offer tools to set limits and to self-exclude. Each player must check that this type of service is allowed where they live."
+      ],
+      [
+        "5. Security and privacy",
+        "We protect your account and personal data with appropriate security measures, and we never sell your information. See our Privacy Policy and Terms."
+      ],
+      [
+        "6. Contact us",
+        "Questions or support: {MAIL}, or the “Help” section inside the app. We reply as quickly as possible."
+      ]
+    ]
+  },
+  "es": {
+    "title": "Sobre nosotros",
+    "intro": "Esto es quiénes somos y qué ofrece OROLADO.",
+    "s": [
+      [
+        "1. Quiénes somos",
+        "OROLADO es una plataforma de entretenimiento y juego en línea, disponible en orolado.com. Ofrece trading de índices sintéticos, juegos (de habilidad, en vivo y tipo casino) y pronósticos deportivos."
+      ],
+      [
+        "2. Qué ofrecemos",
+        "Trading de índices sintéticos y predicción de precios, con un modo demo gratuito para practicar; juegos (de habilidad, en vivo y tipo casino); y pronósticos deportivos. El jugador alimenta su cuenta para jugar y retira sus ganancias con los métodos de pago disponibles en su país."
+      ],
+      [
+        "3. Justo y transparente",
+        "Nuestros juegos siguen reglas claras y fijas, con un margen de la casa fijo y publicado. Los resultados se generan de forma justa y no pueden cambiarse una vez iniciada la ronda."
+      ],
+      [
+        "4. Juego responsable",
+        "OROLADO es entretenimiento, no una fuente de ingresos. Solo para mayores de 18 años. Ofrecemos herramientas para fijar límites y autoexcluirse. Cada jugador debe comprobar que este tipo de servicio está permitido donde vive."
+      ],
+      [
+        "5. Seguridad y privacidad",
+        "Protegemos tu cuenta y tus datos con medidas de seguridad adecuadas, y nunca vendemos tu información. Consulta nuestra Política de privacidad y nuestras Condiciones."
+      ],
+      [
+        "6. Contacto",
+        "Preguntas o ayuda: {MAIL}, o la sección «Ayuda» dentro de la app. Respondemos lo antes posible."
+      ]
+    ]
+  },
+  "pt": {
+    "title": "Sobre nós",
+    "intro": "Aqui está quem somos e o que a OROLADO oferece.",
+    "s": [
+      [
+        "1. Quem somos",
+        "A OROLADO é uma plataforma de entretenimento e jogo online, disponível em orolado.com. Oferece trading de índices sintéticos, jogos (de habilidade, ao vivo e tipo casino) e prognósticos desportivos."
+      ],
+      [
+        "2. O que oferecemos",
+        "Trading de índices sintéticos e previsão de preços, com um modo demo gratuito para praticar; jogos (de habilidade, ao vivo e tipo casino); e prognósticos desportivos. O jogador alimenta a sua conta para jogar e retira os seus ganhos com os métodos de pagamento disponíveis no seu país."
+      ],
+      [
+        "3. Justo e transparente",
+        "Os nossos jogos seguem regras claras e fixas, com uma margem da casa fixa e publicada. Os resultados são gerados de forma justa e não podem ser alterados depois de a rodada começar."
+      ],
+      [
+        "4. Jogo responsável",
+        "A OROLADO é entretenimento, não uma fonte de rendimento. Apenas para maiores de 18 anos. Oferecemos ferramentas para definir limites e autoexcluir-se. Cada jogador deve verificar se este tipo de serviço é permitido onde vive."
+      ],
+      [
+        "5. Segurança e privacidade",
+        "Protegemos a sua conta e os seus dados com medidas de segurança adequadas, e nunca vendemos as suas informações. Consulte a nossa Política de privacidade e os nossos Termos."
+      ],
+      [
+        "6. Contacto",
+        "Perguntas ou ajuda: {MAIL}, ou a seção «Ajuda» na aplicação. Respondemos o mais rápido possível."
+      ]
+    ]
+  },
+  "ar": {
+    "title": "من نحن",
+    "intro": "إليك من نحن وما تقدّمه أورولادو.",
+    "s": [
+      [
+        "1. من نحن",
+        "أورولادو (OROLADO) منصة ترفيه وألعاب عبر الإنترنت، متاحة على orolado.com. تقدّم تداول المؤشرات الاصطناعية، وألعابًا (مهارة، ومباشرة، ومن نوع الكازينو)، وتوقعات رياضية."
+      ],
+      [
+        "2. ماذا نقدّم",
+        "تداول المؤشرات الاصطناعية وتوقّع الأسعار، مع وضع تجريبي مجاني للتدرّب؛ وألعاب (مهارة، ومباشرة، ومن نوع الكازينو)؛ وتوقعات رياضية. يشحن اللاعب حسابه للعب ويسحب أرباحه عبر وسائل الدفع المتاحة في بلده."
+      ],
+      [
+        "3. عادل وشفّاف",
+        "تتبع ألعابنا قواعد واضحة وثابتة، بهامش بيت ثابت ومعلن. تُولَّد النتائج بعدالة ولا يمكن تغييرها بعد بدء الجولة."
+      ],
+      [
+        "4. اللعب المسؤول",
+        "أورولادو ترفيه وليست مصدر دخل. مخصّصة لمن هم في سن 18 عامًا فأكثر. نوفّر أدوات لوضع حدود وللإقصاء الذاتي. على كل لاعب التحقّق من أن هذا النوع من الخدمات مسموح به حيث يقيم."
+      ],
+      [
+        "5. الأمان والخصوصية",
+        "نحمي حسابك وبياناتك بإجراءات أمان مناسبة، ولا نبيع معلوماتك أبدًا. راجع سياسة الخصوصية والشروط."
+      ],
+      [
+        "6. اتصل بنا",
+        "للأسئلة أو المساعدة: {MAIL}، أو قسم «المساعدة» داخل التطبيق. نرد في أقرب وقت ممكن."
+      ]
+    ]
+  },
+  "tr": {
+    "title": "Hakkımızda",
+    "intro": "İşte biz kimiz ve OROLADO ne sunar.",
+    "s": [
+      [
+        "1. Biz kimiz",
+        "OROLADO, orolado.com adresinden erişilebilen çevrimiçi bir eğlence ve oyun platformudur. Sentetik endeks işlemleri, oyunlar (beceri, canlı ve casino tarzı) ve spor tahminleri sunar."
+      ],
+      [
+        "2. Ne sunuyoruz",
+        "Sentetik endeks işlemleri ve fiyat tahmini (alıştırma için ücretsiz demo modu ile); oyunlar (beceri, canlı ve casino tarzı); ve spor tahminleri. Oyuncu oynamak için hesabını yükler ve kazançlarını ülkesinde mevcut ödeme yöntemleriyle çeker."
+      ],
+      [
+        "3. Adil ve şeffaf",
+        "Oyunlarımız açık ve sabit kurallara, sabit ve ilan edilmiş bir ev marjına göre işler. Sonuçlar adil şekilde üretilir ve tur başladıktan sonra değiştirilemez."
+      ],
+      [
+        "4. Sorumlu oyun",
+        "OROLADO bir eğlencedir, gelir kaynağı değildir. Yalnızca 18 yaş ve üzeri içindir. Limit koyma ve kendini hariç tutma araçları sunuyoruz. Her oyuncu, bu tür hizmetin yaşadığı yerde izinli olup olmadığını kontrol etmelidir."
+      ],
+      [
+        "5. Güvenlik ve gizlilik",
+        "Hesabınızı ve kişisel verilerinizi uygun güvenlik önlemleriyle koruruz ve bilgilerinizi asla satmayız. Gizlilik Politikamıza ve Koşullarımıza bakın."
+      ],
+      [
+        "6. Bize ulaşın",
+        "Soru veya destek: {MAIL} ya da uygulama içindeki «Yardım» bölümü. En kısa sürede yanıt veririz."
+      ]
+    ]
+  },
+  "de": {
+    "title": "Über uns",
+    "intro": "Das sind wir und das bietet OROLADO.",
+    "s": [
+      [
+        "1. Wer wir sind",
+        "OROLADO ist eine Online-Unterhaltungs- und Spieleplattform, erreichbar unter orolado.com. Sie bietet Handel mit synthetischen Indizes, Spiele (Geschick, Live und im Casino-Stil) und Sportvorhersagen."
+      ],
+      [
+        "2. Was wir bieten",
+        "Handel mit synthetischen Indizes und Preisvorhersage, mit kostenlosem Demo-Modus zum Üben; Spiele (Geschick, Live und im Casino-Stil); und Sportvorhersagen. Spieler laden ihr Konto auf, um zu spielen, und zahlen ihre Gewinne über die in ihrem Land verfügbaren Zahlungsmethoden aus."
+      ],
+      [
+        "3. Fair und transparent",
+        "Unsere Spiele folgen klaren, festen Regeln mit einer festen, veröffentlichten Hausmarge. Ergebnisse werden fair erzeugt und können nach Rundenbeginn nicht geändert werden."
+      ],
+      [
+        "4. Verantwortungsvolles Spielen",
+        "OROLADO ist Unterhaltung, keine Einnahmequelle. Nur für Personen ab 18 Jahren. Wir bieten Werkzeuge zum Setzen von Limits und zum Selbstausschluss. Jeder Spieler muss prüfen, ob diese Art von Dienst an seinem Wohnort erlaubt ist."
+      ],
+      [
+        "5. Sicherheit und Datenschutz",
+        "Wir schützen Ihr Konto und Ihre Daten mit angemessenen Sicherheitsmaßnahmen und verkaufen Ihre Informationen niemals. Siehe unsere Datenschutzerklärung und Bedingungen."
+      ],
+      [
+        "6. Kontakt",
+        "Fragen oder Hilfe: {MAIL} oder der Bereich „Hilfe“ in der App. Wir antworten so schnell wie möglich."
+      ]
+    ]
+  },
+  "ru": {
+    "title": "О нас",
+    "intro": "Здесь — кто мы и что предлагает OROLADO.",
+    "s": [
+      [
+        "1. Кто мы",
+        "OROLADO — онлайн-платформа развлечений и игр, доступная на orolado.com. Она предлагает трейдинг синтетическими индексами, игры (на умение, live и в стиле казино) и спортивные прогнозы."
+      ],
+      [
+        "2. Что мы предлагаем",
+        "Трейдинг синтетическими индексами и прогноз цены, с бесплатным демо-режимом для тренировки; игры (на умение, live и в стиле казино); и спортивные прогнозы. Игрок пополняет счёт, чтобы играть, и выводит выигрыши доступными в его стране способами оплаты."
+      ],
+      [
+        "3. Честно и прозрачно",
+        "Наши игры следуют понятным фиксированным правилам с фиксированной и опубликованной маржой заведения. Результаты формируются честно и не могут быть изменены после начала раунда."
+      ],
+      [
+        "4. Ответственная игра",
+        "OROLADO — это развлечение, а не источник дохода. Только для лиц старше 18 лет. Мы предлагаем инструменты для установки лимитов и самоисключения. Каждый игрок должен проверить, разрешён ли такой сервис там, где он живёт."
+      ],
+      [
+        "5. Безопасность и конфиденциальность",
+        "Мы защищаем ваш аккаунт и данные надлежащими мерами безопасности и никогда не продаём вашу информацию. См. нашу Политику конфиденциальности и Условия."
+      ],
+      [
+        "6. Связаться с нами",
+        "Вопросы или поддержка: {MAIL} или раздел «Помощь» в приложении. Отвечаем как можно скорее."
+      ]
+    ]
+  },
+  "id": {
+    "title": "Tentang kami",
+    "intro": "Inilah siapa kami dan apa yang ditawarkan OROLADO.",
+    "s": [
+      [
+        "1. Siapa kami",
+        "OROLADO adalah platform hiburan dan permainan online yang dapat diakses di orolado.com. OROLADO menawarkan trading indeks sintetis, permainan (keterampilan, langsung, dan bergaya kasino), serta prediksi olahraga."
+      ],
+      [
+        "2. Apa yang kami tawarkan",
+        "Trading indeks sintetis dan prediksi harga, dengan mode demo gratis untuk berlatih; permainan (keterampilan, langsung, dan bergaya kasino); serta prediksi olahraga. Pemain mengisi akunnya untuk bermain dan menarik kemenangannya melalui metode pembayaran yang tersedia di negaranya."
+      ],
+      [
+        "3. Adil dan transparan",
+        "Permainan kami mengikuti aturan yang jelas dan tetap, dengan margin rumah yang tetap dan diumumkan. Hasil dihasilkan secara adil dan tidak dapat diubah setelah ronde dimulai."
+      ],
+      [
+        "4. Permainan yang bertanggung jawab",
+        "OROLADO adalah hiburan, bukan sumber penghasilan. Hanya untuk usia 18 tahun ke atas. Kami menyediakan alat untuk menetapkan batas dan menutup diri (self-exclusion). Setiap pemain harus memeriksa apakah layanan jenis ini diizinkan di tempat tinggalnya."
+      ],
+      [
+        "5. Keamanan dan privasi",
+        "Kami melindungi akun dan data pribadi Anda dengan langkah keamanan yang memadai, dan tidak pernah menjual informasi Anda. Lihat Kebijakan Privasi dan Ketentuan kami."
+      ],
+      [
+        "6. Hubungi kami",
+        "Pertanyaan atau bantuan: {MAIL}, atau bagian «Bantuan» di dalam aplikasi. Kami membalas secepat mungkin."
+      ]
+    ]
+  },
+  "vi": {
+    "title": "Về chúng tôi",
+    "intro": "Đây là chúng tôi là ai và OROLADO cung cấp gì.",
+    "s": [
+      [
+        "1. Chúng tôi là ai",
+        "OROLADO là nền tảng giải trí và trò chơi trực tuyến, truy cập tại orolado.com. OROLADO cung cấp giao dịch chỉ số tổng hợp, trò chơi (kỹ năng, trực tiếp và kiểu sòng bài) và dự đoán thể thao."
+      ],
+      [
+        "2. Chúng tôi cung cấp gì",
+        "Giao dịch chỉ số tổng hợp và dự đoán giá, có chế độ dùng thử miễn phí để luyện tập; trò chơi (kỹ năng, trực tiếp và kiểu sòng bài); và dự đoán thể thao. Người chơi nạp tiền vào tài khoản để chơi và rút tiền thắng bằng các phương thức thanh toán có sẵn ở quốc gia của mình."
+      ],
+      [
+        "3. Công bằng và minh bạch",
+        "Trò chơi của chúng tôi tuân theo các quy tắc rõ ràng, cố định, với biên lợi nhà cái cố định và được công bố. Kết quả được tạo công bằng và không thể thay đổi sau khi ván bắt đầu."
+      ],
+      [
+        "4. Chơi có trách nhiệm",
+        "OROLADO là giải trí, không phải nguồn thu nhập. Chỉ dành cho người từ 18 tuổi trở lên. Chúng tôi cung cấp công cụ để đặt giới hạn và tự loại trừ. Mỗi người chơi phải kiểm tra loại dịch vụ này có được phép ở nơi mình sống hay không."
+      ],
+      [
+        "5. Bảo mật và quyền riêng tư",
+        "Chúng tôi bảo vệ tài khoản và dữ liệu cá nhân của bạn bằng các biện pháp an ninh phù hợp, và không bao giờ bán thông tin của bạn. Xem Chính sách quyền riêng tư và Điều khoản của chúng tôi."
+      ],
+      [
+        "6. Liên hệ",
+        "Câu hỏi hoặc hỗ trợ: {MAIL}, hoặc mục «Trợ giúp» trong ứng dụng. Chúng tôi trả lời sớm nhất có thể."
+      ]
+    ]
+  },
+  "hi": {
+    "title": "हमारे बारे में",
+    "intro": "यहाँ बताया गया है कि हम कौन हैं और OROLADO क्या प्रदान करता है।",
+    "s": [
+      [
+        "1. हम कौन हैं",
+        "OROLADO एक ऑनलाइन मनोरंजन और गेमिंग प्लेटफ़ॉर्म है, जो orolado.com पर उपलब्ध है। यह सिंथेटिक इंडेक्स ट्रेडिंग, गेम (कौशल, लाइव और कैसीनो-शैली) और खेल भविष्यवाणियाँ प्रदान करता है।"
+      ],
+      [
+        "2. हम क्या प्रदान करते हैं",
+        "सिंथेटिक इंडेक्स ट्रेडिंग और मूल्य भविष्यवाणी, अभ्यास के लिए मुफ़्त डेमो मोड के साथ; गेम (कौशल, लाइव और कैसीनो-शैली); और खेल भविष्यवाणियाँ। खिलाड़ी खेलने के लिए अपना खाता भरते हैं और अपने देश में उपलब्ध भुगतान तरीकों से अपनी जीत निकालते हैं।"
+      ],
+      [
+        "3. निष्पक्ष और पारदर्शी",
+        "हमारे गेम स्पष्ट, निश्चित नियमों और एक निश्चित, घोषित हाउस मार्जिन पर चलते हैं। परिणाम निष्पक्ष रूप से बनते हैं और राउंड शुरू होने के बाद बदले नहीं जा सकते।"
+      ],
+      [
+        "4. ज़िम्मेदार गेमिंग",
+        "OROLADO मनोरंजन है, आय का स्रोत नहीं। केवल 18 वर्ष और उससे अधिक आयु के लिए। हम सीमा तय करने और स्व-बहिष्कार के उपकरण देते हैं। हर खिलाड़ी को यह जाँचना चाहिए कि उसके निवास स्थान पर इस प्रकार की सेवा की अनुमति है या नहीं।"
+      ],
+      [
+        "5. सुरक्षा और गोपनीयता",
+        "हम आपके खाते और व्यक्तिगत डेटा को उचित सुरक्षा उपायों से सुरक्षित रखते हैं, और आपकी जानकारी कभी नहीं बेचते। हमारी गोपनीयता नीति और शर्तें देखें।"
+      ],
+      [
+        "6. संपर्क करें",
+        "प्रश्न या सहायता: {MAIL}, या ऐप में «सहायता» अनुभाग। हम जल्द से जल्द उत्तर देते हैं।"
+      ]
+    ]
+  }
 };
