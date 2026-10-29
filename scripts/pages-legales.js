@@ -33,17 +33,17 @@ function loadTerms() {
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const NAMES = { en: 'English', fr: 'Français', es: 'Español', pt: 'Português', ar: 'العربية', tr: 'Türkçe', de: 'Deutsch', ru: 'Русский', id: 'Bahasa Indonesia', vi: 'Tiếng Việt', hi: 'हिन्दी' };
 const NAV = {
-  fr: { terms: 'Conditions', privacy: 'Confidentialité', contact: 'Contact', back: 'Aller sur OROLADO', upd: '' },
-  en: { terms: 'Terms', privacy: 'Privacy', contact: 'Contact', back: 'Go to OROLADO', upd: '' },
-  es: { terms: 'Condiciones', privacy: 'Privacidad', contact: 'Contacto', back: 'Ir a OROLADO', upd: '' },
-  pt: { terms: 'Termos', privacy: 'Privacidade', contact: 'Contacto', back: 'Ir para a OROLADO', upd: '' },
-  ar: { terms: 'الشروط', privacy: 'الخصوصية', contact: 'اتصل بنا', back: 'اذهب إلى OROLADO', upd: '' },
-  tr: { terms: 'Koşullar', privacy: 'Gizlilik', contact: 'İletişim', back: 'OROLADO’ya git', upd: '' },
-  de: { terms: 'Bedingungen', privacy: 'Datenschutz', contact: 'Kontakt', back: 'Zu OROLADO', upd: '' },
-  ru: { terms: 'Условия', privacy: 'Конфиденциальность', contact: 'Контакты', back: 'Перейти на OROLADO', upd: '' },
-  id: { terms: 'Ketentuan', privacy: 'Privasi', contact: 'Kontak', back: 'Buka OROLADO', upd: '' },
-  vi: { terms: 'Điều khoản', privacy: 'Quyền riêng tư', contact: 'Liên hệ', back: 'Vào OROLADO', upd: '' },
-  hi: { terms: 'शर्तें', privacy: 'गोपनीयता', contact: 'संपर्क', back: 'OROLADO पर जाएँ', upd: '' }
+  fr: { terms: 'Conditions', privacy: 'Confidentialité', contact: 'Contact', about: 'À propos', back: 'Aller sur OROLADO', upd: '' },
+  en: { terms: 'Terms', privacy: 'Privacy', contact: 'Contact', about: 'About', back: 'Go to OROLADO', upd: '' },
+  es: { terms: 'Condiciones', privacy: 'Privacidad', contact: 'Contacto', about: 'Nosotros', back: 'Ir a OROLADO', upd: '' },
+  pt: { terms: 'Termos', privacy: 'Privacidade', contact: 'Contacto', about: 'Sobre', back: 'Ir para a OROLADO', upd: '' },
+  ar: { terms: 'الشروط', privacy: 'الخصوصية', contact: 'اتصل بنا', about: 'من نحن', back: 'اذهب إلى OROLADO', upd: '' },
+  tr: { terms: 'Koşullar', privacy: 'Gizlilik', contact: 'İletişim', about: 'Hakkımızda', back: 'OROLADO’ya git', upd: '' },
+  de: { terms: 'Bedingungen', privacy: 'Datenschutz', contact: 'Kontakt', about: 'Über uns', back: 'Zu OROLADO', upd: '' },
+  ru: { terms: 'Условия', privacy: 'Конфиденциальность', contact: 'Контакты', about: 'О нас', back: 'Перейти на OROLADO', upd: '' },
+  id: { terms: 'Ketentuan', privacy: 'Privasi', contact: 'Kontak', about: 'Tentang', back: 'Buka OROLADO', upd: '' },
+  vi: { terms: 'Điều khoản', privacy: 'Quyền riêng tư', contact: 'Liên hệ', about: 'Giới thiệu', back: 'Vào OROLADO', upd: '' },
+  hi: { terms: 'शर्तें', privacy: 'गोपनीयता', contact: 'संपर्क', about: 'परिचय', back: 'OROLADO पर जाएँ', upd: '' }
 };
 
 // 2) Habillage commun (simple, lisible, sans décor animé).
@@ -94,6 +94,7 @@ function page({ file, title, desc, body, langs, script }) {
     <a href="/conditions/"${file === 'conditions' ? ' class="on"' : ''} data-t="terms">Terms</a>
     <a href="/confidentialite/"${file === 'confidentialite' ? ' class="on"' : ''} data-t="privacy">Privacy</a>
     <a href="/contact/"${file === 'contact' ? ' class="on"' : ''} data-t="contact">Contact</a>
+    <a href="/about/"${file === 'about' ? ' class="on"' : ''} data-t="about">About</a>
   </nav>
   <select id="lang" aria-label="Language">${langs.map(l => `<option value="${l}">${NAMES[l]}</option>`).join('')}</select>
 </div></header>
@@ -145,7 +146,7 @@ const TXT = require('./pages-legales-textes.js');
 const PRIV_KEEP = [0, 1, 2, 4, 8, 9, 11, 13]; // qui / infos / pourquoi / partage / sécurité / droits / mineurs / contact
 const mailLink = '<a href="mailto:' + MAIL + '">' + MAIL + '</a>';
 const fill = s => esc(s).split('{MAIL}').join(mailLink).split('{SITE}').join('<a href="https://www.orolado.com/">orolado.com</a>');
-const PRIVACY = {}, CONTACT = {};
+const PRIVACY = {}, CONTACT = {}, ABOUT = {};
 for (const l of Object.keys(TXT.PRIVACY)) {
   const P = TXT.PRIVACY[l];
   let h = '<h1>' + esc(P.title) + '</h1>\n<p>' + esc(P.intro) + '</p>\n';
@@ -164,6 +165,13 @@ for (const l of Object.keys(TXT.CONTACT)) {
   h += '<a class="go" href="https://www.orolado.com/">' + esc(C.back) + ' →</a>';
   CONTACT[l] = h;
 }
+for (const l of Object.keys(TXT.ABOUT || {})) {
+  const Ab = TXT.ABOUT[l];
+  let h = '<h1>' + esc(Ab.title) + '</h1>\n<p>' + esc(Ab.intro) + '</p>\n';
+  Ab.s.forEach(sec => { h += '<h3>' + esc(sec[0]) + '</h3>\n<p>' + fill(sec[1]) + '</p>\n'; });
+  ABOUT[l] = h;
+}
+
 
 const T = loadTerms();
 const termLangs = Object.keys(T);
@@ -173,7 +181,8 @@ const termData = {}; termLangs.forEach(l => termData[l] = termsHtml(T, l));
 const out = [
   { file: 'conditions', title: 'OROLADO — Terms of Use & Risks', desc: 'OROLADO terms of use: synthetic indices trading, deposits, withdrawals, bonuses, risks and responsible gaming.', body: termData.en, langs: termLangs, script: render2(termData) },
   { file: 'confidentialite', title: 'OROLADO — Privacy Policy', desc: 'How OROLADO uses and protects your personal data.', body: PRIVACY.en, langs: termLangs, script: render2(PRIVACY) },
-  { file: 'contact', title: 'OROLADO — Contact', desc: 'Contact OROLADO support: ' + MAIL, body: CONTACT.en, langs: termLangs, script: render2(CONTACT) }
+  { file: 'contact', title: 'OROLADO — Contact', desc: 'Contact OROLADO support: ' + MAIL, body: CONTACT.en, langs: termLangs, script: render2(CONTACT) },
+  { file: 'about', title: 'OROLADO — About Us', desc: 'About OROLADO: an online entertainment and gaming platform — synthetic-indices trading, games and sports predictions.', body: ABOUT.en, langs: termLangs, script: render2(ABOUT) }
 ];
 for (const p of out) {
   const dir = path.join(root, p.file); fs.mkdirSync(dir, { recursive: true });
