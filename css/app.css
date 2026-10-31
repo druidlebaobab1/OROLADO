@@ -5549,8 +5549,17 @@ html body #portalModal #affCard.aff-rev-on .aff-steps3,
 html body #portalModal #affCard.aff-rev-on .aff-ex,
 html body #portalModal #affCard.aff-rev-on .aff-rl,
 html body #portalModal #affCard.aff-rev-on .aff-paid,
+html body #portalModal #affCard.aff-rev-on .aff-stats,
 html body #portalModal #affCard.aff-rev-on .aff-proj{display:none!important}
 html body #portalModal .aff-revbox{display:flex;flex-direction:column;gap:11px;margin:0 0 12px}
+/* Bloc « Revenus » + grille d'indicateurs (façon 1win Partners), style sombre doré. */
+html body #portalModal .arv-income{display:flex;flex-direction:column;gap:3px;padding:13px 16px;border-radius:14px;background:linear-gradient(120deg,#F2B33D,#C98A1E);box-shadow:0 8px 22px rgba(201,138,30,.3)}
+html body #portalModal .arv-income span{font-size:clamp(11px,3vw,12.5px);font-weight:700;color:#3a2a08}
+html body #portalModal .arv-income b{font-size:clamp(20px,6.4vw,28px);font-weight:900;color:#1a1206;direction:ltr;line-height:1.05;overflow-wrap:anywhere}
+html body #portalModal .arv-mets{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+html body #portalModal .arv-met{min-width:0;display:flex;flex-direction:column;gap:2px;padding:10px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+html body #portalModal .arv-met b{font-size:clamp(15px,4.4vw,19px);font-weight:900;color:#fff;direction:ltr;line-height:1.1;overflow-wrap:anywhere}
+html body #portalModal .arv-met span{font-size:clamp(10px,2.8vw,11.5px);color:#AEB6D6;line-height:1.25;overflow-wrap:anywhere}
 html body #portalModal .arv-head{display:flex;gap:7px;flex-wrap:wrap}
 html body #portalModal .arv-kpi{flex:1 1 90px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 6px;border-radius:12px;background:linear-gradient(180deg,rgba(242,179,61,.14),rgba(242,179,61,.05));border:1px solid rgba(242,179,61,.35);text-align:center}
 html body #portalModal .arv-kpi b{font-size:clamp(15px,4.6vw,20px);font-weight:900;color:#fff;direction:ltr;line-height:1.1;max-width:100%;overflow-wrap:anywhere}
