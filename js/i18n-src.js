@@ -3457,11 +3457,12 @@
     hi: { affDemoLocked: '{min} सक्रिय दोस्तों (जिन्होंने जमा किया) पर आप अपने वीडियो के लिए डेमो खाता अनलॉक करते हैं। लगे रहें, बस थोड़ा और!', affDemoText: 'आप अपना डेमो खाता माँग सकते हैं! सपोर्ट से संपर्क करें: OROLADO इसे क्रेडिट करता है (न निकाले जाने वाला पैसा) अच्छे विज्ञापनों के लिए।' }
   };
   Object.keys(DEMO2_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], DEMO2_TR[l]); });
-  // Texte dans la case code à l'inscription : « Code promo, ex. FOOT » (propre, sans parenthèses).
+  // Texte dans la case code à l'inscription : simplement « Code promo » (sans exemple, pour que
+  // personne ne tape l'exemple comme code).
   var REG_PH2 = {
-    fr: 'Code promo, par ex. FOOT', en: 'Promo code, e.g. FOOT', es: 'Código promo, ej. FOOT', pt: 'Código promo, ex. FOOT',
-    ar: 'رمز ترويجي، مثال FOOT', tr: 'Promosyon kodu, örn. FOOT', vi: 'Mã khuyến mãi, vd. FOOT', id: 'Kode promo, mis. FOOT',
-    ru: 'Промокод, напр. FOOT', de: 'Promo-Code, z. B. FOOT', hi: 'प्रोमो कोड, जैसे FOOT'
+    fr: 'Code promo', en: 'Promo code', es: 'Código promo', pt: 'Código promo',
+    ar: 'رمز ترويجي', tr: 'Promosyon kodu', vi: 'Mã khuyến mãi', id: 'Kode promo',
+    ru: 'Промокод', de: 'Promo-Code', hi: 'प्रोमो कोड'
   };
   Object.keys(REG_PH2).forEach(function (l) { if (DICT[l]) DICT[l].regCodePh = REG_PH2[l]; });
   // v2414 — Inviter (carrés, liste de 365 jours) + Top 25 démo de la semaine.

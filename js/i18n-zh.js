@@ -44,7 +44,7 @@
  "affCodeHelp": "创建一个好记的词（如 FOOT）。你的链接就变成 orolado.com/r/FOOT。",
  "affKept": "留存",
  "regCodeLabel": "推广码（可选）",
- "regCodePh": "推广码，如 FOOT",
+ "regCodePh": "推广码",
  "affPromoTitle": "如何带来朋友",
  "affPromoWa": "建一个群，邀请联系人，分享你的链接。",
  "affPromoTg": "建一个频道，经常发布你的链接。",
