@@ -651,9 +651,9 @@
       '<div class="sp-rcpt-st"><em class="' + esc(st) + '">' + esc(stTxt) + '</em><small>' + esc(bigLab) + '</small><strong>' + big + ' $</strong></div>' +
       '<div class="sp-rcpt-cut"></div>' +
       '<div class="sp-rcpt-sels"><p class="sp-rcpt-k">' + esc(bt.sel.length > 1 ? x.rcCombo : x.rcSingle) + ' · ' + bt.sel.length + '</p>' + bt.sel.map(function (s) {
-        // 2026-10-31 (propriétaire, validé — style 2) : match terminé → SCORE FINAL en texte simple
-        // « Terminé · 0 – 6 » (tiret détaché). s.fs = [dom, ext]
-        var fsTxt = Array.isArray(s.fs) ? '<u class="sp-rcpt-fs"><var class="fsL">' + esc(NX().ft) + '</var><var class="fsSep">·</var><var class="fsN" dir="ltr">' + (+s.fs[0] || 0) + '<var class="fsD">–</var>' + (+s.fs[1] || 0) + '</var></u>' : '';
+        // 2026-10-31 (propriétaire, validé — style 3) : match terminé → pastille « Terminé 1:2 », couleur selon
+        // le résultat (gagné vert / perdu rouge / remboursé bleu, via la classe du parent .sp-rcpt-s). s.fs = [dom, ext]
+        var fsTxt = Array.isArray(s.fs) ? '<u class="sp-rcpt-fs"><var class="fsL">' + esc(NX().ft) + '</var><var class="fsN" dir="ltr">' + (+s.fs[0] || 0) + ':' + (+s.fs[1] || 0) + '</var></u>' : '';
         return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>' + m2(bt.stake) + ' $</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
