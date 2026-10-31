@@ -70,7 +70,7 @@
     // v2497 — comme le site : une seule barre bleu verre, DÉMO bleu (choisi), COMPTE RÉEL vert avec portefeuille.
     return '<div class="lg-art lg-row"><div class="lg-modebar">' +
       '<div class="lg-mode lg-demo on"><small>' + esc(S('fsDemo', 'DEMO')) + '</small><b>$ 1 000 000</b></div>' +
-      '<div class="lg-mode lg-real"><small>' + esc(S('fsReal', 'REAL')) + '</small><b>$ 25</b><i class="lg-wal" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2.6"/><path d="M20.5 11.5h-4a2 2 0 0 0 0 4h4z"/></svg></i></div>' +
+      '<div class="lg-mode lg-real"><small>' + esc(T('greal') || S('fsReal', 'REAL')) + '</small><b>$ 25</b><i class="lg-wal" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="7.5" width="17" height="12" rx="2.6"/><path d="M20.5 11.5h-4a2 2 0 0 0 0 4h4z"/></svg></i></div>' +
       '</div></div>';
   }
   function candles(n, up) {
@@ -233,7 +233,7 @@
   // v2505 — guide du dépôt en grand : carte (et pourquoi elle peut être refusée), puis crypto en 7 étapes avec exemple dessiné.
   function depGuide() {
     var li = function (k) { return '<li>' + esc(T(k)) + '</li>'; };
-    var yt = ['gty1', 'gty2', 'gty3', 'gty4'].map(function (k) { return '<span class="lg-yt-q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>' + esc(T(k)) + '</span>'; }).join('');
+    var yt = ['gty1', 'gty2', 'gty3', 'gty4', 'gty5', 'gty6'].map(function (k) { return '<span class="lg-yt-q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>' + esc(T(k)) + '</span>'; }).join('');
     return '<div class="lg-dg"><div class="lg-dg-b"><h4>' + I('card') + ' ' + esc(T('gdA')) + '</h4><ul>' + li('gd1') + li('gd2') + li('gd3') + '</ul>' +
       '<div class="lg-dg-warn lg-dg-info">' + I('bulb') + ' ' + esc(T('gd4')) + '</div></div>' +
       '<div class="lg-dg-b lg-dg-c"><h4><span class="lg-coins" aria-hidden="true"><svg><use href="#ico-usdt"></use></svg><svg><use href="#ico-btc"></use></svg></span> ' + esc(T('gdB')) + '</h4>' +

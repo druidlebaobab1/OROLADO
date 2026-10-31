@@ -514,3 +514,22 @@
 // v2510 — titre précisé : « C’est quoi une adresse crypto ? ».
 (function () { var T = {"fr":"C’est quoi une adresse crypto ?","en":"What is a crypto address?","es":"¿Qué es una dirección cripto?","pt":"O que é um endereço cripto?","ar":"ما هو عنوان العملة الرقمية؟","tr":"Kripto adresi nedir?","vi":"Địa chỉ crypto là gì?","id":"Apa itu alamat kripto?","ru":"Что такое крипто-адрес?","de":"Was ist eine Krypto-Adresse?","hi":"क्रिप्टो पता क्या है?"};
   var D6 = window.D6 = window.D6 || {}; D6.LEARN_TXT = D6.LEARN_TXT || {}; Object.keys(T).forEach(function (l) { (D6.LEARN_TXT[l] = D6.LEARN_TXT[l] || {}).gaT = T[l]; }); })();
+// 2026-10-31 (propriétaire) : petit carré du guide → « Compte réel » ; recherches YouTube plus utiles
+// (on retire « copier une adresse crypto »). Doit s'exécuter APRÈS la génération des clés g* (fin de fichier).
+(function () {
+  var T = {
+    fr: { greal: 'Compte réel', gty4: 'comment créer un compte Binance', gty5: 'comment déposer de l’argent sur Binance', gty6: 'c’est quoi l’USDT et comment ça marche' },
+    en: { greal: 'Real account', gty4: 'how to create a Binance account', gty5: 'how to deposit money on Binance', gty6: 'what is USDT and how it works' },
+    es: { greal: 'Cuenta real', gty4: 'cómo crear una cuenta Binance', gty5: 'cómo depositar dinero en Binance', gty6: 'qué es USDT y cómo funciona' },
+    pt: { greal: 'Conta real', gty4: 'como criar uma conta Binance', gty5: 'como depositar dinheiro na Binance', gty6: 'o que é USDT e como funciona' },
+    ar: { greal: 'حساب حقيقي', gty4: 'كيفية إنشاء حساب Binance', gty5: 'كيفية إيداع الأموال في Binance', gty6: 'ما هو USDT وكيف يعمل' },
+    tr: { greal: 'Gerçek hesap', gty4: 'Binance hesabı nasıl açılır', gty5: 'Binance’e nasıl para yatırılır', gty6: 'USDT nedir ve nasıl çalışır' },
+    vi: { greal: 'Tài khoản thật', gty4: 'cách tạo tài khoản Binance', gty5: 'cách nạp tiền vào Binance', gty6: 'USDT là gì và hoạt động thế nào' },
+    id: { greal: 'Akun nyata', gty4: 'cara membuat akun Binance', gty5: 'cara deposit uang di Binance', gty6: 'apa itu USDT dan cara kerjanya' },
+    ru: { greal: 'Реальный счёт', gty4: 'как создать аккаунт Binance', gty5: 'как внести деньги на Binance', gty6: 'что такое USDT и как он работает' },
+    de: { greal: 'Echtgeld-Konto', gty4: 'Binance-Konto erstellen', gty5: 'Geld bei Binance einzahlen', gty6: 'was ist USDT und wie funktioniert es' },
+    hi: { greal: 'असली खाता', gty4: 'Binance खाता कैसे बनाएँ', gty5: 'Binance पर पैसे कैसे जमा करें', gty6: 'USDT क्या है और कैसे काम करता है' }
+  };
+  var D6 = window.D6 = window.D6 || {}; D6.LEARN_TXT = D6.LEARN_TXT || {};
+  Object.keys(T).forEach(function (l) { var d = D6.LEARN_TXT[l] = D6.LEARN_TXT[l] || {}; var s = T[l]; Object.keys(s).forEach(function (k) { d[k] = s[k]; }); });
+})();
