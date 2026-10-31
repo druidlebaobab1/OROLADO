@@ -12523,9 +12523,9 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
 .sp-rcpt-s em { font-style: normal; font-weight: 800; font-size: 14px; color: #4C1D95; }
 /* 2026-10-31 (propriétaire, validé — style 3) : score final du match sur le reçu = pastille « Terminé · score »,
    COULEUR SELON LE RÉSULTAT : gagné = vert, perdu = rouge, remboursé = bleu. « Terminé » traduit (NX().ft). */
-.sp-rcpt-fs { align-self: flex-start; margin-top: 6px; display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px; border-radius: 999px; background: #F1F5F9; border: 1px solid #E2E8F0; text-decoration: none; }
-.sp-rcpt-fs .fsL { display: inline-block; font-style: normal; font-size: 10px; line-height: 1; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #94A3B8; }
-.sp-rcpt-fs .fsN { display: inline-block; font-style: normal; font-size: 13px; line-height: 1; font-weight: 800; color: #334155; font-variant-numeric: tabular-nums; letter-spacing: .07em; }
+.sp-rcpt-fs { align-self: flex-start; margin-top: 6px; display: inline-flex; align-items: center; gap: 7px; height: 24px; padding: 0 11px; border-radius: 999px; background: #F1F5F9; border: 1px solid #E2E8F0; text-decoration: none; white-space: nowrap; }
+.sp-rcpt-fs .fsL { display: flex; align-items: center; font-style: normal; font-size: 10px; line-height: 1; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #94A3B8; }
+.sp-rcpt-fs .fsN { display: flex; align-items: center; font-style: normal; font-size: 13px; line-height: 1; font-weight: 800; color: #334155; font-variant-numeric: tabular-nums; letter-spacing: .06em; }
 .sp-rcpt-s.won .sp-rcpt-fs, .sp-rcpt-s.hwon .sp-rcpt-fs { background: #ECFDF3; border-color: #BBF7D0; }
 .sp-rcpt-s.won .sp-rcpt-fs .fsL, .sp-rcpt-s.hwon .sp-rcpt-fs .fsL { color: #16A34A; }
 .sp-rcpt-s.won .sp-rcpt-fs .fsN, .sp-rcpt-s.hwon .sp-rcpt-fs .fsN { color: #15803D; }
