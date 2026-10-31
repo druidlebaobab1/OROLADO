@@ -765,14 +765,20 @@
       g.font = '800 19px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, W - P, y + rowH / 2);
       var right = W - P - g.measureText(odd).width - 12; right -= mark(s, right, y + rowH / 2, 16);
       g.textAlign = 'left';
-      // 2026-10-31 (propriétaire) : match terminé → score final en vert à côté du nom du match
+      // 2026-10-31 (propriétaire) : match terminé → score final, étiquette neutre nette (statut petit gris + score noir)
       var fs = Array.isArray(s.fs) ? ((+s.fs[0] || 0) + '–' + (+s.fs[1] || 0)) : '';
-      var fsLab = fs ? ((x.ftS || '') + ' ' + fs).trim() : '';
+      var fsLab = fs ? String(x.ftS || '').toUpperCase() : '';
+      var wLab = 0, wScore = 0;
+      if (fs) { g.font = '800 10px ' + FONT; wLab = fsLab ? g.measureText(fsLab).width + 7 : 0; g.font = '800 14px ' + FONT; wScore = g.measureText(fs).width; }
+      var suffix = fs ? (wLab + wScore + 12) : 0;
       g.fillStyle = MUTE; g.font = '500 14px ' + FONT;
-      var mtMax = (right - P - 4) - (fsLab ? (g.measureText(fsLab).width + 14) : 0);
-      var mt = ell(g, s.t, Math.max(30, mtMax));
+      var mt = ell(g, s.t, Math.max(30, (right - P - 4) - suffix));
       g.fillText(mt, P, y + 19);
-      if (fsLab) { g.fillStyle = '#15803D'; g.font = '800 13px ' + FONT; g.fillText(fsLab, P + g.measureText(mt).width + 10, y + 19); g.font = '500 14px ' + FONT; }
+      if (fs) {
+        var fx = P + g.measureText(mt).width + 12;
+        if (fsLab) { g.fillStyle = '#94A3B8'; g.font = '800 10px ' + FONT; g.fillText(fsLab, fx, y + 18); fx += wLab; }
+        g.fillStyle = '#0F172A'; g.font = '800 14px ' + FONT; g.fillText(fs, fx, y + 19);
+      }
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, y + 41);
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {
