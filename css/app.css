@@ -154,9 +154,9 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .legal{text-align:center;color:rgba(139,155,184,.72);font-size:.62rem;font-weight:700;margin-top:14px;letter-spacing:.04em}
 .drawer-legal{margin-top:18px}
 
-.auth-ambient{position:fixed;inset:0;pointer-events:none;background:
-  url("../icons/pyramid-bg.svg?v=2096") center 72%/min(820px,170vw) auto no-repeat,
-  radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.05),transparent 46%)}
+/* 2026-10-31 (propriétaire) : retiré UNIQUEMENT sur l'écran Connexion/Inscription — le décor « univers »
+   (pyramide/galaxie) du bas gênait. Ne touche aucune autre partie du site (élément propre à #screenAuth). */
+.auth-ambient{display:none!important}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
 .auth-card{border-radius:14px;padding:18px 16px 18px}
