@@ -707,7 +707,7 @@
     // 2026-10-31 (propriétaire) : pari simple / court avec score final → on réserve une 3e ligne pour le
     // carré de score SOUS le choix (comme à l'écran), pour qu'il ne croise jamais un nom de match long.
     var showScore = D === 0 && sel.some(function (s) { return Array.isArray(s.fs); });
-    if (showScore) rowH = 84;
+    if (showScore) rowH = 90;
     var HB = 96, stTop = HB, selHead = stTop + 158, selTop = selHead + 22, selEnd = selTop + rows * rowH;
     var totTop = selEnd + 18, totRow = 34, nT = bt.bst ? 6 : 5, H = totTop + nT * totRow + 112; // 2026-10-23 : + ligne « Bonus combiné »
     // très long coupon (jusqu'à 1 000 choix) : résolution réduite pour rester sous les limites des téléphones (iPhone : ≈ 16 Mpx
@@ -781,7 +781,7 @@
           : (s.r === 'void') ? { bg: '#EFF6FF', bd: '#BFDBFE', n: '#1E40AF' }
           : { bg: '#F1F5F9', bd: '#E2E8F0', n: '#334155' };
         g.font = '800 13px ' + FONT; var wN = g.measureText(fsStr).width;
-        var boxW = Math.max(44, wN + 20), boxH = 22, bx = P, by = y + 52;
+        var boxW = Math.max(44, wN + 20), boxH = 22, bx = P, by = y + 60;
         rr(g, bx, by, boxW, boxH, 3); g.fillStyle = FC.bg; g.fill();
         g.lineWidth = 1; g.strokeStyle = FC.bd; g.stroke();
         g.fillStyle = FC.n; g.textAlign = 'center'; g.fillText(fsStr, bx + boxW / 2, by + boxH / 2); g.textAlign = 'left';
