@@ -5232,6 +5232,12 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
   html body #screenAuth#screenAuth .auth-card form .field input{height:38px!important;min-height:38px!important;margin-bottom:2px!important;padding-top:6px!important;padding-bottom:6px!important}
   html body #screenAuth .auth-or{margin:7px 0 6px}
 }
+/* 2026-10-31 (propriétaire) : la case « Code promo » ajoutée à l'inscription — on resserre un peu CHAQUE
+   champ sur les téléphones courants (iPhone/Android), même style, pour que tout rentre sans déborder. */
+@media (orientation:portrait) and (min-height:701px) and (max-height:900px){
+  html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:6px!important}
+  html body #screenAuth#screenAuth .auth-card form .field input{min-height:42px}
+}
 /* v2396 — PC / portable pas très haut (ex. 1366×768) : mêmes cases un peu serrées, pour que
    l'inscription tienne entière avec le bouton Google et la ligne de logos. */
 @media (min-width:860px) and (min-height:501px) and (max-height:900px){
@@ -5610,12 +5616,29 @@ html body #portalModal .apr-demo b{font-size:clamp(12px,3.2vw,13.5px);color:#FFE
 html body #portalModal .apr-demo p{margin:3px 0 0;font-size:clamp(10.5px,2.9vw,12px);line-height:1.4;color:#C7CEE8;overflow-wrap:anywhere}
 html body #portalModal .apr-demo-lock{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.12)}
 html body #portalModal .apr-demo-lock b{color:#AEB6D6}
+/* Règles à respecter — autorisé / à éviter / avertissement. */
+html body #portalModal .arv-rules{border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);overflow:hidden}
+html body #portalModal .arv-rules>summary{cursor:pointer;list-style:none;padding:11px 12px;font-size:clamp(12.5px,3.4vw,14px);font-weight:900;color:#FFE6A6;display:flex;justify-content:space-between;align-items:center;gap:8px}
+html body #portalModal .arv-rules>summary::-webkit-details-marker{display:none}
+html body #portalModal .arv-rules>summary::after{content:"+";flex:0 0 auto;color:#F2B33D;font-weight:900;font-size:16px}
+html body #portalModal .arv-rules[open]>summary::after{content:"\2212"}
+html body #portalModal .arl-ok,html body #portalModal .arl-no{padding:0 12px 8px}
+html body #portalModal .arl-ok b,html body #portalModal .arl-no b{display:block;font-size:clamp(11.5px,3.1vw,13px);margin-bottom:3px}
+html body #portalModal .arl-ok b{color:#48C38D}
+html body #portalModal .arl-no b{color:#E2694A}
+html body #portalModal .arl-ok p{margin:0;font-size:clamp(10.5px,2.9vw,12px);line-height:1.4;color:#C7CEE8;overflow-wrap:anywhere}
+html body #portalModal .arl-no ul{margin:0;padding-left:18px}
+html body #portalModal .arl-no li{font-size:clamp(10.5px,2.9vw,12px);line-height:1.45;color:#C7CEE8;overflow-wrap:anywhere}
+html body #portalModal .arl-warn{margin:0 12px 12px;padding:9px 11px;border-radius:9px;background:rgba(226,105,74,.1);border:1px solid rgba(226,105,74,.35);font-size:clamp(10.5px,2.9vw,12px);line-height:1.4;color:#FFB7A3;overflow-wrap:anywhere}
 /* Codes promo personnalisés (max 5) — élastique, sans débordement. */
 html body #portalModal .aff-codes{margin-top:11px;padding:12px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(242,179,61,.22);display:flex;flex-direction:column;gap:8px}
 html body #portalModal .aff-codes .ac-h{font-size:clamp(12.5px,3.4vw,14px);color:#fff;font-weight:900;display:flex;align-items:center;gap:6px}
 html body #portalModal .aff-codes .ac-h i{font-style:normal;font-size:12px;font-weight:700;color:#F2B33D;background:rgba(242,179,61,.14);border-radius:999px;padding:1px 8px}
 html body #portalModal .aff-codes .ac-list{display:flex;flex-direction:column;gap:6px}
-html body #portalModal .ac-row{display:flex;align-items:center;gap:6px;padding:5px 5px 5px 11px;border-radius:10px;background:rgba(0,0,0,.26);border:1px dashed rgba(242,179,61,.4)}
+html body #portalModal .ac-row{display:flex;align-items:center;gap:6px;padding:6px 6px 6px 11px;border-radius:10px;background:rgba(0,0,0,.26);border:1px dashed rgba(242,179,61,.4)}
+html body #portalModal .ac-row .ac-ci{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px;direction:ltr}
+html body #portalModal .ac-row .ac-codew{font-weight:900;font-size:clamp(13px,3.7vw,15px);color:#FFE6A6;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #portalModal .ac-row .ac-codelink{font-size:clamp(10px,2.7vw,11.5px);color:#9AA3C4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html body #portalModal .ac-row .ac-code{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;font-weight:800;font-size:clamp(12px,3.3vw,13.5px);color:#FFE6A6}
 html body #portalModal .ac-row .ac-copy{flex:0 0 auto;height:30px;padding:0 11px;border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font:800 12px/1 inherit;font-family:inherit;cursor:pointer}
 html body #portalModal .ac-row .ac-copy.done{background:#1F9D63}
