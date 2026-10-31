@@ -1054,7 +1054,9 @@
     try { sessionStorage.setItem('oro_auth_tab', tab === 'login' ? 'login' : 'register'); } catch (eTab) { /* ignore */ }
     showScreen('screenAuth');
     markBootReady();
+    try { authFit(); } catch (eAF0) { /* ignore */ }
     setTimeout(pcAuthFit, 80);
+    setTimeout(pcAuthFit, 320);
     var auth = $('screenAuth');
     if (auth) {
       auth.classList.remove('hidden');
@@ -1483,9 +1485,8 @@
     try {
       var wrap = document.querySelector('#screenAuth .auth-wrap');
       if (!wrap) return;
-      if (window.innerWidth < 900 || window.innerWidth < window.innerHeight) { wrap.style.zoom = ''; return; }
       var scr = $('screenAuth');
-      if (!scr || scr.classList.contains('hidden') || !wrap.offsetHeight) return;
+      if (!scr || scr.classList.contains('hidden') || !wrap.offsetHeight) { wrap.style.zoom = ''; return; }
       wrap.style.zoom = '';
       var kids = wrap.children, top = Infinity, bot = -Infinity, i;
       for (i = 0; i < kids.length; i++) {
@@ -1496,7 +1497,13 @@
         if (r.bottom > bot) bot = r.bottom;
       }
       var need = bot - top;
-      var room = (window.innerHeight || 0) - 56;
+      // 2026-10-31 (propriétaire : « rien ne doit défiler, ni Connexion ni Inscription ») : l'ajustement
+      // marche maintenant AUSSI sur téléphone (avant : seulement sur ordinateur). Sur un écran trop court,
+      // tout le bloc rapetisse juste ce qu'il faut pour tenir en entier — jamais de défilement, jamais coupé.
+      var ih = window.innerHeight || 0;
+      var portrait = window.innerWidth < window.innerHeight;
+      var under = document.documentElement.classList.contains('saf-under');
+      var room = portrait ? ((under ? ih - safeBottomPx() - 70 : ih) - 14) : (ih - 56);
       if (need > 0 && room > 200 && need > room) wrap.style.zoom = String(Math.max(0.6, Math.floor(room / need * 100) / 100));
     } catch (ePa) { /* ignore */ }
   }
