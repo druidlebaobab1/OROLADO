@@ -5232,10 +5232,12 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
    un peu leur hauteur (≈42 px, police gardée à 16 px pour ne pas faire zoomer l'iPhone). PC : inchangé. */
 @media (max-width:859px){
   html body #screenAuth#screenAuth .auth-card form .field input{min-height:42px;padding-top:8px;padding-bottom:8px}
-  html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:9px;gap:5px}
-  /* Appli installée : ~59 px du bas non dessinables → on réserve plus d'air sous la carte pour que la
-     bannière « Apprendre à trader » ne soit plus coupée par le bord. */
-  html body #screenAuth .auth-wrap{padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))!important}
+  /* On RETIRE les espaces vides entre les champs (gap label↔case et marge entre champs) : le formulaire
+     remonte, et la bannière « Apprendre à trader » n'est plus coupée en bas. */
+  html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:4px;gap:3px}
+  html body #screenAuth#screenAuth #formRegister .check-row{margin-top:8px}
+  /* Haut et bas resserrés : moins de vide en haut, juste ce qu'il faut en bas (barre d'accueil). */
+  html body #screenAuth .auth-wrap{padding-top:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))!important}
 }
 @media (orientation:portrait) and (max-height:700px){
   html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:3px!important}
