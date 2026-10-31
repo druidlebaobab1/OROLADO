@@ -3306,6 +3306,22 @@
     hi: { affCodesTitle: 'आपके प्रोमो कोड', affCodeNewPh: 'नया कोड (जैसे FOOT)', affCodeAdd: 'बनाएँ', affCodeWarn: 'अपने विज्ञापन और वीडियो खुलकर बनाएँ। बस खुद को रेफर करने के लिए नकली खाते न बनाएँ।', affCodeTaken: 'यह कोड पहले से लिया जा चुका है।', affCodeBad: '3 से 16 अक्षर या अंक।', affCodeMaxMsg: 'आपके पास पहले से {max} कोड हैं।', affCodeDelAsk: 'यह कोड हटाएँ?' }
   };
   Object.keys(AFF_CODE_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF_CODE_TR[l]); });
+  var AFF_CODE_HELP = {
+    fr: 'Crée un mot facile (ex. FOOT). Ton lien devient orolado.com/r/FOOT.',
+    en: 'Create an easy word (e.g. FOOT). Your link becomes orolado.com/r/FOOT.',
+    es: 'Crea una palabra fácil (ej. FOOT). Tu enlace será orolado.com/r/FOOT.',
+    pt: 'Cria uma palavra fácil (ex. FOOT). O teu link fica orolado.com/r/FOOT.',
+    ar: 'أنشئ كلمة سهلة (مثال FOOT). يصبح رابطك orolado.com/r/FOOT.',
+    tr: 'Kolay bir kelime oluştur (örn. FOOT). Linkin orolado.com/r/FOOT olur.',
+    vi: 'Tạo một từ dễ nhớ (vd. FOOT). Liên kết của bạn thành orolado.com/r/FOOT.',
+    id: 'Buat kata mudah (mis. FOOT). Tautanmu jadi orolado.com/r/FOOT.',
+    ru: 'Придумай простое слово (напр. FOOT). Твоя ссылка станет orolado.com/r/FOOT.',
+    de: 'Erstelle ein einfaches Wort (z. B. FOOT). Dein Link wird orolado.com/r/FOOT.',
+    hi: 'एक आसान शब्द बनाएँ (जैसे FOOT)। आपका लिंक बन जाएगा orolado.com/r/FOOT।'
+  };
+  Object.keys(AFF_CODE_HELP).forEach(function (l) { if (DICT[l]) DICT[l].affCodeHelp = AFF_CODE_HELP[l]; });
+  var AFF_KEPT = { fr: 'gardé', en: 'kept', es: 'retenido', pt: 'retido', ar: 'محتفظ به', tr: 'tutulan', vi: 'giữ lại', id: 'disimpan', ru: 'удержано', de: 'behalten', hi: 'रखा गया' };
+  Object.keys(AFF_KEPT).forEach(function (l) { if (DICT[l]) DICT[l].affKept = AFF_KEPT[l]; });
   // v2414 — Inviter (carrés, liste de 365 jours) + Top 25 démo de la semaine.
   var TOP_TR = {
     fr: { affR1: 'Toi : 5 % de chaque dépôt de ton ami, pendant 365 jours. Tu retires quand tu veux.', affClicks: 'Clics sur ton lien', affPlayed: 'Ont joué en réel', affTotal: 'Total déposé par tes amis', affListBtn: 'Voir mes amis', affListTitle: 'Mes amis invités', affFDay: 'Aujourd’hui', affFWeek: '7 jours', affFAll: 'Tout', affColDep: 'Déposé', affEmpty: 'Aucun ami pour cette période.', affPlayedOne: 'a joué', affLeft: 'Reste', topTab: 'Top 25', topTitle: 'Top 25 de la semaine', topSub: 'Les meilleurs joueurs démo de la semaine sont récompensés par OROLADO.', topRule: 'Points = ce que tu gagnes ÷ ce que tu mises. 5 trades démo minimum. Nouveau classement chaque lundi.', topPlay: 'Jouer en démo', topPrev: 'Semaine dernière', topThis: 'Cette semaine', topPts: 'pts', topEmpty: 'Joue 20 trades démo pour entrer !', topMeRank: 'Toi : {r}e sur {n} · {p} pts', topMeNeed: 'Encore {n} trades démo pour entrer dans le classement.', topMeOut: 'Toi : {p} pts — continue pour monter !', topEnded: 'Terminé' },

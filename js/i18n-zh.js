@@ -41,6 +41,8 @@
  "affCodeBad": "3 到 16 个字母或数字。",
  "affCodeMaxMsg": "你已经有 {max} 个代码。",
  "affCodeDelAsk": "删除此代码？",
+ "affCodeHelp": "创建一个好记的词（如 FOOT）。你的链接就变成 orolado.com/r/FOOT。",
+ "affKept": "留存",
  "affBiggest": "最大单笔充值",
  "affClicks": "链接点击次数",
  "affColDep": "已充值",

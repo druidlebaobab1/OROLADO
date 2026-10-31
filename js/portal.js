@@ -521,8 +521,9 @@
   function renderRevBox(rev) {
     var main = $('affMain');
     if (!main) return;
-    var legacy = ['.aff-big', '.aff-steps3', '.aff-ex', '.aff-rl', '.aff-paid', '.aff-proj'];
-    legacy.forEach(function (sel) { var el = main.querySelector(sel); if (el) el.style.display = rev ? 'none' : ''; });
+    // Masquage sûr des anciens blocs « +5 % » via une classe sur la carte (CSS !important).
+    var card = document.getElementById('affCard');
+    if (card) card.classList.toggle('aff-rev-on', !!rev);
     var box = document.getElementById('affRevBox');
     if (!rev) { if (box) box.style.display = 'none'; return; }
     if (!box) { box = document.createElement('div'); box.id = 'affRevBox'; box.className = 'aff-revbox'; main.insertBefore(box, main.firstChild); }
@@ -538,11 +539,9 @@
         '<div class="arv-kpi"><b>' + money(rev.paid || 0) + '</b><span>' + esc(t('affEarned')) + '</span></div>' +
       '</div>' +
       '<h3 class="arv-big">' + esc(t('affRevBig', V)) + '</h3>' +
-      '<p class="arv-sub">' + esc(t('affRevSub', V)) + '</p>' +
       '<ul class="arv-rules">' +
         '<li>' + esc(t('affRevR1', V)) + '</li>' +
         '<li>' + esc(t('affRevR3')) + '</li>' +
-        '<li class="arv-safe">' + esc(t('affRevSafe')) + '</li>' +
       '</ul>' +
       '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
         proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
@@ -564,7 +563,11 @@
       '<div class="ar-dep"><b>' + esc(money(r.deposit)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
       // v2489 — nombre de dépôts de l'ami.
       '<div class="ar-n"><b>' + affN(r) + '</b><span>' + esc(t('affColN')) + '</span></div>' +
-      '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b><span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(daysOnly(r.until)) + '</span></div></div>';
+      '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b>' +
+        (aff && aff.rev && aff.rev.on
+          ? '<span class="ar-left">' + esc(money(r.ngr || 0)) + ' ' + esc(t('affKept')) + '</span>'
+          : '<span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(daysOnly(r.until)) + '</span>') +
+      '</div></div>';
   }
   // v2491 — petit graphique des gains de celui qui invite (barres). 7 jours (Aujourd'hui / 7 jours) avec le nom du jour,
   // 30 jours avec la date, « Tout » = par semaine (12 dernières). Affichage seulement.
@@ -913,19 +916,20 @@
     }
     box.style.display = '';
     var codes = aff.codes || { "default": aff.code, custom: [], max: 5 };
-    var def = codes["default"] || aff.code || '';
     var custom = codes.custom || [];
     var max = Number(codes.max) || 5;
-    var row = function (code, canDel) {
-      return '<div class="ac-row"><span class="ac-code" title="' + esc(codeLink(code)) + '">r/' + esc(code) + '</span>' +
+    var shortLink = function (code) { return 'orolado.com/r/' + code; };
+    var row = function (code) {
+      return '<div class="ac-row"><span class="ac-code" title="' + esc(codeLink(code)) + '">' + esc(shortLink(code)) + '</span>' +
         '<button type="button" class="ac-copy" data-code="' + esc(code) + '">' + esc(t('affCopy')) + '</button>' +
-        (canDel ? '<button type="button" class="ac-del" data-code="' + esc(code) + '" aria-label="×">×</button>' : '') + '</div>';
+        '<button type="button" class="ac-del" data-code="' + esc(code) + '" aria-label="×">×</button></div>';
     };
     var addForm = custom.length < max ?
       '<div class="ac-add"><input id="affCodeInput" type="text" maxlength="16" autocomplete="off" spellcheck="false" placeholder="' + esc(t('affCodeNewPh')) + '">' +
       '<button type="button" id="affCodeAddBtn" class="btn-gold">' + esc(t('affCodeAdd')) + '</button></div>' : '';
     box.innerHTML = '<b class="ac-h">' + esc(t('affCodesTitle')) + ' <i>' + custom.length + '/' + max + '</i></b>' +
-      '<div class="ac-list">' + (def ? row(def, false) : '') + custom.map(function (c) { return row(c, true); }).join('') + '</div>' +
+      '<p class="ac-help">' + esc(t('affCodeHelp')) + '</p>' +
+      (custom.length ? '<div class="ac-list">' + custom.map(function (c) { return row(c); }).join('') + '</div>' : '') +
       addForm + '<p class="ac-msg" id="affCodeMsg" hidden></p>' +
       '<p class="ac-warn">' + esc(t('affCodeWarn')) + '</p>';
   }
