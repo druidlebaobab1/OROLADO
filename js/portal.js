@@ -564,13 +564,15 @@
         proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
         '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
       '<details class="arv-promo" open><summary>' + esc(t('affPromoTitle')) + '</summary>' +
+        '<p class="apr-lead">' + esc(t('affPromoLead')) + '</p>' +
         '<div class="apr-grid">' +
-          '<div class="apr-card apr-wa"><i>WhatsApp</i><p>' + esc(t('affPromoWa')) + '</p></div>' +
-          '<div class="apr-card apr-tg"><i>Telegram</i><p>' + esc(t('affPromoTg')) + '</p></div>' +
-          '<div class="apr-card apr-fb"><i>Facebook</i><p>' + esc(t('affPromoFb')) + '</p></div>' +
-          '<div class="apr-card apr-tt"><i>TikTok</i><p>' + esc(t('affPromoTt')) + '</p></div>' +
+          '<div class="apr-card apr-wa"><span class="apr-n">1</span><i>WhatsApp</i><p>' + esc(t('affPromoWa')) + '</p><em>' + esc(t('affPromoWaEx')) + '</em></div>' +
+          '<div class="apr-card apr-tg"><span class="apr-n">2</span><i>Telegram</i><p>' + esc(t('affPromoTg')) + '</p><em>' + esc(t('affPromoTgEx')) + '</em></div>' +
+          '<div class="apr-card apr-tt"><span class="apr-n">3</span><i>TikTok</i><p>' + esc(t('affPromoTt')) + '</p><em>' + esc(t('affPromoTtEx')) + '</em></div>' +
+          '<div class="apr-card apr-fb"><span class="apr-n">4</span><i>Facebook</i><p>' + esc(t('affPromoFb')) + '</p><em>' + esc(t('affPromoFbEx')) + '</em></div>' +
         '</div>' +
         '<p class="apr-tip">' + esc(t('affPromoTip')) + '</p>' +
+        '<p class="apr-go">' + esc(t('affPromoGo')) + '</p>' +
         '<div class="apr-demo"><b>' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoText')) + '</p></div>' +
       '</details>' +
       '<div class="arv-faq"><b>' + esc(t('affRevFaq')) + '</b>' +
