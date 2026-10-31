@@ -12524,7 +12524,7 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
 /* 2026-10-31 (propriétaire, validé — style 3) : score final du match sur le reçu = pastille « Terminé · score »,
    COULEUR SELON LE RÉSULTAT : gagné = vert, perdu = rouge, remboursé = bleu. « Terminé » traduit (NX().ft). */
 /* score final SEUL, centré dans une pastille (plus de « Terminé »), couleur selon le résultat */
-.sp-rcpt-fs { align-self: flex-start; margin-top: 6px; display: inline-flex; align-items: center; justify-content: center; height: 22px; min-width: 42px; padding: 0 10px; border-radius: 3px; background: #F1F5F9; border: 1px solid #CBD5E1; text-decoration: none; white-space: nowrap; }
+.sp-rcpt-fs { align-self: flex-start; margin-top: 9px; margin-bottom: 2px; display: inline-flex; align-items: center; justify-content: center; height: 22px; min-width: 42px; padding: 0 10px; border-radius: 3px; background: #F1F5F9; border: 1px solid #CBD5E1; text-decoration: none; white-space: nowrap; }
 .sp-rcpt-fs .fsN { display: block; font-style: normal; font-size: 13px; line-height: 1; font-weight: 800; color: #0F172A; font-variant-numeric: tabular-nums; letter-spacing: .1em; text-indent: .1em; }
 .sp-rcpt-s.won .sp-rcpt-fs, .sp-rcpt-s.hwon .sp-rcpt-fs { background: #ECFDF3; border-color: #BBF7D0; }
 .sp-rcpt-s.won .sp-rcpt-fs .fsL, .sp-rcpt-s.hwon .sp-rcpt-fs .fsL { color: #16A34A; }
