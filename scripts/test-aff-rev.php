@@ -17,13 +17,26 @@ putenv('OROLADO_AFF_PUBLIC=1');
 putenv('OROLADO_AFF_REV=1');
 putenv('OROLADO_AFF_REV_PCT=60');
 putenv('OROLADO_AFF_REV_HOLD_H=24');
-$GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $method) { return []; };
+$credits = [];
+$GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $method) use (&$credits) {
+  if (str_contains($url, '/rpc/resolve_trade')) {
+    $b = json_decode((string) $body, true) ?: [];
+    $k = $b['p_user'] . '|' . $b['p_order'];
+    if (!isset($credits[$k])) $credits[$k] = (float) $b['p_amount'];
+    $mine = 0.0;
+    foreach ($credits as $kk => $v) if (str_starts_with($kk, $b['p_user'] . '|')) $mine += $v;
+    return ['ok' => true, 'real' => $mine];
+  }
+  return [];
+};
 require $tmp . '/orolado_lib.php';
 require $tmp . '/trade_lib.php';
 require $tmp . '/aff_rev_lib.php';
 
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
+function uuid_for(string $uid): string { $h = md5($uid); return substr($h, 0, 8) . '-' . substr($h, 8, 4) . '-' . substr($h, 12, 4) . '-' . substr($h, 16, 4) . '-' . substr($h, 20, 12); }
+function paid_to(array $credits, string $uid, string $prefix = ''): float { $u = uuid_for($uid); $s = 0.0; foreach ($credits as $k => $v) if (str_starts_with($k, $u . '|' . $prefix)) $s += $v; return round($s, 2); }
 
 $OLD = date('c', time() - 3 * 86400); // réglé depuis 3 jours (passe le hold de 24 h)
 $NEW = date('c');                      // tout frais (bloqué par le hold)
@@ -38,7 +51,7 @@ function reset_db(): array {
 }
 function mkuser(string $uid, string $email): void {
   $db = load_db();
-  $db['users'][$uid] = ['id' => $uid, 'email' => $email, 'role' => 'user', 'displayName' => $uid, 'publicId' => 'ORO-' . substr(md5($uid), 0, 6)];
+  $db['users'][$uid] = ['id' => $uid, 'email' => $email, 'role' => 'user', 'displayName' => $uid, 'sbId' => uuid_for($uid), 'publicId' => 'ORO-' . substr(md5($uid), 0, 6)];
   $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
   save_db(orolado_data_file(), $db);
 }
@@ -180,6 +193,41 @@ for ($s = 0; $s < 200; $s++) {
   if ($ratio > $worst) $worst = $ratio;
 }
 check('200 scénarios : dû ≤ 60 % de la vraie marge (jamais la caisse dans le rouge)', $ok, 'pire ratio = ' . round($worst * 100, 1) . '%');
+
+echo "9) VERSEMENT (argent libre, idempotent, hold, report négatif)\n";
+$credits = [];
+reset_db();
+mkuser('inv', 'inv@g.com'); mkuser('f1', 'f1@g.com');
+$code = (string) orolado_aff_status(load_db(), load_db()['users']['inv'])['code'];
+orolado_aff_attach(load_db(), 'f1', $code);
+deposit('f1', 100, $OLD); bet('f1', 50, false, $OLD); bet('f1', 50, false, $OLD);
+$w = orolado_aff_rev_run(load_db(), 'inv');
+check('affilié versé 60 $ en argent libre', abs(paid_to($credits, 'inv', 'affrev_') - 60) < 0.001, (string) paid_to($credits, 'inv', 'affrev_'));
+check('justPaid = 60 $ (1re fois)', abs(($w['justPaid'] ?? 0) - 60) < 0.001);
+check('solde affilié revient à 0 (tout versé)', abs($w['balance']) < 0.001, 'bal=' . $w['balance']);
+// 10 relectures : jamais payé 2 fois
+for ($i = 0; $i < 10; $i++) orolado_aff_rev_run(load_db(), 'inv');
+check('10 relectures : toujours 60 $ (jamais payé 2 fois)', abs(paid_to($credits, 'inv', 'affrev_') - 60) < 0.001, (string) paid_to($credits, 'inv', 'affrev_'));
+
+echo "9b) Un ami perd encore 100 \$ de plus → +60 \$, total 120 \$\n";
+deposit('f1', 100, $OLD); bet('f1', 100, false, $OLD);
+orolado_aff_rev_run(load_db(), 'inv');
+check('affilié total versé 120 $', abs(paid_to($credits, 'inv', 'affrev_') - 120) < 0.001, (string) paid_to($credits, 'inv', 'affrev_'));
+
+echo "9c) Report négatif : un NOUVEL ami gagne gros → compteur descend, AUCUNE reprise\n";
+mkuser('f2', 'f2@g.com'); orolado_aff_attach(load_db(), 'f2', $code);
+deposit('f2', 200, $OLD); bet('f2', 200, true, $OLD, 1.90); // f2 gagne : marge −200
+$w = orolado_aff_rev_run(load_db(), 'inv');
+check('déjà versé 120 $ non repris (toujours chez l\'affilié)', abs(paid_to($credits, 'inv', 'affrev_') - 120) < 0.001, (string) paid_to($credits, 'inv', 'affrev_'));
+check('solde affilié négatif (doit remonter avant de toucher)', $w['balance'] < 0 && abs($w['withdrawable']) < 0.001, 'bal=' . $w['balance']);
+check('rien de neuf versé ce tour', empty($w['justPaid']));
+
+echo "9d) Les amis re-perdent → le compteur remonte, puis reprise des versements\n";
+bet('f2', 200, false, $OLD); bet('f2', 200, false, $OLD); // f2 reperd 400 : marge f2 = -200+400... plafonné par dépôts nets (200)
+$w = orolado_aff_rev_run(load_db(), 'inv');
+check('versé ≤ 60 % de la vraie marge totale (jamais la caisse dans le rouge)',
+  paid_to($credits, 'inv', 'affrev_') <= 0.60 * (house_kept(load_db(), 'f1') + house_kept(load_db(), 'f2')) + 0.02,
+  'versé=' . paid_to($credits, 'inv', 'affrev_') . ' max=' . round(0.6 * (house_kept(load_db(), 'f1') + house_kept(load_db(), 'f2')), 2));
 
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);

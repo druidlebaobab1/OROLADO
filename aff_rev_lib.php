@@ -181,11 +181,48 @@ function orolado_aff_rev_wallet(array $db, string $inviterUid): array {
     'holdH' => orolado_aff_rev_hold_h(),
     'ngr' => $agg['ngr'],
     'entitled' => $entitled,
-    'withdrawn' => $withdrawn,
+    'withdrawn' => $withdrawn, // = total déjà versé à l'affilié (argent libre)
     'balance' => $balance,
     'withdrawable' => orolado_money(max(0.0, $balance)),
     'minWithdraw' => orolado_money($minW),
     'friendsCount' => $agg['count'],
     'friends' => $agg['friends'],
   ];
+}
+
+/**
+ * VERSEMENT (vesting) : crédite à l'affilié, en argent LIBRE (retirable ou jouable, comme aujourd'hui),
+ * la part de commission qui vient d'être acquise — c.-à-d. ce qui dépasse ce qu'on lui a DÉJÀ versé.
+ *   à_verser = entitled − déjà_versé   (seulement si > 0 ; jamais de reprise si le compteur redescend)
+ * Idempotent : la référence encode le nouveau total versé, donc même appelé 100 fois, rien n'est payé 2 fois
+ * (orolado_trade_credit_once dédouble par référence). Report négatif : si les amis gagnent, entitled
+ * baisse sous « déjà_versé » → on ne verse rien de plus tant qu'il n'est pas remonté (high-water).
+ * Compte admin (mode test) : versé sur la démo, jamais d'argent réel (via orolado_aff_pay_inviter).
+ */
+function orolado_aff_rev_run(array $db, string $inviterUid): array {
+  if (!orolado_aff_rev_enabled() || $inviterUid === '') return orolado_aff_rev_wallet($db, $inviterUid);
+  $iu = $db['users'][$inviterUid] ?? null;
+  if (!is_array($iu) || !orolado_aff_allowed($iu + ['id' => $inviterUid])) return orolado_aff_rev_wallet($db, $inviterUid);
+  $wallet = orolado_aff_rev_wallet($db, $inviterUid);
+  $entitled = orolado_money($wallet['entitled']);
+  $rev = orolado_aff_read(orolado_aff_rev_name($inviterUid));
+  $paid = orolado_money($rev['withdrawn'] ?? 0);
+  $delta = orolado_money(floor(($entitled - $paid) * 100) / 100);
+  if ($delta >= 0.01) {
+    $newTotal = orolado_money($paid + $delta);
+    $ref = 'affrev_' . substr(hash('sha256', $inviterUid . '|' . number_format($newTotal, 2, '.', '')), 0, 20);
+    $ok = orolado_aff_pay_inviter($db, $inviterUid, $delta, $ref);
+    if ($ok) {
+      orolado_aff_with(orolado_aff_rev_name($inviterUid), static function (&$st) use ($newTotal, $delta, $ref) {
+        $st['withdrawn'] = $newTotal; // total versé à ce jour (argent libre chez l'affilié)
+        if (!isset($st['log']) || !is_array($st['log'])) $st['log'] = [];
+        foreach ($st['log'] as $l) if (($l['ref'] ?? '') === $ref) return; // déjà noté
+        $st['log'][] = ['ref' => $ref, 'amount' => $delta, 'at' => date('c')];
+        $st['log'] = array_slice($st['log'], -500);
+      });
+      $wallet = orolado_aff_rev_wallet($db, $inviterUid);
+      $wallet['justPaid'] = $delta;
+    }
+  }
+  return $wallet;
 }
