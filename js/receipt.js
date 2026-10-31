@@ -785,8 +785,8 @@
         rr(g, px, cy - pillH / 2, pillW, pillH, pillH / 2); g.fillStyle = FC.bg; g.fill();
         g.lineWidth = 1; g.strokeStyle = FC.bd; g.stroke();
         var tx = px + padX;
-        if (fsLab) { g.fillStyle = FC.l; g.font = '800 10px ' + FONT; g.fillText(fsLab, tx, cy + 0.5); tx += wLab + g1; }
-        g.fillStyle = FC.n; g.font = '800 13px ' + FONT; g.fillText(fsStr, tx, cy + 0.5);
+        if (fsLab) { g.fillStyle = FC.l; g.font = '800 10px ' + FONT; g.fillText(fsLab, tx, cy); tx += wLab + g1; }
+        g.fillStyle = FC.n; g.font = '800 13px ' + FONT; g.fillText(fsStr, tx, cy);
       }
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, y + 41);
     });
