@@ -5543,6 +5543,13 @@ html body #portalModal .aff-stats div{display:flex;flex-direction:column;align-i
 html body #portalModal .aff-stats b{font-size:16px;font-weight:900;color:#fff;direction:ltr}
 html body #portalModal .aff-stats span{font-size:11px;color:#AEB6D6;line-height:1.2}
 /* Part de revenu (NGR) — tableau de bord affilié. Élastique : s'adapte au téléphone et à la langue, sans débordement. */
+/* En mode part de revenu, les anciens blocs « +5 % » sont masqués pour de bon. */
+html body #portalModal #affCard.aff-rev-on .aff-big,
+html body #portalModal #affCard.aff-rev-on .aff-steps3,
+html body #portalModal #affCard.aff-rev-on .aff-ex,
+html body #portalModal #affCard.aff-rev-on .aff-rl,
+html body #portalModal #affCard.aff-rev-on .aff-paid,
+html body #portalModal #affCard.aff-rev-on .aff-proj{display:none!important}
 html body #portalModal .aff-revbox{display:flex;flex-direction:column;gap:11px;margin:0 0 12px}
 html body #portalModal .arv-head{display:flex;gap:7px;flex-wrap:wrap}
 html body #portalModal .arv-kpi{flex:1 1 90px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 6px;border-radius:12px;background:linear-gradient(180deg,rgba(242,179,61,.14),rgba(242,179,61,.05));border:1px solid rgba(242,179,61,.35);text-align:center}
@@ -5580,9 +5587,11 @@ html body #portalModal .ac-row .ac-code{flex:1 1 auto;min-width:0;overflow:hidde
 html body #portalModal .ac-row .ac-copy{flex:0 0 auto;height:30px;padding:0 11px;border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font:800 12px/1 inherit;font-family:inherit;cursor:pointer}
 html body #portalModal .ac-row .ac-copy.done{background:#1F9D63}
 html body #portalModal .ac-row .ac-del{flex:0 0 auto;width:30px;height:30px;border:0;border-radius:8px;background:rgba(226,105,74,.18);color:#FF9E86;font:900 17px/1 inherit;font-family:inherit;cursor:pointer}
-html body #portalModal .aff-codes .ac-add{display:flex;gap:6px}
-html body #portalModal .aff-codes .ac-add input{flex:1 1 auto;min-width:0;height:36px;padding:0 11px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.3);color:#fff;font:700 13px/1 inherit;font-family:inherit;text-transform:uppercase}
-html body #portalModal .aff-codes .ac-add .btn-gold{flex:0 0 auto;height:36px;padding:0 15px;border-radius:9px;font:900 12.5px/1 inherit;font-family:inherit;cursor:pointer}
+html body #portalModal .aff-codes .ac-help{margin:0;font-size:clamp(11px,3vw,12.5px);line-height:1.4;color:#C7CEE8;overflow-wrap:anywhere}
+html body #portalModal .aff-codes .ac-add{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+html body #portalModal .aff-codes .ac-add input{flex:1 1 150px;min-width:130px;height:44px;padding:0 13px;border-radius:10px;border:1px solid rgba(242,179,61,.5);background:rgba(0,0,0,.34);color:#fff;font:800 15px/1 inherit;font-family:inherit;text-transform:uppercase;letter-spacing:.04em}
+html body #portalModal .aff-codes .ac-add input::placeholder{color:#8993b4;text-transform:none;letter-spacing:0;font-weight:600}
+html body #portalModal .aff-codes .ac-add .btn-gold{flex:0 0 auto;width:auto!important;min-width:96px;height:44px;padding:0 20px;border-radius:10px;font:900 14px/1 inherit;font-family:inherit;cursor:pointer}
 html body #portalModal .aff-codes .ac-msg{margin:0;font-size:clamp(11px,3vw,12.5px);color:#FF9E86;overflow-wrap:anywhere}
 html body #portalModal .aff-codes .ac-warn{margin:0;font-size:clamp(10.5px,2.9vw,12px);line-height:1.4;color:#9AA3C4;overflow-wrap:anywhere}
 @media (max-width:859px){html body #portalModal#portalModal .aff-card{margin-bottom:auto!important}}

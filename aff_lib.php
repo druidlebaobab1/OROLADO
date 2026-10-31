@@ -582,6 +582,12 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
     if (!empty($rev['justPaid'])) $out['rev']['justPaid'] = orolado_money($rev['justPaid']);
     $out['pct'] = $out['rev']['pct'];
     $out['earned'] = $out['rev']['paid'];
+    // Détail : on remplace les gains de l'ancien modèle 5 % par le versé réel (part de revenu),
+    // pour que « Tu as gagné » soit cohérent partout (plus de vieux chiffres 5 %).
+    $out['gains'] = [];
+    if (isset($out['periods']) && is_array($out['periods'])) {
+      foreach ($out['periods'] as $pk => $pv) $out['periods'][$pk]['gain'] = ($pk === 'all') ? $out['rev']['paid'] : 0.0;
+    }
   }
   return $out;
 }
