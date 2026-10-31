@@ -5234,10 +5234,12 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
   html body #screenAuth#screenAuth .auth-card form .field input{min-height:42px;padding-top:8px;padding-bottom:8px}
   /* On RETIRE les espaces vides entre les champs (gap label↔case et marge entre champs) : le formulaire
      remonte, et la bannière « Apprendre à trader » n'est plus coupée en bas. */
-  html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:4px;gap:3px}
-  html body #screenAuth#screenAuth #formRegister .check-row{margin-top:8px}
-  /* Haut et bas resserrés : moins de vide en haut, juste ce qu'il faut en bas (barre d'accueil). */
-  html body #screenAuth .auth-wrap{padding-top:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))!important}
+  html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:3px;gap:2px}
+  html body #screenAuth#screenAuth #formRegister .check-row{margin-top:7px;margin-bottom:4px}
+  /* Haut et bas resserrés : peu de vide en haut, juste ce qu'il faut en bas (barre d'accueil), pour que la
+     bannière « Apprendre » et son sous-titre « Guide gratuit, pas à pas » s'affichent en entier. */
+  html body #screenAuth .auth-wrap{padding-top:8px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))!important}
+  html body #screenAuth .auth-card{padding-top:14px;padding-bottom:14px}
 }
 @media (orientation:portrait) and (max-height:700px){
   html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:3px!important}
