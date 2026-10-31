@@ -78,6 +78,61 @@ function orolado_aff_clean_code(string $code): string {
   return strlen($c) === 8 ? $c : '';
 }
 
+/** Code normalisé : MAJUSCULES, lettres/chiffres, 3 à 16 caractères (couvre le code par défaut de 8 ET les codes promo personnalisés). */
+function orolado_aff_norm_code(string $code): string {
+  $c = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $code) ?? '');
+  return (strlen($c) >= 3 && strlen($c) <= 16) ? $c : '';
+}
+
+const OROLADO_AFF_MAX_CODES = 5; // codes promo personnalisés max par affilié (demande du propriétaire)
+
+/** Codes de l'affilié : son code par défaut + ses codes promo personnalisés. */
+function orolado_aff_codes(string $uid): array {
+  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+  $custom = [];
+  foreach ((array) ($own['codes'] ?? []) as $c) { $c = orolado_aff_norm_code((string) $c); if ($c !== '') $custom[$c] = true; }
+  return ['default' => orolado_aff_code($uid), 'custom' => array_keys($custom), 'max' => OROLADO_AFF_MAX_CODES];
+}
+
+/** Crée un code promo personnalisé (max OROLADO_AFF_MAX_CODES). Retour: ['ok'=>bool,'code'=>..,'reason'=>..]. */
+function orolado_aff_code_create(array $db, string $uid, string $raw): array {
+  $u = $db['users'][$uid] ?? null;
+  if (!is_array($u) || !orolado_aff_allowed($u + ['id' => $uid])) return ['ok' => false, 'reason' => 'not_allowed'];
+  $code = orolado_aff_norm_code($raw);
+  if ($code === '') return ['ok' => false, 'reason' => 'bad'];
+  if ($code === orolado_aff_code($uid)) return ['ok' => false, 'reason' => 'default'];
+  if (in_array($code, ['OROLADO', 'ADMIN', 'SUPPORT', 'ORO', 'TEST'], true)) return ['ok' => false, 'reason' => 'reserved'];
+  $cur = orolado_aff_codes($uid);
+  if (in_array($code, $cur['custom'], true)) return ['ok' => true, 'code' => $code]; // déjà à lui
+  if (count($cur['custom']) >= OROLADO_AFF_MAX_CODES) return ['ok' => false, 'reason' => 'max'];
+  $taken = false;
+  orolado_aff_with('code_' . $code, static function (&$st) use ($uid, &$taken) {
+    $owner = (string) ($st['uid'] ?? '');
+    if ($owner === '') { $st = ['uid' => $uid, 'custom' => true, 'at' => date('c')]; }
+    else if ($owner !== $uid) { $taken = true; }
+  });
+  if ($taken) return ['ok' => false, 'reason' => 'taken'];
+  orolado_aff_with(orolado_aff_owner_name($uid), static function (&$st) use ($code) {
+    if (!isset($st['codes']) || !is_array($st['codes'])) $st['codes'] = [];
+    if (!in_array($code, $st['codes'], true)) $st['codes'][] = $code;
+    $st['codes'] = array_slice($st['codes'], 0, OROLADO_AFF_MAX_CODES);
+  });
+  return ['ok' => true, 'code' => $code];
+}
+
+/** Supprime un code promo personnalisé (et le libère s'il appartient bien à cet affilié). */
+function orolado_aff_code_delete(string $uid, string $raw): array {
+  $code = orolado_aff_norm_code($raw);
+  if ($code === '') return ['ok' => false, 'reason' => 'bad'];
+  orolado_aff_with(orolado_aff_owner_name($uid), static function (&$st) use ($code) {
+    if (isset($st['codes']) && is_array($st['codes'])) $st['codes'] = array_values(array_filter($st['codes'], static fn($c) => orolado_aff_norm_code((string) $c) !== $code));
+  });
+  orolado_aff_with('code_' . $code, static function (&$st) use ($uid) {
+    if ((string) ($st['uid'] ?? '') === $uid) $st = ['uid' => '', 'removed' => true, 'at' => date('c')];
+  });
+  return ['ok' => true];
+}
+
 /** Enregistre le code du joueur (pour retrouver qui invite à partir du lien). */
 function orolado_aff_register_code(string $uid): string {
   $code = orolado_aff_code($uid);
@@ -97,7 +152,7 @@ function orolado_aff_client_ip(): string {
  * Refusé : code inconnu, soi-même, compte qui invite introuvable / bloqué / non autorisé, déjà relié.
  */
 function orolado_aff_attach(array $db, string $newUid, string $code): bool {
-  $code = orolado_aff_clean_code($code);
+  $code = orolado_aff_norm_code($code); // accepte le code par défaut (8) ET les codes promo personnalisés
   if ($code === '' || $newUid === '') return false;
   $inviter = (string) (orolado_aff_read('code_' . $code)['uid'] ?? '');
   if ($inviter === '' || $inviter === $newUid) return false;
@@ -395,6 +450,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
   $out['enabled'] = true;
   $out['code'] = $code;
+  $out['codes'] = orolado_aff_codes($uid); // code par défaut + codes promo personnalisés (max 5)
   $out['days'] = OROLADO_AFF_DAYS;
   $out['now'] = time();
   $out['clicks'] = (int) ($own['clicks'] ?? 0);
@@ -535,7 +591,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
  * Un même téléphone (ou une même connexion) n'est compté qu'UNE fois par jour et par lien.
  */
 function orolado_aff_click(string $code, string $device): bool {
-  $code = orolado_aff_clean_code($code);
+  $code = orolado_aff_norm_code($code);
   if ($code === '') return false;
   $inviter = (string) (orolado_aff_read('code_' . $code)['uid'] ?? '');
   if ($inviter === '') return false;

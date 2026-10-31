@@ -301,6 +301,8 @@ $OROLADO_RATE_RULES = [
   'defiStatus'        => [['t', 120, 60]],
   'affStatus'         => [['t', 60, 60]],
   'affClick'          => [['i', 30, 3600]],
+  'affCodeNew'        => [['t', 20, 3600]],
+  'affCodeDel'        => [['t', 20, 3600]],
   'topStatus'         => [['t', 60, 60]],
   'bonusStatus'       => [['t', 60, 60]],
   'bonusActivate'     => [['t', 10, 60]],
@@ -436,6 +438,22 @@ if ($action === 'affStatus') {
     $res = ['ok' => false, 'reason' => 'Indisponible'];
   }
   echo json_encode(['server' => true] + $res);
+  exit;
+}
+
+// Codes promo personnalisés de l'affilié (créer / supprimer, max 5).
+if ($action === 'affCodeNew' || $action === 'affCodeDel') {
+  $me = session_user($db, $token);
+  if (!$me || empty($me['id'])) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Session invalide']); exit; }
+  $uid = (string) $me['id'];
+  $raw = substr((string) ($req['code'] ?? ''), 0, 24);
+  $out = ['ok' => false, 'reason' => 'Indisponible'];
+  try {
+    if ($action === 'affCodeNew' && function_exists('orolado_aff_code_create')) $out = orolado_aff_code_create($db, $uid, $raw);
+    else if ($action === 'affCodeDel' && function_exists('orolado_aff_code_delete')) $out = orolado_aff_code_delete($uid, $raw);
+  } catch (Throwable $eCc) { error_log('OROLADO affcode ' . $eCc->getMessage()); $out = ['ok' => false, 'reason' => 'Indisponible']; }
+  if (function_exists('orolado_aff_codes')) $out['codes'] = orolado_aff_codes($uid);
+  echo json_encode(['server' => true] + $out);
   exit;
 }
 

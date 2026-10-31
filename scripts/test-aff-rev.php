@@ -287,5 +287,27 @@ check('filleul a1 est marqué « venu par affiliation » (parrain inv1)', ($refM
 check('filleul b1 → parrain inv2', ($refMap['b1'] ?? '') === 'inv2');
 check('solo (normal) n\'est PAS dans les filleuls', !isset($refMap['solo']));
 
+echo "13) CODES PROMO personnalisés : max 5, uniques, inscription via code, suppression\n";
+reset_db();
+mkuser('affX', 'affx@g.com'); mkuser('affY', 'affy@g.com');
+orolado_aff_status(load_db(), load_db()['users']['affX']); // enregistre le code par défaut
+orolado_aff_status(load_db(), load_db()['users']['affY']);
+$ok5 = true;
+foreach (['FOOT1', 'BONUS', 'GAGNE', 'ORO2026', 'PROMO'] as $c) { $r = orolado_aff_code_create(load_db(), 'affX', $c); if (empty($r['ok'])) $ok5 = false; }
+check('5 codes promo créés', $ok5 && count(orolado_aff_codes('affX')['custom']) === 5, (string) count(orolado_aff_codes('affX')['custom']));
+$r6 = orolado_aff_code_create(load_db(), 'affX', 'TROP6');
+check('6e code refusé (max 5)', empty($r6['ok']) && ($r6['reason'] ?? '') === 'max', (string) ($r6['reason'] ?? ''));
+$rT = orolado_aff_code_create(load_db(), 'affY', 'FOOT1');
+check('code déjà pris par un autre → refusé', empty($rT['ok']) && ($rT['reason'] ?? '') === 'taken');
+$rR = orolado_aff_code_create(load_db(), 'affY', 'admin');
+check('code réservé (ADMIN) refusé', empty($rR['ok']) && ($rR['reason'] ?? '') === 'reserved');
+mkuser('newf', 'newf@g.com');
+check('inscription via le code promo FOOT1 → relié à affX', orolado_aff_attach(load_db(), 'newf', 'foot1'));
+check('newf bien compté comme ami de affX', orolado_aff_is_affiliate('affX') && in_array('newf', array_column(orolado_aff_read(orolado_aff_owner_name('affX'))['friends'], 'uid'), true));
+orolado_aff_code_delete('affX', 'PROMO');
+check('après suppression : 4 codes', count(orolado_aff_codes('affX')['custom']) === 4, (string) count(orolado_aff_codes('affX')['custom']));
+mkuser('newf2', 'newf2@g.com');
+check('inscription via un code supprimé → refusée', !orolado_aff_attach(load_db(), 'newf2', 'PROMO'));
+
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
