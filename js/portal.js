@@ -532,6 +532,13 @@
     var avg = 50; // exemple : perte nette moyenne par ami actif et par an
     var proj = [100, 1000, 10000].map(function (n) { return { n: n, amt: Math.round(n * avg * pct / 100) }; });
     var faq = [['affRevQ1', 'affRevA1'], ['affRevQ2', 'affRevA2'], ['affRevQ3', 'affRevA3'], ['affRevQ4', 'affRevA4']];
+    // Chiffres « pro » (façon 1win) calculés à partir des données déjà reçues.
+    var clicks = Number(aff.clicks) || 0, friends = Number(aff.friends) || 0, dep = Number(aff.deposited) || 0;
+    var nDep = Number(aff.depCount) || 0, totalDep = Number(aff.total) || 0;
+    var avgPlayer = dep > 0 ? totalDep / dep : 0;
+    var c2r = clicks > 0 ? Math.round(100 * friends / clicks) : 0;
+    var r2d = friends > 0 ? Math.round(100 * dep / friends) : 0;
+    var met = function (v, label) { return '<div class="arv-met"><b>' + v + '</b><span>' + esc(label) + '</span></div>'; };
     box.innerHTML =
       '<div class="arv-head">' +
         '<div class="arv-kpi"><b class="g">' + pct + ' %</b><span>' + esc(t('affRevShareLabel')) + '</span></div>' +
@@ -542,6 +549,17 @@
       '<ul class="arv-rules">' +
         '<li>' + esc(t('affRevR1', V)) + '</li>' +
       '</ul>' +
+      '<div class="arv-income"><span>' + esc(t('affIncome')) + '</span><b>' + money(rev.paid || 0) + '</b></div>' +
+      '<div class="arv-mets">' +
+        met(affInt(clicks), t('affClicks')) +
+        met(affInt(friends), t('affFriends')) +
+        met(affInt(dep), t('affFirstDep')) +
+        met(money(avgPlayer), t('affAvgPlayer')) +
+        met(affInt(nDep), t('affNbDep')) +
+        met(money(totalDep), t('affTotal')) +
+        met(c2r + ' %', t('affC2R')) +
+        met(r2d + ' %', t('affR2D')) +
+      '</div>' +
       '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
         proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
         '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
