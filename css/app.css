@@ -5233,6 +5233,9 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
 @media (max-width:859px){
   html body #screenAuth#screenAuth .auth-card form .field input{min-height:42px;padding-top:8px;padding-bottom:8px}
   html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:9px;gap:5px}
+  /* Appli installée : ~59 px du bas non dessinables → on réserve plus d'air sous la carte pour que la
+     bannière « Apprendre à trader » ne soit plus coupée par le bord. */
+  html body #screenAuth .auth-wrap{padding-bottom:calc(30px + env(safe-area-inset-bottom,0px))!important}
 }
 @media (orientation:portrait) and (max-height:700px){
   html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:3px!important}
