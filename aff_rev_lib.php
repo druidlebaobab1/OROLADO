@@ -34,9 +34,10 @@ const OROLADO_AFF_REV_PCT_DEFAULT  = 0.60; // part versée à l'affilié sur la 
 const OROLADO_AFF_REV_HOLD_H_DEF   = 24;   // heures avant qu'un dépôt/pari compte (anti-chargeback)
 
 function orolado_aff_rev_enabled(): bool {
+  // Actif par défaut (part de revenu 60 %). Pour revenir à l'ancien 5 % : OROLADO_AFF_REV=0.
   $v = getenv('OROLADO_AFF_REV');
   if ($v === false || $v === '') $v = $_ENV['OROLADO_AFF_REV'] ?? '';
-  return (string) $v === '1';
+  return (string) $v !== '0';
 }
 
 /** Pourcentage versé à l'affilié (réglable sans toucher au code : OROLADO_AFF_REV_PCT=60). */
