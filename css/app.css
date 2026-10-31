@@ -5227,6 +5227,13 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
 /* v2396 — demande du propriétaire : écrans de téléphone pas très hauts (iPhone dans Safari…) : les cases
    de saisie un peu moins hautes et un peu plus serrées, pour que la ligne de logos crypto reste visible
    sous le bouton Google. Grands écrans et PC : inchangés. */
+/* 2026-10-31 (propriétaire) : sur TÉLÉPHONE (appli installée incluse), les cases d'inscription étaient
+   trop hautes (surtout dans l'appli, où le mode serré ne s'active pas car l'écran est grand). On réduit
+   un peu leur hauteur (≈42 px, police gardée à 16 px pour ne pas faire zoomer l'iPhone). PC : inchangé. */
+@media (max-width:859px){
+  html body #screenAuth#screenAuth .auth-card form .field input{min-height:42px;padding-top:8px;padding-bottom:8px}
+  html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:9px;gap:5px}
+}
 @media (orientation:portrait) and (max-height:700px){
   html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:3px!important}
   html body #screenAuth#screenAuth .auth-card form .field input{height:38px!important;min-height:38px!important;margin-bottom:2px!important;padding-top:6px!important;padding-bottom:6px!important}
