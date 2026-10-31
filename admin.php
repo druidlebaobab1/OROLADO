@@ -7,6 +7,7 @@ require_once __DIR__ . '/trade_lib.php';
 require_once __DIR__ . '/wipe_lib.php';
 require_once __DIR__ . '/admin_gift_lib.php';
 require_once __DIR__ . '/push_lib.php';
+if (is_file(__DIR__ . '/aff_rev_lib.php')) require_once __DIR__ . '/aff_rev_lib.php'; // suivi affiliation (part de revenu)
 orolado_load_env();
 date_default_timezone_set(admin_tz()->getName()); // v2956 : heure du téléphone de l'admin (voir admin_tz)
 
@@ -1305,6 +1306,34 @@ function admin_list_payload(string $view, array $req): array {
       ];
     }
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($src), 'page' => 1, 'pages' => 1, 'summary' => count($src) . ' inscription(s) ventilées par réseau et conversion', 'actions' => false];
+  }
+
+  // Suivi des affiliés (part de revenu). Signaux = INFO seulement, jamais de blocage automatique.
+  if ($view === 'aff_track') {
+    $cols = ['', 'Affilié', 'Amis (déposé)', 'NGR gardé', 'Dû 60 %', 'Versé', 'Solde', 'Signaux'];
+    $ov = function_exists('orolado_aff_admin_overview') ? orolado_aff_admin_overview(load_db()) : ['rows' => [], 'count' => 0, 'totalPaid' => 0];
+    foreach ((array) ($ov['rows'] ?? []) as $r) {
+      $sig = [];
+      if ((int) ($r['sameIp'] ?? 0) >= 2) $sig[] = 'IP ×' . (int) $r['sameIp'];
+      if ((int) ($r['big'] ?? 0) > 0) $sig[] = (int) $r['big'] . ' gros dépôt' . ((int) $r['big'] > 1 ? 's' : '');
+      $who = (string) ($r['publicId'] ?? '—');
+      if (($r['name'] ?? '') !== '') $who .= ' · ' . $r['name'];
+      $rows[] = [
+        'cells' => [
+          !empty($r['watch']) ? '🚩' : '',
+          $who,
+          (int) ($r['friends'] ?? 0) . ' (' . (int) ($r['deposited'] ?? 0) . ')',
+          admin_money($r['ngr'] ?? 0),
+          admin_money($r['entitled'] ?? 0),
+          admin_money($r['paid'] ?? 0),
+          admin_money($r['balance'] ?? 0),
+          $sig ? implode(' · ', $sig) : '—',
+        ],
+        'userId' => (string) ($r['uid'] ?? ''),
+      ];
+    }
+    $sum = (int) ($ov['count'] ?? 0) . ' affilié(s) · ' . admin_money($ov['totalPaid'] ?? 0) . ' versés au total · 🚩 = à regarder (jamais bloqué auto)';
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => (int) ($ov['count'] ?? 0), 'page' => 1, 'pages' => 1, 'summary' => $sum, 'actions' => false];
   }
 
   if ($view === 'otp_mails') {
@@ -2718,6 +2747,7 @@ $ADMIN_TABS = [
     ['watch', 'À surveiller'],
   ],
   'gF' => [
+    ['aff_track', 'Affiliés : suivi (part de revenu)'],
     ['gift_aff', 'Invitation : Affiliés'],
     ['gift_friends', 'Invitation : Amis invités'],
     ['gift_top', 'Tournoi démo : cette semaine'],
