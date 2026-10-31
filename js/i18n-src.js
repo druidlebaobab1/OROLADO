@@ -3457,6 +3457,13 @@
     hi: { affDemoLocked: '{min} सक्रिय दोस्तों (जिन्होंने जमा किया) पर आप अपने वीडियो के लिए डेमो खाता अनलॉक करते हैं। लगे रहें, बस थोड़ा और!', affDemoText: 'आप अपना डेमो खाता माँग सकते हैं! सपोर्ट से संपर्क करें: OROLADO इसे क्रेडिट करता है (न निकाले जाने वाला पैसा) अच्छे विज्ञापनों के लिए।' }
   };
   Object.keys(DEMO2_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], DEMO2_TR[l]); });
+  // Texte dans la case code à l'inscription : « Code promo, ex. FOOT » (propre, sans parenthèses).
+  var REG_PH2 = {
+    fr: 'Code promo, par ex. FOOT', en: 'Promo code, e.g. FOOT', es: 'Código promo, ej. FOOT', pt: 'Código promo, ex. FOOT',
+    ar: 'رمز ترويجي، مثال FOOT', tr: 'Promosyon kodu, örn. FOOT', vi: 'Mã khuyến mãi, vd. FOOT', id: 'Kode promo, mis. FOOT',
+    ru: 'Промокод, напр. FOOT', de: 'Promo-Code, z. B. FOOT', hi: 'प्रोमो कोड, जैसे FOOT'
+  };
+  Object.keys(REG_PH2).forEach(function (l) { if (DICT[l]) DICT[l].regCodePh = REG_PH2[l]; });
   // v2414 — Inviter (carrés, liste de 365 jours) + Top 25 démo de la semaine.
   var TOP_TR = {
     fr: { affR1: 'Toi : 5 % de chaque dépôt de ton ami, pendant 365 jours. Tu retires quand tu veux.', affClicks: 'Clics sur ton lien', affPlayed: 'Ont joué en réel', affTotal: 'Total déposé par tes amis', affListBtn: 'Voir mes amis', affListTitle: 'Mes amis invités', affFDay: 'Aujourd’hui', affFWeek: '7 jours', affFAll: 'Tout', affColDep: 'Déposé', affEmpty: 'Aucun ami pour cette période.', affPlayedOne: 'a joué', affLeft: 'Reste', topTab: 'Top 25', topTitle: 'Top 25 de la semaine', topSub: 'Les meilleurs joueurs démo de la semaine sont récompensés par OROLADO.', topRule: 'Points = ce que tu gagnes ÷ ce que tu mises. 5 trades démo minimum. Nouveau classement chaque lundi.', topPlay: 'Jouer en démo', topPrev: 'Semaine dernière', topThis: 'Cette semaine', topPts: 'pts', topEmpty: 'Joue 20 trades démo pour entrer !', topMeRank: 'Toi : {r}e sur {n} · {p} pts', topMeNeed: 'Encore {n} trades démo pour entrer dans le classement.', topMeOut: 'Toi : {p} pts — continue pour monter !', topEnded: 'Terminé' },
