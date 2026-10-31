@@ -781,7 +781,7 @@
       g.fillText(mt, P, y + 19);
       if (fsStr) {
         var px = P + g.measureText(mt).width + 14, cy = y + 19;
-        rr(g, px, cy - pillH / 2, pillW, pillH, 5); g.fillStyle = FC.bg; g.fill();
+        rr(g, px, cy - pillH / 2, pillW, pillH, 3); g.fillStyle = FC.bg; g.fill();
         g.lineWidth = 1; g.strokeStyle = FC.bd; g.stroke();
         g.fillStyle = FC.n; g.font = '800 13px ' + FONT; g.textAlign = 'center'; g.fillText(fsStr, px + pillW / 2, cy); g.textAlign = 'left';
       }
