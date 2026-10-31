@@ -155,7 +155,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .drawer-legal{margin-top:18px}
 
 /* 2026-10-31 (propriétaire) : retiré UNIQUEMENT sur l'écran Connexion/Inscription — le décor « univers »
-   (pyramide/galaxie) du bas gênait. Ne touche aucune autre partie du site (élément propre à #screenAuth). */
+   (pyramide/galaxie/étoiles) du bas gênait. Ne touche aucune autre partie du site. */
 .auth-ambient{display:none!important}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
