@@ -7,6 +7,7 @@ require_once __DIR__ . '/trade_lib.php';
 require_once __DIR__ . '/wipe_lib.php';
 require_once __DIR__ . '/admin_gift_lib.php';
 require_once __DIR__ . '/push_lib.php';
+if (is_file(__DIR__ . '/aff_rev_lib.php')) require_once __DIR__ . '/aff_rev_lib.php'; // suivi affiliation (part de revenu)
 orolado_load_env();
 date_default_timezone_set(admin_tz()->getName()); // v2956 : heure du téléphone de l'admin (voir admin_tz)
 
@@ -729,10 +730,17 @@ function admin_list_payload(string $view, array $req): array {
   $actions = false;
 
   $userCols = ['ID', 'Nom', 'E-mail', 'Téléphone', 'Pays', 'Inscrit', 'Via', 'Solde réel'];
-  $asUser = static function (array $p) use ($userCols): array {
+  // Petits signes affiliation (discrets) : 🤝 = a invité des amis · 🔗 = venu par un lien/code d'affiliation.
+  $affSet = [];
+  $refMap = [];
+  if (function_exists('orolado_aff_index_ids')) foreach (orolado_aff_index_ids() as $aid) $affSet[(string) $aid] = true;
+  if (function_exists('orolado_aff_referred_map')) $refMap = orolado_aff_referred_map();
+  $asUser = static function (array $p) use ($userCols, $affSet, $refMap): array {
+    $pid = (string) ($p['id'] ?? '');
+    $mark = (isset($affSet[$pid]) ? ' 🤝' : '') . (isset($refMap[$pid]) ? ' 🔗' : '');
     return [
       'cells' => [
-        (string) ($p['publicId'] ?? ''),
+        (string) ($p['publicId'] ?? '') . $mark,
         (string) ($p['name'] ?? '—'),
         (string) ($p['email'] ?? ''),
         admin_phone_cell($p),
@@ -813,7 +821,7 @@ function admin_list_payload(string $view, array $req): array {
       $p = admin_enrich_user_row($p, $vaults);
       $rows[] = $asUser($p);
     }
-    $summary = $total . ' joueur(s)' . ($wantC !== '' ? ' · ' . $wantC : '') . (count($countries) > 1 && $wantC === '' ? ' · ' . count($countries) . ' pays' : '');
+    $summary = $total . ' joueur(s)' . ($wantC !== '' ? ' · ' . $wantC : '') . (count($countries) > 1 && $wantC === '' ? ' · ' . count($countries) . ' pays' : '') . ' · 🤝 a invité · 🔗 venu par affiliation';
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'countries' => $countries];
   }
 
@@ -1307,6 +1315,34 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($src), 'page' => 1, 'pages' => 1, 'summary' => count($src) . ' inscription(s) ventilées par réseau et conversion', 'actions' => false];
   }
 
+  // Suivi des affiliés (part de revenu). Signaux = INFO seulement, jamais de blocage automatique.
+  if ($view === 'aff_track') {
+    $cols = ['', 'Affilié', 'Amis (déposé)', 'NGR gardé', 'Dû 60 %', 'Versé', 'Solde', 'Signaux'];
+    $ov = function_exists('orolado_aff_admin_overview') ? orolado_aff_admin_overview(load_db()) : ['rows' => [], 'count' => 0, 'totalPaid' => 0];
+    foreach ((array) ($ov['rows'] ?? []) as $r) {
+      $sig = [];
+      if ((int) ($r['sameIp'] ?? 0) >= 2) $sig[] = 'IP ×' . (int) $r['sameIp'];
+      if ((int) ($r['big'] ?? 0) > 0) $sig[] = (int) $r['big'] . ' gros dépôt' . ((int) $r['big'] > 1 ? 's' : '');
+      $who = (string) ($r['publicId'] ?? '—');
+      if (($r['name'] ?? '') !== '') $who .= ' · ' . $r['name'];
+      $rows[] = [
+        'cells' => [
+          !empty($r['watch']) ? '🚩' : '',
+          $who,
+          (int) ($r['friends'] ?? 0) . ' (' . (int) ($r['deposited'] ?? 0) . ')',
+          admin_money($r['ngr'] ?? 0),
+          admin_money($r['entitled'] ?? 0),
+          admin_money($r['paid'] ?? 0),
+          admin_money($r['balance'] ?? 0),
+          $sig ? implode(' · ', $sig) : '—',
+        ],
+        'userId' => (string) ($r['uid'] ?? ''),
+      ];
+    }
+    $sum = (int) ($ov['count'] ?? 0) . ' affilié(s) · ' . admin_money($ov['totalPaid'] ?? 0) . ' versés au total · 🚩 = à regarder (jamais bloqué auto)';
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => (int) ($ov['count'] ?? 0), 'page' => 1, 'pages' => 1, 'summary' => $sum, 'actions' => false];
+  }
+
   if ($view === 'otp_mails') {
     $cols = ['Heure', 'E-mail', 'Type', 'Statut'];
     $list = admin_apply_filters(admin_otp_rows(), $req, 'at');
@@ -1686,8 +1722,25 @@ function admin_profile_payload(string $uid): array {
       'at' => $o['created_at'] ?? '',
     ];
   }
+  // Affiliation (part de revenu) : badge + chiffres si ce joueur a invité des amis.
+  $affBox = null;
+  if (function_exists('orolado_aff_is_affiliate') && orolado_aff_is_affiliate($uid) && function_exists('orolado_aff_rev_wallet')) {
+    $aw = orolado_aff_rev_wallet(load_db(), $uid);
+    $dep = 0;
+    foreach ((array) ($aw['friends'] ?? []) as $fr) if (($fr['deposits'] ?? 0) > 0.009) $dep++;
+    $affBox = [
+      'friends' => (int) ($aw['friendsCount'] ?? 0),
+      'deposited' => $dep,
+      'pct' => (int) ($aw['pct'] ?? 60),
+      'ngr' => (float) ($aw['ngr'] ?? 0),
+      'entitled' => (float) ($aw['entitled'] ?? 0),
+      'paid' => (float) ($aw['withdrawn'] ?? 0),
+      'balance' => (float) ($aw['balance'] ?? 0),
+    ];
+  }
   return [
     'ok' => true,
+    'aff' => $affBox,
     'user' => [
       'id' => $uid,
       'publicId' => (string) ($p['publicId'] ?? ''),
@@ -2718,6 +2771,7 @@ $ADMIN_TABS = [
     ['watch', 'À surveiller'],
   ],
   'gF' => [
+    ['aff_track', 'Affiliés : suivi (part de revenu)'],
     ['gift_aff', 'Invitation : Affiliés'],
     ['gift_friends', 'Invitation : Amis invités'],
     ['gift_top', 'Tournoi démo : cette semaine'],
@@ -3911,6 +3965,7 @@ async function openUser(uid) {
     '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
     '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(fdate(u.createdAt))+'</strong></p>'+
     '<p>Solde réel : <strong>$ '+esc(u.real)+'</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
+    (j.aff ? '<div class="sus-box watch" style="border-color:rgba(43,212,154,.6);background:rgba(43,212,154,.12)">🤝 Affilié · '+esc(j.aff.friends)+' ami(s), '+esc(j.aff.deposited)+' ont déposé · NGR gardé '+money(j.aff.ngr)+' · dû '+esc(j.aff.pct)+'% = '+money(j.aff.entitled)+' · versé '+money(j.aff.paid)+' · solde '+money(j.aff.balance)+'</div>' : '')+
     (j.suspect ? '<div class="sus-box'+(j.suspectLevel === 'orange' ? ' watch' : '')+'">'+(j.suspectLevel === 'orange' ? 'À suivre : ' : 'Ne pas payer sans vérifier : ')+esc(j.suspect)+'</div>' : '')+
     (j.totals ? '<div class="totals">'+
       '<div style="background:linear-gradient(180deg,rgba(34,197,94,.28),rgba(22,163,74,.12));border:1px solid rgba(74,222,128,.75);box-shadow:0 0 12px rgba(34,197,94,.35)"><span style="color:#BBF7D0">Solde réel actuel</span><b style="color:#4ADE80;font-size:1.25em">'+money(u.real)+'</b></div>'+

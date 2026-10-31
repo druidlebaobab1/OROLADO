@@ -78,6 +78,61 @@ function orolado_aff_clean_code(string $code): string {
   return strlen($c) === 8 ? $c : '';
 }
 
+/** Code normalisé : MAJUSCULES, lettres/chiffres, 3 à 16 caractères (couvre le code par défaut de 8 ET les codes promo personnalisés). */
+function orolado_aff_norm_code(string $code): string {
+  $c = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $code) ?? '');
+  return (strlen($c) >= 3 && strlen($c) <= 16) ? $c : '';
+}
+
+const OROLADO_AFF_MAX_CODES = 5; // codes promo personnalisés max par affilié (demande du propriétaire)
+
+/** Codes de l'affilié : son code par défaut + ses codes promo personnalisés. */
+function orolado_aff_codes(string $uid): array {
+  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+  $custom = [];
+  foreach ((array) ($own['codes'] ?? []) as $c) { $c = orolado_aff_norm_code((string) $c); if ($c !== '') $custom[$c] = true; }
+  return ['default' => orolado_aff_code($uid), 'custom' => array_keys($custom), 'max' => OROLADO_AFF_MAX_CODES];
+}
+
+/** Crée un code promo personnalisé (max OROLADO_AFF_MAX_CODES). Retour: ['ok'=>bool,'code'=>..,'reason'=>..]. */
+function orolado_aff_code_create(array $db, string $uid, string $raw): array {
+  $u = $db['users'][$uid] ?? null;
+  if (!is_array($u) || !orolado_aff_allowed($u + ['id' => $uid])) return ['ok' => false, 'reason' => 'not_allowed'];
+  $code = orolado_aff_norm_code($raw);
+  if ($code === '') return ['ok' => false, 'reason' => 'bad'];
+  if ($code === orolado_aff_code($uid)) return ['ok' => false, 'reason' => 'default'];
+  if (in_array($code, ['OROLADO', 'ADMIN', 'SUPPORT', 'ORO', 'TEST'], true)) return ['ok' => false, 'reason' => 'reserved'];
+  $cur = orolado_aff_codes($uid);
+  if (in_array($code, $cur['custom'], true)) return ['ok' => true, 'code' => $code]; // déjà à lui
+  if (count($cur['custom']) >= OROLADO_AFF_MAX_CODES) return ['ok' => false, 'reason' => 'max'];
+  $taken = false;
+  orolado_aff_with('code_' . $code, static function (&$st) use ($uid, &$taken) {
+    $owner = (string) ($st['uid'] ?? '');
+    if ($owner === '') { $st = ['uid' => $uid, 'custom' => true, 'at' => date('c')]; }
+    else if ($owner !== $uid) { $taken = true; }
+  });
+  if ($taken) return ['ok' => false, 'reason' => 'taken'];
+  orolado_aff_with(orolado_aff_owner_name($uid), static function (&$st) use ($code) {
+    if (!isset($st['codes']) || !is_array($st['codes'])) $st['codes'] = [];
+    if (!in_array($code, $st['codes'], true)) $st['codes'][] = $code;
+    $st['codes'] = array_slice($st['codes'], 0, OROLADO_AFF_MAX_CODES);
+  });
+  return ['ok' => true, 'code' => $code];
+}
+
+/** Supprime un code promo personnalisé (et le libère s'il appartient bien à cet affilié). */
+function orolado_aff_code_delete(string $uid, string $raw): array {
+  $code = orolado_aff_norm_code($raw);
+  if ($code === '') return ['ok' => false, 'reason' => 'bad'];
+  orolado_aff_with(orolado_aff_owner_name($uid), static function (&$st) use ($code) {
+    if (isset($st['codes']) && is_array($st['codes'])) $st['codes'] = array_values(array_filter($st['codes'], static fn($c) => orolado_aff_norm_code((string) $c) !== $code));
+  });
+  orolado_aff_with('code_' . $code, static function (&$st) use ($uid) {
+    if ((string) ($st['uid'] ?? '') === $uid) $st = ['uid' => '', 'removed' => true, 'at' => date('c')];
+  });
+  return ['ok' => true];
+}
+
 /** Enregistre le code du joueur (pour retrouver qui invite à partir du lien). */
 function orolado_aff_register_code(string $uid): string {
   $code = orolado_aff_code($uid);
@@ -97,7 +152,7 @@ function orolado_aff_client_ip(): string {
  * Refusé : code inconnu, soi-même, compte qui invite introuvable / bloqué / non autorisé, déjà relié.
  */
 function orolado_aff_attach(array $db, string $newUid, string $code): bool {
-  $code = orolado_aff_clean_code($code);
+  $code = orolado_aff_norm_code($code); // accepte le code par défaut (8) ET les codes promo personnalisés
   if ($code === '' || $newUid === '') return false;
   $inviter = (string) (orolado_aff_read('code_' . $code)['uid'] ?? '');
   if ($inviter === '' || $inviter === $newUid) return false;
@@ -117,7 +172,37 @@ function orolado_aff_attach(array $db, string $newUid, string $code): bool {
     foreach ($st['friends'] as $f) if (($f['uid'] ?? '') === $newUid) return;
     $st['friends'][] = ['uid' => $newUid, 'name' => $name, 'at' => date('c'), 'ip' => $ip, 'deposit' => 0, 'gift' => 0, 'paid' => false];
   });
+  // Index léger des affiliés (ceux qui ont invité au moins un ami) : pour le suivi admin, sans
+  // relire tous les fichiers. Garde aussi le dernier compte d'amis (affichage/tri rapide).
+  orolado_aff_with('index_aff', static function (&$st) use ($inviter) {
+    if (!isset($st['ids']) || !is_array($st['ids'])) $st['ids'] = [];
+    if (!in_array($inviter, $st['ids'], true)) $st['ids'][] = $inviter;
+  });
+  // Index des FILLEULS (joueurs venus par un lien/code d'affiliation) : petit signe admin + qui a parrainé qui.
+  orolado_aff_with('index_referred', static function (&$st) use ($newUid, $inviter) {
+    if (!isset($st['by']) || !is_array($st['by'])) $st['by'] = [];
+    if (!isset($st['by'][$newUid])) $st['by'][$newUid] = $inviter;
+  });
   return true;
+}
+
+/** Ce joueur a-t-il invité au moins un ami ? (pour le petit badge 🤝 dans l'admin). */
+function orolado_aff_is_affiliate(string $uid): bool {
+  if ($uid === '') return false;
+  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+  return is_array($own['friends'] ?? null) && count($own['friends']) > 0;
+}
+
+/** Liste des uid affiliés connus (index). Les anciens (avant l'index) sont ajoutés à la volée par l'admin. */
+function orolado_aff_index_ids(): array {
+  $st = orolado_aff_read('index_aff');
+  return is_array($st['ids'] ?? null) ? array_values(array_unique(array_map('strval', $st['ids']))) : [];
+}
+
+/** Map uid filleul → uid parrain (joueurs venus par un lien/code d'affiliation). Pour les petits signes admin. */
+function orolado_aff_referred_map(): array {
+  $st = orolado_aff_read('index_referred');
+  return is_array($st['by'] ?? null) ? $st['by'] : [];
 }
 
 /**
@@ -265,7 +350,11 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
   }
   if (!$todo) return $inv;
   $inviter = (string) $inv['inviter'];
-  $res = orolado_aff_with(orolado_aff_inv_name($friendUid), static function (&$st) use ($db, $friendUid, $inviter, $deps, $end) {
+  // Part de revenu (NGR) active : le gain de celui qui invite est géré par aff_rev_lib.php
+  // (60 % de la marge réelle). On NE verse donc PLUS les 5 % par dépôt ici (sinon double paiement) ;
+  // on continue juste à noter les dépôts (pour le nombre affiché). Le cadeau de bienvenue de l'ami reste.
+  $revOn = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled();
+  $res = orolado_aff_with(orolado_aff_inv_name($friendUid), static function (&$st) use ($db, $friendUid, $inviter, $deps, $end, $revOn) {
     if (!isset($st['deps']) || !is_array($st['deps'])) $st['deps'] = [];
     // 1) Cadeau de l'ami : 5 % de son tout premier vrai dépôt, une fois.
     if (empty($st['friendPaid'])) {
@@ -278,15 +367,15 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
         if ($g >= 0.01) $st['justPaid'] = true;
       }
     }
-    // 2) Part de celui qui invite : 5 % de chaque vrai dépôt pendant 365 jours.
+    // 2) Part de celui qui invite : 5 % de chaque vrai dépôt pendant 365 jours (SAUF si NGR actif).
     foreach ($deps as $d) {
       if ($d['ts'] <= 0 || $d['ts'] > $end) continue;
       if (!empty($st['deps'][$d['id']]['paid'])) continue;
-      $g = orolado_aff_gift($d['amount']);
-      $ok = $g < 0.01 ? true : orolado_aff_pay_inviter($db, $inviter, $g, 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24));
+      $g = $revOn ? 0.0 : orolado_aff_gift($d['amount']);
+      $ok = ($revOn || $g < 0.01) ? true : orolado_aff_pay_inviter($db, $inviter, $g, 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24));
       if ($ok) {
         $st['deps'][$d['id']] = ['amount' => $d['amount'], 'gift' => $g, 'paid' => true, 'at' => date('c')];
-        if ($g >= 0.01) $st['newPays'][] = ['ref' => 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24), 'amount' => $g, 'deposit' => $d['amount'], 'at' => date('c')];
+        if (!$revOn && $g >= 0.01) $st['newPays'][] = ['ref' => 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24), 'amount' => $g, 'deposit' => $d['amount'], 'at' => date('c')];
       }
     }
     $earned = 0.0;
@@ -361,6 +450,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
   $out['enabled'] = true;
   $out['code'] = $code;
+  $out['codes'] = orolado_aff_codes($uid); // code par défaut + codes promo personnalisés (max 5)
   $out['days'] = OROLADO_AFF_DAYS;
   $out['now'] = time();
   $out['clicks'] = (int) ($own['clicks'] ?? 0);
@@ -371,6 +461,13 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   $list = [];
   $depCount = 0;
   $fixN = [];
+  // Part de revenu (NGR) : gain par ami = pct × ce qu'OROLADO a gardé sur lui. Calculé une fois ici.
+  $revOn2 = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled();
+  $revPct2 = $revOn2 && function_exists('orolado_aff_rev_pct') ? orolado_aff_rev_pct() : 0.0;
+  $ngrByUid = [];
+  if ($revOn2 && function_exists('orolado_aff_rev_aggregate')) {
+    foreach ((array) (orolado_aff_rev_aggregate($db, $uid)['friends'] ?? []) as $fr) $ngrByUid[(string) ($fr['uid'] ?? '')] = (float) ($fr['ngr'] ?? 0);
+  }
   foreach ($friends as $f) {
     $fu = $db['users'][(string) ($f['uid'] ?? '')] ?? [];
     $realTrades = (int) ($fu['realTrades'] ?? 0);
@@ -384,12 +481,16 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       $nDep = is_array($invF['deps'] ?? null) ? count($invF['deps']) : 0;
       $fixN[(string) $f['uid']] = $nDep;
     }
+    $fuid = (string) ($f['uid'] ?? '');
+    $ngrF = $revOn2 ? (float) ($ngrByUid[$fuid] ?? 0) : 0.0;
+    $giftF = $revOn2 ? orolado_money(max(0.0, $revPct2 * $ngrF)) : orolado_money($f['gift'] ?? 0);
     $list[] = [
-      'id' => (string) ($fu['publicId'] ?? 'ORO-??????'), 'uid' => (string) ($f['uid'] ?? ''),
+      'id' => (string) ($fu['publicId'] ?? 'ORO-??????'), 'uid' => $fuid,
       'at' => $t,
       'until' => $t > 0 ? $t + OROLADO_AFF_DAYS * 86400 : 0,
       'deposit' => orolado_money($f['deposit'] ?? 0),
-      'gift' => orolado_money($f['gift'] ?? 0),
+      'gift' => $giftF,
+      'ngr' => orolado_money($ngrF),
       'n' => $nDep,
       'played' => $realTrades > 0,
     ];
@@ -460,6 +561,28 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   ksort($gains);
   $out['gains'] = [];
   foreach ($gains as $h => $sumH) $out['gains'][] = [$h, orolado_money($sumH)];
+  // v2026-10-31 — PART DE REVENU (NGR) : si le drapeau est actif, le gain de l'affilié n'est plus
+  // « 5 % des dépôts » mais « 60 % de ce qu'OROLADO garde ». On verse le dû (argent libre) et on
+  // expose le portefeuille au portail. Le reste (lien, amis, clics) ne change pas.
+  if (function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled()) {
+    $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
+    $rev = orolado_aff_rev_run($db, $uid);
+    unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+    $out['rev'] = [
+      'on' => true,
+      'pct' => (int) ($rev['pct'] ?? 60),
+      'holdH' => (int) ($rev['holdH'] ?? 24),
+      'ngr' => orolado_money($rev['ngr'] ?? 0),
+      'entitled' => orolado_money($rev['entitled'] ?? 0),
+      'paid' => orolado_money($rev['withdrawn'] ?? 0),       // total déjà versé (argent libre)
+      'balance' => orolado_money($rev['balance'] ?? 0),       // peut être négatif (report)
+      'withdrawable' => orolado_money($rev['withdrawable'] ?? 0),
+      'minWithdraw' => orolado_money($rev['minWithdraw'] ?? 1),
+    ];
+    if (!empty($rev['justPaid'])) $out['rev']['justPaid'] = orolado_money($rev['justPaid']);
+    $out['pct'] = $out['rev']['pct'];
+    $out['earned'] = $out['rev']['paid'];
+  }
   return $out;
 }
 
@@ -468,7 +591,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
  * Un même téléphone (ou une même connexion) n'est compté qu'UNE fois par jour et par lien.
  */
 function orolado_aff_click(string $code, string $device): bool {
-  $code = orolado_aff_clean_code($code);
+  $code = orolado_aff_norm_code($code);
   if ($code === '') return false;
   $inviter = (string) (orolado_aff_read('code_' . $code)['uid'] ?? '');
   if ($inviter === '') return false;

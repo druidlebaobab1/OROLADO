@@ -512,8 +512,44 @@
     $('affTotal').textContent = money(aff.total || 0);
     $('affEarned').textContent = money(aff.earned || 0);
     $('affListCount').textContent = String(aff.deposited || 0);
+    renderRevBox(aff.rev && aff.rev.on ? aff.rev : null);
+    renderAffCodes();
     renderAffList();
     fitPortal();
+  }
+  // Part de revenu (NGR) : tableau de bord affilié (panneau + règles + projections + FAQ). Élastique, 12 langues.
+  function renderRevBox(rev) {
+    var main = $('affMain');
+    if (!main) return;
+    var legacy = ['.aff-big', '.aff-steps3', '.aff-ex', '.aff-rl', '.aff-paid', '.aff-proj'];
+    legacy.forEach(function (sel) { var el = main.querySelector(sel); if (el) el.style.display = rev ? 'none' : ''; });
+    var box = document.getElementById('affRevBox');
+    if (!rev) { if (box) box.style.display = 'none'; return; }
+    if (!box) { box = document.createElement('div'); box.id = 'affRevBox'; box.className = 'aff-revbox'; main.insertBefore(box, main.firstChild); }
+    box.style.display = '';
+    var pct = Number(rev.pct) || 60, hold = Number(rev.holdH) || 24, V = { pct: pct, hold: hold };
+    var avg = 50; // exemple : perte nette moyenne par ami actif et par an
+    var proj = [100, 1000, 10000].map(function (n) { return { n: n, amt: Math.round(n * avg * pct / 100) }; });
+    var faq = [['affRevQ1', 'affRevA1'], ['affRevQ2', 'affRevA2'], ['affRevQ3', 'affRevA3'], ['affRevQ4', 'affRevA4']];
+    box.innerHTML =
+      '<div class="arv-head">' +
+        '<div class="arv-kpi"><b class="g">' + pct + ' %</b><span>' + esc(t('affRevShareLabel')) + '</span></div>' +
+        '<div class="arv-kpi"><b>' + money(rev.balance || 0) + '</b><span>' + esc(t('affRevBalLabel')) + '</span></div>' +
+        '<div class="arv-kpi"><b>' + money(rev.paid || 0) + '</b><span>' + esc(t('affEarned')) + '</span></div>' +
+      '</div>' +
+      '<h3 class="arv-big">' + esc(t('affRevBig', V)) + '</h3>' +
+      '<p class="arv-sub">' + esc(t('affRevSub', V)) + '</p>' +
+      '<ul class="arv-rules">' +
+        '<li>' + esc(t('affRevR1', V)) + '</li>' +
+        '<li>' + esc(t('affRevR3')) + '</li>' +
+        '<li class="arv-safe">' + esc(t('affRevSafe')) + '</li>' +
+      '</ul>' +
+      '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
+        proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
+        '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
+      '<div class="arv-faq"><b>' + esc(t('affRevFaq')) + '</b>' +
+        faq.map(function (q) { return '<details class="arv-q"><summary>' + esc(t(q[0])) + '</summary><p>' + esc(t(q[1], V)) + '</p></details>'; }).join('') +
+      '</div>';
   }
   var affFound = null, affSearchT = 0;
   async function affServerSearch(q) {
@@ -853,8 +889,7 @@
     renderAffList();
     fitPortal();
   }
-  async function copyLink() {
-    var link = affLink();
+  async function copyText(link) {
     if (!link) return false;
     try { await navigator.clipboard.writeText(link); return true; } catch (e) { /* repli ci-dessous */ }
     try {
@@ -863,6 +898,48 @@
       document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
       return true;
     } catch (e2) { return false; }
+  }
+  async function copyLink() { return copyText(affLink()); }
+  function codeLink(code) { return 'https://orolado.com/r/' + code; }
+  // Codes promo : code par défaut + jusqu'à 5 codes personnalisés. Créer / copier / supprimer.
+  function renderAffCodes() {
+    var main = $('affMain');
+    if (!main || !aff || !aff.enabled || aff.guest) { var b0 = document.getElementById('affCodesBox'); if (b0) b0.style.display = 'none'; return; }
+    var box = document.getElementById('affCodesBox');
+    if (!box) {
+      box = document.createElement('div'); box.id = 'affCodesBox'; box.className = 'aff-codes';
+      var anchor = $('affShare');
+      if (anchor && anchor.parentNode === main) main.insertBefore(box, anchor.nextSibling); else main.appendChild(box);
+    }
+    box.style.display = '';
+    var codes = aff.codes || { "default": aff.code, custom: [], max: 5 };
+    var def = codes["default"] || aff.code || '';
+    var custom = codes.custom || [];
+    var max = Number(codes.max) || 5;
+    var row = function (code, canDel) {
+      return '<div class="ac-row"><span class="ac-code" title="' + esc(codeLink(code)) + '">r/' + esc(code) + '</span>' +
+        '<button type="button" class="ac-copy" data-code="' + esc(code) + '">' + esc(t('affCopy')) + '</button>' +
+        (canDel ? '<button type="button" class="ac-del" data-code="' + esc(code) + '" aria-label="×">×</button>' : '') + '</div>';
+    };
+    var addForm = custom.length < max ?
+      '<div class="ac-add"><input id="affCodeInput" type="text" maxlength="16" autocomplete="off" spellcheck="false" placeholder="' + esc(t('affCodeNewPh')) + '">' +
+      '<button type="button" id="affCodeAddBtn" class="btn-gold">' + esc(t('affCodeAdd')) + '</button></div>' : '';
+    box.innerHTML = '<b class="ac-h">' + esc(t('affCodesTitle')) + ' <i>' + custom.length + '/' + max + '</i></b>' +
+      '<div class="ac-list">' + (def ? row(def, false) : '') + custom.map(function (c) { return row(c, true); }).join('') + '</div>' +
+      addForm + '<p class="ac-msg" id="affCodeMsg" hidden></p>' +
+      '<p class="ac-warn">' + esc(t('affCodeWarn')) + '</p>';
+  }
+  async function affCodeDo(action, code) {
+    if (!D6.Api || !D6.Api.post) return;
+    var msg = $('affCodeMsg');
+    try {
+      var r = await D6.Api.post(action, { code: code }, 12000);
+      if (r && r.codes) { aff.codes = r.codes; renderAffCodes(); }
+      if (r && r.ok === false && msg) {
+        var reason = r.reason === 'taken' ? t('affCodeTaken') : (r.reason === 'bad' ? t('affCodeBad') : (r.reason === 'max' ? t('affCodeMaxMsg', { max: (aff.codes && aff.codes.max) || 5 }) : (r.reason === 'reserved' || r.reason === 'default' ? t('affCodeTaken') : '')));
+        if (reason) { msg.textContent = reason; msg.hidden = false; }
+      } else if (msg) { msg.hidden = true; }
+    } catch (e) { /* ignore */ }
   }
   // Clic sur un lien d'ami (orolado.com/r/CODE) : envoyé une fois ; le serveur filtre par téléphone et par jour.
   function sendClick() {
@@ -897,6 +974,15 @@
       var win = null;
       try { win = window.open(wa, '_blank'); if (win) win.opener = null; } catch (e) { win = null; }
       if (!win) location.href = wa;
+    });
+    // Codes promo : copier / supprimer (délégation, car la liste se redessine) + créer.
+    if ($('affMain')) $('affMain').addEventListener('click', async function (e) {
+      var cp = e.target.closest ? e.target.closest('.ac-copy') : null;
+      if (cp) { if (needAccount()) return; var c = cp.getAttribute('data-code'); if (await copyText(codeLink(c))) { var o = cp.textContent; cp.textContent = t('affCopied'); cp.classList.add('done'); setTimeout(function () { cp.textContent = o; cp.classList.remove('done'); }, 1500); } return; }
+      var dl = e.target.closest ? e.target.closest('.ac-del') : null;
+      if (dl) { if (needAccount()) return; if (window.confirm(t('affCodeDelAsk'))) affCodeDo('affCodeDel', dl.getAttribute('data-code')); return; }
+      var ad = e.target.closest ? e.target.closest('#affCodeAddBtn') : null;
+      if (ad) { if (needAccount()) return; var inp = $('affCodeInput'); var v = inp ? inp.value : ''; if (v && v.trim()) { affCodeDo('affCodeNew', v.trim()); if (inp) inp.value = ''; } return; }
     });
     if ($('affMore')) $('affMore').addEventListener('click', function () { showAffList(true); });
     // v2437 — recherche (à chaque lettre) et tri.
