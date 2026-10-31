@@ -5300,6 +5300,13 @@ html.auth-tight body #screenAuth#screenAuth #formRegister .field input{height:45
 html.auth-tight body #screenAuth#screenAuth #formLogin .field input{height:48px!important;min-height:48px!important}
 html.auth-tight body #screenAuth#screenAuth #formLogin .field{margin-bottom:9px!important}
 html.auth-tight body #screenAuth#screenAuth #formLogin .btn-gold{margin-top:10px!important}
+/* 2026-10-31 — Case « Code promo » ajoutée à l'Inscription : UNIQUEMENT quand l'écran est serré
+   (auth-tight, surtout l'appli iPhone/Android), on récupère un peu d'air ENTRE les champs (cases
+   quasi inchangées à 43 px) pour que les 6 champs rentrent sans déborder. La case code (optionnelle)
+   est un peu plus légère. Grand écran / PC : rien ne change. */
+html.auth-tight body #screenAuth#screenAuth #formRegister .field{margin-bottom:4px!important;gap:4px!important}
+html.auth-tight body #screenAuth#screenAuth #formRegister .field input{height:43px!important;min-height:43px!important}
+html.auth-tight body #screenAuth#screenAuth #formRegister #regCode{height:40px!important;min-height:40px!important}
 
 /* ===== v2409 — Le Portail OROLADO (bouton fenêtre + Défi) ===== */
 html body .topbar .portal-btn{position:relative;width:34px;height:34px;flex:0 0 34px;border-radius:50%;border:0;padding:0;display:grid;place-items:center;cursor:pointer;
