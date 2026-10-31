@@ -26,6 +26,7 @@ require_once __DIR__ . '/account_lib.php';
 // Défi (v2409) : optionnel — si le fichier manque, le reste du site fonctionne normalement.
 if (is_file(__DIR__ . '/defi_lib.php')) require_once __DIR__ . '/defi_lib.php';
 if (is_file(__DIR__ . '/aff_lib.php')) require_once __DIR__ . '/aff_lib.php';
+if (is_file(__DIR__ . '/aff_rev_lib.php')) require_once __DIR__ . '/aff_rev_lib.php';
 if (is_file(__DIR__ . '/top_lib.php')) require_once __DIR__ . '/top_lib.php';
 if (is_file(__DIR__ . '/bonus_lib.php')) require_once __DIR__ . '/bonus_lib.php';
 if (is_file(__DIR__ . '/gifts_lib.php')) require_once __DIR__ . '/gifts_lib.php';

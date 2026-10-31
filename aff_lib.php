@@ -460,6 +460,28 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   ksort($gains);
   $out['gains'] = [];
   foreach ($gains as $h => $sumH) $out['gains'][] = [$h, orolado_money($sumH)];
+  // v2026-10-31 — PART DE REVENU (NGR) : si le drapeau est actif, le gain de l'affilié n'est plus
+  // « 5 % des dépôts » mais « 60 % de ce qu'OROLADO garde ». On verse le dû (argent libre) et on
+  // expose le portefeuille au portail. Le reste (lien, amis, clics) ne change pas.
+  if (function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled()) {
+    $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
+    $rev = orolado_aff_rev_run($db, $uid);
+    unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+    $out['rev'] = [
+      'on' => true,
+      'pct' => (int) ($rev['pct'] ?? 60),
+      'holdH' => (int) ($rev['holdH'] ?? 24),
+      'ngr' => orolado_money($rev['ngr'] ?? 0),
+      'entitled' => orolado_money($rev['entitled'] ?? 0),
+      'paid' => orolado_money($rev['withdrawn'] ?? 0),       // total déjà versé (argent libre)
+      'balance' => orolado_money($rev['balance'] ?? 0),       // peut être négatif (report)
+      'withdrawable' => orolado_money($rev['withdrawable'] ?? 0),
+      'minWithdraw' => orolado_money($rev['minWithdraw'] ?? 1),
+    ];
+    if (!empty($rev['justPaid'])) $out['rev']['justPaid'] = orolado_money($rev['justPaid']);
+    $out['pct'] = $out['rev']['pct'];
+    $out['earned'] = $out['rev']['paid'];
+  }
   return $out;
 }
 

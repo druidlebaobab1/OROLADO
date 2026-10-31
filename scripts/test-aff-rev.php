@@ -229,5 +229,18 @@ check('versé ≤ 60 % de la vraie marge totale (jamais la caisse dans le rouge)
   paid_to($credits, 'inv', 'affrev_') <= 0.60 * (house_kept(load_db(), 'f1') + house_kept(load_db(), 'f2')) + 0.02,
   'versé=' . paid_to($credits, 'inv', 'affrev_') . ' max=' . round(0.6 * (house_kept(load_db(), 'f1') + house_kept(load_db(), 'f2')), 2));
 
+echo "10) affStatus expose bien le portefeuille au portail (branchement API)\n";
+$r = orolado_aff_status(load_db(), load_db()['users']['inv']);
+check('bloc rev présent et actif', !empty($r['rev']['on']));
+check('pct = 60', (int) ($r['rev']['pct'] ?? 0) === 60, (string) ($r['rev']['pct'] ?? 0));
+check('hold = 24 h', (int) ($r['rev']['holdH'] ?? 0) === 24);
+check('total versé exposé (= earned)', abs(($r['earned'] ?? -1) - ($r['rev']['paid'] ?? 0)) < 0.001);
+check('sans le drapeau : pas de bloc rev', (function () {
+  putenv('OROLADO_AFF_REV=0');
+  $x = orolado_aff_status(load_db(), load_db()['users']['inv']);
+  putenv('OROLADO_AFF_REV=1');
+  return empty($x['rev']);
+})());
+
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
