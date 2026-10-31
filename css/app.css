@@ -4296,6 +4296,10 @@ html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important
 @media (display-mode: standalone),(display-mode: fullscreen){
   html body #screenAuth{padding-top:env(safe-area-inset-top,0px)!important;box-sizing:border-box!important}
   html body #screenAuth .lang-bar-auth{top:calc(10px + env(safe-area-inset-top,0px))!important}
+  /* Appli installée : on garantit une marge sous la bannière « Apprendre » (≥ 34 px) pour qu'elle garde
+     son cadre comme sur le site et ne soit jamais coupée par la barre d'accueil, même si l'appli ne
+     déclare pas la zone basse (env peut valoir 0 dans certains wrappers). */
+  html body #screenAuth .auth-wrap{padding-bottom:calc(16px + max(env(safe-area-inset-bottom,0px),34px))!important}
 }
 /* ===== COULEURS PROFESSIONNELLES sur le thème noir (demande du propriétaire, 1er octobre 2026) =====
    Pas de blanc, pas d'arc-en-ciel : boutons sombres avec accent ; UNE couleur principale (orange) pour l'essentiel ;
