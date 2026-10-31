@@ -356,15 +356,22 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
   $revOn = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled();
   $res = orolado_aff_with(orolado_aff_inv_name($friendUid), static function (&$st) use ($db, $friendUid, $inviter, $deps, $end, $revOn) {
     if (!isset($st['deps']) || !is_array($st['deps'])) $st['deps'] = [];
-    // 1) Cadeau de l'ami : 5 % de son tout premier vrai dépôt, une fois.
+    // 1) Cadeau de l'ami : 5 % de son tout premier vrai dépôt, une fois. SUPPRIMÉ en mode part de revenu
+    //    (demande du propriétaire : on simplifie, plus de 5 % sur le 1er dépôt de l'ami).
     if (empty($st['friendPaid'])) {
-      $g = orolado_aff_gift($deps[0]['amount']);
-      $ok = $g < 0.01 ? true : orolado_aff_pay_friend($db, $friendUid, $g, 'adm_ami_' . $friendUid);
-      if ($ok) {
+      if ($revOn) {
         $st['friendPaid'] = true;
-        $st['friendGift'] = $g;
+        $st['friendGift'] = 0.0;
         $st['friendDeposit'] = $deps[0]['amount'];
-        if ($g >= 0.01) $st['justPaid'] = true;
+      } else {
+        $g = orolado_aff_gift($deps[0]['amount']);
+        $ok = $g < 0.01 ? true : orolado_aff_pay_friend($db, $friendUid, $g, 'adm_ami_' . $friendUid);
+        if ($ok) {
+          $st['friendPaid'] = true;
+          $st['friendGift'] = $g;
+          $st['friendDeposit'] = $deps[0]['amount'];
+          if ($g >= 0.01) $st['justPaid'] = true;
+        }
       }
     }
     // 2) Part de celui qui invite : 5 % de chaque vrai dépôt pendant 365 jours (SAUF si NGR actif).

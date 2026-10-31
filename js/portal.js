@@ -541,11 +541,20 @@
       '<h3 class="arv-big">' + esc(t('affRevBig', V)) + '</h3>' +
       '<ul class="arv-rules">' +
         '<li>' + esc(t('affRevR1', V)) + '</li>' +
-        '<li>' + esc(t('affRevR3')) + '</li>' +
       '</ul>' +
       '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
         proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
         '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
+      '<details class="arv-promo" open><summary>' + esc(t('affPromoTitle')) + '</summary>' +
+        '<div class="apr-grid">' +
+          '<div class="apr-card apr-wa"><i>WhatsApp</i><p>' + esc(t('affPromoWa')) + '</p></div>' +
+          '<div class="apr-card apr-tg"><i>Telegram</i><p>' + esc(t('affPromoTg')) + '</p></div>' +
+          '<div class="apr-card apr-fb"><i>Facebook</i><p>' + esc(t('affPromoFb')) + '</p></div>' +
+          '<div class="apr-card apr-tt"><i>TikTok</i><p>' + esc(t('affPromoTt')) + '</p></div>' +
+        '</div>' +
+        '<p class="apr-tip">' + esc(t('affPromoTip')) + '</p>' +
+        '<div class="apr-demo"><b>' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoText')) + '</p></div>' +
+      '</details>' +
       '<div class="arv-faq"><b>' + esc(t('affRevFaq')) + '</b>' +
         faq.map(function (q) { return '<details class="arv-q"><summary>' + esc(t(q[0])) + '</summary><p>' + esc(t(q[1], V)) + '</p></details>'; }).join('') +
       '</div>';
