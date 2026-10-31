@@ -765,29 +765,28 @@
       g.font = '800 19px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, W - P, y + rowH / 2);
       var right = W - P - g.measureText(odd).width - 12; right -= mark(s, right, y + rowH / 2, 16);
       g.textAlign = 'left';
-      // 2026-10-31 (propriétaire, validé) : match terminé → score final style « scoreboard » : statut « Terminé »
-      // en petit gris + score blanc gras sur plaque sombre, tiret bien détaché des chiffres.
+      // 2026-10-31 (propriétaire, validé — style 2) : match terminé → score final en texte simple
+      // « Terminé · 0 – 6 » : statut petit gris · score foncé gras, tiret détaché (pas de cadre).
       var fsA = Array.isArray(s.fs) ? [(+s.fs[0] || 0), (+s.fs[1] || 0)] : null;
       var fsLab = fsA ? String(x.ftS || '').toUpperCase() : '';
-      var wLab = 0, w0 = 0, wd = 0, w2 = 0, chipW = 0, gapS = 7, padX = 11;
+      var wLab = 0, wSep = 0, w0 = 0, wd = 0, w2 = 0, g1 = 6, dpad = 4;
       if (fsA) {
-        g.font = '800 10px ' + FONT; wLab = fsLab ? g.measureText(fsLab).width + 9 : 0;
+        g.font = '800 10px ' + FONT; wLab = fsLab ? g.measureText(fsLab).width : 0;
+        g.font = '700 13px ' + FONT; wSep = g.measureText('·').width;
         g.font = '800 14px ' + FONT; w0 = g.measureText(String(fsA[0])).width; w2 = g.measureText(String(fsA[1])).width;
         g.font = '600 14px ' + FONT; wd = g.measureText('–').width;
-        chipW = padX * 2 + w0 + gapS + wd + gapS + w2;
       }
-      var suffix = fsA ? (wLab + chipW + 14) : 0;
+      var suffix = fsA ? ((wLab ? wLab + g1 : 0) + wSep + g1 + (w0 + dpad + wd + dpad + w2) + 14) : 0;
       g.fillStyle = MUTE; g.font = '500 14px ' + FONT;
       var mt = ell(g, s.t, Math.max(30, (right - P - 4) - suffix));
       g.fillText(mt, P, y + 19);
       if (fsA) {
         var fx = P + g.measureText(mt).width + 14, cy = y + 19;
-        if (fsLab) { g.fillStyle = '#94A3B8'; g.font = '800 10px ' + FONT; g.fillText(fsLab, fx, cy); fx += wLab; }
-        rr(g, fx, cy - 11, chipW, 22, 7); g.fillStyle = (s.r === 'lost' ? '#1E293B' : '#0F172A'); g.fill();
-        var tx = fx + padX;
-        g.fillStyle = '#FFFFFF'; g.font = '800 14px ' + FONT; g.fillText(String(fsA[0]), tx, cy); tx += w0 + gapS;
-        g.fillStyle = 'rgba(255,255,255,0.5)'; g.font = '600 14px ' + FONT; g.fillText('–', tx, cy); tx += wd + gapS;
-        g.fillStyle = '#FFFFFF'; g.font = '800 14px ' + FONT; g.fillText(String(fsA[1]), tx, cy);
+        if (fsLab) { g.fillStyle = '#94A3B8'; g.font = '800 10px ' + FONT; g.fillText(fsLab, fx, cy); fx += wLab + g1; }
+        g.fillStyle = '#CBD5E1'; g.font = '700 13px ' + FONT; g.fillText('·', fx, cy); fx += wSep + g1;
+        g.fillStyle = INK; g.font = '800 14px ' + FONT; g.fillText(String(fsA[0]), fx, cy); fx += w0 + dpad;
+        g.fillStyle = '#94A3B8'; g.font = '600 14px ' + FONT; g.fillText('–', fx, cy); fx += wd + dpad;
+        g.fillStyle = INK; g.font = '800 14px ' + FONT; g.fillText(String(fsA[1]), fx, cy);
       }
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, y + 41);
     });
