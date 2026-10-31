@@ -807,12 +807,13 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
   width:26px!important;height:26px!important;border-radius:50%!important;background:transparent!important;
 }
 
-/* connexion / inscription : on RETIRE l'image d'univers (galaxy-auth.svg : étoiles + planète
-   en bas qui passaient par-dessus le logo et le message). On n'ajoute PAS de fond :
-   #screenAuth devient transparent, le fond sombre déjà présent du site (body) se voit.
-   Demandé par le propriétaire (2026-10-31) : enlever UNIQUEMENT sur Connexion/Inscription ;
-   les autres écrans gardent leur univers. */
-html body #screenAuth#screenAuth{background:transparent!important}
+/* connexion / inscription : univers sans planètes */
+html body #screenAuth#screenAuth{
+  background:
+    linear-gradient(180deg,rgba(10,8,30,.25),rgba(10,8,30,.5)),
+    url("galaxy-auth.svg?v=2367") center top/cover no-repeat,
+    linear-gradient(180deg,#0E0B28,#080817)!important;
+}
 
 /* case du gain : plus douce ; le payout choisi se voit juste par un fin trait de couleur en bas */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
