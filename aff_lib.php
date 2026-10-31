@@ -117,7 +117,26 @@ function orolado_aff_attach(array $db, string $newUid, string $code): bool {
     foreach ($st['friends'] as $f) if (($f['uid'] ?? '') === $newUid) return;
     $st['friends'][] = ['uid' => $newUid, 'name' => $name, 'at' => date('c'), 'ip' => $ip, 'deposit' => 0, 'gift' => 0, 'paid' => false];
   });
+  // Index léger des affiliés (ceux qui ont invité au moins un ami) : pour le suivi admin, sans
+  // relire tous les fichiers. Garde aussi le dernier compte d'amis (affichage/tri rapide).
+  orolado_aff_with('index_aff', static function (&$st) use ($inviter) {
+    if (!isset($st['ids']) || !is_array($st['ids'])) $st['ids'] = [];
+    if (!in_array($inviter, $st['ids'], true)) $st['ids'][] = $inviter;
+  });
   return true;
+}
+
+/** Ce joueur a-t-il invité au moins un ami ? (pour le petit badge 🤝 dans l'admin). */
+function orolado_aff_is_affiliate(string $uid): bool {
+  if ($uid === '') return false;
+  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+  return is_array($own['friends'] ?? null) && count($own['friends']) > 0;
+}
+
+/** Liste des uid affiliés connus (index). Les anciens (avant l'index) sont ajoutés à la volée par l'admin. */
+function orolado_aff_index_ids(): array {
+  $st = orolado_aff_read('index_aff');
+  return is_array($st['ids'] ?? null) ? array_values(array_unique(array_map('strval', $st['ids']))) : [];
 }
 
 /**

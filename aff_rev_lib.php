@@ -190,6 +190,66 @@ function orolado_aff_rev_wallet(array $db, string $inviterUid): array {
   ];
 }
 
+/** Seuil « gros dépôt » pour le signal admin (réglable : OROLADO_AFF_BIG_DEP=500). Info seulement. */
+function orolado_aff_rev_big_dep(): float {
+  $v = getenv('OROLADO_AFF_BIG_DEP');
+  if ($v === false || $v === '') $v = $_ENV['OROLADO_AFF_BIG_DEP'] ?? '';
+  return is_numeric($v) ? max(0.0, (float) $v) : 500.0;
+}
+
+/**
+ * SUIVI ADMIN (info seulement, JAMAIS de blocage/ban automatique) : pour chaque affilié connu,
+ * ses chiffres (amis, NGR gardé, versé, solde) et des SIGNAUX à regarder à la main :
+ *   - sameIp : combien d'amis partagent une même IP d'inscription (grappe la plus grande) ;
+ *   - big    : combien d'amis ont déposé un gros montant (≥ seuil) ;
+ *   - watch  : vrai si une grappe d'IP ≥ 3 — simple drapeau « à regarder », pas une sanction.
+ * L'admin décide seul quoi faire. Un vrai affilié (pubs, vidéos, tests) n'est jamais pénalisé.
+ */
+function orolado_aff_admin_overview(array $db, array $opts = []): array {
+  $ids = orolado_aff_index_ids();
+  // Rattrapage : inclure aussi des uid passés par l'appelant (anciens affiliés hors index).
+  foreach ((array) ($opts['extra'] ?? []) as $x) { $x = (string) $x; if ($x !== '' && !in_array($x, $ids, true)) $ids[] = $x; }
+  $big = orolado_aff_rev_big_dep();
+  $rows = [];
+  $totalPaid = 0.0;
+  $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
+  foreach ($ids as $uid) {
+    $own = orolado_aff_read(orolado_aff_owner_name($uid));
+    $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
+    if (!$friends) continue;
+    $w = orolado_aff_rev_wallet($db, $uid);
+    // Signaux (info) : grappes d'IP + gros déposeurs.
+    $ipCount = [];
+    foreach ($friends as $f) { $ip = (string) ($f['ip'] ?? ''); if ($ip !== '') $ipCount[$ip] = ($ipCount[$ip] ?? 0) + 1; }
+    $sameIp = $ipCount ? max($ipCount) : 0;
+    $bigN = 0;
+    $deposited = 0;
+    foreach ((array) ($w['friends'] ?? []) as $fr) {
+      if (($fr['deposits'] ?? 0) > 0.009) $deposited++;
+      if (($fr['deposits'] ?? 0) >= $big) $bigN++;
+    }
+    $u = $db['users'][$uid] ?? [];
+    $totalPaid += (float) ($w['withdrawn'] ?? 0);
+    $rows[] = [
+      'uid' => $uid,
+      'publicId' => (string) (is_array($u) ? ($u['publicId'] ?? 'ORO-??????') : 'ORO-??????'),
+      'name' => (string) (is_array($u) ? ($u['displayName'] ?? '') : ''),
+      'friends' => count($friends),
+      'deposited' => $deposited,
+      'ngr' => orolado_money($w['ngr'] ?? 0),
+      'entitled' => orolado_money($w['entitled'] ?? 0), // dû total (60 % du NGR)
+      'paid' => orolado_money($w['withdrawn'] ?? 0),      // déjà versé à l'affilié (argent libre)
+      'balance' => orolado_money($w['balance'] ?? 0),
+      'sameIp' => (int) $sameIp,
+      'big' => (int) $bigN,
+      'watch' => ($sameIp >= 3),
+    ];
+  }
+  unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+  usort($rows, static fn($a, $b) => ($b['watch'] <=> $a['watch']) ?: ($b['paid'] <=> $a['paid']));
+  return ['rows' => $rows, 'count' => count($rows), 'totalPaid' => orolado_money($totalPaid), 'bigThreshold' => $big];
+}
+
 /**
  * VERSEMENT (vesting) : crédite à l'affilié, en argent LIBRE (retirable ou jouable, comme aujourd'hui),
  * la part de commission qui vient d'être acquise — c.-à-d. ce qui dépasse ce qu'on lui a DÉJÀ versé.

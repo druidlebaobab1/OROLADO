@@ -256,5 +256,32 @@ check('total versé à l\'inviteur = 60 $ (pas 65)', abs(paid_to($credits, 'inv'
 // l'ami garde son cadeau de bienvenue (5 % du 1er dépôt), payé par OROLADO
 check('l\'ami reçoit bien son cadeau de bienvenue 5 $', abs(paid_to($credits, 'f1', 'adm_ami_') - 5) < 0.001, (string) paid_to($credits, 'f1', 'adm_ami_'));
 
+echo "12) SUIVI ADMIN : badge affilié, index, stats + signaux (info seulement)\n";
+$credits = [];
+reset_db();
+mkuser('inv1', 'inv1@g.com'); mkuser('inv2', 'inv2@g.com'); mkuser('solo', 'solo@g.com');
+$c1 = (string) orolado_aff_status(load_db(), load_db()['users']['inv1'])['code'];
+$c2 = (string) orolado_aff_status(load_db(), load_db()['users']['inv2'])['code'];
+// inv1 : 3 amis sur la MÊME IP (signal grappe) + un ami perd 100 $
+$_SERVER['REMOTE_ADDR'] = '41.200.10.5';
+foreach (['a1', 'a2', 'a3'] as $fu) { mkuser($fu, "$fu@g.com"); orolado_aff_attach(load_db(), $fu, $c1); }
+unset($_SERVER['REMOTE_ADDR']);
+deposit('a1', 100, $OLD); bet('a1', 100, false, $OLD);
+// inv2 : 1 ami avec un GROS dépôt (≥ 500) perdu
+mkuser('b1', 'b1@g.com'); orolado_aff_attach(load_db(), 'b1', $c2);
+deposit('b1', 600, $OLD); bet('b1', 600, false, $OLD);
+check('badge : inv1 est affilié', orolado_aff_is_affiliate('inv1'));
+check('badge : solo n\'est PAS affilié', !orolado_aff_is_affiliate('solo'));
+check('index : inv1 et inv2 connus', count(array_intersect(['inv1', 'inv2'], orolado_aff_index_ids())) === 2);
+$ov = orolado_aff_admin_overview(load_db());
+check('overview : 2 affiliés', $ov['count'] === 2, (string) $ov['count']);
+$r1 = null; $r2 = null;
+foreach ($ov['rows'] as $r) { if ($r['uid'] === 'inv1') $r1 = $r; if ($r['uid'] === 'inv2') $r2 = $r; }
+check('inv1 : grappe IP = 3, drapeau « à regarder »', $r1 && $r1['sameIp'] === 3 && $r1['watch'] === true, $r1 ? ('sameIp=' . $r1['sameIp']) : 'nul');
+check('inv1 : NGR 100 $, dû 60 $, versé 0 $ (pas encore ouvert son portail)', $r1 && abs($r1['ngr'] - 100) < 0.001 && abs($r1['entitled'] - 60) < 0.001 && abs($r1['paid']) < 0.001, $r1 ? ('ngr=' . $r1['ngr'] . ' entitled=' . $r1['entitled'] . ' paid=' . $r1['paid']) : 'nul');
+check('inv2 : 1 gros déposeur (≥ 500 $) repéré', $r2 && $r2['big'] === 1, $r2 ? ('big=' . $r2['big']) : 'nul');
+check('inv2 : pas de drapeau (1 seul ami, pas de grappe)', $r2 && $r2['watch'] === false);
+check('les affiliés « à regarder » remontent en premier', $ov['rows'][0]['uid'] === 'inv1');
+
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
