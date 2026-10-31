@@ -6,7 +6,8 @@
   // les anciens liens « /?ami=CODE » déjà partagés marchent toujours.
   (function () {
     try {
-      var m = /[?&](?:ref|ami)=([A-Za-z0-9]{8})(?:&|$)/.exec(location.search || '');
+      // 3 à 16 caractères : couvre le code par défaut (8) ET les codes promo personnalisés (ex. DIABLE).
+      var m = /[?&](?:ref|ami)=([A-Za-z0-9]{3,16})(?:&|$)/.exec(location.search || '');
       if (!m) return;
       localStorage.setItem('oro_ami', JSON.stringify({ c: m[1].toUpperCase(), t: Date.now() }));
       if (history.replaceState) {
@@ -15,13 +16,30 @@
       }
     } catch (eAmi) { /* ignore */ }
   })();
+  // Code de parrainage utilisé à l'inscription : d'abord le code promo TAPÉ dans le formulaire (#regCode),
+  // sinon le code gardé depuis le lien /r/CODE. Un seul rattachement côté serveur (pas de double comptage).
   function oroAmiCode() {
+    try {
+      var el = document.getElementById('regCode');
+      if (el && el.value) { var v = String(el.value).toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v.length >= 3 && v.length <= 16) return v; }
+    } catch (eTyped) { /* ignore */ }
     try {
       var o = JSON.parse(localStorage.getItem('oro_ami') || 'null');
       if (o && o.c && Date.now() - (o.t || 0) < 30 * 86400000) return String(o.c);
     } catch (eAmi) { /* ignore */ }
     return '';
   }
+  // Pré-remplit la case « Code promo » quand l'ami est venu par un lien /r/CODE (il voit d'où il vient).
+  try {
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        var el = document.getElementById('regCode');
+        if (!el || el.value) return;
+        var o = JSON.parse(localStorage.getItem('oro_ami') || 'null');
+        if (o && o.c && Date.now() - (o.t || 0) < 30 * 86400000) el.value = String(o.c);
+      } catch (ePre) { /* ignore */ }
+    });
+  } catch (ePre2) { /* ignore */ }
 
   function normalizeEmail(email) {
     return String(email || '').trim().toLowerCase();
