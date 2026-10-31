@@ -76,6 +76,7 @@
  "affRulesNo3": "垃圾信息和骚扰消息。",
  "affRulesWarn": "违规：你的收入可能被冻结或账户被封。",
  "affRevA4": "是的，我们鼓励。只需阅读下面的规则。",
+ "affRevA1": "{hold} 小时内。这是自由资金：随时提现或用来游戏。无需像充值那样 ×2 流水。",
  "affBiggest": "最大单笔充值",
  "affClicks": "链接点击次数",
  "affColDep": "已充值",

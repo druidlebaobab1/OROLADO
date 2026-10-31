@@ -3412,6 +3412,21 @@
     hi: { affRulesTitle: 'पालन करने के नियम', affRulesOkTitle: 'अनुमत', affRulesOk: 'विज्ञापन, वीडियो, ग्रुप, चैनल — अपना लिंक हर जगह साझा करें।', affRulesNoTitle: 'बचें', affRulesNo1: 'खुद को रेफर करने के लिए नकली खाते बनाना।', affRulesNo2: 'गारंटीड जीत का वादा या OROLADO के बारे में झूठ।', affRulesNo3: 'स्पैम और अवांछित संदेश।', affRulesWarn: 'उल्लंघन: आपकी कमाई रोकी जा सकती है या खाता बैन हो सकता है।', affRevA4: 'हाँ, यह प्रोत्साहित है। बस नीचे दिए नियम पढ़ें।' }
   };
   Object.keys(RULES_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], RULES_TR[l]); });
+  // « Quand suis-je payé » : expliquer que c'est de l'argent LIBRE (retire ou joue, pas de ×2 comme un dépôt).
+  var PAID_TR = {
+    fr: 'Sous {hold} h. C’est de l’argent libre : retire-le quand tu veux ou joue avec. Pas besoin de miser ×2 comme un dépôt.',
+    en: 'Within {hold}h. It’s free money: withdraw it whenever you want or play with it. No need to wager it ×2 like a deposit.',
+    es: 'En {hold} h. Es dinero libre: retíralo cuando quieras o juega con él. No hay que apostarlo ×2 como un depósito.',
+    pt: 'Em {hold} h. É dinheiro livre: levanta quando quiseres ou joga com ele. Não precisas de apostar ×2 como um depósito.',
+    ar: 'خلال {hold} ساعة. إنه مال حر: اسحبه متى شئت أو العب به. لا حاجة للمراهنة به ×2 كالإيداع.',
+    tr: '{hold} saat içinde. Serbest para: istediğinde çek ya da oyna. Depozito gibi ×2 çevirmene gerek yok.',
+    vi: 'Trong {hold}h. Là tiền tự do: rút bất cứ lúc nào hoặc chơi. Không cần cược ×2 như tiền nạp.',
+    id: 'Dalam {hold}j. Uang bebas: tarik kapan saja atau mainkan. Tak perlu taruhan ×2 seperti deposit.',
+    ru: 'За {hold} ч. Это свободные деньги: выводи когда хочешь или играй. Не нужно отыгрывать ×2, как депозит.',
+    de: 'In {hold} h. Es ist freies Geld: jederzeit auszahlen oder spielen. Kein ×2-Umsatz nötig wie bei einer Einzahlung.',
+    hi: '{hold} घंटे में। यह मुक्त पैसा है: जब चाहें निकालें या खेलें। जमा की तरह ×2 दांव लगाने की ज़रूरत नहीं।'
+  };
+  Object.keys(PAID_TR).forEach(function (l) { if (DICT[l]) DICT[l].affRevA1 = PAID_TR[l]; });
   // v2414 — Inviter (carrés, liste de 365 jours) + Top 25 démo de la semaine.
   var TOP_TR = {
     fr: { affR1: 'Toi : 5 % de chaque dépôt de ton ami, pendant 365 jours. Tu retires quand tu veux.', affClicks: 'Clics sur ton lien', affPlayed: 'Ont joué en réel', affTotal: 'Total déposé par tes amis', affListBtn: 'Voir mes amis', affListTitle: 'Mes amis invités', affFDay: 'Aujourd’hui', affFWeek: '7 jours', affFAll: 'Tout', affColDep: 'Déposé', affEmpty: 'Aucun ami pour cette période.', affPlayedOne: 'a joué', affLeft: 'Reste', topTab: 'Top 25', topTitle: 'Top 25 de la semaine', topSub: 'Les meilleurs joueurs démo de la semaine sont récompensés par OROLADO.', topRule: 'Points = ce que tu gagnes ÷ ce que tu mises. 5 trades démo minimum. Nouveau classement chaque lundi.', topPlay: 'Jouer en démo', topPrev: 'Semaine dernière', topThis: 'Cette semaine', topPts: 'pts', topEmpty: 'Joue 20 trades démo pour entrer !', topMeRank: 'Toi : {r}e sur {n} · {p} pts', topMeNeed: 'Encore {n} trades démo pour entrer dans le classement.', topMeOut: 'Toi : {p} pts — continue pour monter !', topEnded: 'Terminé' },

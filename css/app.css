@@ -5589,15 +5589,15 @@ html body #portalModal .arv-faq>b{font-size:clamp(12.5px,3.4vw,14px);color:#fff;
 html body #portalModal .arv-q{border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);overflow:hidden}
 html body #portalModal .arv-q>summary{cursor:pointer;list-style:none;padding:9px 11px;font-size:clamp(11.5px,3.2vw,13px);font-weight:700;color:#FFE6A6;display:flex;justify-content:space-between;align-items:center;gap:8px;overflow-wrap:anywhere}
 html body #portalModal .arv-q>summary::-webkit-details-marker{display:none}
-html body #portalModal .arv-q>summary::after{content:"+";flex:0 0 auto;color:#F2B33D;font-weight:900;font-size:16px}
-html body #portalModal .arv-q[open]>summary::after{content:"\2212"}
+html body #portalModal .arv-q>summary::after{content:"\25BE";flex:0 0 auto;color:#F2B33D;font-weight:900;font-size:14px;transition:transform .2s ease}
+html body #portalModal .arv-q[open]>summary::after{transform:rotate(180deg)}
 html body #portalModal .arv-q>p{margin:0;padding:0 11px 10px;font-size:clamp(11px,3.1vw,12.5px);line-height:1.45;color:#C7CEE8;overflow-wrap:anywhere}
 /* « Comment amener des amis » — cartes par réseau, élastique. */
 html body #portalModal .arv-promo{border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);overflow:hidden}
 html body #portalModal .arv-promo>summary{cursor:pointer;list-style:none;padding:11px 12px;font-size:clamp(12.5px,3.4vw,14px);font-weight:900;color:#FFE6A6;display:flex;justify-content:space-between;align-items:center;gap:8px}
 html body #portalModal .arv-promo>summary::-webkit-details-marker{display:none}
-html body #portalModal .arv-promo>summary::after{content:"+";flex:0 0 auto;color:#F2B33D;font-weight:900;font-size:16px}
-html body #portalModal .arv-promo[open]>summary::after{content:"\2212"}
+html body #portalModal .arv-promo>summary::after{content:"\25BE";flex:0 0 auto;color:#F2B33D;font-weight:900;font-size:14px;transition:transform .2s ease}
+html body #portalModal .arv-promo[open]>summary::after{transform:rotate(180deg)}
 html body #portalModal .apr-lead{margin:0;padding:0 12px 8px;font-size:clamp(11.5px,3.1vw,13px);font-weight:700;color:#FFE6A6;overflow-wrap:anywhere}
 html body #portalModal .apr-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 12px 10px}
 html body #portalModal .apr-card{position:relative;min-width:0;padding:9px 10px;border-radius:10px;background:rgba(0,0,0,.26);border:1px solid rgba(255,255,255,.08);border-left-width:3px}
@@ -5620,8 +5620,8 @@ html body #portalModal .apr-demo-lock b{color:#AEB6D6}
 html body #portalModal .arv-rules{border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);overflow:hidden}
 html body #portalModal .arv-rules>summary{cursor:pointer;list-style:none;padding:11px 12px;font-size:clamp(12.5px,3.4vw,14px);font-weight:900;color:#FFE6A6;display:flex;justify-content:space-between;align-items:center;gap:8px}
 html body #portalModal .arv-rules>summary::-webkit-details-marker{display:none}
-html body #portalModal .arv-rules>summary::after{content:"+";flex:0 0 auto;color:#F2B33D;font-weight:900;font-size:16px}
-html body #portalModal .arv-rules[open]>summary::after{content:"\2212"}
+html body #portalModal .arv-rules>summary::after{content:"\25BE";flex:0 0 auto;color:#F2B33D;font-weight:900;font-size:14px;transition:transform .2s ease}
+html body #portalModal .arv-rules[open]>summary::after{transform:rotate(180deg)}
 html body #portalModal .arl-ok,html body #portalModal .arl-no{padding:0 12px 8px}
 html body #portalModal .arl-ok b,html body #portalModal .arl-no b{display:block;font-size:clamp(11.5px,3.1vw,13px);margin-bottom:3px}
 html body #portalModal .arl-ok b{color:#48C38D}
