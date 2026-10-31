@@ -66,6 +66,7 @@
  "affPromoFbEx": "例如：在投注和足球群里分享。",
  "affPromoTtEx": "例如：一个好视频能带来 100 个朋友。",
  "affPromoGo": "选择一种方式，现在就开始！",
+ "affDemoLocked": "达到 {min} 位活跃朋友后解锁——即已经充值过的朋友。",
  "affBiggest": "最大单笔充值",
  "affClicks": "链接点击次数",
  "affColDep": "已充值",

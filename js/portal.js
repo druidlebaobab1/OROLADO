@@ -538,6 +538,7 @@
     var avgPlayer = dep > 0 ? totalDep / dep : 0;
     var c2r = clicks > 0 ? Math.round(100 * friends / clicks) : 0;
     var r2d = friends > 0 ? Math.round(100 * dep / friends) : 0;
+    var demoMin = Number(rev.demoMin) || 50; // amis actifs (déposé) requis pour débloquer un compte démo
     var met = function (v, label) { return '<div class="arv-met"><b>' + v + '</b><span>' + esc(label) + '</span></div>'; };
     box.innerHTML =
       '<div class="arv-head">' +
@@ -563,7 +564,7 @@
       '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
         proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
         '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
-      '<details class="arv-promo" open><summary>' + esc(t('affPromoTitle')) + '</summary>' +
+      '<details class="arv-promo"><summary>' + esc(t('affPromoTitle')) + '</summary>' +
         '<p class="apr-lead">' + esc(t('affPromoLead')) + '</p>' +
         '<div class="apr-grid">' +
           '<div class="apr-card apr-wa"><span class="apr-n">1</span><i>WhatsApp</i><p>' + esc(t('affPromoWa')) + '</p><em>' + esc(t('affPromoWaEx')) + '</em></div>' +
@@ -573,7 +574,11 @@
         '</div>' +
         '<p class="apr-tip">' + esc(t('affPromoTip')) + '</p>' +
         '<p class="apr-go">' + esc(t('affPromoGo')) + '</p>' +
-        '<div class="apr-demo"><b>' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoText')) + '</p></div>' +
+        // Compte démo : visible seulement dans cette section repliée, et le « contacter le support »
+        // n'apparaît qu'à partir du seuil d'amis ACTIFS (amis qui ont déposé).
+        (dep >= demoMin
+          ? '<div class="apr-demo"><b>' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoText')) + '</p></div>'
+          : '<div class="apr-demo apr-demo-lock"><b>🔒 ' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoLocked', { min: demoMin })) + '</p></div>') +
       '</details>' +
       '<div class="arv-faq"><b>' + esc(t('affRevFaq')) + '</b>' +
         faq.map(function (q) { return '<details class="arv-q"><summary>' + esc(t(q[0])) + '</summary><p>' + esc(t(q[1], V)) + '</p></details>'; }).join('') +

@@ -3382,6 +3382,21 @@
     hi: { affPromoLead: 'कमाने के सबसे अच्छे तरीके — आज से शुरू करें, मुफ़्त।', affPromoWaEx: 'उदा.: 200 दोस्तों का ग्रुप = हर दिन पंजीकरण।', affPromoTgEx: 'उदा.: अपने टिप्स + लिंक अपने चैनल पर डालें।', affPromoFbEx: 'उदा.: सट्टेबाजी और फुटबॉल ग्रुप में साझा करें।', affPromoTtEx: 'उदा.: एक अच्छा वीडियो 100 दोस्त ला सकता है।', affPromoGo: 'एक तरीका चुनें और अभी शुरू करें!' }
   };
   Object.keys(PROMO_EX_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], PROMO_EX_TR[l]); });
+  // Compte démo verrouillé tant qu'on n'a pas assez d'amis ACTIFS (= amis qui ont déjà déposé).
+  var DEMO_LOCK_TR = {
+    fr: 'Débloqué à partir de {min} amis actifs — des amis qui ont déjà déposé.',
+    en: 'Unlocked from {min} active friends — friends who have already deposited.',
+    es: 'Se desbloquea con {min} amigos activos — amigos que ya han depositado.',
+    pt: 'Desbloqueado a partir de {min} amigos ativos — amigos que já depositaram.',
+    ar: 'يُفتح ابتداءً من {min} صديقًا نشطًا — أصدقاء أودعوا بالفعل.',
+    tr: '{min} aktif arkadaştan itibaren açılır — zaten yatırım yapmış arkadaşlar.',
+    vi: 'Mở khóa từ {min} bạn hoạt động — những bạn đã nạp tiền.',
+    id: 'Terbuka dari {min} teman aktif — teman yang sudah deposit.',
+    ru: 'Открывается от {min} активных друзей — друзей, которые уже внесли депозит.',
+    de: 'Ab {min} aktiven Freunden freigeschaltet — Freunde, die schon eingezahlt haben.',
+    hi: '{min} सक्रिय दोस्तों से अनलॉक — वे दोस्त जिन्होंने पहले ही जमा किया है।'
+  };
+  Object.keys(DEMO_LOCK_TR).forEach(function (l) { if (DICT[l]) DICT[l].affDemoLocked = DEMO_LOCK_TR[l]; });
   // v2414 — Inviter (carrés, liste de 365 jours) + Top 25 démo de la semaine.
   var TOP_TR = {
     fr: { affR1: 'Toi : 5 % de chaque dépôt de ton ami, pendant 365 jours. Tu retires quand tu veux.', affClicks: 'Clics sur ton lien', affPlayed: 'Ont joué en réel', affTotal: 'Total déposé par tes amis', affListBtn: 'Voir mes amis', affListTitle: 'Mes amis invités', affFDay: 'Aujourd’hui', affFWeek: '7 jours', affFAll: 'Tout', affColDep: 'Déposé', affEmpty: 'Aucun ami pour cette période.', affPlayedOne: 'a joué', affLeft: 'Reste', topTab: 'Top 25', topTitle: 'Top 25 de la semaine', topSub: 'Les meilleurs joueurs démo de la semaine sont récompensés par OROLADO.', topRule: 'Points = ce que tu gagnes ÷ ce que tu mises. 5 trades démo minimum. Nouveau classement chaque lundi.', topPlay: 'Jouer en démo', topPrev: 'Semaine dernière', topThis: 'Cette semaine', topPts: 'pts', topEmpty: 'Joue 20 trades démo pour entrer !', topMeRank: 'Toi : {r}e sur {n} · {p} pts', topMeNeed: 'Encore {n} trades démo pour entrer dans le classement.', topMeOut: 'Toi : {p} pts — continue pour monter !', topEnded: 'Terminé' },
