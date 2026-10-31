@@ -12523,10 +12523,9 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
 .sp-rcpt-s em { font-style: normal; font-weight: 800; font-size: 14px; color: #4C1D95; }
 /* 2026-10-31 (propriétaire, validé — style 3) : score final du match sur le reçu = pastille « Terminé · score »,
    COULEUR SELON LE RÉSULTAT : gagné = vert, perdu = rouge, remboursé = bleu. « Terminé » traduit (NX().ft). */
-.sp-rcpt-fs { align-self: flex-start; margin-top: 6px; display: inline-flex; align-items: center; gap: 8px; height: 23px; padding: 0 11px; border-radius: 999px; background: #F1F5F9; border: 1px solid #E2E8F0; text-decoration: none; white-space: nowrap; }
-/* MÊME taille pour le libellé et le score → parfaitement sur la même ligne (pas de « penché ») */
-.sp-rcpt-fs .fsL { display: flex; align-items: center; font-style: normal; font-size: 12px; line-height: 1; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #94A3B8; }
-.sp-rcpt-fs .fsN { display: flex; align-items: center; font-style: normal; font-size: 12px; line-height: 1; font-weight: 800; color: #334155; font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+/* score final SEUL, centré dans une pastille (plus de « Terminé »), couleur selon le résultat */
+.sp-rcpt-fs { align-self: flex-start; margin-top: 6px; display: inline-flex; align-items: center; justify-content: center; height: 24px; min-width: 50px; padding: 0 14px; border-radius: 999px; background: #F1F5F9; border: 1px solid #E2E8F0; text-decoration: none; white-space: nowrap; }
+.sp-rcpt-fs .fsN { display: block; font-style: normal; font-size: 13.5px; line-height: 1; font-weight: 800; color: #334155; font-variant-numeric: tabular-nums; letter-spacing: .12em; text-indent: .12em; }
 .sp-rcpt-s.won .sp-rcpt-fs, .sp-rcpt-s.hwon .sp-rcpt-fs { background: #ECFDF3; border-color: #BBF7D0; }
 .sp-rcpt-s.won .sp-rcpt-fs .fsL, .sp-rcpt-s.hwon .sp-rcpt-fs .fsL { color: #16A34A; }
 .sp-rcpt-s.won .sp-rcpt-fs .fsN, .sp-rcpt-s.hwon .sp-rcpt-fs .fsN { color: #15803D; }

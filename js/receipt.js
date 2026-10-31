@@ -765,17 +765,16 @@
       g.font = '800 19px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, W - P, y + rowH / 2);
       var right = W - P - g.measureText(odd).width - 12; right -= mark(s, right, y + rowH / 2, 16);
       g.textAlign = 'left';
-      // 2026-10-31 (propriétaire, validé — style 3) : match terminé → pastille « Terminé 1:2 », couleur selon
-      // le résultat : gagné vert / perdu rouge / remboursé bleu.
+      // 2026-10-31 (propriétaire) : match terminé → pastille avec LE SCORE SEUL, centré (plus de « Terminé »),
+      // couleur selon le résultat : gagné vert / perdu rouge / remboursé bleu.
       var fsStr = Array.isArray(s.fs) ? ((+s.fs[0] || 0) + ':' + (+s.fs[1] || 0)) : '';
-      var fsLab = fsStr ? String(x.ftS || '').toUpperCase() : '';
-      var FC = (s.r === 'won' || s.r === 'hwon') ? { bg: '#ECFDF3', bd: '#BBF7D0', l: '#16A34A', n: '#15803D' }
-        : (s.r === 'lost' || s.r === 'hlost') ? { bg: '#FEF2F2', bd: '#FECACA', l: '#DC2626', n: '#B91C1C' }
-        : (s.r === 'void') ? { bg: '#EFF6FF', bd: '#BFDBFE', l: '#2563EB', n: '#1E40AF' }
-        : { bg: '#F1F5F9', bd: '#E2E8F0', l: '#94A3B8', n: '#334155' };
-      var wLab = 0, wN = 0, g1 = 7, padX = 11, pillH = 22;
-      if (fsStr) { g.font = '800 12px ' + FONT; wLab = fsLab ? g.measureText(fsLab).width : 0; g.font = '800 12px ' + FONT; wN = g.measureText(fsStr).width; }
-      var pillW = fsStr ? (padX * 2 + (wLab ? wLab + g1 : 0) + wN) : 0;
+      var FC = (s.r === 'won' || s.r === 'hwon') ? { bg: '#ECFDF3', bd: '#BBF7D0', n: '#15803D' }
+        : (s.r === 'lost' || s.r === 'hlost') ? { bg: '#FEF2F2', bd: '#FECACA', n: '#B91C1C' }
+        : (s.r === 'void') ? { bg: '#EFF6FF', bd: '#BFDBFE', n: '#1E40AF' }
+        : { bg: '#F1F5F9', bd: '#E2E8F0', n: '#334155' };
+      var wN = 0, padX = 15, pillH = 23, minW = 50;
+      if (fsStr) { g.font = '800 13px ' + FONT; wN = g.measureText(fsStr).width; }
+      var pillW = fsStr ? Math.max(minW, wN + padX * 2) : 0;
       var suffix = fsStr ? (pillW + 14) : 0;
       g.fillStyle = MUTE; g.font = '500 14px ' + FONT;
       var mt = ell(g, s.t, Math.max(30, (right - P - 4) - suffix));
@@ -784,9 +783,7 @@
         var px = P + g.measureText(mt).width + 14, cy = y + 19;
         rr(g, px, cy - pillH / 2, pillW, pillH, pillH / 2); g.fillStyle = FC.bg; g.fill();
         g.lineWidth = 1; g.strokeStyle = FC.bd; g.stroke();
-        var tx = px + padX;
-        if (fsLab) { g.fillStyle = FC.l; g.font = '800 12px ' + FONT; g.fillText(fsLab, tx, cy); tx += wLab + g1; }
-        g.fillStyle = FC.n; g.font = '800 12px ' + FONT; g.fillText(fsStr, tx, cy);
+        g.fillStyle = FC.n; g.font = '800 13px ' + FONT; g.textAlign = 'center'; g.fillText(fsStr, px + pillW / 2, cy); g.textAlign = 'left';
       }
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, y + 41);
     });
