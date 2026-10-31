@@ -564,7 +564,7 @@
       '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
         proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
         '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
-      '<details class="arv-promo"><summary>' + esc(t('affPromoTitle')) + '</summary>' +
+      '<details class="arv-promo" open><summary>' + esc(t('affPromoTitle')) + '</summary>' +
         '<p class="apr-lead">' + esc(t('affPromoLead')) + '</p>' +
         '<div class="apr-grid">' +
           '<div class="apr-card apr-wa"><span class="apr-n">1</span><i>WhatsApp</i><p>' + esc(t('affPromoWa')) + '</p><em>' + esc(t('affPromoWaEx')) + '</em></div>' +
