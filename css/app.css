@@ -5232,12 +5232,6 @@ html body #screenAuth .auth-or{margin:12px 0 10px}
   html body #screenAuth#screenAuth .auth-card form .field input{height:38px!important;min-height:38px!important;margin-bottom:2px!important;padding-top:6px!important;padding-bottom:6px!important}
   html body #screenAuth .auth-or{margin:7px 0 6px}
 }
-/* 2026-10-31 (propriétaire) : la case « Code promo » ajoutée à l'inscription — on resserre un peu CHAQUE
-   champ sur les téléphones courants (iPhone/Android), même style, pour que tout rentre sans déborder. */
-@media (orientation:portrait) and (min-height:701px) and (max-height:900px){
-  html body #screenAuth#screenAuth .auth-card form .field{margin-bottom:6px!important}
-  html body #screenAuth#screenAuth .auth-card form .field input{min-height:42px}
-}
 /* v2396 — PC / portable pas très haut (ex. 1366×768) : mêmes cases un peu serrées, pour que
    l'inscription tienne entière avec le bouton Google et la ligne de logos. */
 @media (min-width:860px) and (min-height:501px) and (max-height:900px){
