@@ -765,7 +765,14 @@
       g.font = '800 19px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, W - P, y + rowH / 2);
       var right = W - P - g.measureText(odd).width - 12; right -= mark(s, right, y + rowH / 2, 16);
       g.textAlign = 'left';
-      g.fillStyle = MUTE; g.font = '500 14px ' + FONT; g.fillText(ell(g, s.t, right - P - 4), P, y + 19);
+      // 2026-10-31 (propriétaire) : match terminé → score final en vert à côté du nom du match
+      var fs = Array.isArray(s.fs) ? ((+s.fs[0] || 0) + '–' + (+s.fs[1] || 0)) : '';
+      var fsLab = fs ? ((x.ftS || '') + ' ' + fs).trim() : '';
+      g.fillStyle = MUTE; g.font = '500 14px ' + FONT;
+      var mtMax = (right - P - 4) - (fsLab ? (g.measureText(fsLab).width + 14) : 0);
+      var mt = ell(g, s.t, Math.max(30, mtMax));
+      g.fillText(mt, P, y + 19);
+      if (fsLab) { g.fillStyle = '#15803D'; g.font = '800 13px ' + FONT; g.fillText(fsLab, P + g.measureText(mt).width + 10, y + 19); g.font = '500 14px ' + FONT; }
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, y + 41);
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {
