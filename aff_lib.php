@@ -394,6 +394,13 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   $list = [];
   $depCount = 0;
   $fixN = [];
+  // Part de revenu (NGR) : gain par ami = pct × ce qu'OROLADO a gardé sur lui. Calculé une fois ici.
+  $revOn2 = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled();
+  $revPct2 = $revOn2 && function_exists('orolado_aff_rev_pct') ? orolado_aff_rev_pct() : 0.0;
+  $ngrByUid = [];
+  if ($revOn2 && function_exists('orolado_aff_rev_aggregate')) {
+    foreach ((array) (orolado_aff_rev_aggregate($db, $uid)['friends'] ?? []) as $fr) $ngrByUid[(string) ($fr['uid'] ?? '')] = (float) ($fr['ngr'] ?? 0);
+  }
   foreach ($friends as $f) {
     $fu = $db['users'][(string) ($f['uid'] ?? '')] ?? [];
     $realTrades = (int) ($fu['realTrades'] ?? 0);
@@ -407,12 +414,16 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       $nDep = is_array($invF['deps'] ?? null) ? count($invF['deps']) : 0;
       $fixN[(string) $f['uid']] = $nDep;
     }
+    $fuid = (string) ($f['uid'] ?? '');
+    $ngrF = $revOn2 ? (float) ($ngrByUid[$fuid] ?? 0) : 0.0;
+    $giftF = $revOn2 ? orolado_money(max(0.0, $revPct2 * $ngrF)) : orolado_money($f['gift'] ?? 0);
     $list[] = [
-      'id' => (string) ($fu['publicId'] ?? 'ORO-??????'), 'uid' => (string) ($f['uid'] ?? ''),
+      'id' => (string) ($fu['publicId'] ?? 'ORO-??????'), 'uid' => $fuid,
       'at' => $t,
       'until' => $t > 0 ? $t + OROLADO_AFF_DAYS * 86400 : 0,
       'deposit' => orolado_money($f['deposit'] ?? 0),
-      'gift' => orolado_money($f['gift'] ?? 0),
+      'gift' => $giftF,
+      'ngr' => orolado_money($ngrF),
       'n' => $nDep,
       'played' => $realTrades > 0,
     ];

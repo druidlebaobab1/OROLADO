@@ -512,8 +512,43 @@
     $('affTotal').textContent = money(aff.total || 0);
     $('affEarned').textContent = money(aff.earned || 0);
     $('affListCount').textContent = String(aff.deposited || 0);
+    renderRevBox(aff.rev && aff.rev.on ? aff.rev : null);
     renderAffList();
     fitPortal();
+  }
+  // Part de revenu (NGR) : tableau de bord affilié (panneau + règles + projections + FAQ). Élastique, 12 langues.
+  function renderRevBox(rev) {
+    var main = $('affMain');
+    if (!main) return;
+    var legacy = ['.aff-big', '.aff-steps3', '.aff-ex', '.aff-rl', '.aff-paid', '.aff-proj'];
+    legacy.forEach(function (sel) { var el = main.querySelector(sel); if (el) el.style.display = rev ? 'none' : ''; });
+    var box = document.getElementById('affRevBox');
+    if (!rev) { if (box) box.style.display = 'none'; return; }
+    if (!box) { box = document.createElement('div'); box.id = 'affRevBox'; box.className = 'aff-revbox'; main.insertBefore(box, main.firstChild); }
+    box.style.display = '';
+    var pct = Number(rev.pct) || 60, hold = Number(rev.holdH) || 24, V = { pct: pct, hold: hold };
+    var avg = 50; // exemple : perte nette moyenne par ami actif et par an
+    var proj = [100, 1000, 10000].map(function (n) { return { n: n, amt: Math.round(n * avg * pct / 100) }; });
+    var faq = [['affRevQ1', 'affRevA1'], ['affRevQ2', 'affRevA2'], ['affRevQ3', 'affRevA3'], ['affRevQ4', 'affRevA4']];
+    box.innerHTML =
+      '<div class="arv-head">' +
+        '<div class="arv-kpi"><b class="g">' + pct + ' %</b><span>' + esc(t('affRevShareLabel')) + '</span></div>' +
+        '<div class="arv-kpi"><b>' + money(rev.balance || 0) + '</b><span>' + esc(t('affRevBalLabel')) + '</span></div>' +
+        '<div class="arv-kpi"><b>' + money(rev.paid || 0) + '</b><span>' + esc(t('affEarned')) + '</span></div>' +
+      '</div>' +
+      '<h3 class="arv-big">' + esc(t('affRevBig', V)) + '</h3>' +
+      '<p class="arv-sub">' + esc(t('affRevSub', V)) + '</p>' +
+      '<ul class="arv-rules">' +
+        '<li>' + esc(t('affRevR1', V)) + '</li>' +
+        '<li>' + esc(t('affRevR3')) + '</li>' +
+        '<li class="arv-safe">' + esc(t('affRevSafe')) + '</li>' +
+      '</ul>' +
+      '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
+        proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
+        '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
+      '<div class="arv-faq"><b>' + esc(t('affRevFaq')) + '</b>' +
+        faq.map(function (q) { return '<details class="arv-q"><summary>' + esc(t(q[0])) + '</summary><p>' + esc(t(q[1], V)) + '</p></details>'; }).join('') +
+      '</div>';
   }
   var affFound = null, affSearchT = 0;
   async function affServerSearch(q) {
