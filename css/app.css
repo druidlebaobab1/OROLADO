@@ -12521,11 +12521,14 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
 .sp-rcpt-s small { font-size: 11.5px; color: #64748B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sp-rcpt-s b { font-size: 14px; }
 .sp-rcpt-s em { font-style: normal; font-weight: 800; font-size: 14px; color: #4C1D95; }
-/* 2026-10-31 (propriétaire) : score final du match sur le reçu — étiquette neutre et nette, comme les
-   grandes plateformes : statut en tout petit gris + score en gras bien détaché (pas de vert, rien de collé). */
-.sp-rcpt-fs { align-self: flex-start; margin-top: 5px; display: inline-flex; align-items: center; gap: 7px; padding: 2px 9px; border-radius: 7px; background: #F1F5F9; border: 1px solid #E2E8F0; text-decoration: none; line-height: 1.5; }
+/* 2026-10-31 (propriétaire) : score final du match sur le reçu — style « scoreboard » comme les grandes
+   plateformes : statut « Terminé » en tout petit gris + score en gras BLANC sur plaque sombre, tiret bien
+   détaché (pas collé aux chiffres). Validé par le propriétaire. */
+.sp-rcpt-fs { align-self: flex-start; margin-top: 6px; display: inline-flex; align-items: center; gap: 8px; padding: 0; background: none; border: 0; text-decoration: none; line-height: 1.5; }
 .sp-rcpt-fs .fsL { font-style: normal; font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: #94A3B8; }
-.sp-rcpt-fs .fsN { font-style: normal; font-size: 13px; font-weight: 800; color: #0F172A; font-variant-numeric: tabular-nums; letter-spacing: .03em; }
+.sp-rcpt-fs .fsN { font-style: normal; display: inline-flex; align-items: center; gap: 9px; background: #0F172A; color: #fff; border-radius: 7px; padding: 3px 12px; font-weight: 800; font-size: 13px; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.sp-rcpt-fs .fsD { font-style: normal; font-weight: 600; color: rgba(255,255,255,.5); }
+.sp-rcpt-s.lost .sp-rcpt-fs .fsN { background: #1E293B; }
 .sp-rcpt-rows { margin: 8px 18px 0; padding: 10px 12px; border-radius: 14px; background: #F8FAFC; }
 .sp-rcpt-rows p { display: flex; justify-content: space-between; gap: 10px; margin: 0; padding: 5px 0; font-size: 13px; }
 .sp-rcpt-rows span { color: #64748B; }
