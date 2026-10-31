@@ -738,7 +738,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
     // Version de CETTE page, lue au moment de la vérification (la ligne qui la porte est plus bas dans la page).
     function mine() {
       try {
-        var sc = document.querySelector('script[src*="js/app.js?v=3197"]');
+        var sc = document.querySelector('script[src*="js/app.js?v=3198"]');
         return sc ? parseInt(String(sc.getAttribute('src')).split('v=')[1], 10) || 0 : 0;
       } catch (e0) { return 0; }
     }
@@ -2422,7 +2422,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
   <script src="/js/receipt.js?v=3202"></script>
   <script src="/js/back.js?v=3165"></script>
   <script src="/js/push.js?v=3130"></script>
-  <script src="/js/app.js?v=3197"></script>
+  <script src="/js/app.js?v=3198"></script>
   <script src="/js/portal.js?v=3341"></script>
   <script src="/js/live-ui.js?v=3205"></script>
   <script src="/js/live.js?v=3160"></script>
@@ -2456,7 +2456,7 @@ w.innerHTML=h;}catch(e){}})();</script>  <script>
      30 min, on compare les versions des fichiers du site à celles de la page affichée ; si le site a changé, la page se
      recharge toute seule — jamais pendant un trade ouvert, un jeu, une saisie ou une fenêtre ouverte (on réessaie plus tard). */
   (function () {
-    function sig(html) { var m = html.match(/(?:app|chart|engine|casino|indices)\.js\?v=\d+/g); return m ? m.join('|') : ''; }
+    function sig(html) { var m = html.match(/[\w-]+\.(?:js|css)\?v=\d+/g); return m ? m.join('|') : ''; }
     var mine = sig(document.documentElement.innerHTML), hiddenAt = 0, last = Date.now(), want = false;
     function busy() {
       try {
