@@ -157,6 +157,10 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 /* 2026-10-31 (propriétaire) : retiré UNIQUEMENT sur l'écran Connexion/Inscription — le décor « univers »
    (pyramide/galaxie/étoiles) du bas gênait. Ne touche aucune autre partie du site. */
 .auth-ambient{display:none!important}
+/* 2026-10-31 (propriétaire) : la bannière « Apprendre à trader » est enlevée de l'INSCRIPTION
+   (la place rendue va aux cases e-mail / mot de passe / code, et tout tient sans rapetisser) ;
+   elle reste sur la CONNEXION. */
+#screenAuth.auth-tab-register .auth-card > .auth-learn{display:none!important}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
 .auth-card{border-radius:14px;padding:18px 16px 18px}

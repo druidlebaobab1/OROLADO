@@ -1067,6 +1067,12 @@
     document.querySelectorAll('.auth-tab').forEach(function (el) {
       el.classList.toggle('on', el.dataset.tab === tab);
     });
+    // 2026-10-31 (propriétaire) : la bannière « Apprendre à trader » est retirée de l'INSCRIPTION
+    // (la place gagnée va aux cases e-mail / mot de passe / code) ; elle reste sur la CONNEXION.
+    if (auth) {
+      auth.classList.toggle('auth-tab-register', tab === 'register');
+      auth.classList.toggle('auth-tab-login', tab !== 'register');
+    }
     if ($('formLogin')) setHidden($('formLogin'), tab !== 'login');
     if ($('formRegister')) setHidden($('formRegister'), tab !== 'register');
     var pitch = $('authRealPitch');
@@ -8319,10 +8325,16 @@
       tab.addEventListener('click', function () {
         document.querySelectorAll('.auth-tab').forEach(function (tEl) { tEl.classList.remove('on'); });
         tab.classList.add('on');
+        var isReg = tab.dataset.tab === 'register';
         setHidden($('formLogin'), tab.dataset.tab !== 'login');
-        setHidden($('formRegister'), tab.dataset.tab !== 'register');
+        setHidden($('formRegister'), !isReg);
+        // 2026-10-31 : bannière « Apprendre à trader » retirée de l'inscription (gardée sur connexion),
+        // puis on réajuste pour que tout tienne sans défiler avec la place rendue.
+        var scr = $('screenAuth');
+        if (scr) { scr.classList.toggle('auth-tab-register', isReg); scr.classList.toggle('auth-tab-login', !isReg); }
         clearErrors();
-        if (tab.dataset.tab === 'register') metaTrack('Lead');
+        if (typeof pcAuthFit === 'function') { setTimeout(pcAuthFit, 20); setTimeout(pcAuthFit, 260); }
+        if (isReg) metaTrack('Lead');
       });
     });
     $('formLogin').addEventListener('submit', async function (e) {
