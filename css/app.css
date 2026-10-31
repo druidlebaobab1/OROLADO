@@ -12521,6 +12521,9 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
 .sp-rcpt-s small { font-size: 11.5px; color: #64748B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sp-rcpt-s b { font-size: 14px; }
 .sp-rcpt-s em { font-style: normal; font-weight: 800; font-size: 14px; color: #4C1D95; }
+/* 2026-10-31 (propriétaire) : score final du match sur le reçu (petite pastille verte sous le choix) */
+.sp-rcpt-fs { align-self: flex-start; margin-top: 3px; font-style: normal; font-size: 11px; font-weight: 800; letter-spacing: .02em; color: #15803D; background: #DCFCE7; border-radius: 6px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+.sp-rcpt-s.lost .sp-rcpt-fs { color: #64748B; background: #F1F5F9; }
 .sp-rcpt-rows { margin: 8px 18px 0; padding: 10px 12px; border-radius: 14px; background: #F8FAFC; }
 .sp-rcpt-rows p { display: flex; justify-content: space-between; gap: 10px; margin: 0; padding: 5px 0; font-size: 13px; }
 .sp-rcpt-rows span { color: #64748B; }
