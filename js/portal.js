@@ -580,6 +580,13 @@
           ? '<div class="apr-demo"><b>' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoText')) + '</p></div>'
           : '<div class="apr-demo apr-demo-lock"><b>🔒 ' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoLocked', { min: demoMin })) + '</p></div>') +
       '</details>' +
+      '<details class="arv-rules"><summary>' + esc(t('affRulesTitle')) + '</summary>' +
+        '<div class="arl-ok"><b>✓ ' + esc(t('affRulesOkTitle')) + '</b><p>' + esc(t('affRulesOk')) + '</p></div>' +
+        '<div class="arl-no"><b>✕ ' + esc(t('affRulesNoTitle')) + '</b>' +
+          '<ul><li>' + esc(t('affRulesNo1')) + '</li><li>' + esc(t('affRulesNo2')) + '</li><li>' + esc(t('affRulesNo3')) + '</li></ul>' +
+        '</div>' +
+        '<p class="arl-warn">⚠ ' + esc(t('affRulesWarn')) + '</p>' +
+      '</details>' +
       '<div class="arv-faq"><b>' + esc(t('affRevFaq')) + '</b>' +
         faq.map(function (q) { return '<details class="arv-q"><summary>' + esc(t(q[0])) + '</summary><p>' + esc(t(q[1], V)) + '</p></details>'; }).join('') +
       '</div>';
@@ -954,7 +961,7 @@
     var max = Number(codes.max) || 5;
     var shortLink = function (code) { return 'orolado.com/r/' + code; };
     var row = function (code) {
-      return '<div class="ac-row"><span class="ac-code" title="' + esc(codeLink(code)) + '">' + esc(shortLink(code)) + '</span>' +
+      return '<div class="ac-row"><div class="ac-ci"><b class="ac-codew">' + esc(code) + '</b><span class="ac-codelink">' + esc(shortLink(code)) + '</span></div>' +
         '<button type="button" class="ac-copy" data-code="' + esc(code) + '">' + esc(t('affCopy')) + '</button>' +
         '<button type="button" class="ac-del" data-code="' + esc(code) + '" aria-label="×">×</button></div>';
     };
