@@ -704,6 +704,10 @@
     var n2 = function (v) { return (Number(v) || 0).toFixed(2); };
     var D = betDensity(n);
     var nc = D === 4 ? 3 : D === 3 ? 2 : 1, rowH = [58, 30, 24, 36, 32][D], rows = Math.ceil(n / nc);
+    // 2026-10-31 (propriétaire) : pari simple / court avec score final → on réserve une 3e ligne pour le
+    // carré de score SOUS le choix (comme à l'écran), pour qu'il ne croise jamais un nom de match long.
+    var showScore = D === 0 && sel.some(function (s) { return Array.isArray(s.fs); });
+    if (showScore) rowH = 84;
     var HB = 96, stTop = HB, selHead = stTop + 158, selTop = selHead + 22, selEnd = selTop + rows * rowH;
     var totTop = selEnd + 18, totRow = 34, nT = bt.bst ? 6 : 5, H = totTop + nT * totRow + 112; // 2026-10-23 : + ligne « Bonus combiné »
     // très long coupon (jusqu'à 1 000 choix) : résolution réduite pour rester sous les limites des téléphones (iPhone : ≈ 16 Mpx
@@ -765,27 +769,23 @@
       g.font = '800 19px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, W - P, y + rowH / 2);
       var right = W - P - g.measureText(odd).width - 12; right -= mark(s, right, y + rowH / 2, 16);
       g.textAlign = 'left';
-      // 2026-10-31 (propriétaire) : match terminé → pastille avec LE SCORE SEUL, centré (plus de « Terminé »),
-      // couleur selon le résultat : gagné vert / perdu rouge / remboursé bleu.
+      // 2026-10-31 (propriétaire) : AGENCEMENT IDENTIQUE À L'ÉCRAN → nom du match, puis choix, puis le carré
+      // de score SOUS le choix (jamais à côté du match, donc jamais de croisement même si le match est long).
       var fsStr = Array.isArray(s.fs) ? ((+s.fs[0] || 0) + ':' + (+s.fs[1] || 0)) : '';
-      var FC = (s.r === 'won' || s.r === 'hwon') ? { bg: '#ECFDF3', bd: '#BBF7D0', n: '#15803D' }
-        : (s.r === 'lost' || s.r === 'hlost') ? { bg: '#FEF2F2', bd: '#FECACA', n: '#B91C1C' }
-        : (s.r === 'void') ? { bg: '#EFF6FF', bd: '#BFDBFE', n: '#1E40AF' }
-        : { bg: '#F1F5F9', bd: '#E2E8F0', n: '#334155' };
-      var wN = 0, padX = 15, pillH = 23, minW = 50;
-      if (fsStr) { g.font = '800 13px ' + FONT; wN = g.measureText(fsStr).width; }
-      var pillW = fsStr ? Math.max(minW, wN + padX * 2) : 0;
-      var suffix = fsStr ? (pillW + 14) : 0;
-      g.fillStyle = MUTE; g.font = '500 14px ' + FONT;
-      var mt = ell(g, s.t, Math.max(30, (right - P - 4) - suffix));
-      g.fillText(mt, P, y + 19);
+      var matchY = fsStr ? y + 18 : y + 19, pickY = fsStr ? y + 40 : y + 41;
+      g.fillStyle = MUTE; g.font = '500 14px ' + FONT; g.fillText(ell(g, s.t, right - P - 4), P, matchY);
+      g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
       if (fsStr) {
-        var px = P + g.measureText(mt).width + 14, cy = y + 19;
-        rr(g, px, cy - pillH / 2, pillW, pillH, 3); g.fillStyle = FC.bg; g.fill();
+        var FC = (s.r === 'won' || s.r === 'hwon') ? { bg: '#ECFDF3', bd: '#BBF7D0', n: '#15803D' }
+          : (s.r === 'lost' || s.r === 'hlost') ? { bg: '#FEF2F2', bd: '#FECACA', n: '#B91C1C' }
+          : (s.r === 'void') ? { bg: '#EFF6FF', bd: '#BFDBFE', n: '#1E40AF' }
+          : { bg: '#F1F5F9', bd: '#E2E8F0', n: '#334155' };
+        g.font = '800 13px ' + FONT; var wN = g.measureText(fsStr).width;
+        var boxW = Math.max(44, wN + 20), boxH = 22, bx = P, by = y + 52;
+        rr(g, bx, by, boxW, boxH, 3); g.fillStyle = FC.bg; g.fill();
         g.lineWidth = 1; g.strokeStyle = FC.bd; g.stroke();
-        g.fillStyle = FC.n; g.font = '800 13px ' + FONT; g.textAlign = 'center'; g.fillText(fsStr, px + pillW / 2, cy); g.textAlign = 'left';
+        g.fillStyle = FC.n; g.textAlign = 'center'; g.fillText(fsStr, bx + boxW / 2, by + boxH / 2); g.textAlign = 'left';
       }
-      g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, y + 41);
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {
       var y = selTop + i * rowH;
