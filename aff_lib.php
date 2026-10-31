@@ -265,7 +265,11 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
   }
   if (!$todo) return $inv;
   $inviter = (string) $inv['inviter'];
-  $res = orolado_aff_with(orolado_aff_inv_name($friendUid), static function (&$st) use ($db, $friendUid, $inviter, $deps, $end) {
+  // Part de revenu (NGR) active : le gain de celui qui invite est géré par aff_rev_lib.php
+  // (60 % de la marge réelle). On NE verse donc PLUS les 5 % par dépôt ici (sinon double paiement) ;
+  // on continue juste à noter les dépôts (pour le nombre affiché). Le cadeau de bienvenue de l'ami reste.
+  $revOn = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled();
+  $res = orolado_aff_with(orolado_aff_inv_name($friendUid), static function (&$st) use ($db, $friendUid, $inviter, $deps, $end, $revOn) {
     if (!isset($st['deps']) || !is_array($st['deps'])) $st['deps'] = [];
     // 1) Cadeau de l'ami : 5 % de son tout premier vrai dépôt, une fois.
     if (empty($st['friendPaid'])) {
@@ -278,15 +282,15 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
         if ($g >= 0.01) $st['justPaid'] = true;
       }
     }
-    // 2) Part de celui qui invite : 5 % de chaque vrai dépôt pendant 365 jours.
+    // 2) Part de celui qui invite : 5 % de chaque vrai dépôt pendant 365 jours (SAUF si NGR actif).
     foreach ($deps as $d) {
       if ($d['ts'] <= 0 || $d['ts'] > $end) continue;
       if (!empty($st['deps'][$d['id']]['paid'])) continue;
-      $g = orolado_aff_gift($d['amount']);
-      $ok = $g < 0.01 ? true : orolado_aff_pay_inviter($db, $inviter, $g, 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24));
+      $g = $revOn ? 0.0 : orolado_aff_gift($d['amount']);
+      $ok = ($revOn || $g < 0.01) ? true : orolado_aff_pay_inviter($db, $inviter, $g, 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24));
       if ($ok) {
         $st['deps'][$d['id']] = ['amount' => $d['amount'], 'gift' => $g, 'paid' => true, 'at' => date('c')];
-        if ($g >= 0.01) $st['newPays'][] = ['ref' => 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24), 'amount' => $g, 'deposit' => $d['amount'], 'at' => date('c')];
+        if (!$revOn && $g >= 0.01) $st['newPays'][] = ['ref' => 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24), 'amount' => $g, 'deposit' => $d['amount'], 'at' => date('c')];
       }
     }
     $earned = 0.0;

@@ -242,5 +242,19 @@ check('sans le drapeau : pas de bloc rev', (function () {
   return empty($x['rev']);
 })());
 
+echo "11) ANTI DOUBLE-PAIEMENT : via orolado_aff_status, seul le 60 % NGR est versé (pas le vieux 5 %)\n";
+$credits = [];
+reset_db();
+mkuser('inv', 'inv@g.com'); mkuser('f1', 'f1@g.com');
+$code = (string) orolado_aff_status(load_db(), load_db()['users']['inv'])['code'];
+orolado_aff_attach(load_db(), 'f1', $code);
+deposit('f1', 100, $OLD); bet('f1', 100, false, $OLD);
+for ($i = 0; $i < 4; $i++) orolado_aff_status(load_db(), load_db()['users']['inv']); // chemin réel (settle + rev_run)
+check('aucun versement « aff_ » (ancien 5 %) à l\'inviteur', abs(paid_to($credits, 'inv', 'aff_')) < 0.001, (string) paid_to($credits, 'inv', 'aff_'));
+check('seulement « affrev_ » = 60 $ (NGR)', abs(paid_to($credits, 'inv', 'affrev_') - 60) < 0.001, (string) paid_to($credits, 'inv', 'affrev_'));
+check('total versé à l\'inviteur = 60 $ (pas 65)', abs(paid_to($credits, 'inv') - 60) < 0.001, (string) paid_to($credits, 'inv'));
+// l'ami garde son cadeau de bienvenue (5 % du 1er dépôt), payé par OROLADO
+check('l\'ami reçoit bien son cadeau de bienvenue 5 $', abs(paid_to($credits, 'f1', 'adm_ami_') - 5) < 0.001, (string) paid_to($credits, 'f1', 'adm_ami_'));
+
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
