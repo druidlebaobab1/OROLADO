@@ -513,6 +513,7 @@
     $('affEarned').textContent = money(aff.earned || 0);
     $('affListCount').textContent = String(aff.deposited || 0);
     renderRevBox(aff.rev && aff.rev.on ? aff.rev : null);
+    renderAffCodes();
     renderAffList();
     fitPortal();
   }
@@ -888,8 +889,7 @@
     renderAffList();
     fitPortal();
   }
-  async function copyLink() {
-    var link = affLink();
+  async function copyText(link) {
     if (!link) return false;
     try { await navigator.clipboard.writeText(link); return true; } catch (e) { /* repli ci-dessous */ }
     try {
@@ -898,6 +898,48 @@
       document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
       return true;
     } catch (e2) { return false; }
+  }
+  async function copyLink() { return copyText(affLink()); }
+  function codeLink(code) { return 'https://orolado.com/r/' + code; }
+  // Codes promo : code par défaut + jusqu'à 5 codes personnalisés. Créer / copier / supprimer.
+  function renderAffCodes() {
+    var main = $('affMain');
+    if (!main || !aff || !aff.enabled || aff.guest) { var b0 = document.getElementById('affCodesBox'); if (b0) b0.style.display = 'none'; return; }
+    var box = document.getElementById('affCodesBox');
+    if (!box) {
+      box = document.createElement('div'); box.id = 'affCodesBox'; box.className = 'aff-codes';
+      var anchor = $('affShare');
+      if (anchor && anchor.parentNode === main) main.insertBefore(box, anchor.nextSibling); else main.appendChild(box);
+    }
+    box.style.display = '';
+    var codes = aff.codes || { "default": aff.code, custom: [], max: 5 };
+    var def = codes["default"] || aff.code || '';
+    var custom = codes.custom || [];
+    var max = Number(codes.max) || 5;
+    var row = function (code, canDel) {
+      return '<div class="ac-row"><span class="ac-code" title="' + esc(codeLink(code)) + '">r/' + esc(code) + '</span>' +
+        '<button type="button" class="ac-copy" data-code="' + esc(code) + '">' + esc(t('affCopy')) + '</button>' +
+        (canDel ? '<button type="button" class="ac-del" data-code="' + esc(code) + '" aria-label="×">×</button>' : '') + '</div>';
+    };
+    var addForm = custom.length < max ?
+      '<div class="ac-add"><input id="affCodeInput" type="text" maxlength="16" autocomplete="off" spellcheck="false" placeholder="' + esc(t('affCodeNewPh')) + '">' +
+      '<button type="button" id="affCodeAddBtn" class="btn-gold">' + esc(t('affCodeAdd')) + '</button></div>' : '';
+    box.innerHTML = '<b class="ac-h">' + esc(t('affCodesTitle')) + ' <i>' + custom.length + '/' + max + '</i></b>' +
+      '<div class="ac-list">' + (def ? row(def, false) : '') + custom.map(function (c) { return row(c, true); }).join('') + '</div>' +
+      addForm + '<p class="ac-msg" id="affCodeMsg" hidden></p>' +
+      '<p class="ac-warn">' + esc(t('affCodeWarn')) + '</p>';
+  }
+  async function affCodeDo(action, code) {
+    if (!D6.Api || !D6.Api.post) return;
+    var msg = $('affCodeMsg');
+    try {
+      var r = await D6.Api.post(action, { code: code }, 12000);
+      if (r && r.codes) { aff.codes = r.codes; renderAffCodes(); }
+      if (r && r.ok === false && msg) {
+        var reason = r.reason === 'taken' ? t('affCodeTaken') : (r.reason === 'bad' ? t('affCodeBad') : (r.reason === 'max' ? t('affCodeMaxMsg', { max: (aff.codes && aff.codes.max) || 5 }) : (r.reason === 'reserved' || r.reason === 'default' ? t('affCodeTaken') : '')));
+        if (reason) { msg.textContent = reason; msg.hidden = false; }
+      } else if (msg) { msg.hidden = true; }
+    } catch (e) { /* ignore */ }
   }
   // Clic sur un lien d'ami (orolado.com/r/CODE) : envoyé une fois ; le serveur filtre par téléphone et par jour.
   function sendClick() {
@@ -932,6 +974,15 @@
       var win = null;
       try { win = window.open(wa, '_blank'); if (win) win.opener = null; } catch (e) { win = null; }
       if (!win) location.href = wa;
+    });
+    // Codes promo : copier / supprimer (délégation, car la liste se redessine) + créer.
+    if ($('affMain')) $('affMain').addEventListener('click', async function (e) {
+      var cp = e.target.closest ? e.target.closest('.ac-copy') : null;
+      if (cp) { if (needAccount()) return; var c = cp.getAttribute('data-code'); if (await copyText(codeLink(c))) { var o = cp.textContent; cp.textContent = t('affCopied'); cp.classList.add('done'); setTimeout(function () { cp.textContent = o; cp.classList.remove('done'); }, 1500); } return; }
+      var dl = e.target.closest ? e.target.closest('.ac-del') : null;
+      if (dl) { if (needAccount()) return; if (window.confirm(t('affCodeDelAsk'))) affCodeDo('affCodeDel', dl.getAttribute('data-code')); return; }
+      var ad = e.target.closest ? e.target.closest('#affCodeAddBtn') : null;
+      if (ad) { if (needAccount()) return; var inp = $('affCodeInput'); var v = inp ? inp.value : ''; if (v && v.trim()) { affCodeDo('affCodeNew', v.trim()); if (inp) inp.value = ''; } return; }
     });
     if ($('affMore')) $('affMore').addEventListener('click', function () { showAffList(true); });
     // v2437 — recherche (à chaque lettre) et tri.
