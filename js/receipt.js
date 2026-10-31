@@ -765,28 +765,28 @@
       g.font = '800 19px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, W - P, y + rowH / 2);
       var right = W - P - g.measureText(odd).width - 12; right -= mark(s, right, y + rowH / 2, 16);
       g.textAlign = 'left';
-      // 2026-10-31 (propriétaire, validé — style 2) : match terminé → score final en texte simple
-      // « Terminé · 0 – 6 » : statut petit gris · score foncé gras, tiret détaché (pas de cadre).
-      var fsA = Array.isArray(s.fs) ? [(+s.fs[0] || 0), (+s.fs[1] || 0)] : null;
-      var fsLab = fsA ? String(x.ftS || '').toUpperCase() : '';
-      var wLab = 0, wSep = 0, w0 = 0, wd = 0, w2 = 0, g1 = 6, dpad = 4;
-      if (fsA) {
-        g.font = '800 10px ' + FONT; wLab = fsLab ? g.measureText(fsLab).width : 0;
-        g.font = '700 13px ' + FONT; wSep = g.measureText('·').width;
-        g.font = '800 14px ' + FONT; w0 = g.measureText(String(fsA[0])).width; w2 = g.measureText(String(fsA[1])).width;
-        g.font = '600 14px ' + FONT; wd = g.measureText('–').width;
-      }
-      var suffix = fsA ? ((wLab ? wLab + g1 : 0) + wSep + g1 + (w0 + dpad + wd + dpad + w2) + 14) : 0;
+      // 2026-10-31 (propriétaire, validé — style 3) : match terminé → pastille « Terminé 1:2 », couleur selon
+      // le résultat : gagné vert / perdu rouge / remboursé bleu.
+      var fsStr = Array.isArray(s.fs) ? ((+s.fs[0] || 0) + ':' + (+s.fs[1] || 0)) : '';
+      var fsLab = fsStr ? String(x.ftS || '').toUpperCase() : '';
+      var FC = (s.r === 'won' || s.r === 'hwon') ? { bg: '#ECFDF3', bd: '#BBF7D0', l: '#16A34A', n: '#15803D' }
+        : (s.r === 'lost' || s.r === 'hlost') ? { bg: '#FEF2F2', bd: '#FECACA', l: '#DC2626', n: '#B91C1C' }
+        : (s.r === 'void') ? { bg: '#EFF6FF', bd: '#BFDBFE', l: '#2563EB', n: '#1E40AF' }
+        : { bg: '#F1F5F9', bd: '#E2E8F0', l: '#94A3B8', n: '#334155' };
+      var wLab = 0, wN = 0, g1 = 7, padX = 11, pillH = 22;
+      if (fsStr) { g.font = '800 10px ' + FONT; wLab = fsLab ? g.measureText(fsLab).width : 0; g.font = '800 13px ' + FONT; wN = g.measureText(fsStr).width; }
+      var pillW = fsStr ? (padX * 2 + (wLab ? wLab + g1 : 0) + wN) : 0;
+      var suffix = fsStr ? (pillW + 14) : 0;
       g.fillStyle = MUTE; g.font = '500 14px ' + FONT;
       var mt = ell(g, s.t, Math.max(30, (right - P - 4) - suffix));
       g.fillText(mt, P, y + 19);
-      if (fsA) {
-        var fx = P + g.measureText(mt).width + 14, cy = y + 19;
-        if (fsLab) { g.fillStyle = '#94A3B8'; g.font = '800 10px ' + FONT; g.fillText(fsLab, fx, cy); fx += wLab + g1; }
-        g.fillStyle = '#CBD5E1'; g.font = '700 13px ' + FONT; g.fillText('·', fx, cy); fx += wSep + g1;
-        g.fillStyle = INK; g.font = '800 14px ' + FONT; g.fillText(String(fsA[0]), fx, cy); fx += w0 + dpad;
-        g.fillStyle = '#94A3B8'; g.font = '600 14px ' + FONT; g.fillText('–', fx, cy); fx += wd + dpad;
-        g.fillStyle = INK; g.font = '800 14px ' + FONT; g.fillText(String(fsA[1]), fx, cy);
+      if (fsStr) {
+        var px = P + g.measureText(mt).width + 14, cy = y + 19;
+        rr(g, px, cy - pillH / 2, pillW, pillH, pillH / 2); g.fillStyle = FC.bg; g.fill();
+        g.lineWidth = 1; g.strokeStyle = FC.bd; g.stroke();
+        var tx = px + padX;
+        if (fsLab) { g.fillStyle = FC.l; g.font = '800 10px ' + FONT; g.fillText(fsLab, tx, cy + 0.5); tx += wLab + g1; }
+        g.fillStyle = FC.n; g.font = '800 13px ' + FONT; g.fillText(fsStr, tx, cy + 0.5);
       }
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, y + 41);
     });
