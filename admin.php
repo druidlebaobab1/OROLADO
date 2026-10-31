@@ -730,10 +730,17 @@ function admin_list_payload(string $view, array $req): array {
   $actions = false;
 
   $userCols = ['ID', 'Nom', 'E-mail', 'Téléphone', 'Pays', 'Inscrit', 'Via', 'Solde réel'];
-  $asUser = static function (array $p) use ($userCols): array {
+  // Petits signes affiliation (discrets) : 🤝 = a invité des amis · 🔗 = venu par un lien/code d'affiliation.
+  $affSet = [];
+  $refMap = [];
+  if (function_exists('orolado_aff_index_ids')) foreach (orolado_aff_index_ids() as $aid) $affSet[(string) $aid] = true;
+  if (function_exists('orolado_aff_referred_map')) $refMap = orolado_aff_referred_map();
+  $asUser = static function (array $p) use ($userCols, $affSet, $refMap): array {
+    $pid = (string) ($p['id'] ?? '');
+    $mark = (isset($affSet[$pid]) ? ' 🤝' : '') . (isset($refMap[$pid]) ? ' 🔗' : '');
     return [
       'cells' => [
-        (string) ($p['publicId'] ?? ''),
+        (string) ($p['publicId'] ?? '') . $mark,
         (string) ($p['name'] ?? '—'),
         (string) ($p['email'] ?? ''),
         admin_phone_cell($p),
@@ -814,7 +821,7 @@ function admin_list_payload(string $view, array $req): array {
       $p = admin_enrich_user_row($p, $vaults);
       $rows[] = $asUser($p);
     }
-    $summary = $total . ' joueur(s)' . ($wantC !== '' ? ' · ' . $wantC : '') . (count($countries) > 1 && $wantC === '' ? ' · ' . count($countries) . ' pays' : '');
+    $summary = $total . ' joueur(s)' . ($wantC !== '' ? ' · ' . $wantC : '') . (count($countries) > 1 && $wantC === '' ? ' · ' . count($countries) . ' pays' : '') . ' · 🤝 a invité · 🔗 venu par affiliation';
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'countries' => $countries];
   }
 

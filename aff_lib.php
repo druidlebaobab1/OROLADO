@@ -123,6 +123,11 @@ function orolado_aff_attach(array $db, string $newUid, string $code): bool {
     if (!isset($st['ids']) || !is_array($st['ids'])) $st['ids'] = [];
     if (!in_array($inviter, $st['ids'], true)) $st['ids'][] = $inviter;
   });
+  // Index des FILLEULS (joueurs venus par un lien/code d'affiliation) : petit signe admin + qui a parrainé qui.
+  orolado_aff_with('index_referred', static function (&$st) use ($newUid, $inviter) {
+    if (!isset($st['by']) || !is_array($st['by'])) $st['by'] = [];
+    if (!isset($st['by'][$newUid])) $st['by'][$newUid] = $inviter;
+  });
   return true;
 }
 
@@ -137,6 +142,12 @@ function orolado_aff_is_affiliate(string $uid): bool {
 function orolado_aff_index_ids(): array {
   $st = orolado_aff_read('index_aff');
   return is_array($st['ids'] ?? null) ? array_values(array_unique(array_map('strval', $st['ids']))) : [];
+}
+
+/** Map uid filleul → uid parrain (joueurs venus par un lien/code d'affiliation). Pour les petits signes admin. */
+function orolado_aff_referred_map(): array {
+  $st = orolado_aff_read('index_referred');
+  return is_array($st['by'] ?? null) ? $st['by'] : [];
 }
 
 /**

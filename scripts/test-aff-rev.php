@@ -282,6 +282,10 @@ check('inv1 : NGR 100 $, dû 60 $, versé 0 $ (pas encore ouvert son portail)', 
 check('inv2 : 1 gros déposeur (≥ 500 $) repéré', $r2 && $r2['big'] === 1, $r2 ? ('big=' . $r2['big']) : 'nul');
 check('inv2 : pas de drapeau (1 seul ami, pas de grappe)', $r2 && $r2['watch'] === false);
 check('les affiliés « à regarder » remontent en premier', $ov['rows'][0]['uid'] === 'inv1');
+$refMap = orolado_aff_referred_map();
+check('filleul a1 est marqué « venu par affiliation » (parrain inv1)', ($refMap['a1'] ?? '') === 'inv1', (string) ($refMap['a1'] ?? '—'));
+check('filleul b1 → parrain inv2', ($refMap['b1'] ?? '') === 'inv2');
+check('solo (normal) n\'est PAS dans les filleuls', !isset($refMap['solo']));
 
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
