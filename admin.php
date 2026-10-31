@@ -1715,8 +1715,25 @@ function admin_profile_payload(string $uid): array {
       'at' => $o['created_at'] ?? '',
     ];
   }
+  // Affiliation (part de revenu) : badge + chiffres si ce joueur a invité des amis.
+  $affBox = null;
+  if (function_exists('orolado_aff_is_affiliate') && orolado_aff_is_affiliate($uid) && function_exists('orolado_aff_rev_wallet')) {
+    $aw = orolado_aff_rev_wallet(load_db(), $uid);
+    $dep = 0;
+    foreach ((array) ($aw['friends'] ?? []) as $fr) if (($fr['deposits'] ?? 0) > 0.009) $dep++;
+    $affBox = [
+      'friends' => (int) ($aw['friendsCount'] ?? 0),
+      'deposited' => $dep,
+      'pct' => (int) ($aw['pct'] ?? 60),
+      'ngr' => (float) ($aw['ngr'] ?? 0),
+      'entitled' => (float) ($aw['entitled'] ?? 0),
+      'paid' => (float) ($aw['withdrawn'] ?? 0),
+      'balance' => (float) ($aw['balance'] ?? 0),
+    ];
+  }
   return [
     'ok' => true,
+    'aff' => $affBox,
     'user' => [
       'id' => $uid,
       'publicId' => (string) ($p['publicId'] ?? ''),
@@ -3941,6 +3958,7 @@ async function openUser(uid) {
     '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
     '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(fdate(u.createdAt))+'</strong></p>'+
     '<p>Solde réel : <strong>$ '+esc(u.real)+'</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
+    (j.aff ? '<div class="sus-box watch" style="border-color:rgba(43,212,154,.6);background:rgba(43,212,154,.12)">🤝 Affilié · '+esc(j.aff.friends)+' ami(s), '+esc(j.aff.deposited)+' ont déposé · NGR gardé '+money(j.aff.ngr)+' · dû '+esc(j.aff.pct)+'% = '+money(j.aff.entitled)+' · versé '+money(j.aff.paid)+' · solde '+money(j.aff.balance)+'</div>' : '')+
     (j.suspect ? '<div class="sus-box'+(j.suspectLevel === 'orange' ? ' watch' : '')+'">'+(j.suspectLevel === 'orange' ? 'À suivre : ' : 'Ne pas payer sans vérifier : ')+esc(j.suspect)+'</div>' : '')+
     (j.totals ? '<div class="totals">'+
       '<div style="background:linear-gradient(180deg,rgba(34,197,94,.28),rgba(22,163,74,.12));border:1px solid rgba(74,222,128,.75);box-shadow:0 0 12px rgba(34,197,94,.35)"><span style="color:#BBF7D0">Solde réel actuel</span><b style="color:#4ADE80;font-size:1.25em">'+money(u.real)+'</b></div>'+
