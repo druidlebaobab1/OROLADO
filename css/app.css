@@ -6396,6 +6396,12 @@ html body #portalModal .gift-scene .gs-shoot.s2{top:62%;animation-delay:4.4s;ani
 html body #portalModal#portalModal .bon-head{flex-direction:column!important;justify-content:center!important;align-items:center!important}
 html body #portalModal#portalModal .bon-head .top-timer{margin:0 auto!important;align-self:center!important;justify-content:center}
 @media (prefers-reduced-motion: reduce){html body #portalModal .gift-scene *{animation:none!important}}
+/* v3408 (propriétaire) : Cadeaux plus léger — on retire les grosses planètes qui barrent le texte et on arrête les
+   simulations (planètes/étoiles filantes qui défilent) pour ne pas peser sur le site ; on garde juste la nébuleuse fixe. */
+html body #portalModal .gift-scene .gs-gal,html body #portalModal .gift-scene .gs-planet,html body #portalModal .gift-scene .gs-ring,html body #portalModal .gift-scene .gs-moon,html body #portalModal .gift-scene .gs-shoot{display:none!important}
+html body #portalModal .gift-scene *{animation:none!important}
+/* « Grande jauge » : on enlève la petite barre du bas qui ressemble à un chargement. */
+html body #portalModal .gh-mini{display:none!important}
 /* Téléphone couché : scène plus petite. */
 @media (orientation:landscape) and (max-height:500px){html body #portalModal .gift-scene{flex-basis:110px!important;min-height:110px}}
 html body #portalModal#portalModal .bon-head{flex-wrap:nowrap!important}
