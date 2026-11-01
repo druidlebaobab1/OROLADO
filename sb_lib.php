@@ -138,6 +138,18 @@ function sb_config(): array {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig11'])) return true; foreach (['mMain', 'mSide', 'mExotic', 'mOther', 'mLive'] as $k) $s[$k] = 4; $s['mig11'] = 1; return true; });
     $c = sb_read('config.json');
   }
+  // 2026-11-01 (propriétaire : « Très fort » — cotes trop proches du marché, les joueurs gagnaient trop) : une seule fois,
+  // marge principale 15 %, secondaires 20 %, exotiques/scores exacts 25 %, direct 15 %, autres sports 15 %. L'admin peut
+  // encore la changer ensuite (réglage dans l'admin, de 1 à 40 %). Prend effet au prochain rafraîchissement des cotes.
+  if (empty($c['mig12'])) {
+    sb_with('config.json', static function (array &$s) {
+      if (!empty($s['mig12'])) return true;
+      $s['mMain'] = 15; $s['mSide'] = 20; $s['mExotic'] = 25; $s['mLive'] = 15; $s['mOther'] = 15;
+      $s['mig12'] = 1;
+      return true;
+    });
+    $c = sb_read('config.json');
+  }
   // 2026-10-22 (propriétaire : « avec les contrôles de 15 s, active tout ») : une seule fois, direct sur TOUS les championnats
   if (empty($c['mig10'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig10'])) return true; $s['liveAll'] = true; $s['mig10'] = 1; return true; });
