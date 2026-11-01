@@ -950,7 +950,7 @@
   // 2026-11-01 (propriétaire : « des vrais logos réalistes comme les grands sites ») — PHOTOS : certains jeux ont une
   // vraie image (img/games/<clé>.webp) au lieu d'un dessin. On force ici (passe AVANT tous les setObj/addObj, quel que
   // soit l'ordre de chargement). Même cadre rond que penalty.webp. Ajouter une clé + 2 couleurs d'anneau = logo-photo.
-  var PHOTO_V = '3365';
+  var PHOTO_V = '3368';
   var PHOTO = {
     acorncatch:['#FDBA74','#7C2D12'], airraid:['#FCA5A5','#7F1D1D'], airstrike:['#FDE68A','#78350F'], alienwave:['#BAE6FD','#0C4A6E'], applecatch:['#C4B5FD','#312E81'], archer:['#86EFAC','#14532D'],
     balloonup:['#93C5FD','#1E3A8A'], basket:['#F9A8D4','#831843'], beattap:['#A5B4FC','#312E81'], beefly:['#FDE047','#854D0E'], blockfall:['#67E8F9','#155E75'], brickbreak:['#FCA5A5','#7C2D12'],
