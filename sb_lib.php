@@ -150,6 +150,17 @@ function sb_config(): array {
     });
     $c = sb_read('config.json');
   }
+  // 2026-11-01 (propriétaire : « verrouille à 10 % ») : affichage admin aligné sur la marge verrouillée (SB_MARGE_FIXE = 10 %).
+  // La vraie marge est de toute façon forcée dans sb_margin / sb_o_margin — ce réglage n'est plus qu'indicatif.
+  if (empty($c['mig13'])) {
+    sb_with('config.json', static function (array &$s) {
+      if (!empty($s['mig13'])) return true;
+      foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther'] as $k) $s[$k] = 10;
+      $s['mig13'] = 1;
+      return true;
+    });
+    $c = sb_read('config.json');
+  }
   // 2026-10-22 (propriétaire : « avec les contrôles de 15 s, active tout ») : une seule fois, direct sur TOUS les championnats
   if (empty($c['mig10'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig10'])) return true; $s['liveAll'] = true; $s['mig10'] = 1; return true; });
@@ -312,12 +323,11 @@ function sb_group_size(string $fam): ?int {
 }
 function sb_expected(string $fam): float { return in_array($fam, ['dc', 'htdc', '2hdc'], true) ? 2.0 : 1.0; }
 function sb_min_books(string $fam): int { return in_array($fam, ['1x2', 'dc', 'ou', 'btts'], true) ? 3 : 2; }
-function sb_margin(string $fam, array $cfg): float {
-  if (in_array($fam, ['1x2', 'dc', 'dnb', 'ou', 'btts'], true)) $m = $cfg['mMain'];
-  elseif (in_array($fam, ['cs', 'htcs', '2hcs', 'htft', 'eg', 'rbtts', 'rou', 'ags', 'fgs', 'lgs'], true)) $m = $cfg['mExotic'];
-  else $m = $cfg['mSide'];
-  return max(0.01, min(0.4, (float) $m / 100));
-}
+// 2026-11-01 (propriétaire : « règle une bonne fois pour toutes et verrouille à 10 % ») — marge maison VERROUILLÉE
+// EN DUR à 10 %, pour l'avant-match ET le direct. Elle ne dépend PLUS du réglage ni des anciennes « migrations » :
+// elle ne peut donc plus jamais redescendre (fini le retour à 4 %). Pour la changer un jour : modifier SB_MARGE_FIXE ici.
+const SB_MARGE_FIXE = 0.10;
+function sb_margin(string $fam, array $cfg): float { return SB_MARGE_FIXE; }
 /**
  * 2026-10-23 (propriétaire : « tout à 4 %, la marge surtout sur le favori, comme les grands ») — cote d'un choix de probabilité $p
  * (sans marge) dans un groupe de somme $exp (1, ou 2 pour la double chance) dont la somme des p² vaut $sq : la marge totale vaut
@@ -1136,6 +1146,9 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
   // 2026-11-01 (propriétaire : « Très fort ») : une seule fois, TOUTES les cotes relues tout de suite avec la nouvelle
   // marge (principal 15 %, secondaires 20 %, exotiques 25 %, direct 15 %) — sinon elles ne changeraient qu'au fil des rafraîchissements.
   if (empty($st['rp4'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp4'])) return true; $s['od'] = []; $s['rp4'] = 1; return true; }); $st = sb_state(); }
+  // 2026-11-01 (propriétaire : « verrouille à 10 % ») : marge VERROUILLÉE en dur (SB_MARGE_FIXE) → on relit TOUTES les cotes
+  // une dernière fois pour qu'elles passent toutes à 10 %.
+  if (empty($st['rp5'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp5'])) return true; $s['od'] = []; $s['rp5'] = 1; return true; }); $st = sb_state(); }
   $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($mid, 21600) + array_fill_keys($lat, 43200); // J+3…J+7 : 6 h ; J+8…J+14 : 12 h
   foreach (array_merge([$d0, $dm1, $d1, $d2], $far) as $day) {
     if ($calls >= $max) break;
@@ -2209,7 +2222,7 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
   }
   [$h, $a] = [(int) ($sc[0] ?? 0), (int) ($sc[1] ?? 0)];
   $mn = (int) ($r['fixture']['status']['elapsed'] ?? 0);
-  $m = max(0.01, min(0.4, (float) $cfg['mLive'] / 100));
+  $m = SB_MARGE_FIXE; // 2026-11-01 (propriétaire) : marge du direct VERROUILLÉE à 10 % (ne dépend plus du réglage)
   $out = [];
   foreach ($raw as $mk => $ks) {
     $fam = sb_fam($mk); $x = (float) substr($mk, strlen($fam) + 1);
@@ -3087,7 +3100,7 @@ function sb_o_parse_bet(string $sp, string $name, array $values, array $names, a
   return $out;
 }
 /** Marge des autres sports : réglage « mOther » pour tous leurs marchés (2026-10-22 : 2,5 %). */
-function sb_o_margin(string $fam, array $cfg): float { return max(0.01, min(0.4, (float) $cfg['mOther'] / 100)); }
+function sb_o_margin(string $fam, array $cfg): float { return SB_MARGE_FIXE; } // 2026-11-01 (propriétaire) : autres sports VERROUILLÉS à 10 %
 /** Bookmakers d'un match → nos marchés mk => [[k, cote], …] (même formule et mêmes contrôles que le football). */
 function sb_o_markets(string $sp, array $bookmakers, array $cfg, array $names, array &$unk): array {
   $sum = []; $cnt = [];
