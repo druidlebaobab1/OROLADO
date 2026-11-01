@@ -1061,12 +1061,9 @@
   function glyphSvg(e, gid, size) {
     return emblemSvg(e.glyph, e.accent, e.planet && e.planet.p1, gid, size);
   }
-  /* logo-photo réaliste de l'indice (2026-11) : posé PAR-DESSUS le dessin SVG (qui reste le repli instantané).
-     L'image est en lazy-load : seules les vignettes visibles de la barre se chargent → zéro poids sur l'écran de trading. */
-  var IDX_PV = '3374';
-  function phImg(id) {
-    return '<img class="idx-ph" loading="lazy" decoding="async" src="img/indices/' + id + '.webp?v=' + IDX_PV + '" alt="" aria-hidden="true">';
-  }
+  /* 2026-11 (propriétaire : « enlève le rond noir autour des indices, garde les dessins simples comme avant ») :
+     on NE pose plus la photo par-dessus l'emblème ; on garde uniquement le dessin SVG d'origine (léger, net, pas de cadre noir). */
+  function phImg(id) { return ''; }
   // Les 10 marchés d'origine : mêmes symboles qu'avant, redessinés dans le même style (remplacés au démarrage).
   var ORIG = {
     v100: ['flame', '#2BE07A'], stable: ['cobra', '#FF2D75'], apex500: ['lion', '#F5B83D'], horizon50: ['pyramid', '#FF9A1F'],
