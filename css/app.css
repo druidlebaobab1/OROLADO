@@ -1089,7 +1089,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .drawer-backdrop{position:fixed;inset:0;background:rgba(4,8,16,.86);z-index:200;opacity:0;pointer-events:none;
   transition:opacity .22s ease;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .drawer-backdrop.on{opacity:1;pointer-events:auto}
-.drawer{position:fixed;top:0;right:0;width:min(400px,100vw);height:100dvh;max-height:100svh;background:#0B0E14;
+.drawer{position:fixed;top:0;right:0;width:min(400px,100vw);height:100dvh;max-height:100svh;background:#0e0c09;
   border-left:1px solid rgba(245,158,11,.18);z-index:201;padding:0 0 env(safe-area-inset-bottom,0px);
   transform:translate3d(100%,0,0);transition:transform .28s cubic-bezier(.22,.8,.24,1);overflow:hidden;
   display:flex;flex-direction:column;gap:0;box-shadow:-24px 0 60px rgba(0,0,0,.55);will-change:transform;
@@ -4789,7 +4789,7 @@ html body #histSheetTitle,html body #financeModal .modal-title{flex:0 1 auto!imp
 html body #withdrawModal .wd-modal-head{justify-content:center!important;position:relative!important}
 html body #withdrawModal .wd-modal-head .modal-title{flex:0 1 auto!important;width:auto!important;max-width:calc(100% - 110px)!important;margin:0 auto!important}
 html body #depositModal .modal-head-row .modal-title,html body #depositModal > .modal-box > .modal-title{flex:0 1 auto!important;width:auto!important;max-width:calc(100% - 58px)!important}
-html body #drawerProfile .drawer-item:not(#btnWithdraw):not(.drawer-logout){border:1px solid rgba(56,189,248,.28)!important;border-radius:12px!important;background:linear-gradient(180deg,rgba(56,189,248,.06),rgba(56,189,248,.01))!important;box-shadow:0 0 6px rgba(56,189,248,.14)!important;margin-bottom:6px!important}
+html body #drawerProfile .drawer-item:not(#btnWithdraw):not(.drawer-logout){border:1px solid rgba(242,193,78,.3)!important;border-radius:12px!important;background:linear-gradient(180deg,rgba(242,193,78,.07),rgba(242,193,78,.01))!important;box-shadow:0 0 6px rgba(242,193,78,.12)!important;margin-bottom:6px!important}
 html body #drawerProfile .drawer-item:not(#btnWithdraw):not(.drawer-logout):active{border-color:rgba(56,189,248,.7)!important;box-shadow:0 0 12px rgba(56,189,248,.4)!important}
 html body #drawerProfile #btnWithdraw{background:linear-gradient(180deg,rgba(247,147,26,.32),rgba(194,65,12,.14))!important;border:1px solid rgba(247,147,26,.8)!important;border-radius:12px!important;box-shadow:0 0 14px rgba(247,147,26,.38),inset 0 0 10px rgba(247,147,26,.12)!important;margin-bottom:6px!important}
 html body #drawerProfile #btnWithdraw .di-label{color:#FFD9A8!important;font-weight:800!important}
@@ -7008,7 +7008,7 @@ html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab-ico{filter:drop
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-addr-row{background:rgba(10,8,40,.45)!important;border:1px dashed rgba(251,191,36,.6)!important}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-addr-row code{color:#B9FFE0!important}
 /* Menu : chaque icône dans une mini-planète de sa couleur, lignes vitrées. */
-html body #drawerProfile#drawerProfile#drawerProfile .drawer-item{--c:125,211,252;background:linear-gradient(90deg,rgba(var(--c),.18),rgba(var(--c),.04) 70%)!important;
+html body #drawerProfile#drawerProfile#drawerProfile .drawer-item{--c:242,193,78;background:linear-gradient(90deg,rgba(var(--c),.18),rgba(var(--c),.04) 70%)!important;
   border:1px solid rgba(var(--c),.42)!important;color:#fff!important;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset!important;transition:transform .12s,box-shadow .2s}
 html body #drawerProfile#drawerProfile#drawerProfile .drawer-item:active{transform:scale(.98);box-shadow:0 0 16px rgba(var(--c),.45)!important}
 html body #drawerProfile#drawerProfile#drawerProfile #btnFinance{--c:56,189,248}
