@@ -10503,9 +10503,9 @@ html[dir="rtl"] #casinoModal .cs-back svg{transform:scaleX(-1)}
 #casinoModal .cs-wallet .cs-join{border:0;border-radius:12px;padding:8px 14px;font:800 13px system-ui;color:#2a1a00;background:linear-gradient(180deg,#FFD24A,#F5A700)}
 /* onglets Jeux / Paris en haut */
 #casinoModal .cs-tabs2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-#casinoModal .cs-tabs2 button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:0;border-radius:14px;color:#C9CFE6;font:800 15px "Plus Jakarta Sans",system-ui,sans-serif;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#casinoModal .cs-tabs2 button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border:0;border-radius:14px;color:#B8AC8C;font:800 15px "Plus Jakarta Sans",system-ui,sans-serif;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(242,193,78,.14)}
 #casinoModal .cs-tabs2 button .cs-ico{width:28px;height:28px}
-#casinoModal .cs-tabs2 button.on{color:#fff;background:linear-gradient(135deg,rgba(168,85,247,.45),rgba(236,72,153,.3));box-shadow:inset 0 0 0 1px rgba(255,210,122,.55)}
+#casinoModal .cs-tabs2 button.on{color:#2a1d04;background:linear-gradient(180deg,#F7D774,#C8912E);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
 /* grille : icônes « flottantes » (sans cadre), nom dessous */
 html body #casinoModal #csView.cs-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px 10px!important;padding:4px 0 10px}
 @media (min-width:600px){html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
