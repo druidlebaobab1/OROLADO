@@ -7437,7 +7437,7 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .wi
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row{
     grid-column:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:2px!important;
     height:44px!important;min-height:44px!important;max-height:44px!important;padding:0 3px!important;box-sizing:border-box!important;border-radius:12px!important;
-    background:linear-gradient(180deg,rgba(245,197,81,.14),rgba(245,197,81,.04))!important;border:1px solid rgba(245,197,81,.45)!important;width:auto!important}
+    background:linear-gradient(180deg,rgba(56,189,248,.14),rgba(56,189,248,.04))!important;border:1px solid rgba(125,211,252,.55)!important;width:auto!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip:not(.on){display:none!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on{
     flex:1 1 auto!important;min-width:0!important;height:36px!important;min-height:36px!important;max-height:36px!important;padding:0 2px!important;
@@ -7445,7 +7445,7 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .wi
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on svg{display:none!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav{
     display:grid!important;place-items:center;flex:0 0 26px;width:26px;height:26px;padding:0;border-radius:50%;border:0;cursor:pointer;
-    background:radial-gradient(circle at 32% 28%,#FFF3C4,#F5C451 50%,#B8780C);box-shadow:0 0 8px rgba(245,197,81,.55);transition:transform .1s}
+    background:radial-gradient(circle at 32% 28%,#D6F3FF,#38BDF8 50%,#0369A1);box-shadow:0 0 8px rgba(56,189,248,.55);transition:transform .1s}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav svg{width:16px;height:16px;fill:none;stroke:#2A1600;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav:active,
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav.hit{transform:scale(.88)}
@@ -7712,7 +7712,7 @@ html[dir=rtl] .learn-modal .lg-step h3{margin:6px 26px 10px 0}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row{
     grid-column:auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:2px!important;
     height:44px!important;min-height:44px!important;max-height:44px!important;padding:0 3px!important;box-sizing:border-box!important;border-radius:12px!important;
-    background:linear-gradient(180deg,rgba(245,197,81,.14),rgba(245,197,81,.04))!important;border:1px solid rgba(245,197,81,.45)!important;width:auto!important}
+    background:linear-gradient(180deg,rgba(56,189,248,.14),rgba(56,189,248,.04))!important;border:1px solid rgba(125,211,252,.55)!important;width:auto!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip:not(.on){display:none!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on{
     flex:1 1 auto!important;min-width:0!important;height:36px!important;min-height:36px!important;max-height:36px!important;padding:0 2px!important;
@@ -7720,7 +7720,7 @@ html[dir=rtl] .learn-modal .lg-step h3{margin:6px 26px 10px 0}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on svg{display:none!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav{
     display:grid!important;place-items:center;flex:0 0 26px;width:26px;height:26px;padding:0;border-radius:50%;border:0;cursor:pointer;
-    background:radial-gradient(circle at 32% 28%,#FFF3C4,#F5C451 50%,#B8780C);box-shadow:0 0 8px rgba(245,197,81,.55);transition:transform .1s}
+    background:radial-gradient(circle at 32% 28%,#D6F3FF,#38BDF8 50%,#0369A1);box-shadow:0 0 8px rgba(56,189,248,.55);transition:transform .1s}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav svg{width:16px;height:16px;fill:none;stroke:#2A1600;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav:active,
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav.hit{transform:scale(.88)}
