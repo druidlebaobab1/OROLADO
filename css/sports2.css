@@ -134,7 +134,7 @@ html:root body #casinoModal .sp2 .sp2-x{flex:none;width:30px;height:30px;display
 html:root body #casinoModal .sp2 .sp2-x .sp2-i{width:13px;height:13px;stroke-width:2.8}
 /* bloc de mise : case Mise + monnaie, montants rapides, cote totale, gain possible, bouton Parier */
 html:root body #casinoModal .sp2 .sp2-stk{position:sticky;bottom:calc(-1 * var(--sp2-pb) + var(--sp2-gap) + var(--sp2-lift,0px));z-index:6;flex:none;display:flex;flex-direction:column;gap:10px;min-width:0;padding:12px;border-radius:18px;
-  background:linear-gradient(180deg,rgba(44,29,102,.97),rgba(24,16,60,.98));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  background:linear-gradient(180deg,rgba(28,24,15,.97),rgba(18,14,8,.98));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
   box-shadow:inset 0 0 0 1px rgba(251,191,36,.32),inset 0 1px 0 rgba(255,255,255,.1),0 -10px 30px -16px rgba(0,0,0,.9)}
 /* case de mise : − [ Mise 1.00 $ ] + (2026-10-21 : plus de montants rapides), solde du joueur, erreur si la mise dépasse le solde */
 html:root body #casinoModal .sp2 .sp2-amt{display:flex;align-items:stretch;gap:8px;min-width:0}
@@ -228,7 +228,7 @@ html:root body #casinoModal .sp2 .sp2-bets > .sp2-empty,html:root body #casinoMo
 html:root body #casinoModal .sp2 .sp2-bet{--c:var(--sp2-blue);position:relative;display:flex;flex-direction:column;gap:0;min-width:0;padding:0;border-radius:14px;overflow:hidden;
   background:var(--sp2-card);box-shadow:inset 0 0 0 1px var(--sp2-line)}
 html:root body #casinoModal .sp2 .sp2-bet::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:4px;background:var(--c)}
-html:root body #casinoModal .sp2 .sp2-bet.st-won{--c:#22C55E;background:linear-gradient(165deg,rgba(34,197,94,.16),rgba(24,16,58,.92) 55%)}
+html:root body #casinoModal .sp2 .sp2-bet.st-won{--c:#22C55E;background:linear-gradient(165deg,rgba(34,197,94,.16),rgba(18,14,8,.92) 55%)}
 html:root body #casinoModal .sp2 .sp2-bet.st-lost{--c:#F43F5E}
 html:root body #casinoModal .sp2 .sp2-bet.st-void{--c:#94A3B8}
 html:root body #casinoModal .sp2 .sp2-bet.sp2-skel{min-height:96px;padding:12px 12px 12px 15px;gap:10px}
@@ -921,7 +921,7 @@ html:root body #casinoModal .sp2 .pz-v-pred .pz-pers{background:linear-gradient(
 html:root body #casinoModal .sp2 .pd-cats button.on{color:#2A1A05!important;background:linear-gradient(180deg,#FDE68A,#F5C451)!important}
 html:root body #casinoModal .sp2 .pd-list{grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:12px}
 html:root body #casinoModal .sp2 .pd-ev{gap:12px;padding:15px 15px 13px;border-radius:20px;
-  background:radial-gradient(120% 70% at 100% 0%,rgba(251,191,36,.08),transparent 60%),linear-gradient(165deg,rgba(46,32,98,.9),rgba(20,14,48,.96));
+  background:radial-gradient(120% 70% at 100% 0%,rgba(251,191,36,.08),transparent 60%),linear-gradient(165deg,rgba(30,25,15,.9),rgba(18,14,8,.96));
   box-shadow:inset 0 0 0 1px rgba(251,191,36,.20),0 14px 30px -20px rgba(0,0,0,.95)}
 html:root body #casinoModal .sp2 .pd-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;min-width:0}
 html:root body #casinoModal .sp2 .pd-cat{display:inline-flex;align-items:center;gap:7px;min-width:0;color:#E9DFC4;font:800 12px/1.2 var(--sp2-font);letter-spacing:.06em;text-transform:uppercase}
