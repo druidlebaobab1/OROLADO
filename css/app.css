@@ -9869,6 +9869,8 @@ html body #liveModal .lh-tile .lh-ico,html body #liveModal .lh-tile[class*=" c"]
 html body #liveModal .lh-tile.big .lh-ico{width:58px!important;height:58px!important;flex:0 0 58px}
 html body #liveModal .lh-tile.big{grid-template-columns:58px 1fr!important}
 html body #liveModal .li-ico{width:100%;height:100%;display:block}
+html body .li-img{object-fit:contain!important;filter:drop-shadow(0 3px 7px rgba(0,0,0,.5))}
+html body #liveModal .lh-fi .li-img{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--tc) 45%,transparent)) drop-shadow(0 4px 7px rgba(0,0,0,.5))}
 html body #liveModal .lh-tile b{overflow-wrap:anywhere;hyphens:auto}
 html body #liveModal .lh-tile small{color:#C9CFE6;overflow-wrap:anywhere}
 html body #liveModal .lh-tile .lh-b{z-index:2}

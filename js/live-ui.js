@@ -215,7 +215,12 @@
       '<path d="M14.5 35.6h19" stroke="#F0590B" stroke-width="2.2" stroke-linecap="round"/></svg>';
   }
   D6.OroSendLogo = sendLogo;
-  D6.LiveIcon = function (k, cls) { return k === 'send' ? sendLogo(cls) : icon(k, cls); };
+  // v3401 (propriétaire) — vrais logos 3D réalistes (fal.ai) pour le menu Social, au lieu des dessins SVG.
+  var SOC_IMG = { duel: 1, news: 1, friends: 1, groups: 1, chat: 1, myid: 1, levels: 1, missions: 1, quiz: 1, record: 1, stats: 1, badges: 1, learn: 1, gifts: 1, send: 1 };
+  D6.LiveIcon = function (k, cls) {
+    if (SOC_IMG[k]) return '<img class="li-ico li-img' + (cls ? ' ' + cls : '') + '" src="img/social/' + k + '.webp?v=3401" alt="" loading="lazy" draggable="false">';
+    return k === 'send' ? sendLogo(cls) : icon(k, cls);
+  };
   D6.LiveColor = color;
   D6.LiveGuest = guestPage;
 })(window.D6 = window.D6 || {});
