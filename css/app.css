@@ -9913,10 +9913,10 @@ html:root body #liveModal#liveModal > .modal-box{background:
   radial-gradient(1.3px 1.3px at 90% 52%,rgba(190,220,255,.9),transparent 60%),radial-gradient(1px 1px at 8% 66%,rgba(255,255,255,.7),transparent 60%),
   radial-gradient(1.5px 1.5px at 52% 74%,rgba(255,255,255,.85),transparent 60%),radial-gradient(1px 1px at 84% 86%,rgba(255,220,240,.8),transparent 60%),
   radial-gradient(1px 1px at 22% 92%,rgba(255,255,255,.7),transparent 60%),radial-gradient(1.2px 1.2px at 44% 6%,rgba(255,255,255,.75),transparent 60%),
-  radial-gradient(60% 40% at 100% 0%,rgba(123,59,230,.38),transparent 70%),radial-gradient(55% 35% at 0% 45%,rgba(224,48,111,.2),transparent 70%),
-  radial-gradient(70% 45% at 70% 100%,rgba(36,87,230,.3),transparent 70%),linear-gradient(180deg,#120a30 0%,#0c0824 55%,#090619 100%)!important;background-attachment:local!important}
+  radial-gradient(60% 40% at 100% 0%,rgba(242,193,78,.22),transparent 70%),radial-gradient(55% 35% at 0% 45%,rgba(200,145,46,.16),transparent 70%),
+  radial-gradient(70% 45% at 70% 100%,rgba(247,215,116,.14),transparent 70%),linear-gradient(180deg,#171008 0%,#120c06 55%,#0b0804 100%)!important;background-attachment:local!important}
 /* barre du haut plus légère */
-html body #liveModal .live-bar{padding:2px 0 6px!important;margin-bottom:8px!important;background:linear-gradient(180deg,rgba(18,10,48,.96) 70%,rgba(18,10,48,0))!important}
+html body #liveModal .live-bar{padding:2px 0 6px!important;margin-bottom:8px!important;background:linear-gradient(180deg,rgba(23,16,8,.96) 70%,rgba(23,16,8,0))!important}
 html body #liveModal .live-back{width:34px!important;height:34px!important;flex:0 0 34px!important;border-radius:11px!important}
 html body #liveModal .live-back svg{width:18px!important;height:18px!important}
 html body #liveModal .live-bar b{font-size:17px!important;font-weight:800}
