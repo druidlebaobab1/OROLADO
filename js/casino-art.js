@@ -950,7 +950,7 @@
   // 2026-11-01 (propriétaire : « des vrais logos réalistes comme les grands sites ») — PHOTOS : certains jeux ont une
   // vraie image (img/games/<clé>.webp) au lieu d'un dessin. On force ici (passe AVANT tous les setObj/addObj, quel que
   // soit l'ordre de chargement). Même cadre rond que penalty.webp. Ajouter une clé + 2 couleurs d'anneau = logo-photo.
-  var PHOTO_V = '3369';
+  var PHOTO_V = '3370';
   var PHOTO = {
     acorncatch:['#FDBA74','#7C2D12'], airraid:['#FCA5A5','#7F1D1D'], airstrike:['#FDE68A','#78350F'], alienwave:['#BAE6FD','#0C4A6E'], applecatch:['#C4B5FD','#312E81'], archer:['#86EFAC','#14532D'],
     balloonup:['#93C5FD','#1E3A8A'], basket:['#F9A8D4','#831843'], beattap:['#A5B4FC','#312E81'], beefly:['#FDE047','#854D0E'], blockfall:['#67E8F9','#155E75'], brickbreak:['#FCA5A5','#7C2D12'],
@@ -1011,7 +1011,17 @@
     diceroll:['#93C5FD','#1E3A8A'], royalcard:['#F9A8D4','#831843'], genielamp:['#A5B4FC','#312E81'], jackpotbell:['#FDE047','#854D0E'], oysterpearl:['#67E8F9','#155E75'], crownjewel:['#FCA5A5','#7C2D12'],
     geodegem:['#FDBA74','#7C2D12'], moneytree:['#FCA5A5','#7F1D1D'], lotteryball:['#FDE68A','#78350F'], dragoncoin:['#BAE6FD','#0C4A6E'], fireworkgold:['#C4B5FD','#312E81'], treasuremap:['#86EFAC','#14532D'],
     goldbars:['#93C5FD','#1E3A8A'], pokerchip:['#F9A8D4','#831843'], luckyclover:['#A5B4FC','#312E81'], rubyheart:['#FDE047','#854D0E'], moneybag:['#67E8F9','#155E75'], diamondring:['#FCA5A5','#7C2D12'],
-    goldtrophy:['#FDBA74','#7C2D12'], sunburst:['#FCA5A5','#7F1D1D'], gemtrio:['#FDE68A','#78350F'], horseshoe:['#BAE6FD','#0C4A6E']
+    goldtrophy:['#FDBA74','#7C2D12'], sunburst:['#FCA5A5','#7F1D1D'], gemtrio:['#FDE68A','#78350F'], horseshoe:['#BAE6FD','#0C4A6E'],
+    /* --- Live (52) --- */
+    crash:['#FDBA74','#7C2D12'], cryptox:['#FCA5A5','#7F1D1D'], roulette:['#FDE68A','#78350F'], jet:['#BAE6FD','#0C4A6E'], horses:['#C4B5FD','#312E81'], race:['#86EFAC','#14532D'],
+    rocket:['#93C5FD','#1E3A8A'], planets:['#F9A8D4','#831843'], catwalk:['#A5B4FC','#312E81'], fleets:['#FDE047','#854D0E'], gemcount:['#67E8F9','#155E75'], claw:['#FCA5A5','#7C2D12'],
+    dtlive:['#FDBA74','#7C2D12'], moneywheel:['#FCA5A5','#7F1D1D'], football:['#FDE68A','#78350F'], kenolive:['#BAE6FD','#0C4A6E'], moonshot:['#C4B5FD','#312E81'], sicbolive:['#86EFAC','#14532D'],
+    pegdrop:['#93C5FD','#1E3A8A'], hilolive:['#F9A8D4','#831843'], bullseye:['#A5B4FC','#312E81'], lucky10:['#FDE047','#854D0E'], ladderlive:['#67E8F9','#155E75'], coinlive:['#FCA5A5','#7C2D12'],
+    baccaratlive:['#FDBA74','#7C2D12'], bingolive:['#FCA5A5','#7F1D1D'], diceduellive:['#FDE68A','#78350F'], andarlive:['#BAE6FD','#0C4A6E'], lotto649live:['#C4B5FD','#312E81'], redblacklive:['#86EFAC','#14532D'],
+    pokerlive:['#93C5FD','#1E3A8A'], peryalive:['#F9A8D4','#831843'], bustlive:['#A5B4FC','#312E81'], teenpattilive:['#FDE047','#854D0E'], megaballlive:['#67E8F9','#155E75'], lucky7live:['#FCA5A5','#7C2D12'],
+    dogracelive:['#FDBA74','#7C2D12'], penaltylive:['#FCA5A5','#7F1D1D'], camelracelive:['#FDE68A','#78350F'], boxinglive:['#BAE6FD','#0C4A6E'], monsterlive:['#C4B5FD','#312E81'], basketlive:['#86EFAC','#14532D'],
+    snailracelive:['#93C5FD','#1E3A8A'], volcanolive:['#F9A8D4','#831843'], boatracelive:['#A5B4FC','#312E81'], tennislive:['#FDE047','#854D0E'], chickenracelive:['#67E8F9','#155E75'], archerylive:['#FCA5A5','#7C2D12'],
+    spaceracelive:['#FDBA74','#7C2D12'], cricketlive:['#FCA5A5','#7F1D1D'], balloonlive:['#FDE68A','#78350F'], fishinglive:['#BAE6FD','#0C4A6E']
   };
   function photoFrame(k) {
     var c = PHOTO[k] || ['#334155', '#0F172A'];
