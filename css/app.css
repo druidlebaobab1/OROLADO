@@ -144,13 +144,13 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .tx-feed-row .tx-type{font-weight:900;font-size:.78rem}
 .tx-feed-row .tx-meta{font-size:.62rem;color:var(--muted);margin-top:3px;line-height:1.35;overflow-wrap:anywhere}
 .tx-feed-row .tx-amt{font-weight:900;font-size:.78rem;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;overflow:visible}
-.tx-feed-row .tx-st{display:inline-block;margin-top:4px;font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:999px}
+.tx-feed-row .tx-st{display:inline-block;margin-top:4px;font-size:.58rem;font-weight:800;padding:0;border-radius:0;background:none!important}
 #financeModal .modal-box{display:flex;flex-direction:column;overflow:hidden;max-height:78dvh;padding:16px 14px 10px}
 #txFeed{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-.tx-st.ok{background:rgba(0,230,118,.15);color:var(--green)}
-.tx-st.pending{background:rgba(255,215,0,.12);color:var(--gold)}
-.tx-st.warn{background:rgba(148,163,184,.16);color:#CBD5E1}
-.tx-st.bad{background:rgba(255,23,68,.15);color:#ff8aa0}
+.tx-st.ok{background:none;color:var(--green)}
+.tx-st.pending{background:none;color:var(--gold)}
+.tx-st.warn{background:none;color:#CBD5E1}
+.tx-st.bad{background:none;color:#ff8aa0}
 .legal{text-align:center;color:rgba(139,155,184,.72);font-size:.62rem;font-weight:700;margin-top:14px;letter-spacing:.04em}
 .drawer-legal{margin-top:18px}
 
@@ -7414,12 +7414,12 @@ html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#
 /* ===== v2451 — Durées et ÷2 / ×2 / ⌫ en OR CHAMPAGNE (couleur de la marque, choix du propriétaire) ===== */
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .dur-chip,
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .qbtn{
-  border-color:rgba(245,197,81,.35)!important;color:#FFE7A3!important;background:linear-gradient(180deg,rgba(245,197,81,.14),rgba(245,197,81,.04))!important}
+  border-color:rgba(125,211,252,.45)!important;color:#D6E4FF!important;background:linear-gradient(180deg,rgba(56,189,248,.14),rgba(56,189,248,.04))!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .dur-chip.on{
-  background:linear-gradient(120deg,#D9A43A,#FFE7A3 30%,#F5C451 50%,#FFFFFF 62%,#D9A43A)!important;background-size:250% 100%!important;
-  color:#1E1200!important;border-color:#FFF6DA!important;box-shadow:0 0 14px rgba(245,197,81,.75)!important}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .qbtn:active{background:linear-gradient(180deg,#FFE7A3,#F5C451)!important;color:#1E1200!important;box-shadow:0 0 14px rgba(245,197,81,.8)!important}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .win-preview .mult{background:rgba(245,197,81,.16)!important;color:#FFE7A3!important;border-color:rgba(245,197,81,.5)!important}
+  background:linear-gradient(120deg,#0EA5E9,#7DD3FC 30%,#38BDF8 50%,#BAE6FD 70%,#0EA5E9)!important;background-size:250% 100%!important;
+  color:#04263A!important;border-color:#E0F2FE!important;box-shadow:0 0 14px rgba(56,189,248,.75)!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .qbtn:active{background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;color:#05263A!important;box-shadow:0 0 14px rgba(56,189,248,.8)!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .win-preview .mult{background:rgba(56,189,248,.16)!important;color:#BAE6FD!important;border-color:rgba(125,211,252,.5)!important}
 
 /* ===== v2452 — NOUVEAU TERMINAL (téléphone debout) : ligne 1 = ◀ durée ▶ | − mise + | gain ; ligne 2 = 4 payouts en planètes.
    La place gagnée va à la courbe. PC, tablette, téléphone couché et plein écran : inchangés. ===== */

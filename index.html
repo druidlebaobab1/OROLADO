@@ -221,7 +221,7 @@
   <!-- 2026-10-20 : polices Google chargées SANS bloquer la page (avant : tout, même l'écran de chargement, les attendait) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="css/app.css?v=3406">
+    <link rel="stylesheet" href="css/app.css?v=3407">
     <link rel="stylesheet" href="css/auth.css?v=2790">
     <link rel="stylesheet" href="css/tv.css?v=2790">
     <link rel="stylesheet" href="css/galaxy.css?v=3386">
@@ -476,7 +476,7 @@ html.oro-lite #oroLoader .ow{animation:none}
 for(var i=0;i<L.length;i++){var it=L[i],s=(i%3===0?30:i%3===1?24:27),d=(5+(i*7%5)).toFixed(1),dl=(-(i*1.3%6)).toFixed(1);
 h+='<i class="ow'+(it[2]==='x'?' ow-x':'')+'" style="left:'+it[0]+'%;top:'+it[1]+'%;--s:'+s+'px;--c:'+(it[3]||'#C9B8FF')+';--d:'+d+'s;--w:'+dl+'s">'+(it[2]==='x'?'':'<svg viewBox="0 0 24 24"><use href="#olI-'+it[2]+'"/></svg>')+'</i>';}
 w.innerHTML=h;}catch(e){}})();</script>  <script>/* v3404 (propriétaire) : vrais logos 3D (fal.ai) sur les bulles de l'écran de chargement, au lieu des dessins. */
-(function(){try{var MAP={roulette:'img/loadicons/roulette.webp',cherry:'img/loadicons/cherry.webp',card:'img/loadicons/card.webp',gem:'img/loadicons/gem.webp',plinko:'img/loadicons/plinko.webp',coin:'img/loadicons/coin.webp',flame:'img/loadicons/flame.webp',joy:'img/loadicons/joy.webp',ball:'img/loadicons/ball.webp',dice:'img/loadicons/dice.webp',spade:'img/loadicons/spade.webp',seven:'img/loadicons/roll7.webp',rocket:'img/loadicons/rocket.webp',planet:'img/loadicons/planet.webp',candles:'img/loadicons/candles.webp',star:'img/loadicons/star.webp',wheel:'img/social/wheel.webp',gift:'img/social/gifts.webp',trophy:'img/social/record.webp',target:'img/social/target.webp',duel:'img/social/duel.webp',friends:'img/social/friends.webp',bonus:'img/social/bonus.webp',chat:'img/social/chat.webp',invite:'img/social/invite.webp',news:'img/social/news.webp'},V='3404';
+(function(){try{var MAP={roulette:'img/loadicons/roulette.webp',cherry:'img/loadicons/cherry.webp',card:'img/loadicons/card.webp',gem:'img/loadicons/gem.webp',plinko:'img/loadicons/plinko.webp',coin:'img/loadicons/coin.webp',flame:'img/loadicons/flame.webp',joy:'img/loadicons/joy.webp',ball:'img/loadicons/ball.webp',dice:'img/loadicons/dice.webp',spade:'img/loadicons/spade.webp',seven:'img/loadicons/roll7.webp',rocket:'img/loadicons/rocket.webp',planet:'img/loadicons/planet.webp',candles:'img/loadicons/candles.webp',star:'img/loadicons/star.webp',wheel:'img/social/wheel.webp',gift:'img/social/gifts.webp',trophy:'img/social/record.webp',target:'img/social/target.webp',duel:'img/social/duel.webp',friends:'img/social/friends.webp',bonus:'img/social/bonus.webp',chat:'img/social/chat.webp',invite:'img/social/invite.webp',news:'img/social/news.webp'},V='3407';
 var ld=document.getElementById('oroLoader');if(!ld)return;
 ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=el.querySelector('use');if(!u)return;var href=u.getAttribute('href')||u.getAttribute('xlink:href')||'';var k=href.replace('#olI-','');if(!MAP[k])return;var img=document.createElement('img');img.src=MAP[k]+'?v='+V;img.alt='';img.className='ol-rimg';img.draggable=false;var svg=el.querySelector('svg');if(svg)el.replaceChild(img,svg);else el.appendChild(img);el.classList.add('ol-hasimg');});}catch(e){}})();</script>  <script>
   /* v2450 — Pourcentage de la barre de chargement : il suit le vrai chargement (page lue, site prêt, prix reçus). */
@@ -1175,7 +1175,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
           <div class="mode-switch" id="modeSwitcher" role="tablist" data-plus="1" data-i18n-aria="modeAccount" aria-label="Account mode">
             <button type="button" class="mode-btn on" id="modeDemo" data-mode="demo"><span class="mb-lbl" data-i18n="fsDemo">DEMO</span><span class="mb-amt" id="modeDemoAmt">&nbsp;</span></button>
             <button type="button" class="bal-plus hidden" id="btnDemoTopup" data-i18n-title="demoTopup" data-i18n-aria="demoTopup" title="Top up demo" aria-label="Top up demo"><svg class="plus-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>
-            <button type="button" class="mode-btn" id="modeReal" data-mode="real"><span class="mb-wal" aria-hidden="true"><img class="mb-wal-img" src="img/social/wallet.webp?v=3404" alt="" draggable="false"></span><span class="mb-lbl" data-i18n="real">COMPTE RÉEL</span><span class="mb-amt" id="modeRealAmt">$&nbsp;&nbsp;0.00</span></button>
+            <button type="button" class="mode-btn" id="modeReal" data-mode="real"><span class="mb-wal" aria-hidden="true"><img class="mb-wal-img" src="img/social/wallet.webp?v=3407" alt="" draggable="false"></span><span class="mb-lbl" data-i18n="real">COMPTE RÉEL</span><span class="mb-amt" id="modeRealAmt">$&nbsp;&nbsp;0.00</span></button>
           </div>
         </div>
         <div class="balance-row">
@@ -1377,7 +1377,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
           <svg class="fs-coin fs-coin-eth" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-eth"></use></svg>
           <button type="button" class="fs-mode-btn mode-btn on" id="fsBtnDemo" data-mode="demo"><span class="mb-lbl" data-i18n="fsDemo">DEMO</span><span class="mb-amt" id="fsDemoAmt">&nbsp;</span></button>
           <button type="button" class="fs-mid-plus" id="btnFsMidPlus" aria-label="Recharger" title="Recharger" data-i18n-aria="recharge" data-i18n-title="recharge"><svg class="plus-ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3.8" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>
-          <button type="button" class="fs-mode-btn mode-btn" id="fsBtnReal" data-mode="real"><span class="mb-wal" aria-hidden="true"><img class="mb-wal-img" src="img/social/wallet.webp?v=3404" alt="" draggable="false"></span><span class="mb-lbl" data-i18n="real">COMPTE RÉEL</span><span class="mb-amt" id="fsRealAmt">$&nbsp;&nbsp;0.00</span></button>
+          <button type="button" class="fs-mode-btn mode-btn" id="fsBtnReal" data-mode="real"><span class="mb-wal" aria-hidden="true"><img class="mb-wal-img" src="img/social/wallet.webp?v=3407" alt="" draggable="false"></span><span class="mb-lbl" data-i18n="real">COMPTE RÉEL</span><span class="mb-amt" id="fsRealAmt">$&nbsp;&nbsp;0.00</span></button>
           <svg class="fs-coin fs-coin-usdt" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-usdt"></use></svg>
           <svg class="fs-coin fs-coin-sol" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-sol"></use></svg>
         </div>
@@ -2432,12 +2432,12 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
   <script src="js/push.js?v=3130"></script>
   <script src="js/app.js?v=3200"></script>
   <script src="js/portal.js?v=3341"></script>
-  <script src="js/live-ui.js?v=3403"></script>
+  <script src="js/live-ui.js?v=3407"></script>
   <script src="js/live.js?v=3395"></script>
   <script src="js/live-quiz-data.js?v=2790"></script>
   <script src="js/live-fun.js?v=3160"></script>
   <script src="js/live-groups.js?v=3395"></script>
-  <script src="js/live-send.js?v=3402"></script>
+  <script src="js/live-send.js?v=3407"></script>
   <script src="js/gifts-home.js?v=3128"></script>
   <script src="js/sports.js?v=3321"></script>
   <script src="js/localcur.js?v=3206"></script>
