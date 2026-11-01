@@ -1064,7 +1064,7 @@
   /* 2026-11 (propriétaire : « fais revenir les emblèmes réalistes, mais SANS le rond noir ») :
      l'emblème-photo a un fond détouré en bord doux (transparent) → il flotte sur la galaxie, aucun rond ni cadre noir.
      Lazy-load : seules les vignettes visibles de la barre se chargent → léger, aucun poids sur les courbes. */
-  var IDX_PV = '3384';
+  var IDX_PV = '3387';
   function phImg(id) {
     return '<img class="idx-ph" loading="lazy" decoding="async" src="img/indices/' + id + '.webp?v=' + IDX_PV + '" alt="" aria-hidden="true">';
   }
