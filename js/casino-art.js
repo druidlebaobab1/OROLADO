@@ -952,10 +952,26 @@
   // soit l'ordre de chargement). Même cadre rond que penalty.webp. Ajouter une clé + 2 couleurs d'anneau = logo-photo.
   var PHOTO_V = '3365';
   var PHOTO = {
-    gunship: ['#FDBA74', '#7C2D12'], tankbattle: ['#FCA5A5', '#7F1D1D'], tankrush: ['#FDE68A', '#78350F'],
-    lavarun: ['#FDBA74', '#7C2D12'], dogfight: ['#BAE6FD', '#0C4A6E'], ghostdash: ['#C4B5FD', '#312E81'],
-    grenade: ['#FCD34D', '#78350F'], sniper: ['#86EFAC', '#14532D'], airraid: ['#93C5FD', '#1E3A8A'],
-    subwaydash: ['#FBBF24', '#78350F']
+    acorncatch:['#FDBA74','#7C2D12'], airraid:['#FCA5A5','#7F1D1D'], airstrike:['#FDE68A','#78350F'], alienwave:['#BAE6FD','#0C4A6E'], applecatch:['#C4B5FD','#312E81'], archer:['#86EFAC','#14532D'],
+    balloonup:['#93C5FD','#1E3A8A'], basket:['#F9A8D4','#831843'], beattap:['#A5B4FC','#312E81'], beefly:['#FDE047','#854D0E'], blockfall:['#67E8F9','#155E75'], brickbreak:['#FCA5A5','#7C2D12'],
+    bubblepop:['#FDBA74','#7C2D12'], bubblesub:['#FCA5A5','#7F1D1D'], burgercatch:['#FDE68A','#78350F'], candycatch:['#BAE6FD','#0C4A6E'], canyon:['#C4B5FD','#312E81'], cavebat:['#86EFAC','#14532D'],
+    chicken:['#93C5FD','#1E3A8A'], cityscoot:['#F9A8D4','#831843'], cityshield:['#A5B4FC','#312E81'], coffeecatch:['#FDE047','#854D0E'], coincatch:['#67E8F9','#155E75'], colorjump:['#FCA5A5','#7C2D12'],
+    commando:['#FDBA74','#7C2D12'], copterflight:['#FCA5A5','#7F1D1D'], coralfish:['#FDE68A','#78350F'], cupcake:['#BAE6FD','#0C4A6E'], cupidaim:['#C4B5FD','#312E81'], dartspro:['#86EFAC','#14532D'],
+    desertrally:['#93C5FD','#1E3A8A'], dodge:['#F9A8D4','#831843'], dogfight:['#A5B4FC','#312E81'], donutcatch:['#FDE047','#854D0E'], dragonfly:['#67E8F9','#155E75'], driftking:['#FCA5A5','#7C2D12'],
+    dunebuggy:['#FDBA74','#7C2D12'], echopads:['#FCA5A5','#7F1D1D'], eggcatch:['#FDE68A','#78350F'], fireflylight:['#BAE6FD','#0C4A6E'], flappyrock:['#C4B5FD','#312E81'], fruitcatch:['#86EFAC','#14532D'],
+    fruitpunch:['#93C5FD','#1E3A8A'], gemcatch:['#F9A8D4','#831843'], gemswap:['#A5B4FC','#312E81'], ghostdash:['#FDE047','#854D0E'], gifthaul:['#67E8F9','#155E75'], grenade:['#FCA5A5','#7C2D12'],
+    gunship:['#FDBA74','#7C2D12'], hamster:['#FCA5A5','#7F1D1D'], helixdrop:['#FDE68A','#78350F'], highway:['#BAE6FD','#0C4A6E'], horsejump:['#C4B5FD','#312E81'], icecreamcatch:['#86EFAC','#14532D'],
+    jetpack:['#93C5FD','#1E3A8A'], jetskirace:['#F9A8D4','#831843'], jungledash:['#A5B4FC','#312E81'], kartdash:['#FDE047','#854D0E'], kayakrush:['#67E8F9','#155E75'], knifehit:['#FCA5A5','#7C2D12'],
+    lavaescape:['#FDBA74','#7C2D12'], lavarun:['#FCA5A5','#7F1D1D'], lovecatch:['#FDE68A','#78350F'], mazechomp:['#BAE6FD','#0C4A6E'], memoflip:['#C4B5FD','#312E81'], merge2048:['#86EFAC','#14532D'],
+    meteorblast:['#93C5FD','#1E3A8A'], metrodash:['#F9A8D4','#831843'], minigolf:['#A5B4FC','#312E81'], moonrover:['#FDE047','#854D0E'], motowheelie:['#67E8F9','#155E75'], neonpong:['#FCA5A5','#7C2D12'],
+    neonrider:['#FDBA74','#7C2D12'], neonsnake:['#FCA5A5','#7F1D1D'], orbit:['#FDE68A','#78350F'], owlflight:['#BAE6FD','#0C4A6E'], paperplane:['#C4B5FD','#312E81'], pearlcatch:['#86EFAC','#14532D'],
+    penguinslide:['#93C5FD','#1E3A8A'], petalcatch:['#F9A8D4','#831843'], pianokeys:['#A5B4FC','#312E81'], pizzacatch:['#FDE047','#854D0E'], popcorncatch:['#67E8F9','#155E75'], princess:['#FCA5A5','#7C2D12'],
+    raindash:['#FDBA74','#7C2D12'], roadrace:['#FCA5A5','#7F1D1D'], rocketcave:['#FDE68A','#78350F'], rooftopninja:['#BAE6FD','#0C4A6E'], ropeswing:['#C4B5FD','#312E81'], seagull:['#86EFAC','#14532D'],
+    sharkbay:['#93C5FD','#1E3A8A'], skatetricks:['#F9A8D4','#831843'], skislalom:['#A5B4FC','#312E81'], skyhopper:['#FDE047','#854D0E'], slicer:['#67E8F9','#155E75'], sniper:['#FCA5A5','#7C2D12'],
+    snowcatch:['#FDBA74','#7C2D12'], snowdash:['#FCA5A5','#7F1D1D'], snowjump:['#FDE68A','#78350F'], spacedash:['#BAE6FD','#0C4A6E'], spacerun:['#C4B5FD','#312E81'], speedboat:['#86EFAC','#14532D'],
+    stack:['#93C5FD','#1E3A8A'], starbridge:['#F9A8D4','#831843'], starcatch:['#A5B4FC','#312E81'], subwaydash:['#FDE047','#854D0E'], surfrider:['#67E8F9','#155E75'], sushicatch:['#FCA5A5','#7C2D12'],
+    tacocatch:['#FDBA74','#7C2D12'], tankbattle:['#FCA5A5','#7F1D1D'], tankrush:['#FDE68A','#78350F'], toxicrun:['#BAE6FD','#0C4A6E'], trenchdef:['#C4B5FD','#312E81'], ufoflight:['#86EFAC','#14532D'],
+    veggiecatch:['#93C5FD','#1E3A8A'], zombiesiege:['#F9A8D4','#831843']
   };
   function photoFrame(k) {
     var c = PHOTO[k] || ['#334155', '#0F172A'];
