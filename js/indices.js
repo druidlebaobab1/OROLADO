@@ -1063,7 +1063,7 @@
   }
   /* logo-photo réaliste de l'indice (2026-11) : posé PAR-DESSUS le dessin SVG (qui reste le repli instantané).
      L'image est en lazy-load : seules les vignettes visibles de la barre se chargent → zéro poids sur l'écran de trading. */
-  var IDX_PV = '3373';
+  var IDX_PV = '3374';
   function phImg(id) {
     return '<img class="idx-ph" loading="lazy" decoding="async" src="img/indices/' + id + '.webp?v=' + IDX_PV + '" alt="" aria-hidden="true">';
   }
