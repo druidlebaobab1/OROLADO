@@ -9855,7 +9855,7 @@ html body #liveModal #liveGroups textarea{color:#fff;background:transparent}
 
 /* ===== v2689 — Live : un seul bouton retour (plus de croix), vrais logos, tuiles vivantes, pages « inscris-toi » ===== */
 html body #liveModal #closeLive{display:none!important}
-html body #liveModal .live-bar{position:sticky;top:-2px;z-index:5;margin:0 0 12px!important;padding:6px 0 8px;background:linear-gradient(180deg,#140d33 75%,rgba(20,13,51,0))}
+html body #liveModal .live-bar{position:sticky;top:-2px;z-index:5;margin:0 0 12px!important;padding:6px 0 8px;background:linear-gradient(180deg,#161108 75%,rgba(22,17,8,0))}
 html body #liveModal .live-bar[hidden]{display:flex!important}
 html body #liveModal .live-back{width:40px;height:40px;flex:0 0 40px;border-radius:13px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 html body #liveModal .live-bar b{font-size:20px;letter-spacing:-.2px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -11954,10 +11954,10 @@ html:root body #casinoModal#casinoModal#casinoModal:not(.in-game) > .modal-box{b
   radial-gradient(1.2px 1.2px at 30px 40px,rgba(255,255,255,.75),transparent 60%) 0 0/190px 210px,
   radial-gradient(1px 1px at 120px 150px,rgba(255,255,255,.55),transparent 60%) 0 0/260px 240px,
   radial-gradient(1.4px 1.4px at 70px 90px,rgba(200,210,255,.6),transparent 60%) 0 0/330px 370px,
-  radial-gradient(70% 45% at 15% 0%,rgba(167,139,250,.32),transparent 70%),
-  radial-gradient(60% 40% at 100% 35%,rgba(236,72,153,.16),transparent 70%),
-  radial-gradient(80% 50% at 40% 100%,rgba(56,189,248,.16),transparent 70%),
-  linear-gradient(180deg,#2B1E5E 0%,#211A4C 55%,#1A1640 100%)!important}
+  radial-gradient(70% 45% at 15% 0%,rgba(242,193,78,.22),transparent 70%),
+  radial-gradient(60% 40% at 100% 35%,rgba(200,145,46,.14),transparent 70%),
+  radial-gradient(80% 50% at 40% 100%,rgba(247,215,116,.12),transparent 70%),
+  linear-gradient(180deg,#1b150c 0%,#161108 55%,#120d06 100%)!important}
 html:root body #casinoModal#casinoModal#casinoModal.in-game[data-g] > .modal-box{background:
   radial-gradient(1.2px 1.2px at 30px 40px,rgba(255,255,255,.7),transparent 60%) 0 0/190px 210px,
   radial-gradient(1px 1px at 120px 150px,rgba(255,255,255,.5),transparent 60%) 0 0/260px 240px,
@@ -12055,10 +12055,10 @@ html:root body #liveFun .lv2-c b{font-size:13.5px}
 html:root body #liveModal#liveModal#liveModal .live-box{background:
   radial-gradient(1.2px 1.2px at 30px 40px,rgba(255,255,255,.75),transparent 60%) 0 0/190px 210px,
   radial-gradient(1px 1px at 120px 150px,rgba(255,255,255,.55),transparent 60%) 0 0/260px 240px,
-  radial-gradient(70% 45% at 15% 0%,rgba(167,139,250,.32),transparent 70%),
-  radial-gradient(60% 40% at 100% 35%,rgba(236,72,153,.16),transparent 70%),
-  radial-gradient(80% 50% at 40% 100%,rgba(56,189,248,.16),transparent 70%),
-  linear-gradient(180deg,#2B1E5E 0%,#211A4C 55%,#1A1640 100%)!important}
+  radial-gradient(70% 45% at 15% 0%,rgba(242,193,78,.22),transparent 70%),
+  radial-gradient(60% 40% at 100% 35%,rgba(200,145,46,.14),transparent 70%),
+  radial-gradient(80% 50% at 40% 100%,rgba(247,215,116,.12),transparent 70%),
+  linear-gradient(180deg,#1b150c 0%,#161108 55%,#120d06 100%)!important}
 html:root body #liveModal#liveModal#liveModal .live-box::before,html:root body #liveModal#liveModal#liveModal .live-box::after{display:none!important}
 
 /* ================= v2760 (propriétaire) : Social — chaque page a SON visage ================= */
@@ -12879,7 +12879,7 @@ html.is-ios:root body{position:fixed!important;top:0!important;left:0!important;
 html.is-ios:root body > .screen{height:100%!important;max-height:100%!important;min-height:0!important}
 /* v2812 (propriétaire, round 4) — Social : barre « Mes discussions » en haut du menu en tuiles */
 html body #liveModal #livePaneHome .lh-msgs{display:flex;align-items:center;gap:10px;width:calc(100% - 8px);margin:2px 4px 6px;min-height:54px;padding:7px 12px;
-  border-radius:16px;border:1px solid rgba(75,227,199,.38);background:linear-gradient(135deg,rgba(75,227,199,.16),rgba(46,140,240,.14) 60%,rgba(123,59,230,.12));
+  border-radius:16px;border:1px solid rgba(242,193,78,.42);background:linear-gradient(135deg,rgba(242,193,78,.16),rgba(200,145,46,.12) 60%,rgba(123,80,20,.12));
   color:#fff;font:inherit;text-align:start;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);-webkit-tap-highlight-color:transparent}
 html body #liveModal #livePaneHome .lh-msgs:active{transform:scale(.985)}
 html body #liveModal .lh-msgs .lh-mi{flex:none;width:38px;height:38px}
