@@ -170,7 +170,7 @@ html body #tradeWrap#tradeWrap .asset-chip > .payout-live{display:none!important
 html body #tradeWrap#tradeWrap .asset-chip .mk-art{
   display:block!important;width:44px!important;height:44px!important;position:relative!important;
   transition:transform .25s ease,filter .25s ease!important;
-  filter:drop-shadow(0 6px 10px rgba(0,0,0,.55)) saturate(.92) brightness(.9)!important;opacity:.82!important;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.55)) drop-shadow(0 0 5px var(--p1,#A78BFA)) saturate(1) brightness(.96)!important;opacity:.9!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip .mk-art svg{width:100%!important;height:100%!important;display:block!important;overflow:visible!important}
 /* logo-photo réaliste de l'indice, posé par-dessus le dessin SVG (repli instantané) ; lazy-load, cercle */
