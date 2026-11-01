@@ -1133,6 +1133,9 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
   if (empty($st['rp2'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp2'])) return true; $s['od'] = []; $s['rp2'] = 1; return true; }); $st = sb_state(); }
   // 2026-10-22 (propriétaire : « 1 % ») : idem, relecture avec la marge 1 %
   if (empty($st['rp3'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp3'])) return true; $s['od'] = []; $s['rp3'] = 1; return true; }); $st = sb_state(); }
+  // 2026-11-01 (propriétaire : « Très fort ») : une seule fois, TOUTES les cotes relues tout de suite avec la nouvelle
+  // marge (principal 15 %, secondaires 20 %, exotiques 25 %, direct 15 %) — sinon elles ne changeraient qu'au fil des rafraîchissements.
+  if (empty($st['rp4'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp4'])) return true; $s['od'] = []; $s['rp4'] = 1; return true; }); $st = sb_state(); }
   $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($mid, 21600) + array_fill_keys($lat, 43200); // J+3…J+7 : 6 h ; J+8…J+14 : 12 h
   foreach (array_merge([$d0, $dm1, $d1, $d2], $far) as $day) {
     if ($calls >= $max) break;
