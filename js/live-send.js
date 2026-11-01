@@ -54,7 +54,7 @@
   function ini(n) { return esc(String(n || '?').trim().charAt(0).toUpperCase() || '?'); }
   var AVC = ['#F97316', '#3B82F6', '#22C55E', '#A855F7', '#EC4899', '#14B8A6', '#EAB308', '#EF4444'];
   function avc(n) { var h = 0; String(n || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) % 997; }); return AVC[h % AVC.length]; }
-  function logo() { return '<img class="ls-logo-img" src="img/social/send.webp?v=3402" alt="" draggable="false">'; } // v3402 : hibou 3D réaliste
+  function logo() { return D6.OroSendLogo ? D6.OroSendLogo('ls-logo') : (D6.LiveIcon ? D6.LiveIcon('send') : ''); } // v3407 : ancien hibou au rond (demande propriétaire)
   async function api(a, d) { try { return await D6.Api.post(a, d || {}, 20000); } catch (e) { return null; } }
   async function live(a, d) {
     try {
