@@ -182,8 +182,7 @@ html body #tradeWrap#tradeWrap .asset-chip .mk-name{
   padding-bottom:3px!important;border-bottom:2px solid transparent!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip.on .mk-art{
-  transform:translateY(-1px) scale(1.08)!important;opacity:1!important;
-  filter:drop-shadow(0 6px 12px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(255,170,80,.35))!important;
+  transform:translateY(-1px) scale(1.1)!important;opacity:1!important;filter:none!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip.on .mk-name{color:#FFFFFF!important;border-bottom-color:var(--gx-ac)!important}
 
@@ -520,8 +519,7 @@ html body #tradeWrap#tradeWrap .asset-chip .mk-art svg{
   width:64%!important;height:64%!important;filter:drop-shadow(0 2px 3px rgba(0,0,0,.65))!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip.on .mk-art{
-  opacity:1!important;transform:scale(1.08)!important;filter:none!important;
-  box-shadow:inset -7px -9px 16px rgba(0,0,0,.55),inset 2px 3px 6px rgba(255,255,255,.25),0 0 0 2px rgba(255,196,120,.95),0 0 22px var(--pg)!important;
+  opacity:1!important;transform:scale(1.1)!important;filter:none!important;box-shadow:none!important;
 }
 html.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-art{width:36px!important;height:36px!important}
 
@@ -1154,7 +1152,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds]):not(.or
    et plus de trait sous le nom du marché choisi */
 html.fs-trade body #tradeWrap#tradeWrap .asset-bar{margin-top:6px!important}
 html.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-art{width:28px!important;height:28px!important}
-html.fs-trade body #tradeWrap#tradeWrap .asset-chip.on .mk-art{transform:none!important;box-shadow:inset -5px -6px 10px rgba(0,0,0,.55),inset 2px 3px 6px rgba(255,255,255,.25),0 0 0 1.5px rgba(255,196,120,.95),0 0 10px var(--pg)!important}
+html.fs-trade body #tradeWrap#tradeWrap .asset-chip.on .mk-art{transform:scale(1.1)!important;box-shadow:none!important;filter:none!important}
 html.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-name,
 html.fs-trade body #tradeWrap#tradeWrap .asset-chip.on .mk-name{border-bottom:0!important;padding-bottom:0!important}
 
