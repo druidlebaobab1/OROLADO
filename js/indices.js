@@ -1061,9 +1061,13 @@
   function glyphSvg(e, gid, size) {
     return emblemSvg(e.glyph, e.accent, e.planet && e.planet.p1, gid, size);
   }
-  /* 2026-11 (propriétaire : « enlève le rond noir autour des indices, garde les dessins simples comme avant ») :
-     on NE pose plus la photo par-dessus l'emblème ; on garde uniquement le dessin SVG d'origine (léger, net, pas de cadre noir). */
-  function phImg(id) { return ''; }
+  /* 2026-11 (propriétaire : « fais revenir les emblèmes réalistes, mais SANS le rond noir ») :
+     l'emblème-photo a un fond détouré en bord doux (transparent) → il flotte sur la galaxie, aucun rond ni cadre noir.
+     Lazy-load : seules les vignettes visibles de la barre se chargent → léger, aucun poids sur les courbes. */
+  var IDX_PV = '3383';
+  function phImg(id) {
+    return '<img class="idx-ph" loading="lazy" decoding="async" src="img/indices/' + id + '.webp?v=' + IDX_PV + '" alt="" aria-hidden="true">';
+  }
   // Les 10 marchés d'origine : mêmes symboles qu'avant, redessinés dans le même style (remplacés au démarrage).
   var ORIG = {
     v100: ['flame', '#2BE07A'], stable: ['cobra', '#FF2D75'], apex500: ['lion', '#F5B83D'], horizon50: ['pyramid', '#FF9A1F'],
@@ -1073,7 +1077,7 @@
   function redrawOriginals(bar) {
     Object.keys(ORIG).forEach(function (id) {
       var c = bar.querySelector('.asset-chip[data-asset="' + id + '"] .mk-art');
-      if (c) c.innerHTML = emblemSvg(ORIG[id][0], ORIG[id][1], null, 'mgo' + id) + phImg(id);
+      if (c) c.innerHTML = phImg(id);
     });
   }
 
@@ -1087,7 +1091,7 @@
     b.style.setProperty('--p1', p.p1 || '#C9B8FF');
     b.style.setProperty('--p2', p.p2 || '#3B1D8F');
     b.style.setProperty('--pg', p.pg || 'rgba(167,139,250,.45)');
-    b.innerHTML = '<span class="mk-art" aria-hidden="true">' + glyphSvg(e, 'mgx' + e.id) + phImg(e.id) + '</span><span class="mk-name">' + e.name + '</span>' +
+    b.innerHTML = '<span class="mk-art" aria-hidden="true">' + phImg(e.id) + '</span><span class="mk-name">' + e.name + '</span>' +
       '<div class="n"><span class="asset-ico sig-ico" style="--sig:' + e.accent + '" aria-hidden="true">' + glyphSvg(e, 'mgy' + e.id, 15) + '</span>' + e.name + '</div>' +
       '<div class="payout-live">+90%</div>';
     return b;
