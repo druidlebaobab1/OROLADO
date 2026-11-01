@@ -5356,7 +5356,7 @@ html body #portalModal .defi-timer{font-size:12.5px;font-weight:800;color:#FFE6A
 html body #portalModal .defi-market{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:9px 11px;border-radius:12px;background:rgba(0,0,0,.28);margin-bottom:8px}
 html body #portalModal .defi-mk-lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9AA3C7}
 html body #portalModal .defi-market b{font-size:17px;letter-spacing:.06em;color:#fff}
-html body #portalModal .defi-rule{margin:0 0 10px;font-size:14px;line-height:1.45;color:#ECEFFA;font-weight:600}
+html body #portalModal .defi-rule{margin:0 0 10px;font-size:14px;line-height:1.45;color:#ECE1CB;font-weight:600}
 html body #portalModal .defi-dots{display:flex;justify-content:center;gap:10px;margin:4px 0 8px}
 html body #portalModal .defi-dots i{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.22);background:rgba(255,255,255,.04);transition:.3s}
 html body #portalModal .defi-dots i.on{background:radial-gradient(circle at 40% 35%,#FFE6A6,#F2B33D 60%,#B9700C);border-color:#F2B33D;box-shadow:0 0 12px rgba(242,179,61,.6)}
@@ -5370,7 +5370,7 @@ html body #portalModal .defi-how summary{cursor:pointer;font-weight:800;font-siz
 html body #portalModal .defi-how summary::-webkit-details-marker{display:none}
 html body #portalModal .defi-how summary::after{content:" ▾"}
 html body #portalModal .defi-how p{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#C9CEE6}
-html body #portalModal .defi-how .defi-ex{padding:8px 10px;border-radius:10px;background:rgba(242,179,61,.08);border-left:2px solid #F2B33D;color:#ECEFFA}
+html body #portalModal .defi-how .defi-ex{padding:8px 10px;border-radius:10px;background:rgba(242,179,61,.08);border-left:2px solid #F2B33D;color:#ECE1CB}
 html body .defi-chip{position:fixed;z-index:60;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 4px);display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;border:1px solid rgba(242,179,61,.5);background:rgba(9,13,34,.92);color:#fff;font:800 11.5px/1.2 inherit;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 html body .defi-chip.hidden{display:none!important}
 html body .defi-chip .dc-mk{letter-spacing:.06em}
@@ -5478,7 +5478,7 @@ html body #portalModal .portal-emblem{width:108px;height:108px;filter:drop-shado
 html body #portalModal .portal-emblem .pe-orbit{animation:peOrbit 9s linear infinite;transform-origin:60px 72px}
 @keyframes peOrbit{to{stroke-dashoffset:-320}}
 html body #portalModal .portal-title{font-size:22px;letter-spacing:.28em;background:linear-gradient(180deg,#FFE9B0,#F2B33D 55%,#C98316);-webkit-background-clip:text;background-clip:text;color:transparent!important}
-html body #portalModal .defi-card{background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),radial-gradient(circle at 100% 0%,rgba(242,179,61,.16),rgba(12,17,40,.92) 62%)!important;border:1px solid rgba(242,179,61,.30)!important;box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+html body #portalModal .defi-card{background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),radial-gradient(circle at 100% 0%,rgba(242,179,61,.16),rgba(20,16,10,.94) 62%)!important;border:1px solid rgba(242,179,61,.30)!important;box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
 html body #portalModal .defi-badge{color:#FFD27A}
 html body #portalModal .defi-badge svg.pi{color:#FFD27A}
 html body #portalModal .defi-market{display:none!important}
@@ -5548,17 +5548,17 @@ html body #portalModal .portal-tabs.hidden{display:none!important}
 html body #portalModal .pt-tab{display:flex;align-items:center;justify-content:center;gap:7px;height:38px;border:0;border-radius:10px;background:transparent;color:#AEB6D6;font:800 13.5px/1 inherit;font-family:inherit;cursor:pointer}
 html body #portalModal .pt-tab .pi{width:17px;height:17px;stroke:currentColor}
 html body #portalModal .pt-tab.on{background:linear-gradient(180deg,rgba(242,179,61,.22),rgba(242,179,61,.10));color:#FFE6A6;box-shadow:inset 0 0 0 1px rgba(242,179,61,.45)}
-html body #portalModal .aff-card{border-radius:18px;padding:14px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(12,17,40,.92);border:1px solid rgba(242,179,61,.30);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+html body #portalModal .aff-card{border-radius:18px;padding:14px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(20,16,10,.94);border:1px solid rgba(242,179,61,.30);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
 html body #portalModal .aff-card.hidden{display:none!important}
 html body #portalModal .aff-big{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 10px;text-align:center}
 html body #portalModal .aff-big b{flex:1 1 0;padding:9px 6px;border-radius:12px;background:rgba(242,179,61,.12);border:1px solid rgba(242,179,61,.35);color:#FFE6A6;font-size:14px;font-weight:900;line-height:1.2}
 html body #portalModal .aff-big i{font-style:normal;color:#F2B33D;font-weight:900;font-size:18px}
 html body #portalModal .aff-steps{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-html body #portalModal .aff-steps li{display:flex;align-items:center;gap:9px;font-size:13px;line-height:1.3;color:#ECEFFA}
+html body #portalModal .aff-steps li{display:flex;align-items:center;gap:9px;font-size:13px;line-height:1.3;color:#ECE1CB}
 html body #portalModal .aff-steps em{font-style:normal}
 html body #portalModal .aff-steps span{flex:0 0 22px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#F2B33D;color:#1A1205;font-weight:900;font-size:12px}
 html body #portalModal .aff-ex{margin:10px 0 0;padding:7px 10px;border-radius:10px;background:rgba(242,179,61,.08);border-left:2px solid #F2B33D}
-html body #portalModal .aff-ex p{margin:0;font-size:12.5px;line-height:1.45;color:#ECEFFA}
+html body #portalModal .aff-ex p{margin:0;font-size:12.5px;line-height:1.45;color:#ECE1CB}
 html body #portalModal .aff-rl{margin-top:9px!important}
 html body #portalModal .aff-link{display:flex;align-items:center;gap:8px;margin-top:10px;padding:5px 5px 5px 12px;border-radius:12px;background:rgba(0,0,0,.28);border:1px dashed rgba(242,179,61,.45)}
 html body #portalModal .aff-url{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;font-size:13px;font-weight:700;color:#FFE6A6}
@@ -5586,9 +5586,9 @@ html body #portalModal .arv-income{display:flex;flex-direction:column;gap:3px;pa
 html body #portalModal .arv-income span{font-size:clamp(11px,3vw,12.5px);font-weight:700;color:#3a2a08}
 html body #portalModal .arv-income b{font-size:clamp(20px,6.4vw,28px);font-weight:900;color:#1a1206;direction:ltr;line-height:1.05;overflow-wrap:anywhere}
 html body #portalModal .arv-mets{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-html body #portalModal .arv-met{min-width:0;display:flex;flex-direction:column;gap:2px;padding:10px;border-radius:11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+html body #portalModal .arv-met{position:relative;z-index:2;min-width:0;display:flex;flex-direction:column;gap:2px;padding:10px;border-radius:11px;background:linear-gradient(180deg,#191309,#131008)!important;border:1px solid rgba(242,193,78,.18)}
 html body #portalModal .arv-met b{font-size:clamp(15px,4.4vw,19px);font-weight:900;color:#fff;direction:ltr;line-height:1.1;overflow-wrap:anywhere}
-html body #portalModal .arv-met span{font-size:clamp(10px,2.8vw,11.5px);color:#AEB6D6;line-height:1.25;overflow-wrap:anywhere}
+html body #portalModal .arv-met span{font-size:clamp(10px,2.8vw,11.5px);color:#B8AC8C;line-height:1.25;overflow-wrap:anywhere}
 html body #portalModal .arv-head{display:flex;gap:7px;flex-wrap:wrap}
 html body #portalModal .arv-kpi{flex:1 1 90px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 6px;border-radius:12px;background:linear-gradient(180deg,rgba(242,179,61,.14),rgba(242,179,61,.05));border:1px solid rgba(242,179,61,.35);text-align:center}
 html body #portalModal .arv-kpi b{font-size:clamp(15px,4.6vw,20px);font-weight:900;color:#fff;direction:ltr;line-height:1.1;max-width:100%;overflow-wrap:anywhere}
@@ -5597,16 +5597,16 @@ html body #portalModal .arv-kpi span{font-size:clamp(9.5px,2.8vw,11.5px);color:#
 html body #portalModal .arv-big{margin:2px 0 0;font-size:clamp(14px,4.4vw,18px);font-weight:900;line-height:1.25;color:#FFE6A6;text-wrap:balance;overflow-wrap:anywhere}
 html body #portalModal .arv-sub{margin:0;font-size:clamp(12px,3.4vw,13.5px);line-height:1.45;color:#C7CEE8;overflow-wrap:anywhere}
 html body #portalModal .arv-rules{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-html body #portalModal .arv-rules li{position:relative;padding:8px 10px 8px 26px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:clamp(11.5px,3.2vw,13px);line-height:1.4;color:#ECEFFA;overflow-wrap:anywhere}
+html body #portalModal .arv-rules li{position:relative;padding:8px 10px 8px 26px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:clamp(11.5px,3.2vw,13px);line-height:1.4;color:#ECE1CB;overflow-wrap:anywhere}
 html body #portalModal .arv-rules li::before{content:"◆";position:absolute;left:9px;top:8px;color:#F2B33D;font-size:11px}
 html body #portalModal .arv-rules li.arv-safe{background:rgba(72,195,141,.1);border-color:rgba(72,195,141,.4)}
 html body #portalModal .arv-rules li.arv-safe::before{content:"✓";color:#48C38D}
-html body #portalModal .arv-proj{display:flex;flex-direction:column;gap:5px;padding:10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)}
+html body #portalModal .arv-proj{position:relative;z-index:2;display:flex;flex-direction:column;gap:5px;padding:10px;border-radius:12px;background:linear-gradient(180deg,#1a140c,#141009)!important;border:1px solid rgba(242,193,78,.28);box-shadow:0 8px 22px -12px rgba(0,0,0,.6)}
 html body #portalModal .arv-proj>b{font-size:clamp(12.5px,3.4vw,14px);color:#fff}
 html body #portalModal .arv-prow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:clamp(11.5px,3.2vw,13px)}
-html body #portalModal .arv-prow span{color:#AEB6D6;min-width:0;overflow-wrap:anywhere}
+html body #portalModal .arv-prow span{color:#B8AC8C;min-width:0;overflow-wrap:anywhere}
 html body #portalModal .arv-prow b{color:#F2B33D;font-weight:900;direction:ltr;white-space:nowrap}
-html body #portalModal .arv-proj small{color:#8E97BC;font-size:clamp(10px,2.8vw,11.5px);line-height:1.35}
+html body #portalModal .arv-proj small{color:#9A8F70;font-size:clamp(10px,2.8vw,11.5px);line-height:1.35}
 html body #portalModal .arv-faq{display:flex;flex-direction:column;gap:6px}
 html body #portalModal .arv-faq>b{font-size:clamp(12.5px,3.4vw,14px);color:#fff;margin-bottom:1px}
 html body #portalModal .arv-q{border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);overflow:hidden}
@@ -5751,7 +5751,7 @@ html body #portalModal .aff-row .ar-gain b{color:#3DDC97}
 html body #portalModal .aff-row .ar-left{font-variant-numeric:tabular-nums;color:#FFD27A}
 html body #portalModal .aff-empty{margin:14px 0;text-align:center;font-size:13px;color:#9AA4CC}
 /* Top 25 */
-html body #portalModal .top-card{border-radius:18px;padding:14px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(12,17,40,.92);border:1px solid rgba(242,179,61,.30);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+html body #portalModal .top-card{border-radius:18px;padding:14px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(20,16,10,.94);border:1px solid rgba(242,179,61,.30);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
 html body #portalModal .top-card.hidden{display:none!important}
 html body #portalModal .top-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 html body #portalModal .top-title{display:flex;align-items:center;gap:8px;color:#FFE6A6;font-size:15.5px;font-weight:900}
@@ -5892,14 +5892,14 @@ html body #portalModal .aff-rows{max-height:none;min-height:46px}
 html body #portalModal .aff-row{padding:6px 9px!important}
 
 /* Visiteur non inscrit. */
-html body #portalModal .gift-guest{border-radius:18px;padding:18px 16px;text-align:center;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(12,17,40,.92);border:1px solid rgba(242,179,61,.35);box-shadow:0 18px 40px rgba(0,0,0,.35)}
+html body #portalModal .gift-guest{border-radius:18px;padding:18px 16px;text-align:center;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(20,16,10,.94);border:1px solid rgba(242,179,61,.35);box-shadow:0 18px 40px rgba(0,0,0,.35)}
 html body #portalModal .gift-guest.hidden{display:none!important}
 html body #portalModal .gg-icons{display:flex;justify-content:center;gap:12px;margin-bottom:12px}
 html body #portalModal .gg-i{width:46px;height:46px;border-radius:14px;display:grid;place-items:center}
 html body #portalModal .gg-i svg{width:26px;height:26px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 html body #portalModal .gg-t{display:block;font-size:19px;font-weight:900;color:#FFE6A6;margin-bottom:12px}
 html body #portalModal .gg-list{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:8px;text-align:start}
-html body #portalModal .gg-list li{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);font-size:13px;line-height:1.35;color:#ECEFFA}
+html body #portalModal .gg-list li{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);font-size:13px;line-height:1.35;color:#ECE1CB}
 html body #portalModal .gg-list li i{flex:0 0 10px;width:10px;height:10px;border-radius:50%}
 html body #portalModal .gg-list li i.t-defi{background:#FF6F80}
 html body #portalModal .gg-list li i.t-aff{background:#3DDCA6}
@@ -5945,7 +5945,7 @@ html[dir=rtl] body #chartStage .defi-hud{left:auto;right:8px}
 html body #portalModal .aff-big i{font-size:15px!important}
 html body #portalModal .aff-proj{margin-top:9px;padding:9px 11px;border-radius:12px;background:linear-gradient(160deg,rgba(43,212,154,.12),rgba(43,212,154,.03));border:1px solid rgba(43,212,154,.35)}
 html body #portalModal .aff-proj b{display:block;font-size:12.5px;color:#BFF5DC;font-weight:900;margin-bottom:4px}
-html body #portalModal .aff-proj p{margin:2px 0 0;font-size:12px;line-height:1.35;color:#ECEFFA;font-weight:700}
+html body #portalModal .aff-proj p{margin:2px 0 0;font-size:12px;line-height:1.35;color:#ECE1CB;font-weight:700}
 html body #portalModal .aff-proj small{display:block;margin-top:5px;font-size:10.5px;line-height:1.3;color:#8FE3B8}
 html body #portalModal .aff-row{padding:5px 9px!important;border-radius:9px!important}
 html body #portalModal .aff-row b{font-size:12px!important}
@@ -5964,32 +5964,32 @@ html.saf-under body #portalModal#portalModal .aff-rows-all{max-height:calc(100dv
 @media (max-width:859px){html body #portalModal#portalModal.tabs-on .portal-head{display:none!important}html body #portalModal#portalModal.tabs-on .portal-tabs{margin-top:auto!important}html body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-top:calc(env(safe-area-inset-top,0px) + 50px)!important}}
 html body #portalModal#portalModal.tabs-on .portal-head{display:none!important}
 /* v2417 — 4e onglet « Bonus dépôt » (bleu) : +10 % rempli en jouant, barre de progression, chrono. */
-html body #portalModal .t-bon .pt-ico{background:rgba(92,155,255,.16);box-shadow:inset 0 0 0 1px rgba(92,155,255,.5)}
+html body #portalModal .t-bon .pt-ico{background:rgba(224,168,36,.16);box-shadow:inset 0 0 0 1px rgba(224,168,36,.5)}
 html body #portalModal .t-bon svg{stroke:#7FB2FF}
-html body #portalModal .pt-tab.on.t-bon{background:linear-gradient(180deg,rgba(92,155,255,.24),rgba(92,155,255,.06))!important;color:#D6E6FF!important;box-shadow:inset 0 0 0 1px rgba(92,155,255,.6)!important}
+html body #portalModal .pt-tab.on.t-bon{background:linear-gradient(180deg,rgba(224,168,36,.24),rgba(224,168,36,.06))!important;color:#D6E6FF!important;box-shadow:inset 0 0 0 1px rgba(224,168,36,.6)!important}
 html body #portalModal .pt-tab{font-size:11px!important}
-html body #portalModal .bon-card{border-radius:18px;padding:14px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(12,17,40,.92);border:1px solid rgba(92,155,255,.38);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+html body #portalModal .bon-card{border-radius:18px;padding:14px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.015)),rgba(20,16,10,.94);border:1px solid rgba(224,168,36,.38);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}
 html body #portalModal .bon-card.hidden{display:none!important}
 html body #portalModal .bon-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 html body #portalModal .bon-big{margin:0;font-size:17px;line-height:1.25;font-weight:900;color:#D6E6FF}
-html body #portalModal .bon-head .top-timer{color:#9CC4FF;flex:0 0 auto}
+html body #portalModal .bon-head .top-timer{color:#D8C89A;flex:0 0 auto}
 html body #portalModal .bon-steps{margin-top:12px!important}
-html body #portalModal .bon-steps li span{background:#5C9BFF!important;color:#06142E!important}
-html body #portalModal .bon-meter{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(92,155,255,.08);border:1px solid rgba(92,155,255,.35)}
+html body #portalModal .bon-steps li span{background:#E0A824!important;color:#06142E!important}
+html body #portalModal .bon-meter{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(224,168,36,.08);border:1px solid rgba(224,168,36,.35)}
 html body #portalModal .bon-meter.hidden{display:none!important}
 html body #portalModal .bm-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px}
 html body #portalModal .bm-top b{font-size:17px;font-weight:900;color:#fff;direction:ltr}
-html body #portalModal .bm-top span{font-size:11.5px;color:#9CC4FF;font-weight:700}
+html body #portalModal .bm-top span{font-size:11.5px;color:#D8C89A;font-weight:700}
 html body #portalModal .bm-bar{height:12px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}
-html body #portalModal .bm-bar i{display:block;height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,#5C9BFF,#3DDCA6);box-shadow:0 0 12px rgba(92,155,255,.6);transition:width .6s ease}
+html body #portalModal .bm-bar i{display:block;height:100%;width:0;border-radius:7px;background:linear-gradient(90deg,#E0A824,#3DDCA6);box-shadow:0 0 12px rgba(224,168,36,.6);transition:width .6s ease}
 html[dir=rtl] body #portalModal .bm-bar i{margin-inline-start:auto}
-html body #portalModal .bon-state{margin:10px 0 0;font-size:13.5px;line-height:1.4;font-weight:800;color:#ECEFFA;text-align:center}
+html body #portalModal .bon-state{margin:10px 0 0;font-size:13.5px;line-height:1.4;font-weight:800;color:#ECE1CB;text-align:center}
 html body #portalModal .bon-state:empty{display:none}
 html body #portalModal .bon-state.full{color:#8FE3B8}
 html body #portalModal .bon-state.expired{color:#FFB3BE}
 html body #portalModal .bon-go{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:48px;margin-top:10px;font-size:15px!important;font-weight:900!important}
 html body #portalModal .bon-go.hidden,html body #portalModal .bon-test.hidden{display:none!important}
-html body #portalModal .bon-ex{margin-top:10px!important;border-left-color:#5C9BFF!important;background:rgba(92,155,255,.08)!important}
+html body #portalModal .bon-ex{margin-top:10px!important;border-left-color:#E0A824!important;background:rgba(224,168,36,.08)!important}
 html body #portalModal .bon-test{margin-top:8px;width:100%;height:34px!important}
 @media (max-width:859px){html body #portalModal#portalModal .bon-card{margin-bottom:auto!important}}
 /* v2418 — corrections du propriétaire (captures iPhone + Android). */
@@ -6034,11 +6034,11 @@ html body #portalModal .top-rule{font-size:10.5px!important}
 html body #portalModal .top-play{font-size:14px!important;white-space:nowrap}
 /* Bonus dépôt : titre encadré plus petit, barre centrée, chrono plus petit. */
 html body #portalModal .bon-head{align-items:center}
-html body #portalModal .bon-big{flex:1 1 auto;font-size:14px!important;line-height:1.3!important;padding:8px 10px;border-radius:12px;background:rgba(92,155,255,.10);border:1px solid rgba(92,155,255,.45);color:#E2EDFF!important}
+html body #portalModal .bon-big{flex:1 1 auto;font-size:14px!important;line-height:1.3!important;padding:8px 10px;border-radius:12px;background:rgba(224,168,36,.10);border:1px solid rgba(224,168,36,.45);color:#E2EDFF!important}
 html body #portalModal .bon-head .top-timer{font-size:11px!important}
 html body #portalModal .bm-top{flex-direction:column-reverse!important;align-items:center!important;gap:2px!important;margin-bottom:8px!important}
 html body #portalModal .bm-top b{font-size:20px!important}
-html body #portalModal .bm-top span{font-size:11px!important;color:#9CC4FF!important}
+html body #portalModal .bm-top span{font-size:11px!important;color:#D8C89A!important}
 html body #portalModal .bon-state{font-size:12.5px!important}
 html body #portalModal .bon-steps li em{font-size:10.5px!important}
 /* v2418 — Android : Aide, langue, profil et cadeau un peu plus grands (moins de vide autour). */
@@ -6064,7 +6064,7 @@ html body .topbar .portal-btn.portal-btn .pw-dot{width:6px!important;height:6px!
 html body #portalModal .aff-ex p:empty{display:none}
 html body #portalModal .aff-ex p{padding:3px 0}
 html body #portalModal .aff-ex p + p{border-top:1px dashed rgba(242,179,61,.28)}
-html body #portalModal .bon-ex p + p{border-top-color:rgba(92,155,255,.3)}
+html body #portalModal .bon-ex p + p{border-top-color:rgba(224,168,36,.3)}
 /* Petits écrans (Android) : textes qui ne débordent plus. */
 @media (max-width:420px){
   html body #portalModal .defi-how .defi-ex{font-size:11.5px!important}
@@ -6233,7 +6233,7 @@ html body .defi-win.dw-one .dw-t{text-transform:none!important;font-size:19px!im
 html body #portalModal{--tc:255,104,124;--tc2:255,180,92}
 html body #portalModal.aff-on{--tc:43,212,154;--tc2:120,240,210}
 html body #portalModal.top-on{--tc:242,179,61;--tc2:255,226,140}
-html body #portalModal.bon-on{--tc:92,155,255;--tc2:170,120,255}
+html body #portalModal.bon-on{--tc:224,168,36;--tc2:246,217,138}
 /* Fond de l'univers : nébuleuses colorées qui dérivent lentement derrière les étoiles. */
 html body #portalModal#portalModal#portalModal > .modal-box.portal-box{background:
   radial-gradient(60% 38% at 12% 8%,rgba(var(--tc),.20),transparent 70%),
@@ -6251,7 +6251,7 @@ html body #portalModal .pt-tab .pt-ico svg{width:19px!important;height:19px!impo
 html body #portalModal .pt-tab.t-defi .pt-ico{background:linear-gradient(145deg,#FF9AA8,#FF5A6E 55%,#C2185B)}
 html body #portalModal .pt-tab.t-aff .pt-ico{background:linear-gradient(145deg,#8FF5CF,#2BD49A 55%,#0E8F6A)}
 html body #portalModal .pt-tab.t-top .pt-ico{background:linear-gradient(145deg,#FFE7A3,#F6C453 50%,#D9891A)}
-html body #portalModal .pt-tab.t-bon .pt-ico{background:linear-gradient(145deg,#A9C8FF,#5C9BFF 55%,#6A3DFF)}
+html body #portalModal .pt-tab.t-bon .pt-ico{background:linear-gradient(145deg,#F6D98A,#E0A824 55%,#9A5A12)}
 html body #portalModal .pt-tab.on .pt-ico{transform:translateY(-2px) scale(1.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 0 16px rgba(var(--tc),.75),0 4px 12px rgba(0,0,0,.4)}
 html body #portalModal .pt-tab:not(.on) .pt-ico{filter:saturate(.7) brightness(.85)}
 /* Cartes : bord lumineux de la couleur de la page + une petite planète avec son anneau dans le coin. */
@@ -6280,7 +6280,7 @@ html body #portalModal#portalModal :is(.aff-big b,.bon-big)::after{content:"";po
 /* Pastilles 1-2-3 des étapes : couleur de la page. */
 html body #portalModal .aff-steps3 li > span{background:linear-gradient(145deg,rgb(var(--tc2)),rgb(var(--tc)))!important;color:#160C24!important;box-shadow:0 0 10px rgba(var(--tc),.55)!important}
 /* Barre du bonus : dégradé vivant qui scintille. */
-html body #portalModal .bm-bar i{background:linear-gradient(90deg,#5C9BFF,#8A6BFF,#2EE59D,#5C9BFF)!important;background-size:200% 100%!important;animation:oroBar 3s linear infinite;box-shadow:0 0 12px rgba(92,155,255,.6)}
+html body #portalModal .bm-bar i{background:linear-gradient(90deg,#E0A824,#8A6BFF,#2EE59D,#E0A824)!important;background-size:200% 100%!important;animation:oroBar 3s linear infinite;box-shadow:0 0 12px rgba(224,168,36,.6)}
 @keyframes oroBar{0%{background-position:0 0}100%{background-position:200% 0}}
 /* Podium du tournoi : la 1re place brille. */
 html body #portalModal .tp.tp1 .tp-medal{filter:drop-shadow(0 0 12px rgba(255,210,122,.75));animation:oroFloat 4s ease-in-out infinite}
@@ -6607,15 +6607,15 @@ html body #portalModal .oro-amt.pos .oa-n{color:#2EE59D!important;text-shadow:0 
 
 /* ===== v2441 — Fenêtre « Aide & support » en mode univers (bleu « assistance »). Mêmes champs, même envoi. ===== */
 html body #helpModal > .modal-box{position:relative;overflow:hidden!important;text-align:left;
-  border:1px solid rgba(92,155,255,.6)!important;
-  background:radial-gradient(circle at 50% -8%,rgba(92,155,255,.42),rgba(124,77,255,.20) 42%,rgba(9,10,32,.97) 74%),
+  border:1px solid rgba(224,168,36,.6)!important;
+  background:radial-gradient(circle at 50% -8%,rgba(224,168,36,.42),rgba(124,77,255,.20) 42%,rgba(9,10,32,.97) 74%),
     url("galaxy-modal.svg?v=2441") center/cover no-repeat,#0A0B22!important;
-  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(92,155,255,.30),0 0 100px rgba(124,77,255,.28)!important}
+  box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(224,168,36,.30),0 0 100px rgba(124,77,255,.28)!important}
 html body #helpModal > .modal-box > :not(.cosmo-sp):not(.help-hero){position:relative;z-index:2}
 html body #helpModal > .modal-box > .btn-close{position:absolute!important;z-index:3}
 html body #helpModal .help-hero{position:relative;height:84px;display:grid;place-items:center;margin:2px 0 4px;z-index:1}
 html body #helpModal .help-hero .cosmo-rays{top:42px;background:repeating-conic-gradient(from 0deg,rgba(140,190,255,.30) 0deg 6deg,transparent 6deg 20deg)!important}
-html body #helpModal .help-hero-ico{position:relative;z-index:2;width:72px;height:72px;filter:drop-shadow(0 0 16px rgba(92,155,255,.75));animation:dwFloat 2.8s ease-in-out infinite}
+html body #helpModal .help-hero-ico{position:relative;z-index:2;width:72px;height:72px;filter:drop-shadow(0 0 16px rgba(224,168,36,.75));animation:dwFloat 2.8s ease-in-out infinite}
 html body #helpModal .modal-title{justify-content:center!important;text-align:center;font-size:1.1rem!important;font-weight:900;padding-right:0!important;
   background:linear-gradient(90deg,#E6F0FF,#9FD3FF 45%,#7C9CFF);-webkit-background-clip:text;background-clip:text;color:transparent!important}
 html body #helpModal .help-live{display:flex!important;justify-content:center;margin:6px auto 12px!important;width:max-content;max-width:100%}
@@ -6626,7 +6626,7 @@ html body #helpModal .field{position:relative;margin-bottom:10px}
 html body #helpModal .field label{color:#AFC4F0!important;letter-spacing:.06em}
 html body #helpModal .field input,html body #helpModal .field textarea{background:rgba(255,255,255,.06)!important;border:1px solid rgba(146,180,255,.28)!important;border-radius:12px!important;color:#fff!important;transition:border-color .2s,box-shadow .2s}
 html body #helpModal .field input{padding-left:40px!important}
-html body #helpModal .field input:focus,html body #helpModal .field textarea:focus{border-color:rgba(120,170,255,.85)!important;box-shadow:0 0 0 3px rgba(92,155,255,.20),0 0 18px rgba(92,155,255,.25)!important;outline:0}
+html body #helpModal .field input:focus,html body #helpModal .field textarea:focus{border-color:rgba(120,170,255,.85)!important;box-shadow:0 0 0 3px rgba(224,168,36,.20),0 0 18px rgba(224,168,36,.25)!important;outline:0}
 html body #helpModal .help-in-ico{position:absolute;left:12px;bottom:0;height:44px;display:grid;place-items:center;pointer-events:none;z-index:3}
 html body #helpModal .help-in-ico svg{width:18px;height:18px;fill:none;stroke:#8FB8FF;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 /* Bouton Envoyer : icône d'avion en papier. */
@@ -6691,12 +6691,12 @@ html body #helpModal > .modal-box{scrollbar-width:none}html body #helpModal > .m
    cases en verre coloré avec icône dans un carré lumineux, bouton Envoyer brillant. Mêmes champs, même envoi. ===== */
 html body #helpModal#helpModal > .modal-box{
   background:
-    radial-gradient(120% 60% at 50% 0%,rgba(92,155,255,.55),rgba(92,155,255,0) 60%),
+    radial-gradient(120% 60% at 50% 0%,rgba(224,168,36,.55),rgba(224,168,36,0) 60%),
     radial-gradient(90% 55% at 0% 100%,rgba(168,85,247,.55),rgba(168,85,247,0) 65%),
     radial-gradient(90% 55% at 100% 85%,rgba(34,211,238,.38),rgba(34,211,238,0) 65%),
     linear-gradient(180deg,#1B1F5E 0%,#22165A 50%,#2A1460 100%)!important;
   border:1px solid rgba(140,190,255,.7)!important;
-  box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 0 40px rgba(92,155,255,.45),0 0 90px rgba(168,85,247,.35)!important}
+  box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 0 40px rgba(224,168,36,.45),0 0 90px rgba(168,85,247,.35)!important}
 /* Étoiles qui scintillent sur toute la fenêtre. */
 html body #helpModal > .modal-box::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.9;
   background-image:radial-gradient(1.5px 1.5px at 12% 22%,#fff,transparent),radial-gradient(1px 1px at 80% 12%,#fff,transparent),
@@ -6736,9 +6736,9 @@ html body #helpModal .field input{padding-left:48px!important}
 html body #helpModal .field textarea{padding-left:48px!important}
 html body #helpModal .help-in-ico{left:8px;height:auto;bottom:auto;top:auto}
 html body #helpModal .field .help-in-ico{width:30px;height:30px;border-radius:9px;bottom:7px;
-  background:linear-gradient(135deg,#5C9BFF,#8B5CF6);box-shadow:0 0 10px rgba(92,155,255,.55)}
+  background:linear-gradient(135deg,#E0A824,#8B5CF6);box-shadow:0 0 10px rgba(224,168,36,.55)}
 html body #helpModal .field .help-in-ico svg{stroke:#fff!important;width:16px;height:16px}
-html body #helpModal .field .help-in-ico.msg{bottom:auto;top:30px;background:linear-gradient(135deg,#22D3EE,#5C9BFF)}
+html body #helpModal .field .help-in-ico.msg{bottom:auto;top:30px;background:linear-gradient(135deg,#22D3EE,#E0A824)}
 /* Bouton Envoyer : or brillant avec reflet qui passe. */
 html body #helpModal .help-send{position:relative;overflow:hidden;border-radius:14px!important;min-height:48px;font-weight:900!important;
   background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#2A1600!important;
@@ -8327,7 +8327,7 @@ html body #portalModal#portalModal .bon-head .bon-big{font-size:12.5px!important
    ronds dorés : bord bleu léger, durée en blanc avec une petite lueur bleue, flèches fines sans rond. ===== */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row,
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row{
-  background:rgba(92,155,255,.08)!important;border:1px solid rgba(92,155,255,.45)!important;box-shadow:inset 0 0 12px rgba(92,155,255,.12)!important}
+  background:rgba(224,168,36,.08)!important;border:1px solid rgba(224,168,36,.45)!important;box-shadow:inset 0 0 12px rgba(224,168,36,.12)!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on,
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on{
   background:transparent!important;border:0!important;color:#E2EDFF!important;box-shadow:none!important;text-shadow:0 0 8px rgba(120,170,255,.45)!important}
@@ -8346,7 +8346,7 @@ html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOv
 /* ===== v2492 — Mise et gain prennent le même bleu que la case des durées (moins de couleurs dans le terminal). ===== */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) :is(.stake-field,.win-preview),
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) :is(.stake-field,.win-preview){
-  background:rgba(92,155,255,.08)!important;border:1px solid rgba(92,155,255,.45)!important;box-shadow:inset 0 0 12px rgba(92,155,255,.12)!important}
+  background:rgba(224,168,36,.08)!important;border:1px solid rgba(224,168,36,.45)!important;box-shadow:inset 0 0 12px rgba(224,168,36,.12)!important}
 
 /* ===== v2492 — PC : la fenêtre Cadeaux s'ouvre en GRAND (comme la page Apprendre), plus en petite page de téléphone. ===== */
 @media (min-width:860px){
@@ -8451,9 +8451,9 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):
   html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeReal .mb-amt{font-size:21px!important}
   html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeDemo .mb-amt{font-size:16px!important}
 }
-html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher{background:linear-gradient(180deg,rgba(92,155,255,.16),rgba(70,90,200,.10))!important;border:1px solid rgba(92,155,255,.45)!important;border-radius:16px!important;
-  box-shadow:inset 0 0 14px rgba(92,155,255,.12),0 6px 18px rgba(0,0,0,.25)!important;transition:border-color .3s,box-shadow .3s,background .3s!important}
-html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher:where(.hz-mdemo):not(#oroQ):not(.oroQ){border-color:rgba(110,160,255,.75)!important;box-shadow:inset 0 0 14px rgba(92,155,255,.16),0 0 16px rgba(92,155,255,.30)!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher{background:linear-gradient(180deg,rgba(224,168,36,.16),rgba(70,90,200,.10))!important;border:1px solid rgba(224,168,36,.45)!important;border-radius:16px!important;
+  box-shadow:inset 0 0 14px rgba(224,168,36,.12),0 6px 18px rgba(0,0,0,.25)!important;transition:border-color .3s,box-shadow .3s,background .3s!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher:where(.hz-mdemo):not(#oroQ):not(.oroQ){border-color:rgba(110,160,255,.75)!important;box-shadow:inset 0 0 14px rgba(224,168,36,.16),0 0 16px rgba(224,168,36,.30)!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher:where(.hz-mreal):not(#oroQ):not(.oroQ){border-color:rgba(60,245,166,.70)!important;box-shadow:inset 0 0 14px rgba(34,212,127,.14),0 0 18px rgba(34,212,127,.32)!important;background:linear-gradient(180deg,rgba(34,212,127,.12),rgba(70,90,200,.10))!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher .mode-btn{border:0!important;box-shadow:none!important;background:transparent!important;border-radius:13px!important;position:relative!important;overflow:hidden!important;transition:all .3s!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeDemo::after{content:""!important;position:absolute!important;right:0!important;top:22%!important;bottom:22%!important;width:1px!important;background:rgba(255,255,255,.18)!important;left:auto!important;height:auto!important;border-radius:0!important;box-shadow:none!important;display:block!important}
@@ -8463,7 +8463,7 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeReal .mb-lbl{color:#5CF7B5!important;-webkit-text-fill-color:#5CF7B5!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher .mode-btn:not(.on){opacity:.82}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher .mode-btn:not(.on) .mb-amt{color:#D6E0FF!important;-webkit-text-fill-color:#D6E0FF!important}
-html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeDemo.on{background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22))!important;box-shadow:inset 0 -3px 0 #7AA7FF,0 0 14px rgba(92,155,255,.35)!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeDemo.on{background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22))!important;box-shadow:inset 0 -3px 0 #7AA7FF,0 0 14px rgba(224,168,36,.35)!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeReal.on{background:linear-gradient(135deg,rgba(14,159,94,.62),rgba(34,212,127,.38) 60%,rgba(60,245,166,.22))!important;box-shadow:inset 0 -3px 0 #22D47F,0 0 18px rgba(34,212,127,.38)!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeReal .mb-wal{background:rgba(34,212,127,.22)!important;border:1px solid rgba(60,245,166,.55)!important;color:#5CF7B5!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher #modeReal .mb-wal svg{stroke:#5CF7B5!important;color:#5CF7B5!important}
@@ -8473,7 +8473,7 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher .mode-btn.bal-up .mb-amt,html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4) .fs-mode-btn.bal-up .mb-amt{animation:oroBalUp .9s ease-out!important;color:#5CF7B5!important;-webkit-text-fill-color:#5CF7B5!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #modeSwitcher .mode-btn.bal-down .mb-amt,html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4) .fs-mode-btn.bal-down .mb-amt{animation:oroBalDown .8s ease-out!important}
 /* Plein écran : mêmes couleurs (démo bleu, réel vert). */
-html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4) #fsBtnDemo.on{background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22))!important;border-color:rgba(122,167,255,.8)!important;box-shadow:inset 0 -3px 0 #7AA7FF,0 0 12px rgba(92,155,255,.35)!important}
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4) #fsBtnDemo.on{background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22))!important;border-color:rgba(122,167,255,.8)!important;box-shadow:inset 0 -3px 0 #7AA7FF,0 0 12px rgba(224,168,36,.35)!important}
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4) #fsBtnReal.on{background:linear-gradient(135deg,rgba(14,159,94,.62),rgba(34,212,127,.38) 60%,rgba(60,245,166,.22))!important;border-color:rgba(60,245,166,.75)!important;box-shadow:inset 0 -3px 0 #22D47F,0 0 14px rgba(34,212,127,.38)!important}
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4) #fsBtnDemo .mb-lbl{color:#A9C4FF!important;-webkit-text-fill-color:#A9C4FF!important}
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#y4) #fsBtnReal .mb-lbl{color:#5CF7B5!important;-webkit-text-fill-color:#5CF7B5!important}
@@ -8487,17 +8487,17 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not
 /* ===== v2497 — Guide « Apprendre » : mêmes visuels que le nouveau site (barre DÉMO bleu / RÉEL vert, cases durée, mise
    et gain en bleu verre, + / − et flèches simples bleu ciel, « Payout » bleu ciel, MA / BB / EMA et PLEIN ÉCRAN rouge léger). ===== */
 html body .learn-modal .lg-modebar{display:grid;grid-template-columns:45fr 55fr;width:100%;max-width:360px;padding:3px;border-radius:16px;
-  background:linear-gradient(180deg,rgba(92,155,255,.16),rgba(70,90,200,.10));border:1px solid rgba(110,160,255,.75);box-shadow:inset 0 0 14px rgba(92,155,255,.16),0 0 14px rgba(92,155,255,.25)}
+  background:linear-gradient(180deg,rgba(224,168,36,.16),rgba(70,90,200,.10));border:1px solid rgba(110,160,255,.75);box-shadow:inset 0 0 14px rgba(224,168,36,.16),0 0 14px rgba(224,168,36,.25)}
 html body .learn-modal .lg-modebar .lg-mode{min-width:0;border:0!important;border-radius:13px;background:transparent!important;color:#fff!important;position:relative}
 html body .learn-modal .lg-modebar .lg-demo::after{content:"";position:absolute;right:0;top:22%;bottom:22%;width:1px;background:rgba(255,255,255,.18)}
-html body .learn-modal .lg-modebar .lg-demo.on{background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22))!important;box-shadow:inset 0 -3px 0 #7AA7FF,0 0 12px rgba(92,155,255,.35)}
+html body .learn-modal .lg-modebar .lg-demo.on{background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22))!important;box-shadow:inset 0 -3px 0 #7AA7FF,0 0 12px rgba(224,168,36,.35)}
 html body .learn-modal .lg-modebar .lg-demo small{color:#A9C4FF}
 html body .learn-modal .lg-modebar .lg-real small{color:#5CF7B5}
 html body .learn-modal .lg-modebar .lg-real{opacity:.85;padding-right:40px}
 html body .learn-modal .lg-modebar .lg-real b{font-size:18px}
 html body .learn-modal .lg-wal{position:absolute;right:8px;top:50%;margin-top:-13px;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:rgba(34,212,127,.22);border:1px solid rgba(60,245,166,.55)}
 html body .learn-modal .lg-wal svg{width:15px;height:15px;fill:none;stroke:#5CF7B5;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-html body .learn-modal :is(.lg-dur,.lg-stake,.lg-gain){background:rgba(92,155,255,.08)!important;border:1px solid rgba(92,155,255,.45)!important;box-shadow:inset 0 0 12px rgba(92,155,255,.12)!important}
+html body .learn-modal :is(.lg-dur,.lg-stake,.lg-gain){background:rgba(224,168,36,.08)!important;border:1px solid rgba(224,168,36,.45)!important;box-shadow:inset 0 0 12px rgba(224,168,36,.12)!important}
 html body .learn-modal .lg-dur{color:#E2EDFF!important}
 html body .learn-modal .lg-dur b{text-shadow:0 0 8px rgba(120,170,255,.45)}
 html body .learn-modal .lg-stake{color:#FFB65C!important}
@@ -8584,7 +8584,7 @@ html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOv
 
 /* ===== v2504 — Guide : dépôt expliqué (2 blocs) et retrait animé + 4 assurances. ===== */
 .learn-modal .lg-dg{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-.learn-modal .lg-dg-b{padding:12px;border-radius:14px;background:rgba(92,155,255,.08);border:1px solid rgba(92,155,255,.4)}
+.learn-modal .lg-dg-b{padding:12px;border-radius:14px;background:rgba(224,168,36,.08);border:1px solid rgba(224,168,36,.4)}
 .learn-modal .lg-dg-c{background:rgba(38,161,123,.08);border-color:rgba(46,229,157,.45)}
 .learn-modal .lg-dg h4{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:15px;font-weight:900;color:#fff}
 .learn-modal .lg-dg h4 .lg-i{width:18px;height:18px;stroke:#9DB7FF}
@@ -8613,13 +8613,13 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2) #bt
 .learn-modal .lg-dg ol li::before{display:none!important;content:none!important}.learn-modal .lg-dg ol{list-style:decimal!important}.learn-modal .lg-dg ol li{padding-left:2px!important;list-style:decimal!important}
 
 /* ===== v2505 — Guide : dépôt en grand (exemple dessiné QR + copier + Binance, recherches YouTube) et retrait positif. ===== */
-.learn-modal .lg-dg-info{background:rgba(92,155,255,.10)!important;border-color:rgba(92,155,255,.5)!important;color:#DCE7FF!important}
+.learn-modal .lg-dg-info{background:rgba(224,168,36,.10)!important;border-color:rgba(224,168,36,.5)!important;color:#DCE7FF!important}
 .learn-modal .lg-dg-info .lg-i{stroke:#9DB7FF!important}
 .learn-modal .lg-dg-x{color:#FFE7A3!important;font-weight:700}
 .learn-modal .lg-dg-min{font-size:13px!important;color:#AEB6D6!important;margin:8px 0!important}
 .learn-modal .lg-dx{margin:12px 0 4px;padding:12px;border-radius:14px;background:rgba(6,10,30,.55);border:1px dashed rgba(255,210,122,.5)}
 .learn-modal .lg-dx-h{font-size:12px;font-weight:900;letter-spacing:.04em;color:#FFD27A;text-transform:uppercase;margin:0 0 8px;text-align:center}
-.learn-modal .lg-dx-oro,.learn-modal .lg-dx-bn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:12px;background:rgba(92,155,255,.10);border:1px solid rgba(92,155,255,.4)}
+.learn-modal .lg-dx-oro,.learn-modal .lg-dx-bn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:12px;background:rgba(224,168,36,.10);border:1px solid rgba(224,168,36,.4)}
 .learn-modal .lg-dx-nets{display:flex;gap:6px}
 .learn-modal .lg-dx-nets span{padding:4px 9px;border-radius:999px;font-size:11px;font-weight:900;color:#AEB6D6;border:1px solid rgba(255,255,255,.18)}
 .learn-modal .lg-dx-nets span.on{color:#04261A;background:#3CF5A6;border-color:#3CF5A6}
@@ -8648,7 +8648,7 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2) #bt
 .learn-modal .lg-win .lg-i{flex:0 0 18px;width:18px;height:18px}
 .learn-modal .lg-win-good{color:#FFF3C4;background:linear-gradient(135deg,rgba(255,210,122,.18),rgba(60,245,166,.10));border:1px solid rgba(255,210,122,.55)}
 .learn-modal .lg-win-good .lg-i{stroke:#FFD27A}
-.learn-modal .lg-win-resp{color:#DCE7FF;background:rgba(92,155,255,.10);border:1px solid rgba(92,155,255,.45)}
+.learn-modal .lg-win-resp{color:#DCE7FF;background:rgba(224,168,36,.10);border:1px solid rgba(224,168,36,.45)}
 .learn-modal .lg-win-resp .lg-i{stroke:#9DB7FF}
 /* v2505 — plateformes + « c'est quoi une adresse » + tableau même crypto / délais. */
 .learn-modal .lg-apps,.learn-modal .lg-addr{margin:12px 0;padding:12px;border-radius:14px;background:rgba(6,10,30,.5);border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;gap:8px}
@@ -8675,7 +8675,7 @@ html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2) #bt
 .learn-modal .lg-dg-yt span.lg-yt-q{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:#fff;color:#111!important;font-weight:700!important;font-size:13.5px!important}
 .learn-modal .lg-yt-q svg{flex:0 0 16px;width:16px;height:16px;fill:none;stroke:#555;stroke-width:2.4;stroke-linecap:round}
 /* v2505 — adresses web cliquables + 6 sites d'achat direct par carte. */
-.learn-modal a.lg-web{display:inline-block;margin-top:2px;padding:2px 8px;border-radius:999px;font-size:12.5px;font-weight:800;color:#7FD3FF!important;background:rgba(92,155,255,.14);border:1px solid rgba(92,155,255,.45);text-decoration:none;direction:ltr;unicode-bidi:isolate}
+.learn-modal a.lg-web{display:inline-block;margin-top:2px;padding:2px 8px;border-radius:999px;font-size:12.5px;font-weight:800;color:#7FD3FF!important;background:rgba(224,168,36,.14);border:1px solid rgba(224,168,36,.45);text-decoration:none;direction:ltr;unicode-bidi:isolate}
 .learn-modal .lg-apps-web{font-size:13px!important;color:#C7D2FE!important}
 .learn-modal .lg-buy{border-color:rgba(60,245,166,.45)!important}
 .learn-modal .lg-buy h5{color:#3CF5A6!important}
@@ -8977,7 +8977,7 @@ html body #toast.toast{width:max-content!important;max-width:min(300px,calc(100v
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #inputStake,
 html body:where(:not(.oro-real)):not(#oroQ):not(.oroQ) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #inputStake{color:#7AA7FF!important;-webkit-text-fill-color:#7AA7FF!important;caret-color:#7AA7FF!important;text-shadow:0 0 8px rgba(122,167,255,.35)!important}
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #fsBtnDemo:not(.on):not(.tap-lit),
-html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #modeDemo:not(.on):not(.tap-lit){background:linear-gradient(135deg,rgba(92,155,255,.16),rgba(92,155,255,.05))!important;border:1px solid rgba(122,167,255,.6)!important;color:#D6E0FF!important;box-shadow:none!important}
+html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #modeDemo:not(.on):not(.tap-lit){background:linear-gradient(135deg,rgba(224,168,36,.16),rgba(224,168,36,.05))!important;border:1px solid rgba(122,167,255,.6)!important;color:#D6E0FF!important;box-shadow:none!important}
 /* v2528 — en démo, le montant de la case du gain passe aussi au bleu de la démo (vert en réel inchangé). */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .amount{color:#7AA7FF!important;-webkit-text-fill-color:#7AA7FF!important}
 /* v2529 — la case des secondes (« 5s »…) prend la couleur du mode : bleu en démo, vert en réel (comme la mise et le gain). */
@@ -9614,8 +9614,8 @@ html body #screenTrade #topbarCta.topbar-cta::after{opacity:.55}
 /* Acheter / Vendre */
 /* Payout choisi (90 %, 500 %…) : couleur douce, petite lueur */
 /* Compte réel / Démo : lueur réduite */
-html:root body #screenTrade#screenTrade #modeSwitcher#modeSwitcher{box-shadow:inset 0 0 10px rgba(92,155,255,.08),0 0 6px rgba(92,155,255,.12)!important}
-html:root body #screenTrade#screenTrade #modeSwitcher#modeSwitcher .mode-btn.on{box-shadow:inset 0 -2px 0 rgba(122,167,255,.7),0 0 6px rgba(92,155,255,.18)!important}
+html:root body #screenTrade#screenTrade #modeSwitcher#modeSwitcher{box-shadow:inset 0 0 10px rgba(224,168,36,.08),0 0 6px rgba(224,168,36,.12)!important}
+html:root body #screenTrade#screenTrade #modeSwitcher#modeSwitcher .mode-btn.on{box-shadow:inset 0 -2px 0 rgba(122,167,255,.7),0 0 6px rgba(224,168,36,.18)!important}
 /* Recharger : plus transparent */
 html:root body #screenTrade#screenTrade#screenTrade #topbarCta#topbarCta#topbarCta{background:linear-gradient(90deg,rgba(238,148,80,.78) 0%,rgba(231,117,94,.78) 100%)!important;box-shadow:inset 0 0 0 1px rgba(255,200,160,.35)!important}
 html:root body #screenTrade#screenTrade#screenTrade #topbarCta#topbarCta#topbarCta::before{opacity:.35!important}
@@ -13524,7 +13524,7 @@ html body .oro-welcome .ow-demo b{direction:ltr;unicode-bidi:isolate}
 /* 2026-10-21 (propriétaire) : bienvenue — la case Démo dessinée comme la vraie carte DÉMO du site (bleue), avec « pour
    t'entraîner au trading » ; le logo de l'entreprise remplacé par un cœur de bienvenue */
 html body .oro-welcome .ow-demo{display:flex;flex-direction:column;align-items:center;gap:2px;margin:0 auto 12px;padding:9px 12px 11px;border-radius:14px;border:0;
-  background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22));box-shadow:inset 0 -3px 0 #7AA7FF,0 0 14px rgba(92,155,255,.35)}
+  background:linear-gradient(135deg,rgba(61,107,255,.62),rgba(107,155,255,.38) 60%,rgba(150,190,255,.22));box-shadow:inset 0 -3px 0 #7AA7FF,0 0 14px rgba(224,168,36,.35)}
 html body .oro-welcome .ow-demo .ow-d1{font-size:10px;font-weight:800;letter-spacing:.12em;color:#A9C4FF;text-transform:uppercase}
 html body .oro-welcome .ow-demo b{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.01em;line-height:1.1}
 html body .oro-welcome .ow-demo .ow-d2{font-size:11.5px;font-weight:600;color:#DCE7FF;text-align:center;line-height:1.3}
@@ -13621,7 +13621,7 @@ html:root body #depositModal .amt-row > .oro-loc2{flex:1 0 100%;font-size:12px;m
 html:root body #withdrawModal .oro-loc2{font-size:12px;margin-top:4px;color:#A7F3D0;-webkit-text-fill-color:#A7F3D0}
 /* case choisie (Compte réel / Démo) avec l'équivalent : barre claire du bas plus fine (1,5 px au lieu de 3) — propriétaire */
 html:root body #modeReal#modeReal#modeReal#modeReal#modeReal#modeReal#modeReal.has-loc.on,html:root body #fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal#fsBtnReal.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(34,212,127),0 0 18px rgba(34,212,127,.38)!important}
-html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc.on,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(122,167,255),0 0 14px rgba(92,155,255,.35)!important}
+html:root body #modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo#modeDemo.has-loc.on,html:root body #fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo#fsBtnDemo.has-loc.on{box-shadow:inset 0 -1.5px 0 rgb(122,167,255),0 0 14px rgba(224,168,36,.35)!important}
 /* plein écran : la case de mise montre déjà le gain « ≈ $ 1.90 » dessous → pas de 2e ligne */
 html.fs-trade:root body #screenTrade .stake-field.loc2-ov > .oro-loc2{display:none!important}
 html.fs-trade:root body #screenTrade .stake-field.loc2-ov #inputStake{transform:none!important}
