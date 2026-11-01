@@ -1015,7 +1015,7 @@
      gardent une vignette « médaillon » (fond dégradé de leur couleur + leur logo rond au centre) : jamais un rond recadré. */
   var SCN = {};
   function setScene(k, svg) { if (k) SCN[k] = String(svg || ''); }
-  function hasScene(k) { return !!SCN[k]; }
+  function hasScene(k) { return !PHOTO[k] && !!SCN[k]; } // 2026-11-01 : un jeu-photo passe par objFull (sa vraie image gagne sur la scène)
   function scene(k) { return SCN[k] || ''; }
   // vignette de repli : panneau dégradé (couleur du jeu) + logo rond centré, pour les jeux sans scène dédiée
   function poster(k) {
