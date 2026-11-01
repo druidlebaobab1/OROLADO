@@ -950,7 +950,7 @@
   // 2026-11-01 (propriétaire : « des vrais logos réalistes comme les grands sites ») — PHOTOS : certains jeux ont une
   // vraie image (img/games/<clé>.webp) au lieu d'un dessin. On force ici (passe AVANT tous les setObj/addObj, quel que
   // soit l'ordre de chargement). Même cadre rond que penalty.webp. Ajouter une clé + 2 couleurs d'anneau = logo-photo.
-  var PHOTO_V = '3368';
+  var PHOTO_V = '3369';
   var PHOTO = {
     acorncatch:['#FDBA74','#7C2D12'], airraid:['#FCA5A5','#7F1D1D'], airstrike:['#FDE68A','#78350F'], alienwave:['#BAE6FD','#0C4A6E'], applecatch:['#C4B5FD','#312E81'], archer:['#86EFAC','#14532D'],
     balloonup:['#93C5FD','#1E3A8A'], basket:['#F9A8D4','#831843'], beattap:['#A5B4FC','#312E81'], beefly:['#FDE047','#854D0E'], blockfall:['#67E8F9','#155E75'], brickbreak:['#FCA5A5','#7C2D12'],
@@ -971,7 +971,47 @@
     snowcatch:['#FDBA74','#7C2D12'], snowdash:['#FCA5A5','#7F1D1D'], snowjump:['#FDE68A','#78350F'], spacedash:['#BAE6FD','#0C4A6E'], spacerun:['#C4B5FD','#312E81'], speedboat:['#86EFAC','#14532D'],
     stack:['#93C5FD','#1E3A8A'], starbridge:['#F9A8D4','#831843'], starcatch:['#A5B4FC','#312E81'], subwaydash:['#FDE047','#854D0E'], surfrider:['#67E8F9','#155E75'], sushicatch:['#FCA5A5','#7C2D12'],
     tacocatch:['#FDBA74','#7C2D12'], tankbattle:['#FCA5A5','#7F1D1D'], tankrush:['#FDE68A','#78350F'], toxicrun:['#BAE6FD','#0C4A6E'], trenchdef:['#C4B5FD','#312E81'], ufoflight:['#86EFAC','#14532D'],
-    veggiecatch:['#93C5FD','#1E3A8A'], zombiesiege:['#F9A8D4','#831843']
+    veggiecatch:['#93C5FD','#1E3A8A'], zombiesiege:['#F9A8D4','#831843'],
+    /* --- Casino (232) --- */
+    mines:['#FDBA74','#7C2D12'], penalty:['#FCA5A5','#7F1D1D'], coinpush:['#FDE68A','#78350F'], candy:['#BAE6FD','#0C4A6E'], dragon:['#C4B5FD','#312E81'], limbo:['#86EFAC','#14532D'],
+    cluster:['#93C5FD','#1E3A8A'], plinko2:['#F9A8D4','#831843'], nails:['#A5B4FC','#312E81'], golf:['#FDE047','#854D0E'], gatesgold:['#67E8F9','#155E75'], dice:['#FCA5A5','#7C2D12'],
+    wheel:['#FDBA74','#7C2D12'], safe:['#FCA5A5','#7F1D1D'], coinlink:['#FDE68A','#78350F'], fishing:['#BAE6FD','#0C4A6E'], baccarat:['#C4B5FD','#312E81'], fruitparty:['#86EFAC','#14532D'],
+    snakes:['#93C5FD','#1E3A8A'], lotto:['#F9A8D4','#831843'], megaways:['#A5B4FC','#312E81'], daisy:['#FDE047','#854D0E'], apple:['#67E8F9','#155E75'], pinball:['#FCA5A5','#7C2D12'],
+    bookstars:['#FDBA74','#7C2D12'], sicbo:['#FCA5A5','#7F1D1D'], thimbles:['#FDE68A','#78350F'], cricket:['#BAE6FD','#0C4A6E'], pharaoh:['#C4B5FD','#312E81'], scratch:['#86EFAC','#14532D'],
+    tower:['#93C5FD','#1E3A8A'], spacegems:['#F9A8D4','#831843'], teenpatti:['#A5B4FC','#312E81'], fireworks:['#FDE047','#854D0E'], coin:['#67E8F9','#155E75'], wildwest:['#FCA5A5','#7C2D12'],
+    striker:['#FDBA74','#7C2D12'], colorpred:['#FCA5A5','#7F1D1D'], jewelbox:['#FDE68A','#78350F'], aztec:['#BAE6FD','#0C4A6E'], checkers:['#C4B5FD','#312E81'], keno80:['#86EFAC','#14532D'],
+    pool:['#93C5FD','#1E3A8A'], ocean:['#F9A8D4','#831843'], andar:['#A5B4FC','#312E81'], gumball:['#FDE047','#854D0E'], dragonf:['#67E8F9','#155E75'], bouquet:['#FCA5A5','#7C2D12'],
+    balloon:['#FDBA74','#7C2D12'], panda:['#FCA5A5','#7F1D1D'], moles:['#FDE68A','#78350F'], miniroul:['#BAE6FD','#0C4A6E'], tennis:['#C4B5FD','#312E81'], clover:['#86EFAC','#14532D'],
+    hilo:['#93C5FD','#1E3A8A'], goldpan:['#F9A8D4','#831843'], connect4:['#A5B4FC','#312E81'], cosmic7:['#FDE047','#854D0E'], cups:['#67E8F9','#155E75'], craps:['#FCA5A5','#7C2D12'],
+    slots:['#FDBA74','#7C2D12'], skijump:['#FCA5A5','#7F1D1D'], chests:['#FDE68A','#78350F'], vpoker:['#BAE6FD','#0C4A6E'], diamond:['#C4B5FD','#312E81'], luckyshoe:['#86EFAC','#14532D'],
+    wheel2:['#93C5FD','#1E3A8A'], bingo:['#F9A8D4','#831843'], jungle:['#A5B4FC','#312E81'], domino:['#FDE047','#854D0E'], bowling:['#67E8F9','#155E75'], pinata:['#FCA5A5','#7C2D12'],
+    cometqueen:['#FDBA74','#7C2D12'], blackjack:['#FCA5A5','#7F1D1D'], yatzy:['#FDE68A','#78350F'], pachinko:['#BAE6FD','#0C4A6E'], dblroul:['#C4B5FD','#312E81'], tcpoker:['#86EFAC','#14532D'],
+    derby:['#93C5FD','#1E3A8A'], ducks:['#F9A8D4','#831843'], acerace:['#A5B4FC','#312E81'], twoup:['#FDE047','#854D0E'], skeeball:['#67E8F9','#155E75'], ceelo:['#FCA5A5','#7C2D12'],
+    niuniu:['#FDBA74','#7C2D12'], oracle:['#FCA5A5','#7F1D1D'], twinwheel:['#FDE68A','#78350F'], crownanchor:['#BAE6FD','#0C4A6E'], holdem:['#C4B5FD','#312E81'], amida:['#86EFAC','#14532D'],
+    fantan:['#93C5FD','#1E3A8A'], shipcrew:['#F9A8D4','#831843'], clocksol:['#A5B4FC','#312E81'], dreidel:['#FDE047','#854D0E'], rpsduel:['#67E8F9','#155E75'], trente:['#FCA5A5','#7C2D12'],
+    hilorun:['#FDBA74','#7C2D12'], scarab:['#FCA5A5','#7F1D1D'], pickbox:['#FDE68A','#78350F'], kraken:['#BAE6FD','#0C4A6E'], colorwheel:['#C4B5FD','#312E81'], cherrybar:['#86EFAC','#14532D'],
+    egghunt:['#93C5FD','#1E3A8A'], ufo:['#F9A8D4','#831843'], flip21:['#A5B4FC','#312E81'], goldtrain:['#FDE047','#854D0E'], envelope:['#67E8F9','#155E75'], koi:['#FCA5A5','#7C2D12'],
+    shells:['#FDBA74','#7C2D12'], viking:['#FCA5A5','#7F1D1D'], ladder:['#FDE68A','#78350F'], safari:['#BAE6FD','#0C4A6E'], luckyten:['#C4B5FD','#312E81'], donut:['#86EFAC','#14532D'],
+    popdarts:['#93C5FD','#1E3A8A'], rubymine:['#F9A8D4','#831843'], treasure:['#A5B4FC','#312E81'], pumpkin:['#FDE047','#854D0E'], scratchwin:['#67E8F9','#155E75'], medusa:['#FCA5A5','#7C2D12'],
+    potion:['#FDBA74','#7C2D12'], mermaid:['#FCA5A5','#7F1D1D'], robobox:['#FDE68A','#78350F'], samurai:['#BAE6FD','#0C4A6E'], bottleflip:['#C4B5FD','#312E81'], oasis:['#86EFAC','#14532D'],
+    tarot:['#93C5FD','#1E3A8A'], cybercity:['#F9A8D4','#831843'], curling:['#A5B4FC','#312E81'], carnival:['#FDE047','#854D0E'], lantern:['#67E8F9','#155E75'], jazzclub:['#FCA5A5','#7C2D12'],
+    cargodrop:['#FDBA74','#7C2D12'], sushibar:['#FCA5A5','#7F1D1D'], gemfusion:['#FDE68A','#78350F'], fairy:['#BAE6FD','#0C4A6E'], mahjong:['#C4B5FD','#312E81'], steampunk:['#86EFAC','#14532D'],
+    stoneskip:['#93C5FD','#1E3A8A'], arctic:['#F9A8D4','#831843'], meteor:['#A5B4FC','#312E81'], disco:['#FDE047','#854D0E'], defuse:['#67E8F9','#155E75'], dinopark:['#FCA5A5','#7C2D12'],
+    westgold:['#FDBA74','#7C2D12'], piratecove:['#FCA5A5','#7F1D1D'], shamrock:['#FDE68A','#78350F'], candypop:['#BAE6FD','#0C4A6E'], olympus:['#C4B5FD','#312E81'], vegasneon:['#86EFAC','#14532D'],
+    phoenix:['#93C5FD','#1E3A8A'], buffalo:['#F9A8D4','#831843'], joker:['#A5B4FC','#312E81'], bookgold:['#FDE047','#854D0E'], lotus:['#67E8F9','#155E75'], inferno:['#FCA5A5','#7C2D12'],
+    aztecsun:['#FDBA74','#7C2D12'], dragongold:['#FCA5A5','#7F1D1D'], fruitburst:['#FDE68A','#78350F'], horuseye:['#BAE6FD','#0C4A6E'], cosmicgems:['#C4B5FD','#312E81'], savanna:['#86EFAC','#14532D'],
+    valhalla:['#93C5FD','#1E3A8A'], tigergold:['#F9A8D4','#831843'], honeypot:['#A5B4FC','#312E81'], piggybank:['#FDE047','#854D0E'], atlantis:['#67E8F9','#155E75'], wizard:['#FCA5A5','#7C2D12'],
+    royalcrown:['#FDBA74','#7C2D12'], luckycat:['#FCA5A5','#7F1D1D'], wolfmoon:['#FDE68A','#78350F'], vampire:['#BAE6FD','#0C4A6E'], peacock:['#C4B5FD','#312E81'], knight:['#86EFAC','#14532D'],
+    tikigods:['#93C5FD','#1E3A8A'], icequeen:['#F9A8D4','#831843'], caishen:['#A5B4FC','#312E81'], luchador:['#FDE047','#854D0E'], fiesta:['#67E8F9','#155E75'], genie:['#FCA5A5','#7C2D12'],
+    bandits:['#FDBA74','#7C2D12'], farm:['#FCA5A5','#7F1D1D'], gladiator:['#FDE68A','#78350F'], santa:['#BAE6FD','#0C4A6E'], alien:['#C4B5FD','#312E81'], goblin:['#86EFAC','#14532D'],
+    circus:['#93C5FD','#1E3A8A'], soccer:['#F9A8D4','#831843'], butterfly:['#A5B4FC','#312E81'], pizza:['#FDE047','#854D0E'], beach:['#67E8F9','#155E75'], owl:['#FCA5A5','#7C2D12'],
+    ninja:['#FDBA74','#7C2D12'], unicorn:['#FCA5A5','#7F1D1D'], turbo:['#FDE68A','#78350F'], astro:['#BAE6FD','#0C4A6E'], puppy:['#C4B5FD','#312E81'], sweets:['#86EFAC','#14532D'],
+    rocketcash:['#93C5FD','#1E3A8A'], golddig:['#F9A8D4','#831843'], giftrush:['#A5B4FC','#312E81'], cannonx:['#FDE047','#854D0E'], luckylift:['#67E8F9','#155E75'], magichat:['#FCA5A5','#7C2D12'],
+    chestgold:['#FDBA74','#7C2D12'], fortunewheel:['#FCA5A5','#7F1D1D'], goldenegg:['#FDE68A','#78350F'], mysterybox:['#BAE6FD','#0C4A6E'], crystalorb:['#C4B5FD','#312E81'], diamondvault:['#86EFAC','#14532D'],
+    diceroll:['#93C5FD','#1E3A8A'], royalcard:['#F9A8D4','#831843'], genielamp:['#A5B4FC','#312E81'], jackpotbell:['#FDE047','#854D0E'], oysterpearl:['#67E8F9','#155E75'], crownjewel:['#FCA5A5','#7C2D12'],
+    geodegem:['#FDBA74','#7C2D12'], moneytree:['#FCA5A5','#7F1D1D'], lotteryball:['#FDE68A','#78350F'], dragoncoin:['#BAE6FD','#0C4A6E'], fireworkgold:['#C4B5FD','#312E81'], treasuremap:['#86EFAC','#14532D'],
+    goldbars:['#93C5FD','#1E3A8A'], pokerchip:['#F9A8D4','#831843'], luckyclover:['#A5B4FC','#312E81'], rubyheart:['#FDE047','#854D0E'], moneybag:['#67E8F9','#155E75'], diamondring:['#FCA5A5','#7C2D12'],
+    goldtrophy:['#FDBA74','#7C2D12'], sunburst:['#FCA5A5','#7F1D1D'], gemtrio:['#FDE68A','#78350F'], horseshoe:['#BAE6FD','#0C4A6E']
   };
   function photoFrame(k) {
     var c = PHOTO[k] || ['#334155', '#0F172A'];
@@ -984,6 +1024,12 @@
   }
   function obj(k) {
     if (PHOTO[k]) { var ip = 'ca' + (++n); return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + photoFrame(k).replace(/ID/g, ip) + '</svg>'; }
+    var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
+    return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + fitIn(f(), OBJ[k] ? k : 'coin').replace(/ID/g, id) + '</svg>';
+  }
+  /* objDraw : TOUJOURS le dessin SVG (jamais la photo) — pour les jeux qui dessinent leur logo DANS la partie
+     (cible du Limbo, pomme révélée…) : la vignette du lobby montre la photo, mais le jeu garde son dessin. */
+  function objDraw(k) {
     var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
     return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + fitIn(f(), OBJ[k] ? k : 'coin').replace(/ID/g, id) + '</svg>';
   }
@@ -1041,5 +1087,5 @@
       '<radialGradient id="' + id + 'v" cx="50%" cy="42%" r="70%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient></defs>' +
       '<rect width="160" height="112" fill="url(#' + id + ')"/><rect width="160" height="112" fill="url(#' + id + 'v)"/></svg>';
   }
-  D6.CasinoArt = { PAL: PAL, obj: obj, objFull: objFull, planet: planet, sym: sym, car: car, addObj: addObj, setObj: setObj, setScene: setScene, hasScene: hasScene, scene: scene, poster: poster, rps: function (i) { return rpsSvg(i, true); } };
+  D6.CasinoArt = { PAL: PAL, obj: obj, objDraw: objDraw, objFull: objFull, planet: planet, sym: sym, car: car, addObj: addObj, setObj: setObj, setScene: setScene, hasScene: hasScene, scene: scene, poster: poster, rps: function (i) { return rpsSvg(i, true); } };
 })(window.D6 = window.D6 || {});
