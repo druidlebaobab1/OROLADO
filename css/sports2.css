@@ -24,7 +24,7 @@ html:root body #casinoModal .sp2 .sp2-day{grid-column:1/-1;display:flex;align-it
 html:root body #casinoModal .sp2 .sp2-day span{flex:0 1 auto}
 html:root body #casinoModal .sp2 .sp2-day::after{content:"";flex:1 1 auto;height:1px;background:linear-gradient(90deg,rgba(242,193,78,.35),transparent)}
 html[dir=rtl] body #casinoModal .sp2 .sp2-day::after{background:linear-gradient(270deg,rgba(242,193,78,.35),transparent)}
-html:root body #casinoModal .sp2 .sp2-day i{order:2;flex:none;font-style:normal;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.08);color:#DDD6FE;font-size:11px;letter-spacing:0}
+html:root body #casinoModal .sp2 .sp2-day i{order:2;flex:none;font-style:normal;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.08);color:#E8DCC0;font-size:11px;letter-spacing:0}
 
 html:root body #casinoModal .sp2 .sp2-ev{position:relative;display:flex;flex-direction:column;gap:10px;min-width:0;padding:11px 12px 12px;border-radius:18px;background:var(--sp2-card);
   box-shadow:inset 0 0 0 1px var(--sp2-line),0 10px 26px -18px rgba(0,0,0,.9)}
@@ -33,7 +33,7 @@ html:root body #casinoModal .sp2 .sp2-meta{display:flex;align-items:center;gap:8
 html:root body #casinoModal .sp2 .sp2-lg{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:6px;color:var(--sp2-mute);font:700 12.5px/1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sp2-lg .sp-ico{width:16px;height:16px;flex:none}
 html:root body #casinoModal .sp2 .sp2-chip{flex:0 1 auto;max-width:58%;min-width:0;display:flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:999px;font:800 11.5px/1 var(--sp2-font);font-style:normal;
-  color:#DDD6FE;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+  color:#E8DCC0;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 html:root body #casinoModal .sp2 .sp2-chip .sp2-i{width:12px;height:12px}
 html:root body #casinoModal .sp2 .sp2-chip.cd{color:#FED7AA;background:rgba(251,146,60,.14);box-shadow:inset 0 0 0 1px rgba(251,146,60,.35)}
 html:root body #casinoModal .sp2 .sp2-chip.soon{color:#FECDD3;background:rgba(244,63,94,.16);box-shadow:inset 0 0 0 1px rgba(244,63,94,.45)}
@@ -66,8 +66,8 @@ html:root body #casinoModal .sp2 .sp2-odds{display:grid;grid-template-columns:re
 html:root body #casinoModal .sp2 .sp2-odds.n3{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 html:root body #casinoModal .sp2 .sp2-odds.n1{grid-template-columns:minmax(0,1fr)}
 html:root body #casinoModal .sp2 .sp2-o{min-width:0;height:48px;display:flex;align-items:center;justify-content:space-between;gap:6px;margin:0;padding:0 12px;border:0;border-radius:12px;
-  background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);color:#E9E5FF;transition:transform .1s,background .15s}
-html:root body #casinoModal .sp2 .sp2-o > span{flex:1 1 auto;text-align:start;font:700 13.5px/1 var(--sp2-font);color:#D9D4F5}
+  background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);color:#F2EAD8;transition:transform .1s,background .15s}
+html:root body #casinoModal .sp2 .sp2-o > span{flex:1 1 auto;text-align:start;font:700 13.5px/1 var(--sp2-font);color:#E8DCC0}
 html:root body #casinoModal .sp2 .sp2-o > b{flex:none;display:flex;align-items:center;gap:3px;color:var(--sp2-gold);font:900 17px/1 var(--sp2-font);font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .sp2-odds.n3 .sp2-o{flex-direction:column;justify-content:center;gap:5px;height:54px;padding:0 6px}
 html:root body #casinoModal .sp2 .sp2-odds.n3 .sp2-o > span{flex:none;max-width:100%;text-align:center;font-size:12px}
@@ -100,7 +100,7 @@ html:root body #casinoModal .sp2 .sp2-empty-t{display:flex;flex-direction:column
 html:root body #casinoModal .sp2 .sp2-empty-t b{color:#fff;font:800 15.5px/1.25 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sp2-cta,html:root body #casinoModal .sp2 .sp2-cta2{min-width:0;max-width:100%;height:46px;padding:0 22px;border:0;border-radius:14px;font:900 15px/1 var(--sp2-font);display:flex;align-items:center;justify-content:center}
 html:root body #casinoModal .sp2 .sp2-cta{color:#2a1d04;background:linear-gradient(180deg,#F7D774,#C8912E);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 8px 20px -10px rgba(242,193,78,.95)}
-html:root body #casinoModal .sp2 .sp2-cta2{color:#E9E5FF;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+html:root body #casinoModal .sp2 .sp2-cta2{color:#F2EAD8;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 html:root body #casinoModal .sp2 .sp2-none{margin:24px 8px;text-align:center;color:var(--sp2-mute);font:700 14px/1.2 var(--sp2-font)}
 
 /* ---------- TICKET DE PARIS (2026-10-21, façon grands bookmakers) : en-tête, type du pari, lignes des sélections,
@@ -116,7 +116,7 @@ html:root body #casinoModal .sp2 .sp2-clear.arm{color:#fff;background:#E11D48;bo
 html:root body #casinoModal .sp2 .sp2-type{flex:none;display:flex;align-items:center;gap:10px;min-width:0;padding:8px 10px;border-radius:14px;background:rgba(242,193,78,.12);box-shadow:inset 0 0 0 1px rgba(242,193,78,.3)}
 html:root body #casinoModal .sp2 .sp2-type em{flex:0 1 auto;max-width:44%;min-width:0;padding:6px 10px;border-radius:999px;font:900 12px/1 var(--sp2-font);font-style:normal;color:#fff;background:linear-gradient(180deg,#E0A824,#A9780F)}
 html:root body #casinoModal .sp2 .sp2-type.combo em{color:#2A1800;background:linear-gradient(180deg,#FDE68A,#FBBF24)}
-html:root body #casinoModal .sp2 .sp2-type-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;color:#DDD6FE;font:600 12.5px/1.2 var(--sp2-font)}
+html:root body #casinoModal .sp2 .sp2-type-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;color:#E8DCC0;font:600 12.5px/1.2 var(--sp2-font)}
 /* sélections : une carte, une ligne par choix (choix en gras, match en dessous, cote en or, retirer) */
 html:root body #casinoModal .sp2 .sp2-sels{flex:none;display:flex;flex-direction:column;min-width:0;border-radius:16px;overflow:hidden;background:var(--sp2-card);box-shadow:inset 0 0 0 1px var(--sp2-line)}
 html:root body #casinoModal .sp2 .sp2-sel{flex:none;display:block;min-width:0;padding:10px 8px 10px 12px;border-top:1px solid rgba(255,255,255,.07)}
@@ -148,7 +148,7 @@ html:root body #casinoModal .sp2 .sp2-inv{display:flex;align-items:baseline;gap:
 html:root body #casinoModal .sp2 .sp2-inw input{flex:1 1 auto;min-width:0;width:100%;height:28px;margin:0;padding:0;border:0;outline:0;background:transparent;color:#fff;text-align:start;font:900 22px/1 var(--sp2-font);font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none}
 html:root body #casinoModal .sp2 .sp2-inw em{flex:none;color:var(--sp2-gold);font:900 18px/1 var(--sp2-font);font-style:normal}
 html:root body #casinoModal .sp2 .sp2-balr{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;margin-top:-2px}
-html:root body #casinoModal .sp2 .sp2-balr > span{flex:0 1 auto;min-width:0;color:#DDD6FE;font:700 13px/1.1 var(--sp2-font);font-variant-numeric:tabular-nums}
+html:root body #casinoModal .sp2 .sp2-balr > span{flex:0 1 auto;min-width:0;color:#E8DCC0;font:700 13px/1.1 var(--sp2-font);font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .sp2-dep{flex:0 1 auto;max-width:45%;min-width:0;height:30px;padding:0 12px;border:0;border-radius:999px;color:#BBF7D0;background:rgba(34,197,94,.12);box-shadow:inset 0 0 0 1px rgba(34,197,94,.45);font:800 12.5px/1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sp2-err{display:flex;margin:-4px 0 0;min-width:0;color:#FDA4AF;font:800 12.5px/1.2 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sp2-err[hidden]{display:none}
@@ -234,7 +234,7 @@ html:root body #casinoModal .sp2 .sp2-bet.st-void{--c:#94A3B8}
 html:root body #casinoModal .sp2 .sp2-bet.sp2-skel{min-height:96px;padding:12px 12px 12px 15px;gap:10px}
 html:root body #casinoModal .sp2 .sp2-bh{display:flex;align-items:center;gap:8px;min-width:0}
 html:root body #casinoModal .sp2 .sp2-pill{flex:0 1 auto;max-width:36%;min-width:0;padding:5px 9px;border-radius:999px;font:900 11.5px/1 var(--sp2-font);font-style:normal;color:#fff;background:color-mix(in srgb,var(--c) 30%,transparent);box-shadow:inset 0 0 0 1px var(--c)}
-html:root body #casinoModal .sp2 .sp2-kind{flex:1 1 auto;color:#E9E5FF;font:800 13px/1.1 var(--sp2-font)}
+html:root body #casinoModal .sp2 .sp2-kind{flex:1 1 auto;color:#F2EAD8;font:800 13px/1.1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sp2-bh small{flex:0 1 auto;max-width:36%;color:var(--sp2-mute);font:700 11.5px/1.1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sp2-bs{display:flex;align-items:center;gap:9px;min-width:0;padding:7px 0;border-top:1px solid rgba(255,255,255,.07)}
 html:root body #casinoModal .sp2 .sp2-ri{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:900 12px/1 var(--sp2-font);font-style:normal;color:#fff;background:rgba(96,165,250,.18);box-shadow:inset 0 0 0 2px rgba(96,165,250,.6)}
@@ -288,7 +288,7 @@ html:root body #casinoModal .sp2 .sp2-rcv{flex:0 1 auto;min-width:0;max-width:64
   box-shadow:inset 0 0 0 1px rgba(242,193,78,.5);font:800 12.5px/1 var(--sp2-font);letter-spacing:0}
 html:root body #casinoModal .sp2 .sp2-rcv .sp2-i{width:13px;height:13px;stroke-width:3;transform:scaleX(-1)}
 html[dir=rtl] body #casinoModal .sp2 .sp2-rcv .sp2-i{transform:none}
-html:root body #casinoModal .sp2 .sp2-more{grid-column:1/-1;height:44px;display:flex;align-items:center;justify-content:center;padding:0 16px;border:0;border-radius:12px;color:#DDD6FE;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);font:800 14px/1 var(--sp2-font)}
+html:root body #casinoModal .sp2 .sp2-more{grid-column:1/-1;height:44px;display:flex;align-items:center;justify-content:center;padding:0 16px;border:0;border-radius:12px;color:#E8DCC0;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);font:800 14px/1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .sp2-more span{max-width:100%}
 html:root body #casinoModal .sp2 .sp2-st button{height:46px}
 
@@ -371,14 +371,14 @@ html:root body #casinoModal .sp2 .sp2-md button:disabled{opacity:.4;cursor:defau
 html:root body #casinoModal .sp2 .sp2-md button span{max-width:100%}
 html:root body #casinoModal .sp2 .sp2-expl{flex:none;margin:-2px 4px 0}
 /* réglages du ticket (⚙) */
-html:root body #casinoModal .sp2 .sp2-gear{flex:none;width:34px;height:34px;display:grid;place-items:center;margin-inline-start:auto;padding:0;border:0;border-radius:50%;color:#DDD6FE;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+html:root body #casinoModal .sp2 .sp2-gear{flex:none;width:34px;height:34px;display:grid;place-items:center;margin-inline-start:auto;padding:0;border:0;border-radius:50%;color:#E8DCC0;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 html:root body #casinoModal .sp2 .sp2-gear .sp2-i{width:17px;height:17px;stroke-width:2}
 html:root body #casinoModal .sp2 .sp2-gear.on{color:#2A1800;background:var(--sp2-gold)}
 html:root body #casinoModal .sp2 .sp2-gear + .sp2-clear{margin-inline-start:0}
 html:root body #casinoModal .sp2 .sp2-set{flex:none;display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;background:rgba(18,12,46,.92);box-shadow:inset 0 0 0 1px rgba(251,191,36,.35)}
 html:root body #casinoModal .sp2 .sp2-set-h{margin:2px 0 0;color:var(--sp2-gold);font:800 12px/1.1 var(--sp2-font);letter-spacing:.04em;text-transform:uppercase}
 html:root body #casinoModal .sp2 .sp2-set-h span{max-width:100%}
-html:root body #casinoModal .sp2 .sp2-rad,html:root body #casinoModal .sp2 .sp2-tgl{display:flex;align-items:center;gap:10px;min-width:0;min-height:38px;padding:0 10px;border-radius:11px;background:rgba(255,255,255,.05);color:#E9E5FF;font:700 13.5px/1.2 var(--sp2-font);cursor:pointer}
+html:root body #casinoModal .sp2 .sp2-rad,html:root body #casinoModal .sp2 .sp2-tgl{display:flex;align-items:center;gap:10px;min-width:0;min-height:38px;padding:0 10px;border-radius:11px;background:rgba(255,255,255,.05);color:#F2EAD8;font:700 13.5px/1.2 var(--sp2-font);cursor:pointer}
 html:root body #casinoModal .sp2 .sp2-rad input,html:root body #casinoModal .sp2 .sp2-tgl input{position:absolute;opacity:0;pointer-events:none}
 html:root body #casinoModal .sp2 .sp2-rad i{flex:none;width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 2px #E0A824}
 html:root body #casinoModal .sp2 .sp2-rad input:checked + i{box-shadow:inset 0 0 0 5px var(--sp2-gold)}
@@ -421,7 +421,7 @@ html:root body #casinoModal .sp2 .sp2-gear .sp2-i{stroke-width:1.9}
 html:root body #casinoModal .sp2 .sp2-stk{position:relative;bottom:auto}
 /* 2026-10-21 (propriétaire) : bouton + de la mise, collé à la case (petits pas, appui long = ça accélère) */
 html:root body #casinoModal .sp2 .sp2-pm{flex:none;width:52px;height:56px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:14px;
-  color:#E9E5FF;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);touch-action:manipulation;-webkit-user-select:none;user-select:none;cursor:pointer}
+  color:#F2EAD8;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);touch-action:manipulation;-webkit-user-select:none;user-select:none;cursor:pointer}
 html:root body #casinoModal .sp2 .sp2-pm.plus{color:#3B2300;background:linear-gradient(180deg,#FFD66B,#F2B33D);box-shadow:0 2px 0 #B9700C}
 html:root body #casinoModal .sp2 .sp2-pm svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round}
 html:root body #casinoModal .sp2 .sp2-pm:active{transform:scale(.94)}
@@ -464,7 +464,7 @@ html:root body #casinoModal .sp2 .pz-sports button,html:root body #casinoModal .
 html:root body #casinoModal .sp2 .pz-sports button .sp-ico{width:17px;height:17px}
 html:root body #casinoModal .sp2 .pz-sports button.on{color:#fff;background:rgba(242,193,78,.32);box-shadow:inset 0 0 0 1.5px rgba(242,193,78,.85)}
 html:root body #casinoModal .sp2 .pz-pers button.on,html:root body #casinoModal .sp2 .pz-gch button.on,html:root body #casinoModal .sp2 .pz-hr.on{color:#1E1440;background:#EDE9FE;box-shadow:none}
-html:root body #casinoModal .sp2 .pz-pers{position:sticky;top:var(--sp-top,54px);z-index:8;padding-top:6px;padding-bottom:6px;background:linear-gradient(180deg,#161310 75%,rgba(23,16,56,0))}
+html:root body #casinoModal .sp2 .pz-pers{position:sticky;top:var(--sp-top,54px);z-index:8;padding-top:6px;padding-bottom:6px;background:linear-gradient(180deg,#161310 75%,rgba(16,14,10,0))}
 html:root body #casinoModal .sp2 .pz-hr{position:relative;padding-inline-end:10px;cursor:pointer}
 html:root body #casinoModal .sp2 .pz-hr .sp2-i{width:14px;height:14px}
 html:root body #casinoModal .sp2 .pz-hr select{height:100%;margin:0;padding:0 2px;border:0;outline:0;background:transparent;color:inherit;font:inherit;-webkit-appearance:none;appearance:none;cursor:pointer}
@@ -488,7 +488,7 @@ html:root body #casinoModal .sp2 .pz-bh > b em{font-style:normal;color:var(--pz-
 html:root body #casinoModal .sp2 .pz-more{flex:none;display:flex;align-items:center;gap:2px;height:32px;padding:0 6px 0 10px;border:0;border-radius:10px;background:transparent;color:#C4B5FD;font:700 13px/1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-more .sp2-i,html:root body #casinoModal .sp2 .pz-all .sp2-i,html:root body #casinoModal .sp2 .pz-mrow > .sp2-i{width:16px;height:16px;transform:rotate(-90deg)}
 html[dir=rtl] body #casinoModal .sp2 .pz-more .sp2-i,html[dir=rtl] body #casinoModal .sp2 .pz-all .sp2-i,html[dir=rtl] body #casinoModal .sp2 .pz-mrow > .sp2-i{transform:rotate(90deg)}
-html:root body #casinoModal .sp2 .pz-all{display:flex;align-items:center;justify-content:center;gap:4px;min-height:42px;padding:6px 14px;border:0;border-radius:12px;color:#E9E5FF;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--pz-line);font:700 14px/1.2 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-all{display:flex;align-items:center;justify-content:center;gap:4px;min-height:42px;padding:6px 14px;border:0;border-radius:12px;color:#F2EAD8;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--pz-line);font:700 14px/1.2 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-none{margin:14px 6px;text-align:center;color:var(--pz-mute);font:600 14px/1.35 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-ld{flex:none;display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pz-live);box-shadow:0 0 0 3px rgba(244,63,94,.22);animation:sp2Pulse 1.6s ease-in-out infinite}
 
@@ -525,7 +525,7 @@ html:root body #casinoModal .sp2 .pz-rt small.pz-in{color:#FDBA74}
 html:root body #casinoModal .sp2 .pz-rt.lv b{color:#FDA4AF;font-size:13px}
 html:root body #casinoModal .sp2 .pz-rn{min-width:0;display:flex;flex-direction:column;gap:4px}
 html:root body #casinoModal .sp2 .pz-rn p{display:flex;align-items:flex-start;gap:6px;margin:0;min-width:0}
-html:root body #casinoModal .sp2 .pz-rn p > span{flex:1 1 auto;min-width:0;color:#F1EFFF;font:650 14px/1.22 var(--sp2-font);overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto;padding-bottom:.06em}
+html:root body #casinoModal .sp2 .pz-rn p > span{flex:1 1 auto;min-width:0;color:#F2EAD8;font:650 14px/1.22 var(--sp2-font);overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto;padding-bottom:.06em}
 html:root body #casinoModal .sp2 .pz-rn .pz-sc{flex:none;min-width:14px;text-align:end;color:#fff;font:900 14.5px/1.22 var(--sp2-font);font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .pz-rn .pz-sc.pop,html:root body #casinoModal .sp2 .pz-msc.pop{animation:pzPop .9s ease-out}
 @keyframes pzPop{0%{color:#FDE68A;transform:scale(1.35)}100%{transform:none}}
@@ -534,7 +534,7 @@ html:root body #casinoModal .sp2 .pz-rl span{min-width:0;overflow-wrap:break-wor
 html:root body #casinoModal .sp2 .pz-lo{flex:none;width:17px!important;height:17px!important;margin-top:1px;object-fit:contain}
 html:root body #casinoModal .sp2 i.pz-lo{display:block;border-radius:50%;background:rgba(255,255,255,.1)}
 html:root body #casinoModal .sp2 .pz-ro{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;min-width:0}
-html:root body #casinoModal .sp2 .pz-rc{align-self:stretch;display:grid;place-items:center;min-height:44px;color:#DDD6FE}
+html:root body #casinoModal .sp2 .pz-rc{align-self:stretch;display:grid;place-items:center;min-height:44px;color:#E8DCC0}
 html:root body #casinoModal .sp2 .pz-rc::before{content:"";grid-area:1/1;width:30px;height:30px;border-radius:10px;background:rgba(242,193,78,.14);box-shadow:inset 0 0 0 1px rgba(242,193,78,.28)}
 html:root body #casinoModal .sp2 .pz-rc .sp2-i{grid-area:1/1;width:16px;height:16px;stroke-width:2.6;transform:rotate(-90deg)}
 html:root body #casinoModal .sp2 .pz-rc:active::before{background:rgba(242,193,78,.3)}
@@ -551,7 +551,7 @@ html:root body #casinoModal .sp2 .pz-ob{position:relative;min-width:0;height:42p
   background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 2px 6px -3px rgba(0,0,0,.6);color:#fff;transition:background .15s,box-shadow .15s}
 html:root body #casinoModal .sp2 .pz-ob .pz-ov{font:800 14.5px/1.2 var(--sp2-font);font-variant-numeric:tabular-nums;color:var(--sp2-gold);direction:ltr}
 /* 2026-10-22 (propriétaire) : cadenas DISCRET — la cote reste visible (grisée), petit cadenas dans le coin ; sans cote : bouton grisé + petit cadenas */
-html:root body #casinoModal .sp2 .pz-ob .pz-lki{display:none;position:absolute;top:2px;inset-inline-end:2px;width:13px;height:13px;place-items:center;border-radius:50%;background:rgba(12,8,32,.72);color:#B9B4DA}
+html:root body #casinoModal .sp2 .pz-ob .pz-lki{display:none;position:absolute;top:2px;inset-inline-end:2px;width:13px;height:13px;place-items:center;border-radius:50%;background:rgba(12,8,32,.72);color:#B8AC8C}
 html:root body #casinoModal .sp2 .pz-ob .pz-lki .sp2-i{width:8px;height:8px;stroke-width:2.8}
 html:root body #casinoModal .sp2 .pz-ob.lk .pz-ov{color:#8A85AE}
 html:root body #casinoModal .sp2 .pz-ob.lk .pz-ol{opacity:.6}
@@ -573,7 +573,7 @@ html:root body #casinoModal .sp2 .pz-ob.fl-up::after,html:root body #casinoModal
 html:root body #casinoModal .sp2 .pz-ob.fl-up::after{content:"▲";color:#4ADE80}
 html:root body #casinoModal .sp2 .pz-ob.fl-dn::after{content:"▼";color:#FB7185}
 html:root body #casinoModal .sp2 .pz-ob2{justify-content:space-between;gap:6px;padding:0 10px;min-height:42px;height:auto}
-html:root body #casinoModal .sp2 .pz-ob2 .pz-ol{flex:0 1 auto;min-width:0;padding:6px 0;color:#B9B4DA;font:600 12.5px/1.2 var(--sp2-font);text-align:start;overflow-wrap:break-word}
+html:root body #casinoModal .sp2 .pz-ob2 .pz-ol{flex:0 1 auto;min-width:0;padding:6px 0;color:#B8AC8C;font:600 12.5px/1.2 var(--sp2-font);text-align:start;overflow-wrap:break-word}
 html:root body #casinoModal .sp2 .pz-ob2.on .pz-ol{color:#EDE9FE}
 
 /* page d'un match */
@@ -610,7 +610,7 @@ html:root body #casinoModal .sp2 .pz-stt p span{flex:1 1 auto;min-width:0;text-a
 html:root body #casinoModal .sp2 .pz-sbar{display:flex;gap:3px;height:5px}
 html:root body #casinoModal .sp2 .pz-sbar i{display:block;height:100%;border-radius:3px;background:#E0A824;transition:width .6s ease}
 html:root body #casinoModal .sp2 .pz-sbar i + i{background:#FBBF24}
-html:root body #casinoModal .sp2 .pz-ev{display:flex;align-items:center;gap:8px;min-width:0;color:#E9E5FF;font:600 13px/1.25 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-ev{display:flex;align-items:center;gap:8px;min-width:0;color:#F2EAD8;font:600 13px/1.25 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-ev.a{flex-direction:row-reverse;text-align:end}
 html:root body #casinoModal .sp2 .pz-ev em{flex:none;min-width:34px;color:var(--pz-mute);font:800 12px/1 var(--sp2-font);font-style:normal;font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .pz-ev.a em{text-align:end}
@@ -621,7 +621,7 @@ html:root body #casinoModal .sp2 .pz-evs{width:16px;height:16px;fill:none;stroke
 html:root body #casinoModal .sp2 .pz-var{flex:none;padding:2px 4px;border-radius:4px;background:#334155;color:#fff;font:800 9.5px/1 var(--sp2-font)}
 
 /* groupes de marchés (puces) + cartes repliables */
-html:root body #casinoModal .sp2 .pz-gch{position:sticky;top:var(--sp-top,54px);z-index:8;padding-top:6px;padding-bottom:6px;background:linear-gradient(180deg,#161310 75%,rgba(23,16,56,0))}
+html:root body #casinoModal .sp2 .pz-gch{position:sticky;top:var(--sp-top,54px);z-index:8;padding-top:6px;padding-bottom:6px;background:linear-gradient(180deg,#161310 75%,rgba(16,14,10,0))}
 html:root body #casinoModal .sp2 .pz-gch[hidden]{display:none}
 html:root body #casinoModal .sp2 .pz-mks{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:8px;align-items:start}
 html:root body #casinoModal .sp2 .pz-mk{min-width:0;border-radius:14px;background:var(--pz-card);box-shadow:inset 0 0 0 1px var(--pz-line);overflow:hidden}
@@ -646,10 +646,10 @@ html:root body #casinoModal .sp2 .pz-rules:empty{display:none}
 
 /* barre du bas : Populaire · Direct · Coupon (rond, au centre) · Mes paris · Menu */
 html:root body #casinoModal .sp2 .pz-nav{position:sticky;bottom:calc(var(--sp2-lift,0px) - var(--sp2-pb,18px));z-index:20;flex:none;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);align-items:end;height:var(--pz-nav);
-  margin:6px calc(-1 * var(--sp2-px)) calc(-1 * var(--sp2-pb));padding:0 6px max(4px,env(safe-area-inset-bottom,0px));background:rgba(20,13,50,.97);
+  margin:6px calc(-1 * var(--sp2-px)) calc(-1 * var(--sp2-pb));padding:0 6px max(4px,env(safe-area-inset-bottom,0px));background:rgba(15,13,9,.98);
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 -1px 0 rgba(255,255,255,.08),0 -12px 24px -14px rgba(0,0,0,.9)}
 html.ios-app body #casinoModal .sp2 .pz-nav{padding-bottom:6px}
-html:root body #casinoModal .sp2 .pz-nav button{position:relative;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;margin:0;padding:6px 2px 4px;border:0;background:transparent;color:#9A95BE;font:700 11px/1.1 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-nav button{position:relative;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;margin:0;padding:6px 2px 4px;border:0;background:transparent;color:#9c8f70;font:700 11px/1.1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-nav button > .fit{max-width:100%}
 html:root body #casinoModal .sp2 .pz-nav .pz-ni{position:relative;display:grid;place-items:center;width:26px;height:26px}
 html:root body #casinoModal .sp2 .pz-nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
@@ -658,10 +658,10 @@ html:root body #casinoModal .sp2 .pz-nav .pz-ni .pz-ld{position:absolute;top:1px
 html:root body #casinoModal .sp2 .pz-nav button.on{color:#fff}
 html:root body #casinoModal .sp2 .pz-nav button.on:not(.pz-cpn)::before{content:"";position:absolute;top:0;left:30%;right:30%;height:2.5px;border-radius:0 0 3px 3px;background:#E0A824}
 html:root body #casinoModal .sp2 .pz-cpc{position:relative;display:grid;place-items:center;width:46px;height:46px;margin-top:-20px;border-radius:50%;color:#2A1800;background:linear-gradient(180deg,#FDE68A,#F5B70B);
-  box-shadow:0 0 0 4px rgba(20,13,50,.97),0 8px 18px -8px rgba(245,158,11,.9)}
+  box-shadow:0 0 0 4px rgba(15,13,9,.97),0 8px 18px -8px rgba(245,158,11,.9)}
 html:root body #casinoModal .sp2 .pz-cpc svg{width:24px;height:24px;stroke-width:2}
 html:root body #casinoModal .sp2 .pz-cpc.bump{animation:sp2Bump .35s ease-out}
-html:root body #casinoModal .sp2 .pz-n{position:absolute;top:-4px;inset-inline-end:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;display:grid;place-items:center;font:900 11px/1 var(--sp2-font);font-style:normal;color:#fff;background:#E0A824;box-shadow:0 0 0 2px rgba(20,13,50,.97)}
+html:root body #casinoModal .sp2 .pz-n{position:absolute;top:-4px;inset-inline-end:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;display:grid;place-items:center;font:900 11px/1 var(--sp2-font);font-style:normal;color:#fff;background:#E0A824;box-shadow:0 0 0 2px rgba(15,13,9,.97)}
 html:root body #casinoModal .sp2 .pz-n[hidden]{display:none}
 html:root body #casinoModal .sp2 .pz-nav .pz-cpn.on{color:#FDE68A}
 
@@ -675,7 +675,7 @@ html:root body #casinoModal .sp2 .pz-bi .pz-card{width:14px;height:19px;margin:0
 html:root body #casinoModal .sp2 .pz-btx{min-width:0;display:flex;flex-direction:column;gap:2px}
 html:root body #casinoModal .sp2 .pz-btx b{color:#FDE68A;font:900 15px/1.2 var(--sp2-font);overflow-wrap:break-word}
 html:root body #casinoModal .sp2 .pz-ban.red .pz-btx b{color:#FDA4AF}
-html:root body #casinoModal .sp2 .pz-btx small{color:#E9E5FF;font:600 12.5px/1.25 var(--sp2-font);overflow-wrap:break-word}
+html:root body #casinoModal .sp2 .pz-btx small{color:#F2EAD8;font:600 12.5px/1.25 var(--sp2-font);overflow-wrap:break-word}
 
 /* menu */
 html:root body #casinoModal .sp2 .pz-menu{display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -683,7 +683,7 @@ html:root body #casinoModal .sp2 .pz-mhd{margin:2px 2px -2px;color:var(--pz-mute
 html:root body #casinoModal .sp2 .pz-mcard{display:flex;flex-direction:column;min-width:0;border-radius:14px;background:var(--pz-card);box-shadow:inset 0 0 0 1px var(--pz-line);overflow:hidden}
 html:root body #casinoModal .sp2 .pz-mrow{display:flex;align-items:center;gap:12px;min-height:48px;margin:0;padding:8px 12px;border:0;border-top:1px solid var(--pz-line);background:transparent;color:#fff;text-align:start;font:700 14.5px/1.25 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-mrow:first-child{border-top:0}
-html:root body #casinoModal .sp2 .pz-mi{flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:rgba(242,193,78,.2);color:#DDD6FE;font-size:16px}
+html:root body #casinoModal .sp2 .pz-mi{flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:rgba(242,193,78,.2);color:#E8DCC0;font-size:16px}
 html:root body #casinoModal .sp2 .pz-mi svg,html:root body #casinoModal .sp2 .pz-mi .sp2-i{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2}
 html:root body #casinoModal .sp2 .pz-mi .pz-mstar{color:var(--sp2-gold,#FBBF24);font:400 17px/1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-mt{flex:1 1 auto;min-width:0;overflow-wrap:break-word}
@@ -691,7 +691,7 @@ html:root body #casinoModal .sp2 .pz-mt2{margin:10px 12px 6px;color:#fff;font:70
 html:root body #casinoModal .sp2 .pz-mcode{padding-bottom:10px}
 html:root body #casinoModal .sp2 .pz-mcode .sb-crow,html:root body #casinoModal .sp2 .pz-mcode .sb-code{margin:0 12px}
 html:root body #casinoModal .sp2 .pz-mcode .sb-code{margin-top:8px}
-html:root body #casinoModal .sp2 .pz-rad{position:relative;display:flex;align-items:center;gap:10px;min-height:42px;margin:0;padding:6px 12px;border-top:1px solid var(--pz-line);color:#E9E5FF;font:600 14px/1.25 var(--sp2-font);cursor:pointer}
+html:root body #casinoModal .sp2 .pz-rad{position:relative;display:flex;align-items:center;gap:10px;min-height:42px;margin:0;padding:6px 12px;border-top:1px solid var(--pz-line);color:#F2EAD8;font:600 14px/1.25 var(--sp2-font);cursor:pointer}
 html:root body #casinoModal .sp2 .pz-rad input{position:absolute;opacity:0;pointer-events:none}
 html:root body #casinoModal .sp2 .pz-rad i{flex:none;width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 2px #E0A824}
 html:root body #casinoModal .sp2 .pz-rad input:checked + i{box-shadow:inset 0 0 0 5px var(--sp2-gold)}
@@ -702,7 +702,7 @@ html:root body #casinoModal .sp2 .pz-rules summary .sp2-i{width:16px;height:16px
 html:root body #casinoModal .sp2 .pz-rules[open] summary .sp2-i{transform:rotate(180deg)}
 html:root body #casinoModal .sp2 .pz-rules p{margin:0;padding:0 12px 12px;color:var(--pz-mute);font:500 13px/1.45 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-gst{display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 14px;border-radius:14px;background:var(--pz-card);box-shadow:inset 0 0 0 1px var(--pz-line);text-align:center}
-html:root body #casinoModal .sp2 .pz-gst p{margin:0;color:#E9E5FF;font:600 14.5px/1.4 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-gst p{margin:0;color:#F2EAD8;font:600 14.5px/1.4 var(--sp2-font)}
 
 /* code de coupon : charger (ligne discrète), partager (Menu) → « Code XXXXXX · Copier · ✕ » sur une ligne */
 html:root body #casinoModal .sp2 .sb-crow{display:flex;gap:6px;min-width:0}
@@ -719,7 +719,7 @@ html:root body #casinoModal .sp2 .pz-lnk .sp2-i{width:15px;height:15px}
 html:root body #casinoModal .sp2 .sb-code.sb-load{display:flex;flex-direction:column;gap:6px;margin-top:4px}
 html:root body #casinoModal .sp2 .sb-code.sb-load .sb-mkt{margin:0;color:var(--pz-mute);font:700 13px/1.2 var(--sp2-font);text-align:center}
 html:root body #casinoModal .sp2 .pz-ldc{min-width:0}
-html:root body #casinoModal .sp2 .pz-ldc summary{display:inline-flex;align-items:center;min-height:32px;padding:0 4px;color:#B9B4DA;font:600 13px/1.2 var(--sp2-font);text-decoration:underline;text-underline-offset:3px;cursor:pointer;list-style:none}
+html:root body #casinoModal .sp2 .pz-ldc summary{display:inline-flex;align-items:center;min-height:32px;padding:0 4px;color:#B8AC8C;font:600 13px/1.2 var(--sp2-font);text-decoration:underline;text-underline-offset:3px;cursor:pointer;list-style:none}
 html:root body #casinoModal .sp2 .pz-ldc summary::-webkit-details-marker{display:none}
 html:root body #casinoModal .sp2 .pz-ldc[open] summary{margin-bottom:6px}
 /* ticket : cote changée = ancienne cote barrée, flèche couleur */
@@ -731,7 +731,7 @@ html:root body #casinoModal .sp2 .sp2-sel-r > em.dn{color:#FDA4AF}
 html:root body #casinoModal .sp2 .pz-bet .sp2-bhd{gap:8px}
 html:root body #casinoModal .sp2 .pz-b1{display:flex;align-items:center;gap:8px;min-width:0}
 html:root body #casinoModal .sp2 .pz-b1 .sp2-pill{flex:none;max-width:none}
-html:root body #casinoModal .sp2 .pz-bk2{flex:1 1 auto;min-width:0;color:#E9E5FF;font:700 13px/1.2 var(--sp2-font);overflow-wrap:break-word}
+html:root body #casinoModal .sp2 .pz-bk2{flex:1 1 auto;min-width:0;color:#F2EAD8;font:700 13px/1.2 var(--sp2-font);overflow-wrap:break-word}
 html:root body #casinoModal .sp2 .pz-b1 time{flex:none;color:var(--pz-mute);font:600 12px/1.2 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-bsel{display:flex;flex-direction:column;gap:6px;min-width:0}
 html:root body #casinoModal .sp2 .pz-bs1{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -837,7 +837,7 @@ html:root body #casinoModal .sp2 .pz-tvm > b{color:#fff;font:900 22px/1.1 var(--
 html:root body #casinoModal .sp2 .pz-tvm small{color:#C4B5FD;font:600 10.5px/1.2 var(--sp2-font);text-align:center}
 html:root body #casinoModal .sp2 .pz-tvm em{padding:1px 7px;border-radius:6px;background:#0B1020;color:#fff;font:800 13px/1.3 var(--sp2-font);font-style:normal;font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .pz-tvx{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;min-width:0}
-html:root body #casinoModal .sp2 .pz-tvev{display:flex;flex-direction:column;gap:2px;min-width:0;color:#E9E5FF;font:600 11px/1.3 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-tvev{display:flex;flex-direction:column;gap:2px;min-width:0;color:#F2EAD8;font:600 11px/1.3 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-tvev .pz-te > span{overflow-wrap:anywhere;white-space:normal}
 html:root body #casinoModal .sp2 .pz-tvst{display:flex;flex-direction:column;gap:3px;min-width:0}
 html:root body #casinoModal .sp2 .pz-tvst p{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 6px;margin:0;align-items:baseline}
@@ -872,7 +872,7 @@ html:root body #casinoModal .sp2 .pz-shx .sp2-i{width:16px;height:16px}
 html:root body #casinoModal .sp2 .pz-shl{display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0;overscroll-behavior:contain}
 html:root body #casinoModal .sp2 .pz-shr{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:50px;margin:0;padding:8px 14px;border:0;border-radius:13px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--pz-line);color:#fff;text-align:start;cursor:pointer}
 html:root body #casinoModal .sp2 .pz-shr span{min-width:0;font:700 15px/1.2 var(--sp2-font);overflow-wrap:break-word}
-html:root body #casinoModal .sp2 .pz-shr em{flex:none;padding:3px 9px;border-radius:999px;background:rgba(242,193,78,.16);color:#DDD6FE;font:700 12.5px/1.2 var(--sp2-font);font-style:normal}
+html:root body #casinoModal .sp2 .pz-shr em{flex:none;padding:3px 9px;border-radius:999px;background:rgba(242,193,78,.16);color:#E8DCC0;font:700 12.5px/1.2 var(--sp2-font);font-style:normal}
 html:root body #casinoModal .sp2 .pz-shr.on{background:#EDE9FE;color:#1E1440}
 html:root body #casinoModal .sp2 .pz-shr.on em{background:rgba(30,20,64,.12);color:#1E1440}
 /* 2026-10-22 : logo de la compétition (Ligue des champions, Europa…) à la place du drapeau absent */
@@ -917,7 +917,7 @@ html:root body #casinoModal .sp2 .pz-shr.pz-skel{min-height:50px;animation:sp2Pu
 html:root body #casinoModal .sp2 .pd-ic{width:18px!important;height:18px!important;overflow:visible}
 html:root body #casinoModal .sp2 .pd-ic .pd-sp{transform-origin:19.2px 4.2px;animation:pdTw 3.2s ease-in-out infinite}
 @keyframes pdTw{0%,62%,100%{opacity:.25;transform:scale(.6)}74%{opacity:1;transform:scale(1.15)}86%{opacity:.6;transform:scale(.9)}}
-html:root body #casinoModal .sp2 .pz-v-pred .pz-pers{background:linear-gradient(180deg,#161310 75%,rgba(23,16,56,0))}
+html:root body #casinoModal .sp2 .pz-v-pred .pz-pers{background:linear-gradient(180deg,#161310 75%,rgba(16,14,10,0))}
 html:root body #casinoModal .sp2 .pd-cats button.on{color:#2A1A05!important;background:linear-gradient(180deg,#FDE68A,#F5C451)!important}
 html:root body #casinoModal .sp2 .pd-list{grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:12px}
 html:root body #casinoModal .sp2 .pd-ev{gap:12px;padding:15px 15px 13px;border-radius:20px;
@@ -940,7 +940,7 @@ html:root body #casinoModal .sp2 .pd-cd.soon{color:#FDE68A;background:rgba(251,1
 html:root body #casinoModal .sp2 .pd-t{margin:0;color:#fff;font:800 18px/1.3 var(--sp2-font);overflow-wrap:break-word;hyphens:auto}
 html:root body #casinoModal .sp2 .pd-d{margin:-4px 0 0;color:#B9B2DD;font:600 13.5px/1.4 var(--sp2-font);overflow-wrap:break-word}
 html:root body #casinoModal .sp2 .pd-px{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 6px;margin:-2px 0 0;color:#A9A3CF;font:600 12.5px/1.3 var(--sp2-font)}
-html:root body #casinoModal .sp2 .pd-px bdi{color:#D9D4F5;font-weight:800}
+html:root body #casinoModal .sp2 .pd-px bdi{color:#E8DCC0;font-weight:800}
 html:root body #casinoModal .sp2 .pd-px b{color:#FDE68A;font:800 13.5px/1.3 var(--sp2-font);font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .pd-o{gap:8px}
 html:root body #casinoModal .sp2 .pd-o.pd-c3{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -1074,7 +1074,7 @@ html:root body #casinoModal .sp2 .pz-blv.off{background:rgba(255,255,255,.06);bo
 html:root body #casinoModal .sp2 .sp2-bst .pz-lvt{margin-top:5px}
 /* petit titre sous la barre de recherche (Direct : point rouge qui pulse ; Résultats : point vert) */
 html:root body #casinoModal .sp2 .pz-lvq{display:flex;flex-direction:column;gap:8px}
-html:root body #casinoModal .sp2 .pz-sect{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;color:#E9E5FF;font:800 12px/1 var(--sp2-font);letter-spacing:.06em;text-transform:uppercase}
+html:root body #casinoModal .sp2 .pz-sect{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;color:#F2EAD8;font:800 12px/1 var(--sp2-font);letter-spacing:.06em;text-transform:uppercase}
 html:root body #casinoModal .sp2 .pz-sect i{width:7px;height:7px;border-radius:50%}
 html:root body #casinoModal .sp2 .pz-sect-l{background:#EF4444;animation:pzLvPulse 1.6s ease-out infinite}
 html:root body #casinoModal .sp2 .pz-sect-r{background:#22C55E}
@@ -1105,7 +1105,7 @@ html:root body #casinoModal .sp2 .pz-fpd .pz-bh{padding:4px 2px 8px}
 html:root body #casinoModal .sp2 .pz-fempty{display:flex;flex-direction:column;align-items:center;gap:14px;margin:28px 8px;padding:28px 18px;border-radius:18px;background:rgba(255,255,255,.04);border:1px dashed rgba(250,204,21,.3);text-align:center}
 html:root body #casinoModal .sp2 .pz-fempty span{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:rgba(250,204,21,.12)}
 html:root body #casinoModal .sp2 .pz-fempty svg{width:34px;height:34px;fill:#FACC15}
-html:root body #casinoModal .sp2 .pz-fempty p{margin:0;color:#E9E5FF;font:600 14.5px/1.45 var(--sp2-font);max-width:320px}
+html:root body #casinoModal .sp2 .pz-fempty p{margin:0;color:#F2EAD8;font:600 14.5px/1.45 var(--sp2-font);max-width:320px}
 html:root body #casinoModal .sp2 .pz-fnote{margin:2px 6px;color:var(--pz-mute);font:600 12px/1.4 var(--sp2-font);text-align:center}
 html:root body #casinoModal .sp2 .pz-favn{flex:none;margin-inline-start:auto;min-width:0;color:#FACC15;font:800 13px/1 var(--sp2-font);font-style:normal}
 html:root body #casinoModal .sp2 .pz-favn:empty{display:none}
@@ -1127,7 +1127,7 @@ html:root body #casinoModal .sp2 .pz-rhero-t{min-width:0;display:flex;flex-direc
 html:root body #casinoModal .sp2 .pz-rhero-t b{color:#fff;font:800 18px/1.1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-rhero-t small{color:#86EFAC;font:700 12px/1.2 var(--sp2-font);overflow-wrap:anywhere}
 html:root body #casinoModal .sp2 .pz-reslg .pz-lgh{grid-template-columns:auto minmax(0,1fr) auto}
-html:root body #casinoModal .sp2 .pz-lgc{flex:none;min-width:26px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.08);color:#E9E5FF;font:800 11.5px/1 var(--sp2-font);font-style:normal;text-align:center}
+html:root body #casinoModal .sp2 .pz-lgc{flex:none;min-width:26px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.08);color:#F2EAD8;font:800 11.5px/1 var(--sp2-font);font-style:normal;text-align:center}
 html:root body #casinoModal .sp2 .pz-rres{row-gap:8px}
 html:root body #casinoModal .sp2 .pz-rodd{grid-column:2/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 html:root body #casinoModal .sp2 .pz-rodd span{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06)}
@@ -1143,7 +1143,7 @@ html:root body #casinoModal .sp2 .sp2-perc button.on{color:#1E1440;background:#E
 html:root body #casinoModal .sp2 .sp2-perc button .sp2-i,html:root body #casinoModal .sp2 .pz-rcal .sp2-i{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2}
 html:root body #casinoModal .sp2 .sp2-days{gap:7px}
 html:root body #casinoModal .sp2 .sp2-days[hidden]{display:none}
-html:root body #casinoModal .sp2 .sp2-days button{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:62px;height:52px;margin:0;padding:0 10px;border:0;border-radius:14px;color:#E9E5FF;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);cursor:pointer}
+html:root body #casinoModal .sp2 .sp2-days button{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:62px;height:52px;margin:0;padding:0 10px;border:0;border-radius:14px;color:#F2EAD8;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);cursor:pointer}
 html:root body #casinoModal .sp2 .sp2-days button small{color:var(--sp2-mute);font:700 10.5px/1 var(--sp2-font);text-transform:uppercase;letter-spacing:.04em}
 html:root body #casinoModal .sp2 .sp2-days button b{font:800 13.5px/1 var(--sp2-font);white-space:nowrap}
 html:root body #casinoModal .sp2 .sp2-days button.on{background:linear-gradient(145deg,#E0A824,#A9780F);box-shadow:0 4px 12px rgba(201,145,46,.4)}
@@ -1161,7 +1161,7 @@ html:root body #casinoModal .sp2 .pz-bstb-i{flex:none;display:grid;place-items:c
 html:root body #casinoModal .sp2 .pz-bstb-i svg{width:22px;height:22px;color:#fff}
 html:root body #casinoModal .sp2 .pz-bstb-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}
 html:root body #casinoModal .sp2 .pz-bstb-t b{color:#FDE68A;font:800 14px/1.2 var(--sp2-font);overflow-wrap:anywhere}
-html:root body #casinoModal .sp2 .pz-bstb-t small{color:#E9E5FF;font:600 12px/1.3 var(--sp2-font);overflow-wrap:anywhere}
+html:root body #casinoModal .sp2 .pz-bstb-t small{color:#F2EAD8;font:600 12px/1.3 var(--sp2-font);overflow-wrap:anywhere}
 html:root body #casinoModal .sp2 .pz-bstb > em{flex:none;color:#FACC15;font:900 17px/1 var(--sp2-font);font-style:normal;font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .pz-bstb.hint{background:rgba(255,255,255,.04);border:1px dashed rgba(250,204,21,.3);box-shadow:none;padding:8px 12px}
 html:root body #casinoModal .sp2 .pz-bstb.hint .pz-bstb-i{width:28px;height:28px;border-radius:9px;opacity:.85}
@@ -1185,7 +1185,7 @@ html:root body #casinoModal .sp2 .sp2-bcode small{color:var(--sp2-mute);font:700
 html:root body #casinoModal .sp2 .sp2-bcode b{font:800 14px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.12em;color:#FDE68A}
 html:root body #casinoModal .sp2 .sp2-bcode .sp2-i{width:15px;height:15px;fill:none;stroke:#C4B5FD;stroke-width:2}
 html:root body #casinoModal .sp2 .sp2-done-code{margin:12px auto 0}
-html:root body #casinoModal .sp2 .pz-offst{display:inline-flex;align-items:center;gap:5px;margin-top:3px;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.07);color:#E9E5FF;font:700 11.5px/1.2 var(--sp2-font);align-self:flex-start}
+html:root body #casinoModal .sp2 .pz-offst{display:inline-flex;align-items:center;gap:5px;margin-top:3px;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.07);color:#F2EAD8;font:700 11.5px/1.2 var(--sp2-font);align-self:flex-start}
 html:root body #casinoModal .sp2 .pz-offst svg{width:12px;height:12px}
 html:root body #casinoModal .sp2 .pz-offst.fin{color:#86EFAC;background:rgba(34,197,94,.12)}
 html:root body #casinoModal .sp2 .pz-offst.live{color:#FCA5A5;background:rgba(239,68,68,.14)}
@@ -1242,12 +1242,12 @@ html body #toast#toast.toast.lux-msg.pz-t:not(.micro):not(.toast-bal):not(.tie) 
 html:root body #casinoModal .sp2 .pz-rres[data-rid]{cursor:pointer}
 html:root body #casinoModal .sp2 .pz-rres[data-rid]:active{background:rgba(255,255,255,.04)}
 html:root body #casinoModal .sp2 .pz-rmp{display:flex;flex-direction:column;gap:12px}
-html:root body #casinoModal .sp2 .pz-rmh{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:18px;background:linear-gradient(160deg,rgba(242,193,78,.22),rgba(23,16,56,.6));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+html:root body #casinoModal .sp2 .pz-rmh{display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:18px;background:linear-gradient(160deg,rgba(242,193,78,.22),rgba(16,14,10,.6));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 html:root body #casinoModal .sp2 .pz-rml{display:flex;align-items:center;justify-content:center;gap:7px;margin:0;color:#D9D5F2;font:700 12.5px/1.2 var(--sp2-font);text-align:center}
 html:root body #casinoModal .sp2 .pz-rml img{width:18px;height:13px;object-fit:cover;border-radius:2px}
 html:root body #casinoModal .sp2 .pz-rms{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px}
 html:root body #casinoModal .sp2 .pz-rmt{min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-html:root body #casinoModal .sp2 .pz-rmt b{color:#E9E5FF;font:750 14px/1.2 var(--sp2-font);overflow-wrap:anywhere}
+html:root body #casinoModal .sp2 .pz-rmt b{color:#F2EAD8;font:750 14px/1.2 var(--sp2-font);overflow-wrap:anywhere}
 html:root body #casinoModal .sp2 .pz-rmt.w b{color:#fff;font-weight:900}
 html:root body #casinoModal .sp2 .pz-rmlo{width:46px;height:46px;object-fit:contain}
 html:root body #casinoModal .sp2 i.pz-rmlo{border-radius:50%;background:rgba(255,255,255,.1)}
@@ -1264,7 +1264,7 @@ html:root body #casinoModal .sp2 .pz-rme p{display:grid;grid-template-columns:mi
 html:root body #casinoModal .sp2 .pz-rme p:first-child{border-top:0}
 html:root body #casinoModal .sp2 .pz-rme em{justify-self:center;padding:3px 7px;border-radius:7px;background:rgba(255,255,255,.08);color:#A7F3D0;font:800 11.5px/1 var(--sp2-font);font-style:normal;font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .pz-rme p.g em{background:#22C55E;color:#06210F}
-html:root body #casinoModal .sp2 .pz-rmw{display:flex;align-items:center;gap:6px;min-width:0;color:#E9E5FF;font:600 12.5px/1.25 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-rmw{display:flex;align-items:center;gap:6px;min-width:0;color:#F2EAD8;font:600 12.5px/1.25 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-rmw i{flex:none;font-style:normal}
 html:root body #casinoModal .sp2 .pz-rmw span{min-width:0;overflow-wrap:anywhere}
 html:root body #casinoModal .sp2 .pz-rme p.a .pz-rmw{flex-direction:row-reverse;text-align:end}
