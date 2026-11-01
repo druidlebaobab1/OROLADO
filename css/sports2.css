@@ -549,7 +549,7 @@ html:root body #casinoModal .sp2 .pz-reslg .pz-lgh{grid-template-columns:auto mi
 /* bouton de cote : blanc net ; choisi = violet + liseré or ; ▲ / ▼ discrets quand ça bouge ; cadenas si suspendu */
 html:root body #casinoModal .sp2 .pz-ob{position:relative;min-width:0;height:42px;display:flex;align-items:center;justify-content:center;gap:4px;margin:0;padding:0 4px;border:0;border-radius:10px;
   background:var(--pz-ob);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);color:#fff;transition:background .15s,box-shadow .15s}
-html:root body #casinoModal .sp2 .pz-ob .pz-ov{font:800 14.5px/1.2 var(--sp2-font);font-variant-numeric:tabular-nums;color:#fff;direction:ltr}
+html:root body #casinoModal .sp2 .pz-ob .pz-ov{font:800 14.5px/1.2 var(--sp2-font);font-variant-numeric:tabular-nums;color:var(--sp2-gold);direction:ltr}
 /* 2026-10-22 (propriétaire) : cadenas DISCRET — la cote reste visible (grisée), petit cadenas dans le coin ; sans cote : bouton grisé + petit cadenas */
 html:root body #casinoModal .sp2 .pz-ob .pz-lki{display:none;position:absolute;top:2px;inset-inline-end:2px;width:13px;height:13px;place-items:center;border-radius:50%;background:rgba(12,8,32,.72);color:#B9B4DA}
 html:root body #casinoModal .sp2 .pz-ob .pz-lki .sp2-i{width:8px;height:8px;stroke-width:2.8}
