@@ -947,7 +947,27 @@
     if ((tail.match(/<g[\s>]/g) || []).length !== (tail.match(/<\/g>/g) || []).length) return s; // contour dans un groupe : on ne touche pas
     return s.slice(0, i) + '<g transform="translate(' + (32 + (FIT_D[k] ? FIT_D[k][0] : 0)) + ' ' + (33 + (FIT_D[k] ? FIT_D[k][1] : 0)) + ') scale(' + FIT_X[k] + ') translate(-32 -33)">' + tail + '</g>';
   }
+  // 2026-11-01 (propriétaire : « des vrais logos réalistes comme les grands sites ») — PHOTOS : certains jeux ont une
+  // vraie image (img/games/<clé>.webp) au lieu d'un dessin. On force ici (passe AVANT tous les setObj/addObj, quel que
+  // soit l'ordre de chargement). Même cadre rond que penalty.webp. Ajouter une clé + 2 couleurs d'anneau = logo-photo.
+  var PHOTO_V = '3365';
+  var PHOTO = {
+    gunship: ['#FDBA74', '#7C2D12'], tankbattle: ['#FCA5A5', '#7F1D1D'], tankrush: ['#FDE68A', '#78350F'],
+    lavarun: ['#FDBA74', '#7C2D12'], dogfight: ['#BAE6FD', '#0C4A6E'], ghostdash: ['#C4B5FD', '#312E81'],
+    grenade: ['#FCD34D', '#78350F'], sniper: ['#86EFAC', '#14532D'], airraid: ['#93C5FD', '#1E3A8A'],
+    subwaydash: ['#FBBF24', '#78350F']
+  };
+  function photoFrame(k) {
+    var c = PHOTO[k] || ['#334155', '#0F172A'];
+    return '<defs><clipPath id="IDm"><circle cx="32" cy="33" r="26.5"/></clipPath>' +
+      '<linearGradient id="IDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient>' +
+      '<linearGradient id="IDs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
+      '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDg)"/>' +
+      '<image href="img/games/' + k + '.webp?v=' + PHOTO_V + '" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
+      '<circle cx="32" cy="33" r="26.5" fill="url(#IDs)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>';
+  }
   function obj(k) {
+    if (PHOTO[k]) { var ip = 'ca' + (++n); return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + photoFrame(k).replace(/ID/g, ip) + '</svg>'; }
     var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
     return '<svg class="cs-obj" viewBox="0 0 64 64" aria-hidden="true">' + fitIn(f(), OBJ[k] ? k : 'coin').replace(/ID/g, id) + '</svg>';
   }
@@ -962,7 +982,9 @@
     return s;
   }
   function objFull(k) {
-    var f = OBJ[k] || OBJ.coin, id = 'ca' + (++n);
+    var id = 'ca' + (++n);
+    if (PHOTO[k]) return '<svg class="cs-obj cs-objf" viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + deround(photoFrame(k).replace(/ID/g, id)) + '</svg>';
+    var f = OBJ[k] || OBJ.coin;
     var inner = fitIn(f(), OBJ[k] ? k : 'coin').replace(/ID/g, id);
     return '<svg class="cs-obj cs-objf" viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + deround(inner) + '</svg>';
   }
