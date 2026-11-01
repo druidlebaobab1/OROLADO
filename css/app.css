@@ -12458,7 +12458,7 @@ html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lan
 html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn{flex-direction:row!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important}
 html:root body #screenAuth#screenAuth#screenAuth #langBarAuth#langBarAuth > .lang-dd-btn .lang-code{display:inline-block!important}
 /* Jeux / Paris / Social / Cadeaux : derrière la feuille, un fond PLEIN (on ne voit plus ACHETER / Recharger en faisant défiler) */
-html body #casinoModal.modal-backdrop.active,html body #liveModal.modal-backdrop.active,html body #portalModal.modal-backdrop.active{background:#120F2A!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #casinoModal.modal-backdrop.active,html body #liveModal.modal-backdrop.active,html body #portalModal.modal-backdrop.active{background:#140F08!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 html body #casinoModal .modal-box,html body #liveModal .modal-box,html body #portalModal .modal-box,html body #liveModal .live-box{overscroll-behavior:contain!important}
 html.oro-modal-lock,html.oro-modal-lock body{overflow:hidden!important;overscroll-behavior:none!important}
 /* v2768 (propriétaire) : case du logo Wave plus petite dans Recharger */
