@@ -1,7 +1,7 @@
 /* v2796 (propriétaire) — SOCIAL « MESSAGERIE » (js/social2.js) : comme WhatsApp / Telegram, dans la nuit violette OROLADO.
    Tout est rangé sous #liveModal.sx-on (la messagerie est affichée) : l'ancien Social n'est pas touché.
    Une seule page fixe (aucun défilement de page) ; seules les listes et l'historique d'une conversation défilent. */
-#liveModal{--sx-bg:#120b2e;--sx-bg2:#1a1240;--sx-line:rgba(255,255,255,.07);--sx-txt:#F1EEFF;--sx-sub:#A7A0CC;--sx-mut:#7D76A6;--sx-vio:#8B5CF6;--sx-vio2:#6D3BEF;--sx-gold:#FFD36B;--sx-gold2:#F2A93B;--sx-ok:#22C55E;--sx-red:#F87171;--sx-read:#7DD3FC}
+#liveModal{--sx-bg:#14100a;--sx-bg2:#1c1510;--sx-line:rgba(255,255,255,.07);--sx-txt:#F4ECD9;--sx-sub:#B8AC8C;--sx-mut:#8C8468;--sx-vio:#F2C14E;--sx-vio2:#C8912E;--sx-gold:#FFD36B;--sx-gold2:#F2A93B;--sx-ok:#22C55E;--sx-red:#F87171;--sx-read:#FBD773}
 
 /* ---------- la boîte : plein écran sur téléphone, grande fenêtre à deux colonnes sur ordinateur / TV ---------- */
 html:root body #liveModal#liveModal#liveModal.sx-on > .modal-box{padding:0!important;overflow:hidden!important;display:block!important;position:relative}
@@ -40,7 +40,7 @@ html[dir=rtl] #liveModal .sx .sx-bk .sx-ic,html[dir=rtl] #liveModal .sx .sx-go .
 #liveModal .sx.sx-in-conv .sx-list{display:none}
 #liveModal .sx.sx-in-conv .sx-conv{display:flex}
 @media (min-width:860px){
-  #liveModal .sx-list{flex:0 0 360px;border-inline-end:1px solid var(--sx-line);background:rgba(10,6,30,.35)}
+  #liveModal .sx-list{flex:0 0 360px;border-inline-end:1px solid var(--sx-line);background:rgba(12,8,4,.35)}
   #liveModal .sx .sx-conv,#liveModal .sx.sx-in-conv .sx-list{display:flex}
   #liveModal .sx-conv{background:rgba(255,255,255,.012)}
 }
@@ -50,7 +50,7 @@ html[dir=rtl] #liveModal .sx .sx-bk .sx-ic,html[dir=rtl] #liveModal .sx .sx-go .
 #liveModal .sx-hd{flex:0 0 auto;display:flex;align-items:center;gap:2px;min-height:56px;padding:0 6px}
 @media (max-width:859px){#liveModal .sx-list > .sx-hd,#liveModal .sx-conv > .sx-hd,#liveModal .sx-panel > .sx-hd{padding-top:14px;min-height:66px}}
 #liveModal .sx-ttl{flex:1 1 auto;font-size:22px;font-weight:800;letter-spacing:.01em;padding:0 8px}
-#liveModal .sx-ib{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;background:none;display:grid;place-items:center;color:#E4DCFF;padding:0}
+#liveModal .sx-ib{flex:0 0 auto;width:42px;height:42px;border:0;border-radius:50%;background:none;display:grid;place-items:center;color:#ECE1CB;padding:0}
 #liveModal .sx-ib:active,#liveModal .sx-ib:hover{background:rgba(255,255,255,.08)}
 #liveModal .sx-ib.sm{width:32px;height:32px}
 #liveModal .sx-ib.sm .sx-ic{width:18px;height:18px}
@@ -61,7 +61,7 @@ html[dir=rtl] #liveModal .sx .sx-bk .sx-ic,html[dir=rtl] #liveModal .sx .sx-go .
 #liveModal .sx-srch input::-webkit-search-cancel-button{display:none}
 #liveModal .sx-seg{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin:0 12px 6px;padding:3px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--sx-line)}
 #liveModal .sx-seg button{position:relative;height:36px;border:0;border-radius:11px;background:none;color:var(--sx-sub);display:flex;align-items:center;justify-content:center;gap:5px;padding:0 6px;min-width:0;font-size:14px;font-weight:700;transition:background .15s,color .15s}
-#liveModal .sx-seg button.on{background:linear-gradient(145deg,#9B6CFF,var(--sx-vio2));color:#fff;box-shadow:0 4px 14px -6px rgba(139,92,246,.9)}
+#liveModal .sx-seg button.on{background:linear-gradient(145deg,#F7D774,var(--sx-vio2));color:#2B1700;box-shadow:0 4px 14px -6px rgba(200,145,46,.9)}
 #liveModal .sx-seg button b{font-weight:inherit}
 #liveModal .sx-sb{flex:0 0 auto;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:linear-gradient(180deg,var(--sx-gold),var(--sx-gold2));color:#2B1700;font:800 11px/18px system-ui,sans-serif;font-style:normal;text-align:center}
 #liveModal .sx-sb:empty{display:none}
@@ -72,47 +72,47 @@ html[dir=rtl] #liveModal .sx .sx-bk .sx-ic,html[dir=rtl] #liveModal .sx .sx-go .
 #liveModal .sx-row{display:flex;align-items:center;gap:12px;width:100%;min-height:68px;padding:8px 10px;border:0;border-radius:16px;background:none;text-align:start;color:inherit}
 #liveModal button.sx-row:hover{background:rgba(255,255,255,.04)}
 #liveModal button.sx-row:active{background:rgba(255,255,255,.07)}
-#liveModal .sx-row.sel{background:rgba(139,92,246,.2)}
+#liveModal .sx-row.sel{background:rgba(242,193,78,.2)}
 #liveModal .sx-rm{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}
 #liveModal .sx-r1,#liveModal .sx-r2{display:flex;align-items:center;gap:8px;min-width:0}
 #liveModal .sx-nm{flex:1 1 auto;font-size:15.5px;font-weight:700;color:var(--sx-txt)}
 #liveModal .sx-r1 time{flex:0 0 auto;font-size:12px;color:var(--sx-mut);white-space:nowrap}
 #liveModal .sx-row.unread .sx-r1 time{color:var(--sx-gold)}
 #liveModal .sx-pv{flex:1 1 auto;font-size:13.5px;color:var(--sx-sub)}
-#liveModal .sx-row.unread .sx-pv{color:#DCD5FA}
+#liveModal .sx-row.unread .sx-pv{color:#EDE2CC}
 #liveModal .sx-pv .sx-tk{display:inline-block;vertical-align:-3px;width:15px;height:15px;margin-inline-end:3px;stroke:var(--sx-mut);stroke-width:2.4}
 #liveModal .sx-un{flex:0 0 auto;min-width:21px;height:21px;padding:0 6px;border-radius:11px;background:linear-gradient(180deg,var(--sx-gold),var(--sx-gold2));color:#2B1700;font:800 11.5px/21px system-ui,sans-serif;font-style:normal;text-align:center}
 #liveModal .sx-un.dot{min-width:11px;width:11px;height:11px;padding:0}
 #liveModal .sx-chip{flex:0 0 auto;font-style:normal;font-size:14px}
-#liveModal .sx-ver{display:inline-grid;place-items:center;width:15px;height:15px;margin-inline-start:5px;vertical-align:-2px;border-radius:50%;background:#38BDF8}
+#liveModal .sx-ver{display:inline-grid;place-items:center;width:15px;height:15px;margin-inline-start:5px;vertical-align:-2px;border-radius:50%;background:#E0A824}
 #liveModal .sx-ver svg{width:10px;height:10px;fill:none;stroke:#fff;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
-#liveModal .sx-row.pin{background:linear-gradient(90deg,rgba(139,92,246,.10),rgba(139,92,246,0) 70%)}
-#liveModal .sx-row.pin.sel{background:rgba(139,92,246,.2)}
-#liveModal .sx-h{margin:0;padding:16px 12px 6px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#A493E6}
+#liveModal .sx-row.pin{background:linear-gradient(90deg,rgba(242,193,78,.10),rgba(242,193,78,0) 70%)}
+#liveModal .sx-row.pin.sel{background:rgba(242,193,78,.2)}
+#liveModal .sx-h{margin:0;padding:16px 12px 6px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#C9BC98}
 #liveModal .sx-none{text-align:center;color:var(--sx-mut);font-size:14px;padding:24px 10px}
-#liveModal .sx-go2{color:#C4B5FD;width:36px;height:36px}
+#liveModal .sx-go2{color:#E8C877;width:36px;height:36px}
 #liveModal .sx-onl{font-style:normal;color:#4ADE80}
 
 /* ---------- avatars ---------- */
 #liveModal .sx-av{position:relative;flex:0 0 auto;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:21px;font-weight:800;
-  background:linear-gradient(145deg,color-mix(in srgb,var(--av,#8B5CF6) 82%,#fff),var(--av,#8B5CF6) 60%,color-mix(in srgb,var(--av,#8B5CF6) 70%,#000));box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+  background:linear-gradient(145deg,color-mix(in srgb,var(--av,#C8912E) 82%,#fff),var(--av,#C8912E) 60%,color-mix(in srgb,var(--av,#C8912E) 70%,#000));box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
 #liveModal .sx-av.big{width:84px;height:84px;font-size:34px}
 #liveModal .sx-av svg{width:62%;height:62%}
 #liveModal .sx-av-news{background:linear-gradient(145deg,#5AB0FF,#2457E6)}
 #liveModal .sx-av-team{background:linear-gradient(145deg,#4BE3C7,#0E9A8A)}
-#liveModal .sx-av-g{background:linear-gradient(145deg,rgba(167,139,250,.35),rgba(91,43,214,.35));border:1px solid rgba(196,181,253,.25);font-size:25px;font-weight:400}
+#liveModal .sx-av-g{background:linear-gradient(145deg,rgba(242,193,78,.35),rgba(200,145,46,.35));border:1px solid rgba(242,193,78,.25);font-size:25px;font-weight:400}
 #liveModal .sx-av-g.big{font-size:42px}
 #liveModal .sx-av-req{background:linear-gradient(145deg,#FF86BE,#E0306F)}
-#liveModal .sx-av-add{background:linear-gradient(145deg,#B993FF,#6B3BE3)}
+#liveModal .sx-av-add{background:linear-gradient(145deg,#F7D774,#C8912E)}
 #liveModal .sx-av .sx-ic{width:26px;height:26px;stroke:#fff;stroke-width:2}
 #liveModal .sx-dot{position:absolute;inset-inline-end:1px;bottom:1px;width:13px;height:13px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 2.5px var(--sx-bg)}
 #liveModal .sx-av.big .sx-dot{width:18px;height:18px}
 
 /* ---------- boutons ---------- */
-#liveModal .sx-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:0;height:44px;padding:0 18px;border:0;border-radius:14px;background:linear-gradient(145deg,#9B6CFF,var(--sx-vio2));color:#fff;font-size:15px;font-weight:800;box-shadow:0 8px 18px -10px rgba(139,92,246,.95)}
+#liveModal .sx-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;min-width:0;height:44px;padding:0 18px;border:0;border-radius:14px;background:linear-gradient(145deg,#F7D774,var(--sx-vio2));color:#2B1700;font-size:15px;font-weight:800;box-shadow:0 8px 18px -10px rgba(200,145,46,.95)}
 #liveModal .sx-btn.sm{height:36px;padding:0 14px;border-radius:12px;font-size:13.5px}
 #liveModal .sx-btn.ok{background:linear-gradient(145deg,#34D399,#16A34A);box-shadow:0 8px 18px -10px rgba(34,197,94,.9)}
-#liveModal .sx-btn.ghost{background:rgba(255,255,255,.08);color:#DCD5FA;box-shadow:none}
+#liveModal .sx-btn.ghost{background:rgba(255,255,255,.08);color:#EDE2CC;box-shadow:none}
 #liveModal .sx-btn.gold{background:linear-gradient(180deg,var(--sx-gold),var(--sx-gold2));color:#2B1700;box-shadow:0 8px 18px -10px rgba(242,169,59,.95)}
 #liveModal .sx-btn.wide{width:100%}
 #liveModal .sx-btn:disabled{opacity:.5}
@@ -123,22 +123,22 @@ html[dir=rtl] #liveModal .sx .sx-bk .sx-ic,html[dir=rtl] #liveModal .sx .sx-go .
 
 /* ---------- vides, cartes, formulaires ---------- */
 #liveModal .sx-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:28px 18px}
-#liveModal .sx-eico{width:68px;height:68px;border-radius:22px;display:grid;place-items:center;color:#C4B5FD;background:linear-gradient(145deg,rgba(139,92,246,.28),rgba(139,92,246,.08));border:1px solid rgba(196,181,253,.22)}
+#liveModal .sx-eico{width:68px;height:68px;border-radius:22px;display:grid;place-items:center;color:#E8C877;background:linear-gradient(145deg,rgba(242,193,78,.28),rgba(242,193,78,.08));border:1px solid rgba(242,193,78,.22)}
 #liveModal .sx-eico .sx-ic{width:32px;height:32px;stroke-width:1.7}
 #liveModal .sx-empty b{font-size:17px;font-weight:800;margin-top:4px}
 #liveModal .sx-empty p{margin:0 0 6px;max-width:320px;font-size:14px;line-height:1.45;color:var(--sx-sub)}
 #liveModal .sx-empty p:empty{display:none}
-#liveModal .sx-card{display:flex;align-items:center;gap:10px;margin:6px 8px 0;padding:12px 8px 12px 12px;border-radius:18px;background:linear-gradient(135deg,rgba(139,92,246,.24),rgba(242,169,59,.10));border:1px solid rgba(255,255,255,.09)}
+#liveModal .sx-card{display:flex;align-items:center;gap:10px;margin:6px 8px 0;padding:12px 8px 12px 12px;border-radius:18px;background:linear-gradient(135deg,rgba(242,193,78,.24),rgba(242,169,59,.10));border:1px solid rgba(255,255,255,.09)}
 #liveModal .sx-idi{flex:0 0 auto;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;color:#2B1700;background:linear-gradient(180deg,var(--sx-gold),var(--sx-gold2))}
 #liveModal .sx-idt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
 #liveModal .sx-idt small{font-size:12.5px;color:var(--sx-sub);font-weight:600}
 #liveModal .sx-idv{font:800 23px/1.15 ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.08em;color:var(--sx-gold)}
 #liveModal .sx-note{margin:6px 14px 0;font-size:12.5px;color:var(--sx-sub)}
 #liveModal .sx-hint{margin:6px 8px 2px;padding:10px 12px;border-radius:14px;background:rgba(242,169,59,.12);border:1px solid rgba(242,169,59,.3);color:#FFE3A6;font-size:14px;font-weight:700}
-#liveModal .sx-rec{margin:8px 14px 0;font-size:13px;color:#E9DFFF;font-weight:600}
+#liveModal .sx-rec{margin:8px 14px 0;font-size:13px;color:#EDE2CC;font-weight:600}
 #liveModal .sx-add{display:flex;gap:8px;margin:10px 8px 0}
-#liveModal .sx-add input{flex:1 1 auto;min-width:0;height:44px;padding:0 14px;border-radius:14px;border:1.5px solid rgba(255,255,255,.13);background:rgba(8,5,26,.55);color:var(--sx-txt);font-size:15px;font-weight:500;line-height:1;outline:none}
-#liveModal .sx-add input:focus{border-color:var(--sx-vio);box-shadow:0 0 0 3px rgba(139,92,246,.25)}
+#liveModal .sx-add input{flex:1 1 auto;min-width:0;height:44px;padding:0 14px;border-radius:14px;border:1.5px solid rgba(255,255,255,.13);background:rgba(10,7,3,.55);color:var(--sx-txt);font-size:15px;font-weight:500;line-height:1;outline:none}
+#liveModal .sx-add input:focus{border-color:var(--sx-vio);box-shadow:0 0 0 3px rgba(242,193,78,.25)}
 #liveModal .sx-add input::placeholder,#liveModal .sx textarea::placeholder,#liveModal .sx-srch input::placeholder{color:var(--sx-mut);opacity:1}
 #liveModal .sx-msg{margin:6px 14px 0;font-size:13px;color:#FCA5A5;min-height:0}
 #liveModal .sx-msg:empty{display:none}
@@ -150,7 +150,7 @@ html[dir=rtl] #liveModal .sx .sx-bk .sx-ic,html[dir=rtl] #liveModal .sx .sx-go .
 #liveModal .sx-req{cursor:pointer}
 
 /* ---------- conversation ---------- */
-#liveModal .sx-chd{background:rgba(18,11,46,.7);border-bottom:1px solid var(--sx-line);gap:0}
+#liveModal .sx-chd{background:rgba(20,16,10,.7);border-bottom:1px solid var(--sx-line);gap:0}
 #liveModal .sx-who{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:10px;padding:4px 6px;border:0;border-radius:14px;background:none;text-align:start}
 #liveModal .sx-who .sx-av{width:42px;height:42px;font-size:17px}
 #liveModal .sx-who .sx-av-g{font-size:21px}
@@ -161,18 +161,18 @@ html[dir=rtl] #liveModal .sx .sx-bk .sx-ic,html[dir=rtl] #liveModal .sx .sx-go .
 #liveModal .sx-msgs{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;padding:8px 10px 10px;
   background-image:radial-gradient(rgba(255,255,255,.055) 1px,transparent 1.3px);background-size:24px 24px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
 #liveModal .sx-day{position:sticky;top:2px;z-index:1;display:flex;justify-content:center;margin:10px 0 4px;pointer-events:none}
-#liveModal .sx-day span{padding:4px 12px;border-radius:10px;background:rgba(26,18,64,.92);border:1px solid var(--sx-line);font-size:12px;font-weight:700;color:#D3CCF5;white-space:nowrap}
+#liveModal .sx-day span{padding:4px 12px;border-radius:10px;background:rgba(26,20,12,.92);border:1px solid var(--sx-line);font-size:12px;font-weight:700;color:#D8CDB2;white-space:nowrap}
 #liveModal .sx-sys{display:flex;justify-content:center;margin:8px 0}
 #liveModal .sx-sys span{max-width:92%;padding:6px 12px;border-radius:12px;background:rgba(255,255,255,.06);font-size:12.5px;line-height:1.4;color:var(--sx-sub);text-align:center}
 #liveModal .sx-sys.safe span{background:rgba(242,169,59,.10);border:1px solid rgba(242,169,59,.22);color:#F6DFAE}
 #liveModal .sx-b{position:relative;max-width:min(80%,520px);margin-top:8px;padding:7px 10px 6px 11px;border-radius:18px;font-size:15px;line-height:1.42;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
 #liveModal .sx-b.cont{margin-top:2px}
-#liveModal .sx-b.me{align-self:flex-end;background:linear-gradient(150deg,#8A5BFF,#6230E0);color:#fff;border-end-end-radius:6px;box-shadow:0 6px 16px -10px rgba(109,59,239,.9)}
-#liveModal .sx-b.them{align-self:flex-start;background:rgba(255,255,255,.085);border:1px solid rgba(255,255,255,.06);color:#EEEAFE;border-end-start-radius:6px}
+#liveModal .sx-b.me{align-self:flex-end;background:linear-gradient(150deg,#4a3a15,#2a1f0b);border:1px solid rgba(242,193,78,.42);color:#F6ECD8;border-end-end-radius:6px;box-shadow:0 6px 16px -10px rgba(200,145,46,.9)}
+#liveModal .sx-b.them{align-self:flex-start;background:rgba(255,255,255,.085);border:1px solid rgba(255,255,255,.06);color:#EFE7D6;border-end-start-radius:6px}
 #liveModal .sx-b.me.cont{border-end-end-radius:18px;border-start-end-radius:6px}
 #liveModal .sx-b.them.cont{border-end-start-radius:18px;border-start-start-radius:6px}
 #liveModal .sx-b a{color:inherit;text-decoration:underline}
-#liveModal .sx-b.them a{color:#C4B5FD}
+#liveModal .sx-b.them a{color:#E8C877}
 #liveModal .sx-bw{display:block;font-style:normal;font-size:13px;font-weight:800;color:color-mix(in srgb,var(--av) 70%,#fff);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #liveModal .sx-meta{float:right;display:inline-flex;align-items:center;gap:3px;margin:7px 0 -3px 12px;font-size:11px;line-height:1;color:rgba(255,255,255,.62);white-space:nowrap;font-variant-numeric:tabular-nums}
 html[dir=rtl] #liveModal .sx-meta{float:left;margin:7px 12px -3px 0}
@@ -193,7 +193,7 @@ html[dir=rtl] #liveModal .sx-meta{float:left;margin:7px 12px -3px 0}
 #liveModal .sx-b.aud{padding:6px 8px}
 #liveModal .sx-aud{display:block;width:240px;max-width:100%;height:40px}
 #liveModal .sx-b.post{max-width:min(90%,560px)}
-#liveModal .sx-plink{margin-top:8px;padding:9px 11px;border-radius:12px;background:rgba(139,92,246,.18);color:#D9CCFF!important;font-weight:700;font-size:13.5px;text-decoration:none!important}
+#liveModal .sx-plink{margin-top:8px;padding:9px 11px;border-radius:12px;background:rgba(242,193,78,.18);color:#EDE2CC!important;font-weight:700;font-size:13.5px;text-decoration:none!important}
 #liveModal .sx-pf{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;white-space:nowrap}
 #liveModal .sx-like{border:0;border-radius:99px;padding:5px 12px;background:rgba(255,255,255,.08);font-size:13px;font-weight:700;color:#EEE}
 #liveModal .sx-like.on{background:rgba(244,63,110,.2)}
@@ -208,10 +208,10 @@ html[dir=rtl] #liveModal .sx-meta{float:left;margin:7px 12px -3px 0}
 /* bandeau (défi, demande, bloqué) */
 #liveModal .sx-ban{flex:0 0 auto;position:relative;margin:8px 10px 0;padding:11px 12px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09)}
 #liveModal .sx-ban p{margin:2px 0 0;font-size:13px;line-height:1.4;color:var(--sx-sub)}
-#liveModal .sx-ban.req p,#liveModal .sx-ban.blk p{margin:0 0 9px;color:#E9E3FF;font-size:13.5px}
+#liveModal .sx-ban.req p,#liveModal .sx-ban.blk p{margin:0 0 9px;color:#EDE2CC;font-size:13.5px}
 #liveModal .sx-ban .sx-yn{margin-top:9px}
 #liveModal .sx-ban.req .sx-yn,#liveModal .sx-ban.blk .sx-yn{margin-top:0}
-#liveModal .sx-ban.duel{background:linear-gradient(135deg,rgba(242,169,59,.16),rgba(139,92,246,.16));border-color:rgba(242,169,59,.35)}
+#liveModal .sx-ban.duel{background:linear-gradient(135deg,rgba(242,169,59,.16),rgba(242,193,78,.16));border-color:rgba(242,169,59,.35)}
 #liveModal .sx-ban.duel.done.win{border-color:rgba(74,222,128,.5)}
 #liveModal .sx-dt{display:block;padding-inline-end:30px;font-size:14.5px;font-weight:800;color:#FFF3D6}
 #liveModal .sx-bx{position:absolute;top:6px;inset-inline-end:6px}
@@ -226,26 +226,26 @@ html[dir=rtl] #liveModal .sx-meta{float:left;margin:7px 12px -3px 0}
 /* réponses rapides (Écris-nous) */
 #liveModal .sx-qk{flex:0 0 auto;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 10px 2px}
 #liveModal .sx-qk::-webkit-scrollbar{display:none}
-#liveModal .sx-qk button{flex:0 0 auto;height:36px;padding:0 14px;border-radius:18px;border:1px solid rgba(167,139,250,.38);background:rgba(139,92,246,.16);color:#EDE7FF;font-size:13.5px;font-weight:700}
+#liveModal .sx-qk button{flex:0 0 auto;height:36px;padding:0 14px;border-radius:18px;border:1px solid rgba(242,193,78,.38);background:rgba(242,193,78,.16);color:#EDE2CC;font-size:13.5px;font-weight:700}
 #liveModal .sx-qk button .fit{overflow:visible}
 
 /* barre d'écriture */
-#liveModal .sx-comp{flex:0 0 auto;display:flex;align-items:flex-end;gap:6px;padding:8px 8px 10px;background:rgba(12,8,34,.88);border-top:1px solid var(--sx-line)}
-#liveModal .sx-cb{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(255,255,255,.07);color:#C4B5FD;padding:0;position:relative}
+#liveModal .sx-comp{flex:0 0 auto;display:flex;align-items:flex-end;gap:6px;padding:8px 8px 10px;background:rgba(14,11,7,.88);border-top:1px solid var(--sx-line)}
+#liveModal .sx-cb{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(255,255,255,.07);color:#E8C877;padding:0;position:relative}
 #liveModal .sx-cb .sx-ic{width:23px;height:23px}
-#liveModal .sx-mic{color:#7DD3FC}
+#liveModal .sx-mic{color:#E8C877}
 #liveModal .sx-mic.on{background:linear-gradient(180deg,#F87171,#DC2626);color:#fff;animation:sxPulse 1s ease-in-out infinite}
 @keyframes sxPulse{50%{transform:scale(1.07)}}
 html.oro-lite #liveModal .sx-mic.on{animation:none}
 #liveModal .sx-go{background:linear-gradient(180deg,var(--sx-gold),var(--sx-gold2));color:#2B1700;box-shadow:0 8px 18px -10px rgba(242,169,59,.95)}
 #liveModal .sx-go .sx-ic{stroke-width:2.1;fill:rgba(43,23,0,.12)}
 #liveModal .sx-inw{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center;min-height:46px;padding:2px 14px;border-radius:23px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
-#liveModal .sx-inw:focus-within{border-color:rgba(139,92,246,.7)}
+#liveModal .sx-inw:focus-within{border-color:rgba(242,193,78,.7)}
 #liveModal .sx textarea{display:block;width:100%;min-height:40px;max-height:120px;padding:10px 0;border:0;background:none;color:var(--sx-txt);font-size:15.5px;font-weight:400;line-height:1.32;resize:none;outline:none;overflow-y:auto}
 #liveModal .sx-prev{position:relative;padding:8px 0 4px;align-self:flex-start;max-width:100%}
 #liveModal .sx-prev img{display:block;max-height:120px;max-width:100%;border-radius:12px}
 #liveModal .sx-prev audio{display:block;width:220px;max-width:100%;height:38px}
-#liveModal .sx-px{position:absolute;top:2px;inset-inline-end:-8px;width:26px;height:26px;border-radius:50%;border:0;display:grid;place-items:center;background:#2A1F5C;color:#fff;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#liveModal .sx-px{position:absolute;top:2px;inset-inline-end:-8px;width:26px;height:26px;border-radius:50%;border:0;display:grid;place-items:center;background:#241a0e;color:#fff;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 #liveModal .sx-px .sx-ic{width:14px;height:14px;stroke-width:2.6}
 #liveModal .sx-recb{display:flex;align-items:center;gap:8px;min-height:40px;min-width:0}
 #liveModal .sx-recd{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:#EF4444;animation:sxBlink 1s steps(2) infinite}
@@ -257,8 +257,8 @@ html.oro-lite #liveModal .sx-recd{animation:none}
 #liveModal .sx-ro .sx-ic{display:inline-block;width:14px;height:14px;vertical-align:-2px}
 
 /* ---------- feuille du bas, menu ---------- */
-#liveModal .sx-sheet{position:absolute;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(5,3,20,.62)}
-#liveModal .sx-shin{width:100%;max-height:86%;overflow-y:auto;padding:8px 14px calc(16px + env(safe-area-inset-bottom,0px));border-radius:22px 22px 0 0;background:linear-gradient(180deg,#221852,#17103a);border:1px solid rgba(255,255,255,.08);border-bottom:0;animation:sxUp .2s ease-out}
+#liveModal .sx-sheet{position:absolute;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(6,4,2,.62)}
+#liveModal .sx-shin{width:100%;max-height:86%;overflow-y:auto;padding:8px 14px calc(16px + env(safe-area-inset-bottom,0px));border-radius:22px 22px 0 0;background:linear-gradient(180deg,#221a10,#17110a);border:1px solid rgba(255,255,255,.08);border-bottom:0;animation:sxUp .2s ease-out}
 @keyframes sxUp{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
 html.oro-lite #liveModal .sx-shin{animation:none}
 @media (min-width:860px){#liveModal .sx-sheet{align-items:center}#liveModal .sx-shin{width:420px;border-radius:22px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:16px}}
@@ -276,13 +276,13 @@ html.oro-lite #liveModal .sx-shin{animation:none}
 #liveModal .sx-menu button{display:flex;align-items:center;gap:14px;width:100%;min-height:54px;padding:0 16px;border:0;border-bottom:1px solid var(--sx-line);background:none;font-size:15.5px;font-weight:600;text-align:start}
 #liveModal .sx-menu button:last-child{border-bottom:0}
 #liveModal .sx-menu button:active{background:rgba(255,255,255,.06)}
-#liveModal .sx-menu button .sx-ic{color:#C4B5FD}
+#liveModal .sx-menu button .sx-ic{color:#E8C877}
 #liveModal .sx-menu button .fit{flex:1 1 auto}
 #liveModal .sx-menu button.red{color:#FCA5A5}
 #liveModal .sx-menu button.red .sx-ic{color:var(--sx-red)}
 
 /* ---------- fiche du groupe / ajouter des membres ---------- */
-#liveModal .sx-panel{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;background:linear-gradient(180deg,#160e3a,#0f0a28);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+#liveModal .sx-panel{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;background:linear-gradient(180deg,#16110a,#0f0b07);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (min-width:860px){#liveModal .sx-panel{inset-inline-start:360px;padding:0;border-inline-start:1px solid var(--sx-line)}}
 @media (min-width:1600px){#liveModal .sx-panel{inset-inline-start:420px}}
 #liveModal .sx-pbody{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 6px 24px}
@@ -291,13 +291,13 @@ html.oro-lite #liveModal .sx-shin{animation:none}
 #liveModal .sx-ghero b{font-size:21px;font-weight:800;max-width:100%}
 #liveModal .sx-ghero small{font-size:13.5px;color:var(--sx-sub)}
 #liveModal .sx-acts{display:flex;flex-direction:column;margin:0 8px;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid var(--sx-line)}
-#liveModal .sx-acts button{display:flex;align-items:center;gap:14px;min-width:0;min-height:52px;padding:0 16px;border:0;border-bottom:1px solid var(--sx-line);background:none;color:#E9E3FF;font-size:15px;font-weight:700;text-align:start}
+#liveModal .sx-acts button{display:flex;align-items:center;gap:14px;min-width:0;min-height:52px;padding:0 16px;border:0;border-bottom:1px solid var(--sx-line);background:none;color:#EDE2CC;font-size:15px;font-weight:700;text-align:start}
 #liveModal .sx-acts button:last-child{border-bottom:0}
 #liveModal .sx-acts button .fit{flex:1 1 auto}
-#liveModal .sx-acts .sx-ic{width:24px;height:24px;color:#C4B5FD}
+#liveModal .sx-acts .sx-ic{width:24px;height:24px;color:#E8C877}
 #liveModal .sx-linkc{padding:8px 4px 8px 10px}
 #liveModal .sx-linkc .sx-idi{width:36px;height:36px;border-radius:12px}
-#liveModal .sx-lk{flex:1 1 auto;font-size:14px;color:#D9CCFF;font-weight:600}
+#liveModal .sx-lk{flex:1 1 auto;font-size:14px;color:#EDE2CC;font-weight:600}
 #liveModal .sx-mem{min-height:62px}
 #liveModal .sx-mem .sx-av{width:44px;height:44px;font-size:18px}
 #liveModal .sx-tag{flex:0 0 auto;padding:3px 9px;border-radius:8px;background:rgba(34,197,94,.16);color:#86EFAC;font-size:12px;font-weight:800;font-style:normal}
@@ -367,7 +367,7 @@ html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflo
 /* en-tête de la liste : logo Social + titre + sous-titre */
 #liveModal .sx-lhd{gap:4px}
 #liveModal .sx-logo{flex:0 0 auto;width:34px;height:34px;display:grid;place-items:center;margin-inline-start:2px}
-#liveModal .sx-logo svg{width:34px;height:34px;display:block;filter:drop-shadow(0 4px 10px rgba(124,58,237,.45))}
+#liveModal .sx-logo svg{width:34px;height:34px;display:block;filter:drop-shadow(0 4px 10px rgba(200,145,46,.45))}
 #liveModal .sx-tt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;padding:0 6px;line-height:1.1}
 #liveModal .sx-tt .sx-ttl{padding:0;font-size:21px}
 #liveModal .sx-tt small{font-size:12px;font-weight:600;color:var(--sx-sub);margin-top:2px}
@@ -389,7 +389,7 @@ html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflo
 /* ma photo (carte « Mon identifiant ») et photo du groupe : bouton avec petit appareil photo */
 #liveModal .sx-mya{position:relative;flex:0 0 auto;border:0;background:none;padding:0;border-radius:50%;display:block}
 #liveModal .sx-idc .sx-mya .sx-av{width:46px;height:46px;font-size:19px}
-#liveModal .sx-camb{position:absolute;inset-inline-end:-3px;bottom:-3px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,var(--sx-gold),var(--sx-gold2));color:#2B1700;box-shadow:0 0 0 2px #1a1240;z-index:2}
+#liveModal .sx-camb{position:absolute;inset-inline-end:-3px;bottom:-3px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,var(--sx-gold),var(--sx-gold2));color:#2B1700;box-shadow:0 0 0 2px #1c1510;z-index:2}
 #liveModal .sx-camb .sx-ic{width:13px;height:13px;stroke-width:2.3}
 #liveModal .sx-mya.big .sx-camb{width:30px;height:30px}
 #liveModal .sx-mya.big .sx-camb .sx-ic{width:17px;height:17px}
@@ -409,14 +409,14 @@ html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflo
 #liveModal .sx-sheet .sx-h{padding-inline:2px}
 #liveModal .sx-menu label.sx-mi{display:flex;align-items:center;gap:14px;width:100%;min-height:54px;padding:0 16px;border-bottom:1px solid var(--sx-line);font-size:15.5px;font-weight:600;cursor:pointer}
 #liveModal .sx-menu label.sx-mi:last-child{border-bottom:0}
-#liveModal .sx-menu label.sx-mi .sx-ic{color:#C4B5FD}
+#liveModal .sx-menu label.sx-mi .sx-ic{color:#E8C877}
 #liveModal .sx-menu label.sx-mi .fit{flex:1 1 auto}
 
 /* confirmation dans le site (supprimer, quitter, retirer, signaler) */
 #liveModal .sx-ask{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:2px 2px 0}
 #liveModal .sx-askt{font-size:18px;font-weight:800;max-width:100%;overflow-wrap:anywhere}
 #liveModal .sx-ask p{margin:0;color:var(--sx-sub);font-size:14px;line-height:1.45}
-#liveModal .sx-ask textarea{width:100%;min-height:84px;padding:10px 12px;border-radius:14px;border:1.5px solid rgba(255,255,255,.13);background:rgba(8,5,26,.55);color:var(--sx-txt);resize:none;outline:none;line-height:1.35}
+#liveModal .sx-ask textarea{width:100%;min-height:84px;padding:10px 12px;border-radius:14px;border:1.5px solid rgba(255,255,255,.13);background:rgba(10,7,3,.55);color:var(--sx-txt);resize:none;outline:none;line-height:1.35}
 #liveModal .sx-ask .sx-yn{margin-top:8px}
 #liveModal .sx-btn.red{background:linear-gradient(145deg,#F87171,#DC2626);box-shadow:0 8px 18px -10px rgba(220,38,38,.9)}
 #liveModal .sx-exit .sx-ic{width:20px;height:20px}
@@ -424,16 +424,16 @@ html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflo
 /* aperçu d'un lien d'invitation */
 #liveModal .sx-joinb{display:flex;align-items:flex-start;justify-content:center}
 #liveModal .sx-join{width:100%;max-width:420px;margin:14px 8px 0;padding:22px 18px 18px;border-radius:22px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;
-  background:linear-gradient(160deg,rgba(139,92,246,.22),rgba(242,169,59,.08));border:1px solid rgba(255,255,255,.1);min-height:260px}
+  background:linear-gradient(160deg,rgba(242,193,78,.22),rgba(242,169,59,.08));border:1px solid rgba(255,255,255,.1);min-height:260px}
 #liveModal .sx-join .sx-av.big{width:96px;height:96px}
 #liveModal .sx-jn{font-size:21px;font-weight:800;max-width:100%}
 #liveModal .sx-join > small{font-size:13.5px;color:var(--sx-sub);max-width:100%}
 #liveModal .sx-join p{margin:0;color:var(--sx-sub);font-size:14px;line-height:1.45}
-#liveModal .sx-jby{display:flex;align-items:center;gap:8px;max-width:100%;margin:4px 0 8px;padding:5px 12px 5px 5px;border-radius:99px;background:rgba(255,255,255,.06);font-size:13px;color:#E4DCFF;font-weight:600}
+#liveModal .sx-jby{display:flex;align-items:center;gap:8px;max-width:100%;margin:4px 0 8px;padding:5px 12px 5px 5px;border-radius:99px;background:rgba(255,255,255,.06);font-size:13px;color:#ECE1CB;font-weight:600}
 #liveModal .sx-jby .sx-av{width:26px;height:26px;font-size:12px}
 #liveModal .sx-jby .fit{min-width:0}
 #liveModal .sx-join .sx-btn.wide{height:50px;margin-top:4px;font-size:16px}
-#liveModal .sx-lnk{border:0;background:none;color:#C4B5FD;font-size:14px;font-weight:700;text-decoration:underline;padding:6px}
+#liveModal .sx-lnk{border:0;background:none;color:#E8C877;font-size:14px;font-weight:700;text-decoration:underline;padding:6px}
 #liveModal .sx-skelav{background:rgba(255,255,255,.07)!important;box-shadow:none!important}
 #liveModal .sx-skl{display:block;width:60%;height:14px;border-radius:7px;background:rgba(255,255,255,.07)}
 #liveModal .sx-skl.s{width:40%}
@@ -449,7 +449,7 @@ html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflo
 #liveModal .sx-empty .sx-yn .sx-btn{flex:1 1 0;min-width:0;max-width:200px}
 /* première ouverture d'une discussion : bulles grises (jamais d'écran vide) */
 #liveModal .sx-bsk{height:38px;box-shadow:none!important;background:rgba(255,255,255,.07)!important;border:0!important}
-#liveModal .sx-bsk.me{background:rgba(139,92,246,.28)!important}
+#liveModal .sx-bsk.me{background:rgba(242,193,78,.28)!important}
 #liveModal .sx-bsk.w1{width:46%}#liveModal .sx-bsk.w2{width:62%}#liveModal .sx-bsk.w3{width:38%}
 /* nom dans l'en-tête d'une discussion : coupé par « … », le badge vérifié reste visible */
 #liveModal #sxWn{display:flex!important;align-items:center;min-width:0;overflow:hidden}
@@ -461,7 +461,7 @@ html:has(#liveModal.active.sx-on),html:has(#liveModal.active.sx-on) body{overflo
 #liveModal .sx-newsp .sx-good{padding:14px 4px 4px}
 /* Actualités : cartes utiles */
 #liveModal .sx-tips{display:flex;flex-direction:column;gap:8px;margin:6px 0 4px}
-#liveModal .sx-tip{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 10px;border-radius:18px;background:linear-gradient(135deg,rgba(139,92,246,.20),rgba(242,169,59,.07));border:1px solid rgba(255,255,255,.08)}
+#liveModal .sx-tip{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 10px;border-radius:18px;background:linear-gradient(135deg,rgba(242,193,78,.20),rgba(242,169,59,.07));border:1px solid rgba(255,255,255,.08)}
 #liveModal .sx-tipi{flex:0 0 auto;width:46px;height:46px;display:block}
 #liveModal .sx-tipi .sx-emb{width:46px;height:46px;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
 #liveModal .sx-tipt{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
