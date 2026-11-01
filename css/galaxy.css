@@ -1578,9 +1578,9 @@ html.fs-trade body #tradeWrap#tradeWrap #chartReset{margin:0 auto 0 10px!importa
 @media (max-width:859px){
   /* bas de l'écran : le terminal descend en douceur jusqu'au bleu des fenêtres (inscription…),
      et ce même bleu continue sous la barre du navigateur → aucune limite visible */
-  html,html body{background-color:#1A2A68!important;background-image:none!important}
-  html.is-ios body #oroIosFloor#oroIosFloor{background:#1A2A68!important;background-image:none!important}
-  html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(12,12,35) 0,rgb(14,18,50) 26px,#1A2A68 100%)!important}
+  html,html body{background-color:#141210!important;background-image:none!important}
+  html.is-ios body #oroIosFloor#oroIosFloor{background:#141210!important;background-image:none!important}
+  html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(12,12,35) 0,rgb(14,18,50) 26px,#141210 100%)!important}
   /* Android (Chrome) : ACHETER / VENDRE descendent presque contre la barre du navigateur
      (plus de bande sombre dessous), sans ombre noire en bas */
   html.is-android:not(.fs-trade) body #tradeWrap#tradeWrap .pad{padding-bottom:3px!important}
@@ -1610,11 +1610,11 @@ html.fs-trade body #tradeWrap#tradeWrap #chartZoomIn#chartZoomIn{margin-left:aut
    Retouches 20 (demandes du propriétaire, mesures sur ses captures)
    ===================================================================== */
 @media (max-width:859px){
-  /* iPhone : la bande sous la barre de Safari prend ENFIN le bleu des fenêtres (#1A2A68) sur l'écran de
+  /* iPhone : la bande sous la barre de Safari prend ENFIN le bleu des fenêtres (#141210) sur l'écran de
      jeu aussi (une ancienne règle plus forte gardait #101838 « bleu pur ») ; et elle n'existe que sur
      Safari : sur Chrome / autres navigateurs iPhone, plus de bande sous ACHETER / VENDRE */
   html.is-ios.is-ios-safari body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor,
-  html.is-ios.is-ios-safari body #oroIosFloor#oroIosFloor{background:#1A2A68!important;background-image:none!important}
+  html.is-ios.is-ios-safari body #oroIosFloor#oroIosFloor{background:#141210!important;background-image:none!important}
   html.is-ios:not(.is-ios-safari) body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor,
   html.is-ios:not(.is-ios-safari) body #oroIosFloor#oroIosFloor{display:none!important}
   /* Safari iPhone : page d'inscription / connexion plus compacte (le bas du cadre n'est plus mangé) */
@@ -1829,7 +1829,7 @@ html body #screenTrade#screenTrade #topbarCta#topbarCta#topbarCta #btnOpenDeposi
    2) Petit espace sous ACHETER / VENDRE (barre d'accueil de l'iPhone), et fond bleu du terminal tout en bas
       (avant : bande noire). */
 @media (display-mode: standalone), (display-mode: fullscreen) {
-  html.is-ios, html.is-ios body{background-color:#1A2A68!important}
+  html.is-ios, html.is-ios body{background-color:#141210!important}
   html.is-ios body #oroIosFloor#oroIosFloor,
   html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{display:none!important}
   html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap > .pad{padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
@@ -1857,7 +1857,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip{padding-top:0!important;
 html.is-tv:not(.fs-trade) body #tradeWrap#tradeWrap .stake-line{grid-template-columns:114px minmax(0,1fr) minmax(0,1.2fr)!important}
 html.is-tv body #tradeWrap#tradeWrap .dur-chip .dc-t{font-size:10.5px!important}
 /* v2304 — appli iPhone (classe posée par js/app.js) : fond bleu du terminal partout, jusqu'au bas de l'écran */
-html.ios-app, html.ios-app body{background-color:#1A2A68!important}
+html.ios-app, html.ios-app body{background-color:#141210!important}
 html.ios-app body #screenTrade#screenTrade{min-height:100vh!important}
 /* v2305 — case de mise (écran normal) : l'ancien « $ » fixe (PC, penché, posé à un endroit fixe) est remplacé par
    le « $ » qui suit le chiffre (#stakeCur, js/app.js). Le plein écran garde le sien. */
@@ -2106,7 +2106,7 @@ html.is-android body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:2
 html.is-android body #drawerProfile#drawerProfile#drawerProfile{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important}
 html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{padding-bottom:8px!important}
 /* v2827 (propriétaire, captures iPhone : « bande sous ACHETER / VENDRE ») : plus de plancher bleu fixe posé PAR-DESSUS le bas de
-   l'écran. Le terminal descend lui-même jusqu'au bas de la fenêtre (son fond finit dans le même bleu que la page, #1A2A68) ;
+   l'écran. Le terminal descend lui-même jusqu'au bas de la fenêtre (son fond finit dans le même bleu que la page, #141210) ;
    sous la barre de Safari, c'est le fond de la page, du même bleu : aucune limite visible. */
 @media (max-width:859px){
   html.is-ios body #oroIosFloor#oroIosFloor,html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{display:none!important}
@@ -2118,18 +2118,18 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
   html:not(.fs-trade) body #screenTrade .trade-shell{max-width:none!important;width:100%!important;margin-left:0!important;margin-right:0!important}
 }
 
-/* v2845 (propriétaire) — iPhone / Safari : le BAS de l'écran redevient bleu (#1A2A68) comme avant, sans bande posée
+/* v2845 (propriétaire) — iPhone / Safari : le BAS de l'écran redevient bleu (#141210) comme avant, sans bande posée
    sur ACHETER / VENDRE : c'est le fond du terminal lui-même qui finit en bleu, sous la barre de Safari. */
 @media (max-width:859px){
   html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-    background:linear-gradient(0deg,#1A2A68 0,#1A2A68 env(safe-area-inset-bottom,0px),rgba(26,42,104,0) calc(env(safe-area-inset-bottom,0px) + 34px)),
+    background:linear-gradient(0deg,#141210 0,#141210 env(safe-area-inset-bottom,0px),rgba(20,18,16,0) calc(env(safe-area-inset-bottom,0px) + 34px)),
       url("../icons/ui/pad-planets.svg?v=2886") center/cover no-repeat,
       linear-gradient(180deg,rgb(13,14,40) 0,rgba(13,14,40,.6) 6px,rgba(13,14,40,0) 22px),
-      linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #1A2A68!important}
+      linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #141210!important}
   /* v2965 (propriétaire, iPhone : « bande noire sous la courbe ») : le raccord sombre en haut du terminal est plus court et plus
      clair (avant : noir plein sur 10 px puis fondu jusqu'à 40 px) ; il part toujours de la couleur du bas de la courbe (pas de trait). */
-  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#1A2A68!important}
-  html.is-ios{background:#1A2A68!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#141210!important}
+  html.is-ios{background:#141210!important}
 }
 
 /* v2854 (propriétaire : plus de trait entre la courbe et le terminal) : couleur exacte du haut du terminal, lue par
@@ -2146,7 +2146,7 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
    son fond sombre, sans bande bleue en bas et sans dessin coupé ; fond prune partout (plus de bleu d'un côté et de noir de l'autre). */
 html.ios-app:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
   background:linear-gradient(180deg,rgb(13,14,40) 0,rgba(13,14,40,.6) 6px,rgba(13,14,40,0) 22px),
-    linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #1A2A68!important}
+    linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #141210!important}
 html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#0F102E!important}
 
 /* 2026-10-20 (propriétaire) — APPLICATION iPhone installée : le petit monde de planètes (app-floor.svg) est un bandeau fixé
