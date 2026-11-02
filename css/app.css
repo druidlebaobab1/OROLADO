@@ -13832,3 +13832,14 @@ html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wall
 /* 2026-10-26 (propriétaire) — Android : la croix de « Recharger » bien placée dans le coin, un peu détachée du bord haut
    (barre du téléphone) au lieu d'être collée tout en haut. iPhone : sa croix (déjà bien) n'est pas touchée. */
 html.is-android:root body #depositModal#depositModal#depositModal .btn-close#closeDeposit#closeDeposit{top:14px!important;right:12px!important;width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important}
+
+/* v3413 (propriétaire) : LOBBY Jeux/Casino/Live — fond charbon+or garanti (fini le violet), priorité maximale.
+   N'affecte pas les jeux en cours ([data-g] / in-game) ni Paris (.pred-only). */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):not(.pred-only):not([data-g]) > .modal-box{
+  background:
+  radial-gradient(1.2px 1.2px at 30px 40px,rgba(255,255,255,.7),transparent 60%) 0 0/190px 210px,
+  radial-gradient(1px 1px at 120px 150px,rgba(255,255,255,.5),transparent 60%) 0 0/260px 240px,
+  radial-gradient(70% 45% at 15% 0%,rgba(242,193,78,.20),transparent 70%),
+  radial-gradient(60% 40% at 100% 35%,rgba(200,145,46,.14),transparent 70%),
+  radial-gradient(80% 50% at 40% 100%,rgba(247,215,116,.12),transparent 70%),
+  linear-gradient(180deg,#1b150c 0%,#161108 55%,#120d06 100%)!important;background-attachment:local!important}
