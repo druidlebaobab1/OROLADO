@@ -4364,8 +4364,8 @@ html body #screenAuth .auth-card{border:1px solid rgba(247,147,26,0.17)!importan
 html body #screenAuth .auth-tabs{border-color:rgba(247,147,26,0.15)!important}
 html body #screenAuth .auth-tab.on{background:linear-gradient(180deg,#C9962F 0%,#9A6E1E 100%)!important;color:#0E0D0A!important;box-shadow:0 0 12px rgba(247,147,26,0.11)!important}
 html body #screenAuth .field label{color:#E9BC8C!important}
-html body #screenAuth input[type=text],html body #screenAuth input[type=email],html body #screenAuth input[type=password],html body #screenAuth input[type=tel],html body #screenAuth input:not([type]){border-color:rgba(247,147,26,0.2)!important;transition:border-color .15s,box-shadow .15s}
-html body #screenAuth input:focus{border-color:rgba(247,147,26,0.48)!important;box-shadow:0 0 0 3px rgba(247,147,26,0.05)!important;outline:none!important}
+html body #screenAuth input[type=text],html body #screenAuth input[type=email],html body #screenAuth input[type=password],html body #screenAuth input[type=tel],html body #screenAuth input:not([type]){border-color:rgba(255,255,255,.14)!important;transition:border-color .15s,box-shadow .15s}
+html body #screenAuth input:focus{border-color:rgba(255,255,255,.4)!important;box-shadow:0 0 0 3px rgba(255,255,255,.1)!important;outline:none!important}
 html body #screenAuth .btn-gold,html body #depositModal .btn-gold,html body #withdrawModal .btn-gold{background:linear-gradient(180deg,#C9962F 0%,#9A6E1E 100%)!important;box-shadow:0 4px 16px rgba(247,147,26,0.1),inset 0 1px 0 rgba(255,255,255,0.13)!important}
 html body #screenAuth .auth-back{border-color:rgba(247,147,26,0.27)!important}
 html body #depositModal .modal-box,html body #withdrawModal .modal-box{border-color:rgba(247,147,26,0.23)!important;box-shadow:0 0 30px rgba(247,147,26,0.03)!important}
@@ -4555,8 +4555,8 @@ html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:not(.tap-lit){backgroun
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,rgba(248,113,113,1),rgba(248,113,113,.8))!important;border-color:rgba(248,113,113,1)!important;color:#FFFFFF!important;box-shadow:0 0 14px rgba(248,113,113,.55)!important}
 html body #fsTradeOverlay #inputStake{border-color:rgba(52,211,153,.42)!important;background:linear-gradient(180deg,rgba(52,211,153,.07),rgba(20,17,11,.6))!important;box-shadow:0 0 8px rgba(52,211,153,.14)!important}
 html body #fsTradeOverlay #inputStake:focus{border-color:rgba(52,211,153,.85)!important;box-shadow:0 0 0 3px rgba(52,211,153,.16)!important}
-html body #screenAuth .auth-card input[type=text],html body #screenAuth .auth-card input[type=email],html body #screenAuth .auth-card input[type=password],html body #screenAuth .auth-card input[type=tel],html body #screenAuth .auth-card input:not([type]){border:1px solid rgba(242,193,78,.4)!important;background:linear-gradient(180deg,rgba(242,193,78,.06),rgba(16,13,8,.88))!important;box-shadow:0 0 8px rgba(242,193,78,.12)!important}
-html body #screenAuth .auth-card input:focus{border-color:rgba(242,193,78,.9)!important;box-shadow:0 0 0 3px rgba(242,193,78,.16),0 0 12px rgba(242,193,78,.25)!important}
+html body #screenAuth .auth-card input[type=text],html body #screenAuth .auth-card input[type=email],html body #screenAuth .auth-card input[type=password],html body #screenAuth .auth-card input[type=tel],html body #screenAuth .auth-card input:not([type]){border:1px solid rgba(255,255,255,.14)!important;background:rgba(255,255,255,.04)!important;box-shadow:none!important}
+html body #screenAuth .auth-card input:focus{border-color:rgba(255,255,255,.4)!important;box-shadow:0 0 0 3px rgba(255,255,255,.1)!important}
 html body #screenAuth .auth-card .field label{color:#F7D774!important}
 html body #screenAuth .auth-tab:not(.on){background:linear-gradient(180deg,rgba(184,172,148,.12),rgba(184,172,148,.03))!important;border:1px solid rgba(184,172,148,.35)!important;color:#E1DACB!important}
 html body #screenAuth .pass-toggle{color:#938A74!important}
@@ -7147,24 +7147,21 @@ html body #depositModal#depositModal #payMethodCard .pay-method-desc{padding-rig
 
 /* ===== v2444 — INSCRIPTION / CONNEXION : carte univers lumineuse, onglets dorés, cases vitrées, bouton brillant ===== */
 html body #screenAuth#screenAuth#screenAuth .auth-card{position:relative;
-  background:radial-gradient(110% 40% at 50% 0%,rgba(242,193,78,.02),rgba(242,193,78,0) 62%),
-    radial-gradient(80% 45% at 0% 100%,rgba(242,193,78,.30),rgba(242,193,78,0) 65%),
-    radial-gradient(80% 45% at 100% 85%,rgba(251,191,36,.20),rgba(251,191,36,0) 65%),
-    linear-gradient(180deg,rgba(98,75,30,.92) 0%,rgba(92,69,22,.92) 55%,rgba(96,71,20,.92) 100%)!important;
-  border:1px solid rgba(244,226,190,.6)!important;
-  box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 34px rgba(242,193,78,.38),0 0 80px rgba(242,193,78,.18)!important}
-html body #screenAuth#screenAuth#screenAuth .auth-tabs{background:rgba(40,29,8,.45)!important;border:1px solid rgba(244,226,190,.35)!important}
-html body #screenAuth#screenAuth#screenAuth .auth-tab{color:#EDE2CC!important;background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.12)!important}
+  background:linear-gradient(180deg,rgba(16,14,10,.96) 0%,rgba(11,10,7,.97) 100%)!important;
+  border:1px solid rgba(255,255,255,.1)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.04) inset,0 24px 60px rgba(0,0,0,.6)!important}
+html body #screenAuth#screenAuth#screenAuth .auth-tabs{background:rgba(255,255,255,.03)!important;border:1px solid rgba(255,255,255,.1)!important}
+html body #screenAuth#screenAuth#screenAuth .auth-tab{color:#CFC9BC!important;background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.1)!important}
 html body #screenAuth#screenAuth#screenAuth .auth-tab.on{position:relative;overflow:hidden;background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;color:#150B00!important;
-  border-color:rgba(255,255,255,.5)!important;box-shadow:none!important}
-html body #screenAuth#screenAuth#screenAuth .field label{color:#EDE2CC!important;font-weight:800!important}
-html body #screenAuth#screenAuth#screenAuth .field input{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))!important;
-  border:1px solid rgba(242,219,173,.45)!important;color:#fff!important;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset!important}
-html body #screenAuth#screenAuth#screenAuth .field input:focus{border-color:rgba(251,191,36,.9)!important;box-shadow:0 0 0 3px rgba(251,191,36,.18),0 0 16px rgba(251,191,36,.3)!important;outline:0}
+  border-color:rgba(255,255,255,.4)!important;box-shadow:none!important}
+html body #screenAuth#screenAuth#screenAuth .field label{color:#CFC9BC!important;font-weight:800!important}
+html body #screenAuth#screenAuth#screenAuth .field input{background:rgba(255,255,255,.04)!important;
+  border:1px solid rgba(255,255,255,.14)!important;color:#fff!important;box-shadow:none!important}
+html body #screenAuth#screenAuth#screenAuth .field input:focus{border-color:rgba(255,255,255,.4)!important;box-shadow:0 0 0 3px rgba(255,255,255,.1)!important;outline:0}
 html body #screenAuth#screenAuth#screenAuth .field input::placeholder{color:rgba(250,242,225,.5)!important}
 html body #screenAuth#screenAuth#screenAuth .pass-toggle svg{stroke:#EDE2CC!important}
 html body #screenAuth#screenAuth#screenAuth form .btn-gold{position:relative;overflow:hidden;background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;
-  color:#150B00!important;box-shadow:0 6px 22px rgba(251,191,36,.5),0 0 0 1px rgba(255,255,255,.35) inset!important}
+  color:#150B00!important;box-shadow:0 4px 12px -5px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.14) inset!important}
 html body #screenAuth#screenAuth#screenAuth form .btn-gold::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);background-size:250% 100%;animation:instShine 2.8s ease-in-out infinite}
 html body #screenAuth#screenAuth#screenAuth .logo-mark{filter:drop-shadow(0 0 14px rgba(251,191,36,.65))!important;animation:dwFloat 3.2s ease-in-out infinite}
@@ -7370,12 +7367,12 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .win-preview
   background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02))!important;border:1px solid rgba(251,191,36,.45)!important;
   box-shadow:0 0 12px rgba(251,191,36,.15)!important}
 /* Payouts : couleur légère au repos, couleur pleine « eau » quand choisi. */
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip{--c:200,145,46;
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip{--c:64,170,120;
   background:linear-gradient(180deg,rgba(var(--c),.20),rgba(var(--c),.05))!important;border:1px solid rgba(var(--c),.55)!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.03) inset!important;transition:transform .1s,box-shadow .2s!important}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(2){--c:224,168,36}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(3){--c:242,193,78}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(4){--c:247,215,116}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(2){--c:64,176,186}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(3){--c:152,118,196}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(4){--c:214,108,138}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip.on{
   background:linear-gradient(120deg,rgba(var(--c),.85),rgba(var(--c),1) 35%,rgba(255,255,255,.55) 50%,rgba(var(--c),1) 65%,rgba(var(--c),.85))!important;
   background-size:250% 100%!important;animation:oroWater 3.2s ease-in-out infinite!important;border-color:rgba(255,255,255,.7)!important;
@@ -13912,12 +13909,12 @@ html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTr
 /* ORBES PAYOUT : planètes SOMBRES à liseré crème discret (fini les planètes dorées) */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{
-  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.1),rgba(24,24,27,.95) 72%)!important;
-  border:1px solid rgba(255,255,255,.14)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.35) inset!important}
+  background:radial-gradient(circle at 32% 26%,rgba(var(--c),.6),rgba(16,16,19,.95) 70%)!important;
+  border:1px solid rgba(var(--c),.55)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.35) inset!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on{
-  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.16),rgba(40,40,46,.96) 72%)!important;
-  border:1px solid rgba(255,255,255,.4)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.25) inset,0 0 0 2px rgba(255,255,255,.4)!important}
+  background:radial-gradient(circle at 32% 26%,rgba(var(--c),.92),rgba(24,22,26,.96) 72%)!important;
+  border:1px solid rgba(var(--c),.95)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.25) inset,0 0 0 2px rgba(255,255,255,.5),0 0 9px rgba(var(--c),.5)!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
@@ -13927,7 +13924,7 @@ html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTr
 /* 2026-11-02 (propriétaire) : « lueur jaune en bas » = le petit arc sous chaque orbe payout
    (::after, couleur --c dorée). Neutralisé en gris discret pour un bas vraiment sombre. */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip::after{
-  border-color:rgba(255,255,255,.16)!important;border-top-color:transparent!important;box-shadow:none!important}
+  border-color:rgba(var(--c),.45)!important;border-top-color:transparent!important;box-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on::after{
   border-color:rgba(255,255,255,.45)!important;border-top-color:transparent!important;box-shadow:none!important}
 
