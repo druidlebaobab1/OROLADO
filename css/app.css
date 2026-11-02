@@ -6982,9 +6982,9 @@ html body #drawerProfile#drawerProfile#drawerProfile .btn-copy-id,html body #dra
   background:linear-gradient(135deg,rgba(251,191,36,.35),rgba(245,158,11,.15))!important;border:1px solid rgba(251,191,36,.8)!important;color:#FFE7A3!important;font-weight:800!important}
 /* Wallet : carte lumineuse vert → violet bordée d'or, solde qui brille. */
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-card{position:relative;overflow:hidden;
-  background:radial-gradient(90% 70% at 100% 0%,rgba(251,191,36,.25),rgba(251,191,36,0) 60%),
-    linear-gradient(135deg,rgba(16,185,129,.38),rgba(138,102,30,.40) 50%,rgba(200,145,46,.42))!important;
-  border:1px solid rgba(251,191,36,.75)!important;box-shadow:0 0 22px rgba(46,229,157,.25),0 0 0 1px rgba(255,255,255,.06) inset!important}
+  background:radial-gradient(90% 70% at 100% 0%,rgba(201,150,47,.12),rgba(201,150,47,0) 60%),
+    linear-gradient(135deg,rgba(16,14,10,.92),rgba(12,11,8,.95))!important;
+  border:1px solid rgba(201,150,47,.4)!important;box-shadow:0 0 0 1px rgba(255,255,255,.05) inset!important}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-card::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.16) 50%,transparent 65%);background-size:250% 100%;animation:instShine 4s ease-in-out infinite}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-card > *{position:relative}
@@ -6993,8 +6993,8 @@ html body #drawerProfile#drawerProfile#drawerProfile .wallet-card-v{color:transp
   -webkit-background-clip:text!important;background-clip:text!important;filter:drop-shadow(0 0 8px rgba(46,229,157,.5))}
 /* Dépôt Express Crypto : bouton doré vivant, reflet, flèche qui bouge, pièces qui sautillent. */
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-xpress{position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#FFE9A8,#FBBF24 45%,#F59E0B)!important;color:#150B00!important;font-weight:900!important;
-  border:1px solid rgba(255,255,255,.55)!important;box-shadow:0 4px 16px rgba(251,191,36,.5),0 0 0 1px rgba(255,255,255,.3) inset!important;animation:xpGlow 2s ease-in-out infinite}
+  background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;color:#150B00!important;font-weight:900!important;
+  border:1px solid rgba(201,150,47,.6)!important;box-shadow:0 4px 12px -5px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.14) inset!important}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-xpress::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.6) 50%,transparent 65%);background-size:250% 100%;animation:instShine 2.4s ease-in-out infinite}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-xpress:active{transform:scale(.97)}
@@ -7008,14 +7008,14 @@ html body #drawerProfile#drawerProfile#drawerProfile .wx-coin:nth-child(4){anima
 @keyframes xpGo{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
 @keyframes xpCoin{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 /* Onglets crypto : chaque pièce a sa couleur. */
-html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab{--c:94,234,212;background:linear-gradient(180deg,rgba(var(--c),.22),rgba(var(--c),.05))!important;
-  border:1px solid rgba(var(--c),.45)!important;color:#fff!important;transition:transform .12s,box-shadow .2s}
+html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab{--c:94,234,212;background:linear-gradient(180deg,rgba(var(--c),.10),rgba(var(--c),.02))!important;
+  border:1px solid rgba(var(--c),.3)!important;color:#fff!important;transition:transform .12s,box-shadow .2s}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab[data-recv="usdt"]{--c:38,161,123}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab[data-recv="btc"]{--c:247,147,26}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab[data-recv="eth"]{--c:224,168,36}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab[data-recv="trx"]{--c:255,60,70}
-html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab.on{background:linear-gradient(180deg,rgba(var(--c),.45),rgba(var(--c),.12))!important;border-color:rgba(var(--c),1)!important;
-  box-shadow:0 0 14px rgba(var(--c),.55),0 0 0 1px rgba(255,255,255,.12) inset!important;transform:translateY(-1px)}
+html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab.on{background:linear-gradient(180deg,rgba(var(--c),.28),rgba(var(--c),.08))!important;border-color:rgba(var(--c),.75)!important;
+  box-shadow:0 0 8px rgba(var(--c),.3),0 0 0 1px rgba(255,255,255,.1) inset!important;transform:translateY(-1px)}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab small{color:rgba(255,255,255,.7)!important}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab-ico{filter:drop-shadow(0 0 5px rgba(var(--c),.8))}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-addr-row{background:rgba(40,29,8,.45)!important;border:1px dashed rgba(251,191,36,.6)!important}
@@ -11862,8 +11862,8 @@ html:root body #screenTrade .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball{wid
 /* ================= v2758 (propriétaire) : PROFIL =================
    « Recharger » lumineux et compact (à la place de « Dépôt Express Crypto ») ; la langue au milieu, drapeau rond + le mot « Langue » dessous. */
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge{display:flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:100%!important;height:38px!important;min-height:0!important;margin:8px 0 8px!important;padding:0 14px!important;border:0!important;border-radius:12px!important;
-  background:linear-gradient(180deg,#FDBA4D,#F97316)!important;color:#fff!important;font:800 15px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.02em!important;text-shadow:0 1px 2px rgba(120,40,0,.35)!important;
-  box-shadow:0 0 16px rgba(249,115,22,.5),inset 0 -2px 0 rgba(0,0,0,.14)!important;animation:wxGlow 2.6s ease-in-out infinite}
+  background:linear-gradient(180deg,#C9962F,#9A6E1E)!important;color:#FBF3E0!important;font:800 15px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.02em!important;text-shadow:0 1px 2px rgba(0,0,0,.4)!important;
+  box-shadow:0 3px 10px -4px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14)!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge .wx-plus{width:17px;height:17px;flex:none}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto.wx-recharge:active{transform:scale(.97)}
 @keyframes wxGlow{0%,100%{opacity:1}50%{opacity:.86}}
