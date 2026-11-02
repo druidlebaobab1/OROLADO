@@ -14084,3 +14084,19 @@ html body #depositModal#depositModal#depositModal#depositModal .modal-title,
 html body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .modal-title{
   color:#E6D9BC!important;-webkit-text-fill-color:#E6D9BC!important;background-image:none!important;
   background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important}
+
+/* v3516 (propriétaire, URGENT) — Plein écran : les boutons zoom + / − / ↺ affichaient leur TEXTE
+   (« + » « − ») par-dessus l'icône loupe (le plein écran remettait font-size:15px). On re-cache le
+   texte : seule l'icône loupe reste. Écran normal inchangé. */
+html.fs-trade body #tradeWrap#tradeWrap #chartZoomIn,html.fs-trade body #tradeWrap#tradeWrap #chartZoomOut,html.fs-trade body #tradeWrap#tradeWrap #chartReset,
+html.is-fullscreen body #tradeWrap#tradeWrap #chartZoomIn,html.is-fullscreen body #tradeWrap#tradeWrap #chartZoomOut,html.is-fullscreen body #tradeWrap#tradeWrap #chartReset,
+html.fs-trade body #fsTradeOverlay #chartZoomIn,html.fs-trade body #fsTradeOverlay #chartZoomOut,html.fs-trade body #fsTradeOverlay #chartReset,
+html.fs-trade body #fsTradeOverlay .chart-toolbar .ind-btn.zoom-btn,html.is-fullscreen body #tradeWrap#tradeWrap .chart-toolbar .ind-btn.zoom-btn{
+  font-size:0!important;color:transparent!important;text-indent:-9999px!important;overflow:hidden!important}
+/* LE VRAI BUG : en plein écran l'icône loupe se RÉPÉTAIT (background-repeat:repeat, size:auto) →
+   une 2e loupe en « ( ». On force : une seule loupe, centrée, non répétée. */
+html.fs-trade body #fsTradeOverlay #chartZoomIn,html.fs-trade body #fsTradeOverlay #chartZoomOut,html.fs-trade body #fsTradeOverlay #chartReset,
+html.fs-trade body #fsTradeOverlay .chart-toolbar .ind-btn.zoom-btn,html.fs-trade body #fsTradeOverlay .chart-toolbar #chartReset,
+html.is-fullscreen body #tradeWrap#tradeWrap #chartZoomIn,html.is-fullscreen body #tradeWrap#tradeWrap #chartZoomOut,html.is-fullscreen body #tradeWrap#tradeWrap #chartReset,
+html.fs-trade body #tradeWrap#tradeWrap #chartZoomIn,html.fs-trade body #tradeWrap#tradeWrap #chartZoomOut,html.fs-trade body #tradeWrap#tradeWrap #chartReset{
+  background-repeat:no-repeat!important;background-position:center!important;background-size:17px 17px!important}
