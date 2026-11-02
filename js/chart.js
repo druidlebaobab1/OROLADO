@@ -1320,9 +1320,9 @@
     ];
     // v3236 (propriétaire) : intensité des planètes RÉDUITE (plus discrètes, relax) — on sent que
     // ce sont des planètes mais sans qu'elles accrochent l'œil. Bas remonté d'un chouïa.
-    planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.15, false);
-    planet(planets[1].x, planets[1].y, planets[1].r, '#FFEAC2', 'rgba(210,155,55,1)', '#3A2606', 0.16, false);
-    planet(planets[2].x, planets[2].y, planets[2].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.15, false);
+    planet(planets[0].x, planets[0].y, planets[0].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.04, false);
+    planet(planets[1].x, planets[1].y, planets[1].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.04, false);
+    planet(planets[2].x, planets[2].y, planets[2].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.04, false);
     g.globalAlpha = 1;
     galaxy = null;
     try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
