@@ -13898,7 +13898,7 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#scre
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm.stake-minus::after{background:transparent!important}
 /* mise saisie : texte clair neutre (plus d'or vif) */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{
-  color:#EAEAEE!important;-webkit-text-fill-color:#EAEAEE!important;caret-color:#EAEAEE!important;border:1.5px solid rgba(255,255,255,.18)!important;box-shadow:inset 0 1px 6px rgba(0,0,0,.45)!important;text-shadow:none!important}
+  color:#EAEAEE!important;-webkit-text-fill-color:#EAEAEE!important;caret-color:#EAEAEE!important;border:0!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important}
 /* GAIN : montant vert, « Payout » clair discret */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount{
@@ -13909,8 +13909,8 @@ html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTr
 /* ORBES PAYOUT : planètes SOMBRES à liseré crème discret (fini les planètes dorées) */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{
-  background:radial-gradient(circle at 32% 26%,rgba(var(--c),.6),rgba(16,16,19,.95) 70%)!important;
-  border:1px solid rgba(var(--c),.55)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.35) inset!important}
+  background:radial-gradient(circle at 50% 42%,rgba(var(--c),.12),rgba(var(--c),0) 68%)!important;
+  border:1.5px solid rgba(var(--c),.6)!important;box-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on{
   background:radial-gradient(circle at 32% 26%,rgba(var(--c),.92),rgba(24,22,26,.96) 72%)!important;
