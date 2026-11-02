@@ -14026,3 +14026,15 @@ html:root body:not(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTr
 html:root body.oro-real #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(#inputStake,.dur-chip,.win-preview .amount,.win-preview .mult),
 html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(#inputStake,.dur-chip,.win-preview .amount,.win-preview .mult){
   color:#62CF9E!important;-webkit-text-fill-color:#62CF9E!important}
+
+/* ===== v3506 (propriétaire) — ACHETER / VENDRE : AU REPOS le TEXTE est coloré (vert / rose) sur le fond
+   léger « planètes » déjà en place ; AU CLIC le remplissage vif (déjà géré) s'allume et le texte reste lisible. ===== */
+html body #btnCall.btn-call:not(:active):not(.is-lit):not(.btn-sent) .bt-txt,
+html body #btnCall.btn-call:not(:active):not(.is-lit):not(.btn-sent){color:#9FF3C6!important;-webkit-text-fill-color:#9FF3C6!important}
+html body #btnPut.btn-put:not(:active):not(.is-lit):not(.btn-sent) .bt-txt,
+html body #btnPut.btn-put:not(:active):not(.is-lit):not(.btn-sent){color:#F6A6B2!important;-webkit-text-fill-color:#F6A6B2!important}
+html body #tradeWrap .btn-trade:not(:active):not(.is-lit):not(.btn-sent)::before{opacity:.35!important}
+html body #btnCall.btn-call:is(:active,.is-lit,.btn-sent) .bt-txt,
+html body #btnCall.btn-call:is(:active,.is-lit,.btn-sent){color:#04140C!important;-webkit-text-fill-color:#04140C!important}
+html body #btnPut.btn-put:is(:active,.is-lit,.btn-sent) .bt-txt,
+html body #btnPut.btn-put:is(:active,.is-lit,.btn-sent){color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important}

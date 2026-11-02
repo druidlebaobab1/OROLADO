@@ -1085,7 +1085,7 @@
       g.save();
       g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(210,216,228,0.030)' : 'rgba(196,204,222,0.022)';
+        g.strokeStyle = q ? 'rgba(210,216,228,0.020)' : 'rgba(196,204,222,0.014)';
         g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
         g.beginPath();
         for (t = 0; t <= 1.0001; t += 0.01) { var pp = spiral(arm, t); if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y); }
@@ -1095,7 +1095,7 @@
       for (t = 0.02; t < 1; t += 0.004) {
         var sp = spiral(arm, t);
         var jx = (rnd() - 0.5) * R * 0.07, jy = (rnd() - 0.5) * R * 0.07;
-        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '214,220,230' : '202,210,224') + ',' + (0.03 + t * 0.05).toFixed(2) + ')';
+        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '214,220,230' : '202,210,224') + ',' + (0.02 + t * 0.035).toFixed(3) + ')';
         g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.85, 0, Math.PI * 2); g.fill();
       }
     }
