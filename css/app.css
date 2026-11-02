@@ -7725,15 +7725,15 @@ html[dir=rtl] .learn-modal .lg-step h3{margin:6px 26px 10px 0}
 }
 @media (max-width:859px) and (orientation:portrait){
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on){opacity:1!important;
-    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.14),rgba(var(--c),.16) 45%,rgba(var(--c),.05) 80%,rgba(32,24,9,.4))!important;
-    border:1.5px solid rgba(var(--c),.6)!important;box-shadow:0 0 8px rgba(var(--c),.2),0 0 0 1px rgba(255,255,255,.04) inset!important;transform:none}
+    background:radial-gradient(circle at 50% 36%,rgba(var(--c),.17),rgba(0,0,0,.42) 72%),#070707!important;
+    border:2px solid rgb(var(--c))!important;box-shadow:0 0 14px -2px rgba(var(--c),.7),0 0 0 4px rgba(var(--c),.09),0 0 0 1px rgba(255,255,255,.14) inset!important;transform:none}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on) .odds-mult{color:rgb(var(--c))!important;text-shadow:0 0 8px rgba(var(--c),.5)!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on) .odds-pct{color:rgba(255,255,255,.75)!important;text-shadow:none!important}
 }
 @media (min-width:860px){
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on){opacity:1!important;
-    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.14),rgba(var(--c),.16) 45%,rgba(var(--c),.05) 80%,rgba(32,24,9,.4))!important;
-    border:1.5px solid rgba(var(--c),.6)!important;box-shadow:0 0 8px rgba(var(--c),.2),0 0 0 1px rgba(255,255,255,.04) inset!important;transform:none}
+    background:radial-gradient(circle at 50% 36%,rgba(var(--c),.17),rgba(0,0,0,.42) 72%),#070707!important;
+    border:2px solid rgb(var(--c))!important;box-shadow:0 0 14px -2px rgba(var(--c),.7),0 0 0 4px rgba(var(--c),.09),0 0 0 1px rgba(255,255,255,.14) inset!important;transform:none}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on) .odds-mult{color:rgb(var(--c))!important;text-shadow:0 0 8px rgba(var(--c),.5)!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip:not(.on) .odds-pct{color:rgba(255,255,255,.75)!important;text-shadow:none!important}
 }
@@ -11064,7 +11064,7 @@ html:root body #portalModal.gh-sub .defi-top{display:none!important}
 html:root body #portalModal#portalModal #defiCard#defiCard,html:root body #portalModal#portalModal #bonCard#bonCard,html:root body #portalModal#portalModal #topCard#topCard,html:root body #portalModal#portalModal #affCard#affCard{border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
 html:root body #portalModal#portalModal #defiCard#defiCard::before,html:root body #portalModal#portalModal #bonCard#bonCard::before,html:root body #portalModal#portalModal #topCard#topCard::before,html:root body #portalModal#portalModal #affCard#affCard::before{display:none!important}
 #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(146px,39vw);margin-top:2px}/* 2026-11-02 (propriétaire) : « Invite tes amis » AGRANDI et remonté (favori), les 4 cartes et la roue réduites pour l'espace */
-#portalModal .gh-imm .gh-p.wide b{font-size:22.5px}
+#portalModal .gh-imm .gh-p.wide b{font-size:24.5px}
 #casinoModal .pen-z{height:9.67%}
 #casinoModal .pen-z i{width:24px;height:24px}
 
@@ -11099,9 +11099,10 @@ html:root body #portalModal .gh-imm .gh-hero b{font-size:18px}
 html:root body #portalModal .gh-grid.gh-imm{gap:16px 10px;margin-top:-6px}
 html:root body #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(132px,36vw)}
 html:root body #portalModal .defi-how .defi-ex,html:root body #portalModal .defi-how .defi-rl,html:root body #portalModal .bon-card .defi-rl,html:root body #portalModal .bon-ex{display:none!important}
-html:root body #portalModal .gh-hero-w{width:min(180px,48vw,23vh)}
+html:root body #portalModal .gh-hero-w{width:min(138px,37vw,17vh)}/* 2026-11-02 (propriétaire) : la Roue (inutile) RÉDUITE, pour laisser « Invite tes amis » en vedette */
 html:root body #portalModal .gh-imm .gh-p .cs-pl{width:min(90px,24vw,11vh)}
-html:root body #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(152px,41vw,18.5vh)}
+html:root body #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(176px,47vw,21.5vh)}
+html:root body #portalModal .gh-imm .gh-p.wide{margin:2px 0 12px}/* 2026-11-02 : « Invite tes amis » EN VEDETTE — image agrandie + un grand espace propre avant les 4 cartes */
 html:root body #portalModal .gh-grid.gh-imm{gap:min(14px,1.6vh) 10px}
 /* v2695 (propriétaire) — Recharger : drapeaux en GROS sur une ligne, numéro sur toute la largeur et bien lisible ; plus de bandeau qui fait défiler ; flèche ↓ au lieu de la croix */
 html body #depositModal#depositModal .pay-wave .momo-phone{flex-wrap:wrap!important;height:auto!important;row-gap:8px!important;column-gap:8px!important}
