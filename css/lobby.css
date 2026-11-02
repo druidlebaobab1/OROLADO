@@ -16,7 +16,7 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):no
   radial-gradient(60% 34% at 0% 72%,rgba(242,193,78,.14),transparent 72%),
   radial-gradient(70% 40% at 90% 100%,rgba(251,191,36,.10),transparent 72%),
   linear-gradient(180deg,#503B11 0%,#38290C 45%,#281D08 100%)!important;
-  box-shadow:inset 0 0 120px 10px rgba(5,2,18,.55)!important;color:var(--lb-ink)}
+  box-shadow:inset 0 0 120px 10px rgba(15,12,5,.55)!important;color:var(--lb-ink)}
 html.oro-lite body #casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):not(.pred-only) > .modal-box{box-shadow:none!important}
 
 /* en-tête (‹ · portefeuille · règles) : verre translucide ; le haut de l'écran (encoche) est couvert, rien ne défile dessous */
