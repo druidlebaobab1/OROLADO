@@ -15,7 +15,7 @@ html,body{height:100%;width:100%;min-height:100%;min-height:100dvh;background:va
   pointer-events:auto}
 html{height:100%;height:100dvh}
 body{position:relative;width:100%;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;touch-action:manipulation;background:
-  linear-gradient(165deg,#0E0D0A 0%,#121722 48%,#0E0D0A 100%)}
+  linear-gradient(165deg,#0E0D0A 0%,#221D12 48%,#0E0D0A 100%)}
 body,button,a,input,select,.asset-chip,.dur-chip,.odds-chip,.btn-trade,.btn-deposit,.qbtn,.mode-btn{touch-action:manipulation}
 button:active:not(.drawer-item):not(.btn-close):not(.icon-btn),.qbtn:active,.dur-chip:active,.asset-chip:active,.btn-gold:active,.btn-deposit:active,.btn-trade:active{transform:scale(.98)}
 .topbar-row .btn-deposit:active{transform:none}
@@ -29,7 +29,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 #screenAuth{overflow:hidden!important;-webkit-overflow-scrolling:none}
 #screenTrade{overflow:hidden}
 .hidden{display:none!important}
-.glass{background:rgba(18,23,34,.88);border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.35);backdrop-filter:blur(16px)}
+.glass{background:rgba(18,15,9,.88);border:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.35);backdrop-filter:blur(16px)}
 
 .lux-msg{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;border-radius:12px;
   background:rgba(42,33,15,.95);border:1px solid rgba(16,185,129,.45);color:#F8FAFC;
@@ -58,7 +58,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .toast.micro,.toast.lux-msg.micro{
   top:calc(75px + env(safe-area-inset-top,0px));max-width:none;white-space:nowrap;
   font-size:11px!important;padding:4px 12px!important;border-radius:16px!important;
-  background:rgba(18,22,34,.95)!important;border:1px solid rgba(245,158,11,.55)!important;
+  background:rgba(34,29,18,.95)!important;border:1px solid rgba(245,158,11,.55)!important;
   color:#ffd166!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;
   box-shadow:none!important;line-height:1.2;font-weight:700;letter-spacing:.02em;text-align:center}
 .toast.micro .lux-msg-ico{display:none!important}
@@ -68,7 +68,7 @@ html body .toast.lux-msg{
   top:75px;max-width:min(320px,86vw);
   align-items:center;gap:6px;padding:5px 12px;border-radius:10px;
   font-size:12px;line-height:1.3;font-weight:650;
-  background:linear-gradient(180deg,rgba(24,27,38,.96),rgba(14,16,24,.96));
+  background:linear-gradient(180deg,rgba(38,33,24,.96),rgba(24,21,14,.96));
   border:1px solid rgba(212,175,55,.38);
   color:#F3E6B5;
   box-shadow:0 8px 22px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.05)}
@@ -79,7 +79,7 @@ html body #toast.toast.ok .lux-msg-ico{color:#34D399}
 html body #toast.toast.err,html body .toast.err{border-color:rgba(251,113,133,.40);color:#FBD5DC}
 html body #toast.toast.err .lux-msg-ico{color:#FB7185}
 html body #toast.toast.info,html body .toast.info{border-color:rgba(212,175,55,.40);color:#F3E6B5}
-html body #toast.toast.tie,html body .toast.tie{border-color:rgba(225,218,203,.32);color:#E2E8F0}
+html body #toast.toast.tie,html body .toast.tie{border-color:rgba(225,218,203,.32);color:#F0EBE2}
 html body #toast.toast.tie .lux-msg-ico{color:#E1DACB;
   -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 9.5h12M6 14.5h12' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/></svg>") center/14px no-repeat;
   mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 9.5h12M6 14.5h12' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/></svg>") center/14px no-repeat}
@@ -164,13 +164,13 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:30px 0 calc(8px + var(--safe));
   max-width:420px;margin-left:auto;margin-right:auto;width:92%}
 .auth-card{border-radius:14px;padding:18px 16px 18px}
-.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(11,14,20,.65);padding:4px;border-radius:var(--radius);margin-bottom:14px;border:1px solid var(--line)}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(20,17,11,.65);padding:4px;border-radius:var(--radius);margin-bottom:14px;border:1px solid var(--line)}
 .auth-tab{border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;padding:10px;border-radius:var(--radius-sm);cursor:pointer;min-height:var(--btn-h)}
 .auth-tab.on{background:var(--gold);color:#0E0D0A}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .field label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 .field input,.field select,.phone-row select,.phone-row input{
-  width:100%;background:rgba(11,14,20,.85);border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px;
+  width:100%;background:rgba(20,17,11,.85);border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px;
   color:var(--text);font:inherit;font-size:16px;outline:none;min-height:var(--btn-h-m)}
 .field input:focus,.field select:focus,.phone-row input:focus,.phone-row select:focus{border-color:rgba(245,158,11,.55);box-shadow:0 0 0 3px rgba(245,158,11,.1)}
 .phone-row{display:grid;grid-template-columns:108px 1fr;gap:8px}
@@ -182,7 +182,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .pass-toggle:hover{color:var(--text);background:rgba(255,255,255,.04)}
 .err-msg{min-height:0;font-size:.7rem;color:#FECDD3;font-weight:600;display:none}
 .err-msg.on{display:flex;align-items:flex-start;gap:8px;margin-top:6px;padding:8px 10px;border-radius:10px;
-  background:rgba(11,14,20,.62);border:1px solid rgba(244,63,94,.4);
+  background:rgba(20,17,11,.62);border:1px solid rgba(244,63,94,.4);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   animation:luxInLocal .28s ease}
 .err-msg.on::before{content:"";width:14px;height:14px;flex:0 0 14px;margin-top:1px;background:currentColor;
@@ -315,7 +315,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .asset-chip[data-asset="horizon50"].on{border-width:1.5px;border-color:#ff9800;box-shadow:0 0 12px rgba(255,152,0,.35);background:linear-gradient(180deg,rgba(255,152,0,.28),rgba(124,63,0,.18));color:#ff9800}
 .asset-chip[data-asset="crash300"].on{
   border-width:1.5px!important;border-style:solid!important;border-color:transparent!important;
-  background:linear-gradient(180deg,rgba(18,10,22,.94),rgba(8,10,18,.96)) padding-box,
+  background:linear-gradient(180deg,rgba(18,10,22,.94),rgba(18,15,8,.96)) padding-box,
     linear-gradient(90deg,#ff007f,#CA9428,#DB9E24) border-box!important;
   box-shadow:0 0 14px rgba(229,46,113,.4)!important;color:inherit}
 .asset-chip[data-asset="crash300"].on .n,
@@ -345,7 +345,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .chart-card,#chart{position:relative}
 .chart-toolbar{display:flex;align-items:center;justify-content:flex-start;gap:4px;padding:2px 6px;margin:7px 0 4px;flex-shrink:0;
   position:absolute;top:0;left:0;right:0;z-index:14;min-height:22px;border-bottom:none;
-  background:linear-gradient(180deg,rgba(11,14,20,.88),rgba(11,14,20,0));pointer-events:none}
+  background:linear-gradient(180deg,rgba(20,17,11,.88),rgba(20,17,11,0));pointer-events:none}
 .chart-toolbar .ind-pills,.chart-toolbar .ind-btn,.chart-toolbar .chart-fs-btn{pointer-events:auto}
 .chart-live-price{display:none!important}
 .chart-price-wm{opacity:.9;font-size:.72rem;text-shadow:0 0 10px rgba(0,0,0,.55);color:var(--gold)}
@@ -433,7 +433,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 #screenTrade.is-guest .auth-quick.hidden{display:flex!important;position:relative;z-index:50;flex:1 1 auto;min-width:0;margin-left:auto;margin-right:6px;gap:8px}
 #screenTrade.is-guest .topbar-actions{margin-left:0;flex:0 0 auto}
 #screenTrade.is-guest .btn-auth-link{padding:8px 16px;font-size:.76rem;font-weight:800;min-height:36px;text-align:center;justify-content:center;display:inline-flex;align-items:center;border-radius:9px}
-#screenTrade.is-guest #btnGoLogin{flex:1 1 0;background:#12141c;color:#fff;border:1px solid rgba(255,255,255,.16);box-shadow:none}
+#screenTrade.is-guest #btnGoLogin{flex:1 1 0;background:#1C1912;color:#fff;border:1px solid rgba(255,255,255,.16);box-shadow:none}
 #screenTrade.is-guest #btnGoRegister{flex:1.3 1 0;background:#2a1d05;color:#ffb703;border:1.5px solid #f5a623;box-shadow:0 0 10px rgba(245,166,35,.22);font-weight:800}
 #screenTrade:not(.is-guest) .auth-quick,
 #screenTrade:not(.is-guest) .guest-crypto-pills{display:none!important}
@@ -470,8 +470,8 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;opacity:1;animation:fsBtnHint 2.4s ease-in-out infinite}
 .chart-fs-btn:hover,.chart-fs-btn:focus-visible{
-  border-color:#554A33;background:rgba(18,23,34,.95);
-  color:#E2E8F0}
+  border-color:#554A33;background:rgba(18,15,9,.95);
+  color:#F0EBE2}
 .chart-fs-btn[aria-pressed="true"]{animation:none}
 .chart-fs-live{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#EF4444;
   box-shadow:0 0 0 0 rgba(239,68,68,.55);animation:fsLiveDot 1.5s ease-in-out infinite}
@@ -488,7 +488,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 @media (max-width:859px){
   .chart-fs-btn{
     position:relative;right:auto;top:auto;min-height:22px;padding:2px 5px!important;gap:2px!important;width:auto;border-radius:4px;
-    background:rgba(18,23,34,.85);border:1px solid #382F1E;color:#B8AC94;
+    background:rgba(18,15,9,.85);border:1px solid #382F1E;color:#B8AC94;
     box-shadow:none}
   .chart-fs-label{display:inline;font-size:9.5px}
   .chart-fs-ico{font-size:11px}
@@ -539,7 +539,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
   #screenTrade:not(.hidden)::after{
     content:"";position:fixed;left:0;right:0;bottom:-64px;z-index:0;pointer-events:none;
     height:calc(88px + env(safe-area-inset-bottom, 28px) + 64px);
-    background:linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(11,14,20,.42) 22%,#0E0D0A 52%,#0E0D0A 100%);
+    background:linear-gradient(180deg,rgba(20,17,11,0) 0%,rgba(20,17,11,.42) 22%,#0E0D0A 52%,#0E0D0A 100%);
   }
 }
 .pad.glass{border:none!important;border-top:1px solid rgba(255,255,255,.06)!important;box-shadow:none!important;background:#0E0D0A!important}
@@ -564,7 +564,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .stake-min-actions .qbtn,.stake-min-actions .stake-act{
   flex:0 0 auto;min-width:38px;width:auto;max-width:none;min-height:30px;height:30px;max-height:30px;
   padding:0 8px;font-size:.70rem;border-radius:7px;line-height:1;
-  border:1.5px solid rgba(232,195,106,.5);color:#F8E7B0;background:rgba(18,23,34,.92);
+  border:1.5px solid rgba(232,195,106,.5);color:#F8E7B0;background:rgba(18,15,9,.92);
   display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
   -webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;
   transition:background .12s ease,border-color .12s ease,color .12s ease,box-shadow .12s ease}
@@ -772,7 +772,7 @@ html.is-android #chartOverlay{
 .wd-pill.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft)}
 .wd-trust{display:flex;flex-direction:column;gap:4px;font-size:.62rem;font-weight:700;color:var(--muted);margin:8px 0 12px;line-height:1.35}
 #withdrawModal .withdraw-box{width:min(420px,94vw);max-width:420px;height:auto;max-height:92dvh;overflow:hidden!important;padding:10px 10px 8px;
-  display:flex;flex-direction:column;background:rgba(11,14,20,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  display:flex;flex-direction:column;background:rgba(20,17,11,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid rgba(245,158,11,.35);box-shadow:0 20px 50px rgba(0,0,0,.55)}
 .deposit-box,.withdraw-box{overflow:auto!important}
 .deposit-box .op-grid{margin-top:0}
@@ -802,7 +802,7 @@ html.is-android #chartOverlay{
 .dep-amt-chips,.dep-amt-chip{display:none!important}
 .dep-amt-input,.deposit-box #depositAmt{border:1px solid rgba(245,158,11,.55)!important;
   box-shadow:0 0 0 1px rgba(245,158,11,.18),0 0 18px rgba(245,158,11,.12);
-  background:rgba(11,14,20,.9)}
+  background:rgba(20,17,11,.9)}
 .oxa-net{position:relative}
 .oxa-net::before{content:"";width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;background:#8B7E64}
 .oxa-net[data-net="TRC20"]::before{background:#EF0027}
@@ -830,7 +830,7 @@ html.is-android #chartOverlay{
 #depositModal #payMethodUsdt,.deposit-box:not(.is-crypto) .pay-method-card[data-pay="usdt"]{
   display:flex;flex-direction:column;align-items:stretch;width:100%;box-sizing:border-box;
   padding:16px 12px 14px;min-height:0;
-  background:linear-gradient(165deg,rgba(46,37,18,.98) 0%,rgba(30,23,10,.98) 58%,rgba(8,12,22,.98) 100%);
+  background:linear-gradient(165deg,rgba(46,37,18,.98) 0%,rgba(30,23,10,.98) 58%,rgba(22,17,8,.98) 100%);
   border:1px solid rgba(242,193,78,.28);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 12px 28px rgba(0,0,0,.28)}
 #depositModal #payMethodUsdt.on,.deposit-box:not(.is-crypto) .pay-method-card[data-pay="usdt"].on{
@@ -922,7 +922,7 @@ html.is-android #depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{
 .crypto-hash-field input{min-height:48px;font-size:.88rem}
 .crypto-spin{margin:8px auto}
 .crypto-verify{margin:0 0 10px;text-align:center;font-size:.78rem;font-weight:700;color:#FDE68A;
-  padding:10px 12px;border-radius:12px;background:rgba(11,14,20,.7);border:1px solid rgba(245,166,35,.35);
+  padding:10px 12px;border-radius:12px;background:rgba(20,17,11,.7);border:1px solid rgba(245,166,35,.35);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);animation:luxInLocal .28s ease}
 .crypto-verify.is-err{color:#FECDD3;border-color:rgba(244,63,94,.45)}
 .crypto-pay-btn{width:100%;min-height:48px;font-size:.88rem;letter-spacing:.04em}
@@ -1026,7 +1026,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 @keyframes waitSpin{to{transform:rotate(360deg)}}
 .wait-note{margin:8px 0 0;font-size:.72rem;line-height:1.4;color:var(--muted);min-height:1px}
 .wait-note.ok,.wait-note.warn{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:12px;
-  background:rgba(11,14,20,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:rgba(20,17,11,.7);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   animation:luxInLocal .28s ease}
 .wait-note.ok{color:#A7F3D0;border:1px solid rgba(16,185,129,.45)}
 .wait-note.warn{color:#FDE68A;border:1px solid rgba(245,166,35,.35)}
@@ -1041,7 +1041,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 
 .lang-bar{display:flex;gap:2px;flex-shrink:0}
 .lang-dd{position:relative;flex:0 0 32px;width:32px;min-width:32px;max-width:32px;overflow:hidden;z-index:40;background:#0E0D0A}
-.lang-dd-btn{border:1px solid var(--line);background:#121722;color:var(--text);border-radius:10px;padding:0;
+.lang-dd-btn{border:1px solid var(--line);background:#221D12;color:var(--text);border-radius:10px;padding:0;
   font:inherit;font-size:13px;font-weight:800;cursor:pointer;width:32px;height:32px;min-width:32px;max-width:32px;
   display:grid;place-items:center;line-height:1;overflow:hidden;position:relative;flex:0 0 32px;
   appearance:none;-webkit-appearance:none;box-shadow:none}
@@ -1060,7 +1060,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .lang-btn{border:0;background:transparent;font-size:13px;line-height:1;padding:3px;border-radius:6px;cursor:pointer;opacity:.45}
 .lang-btn.on{opacity:1;background:var(--gold-soft)}
 .install-banner{position:absolute;left:50%;transform:translateX(-50%);right:auto;top:10px;bottom:auto;z-index:26;display:flex;align-items:center;gap:4px;
-  max-width:calc(100% - 16px);width:auto;background:#121722;border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:2px 6px;
+  max-width:calc(100% - 16px);width:auto;background:#221D12;border:1px solid rgba(245,166,35,.35);border-radius:999px;padding:2px 6px;
   min-height:26px;box-shadow:0 8px 22px rgba(0,0,0,.45);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);pointer-events:auto;
   opacity:1;transition:opacity .45s ease}
 .install-banner.hidden{display:none!important}
@@ -1086,7 +1086,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .btn-admin.hidden{display:none!important}
 .ghost-gold{background:transparent;border:1px solid var(--line);color:var(--text);margin-top:0}
 .badge-ok{display:inline-block;margin-top:4px;font-size:.58rem;font-weight:700;color:#ECFDF5;background:rgba(16,185,129,.18);border:1px solid rgba(16,185,129,.35);border-radius:999px;padding:2px 8px}
-.drawer-backdrop{position:fixed;inset:0;background:rgba(4,8,16,.86);z-index:200;opacity:0;pointer-events:none;
+.drawer-backdrop{position:fixed;inset:0;background:rgba(15,12,5,.86);z-index:200;opacity:0;pointer-events:none;
   transition:opacity .22s ease;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .drawer-backdrop.on{opacity:1;pointer-events:auto}
 .drawer{position:fixed;top:0;right:0;width:min(400px,100vw);height:100dvh;max-height:100svh;background:#0e0c09;
@@ -1109,7 +1109,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .drawer .card{margin:0 12px 6px;padding:6px 10px;flex-shrink:0}
 .drawer .list-row{padding:4px 0;font-size:.7rem}
 .wallet-card{margin:0 12px 6px;padding:10px 10px 8px;border-radius:12px;flex-shrink:0;
-  background:linear-gradient(165deg,#262014 0%,#10151F 100%);
+  background:linear-gradient(165deg,#262014 0%,#1F1A10 100%);
   border:1px solid rgba(245,158,11,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .wallet-card-k{font-size:.55rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#B8AC94}
 .wallet-card-v{font-size:1.35rem;font-weight:900;color:#F8E7B8;margin:2px 0 6px;letter-spacing:.01em;
@@ -1135,7 +1135,7 @@ html.lang-ar .crypto-addr,html.lang-ar .crypto-pay,html.lang-ar .crypto-qr-wrap{
 .wallet-tab.on{border-color:rgba(245,158,11,.55);color:#F8E7B8;background:rgba(245,158,11,.12)}
 .wallet-addr-row{display:flex;align-items:flex-start;gap:6px;margin:0;padding:6px 8px;border-radius:8px;min-height:36px;
   background:rgba(255,255,255,.04);border:1px solid rgba(255,158,11,.16)}
-.wallet-addr-row code{flex:1;min-width:0;font-size:.62rem;font-weight:700;color:#E2E8F0;line-height:1.4;
+.wallet-addr-row code{flex:1;min-width:0;font-size:.62rem;font-weight:700;color:#F0EBE2;line-height:1.4;
   font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-all;white-space:normal}
 .wallet-copy,.wallet-gen{flex-shrink:0;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.1);color:var(--gold);
   border-radius:7px;padding:4px 8px;font:inherit;font-size:.58rem;font-weight:800;cursor:pointer;
@@ -1452,7 +1452,7 @@ html.is-android .chart-stage{flex-shrink:0!important;min-height:max(410px,58vh)!
 .fs-trade-topbar{
   flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
   width:100%;min-height:40px;padding:6px 12px;padding-top:max(8px,env(safe-area-inset-top,0px));
-  border-bottom:1px solid var(--line);background:rgba(11,14,20,.98);z-index:6}
+  border-bottom:1px solid var(--line);background:rgba(20,17,11,.98);z-index:6}
 .fs-top-end{display:flex;align-items:center;flex-shrink:0;gap:8px;margin-left:auto}
 .fs-top-mid{display:none;flex-direction:column;align-items:center;justify-content:center;min-width:0;flex:1}
 .fs-mode-label{display:none}
@@ -1523,7 +1523,7 @@ html.is-fullscreen .fs-mode-btn.mode-btn.on[data-mode="real"]{
 .fs-trade-overlay .asset-bar{
   flex:0 0 auto;display:flex!important;flex-direction:row;gap:6px;padding:8px 10px;
   overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
-  border-bottom:1px solid rgba(255,255,255,.08);background:rgba(8,11,20,.95);
+  border-bottom:1px solid rgba(255,255,255,.08);background:rgba(20,16,8,.95);
   width:100%;max-width:none}
 .fs-trade-overlay .asset-chip{
   flex:0 0 auto;min-width:88px;min-height:44px;padding:6px 8px;border-radius:8px}
@@ -1567,7 +1567,7 @@ html.is-fullscreen .fs-mode-btn.mode-btn.on[data-mode="real"]{
 .fs-trade-overlay .pad .stake-field input{
   width:100%;min-height:48px;font-size:15px;text-align:center;border-radius:8px;
   padding:8px 6px 8px 20px;font-family:var(--font-mono);font-variant-numeric:tabular-nums;
-  border:1px solid rgba(245,158,11,.4);background:rgba(11,14,20,.88)}
+  border:1px solid rgba(245,158,11,.4);background:rgba(20,17,11,.88)}
 .fs-trade-overlay .pad .trade-row{
   flex:1 1 auto!important;display:flex!important;flex-direction:row!important;align-items:center!important;
   justify-content:space-between!important;gap:8px!important;margin:0!important;min-width:0!important;padding:0!important}
@@ -2121,7 +2121,7 @@ html.is-fullscreen .ind-pills .chart-reset-btn{
 #helpModal .help-subject-field{margin-bottom:8px}
 #helpModal .help-subject-field input{min-height:38px;padding:9px 12px}
 #helpModal .field input:focus,#helpModal .field textarea:focus{border-color:#F59E0B;box-shadow:0 0 0 3px rgba(245,158,11,.12)}
-#helpModal textarea{width:100%;background:rgba(11,14,20,.85);border:1px solid var(--line);border-radius:var(--radius);
+#helpModal textarea{width:100%;background:rgba(20,17,11,.85);border:1px solid var(--line);border-radius:var(--radius);
   color:var(--text);padding:10px 12px;font:inherit;outline:none}
 @media (max-width:859px){
   #helpModal .modal-title{margin-bottom:4px}
@@ -2134,7 +2134,7 @@ html.is-fullscreen .ind-pills .chart-reset-btn{
 
 .cold-wallet{background:
   radial-gradient(120% 80% at 50% 0%,rgba(245,158,11,.06),transparent 46%),
-  linear-gradient(180deg,#121722 0%,#0C1018 100%)!important;
+  linear-gradient(180deg,#221D12 0%,#18140C 100%)!important;
   border:1px solid #3B311E!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .wallet-assure{display:flex;flex-direction:column;gap:5px;margin:2px 0 10px;
   font-size:.58rem;font-weight:700;color:#B8AC94;line-height:1.35;text-align:center}
@@ -2319,7 +2319,7 @@ html.is-ios .stake-field input{border-radius:10px}
 .wd-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
 .wd-grid-intl{grid-template-columns:repeat(3,minmax(0,1fr))}
 .wd-card{display:flex;align-items:center;gap:5px;min-height:34px;padding:4px 6px;border-radius:8px;
-  border:1px solid rgba(255,255,255,.1);background:rgba(42,33,15,.72);color:#E2E8F0;font:inherit;font-size:.58rem;font-weight:700;
+  border:1px solid rgba(255,255,255,.1);background:rgba(42,33,15,.72);color:#F0EBE2;font:inherit;font-size:.58rem;font-weight:700;
   cursor:pointer;text-align:left;touch-action:manipulation;pointer-events:auto}
 .wd-card.on{border-color:#F5C518;box-shadow:0 0 12px rgba(245,197,24,.25);background:rgba(245,197,24,.1)}
 .wd-card-ico{width:22px;height:22px;border-radius:50%;flex-shrink:0}
@@ -2367,7 +2367,7 @@ html.is-ios .stake-field input{border-radius:10px}
   font-size:2.15rem;font-weight:900;color:#FFD700;
   text-shadow:0 0 18px rgba(255,215,0,.28);
   font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.1}
-#withdrawModal .wd-card{background:rgba(11,16,28,.92);min-width:0;min-height:40px;overflow:hidden;align-items:center}
+#withdrawModal .wd-card{background:rgba(28,22,11,.92);min-width:0;min-height:40px;overflow:hidden;align-items:center}
 #withdrawModal .wd-card > span:last-child{
   min-width:0;flex:1;line-height:1.15;white-space:normal;overflow:hidden;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
@@ -2394,7 +2394,7 @@ html.is-ios .stake-field input{border-radius:10px}
 .wd-confirm-box .btn-close{top:10px!important;right:10px!important;width:30px;height:30px;min-width:30px;min-height:30px;
   font-size:1rem;color:#B8AC94}
 .wd-confirm-ico{width:48px;height:48px;margin:2px auto 12px;border-radius:50%;
-  background:radial-gradient(circle at 38% 32%,rgba(253,230,138,.4),rgba(18,22,32,.95));
+  background:radial-gradient(circle at 38% 32%,rgba(253,230,138,.4),rgba(32,27,18,.95));
   border:1px solid rgba(212,175,55,.5);box-shadow:0 0 22px rgba(212,175,55,.16);position:relative}
 .wd-confirm-ico::after{content:"";position:absolute;inset:0;margin:auto;width:20px;height:20px;background:#E8C56A;
   -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M9.2 16.4 4.7 11.9l1.4-1.4 3.1 3.1 8.7-8.7 1.4 1.4z'/></svg>") center/20px no-repeat;
@@ -2409,7 +2409,7 @@ html.is-ios .stake-field input{border-radius:10px}
 .admin-wd-acts .mini{font-size:.58rem;padding:6px 8px}
 .mini.wd-ok{background:#166534;border-color:#22C55E;color:#ECFDF5}
 .mini.wd-refund{background:#9A3412;border-color:#F97316;color:#FFF7ED}
-.mini.wd-hold{background:#554A33;border-color:#B8AC94;color:#E2E8F0}
+.mini.wd-hold{background:#554A33;border-color:#B8AC94;color:#F0EBE2}
 .mini.wd-silent{background:#7F1D1D;border-color:#EF4444;color:#FEE2E2}
 
 @media (max-width:640px){
@@ -2923,12 +2923,12 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
       radial-gradient(ellipse 24% 110% at 34% 100%,rgba(249,115,22,.7) 0%,transparent 74%),
       radial-gradient(ellipse 22% 105% at 58% 100%,rgba(245,158,11,.78) 0%,transparent 73%),
       radial-gradient(ellipse 26% 115% at 82% 100%,rgba(220,38,38,.62) 0%,transparent 75%),
-      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(180,83,9,.4) 26%,rgba(234,88,12,.55) 50%,rgba(127,29,29,.88) 76%,#2a0c06 100%)}
+      linear-gradient(180deg,rgba(20,17,11,0) 0%,rgba(180,83,9,.4) 26%,rgba(234,88,12,.55) 50%,rgba(127,29,29,.88) 76%,#2a0c06 100%)}
   html:not(.is-tv) #screenTrade .pad,
   html:not(.is-tv) #screenTrade .pad.glass,
   html:not(.is-tv).is-android #screenTrade .pad,
   html:not(.is-tv).is-ios #screenTrade .pad{
-    background:linear-gradient(180deg,#0E0D0A 0%,#0E0D0A calc(100% - 78px - env(safe-area-inset-bottom, 28px)),rgba(11,14,20,.28) calc(100% - 36px),rgba(11,14,20,0) 100%)!important;
+    background:linear-gradient(180deg,#0E0D0A 0%,#0E0D0A calc(100% - 78px - env(safe-area-inset-bottom, 28px)),rgba(20,17,11,.28) calc(100% - 36px),rgba(20,17,11,0) 100%)!important;
     backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
     overflow:hidden}
   html:not(.is-tv) #screenTrade .pad > *{position:relative;z-index:2}
@@ -2946,14 +2946,14 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
       radial-gradient(ellipse 9% 185% at 72% 100%,rgba(255,237,160,.8) 0%,transparent 68%),
       radial-gradient(ellipse 15% 235% at 83% 100%,rgba(245,158,11,.95) 0%,rgba(194,65,12,.42) 38%,transparent 73%),
       radial-gradient(ellipse 11% 205% at 94% 100%,rgba(252,211,77,.9) 0%,transparent 71%),
-      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(180,83,9,.22) 28%,rgba(127,29,29,.5) 100%);
+      linear-gradient(180deg,rgba(20,17,11,0) 0%,rgba(180,83,9,.22) 28%,rgba(127,29,29,.5) 100%);
     animation:oroHellFlicker 2.1s ease-in-out infinite}
   html:not(.is-tv) #screenTrade .pad::before{
     content:"";position:absolute;left:0;right:0;bottom:0;z-index:1;pointer-events:none;
     height:calc(50px + env(safe-area-inset-bottom, 26px));
     transform-origin:50% 100%;
     background:
-      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(252,211,77,.35) 30%,rgba(234,88,12,.62) 62%,rgba(127,29,29,.9) 100%),
+      linear-gradient(180deg,rgba(20,17,11,0) 0%,rgba(252,211,77,.35) 30%,rgba(234,88,12,.62) 62%,rgba(127,29,29,.9) 100%),
       radial-gradient(ellipse 30% 140% at 20% 100%,rgba(255,251,235,.85) 0%,transparent 72%),
       radial-gradient(ellipse 34% 150% at 48% 100%,rgba(245,158,11,.75) 0%,transparent 74%),
       radial-gradient(ellipse 32% 145% at 78% 100%,rgba(249,115,22,.68) 0%,transparent 73%);
@@ -2993,7 +2993,7 @@ html body .asset-chip[data-asset="boomspike"] .payout-live{position:relative;z-i
     -webkit-mask-image:none;
     mask-image:none;
     height:calc(22px + env(safe-area-inset-bottom, 8px));
-    background:linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(0,0,0,.75) 42%,#050608 100%)!important;
+    background:linear-gradient(180deg,rgba(20,17,11,0) 0%,rgba(0,0,0,.75) 42%,#050608 100%)!important;
     -webkit-backdrop-filter:none;
     backdrop-filter:none;
     box-shadow:none;
@@ -3145,7 +3145,7 @@ html.is-android #withdrawModal .wd-card-ico{width:18px;height:18px}
     justify-content:center!important;
     border-radius:50%!important;
     border:1px solid rgba(245,158,11,.65)!important;
-    background:rgba(12,16,26,.96)!important;
+    background:rgba(26,21,12,.96)!important;
     color:#F8FAFC!important;
     box-shadow:0 0 0 1px rgba(255,255,255,.1),0 3px 8px rgba(0,0,0,.4)!important;
     font-size:.7rem!important;
@@ -3542,7 +3542,7 @@ html body .btn-close:not(#btnCloseDrawer):not(#oroX1):not(#oroX2){
   width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;
   margin:0!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
   border-radius:50%!important;border:1px solid rgba(245,197,24,.42)!important;
-  background:rgba(10,14,22,.82)!important;color:#E8EEF9!important;
+  background:rgba(22,18,10,.82)!important;color:#E8EEF9!important;
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   box-shadow:0 0 0 1px rgba(255,255,255,.05),0 4px 12px rgba(0,0,0,.45)!important;
   font-size:1rem!important;line-height:1!important;cursor:pointer;z-index:95!important;transform:none!important;flex:none!important;
@@ -3854,9 +3854,9 @@ html body #toast.toast.tie .lux-msg-ico{color:#F2C14E!important}
       radial-gradient(ellipse 20% 230% at 38% 100%,rgba(255,226,140,.9) 0%,rgba(255,180,40,.45) 40%,transparent 74%),
       radial-gradient(ellipse 18% 210% at 62% 100%,rgba(255,236,170,.9) 0%,rgba(255,190,60,.45) 40%,transparent 72%),
       radial-gradient(ellipse 20% 230% at 88% 100%,rgba(255,226,140,.9) 0%,rgba(255,180,40,.45) 40%,transparent 74%),
-      linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(255,170,30,.22) 30%,rgba(255,160,20,.5) 100%)!important}
+      linear-gradient(180deg,rgba(20,17,11,0) 0%,rgba(255,170,30,.22) 30%,rgba(255,160,20,.5) 100%)!important}
   html:not(.is-tv) #screenTrade .pad::before{
-    background:linear-gradient(180deg,rgba(11,14,20,0) 0%,rgba(255,210,110,.35) 30%,rgba(255,176,32,.62) 65%,rgba(255,160,20,.85) 100%)!important}
+    background:linear-gradient(180deg,rgba(20,17,11,0) 0%,rgba(255,210,110,.35) 30%,rgba(255,176,32,.62) 65%,rgba(255,160,20,.85) 100%)!important}
 }
 /* Fond de page un peu plus vivant (bleu nuit profond au lieu du noir), comme le graphique. */
 html body,html body #screenTrade,html body #screenTrade .trade-shell,html body #screenTrade .trade-wrap{
@@ -4090,7 +4090,7 @@ html body #chart .pinch-hint .pinch-ico{font-size:1.05rem}
 html body #chart,html body #chart *{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;-webkit-tap-highlight-color:transparent}
 /* Bref message au bout de l'historique du graphique (on ne peut pas remonter plus loin). */
 html body #chart .chart-hist-msg{position:absolute;left:10px;top:50%;transform:translateY(-50%);z-index:31;
-  padding:2px 6px;border-radius:6px;background:rgba(10,14,24,.82);border:1px solid rgba(245,197,24,.28);
+  padding:2px 6px;border-radius:6px;background:rgba(24,19,10,.82);border:1px solid rgba(245,197,24,.28);
   color:#F8E7B0;font-size:.56rem;font-weight:700;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .3s ease}
 html body #chart .chart-hist-msg.on{opacity:1}
 /* Appui long : pas de sélection ni de menu « Copier » sur le site (confort d'application).
@@ -4105,7 +4105,7 @@ html body .oro-copyable,html body #screenAdmin,html body #screenAdmin *{-webkit-
   html:not(.is-tv):not(.fs-trade) body #screenTrade .pad.glass,
   html:not(.is-tv):not(.fs-trade).is-android body #screenTrade .pad,
   html:not(.is-tv):not(.fs-trade).is-ios body #screenTrade .pad{
-    background:linear-gradient(180deg,#221B0D 0%,#221B0D 70%,#141722 86%,#1f1a18 100%)!important}
+    background:linear-gradient(180deg,#221B0D 0%,#221B0D 70%,#221D14 86%,#1f1a18 100%)!important}
   html:not(.is-tv):not(.fs-trade) body #screenTrade .pad::after,
   html:not(.is-tv):not(.fs-trade) body #screenTrade .pad::before{
     left:6px!important;right:6px!important;bottom:calc(8px + env(safe-area-inset-bottom, 0px))!important;
@@ -4120,7 +4120,7 @@ html body .oro-copyable,html body #screenAdmin,html body #screenAdmin *{-webkit-
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad,
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad.glass{
     box-shadow:none!important;border-radius:14px 14px 18px 18px!important;
-    background:linear-gradient(180deg,#221B0D 0%,#221B0D 70%,#141722 86%,#211a16 100%)!important}
+    background:linear-gradient(180deg,#221B0D 0%,#221B0D 70%,#221D14 86%,#211a16 100%)!important}
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad::after,
   html.is-ios:not(.is-tv):not(.fs-trade) body #screenTrade .pad::before{
     bottom:0!important;border-radius:0 0 18px 18px!important}
@@ -4190,7 +4190,7 @@ html body .fs-trade-close .fs-exit-txt{font-size:9px!important;letter-spacing:.0
 }
 /* Plein écran couché : flèches ▲ ▼ pour faire défiler la colonne des indices (télécommande, souris). */
 .fs-col-arrow{position:fixed;z-index:60;width:36px;height:28px;display:none;align-items:center;justify-content:center;
-  border-radius:8px;border:1px solid rgba(245,197,24,.6);background:rgba(10,14,24,.92);color:#F5C518;font-size:12px;cursor:pointer;
+  border-radius:8px;border:1px solid rgba(245,197,24,.6);background:rgba(24,19,10,.92);color:#F5C518;font-size:12px;cursor:pointer;
   box-shadow:0 2px 10px rgba(0,0,0,.45)}
 .fs-col-arrow.dim{opacity:.35}
 html.is-tv .fs-col-arrow:focus-visible{outline:3px solid #F5C518;outline-offset:2px}
@@ -4311,12 +4311,12 @@ html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important
 html body #screenTrade .help-badge,html body #screenTrade #btnProfile{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,0.45)!important;color:#FFB15C!important;box-shadow:none!important}
 html body #screenTrade .btn-auth-link:not(.on){background:rgba(255,255,255,.06)!important;border:1px solid rgba(247,147,26,0.33)!important;color:#F8FAFC!important}
 html body #screenTrade .btn-auth-link.on{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important;box-shadow:0 2px 10px rgba(247,147,26,0.11)!important}
-html body #screenTrade .balance-card{background:linear-gradient(90deg,rgba(247,147,26,.16) 0%,rgba(18,23,34,.95) 60%)!important;border:1px solid rgba(247,147,26,0.36)!important;box-shadow:0 2px 12px rgba(247,147,26,0.04)!important}
-html body #screenTrade .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#E2E8F0!important}
+html body #screenTrade .balance-card{background:linear-gradient(90deg,rgba(200,150,54,.07) 0%,rgba(18,15,9,.96) 60%)!important;border:1px solid rgba(247,147,26,0.36)!important;box-shadow:0 2px 12px rgba(247,147,26,0.04)!important}
+html body #screenTrade .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#F0EBE2!important}
 html body #screenTrade .chart-toolbar .ind-btn.on,html body #screenTrade .chart-toolbar .ind-btn.active{background:#F7931A!important;border-color:#F7931A!important;color:#1A1205!important}
 html body #screenTrade .chart-toolbar .chart-reset-btn{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,0.45)!important;color:#FFB15C!important}
 html body #screenTrade .chart-fs-btn{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.7)!important;color:#FCA5A5!important}
-html body #screenTrade .dur-chip:not(.on):not(.active){background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.21)!important;color:#E2E8F0!important}
+html body #screenTrade .dur-chip:not(.on):not(.active){background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.21)!important;color:#F0EBE2!important}
 html body #screenTrade .dur-chip.on,html body #screenTrade .dur-chip.active{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important}
 html body #screenTrade #inputStake{background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.3)!important}
 html body #screenTrade .qbtn.stake-act:not(.qbtn-back){background:rgba(247,147,26,.16)!important;border:1px solid rgba(247,147,26,0.39)!important;color:#FFB15C!important}
@@ -4326,12 +4326,12 @@ html body #screenTrade .help-badge:active,html body #screenTrade #btnProfile:act
 html body #fsTradeOverlay .help-badge,html body #fsTradeOverlay #btnProfile{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,0.45)!important;color:#FFB15C!important;box-shadow:none!important}
 html body #fsTradeOverlay .btn-auth-link:not(.on){background:rgba(255,255,255,.06)!important;border:1px solid rgba(247,147,26,0.33)!important;color:#F8FAFC!important}
 html body #fsTradeOverlay .btn-auth-link.on{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important;box-shadow:0 2px 10px rgba(247,147,26,0.11)!important}
-html body #fsTradeOverlay .balance-card{background:linear-gradient(90deg,rgba(247,147,26,.16) 0%,rgba(18,23,34,.95) 60%)!important;border:1px solid rgba(247,147,26,0.36)!important;box-shadow:0 2px 12px rgba(247,147,26,0.04)!important}
-html body #fsTradeOverlay .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#E2E8F0!important}
+html body #fsTradeOverlay .balance-card{background:linear-gradient(90deg,rgba(200,150,54,.07) 0%,rgba(18,15,9,.96) 60%)!important;border:1px solid rgba(247,147,26,0.36)!important;box-shadow:0 2px 12px rgba(247,147,26,0.04)!important}
+html body #fsTradeOverlay .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#F0EBE2!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn.on,html body #fsTradeOverlay .chart-toolbar .ind-btn.active{background:#F7931A!important;border-color:#F7931A!important;color:#1A1205!important}
 html body #fsTradeOverlay .chart-toolbar .chart-reset-btn{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,0.45)!important;color:#FFB15C!important}
 html body #fsTradeOverlay .chart-fs-btn{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.7)!important;color:#FCA5A5!important}
-html body #fsTradeOverlay .dur-chip:not(.on):not(.active){background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.21)!important;color:#E2E8F0!important}
+html body #fsTradeOverlay .dur-chip:not(.on):not(.active){background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.21)!important;color:#F0EBE2!important}
 html body #fsTradeOverlay .dur-chip.on,html body #fsTradeOverlay .dur-chip.active{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important}
 html body #fsTradeOverlay #inputStake{background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.3)!important}
 html body #fsTradeOverlay .qbtn.stake-act:not(.qbtn-back){background:rgba(247,147,26,.16)!important;border:1px solid rgba(247,147,26,0.39)!important;color:#FFB15C!important}
@@ -4368,8 +4368,8 @@ html body #depositModal .pay-crypto-cell{border:1px solid rgba(255,255,255,.08)!
 html body #depositModal .pay-crypto-cell:hover,html body #depositModal .pay-crypto-cell:active{border-color:rgba(247,147,26,0.36)!important;background:rgba(247,147,26,.1)!important}
 html body #withdrawModal .wd-bal{background:linear-gradient(135deg,rgba(247,147,26,.16),rgba(247,147,26,.03))!important;border:1px solid rgba(247,147,26,0.27)!important}
 html body #withdrawModal .wd-group-label{color:#E9BC8C!important}
-html body #withdrawModal .wd-card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(11,16,28,.92))!important;border-color:rgba(247,147,26,0.11)!important;transition:border-color .15s,background .15s}
-html body #withdrawModal .wd-card:hover,html body #withdrawModal .wd-card:active,html body #withdrawModal .wd-card.on,html body #withdrawModal .wd-card.active{border-color:rgba(247,147,26,0.39)!important;background:linear-gradient(180deg,rgba(247,147,26,.16),rgba(11,16,28,.92))!important}
+html body #withdrawModal .wd-card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(28,22,11,.92))!important;border-color:rgba(247,147,26,0.11)!important;transition:border-color .15s,background .15s}
+html body #withdrawModal .wd-card:hover,html body #withdrawModal .wd-card:active,html body #withdrawModal .wd-card.on,html body #withdrawModal .wd-card.active{border-color:rgba(247,147,26,0.39)!important;background:linear-gradient(180deg,rgba(247,147,26,.16),rgba(28,22,11,.92))!important}
 html body #withdrawModal .modal-title,html body #depositModal .modal-title,html body #withdrawModal .wd-bal-amt{color:#FFB15C!important}
 
 /* ===== v2213 — Vie et lumière (demande du propriétaire) : logo, simulations, payout, carré du gain, boutons qui s'allument ===== */
@@ -4403,7 +4403,7 @@ html body #fsTradeOverlay .qbtn,html body #fsTradeOverlay .ind-btn,html body #fs
 html body #fsTradeOverlay .qbtn:active,html body #fsTradeOverlay .ind-btn:active,html body #fsTradeOverlay .dur-chip:active,html body #fsTradeOverlay .chart-fs-btn:active,html body #fsTradeOverlay .odds-chip:active,html body #fsTradeOverlay .asset-chip:active{filter:brightness(1.45)!important;box-shadow:0 0 14px rgba(247,147,26,0.23),0 0 0 1px rgba(255,200,120,0.22)!important;transform:scale(.96)!important}
 html body #fsTradeOverlay .qbtn-back:active{box-shadow:0 0 14px rgba(239,68,68,0.42),0 0 0 1px rgba(252,165,165,0.36)!important}
 html body #fsTradeOverlay .qbtn.hit,html body #fsTradeOverlay .ind-btn.hit,html body #fsTradeOverlay .dur-chip.hit,html body #fsTradeOverlay .odds-chip.hit{filter:brightness(1.45)!important;box-shadow:0 0 14px rgba(247,147,26,0.23)!important}
-html body #withdrawModal select{background:#0B0F18!important;border:1px solid rgba(247,147,26,0.18)!important;color:#F8FAFC!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)!important}
+html body #withdrawModal select{background:#18140B!important;border:1px solid rgba(247,147,26,0.18)!important;color:#F8FAFC!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)!important}
 html body #withdrawModal select:focus{border-color:rgba(247,147,26,0.48)!important;box-shadow:0 0 0 3px rgba(247,147,26,0.05)!important;outline:none!important}
 html body #withdrawModal input,html body #withdrawModal select{transition:border-color .15s,box-shadow .15s}
 html body #withdrawModal .wd-card:active,html body #depositModal .pay-crypto-cell:active,html body #depositModal .pay-method-card:active{box-shadow:0 0 14px rgba(247,147,26,0.18)!important;transform:scale(.97)}
@@ -4411,7 +4411,7 @@ html body #screenAuth .auth-tab:active,html body #screenAuth .btn-gold:active,ht
 @media (max-width:859px){
 html body #screenTrade .stake-line{align-items:stretch!important}
 html body #screenTrade .stake-field{flex:1 1 auto!important;min-width:0!important}
-html body #screenTrade .win-preview{flex:0 0 116px!important;width:116px!important;align-self:stretch!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:1px!important;padding:5px 6px!important;background:linear-gradient(160deg,rgba(16,185,129,.34) 0%,rgba(6,78,59,.42) 55%,rgba(11,14,20,.9) 100%)!important;border:1px solid rgba(52,211,153,.75)!important;border-radius:12px!important;box-shadow:0 0 16px rgba(16,185,129,0.17),inset 0 1px 0 rgba(255,255,255,0.07)!important;text-align:center!important;overflow:hidden!important}
+html body #screenTrade .win-preview{flex:0 0 116px!important;width:116px!important;align-self:stretch!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:1px!important;padding:5px 6px!important;background:linear-gradient(160deg,rgba(16,185,129,.34) 0%,rgba(6,78,59,.42) 55%,rgba(20,17,11,.9) 100%)!important;border:1px solid rgba(52,211,153,.75)!important;border-radius:12px!important;box-shadow:0 0 16px rgba(16,185,129,0.17),inset 0 1px 0 rgba(255,255,255,0.07)!important;text-align:center!important;overflow:hidden!important}
 html body #screenTrade .win-preview .label{display:block!important;font-size:8px!important;font-weight:800!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#A7F3D0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important;line-height:1.1!important}
 html body #screenTrade .win-preview .amount{font-size:17px!important;font-weight:900!important;line-height:1.15!important;color:#34D399!important;text-shadow:0 0 12px rgba(52,211,153,.5)!important;white-space:nowrap!important}
 html body #screenTrade .win-preview .mult{display:inline-block!important;font-size:8.5px!important;font-weight:800!important;line-height:1!important;padding:2px 7px!important;border-radius:999px!important;background:rgba(52,211,153,.18)!important;border:1px solid rgba(52,211,153,.45)!important;color:#D1FAE5!important;white-space:nowrap!important}
@@ -4427,7 +4427,7 @@ html body #screenTrade .chart-toolbar .ind-btn[data-ind="bb"]:not(.on){backgroun
 html body #screenTrade .chart-toolbar .ind-btn[data-ind="ema"]:not(.on){background:linear-gradient(180deg,rgba(219,158,36,.2),rgba(219,158,36,.06))!important;border:1px solid rgba(219,158,36,.55)!important;color:#F1D9A8!important;box-shadow:0 0 10px rgba(219,158,36,0.16)!important}
 html body #screenTrade .chart-toolbar .ind-btn[data-ind="ma"].on{background:linear-gradient(180deg,#FFC93C,#F59E0B)!important;border-color:#FFD166!important;color:#1A1205!important;box-shadow:0 0 18px rgba(255,183,3,0.27)!important}
 html body #screenTrade .chart-toolbar .ind-btn[data-ind="bb"].on{background:linear-gradient(180deg,#F1DAAB,#E7BE6B)!important;border-color:#F6E6C6!important;color:#FFFFFF!important;box-shadow:0 0 18px rgba(237,206,143,0.48)!important}
-html body #screenTrade .chart-toolbar .ind-btn[data-ind="ema"].on{background:linear-gradient(180deg,#E8C275,#BB871F)!important;border-color:#F1D9A8!important;color:#06222A!important;box-shadow:0 0 18px rgba(219,158,36,0.45)!important}
+html body #screenTrade .chart-toolbar .ind-btn[data-ind="ema"].on{background:linear-gradient(180deg,#E8C275,#BB871F)!important;border-color:#F1D9A8!important;color:#241C0C!important;box-shadow:0 0 18px rgba(219,158,36,0.45)!important}
 html body #screenTrade .chart-toolbar .ind-btn.zoom-btn:not(.chart-reset-btn){background:linear-gradient(180deg,rgba(247,147,26,.2),rgba(247,147,26,.06))!important;border:1px solid rgba(247,147,26,0.33)!important;color:#FFC58A!important;box-shadow:0 0 10px rgba(247,147,26,0.1)!important}
 html body #screenTrade .chart-toolbar .chart-reset-btn{box-shadow:0 0 12px rgba(247,147,26,0.14)!important}
 html body #screenTrade .asset-chip.on[data-asset="v100"]{background:linear-gradient(135deg,rgba(16,185,129,.36),rgba(6,78,59,.36))!important;border:1.5px solid #34D399!important;box-shadow:0 0 12px rgba(16,185,129,0.42),inset 0 0 8px rgba(52,211,153,0.18)!important}
@@ -4445,7 +4445,7 @@ html body #fsTradeOverlay .chart-toolbar .ind-btn[data-ind="bb"]:not(.on){backgr
 html body #fsTradeOverlay .chart-toolbar .ind-btn[data-ind="ema"]:not(.on){background:linear-gradient(180deg,rgba(219,158,36,.2),rgba(219,158,36,.06))!important;border:1px solid rgba(219,158,36,.55)!important;color:#F1D9A8!important;box-shadow:0 0 10px rgba(219,158,36,0.16)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn[data-ind="ma"].on{background:linear-gradient(180deg,#FFC93C,#F59E0B)!important;border-color:#FFD166!important;color:#1A1205!important;box-shadow:0 0 18px rgba(255,183,3,0.27)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn[data-ind="bb"].on{background:linear-gradient(180deg,#F1DAAB,#E7BE6B)!important;border-color:#F6E6C6!important;color:#FFFFFF!important;box-shadow:0 0 18px rgba(237,206,143,0.48)!important}
-html body #fsTradeOverlay .chart-toolbar .ind-btn[data-ind="ema"].on{background:linear-gradient(180deg,#E8C275,#BB871F)!important;border-color:#F1D9A8!important;color:#06222A!important;box-shadow:0 0 18px rgba(219,158,36,0.45)!important}
+html body #fsTradeOverlay .chart-toolbar .ind-btn[data-ind="ema"].on{background:linear-gradient(180deg,#E8C275,#BB871F)!important;border-color:#F1D9A8!important;color:#241C0C!important;box-shadow:0 0 18px rgba(219,158,36,0.45)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn.zoom-btn:not(.chart-reset-btn){background:linear-gradient(180deg,rgba(247,147,26,.2),rgba(247,147,26,.06))!important;border:1px solid rgba(247,147,26,0.33)!important;color:#FFC58A!important;box-shadow:0 0 10px rgba(247,147,26,0.1)!important}
 html body #fsTradeOverlay .chart-toolbar .chart-reset-btn{box-shadow:0 0 12px rgba(247,147,26,0.14)!important}
 html body #fsTradeOverlay .asset-chip.on[data-asset="v100"]{background:linear-gradient(135deg,rgba(16,185,129,.36),rgba(6,78,59,.36))!important;border:1.5px solid #34D399!important;box-shadow:0 0 12px rgba(16,185,129,0.42),inset 0 0 8px rgba(52,211,153,0.18)!important}
@@ -4475,12 +4475,12 @@ html body #screenTrade #langBarTrade .lang-dd-btn{height:23px!important;min-heig
 
 /* ===== v2217 (couleurs de jeu remplacées par v2218 ci-dessous) — Chaque bouton a SA couleur, comme MA / BB / EMA (demande du propriétaire) : léger fond coloré + contour + lueur douce autour ;
    au toucher il s'allume en plein dans sa couleur. Le jaune / orange sombre des boutons est remplacé. Logo OROLADO non touché. ===== */
-html body #withdrawModal #wdCryptoGrid .wd-card{background:linear-gradient(180deg,rgba(45,212,191,.14),rgba(11,16,28,.92))!important;border-color:rgba(45,212,191,.42)!important;box-shadow:0 0 8px rgba(45,212,191,.14)!important}
-html body #withdrawModal #wdCryptoGrid .wd-card:hover,html body #withdrawModal #wdCryptoGrid .wd-card:active,html body #withdrawModal #wdCryptoGrid .wd-card.on,html body #withdrawModal #wdCryptoGrid .wd-card.active{background:linear-gradient(180deg,rgba(45,212,191,.34),rgba(11,16,28,.92))!important;border-color:rgba(45,212,191,.9)!important;box-shadow:0 0 14px rgba(45,212,191,.45)!important}
-html body #withdrawModal #wdLocalGrid .wd-card{background:linear-gradient(180deg,rgba(242,193,78,.14),rgba(11,16,28,.92))!important;border-color:rgba(242,193,78,.42)!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important}
-html body #withdrawModal #wdLocalGrid .wd-card:hover,html body #withdrawModal #wdLocalGrid .wd-card:active,html body #withdrawModal #wdLocalGrid .wd-card.on,html body #withdrawModal #wdLocalGrid .wd-card.active{background:linear-gradient(180deg,rgba(242,193,78,.34),rgba(11,16,28,.92))!important;border-color:rgba(242,193,78,.9)!important;box-shadow:0 0 14px rgba(242,193,78,.45)!important}
-html body #withdrawModal #wdBankGrid .wd-card{background:linear-gradient(180deg,rgba(224,168,36,.14),rgba(11,16,28,.92))!important;border-color:rgba(224,168,36,.42)!important;box-shadow:0 0 8px rgba(224,168,36,.14)!important}
-html body #withdrawModal #wdBankGrid .wd-card:hover,html body #withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal #wdBankGrid .wd-card.on,html body #withdrawModal #wdBankGrid .wd-card.active{background:linear-gradient(180deg,rgba(224,168,36,.34),rgba(11,16,28,.92))!important;border-color:rgba(224,168,36,.9)!important;box-shadow:0 0 14px rgba(224,168,36,.45)!important}
+html body #withdrawModal #wdCryptoGrid .wd-card{background:linear-gradient(180deg,rgba(45,212,191,.14),rgba(28,22,11,.92))!important;border-color:rgba(45,212,191,.42)!important;box-shadow:0 0 8px rgba(45,212,191,.14)!important}
+html body #withdrawModal #wdCryptoGrid .wd-card:hover,html body #withdrawModal #wdCryptoGrid .wd-card:active,html body #withdrawModal #wdCryptoGrid .wd-card.on,html body #withdrawModal #wdCryptoGrid .wd-card.active{background:linear-gradient(180deg,rgba(45,212,191,.34),rgba(28,22,11,.92))!important;border-color:rgba(45,212,191,.9)!important;box-shadow:0 0 14px rgba(45,212,191,.45)!important}
+html body #withdrawModal #wdLocalGrid .wd-card{background:linear-gradient(180deg,rgba(242,193,78,.14),rgba(28,22,11,.92))!important;border-color:rgba(242,193,78,.42)!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important}
+html body #withdrawModal #wdLocalGrid .wd-card:hover,html body #withdrawModal #wdLocalGrid .wd-card:active,html body #withdrawModal #wdLocalGrid .wd-card.on,html body #withdrawModal #wdLocalGrid .wd-card.active{background:linear-gradient(180deg,rgba(242,193,78,.34),rgba(28,22,11,.92))!important;border-color:rgba(242,193,78,.9)!important;box-shadow:0 0 14px rgba(242,193,78,.45)!important}
+html body #withdrawModal #wdBankGrid .wd-card{background:linear-gradient(180deg,rgba(224,168,36,.14),rgba(28,22,11,.92))!important;border-color:rgba(224,168,36,.42)!important;box-shadow:0 0 8px rgba(224,168,36,.14)!important}
+html body #withdrawModal #wdBankGrid .wd-card:hover,html body #withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal #wdBankGrid .wd-card.on,html body #withdrawModal #wdBankGrid .wd-card.active{background:linear-gradient(180deg,rgba(224,168,36,.34),rgba(28,22,11,.92))!important;border-color:rgba(224,168,36,.9)!important;box-shadow:0 0 14px rgba(224,168,36,.45)!important}
 /* ===== v2218 — Couleurs ORDONNÉES par zone (demande du propriétaire : pro, pas désordonné) :
    haut = violet doux ; outils du graphique (+ − ↺) et mode non choisi = gris-bleu acier ; MA/BB/EMA = couleur de leur ligne ;
    durées (le temps) = bleu ciel ; mise (l'argent) = vert émeraude comme le gain ; ⌫ = rouge. Au toucher : plein dans sa couleur. ===== */
@@ -4498,11 +4498,11 @@ html body #screenTrade #fsBtnDemo:not(.on):not(.tap-lit){background:linear-gradi
 html body #screenTrade #fsBtnDemo:not(.on).tap-lit.tap-lit.tap-lit,html body #screenTrade #fsBtnDemo:not(.on):active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
 html body #screenTrade #fsBtnReal:not(.on):not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#E1DACB!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #screenTrade #fsBtnReal:not(.on).tap-lit.tap-lit.tap-lit,html body #screenTrade #fsBtnReal:not(.on):active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
-html body #screenTrade .chart-toolbar #chartZoomIn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#E2E8F0!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
+html body #screenTrade .chart-toolbar #chartZoomIn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#F0EBE2!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #screenTrade .chart-toolbar #chartZoomIn.tap-lit.tap-lit.tap-lit,html body #screenTrade .chart-toolbar #chartZoomIn:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
-html body #screenTrade .chart-toolbar #chartZoomOut:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#E2E8F0!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
+html body #screenTrade .chart-toolbar #chartZoomOut:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#F0EBE2!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #screenTrade .chart-toolbar #chartZoomOut.tap-lit.tap-lit.tap-lit,html body #screenTrade .chart-toolbar #chartZoomOut:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
-html body #screenTrade .chart-toolbar .ind-btn.chart-reset-btn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#E2E8F0!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
+html body #screenTrade .chart-toolbar .ind-btn.chart-reset-btn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#F0EBE2!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #screenTrade .chart-toolbar .ind-btn.chart-reset-btn.tap-lit.tap-lit.tap-lit,html body #screenTrade .chart-toolbar .ind-btn.chart-reset-btn:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
 html body #screenTrade .dur-chip:not(.on):not(.active):not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
 html body #screenTrade .dur-chip:not(.on):not(.active).tap-lit.tap-lit.tap-lit,html body #screenTrade .dur-chip:not(.on):not(.active):active{background:linear-gradient(180deg,rgba(242,193,78,1),rgba(242,193,78,.8))!important;border-color:rgba(242,193,78,1)!important;color:#2B1F07!important;box-shadow:0 0 14px rgba(242,193,78,.55)!important}
@@ -4514,7 +4514,7 @@ html body #screenTrade .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:lin
 html body #screenTrade .qbtn.stake-act[data-a="x2"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="x2"]:active{background:linear-gradient(180deg,rgba(52,211,153,1),rgba(52,211,153,.8))!important;border-color:rgba(52,211,153,1)!important;color:#04241A!important;box-shadow:0 0 14px rgba(52,211,153,.55)!important}
 html body #screenTrade .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:linear-gradient(180deg,rgba(248,113,113,.16),rgba(248,113,113,.04))!important;border:1px solid rgba(248,113,113,.45)!important;color:#FECACA!important;box-shadow:0 0 8px rgba(248,113,113,.18)!important}
 html body #screenTrade .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,rgba(248,113,113,1),rgba(248,113,113,.8))!important;border-color:rgba(248,113,113,1)!important;color:#FFFFFF!important;box-shadow:0 0 14px rgba(248,113,113,.55)!important}
-html body #screenTrade #inputStake{border-color:rgba(52,211,153,.42)!important;background:linear-gradient(180deg,rgba(52,211,153,.07),rgba(11,14,20,.6))!important;box-shadow:0 0 8px rgba(52,211,153,.14)!important}
+html body #screenTrade #inputStake{border-color:rgba(52,211,153,.42)!important;background:linear-gradient(180deg,rgba(52,211,153,.07),rgba(20,17,11,.6))!important;box-shadow:0 0 8px rgba(52,211,153,.14)!important}
 html body #screenTrade #inputStake:focus{border-color:rgba(52,211,153,.85)!important;box-shadow:0 0 0 3px rgba(52,211,153,.16)!important}
 html body #fsTradeOverlay .help-badge:not(.tap-lit){background:linear-gradient(180deg,rgba(224,168,36,.16),rgba(224,168,36,.04))!important;border:1px solid rgba(224,168,36,.45)!important;color:#F9EFDB!important;box-shadow:0 0 8px rgba(224,168,36,.18)!important}
 html body #fsTradeOverlay .help-badge.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .help-badge:active{background:linear-gradient(180deg,rgba(224,168,36,1),rgba(224,168,36,.8))!important;border-color:rgba(224,168,36,1)!important;color:#FFFFFF!important;box-shadow:0 0 14px rgba(224,168,36,.55)!important}
@@ -4530,11 +4530,11 @@ html body #fsTradeOverlay #fsBtnDemo:not(.on):not(.tap-lit){background:linear-gr
 html body #fsTradeOverlay #fsBtnDemo:not(.on).tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay #fsBtnDemo:not(.on):active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
 html body #fsTradeOverlay #fsBtnReal:not(.on):not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#E1DACB!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #fsTradeOverlay #fsBtnReal:not(.on).tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay #fsBtnReal:not(.on):active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
-html body #fsTradeOverlay .chart-toolbar #chartZoomIn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#E2E8F0!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
+html body #fsTradeOverlay .chart-toolbar #chartZoomIn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#F0EBE2!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #fsTradeOverlay .chart-toolbar #chartZoomIn.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .chart-toolbar #chartZoomIn:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
-html body #fsTradeOverlay .chart-toolbar #chartZoomOut:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#E2E8F0!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
+html body #fsTradeOverlay .chart-toolbar #chartZoomOut:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#F0EBE2!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #fsTradeOverlay .chart-toolbar #chartZoomOut.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .chart-toolbar #chartZoomOut:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
-html body #fsTradeOverlay .chart-toolbar .ind-btn.chart-reset-btn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#E2E8F0!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
+html body #fsTradeOverlay .chart-toolbar .ind-btn.chart-reset-btn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#F0EBE2!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn.chart-reset-btn.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .chart-toolbar .ind-btn.chart-reset-btn:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
 html body #fsTradeOverlay .dur-chip:not(.on):not(.active):not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
 html body #fsTradeOverlay .dur-chip:not(.on):not(.active).tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .dur-chip:not(.on):not(.active):active{background:linear-gradient(180deg,rgba(242,193,78,1),rgba(242,193,78,.8))!important;border-color:rgba(242,193,78,1)!important;color:#2B1F07!important;box-shadow:0 0 14px rgba(242,193,78,.55)!important}
@@ -4546,7 +4546,7 @@ html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:
 html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:active{background:linear-gradient(180deg,rgba(52,211,153,1),rgba(52,211,153,.8))!important;border-color:rgba(52,211,153,1)!important;color:#04241A!important;box-shadow:0 0 14px rgba(52,211,153,.55)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:linear-gradient(180deg,rgba(248,113,113,.16),rgba(248,113,113,.04))!important;border:1px solid rgba(248,113,113,.45)!important;color:#FECACA!important;box-shadow:0 0 8px rgba(248,113,113,.18)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,rgba(248,113,113,1),rgba(248,113,113,.8))!important;border-color:rgba(248,113,113,1)!important;color:#FFFFFF!important;box-shadow:0 0 14px rgba(248,113,113,.55)!important}
-html body #fsTradeOverlay #inputStake{border-color:rgba(52,211,153,.42)!important;background:linear-gradient(180deg,rgba(52,211,153,.07),rgba(11,14,20,.6))!important;box-shadow:0 0 8px rgba(52,211,153,.14)!important}
+html body #fsTradeOverlay #inputStake{border-color:rgba(52,211,153,.42)!important;background:linear-gradient(180deg,rgba(52,211,153,.07),rgba(20,17,11,.6))!important;box-shadow:0 0 8px rgba(52,211,153,.14)!important}
 html body #fsTradeOverlay #inputStake:focus{border-color:rgba(52,211,153,.85)!important;box-shadow:0 0 0 3px rgba(52,211,153,.16)!important}
 html body #screenAuth .auth-card input[type=text],html body #screenAuth .auth-card input[type=email],html body #screenAuth .auth-card input[type=password],html body #screenAuth .auth-card input[type=tel],html body #screenAuth .auth-card input:not([type]){border:1px solid rgba(242,193,78,.4)!important;background:linear-gradient(180deg,rgba(242,193,78,.06),rgba(16,13,8,.88))!important;box-shadow:0 0 8px rgba(242,193,78,.12)!important}
 html body #screenAuth .auth-card input:focus{border-color:rgba(242,193,78,.9)!important;box-shadow:0 0 0 3px rgba(242,193,78,.16),0 0 12px rgba(242,193,78,.25)!important}
@@ -4602,10 +4602,10 @@ html body #screenTrade .qbtn.stake-act[data-a="half"]:not(.tap-lit){background:l
 html body #screenTrade .qbtn.stake-act[data-a="half"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="half"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#2B1F07!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
 html body #screenTrade .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
 html body #screenTrade .qbtn.stake-act[data-a="x2"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="x2"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#2B1F07!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
-html body #screenTrade #inputStake{border-color:rgba(242,193,78,.42)!important;background:linear-gradient(180deg,rgba(242,193,78,.07),rgba(11,14,20,.6))!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important}
+html body #screenTrade #inputStake{border-color:rgba(242,193,78,.42)!important;background:linear-gradient(180deg,rgba(242,193,78,.07),rgba(20,17,11,.6))!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important}
 html body #screenTrade #inputStake:focus{border-color:rgba(242,193,78,.85)!important;box-shadow:0 0 0 3px rgba(242,193,78,.16)!important}
 html body #screenTrade .stake-min-label{border-color:rgba(242,193,78,.45)!important;background:linear-gradient(180deg,rgba(242,193,78,.12),rgba(242,193,78,.03))!important;color:#F7D774!important;box-shadow:0 0 6px rgba(242,193,78,.2)!important}
-html body #screenTrade .win-preview{background:linear-gradient(160deg,rgba(242,193,78,.26) 0%,rgba(105,76,17,.4) 55%,rgba(11,14,20,.9) 100%)!important;border:1px solid rgba(242,193,78,.7)!important}
+html body #screenTrade .win-preview{background:linear-gradient(160deg,rgba(242,193,78,.26) 0%,rgba(105,76,17,.4) 55%,rgba(20,17,11,.9) 100%)!important;border:1px solid rgba(242,193,78,.7)!important}
 html body #screenTrade .win-preview .label{color:#F7D774!important}
 html body #screenTrade .win-preview .amount{color:#F2C14E!important;text-shadow:0 0 12px rgba(242,193,78,.5)!important}
 html body #screenTrade .win-preview .mult{background:rgba(242,193,78,.18)!important;border-color:rgba(242,193,78,.5)!important;color:#F6ECD8!important}
@@ -4615,32 +4615,32 @@ html body #fsTradeOverlay .qbtn.stake-act[data-a="half"]:not(.tap-lit){backgroun
 html body #fsTradeOverlay .qbtn.stake-act[data-a="half"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="half"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#2B1F07!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#2B1F07!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
-html body #fsTradeOverlay #inputStake{border-color:rgba(242,193,78,.42)!important;background:linear-gradient(180deg,rgba(242,193,78,.07),rgba(11,14,20,.6))!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important}
+html body #fsTradeOverlay #inputStake{border-color:rgba(242,193,78,.42)!important;background:linear-gradient(180deg,rgba(242,193,78,.07),rgba(20,17,11,.6))!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important}
 html body #fsTradeOverlay #inputStake:focus{border-color:rgba(242,193,78,.85)!important;box-shadow:0 0 0 3px rgba(242,193,78,.16)!important}
 html body #fsTradeOverlay .stake-min-label{border-color:rgba(242,193,78,.45)!important;background:linear-gradient(180deg,rgba(242,193,78,.12),rgba(242,193,78,.03))!important;color:#F7D774!important;box-shadow:0 0 6px rgba(242,193,78,.2)!important}
-html body #fsTradeOverlay .win-preview{background:linear-gradient(160deg,rgba(242,193,78,.26) 0%,rgba(105,76,17,.4) 55%,rgba(11,14,20,.9) 100%)!important;border:1px solid rgba(242,193,78,.7)!important}
+html body #fsTradeOverlay .win-preview{background:linear-gradient(160deg,rgba(242,193,78,.26) 0%,rgba(105,76,17,.4) 55%,rgba(20,17,11,.9) 100%)!important;border:1px solid rgba(242,193,78,.7)!important}
 html body #fsTradeOverlay .win-preview .label{color:#F7D774!important}
 html body #fsTradeOverlay .win-preview .amount{color:#F2C14E!important;text-shadow:0 0 12px rgba(242,193,78,.5)!important}
 html body #fsTradeOverlay .win-preview .mult{background:rgba(242,193,78,.18)!important;border-color:rgba(242,193,78,.5)!important;color:#F6ECD8!important}
 @media (max-width:859px){html body #screenTrade .win-preview{box-shadow:0 0 5px rgba(242,193,78,.35),inset 0 0 10px rgba(242,193,78,.16),inset 0 1px 0 rgba(255,255,255,.1)!important}}
 @media (min-width:860px){html body #screenTrade .win-preview{box-shadow:0 0 10px rgba(242,193,78,.25),inset 0 1px 0 rgba(255,255,255,.1)!important}}
-html body #screenTrade .balance-card{background:linear-gradient(135deg,rgba(247,147,26,.14) 0%,rgba(247,147,26,.04) 45%,rgba(18,23,34,.95) 100%)!important;border:1px solid rgba(247,147,26,.6)!important;box-shadow:0 0 12px rgba(247,147,26,.22),inset 0 0 14px rgba(247,147,26,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
-html body #screenTrade.mode-real .balance-card{background:linear-gradient(135deg,rgba(52,211,153,.14) 0%,rgba(52,211,153,.04) 45%,rgba(18,23,34,.95) 100%)!important;border:1px solid rgba(52,211,153,.6)!important;box-shadow:0 0 12px rgba(52,211,153,.22),inset 0 0 14px rgba(52,211,153,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #screenTrade .balance-card{background:linear-gradient(135deg,rgba(247,147,26,.14) 0%,rgba(247,147,26,.04) 45%,rgba(18,15,9,.95) 100%)!important;border:1px solid rgba(247,147,26,.6)!important;box-shadow:0 0 12px rgba(247,147,26,.22),inset 0 0 14px rgba(247,147,26,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #screenTrade.mode-real .balance-card{background:linear-gradient(135deg,rgba(52,211,153,.14) 0%,rgba(52,211,153,.04) 45%,rgba(18,15,9,.95) 100%)!important;border:1px solid rgba(52,211,153,.6)!important;box-shadow:0 0 12px rgba(52,211,153,.22),inset 0 0 14px rgba(52,211,153,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
 
 /* ===== v2227 — ⌫ bleu comme sa zone (rouge seulement au toucher) ; DÉMO / RÉEL non choisis : intérieur sombre + contour lumineux net
    (orange pour DÉMO, vert pour RÉEL) ; solde : intérieur sombre et net, seulement un contour coloré propre (plus de fond flou) ===== */
 html body #screenTrade .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
 html body #screenTrade .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,#F87171,#DC2626)!important;border-color:#FCA5A5!important;color:#FFFFFF!important;box-shadow:0 0 12px rgba(239,68,68,.55)!important}
-html body #screenTrade #modeDemo:not(.on):not(.tap-lit){background:#0E131D!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #screenTrade #fsBtnDemo:not(.on):not(.tap-lit){background:#0E131D!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #screenTrade #modeReal:not(.on):not(.tap-lit){background:#0E131D!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
-html body #screenTrade #fsBtnReal:not(.on):not(.tap-lit){background:#0E131D!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
+html body #screenTrade #modeDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
+html body #screenTrade #fsBtnDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
+html body #screenTrade #modeReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
+html body #screenTrade #fsBtnReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,#F87171,#DC2626)!important;border-color:#FCA5A5!important;color:#FFFFFF!important;box-shadow:0 0 12px rgba(239,68,68,.55)!important}
-html body #fsTradeOverlay #modeDemo:not(.on):not(.tap-lit){background:#0E131D!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #fsTradeOverlay #fsBtnDemo:not(.on):not(.tap-lit){background:#0E131D!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #fsTradeOverlay #modeReal:not(.on):not(.tap-lit){background:#0E131D!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
-html body #fsTradeOverlay #fsBtnReal:not(.on):not(.tap-lit){background:#0E131D!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
+html body #fsTradeOverlay #modeDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
+html body #fsTradeOverlay #fsBtnDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
+html body #fsTradeOverlay #modeReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
+html body #fsTradeOverlay #fsBtnReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
 html body #screenTrade .balance-card{background:rgba(16,13,9,.96)!important;border:1px solid rgba(247,147,26,.75)!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
 html body #screenTrade.mode-real .balance-card{background:rgba(16,13,9,.96)!important;border:1px solid rgba(52,211,153,.75)!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
 
@@ -4771,7 +4771,7 @@ html body .hc-side.call{color:#86EFAC;background:rgba(34,197,94,.14);border:1px 
 html body .hc-side.put{color:#FDA4AF;background:rgba(244,63,94,.14);border:1px solid rgba(244,63,94,.4)}
 html body .hc-meta{font-size:11px;color:#B8AC94;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html body .hc-res{text-align:right}
-html body .hc-pnl{font-weight:800;font-size:14px;color:#E2E8F0;white-space:nowrap}
+html body .hc-pnl{font-weight:800;font-size:14px;color:#F0EBE2;white-space:nowrap}
 html body .hc-pnl.w{color:#22E07A}html body .hc-pnl.l{color:#FF5577}
 html body .hc-st{font-size:10px;font-weight:700;color:#B8AC94;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;white-space:nowrap}
 html body .hc .rc-dlbtn{width:30px;height:30px}
@@ -4828,8 +4828,8 @@ html body #screenTrade #modeReal::before,html body #fsTradeOverlay #fsBtnReal::b
 /* ===== v2246 — Plein écran : DÉMO / RÉEL avec les mêmes couleurs que l'écran normal, même taille, « + » au milieu ;
    solde orange en démo, vert en réel ===== */
 html body #fsTradeOverlay .fs-mode-switch .fs-mode-btn{flex:0 0 auto!important;width:clamp(58px,17vw,124px)!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;justify-content:center!important;text-align:center!important;transform:none!important;display:flex!important;align-items:center!important;height:clamp(26px,7vw,32px)!important;min-height:0!important;padding:0 4px!important;line-height:1!important;white-space:nowrap!important;overflow:hidden!important;gap:clamp(4px,1.2vw,7px)!important}
-html body #fsTradeOverlay #fsBtnDemo:not(.on){background:#0E131D!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #fsTradeOverlay #fsBtnReal:not(.on){background:#0E131D!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
+html body #fsTradeOverlay #fsBtnDemo:not(.on){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
+html body #fsTradeOverlay #fsBtnReal:not(.on){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
 html body #fsTradeOverlay #fsBtnDemo.on{background:linear-gradient(135deg,#FFB300,#FF6D00)!important;color:#1a0d00!important;border:1px solid rgba(255,171,64,.8)!important;box-shadow:0 0 14px rgba(255,109,0,.45)!important}
 html body #fsTradeOverlay #fsBtnReal.on{background:linear-gradient(135deg,#FFE082,#00E676 55%,#00C853)!important;color:#04140a!important;border:1px solid rgba(255,215,0,.7)!important;box-shadow:0 0 14px rgba(0,230,118,.45)!important}
 html body #fsTradeOverlay #fsTopMid:where(.hz-fdemo):not(#oroQ):not(.oroQ) #fsTopBalance{color:#FFB21A!important;-webkit-text-fill-color:#FFB21A!important}
@@ -5376,7 +5376,7 @@ html body .defi-chip.hidden{display:none!important}
 html body .defi-chip .dc-mk{letter-spacing:.06em}
 html body .defi-chip .dc-dots{color:#F2B33D;letter-spacing:1px}
 html.fs-trade body .defi-chip{top:calc(env(safe-area-inset-top,0px) + 2px)}
-html body .defi-win{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(3,5,15,.55);animation:dwIn .3s ease-out;pointer-events:none}
+html body .defi-win{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(14,10,4,.55);animation:dwIn .3s ease-out;pointer-events:none}
 html body .defi-win .dw-in{text-align:center;padding:22px 28px;border-radius:22px;background:radial-gradient(circle at 50% 0%,rgba(242,179,61,.35),rgba(34,26,9,.97) 70%);border:1px solid rgba(242,179,61,.6);box-shadow:0 0 60px rgba(242,179,61,.35)}
 html body .defi-win .dw-cup{font-size:46px}
 html body .defi-win .dw-t{font-weight:900;font-size:20px;color:#F2B33D;letter-spacing:.05em;text-transform:uppercase}
@@ -5498,7 +5498,7 @@ html body #portalModal .defi-dots{display:none!important}
 html body #portalModal .defi-rule{font-size:15px}
 /* v2411 — Portail : plus de message « mode test », plus de taches de couleur (seulement les étoiles et l'emblème), page qui défile. */
 html body #portalModal .portal-test{display:none!important}
-html body #portalModal .portal-box{background:linear-gradient(180deg,#261D0A 0%,#1D1607 60%,#060918 100%)!important}
+html body #portalModal .portal-box{background:linear-gradient(180deg,#261D0A 0%,#1D1607 60%,#161108 100%)!important}
 html body #portalModal .portal-box{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 html body #portalModal .defi-how p:first-of-type{font-size:14px;font-weight:700;color:#FFE6A6}
 /* v2412 — Portail : tout est écrit directement (plus de « Comment ça marche ? »), la page tient sur un seul écran sans défiler. */
@@ -5773,7 +5773,7 @@ html body #portalModal .tp-medal .rb{fill:#9A7A3B}
 html body #portalModal .tp1 .md{fill:#F2B33D}
 html body #portalModal .tp1 .mi{fill:#FFE19A}
 html body #portalModal .tp2 .md{fill:#CFC4AE}
-html body #portalModal .tp2 .mi{fill:#E6ECF7}
+html body #portalModal .tp2 .mi{fill:#F7F1E6}
 html body #portalModal .tp3 .md{fill:#C27A3A}
 html body #portalModal .tp3 .mi{fill:#E9A86A}
 html body #portalModal .tp-step{width:100%;margin-top:4px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,rgba(242,179,61,.28),rgba(242,179,61,.05));border:1px solid rgba(242,179,61,.30);border-bottom:0}
@@ -6171,7 +6171,7 @@ html body #portalModal#portalModal#portalModal.tabs-on .portal-tabs{margin-top:8
 /* Onglets réservés (visiteur) : un petit cadenas doré. */
 html body #portalModal .pt-tab.locked{position:relative}
 html body #portalModal .pt-tab.locked::after{content:"";position:absolute;top:4px;right:6px;width:12px;height:12px;border-radius:50%;
-  background:#F2B33D url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='11' width='12' height='9' rx='2' fill='%231a1206'/%3E%3Cpath d='M8.5 11V8.5a3.5 3.5 0 0 1 7 0V11' fill='none' stroke='%231a1206' stroke-width='2.4'/%3E%3C/svg%3E") center/9px no-repeat;box-shadow:0 0 0 1.5px rgba(10,8,24,.9)}
+  background:#F2B33D url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='11' width='12' height='9' rx='2' fill='%231a1206'/%3E%3Cpath d='M8.5 11V8.5a3.5 3.5 0 0 1 7 0V11' fill='none' stroke='%231a1206' stroke-width='2.4'/%3E%3C/svg%3E") center/9px no-repeat;box-shadow:0 0 0 1.5px rgba(24,19,8,.9)}
 /* Invitation : les 2 grandes cases toujours sur la même ligne, même hauteur, texte jamais coupé. */
 html body #portalModal#portalModal .aff-big{display:flex!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:6px!important}
 html body #portalModal#portalModal .aff-big b{flex:1 1 0!important;min-width:0!important;display:flex!important;align-items:center;justify-content:center;text-align:center;white-space:normal!important;
@@ -6278,7 +6278,7 @@ html body #portalModal#portalModal :is(.aff-big b,.bon-big)::after{content:"";po
   background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);animation:oroShine 4.5s ease-in-out infinite}
 @keyframes oroShine{0%,62%{left:-60%}100%{left:130%}}
 /* Pastilles 1-2-3 des étapes : couleur de la page. */
-html body #portalModal .aff-steps3 li > span{background:linear-gradient(145deg,rgb(var(--tc2)),rgb(var(--tc)))!important;color:#160C24!important;box-shadow:0 0 10px rgba(var(--tc),.55)!important}
+html body #portalModal .aff-steps3 li > span{background:linear-gradient(145deg,rgb(var(--tc2)),rgb(var(--tc)))!important;color:#241C0C!important;box-shadow:0 0 10px rgba(var(--tc),.55)!important}
 /* Barre du bonus : dégradé vivant qui scintille. */
 html body #portalModal .bm-bar i{background:linear-gradient(90deg,#E0A824,#EAC780,#2EE59D,#E0A824)!important;background-size:200% 100%!important;animation:oroBar 3s linear infinite;box-shadow:0 0 12px rgba(224,168,36,.6)}
 @keyframes oroBar{0%{background-position:0 0}100%{background-position:200% 0}}
@@ -6289,7 +6289,7 @@ html body #portalModal :is(#defiActivate,#defiTrade,#affShare,#topPlay,#bonActiv
 @keyframes oroBreath{0%,100%{box-shadow:0 4px 14px rgba(242,179,61,.25)}50%{box-shadow:0 4px 26px rgba(242,179,61,.6)}}
 
 /* ===== Notifications (défi commencé, défi gagné, bonus reçu, cadeau d'ami, inscription) : explosion d'étoiles. ===== */
-html body .defi-win{background:radial-gradient(circle at 50% 50%,rgba(80,60,20,.55),rgba(3,4,14,.78))!important}
+html body .defi-win{background:radial-gradient(circle at 50% 50%,rgba(80,60,20,.55),rgba(13,10,4,.78))!important}
 html body .defi-win .dw-in{position:relative;overflow:visible!important;min-width:250px;max-width:300px;padding:26px 26px 22px!important;
   background:radial-gradient(circle at 50% -10%,rgba(255,210,122,.45),rgba(242,193,78,.22) 45%,rgba(32,24,9,.97) 75%)!important;
   border:1px solid rgba(255,210,122,.7)!important;box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 50px rgba(255,190,80,.35),0 0 110px rgba(242,193,78,.35)!important;
@@ -6356,7 +6356,7 @@ html body #portalModal .gift-scene .gs-dust{inset:0;opacity:.9;background:
   radial-gradient(1.2px 1.2px at 35% 14%,#FFE6B0,transparent 60%),radial-gradient(1px 1px at 48% 80%,#fff,transparent 60%),
   radial-gradient(1.5px 1.5px at 63% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 72% 70%,#F8ECD3,transparent 60%),
   radial-gradient(1.3px 1.3px at 88% 12%,#fff,transparent 60%),radial-gradient(1px 1px at 93% 58%,#fff,transparent 60%),
-  radial-gradient(1px 1px at 4% 88%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 56% 46%,#BFF7FF,transparent 60%);
+  radial-gradient(1px 1px at 4% 88%,#fff,transparent 60%),radial-gradient(1.2px 1.2px at 56% 46%,#EFE4CF,transparent 60%);
   animation:gsTwinkle 3.5s ease-in-out infinite alternate}
 @keyframes gsTwinkle{0%{opacity:.55}100%{opacity:1}}
 /* Galaxie en spirale qui tourne lentement. */
@@ -6503,8 +6503,8 @@ html body #portalModal .tr.tt1 em{display:grid;place-items:center;width:26px;hei
   background:radial-gradient(circle at 35% 30%,#FFF4CF,#F6C453 55%,#C77A14);box-shadow:0 0 10px rgba(255,200,90,.6)}
 html body #portalModal .tr.tt1 b{color:#FFF3D6!important}
 html body #portalModal .tr.tt2{border:1px solid rgba(236,203,136,.40)!important;background:linear-gradient(90deg,rgba(236,203,136,.13),rgba(236,203,136,.03))!important}
-html body #portalModal .tr.tt2 em{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-style:normal;font-weight:900;color:#06323A!important;
-  background:radial-gradient(circle at 35% 30%,#E6FCFF,#ECCB88 55%,#B8892B)}
+html body #portalModal .tr.tt2 em{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-style:normal;font-weight:900;color:#302510!important;
+  background:radial-gradient(circle at 35% 30%,#F9F5EC,#ECCB88 55%,#B8892B)}
 html body #portalModal .tr.tt3{border:1px solid rgba(242,220,175,.35)!important;background:linear-gradient(90deg,rgba(242,220,175,.11),rgba(242,220,175,.02))!important}
 html body #portalModal .tr.tt3 em{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-weight:900;color:#4A3710!important;
   background:radial-gradient(circle at 35% 30%,#F3E9FF,#F2DCAF 55%,#C8912E)}
@@ -8210,7 +8210,7 @@ html body #tradeWrap#tradeWrap#tradeWrap .chart-card::after,html body #fsTradeOv
 /* v2476 — Égalité : pastille argent pleine, rond blanc et argent avec « = » posé au bord (même style que le gain). */
 html body .chart-stage .chart-outcome.show.tie.chart-outcome{padding:0 11px 0 19px!important;margin-left:13px!important;height:22px!important;min-height:22px!important;border-radius:999px!important;
   font-size:12px!important;font-weight:900!important;color:#fff!important;white-space:nowrap!important;overflow:visible!important;text-shadow:0 1px 1px rgba(0,0,0,.3)!important;
-  background:linear-gradient(180deg,#BDB19A,#82765E)!important;border:1px solid rgba(226,232,240,.85)!important;
+  background:linear-gradient(180deg,#BDB19A,#82765E)!important;border:1px solid rgba(240,235,226,.85)!important;
   box-shadow:0 3px 10px rgba(130,118,94,.5),inset 0 1px 0 rgba(255,255,255,.3)!important;backdrop-filter:none!important}
 html body .chart-stage .chart-outcome.tie .oc-ic{position:absolute!important;left:-13px;top:50%;margin-top:-13px;width:26px!important;height:26px!important;border-radius:50%;display:grid;place-items:center;
   background:radial-gradient(circle at 34% 28%,#fff 0,#F1F5F9 30%,#E1DACB 62%,#B8AC94 85%,#8B7E64 100%)!important;box-shadow:0 0 0 2px #fff,0 2px 5px rgba(0,0,0,.35)!important}
@@ -8221,7 +8221,7 @@ html body .chart-stage .chart-outcome.tie .oc-ic svg{width:13px!important;height
 .learn-modal .lg-oc-row small{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#EDE2CC}
 .learn-modal .lg-oc{position:relative;display:inline-flex;align-items:center;height:22px;padding:0 11px;border-radius:999px;font-size:12.5px;font-weight:900;color:#fff;white-space:nowrap;text-shadow:0 1px 1px rgba(0,0,0,.28)}
 .learn-modal .lg-oc.win{padding-left:19px;background:linear-gradient(180deg,#2FD06B,#15993F);border:1px solid rgba(187,247,208,.85);box-shadow:0 3px 10px rgba(22,163,74,.55)}
-.learn-modal .lg-oc.tie{padding-left:19px;font-size:12px;background:linear-gradient(180deg,#BDB19A,#82765E);border:1px solid rgba(226,232,240,.85);box-shadow:0 3px 10px rgba(130,118,94,.5)}
+.learn-modal .lg-oc.tie{padding-left:19px;font-size:12px;background:linear-gradient(180deg,#BDB19A,#82765E);border:1px solid rgba(240,235,226,.85);box-shadow:0 3px 10px rgba(130,118,94,.5)}
 .learn-modal .lg-oc.lose{font-size:11.5px;background:linear-gradient(180deg,#F2566A,#C81E3A);border:1px solid rgba(254,205,211,.7);box-shadow:0 3px 10px rgba(200,30,58,.45)}
 .learn-modal .lg-oc i{position:absolute;left:-13px;top:50%;margin-top:-13px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 2px #fff,0 2px 5px rgba(0,0,0,.35)}
 .learn-modal .lg-oc.win i{background:radial-gradient(circle at 34% 28%,#fff 0,#E9FFF1 26%,#86EFAC 58%,#22C55E 82%,#15803D 100%)}
@@ -9058,7 +9058,7 @@ html body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#
 @media (max-width:820px){ #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{margin-left:6px!important} }
 
 /* v2541 — fenêtre « Wave est en maintenance » (Côte d'Ivoire / Sénégal), juste avant la page Flutterwave. */
-#waveNotice.wave-notice{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,22,.72)}
+#waveNotice.wave-notice{position:fixed;inset:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(20,16,7,.72)}
 #waveNotice .wn-box{width:min(340px,100%);background:linear-gradient(180deg,#443415,#30250E);border:1px solid rgba(242,219,173,.28);border-radius:20px;padding:18px 16px 14px;text-align:center;color:#FCF7ED;box-shadow:0 14px 40px rgba(0,0,0,.55)}
 #waveNotice .wn-wave{position:relative;width:52px;height:52px;margin:0 auto 10px}
 #waveNotice .wn-wave img{width:52px;height:52px;border-radius:14px;opacity:.55;filter:grayscale(.6)}
@@ -9077,7 +9077,7 @@ html body #depositModal .pl-bank svg{width:14px;height:14px;fill:#FCD34D;flex:0 
 
 /* v2544 — nouveaux logos de « Carte & paiement instantané » (couleurs des marques). */
 html body #depositModal .pl-opay{background:#1DCF9F;color:#073B2E;font-weight:900}
-html body #depositModal .pl-ussd{background:#2B2F3A;color:#fff}
+html body #depositModal .pl-ussd{background:#3A352B;color:#fff}
 html body #depositModal .pl-ussd b{color:#FCD34D;margin-right:2px}
 html body #depositModal .pl-telecel{background:#E30613;color:#fff;text-transform:lowercase}
 html body #depositModal .pl-tigo{background:#6A4C11;color:#fff}
@@ -9285,7 +9285,7 @@ html body #depositModal#depositModal .pay-momo-grid .pm-op{flex:0 0 calc((100% -
 /* v2622 — fenêtre de paiement Mobile Money intégrée (plein écran sur téléphone, centrée sur PC / TV). */
 html body #payFrameModal{z-index:260!important}
 html body #payFrameModal .pay-frame-box{position:fixed;inset:0;display:flex;flex-direction:column;background:#30240B;border:0;border-radius:0;overflow:hidden}
-html body #payFrameModal .pay-frame-head{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:48px;padding:0 8px 0 14px;padding-top:env(safe-area-inset-top);box-sizing:content-box;background:linear-gradient(90deg,#0f4a4a,#665024);color:#fff;border-bottom:1px solid rgba(126,231,192,.35)}
+html body #payFrameModal .pay-frame-head{flex:0 0 auto;display:flex;align-items:center;gap:8px;height:48px;padding:0 8px 0 14px;padding-top:env(safe-area-inset-top);box-sizing:content-box;background:linear-gradient(90deg,#433416,#665024);color:#fff;border-bottom:1px solid rgba(126,231,192,.35)}
 html body #payFrameModal .pay-frame-head b{flex:1 1 auto;font-size:15px;font-weight:800}
 html body #payFrameModal .pay-frame-lock{width:18px;height:18px;color:#4ADE80;flex:0 0 18px}
 html body #payFrameModal .pay-frame-close{width:38px;height:38px;border-radius:50%;border:2px solid rgba(126,231,192,.7);background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
@@ -9419,7 +9419,7 @@ html body #otpModal #err-otpCode{white-space:nowrap;overflow:hidden;text-overflo
 /* v2661 (propriétaire) — messages « Compte réel / Bravo / Prêt » pour les visiteurs non inscrits. */
 #coachModal{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;visibility:hidden}
 #coachModal.on{pointer-events:auto;visibility:visible}
-#coachModal .coach-dim{position:absolute;inset:0;background:rgba(5,3,15,.62);opacity:0;transition:opacity .25s}
+#coachModal .coach-dim{position:absolute;inset:0;background:rgba(14,10,4,.62);opacity:0;transition:opacity .25s}
 #coachModal.on .coach-dim{opacity:1}
 #coachModal .coach-card{position:relative;width:min(420px,calc(100% - 28px));margin:0 0 calc(18px + env(safe-area-inset-bottom,0px));border-radius:24px;padding:20px 18px 14px;
   background:linear-gradient(180deg,#664F22,#392C13);border:1.5px solid rgba(245,197,24,.55);box-shadow:0 0 30px rgba(245,197,24,.18),0 20px 40px rgba(0,0,0,.5);
@@ -9685,7 +9685,7 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2) #topbarCta#topbarCta#topbarCta #btnOpenDeposit .dep-bolt::before{color:#E7755E!important;-webkit-text-fill-color:#E7755E!important}
 /* Menu des langues : liste simple et transparente (plus de cases lumineuses) */
 html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu{background:rgba(40,31,13,.94)!important;background-image:none!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:0 14px 30px rgba(0,0,0,.45)!important;border-radius:16px!important;padding:6px!important;gap:2px!important}
-html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn{background:none!important;border:0!important;box-shadow:none!important;border-radius:10px!important;padding:8px 10px!important;color:#E6E9F5!important}
+html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn{background:none!important;border:0!important;box-shadow:none!important;border-radius:10px!important;padding:8px 10px!important;color:#F5F0E6!important}
 html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn:hover{background:rgba(255,255,255,.06)!important}
 html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn.on{background:rgba(245,197,24,.1)!important;color:#FFD27A!important}
 html:root body .lang-dd-menu.lang-dd-menu.lang-dd-menu .lang-btn *{box-shadow:none!important}
@@ -10173,7 +10173,7 @@ html[dir="rtl"] #casinoModal .cs-back svg{transform:scaleX(-1)}
 #casinoModal .cs-tile{position:relative;overflow:hidden;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:start;border:0;border-radius:20px;padding:13px 12px;min-height:122px;color:#fff;
   background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 @supports (background:color-mix(in srgb,red 10%,blue)){
-  #casinoModal .cs-tile{background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--tc) 40%,transparent),transparent 62%),linear-gradient(160deg,color-mix(in srgb,var(--tc) 22%,rgba(30,14,40,.92)),rgba(18,8,26,.94));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 50%,transparent),0 10px 24px -14px var(--tc)}
+  #casinoModal .cs-tile{background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--tc) 40%,transparent),transparent 62%),linear-gradient(160deg,color-mix(in srgb,var(--tc) 22%,rgba(40,31,14,.92)),rgba(18,8,26,.94));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 50%,transparent),0 10px 24px -14px var(--tc)}
 }
 #casinoModal .cs-tile.big{grid-column:1/-1;min-height:120px;flex-direction:row;align-items:center;gap:14px}
 #casinoModal .cs-ti{width:54px;height:54px;flex:0 0 54px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
@@ -10181,7 +10181,7 @@ html[dir="rtl"] #casinoModal .cs-back svg{transform:scaleX(-1)}
 #casinoModal .cs-ico{width:100%;height:100%;display:block}
 #casinoModal .cs-tile b{font:800 15.5px/1.2 "Plus Jakarta Sans",system-ui,sans-serif;overflow-wrap:anywhere;position:relative;z-index:1}
 #casinoModal .cs-tile.big b{font-size:21px}
-#casinoModal .cs-tile small{color:#E4D9F0;font-size:12px;line-height:1.3;overflow-wrap:anywhere;position:relative;z-index:1}
+#casinoModal .cs-tile small{color:#F0E8D9;font-size:12px;line-height:1.3;overflow-wrap:anywhere;position:relative;z-index:1}
 #casinoModal .cs-tile.big small{display:block}
 #casinoModal .cs-tile.big > b,#casinoModal .cs-tile.big > small{flex:0 1 auto}
 #casinoModal .cs-tile.big{display:grid;grid-template-columns:66px 1fr;grid-template-rows:auto auto;column-gap:14px;row-gap:2px}
@@ -10269,7 +10269,7 @@ html[dir="rtl"] #casinoModal .cs-plane{right:auto;left:16px}
 #casinoModal .rl-ball,#casinoModal .clr-ball{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;font:900 46px "Plus Jakarta Sans",system-ui,sans-serif;background:radial-gradient(circle at 35% 30%,#635B4B,#272011);box-shadow:inset 0 0 0 6px rgba(255,255,255,.2),0 10px 26px rgba(0,0,0,.5)}
 #casinoModal .rl-ball.r,#casinoModal .clr-ball.r{background:radial-gradient(circle at 35% 30%,#f87171,#991b1b)}
 #casinoModal .rl-ball.z,#casinoModal .clr-ball.g{background:radial-gradient(circle at 35% 30%,#4ade80,#166534)}
-#casinoModal .rl-ball.k{background:radial-gradient(circle at 35% 30%,#635B4B,#030712)}
+#casinoModal .rl-ball.k{background:radial-gradient(circle at 35% 30%,#635B4B,#100C05)}
 #casinoModal .clr-ball.rv{background:linear-gradient(135deg,#ef4444 50%,#E7BE6B 50%)}
 #casinoModal .clr-ball.gv{background:linear-gradient(135deg,#22c55e 50%,#E7BE6B 50%)}
 #casinoModal .cs-nums{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
@@ -10292,7 +10292,7 @@ html[dir="rtl"] #casinoModal .cs-plane{right:auto;left:16px}
 /* grattage */
 #casinoModal .scr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:280px}
 #casinoModal .scr span{height:72px;border-radius:14px;display:grid;place-items:center;font-size:34px;background:#fff}
-#casinoModal .scr span i{display:block;width:100%;height:100%;border-radius:14px;background:repeating-linear-gradient(45deg,#C0C4CC 0 6px,#A3A8B3 6px 12px)}
+#casinoModal .scr span i{display:block;width:100%;height:100%;border-radius:14px;background:repeating-linear-gradient(45deg,#CCC8C0 0 6px,#B3AEA3 6px 12px)}
 #casinoModal .scr span.op{animation:ghPop .3s ease-out}
 /* penalty */
 #casinoModal .pen{min-height:230px;justify-content:flex-start;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(34,197,94,.25))}
@@ -10301,7 +10301,7 @@ html[dir="rtl"] #casinoModal .cs-plane{right:auto;left:16px}
 #casinoModal .goal .kp{position:absolute;left:50%;bottom:0;font-size:46px;transform:translateX(-50%);font-style:normal}
 #casinoModal .pen .ball{position:absolute;left:50%;bottom:16px;font-size:34px;transform:translate(-50%,0)}
 /* avion */
-#casinoModal .crash-stage{min-height:230px;background:radial-gradient(90% 80% at 20% 100%,rgba(255,61,110,.25),transparent 70%),linear-gradient(180deg,#2E220A,#0d0618)}
+#casinoModal .crash-stage{min-height:230px;background:radial-gradient(90% 80% at 20% 100%,rgba(255,61,110,.25),transparent 70%),linear-gradient(180deg,#2E220A,#161108)}
 #casinoModal .crash-sky{position:absolute;inset:0;width:100%;height:100%}
 #casinoModal .plane{position:absolute;left:0;top:0;font-size:34px;color:#FF5E7E;filter:drop-shadow(0 0 10px rgba(255,94,126,.8));will-change:transform}
 #casinoModal .crash-n{position:relative;z-index:2;font:900 54px "Plus Jakarta Sans",system-ui,sans-serif;text-shadow:0 4px 18px rgba(0,0,0,.6)}
@@ -10320,7 +10320,7 @@ html.oro-lite #casinoModal .cs-res.win,html.oro-lite #casinoModal .mn button.ok{
 #casinoModal [hidden]{display:none!important}
 
 /* ===== v2690b — CASINO & PARIS : style « grandes plateformes » (sobre, sombre, pro), réel seulement ===== */
-html:root body #casinoModal#casinoModal > .modal-box{background:radial-gradient(80% 35% at 50% 0%,rgba(31,216,107,.10),transparent 70%),linear-gradient(180deg,#231C0F 0%,#0c141d 60%,#0a1118 100%)!important;color:#E8EEF5}
+html:root body #casinoModal#casinoModal > .modal-box{background:radial-gradient(80% 35% at 50% 0%,rgba(31,216,107,.10),transparent 70%),linear-gradient(180deg,#231C0F 0%,#1D170C 60%,#18130A 100%)!important;color:#E8EEF5}
 #casinoModal .cs-bar{position:sticky;top:-14px;z-index:6;margin:-14px -14px 10px;padding:12px 14px 10px;background:rgba(35,28,15,.96);border-bottom:1px solid #39301D}
 #casinoModal .cs-back{background:#332B1A;box-shadow:none}
 #casinoModal .cs-bal{background:#332B1A;box-shadow:inset 0 0 0 1px #4A3D24}
@@ -10381,7 +10381,7 @@ html body #casinoModal .coin3d i{background:none!important;box-shadow:0 14px 34p
 #casinoModal .whl-leg{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 #casinoModal .whl-leg span{font:800 11px system-ui;color:#fff;padding:3px 8px;border-radius:8px;background:var(--c)}
 /* avion */
-html body #casinoModal .crash-stage{background:radial-gradient(80% 70% at 15% 100%,rgba(225,29,72,.22),transparent 70%),linear-gradient(180deg,#221B0D,#0a1019);overflow:hidden}
+html body #casinoModal .crash-stage{background:radial-gradient(80% 70% at 15% 100%,rgba(225,29,72,.22),transparent 70%),linear-gradient(180deg,#221B0D,#19140A);overflow:hidden}
 #casinoModal .crash-sky{position:absolute;inset:0;width:100%;height:100%}
 html body #casinoModal .plane{position:absolute;left:0;top:0;width:64px;height:40px;font-size:0;filter:drop-shadow(0 0 14px rgba(255,45,85,.65))}
 #casinoModal .plane svg{width:100%;height:100%;display:block}
@@ -10437,15 +10437,15 @@ html body #casinoModal .cs-grid{grid-template-columns:repeat(2,minmax(0,1fr))!im
 html body #casinoModal .cs-tile{border-radius:18px}
 html body #casinoModal .cs-tile .cs-ti{aspect-ratio:1/0.78;position:relative;
   background:radial-gradient(1.2px 1.2px at 18% 22%,rgba(255,255,255,.9),transparent 60%),radial-gradient(1px 1px at 78% 18%,rgba(255,255,255,.8),transparent 60%),radial-gradient(1.3px 1.3px at 62% 74%,rgba(255,255,255,.75),transparent 60%),radial-gradient(1px 1px at 30% 80%,rgba(255,255,255,.6),transparent 60%),
-    radial-gradient(70% 70% at 50% 40%,color-mix(in srgb,var(--tc) 60%,transparent),transparent 72%),linear-gradient(160deg,color-mix(in srgb,var(--tc) 40%,#231C0F),#0b121a)!important}
+    radial-gradient(70% 70% at 50% 40%,color-mix(in srgb,var(--tc) 60%,transparent),transparent 72%),linear-gradient(160deg,color-mix(in srgb,var(--tc) 40%,#231C0F),#1A150B)!important}
 html body #casinoModal .cs-tile .cs-ti::after{content:"";position:absolute;right:-14%;bottom:-30%;width:62%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.35),color-mix(in srgb,var(--tc) 80%,#000) 55%,transparent 72%);opacity:.45;pointer-events:none}
 html body #casinoModal .cs-tile .cs-ti .cs-ico{width:54%;position:relative;z-index:1}
 html body #casinoModal .cs-tt{padding:9px 11px 11px}
 html body #casinoModal .cs-tt b{font-size:14.5px}
 html body #casinoModal .cs-tt small{font-size:11.5px}
 /* jeux ça-monte : thèmes */
-html body #casinoModal .crash-stage.th-jet{background:radial-gradient(80% 70% at 20% 100%,rgba(200,145,46,.28),transparent 70%),linear-gradient(180deg,#241C0B,#0a0814)}
-html body #casinoModal .crash-stage.th-rocket{background:radial-gradient(80% 70% at 80% 0%,rgba(247,215,116,.22),transparent 70%),radial-gradient(60% 50% at 10% 100%,rgba(226,177,79,.25),transparent 70%),linear-gradient(180deg,#1F1706,#03070d)}
+html body #casinoModal .crash-stage.th-jet{background:radial-gradient(80% 70% at 20% 100%,rgba(200,145,46,.28),transparent 70%),linear-gradient(180deg,#241C0B,#141008)}
+html body #casinoModal .crash-stage.th-rocket{background:radial-gradient(80% 70% at 80% 0%,rgba(247,215,116,.22),transparent 70%),radial-gradient(60% 50% at 10% 100%,rgba(226,177,79,.25),transparent 70%),linear-gradient(180deg,#1F1706,#0C0904)}
 html body #casinoModal .plane{transition:opacity .35s ease,filter .35s}
 html body #casinoModal .plane.gone{opacity:0;filter:blur(3px)}
 html body #casinoModal .th-jet .plane{filter:drop-shadow(0 0 12px rgba(200,145,46,.7))}
@@ -10542,7 +10542,7 @@ html body #casinoModal .cs-game > .cs-stage{flex:1 1 auto;min-height:150px;posit
 html[dir="rtl"] #casinoModal .cs-gname{left:auto;right:10px}
 /* résultat : bannière au-dessus de l'écran du jeu (ne prend pas de place) */
 html body #casinoModal .cs-stage > .cs-res{position:absolute;left:50%;top:44px;z-index:6;min-height:0;min-width:150px;padding:10px 18px;border-radius:16px;transform:translate(-50%,-10px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
-  display:flex;flex-direction:column;align-items:center;background:rgba(10,8,24,.82)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)!important;animation:none!important}
+  display:flex;flex-direction:column;align-items:center;background:rgba(24,19,8,.82)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)!important;animation:none!important}
 html body #casinoModal .cs-stage > .cs-res.win,html body #casinoModal .cs-stage > .cs-res.lose{opacity:1;transform:translate(-50%,0)}
 html body #casinoModal .cs-stage > .cs-res.win{background:linear-gradient(135deg,rgba(22,163,74,.92),rgba(5,95,70,.92))!important;box-shadow:0 0 0 2px #FFD24A,0 12px 30px -8px rgba(34,197,94,.8)!important}
 html body #casinoModal .cs-stage > .cs-res.win b{color:#fff;font:900 24px "Plus Jakarta Sans",system-ui,sans-serif;text-shadow:0 2px 10px rgba(0,0,0,.4)}
@@ -10570,12 +10570,12 @@ html body #casinoModal .ap-stage .ap-row button{height:min(34px,3.6vh)}
 html body #casinoModal .whl-leg{gap:4px}
 html body #casinoModal .whl-leg span{font-size:10px;padding:2px 6px}
 /* page « ? » comment jouer */
-#casinoModal .cs-sheet{position:absolute;inset:0;z-index:20;display:flex;align-items:flex-end;background:rgba(5,3,15,.6)}
+#casinoModal .cs-sheet{position:absolute;inset:0;z-index:20;display:flex;align-items:flex-end;background:rgba(14,10,4,.6)}
 #casinoModal .cs-sheet[hidden]{display:none}
 #casinoModal .cs-sheet-in{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:22px 18px calc(env(safe-area-inset-bottom,0px) + 18px);border-radius:24px 24px 0 0;background:linear-gradient(180deg,#4F3B12,#30240B);box-shadow:0 -10px 40px rgba(0,0,0,.6)}
 #casinoModal .cs-sheet-in .cs-orb{width:84px}
 #casinoModal .cs-sheet-in b{font:900 22px "Plus Jakarta Sans",system-ui,sans-serif}
-#casinoModal .cs-sheet-in p{margin:0;color:#E4E7F5;font-size:15px;line-height:1.5;max-width:420px}
+#casinoModal .cs-sheet-in p{margin:0;color:#F5EFE4;font-size:15px;line-height:1.5;max-width:420px}
 #casinoModal .cs-sheet-in small{color:#C4B69A;font-size:11.5px}
 #casinoModal .cs-sheet-in .cs-go{width:100%;max-width:360px}
 /* paris : page à part (onglet) */
@@ -10628,7 +10628,7 @@ html body #casinoModal .tw-stage,html body #casinoModal .ap-stage{padding:44px 1
 #casinoModal .cs-pump:disabled{opacity:.45}
 /* v2693 — course : route, ligne d'arrivée ; personnages qui flottent ; grattage au doigt */
 html body #casinoModal .race-stage{padding:44px 8px 10px!important;justify-content:center}
-#casinoModal .road{position:relative;width:100%;border-radius:12px;padding:6px 0;background:linear-gradient(180deg,#2b2f36,#1f2329);box-shadow:inset 0 0 0 2px #e5e7eb}
+#casinoModal .road{position:relative;width:100%;border-radius:12px;padding:6px 0;background:linear-gradient(180deg,#36322B,#29261F);box-shadow:inset 0 0 0 2px #e5e7eb}
 html body #casinoModal .road .lane{height:min(38px,5vh);border-radius:0;background:none;border-bottom:2px dashed rgba(255,255,255,.35)}
 html body #casinoModal .road .lane:last-of-type{border-bottom:0}
 html body #casinoModal .road .lane em{left:4px;color:#AFA99C}
@@ -10684,17 +10684,17 @@ html body #casinoModal #csView.cs-grid > .cs-g:last-child:nth-child(3n+1){grid-c
 #casinoModal.in-game .cs-top{background:none!important}
 html body #casinoModal .cs-game{position:relative;isolation:isolate;margin:0 -14px;padding:0 14px;gap:6px}
 html body #casinoModal .cs-game::after{content:"";position:absolute;z-index:-1;left:-35%;right:-35%;top:calc(100% - 210px);aspect-ratio:1;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle at 30% 6%,rgba(255,255,255,.4) 0,rgba(255,255,255,0) 14%),repeating-linear-gradient(-14deg,rgba(255,255,255,.06) 0 4px,rgba(0,0,0,.08) 4px 14px),radial-gradient(circle at 50% 4%,var(--p1) 0%,var(--p2) 18%,color-mix(in srgb,var(--p2) 35%,#05030f) 52%);
+  background:radial-gradient(circle at 30% 6%,rgba(255,255,255,.4) 0,rgba(255,255,255,0) 14%),repeating-linear-gradient(-14deg,rgba(255,255,255,.06) 0 4px,rgba(0,0,0,.08) 4px 14px),radial-gradient(circle at 50% 4%,var(--p1) 0%,var(--p2) 18%,color-mix(in srgb,var(--p2) 35%,#0E0A04) 52%);
   box-shadow:0 0 0 2px rgba(255,210,140,.55),0 -18px 60px color-mix(in srgb,var(--p2) 80%,transparent)}
 html body #casinoModal .cs-game > .cs-stage{flex:1 1 auto;min-height:150px;margin:0 -14px;padding:8px 14px!important;border-radius:0!important;background:none!important;box-shadow:none!important;overflow:hidden}
 #casinoModal .cs-game > .cs-gname{position:static;display:flex;align-items:center;justify-content:center;gap:8px;padding:0;background:none;min-height:34px}
 #casinoModal .cs-game > .cs-gname b{display:block!important;font:900 19px "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.3px;text-shadow:0 2px 10px rgba(0,0,0,.45)}
-html body #casinoModal .cs-panel{background:rgba(6,3,20,.42)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.14)!important;border-radius:22px}
-html body #casinoModal .cs-game > .cs-res{background:rgba(6,3,20,.32)!important;box-shadow:none!important}
+html body #casinoModal .cs-panel{background:rgba(17,13,6,.42)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.14)!important;border-radius:22px}
+html body #casinoModal .cs-game > .cs-res{background:rgba(17,13,6,.32)!important;box-shadow:none!important}
 html body #casinoModal .cs-game > .cs-res:empty{background:none!important}
 /* couleur de fond = la couleur du jeu (décors inspirés des grands jeux) */
-html:root body #casinoModal#casinoModal.in-game > .modal-box{background:radial-gradient(90% 60% at 50% 20%,color-mix(in srgb,var(--p2) 70%,transparent),transparent 75%),linear-gradient(180deg,color-mix(in srgb,var(--p2) 70%,#201706),color-mix(in srgb,var(--p2) 35%,#06030f))!important}
-html:root body #casinoModal#casinoModal[data-g="crash"] > .modal-box{background:radial-gradient(120% 70% at 0% 100%,rgba(229,51,75,.5),transparent 60%),linear-gradient(180deg,#14061f,#2a0a1e)!important}
+html:root body #casinoModal#casinoModal.in-game > .modal-box{background:radial-gradient(90% 60% at 50% 20%,color-mix(in srgb,var(--p2) 70%,transparent),transparent 75%),linear-gradient(180deg,color-mix(in srgb,var(--p2) 70%,#201706),color-mix(in srgb,var(--p2) 35%,#0E0A04))!important}
+html:root body #casinoModal#casinoModal[data-g="crash"] > .modal-box{background:radial-gradient(120% 70% at 0% 100%,rgba(229,51,75,.5),transparent 60%),linear-gradient(180deg,#1C1609,#2a0a1e)!important}
 html:root body #casinoModal#casinoModal[data-g="jet"] > .modal-box{background:radial-gradient(90% 60% at 80% 10%,rgba(237,207,147,.45),transparent 70%),linear-gradient(180deg,#4A350C,#956D1D)!important}
 html:root body #casinoModal#casinoModal[data-g="rocket"] > .modal-box{background:radial-gradient(60% 40% at 85% 12%,rgba(233,195,119,.35),transparent 70%),linear-gradient(180deg,#312308,#755413)!important}
 html:root body #casinoModal#casinoModal[data-g="mines"] > .modal-box{background:radial-gradient(80% 50% at 50% 30%,rgba(232,193,114,.45),transparent 70%),linear-gradient(180deg,#8E6617,#5E440F)!important}
@@ -10710,7 +10710,7 @@ html:root body #casinoModal#casinoModal[data-g="coin"] > .modal-box{background:r
 html:root body #casinoModal#casinoModal[data-g="keno"] > .modal-box{background:radial-gradient(80% 50% at 50% 25%,rgba(236,204,141,.45),transparent 70%),linear-gradient(180deg,#A37D30,#4B3B1B)!important}
 html:root body #casinoModal#casinoModal[data-g="scratch"] > .modal-box{background:radial-gradient(80% 50% at 50% 25%,rgba(244,226,190,.45),transparent 70%),linear-gradient(180deg,#D99E28,#654910)!important}
 html:root body #casinoModal#casinoModal[data-g="hilo"] > .modal-box{background:radial-gradient(80% 55% at 50% 30%,rgba(253,186,116,.5),transparent 70%),linear-gradient(180deg,#ea580c,#7c2d12)!important}
-html:root body #casinoModal#casinoModal[data-g="dragon"] > .modal-box{background:radial-gradient(60% 50% at 20% 35%,rgba(226,177,79,.55),transparent 70%),radial-gradient(60% 50% at 80% 35%,rgba(249,115,22,.55),transparent 70%),linear-gradient(180deg,#352910,#0b0618)!important}
+html:root body #casinoModal#casinoModal[data-g="dragon"] > .modal-box{background:radial-gradient(60% 50% at 20% 35%,rgba(226,177,79,.55),transparent 70%),radial-gradient(60% 50% at 80% 35%,rgba(249,115,22,.55),transparent 70%),linear-gradient(180deg,#352910,#161108)!important}
 html:root body #casinoModal#casinoModal[data-g="baccarat"] > .modal-box{background:radial-gradient(90% 60% at 50% 30%,#D39822,transparent 75%),linear-gradient(180deg,#544017,#30240B)!important}
 html:root body #casinoModal#casinoModal[data-g="sicbo"] > .modal-box{background:radial-gradient(80% 55% at 50% 35%,rgba(251,113,133,.5),transparent 70%),linear-gradient(180deg,#9f1239,#3b0718)!important}
 html:root body #casinoModal#casinoModal[data-g="chests"] > .modal-box{background:linear-gradient(180deg,#F2C14E 0%,#A0731A 45%,#755515 100%)!important}
@@ -10795,7 +10795,7 @@ html body #casinoModal .tw-row button.trap{background:#3f1d1d}
 #casinoModal .pay2 span{display:flex;align-items:center;justify-content:center;gap:4px;padding:4px 6px;border-radius:12px;background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 #casinoModal .pay2 em{width:22px;height:22px;display:block}
 #casinoModal .pay2 em svg{width:100%;height:100%}
-#casinoModal .pay2 small{font:800 10px system-ui;color:#e2e8f0}
+#casinoModal .pay2 small{font:800 10px system-ui;color:#F0EBE2}
 #casinoModal .pay2 b{font:900 13px system-ui;color:#FDE047}
 #casinoModal .pay2.kn{grid-template-columns:repeat(3,1fr)}
 #casinoModal .pay2.kn small::after{content:" ✓"}
@@ -10879,7 +10879,7 @@ html body #casinoModal .rl-stage{position:relative}
 #casinoModal .rl-wheel svg{width:100%;height:100%;display:block}
 html body #casinoModal .rl-stage .rl-ball{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;font-size:26px;z-index:2;box-shadow:inset 0 0 0 3px rgba(255,255,255,.4),0 6px 16px rgba(0,0,0,.5)}
 html body #casinoModal .rl-ball.r{background:radial-gradient(circle at 35% 30%,#f87171,#b91c1c)}
-html body #casinoModal .rl-ball.k{background:radial-gradient(circle at 35% 30%,#635B4B,#030712)}
+html body #casinoModal .rl-ball.k{background:radial-gradient(circle at 35% 30%,#635B4B,#100C05)}
 html body #casinoModal .rl-ball.z{background:radial-gradient(circle at 35% 30%,#4ade80,#15803d)}
 /* ---- Dice / Target ---- */
 #casinoModal .dice-hero{width:min(96px,24vw,13vh)}
@@ -10899,7 +10899,7 @@ html body #casinoModal .whl-leg span{font-size:10px;padding:1px 5px;border-radiu
 #casinoModal .dr-dart{position:absolute;left:50%;top:50%;width:7%;aspect-ratio:20/60;opacity:0;z-index:2}
 #casinoModal .dr-dart svg{width:100%;height:100%;display:block}
 /* ---- page « ? » immergée ---- */
-#casinoModal .cs-sheet{background:rgba(5,3,15,.55)}
+#casinoModal .cs-sheet{background:rgba(14,10,4,.55)}
 #casinoModal .cs-sheet-in{position:relative;padding-top:72px;margin-top:60px;background:radial-gradient(90% 70% at 50% 0%,color-mix(in srgb,var(--p2,#E1AD46) 80%,transparent),transparent 75%),linear-gradient(180deg,color-mix(in srgb,var(--p2,#E1AD46) 55%,#201706),#201706)!important;box-shadow:0 -10px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.2)!important}
 #casinoModal .cs-sheet-in > .cs-pl.big{position:absolute;top:-60px;left:50%;margin-left:-60px}
 @media (max-height:640px){#casinoModal .cs-game > .cs-gname{min-height:26px}#casinoModal .cs-game > .cs-gname b{font-size:16px}#casinoModal .cs-pl.mini{width:26px}}
@@ -10945,7 +10945,7 @@ html:root body #casinoModal#casinoModal:not(.in-game) > .modal-box{background:
   radial-gradient(150% 40% at 50% 106%,#F4E2BE 0,#E7BE6B 24%,#B68421 44%,#654910 49.5%,rgba(244,226,190,.55) 50%,transparent 53%),
   radial-gradient(60% 30% at 92% 8%,rgba(236,72,153,.5),transparent 70%),radial-gradient(60% 35% at 0% 38%,rgba(226,177,79,.45),transparent 70%),radial-gradient(50% 25% at 100% 60%,rgba(200,145,46,.45),transparent 70%),
   linear-gradient(180deg,#4F3A10 0%,#3D2C0B 60%,#302308 100%)!important}
-html body #casinoModal .cs-panel{background:rgba(6,3,20,.26)!important;padding:8px 10px!important;gap:6px!important}
+html body #casinoModal .cs-panel{background:rgba(17,13,6,.26)!important;padding:8px 10px!important;gap:6px!important}
 html body #casinoModal .cs-chips button{background:rgba(255,255,255,.1)!important}
 .cs-pl > svg,#casinoModal .cs-pl > svg{left:17%;top:17%;width:66%;height:66%}
 #portalModal .whl-wrap{width:min(340px,88vw,46vh)}
@@ -10960,7 +10960,7 @@ html body #casinoModal .cs-chips button{background:rgba(255,255,255,.1)!importan
 .ls2-hero b{font:900 38px "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:-.5px;color:#fff;text-shadow:0 4px 18px rgba(16,185,129,.45)}
 .ls2-hero b i{font-style:normal;font-size:24px;color:#6EE7B7}
 .ls2-sec{display:flex;flex-direction:column;gap:8px}
-.ls2-sec > label{font:800 14px system-ui;color:#E2E8F0}
+.ls2-sec > label{font:800 14px system-ui;color:#F0EBE2}
 .ls2-fr{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
 .ls2-fr::-webkit-scrollbar{display:none}
 .ls2-fr button{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;width:62px;border:0;background:none;color:#fff;padding:0}
@@ -10980,7 +10980,7 @@ html body #casinoModal .cs-chips button{background:rgba(255,255,255,.1)!importan
 .ls2-go:disabled{opacity:.6}
 .ls2-alt{width:100%;min-height:46px;border:0;border-radius:16px;color:#fff;font:800 15px system-ui;background:rgba(255,255,255,.1)}
 .ls2-fee{margin:-6px 0 0;text-align:center;font:800 12px system-ui;color:#6EE7B7}
-.ls2-nodep{text-align:center;color:#E2E8F0;font-size:14px;margin:0}
+.ls2-nodep{text-align:center;color:#F0EBE2;font-size:14px;margin:0}
 .ls2-h{display:block;margin:18px 0 6px;font:900 16px "Plus Jakarta Sans",system-ui,sans-serif;color:#fff}
 .ls2-hist{display:flex;flex-direction:column}
 .ls2-day{margin:10px 0 4px;font:800 12px system-ui;color:#B8AC94;text-transform:uppercase;letter-spacing:.4px}
@@ -10993,7 +10993,7 @@ html body #casinoModal .cs-chips button{background:rgba(255,255,255,.1)!importan
 .ls2-row > span small{font:600 12px system-ui;color:#B8AC94}
 .ls2-row > strong{font:900 15px system-ui;white-space:nowrap}
 .ls2-row.in > strong{color:#6EE7B7}
-.ls2-sheet{position:fixed;inset:0;z-index:600;display:flex;align-items:flex-end;justify-content:center;background:rgba(3,2,12,.6)}
+.ls2-sheet{position:fixed;inset:0;z-index:600;display:flex;align-items:flex-end;justify-content:center;background:rgba(10,8,4,.6)}
 .ls2-sheet[hidden]{display:none}
 .ls2-sheet-in{width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 18px);border-radius:26px 26px 0 0;color:#fff;background:linear-gradient(180deg,#503D16,#32250C);box-shadow:0 -12px 40px rgba(0,0,0,.6);animation:ghPop .25s ease-out}
 .ls2-st{font:900 18px "Plus Jakarta Sans",system-ui,sans-serif;text-align:center}
@@ -11031,7 +11031,7 @@ html.oro-lite .ls2-conf{display:none}
 .ls2-rc-top b.in{color:#059669}
 .ls2-rc-top span{font:900 12px system-ui;letter-spacing:3px;color:#E1AD46}
 .ls2-rc-rows{padding:6px 16px 18px}
-.ls2-rc-rows p{display:flex;justify-content:space-between;gap:12px;margin:0;padding:9px 0;border-bottom:1px dashed #E2E8F0;font-size:13.5px}
+.ls2-rc-rows p{display:flex;justify-content:space-between;gap:12px;margin:0;padding:9px 0;border-bottom:1px dashed #F0EBE2;font-size:13.5px}
 .ls2-rc-rows p span{color:#8B7E64}
 .ls2-rc-rows p b{color:#2A210F;text-align:end;overflow-wrap:anywhere}
 
@@ -11070,7 +11070,7 @@ html.oro-lite .ls2-conf{display:none}
 html:root body #casinoModal#casinoModal:not(.in-game) > .modal-box{background:
   radial-gradient(1.2px 1.2px at 12% 14%,rgba(255,255,255,.9),transparent 60%),radial-gradient(1px 1px at 82% 10%,rgba(255,255,255,.8),transparent 60%),radial-gradient(1.3px 1.3px at 64% 46%,rgba(255,240,210,.85),transparent 60%),radial-gradient(1px 1px at 30% 62%,rgba(255,255,255,.7),transparent 60%),radial-gradient(1.2px 1.2px at 90% 70%,rgba(255,255,255,.75),transparent 60%),radial-gradient(1px 1px at 8% 86%,rgba(255,255,255,.6),transparent 60%),radial-gradient(1px 1px at 46% 92%,rgba(255,255,255,.6),transparent 60%),radial-gradient(1.1px 1.1px at 72% 28%,rgba(255,255,255,.7),transparent 60%),
   radial-gradient(70% 38% at 95% 6%,rgba(251,146,60,.55),transparent 70%),radial-gradient(60% 34% at 0% 45%,rgba(234,88,12,.4),transparent 70%),radial-gradient(70% 40% at 70% 100%,rgba(245,158,11,.38),transparent 70%),radial-gradient(50% 30% at 20% 90%,rgba(200,145,46,.35),transparent 70%),
-  linear-gradient(180deg,#1c0f2c 0%,#2a1124 55%,#1a0b1c 100%)!important}
+  linear-gradient(180deg,#2C220F 0%,#2a1124 55%,#1a0b1c 100%)!important}
 /* les 25 jeux tiennent sur un seul écran : 5 colonnes × 5 lignes */
 html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:min(10px,1.2vh) 4px!important;padding:2px 0 6px}
 @media (min-width:600px){html body #casinoModal #csView.cs-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
@@ -11176,7 +11176,7 @@ html:root body #depositModal#depositModal .pay-crypto-wall > .pay-crypto-cell:nt
 #casinoModal .sp-ico{width:18px;height:18px;flex:0 0 18px}
 #casinoModal .sp-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
 #casinoModal .sp-chips::-webkit-scrollbar{display:none}
-#casinoModal .sp-chips button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:0;border-radius:18px;color:#E2E8F0;font:800 13px system-ui;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+#casinoModal .sp-chips button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:0;border-radius:18px;color:#F0EBE2;font:800 13px system-ui;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 #casinoModal .sp-chips button.on{color:#04261b;background:linear-gradient(180deg,#4ade80,#16a34a);box-shadow:none}
 html body #casinoModal .sp-ev{padding:12px 12px 10px!important;border-radius:18px!important;background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important}
 html body #casinoModal .sp-top{align-items:center;color:#C8BDA7;font-size:11.5px;margin-bottom:8px}
@@ -11197,7 +11197,7 @@ html body #casinoModal .sp-mine svg{width:20px;height:20px;fill:none;stroke:#FDE
 #casinoModal .sp-empty{display:flex;flex-direction:column;align-items:center;gap:14px;padding:30px 16px;text-align:center}
 #casinoModal .sp-empty-ball{width:110px;height:110px;filter:drop-shadow(0 14px 22px rgba(0,0,0,.45))}
 #casinoModal .sp-empty-ball svg{width:100%;height:100%}
-#casinoModal .sp-empty b{font:800 15px system-ui;color:#E2E8F0;max-width:300px}
+#casinoModal .sp-empty b{font:800 15px system-ui;color:#F0EBE2;max-width:300px}
 html body #casinoModal .sp-slip{background:linear-gradient(180deg,#4A3916,#33270F)!important;box-shadow:0 -12px 30px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.14)!important}
 
 /* ===== v2697 (propriétaire) — plus de carré noir au toucher ; livre « comment jouer » ; grande roulette + bille ; dés qui roulent ; fléchette ;
@@ -11212,7 +11212,7 @@ html body #casinoModal .cs-help svg{width:26px;height:26px;fill:none;stroke:none
 #casinoModal .rl-big{position:relative;width:min(340px,92vw,46vh);aspect-ratio:1;margin:auto}
 html body #casinoModal .rl-big .rl-wheel{position:absolute;inset:0;width:100%;height:100%;transition:transform 2.6s cubic-bezier(.15,.7,.2,1);filter:drop-shadow(0 16px 26px rgba(0,0,0,.55))}
 #casinoModal .rl-orbit{position:absolute;inset:0;pointer-events:none}
-#casinoModal .rl-pearl{position:absolute;left:50%;top:5.5%;width:4.6%;aspect-ratio:1;margin-left:-2.3%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#e2e8f0 55%,#B8AC94);box-shadow:0 2px 4px rgba(0,0,0,.6)}
+#casinoModal .rl-pearl{position:absolute;left:50%;top:5.5%;width:4.6%;aspect-ratio:1;margin-left:-2.3%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#F0EBE2 55%,#B8AC94);box-shadow:0 2px 4px rgba(0,0,0,.6)}
 html body #casinoModal .rl-big .rl-ball{width:44px!important;height:44px!important;margin:-22px 0 0 -22px!important;font-size:17px!important;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5),0 4px 10px rgba(0,0,0,.5)!important}
 html body #casinoModal .rl-big .rl-ball.spin{background:radial-gradient(circle at 35% 30%,#FFF6C8,#F5B700 60%,#9A6A00)!important;color:#5a3500}
 /* dés : ils tremblent et roulent pendant le tirage */
@@ -11493,7 +11493,7 @@ html body #casinoModal .dd-die.top{transform:scale(1.1);filter:drop-shadow(0 0 1
 html body #casinoModal .dd-vs{font:900 italic 22px/1 system-ui;color:#FDE68A;text-shadow:0 2px 10px rgba(0,0,0,.6)}
 html body #casinoModal .dd-rule{text-align:center;opacity:.85}
 html body #casinoModal .dd-pick .b-red.on{background:linear-gradient(135deg,#DC2626,#991B1B)!important;box-shadow:0 0 0 2px #FCA5A5!important}
-html body #casinoModal .dd-pick .b-black.on{background:linear-gradient(135deg,#514837,#030712)!important;box-shadow:0 0 0 2px #AFA99C!important}
+html body #casinoModal .dd-pick .b-black.on{background:linear-gradient(135deg,#514837,#100C05)!important;box-shadow:0 0 0 2px #AFA99C!important}
 /* v2724 : Coin Flip Dollar / Euro */
 html body #casinoModal .coin-stage .coin-lbl span{font-weight:900;letter-spacing:.05em}
 
@@ -11545,7 +11545,7 @@ html body #casinoModal .mn-info{max-width:min(340px,44vh)!important;font-size:12
 html body #casinoModal .mn-info span{overflow:hidden;text-overflow:ellipsis}
 /* v2726 : Balloon — plus de nuages ; cote petite, en haut à gauche (le ballon ne la cache plus) */
 html body #casinoModal .bl-stage .bl-cloud{display:none!important}
-html body #casinoModal .bl-stage .bl-m{position:absolute!important;top:8px!important;left:10px!important;right:auto!important;transform:none!important;margin:0!important;z-index:5;font-size:22px!important;padding:4px 10px;border-radius:12px;background:rgba(6,3,20,.45)}
+html body #casinoModal .bl-stage .bl-m{position:absolute!important;top:8px!important;left:10px!important;right:auto!important;transform:none!important;margin:0!important;z-index:5;font-size:22px!important;padding:4px 10px;border-radius:12px;background:rgba(17,13,6,.45)}
 html[dir="rtl"] body #casinoModal .bl-stage .bl-m{left:auto!important;right:10px!important}
 html body #casinoModal .bl-stage .bl{transition:transform .14s ease-out!important}
 html body #casinoModal .slot-stage .pay2{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;width:100%;max-width:360px}
@@ -11553,7 +11553,7 @@ html body #casinoModal .pay2 .pay3{padding:7px 6px!important;border-radius:12px!
 html body #casinoModal .pay2 .pay3 em{width:24px;height:24px}
 html body #casinoModal .pay2 .pay3 b{font-size:16px}
 html body #casinoModal .pay2 .pay3 u{font-size:13px}
-html:root body #casinoModal#casinoModal .bl-stage .crash-n.bl-m{position:absolute!important;top:8px!important;left:10px!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0!important;z-index:8!important;font-size:22px!important;line-height:1.1!important;padding:4px 10px!important;border-radius:12px!important;background:rgba(6,3,20,.5)!important;width:auto!important}
+html:root body #casinoModal#casinoModal .bl-stage .crash-n.bl-m{position:absolute!important;top:8px!important;left:10px!important;right:auto!important;bottom:auto!important;transform:none!important;margin:0!important;z-index:8!important;font-size:22px!important;line-height:1.1!important;padding:4px 10px!important;border-radius:12px!important;background:rgba(17,13,6,.5)!important;width:auto!important}
 html[dir="rtl"]:root body #casinoModal#casinoModal .bl-stage .crash-n.bl-m{left:auto!important;right:10px!important}
 /* v2730 : Golden Orchard — la pomme-bijou du logo dans les cases gagnées */
 html body #casinoModal .ap-stage .ap-row button.good .cs-obj{width:auto;height:92%;max-height:100%;display:block;margin:auto;filter:drop-shadow(0 0 6px rgba(253,224,71,.6))}
@@ -11707,7 +11707,7 @@ html:root body .topbar-row #topbarCta{display:none!important}
 html:root body .topbar-row #btnPortal svg,html:root body .topbar-row #btnHelp svg,html:root body .topbar-row #btnProfile svg{background:none!important;box-shadow:none!important;border:0!important}
 html:root body .topbar-row #btnPortal,html:root body .topbar-row #btnHelp,html:root body .topbar-row #btnProfile{background:none!important;box-shadow:none!important;border:0!important}
 html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball{width:40px!important;height:34px!important;background:none!important;box-shadow:none!important;border:0!important;padding:0!important;border-radius:0!important}
-html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball svg{width:100%!important;height:100%!important;overflow:visible;filter:drop-shadow(0 0 6px rgba(240,171,252,.45))}
+html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball svg{width:100%!important;height:100%!important;overflow:visible;filter:drop-shadow(0 0 6px rgba(233,219,190,.45))}
 html:root body .topbar-row #btnCasino .cb-lbl b{font-size:10.5px!important;white-space:nowrap}
 /* la grande manette « Jeux » au centre */
 html:root body .topbar-row #btnGames{margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 6px;border:0;background:none;color:#fff;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none}
@@ -12497,7 +12497,7 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
 .sp-rc[data-rc] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .sp-rc-id em { float: right; font-style: normal; font-weight: 800; color: #D99E28; letter-spacing: .02em; }
 .sp-rcpt { position: fixed; inset: 0; z-index: 2147483000; display: flex; align-items: center; justify-content: center; padding: 16px;
-  background: rgba(8, 6, 24, .72); opacity: 0; transition: opacity .2s ease; }
+  background: rgba(22,17,8, .72); opacity: 0; transition: opacity .2s ease; }
 .sp-rcpt.on { opacity: 1; }
 .sp-rcpt-card { width: min(380px, 100%); max-height: calc(100dvh - 32px); overflow: auto; background: #fff; color: #2A210F; border-radius: 20px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, .45); transform: translateY(14px) scale(.98); transition: transform .22s ease; font-family: inherit; }
@@ -12518,8 +12518,8 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
 .sp-rcpt-st strong { font-size: 34px; font-weight: 900; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .sp-rcpt-card.won .sp-rcpt-st strong { color: #16A34A; }
 .sp-rcpt-card.lost .sp-rcpt-st strong { color: #B8AC94; }
-.sp-rcpt-cut { position: relative; height: 0; border-top: 2px dashed #E2E8F0; margin: 2px 18px; }
-.sp-rcpt-cut::before, .sp-rcpt-cut::after { content: ''; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: rgba(8, 6, 24, .72); }
+.sp-rcpt-cut { position: relative; height: 0; border-top: 2px dashed #F0EBE2; margin: 2px 18px; }
+.sp-rcpt-cut::before, .sp-rcpt-cut::after { content: ''; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: rgba(22,17,8, .72); }
 .sp-rcpt-cut::before { left: -29px; } .sp-rcpt-cut::after { right: -29px; }
 .sp-rcpt-sels { padding: 12px 18px 4px; }
 .sp-rcpt-k { margin: 0 0 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #8B7E64; }
@@ -12603,7 +12603,7 @@ html body #portalModal .defi-rl { background: rgba(30,23,8, .62); border: 1px so
 html body #portalModal .defi-rl li { color: #F1F5F9 !important; opacity: 1 !important; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
 html:root body #portalModal#portalModal .defi-how .defi-rl li, html:root body #portalModal#portalModal .defi-how .defi-rl li span { color: #fff !important; overflow-wrap: anywhere; }
 html:root body #portalModal#portalModal .defi-how .defi-rl li svg { stroke: #FDE68A !important; opacity: 1 !important; }
-html:root body #portalModal#portalModal .top-card .top-rule, html:root body #portalModal#portalModal .top-card .top-sub { color: #E2E8F0 !important; font-size: 11.5px !important; line-height: 1.45; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+html:root body #portalModal#portalModal .top-card .top-rule, html:root body #portalModal#portalModal .top-card .top-sub { color: #F0EBE2 !important; font-size: 11.5px !important; line-height: 1.45; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
 html:root body #portalModal#portalModal .top-rows .aff-empty { color: #F1F5F9 !important; font-weight: 700; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
 /* v2783 (propriétaire) : on doit SENTIR qu'on peut changer la langue — petite flèche dorée ▾ à côté de « FR »
    et un léger contour arrondi (Connexion / Inscription et Profil). */
@@ -12659,7 +12659,7 @@ html body #liveModal .ls2-cv b{display:block;font-size:28px;font-weight:900;colo
 html body #liveModal .ls2-cv b i{font-style:normal;font-size:18px;opacity:.9}
 html body #liveModal .ls2-cf{position:relative;z-index:1;align-self:flex-start;font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:rgba(50,39,16,.35);border:1px solid rgba(255,255,255,.35);padding:4px 8px;border-radius:99px;white-space:nowrap}
 html body #liveModal .ls2-sec{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:18px;padding:12px}
-html body #liveModal .ls2-sec > label{display:block;font-size:12.5px;font-weight:800;color:#E2E8F0;margin:0 0 8px}
+html body #liveModal .ls2-sec > label{display:block;font-size:12.5px;font-weight:800;color:#F0EBE2;margin:0 0 8px}
 html body #liveModal .ls2-in{width:100%;height:48px;border-radius:14px;border:1.5px solid rgba(255,255,255,.16);background:rgba(16,13,8,.55);color:#fff;font:600 15px/1 inherit;padding:0 14px}
 html body #liveModal .ls2-in:focus{outline:none;border-color:#FF9A3C;box-shadow:0 0 0 3px rgba(255,154,60,.25)}
 html body #liveModal .ls2-big{display:flex;align-items:baseline;justify-content:center;gap:6px;padding:4px 0 2px}
@@ -12710,10 +12710,10 @@ html.oro-shield body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrad
 html body #casinoModal .sp-mf{display:flex;flex-direction:column;gap:8px;margin:4px 0 10px}
 html body #casinoModal .sp-mf-st{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 html body #casinoModal .sp-mf-st::-webkit-scrollbar{display:none}
-html body #casinoModal .sp-mf-st button{flex:0 0 auto;height:32px;padding:0 12px;border-radius:99px;border:1px solid #E2E8F0;background:#fff;color:#554A33;font:700 12.5px/1 inherit;white-space:nowrap}
+html body #casinoModal .sp-mf-st button{flex:0 0 auto;height:32px;padding:0 12px;border-radius:99px;border:1px solid #F0EBE2;background:#fff;color:#554A33;font:700 12.5px/1 inherit;white-space:nowrap}
 html body #casinoModal .sp-mf-st button.on{background:#2A210F;border-color:#2A210F;color:#fff}
 html body #casinoModal .sp-mf-per{display:flex;gap:6px}
-html body #casinoModal .sp-mf-per select,html body #casinoModal .sp-mf-per input{flex:1;min-width:0;height:36px;border-radius:12px;border:1px solid #E2E8F0;background:#fff;color:#2A210F;font:600 13px/1 inherit;padding:0 10px}
+html body #casinoModal .sp-mf-per select,html body #casinoModal .sp-mf-per input{flex:1;min-width:0;height:36px;border-radius:12px;border:1px solid #F0EBE2;background:#fff;color:#2A210F;font:600 13px/1 inherit;padding:0 10px}
 
 /* v2790 : bouton « Télécharger / Partager » du reçu de pari (icône) */
 html body .sp-rcpt-share { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
@@ -13297,7 +13297,7 @@ html:root body #financeModal#financeModal .fx-ico{width:38px;height:38px;border-
 html:root body #financeModal#financeModal .fx-ico svg{width:19px!important;height:19px!important}
 html:root body #financeModal#financeModal .fx-deposit{background:radial-gradient(circle at 35% 30%,#6EE7B7,#059669 70%);box-shadow:0 0 10px rgba(16,185,129,.35)}
 html:root body #financeModal#financeModal .fx-withdraw{background:radial-gradient(circle at 35% 30%,#FDBA74,#EA580C 70%);box-shadow:0 0 10px rgba(234,88,12,.35)}
-html:root body #financeModal#financeModal .fx-bonus{background:radial-gradient(circle at 35% 30%,#F0ABFC,#E0AA3E 70%);box-shadow:0 0 10px rgba(224,170,62,.35)}
+html:root body #financeModal#financeModal .fx-bonus{background:radial-gradient(circle at 35% 30%,#E9DBBE,#E0AA3E 70%);box-shadow:0 0 10px rgba(224,170,62,.35)}
 html:root body #financeModal#financeModal .hc.fx .hc-name{font-size:14px!important}
 html:root body #financeModal#financeModal .hc.fx .hc-meta{font-size:11.5px!important}
 html:root body #financeModal#financeModal .hc.fx .hc-pnl{font-size:15px!important}
@@ -13504,7 +13504,7 @@ html body .oro-welcome{position:fixed;inset:0;z-index:2147482000;display:grid;pl
 html body .oro-welcome.out{animation:owOut .36s ease-in forwards;pointer-events:none}
 @keyframes owIn{from{opacity:0}to{opacity:1}}
 @keyframes owOut{to{opacity:0}}
-html body .oro-welcome .ow-dim{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 38%,rgba(90,68,24,.5),rgba(3,4,14,.86))}
+html body .oro-welcome .ow-dim{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 38%,rgba(90,68,24,.5),rgba(13,10,4,.86))}
 html body .oro-welcome .ow-card{position:relative;width:min(340px,calc(100vw - 40px));max-height:calc(100% - 110px);overflow:visible;padding:78px 20px 18px;border-radius:26px;text-align:center;
   background:radial-gradient(130% 70% at 50% 0%,rgba(251,191,36,.30),rgba(48,37,14,.97) 62%),#30250E;border:1px solid rgba(253,230,138,.55);
   box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,0 0 40px rgba(251,191,36,.35),0 24px 60px rgba(0,0,0,.6);margin-top:54px;animation:owPop .5s cubic-bezier(.2,1.4,.4,1)}
@@ -13544,7 +13544,7 @@ html body .oro-welcome .ow-demo .ow-d2{font-size:11.5px;font-weight:600;color:#F
 html body .oro-welcome .ow-logo{background:radial-gradient(circle at 35% 30%,#5E491F,#2A1F0A)}
 html body .oro-welcome .ow-logo svg{width:76%;height:76%;filter:drop-shadow(0 4px 10px rgba(255,95,162,.55))}
 /* 2026-10-21 (propriétaire, choix 2) : PLEIN ÉCRAN — le mot en blanc doux, fixe ; le petit carré rouge et la case restent comme avant */
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#E8E6F5!important;-webkit-text-fill-color:#E8E6F5!important;animation:none!important;opacity:1!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#F5F0E6!important;-webkit-text-fill-color:#F5F0E6!important;animation:none!important;opacity:1!important}
 /* 2026-10-21 (propriétaire : « prêt et DÉMO se collent ») : lignes équilibrées (pas de mot seul sur la 2e ligne) et vrai espace
    entre le nom et la carte DÉMO, sur tous les téléphones et dans toutes les langues */
 html body .oro-welcome .ow-t,html body .oro-welcome .ow-n,html body .oro-welcome .ow-s{text-wrap:balance}
@@ -13573,7 +13573,7 @@ html body #liveModal #liveHomeGrid.lh-free.lh-r2 > .lh-f:nth-last-child(2){grid-
 html body #liveModal #liveHomeGrid.lh-free.lh-r2 > .lh-f:last-child{grid-column:4/span 2}
 html body #liveModal #liveHomeGrid.lh-free.lh-r1 > .lh-f:last-child{grid-column:3/span 2}
 /* 2026-10-21 (propriétaire) : PLEIN ÉCRAN — le mot garde son blanc doux et clignote doucement, sans jamais devenir blanc pur */
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#E8E6F5!important;-webkit-text-fill-color:#E8E6F5!important;animation:oroFsSoft 1.8s ease-in-out infinite!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#F5F0E6!important;-webkit-text-fill-color:#F5F0E6!important;animation:oroFsSoft 1.8s ease-in-out infinite!important}
 @keyframes oroFsSoft{0%,100%{opacity:.95}50%{opacity:.6}}
 /* 2026-10-21 (propriétaire) : invitation à créer un compte dans les jeux — un logo dessiné au-dessus du titre (plus d'émoji) */
 html:root body #casinoModal .cs-try.cs-try2 .cs-try-ico{display:block;width:54px;height:54px;margin:0 auto 4px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
@@ -13721,7 +13721,7 @@ html body #toast#toast.toast.lux-msg:not(.micro):not(.toast-bal):not(.tie){
   font:700 13.5px/1.3 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif!important;letter-spacing:0!important;
   text-align:start!important;white-space:normal!important;color:#fff!important;text-shadow:none!important;
   background:linear-gradient(180deg,#6A5223,#523F1A)!important;border:1px solid rgba(212,175,55,.62)!important;
-  box-shadow:0 12px 28px -10px rgba(8,5,24,.75),0 2px 6px rgba(8,5,24,.35),inset 0 1px 0 rgba(255,255,255,.08)!important}
+  box-shadow:0 12px 28px -10px rgba(22,17,7,.75),0 2px 6px rgba(22,17,7,.35),inset 0 1px 0 rgba(255,255,255,.08)!important}
 html body #toast#toast.toast.lux-msg.ok:not(.micro):not(.toast-bal):not(.tie){
   background:linear-gradient(180deg,#17744B,#105C3A)!important;border-color:rgba(134,239,172,.55)!important}
 html body #toast#toast.toast.lux-msg.err:not(.micro):not(.toast-bal):not(.tie){
@@ -13790,7 +13790,7 @@ html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix{color:#1E9E92!important;font-size:11px!important;gap:4px!important;text-transform:lowercase}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix b{width:8px;height:8px;flex:0 0 8px;background:#32BCAD;border-radius:2px;transform:rotate(45deg)}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-nequi{color:#DA0081!important;font-size:10.5px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-yape{background:#742284!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-yape{background:#7D6129!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago{background:#C99121!important;color:#fff!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago b{font-size:7.5px;font-weight:800;color:#fff}
 /* 2026-10-25 : Pago Móvil (Venezuela) à la place de PIX dans la rangée Amérique latine. */

@@ -115,7 +115,7 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
   border-radius:16px!important;
   display:flex;flex-direction:column;
   overflow:hidden!important;
-  padding:16px 16px 14px;background:rgba(10,14,22,.97);
+  padding:16px 16px 14px;background:rgba(22,18,10,.97);
   border:1px solid #382F1E;box-sizing:border-box}
 #termsModal .terms-head{
   display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
@@ -225,7 +225,7 @@ html.is-ios body #screenAuth .auth-card{
     margin:0!important;padding:0!important;flex:none!important;
     display:inline-flex!important;align-items:center!important;justify-content:center!important;
     border-radius:50%!important;border:1px solid rgba(245,158,11,.65)!important;
-    background:rgba(12,16,26,.96)!important;color:#F8FAFC!important;
+    background:rgba(26,21,12,.96)!important;color:#F8FAFC!important;
     box-shadow:0 0 0 1px rgba(255,255,255,.1),0 3px 8px rgba(0,0,0,.4)!important;
     font-size:.7rem!important;line-height:1!important;z-index:90!important;transform:none!important}
 }
