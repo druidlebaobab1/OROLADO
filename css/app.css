@@ -939,7 +939,7 @@ html.is-android #depositModal #payMethodUsdt .pay-crypto-cell .pay-crypto-badge{
 .oxa-dd-btn{display:flex;align-items:center;gap:10px;width:100%;min-height:54px;padding:10px 10px 10px 12px;
   border:1px solid rgba(255,255,255,.1);border-radius:12px;background:#120F09;color:var(--text);
   font:inherit;cursor:pointer;text-align:left;touch-action:manipulation}
-.oxa-dd-btn[aria-expanded=true]{border-color:rgba(245,158,11,.45)}
+.oxa-dd-btn[aria-expanded=true]{border-color:rgba(255,255,255,.18)}
 .oxa-ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:900;
   color:#0E0D0A;flex-shrink:0}
 .oxa-dd-meta{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
@@ -6888,7 +6888,7 @@ html body #depositModal#depositModal .modal-box{
 html body #depositModal#depositModal .modal-title{color:#F0EAD8!important;background:rgba(255,255,255,.05)!important;
   border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important;font-weight:900!important}
 html body #depositModal#depositModal label{color:#C8F7E2!important}
-html body #depositModal#depositModal .dep-amt-input{background:rgba(255,255,255,.04)!important;
+html body #depositModal#depositModal .dep-amt-input{background:rgba(255,255,255,.04)!important;border:0!important;
   border:1.5px solid rgba(46,229,157,.75)!important;color:#fff!important;font-weight:900!important;
   box-shadow:0 0 16px rgba(46,229,157,.28),0 0 0 1px rgba(255,255,255,.05) inset!important;animation:depGlow 2.4s ease-in-out infinite}
 html body #depositModal#depositModal .dep-amt-input:focus{border-color:#FBBF24!important;box-shadow:0 0 0 3px rgba(251,191,36,.22),0 0 18px rgba(251,191,36,.4)!important;animation:none;outline:0}
@@ -13923,7 +13923,7 @@ html.fs-trade body:where(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverla
 /* 2026-11-02 (propriétaire) : écran DÉPÔT = sombre sérieux, moins de jaune (logos/chips de marque gardés) */
 html body #depositModal#depositModal .modal-box{background:linear-gradient(180deg,#100E0A,#0A0906)!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:0 20px 60px rgba(0,0,0,.65)!important}
 html body #depositModal#depositModal .modal-title,html body #depositModal#depositModal .pay-wave-title{background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important;color:#F0EAD8!important}
-html body #depositModal#depositModal .dep-amt-input{background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important;color:#fff!important}
+html body #depositModal#depositModal .dep-amt-input{background:rgba(255,255,255,.04)!important;border:0!important;box-shadow:none!important;color:#fff!important}
 html body #depositModal#depositModal .dep-amt-input:focus{border-color:rgba(255,255,255,.4)!important;box-shadow:0 0 0 3px rgba(255,255,255,.1)!important}
 html body #depositModal#depositModal :is(.pay-wave,.pay-crypto-wall,.momo-phone){background:rgba(255,255,255,.03)!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:none!important}
 html body #depositModal#depositModal .btn-wave{background:linear-gradient(180deg,#C9962F,#9A6E1E)!important;border:1px solid rgba(201,150,47,.5)!important;box-shadow:none!important;color:#FBF3E0!important}
@@ -13931,7 +13931,17 @@ html body #depositModal#depositModal .pay-go-pill{background:rgba(255,255,255,.0
 
 /* 2026-11-02 (propriétaire) : DÉPÔT — balayage final, TOUT le reste du jaune en sombre (3× spécificité) */
 html body #depositModal#depositModal#depositModal :is(.modal-title,.pay-wave-title,.dep-amt-input,.amt-row,.pay-wave,.momo-phone,.oxa-dd-btn,.pay-crypto-wall,.pay-crypto-cell,.pay-go-pill,.dep-learn,.dep-learn-btn,.wave-cc){
-  background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:none!important;color:#EFEADC!important}
+  background:transparent!important;border:0!important;box-shadow:none!important;color:#EFEADC!important}
 html body #depositModal#depositModal#depositModal :is(.dep-amt-input,.oxa-dd-btn){color:#fff!important}
 html body #depositModal#depositModal#depositModal .btn-wave{background:linear-gradient(180deg,#C9962F,#9A6E1E)!important;border:1px solid rgba(201,150,47,.5)!important;box-shadow:none!important;color:#FBF3E0!important}
 html body #depositModal#depositModal#depositModal .pay-go-pill{background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.2)!important;box-shadow:none!important;color:#EFEADC!important}
+
+/* 2026-11-02 (propriétaire) : dépôt / retrait / finance — fond TOTALEMENT opaque sombre (on ne voit plus la page derrière) */
+html body #depositModal.modal-backdrop.active,html body #financeModal.modal-backdrop.active,html body #withdrawModal.modal-backdrop.active{background:#0A0906!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+/* 2026-11-02 : dépôt sans carrés — champs sans bordure, fond plat discret */
+html body #depositModal#depositModal#depositModal#depositModal :is(.dep-amt-input,.oxa-dd-btn,.momo-phone){background:rgba(255,255,255,.04)!important;border:0!important;box-shadow:none!important}
+
+/* 2026-11-02 (propriétaire) : dépôt — AUCUN carré/bordure sur les champs (montant, pays, téléphone), 5× spécificité */
+html body #depositModal#depositModal#depositModal#depositModal#depositModal :is(.dep-amt-input,.amt-row,.oxa-dd-btn,.momo-phone,.wave-cc){border:0!important;outline:0!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal#depositModal .oxa-dd-btn[aria-expanded=true]{border:0!important}
