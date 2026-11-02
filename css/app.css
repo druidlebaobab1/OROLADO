@@ -7319,7 +7319,7 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:a
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .dur-chip:active{transform:scale(.95)}
 
 /* ===== v2450 — Ligne MA / BB / EMA / zoom / plein écran : même verre sombre transparent, sans trait dur sur la courbe ===== */
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar{background:linear-gradient(180deg,rgba(40,31,12,.55),rgba(40,31,12,0))!important;border:0!important;box-shadow:none!important}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar{background:linear-gradient(180deg,rgba(10,10,13,.5),rgba(10,10,13,0))!important;border:0!important;box-shadow:none!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar .ind-btn{
   background-color:rgba(255,255,255,.08)!important;border:1px solid rgba(237,228,208,.25)!important;border-radius:9px!important;
   box-shadow:0 1px 0 rgba(255,255,255,.12) inset!important;transition:transform .1s,box-shadow .2s!important}

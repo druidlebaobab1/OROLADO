@@ -187,7 +187,7 @@ html body #tradeWrap#tradeWrap .chart-card{
   box-shadow:0 10px 30px rgba(0,0,0,.35)!important;overflow:hidden!important;
 }
 html body #tradeWrap#tradeWrap .chart-toolbar{
-  background:rgba(32,25,11,.55)!important;border:0!important;border-bottom:1px solid rgba(239,211,156,.10)!important;
+  background:rgba(10,10,13,.5)!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.06)!important;
   padding:6px 8px!important;margin:0!important;
 }
 html body #tradeWrap#tradeWrap .ind-pills{gap:6px!important;align-items:center!important}
@@ -1082,7 +1082,7 @@ html body #tradeWrap#tradeWrap .chart-toolbar{background:linear-gradient(180deg,
   html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgba(86,64,20,.88) 0%,rgba(86,64,20,.6) 40%,rgba(86,64,20,.35) 100%)!important}
 }
 /* plein écran : la fin de la courbe va aussi dans le bleu, et la barre du bas aussi */
-html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgba(86,64,20,.88),rgba(70,52,16,.7))!important;border:0!important;box-shadow:none!important}
+html.fs-trade body #tradeWrap#tradeWrap .pad{background:#000000!important;border:0!important;box-shadow:none!important}
 
 /* ACHETER / VENDRE un peu plus larges que le reste (sans sortir de l'écran) */
 @media (max-width:859px){
