@@ -10380,7 +10380,24 @@
         return navigator.serviceWorker.register('sw.js?v=2000');
       }).then(function (reg) {
         if (D6.Push && D6.Push.start) D6.Push.start(reg);
+        // 2026-11-02 (propriétaire) : FORÇAGE — dès qu'un nouveau service worker prend la main
+        // (nouvelle version en ligne), on recharge la page tout de suite pour jeter l'ancien cache,
+        // sauf pendant un trade ouvert. Fini le « toujours pareil ».
+        try {
+          reg.update();
+          if (reg.waiting && navigator.serviceWorker.controller) { try { reg.waiting.postMessage('skip'); } catch (e2) {} }
+        } catch (eU) {}
       }).catch(function () { /* ignore */ });
+      if (!window.__oroSwReload) {
+        window.__oroSwReload = 1;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (window.__oroSwReloaded) return;
+          // ne pas couper un trade en cours
+          if (document.documentElement.classList.contains('oro-trade-open')) return;
+          window.__oroSwReloaded = 1;
+          try { location.reload(); } catch (e3) { location.href = location.pathname; }
+        });
+      }
     }
     watchNewVersion();
   }
