@@ -1168,8 +1168,8 @@
     // Fond « univers » : nuit bleu-violet (pas un noir plat), nébuleuses douces, étoiles,
     // quelques planètes et les cryptos. Décor seulement : rien ici ne touche aux prix.
     var base = g.createLinearGradient(0, 0, 0, cssH);
-    base.addColorStop(0, '#100E0A');
-    base.addColorStop(1, '#090806');
+    base.addColorStop(0, '#0A0E0B');
+    base.addColorStop(1, '#060807');
     g.fillStyle = base;
     g.fillRect(0, 0, cssW, cssH);
     function glow(x, y, r, col) {
@@ -1181,10 +1181,10 @@
     }
     var big = Math.max(cssW, cssH);
     var small = Math.min(w, h);
-    glow(cssW * 0.06, cssH * 0.04, big * 0.6, 'rgba(200,145,46,0.05)');
+    glow(cssW * 0.06, cssH * 0.04, big * 0.6, 'rgba(52,82,62,0.05)');
     // (Ancien halo orange en bas à droite retiré : le propriétaire voyait une « lueur jaune » près des prix.)
-    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(160,115,40,0.025)');
-    glow(pad.l + w * 0.5, pad.t + h * 0.55, small * 0.85, 'rgba(180,135,48,0.025)');
+    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(40,66,50,0.03)');
+    glow(pad.l + w * 0.5, pad.t + h * 0.55, small * 0.85, 'rgba(44,72,54,0.03)');
     // Étoiles : tirage fixe (toujours au même endroit), petites et discrètes.
     var seed = 7;
     function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
