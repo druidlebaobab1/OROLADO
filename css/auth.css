@@ -116,7 +116,7 @@ html body #screenAuth .auth-crypto-marquee{width:min(240px,88%)}
   display:flex;flex-direction:column;
   overflow:hidden!important;
   padding:16px 16px 14px;background:rgba(22,18,10,.97);
-  border:1px solid #382F1E;box-sizing:border-box}
+  border:1px solid #1C180F;box-sizing:border-box}
 #termsModal .terms-head{
   display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
   margin:0 0 14px;flex-shrink:0;min-width:0;padding-right:40px;position:static}
