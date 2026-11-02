@@ -14014,7 +14014,7 @@ html:root body #fsTradeOverlay#fsTradeOverlay .pad.glass{
   html:not(.is-tv) body::after{
     content:"";position:fixed;left:0;right:0;bottom:0;z-index:9999;pointer-events:none;
     height:calc(20px + env(safe-area-inset-bottom,22px));
-    background:url("../icons/app-bottom-space.svg?v=3487") center bottom/cover no-repeat;
+    background:url("../icons/app-bottom-space.svg?v=3488") center bottom/cover no-repeat;
     -webkit-mask-image:linear-gradient(to top,#000 66%,transparent);
     mask-image:linear-gradient(to top,#000 66%,transparent)}
 }
