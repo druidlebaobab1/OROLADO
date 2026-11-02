@@ -1439,8 +1439,8 @@ html.fs-trade body #tradeWrap#tradeWrap #inputStake{font-size:16px!important;let
 
 /* Safari iPhone : sous la barre, un bleu nuit foncé (couleur du bas de l'univers), pas un bleu vif */
 @media (max-width:859px){
-  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#1C1608!important}
-  html.is-ios,html.is-ios body{background-color:#1C1608!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#0C0B08!important}
+  html.is-ios,html.is-ios body{background-color:#0C0B08!important}
 }
 
 /* profil : la croix n'est plus coupée par la ligne du haut */
@@ -1492,16 +1492,16 @@ html body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:calc(10px + 
 /* le bas de l'écran (sous la barre de Safari, et pendant le chargement) : un fond d'univers avec des étoiles,
    pas une couleur plate */
 @media (max-width:859px){html,html body{
-  background-color:#1C1608!important;
+  background-color:#0C0B08!important;
   background-image:
-    linear-gradient(180deg,#1C1608,#231A0A)!important;
+    linear-gradient(180deg,#0C0B08,#231A0A)!important;
   background-size:100% 100%!important;
 }}
 @media (max-width:859px){
   html.is-ios body #oroIosFloor#oroIosFloor{
     display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;
     height:calc(14px + env(safe-area-inset-bottom,0px))!important;z-index:3!important;pointer-events:none!important;
-    background-color:#1C1608!important;
+    background-color:#0C0B08!important;
     background-image:none!important;
   }
   html.is-ios.fs-trade body #oroIosFloor#oroIosFloor{display:none!important}
@@ -1608,7 +1608,7 @@ html.fs-trade body #tradeWrap#tradeWrap #chartZoomIn#chartZoomIn{margin-left:aut
    ===================================================================== */
 @media (max-width:859px){
   /* iPhone : la bande sous la barre de Safari prend ENFIN le bleu des fenêtres (#141210) sur l'écran de
-     jeu aussi (une ancienne règle plus forte gardait #1C1608 « bleu pur ») ; et elle n'existe que sur
+     jeu aussi (une ancienne règle plus forte gardait #0C0B08 « bleu pur ») ; et elle n'existe que sur
      Safari : sur Chrome / autres navigateurs iPhone, plus de bande sous ACHETER / VENDRE */
   html.is-ios.is-ios-safari body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor,
   html.is-ios.is-ios-safari body #oroIosFloor#oroIosFloor{background:#141210!important;background-image:none!important}
