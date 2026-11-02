@@ -2114,14 +2114,11 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
    sur ACHETER / VENDRE : c'est le fond du terminal lui-même qui finit en bleu, sous la barre de Safari. */
 @media (max-width:859px){
   html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-    background:linear-gradient(0deg,#141210 0,#141210 env(safe-area-inset-bottom,0px),rgba(20,18,16,0) calc(env(safe-area-inset-bottom,0px) + 34px)),
-      url("../icons/ui/pad-planets.svg?v=3426") center/cover no-repeat,
-      linear-gradient(180deg,rgb(20,16,6) 0,rgba(40,31,13,.6) 6px,rgba(40,31,13,0) 22px),
-      linear-gradient(180deg,rgba(40,31,12,.55),rgba(32,24,9,.78)) #141210!important}
+    background:#000000!important}
   /* v2965 (propriétaire, iPhone : « bande noire sous la courbe ») : le raccord sombre en haut du terminal est plus court et plus
      clair (avant : noir plein sur 10 px puis fondu jusqu'à 40 px) ; il part toujours de la couleur du bas de la courbe (pas de trait). */
-  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#141210!important}
-  html.is-ios{background:#141210!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#000000!important}
+  html.is-ios{background:#000000!important}
 }
 
 /* v2854 (propriétaire : plus de trait entre la courbe et le terminal) : couleur exacte du haut du terminal, lue par
@@ -2136,10 +2133,8 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
 /* v2888 (propriétaire) — APPLICATION iPhone installée (classe .ios-app posée par js/app.js) : le petit monde de planètes est peint
    TOUT EN BAS de l'écran par js/app.js (fond de la page, sous chaque écran : trading, Profil, Historique, Jeux). Le terminal garde
    son fond sombre, sans bande bleue en bas et sans dessin coupé ; fond prune partout (plus de bleu d'un côté et de noir de l'autre). */
-html.ios-app:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-  background:linear-gradient(180deg,rgb(20,16,6) 0,rgba(40,31,13,.6) 6px,rgba(40,31,13,0) 22px),
-    linear-gradient(180deg,rgba(40,31,12,.55),rgba(32,24,9,.78)) #141210!important}
-html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#171208!important}
+html.ios-app:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{background:#000000!important}
+html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#000000!important}
 
 /* 2026-10-20 (propriétaire) — APPLICATION iPhone installée : le petit monde de planètes (app-floor.svg) est un bandeau fixé
    tout en bas de l'écran, haut exactement comme l'espace libre sous le terminal (--ios-floor-h, mesuré par js/app.js) :
