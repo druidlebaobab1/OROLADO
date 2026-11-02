@@ -958,10 +958,12 @@
         '<rect x="22" y="30" width="4" height="10" fill="' + P.S + '" stroke="' + P.K + '"/>';
     },
     torch: function (P) {
-      return '<rect x="22" y="22" width="4" height="20" rx="2" fill="' + P.S + '" stroke="' + P.K + '" transform="rotate(12 24 32)"/>' +
+      return '<g transform="translate(24 25) scale(1.3) translate(-24 -25)">' +
+        '<rect x="22" y="22" width="4" height="20" rx="2" fill="' + P.S + '" stroke="' + P.K + '" transform="rotate(12 24 32)"/>' +
         '<path fill="' + P.F + '" stroke="' + P.K + '" d="M24 4c3 5 7 8 7 13 0 5-3 8-7 8s-7-3-7-8c0-5 4-8 7-13z"/>' +
         '<path fill="' + P.G + '" d="M24 12c1 3 3 5 3 8 0 2-1 4-3 4s-3-2-3-4c0-3 2-5 3-8z"/>' +
-        '<path fill="' + P.L + '" stroke="' + P.K + '" d="M18 22h12l-1 3H19z"/>';
+        '<path fill="' + P.L + '" stroke="' + P.K + '" d="M18 22h12l-1 3H19z"/>' +
+        '</g>';
     },
     twofaces: function (P) {
       return '<path fill="' + P.F + '" stroke="' + P.K + '" stroke-linejoin="round" d="M24 6c6 0 10 4 11 10 1 5-1 10-4 14l-2 6h-5V6zM24 6c-6 0-10 4-11 10-1 5 1 10 4 14l2 6h5V6z"/>' +
@@ -1072,7 +1074,7 @@
   var ORIG = {
     v100: ['flame', '#2BE07A'], stable: ['cobra', '#E84E44'], apex500: ['lion', '#F5B83D'], horizon50: ['pyramid', '#FF9A1F'],
     crash300: ['crest', '#FF6A3D'], goldtrend: ['ingots', '#F5C542'], boomspike: ['celtic', '#FBF3E0'], nexusprime: ['chalice', '#EA6654'],
-    v75: ['demon', '#FF3B3B'], titanpulse: ['world', '#F2C693']
+    v75: ['demon', '#FF6B4F'], titanpulse: ['world', '#F2C693']
   };
   function redrawOriginals(bar) {
     Object.keys(ORIG).forEach(function (id) {
