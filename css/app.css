@@ -6855,7 +6855,7 @@ html body #withdrawModal .wd-sel-ico > *{width:20px!important;height:20px!import
 html body #withdrawModal .wd-sel-ico .wd-card-brands{transform:scale(.7)}
 html body #withdrawModal#withdrawModal #wdStepForm label{color:#F9EFDC!important;font-weight:800!important}
 html body #withdrawModal#withdrawModal #wdStepForm input,html body #withdrawModal#withdrawModal #wdStepForm select{
-  background:linear-gradient(180deg,rgba(236,204,139,.17),rgba(233,196,122,.10))!important;border:1px solid rgba(242,219,173,.45)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))!important;border:1px solid rgba(242,219,173,.45)!important;
   color:#fff!important;border-radius:12px!important;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset!important}
 html body #withdrawModal#withdrawModal #wdStepForm input:focus,html body #withdrawModal#withdrawModal #wdStepForm select:focus{
   border-color:rgba(46,229,157,.9)!important;box-shadow:0 0 0 3px rgba(46,229,157,.2),0 0 14px rgba(46,229,157,.3)!important;outline:0}
@@ -7069,7 +7069,7 @@ html body #otpModal .modal-title,html body #forgotModal .modal-title{justify-con
 html body #passModal .otp-lead,html body #emailModal .otp-lead,html body #otpModal .otp-lead,html body #logoutModal .logout-lead,html body #logoutOthersModal .logout-lead{color:#F9EFDC!important;text-align:center}
 /* Cases vitrées colorées. */
 html body #passModal input,html body #emailModal input,html body #otpModal input,html body #forgotModal input{
-  background:linear-gradient(180deg,rgba(236,204,139,.17),rgba(233,196,122,.10))!important;border:1px solid rgba(var(--c),.55)!important;color:#fff!important;border-radius:12px!important}
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))!important;border:1px solid rgba(var(--c),.55)!important;color:#fff!important;border-radius:12px!important}
 html body #passModal input:focus,html body #emailModal input:focus,html body #otpModal input:focus,html body #forgotModal input:focus{
   box-shadow:0 0 0 3px rgba(var(--c),.22),0 0 14px rgba(var(--c),.35)!important;outline:0}
 html body #passModal label,html body #emailModal label,html body #otpModal label,html body #forgotModal label{color:#EDE2CC!important;font-weight:800!important}
@@ -7140,7 +7140,7 @@ html body #depositModal#depositModal #payMethodCard .pay-method-desc{padding-rig
 
 /* ===== v2444 — INSCRIPTION / CONNEXION : carte univers lumineuse, onglets dorés, cases vitrées, bouton brillant ===== */
 html body #screenAuth#screenAuth#screenAuth .auth-card{position:relative;
-  background:radial-gradient(110% 40% at 50% 0%,rgba(242,193,78,.42),rgba(242,193,78,0) 62%),
+  background:radial-gradient(110% 40% at 50% 0%,rgba(242,193,78,.12),rgba(242,193,78,0) 62%),
     radial-gradient(80% 45% at 0% 100%,rgba(242,193,78,.30),rgba(242,193,78,0) 65%),
     radial-gradient(80% 45% at 100% 85%,rgba(251,191,36,.20),rgba(251,191,36,0) 65%),
     linear-gradient(180deg,rgba(98,75,30,.92) 0%,rgba(92,69,22,.92) 55%,rgba(96,71,20,.92) 100%)!important;
@@ -7151,7 +7151,7 @@ html body #screenAuth#screenAuth#screenAuth .auth-tab{color:#EDE2CC!important;ba
 html body #screenAuth#screenAuth#screenAuth .auth-tab.on{position:relative;overflow:hidden;background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#2A1600!important;
   border-color:rgba(255,255,255,.5)!important;box-shadow:0 0 16px rgba(251,191,36,.5)!important}
 html body #screenAuth#screenAuth#screenAuth .field label{color:#EDE2CC!important;font-weight:800!important}
-html body #screenAuth#screenAuth#screenAuth .field input{background:linear-gradient(180deg,rgba(236,204,139,.17),rgba(233,196,122,.10))!important;
+html body #screenAuth#screenAuth#screenAuth .field input{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))!important;
   border:1px solid rgba(242,219,173,.45)!important;color:#fff!important;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset!important}
 html body #screenAuth#screenAuth#screenAuth .field input:focus{border-color:rgba(251,191,36,.9)!important;box-shadow:0 0 0 3px rgba(251,191,36,.18),0 0 16px rgba(251,191,36,.3)!important;outline:0}
 html body #screenAuth#screenAuth#screenAuth .field input::placeholder{color:rgba(250,242,225,.5)!important}
@@ -7231,7 +7231,7 @@ html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card:active,html body #
 html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card.on{border-color:#F2C14E!important;box-shadow:0 0 16px rgba(242,193,78,.55)!important}
 html body #withdrawModal#withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdBankGrid .wd-card.on{border-color:#F4E2BE!important;box-shadow:0 0 16px rgba(244,226,190,.55)!important}
 /* Indicatif fixe (Nigeria…) : même case vitrée colorée que les autres. */
-html body #withdrawModal#withdrawModal .wd-dial-fixed{background:linear-gradient(180deg,rgba(236,204,139,.17),rgba(233,196,122,.10))!important;
+html body #withdrawModal#withdrawModal .wd-dial-fixed{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))!important;
   border:1px solid rgba(242,219,173,.45)!important;color:#fff!important;border-radius:12px!important}
 html body #withdrawModal#withdrawModal .wd-dest-help{color:#F7D774!important}
 html body #withdrawModal#withdrawModal .wd-wager-box{background:rgba(251,191,36,.10)!important;border:1px solid rgba(251,191,36,.45)!important;border-radius:12px}

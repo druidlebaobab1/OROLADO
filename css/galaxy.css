@@ -808,7 +808,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
 /* connexion / inscription : univers sans planètes */
 html body #screenAuth#screenAuth{
   background:
-    linear-gradient(180deg,rgba(16,13,8,.25),rgba(16,13,8,.5)),
+    linear-gradient(180deg,rgba(10,9,6,.55),rgba(10,9,6,.78)),
     url("galaxy-auth.svg?v=3426") center top/cover no-repeat,
     linear-gradient(180deg,#120F08,#0A0906)!important;
 }
