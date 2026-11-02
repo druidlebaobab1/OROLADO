@@ -1718,7 +1718,7 @@
               // 2026-10-20 (c) : sur l'iPhone, cette bande est EN DEHORS de la fenêtre de la page : seul le fond de l'écran
               // (fond de html) y est dessiné. index.html pose ce fond en style direct (« background », prioritaire) : le petit
               // monde de planètes est donc posé de la même façon, exactement sous le terminal (jamais sur les boutons).
-              root.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2919")', 'important');
+              root.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=3494")', 'important');
               root.style.setProperty('background-repeat', 'no-repeat', 'important');
               root.style.setProperty('background-position', 'center ' + Math.round(pb) + 'px', 'important');
               root.style.setProperty('background-size', '100% ' + gap + 'px', 'important');
@@ -1729,7 +1729,7 @@
             // 2026-10-20 (d) : le dessin est AUSSI posé tout en bas du fond du body (c'est peut-être lui qui peint la bande
             // sous la fenêtre de l'appli sur certains iPhone) ; caché derrière le site s'il ne descend pas jusque-là.
             var bh = parseInt(getComputedStyle(root).getPropertyValue('--ios-floor-h'), 10) || 56;
-            document.body.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=2919")', 'important');
+            document.body.style.setProperty('background-image', 'url("icons/ui/app-floor.svg?v=3494")', 'important');
             document.body.style.setProperty('background-repeat', 'no-repeat', 'important');
             document.body.style.setProperty('background-position', 'center bottom', 'important');
             document.body.style.setProperty('background-size', '100% ' + bh + 'px', 'important');

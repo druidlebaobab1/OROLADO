@@ -2142,7 +2142,7 @@ html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#
 html.ios-app:not(.fs-trade) body:not(#z1):not(#z2) #oroIosFloor#oroIosFloor#oroIosFloor{
   display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:auto!important;top:var(--ios-floor-top,100vh)!important;
   height:var(--ios-floor-h,0px)!important;z-index:3!important;pointer-events:none!important;
-  background:url("../icons/ui/app-floor.svg?v=2919") center bottom/cover no-repeat,#171208!important}
+  background:url("../icons/ui/app-floor.svg?v=3494") center bottom/cover no-repeat,#000000!important}
 
 /* 2026-10-20 (propriétaire) — APPLI iPhone, PLEIN ÉCRAN : mise / ACHETER / VENDRE restent dans la fenêtre de l'appli
    (les descendre plus bas les coupait sous l'écran). */
@@ -2180,7 +2180,7 @@ html.ios-app.is-ios:root body #screenTrade#screenTrade .trade-shell,html.ios-app
    - ensuite : le petit monde de planètes (app-floor.svg) posé exactement dans la bande (sous le site), partout, plein écran compris.
    Une seule couleur de fond (#100C05, posée dès la 1re image par index.html) : plus de noirs différents au lancement. */
 html.ios-app.is-ios:root body #oroLoader#oroLoader{background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important;background-repeat:no-repeat!important}
-html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=2919")!important;background-repeat:no-repeat!important;
+html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=3494")!important;background-repeat:no-repeat!important;
   background-position:center top var(--ios-site-h,100%)!important;background-size:100% var(--ios-under,0px)!important}
 html.ios-app.is-ios:root:has(#oroLoader:not(.off)){
   background-image:radial-gradient(ellipse at 50% 44%,rgba(60,40,12,.85) 0%,rgba(40,32,16,.35) 34%,rgba(0,0,0,0) 60%),url("galaxy-loader.svg?v=2790"),
