@@ -1059,7 +1059,7 @@ html:root body #casinoModal .sp2 .pz-tvseg button.on{background:transparent!impo
 @media (prefers-reduced-motion:reduce){html:root body #casinoModal .sp2 .pz-tvseg::before{transition:none}}
 /* 2026-10-22 (propriétaire : « en bas, la liste défile sous la barre ») : la couleur de la barre du bas continue jusqu'au bord de
    l'écran (application installée : la zone sous la barre ne montre plus la liste qui défile) */
-html:root body #casinoModal .sp2 .pz-nav{box-shadow:0 -1px 0 rgba(255,255,255,.08),0 -12px 24px -14px rgba(0,0,0,.9),0 70px 0 40px #140D32}
+html:root body #casinoModal .sp2 .pz-nav{box-shadow:0 -1px 0 rgba(255,255,255,.08),0 -12px 24px -14px rgba(0,0,0,.9),0 70px 0 40px #0e0c08}
 html:root body #casinoModal .sp2 .pz-b1{flex-wrap:wrap;row-gap:4px}
 /* 2026-10-23 (propriétaire : « Mes paris mal rangé ») — ligne de choix : nom + match à gauche, score à droite, résultat en couleur ;
    carte ouverte = seulement la liste détaillée (plus de scores en double) ; « Direct » neutre une fois le match fini */
