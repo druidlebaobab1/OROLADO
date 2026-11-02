@@ -1157,7 +1157,7 @@ html.fs-trade body #tradeWrap#tradeWrap .asset-chip.on .mk-name{border-bottom:0!
     background:linear-gradient(90deg,rgba(18,16,9,.95) 0,rgba(18,16,9,0) 34px,rgba(18,16,9,0) calc(100% - 34px),rgba(18,16,9,.95) 100%)!important;
   }
   html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:transparent!important}
-  html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(90deg,rgba(18,16,9,.95),rgba(86,64,20,.7))!important}
+  html.fs-trade body #tradeWrap#tradeWrap .pad{background:#000000!important}
 }
 html.oro-guest body #screenTrade#screenTrade #authQuick #btnGoRegister{margin-left:4px!important}
 
@@ -1195,7 +1195,7 @@ html body #tradeWrap#tradeWrap .chart-toolbar{background:linear-gradient(180deg,
   html:not(.fs-trade) body #tradeWrap#tradeWrap .trade-row > .btn-trade{width:auto!important;margin:0!important;flex:none!important}
 }
 /* plein écran (téléphone et PC) : la barre du bas commence aussi de la couleur du bas de la courbe */
-html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(25,19,7) 24px,rgba(78,58,18,.85) 100%)!important}
+html.fs-trade body #tradeWrap#tradeWrap .pad{background:#000000!important}
 
 /* case du gain : le petit « Payout 88% » garde le même bleu que tout le terminal, quel que soit le payout choisi */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview,
@@ -1226,7 +1226,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):no
   }
   html body #screenTrade#screenTrade::after{display:none!important}
   html body #tradeWrap#tradeWrap .chart-card::after{background:linear-gradient(90deg,rgba(50,39,17,.9) 0,rgba(50,39,17,0) 26px,rgba(50,39,17,0) calc(100% - 26px),rgba(50,39,17,.9) 100%)!important}
-  html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(90deg,rgba(50,39,17,0),rgba(78,59,20,.55))!important}
+  html.fs-trade body #tradeWrap#tradeWrap .pad{background:#000000!important}
 }
 @media (max-width:859px){html:not(.fs-trade) body #tradeWrap#tradeWrap.trade-wrap{row-gap:0!important;gap:0!important}}
 /* plein écran : on comble les quelques pixels entre la courbe et la barre du bas, de la couleur du bas de la courbe */
