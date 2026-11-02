@@ -4654,7 +4654,7 @@ html body .wd-back-ico,html body .crypto-back{color:#BAE6FD!important;filter:dro
 html body .wd-back-ico:active,html body .crypto-back:active{filter:drop-shadow(0 0 8px rgba(56,189,248,1))!important}
 
 /* ===== v2229 — Titre des Conditions : même lueur bleu ciel que les croix ; chrono qui ne dépasse jamais la durée et ne remonte jamais ===== */
-html body #termsModal #termsTitle{border:1px solid rgba(56,189,248,.6)!important;background:rgba(14,19,29,.96)!important;color:#E0F2FE!important;box-shadow:0 0 9px rgba(56,189,248,.38),inset 0 0 6px rgba(56,189,248,.18)!important}
+html body #termsModal #termsTitle{border:1px solid rgba(242,193,78,.6)!important;background:rgba(16,13,8,.96)!important;color:#FFE7A3!important;box-shadow:0 0 9px rgba(242,193,78,.38),inset 0 0 6px rgba(242,193,78,.18)!important}
 
 /* ===== v2230 — TV : les 6 durées sur une seule ligne (plus petites) ; carré du gain à droite, sous + ÷2 ×2 ⌫.
    PC : carré du gain sans la longue bande bleue (fond sombre uni, contour bleu net, lueur courte), contenu centré. ===== */
@@ -6700,7 +6700,7 @@ html body #helpModal#helpModal > .modal-box{
     radial-gradient(120% 60% at 50% 0%,rgba(224,168,36,.55),rgba(224,168,36,0) 60%),
     radial-gradient(90% 55% at 0% 100%,rgba(168,85,247,.55),rgba(168,85,247,0) 65%),
     radial-gradient(90% 55% at 100% 85%,rgba(34,211,238,.38),rgba(34,211,238,0) 65%),
-    linear-gradient(180deg,#1B1F5E 0%,#22165A 50%,#2A1460 100%)!important;
+    linear-gradient(180deg,#1b150c 0%,#161108 50%,#120d06 100%)!important;
   border:1px solid rgba(140,190,255,.7)!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 0 40px rgba(224,168,36,.45),0 0 90px rgba(168,85,247,.35)!important}
 /* Étoiles qui scintillent sur toute la fenêtre. */
@@ -7041,7 +7041,7 @@ html body #otpModal#otpModal .modal-box,html body #forgotModal#forgotModal .moda
   background:radial-gradient(110% 45% at 50% 0%,rgba(var(--c),.45),rgba(var(--c),0) 62%),
     radial-gradient(80% 50% at 0% 100%,rgba(168,85,247,.42),rgba(168,85,247,0) 65%),
     radial-gradient(80% 50% at 100% 80%,rgba(56,189,248,.28),rgba(56,189,248,0) 65%),
-    linear-gradient(180deg,#1B1F5E 0%,#22165A 55%,#2A1460 100%)!important;
+    linear-gradient(180deg,#1b150c 0%,#161108 55%,#120d06 100%)!important;
   border:1px solid rgba(var(--c),.75)!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 36px rgba(var(--c),.40),0 0 80px rgba(124,77,255,.25)!important}
 html body #passModal#passModal .modal-box{--c:244,114,182}
@@ -7240,18 +7240,18 @@ html body #withdrawModal#withdrawModal .wd-wager-fill{background:linear-gradient
 /* ===== v2446 — Les dernières fenêtres sombres passent en univers lumineux (Conditions, Installer sur iPhone, Astuce, Paiement en cours) ===== */
 html body #termsModal#termsModal .modal-box,html body #iosInstallModal#iosInstallModal .modal-box,
 html body #tipModal#tipModal .modal-box,html body #depositWaitModal#depositWaitModal .modal-box{
-  --c:124,77,255;
-  background:radial-gradient(110% 45% at 50% 0%,rgba(var(--c),.45),rgba(var(--c),0) 62%),
-    radial-gradient(80% 50% at 0% 100%,rgba(168,85,247,.40),rgba(168,85,247,0) 65%),
-    radial-gradient(80% 50% at 100% 80%,rgba(56,189,248,.28),rgba(56,189,248,0) 65%),
-    linear-gradient(180deg,#1B1F5E 0%,#22165A 55%,#2A1460 100%)!important;
-  border:1px solid rgba(var(--c),.7)!important;
-  box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 36px rgba(var(--c),.38),0 0 80px rgba(124,77,255,.22)!important}
-html body #iosInstallModal#iosInstallModal .modal-box{--c:56,189,248}
+  --c:242,193,78;
+  background:radial-gradient(110% 45% at 50% 0%,rgba(var(--c),.22),rgba(var(--c),0) 62%),
+    radial-gradient(80% 50% at 0% 100%,rgba(200,145,46,.20),rgba(200,145,46,0) 65%),
+    radial-gradient(80% 50% at 100% 80%,rgba(247,215,116,.16),rgba(247,215,116,0) 65%),
+    linear-gradient(180deg,#1b150c 0%,#161108 55%,#120d06 100%)!important;
+  border:1px solid rgba(var(--c),.55)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 36px rgba(var(--c),.30),0 0 80px rgba(200,145,46,.18)!important}
+html body #iosInstallModal#iosInstallModal .modal-box{--c:242,193,78}
 html body #tipModal#tipModal .modal-box{--c:251,191,36}
 html body #depositWaitModal#depositWaitModal .modal-box{--c:46,229,157}
 html body #termsModal .modal-box h3,html body #termsModal .modal-box h4,html body #termsModal .modal-box strong{color:#FFE7A3!important}
-html body #termsModal .modal-box p,html body #termsModal .modal-box li{color:#E0E7FF!important}
+html body #termsModal .modal-box p,html body #termsModal .modal-box li{color:#EDE6D6!important}
 html body #iosInstallModal .install-ios-lead{color:#D6E4FF!important}
 html body #iosInstallModal .install-ios-ico{background:radial-gradient(circle at 32% 28%,#BAE6FD,#38BDF8 45%,#0369A1)!important;color:#fff!important;
   border:0!important;box-shadow:0 0 12px rgba(56,189,248,.6)!important;border-radius:50%!important}
@@ -7578,8 +7578,8 @@ html body .auth-learn .al-tag{font-style:normal;font-weight:900;font-size:8.5px;
 html body .auth-learn .al-go{flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.18);animation:xpGo 1.2s ease-in-out infinite}
 html body .auth-learn .al-go svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
 html[dir=rtl] body .auth-learn .al-go svg{transform:scaleX(-1)}
-html body #termsModal .terms-learn{margin:18px 0 6px;padding:12px;border-radius:14px;background:rgba(56,189,248,.08);border:1px solid rgba(125,211,252,.35)}
-html body #termsModal .terms-learn p{margin:0 0 10px!important;color:#E0F2FE!important;font-weight:600}
+html body #termsModal .terms-learn{margin:18px 0 6px;padding:12px;border-radius:14px;background:rgba(242,193,78,.08);border:1px solid rgba(242,193,78,.35)}
+html body #termsModal .terms-learn p{margin:0 0 10px!important;color:#F6ECD8!important;font-weight:600}
 
 /* ===== v2454 — La page « Apprendre à trader » ===== */
 .learn-modal{position:fixed;inset:0;z-index:2147480000;display:none;flex-direction:column;
