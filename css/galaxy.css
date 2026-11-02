@@ -8,12 +8,12 @@
 :root{
   --gx-bg0:#0a0906;
   --gx-bg1:#120f08;
-  --gx-panel:rgba(20,18,48,.62);
-  --gx-panel2:rgba(28,25,64,.72);
-  --gx-line:rgba(150,140,255,.16);
-  --gx-line2:rgba(150,140,255,.26);
+  --gx-panel:rgba(48,38,18,.62);
+  --gx-panel2:rgba(64,51,25,.72);
+  --gx-line:rgba(239,211,156,.16);
+  --gx-line2:rgba(239,211,156,.26);
   --gx-txt:#EEF0FF;
-  --gx-mu:#9B9DC9;
+  --gx-mu:#C9BA9B;
   --gx-ac:#FF9F2E;
   --gx-ac2:#FF7A1A;
   --gx-green:#22D47F;
@@ -46,7 +46,7 @@ html body #screenTrade#screenTrade .topbar-actions .help-badge,
 html body #screenTrade#screenTrade .topbar-actions #btnProfile,
 html body #screenTrade#screenTrade .topbar-actions .lang-dd-btn{
   background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important;
-  border-radius:10px!important;color:#D9DBF5!important;
+  border-radius:10px!important;color:#F5ECD9!important;
 }
 html body #screenTrade#screenTrade .topbar-actions .help-badge::before,
 html body #screenTrade#screenTrade .topbar-actions .help-badge::after,
@@ -62,7 +62,7 @@ html body #screenTrade#screenTrade #btnProfile{
 }
 html body #screenTrade#screenTrade .gx-ico{
   width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;
-  filter:drop-shadow(0 0 6px rgba(140,150,255,.25));
+  filter:drop-shadow(0 0 6px rgba(239,211,156,.25));
 }
 html body #screenTrade#screenTrade .topbar-actions .lang-dd-btn .lang-flag{
   border-radius:4px!important;box-shadow:0 0 0 1px rgba(255,255,255,.18)!important;
@@ -123,7 +123,7 @@ html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="demo"] .
 html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="demo"] .mb-lbl{color:#FFB65C!important}
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn.on[data-mode="demo"],
 html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn.mode-btn.on[data-mode="demo"]{
-  background:linear-gradient(135deg,rgba(255,159,46,.30),rgba(255,122,26,.12) 60%,rgba(20,18,48,.6))!important;
+  background:linear-gradient(135deg,rgba(255,159,46,.30),rgba(255,122,26,.12) 60%,rgba(48,38,18,.6))!important;
   border-color:rgba(255,170,80,.75)!important;
   box-shadow:0 0 0 1px rgba(255,170,80,.25),0 8px 24px rgba(255,122,26,.18),inset 0 1px 0 rgba(255,255,255,.12)!important;
 }
@@ -132,12 +132,12 @@ html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"] .
 html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"] .mb-lbl{color:#4BE69A!important}
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn.on[data-mode="real"],
 html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn.mode-btn.on[data-mode="real"]{
-  background:linear-gradient(135deg,rgba(34,212,127,.28),rgba(15,169,104,.12) 60%,rgba(20,18,48,.6))!important;
+  background:linear-gradient(135deg,rgba(34,212,127,.28),rgba(15,169,104,.12) 60%,rgba(48,38,18,.6))!important;
   border-color:rgba(60,230,150,.75)!important;
   box-shadow:0 0 0 1px rgba(60,230,150,.22),0 8px 24px rgba(15,169,104,.18),inset 0 1px 0 rgba(255,255,255,.12)!important;
 }
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn:not(.on) .mb-amt,
-html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn:not(.on) .mb-amt{color:#C9CBEA!important}
+html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn:not(.on) .mb-amt{color:#EADFC9!important}
 /* petit « + » de recharge entre les deux */
 html body #screenTrade#screenTrade #modeSwitcher #btnDemoTopup{
   position:static!important;align-self:center!important;width:34px!important;height:34px!important;min-width:34px!important;margin:0!important;padding:0!important;
@@ -192,13 +192,13 @@ html body #tradeWrap#tradeWrap .chart-card{
   box-shadow:0 10px 30px rgba(0,0,0,.35)!important;overflow:hidden!important;
 }
 html body #tradeWrap#tradeWrap .chart-toolbar{
-  background:rgba(12,11,32,.55)!important;border:0!important;border-bottom:1px solid rgba(150,140,255,.10)!important;
+  background:rgba(32,25,11,.55)!important;border:0!important;border-bottom:1px solid rgba(239,211,156,.10)!important;
   padding:6px 8px!important;margin:0!important;
 }
 html body #tradeWrap#tradeWrap .ind-pills{gap:6px!important;align-items:center!important}
 html body #tradeWrap#tradeWrap .ind-btn{
   height:28px!important;min-height:28px!important;padding:0 10px!important;border-radius:9px!important;
-  background:rgba(255,255,255,.06)!important;border:1px solid rgba(150,140,255,.16)!important;box-shadow:none!important;
+  background:rgba(255,255,255,.06)!important;border:1px solid rgba(239,211,156,.16)!important;box-shadow:none!important;
   font-size:11px!important;font-weight:800!important;
 }
 html body #tradeWrap#tradeWrap .ind-btn[data-ind="ma"]{color:#FBBF24!important}
@@ -226,8 +226,8 @@ html body #tradeWrap#tradeWrap .chart-fs-btn > *{display:none!important}
 
 /* ---------- terminal (écran normal) : transparent, on voit l'univers derrière ---------- */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{
-  background:linear-gradient(180deg,rgba(30,26,74,.30),rgba(12,11,34,.42))!important;
-  border:1px solid rgba(150,140,255,.20)!important;border-radius:18px!important;
+  background:linear-gradient(180deg,rgba(74,58,26,.30),rgba(34,26,11,.42))!important;
+  border:1px solid rgba(239,211,156,.20)!important;border-radius:18px!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 -4px 24px rgba(0,0,0,.18)!important;
   padding:10px 10px 12px!important;margin-top:8px!important;
 }
@@ -252,7 +252,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip:not(.on):not(.active):no
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip.on,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip.active{
-  background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border:1px solid #F7D774!important;color:#04202E!important;
+  background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border:1px solid #F7D774!important;color:#2B1F07!important;
   box-shadow:0 0 10px rgba(242,193,78,.5)!important;
 }
 /* mise : couleur du compte (démo orange, réel vert) */
@@ -282,7 +282,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .qbtn.stake-act{
   width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;padding:0!important;margin:0!important;
   border-radius:8px!important;font-size:12px!important;font-weight:800!important;line-height:1!important;
   background:linear-gradient(180deg,rgba(242,193,78,.12),rgba(242,193,78,.03))!important;border:1px solid rgba(242,193,78,.32)!important;
-  color:#D6EEFF!important;box-shadow:none!important;
+  color:#F9EFDC!important;box-shadow:none!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .qbtn.stake-plus1{color:#FFB65C!important}
 html:not(.fs-trade) body #screenTrade.mode-real #tradeWrap#tradeWrap .qbtn.stake-plus1{color:#22E07A!important}
@@ -315,9 +315,9 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip .odds-pct{font-size:8.5
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"]:not(.on){background:rgba(200,145,46,.16)!important;border:1px solid #C8912E!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"]:not(.on) .odds-mult{color:#FDBA74!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"]:not(.on){background:rgba(224,168,36,.16)!important;border:1px solid #E0A824!important;box-shadow:none!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"]:not(.on) .odds-mult{color:#67E8F9!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"]:not(.on) .odds-mult{color:#E9C377!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"]:not(.on){background:rgba(242,193,78,.16)!important;border:1px solid #F2C14E!important;box-shadow:none!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"]:not(.on) .odds-mult{color:#D8B4FE!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"]:not(.on) .odds-mult{color:#F4E2BE!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"]:not(.on){background:rgba(247,215,116,.16)!important;border:1px solid #F7D774!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"]:not(.on) .odds-mult{color:#FCD34D!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"].on{background:linear-gradient(180deg,#D9A43A,#A86E1A)!important;border:1px solid #F2D79A!important;box-shadow:0 0 16px rgba(200,145,46,.55)!important}
@@ -393,12 +393,12 @@ html.fs-trade body #tradeWrap#tradeWrap .asset-bar{margin-top:2px!important;padd
 html body #screenTrade#screenTrade #btnHelp#btnHelp,
 html body #screenTrade#screenTrade #btnProfile#btnProfile,
 html body #screenTrade#screenTrade #langBarTrade#langBarTrade .lang-dd-btn{
-  background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important;color:#D9DBF5!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important;color:#F5ECD9!important;
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .gx-ico,
-html body #screenTrade#screenTrade #btnProfile#btnProfile .gx-ico{color:#D9DBF5!important;stroke:#D9DBF5!important}
+html body #screenTrade#screenTrade #btnProfile#btnProfile .gx-ico{color:#F5ECD9!important;stroke:#F5ECD9!important}
 html body #screenTrade#screenTrade #btnHelp#btnHelp{width:34px!important;height:34px!important}
-html body #screenTrade#screenTrade #langBarTrade#langBarTrade .lang-dd-btn .lang-chev{color:#9B9DC9!important}
+html body #screenTrade#screenTrade #langBarTrade#langBarTrade .lang-dd-btn .lang-chev{color:#C9BA9B!important}
 html body #screenTrade#screenTrade #modeSwitcher#modeSwitcher > .mode-btn::before,
 html body #screenTrade#screenTrade #modeSwitcher#modeSwitcher > .mode-btn::after,
 html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn.mode-btn::before,
@@ -503,15 +503,15 @@ html body #tradeWrap#tradeWrap .asset-chip[data-asset="horizon50"]{--p1:#FFC88A;
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="crash300"]{--p1:#FFB09B;--p2:#A3260E;--pg:rgba(255,90,54,.45)}
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="goldtrend"]{--p1:#FFE29A;--p2:#7E5200;--pg:rgba(245,158,11,.45)}
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="boomspike"]{--p1:#8CFFC6;--p2:#006B37;--pg:rgba(0,230,118,.4)}
-html body #tradeWrap#tradeWrap .asset-chip[data-asset="nexusprime"]{--p1:#9DF4FF;--p2:#006A8A;--pg:rgba(0,229,255,.45)}
+html body #tradeWrap#tradeWrap .asset-chip[data-asset="nexusprime"]{--p1:#F1DAAB;--p2:#775613;--pg:rgba(219,158,36,.45)}
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="v75"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
-html body #tradeWrap#tradeWrap .asset-chip[data-asset="titanpulse"]{--p1:#CDBBFF;--p2:#3B1E8C;--pg:rgba(224,168,36,.5)}
+html body #tradeWrap#tradeWrap .asset-chip[data-asset="titanpulse"]{--p1:#F5E5C5;--p2:#8C671E;--pg:rgba(224,168,36,.5)}
 html body #tradeWrap#tradeWrap .asset-chip .mk-art{
   width:50px!important;height:50px!important;border-radius:50%!important;display:grid!important;place-items:center!important;
   background:
     radial-gradient(circle at 30% 24%,rgba(255,255,255,.55) 0,rgba(255,255,255,0) 24%),
     repeating-linear-gradient(-22deg,rgba(255,255,255,.07) 0 3px,rgba(0,0,0,.07) 3px 9px),
-    radial-gradient(circle at 38% 34%,var(--p1) 0%,var(--p2) 58%,#07051A 100%)!important;
+    radial-gradient(circle at 38% 34%,var(--p1) 0%,var(--p2) 58%,#1A1305 100%)!important;
   box-shadow:inset -7px -9px 16px rgba(0,0,0,.62),inset 2px 3px 6px rgba(255,255,255,.22),0 0 0 1px rgba(255,255,255,.10),0 0 14px var(--pg)!important;
   filter:none!important;opacity:.9!important;
 }
@@ -538,7 +538,7 @@ html body #screenTrade#screenTrade #btnHelp#btnHelp{
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .gx-ico{width:20px!important;height:20px!important}
 html body #screenTrade#screenTrade #btnHelp#btnHelp .hb-txt{
-  display:block!important;font-size:8.5px!important;font-weight:800!important;letter-spacing:.04em!important;line-height:1!important;color:#C9CBEA!important;
+  display:block!important;font-size:8.5px!important;font-weight:800!important;letter-spacing:.04em!important;line-height:1!important;color:#EADFC9!important;
   white-space:nowrap!important;text-transform:none!important;
 }
 
@@ -577,14 +577,14 @@ html body #screenTrade#screenTrade #topbarCta.topbar-cta .crypto-mini-row .coin-
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{
   background:
     radial-gradient(70% 60% at 100% 0%,rgba(242,193,78,.16),transparent 70%),
-    radial-gradient(60% 60% at 0% 100%,rgba(99,102,241,.16),transparent 70%),
-    linear-gradient(180deg,rgba(14,52,96,.40),rgba(6,22,52,.56))!important;
+    radial-gradient(60% 60% at 0% 100%,rgba(231,190,109,.16),transparent 70%),
+    linear-gradient(180deg,rgba(95,68,15,.40),rgba(50,36,8,.56))!important;
   border:1px solid rgba(242,193,78,.40)!important;
-  box-shadow:inset 0 1px 0 rgba(186,230,253,.14),0 0 26px rgba(242,193,78,.10)!important;
+  box-shadow:inset 0 1px 0 rgba(245,228,194,.14),0 0 26px rgba(242,193,78,.10)!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
   background:linear-gradient(180deg,rgba(242,193,78,.22),rgba(242,193,78,.06))!important;border:1px solid rgba(242,193,78,.6)!important;
-  box-shadow:inset 0 1px 0 rgba(186,230,253,.18),0 0 12px rgba(242,193,78,.14)!important;
+  box-shadow:inset 0 1px 0 rgba(245,228,194,.18),0 0 12px rgba(242,193,78,.14)!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F0F9FF!important;text-shadow:0 0 12px rgba(242,193,78,.55)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult{background:rgba(200,145,46,.28)!important;color:#F7D774!important}
@@ -597,7 +597,7 @@ html.fs-trade body #tradeWrap#tradeWrap .trade-row .btn-trade{flex:1 1 0!importa
 html.fs-trade body #tradeWrap#tradeWrap .stake-field{width:100%!important;max-width:none!important;height:56px!important;min-height:56px!important;margin:0!important}
 html.fs-trade body #tradeWrap#tradeWrap #inputStake{
   width:100%!important;height:56px!important;min-height:56px!important;margin:0!important;border-radius:16px!important;
-  background:linear-gradient(180deg,rgba(14,52,96,.62),rgba(6,22,52,.78))!important;border:1.5px solid rgba(255,171,64,.8)!important;
+  background:linear-gradient(180deg,rgba(95,68,15,.62),rgba(50,36,8,.78))!important;border:1.5px solid rgba(255,171,64,.8)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(255,140,30,.18)!important;
   font-size:20px!important;font-weight:800!important;text-align:center!important;padding:0 8px 16px 18px!important;line-height:1!important;
 }
@@ -622,18 +622,18 @@ html body #screenAuth#screenAuth{
 /* fenêtres (dépôt, retrait, aide, mot de passe…) : univers bleu nuit, très léger */
 html body .modal-backdrop .modal-box{
   background:
-    linear-gradient(180deg,rgba(12,14,38,.68),rgba(8,9,26,.80)),
+    linear-gradient(180deg,rgba(38,29,12,.68),rgba(26,20,8,.80)),
     url("galaxy-space2.svg?v=2367") center/cover no-repeat,
-    #0B0D22!important;
-  border:1px solid rgba(150,140,255,.22)!important;
+    #221A0B!important;
+  border:1px solid rgba(239,211,156,.22)!important;
 }
 /* dépôt : nuance turquoise */
 html body #depositModal .modal-box{
   background:
     radial-gradient(90% 50% at 100% 0%,rgba(20,184,166,.16),transparent 65%),
-    linear-gradient(180deg,rgba(10,20,36,.66),rgba(6,12,26,.80)),
+    linear-gradient(180deg,rgba(36,27,10,.66),rgba(26,19,6,.80)),
     url("galaxy-space2.svg?v=2367") center/cover no-repeat,
-    #08121E!important;
+    #1E1708!important;
   border-color:rgba(45,212,191,.28)!important;
 }
 /* retrait : nuance verte */
@@ -649,9 +649,9 @@ html body #withdrawModal .modal-box{
 html body #drawerProfile#drawerProfile{
   background:
     radial-gradient(90% 40% at 100% 0%,rgba(200,145,46,.18),transparent 65%),
-    linear-gradient(180deg,rgba(16,10,36,.66),rgba(9,7,24,.80)),
+    linear-gradient(180deg,rgba(36,27,10,.66),rgba(9,7,24,.80)),
     url("galaxy-space2.svg?v=2367") center/cover no-repeat,
-    #0C0820!important;
+    #201808!important;
 }
 html body #screenTrade#screenTrade #btnHelp#btnHelp .hb-txt{order:2!important}
 html body #screenTrade#screenTrade #btnHelp#btnHelp .gx-ico{order:1!important}
@@ -661,17 +661,17 @@ html body #screenTrade#screenTrade #topbarCta.topbar-cta #btnOpenDeposit{flex:1 
 html.fs-trade body #tradeWrap#tradeWrap #btnCall#btnCall .bt-txt,html.fs-trade body #tradeWrap#tradeWrap #btnPut#btnPut .bt-txt{font-size:15px!important;letter-spacing:.04em!important}
 html.fs-trade body #tradeWrap#tradeWrap .btn-trade{gap:6px!important}
 html.fs-trade body #tradeWrap#tradeWrap .btn-trade .bt-arr{width:17px!important;height:17px!important}
-html body #tradeWrap#tradeWrap .asset-chip[data-asset="boomspike"]{--p1:#FFFFFF;--p2:#7C86AE;--pg:rgba(220,228,255,.45)}
+html body #tradeWrap#tradeWrap .asset-chip[data-asset="boomspike"]{--p1:#FFFFFF;--p2:#AE9D7C;--pg:rgba(250,242,225,.45)}
 
 /* =====================================================================
    Retouches 4 (demandées par le propriétaire)
    ===================================================================== */
 /* tout le terminal est bleu : le +1 aussi, et le cadre de la mise ; seul le MONTANT garde la couleur du compte */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .qbtn.stake-plus1,
-html:not(.fs-trade) body #screenTrade.mode-real #tradeWrap#tradeWrap .qbtn.stake-plus1{color:#D6EEFF!important}
+html:not(.fs-trade) body #screenTrade.mode-real #tradeWrap#tradeWrap .qbtn.stake-plus1{color:#F9EFDC!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap #inputStake,
 html:not(.fs-trade) body #screenTrade.mode-real #tradeWrap#tradeWrap #inputStake{
-  border-color:rgba(242,193,78,.75)!important;background:linear-gradient(180deg,rgba(14,52,96,.55),rgba(6,22,52,.7))!important;
+  border-color:rgba(242,193,78,.75)!important;background:linear-gradient(180deg,rgba(95,68,15,.55),rgba(50,36,8,.7))!important;
   box-shadow:inset 0 1px 6px rgba(0,0,0,.35),0 0 12px rgba(242,193,78,.22)!important;
 }
 html.fs-trade body #tradeWrap#tradeWrap #inputStake,
@@ -688,12 +688,12 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
     radial-gradient(circle at 18% 12%,rgba(255,255,255,.45),rgba(255,255,255,0) 38%),
     repeating-linear-gradient(62deg,rgba(255,255,255,.07) 0 2px,rgba(255,255,255,0) 2px 7px),
     repeating-linear-gradient(-48deg,rgba(255,255,255,.05) 0 1px,rgba(255,255,255,0) 1px 9px),
-    linear-gradient(180deg,rgba(165,225,255,.50) 0%,rgba(56,160,230,.32) 55%,rgba(14,90,170,.40) 100%)!important;
+    linear-gradient(180deg,rgba(242,221,178,.50) 0%,rgba(224,170,62,.32) 55%,rgba(158,114,26,.40) 100%)!important;
   background-size:220% 100%,100% 100%,100% 100%,100% 100%,100% 100%!important;
   background-repeat:no-repeat!important;
   animation:gxIceShine 4.2s ease-in-out infinite!important;
-  border:1px solid rgba(214,240,255,.9)!important;
-  box-shadow:inset 0 0 16px rgba(224,244,255,.45),inset 0 -6px 12px rgba(10,60,120,.35),0 0 20px rgba(242,193,78,.40),0 6px 16px rgba(0,0,0,.25)!important;
+  border:1px solid rgba(249,239,220,.9)!important;
+  box-shadow:inset 0 0 16px rgba(251,243,228,.45),inset 0 -6px 12px rgba(112,81,18,.35),0 0 20px rgba(242,193,78,.40),0 6px 16px rgba(0,0,0,.25)!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::before{
   content:""!important;display:block!important;position:absolute!important;right:5px!important;top:4px!important;width:15px!important;height:15px!important;opacity:.85!important;pointer-events:none!important;
@@ -705,34 +705,34 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::after{
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{
   position:relative!important;z-index:1!important;color:#FFFFFF!important;font-size:19px!important;
-  text-shadow:0 0 10px rgba(186,230,253,.9),0 1px 2px rgba(6,40,90,.6)!important;
+  text-shadow:0 0 10px rgba(245,228,194,.9),0 1px 2px rgba(83,60,13,.6)!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult{
   position:relative!important;z-index:1!important;background:rgba(255,255,255,.22)!important;color:#FFFFFF!important;
-  border:1px solid rgba(255,255,255,.45)!important;text-shadow:0 1px 1px rgba(6,40,90,.5)!important;
+  border:1px solid rgba(255,255,255,.45)!important;text-shadow:0 1px 1px rgba(83,60,13,.5)!important;
 }
 @media (prefers-reduced-motion:reduce){html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{animation:none!important}}
 
 /* connexion / inscription : la carte est transparente, la pyramide passe derrière sans être coupée */
 html body #screenAuth#screenAuth .auth-card{
-  background:linear-gradient(180deg,rgba(18,16,46,.58),rgba(10,9,30,.66))!important;
+  background:linear-gradient(180deg,rgba(46,36,16,.58),rgba(30,23,9,.66))!important;
   -webkit-backdrop-filter:blur(5px)!important;backdrop-filter:blur(5px)!important;
-  border:1px solid rgba(150,140,255,.24)!important;
+  border:1px solid rgba(239,211,156,.24)!important;
 }
 
 /* conditions d'utilisation : effet planète bien visible ; aide : léger */
 html body #termsModal .modal-box{
   background:
     radial-gradient(70% 40% at 100% 0%,rgba(200,145,46,.22),transparent 65%),
-    linear-gradient(180deg,rgba(12,12,36,.52),rgba(8,8,26,.70)),
+    linear-gradient(180deg,rgba(36,28,12,.52),rgba(26,20,8,.70)),
     url("galaxy-space2.svg?v=2367") center/cover no-repeat,
-    #0B0D22!important;
+    #221A0B!important;
 }
 html body #helpModal .modal-box{
   background:
-    linear-gradient(180deg,rgba(12,14,38,.74),rgba(8,9,26,.84)),
+    linear-gradient(180deg,rgba(38,29,12,.74),rgba(26,20,8,.84)),
     url("galaxy-space2.svg?v=2367") center/cover no-repeat,
-    #0B0D22!important;
+    #221A0B!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="stable"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="v75"]{--p1:#FF5050;--p2:#6E000E;--pg:rgba(210,10,30,.55)}
@@ -758,24 +758,24 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::before,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::after{display:none!important;content:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
   background:
-    linear-gradient(105deg,rgba(255,255,255,0) 40%,rgba(225,245,255,.20) 50%,rgba(255,255,255,0) 60%),
+    linear-gradient(105deg,rgba(255,255,255,0) 40%,rgba(251,244,229,.20) 50%,rgba(255,255,255,0) 60%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 70' fill='none' stroke='%23E6F7FF' stroke-linecap='round'%3E%3Cg stroke-opacity='.28' stroke-width='.6'%3E%3Cpath d='M0 8l14 6 6-10M14 14l-4 14M10 28l14 4 10-12M24 32l-2 16M90 4l-12 8-4 12M78 12l8 14M74 24l-10 6M0 62l10-8 12 4M10 54l2-12M90 66l-10-10-12 2M80 56l4-14'/%3E%3C/g%3E%3Cg stroke-opacity='.16' stroke-width='.5'%3E%3Cpath d='M30 0l4 10 10 2M44 12l6 10M60 70l-4-12 6-10M56 58l-14 2M36 70l2-10'/%3E%3C/g%3E%3C/svg%3E") center/100% 100% no-repeat,
-    radial-gradient(110% 80% at 0% 0%,rgba(205,238,255,.32),rgba(205,238,255,0) 55%),
-    radial-gradient(90% 70% at 100% 100%,rgba(120,200,255,.18),rgba(120,200,255,0) 60%),
-    linear-gradient(160deg,rgba(110,190,245,.34) 0%,rgba(30,110,200,.30) 55%,rgba(8,52,128,.46) 100%)!important;
+    radial-gradient(110% 80% at 0% 0%,rgba(248,236,212,.32),rgba(248,236,212,0) 55%),
+    radial-gradient(90% 70% at 100% 100%,rgba(236,204,139,.18),rgba(236,204,139,0) 60%),
+    linear-gradient(160deg,rgba(233,196,122,.34) 0%,rgba(198,143,32,.30) 55%,rgba(117,84,19,.46) 100%)!important;
   background-size:240% 100%,100% 100%,100% 100%,100% 100%,100% 100%!important;
   background-repeat:no-repeat!important;
   animation:gxIceShine 5s ease-in-out infinite!important;
-  border:1px solid rgba(186,230,253,.72)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.28)!important;
+  border:1px solid rgba(245,228,194,.72)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(242,219,173,.22),inset 0 -10px 16px rgba(86,62,14,.38),0 0 16px rgba(242,193,78,.28)!important;
   transition:box-shadow .35s ease,border-color .35s ease!important;
 }
-html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F4FBFF!important;text-shadow:0 0 8px rgba(160,220,255,.7),0 1px 2px rgba(4,30,80,.7)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F4FBFF!important;text-shadow:0 0 8px rgba(242,219,173,.7),0 1px 2px rgba(72,52,12,.7)!important}
 /* une petite lueur de la couleur du payout choisi (sans casser le bleu) */
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.25),0 0 10px rgba(249,115,22,.30)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(200,145,46,.40)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(200,145,46,.40)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(245,158,11,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(242,219,173,.22),inset 0 -10px 16px rgba(86,62,14,.38),0 0 16px rgba(242,193,78,.25),0 0 10px rgba(249,115,22,.30)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(242,219,173,.22),inset 0 -10px 16px rgba(86,62,14,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(200,145,46,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(242,219,173,.22),inset 0 -10px 16px rgba(86,62,14,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(200,145,46,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(242,219,173,.22),inset 0 -10px 16px rgba(86,62,14,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(245,158,11,.40)!important}
 /* « Payout 88% » sous le montant prend la couleur du payout choisi */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult{transition:background .3s ease,border-color .3s ease!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(249,115,22,.55)!important;border-color:rgba(253,186,116,.8)!important}
@@ -819,18 +819,18 @@ html body #screenAuth#screenAuth{
 /* case du gain : plus douce ; le payout choisi se voit juste par un fin trait de couleur en bas */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
   background:
-    linear-gradient(105deg,rgba(255,255,255,0) 42%,rgba(225,245,255,.14) 50%,rgba(255,255,255,0) 58%),
+    linear-gradient(105deg,rgba(255,255,255,0) 42%,rgba(251,244,229,.14) 50%,rgba(255,255,255,0) 58%),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 90 70' fill='none' stroke='%23E6F7FF' stroke-linecap='round'%3E%3Cg stroke-opacity='.2' stroke-width='.6'%3E%3Cpath d='M0 8l14 6 6-10M14 14l-4 14M10 28l14 4 10-12M24 32l-2 16M90 4l-12 8-4 12M78 12l8 14M74 24l-10 6M0 62l10-8 12 4M10 54l2-12M90 66l-10-10-12 2M80 56l4-14'/%3E%3C/g%3E%3C/svg%3E") center/100% 100% no-repeat,
-    radial-gradient(110% 80% at 0% 0%,rgba(205,238,255,.20),rgba(205,238,255,0) 55%),
-    linear-gradient(160deg,rgba(90,170,235,.24) 0%,rgba(30,100,190,.24) 55%,rgba(8,46,118,.40) 100%)!important;
+    radial-gradient(110% 80% at 0% 0%,rgba(248,236,212,.20),rgba(248,236,212,0) 55%),
+    linear-gradient(160deg,rgba(229,185,96,.24) 0%,rgba(189,136,31,.24) 55%,rgba(108,78,18,.40) 100%)!important;
   background-size:240% 100%,100% 100%,100% 100%,100% 100%!important;
-  border:1px solid rgba(160,215,250,.55)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),0 0 8px rgba(242,193,78,.16)!important;
+  border:1px solid rgba(241,217,169,.55)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(86,62,14,.32),0 0 8px rgba(242,193,78,.16)!important;
 }
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(249,115,22,.75),0 0 8px rgba(242,193,78,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(200,145,46,.8),0 0 8px rgba(242,193,78,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(200,145,46,.8),0 0 8px rgba(242,193,78,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(245,158,11,.8),0 0 8px rgba(242,193,78,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(86,62,14,.32),inset 0 -2px 0 rgba(249,115,22,.75),0 0 8px rgba(242,193,78,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(86,62,14,.32),inset 0 -2px 0 rgba(200,145,46,.8),0 0 8px rgba(242,193,78,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(86,62,14,.32),inset 0 -2px 0 rgba(200,145,46,.8),0 0 8px rgba(242,193,78,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(86,62,14,.32),inset 0 -2px 0 rgba(245,158,11,.8),0 0 8px rgba(242,193,78,.16)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(249,115,22,.20)!important;border-color:rgba(253,186,116,.45)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(200,145,46,.20)!important;border-color:rgba(247,215,116,.45)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(200,145,46,.20)!important;border-color:rgba(247,215,116,.45)!important}
@@ -839,18 +839,18 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):no
 /* Aide : univers sérieux (sans planètes, sombre) */
 html body #helpModal .modal-box{
   background:
-    linear-gradient(180deg,rgba(10,12,34,.72),rgba(6,8,24,.84)),
+    linear-gradient(180deg,rgba(34,26,10,.72),rgba(6,8,24,.84)),
     url("galaxy-auth.svg?v=3426") center/cover no-repeat,
-    #0A0C20!important;
-  border-color:rgba(120,150,255,.24)!important;
+    #20190A!important;
+  border-color:rgba(236,204,139,.24)!important;
 }
 /* menu des langues : léger univers derrière la liste des pays */
 html body .lang-dd-menu{
   background:
-    linear-gradient(180deg,rgba(12,12,36,.80),rgba(8,8,26,.90)),
+    linear-gradient(180deg,rgba(36,28,12,.80),rgba(26,20,8,.90)),
     url("galaxy-auth.svg?v=3426") center/cover no-repeat,
-    #0B0C22!important;
-  border:1px solid rgba(150,140,255,.26)!important;
+    #221A0B!important;
+  border:1px solid rgba(239,211,156,.26)!important;
   box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(200,145,46,.18)!important;
 }
 /* logo rond : pas de rond ni de halo en plus autour (le logo a déjà son cercle) */
@@ -859,7 +859,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark{filter:none!important
 /* inscription / connexion : plus de lueur de pyramide derrière la carte */
 html body #screenAuth#screenAuth .auth-ambient{background:none!important}
 /* liste des langues : effet galaxie bien visible */
-html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=3426") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(200,145,46,.28)!important}
+html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(40,30,10,.52),rgba(28,21,8,.66)),url("galaxy-space.svg?v=3426") center top/cover no-repeat,#261D0B!important;border:1px solid rgba(240,215,165,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(200,145,46,.28)!important}
 /* COMPTE RÉEL : petit portefeuille à droite, comme avant */
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"],html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"]{padding-right:40px!important}
 html body .mode-btn[data-mode="real"] .mb-wal{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;width:24px!important;height:24px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:rgba(0,230,118,.14)!important;border:1px solid rgba(0,230,118,.45)!important;color:#4BE69A!important}
@@ -902,7 +902,7 @@ html body #screenTrade#screenTrade #langBarTrade#langBarTrade .lang-dd-btn{
 }
 html body #screenTrade#screenTrade #langBarTrade#langBarTrade .lang-chev{display:none!important}
 html body #screenTrade#screenTrade #langBarTrade#langBarTrade .lang-flag{font-size:18px!important;line-height:1!important;box-shadow:none!important;border:0!important;background:transparent!important;border-radius:0!important}
-html body #screenTrade#screenTrade #langBarTrade#langBarTrade .lang-code{display:block!important;font-size:8.5px!important;font-weight:800!important;letter-spacing:.04em!important;line-height:1!important;color:#C9CBEA!important}
+html body #screenTrade#screenTrade #langBarTrade#langBarTrade .lang-code{display:block!important;font-size:8.5px!important;font-weight:800!important;letter-spacing:.04em!important;line-height:1!important;color:#EADFC9!important}
 html body .lang-code{display:none}
 
 /* --- DÉMO / COMPTE RÉEL : un peu moins hauts, alignés sur les bords du site, même taille partout --- */
@@ -940,7 +940,7 @@ html body #tradeWrap#tradeWrap .chart-fs-btn > .chart-fs-ico{display:none!import
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{
   border:0!important;border-radius:0!important;box-shadow:none!important;margin-top:0!important;
   background:
-    linear-gradient(180deg,rgba(8,24,60,0) 0%,rgba(8,24,60,.42) 14%,rgba(6,18,46,.62) 100%)!important;
+    linear-gradient(180deg,rgba(58,42,10,0) 0%,rgba(58,42,10,.42) 14%,rgba(45,32,7,.62) 100%)!important;
   padding:8px 10px 10px!important;
 }
 /* mise : +1 enlevé, ÷2 ×2 ⌫ plus larges */
@@ -1073,7 +1073,7 @@ html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{background-color:#121009!important}
 html body #screenTrade#screenTrade::after{
   content:""!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;height:46%!important;
-  background:linear-gradient(180deg,rgba(18,30,78,0) 0%,rgba(20,34,86,.55) 45%,rgba(22,38,94,.75) 100%)!important;
+  background:linear-gradient(180deg,rgba(78,58,18,0) 0%,rgba(86,64,20,.55) 45%,rgba(94,70,22,.75) 100%)!important;
   pointer-events:none!important;z-index:0!important;
 }
 /* la courbe : en haut et en bas elle se fond doucement dans le bleu (on ne voit plus où elle commence ni où elle finit) */
@@ -1082,15 +1082,15 @@ html body #tradeWrap#tradeWrap #chartStage::before,
 html body #tradeWrap#tradeWrap #chartStage::after{
   content:""!important;position:absolute!important;left:0!important;right:0!important;pointer-events:none!important;z-index:25!important;display:block!important;
 }
-html body #tradeWrap#tradeWrap #chartStage::before{top:0!important;height:22px!important;background:linear-gradient(180deg,rgba(18,16,52,.85),rgba(18,16,52,0))!important}
-html body #tradeWrap#tradeWrap #chartStage::after{bottom:0!important;height:46px!important;background:linear-gradient(180deg,rgba(20,34,86,0),rgba(20,34,86,.88))!important}
-html body #tradeWrap#tradeWrap .chart-toolbar{background:linear-gradient(180deg,rgba(18,16,52,0),rgba(18,16,52,.85))!important}
+html body #tradeWrap#tradeWrap #chartStage::before{top:0!important;height:22px!important;background:linear-gradient(180deg,rgba(52,40,16,.85),rgba(52,40,16,0))!important}
+html body #tradeWrap#tradeWrap #chartStage::after{bottom:0!important;height:46px!important;background:linear-gradient(180deg,rgba(86,64,20,0),rgba(86,64,20,.88))!important}
+html body #tradeWrap#tradeWrap .chart-toolbar{background:linear-gradient(180deg,rgba(52,40,16,0),rgba(52,40,16,.85))!important}
 /* terminal du téléphone : même bleu que la fin de la courbe, sans bord ni carré */
 @media (max-width:859px){
-  html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgba(20,34,86,.88) 0%,rgba(20,34,86,.6) 40%,rgba(20,34,86,.35) 100%)!important}
+  html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgba(86,64,20,.88) 0%,rgba(86,64,20,.6) 40%,rgba(86,64,20,.35) 100%)!important}
 }
 /* plein écran : la fin de la courbe va aussi dans le bleu, et la barre du bas aussi */
-html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgba(20,34,86,.88),rgba(16,26,70,.7))!important;border:0!important;box-shadow:none!important}
+html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgba(86,64,20,.88),rgba(70,52,16,.7))!important;border:0!important;box-shadow:none!important}
 
 /* ACHETER / VENDRE un peu plus larges que le reste (sans sortir de l'écran) */
 @media (max-width:859px){
@@ -1165,7 +1165,7 @@ html.fs-trade body #tradeWrap#tradeWrap .asset-chip.on .mk-name{border-bottom:0!
     background:linear-gradient(90deg,rgba(18,16,9,.95) 0,rgba(18,16,9,0) 34px,rgba(18,16,9,0) calc(100% - 34px),rgba(18,16,9,.95) 100%)!important;
   }
   html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:transparent!important}
-  html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(90deg,rgba(18,16,9,.95),rgba(20,34,86,.7))!important}
+  html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(90deg,rgba(18,16,9,.95),rgba(86,64,20,.7))!important}
 }
 html.oro-guest body #screenTrade#screenTrade #authQuick #btnGoRegister{margin-left:4px!important}
 
@@ -1187,7 +1187,7 @@ html body #tradeWrap#tradeWrap .chart-toolbar{background:linear-gradient(180deg,
   html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{
     width:100vw!important;max-width:100vw!important;margin-left:calc(50% - 50vw)!important;margin-right:calc(50% - 50vw)!important;
     padding-left:14px!important;padding-right:14px!important;box-sizing:border-box!important;
-    background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(14,18,50) 26px,rgba(18,30,78,.9) 100%)!important;
+    background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(50,38,14) 26px,rgba(78,58,18,.9) 100%)!important;
   }
   /* Android : la courbe descend jusqu'au terminal (plus de bande de 10 px entre les deux) */
   html.is-android:not(.fs-trade) body #tradeWrap#tradeWrap #chart,
@@ -1203,7 +1203,7 @@ html body #tradeWrap#tradeWrap .chart-toolbar{background:linear-gradient(180deg,
   html:not(.fs-trade) body #tradeWrap#tradeWrap .trade-row > .btn-trade{width:auto!important;margin:0!important;flex:none!important}
 }
 /* plein écran (téléphone et PC) : la barre du bas commence aussi de la couleur du bas de la courbe */
-html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(14,18,50) 24px,rgba(18,30,78,.85) 100%)!important}
+html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(50,38,14) 24px,rgba(78,58,18,.85) 100%)!important}
 
 /* case du gain : le petit « Payout 88% » garde le même bleu que tout le terminal, quel que soit le payout choisi */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview,
@@ -1230,11 +1230,11 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):no
     background:
       radial-gradient(90% 40% at 0% 0%,rgba(200,145,46,.16),transparent 62%),
       linear-gradient(180deg,rgb(22,19,12) 0%,rgb(19,16,10) 55%,rgb(14,12,8) 100%)!important;
-    background-color:rgb(14,14,44)!important;
+    background-color:rgb(44,34,14)!important;
   }
   html body #screenTrade#screenTrade::after{display:none!important}
-  html body #tradeWrap#tradeWrap .chart-card::after{background:linear-gradient(90deg,rgba(17,17,50,.9) 0,rgba(17,17,50,0) 26px,rgba(17,17,50,0) calc(100% - 26px),rgba(17,17,50,.9) 100%)!important}
-  html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(90deg,rgba(17,17,50,0),rgba(20,30,78,.55))!important}
+  html body #tradeWrap#tradeWrap .chart-card::after{background:linear-gradient(90deg,rgba(50,39,17,.9) 0,rgba(50,39,17,0) 26px,rgba(50,39,17,0) calc(100% - 26px),rgba(50,39,17,.9) 100%)!important}
+  html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(90deg,rgba(50,39,17,0),rgba(78,59,20,.55))!important}
 }
 @media (max-width:859px){html:not(.fs-trade) body #tradeWrap#tradeWrap.trade-wrap{row-gap:0!important;gap:0!important}}
 /* plein écran : on comble les quelques pixels entre la courbe et la barre du bas, de la couleur du bas de la courbe */
@@ -1309,20 +1309,20 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close .fs-exit-txt{m
 /* page profil : en univers (avec des planètes), cartes et boutons assortis, Se déconnecter visible */
 html body #drawerProfile#drawerProfile{
   background:
-    linear-gradient(180deg,rgba(14,10,40,.35),rgba(9,8,28,.6)),
+    linear-gradient(180deg,rgba(40,30,10,.35),rgba(28,21,8,.6)),
     url("galaxy-loader.svg?v=2367") center/cover no-repeat,
-    linear-gradient(180deg,#130F36,#0A0A20)!important;
-  border-left:1px solid rgba(170,150,255,.25)!important;
+    linear-gradient(180deg,#36290F,#20190A)!important;
+  border-left:1px solid rgba(240,215,165,.25)!important;
 }
 html body #drawerProfile#drawerProfile .card,
 html body #drawerProfile#drawerProfile .wallet-card,
 html body #drawerProfile#drawerProfile .drawer-section{
-  background:linear-gradient(180deg,rgba(30,26,74,.55),rgba(14,13,40,.6))!important;
-  border:1px solid rgba(150,140,255,.24)!important;border-radius:16px!important;box-shadow:0 8px 24px rgba(0,0,0,.25)!important;
+  background:linear-gradient(180deg,rgba(74,58,26,.55),rgba(40,31,13,.6))!important;
+  border:1px solid rgba(239,211,156,.24)!important;border-radius:16px!important;box-shadow:0 8px 24px rgba(0,0,0,.25)!important;
 }
-html body #drawerProfile#drawerProfile .drawer-item{background:transparent!important;border-color:rgba(150,140,255,.14)!important}
+html body #drawerProfile#drawerProfile .drawer-item{background:transparent!important;border-color:rgba(239,211,156,.14)!important}
 html body #drawerProfile#drawerProfile .drawer-item .di-ico{
-  color:#C9B8FF!important;background:rgba(200,145,46,.22)!important;border-radius:10px!important;padding:5px!important;box-sizing:content-box!important;
+  color:#F5E4C2!important;background:rgba(200,145,46,.22)!important;border-radius:10px!important;padding:5px!important;box-sizing:content-box!important;
 }
 html body #drawerProfile#drawerProfile .drawer-item.drawer-logout{
   background:linear-gradient(180deg,rgba(255,77,94,.22),rgba(200,30,50,.16))!important;border:1px solid rgba(255,110,125,.55)!important;border-radius:12px!important;color:#FFC2C9!important;
@@ -1364,12 +1364,12 @@ html.fs-trade body #tradeWrap#tradeWrap .asset-chip.on .mk-art{
 }
 
 /* page profil : la ligne du haut (PROFIL et la croix) n'est plus noire, l'univers passe derrière */
-html body #drawerProfile#drawerProfile .drawer-head{background:transparent!important;border-bottom:1px solid rgba(150,140,255,.18)!important;box-shadow:none!important}
-html body #drawerProfile#drawerProfile .drawer-head .btn-close{background:rgba(200,145,46,.22)!important;border:1px solid rgba(170,150,255,.45)!important;color:#E9DDFF!important}
+html body #drawerProfile#drawerProfile .drawer-head{background:transparent!important;border-bottom:1px solid rgba(239,211,156,.18)!important;box-shadow:none!important}
+html body #drawerProfile#drawerProfile .drawer-head .btn-close{background:rgba(200,145,46,.22)!important;border:1px solid rgba(240,215,165,.45)!important;color:#FAF2E2!important}
 /* Safari iPhone : sous la barre de Safari, l'univers continue (plus de bande sombre / brune en bas) */
 @media (max-width:859px){
-  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#18275C!important;height:calc(14px + env(safe-area-inset-bottom,0px))!important}
-  html.is-ios,html.is-ios body{background-color:#18275C!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#5C4518!important;height:calc(14px + env(safe-area-inset-bottom,0px))!important}
+  html.is-ios,html.is-ios body{background-color:#5C4518!important}
 }
 @media (max-width:859px){html:not(.oro-guest) body #screenTrade#screenTrade .topbar .topbar-row > #topbarCta#topbarCta{width:clamp(120px,calc(100vw - 236px),186px)!important}}
 
@@ -1390,15 +1390,15 @@ html body #withdrawModal .modal-box,
 html body #helpModal .modal-box,
 html body #termsModal .modal-box{
   background:
-    linear-gradient(180deg,rgba(12,12,38,.50),rgba(8,8,26,.66)),
+    linear-gradient(180deg,rgba(38,29,12,.50),rgba(26,20,8,.66)),
     url("galaxy-modal.svg?v=2367") center/cover no-repeat,
-    linear-gradient(180deg,#120F34,#0A0A20)!important;
+    linear-gradient(180deg,#34280F,#20190A)!important;
 }
 html body #depositModal .modal-box{background:
     radial-gradient(80% 40% at 100% 0%,rgba(20,184,166,.14),transparent 65%),
-    linear-gradient(180deg,rgba(10,14,36,.48),rgba(6,10,26,.64)),
+    linear-gradient(180deg,rgba(36,27,10,.48),rgba(26,19,6,.64)),
     url("galaxy-modal.svg?v=2367") center/cover no-repeat,
-    linear-gradient(180deg,#0F1434,#090C20)!important}
+    linear-gradient(180deg,#34280F,#201809)!important}
 
 /* Recharger (téléphone, connecté) : même espace entre OROLADO et Recharger qu'entre Recharger et Aide ;
    Recharger prend toute la place entre les deux */
@@ -1442,8 +1442,8 @@ html.fs-trade body #tradeWrap#tradeWrap #inputStake{font-size:16px!important;let
 
 /* Safari iPhone : sous la barre, un bleu nuit foncé (couleur du bas de l'univers), pas un bleu vif */
 @media (max-width:859px){
-  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#101838!important}
-  html.is-ios,html.is-ios body{background-color:#101838!important}
+  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#382B10!important}
+  html.is-ios,html.is-ios body{background-color:#382B10!important}
 }
 
 /* profil : la croix n'est plus coupée par la ligne du haut */
@@ -1495,16 +1495,16 @@ html body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:calc(10px + 
 /* le bas de l'écran (sous la barre de Safari, et pendant le chargement) : un fond d'univers avec des étoiles,
    pas une couleur plate */
 @media (max-width:859px){html,html body{
-  background-color:#101838!important;
+  background-color:#382B10!important;
   background-image:
-    linear-gradient(180deg,#101838,#141C46)!important;
+    linear-gradient(180deg,#382B10,#463514)!important;
   background-size:100% 100%!important;
 }}
 @media (max-width:859px){
   html.is-ios body #oroIosFloor#oroIosFloor{
     display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;
     height:calc(14px + env(safe-area-inset-bottom,0px))!important;z-index:3!important;pointer-events:none!important;
-    background-color:#101838!important;
+    background-color:#382B10!important;
     background-image:none!important;
   }
   html.is-ios.fs-trade body #oroIosFloor#oroIosFloor{display:none!important}
@@ -1514,17 +1514,17 @@ html body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:calc(10px + 
    Retouches 16 : échange (demande du propriétaire) — BAAL (lion) sur la simulation violette,
    ORO 999 (pyramide, sans barre violette) sur la simulation orange façon Boom
    ===================================================================== */
-html body #tradeWrap#tradeWrap .asset-chip[data-asset="apex500"]{--p1:#EBDDFF!important;--p2:#6D28D9!important;--pg:rgba(224,168,36,.45)!important}
+html body #tradeWrap#tradeWrap .asset-chip[data-asset="apex500"]{--p1:#FAF2E2!important;--p2:#D99E28!important;--pg:rgba(224,168,36,.45)!important}
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="horizon50"]{--p1:#FFC88A!important;--p2:#B24A08!important;--pg:rgba(255,152,0,.45)!important}
 
 /* =====================================================================
    Retouches 17 : le bas de l'écran (sous la barre de Safari / Chrome) prend EXACTEMENT la couleur du
-   bas du terminal (#121D4C) : plus de bord ni de « carré », le site semble continuer jusqu'en bas.
+   bas du terminal (#4C3912) : plus de bord ni de « carré », le site semble continuer jusqu'en bas.
    ===================================================================== */
 @media (max-width:859px){
-  html,html body{background-color:#121D4C!important;background-image:none!important}
-  html.is-ios body #oroIosFloor#oroIosFloor{background:#121D4C!important;background-image:none!important}
-  html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(14,18,50) 26px,#121D4C 100%)!important}
+  html,html body{background-color:#4C3912!important;background-image:none!important}
+  html.is-ios body #oroIosFloor#oroIosFloor{background:#4C3912!important;background-image:none!important}
+  html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(50,38,14) 26px,#4C3912 100%)!important}
 }
 
 /* =====================================================================
@@ -1580,7 +1580,7 @@ html.fs-trade body #tradeWrap#tradeWrap #chartReset{margin:0 auto 0 10px!importa
      et ce même bleu continue sous la barre du navigateur → aucune limite visible */
   html,html body{background-color:#141210!important;background-image:none!important}
   html.is-ios body #oroIosFloor#oroIosFloor{background:#141210!important;background-image:none!important}
-  html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(14,18,50) 26px,#141210 100%)!important}
+  html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,rgb(14,12,8) 0,rgb(50,38,14) 26px,#141210 100%)!important}
   /* Android (Chrome) : ACHETER / VENDRE descendent presque contre la barre du navigateur
      (plus de bande sombre dessous), sans ombre noire en bas */
   html.is-android:not(.fs-trade) body #tradeWrap#tradeWrap .pad{padding-bottom:3px!important}
@@ -1611,7 +1611,7 @@ html.fs-trade body #tradeWrap#tradeWrap #chartZoomIn#chartZoomIn{margin-left:aut
    ===================================================================== */
 @media (max-width:859px){
   /* iPhone : la bande sous la barre de Safari prend ENFIN le bleu des fenêtres (#141210) sur l'écran de
-     jeu aussi (une ancienne règle plus forte gardait #101838 « bleu pur ») ; et elle n'existe que sur
+     jeu aussi (une ancienne règle plus forte gardait #382B10 « bleu pur ») ; et elle n'existe que sur
      Safari : sur Chrome / autres navigateurs iPhone, plus de bande sous ACHETER / VENDRE */
   html.is-ios.is-ios-safari body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor,
   html.is-ios.is-ios-safari body #oroIosFloor#oroIosFloor{background:#141210!important;background-image:none!important}
@@ -1700,10 +1700,10 @@ html[dir="rtl"] body .strip-price{direction:ltr!important;unicode-bidi:isolate!i
    (celui des pages d'inscription) ; les planètes dessinées DANS la courbe restent */
 @media (min-width:860px){
   html body #screenTrade#screenTrade,html body #fsTradeOverlay#fsTradeOverlay{
-    background:linear-gradient(180deg,rgba(16,13,8,.15),rgba(16,13,8,.35)),url("galaxy-auth.svg?v=3426") center top/cover no-repeat,#13113A!important}
+    background:linear-gradient(180deg,rgba(16,13,8,.15),rgba(16,13,8,.35)),url("galaxy-auth.svg?v=3426") center top/cover no-repeat,#3A2C11!important}
 }
 html.is-tv body #screenTrade#screenTrade,html.is-tv body #fsTradeOverlay#fsTradeOverlay{
-  background:linear-gradient(180deg,rgba(16,13,8,.15),rgba(16,13,8,.35)),url("galaxy-auth.svg?v=3426") center top/cover no-repeat,#13113A!important}
+  background:linear-gradient(180deg,rgba(16,13,8,.15),rgba(16,13,8,.35)),url("galaxy-auth.svg?v=3426") center top/cover no-repeat,#3A2C11!important}
 /* TV : noms des marchés lisibles en entier (VOLATILITY, APOCALYPSE…) */
 html.is-tv body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:7.6px!important;letter-spacing:-.02em!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important}
 html.is-tv.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:9px!important}
@@ -1887,14 +1887,14 @@ html body #toast.toast.lux-msg:not(.micro){
   display:flex!important;align-items:center!important;gap:10px!important;text-align:left!important;
   padding:10px 14px 10px 12px!important;border-radius:10px!important;
   font-size:13px!important;font-weight:700!important;line-height:1.3!important;letter-spacing:.005em!important;
-  background:linear-gradient(180deg,rgba(26,24,62,.97),rgba(14,13,38,.97))!important;
-  border:1px solid rgba(150,140,255,.28)!important;border-left:4px solid #60A5FA!important;color:#EEF2FF!important;
+  background:linear-gradient(180deg,rgba(62,49,24,.97),rgba(38,30,13,.97))!important;
+  border:1px solid rgba(239,211,156,.28)!important;border-left:4px solid #E8C172!important;color:#EEF2FF!important;
   box-shadow:0 12px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)!important}
 html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico{
   width:24px!important;height:24px!important;flex:0 0 24px!important;margin:0!important;border-radius:6px!important;opacity:1!important;
-  background:rgba(96,165,250,.18)!important;-webkit-mask:none!important;mask:none!important;position:relative}
+  background:rgba(232,193,114,.18)!important;-webkit-mask:none!important;mask:none!important;position:relative}
 html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico::after{content:"i";position:absolute;inset:0;display:grid;place-items:center;
-  font:800 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;color:#93C5FD}
+  font:800 14px/1 "Plus Jakarta Sans",system-ui,sans-serif;color:#F0D5A0}
 html body #toast.toast.err:not(.micro){border-left-color:#F43F5E!important;color:#FFE4E8!important}
 html body #toast.toast.err:not(.micro) .lux-msg-ico{background:rgba(244,63,94,.18)!important}
 html body #toast.toast.err:not(.micro) .lux-msg-ico::after{content:"!";color:#FB7185}
@@ -1908,9 +1908,9 @@ html body #toast.toast.lux-msg:not(.micro) .lux-msg-txt{flex:1 1 auto;min-width:
 /* v2309 — notifications COLORÉES aux couleurs du site (le propriétaire : « pas des notifications noires, sombres »).
    Dégradé plein et lumineux selon le type, texte blanc, icône dans un carré clair. */
 html body #toast.toast.lux-msg:not(.micro){
-  background:linear-gradient(135deg,#6D28D9 0%,#4F46E5 55%,#C8912E 100%)!important;border:1px solid rgba(255,255,255,.28)!important;
+  background:linear-gradient(135deg,#D99E28 0%,#E1AF4A 55%,#C8912E 100%)!important;border:1px solid rgba(255,255,255,.28)!important;
   border-left:1px solid rgba(255,255,255,.28)!important;color:#FFFFFF!important;
-  box-shadow:0 10px 28px rgba(79,70,229,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+  box-shadow:0 10px 28px rgba(225,175,74,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico{background:rgba(255,255,255,.22)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
 html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico::after{color:#FFFFFF!important}
 html body #toast.toast.err:not(.micro){background:linear-gradient(135deg,#F43F5E 0%,#E11D48 55%,#BE185D 100%)!important;color:#fff!important;
@@ -2006,8 +2006,8 @@ html body #toast.toast.lux-msg:not(.micro){
   gap:7px!important;padding:6px 12px 6px 7px!important;border-radius:999px!important;
   font-size:12px!important;line-height:1.25!important;min-height:0!important;height:auto!important;
   -webkit-backdrop-filter:blur(8px) saturate(1.3);backdrop-filter:blur(8px) saturate(1.3);
-  background:linear-gradient(135deg,rgba(109,40,217,.80),rgba(37,99,235,.80))!important;
-  box-shadow:0 6px 18px rgba(30,20,90,.35),inset 0 1px 0 rgba(255,255,255,.25)!important}
+  background:linear-gradient(135deg,rgba(217,158,40,.80),rgba(222,165,50,.80))!important;
+  box-shadow:0 6px 18px rgba(90,67,20,.35),inset 0 1px 0 rgba(255,255,255,.25)!important}
 html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico{width:18px!important;height:18px!important;flex:0 0 18px!important;border-radius:999px!important}
 html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico::after{font-size:11px!important}
 html body #toast.toast.err:not(.micro){background:linear-gradient(135deg,rgba(244,63,94,.80),rgba(190,24,93,.80))!important;box-shadow:0 6px 18px rgba(190,24,93,.30),inset 0 1px 0 rgba(255,255,255,.25)!important}
@@ -2062,7 +2062,7 @@ html body #toast.toast.tie:not(.micro){background:linear-gradient(135deg,rgba(25
   html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade .topbar-actions #btnProfile#btnProfile svg{width:22px!important;height:22px!important;stroke-width:2!important}
   html:not(.oro-guest):not(.fs-trade):not(.is-tv) body #screenTrade#screenTrade .topbar-actions #btnProfile#btnProfile .pf-txt{
     display:block!important;font:800 8.5px/1 "Plus Jakarta Sans",system-ui,-apple-system,sans-serif!important;letter-spacing:.34px!important;
-    color:rgb(201,203,234)!important;white-space:nowrap!important;max-width:38px!important}
+    color:rgb(234,223,201)!important;white-space:nowrap!important;max-width:38px!important}
   html[lang="ru"] body #screenTrade#screenTrade .topbar-actions #btnProfile#btnProfile .pf-txt,
   html[lang="vi"] body #screenTrade#screenTrade .topbar-actions #btnProfile#btnProfile .pf-txt{font-size:7px!important;letter-spacing:0!important}
 }
@@ -2124,8 +2124,8 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
   html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
     background:linear-gradient(0deg,#141210 0,#141210 env(safe-area-inset-bottom,0px),rgba(20,18,16,0) calc(env(safe-area-inset-bottom,0px) + 34px)),
       url("../icons/ui/pad-planets.svg?v=3426") center/cover no-repeat,
-      linear-gradient(180deg,rgb(13,14,40) 0,rgba(13,14,40,.6) 6px,rgba(13,14,40,0) 22px),
-      linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #141210!important}
+      linear-gradient(180deg,rgb(40,31,13) 0,rgba(40,31,13,.6) 6px,rgba(40,31,13,0) 22px),
+      linear-gradient(180deg,rgba(40,31,12,.55),rgba(32,24,9,.78)) #141210!important}
   /* v2965 (propriétaire, iPhone : « bande noire sous la courbe ») : le raccord sombre en haut du terminal est plus court et plus
      clair (avant : noir plein sur 10 px puis fondu jusqu'à 40 px) ; il part toujours de la couleur du bas de la courbe (pas de trait). */
   html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#141210!important}
@@ -2145,9 +2145,9 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
    TOUT EN BAS de l'écran par js/app.js (fond de la page, sous chaque écran : trading, Profil, Historique, Jeux). Le terminal garde
    son fond sombre, sans bande bleue en bas et sans dessin coupé ; fond prune partout (plus de bleu d'un côté et de noir de l'autre). */
 html.ios-app:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
-  background:linear-gradient(180deg,rgb(13,14,40) 0,rgba(13,14,40,.6) 6px,rgba(13,14,40,0) 22px),
-    linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #141210!important}
-html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#0F102E!important}
+  background:linear-gradient(180deg,rgb(40,31,13) 0,rgba(40,31,13,.6) 6px,rgba(40,31,13,0) 22px),
+    linear-gradient(180deg,rgba(40,31,12,.55),rgba(32,24,9,.78)) #141210!important}
+html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#2E240F!important}
 
 /* 2026-10-20 (propriétaire) — APPLICATION iPhone installée : le petit monde de planètes (app-floor.svg) est un bandeau fixé
    tout en bas de l'écran, haut exactement comme l'espace libre sous le terminal (--ios-floor-h, mesuré par js/app.js) :
@@ -2155,7 +2155,7 @@ html.ios-app,html.ios-app body:not(#oroQ):not(.oroQ):not(#z9){background-color:#
 html.ios-app:not(.fs-trade) body:not(#z1):not(#z2) #oroIosFloor#oroIosFloor#oroIosFloor{
   display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:auto!important;top:var(--ios-floor-top,100vh)!important;
   height:var(--ios-floor-h,0px)!important;z-index:3!important;pointer-events:none!important;
-  background:url("../icons/ui/app-floor.svg?v=2919") center bottom/cover no-repeat,#0F102E!important}
+  background:url("../icons/ui/app-floor.svg?v=2919") center bottom/cover no-repeat,#2E240F!important}
 
 /* 2026-10-20 (propriétaire) — APPLI iPhone, PLEIN ÉCRAN : mise / ACHETER / VENDRE restent dans la fenêtre de l'appli
    (les descendre plus bas les coupait sous l'écran). */
@@ -2191,13 +2191,13 @@ html.ios-app.is-ios:root body #screenTrade#screenTrade .trade-shell,html.ios-app
    - pendant le chargement : le MÊME décor que l'écran de chargement, dessiné à la taille de l'écran entier pour les deux → le bas
      est la suite exacte de l'image (aucun raccord) ;
    - ensuite : le petit monde de planètes (app-floor.svg) posé exactement dans la bande (sous le site), partout, plein écran compris.
-   Une seule couleur de fond (#0B0A20, posée dès la 1re image par index.html) : plus de noirs différents au lancement. */
+   Une seule couleur de fond (#20190A, posée dès la 1re image par index.html) : plus de noirs différents au lancement. */
 html.ios-app.is-ios:root body #oroLoader#oroLoader{background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important;background-repeat:no-repeat!important}
 html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=2919")!important;background-repeat:no-repeat!important;
   background-position:center top var(--ios-site-h,100%)!important;background-size:100% var(--ios-under,0px)!important}
 html.ios-app.is-ios:root:has(#oroLoader:not(.off)){
-  background-image:radial-gradient(ellipse at 50% 44%,rgba(60,40,12,.85) 0%,rgba(20,16,40,.35) 34%,rgba(0,0,0,0) 60%),url("galaxy-loader.svg?v=2790"),
-    radial-gradient(120% 55% at 0% 0%,rgba(200,145,46,.28),transparent 62%),radial-gradient(110% 55% at 50% 112%,rgba(46,84,220,.22),transparent 62%),
+  background-image:radial-gradient(ellipse at 50% 44%,rgba(60,40,12,.85) 0%,rgba(40,32,16,.35) 34%,rgba(0,0,0,0) 60%),url("galaxy-loader.svg?v=2790"),
+    radial-gradient(120% 55% at 0% 0%,rgba(200,145,46,.28),transparent 62%),radial-gradient(110% 55% at 50% 112%,rgba(220,162,46,.22),transparent 62%),
     linear-gradient(180deg,#120F08 0%,#0A0906 100%)!important;
   background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important}
 /* plein écran : la fenêtre du plein écran s'arrête au bas du site (rien ne passe dans la bande, rien au-dessus d'ACHETER) */

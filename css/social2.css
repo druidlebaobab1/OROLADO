@@ -98,7 +98,7 @@ html[dir=rtl] #liveModal .sx .sx-bk .sx-ic,html[dir=rtl] #liveModal .sx .sx-go .
   background:linear-gradient(145deg,color-mix(in srgb,var(--av,#C8912E) 82%,#fff),var(--av,#C8912E) 60%,color-mix(in srgb,var(--av,#C8912E) 70%,#000));box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
 #liveModal .sx-av.big{width:84px;height:84px;font-size:34px}
 #liveModal .sx-av svg{width:62%;height:62%}
-#liveModal .sx-av-news{background:linear-gradient(145deg,#5AB0FF,#2457E6)}
+#liveModal .sx-av-news{background:linear-gradient(145deg,#E8C071,#DDA22D)}
 #liveModal .sx-av-team{background:linear-gradient(145deg,#4BE3C7,#0E9A8A)}
 #liveModal .sx-av-g{background:linear-gradient(145deg,rgba(242,193,78,.35),rgba(200,145,46,.35));border:1px solid rgba(242,193,78,.25);font-size:25px;font-weight:400}
 #liveModal .sx-av-g.big{font-size:42px}
