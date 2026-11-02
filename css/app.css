@@ -4549,7 +4549,7 @@ html body #fsTradeOverlay .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit
 html body #fsTradeOverlay #inputStake{border-color:rgba(52,211,153,.42)!important;background:linear-gradient(180deg,rgba(52,211,153,.07),rgba(11,14,20,.6))!important;box-shadow:0 0 8px rgba(52,211,153,.14)!important}
 html body #fsTradeOverlay #inputStake:focus{border-color:rgba(52,211,153,.85)!important;box-shadow:0 0 0 3px rgba(52,211,153,.16)!important}
 html body #screenAuth .auth-card input[type=text],html body #screenAuth .auth-card input[type=email],html body #screenAuth .auth-card input[type=password],html body #screenAuth .auth-card input[type=tel],html body #screenAuth .auth-card input:not([type]){border:1px solid rgba(242,193,78,.4)!important;background:linear-gradient(180deg,rgba(242,193,78,.06),rgba(16,13,8,.88))!important;box-shadow:0 0 8px rgba(242,193,78,.12)!important}
-html body #screenAuth .auth-card input:focus{border-color:rgba(56,189,248,.9)!important;box-shadow:0 0 0 3px rgba(56,189,248,.16),0 0 12px rgba(56,189,248,.25)!important}
+html body #screenAuth .auth-card input:focus{border-color:rgba(242,193,78,.9)!important;box-shadow:0 0 0 3px rgba(242,193,78,.16),0 0 12px rgba(242,193,78,.25)!important}
 html body #screenAuth .auth-card .field label{color:#BAE6FD!important}
 html body #screenAuth .auth-tab:not(.on){background:linear-gradient(180deg,rgba(148,163,184,.12),rgba(148,163,184,.03))!important;border:1px solid rgba(148,163,184,.35)!important;color:#CBD5E1!important}
 html body #screenAuth .pass-toggle{color:#BAE6FD!important}
