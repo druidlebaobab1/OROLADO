@@ -118,7 +118,7 @@
     // v2745 (propriétaire) : EXACTEMENT la carte « Compte réel » du trading (icône portefeuille verte, libellé vert, « $ » devant)
     var realLbl = (document.querySelector('#modeReal .mb-lbl') || {}).textContent || X().realAcc;
     b.innerHTML = '<span class="cw-wal cw-wal-img" aria-hidden="true"><img src="img/social/wallet.webp?v=3408" alt="" draggable="false"></span>' +
-      '<span class="cw-t"><small>' + esc(realLbl) + '</small><b>$&nbsp;' + (S.bal[md] == null ? '—' : m2(S.bal[md])) + '</b></span><i class="cw-plus" aria-hidden="true">+</i>';
+      '<span class="cw-t"><small>' + esc(realLbl) + '</small><b>$&nbsp;' + (S.bal[md] == null ? '—' : m2(S.bal[md])) + '</b></span><i class="cw-plus" aria-hidden="true"><svg class="ms-plus-ico" viewBox="0 0 24 24"><rect x="10.25" y="3.6" width="3.5" height="16.8" rx="1.75"/><rect x="3.6" y="10.25" width="16.8" height="3.5" rx="1.75"/></svg></i>';
     b.className = 'cs-wallet cw-same ' + md;
   }
   var vaultT = 0;

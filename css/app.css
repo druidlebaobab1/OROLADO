@@ -13852,3 +13852,7 @@ html:root body #modeSwitcher#modeSwitcher#modeSwitcher .ms-plus{display:grid!imp
   border:1px solid rgba(255,214,120,.9)!important}
 html:root body #modeSwitcher .ms-plus .ms-plus-ico{width:18px;height:18px;display:block;fill:#3A2200;filter:drop-shadow(0 1px 0 rgba(255,236,190,.35))}
 html:root body #modeSwitcher .ms-plus span{display:none!important}
+
+/* v3430 — « + » de la pastille solde du lobby : même signe géométrique centré, couleur du bouton. */
+html:root body #casinoModal .cw-plus{padding:0!important}
+html:root body #casinoModal .cw-plus .ms-plus-ico{width:17px;height:17px;display:block;fill:currentColor;filter:drop-shadow(0 1px 0 rgba(0,0,0,.15))}
