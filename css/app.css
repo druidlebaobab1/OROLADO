@@ -8334,7 +8334,7 @@ html body #portalModal#portalModal .bon-head .bon-big{font-size:12.5px!important
    ronds dorés : bord bleu léger, durée en blanc avec une petite lueur bleue, flèches fines sans rond. ===== */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row,
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row{
-  background:transparent!important;border:0!important;box-shadow:none!important}
+  background:rgba(255,255,255,.04)!important;border:1.5px solid rgba(255,255,255,.26)!important;border-radius:12px!important;box-shadow:none!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on,
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on{
   background:transparent!important;border:0!important;color:#FBF4E6!important;box-shadow:none!important;text-shadow:0 0 8px rgba(236,204,139,.45)!important}
@@ -8353,7 +8353,7 @@ html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOv
 /* ===== v2492 — Mise et gain prennent le même bleu que la case des durées (moins de couleurs dans le terminal). ===== */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) :is(.stake-field,.win-preview),
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) :is(.stake-field,.win-preview){
-  background:transparent!important;border:0!important;box-shadow:none!important}
+  background:rgba(255,255,255,.04)!important;border:1.5px solid rgba(255,255,255,.26)!important;border-radius:12px!important;box-shadow:none!important}
 
 /* ===== v2492 — PC : la fenêtre Cadeaux s'ouvre en GRAND (comme la page Apprendre), plus en petite page de téléphone. ===== */
 @media (min-width:860px){
@@ -13897,7 +13897,7 @@ html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTr
 /* ORBES PAYOUT : même verre sombre + liseré or discret que le haut (uniforme) */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{
-  background:transparent!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important}
+  background:rgba(255,255,255,.03)!important;border:1.5px solid rgba(255,255,255,.22)!important;box-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on{
   background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.4)!important;box-shadow:none!important}
