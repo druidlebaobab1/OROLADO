@@ -7370,12 +7370,12 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .win-preview
   background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02))!important;border:1px solid rgba(251,191,36,.45)!important;
   box-shadow:0 0 12px rgba(251,191,36,.15)!important}
 /* Payouts : couleur légère au repos, couleur pleine « eau » quand choisi. */
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip{--c:200,145,46;
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip{--c:64,156,110;
   background:linear-gradient(180deg,rgba(var(--c),.20),rgba(var(--c),.05))!important;border:1px solid rgba(var(--c),.55)!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.03) inset!important;transition:transform .1s,box-shadow .2s!important}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(2){--c:224,168,36}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(3){--c:242,193,78}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(4){--c:247,215,116}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(2){--c:74,134,186}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(3){--c:150,112,186}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(4){--c:198,150,74}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip.on{
   background:linear-gradient(120deg,rgba(var(--c),.85),rgba(var(--c),1) 35%,rgba(255,255,255,.55) 50%,rgba(var(--c),1) 65%,rgba(var(--c),.85))!important;
   background-size:250% 100%!important;animation:oroWater 3.2s ease-in-out infinite!important;border-color:rgba(255,255,255,.7)!important;
@@ -13912,21 +13912,14 @@ html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTr
 /* ORBES PAYOUT : planètes SOMBRES à liseré crème discret (fini les planètes dorées) */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{
-  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.12),rgba(34,31,23,.94) 72%)!important;
-  border:1px solid rgba(237,228,208,.22)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.3) inset!important}
+  background:radial-gradient(circle at 32% 26%,rgba(var(--c),.55),rgba(18,17,13,.95) 70%)!important;
+  border:1px solid rgba(var(--c),.5)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.35) inset!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on{
-  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.2),rgba(52,48,36,.96) 72%)!important;
-  border:1px solid rgba(237,228,208,.5)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.25) inset,0 0 0 2px rgba(237,228,208,.5)!important}
+  background:radial-gradient(circle at 32% 26%,rgba(var(--c),.9),rgba(26,24,18,.96) 72%)!important;
+  border:1px solid rgba(var(--c),.95)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.25) inset,0 0 0 2px rgba(255,255,255,.4),0 0 9px rgba(var(--c),.45)!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct{
   color:#F0EAD8!important;-webkit-text-fill-color:#F0EAD8!important;text-shadow:0 1px 2px rgba(0,0,0,.6)!important}
-
-/* 2026-11-02 (propriétaire) : boutons de direction ACHETER/VENDRE — les ronds des flèches
-   ne sont plus blancs « sans couleur » : léger teinté vert pour ACHETER, rosé pour VENDRE. */
-html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .btn-call .bt-arr{background-color:rgba(206,247,222,.95)!important}
-html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .btn-put .bt-arr{background-color:rgba(255,221,226,.95)!important}
-html:root body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .btn-call .bt-arr{background-color:rgba(206,247,222,.95)!important}
-html:root body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .btn-put .bt-arr{background-color:rgba(255,221,226,.95)!important}
