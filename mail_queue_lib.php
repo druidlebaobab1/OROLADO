@@ -122,20 +122,17 @@ function admin_mail_html(string $text, string $btnSpec = ''): string {
     $h = (string) preg_replace('~(https?://[^\s<]+)~u', '<a href="$1" style="color:#F5C518;font-weight:700;text-decoration:underline">$1</a>', $h);
     $body .= '<p style="margin:0 0 14px;">' . nl2br($h) . '</p>';
   }
-  // 2026-11-02 (propriétaire : « email stylé ») — gabarit premium OROLADO (or/noir), en-tête à liseré doré,
-  // bouton doré brillant, bas de page « jeu responsable ». Générique : marche pour n'importe quel message.
+  // 2026-11-02 (propriétaire : « emails simples, pas de jolis trucs, pour ne pas aller en spam ») —
+  // gabarit SOBRE : ressemble à un e-mail écrit à la main (meilleure délivrabilité). En-tête texte, un lien/bouton discret.
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
-    . '<body style="margin:0;padding:0;background:#05060a;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
-    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#05060a;padding:24px 12px;"><tr><td align="center">'
-    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#0b0d14;border-radius:20px;border:1px solid rgba(240,210,120,.28);overflow:hidden;">'
-    . '<tr><td style="background:linear-gradient(135deg,#120d04,#1c1406 60%,#0b0d14);padding:30px 24px 22px;text-align:center;">'
-    . '<div style="font-size:28px;font-weight:900;letter-spacing:.16em;color:#F2C879;font-family:Georgia,serif;">OROLADO</div>'
-    . '<div style="height:3px;width:60px;margin:12px auto 0;background:linear-gradient(90deg,#F7D785,#E0A528);border-radius:3px;"></div></td></tr>'
-    . '<tr><td style="padding:24px 26px 8px;color:#D7DBE6;font-size:15px;line-height:1.7;">' . $body . '</td></tr>'
-    . '<tr><td style="padding:8px 26px 26px;text-align:center;"><a href="' . $e($href) . '" style="display:inline-block;background:linear-gradient(135deg,#F7D785,#E0A528 60%,#C9962F);color:#1a1205;text-decoration:none;font-weight:900;font-size:16px;line-height:1.2;padding:15px 36px;border-radius:999px;border:0;box-shadow:0 6px 18px rgba(224,165,40,.3);">' . $btn . '</a></td></tr>'
-    . '<tr><td style="padding:16px 26px 24px;border-top:1px solid rgba(255,255,255,.06);text-align:center;color:#6b6e7d;font-size:11px;line-height:1.6;">'
-    . '<span style="letter-spacing:.2em;color:#B99A5A;font-weight:700;">OROLADO</span><br>orolado.com &middot; Jouer comporte des risques. 18+. Jouez de fa&ccedil;on responsable.</td></tr>'
-    . '</table></td></tr></table></body></html>';
+    . '<body style="margin:0;padding:0;background:#0B1220;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0B1220;padding:20px 12px;"><tr><td align="center">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;background:#121A2B;border-radius:16px;border:1px solid #2B3A57;">'
+    . '<tr><td style="padding:22px 22px 6px;text-align:center;"><div style="font-size:22px;font-weight:800;letter-spacing:.08em;color:#F5C518;">OROLADO</div>'
+    . '<div style="height:3px;width:56px;margin:10px auto 0;background:#F5C518;border-radius:3px;"></div></td></tr>'
+    . '<tr><td style="padding:14px 22px 6px;color:#E8EEF9;font-size:15px;line-height:1.6;">' . $body . '</td></tr>'
+    . '<tr><td style="padding:4px 22px 24px;text-align:center;"><a href="' . $e($href) . '" style="display:inline-block;background:#F59E0B;color:#111827;text-decoration:none;font-weight:800;font-size:16px;line-height:1.2;padding:14px 30px;border-radius:12px;border:1px solid #D97706;">' . $btn . '</a></td></tr>'
+    . '</table><div style="color:#6B7A99;font-size:11px;margin-top:12px;">orolado.com</div></td></tr></table></body></html>';
 }
 
 function admin_mail_plain(string $to, string $subject, string $msg, string $btn = ''): array {
