@@ -8188,7 +8188,7 @@ html body #rcptModal#rcptModal .rc-back::before{content:"";position:absolute;lef
    téléphone, grand écran, plein écran. Le haut de la boîte de la courbe commence transparent (la barre MA / BB / EMA
    est « posée » sur la courbe) et la courbe elle-même apparaît en fondu en haut et en bas. Dessin seulement. ===== */
 html body #chart#chart.chart-card,html body #fsTradeOverlay .chart-card{
-  background:linear-gradient(180deg,rgba(19,18,59,0) 0,rgba(19,18,59,.85) 22px,rgb(19,18,59) 40px,rgb(17,18,50) 50%,rgba(12,12,35,.9) 100%)!important}
+  background:linear-gradient(180deg,rgba(22,19,12,0) 0,rgba(22,19,12,.85) 22px,rgb(22,19,12) 40px,rgb(20,17,11) 50%,rgba(14,12,8,.9) 100%)!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .chart-toolbar,html body #fsTradeOverlay .chart-toolbar{background:none!important;border:0!important;box-shadow:none!important}
 html body #chartCanvas,html body #chartOverlay{
   -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16px,#000 calc(100% - 10px),rgba(0,0,0,.35) 100%);
@@ -8201,7 +8201,7 @@ html body #chartCanvas,html body #chartOverlay{
   mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.55) 12px,#000 28px,#000 calc(100% - 8px),rgba(0,0,0,.45) 100%)}
 /* v2472 (suite) — plus fort que l'ancienne règle de galaxy.css (chargée après) : la boîte de la courbe commence transparente. */
 html body #tradeWrap#tradeWrap#tradeWrap #chart#chart.chart-card,html body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap .chart-card{
-  background:linear-gradient(180deg,rgba(19,18,59,0) 0,rgba(19,18,59,.85) 22px,rgb(19,18,59) 40px,rgb(17,18,50) 50%,rgb(12,12,35) 100%)!important}
+  background:linear-gradient(180deg,rgba(22,19,12,0) 0,rgba(22,19,12,.85) 22px,rgb(22,19,12) 40px,rgb(20,17,11) 50%,rgb(14,12,8) 100%)!important}
 /* v2475 — l'ombre des côtés de la courbe (gauche / droite) s'efface en douceur en haut et en bas : plus de « carré »
    au-dessus de la case du gain ni à côté de la barre MA / BB / EMA. */
 html body #tradeWrap#tradeWrap#tradeWrap .chart-card::after,html body #fsTradeOverlay .chart-card::after{
@@ -8230,7 +8230,7 @@ html body .chart-stage .chart-outcome.tie .oc-ic svg{width:13px!important;height
 /* v2477 — Plein écran : noms des marchés remontés (plus collés au bord de la courbe) et fondu du haut plus long. */
 html body #fsTradeOverlay .asset-bar .asset-chip .mk-name{top:-3px!important}
 html body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap #chart#chart.chart-card{
-  background:linear-gradient(180deg,rgba(19,18,59,0) 0,rgba(19,18,59,.6) 26px,rgb(19,18,59) 48px,rgb(17,18,50) 50%,rgb(12,12,35) 100%)!important}
+  background:linear-gradient(180deg,rgba(22,19,12,0) 0,rgba(22,19,12,.6) 26px,rgb(22,19,12) 48px,rgb(20,17,11) 50%,rgb(14,12,8) 100%)!important}
 .learn-modal .lg-oc-cap{margin:-4px 0 2px -14px;font-size:11px;font-weight:800;color:#FFE7A3}
 
 /* ===== v2481 — Plein écran comme l'écran normal : la scène de la courbe n'a plus son propre fond (il recommençait
@@ -13488,7 +13488,7 @@ html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTr
    derniers pixels du graphique se fondent doucement dans cette couleur. Rien ne bouge. */
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay #chart.chart-card{box-shadow:0 6px 0 0 #0C0C23!important}
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay #chart.chart-card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:18px;pointer-events:none;z-index:3;
-  background:linear-gradient(180deg,rgba(12,12,35,0),rgba(12,12,35,.82))}
+  background:linear-gradient(180deg,rgba(14,12,8,0),rgba(14,12,8,.82))}
 /* 2026-10-21 (propriétaire : « Profil : le i et le l sont collés ») : la police dessinait « fi » / « fl » en un seul signe
    (ligature) → partout sur le site, chaque lettre est écrite séparément */
 html,html body,html body *{font-variant-ligatures:no-common-ligatures}
