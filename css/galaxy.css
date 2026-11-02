@@ -2184,7 +2184,7 @@ html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=3494"
   background-position:center top var(--ios-site-h,100%)!important;background-size:100% var(--ios-under,0px)!important}
 html.ios-app.is-ios:root:has(#oroLoader:not(.off)){
   background-image:radial-gradient(ellipse at 50% 44%,rgba(60,40,12,.85) 0%,rgba(40,32,16,.35) 34%,rgba(0,0,0,0) 60%),url("galaxy-loader.svg?v=2790"),
-    radial-gradient(120% 55% at 0% 0%,rgba(200,145,46,.28),transparent 62%),radial-gradient(110% 55% at 50% 112%,rgba(220,162,46,.22),transparent 62%),
+    radial-gradient(120% 50% at 0% 0%,rgba(200,145,46,.20),transparent 60%),radial-gradient(120% 42% at 50% 124%,rgba(220,162,46,.10),transparent 58%),
     linear-gradient(180deg,#120F08 0%,#0A0906 100%)!important;
   background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important}
 /* plein écran : la fenêtre du plein écran s'arrête au bas du site (rien ne passe dans la bande, rien au-dessus d'ACHETER) */
