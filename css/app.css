@@ -11064,7 +11064,7 @@ html:root body #portalModal.gh-sub .defi-top{display:none!important}
 html:root body #portalModal#portalModal #defiCard#defiCard,html:root body #portalModal#portalModal #bonCard#bonCard,html:root body #portalModal#portalModal #topCard#topCard,html:root body #portalModal#portalModal #affCard#affCard{border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
 html:root body #portalModal#portalModal #defiCard#defiCard::before,html:root body #portalModal#portalModal #bonCard#bonCard::before,html:root body #portalModal#portalModal #topCard#topCard::before,html:root body #portalModal#portalModal #affCard#affCard::before{display:none!important}
 #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(146px,39vw);margin-top:2px}/* 2026-11-02 (propriétaire) : « Invite tes amis » AGRANDI et remonté (favori), les 4 cartes et la roue réduites pour l'espace */
-#portalModal .gh-imm .gh-p.wide b{font-size:20.5px}
+#portalModal .gh-imm .gh-p.wide b{font-size:22.5px}
 #casinoModal .pen-z{height:9.67%}
 #casinoModal .pen-z i{width:24px;height:24px}
 
@@ -11100,8 +11100,8 @@ html:root body #portalModal .gh-grid.gh-imm{gap:16px 10px;margin-top:-6px}
 html:root body #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(132px,36vw)}
 html:root body #portalModal .defi-how .defi-ex,html:root body #portalModal .defi-how .defi-rl,html:root body #portalModal .bon-card .defi-rl,html:root body #portalModal .bon-ex{display:none!important}
 html:root body #portalModal .gh-hero-w{width:min(180px,48vw,23vh)}
-html:root body #portalModal .gh-imm .gh-p .cs-pl{width:min(100px,27vw,12.5vh)}
-html:root body #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(116px,31vw,14vh)}
+html:root body #portalModal .gh-imm .gh-p .cs-pl{width:min(90px,24vw,11vh)}
+html:root body #portalModal .gh-imm .gh-p.wide .cs-pl{width:min(152px,41vw,18.5vh)}
 html:root body #portalModal .gh-grid.gh-imm{gap:min(14px,1.6vh) 10px}
 /* v2695 (propriétaire) — Recharger : drapeaux en GROS sur une ligne, numéro sur toute la largeur et bien lisible ; plus de bandeau qui fait défiler ; flèche ↓ au lieu de la croix */
 html body #depositModal#depositModal .pay-wave .momo-phone{flex-wrap:wrap!important;height:auto!important;row-gap:8px!important;column-gap:8px!important}
