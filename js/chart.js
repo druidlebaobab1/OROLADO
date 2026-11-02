@@ -1045,7 +1045,7 @@
   var GALAXY_TRIP_MS = 180000;
   var GALAXY_COINS = ['ico-btc', 'ico-trx', 'ico-ton', 'ico-btc', 'ico-eth', 'ico-usdt', 'ico-btc',
     'ico-bnb', 'ico-sol', 'ico-btc', 'ico-xrp', 'ico-usdc', 'ico-btc', 'ico-doge'];
-  var GALAXY_TURNS = 1.6;
+  var GALAXY_TURNS = 2.3;
 
   function cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr) {
     // v3229 (propriétaire) : on REMET la spirale centrale (il l'avait demandée en « plus léger »,
@@ -1073,17 +1073,19 @@
     var R = Math.min(cssW * 0.30, cssH * 0.40);
     function spiral(arm, t) {
       var ang = arm * Math.PI + t * Math.PI * 2 * GALAXY_TURNS;
-      var rad = R * (0.05 + 0.95 * t);
+      var rad = R * (0.015 + 0.985 * t);
       return { x: cx + Math.cos(ang) * rad, y: cy + Math.sin(ang) * rad };
     }
-    halo(cx, cy, R * 1.05, 'rgba(231,188,104,0.032)');
-    halo(cx, cy, R * 0.45, 'rgba(210,165,80,0.032)');
+    // v3504 (propriétaire) : la spirale REVIENT, douce et stylée — blanc léger (pas trop fort),
+    // un peu plus visible qu'avant pour apporter une petite beauté à la courbe, sans écraser.
+    halo(cx, cy, R * 1.05, 'rgba(214,220,232,0.03)');
+    halo(cx, cy, R * 0.45, 'rgba(200,208,224,0.03)');
     var arm, t, q;
     for (arm = 0; arm < 2; arm++) {
       g.save();
       g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(200,205,215,0.0012)' : 'rgba(190,195,210,0.0012)';
+        g.strokeStyle = q ? 'rgba(210,216,228,0.030)' : 'rgba(196,204,222,0.022)';
         g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
         g.beginPath();
         for (t = 0; t <= 1.0001; t += 0.01) { var pp = spiral(arm, t); if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y); }
@@ -1093,12 +1095,19 @@
       for (t = 0.02; t < 1; t += 0.004) {
         var sp = spiral(arm, t);
         var jx = (rnd() - 0.5) * R * 0.07, jy = (rnd() - 0.5) * R * 0.07;
-        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '210,215,225' : '200,205,220') + ',' + (0.012 + t * 0.018).toFixed(2) + ')';
-        g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
+        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '214,220,230' : '202,210,224') + ',' + (0.03 + t * 0.05).toFixed(2) + ')';
+        g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.85, 0, Math.PI * 2); g.fill();
       }
     }
-    halo(cx, cy, R * 0.26, 'rgba(200,205,215,0.0022)');
-    halo(cx, cy, R * 0.11, 'rgba(210,215,225,0.0028)');
+    // v3504 (propriétaire) : un VRAI centre — un petit cœur net d'où part la spirale (début propre, « sérieux »).
+    halo(cx, cy, R * 0.26, 'rgba(206,212,224,0.03)');
+    halo(cx, cy, R * 0.10, 'rgba(220,226,238,0.07)');
+    halo(cx, cy, R * 0.045, 'rgba(234,240,250,0.16)');
+    g.save();
+    g.globalAlpha = 0.72;
+    g.fillStyle = 'rgba(240,244,252,1)';
+    g.beginPath(); g.arc(cx, cy, Math.max(1.3, R * 0.012), 0, Math.PI * 2); g.fill();
+    g.restore();
     // v3232 (propriétaire) : plus de cercle autour de la spirale (il n'avait demandé que la pyramide).
     galaxy = null;
   }
@@ -1131,6 +1140,7 @@
   // restent à leur place (placées pour ne jamais toucher la tête ni les prix). Décor seulement.
   var driftStars = null;
   function drawStarDrift() {
+    return; /* 2026-11-02 (propriétaire) : plus d'étoiles blanches qui défilent dans la courbe */
     if (!driftStars) {
       var sd = 91, arr = [], i;
       // v2585 (propriétaire) : le nombre d'avant (48), mais une étoile par case d'une grille 8 × 6 (légèrement
@@ -1198,7 +1208,7 @@
     var gCols = Math.max(1, Math.round(Math.sqrt(nStars * cssW / Math.max(1, cssH))));
     var gRows = Math.max(1, Math.ceil(nStars / gCols));
     var cellW = cssW / gCols, cellH = cssH / gRows;
-    for (k = 0; k < gCols * gRows; k++) {
+    for (k = 0; k < 0; k++) { /* 2026-11-02 (propriétaire) : étoiles fixes retirées de la courbe */
       var sx = ((k % gCols) + 0.2 + rnd() * 0.6) * cellW;
       var sy = (Math.floor(k / gCols) + 0.2 + rnd() * 0.6) * cellH;
       var sr = rnd() * 1.05 + 0.25;
@@ -1213,7 +1223,7 @@
     // Quelques étoiles brillantes en croix.
     // v2583 (propriétaire) : les étoiles brillantes aux 4 coins + 2 au milieu, bien séparées (avant : au hasard, coins vides).
     var crossAt = [[0.06, 0.07], [0.62, 0.05], [0.05, 0.93], [0.70, 0.93], [0.30, 0.42], [0.55, 0.62]];
-    for (k = 0; k < crossAt.length; k++) {
+    for (k = 0; k < 0; k++) { /* 2026-11-02 (propriétaire) : étoiles brillantes en croix retirées */
       var bx = pad.l + crossAt[k][0] * w + (rnd() - 0.5) * 8;
       var by = pad.t + crossAt[k][1] * h + (rnd() - 0.5) * 8;
       var bl = 3 + rnd() * 3;
@@ -1320,9 +1330,9 @@
     ];
     // v3236 (propriétaire) : intensité des planètes RÉDUITE (plus discrètes, relax) — on sent que
     // ce sont des planètes mais sans qu'elles accrochent l'œil. Bas remonté d'un chouïa.
-    planet(planets[0].x, planets[0].y, planets[0].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.01, false);
-    planet(planets[1].x, planets[1].y, planets[1].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.01, false);
-    planet(planets[2].x, planets[2].y, planets[2].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.01, false);
+    planet(planets[0].x, planets[0].y, planets[0].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.12, false);
+    planet(planets[1].x, planets[1].y, planets[1].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.12, false);
+    planet(planets[2].x, planets[2].y, planets[2].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.12, false);
     g.globalAlpha = 1;
     galaxy = null;
     try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
