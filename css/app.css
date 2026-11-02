@@ -14010,3 +14010,19 @@ html:root body #fsTradeOverlay#fsTradeOverlay .pad,
 html:root body #fsTradeOverlay#fsTradeOverlay .pad.glass{
   background:#000000!important;background-image:none!important;border-top:0!important;box-shadow:none!important}
 
+
+/* ===== v3505 (propriétaire) — Boîtes durée / mise / gain : cadre en OR discret qui marie le site
+   (fini le blanc dur), et textes plus calmes : démo en blanc chaud, réel en vert doux. ===== */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(.stake-field,.win-preview),
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(.stake-field,.win-preview){
+  border:1px solid rgba(201,150,47,.42)!important;background:rgba(201,150,47,.05)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important}
+/* Démo : blanc chaud, calme */
+html:root body:not(.oro-real) #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(#inputStake,.dur-chip,.win-preview .amount,.win-preview .mult),
+html:root body:not(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(#inputStake,.dur-chip,.win-preview .amount,.win-preview .mult){
+  color:#E6D9BC!important;-webkit-text-fill-color:#E6D9BC!important}
+/* Réel : vert doux, calme */
+html:root body.oro-real #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(#inputStake,.dur-chip,.win-preview .amount,.win-preview .mult),
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(#inputStake,.dur-chip,.win-preview .amount,.win-preview .mult){
+  color:#62CF9E!important;-webkit-text-fill-color:#62CF9E!important}
