@@ -7140,7 +7140,7 @@ html body #depositModal#depositModal #payMethodCard .pay-method-desc{padding-rig
 
 /* ===== v2444 — INSCRIPTION / CONNEXION : carte univers lumineuse, onglets dorés, cases vitrées, bouton brillant ===== */
 html body #screenAuth#screenAuth#screenAuth .auth-card{position:relative;
-  background:radial-gradient(110% 40% at 50% 0%,rgba(242,193,78,.12),rgba(242,193,78,0) 62%),
+  background:radial-gradient(110% 40% at 50% 0%,rgba(242,193,78,.05),rgba(242,193,78,0) 62%),
     radial-gradient(80% 45% at 0% 100%,rgba(242,193,78,.30),rgba(242,193,78,0) 65%),
     radial-gradient(80% 45% at 100% 85%,rgba(251,191,36,.20),rgba(251,191,36,0) 65%),
     linear-gradient(180deg,rgba(98,75,30,.92) 0%,rgba(92,69,22,.92) 55%,rgba(96,71,20,.92) 100%)!important;

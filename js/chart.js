@@ -5083,7 +5083,7 @@
     ctx.setLineDash(NO_DASH);
     // Point de la bougie (clôture) / de la courbe, net avec un liseré sombre.
     var py = plotToY(pt.v, pad, h, minP, maxP);
-    ctx.fillStyle = '#10141f';
+    ctx.fillStyle = '#1F1A10';
     ctx.beginPath();
     ctx.arc(x, py, 4.5, 0, Math.PI * 2);
     ctx.fill();
@@ -5101,7 +5101,7 @@
     ctx.fillStyle = '#F5C518';
     roundRectOn(ctx, px, y - 7, pw, 14, 4);
     ctx.fill();
-    ctx.fillStyle = '#10141f';
+    ctx.fillStyle = '#1F1A10';
     ctx.fillText(ptxt, px + pw / 2, y + 0.5);
     // Carré du haut : O H / L C (ou le prix de la courbe), l'heure en bas ; il suit le trait.
     var dt = new Date(pt.t || xNow);

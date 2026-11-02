@@ -589,10 +589,10 @@
     world: function (P) {
       // v2835 (propriétaire : « un monde qui se divise en deux ») : la Terre FENDUE en deux, lave dans la faille, éclairs.
       var crack = 'L21 14 26 20 21.6 27 27 33 22.6 40 25 48';
-      var globe = '<circle cx="24" cy="26" r="17" fill="url(#wldO)" stroke="#0A1A4A"/>' +
+      var globe = '<circle cx="24" cy="26" r="17" fill="url(#wldO)" stroke="#433211"/>' +
         '<path fill="#3DDC84" stroke="#0B4A2A" stroke-width=".7" d="M12 18c3-2 7-1 8 2 1 2-1 4 1 6 2 1 1 4-1 5-3 1-5-1-6-4-1-2-3-3-3-5 0-2 0-3 1-4zM30 13c3 0 7 2 8 5 1 2-1 3-3 3-2 1-3 3-5 2-2-1-1-3-2-5 0-2 0-4 2-5zM29 31c2-1 5 0 6 2 0 2-2 4-4 4-2 0-3-2-2-6z"/>' +
         '<path fill="#fff" opacity=".3" d="M11 21c2-5 6-8 11-9-4 2-8 5-11 9z"/>';
-      return '<defs><radialGradient id="wldO" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#7FD3FF"/><stop offset=".55" stop-color="#1E5FD8"/><stop offset="1" stop-color="#0A1A4A"/></radialGradient>' +
+      return '<defs><radialGradient id="wldO" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#7FD3FF"/><stop offset=".55" stop-color="#1E5FD8"/><stop offset="1" stop-color="#433211"/></radialGradient>' +
         '<clipPath id="wldL"><path d="M0 0H24V8' + crack + 'H0z"/></clipPath><clipPath id="wldR"><path d="M24 0H48V48H25L22.6 40 27 33 21.6 27 26 20 21 14 24 8z"/></clipPath></defs>' +
         '<path fill="none" stroke="#FF5A1F" stroke-width="5" stroke-linejoin="round" opacity=".55" d="M24 8' + crack + '"/>' +
         '<path fill="none" stroke="#FFE14D" stroke-width="1.6" stroke-linejoin="round" d="M24 8' + crack + '"/>' +
@@ -1250,9 +1250,9 @@
 
   var CSS = '' +
     '.mk-arrow{position:fixed;z-index:60;width:28px;height:28px;border-radius:50%;display:none;align-items:center;justify-content:center;' +
-    'border:1px solid rgba(255,255,255,.18);background:rgba(14,10,40,.82);color:#FFD9A0;font-size:11px;line-height:1;cursor:pointer;padding:0;' +
+    'border:1px solid rgba(255,255,255,.18);background:rgba(40,30,10,.82);color:#FFD9A0;font-size:11px;line-height:1;cursor:pointer;padding:0;' +
     'box-shadow:0 2px 8px rgba(0,0,0,.45)}' +
-    '.mk-arrow:hover{background:rgba(40,28,90,.95)}.mk-arrow.dim{opacity:.3;pointer-events:none}' +
+    '.mk-arrow:hover{background:rgba(90,69,28,.95)}.mk-arrow.dim{opacity:.3;pointer-events:none}' +
     'html.fs-trade .mk-arrow{display:none!important}' +
     // v2814 (propriétaire) : plus de planètes derrière les logos : l'emblème seul, net, avec une ombre douce ;
     // le marché choisi : emblème plus lumineux, anneau doré sous lui (socle) et nom en gras doré.
