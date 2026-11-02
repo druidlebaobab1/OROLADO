@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 60" width="400" height="60">
 <defs>
 <radialGradient id="p1" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFF4D6"/><stop offset=".35" stop-color="#F5B04A"/><stop offset=".8" stop-color="#8A4A12"/><stop offset="1" stop-color="#3A1C06"/></radialGradient>
-<radialGradient id="p2" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#E0F2FE"/><stop offset=".4" stop-color="#4F8FE8"/><stop offset=".85" stop-color="#1E2F7A"/><stop offset="1" stop-color="#0B1238"/></radialGradient>
-<radialGradient id="p3" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#F5E1FF"/><stop offset=".4" stop-color="#B07CF0"/><stop offset=".85" stop-color="#4A1F8C"/><stop offset="1" stop-color="#1C0B3A"/></radialGradient>
-<radialGradient id="p4" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".45" stop-color="#C9D2E3"/><stop offset="1" stop-color="#4B5563"/></radialGradient>
+<radialGradient id="p2" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#E0F2FE"/><stop offset=".4" stop-color="#E0A824"/><stop offset=".85" stop-color="#3A2606"/><stop offset="1" stop-color="#0B1238"/></radialGradient>
+<radialGradient id="p3" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#F5E1FF"/><stop offset=".4" stop-color="#E6C98A"/><stop offset=".85" stop-color="#4A2A06"/><stop offset="1" stop-color="#1C0B3A"/></radialGradient>
+<radialGradient id="p4" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".45" stop-color="#E3DAC9"/><stop offset="1" stop-color="#4B5563"/></radialGradient>
 </defs><g opacity=".4">
 </g></svg>
