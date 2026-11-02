@@ -5348,7 +5348,7 @@ html body #portalModal .portal-head{text-align:center;margin:2px 26px 12px}
 html body #portalModal .portal-title{font-weight:900;font-size:21px;letter-spacing:.06em;color:#F2B33D;text-transform:uppercase}
 html body #portalModal .portal-sub{font-size:12.5px;color:#C7B89A;margin-top:2px}
 html body #portalModal .portal-test{font-size:11.5px;line-height:1.4;color:#FFD27A;background:rgba(242,179,61,.10);border:1px dashed rgba(242,179,61,.45);border-radius:12px;padding:8px 10px;margin-bottom:10px;text-align:center}
-html body #portalModal .defi-card{border-radius:18px;padding:14px;background:radial-gradient(circle at 85% 0%,rgba(255,77,106,.20),rgba(51,40,17,.95) 60%);border:1px solid rgba(255,140,160,.28)}
+html body #portalModal .defi-card{border-radius:18px;padding:14px;background:radial-gradient(circle at 85% 0%,rgba(224,150,60,.20),rgba(51,40,17,.95) 60%);border:1px solid rgba(235,185,120,.28)}
 html body #portalModal .defi-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 html body #portalModal .defi-badge{font-weight:900;font-size:16px;letter-spacing:.04em;color:#FFB4C1}
 html body #portalModal .defi-badge::before{content:"🎯 "}
@@ -5937,7 +5937,7 @@ html body #chartStage .defi-hud .dh-dots i{width:7px;height:7px;border-radius:50
 html body #chartStage .defi-hud .dh-dots i.on{background:#F6C453;box-shadow:0 0 6px rgba(246,196,83,.7)}
 html body #chartStage .defi-hud em{font-style:normal;color:#fff;direction:ltr}
 html body #chartStage .defi-hud.lost{border-color:rgba(255,90,110,.7);background:rgba(60,8,20,.75)}
-html body #chartStage .defi-hud.lost::after{content:attr(data-lost);position:absolute;left:0;top:32px;white-space:nowrap;padding:5px 10px;border-radius:10px;background:rgba(255,77,106,.92);color:#fff;font-size:12px;font-weight:900;animation:hudLost 2.6s ease forwards}
+html body #chartStage .defi-hud.lost::after{content:attr(data-lost);position:absolute;left:0;top:32px;white-space:nowrap;padding:5px 10px;border-radius:10px;background:rgba(224,150,60,.92);color:#fff;font-size:12px;font-weight:900;animation:hudLost 2.6s ease forwards}
 @keyframes hudLost{0%{opacity:0;transform:translateY(-4px)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
 html[dir=rtl] body #chartStage .defi-hud{left:auto;right:8px}
 
@@ -6000,7 +6000,7 @@ html body #chartStage .defi-hud{height:24px!important;padding:0 8px 0 6px!import
 html body #chartStage .defi-hud .pi{width:13px!important;height:13px!important}
 html body #chartStage .defi-hud .dh-dots i{width:6px!important;height:6px!important}
 html body #chartStage .defi-hud.lost{border-color:#FF4D6A!important;background:rgba(120,10,30,.85)!important;color:#FFD0D6!important}
-html body #chartStage .defi-hud.lost .dh-dots i{background:rgba(255,77,106,.45)!important;box-shadow:none!important}
+html body #chartStage .defi-hud.lost .dh-dots i{background:rgba(224,150,60,.45)!important;box-shadow:none!important}
 html body #chartStage .defi-hud.lost::after{top:28px!important;font-size:11px!important}
 html body #portalModal .defi-state.lost{color:#FF8A9A!important}
 /* Défi : la ligne du cadeau ne déborde plus. */
@@ -6082,7 +6082,7 @@ html body #portalModal .top-prev{display:inline-flex!important;align-items:cente
 html body #portalModal .top-prev .pi{width:14px;height:14px;stroke:currentColor}
 html body #portalModal .top-prev.hidden{display:none!important}
 html[dir=rtl] body #portalModal .top-prev .pi{transform:scaleX(-1)}
-html body #portalModal .top-ended{margin:8px 0 0;padding:7px 10px;border-radius:10px;background:rgba(255,77,106,.14);border:1px solid rgba(255,77,106,.45);color:#FFC2CB;font-size:12.5px;font-weight:900;text-align:center;letter-spacing:.04em;text-transform:uppercase}
+html body #portalModal .top-ended{margin:8px 0 0;padding:7px 10px;border-radius:10px;background:rgba(224,150,60,.14);border:1px solid rgba(224,150,60,.45);color:#FFC2CB;font-size:12.5px;font-weight:900;text-align:center;letter-spacing:.04em;text-transform:uppercase}
 html body #portalModal .top-ended.hidden{display:none!important}
 html body #portalModal .top-card.is-prev{border-color:rgba(200,187,160,.35)!important}
 html body #portalModal .top-card.is-prev .top-sub,html body #portalModal .top-card.is-prev .top-rule{display:none}
@@ -6230,7 +6230,7 @@ html body .defi-win.dw-one .dw-t{text-transform:none!important;font-size:19px!im
 
 /* ===== v2426 — Les Cadeaux prennent vie : univers coloré, une couleur et une planète par page, notifications « étoiles ». ===== */
 /* Couleur de chaque page : Défi (corail), Invitation (émeraude), Tournoi (or), Bonus (bleu). */
-html body #portalModal{--tc:255,104,124;--tc2:255,180,92}
+html body #portalModal{--tc:230,165,70;--tc2:246,210,130}
 html body #portalModal.aff-on{--tc:43,212,154;--tc2:120,240,210}
 html body #portalModal.top-on{--tc:242,179,61;--tc2:255,226,140}
 html body #portalModal.bon-on{--tc:224,168,36;--tc2:246,217,138}
@@ -6240,7 +6240,7 @@ html body #portalModal#portalModal#portalModal > .modal-box.portal-box{backgroun
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.20),transparent 70%),
   radial-gradient(70% 45% at 30% 100%,rgba(219,158,36,.13),transparent 70%),
   radial-gradient(40% 30% at 80% 90%,rgba(var(--tc2),.12),transparent 70%),
-  linear-gradient(180deg,#221A0A 0%,#070818 60%,#1A1305 100%)!important;
+  linear-gradient(180deg,#221A0A 0%,#0B0A06 60%,#1A1305 100%)!important;
   background-size:140% 140%,140% 140%,140% 140%,140% 140%,100% 100%!important;
   animation:oroNebula 26s ease-in-out infinite alternate}
 @keyframes oroNebula{0%{background-position:0% 0%,100% 0%,0% 100%,100% 100%,0 0}100%{background-position:18% 12%,82% 14%,14% 86%,86% 84%,0 0}}
@@ -6331,8 +6331,8 @@ html body #portalModal#portalModal#portalModal > .modal-box.portal-box{backgroun
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.22),transparent 70%),
   radial-gradient(70% 45% at 30% 100%,rgba(219,158,36,.14),transparent 70%),
   radial-gradient(40% 30% at 80% 90%,rgba(var(--tc2),.14),transparent 70%),
-  url("galaxy-modal.svg?v=2427") center/cover no-repeat,
-  linear-gradient(180deg,#221A0A 0%,#070818 60%,#1A1305 100%)!important;
+  url("galaxy-modal.svg?v=3428") center/cover no-repeat,
+  linear-gradient(180deg,#221A0A 0%,#0B0A06 60%,#1A1305 100%)!important;
   background-size:140% 140%,140% 140%,140% 140%,140% 140%,cover,100% 100%!important}
 /* Cartes un peu plus lumineuses, teintées de la couleur de la page. */
 html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card):not(.hidden){display:flex!important;flex-direction:column!important;
@@ -6348,7 +6348,7 @@ html body #portalModal .gift-scene .gs-neb{inset:0;background:
   radial-gradient(45% 60% at 18% 70%,rgba(var(--tc),.45),transparent 70%),
   radial-gradient(40% 55% at 82% 30%,rgba(242,193,78,.45),transparent 70%),
   radial-gradient(50% 50% at 60% 100%,rgba(219,158,36,.28),transparent 70%),
-  url("galaxy-modal.svg?v=2427") center/cover no-repeat,
+  url("galaxy-modal.svg?v=3428") center/cover no-repeat,
   linear-gradient(180deg,#34270E,#1A1407);animation:gsNeb 18s ease-in-out infinite alternate}
 @keyframes gsNeb{0%{filter:hue-rotate(0deg) brightness(1)}100%{filter:hue-rotate(18deg) brightness(1.15)}}
 html body #portalModal .gift-scene .gs-dust{inset:0;opacity:.9;background:
@@ -6417,11 +6417,11 @@ html body .modal-box :is(h2,h3,h4,.modal-title),html body #screenAuth :is(h1,h2,
 html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box{position:relative;overflow:hidden!important;text-align:center;
   border:1px solid rgba(255,210,122,.65)!important;
   background:radial-gradient(circle at 50% -10%,rgba(255,210,122,.42),rgba(242,193,78,.20) 45%,rgba(32,24,9,.97) 76%),
-    url("galaxy-modal.svg?v=2430") center/cover no-repeat,#221A0A!important;
+    url("galaxy-modal.svg?v=3428") center/cover no-repeat,#221A0A!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(255,190,80,.30),0 0 100px rgba(242,193,78,.30)!important}
 html body #depositSuccessModal > .modal-box{border-color:rgba(75,227,168,.6)!important;
   background:radial-gradient(circle at 50% -10%,rgba(75,227,168,.40),rgba(242,193,78,.20) 45%,rgba(32,24,9,.97) 76%),
-    url("galaxy-modal.svg?v=2430") center/cover no-repeat,#221A0A!important;
+    url("galaxy-modal.svg?v=3428") center/cover no-repeat,#221A0A!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(46,229,157,.28),0 0 100px rgba(242,193,78,.30)!important}
 html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box > :not(.cosmo-rays):not(.cosmo-sp){position:relative;z-index:2}
 html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box > .btn-close{position:absolute!important;z-index:3}
@@ -6467,9 +6467,9 @@ html body #depositSuccessModal #depositSuccessAmt:not(:empty)::before{content:"+
 html body .modal-box .cosmo-ico{border:0!important;outline:0!important}
 
 /* ===== v2431 — Retrait = ROUGE, Dépôt = VERT (vraies icônes : portefeuille + flèche qui sort / qui entre). ===== */
-html body #wdConfirmModal > .modal-box{border-color:rgba(255,77,106,.7)!important;
-  background:radial-gradient(circle at 50% -10%,rgba(255,77,106,.42),rgba(242,193,78,.18) 45%,rgba(32,24,9,.97) 76%),
-    url("galaxy-modal.svg?v=2431") center/cover no-repeat,#221A0A!important;
+html body #wdConfirmModal > .modal-box{border-color:rgba(224,150,60,.7)!important;
+  background:radial-gradient(circle at 50% -10%,rgba(224,150,60,.42),rgba(242,193,78,.18) 45%,rgba(32,24,9,.97) 76%),
+    url("galaxy-modal.svg?v=3428") center/cover no-repeat,#221A0A!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(255,59,87,.32),0 0 100px rgba(242,193,78,.28)!important}
 html body #wdConfirmModal .modal-box .cosmo-rays{background:repeating-conic-gradient(from 0deg,rgba(255,110,130,.32) 0deg 6deg,transparent 6deg 20deg)!important}
 html body #wdConfirmModal .modal-box .cosmo-ico svg{filter:drop-shadow(0 0 16px rgba(255,59,87,.7))!important}
@@ -6549,7 +6549,7 @@ html body #portalModal .aff-sort button.on{background:linear-gradient(135deg,#2B
 /* Tournoi : signe bien visible — « + » vert, « − » rouge (ce n'est plus un tiret). */
 html body #portalModal .oro-amt .oa-s{font-style:normal;font-weight:900;margin-inline-end:1px}
 html body #portalModal .oro-amt .oa-s.pos{color:#2EE59D;text-shadow:0 0 8px rgba(46,229,157,.45)}
-html body #portalModal .oro-amt .oa-s.neg{color:#FF4D6A;text-shadow:0 0 8px rgba(255,77,106,.45)}
+html body #portalModal .oro-amt .oa-s.neg{color:#FF4D6A;text-shadow:0 0 8px rgba(224,150,60,.45)}
 html body #portalModal .oro-amt.neg .oa-n{color:#FF8A9A!important}
 
 /* Invitation → « Voir plus » : la page tient entièrement à l'écran (pas de défilement de la page) ;
@@ -6615,7 +6615,7 @@ html body #portalModal .oro-amt.pos .oa-n{color:#2EE59D!important;text-shadow:0 
 html body #helpModal > .modal-box{position:relative;overflow:hidden!important;text-align:left;
   border:1px solid rgba(224,168,36,.6)!important;
   background:radial-gradient(circle at 50% -8%,rgba(224,168,36,.42),rgba(242,193,78,.20) 42%,rgba(32,24,9,.97) 74%),
-    url("galaxy-modal.svg?v=2441") center/cover no-repeat,#221A0A!important;
+    url("galaxy-modal.svg?v=3428") center/cover no-repeat,#221A0A!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(224,168,36,.30),0 0 100px rgba(242,193,78,.28)!important}
 html body #helpModal > .modal-box > :not(.cosmo-sp):not(.help-hero){position:relative;z-index:2}
 html body #helpModal > .modal-box > .btn-close{position:absolute!important;z-index:3}
@@ -7023,7 +7023,7 @@ html body #drawerProfile#drawerProfile#drawerProfile #btnHistTrade{--c:224,168,3
 html body #drawerProfile#drawerProfile#drawerProfile #btnOpenPass{--c:232,180,120}
 html body #drawerProfile#drawerProfile#drawerProfile #btnOpenEmail{--c:212,175,100}
 html body #drawerProfile#drawerProfile#drawerProfile #btnLogoutOthers{--c:200,170,90}
-html body #drawerProfile#drawerProfile#drawerProfile #btnLogout{--c:255,77,106}
+html body #drawerProfile#drawerProfile#drawerProfile #btnLogout{--c:224,150,60}
 html body #drawerProfile#drawerProfile#drawerProfile .drawer-item .di-ico{border-radius:50%!important;color:#fff!important;padding:4px;box-sizing:border-box;
   background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.85),rgba(var(--c),1) 40%,rgba(var(--c),.45) 100%)!important;
   box-shadow:-2px -2px 4px rgba(0,0,0,.3) inset,0 0 10px rgba(var(--c),.7)!important;border:0!important}
@@ -7047,7 +7047,7 @@ html body #otpModal#otpModal .modal-box,html body #forgotModal#forgotModal .moda
 html body #passModal#passModal .modal-box{--c:244,114,182}
 html body #emailModal#emailModal .modal-box{--c:96,165,250}
 html body #logoutOthersModal#logoutOthersModal .modal-box{--c:45,212,191}
-html body #logoutModal#logoutModal .modal-box{--c:255,77,106}
+html body #logoutModal#logoutModal .modal-box{--c:224,150,60}
 html body #financeModal#financeModal .modal-box{--c:242,193,78}
 html body #historySheet#historySheet .modal-box{--c:224,168,36}
 html body #otpModal#otpModal .modal-box,html body #forgotModal#forgotModal .modal-box{--c:251,191,36}
@@ -10357,7 +10357,7 @@ html body #casinoModal .cs-stage{min-height:min(52vh,430px);border-radius:18px;b
 #casinoModal .cs-res{min-height:46px;border-radius:12px}
 #casinoModal .cs-res.win{background:rgba(31,216,107,.14);box-shadow:inset 0 0 0 1px rgba(31,216,107,.6)}
 #casinoModal .cs-res.win b{color:#1FD86B}
-#casinoModal .cs-res.lose{background:rgba(255,77,106,.1)}
+#casinoModal .cs-res.lose{background:rgba(224,150,60,.1)}
 #casinoModal .cs-panel{background:#2F2717;box-shadow:inset 0 0 0 1px #3F3522;border-radius:18px}
 #casinoModal .cs-stake input{background:#231C0F;box-shadow:inset 0 0 0 1px #56482B}
 #casinoModal .cs-stake button{background:#3F3522}
@@ -11244,24 +11244,24 @@ html body #btnOpenDeposit{filter:saturate(1.18) brightness(1.06)}
 /* v2697b (propriétaire) — LE MÊME UNIVERS que derrière le Défi du jour / le Tournoi (image galaxie des Cadeaux) derrière le Casino, les 25 jeux, les Paris et Live */
 html:root body #casinoModal#casinoModal > .modal-box::before{display:none!important}
 html:root body #casinoModal#casinoModal:not(.in-game) > .modal-box{background:
-  radial-gradient(60% 38% at 12% 8%,rgba(255,104,124,.24),transparent 70%) 0 0/140% 140%,
+  radial-gradient(60% 38% at 12% 8%,rgba(230,165,70,.24),transparent 70%) 0 0/140% 140%,
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.22),transparent 70%) 0 0/140% 140%,
   radial-gradient(70% 45% at 30% 100%,rgba(219,158,36,.14),transparent 70%) 0 0/140% 140%,
   radial-gradient(40% 30% at 80% 90%,rgba(255,180,92,.18),transparent 70%) 0 0/140% 140%,
-  url("galaxy-modal.svg?v=2427") 50% 50%/cover no-repeat,
-  linear-gradient(180deg,#221A0A 0%,#070818 60%,#1A1305 100%)!important}
+  url("galaxy-modal.svg?v=3428") 50% 50%/cover no-repeat,
+  linear-gradient(180deg,#221A0A 0%,#0B0A06 60%,#1A1305 100%)!important}
 html:root body #casinoModal#casinoModal.in-game[data-g] > .modal-box{background:
   radial-gradient(75% 45% at 50% 28%,color-mix(in srgb,var(--p2) 42%,transparent),transparent 72%),
-  radial-gradient(60% 38% at 12% 8%,rgba(255,104,124,.18),transparent 70%) 0 0/140% 140%,
+  radial-gradient(60% 38% at 12% 8%,rgba(230,165,70,.18),transparent 70%) 0 0/140% 140%,
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.18),transparent 70%) 0 0/140% 140%,
-  url("galaxy-modal.svg?v=2427") 50% 50%/cover no-repeat,
-  linear-gradient(180deg,color-mix(in srgb,var(--p2) 22%,#221A0A) 0%,#070818 60%,#1A1305 100%)!important}
+  url("galaxy-modal.svg?v=3428") 50% 50%/cover no-repeat,
+  linear-gradient(180deg,color-mix(in srgb,var(--p2) 22%,#221A0A) 0%,#0B0A06 60%,#1A1305 100%)!important}
 html:root body #liveModal#liveModal .live-box{background:
-  radial-gradient(60% 38% at 12% 8%,rgba(255,104,124,.24),transparent 70%) 0 0/140% 140%,
+  radial-gradient(60% 38% at 12% 8%,rgba(230,165,70,.24),transparent 70%) 0 0/140% 140%,
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.22),transparent 70%) 0 0/140% 140%,
   radial-gradient(70% 45% at 30% 100%,rgba(219,158,36,.14),transparent 70%) 0 0/140% 140%,
-  url("galaxy-modal.svg?v=2427") 50% 50%/cover no-repeat,
-  linear-gradient(180deg,#221A0A 0%,#070818 60%,#1A1305 100%)!important}
+  url("galaxy-modal.svg?v=3428") 50% 50%/cover no-repeat,
+  linear-gradient(180deg,#221A0A 0%,#0B0A06 60%,#1A1305 100%)!important}
 #casinoModal .rl-big{width:min(340px,92vw,35vh)}
 @media (min-height:820px){#casinoModal .rl-big{width:min(360px,92vw,40vh)}}
 /* la roue prend toute la hauteur libre de l'écran du jeu, sans jamais dépasser */
