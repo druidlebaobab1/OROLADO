@@ -1083,7 +1083,7 @@
       g.save();
       g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(200,205,215,0.006)' : 'rgba(190,195,210,0.005)';
+        g.strokeStyle = q ? 'rgba(200,205,215,0.002)' : 'rgba(190,195,210,0.002)';
         g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
         g.beginPath();
         for (t = 0; t <= 1.0001; t += 0.01) { var pp = spiral(arm, t); if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y); }
@@ -1117,7 +1117,7 @@
       var rad = G.R * (0.05 + 0.95 * t);
       var x = G.cx + Math.cos(ang) * rad, y = G.cy + Math.sin(ang) * rad;
       var s = 3 + 12 * t;
-      var a = 0.22 * t + 0.03;
+      var a = 0.07 * t + 0.012;
       if (u < 0.06) a *= u / 0.06;
       if (u > 0.85) a *= (1 - u) / 0.15;
       ctx.globalAlpha = a;
@@ -1217,13 +1217,13 @@
       var bx = pad.l + crossAt[k][0] * w + (rnd() - 0.5) * 8;
       var by = pad.t + crossAt[k][1] * h + (rnd() - 0.5) * 8;
       var bl = 3 + rnd() * 3;
-      g.strokeStyle = 'rgba(255,240,220,0.32)';
+      g.strokeStyle = 'rgba(205,210,220,0.14)';
       g.lineWidth = 0.8;
       g.beginPath();
       g.moveTo(bx - bl, by); g.lineTo(bx + bl, by);
       g.moveTo(bx, by - bl); g.lineTo(bx, by + bl);
       g.stroke();
-      g.fillStyle = 'rgba(255,248,235,0.8)';
+      g.fillStyle = 'rgba(220,224,232,0.45)';
       g.beginPath();
       g.arc(bx, by, 0.9, 0, Math.PI * 2);
       g.fill();
