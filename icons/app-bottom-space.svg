@@ -1,43 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 70" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 72" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
   <defs>
     <linearGradient id="bgFade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#000000" stop-opacity="0"/>
-      <stop offset="1" stop-color="#04050B" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#05060C" stop-opacity="0.92"/>
     </linearGradient>
-    <radialGradient id="neb" cx="50%" cy="120%" r="80%">
-      <stop offset="0" stop-color="#14203A" stop-opacity="0.35"/>
-      <stop offset="0.6" stop-color="#0B1222" stop-opacity="0.12"/>
-      <stop offset="1" stop-color="#04050B" stop-opacity="0"/>
+    <linearGradient id="aurora" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1E3A5F" stop-opacity="0"/>
+      <stop offset="0.35" stop-color="#2A4C72" stop-opacity="0.22"/>
+      <stop offset="0.6" stop-color="#3A6E7A" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#1E3A5F" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glowC" cx="50%" cy="100%" r="70%">
+      <stop offset="0" stop-color="#20374F" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#05060C" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect x="0" y="0" width="390" height="70" fill="url(#bgFade)"/>
-  <rect x="0" y="8" width="390" height="62" fill="url(#neb)"/>
-  <!-- minuscule univers : petites étoiles seulement -->
+  <rect x="0" y="0" width="390" height="72" fill="url(#bgFade)"/>
+  <!-- voile d'aurore très discret, élégant -->
+  <path d="M0 58 Q 110 40 200 54 T 390 50 L390 72 L0 72 Z" fill="url(#aurora)" opacity="0.8"/>
+  <rect x="0" y="30" width="390" height="42" fill="url(#glowC)"/>
+  <!-- petites étoiles fines, densité douce -->
   <g fill="#FFFFFF">
-    <circle cx="16" cy="40" r="0.8" opacity="0.75"/>
-    <circle cx="38" cy="54" r="0.5" opacity="0.5"/>
-    <circle cx="57" cy="34" r="0.9" opacity="0.85"/>
-    <circle cx="82" cy="50" r="0.5" opacity="0.45"/>
-    <circle cx="104" cy="42" r="0.7" opacity="0.65"/>
-    <circle cx="126" cy="30" r="0.6" opacity="0.6"/>
-    <circle cx="150" cy="52" r="0.8" opacity="0.7"/>
-    <circle cx="172" cy="38" r="0.5" opacity="0.45"/>
-    <circle cx="196" cy="48" r="0.9" opacity="0.8"/>
-    <circle cx="218" cy="32" r="0.6" opacity="0.55"/>
-    <circle cx="242" cy="54" r="0.5" opacity="0.45"/>
-    <circle cx="265" cy="40" r="0.8" opacity="0.72"/>
-    <circle cx="288" cy="30" r="0.6" opacity="0.6"/>
-    <circle cx="310" cy="50" r="0.7" opacity="0.6"/>
-    <circle cx="332" cy="36" r="0.9" opacity="0.82"/>
-    <circle cx="354" cy="52" r="0.5" opacity="0.45"/>
-    <circle cx="374" cy="40" r="0.7" opacity="0.65"/>
+    <circle cx="14" cy="42" r="0.7" opacity="0.7"/>
+    <circle cx="33" cy="56" r="0.5" opacity="0.45"/>
+    <circle cx="52" cy="36" r="0.8" opacity="0.8"/>
+    <circle cx="71" cy="50" r="0.5" opacity="0.4"/>
+    <circle cx="92" cy="44" r="0.6" opacity="0.6"/>
+    <circle cx="112" cy="33" r="0.55" opacity="0.5"/>
+    <circle cx="134" cy="54" r="0.75" opacity="0.7"/>
+    <circle cx="156" cy="40" r="0.5" opacity="0.4"/>
+    <circle cx="178" cy="50" r="0.85" opacity="0.8"/>
+    <circle cx="200" cy="34" r="0.55" opacity="0.5"/>
+    <circle cx="222" cy="56" r="0.5" opacity="0.42"/>
+    <circle cx="244" cy="42" r="0.75" opacity="0.7"/>
+    <circle cx="266" cy="32" r="0.6" opacity="0.55"/>
+    <circle cx="288" cy="52" r="0.65" opacity="0.58"/>
+    <circle cx="310" cy="38" r="0.85" opacity="0.8"/>
+    <circle cx="331" cy="54" r="0.5" opacity="0.42"/>
+    <circle cx="352" cy="44" r="0.6" opacity="0.58"/>
+    <circle cx="373" cy="36" r="0.7" opacity="0.68"/>
   </g>
-  <!-- 2 étoiles brillantes discrètes (croix fine) -->
-  <g stroke="#CFE0FF" stroke-width="0.6" opacity="0.5" stroke-linecap="round">
-    <path d="M122 44h5M124.5 41.5v5"/>
-    <path d="M300 38h5M302.5 35.5v5"/>
+  <!-- 3 étoiles scintillantes (croix très fine) -->
+  <g stroke="#DCE8FF" stroke-width="0.5" opacity="0.5" stroke-linecap="round">
+    <path d="M100 46h4.4M102.2 43.8v4.4"/>
+    <path d="M226 38h4.4M228.2 35.8v4.4"/>
+    <path d="M324 48h4.4M326.2 45.8v4.4"/>
   </g>
-  <!-- une toute petite planète lointaine (discrète) -->
-  <circle cx="210" cy="60" r="3.2" fill="#223049" opacity="0.8"/>
-  <circle cx="208.6" cy="58.8" r="3.2" fill="#05070F" opacity="0.65"/>
+  <!-- fine étoile filante, touche élégante -->
+  <path d="M60 30 L96 24" stroke="#CFE0FF" stroke-width="0.7" opacity="0.35" stroke-linecap="round"/>
 </svg>
