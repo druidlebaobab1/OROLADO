@@ -2403,7 +2403,7 @@
           ctx.fillRect(x - cw / 2, y1, cw, bh);
           ctx.shadowBlur = 0;
           if (cw >= 4 && bh >= 5) {
-            ctx.fillStyle = 'rgba(12,8,30,0.55)';
+            ctx.fillStyle = 'rgba(14,12,9,0.55)';
             var rowH = 3.4;
             var r, yy;
             for (r = 0, yy = y2 - rowH; yy > y1; r++, yy -= rowH) {
@@ -3158,7 +3158,7 @@
         ctx.lineTo(x + sw, y + sh);
         ctx.closePath();
         ctx.fill();
-        ctx.fillStyle = 'rgba(10,6,30,0.55)';
+        ctx.fillStyle = 'rgba(12,10,7,0.55)';
         ctx.fillRect(x - 0.6, y - sh * 0.45, 1.2, sh * 0.9);
         ctx.fillRect(x - sw * 0.45, y - sh * 0.2, sw * 0.9, 1.2);
       }
@@ -5170,7 +5170,7 @@
     // courbe (assombrie seulement si elle est trop claire pour se lire sur le blanc).
     ctx.font = '800 8.5px ui-monospace, Menlo, Consolas, monospace';
     // v2453 — prix dans une étiquette en verre sombre, bord de la couleur de la courbe, chiffres blancs.
-    ctx.fillStyle = 'rgba(14,12,40,0.86)';
+    ctx.fillStyle = 'rgba(14,12,9,0.86)';
     roundRect(x, y, tw, th, 6);
     ctx.fill();
     ctx.lineWidth = 1;
