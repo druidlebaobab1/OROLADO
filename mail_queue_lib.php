@@ -288,50 +288,54 @@ function mail_queue_tick(): string {
     $job = mailq_job_read(); // relu sous verrou (un autre tic vient peut-être de passer)
     if (!$job || empty($job['active']) || (string) $job['id'] !== $id) return 'idle';
     if (time() < (int) ($job['nextAt'] ?? 0)) return 'wait';
-    @set_time_limit(25);
+    @set_time_limit(90);           // v3527 (propriétaire : « plus rapide ») — on envoie un PAQUET par tic (le verrou garde UN seul processus)
     @ignore_user_abort(true);
-    $done = mailq_log_read($id);
-    $em = mailq_next($job, $done);
-    if ($em === '') {
-      $left = mailq_left($job, $done);
-      mailq_job_update(static function (?array $j) use ($id, $left) {
+    $GLOBALS['OROLADO_MAIL_NAMES'] = array_merge((array) ($GLOBALS['OROLADO_MAIL_NAMES'] ?? []), (array) ($job['names'] ?? []));
+    $BATCH = (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_MAILQ_BATCH'])) ? (int) $GLOBALS['OROLADO_MAILQ_BATCH'] : 30;
+    $out = 'idle'; $stop = false; $sentN = 0;
+    for ($b = 0; $b < $BATCH && !$stop; $b++) {
+      $done = mailq_log_read($id);
+      $em = mailq_next($job, $done);
+      if ($em === '') {
+        $left = mailq_left($job, $done);
+        mailq_job_update(static function (?array $j) use ($id, $left) {
+          if (!$j || (string) $j['id'] !== $id) return null;
+          if ($left > 0) { $j['nextAt'] = time() + 30; return $j; } // seulement des réessais en attente (2 min)
+          $j['active'] = false; $j['finishedAt'] = time(); $j['reason'] = 'Terminé.';
+          return $j;
+        });
+        return $sentN > 0 ? 'sent' : ($left > 0 ? 'wait' : 'finished');
+      }
+      $r = admin_mail_plain($em, (string) $job['subject'], (string) $job['message'], (string) ($job['button'] ?? ''));
+      $ok = !empty($r['ok']);
+      $done = mailq_log_read($id);
+      $done[$em] = $ok ? 1 : time();
+      mailq_log_write($id, $done);
+      $quota = !$ok && mailq_is_quota_error($r);
+      if ($ok) $sentN++;
+      $job = mailq_job_update(static function (?array $j) use ($id, $em, $ok, $r, $quota, &$out, &$stop) {
         if (!$j || (string) $j['id'] !== $id) return null;
-        if ($left > 0) { $j['nextAt'] = time() + 30; return $j; } // seulement des réessais en attente (2 min)
-        $j['active'] = false; $j['finishedAt'] = time(); $j['reason'] = 'Terminé.';
+        $j['lastTick'] = time();
+        if ($ok) { $j['sent'] = (int) ($j['sent'] ?? 0) + 1; $j['consecFail'] = 0; $out = 'sent'; return $j; }
+        $j['fail'] = (int) ($j['fail'] ?? 0) + 1;
+        $j['consecFail'] = (int) ($j['consecFail'] ?? 0) + 1;
+        $j['tries'][$em] = (int) ($j['tries'][$em] ?? 0) + 1;
+        $j['lastError'] = mb_substr($em . ' : ' . (string) ($r['reason'] ?? 'échec'), 0, 300);
+        $out = 'fail';
+        if ($quota || $j['consecFail'] >= MAILQ_MAX_CONSEC_FAIL) {
+          $j['active'] = false;
+          $j['reason'] = $quota ? 'Pause automatique : limite / quota Brevo atteint (' . mb_substr((string) ($r['reason'] ?? ''), 0, 160) . '). Reprenez plus tard.'
+            : 'Pause automatique : ' . $j['consecFail'] . ' échecs d’affilée. Vérifiez Brevo puis reprenez.';
+          $out = 'paused'; $stop = true;
+        }
         return $j;
       });
-      return $left > 0 ? 'wait' : 'finished';
+      if (!is_array($job) || empty($job['active'])) { $stop = true; }
     }
-    // Réserver le créneau AVANT d'envoyer : un autre processus ne retentera pas pendant l'envoi.
-    $gap = (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_MAILQ_GAP'])) ? (int) $GLOBALS['OROLADO_MAILQ_GAP'] : random_int(6, 9); // test seulement : délai forcé
-    mailq_job_update(static function (?array $j) use ($id, $gap) {
+    // paquet fini : on repart tout de suite au prochain tic (pas de longue pause)
+    mailq_job_update(static function (?array $j) use ($id) {
       if (!$j || (string) $j['id'] !== $id) return null;
-      $j['lastTick'] = time(); $j['nextAt'] = time() + $gap;
-      return $j;
-    });
-    $GLOBALS['OROLADO_MAIL_NAMES'] = array_merge((array) ($GLOBALS['OROLADO_MAIL_NAMES'] ?? []), (array) ($job['names'] ?? []));
-    $r = admin_mail_plain($em, (string) $job['subject'], (string) $job['message'], (string) ($job['button'] ?? ''));
-    $ok = !empty($r['ok']);
-    $done = mailq_log_read($id);
-    $done[$em] = $ok ? 1 : time();
-    mailq_log_write($id, $done);
-    $quota = !$ok && mailq_is_quota_error($r);
-    $out = 'sent';
-    mailq_job_update(static function (?array $j) use ($id, $em, $ok, $r, $quota, &$out) {
-      if (!$j || (string) $j['id'] !== $id) return null;
-      $j['lastTick'] = time();
-      if ($ok) { $j['sent'] = (int) ($j['sent'] ?? 0) + 1; $j['consecFail'] = 0; $out = 'sent'; return $j; }
-      $j['fail'] = (int) ($j['fail'] ?? 0) + 1;
-      $j['consecFail'] = (int) ($j['consecFail'] ?? 0) + 1;
-      $j['tries'][$em] = (int) ($j['tries'][$em] ?? 0) + 1;
-      $j['lastError'] = mb_substr($em . ' : ' . (string) ($r['reason'] ?? 'échec'), 0, 300);
-      $out = 'fail';
-      if ($quota || $j['consecFail'] >= MAILQ_MAX_CONSEC_FAIL) {
-        $j['active'] = false;
-        $j['reason'] = $quota ? 'Pause automatique : limite / quota Brevo atteint (' . mb_substr((string) ($r['reason'] ?? ''), 0, 160) . '). Reprenez plus tard.'
-          : 'Pause automatique : ' . $j['consecFail'] . ' échecs d’affilée. Vérifiez Brevo puis reprenez.';
-        $out = 'paused';
-      }
+      $j['lastTick'] = time(); $j['nextAt'] = time() + 1;
       return $j;
     });
     return $out;

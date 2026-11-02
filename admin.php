@@ -3107,14 +3107,13 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <input id="mlSubject" maxlength="120" class="nt-in" placeholder="Ex. : Volatility est en mouvement sur OROLADO">
         <label class="nt-lab">Message</label>
         <textarea id="mlBody" maxlength="2000" rows="8" class="nt-in" placeholder="Bonjour {prenom},&#10;&#10;Les marchés bougent bien aujourd'hui. Passe faire quelques trades : orolado.com&#10;&#10;À bientôt,&#10;L'équipe OROLADO"></textarea>
-        <p class="muted" style="margin:4px 0 0">E-mail simple, comme écrit à la main (meilleure chance d'arriver dans « Principale »). Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte. Envoi lent : environ 1 e-mail toutes les 5 à 8 secondes (« 2. Envoyer à tous » : laissez la page ouverte ; « 📨 en arrière-plan » : vous pouvez la fermer).</p>
+        <p class="muted" style="margin:4px 0 0">Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte (ou utilisez le bouton 🎁 Affiliés). Envoi <b>rapide par paquets</b> : ça continue même si vous fermez la page. Si Brevo atteint sa limite, l'envoi se met en pause tout seul et vous le reprenez.</p>
         <label class="nt-lab">Texte du bouton orange (vide = « Jouer maintenant » / « Play now »)</label><input id="mlBtn" maxlength="40" class="nt-in" placeholder="Jouer maintenant"><label class="nt-lab">Lien du bouton (vide = orolado.com)</label><input id="mlLink" maxlength="300" class="nt-in" placeholder="https://orolado.com/" inputmode="url">
         <label class="nt-lab">Envoyer le test à (votre vraie adresse e-mail)</label>
         <input id="mlTestTo" type="email" maxlength="120" class="nt-in" placeholder="exemple@gmail.com" autocomplete="email">
         <p style="margin-top:12px">
           <button class="mini ok" type="button" id="btnMlTest">1. M’envoyer un test</button>
-          <button class="mini bad" type="button" id="btnMlAll">2. Envoyer à tous</button>
-          <button class="mini bad" type="button" id="btnMlBg" style="margin-top:6px">📨 Envoyer à tous en arrière-plan (je peux fermer la page)</button>
+          <button class="mini bad" type="button" id="btnMlBg" style="margin-top:6px">2. 🚀 Envoyer à tous (rapide — continue même si je ferme la page)</button>
         </p>
         <p class="muted" id="mlSt"></p>
         <div id="mlQ" hidden style="margin-top:10px;padding:10px;border:1px solid #2A3550;border-radius:10px;overflow-wrap:anywhere">
@@ -4313,7 +4312,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       if (confirmTxt.trim().toUpperCase() !== 'ENVOYER') { $m('mlSt').textContent = 'Envoi annulé.'; return; }
       confirmTxt = 'ENVOYER';
     }
-    $m('btnMlTest').disabled = $m('btnMlAll').disabled = true;
+    $m('btnMlTest').disabled = true;
     let id = '', sent = 0, fail = 0, err = '', already = -1, j;
     try {
       // v2668 — « Envoyer à tous » : l'adresse du propriétaire (case du test) reçoit d'abord une copie, pour voir que c'est parti.
@@ -4334,10 +4333,9 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
           + (already > 0 ? ' (dont ' + already + ' déjà avant : pas renvoyé)' : '')
           + (fail ? '. ' + fail + ' échec(s)' + (err ? ' (' + err + ')' : '') + ' : retouchez « Envoyer à tous » pour réessayer seulement ceux-là' : '') + '.';
     } catch (e) { $m('mlSt').textContent = 'Échec : ' + (e && e.message ? e.message : e); }
-    $m('btnMlTest').disabled = $m('btnMlAll').disabled = false;
+    $m('btnMlTest').disabled = false;
   }
   $m('btnMlTest').onclick = () => send('test');
-  $m('btnMlAll').onclick = () => send('all');
   // 2026-11-02 (propriétaire) — bouton 1 clic : pré-remplit la campagne Affiliés stylée (FR ou EN selon la langue choisie).
   $m('btnMlAff').onclick = () => {
     const g = $m('mlGroup').value;
@@ -4375,14 +4373,14 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       const j = await ajax({action:'mail_queue_status'});
       const on = j && j.ok ? qPaint(j.status) : false;
       clearTimeout(qTimer);
-      if (on || $m('mailModal').classList.contains('on')) qTimer = setTimeout(qStatus, 10000);
-    } catch (e) { clearTimeout(qTimer); qTimer = setTimeout(qStatus, 10000); }
+      if (on || $m('mailModal').classList.contains('on')) qTimer = setTimeout(qStatus, on ? 2500 : 10000);
+    } catch (e) { clearTimeout(qTimer); qTimer = setTimeout(qStatus, 4000); }
   }
   $m('btnMlBg').onclick = async () => {
     const subject = $m('mlSubject').value.trim(), message = $m('mlBody').value.trim(), button = $m('mlBtn').value.trim(), link = $m('mlLink').value.trim(), group = $m('mlGroup').value;
     if (!subject || !message) { $m('mlSt').textContent = 'Écrivez l’objet et le message.'; return; }
     const testTo = $m('mlTestTo').value.trim();
-    const c = prompt('Envoyer « ' + subject + ' » EN ARRIÈRE-PLAN à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nEnvoi lent (1 e-mail toutes les 6 à 9 s au plus) : vous pouvez fermer la page.\nAvez-vous fait « 1. M’envoyer un test » ?\nTapez ENVOYER pour confirmer :') || '';
+    const c = prompt('Envoyer « ' + subject + ' » à tous les joueurs ' + (group === 'fr' ? 'des pays francophones' : 'des autres pays') + ' ?\nEnvoi rapide par paquets ; ça continue même si vous fermez la page.\nAvez-vous fait « M’envoyer un test » ?\nTapez ENVOYER pour confirmer :') || '';
     if (c.trim().toUpperCase() !== 'ENVOYER') { $m('mlSt').textContent = 'Envoi annulé.'; return; }
     $m('btnMlBg').disabled = true;
     try {
