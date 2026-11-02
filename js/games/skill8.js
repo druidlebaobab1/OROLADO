@@ -3173,20 +3173,20 @@
   }), 'tap', 0.45);
 
   boot('subwaydash', dodger({
-    lanes: 4, lineCol: 'rgba(253,230,138,.5)', winCols: ['#FDE68A', '#67E8F9'],
+    lanes: 4, lines: false, lineCol: 'rgba(255,255,255,.07)', winCols: ['#FDE68A', '#67E8F9'],
     bg: (function () {
-      /* 2026-11-02 (propriétaire : « fais un vrai décor réaliste ») — on affiche la VRAIE image du jeu
-         (img/games/subwaydash.webp, le même tunnel de métro que la carte du lobby) en fond, couvrant la scène.
-         Le personnage + les obstacles passent par-dessus. Bien plus réaliste que le dessin vectoriel. */
+      /* 2026-11-02 (propriétaire) — VRAIE image du tunnel de métro (img/games/subwaydash.webp) en fond.
+         On n'affiche QUE le HAUT du tunnel (la personne de la photo est pile au centre → coupée) pour n'avoir
+         qu'UN seul humain (le joueur). Plus de tirets de voie (lines:false). Net, réaliste, sérieux. */
       var im = null, ok = false;
       return function (c, W, H, T, rx0, rx1) {
-        if (!im) { im = new Image(); im.onload = function () { ok = true; }; im.src = 'img/games/subwaydash.webp?v=3525'; }
+        if (!im) { im = new Image(); im.onload = function () { ok = true; }; im.src = 'img/games/subwaydash.webp?v=3526'; }
         if (ok) {
-          var s = Math.max(W / im.width, H / im.height) * 1.14, iw = im.width * s, ih = im.height * s;
-          c.drawImage(im, (W - iw) / 2, (H - ih) / 2 - H * 0.05, iw, ih);
+          var topFrac = 0.46, s = H / (topFrac * im.height), iw = im.width * s, ih = im.height * s;
+          c.drawImage(im, (W - iw) / 2, 0, iw, ih);
         } else { c.fillStyle = '#0a1420'; c.fillRect(0, 0, W, H); }
-        var gr = c.createLinearGradient(0, H * 0.46, 0, H); gr.addColorStop(0, 'rgba(2,6,15,0)'); gr.addColorStop(1, 'rgba(2,6,15,.72)'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
-        var vg = c.createLinearGradient(0, 0, W, 0); vg.addColorStop(0, 'rgba(0,0,0,.42)'); vg.addColorStop(0.5, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.42)'); c.fillStyle = vg; c.fillRect(0, 0, W, H);
+        var gr = c.createLinearGradient(0, H * 0.38, 0, H); gr.addColorStop(0, 'rgba(2,6,15,0)'); gr.addColorStop(0.7, 'rgba(2,6,15,.7)'); gr.addColorStop(1, 'rgba(2,6,15,.95)'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
+        var vg = c.createLinearGradient(0, 0, W, 0); vg.addColorStop(0, 'rgba(0,0,0,.5)'); vg.addColorStop(0.5, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)'); c.fillStyle = vg; c.fillRect(0, 0, W, H);
       };
     })(),
     player: function (d, w, h) { return mkc(w + 8, h + 8, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2);
