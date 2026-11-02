@@ -4394,6 +4394,20 @@ html body #fsTradeOverlay .chart-toolbar .ind-btn[data-ind="bb"].on{background:l
 html body #fsTradeOverlay .chart-toolbar .ind-btn[data-ind="ema"].on{background:linear-gradient(180deg,#E8C275,#BB871F)!important;border-color:#F1D9A8!important;color:#120E06!important;box-shadow:0 0 18px rgba(219,158,36,0.45)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn.zoom-btn:not(.chart-reset-btn){background:linear-gradient(180deg,rgba(247,147,26,.2),rgba(247,147,26,.06))!important;border:1px solid rgba(247,147,26,0.33)!important;color:#FFC58A!important;box-shadow:0 0 10px rgba(247,147,26,0.1)!important}
 html body #fsTradeOverlay .chart-toolbar .chart-reset-btn{box-shadow:0 0 12px rgba(247,147,26,0.14)!important}
+/* 2026-11-02 (propriétaire) : plus de LUEUR JAUNE sur la ligne des indicateurs (MA/BB/EMA/zoom) — au repos,
+   fond sombre neutre, sans halo doré ; le texte garde juste sa couleur. Au clic, un éclat blanc discret.
+   iPhone + Android, écran normal + plein écran. */
+html body #screenTrade#screenTrade .chart-toolbar .ind-btn[data-ind]:not(.on),
+html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar .ind-btn[data-ind]:not(.on),
+html body #screenTrade#screenTrade .chart-toolbar .ind-btn.zoom-btn:not(.on),
+html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar .ind-btn.zoom-btn:not(.on){
+  background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important}
+html body #screenTrade#screenTrade .chart-toolbar .chart-reset-btn,
+html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar .chart-reset-btn{
+  background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important}
+html body #screenTrade#screenTrade .chart-toolbar .ind-btn[data-ind].on,
+html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar .ind-btn[data-ind].on{
+  box-shadow:0 0 10px -3px rgba(255,255,255,.3)!important}
 html body #fsTradeOverlay .asset-chip.on[data-asset="v100"]{background:linear-gradient(135deg,rgba(16,185,129,.36),rgba(6,78,59,.36))!important;border:1.5px solid #34D399!important;box-shadow:0 0 12px rgba(16,185,129,0.42),inset 0 0 8px rgba(52,211,153,0.18)!important}
 html body #fsTradeOverlay .asset-chip.on[data-asset="stable"]{background:linear-gradient(135deg,rgba(239,68,68,.36),rgba(127,29,29,.36))!important;border:1.5px solid #F87171!important;box-shadow:0 0 12px rgba(239,68,68,0.42),inset 0 0 8px rgba(248,113,113,0.18)!important}
 html body #fsTradeOverlay .asset-chip.on[data-asset="apex500"]{background:linear-gradient(135deg,rgba(231,190,107,.36),rgba(149,109,29,.36))!important;border:1.5px solid #E0A824!important;box-shadow:0 0 12px rgba(231,190,107,0.42),inset 0 0 8px rgba(224,168,36,0.18)!important}
