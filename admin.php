@@ -3102,6 +3102,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <div class="nt-card">
         <label class="nt-lab">Envoyer à</label>
         <select id="mlGroup" class="nt-in"><option value="fr">Pays francophones (message en français)</option><option value="en">Autres pays (message en anglais)</option></select>
+        <button class="mini" type="button" id="btnMlAff" style="margin:8px 0 2px;border-color:#F2C879;color:#F2C879;width:100%">🎁 Remplir : campagne Affiliés (selon la langue choisie ci-dessus)</button>
         <label class="nt-lab">Objet</label>
         <input id="mlSubject" maxlength="120" class="nt-in" placeholder="Ex. : Volatility est en mouvement sur OROLADO">
         <label class="nt-lab">Message</label>
@@ -4337,6 +4338,23 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   }
   $m('btnMlTest').onclick = () => send('test');
   $m('btnMlAll').onclick = () => send('all');
+  // 2026-11-02 (propriétaire) — bouton 1 clic : pré-remplit la campagne Affiliés stylée (FR ou EN selon la langue choisie).
+  $m('btnMlAff').onclick = () => {
+    const g = $m('mlGroup').value;
+    const fr = {
+      subj: "Gagne 60% à vie avec OROLADO — sans jouer",
+      msg: "Bonjour {prenom},\n\nTu peux gagner de l'argent avec OROLADO sans jouer — et à vie.\n\nPartage ton lien d'affilié : chaque personne qui s'inscrit avec devient ton joueur, et tu touches 60% de commission à vie. Toi tu ne joues pas, tu ne risques rien.\n\nExemple : 100 amis actifs ≈ 3 000 $ par an, 1 000 amis ≈ 30 000 $ — et plus tu en as, plus tu gagnes, chaque mois, pour toujours.\n\nC'est simple : prends ton lien dans l'appli (Cadeaux → Affiliation), partage-le sur TikTok, WhatsApp, tes réseaux, et tu encaisses automatiquement. Les retraits sont traités en 24h.\n\nCommence aujourd'hui : orolado.com\n\nÀ bientôt,\nL'équipe OROLADO",
+      btn: "Obtenir mon lien"
+    };
+    const en = {
+      subj: "Earn 60% for life with OROLADO — no playing",
+      msg: "Hi {prenom},\n\nYou can earn money with OROLADO without playing — for life.\n\nShare your affiliate link: everyone who signs up with it becomes your player, and you earn 60% commission for life. You don't play, you risk nothing.\n\nExample: 100 active friends ≈ $3,000 a year, 1,000 friends ≈ $30,000 — and the more you have, the more you earn, every month, forever.\n\nIt's simple: get your link in the app (Gifts → Affiliation), share it on TikTok, WhatsApp, your socials, and you get paid automatically. Withdrawals in 24h.\n\nStart today: orolado.com\n\nSee you soon,\nThe OROLADO team",
+      btn: "Get my link"
+    };
+    const d = g === 'en' ? en : fr;
+    $m('mlSubject').value = d.subj; $m('mlBody').value = d.msg; $m('mlBtn').value = d.btn; $m('mlLink').value = 'https://orolado.com';
+    $m('mlSt').textContent = 'Campagne Affiliés remplie (' + (g === 'en' ? 'anglais' : 'français') + '). Teste-la sur ton e-mail, puis « Envoyer à tous ».';
+  };
   // v3000 — envoi EN ARRIÈRE-PLAN : le serveur continue seul (page fermée) ; ici on montre l'avancement
   // et, tant que la page est ouverte, on demande l'état toutes les 10 s (ce qui fait aussi avancer l'envoi).
   let qTimer = 0;
