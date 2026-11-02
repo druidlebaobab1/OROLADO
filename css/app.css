@@ -7275,10 +7275,17 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .
   box-shadow:0 0 0 3px rgba(255,255,255,.18),0 2px 8px rgba(0,0,0,.35);z-index:2}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call .bt-arr,html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call .bt-arr path{stroke:#15803D!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr,html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr path{stroke:#BE123C!important}
+/* 2026-11-02 (propriétaire) : on pousse le texte pour qu'il ne croise plus le rond (un peu d'espace),
+   le rond + son anneau restent bien à l'intérieur (ne débordent pas). */
+html:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:56px!important;padding-right:12px!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-right:56px!important;padding-left:12px!important}
+html.fs-trade body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:40px!important;padding-right:8px!important}
+html.fs-trade body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-right:40px!important;padding-left:8px!important}
 /* Anneau doré en pointillés qui tourne autour du rond. */
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade::after{content:""!important;position:absolute!important;left:2px;top:50%;
-  height:calc(100% - 6px);width:auto;aspect-ratio:1;max-height:52px;transform-origin:center;translate:0 -50%;
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade::after{content:""!important;position:absolute!important;left:4px;top:50%;
+  height:calc(100% - 12px);width:auto;aspect-ratio:1;max-height:46px;transform-origin:center;translate:0 -50%;
   border-radius:50%;border:2px dashed rgba(255,226,140,.9);animation:btRing 5s linear infinite;pointer-events:none;z-index:1;background:none!important;display:block!important;box-sizing:border-box}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put::after{left:auto!important;right:4px!important}
 @keyframes btRing{to{transform:rotate(360deg)}}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-txt{position:relative;z-index:2}
 
@@ -13291,7 +13298,7 @@ html[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile
 html[dir=rtl]:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade{translate:8px -6px!important}
 /* v2964 (propriétaire) : rond blanc des flèches ACHETER / VENDRE plus calme (blanc légèrement transparent) ; au toucher il s'allume en blanc plein */
 html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade .bt-arr{background-color:rgba(255,255,255,.86)!important;box-shadow:0 0 0 4px rgba(255,255,255,.14),0 2px 8px rgba(0,0,0,.35)!important;transition:background-color .15s,box-shadow .15s}
-html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade:active .bt-arr,html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade.tap-lit .bt-arr,html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade.pressed .bt-arr{background-color:#fff!important;box-shadow:0 0 0 4px rgba(255,255,255,.3),0 0 14px rgba(255,255,255,.55)!important}
+html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade:active .bt-arr,html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade.tap-lit .bt-arr,html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .btn-trade.pressed .bt-arr{background-color:rgba(250,252,248,.96)!important;box-shadow:0 0 0 4px rgba(255,255,255,.26),0 0 13px rgba(255,255,255,.45)!important}
 /* v2965 (propriétaire) — iPhone seulement : la bulle 5000 % reste LA PLUS GRANDE (×1,06 : 59 px, contre 54 px pour 1000 %),
    centrée entre le cadre « $ 1.90 » et VENDRE : ~4 px d'air au-dessus et ~4 px sous son anneau (avant v2964 : ×1,1 + 5 px
    plus bas → l'anneau touchait VENDRE ; v2964 : ×0,95 tirée vers le haut → trop petite). Android ne change pas. */
