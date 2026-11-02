@@ -13964,6 +13964,27 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#scre
 
 
 
+/* 2026-11-02 (propriétaire) : COMPTE RÉEL — tout le texte des carrés du terminal en VERT
+   (durées 5 s, mise, gain) ; bat mes règles neutres grâce à .mode-real / body.oro-real. */
+html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip ,html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on{
+  color:#22E07A!important;-webkit-text-fill-color:#22E07A!important;text-shadow:0 0 8px rgba(34,224,122,.35)!important}
+html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg ,html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path{stroke:#22E07A!important}
+html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{color:#22E07A!important;-webkit-text-fill-color:#22E07A!important;caret-color:#22E07A!important;text-shadow:0 0 8px rgba(34,224,122,.35)!important}
+html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::before,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::before ,html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::after,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::after{background:#22E07A!important}
+html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm.stake-minus::after,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm.stake-minus::after{background:transparent!important}
+html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount{color:#22E07A!important;-webkit-text-fill-color:#22E07A!important;text-shadow:0 0 8px rgba(34,224,122,.35)!important}
+html:root body #screenTrade.mode-real#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .mult,
+html:root body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .mult{color:#22E07A!important;-webkit-text-fill-color:#22E07A!important;background:rgba(34,224,122,.12)!important;border-color:rgba(34,224,122,.4)!important}
+
 /* 2026-11-02 (propriétaire) : PLEIN ÉCRAN — bas aussi sombre, pas de carré ni d'or.
    Le sombre de la courbe descend sur tout le bas (comme en portrait). */
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap :is(.stake-line,.stake-field,.win-preview,.dur-row){background:transparent!important;border:0!important;box-shadow:none!important}
