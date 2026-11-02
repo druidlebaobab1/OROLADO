@@ -5384,7 +5384,7 @@ html body .defi-chip .dc-mk{letter-spacing:.06em}
 html body .defi-chip .dc-dots{color:#F2B33D;letter-spacing:1px}
 html.fs-trade body .defi-chip{top:calc(env(safe-area-inset-top,0px) + 2px)}
 html body .defi-win{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(14,10,4,.55);animation:dwIn .3s ease-out;pointer-events:none}
-html body .defi-win .dw-in{text-align:center;padding:22px 28px;border-radius:22px;background:radial-gradient(circle at 50% 0%,rgba(242,179,61,.35),rgba(10,8,6,.97) 70%);border:1px solid rgba(242,179,61,.6);box-shadow:0 0 60px rgba(242,179,61,.35)}
+html body .defi-win .dw-in{text-align:center;padding:22px 28px;border-radius:22px;background:radial-gradient(circle at 50% 0%,rgba(201,150,47,.12),rgba(9,8,6,.98) 70%);border:1px solid rgba(201,150,47,.28);box-shadow:0 0 60px rgba(242,179,61,.35)}
 html body .defi-win .dw-cup{font-size:46px}
 html body .defi-win .dw-t{font-weight:900;font-size:20px;color:#F2B33D;letter-spacing:.05em;text-transform:uppercase}
 html body .defi-win .dw-a{font-weight:900;font-size:30px;color:#2EE59D;margin-top:4px}
@@ -9423,23 +9423,23 @@ html body #otpModal #err-otpCode{white-space:nowrap;overflow:hidden;text-overflo
 #coachModal .coach-dim{position:absolute;inset:0;background:rgba(14,10,4,.62);opacity:0;transition:opacity .25s}
 #coachModal.on .coach-dim{opacity:1}
 #coachModal .coach-card{position:relative;width:min(420px,calc(100% - 28px));margin:0 0 calc(18px + env(safe-area-inset-bottom,0px));border-radius:24px;padding:20px 18px 14px;
-  background:linear-gradient(180deg,#664F22,#1C160A);border:1.5px solid rgba(245,197,24,.55);box-shadow:0 0 30px rgba(245,197,24,.18),0 20px 40px rgba(0,0,0,.5);
+  background:linear-gradient(180deg,#12100B,#0A0906);border:1.5px solid rgba(245,197,24,.55);box-shadow:0 0 30px rgba(245,197,24,.18),0 20px 40px rgba(0,0,0,.5);
   color:#fff;text-align:center;transform:translateY(40px);opacity:0;transition:transform .3s cubic-bezier(.2,.9,.3,1.2),opacity .25s}
 #coachModal.on .coach-card{transform:none;opacity:1}
 #coachModal .coach-x{position:absolute;top:8px;right:10px;width:34px;height:34px;border:0;background:none;color:#C9B895;font-size:24px;line-height:1;cursor:pointer}
-#coachModal .coach-big svg{width:54px;height:54px;fill:none;stroke:#FFD24A;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 10px rgba(255,200,60,.45))}
-#coachModal h2{margin:4px 0 6px;font:800 clamp(18px,5.4vw,22px)/1.2 "Plus Jakarta Sans",system-ui,sans-serif;color:#FFE08A}
+#coachModal .coach-big svg{width:54px;height:54px;fill:none;stroke:#C9B488;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:none}
+#coachModal h2{margin:4px 0 6px;font:800 clamp(18px,5.4vw,22px)/1.2 "Plus Jakarta Sans",system-ui,sans-serif;color:#F0EAD8}
 #coachModal p{margin:0 0 14px;color:#F9EED9;font-size:clamp(13px,3.7vw,14.5px);line-height:1.35}
 #coachModal .coach-steps{display:flex;align-items:flex-start;justify-content:space-between;margin:2px 0 16px}
 #coachModal .coach-st{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:0}
-#coachModal .coach-st i{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(160deg,rgba(255,215,90,.22),rgba(255,255,255,.05));box-shadow:inset 0 0 0 1.5px rgba(255,215,90,.45)}
-#coachModal .coach-st svg{width:24px;height:24px;fill:none;stroke:#FFE7A3;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#coachModal .coach-st i{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1.5px rgba(201,150,47,.4)}
+#coachModal .coach-st svg{width:24px;height:24px;fill:none;stroke:#C9B488;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #coachModal .coach-st b{font-size:clamp(10.5px,3vw,12px);font-weight:700;color:#efeaff;white-space:nowrap}
-#coachModal .coach-ar{color:#F5C518;font-size:18px;font-weight:800;margin-top:14px}
+#coachModal .coach-ar{color:#8C7E5C;font-size:18px;font-weight:800;margin-top:14px}
 #coachModal .coach-cmp{display:flex;gap:10px;margin:2px 0 16px}
 #coachModal .coach-col{flex:1;border-radius:16px;padding:12px 8px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.14);text-align:left}
 #coachModal .coach-col.real{background:rgba(46,229,157,.10);box-shadow:inset 0 0 0 1.5px rgba(46,229,157,.5)}
-#coachModal .coach-col i svg{width:28px;height:28px;fill:none;stroke:#F4E2BE;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#coachModal .coach-col i svg{width:28px;height:28px;fill:none;stroke:#C9B488;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #coachModal .coach-col.real i svg{stroke:#2EE59D}
 #coachModal .coach-col .ct{font-size:13px;font-weight:800;margin:4px 0 6px}
 #coachModal .coach-col.real .ct{color:#2EE59D}
@@ -9448,14 +9448,14 @@ html body #otpModal #err-otpCode{white-space:nowrap;overflow:hidden;text-overflo
 #coachModal .coach-col .cl.no svg{stroke:#F87171}
 #coachModal .coach-col .cl.yes svg{stroke:#2EE59D}
 #coachModal .coach-prog{height:8px;border-radius:8px;background:rgba(255,255,255,.1);margin:4px 4px 6px;overflow:hidden}
-#coachModal .coach-prog i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#2EE59D,#F5C518)}
-#coachModal .coach-pl{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#F5E6C8;margin:0 4px 14px}
+#coachModal .coach-prog i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#2EE59D,#2EA06A)}
+#coachModal .coach-pl{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#C9BEA2;margin:0 4px 14px}
 #coachModal .coach-go{display:block;width:100%;border:0;border-radius:16px;padding:15px 10px;font:800 clamp(15px,4.4vw,17px) "Plus Jakarta Sans",system-ui,sans-serif;color:#150B00;
-  background:linear-gradient(180deg,#FFD866,#F5A524);box-shadow:0 6px 18px rgba(245,165,36,.35);cursor:pointer}
+  background:linear-gradient(180deg,#C9962F,#9A6E1E);box-shadow:0 4px 12px -5px rgba(0,0,0,.6);color:#FBF3E0!important;cursor:pointer}
 #coachModal .coach-later{display:block;margin:8px auto 0;border:0;background:none;color:#C9B895;font:700 13px "Plus Jakarta Sans",system-ui,sans-serif;padding:6px 14px;cursor:pointer}
 @media (orientation:landscape) and (max-height:500px){#coachModal{align-items:center}#coachModal .coach-card{margin:0;max-height:94vh;overflow:auto;padding:12px 14px}#coachModal .coach-big svg{width:38px;height:38px}#coachModal p{margin-bottom:8px}#coachModal .coach-steps,#coachModal .coach-cmp{margin-bottom:10px}}
 /* v2661 — même style que les grandes notifications du site (lueur dorée en haut, icônes trait doré fin). */
-#coachModal .coach-card{background:radial-gradient(circle at 50% 0%,rgba(242,179,61,.35),rgba(10,8,6,.97) 70%);border:1px solid rgba(242,179,61,.6);box-shadow:0 0 60px rgba(242,179,61,.35);overflow:hidden}
+#coachModal .coach-card{background:radial-gradient(circle at 50% 0%,rgba(201,150,47,.12),rgba(9,8,6,.98) 70%);border:1px solid rgba(201,150,47,.28);box-shadow:0 0 60px rgba(242,179,61,.35);overflow:hidden}
 #coachModal .coach-body{position:relative;z-index:2}
 #coachModal .coach-rays{position:absolute;z-index:0;left:50%;top:44px;width:240px;height:240px;margin:-120px 0 0 -120px;border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(255,214,110,.28),rgba(242,179,61,.08) 45%,rgba(242,179,61,0) 70%)}
