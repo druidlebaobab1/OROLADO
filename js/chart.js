@@ -1099,23 +1099,9 @@
         g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.85, 0, Math.PI * 2); g.fill();
       }
     }
-    // v3505 (propriétaire) : PAS de point blanc au centre. Le DÉBUT de la spirale forme un petit
-    // TRIANGLE discret (une pointe), d'où elle s'enroule.
-    halo(cx, cy, R * 0.24, 'rgba(206,212,224,0.028)');
-    halo(cx, cy, R * 0.09, 'rgba(214,220,232,0.05)');
-    (function () {
-      var tr = Math.max(4.5, R * 0.052), a0 = -Math.PI / 2, ti, aa, px, py;
-      g.save();
-      g.globalAlpha = 0.5;
-      g.strokeStyle = 'rgba(210,218,232,0.85)';
-      g.lineWidth = Math.max(1, R * 0.013);
-      g.lineJoin = 'round';
-      g.beginPath();
-      for (ti = 0; ti < 3; ti++) { aa = a0 + ti * 2 * Math.PI / 3; px = cx + Math.cos(aa) * tr; py = cy + Math.sin(aa) * tr; if (ti === 0) g.moveTo(px, py); else g.lineTo(px, py); }
-      g.closePath();
-      g.stroke();
-      g.restore();
-    })();
+    // v3506 (propriétaire) : PAS de point blanc, PAS de triangle au centre. Juste un centre doux.
+    halo(cx, cy, R * 0.24, 'rgba(206,212,224,0.026)');
+    halo(cx, cy, R * 0.09, 'rgba(214,220,232,0.04)');
     // v3232 (propriétaire) : plus de cercle autour de la spirale (il n'avait demandé que la pyramide).
     galaxy = null;
   }
