@@ -8337,7 +8337,7 @@ html body #portalModal#portalModal .bon-head .bon-big{font-size:12.5px!important
    ronds dorés : bord bleu léger, durée en blanc avec une petite lueur bleue, flèches fines sans rond. ===== */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row,
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row{
-  background:rgba(255,255,255,.03)!important;border:1px solid rgba(201,150,47,.26)!important;box-shadow:none!important}
+  background:transparent!important;border:0!important;box-shadow:none!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on,
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on{
   background:transparent!important;border:0!important;color:#FBF4E6!important;box-shadow:none!important;text-shadow:0 0 8px rgba(236,204,139,.45)!important}
@@ -8356,7 +8356,7 @@ html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOv
 /* ===== v2492 — Mise et gain prennent le même bleu que la case des durées (moins de couleurs dans le terminal). ===== */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) :is(.stake-field,.win-preview),
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) :is(.stake-field,.win-preview){
-  background:rgba(255,255,255,.03)!important;border:1px solid rgba(201,150,47,.26)!important;box-shadow:none!important}
+  background:transparent!important;border:0!important;box-shadow:none!important}
 
 /* ===== v2492 — PC : la fenêtre Cadeaux s'ouvre en GRAND (comme la page Apprendre), plus en petite page de téléphone. ===== */
 @media (min-width:860px){
@@ -8989,7 +8989,7 @@ html body:where(:not(.oro-real)):not(#oroQ):not(.oroQ) #fsTradeOverlay#fsTradeOv
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #fsBtnDemo:not(.on):not(.tap-lit),
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #modeDemo:not(.on):not(.tap-lit){background:linear-gradient(135deg,rgba(224,168,36,.16),rgba(224,168,36,.05))!important;border:1px solid rgba(242,193,78,.6)!important;color:#F0E2C6!important;box-shadow:none!important}
 /* v2528 — en démo, le montant de la case du gain passe aussi au bleu de la démo (vert en réel inchangé). */
-html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .amount{color:#45C98D!important;-webkit-text-fill-color:#45C98D!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .amount{color:#E8C06A!important;-webkit-text-fill-color:#E8C06A!important}
 /* v2529 — la case des secondes (« 5s »…) prend la couleur du mode : bleu en démo, vert en réel (comme la mise et le gain). */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on,
 html body:where(:not(.oro-real)):not(#oroQ):not(.oroQ) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3) .dur-row .dur-chip.on{color:#E6E6EA!important;-webkit-text-fill-color:#E6E6EA!important}
@@ -13880,14 +13880,15 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#scre
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(.stake-field,.win-preview),
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(.stake-field,.win-preview){
-  background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important}
+  background:transparent!important;border:0!important;box-shadow:none!important}
 /* durées : chip actif neutre clair (plus d'or vif), texte clair */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip{
   color:#E6E6EA!important;-webkit-text-fill-color:#E6E6EA!important;background:transparent!important;border:0!important;box-shadow:none!important;text-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on{
-  color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;background:rgba(255,255,255,.1)!important;border-radius:9px!important;text-shadow:none!important}
+  color:#E8C06A!important;-webkit-text-fill-color:#E8C06A!important;background:rgba(255,255,255,.07)!important;border-radius:9px!important;text-shadow:none!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade.mode-real #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on{color:#3BE39A!important;-webkit-text-fill-color:#3BE39A!important}
 /* flèches des durées + / − de la mise : gris clair neutre */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg,
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path,
@@ -13898,11 +13899,13 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#scre
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm.stake-minus::after{background:transparent!important}
 /* mise saisie : texte clair neutre (plus d'or vif) */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{
-  color:#EAEAEE!important;-webkit-text-fill-color:#EAEAEE!important;caret-color:#EAEAEE!important;border:0!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important}
+  color:#E8C06A!important;-webkit-text-fill-color:#E8C06A!important;caret-color:#E8C06A!important;border:0!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade.mode-real #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{color:#3BE39A!important;-webkit-text-fill-color:#3BE39A!important;caret-color:#3BE39A!important}
 /* GAIN : montant vert, « Payout » clair discret */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount{
-  color:#45C98D!important;-webkit-text-fill-color:#45C98D!important;background:none!important;text-shadow:0 1px 2px rgba(0,0,0,.55)!important}
+  color:#E8C06A!important;-webkit-text-fill-color:#E8C06A!important;background:none!important;text-shadow:0 1px 2px rgba(0,0,0,.55)!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade.mode-real #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount{color:#3BE39A!important;-webkit-text-fill-color:#3BE39A!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .mult,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .mult{
   color:#C2C2C8!important;-webkit-text-fill-color:#C2C2C8!important;background:none!important;border:0!important}
@@ -13928,3 +13931,10 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#scre
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on::after{
   border-color:rgba(255,255,255,.45)!important;border-top-color:transparent!important;box-shadow:none!important}
 
+
+/* 2026-11-02 (propriétaire) : PLEIN ÉCRAN — bas aussi sombre, pas de carré ni d'or.
+   Le sombre de la courbe descend sur tout le bas (comme en portrait). */
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap :is(.stake-line,.stake-field,.win-preview,.dur-row){background:transparent!important;border:0!important;box-shadow:none!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap #inputStake{border:0!important;background:transparent!important;box-shadow:none!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap .stake-field .fs-stake-win{text-shadow:0 1px 2px rgba(0,0,0,.55)!important;color:#E8C06A!important}
+html.fs-trade body:where(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap .stake-field .fs-stake-win{color:#3BE39A!important}
