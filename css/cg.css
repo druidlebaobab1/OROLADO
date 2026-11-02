@@ -43,9 +43,9 @@ html:root body #casinoModal .cs-go.cg-go{min-height:80px!important;height:auto!i
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.18),0 10px 24px -12px rgba(34,197,94,.9)!important;transition:transform .1s,filter .15s}
 html:root body #casinoModal .cs-go.cg-go:active{transform:scale(.97)}
 html:root body #casinoModal .cs-go.cg-go:disabled{filter:saturate(.35) brightness(.8);opacity:1!important}
-html:root body #casinoModal .cs-go.cg-go.cash{color:#3B2300!important;text-shadow:none;background:linear-gradient(180deg,#FDE68A 0%,#FBBF24 45%,#F59E0B 100%)!important;
+html:root body #casinoModal .cs-go.cg-go.cash{color:#1E1200!important;text-shadow:none;background:linear-gradient(180deg,#FDE68A 0%,#FBBF24 45%,#F59E0B 100%)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -3px 0 rgba(0,0,0,.15),0 10px 24px -12px rgba(245,158,11,.95)!important}
-html:root body #casinoModal .cs-go.cg-go.placed,html:root body #casinoModal .cs-go.cg-go.wait{color:#FDE68A!important;background:linear-gradient(180deg,#66573A,#504225)!important;
+html:root body #casinoModal .cs-go.cg-go.placed,html:root body #casinoModal .cs-go.cg-go.wait{color:#FDE68A!important;background:linear-gradient(180deg,#66573A,#282112)!important;
   box-shadow:inset 0 0 0 1.5px rgba(253,230,138,.45)!important;filter:none}
 html:root body #casinoModal .cs-go.cg-go.stop{background:linear-gradient(180deg,#FB7185,#E11D48)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 10px 24px -12px rgba(225,29,72,.9)!important}
 /* petits écrans : terminal plus bas, rien ne disparaît */
@@ -61,7 +61,7 @@ html:root body #casinoModal .cs-panel.cg-panel.cs-guestpanel > .cg-term{display:
 /* ---------- base des scènes refaites ---------- */
 html:root body #casinoModal .cg-game{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:8px;position:relative}
 html:root body #casinoModal .cg-stage{position:relative;flex:1 1 auto;min-height:180px;border-radius:20px;overflow:hidden;isolation:isolate;
-  background:radial-gradient(120% 80% at 50% 0%,rgba(231,190,107,.28),transparent 60%),linear-gradient(180deg,#423314,#261D0A);
+  background:radial-gradient(120% 80% at 50% 0%,rgba(231,190,107,.28),transparent 60%),linear-gradient(180deg,#211A0A,#130E05);
   box-shadow:inset 0 0 0 1px var(--cg-line),0 12px 30px -20px rgba(0,0,0,.9)}
 html:root body #casinoModal .cg-stage::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.55;
   background-image:radial-gradient(1px 1px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 72% 12%,#fff,transparent),radial-gradient(1.4px 1.4px at 38% 62%,#fff,transparent),
@@ -110,7 +110,7 @@ html:root body #casinoModal .cg-in input{padding:0 20px 0 2px!important;font-siz
 html:root body #casinoModal .cg-amt{gap:6px;padding:0 4px}
 html:root body #casinoModal .cg-step{width:38px!important;height:38px!important;min-width:38px;flex:0 0 38px!important}
 html:root body #casinoModal .cg-step[data-sk="up"]{background:linear-gradient(180deg,#FDE68A,#F59E0B)!important;box-shadow:0 2px 8px rgba(245,158,11,.45),inset 0 1px 0 rgba(255,255,255,.5)!important}
-html:root body #casinoModal .cg-step[data-sk="up"] svg{stroke:#3B2300;stroke-width:3.4}
+html:root body #casinoModal .cg-step[data-sk="up"] svg{stroke:#1E1200;stroke-width:3.4}
 html:root body #casinoModal .cg-step[data-sk="dn"]{background:rgba(255,255,255,.16)!important;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.3)!important}
 html:root body #casinoModal .cg-step[data-sk="dn"] svg{stroke-width:3.4}
 html:root body #casinoModal .cg-clr{right:4px!important;width:18px!important;height:18px!important;margin-top:-9px!important;background:rgba(244,63,94,.28)!important;box-shadow:inset 0 0 0 1px rgba(251,113,133,.6)!important}
@@ -157,8 +157,8 @@ html[dir="rtl"] body #casinoModal .cg-hint{padding:5px 5px 5px 12px}
 html:root body #casinoModal .cg-hint small{display:block;min-width:0;white-space:nowrap;overflow:hidden;color:#fff;font:800 clamp(11.5px,3.5vw,14px)/1.25 var(--cg-font)}
 html:root body #casinoModal .cg-hint.off{opacity:0;transform:translateX(-50%) translateY(8px)}
 html:root body #casinoModal .cg-hhand{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,#FDE68A,#F59E0B)}
-html:root body #casinoModal .cg-hhand svg{width:20px;height:20px;fill:#FFF7E0;stroke:#3B2300;stroke-width:1.8;stroke-linejoin:round;animation:cgTap 1.1s ease-in-out infinite}
-html:root body #casinoModal .cg-hhand .cg-hrip{fill:none;stroke:#3B2300;stroke-width:1.4;transform-box:fill-box;transform-origin:center;animation:cgRip 1.1s ease-out infinite}
+html:root body #casinoModal .cg-hhand svg{width:20px;height:20px;fill:#FFF7E0;stroke:#1E1200;stroke-width:1.8;stroke-linejoin:round;animation:cgTap 1.1s ease-in-out infinite}
+html:root body #casinoModal .cg-hhand .cg-hrip{fill:none;stroke:#1E1200;stroke-width:1.4;transform-box:fill-box;transform-origin:center;animation:cgRip 1.1s ease-out infinite}
 @keyframes cgHintIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%)}}
 @keyframes cgTap{0%,100%{transform:translateY(0)}45%{transform:translateY(2.5px) scale(.94)}}
 @keyframes cgRip{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(1.5)}}
