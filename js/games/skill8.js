@@ -3174,19 +3174,21 @@
 
   boot('subwaydash', dodger({
     lanes: 4, lineCol: 'rgba(253,230,138,.5)', winCols: ['#FDE68A', '#67E8F9'],
-    bg: function (c, W, H, T, rx0, rx1) {
-      c.fillStyle = lg(c, 0, 0, 0, H, ['#1b2a44', '#0F172A', '#010309']); c.fillRect(0, 0, W, H);
-      var span = rx1 - rx0, mid = (rx0 + rx1) / 2;
-      var vg = c.createRadialGradient(mid, H * 0.04, 2, mid, H * 0.04, H * 0.55); vg.addColorStop(0, 'rgba(150,180,230,.4)'); vg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = vg; c.fillRect(0, 0, W, H * 0.62);
-      fieldLines(c, W, H, T, rx0, rx1, '#3a2a10', '#5a3f12');
-      var sp = (T * 0.12) % 1;
-      for (var i = 0; i < 9; i++) { var t = ((i + sp) / 9); var y = H * (0.08 + t * 0.98); var ww = span * (0.26 + t * 0.78); var hh = 3 + t * 11; c.fillStyle = 'rgba(92,70,38,' + (0.22 + t * 0.5) + ')'; c.fillRect(mid - ww / 2, y, ww, hh); }
-      for (var r = -1; r <= 1; r += 2) { c.strokeStyle = 'rgba(203,213,225,.55)'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(mid + r * span * 0.045, H * 0.08); c.lineTo(mid + r * span * 0.42, H); c.stroke(); }
-      c.strokeStyle = 'rgba(253,230,138,.26)'; c.lineWidth = 2;
-      for (var ln = 1; ln < 4; ln++) { var lx = rx0 + span * ln / 4; c.beginPath(); c.moveTo(lx, 0); c.lineTo(lx, H); c.stroke(); }
-      var lp = (T * 0.18) % 1;
-      for (var k = 0; k < 6; k++) { var tt = ((k + lp) / 6); var yy = H * tt * 0.92; var lw = span * (0.07 + tt * 0.18); c.fillStyle = 'rgba(255,241,190,' + (0.1 + tt * 0.3) + ')'; rr(c, mid - lw / 2, yy, lw, 3 + tt * 5, 3); c.fill(); }
-    },
+    bg: (function () {
+      /* 2026-11-02 (propriétaire : « fais un vrai décor réaliste ») — on affiche la VRAIE image du jeu
+         (img/games/subwaydash.webp, le même tunnel de métro que la carte du lobby) en fond, couvrant la scène.
+         Le personnage + les obstacles passent par-dessus. Bien plus réaliste que le dessin vectoriel. */
+      var im = null, ok = false;
+      return function (c, W, H, T, rx0, rx1) {
+        if (!im) { im = new Image(); im.onload = function () { ok = true; }; im.src = 'img/games/subwaydash.webp?v=3525'; }
+        if (ok) {
+          var s = Math.max(W / im.width, H / im.height) * 1.14, iw = im.width * s, ih = im.height * s;
+          c.drawImage(im, (W - iw) / 2, (H - ih) / 2 - H * 0.05, iw, ih);
+        } else { c.fillStyle = '#0a1420'; c.fillRect(0, 0, W, H); }
+        var gr = c.createLinearGradient(0, H * 0.46, 0, H); gr.addColorStop(0, 'rgba(2,6,15,0)'); gr.addColorStop(1, 'rgba(2,6,15,.72)'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
+        var vg = c.createLinearGradient(0, 0, W, 0); vg.addColorStop(0, 'rgba(0,0,0,.42)'); vg.addColorStop(0.5, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.42)'); c.fillStyle = vg; c.fillRect(0, 0, W, H);
+      };
+    })(),
     player: function (d, w, h) { return mkc(w + 8, h + 8, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2);
       c.lineJoin = 'round'; c.lineCap = 'round';
       c.fillStyle = 'rgba(0,0,0,.38)'; c.beginPath(); c.ellipse(0, h * 0.46, w * 0.3, h * 0.07, 0, 0, TAU); c.fill();
