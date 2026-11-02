@@ -3,29 +3,29 @@
    Tous les jeux) avec pastille-icône et compteur, chaque logo posé sur une plaque de verre éclairée de sa couleur (--tc).
    CSS seul, chargé après cg.css. Ne touche QUE l'accueil des jeux : #casinoModal hors partie (.in-game) et hors Paris (.pred-only),
    et #csView.cs-grid3. Ne change PAS le nombre de colonnes (js balanceGrid les lit). html.oro-lite : pas de flou, pas d'animation. */
-:root{--lb-ink:#F5F3FF;--lb-mute:#A9A3CF;--lb-gold:#FBBF24;--lb-line:rgba(242,193,78,.2);
+:root{--lb-ink:#F5F3FF;--lb-mute:#CFC0A3;--lb-gold:#FBBF24;--lb-line:rgba(242,193,78,.2);
   --lb-font:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 
 /* ---------- l'univers : nuit cosmique + nébuleuses + vignette (le décor reste fixe pendant que les jeux défilent) ---------- */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):not(.pred-only) > .modal-box{background:
   radial-gradient(1.3px 1.3px at 30px 40px,rgba(255,255,255,.8),transparent 60%) 0 0/190px 210px,
   radial-gradient(1px 1px at 120px 150px,rgba(255,236,200,.6),transparent 60%) 0 0/260px 240px,
-  radial-gradient(1.5px 1.5px at 70px 90px,rgba(196,181,253,.7),transparent 60%) 0 0/330px 370px,
-  radial-gradient(60% 34% at 8% 4%,rgba(139,92,246,.42),transparent 72%),
+  radial-gradient(1.5px 1.5px at 70px 90px,rgba(244,226,190,.7),transparent 60%) 0 0/330px 370px,
+  radial-gradient(60% 34% at 8% 4%,rgba(231,190,107,.42),transparent 72%),
   radial-gradient(52% 30% at 100% 30%,rgba(236,72,153,.22),transparent 72%),
   radial-gradient(60% 34% at 0% 72%,rgba(242,193,78,.14),transparent 72%),
   radial-gradient(70% 40% at 90% 100%,rgba(251,191,36,.10),transparent 72%),
-  linear-gradient(180deg,#1C1150 0%,#130C38 45%,#0D0828 100%)!important;
+  linear-gradient(180deg,#503B11 0%,#38290C 45%,#281D08 100%)!important;
   box-shadow:inset 0 0 120px 10px rgba(5,2,18,.55)!important;color:var(--lb-ink)}
 html.oro-lite body #casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):not(.pred-only) > .modal-box{box-shadow:none!important}
 
 /* en-tête (‹ · portefeuille · règles) : verre translucide ; le haut de l'écran (encoche) est couvert, rien ne défile dessous */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):not(.pred-only) .cs-top{
-  background:linear-gradient(180deg,rgba(24,15,62,.9),rgba(20,12,52,.78))!important;
-  box-shadow:0 -60px 0 40px rgba(22,14,57,.97),0 1px 0 rgba(242,193,78,.16),0 12px 24px -16px rgba(0,0,0,.85)!important;
+  background:linear-gradient(180deg,rgba(62,46,15,.9),rgba(52,39,12,.78))!important;
+  box-shadow:0 -60px 0 40px rgba(57,43,14,.97),0 1px 0 rgba(242,193,78,.16),0 12px 24px -16px rgba(0,0,0,.85)!important;
   -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%)}
 html.oro-lite body #casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):not(.pred-only) .cs-top{
-  background:#1A1046!important;box-shadow:0 -60px 0 40px #1A1046,0 1px 0 rgba(242,193,78,.16)!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+  background:#463410!important;box-shadow:0 -60px 0 40px #463410,0 1px 0 rgba(242,193,78,.16)!important;-webkit-backdrop-filter:none;backdrop-filter:none}
 
 /* ---------- bandeau d'accueil « ★ CASINO ★ / OROLADO » ---------- */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid.cs-grid3{position:relative;padding-top:2px!important}
@@ -34,7 +34,7 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid.
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 156 92'%3E%3Cdefs%3E%3CradialGradient id='g'%3E%3Cstop offset='0' stop-color='%23FBBF24' stop-opacity='.5'/%3E%3Cstop offset='1' stop-color='%23FBBF24' stop-opacity='0'/%3E%3C/radialGradient%3E%3ClinearGradient id='c' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23FDE68A'/%3E%3Cstop offset='.5' stop-color='%23F59E0B'/%3E%3Cstop offset='1' stop-color='%23B45309'/%3E%3C/linearGradient%3E%3ClinearGradient id='d' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FDA4AF'/%3E%3Cstop offset='.4' stop-color='%23F43F5E'/%3E%3Cstop offset='1' stop-color='%239F1239'/%3E%3C/linearGradient%3E%3ClinearGradient id='k' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FFF'/%3E%3Cstop offset='1' stop-color='%23DDD6FE'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='92' cy='48' r='46' fill='url(%23g)'/%3E%3Cg transform='rotate(-15 58 46)'%3E%3Crect x='38' y='18' width='38' height='54' rx='6' fill='url(%23k)' stroke='%23A78BFA' stroke-width='1'/%3E%3Cpath d='M57 31s-11 9-11 15a5.4 5.4 0 0 0 9.4 3.4L53 57h8l-2.4-7.6A5.4 5.4 0 0 0 68 46c0-6-11-15-11-15z' fill='%231E1B4B'/%3E%3Cpath d='M44 22h5l-2.5 7z' fill='%231E1B4B'/%3E%3C/g%3E%3Cg transform='translate(118 62)'%3E%3Ccircle r='21' fill='%236D28D9'/%3E%3Ccircle r='18.5' fill='none' stroke='%23fff' stroke-width='5' stroke-dasharray='5.8 4'/%3E%3Ccircle r='12' fill='%237C3AED' stroke='%23C4B5FD' stroke-width='1.4'/%3E%3Cpath d='M0-7l2 4.2 4.6.6-3.3 3.2.8 4.6L0 3.4l-4.1 2.2.8-4.6-3.3-3.2 4.6-.6z' fill='%23FDE68A'/%3E%3C/g%3E%3Cg%3E%3Cellipse cx='88' cy='80' rx='15' ry='5' fill='%2392400E'/%3E%3Crect x='73' y='70' width='30' height='10' fill='url(%23c)'/%3E%3Cellipse cx='88' cy='70' rx='15' ry='5' fill='%23B45309'/%3E%3Crect x='73' y='61' width='30' height='9' fill='url(%23c)'/%3E%3Cellipse cx='88' cy='61' rx='15' ry='5' fill='%23FCD34D'/%3E%3Cellipse cx='88' cy='61' rx='9' ry='2.8' fill='none' stroke='%23B45309' stroke-width='1.3'/%3E%3C/g%3E%3Cg transform='rotate(18 128 24)'%3E%3Crect x='113' y='9' width='30' height='30' rx='7' fill='url(%23d)'/%3E%3Crect x='115' y='11' width='26' height='10' rx='5' fill='%23fff' opacity='.18'/%3E%3Ccircle cx='121' cy='17' r='2.8' fill='%23fff'/%3E%3Ccircle cx='128' cy='24' r='2.8' fill='%23fff'/%3E%3Ccircle cx='135' cy='31' r='2.8' fill='%23fff'/%3E%3C/g%3E%3Cpath d='M100 14l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z M24 66l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z M148 50l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z' fill='%23FDE68A'/%3E%3C/svg%3E") right 6px center/auto 92% no-repeat,
     radial-gradient(55% 90% at 82% 50%,rgba(251,191,36,.22),transparent 70%),
     radial-gradient(60% 120% at 0% 0%,rgba(242,193,78,.45),transparent 70%),
-    linear-gradient(120deg,#3A1C8C 0%,#26145F 52%,#1B0F48 100%);
+    linear-gradient(120deg,#8C671C 0%,#5F4614 52%,#48350F 100%);
   box-shadow:inset 0 0 0 1px rgba(253,230,138,.24),inset 0 1px 0 rgba(255,255,255,.2),0 16px 30px -18px rgba(0,0,0,.95),0 0 26px -12px rgba(251,191,36,.55)}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid.cs-grid3::after{content:"OROLADO";position:absolute;z-index:1;top:calc(2px + clamp(78px,23vw,104px) * .44);left:18px;
   font:900 clamp(22px,7.2vw,34px)/1 var(--lb-font);letter-spacing:.06em;white-space:nowrap;pointer-events:none;
@@ -76,7 +76,7 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3
   background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.035) 55%,rgba(0,0,0,.12));
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.16),0 8px 16px -10px rgba(0,0,0,.9)}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g .cs-pl::after{content:"";position:absolute;z-index:-1;inset:4%;border-radius:50%;
-  background:radial-gradient(closest-side,var(--tc,#8B5CF6),transparent);opacity:.42}
+  background:radial-gradient(closest-side,var(--tc,#E7BE6B),transparent);opacity:.42}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g:active .cs-pl{transform:scale(.93)}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g:active .cs-pl::after{opacity:.65}
 @media (hover:hover) and (pointer:fine){
@@ -90,9 +90,9 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3
 /* jeux en direct : point rouge « en direct » au coin de la plaque */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-sec-live .cs-g::after{content:"";position:absolute;z-index:2;top:-2px;
   right:calc(50% - min(36px,9vw) - 1px);width:10px;height:10px;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#FFB4C0,#F43F5E 55%,#BE123C);box-shadow:0 0 0 2px #1A1046,0 0 10px 1px rgba(244,63,94,.85);animation:lbLive 1.6s ease-in-out infinite}
+  background:radial-gradient(circle at 35% 35%,#FFB4C0,#F43F5E 55%,#BE123C);box-shadow:0 0 0 2px #463410,0 0 10px 1px rgba(244,63,94,.85);animation:lbLive 1.6s ease-in-out infinite}
 html[dir=rtl] body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-sec-live .cs-g::after{right:auto;left:calc(50% - min(36px,9vw) - 1px)}
-@keyframes lbLive{50%{box-shadow:0 0 0 2px #1A1046,0 0 3px 0 rgba(244,63,94,.4)}}
+@keyframes lbLive{50%{box-shadow:0 0 0 2px #463410,0 0 3px 0 rgba(244,63,94,.4)}}
 html.oro-lite body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-sec-live .cs-g::after{animation:none}
 html.oro-lite body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g .cs-pl{transition:none}
 @media (prefers-reduced-motion:reduce){html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-sec-live .cs-g::after{animation:none}}
@@ -104,9 +104,9 @@ html.oro-lite body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-g
    <button type="button" class="cs-tab" data-t="casino" role="tab"><span class="fit">Casino</span><i>74</i></button></div>
    (icône dessinée par le CSS selon data-t ; js : fitEl/fitAll sur .fit ; --cs-tabs-top = hauteur de .cs-top − 8 px si besoin) */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tabs{position:sticky;top:var(--cs-tabs-top,50px);z-index:7;display:flex;gap:4px;margin:0 0 14px;padding:4px;border-radius:16px;
-  background:rgba(22,14,58,.86);box-shadow:inset 0 0 0 1px rgba(242,193,78,.2),0 12px 22px -14px rgba(0,0,0,.9);
+  background:rgba(58,43,14,.86);box-shadow:inset 0 0 0 1px rgba(242,193,78,.2),0 12px 22px -14px rgba(0,0,0,.9);
   -webkit-backdrop-filter:blur(12px) saturate(140%);backdrop-filter:blur(12px) saturate(140%)}
-html.oro-lite body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tabs{background:#1C1248;-webkit-backdrop-filter:none;backdrop-filter:none}
+html.oro-lite body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tabs{background:#483612;-webkit-backdrop-filter:none;backdrop-filter:none}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tab{position:relative;flex:1 1 0;width:0;min-width:0;height:42px;min-height:0;display:flex;align-items:center;justify-content:center;gap:6px;
   margin:0;padding:0 8px;border:0;border-radius:12px;background:transparent;color:var(--lb-mute);font:800 14.5px/1 var(--lb-font);cursor:pointer;-webkit-tap-highlight-color:transparent;
   transition:background-color .15s ease,color .15s ease}
@@ -116,7 +116,7 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tab[data-t=live]::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='2.6' fill='%23fff' stroke='none'/%3E%3Cpath d='M8.2 8.2a5.4 5.4 0 0 0 0 7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.2 5.2a9.6 9.6 0 0 0 0 13.6M18.8 5.2a9.6 9.6 0 0 1 0 13.6'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='2.6' fill='%23fff' stroke='none'/%3E%3Cpath d='M8.2 8.2a5.4 5.4 0 0 0 0 7.6M15.8 8.2a5.4 5.4 0 0 1 0 7.6M5.2 5.2a9.6 9.6 0 0 0 0 13.6M18.8 5.2a9.6 9.6 0 0 1 0 13.6'/%3E%3C/svg%3E")}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tab > span{display:block;min-width:0;overflow:hidden;white-space:nowrap}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tab > i{flex:none;min-width:20px;height:19px;padding:0 6px;border-radius:999px;box-sizing:border-box;
-  background:rgba(255,255,255,.1);color:#C4B5FD;font:800 11.5px/19px var(--lb-font);font-style:normal;text-align:center;font-variant-numeric:tabular-nums}
+  background:rgba(255,255,255,.1);color:#F4E2BE;font:800 11.5px/19px var(--lb-font);font-style:normal;text-align:center;font-variant-numeric:tabular-nums}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tab.on{color:#2a1d04;background:linear-gradient(180deg,#F7D774,#C8912E);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 16px -8px rgba(245,158,11,.8)}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tab.on > i{background:rgba(42,24,0,.22);color:#2a1d04}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tab[data-t=live]:not(.on)::before{color:#FB7185}
@@ -155,7 +155,7 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3
 /* v2827 : petit titre du bandeau (« ★ JEUX ★ », traduit, même mot que le menu) ; plus de point rouge sur les jeux live
    (le signe « en direct » devant le nom suffit, le point abîmait les logos) */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-kick{position:absolute;z-index:1;left:18px;top:calc(2px + clamp(78px,23vw,104px) * .3 - 7px);
-  max-width:46%;overflow:hidden;white-space:nowrap;font:700 clamp(9.5px,2.7vw,11.5px)/1.2 var(--lb-font);font-style:normal;letter-spacing:.3em;color:#C4B5FD;pointer-events:none}
+  max-width:46%;overflow:hidden;white-space:nowrap;font:700 clamp(9.5px,2.7vw,11.5px)/1.2 var(--lb-font);font-style:normal;letter-spacing:.3em;color:#F4E2BE;pointer-events:none}
 html[dir=rtl] body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-kick{left:auto;right:18px}
 html[lang="ar"] body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-kick{letter-spacing:0}
 @media (min-width:600px){html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-kick{left:24px}}
@@ -186,7 +186,7 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3
 /* carte un peu plus HAUTE (demande propriétaire) ; le FOND de la couleur du jeu remplit bord à bord ;
    le dessin est posé dans un carré CENTRÉ avec une marge → il ne touche jamais les bords, sur tous les téléphones. */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art{position:relative;width:100%;aspect-ratio:1/1.3;border-radius:14px;overflow:hidden;
-  background:#15112e;
+  background:#2E2411;
   box-shadow:0 10px 20px -14px rgba(0,0,0,.9)}
 /* le carré du dessin : centré, marge autour (~4 % côtés, le reste en haut/bas vient de la carte plus haute) */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art > svg,
