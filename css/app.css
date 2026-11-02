@@ -13923,3 +13923,10 @@ html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#scre
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct{
   color:#F0EAD8!important;-webkit-text-fill-color:#F0EAD8!important;text-shadow:0 1px 2px rgba(0,0,0,.6)!important}
+
+/* 2026-11-02 (propriétaire) : boutons de direction ACHETER/VENDRE — les ronds des flèches
+   ne sont plus blancs « sans couleur » : léger teinté vert pour ACHETER, rosé pour VENDRE. */
+html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .btn-call .bt-arr{background-color:rgba(206,247,222,.95)!important}
+html:root body #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .btn-put .bt-arr{background-color:rgba(255,221,226,.95)!important}
+html:root body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .btn-call .bt-arr{background-color:rgba(206,247,222,.95)!important}
+html:root body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .btn-put .bt-arr{background-color:rgba(255,221,226,.95)!important}
