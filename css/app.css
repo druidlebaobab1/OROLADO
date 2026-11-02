@@ -14006,3 +14006,15 @@ html:root body #screenTrade#screenTrade .pad.glass,
 html:root body #fsTradeOverlay#fsTradeOverlay .pad,
 html:root body #fsTradeOverlay#fsTradeOverlay .pad.glass{
   background:#000000!important;background-image:none!important;border-top:0!important;box-shadow:none!important}
+
+/* 2026-11-02 (propriétaire) : décor spatial sombre et chic dans la bande du bas de l'APP INSTALLÉE (iPhone/Android).
+   Planètes sombres + étoiles, fondu vers le noir en haut ; au-dessus de tout (z élevé) pour apparaître sur les deux
+   parties (écran de trading ET profil), sans jamais bloquer les clics (pointer-events:none). */
+@media (display-mode: standalone),(display-mode: fullscreen){
+  html:not(.is-tv) body::after{
+    content:"";position:fixed;left:0;right:0;bottom:0;z-index:9999;pointer-events:none;
+    height:calc(20px + env(safe-area-inset-bottom,22px));
+    background:url("../icons/app-bottom-space.svg?v=3487") center bottom/cover no-repeat;
+    -webkit-mask-image:linear-gradient(to top,#000 66%,transparent);
+    mask-image:linear-gradient(to top,#000 66%,transparent)}
+}

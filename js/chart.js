@@ -1083,7 +1083,7 @@
       g.save();
       g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(200,205,215,0.002)' : 'rgba(190,195,210,0.002)';
+        g.strokeStyle = q ? 'rgba(200,205,215,0.0012)' : 'rgba(190,195,210,0.0012)';
         g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
         g.beginPath();
         for (t = 0; t <= 1.0001; t += 0.01) { var pp = spiral(arm, t); if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y); }
@@ -1097,8 +1097,8 @@
         g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
       }
     }
-    halo(cx, cy, R * 0.26, 'rgba(200,205,215,0.004)');
-    halo(cx, cy, R * 0.11, 'rgba(210,215,225,0.005)');
+    halo(cx, cy, R * 0.26, 'rgba(200,205,215,0.0022)');
+    halo(cx, cy, R * 0.11, 'rgba(210,215,225,0.0028)');
     // v3232 (propriétaire) : plus de cercle autour de la spirale (il n'avait demandé que la pyramide).
     galaxy = null;
   }
