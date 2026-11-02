@@ -2041,7 +2041,7 @@
       // colonnes NETTES et lumineuses (dégradé doux sur toute la hauteur, jamais noir) coiffées d'une perle brillante au prix.
       // AZAZEL : menthe (hausse) / rose (baisse) ; PHOENIX (pal) : or / bleu. La colonne en cours reste blanche.
       var cU = PU || '#5EF2C6';
-      var cD = PD || '#FF5C8A';
+      var cD = PD || '#E7C174';
       var cN = '#F8FAFC';
       function colGrad(hex, a0, a1) {
         var g = ctx.createLinearGradient(0, pad.t, 0, bot);
@@ -2640,7 +2640,7 @@
       }
     } else if (kind === 'comet' || kind === 'ohlc' || kind === 'diamonds' || kind === 'dashes' || kind === 'zigzag' || kind === 'dotline' || kind === 'rings' || kind === 'arcs') {
       // 2026-10-19 (propriétaire : « trop de simulations identiques ; chaque monde différent ») : 8 dessins nouveaux.
-      var cU2 = X.up || M, cD2 = X.dn || '#FF4D6D';
+      var cU2 = X.up || M, cD2 = X.dn || '#E4BB68';
       var cdir = function (j) { return j > 0 ? candles[j].c >= candles[j - 1].c : candles[j].c >= candles[j].o; };
       ctx.lineJoin = 'round'; ctx.lineCap = 'round';
       if (kind === 'comet') {
@@ -2848,7 +2848,7 @@
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var k = sizeK();
     var U = X.up || X.line || '#FFFFFF';
-    var D = X.dn || '#FF4D6D';
+    var D = X.dn || '#E4BB68';
     var M = X.line || U;
     var top = pad.t;
     var floor = pad.t + h;
@@ -3265,7 +3265,7 @@
         x = pts[i][0]; y = pts[i][1]; sd = seeds[i];
         var hgt2 = 3 + Math.min(8, moves[i] * 0.5);
         var jit = i >= n - 4 ? (Math.floor(T * 7 + sd * 10) % 3 - 1) * 1.4 : (sd - 0.5) * 3;
-        ctx.fillStyle = 'rgba(255,40,200,0.75)';
+        ctx.fillStyle = 'rgba(223,173,72,0.75)';
         ctx.fillRect(x - gw / 2 + 2 + jit, y - hgt2 / 2 - 1, gw, hgt2);
         ctx.fillStyle = 'rgba(240,200,90,0.75)';
         ctx.fillRect(x - gw / 2 - 2 - jit, y - hgt2 / 2 + 1, gw, hgt2);
@@ -3353,7 +3353,7 @@
         ctx.fill();
         ctx.fillStyle = 'rgba(0,0,0,0.25)';
         ctx.fillRect(x - s, y + s * 0.25, s * 2, s * 0.3);
-        ctx.fillStyle = X.gem || '#FF2E6E';
+        ctx.fillStyle = X.gem || '#E0AF4D';
         ctx.beginPath(); ctx.arc(x, y + s * 0.05, Math.max(1.2, s * 0.2), 0, Math.PI * 2); ctx.fill();
       }
     } else if (kind === 'eyes') {
@@ -3795,7 +3795,7 @@
 
   function drawCoreLine(pad, w, h, data, minP, maxP, color, width, glow) {
     if (!data || data.length < 2) return null;
-    var col = color || '#ff2d55';
+    var col = color || '#DFAE4D';
     var toX = makeToX(data.length, pad, w);
     var toY = function (p) { return plotToY(p, pad, h, minP, maxP); };
     var lastX = panMs > 0 ? toX(data.length - 1) : pad.l + w;
@@ -3815,8 +3815,8 @@
     if (glow) {
       ctx.shadowColor = glow;
       ctx.shadowBlur = 8;
-    } else if (col === '#ff2244' || col === '#ff2d75') {
-      ctx.shadowColor = col === '#ff2d75' ? 'rgba(255,45,117,0.55)' : 'rgba(255,34,68,0.55)';
+    } else if (col === '#ff2244' || col === '#DFAE4D') {
+      ctx.shadowColor = col === '#DFAE4D' ? 'rgba(223,174,77,0.55)' : 'rgba(255,34,68,0.55)';
       ctx.shadowBlur = 8;
     } else {
       ctx.shadowBlur = 0;
@@ -4738,9 +4738,9 @@
     // v2453 — rond d'entrée en petite planète lumineuse (vert ACHAT / rouge VENTE). Même place, même taille.
     var pgr = g.createRadialGradient(mx - r * 0.35, ey - r * 0.4, r * 0.1, mx, ey, r);
     pgr.addColorStop(0, isCall ? '#BBF7D0' : '#FECDD3');
-    pgr.addColorStop(0.5, isCall ? '#16C25E' : '#F43F5E');
+    pgr.addColorStop(0.5, isCall ? '#16C25E' : '#E1B152');
     pgr.addColorStop(1, fillCol);
-    g.shadowColor = isCall ? 'rgba(34,197,94,0.85)' : 'rgba(244,63,94,0.85)';
+    g.shadowColor = isCall ? 'rgba(34,197,94,0.85)' : 'rgba(225,177,82,0.85)';
     g.shadowBlur = lite ? 6 : 10;
     g.beginPath();
     g.arc(mx, ey, r, 0, Math.PI * 2);
@@ -4934,8 +4934,8 @@
       ctx.fill();
     }
     // Point actuel : noyau de 6 px et halo pulsant de 12 px, quel que soit l'actif.
-    var headCol = compact ? '#ff2d75' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#DB9E24' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
-    var glowCol = compact ? '#ff2d75' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#DB9E24' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
+    var headCol = compact ? '#DFAE4D' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#DB9E24' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
+    var glowCol = compact ? '#DFAE4D' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#DB9E24' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, compact ? 2.2 : 3, 0, Math.PI * 2);
     ctx.fillStyle = headCol;
@@ -5024,7 +5024,7 @@
     var panelY = top + (legendOn ? 22 : 2);
     var DIM = 'rgba(248,231,176,0.55)';
     var UPC = '#00E676';
-    var DNC = '#FF4D6A';
+    var DNC = '#E4BB68';
     if (!touchCross) {
       // Carte du trade touché (se ferme au toucher suivant, à la fin du trade ou après 6 s).
       if (!tradeCard) return;
@@ -5866,7 +5866,7 @@
     if (asset.ext && asset.xkind) {
       map = drawExt(asset.xkind, pad, seriesW, h, candles, minP, maxP, asset.xdraw || {});
     } else if (asset.id === 'stable') {
-      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#ff2d75', 3.6);
+      map = drawCoreLine(pad, seriesW, h, lineData, minP, maxP, '#DFAE4D', 3.6);
     } else if (STYLED_ASSETS[asset.id]) {
       map = drawStyledCandles(pad, seriesW, h, candles, minP, maxP, STYLED_ASSETS[asset.id], STYLED_PAL[asset.id]);
     } else if (asset.ext && asset.chart === 'candle') {
@@ -6034,7 +6034,7 @@
     }
     if (asset.id === 'nexusprime') tagCol = '#DB9E24';
     if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
-    if (asset.id === 'v75') tagCol = '#ff2d75';
+    if (asset.id === 'v75') tagCol = '#DFAE4D';
     if (asset.id === 'apex500') tagCol = '#EDCF93';
     if (asset.ext && asset.chart === 'candle' && asset.candlePal && !primary) tagCol = market.price >= market.candle.o ? asset.candlePal.up : (asset.accent || asset.candlePal.up);
     // Historique regardé : le point du direct reste affiché tant que le bout de la courbe est à l'écran.

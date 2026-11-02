@@ -224,7 +224,7 @@
   <!-- 2026-10-20 : polices Google chargées SANS bloquer la page (avant : tout, même l'écran de chargement, les attendait) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="/css/app.css?v=3445">
+    <link rel="stylesheet" href="/css/app.css?v=3447">
     <link rel="stylesheet" href="/css/auth.css?v=3443">
     <link rel="stylesheet" href="/css/tv.css?v=3443">
     <link rel="stylesheet" href="/css/galaxy.css?v=3445">
@@ -2365,7 +2365,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <script src="/js/indices.js?v=3446"></script>
+  <script src="/js/indices.js?v=3447"></script>
   <script>/* v2822 : emblèmes des indices (js/indices.js) posés dans le « monde OROLADO » de l'écran de chargement */
   (function(){try{var W=window.D6||{},list=(W.EXT_INDICES||[]).filter(function(e){return e&&e.glyph;}),orig=['v100','stable','apex500','horizon50','crash300','goldtrend','boomspike','nexusprime','v75','titanpulse'];
   var slots=document.querySelectorAll('#olWorld .ow-x');for(var i=0;i<slots.length;i++){var svg='';
@@ -2383,7 +2383,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
   <script src="/js/auth.js?v=3334"></script>
   <script src="/js/fair_table.js?v=2790"></script>
   <script src="/js/engine.js?v=2974"></script>
-  <script src="/js/chart.js?v=3445"></script>
+  <script src="/js/chart.js?v=3447"></script>
   <script>/* v2573 — paiement Flutterwave chargé APRÈS l'affichage (avant : 2 s de blocage, Safari restait en « chargement » avec sa grande barre sur ACHETER / VENDRE). Au clic sur Recharger, ensureFlwScript() le recharge si besoin. */(function(){function go(){if(window.FlutterwaveCheckout||window.__flwInject)return;window.__flwInject=1;var s=document.createElement('script');s.src='https://checkout.flutterwave.com/v3.js?v=2790';s.async=true;s.onload=function(){window.__flwLoad='ok'};s.onerror=function(){window.__flwLoad='err'};document.head.appendChild(s);}window.__oroFlwPreload=go;/* 2026-10-20 : plus chargé à chaque visite (vieux Android) : js/app.js le prépare à l'ouverture de Recharger */})();</script>
   <script>
   (function () {

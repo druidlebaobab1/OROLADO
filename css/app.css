@@ -4552,7 +4552,7 @@ html body #screenAuth .auth-card input[type=text],html body #screenAuth .auth-ca
 html body #screenAuth .auth-card input:focus{border-color:rgba(242,193,78,.9)!important;box-shadow:0 0 0 3px rgba(242,193,78,.16),0 0 12px rgba(242,193,78,.25)!important}
 html body #screenAuth .auth-card .field label{color:#F7D774!important}
 html body #screenAuth .auth-tab:not(.on){background:linear-gradient(180deg,rgba(184,172,148,.12),rgba(184,172,148,.03))!important;border:1px solid rgba(184,172,148,.35)!important;color:#E1DACB!important}
-html body #screenAuth .pass-toggle{color:#F7D774!important}
+html body #screenAuth .pass-toggle{color:#938A74!important}
 html body #screenAuth input[type=checkbox]{accent-color:#34D399!important}
 
 /* ===== v2220 — Bouton langue (drapeau + petit triangle) bien construit, comme avant sur iPhone, avec de l'espace :
