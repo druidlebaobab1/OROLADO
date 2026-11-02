@@ -4435,12 +4435,12 @@ html body #screenTrade #langBarTrade .lang-dd-btn{height:23px!important;min-heig
 
 /* ===== v2217 (couleurs de jeu remplacées par v2218 ci-dessous) — Chaque bouton a SA couleur, comme MA / BB / EMA (demande du propriétaire) : léger fond coloré + contour + lueur douce autour ;
    au toucher il s'allume en plein dans sa couleur. Le jaune / orange sombre des boutons est remplacé. Logo OROLADO non touché. ===== */
-html body #withdrawModal #wdCryptoGrid .wd-card{background:linear-gradient(180deg,rgba(45,212,191,.14),rgba(12,12,14,.92))!important;border-color:rgba(45,212,191,.42)!important;box-shadow:0 0 8px rgba(45,212,191,.14)!important}
-html body #withdrawModal #wdCryptoGrid .wd-card:hover,html body #withdrawModal #wdCryptoGrid .wd-card:active,html body #withdrawModal #wdCryptoGrid .wd-card.on,html body #withdrawModal #wdCryptoGrid .wd-card.active{background:linear-gradient(180deg,rgba(45,212,191,.34),rgba(12,12,14,.92))!important;border-color:rgba(45,212,191,.9)!important;box-shadow:0 0 14px rgba(45,212,191,.45)!important}
+html body #withdrawModal #wdCryptoGrid .wd-card{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(12,12,14,.92))!important;border-color:rgba(255,255,255,.42)!important;box-shadow:0 0 8px rgba(255,255,255,.14)!important}
+html body #withdrawModal #wdCryptoGrid .wd-card:hover,html body #withdrawModal #wdCryptoGrid .wd-card:active,html body #withdrawModal #wdCryptoGrid .wd-card.on,html body #withdrawModal #wdCryptoGrid .wd-card.active{background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(12,12,14,.92))!important;border-color:rgba(255,255,255,.9)!important;box-shadow:0 0 14px rgba(255,255,255,.45)!important}
 html body #withdrawModal #wdLocalGrid .wd-card{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(12,12,14,.92))!important;border-color:rgba(255,255,255,.42)!important;box-shadow:0 0 8px rgba(255,255,255,.14)!important}
 html body #withdrawModal #wdLocalGrid .wd-card:hover,html body #withdrawModal #wdLocalGrid .wd-card:active,html body #withdrawModal #wdLocalGrid .wd-card.on,html body #withdrawModal #wdLocalGrid .wd-card.active{background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(12,12,14,.92))!important;border-color:rgba(255,255,255,.9)!important;box-shadow:0 0 14px rgba(255,255,255,.45)!important}
-html body #withdrawModal #wdBankGrid .wd-card{background:linear-gradient(180deg,rgba(224,168,36,.14),rgba(12,12,14,.92))!important;border-color:rgba(224,168,36,.42)!important;box-shadow:0 0 8px rgba(224,168,36,.14)!important}
-html body #withdrawModal #wdBankGrid .wd-card:hover,html body #withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal #wdBankGrid .wd-card.on,html body #withdrawModal #wdBankGrid .wd-card.active{background:linear-gradient(180deg,rgba(224,168,36,.34),rgba(12,12,14,.92))!important;border-color:rgba(224,168,36,.9)!important;box-shadow:0 0 14px rgba(224,168,36,.45)!important}
+html body #withdrawModal #wdBankGrid .wd-card{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(12,12,14,.92))!important;border-color:rgba(255,255,255,.42)!important;box-shadow:0 0 8px rgba(255,255,255,.14)!important}
+html body #withdrawModal #wdBankGrid .wd-card:hover,html body #withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal #wdBankGrid .wd-card.on,html body #withdrawModal #wdBankGrid .wd-card.active{background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(12,12,14,.92))!important;border-color:rgba(255,255,255,.9)!important;box-shadow:0 0 14px rgba(255,255,255,.45)!important}
 /* ===== v2218 — Couleurs ORDONNÉES par zone (demande du propriétaire : pro, pas désordonné) :
    haut = violet doux ; outils du graphique (+ − ↺) et mode non choisi = gris-bleu acier ; MA/BB/EMA = couleur de leur ligne ;
    durées (le temps) = bleu ciel ; mise (l'argent) = vert émeraude comme le gain ; ⌫ = rouge. Au toucher : plein dans sa couleur. ===== */
@@ -6798,9 +6798,9 @@ html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(3){color:#F4E
 html body #withdrawModal#withdrawModal .wd-card{color:#fff!important;font-weight:800!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 3px 10px rgba(29,21,5,.35)!important;
   transition:transform .12s,box-shadow .2s,border-color .2s;animation:wdIn .38s ease-out both}
-html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card{background:linear-gradient(135deg,rgba(45,212,191,.26),rgba(45,212,191,.07))!important;border:1px solid rgba(94,234,212,.55)!important}
+html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card{background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.07))!important;border:1px solid rgba(255,255,255,.55)!important}
 html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card{background:linear-gradient(135deg,rgba(255,255,255,.24),rgba(255,255,255,.06))!important;border:1px solid rgba(255,255,255,.5)!important}
-html body #withdrawModal#withdrawModal #wdBankGrid .wd-card{background:linear-gradient(135deg,rgba(224,168,36,.28),rgba(224,168,36,.07))!important;border:1px solid rgba(244,226,190,.55)!important}
+html body #withdrawModal#withdrawModal #wdBankGrid .wd-card{background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(255,255,255,.07))!important;border:1px solid rgba(255,255,255,.55)!important}
 html body #withdrawModal#withdrawModal .wd-card:active,html body #withdrawModal#withdrawModal .wd-card.on{transform:scale(.97);
   border-color:#FBBF24!important;box-shadow:0 0 0 1px rgba(251,191,36,.5) inset,0 0 16px rgba(251,191,36,.45)!important}
 html body #withdrawModal#withdrawModal .wd-card:nth-child(3n+2){animation-delay:.05s}
@@ -7181,9 +7181,9 @@ html body #withdrawModal#withdrawModal .wd-selected{background:linear-gradient(1
   border:1px solid rgba(242,193,78,.6)!important;box-shadow:0 0 14px rgba(242,193,78,.30),0 0 0 1px rgba(255,255,255,.05) inset!important;color:#fff!important}
 html body #withdrawModal .wd-sel-ico{background:rgba(255,255,255,.12)!important;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
 /* Case touchée : elle s'allume dans la couleur de son groupe (pas en jaune). */
-html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card.on{border-color:#5EEAD4!important;box-shadow:0 0 16px rgba(94,234,212,.55)!important}
+html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card.on{border-color:#E6D9BC!important;box-shadow:0 0 16px rgba(255,255,255,.55)!important}
 html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card.on{border-color:#E6D9BC!important;box-shadow:0 0 16px rgba(255,255,255,.55)!important}
-html body #withdrawModal#withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdBankGrid .wd-card.on{border-color:#F4E2BE!important;box-shadow:0 0 16px rgba(244,226,190,.55)!important}
+html body #withdrawModal#withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdBankGrid .wd-card.on{border-color:#E6D9BC!important;box-shadow:0 0 16px rgba(255,255,255,.55)!important}
 /* Indicatif fixe (Nigeria…) : même case vitrée colorée que les autres. */
 html body #withdrawModal#withdrawModal .wd-dial-fixed{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))!important;
   border:1px solid rgba(242,219,173,.45)!important;color:#fff!important;border-radius:12px!important}
@@ -9033,7 +9033,7 @@ html body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#
 #waveNotice .wn-no{display:block;width:100%;margin-top:8px;border:0;background:transparent;color:#F1DAAB;font:700 14px system-ui;padding:6px;cursor:pointer}
 
 /* v2543 — logo BANQUE (remplace Moov) dans « Carte & paiement instantané » : bleu marine, bâtiment doré, un peu plus large. */
-html body #depositModal #payMethodCard .pl-logo.pl-bank{background:linear-gradient(180deg,#3A465E,#232B3D);color:#fff;padding:0 10px;gap:5px;letter-spacing:.02em;font-style:normal}
+html body #depositModal #payMethodCard .pl-logo.pl-bank{background:linear-gradient(180deg,#FFFFFF,#F0F0F0);color:#2A2A2A;padding:0 10px;gap:5px;letter-spacing:.02em;font-style:normal}
 html body #depositModal .pl-bank svg{width:14px;height:14px;fill:#FCD34D;flex:0 0 auto}
 
 /* v2544 — nouveaux logos de « Carte & paiement instantané » (couleurs des marques). */
@@ -13754,23 +13754,23 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-la{display:inline-flex!important;border:0!important;background:#fff!important;font-weight:900!important;font-style:normal!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos{gap:4px!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{height:22px!important;min-height:22px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-spei{color:#8F681B!important;font-size:10.5px!important;letter-spacing:.06em!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix{color:#1E9E92!important;font-size:11px!important;gap:4px!important;text-transform:lowercase}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix b{width:8px;height:8px;flex:0 0 8px;background:#32BCAD;border-radius:2px;transform:rotate(45deg)}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-nequi{color:#DA0081!important;font-size:10.5px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-yape{background:#6E2E8F!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago{background:#00A1E0!important;color:#fff!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago b{font-size:7.5px;font-weight:800;color:#fff}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-spei{color:#2A2A2A!important;font-size:10.5px!important;letter-spacing:.06em!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix{color:#2A2A2A!important;font-size:11px!important;gap:4px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix b{width:8px;height:8px;flex:0 0 8px;background:#2A2A2A;border-radius:2px;transform:rotate(45deg)}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-nequi{color:#2A2A2A!important;font-size:10.5px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-yape{background:#FFFFFF!important;color:#2A2A2A!important;font-size:11px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago{background:#FFFFFF!important;color:#2A2A2A!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago b{font-size:7.5px;font-weight:800;color:#2A2A2A}
 /* 2026-10-25 : Pago Móvil (Venezuela) à la place de PIX dans la rangée Amérique latine. */
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil{background:#1F5FA6!important;color:#fff!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil b{font-size:7.5px;font-weight:800;color:#fff}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil{background:#FFFFFF!important;color:#2A2A2A!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil b{font-size:7.5px;font-weight:800;color:#2A2A2A}
 /* 2026-10-25 : 2e rangée Amérique latine (PIX, Yape, Bancolombia, Daviplata, Plin, Zinli) ; rangées encore serrées (6 rangées). */
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos{gap:3px!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{height:20px!important;min-height:20px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-bancol{background:#FDDA24!important;color:#111!important;font-size:7.8px!important;letter-spacing:-.04em!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-davi{background:#E30613!important;color:#fff!important;font-size:8.6px!important;letter-spacing:-.03em!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-plin{background:#0BB7BE!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-zinli{background:#4B4FD6!important;color:#fff!important;font-size:11px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-bancol{background:#FFFFFF!important;color:#2A2A2A!important;font-size:7.8px!important;letter-spacing:-.04em!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-davi{background:#FFFFFF!important;color:#2A2A2A!important;font-size:8.6px!important;letter-spacing:-.03em!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-plin{background:#FFFFFF!important;color:#2A2A2A!important;font-size:11px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-zinli{background:#FFFFFF!important;color:#2A2A2A!important;font-size:11px!important;text-transform:lowercase}
 /* 2026-10-25 (propriétaire : « le petit tiret colle au titre Recharger ») : la barre de prise des fenêtres remonte tout en
    haut (3 px du bord, 4 px d'épaisseur) — un vrai espace avec le titre, sur tout le site, sans bouger la page. */
 html body .modal-backdrop > .modal-box > i.bp-grip.bp-grip.bp-grip{top:calc(env(safe-area-inset-top,0px) + 9px)!important;height:4px!important;width:44px!important;background:rgba(255,255,255,.34)!important}
