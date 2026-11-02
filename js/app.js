@@ -10398,7 +10398,7 @@
           // tout de suite, sans attendre que le joueur quitte l'écran.
           if (document.documentElement.classList.contains('oro-trade-open')) { try { oroHotSwapCss(); } catch (eH) {} return; }
           window.__oroSwReloaded = 1;
-          try { location.reload(); } catch (e3) { location.href = location.pathname; }
+          try { location.replace(location.pathname + '?v=' + Date.now()); } catch (e3) { try { location.reload(); } catch (e4) { location.href = location.pathname; } }
         });
       }
     }
@@ -10449,8 +10449,12 @@
           var m2 = /orolado-v(\d+)/.exec(String(txt || ''));
           var live = m2 ? Number(m2[1]) : 0;
           if (!live) return;
-          if (!(window.__oroSwBase > 0)) { window.__oroSwBase = live; return; }
-          if (live > window.__oroSwBase) newer = true;
+          // 2026-11-02 (propriétaire : « rien ne change, c'est toujours pareil ») : on compare la version EN LIGNE
+          // à la version RÉELLEMENT CHARGÉE (mine = app.js?v= du HTML en mémoire), pas à la 1re lecture. Ainsi, si
+          // l'iPhone garde un vieux HTML en cache (ex. v3479) alors que le serveur est à v3485, on le détecte et on
+          // recharge. (Avant : base = 1re lecture = 3485 = live → jamais « plus récent » → jamais rechargé.)
+          window.__oroSwBase = live;
+          if (live > mine) newer = true;
         }).catch(function () { /* hors ligne : on réessaiera */ });
     }
     function openTrades() {
@@ -10462,7 +10466,13 @@
       // (Recharger, Paris, Casino, profil…) : la nouvelle version attend le prochain retour sur l'écran de trading.
       try { if (document.querySelector('.modal-backdrop.active, .modal.active, #drawerProfile.on, .oro-welcome, #coachModal.on') || document.documentElement.classList.contains('learn-on')) return; } catch (eQ) { /* ignore */ }
       reloading = true;
-      try { location.reload(); } catch (eR) { reloading = false; }
+      // 2026-11-02 : rechargement AVEC cache-bust — un location.reload() simple sert parfois le HTML gardé par iOS
+      // (toujours la même vieille version). On navigue vers une URL fraîche (?v=<version en ligne>) → HTML re-téléchargé,
+      // donc nouveau CSS/JS. Au chargement suivant mine==live → plus de rechargement (pas de boucle).
+      try {
+        var fresh = location.pathname + '?v=' + (window.__oroSwBase || Date.now());
+        location.replace(fresh);
+      } catch (eR) { try { location.reload(); } catch (e2) { reloading = false; } }
     }
     setInterval(check, 5 * 60 * 1000);
     setTimeout(check, 8 * 1000); // relève le numéro de départ tôt (une mise en ligne dans la 1re minute n'est plus manquée)

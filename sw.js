@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v3485';
+const CACHE = 'orolado-v3486';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -25,6 +25,22 @@ self.addEventListener('activate', function (event) {
       }));
     }).then(function () {
       return self.clients.claim();
+    }).then(function () {
+      // 2026-11-02 (propriétaire : « rien ne change, c'est toujours pareil ») : quand une NOUVELLE version prend
+      // la main, le service worker force lui-même les fenêtres ouvertes à charger le HTML frais (?swv=<version>).
+      // Fiable même si l'app.js en cache est ancien (le navigateur revalide toujours sw.js). Le paramètre swv évite
+      // toute boucle : on ne renavigue qu'une fois par version et par fenêtre.
+      var ver = (CACHE.match(/(\d+)/) || ['', ''])[1];
+      return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+        list.forEach(function (c) {
+          try {
+            var u = new URL(c.url);
+            if (!ver || u.searchParams.get('swv') === ver) return;
+            u.searchParams.set('swv', ver);
+            if ('navigate' in c) c.navigate(u.href);
+          } catch (e) { /* ignore */ }
+        });
+      });
     })
   );
 });
