@@ -4511,7 +4511,7 @@ html body #screenTrade .chart-toolbar #chartZoomOut:not(.tap-lit){background:lin
 html body #screenTrade .chart-toolbar #chartZoomOut.tap-lit.tap-lit.tap-lit,html body #screenTrade .chart-toolbar #chartZoomOut:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
 html body #screenTrade .chart-toolbar .ind-btn.chart-reset-btn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#F0EBE2!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #screenTrade .chart-toolbar .ind-btn.chart-reset-btn.tap-lit.tap-lit.tap-lit,html body #screenTrade .chart-toolbar .ind-btn.chart-reset-btn:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
-html body #screenTrade .dur-chip:not(.on):not(.active):not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #screenTrade .dur-chip:not(.on):not(.active):not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #screenTrade .dur-chip:not(.on):not(.active).tap-lit.tap-lit.tap-lit,html body #screenTrade .dur-chip:not(.on):not(.active):active{background:linear-gradient(180deg,rgba(242,193,78,1),rgba(242,193,78,.8))!important;border-color:rgba(242,193,78,1)!important;color:#161004!important;box-shadow:0 0 14px rgba(242,193,78,.55)!important}
 html body #screenTrade .qbtn.stake-act[data-add="1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(52,211,153,.16),rgba(52,211,153,.04))!important;border:1px solid rgba(52,211,153,.45)!important;color:#A7F3D0!important;box-shadow:0 0 8px rgba(52,211,153,.18)!important}
 html body #screenTrade .qbtn.stake-act[data-add="1"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-add="1"]:active{background:linear-gradient(180deg,rgba(52,211,153,1),rgba(52,211,153,.8))!important;border-color:rgba(52,211,153,1)!important;color:#04241A!important;box-shadow:0 0 14px rgba(52,211,153,.55)!important}
@@ -4543,7 +4543,7 @@ html body #fsTradeOverlay .chart-toolbar #chartZoomOut:not(.tap-lit){background:
 html body #fsTradeOverlay .chart-toolbar #chartZoomOut.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .chart-toolbar #chartZoomOut:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn.chart-reset-btn:not(.tap-lit){background:linear-gradient(180deg,rgba(184,172,148,.16),rgba(184,172,148,.04))!important;border:1px solid rgba(184,172,148,.45)!important;color:#F0EBE2!important;box-shadow:0 0 8px rgba(184,172,148,.18)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn.chart-reset-btn.tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .chart-toolbar .ind-btn.chart-reset-btn:active{background:linear-gradient(180deg,rgba(184,172,148,1),rgba(184,172,148,.8))!important;border-color:rgba(184,172,148,1)!important;color:#0E0D0A!important;box-shadow:0 0 14px rgba(184,172,148,.55)!important}
-html body #fsTradeOverlay .dur-chip:not(.on):not(.active):not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #fsTradeOverlay .dur-chip:not(.on):not(.active):not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #fsTradeOverlay .dur-chip:not(.on):not(.active).tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .dur-chip:not(.on):not(.active):active{background:linear-gradient(180deg,rgba(242,193,78,1),rgba(242,193,78,.8))!important;border-color:rgba(242,193,78,1)!important;color:#161004!important;box-shadow:0 0 14px rgba(242,193,78,.55)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-add="1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(52,211,153,.16),rgba(52,211,153,.04))!important;border:1px solid rgba(52,211,153,.45)!important;color:#A7F3D0!important;box-shadow:0 0 8px rgba(52,211,153,.18)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-add="1"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-add="1"]:active{background:linear-gradient(180deg,rgba(52,211,153,1),rgba(52,211,153,.8))!important;border-color:rgba(52,211,153,1)!important;color:#04241A!important;box-shadow:0 0 14px rgba(52,211,153,.55)!important}
@@ -4603,11 +4603,11 @@ html.is-android body #screenTrade #authQuick > button{min-width:0!important;over
    (3) Cadre du solde : vraie lueur orange en DÉMO, verte en RÉEL. ===== */
 html body #screenTrade #langBarTrade{width:auto!important;min-width:28px!important;overflow:visible!important}
 html.is-android body #screenTrade .topbar-actions{margin-left:0!important;margin-right:20px!important}
-html body #screenTrade .qbtn.stake-act[data-add="1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-add="1"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #screenTrade .qbtn.stake-act[data-add="1"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-add="1"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#161004!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
-html body #screenTrade .qbtn.stake-act[data-a="half"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-a="half"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #screenTrade .qbtn.stake-act[data-a="half"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="half"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#161004!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
-html body #screenTrade .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #screenTrade .qbtn.stake-act[data-a="x2"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="x2"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#161004!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
 html body #screenTrade #inputStake{border-color:rgba(242,193,78,.42)!important;background:linear-gradient(180deg,rgba(242,193,78,.07),rgba(20,17,11,.6))!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important}
 html body #screenTrade #inputStake:focus{border-color:rgba(242,193,78,.85)!important;box-shadow:0 0 0 3px rgba(242,193,78,.16)!important}
@@ -4616,11 +4616,11 @@ html body #screenTrade .win-preview{background:linear-gradient(160deg,rgba(242,1
 html body #screenTrade .win-preview .label{color:#F7D774!important}
 html body #screenTrade .win-preview .amount{color:#45C98D!important;text-shadow:0 1px 2px rgba(0,0,0,.55)!important}
 html body #screenTrade .win-preview .mult{background:rgba(242,193,78,.18)!important;border-color:rgba(242,193,78,.5)!important;color:#F6ECD8!important}
-html body #fsTradeOverlay .qbtn.stake-act[data-add="1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-add="1"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-add="1"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-add="1"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#161004!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
-html body #fsTradeOverlay .qbtn.stake-act[data-a="half"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-a="half"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="half"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="half"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#161004!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
-html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="x2"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#161004!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
 html body #fsTradeOverlay #inputStake{border-color:rgba(242,193,78,.42)!important;background:linear-gradient(180deg,rgba(242,193,78,.07),rgba(20,17,11,.6))!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important}
 html body #fsTradeOverlay #inputStake:focus{border-color:rgba(242,193,78,.85)!important;box-shadow:0 0 0 3px rgba(242,193,78,.16)!important}
@@ -4636,13 +4636,13 @@ html body #screenTrade.mode-real .balance-card{background:linear-gradient(135deg
 
 /* ===== v2227 — ⌫ bleu comme sa zone (rouge seulement au toucher) ; DÉMO / RÉEL non choisis : intérieur sombre + contour lumineux net
    (orange pour DÉMO, vert pour RÉEL) ; solde : intérieur sombre et net, seulement un contour coloré propre (plus de fond flou) ===== */
-html body #screenTrade .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #screenTrade .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,#F87171,#DC2626)!important;border-color:#FCA5A5!important;color:#FFFFFF!important;box-shadow:0 0 12px rgba(239,68,68,.55)!important}
 html body #screenTrade #modeDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
 html body #screenTrade #fsBtnDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
 html body #screenTrade #modeReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
 html body #screenTrade #fsBtnReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
-html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,#F87171,#DC2626)!important;border-color:#FCA5A5!important;color:#FFFFFF!important;box-shadow:0 0 12px rgba(239,68,68,.55)!important}
 html body #fsTradeOverlay #modeDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
 html body #fsTradeOverlay #fsBtnDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
@@ -4683,14 +4683,14 @@ html body #screenTrade .win-preview{justify-content:center!important;gap:3px!imp
 html body #screenTrade .stake-min{display:flex!important;width:100%!important;justify-content:stretch!important}
 html body #screenTrade .stake-min-actions{display:flex!important;flex:1 1 auto!important;width:100%!important;gap:5px!important;justify-content:space-between!important}
 html body #screenTrade .stake-min-actions .qbtn.stake-act{flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important}
-html body #screenTrade .qbtn.stake-act[data-add="-1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #screenTrade .qbtn.stake-act[data-add="-1"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #screenTrade .qbtn.stake-act[data-add="-1"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-add="-1"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#161004!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
 html body #fsTradeOverlay .win-preview .label,html body #fsTradeOverlay .odds-label.payout-badge,html body #fsTradeOverlay .stake-min-label{display:none!important}
 html body #fsTradeOverlay .win-preview{justify-content:center!important;gap:3px!important}
 html body #fsTradeOverlay .stake-min{display:flex!important;width:100%!important;justify-content:stretch!important}
 html body #fsTradeOverlay .stake-min-actions{display:flex!important;flex:1 1 auto!important;width:100%!important;gap:5px!important;justify-content:space-between!important}
 html body #fsTradeOverlay .stake-min-actions .qbtn.stake-act{flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important}
-html body #fsTradeOverlay .qbtn.stake-act[data-add="-1"]:not(.tap-lit){background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.18)!important}
+html body #fsTradeOverlay .qbtn.stake-act[data-add="-1"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-add="-1"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-add="-1"]:active{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border-color:#F7D774!important;color:#161004!important;box-shadow:0 0 12px rgba(242,193,78,.55)!important}
 html body #screenTrade .win-preview,html body #fsTradeOverlay .win-preview{gap:7px!important}
 html body #screenTrade .win-preview .amount,html body #fsTradeOverlay .win-preview .amount{margin-top:-2px!important}
@@ -7446,8 +7446,8 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) .wi
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on svg{display:none!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav{
     display:grid!important;place-items:center;flex:0 0 26px;width:26px;height:26px;padding:0;border-radius:50%;border:0;cursor:pointer;
-    background:radial-gradient(circle at 32% 28%,#F9EFDC,#E0A824 50%,#8A5A14);box-shadow:0 0 8px rgba(242,193,78,.55);transition:transform .1s}
-  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav svg{width:16px;height:16px;fill:none;stroke:#150B00;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+    background:rgba(255,255,255,.06);box-shadow:none;transition:transform .1s}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav svg{width:16px;height:16px;fill:none;stroke:#D2CCC0;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav:active,
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav.hit{transform:scale(.88)}
   /* Mise : − $ 1 + */
@@ -7721,8 +7721,8 @@ html[dir=rtl] .learn-modal .lg-step h3{margin:6px 26px 10px 0}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-row .dur-chip.on svg{display:none!important}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav{
     display:grid!important;place-items:center;flex:0 0 26px;width:26px;height:26px;padding:0;border-radius:50%;border:0;cursor:pointer;
-    background:radial-gradient(circle at 32% 28%,#F9EFDC,#E0A824 50%,#8A5A14);box-shadow:0 0 8px rgba(242,193,78,.55);transition:transform .1s}
-  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav svg{width:16px;height:16px;fill:none;stroke:#150B00;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+    background:rgba(255,255,255,.06);box-shadow:none;transition:transform .1s}
+  html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav svg{width:16px;height:16px;fill:none;stroke:#D2CCC0;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav:active,
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap > .pad .dur-nav.hit{transform:scale(.88)}
   /* Mise : − $ 1 + */
@@ -8986,7 +8986,7 @@ html body:where(:not(.oro-real)):not(#oroQ):not(.oroQ) #fsTradeOverlay#fsTradeOv
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #fsBtnDemo:not(.on):not(.tap-lit),
 html body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3) #modeDemo:not(.on):not(.tap-lit){background:linear-gradient(135deg,rgba(224,168,36,.16),rgba(224,168,36,.05))!important;border:1px solid rgba(242,193,78,.6)!important;color:#F0E2C6!important;box-shadow:none!important}
 /* v2528 — en démo, le montant de la case du gain passe aussi au bleu de la démo (vert en réel inchangé). */
-html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .amount{color:#E8C06A!important;-webkit-text-fill-color:#E8C06A!important}
+html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .win-preview .amount{color:#D2CCC0!important;-webkit-text-fill-color:#D2CCC0!important}
 /* v2529 — la case des secondes (« 5s »…) prend la couleur du mode : bleu en démo, vert en réel (comme la mise et le gain). */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6) .dur-row .dur-chip.on,
 html body:where(:not(.oro-real)):not(#oroQ):not(.oroQ) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3) .dur-row .dur-chip.on{color:#E6E6EA!important;-webkit-text-fill-color:#E6E6EA!important}
@@ -9052,7 +9052,7 @@ html.oro-lite body:not(#lz1):not(#lz2):not(#lz3):not(#lz4):not(#lz5):not(#lz6):n
 /* v2540 — on voit que ce sont des BOUTONS : léger halo rond (couleur du mode : bleu démo / vert réel) derrière
    les + / − de la mise et les flèches des secondes, normal et plein écran. Couleurs des signes inchangées. */
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2):not(#x3) .stake-pm,html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real):not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2):not(#x3) .dur-row .dur-nav,
-html body:not(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm,html body:not(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav{border-radius:50%!important;background:radial-gradient(circle at 50% 50%,rgba(242,193,78,.20) 0,rgba(242,193,78,.08) 58%,rgba(242,193,78,0) 72%)!important;box-shadow:inset 0 0 0 1px rgba(242,193,78,.30),0 0 7px rgba(242,193,78,.22)!important}
+html body:not(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm,html body:not(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav{border-radius:50%!important;background:rgba(255,255,255,.06)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade.mode-real:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2):not(#x3) .stake-pm,html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade.mode-real:not(#y1):not(#y2):not(#y3) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#x1):not(#x2):not(#x3) .dur-row .dur-nav,
 html body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm,html body.oro-real #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay:not(#y1):not(#y2):not(#y3):not(#z1):not(#z2):not(#z3):not(#z4) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav{border-radius:50%!important;background:radial-gradient(circle at 50% 50%,rgba(34,224,122,.18) 0,rgba(34,224,122,.07) 58%,rgba(34,224,122,0) 72%)!important;box-shadow:inset 0 0 0 1px rgba(34,224,122,.28),0 0 7px rgba(34,224,122,.20)!important}
 /* v2540 — plein écran (téléphones) : « $ montant » un peu plus au milieu, moins collé au − (était 9 px du −, 20 px du +). */
@@ -13867,64 +13867,48 @@ html #oroLoader .ol-ufo::before{content:"";position:absolute;top:52%;right:86%;w
 @keyframes olUfoFire{0%{opacity:.7;width:50px}50%{opacity:1;width:66px}100%{opacity:.82;width:56px}}
 
 /* =====================================================================
-   2026-11-02 (propriétaire) : TERMINAL DU BAS = même « noir léger » que le haut.
-   Override FINAL, spécificité max (6× #screenTrade + 5× #tradeWrap / fsTradeOverlay)
-   pour gagner sur toutes les règles dorées précédentes. Fini le jaune : fonds verre
-   neutre sombre, bordures crème discrètes, textes clairs, orbes payout en planètes
-   sombres à liseré léger ; le GAIN reste vert. Ne pas rebrancher sur l'or.
+   2026-11-02 (propriétaire) : TERMINAL DU BAS = MÊME allure que le HAUT (MA/BB/EMA) :
+   verre sombre + fin liseré or discret + texte or léger. Uniforme, pas d'orbe colorée,
+   pas de jaune fort, pas de vert. « Sombre qui tire un peu sur l'or, comme la coupe. »
    ===================================================================== */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row,
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(.stake-field,.win-preview),
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(.stake-field,.win-preview){
   background:transparent!important;border:0!important;box-shadow:none!important}
-/* durées : chip actif neutre clair (plus d'or vif), texte clair */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip{
-  color:#E6E6EA!important;-webkit-text-fill-color:#E6E6EA!important;background:transparent!important;border:0!important;box-shadow:none!important;text-shadow:none!important}
+  color:#C3BEB2!important;-webkit-text-fill-color:#C3BEB2!important;background:transparent!important;border:0!important;box-shadow:none!important;text-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on{
-  color:#E8C06A!important;-webkit-text-fill-color:#E8C06A!important;background:rgba(255,255,255,.07)!important;border-radius:9px!important;text-shadow:none!important}
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade.mode-real #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on{color:#3BE39A!important;-webkit-text-fill-color:#3BE39A!important}
-/* flèches des durées + / − de la mise : gris clair neutre */
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg,
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path,
-html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg,
-html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path{stroke:#C6C6CC!important}
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::before,
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::after{background:#C6C6CC!important;box-shadow:none!important}
+  color:#D2CCC0!important;-webkit-text-fill-color:#D2CCC0!important;background:rgba(255,255,255,.08)!important;border-radius:9px!important;text-shadow:none!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg,html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg,html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path{stroke:#C3BEB2!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::before,html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::after{background:#C3BEB2!important;box-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm.stake-minus::after{background:transparent!important}
-/* mise saisie : texte clair neutre (plus d'or vif) */
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{
-  color:#E8C06A!important;-webkit-text-fill-color:#E8C06A!important;caret-color:#E8C06A!important;border:0!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important}
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade.mode-real #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{color:#3BE39A!important;-webkit-text-fill-color:#3BE39A!important;caret-color:#3BE39A!important}
-/* GAIN : montant vert, « Payout » clair discret */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{
+  color:#D2CCC0!important;-webkit-text-fill-color:#D2CCC0!important;caret-color:#D2CCC0!important;border:0!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount{
-  color:#E8C06A!important;-webkit-text-fill-color:#E8C06A!important;background:none!important;text-shadow:0 1px 2px rgba(0,0,0,.55)!important}
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade.mode-real #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount{color:#3BE39A!important;-webkit-text-fill-color:#3BE39A!important}
+  color:#D2CCC0!important;-webkit-text-fill-color:#D2CCC0!important;background:none!important;text-shadow:0 1px 2px rgba(0,0,0,.55)!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .mult,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .mult{
-  color:#C2C2C8!important;-webkit-text-fill-color:#C2C2C8!important;background:none!important;border:0!important}
-/* ORBES PAYOUT : planètes SOMBRES à liseré crème discret (fini les planètes dorées) */
+  color:#C3BEB2!important;-webkit-text-fill-color:#C3BEB2!important;background:none!important;border:0!important}
+/* ORBES PAYOUT : même verre sombre + liseré or discret que le haut (uniforme) */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{
-  background:radial-gradient(circle at 50% 42%,rgba(var(--c),.12),rgba(var(--c),0) 68%)!important;
-  border:1.5px solid rgba(var(--c),.6)!important;box-shadow:none!important}
+  background:transparent!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on,
 html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on{
-  background:radial-gradient(circle at 32% 26%,rgba(var(--c),.92),rgba(24,22,26,.96) 72%)!important;
-  border:1px solid rgba(var(--c),.95)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.25) inset,0 0 0 2px rgba(255,255,255,.5),0 0 9px rgba(var(--c),.5)!important}
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct,
-html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
-html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct{
-  color:#ECECF0!important;-webkit-text-fill-color:#ECECF0!important;text-shadow:0 1px 2px rgba(0,0,0,.6)!important}
+  background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.4)!important;box-shadow:none!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct{
+  color:#C3BEB2!important;-webkit-text-fill-color:#C3BEB2!important;text-shadow:0 1px 2px rgba(0,0,0,.6)!important}
 
 /* 2026-11-02 (propriétaire) : « lueur jaune en bas » = le petit arc sous chaque orbe payout
    (::after, couleur --c dorée). Neutralisé en gris discret pour un bas vraiment sombre. */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip::after{
-  border-color:rgba(var(--c),.45)!important;border-top-color:transparent!important;box-shadow:none!important}
+  border-color:rgba(255,255,255,.12)!important;border-top-color:transparent!important;box-shadow:none!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on::after{
   border-color:rgba(255,255,255,.45)!important;border-top-color:transparent!important;box-shadow:none!important}
 
