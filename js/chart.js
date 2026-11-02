@@ -2309,7 +2309,7 @@
     var k = sizeK();
     var big = cssH >= 200;
     var i, c, x, up, y1, y2, bh, hw, lw;
-    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1, coins: 1, comet: 1, ohlc: 1, diamonds: 1, dashes: 1, zigzag: 1, dotline: 1, rings: 1, arcs: 1 }[kind];
+    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1, coins: 1, comet: 1, ohlc: 1, diamonds: 1, dashes: 1, zigzag: 1, dotline: 1, rings: 1, arcs: 1, beam: 1, nodes: 1, ramp: 1 }[kind];
     var lastX = isLine ? (panMs > 0 ? toX(last) : pad.l + w) : toX(last);
     function wick(cd) {
       var a = isFinite(cd.h) ? cd.h : Math.max(cd.o, cd.c);
@@ -2522,6 +2522,45 @@
         ctx.lineTo(pts[i][0], d1);
         ctx.stroke();
       }
+    } else if (kind === 'beam') {
+      // NOUVEAU — Rais : rideau de rayons verticaux (lueur descendante) sous une ligne nette, tête brillante.
+      for (i = 0; i < n; i++) {
+        var gB = ctx.createLinearGradient(0, pts[i][1], 0, floor);
+        gB.addColorStop(0, extColRgba(M, 0.50));
+        gB.addColorStop(1, extColRgba(M, 0));
+        ctx.strokeStyle = gB;
+        ctx.lineWidth = Math.max(1, slot * 0.34);
+        ctx.beginPath(); ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[i][0], floor); ctx.stroke();
+      }
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < n; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.lineTo(lastX, lastY);
+      ctx.strokeStyle = M; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = extColRgba(M, 0.22); ctx.beginPath(); ctx.arc(lastX, lastY, 9 * k, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.arc(lastX, lastY, 2.6 * k, 0, Math.PI * 2); ctx.fill();
+    } else if (kind === 'nodes') {
+      // NOUVEAU — Noeuds : versant plein tres doux + un point lumineux a chaque pas, tete cerclee.
+      ctx.beginPath(); smoothPath(pts, lastX, lastY); ctx.lineTo(lastX, floor); ctx.lineTo(pts[0][0], floor); ctx.closePath();
+      var gN = ctx.createLinearGradient(0, pad.t, 0, floor);
+      gN.addColorStop(0, extColRgba(M, 0.28)); gN.addColorStop(1, extColRgba(M, 0.02));
+      ctx.fillStyle = gN; ctx.fill();
+      ctx.beginPath(); smoothPath(pts, lastX, lastY); ctx.strokeStyle = M; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+      for (i = 0; i < n; i++) { ctx.fillStyle = extColRgba(M, 0.9); ctx.beginPath(); ctx.arc(pts[i][0], pts[i][1], (i === last ? 3.4 : 1.8) * k, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = '#FFFFFF'; ctx.beginPath(); ctx.arc(lastX, lastY, 2 * k, 0, Math.PI * 2); ctx.fill();
+    } else if (kind === 'ramp') {
+      // NOUVEAU — Rampe : silhouette en escalier REMPLIE (degrade) + arete superieure vive.
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], floor); ctx.lineTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < n; i++) { ctx.lineTo(pts[i][0], pts[i - 1][1]); ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(lastX, pts[last][1]); ctx.lineTo(lastX, floor); ctx.closePath();
+      var gR = ctx.createLinearGradient(0, pad.t, 0, floor);
+      gR.addColorStop(0, extColRgba(M, 0.42)); gR.addColorStop(1, extColRgba(M, 0.03));
+      ctx.fillStyle = gR; ctx.fill();
+      ctx.strokeStyle = M; ctx.lineWidth = 2.4; ctx.lineCap = 'square'; ctx.lineJoin = 'miter';
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < n; i++) { ctx.lineTo(pts[i][0], pts[i - 1][1]); ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(lastX, pts[last][1]); ctx.stroke();
     } else if (kind === 'mountain') {
       // Montagne : crête lissée, versant plein (dégradé franc), ligne de crête claire.
       ctx.beginPath();
