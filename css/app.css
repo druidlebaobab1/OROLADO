@@ -4402,6 +4402,9 @@ html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar .ind-btn[data-ind]:not(.
 html body #screenTrade#screenTrade .chart-toolbar .ind-btn.zoom-btn:not(.on),
 html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar .ind-btn.zoom-btn:not(.on){
   background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important}
+/* 2026-11-02b (propriétaire) : AUCUN jaune au repos sur MA/BB/EMA — texte neutre clair (gris chaud), pas doré. La couleur de l'indicateur revient seulement quand il est allumé (.on). */
+html body #screenTrade#screenTrade .chart-toolbar .ind-btn[data-ind]:not(.on),
+html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar .ind-btn[data-ind]:not(.on){color:#CBC6BA!important}
 html body #screenTrade#screenTrade .chart-toolbar .chart-reset-btn,
 html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar .chart-reset-btn{
   background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important}
@@ -4585,24 +4588,24 @@ html body #fsTradeOverlay .win-preview .mult{background:rgba(242,193,78,.18)!imp
 @media (max-width:859px){html body #screenTrade .win-preview{box-shadow:0 0 5px rgba(242,193,78,.35),inset 0 0 10px rgba(242,193,78,.16),inset 0 1px 0 rgba(255,255,255,.1)!important}}
 @media (min-width:860px){html body #screenTrade .win-preview{box-shadow:0 0 10px rgba(242,193,78,.25),inset 0 1px 0 rgba(255,255,255,.1)!important}}
 html body #screenTrade .balance-card{background:linear-gradient(135deg,rgba(247,147,26,.14) 0%,rgba(247,147,26,.04) 45%,rgba(18,15,9,.95) 100%)!important;border:1px solid rgba(247,147,26,.6)!important;box-shadow:0 0 12px rgba(247,147,26,.22),inset 0 0 14px rgba(247,147,26,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
-html body #screenTrade.mode-real .balance-card{background:linear-gradient(135deg,rgba(52,211,153,.14) 0%,rgba(52,211,153,.04) 45%,rgba(18,15,9,.95) 100%)!important;border:1px solid rgba(52,211,153,.6)!important;box-shadow:0 0 12px rgba(52,211,153,.22),inset 0 0 14px rgba(52,211,153,.08),inset 0 1px 0 rgba(255,255,255,.06)!important}
+html body #screenTrade.mode-real .balance-card{background:linear-gradient(135deg,rgba(52,211,153,.085) 0%,rgba(52,211,153,.03) 45%,rgba(18,15,9,.96) 100%)!important;border:1px solid rgba(52,211,153,.5)!important;box-shadow:0 0 7px rgba(52,211,153,.12),inset 0 0 9px rgba(52,211,153,.05),inset 0 1px 0 rgba(255,255,255,.05)!important}
 
 /* ===== v2227 — ⌫ bleu comme sa zone (rouge seulement au toucher) ; DÉMO / RÉEL non choisis : intérieur sombre + contour lumineux net
    (orange pour DÉMO, vert pour RÉEL) ; solde : intérieur sombre et net, seulement un contour coloré propre (plus de fond flou) ===== */
 html body #screenTrade .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #screenTrade .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #screenTrade .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,#F87171,#DC2626)!important;border-color:#FCA5A5!important;color:#FFFFFF!important;box-shadow:0 0 12px rgba(239,68,68,.55)!important}
-html body #screenTrade #modeDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #screenTrade #fsBtnDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #screenTrade #modeReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
-html body #screenTrade #fsBtnReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
+html body #screenTrade #modeDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.58)!important;color:#FED7AA!important;box-shadow:0 0 6px rgba(247,147,26,.24)!important}
+html body #screenTrade #fsBtnDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.58)!important;color:#FED7AA!important;box-shadow:0 0 6px rgba(247,147,26,.24)!important}
+html body #screenTrade #modeReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.55)!important;color:#A7F3D0!important;box-shadow:0 0 5px rgba(52,211,153,.2)!important}
+html body #screenTrade #fsBtnReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.55)!important;color:#A7F3D0!important;box-shadow:0 0 5px rgba(52,211,153,.2)!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:not(.tap-lit){background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.14)!important;color:#D2CCC0!important;box-shadow:none!important}
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,#F87171,#DC2626)!important;border-color:#FCA5A5!important;color:#FFFFFF!important;box-shadow:0 0 12px rgba(239,68,68,.55)!important}
-html body #fsTradeOverlay #modeDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #fsTradeOverlay #fsBtnDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #fsTradeOverlay #modeReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
-html body #fsTradeOverlay #fsBtnReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
-html body #screenTrade .balance-card{background:rgba(16,13,9,.96)!important;border:1px solid rgba(247,147,26,.75)!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #screenTrade.mode-real .balance-card{background:rgba(16,13,9,.96)!important;border:1px solid rgba(52,211,153,.75)!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
+html body #fsTradeOverlay #modeDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.58)!important;color:#FED7AA!important;box-shadow:0 0 6px rgba(247,147,26,.24)!important}
+html body #fsTradeOverlay #fsBtnDemo:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(247,147,26,.58)!important;color:#FED7AA!important;box-shadow:0 0 6px rgba(247,147,26,.24)!important}
+html body #fsTradeOverlay #modeReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.55)!important;color:#A7F3D0!important;box-shadow:0 0 5px rgba(52,211,153,.2)!important}
+html body #fsTradeOverlay #fsBtnReal:not(.on):not(.tap-lit){background:#1D180E!important;border:1px solid rgba(52,211,153,.55)!important;color:#A7F3D0!important;box-shadow:0 0 5px rgba(52,211,153,.2)!important}
+html body #screenTrade .balance-card{background:rgba(16,13,9,.97)!important;border:1px solid rgba(247,147,26,.55)!important;box-shadow:0 0 5px rgba(247,147,26,.2)!important}
+html body #screenTrade.mode-real .balance-card{background:rgba(16,13,9,.97)!important;border:1px solid rgba(52,211,153,.55)!important;box-shadow:0 0 5px rgba(52,211,153,.2)!important}
 
 /* ===== v2228 — Mise : chiffre ORANGE en DÉMO, VERT pur en RÉEL (on sait tout de suite où on joue) ;
    toutes les croix (×) et flèches retour (←) du site : lueur bleu ciel douce, même forme et même place ===== */
@@ -4783,13 +4786,13 @@ html body #screenTrade #modeSwitcher > .mode-btn:not(.on),html body #fsTradeOver
 /* ===== v2245 — DÉMO / COMPTE RÉEL à parts égales ; portefeuille dessiné devant « COMPTE RÉEL » (le côté sérieux) ===== */
 html body #screenTrade #modeSwitcher{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
 html body #screenTrade #modeReal,html body #fsTradeOverlay #fsBtnReal{display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}
-html body #screenTrade #modeReal::before,html body #fsTradeOverlay #fsBtnReal::before{content:""!important;display:inline-block!important;flex:0 0 auto!important;width:19px!important;height:19px!important;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2334D399'/%3E%3Cstop offset='1' stop-color='%23059669'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M4 6.5h13.5a1.5 1.5 0 0 1 1.5 1.5v1H21v8h-2v1a1.5 1.5 0 0 1-1.5 1.5H4A2 2 0 0 1 2 17.5v-9A2 2 0 0 1 4 6.5z' fill='url(%23g)' stroke='%23ECFDF5' stroke-width='1.1'/%3E%3Cpath d='M4.5 6.5 15 3.2a1.2 1.2 0 0 1 1.5.9l.5 2.4' fill='none' stroke='%23FCD34D' stroke-width='1.4' stroke-linecap='round'/%3E%3Crect x='14.5' y='10.5' width='7' height='5' rx='1.4' fill='%23064E3B' stroke='%23ECFDF5' stroke-width='1'/%3E%3Ccircle cx='17' cy='13' r='1.1' fill='%23FCD34D'/%3E%3C/svg%3E")!important;filter:drop-shadow(0 0 3px rgba(52,211,153,.55))!important}
+html body #screenTrade #modeReal::before,html body #fsTradeOverlay #fsBtnReal::before{content:""!important;display:inline-block!important;flex:0 0 auto!important;width:19px!important;height:19px!important;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2334D399'/%3E%3Cstop offset='1' stop-color='%23059669'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M4 6.5h13.5a1.5 1.5 0 0 1 1.5 1.5v1H21v8h-2v1a1.5 1.5 0 0 1-1.5 1.5H4A2 2 0 0 1 2 17.5v-9A2 2 0 0 1 4 6.5z' fill='url(%23g)' stroke='%23ECFDF5' stroke-width='1.1'/%3E%3Cpath d='M4.5 6.5 15 3.2a1.2 1.2 0 0 1 1.5.9l.5 2.4' fill='none' stroke='%23FCD34D' stroke-width='1.4' stroke-linecap='round'/%3E%3Crect x='14.5' y='10.5' width='7' height='5' rx='1.4' fill='%23064E3B' stroke='%23ECFDF5' stroke-width='1'/%3E%3Ccircle cx='17' cy='13' r='1.1' fill='%23FCD34D'/%3E%3C/svg%3E")!important;filter:drop-shadow(0 0 2px rgba(52,211,153,.35))!important}
 
 /* ===== v2246 — Plein écran : DÉMO / RÉEL avec les mêmes couleurs que l'écran normal, même taille, « + » au milieu ;
    solde orange en démo, vert en réel ===== */
 html body #fsTradeOverlay .fs-mode-switch .fs-mode-btn{flex:0 0 auto!important;width:clamp(58px,17vw,124px)!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;justify-content:center!important;text-align:center!important;transform:none!important;display:flex!important;align-items:center!important;height:clamp(26px,7vw,32px)!important;min-height:0!important;padding:0 4px!important;line-height:1!important;white-space:nowrap!important;overflow:hidden!important;gap:clamp(4px,1.2vw,7px)!important}
-html body #fsTradeOverlay #fsBtnDemo:not(.on){background:#1D180E!important;border:1px solid rgba(247,147,26,.7)!important;color:#FED7AA!important;box-shadow:0 0 7px rgba(247,147,26,.35)!important}
-html body #fsTradeOverlay #fsBtnReal:not(.on){background:#1D180E!important;border:1px solid rgba(52,211,153,.7)!important;color:#A7F3D0!important;box-shadow:0 0 7px rgba(52,211,153,.35)!important}
+html body #fsTradeOverlay #fsBtnDemo:not(.on){background:#1D180E!important;border:1px solid rgba(247,147,26,.58)!important;color:#FED7AA!important;box-shadow:0 0 6px rgba(247,147,26,.24)!important}
+html body #fsTradeOverlay #fsBtnReal:not(.on){background:#1D180E!important;border:1px solid rgba(52,211,153,.55)!important;color:#A7F3D0!important;box-shadow:0 0 5px rgba(52,211,153,.2)!important}
 html body #fsTradeOverlay #fsBtnDemo.on{background:linear-gradient(135deg,#FFB300,#FF6D00)!important;color:#1a0d00!important;border:1px solid rgba(255,171,64,.8)!important;box-shadow:0 0 14px rgba(255,109,0,.45)!important}
 html body #fsTradeOverlay #fsBtnReal.on{background:linear-gradient(135deg,#FFE082,#00E676 55%,#00C853)!important;color:#04140a!important;border:1px solid rgba(255,215,0,.7)!important;box-shadow:0 0 14px rgba(0,230,118,.45)!important}
 html body #fsTradeOverlay #fsTopMid:where(.hz-fdemo):not(#oroQ):not(.oroQ) #fsTopBalance{color:#FFB21A!important;-webkit-text-fill-color:#FFB21A!important}
@@ -7371,11 +7374,12 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr{left:auto!important;right:9px!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:54px!important;padding-right:10px!important}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-left:10px!important;padding-right:54px!important}
-/* v2450 — Plein écran (boutons plus petits) : rond plus près du bord, texte qui tient. */
-html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-arr{left:6px!important;max-height:28px!important;max-width:28px!important;padding:6px!important}
-html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr{left:auto!important;right:6px!important}
-html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:38px!important;padding-right:6px!important}
-html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-left:6px!important;padding-right:38px!important}
+/* v2450 — Plein écran (boutons plus petits). 2026-11-02 (propriétaire) : le rond de direction était trop collé au bord ;
+   on le recule un peu des deux côtés (gap plus grand avec le bord), le texte garde sa place. */
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-arr{left:14px!important;max-height:28px!important;max-width:28px!important;padding:6px!important}
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put .bt-arr{left:auto!important;right:14px!important}
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-call{padding-left:48px!important;padding-right:8px!important}
+html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-put{padding-left:8px!important;padding-right:48px!important}
 html body #fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .btn-trade .bt-txt{font-size:clamp(13px,4vw,17px)!important;white-space:nowrap}
 
 /* ===== v2451 — Durées et ÷2 / ×2 / ⌫ en OR CHAMPAGNE (couleur de la marque, choix du propriétaire) ===== */
@@ -13754,23 +13758,23 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-la{display:inline-flex!important;border:0!important;background:#fff!important;font-weight:900!important;font-style:normal!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos{gap:4px!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{height:22px!important;min-height:22px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-spei{color:#2A2A2A!important;font-size:10.5px!important;letter-spacing:.06em!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix{color:#2A2A2A!important;font-size:11px!important;gap:4px!important;text-transform:lowercase}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix b{width:8px;height:8px;flex:0 0 8px;background:#2A2A2A;border-radius:2px;transform:rotate(45deg)}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-nequi{color:#2A2A2A!important;font-size:10.5px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-yape{background:#FFFFFF!important;color:#2A2A2A!important;font-size:11px!important;text-transform:lowercase}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago{background:#FFFFFF!important;color:#2A2A2A!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago b{font-size:7.5px;font-weight:800;color:#2A2A2A}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-spei{color:#1F2A44!important;font-size:10.5px!important;letter-spacing:.06em!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix{font-size:0!important;color:transparent!important;gap:0!important;background-image:url("../icons/pay/pix.svg?v=3518")!important;background-repeat:no-repeat!important;background-position:center!important;background-size:auto 17px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pix b{display:none!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-nequi{font-size:0!important;color:transparent!important;background-image:url("../icons/pay/nequi.svg?v=3518")!important;background-repeat:no-repeat!important;background-position:center!important;background-size:auto 17px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-yape{background:#FFFFFF!important;color:#6B2E9E!important;font-size:11.5px!important;text-transform:lowercase;letter-spacing:-.01em}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago{background-color:#FFFFFF!important;font-size:0!important;color:transparent!important;gap:0!important;background-image:url("../icons/pay/mpago.svg?v=3518")!important;background-repeat:no-repeat!important;background-position:center!important;background-size:auto 17px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-mpago b{display:none!important}
 /* 2026-10-25 : Pago Móvil (Venezuela) à la place de PIX dans la rangée Amérique latine. */
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil{background:#FFFFFF!important;color:#2A2A2A!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil b{font-size:7.5px;font-weight:800;color:#2A2A2A}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil{background:#FFFFFF!important;color:#0A4DA6!important;flex-direction:column!important;justify-content:center!important;gap:0!important;line-height:.95!important;font-size:8.5px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-pmovil b{font-size:7.5px;font-weight:800;color:#0A4DA6}
 /* 2026-10-25 : 2e rangée Amérique latine (PIX, Yape, Bancolombia, Daviplata, Plin, Zinli) ; rangées encore serrées (6 rangées). */
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos{gap:3px!important}
 html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{height:20px!important;min-height:20px!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-bancol{background:#FFFFFF!important;color:#2A2A2A!important;font-size:7.8px!important;letter-spacing:-.04em!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-davi{background:#FFFFFF!important;color:#2A2A2A!important;font-size:8.6px!important;letter-spacing:-.03em!important}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-plin{background:#FFFFFF!important;color:#2A2A2A!important;font-size:11px!important;text-transform:lowercase}
-html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-zinli{background:#FFFFFF!important;color:#2A2A2A!important;font-size:11px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-bancol{background:#FFFFFF!important;color:#111111!important;font-size:7.8px!important;letter-spacing:-.04em!important;border-left:3px solid #FDDA24!important;padding-left:4px!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-davi{background:#FFFFFF!important;color:#E1251B!important;font-size:8.6px!important;letter-spacing:-.03em!important}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-plin{background:#FFFFFF!important;color:#00A79D!important;font-size:11.5px!important;text-transform:lowercase}
+html.oro-latam body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-zinli{background:#FFFFFF!important;color:#2E3192!important;font-size:11.5px!important;text-transform:lowercase}
 /* 2026-10-25 (propriétaire : « le petit tiret colle au titre Recharger ») : la barre de prise des fenêtres remonte tout en
    haut (3 px du bord, 4 px d'épaisseur) — un vrai espace avec le titre, sur tout le site, sans bouger la page. */
 html body .modal-backdrop > .modal-box > i.bp-grip.bp-grip.bp-grip{top:calc(env(safe-area-inset-top,0px) + 9px)!important;height:4px!important;width:44px!important;background:rgba(255,255,255,.34)!important}
@@ -14100,3 +14104,14 @@ html.fs-trade body #fsTradeOverlay .chart-toolbar .ind-btn.zoom-btn,html.fs-trad
 html.is-fullscreen body #tradeWrap#tradeWrap #chartZoomIn,html.is-fullscreen body #tradeWrap#tradeWrap #chartZoomOut,html.is-fullscreen body #tradeWrap#tradeWrap #chartReset,
 html.fs-trade body #tradeWrap#tradeWrap #chartZoomIn,html.fs-trade body #tradeWrap#tradeWrap #chartZoomOut,html.fs-trade body #tradeWrap#tradeWrap #chartReset{
   background-repeat:no-repeat!important;background-position:center!important;background-size:17px 17px!important}
+
+/* 2026-11-02 (propriétaire) : RETRAIT tout en NOIR — fond uni sombre identique pour TOUTES les cases
+   (crypto, transferts directs, réseaux internationaux), sans aucune teinte verte/or/blanche. Les logos de marque restent. */
+html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card,
+html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card,
+html body #withdrawModal#withdrawModal #wdBankGrid .wd-card{
+  background:#0C0C0E!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important}
+html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdCryptoGrid .wd-card.on,
+html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdLocalGrid .wd-card.on,
+html body #withdrawModal#withdrawModal #wdBankGrid .wd-card:active,html body #withdrawModal#withdrawModal #wdBankGrid .wd-card.on{
+  border-color:#E6D9BC!important;box-shadow:0 0 12px rgba(255,255,255,.35)!important}
