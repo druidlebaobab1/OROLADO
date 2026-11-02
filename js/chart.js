@@ -1168,8 +1168,8 @@
     // Fond « univers » : nuit bleu-violet (pas un noir plat), nébuleuses douces, étoiles,
     // quelques planètes et les cryptos. Décor seulement : rien ici ne touche aux prix.
     var base = g.createLinearGradient(0, 0, 0, cssH);
-    base.addColorStop(0, '#070709');
-    base.addColorStop(1, '#050506');
+    base.addColorStop(0, '#000000');
+    base.addColorStop(1, '#000000');
     g.fillStyle = base;
     g.fillRect(0, 0, cssW, cssH);
     function glow(x, y, r, col) {
