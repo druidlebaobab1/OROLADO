@@ -13871,3 +13871,55 @@ html #oroLoader .ol-ufo::before{content:"";position:absolute;top:52%;right:86%;w
   border-radius:50% 50% 50% 50%/60% 60% 60% 60%;filter:blur(3px);pointer-events:none;
   animation:olUfoFire .16s steps(2,end) infinite}
 @keyframes olUfoFire{0%{opacity:.7;width:50px}50%{opacity:1;width:66px}100%{opacity:.82;width:56px}}
+
+/* =====================================================================
+   2026-11-02 (propriétaire) : TERMINAL DU BAS = même « noir léger » que le haut.
+   Override FINAL, spécificité max (6× #screenTrade + 5× #tradeWrap / fsTradeOverlay)
+   pour gagner sur toutes les règles dorées précédentes. Fini le jaune : fonds verre
+   neutre sombre, bordures crème discrètes, textes clairs, orbes payout en planètes
+   sombres à liseré léger ; le GAIN reste vert. Ne pas rebrancher sur l'or.
+   ===================================================================== */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(.stake-field,.win-preview),
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap :is(.stake-field,.win-preview){
+  background:rgba(255,255,255,.055)!important;border:1px solid rgba(237,228,208,.2)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important}
+/* durées : chip actif neutre clair (plus d'or vif), texte clair */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip{
+  color:#E8E0CC!important;-webkit-text-fill-color:#E8E0CC!important;background:transparent!important;border:0!important;box-shadow:none!important;text-shadow:none!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-chip.on{
+  color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;background:rgba(255,255,255,.1)!important;border-radius:9px!important;text-shadow:none!important}
+/* flèches des durées + / − de la mise : gris clair neutre */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .dur-row .dur-nav svg path{stroke:#CFC6B2!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::before,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm::after{background:#CFC6B2!important;box-shadow:none!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .stake-pm.stake-minus::after{background:transparent!important}
+/* mise saisie : texte clair neutre (plus d'or vif) */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(.mode-real) #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #inputStake{
+  color:#EFE8D6!important;-webkit-text-fill-color:#EFE8D6!important;caret-color:#EFE8D6!important;border:1.5px solid rgba(237,228,208,.3)!important;box-shadow:inset 0 1px 6px rgba(0,0,0,.45)!important;text-shadow:none!important}
+/* GAIN : montant vert, « Payout » clair discret */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .amount{
+  color:#45C98D!important;-webkit-text-fill-color:#45C98D!important;background:none!important;text-shadow:0 1px 2px rgba(0,0,0,.55)!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .mult,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap .win-preview .mult{
+  color:#C9C0AC!important;-webkit-text-fill-color:#C9C0AC!important;background:none!important;border:0!important}
+/* ORBES PAYOUT : planètes SOMBRES à liseré crème discret (fini les planètes dorées) */
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip{
+  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.12),rgba(34,31,23,.94) 72%)!important;
+  border:1px solid rgba(237,228,208,.22)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.3) inset!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip.on{
+  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.2),rgba(52,48,36,.96) 72%)!important;
+  border:1px solid rgba(237,228,208,.5)!important;box-shadow:-3px -3px 8px rgba(0,0,0,.25) inset,0 0 0 2px rgba(237,228,208,.5)!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-mult,
+html:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap#tradeWrap #oddsRow .odds-chip .odds-pct{
+  color:#F0EAD8!important;-webkit-text-fill-color:#F0EAD8!important;text-shadow:0 1px 2px rgba(0,0,0,.6)!important}
