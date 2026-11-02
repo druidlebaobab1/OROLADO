@@ -221,7 +221,7 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .btn-gold:disabled,.btn-gold[disabled]{opacity:.45;cursor:not-allowed;transform:none}
 
 .trade-shell{flex:1;display:flex;flex-direction:column;min-height:0;width:100%;max-width:28rem;margin:0 auto;overflow:visible}
-.topbar{flex-shrink:0;padding:0;padding-top:env(safe-area-inset-top,0px);background:rgba(10,15,29,.86);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);position:relative;z-index:50}
+.topbar{flex-shrink:0;padding:0;padding-top:env(safe-area-inset-top,0px);background:rgba(18,15,10,.92);border-bottom:1px solid var(--line);backdrop-filter:blur(16px);position:relative;z-index:50}
 .topbar-row{display:flex;align-items:center;width:100%;padding:6px 8px;gap:6px;position:relative;min-height:40px}
 .topbar-row .btn-deposit{position:static;left:auto;margin-left:0;margin-right:0;min-width:max-content;z-index:6;flex:0 0 auto;overflow:visible}
 .auth-quick{display:flex;gap:5px;align-items:center;flex-shrink:0;min-width:0;z-index:2}
@@ -4548,7 +4548,7 @@ html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:not(.tap-lit){backgroun
 html body #fsTradeOverlay .qbtn.stake-act[data-a="back"].tap-lit.tap-lit.tap-lit,html body #fsTradeOverlay .qbtn.stake-act[data-a="back"]:active{background:linear-gradient(180deg,rgba(248,113,113,1),rgba(248,113,113,.8))!important;border-color:rgba(248,113,113,1)!important;color:#FFFFFF!important;box-shadow:0 0 14px rgba(248,113,113,.55)!important}
 html body #fsTradeOverlay #inputStake{border-color:rgba(52,211,153,.42)!important;background:linear-gradient(180deg,rgba(52,211,153,.07),rgba(11,14,20,.6))!important;box-shadow:0 0 8px rgba(52,211,153,.14)!important}
 html body #fsTradeOverlay #inputStake:focus{border-color:rgba(52,211,153,.85)!important;box-shadow:0 0 0 3px rgba(52,211,153,.16)!important}
-html body #screenAuth .auth-card input[type=text],html body #screenAuth .auth-card input[type=email],html body #screenAuth .auth-card input[type=password],html body #screenAuth .auth-card input[type=tel],html body #screenAuth .auth-card input:not([type]){border:1px solid rgba(56,189,248,.4)!important;background:linear-gradient(180deg,rgba(56,189,248,.07),rgba(11,14,20,.85))!important;box-shadow:0 0 8px rgba(56,189,248,.12)!important}
+html body #screenAuth .auth-card input[type=text],html body #screenAuth .auth-card input[type=email],html body #screenAuth .auth-card input[type=password],html body #screenAuth .auth-card input[type=tel],html body #screenAuth .auth-card input:not([type]){border:1px solid rgba(242,193,78,.4)!important;background:linear-gradient(180deg,rgba(242,193,78,.06),rgba(16,13,8,.88))!important;box-shadow:0 0 8px rgba(242,193,78,.12)!important}
 html body #screenAuth .auth-card input:focus{border-color:rgba(56,189,248,.9)!important;box-shadow:0 0 0 3px rgba(56,189,248,.16),0 0 12px rgba(56,189,248,.25)!important}
 html body #screenAuth .auth-card .field label{color:#BAE6FD!important}
 html body #screenAuth .auth-tab:not(.on){background:linear-gradient(180deg,rgba(148,163,184,.12),rgba(148,163,184,.03))!important;border:1px solid rgba(148,163,184,.35)!important;color:#CBD5E1!important}
@@ -4740,7 +4740,7 @@ html:not(.is-tv) body #depositModal .modal-box{width:min(560px,94vw)!important;m
    espacements égaux autour de la mise (5 px partout) ===== */
 html body #screenTrade #btnGoLogin:not(.on){background:linear-gradient(180deg,rgba(56,189,248,.14),rgba(56,189,248,.03))!important;border:1px solid rgba(56,189,248,.5)!important;color:#E0F2FE!important;box-shadow:0 0 8px rgba(56,189,248,.22)!important}
 html body #screenTrade #btnGoLogin:not(.on):active{border-color:#7DD3FC!important;box-shadow:0 0 14px rgba(56,189,248,.55)!important}
-html body #screenAuth #langBarAuth .lang-dd-btn{background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.55)!important;box-shadow:0 0 9px rgba(56,189,248,.3),inset 0 0 6px rgba(56,189,248,.15)!important}
+html body #screenAuth #langBarAuth .lang-dd-btn{background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.55)!important;box-shadow:0 0 9px rgba(242,193,78,.3),inset 0 0 6px rgba(242,193,78,.15)!important}
 html body #screenTrade .stake-field{gap:5px!important}
 html body #screenTrade .stake-line{gap:5px!important}
 html body #fsTradeOverlay .stake-field{gap:5px!important}
@@ -7363,12 +7363,12 @@ html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .win-preview
   background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02))!important;border:1px solid rgba(251,191,36,.45)!important;
   box-shadow:0 0 12px rgba(251,191,36,.15)!important}
 /* Payouts : couleur légère au repos, couleur pleine « eau » quand choisi. */
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip{--c:251,146,60;
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip{--c:200,145,46;
   background:linear-gradient(180deg,rgba(var(--c),.20),rgba(var(--c),.05))!important;border:1px solid rgba(var(--c),.55)!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.03) inset!important;transition:transform .1s,box-shadow .2s!important}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(2){--c:56,189,248}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(3){--c:167,139,250}
-html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(4){--c:251,191,36}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(2){--c:224,168,36}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(3){--c:242,193,78}
+html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip:nth-child(4){--c:247,215,116}
 html body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) .odds-chip.on{
   background:linear-gradient(120deg,rgba(var(--c),.85),rgba(var(--c),1) 35%,rgba(255,255,255,.55) 50%,rgba(var(--c),1) 65%,rgba(var(--c),.85))!important;
   background-size:250% 100%!important;animation:oroWater 3.2s ease-in-out infinite!important;border-color:rgba(255,255,255,.7)!important;
@@ -10495,7 +10495,7 @@ html:root body #casinoModal#casinoModal > .modal-box{background:
   linear-gradient(180deg,#1b150c 0%,#161108 55%,#120d06 100%)!important;color:#fff;padding-top:calc(env(safe-area-inset-top,0px) + 6px)!important}
 #casinoModal .modal-box > .bp-grip{display:none!important}
 html body #casinoModal .cs-bar{display:none!important}
-#casinoModal .cs-top{position:sticky;top:-8px;z-index:8;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px;margin:-6px -14px 10px;padding:6px 14px 8px;background:linear-gradient(180deg,rgba(18,10,44,.97) 70%,rgba(18,10,44,0))}
+#casinoModal .cs-top{position:sticky;top:-8px;z-index:8;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px;margin:-6px -14px 10px;padding:6px 14px 8px;background:linear-gradient(180deg,rgba(22,17,8,.97) 70%,rgba(22,17,8,0))}
 #casinoModal .cs-back,#casinoModal .cs-help{width:40px;height:40px;border:0;border-radius:14px;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 #casinoModal .cs-back svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 html[dir="rtl"] #casinoModal .cs-back svg{transform:scaleX(-1)}
