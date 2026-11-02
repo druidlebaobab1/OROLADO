@@ -98,7 +98,7 @@
     try {
       document.querySelectorAll('#assetBar .asset-chip').forEach(function (c, i) {
         var art = c.querySelector('.mk-art'), nm = c.querySelector('.mk-name');
-        if (!art || i > 3) return;
+        if (!art || i > 11) return;
         var svg = art.innerHTML.replace(/id="([^"]+)"/g, 'id="lg$1"').replace(/url\(#([^)]+)\)/g, 'url(#lg$1)').replace(/href="#([^"]+)"/g, 'href="#lg$1"');
         h += '<div class="lg-mk-i' + (i === 0 ? ' on' : '') + '"><i>' + svg + '</i><small>' + esc(nm ? nm.textContent : '') + '</small></div>';
       });
