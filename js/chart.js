@@ -1097,8 +1097,8 @@
         g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
       }
     }
-    halo(cx, cy, R * 0.26, 'rgba(200,205,215,0.01)');
-    halo(cx, cy, R * 0.11, 'rgba(210,215,225,0.012)');
+    halo(cx, cy, R * 0.26, 'rgba(200,205,215,0.004)');
+    halo(cx, cy, R * 0.11, 'rgba(210,215,225,0.005)');
     // v3232 (propriétaire) : plus de cercle autour de la spirale (il n'avait demandé que la pyramide).
     galaxy = null;
   }
@@ -1320,9 +1320,9 @@
     ];
     // v3236 (propriétaire) : intensité des planètes RÉDUITE (plus discrètes, relax) — on sent que
     // ce sont des planètes mais sans qu'elles accrochent l'œil. Bas remonté d'un chouïa.
-    planet(planets[0].x, planets[0].y, planets[0].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.04, false);
-    planet(planets[1].x, planets[1].y, planets[1].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.04, false);
-    planet(planets[2].x, planets[2].y, planets[2].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.04, false);
+    planet(planets[0].x, planets[0].y, planets[0].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.022, false);
+    planet(planets[1].x, planets[1].y, planets[1].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.022, false);
+    planet(planets[2].x, planets[2].y, planets[2].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.022, false);
     g.globalAlpha = 1;
     galaxy = null;
     try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
