@@ -6794,7 +6794,7 @@ html body #withdrawModal#withdrawModal .wd-bal-amt{color:transparent!important;b
 html body #withdrawModal#withdrawModal .wd-group-label{display:flex!important;align-items:center;gap:6px;font-weight:900!important;letter-spacing:.06em}
 html body #withdrawModal#withdrawModal .wd-group-label::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;flex:0 0 6px}
 html body #withdrawModal#withdrawModal .wd-group-label::after{content:"";flex:1 1 auto;height:1px;background:linear-gradient(90deg,currentColor,transparent);opacity:.6}
-html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(1){color:#5EEAD4!important}
+html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(1){color:#E6D9BC!important}
 html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(2){color:#E6D9BC!important}
 html body #withdrawModal#withdrawModal .wd-group-label:nth-of-type(3){color:#F4E2BE!important}
 /* Cases : verre coloré par groupe, bord lumineux, apparition en cascade. */
@@ -14085,9 +14085,10 @@ html body #depositModal#depositModal#depositModal .pay-method-card.on{border-col
 
 /* v3509 — Titres Recharge/Retrait calmés (plus de dégradé or vif) */
 html body #depositModal#depositModal#depositModal#depositModal .modal-title,
+/* 2026-11-02 (propriétaire) : plus de cadre autour du titre « Retrait » — juste le texte, léger, sans boîte (vue grille + vue formulaire). */
 html body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .modal-title{
   color:#E6D9BC!important;-webkit-text-fill-color:#E6D9BC!important;background-image:none!important;
-  background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important}
+  background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
 
 /* v3516 (propriétaire, URGENT) — Plein écran : les boutons zoom + / − / ↺ affichaient leur TEXTE
    (« + » « − ») par-dessus l'icône loupe (le plein écran remettait font-size:15px). On re-cache le
