@@ -1278,8 +1278,8 @@
         g.stroke();
       }
       var shade = g.createRadialGradient(x + r * 0.55, y + r * 0.6, r * 0.2, x + r * 0.2, y + r * 0.25, r * 1.4);
-      shade.addColorStop(0, 'rgba(5,5,20,0.55)');
-      shade.addColorStop(1, 'rgba(5,5,20,0)');
+      shade.addColorStop(0, 'rgba(9,8,6,0.55)');
+      shade.addColorStop(1, 'rgba(9,8,6,0)');
       g.fillStyle = shade;
       g.fillRect(x - r, y - r, r * 2, r * 2);
       g.restore();
@@ -1542,7 +1542,7 @@
         priceTxt: '#8C7E5C',
         timeTxt: '#8C7E5C',
         watermark: 'rgba(255,215,0,0.028)',
-        rsiBg: 'rgba(8,12,22,0.72)',
+        rsiBg: 'rgba(13,12,9,0.72)',
         rsiBorder: 'rgba(255,215,0,0.12)',
         rsiTxt: 'rgba(196,188,160,0.85)',
         maFast: 'rgba(255,213,79,0.95)',
@@ -1563,7 +1563,7 @@
       priceTxt: '#8C7E5C',
       timeTxt: '#8C7E5C',
       watermark: 'rgba(255,215,0,0.028)',
-      rsiBg: 'rgba(8,12,22,0.72)',
+      rsiBg: 'rgba(13,12,9,0.72)',
       rsiBorder: 'rgba(255,215,0,0.12)',
       rsiTxt: 'rgba(196,188,160,0.85)',
       maFast: 'rgba(255,213,79,0.95)',
@@ -4990,7 +4990,7 @@
     var bh = lines.length * lh + 5;
     var cx = isFinite(centerX) ? centerX : pad.l + (layout.axisX - pad.l) / 2;
     var bx = Math.max(pad.l + 2, Math.min(layout.axisX - bw - 2, cx - bw / 2));
-    ctx.fillStyle = 'rgba(10,14,24,0.82)';
+    ctx.fillStyle = 'rgba(14,13,10,0.82)';
     roundRectOn(ctx, bx, topY, bw, bh, 6);
     ctx.fill();
     // Légère couleur à l'intérieur (orange doux), comme le reste du site.
@@ -5952,7 +5952,7 @@
           var tw = Math.ceil(ctx.measureText(it[0]).width);
           var pw = tw + 20;
           ctx.globalAlpha = 1;
-          ctx.fillStyle = 'rgba(10,14,22,0.78)';
+          ctx.fillStyle = 'rgba(14,13,10,0.78)';
           roundRectOn(ctx, lx, ly, pw, lh, 8);
           ctx.fill();
           ctx.strokeStyle = 'rgba(255,255,255,0.08)';
