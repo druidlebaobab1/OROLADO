@@ -6,8 +6,8 @@
    devant les anciennes règles sans les toucher. Dessin seulement.
    ===================================================================== */
 :root{
-  --gx-bg0:#080817;
-  --gx-bg1:#0D0B24;
+  --gx-bg0:#0a0906;
+  --gx-bg1:#120f08;
   --gx-panel:rgba(20,18,48,.62);
   --gx-panel2:rgba(28,25,64,.72);
   --gx-line:rgba(150,140,255,.16);
@@ -25,9 +25,9 @@ html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
     url("galaxy-space.svg?v=2488") center top/cover no-repeat,
-    radial-gradient(120% 55% at 0% 0%,rgba(124,58,237,.26),transparent 62%),
+    radial-gradient(120% 55% at 0% 0%,rgba(200,145,46,.16),transparent 62%),
     radial-gradient(80% 45% at 100% 18%,rgba(255,138,0,.10),transparent 62%),
-    radial-gradient(110% 55% at 50% 112%,rgba(46,84,220,.20),transparent 62%),
+    radial-gradient(110% 55% at 50% 112%,rgba(150,110,40,.16),transparent 62%),
     linear-gradient(180deg,var(--gx-bg1) 0%,var(--gx-bg0) 100%)!important;
   background-color:var(--gx-bg0)!important;
 }
@@ -312,18 +312,18 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip{
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip .odds-mult{font-size:14px!important;font-weight:800!important;line-height:1.15!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip .odds-pct{font-size:8.5px!important;font-weight:800!important;letter-spacing:.12em!important;color:rgba(255,255,255,.7)!important;text-transform:uppercase!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"]:not(.on){background:rgba(249,115,22,.16)!important;border:1px solid #F97316!important;box-shadow:none!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"]:not(.on){background:rgba(200,145,46,.16)!important;border:1px solid #C8912E!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"]:not(.on) .odds-mult{color:#FDBA74!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"]:not(.on){background:rgba(6,182,212,.16)!important;border:1px solid #06B6D4!important;box-shadow:none!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"]:not(.on){background:rgba(224,168,36,.16)!important;border:1px solid #E0A824!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"]:not(.on) .odds-mult{color:#67E8F9!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"]:not(.on){background:rgba(168,85,247,.18)!important;border:1px solid #A855F7!important;box-shadow:none!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"]:not(.on){background:rgba(242,193,78,.16)!important;border:1px solid #F2C14E!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"]:not(.on) .odds-mult{color:#D8B4FE!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"]:not(.on){background:rgba(245,158,11,.16)!important;border:1px solid #F59E0B!important;box-shadow:none!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"]:not(.on){background:rgba(247,215,116,.16)!important;border:1px solid #F7D774!important;box-shadow:none!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"]:not(.on) .odds-mult{color:#FCD34D!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"].on{background:linear-gradient(180deg,#FB923C,#EA580C)!important;border:1px solid #FDBA74!important;box-shadow:0 0 16px rgba(249,115,22,.55)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"].on{background:linear-gradient(180deg,#22D3EE,#0891B2)!important;border:1px solid #A5F3FC!important;box-shadow:0 0 16px rgba(6,182,212,.55)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"].on{background:linear-gradient(180deg,#C084FC,#9333EA)!important;border:1px solid #E9D5FF!important;box-shadow:0 0 18px rgba(168,85,247,.55)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"].on{background:linear-gradient(180deg,#FBBF24,#D97706)!important;border:1px solid #FDE68A!important;box-shadow:0 0 18px rgba(245,158,11,.55)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="1.9"].on{background:linear-gradient(180deg,#D9A43A,#A86E1A)!important;border:1px solid #F2D79A!important;box-shadow:0 0 16px rgba(200,145,46,.55)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="5"].on{background:linear-gradient(180deg,#E8C04A,#B8860B)!important;border:1px solid #F6E3A0!important;box-shadow:0 0 16px rgba(224,168,36,.55)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="10"].on{background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border:1px solid #FBE7A8!important;box-shadow:0 0 18px rgba(242,193,78,.55)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip[data-odds="50"].on{background:linear-gradient(180deg,#F7D774,#E0A824)!important;border:1px solid #FFF2C4!important;box-shadow:0 0 18px rgba(247,215,116,.55)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip.on .odds-mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .odds-chip.on .odds-pct{color:#FFFFFF!important}
 
