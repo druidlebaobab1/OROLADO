@@ -4355,11 +4355,11 @@ html body #fsTradeOverlay .dur-chip.on,html body #fsTradeOverlay .dur-chip.activ
 /* ===== v2212 — Touches légères (thème noir) : Connexion / Inscription, Dépôt, Retrait. Bordures et reflets orange doux seulement ; mise en page non touchée ===== */
 html body #screenAuth .auth-card{border:1px solid rgba(247,147,26,0.17)!important;box-shadow:0 0 26px rgba(247,147,26,0.03),inset 0 1px 0 rgba(255,255,255,0.03)!important}
 html body #screenAuth .auth-tabs{border-color:rgba(247,147,26,0.15)!important}
-html body #screenAuth .auth-tab.on{background:linear-gradient(180deg,#FBA43A 0%,#F7931A 100%)!important;color:#0E0D0A!important;box-shadow:0 0 12px rgba(247,147,26,0.11)!important}
+html body #screenAuth .auth-tab.on{background:linear-gradient(180deg,#C9962F 0%,#9A6E1E 100%)!important;color:#0E0D0A!important;box-shadow:0 0 12px rgba(247,147,26,0.11)!important}
 html body #screenAuth .field label{color:#E9BC8C!important}
 html body #screenAuth input[type=text],html body #screenAuth input[type=email],html body #screenAuth input[type=password],html body #screenAuth input[type=tel],html body #screenAuth input:not([type]){border-color:rgba(247,147,26,0.2)!important;transition:border-color .15s,box-shadow .15s}
 html body #screenAuth input:focus{border-color:rgba(247,147,26,0.48)!important;box-shadow:0 0 0 3px rgba(247,147,26,0.05)!important;outline:none!important}
-html body #screenAuth .btn-gold,html body #depositModal .btn-gold,html body #withdrawModal .btn-gold{background:linear-gradient(180deg,#FBA43A 0%,#F7931A 100%)!important;box-shadow:0 4px 16px rgba(247,147,26,0.1),inset 0 1px 0 rgba(255,255,255,0.13)!important}
+html body #screenAuth .btn-gold,html body #depositModal .btn-gold,html body #withdrawModal .btn-gold{background:linear-gradient(180deg,#C9962F 0%,#9A6E1E 100%)!important;box-shadow:0 4px 16px rgba(247,147,26,0.1),inset 0 1px 0 rgba(255,255,255,0.13)!important}
 html body #screenAuth .auth-back{border-color:rgba(247,147,26,0.27)!important}
 html body #depositModal .modal-box,html body #withdrawModal .modal-box{border-color:rgba(247,147,26,0.23)!important;box-shadow:0 0 30px rgba(247,147,26,0.03)!important}
 html body #depositModal .dep-amt-input,html body #withdrawModal input[type=text],html body #withdrawModal input[type=number],html body #withdrawModal input[type=email],html body #withdrawModal input[type=tel]{border-color:rgba(247,147,26,0.18)!important}
@@ -6747,7 +6747,7 @@ html body #helpModal .field .help-in-ico svg{stroke:#fff!important;width:16px;he
 html body #helpModal .field .help-in-ico.msg{bottom:auto;top:30px;background:linear-gradient(135deg,#F2C14E,#E0A824)}
 /* Bouton Envoyer : or brillant avec reflet qui passe. */
 html body #helpModal .help-send{position:relative;overflow:hidden;border-radius:14px!important;min-height:48px;font-weight:900!important;
-  background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#150B00!important;
+  background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;color:#150B00!important;
   box-shadow:0 6px 20px rgba(251,191,36,.45),0 0 0 1px rgba(255,255,255,.35) inset!important}
 html body #helpModal .help-send::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);
   background-size:250% 100%;animation:instShine 2.8s ease-in-out infinite;pointer-events:none}
@@ -6869,7 +6869,7 @@ html body #withdrawModal#withdrawModal .wd-trust span{display:inline-block;paddi
 html body #withdrawModal#withdrawModal .btn-wd-confirm,html body #depositModal#depositModal .btn-deposit-confirm{position:relative;overflow:hidden}
 html body #withdrawModal#withdrawModal .btn-wd-confirm::after,html body #depositModal#depositModal .btn-deposit-confirm::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);background-size:250% 100%;animation:instShine 2.8s ease-in-out infinite}
-html body #withdrawModal#withdrawModal .btn-wd-confirm{background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#150B00!important;
+html body #withdrawModal#withdrawModal .btn-wd-confirm{background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;color:#150B00!important;
   box-shadow:0 6px 20px rgba(251,191,36,.45),0 0 0 1px rgba(255,255,255,.35) inset!important}
 
 /* --- Fenêtre RECHARGER --- */
@@ -7075,7 +7075,7 @@ html body #passModal input:focus,html body #emailModal input:focus,html body #ot
 html body #passModal label,html body #emailModal label,html body #otpModal label,html body #forgotModal label{color:#EDE2CC!important;font-weight:800!important}
 html body #passModal .otp-input,html body #emailModal .otp-input,html body #otpModal .otp-input,html body #forgotModal .otp-input{color:#FFE08A!important;font-weight:900!important;letter-spacing:.35em}
 html body #passModal .btn-gold,html body #emailModal .btn-gold,html body #otpModal .btn-gold,html body #forgotModal .btn-gold{position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#150B00!important;box-shadow:0 6px 18px rgba(251,191,36,.45)!important}
+  background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;color:#150B00!important;box-shadow:0 6px 18px rgba(251,191,36,.45)!important}
 html body #passModal .btn-gold::after,html body #emailModal .btn-gold::after,html body #otpModal .btn-gold::after,html body #forgotModal .btn-gold::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);background-size:250% 100%;animation:instShine 2.8s ease-in-out infinite}
 html body .otp-resend-link{color:#F2C14E!important;text-shadow:0 0 8px rgba(242,193,78,.5)}
@@ -7140,7 +7140,7 @@ html body #depositModal#depositModal #payMethodCard .pay-method-desc{padding-rig
 
 /* ===== v2444 — INSCRIPTION / CONNEXION : carte univers lumineuse, onglets dorés, cases vitrées, bouton brillant ===== */
 html body #screenAuth#screenAuth#screenAuth .auth-card{position:relative;
-  background:radial-gradient(110% 40% at 50% 0%,rgba(242,193,78,.05),rgba(242,193,78,0) 62%),
+  background:radial-gradient(110% 40% at 50% 0%,rgba(242,193,78,.02),rgba(242,193,78,0) 62%),
     radial-gradient(80% 45% at 0% 100%,rgba(242,193,78,.30),rgba(242,193,78,0) 65%),
     radial-gradient(80% 45% at 100% 85%,rgba(251,191,36,.20),rgba(251,191,36,0) 65%),
     linear-gradient(180deg,rgba(98,75,30,.92) 0%,rgba(92,69,22,.92) 55%,rgba(96,71,20,.92) 100%)!important;
@@ -7148,15 +7148,15 @@ html body #screenAuth#screenAuth#screenAuth .auth-card{position:relative;
   box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 34px rgba(242,193,78,.38),0 0 80px rgba(242,193,78,.18)!important}
 html body #screenAuth#screenAuth#screenAuth .auth-tabs{background:rgba(40,29,8,.45)!important;border:1px solid rgba(244,226,190,.35)!important}
 html body #screenAuth#screenAuth#screenAuth .auth-tab{color:#EDE2CC!important;background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.12)!important}
-html body #screenAuth#screenAuth#screenAuth .auth-tab.on{position:relative;overflow:hidden;background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#150B00!important;
-  border-color:rgba(255,255,255,.5)!important;box-shadow:0 0 16px rgba(251,191,36,.5)!important}
+html body #screenAuth#screenAuth#screenAuth .auth-tab.on{position:relative;overflow:hidden;background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;color:#150B00!important;
+  border-color:rgba(255,255,255,.5)!important;box-shadow:none!important}
 html body #screenAuth#screenAuth#screenAuth .field label{color:#EDE2CC!important;font-weight:800!important}
 html body #screenAuth#screenAuth#screenAuth .field input{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))!important;
   border:1px solid rgba(242,219,173,.45)!important;color:#fff!important;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset!important}
 html body #screenAuth#screenAuth#screenAuth .field input:focus{border-color:rgba(251,191,36,.9)!important;box-shadow:0 0 0 3px rgba(251,191,36,.18),0 0 16px rgba(251,191,36,.3)!important;outline:0}
 html body #screenAuth#screenAuth#screenAuth .field input::placeholder{color:rgba(250,242,225,.5)!important}
 html body #screenAuth#screenAuth#screenAuth .pass-toggle svg{stroke:#EDE2CC!important}
-html body #screenAuth#screenAuth#screenAuth form .btn-gold{position:relative;overflow:hidden;background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;
+html body #screenAuth#screenAuth#screenAuth form .btn-gold{position:relative;overflow:hidden;background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;
   color:#150B00!important;box-shadow:0 6px 22px rgba(251,191,36,.5),0 0 0 1px rgba(255,255,255,.35) inset!important}
 html body #screenAuth#screenAuth#screenAuth form .btn-gold::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);background-size:250% 100%;animation:instShine 2.8s ease-in-out infinite}
@@ -7265,7 +7265,7 @@ html body #depositWaitModal #btnDepositCheck{background:linear-gradient(135deg,#
   box-shadow:0 6px 20px rgba(34,197,94,.5)!important}
 html body #depositWaitModal .ghost-gold{background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.35)!important;color:#fff!important}
 html body #iosInstallModal .btn-gold,html body #tipModal .btn-gold,html body #termsModal .btn-gold{position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B)!important;color:#150B00!important;box-shadow:0 6px 18px rgba(251,191,36,.45)!important}
+  background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;color:#150B00!important;box-shadow:0 6px 18px rgba(251,191,36,.45)!important}
 
 /* ===== v2447 — Croix ✕ et retours ← bien lisibles dans les mini-planètes : symbole gros, épais, blanc, contour sombre ===== */
 html body .btn-close:not(#oroZ1):not(#oroZ2):not(#oroZ3):not(#oroZ4) .x-ico,
@@ -7623,7 +7623,7 @@ html[dir=rtl] .learn-modal .lg-step h3{margin:6px 26px 10px 0}
 .learn-modal .lg-trophy{font-size:44px;animation:dwFloat 2.6s ease-in-out infinite}
 .learn-modal .lg-end h3{margin:6px 0;font-size:20px;font-weight:900;color:#B9FFE0}
 .learn-modal .lg-end p{color:#EDE2CC;font-size:14px;line-height:1.5;margin:0 0 14px}
-.learn-modal .lg-cta{border:0;cursor:pointer;padding:13px 26px;border-radius:14px;font-weight:900;font-size:15px;color:#150B00;background:linear-gradient(135deg,#FFE08A,#FBBF24 45%,#F59E0B);box-shadow:0 6px 20px rgba(251,191,36,.45)}
+.learn-modal .lg-cta{border:0;cursor:pointer;padding:13px 26px;border-radius:14px;font-weight:900;font-size:15px;color:#150B00;background:linear-gradient(135deg,#C9962F,#9A6E1E);box-shadow:0 6px 20px rgba(251,191,36,.45)}
 .learn-modal .lg-sign{margin:14px 0 0!important;font-size:10px!important;opacity:.6;letter-spacing:.08em}
 /* Dessins */
 .learn-modal .lg-art{margin:4px 0 6px;padding:10px;border-radius:14px;background:rgba(36,27,8,.55);border:1px solid rgba(255,255,255,.08)}
