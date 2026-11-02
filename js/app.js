@@ -10392,8 +10392,11 @@
         window.__oroSwReload = 1;
         navigator.serviceWorker.addEventListener('controllerchange', function () {
           if (window.__oroSwReloaded) return;
-          // ne pas couper un trade en cours
-          if (document.documentElement.classList.contains('oro-trade-open')) return;
+          // 2026-11-02 (propriétaire : « c'est toujours pareil » alors qu'il reste sur l'écran de trading) :
+          // pendant un trade on ne recharge pas la page (on ne coupe pas la partie) MAIS on recharge la
+          // feuille de style en direct → le nouveau look (cadres du terminal, courbe sombre) apparaît
+          // tout de suite, sans attendre que le joueur quitte l'écran.
+          if (document.documentElement.classList.contains('oro-trade-open')) { try { oroHotSwapCss(); } catch (eH) {} return; }
           window.__oroSwReloaded = 1;
           try { location.reload(); } catch (e3) { location.href = location.pathname; }
         });
@@ -10408,6 +10411,25 @@
    * s'il est plus récent, la page se recharge discrètement quand le joueur revient sur l'onglet / l'appli,
    * jamais pendant un trade ouvert.
    */
+  // 2026-11-02 — recharge la feuille de style app.css en direct (cache-bust), sans recharger la page.
+  // Sert quand une nouvelle version arrive pendant que le joueur reste sur l'écran de trading.
+  function oroHotSwapCss() {
+    try {
+      var links = document.querySelectorAll('link[rel="stylesheet"][href*="css/app.css"]');
+      for (var i = 0; i < links.length; i++) {
+        (function (old) {
+          var base = (old.getAttribute('href') || '').split('?')[0];
+          if (!base) return;
+          var fresh = document.createElement('link');
+          fresh.rel = 'stylesheet';
+          fresh.href = base + '?v=' + Date.now();
+          fresh.onload = function () { try { if (old.parentNode) old.parentNode.removeChild(old); } catch (e) {} };
+          if (old.parentNode) old.parentNode.insertBefore(fresh, old.nextSibling);
+        })(links[i]);
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   function watchNewVersion() {
     var mine = 0;
     try {
