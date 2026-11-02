@@ -786,6 +786,10 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     // Plus de vérification toutes les 60 s pendant qu'on joue : seulement au retour sur le site.
     document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(check, 1500); });
     window.addEventListener('pageshow', function () { setTimeout(check, 1500); });
+    // 2026-11-02 : vérification douce toutes les 30 s AUSSI quand l'onglet reste ouvert au premier plan
+    // (compare sw.js à sw.js, ne recharge qu'une fois par version grâce à oro_upd_try : pas de boucle).
+    setInterval(function () { if (!document.hidden) check(); }, 30000);
+    setTimeout(check, 4000);
   })();
   </script>
   <script>
