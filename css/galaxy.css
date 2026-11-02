@@ -24,11 +24,9 @@
 html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
-    url("galaxy-space.svg?v=3426") center top/cover no-repeat,
-    radial-gradient(120% 55% at 0% 0%,rgba(200,145,46,.16),transparent 62%),
-    radial-gradient(80% 45% at 100% 18%,rgba(255,138,0,.10),transparent 62%),
-    radial-gradient(110% 55% at 50% 112%,rgba(150,110,40,.16),transparent 62%),
-    linear-gradient(180deg,var(--gx-bg1) 0%,var(--gx-bg0) 100%)!important;
+    url("galaxy-space.svg?v=3434") center top/cover no-repeat,
+    radial-gradient(150% 90% at 50% 40%,rgba(200,150,54,.06),transparent 72%),
+    linear-gradient(180deg,var(--gx-bg0) 0%,var(--gx-bg0) 100%)!important;
   background-color:var(--gx-bg0)!important;
 }
 html body #screenTrade#screenTrade .trade-shell,
