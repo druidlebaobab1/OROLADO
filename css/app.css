@@ -14035,7 +14035,7 @@ html body #btnPut.btn-put:not(:active):not(.is-lit):not(.btn-sent) .bt-txt,
 html body #btnPut.btn-put:not(:active):not(.is-lit):not(.btn-sent){color:#F6A6B2!important;-webkit-text-fill-color:#F6A6B2!important}
 html body #tradeWrap .btn-trade:not(:active):not(.is-lit):not(.btn-sent)::before{opacity:.35!important}
 html body #btnCall.btn-call:is(:active,.is-lit,.btn-sent) .bt-txt,
-html body #btnCall.btn-call:is(:active,.is-lit,.btn-sent){color:#04140C!important;-webkit-text-fill-color:#04140C!important}
+html body #btnCall.btn-call:is(:active,.is-lit,.btn-sent){color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important}
 html body #btnPut.btn-put:is(:active,.is-lit,.btn-sent) .bt-txt,
 html body #btnPut.btn-put:is(:active,.is-lit,.btn-sent){color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important}
 

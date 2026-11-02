@@ -19,7 +19,7 @@
   // Les 60 nouveaux marchés restent CACHÉS au public tant que NEW_PUBLIC = false :
   // seul le compte admin les voit, pour les tester en direct. Quand le propriétaire
   // valide, passer NEW_PUBLIC à true pour les montrer à tout le monde (une seule ligne).
-  var NEW_PUBLIC = false;
+  var NEW_PUBLIC = true;
   var NEW_IDS = {};
   ['quetzal','indra','garuda','enki','viracocha','morrigan','artemis','durga','vishnu','susanoo','ganesha','agni','shango','ogun','perun','inti','dagon','itzamna','sekhmet','ishtar','krishna','hanuman','yama','bishamon','inari','ryujin','bastet','thoth','sobek','nergal','shamash','enlil','veles','svarog','mictlan','xolotl','pachamama','oshun','yemoja','anansi','jupiter','neptune','pluto','vulcan','mercury','minerva','bellona','janus','fortuna','saturn','heimdall','tyr','njord','skadi','surtr','ymir','nut','geb','khonsu','maat'].forEach(function (id) { NEW_IDS[id] = 1; });
   function isAdminNow() {
