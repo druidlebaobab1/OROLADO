@@ -1853,7 +1853,7 @@
         ctx.shadowColor = up ? 'rgba(224,0,27,0.55)' : 'rgba(122,0,12,0.6)';
         ctx.shadowBlur = 8;
       } else if (opts.nexusCyber && i === candles.length - 1) {
-        ctx.shadowColor = up ? 'rgba(219,158,36,0.55)' : 'rgba(183,132,30,0.4)';
+        ctx.shadowColor = up ? 'rgba(120,130,110,0.25)' : 'rgba(110,110,120,0.2)';
         ctx.shadowBlur = 8;
       } else if (opts.horizonOrange && i === candles.length - 1) {
         ctx.shadowColor = 'rgba(255,152,0,0.5)';
