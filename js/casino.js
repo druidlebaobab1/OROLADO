@@ -594,10 +594,10 @@
   // v2742 (propriétaire) : la manette transparente violet-rose (le logo « Jeux » du bouton du haut)
   function padIcon() {
     var id = 'pd' + (++gn);
-    return '<svg class="cs-padico" viewBox="0 6 64 52" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#A78BFA"/><stop offset="1" stop-color="#F472B6"/></linearGradient></defs>' +
-      '<path d="M17 18h30c8 0 12 6 13.5 14l2 11c1.2 7-5 11-10 7l-8-7H19.5l-8 7c-5 4-11.2 0-10-7l2-11C5 24 9 18 17 18z" fill="rgba(167,139,250,.14)" stroke="url(#' + id + ')" stroke-width="3"/>' +
+    return '<svg class="cs-padico" viewBox="0 6 64 52" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F7D774"/><stop offset="1" stop-color="#C8912E"/></linearGradient></defs>' +
+      '<path d="M17 18h30c8 0 12 6 13.5 14l2 11c1.2 7-5 11-10 7l-8-7H19.5l-8 7c-5 4-11.2 0-10-7l2-11C5 24 9 18 17 18z" fill="rgba(242,193,78,.14)" stroke="url(#' + id + ')" stroke-width="3"/>' +
       '<g transform="translate(18 31)" fill="url(#' + id + ')"><rect x="-2.6" y="-7.5" width="5.2" height="15" rx="1.4"/><rect x="-7.5" y="-2.6" width="15" height="5.2" rx="1.4"/></g>' +
-      '<g transform="translate(46 31)"><circle cy="-5.2" r="2.5" fill="#22C55E"/><circle cx="5.2" r="2.5" fill="#EF4444"/><circle cx="-5.2" r="2.5" fill="#3B82F6"/><circle cy="5.2" r="2.5" fill="#FACC15"/></g></svg>';
+      '<g transform="translate(46 31)"><circle cy="-5.2" r="2.5" fill="#22C55E"/><circle cx="5.2" r="2.5" fill="#EF4444"/><circle cx="-5.2" r="2.5" fill="#E0A824"/><circle cy="5.2" r="2.5" fill="#FACC15"/></g></svg>';
   }
   function modeSwitch() { return ''; }
   function bindMode() { /* plus de choix réel / démo */ }
