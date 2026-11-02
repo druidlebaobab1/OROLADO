@@ -218,7 +218,7 @@
   // v3401 (propriétaire) — vrais logos 3D réalistes (fal.ai) pour le menu Social, au lieu des dessins SVG.
   var SOC_IMG = { duel: 1, news: 1, friends: 1, groups: 1, chat: 1, myid: 1, levels: 1, missions: 1, quiz: 1, record: 1, stats: 1, badges: 1, learn: 1, gifts: 1, wheel: 1, target: 1, bonus: 1, bonus2: 1, jauge: 1, invite: 1 };
   D6.LiveIcon = function (k, cls) {
-    if (SOC_IMG[k]) return '<img class="li-ico li-img' + (cls ? ' ' + cls : '') + '" src="img/social/' + k + '.webp?v=3411" alt="" loading="lazy" draggable="false">';
+    if (SOC_IMG[k]) return '<img class="li-ico li-img' + (cls ? ' ' + cls : '') + '" src="img/social/' + k + '.webp?v=3428" alt="" loading="lazy" draggable="false">';
     return k === 'send' ? sendLogo(cls) : icon(k, cls);
   };
   D6.LiveColor = color;
