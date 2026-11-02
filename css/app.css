@@ -13856,3 +13856,11 @@ html:root body #modeSwitcher .ms-plus span{display:none!important}
 /* v3430 — « + » de la pastille solde du lobby : même signe géométrique centré, couleur du bouton. */
 html:root body #casinoModal .cw-plus{padding:0!important}
 html:root body #casinoModal .cw-plus .ms-plus-ico{width:17px;height:17px;display:block;fill:currentColor;filter:drop-shadow(0 1px 0 rgba(0,0,0,.15))}
+
+/* v3431 — OVNI du chargement : traînée de feu dorée, plus dramatique (flamme qui vacille derrière la soucoupe). */
+html #oroLoader .ol-ufo{overflow:visible}
+html #oroLoader .ol-ufo::before{content:"";position:absolute;top:52%;right:86%;width:60px;height:16px;transform:translateY(-50%);
+  background:linear-gradient(90deg,rgba(255,110,20,0) 0%,rgba(255,140,40,.45) 38%,rgba(255,190,80,.85) 72%,rgba(255,230,150,.98) 100%);
+  border-radius:50% 50% 50% 50%/60% 60% 60% 60%;filter:blur(3px);pointer-events:none;
+  animation:olUfoFire .16s steps(2,end) infinite}
+@keyframes olUfoFire{0%{opacity:.7;width:50px}50%{opacity:1;width:66px}100%{opacity:.82;width:56px}}
