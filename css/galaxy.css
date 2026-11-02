@@ -24,7 +24,7 @@
 html body #screenTrade#screenTrade,
 html body #fsTradeOverlay#fsTradeOverlay{
   background:
-    url("galaxy-space.svg?v=2488") center top/cover no-repeat,
+    url("galaxy-space.svg?v=3426") center top/cover no-repeat,
     radial-gradient(120% 55% at 0% 0%,rgba(200,145,46,.16),transparent 62%),
     radial-gradient(80% 45% at 100% 18%,rgba(255,138,0,.10),transparent 62%),
     radial-gradient(110% 55% at 50% 112%,rgba(150,110,40,.16),transparent 62%),
@@ -178,7 +178,7 @@ html body #tradeWrap#tradeWrap .asset-chip .mk-art{position:relative!important}
 html body .asset-chip .mk-art .idx-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:2;pointer-events:none}
 html body #tradeWrap#tradeWrap .asset-chip .mk-name{
   display:block!important;font-size:10px!important;font-weight:800!important;letter-spacing:.04em!important;line-height:1.2!important;
-  color:#AEB0D6!important;white-space:nowrap!important;max-width:70px!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  color:#D9CDB0!important;white-space:nowrap!important;max-width:70px!important;overflow:hidden!important;text-overflow:ellipsis!important;
   padding-bottom:3px!important;border-bottom:2px solid transparent!important;
 }
 html body #tradeWrap#tradeWrap .asset-chip.on .mk-art{
@@ -202,8 +202,8 @@ html body #tradeWrap#tradeWrap .ind-btn{
   font-size:11px!important;font-weight:800!important;
 }
 html body #tradeWrap#tradeWrap .ind-btn[data-ind="ma"]{color:#FBBF24!important}
-html body #tradeWrap#tradeWrap .ind-btn[data-ind="bb"]{color:#A78BFA!important}
-html body #tradeWrap#tradeWrap .ind-btn[data-ind="ema"]{color:#22D3EE!important}
+html body #tradeWrap#tradeWrap .ind-btn[data-ind="bb"]{color:#E0A824!important}
+html body #tradeWrap#tradeWrap .ind-btn[data-ind="ema"]{color:#F2C14E!important}
 html body #tradeWrap#tradeWrap .ind-btn.on,
 html body #tradeWrap#tradeWrap .ind-btn.active{background:rgba(255,255,255,.14)!important;border-color:currentColor!important}
 /* zoom + / − / retour : icônes loupe propres, sans cadre lourd */
@@ -247,13 +247,13 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip{
   border-radius:10px!important;font-size:11.5px!important;font-weight:800!important;letter-spacing:-.01em!important;white-space:nowrap!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip:not(.on):not(.active):not(.tap-lit){
-  background:linear-gradient(180deg,rgba(56,189,248,.16),rgba(56,189,248,.04))!important;border:1px solid rgba(56,189,248,.45)!important;
-  color:#BAE6FD!important;box-shadow:0 0 8px rgba(56,189,248,.14)!important;
+  background:linear-gradient(180deg,rgba(242,193,78,.16),rgba(242,193,78,.04))!important;border:1px solid rgba(242,193,78,.45)!important;
+  color:#F7D774!important;box-shadow:0 0 8px rgba(242,193,78,.14)!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip.on,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip.active{
-  background:linear-gradient(180deg,#7DD3FC,#0EA5E9)!important;border:1px solid #BAE6FD!important;color:#04202E!important;
-  box-shadow:0 0 10px rgba(56,189,248,.5)!important;
+  background:linear-gradient(180deg,#F2C14E,#C8912E)!important;border:1px solid #F7D774!important;color:#04202E!important;
+  box-shadow:0 0 10px rgba(242,193,78,.5)!important;
 }
 /* mise : couleur du compte (démo orange, réel vert) */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .stake-field{
@@ -281,7 +281,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .stake-min-actions{
 html:not(.fs-trade) body #tradeWrap#tradeWrap .qbtn.stake-act{
   width:auto!important;min-width:0!important;height:28px!important;min-height:28px!important;padding:0!important;margin:0!important;
   border-radius:8px!important;font-size:12px!important;font-weight:800!important;line-height:1!important;
-  background:linear-gradient(180deg,rgba(56,189,248,.12),rgba(56,189,248,.03))!important;border:1px solid rgba(56,189,248,.32)!important;
+  background:linear-gradient(180deg,rgba(242,193,78,.12),rgba(242,193,78,.03))!important;border:1px solid rgba(242,193,78,.32)!important;
   color:#D6EEFF!important;box-shadow:none!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .qbtn.stake-plus1{color:#FFB65C!important}
@@ -505,7 +505,7 @@ html body #tradeWrap#tradeWrap .asset-chip[data-asset="goldtrend"]{--p1:#FFE29A;
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="boomspike"]{--p1:#8CFFC6;--p2:#006B37;--pg:rgba(0,230,118,.4)}
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="nexusprime"]{--p1:#9DF4FF;--p2:#006A8A;--pg:rgba(0,229,255,.45)}
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="v75"]{--p1:#FF9CC2;--p2:#8C0036;--pg:rgba(255,45,117,.45)}
-html body #tradeWrap#tradeWrap .asset-chip[data-asset="titanpulse"]{--p1:#CDBBFF;--p2:#3B1E8C;--pg:rgba(167,139,250,.5)}
+html body #tradeWrap#tradeWrap .asset-chip[data-asset="titanpulse"]{--p1:#CDBBFF;--p2:#3B1E8C;--pg:rgba(224,168,36,.5)}
 html body #tradeWrap#tradeWrap .asset-chip .mk-art{
   width:50px!important;height:50px!important;border-radius:50%!important;display:grid!important;place-items:center!important;
   background:
@@ -576,18 +576,18 @@ html body #screenTrade#screenTrade #topbarCta.topbar-cta .crypto-mini-row .coin-
 /* terminal bleu transparent, avec un peu d'univers dedans */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{
   background:
-    radial-gradient(70% 60% at 100% 0%,rgba(56,189,248,.16),transparent 70%),
+    radial-gradient(70% 60% at 100% 0%,rgba(242,193,78,.16),transparent 70%),
     radial-gradient(60% 60% at 0% 100%,rgba(99,102,241,.16),transparent 70%),
     linear-gradient(180deg,rgba(14,52,96,.40),rgba(6,22,52,.56))!important;
-  border:1px solid rgba(56,189,248,.40)!important;
-  box-shadow:inset 0 1px 0 rgba(186,230,253,.14),0 0 26px rgba(56,189,248,.10)!important;
+  border:1px solid rgba(242,193,78,.40)!important;
+  box-shadow:inset 0 1px 0 rgba(186,230,253,.14),0 0 26px rgba(242,193,78,.10)!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
-  background:linear-gradient(180deg,rgba(56,189,248,.22),rgba(56,189,248,.06))!important;border:1px solid rgba(56,189,248,.6)!important;
-  box-shadow:inset 0 1px 0 rgba(186,230,253,.18),0 0 12px rgba(56,189,248,.14)!important;
+  background:linear-gradient(180deg,rgba(242,193,78,.22),rgba(242,193,78,.06))!important;border:1px solid rgba(242,193,78,.6)!important;
+  box-shadow:inset 0 1px 0 rgba(186,230,253,.18),0 0 12px rgba(242,193,78,.14)!important;
 }
-html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F0F9FF!important;text-shadow:0 0 12px rgba(125,211,252,.55)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult{background:rgba(14,165,233,.28)!important;color:#BAE6FD!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F0F9FF!important;text-shadow:0 0 12px rgba(242,193,78,.55)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult{background:rgba(200,145,46,.28)!important;color:#F7D774!important}
 
 /* plein écran : la case de mise a la même taille et la même forme qu'ACHETER / VENDRE */
 html.fs-trade body #tradeWrap#tradeWrap .pad{gap:8px!important;align-items:stretch!important}
@@ -604,7 +604,7 @@ html.fs-trade body #tradeWrap#tradeWrap #inputStake{
 html.fs-trade body:where(.oro-real):not(#oroQ):not(.oroQ) #tradeWrap#tradeWrap #inputStake{border-color:rgba(34,224,122,.85)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(34,224,122,.2)!important}
 html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
   font-size:12px!important;font-weight:800!important;color:#F0F9FF!important;text-align:center!important;letter-spacing:.01em!important;
-  text-shadow:0 0 8px rgba(125,211,252,.45)!important;
+  text-shadow:0 0 8px rgba(242,193,78,.45)!important;
 }
 
 /* =====================================================================
@@ -613,11 +613,11 @@ html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
 /* page connexion / inscription : univers violet */
 html body #screenAuth#screenAuth{
   background:
-    linear-gradient(180deg,rgba(10,8,30,.30),rgba(10,8,30,.55)),
+    linear-gradient(180deg,rgba(16,13,8,.30),rgba(16,13,8,.55)),
     url("galaxy-space2.svg?v=2367") center top/cover no-repeat,
-    radial-gradient(120% 60% at 0% 0%,rgba(124,58,237,.30),transparent 62%),
+    radial-gradient(120% 60% at 0% 0%,rgba(200,145,46,.30),transparent 62%),
     radial-gradient(90% 50% at 100% 100%,rgba(255,138,0,.12),transparent 62%),
-    linear-gradient(180deg,#0E0B28,#080817)!important;
+    linear-gradient(180deg,#120F08,#0A0906)!important;
 }
 /* fenêtres (dépôt, retrait, aide, mot de passe…) : univers bleu nuit, très léger */
 html body .modal-backdrop .modal-box{
@@ -648,7 +648,7 @@ html body #withdrawModal .modal-box{
 /* profil : nuance violette */
 html body #drawerProfile#drawerProfile{
   background:
-    radial-gradient(90% 40% at 100% 0%,rgba(168,85,247,.18),transparent 65%),
+    radial-gradient(90% 40% at 100% 0%,rgba(200,145,46,.18),transparent 65%),
     linear-gradient(180deg,rgba(16,10,36,.66),rgba(9,7,24,.80)),
     url("galaxy-space2.svg?v=2367") center/cover no-repeat,
     #0C0820!important;
@@ -671,12 +671,12 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .qbtn.stake-plus1,
 html:not(.fs-trade) body #screenTrade.mode-real #tradeWrap#tradeWrap .qbtn.stake-plus1{color:#D6EEFF!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap #inputStake,
 html:not(.fs-trade) body #screenTrade.mode-real #tradeWrap#tradeWrap #inputStake{
-  border-color:rgba(56,189,248,.75)!important;background:linear-gradient(180deg,rgba(14,52,96,.55),rgba(6,22,52,.7))!important;
-  box-shadow:inset 0 1px 6px rgba(0,0,0,.35),0 0 12px rgba(56,189,248,.22)!important;
+  border-color:rgba(242,193,78,.75)!important;background:linear-gradient(180deg,rgba(14,52,96,.55),rgba(6,22,52,.7))!important;
+  box-shadow:inset 0 1px 6px rgba(0,0,0,.35),0 0 12px rgba(242,193,78,.22)!important;
 }
 html.fs-trade body #tradeWrap#tradeWrap #inputStake,
 html.fs-trade body:where(.oro-real):not(#oroQ):not(.oroQ) #tradeWrap#tradeWrap #inputStake{
-  border-color:rgba(56,189,248,.8)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(56,189,248,.22)!important;
+  border-color:rgba(242,193,78,.8)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(242,193,78,.22)!important;
 }
 
 /* la case du gain : effet glace / givre, qui donne envie */
@@ -693,7 +693,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
   background-repeat:no-repeat!important;
   animation:gxIceShine 4.2s ease-in-out infinite!important;
   border:1px solid rgba(214,240,255,.9)!important;
-  box-shadow:inset 0 0 16px rgba(224,244,255,.45),inset 0 -6px 12px rgba(10,60,120,.35),0 0 20px rgba(125,211,252,.40),0 6px 16px rgba(0,0,0,.25)!important;
+  box-shadow:inset 0 0 16px rgba(224,244,255,.45),inset 0 -6px 12px rgba(10,60,120,.35),0 0 20px rgba(242,193,78,.40),0 6px 16px rgba(0,0,0,.25)!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::before{
   content:""!important;display:block!important;position:absolute!important;right:5px!important;top:4px!important;width:15px!important;height:15px!important;opacity:.85!important;pointer-events:none!important;
@@ -723,7 +723,7 @@ html body #screenAuth#screenAuth .auth-card{
 /* conditions d'utilisation : effet planète bien visible ; aide : léger */
 html body #termsModal .modal-box{
   background:
-    radial-gradient(70% 40% at 100% 0%,rgba(124,58,237,.22),transparent 65%),
+    radial-gradient(70% 40% at 100% 0%,rgba(200,145,46,.22),transparent 65%),
     linear-gradient(180deg,rgba(12,12,36,.52),rgba(8,8,26,.70)),
     url("galaxy-space2.svg?v=2367") center/cover no-repeat,
     #0B0D22!important;
@@ -767,20 +767,20 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
   background-repeat:no-repeat!important;
   animation:gxIceShine 5s ease-in-out infinite!important;
   border:1px solid rgba(186,230,253,.72)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.28)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.28)!important;
   transition:box-shadow .35s ease,border-color .35s ease!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F4FBFF!important;text-shadow:0 0 8px rgba(160,220,255,.7),0 1px 2px rgba(4,30,80,.7)!important}
 /* une petite lueur de la couleur du payout choisi (sans casser le bleu) */
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 10px rgba(249,115,22,.30)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(6,182,212,.40)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(168,85,247,.40)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(125,211,252,.25),0 0 12px rgba(245,158,11,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.25),0 0 10px rgba(249,115,22,.30)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(200,145,46,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(200,145,46,.40)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 18px rgba(160,220,255,.22),inset 0 -10px 16px rgba(4,36,96,.38),0 0 16px rgba(242,193,78,.25),0 0 12px rgba(245,158,11,.40)!important}
 /* « Payout 88% » sous le montant prend la couleur du payout choisi */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult{transition:background .3s ease,border-color .3s ease!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(249,115,22,.55)!important;border-color:rgba(253,186,116,.8)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(6,182,212,.55)!important;border-color:rgba(165,243,252,.8)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(168,85,247,.55)!important;border-color:rgba(233,213,255,.8)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(200,145,46,.55)!important;border-color:rgba(247,215,116,.8)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(200,145,46,.55)!important;border-color:rgba(247,215,116,.8)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(245,158,11,.6)!important;border-color:rgba(253,230,138,.85)!important}
 
 /* plein écran : le haut (DÉMO / COMPTE RÉEL / QUITTER) et les marchés prennent moins de place → courbe plus grande */
@@ -811,9 +811,9 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark.sm{
 /* connexion / inscription : univers sans planètes */
 html body #screenAuth#screenAuth{
   background:
-    linear-gradient(180deg,rgba(10,8,30,.25),rgba(10,8,30,.5)),
-    url("galaxy-auth.svg?v=2367") center top/cover no-repeat,
-    linear-gradient(180deg,#0E0B28,#080817)!important;
+    linear-gradient(180deg,rgba(16,13,8,.25),rgba(16,13,8,.5)),
+    url("galaxy-auth.svg?v=3426") center top/cover no-repeat,
+    linear-gradient(180deg,#120F08,#0A0906)!important;
 }
 
 /* case du gain : plus douce ; le payout choisi se voit juste par un fin trait de couleur en bas */
@@ -825,22 +825,22 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
     linear-gradient(160deg,rgba(90,170,235,.24) 0%,rgba(30,100,190,.24) 55%,rgba(8,46,118,.40) 100%)!important;
   background-size:240% 100%,100% 100%,100% 100%,100% 100%!important;
   border:1px solid rgba(160,215,250,.55)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),0 0 8px rgba(125,211,252,.16)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),0 0 8px rgba(242,193,78,.16)!important;
 }
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(249,115,22,.75),0 0 8px rgba(125,211,252,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(6,182,212,.8),0 0 8px rgba(125,211,252,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(168,85,247,.8),0 0 8px rgba(125,211,252,.16)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(245,158,11,.8),0 0 8px rgba(125,211,252,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(249,115,22,.75),0 0 8px rgba(242,193,78,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(200,145,46,.8),0 0 8px rgba(242,193,78,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(200,145,46,.8),0 0 8px rgba(242,193,78,.16)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -8px 14px rgba(4,36,96,.32),inset 0 -2px 0 rgba(245,158,11,.8),0 0 8px rgba(242,193,78,.16)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(249,115,22,.20)!important;border-color:rgba(253,186,116,.45)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(6,182,212,.20)!important;border-color:rgba(165,243,252,.45)!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(168,85,247,.20)!important;border-color:rgba(233,213,255,.45)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(200,145,46,.20)!important;border-color:rgba(247,215,116,.45)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(200,145,46,.20)!important;border-color:rgba(247,215,116,.45)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(245,158,11,.22)!important;border-color:rgba(253,230,138,.5)!important}
 
 /* Aide : univers sérieux (sans planètes, sombre) */
 html body #helpModal .modal-box{
   background:
     linear-gradient(180deg,rgba(10,12,34,.72),rgba(6,8,24,.84)),
-    url("galaxy-auth.svg?v=2367") center/cover no-repeat,
+    url("galaxy-auth.svg?v=3426") center/cover no-repeat,
     #0A0C20!important;
   border-color:rgba(120,150,255,.24)!important;
 }
@@ -848,10 +848,10 @@ html body #helpModal .modal-box{
 html body .lang-dd-menu{
   background:
     linear-gradient(180deg,rgba(12,12,36,.80),rgba(8,8,26,.90)),
-    url("galaxy-auth.svg?v=2367") center/cover no-repeat,
+    url("galaxy-auth.svg?v=3426") center/cover no-repeat,
     #0B0C22!important;
   border:1px solid rgba(150,140,255,.26)!important;
-  box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(124,58,237,.18)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 18px rgba(200,145,46,.18)!important;
 }
 /* logo rond : pas de rond ni de halo en plus autour (le logo a déjà son cercle) */
 html body #screenAuth#screenAuth .logo-mark{box-shadow:none!important;border-radius:0!important}
@@ -859,7 +859,7 @@ html body #screenTrade#screenTrade #brandLockup .logo-mark{filter:none!important
 /* inscription / connexion : plus de lueur de pyramide derrière la carte */
 html body #screenAuth#screenAuth .auth-ambient{background:none!important}
 /* liste des langues : effet galaxie bien visible */
-html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=2488") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(124,58,237,.28)!important}
+html body .lang-dd-menu.lang-dd-menu{background:linear-gradient(180deg,rgba(14,10,40,.52),rgba(8,8,28,.66)),url("galaxy-space.svg?v=3426") center top/cover no-repeat,#0D0B26!important;border:1px solid rgba(170,150,255,.32)!important;box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 22px rgba(200,145,46,.28)!important}
 /* COMPTE RÉEL : petit portefeuille à droite, comme avant */
 html body #screenTrade#screenTrade #modeSwitcher > .mode-btn[data-mode="real"],html body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn[data-mode="real"]{padding-right:40px!important}
 html body .mode-btn[data-mode="real"] .mb-wal{position:absolute!important;right:10px!important;top:50%!important;transform:translateY(-50%)!important;width:24px!important;height:24px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:rgba(0,230,118,.14)!important;border:1px solid rgba(0,230,118,.45)!important;color:#4BE69A!important}
@@ -952,7 +952,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip{
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip::before{
   content:""!important;display:block!important;width:10px!important;height:10px!important;flex:0 0 auto!important;opacity:.85!important;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23BAE6FD' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='13.5' r='8'/%3E%3Cpath d='M12 9.5v4l2.6 1.8M9.5 2.5h5M12 2.5v3'/%3E%3C/svg%3E") center/contain no-repeat!important;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F7D774' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='12' cy='13.5' r='8'/%3E%3Cpath d='M12 9.5v4l2.6 1.8M9.5 2.5h5M12 2.5v3'/%3E%3C/svg%3E") center/contain no-repeat!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip.on::before,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .dur-chip.active::before{
@@ -1070,7 +1070,7 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-mode-btn.mode-btn{width:au
    ===================================================================== */
 /* fond de l'écran : plus de « noir » en bas ni derrière le terminal, un bleu nuit qui va avec la courbe */
 html body #screenTrade#screenTrade,
-html body #fsTradeOverlay#fsTradeOverlay{background-color:#0F1338!important}
+html body #fsTradeOverlay#fsTradeOverlay{background-color:#121009!important}
 html body #screenTrade#screenTrade::after{
   content:""!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;height:46%!important;
   background:linear-gradient(180deg,rgba(18,30,78,0) 0%,rgba(20,34,86,.55) 45%,rgba(22,38,94,.75) 100%)!important;
@@ -1135,17 +1135,17 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .fs-trade-close{
 /* case du gain : couleur normale du terminal bleu (plus de givre, plus de couleur de payout) */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds]):not(.oroQ):not(.oroQ2) .win-preview{
-  background:linear-gradient(180deg,rgba(56,189,248,.18),rgba(56,189,248,.05))!important;
-  border:1px solid rgba(56,189,248,.5)!important;
-  box-shadow:0 0 8px rgba(56,189,248,.14)!important;
+  background:linear-gradient(180deg,rgba(242,193,78,.18),rgba(242,193,78,.05))!important;
+  border:1px solid rgba(242,193,78,.5)!important;
+  box-shadow:0 0 8px rgba(242,193,78,.14)!important;
   animation:none!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::before,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview::after{display:none!important;content:none!important}
-html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F0F9FF!important;text-shadow:0 0 8px rgba(125,211,252,.4)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .amount{color:#F0F9FF!important;text-shadow:0 0 8px rgba(242,193,78,.4)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds]):not(.oroQ):not(.oroQ2) .win-preview .mult{
-  background:rgba(14,165,233,.22)!important;border:1px solid rgba(125,211,252,.35)!important;color:#BAE6FD!important;
+  background:rgba(200,145,46,.22)!important;border:1px solid rgba(242,193,78,.35)!important;color:#F7D774!important;
 }
 
 /* plein écran (téléphone) : logos un peu plus petits, tous de la même taille, un espace sous DÉMO / COMPTE RÉEL,
@@ -1162,10 +1162,10 @@ html.fs-trade body #tradeWrap#tradeWrap .asset-chip.on .mk-name{border-bottom:0!
   html body #tradeWrap#tradeWrap .chart-card::after{
     content:""!important;display:block!important;position:absolute!important;top:0!important;bottom:0!important;left:0!important;right:0!important;
     pointer-events:none!important;z-index:26!important;
-    background:linear-gradient(90deg,rgba(15,19,56,.95) 0,rgba(15,19,56,0) 34px,rgba(15,19,56,0) calc(100% - 34px),rgba(15,19,56,.95) 100%)!important;
+    background:linear-gradient(90deg,rgba(18,16,9,.95) 0,rgba(18,16,9,0) 34px,rgba(18,16,9,0) calc(100% - 34px),rgba(18,16,9,.95) 100%)!important;
   }
   html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{background:transparent!important}
-  html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(90deg,rgba(15,19,56,.95),rgba(20,34,86,.7))!important}
+  html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(90deg,rgba(18,16,9,.95),rgba(20,34,86,.7))!important}
 }
 html.oro-guest body #screenTrade#screenTrade #authQuick #btnGoRegister{margin-left:4px!important}
 
@@ -1209,11 +1209,11 @@ html.fs-trade body #tradeWrap#tradeWrap .pad{background:linear-gradient(180deg,r
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:0 0 8px rgba(56,189,248,.14)!important;border-color:rgba(56,189,248,.5)!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview{box-shadow:0 0 8px rgba(242,193,78,.14)!important;border-color:rgba(242,193,78,.5)!important}
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="1.9"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="5"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="10"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult,
-html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(14,165,233,.22)!important;border:1px solid rgba(125,211,252,.35)!important;color:#BAE6FD!important}
+html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):not(.oroQ):not(.oroQ2):not(.oroQ3) .win-preview .mult{background:rgba(200,145,46,.22)!important;border:1px solid rgba(242,193,78,.35)!important;color:#F7D774!important}
 
 /* non inscrit : Connexion et Inscription plus larges ; même espace entre OROLADO et Connexion qu'entre Inscription et Aide */
 @media (max-width:859px){
@@ -1228,7 +1228,7 @@ html:not(.fs-trade) body #tradeWrap#tradeWrap .pad:where([data-hz-odds="50"]):no
   html body #screenTrade#screenTrade,
   html.fs-trade body #fsTradeOverlay#fsTradeOverlay{
     background:
-      radial-gradient(90% 40% at 0% 0%,rgba(124,58,237,.16),transparent 62%),
+      radial-gradient(90% 40% at 0% 0%,rgba(200,145,46,.16),transparent 62%),
       linear-gradient(180deg,rgb(22,19,12) 0%,rgb(19,16,10) 55%,rgb(14,12,8) 100%)!important;
     background-color:rgb(14,14,44)!important;
   }
@@ -1322,7 +1322,7 @@ html body #drawerProfile#drawerProfile .drawer-section{
 }
 html body #drawerProfile#drawerProfile .drawer-item{background:transparent!important;border-color:rgba(150,140,255,.14)!important}
 html body #drawerProfile#drawerProfile .drawer-item .di-ico{
-  color:#C9B8FF!important;background:rgba(124,58,237,.22)!important;border-radius:10px!important;padding:5px!important;box-sizing:content-box!important;
+  color:#C9B8FF!important;background:rgba(200,145,46,.22)!important;border-radius:10px!important;padding:5px!important;box-sizing:content-box!important;
 }
 html body #drawerProfile#drawerProfile .drawer-item.drawer-logout{
   background:linear-gradient(180deg,rgba(255,77,94,.22),rgba(200,30,50,.16))!important;border:1px solid rgba(255,110,125,.55)!important;border-radius:12px!important;color:#FFC2C9!important;
@@ -1365,7 +1365,7 @@ html.fs-trade body #tradeWrap#tradeWrap .asset-chip.on .mk-art{
 
 /* page profil : la ligne du haut (PROFIL et la croix) n'est plus noire, l'univers passe derrière */
 html body #drawerProfile#drawerProfile .drawer-head{background:transparent!important;border-bottom:1px solid rgba(150,140,255,.18)!important;box-shadow:none!important}
-html body #drawerProfile#drawerProfile .drawer-head .btn-close{background:rgba(124,58,237,.22)!important;border:1px solid rgba(170,150,255,.45)!important;color:#E9DDFF!important}
+html body #drawerProfile#drawerProfile .drawer-head .btn-close{background:rgba(200,145,46,.22)!important;border:1px solid rgba(170,150,255,.45)!important;color:#E9DDFF!important}
 /* Safari iPhone : sous la barre de Safari, l'univers continue (plus de bande sombre / brune en bas) */
 @media (max-width:859px){
   html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor{background:#18275C!important;height:calc(14px + env(safe-area-inset-bottom,0px))!important}
@@ -1514,7 +1514,7 @@ html body #drawerProfile#drawerProfile .drawer-legal{padding-bottom:calc(10px + 
    Retouches 16 : échange (demande du propriétaire) — BAAL (lion) sur la simulation violette,
    ORO 999 (pyramide, sans barre violette) sur la simulation orange façon Boom
    ===================================================================== */
-html body #tradeWrap#tradeWrap .asset-chip[data-asset="apex500"]{--p1:#EBDDFF!important;--p2:#6D28D9!important;--pg:rgba(167,139,250,.45)!important}
+html body #tradeWrap#tradeWrap .asset-chip[data-asset="apex500"]{--p1:#EBDDFF!important;--p2:#6D28D9!important;--pg:rgba(224,168,36,.45)!important}
 html body #tradeWrap#tradeWrap .asset-chip[data-asset="horizon50"]{--p1:#FFC88A!important;--p2:#B24A08!important;--pg:rgba(255,152,0,.45)!important}
 
 /* =====================================================================
@@ -1700,10 +1700,10 @@ html[dir="rtl"] body .strip-price{direction:ltr!important;unicode-bidi:isolate!i
    (celui des pages d'inscription) ; les planètes dessinées DANS la courbe restent */
 @media (min-width:860px){
   html body #screenTrade#screenTrade,html body #fsTradeOverlay#fsTradeOverlay{
-    background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2367") center top/cover no-repeat,#13113A!important}
+    background:linear-gradient(180deg,rgba(16,13,8,.15),rgba(16,13,8,.35)),url("galaxy-auth.svg?v=3426") center top/cover no-repeat,#13113A!important}
 }
 html.is-tv body #screenTrade#screenTrade,html.is-tv body #fsTradeOverlay#fsTradeOverlay{
-  background:linear-gradient(180deg,rgba(10,8,30,.15),rgba(10,8,30,.35)),url("galaxy-auth.svg?v=2367") center top/cover no-repeat,#13113A!important}
+  background:linear-gradient(180deg,rgba(16,13,8,.15),rgba(16,13,8,.35)),url("galaxy-auth.svg?v=3426") center top/cover no-repeat,#13113A!important}
 /* TV : noms des marchés lisibles en entier (VOLATILITY, APOCALYPSE…) */
 html.is-tv body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:7.6px!important;letter-spacing:-.02em!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important}
 html.is-tv.fs-trade body #tradeWrap#tradeWrap .asset-chip .mk-name{font-size:9px!important}
@@ -1908,7 +1908,7 @@ html body #toast.toast.lux-msg:not(.micro) .lux-msg-txt{flex:1 1 auto;min-width:
 /* v2309 — notifications COLORÉES aux couleurs du site (le propriétaire : « pas des notifications noires, sombres »).
    Dégradé plein et lumineux selon le type, texte blanc, icône dans un carré clair. */
 html body #toast.toast.lux-msg:not(.micro){
-  background:linear-gradient(135deg,#6D28D9 0%,#4F46E5 55%,#2563EB 100%)!important;border:1px solid rgba(255,255,255,.28)!important;
+  background:linear-gradient(135deg,#6D28D9 0%,#4F46E5 55%,#C8912E 100%)!important;border:1px solid rgba(255,255,255,.28)!important;
   border-left:1px solid rgba(255,255,255,.28)!important;color:#FFFFFF!important;
   box-shadow:0 10px 28px rgba(79,70,229,.45),0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3)!important;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 html body #toast.toast.lux-msg:not(.micro) .lux-msg-ico{background:rgba(255,255,255,.22)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
@@ -2123,7 +2123,7 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
 @media (max-width:859px){
   html.is-ios:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) > .pad{
     background:linear-gradient(0deg,#141210 0,#141210 env(safe-area-inset-bottom,0px),rgba(20,18,16,0) calc(env(safe-area-inset-bottom,0px) + 34px)),
-      url("../icons/ui/pad-planets.svg?v=2886") center/cover no-repeat,
+      url("../icons/ui/pad-planets.svg?v=3426") center/cover no-repeat,
       linear-gradient(180deg,rgb(13,14,40) 0,rgba(13,14,40,.6) 6px,rgba(13,14,40,0) 22px),
       linear-gradient(180deg,rgba(14,12,40,.55),rgba(10,9,32,.78)) #141210!important}
   /* v2965 (propriétaire, iPhone : « bande noire sous la courbe ») : le raccord sombre en haut du terminal est plus court et plus
@@ -2197,8 +2197,8 @@ html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=2919"
   background-position:center top var(--ios-site-h,100%)!important;background-size:100% var(--ios-under,0px)!important}
 html.ios-app.is-ios:root:has(#oroLoader:not(.off)){
   background-image:radial-gradient(ellipse at 50% 44%,rgba(60,40,12,.85) 0%,rgba(20,16,40,.35) 34%,rgba(0,0,0,0) 60%),url("galaxy-loader.svg?v=2790"),
-    radial-gradient(120% 55% at 0% 0%,rgba(124,58,237,.28),transparent 62%),radial-gradient(110% 55% at 50% 112%,rgba(46,84,220,.22),transparent 62%),
-    linear-gradient(180deg,#0E0B28 0%,#080817 100%)!important;
+    radial-gradient(120% 55% at 0% 0%,rgba(200,145,46,.28),transparent 62%),radial-gradient(110% 55% at 50% 112%,rgba(46,84,220,.22),transparent 62%),
+    linear-gradient(180deg,#120F08 0%,#0A0906 100%)!important;
   background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important}
 /* plein écran : la fenêtre du plein écran s'arrête au bas du site (rien ne passe dans la bande, rien au-dessus d'ACHETER) */
 html.ios-app.is-ios:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay{top:0!important;bottom:auto!important;height:100%!important;max-height:100%!important}

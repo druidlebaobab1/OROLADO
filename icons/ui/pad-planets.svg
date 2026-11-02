@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220" width="400" height="220" preserveAspectRatio="xMidYMid slice">
 <defs>
-<radialGradient id="a" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#C7D2FE"/><stop offset=".5" stop-color="#5B46C8"/><stop offset="1" stop-color="#1A0F4A" stop-opacity="0"/></radialGradient>
+<radialGradient id="a" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#EDE2CC"/><stop offset=".5" stop-color="#C8912E"/><stop offset="1" stop-color="#1A1206" stop-opacity="0"/></radialGradient>
 <radialGradient id="b" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#FFE7B0"/><stop offset=".5" stop-color="#C77A1C"/><stop offset="1" stop-color="#3A1C06" stop-opacity="0"/></radialGradient>
-<radialGradient id="c" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#BAE6FD"/><stop offset=".5" stop-color="#0E7490"/><stop offset="1" stop-color="#062C3A" stop-opacity="0"/></radialGradient>
+<radialGradient id="c" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#F7D774"/><stop offset=".5" stop-color="#9A6A1C"/><stop offset="1" stop-color="#2A1C08" stop-opacity="0"/></radialGradient>
 </defs>
 
 </svg>

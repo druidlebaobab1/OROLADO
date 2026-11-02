@@ -1077,7 +1077,7 @@
       return { x: cx + Math.cos(ang) * rad, y: cy + Math.sin(ang) * rad };
     }
     halo(cx, cy, R * 1.05, 'rgba(120,80,255,0.032)');
-    halo(cx, cy, R * 0.45, 'rgba(180,120,255,0.032)');
+    halo(cx, cy, R * 0.45, 'rgba(210,165,80,0.032)');
     var arm, t, q;
     for (arm = 0; arm < 2; arm++) {
       g.save();
@@ -1168,8 +1168,8 @@
     // Fond « univers » : nuit bleu-violet (pas un noir plat), nébuleuses douces, étoiles,
     // quelques planètes et les cryptos. Décor seulement : rien ici ne touche aux prix.
     var base = g.createLinearGradient(0, 0, 0, cssH);
-    base.addColorStop(0, '#13113A');
-    base.addColorStop(1, '#0A0A20');
+    base.addColorStop(0, '#161309');
+    base.addColorStop(1, '#0B0A06');
     g.fillStyle = base;
     g.fillRect(0, 0, cssW, cssH);
     function glow(x, y, r, col) {
@@ -1181,10 +1181,10 @@
     }
     var big = Math.max(cssW, cssH);
     var small = Math.min(w, h);
-    glow(cssW * 0.06, cssH * 0.04, big * 0.6, 'rgba(124,58,237,0.20)');
+    glow(cssW * 0.06, cssH * 0.04, big * 0.6, 'rgba(200,145,46,0.16)');
     // (Ancien halo orange en bas à droite retiré : le propriétaire voyait une « lueur jaune » près des prix.)
-    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(40,70,190,0.07)');
-    glow(pad.l + w * 0.5, pad.t + h * 0.55, small * 0.85, 'rgba(70,110,255,0.07)');
+    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(160,115,40,0.06)');
+    glow(pad.l + w * 0.5, pad.t + h * 0.55, small * 0.85, 'rgba(180,135,48,0.06)');
     // Étoiles : tirage fixe (toujours au même endroit), petites et discrètes.
     var seed = 7;
     function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
@@ -1321,7 +1321,7 @@
     // v3236 (propriétaire) : intensité des planètes RÉDUITE (plus discrètes, relax) — on sent que
     // ce sont des planètes mais sans qu'elles accrochent l'œil. Bas remonté d'un chouïa.
     planet(planets[0].x, planets[0].y, planets[0].r, '#FFE2B8', 'rgba(226,132,46,1)', '#4A1C06', 0.15, false);
-    planet(planets[1].x, planets[1].y, planets[1].r, '#CDE8FF', 'rgba(58,123,213,1)', '#0A1A44', 0.16, false);
+    planet(planets[1].x, planets[1].y, planets[1].r, '#FFEAC2', 'rgba(210,155,55,1)', '#3A2606', 0.16, false);
     planet(planets[2].x, planets[2].y, planets[2].r, '#C8FFF4', 'rgba(20,184,166,1)', '#03312C', 0.15, false);
     g.globalAlpha = 1;
     galaxy = null;
@@ -1539,12 +1539,12 @@
         gridHStrong: 'rgba(255,255,255,0.05)',
         gridV: 'rgba(255,255,255,0.05)',
         border: null,
-        priceTxt: '#64748B',
-        timeTxt: '#64748B',
+        priceTxt: '#8C7E5C',
+        timeTxt: '#8C7E5C',
         watermark: 'rgba(255,215,0,0.028)',
         rsiBg: 'rgba(8,12,22,0.72)',
         rsiBorder: 'rgba(255,215,0,0.12)',
-        rsiTxt: 'rgba(168,180,204,0.85)',
+        rsiTxt: 'rgba(196,188,160,0.85)',
         maFast: 'rgba(255,213,79,0.95)',
         maSlow: 'rgba(0,188,212,0.9)',
         bbFill: 'rgba(255,215,0,0.07)',
@@ -1560,12 +1560,12 @@
       gridHStrong: 'rgba(255,255,255,0.05)',
       gridV: 'rgba(255,255,255,0.05)',
       border: null,
-      priceTxt: '#64748B',
-      timeTxt: '#64748B',
+      priceTxt: '#8C7E5C',
+      timeTxt: '#8C7E5C',
       watermark: 'rgba(255,215,0,0.028)',
       rsiBg: 'rgba(8,12,22,0.72)',
       rsiBorder: 'rgba(255,215,0,0.12)',
-      rsiTxt: 'rgba(168,180,204,0.85)',
+      rsiTxt: 'rgba(196,188,160,0.85)',
       maFast: 'rgba(255,213,79,0.95)',
       maSlow: 'rgba(0,188,212,0.9)',
       bbFill: 'rgba(255,215,0,0.07)',
@@ -1648,7 +1648,7 @@
       ctx.moveTo(Math.min(cssW, cssW - PRICE_AXIS_GAP + 3), y);
       ctx.lineTo(cssW, y);
       ctx.stroke();
-      ctx.fillStyle = '#64748B';
+      ctx.fillStyle = '#8C7E5C';
       // Calage à droite sur une marge de sécurité fixe : les décimales ne
       // peuvent plus être rognées par le bord de l'écran, quelle que soit la
       // longueur du cours.
@@ -1712,7 +1712,7 @@
       ctx.lineWidth = 1;
       // Heures en bas, seulement sous les traits principaux ; jamais sous la colonne des prix.
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
-      ctx.fillStyle = '#64748B';
+      ctx.fillStyle = '#8C7E5C';
       ctx.textAlign = 'center';
       var priceColL = cssW - PRICE_AXIS_GAP - 46;
       timeLabelsQ.length = 0;
@@ -1860,7 +1860,7 @@
         ctx.shadowBlur = 9;
       } else if (!thin && i === candles.length - 1 && cssH >= 200 && !opts.v75Rose &&
         !opts.titanWhite && !opts.horizonOrange) {
-        ctx.shadowColor = opts.pal ? palRgba(col, 0.55) : (opts.apexAiry ? 'rgba(192,132,252,0.7)' : (up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)'));
+        ctx.shadowColor = opts.pal ? palRgba(col, 0.55) : (opts.apexAiry ? 'rgba(224,168,60,0.7)' : (up ? 'rgba(0,230,118,0.45)' : 'rgba(255,23,68,0.4)'));
         ctx.shadowBlur = 8;
       }
       if (opts.titanWhite) {
@@ -1928,7 +1928,7 @@
         // ORO 888 : corps violet plein, liseré clair en haut (effet bijou).
         ctx.fillStyle = col;
         ctx.fillRect(x - cw / 2, y1, cw, bh);
-        ctx.fillStyle = up ? 'rgba(243,232,255,0.85)' : 'rgba(196,181,253,0.55)';
+        ctx.fillStyle = up ? 'rgba(248,240,220,0.85)' : 'rgba(230,208,150,0.55)';
         ctx.fillRect(x - cw / 2, y1, cw, Math.min(1.5, bh));
       } else {
         ctx.fillStyle = col;
@@ -2006,7 +2006,7 @@
         var move = Math.abs(toY(c.o) - y);
         var r = Math.max(3.2, Math.min(rMax, 3.2 + move * 0.35));
         if (i === last && cssH >= 200) {
-          ctx.shadowColor = PU ? palRgba(PU, 0.85) : 'rgba(192,132,252,0.85)';
+          ctx.shadowColor = PU ? palRgba(PU, 0.85) : 'rgba(224,168,60,0.85)';
           ctx.shadowBlur = 12;
         }
         ctx.fillStyle = up ? (PU || '#D58BFF') : (PD || '#8B4BFF');
@@ -3267,7 +3267,7 @@
         var jit = i >= n - 4 ? (Math.floor(T * 7 + sd * 10) % 3 - 1) * 1.4 : (sd - 0.5) * 3;
         ctx.fillStyle = 'rgba(255,40,200,0.75)';
         ctx.fillRect(x - gw / 2 + 2 + jit, y - hgt2 / 2 - 1, gw, hgt2);
-        ctx.fillStyle = 'rgba(40,230,255,0.75)';
+        ctx.fillStyle = 'rgba(240,200,90,0.75)';
         ctx.fillRect(x - gw / 2 - 2 - jit, y - hgt2 / 2 + 1, gw, hgt2);
         ctx.fillStyle = dirs[i] ? U : D;
         ctx.fillRect(x - gw / 2, y - hgt2 / 2, gw, hgt2);
@@ -6106,7 +6106,7 @@
     ctx.fillRect(0, cssH - fz, cssW, fz);
     if (timeLabelsQ.length) {
       ctx.font = (cssW < 500 ? '500 8.5px ' : '500 9px ') + '"Plus Jakarta Sans", "Hanken Grotesk", sans-serif';
-      ctx.fillStyle = '#64748B';
+      ctx.fillStyle = '#8C7E5C';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       for (var q = 0; q < timeLabelsQ.length; q += 2) ctx.fillText(timeLabelsQ[q], timeLabelsQ[q + 1], cssH - (padTopRGB ? 9 : 5)); // v2874 : téléphone — heures un peu plus haut, au-dessus du raccord sombre

@@ -798,7 +798,7 @@ html:root body #casinoModal .sp2 .pz-shirt{flex:none;width:17px;height:17px}
 html:root body #casinoModal .sp2 .pz-tvn.a{justify-content:flex-end;text-align:end}
 html:root body #casinoModal .sp2 .pz-tvn .pz-card{margin-inline:4px}
 html:root body #casinoModal .sp2 .pz-tvsc{display:flex;flex-direction:column;align-items:center;gap:1px}
-html:root body #casinoModal .sp2 .pz-tvsc b{padding:2px 12px;border-radius:7px;background:#0B1020;border-inline:3px solid;border-color:#3B82F6 #22C55E;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);color:#fff;font:900 17px/1.15 var(--sp2-font);font-variant-numeric:tabular-nums;white-space:nowrap}
+html:root body #casinoModal .sp2 .pz-tvsc b{padding:2px 12px;border-radius:7px;background:#0B1020;border-inline:3px solid;border-color:#E0A824 #22C55E;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);color:#fff;font:900 17px/1.15 var(--sp2-font);font-variant-numeric:tabular-nums;white-space:nowrap}
 html:root body #casinoModal .sp2 .pz-tvsc b.pop{animation:pzPop .9s ease-out}
 html:root body #casinoModal .sp2 .pz-tvsc em{display:flex;align-items:center;gap:3px;padding:1px 7px 2px;border-radius:0 0 7px 7px;background:rgba(11,16,32,.75);color:#fff;font:800 11px/1.1 var(--sp2-font);font-style:normal;font-variant-numeric:tabular-nums}
 html:root body #casinoModal .sp2 .pz-clki{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
@@ -931,7 +931,7 @@ html:root body #casinoModal .sp2 .c-politique .pd-dot{background:#60A5FA}
 html:root body #casinoModal .sp2 .c-economie .pd-dot{background:#34D399}
 html:root body #casinoModal .sp2 .c-divertissement .pd-dot{background:#F472B6}
 html:root body #casinoModal .sp2 .c-sport .pd-dot{background:#A3E635}
-html:root body #casinoModal .sp2 .c-tech .pd-dot{background:#22D3EE}
+html:root body #casinoModal .sp2 .c-tech .pd-dot{background:#F2C14E}
 html:root body #casinoModal .sp2 .c-monde .pd-dot{background:#C4B5FD}
 html:root body #casinoModal .sp2 .pd-cd{display:inline-flex;align-items:center;gap:5px;flex:none;max-width:100%;height:26px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.06);color:#DCD6F7;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 html:root body #casinoModal .sp2 .pd-cd .sp2-i{width:13px;height:13px}
