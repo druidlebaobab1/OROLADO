@@ -4318,8 +4318,8 @@ html body #screenTrade .chart-toolbar .chart-reset-btn{background:rgba(247,147,2
 html body #screenTrade .chart-fs-btn{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.7)!important;color:#FCA5A5!important}
 html body #screenTrade .dur-chip:not(.on):not(.active){background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.21)!important;color:#F0EBE2!important}
 html body #screenTrade .dur-chip.on,html body #screenTrade .dur-chip.active{background:#F7931A!important;border:1px solid #F7931A!important;color:#1A1205!important}
-html body #screenTrade #inputStake{background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.3)!important}
-html body #screenTrade .qbtn.stake-act:not(.qbtn-back){background:rgba(247,147,26,.16)!important;border:1px solid rgba(247,147,26,0.39)!important;color:#FFB15C!important}
+html body #screenTrade #inputStake{background:rgba(255,255,255,.05)!important;border:1px solid rgba(247,147,26,0.18)!important}
+html body #screenTrade .qbtn.stake-act:not(.qbtn-back){background:rgba(255,255,255,.055)!important;border:1px solid rgba(247,147,26,0.39)!important;color:#FFB15C!important}
 html body #screenTrade .qbtn.qbtn-back{background:rgba(239,68,68,.16)!important;border:1px solid rgba(239,68,68,.65)!important;color:#FCA5A5!important}
 html body #screenTrade .win-preview{background:rgba(16,185,129,.12)!important;border:1px solid rgba(16,185,129,.5)!important;border-radius:10px!important}
 html body #screenTrade .help-badge:active,html body #screenTrade #btnProfile:active,html body #screenTrade .btn-auth-link:active,html body #screenTrade .asset-chip:active,html body #screenTrade .ind-btn:active,html body #screenTrade .chart-fs-btn:active,html body #screenTrade .dur-chip:active,html body #screenTrade .qbtn:active{filter:brightness(1.25)!important}
@@ -4343,7 +4343,7 @@ html body #screenTrade .odds-label.payout-badge{background:linear-gradient(90deg
 html body #screenTrade .win-preview{background:linear-gradient(135deg,rgba(16,185,129,.24) 0%,rgba(16,185,129,.06) 100%)!important;border:1px solid rgba(52,211,153,.6)!important;border-radius:12px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04),0 0 14px rgba(16,185,129,0.1)!important}
 html body #screenTrade .win-preview .amount{color:#34D399!important;text-shadow:0 0 10px rgba(52,211,153,.35)!important}
 html body #screenTrade .win-preview .mult,html body #screenTrade .win-preview .label{color:#A7F3D0!important}
-html body #screenTrade .dur-chip:not(.on):not(.active){background:linear-gradient(180deg,rgba(247,147,26,.14),rgba(255,255,255,.03))!important;border:1px solid rgba(247,147,26,0.25)!important;color:#FCD9B6!important}
+html body #screenTrade .dur-chip:not(.on):not(.active){background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03))!important;border:1px solid rgba(247,147,26,0.25)!important;color:#FCD9B6!important}
 html body #screenTrade .dur-chip.on,html body #screenTrade .dur-chip.active{box-shadow:0 0 12px rgba(247,147,26,0.14)!important}
 html body #fsTradeOverlay .odds-label.payout-badge{background:linear-gradient(90deg,rgba(247,147,26,.28),rgba(247,147,26,.08))!important;border:1px solid rgba(247,147,26,0.39)!important;color:#FFB15C!important;letter-spacing:.08em!important;box-shadow:0 0 10px rgba(247,147,26,0.05)!important}
 html body #fsTradeOverlay .win-preview{background:linear-gradient(135deg,rgba(16,185,129,.24) 0%,rgba(16,185,129,.06) 100%)!important;border:1px solid rgba(52,211,153,.6)!important;border-radius:12px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04),0 0 14px rgba(16,185,129,0.1)!important}
@@ -4797,7 +4797,7 @@ html body #passModal .modal-title,html body #emailModal .modal-title,html body #
 
 /* ===== v2241 ===== */
 /* « Solde insuffisant » (compte réel seulement) : message plein orange, bien lisible */
-html body #toast.toast.lux-msg.toast-bal{background:linear-gradient(180deg,#FBA43A,#F7931A)!important;border:1px solid #FFD29A!important;box-shadow:0 8px 24px rgba(247,147,26,.45)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html body #toast.toast.lux-msg.toast-bal{background:linear-gradient(180deg,#C8912E,#9A6E1E)!important;border:1px solid rgba(242,193,78,.5)!important;box-shadow:0 8px 24px rgba(247,147,26,.45)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 html body #toast.toast.toast-bal .lux-msg-txt{color:#1A1205!important;font-size:.86rem!important;font-weight:800!important}
 /* reçus : affichés carrés aussi à l'écran */
 html body #rcptModal .rc-img{border-radius:0!important}

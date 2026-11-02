@@ -3370,7 +3370,7 @@
         ctx.fillStyle = dirs[i] ? U : D;
         var pyy = y + (dirs[i] ? -s * 0.15 : s * 0.15);
         ctx.beginPath(); ctx.arc(x, pyy, s * 0.36, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#04121A';
+        ctx.fillStyle = '#0A1210';
         ctx.beginPath(); ctx.arc(x, pyy, s * 0.15, 0, Math.PI * 2); ctx.fill();
       }
     } else if (kind === 'gears') {
@@ -6033,7 +6033,7 @@
       tagCol = '#FFD08A';
     }
     if (asset.id === 'nexusprime') tagCol = '#DB9E24';
-    if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
+    if (asset.id === 'titanpulse') tagCol = '#E8E2D6';
     if (asset.id === 'v75') tagCol = '#DFAE4D';
     if (asset.id === 'apex500') tagCol = '#EDCF93';
     if (asset.ext && asset.chart === 'candle' && asset.candlePal && !primary) tagCol = market.price >= market.candle.o ? asset.candlePal.up : (asset.accent || asset.candlePal.up);
