@@ -5343,12 +5343,12 @@ html body .topbar .portal-btn .pw-dot{position:absolute;top:2px;right:2px;width:
 @keyframes pwGlow{0%,100%{opacity:.55}50%{opacity:1}}
 @keyframes pwDoor{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.72)}}
 @media (prefers-reduced-motion: reduce){html body .topbar .portal-btn .pw-light,html body .topbar .portal-btn .pw-door{animation:none}}
-html body #portalModal .portal-box{max-width:440px;padding:18px 16px 16px;background:radial-gradient(circle at 50% -10%,rgba(242,179,61,.16),rgba(34,26,9,.97) 55%)!important;border:1px solid rgba(242,179,61,.28)!important}
+html body #portalModal .portal-box{max-width:440px;padding:18px 16px 16px;background:radial-gradient(circle at 50% -10%,rgba(242,179,61,.16),rgba(10,8,6,.97) 55%)!important;border:1px solid rgba(242,179,61,.28)!important}
 html body #portalModal .portal-head{text-align:center;margin:2px 26px 12px}
 html body #portalModal .portal-title{font-weight:900;font-size:21px;letter-spacing:.06em;color:#F2B33D;text-transform:uppercase}
 html body #portalModal .portal-sub{font-size:12.5px;color:#C7B89A;margin-top:2px}
 html body #portalModal .portal-test{font-size:11.5px;line-height:1.4;color:#FFD27A;background:rgba(242,179,61,.10);border:1px dashed rgba(242,179,61,.45);border-radius:12px;padding:8px 10px;margin-bottom:10px;text-align:center}
-html body #portalModal .defi-card{border-radius:18px;padding:14px;background:radial-gradient(circle at 85% 0%,rgba(224,150,60,.20),rgba(51,40,17,.95) 60%);border:1px solid rgba(235,185,120,.28)}
+html body #portalModal .defi-card{border-radius:18px;padding:14px;background:radial-gradient(circle at 85% 0%,rgba(224,150,60,.20),rgba(12,10,6,.95) 60%);border:1px solid rgba(235,185,120,.28)}
 html body #portalModal .defi-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 html body #portalModal .defi-badge{font-weight:900;font-size:16px;letter-spacing:.04em;color:#FFB4C1}
 html body #portalModal .defi-badge::before{content:"🎯 "}
@@ -5371,13 +5371,13 @@ html body #portalModal .defi-how summary::-webkit-details-marker{display:none}
 html body #portalModal .defi-how summary::after{content:" ▾"}
 html body #portalModal .defi-how p{margin:8px 0 0;font-size:12.5px;line-height:1.5;color:#E6DCC9}
 html body #portalModal .defi-how .defi-ex{padding:8px 10px;border-radius:10px;background:rgba(242,179,61,.08);border-left:2px solid #F2B33D;color:#ECE1CB}
-html body .defi-chip{position:fixed;z-index:60;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 4px);display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;border:1px solid rgba(242,179,61,.5);background:rgba(34,26,9,.92);color:#fff;font:800 11.5px/1.2 inherit;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+html body .defi-chip{position:fixed;z-index:60;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 4px);display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;border:1px solid rgba(242,179,61,.5);background:rgba(10,8,6,.92);color:#fff;font:800 11.5px/1.2 inherit;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 html body .defi-chip.hidden{display:none!important}
 html body .defi-chip .dc-mk{letter-spacing:.06em}
 html body .defi-chip .dc-dots{color:#F2B33D;letter-spacing:1px}
 html.fs-trade body .defi-chip{top:calc(env(safe-area-inset-top,0px) + 2px)}
 html body .defi-win{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(14,10,4,.55);animation:dwIn .3s ease-out;pointer-events:none}
-html body .defi-win .dw-in{text-align:center;padding:22px 28px;border-radius:22px;background:radial-gradient(circle at 50% 0%,rgba(242,179,61,.35),rgba(34,26,9,.97) 70%);border:1px solid rgba(242,179,61,.6);box-shadow:0 0 60px rgba(242,179,61,.35)}
+html body .defi-win .dw-in{text-align:center;padding:22px 28px;border-radius:22px;background:radial-gradient(circle at 50% 0%,rgba(242,179,61,.35),rgba(10,8,6,.97) 70%);border:1px solid rgba(242,179,61,.6);box-shadow:0 0 60px rgba(242,179,61,.35)}
 html body .defi-win .dw-cup{font-size:46px}
 html body .defi-win .dw-t{font-weight:900;font-size:20px;color:#F2B33D;letter-spacing:.05em;text-transform:uppercase}
 html body .defi-win .dw-a{font-weight:900;font-size:30px;color:#2EE59D;margin-top:4px}
@@ -5387,7 +5387,7 @@ html body .defi-win.out{opacity:0;transition:opacity .5s}
 html body .topbar .topbar-mode.has-portal{display:flex!important;align-items:center;gap:8px}
 html body .topbar .topbar-mode.has-portal > .mode-switch{flex:1 1 auto;min-width:0}
 html body .topbar .portal-btn{width:52px!important;height:46px!important;flex:0 0 52px!important;border-radius:14px!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-  background:radial-gradient(circle at 50% 30%,rgba(242,179,61,.30),rgba(242,179,61,.06) 70%),rgba(34,26,9,.6)!important;border:1px solid rgba(242,179,61,.45)!important}
+  background:radial-gradient(circle at 50% 30%,rgba(242,179,61,.30),rgba(242,179,61,.06) 70%),rgba(10,8,6,.6)!important;border:1px solid rgba(242,179,61,.45)!important}
 html body .topbar .portal-btn.hidden{display:none!important}
 html body .topbar .portal-btn svg{width:22px;height:22px}
 html body .topbar .portal-btn .pw-lbl{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#F2B33D;line-height:1}
@@ -5448,7 +5448,7 @@ html body #portalModal .defi-state{display:flex;align-items:center;justify-conte
 html body #portalModal .portal-box{background:
   radial-gradient(120px 120px at 88% 6%,rgba(242,179,61,.30),rgba(242,179,61,0) 70%),
   radial-gradient(70px 70px at 10% 14%,rgba(216,169,75,.35),rgba(216,169,75,0) 70%),
-  radial-gradient(circle at 50% -10%,rgba(242,179,61,.12),rgba(34,26,9,.98) 58%)!important}
+  radial-gradient(circle at 50% -10%,rgba(242,179,61,.12),rgba(10,8,6,.98) 58%)!important}
 html body #portalModal .portal-title{font-family:"Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.22em}
 html body .defi-win .dw-cup svg.pi{width:58px;height:58px;fill:none;stroke:#F2B33D;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 12px rgba(242,179,61,.6))}
 html.portal-on body .topbar .topbar-row > .topbar-actions{display:flex!important;align-items:center;justify-content:flex-end!important;gap:6px!important;width:auto!important;margin:0!important}
@@ -5994,7 +5994,7 @@ html body #portalModal .bon-test{margin-top:8px;width:100%;height:34px!important
 @media (max-width:859px){html body #portalModal#portalModal .bon-card{margin-bottom:auto!important}}
 /* v2418 — corrections du propriétaire (captures iPhone + Android). */
 /* Compteur « 1/5 » du cadeau : plus petit, ne touche plus le haut de l'écran. */
-html body .topbar .portal-btn.portal-btn .pw-prog{top:-1px!important;right:-6px!important;min-width:18px!important;padding:0 3px!important;border-radius:7px!important;font-size:7.5px!important;line-height:11px!important;box-shadow:0 0 0 1.5px rgba(40,30,10,.9)}
+html body .topbar .portal-btn.portal-btn .pw-prog{top:-1px!important;right:-6px!important;min-width:18px!important;padding:0 3px!important;border-radius:7px!important;font-size:7.5px!important;line-height:11px!important;box-shadow:0 0 0 1.5px rgba(9,8,5,.9)}
 /* Compteur du défi sur le graphique : plus petit ; rouge « Défi perdu » puis il disparaît. */
 html body #chartStage .defi-hud{height:24px!important;padding:0 8px 0 6px!important;gap:5px!important;font-size:10.5px!important;border-radius:12px!important}
 html body #chartStage .defi-hud .pi{width:13px!important;height:13px!important}
@@ -6240,7 +6240,7 @@ html body #portalModal#portalModal#portalModal > .modal-box.portal-box{backgroun
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.20),transparent 70%),
   radial-gradient(70% 45% at 30% 100%,rgba(219,158,36,.13),transparent 70%),
   radial-gradient(40% 30% at 80% 90%,rgba(var(--tc2),.12),transparent 70%),
-  linear-gradient(180deg,#221A0A 0%,#0B0A06 60%,#1A1305 100%)!important;
+  linear-gradient(180deg,#0A0806 0%,#0B0A06 60%,#1A1305 100%)!important;
   background-size:140% 140%,140% 140%,140% 140%,140% 140%,100% 100%!important;
   animation:oroNebula 26s ease-in-out infinite alternate}
 @keyframes oroNebula{0%{background-position:0% 0%,100% 0%,0% 100%,100% 100%,0 0}100%{background-position:18% 12%,82% 14%,14% 86%,86% 84%,0 0}}
@@ -6331,12 +6331,12 @@ html body #portalModal#portalModal#portalModal > .modal-box.portal-box{backgroun
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.22),transparent 70%),
   radial-gradient(70% 45% at 30% 100%,rgba(219,158,36,.14),transparent 70%),
   radial-gradient(40% 30% at 80% 90%,rgba(var(--tc2),.14),transparent 70%),
-  url("galaxy-modal.svg?v=3428") center/cover no-repeat,
-  linear-gradient(180deg,#221A0A 0%,#0B0A06 60%,#1A1305 100%)!important;
+  url("galaxy-modal.svg?v=3440") center/cover no-repeat,
+  linear-gradient(180deg,#0A0806 0%,#0B0A06 60%,#1A1305 100%)!important;
   background-size:140% 140%,140% 140%,140% 140%,140% 140%,cover,100% 100%!important}
 /* Cartes un peu plus lumineuses, teintées de la couleur de la page. */
 html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card):not(.hidden){display:flex!important;flex-direction:column!important;
-  background:linear-gradient(180deg,rgba(var(--tc),.13),rgba(70,55,24,.55) 34%,rgba(44,34,14,.62) 70%,rgba(var(--tc),.10))!important}
+  background:linear-gradient(180deg,rgba(var(--tc),.13),rgba(16,13,8,.55) 34%,rgba(11,9,6,.62) 70%,rgba(var(--tc),.10))!important}
 html body #portalModal#portalModal .portal-box > :is(.defi-card,.aff-card,.top-card,.bon-card) > :not(.gift-scene){flex:0 0 auto}
 
 /* La scène : elle remplit tout l'espace libre en bas de la page (au moins 170 px). */
@@ -6348,8 +6348,8 @@ html body #portalModal .gift-scene .gs-neb{inset:0;background:
   radial-gradient(45% 60% at 18% 70%,rgba(var(--tc),.45),transparent 70%),
   radial-gradient(40% 55% at 82% 30%,rgba(242,193,78,.45),transparent 70%),
   radial-gradient(50% 50% at 60% 100%,rgba(219,158,36,.28),transparent 70%),
-  url("galaxy-modal.svg?v=3428") center/cover no-repeat,
-  linear-gradient(180deg,#34270E,#1A1407);animation:gsNeb 18s ease-in-out infinite alternate}
+  url("galaxy-modal.svg?v=3440") center/cover no-repeat,
+  linear-gradient(180deg,#0E0B06,#0A0806);animation:gsNeb 18s ease-in-out infinite alternate}
 @keyframes gsNeb{0%{filter:hue-rotate(0deg) brightness(1)}100%{filter:hue-rotate(18deg) brightness(1.15)}}
 html body #portalModal .gift-scene .gs-dust{inset:0;opacity:.9;background:
   radial-gradient(1.4px 1.4px at 8% 20%,#fff,transparent 60%),radial-gradient(1px 1px at 22% 62%,#fff,transparent 60%),
@@ -6417,11 +6417,11 @@ html body .modal-box :is(h2,h3,h4,.modal-title),html body #screenAuth :is(h1,h2,
 html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box{position:relative;overflow:hidden!important;text-align:center;
   border:1px solid rgba(255,210,122,.65)!important;
   background:radial-gradient(circle at 50% -10%,rgba(255,210,122,.42),rgba(242,193,78,.20) 45%,rgba(32,24,9,.97) 76%),
-    url("galaxy-modal.svg?v=3428") center/cover no-repeat,#221A0A!important;
+    url("galaxy-modal.svg?v=3440") center/cover no-repeat,#0A0806!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(255,190,80,.30),0 0 100px rgba(242,193,78,.30)!important}
 html body #depositSuccessModal > .modal-box{border-color:rgba(75,227,168,.6)!important;
   background:radial-gradient(circle at 50% -10%,rgba(75,227,168,.40),rgba(242,193,78,.20) 45%,rgba(32,24,9,.97) 76%),
-    url("galaxy-modal.svg?v=3428") center/cover no-repeat,#221A0A!important;
+    url("galaxy-modal.svg?v=3440") center/cover no-repeat,#0A0806!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(46,229,157,.28),0 0 100px rgba(242,193,78,.30)!important}
 html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box > :not(.cosmo-rays):not(.cosmo-sp){position:relative;z-index:2}
 html body :is(#wdConfirmModal,#depositSuccessModal) > .modal-box > .btn-close{position:absolute!important;z-index:3}
@@ -6469,7 +6469,7 @@ html body .modal-box .cosmo-ico{border:0!important;outline:0!important}
 /* ===== v2431 — Retrait = ROUGE, Dépôt = VERT (vraies icônes : portefeuille + flèche qui sort / qui entre). ===== */
 html body #wdConfirmModal > .modal-box{border-color:rgba(224,150,60,.7)!important;
   background:radial-gradient(circle at 50% -10%,rgba(224,150,60,.42),rgba(242,193,78,.18) 45%,rgba(32,24,9,.97) 76%),
-    url("galaxy-modal.svg?v=3428") center/cover no-repeat,#221A0A!important;
+    url("galaxy-modal.svg?v=3440") center/cover no-repeat,#0A0806!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(255,59,87,.32),0 0 100px rgba(242,193,78,.28)!important}
 html body #wdConfirmModal .modal-box .cosmo-rays{background:repeating-conic-gradient(from 0deg,rgba(255,110,130,.32) 0deg 6deg,transparent 6deg 20deg)!important}
 html body #wdConfirmModal .modal-box .cosmo-ico svg{filter:drop-shadow(0 0 16px rgba(255,59,87,.7))!important}
@@ -6615,7 +6615,7 @@ html body #portalModal .oro-amt.pos .oa-n{color:#2EE59D!important;text-shadow:0 
 html body #helpModal > .modal-box{position:relative;overflow:hidden!important;text-align:left;
   border:1px solid rgba(224,168,36,.6)!important;
   background:radial-gradient(circle at 50% -8%,rgba(224,168,36,.42),rgba(242,193,78,.20) 42%,rgba(32,24,9,.97) 74%),
-    url("galaxy-modal.svg?v=3428") center/cover no-repeat,#221A0A!important;
+    url("galaxy-modal.svg?v=3440") center/cover no-repeat,#0A0806!important;
   box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 46px rgba(224,168,36,.30),0 0 100px rgba(242,193,78,.28)!important}
 html body #helpModal > .modal-box > :not(.cosmo-sp):not(.help-hero){position:relative;z-index:2}
 html body #helpModal > .modal-box > .btn-close{position:absolute!important;z-index:3}
@@ -6673,7 +6673,7 @@ html body #installBanner #btnInstall:active{transform:scale(.96)}
 /* ===== v2441 — Liste des langues : fenêtre univers plus lumineuse, drapeaux ronds, langue choisie en or avec ✓. ===== */
 html body .lang-dd-menu.lang-dd-menu{border-radius:16px!important;padding:8px!important;gap:5px!important;width:min(236px,calc(100vw - 16px))!important;max-width:min(236px,calc(100vw - 16px))!important;
   background:radial-gradient(circle at 50% -10%,rgba(242,193,78,.30),rgba(242,193,78,.20) 45%,rgba(32,25,10,.0) 75%),
-    linear-gradient(180deg,rgba(40,30,10,.62),rgba(28,21,8,.80)),url("galaxy-space.svg?v=3426") center top/cover no-repeat,#261D0B!important;
+    linear-gradient(180deg,rgba(9,8,5,.62),rgba(7,6,4,.80)),url("galaxy-space.svg?v=3440") center top/cover no-repeat,#0A0806!important;
   border:1px solid rgba(242,193,78,.5)!important;
   box-shadow:0 16px 38px rgba(0,0,0,.55),0 0 26px rgba(242,193,78,.28),0 0 0 1px rgba(255,255,255,.04) inset!important;
   transform-origin:top right;animation:langPop .22s cubic-bezier(.2,1.3,.4,1)}
@@ -6965,7 +6965,7 @@ html body #drawerProfile#drawerProfile#drawerProfile .prof-name{color:transparen
   -webkit-background-clip:text!important;background-clip:text!important;font-weight:900!important;letter-spacing:.01em;filter:drop-shadow(0 0 6px rgba(251,191,36,.35))}
 html body #drawerProfile#drawerProfile#drawerProfile .drawer-head h2{color:#FFE7A3!important;border-color:rgba(251,191,36,.7)!important;box-shadow:0 0 12px rgba(251,191,36,.3)!important}
 /* Carte d'identité : verre violet, lignes en dégradé, boutons Copier dorés. */
-html body #drawerProfile#drawerProfile#drawerProfile > .card.glass{background:linear-gradient(135deg,rgba(242,193,78,.18),rgba(200,145,46,.08))!important;
+html body #drawerProfile#drawerProfile#drawerProfile > .card.glass{background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.015))!important;
   border:1px solid rgba(244,226,190,.55)!important;box-shadow:0 0 16px rgba(242,193,78,.25),0 0 0 1px rgba(255,255,255,.05) inset!important}
 html body #drawerProfile#drawerProfile#drawerProfile > .card.glass .list-row + .list-row{border-top:1px solid transparent!important;
   border-image:linear-gradient(90deg,transparent,rgba(244,226,190,.5),transparent) 1!important}
@@ -7014,7 +7014,7 @@ html body #drawerProfile#drawerProfile#drawerProfile .wallet-tab-ico{filter:drop
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-addr-row{background:rgba(40,29,8,.45)!important;border:1px dashed rgba(251,191,36,.6)!important}
 html body #drawerProfile#drawerProfile#drawerProfile .wallet-addr-row code{color:#B9FFE0!important}
 /* Menu : chaque icône dans une mini-planète de sa couleur, lignes vitrées. */
-html body #drawerProfile#drawerProfile#drawerProfile .drawer-item{--c:242,193,78;background:linear-gradient(90deg,rgba(var(--c),.18),rgba(var(--c),.04) 70%)!important;
+html body #drawerProfile#drawerProfile#drawerProfile .drawer-item{--c:242,193,78;background:linear-gradient(90deg,rgba(255,255,255,.045),rgba(255,255,255,.015) 70%)!important;
   border:1px solid rgba(var(--c),.42)!important;color:#fff!important;box-shadow:0 0 0 1px rgba(255,255,255,.04) inset!important;transition:transform .12s,box-shadow .2s}
 html body #drawerProfile#drawerProfile#drawerProfile .drawer-item:active{transform:scale(.98);box-shadow:0 0 16px rgba(var(--c),.45)!important}
 html body #drawerProfile#drawerProfile#drawerProfile #btnFinance{--c:242,193,78}
@@ -8101,7 +8101,7 @@ html body .chart-stage .chart-outcome.show.win.chart-outcome,html body .chart-st
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip.on::after{border-color:rgba(255,255,255,.95)!important;border-top-color:transparent!important;box-shadow:0 3px 8px -2px rgba(var(--c),.9)!important}
   /* Fondu doux en bas de la courbe : pas de trait, la courbe se termine en douceur. */
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade .chart-stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;pointer-events:none;z-index:3;
-    background:linear-gradient(180deg,rgba(34,26,9,0),rgba(34,26,9,.55))}
+    background:linear-gradient(180deg,rgba(10,8,6,0),rgba(10,8,6,.55))}
 }
 @media (max-width:859px) and (orientation:portrait){
   html:not(.fs-trade):not(.is-fullscreen) body #screenTrade#screenTrade#screenTrade #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3) #oddsRow .odds-chip:nth-child(1) .odds-mult{font-size:11.5px!important}
@@ -9454,7 +9454,7 @@ html body #otpModal #err-otpCode{white-space:nowrap;overflow:hidden;text-overflo
 #coachModal .coach-later{display:block;margin:8px auto 0;border:0;background:none;color:#C9B895;font:700 13px "Plus Jakarta Sans",system-ui,sans-serif;padding:6px 14px;cursor:pointer}
 @media (orientation:landscape) and (max-height:500px){#coachModal{align-items:center}#coachModal .coach-card{margin:0;max-height:94vh;overflow:auto;padding:12px 14px}#coachModal .coach-big svg{width:38px;height:38px}#coachModal p{margin-bottom:8px}#coachModal .coach-steps,#coachModal .coach-cmp{margin-bottom:10px}}
 /* v2661 — même style que les grandes notifications du site (lueur dorée en haut, icônes trait doré fin). */
-#coachModal .coach-card{background:radial-gradient(circle at 50% 0%,rgba(242,179,61,.35),rgba(34,26,9,.97) 70%);border:1px solid rgba(242,179,61,.6);box-shadow:0 0 60px rgba(242,179,61,.35);overflow:hidden}
+#coachModal .coach-card{background:radial-gradient(circle at 50% 0%,rgba(242,179,61,.35),rgba(10,8,6,.97) 70%);border:1px solid rgba(242,179,61,.6);box-shadow:0 0 60px rgba(242,179,61,.35);overflow:hidden}
 #coachModal .coach-body{position:relative;z-index:2}
 #coachModal .coach-rays{position:absolute;z-index:0;left:50%;top:44px;width:240px;height:240px;margin:-120px 0 0 -120px;border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(255,214,110,.28),rgba(242,179,61,.08) 45%,rgba(242,179,61,0) 70%)}
@@ -11248,20 +11248,20 @@ html:root body #casinoModal#casinoModal:not(.in-game) > .modal-box{background:
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.22),transparent 70%) 0 0/140% 140%,
   radial-gradient(70% 45% at 30% 100%,rgba(219,158,36,.14),transparent 70%) 0 0/140% 140%,
   radial-gradient(40% 30% at 80% 90%,rgba(255,180,92,.18),transparent 70%) 0 0/140% 140%,
-  url("galaxy-modal.svg?v=3428") 50% 50%/cover no-repeat,
-  linear-gradient(180deg,#221A0A 0%,#0B0A06 60%,#1A1305 100%)!important}
+  url("galaxy-modal.svg?v=3440") 50% 50%/cover no-repeat,
+  linear-gradient(180deg,#0A0806 0%,#0B0A06 60%,#1A1305 100%)!important}
 html:root body #casinoModal#casinoModal.in-game[data-g] > .modal-box{background:
   radial-gradient(75% 45% at 50% 28%,color-mix(in srgb,var(--p2) 42%,transparent),transparent 72%),
   radial-gradient(60% 38% at 12% 8%,rgba(230,165,70,.18),transparent 70%) 0 0/140% 140%,
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.18),transparent 70%) 0 0/140% 140%,
-  url("galaxy-modal.svg?v=3428") 50% 50%/cover no-repeat,
-  linear-gradient(180deg,color-mix(in srgb,var(--p2) 22%,#221A0A) 0%,#0B0A06 60%,#1A1305 100%)!important}
+  url("galaxy-modal.svg?v=3440") 50% 50%/cover no-repeat,
+  linear-gradient(180deg,color-mix(in srgb,var(--p2) 22%,#0A0806) 0%,#0B0A06 60%,#1A1305 100%)!important}
 html:root body #liveModal#liveModal .live-box{background:
   radial-gradient(60% 38% at 12% 8%,rgba(230,165,70,.24),transparent 70%) 0 0/140% 140%,
   radial-gradient(55% 40% at 92% 30%,rgba(242,193,78,.22),transparent 70%) 0 0/140% 140%,
   radial-gradient(70% 45% at 30% 100%,rgba(219,158,36,.14),transparent 70%) 0 0/140% 140%,
-  url("galaxy-modal.svg?v=3428") 50% 50%/cover no-repeat,
-  linear-gradient(180deg,#221A0A 0%,#0B0A06 60%,#1A1305 100%)!important}
+  url("galaxy-modal.svg?v=3440") 50% 50%/cover no-repeat,
+  linear-gradient(180deg,#0A0806 0%,#0B0A06 60%,#1A1305 100%)!important}
 #casinoModal .rl-big{width:min(340px,92vw,35vh)}
 @media (min-height:820px){#casinoModal .rl-big{width:min(360px,92vw,40vh)}}
 /* la roue prend toute la hauteur libre de l'écran du jeu, sans jamais dépasser */
@@ -13120,7 +13120,7 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-code{font-size:10px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-head #btnCloseDrawer#btnCloseDrawer{width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;font-size:16px!important;opacity:.9}
 /* Profil : plus de grosses planètes en fond (propriétaire : « ça encombre ») — fond calme, juste un léger halo violet */
-html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile{background:radial-gradient(120% 40% at 50% 0%,rgba(200,145,46,.22),transparent 70%),linear-gradient(180deg,rgb(54,41,15),rgb(32,25,10))!important;background-color:#261D0B!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile{background:radial-gradient(120% 40% at 50% 0%,rgba(200,145,46,.08),transparent 70%),linear-gradient(180deg,rgb(54,41,15),rgb(32,25,10))!important;background-color:#0A0806!important}
 /* langue encore un peu plus petite */
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn{height:22px!important;padding:1px 5px!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #langBarTrade#langBarTrade > .lang-dd-btn .lang-flag{width:13px!important;height:9px!important}
