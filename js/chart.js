@@ -1076,14 +1076,14 @@
       var rad = R * (0.05 + 0.95 * t);
       return { x: cx + Math.cos(ang) * rad, y: cy + Math.sin(ang) * rad };
     }
-    halo(cx, cy, R * 1.05, 'rgba(120,80,255,0.032)');
+    halo(cx, cy, R * 1.05, 'rgba(231,188,104,0.032)');
     halo(cx, cy, R * 0.45, 'rgba(210,165,80,0.032)');
     var arm, t, q;
     for (arm = 0; arm < 2; arm++) {
       g.save();
       g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(200,170,255,0.028)' : 'rgba(120,90,255,0.022)';
+        g.strokeStyle = q ? 'rgba(243,223,182,0.028)' : 'rgba(232,192,113,0.022)';
         g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
         g.beginPath();
         for (t = 0; t <= 1.0001; t += 0.01) { var pp = spiral(arm, t); if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y); }
@@ -1332,7 +1332,7 @@
 
   function drawBackdrop(pad, w, h) {
     // v2570 — lien de test « ?test=decor » seulement : fond uni, sans planètes / galaxie / pièces (pour mesurer).
-    if (D6.testDecor) { ctx.fillStyle = '#120F38'; ctx.fillRect(0, 0, cssW, cssH); return; }
+    if (D6.testDecor) { ctx.fillStyle = '#382A0F'; ctx.fillRect(0, 0, cssW, cssH); return; }
     var ready = backdropCoinsReady();
     var key = cssW + 'x' + cssH + '@' + dpr + ':' + pad.l + ',' + pad.t + ',' + Math.round(w) + ',' + Math.round(h) + (ready ? '' : ':wait');
     if (!bgCanvas || key !== bgKey) {
@@ -1546,7 +1546,7 @@
         rsiBorder: 'rgba(255,215,0,0.12)',
         rsiTxt: 'rgba(196,188,160,0.85)',
         maFast: 'rgba(255,213,79,0.95)',
-        maSlow: 'rgba(0,188,212,0.9)',
+        maSlow: 'rgba(182,131,30,0.9)',
         bbFill: 'rgba(255,215,0,0.07)',
         bbStroke: 'rgba(255,215,0,0.28)',
         beadGlow: 'rgba(0,230,118,0.2)'
@@ -1567,7 +1567,7 @@
       rsiBorder: 'rgba(255,215,0,0.12)',
       rsiTxt: 'rgba(196,188,160,0.85)',
       maFast: 'rgba(255,213,79,0.95)',
-      maSlow: 'rgba(0,188,212,0.9)',
+      maSlow: 'rgba(182,131,30,0.9)',
       bbFill: 'rgba(255,215,0,0.07)',
       bbStroke: 'rgba(255,215,0,0.28)',
       beadGlow: 'rgba(255,215,0,0.16)'
@@ -1800,9 +1800,9 @@
       var up = c.c >= c.o;
       var col = up ? '#00E676' : '#ff3b30';
       if (opts.pal) col = up ? opts.pal.up : opts.pal.dn;
-      if (opts.nexusCyber) col = up ? '#00E5FF' : '#1565C0';
+      if (opts.nexusCyber) col = up ? '#DB9E24' : '#B7841E';
       if (opts.v75Rose) col = up ? '#E0001B' : '#7A000C';
-      if (opts.apexAiry) col = up ? '#C084FC' : '#7C3AED';
+      if (opts.apexAiry) col = up ? '#EDCF93' : '#E1AD46';
       // AZAZEL : braise orange à la hausse, rouge feu à la baisse.
       if (opts.crashDrop) col = up ? '#FF9F43' : '#FF3B30';
       // Titan Pulse : blanc pur, sans aucune teinte froide.
@@ -1853,7 +1853,7 @@
         ctx.shadowColor = up ? 'rgba(224,0,27,0.55)' : 'rgba(122,0,12,0.6)';
         ctx.shadowBlur = 8;
       } else if (opts.nexusCyber && i === candles.length - 1) {
-        ctx.shadowColor = up ? 'rgba(0,229,255,0.55)' : 'rgba(21,101,192,0.4)';
+        ctx.shadowColor = up ? 'rgba(219,158,36,0.55)' : 'rgba(183,132,30,0.4)';
         ctx.shadowBlur = 8;
       } else if (opts.horizonOrange && i === candles.length - 1) {
         ctx.shadowColor = 'rgba(255,152,0,0.5)';
@@ -1988,7 +1988,7 @@
       ctx.save();
       // v2583 (propriétaire) : BAAL plus visible, sans lueur : fil plus épais et plus clair, perles un peu plus
       // grosses et plus vives, fin contour clair (on ne les confond plus avec les bulles du décor).
-      ctx.strokeStyle = PU ? palRgba(PU, 0.7) : 'rgba(216,180,254,0.78)';
+      ctx.strokeStyle = PU ? palRgba(PU, 0.7) : 'rgba(244,226,190,0.78)';
       ctx.lineWidth = 2 * sizeK();
       ctx.lineJoin = 'round';
       ctx.beginPath();
@@ -2009,15 +2009,15 @@
           ctx.shadowColor = PU ? palRgba(PU, 0.85) : 'rgba(224,168,60,0.85)';
           ctx.shadowBlur = 12;
         }
-        ctx.fillStyle = up ? (PU || '#D58BFF') : (PD || '#8B4BFF');
+        ctx.fillStyle = up ? (PU || '#EFD39B') : (PD || '#E6BB64');
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
-        ctx.strokeStyle = up ? 'rgba(250,240,255,0.85)' : 'rgba(221,204,255,0.6)';
+        ctx.strokeStyle = up ? 'rgba(250,240,255,0.85)' : 'rgba(248,236,211,0.6)';
         ctx.lineWidth = 0.9;
         ctx.stroke();
-        ctx.fillStyle = up ? 'rgba(250,245,255,0.85)' : 'rgba(221,214,254,0.6)';
+        ctx.fillStyle = up ? 'rgba(250,245,255,0.85)' : 'rgba(249,239,219,0.6)';
         ctx.beginPath();
         ctx.arc(x - r * 0.3, y - r * 0.3, Math.max(0.8, r * 0.32), 0, Math.PI * 2);
         ctx.fill();
@@ -2224,10 +2224,10 @@
         var yT = Math.min(toY(hiC), yc - 7);
         var yB = Math.max(toY(loC), yc + 7);
         if (i === last && cssH >= 200) {
-          ctx.shadowColor = PU ? palRgba(up ? PU : PD, 0.9) : (up ? 'rgba(0,229,255,0.9)' : 'rgba(41,121,255,0.9)');
+          ctx.shadowColor = PU ? palRgba(up ? PU : PD, 0.9) : (up ? 'rgba(219,158,36,0.9)' : 'rgba(225,174,71,0.9)');
           ctx.shadowBlur = 12;
         }
-        ctx.fillStyle = PU ? (up ? palRgba(PU, 0.88) : palRgba(PD, 0.95)) : (up ? 'rgba(0,229,255,0.85)' : 'rgba(21,101,192,0.95)');
+        ctx.fillStyle = PU ? (up ? palRgba(PU, 0.88) : palRgba(PD, 0.95)) : (up ? 'rgba(219,158,36,0.85)' : 'rgba(183,132,30,0.95)');
         ctx.beginPath();
         ctx.moveTo(x, yT);
         ctx.lineTo(x + halfW, yc);
@@ -2237,7 +2237,7 @@
         ctx.fill();
         ctx.shadowBlur = 0;
         // Reflet : petite facette claire en haut à gauche (effet pierre taillée).
-        ctx.fillStyle = up ? 'rgba(255,255,255,0.75)' : (PU ? 'rgba(255,255,255,0.4)' : 'rgba(144,202,249,0.55)');
+        ctx.fillStyle = up ? 'rgba(255,255,255,0.75)' : (PU ? 'rgba(255,255,255,0.4)' : 'rgba(239,211,154,0.55)');
         ctx.beginPath();
         ctx.moveTo(x, yT);
         ctx.lineTo(x, yc);
@@ -2739,7 +2739,7 @@
     } else if (kind === 'current') {
       // v2835 (propriétaire : POSEIDON « on ne comprend pas », plus de trait au milieu) : COURANT MARIN — un seul tracé épais
       // dont chaque morceau prend la couleur de son sens (montée / descente), sans remplissage ni ligne de base.
-      var cUp = X.up || '#2DE2FF', cDn = X.dn || X.below || '#FFB547';
+      var cUp = X.up || '#E2AF4A', cDn = X.dn || X.below || '#FFB547';
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
       ctx.lineWidth = 3;
@@ -2925,7 +2925,7 @@
     } else if (kind === 'nightsky') {
       // NYX — voile de nuit : ciel violet profond sous la courbe, étoiles qui scintillent dedans, crête de lune.
       areaPath();
-      ctx.fillStyle = vGrad(minY, floor, [[0, rgba(X.fill || '#6B4DFF', 0.62)], [0.5, rgba(X.fill || '#6B4DFF', 0.25)], [1, rgba(X.fill || '#6B4DFF', 0.02)]]);
+      ctx.fillStyle = vGrad(minY, floor, [[0, rgba(X.fill || '#E6BB66', 0.62)], [0.5, rgba(X.fill || '#E6BB66', 0.25)], [1, rgba(X.fill || '#E6BB66', 0.02)]]);
       ctx.fill();
       for (i = 0; i < n; i++) {
         sd = seeds[i];
@@ -2946,7 +2946,7 @@
     } else if (kind === 'clouds') {
       // ZEUS — banc de nuages de l'Olympe : un nuage par seconde, reflet or quand ça monte.
       var cr = Math.max(3.4, S * 0.95);
-      ctx.fillStyle = rgba(X.fill || '#6E86C9', 0.9);
+      ctx.fillStyle = rgba(X.fill || '#C9AB6E', 0.9);
       for (i = 0; i < n; i++) {
         x = pts[i][0]; y = pts[i][1] + cr * 0.35;
         ctx.beginPath();
@@ -2956,7 +2956,7 @@
       }
       for (i = 0; i < n; i++) {
         x = pts[i][0]; y = pts[i][1];
-        ctx.fillStyle = dirs[i] ? U : (X.cloud || '#EEF3FF');
+        ctx.fillStyle = dirs[i] ? U : (X.cloud || '#FDF9F0');
         ctx.beginPath();
         ctx.arc(x, y, cr * 0.78, 0, Math.PI * 2);
         ctx.arc(x - cr * 0.62, y + cr * 0.25, cr * 0.55, 0, Math.PI * 2);
@@ -3279,7 +3279,7 @@
         x = pts[i][0]; y = pts[i][1];
         var len = Math.max(18, (floor - y) * 0.75);
         var mix = 0.5 + 0.5 * Math.sin(x * 0.03 + T * 0.7);
-        var cA = mix > 0.5 ? (X.fill || '#B48CFF') : M;
+        var cA = mix > 0.5 ? (X.fill || '#EFD39C') : M;
         var g2 = ctx.createLinearGradient(0, y, 0, y + len);
         g2.addColorStop(0, rgba(cA, 0.85));
         g2.addColorStop(0.25, rgba(cA, 0.45));
@@ -3409,7 +3409,7 @@
     } else if (kind === 'tide') {
       // POSEIDON — la marée : mer sous la courbe, crête d'écume qui ondule, houle dessous.
       areaPath();
-      ctx.fillStyle = vGrad(minY, floor, [[0, rgba(M, 0.6)], [0.5, rgba(X.fill || '#0B4FA8', 0.45)], [1, rgba(X.fill || '#0B4FA8', 0.05)]]);
+      ctx.fillStyle = vGrad(minY, floor, [[0, rgba(M, 0.6)], [0.5, rgba(X.fill || '#9A6F19', 0.45)], [1, rgba(X.fill || '#9A6F19', 0.05)]]);
       ctx.fill();
       var waveLine = function (off, amp, ph, col, wd, al) {
         ctx.beginPath();
@@ -3625,7 +3625,7 @@
     } else if (kind === 'scales') {
       // TIAMAT — peau de dragon : écailles sous la courbe (violet → indigo), arête dorsale en dents.
       areaPath();
-      ctx.fillStyle = vGrad(minY, floor, [[0, rgba(M, 0.75)], [0.6, rgba(X.fill || '#5B2BCF', 0.45)], [1, rgba(X.fill || '#5B2BCF', 0.08)]]);
+      ctx.fillStyle = vGrad(minY, floor, [[0, rgba(M, 0.75)], [0.6, rgba(X.fill || '#CF982B', 0.45)], [1, rgba(X.fill || '#CF982B', 0.08)]]);
       ctx.fill();
       ctx.save();
       areaPath();
@@ -3985,13 +3985,13 @@
       ctx.moveTo(x0, y0);
       ctx.lineTo(x1, y0);
       ctx.lineTo(x1, y1);
-      ctx.strokeStyle = useAccent ? accent : (color || '#2F6BFF');
+      ctx.strokeStyle = useAccent ? accent : (color || '#E2B04C');
       ctx.lineWidth = width || 3;
       ctx.lineJoin = 'miter';
       ctx.lineCap = 'butt';
       ctx.stroke();
       if (falling) {
-        ctx.strokeStyle = color || '#2F6BFF';
+        ctx.strokeStyle = color || '#E2B04C';
       }
     }
     var lastX = panMs > 0 ? toX(data.length - 1) : pad.l + w;
@@ -3999,7 +3999,7 @@
     ctx.beginPath();
     ctx.moveTo(toX(data.length - 1), lastY);
     ctx.lineTo(lastX, lastY);
-    ctx.strokeStyle = color || '#2F6BFF';
+    ctx.strokeStyle = color || '#E2B04C';
     ctx.lineWidth = width || 3;
     ctx.stroke();
     return { toX: toX, toY: toY, lastX: lastX, lastY: lastY, count: data.length };
@@ -4057,7 +4057,7 @@
       ctx.lineTo(map.toX(i), map.toY(lo[i]));
     }
     ctx.closePath();
-    ctx.fillStyle = 'rgba(157, 78, 221, 0.08)';
+    ctx.fillStyle = 'rgba(221,173,78, 0.08)';
     ctx.fill();
     started = false;
     ctx.beginPath();
@@ -4066,7 +4066,7 @@
       if (!started) { ctx.moveTo(map.toX(i), map.toY(up[i])); started = true; }
       else ctx.lineTo(map.toX(i), map.toY(up[i]));
     }
-    ctx.strokeStyle = 'rgba(157,78,221,0.65)';
+    ctx.strokeStyle = 'rgba(221,173,78,0.65)';
     ctx.lineWidth = 1.15;
     ctx.stroke();
     started = false;
@@ -4114,7 +4114,7 @@
       if (!started) { ctx.moveTo(toX(i - startIdx), toY(v)); started = true; }
       else ctx.lineTo(toX(i - startIdx), toY(v));
     }
-    ctx.strokeStyle = last >= 70 ? '#FF1744' : last <= 30 ? '#00E676' : '#9d4edd';
+    ctx.strokeStyle = last >= 70 ? '#FF1744' : last <= 30 ? '#00E676' : '#DDAD4E';
     ctx.lineWidth = 1.25;
     ctx.stroke();
     ctx.fillStyle = theme.rsiTxt;
@@ -4166,7 +4166,7 @@
       if (!started) { ctx.moveTo(toX(i - startIdx), toY(signal[i])); started = true; }
       else ctx.lineTo(toX(i - startIdx), toY(signal[i]));
     }
-    ctx.strokeStyle = '#5B8CFF';
+    ctx.strokeStyle = '#E8C172';
     ctx.lineWidth = 1.1;
     ctx.stroke();
     ctx.fillStyle = theme.rsiTxt || '#C9A227';
@@ -4219,7 +4219,7 @@
       else ctx.lineTo(x, y);
     }
     if (!started) return;
-    ctx.strokeStyle = '#00f0ff';
+    ctx.strokeStyle = '#DB9E24';
     ctx.lineWidth = 1.5;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
@@ -4934,8 +4934,8 @@
       ctx.fill();
     }
     // Point actuel : noyau de 6 px et halo pulsant de 12 px, quel que soit l'actif.
-    var headCol = compact ? '#ff2d75' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
-    var glowCol = compact ? '#ff2d75' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#00E5FF' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
+    var headCol = compact ? '#ff2d75' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#DB9E24' : (goldHead ? '#ffd24d' : (horizonHead ? '#ff9800' : color)))));
+    var glowCol = compact ? '#ff2d75' : (v75Head ? '#E0001B' : (titanHead ? '#FFFFFF' : (nexusHead ? '#DB9E24' : (goldHead ? '#ffb300' : (horizonHead ? '#ff9800' : color)))));
     ctx.beginPath();
     ctx.arc(map.lastX, map.lastY, compact ? 2.2 : 3, 0, Math.PI * 2);
     ctx.fillStyle = headCol;
@@ -5539,7 +5539,7 @@
       // Décor complet (étoiles et galaxie comprises) quand on le connaît : il ne change pas quand la courbe arrive.
       if (lastBackdrop && bgCanvas) drawBackdrop(lastBackdrop.pad, lastBackdrop.w, lastBackdrop.h);
       else if (bgCanvas) ctx.drawImage(bgCanvas, 0, 0, cssW, cssH);
-      else { ctx.fillStyle = '#120F38'; ctx.fillRect(0, 0, cssW, cssH); }
+      else { ctx.fillStyle = '#382A0F'; ctx.fillRect(0, 0, cssW, cssH); }
       if (Date.now() - Math.max(waitSince, arriveGate ? arriveSince : 0) > 1500) {
         ctx.fillStyle = 'rgba(245,197,24,0.55)';
         ctx.font = '700 12px "Hanken Grotesk", sans-serif';
@@ -5896,7 +5896,7 @@
     } else if (asset.lineStyle === 'plain') {
       map = drawLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor, asset.areaRgb);
     } else if (asset.lineStyle === 'step') {
-      map = drawStepLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#2F6BFF', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
+      map = drawStepLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#E2B04C', asset.lineAccent || '#FF7A00', asset.lineWidth || 3);
     } else if (asset.lineStyle === 'smooth' || asset.plotTheme === 'ivoryGold') {
       map = drawSmoothLine(pad, seriesW, h, lineData, minP, maxP, asset.lineColor || '#ff9800', asset.lineWidth || 2.5, asset.lineHalo || (asset.id === 'horizon50' ? 'rgba(255,152,0,0.55)' : null));
     } else if (asset.areaRgb || asset.id === 'goldtrend') {
@@ -5937,8 +5937,8 @@
       // Légende des indicateurs actifs (comme sur les plateformes pro).
       var legend = [];
       if (inds.ma) legend.push(['MA 9', '#ffb703']);
-      if (inds.ema) legend.push(['EMA 9', '#00f0ff']);
-      if (inds.bb) legend.push(['BB 20', '#b48cf0']);
+      if (inds.ema) legend.push(['EMA 9', '#DB9E24']);
+      if (inds.bb) legend.push(['BB 20', '#EDCE8F']);
       if (legend.length) {
         // Pastilles lisibles (fond sombre, point de couleur) : jamais de texte sur les bougies.
         ctx.save();
@@ -5962,7 +5962,7 @@
           ctx.beginPath();
           ctx.arc(lx + 8, ly + lh / 2, 2.6, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = 'rgba(235,240,250,0.92)';
+          ctx.fillStyle = 'rgba(250,245,235,0.92)';
           ctx.fillText(it[0], lx + 14, ly + lh / 2 + 0.5);
           lx += pw + 5;
         });
@@ -6032,10 +6032,10 @@
       // v2612 : même couleur que la colonne en cours (fixée pour sa seconde, plus de clignotement).
       tagCol = '#FFD08A';
     }
-    if (asset.id === 'nexusprime') tagCol = '#00E5FF';
+    if (asset.id === 'nexusprime') tagCol = '#DB9E24';
     if (asset.id === 'titanpulse') tagCol = '#e0e6ed';
     if (asset.id === 'v75') tagCol = '#ff2d75';
-    if (asset.id === 'apex500') tagCol = '#C084FC';
+    if (asset.id === 'apex500') tagCol = '#EDCF93';
     if (asset.ext && asset.chart === 'candle' && asset.candlePal && !primary) tagCol = market.price >= market.candle.o ? asset.candlePal.up : (asset.accent || asset.candlePal.up);
     // Historique regardé : le point du direct reste affiché tant que le bout de la courbe est à l'écran.
     if (map && (!(panMs > 0) || (panTrim === 0 && map.lastX < layout.axisX - 70))) {
