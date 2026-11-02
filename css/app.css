@@ -6882,16 +6882,13 @@ html body #withdrawModal#withdrawModal .btn-wd-confirm{background:linear-gradien
 /* --- Fenêtre RECHARGER --- */
 html body #depositModal#depositModal .modal-box{
   background:
-    radial-gradient(110% 45% at 50% 0%,rgba(46,229,157,.38),rgba(46,229,157,0) 60%),
-    radial-gradient(80% 50% at 100% 100%,rgba(251,191,36,.30),rgba(251,191,36,0) 65%),
-    radial-gradient(80% 50% at 0% 70%,rgba(200,145,46,.42),rgba(200,145,46,0) 65%),
     linear-gradient(180deg,#2A1F08 0%,#624A1A 55%,#5E4718 100%)!important;
-  border:1px solid rgba(46,229,157,.7)!important;
-  box-shadow:0 0 0 1px rgba(255,255,255,.07) inset,0 0 38px rgba(46,229,157,.38),0 0 80px rgba(251,191,36,.18)!important}
-html body #depositModal#depositModal .modal-title{color:#EFFFF7!important;background:linear-gradient(90deg,rgba(46,229,157,.38),rgba(16,185,129,.16))!important;
-  border:1px solid rgba(46,229,157,.8)!important;box-shadow:0 0 14px rgba(46,229,157,.35)!important;font-weight:900!important}
+  border:1px solid rgba(255,255,255,.08)!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.65)!important}
+html body #depositModal#depositModal .modal-title{color:#F0EAD8!important;background:rgba(255,255,255,.05)!important;
+  border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important;font-weight:900!important}
 html body #depositModal#depositModal label{color:#C8F7E2!important}
-html body #depositModal#depositModal .dep-amt-input{background:linear-gradient(180deg,rgba(46,229,157,.16),rgba(80,60,20,.30))!important;
+html body #depositModal#depositModal .dep-amt-input{background:rgba(255,255,255,.04)!important;
   border:1.5px solid rgba(46,229,157,.75)!important;color:#fff!important;font-weight:900!important;
   box-shadow:0 0 16px rgba(46,229,157,.28),0 0 0 1px rgba(255,255,255,.05) inset!important;animation:depGlow 2.4s ease-in-out infinite}
 html body #depositModal#depositModal .dep-amt-input:focus{border-color:#FBBF24!important;box-shadow:0 0 0 3px rgba(251,191,36,.22),0 0 18px rgba(251,191,36,.4)!important;animation:none;outline:0}
@@ -9361,7 +9358,7 @@ html body #depositModal#depositModal .momo-flw .pm-op.off{display:none!important
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-logo{flex:0 0 calc((100% - 15px) / 4)!important;width:calc((100% - 15px) / 4)!important;max-width:calc((100% - 15px) / 4)!important;font-size:11px!important;letter-spacing:-.01em!important;padding:0 3px!important;gap:3px!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-op2{background:#fff!important;color:#111!important;font-weight:800!important;border:0!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-op2 img{width:15px;height:15px;border-radius:4px;flex:0 0 15px}
-html body #depositModal#depositModal .pay-wave{border:2px solid #DFA93D!important;background:linear-gradient(160deg,rgba(223,169,61,.16),rgba(223,169,61,.05))!important}
+html body #depositModal#depositModal .pay-wave{border:1px solid rgba(255,255,255,.1)!important;background:rgba(255,255,255,.03)!important}
 html body #depositModal#depositModal .pay-wave-title{display:inline-flex;align-items:center;gap:8px}
 html body #depositModal#depositModal .pay-wave-title img{width:26px;height:26px;border-radius:7px;box-shadow:0 2px 8px rgba(0,0,0,.35)}
 html body #depositModal#depositModal .pay-wave .momo-phone{display:flex!important;gap:6px;margin-top:2px;height:40px;border:0!important;background:none!important;padding:0!important}
@@ -9399,7 +9396,7 @@ html body #depositModal#depositModal #payMethodCard .pl-logos .pl-mpesa2{color:#
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher{color:#F26522!important;font-weight:800!important}
 html body #depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher b{width:13px!important;height:13px!important;border-radius:3px!important;background:#F26522!important;color:#fff!important;font-size:9.5px!important;font-weight:900!important}
 /* v2633 — bouton « OUVRIR WAVE » prêt (le joueur reste sur OROLADO). */
-html body #depositModal#depositModal .btn-wave.ready{background:linear-gradient(135deg,#DFA93D,#AC7C1C)!important;box-shadow:0 0 0 2px #fff inset,0 0 14px rgba(223,169,61,.55)!important}
+html body #depositModal#depositModal .btn-wave.ready{background:linear-gradient(135deg,#C9962F,#9A6E1E)!important;box-shadow:0 0 0 1px rgba(255,255,255,.15) inset!important}
 html body #depositModal#depositModal .btn-wave.ready span::before{content:"";display:inline-block;width:18px;height:18px;margin-right:8px;vertical-align:-4px;border-radius:5px;background:url("../icons/pay/wave.svg?v=2768") center/cover no-repeat}
 
 /* v2642 — Pub Facebook / Instagram / TikTok (navigateur intégré) : Google y refuse sa connexion
@@ -13938,3 +13935,19 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#trad
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap #inputStake{border:0!important;background:transparent!important;box-shadow:none!important}
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap .stake-field .fs-stake-win{text-shadow:0 1px 2px rgba(0,0,0,.55)!important;color:#E8C06A!important}
 html.fs-trade body:where(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap .stake-field .fs-stake-win{color:#3BE39A!important}
+
+/* 2026-11-02 (propriétaire) : écran DÉPÔT = sombre sérieux, moins de jaune (logos/chips de marque gardés) */
+html body #depositModal#depositModal .modal-box{background:linear-gradient(180deg,#100E0A,#0A0906)!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:0 20px 60px rgba(0,0,0,.65)!important}
+html body #depositModal#depositModal .modal-title,html body #depositModal#depositModal .pay-wave-title{background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important;color:#F0EAD8!important}
+html body #depositModal#depositModal .dep-amt-input{background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:none!important;color:#fff!important}
+html body #depositModal#depositModal .dep-amt-input:focus{border-color:rgba(255,255,255,.4)!important;box-shadow:0 0 0 3px rgba(255,255,255,.1)!important}
+html body #depositModal#depositModal :is(.pay-wave,.pay-crypto-wall,.momo-phone){background:rgba(255,255,255,.03)!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:none!important}
+html body #depositModal#depositModal .btn-wave{background:linear-gradient(180deg,#C9962F,#9A6E1E)!important;border:1px solid rgba(201,150,47,.5)!important;box-shadow:none!important;color:#FBF3E0!important}
+html body #depositModal#depositModal .pay-go-pill{background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:none!important;color:#F0EAD8!important}
+
+/* 2026-11-02 (propriétaire) : DÉPÔT — balayage final, TOUT le reste du jaune en sombre (3× spécificité) */
+html body #depositModal#depositModal#depositModal :is(.modal-title,.pay-wave-title,.dep-amt-input,.amt-row,.pay-wave,.momo-phone,.oxa-dd-btn,.pay-crypto-wall,.pay-crypto-cell,.pay-go-pill,.dep-learn,.dep-learn-btn,.wave-cc){
+  background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:none!important;color:#EFEADC!important}
+html body #depositModal#depositModal#depositModal :is(.dep-amt-input,.oxa-dd-btn){color:#fff!important}
+html body #depositModal#depositModal#depositModal .btn-wave{background:linear-gradient(180deg,#C9962F,#9A6E1E)!important;border:1px solid rgba(201,150,47,.5)!important;box-shadow:none!important;color:#FBF3E0!important}
+html body #depositModal#depositModal#depositModal .pay-go-pill{background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.2)!important;box-shadow:none!important;color:#EFEADC!important}
