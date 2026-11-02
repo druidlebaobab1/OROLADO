@@ -10470,11 +10470,11 @@
       // (toujours la même vieille version). On navigue vers une URL fraîche (?v=<version en ligne>) → HTML re-téléchargé,
       // donc nouveau CSS/JS. Au chargement suivant mine==live → plus de rechargement (pas de boucle).
       try {
-        var fresh = location.pathname + '?v=' + (window.__oroSwBase || Date.now());
+        var fresh = location.pathname + '?v=' + Date.now();
         location.replace(fresh);
       } catch (eR) { try { location.reload(); } catch (e2) { reloading = false; } }
     }
-    setInterval(check, 5 * 60 * 1000);
+    setInterval(function(){ var pr=check(); if(pr&&pr.then){pr.then(maybeReload, function(){});} else { maybeReload(); } }, 90 * 1000);
     setTimeout(check, 8 * 1000); // relève le numéro de départ tôt (une mise en ligne dans la 1re minute n'est plus manquée)
     // 2026-10-21 (propriétaire : « les changements du site n'arrivent pas dans l'appli iPhone ») : l'appli de l'écran
     // d'accueil n'est presque jamais rechargée — iOS la remet telle quelle au premier plan (page gardée en mémoire, minuteries
