@@ -2309,7 +2309,7 @@
     var k = sizeK();
     var big = cssH >= 200;
     var i, c, x, up, y1, y2, bh, hw, lw;
-    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1, coins: 1, comet: 1, ohlc: 1, diamonds: 1, dashes: 1, zigzag: 1, dotline: 1, rings: 1, arcs: 1, beam: 1, nodes: 1, ramp: 1 }[kind];
+    var isLine = { step: 1, mountain: 1, neon: 1, ribbon: 1, stars: 1, baseline: 1, thread: 1, current: 1, coins: 1, comet: 1, ohlc: 1, diamonds: 1, dashes: 1, zigzag: 1, dotline: 1, rings: 1, arcs: 1, beam: 1, nodes: 1, ramp: 1, skyline: 1, domes: 1, spikes: 1 }[kind];
     var lastX = isLine ? (panMs > 0 ? toX(last) : pad.l + w) : toX(last);
     function wick(cd) {
       var a = isFinite(cd.h) ? cd.h : Math.max(cd.o, cd.c);
@@ -2561,6 +2561,61 @@
       ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
       for (i = 1; i < n; i++) { ctx.lineTo(pts[i][0], pts[i - 1][1]); ctx.lineTo(pts[i][0], pts[i][1]); }
       ctx.lineTo(lastX, pts[last][1]); ctx.stroke();
+    } else if (kind === 'skyline') {
+      // NOUVEAU (non-ligne) — Gratte-ciel : colonnes pleines montant du sol, degrade, sommet net.
+      var cwSk = Math.max(2, slot * 0.72);
+      for (i = 0; i < n; i++) {
+        var upSk = i === 0 ? (candles[i].c >= candles[i].o) : (candles[i].c >= candles[i - 1].c);
+        var colSk = upSk ? U : D;
+        var xSk = pts[i][0] - cwSk / 2, yTk = pts[i][1];
+        var gSk = ctx.createLinearGradient(0, yTk, 0, floor);
+        gSk.addColorStop(0, extColRgba(colSk, 0.92));
+        gSk.addColorStop(1, extColRgba(colSk, 0.10));
+        ctx.fillStyle = gSk;
+        ctx.fillRect(xSk, yTk, cwSk, Math.max(1, floor - yTk));
+        ctx.fillStyle = extColRgba(colSk, 1);
+        ctx.fillRect(xSk, yTk, cwSk, Math.max(2, 2.4 * k));
+      }
+    } else if (kind === 'domes') {
+      // NOUVEAU (non-ligne) — Domes : piliers a sommet arrondi (demi-cercle), degrade.
+      var cwD = Math.max(3, slot * 0.64);
+      for (i = 0; i < n; i++) {
+        var upD = i === 0 ? (candles[i].c >= candles[i].o) : (candles[i].c >= candles[i - 1].c);
+        var colD = upD ? U : D;
+        var xD = pts[i][0], yD = pts[i][1], rD = cwD / 2;
+        var topD = Math.min(yD + rD, floor);
+        var gD = ctx.createLinearGradient(0, yD, 0, floor);
+        gD.addColorStop(0, extColRgba(colD, 0.9));
+        gD.addColorStop(1, extColRgba(colD, 0.08));
+        ctx.fillStyle = gD;
+        ctx.beginPath();
+        ctx.moveTo(xD - rD, floor);
+        ctx.lineTo(xD - rD, topD);
+        ctx.arc(xD, topD, rD, Math.PI, 0, false);
+        ctx.lineTo(xD + rD, floor);
+        ctx.closePath();
+        ctx.fill();
+      }
+    } else if (kind === 'spikes') {
+      // NOUVEAU (non-ligne) — Pics : triangles pointus montant du sol jusqu'au prix.
+      var cwK = Math.max(3, slot * 0.82);
+      for (i = 0; i < n; i++) {
+        var upK = i === 0 ? (candles[i].c >= candles[i].o) : (candles[i].c >= candles[i - 1].c);
+        var colK = upK ? U : D;
+        var xK = pts[i][0], yK = pts[i][1];
+        var gK = ctx.createLinearGradient(0, yK, 0, floor);
+        gK.addColorStop(0, extColRgba(colK, 0.95));
+        gK.addColorStop(1, extColRgba(colK, 0.05));
+        ctx.fillStyle = gK;
+        ctx.beginPath();
+        ctx.moveTo(xK, yK);
+        ctx.lineTo(xK + cwK / 2, floor);
+        ctx.lineTo(xK - cwK / 2, floor);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = extColRgba(colK, 1);
+        ctx.beginPath(); ctx.arc(xK, yK, Math.max(1.4, 1.8 * k), 0, Math.PI * 2); ctx.fill();
+      }
     } else if (kind === 'mountain') {
       // Montagne : crête lissée, versant plein (dégradé franc), ligne de crête claire.
       ctx.beginPath();
