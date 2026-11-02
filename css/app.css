@@ -14026,3 +14026,22 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpr
   box-shadow:0 2px 7px rgba(0,0,0,.4),0 0 10px rgba(245,158,11,.55)!important;
   margin:0 0 0 10px!important;color:#FFFFFF!important}
 html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto#btnExpressCrypto.wx-recharge .wx-plus path{stroke:#FFFFFF!important;stroke-width:3.8!important}
+
+/* 2026-11-02 (propriétaire, « force le sombre du bas ») : le bas du terminal gardait une LUEUR FEU
+   (dégradés jaune/orange/rouge) peinte par #screenTrade::before/::after et .pad::before/::after, fixée
+   en bas de l'écran — c'est elle qui créait la « 3e zone jaune-noire » et la coupure avec la courbe.
+   On la supprime : le bas devient le MÊME noir #000000 que la courbe, continu, sans lueur chaude. */
+html:root body #screenTrade#screenTrade:not(.hidden)::before,
+html:root body #screenTrade#screenTrade:not(.hidden)::after,
+html:root body #screenTrade#screenTrade .pad::before,
+html:root body #screenTrade#screenTrade .pad::after,
+html:root body #fsTradeOverlay#fsTradeOverlay:not(.hidden)::before,
+html:root body #fsTradeOverlay#fsTradeOverlay:not(.hidden)::after,
+html:root body #fsTradeOverlay#fsTradeOverlay .pad::before,
+html:root body #fsTradeOverlay#fsTradeOverlay .pad::after{
+  background:none!important;background-image:none!important;box-shadow:none!important;animation:none!important}
+html:root body #screenTrade#screenTrade .pad,
+html:root body #screenTrade#screenTrade .pad.glass,
+html:root body #fsTradeOverlay#fsTradeOverlay .pad,
+html:root body #fsTradeOverlay#fsTradeOverlay .pad.glass{
+  background:#000000!important;background-image:none!important;border-top:0!important;box-shadow:none!important}
