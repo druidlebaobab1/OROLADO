@@ -1083,7 +1083,7 @@
       g.save();
       g.lineCap = 'round';
       for (q = 0; q < 2; q++) {
-        g.strokeStyle = q ? 'rgba(243,223,182,0.028)' : 'rgba(232,192,113,0.022)';
+        g.strokeStyle = q ? 'rgba(200,205,215,0.006)' : 'rgba(190,195,210,0.005)';
         g.lineWidth = q ? Math.max(2, R * 0.05) : Math.max(5, R * 0.13);
         g.beginPath();
         for (t = 0; t <= 1.0001; t += 0.01) { var pp = spiral(arm, t); if (t === 0) g.moveTo(pp.x, pp.y); else g.lineTo(pp.x, pp.y); }
@@ -1093,12 +1093,12 @@
       for (t = 0.02; t < 1; t += 0.004) {
         var sp = spiral(arm, t);
         var jx = (rnd() - 0.5) * R * 0.07, jy = (rnd() - 0.5) * R * 0.07;
-        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '255,220,170' : '210,200,255') + ',' + (0.05 + t * 0.07).toFixed(2) + ')';
+        g.fillStyle = 'rgba(' + (rnd() < 0.3 ? '210,215,225' : '200,205,220') + ',' + (0.012 + t * 0.018).toFixed(2) + ')';
         g.beginPath(); g.arc(sp.x + jx, sp.y + jy, 0.4 + rnd() * 0.8, 0, Math.PI * 2); g.fill();
       }
     }
-    halo(cx, cy, R * 0.26, 'rgba(255,200,110,0.06)');
-    halo(cx, cy, R * 0.11, 'rgba(255,240,210,0.06)');
+    halo(cx, cy, R * 0.26, 'rgba(200,205,215,0.01)');
+    halo(cx, cy, R * 0.11, 'rgba(210,215,225,0.012)');
     // v3232 (propriétaire) : plus de cercle autour de la spirale (il n'avait demandé que la pyramide).
     galaxy = null;
   }
