@@ -1181,10 +1181,10 @@
     }
     var big = Math.max(cssW, cssH);
     var small = Math.min(w, h);
-    glow(cssW * 0.06, cssH * 0.04, big * 0.6, 'rgba(40,50,46,0.012)');
+    glow(cssW * 0.06, cssH * 0.04, big * 0.6, 'rgba(40,50,46,0.004)');
     // (Ancien halo orange en bas à droite retiré : le propriétaire voyait une « lueur jaune » près des prix.)
-    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(40,50,46,0.01)');
-    glow(pad.l + w * 0.5, pad.t + h * 0.55, small * 0.85, 'rgba(40,50,46,0.01)');
+    glow(cssW * 0.96, cssH * 0.94, big * 0.55, 'rgba(40,50,46,0.004)');
+    glow(pad.l + w * 0.5, pad.t + h * 0.55, small * 0.85, 'rgba(40,50,46,0.003)');
     // Étoiles : tirage fixe (toujours au même endroit), petites et discrètes.
     var seed = 7;
     function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
