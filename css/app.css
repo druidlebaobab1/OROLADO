@@ -13965,7 +13965,8 @@ html.fs-trade body:where(.oro-real) #fsTradeOverlay#fsTradeOverlay#fsTradeOverla
 
 /* 2026-11-02 (propriétaire) : écran DÉPÔT = sombre sérieux, moins de jaune (logos/chips de marque gardés) */
 html body #depositModal#depositModal .modal-box{background:linear-gradient(180deg,#100E0A,#0A0906)!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:0 20px 60px rgba(0,0,0,.65)!important}
-html body #depositModal#depositModal .modal-title,html body #depositModal#depositModal .pay-wave-title{background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important;color:#F0EAD8!important}
+/* 2026-11-02 (propriétaire) : plus de cadre autour du titre « Recharger en USD » (ni « Payer avec Wave ») — juste le texte, léger. */
+html body #depositModal#depositModal .modal-title,html body #depositModal#depositModal .pay-wave-title{background:transparent!important;border:0!important;box-shadow:none!important;color:#F0EAD8!important;padding:0!important}
 html body #depositModal#depositModal .dep-amt-input{background:rgba(255,255,255,.04)!important;border:0!important;box-shadow:none!important;color:#fff!important}
 html body #depositModal#depositModal .dep-amt-input:focus{border-color:rgba(255,255,255,.4)!important;box-shadow:0 0 0 3px rgba(255,255,255,.1)!important}
 html body #depositModal#depositModal :is(.pay-wave,.pay-crypto-wall,.momo-phone){background:rgba(255,255,255,.03)!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:none!important}
