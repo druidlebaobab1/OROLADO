@@ -7935,10 +7935,10 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap
 .learn-modal .lg-demo{background:linear-gradient(135deg,#FFB300,#FF6D00);border:1px solid rgba(255,171,64,.8);color:#1a0d00}
 .learn-modal .lg-mode b{white-space:nowrap}
 /* 10 marchés alignés */
-.learn-modal .lg-mk{display:grid;grid-template-columns:repeat(5,1fr);gap:6px 4px;margin-bottom:8px}
+.learn-modal .lg-mk{display:grid;grid-template-columns:repeat(6,1fr);gap:8px 4px;margin-bottom:8px}
 .learn-modal .lg-mk-i{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
-.learn-modal .lg-mk-i i{width:36px;height:36px;display:block;border-radius:50%;background:rgba(255,255,255,.05)}
-.learn-modal .lg-mk-i i svg{width:100%;height:100%;display:block}
+.learn-modal .lg-mk-i i{width:30px;height:30px;display:block;border-radius:50%;background:rgba(255,255,255,.05);overflow:hidden;flex:0 0 auto}
+.learn-modal .lg-mk-i i svg,.learn-modal .lg-mk-i i img{width:100%;height:100%;display:block;overflow:hidden;object-fit:contain}
 .learn-modal .lg-mk-i.on i{box-shadow:0 0 0 2px #FBBF24,0 0 10px rgba(251,191,36,.6)}
 .learn-modal .lg-mk-i small{font-size:8.5px;font-weight:800;color:#EDE2CC;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .learn-modal .lg-kinds{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px}
@@ -14017,3 +14017,11 @@ html body #depositModal#depositModal#depositModal#depositModal :is(.dep-amt-inpu
 /* 2026-11-02 (propriétaire) : dépôt — AUCUN carré/bordure sur les champs (montant, pays, téléphone), 5× spécificité */
 html body #depositModal#depositModal#depositModal#depositModal#depositModal :is(.dep-amt-input,.amt-row,.oxa-dd-btn,.momo-phone,.wave-cc){border:0!important;outline:0!important;box-shadow:none!important}
 html body #depositModal#depositModal#depositModal#depositModal#depositModal .oxa-dd-btn[aria-expanded=true]{border:0!important}
+
+/* 2026-11-02 (propriétaire) : le « + » devant Recharger (profil) doit ressembler aux bons « + » du site :
+   pastille ronde blanche nette avec le « + » sombre → on voit clairement que c'est un bouton. */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto#btnExpressCrypto.wx-recharge .wx-plus{
+  width:28px!important;height:28px!important;min-width:28px!important;padding:5px!important;border-radius:50%!important;
+  background:#FFFFFF!important;box-shadow:0 2px 6px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.85)!important;
+  margin:0 0 0 10px!important;color:#9A3412!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnExpressCrypto#btnExpressCrypto.wx-recharge .wx-plus path{stroke:#9A3412!important;stroke-width:3.6!important}

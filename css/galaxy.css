@@ -222,9 +222,9 @@ html body #tradeWrap#tradeWrap .chart-fs-btn > *{display:none!important}
 /* ---------- terminal (écran normal) : transparent, on voit l'univers derrière ---------- */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{
   background:#000000!important;
-  border:1px solid rgba(255,255,255,.07)!important;border-radius:18px!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 -4px 24px rgba(0,0,0,.18)!important;
-  padding:10px 10px 12px!important;margin-top:8px!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;
+  padding:10px 10px 12px!important;margin-top:0!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad::before,
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad::after{display:none!important;content:none!important}
@@ -570,12 +570,9 @@ html body #screenTrade#screenTrade #topbarCta.topbar-cta .crypto-mini-row .coin-
 
 /* terminal bleu transparent, avec un peu d'univers dedans */
 html:not(.fs-trade) body #tradeWrap#tradeWrap .pad{
-  background:
-    radial-gradient(70% 60% at 100% 0%,rgba(242,193,78,.16),transparent 70%),
-    radial-gradient(60% 60% at 0% 100%,rgba(231,190,109,.16),transparent 70%),
-    linear-gradient(180deg,rgba(95,68,15,.40),rgba(50,36,8,.56))!important;
-  border:1px solid rgba(242,193,78,.40)!important;
-  box-shadow:inset 0 1px 0 rgba(245,228,194,.14),0 0 26px rgba(242,193,78,.10)!important;
+  background:#000000!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;
 }
 html:not(.fs-trade) body #tradeWrap#tradeWrap .win-preview{
   background:linear-gradient(180deg,rgba(242,193,78,.22),rgba(242,193,78,.06))!important;border:1px solid rgba(242,193,78,.6)!important;
@@ -592,14 +589,14 @@ html.fs-trade body #tradeWrap#tradeWrap .trade-row .btn-trade{flex:1 1 0!importa
 html.fs-trade body #tradeWrap#tradeWrap .stake-field{width:100%!important;max-width:none!important;height:56px!important;min-height:56px!important;margin:0!important}
 html.fs-trade body #tradeWrap#tradeWrap #inputStake{
   width:100%!important;height:56px!important;min-height:56px!important;margin:0!important;border-radius:16px!important;
-  background:linear-gradient(180deg,rgba(95,68,15,.62),rgba(50,36,8,.78))!important;border:1.5px solid rgba(255,171,64,.8)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(255,140,30,.18)!important;
+  background:rgba(255,255,255,.04)!important;border:1.5px solid rgba(255,255,255,.26)!important;
+  box-shadow:none!important;
   font-size:20px!important;font-weight:800!important;text-align:center!important;padding:0 8px 16px 18px!important;line-height:1!important;
 }
 html.fs-trade body:where(.oro-real):not(#oroQ):not(.oroQ) #tradeWrap#tradeWrap #inputStake{border-color:rgba(34,224,122,.85)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 14px rgba(34,224,122,.2)!important}
 html body #fsTradeOverlay#fsTradeOverlay .stake-field .fs-stake-win{
   font-size:12px!important;font-weight:800!important;color:#F0F9FF!important;text-align:center!important;letter-spacing:.01em!important;
-  text-shadow:0 0 8px rgba(242,193,78,.45)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.6)!important;
 }
 
 /* =====================================================================
@@ -2130,8 +2127,8 @@ html.is-android body #drawerProfile#drawerProfile#drawerProfile .drawer-legal{pa
 /* v2854 (propriétaire : plus de trait entre la courbe et le terminal) : couleur exacte du haut du terminal, lue par
    js/chart.js pour fondre le bas de la courbe dedans (Android / iPhone, portrait). */
 @media (max-width:859px){
-  html body #tradeWrap > .pad{--oro-pad-top:14,13,10}
-  html.is-ios body #tradeWrap > .pad{--oro-pad-top:14,13,10} /* v3453 : noir chaud = fond du terminal (#0E0D0A). Fini la bande bleue (avant 10,10,34 / 13,14,40 = navy) */
+  html body #tradeWrap > .pad{--oro-pad-top:0,0,0}
+  html.is-ios body #tradeWrap > .pad{--oro-pad-top:0,0,0} /* v3453 : noir chaud = fond du terminal (#0E0D0A). Fini la bande bleue (avant 10,10,34 / 13,14,40 = navy) */
   /* la dernière ligne de pixels sous la courbe (arrondi de hauteur) laissait voir le fond : le terminal la recouvre */
   html:not(.fs-trade) body #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4) > .pad{box-shadow:0 -2px 0 0 rgb(var(--oro-pad-top))!important}
 }

@@ -1139,7 +1139,7 @@
         sd = (sd * 16807) % 2147483647; var rx = ((i % 8) + 0.15 + 0.7 * (sd - 1) / 2147483646) / 8;
         sd = (sd * 16807) % 2147483647; var ry = (Math.floor(i / 8) + 0.15 + 0.7 * (sd - 1) / 2147483646) / 6;
         sd = (sd * 16807) % 2147483647; var rs = (sd - 1) / 2147483646;
-        arr.push({ x: rx, y: ry, r: 0.45 + rs * 0.9, a: 0.25 + rs * 0.45 });
+        arr.push({ x: rx, y: ry, r: 0.45 + rs * 0.9, a: 0.12 + rs * 0.2 });
       }
       driftStars = arr;
     }
@@ -1202,7 +1202,7 @@
       var sx = ((k % gCols) + 0.2 + rnd() * 0.6) * cellW;
       var sy = (Math.floor(k / gCols) + 0.2 + rnd() * 0.6) * cellH;
       var sr = rnd() * 1.05 + 0.25;
-      var sa = rnd() * 0.5 + 0.12;
+      var sa = rnd() * 0.3 + 0.05;
       // (v2501 retirait 2 étoiles sur 3 en bas à droite parce qu'elles étaient collées ; v2585 : la grille les sépare
       // déjà, donc ce coin garde ses étoiles, comme les autres — demande du propriétaire.)
       g.fillStyle = 'rgba(255,255,255,' + sa.toFixed(2) + ')';
@@ -1320,9 +1320,9 @@
     ];
     // v3236 (propriétaire) : intensité des planètes RÉDUITE (plus discrètes, relax) — on sent que
     // ce sont des planètes mais sans qu'elles accrochent l'œil. Bas remonté d'un chouïa.
-    planet(planets[0].x, planets[0].y, planets[0].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.022, false);
-    planet(planets[1].x, planets[1].y, planets[1].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.022, false);
-    planet(planets[2].x, planets[2].y, planets[2].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.022, false);
+    planet(planets[0].x, planets[0].y, planets[0].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.01, false);
+    planet(planets[1].x, planets[1].y, planets[1].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.01, false);
+    planet(planets[2].x, planets[2].y, planets[2].r, '#9aa0a8', 'rgba(120,124,132,1)', '#15171b', 0.01, false);
     g.globalAlpha = 1;
     galaxy = null;
     try { cryptoWorld(g, pad, w, h, planets, planet, rnd, small, pr); } catch (eCw) { galaxy = null; }
@@ -1535,9 +1535,9 @@
         id: 'darkPro',
         bg0: '#0B0E14',
         bg1: '#0B0E14',
-        gridH: 'rgba(255,255,255,0.05)',
-        gridHStrong: 'rgba(255,255,255,0.05)',
-        gridV: 'rgba(255,255,255,0.05)',
+        gridH: 'rgba(255,255,255,0.035)',
+        gridHStrong: 'rgba(255,255,255,0.035)',
+        gridV: 'rgba(255,255,255,0.035)',
         border: null,
         priceTxt: '#8C7E5C',
         timeTxt: '#8C7E5C',
@@ -1556,9 +1556,9 @@
       id: 'darkLegacy',
       bg0: '#0B0E14',
       bg1: '#0B0E14',
-      gridH: 'rgba(255,255,255,0.05)',
-      gridHStrong: 'rgba(255,255,255,0.05)',
-      gridV: 'rgba(255,255,255,0.05)',
+      gridH: 'rgba(255,255,255,0.035)',
+      gridHStrong: 'rgba(255,255,255,0.035)',
+      gridV: 'rgba(255,255,255,0.035)',
       border: null,
       priceTxt: '#8C7E5C',
       timeTxt: '#8C7E5C',
