@@ -2371,79 +2371,99 @@
      la tranchée à gauche : touche où lancer une grenade, elle décrit un arc et explose au sol en nettoyant les soldats autour.
      Ils avancent de plus en plus vite et nombreux ; un soldat à la tranchée termine. La fin secrète = un tir d'artillerie. */
   boot('grenade', function (A) {
-    var W, H, T, dpr, bg, gx, gy, sr, soldiers = [], nades = [], cool = 0, dead = 0, won = 0, barrage = null, t = 0, spT = 0, kills = 0, aiT = 0, soldierS, GRAV, walkI, heroI, sandI;
-    function soldierSprite() {
-      var s = sr * 2;
-      return mkc(s, s * 1.3, dpr, function (c, w, h) {
-        c.translate(w / 2, h * 0.5);
-        c.fillStyle = '#3F4A2E'; rr(c, -s * 0.2, -s * 0.1, s * 0.4, s * 0.55, s * 0.08); c.fill();
-        circ(c, 0, -s * 0.28, s * 0.17, '#C7A17A');
-        c.fillStyle = '#4B5320'; c.beginPath(); c.arc(0, -s * 0.3, s * 0.2, Math.PI, 0); c.fill(); c.fillRect(-s * 0.22, -s * 0.32, s * 0.44, s * 0.06);
-        c.strokeStyle = '#2B3220'; c.lineWidth = s * 0.08; c.lineCap = 'round'; c.beginPath(); c.moveTo(-s * 0.08, s * 0.42); c.lineTo(-s * 0.08, s * 0.62); c.moveTo(s * 0.08, s * 0.42); c.lineTo(s * 0.08, s * 0.62); c.stroke();
-        c.strokeStyle = '#1F2937'; c.lineWidth = s * 0.06; c.beginPath(); c.moveTo(-s * 0.1, -s * 0.05); c.lineTo(-s * 0.4, -s * 0.18); c.stroke();
-      });
-    }
+    /* v3550 (propriétaire : « améliorer puissamment ») — champ de bataille VU DE CÔTÉ (war_side.webp, sol à 72,8 % de l'image,
+       calé sur gy), personnages plus grands, vraie explosion (boule de feu fal.ai qui gonfle puis s'efface + fumée + terre),
+       soldats PROJETÉS par le souffle (ils volent, tournent, retombent et restent au sol), grenade qui tourne avec une traînée,
+       soldats à des profondeurs et vitesses variées (plus une file indienne). Même règle de jeu qu'avant. */
+    var W, H, T, dpr, bg, gx, gy, sr, soldiers = [], nades = [], cool = 0, dead = 0, won = 0, barrage = null, t = 0, spT = 0, kills = 0, aiT = 0, soldierS, GRAV, walkI, heroI, sandI, boomI, booms = [], fallen = [], CH = 90;
     function throwAt(tx) {
       if (cool > 0 || dead || barrage || won) return;
-      tx = clamp(tx, gx + sr, W - sr * 0.5); cool = 0.4;
-      var dist = tx - gx, tf = clamp(dist / (W * 0.55), 0.55, 1.4);
-      nades.push({ x: gx + sr * 0.5, y: gy - sr * 3, vx: (tx - gx - sr * 0.5) / tf, vy: -GRAV * tf / 2 + (sr * 3) / tf, tx: tx });
+      tx = clamp(tx, gx + sr * 2, W - sr * 0.5); cool = 0.45;
+      var dist = tx - gx, tf = clamp(dist / (W * 0.55), 0.55, 1.4), x0 = gx + CH * 0.12, y0 = gy - CH * 0.95;
+      nades.push({ x: x0, y: y0, vx: (tx - x0) / tf, vy: -GRAV * tf / 2 + (gy - y0) / tf, tx: tx, r: 0, tr: [] });
       A.sx('throw', { k: 'nade', v: 0.4 });
     }
     function blast(x) {
-      var r = W * 0.15; boomFx(A, x, gy, 1.2); A.shake(0.4);
-      for (var i = soldiers.length - 1; i >= 0; i--) if (Math.abs(soldiers[i].x - x) < r) { soldiers.splice(i, 1); kills++; }
+      var r = W * 0.15; boomFx(A, x, gy, 1.2); A.shake(0.45);
+      booms.push({ x: x, t: 0, s: r * 2.3 });
+      for (var i = soldiers.length - 1; i >= 0; i--) {
+        var s = soldiers[i];
+        if (Math.abs(s.x - x) < r) {
+          var dir = s.x >= x ? 1 : -1;
+          fallen.push({ x: s.x, y: 0, dz: s.dz, vx: dir * rnd(0.25, 0.5) * W, vy: -rnd(0.55, 0.85) * (H - T), r: 0, vr: dir * rnd(6, 10), t: 0, fi: Math.floor(s.bob / 3) % 2 });
+          soldiers.splice(i, 1); kills++;
+        }
+      }
     }
     return {
       size: function (w, h, uu, d, top) {
-        W = w; H = h; dpr = d; T = top; gy = H - clamp((H - T) * 0.14, 26, 80); sr = clamp(Math.min(W, H - T) * 0.05, 14, 32); gx = W * 0.1; GRAV = (H - T) * 2.4;
-        /* v3547 (propriétaire) — décor VU DE CÔTÉ (sol plat calé sur gy), soldats ennemis qui marchent (2 images),
-           lanceur dessin animé (prêt / lancé) derrière des sacs de sable. Tout fal.ai ; repli dessiné pendant le chargement. */
+        W = w; H = h; dpr = d; T = top; gy = H - clamp((H - T) * 0.24, 40, 170); sr = clamp(Math.min(W, H - T) * 0.05, 14, 32); GRAV = (H - T) * 2.4;
+        CH = clamp((H - T) * 0.32, 60, 240); gx = Math.max(W * 0.12, CH * 0.5);
         soldierS = gSprite(sr * 2.3, sr * 2.8, dpr, 'img/games/war_soldier.webp?v=' + GV, function (c, cw, ch) { c.fillStyle = '#4B5320'; rr(c, cw * 0.28, ch * 0.2, cw * 0.44, ch * 0.62, cw * 0.1); c.fill(); });
-        gx = W * 0.13; walkI = gImg('img/games/war_walk.webp?v=3547'); heroI = gImg('img/games/war_hero.webp?v=3547'); sandI = gImg('img/games/war_sand.webp?v=3547');
-        bg = mkc(W, H, dpr, function (c) {
-          c.fillStyle = lg(c, 0, 0, 0, gy, ['#E9C9A0', '#F2D7AE']); c.fillRect(0, 0, W, gy);
-          c.fillStyle = lg(c, 0, gy, 0, H, ['#C79562', '#4A3A30']); c.fillRect(0, gy, W, H - gy);
-        });
-        (function (cv) {
-          var o = gImg('img/games/war_side.webp?v=3547'), G0 = 0.81;
-          function paint() { try { var x = cv.getContext('2d'), im = o.im, iw = im.naturalWidth, ih = im.naturalHeight, k = cv.width / W;
-            var s2 = Math.max(W / iw, gy / (G0 * ih), (H - gy) / ((1 - G0) * ih)), dw = iw * s2, dh = ih * s2;
-            x.save(); x.setTransform(k, 0, 0, k, 0, 0); x.drawImage(im, (W - dw) / 2, gy - G0 * dh, dw, dh); x.restore(); } catch (e) { /* repli */ } }
-          if (o.ok) paint(); else o.im.addEventListener('load', paint);
-        })(bg);
+        walkI = gImg('img/games/war_walk.webp?v=3547'); heroI = gImg('img/games/war_hero.webp?v=3547'); sandI = gImg('img/games/war_sand.webp?v=3547'); boomI = gImg('img/games/war_boom.webp?v=3550');
+        var o = gImg('img/games/war_side.webp?v=3550'), G0 = 0.728;
+        function paint(c) {
+          if (o.ok) { var iw = o.im.naturalWidth, ih = o.im.naturalHeight, s2 = Math.max(W / iw, gy / (G0 * ih), (H - gy) / ((1 - G0) * ih)), dw = iw * s2, dh = ih * s2; c.drawImage(o.im, (W - dw) / 2, gy - G0 * dh, dw, dh); }
+          else { c.fillStyle = lg(c, 0, 0, 0, gy, ['#7C3A3A', '#E0894B', '#F2C27A']); c.fillRect(0, 0, W, gy); c.fillStyle = lg(c, 0, gy, 0, H, ['#7A5A3A', '#3A2A1E']); c.fillRect(0, gy, W, H - gy); }
+        }
+        bg = mkc(W, H, dpr, paint);
+        if (!o.ok) o.im.addEventListener('load', function () { if (W === w && H === h) bg = mkc(W, H, dpr, paint); }); // nouveau canevas : le fond en cache est redessiné
       },
-      reset: function () { soldiers = []; nades = []; dead = 0; won = 0; barrage = null; spT = 0.4; kills = 0; cool = 0; },
+      reset: function () { soldiers = []; nades = []; booms = []; fallen = []; dead = 0; won = 0; barrage = null; spT = 0.4; kills = 0; cool = 0; },
       step: function (dt, live) {
         t += dt; cool = Math.max(0, cool - dt); var lv = live ? A.lv() : 0.2, i, s, n;
-        if (barrage) { barrage.t += dt; barrage.sh = barrage.sh || []; if (barrage.t < 0.9 && Math.random() < 0.5) barrage.sh.push({ x: rnd(0, W), y: T, vy: (H - T) * 2 }); for (i = barrage.sh.length - 1; i >= 0; i--) { var sh = barrage.sh[i]; sh.y += sh.vy * dt; if (sh.y >= gy) { boomFx(A, sh.x, gy, 0.9); barrage.sh.splice(i, 1); } } if (barrage.t > 0.4 && !barrage.hit) { barrage.hit = 1; dead = 1; } return; }
+        for (i = booms.length - 1; i >= 0; i--) { booms[i].t += dt; if (booms[i].t > 0.75) booms.splice(i, 1); }
+        for (i = fallen.length - 1; i >= 0; i--) { var f = fallen[i]; f.t += dt; if (f.y < 0 || f.vy < 0) { f.vy += GRAV * 0.8 * dt; f.y += f.vy * dt; f.x += f.vx * dt; f.r += f.vr * dt; if (f.y >= 0) { f.y = 0; f.vy = 0; f.vx = 0; f.r = (f.vr > 0 ? 1 : -1) * Math.PI / 2; f.vr = 0; } } if (f.t > 2.6) fallen.splice(i, 1); }
+        if (barrage) { barrage.t += dt; barrage.sh = barrage.sh || []; if (barrage.t < 0.9 && Math.random() < 0.5) barrage.sh.push({ x: rnd(0, W), y: T, vy: (H - T) * 2 }); for (i = barrage.sh.length - 1; i >= 0; i--) { var sh = barrage.sh[i]; sh.y += sh.vy * dt; if (sh.y >= gy) { boomFx(A, sh.x, gy, 0.9); booms.push({ x: sh.x, t: 0, s: W * 0.3 }); barrage.sh.splice(i, 1); } } if (barrage.t > 0.4 && !barrage.hit) { barrage.hit = 1; dead = 1; } return; }
         if (dead || won) return;
-        spT -= dt; if (spT <= 0 && soldiers.length < 3 + Math.round(6 * lv)) { soldiers.push({ x: W + sr, v: (W) * (0.05 + 0.06 * lv) * rnd(0.85, 1.2), bob: rnd(0, TAU) }); spT = Math.max(0.5, 1.9 - 1.2 * lv) * rnd(0.7, 1.3); }
-        for (i = nades.length - 1; i >= 0; i--) { n = nades[i]; n.x += n.vx * dt; n.vy += GRAV * dt; n.y += n.vy * dt; if (n.y >= gy) { blast(n.x); nades.splice(i, 1); } }
+        spT -= dt; if (spT <= 0 && soldiers.length < 3 + Math.round(6 * lv)) { soldiers.push({ x: W + CH * 0.5, v: W * (0.05 + 0.06 * lv) * rnd(0.75, 1.3), bob: rnd(0, TAU), dz: rnd(-1, 1) }); spT = Math.max(0.5, 1.9 - 1.2 * lv) * rnd(0.6, 1.4); }
+        for (i = nades.length - 1; i >= 0; i--) { n = nades[i]; n.tr.push([n.x, n.y]); if (n.tr.length > 7) n.tr.shift(); n.x += n.vx * dt; n.vy += GRAV * dt; n.y += n.vy * dt; n.r += dt * 14; if (n.y >= gy) { blast(n.x); nades.splice(i, 1); } }
         for (i = soldiers.length - 1; i >= 0; i--) {
           s = soldiers[i]; s.x -= s.v * dt; s.bob += dt * 10;
-          if (s.x <= gx + sr * 2.2) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, gx, gy, 1.2); A.shake(0.5); } return; } soldiers.splice(i, 1); }
+          if (s.x <= gx + CH * 0.62) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, gx, gy, 1.2); booms.push({ x: gx, t: 0, s: W * 0.35 }); A.shake(0.5); } return; } soldiers.splice(i, 1); }
         }
-        if (A.idle()) { aiT += dt; if (aiT > 0.45) { aiT = 0; var near = soldiers.slice().sort(function (a2, b2) { return a2.x - b2.x; })[0]; if (near && near.x < W * 0.62) throwAt(near.x - near.v * 0.3); } }
+        if (A.idle()) { aiT += dt; if (aiT > 0.5) { aiT = 0; var near = soldiers.slice().sort(function (a2, b2) { return a2.x - b2.x; })[0]; if (near && near.x < W * 0.66) throwAt(near.x - near.v * 0.35); } }
       },
       draw: function (c) {
         A.bg(bg); var i, s, n;
-        var zh = sr * 3.7, zw = zh * 0.8;
-        for (i = 0; i < soldiers.length; i++) {
-          s = soldiers[i]; var lift = Math.abs(Math.sin(s.bob * 0.5)) * zh * 0.025;
-          c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(s.x, gy, zw * 0.3, zh * 0.05, 0, 0, TAU); c.fill();
-          if (walkI.ok) c.drawImage(walkI.im, (Math.floor(s.bob / 3) % 2) * 256, 0, 256, 320, s.x - zw / 2, gy - zh - lift + zh * 0.02, zw, zh);
-          else c.drawImage(soldierS, s.x - soldierS.w / 2, gy - soldierS.h, soldierS.w, soldierS.h);
+        var zh = CH * 0.88, zw = zh * 0.8;
+        // soldats tombés (derrière les vivants)
+        for (i = 0; i < fallen.length; i++) {
+          var f = fallen[i], fy = gy + f.dz * CH * 0.04 + f.y, k = f.t > 1.8 ? Math.max(0, 1 - (f.t - 1.8) / 0.8) : 1, sc = 1 + f.dz * 0.04;
+          if (!walkI.ok) continue;
+          c.globalAlpha = k; c.save(); c.translate(f.x, fy - zh * 0.45 * sc * (f.y < 0 ? 1 : 0.35)); c.rotate(f.r); c.drawImage(walkI.im, f.fi * 256, 0, 256, 320, -zw * sc / 2, -zh * sc / 2, zw * sc, zh * sc); c.restore(); c.globalAlpha = 1;
         }
-        var hh = sr * 4.3, hw = hh;
+        var list = soldiers.slice().sort(function (a, b) { return a.dz - b.dz; });
+        for (i = 0; i < list.length; i++) {
+          s = list[i]; var sc2 = 1 + s.dz * 0.05, sy = gy + s.dz * CH * 0.04, lift = Math.abs(Math.sin(s.bob * 0.5)) * zh * 0.025, zw2 = zw * sc2, zh2 = zh * sc2;
+          c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(s.x, sy, zw2 * 0.3, zh2 * 0.05, 0, 0, TAU); c.fill();
+          if (walkI.ok) c.drawImage(walkI.im, (Math.floor(s.bob / 3) % 2) * 256, 0, 256, 320, s.x - zw2 / 2, sy - zh2 - lift + zh2 * 0.02, zw2, zh2);
+          else c.drawImage(soldierS, s.x - soldierS.w / 2, sy - soldierS.h, soldierS.w, soldierS.h);
+        }
+        var hh = CH, hw = hh;
         if (!dead) {
-          c.fillStyle = 'rgba(0,0,0,.22)'; c.beginPath(); c.ellipse(gx, gy, hw * 0.3, hh * 0.05, 0, 0, TAU); c.fill();
-          if (heroI.ok) c.drawImage(heroI.im, (cool > 0.18 ? 1 : 0) * 320, 0, 320, 320, gx - hw / 2, gy - hh + hh * 0.02, hw, hh);
+          c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(gx, gy, hw * 0.3, hh * 0.05, 0, 0, TAU); c.fill();
+          if (heroI.ok) c.drawImage(heroI.im, (cool > 0.22 ? 1 : 0) * 320, 0, 320, 320, gx - hw / 2, gy - hh + hh * 0.02, hw, hh);
           else { circ(c, gx, gy - sr * 0.9, sr * 0.5, '#C7A17A'); c.fillStyle = '#4B5320'; c.beginPath(); c.arc(gx, gy - sr * 1.05, sr * 0.55, Math.PI, 0); c.fill(); }
         }
-        if (sandI.ok) { var sw = sr * 3.6, shh = sw * 177 / 360; c.drawImage(sandI.im, gx + sr * 0.9 - sw / 2, gy - shh + sr * 0.12, sw, shh); }
-        else for (var sb = 0; sb < 3; sb++) circ(c, gx - sr * 0.3 + sb * sr * 0.5, gy - sr * 0.1, sr * 0.45, '#A8956B');
-        c.fillStyle = '#1F2937'; for (i = 0; i < nades.length; i++) { n = nades[i]; circ(c, n.x, n.y, sr * 0.3, '#1F2937'); c.fillStyle = '#16A34A'; c.fillRect(n.x - sr * 0.06, n.y - sr * 0.4, sr * 0.12, sr * 0.14); c.fillStyle = '#1F2937'; }
+        if (sandI.ok) { var sw = CH * 0.85, shh = sw * 177 / 360; c.drawImage(sandI.im, gx + CH * 0.22 - sw / 2, gy - shh + CH * 0.03, sw, shh); }
+        // grenades : traînée + corps ovale qui tourne + levier
+        for (i = 0; i < nades.length; i++) {
+          n = nades[i]; var gr = Math.max(4, CH * 0.06);
+          for (var q = 0; q < n.tr.length; q++) { c.globalAlpha = (q + 1) / n.tr.length * 0.35; circ(c, n.tr[q][0], n.tr[q][1], gr * (0.4 + q / n.tr.length * 0.5), '#E7E5E4'); }
+          c.globalAlpha = 1; c.save(); c.translate(n.x, n.y); c.rotate(n.r);
+          c.fillStyle = '#4D5B2A'; c.beginPath(); c.ellipse(0, 0, gr * 0.8, gr, 0, 0, TAU); c.fill();
+          c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1; for (var g2 = -1; g2 <= 1; g2++) { c.beginPath(); c.moveTo(-gr * 0.8, g2 * gr * 0.45); c.lineTo(gr * 0.8, g2 * gr * 0.45); c.stroke(); }
+          c.fillStyle = 'rgba(255,255,255,.3)'; c.beginPath(); c.ellipse(-gr * 0.3, -gr * 0.35, gr * 0.22, gr * 0.3, 0, 0, TAU); c.fill();
+          c.fillStyle = '#9CA3AF'; c.fillRect(-gr * 0.3, -gr * 1.35, gr * 0.6, gr * 0.4); c.fillRect(gr * 0.2, -gr * 1.3, gr * 0.25, gr * 0.9);
+          c.restore();
+        }
+        // explosions : boule de feu qui gonfle puis s'efface
+        for (i = 0; i < booms.length; i++) {
+          var b = booms[i], p = b.t / 0.75, gs = b.s * (0.35 + 0.75 * Math.min(1, b.t / 0.18)), al = p < 0.45 ? 1 : Math.max(0, 1 - (p - 0.45) / 0.55);
+          if (boomI && boomI.ok) { c.globalAlpha = al; c.drawImage(boomI.im, b.x - gs / 2, gy - gs * 0.62 - b.t * CH * 0.3, gs, gs); c.globalAlpha = 1; }
+          c.fillStyle = 'rgba(40,30,25,' + (0.35 * al).toFixed(3) + ')'; c.beginPath(); c.ellipse(b.x, gy, b.s * 0.35, b.s * 0.06, 0, 0, TAU); c.fill();
+        }
         if (barrage && barrage.sh) { c.strokeStyle = '#FDE68A'; c.lineWidth = 3; c.lineCap = 'round'; for (i = 0; i < barrage.sh.length; i++) { var sh = barrage.sh[i]; c.beginPath(); c.moveTo(sh.x, sh.y); c.lineTo(sh.x, sh.y - 16); c.stroke(); } }
       },
       act: function (k, x, y) { throwAt(x); },
