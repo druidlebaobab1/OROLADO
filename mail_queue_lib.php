@@ -119,20 +119,19 @@ function admin_mail_html(string $text, string $btnSpec = ''): string {
   $body = '';
   foreach (preg_split('/\n{2,}/', trim($text)) ?: [] as $para) {
     $h = $e($para);
-    $h = (string) preg_replace('~(https?://[^\s<]+)~u', '<a href="$1" style="color:#F5C518;font-weight:700;text-decoration:underline">$1</a>', $h);
+    $h = (string) preg_replace('~(https?://[^\s<]+)~u', '<a href="$1" style="color:#1A5FB4;text-decoration:underline">$1</a>', $h);
     $body .= '<p style="margin:0 0 14px;">' . nl2br($h) . '</p>';
   }
-  // 2026-11-02 (propriétaire : « emails simples, pas de jolis trucs, pour ne pas aller en spam ») —
-  // gabarit SOBRE : ressemble à un e-mail écrit à la main (meilleure délivrabilité). En-tête texte, un lien/bouton discret.
+  // 2026-11-02 (propriétaire : « je veux un message NORMAL, pas en style ») — e-mail tout simple, comme écrit à la main :
+  // fond clair, texte noir, un lien souligné. Aucune mise en forme « campagne ». Meilleure délivrabilité (boîte Principale).
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
-    . '<body style="margin:0;padding:0;background:#0B1220;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">'
-    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0B1220;padding:20px 12px;"><tr><td align="center">'
-    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;background:#121A2B;border-radius:16px;border:1px solid #2B3A57;">'
-    . '<tr><td style="padding:22px 22px 6px;text-align:center;"><div style="font-size:22px;font-weight:800;letter-spacing:.08em;color:#F5C518;">OROLADO</div>'
-    . '<div style="height:3px;width:56px;margin:10px auto 0;background:#F5C518;border-radius:3px;"></div></td></tr>'
-    . '<tr><td style="padding:14px 22px 6px;color:#E8EEF9;font-size:15px;line-height:1.6;">' . $body . '</td></tr>'
-    . '<tr><td style="padding:4px 22px 24px;text-align:center;"><a href="' . $e($href) . '" style="display:inline-block;background:#F59E0B;color:#111827;text-decoration:none;font-weight:800;font-size:16px;line-height:1.2;padding:14px 30px;border-radius:12px;border:1px solid #D97706;">' . $btn . '</a></td></tr>'
-    . '</table><div style="color:#6B7A99;font-size:11px;margin-top:12px;">orolado.com</div></td></tr></table></body></html>';
+    . '<body style="margin:0;padding:0;background:#f3f4f6;">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6;padding:18px 10px;"><tr><td align="center">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:8px;border:1px solid #e4e6ea;">'
+    . '<tr><td style="padding:20px 22px 2px;color:#222733;font-size:15px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;">' . $body
+    . '<p style="margin:2px 0 6px;"><a href="' . $e($href) . '" style="color:#1A5FB4;font-weight:700;text-decoration:underline;">' . $btn . '</a></p></td></tr>'
+    . '<tr><td style="padding:10px 22px 18px;border-top:1px solid #eceef1;color:#9aa0ab;font-size:11px;font-family:Arial,Helvetica,sans-serif;">OROLADO · orolado.com</td></tr>'
+    . '</table></td></tr></table></body></html>';
 }
 
 function admin_mail_plain(string $to, string $subject, string $msg, string $btn = ''): array {
