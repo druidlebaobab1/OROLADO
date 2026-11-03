@@ -621,6 +621,8 @@
     if (z1 <= z0) return;
     // strips evenly spaced on screen (in perspective P), each one an exact sheared slice of the texture: no stepping
     var P0 = V.P(z0), P1 = V.P(z1), lw = V.lw;
+    // v3586 : assez de bandes pour qu'une bande fasse ~3 px à l'écran (plus de « dents de scie » sur les façades proches)
+    n = Math.min(160, Math.max(n, Math.ceil(Math.abs(lx * lw * (P0 - P1)) / 3), Math.ceil(Math.abs((V.ny - V.hy + h1 * lw) * (P0 - P1)) / 6)));
     for (var i = 0; i < n; i++) {
       var pa = P1 + (P0 - P1) * i / n, pb = P1 + (P0 - P1) * (i + 1) / n;          // far → near
       var za = (1 / pa - 1) / F, zb = (1 / pb - 1) / F;
