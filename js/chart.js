@@ -103,8 +103,8 @@
   var CANDLE_DURATION_MS = 1000;
   // Tête de lecture : 62 % sur desktop, 60 % sur mobile, pour qu'elle tombe
   // toujours au milieu d'une case de la grille et jamais sur un trait.
-  var HEAD_X_RATIO = 0.62;
-  var HEAD_X_RATIO_MOBILE = 0.60;
+  var HEAD_X_RATIO = 0.76;
+  var HEAD_X_RATIO_MOBILE = 0.74;
   var Y_PAD_RATIO = 0.12;
   // Plein écran : 15 % de marge en haut comme en bas, recentrés en continu.
   var Y_PAD_FS = 0.15;
