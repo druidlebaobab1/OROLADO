@@ -100,7 +100,10 @@
     volcanolive: '<defs>' + lg('IDm', '#C2410C', '#7C2D12') + rg('IDl', '#FEF08A', '#F97316', '#B91C1C') + '</defs>' + sh(26) +
       '<path d="M2 56L24 26H40L62 56Z" fill="url(#IDm)"/><path d="M24 26H40L36 32H28Z" fill="#EA580C"/><path d="M28 32L25 44L31 38L30 50L35 36L38 42L36 32Z" fill="#F97316" opacity=".85"/>' +
       '<path d="M26 26Q22 10 32 4Q42 10 38 26Z" fill="url(#IDl)"/><circle cx="14" cy="14" r="4" fill="url(#IDl)"/><circle cx="52" cy="12" r="3.4" fill="url(#IDl)"/><circle cx="46" cy="4" r="2.2" fill="url(#IDl)"/>' +
-      '<path d="M14 14Q22 6 30 8M52 12Q44 4 36 8" stroke="#FDBA74" stroke-width="1" fill="none" stroke-dasharray="2 2"/>'
+      '<path d="M14 14Q22 6 30 8M52 12Q44 4 36 8" stroke="#FDBA74" stroke-width="1" fill="none" stroke-dasharray="2 2"/>',
+    // 2026-11-03 : logos-photos (casino-art.js PHOTO) ; ce dessin ne sert que de secours
+    footmatchlive: '<image href="img/games/footmatchlive.webp?v=3580" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    sumolive: '<image href="img/games/sumolive.webp?v=3580" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>'
   };
   var A = function (k, name, pal) { return { k: k, name: name, sec: 'live', file: 'live5', pal: pal, icon: ICONS[k] }; };
   D6.CasinoCatalog.add([
@@ -119,6 +122,8 @@
     A('archerylive', 'Archery Live', ['#ECFCCB', '#3F6212']),
     A('fishinglive', 'Fishing Live', ['#E0F2FE', '#0369A1']),
     A('balloonlive', 'Balloon Pop', ['#F3E8FF', '#7C3AED']),
-    A('volcanolive', 'Volcano Live', ['#FFEDD5', '#B91C1C'])
+    A('volcanolive', 'Volcano Live', ['#FFEDD5', '#B91C1C']),
+    A('footmatchlive', 'Football Live', ['#DCFCE7', '#166534']),
+    A('sumolive', 'Sumo Live', ['#FEE2E2', '#7F1D1D'])
   ].filter(function (e) { return e.icon; }));
 })(window.D6 = window.D6 || {});

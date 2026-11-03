@@ -27,13 +27,19 @@ declare(strict_types=1);
  *  - balloonlive     Balloon Pop Live : 12 ballons (4 rouges, 4 bleus, 3 verts, 1 or), 3 fléchettes = 3 ballons différents au hasard ;
  *                    or touché · 2+ rouges · 2+ bleus · 2+ verts · 3 couleurs · 3 pareils.
  *  - volcanolive     Volcano Live : puissance 1–10 (table fixe) + 5 bombes de lave à gauche / droite (50 %) ; 1–3 · 4–6 · 7–9 · 10 · gauche · droite.
+ * 2026-11-03 (propriétaire : « 2 jeux live de plus, très différents ») :
+ *  - footmatchlive   Football Match Live : un vrai match de 90 minutes montré en 30 s ; buts Domicile / Extérieur tirés selon une loi de
+ *                    Poisson (moyennes 1,45 et 1,15) bornée à 6 buts chacun ; minutes des buts tirées ; 1 · X · 2 · +2,5 · −2,5 · les deux marquent.
+ *  - sumolive        Sumo Live : Est contre Ouest (52 % / 48 %), victoire par sortie du cercle (60 %) ou par projection (40 %),
+ *                    combat court (≤ 6 s, 30 %) ou long, tirés indépendamment ; Est · Ouest · sortie · projection · court · long.
  * [période P, mises ouvertes B] */
 const CASINO_LIVE5 = ['dogracelive' => [150, 120], 'camelracelive' => [155, 120], 'snailracelive' => [150, 120], 'chickenracelive' => [150, 120],
   'monsterlive' => [140, 120], 'boatracelive' => [150, 120], 'spaceracelive' => [150, 120], 'penaltylive' => [170, 120],
   'basketlive' => [145, 120], 'boxinglive' => [150, 120], 'tennislive' => [150, 120], 'cricketlive' => [145, 120],
-  'archerylive' => [140, 120], 'fishinglive' => [140, 120], 'balloonlive' => [140, 120], 'volcanolive' => [140, 120]];
+  'archerylive' => [140, 120], 'fishinglive' => [140, 120], 'balloonlive' => [140, 120], 'volcanolive' => [140, 120],
+  'footmatchlive' => [160, 120], 'sumolive' => [145, 120]];
 const CASINO_LIVE5_KEYS = ['dogracelive', 'camelracelive', 'snailracelive', 'chickenracelive', 'monsterlive', 'boatracelive', 'spaceracelive', 'penaltylive',
-  'basketlive', 'boxinglive', 'tennislive', 'cricketlive', 'archerylive', 'fishinglive', 'balloonlive', 'volcanolive'];
+  'basketlive', 'boxinglive', 'tennislive', 'cricketlive', 'archerylive', 'fishinglive', 'balloonlive', 'volcanolive', 'footmatchlive', 'sumolive'];
 // poids des concurrents (favori → outsider)
 const CASINO_L5_RACE = ['dogracelive' => [26, 21, 18, 14, 12, 9], 'camelracelive' => [30, 25, 20, 15, 10], 'snailracelive' => [1, 1, 1, 1],
   'chickenracelive' => [24, 20, 18, 15, 13, 10], 'boatracelive' => [28, 24, 20, 16, 12], 'spaceracelive' => [22, 20, 17, 16, 13, 12]];
@@ -50,6 +56,19 @@ const CASINO_L5_ARROW = [10 => 160, 9 => 220, 8 => 200, 7 => 150, 6 => 100, 5 =>
 const CASINO_L5_FISH = [18, 30, 24, 16, 8, 4]; // % : botte, petit, moyen, gros, requin, or
 const CASINO_L5_BALLOON = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3]; // couleurs des 12 ballons : 0 rouge, 1 bleu, 2 vert, 3 or
 const CASINO_L5_VOLCANO = [16, 15, 14, 12, 11, 9, 8, 6, 5, 4]; // % : puissance 1…10
+const CASINO_L5_FOOT = [1.45, 1.15]; const CASINO_L5_FOOT_MAX = 6; // Football : buts moyens Domicile / Extérieur, au plus 6 chacun
+const CASINO_L5_SUMO = [52, 48]; const CASINO_L5_SUMO_PUSH = 60; const CASINO_L5_SUMO_QUICK = 30; // % : Est / Ouest, sortie (sinon projection), court (sinon long)
+
+/** Football : loi exacte du nombre de buts d'une équipe (Poisson bornée à CASINO_L5_FOOT_MAX, renormalisée), en ‰ entiers pour le tirage. */
+function casino_live5_foot_pmf(float $lam): array {
+  $p = []; $f = 1.0; for ($k = 0; $k <= CASINO_L5_FOOT_MAX; $k++) { if ($k) $f *= $k; $p[$k] = exp(-$lam) * $lam ** $k / $f; }
+  $s = array_sum($p); return array_map(static fn($v) => $v / $s, $p);
+}
+/** Football : la même loi en poids entiers (sur 1 000 000) pour casino_live5_pick ; chance exacte = poids ÷ somme. */
+function casino_live5_foot_w(int $side): array {
+  $w = array_map(static fn($v) => max(1, (int) round($v * 1000000)), casino_live5_foot_pmf(CASINO_L5_FOOT[$side]));
+  return $w;
+}
 
 /** Course : chance de chaque ordre d'arrivée (poids $w) ; [[ordre, chance], …] (N ≤ 6 : 720 ordres). */
 function casino_live5_orders(array $w): array {
@@ -190,6 +209,18 @@ function casino_live5_probs(string $g, array $out = []): array {
       $p = ['gold' => 0.0, 'red2' => 0.0, 'blue2' => 0.0, 'green2' => 0.0, 'mix' => 0.0, 'tri' => 0.0]; $B = CASINO_L5_BALLOON; $T = 220;
       for ($a = 0; $a < 12; $a++) for ($b = $a + 1; $b < 12; $b++) for ($c = $b + 1; $c < 12; $c++) foreach (casino_live5_balloon_wins([$B[$a], $B[$b], $B[$c]]) as $s) $p[$s] += 1 / $T;
       break;
+    case 'footmatchlive':
+      $wh = casino_live5_foot_w(0); $wa = casino_live5_foot_w(1); $sh = array_sum($wh); $sa = array_sum($wa);
+      $p = ['h' => 0.0, 'd' => 0.0, 'a' => 0.0, 'o25' => 0.0, 'u25' => 0.0, 'btts' => 0.0];
+      foreach ($wh as $i => $x) foreach ($wa as $j => $y) {
+        $q = $x / $sh * $y / $sa;
+        $p[$i > $j ? 'h' : ($i === $j ? 'd' : 'a')] += $q; $p[$i + $j >= 3 ? 'o25' : 'u25'] += $q; if ($i > 0 && $j > 0) $p['btts'] += $q;
+      }
+      break;
+    case 'sumolive':
+      $p = ['e' => CASINO_L5_SUMO[0] / 100, 'w' => CASINO_L5_SUMO[1] / 100, 'push' => CASINO_L5_SUMO_PUSH / 100, 'throw' => 1 - CASINO_L5_SUMO_PUSH / 100,
+        'quick' => CASINO_L5_SUMO_QUICK / 100, 'long' => 1 - CASINO_L5_SUMO_QUICK / 100];
+      break;
     case 'volcanolive':
       $v = CASINO_L5_VOLCANO;
       $p = ['v0' => ($v[0] + $v[1] + $v[2]) / 100, 'v1' => ($v[3] + $v[4] + $v[5]) / 100, 'v2' => ($v[6] + $v[7] + $v[8]) / 100, 'v3' => $v[9] / 100, 'left' => 0.5, 'right' => 0.5];
@@ -231,6 +262,13 @@ function casino_live5_wins(string $g, array $out): array {
     case 'balloonlive':
       $L = array_map('intval', (array) ($out['l'] ?? [])); $h = array_map('intval', (array) ($out['h'] ?? [])); if (count($L) !== 12 || count($h) !== 3) return [];
       return casino_live5_balloon_wins([$L[$h[0]], $L[$h[1]], $L[$h[2]]]);
+    case 'footmatchlive':
+      $h = (int) ($out['h'] ?? -1); $a = (int) ($out['a'] ?? -1); if ($h < 0 || $a < 0) return [];
+      $w = [$h > $a ? 'h' : ($h === $a ? 'd' : 'a'), $h + $a >= 3 ? 'o25' : 'u25']; if ($h > 0 && $a > 0) $w[] = 'btts';
+      return $w;
+    case 'sumolive':
+      if (!isset($out['m'], $out['q'])) return [];
+      return [$n === 0 ? 'e' : 'w', (int) $out['m'] === 0 ? 'push' : 'throw', (int) $out['q'] === 1 ? 'quick' : 'long'];
     case 'volcanolive':
       $b = array_map('intval', (array) ($out['b'] ?? [])); if (count($b) !== 5) return [];
       return ['v' . ($n <= 3 ? 0 : ($n <= 6 ? 1 : ($n <= 9 ? 2 : 3))), array_sum($b) >= 3 ? 'right' : 'left'];
@@ -277,6 +315,15 @@ function casino_live5_draw(string $g): array {
       $pos = range(0, 11); $h = []; for ($i = 0; $i < 3; $i++) { $j = random_int($i, 11); [$pos[$i], $pos[$j]] = [$pos[$j], $pos[$i]]; $h[] = $pos[$i]; }
       $c = [$L[$h[0]], $L[$h[1]], $L[$h[2]]]; sort($c);
       return ['n' => $c[0] * 16 + $c[1] * 4 + $c[2], 'l' => $L, 'h' => $h, 's' => $seed];
+    case 'footmatchlive':
+      $h = casino_live5_pick(casino_live5_foot_w(0), range(0, CASINO_L5_FOOT_MAX)); $a = casino_live5_pick(casino_live5_foot_w(1), range(0, CASINO_L5_FOOT_MAX));
+      $ev = []; $used = [];
+      foreach ([[0, $h], [1, $a]] as [$side, $k]) for ($j = 0; $j < $k; $j++) { do { $m = random_int(2, 90); } while (isset($used[$m])); $used[$m] = 1; $ev[] = [$m, $side]; }
+      usort($ev, static fn($x, $y) => $x[0] <=> $y[0]);
+      return ['n' => $h * 10 + $a, 'h' => $h, 'a' => $a, 'g' => $ev, 's' => $seed];
+    case 'sumolive':
+      $n = casino_live5_pick(CASINO_L5_SUMO, [0, 1]);
+      return ['n' => $n, 'm' => random_int(1, 100) <= CASINO_L5_SUMO_PUSH ? 0 : 1, 'q' => random_int(1, 100) <= CASINO_L5_SUMO_QUICK ? 1 : 0, 's' => $seed];
     case 'volcanolive':
       $b = []; for ($j = 0; $j < 5; $j++) $b[] = random_int(0, 1);
       return ['n' => 1 + casino_live5_pick(CASINO_L5_VOLCANO, range(0, 9)), 'b' => $b, 's' => $seed];

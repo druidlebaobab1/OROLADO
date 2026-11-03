@@ -40,8 +40,8 @@ $ALL = array_keys(CASINO_LIVE5);
 $G = array_slice($argv, 1) ?: $ALL;
 $T0 = microtime(true);
 
-echo "1) Déclaration : 16 jeux en direct, clés libres, anciens jeux inchangés\n";
-check('CASINO_LIVE5 = 16 jeux, mises ouvertes 120 s, période ≥ 140 s, clés = CASINO_LIVE5_KEYS', count($ALL) === 16 && $ALL === CASINO_LIVE5_KEYS && count(array_filter(CASINO_LIVE5, static fn($pb) => $pb[1] === 120 && $pb[0] >= 140)) === 16);
+echo "1) Déclaration : 18 jeux en direct, clés libres, anciens jeux inchangés\n";
+check('CASINO_LIVE5 = 18 jeux, mises ouvertes 120 s, période ≥ 140 s, clés = CASINO_LIVE5_KEYS', count($ALL) === 18 && $ALL === CASINO_LIVE5_KEYS && count(array_filter(CASINO_LIVE5, static fn($pb) => $pb[1] === 120 && $pb[0] >= 140)) === 18);
 check('CASINO_DRAW, CASINO_LIVE2, CASINO_LIVE3 inchangés' . (CASINO_LIVE4 ? ', CASINO_LIVE4 présent (12)' : ''), count(CASINO_DRAW) === 5 && count(CASINO_LIVE2) === 4 && count(CASINO_LIVE3) === 12 && CASINO_LIVE3['moonshot'] === [165, 120] && (!CASINO_LIVE4 || count(CASINO_LIVE4) === 12));
 check('aucune clé en double dans CASINO_GAMES / CASINO_MULTI ; aucune clé commune avec LIVE 4', count(CASINO_GAMES) === count(array_unique(CASINO_GAMES)) && count(CASINO_MULTI) === count(array_unique(CASINO_MULTI)) && !array_intersect($ALL, CASINO_LIVE4_KEYS));
 $tour = (string) file_get_contents(__DIR__ . '/../casino-tour.php');
@@ -106,6 +106,14 @@ function all_outcomes(string $g): array {
     case 'volcanolive':
       foreach ([.16, .15, .14, .12, .11, .09, .08, .06, .05, .04] as $i => $p) for ($m = 0; $m < 32; $m++) { $b = []; for ($j = 0; $j < 5; $j++) $b[] = $m >> $j & 1; $L[] = [$p / 32, ['n' => $i + 1, 'b' => $b]]; }
       break;
+    case 'footmatchlive': // Poisson bornée à 6 (moyennes 1,45 / 1,15), recalculée ici puis arrondie au millionième comme le tirage
+      $W = []; foreach ([1.45, 1.15] as $side => $lam) { $q = []; $f = 1.0; for ($k = 0; $k <= 6; $k++) { if ($k) $f *= $k; $q[$k] = exp(-$lam) * $lam ** $k / $f; } $sq = array_sum($q); $W[$side] = array_map(static fn($v) => max(1, (int) round($v / $sq * 1000000)), $q); }
+      $SH = array_sum($W[0]); $SA = array_sum($W[1]);
+      foreach ($W[0] as $h => $x) foreach ($W[1] as $a => $y) $L[] = [$x / $SH * $y / $SA, ['n' => $h * 10 + $a, 'h' => $h, 'a' => $a, 'g' => []]];
+      break;
+    case 'sumolive':
+      foreach ([0 => .52, 1 => .48] as $n => $p) foreach ([0 => .6, 1 => .4] as $m => $q) foreach ([1 => .3, 0 => .7] as $qq => $r) $L[] = [$p * $q * $r, ['n' => $n, 'm' => $m, 'q' => $qq]];
+      break;
   }
   return $L;
 }
@@ -149,6 +157,11 @@ foreach ($G as $g) {
       case 'fishinglive': if ($o['n'] < 0 || $o['n'] > 5) $okS = false; break;
       case 'balloonlive': $c = $o['l']; sort($c); if ($c !== CASINO_L5_BALLOON || count(array_unique($o['h'])) !== 3 || max($o['h']) > 11 || min($o['h']) < 0) $okS = false; break;
       case 'volcanolive': if ($o['n'] < 1 || $o['n'] > 10 || count($o['b']) !== 5) $okS = false; break;
+      case 'footmatchlive': // score = nombre de buts listés, minutes 2…90 distinctes et croissantes
+        $gh = 0; $ga = 0; $pm = 0; foreach ($o['g'] as [$mi, $sd]) { if ($mi <= $pm || $mi < 2 || $mi > 90) $okS = false; $pm = $mi; if ($sd) $ga++; else $gh++; }
+        if ($gh !== $o['h'] || $ga !== $o['a'] || $o['h'] > 6 || $o['a'] > 6 || $o['n'] !== $o['h'] * 10 + $o['a']) $okS = false;
+        break;
+      case 'sumolive': if (!in_array($o['n'], [0, 1], true) || !in_array($o['m'], [0, 1], true) || !in_array($o['q'], [0, 1], true)) $okS = false; break;
     }
     foreach (casino_live5_odds($g) as $sel => $od) { $m = (float) casino_draw_mult($g, (string) $sel, $o); $ret[$sel] = ($ret[$sel] ?? 0) + $m; if ($m > 0) $hit[$sel] = ($hit[$sel] ?? 0) + 1; }
   }
@@ -165,7 +178,8 @@ foreach ($G as $g) {
 echo implode("\n", $simTxt) . "\n";
 $inv = ['dogracelive' => ['w6', 'l0', 'x'], 'camelracelive' => ['w5', 'l5', 'odd'], 'snailracelive' => ['q10', 'q44', 'w4'], 'chickenracelive' => ['w6', 'even'], 'boatracelive' => ['t5', 'w9'],
   'spaceracelive' => ['k3', 'w6'], 'monsterlive' => ['c5', 'c13'], 'penaltylive' => ['x', 'H'], 'basketlive' => ['p9', 'e7'], 'boxinglive' => ['ko2', 'green'], 'tennislive' => ['srv2', 'y'],
-  'cricketlive' => ['r4', 'four'], 'archerylive' => ['a4', 'nine'], 'fishinglive' => ['f6', 'boot'], 'balloonlive' => ['gold2', 'red3'], 'volcanolive' => ['v4', 'up']];
+  'cricketlive' => ['r4', 'four'], 'archerylive' => ['a4', 'nine'], 'fishinglive' => ['f6', 'boot'], 'balloonlive' => ['gold2', 'red3'], 'volcanolive' => ['v4', 'up'],
+  'footmatchlive' => ['x', '1', 'o35'], 'sumolive' => ['ko', 'draw']];
 $okI = true; foreach ($inv as $g => $l) foreach ($l as $s) if (casino_draw_mult($g, $s, []) !== null) { $okI = false; echo "     accepté à tort : $g/$s\n"; }
 check('sélections invalides refusées', $okI);
 check('rien n\'est montré pendant les mises (aucun « pre »)', !array_filter($ALL, static fn($g) => casino_live5_pre($g, casino_live5_draw($g)) !== []));
@@ -178,7 +192,8 @@ $db['vault']['u_l'] = ['demo' => 500, 'real' => 100];
 save_db(orolado_data_file(), $db); $bal[$U] = 1000.0; $me = $db['users']['u_l'];
 $file = casino_user_file('u_l');
 $sels = ['dogracelive' => 'w0', 'camelracelive' => 'l4', 'snailracelive' => 'q01', 'chickenracelive' => 'lo', 'monsterlive' => 'c2', 'boatracelive' => 't1', 'spaceracelive' => 'k0',
-  'penaltylive' => 'h', 'basketlive' => 'e5', 'boxinglive' => 'ko', 'tennislive' => 'rcv', 'cricketlive' => 'six', 'archerylive' => 'ten', 'fishinglive' => 'f1', 'balloonlive' => 'mix', 'volcanolive' => 'left'];
+  'penaltylive' => 'h', 'basketlive' => 'e5', 'boxinglive' => 'ko', 'tennislive' => 'rcv', 'cricketlive' => 'six', 'archerylive' => 'ten', 'fishinglive' => 'f1', 'balloonlive' => 'mix', 'volcanolive' => 'left',
+  'footmatchlive' => 'btts', 'sumolive' => 'throw'];
 foreach ($G as $g) {
   [$P, $B] = CASINO_LIVE5[$g]; $sel = $sels[$g];
   $i0 = casino_draw_i($g, time()) + 40; $t = casino_draw_start($g, $i0) + 2.0;
@@ -240,10 +255,10 @@ foreach ($G as $g) {
 echo '     ' . implode("\n     ", $cost) . "\n";
 check('lecture publique < 5 ms, fichier du tirage < 60 Ko (60 tours), réponse < 2,5 Ko', !in_array('!!', $cost, true));
 $t0 = hrtime(true); $x = 0; foreach ($ALL as $g) $x += count(casino_live5_odds($g)); $ms = (hrtime(true) - $t0) / 1e6;
-check(sprintf('cotes des 16 jeux (mémoire déjà chaude ici) : %.2f ms', $ms), $ms < 30);
+check(sprintf('cotes des 18 jeux (mémoire déjà chaude ici) : %.2f ms', $ms), $ms < 30);
 $code = 'require "' . $tmp . '/orolado_lib.php"; require "' . $tmp . '/casino_lib.php"; $t = hrtime(true); foreach (CASINO_LIVE5_KEYS as $g) casino_live5_odds($g); echo (hrtime(true) - $t) / 1e6;';
 $cold = (float) shell_exec(escapeshellarg(PHP_BINARY) . ' -r ' . escapeshellarg($code));
-check(sprintf('cotes des 16 jeux à froid (nouveau processus, comme casino-tour.php) : %.1f ms', $cold), $cold > 0 && $cold < 60);
+check(sprintf('cotes des 18 jeux à froid (nouveau processus, comme casino-tour.php) : %.1f ms', $cold), $cold > 0 && $cold < 60);
 
 printf("\n(durée %.0f s)\nRÉSULTAT : %d OK, %d échec(s)\n", microtime(true) - $T0, $pass, $fail);
 exit($fail ? 1 : 0);
