@@ -1539,9 +1539,9 @@
         id: 'darkPro',
         bg0: '#0B0E14',
         bg1: '#0B0E14',
-        gridH: 'rgba(255,255,255,0.075)',
-        gridHStrong: 'rgba(255,255,255,0.075)',
-        gridV: 'rgba(255,255,255,0.075)',
+        gridH: 'rgba(255,255,255,0.055)',
+        gridHStrong: 'rgba(255,255,255,0.055)',
+        gridV: 'rgba(255,255,255,0.055)',
         border: null,
         priceTxt: '#8C7E5C',
         timeTxt: '#8C7E5C',
@@ -1560,9 +1560,9 @@
       id: 'darkLegacy',
       bg0: '#0B0E14',
       bg1: '#0B0E14',
-      gridH: 'rgba(255,255,255,0.075)',
-      gridHStrong: 'rgba(255,255,255,0.075)',
-      gridV: 'rgba(255,255,255,0.075)',
+      gridH: 'rgba(255,255,255,0.055)',
+      gridHStrong: 'rgba(255,255,255,0.055)',
+      gridV: 'rgba(255,255,255,0.055)',
       border: null,
       priceTxt: '#8C7E5C',
       timeTxt: '#8C7E5C',
@@ -1698,7 +1698,7 @@
       // v2392 (propriétaire) : couleur plus douce pour tous (celle du « 4e trait » d'avant) et l'effacement ne
       // commence qu'un carreau à gauche de la tête, plus progressivement.
       var fadeFrom = headX - Math.max(24, S * pxSec);
-      function depth(x) { return x >= fadeFrom ? 1 : Math.max(0.55, Math.pow(Math.max(0, x) / Math.max(1, fadeFrom), 0.9)); }
+      function depth(x) { return x >= fadeFrom ? 1 : Math.max(0.78, Math.pow(Math.max(0, x) / Math.max(1, fadeFrom), 0.9)); }
       // v2391 : tous les traits SE RESSEMBLENT (plus de trait principal plus large ni d'ombre) ; seul le
       // dégradé de profondeur change leur intensité selon leur place.
       for (T = T0, guard = 0; T <= tRight + stepMs && guard < 120; T += stepMs, guard++) {
@@ -1706,7 +1706,7 @@
         if (gx < 0 || gx > cssW) continue;
         var dp = depth(gx);
         ctx.lineWidth = 0.6 + 0.4 * dp;
-        ctx.strokeStyle = 'rgba(255,255,255,' + (0.13 * dp).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(255,255,255,' + (0.07 * dp).toFixed(3) + ')';
         ctx.beginPath();
         ctx.moveTo(gx, 0);
         ctx.lineTo(gx, lineBot);
