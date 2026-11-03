@@ -14158,3 +14158,9 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay .pad,
 html.is-fullscreen body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad{background:#000!important;background-image:none!important;box-shadow:none!important;border-color:transparent!important}
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #fsTradeSlot #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad.pad.glass,
 html.is-fullscreen body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad.pad.glass{background:#000!important;background-image:none!important;box-shadow:none!important;border-color:transparent!important}
+/* v3561 (propriétaire : « lueur jaune entre la courbe et Acheter / Vendre en plein écran ») — plus d'ombre ni de fondu brun
+   sous la courbe : tout est noir, comme en écran normal. */
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #chart.chart-card{box-shadow:none!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #chart.chart-card::after{background:none!important;display:none!important}
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .chart-card::after{background:none!important}
+html.fs-trade body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad::before{background:#000!important}
