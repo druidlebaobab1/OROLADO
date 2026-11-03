@@ -5662,16 +5662,17 @@
     // quand le dépôt Amérique latine est ouvert (html.oro-latam ; pour l'instant le compte admin).
     // Ordre : Venezuela (Pago Móvil), Colombie (Nequi), Mexique (SPEI) d'abord, puis les plus grands de chaque pays
     // que Guardarian / El Dorado prennent (Mercado Pago, PIX, Yape, Bancolombia, Daviplata, Plin, Zinli). 2 rangées de 5.
-    '<i class="pl-logo pl-la pl-pmovil"><b>Pago</b>Móvil</i>' +
-    '<i class="pl-logo pl-la pl-nequi">Nequi</i>' +
-    '<i class="pl-logo pl-la pl-spei">SPEI</i>' +
-    '<i class="pl-logo pl-la pl-mpago"><b>Mercado</b>Pago</i>' +
-    '<i class="pl-logo pl-la pl-pix"><b></b>pix</i>' +
-    '<i class="pl-logo pl-la pl-yape">yape</i>' +
-    '<i class="pl-logo pl-la pl-bancol">Bancolombia</i>' +
-    '<i class="pl-logo pl-la pl-davi">Daviplata</i>' +
-    '<i class="pl-logo pl-la pl-plin">plin</i>' +
-    '<i class="pl-logo pl-la pl-zinli">zinli</i>';
+    // 2026-11-03 (propriétaire) : comme les rangées du haut — petit logo + NOM écrit (plus de logo seul dans la case)
+    '<i class="pl-logo pl-la pl-la2 pl-pmovil"><img src="icons/pay/pmovil.svg?v=3577" alt=""><span class="pl-n">Pago Móvil</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-nequi"><img src="icons/pay/nequi.svg?v=3577" alt=""><span class="pl-n">Nequi</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-spei"><img src="icons/pay/spei.svg?v=3577" alt=""><span class="pl-n">SPEI</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-mpago"><img src="icons/pay/mpago.svg?v=3577" alt=""><span class="pl-n">Mercado Pago</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-pix"><img src="icons/pay/pix.svg?v=3577" alt=""><span class="pl-n">PIX</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-yape"><img src="icons/pay/yape.svg?v=3577" alt=""><span class="pl-n">Yape</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-bancol"><img src="icons/pay/bancol.svg?v=3577" alt=""><span class="pl-n">Bancolombia</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-davi"><img src="icons/pay/davi.svg?v=3577" alt=""><span class="pl-n">Daviplata</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-plin"><img src="icons/pay/plin.svg?v=3577" alt=""><span class="pl-n">Plin</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-zinli"><img src="icons/pay/zinli.svg?v=3577" alt=""><span class="pl-n">Zinli</span></i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
     if (!card || card.querySelector('.pay-local')) return;
@@ -5684,6 +5685,19 @@
     card.appendChild(box);
   }
   paintPayLocal();
+  // 2026-11-03 : les noms longs (Bancolombia, Mercado Pago…) rapetissent juste assez pour tenir dans leur case
+  (function fitPayNames() {
+    var card = $('payMethodCard'); if (!card) return;
+    var fit = function () {
+      Array.prototype.forEach.call(card.querySelectorAll('.pl-la2'), function (c) {
+        var n = c.querySelector('.pl-n'); if (!n || !c.clientWidth) return;
+        n.style.fontSize = ''; var fs = parseFloat(getComputedStyle(n).fontSize) || 10, k = 0;
+        while (c.scrollWidth > c.clientWidth + 0.5 && fs > 6.5 && k++ < 12) { fs -= 0.5; n.style.fontSize = fs + 'px'; }
+      });
+    };
+    if (typeof ResizeObserver === 'function') new ResizeObserver(function () { requestAnimationFrame(fit); }).observe(card);
+    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit); } catch (eF) { /* ignore */ }
+  })();
   // v2594 (propriétaire) — les logos de la fenêtre Retrait (Wave, Orange, MTN…) n'étaient téléchargés qu'à son
   // ouverture → ils apparaissaient l'un après l'autre devant le joueur. Ils sont maintenant préparés en avance,
   // discrètement, 2 s après la fin du chargement de la page (rien de plus pendant le chargement).
@@ -7583,7 +7597,9 @@
       if (isAnd) {
         pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('btnWithdraw'), 2); pushT($('profWalletBal'), 1);
       } else {
-        pushT($('btnExpressCrypto'), 3); pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('profWalletBal'), 1);
+        // 2026-11-03 (propriétaire) : sur iPhone, Recharger un peu moins haut, la place va au SOLDE DISPONIBLE (montant plus grand)
+        if (document.documentElement.classList.contains('is-ios')) { pushT($('profWalletBal'), 3); pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('btnExpressCrypto'), 1); }
+        else { pushT($('btnExpressCrypto'), 3); pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('profWalletBal'), 1); }
       }
       // le menu (drawer-nav) s'étire pour remplir : la vraie place libre est le vide sous « Se déconnecter »
       var navEl = d.querySelector('.drawer-nav'), loEl = $('btnLogout');
