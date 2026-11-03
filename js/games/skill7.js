@@ -157,6 +157,34 @@
       hi: ['गोली के लिए सैनिकों पर टैप करें', 'आपको गोली लगी!', 'तोपखाने की बौछार!', 'दुश्मन सैनिक बंकर पर, खंडहरों में और मैदान में दिखते हैं: हर एक पर टैप करके उसके चलाने से पहले गोली चलाएँ (हर गोली के बाद थोड़ा रीलोड)। हाथ उठाए गाँववालों पर कभी गोली न चलाएँ। समय के साथ और ज़्यादा व तेज़ आते हैं। गोली लगना, या किसी गाँववाले को मारना, राउंड खत्म करता है।', 'आपने एक गाँववाली को मारा!'],
       zh: ['点击士兵射击', '你中弹了！', '炮火齐射！', '敌兵会出现在碉堡、废墟和田野上：在他开枪前点击射击（每枪后短暂装弹）。千万不要射击举手的村民。随着时间推移，敌人越来越多、越来越快。中弹，或击中村民，本回合结束。', '你击中了村民！']
     },
+    alienattack: {
+      en: ['Tap the aliens to shoot', 'An alien zapped you!', 'Mothership beam!', 'Aliens pop up on the farm at night: tap each one to shoot before it fires (short reload after each shot). Never shoot the farmers with raised hands. More and faster aliens come with time. Being hit, or shooting a farmer, ends the round.', 'You shot a farmer!'],
+      fr: ['Touche les aliens pour tirer', 'Un alien t’a touché !', 'Rayon du vaisseau mère !', 'Des aliens surgissent dans la ferme la nuit : touche chacun pour tirer avant qu’il ne tire (petit rechargement après chaque tir). Ne tire jamais sur les fermiers aux mains levées. Ils arrivent plus nombreux et plus vite avec le temps. Être touché, ou toucher un fermier, termine la partie.', 'Tu as touché un fermier !'],
+      es: ['Toca a los alienígenas para disparar', '¡Un alienígena te alcanzó!', '¡Rayo de la nave nodriza!', 'Aparecen alienígenas en la granja de noche: toca a cada uno para disparar antes de que dispare (breve recarga tras cada tiro). Nunca dispares a los granjeros con las manos en alto. Llegan más y más rápido con el tiempo. Recibir un disparo, o alcanzar a un granjero, termina la ronda.', '¡Alcanzaste a un granjero!'],
+      pt: ['Toque nos alienígenas para atirar', 'Um alienígena te acertou!', 'Raio da nave-mãe!', 'Alienígenas aparecem na fazenda à noite: toque em cada um para atirar antes que ele atire (breve recarga após cada tiro). Nunca atire nos fazendeiros de mãos para cima. Chegam mais e mais rápido com o tempo. Levar um tiro, ou acertar um fazendeiro, encerra a rodada.', 'Você acertou um fazendeiro!'],
+      ar: ['المس الكائنات الفضائية لإطلاق النار', 'أصابك كائن فضائي!', 'شعاع السفينة الأم!', 'تظهر كائنات فضائية في المزرعة ليلًا: المس كل واحد لإطلاق النار قبل أن يطلق (تلقيم قصير بعد كل طلقة). لا تطلق أبدًا على المزارعين رافعي الأيدي. يأتون أكثر وأسرع مع الوقت. إصابتك، أو إصابة مزارع، تنهي الجولة.', 'أصبت مزارعًا!'],
+      tr: ['Ateş için uzaylılara dokun', 'Bir uzaylı seni vurdu!', 'Ana gemi ışını!', 'Gece çiftlikte uzaylılar beliriyor: o ateş etmeden her birine dokunarak ateş et (her atıştan sonra kısa dolum). Elleri havadaki çiftçilere asla ateş etme. Zamanla daha çok ve daha hızlı gelirler. Vurulmak ya da bir çiftçiyi vurmak turu bitirir.', 'Bir çiftçiyi vurdun!'],
+      vi: ['Chạm vào người ngoài hành tinh để bắn', 'Người ngoài hành tinh đã bắn trúng bạn!', 'Tia của phi thuyền mẹ!', 'Người ngoài hành tinh xuất hiện ở nông trại ban đêm: chạm từng tên để bắn trước khi nó bắn (nạp đạn ngắn sau mỗi phát). Đừng bao giờ bắn nông dân đang giơ tay. Càng lúc càng nhiều và nhanh hơn. Bị bắn trúng, hoặc bắn trúng nông dân, là kết thúc ván.', 'Bạn bắn trúng nông dân!'],
+      id: ['Ketuk alien untuk menembak', 'Alien menembakmu!', 'Sinar kapal induk!', 'Alien muncul di peternakan pada malam hari: ketuk setiap alien untuk menembak sebelum ia menembak (isi ulang singkat setiap tembakan). Jangan pernah menembak petani yang mengangkat tangan. Makin lama makin banyak dan cepat. Tertembak, atau menembak petani, mengakhiri ronde.', 'Kamu menembak petani!'],
+      ru: ['Тап по пришельцам — выстрел', 'Пришелец попал в тебя!', 'Луч корабля-матки!', 'Ночью на ферме появляются пришельцы: нажимай на каждого, чтобы выстрелить раньше него (короткая перезарядка после выстрела). Никогда не стреляй в фермеров с поднятыми руками. Со временем их больше и они быстрее. Попадание в тебя или выстрел в фермера завершает раунд.', 'Ты попал в фермера!'],
+      de: ['Tippe auf die Aliens', 'Ein Alien hat dich getroffen!', 'Mutterschiff-Strahl!', 'Nachts tauchen Aliens auf der Farm auf: tippe jedes an, um zu schießen, bevor es feuert (kurzes Nachladen nach jedem Schuss). Schieß nie auf Farmer mit erhobenen Händen. Mit der Zeit kommen mehr und schnellere. Getroffen zu werden oder einen Farmer zu treffen beendet die Runde.', 'Du hast einen Farmer getroffen!'],
+      hi: ['गोली के लिए एलियन पर टैप करें', 'एक एलियन ने आपको मारा!', 'मदरशिप की किरण!', 'रात में खेत पर एलियन दिखते हैं: हर एक पर टैप करके उसके चलाने से पहले गोली चलाएँ (हर गोली के बाद थोड़ा रीलोड)। हाथ उठाए किसानों पर कभी गोली न चलाएँ। समय के साथ और ज़्यादा व तेज़ आते हैं। गोली लगना, या किसी किसान को मारना, राउंड खत्म करता है।', 'आपने एक किसान को मारा!'],
+      zh: ['点击外星人射击', '外星人击中了你！', '母舰光束！', '夜晚的农场出现外星人：在它开火前点击射击（每枪后短暂装弹）。千万不要射击举手的农民。随着时间推移，外星人越来越多、越来越快。被击中，或击中农民，本回合结束。', '你击中了农民！']
+    },
+    pirateraid: {
+      en: ['Tap the pirates to shoot', 'A pirate got you!', 'Cannon broadside!', 'Pirates appear on the ships and on the deck: tap each one to shoot before he fires (short reload after each shot). Never shoot the young sailors with raised hands. More and faster pirates come with time. Being shot, or shooting a sailor, ends the round.', 'You shot a sailor!'],
+      fr: ['Touche les pirates pour tirer', 'Un pirate t’a eu !', 'Bordée de canons !', 'Des pirates apparaissent sur les navires et sur le pont : touche chacun pour tirer avant qu’il ne tire (petit rechargement après chaque tir). Ne tire jamais sur les jeunes marins aux mains levées. Ils arrivent plus nombreux et plus vite avec le temps. Être touché, ou toucher un marin, termine la partie.', 'Tu as touché un marin !'],
+      es: ['Toca a los piratas para disparar', '¡Un pirata te alcanzó!', '¡Andanada de cañones!', 'Aparecen piratas en los barcos y en la cubierta: toca a cada uno para disparar antes de que dispare (breve recarga tras cada tiro). Nunca dispares a los jóvenes marineros con las manos en alto. Llegan más y más rápido con el tiempo. Recibir un disparo, o alcanzar a un marinero, termina la ronda.', '¡Alcanzaste a un marinero!'],
+      pt: ['Toque nos piratas para atirar', 'Um pirata te pegou!', 'Salva de canhões!', 'Piratas aparecem nos navios e no convés: toque em cada um para atirar antes que ele atire (breve recarga após cada tiro). Nunca atire nos jovens marinheiros de mãos para cima. Chegam mais e mais rápido com o tempo. Levar um tiro, ou acertar um marinheiro, encerra a rodada.', 'Você acertou um marinheiro!'],
+      ar: ['المس القراصنة لإطلاق النار', 'أصابك قرصان!', 'قصف المدافع!', 'يظهر القراصنة على السفن وعلى السطح: المس كل واحد لإطلاق النار قبل أن يطلق (تلقيم قصير بعد كل طلقة). لا تطلق أبدًا على البحارة الصغار رافعي الأيدي. يأتون أكثر وأسرع مع الوقت. إصابتك، أو إصابة بحار، تنهي الجولة.', 'أصبت بحارًا!'],
+      tr: ['Ateş için korsanlara dokun', 'Bir korsan seni vurdu!', 'Top yaylımı!', 'Korsanlar gemilerde ve güvertede beliriyor: o ateş etmeden her birine dokunarak ateş et (her atıştan sonra kısa dolum). Elleri havadaki genç denizcilere asla ateş etme. Zamanla daha çok ve daha hızlı gelirler. Vurulmak ya da bir denizciyi vurmak turu bitirir.', 'Bir denizciyi vurdun!'],
+      vi: ['Chạm vào cướp biển để bắn', 'Cướp biển đã bắn trúng bạn!', 'Loạt đại bác!', 'Cướp biển xuất hiện trên tàu và trên boong: chạm từng tên để bắn trước khi hắn bắn (nạp đạn ngắn sau mỗi phát). Đừng bao giờ bắn các thủy thủ trẻ đang giơ tay. Càng lúc càng nhiều và nhanh hơn. Bị bắn trúng, hoặc bắn trúng thủy thủ, là kết thúc ván.', 'Bạn bắn trúng thủy thủ!'],
+      id: ['Ketuk bajak laut untuk menembak', 'Bajak laut menembakmu!', 'Tembakan meriam!', 'Bajak laut muncul di kapal dan di dek: ketuk setiap bajak laut untuk menembak sebelum ia menembak (isi ulang singkat setiap tembakan). Jangan pernah menembak pelaut muda yang mengangkat tangan. Makin lama makin banyak dan cepat. Tertembak, atau menembak pelaut, mengakhiri ronde.', 'Kamu menembak pelaut!'],
+      ru: ['Тап по пиратам — выстрел', 'Пират попал в тебя!', 'Бортовой залп!', 'Пираты появляются на кораблях и на палубе: нажимай на каждого, чтобы выстрелить раньше него (короткая перезарядка после выстрела). Никогда не стреляй в юнг с поднятыми руками. Со временем их больше и они быстрее. Попадание в тебя или выстрел в юнгу завершает раунд.', 'Ты попал в юнгу!'],
+      de: ['Tippe auf die Piraten', 'Ein Pirat hat dich erwischt!', 'Kanonensalve!', 'Piraten tauchen auf den Schiffen und an Deck auf: tippe jeden an, um zu schießen, bevor er feuert (kurzes Nachladen nach jedem Schuss). Schieß nie auf junge Matrosen mit erhobenen Händen. Mit der Zeit kommen mehr und schnellere. Getroffen zu werden oder einen Matrosen zu treffen beendet die Runde.', 'Du hast einen Matrosen getroffen!'],
+      hi: ['गोली के लिए समुद्री डाकुओं पर टैप करें', 'एक समुद्री डाकू ने आपको मारा!', 'तोपों की बौछार!', 'समुद्री डाकू जहाज़ों पर और डेक पर दिखते हैं: हर एक पर टैप करके उसके चलाने से पहले गोली चलाएँ (हर गोली के बाद थोड़ा रीलोड)। हाथ उठाए युवा नाविकों पर कभी गोली न चलाएँ। समय के साथ और ज़्यादा व तेज़ आते हैं। गोली लगना, या किसी नाविक को मारना, राउंड खत्म करता है।', 'आपने एक नाविक को मारा!'],
+      zh: ['点击海盗射击', '海盗击中了你！', '舷炮齐射！', '海盗会出现在船上和甲板上：在他开枪前点击射击（每枪后短暂装弹）。千万不要射击举手的小水手。随着时间推移，海盗越来越多、越来越快。中弹，或击中水手，本回合结束。', '你击中了水手！']
+    },
     cityshield: {
       en: ['Tap to fire an interceptor', 'A city is hit!', 'Mega warhead!', 'Missiles fall toward your cities: tap where to fire — the interceptor flies there and explodes, destroying the missiles in its blast. Aim ahead of them. Some missiles split. A missile hitting a city ends the round.'],
       fr: ['Touche pour lancer un intercepteur', 'Une ville est touchée !', 'Méga-ogive !', 'Des missiles tombent vers tes villes : touche où tirer — l’intercepteur y vole et explose, détruisant les missiles dans son souffle. Vise devant eux. Certains missiles se divisent. Un missile sur une ville termine la partie.'],
@@ -1222,7 +1250,8 @@
       var n = civ ? pick(CF.civ) : pick(CF.en);
       foes.push({ sp: sp, civ: civ, n: n, up: 0, t: 0, aT: (civ ? 2.6 : Math.max(1.25, 3.2 - 1.7 * lv)) * (0.85 + 0.35 * (1 - sp[2])), dn: 0, fire: 0 });
     }
-    function box(f) { var p = pos(f.sp), q = IM[f.n], ar = q && q.ok ? q.i.width / q.i.height : 0.7, w = p.h * ar; return { x: p.x - w / 2, y: p.y - p.h * f.up, w: w, h: p.h, by: p.y, cx: p.x }; }
+    // 2026-11-03 (propriétaire, vidéo Grenade Toss) : un personnage n'est JAMAIS coupé par le bord de l'écran
+    function box(f) { var p = pos(f.sp), q = IM[f.n], ar = q && q.ok ? q.i.width / q.i.height : 0.7, w = p.h * ar, cx = Math.max(w / 2 + 6, Math.min(W - w / 2 - 6, p.x)); return { x: cx - w / 2, y: p.y - p.h * f.up, w: w, h: p.h, by: p.y, cx: cx }; }
     function shoot(x, y) {
       if (cool > 0 || dead || strike || won) return;
       cool = 0.3; cross = { x: x, y: y, t: 0 }; A.sx('gun', { k: CF.gun }); A.shake(0.06);
@@ -1305,6 +1334,18 @@
       hitCol: ['#7F1D1D', '#B91C1C', '#A8A29E'], dust: ['#A8A29E', '#78716C'],
       // bunker et ruines au loin, talus de gauche et de droite, champ devant
       spots: [[0.64, 0.46, 0.34], [0.77, 0.46, 0.34], [0.70, 0.43, 0.3], [0.18, 0.56, 0.48], [0.88, 0.58, 0.5], [0.38, 0.66, 0.6], [0.66, 0.70, 0.66], [0.22, 0.84, 0.86], [0.5, 0.9, 0.98], [0.8, 0.9, 0.98]] });
+  }, 'aim', 0.5);
+
+  boot('alienattack', function (A) {
+    return gallery(A, { v: '3582', bg: 'al_bg', en: ['al_e1', 'al_e2'], civ: ['al_c1'], gun: 'pistol', base: '#1E1B4B',
+      hitCol: ['#86EFAC', '#22C55E', '#A7F3D0'], dust: ['#A8A29E', '#78716C'],
+      // champ ouvert au milieu (rien ne cache les aliens), tous les emplacements bien DANS l'écran
+      spots: [[0.30, 0.62, 0.42], [0.70, 0.60, 0.42], [0.50, 0.56, 0.34], [0.22, 0.74, 0.6], [0.78, 0.74, 0.6], [0.38, 0.86, 0.85], [0.64, 0.9, 0.95], [0.5, 0.72, 0.55]] });
+  }, 'aim', 0.5);
+  boot('pirateraid', function (A) {
+    return gallery(A, { v: '3582', bg: 'pi_bg', en: ['pi_e1', 'pi_e2'], civ: ['pi_c1'], gun: 'pistol', base: '#7C2D12',
+      hitCol: ['#7F1D1D', '#B91C1C', '#D6D3D1'], dust: ['#D6D3D1', '#A8A29E'],
+      spots: [[0.26, 0.46, 0.36], [0.74, 0.45, 0.34], [0.50, 0.44, 0.3], [0.30, 0.70, 0.6], [0.70, 0.70, 0.6], [0.50, 0.86, 0.9], [0.24, 0.92, 0.95], [0.78, 0.92, 0.95]] });
   }, 'aim', 0.5);
 
   /* ================================================================== 13. TRENCH DEFENSE — first-person from the trench: enemy
