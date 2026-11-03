@@ -515,6 +515,7 @@ function admin_all_pay_run(array $req, array $players, callable $pay, int $limit
     return ['ok' => false, 'busy' => true, 'reason' => 'Un envoi du bonus est déjà en cours (autre onglet ?). Attendez qu’il finisse.'];
   }
   $paid = 0; $errors = []; $mailFailed = 0; $t0 = microtime(true);
+  $GLOBALS['OROLADO_BULK_CREDIT'] = true; // v3556 : pas de rechargement de toute la liste après chaque joueur
   try {
     foreach ($players as $r) {
       if ($paid >= $limit || microtime(true) - $t0 > $maxSec) break;
@@ -545,6 +546,7 @@ function admin_all_pay_run(array $req, array $players, callable $pay, int $limit
       $paid++;
     }
   } finally {
+    $GLOBALS['OROLADO_BULK_CREDIT'] = false;
     flock($lk, LOCK_UN);
     fclose($lk);
   }
