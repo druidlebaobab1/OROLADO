@@ -1260,8 +1260,20 @@
     }
   };
 
-  // 2026-11-03 (propriétaire) — SUBWAY DASH rebranché sur le VRAI moteur de course en perspective (comme Metro Dash) :
-  // mêmes voies/obstacles/perso animé qui AVANCE, mais décor de TUNNEL souterrain (seul le fond change).
+  // 2026-11-03 (propriétaire) — SUBWAY DASH : VRAI moteur de course (comme Metro Dash) mais sa PROPRE peau de
+  // TUNNEL souterrain (fond tunnel + parois carrelées), distinct de Metro (ligne aérienne néon). Pas une copie.
+  function tunnelWall(w, h, seed) {
+    return mkc(w, h, 1, function (c) {
+      var S = seed; function R() { S = (S * 9301 + 49297) % 233280; return S / 233280; }
+      c.fillStyle = lg(c, 0, 0, 0, h, ['#2b2f3a', '#20242e', '#13161d']); c.fillRect(0, 0, w, h);
+      var tw = w / 16, th = h / 3;
+      for (var y = 0; y < h; y += th) for (var x = ((y / th) % 2) * tw * 0.5; x < w; x += tw) { c.fillStyle = 'rgba(255,255,255,.045)'; c.fillRect(x + 1, y + 1, tw - 2, th - 2); c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(x, y, tw, 1); c.fillRect(x, y, 1, th); }
+      for (var g = 0; g < 9; g++) { c.fillStyle = 'rgba(0,0,0,' + (0.05 + R() * 0.13).toFixed(2) + ')'; c.fillRect(R() * w, 0, 2 + R() * 6, h); }
+      [0.22, 0.44, 0.72].forEach(function (py) { c.fillStyle = '#394049'; c.fillRect(0, h * py, w, Math.max(2, h * 0.03)); c.fillStyle = 'rgba(255,255,255,.07)'; c.fillRect(0, h * py, w, 1); });
+      c.fillStyle = 'rgba(255,236,180,.95)'; c.fillRect(0, h * 0.1, w, Math.max(2, h * 0.028));
+      c.fillStyle = 'rgba(255,220,140,.14)'; c.fillRect(0, h * 0.04, w, h * 0.2);
+    });
+  }
   var SUBWAY = Object.assign({}, METRO, {
     bg: function (c, V) {
       var W = V.W, H = V.H, hy = V.hy, vx = W * 0.5, vy = hy * 0.9, mm = Math.min(W, H), i, k;
@@ -1270,7 +1282,8 @@
       for (i = 1; i <= 8; i++) { var f = i / 9; c.strokeStyle = 'rgba(150,175,205,' + (0.06 + 0.16 * f).toFixed(3) + ')'; c.lineWidth = 1 + 2 * f; c.beginPath(); c.ellipse(vx, vy, W * (0.05 + 0.6 * f), hy * (0.06 + 0.9 * f), 0, Math.PI, 2 * Math.PI); c.stroke(); }
       for (k = 1; k <= 6; k++) { var g = k / 7, lw2 = 4 + 14 * g; c.fillStyle = 'rgba(255,245,210,' + (0.25 + 0.4 * g).toFixed(2) + ')'; c.fillRect(vx - lw2 / 2, vy - hy * (0.1 + 0.82 * g), lw2, 3 + 6 * g); }
       c.fillStyle = lg(c, 0, hy, 0, V.ny, ['#15131d', '#0b0a12']); c.fillRect(0, hy, W, H - hy);
-    }
+    },
+    art: function (V, dpr) { var sp = METRO.art(V, dpr); sp.walls = [tunnelWall(512, 128, 3), tunnelWall(512, 128, 11), tunnelWall(512, 128, 29)]; return sp; }
   });
 
   boot('highway', function (A) { return runner(A, HIGHWAY); }, 'lr', 0.5);
