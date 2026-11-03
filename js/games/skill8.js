@@ -2685,7 +2685,7 @@
           A.bg(bg);
           if (cfg.fx) cfg.fx(c, W, H, T, t, dash, rx0, rx1);
           if (cfg.lines !== false) { c.strokeStyle = cfg.lineCol || 'rgba(255,255,255,.3)'; c.lineWidth = Math.max(2, pw2 * 0.08); c.setLineDash([ph * 0.5, ph * 0.6]); c.lineDashOffset = -(dash % (ph * 1.1)); for (var ln = 1; ln < cfg.lanes; ln++) { var lx = rx0 + (rx1 - rx0) * ln / cfg.lanes; c.beginPath(); c.moveTo(lx, -ph); c.lineTo(lx, H + ph); c.stroke(); } c.setLineDash([]); }
-          for (var i = 0; i < obs.length; i++) { var e = obs[i], img = oS[e.k], ix = e.x, iy = e.y, sc = 1; if (cfg.persp) { var fy = clamp((e.y - T) / Math.max(1, py - T), 0, 1); sc = 0.32 + 0.68 * fy; ix = W / 2 + (e.x - W / 2) * (0.38 + 0.62 * fy); } var iw = img.w * sc, ih = img.h * sc; if (e.rot) { c.save(); c.translate(ix, iy); c.rotate(e.rot); c.drawImage(img, -iw / 2, -ih / 2, iw, ih); c.restore(); } else c.drawImage(img, ix - iw / 2, iy - ih / 2, iw, ih); }
+          for (var i = 0; i < obs.length; i++) { var e = obs[i], img = oS[e.k], ix = e.x, iy = e.y, sc = 1; if (cfg.persp) { var vpy = T + (H - T) * 0.42, fyr = (e.y - T) / Math.max(1, py - T), fy = fyr < 0 ? 0 : fyr, fc = fy < 1 ? fy : 1; sc = 0.24 + 0.76 * fc; ix = W / 2 + (e.x - W / 2) * (0.1 + 0.9 * fc); iy = vpy + (py - vpy) * fy; } var iw = img.w * sc, ih = img.h * sc; if (e.rot) { c.save(); c.translate(ix, iy); c.rotate(e.rot); c.drawImage(img, -iw / 2, -ih / 2, iw, ih); c.restore(); } else c.drawImage(img, ix - iw / 2, iy - ih / 2, iw, ih); }
           if (!dead) c.drawImage(pS, px - pS.w / 2, py - pS.h / 2, pS.w, pS.h);
         },
         down: function (x) { drag = { x: x, s: px }; },
@@ -3195,7 +3195,7 @@
     /* 2026-11-03 (propriétaire) — Subway Dash passe aux VRAIS visuels (générés avec la clé fal.ai du propriétaire) :
        tunnel en perspective + coureur vu de dos + métro-obstacle. Les images se chargent de façon asynchrone et
        se redessinent sur le canevas-sprite déjà en cache (aucune modif du moteur). Repli propre pendant le chargement. */
-    var SUBV = '3537';
+    var SUBV = '3538';
     function containDraw(x, im, w, h) {
       var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
       if (!iw || !ih) return;
@@ -3243,17 +3243,22 @@
       fx: function (c, W, H, T, t) {
         /* 2026-11-03 (propriétaire : « une vraie avancée, une course qui avance ») — traverses de rails qui
            FONCENT vers le joueur (perspective) + stries de vitesse sur les parois → on sent qu'on fonce. */
-        var cx = W / 2, vpy = T + (H - T) * 0.40, span = H - vpy, j;
-        for (j = 0; j < 16; j++) {
-          var u = ((t * 0.6) + j / 16) % 1, f = u * u, y = vpy + span * f, half = W * (0.035 + 0.30 * f), th = 2 + 13 * f;
-          c.globalAlpha = 0.05 + 0.22 * f; c.fillStyle = '#F4E2B0'; c.fillRect(cx - half, y - th * 0.5, half * 2, th * 0.5);
-          c.globalAlpha = 0.04 + 0.16 * f; c.fillStyle = '#05070d'; c.fillRect(cx - half, y, half * 2, th * 0.5);
+        var cx = W / 2, vpy = T + (H - T) * 0.42, span = H - vpy, j;
+        for (j = 0; j < 7; j++) {
+          var w0 = ((t * 0.85) + j / 7) % 1, rf = w0 * w0;
+          c.globalAlpha = (0.03 + 0.12 * rf) * (1 - rf * 0.35); c.strokeStyle = '#EAF2FF'; c.lineWidth = 1 + 3 * rf;
+          c.beginPath(); c.ellipse(cx, vpy - span * 0.05, W * (0.12 + 0.48 * rf), span * (0.1 + 0.7 * rf), 0, Math.PI * 1.08, Math.PI * 1.92); c.stroke();
         }
-        for (j = 0; j < 10; j++) {
-          var v = ((t * 0.66) + j / 10) % 1, g = v * v, yy = vpy + span * g, hh = 6 + 60 * g, lw = W * (0.02 + 0.03 * g);
-          c.globalAlpha = 0.05 + 0.14 * g; c.fillStyle = '#CFE8FF';
-          c.fillRect(cx - W * (0.16 + 0.34 * g), yy, lw, hh);
-          c.fillRect(cx + W * (0.16 + 0.34 * g) - lw, yy, lw, hh);
+        for (j = 0; j < 20; j++) {
+          var u = ((t * 1.0) + j / 20) % 1, f = u * u, y = vpy + span * f, half = W * (0.03 + 0.33 * f), th = 2 + 16 * f;
+          c.globalAlpha = 0.06 + 0.38 * f; c.fillStyle = '#F6E6B4'; c.fillRect(cx - half, y - th * 0.5, half * 2, th * 0.5);
+          c.globalAlpha = 0.05 + 0.22 * f; c.fillStyle = '#04060c'; c.fillRect(cx - half, y, half * 2, th * 0.5);
+        }
+        for (j = 0; j < 12; j++) {
+          var v = ((t * 1.1) + j / 12) % 1, g = v * v, yy = vpy + span * g, hh = 8 + 90 * g, lw = W * (0.015 + 0.04 * g);
+          c.globalAlpha = 0.05 + 0.2 * g; c.fillStyle = '#DCEBFF';
+          c.fillRect(cx - W * (0.14 + 0.36 * g), yy, lw, hh);
+          c.fillRect(cx + W * (0.14 + 0.36 * g) - lw, yy, lw, hh);
         }
         c.globalAlpha = 1;
       },
