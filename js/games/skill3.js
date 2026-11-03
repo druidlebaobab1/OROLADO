@@ -1305,7 +1305,7 @@
      passer en glissant. Mêmes voies, mêmes rangées d'obstacles et mêmes collisions que Metro : seul le dessin change.
      Tant qu'une image n'est pas chargée, le dessin Metro sert de secours. */
   var SUBI = {};
-  function subI(n) { if (!SUBI[n]) { var o = { im: new Image(), ok: false }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/sub_' + n + '.webp?v=3549'; SUBI[n] = o; } return SUBI[n]; }
+  function subI(n) { if (!SUBI[n]) { var o = { im: new Image(), ok: false }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/sub_' + n + '.webp?v=3552'; SUBI[n] = o; } return SUBI[n]; }
   var SUBWAY = Object.assign({}, METRO, {
     streak: 'rgba(255,255,255,', dust: 'rgba(214,200,170,',
     bg: function (c, V) {
@@ -1323,26 +1323,28 @@
     },
     ground: function (c, V, dist, SP, t) {
       var ci = SUBI.city;
-      if (ci && ci.ok) { var cw = Math.max(V.W * 1.25, (V.hy - V.T + 30) * 2.5), ch = cw * 480 / 1200; c.drawImage(ci.im, (V.W - cw) / 2, V.hy - ch + 2, cw, ch); }
-      // au bout des façades : une rangée d'immeubles lointains de chaque côté des voies (plus de bande grise à l'horizon)
-      var w0 = SUBI.wall0;
-      if (w0 && w0.ok) {
-        var zE = V.ZM * 2.2 + 1.5, pE = V.P(zE), yE = V.SY(zE) + 1, hE = 4.0 * V.lw * pE, tw = hE * 1024 / 273, xL = V.SX(-1.62, zE), xR = V.SX(1.62, zE), x;
-        for (x = xL; x > -tw; x -= tw) c.drawImage(w0.im, x - tw, yE - hE, tw, hE);
-        for (x = xR; x < V.W; x += tw) c.drawImage(w0.im, x, yE - hE, tw, hE);
+      if (ci && ci.ok) {
+        // le panorama descend sous l'horizon (derrière les immeubles : plus de grand vide bleu), mais jamais sur la voie
+        var cw = Math.max(V.W * 1.25, (V.hy - V.T + 30) * 2.5), ch = cw * 480 / 1200, drop = (V.ny - V.hy) * 0.22;
+        c.save(); c.beginPath(); c.rect(0, 0, V.W, V.H);
+        c.moveTo(V.SX(-2.06, V.ZF), V.hy); c.lineTo(V.SX(-2.06, -0.14), V.SY(-0.14)); c.lineTo(V.SX(2.06, -0.14), V.SY(-0.14)); c.lineTo(V.SX(2.06, V.ZF), V.hy); c.closePath();
+        c.clip('evenodd'); c.drawImage(ci.im, (V.W - cw) / 2, V.hy - ch + 2 + drop, cw, ch); c.restore();
       }
       METRO.ground(c, V, dist);
     },
     side: function (c, V, dist, SP) {
       var w0 = SUBI.wall0, w1 = SUBI.wall1;
       if (!(w0 && w0.ok && w1 && w1.ok)) return METRO.side(c, V, dist, SP);
-      var S = 1.5, o = dist % S, k = Math.floor(dist / S), z, i, zMax = V.ZM * 2.2 + S;
-      // fond opaque derrière les façades (pas de fente grise entre deux pans)
-      wallQuad(c, V, -2.07, -0.8, zMax, 0, 1.1, '#7A4B3A'); wallQuad(c, V, 2.07, -0.8, zMax, 0, 1.1, '#7A4B3A');
+      var S = 1.5, o = dist % S, k = Math.floor(dist / S), z, i, zMax = V.ZM * 2.2 + S, zF = zMax - S;
+      // v3552 (propriétaire : « les maisons arrivent bizarrement ») : fond opaque plus haut derrière les façades (plus de
+      // fentes claires qui clignotent entre deux bandes), et le pan du fond APPARAÎT EN FONDU au lieu de surgir d'un coup.
+      wallQuad(c, V, -2.07, -0.8, zF, 0, 2.3, '#8A5A44'); wallQuad(c, V, 2.07, -0.8, zF, 0, 2.3, '#8A5A44');
       for (z = zMax - o, i = 0; z > -0.8; z -= S, i++) {
         var a = (k + i) % 2 ? w0.im : w1.im, b = (k + i) % 2 ? w1.im : w0.im;
+        c.globalAlpha = clamp((zMax - z) / (S * 0.9), 0, 1);
         wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 14); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 14);
       }
+      c.globalAlpha = 1;
       // trottoir clair au pied des immeubles
       [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.62, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, -0.14), V.SY(-0.14), V.SX(s * 1.62, -0.14), V.SY(-0.14)], 'rgba(214,211,209,.55)'); });
     },
