@@ -14337,3 +14337,28 @@ html:root body #withdrawModal#withdrawModal#withdrawModal .modal-title,html:root
 html:root body #historySheet#historySheet#historySheet#historySheet .hist-tab.on{background:linear-gradient(180deg,#2A2213 0%,#1C170D 100%)!important;border:1px solid rgba(212,175,55,.45)!important;box-shadow:none!important;color:#F3DFA6!important;text-shadow:none!important}
 html:root body #depositModal#depositModal#depositModal#depositModal .pay-method-card.on{box-shadow:none!important;filter:none!important}
 html:root body #depositModal#depositModal#depositModal#depositModal .pay-method-card.on::before,html:root body #depositModal#depositModal#depositModal#depositModal .pay-method-card.on::after{animation:none!important;opacity:0!important}
+
+/* v3575 SITE SÉRIEUX — plus de planètes ni d'étoiles décoratives sur les pages à lire ; fenêtres sombres et posées */
+/* Cadeaux : plus de points blancs (ciel étoilé), plus de boule « planète » derrière le logo du marché du Défi */
+html:root body #portalModal#portalModal#portalModal#portalModal .portal-sky{display:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .defi-globe .hc-globe,html:root body .defi-win .dw-cup .hc-globe{background:none!important;background-image:none!important;box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .defi-globe .hc-globe > svg,html:root body .defi-win .dw-cup .hc-globe > svg{width:78%!important;height:78%!important}
+/* rayons qui tournent (soleil) derrière les icônes : retirés partout */
+html:root body .cosmo-rays,html:root body .defi-win .dw-rays,html:root body .defi-win .dw-sp{display:none!important;animation:none!important}
+/* petites fenêtres (aide, déconnexion, astuce, dépôt réussi, retrait reçu) : fond sombre uni, sans halo de couleur */
+html:root body #helpModal#helpModal#helpModal .modal-box,html:root body #logoutModal#logoutModal#logoutModal .modal-box,html:root body #tipModal#tipModal#tipModal .modal-box,
+html:root body #depositSuccessModal#depositSuccessModal#depositSuccessModal .modal-box,html:root body #wdConfirmModal#wdConfirmModal#wdConfirmModal .modal-box{
+  background:linear-gradient(180deg,#14110C 0%,#0F0D09 100%)!important;border:1px solid rgba(255,255,255,.09)!important;box-shadow:0 14px 34px rgba(0,0,0,.6)!important}
+html:root body #helpModal#helpModal#helpModal .modal-box::before,html:root body #helpModal#helpModal#helpModal .modal-box::after,
+html:root body #helpModal#helpModal#helpModal .help-hero::before,html:root body #helpModal#helpModal#helpModal .help-hero::after{content:none!important;display:none!important;animation:none!important}
+html:root body #logoutModal#logoutModal#logoutModal .modal-box::before{box-shadow:inset -4px -4px 10px rgba(0,0,0,.3)!important;animation:none!important}
+html:root body #helpModal#helpModal#helpModal .help-live,html:root body #helpModal#helpModal#helpModal .help-live-dot,html:root body #helpModal#helpModal#helpModal .help-on{box-shadow:none!important;animation:none!important}
+html:root body #helpModal#helpModal#helpModal .help-live{background:rgba(46,229,157,.08)!important;border:1px solid rgba(46,229,157,.28)!important}
+html:root body #helpModal#helpModal#helpModal .help-in-ico{box-shadow:none!important}
+html:root body #helpModal#helpModal#helpModal input,html:root body #helpModal#helpModal#helpModal textarea{background:rgba(255,255,255,.04)!important;box-shadow:none!important}
+html:root body #helpModal#helpModal#helpModal svg,html:root body #depositSuccessModal .cosmo-ico,html:root body #wdConfirmModal .cosmo-ico,html:root body #tipModal .convert-fire{animation:none!important}
+html:root body #wdConfirmModal#wdConfirmModal .wd-confirm-status::before{animation:none!important;box-shadow:none!important}
+/* boutons or / rouges de ces fenêtres : visibles, sans lueur ni reflet qui passe */
+html:root body #helpModal#helpModal#helpModal .btn-gold,html:root body #tipModal#tipModal#tipModal .btn-gold,html:root body #logoutModal#logoutModal#logoutModal .logout-go,
+html:root body #depositSuccessModal#depositSuccessModal#depositSuccessModal .btn-gold{box-shadow:0 2px 6px rgba(0,0,0,.45)!important}
+html:root body #helpModal#helpModal#helpModal .btn-gold::after{content:none!important;animation:none!important}
