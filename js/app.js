@@ -3305,6 +3305,8 @@
         // v2394 : le nouveau logo (globe du marché, comme sur les cases du site) ; l'ancien pictogramme en secours.
         var chip = document.querySelector('.asset-chip[data-asset="' + assetId + '"]');
         var art = chip && chip.querySelector('.mk-art');
+        var im0 = art && !art.querySelector('svg') && art.querySelector('img'); // v3558 : emblème en image (indices récents)
+        if (im0) return '<span class="hc-globe hc-img" style="background:none;box-shadow:none"><img src="' + im0.getAttribute('src') + '" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></span>';
         if (art && art.querySelector('svg')) {
           var cs = getComputedStyle(chip);
           var p1 = (cs.getPropertyValue('--p1') || '').trim() || '#C9B8FF';

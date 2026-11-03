@@ -14134,3 +14134,12 @@ html body #withdrawModal#withdrawModal #wdBankGrid .wd-card:active,html body #wi
 @keyframes bwFall{0%{top:-12%;transform:rotate(0);opacity:0}8%{opacity:1}100%{top:108%;transform:rotate(var(--r));opacity:1}}
 html.oro-lite .cs-bigwin .bw-rays{animation:none}
 @media (prefers-reduced-motion:reduce){.cs-bigwin .bw-rays{animation:none}.cs-bigwin .bw-c{animation-duration:0s!important;display:none}}
+/* v3558 (propriétaire : « le +, le − et la flèche sont trop gros dans les carrés, en écran normal ») — même
+   petite icône qu'en plein écran, seulement en écran normal (le carré lui-même ne change pas). */
+html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .chart-toolbar #chartZoomIn,
+html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .chart-toolbar #chartZoomOut,
+html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .chart-toolbar #chartReset,
+html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .chart-toolbar .chart-reset-btn{
+  background-size:15px 15px!important;background-repeat:no-repeat!important;background-position:center!important}
+html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .chart-toolbar .chart-reset-btn svg,
+html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .chart-toolbar #chartReset svg{width:15px!important;height:15px!important}

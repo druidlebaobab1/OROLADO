@@ -186,6 +186,10 @@
     try {
       var chip = document.querySelector('.asset-chip[data-asset="' + id + '"]');
       var art = chip && chip.querySelector('.mk-art');
+      // v3558 (propriétaire : « le logo de l'indice ne s'affiche pas dans le défi ») — les indices récents ont un emblème
+      // en IMAGE (pas en dessin SVG) : on recopie l'image telle quelle, à la taille du rond.
+      var im0 = art && !art.querySelector('svg') && art.querySelector('img');
+      if (im0) return '<span class="hc-globe hc-img" style="display:flex;align-items:center;justify-content:center;background:none;box-shadow:none"><img src="' + im0.getAttribute('src') + '" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></span>';
       if (art && art.querySelector('svg')) {
         var cs = getComputedStyle(chip);
         var p1 = (cs.getPropertyValue('--p1') || '').trim() || '#C9B8FF';
