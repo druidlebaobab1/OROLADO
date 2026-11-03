@@ -185,7 +185,7 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3
 /* la zone d'art : rectangle 160×112, l'art la remplit entièrement */
 /* carte un peu plus HAUTE (demande propriétaire) ; le FOND de la couleur du jeu remplit bord à bord ;
    le dessin est posé dans un carré CENTRÉ avec une marge → il ne touche jamais les bords, sur tous les téléphones. */
-html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art{position:relative;width:100%;aspect-ratio:1/1.3;border-radius:14px;overflow:hidden;
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big .cs-art{position:relative;width:100%;aspect-ratio:1/1;border-radius:14px;overflow:hidden;
   background:#171208;
   box-shadow:0 10px 20px -14px rgba(0,0,0,.9)}
 /* le carré du dessin : centré, marge autour (~4 % côtés, le reste en haut/bas vient de la carte plus haute) */
