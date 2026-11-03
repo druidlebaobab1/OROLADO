@@ -770,6 +770,13 @@
         if (won) won += dt;
       },
       draw: function (c) {
+        // 2026-11-03 : jamais l'ancien dessin de secours — chargement propre tant que la rue, les zombies et l'arme ne sont pas là (≤ 8 s)
+        var bgI = gImg4('img/games/zomb2_bg.webp?v=3548');
+        if (t < 8 && !(bgI.ok && ZI.w && ZI.w.ok && ZI.r && ZI.r.ok && ZI.b && ZI.b.ok && GUN && GUN.ok)) {
+          c.fillStyle = '#0B2A2A'; c.fillRect(0, 0, W, H); var lr = Math.min(W, H) * 0.06; c.lineWidth = Math.max(3, lr * 0.22); c.lineCap = 'round';
+          c.strokeStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(W / 2, H * 0.55, lr, 0, TAU); c.stroke(); c.strokeStyle = '#86EFAC'; c.beginPath(); c.arc(W / 2, H * 0.55, lr, t * 5, t * 5 + 1.6); c.stroke();
+          return;
+        }
         A.bg(bg);
         var i;
         for (i = 0; i < splats.length; i++) { var sp0 = splats[i]; c.globalAlpha = Math.max(0, 0.7 - sp0.t * 0.1); c.fillStyle = '#3F0A0A'; c.beginPath(); c.ellipse(sp0.x, sp0.y, sp0.r, sp0.r * 0.22, 0, 0, TAU); c.fill(); }

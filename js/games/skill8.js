@@ -2375,7 +2375,7 @@
        calé sur gy), personnages plus grands, vraie explosion (boule de feu fal.ai qui gonfle puis s'efface + fumée + terre),
        soldats PROJETÉS par le souffle (ils volent, tournent, retombent et restent au sol), grenade qui tourne avec une traînée,
        soldats à des profondeurs et vitesses variées (plus une file indienne). Même règle de jeu qu'avant. */
-    var W, H, T, dpr, bg, gx, gy, sr, soldiers = [], nades = [], cool = 0, dead = 0, won = 0, barrage = null, t = 0, spT = 0, kills = 0, aiT = 0, soldierS, GRAV, walkI, heroI, sandI, boomI, booms = [], fallen = [], CH = 90;
+    var warI = null, W, H, T, dpr, bg, gx, gy, sr, soldiers = [], nades = [], cool = 0, dead = 0, won = 0, barrage = null, t = 0, spT = 0, kills = 0, aiT = 0, soldierS, GRAV, walkI, heroI, sandI, boomI, booms = [], fallen = [], CH = 90;
     function throwAt(tx) {
       if (cool > 0 || dead || barrage || won) return;
       tx = clamp(tx, gx + sr * 2, W - sr * 0.5); cool = 0.45;
@@ -2402,7 +2402,7 @@
         CH = clamp((H - T) * 0.33, 64, 250); gx = Math.max(W * 0.12, CH * 0.5);
         soldierS = gSprite(sr * 2.3, sr * 2.8, dpr, 'img/games/war_soldier.webp?v=' + GV, function (c, cw, ch) { c.fillStyle = '#4B5320'; rr(c, cw * 0.28, ch * 0.2, cw * 0.44, ch * 0.62, cw * 0.1); c.fill(); });
         walkI = gImg('img/games/war_walk.webp?v=3547'); heroI = gImg('img/games/war_hero.webp?v=3547'); sandI = gImg('img/games/war_sand.webp?v=3547'); boomI = gImg('img/games/war_boom.webp?v=3550');
-        var o = gImg('img/games/war_side.webp?v=3582'), G0 = 0.728; // 2026-11-03 : plus de char peint au milieu (les soldats passaient derrière)
+        var o = gImg('img/games/war_side.webp?v=3582'), G0 = 0.728; warI = o; // 2026-11-03 : plus de char peint au milieu (les soldats passaient derrière)
         function paint(c) {
           if (o.ok) { var iw = o.im.naturalWidth, ih = o.im.naturalHeight, s2 = Math.max(W / iw, gy / (G0 * ih), (H - gy) / ((1 - G0) * ih)), dw = iw * s2, dh = ih * s2; c.drawImage(o.im, (W - dw) / 2, gy - G0 * dh, dw, dh); }
           else { c.fillStyle = lg(c, 0, 0, 0, gy, ['#7C3A3A', '#E0894B', '#F2C27A']); c.fillRect(0, 0, W, gy); c.fillStyle = lg(c, 0, gy, 0, H, ['#7A5A3A', '#3A2A1E']); c.fillRect(0, gy, W, H - gy); }
@@ -2426,6 +2426,12 @@
         if (A.idle()) { aiT += dt; if (aiT > 0.5) { aiT = 0; var near = soldiers.slice().sort(function (a2, b2) { return a2.x - b2.x; })[0]; if (near && near.x < W * 0.66) throwAt(near.x - near.v * 0.35); } }
       },
       draw: function (c) {
+        // 2026-11-03 : jamais l'ancien dessin de secours — écran de chargement tant que le décor et les soldats ne sont pas là (au plus 8 s)
+        if (t < 8 && !(warI && warI.ok && walkI && walkI.ok && heroI && heroI.ok && sandI && sandI.ok)) {
+          c.fillStyle = '#3B1F2B'; c.fillRect(0, 0, W, H); var lr = Math.min(W, H) * 0.06; c.lineWidth = Math.max(3, lr * 0.22); c.lineCap = 'round';
+          c.strokeStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(W / 2, H * 0.55, lr, 0, TAU); c.stroke(); c.strokeStyle = '#FBBF24'; c.beginPath(); c.arc(W / 2, H * 0.55, lr, t * 5, t * 5 + 1.6); c.stroke();
+          return;
+        }
         A.bg(bg); var i, s, n;
         var zh = CH * 0.74, zw = zh * 0.8;
         // soldats tombés (derrière les vivants)

@@ -424,6 +424,14 @@
      'J' low (swipe up = jump), 'S' high (swipe down = slide); 'wide' ones cover the 3 lanes. Every generated row keeps,
      next to EACH lane that was passable in the previous row, a passable lane (one swipe away at most): wherever the
      player stands, the next row is always beaten with one gesture. */
+  // écran de chargement : fond du monde + anneau qui tourne (jamais l'ancien décor)
+  function loadingScreen(c, W, H, t, col) {
+    c.fillStyle = (col && col[0]) || '#0B1220'; c.fillRect(0, 0, W, H);
+    var r = Math.min(W, H) * 0.06, x = W / 2, y = H * 0.55;
+    c.lineWidth = Math.max(3, r * 0.22); c.lineCap = 'round';
+    c.strokeStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(x, y, r, 0, TAU); c.stroke();
+    c.strokeStyle = (col && col[1]) || '#FBBF24'; c.beginPath(); c.arc(x, y, r, t * 5, t * 5 + 1.6); c.stroke();
+  }
   function runner(A, TH) {
     var W, H, u, dpr, T, hy, ny, lw, F = 4.2, ZM = 2.0;
     var bg = null, SP = {}, obs = [], px = 0, lane = 0, jt = -1, sl = -1, buf = null, bufT = 0, dead = 0, endE = null, won = 0, t = 0, dist = 0, v = 0, spD = 0, prevOk = [-1, 0, 1], rows = 0, lean = 0;
@@ -549,6 +557,9 @@
         if (won) won += dt;
       },
       draw: function (c) {
+        // 2026-11-03 (propriétaire : « on voit l'ancien jeu quelques secondes avant le nouveau ») — tant que les vraies images du
+        // monde ne sont pas chargées, écran de chargement propre au lieu de l'ancien dessin de secours (au plus 8 s).
+        if (TH.ready && !TH.ready() && t < 8) { loadingScreen(c, W, H, t, TH.load); return; }
         A.bg(bg);
         TH.ground(c, V, dist, SP, t);
         if (TH.side) TH.side(c, V, dist, SP, t);
@@ -1308,7 +1319,8 @@
   var SUBI = {};
   function subI(n) { if (!SUBI[n]) { var o = { im: new Image(), ok: false }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/sub_' + n + '.webp?v=3552'; SUBI[n] = o; } return SUBI[n]; }
   var SUBWAY = Object.assign({}, METRO, {
-    streak: 'rgba(255,255,255,', dust: 'rgba(214,200,170,',
+    streak: 'rgba(255,255,255,', dust: 'rgba(214,200,170,', load: ['#7DD3FC', '#FBBF24'],
+    ready: function () { return !!subKidFr && ['city', 'wall0', 'wall1', 'tfront', 'hurdle', 'duck'].every(function (n) { return SUBI[n] && SUBI[n].ok; }); },
     bg: function (c, V) {
       var W = V.W, H = V.H, hy = V.hy, ny = V.ny, i;
       // ciel partout (derrière les toits des immeubles, on ne doit voir que du ciel), sol seulement entre les deux rangées d'immeubles
@@ -1392,7 +1404,8 @@
     }
     var ok = function (n) { return I[n] && I[n].ok; };
     return Object.assign({}, SUBWAY, {
-      streak: o.streak || SUBWAY.streak, dust: o.dust || SUBWAY.dust,
+      streak: o.streak || SUBWAY.streak, dust: o.dust || SUBWAY.dust, load: [o.sky[1], '#FBBF24'],
+      ready: function () { return !!kidFr && ['city', 'wall0', 'wall1', 'tfront', 'hurdle', 'duck'].every(ok); },
       bg: function (c, V) {
         var W = V.W, H = V.H, hy = V.hy, ny = V.ny, i;
         c.fillStyle = lg(c, 0, 0, 0, H, o.sky); c.fillRect(0, 0, W, H);
