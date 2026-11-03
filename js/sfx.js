@@ -249,7 +249,8 @@
     tikigods: 'slots', icequeen: 'slots', caishen: 'slots', luchador: 'slots', fiesta: 'slots', genie: 'slots',
     bandits: 'slots', farm: 'slots', gladiator: 'slots', santa: 'slots', alien: 'slots', goblin: 'slots',
     circus: 'slots', soccer: 'slots', butterfly: 'slots', pizza: 'slots', beach: 'slots', owl: 'slots',
-    ninja: 'slots', unicorn: 'slots', turbo: 'slots', astro: 'slots', puppy: 'slots', sweets: 'slots' });
+    ninja: 'slots', unicorn: 'slots', turbo: 'slots', astro: 'slots', puppy: 'slots', sweets: 'slots',
+    champagne: 'slots', neontokyo: 'slots', nilequeen: 'slots', sambario: 'slots', crystalcave: 'slots', fisherman: 'slots', gummyland: 'slots', mayagold: 'slots', starvoyager: 'slots', rockstar: 'slots' });
   /* ---- casc4 : nouveaux types (révèle le palier) ---- */
   Object.assign(MAP, { rocketcash: 'crash', golddig: 'pick', giftrush: 'chests', cannonx: 'shoot', luckylift: 'show', magichat: 'pick' });
   Object.assign(MAP, { chestgold: 'chests', fortunewheel: 'show', goldenegg: 'chests', mysterybox: 'chests', crystalorb: 'show', diamondvault: 'show', diceroll: 'show', royalcard: 'show', genielamp: 'show', jackpotbell: 'show', oysterpearl: 'chests', crownjewel: 'show', geodegem: 'chests', moneytree: 'chests', lotteryball: 'show', dragoncoin: 'chests', fireworkgold: 'crash', treasuremap: 'show', goldbars: 'chests', pokerchip: 'show', luckyclover: 'show', rubyheart: 'show', moneybag: 'chests', luckyshoe: 'show', diamondring: 'show', goldtrophy: 'show', sunburst: 'show', gemtrio: 'chests' });

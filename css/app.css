@@ -14380,3 +14380,6 @@ html:root body #portalModal#portalModal .gh-grid .gh-p > b{white-space:normal!im
 /* Retrait : mots longs (allemand « Banküberweisung »…) coupés proprement avec un tiret */
 html:root body #withdrawModal#withdrawModal .wd-card > span:last-child{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:normal}
 html[lang^="de"]:root body #withdrawModal#withdrawModal .wd-card > span:last-child,html[lang^="ru"]:root body #withdrawModal#withdrawModal .wd-card > span:last-child{font-size:.84em!important;letter-spacing:-.01em}
+/* v3581 CASINO — gain moyen : pluie de pièces légère, sans voile sombre ni rayons (le montant reste lisible) */
+html body .cs-coinrain.cs-bigwin{background:none!important;pointer-events:none!important;z-index:30;opacity:1!important;transition:none!important}
+html body .cs-coinrain.cs-bigwin::before,html body .cs-coinrain.cs-bigwin::after{content:none!important;display:none!important}

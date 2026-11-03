@@ -282,6 +282,8 @@
     ['pizza', 'Pizza Party', 'casc1', ['#FDBA74', '#EA580C']], ['beach', 'Beach Party', 'casc1', ['#7DD3FC', '#0EA5E9']], ['owl', 'Night Owl', 'casc1', ['#C7D2FE', '#4F46E5']],
     ['ninja', 'Ninja Master', 'casc1', ['#CBD5E1', '#DC2626']], ['unicorn', 'Unicorn Magic', 'casc1', ['#FBCFE8', '#A855F7']], ['turbo', 'Turbo Racing', 'casc1', ['#FECACA', '#DC2626']],
     ['astro', 'Moon Explorer', 'casc1', ['#C7D2FE', '#6366F1']], ['puppy', 'Lucky Puppy', 'casc1', ['#FDE68A', '#D97706']], ['sweets', 'Sweet Treats', 'casc1', ['#FBCFE8', '#EC4899']],
+    // 2026-11-03 : 10 machines à vrais symboles illustrés (logos-photos img/games/<clé>.webp via casino-art.js)
+    ['champagne', 'Champagne Gold', 'casc1', ['#FDE68A', '#B45309']], ['neontokyo', 'Neon Tokyo', 'casc1', ['#F9A8D4', '#DB2777']], ['nilequeen', 'Nile Queen', 'casc1', ['#FDE68A', '#2563EB']], ['sambario', 'Samba Rio', 'casc1', ['#BBF7D0', '#16A34A']], ['crystalcave', 'Crystal Caves', 'casc1', ['#C4B5FD', '#7C3AED']], ['fisherman', 'Lucky Fisherman', 'casc1', ['#BAE6FD', '#0284C7']], ['gummyland', 'Gummy Land', 'casc1', ['#FBCFE8', '#EC4899']], ['mayagold', 'Maya Gold', 'casc1', ['#A7F3D0', '#059669']], ['starvoyager', 'Star Voyager', 'casc1', ['#C7D2FE', '#4F46E5']], ['rockstar', 'Rock Star', 'casc1', ['#FCA5A5', '#DC2626']],
     ['rocketcash', 'Rocket Cash', 'casc4', ['#C7D2FE', '#4F46E5']], ['golddig', 'Gold Digger', 'casc4', ['#FDE68A', '#A16207']], ['giftrush', 'Gift Rush', 'casc4', ['#FECACA', '#DC2626']],
     ['cannonx', 'Treasure Cannon', 'casc4', ['#CBD5E1', '#334155']], ['luckylift', 'Lucky Lift', 'casc4', ['#FDE68A', '#B45309']], ['magichat', 'Magic Hat', 'casc4', ['#DDD6FE', '#7C3AED']],
     ['chestgold', 'Treasure Chest', 'casc4', ['#FDE68A', '#B45309']], ['fortunewheel', 'Fortune Wheel', 'casc4', ['#FCA5A5', '#B91C1C']], ['goldenegg', 'Golden Egg', 'casc4', ['#FDE68A', '#A16207']],
@@ -471,5 +473,6 @@
       tw(50, 16, .8) + tw(14, 42, .6)
   });
 
+  ['champagne', 'neontokyo', 'nilequeen', 'sambario', 'crystalcave', 'fisherman', 'gummyland', 'mayagold', 'starvoyager', 'rockstar'].forEach(function (k) { if (!ICONS[k]) ICONS[k] = '<image href="img/games/' + k + '.webp?v=3581" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>'; });
   D6.CasinoCatalog.add(L.map(function (g) { return { k: g[0], name: g[1], sec: 'more', file: g[2], pal: g[3], icon: ICONS[g[0]] }; }));
 })(window.D6 = window.D6 || {});
