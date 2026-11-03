@@ -3537,9 +3537,9 @@ html body .asset-chip[data-asset="boomspike"].on .payout-live{color:#B9F6CA!impo
 /* Signes des indices : petit logo propre à chacun, qui s'allume quand l'indice est choisi. */
 html body .asset-ico.sig-ico{display:inline-flex;align-items:center;justify-content:center;margin-right:5px;vertical-align:-5px;
   background:none!important;-webkit-text-fill-color:initial!important;
-  filter:drop-shadow(0 0 1.5px var(--sig,#fff));opacity:.85;transition:filter .25s,opacity .25s}
+  filter:drop-shadow(0 0 1.5px var(--sig,#fff)) saturate(.8) brightness(.88);opacity:.82;transition:filter .25s,opacity .25s}
 html body .asset-ico.sig-ico svg{display:block;width:19px;height:19px}
-html body .asset-chip.on .asset-ico.sig-ico{opacity:1;filter:drop-shadow(0 0 1.5px var(--sig,#fff)) drop-shadow(0 0 3px var(--sig,#fff))}
+html body .asset-chip.on .asset-ico.sig-ico{opacity:1;filter:drop-shadow(0 0 1.5px var(--sig,#fff)) drop-shadow(0 0 3px var(--sig,#fff)) saturate(.8) brightness(.88)}
 /* Inscription : « Trading » petit et blanc sous OROLADO.COM. */
 html body #screenAuth .brand-sub{color:#FFFFFF!important;letter-spacing:.32em;text-transform:uppercase;font-weight:600;opacity:.9}
 /* Barre du solde : une pièce qui ne tient pas passe à la ligne (invisible) au lieu
@@ -4256,7 +4256,7 @@ html body .chart-outcome.lose{font-size:10px!important;padding:3px 6px!important
    simulations : légère teinte + fin contour de leur couleur ; rouge / vert discrets. Couleurs seulement. */
 html body #screenTrade .help-badge,html body #screenTrade #btnProfile{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,0.45)!important;color:#FFB15C!important;box-shadow:none!important}
 html body #screenTrade .btn-auth-link:not(.on){background:rgba(255,255,255,.06)!important;border:1px solid rgba(247,147,26,0.33)!important;color:#F8FAFC!important}
-html body #screenTrade .btn-auth-link.on{background:#E0841A!important;border:1px solid #E0841A!important;color:#1A1205!important;box-shadow:0 1px 6px rgba(247,147,26,0.06)!important}
+html body #screenTrade .btn-auth-link.on{background:#C9761A!important;border:1px solid #C9761A!important;color:#1A1205!important;box-shadow:0 1px 5px rgba(247,147,26,0.05)!important}
 html body #screenTrade .balance-card{background:linear-gradient(90deg,rgba(200,150,54,.07) 0%,rgba(18,15,9,.96) 60%)!important;border:1px solid rgba(247,147,26,0.36)!important;box-shadow:0 2px 12px rgba(247,147,26,0.04)!important}
 html body #screenTrade .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#F0EBE2!important}
 html body #screenTrade .chart-toolbar .ind-btn.on,html body #screenTrade .chart-toolbar .ind-btn.active{background:#F7931A!important;border-color:#F7931A!important;color:#1A1205!important}
@@ -4271,7 +4271,7 @@ html body #screenTrade .win-preview{background:rgba(16,185,129,.12)!important;bo
 html body #screenTrade .help-badge:active,html body #screenTrade #btnProfile:active,html body #screenTrade .btn-auth-link:active,html body #screenTrade .asset-chip:active,html body #screenTrade .ind-btn:active,html body #screenTrade .chart-fs-btn:active,html body #screenTrade .dur-chip:active,html body #screenTrade .qbtn:active{filter:brightness(1.25)!important}
 html body #fsTradeOverlay .help-badge,html body #fsTradeOverlay #btnProfile{background:rgba(247,147,26,.18)!important;border:1px solid rgba(247,147,26,0.45)!important;color:#FFB15C!important;box-shadow:none!important}
 html body #fsTradeOverlay .btn-auth-link:not(.on){background:rgba(255,255,255,.06)!important;border:1px solid rgba(247,147,26,0.33)!important;color:#F8FAFC!important}
-html body #fsTradeOverlay .btn-auth-link.on{background:#E0841A!important;border:1px solid #E0841A!important;color:#1A1205!important;box-shadow:0 1px 6px rgba(247,147,26,0.06)!important}
+html body #fsTradeOverlay .btn-auth-link.on{background:#C9761A!important;border:1px solid #C9761A!important;color:#1A1205!important;box-shadow:0 1px 5px rgba(247,147,26,0.05)!important}
 html body #fsTradeOverlay .balance-card{background:linear-gradient(90deg,rgba(200,150,54,.07) 0%,rgba(18,15,9,.96) 60%)!important;border:1px solid rgba(247,147,26,0.36)!important;box-shadow:0 2px 12px rgba(247,147,26,0.04)!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn{background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.18)!important;color:#F0EBE2!important}
 html body #fsTradeOverlay .chart-toolbar .ind-btn.on,html body #fsTradeOverlay .chart-toolbar .ind-btn.active{background:#F7931A!important;border-color:#F7931A!important;color:#1A1205!important}
@@ -11680,7 +11680,7 @@ html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball svg{width:100%!i
 html:root body .topbar-row #btnCasino .cb-lbl b{font-size:10.5px!important;white-space:nowrap}
 /* la grande manette « Jeux » au centre */
 html:root body .topbar-row #btnGames{margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 6px;border:0;background:none;color:#fff;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;flex:none}
-html:root body .topbar-row #btnGames .gb-ico{display:block;width:62px;height:40px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))}
+html:root body .topbar-row #btnGames .gb-ico{display:block;width:62px;height:40px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45)) saturate(.78) brightness(.86)}
 html:root body .topbar-row #btnGames .gb-ico svg{width:100%;height:100%;overflow:visible}
 html:root body .topbar-row #btnGames b{font:800 11.5px/1.1 "Plus Jakarta Sans",system-ui,sans-serif;letter-spacing:.02em}
 html:root body .topbar-row #btnGames:active .gb-ico{transform:scale(.94)}
@@ -11716,7 +11716,7 @@ html:root body #screenTrade .topbar-row #btnPortal .pw-lbl,html:root body #scree
 html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball{width:34px!important;height:30px!important}
 html:root body .topbar-row #btnCasino#btnCasino .cb-ico.cb-ball svg{filter:none!important}
 /* la grande manette « Jeux » : plus large, plus belle, le seul élément en couleur */
-html:root body .topbar-row #btnGames .gb-ico{width:80px!important;height:46px!important;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))!important}
+html:root body .topbar-row #btnGames .gb-ico{width:80px!important;height:46px!important;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5)) saturate(.78) brightness(.86)!important}
 html:root body .topbar-row #btnGames b{font:800 13px/1 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.04em!important;color:#fff!important;margin-top:1px}
 html.oro-lite body .topbar-row #btnGames .gb-ico{filter:none!important}
 /* « + » : petit carré orange au bout de « Compte réel », sans cercle noir */
