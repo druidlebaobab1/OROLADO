@@ -150,7 +150,7 @@
   };
   // Subway Dash réutilise les textes de Metro Dash (même course en perspective, décor tunnel).
   G.subwaydash = G.metrodash;
-  G.tokyodash = G.metrodash; G.pharaohrun = G.metrodash; // mêmes règles et mêmes textes (12 langues) que Metro / Subway
+  G.tokyodash = G.metrodash; G.pharaohrun = G.metrodash; G.parisrun = G.metrodash; G.candyrun = G.metrodash; // mêmes règles et mêmes textes (12 langues) que Metro / Subway
 
   /* ------------------------------------------------------------------ shared engine (round flow + canvas loop + gestures) */
   function boot(key, mk, gest, hy) {
@@ -1340,14 +1340,16 @@
       // v3552 (propriétaire : « les maisons arrivent bizarrement ») : fond opaque plus haut derrière les façades (plus de
       // fentes claires qui clignotent entre deux bandes), et le pan du fond APPARAÎT EN FONDU au lieu de surgir d'un coup.
       wallQuad(c, V, -2.07, -0.8, zF, 0, 2.3, '#8A5A44'); wallQuad(c, V, 2.07, -0.8, zF, 0, 2.3, '#8A5A44');
+      // 2026-11-03 (propriétaire, capture) : trottoir OPAQUE dessiné AVANT les façades (avant : voile gris par-dessus le bas des
+      // maisons → « marches d'escalier » grises) ; bordure sombre côté voies.
+      [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.58, V.ZF), V.SY(V.ZF), V.SX(s * 2.07, V.ZF), V.SY(V.ZF), V.SX(s * 2.07, -0.14), V.SY(-0.14), V.SX(s * 1.58, -0.14), V.SY(-0.14)], '#B9B2AA');
+        poly(c, [V.SX(s * 1.58, V.ZF), V.SY(V.ZF), V.SX(s * 1.64, V.ZF), V.SY(V.ZF), V.SX(s * 1.64, -0.14), V.SY(-0.14), V.SX(s * 1.58, -0.14), V.SY(-0.14)], '#6B6560'); });
       for (z = zMax - o, i = 0; z > -0.8; z -= S, i++) {
         var a = (k + i) % 2 ? w0.im : w1.im, b = (k + i) % 2 ? w1.im : w0.im;
         c.globalAlpha = clamp((zMax - z) / (S * 0.9), 0, 1);
         wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 14); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 14);
       }
       c.globalAlpha = 1;
-      // trottoir clair au pied des immeubles
-      [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.62, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, -0.14), V.SY(-0.14), V.SX(s * 1.62, -0.14), V.SY(-0.14)], 'rgba(214,211,209,.55)'); });
     },
     ob: function (c, V, o, SP, t) {
       var tf = SUBI.tfront, ts = SUBI.tside, hu = SUBI.hurdle, du = SUBI.duck;
@@ -1355,7 +1357,7 @@
         if (!(tf && tf.ok && ts && ts.ok)) return METRO.ob(c, V, o, SP, t);
         var zn = Math.max(o.z, -0.02), zf = o.z + o.len;
         if (o.ln < -0.1) wallImg(c, V, ts.im, o.ln + 0.42, zn, zf, 0.02, 1.3, 8); else if (o.ln > 0.1) wallImg(c, V, ts.im, o.ln - 0.42, zn, zf, 0.02, 1.3, 8);
-        box(c, V, o.ln, o.z, zf, 0.42, 1.3, tf.im, 'rgba(0,0,0,0)', lg(c, 0, V.SY(zf), 0, V.SY(zn), ['#5EA9B8', '#8FD3DE']));
+        box(c, V, o.ln, o.z, zf, 0.42, 1.3, tf.im, 'rgba(0,0,0,0)', lg(c, 0, V.SY(zf), 0, V.SY(zn), ['#3F4A55', '#5B6773'])); // toit gris (plus de grande dalle bleu clair)
         return;
       }
       if (o.k === 1 || o.k === 3) {
@@ -1416,13 +1418,14 @@
         if (!(ok('wall0') && ok('wall1'))) return METRO.side(c, V, dist, SP);
         var w0 = I.wall0, w1 = I.wall1, S = 1.5, off = dist % S, k = Math.floor(dist / S), z, i, zMax = V.ZM * 2.2 + S, zF = zMax - S;
         wallQuad(c, V, -2.07, -0.8, zF, 0, 2.3, o.back); wallQuad(c, V, 2.07, -0.8, zF, 0, 2.3, o.back);
+        [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.58, V.ZF), V.SY(V.ZF), V.SX(s * 2.07, V.ZF), V.SY(V.ZF), V.SX(s * 2.07, -0.14), V.SY(-0.14), V.SX(s * 1.58, -0.14), V.SY(-0.14)], o.walk);
+          poly(c, [V.SX(s * 1.58, V.ZF), V.SY(V.ZF), V.SX(s * 1.64, V.ZF), V.SY(V.ZF), V.SX(s * 1.64, -0.14), V.SY(-0.14), V.SX(s * 1.58, -0.14), V.SY(-0.14)], 'rgba(0,0,0,.35)'); });
         for (z = zMax - off, i = 0; z > -0.8; z -= S, i++) {
           var a = (k + i) % 2 ? w0.im : w1.im, b = (k + i) % 2 ? w1.im : w0.im;
           c.globalAlpha = clamp((zMax - z) / (S * 0.9), 0, 1);
           wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 14); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 14);
         }
         c.globalAlpha = 1;
-        [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.62, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, -0.14), V.SY(-0.14), V.SX(s * 1.62, -0.14), V.SY(-0.14)], o.walk); });
       },
       ob: function (c, V, ob, SP, t) {
         if (ob.k === 0) {
@@ -1449,16 +1452,27 @@
   // TOKYO DASH : rue japonaise au printemps (cerisiers, lanternes), mont Fuji au loin, tram blanc et vert, torii à passer en glissant
   var TOKYO = worldTheme('tk', '3579', {
     sky: ['#60A5FA', '#93C5FD', '#DBEAFE', '#FCE7F3'], ground: ['#B8A9A0', '#9C8E86', '#7F726B'], lane: ['#8B7F78', '#776B65', '#625752'],
-    back: '#7A4E3A', walk: 'rgba(253,230,238,.55)', roof: ['#64748B', '#94A3B8'], dust: 'rgba(252,205,225,'
+    back: '#7A4E3A', walk: '#C9BEB9', roof: ['#4B5563', '#6B7280'], dust: 'rgba(252,205,225,'
   });
   // PHARAOH RUN : temple égyptien au soleil, pyramides au loin, chariots de pierres, colonnes tombées à sauter, portiques à passer en glissant
   var PHARAOH = worldTheme('ph', '3579', {
     sky: ['#38BDF8', '#7DD3FC', '#BAE6FD', '#FEF3C7'], ground: ['#E9C989', '#D6B06B', '#B88F4E'], lane: ['#D2A960', '#BE9550', '#A07A3E'],
-    back: '#A97C45', walk: 'rgba(254,243,199,.5)', roof: ['#8B5E34', '#B07A45'], dust: 'rgba(240,214,160,'
+    back: '#A97C45', walk: '#D9C08E', roof: ['#8B5E34', '#B07A45'], dust: 'rgba(240,214,160,'
+  });
+  // 2026-11-03 : PARIS RUN (Haussmann, cafés, tour Eiffel, métro vert) et CANDY KINGDOM (maisons en pain d'épice, train en chocolat)
+  var PARIS = worldTheme('pr', '3582', {
+    sky: ['#60A5FA', '#93C5FD', '#DBEAFE', '#F1F5F9'], ground: ['#A8A29E', '#8D8379', '#6F655B'], lane: ['#7C7268', '#6B6157', '#5A5047'],
+    back: '#C8B79A', walk: '#CFC8BF', roof: ['#2F4A3A', '#43644F']
+  });
+  var CANDY = worldTheme('cd', '3582', {
+    sky: ['#F9A8D4', '#FBCFE8', '#FCE7F3', '#FFF1F2'], ground: ['#E9B9A0', '#D9A086', '#C4876C'], lane: ['#B9785A', '#A86B4F', '#955D43'],
+    back: '#F7C9DD', walk: '#F5D0E0', roof: ['#F9A8D4', '#FBCFE8'], dust: 'rgba(251,207,232,'
   });
   boot('highway', function (A) { return runner(A, HIGHWAY); }, 'lr', 0.5);
   boot('tokyodash', function (A) { return runner(A, TOKYO); }, 'swipe4', 0.5);
   boot('pharaohrun', function (A) { return runner(A, PHARAOH); }, 'swipe4', 0.5);
+  boot('parisrun', function (A) { return runner(A, PARIS); }, 'swipe4', 0.5);
+  boot('candyrun', function (A) { return runner(A, CANDY); }, 'swipe4', 0.5);
   boot('jungledash', function (A) { return runner(A, JUNGLE); }, 'swipe4', 0.5);
   boot('metrodash', function (A) { return runner(A, METRO); }, 'swipe4', 0.5);
   boot('subwaydash', function (A) { return runner(A, SUBWAY); }, 'swipe4', 0.5);

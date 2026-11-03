@@ -2397,11 +2397,12 @@
     }
     return {
       size: function (w, h, uu, d, top) {
-        W = w; H = h; dpr = d; T = top; gy = H - clamp((H - T) * 0.24, 40, 170); sr = clamp(Math.min(W, H - T) * 0.05, 14, 32); GRAV = (H - T) * 2.4;
-        CH = clamp((H - T) * 0.32, 60, 240); gx = Math.max(W * 0.12, CH * 0.5);
+        W = w; H = h; dpr = d; T = top; gy = H - clamp((H - T) * 0.28, 40, 220); sr = clamp(Math.min(W, H - T) * 0.05, 14, 32); GRAV = (H - T) * 2.4;
+        // 2026-11-03 (propriétaire, vidéo) : sol plus haut, personnages plus grands — l'action remplit l'écran (plus 60 % de ciel vide)
+        CH = clamp((H - T) * 0.33, 64, 250); gx = Math.max(W * 0.12, CH * 0.5);
         soldierS = gSprite(sr * 2.3, sr * 2.8, dpr, 'img/games/war_soldier.webp?v=' + GV, function (c, cw, ch) { c.fillStyle = '#4B5320'; rr(c, cw * 0.28, ch * 0.2, cw * 0.44, ch * 0.62, cw * 0.1); c.fill(); });
         walkI = gImg('img/games/war_walk.webp?v=3547'); heroI = gImg('img/games/war_hero.webp?v=3547'); sandI = gImg('img/games/war_sand.webp?v=3547'); boomI = gImg('img/games/war_boom.webp?v=3550');
-        var o = gImg('img/games/war_side.webp?v=3550'), G0 = 0.728;
+        var o = gImg('img/games/war_side.webp?v=3582'), G0 = 0.728; // 2026-11-03 : plus de char peint au milieu (les soldats passaient derrière)
         function paint(c) {
           if (o.ok) { var iw = o.im.naturalWidth, ih = o.im.naturalHeight, s2 = Math.max(W / iw, gy / (G0 * ih), (H - gy) / ((1 - G0) * ih)), dw = iw * s2, dh = ih * s2; c.drawImage(o.im, (W - dw) / 2, gy - G0 * dh, dw, dh); }
           else { c.fillStyle = lg(c, 0, 0, 0, gy, ['#7C3A3A', '#E0894B', '#F2C27A']); c.fillRect(0, 0, W, gy); c.fillStyle = lg(c, 0, gy, 0, H, ['#7A5A3A', '#3A2A1E']); c.fillRect(0, gy, W, H - gy); }
@@ -2416,7 +2417,7 @@
         for (i = fallen.length - 1; i >= 0; i--) { var f = fallen[i]; f.t += dt; if (f.y < 0 || f.vy < 0) { f.vy += GRAV * 0.8 * dt; f.y += f.vy * dt; f.x += f.vx * dt; f.r += f.vr * dt; if (f.y >= 0) { f.y = 0; f.vy = 0; f.vx = 0; f.r = (f.vr > 0 ? 1 : -1) * Math.PI / 2; f.vr = 0; } } if (f.t > 2.6) fallen.splice(i, 1); }
         if (barrage) { barrage.t += dt; barrage.sh = barrage.sh || []; if (barrage.t < 0.9 && Math.random() < 0.5) barrage.sh.push({ x: rnd(0, W), y: T, vy: (H - T) * 2 }); for (i = barrage.sh.length - 1; i >= 0; i--) { var sh = barrage.sh[i]; sh.y += sh.vy * dt; if (sh.y >= gy) { boomFx(A, sh.x, gy, 0.9); booms.push({ x: sh.x, t: 0, s: W * 0.3 }); barrage.sh.splice(i, 1); } } if (barrage.t > 0.4 && !barrage.hit) { barrage.hit = 1; dead = 1; } return; }
         if (dead || won) return;
-        spT -= dt; if (spT <= 0 && soldiers.length < 3 + Math.round(6 * lv)) { soldiers.push({ x: W + CH * 0.5, v: W * (0.05 + 0.06 * lv) * rnd(0.75, 1.3), bob: rnd(0, TAU), dz: rnd(-1, 1) }); spT = Math.max(0.5, 1.9 - 1.2 * lv) * rnd(0.6, 1.4); }
+        spT -= dt; if (spT <= 0 && soldiers.length < 3 + Math.round(6 * lv)) { soldiers.push({ x: W + CH * 0.35, v: W * (0.085 + 0.06 * lv) * rnd(0.8, 1.25), bob: rnd(0, TAU), dz: rnd(-1, 1) }); spT = Math.max(0.5, 1.9 - 1.2 * lv) * rnd(0.6, 1.4); }
         for (i = nades.length - 1; i >= 0; i--) { n = nades[i]; n.tr.push([n.x, n.y]); if (n.tr.length > 7) n.tr.shift(); n.x += n.vx * dt; n.vy += GRAV * dt; n.y += n.vy * dt; n.r += dt * 14; if (n.y >= gy) { blast(n.x); nades.splice(i, 1); } }
         for (i = soldiers.length - 1; i >= 0; i--) {
           s = soldiers[i]; s.x -= s.v * dt; s.bob += dt * 10;
@@ -2426,7 +2427,7 @@
       },
       draw: function (c) {
         A.bg(bg); var i, s, n;
-        var zh = CH * 0.88, zw = zh * 0.8;
+        var zh = CH * 0.74, zw = zh * 0.8;
         // soldats tombés (derrière les vivants)
         for (i = 0; i < fallen.length; i++) {
           var f = fallen[i], fy = gy + f.dz * CH * 0.04 + f.y, k = f.t > 1.8 ? Math.max(0, 1 - (f.t - 1.8) / 0.8) : 1, sc = 1 + f.dz * 0.04;
@@ -2449,7 +2450,7 @@
         if (sandI.ok) { var sw = CH * 0.85, shh = sw * 177 / 360; c.drawImage(sandI.im, gx + CH * 0.22 - sw / 2, gy - shh + CH * 0.03, sw, shh); }
         // grenades : traînée + corps ovale qui tourne + levier
         for (i = 0; i < nades.length; i++) {
-          n = nades[i]; var gr = Math.max(4, CH * 0.06);
+          n = nades[i]; var gr = Math.max(5, CH * 0.075);
           for (var q = 0; q < n.tr.length; q++) { c.globalAlpha = (q + 1) / n.tr.length * 0.35; circ(c, n.tr[q][0], n.tr[q][1], gr * (0.4 + q / n.tr.length * 0.5), '#E7E5E4'); }
           c.globalAlpha = 1; c.save(); c.translate(n.x, n.y); c.rotate(n.r);
           c.fillStyle = '#4D5B2A'; c.beginPath(); c.ellipse(0, 0, gr * 0.8, gr, 0, 0, TAU); c.fill();

@@ -104,6 +104,11 @@ return [
   // 2026-11-03 (propriétaire) : 2 galeries de tir (cibles) — js/games/skill7.js
   'westshoot'     => ['type' => 'skill', 'name' => 'Western Showdown', 'rate' => 0.03],
   'bunkerbreach'  => ['type' => 'skill', 'name' => 'Bunker Breach',  'rate' => 0.03],
+  // 2026-11-03 (propriétaire, 2e vague) : 2 courses (skill3) + 2 galeries de tir (skill7)
+  'parisrun'      => ['type' => 'skill', 'name' => 'Paris Run',      'rate' => 0.03],
+  'candyrun'      => ['type' => 'skill', 'name' => 'Candy Kingdom',  'rate' => 0.03],
+  'alienattack'   => ['type' => 'skill', 'name' => 'Alien Attack',   'rate' => 0.03],
+  'pirateraid'    => ['type' => 'skill', 'name' => 'Pirate Raid',    'rate' => 0.03],
   'icecreamcatch' => ['type' => 'skill', 'name' => 'Ice Cream Catch','rate' => 0.03],
   'popcorncatch'  => ['type' => 'skill', 'name' => 'Popcorn Catch',  'rate' => 0.03],
   'veggiecatch'   => ['type' => 'skill', 'name' => 'Veggie Catch',   'rate' => 0.03],
