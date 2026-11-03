@@ -1274,6 +1274,18 @@
       c.fillStyle = 'rgba(255,220,140,.14)'; c.fillRect(0, h * 0.04, w, h * 0.2);
     });
   }
+  // perso PROPRE à Subway (distinct du gamin de Metro) : bonnet vert à pompon, sweat orange, baskets cyan
+  var SUBWAY_KID = {
+    skin: '#E8B892', hair: '#2A2A2A', style: 'short',
+    top: ['#FB923C', '#C2410C'], sleeve: 'long',
+    bottom: ['#334155', '#1E293B'], legs: 'pants',
+    shoe: '#22D3EE', sole: '#FACC15', stripe: '#FDE68A',
+    hat: function (c, x, y, r, v) {
+      c.fillStyle = lg(c, x - r, 0, x + r, 0, ['#10B981', '#065F46']); c.beginPath(); c.ellipse(x, y - r * 0.2, r * 1.05, r * 0.95, 0, Math.PI, TAU); c.fill();
+      c.fillStyle = '#064E3B'; rr(c, x - r, y - r * 0.32, r * 2, r * 0.3, r * 0.12); c.fill();
+      circ(c, x, y - r * 1.12, r * 0.22, '#FDE68A');
+    }
+  };
   var SUBWAY = Object.assign({}, METRO, {
     bg: function (c, V) {
       var W = V.W, H = V.H, hy = V.hy, vx = W * 0.5, vy = hy * 0.9, mm = Math.min(W, H), i, k;
@@ -1283,7 +1295,7 @@
       for (k = 1; k <= 6; k++) { var g = k / 7, lw2 = 4 + 14 * g; c.fillStyle = 'rgba(255,245,210,' + (0.25 + 0.4 * g).toFixed(2) + ')'; c.fillRect(vx - lw2 / 2, vy - hy * (0.1 + 0.82 * g), lw2, 3 + 6 * g); }
       c.fillStyle = lg(c, 0, hy, 0, V.ny, ['#15131d', '#0b0a12']); c.fillRect(0, hy, W, H - hy);
     },
-    art: function (V, dpr) { var sp = METRO.art(V, dpr); sp.walls = [tunnelWall(512, 128, 3), tunnelWall(512, 128, 11), tunnelWall(512, 128, 29)]; return sp; }
+    art: function (V, dpr) { var sp = METRO.art(V, dpr); var r2 = rigSet(V, dpr, SUBWAY_KID); sp.run = r2.run; sp.jump = r2.jump; sp.slide = r2.slide; sp.walls = [tunnelWall(512, 128, 3), tunnelWall(512, 128, 11), tunnelWall(512, 128, 29)]; return sp; }
   });
 
   boot('highway', function (A) { return runner(A, HIGHWAY); }, 'lr', 0.5);
