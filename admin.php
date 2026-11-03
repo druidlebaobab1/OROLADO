@@ -1988,7 +1988,9 @@ function admin_credit_player(string $uid, float $delta, string $motif, array $hi
     $delta,
     $motif
   );
-  admin_bust_cache();
+  // v3556 (propriétaire : « Bonus à tous lent ») : pendant un envoi à tous, le cache n'est PAS vidé après chaque joueur
+  // (sinon le joueur suivant recharge toute la liste des profils : plusieurs secondes) — vidé une fois en fin de paquet.
+  if (empty($GLOBALS['OROLADO_BULK_CREDIT'])) admin_bust_cache();
   // 2026-10-19 : argent / bonus envoyé par l'admin → le joueur est prévenu (notification + e-mail)
   if ($delta > 0) { require_once __DIR__ . '/notify_lib.php'; orolado_notify_player((string) $targets[0], 'bonus', $delta); }
   return ['ok' => true, 'real' => $lastReal];
