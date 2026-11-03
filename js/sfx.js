@@ -71,6 +71,9 @@
     var c = window.__oroAC;
     if (!c || c.state !== 'running' || !idleOk()) return;
     if (active > 0 || (B && B.nodes) || Date.now() - (window.__oroSndAt || 0) < 2500) return;
+    // 2026-11-03 (propriétaire : « le son des jeux donne l'impression d'être coupé ») : jamais de veille pendant qu'un jeu est
+    // ouvert — sur iPhone le réveil prend un instant et le début du son suivant était mangé.
+    if (document.querySelector('#casinoModal.active.in-game')) return;
     try { c.__oroIdle = true; var pr = c.suspend(); if (pr && pr.catch) pr.catch(function () { /* ignore */ }); } catch (e) { /* ignore */ }
   }, 1500);
   function base() { return lite() ? 0.5 : 0.58; } // 2026-10-21 (propriétaire : « augmente bien le son ») : ~2× plus fort
@@ -594,7 +597,12 @@
     var th = null;
     if (k && BEDS[k] && (k !== cur || (!MAP[k] && !BED_OF[k]))) { th = k; k = cur || k; } // un nom de thème (« war », « race »…) sauf si c'est le jeu ouvert
     k = k || cur;
-    if (!on) { if (B && (!k || k === '*' || B.key === k)) bedOff(o.fade == null ? 0.6 : o.fade); return false; }
+    if (!on) {
+      // 2026-11-03 (propriétaire) : entre deux tours, l'ambiance du jeu ne se coupe plus net — elle redescend tout bas et continue
+      // tant que ce jeu reste ouvert (vraie fermeture : k = '*', autre jeu ou salle fermée → arrêt comme avant).
+      if (B && k && k !== '*' && B.key === k && k === cur && document.querySelector('#casinoModal.active.in-game')) { B.i = 0.1; B.iv = Math.min(B.iv, 0.3); B.clk = null; B.auto = false; B.ttl = 0; return true; }
+      if (B && (!k || k === '*' || B.key === k)) bedOff(o.fade == null ? 0.6 : o.fade); return false;
+    }
     if (!k) return false;
     var num = typeof i === 'number' && isFinite(i), now = Date.now();
     if (B && B.key === k && (!th || B.th === th)) {
