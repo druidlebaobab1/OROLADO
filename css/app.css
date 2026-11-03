@@ -14164,3 +14164,13 @@ html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #chart.chart-ca
 html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #chart.chart-card::after{background:none!important;display:none!important}
 html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .chart-card::after{background:none!important}
 html.fs-trade body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad::before{background:#000!important}
+/* v3569 (propriétaire : « Social et les fenêtres qui arrivent (Installer, bienvenue…) rendent le site jaune ») —
+   1) Social : même fond sombre unique que Jeux / Paris (noir chaud, quelques étoiles discrètes, aucune lueur dorée) ;
+   2) toutes les fenêtres d'annonce (.oro-welcome : installer, bienvenue, retrait, …) : voile NOIR neutre derrière, plus de voile doré. */
+html body #liveModal#liveModal#liveModal.modal-backdrop.active{background:#0B0A08!important}
+html body #liveModal#liveModal#liveModal > .modal-box.live-box{
+  background:radial-gradient(1px 1px at 12% 18%,rgba(255,255,255,.35),transparent 60%),radial-gradient(1px 1px at 78% 9%,rgba(255,255,255,.28),transparent 60%),
+    radial-gradient(1px 1px at 33% 64%,rgba(255,255,255,.22),transparent 60%),radial-gradient(1px 1px at 88% 52%,rgba(255,255,255,.25),transparent 60%),
+    radial-gradient(1px 1px at 58% 88%,rgba(255,255,255,.2),transparent 60%),linear-gradient(180deg,#0E0C0A 0%,#0B0A08 100%)!important;
+  background-color:#0B0A08!important;box-shadow:none!important}
+html body .oro-welcome .ow-dim.ow-dim{background:rgba(0,0,0,.72)!important}
