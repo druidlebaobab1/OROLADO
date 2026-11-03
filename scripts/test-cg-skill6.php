@@ -54,7 +54,7 @@ foreach ($GAMES as $g) {
 }
 foreach ($ALL as $g) check(sprintf('%-11s : ×2 après %.1f s, ×5 après %.1f s', $g, casino_skill_secs($g, 2), casino_skill_secs($g, 5)), in_array($g, $k, true) && casino_skill_secs($g, 2) >= 20 && casino_skill_secs($g, 5) >= 50);
 $cat = (string) file_get_contents(__DIR__ . '/../js/games/cat-skill6.js');
-preg_match_all("/\{ k: '([a-z0-9]+)', name: '([^']+)', sec: 'skill', file: '(skill[678])', pal: \[[^\]]+\],\n    nm: \{([^}]*)\}/", $cat, $m);
+preg_match_all("/\{ k: '([a-z0-9]+)', name: '([^']+)', sec: 'skill', file: '(skill[3678])', pal: \[[^\]]+\],\n    nm: \{([^}]*)\}/", $cat, $m);
 check('catalogue cat-skill6 : les mêmes jeux que la fiche serveur', $m[1] == $GAMES, implode(',', $m[1]));
 $NM = casino_ext_names();
 foreach ($m[1] as $i => $g) {
@@ -62,7 +62,7 @@ foreach ($m[1] as $i => $g) {
   $langs = []; preg_match_all("/([a-z]{2}): '([^']+)'/", $m[4][$i], $q); foreach ($q[1] as $j => $l) $langs[$l] = $q[2][$j];
   check("$g : nom dans les 12 langues (≤ 22 caractères)", array_keys($langs) == $LANGS && max(array_map('mb_strlen', $langs)) <= 22, json_encode($langs, JSON_UNESCAPED_UNICODE));
   $js = (string) file_get_contents(__DIR__ . '/../js/games/' . $m[3][$i] . '.js');
-  check("module {$m[3][$i]} : $g enregistré + règles (12 langues)", strpos($js, "boot('$g'") !== false && preg_match("/    $g: \{\n(      [a-z]{2}: \[.*\],?\n){12}    \}/", $js) === 1);
+  check("module {$m[3][$i]} : $g enregistré + règles (12 langues)", strpos($js, "boot('$g'") !== false && (preg_match("/    $g: \{\n(      [a-z]{2}: \[.*\],?\n){12}    \}/", $js) === 1 || preg_match("/G\.$g = G\.metrodash/", $js) === 1)); // courses du moteur Subway : mêmes textes 12 langues que Metro Dash
 }
 foreach (array_unique($m[3]) as $file) {
   $js = (string) file_get_contents(__DIR__ . "/../js/games/$file.js");
