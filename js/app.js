@@ -1326,7 +1326,7 @@
     }
     var plus = $('btnDemoTopup');
     var real = !!(u && u.mode === 'real');
-    var plusTitle = real ? (t('recharge') || 'Recharger') : (t('demoTopup') || 'Recharger la démo');
+    var plusTitle = real ? (t('recharge') || 'Top up') : (t('demoTopup') || 'Top up demo');
     if (plus) {
       plus.classList.toggle('hidden', guest);
       plus.title = plusTitle;
@@ -1938,7 +1938,7 @@
   function depositWagerText() {
     var s = t('wagerBlocked');
     if (!s || s === 'wagerBlocked') {
-      s = 'Vous devez miser x2 de votre dépôt avant de pouvoir effectuer un retrait.';
+      s = 'You must wager 2x your deposit before you can withdraw.';
     }
     return s;
   }
@@ -2050,9 +2050,27 @@
         bannedKickLock = false;
       });
   }
+  // v3559 : le serveur renvoie le motif de suspension standard en français → message dans la langue du joueur (anglais par défaut)
+  var BAN_T = {
+    en: 'Your account has been suspended for breaking the terms of use. If you think this is a mistake, contact OROLADO support.',
+    fr: 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support OROLADO.',
+    es: 'Tu cuenta ha sido suspendida por incumplir las condiciones de uso. Si crees que es un error, contacta con el soporte de OROLADO.',
+    pt: 'Sua conta foi suspensa por violar os termos de uso. Se acha que é um erro, contate o suporte OROLADO.',
+    ar: 'تم تعليق حسابك بسبب مخالفة شروط الاستخدام. إذا كنت تعتقد أن هذا خطأ، تواصل مع دعم OROLADO.',
+    tr: 'Hesabın kullanım koşullarını ihlal ettiği için askıya alındı. Bunun bir hata olduğunu düşünüyorsan OROLADO desteğiyle iletişime geç.',
+    vi: 'Tài khoản của bạn đã bị tạm khóa do vi phạm điều khoản sử dụng. Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ hỗ trợ OROLADO.',
+    id: 'Akun Anda ditangguhkan karena melanggar ketentuan penggunaan. Jika menurut Anda ini kesalahan, hubungi dukungan OROLADO.',
+    ru: 'Ваш аккаунт заблокирован за нарушение правил использования. Если вы считаете это ошибкой, свяжитесь с поддержкой OROLADO.',
+    de: 'Dein Konto wurde wegen Verstoßes gegen die Nutzungsbedingungen gesperrt. Wenn du das für einen Fehler hältst, kontaktiere den OROLADO-Support.',
+    hi: 'उपयोग की शर्तों का उल्लंघन करने के कारण आपका खाता निलंबित कर दिया गया है। अगर आपको लगता है कि यह गलती है, तो OROLADO सहायता से संपर्क करें।',
+    zh: '您的账户因违反使用条款已被暂停。如认为有误，请联系 OROLADO 客服。'
+  };
+  function lang2() { return String(document.documentElement.lang || 'en').slice(0, 2); }
   function watchBan(r) {
     if (!isBannedPayload(r)) return false;
-    hardLogout(r.reason || 'Votre compte a été suspendu pour non-respect des règles d’utilisation. Si vous pensez qu’il s’agit d’une erreur, contactez le support Orolado.');
+    var why = String(r.reason || '');
+    if (!why || /suspendu pour non-respect/i.test(why)) why = BAN_T[lang2()] || BAN_T.en;
+    hardLogout(why);
     return true;
   }
   // Session vraiment expirée : on revérifie une fois, puis écran de connexion
@@ -4002,12 +4020,12 @@
         var addr = assignedRecv(profRecvCoin);
         if (!addr) {
           prefetchRecv(profRecvCoin, true);
-          toast('Adresse en cours de génération…', '');
+          toast(({ fr: 'Adresse en cours de génération…', es: 'Generando la dirección…', pt: 'Gerando o endereço…', ar: 'جارٍ إنشاء العنوان…', tr: 'Adres oluşturuluyor…', vi: 'Đang tạo địa chỉ…', id: 'Membuat alamat…', ru: 'Создаём адрес…', de: 'Adresse wird erstellt…', hi: 'पता बनाया जा रहा है…', zh: '正在生成地址…' })[lang2()] || 'Generating address…', '');
           return;
         }
         var copyBtn = $('btnCopyWallet');
         copyTextSilent(addr, function () {
-          copyBtn.textContent = t('copied') || 'Copié';
+          copyBtn.textContent = t('copied') || 'Copied';
           copyBtn.classList.add('is-copied');
           setTimeout(function () {
             copyBtn.textContent = t('copyId') || 'Copier';
@@ -4033,7 +4051,7 @@
     if (!txt || txt === '—') return;
     function ok() {
       if (!btn) return;
-      btn.textContent = t('copied') || 'Copié';
+      btn.textContent = t('copied') || 'Copied';
       setTimeout(function () { btn.textContent = t('copyId') || 'Copier'; }, 1200);
     }
     function fallback() {
@@ -4343,7 +4361,7 @@
       if (!id || id === '—') return;
       function ok() {
         var prev = btn.textContent;
-        btn.textContent = t('copied') || 'Copié';
+        btn.textContent = t('copied') || 'Copied';
         setTimeout(function () { btn.textContent = t('copyId') || 'Copier'; }, 1200);
       }
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -6741,7 +6759,7 @@
       if (!btn) return;
       btn.classList.add('is-copied');
       if (!btn.querySelector('.copy-state')) {
-        btn.textContent = t('cryptoCopied') || t('copied') || 'Copié';
+        btn.textContent = t('cryptoCopied') || t('copied') || 'Copied';
       }
       setTimeout(function () {
         btn.classList.remove('is-copied');

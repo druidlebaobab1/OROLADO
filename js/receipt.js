@@ -99,6 +99,9 @@
       var chip = document.querySelector('.asset-chip[data-asset="' + assetId + '"]');
       var art = chip && chip.querySelector('.mk-art svg');
       if (art) return globeIcon(chip, art);
+      // v3559 : indices récents = emblème en IMAGE (img/indices/<id>.webp) → on le charge tel quel pour le reçu
+      var pim = chip && chip.querySelector('.mk-art img');
+      if (pim && pim.getAttribute('src')) return loadImg(pim.getAttribute('src'));
       var svg = document.querySelector('.asset-chip[data-asset="' + assetId + '"] .asset-ico svg');
       if (!svg) return Promise.resolve(null);
       var c = svg.cloneNode(true);

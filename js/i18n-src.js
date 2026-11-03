@@ -2430,7 +2430,12 @@
     titleBollinger: ['Bollinger Bands', 'Bandes de Bollinger', 'Bandas de Bollinger', 'Bandas de Bollinger', 'نطاقات بولينجر', 'Полосы Боллинджера', 'Bollinger Bantları', 'Dải Bollinger', 'Bollinger Bands', 'Bollinger-Bänder', 'बोलिंजर बैंड्स'],
     fsExitShort: ['EXIT', 'QUITTER', 'SALIR', 'SAIR', 'خروج', 'ВЫЙТИ', 'ÇIKIŞ', 'THOÁT', 'KELUAR', 'BEENDEN', 'बाहर'],
     ariaExitFs: ['Exit full screen', 'Quitter le plein écran', 'Salir de pantalla completa', 'Sair da tela cheia', 'الخروج من ملء الشاشة', 'Выйти из полноэкранного режима', 'Tam ekrandan çık', 'Thoát toàn màn hình', 'Keluar layar penuh', 'Vollbild beenden', 'फ़ुल स्क्रीन से बाहर निकलें'],
-    ariaDepositNet: ['Deposit network', 'Réseau de dépôt', 'Red de depósito', 'Rede de depósito', 'شبكة الإيداع', 'Сеть депозита', 'Yatırım ağı', 'Mạng nạp tiền', 'Jaringan deposit', 'Einzahlungsnetzwerk', 'जमा नेटवर्क']
+    ariaDepositNet: ['Deposit network', 'Réseau de dépôt', 'Red de depósito', 'Rede de depósito', 'شبكة الإيداع', 'Сеть депозита', 'Yatırım ağı', 'Mạng nạp tiền', 'Jaringan deposit', 'Einzahlungsnetzwerk', 'जमा नेटवर्क'],
+    m3_mkClosed: ['This match is already closed or settled.', 'Ce match est déjà fermé ou réglé.', 'Este partido ya está cerrado o liquidado.', 'Esta partida já está fechada ou liquidada.', 'هذه المباراة مغلقة أو تمت تسويتها بالفعل.', 'Этот матч уже закрыт или рассчитан.', 'Bu maç zaten kapandı veya sonuçlandı.', 'Trận này đã đóng hoặc đã thanh toán.', 'Pertandingan ini sudah ditutup atau diselesaikan.', 'Dieses Spiel ist bereits geschlossen oder abgerechnet.', 'यह मैच पहले ही बंद या निपटाया जा चुका है।'],
+    m3_notFound: ['This event is no longer available.', 'Cet événement n’est plus disponible.', 'Este evento ya no está disponible.', 'Este evento não está mais disponível.', 'هذا الحدث لم يعد متاحًا.', 'Это событие больше недоступно.', 'Bu etkinlik artık mevcut değil.', 'Sự kiện này không còn khả dụng.', 'Acara ini tidak lagi tersedia.', 'Dieses Ereignis ist nicht mehr verfügbar.', 'यह इवेंट अब उपलब्ध नहीं है।'],
+    m3_tooLate: ['Too late: betting on this event has closed.', 'Trop tard : les mises sur cet événement sont fermées.', 'Demasiado tarde: las apuestas para este evento están cerradas.', 'Tarde demais: as apostas neste evento foram encerradas.', 'فات الأوان: أُغلقت الرهانات على هذا الحدث.', 'Слишком поздно: ставки на это событие закрыты.', 'Çok geç: bu etkinliğe bahisler kapandı.', 'Quá muộn: đã đóng cược cho sự kiện này.', 'Terlambat: taruhan untuk acara ini sudah ditutup.', 'Zu spät: Wetten auf dieses Ereignis sind geschlossen.', 'बहुत देर हो गई: इस इवेंट पर दांव बंद हो चुके हैं।'],
+    m3_tryLater: ['Too many attempts. Please try again in a few minutes.', 'Trop de tentatives. Réessayez dans quelques minutes.', 'Demasiados intentos. Inténtalo de nuevo en unos minutos.', 'Muitas tentativas. Tente novamente em alguns minutos.', 'محاولات كثيرة جدًا. حاول مجددًا بعد بضع دقائق.', 'Слишком много попыток. Повторите через несколько минут.', 'Çok fazla deneme. Birkaç dakika sonra tekrar dene.', 'Quá nhiều lần thử. Vui lòng thử lại sau vài phút.', 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.', 'Zu viele Versuche. Bitte versuche es in ein paar Minuten erneut.', 'बहुत अधिक प्रयास। कुछ मिनट बाद फिर से कोशिश करें।'],
+    m3_badPlayer: ['Player not found.', 'Joueur invalide.', 'Jugador no encontrado.', 'Jogador não encontrado.', 'اللاعب غير موجود.', 'Игрок не найден.', 'Oyuncu bulunamadı.', 'Không tìm thấy người chơi.', 'Pemain tidak ditemukan.', 'Spieler nicht gefunden.', 'खिलाड़ी नहीं मिला।'],
   };
 
   /* Messages français connus (serveur ou code) → clé ci-dessus. Minuscules, apostrophes droites. */
@@ -2468,6 +2473,12 @@
     'changement impossible pour le moment, réessayez plus tard': 'm_busy',
     'stockage indisponible': 'm_busy',
     'règlement en cours': 'm_settling',
+    // v3559 — messages joueurs du serveur encore en français (paris, prédictions, connexion)
+    'match déjà fermé ou réglé': 'm3_mkClosed', 'match introuvable ou déjà fermé': 'm3_mkClosed', 'événement fermé ou réglé': 'm3_mkClosed', 'déjà réglée': 'm3_mkClosed',
+    'match introuvable': 'm3_notFound', 'prédiction introuvable': 'm3_notFound',
+    "trop tard : la fermeture prévue est passée": 'm3_tooLate',
+    'trop de tentatives. réessayez dans quelques minutes': 'm3_tryLater',
+    'joueur invalide': 'm3_badPlayer',
     'code expiré': 'm_codeExpired',
     'code expiré, demandez-en un nouveau': 'm_codeExpired',
     'code expiré. demandez un nouveau code.': 'm_codeExpired',
