@@ -1299,16 +1299,74 @@
     });
     if (subKidImg.complete && subKidImg.naturalWidth) subKidImg.dispatchEvent(new Event('load'));
   }
+  /* v3549 (propriétaire : « le humain court bien, il voit la ville ») — SUBWAY DASH en VILLE, plein jour, style Subway Surfers :
+     ciel + panorama de ville fal.ai à l'horizon, rangées d'immeubles colorés fal.ai le long des voies (ciel détouré : on voit la
+     ville derrière), vrais trains fal.ai (avant + flanc), barrières rouges et blanches à sauter, portiques jaunes et noirs à
+     passer en glissant. Mêmes voies, mêmes rangées d'obstacles et mêmes collisions que Metro : seul le dessin change.
+     Tant qu'une image n'est pas chargée, le dessin Metro sert de secours. */
+  var SUBI = {};
+  function subI(n) { if (!SUBI[n]) { var o = { im: new Image(), ok: false }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/sub_' + n + '.webp?v=3549'; SUBI[n] = o; } return SUBI[n]; }
   var SUBWAY = Object.assign({}, METRO, {
+    streak: 'rgba(255,255,255,', dust: 'rgba(214,200,170,',
     bg: function (c, V) {
-      var W = V.W, H = V.H, hy = V.hy, vx = W * 0.5, vy = hy * 0.9, mm = Math.min(W, H), i, k;
-      c.fillStyle = lg(c, 0, 0, 0, hy, ['#05070c', '#0a121a', '#13202b']); c.fillRect(0, 0, W, hy + 2);
-      circ(c, vx, vy, mm * 0.26, rg(c, vx, vy, mm * 0.26, ['rgba(190,215,255,.38)', 'rgba(120,150,200,.10)', 'rgba(0,0,0,0)']));
-      for (i = 1; i <= 8; i++) { var f = i / 9; c.strokeStyle = 'rgba(150,175,205,' + (0.06 + 0.16 * f).toFixed(3) + ')'; c.lineWidth = 1 + 2 * f; c.beginPath(); c.ellipse(vx, vy, W * (0.05 + 0.6 * f), hy * (0.06 + 0.9 * f), 0, Math.PI, 2 * Math.PI); c.stroke(); }
-      for (k = 1; k <= 6; k++) { var g = k / 7, lw2 = 4 + 14 * g; c.fillStyle = 'rgba(255,245,210,' + (0.25 + 0.4 * g).toFixed(2) + ')'; c.fillRect(vx - lw2 / 2, vy - hy * (0.1 + 0.82 * g), lw2, 3 + 6 * g); }
-      c.fillStyle = lg(c, 0, hy, 0, V.ny, ['#15131d', '#0b0a12']); c.fillRect(0, hy, W, H - hy);
+      var W = V.W, H = V.H, hy = V.hy, ny = V.ny, i;
+      // ciel partout (derrière les toits des immeubles, on ne doit voir que du ciel), sol seulement entre les deux rangées d'immeubles
+      c.fillStyle = lg(c, 0, 0, 0, H, ['#38BDF8', '#7DD3FC', '#BAE6FD', '#E0F2FE']); c.fillRect(0, 0, W, H);
+      poly(c, [V.SX(-2.06, V.ZF), hy, V.SX(2.06, V.ZF), hy, V.SX(2.06, -0.14), V.SY(-0.14), V.SX(-2.06, -0.14), V.SY(-0.14)], lg(c, 0, hy, 0, ny, ['#A8A29E', '#8D8379', '#6F655B']));
+      [-1, 0, 1].forEach(function (l) { poly(c, [V.SX(l - 0.48, V.ZF), hy, V.SX(l + 0.48, V.ZF), hy, V.SX(l + 0.48, -0.14), V.SY(-0.14), V.SX(l - 0.48, -0.14), V.SY(-0.14)], lg(c, 0, hy, 0, ny, ['#7C7268', '#6B6157', '#5A5047'])); });
+      for (i = 0; i < (V.lite ? 300 : 900); i++) { var gz = Math.pow(Math.random(), 1.6) * 2, gx = rnd(-1.6, 1.6), p = V.P(gz); c.fillStyle = i % 3 ? 'rgba(0,0,0,.16)' : 'rgba(255,255,255,.18)'; c.fillRect(V.SX(gx, gz), V.SY(gz), 1.6 * p + 0.6, 1.2 * p + 0.5); }
     },
-    art: function (V, dpr) { var sp = METRO.art(V, dpr); var r2 = rigSet(V, dpr, SUBWAY_KID); sp.run = r2.run; sp.jump = r2.jump; sp.slide = r2.slide; subKid(sp); sp.walls = [tunnelWall(512, 128, 3), tunnelWall(512, 128, 11), tunnelWall(512, 128, 29)]; return sp; }
+    art: function (V, dpr) {
+      var sp = METRO.art(V, dpr), r2 = rigSet(V, dpr, SUBWAY_KID); sp.run = r2.run; sp.jump = r2.jump; sp.slide = r2.slide; subKid(sp);
+      ['city', 'wall0', 'wall1', 'tfront', 'tside', 'hurdle', 'duck'].forEach(subI);
+      return sp;
+    },
+    ground: function (c, V, dist, SP, t) {
+      var ci = SUBI.city;
+      if (ci && ci.ok) { var cw = Math.max(V.W * 1.25, (V.hy - V.T + 30) * 2.5), ch = cw * 480 / 1200; c.drawImage(ci.im, (V.W - cw) / 2, V.hy - ch + 2, cw, ch); }
+      // au bout des façades : une rangée d'immeubles lointains de chaque côté des voies (plus de bande grise à l'horizon)
+      var w0 = SUBI.wall0;
+      if (w0 && w0.ok) {
+        var zE = V.ZM * 2.2 + 1.5, pE = V.P(zE), yE = V.SY(zE) + 1, hE = 4.0 * V.lw * pE, tw = hE * 1024 / 273, xL = V.SX(-1.62, zE), xR = V.SX(1.62, zE), x;
+        for (x = xL; x > -tw; x -= tw) c.drawImage(w0.im, x - tw, yE - hE, tw, hE);
+        for (x = xR; x < V.W; x += tw) c.drawImage(w0.im, x, yE - hE, tw, hE);
+      }
+      METRO.ground(c, V, dist);
+    },
+    side: function (c, V, dist, SP) {
+      var w0 = SUBI.wall0, w1 = SUBI.wall1;
+      if (!(w0 && w0.ok && w1 && w1.ok)) return METRO.side(c, V, dist, SP);
+      var S = 1.5, o = dist % S, k = Math.floor(dist / S), z, i, zMax = V.ZM * 2.2 + S;
+      // fond opaque derrière les façades (pas de fente grise entre deux pans)
+      wallQuad(c, V, -2.07, -0.8, zMax, 0, 1.1, '#7A4B3A'); wallQuad(c, V, 2.07, -0.8, zMax, 0, 1.1, '#7A4B3A');
+      for (z = zMax - o, i = 0; z > -0.8; z -= S, i++) {
+        var a = (k + i) % 2 ? w0.im : w1.im, b = (k + i) % 2 ? w1.im : w0.im;
+        wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 14); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 14);
+      }
+      // trottoir clair au pied des immeubles
+      [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.62, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, -0.14), V.SY(-0.14), V.SX(s * 1.62, -0.14), V.SY(-0.14)], 'rgba(214,211,209,.55)'); });
+    },
+    ob: function (c, V, o, SP, t) {
+      var tf = SUBI.tfront, ts = SUBI.tside, hu = SUBI.hurdle, du = SUBI.duck;
+      if (o.k === 0) {
+        if (!(tf && tf.ok && ts && ts.ok)) return METRO.ob(c, V, o, SP, t);
+        var zn = Math.max(o.z, -0.02), zf = o.z + o.len;
+        if (o.ln < -0.1) wallImg(c, V, ts.im, o.ln + 0.42, zn, zf, 0.02, 1.3, 8); else if (o.ln > 0.1) wallImg(c, V, ts.im, o.ln - 0.42, zn, zf, 0.02, 1.3, 8);
+        box(c, V, o.ln, o.z, zf, 0.42, 1.3, tf.im, 'rgba(0,0,0,0)', lg(c, 0, V.SY(zf), 0, V.SY(zn), ['#5EA9B8', '#8FD3DE']));
+        return;
+      }
+      if (o.k === 1 || o.k === 3) {
+        if (!(hu && hu.ok)) return METRO.ob(c, V, o, SP, t);
+        (o.k === 3 ? [-1, 0, 1] : [o.ln]).forEach(function (l) { stand(c, V, hu.im, l, o.z, 0.95, 0.33); });
+        return;
+      }
+      if (!(du && du.ok)) return METRO.ob(c, V, o, SP, t);
+      stand(c, V, du.im, o.ln, o.z, 1.0, 1.1);
+    },
+    endDraw: function (c, V, e, SP, t) {
+      var tf = SUBI.tfront; if (!(tf && tf.ok)) return METRO.endDraw(c, V, e, SP, t);
+      for (var l = -1; l <= 1; l++) box(c, V, l, Math.max(e.z, -0.12), e.z + 0.9, 0.42, 1.3, tf.im, '#C2410C', '#8FD3DE');
+    }
   });
 
   boot('highway', function (A) { return runner(A, HIGHWAY); }, 'lr', 0.5);
