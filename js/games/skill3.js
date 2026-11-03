@@ -1286,6 +1286,19 @@
       circ(c, x, y - r * 1.12, r * 0.22, '#FDE68A');
     }
   };
+  // v3546 : vrai coureur dessin animé (fal.ai) — planche 4 images 320x400 : course pied droit, course pied gauche, saut, accroupi.
+  // Tant que l'image n'est pas chargée, le dessin vectoriel (SUBWAY_KID) sert de secours.
+  var subKidImg = null, subKidFr = null;
+  function subKid(sp) {
+    function apply() { if (subKidFr) { sp.run = [subKidFr[0], subKidFr[1]]; sp.jump = subKidFr[2]; sp.slide = subKidFr[3]; } }
+    if (subKidFr) return apply();
+    if (!subKidImg) { subKidImg = new Image(); subKidImg.decoding = 'async'; subKidImg.src = 'img/games/sub_kid.webp?v=3546'; }
+    subKidImg.addEventListener('load', function () {
+      if (!subKidFr) subKidFr = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = 320; cv.height = 400; cv.getContext('2d').drawImage(subKidImg, i * 320, 0, 320, 400, 0, 0, 320, 400); return cv; });
+      apply();
+    });
+    if (subKidImg.complete && subKidImg.naturalWidth) subKidImg.dispatchEvent(new Event('load'));
+  }
   var SUBWAY = Object.assign({}, METRO, {
     bg: function (c, V) {
       var W = V.W, H = V.H, hy = V.hy, vx = W * 0.5, vy = hy * 0.9, mm = Math.min(W, H), i, k;
@@ -1295,7 +1308,7 @@
       for (k = 1; k <= 6; k++) { var g = k / 7, lw2 = 4 + 14 * g; c.fillStyle = 'rgba(255,245,210,' + (0.25 + 0.4 * g).toFixed(2) + ')'; c.fillRect(vx - lw2 / 2, vy - hy * (0.1 + 0.82 * g), lw2, 3 + 6 * g); }
       c.fillStyle = lg(c, 0, hy, 0, V.ny, ['#15131d', '#0b0a12']); c.fillRect(0, hy, W, H - hy);
     },
-    art: function (V, dpr) { var sp = METRO.art(V, dpr); var r2 = rigSet(V, dpr, SUBWAY_KID); sp.run = r2.run; sp.jump = r2.jump; sp.slide = r2.slide; sp.walls = [tunnelWall(512, 128, 3), tunnelWall(512, 128, 11), tunnelWall(512, 128, 29)]; return sp; }
+    art: function (V, dpr) { var sp = METRO.art(V, dpr); var r2 = rigSet(V, dpr, SUBWAY_KID); sp.run = r2.run; sp.jump = r2.jump; sp.slide = r2.slide; subKid(sp); sp.walls = [tunnelWall(512, 128, 3), tunnelWall(512, 128, 11), tunnelWall(512, 128, 29)]; return sp; }
   });
 
   boot('highway', function (A) { return runner(A, HIGHWAY); }, 'lr', 0.5);
