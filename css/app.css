@@ -14383,3 +14383,23 @@ html[lang^="de"]:root body #withdrawModal#withdrawModal .wd-card > span:last-chi
 /* v3581 CASINO — gain moyen : pluie de pièces légère, sans voile sombre ni rayons (le montant reste lisible) */
 html body .cs-coinrain.cs-bigwin{background:none!important;pointer-events:none!important;z-index:30;opacity:1!important;transition:none!important}
 html body .cs-coinrain.cs-bigwin::before,html body .cs-coinrain.cs-bigwin::after{content:none!important;display:none!important}
+
+/* v3584 PASTILLES DE GAIN (trading + jeux) — le PORTEFEUILLE du solde à l'intérieur, vert profond calme comme la carte du solde,
+   plus de reflet blanc qui passe ni de lueur claire (le propriétaire voyait « des lieux blancs ») ; même forme qu'avant */
+html:root body .chart-stage .chart-outcome.chart-outcome.chart-outcome.chart-outcome.show.win,
+html:root body #fsTradeOverlay .chart-outcome.chart-outcome.chart-outcome.chart-outcome.show.win{
+  background:linear-gradient(180deg,#14402A 0%,#0C2A1B 100%)!important;border:1px solid rgba(74,222,128,.42)!important;
+  box-shadow:0 4px 12px rgba(0,0,0,.45)!important;text-shadow:none!important;color:#DCFCE7!important}
+html:root body .chart-stage .chart-outcome.chart-outcome.chart-outcome.chart-outcome.show.win span,html:root body #fsTradeOverlay .chart-outcome.chart-outcome.chart-outcome.chart-outcome.show.win span{color:#BBF7D0!important;-webkit-text-fill-color:#BBF7D0!important;text-shadow:none!important}
+html:root body .chart-stage .chart-outcome.chart-outcome.win .oc-ic.oc-ic.oc-ic.oc-ic,html:root body #fsTradeOverlay .chart-outcome.chart-outcome.win .oc-ic.oc-ic.oc-ic.oc-ic{
+  background:none!important;box-shadow:none!important;border:0!important;display:grid!important;place-items:center!important;overflow:visible!important}
+html:root body .chart-outcome .oc-ic img.oc-wal{width:26px!important;height:26px!important;object-fit:contain!important;display:block!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))!important}
+html:root body .chart-stage .chart-outcome.win::before,html:root body .chart-stage .chart-outcome.win::after,
+html:root body #fsTradeOverlay .chart-outcome.win::before,html:root body #fsTradeOverlay .chart-outcome.win::after{content:none!important;display:none!important;animation:none!important}
+/* jeux */
+html:root body #casinoModal#casinoModal .cs-toast.cs-toast.cs-toast.cs-toast.win{
+  background:linear-gradient(180deg,#14402A 0%,#0C2A1B 100%)!important;border:1px solid rgba(74,222,128,.42)!important;box-shadow:0 6px 16px rgba(0,0,0,.5)!important}
+html:root body #casinoModal#casinoModal .cs-toast.cs-toast.win::after,html:root body #casinoModal#casinoModal .cs-toast.cs-toast.win::before{content:none!important;display:none!important;animation:none!important}
+html:root body #casinoModal#casinoModal .cs-toast.cs-toast.cs-toast.cs-toast.win > b{color:#BBF7D0!important;-webkit-text-fill-color:#BBF7D0!important;text-shadow:none!important;background:none!important}
+html:root body #casinoModal#casinoModal .cs-toast .ct-ic.ct-ic{background:none!important;box-shadow:none!important}
+html:root body #casinoModal .cs-toast .ct-ic img.ct-wal,html:root body #casinoModal .cs-bigwin .bw-ic img.ct-wal{width:40px!important;height:40px!important;object-fit:contain!important;display:block!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))!important}
