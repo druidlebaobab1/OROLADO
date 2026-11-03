@@ -34,10 +34,10 @@ if (is_file(__DIR__ . '/notif_daily_lib.php')) {
 }
 
 /** 2026-10-22 — un paquet du « 🎁 Bonus à tous » (en arrière-plan ou depuis la page) ; même crédit que « Ajuster ». */
-function admin_bonus_all_step_here(string $tok, array $job): string {
+function admin_bonus_all_step_here(string $tok, array $job, int $limit = 10, int $maxSec = 8): string {
   $allPl = admin_all_pay_players(admin_profiles(), static fn(string $id, array $row): bool => admin_is_house_account($id, $row));
   $by = (string) ($job['by'] ?? '');
-  return admin_all_job_step($tok, $allPl, static fn(string $id, float $amt, string $motif, array $hint): array => admin_credit_player($id, $amt, $motif, $hint, $by));
+  return admin_all_job_step($tok, $allPl, static fn(string $id, float $amt, string $motif, array $hint): array => admin_credit_player($id, $amt, $motif, $hint, $by), null, $limit, $maxSec);
 }
 
 function admin_json(array $payload, int $code = 200): void {
@@ -2123,7 +2123,8 @@ if ($isAjax) {
       $tok = (string) ($j['token'] ?? '');
       if ((int) ($j['kickAt'] ?? 0) > (int) ($j['lastAt'] ?? 0) && (int) $j['kickAt'] < time() - 20) {
         @set_time_limit(28);
-        if (admin_bonus_all_step_here($tok, $j) === 'next') orolado_bonus_all_kick($tok);
+        // v3557 : depuis la page ouverte, un MINI paquet (3 joueurs / 4 s) — la page ne reste plus bloquée en chargement
+        if (admin_bonus_all_step_here($tok, $j, 3, 4) === 'next') orolado_bonus_all_kick($tok);
       } elseif ((int) ($j['kickAt'] ?? 0) <= (int) ($j['lastAt'] ?? 0)) {
         admin_all_job_update(static function (array &$x): void { $x['kickAt'] = time(); });
         orolado_bonus_all_kick($tok);
