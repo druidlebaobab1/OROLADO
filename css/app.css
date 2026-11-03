@@ -14143,3 +14143,18 @@ html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .cha
   background-size:15px 15px!important;background-repeat:no-repeat!important;background-position:center!important}
 html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .chart-toolbar .chart-reset-btn svg,
 html:not(.fs-trade):not(.is-fullscreen) body #tradeWrap#tradeWrap#tradeWrap .chart-toolbar #chartReset svg{width:15px!important;height:15px!important}
+/* v3560 (propriétaire : « retirer la lueur jaune ») — 1) la ligne MA / BB / EMA et le haut de la courbe : NOIR pur
+   (avant : bande brun doré rgb(22,19,12)), écran normal ET plein écran ; 2) plein écran : le terminal Acheter / Vendre
+   comme en écran normal, noir uni, sans planètes ni dégradé doré. */
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .chart-toolbar,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .chart-card .chart-toolbar,
+html body #fsTradeOverlay#fsTradeOverlay .chart-toolbar{background:#000!important;box-shadow:none!important;border:0!important}
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap #chart#chart.chart-card,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .chart-card,
+html body #tradeWrap#tradeWrap#tradeWrap#tradeWrap #chartStage,
+html body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap #chart#chart.chart-card{background:#000!important}
+html.fs-trade body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad,
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay .pad,
+html.is-fullscreen body #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad{background:#000!important;background-image:none!important;box-shadow:none!important;border-color:transparent!important}
+html.fs-trade body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #fsTradeSlot #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad.pad.glass,
+html.is-fullscreen body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap#tradeWrap .pad.pad.glass{background:#000!important;background-image:none!important;box-shadow:none!important;border-color:transparent!important}
