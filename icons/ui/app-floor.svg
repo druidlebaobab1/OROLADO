@@ -1,32 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 46" width="390" height="46" preserveAspectRatio="xMidYMax slice">
+<!-- v3563 (propriétaire, style « B » tout violet) : bas de l'appli iPhone — univers violet, quelques étoiles, OROLADO une seule fois. -->
 <defs>
-<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050609"/><stop offset="1" stop-color="#030406"/></linearGradient>
-<radialGradient id="neb" cx="50%" cy="120%" r="80%"><stop offset="0" stop-color="#14213a" stop-opacity=".30"/><stop offset=".6" stop-color="#0a1120" stop-opacity=".12"/><stop offset="1" stop-color="#030406" stop-opacity="0"/></radialGradient>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#07040E"/><stop offset=".55" stop-color="#140A28"/><stop offset="1" stop-color="#22103F"/></linearGradient>
+<radialGradient id="n1" cx="18%" cy="130%" r="55%"><stop offset="0" stop-color="#7C3AED" stop-opacity=".55"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></radialGradient>
+<radialGradient id="n2" cx="84%" cy="125%" r="50%"><stop offset="0" stop-color="#A855F7" stop-opacity=".45"/><stop offset="1" stop-color="#A855F7" stop-opacity="0"/></radialGradient>
+<radialGradient id="n3" cx="50%" cy="150%" r="45%"><stop offset="0" stop-color="#C084FC" stop-opacity=".30"/><stop offset="1" stop-color="#C084FC" stop-opacity="0"/></radialGradient>
+<linearGradient id="tx" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5EDFF"/><stop offset="1" stop-color="#C4B5FD"/></linearGradient>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".35" stop-color="#DDD6FE" stop-opacity=".5"/><stop offset="1" stop-color="#DDD6FE" stop-opacity="0"/></radialGradient>
 </defs>
-<rect x="0" y="0" width="390" height="46" fill="url(#bg)"/>
-<rect x="0" y="6" width="390" height="40" fill="url(#neb)"/>
-<g fill="#FFFFFF">
-<circle cx="16" cy="24" r="0.7" opacity="0.7"/>
-<circle cx="37" cy="34" r="0.5" opacity="0.45"/>
-<circle cx="58" cy="20" r="0.8" opacity="0.8"/>
-<circle cx="80" cy="32" r="0.5" opacity="0.4"/>
-<circle cx="102" cy="26" r="0.6" opacity="0.6"/>
-<circle cx="126" cy="18" r="0.55" opacity="0.5"/>
-<circle cx="150" cy="34" r="0.75" opacity="0.7"/>
-<circle cx="174" cy="24" r="0.5" opacity="0.4"/>
-<circle cx="198" cy="30" r="0.85" opacity="0.8"/>
-<circle cx="222" cy="19" r="0.55" opacity="0.5"/>
-<circle cx="246" cy="34" r="0.5" opacity="0.42"/>
-<circle cx="270" cy="25" r="0.75" opacity="0.7"/>
-<circle cx="294" cy="18" r="0.6" opacity="0.55"/>
-<circle cx="316" cy="32" r="0.65" opacity="0.58"/>
-<circle cx="340" cy="22" r="0.85" opacity="0.78"/>
-<circle cx="362" cy="34" r="0.5" opacity="0.42"/>
-<circle cx="378" cy="26" r="0.6" opacity="0.58"/>
+<rect width="390" height="46" fill="url(#bg)"/>
+<rect width="390" height="46" fill="url(#n1)"/>
+<rect width="390" height="46" fill="url(#n2)"/>
+<rect width="390" height="46" fill="url(#n3)"/>
+<line x1="0" y1="0.5" x2="390" y2="0.5" stroke="#A78BFA" stroke-opacity=".35" stroke-width="1"/>
+<g fill="#fff">
+<circle cx="22" cy="14" r=".7" opacity=".75"/><circle cx="64" cy="30" r=".5" opacity=".5"/><circle cx="103" cy="12" r=".6" opacity=".6"/>
+<circle cx="292" cy="11" r=".6" opacity=".6"/><circle cx="331" cy="31" r=".5" opacity=".5"/><circle cx="372" cy="15" r=".7" opacity=".75"/>
 </g>
-<g stroke="#DCE8FF" stroke-width="0.5" opacity="0.45" stroke-linecap="round">
-<path d="M110 28h3.6M111.8 26.2v3.6"/>
-<path d="M300 22h3.6M301.8 20.2v3.6"/>
-</g>
-<path d="M66 16 L96 11" stroke="#CFE0FF" stroke-width="0.6" opacity="0.3" stroke-linecap="round"/>
+<g fill="#E9D5FF"><circle cx="142" cy="33" r=".55" opacity=".6"/><circle cx="252" cy="34" r=".55" opacity=".6"/></g>
+<!-- deux étoiles qui brillent -->
+<circle cx="44" cy="22" r="3.2" fill="url(#glow)"/><path d="M44 18.4v7.2M40.4 22h7.2" stroke="#fff" stroke-width=".5" stroke-opacity=".9"/>
+<circle cx="350" cy="25" r="2.8" fill="url(#glow)"/><path d="M350 21.8v6.4M346.8 25h6.4" stroke="#fff" stroke-width=".5" stroke-opacity=".85"/>
+<text x="195" y="23" text-anchor="middle" font-family="Plus Jakarta Sans, Montserrat, Helvetica, Arial, sans-serif" font-weight="800" font-size="9.5" letter-spacing="4.2" fill="url(#tx)" fill-opacity=".9">OROLADO</text>
 </svg>
