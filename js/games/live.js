@@ -403,8 +403,7 @@
       '<radialGradient id="lzPl" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="' + (horses ? '#FDBA74' : '#F0ABFC') + '"/><stop offset=".55" stop-color="' + (horses ? '#C2410C' : '#7C3AED') + '"/><stop offset="1" stop-color="#1e0b3a"/></radialGradient>' +
       '<linearGradient id="lzHz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8B5CF6" stop-opacity="0"/><stop offset="1" stop-color="' + (horses ? '#F59E0B' : '#22D3EE') + '" stop-opacity=".35"/></linearGradient></defs>' +
       '<rect x="0" y="60" width="400" height="60" fill="url(#lzHz)"/>' +
-      '<circle cx="318" cy="40" r="26" fill="url(#lzPl)"/><ellipse cx="318" cy="42" rx="44" ry="8" fill="none" stroke="rgba(253,230,138,.65)" stroke-width="2" transform="rotate(-14 318 42)"/>' +
-      '<circle cx="92" cy="24" r="6" fill="#E9D5FF" opacity=".85"/><circle cx="90" cy="22.5" r="1.4" fill="#C4B5FD"/></svg>';
+      '</svg>'; // v3567 (propriétaire : « retire les planètes inutiles dans les jeux ») : planète et lune retirées, seul le ciel reste
   }
   var FAR_URI = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="40" viewBox="0 0 240 40"><path d="M0 40V30Q20 18 40 30T80 28Q96 14 112 28L130 26Q150 8 170 26Q190 20 210 30Q228 22 240 30V40Z" fill="#241650"/><path d="M58 30a12 12 0 0 1 24 0Z" fill="#2f1d66"/><circle cx="70" cy="22" r="1.3" fill="#22D3EE"/><path d="M186 30V14h3v16ZM187.5 12l-2 2h4Z" fill="#2f1d66"/><circle cx="187.5" cy="11" r="1.2" fill="#F472B6"/></svg>') + '")';
 

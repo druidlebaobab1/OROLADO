@@ -2143,7 +2143,7 @@ html.ios-app.is-ios:root:not(#z1){background-color:#1E1507!important} /* v3563 :
 html.ios-app:not(.fs-trade) body:not(#z1):not(#z2) #oroIosFloor#oroIosFloor#oroIosFloor{
   display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:auto!important;top:var(--ios-floor-top,100vh)!important;
   height:var(--ios-floor-h,0px)!important;z-index:3!important;pointer-events:none!important;
-  background:url("../icons/ui/app-floor.svg?v=3566") center bottom/cover no-repeat,#000000!important}
+  background:url("../icons/ui/app-floor.svg?v=3567") center bottom/cover no-repeat,#000000!important}
 
 /* 2026-10-20 (propriétaire) — APPLI iPhone, PLEIN ÉCRAN : mise / ACHETER / VENDRE restent dans la fenêtre de l'appli
    (les descendre plus bas les coupait sous l'écran). */
@@ -2181,7 +2181,7 @@ html.ios-app.is-ios:root body #screenTrade#screenTrade .trade-shell,html.ios-app
    - ensuite : le petit monde de planètes (app-floor.svg) posé exactement dans la bande (sous le site), partout, plein écran compris.
    Une seule couleur de fond (#100C05, posée dès la 1re image par index.html) : plus de noirs différents au lancement. */
 html.ios-app.is-ios:root body #oroLoader#oroLoader{background-size:100% var(--ios-screen-h,100%)!important;background-position:center top!important;background-repeat:no-repeat!important}
-html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=3566")!important;background-repeat:no-repeat!important;
+html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=3567")!important;background-repeat:no-repeat!important;
   background-position:center top var(--ios-site-h,100%)!important;background-size:100% var(--ios-under,0px)!important}
 /* v3565 (propriétaire : « le petit bas ne doit pas aller dans la page d'actualisation ») — pendant le chargement, la bande du bas
    est la SUITE EXACTE de l'écran de chargement (mêmes couches que #oroLoader, dessinées à la hauteur de l'écran entier). */
@@ -2249,3 +2249,14 @@ html.is-ios body #oroIosFloor#oroIosFloor#oroIosFloor,
 html.is-ios.is-ios-safari body #oroIosFloor#oroIosFloor#oroIosFloor,
 html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloor#oroIosFloor{
   background:#000000!important;background-image:none!important}
+/* v3567 (propriétaire : « le bas or n'est pas encore dans Paris ») — quand iOS donne TOUT l'écran à l'appli (ios-tall), les fenêtres
+   pleine page (Paris, Jeux, Social, Cadeaux…) descendent jusqu'en bas et leur fond couvrait la bande : on y repose le MÊME bas or,
+   exactement dans la hauteur de la bande (au-dessus de la barre d'accueil, sous le contenu). */
+html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active:not(#historySheet):not(#financeModal)::after,
+html.ios-app.is-ios.ios-tall:root body #liveModal.active::after{
+  content:""!important;display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;
+  height:var(--ios-under,0px)!important;z-index:2147483000!important;pointer-events:none!important;
+  background:url("../icons/ui/app-floor.svg?v=3567") center bottom/100% 100% no-repeat,#1E1507!important}
+/* v3567 : Paris dans l'appli (tout l'écran) — la barre Populaire / Direct / Coupon… reste AU-DESSUS du bas or (avant : elle
+   descendait de 18 px dedans). */
+html.ios-app.is-ios.ios-tall:root body #casinoModal#casinoModal .sp2 .pz-nav{bottom:0!important}
