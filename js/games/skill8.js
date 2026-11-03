@@ -3195,7 +3195,7 @@
     /* 2026-11-03 (propriétaire) — Subway Dash passe aux VRAIS visuels (générés avec la clé fal.ai du propriétaire) :
        tunnel en perspective + coureur vu de dos + métro-obstacle. Les images se chargent de façon asynchrone et
        se redessinent sur le canevas-sprite déjà en cache (aucune modif du moteur). Repli propre pendant le chargement. */
-    var SUBV = '3538';
+    var SUBV = '3539';
     function containDraw(x, im, w, h) {
       var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
       if (!iw || !ih) return;
