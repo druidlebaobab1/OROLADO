@@ -3194,7 +3194,7 @@
     /* 2026-11-03 (propriétaire) — Subway Dash passe aux VRAIS visuels (générés avec la clé fal.ai du propriétaire) :
        tunnel en perspective + coureur vu de dos + métro-obstacle. Les images se chargent de façon asynchrone et
        se redessinent sur le canevas-sprite déjà en cache (aucune modif du moteur). Repli propre pendant le chargement. */
-    var SUBV = '3533';
+    var SUBV = '3536';
     function containDraw(x, im, w, h) {
       var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
       if (!iw || !ih) return;
@@ -3214,6 +3214,28 @@
       im.src = src;
       return cv;
     }
+    /* 2026-11-03 (propriétaire : « le personnage ne court pas ») — coureur ANIMÉ : 2 poses de course générées
+       avec fal.ai qui alternent + un rebond vertical, redessinées en boucle sur le canevas-sprite → il court. */
+    var runRAF = 0;
+    function animRunner(d, w, h) {
+      var cv = mkc(w, h, d, function (c, cw, ch) { c.fillStyle = lg(c, 0, ch * 0.3, 0, ch * 0.8, ['#22D3EE', '#0E7490']); rr(c, cw * 0.3, ch * 0.32, cw * 0.4, ch * 0.5, cw * 0.1); c.fill(); });
+      var f0 = gImg('img/games/sub_run1.webp?v=' + SUBV), f1 = gImg('img/games/sub_run2.webp?v=' + SUBV);
+      if (runRAF) { try { cancelAnimationFrame(runRAF); } catch (e) { /* ignore */ } }
+      function tick() {
+        try {
+          var now = Date.now(), fr = (now % 200 < 100) ? f0 : f1, im = fr.ok ? fr.im : (f0.ok ? f0.im : (f1.ok ? f1.im : null));
+          var x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, cv.width, cv.height); x.restore();
+          if (im && im.naturalWidth) {
+            var bob = Math.sin(now / 65) * cv.h * 0.045;
+            var s = Math.min(cv.w / im.naturalWidth, cv.h / im.naturalHeight), dw = im.naturalWidth * s, dh = im.naturalHeight * s;
+            x.drawImage(im, (cv.w - dw) / 2, (cv.h - dh) / 2 + bob, dw, dh);
+          }
+        } catch (e) { /* garde le repli */ }
+        runRAF = requestAnimationFrame(tick);
+      }
+      tick();
+      return cv;
+    }
     var tun = null, tunOk = false;
     return dodger({
       lanes: 4, lines: false, winCols: ['#FDE68A', '#67E8F9'], ratio: 1.9,
@@ -3225,12 +3247,7 @@
         } else { c.fillStyle = '#0a1420'; c.fillRect(0, 0, W, H); }
         var gr = c.createLinearGradient(0, H * 0.42, 0, H); gr.addColorStop(0, 'rgba(2,6,15,0)'); gr.addColorStop(1, 'rgba(2,6,15,.82)'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
       },
-      player: function (d, w, h) {
-        return imgSprite(d, w + 8, h + 8, 'img/games/sub_runner.webp?v=' + SUBV, function (c, cw, ch) {
-          c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(cw / 2, ch * 0.9, cw * 0.28, ch * 0.05, 0, 0, TAU); c.fill();
-          c.fillStyle = lg(c, 0, ch * 0.3, 0, ch * 0.8, ['#22D3EE', '#0E7490']); rr(c, cw * 0.3, ch * 0.32, cw * 0.4, ch * 0.5, cw * 0.1); c.fill();
-        });
-      },
+      player: function (d, w, h) { return animRunner(d, w + 8, h + 10); },
       obs: [function (d, w, h) {
         return imgSprite(d, w + 6, h + 6, 'img/games/sub_train.webp?v=' + SUBV, function (c, cw, ch) {
           c.fillStyle = lg(c, 0, 0, 0, ch, ['#FBBF24', '#92400E']); rr(c, cw * 0.12, ch * 0.28, cw * 0.76, ch * 0.44, cw * 0.1); c.fill();
