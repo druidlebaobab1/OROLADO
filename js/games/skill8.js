@@ -2397,14 +2397,12 @@
     return {
       size: function (w, h, uu, d, top) {
         W = w; H = h; dpr = d; T = top; gy = H - clamp((H - T) * 0.14, 26, 80); sr = clamp(Math.min(W, H - T) * 0.05, 14, 32); gx = W * 0.1; GRAV = (H - T) * 2.4;
-        soldierS = soldierSprite();
-        bg = mkc(W, H, dpr, function (c) {
+        /* 2026-11-03 (propriétaire) — vrais visuels fal.ai cartoon : champ de bataille (fond) + soldat ennemi (sprite). */
+        soldierS = gSprite(sr * 2.3, sr * 2.8, dpr, 'img/games/war_soldier.webp?v=' + GV, function (c, cw, ch) { c.fillStyle = '#4B5320'; rr(c, cw * 0.28, ch * 0.2, cw * 0.44, ch * 0.62, cw * 0.1); c.fill(); });
+        bg = gCover(mkc(W, H, dpr, function (c) {
           c.fillStyle = lg(c, 0, 0, 0, gy, ['#6B7280', '#9CA3AF', '#D6B98C']); c.fillRect(0, 0, W, gy);
-          c.fillStyle = 'rgba(120,53,15,.25)'; for (var q = 0; q < (A.lite ? 3 : 6); q++) { var cx2 = rnd(0, W), cy2 = rnd(T, gy * 0.6); circ(c, cx2, cy2, rnd(14, 40), 'rgba(75,85,99,.3)'); }
-          c.fillStyle = 'rgba(55,65,81,.5)'; c.beginPath(); c.moveTo(0, gy); for (var x = 0; x <= W; x += W / 6) c.lineTo(x, gy - (H - T) * 0.1 * (0.5 + Math.abs(Math.sin(x * 0.011)))); c.lineTo(W, gy); c.closePath(); c.fill();
           c.fillStyle = lg(c, 0, gy, 0, H, ['#5B4A2E', '#3A2E1A']); c.fillRect(0, gy, W, H - gy);
-          c.strokeStyle = 'rgba(30,20,10,.4)'; c.lineWidth = 2; for (var k = 0; k < 5; k++) { c.beginPath(); c.moveTo(rnd(0, W), gy + rnd(4, (H - gy))); c.lineTo(rnd(0, W), gy + rnd(4, (H - gy))); c.stroke(); }
-        });
+        }), 'img/games/war_bg.webp?v=' + GV, 'rgba(12,7,2,0.12)');
       },
       reset: function () { soldiers = []; nades = []; dead = 0; won = 0; barrage = null; spT = 0.4; kills = 0; cool = 0; },
       step: function (dt, live) {

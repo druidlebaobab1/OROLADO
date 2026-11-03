@@ -113,6 +113,15 @@
     c.w = w; c.h = h;
     return c;
   }
+  // 2026-11-03 — fond « photo » généré fal.ai (cartoon) redessiné en plein cadre sur le canevas de fond quand l'image charge.
+  var GV4 = '3544', gImgCache4 = {};
+  function gImg4(src) { if (gImgCache4[src]) return gImgCache4[src]; var o = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = src; gImgCache4[src] = o; return o; }
+  function gCover4(cv, src, tint) {
+    var o = gImg4(src);
+    function paint() { try { var x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); var im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s; x.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (tint) { x.fillStyle = tint; x.fillRect(0, 0, cv.width, cv.height); } x.restore(); } catch (e) { /* repli */ } }
+    if (o.ok) paint(); else o.im.addEventListener('load', paint);
+    return cv;
+  }
   function lg(c, x0, y0, x1, y1, st) { var g = c.createLinearGradient(x0, y0, x1, y1); st.forEach(function (s, i) { g.addColorStop(i / (st.length - 1), s); }); return g; }
   function rg(c, x, y, r, st, fx, fy) { var g = c.createRadialGradient(x + (fx || 0), y + (fy || 0), r * 0.05, x, y, r); st.forEach(function (s, i) { g.addColorStop(i / (st.length - 1), s); }); return g; }
   function circ(c, x, y, r, fill) { c.fillStyle = fill; c.beginPath(); c.arc(x, y, Math.max(0, r), 0, TAU); c.fill(); }
@@ -715,7 +724,7 @@
         if (yB - yTop < zh * 0.9) yTop = yB - zh * 0.9;
         var hz = yTop - zh * 0.3, rl = function (y) { return W / 2 - W * (0.18 + 0.27 * kk(y)) - zh * 0.35 * sc(y); };
         fires = [[W * 0.1, hz + (H - hz) * 0.18, zh * 0.18], [W * 0.88, hz + (H - hz) * 0.32, zh * 0.24]];
-        bg = mkc(W, H, dpr, function (c) {
+        bg = gCover4(mkc(W, H, dpr, function (c) {
           var S = 5; function R() { S = (S * 9301 + 49297) % 233280; return S / 233280; }
           // night sky lit red by the fires, a hazy moon
           c.fillStyle = lg(c, 0, 0, 0, hz, ['#07060F', '#17112B', '#3A1A2E', '#6B2A2A']); c.fillRect(0, 0, W, hz + 2);
@@ -769,7 +778,7 @@
           // fog at the horizon and over the road
           c.fillStyle = lg(c, 0, hz - zh * 0.4, 0, hz + zh * 0.9, ['rgba(180,160,200,0)', 'rgba(180,160,200,.22)', 'rgba(180,160,200,0)']); c.fillRect(0, hz - zh * 0.4, W, zh * 1.3);
           c.fillStyle = rg(c, W / 2, H, Math.max(W, H) * 0.7, ['rgba(0,0,0,0)', 'rgba(0,0,0,0)', 'rgba(0,0,0,.45)']); c.fillRect(0, 0, W, H); // vignette
-        });
+        }), 'img/games/zomb_bg.webp?v=' + GV4, 'rgba(8,4,12,0.2)');
         glowS = mkc(64, 64, 1, function (c) { circ(c, 32, 32, 32, rg(c, 32, 32, 32, ['rgba(251,146,60,.5)', 'rgba(249,115,22,.18)', 'rgba(249,115,22,0)'])); });
         // the barricade: shaded sandbags, wooden posts, barbed wire coil (drawn over the zombies' feet)
         var bh2 = H - yB;
