@@ -234,3 +234,9 @@ html:root body #casinoModal .cs-toast .ct-ic svg{width:42px;height:36px;display:
 @keyframes ctIcIn{0%{transform:scale(.4)}100%{transform:scale(1)}}
 html:root body #casinoModal .cs-toast.cs-toast.cs-toast.win > b{font-size:var(--ctfs,20px)!important;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:0;letter-spacing:.01em}
 html.oro-lite body #casinoModal .cs-toast .ct-ic,html.oro-lite body #casinoModal .cs-toast.win::after{animation:none}
+/* v3567 (propriétaire : « il y a beaucoup de planètes dans les jeux, ce n'est pas sérieux ») — planètes décoratives retirées des jeux
+   (Sky Rush / Jet / Rocket, Bowling, Penalty, Limbo) ; les jeux, leurs règles et leurs résultats ne changent pas. */
+html:root body #casinoModal .cg-crash .cr-planet,
+html:root body #casinoModal .bw-planet,
+html:root body #casinoModal .pk-planet,
+html:root body #casinoModal .cg-limbo .lb-planet{display:none!important}
