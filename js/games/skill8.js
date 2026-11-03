@@ -952,6 +952,26 @@
     c.w = w; c.h = h;
     return c;
   }
+  /* 2026-11-03 — sprites « photo » générés avec la clé fal.ai du propriétaire. Une image se charge en asynchrone
+     et se redessine (adaptée, centrée) sur le canevas-sprite DÉJÀ en cache du moteur → aucune modif des moteurs,
+     avec un repli dessiné pendant le chargement. gCover peint une image plein cadre sur un canevas de fond. */
+  var gImgCache = {};
+  function gImg(src) { if (gImgCache[src]) return gImgCache[src]; var o = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = src; gImgCache[src] = o; return o; }
+  function gContain(x, im, w, h) { var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height; if (!iw || !ih) return; var s = Math.min(w / iw, h / ih), dw = iw * s, dh = ih * s; x.drawImage(im, (w - dw) / 2, (h - dh) / 2, dw, dh); }
+  function gSprite(w, h, dpr, src, fb) {
+    var cv = mkc(w, h, dpr, fb);
+    var o = gImg(src);
+    function paint() { try { var x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, cv.width, cv.height); x.restore(); gContain(x, o.im, cv.w, cv.h); } catch (e) { /* garde le repli */ } }
+    if (o.ok) paint(); else o.im.addEventListener('load', paint);
+    return cv;
+  }
+  function gCover(cv, src, tint) {
+    var o = gImg(src);
+    function paint() { try { var x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); var im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s; x.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (tint) { x.fillStyle = tint; x.fillRect(0, 0, cv.width, cv.height); } x.restore(); } catch (e) { /* garde le repli */ } }
+    if (o.ok) paint(); else o.im.addEventListener('load', paint);
+    return cv;
+  }
+  var GV = '3534';
   function lg(c, x0, y0, x1, y1, st) { var g = c.createLinearGradient(x0, y0, x1, y1); st.forEach(function (s, i) { g.addColorStop(i / (st.length - 1), s); }); return g; }
   function rg(c, x, y, r, st, fx, fy) { var g = c.createRadialGradient(x + (fx || 0), y + (fy || 0), r * 0.05, x, y, r); st.forEach(function (s, i) { g.addColorStop(i / (st.length - 1), s); }); return g; }
   function circ(c, x, y, r, fill) { c.fillStyle = fill; c.beginPath(); c.arc(x, y, Math.max(0, r), 0, TAU); c.fill(); }
@@ -2514,13 +2534,11 @@
     return {
       size: function (w, h, uu, d, top) {
         W = w; H = h; dpr = d; T = top; tw = clamp(Math.min(W, H - T) * 0.13, 30, 76); py = H - clamp((H - T) * 0.09, 18, 52) - tw * 0.4; if (px == null) px = W / 2;
-        tankS = tankSprite(['#A3B18A', '#6B7A4F', '#3F4A2E'], true); foeS = tankSprite(['#D1A3A3', '#9E5C5C', '#5C2E2E'], false);
-        bg = mkc(W, H, dpr, function (c) {
+        tankS = gSprite(tw + 6, tw * 0.95 + 10, dpr, 'img/games/war_tank.webp?v=' + GV, function (c, cw, ch) { c.fillStyle = '#6B7A4F'; rr(c, cw * 0.16, ch * 0.2, cw * 0.68, ch * 0.6, 6); c.fill(); });
+        foeS = gSprite(tw + 6, tw * 0.95 + 10, dpr, 'img/games/war_foe.webp?v=' + GV, function (c, cw, ch) { c.fillStyle = '#9E5C5C'; rr(c, cw * 0.16, ch * 0.2, cw * 0.68, ch * 0.6, 6); c.fill(); });
+        bg = gCover(mkc(W, H, dpr, function (c) {
           c.fillStyle = lg(c, 0, 0, 0, H, ['#8B7355', '#A1875F', '#7A6344']); c.fillRect(0, 0, W, H);
-          c.fillStyle = 'rgba(70,50,25,.35)'; for (var q = 0; q < (A.lite ? 6 : 14); q++) { var cx3 = rnd(0, W), cy3 = rnd(T, H); circ(c, cx3, cy3, rnd(5, 15), 'rgba(90,70,40,.4)'); circ(c, cx3, cy3, rnd(2, 6), 'rgba(60,45,22,.45)'); }
-          c.strokeStyle = 'rgba(60,45,25,.3)'; c.lineWidth = 2; for (var k = 0; k < 6; k++) { c.beginPath(); c.moveTo(rnd(0, W), rnd(T, H)); c.lineTo(rnd(0, W), rnd(T, H)); c.stroke(); }
-          c.fillStyle = lg(c, 0, T, 0, T + (H - T) * 0.18, ['rgba(120,113,108,.5)', 'rgba(120,113,108,0)']); c.fillRect(0, T, W, (H - T) * 0.18);
-        });
+        }), 'img/games/war_ground.webp?v=' + GV, 'rgba(16,11,5,0.24)');
       },
       reset: function () { foes = []; bul = []; dead = 0; won = 0; strike = null; spT = 0.5; kills = 0; px = W / 2; drag = null; cool = 0; },
       step: function (dt, live) {
@@ -2743,9 +2761,9 @@
   /* ===== vague 1 : 4 jeux « esquive » + 2 jeux « attrape » (décors variés) ===== */
   boot('spacedash', dodger({
     lanes: 4, spin: true, lineCol: 'rgba(148,163,184,.25)', winCols: ['#A5B4FC', '#FFFFFF', '#FDE68A'],
-    bg: function (c, W, H, T) { c.fillStyle = lg(c, 0, 0, 0, H, ['#05060F', '#0B1026', '#1E1B4B']); c.fillRect(0, 0, W, H); stars(c, W, H, A_lite(c) ? 50 : 130, 0, H); c.fillStyle = rg(c, W * 0.7, H * 0.2, W * 0.5, ['rgba(124,58,237,.25)', 'rgba(124,58,237,0)']); c.fillRect(0, 0, W, H); },
-    player: function (d, w, h) { return mkc(w + 8, h + 8, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2); c.fillStyle = lg(c, 0, -h / 2, 0, h / 2, ['#E2E8F0', '#94A3B8', '#475569']); c.beginPath(); c.moveTo(0, -h / 2); c.quadraticCurveTo(w * 0.42, -h * 0.1, w * 0.3, h * 0.4); c.lineTo(-w * 0.3, h * 0.4); c.quadraticCurveTo(-w * 0.42, -h * 0.1, 0, -h / 2); c.fill(); c.fillStyle = '#7DD3FC'; circ(c, 0, -h * 0.1, w * 0.17, '#7DD3FC'); c.fillStyle = '#EF4444'; c.beginPath(); c.moveTo(-w * 0.3, h * 0.4); c.lineTo(-w * 0.46, h * 0.5); c.lineTo(-w * 0.26, h * 0.5); c.closePath(); c.fill(); c.beginPath(); c.moveTo(w * 0.3, h * 0.4); c.lineTo(w * 0.46, h * 0.5); c.lineTo(w * 0.26, h * 0.5); c.closePath(); c.fill(); c.fillStyle = 'rgba(253,186,116,.8)'; c.beginPath(); c.moveTo(-w * 0.14, h * 0.45); c.lineTo(0, h * 0.62); c.lineTo(w * 0.14, h * 0.45); c.fill(); }); },
-    obs: [function (d, w, h) { return astero(d, w * 0.82, ['#A8A29E', '#57534E', '#292524']); }, function (d, w, h) { return astero(d, w * 0.9, ['#94A3B8', '#475569', '#1E293B']); }]
+    bg: function (c, W, H, T) { var gi = gImg('img/games/space_bg.webp?v=' + GV); if (gi.ok) { var im = gi.im, s = Math.max(W / im.naturalWidth, H / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s; c.drawImage(im, (W - iw) / 2, (H - ih) / 2, iw, ih); } else { c.fillStyle = lg(c, 0, 0, 0, H, ['#05060F', '#0B1026', '#1E1B4B']); c.fillRect(0, 0, W, H); } },
+    player: function (d, w, h) { return gSprite(w + 8, h + 8, d, 'img/games/space_ship.webp?v=' + GV, function (c, cw, ch) { c.fillStyle = '#94A3B8'; c.beginPath(); c.moveTo(cw / 2, ch * 0.2); c.lineTo(cw * 0.74, ch * 0.78); c.lineTo(cw * 0.26, ch * 0.78); c.closePath(); c.fill(); }); },
+    obs: [function (d, w, h) { return gSprite(w + 6, h + 6, d, 'img/games/space_rock.webp?v=' + GV, function (c, cw, ch) { circ(c, cw / 2, ch / 2, cw * 0.38, '#57534E'); }); }]
   }), 'drag', 0.5);
 
   boot('sharkbay', dodger({
