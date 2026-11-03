@@ -3172,45 +3172,54 @@
     player: function (d, s) { return mkc(s * 1.1, s, d, function (c, w, h) { c.translate(w / 2, h / 2); c.fillStyle = rg(c, 0, s * 0.1, s * 0.5, ['rgba(253,224,71,.6)', 'rgba(253,224,71,0)']); circ(c, 0, s * 0.1, s * 0.5, c.fillStyle); c.fillStyle = '#44403C'; c.beginPath(); c.ellipse(0, -s * 0.08, s * 0.16, s * 0.2, 0, 0, TAU); c.fill(); c.fillStyle = 'rgba(255,255,255,.4)'; c.beginPath(); c.ellipse(-s * 0.1, -s * 0.1, s * 0.12, s * 0.07, -0.4, 0, TAU); c.fill(); c.beginPath(); c.ellipse(s * 0.1, -s * 0.1, s * 0.12, s * 0.07, 0.4, 0, TAU); c.fill(); c.fillStyle = '#FDE047'; circ(c, 0, s * 0.18, s * 0.12, '#FEF08A'); circ(c, 0, s * 0.18, s * 0.07, '#FDE047'); }); }
   }), 'tap', 0.45);
 
-  boot('subwaydash', dodger({
-    lanes: 4, lines: false, lineCol: 'rgba(255,255,255,.07)', winCols: ['#FDE68A', '#67E8F9'],
-    bg: (function () {
-      /* 2026-11-02 (propriétaire) — VRAIE image du tunnel de métro (img/games/subwaydash.webp) en fond.
-         On n'affiche QUE le HAUT du tunnel (la personne de la photo est pile au centre → coupée) pour n'avoir
-         qu'UN seul humain (le joueur). Plus de tirets de voie (lines:false). Net, réaliste, sérieux. */
-      var im = null, ok = false;
-      return function (c, W, H, T, rx0, rx1) {
-        if (!im) { im = new Image(); im.onload = function () { ok = true; }; im.src = 'img/games/subwaydash.webp?v=3526'; }
-        if (ok) {
-          var topFrac = 0.46, s = H / (topFrac * im.height), iw = im.width * s, ih = im.height * s;
-          c.drawImage(im, (W - iw) / 2, 0, iw, ih);
-        } else { c.fillStyle = '#0a1420'; c.fillRect(0, 0, W, H); }
-        var gr = c.createLinearGradient(0, H * 0.38, 0, H); gr.addColorStop(0, 'rgba(2,6,15,0)'); gr.addColorStop(0.7, 'rgba(2,6,15,.7)'); gr.addColorStop(1, 'rgba(2,6,15,.95)'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
-        var vg = c.createLinearGradient(0, 0, W, 0); vg.addColorStop(0, 'rgba(0,0,0,.5)'); vg.addColorStop(0.5, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)'); c.fillStyle = vg; c.fillRect(0, 0, W, H);
+  boot('subwaydash', (function () {
+    /* 2026-11-03 (propriétaire) — Subway Dash passe aux VRAIS visuels (générés avec la clé fal.ai du propriétaire) :
+       tunnel en perspective + coureur vu de dos + métro-obstacle. Les images se chargent de façon asynchrone et
+       se redessinent sur le canevas-sprite déjà en cache (aucune modif du moteur). Repli propre pendant le chargement. */
+    var SUBV = '3533';
+    function containDraw(x, im, w, h) {
+      var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
+      if (!iw || !ih) return;
+      var s = Math.min(w / iw, h / ih), dw = iw * s, dh = ih * s;
+      x.drawImage(im, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    }
+    function imgSprite(d, w, h, src, fb) {
+      var cv = mkc(w, h, d, fb);
+      var im = new Image();
+      im.onload = function () {
+        try {
+          var x = cv.getContext('2d');
+          x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, cv.width, cv.height); x.restore();
+          containDraw(x, im, cv.w, cv.h);
+        } catch (e) { /* garde le repli */ }
       };
-    })(),
-    player: function (d, w, h) { return mkc(w + 8, h + 8, d, function (c, cw, ch) { c.translate(cw / 2, ch / 2);
-      c.lineJoin = 'round'; c.lineCap = 'round';
-      c.fillStyle = 'rgba(0,0,0,.38)'; c.beginPath(); c.ellipse(0, h * 0.46, w * 0.3, h * 0.07, 0, 0, TAU); c.fill();
-      c.strokeStyle = '#1D4ED8'; c.lineWidth = w * 0.14;
-      c.beginPath(); c.moveTo(-w * 0.07, h * 0.12); c.lineTo(-w * 0.15, h * 0.4); c.stroke();
-      c.beginPath(); c.moveTo(w * 0.08, h * 0.12); c.lineTo(w * 0.17, h * 0.33); c.stroke();
-      c.fillStyle = '#F8FAFC'; rr(c, -w * 0.24, h * 0.37, w * 0.17, h * 0.07, 3); c.fill(); rr(c, w * 0.09, h * 0.31, w * 0.17, h * 0.07, 3); c.fill();
-      c.fillStyle = '#F97316'; c.fillRect(-w * 0.24, h * 0.42, w * 0.17, h * 0.022); c.fillRect(w * 0.09, h * 0.36, w * 0.17, h * 0.022);
-      c.fillStyle = '#334155'; rr(c, -w * 0.25, -h * 0.2, w * 0.5, h * 0.36, w * 0.1); c.fill();
-      c.fillStyle = '#F59E0B'; rr(c, -w * 0.08, -h * 0.13, w * 0.16, h * 0.22, w * 0.04); c.fill();
-      c.fillStyle = lg(c, 0, -h * 0.22, 0, h * 0.14, ['#22D3EE', '#0E7490']); rr(c, -w * 0.2, -h * 0.22, w * 0.4, h * 0.35, w * 0.1); c.fill();
-      c.strokeStyle = '#0E7490'; c.lineWidth = w * 0.11;
-      c.beginPath(); c.moveTo(-w * 0.18, -h * 0.13); c.lineTo(-w * 0.27, h * 0.05); c.stroke();
-      c.beginPath(); c.moveTo(w * 0.18, -h * 0.13); c.lineTo(w * 0.25, -h * 0.02); c.stroke();
-      c.fillStyle = '#E7B48A'; circ(c, -w * 0.28, h * 0.07, w * 0.06, '#E7B48A'); circ(c, w * 0.26, -h * 0.03, w * 0.06, '#E7B48A');
-      c.fillStyle = '#E7B48A'; rr(c, -w * 0.05, -h * 0.3, w * 0.1, h * 0.1, w * 0.03); c.fill();
-      c.fillStyle = lg(c, 0, -h * 0.5, 0, -h * 0.28, ['#6B451F', '#3A2410']); circ(c, 0, -h * 0.38, w * 0.17, c.fillStyle);
-      c.fillStyle = '#DC2626'; c.beginPath(); c.arc(0, -h * 0.4, w * 0.18, Math.PI, 0); c.fill(); c.fillRect(-w * 0.18, -h * 0.41, w * 0.36, w * 0.035);
-      c.fillStyle = '#B91C1C'; c.fillRect(-w * 0.2, -h * 0.4, w * 0.07, w * 0.05);
-    }); },
-    obs: [function (d, w, h) { return subwayTrain(d, w, h); }, function (d, w, h) { return coneS(d, w, h); }]
-  }), 'drag', 0.5);
+      im.src = src;
+      return cv;
+    }
+    var tun = null, tunOk = false;
+    return dodger({
+      lanes: 4, lines: false, winCols: ['#FDE68A', '#67E8F9'], ratio: 1.9,
+      bg: function (c, W, H) {
+        if (!tun) { tun = new Image(); tun.onload = function () { tunOk = true; }; tun.src = 'img/games/sub_tunnel.webp?v=' + SUBV; }
+        if (tunOk) {
+          var s = Math.max(W / tun.naturalWidth, H / tun.naturalHeight), iw = tun.naturalWidth * s, ih = tun.naturalHeight * s;
+          c.drawImage(tun, (W - iw) / 2, (H - ih) / 2, iw, ih);
+        } else { c.fillStyle = '#0a1420'; c.fillRect(0, 0, W, H); }
+        var gr = c.createLinearGradient(0, H * 0.42, 0, H); gr.addColorStop(0, 'rgba(2,6,15,0)'); gr.addColorStop(1, 'rgba(2,6,15,.82)'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
+      },
+      player: function (d, w, h) {
+        return imgSprite(d, w + 8, h + 8, 'img/games/sub_runner.webp?v=' + SUBV, function (c, cw, ch) {
+          c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(cw / 2, ch * 0.9, cw * 0.28, ch * 0.05, 0, 0, TAU); c.fill();
+          c.fillStyle = lg(c, 0, ch * 0.3, 0, ch * 0.8, ['#22D3EE', '#0E7490']); rr(c, cw * 0.3, ch * 0.32, cw * 0.4, ch * 0.5, cw * 0.1); c.fill();
+        });
+      },
+      obs: [function (d, w, h) {
+        return imgSprite(d, w + 6, h + 6, 'img/games/sub_train.webp?v=' + SUBV, function (c, cw, ch) {
+          c.fillStyle = lg(c, 0, 0, 0, ch, ['#FBBF24', '#92400E']); rr(c, cw * 0.12, ch * 0.28, cw * 0.76, ch * 0.44, cw * 0.1); c.fill();
+        });
+      }]
+    });
+  })(), 'drag', 0.5);
 
   boot('icecreamcatch', catcher({
     winCols: ['#F9A8D4', '#67E8F9', '#FFFFFF'], ring: '#F9A8D4',
