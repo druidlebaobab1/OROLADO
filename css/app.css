@@ -14253,3 +14253,87 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-
 /* v3573 : le contour vert (côté Réel) et or (côté Démo) du bandeau des soldes — gardé, mais doux */
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5):not(#y6):not(#y7):not(#y8) #modeSwitcher#modeSwitcher::before{border-color:rgba(74,222,128,.28)!important;box-shadow:none!important}
 html body #screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5):not(#y6):not(#y7):not(#y8) #modeSwitcher#modeSwitcher::after{border-color:rgba(212,175,55,.3)!important;box-shadow:none!important}
+
+/* v3574 RETRAIT — le solde retirable = la même pastille portefeuille que Paris / Casino / Jeux (calme, sans halo ni reflet) */
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel#wdBalanceLabel.wd-bal{
+  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;
+  width:fit-content!important;max-width:100%!important;min-width:min(220px,100%)!important;margin:4px auto 10px!important;padding:6px 18px 6px 8px!important;height:auto!important;min-height:0!important;
+  border-radius:14px!important;background:linear-gradient(180deg,#123222 0%,#0B1E14 100%)!important;border:1px solid rgba(74,222,128,.16)!important;
+  box-shadow:none!important;filter:none!important;text-align:start!important;box-sizing:border-box!important;overflow:hidden!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel#wdBalanceLabel.wd-bal::after,
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel#wdBalanceLabel.wd-bal::before{content:none!important;display:none!important;animation:none!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel .wd-wal{flex:0 0 36px!important;width:36px!important;height:36px!important;display:block!important;background:none!important;border:0!important;box-shadow:none!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel .wd-wal img{width:100%!important;height:100%!important;object-fit:contain!important;display:block!important;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel .wd-bal-t{display:flex!important;flex-direction:column!important;min-width:0!important;line-height:1.1!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel .wd-bal-secure{display:block!important;font:800 10px/1.2 "Plus Jakarta Sans",system-ui,sans-serif!important;letter-spacing:.06em!important;color:#86EFAC!important;margin:0 0 2px!important;text-transform:uppercase;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;text-shadow:none!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel .wd-bal-amt{display:block!important;font:800 21px/1.1 "Plus Jakarta Sans",system-ui,sans-serif!important;color:#FFFFFF!important;-webkit-text-fill-color:#FFFFFF!important;background:none!important;filter:none!important;text-shadow:none!important;margin:0!important;white-space:nowrap!important;direction:ltr;unicode-bidi:isolate}
+@media (max-height:700px){
+  html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel#wdBalanceLabel.wd-bal{padding:4px 14px 4px 6px!important;margin:2px auto 6px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel .wd-wal{flex-basis:30px!important;width:30px!important;height:30px!important}
+  html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal #wdBalanceLabel .wd-bal-amt{font-size:18px!important}
+}
+
+/* v3574 CADEAUX (Défi, Invitation, Tournoi, Bonus, Roue, Jauge) — fond sombre uni et calme : plus de nébuleuse dorée,
+   plus d'anneau/orbite en haut à droite, plus de scène planète + boule lumineuse en bas, cadres or apaisés */
+html:root body #portalModal#portalModal#portalModal#portalModal > .modal-box.portal-box{
+  background:linear-gradient(180deg,#0F0D0A 0%,#0B0A08 55%,#0A0908 100%)!important;background-size:100% 100%!important;animation:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .portal-sky{opacity:.5!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .gift-scene{display:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .defi-card::after,html:root body #portalModal#portalModal#portalModal#portalModal .aff-card::after,
+html:root body #portalModal#portalModal#portalModal#portalModal .top-card::after,html:root body #portalModal#portalModal#portalModal#portalModal .bon-card::after,
+html:root body #portalModal#portalModal#portalModal#portalModal .defi-card::before,html:root body #portalModal#portalModal#portalModal#portalModal .aff-card::before,
+html:root body #portalModal#portalModal#portalModal#portalModal .top-card::before,html:root body #portalModal#portalModal#portalModal#portalModal .bon-card::before{content:none!important;display:none!important;animation:none!important}
+/* encadrés dorés (Toi +5 % / Ton ami +5 %, +10 % bonus, règle du défi) : sombres, fin liseré or doux, sans halo ni reflet */
+html:root body #portalModal#portalModal#portalModal#portalModal .aff-big b,html:root body #portalModal#portalModal#portalModal#portalModal .bon-big,
+html:root body #portalModal#portalModal#portalModal#portalModal .defi-rule{
+  background:rgba(255,255,255,.045)!important;border:1px solid rgba(212,175,55,.24)!important;box-shadow:none!important;text-shadow:none!important;filter:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .aff-big b::after,html:root body #portalModal#portalModal#portalModal#portalModal .bon-big::after,
+html:root body #portalModal#portalModal#portalModal#portalModal .defi-rule::after{content:none!important;display:none!important;animation:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .aff-steps3 li > span{box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .defi-ex,html:root body #portalModal#portalModal#portalModal#portalModal .bon-ex{box-shadow:inset 2px 0 0 rgba(212,175,55,.45)!important;background:rgba(255,255,255,.03)!important}
+/* boutons or (Activer, Partager mon lien, Jouer en démo…) : restent bien visibles, sans lueur qui « respire » */
+html:root body #portalModal#portalModal#portalModal#portalModal .btn-gold,html:root body #portalModal#portalModal#portalModal#portalModal .aff-share{
+  animation:none!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 6px rgba(0,0,0,.45)!important;filter:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .btn-gold::before,html:root body #portalModal#portalModal#portalModal#portalModal .btn-gold::after{animation:none!important;opacity:0!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .bm-bar i{box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .tp-medal{animation:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .tp-step{background:rgba(255,255,255,.05)!important;border-color:rgba(255,255,255,.1)!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .tp1 .tp-step{background:rgba(212,175,55,.12)!important;border-color:rgba(212,175,55,.26)!important}
+/* v3574 Invitation (affiliation) : encadrés neutres et sombres, chiffres lisibles, sans halo */
+html:root body #portalModal#portalModal#portalModal#portalModal .aff-ex{background:rgba(255,255,255,.035)!important;border-left:2px solid rgba(212,175,55,.5)!important;box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .aff-proj{background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.09)!important;box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .aff-stats6 .gold{background:rgba(212,175,55,.07)!important;border-color:rgba(212,175,55,.26)!important;box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .aff-more{background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:none!important;animation:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .arv-kpi{background:rgba(255,255,255,.04)!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .arv-income{background:linear-gradient(180deg,#17130B 0%,#110E08 100%)!important;border:1px solid rgba(212,175,55,.3)!important;box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .arv-income span{color:#CBB488!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .arv-income b{color:#EBC873!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .arv-met,html:root body #portalModal#portalModal#portalModal#portalModal .arv-proj{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.09)!important;box-shadow:none!important}
+html:root body #portalModal#portalModal#portalModal#portalModal .aff-codes{border-color:rgba(255,255,255,.1)!important}
+/* v3574 PROFIL — sombre et calme : plus de halo or en haut, lignes du menu neutres, icônes nettes (or mat sur pastille sombre) */
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile{background:linear-gradient(180deg,#100D09 0%,#0B0907 100%)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .avatar{box-shadow:0 0 0 2px rgba(233,196,106,.7),0 4px 12px rgba(0,0,0,.5)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #profWalletCard.wallet-card{background:linear-gradient(180deg,#14110C 0%,#0F0D09 100%)!important;border:1px solid rgba(255,255,255,.09)!important;box-shadow:none!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #profWalletCard.wallet-card::before,html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #profWalletCard.wallet-card::after{content:none!important;display:none!important;animation:none!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnCloseDrawer{box-shadow:none!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-item{background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-item .di-ico{width:28px!important;height:28px!important;min-width:28px!important;padding:6px!important;box-sizing:border-box!important;border-radius:9px!important;
+  background:#1A160F!important;border:1px solid rgba(212,175,55,.28)!important;box-shadow:none!important;color:#E9C46A!important;opacity:1!important;filter:none!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-item .di-ico path,html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile .drawer-item .di-ico rect{stroke:#E9C46A!important;stroke-width:1.9!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnWithdraw.drawer-item{border-color:rgba(74,222,128,.22)!important;background:rgba(74,222,128,.05)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnWithdraw .di-ico{background:#0F2217!important;border-color:rgba(74,222,128,.35)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnWithdraw .di-ico path{stroke:#86EFAC!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnWithdraw .di-label{color:#FFFFFF!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnLogout.drawer-item{border-color:rgba(248,113,113,.2)!important;background:rgba(248,113,113,.04)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnLogout .di-ico{background:#221111!important;border-color:rgba(248,113,113,.32)!important}
+html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerProfile #btnLogout .di-ico path{stroke:#FCA5A5!important}
+/* v3574 RETRAIT — « Paiement instantané » : pastille verte posée, sans halo qui pulse ; méthode choisie sans lueur */
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-trust,html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-trust::before,html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-trust::after{box-shadow:none!important;animation:none!important;filter:none!important;background-image:none!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-trust span{animation:none!important;box-shadow:none!important;text-shadow:none!important;background:rgba(46,229,157,.08)!important;border:1px solid rgba(46,229,157,.3)!important;color:#A7F3D0!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-selected{box-shadow:none!important;filter:none!important}
+/* v3574 HISTORIQUES / RECHARGER — titres sans lueur, onglet actif or mat, carte de paiement choisie sans halo */
+html:root body #financeModal#financeModal#financeModal .modal-title,html:root body #historySheet#historySheet#historySheet .modal-title,
+html:root body #withdrawModal#withdrawModal#withdrawModal .modal-title,html:root body #depositModal#depositModal#depositModal .modal-title{text-shadow:none!important;filter:none!important}
+html:root body #historySheet#historySheet#historySheet#historySheet .hist-tab.on{background:linear-gradient(180deg,#2A2213 0%,#1C170D 100%)!important;border:1px solid rgba(212,175,55,.45)!important;box-shadow:none!important;color:#F3DFA6!important;text-shadow:none!important}
+html:root body #depositModal#depositModal#depositModal#depositModal .pay-method-card.on{box-shadow:none!important;filter:none!important}
+html:root body #depositModal#depositModal#depositModal#depositModal .pay-method-card.on::before,html:root body #depositModal#depositModal#depositModal#depositModal .pay-method-card.on::after{animation:none!important;opacity:0!important}
