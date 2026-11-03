@@ -604,7 +604,7 @@ function admin_all_job_step(string $token, array $players, callable $pay, ?int $
   if (!$j || empty($j['active']) || !hash_equals((string) ($j['token'] ?? ''), $token)) return 'bad';
   admin_all_job_update(static function (array &$x) use ($token): void { if (hash_equals((string) ($x['token'] ?? ''), $token)) $x['lastAt'] = time(); });
   if (function_exists('orolado_bonus_all_marker')) @touch(orolado_bonus_all_marker());
-  $r = admin_all_pay_run(['amount' => (string) $j['amount'], 'confirm' => 'PAYER'], $players, $pay, 4, $now, 8); // court : le serveur coupe une demande à 30 s
+  $r = admin_all_pay_run(['amount' => (string) $j['amount'], 'confirm' => 'PAYER'], $players, $pay, 30, $now, 15); // v3555 (propriétaire : « plus vite ») : 30 joueurs ou 15 s par paquet (le serveur coupe une demande à 30 s)
   if (!empty($r['busy'])) return 'busy';
   $out = 'next';
   admin_all_job_update(static function (array &$x) use ($token, $r, &$out): void {
