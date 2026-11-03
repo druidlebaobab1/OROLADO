@@ -148,6 +148,8 @@
     lr: '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-arr" d="M1 9l5-4v8zM31 9l-5-4v8z"/>' + FINGER + '</svg>',
     swipe4: '<svg viewBox="0 0 32 32" aria-hidden="true"><path class="sk-arr" d="M1 11l4.5-3.5v7zM31 11l-4.5-3.5v7zM13 0l3.5 4h-7z"/>' + FINGER + '</svg>'
   };
+  // Subway Dash réutilise les textes de Metro Dash (même course en perspective, décor tunnel).
+  G.subwaydash = G.metrodash;
 
   /* ------------------------------------------------------------------ shared engine (round flow + canvas loop + gestures) */
   function boot(key, mk, gest, hy) {
@@ -1258,9 +1260,23 @@
     }
   };
 
+  // 2026-11-03 (propriétaire) — SUBWAY DASH rebranché sur le VRAI moteur de course en perspective (comme Metro Dash) :
+  // mêmes voies/obstacles/perso animé qui AVANCE, mais décor de TUNNEL souterrain (seul le fond change).
+  var SUBWAY = Object.assign({}, METRO, {
+    bg: function (c, V) {
+      var W = V.W, H = V.H, hy = V.hy, vx = W * 0.5, vy = hy * 0.9, mm = Math.min(W, H), i, k;
+      c.fillStyle = lg(c, 0, 0, 0, hy, ['#05070c', '#0a121a', '#13202b']); c.fillRect(0, 0, W, hy + 2);
+      circ(c, vx, vy, mm * 0.26, rg(c, vx, vy, mm * 0.26, ['rgba(190,215,255,.38)', 'rgba(120,150,200,.10)', 'rgba(0,0,0,0)']));
+      for (i = 1; i <= 8; i++) { var f = i / 9; c.strokeStyle = 'rgba(150,175,205,' + (0.06 + 0.16 * f).toFixed(3) + ')'; c.lineWidth = 1 + 2 * f; c.beginPath(); c.ellipse(vx, vy, W * (0.05 + 0.6 * f), hy * (0.06 + 0.9 * f), 0, Math.PI, 2 * Math.PI); c.stroke(); }
+      for (k = 1; k <= 6; k++) { var g = k / 7, lw2 = 4 + 14 * g; c.fillStyle = 'rgba(255,245,210,' + (0.25 + 0.4 * g).toFixed(2) + ')'; c.fillRect(vx - lw2 / 2, vy - hy * (0.1 + 0.82 * g), lw2, 3 + 6 * g); }
+      c.fillStyle = lg(c, 0, hy, 0, V.ny, ['#15131d', '#0b0a12']); c.fillRect(0, hy, W, H - hy);
+    }
+  });
+
   boot('highway', function (A) { return runner(A, HIGHWAY); }, 'lr', 0.5);
   boot('jungledash', function (A) { return runner(A, JUNGLE); }, 'swipe4', 0.5);
   boot('metrodash', function (A) { return runner(A, METRO); }, 'swipe4', 0.5);
+  boot('subwaydash', function (A) { return runner(A, SUBWAY); }, 'swipe4', 0.5);
 
   /* ================================================================== 4. ORBIT SWITCH — tap to jump between two orbits */
   boot('orbit', function (A) {
