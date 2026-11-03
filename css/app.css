@@ -237,10 +237,10 @@ html body #toast.toast.toast-bal .lux-msg-ico{display:none!important}
 .mode-btn[data-mode="demo"]{padding:7px 6px;font-size:.55rem;letter-spacing:.04em}
 .mode-btn[data-mode="real"]{padding:8px 14px;font-size:.62rem;letter-spacing:.03em}
 .mode-btn.on{opacity:1;transform:scale(1);font-size:.64rem;font-weight:900;box-shadow:0 0 16px rgba(0,0,0,.35)}
-.mode-btn.on[data-mode="demo"]{background:linear-gradient(135deg,#FFB300,#FF6D00);color:#1a0d00;border-color:rgba(255,171,64,.7);
-  box-shadow:0 0 18px rgba(255,109,0,.35),inset 0 0 12px rgba(255,255,255,.12)}
-.mode-btn.on[data-mode="real"]{background:linear-gradient(135deg,#FFE082,#00E676 55%,#00C853);color:#04140a;border-color:rgba(255,215,0,.65);
-  box-shadow:0 0 20px rgba(0,230,118,.45),0 0 8px rgba(255,215,0,.35),inset 0 0 14px rgba(255,255,255,.18)}
+.mode-btn.on[data-mode="demo"]{background:linear-gradient(135deg,#FFB300,#FF6D00);color:#1a0d00;border-color:rgba(255,171,64,.55);
+  box-shadow:0 0 8px rgba(255,109,0,.16),inset 0 0 8px rgba(255,255,255,.09)}
+.mode-btn.on[data-mode="real"]{background:linear-gradient(135deg,#FFE082,#00E676 55%,#00C853);color:#04140a;border-color:rgba(255,215,0,.5);
+  box-shadow:0 0 9px rgba(0,230,118,.18),inset 0 0 9px rgba(255,255,255,.10)}
 .mode-btn:not(.on)[data-mode="demo"]{color:#c9a227}
 .mode-btn:not(.on)[data-mode="real"]{color:#6ee7a8}
 
@@ -11530,9 +11530,9 @@ html body #casinoModal .ap-stage .ap-row button{height:min(40px,4.7vh)!important
 html body #casinoModal .ap-stage .ap{gap:min(6px,.8vh)}
 
 /* v2734 (propriétaire) : le solde du Casino = la MÊME carte verte « Compte réel » que le trading (même argent partout) */
-html:root body #casinoModal .cs-wallet.real,html:root body #casinoModal.in-game .cs-wallet.real{border:1px solid rgba(60,245,166,.70)!important;
-  background:linear-gradient(180deg,rgba(34,212,127,.16),rgba(170,130,45,.10))!important;
-  box-shadow:inset 0 0 14px rgba(34,212,127,.14),0 0 18px rgba(34,212,127,.32)!important;padding:4px 5px 4px 14px!important}
+html:root body #casinoModal .cs-wallet.real,html:root body #casinoModal.in-game .cs-wallet.real{border:1px solid rgba(60,245,166,.42)!important;
+  background:linear-gradient(180deg,rgba(34,212,127,.12),rgba(170,130,45,.07))!important;
+  box-shadow:inset 0 0 9px rgba(34,212,127,.09),0 0 7px rgba(34,212,127,.13)!important;padding:4px 5px 4px 14px!important}
 html:root body #casinoModal .cs-wallet.real .cw-t small{color:#A7F3D0!important}
 html:root body #casinoModal .cs-wallet.real .cw-t b{color:#fff!important}
 html:root body #casinoModal .cs-wallet .cw-plus{width:32px;height:32px;border-radius:50%;color:#fff;background:linear-gradient(180deg,#34D399,#059669);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35),0 4px 10px -4px rgba(5,150,105,.9)}
@@ -13334,11 +13334,11 @@ html:root body #portalModal#portalModal.gh-home .portal-box > #topCard{display:n
 /* 2026-10-20 (propriétaire : « Compte réel trop petit en haut de Jeux / Paris / jeux ») : portefeuille plus large et plus grand.
    Salle de jeux et Paris (place libre) : large ; dans un jeu : il s'étire entre la flèche ‹ et les boutons livre / son, sans les toucher. */
 html:root body #casinoModal#casinoModal#casinoModal .cs-top{grid-template-columns:52px minmax(0,1fr) 52px!important;column-gap:6px!important}
-html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet{justify-self:center!important;width:100%!important;max-width:300px!important;min-width:0!important;margin-inline:auto!important;min-height:52px!important;height:auto!important;padding:5px 6px 5px 12px!important;gap:10px!important;justify-content:space-between!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet{justify-self:center!important;width:100%!important;max-width:270px!important;min-width:0!important;margin-inline:auto!important;min-height:44px!important;height:auto!important;padding:4px 6px 4px 12px!important;gap:9px!important;justify-content:space-between!important}
 html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t{flex:1 1 auto!important;min-width:0!important}
-html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t small{font-size:11px!important;letter-spacing:.08em!important}
-html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:21px!important;line-height:1.1!important;white-space:nowrap!important}
-html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-plus{width:38px!important;height:38px!important;min-width:38px!important;font-size:24px!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t small{font-size:9.5px!important;letter-spacing:.08em!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:17px!important;line-height:1.1!important;white-space:nowrap!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-top #csBal#csBal.cs-wallet .cw-plus{width:31px!important;height:31px!important;min-width:31px!important;font-size:20px!important}
 html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top{grid-template-columns:52px minmax(0,1fr) auto!important}
 html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet{justify-self:start!important;width:calc(100% - 8px)!important;max-width:250px!important;margin-inline:0 auto!important;min-height:48px!important}
 html:root body #casinoModal#casinoModal#casinoModal.in-game .cs-top #csBal#csBal.cs-wallet .cw-t b{font-size:18px!important}
