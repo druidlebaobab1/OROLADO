@@ -14174,3 +14174,5 @@ html body #liveModal#liveModal#liveModal > .modal-box.live-box{
     radial-gradient(1px 1px at 58% 88%,rgba(255,255,255,.2),transparent 60%),linear-gradient(180deg,#0E0C0A 0%,#0B0A08 100%)!important;
   background-color:#0B0A08!important;box-shadow:none!important}
 html body .oro-welcome .ow-dim.ow-dim{background:rgba(0,0,0,.72)!important}
+/* v3570 (propriétaire : « lueur jaune sur Mes discussions ») — carte sombre neutre, fin liseré gris. */
+html body #liveModal#liveModal #lhMsgs#lhMsgs{background:rgba(255,255,255,.045)!important;border-color:rgba(255,255,255,.12)!important;box-shadow:none!important}
