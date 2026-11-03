@@ -615,16 +615,16 @@
      walls / trees close to the track, far props), speed streaks and dust grow with the speed. Every sprite is pre-drawn once. */
   // a vertical wall along the track (lateral position lx, between depths z0 → z1, from height h0 to h1 in lane units),
   // textured with a sprite cut into a few vertical strips (cheap perspective, no per-pixel work)
-  function wallImg(c, V, img, lx, z0, z1, h0, h1, n) {
-    var iw = img.width, ih = img.height, F = 4.2;
-    z0 = Math.max(z0, -0.14);
+  function wallImg(c, V, img, lx, z0, z1, h0, h1, n, zMin) {
+    var iw = img.width, ih = img.height, F = 4.2, zc = zMin == null ? -0.14 : zMin, zr = z0;
+    z0 = Math.max(z0, zc);
     if (z1 <= z0) return;
     // strips evenly spaced on screen (in perspective P), each one an exact sheared slice of the texture: no stepping
     var P0 = V.P(z0), P1 = V.P(z1), lw = V.lw;
     for (var i = 0; i < n; i++) {
       var pa = P1 + (P0 - P1) * i / n, pb = P1 + (P0 - P1) * (i + 1) / n;          // far → near
       var za = (1 / pa - 1) / F, zb = (1 / pb - 1) / F;
-      var ua = (za - z0) / (z1 - z0) * iw, ub = (zb - z0) / (z1 - z0) * iw, sw = ua - ub;
+      var ua = (za - zr) / (z1 - zr) * iw, ub = (zb - zr) / (z1 - zr) * iw, sw = ua - ub;
       if (sw < 0.5) continue;
       var xa = V.W / 2 + lx * lw * pa, xb = V.W / 2 + lx * lw * pb, ya = V.hy + (V.ny - V.hy) * pa, yb = V.hy + (V.ny - V.hy) * pb;
       var ta = ya - h1 * lw * pa, tb = yb - h1 * lw * pb, hgt = (h1 - h0) * lw * (pa + pb) / 2;
@@ -632,6 +632,16 @@
       c.save(); c.transform((xa - xb) / sw, (ta - tb) / sw, 0, hgt / ih, xb, tb);
       c.drawImage(img, ub, 0, sw, ih, 0, 0, sw + 0.8, ih); c.restore();
     }
+  }
+  // v3586 (propriétaire, vidéo Tokyo Dash : « les maisons viennent en vitesse bizarre ») : tout près de la caméra une façade
+  // devenait un énorme chevron déformé. Les façades s'arrêtent juste avant le coureur (NEAR_Z) et le bord de l'écran est fermé
+  // par l'angle sombre de l'immeuble le plus proche (comme dans les vrais jeux de course).
+  var NEAR_Z = 0.06;
+  function nearCorner(c, V, lx, h, col) {
+    var p = V.P(NEAR_Z), x = V.SX(lx, NEAR_Z), yb = V.SY(NEAR_Z), yt = yb - h * V.lw * p, e = lx < 0 ? -2 : V.W + 2;
+    poly(c, [x, -2, x, yt, x, yb, x, V.H + 2, e, V.H + 2, e, -2], col);
+    var g = c.createLinearGradient(x, 0, e, 0); g.addColorStop(0, 'rgba(0,0,0,.05)'); g.addColorStop(1, 'rgba(0,0,0,.45)');
+    poly(c, [x, -2, x, V.H + 2, e, V.H + 2, e, -2], g);
   }
   function wallQuad(c, V, lx, z0, z1, h0, h1, fill) {
     z0 = Math.max(z0, -0.14);
@@ -1359,9 +1369,9 @@
       for (z = zMax - o, i = 0; z > -0.8; z -= S, i++) {
         var a = (k + i) % 2 ? w0.im : w1.im, b = (k + i) % 2 ? w1.im : w0.im;
         c.globalAlpha = clamp((zMax - z) / (S * 0.9), 0, 1);
-        wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 14); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 14);
+        wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 22, NEAR_Z); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 22, NEAR_Z);
       }
-      c.globalAlpha = 1;
+      c.globalAlpha = 1; nearCorner(c, V, -2.05, 4.0, '#3A2A24'); nearCorner(c, V, 2.05, 4.0, '#3A2A24');
     },
     ob: function (c, V, o, SP, t) {
       var tf = SUBI.tfront, ts = SUBI.tside, hu = SUBI.hurdle, du = SUBI.duck;
@@ -1436,9 +1446,9 @@
         for (z = zMax - off, i = 0; z > -0.8; z -= S, i++) {
           var a = (k + i) % 2 ? w0.im : w1.im, b = (k + i) % 2 ? w1.im : w0.im;
           c.globalAlpha = clamp((zMax - z) / (S * 0.9), 0, 1);
-          wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 14); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 14);
+          wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 22, NEAR_Z); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 22, NEAR_Z);
         }
-        c.globalAlpha = 1;
+        c.globalAlpha = 1; nearCorner(c, V, -2.05, 4.0, o.corner || '#2B2420'); nearCorner(c, V, 2.05, 4.0, o.corner || '#2B2420');
       },
       ob: function (c, V, ob, SP, t) {
         if (ob.k === 0) {
