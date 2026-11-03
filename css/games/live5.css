@@ -169,3 +169,10 @@ html:root body #casinoModal .cg-volcanolive .vo-seg.on{fill:#F59E0B}html:root bo
 html:root body #casinoModal .cg-volcanolive .vo-pw{fill:#FDE68A;font-size:15px}
 html:root body #casinoModal .cg-volcanolive .vo-cl,html:root body #casinoModal .cg-volcanolive .vo-cr{fill:#FDBA74;font-size:14px}
 html:root body #casinoModal .cg-volcanolive .vo-lb{fill:#E7E5E4;font-size:9px;letter-spacing:.04em}
+/* 2026-11-03 : Football Match Live + Sumo Live — 6 choix sur 2 rangées de 3 (noms lisibles), puces d'historique */
+html:root body #casinoModal .cg-live5 .l5-board.l5-b-footmatchlive,html:root body #casinoModal .cg-live5 .l5-board.l5-b-sumolive{grid-template-columns:repeat(3,minmax(0,1fr))}
+html:root body #casinoModal .cg-live5 .l5-b-footmatchlive button,html:root body #casinoModal .cg-live5 .l5-b-sumolive button{height:48px!important;flex-direction:row;flex-wrap:wrap;column-gap:5px}
+html:root body #casinoModal .cg-live5 .l5-b-footmatchlive button span,html:root body #casinoModal .cg-live5 .l5-b-sumolive button span{flex:1 1 100%;text-align:center}
+html:root body #casinoModal .cg-live5 .l5-b-footmatchlive i.tm,html:root body #casinoModal .cg-live5 .l5-b-sumolive i.tm{position:absolute;left:6px;top:6px;width:8px;height:8px;border-radius:3px}
+html:root body #casinoModal .cg-live5 .h-c.fmh0{background:#DC2626}html:root body #casinoModal .cg-live5 .h-c.fmh1{background:#2563EB}html:root body #casinoModal .cg-live5 .h-c.fmh2{background:#64748B}
+html:root body #casinoModal .cg-live5 .h-c.suh0{background:#DC2626}html:root body #casinoModal .cg-live5 .h-c.suh1{background:#2563EB}

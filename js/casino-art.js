@@ -969,7 +969,7 @@
     raindash:['#FDBA74','#7C2D12'], roadrace:['#FCA5A5','#7F1D1D'], rocketcave:['#FDE68A','#78350F'], rooftopninja:['#BAE6FD','#0C4A6E'], ropeswing:['#C4B5FD','#312E81'], seagull:['#86EFAC','#14532D'],
     sharkbay:['#93C5FD','#1E3A8A'], skatetricks:['#F9A8D4','#831843'], skislalom:['#A5B4FC','#312E81'], skyhopper:['#FDE047','#854D0E'], slicer:['#67E8F9','#155E75'], sniper:['#FCA5A5','#7C2D12'],
     snowcatch:['#FDBA74','#7C2D12'], snowdash:['#FCA5A5','#7F1D1D'], snowjump:['#FDE68A','#78350F'], spacedash:['#BAE6FD','#0C4A6E'], spacerun:['#C4B5FD','#312E81'], speedboat:['#86EFAC','#14532D'],
-    stack:['#93C5FD','#1E3A8A'], starbridge:['#F9A8D4','#831843'], starcatch:['#A5B4FC','#312E81'], subwaydash:['#FDE047','#854D0E'], tokyodash:['#F9A8D4','#831843'], pharaohrun:['#FDE68A','#78350F'], westshoot:['#FDBA74','#7C2D12'], bunkerbreach:['#BEF264','#3F6212'], surfrider:['#67E8F9','#155E75'], sushicatch:['#FCA5A5','#7C2D12'],
+    stack:['#93C5FD','#1E3A8A'], starbridge:['#F9A8D4','#831843'], starcatch:['#A5B4FC','#312E81'], subwaydash:['#FDE047','#854D0E'], tokyodash:['#F9A8D4','#831843'], pharaohrun:['#FDE68A','#78350F'], westshoot:['#FDBA74','#7C2D12'], bunkerbreach:['#BEF264','#3F6212'], footmatchlive:['#86EFAC','#14532D'], sumolive:['#FCA5A5','#7F1D1D'], surfrider:['#67E8F9','#155E75'], sushicatch:['#FCA5A5','#7C2D12'],
     tacocatch:['#FDBA74','#7C2D12'], tankbattle:['#FCA5A5','#7F1D1D'], tankrush:['#FDE68A','#78350F'], toxicrun:['#BAE6FD','#0C4A6E'], trenchdef:['#C4B5FD','#312E81'], ufoflight:['#86EFAC','#14532D'],
     veggiecatch:['#93C5FD','#1E3A8A'], zombiesiege:['#F9A8D4','#831843'],
     /* --- Casino (232) --- */

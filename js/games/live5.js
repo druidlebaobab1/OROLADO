@@ -1387,4 +1387,217 @@
       bnSet(c, fin ? c.l.power + ' ' + n + ' · ' + (Rt >= 3 ? c.l.right : c.l.left) : '', 'n0');
     }
   });
+
+  /* =============================================================== 2026-11-03 (propriétaire) : 2 NOUVEAUX LIVE ===============================
+     FOOTBALL MATCH LIVE : un match de 90 minutes montré en 30 s (horloge 0' → 90'), buts aux minutes tirées par le serveur,
+     tableau d'affichage, statistiques en direct (possession, tirs, tirs cadrés, corners) tirées de la graine du spectacle et
+     cohérentes avec le score. SUMO LIVE : Est contre Ouest sur le dohyo, salut, charge, poussées, puis sortie ou projection. */
+  var LX = {
+    en: { mt: 'Match in progress', ht: 'Half-time', ft: 'Full-time', over: 'Over 2.5', under: 'Under 2.5', btts: 'Both score', poss: 'Possession', shots: 'Shots', sot: 'On target', corn: 'Corners', home2: 'Lions', away2: 'Eagles',
+      bout: 'Bout in progress', east: 'East', west: 'West', push: 'Push-out', thr: 'Throw', quick: 'Quick bout', long: 'Long bout' },
+    fr: { mt: 'Match en cours', ht: 'Mi-temps', ft: 'Fin du match', over: 'Plus de 2,5', under: 'Moins de 2,5', btts: 'Les deux marquent', poss: 'Possession', shots: 'Tirs', sot: 'Cadrés', corn: 'Corners', home2: 'Lions', away2: 'Aigles',
+      bout: 'Combat en cours', east: 'Est', west: 'Ouest', push: 'Sortie', thr: 'Projection', quick: 'Combat court', long: 'Combat long' },
+    es: { mt: 'Partido en curso', ht: 'Descanso', ft: 'Final', over: 'Más de 2,5', under: 'Menos de 2,5', btts: 'Ambos marcan', poss: 'Posesión', shots: 'Tiros', sot: 'A puerta', corn: 'Córneres', home2: 'Leones', away2: 'Águilas',
+      bout: 'Combate en curso', east: 'Este', west: 'Oeste', push: 'Fuera', thr: 'Derribo', quick: 'Combate corto', long: 'Combate largo' },
+    pt: { mt: 'Jogo em andamento', ht: 'Intervalo', ft: 'Fim de jogo', over: 'Mais de 2,5', under: 'Menos de 2,5', btts: 'Ambos marcam', poss: 'Posse', shots: 'Chutes', sot: 'No alvo', corn: 'Escanteios', home2: 'Leões', away2: 'Águias',
+      bout: 'Luta em andamento', east: 'Leste', west: 'Oeste', push: 'Para fora', thr: 'Queda', quick: 'Luta curta', long: 'Luta longa' },
+    ar: { mt: 'المباراة جارية', ht: 'الاستراحة', ft: 'نهاية المباراة', over: 'أكثر من 2.5', under: 'أقل من 2.5', btts: 'كلاهما يسجل', poss: 'الاستحواذ', shots: 'التسديدات', sot: 'على المرمى', corn: 'الركنيات', home2: 'الأسود', away2: 'النسور',
+      bout: 'النزال جارٍ', east: 'الشرق', west: 'الغرب', push: 'دفع للخارج', thr: 'إسقاط', quick: 'نزال قصير', long: 'نزال طويل' },
+    tr: { mt: 'Maç sürüyor', ht: 'Devre arası', ft: 'Maç sonu', over: '2,5 üst', under: '2,5 alt', btts: 'Karşılıklı gol', poss: 'Topla oynama', shots: 'Şut', sot: 'İsabetli', corn: 'Korner', home2: 'Aslanlar', away2: 'Kartallar',
+      bout: 'Güreş sürüyor', east: 'Doğu', west: 'Batı', push: 'Dışarı itme', thr: 'Fırlatma', quick: 'Kısa güreş', long: 'Uzun güreş' },
+    vi: { mt: 'Trận đang diễn ra', ht: 'Nghỉ giữa hiệp', ft: 'Hết trận', over: 'Tài 2,5', under: 'Xỉu 2,5', btts: 'Cả hai ghi bàn', poss: 'Kiểm soát bóng', shots: 'Sút', sot: 'Trúng đích', corn: 'Phạt góc', home2: 'Sư Tử', away2: 'Đại Bàng',
+      bout: 'Trận đấu đang diễn ra', east: 'Đông', west: 'Tây', push: 'Đẩy ra', thr: 'Quật ngã', quick: 'Trận ngắn', long: 'Trận dài' },
+    id: { mt: 'Pertandingan berlangsung', ht: 'Turun minum', ft: 'Selesai', over: 'Di atas 2,5', under: 'Di bawah 2,5', btts: 'Keduanya cetak gol', poss: 'Penguasaan', shots: 'Tembakan', sot: 'Tepat sasaran', corn: 'Sepak pojok', home2: 'Singa', away2: 'Elang',
+      bout: 'Pertarungan berlangsung', east: 'Timur', west: 'Barat', push: 'Dorong keluar', thr: 'Bantingan', quick: 'Laga singkat', long: 'Laga panjang' },
+    ru: { mt: 'Матч идёт', ht: 'Перерыв', ft: 'Конец матча', over: 'Больше 2,5', under: 'Меньше 2,5', btts: 'Обе забьют', poss: 'Владение', shots: 'Удары', sot: 'В створ', corn: 'Угловые', home2: 'Львы', away2: 'Орлы',
+      bout: 'Схватка идёт', east: 'Восток', west: 'Запад', push: 'Вытолкнул', thr: 'Бросок', quick: 'Короткая', long: 'Долгая' },
+    de: { mt: 'Spiel läuft', ht: 'Halbzeit', ft: 'Abpfiff', over: 'Über 2,5', under: 'Unter 2,5', btts: 'Beide treffen', poss: 'Ballbesitz', shots: 'Schüsse', sot: 'Aufs Tor', corn: 'Ecken', home2: 'Löwen', away2: 'Adler',
+      bout: 'Kampf läuft', east: 'Ost', west: 'West', push: 'Hinausdrücken', thr: 'Wurf', quick: 'Kurzer Kampf', long: 'Langer Kampf' },
+    hi: { mt: 'मैच जारी है', ht: 'हाफ़-टाइम', ft: 'मैच खत्म', over: '2.5 से ज़्यादा', under: '2.5 से कम', btts: 'दोनों गोल करें', poss: 'कब्ज़ा', shots: 'शॉट', sot: 'निशाने पर', corn: 'कॉर्नर', home2: 'शेर', away2: 'बाज़',
+      bout: 'मुक़ाबला जारी', east: 'पूर्व', west: 'पश्चिम', push: 'बाहर धकेला', thr: 'पटखनी', quick: 'छोटा मुक़ाबला', long: 'लंबा मुक़ाबला' },
+    zh: { mt: '比赛进行中', ht: '中场', ft: '全场结束', over: '大于 2.5', under: '小于 2.5', btts: '双方进球', poss: '控球率', shots: '射门', sot: '射正', corn: '角球', home2: '雄狮', away2: '雄鹰',
+      bout: '比赛进行中', east: '东方', west: '西方', push: '推出', thr: '摔倒', quick: '速胜', long: '持久战' }
+  };
+  Object.keys(LX).forEach(function (lg) { if (T[lg]) Object.assign(T[lg], LX[lg]); });
+
+  /* ------------------------------------------------------------- Football Match ------------------------------------------------------------- */
+  var FM_0 = 1.2, FM_D = 30; // coup d'envoi après 1,2 s, 90 minutes en 30 s
+  function fmMin(e) { return Math.max(0, Math.min(90, Math.floor((e - FM_0) / FM_D * 90))); }
+  function fmStats(res) { // statistiques de fin de match, tirées de la graine et cohérentes avec le score
+    var s = +res.s || 0, h = +res.h, a = +res.a, ph = Math.round(42 + hs(s, 1) * 18 + (h - a) * 2);
+    ph = Math.max(34, Math.min(68, ph));
+    var sh = h + 4 + Math.floor(hs(s, 2) * 9), sa2 = a + 3 + Math.floor(hs(s, 3) * 8);
+    return { ph: ph, sh: [sh, sa2], sot: [h + Math.floor(hs(s, 4) * Math.max(1, sh - h) * .45), a + Math.floor(hs(s, 5) * Math.max(1, sa2 - a) * .45)], co: [1 + Math.floor(hs(s, 6) * 8), 1 + Math.floor(hs(s, 7) * 7)] };
+  }
+  function fmPlayer(col, dark, num) {
+    return '<ellipse cx="0" cy="7.5" rx="5.5" ry="1.8" fill="#000" opacity=".25"/><path d="M-3 3L-3.4 7.5M3 3L3.4 7.5" stroke="' + dark + '" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<rect x="-4.6" y="-4.5" width="9.2" height="8.5" rx="2.6" fill="' + col + '" stroke="' + dark + '" stroke-width=".7"/><circle cy="-7.6" r="3.3" fill="#F2C9A0"/><path d="M-3.3-8.4a3.3 3.3 0 0 1 6.6 0z" fill="#3B2A1F"/>' +
+      '<text y="1.6" text-anchor="middle" font-size="5" font-weight="900" fill="#fff">' + num + '</text>';
+  }
+  live('footmatchlive', {
+    lab: 'mt', bev: 'tick', show: function () { return FM_0 + FM_D + 4.2; },
+    odds0: { h: 2.04, d: 3.45, a: 3.00, o25: 1.87, u25: 1.73, btts: 1.72 },
+    beat: function (e) { return e < FM_0 ? 0 : e > FM_0 + FM_D ? -1 : 1 + Math.floor((e - FM_0) / 1.5); },
+    rules: rules(160, { h: 2.04, d: 3.45, a: 3.00, o25: 1.87, u25: 1.73, btts: 1.72 }, {
+      en: ['A full football match, Lions (home) against Eagles (away), shown in 30 seconds. Bet on the result: Home 1 ({h}), Draw X ({d}) or Away 2 ({a}); on the goals: Over 2.5 ({o25}) or Under 2.5 ({u25}); or on Both teams to score ({btts}).', 'The goals of each team are drawn at random (on average 1.45 for the home side and 1.15 for the away side, at most 6 each), the minute of each goal too. Live stats (possession, shots, corners) follow the match.'],
+      fr: ['Un vrai match de foot, Lions (domicile) contre Aigles (extérieur), montré en 30 secondes. Parie sur le résultat : Domicile 1 ({h}), Nul X ({d}) ou Extérieur 2 ({a}) ; sur les buts : Plus de 2,5 ({o25}) ou Moins de 2,5 ({u25}) ; ou sur Les deux équipes marquent ({btts}).', 'Les buts de chaque équipe sont tirés au hasard (en moyenne 1,45 pour le domicile et 1,15 pour l’extérieur, 6 au plus chacun), la minute de chaque but aussi. Les statistiques en direct (possession, tirs, corners) suivent le match.'],
+      es: ['Un partido completo, Leones (local) contra Águilas (visitante), mostrado en 30 segundos. Apuesta al resultado: Local 1 ({h}), Empate X ({d}) o Visitante 2 ({a}); a los goles: Más de 2,5 ({o25}) o Menos de 2,5 ({u25}); o a que Ambos marcan ({btts}).', 'Los goles de cada equipo se sortean (media 1,45 local y 1,15 visitante, máximo 6 cada uno), también el minuto de cada gol. Las estadísticas en vivo (posesión, tiros, córneres) siguen el partido.'],
+      pt: ['Um jogo completo, Leões (casa) contra Águias (fora), mostrado em 30 segundos. Aposte no resultado: Casa 1 ({h}), Empate X ({d}) ou Fora 2 ({a}); nos gols: Mais de 2,5 ({o25}) ou Menos de 2,5 ({u25}); ou em Ambos marcam ({btts}).', 'Os gols de cada time são sorteados (média 1,45 em casa e 1,15 fora, no máximo 6 cada), o minuto de cada gol também. As estatísticas ao vivo (posse, chutes, escanteios) acompanham o jogo.'],
+      ar: ['مباراة كرة قدم كاملة، الأسود (أرض) ضد النسور (ضيف)، تُعرض في 30 ثانية. راهن على النتيجة: الأرض 1 ‏({h})، تعادل X ‏({d})، الضيف 2 ‏({a})؛ أو على الأهداف: أكثر من 2.5 ‏({o25}) أو أقل من 2.5 ‏({u25})؛ أو على تسجيل الفريقين ({btts}).', 'تُسحب أهداف كل فريق عشوائيًا (بمعدل 1.45 للأرض و1.15 للضيف، 6 كحد أقصى لكل فريق)، وكذلك دقيقة كل هدف. الإحصاءات المباشرة (الاستحواذ، التسديدات، الركنيات) تتبع المباراة.'],
+      tr: ['Tam bir futbol maçı, Aslanlar (ev sahibi) Kartallar’a (deplasman) karşı, 30 saniyede gösterilir. Sonuca oyna: Ev 1 ({h}), Beraberlik X ({d}) veya Deplasman 2 ({a}); gollere: 2,5 üst ({o25}) veya 2,5 alt ({u25}); ya da Karşılıklı gol ({btts}).', 'Her takımın golleri rastgele çekilir (ortalama ev 1,45, deplasman 1,15, her biri en fazla 6), her golün dakikası da. Canlı istatistikler (topla oynama, şut, korner) maçı izler.'],
+      vi: ['Một trận bóng đá trọn vẹn, Sư Tử (chủ nhà) gặp Đại Bàng (đội khách), chiếu trong 30 giây. Cược kết quả: Chủ nhà 1 ({h}), Hòa X ({d}) hoặc Khách 2 ({a}); cược bàn thắng: Tài 2,5 ({o25}) hoặc Xỉu 2,5 ({u25}); hoặc Cả hai ghi bàn ({btts}).', 'Số bàn của mỗi đội được rút ngẫu nhiên (trung bình 1,45 cho chủ nhà và 1,15 cho đội khách, tối đa 6 mỗi đội), phút ghi bàn cũng vậy. Thống kê trực tiếp (kiểm soát bóng, sút, phạt góc) đi theo trận đấu.'],
+      id: ['Pertandingan sepak bola penuh, Singa (tuan rumah) melawan Elang (tamu), ditayangkan dalam 30 detik. Pasang hasilnya: Tuan rumah 1 ({h}), Seri X ({d}) atau Tamu 2 ({a}); jumlah gol: Di atas 2,5 ({o25}) atau Di bawah 2,5 ({u25}); atau Keduanya cetak gol ({btts}).', 'Gol tiap tim diundi acak (rata-rata 1,45 tuan rumah dan 1,15 tamu, maksimal 6 masing-masing), menit tiap gol juga. Statistik langsung (penguasaan, tembakan, sepak pojok) mengikuti laga.'],
+      ru: ['Полный футбольный матч, Львы (хозяева) против Орлов (гости), за 30 секунд. Ставьте на исход: Хозяева 1 ({h}), Ничья X ({d}) или Гости 2 ({a}); на голы: Больше 2,5 ({o25}) или Меньше 2,5 ({u25}); или на «Обе забьют» ({btts}).', 'Голы каждой команды разыгрываются случайно (в среднем 1,45 у хозяев и 1,15 у гостей, не больше 6 у каждой), минута каждого гола тоже. Живая статистика (владение, удары, угловые) следует за матчем.'],
+      de: ['Ein ganzes Fußballspiel, Löwen (Heim) gegen Adler (Gast), in 30 Sekunden gezeigt. Setze auf das Ergebnis: Heim 1 ({h}), Remis X ({d}) oder Gast 2 ({a}); auf die Tore: Über 2,5 ({o25}) oder Unter 2,5 ({u25}); oder auf Beide treffen ({btts}).', 'Die Tore jedes Teams werden zufällig gezogen (im Schnitt 1,45 Heim und 1,15 Gast, höchstens 6 je Team), auch die Minute jedes Tores. Die Live-Statistik (Ballbesitz, Schüsse, Ecken) folgt dem Spiel.'],
+      hi: ['एक पूरा फ़ुटबॉल मैच, शेर (घरेलू) बनाम बाज़ (मेहमान), 30 सेकंड में। नतीजे पर दांव लगाएँ: घरेलू 1 ({h}), ड्रॉ X ({d}) या मेहमान 2 ({a}); गोलों पर: 2.5 से ज़्यादा ({o25}) या 2.5 से कम ({u25}); या दोनों टीमें गोल करें ({btts})।', 'हर टीम के गोल बेतरतीब निकलते हैं (औसतन घरेलू 1.45 और मेहमान 1.15, हर टीम के ज़्यादा से ज़्यादा 6), हर गोल का मिनट भी। लाइव आँकड़े (कब्ज़ा, शॉट, कॉर्नर) मैच के साथ चलते हैं।'],
+      zh: ['一场完整的足球比赛，雄狮（主队）对雄鹰（客队），30 秒内播完。押赛果：主胜 1（{h}）、平局 X（{d}）或客胜 2（{a}）；押进球：大于 2.5（{o25}）或小于 2.5（{u25}）；或押双方进球（{btts}）。', '每队进球数随机抽取（主队平均 1.45、客队平均 1.15，每队最多 6 球），每个进球的分钟也随机。实时数据（控球率、射门、角球）随比赛更新。']
+    }),
+    scene: function (uid, l) {
+      var h = '<defs>' + lgd('fmG' + uid, '#16A34A', '#15803D', 1) + '</defs><rect x="-300" y="-300" width="960" height="830" fill="#0B3B1E"/>';
+      for (var k = 0; k < 10; k++) h += '<rect x="' + (14 + k * 33.2).toFixed(1) + '" y="34" width="16.6" height="150" fill="#22C55E" opacity=".18"/>';
+      h += '<rect x="14" y="34" width="332" height="150" fill="none" stroke="#F0FDF4" stroke-opacity=".85" stroke-width="1.6"/><path d="M180 34V184" stroke="#F0FDF4" stroke-opacity=".85" stroke-width="1.4"/>' +
+        '<circle cx="180" cy="109" r="22" fill="none" stroke="#F0FDF4" stroke-opacity=".85" stroke-width="1.4"/><circle cx="180" cy="109" r="1.8" fill="#F0FDF4"/>' +
+        '<rect x="14" y="74" width="40" height="70" fill="none" stroke="#F0FDF4" stroke-opacity=".85" stroke-width="1.4"/><rect x="306" y="74" width="40" height="70" fill="none" stroke="#F0FDF4" stroke-opacity=".85" stroke-width="1.4"/>' +
+        '<rect x="6" y="96" width="8" height="26" fill="#F8FAFC" opacity=".9"/><rect x="346" y="96" width="8" height="26" fill="#F8FAFC" opacity=".9"/>' +
+        '<path d="M6 96h8M6 122h8M346 96h8M346 122h8" stroke="#94A3B8" stroke-width=".6"/>';
+      // tableau d'affichage
+      h += '<g class="fm-sb"><rect x="96" y="4" width="168" height="26" rx="8" fill="rgba(2,6,23,.88)" stroke="rgba(255,255,255,.18)"/>' +
+        '<rect x="102" y="10" width="7" height="14" rx="2" fill="#DC2626"/><text class="fm-hn" x="113" y="21.5" font-size="9.5" font-weight="800" fill="#fff"></text>' +
+        '<rect x="251" y="10" width="7" height="14" rx="2" fill="#2563EB"/><text class="fm-an" x="247" y="21.5" text-anchor="end" font-size="9.5" font-weight="800" fill="#fff"></text>' +
+        '<text class="fm-sc" x="180" y="22" text-anchor="middle" font-size="13" font-weight="900" fill="#FDE68A">0 – 0</text></g>' +
+        '<g><rect x="290" y="7" width="44" height="20" rx="6" fill="rgba(2,6,23,.8)"/><text class="fm-mn" x="312" y="21" text-anchor="middle" font-size="10.5" font-weight="900" fill="#4ADE80">0\'</text></g>';
+      // joueurs (5 + 5) et ballon
+      for (var i = 0; i < 5; i++) h += '<g class="fm-p fm-h">' + fmPlayer('#DC2626', '#7F1D1D', [1, 4, 7, 9, 10][i]) + '</g>';
+      for (i = 0; i < 5; i++) h += '<g class="fm-p fm-a">' + fmPlayer('#2563EB', '#1E3A8A', [1, 3, 6, 8, 11][i]) + '</g>';
+      h += '<g class="fm-ball"><ellipse cx="0" cy="3.4" rx="3" ry="1" fill="#000" opacity=".3"/><circle r="3" fill="#fff" stroke="#111" stroke-width=".6"/><path d="M-1.2-1h2.4l.7 1.6-1.9 1.3-1.9-1.3z" fill="#111"/></g>';
+      // statistiques en direct
+      h += '<g class="fm-st" transform="translate(0 190)"><rect x="14" y="0" width="332" height="36" rx="8" fill="rgba(2,6,23,.78)"/>';
+      ['poss', 'shots', 'sot', 'corn'].forEach(function (k2, j) { var x = 56 + j * 83; h += '<text class="fm-sv' + j + '" x="' + x + '" y="15" text-anchor="middle" font-size="10" font-weight="900" fill="#fff">–</text><text class="fm-sl' + j + '" x="' + x + '" y="29" text-anchor="middle" font-size="7.5" font-weight="700" fill="#94A3B8"></text>'; });
+      h += '</g><g class="fm-goal" opacity="0" transform="translate(180 108)"><rect x="-58" y="-18" width="116" height="34" rx="12" fill="#FACC15"/><text y="7" text-anchor="middle" font-size="18" font-weight="900" fill="#1A1205"></text></g>';
+      return h + banner(110);
+    },
+    board: function (uid, l, oddTxt, o) {
+      return btn('h', '<i class="tm" style="background:#DC2626"></i>' + lab('1 · ' + l.home2) + odd('h', oddTxt, o), 'fm-b') + btn('d', lab('X · ' + l.draw) + odd('d', oddTxt, o), 'fm-b') +
+        btn('a', '<i class="tm" style="background:#2563EB"></i>' + lab('2 · ' + l.away2) + odd('a', oddTxt, o), 'fm-b') +
+        btn('o25', lab(l.over) + odd('o25', oddTxt, o), 'fm-b') + btn('u25', lab(l.under) + odd('u25', oddTxt, o), 'fm-b') + btn('btts', lab(l.btts) + odd('btts', oddTxt, o), 'fm-b');
+    },
+    hist: function (n) { return chipS(Math.floor(n / 10) + '-' + (n % 10), 'fmh' + (Math.floor(n / 10) > n % 10 ? 0 : Math.floor(n / 10) < n % 10 ? 1 : 2)); },
+    wins: function (res) { var h = +res.h, a = +res.a, w = [h > a ? 'h' : h === a ? 'd' : 'a', h + a >= 3 ? 'o25' : 'u25']; if (h > 0 && a > 0) w.push('btts'); return w; },
+    init: function (c) {
+      c.fp = [].slice.call(c.box.querySelectorAll('.fm-p')); c.fb = c.q('.fm-ball'); c.fsc = c.q('.fm-sc'); c.fmn = c.q('.fm-mn'); c.fg = c.q('.fm-goal'); c.fgt = c.fg.querySelector('text');
+      txt(c.q('.fm-hn'), c.l.home2, 60); txt(c.q('.fm-an'), c.l.away2, 60);
+      c.fsv = [0, 1, 2, 3].map(function (j) { return c.q('.fm-sv' + j); });
+      ['poss', 'shots', 'sot', 'corn'].forEach(function (k, j) { txt(c.q('.fm-sl' + j), c.l[k], 76); });
+      bnInit(c);
+    },
+    frame: function (c, R, t, e, res) {
+      var run = !!res && e >= FM_0, s = res ? +res.s || 0 : 0, mn = run ? fmMin(e) : 0, G = res ? (res.g || []) : [], gh = 0, ga = 0, last = null;
+      G.forEach(function (g) { if (run && +g[0] <= mn) { if (+g[1]) ga++; else gh++; last = g; } });
+      // ballon : suit une trajectoire tirée de la graine ; juste avant un but il file dans le bon but
+      var bx = 180, by = 109, tt = run ? (e - FM_0) : t * .3;
+      bx = 180 + Math.sin(tt * .9 + hs(s, 11) * 6) * 118 + Math.sin(tt * 2.3 + hs(s, 12) * 6) * 24;
+      by = 109 + Math.sin(tt * 1.3 + hs(s, 13) * 6) * 52;
+      var next = null; G.forEach(function (g) { if (!next && run && +g[0] > mn - 1 && +g[0] <= mn + 3) next = g; });
+      if (next) { var k = cl01(1 - ((+next[0] - (e - FM_0) / FM_D * 90) / 3)); bx += ((+next[1] ? 22 : 338) - bx) * eio(k); by += (109 - by) * eio(k); }
+      if (res && e >= FM_0 + FM_D) { bx = 180; by = 109; }
+      sa(c.fb, 'transform', 'translate(' + bx.toFixed(1) + ' ' + by.toFixed(1) + ')');
+      c.fp.forEach(function (p, i) { // les joueurs se placent autour du ballon, chacun dans sa zone
+        var home = i < 5, j = i % 5, zx = home ? [40, 100, 150, 200, 240][j] : [320, 260, 210, 160, 120][j], zy = [109, 70, 150, 90, 130][j];
+        var x = zx + (bx - zx) * (j === 0 ? .12 : .38) + Math.sin(tt * 1.7 + i) * 6, y = zy + (by - zy) * (j === 0 ? .3 : .42) + Math.cos(tt * 1.4 + i) * 5;
+        sa(p, 'transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') scale(1.15)');
+      });
+      txt(c.fsc, gh + ' – ' + ga); txt(c.fmn, (res && e >= FM_0 + FM_D ? 90 : mn) + "'");
+      var st = res ? fmStats(res) : null, k2 = res ? cl01((e - FM_0) / FM_D) : 0;
+      if (st) {
+        var poss = Math.round(50 + (st.ph - 50) * Math.min(1, k2 * 3)), cur = function (v) { return Math.round(v * k2); };
+        var shH = Math.max(gh, cur(st.sh[0])), shA = Math.max(ga, cur(st.sh[1])), soH = Math.max(gh, Math.min(shH, cur(st.sot[0]))), soA = Math.max(ga, Math.min(shA, cur(st.sot[1])));
+        [poss + '% · ' + (100 - poss) + '%', shH + ' · ' + shA, soH + ' · ' + soA, cur(st.co[0]) + ' · ' + cur(st.co[1])].forEach(function (v, j) { txt(c.fsv[j], v, 78); });
+      } else c.fsv.forEach(function (x) { txt(x, '–'); });
+      var gl = last && run && (e - FM_0) / FM_D * 90 - +last[0] < 4.5 && e < FM_0 + FM_D;
+      sa(c.fg, 'opacity', gl ? '1' : '0'); if (gl) txt(c.fgt, c.l.goal, 100);
+      if (!res) { if (!bnCd(c, R, t, e)) bnSet(c, ''); return; }
+      var fin = e >= FM_0 + FM_D + .4;
+      bnSet(c, fin ? c.l.ft + ' · ' + gh + ' – ' + ga : (e < FM_0 ? '⚽' : ''), 'n0');
+    }
+  });
+
+  /* ------------------------------------------------------------- Sumo ------------------------------------------------------------- */
+  var SU_0 = 2.2; // salut + accroupis, puis la charge
+  function suDur(res) { return +res.q === 1 ? 3.2 + hs(+res.s || 0, 21) * 2.6 : 7.5 + hs(+res.s || 0, 22) * 5; }
+  function sumoSvg(col, belt, side) {
+    // gros lutteur de profil, regardant vers la droite (on le retourne pour l'Ouest)
+    return '<g class="su-in"><ellipse cx="0" cy="2" rx="26" ry="5" fill="#000" opacity=".25"/>' +
+      '<path d="M-14 0V-20M10 0V-20" stroke="#E8B48C" stroke-width="13" stroke-linecap="round"/>' +
+      '<ellipse cx="-2" cy="-40" rx="27" ry="26" fill="#EFC29A"/><ellipse cx="6" cy="-38" rx="18" ry="20" fill="#F6D3B0" opacity=".7"/>' +
+      '<path d="M-28-26Q-2-16 24-26L22-16Q-2-8-26-16Z" fill="' + belt + '"/><path d="M-6-20v18M-1-20v18" stroke="' + belt + '" stroke-width="4"/>' +
+      '<path d="M14-52Q34-50 36-38" stroke="#EFC29A" stroke-width="11" stroke-linecap="round" fill="none"/>' +
+      '<circle cx="8" cy="-72" r="13" fill="#EFC29A"/><path d="M-5-74a13 13 0 0 1 26-2Q14-82 6-80Q-1-79-5-74Z" fill="#111827"/><ellipse cx="2" cy="-86" rx="5" ry="3.6" fill="#111827"/>' +
+      '<circle cx="15" cy="-73" r="1.3" fill="#111"/><path d="M14-66q3 1 5-1" stroke="#7C2D12" stroke-width="1.2" fill="none"/>' +
+      '<rect x="-6" y="-22" width="16" height="4" rx="2" fill="' + col + '" opacity=".9"/></g>';
+  }
+  live('sumolive', {
+    lab: 'bout', bev: 'act', show: function (res) { return SU_0 + suDur(res) + 3.4; },
+    odds0: { e: 1.73, w: 1.87, push: 1.5, throw: 2.25, quick: 3, long: 1.28 },
+    beat: function (e, res) { return e < SU_0 ? 0 : e > SU_0 + suDur(res) ? -1 : 1 + Math.floor((e - SU_0) / .45); },
+    rules: rules(145, { e: 1.73, w: 1.87, push: 1.5, throw: 2.25, quick: 3, long: 1.28 }, {
+      en: ['Two sumo wrestlers, East and West, face each other in the ring. Bet on the winner: East ({e}) or West ({w}); on how he wins: Push-out ({push}) or Throw ({throw}); or on the length: Quick bout ({quick}) or Long bout ({long}).', 'East wins 52 times out of 100, West 48; 60 % of bouts end with a push out of the ring, 40 % with a throw; 30 % are quick (6 seconds or less). Each is drawn on its own.'],
+      fr: ['Deux lutteurs de sumo, Est et Ouest, s’affrontent sur le cercle. Parie sur le vainqueur : Est ({e}) ou Ouest ({w}) ; sur sa façon de gagner : Sortie du cercle ({push}) ou Projection ({throw}) ; ou sur la durée : Combat court ({quick}) ou Combat long ({long}).', 'L’Est gagne 52 fois sur 100, l’Ouest 48 ; 60 % des combats finissent par une sortie du cercle, 40 % par une projection ; 30 % sont courts (6 secondes ou moins). Chaque tirage est indépendant.'],
+      es: ['Dos luchadores de sumo, Este y Oeste, se enfrentan en el círculo. Apuesta al ganador: Este ({e}) u Oeste ({w}); a cómo gana: Fuera del círculo ({push}) o Derribo ({throw}); o a la duración: Combate corto ({quick}) o largo ({long}).', 'El Este gana 52 de cada 100, el Oeste 48; el 60 % termina sacando al rival del círculo y el 40 % con un derribo; el 30 % son cortos (6 segundos o menos). Cada sorteo es independiente.'],
+      pt: ['Dois lutadores de sumô, Leste e Oeste, se enfrentam no círculo. Aposte no vencedor: Leste ({e}) ou Oeste ({w}); em como vence: Para fora ({push}) ou Queda ({throw}); ou na duração: Luta curta ({quick}) ou longa ({long}).', 'O Leste vence 52 vezes em 100, o Oeste 48; 60 % das lutas acabam empurrando o rival para fora, 40 % com uma queda; 30 % são curtas (6 segundos ou menos). Cada sorteio é independente.'],
+      ar: ['مصارعا سومو، الشرق والغرب، يتواجهان في الحلبة. راهن على الفائز: الشرق ({e}) أو الغرب ({w})؛ أو على طريقة الفوز: الدفع للخارج ({push}) أو الإسقاط ({throw})؛ أو على المدة: نزال قصير ({quick}) أو طويل ({long}).', 'يفوز الشرق 52 مرة من 100 والغرب 48؛ 60 % من النزالات تنتهي بالدفع خارج الحلبة و40 % بالإسقاط؛ 30 % قصيرة (6 ثوانٍ أو أقل). كل سحب مستقل.'],
+      tr: ['Doğu ve Batı, iki sumo güreşçisi halkada karşılaşır. Kazanana oyna: Doğu ({e}) veya Batı ({w}); nasıl kazanacağına: Dışarı itme ({push}) veya Fırlatma ({throw}); ya da süreye: Kısa ({quick}) veya Uzun güreş ({long}).', 'Doğu 100’de 52, Batı 48 kez kazanır; güreşlerin %60’ı halkadan itmeyle, %40’ı fırlatmayla biter; %30’u kısadır (6 saniye veya daha az). Her çekiliş bağımsızdır.'],
+      vi: ['Hai đô vật sumo, Đông và Tây, đối đầu trên võ đài. Cược người thắng: Đông ({e}) hoặc Tây ({w}); cách thắng: Đẩy ra ({push}) hoặc Quật ngã ({throw}); hoặc độ dài: Trận ngắn ({quick}) hay Trận dài ({long}).', 'Đông thắng 52 lần trên 100, Tây 48; 60 % trận kết thúc bằng đẩy ra khỏi võ đài, 40 % bằng quật ngã; 30 % là trận ngắn (6 giây trở xuống). Mỗi lần rút là độc lập.'],
+      id: ['Dua pegulat sumo, Timur dan Barat, berhadapan di ring. Pasang pemenang: Timur ({e}) atau Barat ({w}); cara menang: Dorong keluar ({push}) atau Bantingan ({throw}); atau lamanya: Laga singkat ({quick}) atau panjang ({long}).', 'Timur menang 52 dari 100 kali, Barat 48; 60 % laga berakhir dengan dorongan keluar ring, 40 % dengan bantingan; 30 % singkat (6 detik atau kurang). Tiap undian berdiri sendiri.'],
+      ru: ['Два сумоиста, Восток и Запад, сходятся на помосте. Ставьте на победителя: Восток ({e}) или Запад ({w}); на способ: Вытолкнул ({push}) или Бросок ({throw}); или на длительность: Короткая ({quick}) или Долгая ({long}).', 'Восток побеждает в 52 случаях из 100, Запад — в 48; 60 % схваток заканчиваются выталкиванием, 40 % — броском; 30 % короткие (6 секунд и меньше). Каждый розыгрыш независим.'],
+      de: ['Zwei Sumo-Ringer, Ost und West, treffen im Ring aufeinander. Setze auf den Sieger: Ost ({e}) oder West ({w}); auf die Art: Hinausdrücken ({push}) oder Wurf ({throw}); oder auf die Dauer: Kurzer ({quick}) oder Langer Kampf ({long}).', 'Ost gewinnt 52-mal von 100, West 48; 60 % der Kämpfe enden mit Hinausdrücken, 40 % mit einem Wurf; 30 % sind kurz (6 Sekunden oder weniger). Jede Ziehung ist unabhängig.'],
+      hi: ['दो सूमो पहलवान, पूर्व और पश्चिम, अखाड़े में आमने-सामने। विजेता पर दांव लगाएँ: पूर्व ({e}) या पश्चिम ({w}); जीत के तरीके पर: बाहर धकेला ({push}) या पटखनी ({throw}); या अवधि पर: छोटा ({quick}) या लंबा मुक़ाबला ({long})।', 'पूर्व 100 में 52 बार जीतता है, पश्चिम 48; 60 % मुक़ाबले बाहर धकेलने से और 40 % पटखनी से खत्म होते हैं; 30 % छोटे होते हैं (6 सेकंड या कम)। हर ड्रॉ अलग है।'],
+      zh: ['两位相扑力士，东方与西方，在土俵上对决。押胜者：东方（{e}）或西方（{w}）；押取胜方式：推出（{push}）或摔倒（{throw}）；或押时长：速胜（{quick}）或持久战（{long}）。', '东方 100 次胜 52 次，西方 48 次；60% 的比赛以推出土俵结束，40% 以摔倒结束；30% 为速胜（6 秒或更短）。每项抽取相互独立。']
+    }),
+    scene: function (uid, l) {
+      var h = '<defs><radialGradient id="suR' + uid + '" cx="50%" cy="40%" r="70%"><stop offset="0" stop-color="#E7C493"/><stop offset="1" stop-color="#B98A55"/></radialGradient>' + lgd('suW' + uid, '#3B1F14', '#1C0F0A', 1) + '</defs>' +
+        '<rect x="-300" y="-300" width="960" height="830" fill="url(#suW' + uid + ')"/>';
+      for (var k = 0; k < 2; k++) for (var q = 0; q < 40; q++) h += '<circle cx="' + (q * 9 + k * 4.5) + '" cy="' + (60 + k * 12) + '" r="3.2" fill="' + ['#FDE68A', '#F8FAFC', '#FCA5A5', '#93C5FD'][(q + k) % 4] + '" opacity=".22"/>';
+      h += '<path d="M60 30h240l-12 16H72z" fill="#7F1D1D"/><path d="M60 30h240" stroke="#FDE68A" stroke-width="2"/>' + // toit suspendu
+        '<rect x="-300" y="150" width="960" height="400" fill="#2B1810"/><path d="M20 210L52 150H308L340 210Z" fill="#C79A63"/><ellipse cx="180" cy="168" rx="122" ry="22" fill="url(#suR' + uid + ')"/>' +
+        '<ellipse cx="180" cy="168" rx="104" ry="18" fill="none" stroke="#F5F0E6" stroke-width="2.4"/><path d="M168 168h-6M192 168h6" stroke="#F5F0E6" stroke-width="2"/>' +
+        '<g class="su su-e">' + sumoSvg('#DC2626', '#1E3A8A') + '</g><g class="su su-w">' + sumoSvg('#2563EB', '#7C2D12') + '</g>' +
+        '<g class="su-tags"><rect x="22" y="8" width="70" height="20" rx="10" fill="rgba(2,6,23,.75)"/><circle cx="34" cy="18" r="5" fill="#DC2626"/><text class="su-te" x="43" y="22" font-size="9" font-weight="800" fill="#fff"></text>' +
+        '<rect x="268" y="8" width="70" height="20" rx="10" fill="rgba(2,6,23,.75)"/><circle cx="326" cy="18" r="5" fill="#2563EB"/><text class="su-tw" x="317" y="22" text-anchor="end" font-size="9" font-weight="800" fill="#fff"></text></g>';
+      return h + banner(104);
+    },
+    board: function (uid, l, oddTxt, o) {
+      return btn('e', '<i class="tm" style="background:#DC2626"></i>' + lab(l.east) + odd('e', oddTxt, o), 'su-b') + btn('w', '<i class="tm" style="background:#2563EB"></i>' + lab(l.west) + odd('w', oddTxt, o), 'su-b') +
+        btn('push', lab(l.push) + odd('push', oddTxt, o), 'su-b') + btn('throw', lab(l.thr) + odd('throw', oddTxt, o), 'su-b') +
+        btn('quick', lab(l.quick) + odd('quick', oddTxt, o), 'su-b') + btn('long', lab(l.long) + odd('long', oddTxt, o), 'su-b');
+    },
+    hist: function (n) { return chipS(n === 0 ? 'E' : 'W', 'suh' + n); },
+    wins: function (res) { return [+res.n === 0 ? 'e' : 'w', +res.m === 0 ? 'push' : 'throw', +res.q === 1 ? 'quick' : 'long']; },
+    init: function (c) {
+      c.su = ['e', 'w'].map(function (k) { var g = c.q('.su-' + k); return { g: g, inn: g.querySelector('.su-in') }; });
+      txt(c.q('.su-te'), c.l.east, 44); txt(c.q('.su-tw'), c.l.west, 44); bnInit(c);
+    },
+    frame: function (c, R, t, e, res) {
+      var s = res ? +res.s || 0 : 0, D = res ? suDur(res) : 6, end = SU_0 + D, win = res ? +res.n : -1, thr = res && +res.m === 1;
+      var mid = 180, gap = 50, crouch = 0, push = 0, fallK = 0;
+      if (!res || e < 0) { gap = 66; crouch = .25 + .25 * Math.sin(t * 2); }
+      else if (e < SU_0) { gap = 66 - 24 * eo(e / SU_0); crouch = Math.sin(Math.min(1, e / SU_0) * Math.PI) * .8; }
+      else if (e < end) { // poussées : le centre du combat va et vient (graine), puis glisse vers le perdant
+        var u = (e - SU_0) / D; gap = 40 + Math.sin(e * 9) * 1.5;
+        push = Math.sin(e * 1.7 + hs(s, 31) * 6) * 46 * (1 - u) + Math.sin(e * 4.1 + hs(s, 32) * 6) * 10;
+        push += (win === 0 ? 1 : -1) * 70 * eio(Math.max(0, (u - .6) / .4));
+      } else { gap = 40; push = (win === 0 ? 1 : -1) * (thr ? 34 : 78); fallK = Math.min(1, (e - end) * 2.4); }
+      mid += push;
+      for (var i = 0; i < 2; i++) {
+        var b = c.su[i], east = i === 0, x = east ? mid - gap : mid + gap, y = 168 + crouch * 6, rot = 0, lean = res && e >= SU_0 && e < end ? 14 : crouch * 18;
+        var loser = res && e >= end && ((win === 0 && !east) || (win === 1 && east));
+        if (loser) { if (thr) { rot = (east ? -1 : 1) * 80 * eo(fallK); y += 10 * fallK; } else { x += (east ? -1 : 1) * 30 * eo(fallK); y += 14 * fallK; rot = (east ? -1 : 1) * 25 * fallK; } }
+        if (res && e >= end + .6 && !loser) lean = -6;
+        sa(b.g, 'transform', 'translate(' + x.toFixed(1) + ' ' + (y + 8).toFixed(1) + ') scale(' + (east ? 1.3 : -1.3) + ' 1.3)');
+        sa(b.inn, 'transform', 'rotate(' + (lean + rot * (east ? 1 : -1)).toFixed(1) + ' 0 0) translate(0 ' + (crouch * 8).toFixed(1) + ')');
+      }
+      if (!res) { if (!bnCd(c, R, t, e)) bnSet(c, ''); return; }
+      var dn = e >= end + .8;
+      bnSet(c, dn ? (win === 0 ? c.l.east : c.l.west) + ' ' + c.l.wins + ' · ' + (thr ? c.l.thr : c.l.push) : e < SU_0 ? 'Hakkeyoi!' : '', 'n0');
+    }
+  });
 })(window.D6 = window.D6 || {});

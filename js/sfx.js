@@ -262,7 +262,7 @@
   /* v3019 : 16 jeux en direct live5 */
   Object.assign(MAP, { dogracelive: 'horses', camelracelive: 'horses', snailracelive: 'show', chickenracelive: 'horses', monsterlive: 'cars',
     boatracelive: 'cars', spaceracelive: 'cars', penaltylive: 'sport', basketlive: 'sport', boxinglive: 'sport', tennislive: 'sport',
-    cricketlive: 'sport', archerylive: 'throwg', fishinglive: 'show', balloonlive: 'balloon', volcanolive: 'crash' });
+    cricketlive: 'sport', archerylive: 'throwg', fishinglive: 'show', balloonlive: 'balloon', volcanolive: 'crash', footmatchlive: 'sport', sumolive: 'sport' });
   /* v3013 : 12 courses (skill9) */
   Object.assign(MAP, { motowheelie: 'run', driftking: 'run', horsejump: 'run', jetskirace: 'run', kartdash: 'run', desertrally: 'run',
     surfrider: 'fly', penguinslide: 'fly', skatetricks: 'fly', snowjump: 'fly', rooftopninja: 'fly', lavaescape: 'fly' });
