@@ -7583,7 +7583,9 @@
       if (isAnd) {
         pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('btnWithdraw'), 2); pushT($('profWalletBal'), 1);
       } else {
-        pushT($('btnExpressCrypto'), 3); pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('profWalletBal'), 1);
+        // 2026-11-03 (propriétaire) : sur iPhone, Recharger un peu moins haut, la place va au SOLDE DISPONIBLE (montant plus grand)
+        if (document.documentElement.classList.contains('is-ios')) { pushT($('profWalletBal'), 3); pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('btnExpressCrypto'), 1); }
+        else { pushT($('btnExpressCrypto'), 3); pushT(wal && wal.querySelector('.wallet-addr-row'), 2); pushT($('profWalletBal'), 1); }
       }
       // le menu (drawer-nav) s'étire pour remplir : la vraie place libre est le vide sous « Se déconnecter »
       var navEl = d.querySelector('.drawer-nav'), loEl = $('btnLogout');
