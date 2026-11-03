@@ -31,6 +31,8 @@
   }
   function sp(x, y, s, o) { return '<path d="M' + x + ' ' + (y - s) + 'Q' + x + ' ' + y + ' ' + (x + s) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y + s) + 'Q' + x + ' ' + y + ' ' + (x - s) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y - s) + 'z" fill="#fff"' + (o ? ' opacity="' + o + '"' : '') + '/>'; }
   function gl(cx, cy, rx, ry, rot, o) { return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="#fff" opacity="' + (o || 0.5) + '"' + (rot ? ' transform="rotate(' + rot + ' ' + cx + ' ' + cy + ')"' : '') + '/>'; }
+  // 2026-11-03 : symbole = vraie image illustrée (fal.ai) ; sc = 1 : symbole spécial (scatter) avec un halo doré
+  function simg(k, i, sc) { return (sc ? '<circle cx="50" cy="50" r="44" fill="#FDE68A" opacity=".18"/>' : '') + shd(24) + '<image href="img/slots/' + k + '_' + i + '.webp?v=3581" x="6" y="6" width="88" height="88" preserveAspectRatio="xMidYMid meet"/>'; }
   function shd(w) { return '<ellipse cx="50" cy="92" rx="' + (w || 30) + '" ry="5" fill="#000" opacity=".25"/>'; }
   var RC = ' stroke-linecap="round" stroke-linejoin="round"';
   // royal letters, engraved, in the theme colours
@@ -920,10 +922,42 @@
           shd(16) + '<rect x="34" y="40" width="32" height="18" rx="6" fill="' + B.lg(['#F472B6', '#BE185D']) + '" stroke="#831843"/><path d="M34 44l-12-6 4 12zM66 44l12-6-4 12z" fill="' + B.lg(['#F9A8D4', '#EC4899']) + '" stroke="#831843"/><path d="M40 44h20" stroke="#fff" stroke-width="1.4" opacity=".5"/>',
           '<path d="' + (function () { var d = ''; for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 14 : 34; d += (i ? 'L' : 'M') + (50 + Math.cos(a) * r).toFixed(1) + ' ' + (50 + Math.sin(a) * r).toFixed(1); } return d; })() + 'z" fill="' + B.rg(['#FEF9C3', '#FACC15', '#A16207']) + '" stroke="#78350F" stroke-width="2" stroke-linejoin="round"/>' + gl(42, 42, 5, 3, 0, 0.6)
         ];
-      } }
+      } },
+    /* ---- 2026-11-03 (propriétaire : « casino plus réel, chic, comme les sites pro ») : 10 machines à VRAIS SYMBOLES illustrés
+       (images img/slots/<clé>_<n>.webp, fal.ai), mêmes moteurs et mêmes tables que les autres machines (le serveur tire). ---- */
+    champagne: { kind: 'A', cols: 5, rows: 4, bands: [6, 8, 10], pays: [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 4, 12], [0.8, 2.5, 8], [0.5, 1.5, 5], [0.3, 1, 3]], scat: [],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#B4530955,transparent 70%),linear-gradient(180deg,#211706,#0A0703)', fr: ['#FDE68A', '#B45309', '#1A1206'], cell: '#211706',
+      art: function (B) { return [simg('champagne', 0), simg('champagne', 1), simg('champagne', 2), simg('champagne', 3), royal(B, 'A', GOLD), royal(B, 'K', SILV), royal(B, 'Q', RUBY)]; } },
+    neontokyo: { kind: 'L5', pays: [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], scat: [12, 60],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#DB277755,transparent 70%),linear-gradient(180deg,#16081C,#07030C)', fr: ['#F9A8D4', '#DB2777', '#1B0B1E'], cell: '#16081C',
+      art: function (B) { return [simg('neontokyo', 0), simg('neontokyo', 1), simg('neontokyo', 2), simg('neontokyo', 3), royal(B, 'A', RUBY), royal(B, 'K', AMET), royal(B, 'Q', TURQ), simg('neontokyo', 4, 1)]; } },
+    nilequeen: { kind: 'L5', pays: [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], scat: [12, 60],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#2563EB55,transparent 70%),linear-gradient(180deg,#0B1328,#04070F)', fr: ['#FDE68A', '#2563EB', '#0C1630'], cell: '#0B1328',
+      art: function (B) { return [simg('nilequeen', 0), simg('nilequeen', 1), simg('nilequeen', 2), simg('nilequeen', 3), royal(B, 'A', GOLD), royal(B, 'K', LAPIS), royal(B, 'Q', TURQ), simg('nilequeen', 4, 1)]; } },
+    sambario: { kind: 'L5', pays: [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], scat: [12, 60],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#16A34A55,transparent 70%),linear-gradient(180deg,#0A1F12,#030A06)', fr: ['#BBF7D0', '#16A34A', '#0B2414'], cell: '#0A1F12',
+      art: function (B) { return [simg('sambario', 0), simg('sambario', 1), simg('sambario', 2), simg('sambario', 3), royal(B, 'A', GOLD), royal(B, 'K', RUBY), royal(B, 'Q', TURQ), simg('sambario', 4, 1)]; } },
+    crystalcave: { kind: 'R33', pays: [50, 20, 10, 6, 3, 2], scat: [],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#7C3AED55,transparent 70%),linear-gradient(180deg,#140A28,#06030F)', fr: ['#C4B5FD', '#7C3AED', '#170B2E'], cell: '#140A28',
+      art: function (B) { return [simg('crystalcave', 0), simg('crystalcave', 1), simg('crystalcave', 2), simg('crystalcave', 3), simg('crystalcave', 4), simg('crystalcave', 5)]; } },
+    fisherman: { kind: 'A', cols: 5, rows: 4, bands: [6, 8, 10], pays: [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 4, 12], [0.8, 2.5, 8], [0.5, 1.5, 5], [0.3, 1, 3]], scat: [],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#0284C755,transparent 70%),linear-gradient(180deg,#071C28,#020A10)', fr: ['#BAE6FD', '#0284C7', '#06202E'], cell: '#071C28',
+      art: function (B) { return [simg('fisherman', 0), simg('fisherman', 1), simg('fisherman', 2), simg('fisherman', 3), royal(B, 'A', LAPIS), royal(B, 'K', TURQ), royal(B, 'Q', GOLD)]; } },
+    gummyland: { kind: 'R33', pays: [50, 20, 10, 6, 3, 2], scat: [],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#EC489955,transparent 70%),linear-gradient(180deg,#1F0716,#0B020A)', fr: ['#FBCFE8', '#EC4899', '#24081A'], cell: '#1F0716',
+      art: function (B) { return [simg('gummyland', 0), simg('gummyland', 1), simg('gummyland', 2), simg('gummyland', 3), simg('gummyland', 4), simg('gummyland', 5)]; } },
+    mayagold: { kind: 'L5', pays: [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], scat: [12, 60],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#05966955,transparent 70%),linear-gradient(180deg,#061C15,#020A08)', fr: ['#A7F3D0', '#059669', '#062019'], cell: '#061C15',
+      art: function (B) { return [simg('mayagold', 0), simg('mayagold', 1), simg('mayagold', 2), simg('mayagold', 3), royal(B, 'A', GOLD), royal(B, 'K', TURQ), royal(B, 'Q', RUBY), simg('mayagold', 4, 1)]; } },
+    starvoyager: { kind: 'L5', pays: [[10, 50, 300], [5, 20, 80], [3, 10, 40], [2, 6, 20], [1, 4, 10], [0.6, 2, 6], [0.4, 1.5, 4]], scat: [12, 60],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#4F46E555,transparent 70%),linear-gradient(180deg,#0B0C26,#03030D)', fr: ['#C7D2FE', '#4F46E5', '#0D0E2E'], cell: '#0B0C26',
+      art: function (B) { return [simg('starvoyager', 0), simg('starvoyager', 1), simg('starvoyager', 2), simg('starvoyager', 3), royal(B, 'A', LAPIS), royal(B, 'K', AMET), royal(B, 'Q', SILV), simg('starvoyager', 4, 1)]; } },
+    rockstar: { kind: 'W5', pays: [[5, 20, 100], [3, 10, 40], [2, 6, 20], [1.2, 3, 12], [0.6, 2, 8], [0.4, 1.2, 5]], scat: [],
+      bg: 'radial-gradient(90% 60% at 50% 0%,#DC262655,transparent 70%),linear-gradient(180deg,#1C0909,#0A0303)', fr: ['#FCA5A5', '#DC2626', '#1F0A0A'], cell: '#1C0909',
+      art: function (B) { return [simg('rockstar', 0), simg('rockstar', 1), simg('rockstar', 2), royal(B, 'A', RUBY), royal(B, 'K', GOLD), royal(B, 'Q', SILV)]; } },
   };
   Object.keys(TH).forEach(function (k) { TH[k].scat = TH[k].scat || []; });
-  var ORDER = ['samurai', 'mermaid', 'carnival', 'jazzclub', 'oasis', 'arctic', 'steampunk', 'cybercity', 'fairy', 'dinopark', 'sushibar', 'disco', 'westgold', 'piratecove', 'shamrock', 'candypop', 'olympus', 'vegasneon', 'phoenix', 'buffalo', 'joker', 'bookgold', 'lotus', 'inferno', 'aztecsun', 'dragongold', 'fruitburst', 'horuseye', 'cosmicgems', 'savanna', 'valhalla', 'tigergold', 'honeypot', 'piggybank', 'atlantis', 'wizard', 'royalcrown', 'luckycat', 'wolfmoon', 'vampire', 'peacock', 'knight', 'tikigods', 'icequeen', 'caishen', 'luchador', 'fiesta', 'genie', 'bandits', 'farm', 'gladiator', 'santa', 'alien', 'goblin', 'circus', 'soccer', 'butterfly', 'pizza', 'beach', 'owl', 'ninja', 'unicorn', 'turbo', 'astro', 'puppy', 'sweets'];
+  var ORDER = ['samurai', 'mermaid', 'carnival', 'jazzclub', 'oasis', 'arctic', 'steampunk', 'cybercity', 'fairy', 'dinopark', 'sushibar', 'disco', 'westgold', 'piratecove', 'shamrock', 'candypop', 'olympus', 'vegasneon', 'phoenix', 'buffalo', 'joker', 'bookgold', 'lotus', 'inferno', 'aztecsun', 'dragongold', 'fruitburst', 'horuseye', 'cosmicgems', 'savanna', 'valhalla', 'tigergold', 'honeypot', 'piggybank', 'atlantis', 'wizard', 'royalcrown', 'luckycat', 'wolfmoon', 'vampire', 'peacock', 'knight', 'tikigods', 'icequeen', 'caishen', 'luchador', 'fiesta', 'genie', 'bandits', 'farm', 'gladiator', 'santa', 'alien', 'goblin', 'circus', 'soccer', 'butterfly', 'pizza', 'beach', 'owl', 'ninja', 'unicorn', 'turbo', 'astro', 'puppy', 'sweets', 'champagne', 'neontokyo', 'nilequeen', 'sambario', 'crystalcave', 'fisherman', 'gummyland', 'mayagold', 'starvoyager', 'rockstar'];
   var DIM = { L5: [5, 3], W5: [5, 3], R33: [3, 3], R3: [3, 3] };
   function dims(d) { return d.kind === 'A' ? [d.cols, d.rows] : DIM[d.kind]; }
   function nSym(d) { return d.kind === 'L5' ? d.pays.length + (d.scat.length ? 1 : 0) : d.pays.length; }
