@@ -2683,8 +2683,9 @@
         },
         draw: function (c) {
           A.bg(bg);
+          if (cfg.fx) cfg.fx(c, W, H, T, t, dash, rx0, rx1);
           if (cfg.lines !== false) { c.strokeStyle = cfg.lineCol || 'rgba(255,255,255,.3)'; c.lineWidth = Math.max(2, pw2 * 0.08); c.setLineDash([ph * 0.5, ph * 0.6]); c.lineDashOffset = -(dash % (ph * 1.1)); for (var ln = 1; ln < cfg.lanes; ln++) { var lx = rx0 + (rx1 - rx0) * ln / cfg.lanes; c.beginPath(); c.moveTo(lx, -ph); c.lineTo(lx, H + ph); c.stroke(); } c.setLineDash([]); }
-          for (var i = 0; i < obs.length; i++) { var e = obs[i], img = oS[e.k]; if (e.rot) { c.save(); c.translate(e.x, e.y); c.rotate(e.rot); c.drawImage(img, -img.w / 2, -img.h / 2, img.w, img.h); c.restore(); } else c.drawImage(img, e.x - img.w / 2, e.y - img.h / 2, img.w, img.h); }
+          for (var i = 0; i < obs.length; i++) { var e = obs[i], img = oS[e.k], ix = e.x, iy = e.y, sc = 1; if (cfg.persp) { var fy = clamp((e.y - T) / Math.max(1, py - T), 0, 1); sc = 0.32 + 0.68 * fy; ix = W / 2 + (e.x - W / 2) * (0.38 + 0.62 * fy); } var iw = img.w * sc, ih = img.h * sc; if (e.rot) { c.save(); c.translate(ix, iy); c.rotate(e.rot); c.drawImage(img, -iw / 2, -ih / 2, iw, ih); c.restore(); } else c.drawImage(img, ix - iw / 2, iy - ih / 2, iw, ih); }
           if (!dead) c.drawImage(pS, px - pS.w / 2, py - pS.h / 2, pS.w, pS.h);
         },
         down: function (x) { drag = { x: x, s: px }; },
@@ -3194,7 +3195,7 @@
     /* 2026-11-03 (propriétaire) — Subway Dash passe aux VRAIS visuels (générés avec la clé fal.ai du propriétaire) :
        tunnel en perspective + coureur vu de dos + métro-obstacle. Les images se chargent de façon asynchrone et
        se redessinent sur le canevas-sprite déjà en cache (aucune modif du moteur). Repli propre pendant le chargement. */
-    var SUBV = '3536';
+    var SUBV = '3537';
     function containDraw(x, im, w, h) {
       var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height;
       if (!iw || !ih) return;
@@ -3238,7 +3239,24 @@
     }
     var tun = null, tunOk = false;
     return dodger({
-      lanes: 4, lines: false, winCols: ['#FDE68A', '#67E8F9'], ratio: 1.9,
+      lanes: 4, lines: false, persp: true, winCols: ['#FDE68A', '#67E8F9'], ratio: 1.9,
+      fx: function (c, W, H, T, t) {
+        /* 2026-11-03 (propriétaire : « une vraie avancée, une course qui avance ») — traverses de rails qui
+           FONCENT vers le joueur (perspective) + stries de vitesse sur les parois → on sent qu'on fonce. */
+        var cx = W / 2, vpy = T + (H - T) * 0.40, span = H - vpy, j;
+        for (j = 0; j < 16; j++) {
+          var u = ((t * 0.6) + j / 16) % 1, f = u * u, y = vpy + span * f, half = W * (0.035 + 0.30 * f), th = 2 + 13 * f;
+          c.globalAlpha = 0.05 + 0.22 * f; c.fillStyle = '#F4E2B0'; c.fillRect(cx - half, y - th * 0.5, half * 2, th * 0.5);
+          c.globalAlpha = 0.04 + 0.16 * f; c.fillStyle = '#05070d'; c.fillRect(cx - half, y, half * 2, th * 0.5);
+        }
+        for (j = 0; j < 10; j++) {
+          var v = ((t * 0.66) + j / 10) % 1, g = v * v, yy = vpy + span * g, hh = 6 + 60 * g, lw = W * (0.02 + 0.03 * g);
+          c.globalAlpha = 0.05 + 0.14 * g; c.fillStyle = '#CFE8FF';
+          c.fillRect(cx - W * (0.16 + 0.34 * g), yy, lw, hh);
+          c.fillRect(cx + W * (0.16 + 0.34 * g) - lw, yy, lw, hh);
+        }
+        c.globalAlpha = 1;
+      },
       bg: function (c, W, H) {
         if (!tun) { tun = new Image(); tun.onload = function () { tunOk = true; }; tun.src = 'img/games/sub_tunnel.webp?v=' + SUBV; }
         if (tunOk) {
