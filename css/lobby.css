@@ -220,3 +220,15 @@ html[dir=rtl]:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView
 }
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big:focus-visible{outline:2px solid #FBBF24;outline-offset:3px;border-radius:17px}
 html.oro-lite:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-g.cs-big{transition:none}
+/* v3566 (propriétaire : « dans les Jeux / Paris, trop de lueur jaune en haut et partout ») — UN seul fond, sobre et durable,
+   pour toute la salle de jeux, les jeux et Paris : noir chaud très sombre, quelques étoiles discrètes, AUCUNE lueur dorée.
+   Le haut (barre du solde) est de la même couleur que le reste. Rien d'autre ne change. */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal{background:#0B0A08!important}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal > .modal-box.cs-box{
+  background:radial-gradient(1px 1px at 12% 18%,rgba(255,255,255,.35),transparent 60%),radial-gradient(1px 1px at 78% 9%,rgba(255,255,255,.28),transparent 60%),
+    radial-gradient(1px 1px at 33% 64%,rgba(255,255,255,.22),transparent 60%),radial-gradient(1px 1px at 88% 52%,rgba(255,255,255,.25),transparent 60%),
+    radial-gradient(1px 1px at 58% 88%,rgba(255,255,255,.2),transparent 60%),
+    linear-gradient(180deg,#0E0C0A 0%,#0B0A08 100%)!important;background-color:#0B0A08!important;box-shadow:none!important}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-top,
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):not(.pred-only) .cs-top{background:#0E0C0A!important;box-shadow:0 -80px 0 60px #0E0C0A,0 1px 0 rgba(255,255,255,.05)!important}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-panel{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.08)!important;box-shadow:none!important}
