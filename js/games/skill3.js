@@ -150,6 +150,7 @@
   };
   // Subway Dash réutilise les textes de Metro Dash (même course en perspective, décor tunnel).
   G.subwaydash = G.metrodash;
+  G.tokyodash = G.metrodash; G.pharaohrun = G.metrodash; // mêmes règles et mêmes textes (12 langues) que Metro / Subway
 
   /* ------------------------------------------------------------------ shared engine (round flow + canvas loop + gestures) */
   function boot(key, mk, gest, hy) {
@@ -1371,7 +1372,93 @@
     }
   });
 
+  /* 2026-11-03 (propriétaire : « 2 jeux de plus où l'on court, mondes différents, persos cool ») — fabrique de MONDES :
+     même moteur, mêmes voies, mêmes obstacles et mêmes collisions que Subway Dash ; seules les images changent
+     (perso fal.ai en 4 poses 320x400, panorama, façades, avant/flanc du « train », barrière à sauter, portique à glisser). */
+  function worldTheme(pfx, ver, o) {
+    var I = {}, kidImg = null, kidFr = null;
+    function img(n) { if (!I[n]) { var q = { im: new Image(), ok: false }; q.im.decoding = 'async'; q.im.onload = function () { q.ok = true; }; q.im.src = 'img/games/' + pfx + '_' + n + '.webp?v=' + ver; I[n] = q; } return I[n]; }
+    function kid(sp) {
+      function apply() { if (kidFr) { sp.run = [kidFr[0], kidFr[1]]; sp.jump = kidFr[2]; sp.slide = kidFr[3]; } }
+      if (kidFr) return apply();
+      if (!kidImg) { kidImg = new Image(); kidImg.decoding = 'async'; kidImg.src = 'img/games/' + pfx + '_kid.webp?v=' + ver; }
+      kidImg.addEventListener('load', function () {
+        if (!kidFr) kidFr = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = 320; cv.height = 400; cv.getContext('2d').drawImage(kidImg, i * 320, 0, 320, 400, 0, 0, 320, 400); return cv; });
+        apply();
+      });
+      if (kidImg.complete && kidImg.naturalWidth) kidImg.dispatchEvent(new Event('load'));
+    }
+    var ok = function (n) { return I[n] && I[n].ok; };
+    return Object.assign({}, SUBWAY, {
+      streak: o.streak || SUBWAY.streak, dust: o.dust || SUBWAY.dust,
+      bg: function (c, V) {
+        var W = V.W, H = V.H, hy = V.hy, ny = V.ny, i;
+        c.fillStyle = lg(c, 0, 0, 0, H, o.sky); c.fillRect(0, 0, W, H);
+        poly(c, [V.SX(-2.06, V.ZF), hy, V.SX(2.06, V.ZF), hy, V.SX(2.06, -0.14), V.SY(-0.14), V.SX(-2.06, -0.14), V.SY(-0.14)], lg(c, 0, hy, 0, ny, o.ground));
+        [-1, 0, 1].forEach(function (l) { poly(c, [V.SX(l - 0.48, V.ZF), hy, V.SX(l + 0.48, V.ZF), hy, V.SX(l + 0.48, -0.14), V.SY(-0.14), V.SX(l - 0.48, -0.14), V.SY(-0.14)], lg(c, 0, hy, 0, ny, o.lane)); });
+        for (i = 0; i < (V.lite ? 300 : 900); i++) { var gz = Math.pow(Math.random(), 1.6) * 2, gx = rnd(-1.6, 1.6), p = V.P(gz); c.fillStyle = i % 3 ? 'rgba(0,0,0,.14)' : 'rgba(255,255,255,.16)'; c.fillRect(V.SX(gx, gz), V.SY(gz), 1.6 * p + 0.6, 1.2 * p + 0.5); }
+      },
+      art: function (V, dpr) {
+        var sp = METRO.art(V, dpr), r2 = rigSet(V, dpr, SUBWAY_KID); sp.run = r2.run; sp.jump = r2.jump; sp.slide = r2.slide; kid(sp);
+        ['city', 'wall0', 'wall1', 'tfront', 'tside', 'hurdle', 'duck'].forEach(img);
+        return sp;
+      },
+      ground: function (c, V, dist, SP, t) {
+        if (ok('city')) {
+          var ci = I.city, cw = Math.max(V.W * 1.25, (V.hy - V.T + 30) * 2.5), ch = cw * 480 / 1200, drop = (V.ny - V.hy) * 0.22;
+          c.save(); c.beginPath(); c.rect(0, 0, V.W, V.H);
+          c.moveTo(V.SX(-2.06, V.ZF), V.hy); c.lineTo(V.SX(-2.06, -0.14), V.SY(-0.14)); c.lineTo(V.SX(2.06, -0.14), V.SY(-0.14)); c.lineTo(V.SX(2.06, V.ZF), V.hy); c.closePath();
+          c.clip('evenodd'); c.drawImage(ci.im, (V.W - cw) / 2, V.hy - ch + 2 + drop, cw, ch); c.restore();
+        }
+        METRO.ground(c, V, dist);
+      },
+      side: function (c, V, dist, SP) {
+        if (!(ok('wall0') && ok('wall1'))) return METRO.side(c, V, dist, SP);
+        var w0 = I.wall0, w1 = I.wall1, S = 1.5, off = dist % S, k = Math.floor(dist / S), z, i, zMax = V.ZM * 2.2 + S, zF = zMax - S;
+        wallQuad(c, V, -2.07, -0.8, zF, 0, 2.3, o.back); wallQuad(c, V, 2.07, -0.8, zF, 0, 2.3, o.back);
+        for (z = zMax - off, i = 0; z > -0.8; z -= S, i++) {
+          var a = (k + i) % 2 ? w0.im : w1.im, b = (k + i) % 2 ? w1.im : w0.im;
+          c.globalAlpha = clamp((zMax - z) / (S * 0.9), 0, 1);
+          wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 14); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 14);
+        }
+        c.globalAlpha = 1;
+        [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.62, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, V.ZF), V.SY(V.ZF), V.SX(s * 2.05, -0.14), V.SY(-0.14), V.SX(s * 1.62, -0.14), V.SY(-0.14)], o.walk); });
+      },
+      ob: function (c, V, ob, SP, t) {
+        if (ob.k === 0) {
+          if (!(ok('tfront') && ok('tside'))) return METRO.ob(c, V, ob, SP, t);
+          var zn = Math.max(ob.z, -0.02), zf = ob.z + ob.len;
+          if (ob.ln < -0.1) wallImg(c, V, I.tside.im, ob.ln + 0.42, zn, zf, 0.02, 1.3, 8); else if (ob.ln > 0.1) wallImg(c, V, I.tside.im, ob.ln - 0.42, zn, zf, 0.02, 1.3, 8);
+          box(c, V, ob.ln, ob.z, zf, 0.42, 1.3, I.tfront.im, 'rgba(0,0,0,0)', lg(c, 0, V.SY(zf), 0, V.SY(zn), o.roof));
+          return;
+        }
+        if (ob.k === 1 || ob.k === 3) {
+          if (!ok('hurdle')) return METRO.ob(c, V, ob, SP, t);
+          (ob.k === 3 ? [-1, 0, 1] : [ob.ln]).forEach(function (l) { stand(c, V, I.hurdle.im, l, ob.z, 0.95, 0.33); });
+          return;
+        }
+        if (!ok('duck')) return METRO.ob(c, V, ob, SP, t);
+        stand(c, V, I.duck.im, ob.ln, ob.z, 1.0, 1.1);
+      },
+      endDraw: function (c, V, e, SP, t) {
+        if (!ok('tfront')) return METRO.endDraw(c, V, e, SP, t);
+        for (var l = -1; l <= 1; l++) box(c, V, l, Math.max(e.z, -0.12), e.z + 0.9, 0.42, 1.3, I.tfront.im, o.roof[1], o.roof[0]);
+      }
+    });
+  }
+  // TOKYO DASH : rue japonaise au printemps (cerisiers, lanternes), mont Fuji au loin, tram blanc et vert, torii à passer en glissant
+  var TOKYO = worldTheme('tk', '3579', {
+    sky: ['#60A5FA', '#93C5FD', '#DBEAFE', '#FCE7F3'], ground: ['#B8A9A0', '#9C8E86', '#7F726B'], lane: ['#8B7F78', '#776B65', '#625752'],
+    back: '#7A4E3A', walk: 'rgba(253,230,238,.55)', roof: ['#64748B', '#94A3B8'], dust: 'rgba(252,205,225,'
+  });
+  // PHARAOH RUN : temple égyptien au soleil, pyramides au loin, chariots de pierres, colonnes tombées à sauter, portiques à passer en glissant
+  var PHARAOH = worldTheme('ph', '3579', {
+    sky: ['#38BDF8', '#7DD3FC', '#BAE6FD', '#FEF3C7'], ground: ['#E9C989', '#D6B06B', '#B88F4E'], lane: ['#D2A960', '#BE9550', '#A07A3E'],
+    back: '#A97C45', walk: 'rgba(254,243,199,.5)', roof: ['#8B5E34', '#B07A45'], dust: 'rgba(240,214,160,'
+  });
   boot('highway', function (A) { return runner(A, HIGHWAY); }, 'lr', 0.5);
+  boot('tokyodash', function (A) { return runner(A, TOKYO); }, 'swipe4', 0.5);
+  boot('pharaohrun', function (A) { return runner(A, PHARAOH); }, 'swipe4', 0.5);
   boot('jungledash', function (A) { return runner(A, JUNGLE); }, 'swipe4', 0.5);
   boot('metrodash', function (A) { return runner(A, METRO); }, 'swipe4', 0.5);
   boot('subwaydash', function (A) { return runner(A, SUBWAY); }, 'swipe4', 0.5);

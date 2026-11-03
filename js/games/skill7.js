@@ -128,6 +128,35 @@
       hi: ['तोप चलाने को खींचें', 'आपकी तोप पर वार!', 'मदरशिप लेज़र!', 'बाएँ या दाएँ खींचें: तोप उँगली के साथ चलती है और खुद फायर करती है। एलियन बेड़े को उतरने से पहले गिराएँ और बमों से बचें। हर लहर तेज़ होती है। तोप पर बम या ज़मीन तक पहुँचा एलियन राउंड खत्म करता है।', 'आक्रमण!'],
       zh: ['拖动移动你的炮台', '炮台被击中！', '母舰激光！', '左右拖动：炮台跟随手指并自动开火。在外星舰队降落前将其击落，并躲开炸弹。每一波都更快。炸弹击中炮台，或外星人到达地面，本回合结束。', '入侵！']
     },
+    // 2026-11-03 (propriétaire : « des jeux de guerre où l'on voit des cibles ») — galeries de tir illustrées (fal.ai)
+    westshoot: {
+      en: ['Tap the outlaws to shoot', 'The outlaw got you!', 'Dynamite!', 'Outlaws pop up in the windows, on the porches and in the street: tap each one to shoot before he fires (short reload after each shot). Never shoot the townsfolk with raised hands. More and faster outlaws come with time. Being shot, or shooting a townsman, ends the round.', 'You shot a townsman!'],
+      fr: ['Touche les bandits pour tirer', 'Le bandit t’a eu !', 'Dynamite !', 'Des bandits surgissent aux fenêtres, sur les porches et dans la rue : touche chacun pour tirer avant qu’il ne tire (petit rechargement après chaque tir). Ne tire jamais sur les habitants aux mains levées. Ils arrivent plus nombreux et plus vite avec le temps. Être touché, ou toucher un habitant, termine la partie.', 'Tu as touché un habitant !'],
+      es: ['Toca a los bandidos para disparar', '¡El bandido te alcanzó!', '¡Dinamita!', 'Aparecen bandidos en las ventanas, los porches y la calle: toca a cada uno para disparar antes de que dispare (breve recarga tras cada tiro). Nunca dispares a los vecinos con las manos en alto. Llegan más y más rápido con el tiempo. Recibir un disparo, o alcanzar a un vecino, termina la ronda.', '¡Alcanzaste a un vecino!'],
+      pt: ['Toque nos bandidos para atirar', 'O bandido te pegou!', 'Dinamite!', 'Bandidos aparecem nas janelas, nas varandas e na rua: toque em cada um para atirar antes que ele atire (breve recarga após cada tiro). Nunca atire nos moradores de mãos para cima. Chegam mais e mais rápido com o tempo. Levar um tiro, ou acertar um morador, encerra a rodada.', 'Você acertou um morador!'],
+      ar: ['المس الخارجين عن القانون لإطلاق النار', 'أصابك الخارج عن القانون!', 'ديناميت!', 'يظهر الخارجون عن القانون في النوافذ والشرفات والشارع: المس كل واحد لإطلاق النار قبل أن يطلق (تلقيم قصير بعد كل طلقة). لا تطلق أبدًا على السكان رافعي الأيدي. يأتون أكثر وأسرع مع الوقت. إصابتك، أو إصابة أحد السكان، تنهي الجولة.', 'أصبت أحد السكان!'],
+      tr: ['Ateş için haydutlara dokun', 'Haydut seni vurdu!', 'Dinamit!', 'Haydutlar pencerelerde, verandalarda ve sokakta beliriyor: o ateş etmeden her birine dokunarak ateş et (her atıştan sonra kısa dolum). Elleri havadaki kasabalılara asla ateş etme. Zamanla daha çok ve daha hızlı gelirler. Vurulmak ya da bir kasabalıyı vurmak turu bitirir.', 'Bir kasabalıyı vurdun!'],
+      vi: ['Chạm vào bọn cướp để bắn', 'Tên cướp đã bắn trúng bạn!', 'Thuốc nổ!', 'Bọn cướp xuất hiện ở cửa sổ, hiên nhà và trên đường: chạm từng tên để bắn trước khi hắn bắn (nạp đạn ngắn sau mỗi phát). Đừng bao giờ bắn dân thị trấn đang giơ tay. Càng lúc càng nhiều và nhanh hơn. Bị bắn trúng, hoặc bắn trúng dân, là kết thúc ván.', 'Bạn bắn trúng người dân!'],
+      id: ['Ketuk bandit untuk menembak', 'Bandit menembakmu!', 'Dinamit!', 'Bandit muncul di jendela, beranda, dan jalan: ketuk setiap bandit untuk menembak sebelum ia menembak (isi ulang singkat setiap tembakan). Jangan pernah menembak warga yang mengangkat tangan. Makin lama makin banyak dan cepat. Tertembak, atau menembak warga, mengakhiri ronde.', 'Kamu menembak warga!'],
+      ru: ['Тап по бандитам — выстрел', 'Бандит попал в тебя!', 'Динамит!', 'Бандиты появляются в окнах, на крыльце и на улице: нажимай на каждого, чтобы выстрелить раньше него (короткая перезарядка после выстрела). Никогда не стреляй в жителей с поднятыми руками. Со временем их больше и они быстрее. Попадание в тебя или выстрел в жителя завершает раунд.', 'Ты попал в жителя!'],
+      de: ['Tippe auf die Banditen', 'Der Bandit hat dich erwischt!', 'Dynamit!', 'Banditen tauchen in Fenstern, auf Veranden und auf der Straße auf: tippe jeden an, um zu schießen, bevor er feuert (kurzes Nachladen nach jedem Schuss). Schieß nie auf Bürger mit erhobenen Händen. Mit der Zeit kommen mehr und schnellere. Getroffen zu werden oder einen Bürger zu treffen beendet die Runde.', 'Du hast einen Bürger getroffen!'],
+      hi: ['गोली के लिए डाकुओं पर टैप करें', 'डाकू ने आपको मार दिया!', 'डायनामाइट!', 'डाकू खिड़कियों, बरामदों और सड़क पर दिखते हैं: हर एक पर टैप करके उसके चलाने से पहले गोली चलाएँ (हर गोली के बाद थोड़ा रीलोड)। हाथ उठाए लोगों पर कभी गोली न चलाएँ। समय के साथ और ज़्यादा व तेज़ आते हैं। गोली लगना, या किसी नागरिक को मारना, राउंड खत्म करता है।', 'आपने एक नागरिक को मारा!'],
+      zh: ['点击歹徒射击', '歹徒击中了你！', '炸药！', '歹徒会出现在窗口、门廊和街上：在他开枪前点击射击（每枪后短暂装弹）。千万不要射击举手的镇民。随着时间推移，歹徒越来越多、越来越快。被击中，或击中镇民，本回合结束。', '你击中了镇民！']
+    },
+    bunkerbreach: {
+      en: ['Tap the soldiers to shoot', 'You were shot!', 'Artillery barrage!', 'Enemy soldiers appear at the bunker, in the ruins and across the field: tap each one to shoot before he fires (short reload after each shot). Never shoot the villagers with raised hands. More and faster soldiers come with time. Being shot, or shooting a villager, ends the round.', 'You shot a villager!'],
+      fr: ['Touche les soldats pour tirer', 'Tu as été touché !', 'Barrage d’artillerie !', 'Des soldats ennemis surgissent au bunker, dans les ruines et dans le champ : touche chacun pour tirer avant qu’il ne tire (petit rechargement après chaque tir). Ne tire jamais sur les villageois aux mains levées. Ils arrivent plus nombreux et plus vite avec le temps. Être touché, ou toucher un villageois, termine la partie.', 'Tu as touché une villageoise !'],
+      es: ['Toca a los soldados para disparar', '¡Te dispararon!', '¡Barrera de artillería!', 'Soldados enemigos aparecen en el búnker, en las ruinas y en el campo: toca a cada uno para disparar antes de que dispare (breve recarga tras cada tiro). Nunca dispares a los aldeanos con las manos en alto. Llegan más y más rápido con el tiempo. Recibir un disparo, o alcanzar a un aldeano, termina la ronda.', '¡Alcanzaste a una aldeana!'],
+      pt: ['Toque nos soldados para atirar', 'Você levou um tiro!', 'Barragem de artilharia!', 'Soldados inimigos aparecem no bunker, nas ruínas e no campo: toque em cada um para atirar antes que ele atire (breve recarga após cada tiro). Nunca atire nos aldeões de mãos para cima. Chegam mais e mais rápido com o tempo. Levar um tiro, ou acertar um aldeão, encerra a rodada.', 'Você acertou uma aldeã!'],
+      ar: ['المس الجنود لإطلاق النار', 'لقد أُصبت!', 'قصف مدفعي كثيف!', 'يظهر جنود العدو عند المخبأ وفي الأطلال وعبر الحقل: المس كل جندي لإطلاق النار قبل أن يطلق (تلقيم قصير بعد كل طلقة). لا تطلق أبدًا على القرويين رافعي الأيدي. يأتون أكثر وأسرع مع الوقت. إصابتك، أو إصابة قروي، تنهي الجولة.', 'أصبت قروية!'],
+      tr: ['Ateş için askerlere dokun', 'Vuruldun!', 'Topçu barajı!', 'Düşman askerleri sığınakta, yıkıntılarda ve tarlada beliriyor: o ateş etmeden her birine dokunarak ateş et (her atıştan sonra kısa dolum). Elleri havadaki köylülere asla ateş etme. Zamanla daha çok ve daha hızlı gelirler. Vurulmak ya da bir köylüyü vurmak turu bitirir.', 'Bir köylüyü vurdun!'],
+      vi: ['Chạm vào lính để bắn', 'Bạn bị bắn trúng!', 'Pháo kích dồn dập!', 'Lính địch xuất hiện ở lô cốt, trong đống đổ nát và trên cánh đồng: chạm từng tên để bắn trước khi hắn bắn (nạp đạn ngắn sau mỗi phát). Đừng bao giờ bắn dân làng đang giơ tay. Càng lúc càng nhiều và nhanh hơn. Bị bắn trúng, hoặc bắn trúng dân làng, là kết thúc ván.', 'Bạn bắn trúng dân làng!'],
+      id: ['Ketuk tentara untuk menembak', 'Kamu tertembak!', 'Gempuran artileri!', 'Tentara musuh muncul di bunker, di reruntuhan, dan di lapangan: ketuk setiap tentara untuk menembak sebelum ia menembak (isi ulang singkat setiap tembakan). Jangan pernah menembak warga desa yang mengangkat tangan. Makin lama makin banyak dan cepat. Tertembak, atau menembak warga desa, mengakhiri ronde.', 'Kamu menembak warga desa!'],
+      ru: ['Тап по солдатам — выстрел', 'В тебя попали!', 'Артиллерийский шквал!', 'Вражеские солдаты появляются у бункера, в руинах и в поле: нажимай на каждого, чтобы выстрелить раньше него (короткая перезарядка после выстрела). Никогда не стреляй в жителей деревни с поднятыми руками. Со временем их больше и они быстрее. Попадание в тебя или выстрел в жителя завершает раунд.', 'Ты попал в жительницу!'],
+      de: ['Tippe auf die Soldaten', 'Du wurdest getroffen!', 'Artilleriefeuer!', 'Feindliche Soldaten tauchen am Bunker, in den Ruinen und auf dem Feld auf: tippe jeden an, um zu schießen, bevor er feuert (kurzes Nachladen nach jedem Schuss). Schieß nie auf Dorfbewohner mit erhobenen Händen. Mit der Zeit kommen mehr und schnellere. Getroffen zu werden oder einen Dorfbewohner zu treffen beendet die Runde.', 'Du hast eine Dorfbewohnerin getroffen!'],
+      hi: ['गोली के लिए सैनिकों पर टैप करें', 'आपको गोली लगी!', 'तोपखाने की बौछार!', 'दुश्मन सैनिक बंकर पर, खंडहरों में और मैदान में दिखते हैं: हर एक पर टैप करके उसके चलाने से पहले गोली चलाएँ (हर गोली के बाद थोड़ा रीलोड)। हाथ उठाए गाँववालों पर कभी गोली न चलाएँ। समय के साथ और ज़्यादा व तेज़ आते हैं। गोली लगना, या किसी गाँववाले को मारना, राउंड खत्म करता है।', 'आपने एक गाँववाली को मारा!'],
+      zh: ['点击士兵射击', '你中弹了！', '炮火齐射！', '敌兵会出现在碉堡、废墟和田野上：在他开枪前点击射击（每枪后短暂装弹）。千万不要射击举手的村民。随着时间推移，敌人越来越多、越来越快。中弹，或击中村民，本回合结束。', '你击中了村民！']
+    },
     cityshield: {
       en: ['Tap to fire an interceptor', 'A city is hit!', 'Mega warhead!', 'Missiles fall toward your cities: tap where to fire — the interceptor flies there and explodes, destroying the missiles in its blast. Aim ahead of them. Some missiles split. A missile hitting a city ends the round.'],
       fr: ['Touche pour lancer un intercepteur', 'Une ville est touchée !', 'Méga-ogive !', 'Des missiles tombent vers tes villes : touche où tirer — l’intercepteur y vole et explose, détruisant les missiles dans son souffle. Vise devant eux. Certains missiles se divisent. Un missile sur une ville termine la partie.'],
@@ -1164,6 +1193,119 @@
     var out = []; for (var i = 0; i < n; i++) out.push(mkc(h * 1.2, h * 1.12, Math.min(2, window.devicePixelRatio || 1), function (c) { c.translate(h * 0.6, h * 1.08); fn(c, i / n); }));
     return out;
   }
+
+  /* ================================================================== GALERIES DE TIR (2026-11-03, propriétaire) — WESTERN
+     SHOWDOWN (rue du Far West au couchant) et BUNKER BREACH (champ de bataille 1944) : vraies images fal.ai (décor + ennemis +
+     civils). Les ennemis surgissent à des places fixes du décor (fenêtres, porches, rue / bunker, ruines, champ) ; un cercle
+     rouge se resserre : touche-le avant qu'il ne tire. Un civil aux mains levées ne doit jamais être touché. Même tour de jeu
+     que Sniper / Trench Defense (le serveur décide et paie) ; la fin secrète arrive en explosions (dynamite / artillerie). */
+  function gallery(A, CF) {
+    var W, H, T, dpr, bg = null, t = 0, foes = [], holes = [], cool = 0, flash = null, dead = 0, won = 0, strike = null, spT = 0, kills = 0, aiT = 0, cross = null;
+    var IM = {}, fit = { x: 0, y: 0, w: 1, h: 1 };
+    function im(n) { if (!IM[n]) { var q = { i: new Image(), ok: false }; q.i.decoding = 'async'; q.i.onload = function () { q.ok = true; if (n === CF.bg && W) build(); }; q.i.src = 'img/games/' + n + '.webp?v=' + CF.v; IM[n] = q; } return IM[n]; }
+    [CF.bg].concat(CF.en, CF.civ).forEach(im);
+    function build() {
+      var b = IM[CF.bg];
+      bg = mkc(W, H, dpr, function (c) {
+        c.fillStyle = CF.base; c.fillRect(0, 0, W, H);
+        if (b && b.ok) { var r = Math.max(W / b.i.width, H / b.i.height), w = b.i.width * r, h = b.i.height * r; fit = { x: (W - w) / 2, y: (H - h) * 0.55, w: w, h: h }; c.drawImage(b.i, fit.x, fit.y, w, h); }
+        else fit = { x: 0, y: 0, w: W, h: H };
+        var q = c.createLinearGradient(0, 0, 0, T + 20); q.addColorStop(0, 'rgba(0,0,0,.45)'); q.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = q; c.fillRect(0, 0, W, T + 20);
+        q = c.createLinearGradient(0, H * 0.82, 0, H); q.addColorStop(0, 'rgba(0,0,0,0)'); q.addColorStop(1, 'rgba(0,0,0,.35)'); c.fillStyle = q; c.fillRect(0, H * 0.82, W, H * 0.18);
+      });
+    }
+    function pos(sp) { return { x: fit.x + sp[0] * fit.w, y: fit.y + sp[1] * fit.h, h: sp[2] * Math.min(H - T, W * 1.25) * 0.5 }; }
+    function busy(sp) { return foes.some(function (f) { return f.sp === sp; }); }
+    function spawn(live) {
+      var free = CF.spots.filter(function (sp) { var p = pos(sp); return !busy(sp) && p.y - p.h > T - 6 && p.y < H + 4; }); if (!free.length) return;
+      var lv = live ? A.lv() : 0.2, sp = pick(free), civ = live && Math.random() < 0.17 + 0.08 * lv;
+      var n = civ ? pick(CF.civ) : pick(CF.en);
+      foes.push({ sp: sp, civ: civ, n: n, up: 0, t: 0, aT: (civ ? 2.6 : Math.max(1.25, 3.2 - 1.7 * lv)) * (0.85 + 0.35 * (1 - sp[2])), dn: 0, fire: 0 });
+    }
+    function box(f) { var p = pos(f.sp), q = IM[f.n], ar = q && q.ok ? q.i.width / q.i.height : 0.7, w = p.h * ar; return { x: p.x - w / 2, y: p.y - p.h * f.up, w: w, h: p.h, by: p.y, cx: p.x }; }
+    function shoot(x, y) {
+      if (cool > 0 || dead || strike || won) return;
+      cool = 0.3; cross = { x: x, y: y, t: 0 }; A.sx('gun', { k: CF.gun }); A.shake(0.06);
+      var hit = null, best = -1;
+      foes.forEach(function (f) { if (f.dn || f.up < 0.45) return; var b = box(f); if (x > b.x + b.w * 0.12 && x < b.x + b.w * 0.88 && y > b.y && y < b.by && f.sp[2] > best) { best = f.sp[2]; hit = f; } });
+      if (hit) {
+        hit.dn = 0.001;
+        if (hit.civ) { if (A.live()) { if (A.fail(A.l.fail2)) dead = 1; } return; }
+        kills++; A.burst(x, y, 8, CF.hitCol, 90, 0.4, 2.6, 80); A.sx('hit');
+        return;
+      }
+      holes.push({ x: x, y: y, t: 0 }); if (holes.length > 14) holes.shift();
+      A._xb = 1; A.burst(x, y, 5, CF.dust, 60, 0.35, 2, 60); A._xb = 0;
+    }
+    return {
+      size: function (w, h, uu, d, top) { W = w; H = h; dpr = d; T = top; build(); foes = []; },
+      reset: function () { foes = []; holes = []; dead = 0; won = 0; strike = null; spT = 0.7; kills = 0; cool = 0; cross = null; },
+      step: function (dt, live) {
+        t += dt; cool = Math.max(0, cool - dt); if (flash) { flash.t += dt; if (flash.t > 0.14) flash = null; } if (cross) { cross.t += dt; if (cross.t > 0.35) cross = null; }
+        var i, f;
+        for (i = foes.length - 1; i >= 0; i--) {
+          f = foes[i];
+          if (f.dn) { f.dn += dt; if (f.dn > 0.45) foes.splice(i, 1); continue; }
+          if (f.fire) f.fire = Math.max(0, f.fire - dt);
+          f.up = Math.min(1, f.up + dt * 3.2); if (f.up < 1) continue;
+          f.t += dt;
+          if (f.t >= f.aT && !strike && !dead && !won) {
+            if (f.civ) { f.dn = 0.001; continue; }
+            if (A.live()) { f.fire = 0.2; A.sx('gun', { k: CF.gun, v: 0.7 }); flash = { t: 0, red: 1 }; if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); A.flash(0.4); } }
+            else f.dn = 0.001;
+          }
+        }
+        if (strike) { strike.k -= dt; if (strike.k <= 0 && strike.n < 8) { strike.k = 0.17; strike.n++; boomFx(A, rnd(W * 0.08, W * 0.92), rnd(T + (H - T) * 0.25, H * 0.92), 1.15); } return; }
+        if (dead || won) return;
+        var lv = live ? A.lv() : 0.2;
+        spT -= dt; if (spT <= 0) { if (foes.length < (A.idle() ? 2 : 2 + Math.round(2 * lv))) spawn(live); spT = Math.max(0.42, 1.4 - 0.9 * lv) * rnd(0.7, 1.3); }
+        if (A.idle()) { // démo du visiteur : vise et abat les ennemis, jamais les civils
+          aiT += dt;
+          var tg = foes.filter(function (q) { return !q.civ && !q.dn && q.up >= 1 && q.t > 0.55; })[0];
+          if (tg && aiT > 0.5) { aiT = 0; var b = box(tg); shoot(b.cx, b.y + b.h * 0.35); }
+        }
+      },
+      draw: function (c) {
+        if (bg) A.bg(bg);
+        var list = foes.slice().sort(function (a, b) { return a.sp[2] - b.sp[2]; }); // les plus lointains d'abord
+        list.forEach(function (f) {
+          var q = IM[f.n]; if (!(q && q.ok)) return;
+          var b = box(f), k = f.dn ? Math.max(0, 1 - f.dn * 2.4) : 1;
+          if (k <= 0) return;
+          c.save(); c.beginPath(); c.rect(b.x - 4, 0, b.w + 8, b.by); c.clip();
+          c.globalAlpha = k;
+          var dy = f.dn ? f.dn * b.h * 0.9 : 0; // il retombe derrière son abri quand il est touché
+          c.drawImage(q.i, b.x, b.y + dy, b.w, b.h);
+          c.restore(); c.globalAlpha = 1;
+          if (!f.civ && !f.dn && f.up >= 1) {
+            var p = Math.min(1, f.t / f.aT), r = b.h * (0.62 - 0.36 * p), cy = b.y + b.h * 0.3;
+            c.strokeStyle = p > 0.7 ? '#EF4444' : 'rgba(239,68,68,.75)'; c.lineWidth = Math.max(2, b.h * 0.025); c.beginPath(); c.arc(b.cx, cy, r, 0, TAU); c.stroke();
+          }
+          if (f.fire) { circ(c, b.cx + b.w * 0.05, b.y + b.h * 0.42, b.h * 0.12 * (f.fire / 0.2), 'rgba(253,224,71,.9)'); }
+        });
+        for (var i = 0; i < holes.length; i++) circ(c, holes[i].x, holes[i].y, 1.8, 'rgba(20,20,20,.8)');
+        if (cross) { var a = 1 - cross.t / 0.35, r0 = 14 + cross.t * 20; c.strokeStyle = 'rgba(255,255,255,' + (0.85 * a).toFixed(2) + ')'; c.lineWidth = 2; c.beginPath(); c.arc(cross.x, cross.y, r0, 0, TAU); c.moveTo(cross.x - r0 - 6, cross.y); c.lineTo(cross.x - r0 + 4, cross.y); c.moveTo(cross.x + r0 - 4, cross.y); c.lineTo(cross.x + r0 + 6, cross.y); c.stroke(); circ(c, cross.x, cross.y, 3, 'rgba(253,224,71,' + a.toFixed(2) + ')'); }
+        if (cool > 0) { c.strokeStyle = 'rgba(253,230,138,.85)'; c.lineWidth = 3; c.beginPath(); c.arc(W - 26, H - 26, 12, -Math.PI / 2, -Math.PI / 2 + (1 - cool / 0.3) * TAU); c.stroke(); }
+        if (flash) { c.globalAlpha = 0.45 * (1 - flash.t / 0.14); c.fillStyle = flash.red ? '#EF4444' : '#FEF3C7'; c.fillRect(0, 0, W, H); c.globalAlpha = 1; }
+      },
+      act: function (k, x, y) { if (k === 'tap') shoot(x, y); },
+      boom: function () { strike = { k: 0, n: 0 }; },
+      win: function () { won = 0.001; },
+      dbg: function () { return { foes: foes.map(function (f) { var b = box(f); return { x: b.cx, y: b.y + b.h * 0.35, civ: f.civ, up: f.up, dn: f.dn }; }), dead: dead, kills: kills, cool: cool }; }
+    };
+  }
+  boot('westshoot', function (A) {
+    return gallery(A, { v: '3579', bg: 'ws_bg', en: ['ws_e1', 'ws_e2'], civ: ['ws_c1'], gun: 'pistol', base: '#7C2D12',
+      hitCol: ['#7F1D1D', '#B91C1C', '#D6D3D1'], dust: ['#E7C9A0', '#C8A27A'],
+      // [x, y (pied), échelle] dans l'image : fenêtres du saloon (g.) et de la banque (d.), porches, rue
+      spots: [[0.07, 0.38, 0.42], [0.21, 0.40, 0.4], [0.86, 0.36, 0.42], [0.95, 0.38, 0.42], [0.12, 0.74, 0.62], [0.88, 0.74, 0.62], [0.32, 0.70, 0.42], [0.66, 0.70, 0.42], [0.47, 0.84, 0.82], [0.62, 0.92, 0.98], [0.26, 0.94, 0.98]] });
+  }, 'aim', 0.5);
+  boot('bunkerbreach', function (A) {
+    return gallery(A, { v: '3579', bg: 'bb_bg', en: ['bb_e1', 'bb_e2'], civ: ['bb_c1'], gun: 'rifle', base: '#3F2A2A',
+      hitCol: ['#7F1D1D', '#B91C1C', '#A8A29E'], dust: ['#A8A29E', '#78716C'],
+      // bunker et ruines au loin, talus de gauche et de droite, champ devant
+      spots: [[0.64, 0.46, 0.34], [0.77, 0.46, 0.34], [0.70, 0.43, 0.3], [0.18, 0.56, 0.48], [0.88, 0.58, 0.5], [0.38, 0.66, 0.6], [0.66, 0.70, 0.66], [0.22, 0.84, 0.86], [0.5, 0.9, 0.98], [0.8, 0.9, 0.98]] });
+  }, 'aim', 0.5);
 
   /* ================================================================== 13. TRENCH DEFENSE — first-person from the trench: enemy
      soldiers charge across the battlefield (front-view run cycle, perspective). Tap one to shoot him; shoot grenades in
