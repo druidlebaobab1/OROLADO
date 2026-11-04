@@ -293,8 +293,8 @@
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         if (!W) { resize(); if (!W) return; }
         if (D) demoTick(dt);                                            // visitor: a demo round plays by itself
-        if (lite && phase === 'idle' && drawn && !P.length) return;      // old phones: still idle scene
-        var moving = phase !== 'idle' || !lite;
+        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy())) return; // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
+        var moving = phase !== 'idle' || !lite || !!(g.busy && g.busy());
         if (phase === 'play') playT += dt;
         if (phase === 'over') { overT -= dt; if (overT <= 0) toIdle(); }
         if (moving) g.step(dt, phase === 'play' || phase === 'cashing');

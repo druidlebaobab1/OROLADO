@@ -347,7 +347,7 @@
       function frame(dt) {
         if (!W) return;
         dt = dt || 0;
-        var moving = phase !== 'idle' || !lite;
+        var moving = phase !== 'idle' || !lite || !!(g.busy && g.busy());
         if (moving && dt) g.step(dt, phase === 'play' || phase === 'cashing');
         for (var i = P.length - 1; i >= 0; i--) { var p = P[i]; p.t += dt; if (p.t >= p.m) { P.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.985; p.vy = p.vy * 0.985 + p.g * dt; }
         for (i = RG.length - 1; i >= 0; i--) { RG[i].t += dt; if (RG[i].t > 0.6) RG.splice(i, 1); }
@@ -370,7 +370,7 @@
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         if (!W) { resize(); if (!W) return; }
         if (D) demoTick(dt);                                            // visitor: a demo round plays by itself
-        if (lite && phase === 'idle' && drawn && !P.length) return;      // old phones: still idle scene
+        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy())) return; // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
         if (phase === 'play') { playT += dt; ambT += dt; if (ambT > 3) { ambT = 0; amb(true, 0.4 + 0.45 * Math.min(1, playT / 110)); } }
         if (phase === 'over') { overT -= dt; if (overT <= 0) toIdle(); }
         frame(dt);
