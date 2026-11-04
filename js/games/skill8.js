@@ -1444,7 +1444,7 @@
         if (ball.y < T - br) { score++; A.ring(W / 2, ay, pw, '#FDE68A'); A.burst(ball.x, ay, 14, ['#FDE68A', '#fff'], 160, 0.5, 3, 0); serve(true); }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'neonpong', 'rgba(0,0,0,.3)');
         var paddle = function (x, y, col) { rr(c, x - pw / 2, y - ph / 2, pw, ph, ph / 2); c.fillStyle = col; c.fill(); rr(c, x - pw / 2 + 4, y - ph / 2 + 2, pw - 8, ph * 0.3, ph * 0.15); c.fillStyle = 'rgba(255,255,255,.6)'; c.fill(); };
         paddle(ai, ay, lg(c, 0, ay - ph, 0, ay + ph, ['#FBCFE8', '#EC4899', '#9D174D']));
         if (!dead) paddle(me, py, lg(c, 0, py - ph, 0, py + ph, ['#CFFAFE', '#06B6D4', '#155E75']));
@@ -1762,7 +1762,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'beattap', 'rgba(0,0,0,.3)');
         var i, l;
         // hit line + lane flashes
         for (l = 0; l < 3; l++) { if (flashL[l]) { c.globalAlpha = flashL[l] / 0.15 * 0.5; c.fillStyle = LC[l][1]; c.beginPath(); c.moveTo(laneX(l - 0.5, lineY - 60), lineY - 60); c.lineTo(laneX(l + 0.5, lineY - 60), lineY - 60); c.lineTo(laneX(l + 0.5, H), H); c.lineTo(laneX(l - 0.5, H), H); c.fill(); c.globalAlpha = 1; } }

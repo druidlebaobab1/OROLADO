@@ -487,6 +487,11 @@
   /* ================================================================== 1. BLOCK FALL — the falling-blocks puzzle: drag the block
      left / right (it follows the finger, one cell at a time), tap to turn it, flick down to drop it. Full rows clear.
      Gravity speeds up with the time played. Fair: a ghost shows where the block lands; the next block is shown. */
+  // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
+  var WBF = {};
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('blockfall', function (A) {
     var W, H, T, dpr, bg, cs, ox, oy, NC = 10, NR = 16, spr = [], ghostS = null;
     var SH = [
@@ -1043,7 +1048,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'bubblepop', 'rgba(0,0,0,.3)');
         var i, j, d2 = r * 2 + 2;
         for (i = 0; i < rows.length; i++) for (j = 0; j < ncol(i); j++) { var v = rows[i].c[j]; if (v >= 0) c.drawImage(spr[v], cx(i, j) - r - 1, cy(i) - r - 1, d2, d2); }
         for (i = 0; i < falls.length; i++) c.drawImage(spr[falls[i].c], falls[i].x - r - 1, falls[i].y - r - 1, d2, d2);
@@ -1151,7 +1156,7 @@
         if (A.idle() && !busy && !won) { aiT += dt; if (aiT > 1.1) { aiT = 0; var mv = findMove(); if (mv) trySwap(mv[0], mv[1]); } }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'gemswap', 'rgba(0,0,0,.3)');
         var i, g, x, y;
         for (i = 0; i < N * N; i++) {
           g = b[i]; if (!g) continue; x = g.x; y = g.y;
@@ -1276,7 +1281,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'memoflip', 'rgba(0,0,0,.3)');
         if (!backS) return;
         for (var i = 0; i < cards.length; i++) {
           var cd = cards[i], x = ox + (i % cols) * cw + 3, y = oy + ((i / cols) | 0) * ch + 3, w = cw - 6, h = ch - 6, s = Math.abs(cd.f * 2 - 1), face = cd.f > 0.5;
@@ -1358,7 +1363,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'echopads', 'rgba(0,0,0,.3)');
         for (var k = 0; k < 4; k++) {
           var on = !cut && (lit === k || (dead && wrong === k && (t * 6 | 0) % 2));
           if (cut) c.globalAlpha = Math.max(0.15, 1 - cut.t * 1.5);
