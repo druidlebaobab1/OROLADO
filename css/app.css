@@ -14428,3 +14428,28 @@ html body #casinoModal .oro-cover .oc-in > :not(.oc-sp){width:62px!important;hei
 html body #casinoModal .oro-cover .oc-in > :not(.oc-sp) img,html body #casinoModal .oro-cover .oc-in > :not(.oc-sp) svg{width:100%!important;height:100%!important}
 html body #casinoModal .oro-cover .oc-sp{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,.12);border-top-color:#F5C451;animation:ocSpin .8s linear infinite}
 @keyframes ocSpin{to{transform:rotate(360deg)}}
+
+/* v3612 (propriétaire : « améliore TOUS les jeux ») : pour les jeux dont le plateau fait partie du fond, le décor illustré passe
+   DERRIÈRE et le fond dessiné devient semi-transparent (plateau toujours lisible). */
+html body #casinoModal[data-g="speedboat"] .cg-stage{background:url("/img/games/wb_speedboat.webp?v=3612") center/cover no-repeat,#0B0906!important}
+html body #casinoModal[data-g="speedboat"] .cg-stage > canvas.s4-bg{opacity:.62}
+html body #casinoModal[data-g="highway"] .cg-stage{background:url("/img/games/wb_highway.webp?v=3612") center/cover no-repeat,#0B0906!important}
+html body #casinoModal[data-g="highway"] .cg-stage > canvas.s3-bg{opacity:.62}
+html body #casinoModal[data-g="neonsnake"] .cg-stage{background:url("/img/games/wb_neonsnake.webp?v=3612") center/cover no-repeat,#0B0906!important}
+html body #casinoModal[data-g="neonsnake"] .cg-stage > canvas.s4-bg{opacity:.62}
+html body #casinoModal[data-g="blockfall"] .cg-stage{background:url("/img/games/wb_blockfall.webp?v=3612") center/cover no-repeat,#0B0906!important}
+html body #casinoModal[data-g="blockfall"] .cg-stage > canvas.s4-bg{opacity:.62}
+html body #casinoModal[data-g="merge2048"] .cg-stage{background:url("/img/games/wb_merge2048.webp?v=3612") center/cover no-repeat,#0B0906!important}
+html body #casinoModal[data-g="merge2048"] .cg-stage > canvas.s4-bg{opacity:.62}
+html body #casinoModal[data-g="mazechomp"] .cg-stage{background:url("/img/games/wb_mazechomp.webp?v=3612") center/cover no-repeat,#0B0906!important}
+html body #casinoModal[data-g="mazechomp"] .cg-stage > canvas.s4-bg{opacity:.62}
+html body #casinoModal[data-g="minigolf"] .cg-stage{background:url("/img/games/wb_minigolf.webp?v=3612") center/cover no-repeat,#0B0906!important}
+html body #casinoModal[data-g="minigolf"] .cg-stage > canvas.s4-bg{opacity:.62}
+html body #casinoModal[data-g="dogracelive"] .l5-scene{background:url("/img/games/lb_dogracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="dogracelive"] .l5-scene > svg.l5-svg{opacity:.8}
+html body #casinoModal[data-g="camelracelive"] .l5-scene{background:url("/img/games/lb_camelracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="camelracelive"] .l5-scene > svg.l5-svg{opacity:.8}
+html body #casinoModal[data-g="snailracelive"] .l5-scene{background:url("/img/games/lb_snailracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="snailracelive"] .l5-scene > svg.l5-svg{opacity:.8}
+html body #casinoModal[data-g="chickenracelive"] .l5-scene{background:url("/img/games/lb_chickenracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="chickenracelive"] .l5-scene > svg.l5-svg{opacity:.8}
+html body #casinoModal[data-g="boatracelive"] .l5-scene{background:url("/img/games/lb_boatracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="boatracelive"] .l5-scene > svg.l5-svg{opacity:.8}
+html body #casinoModal[data-g="spaceracelive"] .l5-scene{background:url("/img/games/lb_spaceracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="spaceracelive"] .l5-scene > svg.l5-svg{opacity:.8}
+html body #casinoModal[data-g="horses"] .lz-scene > svg{opacity:.8}
+html body #casinoModal[data-g="race"] .lz-scene > svg{opacity:.8}

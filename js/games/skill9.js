@@ -667,6 +667,7 @@
           circ(c, 118, 120, 10, 'rgba(0,0,0,.25)'); circ(c, 115, 115, 9, rg(c, 115, 115, 9, ['#86EFAC', '#16A34A', '#14532D'], -3, -3));
         });
         tileS.w = ts; tileS.h = ts;
+        (function () { var im = new Image(); im.onload = function () { try { var x = tileS.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.drawImage(im, 0, 0, tileS.width, tileS.height); x.restore(); } catch (e) { /* garde l'herbe dessinée */ } }; im.src = 'img/games/tx_grass.webp?v=3612'; })(); // v3612 : vraie herbe illustrée
         car = mkc(cl * 0.62, cl * 1.08, sdpr(), function (c, w, h) { // top view, nose up
           var bw = w * 0.82, x0 = (w - bw) / 2;
           c.fillStyle = '#0B0B10'; [[0.04, 0.16], [0.04, 0.7], [0.82, 0.16], [0.82, 0.7]].forEach(function (q) { rr(c, w * q[0], h * q[1], w * 0.16, h * 0.16, 2); c.fill(); });
