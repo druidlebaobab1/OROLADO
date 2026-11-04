@@ -639,7 +639,7 @@
   // v3586 (propriétaire, vidéo Tokyo Dash : « les maisons viennent en vitesse bizarre ») : tout près de la caméra une façade
   // devenait un énorme chevron déformé. Les façades s'arrêtent juste avant le coureur (NEAR_Z) et le bord de l'écran est fermé
   // par l'angle sombre de l'immeuble le plus proche (comme dans les vrais jeux de course).
-  var NEAR_Z = 0.06;
+  var NEAR_Z = 0.0;
   function nearCorner(c, V, lx, h, col) {
     var p = V.P(NEAR_Z), x = V.SX(lx, NEAR_Z), yb = V.SY(NEAR_Z), yt = yb - h * V.lw * p, e = lx < 0 ? -2 : V.W + 2;
     poly(c, [x, -2, x, yt, x, yb, x, V.H + 2, e, V.H + 2, e, -2], col);
