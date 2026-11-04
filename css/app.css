@@ -14414,3 +14414,8 @@ html:root body #casinoModal .cs-toast .ct-ic img.ct-wal,html:root body #casinoMo
 /* v3598 (propriétaire, capture Pharaoh Run : « libère le jeu, il doit remplir tout ») : dans les jeux Action, l'image du jeu prend
    toute la largeur de l'écran (plus de bords noirs à gauche / à droite, plus de coins arrondis). Le terminal du bas ne change pas. */
 html body #casinoModal.in-game[data-sec="skill"] .cs-game > .cg-stage{margin-left:-14px!important;margin-right:-14px!important;width:calc(100% + 28px)!important;max-width:none!important;border-radius:0!important;border-left:0!important;border-right:0!important;box-shadow:none!important}
+
+/* v3604 (propriétaire : « améliore aussi les jeux casino ») : décor d'ambiance illustré, propre à chaque jeu, derrière le jeu (doux
+   et assombri pour que les symboles, cartes et chiffres restent bien lisibles). */
+html body #casinoModal.in-game[data-sec="more"] .cs-game{background:linear-gradient(180deg,rgba(8,6,14,.55),rgba(8,6,14,.78)),var(--cbg,none) center/cover no-repeat!important}
+html body #casinoModal#casinoModal.in-game[data-sec="more"] .cs-game > :is(.cs-stage,.cg-stage){background:linear-gradient(180deg,rgba(10,8,20,.32),rgba(10,8,20,.55)),var(--cbg,none) center/cover no-repeat!important}
