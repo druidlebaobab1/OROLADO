@@ -1315,7 +1315,7 @@
   // Tant que l'image n'est pas chargée, le dessin vectoriel (SUBWAY_KID) sert de secours.
   var subKidImg = null, subKidFr = null;
   function subKid(sp) {
-    function apply() { if (subKidFr) { sp.run = [subKidFr[0], subKidFr[1]]; sp.jump = subKidFr[2]; sp.slide = subKidFr[3]; } }
+    function apply() { if (subKidFr) { sp.run = [subKidFr[0], subKidFr[1]]; sp.jump = subKidFr[2]; sp.slide = subKidFr[3]; } runFrames('sub', sp); }
     if (subKidFr) return apply();
     if (!subKidImg) { subKidImg = new Image(); subKidImg.decoding = 'async'; subKidImg.src = 'img/games/sub_kid.webp?v=3546'; }
     subKidImg.addEventListener('load', function () {
@@ -1402,11 +1402,21 @@
   /* 2026-11-03 (propriétaire : « 2 jeux de plus où l'on court, mondes différents, persos cool ») — fabrique de MONDES :
      même moteur, mêmes voies, mêmes obstacles et mêmes collisions que Subway Dash ; seules les images changent
      (perso fal.ai en 4 poses 320x400, panorama, façades, avant/flanc du « train », barrière à sauter, portique à glisser). */
+  // v3593 (propriétaire, vidéo : « il a un seul pied ») : 4 vraies poses de course vues de dos (les deux jambes alternent),
+  // même taille et même ligne de sol que les anciennes ; elles remplacent les 2 poses de course dès qu'elles sont chargées.
+  var RUNF = {};
+  function runFrames(pfx, sp) {
+    var q = RUNF[pfx];
+    if (!q) { q = RUNF[pfx] = { im: new Image(), fr: null, sps: [] }; q.im.decoding = 'async';
+      q.im.onload = function () { q.fr = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = 320; cv.height = 400; cv.getContext('2d').drawImage(q.im, i * 320, 0, 320, 400, 0, 0, 320, 400); return cv; }); q.sps.forEach(function (x) { x.run = q.fr.slice(); }); };
+      q.im.src = 'img/games/' + pfx + '_run.webp?v=3593'; }
+    if (q.fr) sp.run = q.fr.slice(); else q.sps.push(sp);
+  }
   function worldTheme(pfx, ver, o) {
     var I = {}, kidImg = null, kidFr = null;
     function img(n) { if (!I[n]) { var q = { im: new Image(), ok: false }; q.im.decoding = 'async'; q.im.onload = function () { q.ok = true; }; q.im.src = 'img/games/' + pfx + '_' + n + '.webp?v=' + ver; I[n] = q; } return I[n]; }
     function kid(sp) {
-      function apply() { if (kidFr) { sp.run = [kidFr[0], kidFr[1]]; sp.jump = kidFr[2]; sp.slide = kidFr[3]; } }
+      function apply() { if (kidFr) { sp.run = [kidFr[0], kidFr[1]]; sp.jump = kidFr[2]; sp.slide = kidFr[3]; } runFrames(pfx, sp); }
       if (kidFr) return apply();
       if (!kidImg) { kidImg = new Image(); kidImg.decoding = 'async'; kidImg.src = 'img/games/' + pfx + '_kid.webp?v=' + ver; }
       kidImg.addEventListener('load', function () {
