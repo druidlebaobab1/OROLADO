@@ -1060,6 +1060,7 @@
         if (!w.W) return;
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.drawImage(bg, 0, 0);
+        wb1(ctx, key);
         var k = w.s * dpr, sx = 0, sy = 0;
         if (shake > 0) { sx = (Math.random() - 0.5) * shake * 6 * dpr; sy = (Math.random() - 0.5) * shake * 6 * dpr; }
         ctx.setTransform(k, 0, 0, k, sx, sy);
@@ -1248,5 +1249,10 @@
       if (!watch) K.multi(key, 'state', null, true).then(function (r) { if (alive() && r && !r.done && r.t0 && phase === 'idle') { r.now = r.now || Date.now() / 1000; begin(r); } });
     };
   }
+  // v3602 (propriétaire) : vrai décor illustré derrière les 6 jeux d'origine (fond dessiné en secours tant qu'il charge)
+  var WB1 = {};
+  function wb1(c, k) { if (k === 'basket') return; var o = WB1[k]; if (!o) { o = WB1[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3602'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, sc = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * sc, ih = im.naturalHeight * sc;
+    c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(0, 0, cv.width, cv.height); }
   ['spacerun', 'flappyrock', 'stack', 'knifehit', 'basket', 'starbridge'].forEach(function (k) { K.register(k, make(k), { rules: rules(k) }); });
 })(window.D6 = window.D6 || {});
