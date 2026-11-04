@@ -14410,3 +14410,7 @@ html:root body #casinoModal .cs-toast .ct-ic img.ct-wal,html:root body #casinoMo
 
 /* v3588 (propriétaire) : rangée de coefficients / derniers résultats retirée de TOUS les jeux (Action et Casino) ; seul le Live la garde. */
 #casinoModal.in-game:not([data-sec="live"]) .cg-hist{display:none!important}
+
+/* v3598 (propriétaire, capture Pharaoh Run : « libère le jeu, il doit remplir tout ») : dans les jeux Action, l'image du jeu prend
+   toute la largeur de l'écran (plus de bords noirs à gauche / à droite, plus de coins arrondis). Le terminal du bas ne change pas. */
+html body #casinoModal.in-game[data-sec="skill"] .cs-game > .cg-stage{margin-left:-14px!important;margin-right:-14px!important;width:calc(100% + 28px)!important;max-width:none!important;border-radius:0!important;border-left:0!important;border-right:0!important;box-shadow:none!important}
