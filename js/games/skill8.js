@@ -1394,6 +1394,11 @@
 
   /* ================================================================== 17. NEON PONG — drag your paddle at the bottom; the robot plays
      the top. The ball speeds up after each hit and the robot gets sharper. Letting the ball pass ends the round. */
+  // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
+  var WBF = {};
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('neonpong', function (A) {
     var W, H, T, dpr, bg, pw, ph, py, ay, br, me = 0, ai = 0, ball = null, dead = 0, won = 0, over = null, t = 0, drag = null, wait = 0, hits = 0, trail = [], score = 0, aiErr = 0;
     function serve(toMe) { var a = rnd(-0.5, 0.5) + (toMe ? Math.PI / 2 : -Math.PI / 2), v = (H - T) * 0.62; ball = { x: W / 2, y: (py + ay) / 2, vx: Math.cos(a) * v, vy: Math.sin(a) * v, v: v }; wait = 0.7; trail = []; aiErr = rnd(-1, 1); }
@@ -1512,7 +1517,7 @@
         if (A.idle()) { aiT += dt; if (aiT > 0.35) { aiT = 0; var near = rocks.slice().sort(function (a2, b2) { return Math.hypot(a2.x - sx, a2.y - sy) - Math.hypot(b2.x - sx, b2.y - sy); })[0]; if (near && Math.hypot(near.x - sx, near.y - sy) < Math.max(W, H) * 0.55) fire(near.x + near.vx * 0.15, near.y + near.vy * 0.15); } }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'meteorblast', 'rgba(0,0,0,.16)');
         var i, r;
         for (i = 0; i < rocks.length; i++) { r = rocks[i]; c.save(); c.translate(r.x, r.y); c.rotate(r.a); c.drawImage(rockS[r.k], -r.r * 1.25, -r.r * 1.25, r.r * 2.5, r.r * 2.5); c.restore(); }
         c.strokeStyle = '#86EFAC'; c.lineWidth = 3; c.lineCap = 'round'; for (i = 0; i < bul.length; i++) { var b = bul[i]; c.beginPath(); c.moveTo(b.x, b.y); c.lineTo(b.x - b.vx * 0.02, b.y - b.vy * 0.02); c.stroke(); }
@@ -1585,7 +1590,7 @@
         if (y - cam > H + hr * 2) { if (A.live()) { if (A.fail(A.l.fail)) dead = 1; } else this.reset(false); }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'skyhopper', 'rgba(0,0,0,.16)');
         var P2 = pw(), i, p, ph2 = Math.max(8, P2 * 0.16);
         for (i = 0; i < plats.length; i++) {
           p = plats[i]; var py = p.y - cam; if (py < T - 20 || py > H + 20) continue;
@@ -1675,7 +1680,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'fruitcatch', 'rgba(0,0,0,.16)');
         var i, it;
         for (i = 0; i < splats.length; i++) { c.globalAlpha = 1 - splats[i].t / 1.2; c.fillStyle = '#B91C1C'; c.beginPath(); c.ellipse(splats[i].x, splats[i].y, 14, 4, 0, 0, TAU); c.fill(); } c.globalAlpha = 1;
         for (i = 0; i < items.length; i++) {
@@ -1830,7 +1835,7 @@
         if (snap && !snap.b && p.y + hr * 0.2 > lava) { snap.b = 1; dead = 1; boomFx(A, p.x - cam, lava, 1); }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'ropeswing', 'rgba(0,0,0,.16)');
         var i;
         // lava waves
         c.fillStyle = 'rgba(254,240,138,.5)'; for (i = 0; i < 8; i++) { var lx = ((i * W / 4 - cam * 0.9) % (W * 2) + W * 2) % (W * 2) - W * 0.25; c.beginPath(); c.ellipse(lx, lava + 4 + Math.sin(t * 2 + i) * 2, W * 0.08, 3, 0, 0, TAU); c.fill(); }
@@ -2266,7 +2271,7 @@
         if (A.idle()) { aiT += dt; if (aiT > 0.35) { aiT = 0; var near = hearts.slice().sort(function (a2, b2) { return a2.y - b2.y; })[0]; if (near) fire(near.x + near.vx * 0.1, near.y + near.vy * 0.1); } }
       },
       draw: function (c) {
-        A.bg(bg); var i, h, a;
+        A.bg(bg); wbFill(c, 'cupidaim', 'rgba(40,10,40,.45)'); var i, h, a;
         c.strokeStyle = '#FDE68A'; c.lineWidth = 3; c.lineCap = 'round';
         for (i = 0; i < arrows.length; i++) { a = arrows[i]; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(a.x - a.vx * 0.03, a.y - a.vy * 0.03); c.stroke(); c.save(); c.translate(a.x, a.y); c.rotate(Math.atan2(a.vy, a.vx)); poly(c, [4, 0, -7, -4, -7, 4], '#F87171'); c.restore(); }
         for (i = 0; i < hearts.length; i++) { h = hearts[i]; c.save(); c.translate(h.x, h.y); c.rotate(Math.sin(h.wob) * 0.14); c.drawImage(heartS, -heartS.w / 2, -heartS.h / 2, heartS.w, heartS.h); c.restore(); }
@@ -2357,7 +2362,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg); var i, e, img;
+        A.bg(bg); wbFill(c, 'lovecatch', 'rgba(0,0,0,.16)'); var i, e, img;
         for (i = 0; i < items.length; i++) { e = items[i]; img = e.kind === 'h' ? heartS : e.kind === 'r' ? roseS : brokeS; c.save(); c.translate(e.x, e.y); c.rotate(e.rot); c.drawImage(img, -img.w / 2, -img.h / 2, img.w, img.h); c.restore(); }
         if (!dead) drawBasket(c);
       },
