@@ -136,6 +136,16 @@
   /* ======================================================= shared live engine ===================================================== */
   // G: { SHOW (s) or show(res), lab, odds0, rules, scene(uid,l), board(uid,l,oddTxt,odds), init(c), frame(c,R,t,e,res,odds),
   //      wins(res) → winning selections, hist(n,c), beat(e,res,R) → int that changes at each highlight, bev: sound event name }
+  // v3601 (propriétaire : « améliore les jeux live de l'entreprise ») : vrai décor illustré glissé juste après le fond de la scène
+  // (pistes, tables, cartes, boules restent dessinées par-dessus).
+  var LBG = ['andarlive','archerylive','baccaratlive','balloonlive','basketlive','bingolive','boatracelive','boxinglive','bullseye','bustlive','camelracelive','catwalk','chickenracelive','claw','coinlive','cricketlive','diceduellive','dogracelive','dtlive','fishinglive','fleets','football','gemcount','hilolive','kenolive','ladderlive','lotto649live','lucky10','lucky7live','megaballlive','moneywheel','monsterlive','pegdrop','penaltylive','peryalive','pokerlive','redblacklive','sicbolive','snailracelive','spaceracelive','teenpattilive','tennislive','volcanolive'];
+  function liveBg(key, h) {
+    if (LBG.indexOf(key) < 0) return h;
+    var img = '<image class="lbg" href="img/games/lb_' + key + '.webp?v=3601" x="-70" y="-25" width="500" height="290" preserveAspectRatio="xMidYMid slice" opacity=".92"/>';
+    var i = h.indexOf('</defs>'), p = i < 0 ? 0 : i + 7, m = /^<rect\b[^>]*\/>/.exec(h.slice(p));
+    if (m) { var w = /width="(-?[\d.]+)"/.exec(m[0]); if (w && +w[1] >= 300) p += m[0].length; }
+    return h.slice(0, p) + img + h.slice(p);
+  }
   function live(key, G) {
     var showOf = function (res) { return G.show ? G.show(res) : G.SHOW; };
     K.register(key, function (box) {
@@ -144,7 +154,7 @@
       box.classList.add('cg-game', 'cg-live5', 'cg-' + key);
       box.innerHTML = '<div class="cg-stage l5-stage" data-ph="open"><div class="l5-head"><span class="l5-live"><i></i><b>LIVE</b></span><b class="l5-ph fit"></b><em class="l5-tm fit"></em></div>' +
         '<i class="l5-bar"><b></b></i>' +
-        '<div class="l5-scene"><svg class="l5-svg" viewBox="0 0 360 230" preserveAspectRatio="xMidYMid meet" dir="ltr" aria-hidden="true">' + G.scene(uid, l) + '</svg></div>' +
+        '<div class="l5-scene"><svg class="l5-svg" viewBox="0 0 360 230" preserveAspectRatio="xMidYMid meet" dir="ltr" aria-hidden="true">' + liveBg(key, G.scene(uid, l)) + '</svg></div>' +
         '<div class="l5-last"></div></div>' +
         K.stakePanel(l.bet, '<div class="l5-board l5-b-' + key + '" dir="ltr">' + G.board(uid, l, oddTxt, G.odds0 || {}) + '</div>');
       K.bindStake(box);
