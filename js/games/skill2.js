@@ -868,7 +868,7 @@
         shipS = [0, 1, 2].map(shipSprite);
         var lt = rowH - sh;
         laneS = mkc(W + 28, lt, dpr, function (c) {
-          c.fillStyle = 'rgba(8,5,26,.55)'; c.fillRect(0, 0, W + 28, lt);
+          c.fillStyle = 'rgba(8,5,26,.3)'; c.fillRect(0, 0, W + 28, lt); // v3613 : voies plus claires (on voit l'espace)
           c.fillStyle = 'rgba(167,139,250,.35)'; for (var x = 0; x < W + 28; x += 28) c.fillRect(x, lt / 2 - 1, 14, 2);
         });
         lanes = {};
