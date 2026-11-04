@@ -970,8 +970,19 @@
     var W, H, u, dpr, T, bg, obS = [], hy, ny, lw, F = 5, lane = 0, hx = 0, obs = [], rowT = 0, ringP = 0, dead = false, wall = null, t = 0, won = 0, spd = 0.5, lastFree = 0;
     var ringN = 0, SD = [], wallS = null, floorG = null, fogG = null, shadeG = null, sfx = 0; // drawing only
     var HR = null, cyc = 0, lx0 = 0, vX = 0, lean = 0, vPrev = 0, PF = [], CF = [], crash = null, scrollK = 1, cfOn = 0; // drawing only (v3103)
-    var TUBE = ['#F472B6', '#FB923C', '#FACC15', '#4ADE80', '#22D3EE', '#818CF8', '#C084FC'];
-    var WOOD = ['#C98A4B', '#D69A5C', '#BD7E41', '#DDA567', '#C68647'];
+    // v3589 (propriétaire : « améliore le dessin du Hamster », sans nouvelle image payée) : le tube reprend celui du LOGO
+    // (plastique orange / ambre, anneaux dorés) et le fond = le décor du logo (plage, ciel, ville) en flou doux.
+    var TUBE = ['#FB923C', '#F59E0B', '#F97316', '#FDBA74', '#EA580C', '#FBBF24'];
+    var LOGO = new Image(); LOGO.decoding = 'async'; LOGO.src = 'img/games/hamster.webp?v=3589';
+    function blurLogo(c) { // flou sans ctx.filter (marche aussi sur les vieux iPhone) : réduit à 20 px puis agrandi en douceur
+      if (!(LOGO.complete && LOGO.naturalWidth)) return false;
+      var sm = document.createElement('canvas'); sm.width = 20; sm.height = 20; var sc = sm.getContext('2d'); sc.imageSmoothingEnabled = true;
+      sc.drawImage(LOGO, 0, 0, 512, 512, 0, 0, 20, 20);
+      var md = document.createElement('canvas'); md.width = 80; md.height = 80; var mc = md.getContext('2d'); mc.imageSmoothingEnabled = true; mc.drawImage(sm, 0, 0, 80, 80);
+      var S = Math.max(W, H) * 1.15; c.imageSmoothingEnabled = true; c.drawImage(md, (W - S) / 2, (H - S) / 2 - H * 0.08, S, S);
+      return true;
+    }
+    var WOOD = ['#EAD2A6', '#F2DEB8', '#E2C594', '#F5E4C3', '#E6CB9E']; // v3589 : bois clair (le hamster doré ressort)
     function P(z) { return 1 / (1 + F * z); }
     function SY(z) { return hy + (ny - hy) * P(z); }
     function SX(lx, z) { return W / 2 + lx * lw * P(z); }
@@ -1213,23 +1224,22 @@
       });
     }
     function lg2(c, x0, y0, x1, y1, st) { var g = c.createLinearGradient(x0, y0, x1, y1); st.forEach(function (s, i) { g.addColorStop(i / (st.length - 1), s); }); return g; }
+    function mkBg() {
+      bg = mkc(W, H, dpr, function (c) {
+        // the world outside the tube = the logo's sunny seaside town, out of focus (warm, bright, same mood as the logo)
+        var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#5FB8D6'); g.addColorStop(0.55, '#E9A15A'); g.addColorStop(1, '#8A4A22'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+        if (blurLogo(c)) { var dk = c.createLinearGradient(0, 0, 0, H); dk.addColorStop(0, 'rgba(20,10,4,0)'); dk.addColorStop(1, 'rgba(40,18,6,.22)'); c.fillStyle = dk; c.fillRect(0, 0, W, H); }
+        var q2 = c.createRadialGradient(W / 2, hy, 0, W / 2, hy, lw * 1.4); q2.addColorStop(0, 'rgba(255,251,235,1)'); q2.addColorStop(0.22, 'rgba(253,230,138,.85)'); q2.addColorStop(0.6, 'rgba(251,146,60,.22)'); q2.addColorStop(1, 'rgba(251,146,60,0)');
+        c.fillStyle = q2; c.fillRect(0, 0, W, H);
+      });
+    }
+    LOGO.addEventListener('load', function () { if (W) mkBg(); });
     return {
       size: function (w, h, uu, d, top) {
         W = w; H = h; u = uu; dpr = d; T = top;
         hy = Math.max(T + 4, H * 0.22); ny = H * 0.95; lw = Math.max(4, Math.min(W * 0.3, (ny - hy) * 0.5)); // 2026-10-20 (QA) : scène pas encore mesurée (très basse) → jamais de rayon négatif (createRadialGradient plantait l'image)
         var tr = lw * 1.95, cyN = ny - tr * 0.45;
-        bg = mkc(W, H, dpr, function (c) {
-          // the world outside the tube: a bright toy room, out of focus (soft colour blobs), glowing exit at the end
-          var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#3B1D6E'); g.addColorStop(0.5, '#5B2A86'); g.addColorStop(1, '#2A1250'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-          var R = 31;
-          for (var i = 0; i < (A.lite ? 14 : 30); i++) {
-            R = (R * 9301 + 49297) % 233280; var bx = R / 233280 * W; R = (R * 9301 + 49297) % 233280; var by = R / 233280 * H; R = (R * 9301 + 49297) % 233280;
-            var br = Math.min(W, H) * (0.05 + R / 233280 * 0.12), col = TUBE[i % TUBE.length], q = c.createRadialGradient(bx, by, 0, bx, by, br);
-            q.addColorStop(0, col + '88'); q.addColorStop(1, col + '00'); c.fillStyle = q; c.fillRect(bx - br, by - br, br * 2, br * 2);
-          }
-          var q2 = c.createRadialGradient(W / 2, hy, 0, W / 2, hy, lw * 1.4); q2.addColorStop(0, 'rgba(255,251,235,1)'); q2.addColorStop(0.2, 'rgba(253,230,138,.85)'); q2.addColorStop(0.6, 'rgba(244,114,182,.25)'); q2.addColorStop(1, 'rgba(244,114,182,0)');
-          c.fillStyle = q2; c.fillRect(0, 0, W, H);
-        });
+        mkBg();
         floorG = null; fogG = null; shadeG = null;
         HR = rig(hamW());
         obS = [obSprite(0), obSprite(1)];
@@ -1302,7 +1312,7 @@
         for (i = 0; i < n + 2; i++) {
           var z1 = (n - 1 - i + 1 - ringP) * 0.14, z0 = z1 + 0.14; if (z0 < -0.12) continue;
           var p0 = P(z0), p1 = P(Math.max(z1, -0.12)), cut = z1 < -0.12, col = TUBE[((ringN + n - i) % TUBE.length + TUBE.length) % TUBE.length];
-          c.globalAlpha = Math.min(0.75, 0.42 + 0.3 * p1); c.fillStyle = col; c.beginPath(); c.arc(cx, cy(p1), tr * p1, 0, TAU); c.arc(cx, cy(p0), tr * p0, 0, TAU, true); c.fill('evenodd');
+          c.globalAlpha = Math.min(0.55, 0.26 + 0.3 * p1); c.fillStyle = col; c.beginPath(); c.arc(cx, cy(p1), tr * p1, 0, TAU); c.arc(cx, cy(p0), tr * p0, 0, TAU, true); c.fill('evenodd');
           if (cut) continue;
           c.globalAlpha = Math.min(1, 0.25 + 0.5 * p1); c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = Math.max(1, 3.2 * p1); c.beginPath(); c.arc(cx - tr * p1 * 0.05, cy(p1) - tr * p1 * 0.05, tr * p1 * 0.93, Math.PI * 1.12, Math.PI * 1.42); c.stroke();
           c.lineWidth = Math.max(1.5, 9 * p1); c.strokeStyle = sh(col, -0.15); c.beginPath(); c.arc(cx, cy(p1), tr * p1, Math.PI * 0.75, Math.PI * 2.25); c.stroke();
