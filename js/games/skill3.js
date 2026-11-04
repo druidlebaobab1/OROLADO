@@ -1509,8 +1509,18 @@
   boot('pharaohrun', function (A) { return runner(A, PHARAOH); }, 'swipe4', 0.5);
   boot('parisrun', function (A) { return runner(A, PARIS); }, 'swipe4', 0.5);
   boot('candyrun', function (A) { return runner(A, CANDY); }, 'swipe4', 0.5);
-  boot('jungledash', function (A) { return runner(A, JUNGLE); }, 'swipe4', 0.5);
-  boot('metrodash', function (A) { return runner(A, METRO); }, 'swipe4', 0.5);
+  // v3594 (propriétaire : « améliore les jeux qu'on contrôle, en commençant par le haut ») : Metro Dash et Jungle Dash passent
+  // dans de vrais mondes illustrés (même moteur, mêmes voies, mêmes obstacles, mêmes collisions ; seules les images changent).
+  var NEON = worldTheme('mt', '3594', {
+    sky: ['#1E1B4B', '#4C1D95', '#7C3AED', '#DB2777'], ground: ['#3F3F55', '#33334A', '#28283C'], lane: ['#2E2E44', '#26263A', '#1F1F31'],
+    back: '#1B1530', walk: '#4B4B63', roof: ['#334155', '#475569'], dust: 'rgba(103,232,249,'
+  });
+  var JUNGLE2 = worldTheme('jg', '3594', {
+    sky: ['#38BDF8', '#7DD3FC', '#BAE6FD', '#DCFCE7'], ground: ['#8B6A43', '#76583A', '#5F4630'], lane: ['#6B5236', '#5C462E', '#4D3A26'],
+    back: '#2F4A2A', walk: '#7C8B5A', roof: ['#5B3A1E', '#7A5230'], dust: 'rgba(190,160,110,'
+  });
+  boot('jungledash', function (A) { return runner(A, JUNGLE2); }, 'swipe4', 0.5);
+  boot('metrodash', function (A) { return runner(A, NEON); }, 'swipe4', 0.5);
   boot('subwaydash', function (A) { return runner(A, SUBWAY); }, 'swipe4', 0.5);
 
   /* ================================================================== 4. ORBIT SWITCH — tap to jump between two orbits */
