@@ -1122,7 +1122,7 @@
     // qui alternent), à la place du hamster dessiné en code (gardé en secours tant que l'image n'est pas chargée).
     var HS = new Image(), HSF = null; HS.decoding = 'async';
     HS.onload = function () { var fw = HS.width / 4; HSF = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = fw; cv.height = HS.height; cv.getContext('2d').drawImage(HS, i * fw, 0, fw, HS.height, 0, 0, fw, HS.height); return cv; }); };
-    HS.src = 'img/games/ham_run.webp?v=3592';
+    HS.src = 'img/games/ham_run.webp?v=3605';
     function star5(c, x, y, r, col) { c.fillStyle = col; c.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } c.closePath(); c.fill(); }
     // one frame of the hamster at ground point (x, gy): run cycle / cash-out hops / stumble and fall
     function drawHam(c, x, gy) {
