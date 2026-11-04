@@ -59,8 +59,7 @@ RewriteRule ^r/([A-Za-z0-9]{8})/?$ /?ref=$1 [R=302,L]
     Header set Cache-Control "public, max-age=86400" env=REDIRECT_ORO_VER
   </FilesMatch>
   <FilesMatch "\.(webp|png|jpg|jpeg|svg)$">
-    Header set Cache-Control "public, max-age=2592000, immutable" env=ORO_IMGV
-    Header set Cache-Control "public, max-age=2592000, immutable" env=REDIRECT_ORO_IMGV
+    Header set Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
   </FilesMatch>
 </IfModule>
 
