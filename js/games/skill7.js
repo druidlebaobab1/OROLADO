@@ -1649,6 +1649,10 @@
 
   /* ================================================================== 16. CITY SHIELD — missiles fall on your cities: tap to fire an
      interceptor; it flies to the point and blows up, destroying the missiles in its blast. Aim ahead. Some split. */
+  // v3597 (propriétaire) : vrais décors illustrés pour les jeux de guerre au fond uni (anciens fonds en secours)
+  var WBI = {};
+  function wbImg(k) { var o = WBI[k]; if (!o) { o = WBI[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3597'; } return o; }
+  function wbDraw(c, k, W, H, dark) { var o = wbImg(k); if (!o.ok) return; var im = o.im, s = Math.max(W / im.naturalWidth, H / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s; c.drawImage(im, (W - iw) / 2, (H - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, W, H); } }
   boot('cityshield', function (A) {
     var W, H, T, dpr, bg, gyy, cities = [], mis = [], ints = [], blasts = [], dead = 0, won = 0, mega = null, t = 0, spT = 0, aiT = 0, R, lx, ly, kills = 0;
     function addMis(live, x0, y0, tgt) {
@@ -1695,7 +1699,7 @@
         if (A.idle()) { aiT += dt; if (aiT > 0.7) { aiT = 0; var lo = mis.slice().sort(function (a, b2) { return b2.y - a.y; })[0]; if (lo && lo.y > T + (H - T) * 0.2) { var tt = 0.45; fire(lo.x + lo.vx * tt, lo.y + lo.vy * tt); } } }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbDraw(c, 'cityshield', W, H, 'rgba(6,8,24,.18)');
         var i, m;
         for (i = 0; i < cities.length; i++) cityS(c, cities[i], !cities[i].on);
         c.lineCap = 'round';

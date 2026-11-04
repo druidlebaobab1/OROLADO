@@ -2116,6 +2116,10 @@
   /* ================================================================== AIR RAID (jeux de guerre, propriétaire « j'aime les jeux de
      guerre ») — une base de DCA la nuit : touche les avions ennemis pour les abattre avant qu'ils touchent la base en bas.
      Ça accélère et se densifie ; un avion à la base termine. La fin secrète = un bombardement. */
+  // v3597 (propriétaire) : vrais décors illustrés pour les jeux de guerre au fond uni (anciens fonds en secours)
+  var WBI = {};
+  function wbImg(k) { var o = WBI[k]; if (!o) { o = WBI[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3597'; } return o; }
+  function wbDraw(c, k, W, H, dark) { var o = wbImg(k); if (!o.ok) return; var im = o.im, s = Math.max(W / im.naturalWidth, H / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s; c.drawImage(im, (W - iw) / 2, (H - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, W, H); } }
   boot('airraid', function (A) {
     var W, H, T, dpr, bg, tx, ty, tr, planes = [], bul = [], ang = -Math.PI / 2, cool = 0, dead = 0, won = 0, raid = null, t = 0, spT = 0, kills = 0, aiT = 0, planeS;
     function planeSprite() {
@@ -2170,7 +2174,7 @@
         if (A.idle()) { aiT += dt; if (aiT > 0.3) { aiT = 0; var near = planes.slice().sort(function (a2, b2) { return b2.y - a2.y; })[0]; if (near) fire(near.x + near.vx * 0.1, near.y + near.vy * 0.12); } }
       },
       draw: function (c) {
-        A.bg(bg); var i, p, b;
+        A.bg(bg); wbDraw(c, 'airraid', W, H, 'rgba(6,4,20,.15)'); var i, p, b;
         c.strokeStyle = '#FDE68A'; c.lineWidth = 3; c.lineCap = 'round'; for (i = 0; i < bul.length; i++) { b = bul[i]; c.beginPath(); c.moveTo(b.x, b.y); c.lineTo(b.x - b.vx * 0.02, b.y - b.vy * 0.02); c.stroke(); }
         for (i = 0; i < planes.length; i++) { p = planes[i]; c.save(); c.translate(p.x, p.y); c.rotate(Math.sin(p.wob) * 0.12); c.drawImage(planeS, -planeS.w / 2, -planeS.h / 2, planeS.w, planeS.h); c.restore(); }
         if (raid) { var jx = raid.x, jy = T + 24; c.fillStyle = '#1E293B'; c.save(); c.translate(jx, jy); c.beginPath(); c.moveTo(-30, 0); c.lineTo(20, -8); c.lineTo(30, 0); c.lineTo(20, 8); c.closePath(); c.fill(); c.fillRect(-34, -3, 20, 6); c.restore(); }
