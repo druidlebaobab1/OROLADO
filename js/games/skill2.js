@@ -219,11 +219,11 @@
       var hintOn = function (on) { hintEl.classList.toggle('off', !on); st.classList.toggle('idle', phase === 'idle'); };
       var W = 0, H = 0, dpr = 1, rect = null, sized = false, fadeS = null, fadeH = 0, phase = 'idle', R = null, off = 0, busy = false, playT = 0, overT = 0, last = 0, drawn = false, hintT = 0;
       var P = [], RG = [], shake = 0, flash = 0, mShown = '';
-      var bgCv = $('s2Bg'), bgOn = null;
+      var bgCv = $('s2Bg'), bgOnV = 0, bgOn = null;
       var A = {
         l: l, lite: lite,
         // the static background lives in its own canvas behind the scene: painted once, never redrawn each frame
-        bg: function (img) { if (bgOn === img) return; bgOn = img; bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
+        bg: function (img) { if (bgOn === img && bgOnV === (img._v | 0)) return; bgOn = img; bgOnV = img._v | 0; /* v3609 : re-copié quand une image illustrée finit de charger */ bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
         lv: function () { return Math.min(1, playT / 110); },              // v2812: difficulty rises over ~2 min (fair start, really hard later)
         live: function () { return phase === 'play'; },
         idle: function () { return phase === 'idle' || phase === 'demo'; }, // the visitor's demo round = the attract autopilot
@@ -293,7 +293,7 @@
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         if (!W) { resize(); if (!W) return; }
         if (D) demoTick(dt);                                            // visitor: a demo round plays by itself
-        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy())) return; // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
+        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy()) && Date.now() - (window.__oroGameAt || 0) > 9000 && !(window.__oroImgPend > 0)) return; // v3609 : en mode léger, le jeu continue de se dessiner le temps que ses images arrivent // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
         var moving = phase !== 'idle' || !lite || !!(g.busy && g.busy());
         if (phase === 'play') playT += dt;
         if (phase === 'over') { overT -= dt; if (overT <= 0) toIdle(); }

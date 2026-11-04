@@ -166,12 +166,12 @@
       var st = $('s3St'), cv = $('s3Cv'), ctx = cv.getContext('2d'), btn = $('csGo'), mEl = $('s3M'), msgEl = $('s3Msg'), hud = $('s3Hud'), hintEl = $('s3Hint'), gN = 0, nudgeT = 0;
       var W = 0, H = 0, dpr = 1, rect = null, sized = false, fadeS = null, fadeH = 0, phase = 'idle', R = null, off = 0, busy = false, playT = 0, overT = 0, last = 0, drawn = false;
       var P = [], RG = [], shake = 0, flash = 0, mShown = '';
-      var bgCv = $('s3Bg'), bgOn = null;
+      var bgCv = $('s3Bg'), bgOnV = 0, bgOn = null;
       var hintOn = function (on) { hintEl.classList.toggle('off', !on); st.classList.toggle('idle', phase === 'idle'); };
       var A = {
         l: l, lite: lite,
         // the static background lives in its own canvas behind the scene: painted once, never redrawn each frame
-        bg: function (img) { if (bgOn === img) return; bgOn = img; bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
+        bg: function (img) { if (bgOn === img && bgOnV === (img._v | 0)) return; bgOn = img; bgOnV = img._v | 0; /* v3609 : re-copié quand une image illustrée finit de charger */ bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
         lv: function () { return Math.min(1.25, playT / 110); },            // difficulty: fair at the start, really hard after ~2 min
         live: function () { return phase === 'play'; },
         idle: function () { return phase === 'idle' || phase === 'demo'; }, // the visitor's demo round = the attract autopilot
@@ -262,7 +262,7 @@
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         if (!W) { resize(); if (!W) return; }
         if (D) demoTick(dt);                                            // visitor: a demo round plays by itself
-        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy())) return; // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
+        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy()) && Date.now() - (window.__oroGameAt || 0) > 9000 && !(window.__oroImgPend > 0)) return; // v3609 : en mode léger, le jeu continue de se dessiner le temps que ses images arrivent // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
         if (phase === 'play') playT += dt;
         if (phase === 'over') { overT -= dt; if (overT <= 0) toIdle(); }
         frame(dt);
@@ -556,11 +556,11 @@
         }
         if (won) won += dt;
       },
-      busy: function () { return !!(TH.ready && !TH.ready() && t < 8); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
+      busy: function () { return !!(TH.ready && !TH.ready() && t < 20); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
       draw: function (c) {
         // 2026-11-03 (propriétaire : « on voit l'ancien jeu quelques secondes avant le nouveau ») — tant que les vraies images du
         // monde ne sont pas chargées, écran de chargement propre au lieu de l'ancien dessin de secours (au plus 8 s).
-        if (TH.ready && !TH.ready() && t < 8) { loadingScreen(c, W, H, t, TH.load); return; }
+        if (TH.ready && !TH.ready() && t < 20) { loadingScreen(c, W, H, t, TH.load); return; }
         A.bg(bg);
         TH.ground(c, V, dist, SP, t);
         if (TH.side) TH.side(c, V, dist, SP, t);

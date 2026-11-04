@@ -265,7 +265,7 @@
       var rows = [0, 1, 2, 3, 4, 5].map(function (m) { var y = 64 + m * 25; return '<g class="cw-row" data-s="' + m + '" transform="translate(327 ' + y + ')"><rect x="-29" y="-11" width="58" height="23" rx="7" class="cw-rowbg"/>' +
         '<circle cx="-20" cy="0" r="6.5" fill="' + CW.dress[m] + '"/><circle cx="-20" cy="1" r="3" fill="' + CW.skin[m] + '"/><g class="cw-lead" transform="translate(-20 -8.5)" opacity="0">' + crown(.55) + '</g>' +
         '<text x="-10" y="-2" class="cw-nm">' + CW.names[m] + '</text><text x="-10" y="8.5" class="cw-val" data-v="' + m + '">–</text></g>'; }).join('');
-      var models = [0, 1, 2, 3, 4, 5].map(function (m) { return '<g class="cw-m" data-s="' + m + '"><circle class="cw-halo" cy="-40" r="34"/>' + cwModel(m, uid) + '<g class="cw-crown" transform="translate(0 -79)" opacity="0">' + crown(.8) + '</g></g>'; }).join('');
+      var models = [0, 1, 2, 3, 4, 5].map(function (m) { return '<g class="cw-m" data-s="' + m + '"><circle class="cw-halo" cy="-40" r="34"/>' + cwModel(m, uid) + '<g class="cw-crown" transform="translate(0 -97)" opacity="0">' + crown(.8) + '</g></g>'; }).join('');
       var conf = ''; for (var j = 0; j < 22; j++) conf += '<rect class="cw-cf" width="3.2" height="5.6" rx="1" fill="' + ['#F472B6', '#FBBF24', '#FDE68A', '#C084FC', '#FB7185'][j % 5] + '" opacity="0"/>';
       return '<defs><linearGradient id="cwR' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B0A2E"/><stop offset="1" stop-color="#9D2463"/></linearGradient>' +
         '<linearGradient id="cwW' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A0E3A"/><stop offset="1" stop-color="#22061E"/></linearGradient>' +
@@ -359,7 +359,7 @@
         else if (e >= CW_W0 + 6 * CW_SLOT && m === n && cw < 1) fi = Math.floor(((e * 1.6) % 1) * 8);
         cwFrame(c, m, fi);
       }
-      c.crowns.forEach(function (x, j) { sa(x, 'opacity', j === n && crownK > 0 ? '1' : '0'); sa(x, 'transform', 'translate(0 ' + (j === n ? lerp(-130, -79, eo(crownK)) : -79).toFixed(1) + ')'); });
+      c.crowns.forEach(function (x, j) { sa(x, 'opacity', j === n && crownK > 0 ? '1' : '0'); sa(x, 'transform', 'translate(0 ' + (j === n ? lerp(-140, -97, eo(crownK)) : -97).toFixed(1) + ')'); });
       txt(c.big, revd ? c.oddTxt(odds[String(n)]) : ''); sa(c.big, 'class', 'cw-big odd');
       // confetti at the crowning
       var ct = e - (CW_W0 + 6 * CW_SLOT + 3.4);
