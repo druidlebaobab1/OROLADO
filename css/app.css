@@ -14410,12 +14410,3 @@ html:root body #casinoModal .cs-toast .ct-ic img.ct-wal,html:root body #casinoMo
 
 /* v3588 (propriétaire) : rangée de coefficients / derniers résultats retirée de TOUS les jeux (Action et Casino) ; seul le Live la garde. */
 #casinoModal.in-game:not([data-sec="live"]) .cg-hist{display:none!important}
-
-/* v3588 (propriétaire, capture appli iPhone : « le bas va et vient ») : dans l'APPLICATION installée, la zone sous ACHETER / VENDRE
-   (59 px que le site ne dessine pas) prenait le fond brun-orangé prévu pour Safari → une bande brune qui apparaît / disparaît.
-   Appli installée seulement : fond NOIR, comme le bas de l'écran de trading. Safari ne change pas. */
-@media (display-mode: standalone),(display-mode: fullscreen){
-  html.is-ios{background:#000!important}
-  html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ){background:#000!important}
-  html.is-ios body #oroIosFloor{background:#000!important}
-}
