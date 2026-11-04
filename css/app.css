@@ -14453,3 +14453,15 @@ html body #casinoModal[data-g="boatracelive"] .l5-scene{background:url("/img/gam
 html body #casinoModal[data-g="spaceracelive"] .l5-scene{background:url("/img/games/lb_spaceracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="spaceracelive"] .l5-scene > svg.l5-svg{opacity:.8}
 html body #casinoModal[data-g="horses"] .lz-scene > svg{opacity:.8}
 html body #casinoModal[data-g="race"] .lz-scene > svg{opacity:.8}
+
+/* v3613 (propriétaire : « améliore TOUS les jeux, n'en laisse aucun ») — courses Live chevaux / voitures : vrai décor illustré en
+   haut (hippodrome, circuit de nuit) et vraie texture de piste (gazon, asphalte) qui défile ; Piano Keys : salle de concert derrière
+   les colonnes ; Chicken : voies plus claires pour laisser voir l'espace. */
+html body #casinoModal .lz-game .lz-rc.h .lz-rc-sky{background:url("/img/games/lb_horses.webp?v=3603") center 70%/cover no-repeat}
+html body #casinoModal .lz-game .lz-rc:not(.h) .lz-rc-sky{background:url("/img/games/lb_race.webp?v=3603") center 60%/cover no-repeat}
+html body #casinoModal .lz-game .lz-rc .lz-rc-sky svg{opacity:.35}
+html body #casinoModal .lz-game .lz-rc .lz-rc-far{opacity:.45}
+html body #casinoModal .lz-game .lz-rc.h .lz-rc-tex{background:linear-gradient(rgba(20,40,10,.18),rgba(20,40,10,.18)),url("/img/games/tx_grass.webp?v=3612") 0 0/48px 48px repeat}
+html body #casinoModal .lz-game .lz-rc:not(.h) .lz-rc-tex{background:linear-gradient(rgba(10,8,30,.25),rgba(10,8,30,.25)),url("/img/games/tx_asphalt.webp?v=3613") 0 0/48px 48px repeat}
+html body #casinoModal[data-g="pianokeys"] .cg-stage{background:url("/img/games/wb_pianokeys.webp?v=3613") center/cover no-repeat,#0B0906!important}
+html body #casinoModal[data-g="pianokeys"] .cg-stage > canvas.s4-bg{opacity:.3}
