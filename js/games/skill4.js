@@ -778,7 +778,7 @@
         for (i = fx.length - 1; i >= 0; i--) { fx[i].t -= dt; if (fx[i].t <= 0) fx.splice(i, 1); }
         if (won) won += dt;
       },
-      busy: function () { return t < 8 && !(bgI.ok && ZI.w && ZI.w.ok && ZI.r && ZI.r.ok && ZI.b && ZI.b.ok && GUN && GUN.ok); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
+      busy: function () { var bgI = gImg4('img/games/zomb2_bg.webp?v=3548'); return t < 8 && !(bgI.ok && ZI.w && ZI.w.ok && ZI.r && ZI.r.ok && ZI.b && ZI.b.ok && GUN && GUN.ok); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
       draw: function (c) {
         // 2026-11-03 : jamais l'ancien dessin de secours — chargement propre tant que la rue, les zombies et l'arme ne sont pas là (≤ 8 s)
         var bgI = gImg4('img/games/zomb2_bg.webp?v=3548');
