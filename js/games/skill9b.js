@@ -482,6 +482,11 @@
 
   /* ================================================================== 5. PENGUIN SLIDE — rolling snowy hills (Tiny-Wings style). Hold =
      press into the slopes (heavier), release = fly off the tops. A giant snowball rolls behind: too slow and it catches you. */
+  // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
+  var WBF = {};
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('penguinslide', function (A) {
     var W, H, T, dpr, bg, mtn, G0, amp, wl, pg = [], px = 0, py = 0, s = 0, vx = 0, vy = 0, air = false, held = false, ang = 0, camY = 0, bx = 0, br, pr, t = 0, dead = null, won = 0, crack = null, ph = 1, lastLand = '';
     var GR;
@@ -558,7 +563,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'penguinslide', 'rgba(0,0,0,.14)');
         var ox = px - W * 0.3, i, X, Y;
         var my = G0 - amp - mtn.h * 0.75 - camY * 0.3; tile(c, mtn, ox * 0.1, my, W); c.fillStyle = '#334E68'; c.fillRect(0, my + mtn.h - 1, W, H);
         // snow hills (sampled every few px)
@@ -690,7 +695,7 @@
         for (i = obs.length - 1; i >= 0; i--) if (obs[i].x + obs[i].w < cam - W * 0.4) obs.splice(i, 1);
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'snowjump', 'rgba(0,0,0,.14)');
         c.save(); c.translate(W / 2, G); c.rotate(sa); c.translate(-W / 2, -G); // the whole slope tilts downhill
         var i, ext = W * 0.4;
         // snow ground with crevasses cut out
@@ -794,7 +799,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'surfrider', 'rgba(0,0,0,.14)');
         var i;
         c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 2; c.beginPath(); for (i = 0; i < foam.length; i++) { c.moveTo(foam[i].x, foam[i].y); c.lineTo(foam[i].x + foam[i].l, foam[i].y - 2); } c.stroke();
         for (i = 0; i < obs.length; i++) {
@@ -902,7 +907,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'jetskirace', 'rgba(0,0,0,.14)');
         var i, st = Math.max(10, (H - T) / 40), hw = W * wid / 2, y, wy;
         // water (whole stage), then the two banks as polygons following the river
         c.fillStyle = lg(c, 0, T, 0, H, ['#0E7490', '#0891B2', '#0E7490']); c.fillRect(0, 0, W, H);

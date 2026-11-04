@@ -482,6 +482,11 @@
 
   /* ================================================================== 1. MOTO WHEELIE — hold = throttle (the front wheel rises),
      release = it comes down. Keep the pitch in the green zone of the dial; speed bumps kick the bike up, more and more. */
+  // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
+  var WBF = {};
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('motowheelie', function (A) {
     var W, H, T, dpr, G, r, wb, bx, bg, sky, spr, dial, a = 0.5, w = 0, held = false, cam = 0, v = 0, t = 0, bumps = [], nextB = 0, crash = null, won = 0, oil = null, lamp, grace = 0, rot = 0;
     var LO = 0.03, HI = 1.62, G1 = 0.42, G2 = 1.22; // fail below LO / above HI (rad); green zone G1..G2
@@ -583,7 +588,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'motowheelie', 'rgba(0,0,0,.14)');
         var i, sh = sky.h;
         tile(c, sky, cam * 0.12, G - sh, W);
         var lw = W * 0.55; for (var lx = -((cam * 0.5) % lw); lx < W + lamp.w; lx += lw) c.drawImage(lamp, lx, G - lamp.h, lamp.w, lamp.h);
@@ -865,7 +870,7 @@
         for (i = 0; i < obs.length; i++) if (obs[i].fall) obs[i].fall = Math.min(1, obs[i].fall + dt * 3);
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'horsejump', 'rgba(0,0,0,.14)');
         var i;
         // sand track lines (scroll)
         c.fillStyle = 'rgba(255,255,255,.12)'; var sp = u * 1.6; for (var lx = -(cam % sp); lx < W; lx += sp) c.fillRect(lx, G + (H - G) * 0.5, u * 0.5, 2);
@@ -980,7 +985,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'skatetricks', 'rgba(0,0,0,.14)');
         var x, y, rot = 0, i;
         // timing ring on the next edge (shrinks to the coping exactly at the moment to tap)
         if (!dead && !won && !snap) {
