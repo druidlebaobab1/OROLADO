@@ -1113,6 +1113,11 @@
       return R;
     }
     function hamW() { return lw * 0.82; }
+    // v3592 (propriétaire : « rends bien le Hamster ») : le VRAI hamster du logo vu de dos, 4 poses de course (pattes roses
+    // qui alternent), à la place du hamster dessiné en code (gardé en secours tant que l'image n'est pas chargée).
+    var HS = new Image(), HSF = null; HS.decoding = 'async';
+    HS.onload = function () { var fw = HS.width / 4; HSF = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = fw; cv.height = HS.height; cv.getContext('2d').drawImage(HS, i * fw, 0, fw, HS.height, 0, 0, fw, HS.height); return cv; }); };
+    HS.src = 'img/games/ham_run.webp?v=3592';
     function star5(c, x, y, r, col) { c.fillStyle = col; c.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } c.closePath(); c.fill(); }
     // one frame of the hamster at ground point (x, gy): run cycle / cash-out hops / stumble and fall
     function drawHam(c, x, gy) {
@@ -1134,6 +1139,14 @@
       var lift = (hop + bob) / s, shW = s * (crash && cr ? 1.15 : 1) * (1 - lift * 0.5);
       c.globalAlpha = clamp(1 - lift * 1.2, 0.35, 1); c.drawImage(R.shd, x + pivot * Math.min(1, Math.abs(cr)) * 0.6 - shW * 0.6, gy - shW * 0.12, shW * 1.2, shW * 0.3); c.globalAlpha = 1;
       c.save(); c.translate(x + sway + pivot, gy - hop); c.rotate(roll + cr); c.translate(-pivot, 0);
+      if (HSF) { // sprite: 4 poses, bob + squash, same lean / hop / fall as before
+        var fi = crash ? 1 : won ? (Math.floor(won * 8) % 2 ? 1 : 3) : Math.floor(ph * 4) % 4, fr = HSF[fi], sw = s * 1.12, shh = sw * fr.height / fr.width;
+        c.translate(0, -bob); c.scale(sx, sy); c.drawImage(fr, -sw / 2, -shh + s * 0.04, sw, shh);
+        c.restore();
+        if (crash && crash.t > 0.5) { var ang0 = cr, hx3 = x + pivot + Math.cos(ang0) * (-pivot) - Math.sin(ang0) * (-1.1 * s), hy3 = gy - hop + Math.sin(ang0) * (-pivot) + Math.cos(ang0) * (-1.1 * s);
+          c.globalAlpha = Math.min(1, (crash.t - 0.5) * 3); for (var q3 = 0; q3 < 3; q3++) { var sa3 = crash.t * 4 + q3 * TAU / 3, zz3 = Math.sin(sa3); star5(c, hx3 + Math.cos(sa3) * s * 0.3, hy3 - s * 0.12 + zz3 * s * 0.07, s * (0.055 + 0.015 * zz3), q3 % 2 ? '#FDE68A' : '#FFFFFF'); } c.globalAlpha = 1; }
+        return;
+      }
       var i, fp, fk, fx, fy;
       // front paws (under the chest, behind the body): reach out at the sides, alternating
       for (i = -1; i <= 1; i += 2) {
