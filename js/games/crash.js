@@ -39,7 +39,15 @@
   var NS = 'http://www.w3.org/2000/svg';
   var GRAD = 0;
   /* our own drawings (SVG 120×60, facing right) */
+  // v3590 (propriétaire : « améliore les jeux live où on décolle ») : vrais engins illustrés (avion de course rouge, héros à
+  // réacteur doré, fusée blanche) à la place des petits dessins ; le dessin d'origine reste en secours si l'image ne charge pas.
+  var CRAFT_V = '3590';
   function craftSvg(game) {
+    var src = 'img/games/cr_' + (game === 'jet' ? 'jet' : game === 'rocket' ? 'rocket' : 'crash') + '_craft.webp?v=' + CRAFT_V;
+    return '<img class="cr-img" src="' + src + '" alt="" draggable="false" decoding="async" onerror="this.style.display=\'none\';this.nextSibling&&(this.nextSibling.style.display=\'block\')">' +
+      '<span class="cr-svgfb" style="display:none">' + craftSvgOld(game) + '</span>';
+  }
+  function craftSvgOld(game) {
     var id = 'cr' + (++GRAD);
     var flame = '<g class="cr-flame"><path d="M30 23C16 21 8 28 0 30c8 2 16 9 30 7z" fill="url(#' + id + 'f)"/><path d="M30 26c-8-1-13 2-17 4 4 2 9 5 17 4z" fill="#FFF7D6"/></g>';
     var fdef = '<linearGradient id="' + id + 'f" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#FDE68A"/><stop offset=".45" stop-color="#FB923C"/><stop offset="1" stop-color="#F43F5E" stop-opacity="0"/></linearGradient>';
@@ -176,7 +184,7 @@
       var measure = function () {
         W = st.clientWidth; H = st.clientHeight;
         svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
-        cw = Math.max(60, Math.min(140, W * 0.2, H * 0.36));
+        cw = Math.max(70, Math.min(170, W * 0.26, H * 0.4)); // v3590 : engins illustrés un peu plus grands
         craft.style.width = cw + 'px'; craft.style.height = (cw / 2) + 'px';
         var top = $('crTop'), tb = top ? top.offsetTop + top.offsetHeight : H * 0.2;
         X0 = Math.max(18, W * 0.06); Y0 = H - Math.max(16, H * 0.1);

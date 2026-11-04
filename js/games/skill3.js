@@ -239,7 +239,7 @@
       function frame(dt) {
         if (!W) return;
         dt = dt || 0;
-        var moving = phase !== 'idle' || !lite;
+        var moving = phase !== 'idle' || !lite || !!(g.busy && g.busy());
         if (moving && dt) g.step(dt, phase === 'play' || phase === 'cashing');
         for (var i = P.length - 1; i >= 0; i--) { var p = P[i]; p.t += dt; if (p.t >= p.m) { P.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.985; p.vy = p.vy * 0.985 + 40 * dt; }
         for (i = RG.length - 1; i >= 0; i--) { RG[i].t += dt; if (RG[i].t > 0.6) RG.splice(i, 1); }
@@ -262,7 +262,7 @@
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         if (!W) { resize(); if (!W) return; }
         if (D) demoTick(dt);                                            // visitor: a demo round plays by itself
-        if (lite && phase === 'idle' && drawn && !P.length) return;      // old phones: still idle scene
+        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy())) return; // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
         if (phase === 'play') playT += dt;
         if (phase === 'over') { overT -= dt; if (overT <= 0) toIdle(); }
         frame(dt);
@@ -556,6 +556,7 @@
         }
         if (won) won += dt;
       },
+      busy: function () { return !!(TH.ready && !TH.ready() && t < 8); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
       draw: function (c) {
         // 2026-11-03 (propriétaire : « on voit l'ancien jeu quelques secondes avant le nouveau ») — tant que les vraies images du
         // monde ne sont pas chargées, écran de chargement propre au lieu de l'ancien dessin de secours (au plus 8 s).
