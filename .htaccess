@@ -8,6 +8,9 @@ RewriteRule ^r/([A-Za-z0-9]{8})/?$ /?ref=$1 [R=302,L]
   # 2026-10-21 : fichiers .js / .css avec numéro de version (?v=…) = gardés 1 jour par le téléphone (ouverture plus rapide)
   RewriteCond %{QUERY_STRING} (^|&)v=[0-9]
   RewriteRule \.(js|css)$ - [E=ORO_VER:1]
+  # v3611 (propriétaire : « les jeux chargent longtemps ») : images de jeux avec numéro de version (?v=…) gardées 30 jours
+  RewriteCond %{QUERY_STRING} (^|&)v=[0-9]
+  RewriteRule ^img/.*\.(webp|png|jpg|jpeg|svg)$ - [E=ORO_IMGV:1]
   RewriteCond %{HTTPS} !=on
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   RewriteRule ^admin/?$ admin.php [L,QSA]
@@ -54,6 +57,10 @@ RewriteRule ^r/([A-Za-z0-9]{8})/?$ /?ref=$1 [R=302,L]
     Header set Cache-Control "no-cache, must-revalidate, max-age=0"
     Header set Cache-Control "public, max-age=86400" env=ORO_VER
     Header set Cache-Control "public, max-age=86400" env=REDIRECT_ORO_VER
+  </FilesMatch>
+  <FilesMatch "\.(webp|png|jpg|jpeg|svg)$">
+    Header set Cache-Control "public, max-age=2592000, immutable" env=ORO_IMGV
+    Header set Cache-Control "public, max-age=2592000, immutable" env=REDIRECT_ORO_IMGV
   </FilesMatch>
 </IfModule>
 
