@@ -14419,3 +14419,12 @@ html body #casinoModal.in-game[data-sec="skill"] .cs-game > .cg-stage{margin-lef
    et assombri pour que les symboles, cartes et chiffres restent bien lisibles). */
 html body #casinoModal.in-game[data-sec="more"] .cs-game{background:linear-gradient(180deg,rgba(8,6,14,.55),rgba(8,6,14,.78)),var(--cbg,none) center/cover no-repeat!important}
 html body #casinoModal#casinoModal.in-game[data-sec="more"] .cs-game > :is(.cs-stage,.cg-stage){background:linear-gradient(180deg,rgba(10,8,20,.32),rgba(10,8,20,.55)),var(--cbg,none) center/cover no-repeat!important}
+
+/* v3611 : cache de chargement des jeux (logo + rond qui tourne) — couvre la scène tant que ses images arrivent */
+html body #casinoModal .oro-cover{position:absolute;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:radial-gradient(60% 50% at 50% 45%,rgba(60,44,18,.9),#0B0906 75%);transition:opacity .25s ease;pointer-events:none}
+html body #casinoModal .oro-cover.off{opacity:0}
+html body #casinoModal .oro-cover .oc-in{position:relative;width:86px;height:86px;display:flex;align-items:center;justify-content:center}
+html body #casinoModal .oro-cover .oc-in > :not(.oc-sp){width:62px!important;height:62px!important;border-radius:16px;overflow:hidden}
+html body #casinoModal .oro-cover .oc-in > :not(.oc-sp) img,html body #casinoModal .oro-cover .oc-in > :not(.oc-sp) svg{width:100%!important;height:100%!important}
+html body #casinoModal .oro-cover .oc-sp{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,.12);border-top-color:#F5C451;animation:ocSpin .8s linear infinite}
+@keyframes ocSpin{to{transform:rotate(360deg)}}
