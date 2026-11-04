@@ -785,7 +785,7 @@
       A._xb = 1; A.burst(px, py, 5, ['#D6D3D1', '#A8A29E'], 60, 0.35, 2, 60); A._xb = 0;
     }
     function scene(c, z, fx, fy) { // the city with people (drawn normally, or zoomed inside the scope)
-      if (z === 1) A.bg(bg); // static layer behind the scene (painted once)
+      if (z === 1) { A.bg(bg); wbFill(c, 'sniper', 'rgba(0,0,0,.14)'); } // static layer behind the scene (painted once)
       else { // only the small part of the city seen through the scope (cheap on old phones)
         var r0 = Rs / z + 4, x0 = clamp(fx - r0, 0, W), y0 = clamp(fy - r0, 0, H), x1 = clamp(fx + r0, 0, W), y1 = clamp(fy + r0, 0, H);
         if (x1 - x0 > 1 && y1 - y0 > 1) c.drawImage(bg, x0 * dpr, y0 * dpr, (x1 - x0) * dpr, (y1 - y0) * dpr, x0, y0, x1 - x0, y1 - y0);

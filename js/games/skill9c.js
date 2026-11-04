@@ -566,7 +566,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'kartdash', 'rgba(0,0,0,.14)');
         tile(c, hills, sky, hor - hills.h + 2, W);
         // project the next NS segments (near → far), then draw far → near
         var P = [], x = 0, dx = 0, base = Math.floor(z), f = z - base, n, s;
@@ -683,7 +683,7 @@
         var tyc = Math.min(0, y - (T + (H - T) * 0.45)); camY += (tyc - camY) * Math.min(1, dt * 4);
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'desertrally', 'rgba(0,0,0,.14)');
         var ox = x - cx0, X, i;
         var dy = G0 - amp * 1.4 - dune.h * 0.7 - camY * 0.3; tile(c, dune, ox * 0.15, dy, W); c.fillStyle = 'rgba(194,65,12,.55)'; c.fillRect(0, dy + dune.h - 1, W, H);
         var stp = Math.max(6, W / 70);

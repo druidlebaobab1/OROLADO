@@ -808,7 +808,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'cupcake', 'rgba(0,0,0,.14)');
         var i, sh = 14;
         // moving belt stripes
         c.fillStyle = 'rgba(255,255,255,.12)'; var o = roll % sh;
@@ -1017,7 +1017,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'princess', 'rgba(0,0,0,.14)');
         var i, list = gates.slice().sort(function (a, b) { return b.z - a.z; });
         // scrolling ground: mowed lawn stripes and marble tiles (the strongest cue of her walking)
         var S0 = 0.16, o0 = dist % S0, n0 = Math.floor(dist / S0), z, k;

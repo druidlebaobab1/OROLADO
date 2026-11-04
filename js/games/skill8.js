@@ -1983,7 +1983,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'skislalom', 'rgba(0,0,0,.14)');
         var i, o, off = dist % 40;
         c.strokeStyle = 'rgba(148,163,184,.25)'; c.lineWidth = 1; for (i = 0; i < 6; i++) { var yy = T + ((i * 90 - dist * 1) % (H - T + 90) + (H - T + 90)) % (H - T + 90); yy = fy(yy); c.beginPath(); c.moveTo(0, yy); c.quadraticCurveTo(W / 2, yy - 20, W, yy); c.stroke(); } void off;
         var list = objs.slice().sort(function (a, b) { return b.y - a.y; }), drawn = false, SY = fy(sy);
@@ -2097,7 +2097,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'roadrace', 'rgba(0,0,0,.14)');
         c.strokeStyle = 'rgba(253,230,138,.85)'; c.lineWidth = Math.max(3, cw * 0.1); c.setLineDash([ch * 0.6, ch * 0.5]); c.lineDashOffset = -(dash % (ch * 1.1));
         for (var ln = 1; ln < 4; ln++) { var lx = rx0 + (rx1 - rx0) * ln / 4; c.beginPath(); c.moveTo(lx, -ch); c.lineTo(lx, H + ch); c.stroke(); }
         c.setLineDash([]);
@@ -2546,7 +2546,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg); var i, col;
+        A.bg(bg); wbFill(c, 'canyon', 'rgba(0,0,0,.14)'); var i, col;
         for (i = 0; i < cols.length; i++) {
           col = cols[i]; var topH = col.gapY - col.gapH / 2, botY = col.gapY + col.gapH / 2;
           c.fillStyle = lg(c, col.x, 0, col.x + cw, 0, ['#92400E', '#78350F', '#451A03']);
@@ -2609,7 +2609,7 @@
         for (i = foes.length - 1; i >= 0; i--) { f = foes[i]; f.y += f.vy * dt; if (f.y + tw * 0.4 > py) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, f.x, py, 1.2); A.shake(0.5); } return; } foes.splice(i, 1); } }
       },
       draw: function (c) {
-        A.bg(bg); var i, f, b;
+        A.bg(bg); wbFill(c, 'tankrush', 'rgba(0,0,0,.14)'); var i, f, b;
         c.strokeStyle = '#FDE68A'; c.lineWidth = 4; c.lineCap = 'round'; for (i = 0; i < bul.length; i++) { b = bul[i]; c.beginPath(); c.moveTo(b.x, b.y); c.lineTo(b.x, b.y + 14); c.stroke(); }
         for (i = 0; i < foes.length; i++) { f = foes[i]; c.drawImage(foeS, f.x - foeS.w / 2, f.y - foeS.h / 2, foeS.w, foeS.h); }
         if (strike && strike.sh) { c.strokeStyle = '#FB923C'; c.lineWidth = 3; for (i = 0; i < strike.sh.length; i++) { var sh = strike.sh[i]; c.beginPath(); c.moveTo(sh.x, sh.y); c.lineTo(sh.x, sh.y - 16); c.stroke(); } }
