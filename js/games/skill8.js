@@ -956,7 +956,7 @@
      et se redessine (adaptée, centrée) sur le canevas-sprite DÉJÀ en cache du moteur → aucune modif des moteurs,
      avec un repli dessiné pendant le chargement. gCover peint une image plein cadre sur un canevas de fond. */
   var gImgCache = {};
-  function gImg(src) { if (gImgCache[src]) return gImgCache[src]; var o = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = src; gImgCache[src] = o; return o; }
+  function gImg(src) { if (gImgCache[src]) return gImgCache[src]; var o = { im: new Image(), ok: false }; window.__oroImgPend = (window.__oroImgPend | 0) + 1; var dn = function () { window.__oroImgPend = Math.max(0, (window.__oroImgPend | 0) - 1); }; o.im.onload = function () { o.ok = true; dn(); }; o.im.onerror = dn; o.im.src = src; gImgCache[src] = o; return o; }
   function gContain(x, im, w, h) { var iw = im.naturalWidth || im.width, ih = im.naturalHeight || im.height; if (!iw || !ih) return; var s = Math.min(w / iw, h / ih), dw = iw * s, dh = ih * s; x.drawImage(im, (w - dw) / 2, (h - dh) / 2, dw, dh); }
   function gSprite(w, h, dpr, src, fb) {
     var cv = mkc(w, h, dpr, fb);
@@ -967,7 +967,7 @@
   }
   function gCover(cv, src, tint) {
     var o = gImg(src);
-    function paint() { try { var x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); var im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s; x.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (tint) { x.fillStyle = tint; x.fillRect(0, 0, cv.width, cv.height); } x.restore(); } catch (e) { /* garde le repli */ } }
+    function paint() { try { var x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); var im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s; x.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (tint) { x.fillStyle = tint; x.fillRect(0, 0, cv.width, cv.height); } x.restore(); cv._v = (cv._v | 0) + 1; } catch (e) { /* garde le repli */ } }
     if (o.ok) paint(); else o.im.addEventListener('load', paint);
     return cv;
   }
@@ -1017,7 +1017,7 @@
       var st = $('s4St'), cv = $('s4Cv'), ctx = cv.getContext('2d'), btn = $('csGo'), mEl = $('s4M'), msgEl = $('s4Msg'), hud = $('s4Hud'), hintEl = $('s4Hint'), gN = 0, nudgeT = 0;
       var W = 0, H = 0, dpr = 1, rect = null, sized = false, fadeS = null, fadeH = 0, phase = 'idle', R = null, off = 0, busy = false, playT = 0, overT = 0, last = 0, drawn = false;
       var P = [], RG = [], shake = 0, flash = 0, mShown = '';
-      var bgCv = $('s4Bg'), bgOn = null;
+      var bgCv = $('s4Bg'), bgOnV = 0, bgOn = null;
       // v2850: immersive audio (js/sfx.js amb / play, added by the audio round): harmless if the API is not there
       var ambOn = false, ambT = 0;
       var amb = function (on, k) { if (ambOn === on && !k) return; ambOn = on; try { if (D6.Sfx && D6.Sfx.amb) D6.Sfx.amb(key, on, on ? (k || 0.45) : 0); } catch (e) { /* ignore */ } };
@@ -1026,7 +1026,7 @@
       var A = {
         l: l, lite: lite, sx: sx,
         // the static background lives in its own canvas behind the scene: painted once, never redrawn each frame
-        bg: function (img) { if (bgOn === img) return; bgOn = img; bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
+        bg: function (img) { if (bgOn === img && bgOnV === (img._v | 0)) return; bgOn = img; bgOnV = img._v | 0; /* v3609 : re-copié quand une image illustrée finit de charger */ bgCv.width = img.width; bgCv.height = img.height; bgCv.getContext('2d').drawImage(img, 0, 0); },
         lv: function () { return Math.min(1.25, playT / 110); },            // difficulty: fair at the start, really hard after ~2 min
         live: function () { return phase === 'play'; },
         idle: function () { return phase === 'idle' || phase === 'demo'; }, // the visitor's demo round = the attract autopilot
@@ -1117,7 +1117,7 @@
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         if (!W) { resize(); if (!W) return; }
         if (D) demoTick(dt);                                            // visitor: a demo round plays by itself
-        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy())) return; // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
+        if (lite && phase === 'idle' && drawn && !P.length && !(g.busy && g.busy()) && Date.now() - (window.__oroGameAt || 0) > 9000 && !(window.__oroImgPend > 0)) return; // v3609 : en mode léger, le jeu continue de se dessiner le temps que ses images arrivent // old phones: still idle scene (v3590 : jamais figé sur l'écran de chargement)
         if (phase === 'play') { playT += dt; ambT += dt; if (ambT > 3) { ambT = 0; amb(true, 0.4 + 0.45 * Math.min(1, playT / 110)); } }
         if (phase === 'over') { overT -= dt; if (overT <= 0) toIdle(); }
         frame(dt);
@@ -2434,10 +2434,10 @@
         }
         if (A.idle()) { aiT += dt; if (aiT > 0.5) { aiT = 0; var near = soldiers.slice().sort(function (a2, b2) { return a2.x - b2.x; })[0]; if (near && near.x < W * 0.66) throwAt(near.x - near.v * 0.35); } }
       },
-      busy: function () { return t < 8 && !(warI && warI.ok && walkI && walkI.ok && heroI && heroI.ok && sandI && sandI.ok); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
+      busy: function () { return t < 20 && !(warI && warI.ok && walkI && walkI.ok && heroI && heroI.ok && sandI && sandI.ok); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
       draw: function (c) {
         // 2026-11-03 : jamais l'ancien dessin de secours — écran de chargement tant que le décor et les soldats ne sont pas là (au plus 8 s)
-        if (t < 8 && !(warI && warI.ok && walkI && walkI.ok && heroI && heroI.ok && sandI && sandI.ok)) {
+        if (t < 20 && !(warI && warI.ok && walkI && walkI.ok && heroI && heroI.ok && sandI && sandI.ok)) {
           c.fillStyle = '#3B1F2B'; c.fillRect(0, 0, W, H); var lr = Math.min(W, H) * 0.06; c.lineWidth = Math.max(3, lr * 0.22); c.lineCap = 'round';
           c.strokeStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(W / 2, H * 0.55, lr, 0, TAU); c.stroke(); c.strokeStyle = '#FBBF24'; c.beginPath(); c.arc(W / 2, H * 0.55, lr, t * 5, t * 5 + 1.6); c.stroke();
           return;
