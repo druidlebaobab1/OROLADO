@@ -1057,6 +1057,7 @@
           c.strokeStyle = 'rgba(255,255,255,.08)'; c.lineWidth = 1.5;
           for (var i = 0; i < 26; i++) { var x = Math.random() * tile, y = Math.random() * tile, l = rnd(6, 16); c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + l / 2, y - 2, x + l, y); c.stroke(); c.beginPath(); c.moveTo(x - tile, y); c.quadraticCurveTo(x - tile + l / 2, y - 2, x - tile + l, y); c.stroke(); }
         });
+        (function (cv) { var im = new Image(); im.onload = function () { try { var x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); x.drawImage(im, 0, 0, cv.width, cv.height); x.restore(); } catch (e) { /* garde la mer dessinée */ } }; im.src = 'img/games/tx_ocean.webp?v=3612'; })(bg); // v3612 : vraie mer illustrée
         clouds = []; for (var i = 0; i < 7; i++) clouds.push({ x: rnd(0, 1600), y: rnd(0, 1600), r: rnd(40, 90) });
       },
       reset: function () { me = { x: 0, y: 0, a: -Math.PI / 2 }; cam.x = -W / 2; cam.y = -(T + (H - T) * 0.55); foes = []; bul = []; eb = []; mis = []; dead = 0; won = 0; amb = null; spT = 1.2; steer = null; kills = 0; },

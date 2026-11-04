@@ -910,7 +910,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'meteorblast', 'rgba(8,5,26,.35)');
         var lo = Math.floor((cam - H * 0.3) / rowH) - 1, hi = Math.ceil((cam + H) / rowH) + 1, i, k, s, L, y;
         for (i = lo; i <= hi; i++) {
           // lane i lies between strip i and strip i+1
