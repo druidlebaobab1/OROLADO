@@ -476,6 +476,10 @@
   function shade2(hex, k) { return D6.Rig ? D6.Rig.shade(hex, k) : hex; }
   // a spinning propeller seen from above: a blurred disc + 2 faint blade ghosts (drawn per frame, very cheap)
   function prop(c, x, y, r, t, sp) { c.fillStyle = 'rgba(226,232,240,.18)'; c.beginPath(); c.ellipse(x, y, r, r * 0.22, 0, 0, TAU); c.fill(); c.strokeStyle = 'rgba(30,41,59,.35)'; c.lineWidth = Math.max(1, r * 0.08); var a = Math.sin(t * sp) * r; c.beginPath(); c.moveTo(x - a, y - r * 0.05); c.lineTo(x + a, y + r * 0.05); c.stroke(); }
+  // v3597 (propriétaire) : vrais décors illustrés pour les jeux de guerre au fond uni (anciens fonds en secours)
+  var WBI = {};
+  function wbImg(k) { var o = WBI[k]; if (!o) { o = WBI[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3597'; } return o; }
+  function wbDraw(c, k, W, H, dark) { var o = wbImg(k); if (!o.ok) return; var im = o.im, s = Math.max(W / im.naturalWidth, H / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s; c.drawImage(im, (W - iw) / 2, (H - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, W, H); } }
   boot('airstrike', function (A) {
     var W, H, u, dpr, T, bg, pS, pSh, eS, bS, ebS, islS = [], clS, ps, eb;
     var seaS = null, seaY = 0, shipS = null, ships = [], hiS = null, hi = [], clSh = null; // drawing only
@@ -608,7 +612,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbDraw(c, 'airstrike', W, H);
         var i;
         if (seaS) { c.drawImage(seaS, 0, seaY - H, W, H); c.drawImage(seaS, 0, seaY, W, H); }
         for (i = 0; i < isl.length; i++) { var im = islS[isl[i].s]; c.drawImage(im, isl[i].x - im.width / 2, isl[i].y - im.height / 2); }
