@@ -568,6 +568,11 @@
 
   /* ================================================================== 9. TANK BATTLE — artillery duel: pull back from your tank to
      aim (the guide shows only the start of the arc), release to fire. Each enemy tank fills a reload bar: destroy it first. */
+  // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
+  var WBF = {};
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('tankbattle', function (A) {
     var W, H, T, dpr, bg, gY0, tw, pS = null, eS = null, me, en = [], shells = [], aim = null, wind = 0, cool = 0, dead = 0, won = 0, raid = null, t = 0, spawnT = 0, aiT = 0, debris = [], hits = 0, G;
     function gy(x) { return gY0 + Math.sin(x / W * 5.2 + 0.6) * H * 0.025 + Math.sin(x / W * 13 + 1.3) * H * 0.012; }
@@ -665,7 +670,7 @@
         if (A.idle()) { aiT += dt; if (aiT > 1.4 && en.length && en[0].x <= en[0].tx) { aiT = 0; var sl = solve(en[0].x, gy(en[0].x) - tw * 0.2, 0.06); fire(sl.a, clamp(sl.v, 0.2, 1)); } }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'tankbattle', 'rgba(0,0,0,.16)');
         var i, e, s;
         for (i = 0; i < en.length; i++) {
           e = en[i]; var ey = gy(e.x);
@@ -983,7 +988,7 @@
         if (!dead && py + hw * 0.22 > terY(px) && !A.idle()) die();
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'gunship', 'rgba(0,0,0,.16)');
         var i, f, b;
         // terrain (scrolling mountains)
         c.fillStyle = lg(c, 0, H * 0.6, 0, H, ['#4D7C0F', '#365314', '#1A2E05']); c.beginPath(); c.moveTo(0, H); for (var x = 0; x <= W + 10; x += 10) c.lineTo(x, terY(x)); c.lineTo(W, H); c.fill();
@@ -1407,7 +1412,7 @@
         if (A.idle()) { aiT += dt; if (aiT > 0.55) { aiT = 0; var tg = gren[0]; if (tg) { var gp = gpos(tg); shootAt(gp.x, gp.y); } else { var near = foes.filter(function (q) { return !q.dn; }).sort(function (a, b) { return a.z - b.z; })[0]; if (near && near.z < 0.8) { var p2 = scr(near); shootAt(p2.x, p2.y - bh * p2.s * 0.55); } } } }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'trenchdef', 'rgba(0,0,0,.16)');
         var list = foes.slice().sort(function (a, b) { return b.z - a.z; }), i;
         for (i = 0; i < list.length; i++) {
           var f = list[i], p = scr(f), hh = bh * p.s, img = fr[Math.floor(f.ph * NF) % NF];
@@ -1513,7 +1518,7 @@
         if (strike) { strike.t += dt; strike.k -= dt; if (strike.k <= 0 && strike.n < 5) { strike.k = 0.22; strike.n++; boomFx(A, px + rnd(-ch, ch * 2), gy - ch * 0.2, 1.2); if (strike.n === 4) dead = 1; } }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'commando', 'rgba(0,0,0,.16)');
         var fx = -((dist * 0.25) % (W * 2)), i, o;
         c.drawImage(far, fx, 0, W * 2, H); c.drawImage(far, fx + W * 2, 0, W * 2, H);
         // ground with moving texture (sense of speed)
@@ -1625,7 +1630,7 @@
         if (ufo) { ufo.x += ufo.v * dt; if (ufo.x > W + aw) ufo = null; }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'alienwave', 'rgba(0,0,0,.16)');
         var i, a, p;
         for (i = 0; i < al.length; i++) { a = al[i]; if (!a.on) continue; p = apos(a); c.drawImage(spr[a.k][frame], p[0] - aw / 2, p[1] - aw * 0.4, aw, aw * 0.8); }
         c.fillStyle = '#4ADE80'; for (i = 0; i < shields.length; i++) { var s = shields[i]; if (s.on) c.fillRect(s.x, s.y, aw * 0.2 - 0.5, aw * 0.2 - 0.5); }

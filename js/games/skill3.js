@@ -1504,6 +1504,11 @@
     sky: ['#F9A8D4', '#FBCFE8', '#FCE7F3', '#FFF1F2'], ground: ['#E9B9A0', '#D9A086', '#C4876C'], lane: ['#B9785A', '#A86B4F', '#955D43'],
     back: '#F7C9DD', walk: '#F5D0E0', roof: ['#F9A8D4', '#FBCFE8'], dust: 'rgba(251,207,232,'
   });
+  // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
+  var WBF = {};
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('highway', function (A) { return runner(A, HIGHWAY); }, 'lr', 0.5);
   boot('tokyodash', function (A) { return runner(A, TOKYO); }, 'swipe4', 0.5);
   boot('pharaohrun', function (A) { return runner(A, PHARAOH); }, 'swipe4', 0.5);
@@ -1604,7 +1609,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'orbit', 'rgba(0,0,0,.16)');
         var i;
         // the current orbit glows
         c.lineWidth = 2.5; c.strokeStyle = 'rgba(253,230,138,.55)'; c.beginPath(); c.arc(cx, cy, ring ? R2 : R1, 0, TAU); c.stroke();

@@ -425,6 +425,11 @@
   /* ================================================================== 1. HELIX DROP — a ball bounces on a spiral tower: drag to turn the
      tower so the ball drops through the gaps. Red parts = mistake. A floor breaks after 3 bounces (no waiting forever).
      Fair: the part just under the gap you fell through is never red; the next floor is always visible. */
+  // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
+  var WBF = {};
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('helixdrop', function (A) {
     var W, H, u, dpr, T, bg, poleS, ballS, cx, R, e = 0.34, th, rp, sp, br, rb, N = 12, STEP = TAU / 12;
     var plats = [], rot = 0, by = 0, vy = 0, cur = 0, cam = 0, drag = null, dead = 0, won = 0, t = 0, bolt = null, squash = 0, lastGap = 0, gen = 0, autoW = 0;
@@ -512,7 +517,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'helixdrop', 'rgba(0,0,0,.16)');
         var vis = plats.filter(function (p) { var y = p.y - cam; return y > -R && y < H + R; }), i;
         var front = [];
         for (i = 0; i < vis.length; i++) {
@@ -661,7 +666,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'colorjump', 'rgba(0,0,0,.16)');
         var i, q;
         c.lineCap = 'butt';
         for (i = 0; i < obs.length; i++) {

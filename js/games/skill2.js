@@ -442,6 +442,11 @@
   }
 
   /* ================================================================== 1. STAR ARCHER — drag back, release, hit the moving target */
+  // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
+  var WBF = {};
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+    if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('archer', function (A) {
     // v2807 (owner: "pull back and release" was confusing) — ONE simple gesture: TAP THE TARGET. The bow turns to it by
     // itself and the arrow flies there; a tap beside the target is a miss. No wind (it confused players).
@@ -522,7 +527,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'archer', 'rgba(0,0,0,.16)');
         c.strokeStyle = 'rgba(196,181,253,.25)'; c.lineWidth = 1.2; c.beginPath();
         for (var i = 0; i < streaks.length; i++) { var s = streaks[i]; c.moveTo(s.x, s.y); c.lineTo(s.x - s.l, s.y); }
         c.stroke();
@@ -701,7 +706,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'slicer', 'rgba(0,0,0,.16)');
         var i, o, s;
         for (i = 0; i < halves.length; i++) {
           var h = halves[i], img = fs[h.k], r = h.r * 1.1;
@@ -1464,7 +1469,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'dodge', 'rgba(0,0,0,.16)');
         c.fillStyle = 'rgba(255,255,255,.8)'; // parallax star streaks (cheap dots, no full-screen copy)
         for (var q = 0; q < stL.length; q++) { var st = stL[q], yy = (st[1] + scroll * st[3]) % H; c.fillRect(st[0], yy, st[2], st[2] * (1 + st[3] * 2)); }
         var i, r;
@@ -1557,7 +1562,7 @@
         if (won) won += dt;
       },
       draw: function (c) {
-        A.bg(bg);
+        A.bg(bg); wbFill(c, 'dartspro', 'rgba(0,0,0,.16)');
         var bs = R * 2 + 16, sc = dead && !fly ? 1 : 1;
         if (!(dead && !darts.length && !fly)) c.drawImage(boardS, cx - bs / 2, cy - bs / 2, bs * sc, bs * sc);
         else { c.globalAlpha = 0.35; c.drawImage(boardS, cx - bs / 2, cy - bs / 2, bs, bs); c.globalAlpha = 1; }
