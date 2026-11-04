@@ -987,12 +987,13 @@
       var ticks = [[1.5, '1.5'], [2, '2'], [3, '3'], [10, '10'], [100, '100']].map(function (q) { var y = msGy(q[0]); return '<path d="M28 ' + y.toFixed(1) + 'H46" stroke="#FDE68A" stroke-opacity=".7"/><text x="50" y="' + (y + 3.4).toFixed(1) + '" class="ms-tk">×' + q[1] + '</text>'; }).join('');
       return '<defs><linearGradient id="msSky' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#020617"/><stop offset=".6" stop-color="#1E1B4B"/><stop offset="1" stop-color="#4C1D95"/></linearGradient>' +
         rgd('msM' + uid, '#FFFFFF', '#E2E8F0', '#94A3B8') + lgd('msR' + uid, '#F8FAFC', '#94A3B8') + rgd('msF' + uid, '#FFF7D6', '#FB923C', '#DC2626') + rgd('msX' + uid, '#FFFFFF', '#FDE68A', '#F97316') + '</defs>' +
-        '<rect x="-300" y="-300" width="960" height="830" fill="url(#msSky' + uid + ')"/><g class="ms-stars" fill="#fff" opacity=".8">' + stars + '</g>' +
-        '<g class="ms-moon"><circle cx="300" cy="44" r="24" fill="url(#msM' + uid + ')"/><circle cx="292" cy="38" r="4" fill="#CBD5E1"/><circle cx="306" cy="52" r="3" fill="#CBD5E1"/></g>' +
+        '<rect x="-300" y="-300" width="960" height="830" fill="#0A1430"/>' +
+        // v3590 (propriétaire : « améliore les jeux live où on décolle ») : vrai décor illustré (nuit, lune, plateforme) + vraie fusée
+        '<g class="ms-bgi"><image href="img/games/ms_bg.webp?v=3590" x="-38" y="-5" width="437" height="280" preserveAspectRatio="none"/></g>' +
+        '<g class="ms-stars" fill="#fff" opacity=".35">' + stars + '</g><g class="ms-moon"></g>' +
         '<rect x="24" y="24" width="10" height="182" rx="5" fill="#fff" fill-opacity=".08"/><rect class="ms-lvl" x="24" y="24" width="10" height="182" rx="5" fill="#22C55E"/>' + ticks +
-        '<g class="ms-gnd"><path d="M-300 214Q180 196 660 214V530H-300Z" fill="#312E81"/><rect x="186" y="198" width="44" height="8" rx="2" fill="#475569"/></g>' +
-        '<g class="ms-rk"><g class="ms-fl"><path d="M-6 18Q0 44 6 18Z" fill="url(#msF' + uid + ')"/></g><path d="M0-26Q12-12 10 14H-10Q-12-12 0-26Z" fill="url(#msR' + uid + ')" stroke="#475569" stroke-width=".8"/>' +
-          '<path d="M0-26Q6-19 8.5-12H-8.5Q-6-19 0-26Z" fill="#DC2626"/><circle cy="-3" r="4.6" fill="#38BDF8" stroke="#0C4A6E" stroke-width="1.4"/><path d="M-10 6L-17 18L-9 15ZM10 6L17 18L9 15Z" fill="#DC2626"/></g>' +
+        '<g class="ms-gnd"></g>' +
+        '<g class="ms-rk"><g transform="translate(0 1)"><g class="ms-fl"><path d="M-6 18Q0 48 6 18Z" fill="url(#msF' + uid + ')"/></g></g><image href="img/games/ms_rocket.webp?v=3590" x="-13" y="-42" width="26" height="62" preserveAspectRatio="xMidYMid meet"/></g>' +
         '<g class="ms-boom" opacity="0"><circle r="30" fill="url(#msX' + uid + ')"/><path d="M0-44L8-14L38-24L16 0L40 22L10 14L0 44L-10 14L-40 22L-16 0L-38-24L-8-14Z" fill="#FDE68A" opacity=".8"/></g>' +
         '<text class="ms-x" x="226" y="122" text-anchor="middle">×1.00</text><text class="ms-cd" x="226" y="150" text-anchor="middle"></text>';
     },
@@ -1003,7 +1004,7 @@
     },
     hist: function (n) { var x = n / 100; return '<span class="ms-h ' + msBand(x) + '">' + fmtX(x).replace('.', K.dec()) + '</span>'; },
     wins: function (res) { var x = +res.n / 100; return [msBand(x), x < 2 ? 'u2' : 'o2']; },
-    init: function (c) { c.rk = c.q('.ms-rk'); c.fl = c.q('.ms-fl'); c.boom = c.q('.ms-boom'); c.x = c.q('.ms-x'); c.cd = c.q('.ms-cd'); c.lvl = c.q('.ms-lvl'); c.stars = c.q('.ms-stars'); c.gnd = c.q('.ms-gnd'); c.moon = c.q('.ms-moon'); },
+    init: function (c) { c.rk = c.q('.ms-rk'); c.fl = c.q('.ms-fl'); c.boom = c.q('.ms-boom'); c.x = c.q('.ms-x'); c.cd = c.q('.ms-cd'); c.lvl = c.q('.ms-lvl'); c.stars = c.q('.ms-stars'); c.gnd = c.q('.ms-gnd'); c.bgi = c.q('.ms-bgi'); c.moon = c.q('.ms-moon'); },
     frame: function (c, R, t, e, res) {
       var x = 1, boom = -1, ry = 178, wob = 0, cam = 0;
       if (res) {
@@ -1013,6 +1014,7 @@
       } else { ry = 178 + Math.sin(t * 2) * .6; }
       sa(c.stars, 'transform', 'translate(0 ' + (cam % 230).toFixed(1) + ')'); sa(c.gnd, 'transform', 'translate(0 ' + Math.min(80, cam).toFixed(1) + ')');
       sa(c.moon, 'transform', 'translate(0 ' + Math.min(30, cam * .12).toFixed(1) + ')');
+      if (c.bgi) sa(c.bgi, 'transform', 'translate(0 ' + Math.min(60, cam * .5).toFixed(1) + ')'); // le décor descend doucement quand la fusée monte
       sa(c.rk, 'opacity', boom >= 0 ? '0' : '1'); sa(c.rk, 'transform', tr(208 + wob, ry, 1.35, wob * .8));
       sa(c.fl, 'transform', 'scale(1 ' + (res && boom < 0 ? (1 + Math.sin(t * 30) * .25) : .25).toFixed(2) + ')');
       if (boom >= 0 && boom < 1.4) { var bk = eo(boom / .5); sa(c.boom, 'opacity', (1 - seg(boom, .6, 1.4)).toFixed(2)); sa(c.boom, 'transform', tr(208, ry, .3 + bk * 1.3, boom * 60)); } else sa(c.boom, 'opacity', '0');
