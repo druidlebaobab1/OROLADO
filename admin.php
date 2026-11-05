@@ -2099,6 +2099,26 @@ if ($isAjax) {
     $adm = orolado_admin_emails()[0] ?? 'admin@orolado.com';
     admin_json(admin_credit_player('admin_master', $amt, 'Recharge test admin', ['email' => $adm], (string) ($me['email'] ?? '')));
   }
+  if ($action === 'partner_list') { // v3631 : tous les comptes affiliés, avec leur solde
+    $ldb = admin_local_db();
+    $ids = (array) ($ldb['partnerIds'] ?? []);
+    if (empty($ldb['partnerIdxDone'])) { // une seule fois : retrouver les comptes affiliés créés avant cette liste
+      foreach ($ldb['users'] as $k => $u) if (is_array($u) && !empty($u['partner'])) $ids[] = (string) $k;
+      $ids = array_values(array_unique($ids));
+      with_db_lock(function ($box) use ($ids) { $box->db['partnerIds'] = array_values(array_unique(array_merge((array) ($box->db['partnerIds'] ?? []), $ids))); $box->db['partnerIdxDone'] = 1; return ['ok' => true]; });
+    }
+    $rows = [];
+    foreach ($ids as $id) {
+      $u = $ldb['users'][$id] ?? null;
+      if (!is_array($u) || empty($u['partner'])) continue;
+      $sb = (string) ($u['sbId'] ?? '');
+      $bal = null;
+      if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $sb)) { $v = supabase_admin_vault($sb); if ($v) $bal = orolado_money($v['real'] ?? 0); }
+      $rows[] = ['id' => (string) $id, 'sbId' => $sb, 'name' => (string) ($u['displayName'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? ''), 'balance' => $bal, 'createdAt' => (string) ($u['createdAt'] ?? '')];
+    }
+    usort($rows, static fn($a, $b) => strcmp($b['createdAt'], $a['createdAt']));
+    admin_json(['ok' => true, 'rows' => $rows]);
+  }
   if ($action === 'partner_create') { // v3629 : crée un compte affilié (identifiant + mot de passe générés), partenaire, rechargé
     $name = trim(mb_substr(preg_replace('/[\x00-\x1F<>]/u', '', (string) ($req['name'] ?? '')) ?? '', 0, 40));
     if ($name === '') $name = 'Partenaire';
@@ -2118,6 +2138,7 @@ if ($isAjax) {
         'trades' => 0, 'wins' => 0, 'realTrades' => 0, 'realStakeVolume' => 0, 'realDepositTotal' => 0, 'trafficSource' => 'partner',
         'publicId' => $pid, 'transactions' => [], 'positions' => [], 'partner' => true];
       $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+      $db['partnerIds'] = array_values(array_unique(array_merge((array) ($db['partnerIds'] ?? []), [$uid]))); // v3631 : liste des comptes affiliés
       return ['ok' => true, 'uid' => $uid, 'email' => $em, 'publicId' => $pid];
     });
     if (empty($made['ok'])) admin_json(['ok' => false, 'reason' => 'Création impossible']);
@@ -2140,6 +2161,8 @@ if ($isAjax) {
         $u = $box->db['users'][$id];
         if ($on) $u['partner'] = true; else unset($u['partner']);
         $box->db['users'][$id] = $u;
+        $pl = (array) ($box->db['partnerIds'] ?? []);
+        $box->db['partnerIds'] = $on ? array_values(array_unique(array_merge($pl, [$id]))) : array_values(array_diff($pl, [$id]));
         $n++;
       }
       return ['ok' => $n > 0, 'n' => $n, 'skip_write' => $n === 0];
@@ -3039,6 +3062,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
       <button class="mini" id="btnSelfTop" type="button" style="border-color:#3B82F6;color:#93C5FD">🧪 Recharger mon compte</button>
       <button class="mini" id="btnAffCreate" type="button" style="border-color:#F59E0B;color:#FDE68A">🤝 Créer un compte affilié</button>
+      <button class="mini" id="btnAffList" type="button" style="border-color:#F59E0B;color:#FDE68A">📋 Mes comptes affiliés</button>
+      <div id="affListBox" style="grid-column:1/-1;display:none"></div>
       <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
       <button class="mini" id="btnBonusAll" type="button" style="border-color:#4ADE80;color:#86EFAC">🎁 Bonus à tous</button>
@@ -4938,6 +4963,29 @@ setInterval(() => {
       go.disabled = true; let j; try { j = await ajax({action:'self_topup', amount:v}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
       go.disabled = false; alert(j.ok ? '✅ +' + v + ' $ ajoutés sur ton compte admin. Rouvre le site pour voir ton solde.' : '❌ ' + (j.reason || 'Échec'));
     };
+  })();
+  // v3631 : liste des comptes affiliés (solde, recharger, ouvrir la fiche)
+  (function () {
+    const go = $c('btnAffList'), box = $c('affListBox'); if (!go || !box) return;
+    const load = async () => {
+      box.style.display = 'block'; box.innerHTML = '<p class="muted">Chargement…</p>';
+      let j; try { j = await ajax({action:'partner_list'}); } catch (e) { j = {ok:false}; }
+      if (!j.ok) { box.innerHTML = '<p class="muted">Échec, réessayez.</p>'; return; }
+      if (!j.rows.length) { box.innerHTML = '<p class="muted">Aucun compte affilié.</p>'; return; }
+      box.innerHTML = j.rows.map(r => '<div style="border:1px solid #334155;border-radius:12px;padding:10px;margin:8px 0">' +
+        '<b>' + esc(r.name || 'Partenaire') + '</b> · ' + esc(r.publicId) + '<br><span class="muted">' + esc(r.email) + '</span><br>' +
+        'Solde : <b>' + (r.balance == null ? '—' : esc(r.balance) + ' $') + '</b><br>' +
+        '<button class="mini ok" data-rech="' + esc(r.sbId || r.id) + '" data-em="' + esc(r.email) + '" data-pid="' + esc(r.publicId) + '">💰 Recharger</button> ' +
+        '<button class="mini" data-open="' + esc(r.sbId || r.id) + '">Ouvrir la fiche</button></div>').join('');
+      box.querySelectorAll('button[data-rech]').forEach(b => b.onclick = async () => {
+        const v = parseFloat(String(prompt('Montant à ajouter, en $ :', '500') || '').replace(',', '.')); if (!(v > 0)) return;
+        b.disabled = true;
+        const r = await ajax({action:'adjust', userId:b.getAttribute('data-rech'), email:b.getAttribute('data-em'), publicId:b.getAttribute('data-pid'), delta:v, motif:'Recharge affilié'});
+        b.disabled = false; alert(r.ok ? '✅ +' + v + ' $' : '❌ ' + (r.reason || 'Échec')); load();
+      });
+      box.querySelectorAll('button[data-open]').forEach(b => b.onclick = () => openUser(b.getAttribute('data-open')));
+    };
+    go.onclick = load;
   })();
   // v3629 : créer un compte affilié (identifiant + mot de passe générés, compte partenaire, rechargé)
   (function () {
