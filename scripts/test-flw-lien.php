@@ -44,7 +44,7 @@ $GLOBALS['OROLADO_FAKE_FLW'] = function (string $method, string $path, ?array $b
     parse_str((string) parse_url($path, PHP_URL_QUERY), $q);
     $paid = $GLOBALS['FLW_PAID'][$q['tx_ref'] ?? ''] ?? null;
     if (!$paid) return ['status' => 'success', 'data' => ['status' => 'pending', 'tx_ref' => $q['tx_ref'] ?? ''], '_http' => 200];
-    return ['status' => 'success', 'data' => ['status' => 'successful', 'tx_ref' => $q['tx_ref'], 'id' => 99001, 'currency' => 'XOF', 'amount' => $paid, 'charged_amount' => $paid], '_http' => 200];
+    return ['status' => 'success', 'data' => ['status' => 'successful', 'tx_ref' => $q['tx_ref'], 'id' => 99001, 'currency' => $GLOBALS['FLW_CUR'][$q['tx_ref']] ?? 'XOF', 'amount' => $paid, 'charged_amount' => $paid], '_http' => 200];
   }
   if ($method === 'POST' && $path === '/payments') {
     if ($mode === 'ok') return ['status' => 'success', 'data' => ['link' => 'https://checkout.flutterwave.com/v3/hosted/pay/abc123'], '_http' => 200];
@@ -144,6 +144,15 @@ check('dépôt Wave payé (liste Flutterwave) → crédité', $stRc === 'COMPLET
 check('paiement inconnu montré, pas crédité', count($rc['unknown'] ?? []) === 1, json_encode($rc['unknown'] ?? [], JSON_UNESCAPED_UNICODE));
 $rc2 = orolado_pay_reconcile(7, ['u_rc']);
 check('2e passage : déjà crédité', ($rc2['credited'] ?? 1) == 0, json_encode($rc2['rows'] ?? [], JSON_UNESCAPED_UNICODE));
+
+echo "v3627 (audit) Payer 1 EUR sur un dépôt de 1000 $ (même référence)\n";
+with_db_lock(function ($box) { $box->db['deposits'][] = ['id' => 'flw_eur_1', 'ref' => 'flw_eur_1', 'userId' => 'u_rc', 'operator' => 'flutterwave', 'status' => 'PENDING', 'amount' => 1000, 'currency' => 'USD', 'at' => date('c')]; return ['ok' => true]; });
+$GLOBALS['FLW_PAID']['flw_eur_1'] = 1; $GLOBALS['FLW_CUR']['flw_eur_1'] = 'EUR';
+$before = $GLOBALS['BANK']['dddddddd-0000-0000-0000-00000000000d'] ?? 0;
+$pf = orolado_flutterwave_verify('flw_eur_1', '');
+orolado_flutterwave_credit('flw_eur_1', (string) ($pf['extId'] ?? ''), (float) ($pf['amount_usd'] ?? 0));
+$stE = ''; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['id'] ?? '') === 'flw_eur_1') $stE = (string) $dd['status'];
+check('1 EUR (monnaie non reconnue) → pas crédité, reste en attente', $stE === 'PENDING' && (($GLOBALS['BANK']['dddddddd-0000-0000-0000-00000000000d'] ?? 0) - $before) == 0, $stE);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

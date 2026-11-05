@@ -23,7 +23,7 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $me
 
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
-$usd = static fn(array $d): float => orolado_oxapay_received_usd($d);
+$usd = static fn(array $d): float => orolado_oxapay_received_usd($d + ['status' => 'Paid']); // v3627 : paiement confirmé (sinon rien n'est compté)
 $near = static fn(float $a, float $b): bool => abs($a - $b) < 0.011;
 
 echo "1) Conversion au bon cours\n";
@@ -53,9 +53,9 @@ foreach (['SOL' => 2, 'LTC' => 0.5, 'XRP' => 40, 'BNB' => 0.1] as $c => $n) {
 check('SOL, LTC, XRP, BNB : tous convertis au bon cours', $all);
 
 echo "2) Cours introuvable : on ne devine pas\n";
-$x = orolado_oxapay_received(['txs' => [['currency' => 'DOGS', 'received_amount' => 1000, 'value' => 1000]]]);
+$x = orolado_oxapay_received(['status' => 'Paid', 'txs' => [['currency' => 'DOGS', 'received_amount' => 1000, 'value' => 1000]]]);
 check('pièce sans cours → pas de crédit, dépôt laissé en attente', $x['known'] === false && orolado_oxapay_received_usd(['txs' => [['currency' => 'DOGS', 'received_amount' => 1000]]]) === 0.0);
-$x = orolado_oxapay_received(['txs' => [['currency' => 'DOGS', 'received_amount' => 1000, 'value' => 4.2]]]);
+$x = orolado_oxapay_received(['status' => 'Paid', 'txs' => [['currency' => 'DOGS', 'received_amount' => 1000, 'value' => 4.2]]]);
 check('pièce sans cours mais valeur en $ fournie par OxaPay → 4,20 $', $x['known'] && $near($x['usd'], 4.2), json_encode($x));
 
 echo "3) Faux avis de paiement (non signé)\n";
@@ -67,6 +67,11 @@ save_db(orolado_data_file(), $db);
 $out = orolado_oxapay_apply_payload(['status' => 'paid', 'address' => 'TFakeAddress123', 'txs' => [['currency' => 'USDT', 'received_amount' => 10000]]], false);
 $d = load_db()['deposits'][0];
 check('avis non signé de 10 000 $ : rien crédité', $credits === [] && strtoupper((string) $d['status']) === 'PENDING', json_encode($credits));
+
+echo "4) v3627 Pas de crédit avant confirmation sur la blockchain\n";
+check('envoi « confirming » (vu, pas confirmé) → 0 $', orolado_oxapay_received_usd(['status' => 'Paying', 'txs' => [['status' => 'confirming', 'currency' => 'USDT', 'received_amount' => 500]]]) == 0.0);
+check('même envoi « confirmed » → 500 $', abs(orolado_oxapay_received_usd(['status' => 'Paying', 'txs' => [['status' => 'confirmed', 'currency' => 'USDT', 'received_amount' => 500]]]) - 500) < 0.01);
+check('envoi remplacé / échoué → 0 $, jamais le prix de la facture', (float) orolado_oxapay_confirmed_usd(['status' => 'Paying', 'amount' => 1000, 'currency' => 'USD', 'txs' => [['status' => 'replaced', 'currency' => 'BTC', 'received_amount' => 0.02]]]) == 0.0);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
