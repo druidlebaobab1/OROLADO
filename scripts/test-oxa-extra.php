@@ -279,5 +279,48 @@ $ab = orolado_abandon_open_deposit(['token' => 'tokA', 'orderId' => $inv['orderI
 $anc = null; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['kind'] ?? '') === 'static') $anc = $dd;
 check("« abandon » de l'écran ne casse pas l'adresse permanente", ($anc['status'] ?? '') === 'STATIC' && empty($ab['abandoned']), json_encode($ab));
 
+echo "19) v3627 (audit) Message SIGNÉ forgé (clé connue) sans paiement réel chez OxaPay\n";
+$fresh([$dep('oF', $A, 'TF', 'ADDRF', 'PENDING', 1000)]);
+$raw = json_encode(['order_id' => 'oF', 'status' => 'Paid', 'txs' => [['status' => 'confirmed', 'amount' => 1000000, 'currency' => 'USDT', 'tx_hash' => 'x']]]);
+orolado_oxapay_webhook($raw, hash_hmac('sha512', $raw, 'fake-oxa'));
+check('signé mais OxaPay ne confirme rien → 0 $', $money($A) == 0, (string) $money($A));
+$OXA['TF'] = $pay('TF', 'oF', 'ADDRF', [['status' => 'confirming', 'currency' => 'USDT', 'network' => 'TRC20', 'amount' => 1000, 'tx_hash' => 'hF']], 'Paying');
+orolado_oxapay_webhook(json_encode(['track_id' => 'TF', 'order_id' => 'oF', 'status' => 'Paying']), '');
+check('envoi vu mais pas confirmé → pas encore crédité', $money($A) == 0, (string) $money($A));
+$OXA['TF'] = $pay('TF', 'oF', 'ADDRF', [$tx('hF', 1000)]);
+orolado_oxapay_webhook(json_encode(['track_id' => 'TF', 'order_id' => 'oF', 'status' => 'Paid']), '');
+check('confirmé → 1000 $ crédités', abs($money($A) - 1000) < 0.02, (string) $money($A));
+
+echo "20) v3627 (audit) Adresse permanente très utilisée : envoi perdu rattrapé même après 5 000 $ déjà déposés\n";
+$fresh([]);
+orolado_oxapay_invoice(['token' => 'tokA', 'coin' => 'usdt_trc20', 'amount' => 20]);
+$old = [];
+for ($q = 0; $q < 10; $q++) { $OXA['TO' . $q] = $pay('TO' . $q, 'oxs_x', 'STATADDR', [$tx('hO' . $q, 500) + ['address' => 'STATADDR']]); orolado_oxapay_webhook(json_encode(['track_id' => 'TO' . $q, 'status' => 'Paid']), ''); }
+check('10 dépôts de 500 $ → 5 000 $', abs($money($A) - 5000) < 0.02, (string) $money($A));
+$HIST['STATADDR'] = [$OXA['TO9'], $pay('TL', 'oxs_x', 'STATADDR', [$tx('hL', 50) + ['address' => 'STATADDR']])];
+orolado_pay_admin_recheck($A);
+check('envoi de 50 $ sans message (historique récent seulement) → rattrapé', abs($money($A) - 5050) < 0.02, (string) $money($A));
+orolado_pay_admin_recheck($A);
+check('re-clic : rien de plus', abs($money($A) - 5050) < 0.02, (string) $money($A));
+
+echo "21) v3627 (audit) Payé mais crédit en échec pendant plus de 48 h : repris par la ronde, admin prévenu\n";
+$old5 = ['id' => 'oP5', 'ref' => 'oP5', 'userId' => $A, 'operator' => 'oxapay', 'network' => 'TRC20', 'coin' => 'usdt_trc20', 'status' => 'PENDING', 'amount' => 30, 'currency' => 'USD', 'trackId' => 'TP5', 'address' => 'ADDRP5', 'at' => date('c', time() - 5 * 86400)];
+$fresh([$old5]);
+$OXA['TP5'] = $pay('TP5', 'oP5', 'ADDRP5', [$tx('hP5', 30)]);
+$GLOBALS['BANK_DOWN'] = 9;
+orolado_oxapay_webhook(json_encode(['track_id' => 'TP5', 'order_id' => 'oP5', 'status' => 'Paid']), '');
+$pf = null; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['id'] ?? '') === 'oP5') $pf = $dd;
+check('échec noté (payFail) et rien crédité', !empty($pf['payFail']) && $money($A) == 0, json_encode(['payFail' => $pf['payFail'] ?? null, 'why' => $pf['payFailWhy'] ?? null]));
+$al = json_decode((string) @file_get_contents(orolado_data_dir() . '/admin_alerts.json'), true) ?: [];
+check('admin prévenu (Santé du site)', str_contains(json_encode($al, JSON_UNESCAPED_UNICODE), 'oP5'));
+$GLOBALS['BANK_DOWN'] = 0;
+@unlink(orolado_data_dir() . '/pay_sweep.next'); @unlink(orolado_data_dir() . '/pay_sweep_seen.json');
+orolado_pay_sweep_after_response();
+check('ronde (dépôt vieux de 5 jours) → crédité une fois', abs($money($A) - 30) < 0.02, (string) $money($A));
+@unlink(orolado_data_dir() . '/pay_sweep.next'); @unlink(orolado_data_dir() . '/pay_sweep_seen.json');
+orolado_pay_sweep_after_response();
+$pf = null; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['id'] ?? '') === 'oP5') $pf = $dd;
+check('ensuite : pas de 2e crédit, marque effacée', abs($money($A) - 30) < 0.02 && empty($pf['payFail']) && ($pf['status'] ?? '') === 'COMPLETED', json_encode(['st' => $pf['status'] ?? null, 'pf' => $pf['payFail'] ?? null]));
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

@@ -3712,7 +3712,40 @@ function orolado_find_deposit_by_hit(array $hit): ?array {
   return null;
 }
 
+/**
+ * v3627 (audit) : un dépôt PAYÉ chez le prestataire dont le crédit échoue (caisse injoignable, compte sans caisse,
+ * plafond…) est marqué « payFail » : la ronde serveur le reprend SANS limite de 48 h (30 jours) et l'admin est
+ * prévenu (Santé du site). Avant : après 48 h, plus jamais retenté automatiquement, et rien ne le signalait.
+ */
 function credit_paid_deposit(array $hit): array {
+  $res = credit_paid_deposit_core($hit);
+  if (!empty($res['ok']) || !empty($res['duplicate']) || empty($hit['paid'])) {
+    if (!empty($res['ok']) && empty($res['duplicate']) && ($ref = (string) ($hit['ref'] ?? '')) !== '') {
+      with_db_lock(function ($box) use ($ref) { foreach (($box->db['deposits'] ?? []) as $i => $d) { if (is_array($d) && (string) ($d['id'] ?? '') === $ref && isset($d['payFail'])) { unset($box->db['deposits'][$i]['payFail'], $box->db['deposits'][$i]['payFailWhy']); return ['ok' => true]; } } return ['ok' => true, 'skip_write' => true]; });
+    }
+    return $res;
+  }
+  $why = (string) ($res['reason'] ?? $res['code'] ?? 'credit');
+  $ref = (string) ($hit['ref'] ?? '');
+  if ($ref !== '' && $why !== 'unknown') {
+    $n = 0;
+    with_db_lock(function ($box) use ($ref, $why, &$n) {
+      foreach (($box->db['deposits'] ?? []) as $i => $d) {
+        if (!is_array($d) || (string) ($d['id'] ?? '') !== $ref) continue;
+        $n = (int) ($d['payFail'] ?? 0) + 1;
+        $box->db['deposits'][$i]['payFail'] = $n;
+        $box->db['deposits'][$i]['payFailWhy'] = $why;
+        $box->db['deposits'][$i]['payFailAt'] = date('c');
+        return ['ok' => true];
+      }
+      return ['ok' => true, 'skip_write' => true];
+    });
+    if ($n === 1 || $n % 10 === 0) orolado_health_event('Dépôts', 'Dépôt ' . $ref . ' PAYÉ chez le prestataire mais pas crédité (' . $why . ', essai ' . $n . '). Nouvel essai automatique ; si ça dure, ouvrez la fiche du joueur → « Revérifier paiements ».', 'warn');
+  }
+  return $res;
+}
+
+function credit_paid_deposit_core(array $hit): array {
   $file = orolado_data_file();
   $fp = fopen($file, 'c+');
   if (!$fp) return ['ok' => false, 'reason' => 'db'];
@@ -3736,7 +3769,13 @@ function credit_paid_deposit(array $hit): array {
   }
 
   $idx = -1;
-  foreach ($db['deposits'] as $i => $d) {
+  // v3627 (audit) : si la référence du dépôt est donnée, elle seule compte (jamais un autre dépôt par adresse / e-mail).
+  if (($hit['ref'] ?? '') !== '') {
+    foreach ($db['deposits'] as $i => $d) {
+      if (is_array($d) && (strcasecmp((string) ($d['id'] ?? ''), (string) $hit['ref']) === 0 || strcasecmp((string) ($d['ref'] ?? ''), (string) $hit['ref']) === 0)) { $idx = $i; break; }
+    }
+  }
+  if ($idx < 0) foreach ($db['deposits'] as $i => $d) {
     $matchRef = ($hit['ref'] ?? '') !== '' && (
       strcasecmp((string) ($d['id'] ?? ''), (string) $hit['ref']) === 0
       || strcasecmp((string) ($d['ref'] ?? ''), (string) $hit['ref']) === 0
@@ -4991,7 +5030,7 @@ function orolado_pay_sweep_after_response(): void {
     foreach (($db['deposits'] ?? []) as $d) {
       if (!is_array($d)) continue;
       $at = strtotime((string) ($d['at'] ?? '')) ?: 0;
-      if ($at < $cut) continue;
+      if ($at < $cut && !(!empty($d['payFail']) && $at >= $now - 30 * 86400)) continue; // v3627 : payé mais pas crédité → 30 jours
       $st = strtoupper((string) ($d['status'] ?? ''));
       $op = strtolower((string) ($d['operator'] ?? ''));
       if ($op === 'oxapay' && ($st === 'COMPLETED' || $st === 'PAID') && (string) ($d['parentId'] ?? '') === '' && ($u = (string) ($d['userId'] ?? '')) !== '') $cryptoUsers[$u] = true;
@@ -6244,16 +6283,26 @@ function orolado_oxapay_uid_from_order(string $orderId, array $db): string {
 }
 
 function orolado_oxapay_find_dep(string $orderId, string $trackId, string $address = '', string $email = ''): ?array {
+  // v3627 (audit) : par ORDRE DE FIABILITÉ sur toute la liste (n° de commande, puis n° de suivi, puis adresse, puis
+  // e-mail). Avant : le premier dépôt qui correspondait à N'IMPORTE QUEL critère (une vieille facture à la même adresse
+  // pouvait passer devant la bonne commande).
   $db = load_db(orolado_data_file());
+  $deps = array_values(array_filter((array) ($db['deposits'] ?? []), 'is_array'));
   $address = trim($address);
   $email = strtolower(trim($email));
-  foreach (($db['deposits'] ?? []) as $d) {
-    if (!is_array($d)) continue;
-    if ($orderId !== '' && (strcasecmp((string) ($d['id'] ?? ''), $orderId) === 0 || strcasecmp((string) ($d['ref'] ?? ''), $orderId) === 0)) return $d;
-    if ($trackId !== '' && (strcasecmp((string) ($d['trackId'] ?? ''), $trackId) === 0 || strcasecmp((string) ($d['extId'] ?? ''), $trackId) === 0)) return $d;
-    if ($address !== '' && strcasecmp((string) ($d['address'] ?? ''), $address) === 0) return $d;
-    if ($email !== '' && strtolower(trim((string) ($d['aliasEmail'] ?? $d['email'] ?? $d['customerEmail'] ?? ''))) === $email) return $d;
+  if ($orderId !== '') foreach ($deps as $d) if (strcasecmp((string) ($d['id'] ?? ''), $orderId) === 0 || strcasecmp((string) ($d['ref'] ?? ''), $orderId) === 0) return $d;
+  if ($trackId !== '') foreach ($deps as $d) if (strcasecmp((string) ($d['trackId'] ?? ''), $trackId) === 0 || strcasecmp((string) ($d['extId'] ?? ''), $trackId) === 0) return $d;
+  if ($address !== '') {
+    $best = null; $bestRank = -1;
+    foreach (array_reverse($deps) as $d) { // plus récent d'abord
+      if (strcasecmp((string) ($d['address'] ?? ''), $address) !== 0) continue;
+      $st = strtoupper((string) ($d['status'] ?? ''));
+      $rank = $st === 'STATIC' ? 3 : (in_array($st, ['PENDING', 'UNFINISHED'], true) ? 2 : 1);
+      if ($rank > $bestRank) { $best = $d; $bestRank = $rank; }
+    }
+    if ($best) return $best;
   }
+  if ($email !== '') foreach ($deps as $d) if (strtolower(trim((string) ($d['aliasEmail'] ?? $d['email'] ?? $d['customerEmail'] ?? ''))) === $email) return $d;
   return null;
 }
 
@@ -6533,6 +6582,26 @@ function orolado_oxapay_piece_usd(array $row, string $fallbackCur): array {
 }
 
 /** Dollars reçus pour un paiement OxaPay (somme des transactions). */
+/**
+ * v3627 (audit) : un envoi crypto ne compte que s'il est CONFIRMÉ sur la blockchain. Avant : « paying / confirming »
+ * suffisait (crédit à 0 confirmation : sur BTC, LTC, ETH… on pouvait jouer l'argent puis annuler l'envoi).
+ * Statut d'envoi vide (ancien format) : on se fie au statut final du paiement chez OxaPay.
+ */
+function orolado_oxapay_tx_final(array $tx, string $payStatus = ''): bool {
+  $st = str_replace(['-', ' '], '_', strtolower(trim((string) ($tx['status'] ?? $tx['state'] ?? ''))));
+  if ($st === '') return orolado_oxapay_full_status($payStatus);
+  return in_array($st, ['confirmed', 'completed', 'complete', 'success', 'successful', 'paid', 'done'], true);
+}
+/** Montant à créditer (USD) : envois confirmés seulement ; sans détail d'envoi, le prix seulement si OxaPay dit « payé ». */
+function orolado_oxapay_confirmed_usd(array $data): ?float {
+  $r = orolado_oxapay_received($data);
+  if (!$r['known']) return null;
+  if ((float) $r['usd'] + 0.0001 >= orolado_oxapay_credit_floor()) return (float) $r['usd'];
+  $hasTx = !empty($data['txs']) && is_array($data['txs']);
+  if (!$hasTx && orolado_oxapay_full_status(orolado_oxapay_payload_status($data))) return orolado_oxapay_usd($data);
+  return 0.0;
+}
+
 function orolado_oxapay_received(array $data): array {
   $cur = strtoupper((string) ($data['pay_currency'] ?? $data['payCurrency'] ?? $data['currency'] ?? ''));
   $total = 0.0;
@@ -6544,13 +6613,15 @@ function orolado_oxapay_received(array $data): array {
       $st = strtolower((string) ($tx['status'] ?? $tx['state'] ?? ''));
       if (in_array($st, ['failed', 'invalid', 'expired', 'replaced', 'rejected'], true)) continue;
       $any = true;
+      if (!orolado_oxapay_tx_final($tx, orolado_oxapay_payload_status($data))) continue; // v3627 : pas encore confirmé
       $p = orolado_oxapay_piece_usd($tx, $cur);
       $total += $p['usd'];
       if (!$p['known']) $known = false;
     }
   }
-  if (!$any) {
-    // Pas de détail des transactions : seulement les champs « reçu » du paiement lui-même.
+  if (!$any && orolado_oxapay_full_status(orolado_oxapay_payload_status($data))) {
+    // Pas de détail des transactions : seulement les champs « reçu » du paiement lui-même — et seulement s'il est
+    // payé pour de bon (v3627).
     $top = [];
     foreach (['received_amount', 'receivedAmount', 'sent_amount', 'sentAmount', 'paid_amount', 'paidAmount', 'sent_value', 'sentValue', 'value'] as $k) {
       if (isset($data[$k])) $top[$k] = $data[$k];
@@ -7053,14 +7124,10 @@ function orolado_oxapay_status(array $req): array {
     orolado_health_event('Dépôts', 'Dépôt crypto reçu (suivi ' . $tid . ') mais cours introuvable pour le convertir en dollars : il reste en attente. Validez-le à la main dans « Dépôts en Attente » après vérification sur OxaPay.', 'warn');
     return ['ok' => true, 'pending' => true];
   }
-  $received = (float) $recv['usd'];
-  $usd = $received > 0.0001 ? $received : orolado_oxapay_usd($data);
-  $payable = orolado_oxapay_paid_status($status) || $received + 0.0001 >= orolado_oxapay_credit_floor();
-  if (!$payable) {
+  $usd = (float) (orolado_oxapay_confirmed_usd($data) ?? 0); // v3627 : envois confirmés seulement
+  if ($usd + 0.0001 < orolado_oxapay_credit_floor()) {
     return ['ok' => true, 'pending' => true, 'oxaStatus' => $status];
   }
-  if ($received + 0.0001 >= orolado_oxapay_credit_floor()) $usd = $received;
-  elseif ($usd + 0.0001 < orolado_oxapay_credit_floor() && orolado_oxapay_full_status($status)) $usd = orolado_money($dep['amount'] ?? 0);
   if (!orolado_oxapay_net_ok($data, $dep)) return ['ok' => true, 'pending' => true];
   if ($usd + 0.0001 < orolado_oxapay_credit_floor()) return ['ok' => true, 'pending' => true];
   $txid = (string) ($data['txs'][0]['tx_hash'] ?? $data['txs'][0]['txHash'] ?? $data['txs'][0]['hash'] ?? $tid);
@@ -7111,19 +7178,35 @@ function orolado_oxapay_extra_payment_inner(array $data, array $dep): array {
   $cur = strtoupper((string) ($data['pay_currency'] ?? $data['payCurrency'] ?? $data['currency'] ?? ''));
   $db = load_db(orolado_data_file());
   $known = [];
-  $already = orolado_money($dep['amount'] ?? 0);
-  foreach ([(string) ($dep['txid'] ?? ''), (string) ($dep['extId'] ?? '')] as $h) if ($h !== '') $known[strtolower($h)] = true;
+  // v3627 (audit) : « déjà crédité » = seulement les crédits dont les envois sont dans CETTE liste (ou sans numéro
+  // d'envoi : prudence). Avant : tous les crédits de l'adresse depuis toujours, comparés à 3 jours d'historique →
+  // une adresse permanente bien utilisée (5 000 $ en quelques semaines) ne rattrapait plus jamais un envoi perdu.
+  $credits = []; // [montant, [hashes]]
+  $ph = array_values(array_filter([strtolower((string) ($dep['txid'] ?? '')), strtolower((string) ($dep['extId'] ?? ''))]));
+  foreach ($ph as $h) $known[$h] = true;
+  if (strtoupper((string) ($dep['status'] ?? '')) !== 'STATIC') $credits[] = [orolado_money($dep['amount'] ?? 0), $ph];
   foreach (($db['deposits'] ?? []) as $d) {
     if (!is_array($d) || (string) ($d['parentId'] ?? '') !== $parentId) continue;
     $stc = strtoupper((string) ($d['status'] ?? ''));
-    if ($stc === 'COMPLETED' || $stc === 'PAID') $already = orolado_money($already + (float) ($d['amount'] ?? 0));
-    foreach (array_merge([(string) ($d['extId'] ?? ''), (string) ($d['txid'] ?? '')], (array) ($d['txids'] ?? [])) as $h) if ($h !== '') $known[strtolower((string) $h)] = true;
+    $hs = [];
+    foreach (array_merge([(string) ($d['extId'] ?? ''), (string) ($d['txid'] ?? '')], (array) ($d['txids'] ?? [])) as $h) if ($h !== '') { $known[strtolower((string) $h)] = true; $hs[] = strtolower((string) $h); }
+    if ($stc === 'COMPLETED' || $stc === 'PAID') $credits[] = [(float) ($d['amount'] ?? 0), array_values(array_unique($hs))];
   }
+  $win = [];
+  foreach ($data['txs'] as $tx) if (is_array($tx) && ($wh = strtolower(trim((string) ($tx['tx_hash'] ?? $tx['txHash'] ?? $tx['hash'] ?? '')))) !== '') $win[$wh] = true;
+  $already = 0.0;
+  foreach ($credits as $cr) {
+    $inWin = !$cr[1];
+    foreach ($cr[1] as $h) if (isset($win[$h])) { $inWin = true; break; }
+    if ($inWin) $already += (float) $cr[0];
+  }
+  $already = orolado_money($already);
   $total = 0.0; $newUsd = 0.0; $newHashes = [];
   foreach ($data['txs'] as $tx) {
     if (!is_array($tx)) continue;
     $st = strtolower((string) ($tx['status'] ?? $tx['state'] ?? ''));
     if (in_array($st, ['failed', 'invalid', 'expired', 'replaced', 'rejected'], true)) continue;
+    if (!orolado_oxapay_tx_final($tx, orolado_oxapay_payload_status($data))) continue; // v3627 : pas encore confirmé → au prochain passage
     $p = orolado_oxapay_piece_usd($tx, $cur);
     if (!$p['known']) return ['ok' => false, 'code' => 'no_price'];
     $total += $p['usd'];
@@ -7289,9 +7372,14 @@ function orolado_oxapay_history_extras(array $db, string $uid, int $days = 7, in
     if (count($byAddr) >= $maxAddr) break;
   }
   foreach ($byAddr as $a => $d) {
-    $res = orolado_oxapay_http('GET', '/v1/payment?' . http_build_query(['address' => (string) $d['address'], 'from_date' => $since - 86400, 'size' => 100]));
-    $list = is_array($res) ? ($res['data']['list'] ?? $res['list'] ?? $res['data'] ?? []) : [];
-    if (!is_array($list)) $list = [];
+    $list = []; $res = null;
+    for ($pg = 1; $pg <= 5; $pg++) { // v3627 : toutes les pages (avant : 100 paiements au plus)
+      $res = orolado_oxapay_http('GET', '/v1/payment?' . http_build_query(['address' => (string) $d['address'], 'from_date' => $since - 86400, 'size' => 200, 'page' => $pg]));
+      $part = is_array($res) ? ($res['data']['list'] ?? $res['list'] ?? []) : [];
+      if (!is_array($part) || !$part) break;
+      $list = array_merge($list, $part);
+      if ($pg >= (int) ($res['meta']['last_page'] ?? $res['data']['meta']['last_page'] ?? 1)) break;
+    }
     $txs = [];
     foreach ($list as $it) {
       if (!is_array($it)) continue;
@@ -7410,15 +7498,16 @@ function orolado_oxapay_apply_payload(array $data, bool $signed = false): array 
   if ($trackId !== '') {
     $live = orolado_oxapay_inquiry($trackId);
     if ($live) {
-      $liveStatus = orolado_oxapay_payload_status($live);
-      $liveRecv = orolado_oxapay_received_usd($live);
-      $livePaid = orolado_oxapay_paid_status($liveStatus) || $liveRecv + 0.0001 >= orolado_oxapay_credit_floor();
-      if ($livePaid) { $data = array_merge($data, $live); $liveData = $live; }
+      $liveUsd = orolado_oxapay_confirmed_usd($live);
+      $livePaid = $liveUsd !== null && $liveUsd + 0.0001 >= orolado_oxapay_credit_floor();
+      // v3627 (audit) : seulement ce qu'OxaPay dit lui-même (l'envoyeur ne fournit que les numéros pour retrouver le dépôt).
+      if ($livePaid) { $data = array_merge(['order_id' => $orderId, 'track_id' => $trackId], $live); $liveData = $live; }
     }
   }
   $known = is_array($depProbe);
   // Sécurité : sans signature valide, seuls les chiffres lus directement chez OxaPay comptent.
-  if (!$livePaid && !($signed && $hookPaid)) {
+  // v3627 (audit) : même signé, un message n'est JAMAIS crédité sans la confirmation lue directement chez OxaPay.
+  if (!$livePaid) {
     orolado_oxapay_log('webhook_skip', ['reason' => 'unconfirmed', 'signed' => $signed, 'hookPaid' => $hookPaid, 'known' => $known, 'orderId' => $orderId, 'trackId' => $trackId]);
     return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   }
@@ -7430,7 +7519,7 @@ function orolado_oxapay_apply_payload(array $data, bool $signed = false): array 
     return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   }
   $received = (float) $recv['usd'];
-  $usd = $received > 0.0001 ? $received : orolado_oxapay_usd($data);
+  $usd = (float) (orolado_oxapay_confirmed_usd($data) ?? 0);
   $orderId = (string) ($data['order_id'] ?? $data['orderId'] ?? $orderId);
   $trackId = (string) ($data['track_id'] ?? $data['trackId'] ?? $trackId);
   $address = trim((string) ($data['address'] ?? $address));
@@ -7453,16 +7542,13 @@ function orolado_oxapay_apply_payload(array $data, bool $signed = false): array 
     $address = (string) ($depLive['address'] ?? '');
     $email = '';
   }
-  $payable = orolado_oxapay_paid_status($status) || $received + 0.0001 >= orolado_oxapay_credit_floor() || $livePaid || ($signed && $hookPaid);
-  if (!$payable) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
+  if (!$livePaid || $usd + 0.0001 < orolado_oxapay_credit_floor()) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   $depSt = $dep ? strtoupper((string) ($dep['status'] ?? '')) : '';
   if ($depSt === 'COMPLETED' || $depSt === 'PAID' || $depSt === 'STATIC') { // v3626 : STATIC = adresse permanente, chaque envoi = dépôt enfant
     $extra = orolado_oxapay_extra_payment($data, $dep);
     orolado_oxapay_log('webhook_extra', ['orderId' => $orderId, 'trackId' => $trackId, 'signed' => $signed, 'livePaid' => $livePaid] + $extra);
     return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   }
-  if ($received + 0.0001 >= orolado_oxapay_credit_floor()) $usd = $received;
-  elseif ($dep && $usd + 0.0001 < orolado_oxapay_credit_floor() && orolado_oxapay_full_status($status)) $usd = orolado_money($dep['amount'] ?? 0);
   if (!orolado_oxapay_net_ok($data, $dep)) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   $txid = (string) ($data['txs'][0]['tx_hash'] ?? $data['txs'][0]['txHash'] ?? $data['txs'][0]['hash'] ?? $data['tx_hash'] ?? $data['txHash'] ?? $trackId);
   if ($orderId === '' && $trackId === '' && $address === '' && $email === '') return ['ok' => true, 'http' => 200, 'body' => 'OK'];
@@ -8053,7 +8139,13 @@ function orolado_flutterwave_credit(string $txRef, string $extId = '', float $ve
   if (!$dep) return ['ok' => false, 'code' => 'unknown'];
   $pending = orolado_money($dep['amount'] ?? 0);
   $verifiedUsd = orolado_money($verifiedUsd);
-  $usd = $verifiedUsd > 0 ? $verifiedUsd : $pending;
+  // v3627 (audit) : jamais de crédit sans montant CONFIRMÉ par Flutterwave. Avant : monnaie inconnue (EUR, GBP…) →
+  // conversion à 0 → on créditait le montant demandé (payer 1 € pour un dépôt de 1 000 $).
+  if ($verifiedUsd <= 0) {
+    orolado_health_event('Dépôts', 'Flutterwave : paiement ' . $txRef . ' confirmé mais montant/monnaie non reconnus — pas crédité. Vérifiez sur Flutterwave puis validez à la main si c\'est bon.', 'warn');
+    return ['ok' => false, 'code' => 'amount_unverified'];
+  }
+  $usd = $verifiedUsd;
   // Jamais plus que le montant demandé (le paiement carte est d'un montant fixe) : protège aussi
   // un paiement lancé à l'ancien taux et confirmé après un changement de taux.
   if ($pending > 0 && $usd > $pending) $usd = $pending;
@@ -8151,8 +8243,7 @@ function orolado_flutterwave_webhook(string $raw, string $hashHeader): array {
   $proof = orolado_flutterwave_verify($txRef, $txId);
   if (empty($proof['paid'])) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   $ref = (string) ($proof['tx_ref'] ?? $txRef);
-  $usd = (float) ($proof['amount_usd'] ?? 0);
-  if ($usd <= 0) $usd = orolado_flutterwave_payload_usd($data);
+  $usd = (float) ($proof['amount_usd'] ?? 0); // v3627 (audit) : seulement le montant confirmé par Flutterwave, jamais celui du message
   if ($usd > 0) {
     orolado_flutterwave_credit($ref, (string) ($proof['extId'] ?? $txId), $usd);
   }
