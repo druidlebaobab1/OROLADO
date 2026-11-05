@@ -5061,7 +5061,7 @@ function orolado_pay_reconcile(int $days = 7, array $ids = [], string $email = '
         }
         if (!$mine($d)) continue;
         $st = strtoupper((string) ($d['status'] ?? ''));
-        if ($st === 'COMPLETED' || $st === 'PAID') {
+        if ($st === 'COMPLETED' || $st === 'PAID' || $st === 'STATIC') {
           $x = orolado_oxapay_extra_payment($it, $d);
           $ok = !empty($x['ok']) && empty($x['duplicate']);
           $res2 = $ok ? 'envoi en plus crédité +' . orolado_money($x['amount'] ?? 0) . ' $' : 'déjà crédité';
@@ -6192,7 +6192,7 @@ function orolado_oxapay_open_invoice(array $db, string $uid, string $coin): ?arr
     if (strtolower((string) ($d['operator'] ?? '')) !== 'oxapay') continue;
     if ($coin !== '' && strtolower((string) ($d['coin'] ?? '')) !== $coin) continue;
     $st = strtoupper((string) ($d['status'] ?? ''));
-    if (in_array($st, ['COMPLETED', 'PAID', 'SUCCESS'], true)) continue;
+    if (in_array($st, ['COMPLETED', 'PAID', 'SUCCESS', 'STATIC'], true)) continue;
     $addr = trim((string) ($d['address'] ?? ''));
     if ($addr === '') continue;
     $at = strtotime((string) ($d['at'] ?? '')) ?: 0;
@@ -6619,6 +6619,7 @@ function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, str
     $ref = (string) ($d['id'] ?? $d['ref'] ?? '');
     $uid = (string) ($d['userId'] ?? '');
     $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st === 'STATIC') return ['ok' => true, 'duplicate' => true, 'static' => true]; // v3626 : l'ancre d'adresse permanente n'est jamais créditée elle-même
     if ($st === 'COMPLETED' || $st === 'PAID') {
       return ['ok' => true, 'duplicate' => true, 'amount' => orolado_money($d['amount'] ?? $usd), 'vault' => $uid !== '' ? orolado_crypto_vault($db, $uid) : null];
     }
@@ -6737,6 +6738,66 @@ function orolado_abandon_open_deposit(array $req): array {
   return ['ok' => true, 'server' => true, 'abandoned' => $changed];
 }
 
+/**
+ * v3626 (propriétaire : « comme les grandes plateformes : le joueur garde son adresse, il peut refaire autant de
+ * fois qu'il veut, n'importe quel montant, et tout est crédité ») : ADRESSE PERMANENTE par joueur et par réseau
+ * (« static address » OxaPay : jamais expirée ; chaque paiement, quel que soit le montant ou le moment, est signalé).
+ * Avant : une adresse « white-label » valable 24 h ; un renvoi plus tard sur la même adresse pouvait se perdre.
+ * Le dépôt « ancre » (kind static, statut STATIC, montant 0) n'est jamais crédité lui-même : chaque envoi devient
+ * un dépôt enfant crédité de ce qui a été reçu (orolado_oxapay_extra_payment : jamais deux fois).
+ * Réseaux : USDT TRC20 / BEP20 / ERC20 et TRX (OROLADO_OXA_STATIC=0 dans .env pour revenir à l'ancien système).
+ */
+function orolado_oxapay_static_enabled(string $coin): bool {
+  $off = getenv('OROLADO_OXA_STATIC');
+  if ($off !== false && trim((string) $off) === '0') return false;
+  return in_array($coin, ['usdt_trc20', 'usdt_bep20', 'usdt_erc20', 'trx'], true);
+}
+function orolado_oxapay_static_nets(string $coin): array {
+  switch ($coin) {
+    case 'usdt_trc20': case 'trx': return ['TRON', 'TRC20', 'Tron'];
+    case 'usdt_bep20': return ['BSC', 'BEP20', 'Binance Smart Chain'];
+    case 'usdt_erc20': return ['Ethereum', 'ERC20', 'ETH'];
+  }
+  return [];
+}
+/** Dépôt « ancre » de l'adresse permanente du joueur pour ce réseau (TRC20 et TRX partagent la même adresse TRON). */
+function orolado_oxapay_static_find(array $db, string $uid, string $coin): ?array {
+  $fam = in_array($coin, ['usdt_trc20', 'trx'], true) ? 'tron' : $coin;
+  foreach (array_reverse($db['deposits'] ?? []) as $d) {
+    if (!is_array($d) || (string) ($d['kind'] ?? '') !== 'static' || (string) ($d['userId'] ?? '') !== $uid) continue;
+    if ((string) ($d['fam'] ?? '') === $fam && trim((string) ($d['address'] ?? '')) !== '') return $d;
+  }
+  return null;
+}
+function orolado_oxapay_static_get(array $me, string $coin): ?array {
+  if (!orolado_oxapay_static_enabled($coin) || orolado_oxapay_key() === '') return null;
+  $uid = (string) ($me['id'] ?? '');
+  if ($uid === '') return null;
+  $db = load_db(orolado_data_file());
+  $have = orolado_oxapay_static_find($db, $uid, $coin);
+  if ($have) return $have;
+  $fam = in_array($coin, ['usdt_trc20', 'trx'], true) ? 'tron' : $coin;
+  $orderId = 'oxs_' . preg_replace('/[^a-zA-Z0-9]/', '', $uid) . '_' . $fam;
+  $base = ['callback_url' => rtrim(orolado_public_origin(), '/') . '/api/oxapay/webhook', 'order_id' => $orderId, 'description' => 'OROLADO ' . $uid . ' ' . $fam, 'auto_withdrawal' => 0];
+  $pe = orolado_oxapay_payer_email($me);
+  if ($pe !== '') $base['email'] = $pe;
+  $data = []; $net = '';
+  foreach (orolado_oxapay_static_nets($coin) as $n) {
+    $res = orolado_oxapay_http('POST', '/v1/payment/static-address', $base + ['network' => $n]);
+    $data = is_array($res) ? orolado_oxapay_extract($res) : [];
+    if (orolado_oxapay_addr($data) !== '') { $net = $n; break; }
+    orolado_oxapay_log('static_fail', ['net' => $n, 'res' => is_array($res) ? array_intersect_key($res, ['message' => 1, 'error' => 1, 'status' => 1]) : null]);
+  }
+  $addr = orolado_oxapay_addr($data);
+  if ($addr === '') return null;
+  $dep = ['id' => $orderId, 'ref' => $orderId, 'userId' => $uid, 'operator' => 'oxapay', 'kind' => 'static', 'fam' => $fam, 'coin' => $coin,
+    'network' => $net, 'status' => 'STATIC', 'amount' => 0, 'currency' => 'USD', 'trackId' => (string) ($data['track_id'] ?? $data['trackId'] ?? ''),
+    'address' => $addr, 'qr' => (string) ($data['qr_code'] ?? ''), 'at' => date('c')];
+  orolado_deposit_append_locked($dep);
+  orolado_oxapay_log('static_new', ['uid' => $uid, 'fam' => $fam, 'net' => $net]);
+  return $dep;
+}
+
 function orolado_oxapay_invoice(array $req): array {
   $file = orolado_data_file();
   $db = load_db($file);
@@ -6755,6 +6816,13 @@ function orolado_oxapay_invoice(array $req): array {
   $amount = orolado_money($req['amount'] ?? 0);
   if ($amount <= 0 || $amount + 0.0001 < $minUsd) $amount = $minUsd;
   $uid = (string) $me['id'];
+  // v3626 : adresse permanente du joueur (n'expire jamais, tout envoi crédité). Échec chez OxaPay → ancien système.
+  $st0 = orolado_oxapay_static_get($me, $coin);
+  if ($st0) {
+    return ['ok' => true, 'server' => true, 'orderId' => (string) $st0['id'], 'trackId' => (string) ($st0['trackId'] ?? ''), 'address' => (string) $st0['address'],
+      'amount' => $amount, 'payAmount' => $amount, 'payCurrency' => $meta['pay'], 'network' => $meta['netLabel'], 'coin' => $coin, 'qr' => '',
+      'expiredAt' => 0, 'memo' => '', 'reused' => true, 'static' => true, 'minUsd' => $minUsd];
+  }
   $reuse = orolado_oxapay_open_invoice($db, $uid, $coin);
   if ($reuse && trim((string) ($reuse['address'] ?? '')) !== '') {
     return [
@@ -6785,7 +6853,7 @@ function orolado_oxapay_invoice(array $req): array {
     'amount' => $amount,
     'currency' => 'USD',
     'pay_currency' => $meta['pay'],
-    'lifetime' => 1440,
+    'lifetime' => 2880, // v3626 : le maximum permis par OxaPay (48 h)
     'callback_url' => $callback,
     'order_id' => $orderId,
     'under_paid_coverage' => 60,
@@ -6928,6 +6996,11 @@ function orolado_oxapay_status(array $req): array {
   }
   if (!$dep) return ['ok' => true, 'pending' => true];
   $st = strtoupper((string) ($dep['status'] ?? ''));
+  if ($st === 'STATIC') { // v3626 : adresse permanente → on relit l'historique OxaPay de l'adresse, chaque envoi crédité une fois
+    $hx = orolado_oxapay_history_extras(load_db(orolado_data_file()), $uid, 2, 4);
+    if ($hx['credited'] > 0) return ['ok' => true, 'paid' => true, 'success' => true, 'amount' => $hx['credited'], 'vault' => orolado_crypto_vault(load_db(orolado_data_file()), $uid)];
+    return ['ok' => true, 'pending' => true];
+  }
   if ($st === 'COMPLETED' || $st === 'PAID') {
     return [
       'ok' => true,
@@ -7098,7 +7171,7 @@ function orolado_oxapay_recheck(array $req): array {
     $liveAddr = orolado_oxapay_addr($live);
     $d = ($liveOrder !== '' || $liveAddr !== '') ? orolado_oxapay_find_dep($liveOrder, '', $liveAddr) : null;
     $st = $d ? strtoupper((string) ($d['status'] ?? '')) : '';
-    if ($st !== 'COMPLETED' && $st !== 'PAID') { $done[$tid] = time(); continue; }
+    if ($st !== 'COMPLETED' && $st !== 'PAID' && $st !== 'STATIC') { $done[$tid] = time(); continue; }
     // Envoi pas encore confirmé : on réessaiera à la prochaine ouverture.
     $recvL = orolado_oxapay_received($live);
     if (!$recvL['known'] || $recvL['usd'] + 0.0001 < orolado_oxapay_credit_floor()) continue;
@@ -7115,6 +7188,7 @@ function orolado_oxapay_recheck(array $req): array {
   }
   foreach ($list as $d) {
     $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st === 'STATIC') continue; // v3626 : adresse permanente → lue par l'historique (plus bas)
     if ($st === 'COMPLETED' || $st === 'PAID') {
       $live = orolado_oxapay_inquiry((string) $d['trackId']);
       $liveOrder = (string) ($live['order_id'] ?? $live['orderId'] ?? '');
@@ -7151,8 +7225,9 @@ function orolado_oxapay_history_extras(array $db, string $uid, int $days = 7, in
     if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
     if (strtolower((string) ($d['operator'] ?? '')) !== 'oxapay' || (string) ($d['parentId'] ?? '') !== '') continue;
     $a = strtolower(trim((string) ($d['address'] ?? '')));
-    if ($a === '' || isset($byAddr[$a]) || (strtotime((string) ($d['at'] ?? '')) ?: 0) < $since) continue;
-    if (!in_array(strtoupper((string) ($d['status'] ?? '')), ['COMPLETED', 'PAID'], true)) continue;
+    $isStatic = strtoupper((string) ($d['status'] ?? '')) === 'STATIC';
+    if ($a === '' || isset($byAddr[$a]) || (!$isStatic && (strtotime((string) ($d['at'] ?? '')) ?: 0) < $since)) continue;
+    if (!in_array(strtoupper((string) ($d['status'] ?? '')), ['COMPLETED', 'PAID', 'STATIC'], true)) continue;
     $byAddr[$a] = $d;
     if (count($byAddr) >= $maxAddr) break;
   }
@@ -7205,6 +7280,7 @@ function orolado_oxapay_admin_recheck(string $uid): array {
       'oxapay' => $live ? (orolado_oxapay_payload_status($live) ?: '?') : 'pas de réponse',
       'envois' => ($live && is_array($live['txs'] ?? null)) ? count($live['txs']) : 0,
       'recu' => $live ? orolado_money(orolado_oxapay_received($live)['usd'] ?? 0) : 0];
+    if ($st === 'STATIC') { $row['resultat'] = 'adresse permanente (lue par l\'historique ci-dessous)'; $rows[] = $row; continue; }
     if ($live && ($st === 'COMPLETED' || $st === 'PAID')) {
       $x = orolado_oxapay_extra_payment($live, $d);
       $row['resultat'] = !empty($x['ok']) && empty($x['duplicate']) ? 'crédité +' . orolado_money($x['amount'] ?? 0) . ' $' : (!empty($x['duplicate']) ? 'rien de nouveau' : 'non crédité (' . (string) ($x['code'] ?? '') . ')');
@@ -7244,7 +7320,7 @@ function orolado_oxapay_admin_recheck(string $uid): array {
     $d = ($liveOrder !== '' || $liveAddr !== '') ? orolado_oxapay_find_dep($liveOrder, '', $liveAddr) : null;
     if (!$d || (string) ($d['userId'] ?? '') !== $uid) continue;
     $st = strtoupper((string) ($d['status'] ?? ''));
-    if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+    if ($st !== 'COMPLETED' && $st !== 'PAID' && $st !== 'STATIC') continue;
     $x = orolado_oxapay_extra_payment($live, $d);
     $rows[] = ['depot' => (string) ($d['id'] ?? ''), 'suivi' => (string) $tid, 'statut' => 'envoi séparé', 'montant' => 0,
       'oxapay' => orolado_oxapay_payload_status($live) ?: '?', 'envois' => is_array($live['txs'] ?? null) ? count($live['txs']) : 0,
@@ -7323,7 +7399,7 @@ function orolado_oxapay_apply_payload(array $data, bool $signed = false): array 
   $payable = orolado_oxapay_paid_status($status) || $received + 0.0001 >= orolado_oxapay_credit_floor() || $livePaid || ($signed && $hookPaid);
   if (!$payable) return ['ok' => true, 'http' => 200, 'body' => 'OK'];
   $depSt = $dep ? strtoupper((string) ($dep['status'] ?? '')) : '';
-  if ($depSt === 'COMPLETED' || $depSt === 'PAID') {
+  if ($depSt === 'COMPLETED' || $depSt === 'PAID' || $depSt === 'STATIC') { // v3626 : STATIC = adresse permanente, chaque envoi = dépôt enfant
     $extra = orolado_oxapay_extra_payment($data, $dep);
     orolado_oxapay_log('webhook_extra', ['orderId' => $orderId, 'trackId' => $trackId, 'signed' => $signed, 'livePaid' => $livePaid] + $extra);
     return ['ok' => true, 'http' => 200, 'body' => 'OK'];

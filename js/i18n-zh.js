@@ -247,7 +247,7 @@
  "cryptoErrPending": "等待 OxaPay 确认…",
  "cryptoErrReused": "该交易哈希已入账。",
  "cryptoErrTx": "请输入有效的 Tron TxID",
- "cryptoGuide1": "请在所选网络上发送准确金额。",
+ "cryptoGuide1": "在此网络发送您想要的金额（不低于最低额）：收到的每笔金额都会入账。",
  "cryptoGuide2": "确认后余额将自动更新。",
  "cryptoGuide3": "如需 memo/标签，请勿从交易所转账。",
  "cryptoHideQr": "隐藏二维码",
