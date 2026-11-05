@@ -6762,9 +6762,11 @@ function orolado_oxapay_extra_payment(array $data, array $dep): array {
   if (!$newHashes) return ['ok' => true, 'duplicate' => true];
   // Les anciens envois sont dans la même liste : on retire ce qui a déjà été crédité.
   // Paiement séparé chez OxaPay (seulement les nouveaux envois) : tout est nouveau.
-  $usd = orolado_money(!empty($oldInList) ? min($newUsd, $total - $already) : $newUsd);
+  // v3622 : historique OxaPay (tous les envois de l'adresse) = toujours « total reçu − déjà crédité » (jamais plus).
+  $net = !empty($data['_net']);
+  $usd = orolado_money((!empty($oldInList) || $net) ? min($newUsd, $total - $already) : $newUsd);
   // Moins de la moitié des nouvelles transactions est « en plus » : elles étaient déjà comptées.
-  if ($usd + 0.0001 < orolado_oxapay_credit_floor() || $usd + 0.0001 < 0.5 * $newUsd) return ['ok' => true, 'duplicate' => true];
+  if ($usd + 0.0001 < orolado_oxapay_credit_floor() || (!$net && $usd + 0.0001 < 0.5 * $newUsd)) return ['ok' => true, 'duplicate' => true];
   sort($newHashes);
   $childId = $parentId . '_x' . substr(sha1(implode('|', $newHashes)), 0, 10);
   orolado_deposit_append_locked([
@@ -6886,9 +6888,54 @@ function orolado_oxapay_recheck(array $req): array {
       orolado_oxapay_log('recheck_credit', ['orderId' => (string) ($d['id'] ?? ''), 'usd' => $r['amount'] ?? 0]);
     }
   }
+  // v3622 : envois renvoyés sur une adresse déjà payée (48 h), lus dans l'historique OxaPay.
+  $hx = orolado_oxapay_history_extras(load_db(orolado_data_file()), $uid, 2, 2);
+  $credited += (float) $hx['credited'];
   return ['ok' => true, 'checked' => count($list), 'credited' => orolado_money($credited)];
 }
 
+
+/**
+ * v3622 (propriétaire : « chaque paiement doit être crédité, 10 $ ou 100 $, même renvoyé sur la même adresse ») :
+ * lit l'HISTORIQUE des paiements OxaPay de chaque adresse déjà payée du joueur (GET /v1/payment?address=…) et crédite
+ * les envois que personne ne nous a signalés. Jamais plus que « total reçu sur l'adresse − déjà crédité », et un hash
+ * de transaction déjà utilisé n'est jamais recompté.
+ */
+function orolado_oxapay_history_extras(array $db, string $uid, int $days = 7, int $maxAddr = 4): array {
+  $since = time() - $days * 86400; $byAddr = []; $rows = []; $credited = 0.0;
+  foreach (array_reverse($db['deposits'] ?? []) as $d) {
+    if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
+    if (strtolower((string) ($d['operator'] ?? '')) !== 'oxapay' || (string) ($d['parentId'] ?? '') !== '') continue;
+    $a = strtolower(trim((string) ($d['address'] ?? '')));
+    if ($a === '' || isset($byAddr[$a]) || (strtotime((string) ($d['at'] ?? '')) ?: 0) < $since) continue;
+    if (!in_array(strtoupper((string) ($d['status'] ?? '')), ['COMPLETED', 'PAID'], true)) continue;
+    $byAddr[$a] = $d;
+    if (count($byAddr) >= $maxAddr) break;
+  }
+  foreach ($byAddr as $a => $d) {
+    $res = orolado_oxapay_http('GET', '/v1/payment?' . http_build_query(['address' => (string) $d['address'], 'from_date' => $since - 86400, 'size' => 100]));
+    $list = is_array($res) ? ($res['data']['list'] ?? $res['list'] ?? $res['data'] ?? []) : [];
+    if (!is_array($list)) $list = [];
+    $txs = [];
+    foreach ($list as $it) {
+      if (!is_array($it)) continue;
+      foreach ((array) ($it['txs'] ?? []) as $tx) {
+        if (!is_array($tx)) continue;
+        $ta = strtolower(trim((string) ($tx['address'] ?? '')));
+        if ($ta !== '' && $ta !== $a) continue;
+        $txs[] = $tx;
+      }
+    }
+    $row = ['depot' => (string) ($d['id'] ?? ''), 'adresse' => substr((string) $d['address'], 0, 6) . '…' . substr((string) $d['address'], -5), 'envois' => count($txs)];
+    if (!$txs) { $row['resultat'] = $res ? 'aucun envoi trouvé chez OxaPay' : 'OxaPay ne répond pas'; $rows[] = $row; continue; }
+    $x = orolado_oxapay_extra_payment(['txs' => $txs, '_net' => 1], $d);
+    $ok = !empty($x['ok']) && empty($x['duplicate']);
+    $row['resultat'] = $ok ? 'crédité +' . orolado_money($x['amount'] ?? 0) . ' $' : (!empty($x['duplicate']) ? 'tout est déjà crédité' : 'non crédité (' . (string) ($x['code'] ?? '') . ')');
+    if ($ok) { $credited += (float) ($x['amount'] ?? 0); orolado_oxapay_log('history_extra', ['orderId' => (string) ($d['id'] ?? '')] + $x); }
+    $rows[] = $row;
+  }
+  return ['rows' => $rows, 'credited' => orolado_money($credited)];
+}
 
 /**
  * v3621 (propriétaire : « 103 $ crédités, mais les 79 $ envoyés ensuite sur la même adresse n'apparaissent pas ») :
@@ -6961,6 +7008,9 @@ function orolado_oxapay_admin_recheck(string $uid): array {
       'resultat' => !empty($x['ok']) && empty($x['duplicate']) ? 'crédité +' . orolado_money($x['amount'] ?? 0) . ' $' : 'rien de nouveau'];
     if (!empty($x['ok']) && empty($x['duplicate'])) { $credited += (float) ($x['amount'] ?? 0); orolado_oxapay_log('admin_recheck_extra', ['orderId' => (string) ($d['id'] ?? ''), 'track' => (string) $tid] + $x); }
   }
+  $h = orolado_oxapay_history_extras(load_db(orolado_data_file()), $uid, 7, 6);
+  foreach ($h['rows'] as $hr) $rows[] = ['depot' => $hr['depot'], 'suivi' => 'historique ' . $hr['adresse'], 'statut' => 'adresse payée', 'montant' => 0, 'oxapay' => 'historique', 'envois' => $hr['envois'], 'recu' => 0, 'resultat' => $hr['resultat']];
+  $credited += (float) $h['credited'];
   return ['ok' => true, 'rows' => $rows, 'credited' => orolado_money($credited)];
 }
 
