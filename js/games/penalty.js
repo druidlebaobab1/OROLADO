@@ -272,7 +272,7 @@
     var KW = { Th: [3.7, 2.7], Sn: [2.8, 1.9], Sk: [2.95, 2.05], Sh: [5.3, 4.5], Ua: [3.5, 2.8], Fa: [3.0, 2.3] };
     var seg = function (el, a, b) { var k = el.id.slice(1, 3), w = KW[k]; el.setAttribute('d', w ? capsule(a, b, w[0], w[1]) : 'M' + a[0].toFixed(2) + ' ' + a[1].toFixed(2) + 'L' + b[0].toFixed(2) + ' ' + b[1].toFixed(2)); };
     function dressKeeper() { // a new keeper look (skin, hair, kit)
-      var r = function (n) { return (Math.random() * n) | 0; }, sk = KSKIN[r(KSKIN.length)], hc = KHAIR[r(KHAIR.length)], kit = KKIT[r(KKIT.length)], st = [0, 1, 3, 4][r(4)];
+      var r = function (n) { return (Math.random() * n) | 0; }, sk = KSKIN[0], hc = KHAIR[0], kit = KKIT[0], st = 0; void r; // v3616 (propriétaire) : TOUJOURS le même gardien (un gardien qui change fait croire à la triche)
       
       var sg = $('pkSkin'); if (sg) { sg.children[0].setAttribute('stop-color', sk[0]); sg.children[1].setAttribute('stop-color', sk[1]); }
       var sh = $('pkShirt'); if (sh) { sh.children[0].setAttribute('stop-color', kit[0]); sh.children[1].setAttribute('stop-color', kit[1]); }
@@ -478,7 +478,7 @@
       var r = await K.multi('penalty', live() ? 'cash' : 'start');
       if (!box.isConnected) return;
       busy = false;
-      if (r) { if (!r.done && (!g || g.done)) dressKeeper(); g = r; if (r.done) K.resultLine(box, r); else $('pnFlash').setAttribute('class', 'pn-flash'); }
+      if (r) { g = r; if (r.done) K.resultLine(box, r); else $('pnFlash').setAttribute('class', 'pn-flash'); }
       paint();
     });
     box._pk = { drawK: drawK, pose: divePose, lerp: lerpPose, fall: fallPose, ready: READY, setBall: setBall, stop: function () { busy = true; cancelAnimationFrame(idleT); } }; // essais (aperçu des poses)
