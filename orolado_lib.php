@@ -6890,6 +6890,80 @@ function orolado_oxapay_recheck(array $req): array {
 }
 
 
+/**
+ * v3621 (propriétaire : « 103 $ crédités, mais les 79 $ envoyés ensuite sur la même adresse n'apparaissent pas ») :
+ * bouton admin « Revérifier crypto » sur la fiche d'un joueur. Redemande TOUT DE SUITE à OxaPay chacun de ses dépôts
+ * crypto des 7 derniers jours (même déjà payés : un 2e envoi sur la même adresse) et les numéros de suivi inconnus du
+ * journal (48 h), crédite ce qui manque — jamais deux fois (mêmes garde-fous que le crédit normal : hash de transaction
+ * déjà utilisé = refusé) — et dit à l'admin ce qu'OxaPay répond pour chaque dépôt.
+ */
+function orolado_oxapay_admin_recheck(string $uid): array {
+  $uid = trim($uid);
+  if ($uid === '') return ['ok' => false, 'reason' => 'Joueur introuvable'];
+  if (orolado_oxapay_key() === '') return ['ok' => false, 'reason' => 'Clé OxaPay absente sur le serveur'];
+  $db = load_db(orolado_data_file());
+  $rows = []; $credited = 0.0; $cut = time() - 7 * 86400;
+  foreach (array_reverse($db['deposits'] ?? []) as $d) {
+    if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
+    if (strtolower((string) ($d['operator'] ?? '')) !== 'oxapay' || (string) ($d['parentId'] ?? '') !== '') continue;
+    $tid = trim((string) ($d['trackId'] ?? ''));
+    if ($tid === '' || (strtotime((string) ($d['at'] ?? '')) ?: 0) < $cut) continue;
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    $live = orolado_oxapay_inquiry($tid);
+    $row = ['depot' => (string) ($d['id'] ?? ''), 'suivi' => $tid, 'statut' => $st, 'montant' => orolado_money($d['amount'] ?? 0),
+      'oxapay' => $live ? (orolado_oxapay_payload_status($live) ?: '?') : 'pas de réponse',
+      'envois' => ($live && is_array($live['txs'] ?? null)) ? count($live['txs']) : 0,
+      'recu' => $live ? orolado_money(orolado_oxapay_received($live)['usd'] ?? 0) : 0];
+    if ($live && ($st === 'COMPLETED' || $st === 'PAID')) {
+      $x = orolado_oxapay_extra_payment($live, $d);
+      $row['resultat'] = !empty($x['ok']) && empty($x['duplicate']) ? 'crédité +' . orolado_money($x['amount'] ?? 0) . ' $' : (!empty($x['duplicate']) ? 'rien de nouveau' : 'non crédité (' . (string) ($x['code'] ?? '') . ')');
+      if (!empty($x['ok']) && empty($x['duplicate'])) { $credited += (float) ($x['amount'] ?? 0); orolado_oxapay_log('admin_recheck_extra', ['orderId' => (string) ($d['id'] ?? '')] + $x); }
+    } elseif ($live) {
+      $before = orolado_crypto_vault(load_db(orolado_data_file()), $uid)['real'] ?? 0;
+      orolado_oxapay_apply_payload($live + ['track_id' => $tid], false);
+      $after = orolado_crypto_vault(load_db(orolado_data_file()), $uid)['real'] ?? 0;
+      $gain = orolado_money((float) $after - (float) $before);
+      $row['resultat'] = $gain > 0 ? 'crédité +' . $gain . ' $' : 'pas encore payé chez OxaPay';
+      if ($gain > 0) $credited += $gain;
+    } else $row['resultat'] = 'OxaPay ne répond pas, réessayez';
+    $rows[] = $row;
+    if (count($rows) >= 8) break;
+  }
+  // Envois passés sous un AUTRE numéro de suivi (journal 48 h), sans limite de « déjà vérifié ».
+  $knownTracks = [];
+  foreach (($db['deposits'] ?? []) as $d) if (is_array($d) && ($d['trackId'] ?? '') !== '') $knownTracks[strtolower((string) $d['trackId'])] = true;
+  $logFile = orolado_data_dir() . '/oxapay_webhook.log';
+  $todo = [];
+  if (is_file($logFile)) {
+    foreach (array_reverse(array_slice(file($logFile, FILE_IGNORE_NEW_LINES) ?: [], -3000)) as $line) {
+      $r = json_decode($line, true);
+      if (!is_array($r)) continue;
+      $tid = trim((string) ($r['trackId'] ?? ''));
+      if ($tid === '' || isset($knownTracks[strtolower($tid)]) || isset($todo[$tid])) continue;
+      if ((strtotime((string) ($r['ts'] ?? '')) ?: 0) < time() - 48 * 3600) continue;
+      $todo[$tid] = true;
+      if (count($todo) >= 8) break;
+    }
+  }
+  foreach (array_keys($todo) as $tid) {
+    $live = orolado_oxapay_inquiry((string) $tid);
+    if (!$live) continue;
+    $liveOrder = (string) ($live['order_id'] ?? $live['orderId'] ?? '');
+    $liveAddr = orolado_oxapay_addr($live);
+    $d = ($liveOrder !== '' || $liveAddr !== '') ? orolado_oxapay_find_dep($liveOrder, '', $liveAddr) : null;
+    if (!$d || (string) ($d['userId'] ?? '') !== $uid) continue;
+    $st = strtoupper((string) ($d['status'] ?? ''));
+    if ($st !== 'COMPLETED' && $st !== 'PAID') continue;
+    $x = orolado_oxapay_extra_payment($live, $d);
+    $rows[] = ['depot' => (string) ($d['id'] ?? ''), 'suivi' => (string) $tid, 'statut' => 'envoi séparé', 'montant' => 0,
+      'oxapay' => orolado_oxapay_payload_status($live) ?: '?', 'envois' => is_array($live['txs'] ?? null) ? count($live['txs']) : 0,
+      'recu' => orolado_money(orolado_oxapay_received($live)['usd'] ?? 0),
+      'resultat' => !empty($x['ok']) && empty($x['duplicate']) ? 'crédité +' . orolado_money($x['amount'] ?? 0) . ' $' : 'rien de nouveau'];
+    if (!empty($x['ok']) && empty($x['duplicate'])) { $credited += (float) ($x['amount'] ?? 0); orolado_oxapay_log('admin_recheck_extra', ['orderId' => (string) ($d['id'] ?? ''), 'track' => (string) $tid] + $x); }
+  }
+  return ['ok' => true, 'rows' => $rows, 'credited' => orolado_money($credited)];
+}
+
 function orolado_oxapay_apply_payload(array $data, bool $signed = false): array {
   if (isset($data['data']) && is_array($data['data'])) $data = array_merge($data, $data['data']);
   if (isset($data['result']) && is_array($data['result'])) $data = array_merge($data, $data['result']);

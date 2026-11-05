@@ -2091,6 +2091,9 @@ if ($isAjax) {
     $adm = orolado_admin_emails()[0] ?? 'admin@orolado.com';
     admin_json(admin_credit_player('admin_master', $amt, 'Recharge test admin', ['email' => $adm], (string) ($me['email'] ?? '')));
   }
+  if ($action === 'oxaRecheck') { // v3621 : revérifier les dépôts crypto d'un joueur chez OxaPay (sans double crédit)
+    admin_json(orolado_oxapay_admin_recheck((string) ($req['userId'] ?? '')));
+  }
   if ($action === 'adjust') {
     admin_json(admin_credit_player(
       (string) ($req['userId'] ?? ''),
@@ -3987,7 +3990,8 @@ async function openUser(uid) {
     '<p><input id="adjAmt" type="number" step="0.01" min="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+
     '<button class="mini bad" id="btnDebit">Débiter</button> '+
-    '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
+    '<button class="mini bad" id="btnSuspend">Suspendre</button> '+
+    '<button class="mini" id="btnOxaRe">🔄 Revérifier crypto</button></p><div id="oxaReOut" style="font-size:12px;white-space:pre-wrap"></div>'+
     // v2405 : seuls les dépôts VRAIMENT payés sous « argent payé » ; les pages de paiement ouvertes puis
     // abandonnées (en attente, jamais payées) à part, pour ne plus croire qu'un joueur a payé.
     tbl('Dépôts (argent payé)', (j.deposits||[]).filter(d => d.paid !== false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
@@ -4023,6 +4027,19 @@ async function openUser(uid) {
   const btnDebit = document.getElementById('btnDebit');
   if (btnCredit) btnCredit.onclick = () => go(1);
   if (btnDebit) btnDebit.onclick = () => go(-1);
+  const btnOxaRe = document.getElementById('btnOxaRe');
+  if (btnOxaRe) btnOxaRe.onclick = async () => {
+    if (btnOxaRe.disabled) return;
+    btnOxaRe.disabled = true; btnOxaRe.textContent = '⏳ OxaPay…';
+    const out = document.getElementById('oxaReOut');
+    let r;
+    try { r = await ajax({action:'oxaRecheck', userId:u.id}); } catch (e) { r = {ok:false, reason:'Réseau lent, réessayez'}; }
+    btnOxaRe.disabled = false; btnOxaRe.textContent = '🔄 Revérifier crypto';
+    if (!r.ok) { out.textContent = r.reason || 'Échec'; return; }
+    const lines = (r.rows||[]).map(x => '• '+x.depot+' ('+x.statut+', '+x.montant+' $) — OxaPay : '+x.oxapay+', '+x.envois+' envoi(s), reçu '+x.recu+' $ → '+x.resultat);
+    out.textContent = (lines.length ? lines.join('\n') : 'Aucun dépôt crypto sur 7 jours.') + '\nCrédité maintenant : '+(r.credited||0)+' $';
+    if (r.credited > 0) { bustList(); loadBadges(); }
+  };
   document.getElementById('btnSuspend').onclick = async () => {
     if (!confirm('Suspendre ce joueur ? Il sera déconnecté tout de suite et ne pourra plus jamais se connecter ni créer un compte avec cet e-mail.')) return;
     const r = await ajax({action:'suspend', userId:u.id, email:u.email||''});

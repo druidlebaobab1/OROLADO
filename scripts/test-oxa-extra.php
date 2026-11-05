@@ -152,5 +152,16 @@ check('chaque numéro interrogé une seule fois, les vieux (> 48 h) ignorés', i
 $x = orolado_oxapay_extra_payment($OXA['T9b'], load_db()['deposits'][0]);
 check('rejoué à la main → pas de 2e crédit', !empty($x['duplicate']) && abs($money($A) - 7.70) < 0.001, json_encode($x));
 
+echo "9) v3621 Bouton admin « Revérifier crypto » : 2e envoi sur la même adresse, sans message d'OxaPay\n";
+$fresh([$dep('oR', $A, 'TR', 'ADDRR', 'COMPLETED', 103.72, 'hR1')]);
+$OXA['TR'] = $pay('TR', 'oR', 'ADDRR', [$tx('hR1', 103.72), $tx('hR2', 79.2)]);
+$r1 = orolado_oxapay_admin_recheck($A);
+check('le 2e envoi est crédité', abs($money($A) - 79.2) < 0.02 && abs(($r1['credited'] ?? 0) - 79.2) < 0.02, json_encode($r1['credited'] ?? null) . ' / ' . $money($A));
+$r2 = orolado_oxapay_admin_recheck($A);
+check('2e clic : rien de plus (pas de double crédit)', abs($money($A) - 79.2) < 0.02 && ($r2['credited'] ?? 1) == 0, json_encode($r2['credited'] ?? null) . ' / ' . $money($A));
+check("l'admin voit la réponse d'OxaPay", !empty($r1['rows'][0]['resultat']), json_encode($r1['rows'][0] ?? [], JSON_UNESCAPED_UNICODE));
+$r3 = orolado_oxapay_admin_recheck($V);
+check('un autre joueur ne reçoit rien', $money($V) == 0 && ($r3['credited'] ?? 1) == 0);
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
