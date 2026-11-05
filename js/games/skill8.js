@@ -2706,10 +2706,15 @@
      décor et ses dessins (cfg). Même modèle d'argent que tous les « You're in control » : marge 6 %, loi de crash serveur. */
   // v3595 (propriétaire : « améliore les jeux qu'on contrôle ») : vrais décors et vrais personnages / obstacles illustrés
   // (img/games/dg_<art>_*.webp) ; les anciens dessins restent dessous en secours tant que les images ne sont pas chargées.
+  // v3619 (propriétaire, vidéo : « les humains sont figés, un pied levé, penchés ») : les coureurs à pied ont une vraie course
+  // vue de dos (4 images en boucle) ; les engins (hoverboard, luge…) glissent au lieu de sauter.
+  var DGRUN = { ghost: 1, tox: 1, rain: 1 }, DGRI = {};
+  function dgRun(k) { if (!DGRUN[k]) return null; var o = DGRI[k]; if (!o) { o = DGRI[k] = new Image(); o.decoding = 'async'; o.src = 'img/games/dg_' + k + '_run.webp?v=3619'; } return o.complete && o.naturalWidth ? o : null; }
   function withArt(k, cfg) {
     var P = 'img/games/dg_' + k + '_', V = '?v=3596', ob = cfg.bg, op = cfg.player, oo = cfg.obs;
+    var VP = (k === 'lava' || k === 'snow') ? '?v=3619' : V; dgRun(k);
     cfg.bg = function (c) { ob.apply(this, arguments); gCover(c.canvas, P + 'bg.webp' + V); };
-    cfg.player = function (d, w, h) { var fb = op(d, w, h); return gSprite(fb.w || w + 8, fb.h || h + 8, d, P + 'pl.webp' + V, function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); };
+    cfg.player = function (d, w, h) { var fb = op(d, w, h); return gSprite(fb.w || w + 8, fb.h || h + 8, d, P + 'pl.webp' + VP, function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); };
     cfg.obs = oo.map(function (f, i) { return function (d, w, h) { var fb = f(d, w, h); return gSprite(fb.w || w + 6, fb.h || h + 6, d, P + 'o' + (i + 1) + '.webp' + V, function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); }; });
     return cfg;
   }
@@ -2764,7 +2769,11 @@
           if (cfg.fx) cfg.fx(c, W, H, T, t, dash, rx0, rx1);
           if (cfg.lines !== false) { c.strokeStyle = cfg.lineCol || 'rgba(255,255,255,.3)'; c.lineWidth = Math.max(2, pw2 * 0.08); c.setLineDash([ph * 0.5, ph * 0.6]); c.lineDashOffset = -(dash % (ph * 1.1)); for (var ln = 1; ln < cfg.lanes; ln++) { var lx = rx0 + (rx1 - rx0) * ln / cfg.lanes; c.beginPath(); c.moveTo(lx, -ph); c.lineTo(lx, H + ph); c.stroke(); } c.setLineDash([]); }
           for (var i = 0; i < obs.length; i++) { var e = obs[i], img = oS[e.k], ix = e.x, iy = e.y, sc = 1; if (cfg.persp) { var vpy = T + (H - T) * (cfg.vp || 0.42), fyr = (e.y - T) / Math.max(1, py - T), fy = fyr < 0 ? 0 : fyr, fc = fy < 1 ? fy : 1; sc = 0.24 + 0.76 * fc; ix = W / 2 + (e.x - W / 2) * (0.1 + 0.9 * fc); iy = vpy + (py - vpy) * fy; } var iw = img.w * sc, ih = img.h * sc; if (e.rot) { c.save(); c.translate(ix, iy); c.rotate(e.rot); c.drawImage(img, -iw / 2, -ih / 2, iw, ih); c.restore(); } else c.drawImage(img, ix - iw / 2, iy - ih / 2, iw, ih); }
-          if (!dead) { var bob = cfg.persp ? Math.sin(t * 14) * Math.max(1.5, pS.h * 0.025) : 0; c.drawImage(pS, px - pS.w / 2, py - pS.h / 2 + bob, pS.w, pS.h); } // v3614 : le joueur avance (petit rebond)
+          if (!dead) {
+            var rI = cfg.art ? dgRun(cfg.art) : null;
+            if (rI) { var rh = pS.h * 1.08, rw = rh * 0.8, fi = Math.floor(t * 9) % 4; c.drawImage(rI, fi * 320, 0, 320, 400, px - rw / 2, py + pS.h / 2 - rh, rw, rh); } // v3619 : vraie course vue de dos
+            else { var sw = cfg.persp ? Math.sin(t * 2.4) * pS.w * 0.035 : 0; c.drawImage(pS, px - pS.w / 2 + sw, py - pS.h / 2, pS.w, pS.h); } // v3619 : l'engin glisse (léger balancement), plus de rebond
+          }
         },
         down: function (x) { drag = { x: x, s: px }; },
         move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, rx0 + pw2 * 0.5, rx1 - pw2 * 0.5); },
