@@ -2094,6 +2094,33 @@ if ($isAjax) {
     $adm = orolado_admin_emails()[0] ?? 'admin@orolado.com';
     admin_json(admin_credit_player('admin_master', $amt, 'Recharge test admin', ['email' => $adm], (string) ($me['email'] ?? '')));
   }
+  if ($action === 'partner_create') { // v3629 : crée un compte affilié (identifiant + mot de passe générés), partenaire, rechargé
+    $name = trim(mb_substr(preg_replace('/[\x00-\x1F<>]/u', '', (string) ($req['name'] ?? '')) ?? '', 0, 40));
+    if ($name === '') $name = 'Partenaire';
+    $amt = round((float) ($req['amount'] ?? 0), 2);
+    if ($amt < 0 || $amt > 1000000) admin_json(['ok' => false, 'reason' => 'Montant entre 0 et 1 000 000 $']);
+    $alpha = 'abcdefghjkmnpqrstuvwxyz23456789';
+    $pw = ''; for ($i = 0; $i < 10; $i++) $pw .= $alpha[random_int(0, strlen($alpha) - 1)];
+    $made = with_db_lock(function ($box) use ($name, $pw) {
+      $db =& $box->db;
+      for ($t = 0; $t < 30; $t++) { $em = 'aff' . random_int(100000, 999999) . '@orolado.com'; if (!find_user_any($db, $em)) break; }
+      $pid = '';
+      for ($i = 0; $i < 60; $i++) { $c = 'ORO-' . random_int(100000, 999999); if (!orolado_public_id_taken($db, $c)) { $pid = $c; break; } }
+      if ($pid === '') $pid = 'ORO-' . substr((string) time(), -6) . random_int(10, 99);
+      $uid = 'u_' . bin2hex(random_bytes(8));
+      $db['users'][$uid] = ['id' => $uid, 'displayName' => $name, 'email' => $em, 'phone' => '', 'countryCode' => '+225', 'country' => '',
+        'passwordHash' => orolado_hash_password($pw), 'role' => 'user', 'createdAt' => date('c'), 'mode' => 'real', 'assetId' => 'v100', 'duration' => 10,
+        'trades' => 0, 'wins' => 0, 'realTrades' => 0, 'realStakeVolume' => 0, 'realDepositTotal' => 0, 'trafficSource' => 'partner',
+        'publicId' => $pid, 'transactions' => [], 'positions' => [], 'partner' => true];
+      $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
+      return ['ok' => true, 'uid' => $uid, 'email' => $em, 'publicId' => $pid];
+    });
+    if (empty($made['ok'])) admin_json(['ok' => false, 'reason' => 'Création impossible']);
+    $credit = null;
+    if ($amt > 0) $credit = admin_credit_player((string) $made['uid'], $amt, 'Recharge compte affilié', ['email' => (string) $made['email'], 'publicId' => (string) $made['publicId']], (string) ($me['email'] ?? ''));
+    admin_bust_cache();
+    admin_json(['ok' => true, 'email' => $made['email'], 'password' => $pw, 'publicId' => $made['publicId'], 'uid' => $made['uid'], 'credited' => $credit ? !empty($credit['ok']) : null, 'creditReason' => $credit && empty($credit['ok']) ? (string) ($credit['reason'] ?? '') : '']);
+  }
   if ($action === 'partner_set') { // v3628 : compte partenaire (affiliés) — retraits jamais payés, jamais dans la file
     $on = !empty($req['on']);
     $ids = function_exists('orolado_pay_player_ids') ? orolado_pay_player_ids((string) ($req['userId'] ?? ''), (string) ($req['email'] ?? '')) : [(string) ($req['userId'] ?? '')];
@@ -2999,6 +3026,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div>
       <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
       <button class="mini" id="btnSelfTop" type="button" style="border-color:#3B82F6;color:#93C5FD">🧪 Recharger mon compte</button>
+      <button class="mini" id="btnAffCreate" type="button" style="border-color:#F59E0B;color:#FDE68A">🤝 Créer un compte affilié</button>
       <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
       <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
       <button class="mini" id="btnBonusAll" type="button" style="border-color:#4ADE80;color:#86EFAC">🎁 Bonus à tous</button>
@@ -4897,6 +4925,22 @@ setInterval(() => {
       const v = parseFloat(String(r).replace(',', '.')); if (!(v > 0)) { alert('Montant invalide'); return; }
       go.disabled = true; let j; try { j = await ajax({action:'self_topup', amount:v}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
       go.disabled = false; alert(j.ok ? '✅ +' + v + ' $ ajoutés sur ton compte admin. Rouvre le site pour voir ton solde.' : '❌ ' + (j.reason || 'Échec'));
+    };
+  })();
+  // v3629 : créer un compte affilié (identifiant + mot de passe générés, compte partenaire, rechargé)
+  (function () {
+    const go = $c('btnAffCreate'); if (!go) return;
+    go.onclick = async () => {
+      const nm = prompt('Nom de l\'affilié (affiché sur son compte) :', ''); if (nm === null) return;
+      const r = prompt('Montant à mettre sur son compte, en $ (vous pourrez recharger quand vous voulez avec « Créditer + ») :', '500'); if (r === null) return;
+      const v = parseFloat(String(r).replace(',', '.')) || 0;
+      go.disabled = true; let j; try { j = await ajax({action:'partner_create', name:nm, amount:v}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
+      go.disabled = false;
+      if (!j.ok) { alert('❌ ' + (j.reason || 'Échec')); return; }
+      const txt = 'Compte affilié OROLADO\nSite : https://orolado.com\nE-mail : ' + j.email + '\nMot de passe : ' + j.password + '\nID : ' + j.publicId;
+      try { await navigator.clipboard.writeText(txt); } catch (e) { /* copie impossible : le texte reste affiché */ }
+      alert('✅ Compte créé' + (v > 0 ? (j.credited ? ' et rechargé de ' + v + ' $' : ' (recharge échouée : ' + (j.creditReason || '?') + ' — utilisez « Créditer + » sur sa fiche)') : '') + '.\n\n' + txt + '\n\n(Copié : collez-le dans WhatsApp pour l\'affilié. Notez le mot de passe : il ne sera plus affiché.)');
+      bustList();
     };
   })();
   // 2026-10-22 : PARIS AUTOMATIQUES (API-Football) — réglages, budget, import, diagnostic, résultats à vérifier
