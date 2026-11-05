@@ -135,6 +135,10 @@ function orolado_finance_history(array $db, string $uid, bool $isAdmin, int $off
     foreach (orolado_aff_history_rows($uid) as $r) $push($r);
   }
 
+  // v3632 (propriétaire) : compte affilié — les recharges de l'admin (lignes « Bonus ») ne s'affichent pas dans SON historique.
+  $partner = false;
+  foreach ($ids as $pid) if (is_array($db['users'][$pid] ?? null) && !empty($db['users'][$pid]['partner'])) { $partner = true; break; }
+  if ($partner) $rows = array_filter($rows, static fn($r) => ($r['kind'] ?? '') !== 'bonus');
   $rows = array_values(array_filter($rows, static fn($r) => abs((float) $r['amount']) > 0.0));
   usort($rows, static fn($a, $b) => strcmp((string) $b['at'], (string) $a['at']));
   $rows = array_slice($rows, 0, OROLADO_HISTORY_MAX);
