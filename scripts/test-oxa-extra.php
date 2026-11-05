@@ -322,5 +322,28 @@ orolado_pay_sweep_after_response();
 $pf = null; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['id'] ?? '') === 'oP5') $pf = $dd;
 check('ensuite : pas de 2e crédit, marque effacée', abs($money($A) - 30) < 0.02 && empty($pf['payFail']) && ($pf['status'] ?? '') === 'COMPLETED', json_encode(['st' => $pf['status'] ?? null, 'pf' => $pf['payFail'] ?? null]));
 
+echo "22) 2e relecture : 2 envois sur une facture, le 2e encore « confirming » et listé en premier\n";
+$fresh([$dep('oT', $A, 'TT', 'ADDRT', 'PENDING', 100)]);
+$conf = fn(string $h, float $a) => ['status' => 'confirming', 'currency' => 'USDT', 'network' => 'TRC20', 'amount' => $a, 'value' => $a, 'tx_hash' => $h];
+$OXA['TT'] = $pay('TT', 'oT', 'ADDRT', [$conf('hT2', 80), $tx('hT1', 20)], 'Paying');
+orolado_oxapay_webhook(json_encode(['track_id' => 'TT', 'order_id' => 'oT', 'status' => 'Paying']), '');
+check('1er passage : seulement les 20 $ confirmés', abs($money($A) - 20) < 0.02, (string) $money($A));
+$OXA['TT'] = $pay('TT', 'oT', 'ADDRT', [$tx('hT2', 80), $tx('hT1', 20)]);
+orolado_oxapay_webhook(json_encode(['track_id' => 'TT', 'order_id' => 'oT', 'status' => 'Paid']), '');
+check('quand les 80 $ sont confirmés → total 100 $ (rien de perdu)', abs($money($A) - 100) < 0.02, (string) $money($A));
+orolado_oxapay_webhook(json_encode(['track_id' => 'TT', 'order_id' => 'oT', 'status' => 'Paid']), '');
+$HIST['ADDRT'] = [$OXA['TT']];
+orolado_pay_admin_recheck($A);
+check('ensuite : jamais plus de 100 $', abs($money($A) - 100) < 0.02, (string) $money($A));
+echo "23) 2e relecture : dépôt noté avec son seul n° de suivi, l'historique ne le recompte pas\n";
+$fresh([$dep('oU', $A, 'TU', 'ADDRU', 'COMPLETED', 40, 'TU')]);
+$HIST['ADDRU'] = [$pay('TU', 'oU', 'ADDRU', [$tx('hU1', 40) + ['address' => 'ADDRU']])];
+orolado_pay_admin_recheck($A);
+check('pas de 2e crédit des 40 $', $money($A) == 0, (string) $money($A));
+echo "24) 2e relecture : OxaPay injoignable au moment du message → « réessayez » (pas « OK »)\n";
+$fresh([$dep('oV', $A, 'TV9', 'ADDRV', 'PENDING', 10)]);
+$rv = orolado_oxapay_webhook(json_encode(['track_id' => 'TV9', 'order_id' => 'oV', 'status' => 'Paid']), '');
+check('réponse 503 (OxaPay renverra le message)', ($rv['http'] ?? 0) === 503 && $money($A) == 0, json_encode($rv));
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
