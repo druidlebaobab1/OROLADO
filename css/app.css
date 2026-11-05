@@ -14445,7 +14445,7 @@ html body #casinoModal[data-g="mazechomp"] .cg-stage{background:url("/img/games/
 html body #casinoModal[data-g="mazechomp"] .cg-stage > canvas.s4-bg{opacity:.62}
 html body #casinoModal[data-g="minigolf"] .cg-stage{background:url("/img/games/wb_minigolf.webp?v=3612") center/cover no-repeat,#0B0906!important}
 html body #casinoModal[data-g="minigolf"] .cg-stage > canvas.s4-bg{opacity:.62}
-html body #casinoModal[data-g="dogracelive"] .l5-scene{background:url("/img/games/lb_dogracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="dogracelive"] .l5-scene > svg.l5-svg{opacity:.8}
+html body #casinoModal[data-g="dogracelive"] .l5-scene{background:url("/img/games/lb_dogracelive.webp?v=3618") center/cover no-repeat!important}html body #casinoModal[data-g="dogracelive"] .l5-scene > svg.l5-svg{opacity:.8}
 html body #casinoModal[data-g="camelracelive"] .l5-scene{background:url("/img/games/lb_camelracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="camelracelive"] .l5-scene > svg.l5-svg{opacity:.8}
 html body #casinoModal[data-g="snailracelive"] .l5-scene{background:url("/img/games/lb_snailracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="snailracelive"] .l5-scene > svg.l5-svg{opacity:.8}
 html body #casinoModal[data-g="chickenracelive"] .l5-scene{background:url("/img/games/lb_chickenracelive.webp?v=3601") center/cover no-repeat!important}html body #casinoModal[data-g="chickenracelive"] .l5-scene > svg.l5-svg{opacity:.8}
@@ -14457,8 +14457,8 @@ html body #casinoModal[data-g="race"] .lz-scene > svg{opacity:.8}
 /* v3613 (propriétaire : « améliore TOUS les jeux, n'en laisse aucun ») — courses Live chevaux / voitures : vrai décor illustré en
    haut (hippodrome, circuit de nuit) et vraie texture de piste (gazon, asphalte) qui défile ; Piano Keys : salle de concert derrière
    les colonnes ; Chicken : voies plus claires pour laisser voir l'espace. */
-html body #casinoModal .lz-game .lz-rc.h .lz-rc-sky{background:url("/img/games/lb_horses.webp?v=3603") center 70%/cover no-repeat}
-html body #casinoModal .lz-game .lz-rc:not(.h) .lz-rc-sky{background:url("/img/games/lb_race.webp?v=3603") center 60%/cover no-repeat}
+html body #casinoModal .lz-game .lz-rc.h .lz-rc-sky{background:url("/img/games/lb_horses.webp?v=3618") center 70%/cover no-repeat}
+html body #casinoModal .lz-game .lz-rc:not(.h) .lz-rc-sky{background:url("/img/games/lb_race.webp?v=3618") center 60%/cover no-repeat}
 html body #casinoModal .lz-game .lz-rc .lz-rc-sky svg{opacity:.35}
 html body #casinoModal .lz-game .lz-rc .lz-rc-far{opacity:.45}
 html body #casinoModal .lz-game .lz-rc.h .lz-rc-tex{background:linear-gradient(rgba(20,40,10,.18),rgba(20,40,10,.18)),url("/img/games/tx_grass.webp?v=3612") 0 0/48px 48px repeat}

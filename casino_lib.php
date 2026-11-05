@@ -204,7 +204,7 @@ function casino_is_crash(string $g): bool { return in_array($g, CASINO_CRASH, tr
  * Le point d'explosion suit la même loi qu'avant (casino_crash_point) : retour joueurs 97 %, rien ne change pour l'argent.
  */
 const CASINO_ROUND_BET = 5.0;   // secondes pour miser avant le départ (v2730 : 5 s au lieu de 7, on voit voler plus vite)
-const CASINO_ROUND_HIST = 30;  // v3616 : 30 derniers tours dans le bandeau (jamais effacés)
+const CASINO_ROUND_HIST = 40;  // v3618 : 40 derniers (v3616 : 30) tours dans le bandeau (jamais effacés)
 const CASINO_ROUND_SHOW = 3.0;  // secondes d'affichage après l'explosion
 function casino_crash_secs(float $c): float { return $c <= 1.0 ? 0.0 : log($c) / 0.08 + 0.05; }
 function casino_round_file(string $game): string { return casino_dir() . DIRECTORY_SEPARATOR . 'round-' . preg_replace('/[^a-z]/', '', $game) . '.json'; }

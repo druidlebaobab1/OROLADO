@@ -189,3 +189,4 @@ html:root body #casinoModal .cg-dtlive .l3-board span,html:root body #casinoModa
 html:root body #casinoModal .cg-dtlive .l3-board b,html:root body #casinoModal .cg-hilolive .l3-board b{font-size:13px}
 html:root body #casinoModal .cg-sicbolive .l3-board button{gap:1px}
 html:root body #casinoModal .cg-sicbolive .l3-board button span{font-size:11px}
+html:root body #casinoModal .cg-football .l3-scene{background:#052E16 url("/img/games/lb_football.webp?v=3601") center/cover no-repeat} /* v3618 : plus de bandes vides au-dessus / au-dessous du terrain */

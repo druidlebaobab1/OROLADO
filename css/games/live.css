@@ -223,5 +223,5 @@ html.oro-lite body #casinoModal .lz-game .lz-live i{animation:none}
 /* v3603 (propriétaire) : vrais décors illustrés derrière les jeux Live d'origine (assombris pour garder la lecture) */
 html:root body #casinoModal .cg-roulette .lz-scene{background:linear-gradient(rgba(10,6,20,.55),rgba(10,6,20,.55)),url("../../img/games/lb_roulette.webp?v=3603") center/cover!important}
 html:root body #casinoModal .cg-cryptox .lz-scene{background:linear-gradient(rgba(10,6,20,.5),rgba(10,6,20,.5)),url("../../img/games/lb_cryptox.webp?v=3603") center/cover!important}
-html:root body #casinoModal .cg-horses .lz-scene{background:linear-gradient(rgba(10,6,20,.45),rgba(10,6,20,.45)),url("../../img/games/lb_horses.webp?v=3603") center/cover!important}
-html:root body #casinoModal .cg-race .lz-scene{background:linear-gradient(rgba(10,6,20,.45),rgba(10,6,20,.45)),url("../../img/games/lb_race.webp?v=3603") center/cover!important}
+html:root body #casinoModal .cg-horses .lz-scene{background:linear-gradient(rgba(10,6,20,.45),rgba(10,6,20,.45)),url("../../img/games/lb_horses.webp?v=3618") center/cover!important}
+html:root body #casinoModal .cg-race .lz-scene{background:linear-gradient(rgba(10,6,20,.45),rgba(10,6,20,.45)),url("../../img/games/lb_race.webp?v=3618") center/cover!important}

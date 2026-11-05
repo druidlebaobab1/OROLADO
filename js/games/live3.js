@@ -91,7 +91,7 @@
   var LBG = ['andarlive','archerylive','baccaratlive','balloonlive','basketlive','bingolive','boatracelive','boxinglive','bullseye','bustlive','camelracelive','catwalk','chickenracelive','claw','coinlive','cricketlive','diceduellive','dogracelive','dtlive','fishinglive','fleets','football','gemcount','hilolive','kenolive','ladderlive','lotto649live','lucky10','lucky7live','megaballlive','moneywheel','monsterlive','pegdrop','penaltylive','peryalive','pokerlive','redblacklive','sicbolive','snailracelive','spaceracelive','teenpattilive','tennislive','volcanolive'];
   function liveBg(key, h) {
     if (LBG.indexOf(key) < 0) return h;
-    var img = '<image class="lbg" href="img/games/lb_' + key + '.webp?v=3601" x="-70" y="-25" width="500" height="290" preserveAspectRatio="xMidYMid slice" opacity=".92"/>';
+    var img = '<image class="lbg" href="img/games/lb_' + key + '.webp?v=' + (/^(monsterlive|archerylive|bullseye|dogracelive|horses|race)$/.test(key) ? '3618' : '3601') + '" x="-70" y="-25" width="500" height="290" preserveAspectRatio="xMidYMid slice" opacity=".92"/>';
     var i = h.indexOf('</defs>'), p = i < 0 ? 0 : i + 7, m = /^<rect\b[^>]*\/>/.exec(h.slice(p));
     if (m) { var w = /width="(-?[\d.]+)"/.exec(m[0]); if (w && +w[1] >= 300) p += m[0].length; }
     return h.slice(0, p) + img + h.slice(p);
@@ -786,14 +786,29 @@
       zh: ['红队对蓝队，90 分钟虚拟比赛。押 1（红队胜）、X（平局）或 2（蓝队胜），押 +2.5（3 球或以上）或 −2.5（2 球或以下），或押 GG（双方都进球）。每项都标有赔率。', '进球由服务器按固定概率开出（红队稍强）：以最终比分定输赢。']
     }),
     scene: function (uid) {
-      var stripes = ''; for (var k = 0; k < 8; k++) stripes += '<rect x="' + (FB_L + k * 41) + '" y="' + FB_T + '" width="20.5" height="' + (FB_B - FB_T) + '" fill="#fff" opacity=".035"/>';
-      var pl = ''; for (var p = 0; p < 10; p++) pl += '<g class="fb-p ' + (p < 5 ? 'r' : 'b') + '"><circle r="5.4"/><circle r="2.2" cy="-1" fill="#fff" opacity=".55"/></g>';
+      var stripes = ''; for (var k = 0; k < 8; k++) stripes += '<rect x="' + (FB_L + k * 41) + '" y="' + FB_T + '" width="20.5" height="' + (FB_B - FB_T) + '" fill="#fff" opacity=".07"/>';
+      // v3618 (propriétaire : « améliorer les joueurs et le terrain ») : vrais petits joueurs (maillot, short, chaussettes,
+      // tête, jambes qui courent, gardien d'une autre couleur) au lieu de ronds ; terrain plus complet (points, arcs, coins, filets).
+      var pl = ''; for (var p = 0; p < 10; p++) {
+        var red = p < 5, gk = p % 5 === 0, sh = gk ? (red ? '#F59E0B' : '#10B981') : (red ? '#DC2626' : '#2563EB'), sh2 = gk ? (red ? '#B45309' : '#047857') : (red ? '#7F1D1D' : '#1E3A8A');
+        var so = red ? '#B91C1C' : '#1D4ED8', st = red ? '#F8FAFC' : '#0F172A', sk = ['#F1C9A5', '#C68642', '#8D5524', '#E0AC69', '#F5D0B5'][(p * 3) % 5];
+        pl += '<g class="fb-p ' + (red ? 'r' : 'b') + '"><ellipse rx="5" ry="1.6" fill="#000" opacity=".32"/><g class="fb-pi">' +
+          '<path class="fb-lg" d="M-1.4-6.6L-1.9 0" stroke="' + so + '" stroke-width="2.1" stroke-linecap="round"/><path class="fb-lg" d="M1.4-6.6L1.9 0" stroke="' + so + '" stroke-width="2.1" stroke-linecap="round"/>' +
+          '<rect x="-3.4" y="-9.2" width="6.8" height="3.6" rx="1.1" fill="' + st + '"/>' +
+          '<path d="M-3.5-15.6h7l2 3.4-2 1v2.2h-7v-2.2l-2-1z" fill="' + sh + '" stroke="' + sh2 + '" stroke-width=".7"/><path d="M-.5-15.4v6" stroke="#fff" stroke-opacity=".35" stroke-width="1"/>' +
+          '<circle cy="-17.9" r="2.6" fill="' + sk + '"/><path d="M-2.6-18.3a2.6 2.6 0 0 1 5.2 0q-2.6-1.4-5.2 0z" fill="#1F2937"/></g></g>';
+      }
+      var mesh = function (x) { var m = ''; for (var yy = FB_CY - 18; yy < FB_CY + 20; yy += 4) m += '<path d="M' + x + ' ' + yy + 'h10" />'; for (var xx = x + 2.5; xx < x + 10; xx += 2.5) m += '<path d="M' + xx + ' ' + (FB_CY - 20) + 'v40"/>'; return '<g stroke="#fff" stroke-opacity=".35" stroke-width=".5">' + m + '</g>'; };
       return '<defs><linearGradient id="fbG' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#15803D"/><stop offset="1" stop-color="#166534"/></linearGradient>' + rgd('fbBl' + uid, '#FFFFFF', '#F1F5F9', '#64748B') + '</defs>' +
         '<rect x="-300" y="-300" width="960" height="830" fill="#052E16"/><rect x="' + FB_L + '" y="' + FB_T + '" width="' + (FB_R - FB_L) + '" height="' + (FB_B - FB_T) + '" fill="url(#fbG' + uid + ')"/>' + stripes +
         '<g fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.4"><rect x="' + FB_L + '" y="' + FB_T + '" width="' + (FB_R - FB_L) + '" height="' + (FB_B - FB_T) + '"/><path d="M180 ' + FB_T + 'V' + FB_B + '"/><circle cx="180" cy="' + FB_CY + '" r="24"/>' +
-          '<rect x="' + FB_L + '" y="' + (FB_CY - 40) + '" width="38" height="80"/><rect x="' + (FB_R - 38) + '" y="' + (FB_CY - 40) + '" width="38" height="80"/></g>' +
-        '<g class="fb-net l"><rect x="' + (FB_L - 10) + '" y="' + (FB_CY - 20) + '" width="10" height="40" fill="#fff" fill-opacity=".25" stroke="#fff" stroke-width="1.6"/></g>' +
-        '<g class="fb-net r"><rect x="' + FB_R + '" y="' + (FB_CY - 20) + '" width="10" height="40" fill="#fff" fill-opacity=".25" stroke="#fff" stroke-width="1.6"/></g>' + pl +
+          '<rect x="' + FB_L + '" y="' + (FB_CY - 40) + '" width="38" height="80"/><rect x="' + (FB_R - 38) + '" y="' + (FB_CY - 40) + '" width="38" height="80"/>' +
+          '<rect x="' + FB_L + '" y="' + (FB_CY - 18) + '" width="14" height="36"/><rect x="' + (FB_R - 14) + '" y="' + (FB_CY - 18) + '" width="14" height="36"/>' +
+          '<path d="M' + (FB_L + 38) + ' ' + (FB_CY - 13) + 'A15 15 0 0 1 ' + (FB_L + 38) + ' ' + (FB_CY + 13) + 'M' + (FB_R - 38) + ' ' + (FB_CY - 13) + 'A15 15 0 0 0 ' + (FB_R - 38) + ' ' + (FB_CY + 13) + '"/>' +
+          '<path d="M' + FB_L + ' ' + (FB_T + 5) + 'A5 5 0 0 0 ' + (FB_L + 5) + ' ' + FB_T + 'M' + (FB_R - 5) + ' ' + FB_T + 'A5 5 0 0 0 ' + FB_R + ' ' + (FB_T + 5) + 'M' + FB_L + ' ' + (FB_B - 5) + 'A5 5 0 0 1 ' + (FB_L + 5) + ' ' + FB_B + 'M' + (FB_R - 5) + ' ' + FB_B + 'A5 5 0 0 1 ' + FB_R + ' ' + (FB_B - 5) + '"/></g>' +
+          '<g fill="#fff" fill-opacity=".8"><circle cx="180" cy="' + FB_CY + '" r="1.6"/><circle cx="' + (FB_L + 27) + '" cy="' + FB_CY + '" r="1.3"/><circle cx="' + (FB_R - 27) + '" cy="' + FB_CY + '" r="1.3"/></g>' +
+        '<g class="fb-net l"><rect x="' + (FB_L - 10) + '" y="' + (FB_CY - 20) + '" width="10" height="40" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-width="1.6"/>' + mesh(FB_L - 10) + '</g>' +
+        '<g class="fb-net r"><rect x="' + FB_R + '" y="' + (FB_CY - 20) + '" width="10" height="40" fill="#fff" fill-opacity=".12" stroke="#fff" stroke-width="1.6"/>' + mesh(FB_R) + '</g>' + pl +
         '<g class="fb-ball"><circle r="4.6" fill="url(#fbBl' + uid + ')" stroke="#0F172A" stroke-width=".6"/><path d="M-1.6-1.2l1.6-1.2 1.6 1.2-.6 1.9h-2z" fill="#0F172A"/></g>' +
         '<rect x="112" y="2" width="136" height="28" rx="9" fill="#020617" fill-opacity=".85" stroke="#FDE68A" stroke-opacity=".5"/>' +
         '<rect x="118" y="8" width="14" height="16" rx="3" fill="#DC2626"/><rect x="228" y="8" width="14" height="16" rx="3" fill="#2563EB"/>' +
@@ -807,7 +822,7 @@
     },
     hist: function (n) { var h = Math.floor(n / 10), a = n % 10; return '<span class="fb-h ' + (h > a ? 'r' : h < a ? 'b' : 'x') + '">' + h + '–' + a + '</span>'; },
     wins: function (res) { var n = +res.n, h = Math.floor(n / 10), a = n % 10, w = [h > a ? '1' : h < a ? '2' : 'x', h + a >= 3 ? 'o' : 'u']; if (h && a) w.push('gg'); return w; },
-    init: function (c) { c.p = [].slice.call(c.box.querySelectorAll('.fb-p')); c.ball = c.q('.fb-ball'); c.sc = c.q('.fb-sc'); c.min = c.q('.fb-min'); c.goal = c.q('.fb-goal'); c.gs = c.q('.fb-gs'); c.nets = [c.q('.fb-net.l'), c.q('.fb-net.r')]; c.ng = -1; },
+    init: function (c) { c.p = [].slice.call(c.box.querySelectorAll('.fb-p')); c.pi = c.p.map(function (g) { return g.querySelector('.fb-pi'); }); c.lg = c.p.map(function (g) { return [].slice.call(g.querySelectorAll('.fb-lg')); }); c.ball = c.q('.fb-ball'); c.sc = c.q('.fb-sc'); c.min = c.q('.fb-min'); c.goal = c.q('.fb-goal'); c.gs = c.q('.fb-gs'); c.nets = [c.q('.fb-net.l'), c.q('.fb-net.r')]; c.ng = -1; },
     frame: function (c, R, t, e, res) {
       var i = R ? R.i : 0, bp, h = 0, a = 0, gk = -1, inNet = 0;
       if (res) {
@@ -824,7 +839,9 @@
       for (var p = 0; p < 10; p++) {
         var red = p < 5, f = FB_POS[p % 5], bx = red ? FB_L + f[0] * (FB_R - FB_L) : FB_R - f[0] * (FB_R - FB_L), by = FB_T + f[1] * (FB_B - FB_T);
         var pull = res && p % 5 ? .35 : .12, jx = Math.sin(t * 1.7 + p) * 4, jy = Math.cos(t * 1.3 + p * 2) * 4;
-        sa(c.p[p], 'transform', tr(lerp(bx, bp[0], pull) + jx, lerp(by, bp[1], pull) + jy));
+        var px = lerp(bx, bp[0], pull) + jx, py = lerp(by, bp[1], pull) + jy;
+        sa(c.p[p], 'transform', tr(px, py + 3));
+        if (c.pi[p]) { sa(c.pi[p], 'transform', 'scale(' + (bp[0] >= px ? 1 : -1) + ' 1)'); var la = Math.sin(t * 11 + p * 1.7) * (res ? 28 : 12); sa(c.lg[p][0], 'transform', 'rotate(' + la.toFixed(1) + ' -1.4 -6.6)'); sa(c.lg[p][1], 'transform', 'rotate(' + (-la).toFixed(1) + ' 1.4 -6.6)'); }
       }
       var gt = gk >= 0 && inNet ? 1 : 0, side = gk >= 0 && res.g[gk] ? res.g[gk][1] : 0;
       sa(c.nets[0], 'transform', gt && side ? 'translate(' + (Math.sin(t * 40) * 1.5).toFixed(1) + ' 0)' : ''); sa(c.nets[1], 'transform', gt && !side ? 'translate(' + (Math.sin(t * 40) * 1.5).toFixed(1) + ' 0)' : '');
