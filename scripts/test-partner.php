@@ -38,6 +38,13 @@ $db['vault'][$P] = ['demo' => 0, 'real' => 500]; $db['vault'][$N] = ['demo' => 0
 save_db(orolado_data_file(), $db);
 $GLOBALS['BANK'][$P] = 500; $GLOBALS['BANK'][$N] = 50;
 
+echo "0) Compte affilié créé par l'admin (fiche u_…) mais connecté par son id Supabase\n";
+$S = 'cccccccc-0000-0000-0000-0000000000cc';
+$db0 = load_db(orolado_data_file());
+$db0['users']['u_aff1'] = ['id' => 'u_aff1', 'email' => 'aff1@orolado.com', 'role' => 'user', 'sbId' => $S, 'partner' => true];
+check('reconnu par son id Supabase', orolado_is_partner($db0, $S) && orolado_is_partner($db0, 'u_aff1'));
+check('compte maison (hors des chiffres)', orolado_is_house_account('u_aff1', $db0['users']['u_aff1']) && !orolado_is_house_account($N, $db0['users'][$N]));
+check('profil envoyé au téléphone : partner=true', !empty(orolado_public_user(['id' => $S, 'email' => 'aff1@orolado.com'], $db0)['partner']) && empty(orolado_public_user($db0['users'][$N], $db0)['partner']));
 echo "1) Retrait d'un compte partenaire\n";
 $db = load_db(orolado_data_file());
 check('reconnu partenaire / joueur normal non', orolado_is_partner($db, $P) && !orolado_is_partner($db, $N));

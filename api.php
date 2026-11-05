@@ -933,7 +933,7 @@ if ($action === 'registerVerify') {
   echo json_encode([
     'ok' => true,
     'server' => true,
-    'user' => orolado_public_user($user),
+    'user' => orolado_public_user($user, $db),
     'vault' => $vault,
     'token' => $tok,
     'welcome' => !empty($welcome['ok'])
@@ -1494,7 +1494,7 @@ if ($action === 'googleLogin') {
     }
   }
   $user = $db['users'][$uid] ?? $user;
-  echo json_encode(['ok' => true, 'server' => true, 'new' => $isNew, 'user' => orolado_public_user($user), 'vault' => ['demo' => $demoNow, 'real' => $official], 'token' => $tok]);
+  echo json_encode(['ok' => true, 'server' => true, 'new' => $isNew, 'user' => orolado_public_user($user, $db), 'vault' => ['demo' => $demoNow, 'real' => $official], 'token' => $tok]);
   exit;
 }
 
@@ -1707,7 +1707,7 @@ if ($action === 'login') {
     'demo' => $demoNow,
     'real' => $official,
   ];
-  echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user), 'vault' => $vault, 'token' => $tok]);
+  echo json_encode(['ok' => true, 'server' => true, 'user' => orolado_public_user($user, $db), 'vault' => $vault, 'token' => $tok]);
   exit;
 }
 
@@ -2685,7 +2685,7 @@ if ($action === 'me') {
   echo json_encode([
     'ok' => true,
     'server' => true,
-    'user' => orolado_public_user($me),
+    'user' => orolado_public_user($me, $db),
     'vault' => $vault,
     'wager' => $wagerMe,
     'demoRefilled' => $demoRefilled,
