@@ -1931,6 +1931,11 @@ function admin_credit_player(string $uid, float $delta, string $motif, array $hi
     $retry = admin_resolve_player_uuid((string) $targets[0], $found + $hint);
     if (admin_is_uuid($retry)) $targets = [$retry];
   }
+  // v3630 : compte partenaire sans coffre de solde → on l'ouvre maintenant (sinon le crédit reste invisible pour lui).
+  if (!admin_is_uuid((string) $targets[0]) && str_starts_with((string) $targets[0], 'u_') && !empty($db['users'][(string) $targets[0]]['partner']) && function_exists('orolado_ensure_balance_uuid')) {
+    $ens = orolado_ensure_balance_uuid((string) $targets[0]);
+    if (admin_is_uuid($ens)) $targets = [$ens];
+  }
   // Anti-doublon : un même crédit/débit (même joueur, même montant, même motif) ne passe qu'une
   // fois en 2 minutes, même si le bouton est touché 2 fois ou si 4 demandes arrivent ensemble.
   // Création de fichier « x » = atomique : une seule demande gagne. (Avant : fenêtre à la minute
@@ -2116,8 +2121,12 @@ if ($isAjax) {
       return ['ok' => true, 'uid' => $uid, 'email' => $em, 'publicId' => $pid];
     });
     if (empty($made['ok'])) admin_json(['ok' => false, 'reason' => 'Création impossible']);
+    // v3630 : coffre de solde (base des soldes) créé TOUT DE SUITE — sinon la recharge allait dans le fichier local et
+    // l'application, qui lit le vrai coffre, affichait 0 (constaté : 7 000 $ affichés puis disparus).
+    $sbId = function_exists('orolado_ensure_balance_uuid') ? orolado_ensure_balance_uuid((string) $made['uid'], $pw) : '';
+    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', (string) $sbId)) admin_json(['ok' => false, 'reason' => 'Compte créé (' . $made['email'] . ' / ' . $pw . ') mais son coffre de solde n\'a pas pu être ouvert. Réessayez la recharge dans 1 minute depuis sa fiche.']);
     $credit = null;
-    if ($amt > 0) $credit = admin_credit_player((string) $made['uid'], $amt, 'Recharge compte affilié', ['email' => (string) $made['email'], 'publicId' => (string) $made['publicId']], (string) ($me['email'] ?? ''));
+    if ($amt > 0) $credit = admin_credit_player((string) $sbId, $amt, 'Recharge compte affilié', ['email' => (string) $made['email'], 'publicId' => (string) $made['publicId']], (string) ($me['email'] ?? ''));
     admin_bust_cache();
     admin_json(['ok' => true, 'email' => $made['email'], 'password' => $pw, 'publicId' => $made['publicId'], 'uid' => $made['uid'], 'credited' => $credit ? !empty($credit['ok']) : null, 'creditReason' => $credit && empty($credit['ok']) ? (string) ($credit['reason'] ?? '') : '']);
   }
@@ -2135,6 +2144,9 @@ if ($isAjax) {
       }
       return ['ok' => $n > 0, 'n' => $n, 'skip_write' => $n === 0];
     });
+    if ($on && !empty($done['ok']) && function_exists('orolado_ensure_balance_uuid')) {
+      foreach ($ids as $id) if (str_starts_with((string) $id, 'u_')) { try { orolado_ensure_balance_uuid((string) $id); } catch (Throwable $e) { /* la recharge réessaiera */ } }
+    }
     admin_bust_cache();
     admin_json(['ok' => !empty($done['ok']), 'on' => $on, 'reason' => empty($done['ok']) ? 'Joueur introuvable' : '']);
   }
