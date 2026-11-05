@@ -2985,17 +2985,24 @@
             if (col.x + cw < -cw) { cols.splice(i, 1); addCol(); continue; }
             if (jx + jetS.w * 0.32 > col.x && jx - jetS.w * 0.32 < col.x + cw) { if (jy - jetS.h * 0.32 < col.gapY - col.gapH / 2 || jy + jetS.h * 0.32 > col.gapY + col.gapH / 2) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, jx, jy, 1.1); A.shake(0.5); } return; } } }
           }
-          if (jy < T + jetS.h * 0.32 || jy > H - jetS.h * 0.32) { jy = clamp(jy, T + jetS.h * 0.32, H - jetS.h * 0.32); vy = 0; if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, jx, jy, 1); A.shake(0.4); } return; } }
+          if (jy < T + jetS.h * 0.32) { jy = T + jetS.h * 0.32; if (vy < 0) vy = 0; } // v3614 : plafond invisible = bloque, ne tue plus (piège injuste)
+          if (jy > H - jetS.h * 0.32) { jy = H - jetS.h * 0.32; vy = 0; if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; boomFx(A, jx, jy, 1); A.shake(0.4); } return; } }
         },
         draw: function (c) {
           A.bg(bg); var i, col; var wc = cfg.wall || ['#334155', '#1E293B', '#0F172A'], cap = cfg.cap || '#475569';
           for (i = 0; i < cols.length; i++) {
             col = cols[i]; var topH = col.gapY - col.gapH / 2, botY = col.gapY + col.gapH / 2;
-            c.fillStyle = lg(c, col.x, 0, col.x + cw, 0, wc); c.fillRect(col.x, T - 4, cw, topH - T + 4); c.fillRect(col.x, botY, cw, H - botY);
-            c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(col.x + cw - 5, T - 4, 5, topH - T + 4); c.fillRect(col.x + cw - 5, botY, 5, H - botY);
-            c.fillStyle = cap; c.fillRect(col.x - 2, topH - 8, cw + 4, 8); c.fillRect(col.x - 2, botY, cw + 4, 8);
+            // v3614 : vrais tuyaux en relief (cylindre éclairé, bord arrondi, collerette) au lieu de rectangles plats — même zone de choc
+            var cx0 = col.x, ch = Math.max(10, cw * 0.28);
+            c.fillStyle = lg(c, cx0, 0, cx0 + cw, 0, [wc[2], wc[0], wc[0], wc[1], wc[2]]); c.fillRect(cx0, 0, cw, topH); c.fillRect(cx0, botY, cw, H - botY);
+            c.fillStyle = 'rgba(255,255,255,.22)'; c.fillRect(cx0 + cw * 0.22, 0, cw * 0.1, topH); c.fillRect(cx0 + cw * 0.22, botY, cw * 0.1, H - botY);
+            c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1.5; c.strokeRect(cx0, -2, cw, topH + 2); c.strokeRect(cx0, botY, cw, H - botY + 2);
+            [topH - ch, botY].forEach(function (yy) {
+              c.fillStyle = lg(c, cx0 - 4, 0, cx0 + cw + 4, 0, [wc[2], cap, cap, wc[1], wc[2]]); rr(c, cx0 - 4, yy, cw + 8, ch, Math.min(6, ch * 0.4)); c.fill();
+              c.strokeStyle = 'rgba(0,0,0,.4)'; c.stroke(); c.fillStyle = 'rgba(255,255,255,.28)'; c.fillRect(cx0 + cw * 0.18, yy + 2, cw * 0.1, ch - 4);
+            });
           }
-          if (!dead) { c.save(); c.translate(jx, jy); c.rotate(clamp(vy / (H - T) * 0.6, -0.5, 0.6)); if (cfg.trail !== false) { c.fillStyle = cfg.trailCol || 'rgba(253,186,116,.7)'; c.beginPath(); c.moveTo(-jetS.w * 0.5, 0); c.lineTo(-jetS.w * 0.5 - rnd(8, 18), -3); c.lineTo(-jetS.w * 0.5 - rnd(8, 18), 3); c.closePath(); c.fill(); } c.drawImage(jetS, -jetS.w / 2, -jetS.h / 2, jetS.w, jetS.h); c.restore(); }
+          if (!dead) { c.save(); c.translate(jx, jy); c.rotate(clamp(vy / (H - T) * 0.6, -0.5, 0.6)); if (cfg.trail !== false) { c.fillStyle = cfg.trailCol || 'rgba(253,186,116,.7)'; c.beginPath(); c.moveTo(-jetS.w * 0.5, 0); c.lineTo(-jetS.w * 0.5 - rnd(8, 18), -3); c.lineTo(-jetS.w * 0.5 - rnd(8, 18), 3); c.closePath(); c.fill(); } c.drawImage(jetS, -jetS.w * 0.75, -jetS.h * 0.75, jetS.w * 1.5, jetS.h * 1.5); /* v3614 : perso 1,5x plus visible, zone de choc inchangée */ c.restore(); }
         },
         act: function (k, x, y) { flap(); },
         key: function (k) { if (k === 'up' || k === 'left' || k === 'right') flap(); },
