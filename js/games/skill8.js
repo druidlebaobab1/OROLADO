@@ -2733,7 +2733,7 @@
   function dodger(cfg) {
     if (cfg.art) withArt(cfg.art, cfg);
     return function (A) {
-      var W, H, T, dpr, bg, pw2, ph, rx0, rx1, px, py, obs = [], t = 0, spT = 0, dead = 0, won = 0, over = null, drag = null, dash = 0, pS, oS = [];
+      var W, H, T, dpr, bg, pw2, ph, rx0, rx1, px, py, obs = [], t = 0, spT = 0, dead = 0, won = 0, over = null, drag = null, dash = 0, pS, oS = [], flow = 0;
       function mk() { pS = cfg.player(dpr, pw2, ph); oS = cfg.obs.map(function (f) { return f(dpr, pw2, ph); }); }
       function spawn(live) {
         var lv = live ? A.lv() : 0.2, lane = (Math.random() * cfg.lanes) | 0, laneW = (rx1 - rx0) / cfg.lanes, x = rx0 + laneW * (lane + 0.5);
@@ -2749,6 +2749,7 @@
         reset: function () { obs = []; dead = 0; won = 0; over = null; spT = 0.5; px = W / 2; dash = 0; drag = null; },
         step: function (dt, live) {
           t += dt; var lv = live ? A.lv() : 0.2, i, e, spd = (H - T) * (0.5 + 0.55 * lv); dash += spd * dt;
+          if (!dead && !won) flow += dt * (over ? 0.25 : 0.85 + 0.7 * lv); // v3620 : le décor avance vers le joueur
           if (over) { over.t += dt; for (i = obs.length - 1; i >= 0; i--) { obs[i].y += obs[i].vy * 0.3 * dt; obs[i].x += Math.sin(t * 8 + i) * W * 0.3 * dt; } return; }
           if (dead || won) return;
           if (A.idle()) {
@@ -2766,12 +2767,15 @@
         },
         draw: function (c) {
           A.bg(bg);
+          // v3620 (propriétaire : « elle court sur place ») : en vue de route, le décor défile vers le joueur (zoom continu depuis le
+          // bout du chemin, deux couches fondues) : on voit qu'il avance.
+          if (cfg.persp && bg) { var Zf = 1.18, fp = flow % 1, vxx = W / 2, vyy = T + (H - T) * (cfg.vp || 0.42), zz = function (z, al) { c.globalAlpha = al; c.drawImage(bg, vxx * (1 - z), vyy * (1 - z), W * z, H * z); }; zz(Math.pow(Zf, 1 + fp), 1); zz(Math.pow(Zf, fp), fp); c.globalAlpha = 1; }
           if (cfg.fx) cfg.fx(c, W, H, T, t, dash, rx0, rx1);
           if (cfg.lines !== false) { c.strokeStyle = cfg.lineCol || 'rgba(255,255,255,.3)'; c.lineWidth = Math.max(2, pw2 * 0.08); c.setLineDash([ph * 0.5, ph * 0.6]); c.lineDashOffset = -(dash % (ph * 1.1)); for (var ln = 1; ln < cfg.lanes; ln++) { var lx = rx0 + (rx1 - rx0) * ln / cfg.lanes; c.beginPath(); c.moveTo(lx, -ph); c.lineTo(lx, H + ph); c.stroke(); } c.setLineDash([]); }
           for (var i = 0; i < obs.length; i++) { var e = obs[i], img = oS[e.k], ix = e.x, iy = e.y, sc = 1; if (cfg.persp) { var vpy = T + (H - T) * (cfg.vp || 0.42), fyr = (e.y - T) / Math.max(1, py - T), fy = fyr < 0 ? 0 : fyr, fc = fy < 1 ? fy : 1; sc = 0.24 + 0.76 * fc; ix = W / 2 + (e.x - W / 2) * (0.1 + 0.9 * fc); iy = vpy + (py - vpy) * fy; } var iw = img.w * sc, ih = img.h * sc; if (e.rot) { c.save(); c.translate(ix, iy); c.rotate(e.rot); c.drawImage(img, -iw / 2, -ih / 2, iw, ih); c.restore(); } else c.drawImage(img, ix - iw / 2, iy - ih / 2, iw, ih); }
           if (!dead) {
             var rI = cfg.art ? dgRun(cfg.art) : null;
-            if (rI) { var rh = pS.h * 1.08, rw = rh * 0.8, fi = Math.floor(t * 9) % 4; c.drawImage(rI, fi * 320, 0, 320, 400, px - rw / 2, py + pS.h / 2 - rh, rw, rh); } // v3619 : vraie course vue de dos
+            if (rI) { var rh = pS.h * 1.08, rw = rh * 0.8, fi = Math.floor(flow * 10) % 4; c.drawImage(rI, fi * 320, 0, 320, 400, px - rw / 2, py + pS.h / 2 - rh, rw, rh); } // v3619 : vraie course vue de dos
             else { var sw = cfg.persp ? Math.sin(t * 2.4) * pS.w * 0.035 : 0; c.drawImage(pS, px - pS.w / 2 + sw, py - pS.h / 2, pS.w, pS.h); } // v3619 : l'engin glisse (léger balancement), plus de rebond
           }
         },
