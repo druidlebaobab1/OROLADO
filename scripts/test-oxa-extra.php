@@ -28,7 +28,9 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $me
   return [];
 };
 $OXA = [];
-$GLOBALS['OROLADO_FAKE_OXA'] = function ($m, $p) use (&$OXA) {
+$HIST = [];
+$GLOBALS['OROLADO_FAKE_OXA'] = function ($m, $p) use (&$OXA, &$HIST) {
+  if (str_starts_with($p, '/v1/payment?')) { parse_str(substr($p, 12), $q); return ['data' => ['list' => $HIST[$q['address'] ?? ''] ?? []], 'meta' => ['page' => 1, 'last_page' => 1]]; }
   foreach ($OXA as $tid => $resp) if (str_ends_with($p, '/payment/' . $tid)) return ['data' => $resp];
   return null;
 };
@@ -162,6 +164,31 @@ check('2e clic : rien de plus (pas de double crédit)', abs($money($A) - 79.2) <
 check("l'admin voit la réponse d'OxaPay", !empty($r1['rows'][0]['resultat']), json_encode($r1['rows'][0] ?? [], JSON_UNESCAPED_UNICODE));
 $r3 = orolado_oxapay_admin_recheck($V);
 check('un autre joueur ne reçoit rien', $money($V) == 0 && ($r3['credited'] ?? 1) == 0);
+
+echo "10) v3622 Historique OxaPay : 2e envoi sur l'adresse payée, invisible dans le dépôt d'origine\n";
+$fresh([$dep('oH', $A, 'TH', 'ADDRH', 'COMPLETED', 103.72, 'hH1')]);
+$OXA['TH'] = $pay('TH', 'oH', 'ADDRH', [$tx('hH1', 103.72)]);
+$HIST['ADDRH'] = [['track_id' => 'TH', 'txs' => [$tx('hH1', 103.72) + ['address' => 'ADDRH']]], ['track_id' => 'TH2', 'txs' => [$tx('hH2', 79.2) + ['address' => 'ADDRH']]]];
+$h1 = orolado_oxapay_admin_recheck($A);
+check('2e envoi lu dans l\'historique → crédité', abs($money($A) - 79.2) < 0.02, json_encode($h1['credited'] ?? null) . ' / ' . $money($A));
+$h2 = orolado_oxapay_admin_recheck($A);
+$GLOBALS['OROLADO_TEST_TOKEN'] = 1;
+check('re-clic → rien de plus', abs($money($A) - 79.2) < 0.02 && ($h2['credited'] ?? 1) == 0, json_encode($h2['credited'] ?? null));
+echo "11) Dépôt payé SANS hash noté : jamais recompté (total reçu − déjà crédité)\n";
+$fresh([$dep('oN', $A, 'TN', 'ADDRN', 'COMPLETED', 50, '')]);
+$HIST['ADDRN'] = [['track_id' => 'TN', 'txs' => [$tx('hN1', 50) + ['address' => 'ADDRN']]]];
+orolado_oxapay_admin_recheck($A);
+check('seul envoi déjà crédité → 0 $', $money($A) == 0, (string) $money($A));
+$HIST['ADDRN'][] = ['track_id' => 'TN2', 'txs' => [$tx('hN2', 20) + ['address' => 'ADDRN']]];
+orolado_oxapay_admin_recheck($A);
+check('+20 $ renvoyés → exactement 20 $', abs($money($A) - 20) < 0.02, (string) $money($A));
+
+echo "12) Automatique : joueur sur le site (sans bouton admin)\n";
+$fresh([$dep('oP', $A, 'TP', 'ADDRP', 'COMPLETED', 103.72, 'hP1')]);
+$OXA['TP'] = $pay('TP', 'oP', 'ADDRP', [$tx('hP1', 103.72)]);
+$HIST['ADDRP'] = [['track_id' => 'TP', 'txs' => [$tx('hP1', 103.72) + ['address' => 'ADDRP']]], ['track_id' => 'TP2', 'txs' => [$tx('hP2', 79.2) + ['address' => 'ADDRP']]]];
+$a1 = orolado_oxapay_recheck(['token' => 'tokA']);
+check('crédité tout seul en ouvrant le site', abs($money($A) - 79.2) < 0.02, json_encode($a1));
 
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
