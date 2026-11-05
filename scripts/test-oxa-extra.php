@@ -29,7 +29,8 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $me
 };
 $OXA = [];
 $HIST = [];
-$GLOBALS['OROLADO_FAKE_OXA'] = function ($m, $p) use (&$OXA, &$HIST) {
+$GLOBALS['OROLADO_FAKE_OXA'] = function ($m, $p, $b = null) use (&$OXA, &$HIST) {
+  if ($m === 'POST' && $p === '/v1/payment/static-address') { $GLOBALS['STATIC_CALLS'] = ($GLOBALS['STATIC_CALLS'] ?? 0) + 1; return ($b['network'] ?? '') === 'TRON' ? ['data' => ['track_id' => 'TSTAT', 'address' => 'STATADDR', 'network' => 'TRON'], 'status' => 200] : ['message' => 'bad network', 'status' => 400]; }
   if (str_starts_with($p, '/v1/payment?')) { parse_str(substr($p, 12), $q); return ['data' => ['list' => $HIST[$q['address'] ?? ''] ?? []], 'meta' => ['page' => 1, 'last_page' => 1]]; }
   foreach ($OXA as $tid => $resp) if (str_ends_with($p, '/payment/' . $tid)) return ['data' => $resp];
   return null;
@@ -226,6 +227,29 @@ check('paiement inconnu montré à l\'admin, jamais crédité', count($rq['unkno
 $rq2 = orolado_pay_admin_recheck($A);
 check('re-clic : 0', ($rq2['credited'] ?? 1) == 0 && abs($money($A) - 80.2) < 0.02, json_encode($rq2['credited'] ?? null));
 $HIST[''] = [];
+
+echo "16) v3626 ADRESSE PERMANENTE par joueur : tout envoi crédité, n'importe quand, n'importe quel montant\n";
+$fresh([]);
+$inv = orolado_oxapay_invoice(['token' => 'tokA', 'coin' => 'usdt_trc20', 'amount' => 20]);
+check('adresse permanente donnée au joueur', ($inv['address'] ?? '') === 'STATADDR' && !empty($inv['static']), json_encode($inv));
+$inv2 = orolado_oxapay_invoice(['token' => 'tokA', 'coin' => 'usdt_trc20', 'amount' => 500]);
+$inv3 = orolado_oxapay_invoice(['token' => 'tokA', 'coin' => 'trx', 'amount' => 5]);
+check('même adresse à chaque fois (USDT et TRX), créée une seule fois chez OxaPay', ($inv2['address'] ?? '') === 'STATADDR' && ($inv3['address'] ?? '') === 'STATADDR' && ($GLOBALS['STATIC_CALLS'] ?? 0) === 1, (string) ($GLOBALS['STATIC_CALLS'] ?? 0));
+$OXA['TP1'] = $pay('TP1', 'oxs_' . preg_replace('/[^a-zA-Z0-9]/', '', $A) . '_tron', 'STATADDR', [$tx('hP1', 50) + ['address' => 'STATADDR']]);
+orolado_oxapay_webhook(json_encode(['track_id' => 'TP1', 'order_id' => 'oxs_x', 'type' => 'static_address', 'status' => 'Paid']), '');
+check('1er envoi 50 $ → crédité', abs($money($A) - 50) < 0.02, (string) $money($A));
+$OXA['TP2'] = $pay('TP2', 'oxs_' . preg_replace('/[^a-zA-Z0-9]/', '', $A) . '_tron', 'STATADDR', [$tx('hP2', 1000) + ['address' => 'STATADDR']]);
+orolado_oxapay_webhook(json_encode(['track_id' => 'TP2', 'type' => 'static_address', 'status' => 'Paid']), '');
+check('2e envoi 1000 $ (même adresse, plus tard) → crédité', abs($money($A) - 1050) < 0.02, (string) $money($A));
+orolado_oxapay_webhook(json_encode(['track_id' => 'TP2', 'type' => 'static_address', 'status' => 'Paid']), '');
+orolado_oxapay_webhook(json_encode(['track_id' => 'TP1', 'type' => 'static_address', 'status' => 'Paid']), '');
+check('messages répétés (OxaPay renvoie 5 fois) → rien de plus', abs($money($A) - 1050) < 0.02, (string) $money($A));
+$HIST['STATADDR'] = [$OXA['TP1'], $OXA['TP2'], $pay('TP3', 'oxs_x', 'STATADDR', [$tx('hP3', 7.5) + ['address' => 'STATADDR']])];
+$st3 = orolado_pay_admin_recheck($A);
+check('3e envoi sans aucun message → rattrapé (7,50 $), le reste pas recompté', abs($money($A) - 1057.5) < 0.02, json_encode($st3['credited'] ?? null) . ' / ' . $money($A));
+$anc = null; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['kind'] ?? '') === 'static') $anc = $dd;
+check("l'ancre n'est jamais créditée elle-même (0 $, STATIC)", $anc && ($anc['status'] ?? '') === 'STATIC' && (float) ($anc['amount'] ?? 1) == 0.0, json_encode($anc));
+check('adresse permanente pas prise par un autre joueur', $money($V) == 0);
 
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

@@ -1627,6 +1627,7 @@ function admin_deposits(): array {
   $local = admin_local_db();
   foreach (($local['deposits'] ?? []) as $d) {
     if (!is_array($d)) continue;
+    if ((string) ($d['kind'] ?? '') === 'static') continue; // v3626 : ancre d'adresse permanente (0 $), pas un dépôt
     $id = (string) ($d['id'] ?? $d['ref'] ?? '');
     if ($id === '') continue;
     $row = [

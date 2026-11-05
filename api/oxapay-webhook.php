@@ -37,4 +37,4 @@ if ($hmac === '' && function_exists('getallheaders')) {
 $out = orolado_oxapay_webhook($raw, $hmac);
 http_response_code((int) ($out['http'] ?? 200));
 header('Content-Type: text/plain; charset=utf-8');
-echo (string) ($out['body'] ?? 'OK');
+echo strtolower((string) ($out['body'] ?? 'ok')); // v3626 : OxaPay attend « ok »

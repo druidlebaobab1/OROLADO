@@ -1860,6 +1860,7 @@ if ($action === 'admin') {
   $depsPending = [];
   $depsPaid = [];
   foreach (($db['deposits'] ?? []) as $d) {
+    if ((string) ($d['kind'] ?? '') === 'static') continue; // v3626 : ancre d'adresse permanente (0 $), pas un dépôt
     $uid = (string) ($d['userId'] ?? '');
     $row = [
       'ref' => (string) ($d['id'] ?? $d['ref'] ?? ''),
