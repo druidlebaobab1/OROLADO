@@ -1409,7 +1409,7 @@
     var q = RUNF[pfx];
     if (!q) { q = RUNF[pfx] = { im: new Image(), fr: null, sps: [] }; q.im.decoding = 'async';
       q.im.onload = function () { q.fr = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = 320; cv.height = 400; cv.getContext('2d').drawImage(q.im, i * 320, 0, 320, 400, 0, 0, 320, 400); return cv; }); q.sps.forEach(function (x) { x.run = q.fr.slice(); }); };
-      q.im.src = 'img/games/' + pfx + '_run.webp?v=3593'; }
+      q.im.src = 'img/games/' + pfx + '_run.webp?v=' + (pfx === 'cd' ? '3614' : '3593'); } // v3614 : Candy = fille
     if (q.fr) sp.run = q.fr.slice(); else q.sps.push(sp);
   }
   function worldTheme(pfx, ver, o) {
@@ -1500,7 +1500,7 @@
     sky: ['#60A5FA', '#93C5FD', '#DBEAFE', '#F1F5F9'], ground: ['#A8A29E', '#8D8379', '#6F655B'], lane: ['#7C7268', '#6B6157', '#5A5047'],
     back: '#C8B79A', walk: '#CFC8BF', roof: ['#2F4A3A', '#43644F']
   });
-  var CANDY = worldTheme('cd', '3582', {
+  var CANDY = worldTheme('cd', '3614', {
     sky: ['#F9A8D4', '#FBCFE8', '#FCE7F3', '#FFF1F2'], ground: ['#E9B9A0', '#D9A086', '#C4876C'], lane: ['#B9785A', '#A86B4F', '#955D43'],
     back: '#F7C9DD', walk: '#F5D0E0', roof: ['#F9A8D4', '#FBCFE8'], dust: 'rgba(251,207,232,'
   });
