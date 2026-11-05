@@ -2495,6 +2495,7 @@ function orolado_is_admin_user(?array $me): bool {
 function orolado_is_house_account(string $uid, array $row = []): bool {
   if ($uid === 'admin_master' || (string) ($row['id'] ?? '') === 'admin_master') return true;
   if (!$row) return false;
+  if (!empty($row['partner'])) return true; // v3633 (propriétaire) : compte affilié = compte maison, hors de TOUS les chiffres et listes
   if (orolado_is_admin_user($row)) return true;
   $em = strtolower(trim((string) ($row['email'] ?? $row['originalEmail'] ?? '')));
   return $em !== '' && ($em === 'admin@6diablo.com' || orolado_is_reserved_admin_email($em));
@@ -2510,7 +2511,14 @@ function orolado_is_house_account(string $uid, array $row = []): bool {
 function orolado_is_partner(array $db, string $uid): bool {
   if ($uid === '') return false;
   $u = $db['users'][$uid] ?? null;
-  return is_array($u) && !empty($u['partner']);
+  if (is_array($u) && !empty($u['partner'])) return true;
+  // v3633 : connecté par son id Supabase → retrouver la fiche locale liée (index, sans parcourir tous les joueurs)
+  if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid)) {
+    if (function_exists('orolado_users_by_sb')) foreach (orolado_users_by_sb($db, $uid) as $lu) if (!empty($lu['partner'])) return true;
+  }
+  $em = is_array($u) ? strtolower(trim((string) ($u['email'] ?? ''))) : '';
+  if ($em !== '' && function_exists('orolado_users_by_email')) foreach (orolado_users_by_email($db, $em) as $lu) if (!empty($lu['partner'])) return true;
+  return false;
 }
 function orolado_partner_withdraw(array $db, array $me, array $req): array {
   $uid = (string) ($me['id'] ?? '');
@@ -2544,7 +2552,8 @@ function orolado_partner_withdraw(array $db, array $me, array $req): array {
   return ['ok' => true, 'server' => true, 'suspect' => false, 'vault' => ['demo' => (float) ($v['demo'] ?? 0), 'real' => $newReal], 'id' => $wdId, 'amount' => $amount];
 }
 
-function orolado_public_user(array $user): array {
+function orolado_public_user(array $user, ?array $db = null): array {
+  if ($db !== null && empty($user['partner']) && orolado_is_partner($db, (string) ($user['id'] ?? ''))) $user['partner'] = true; // v3633
   unset($user['passwordHash'], $user['password'], $user['is_admin'], $user['pwTag']);
   return $user;
 }

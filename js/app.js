@@ -9802,6 +9802,9 @@
           }
           var sent = await D6.Api.post('withdrawOtp', {});
           if (watchBan(sent)) return;
+          if (sent && sent.ok && sent.noOtp) { otp = '000000'; u.partner = true; } // v3633 : compte affilié reconnu par le serveur → pas de code
+        }
+        if (otp.length !== 6) {
           if (sent && sent.needDep) { needDepCard(); return; } // 2026-10-25 : jamais déposé
           if (!sent || !sent.ok) {
             if (sent && sent.cooldown) {
