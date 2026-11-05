@@ -4862,7 +4862,7 @@ function orolado_maketou_recheck(array $req): array {
     if (trim((string) ($d['sellId'] ?? $d['cartId'] ?? '')) === '') continue;
     if ((strtotime((string) ($d['at'] ?? '')) ?: 0) < $cut) continue;
     $list[] = $d;
-    if (count($list) >= 4) break;
+    if (count($list) >= 8) break; // v3623 : 8 au lieu de 4 (+ ronde serveur pour les autres)
   }
   $credited = 0.0;
   foreach ($list as $d) {
@@ -4915,6 +4915,143 @@ function orolado_flw_recheck(array $req): array {
     $credited++;
   }
   return ['ok' => true, 'checked' => count($list), 'credited' => $credited];
+}
+
+/**
+ * v3623 (propriétaire : « payé en Mobile Money, 15 $, pas arrivé… et il n'est pas le seul ») : avant, un dépôt en attente
+ * n'était revérifié que si le joueur gardait le site ouvert, et seulement ses 4 derniers (un joueur qui touche « Recharger »
+ * plusieurs fois avant de payer pouvait avoir le bon dépôt hors de la liste). Maintenant :
+ *  - orolado_pay_check_one : vérifie UN dépôt chez son prestataire (OxaPay, Flutterwave, Maketou) et le crédite s'il est
+ *    payé — mêmes fonctions de crédit qu'avant, donc jamais deux fois ;
+ *  - orolado_pay_sweep_after_response : ronde serveur toutes les 2 min (après une requête, sans cron) sur les dépôts en
+ *    attente de TOUS les joueurs (48 h), les moins récemment vérifiés d'abord (tous finissent par passer), 6 par ronde ;
+ *  - bouton admin « Revérifier paiements » (fiche joueur, 7 jours).
+ */
+function orolado_pay_check_one(array $d): array {
+  $id = (string) ($d['id'] ?? $d['ref'] ?? '');
+  $op = strtolower((string) ($d['operator'] ?? ''));
+  try {
+    if ($op === 'oxapay') {
+      $tid = trim((string) ($d['trackId'] ?? ''));
+      if ($tid === '' || orolado_oxapay_key() === '') return ['r' => 'crypto sans numéro de suivi'];
+      $live = orolado_oxapay_inquiry($tid);
+      if (!$live) return ['r' => 'OxaPay ne répond pas'];
+      $paid = orolado_oxapay_paid_status(orolado_oxapay_payload_status($live)) || orolado_oxapay_received_usd($live) + 0.0001 >= orolado_oxapay_credit_floor();
+      if (!$paid) return ['r' => 'pas payé chez OxaPay (' . (orolado_oxapay_payload_status($live) ?: '?') . ')'];
+      orolado_oxapay_apply_payload($live + ['track_id' => $tid], false);
+      return ['r' => 'payé chez OxaPay', 'paid' => 1];
+    }
+    if ($op === 'flutterwave' || $op === 'flw' || str_starts_with(strtolower($id), 'flw_')) {
+      if (!function_exists('orolado_flw_configured') || !orolado_flw_configured()) return ['r' => 'Flutterwave non configuré'];
+      $pf = orolado_flutterwave_verify($id, '');
+      if (empty($pf['paid'])) return ['r' => 'pas payé chez Flutterwave'];
+      orolado_flutterwave_credit($id, (string) ($pf['extId'] ?? ''), (float) ($pf['amount_usd'] ?? 0));
+      return ['r' => 'payé chez Flutterwave', 'paid' => 1];
+    }
+    if (in_array($op, ['usdt', 'admin', 'refund', 'card'], true)) return ['r' => 'non vérifiable automatiquement'];
+    if (trim((string) ($d['sellId'] ?? $d['cartId'] ?? '')) === '') return ['r' => 'Maketou : paiement jamais ouvert (pas de numéro de vente)'];
+    $pm = maketou_verify_remote_payment($d, 1, 1);
+    if (empty($pm['paid'])) return ['r' => 'pas payé chez Maketou'];
+    $res = credit_paid_deposit([
+      'ref' => $id,
+      'amount' => orolado_money($pm['amount'] ?? ($d['amount'] ?? 0)),
+      'paid' => true,
+      'extId' => '',
+      'sellId' => (string) ($d['sellId'] ?? $d['cartId'] ?? ''),
+    ]);
+    if (function_exists('maketou_log')) maketou_log('sweep_credit', ['ref' => $id, 'result' => $res]);
+    return ['r' => 'payé chez Maketou', 'paid' => 1];
+  } catch (Throwable $e) {
+    return ['r' => 'erreur de vérification'];
+  }
+}
+
+function orolado_pay_dep_state(string $id): array {
+  foreach ((load_db(orolado_data_file())['deposits'] ?? []) as $d) {
+    if (is_array($d) && (string) ($d['id'] ?? '') === $id) return ['status' => strtoupper((string) ($d['status'] ?? '')), 'amount' => orolado_money($d['amount'] ?? 0)];
+  }
+  return ['status' => '', 'amount' => 0];
+}
+
+function orolado_pay_sweep_after_response(): void {
+  $dir = orolado_data_dir();
+  $nextF = $dir . '/pay_sweep.next';
+  $now = time();
+  if ((int) @file_get_contents($nextF) > $now) return;
+  $lk = @fopen($dir . '/pay_sweep.lock', 'c');
+  if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return; }
+  @file_put_contents($nextF, (string) ($now + 120), LOCK_EX);
+  $seenF = $dir . '/pay_sweep_seen.json';
+  $seen = json_decode((string) @file_get_contents($seenF), true);
+  if (!is_array($seen)) $seen = [];
+  try {
+    $db = load_db(orolado_data_file());
+    $cut = $now - 48 * 3600; $cand = []; $cryptoUsers = [];
+    foreach (($db['deposits'] ?? []) as $d) {
+      if (!is_array($d)) continue;
+      $at = strtotime((string) ($d['at'] ?? '')) ?: 0;
+      if ($at < $cut) continue;
+      $st = strtoupper((string) ($d['status'] ?? ''));
+      $op = strtolower((string) ($d['operator'] ?? ''));
+      if ($op === 'oxapay' && ($st === 'COMPLETED' || $st === 'PAID') && (string) ($d['parentId'] ?? '') === '' && ($u = (string) ($d['userId'] ?? '')) !== '') $cryptoUsers[$u] = true;
+      if ($st !== 'PENDING' || in_array($op, ['usdt', 'admin', 'refund', 'card'], true)) continue;
+      if ((string) ($d['id'] ?? '') === '') continue;
+      $cand[] = $d;
+    }
+    usort($cand, static fn($a, $b) => ((int) ($seen[(string) $a['id']] ?? 0)) <=> ((int) ($seen[(string) $b['id']] ?? 0)));
+    $t0 = microtime(true); $n = 0;
+    foreach ($cand as $d) {
+      if ($n >= 6 || microtime(true) - $t0 > 12) break;
+      $id = (string) $d['id'];
+      if ($now - (int) ($seen[$id] ?? 0) < 300) continue; // pas plus d'une fois toutes les 5 min par dépôt
+      $seen[$id] = $now; $n++;
+      $r = orolado_pay_check_one($d);
+      if (!empty($r['paid'])) {
+        $stt = orolado_pay_dep_state($id);
+        if ($stt['status'] === 'COMPLETED' || $stt['status'] === 'PAID') orolado_health_event('Dépôts', 'Rattrapé automatiquement : dépôt ' . $id . ' (' . $stt['amount'] . ' $) payé mais pas encore crédité — crédité.', 'info');
+      }
+    }
+    // Crypto renvoyée sur une adresse déjà payée : 2 joueurs par ronde, chacun au plus toutes les 10 min.
+    $k = 0;
+    foreach (array_keys($cryptoUsers) as $u) {
+      if ($k >= 2 || microtime(true) - $t0 > 14) break;
+      if ($now - (int) ($seen['h:' . $u] ?? 0) < 600) continue;
+      $seen['h:' . $u] = $now; $k++;
+      orolado_oxapay_history_extras(load_db(orolado_data_file()), (string) $u, 2, 2);
+    }
+    foreach ($seen as $kk => $tt) if ((int) $tt < $now - 3 * 86400) unset($seen[$kk]);
+    @file_put_contents($seenF, json_encode($seen), LOCK_EX);
+  } catch (Throwable $e) {
+    // jamais bloquant
+  }
+  flock($lk, LOCK_UN); fclose($lk);
+}
+
+/** Bouton admin « Revérifier paiements » : crypto (OxaPay, historique compris) + Mobile Money / carte, 7 jours. */
+function orolado_pay_admin_recheck(string $uid): array {
+  $uid = trim($uid);
+  if ($uid === '') return ['ok' => false, 'reason' => 'Joueur introuvable'];
+  $rows = []; $credited = 0.0;
+  if (orolado_oxapay_key() !== '') {
+    $c = orolado_oxapay_admin_recheck($uid);
+    if (!empty($c['ok'])) { $rows = $c['rows']; $credited += (float) $c['credited']; }
+  }
+  $cut = time() - 7 * 86400; $n = 0;
+  foreach (array_reverse(load_db(orolado_data_file())['deposits'] ?? []) as $d) {
+    if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
+    if (strtoupper((string) ($d['status'] ?? '')) !== 'PENDING') continue;
+    if (strtolower((string) ($d['operator'] ?? '')) === 'oxapay') continue;
+    if ((strtotime((string) ($d['at'] ?? '')) ?: 0) < $cut) continue;
+    $id = (string) ($d['id'] ?? '');
+    $r = orolado_pay_check_one($d);
+    $stt = orolado_pay_dep_state($id);
+    $ok = $stt['status'] === 'COMPLETED' || $stt['status'] === 'PAID';
+    if ($ok) $credited += $stt['amount'];
+    $rows[] = ['depot' => $id, 'suivi' => (string) ($d['operator'] ?? 'mobile money'), 'statut' => 'EN ATTENTE', 'montant' => orolado_money($d['amount'] ?? 0),
+      'oxapay' => $r['r'], 'envois' => 0, 'recu' => 0, 'resultat' => $ok ? 'crédité +' . $stt['amount'] . ' $' : 'pas crédité'];
+    if (++$n >= 12) break;
+  }
+  return ['ok' => true, 'rows' => $rows, 'credited' => orolado_money($credited)];
 }
 
 function maketou_handle_webhook(): void {

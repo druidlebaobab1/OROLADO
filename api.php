@@ -61,6 +61,12 @@ register_shutdown_function(static function (): void {
   } catch (Throwable $e) { /* jamais bloquant */ }
 });
 
+// v3623 : ronde des dépôts en attente (tous les joueurs, toutes les 2 min, sans cron) — payé = crédité même site fermé.
+register_shutdown_function(static function (): void {
+  if (!function_exists('orolado_pay_sweep_after_response')) return;
+  try { orolado_pay_sweep_after_response(); } catch (Throwable $e) { /* jamais bloquant */ }
+});
+
 // Plantage PHP (erreur fatale, mémoire, délai) : signalé dans « Santé du Site ».
 register_shutdown_function(static function (): void {
   $e = error_get_last();

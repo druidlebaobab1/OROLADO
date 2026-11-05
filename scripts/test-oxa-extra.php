@@ -190,5 +190,19 @@ $HIST['ADDRP'] = [['track_id' => 'TP', 'txs' => [$tx('hP1', 103.72) + ['address'
 $a1 = orolado_oxapay_recheck(['token' => 'tokA']);
 check('crédité tout seul en ouvrant le site', abs($money($A) - 79.2) < 0.02, json_encode($a1));
 
+echo "13) v3623 Ronde serveur : dépôt payé, message perdu, joueur parti\n";
+$fresh([$dep('oS', $A, 'TS', 'ADDRS', 'PENDING', 15)]);
+$OXA['TS'] = $pay('TS', 'oS', 'ADDRS', [$tx('hS1', 15)]);
+@unlink(orolado_data_dir() . '/pay_sweep.next');
+orolado_pay_sweep_after_response();
+check('crédité par la ronde (sans le joueur)', abs($money($A) - 15) < 0.02, (string) $money($A));
+@unlink(orolado_data_dir() . '/pay_sweep.next'); @unlink(orolado_data_dir() . '/pay_sweep_seen.json');
+orolado_pay_sweep_after_response();
+check('2e ronde : pas de 2e crédit', abs($money($A) - 15) < 0.02, (string) $money($A));
+orolado_pay_sweep_after_response();
+check('ronde trop tôt : ne fait rien (bon marché)', abs($money($A) - 15) < 0.02);
+$ar = orolado_pay_admin_recheck($A);
+check('bouton admin paiements : rien de plus', abs($money($A) - 15) < 0.02 && ($ar['credited'] ?? 1) == 0, json_encode($ar['credited'] ?? null));
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
