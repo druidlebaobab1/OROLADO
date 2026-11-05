@@ -204,19 +204,27 @@ function casino_is_crash(string $g): bool { return in_array($g, CASINO_CRASH, tr
  * Le point d'explosion suit la même loi qu'avant (casino_crash_point) : retour joueurs 97 %, rien ne change pour l'argent.
  */
 const CASINO_ROUND_BET = 5.0;   // secondes pour miser avant le départ (v2730 : 5 s au lieu de 7, on voit voler plus vite)
+const CASINO_ROUND_HIST = 30;  // v3616 : 30 derniers tours dans le bandeau (jamais effacés)
 const CASINO_ROUND_SHOW = 3.0;  // secondes d'affichage après l'explosion
 function casino_crash_secs(float $c): float { return $c <= 1.0 ? 0.0 : log($c) / 0.08 + 0.05; }
 function casino_round_file(string $game): string { return casino_dir() . DIRECTORY_SEPARATOR . 'round-' . preg_replace('/[^a-z]/', '', $game) . '.json'; }
 /** Fait avancer le tour commun jusqu'à maintenant (dans le fichier verrouillé). */
 function casino_round_advance(array &$r, float $now): void {
   if (empty($r['i']) || $now - (float) ($r['end'] ?? 0) > 3600) {
-    $r = ['i' => (int) ($r['i'] ?? 0) + 1, 't0' => $now + CASINO_ROUND_BET, 'c' => casino_crash_point(), 'nc' => casino_crash_point()];
+    // v3616 (propriétaire : « l'avion ne doit pas attendre les joueurs, montre au moins 20-30 anciens tours ») : l'historique
+    // n'est plus effacé après une longue pause ; les tours « joués » pendant que personne ne regardait sont tirés ici, par le
+    // même tirage que les vrais tours (casino_crash_point), et passent devant (plus récents en premier).
+    $old = array_values((array) ($r['h'] ?? []));
+    if (!empty($r['i']) && isset($r['c'])) array_unshift($old, (float) $r['c']);
+    $gap = empty($r['i']) ? CASINO_ROUND_HIST : (int) min(CASINO_ROUND_HIST, floor(($now - (float) ($r['end'] ?? 0)) / 12));
+    $fresh = []; for ($k = 0; $k < $gap; $k++) $fresh[] = casino_crash_point();
+    $r = ['i' => (int) ($r['i'] ?? 0) + 1, 't0' => $now + CASINO_ROUND_BET, 'c' => casino_crash_point(), 'nc' => casino_crash_point(), 'h' => array_slice(array_merge($fresh, $old), 0, CASINO_ROUND_HIST)];
     $r['end'] = $r['t0'] + casino_crash_secs((float) $r['c']) + CASINO_ROUND_SHOW;
     return;
   }
   while ($now >= (float) $r['end']) {
     $t0 = (float) $r['end'] + CASINO_ROUND_BET;
-    $h = array_slice(array_merge([(float) $r['c']], (array) ($r['h'] ?? [])), 0, 24); // v2795 : derniers points d'explosion (bandeau d'historique)
+    $h = array_slice(array_merge([(float) $r['c']], (array) ($r['h'] ?? [])), 0, CASINO_ROUND_HIST); // v2795 : derniers points d'explosion (bandeau d'historique)
     $r = ['i' => (int) $r['i'] + 1, 't0' => $t0, 'c' => (float) $r['nc'], 'nc' => casino_crash_point(), 'h' => $h];
     $r['end'] = $t0 + casino_crash_secs((float) $r['c']) + CASINO_ROUND_SHOW;
   }

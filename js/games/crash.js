@@ -227,7 +227,7 @@
         if (key === histKey) return;
         var fresh = histKey !== '' && R.c != null;
         histKey = key;
-        $('crHist').innerHTML = h.slice(0, 24).map(function (v, i) { return '<i class="' + (v < 2 ? 'lo' : v < 10 ? 'mid' : 'hi') + (fresh && i === 0 ? ' new' : '') + '">' + fx(v) + '×</i>'; }).join('');
+        $('crHist').innerHTML = h.slice(0, 30).map(function (v, i) { return '<i class="' + (v < 2 ? 'lo' : v < 10 ? 'mid' : 'hi') + (fresh && i === 0 ? ' new' : '') + '">' + fx(v) + '×</i>'; }).join('');
       };
 
       var showMine = function (r) {
