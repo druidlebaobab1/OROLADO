@@ -19,6 +19,7 @@ $bank = ['c' => [], 'keys' => []];
 $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $method) use (&$bank) {
   $b = $body ? json_decode($body, true) : [];
   if (str_contains($url, '/rpc/resolve_trade')) {
+    if (!empty($GLOBALS['BANK_DOWN'])) { $GLOBALS['BANK_DOWN']--; return null; }
     $u = $b['p_user']; $bank['c'][$u] = $bank['c'][$u] ?? 0;
     if (isset($bank['keys'][$b['p_order']])) return ['ok' => true, 'duplicate' => true, 'real' => $bank['c'][$u] / 100];
     $bank['keys'][$b['p_order']] = 1; $bank['c'][$u] += (int) round($b['p_amount'] * 100);
@@ -250,6 +251,33 @@ check('3e envoi sans aucun message → rattrapé (7,50 $), le reste pas recompt�
 $anc = null; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['kind'] ?? '') === 'static') $anc = $dd;
 check("l'ancre n'est jamais créditée elle-même (0 $, STATIC)", $anc && ($anc['status'] ?? '') === 'STATIC' && (float) ($anc['amount'] ?? 1) == 0.0, json_encode($anc));
 check('adresse permanente pas prise par un autre joueur', $money($V) == 0);
+
+echo "17) v3627 Caisse injoignable au moment du crédit : repris au passage suivant, une seule fois\n";
+$fresh([]);
+orolado_oxapay_invoice(['token' => 'tokA', 'coin' => 'usdt_trc20', 'amount' => 20]);
+$OXA['TF1'] = $pay('TF1', 'oxs_x', 'STATADDR', [$tx('hF1', 40) + ['address' => 'STATADDR']]);
+$GLOBALS['BANK_DOWN'] = 3;
+orolado_oxapay_webhook(json_encode(['track_id' => 'TF1', 'type' => 'static_address', 'status' => 'Paid']), '');
+check('pendant la panne : rien crédité', $money($A) == 0, (string) $money($A));
+$GLOBALS['BANK_DOWN'] = 0;
+orolado_oxapay_webhook(json_encode(['track_id' => 'TF1', 'type' => 'static_address', 'status' => 'Paid']), '');
+check('message renvoyé par OxaPay après la panne → crédité', abs($money($A) - 40) < 0.02, (string) $money($A));
+orolado_oxapay_webhook(json_encode(['track_id' => 'TF1', 'type' => 'static_address', 'status' => 'Paid']), '');
+$HIST['STATADDR'] = [$OXA['TF1']];
+orolado_pay_admin_recheck($A);
+check('ensuite : jamais une 2e fois', abs($money($A) - 40) < 0.02, (string) $money($A));
+echo "18) v3627 Écran de paiement : passe en « reçu » quand le message d'OxaPay a crédité\n";
+$inv = orolado_oxapay_invoice(['token' => 'tokA', 'coin' => 'usdt_trc20', 'amount' => 20]);
+$s0 = orolado_oxapay_status(['token' => 'tokA', 'orderId' => $inv['orderId']]);
+check('écran ouvert, rien de neuf → en attente', !empty($s0['pending']) && empty($s0['paid']), json_encode($s0));
+$OXA['TF2'] = $pay('TF2', 'oxs_x', 'STATADDR', [$tx('hF2', 25) + ['address' => 'STATADDR']]);
+orolado_oxapay_webhook(json_encode(['track_id' => 'TF2', 'type' => 'static_address', 'status' => 'Paid']), '');
+$s1 = orolado_oxapay_status(['token' => 'tokA', 'orderId' => $inv['orderId']]);
+check('après le message : « reçu 25 $ »', !empty($s1['paid']) && abs(($s1['amount'] ?? 0) - 25) < 0.02, json_encode(array_diff_key($s1, ['vault' => 1])));
+check('solde 65 $', abs($money($A) - 65) < 0.02, (string) $money($A));
+$ab = orolado_abandon_open_deposit(['token' => 'tokA', 'orderId' => $inv['orderId']]);
+$anc = null; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['kind'] ?? '') === 'static') $anc = $dd;
+check("« abandon » de l'écran ne casse pas l'adresse permanente", ($anc['status'] ?? '') === 'STATIC' && empty($ab['abandoned']), json_encode($ab));
 
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
