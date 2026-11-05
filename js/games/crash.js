@@ -117,7 +117,7 @@
         '<path id="crArea" fill="url(#crA' + game + ')"/><path id="crLine" class="cr-line" fill="none" stroke="' + col + '" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
         '<i class="cr-axis x"></i><i class="cr-axis y"></i>' +
         '<span class="cr-craft" id="crCraft"><span class="cr-bob">' + craftSvg(game) + '</span></span><i class="cr-boom" id="crBoom"></i>' +
-        '<div class="cr-top" id="crTop"><b class="cr-m fit" id="crM">' + fx(1) + '×</b><small class="cr-flew fit" id="crFlew"></small></div><b class="cr-out" id="crOut"></b>' +
+        '<div class="cr-top" id="crTop"><b class="cr-m fit" id="crM">×' + fx(1) + '</b><small class="cr-flew fit" id="crFlew"></small></div><b class="cr-out" id="crOut"></b>' +
         '<div class="cr-mid"><div class="cr-wait" id="crWait" hidden><i class="cr-spin"></i><small class="fit">' + K.esc(l.wait) + '</small><i class="cr-bar"><b id="crBar"></b></i></div></div></div>' +
         K.stakePanel(l.bet, opts);
       var watch = K.guest();
@@ -227,14 +227,14 @@
         if (key === histKey) return;
         var fresh = histKey !== '' && R.c != null;
         histKey = key;
-        $('crHist').innerHTML = h.slice(0, 30).map(function (v, i) { return '<i class="' + (v < 2 ? 'lo' : v < 10 ? 'mid' : 'hi') + (fresh && i === 0 ? ' new' : '') + '">' + fx(v) + '×</i>'; }).join('');
+        $('crHist').innerHTML = h.slice(0, 40).map(function (v, i) { return '<i class="' + (v < 2 ? 'lo' : v < 10 ? 'mid' : 'hi') + (fresh && i === 0 ? ' new' : '') + '">×' + fx(v) + '</i>'; }).join('');
       };
 
       var showMine = function (r) {
         if (!r || !r.done || !r.ref || shown === r.ref) return;
         shown = r.ref;
         if (cancelRef === r.ref) { K.afterPlay(r); return; } // bet cancelled before take-off: stake back, no result pill
-        if (r.out > 0) { var o = $('crOut'); o.textContent = fx(r.out) + '×'; o.classList.remove('in'); void o.offsetWidth; o.classList.add('in'); } // my cash-out multiplier, under the big one
+        if (r.out > 0) { var o = $('crOut'); o.textContent = '×' + fx(r.out); o.classList.remove('in'); void o.offsetWidth; o.classList.add('in'); } // my cash-out multiplier, under the big one
         K.resultLine(box, r);
       };
       var askMine = async function () {
@@ -300,12 +300,12 @@
             bar.style.transform = 'scaleX(' + Math.max(0, Math.min(1, (R.t0 - t) / (R.bet || 5))).toFixed(3) + ')';
             if (me && !me.done && me.rid === R.i) K.sfxBeat(box, 'cd', R.t0 - t <= 3 ? Math.ceil(R.t0 - t) : -1, 'cd', { last: R.t0 - t <= 1 }); // v2851 : 3 · 2 · 1 avant le départ (si on a misé)
           } else if (phase === 'fly') {
-            lastXY = drawFlight(s); K.setText(mEl, fx(MULT(s)) + '×');
+            lastXY = drawFlight(s); K.setText(mEl, '×' + fx(MULT(s))); // v3618 : la croix devant
             if (K.amb) K.amb(game, true, Math.log(MULT(s)) / Math.log(20)); // v2851 : le moteur monte avec le multiplicateur
             var lv = 0, mm = MULT(s); while (lv < SLV.length && mm >= SLV[lv]) lv++;
             if (lv > sLv) { sLv = lv; K.sfx('rise', { n: lv }); } // v2832 : petite note qui monte à ×1,5 · ×2 · ×3 · ×5 · ×10…
           } else {
-            K.setText(mEl, fx(R.c) + '×');
+            K.setText(mEl, '×' + fx(R.c));
             if (endXY && game !== 'rocket') { // il file tout droit en accélérant, puis disparaît
               var e = (performance.now() - endAt) / 1000;
               if (e < 1.2) { var dd = cw * (1.4 * e + 6 * e * e), ra = flyA * Math.PI / 180; placeCraft(endXY[0] + dd * Math.cos(ra), endXY[1] + dd * Math.sin(ra), flyA, Math.max(0, 1 - e / 1.1)); }

@@ -42,7 +42,7 @@
     box.innerHTML = '<div class="cg-stage lb-stage">' +
         '<div class="cg-hist lb-hist" id="lbHist"></div>' +
         '<div class="lb-core"><i class="lb-ring r1"></i><i class="lb-ring r2"></i><i class="lb-planet"></i>' +
-          '<div class="lb-num"><b class="fit" id="lbNum"><span>1' + K.dec() + '00</span><em>×</em></b></div>' +
+          '<div class="lb-num"><b class="fit" id="lbNum"><em>×</em><span>1' + K.dec() + '00</span></b></div>' +
         '</div>' +
       '</div>' +
       K.stakePanel(l.bet,
@@ -70,9 +70,9 @@
     box.querySelectorAll('.lb-st').forEach(function (b) { b.addEventListener('click', function () { setT(stepT(SET.t, b.getAttribute('data-d') === '1')); }); });
     box.querySelectorAll('.lb-quick [data-q]').forEach(function (b) { b.addEventListener('click', function () { setT(+b.getAttribute('data-q')); }); });
     box.addEventListener('stake', paint);
-    function show(v, cls) { num.className = 'fit ' + (cls || ''); num.firstChild.textContent = big(v); K.fitEl(num); }
+    function show(v, cls) { num.className = 'fit ' + (cls || ''); num.querySelector('span').textContent = big(v); K.fitEl(num); }
     function paintHist() {
-      $('lbHist').innerHTML = HIST.slice(0, 14).map(function (h) { return '<i class="' + (h[1] ? 'w' : 'l') + '">' + big(h[0]) + '×</i>'; }).join('');
+      $('lbHist').innerHTML = HIST.slice(0, 14).map(function (h) { return '<i class="' + (h[1] ? 'w' : 'l') + '">×' + big(h[0]) + '</i>'; }).join('');
     }
 
     $('csGo').addEventListener('click', async function () {

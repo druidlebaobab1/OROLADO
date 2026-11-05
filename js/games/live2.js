@@ -52,7 +52,7 @@
   var LBG = ['andarlive','archerylive','baccaratlive','balloonlive','basketlive','bingolive','boatracelive','boxinglive','bullseye','bustlive','camelracelive','catwalk','chickenracelive','claw','coinlive','cricketlive','diceduellive','dogracelive','dtlive','fishinglive','fleets','football','gemcount','hilolive','kenolive','ladderlive','lotto649live','lucky10','lucky7live','megaballlive','moneywheel','monsterlive','pegdrop','penaltylive','peryalive','pokerlive','redblacklive','sicbolive','snailracelive','spaceracelive','teenpattilive','tennislive','volcanolive'];
   function liveBg(key, h) {
     if (LBG.indexOf(key) < 0) return h;
-    var img = '<image class="lbg" href="img/games/lb_' + key + '.webp?v=3601" x="-70" y="-25" width="500" height="290" preserveAspectRatio="xMidYMid slice" opacity=".92"/>';
+    var img = '<image class="lbg" href="img/games/lb_' + key + '.webp?v=' + (/^(monsterlive|archerylive|bullseye|dogracelive|horses|race)$/.test(key) ? '3618' : '3601') + '" x="-70" y="-25" width="500" height="290" preserveAspectRatio="xMidYMid slice" opacity=".92"/>';
     var i = h.indexOf('</defs>'), p = i < 0 ? 0 : i + 7, m = /^<rect\b[^>]*\/>/.exec(h.slice(p));
     if (m) { var w = /width="(-?[\d.]+)"/.exec(m[0]); if (w && +w[1] >= 300) p += m[0].length; }
     return h.slice(0, p) + img + h.slice(p);
