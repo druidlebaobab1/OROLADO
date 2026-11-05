@@ -484,6 +484,9 @@
      projected segments). Drag left / right; the bends push the kart outward. Cones, crates, peels and slower karts. */
   // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
   var WBF = {};
+  // v3614 (propriétaire : « le personnage du jeu de lave est moche ») : vrai explorateur dessiné (debout / saut)
+  var LEI = {};
+  function leImg(n) { var o = LEI[n]; if (!o) { o = LEI[n] = new Image(); o.decoding = 'async'; o.src = 'img/games/le_' + n + '.webp?v=3614'; } return o.complete && o.naturalWidth ? o : null; }
   function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
     if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
@@ -850,7 +853,7 @@
         if (!hero) { hero = heroJ = mkc(hs * 1.2, hs * 1.12, sdpr(), function (c) { c.translate(hs * 0.6, hs * 1.08); limb(c, 0, 0, 0, -hs * 0.5, hs * 0.14, hs * 0.14, '#78350F'); limb(c, 0, -hs * 0.5, 0, -hs * 0.8, hs * 0.2, hs * 0.18, '#0EA5E9'); circ(c, 0, -hs * 0.9, hs * 0.1, '#F3CBA8'); }); }
         lavaS = mkc(W, (H - T) * 0.45, dpr, function (c, w, h) { c.fillStyle = lg(c, 0, 0, 0, h, ['#FDE047', '#F97316', '#B91C1C', '#450A0A']); c.fillRect(0, 0, w, h); });
         emb = []; for (var e = 0; e < 18; e++) emb.push({ x: Math.random() * W, y: Math.random(), s: rnd(0.3, 1) });
-        reset(false);
+        leImg('stand'); leImg('jump'); reset(false);
       },
       reset: function (live) { reset(live); },
       step: function (dt, live) {
@@ -899,7 +902,7 @@
         if (dead) { feet = dead.y; hx2 = dead.x; im = heroJ; }
         else if (jump) { var q = Math.min(1, jump.t / JT), y0 = ledges[jump.from].y, y1 = ledges[jump.to].y; feet = y0 + (y1 - y0) * q - Math.sin(q * Math.PI) * DY * 0.5; im = heroJ; }
         else feet = ledges[k].y;
-        if (!(dead && dead.burn && dead.t > 0.3)) { c.save(); c.translate(hx2, Y(feet)); if (dead) c.rotate(dead.t * 5); c.drawImage(im, -im.w / 2, -im.h + hs * 0.05, im.w, im.h); c.restore(); }
+        if (!(dead && dead.burn && dead.t > 0.3)) { c.save(); c.translate(hx2, Y(feet)); if (dead) c.rotate(dead.t * 5); var li = leImg(im === heroJ ? 'jump' : 'stand'); if (li) { var lh = hs * 1.7, lw = lh * li.naturalWidth / li.naturalHeight; c.drawImage(li, -lw / 2, -lh + hs * 0.04, lw, lh); } else c.drawImage(im, -im.w / 2, -im.h + hs * 0.05, im.w, im.h); c.restore(); }
         // lava
         var ly = Y(lava);
         if (ly < H + 20) {

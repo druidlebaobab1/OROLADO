@@ -1535,15 +1535,11 @@
   var SU_0 = 2.2; // salut + accroupis, puis la charge
   function suDur(res) { return +res.q === 1 ? 3.2 + hs(+res.s || 0, 21) * 2.6 : 7.5 + hs(+res.s || 0, 22) * 5; }
   function sumoSvg(col, belt, side) {
-    // gros lutteur de profil, regardant vers la droite (on le retourne pour l'Ouest)
+    // v3614 (propriétaire : « les humains de combat sont mal faits ») : vrais lutteurs dessinés, de profil vers la droite,
+    // pieds à y=0 (l'Ouest est retourné par le scale -1) ; mains tendues pour la poussée.
+    var src = side === 'w' ? 'su_b' : 'su_r', ar = side === 'w' ? 368 / 360 : 315 / 360, h = 92, w = h * ar;
     return '<g class="su-in"><ellipse cx="0" cy="2" rx="26" ry="5" fill="#000" opacity=".25"/>' +
-      '<path d="M-14 0V-20M10 0V-20" stroke="#E8B48C" stroke-width="13" stroke-linecap="round"/>' +
-      '<ellipse cx="-2" cy="-40" rx="27" ry="26" fill="#EFC29A"/><ellipse cx="6" cy="-38" rx="18" ry="20" fill="#F6D3B0" opacity=".7"/>' +
-      '<path d="M-28-26Q-2-16 24-26L22-16Q-2-8-26-16Z" fill="' + belt + '"/><path d="M-6-20v18M-1-20v18" stroke="' + belt + '" stroke-width="4"/>' +
-      '<path d="M14-52Q34-50 36-38" stroke="#EFC29A" stroke-width="11" stroke-linecap="round" fill="none"/>' +
-      '<circle cx="8" cy="-72" r="13" fill="#EFC29A"/><path d="M-5-74a13 13 0 0 1 26-2Q14-82 6-80Q-1-79-5-74Z" fill="#111827"/><ellipse cx="2" cy="-86" rx="5" ry="3.6" fill="#111827"/>' +
-      '<circle cx="15" cy="-73" r="1.3" fill="#111"/><path d="M14-66q3 1 5-1" stroke="#7C2D12" stroke-width="1.2" fill="none"/>' +
-      '<rect x="-6" y="-22" width="16" height="4" rx="2" fill="' + col + '" opacity=".9"/></g>';
+      '<image href="img/games/' + src + '.webp?v=3614" x="' + (-w * 0.4).toFixed(1) + '" y="' + (-h + 2) + '" width="' + w.toFixed(1) + '" height="' + h + '"/></g>';
   }
   live('sumolive', {
     lab: 'bout', bev: 'act', show: function (res) { return SU_0 + suDur(res) + 3.4; },
@@ -1570,7 +1566,7 @@
       h += '<path d="M60 30h240l-12 16H72z" fill="#7F1D1D"/><path d="M60 30h240" stroke="#FDE68A" stroke-width="2"/>' + // toit suspendu
         '<rect x="-300" y="150" width="960" height="400" fill="#2B1810"/><path d="M20 210L52 150H308L340 210Z" fill="#C79A63"/><ellipse cx="180" cy="168" rx="122" ry="22" fill="url(#suR' + uid + ')"/>' +
         '<ellipse cx="180" cy="168" rx="104" ry="18" fill="none" stroke="#F5F0E6" stroke-width="2.4"/><path d="M168 168h-6M192 168h6" stroke="#F5F0E6" stroke-width="2"/>' +
-        '<g class="su su-e">' + sumoSvg('#DC2626', '#1E3A8A') + '</g><g class="su su-w">' + sumoSvg('#2563EB', '#7C2D12') + '</g>' +
+        '<g class="su su-e">' + sumoSvg('#DC2626', '#1E3A8A', 'e') + '</g><g class="su su-w">' + sumoSvg('#2563EB', '#7C2D12', 'w') + '</g>' +
         '<g class="su-tags"><rect x="22" y="8" width="70" height="20" rx="10" fill="rgba(2,6,23,.75)"/><circle cx="34" cy="18" r="5" fill="#DC2626"/><text class="su-te" x="43" y="22" font-size="9" font-weight="800" fill="#fff"></text>' +
         '<rect x="268" y="8" width="70" height="20" rx="10" fill="rgba(2,6,23,.75)"/><circle cx="326" cy="18" r="5" fill="#2563EB"/><text class="su-tw" x="317" y="22" text-anchor="end" font-size="9" font-weight="800" fill="#fff"></text></g>';
       return h + banner(104);
