@@ -172,6 +172,17 @@ check('e-mail interne / absent → adresse anonyme', str_ends_with(maketou_mask_
 $cu = maketou_customer_from_user(['id' => 'u9', 'email' => 'awa.kone@yahoo.fr', 'phone' => '+2250701020304', 'displayName' => 'Awa Koné']);
 check('vrai nom gardé, e-mail ≠ vrai, numéro ≠ vrai mais même format', $cu['firstName'] === 'Awa' && $cu['email'] !== 'awa.kone@yahoo.fr' && str_ends_with($cu['email'], '@yahoo.fr') && $cu['phone'] !== '0701020304' && strlen($cu['phone']) === 10, json_encode($cu));
 
+echo "8) v3623 Ronde serveur : 15 $ payés, joueur parti, 9 autres « Recharger » ouverts après\n";
+$before = $bal($U2);
+$dep('oro_p15', $U2, 15, 'CARTP1515');
+for ($q = 0; $q < 9; $q++) $dep('oro_x' . $q, $U2, 15, 'CARTXXXX' . $q);
+$cart('CARTP1515', 'completed', (int) orolado_usd_to_fcfa(15));
+for ($round = 0; $round < 3 && $status('oro_p15') !== 'COMPLETED'; $round++) { @unlink(orolado_data_dir() . '/pay_sweep.next'); @unlink(orolado_data_dir() . '/pay_sweep_seen.json'); orolado_pay_sweep_after_response(); }
+check('le dépôt payé (le plus ancien des 10) est crédité sans le joueur', $status('oro_p15') === 'COMPLETED' && abs($bal($U2) - $before - 15) < 0.001, $status('oro_p15') . ' ' . ($bal($U2) - $before));
+@unlink(orolado_data_dir() . '/pay_sweep.next'); @unlink(orolado_data_dir() . '/pay_sweep_seen.json');
+orolado_pay_sweep_after_response();
+check('ronde suivante : pas de 2e crédit, les non payés restent en attente', abs($bal($U2) - $before - 15) < 0.001 && $status('oro_x0') === 'PENDING', (string) ($bal($U2) - $before));
+
 $b = json_decode((string) file_get_contents($bankFile), true);
 check('aucun crédit par l’ancien chemin sans clé (credit_real)', empty($b['oldCredit']), (string) ($b['oldCredit'] ?? 0));
 
