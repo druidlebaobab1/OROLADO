@@ -1769,6 +1769,7 @@ function admin_profile_payload(string $uid): array {
     ],
     'suspect' => (string) ((admin_suspects()[$uid]['reason'] ?? '') ?: admin_click_reason_for($uid, (string) ($p['email'] ?? ''))),
     'suspectLevel' => (string) (admin_suspects()[$uid]['level'] ?? 'red'),
+    'partner' => (function () use ($uid, $p) { if (!function_exists('orolado_pay_player_ids')) return false; $ldb = admin_local_db(); foreach (orolado_pay_player_ids((string) $uid, (string) ($p['email'] ?? '')) as $pid) if (!empty($ldb['users'][$pid]['partner'])) return true; return false; })(), // v3628
     'deposits' => $deps,
     'bonuses' => $bonuses,
     'withdrawals' => $wds,
@@ -2092,6 +2093,23 @@ if ($isAjax) {
     if ($amt <= 0 || $amt > 100000) admin_json(['ok' => false, 'reason' => 'Montant entre 1 et 100 000 $']);
     $adm = orolado_admin_emails()[0] ?? 'admin@orolado.com';
     admin_json(admin_credit_player('admin_master', $amt, 'Recharge test admin', ['email' => $adm], (string) ($me['email'] ?? '')));
+  }
+  if ($action === 'partner_set') { // v3628 : compte partenaire (affiliés) — retraits jamais payés, jamais dans la file
+    $on = !empty($req['on']);
+    $ids = function_exists('orolado_pay_player_ids') ? orolado_pay_player_ids((string) ($req['userId'] ?? ''), (string) ($req['email'] ?? '')) : [(string) ($req['userId'] ?? '')];
+    $done = with_db_lock(function ($box) use ($ids, $on) {
+      $n = 0;
+      foreach ($ids as $id) {
+        if ($id === '' || !isset($box->db['users'][$id]) || !is_array($box->db['users'][$id])) continue;
+        $u = $box->db['users'][$id];
+        if ($on) $u['partner'] = true; else unset($u['partner']);
+        $box->db['users'][$id] = $u;
+        $n++;
+      }
+      return ['ok' => $n > 0, 'n' => $n, 'skip_write' => $n === 0];
+    });
+    admin_bust_cache();
+    admin_json(['ok' => !empty($done['ok']), 'on' => $on, 'reason' => empty($done['ok']) ? 'Joueur introuvable' : '']);
   }
   if ($action === 'oxaRecheck') { // v3621 : revérifier les dépôts crypto d'un joueur chez OxaPay (sans double crédit)
     admin_json(orolado_pay_admin_recheck((string) ($req['userId'] ?? ''), (string) ($req['email'] ?? ''))); // v3623 : crypto + Mobile Money + carte
@@ -3993,7 +4011,8 @@ async function openUser(uid) {
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+
     '<button class="mini bad" id="btnDebit">Débiter</button> '+
     '<button class="mini bad" id="btnSuspend">Suspendre</button> '+
-    '<button class="mini" id="btnOxaRe">🔄 Revérifier paiements</button></p><div id="oxaReOut" style="font-size:12px;white-space:pre-wrap"></div>'+
+    '<button class="mini" id="btnOxaRe">🔄 Revérifier paiements</button> '+
+    '<button class="mini" id="btnPartner">'+(j.partner ? '🤝 Partenaire : OUI (retirer)' : '🤝 Faire un compte partenaire')+'</button></p><div id="oxaReOut" style="font-size:12px;white-space:pre-wrap"></div>'+
     // v2405 : seuls les dépôts VRAIMENT payés sous « argent payé » ; les pages de paiement ouvertes puis
     // abandonnées (en attente, jamais payées) à part, pour ne plus croire qu'un joueur a payé.
     tbl('Dépôts (argent payé)', (j.deposits||[]).filter(d => d.paid !== false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
@@ -4029,6 +4048,14 @@ async function openUser(uid) {
   const btnDebit = document.getElementById('btnDebit');
   if (btnCredit) btnCredit.onclick = () => go(1);
   if (btnDebit) btnDebit.onclick = () => go(-1);
+  const btnPartner = document.getElementById('btnPartner');
+  if (btnPartner) btnPartner.onclick = async () => {
+    const on = !j.partner;
+    if (!confirm(on ? 'Faire de ce compte un COMPTE PARTENAIRE (affilié) ?\n\n• Vous le rechargez avec « Créditer + » (argent de la maison).\n• Il joue à tout et peut faire des retraits SANS code : le montant quitte son solde et apparaît dans son historique « en traitement ».\n• Ces retraits ne sont JAMAIS payés et n\'arrivent pas dans vos retraits à payer.\n• Pas d\'envoi d\'argent vers un autre joueur, pas de commission d\'affiliation.' : 'Retirer le statut partenaire de ce compte ?')) return;
+    const r = await ajax({action:'partner_set', userId:u.id, email:u.email||'', on: on ? 1 : 0});
+    if (!r.ok) { alert(r.reason || 'Échec'); return; }
+    bustList(); openUser(u.id);
+  };
   const btnOxaRe = document.getElementById('btnOxaRe');
   if (btnOxaRe) btnOxaRe.onclick = async () => {
     if (btnOxaRe.disabled) return;

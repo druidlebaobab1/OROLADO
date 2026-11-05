@@ -571,6 +571,7 @@ if ($action === 'csPlay' || $action === 'csMulti' || $action === 'csTry' || $act
 }
 
 // v2689 — Envoyer de l'argent à un ami (transfer_lib.php) : seulement l'argent de ses VRAIS dépôts ; l'ami mise ×2.
+if (($action === 'xferSend') && function_exists('orolado_is_partner') && ($xMe = orolado_session_user($db, $token)) && orolado_is_partner($db, (string) ($xMe['id'] ?? ''))) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Envoi indisponible sur ce compte.']); exit; } // v3628
 if ($action === 'xferStatus' || $action === 'xferSend') {
   $me = session_user($db, $token);
   if (!$me || empty($me['id'])) {
@@ -2076,6 +2077,7 @@ if ($action === 'withdrawOtp') {
   }
   $me = $st['user'];
   $uid = (string) ($me['id'] ?? '');
+  if (function_exists('orolado_is_partner') && orolado_is_partner($db, $uid)) { echo json_encode(['ok' => true, 'server' => true, 'partner' => true, 'noOtp' => true]); exit; } // v3628 : compte partenaire, pas de code
   $email = strtolower(trim((string) ($me['email'] ?? $me['originalEmail'] ?? '')));
   if ($uid === '' || $email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Adresse e-mail invalide']);
@@ -2143,6 +2145,7 @@ if ($action === 'withdraw') {
   }
   $me = $st['user'];
   $uidOtp = (string) ($me['id'] ?? '');
+  if (function_exists('orolado_is_partner') && orolado_is_partner($db, $uidOtp)) { echo json_encode(orolado_partner_withdraw($db, $me, $req), JSON_UNESCAPED_UNICODE); exit; } // v3628
   $otpCode = preg_replace('/\D/', '', (string) ($req['otp'] ?? $req['otpCode'] ?? ''));
   if (strlen($otpCode) !== 6) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Code de confirmation requis', 'needOtp' => true]);

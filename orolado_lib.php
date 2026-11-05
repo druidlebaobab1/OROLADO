@@ -2500,6 +2500,50 @@ function orolado_is_house_account(string $uid, array $row = []): bool {
   return $em !== '' && ($em === 'admin@6diablo.com' || orolado_is_reserved_admin_email($em));
 }
 
+/**
+ * v3628 (propriétaire) — COMPTE PARTENAIRE pour les affiliés : l'admin active « partenaire » sur un compte et le recharge
+ * (argent de la maison, une fois). L'affilié joue à tout et peut faire le geste du retrait comme un vrai joueur (montant,
+ * moyen, numéro, sans code) : le montant quitte son solde et le retrait apparaît dans SON historique « en traitement ».
+ * Aucun argent ne part : ces retraits ne vont jamais dans la file des retraits à payer, ni sur Telegram, ni dans les
+ * chiffres. Pas d'envoi d'argent vers un autre joueur, pas de commission d'affiliation sur ce compte.
+ */
+function orolado_is_partner(array $db, string $uid): bool {
+  if ($uid === '') return false;
+  $u = $db['users'][$uid] ?? null;
+  return is_array($u) && !empty($u['partner']);
+}
+function orolado_partner_withdraw(array $db, array $me, array $req): array {
+  $uid = (string) ($me['id'] ?? '');
+  $amount = orolado_money($req['amount'] ?? 0);
+  $payId = orolado_balance_uuid($db, $uid);
+  $vault = preg_match(OROLADO_UUID_RE, $payId) ? supabase_admin_vault($payId) : null;
+  if (!$vault) return ['ok' => false, 'server' => true, 'reason' => 'Service momentanément indisponible, réessayez dans un instant.'];
+  $real = orolado_money($vault['real'] ?? 0);
+  $operator = preg_replace('/[^a-z0-9_]/', '', strtolower((string) ($req['operator'] ?? 'wave'))) ?: 'wave';
+  $min = function_exists('orolado_withdraw_min_for') ? orolado_withdraw_min_for($operator) : orolado_min_withdraw();
+  if ($amount < $min) return ['ok' => false, 'server' => true, 'reason' => 'Le retrait minimum est de $' . number_format($min, 2, '.', '') . '.'];
+  if ($amount > $real) return ['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant'];
+  $destination = trim((string) ($req['destination'] ?? $req['phone'] ?? ''));
+  if (strlen($destination) < 4) return ['ok' => false, 'server' => true, 'reason' => 'Indiquez le compte / adresse de réception'];
+  if (!orolado_rate_ok('partner_wd', $uid, 20, 3600)) return ['ok' => false, 'server' => true, 'reason' => 'Trop de demandes. Réessayez plus tard.'];
+  if (!supabase_debit_real($payId, $amount)) return ['ok' => false, 'server' => true, 'reason' => 'Solde insuffisant'];
+  $after = supabase_admin_vault($payId);
+  $newReal = $after ? orolado_money($after['real'] ?? 0) : orolado_money($real - $amount);
+  $wdId = uniqid('wd_', true);
+  $row = ['id' => $wdId, 'userId' => $uid, 'amount' => $amount, 'status' => 'pending', 'operator' => $operator,
+    'methodName' => trim((string) ($req['methodName'] ?? $operator)), 'destination' => $destination,
+    'beneficiary' => trim((string) ($req['beneficiary'] ?? '')), 'at' => date('c'), 'partner' => true];
+  with_db_lock(function ($box) use ($row, $uid, $newReal) {
+    if (!isset($box->db['partnerWd']) || !is_array($box->db['partnerWd'])) $box->db['partnerWd'] = [];
+    array_unshift($box->db['partnerWd'], $row);
+    $box->db['partnerWd'] = array_slice($box->db['partnerWd'], 0, 2000);
+    if (isset($box->db['vault'][$uid]) && is_array($box->db['vault'][$uid])) $box->db['vault'][$uid]['real'] = $newReal;
+    return ['ok' => true];
+  });
+  $v = $after ?: ['demo' => (float) ($vault['demo'] ?? 0), 'real' => $newReal];
+  return ['ok' => true, 'server' => true, 'suspect' => false, 'vault' => ['demo' => (float) ($v['demo'] ?? 0), 'real' => $newReal], 'id' => $wdId, 'amount' => $amount];
+}
+
 function orolado_public_user(array $user): array {
   unset($user['passwordHash'], $user['password'], $user['is_admin'], $user['pwTag']);
   return $user;
