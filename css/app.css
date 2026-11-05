@@ -14465,3 +14465,11 @@ html body #casinoModal .lz-game .lz-rc.h .lz-rc-tex{background:linear-gradient(r
 html body #casinoModal .lz-game .lz-rc:not(.h) .lz-rc-tex{background:linear-gradient(rgba(10,8,30,.25),rgba(10,8,30,.25)),url("/img/games/tx_asphalt.webp?v=3613") 0 0/48px 48px repeat}
 html body #casinoModal[data-g="pianokeys"] .cg-stage{background:url("/img/games/wb_pianokeys.webp?v=3613") center/cover no-repeat,#0B0906!important}
 html body #casinoModal[data-g="pianokeys"] .cg-stage > canvas.s4-bg{opacity:.3}
+/* v3616 (propriétaire : « les jeux Live / Casino / Crash doivent prendre tout l'écran, plus larges, un peu plus haut ») :
+   l'écran de jeu s'étend presque bord à bord (4 px d'air, coins arrondis gardés) et remonte légèrement. */
+@media (orientation:portrait),(min-height:501px){
+html body #casinoModal.in-game:not([data-sec="skill"]) .cs-game > .cg-stage{margin-left:-10px!important;margin-right:-10px!important;width:calc(100% + 20px)!important;max-width:none!important}
+html body #casinoModal.in-game:not([data-sec="skill"]) .cs-game{row-gap:5px!important}
+html body #casinoModal.in-game:not([data-sec="skill"]) .cs-game > .cs-gname{min-height:0!important;height:30px!important}
+html body #casinoModal.in-game .cg-live5 .l5-stage{padding:4px!important}
+}

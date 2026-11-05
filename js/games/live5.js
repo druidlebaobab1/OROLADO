@@ -1589,16 +1589,16 @@
       else if (e < SU_0) { gap = 66 - 24 * eo(e / SU_0); crouch = Math.sin(Math.min(1, e / SU_0) * Math.PI) * .8; }
       else if (e < end) { // poussées : le centre du combat va et vient (graine), puis glisse vers le perdant
         var u = (e - SU_0) / D; gap = 40 + Math.sin(e * 9) * 1.5;
-        push = Math.sin(e * 1.7 + hs(s, 31) * 6) * 46 * (1 - u) + Math.sin(e * 4.1 + hs(s, 32) * 6) * 10;
-        push += (win === 0 ? 1 : -1) * 70 * eio(Math.max(0, (u - .6) / .4));
-      } else { gap = 40; push = (win === 0 ? 1 : -1) * (thr ? 34 : 78); fallK = Math.min(1, (e - end) * 2.4); }
+        push = Math.sin(e * 1.7 + hs(s, 31) * 6) * 34 * (1 - u) + Math.sin(e * 4.1 + hs(s, 32) * 6) * 10;
+        push += (win === 0 ? 1 : -1) * 46 * eio(Math.max(0, (u - .6) / .4)); // v3616 : reste dans la scène
+      } else { gap = 40; push = (win === 0 ? 1 : -1) * (thr ? 26 : 50); fallK = Math.min(1, (e - end) * 2.4); }
       mid += push;
       for (var i = 0; i < 2; i++) {
         var b = c.su[i], east = i === 0, x = east ? mid - gap : mid + gap, y = 168 + crouch * 6, rot = 0, lean = res && e >= SU_0 && e < end ? 14 : crouch * 18;
         var loser = res && e >= end && ((win === 0 && !east) || (win === 1 && east));
-        if (loser) { if (thr) { rot = (east ? -1 : 1) * 80 * eo(fallK); y += 10 * fallK; } else { x += (east ? -1 : 1) * 30 * eo(fallK); y += 14 * fallK; rot = (east ? -1 : 1) * 25 * fallK; } }
+        if (loser) { if (thr) { rot = (east ? -1 : 1) * 80 * eo(fallK); y += 10 * fallK; } else { x += (east ? -1 : 1) * 14 * eo(fallK); y += 10 * fallK; rot = (east ? -1 : 1) * 25 * fallK; } }
         if (res && e >= end + .6 && !loser) lean = -6;
-        sa(b.g, 'transform', 'translate(' + x.toFixed(1) + ' ' + (y + 8).toFixed(1) + ') scale(' + (east ? 1.3 : -1.3) + ' 1.3)');
+        sa(b.g, 'transform', 'translate(' + x.toFixed(1) + ' ' + (y + 8).toFixed(1) + ') scale(' + (east ? 1.15 : -1.15) + ' 1.15)');
         sa(b.inn, 'transform', 'rotate(' + (lean + rot * (east ? 1 : -1)).toFixed(1) + ' 0 0) translate(0 ' + (crouch * 8).toFixed(1) + ')');
       }
       if (!res) { if (!bnCd(c, R, t, e)) bnSet(c, ''); return; }
