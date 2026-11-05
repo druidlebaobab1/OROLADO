@@ -4039,7 +4039,24 @@ async function openUser(uid) {
     btnOxaRe.disabled = false; btnOxaRe.textContent = '🔄 Revérifier paiements';
     if (!r.ok) { out.textContent = r.reason || 'Échec'; return; }
     const lines = (r.rows||[]).map(x => '• '+x.depot+' ('+x.statut+', '+x.montant+' $) — '+x.oxapay+(x.envois?', '+x.envois+' envoi(s), reçu '+x.recu+' $':'')+' → '+x.resultat);
-    out.textContent = (lines.length ? lines.join('\n') : 'Aucun dépôt à revérifier sur 7 jours.') + '\nCrédité maintenant : '+(r.credited||0)+' $';
+    const pend = (r.rows||[]).filter(x => /PENDING|EN ATTENTE|UNFINISHED/.test(x.statut) && !/crédité/.test(x.resultat));
+    const unk = (r.unknown||[]).map(x => '• '+x.qui+' '+x.montant+' $ — '+(x.email||'sans e-mail')+' — '+x.date+' — réf '+x.ref);
+    out.textContent = (lines.length ? lines.join('\n') : 'Aucun dépôt à revérifier sur 7 jours.') + '\nCrédité maintenant : '+(r.credited||0)+' $'
+      + (unk.length ? '\n\n⚠️ Paiements REÇUS chez OxaPay / Flutterwave (7 j) qui ne correspondent à AUCUN dépôt du site :\n'+unk.join('\n') : '\n\nAucun paiement reçu sans dépôt correspondant (7 j).');
+    // v3625 : valider à la main un dépôt en attente COMME UN VRAI DÉPÔT (pas un bonus), après avoir vu la preuve.
+    if (pend.length) {
+      const box = document.createElement('div'); box.style.marginTop = '8px';
+      box.innerHTML = '<b>Valider à la main (après avoir vu la preuve de paiement) :</b><br>' + pend.map(x => '<button class="mini ok" data-dep="'+esc(x.depot)+'" style="margin:3px 0">✅ Valider comme dépôt '+esc(x.montant)+' $ — '+esc(x.depot)+'</button>').join('<br>');
+      out.appendChild(box);
+      box.querySelectorAll('button[data-dep]').forEach(b => b.onclick = async () => {
+        const id = b.getAttribute('data-dep');
+        if (!confirm('Créditer ce dépôt comme VRAI dépôt ('+id+') ? À faire seulement si vous avez vu la preuve du paiement.')) return;
+        b.disabled = true;
+        const rr = await ajax({action:'resolve_dep', id, act:'approve'});
+        b.textContent = rr.ok ? '✔ Validé : '+id : '✖ Échec : '+(rr.reason || (rr.detail && rr.detail.reason) || '');
+        if (rr.ok) { bustList(); loadBadges(); }
+      });
+    }
     if (r.credited > 0) { bustList(); loadBadges(); }
   };
   document.getElementById('btnSuspend').onclick = async () => {

@@ -5019,12 +5019,94 @@ function orolado_pay_sweep_after_response(): void {
       $seen['h:' . $u] = $now; $k++;
       orolado_oxapay_history_extras(load_db(orolado_data_file()), (string) $u, 2, 2);
     }
+    // v3625 : rapprochement depuis les listes OxaPay / Flutterwave (paiements payés 48 h), toutes les 10 min.
+    if (microtime(true) - $t0 < 10 && $now - (int) ($seen['rc'] ?? 0) >= 600) { $seen['rc'] = $now; orolado_pay_reconcile(2); }
     foreach ($seen as $kk => $tt) if ((int) $tt < $now - 3 * 86400) unset($seen[$kk]);
     @file_put_contents($seenF, json_encode($seen), LOCK_EX);
   } catch (Throwable $e) {
     // jamais bloquant
   }
   flock($lk, LOCK_UN); fclose($lk);
+}
+
+/**
+ * v3625 (propriétaire : « ça n'a pas marché, vérifie en profondeur ») : RAPPROCHEMENT depuis le côté des prestataires.
+ * Au lieu de partir de nos dépôts, on demande à OxaPay la liste de TOUS ses paiements « Paid » et à Flutterwave
+ * toutes ses transactions « successful » (N jours), et on rattache chacun à notre dépôt (numéro de commande / tx_ref) :
+ *  - dépôt pas encore crédité → crédité (mêmes fonctions qu'avant : jamais deux fois) ;
+ *  - dépôt déjà crédité → envois en plus éventuels crédités (total reçu − déjà crédité) ;
+ *  - paiement qui ne correspond à AUCUN de nos dépôts → listé pour l'admin (montant, e-mail, date), jamais crédité seul.
+ * $ids non vide : seulement les paiements de ce joueur (+ les paiements inconnus portant son e-mail).
+ */
+function orolado_pay_reconcile(int $days = 7, array $ids = [], string $email = ''): array {
+  $since = time() - $days * 86400; $rows = []; $credited = 0.0; $unknown = [];
+  $email = strtolower(trim($email));
+  $mine = static function (?array $d) use ($ids): bool { return !$ids || ($d && in_array((string) ($d['userId'] ?? ''), $ids, true)); };
+  if (orolado_oxapay_key() !== '') {
+    for ($page = 1; $page <= 5; $page++) {
+      $res = orolado_oxapay_http('GET', '/v1/payment?' . http_build_query(['status' => 'Paid', 'from_date' => $since, 'size' => 200, 'page' => $page, 'sort_by' => 'create_date', 'sort_type' => 'desc']));
+      $list = is_array($res) ? ($res['data']['list'] ?? $res['list'] ?? []) : [];
+      if (!is_array($list) || !$list) break;
+      foreach ($list as $it) {
+        if (!is_array($it)) continue;
+        $oid = (string) ($it['order_id'] ?? ''); $tid = (string) ($it['track_id'] ?? '');
+        $addr = '';
+        foreach ((array) ($it['txs'] ?? []) as $tx) if (is_array($tx) && ($tx['address'] ?? '') !== '') { $addr = (string) $tx['address']; break; }
+        $d = orolado_oxapay_find_dep($oid, $tid, $addr);
+        $recv = orolado_money(orolado_oxapay_received($it)['usd'] ?? 0);
+        if (!$d) {
+          $em = strtolower((string) ($it['email'] ?? ''));
+          $unknown[] = ['qui' => 'OxaPay', 'ref' => $oid !== '' ? $oid : $tid, 'montant' => $recv, 'email' => $em, 'date' => date('d/m H:i', (int) ($it['date'] ?? 0))];
+          continue;
+        }
+        if (!$mine($d)) continue;
+        $st = strtoupper((string) ($d['status'] ?? ''));
+        if ($st === 'COMPLETED' || $st === 'PAID') {
+          $x = orolado_oxapay_extra_payment($it, $d);
+          $ok = !empty($x['ok']) && empty($x['duplicate']);
+          $res2 = $ok ? 'envoi en plus crédité +' . orolado_money($x['amount'] ?? 0) . ' $' : 'déjà crédité';
+          if ($ok) $credited += (float) ($x['amount'] ?? 0);
+        } else {
+          orolado_oxapay_apply_payload($it + ['track_id' => $tid], false);
+          $now = orolado_pay_dep_state((string) ($d['id'] ?? ''));
+          $res2 = ($now['status'] === 'COMPLETED' || $now['status'] === 'PAID') ? 'crédité maintenant +' . $now['amount'] . ' $' : 'payé chez OxaPay mais pas crédité (à voir)';
+          if ($now['status'] === 'COMPLETED' || $now['status'] === 'PAID') $credited += $now['amount'];
+        }
+        $rows[] = ['qui' => 'OxaPay', 'ref' => (string) ($d['id'] ?? ''), 'montant' => $recv, 'resultat' => $res2];
+      }
+      $last = (int) ($res['meta']['last_page'] ?? $res['data']['meta']['last_page'] ?? 1);
+      if ($page >= $last) break;
+    }
+  }
+  if (function_exists('orolado_flw_configured') && orolado_flw_configured()) {
+    for ($page = 1; $page <= 5; $page++) {
+      $res = orolado_flw_http('GET', '/transactions?' . http_build_query(['from' => date('Y-m-d', $since), 'to' => date('Y-m-d', time() + 86400), 'status' => 'successful', 'page' => $page]));
+      $list = is_array($res) ? ($res['data'] ?? []) : [];
+      if (!is_array($list) || !$list) break;
+      foreach ($list as $t) {
+        if (!is_array($t) || strtolower((string) ($t['status'] ?? '')) !== 'successful') continue;
+        $ref = (string) ($t['tx_ref'] ?? '');
+        $d = $ref !== '' ? orolado_oxapay_find_dep($ref, '') : null;
+        $usd = orolado_money(orolado_flutterwave_to_usd(strtoupper((string) ($t['currency'] ?? '')), (float) ($t['amount'] ?? 0)));
+        if (!$d) {
+          $em = strtolower((string) ($t['customer']['email'] ?? ''));
+          $unknown[] = ['qui' => 'Flutterwave', 'ref' => $ref, 'montant' => $usd, 'email' => $em, 'date' => (string) ($t['created_at'] ?? '')];
+          continue;
+        }
+        if (!$mine($d)) continue;
+        $st = strtoupper((string) ($d['status'] ?? ''));
+        if ($st === 'COMPLETED' || $st === 'PAID') { $rows[] = ['qui' => 'Flutterwave', 'ref' => $ref, 'montant' => $usd, 'resultat' => 'déjà crédité']; continue; }
+        orolado_flutterwave_credit($ref, (string) ($t['id'] ?? ''), (float) $usd);
+        $now = orolado_pay_dep_state((string) ($d['id'] ?? ''));
+        $ok = $now['status'] === 'COMPLETED' || $now['status'] === 'PAID';
+        if ($ok) $credited += $now['amount'];
+        $rows[] = ['qui' => 'Flutterwave', 'ref' => $ref, 'montant' => $usd, 'resultat' => $ok ? 'crédité maintenant +' . $now['amount'] . ' $' : 'payé chez Flutterwave mais pas crédité (à voir)'];
+      }
+      $last = (int) ($res['meta']['page_info']['total_pages'] ?? 1);
+      if ($page >= $last) break;
+    }
+  }
+  return ['rows' => $rows, 'unknown' => array_slice($unknown, 0, 15), 'credited' => orolado_money($credited)];
 }
 
 /** Bouton admin « Revérifier paiements » : crypto (OxaPay, historique compris) + Mobile Money / carte, 7 jours. */
@@ -5056,6 +5138,11 @@ function orolado_pay_admin_recheck(string $uid, string $email = ''): array {
       if (!empty($c['ok'])) { $rows = array_merge($rows, $c['rows']); $credited += (float) $c['credited']; }
     }
   }
+  // v3625 : d'abord le rapprochement depuis OxaPay / Flutterwave (tous les paiements payés, 7 jours).
+  $rc = orolado_pay_reconcile(7, $ids, $email);
+  foreach ($rc['rows'] as $r) $rows[] = ['depot' => $r['ref'], 'suivi' => $r['qui'], 'statut' => 'PAYÉ chez ' . $r['qui'], 'montant' => $r['montant'], 'oxapay' => 'liste ' . $r['qui'], 'envois' => 0, 'recu' => 0, 'resultat' => $r['resultat']];
+  $credited += (float) $rc['credited'];
+  $unknownRows = $rc['unknown'];
   $cut = time() - 7 * 86400; $n = 0;
   foreach (array_reverse(load_db(orolado_data_file())['deposits'] ?? []) as $d) {
     if (!is_array($d) || !in_array((string) ($d['userId'] ?? ''), $ids, true)) continue;
@@ -5071,7 +5158,7 @@ function orolado_pay_admin_recheck(string $uid, string $email = ''): array {
       'oxapay' => $r['r'], 'envois' => 0, 'recu' => 0, 'resultat' => $ok ? 'crédité +' . $stt['amount'] . ' $' : 'pas crédité'];
     if (++$n >= 12) break;
   }
-  return ['ok' => true, 'rows' => $rows, 'credited' => orolado_money($credited)];
+  return ['ok' => true, 'rows' => $rows, 'unknown' => $unknownRows ?? [], 'credited' => orolado_money($credited)];
 }
 
 function maketou_handle_webhook(): void {
@@ -7131,7 +7218,7 @@ function orolado_oxapay_admin_recheck(string $uid): array {
       if ($gain > 0) $credited += $gain;
     } else $row['resultat'] = 'OxaPay ne répond pas, réessayez';
     $rows[] = $row;
-    if (count($rows) >= 8) break;
+    if (count($rows) >= 20) break; // v3625 : 20 au lieu de 8
   }
   // Envois passés sous un AUTRE numéro de suivi (journal 48 h), sans limite de « déjà vérifié ».
   $knownTracks = [];

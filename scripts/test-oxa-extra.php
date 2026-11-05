@@ -216,5 +216,16 @@ check('dépôt trouvé et 2e envoi crédité', ($ri['credited'] ?? 0) > 70 && co
 $ri2 = orolado_pay_admin_recheck($UU, 'ib@test.com');
 check('re-clic : 0', ($ri2['credited'] ?? 1) == 0, json_encode($ri2['credited'] ?? null));
 
+echo "15) v3625 Rapprochement depuis la liste OxaPay (paiements « Paid »)\n";
+$fresh([$dep('oQ', $A, 'TQ', 'ADDRQ', 'UNFINISHED', 15)]);
+$OXA['TQ'] = $pay('TQ', 'oQ', 'ADDRQ', [$tx('hQ1', 80.2)]);
+$HIST[''] = [$pay('TQ', 'oQ', 'ADDRQ', [$tx('hQ1', 80.2) + ['address' => 'ADDRQ']]), ['track_id' => 'TZZ', 'order_id' => 'inconnu_1', 'status' => 'Paid', 'email' => 'x@y.com', 'date' => time(), 'txs' => [$tx('hZ', 12) + ['address' => 'ADDRZ']]]];
+$rq = orolado_pay_admin_recheck($A);
+check('facture payée (même ancienne / non confirmée) créditée du montant reçu', abs($money($A) - 80.2) < 0.02, json_encode($rq['credited'] ?? null) . ' / ' . $money($A));
+check('paiement inconnu montré à l\'admin, jamais crédité', count($rq['unknown'] ?? []) === 1 && $money($V) == 0, json_encode($rq['unknown'] ?? [], JSON_UNESCAPED_UNICODE));
+$rq2 = orolado_pay_admin_recheck($A);
+check('re-clic : 0', ($rq2['credited'] ?? 1) == 0 && abs($money($A) - 80.2) < 0.02, json_encode($rq2['credited'] ?? null));
+$HIST[''] = [];
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
