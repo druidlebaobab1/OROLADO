@@ -50,6 +50,9 @@ check('noté à part (partnerWd)', count((array) ($db['partnerWd'] ?? [])) === 1
 $h = orolado_finance_history($db, $P, false, 0, 50);
 $rows = $h['rows'] ?? $h['items'] ?? $h;
 check('visible dans SON historique (retrait)', str_contains(json_encode($rows), '"withdraw"') && str_contains(json_encode($rows), '-120'), substr(json_encode($rows), 0, 200));
+$db2 = $db; $db2['deposits'][] = ['userId' => $P, 'status' => 'COMPLETED', 'operator' => 'admin', 'id' => 'adm_t1', 'amount' => 500, 'at' => date('c')];
+$hb = json_encode(orolado_finance_history($db2, $P, false, 0, 50));
+check('recharge admin (Bonus) cachée dans SON historique', !str_contains($hb, '"bonus"') && !str_contains($hb, 'adm_t1'), substr($hb, 0, 200));
 $r2 = orolado_partner_withdraw($db, $db['users'][$P], ['amount' => 1000, 'operator' => 'wave', 'destination' => '0700000000']);
 check('plus que le solde → refusé', empty($r2['ok']) && abs($GLOBALS['BANK'][$P] - 380) < 0.01, json_encode($r2));
 echo "2) Pas de commission d'affiliation sur un compte partenaire\n";
