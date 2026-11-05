@@ -133,6 +133,7 @@ function orolado_aff_rev_bet_margin(array $db, array $ids, int $cutTs): float {
  * l'argent non confirmé. Peut être négatif (ami qui gagne) → report négatif au niveau de l'affilié.
  */
 function orolado_aff_rev_friend(array $db, string $friendUid): array {
+  if (function_exists('orolado_is_partner') && orolado_is_partner($db, $friendUid)) return ['uid' => $friendUid, 'margin' => 0.0, 'settledIn' => 0.0, 'deposits' => 0.0, 'withdrawals' => 0.0, 'ngr' => 0.0]; // v3628 : compte partenaire = pas de commission
   $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $friendUid) : [$friendUid];
   if (!$ids) $ids = [$friendUid];
   $cutTs = time() - orolado_aff_rev_hold_h() * 3600;

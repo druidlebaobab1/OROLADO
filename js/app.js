@@ -9750,7 +9750,7 @@
       }
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
-      var free = Number(gate.free != null ? gate.free : real) || 0;
+      var free = u && u.partner ? real : (Number(gate.free != null ? gate.free : real) || 0); // v3628 : compte partenaire
       if (amount > free + 0.009) { toast(gate.msg, 'err', 5000); return; }
       if (!method) { toast(t('wdMethod'), 'err'); return; }
       if (amount < minWd) { toast(formatWdMinErr(minWd), 'err'); return; }
@@ -9792,6 +9792,7 @@
       var otp = String(($('wdOtpCode') && $('wdOtpCode').value) || '').replace(/\D/g, '').slice(0, 6);
       var createdId = '';
       if (D6.Api && D6.Api.token()) {
+        if (u && u.partner) otp = '000000'; // v3628 : compte partenaire — pas de code (le serveur le reconnaît lui-même)
         if (otp.length !== 6) {
           if (wdOtpPending) {
             showWdOtpField();

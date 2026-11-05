@@ -122,6 +122,13 @@ function orolado_finance_history(array $db, string $uid, bool $isAdmin, int $off
     ]);
   }
 
+  // v3628 : retraits d'un compte partenaire (jamais payés, jamais dans la file admin) — dans SON historique, « en traitement ».
+  foreach (($db['partnerWd'] ?? []) as $w) {
+    if (!is_array($w) || !in_array((string) ($w['userId'] ?? ''), $ids, true)) continue;
+    $push(['at' => (string) ($w['at'] ?? ''), 'ref' => (string) ($w['id'] ?? ''), 'amount' => -abs(orolado_money($w['amount'] ?? 0)), 'kind' => 'withdraw',
+      'status' => orolado_history_wd_status('pending'), 'gateway' => (string) ($w['operator'] ?? '')]);
+  }
+
   // v2414 — gains « Inviter un ami » de celui qui invite (argent libre, sans ligne de dépôt) : affichage
   // seulement, comme un bonus OROLADO. Pas pour l'admin (en test, sa part va sur sa démo).
   if (!$isAdmin && function_exists('orolado_aff_history_rows')) {
