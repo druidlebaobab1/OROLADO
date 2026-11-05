@@ -204,5 +204,17 @@ check('ronde trop tôt : ne fait rien (bon marché)', abs($money($A) - 15) < 0.0
 $ar = orolado_pay_admin_recheck($A);
 check('bouton admin paiements : rien de plus', abs($money($A) - 15) < 0.02 && ($ar['credited'] ?? 1) == 0, json_encode($ar['credited'] ?? null));
 
+echo "14) v3624 Admin avec le numéro Supabase, dépôt sous le numéro interne (cas Iberto)\n";
+$fresh([]);
+$UL = 'u9acc179a64721746'; $UU = 'cccccccc-0000-0000-0000-00000000000c';
+with_db_lock(function ($box) use ($UL, $UU) { $box->db['users'][$UL] = ['id' => $UL, 'email' => 'ib@test.com', 'role' => 'user', 'sbId' => $UU]; $box->db['vault'][$UL] = ['demo' => 0, 'real' => 0];
+  $box->db['deposits'][] = ['id' => 'oro_' . $UL . '_aa', 'ref' => 'oro_' . $UL . '_aa', 'userId' => $UL, 'operator' => 'oxapay', 'network' => 'TRC20', 'coin' => 'usdt_trc20', 'status' => 'COMPLETED', 'amount' => 104.85, 'currency' => 'USD', 'trackId' => 'TIB', 'address' => 'ADDRIB', 'txid' => 'hIB1', 'at' => date('c')]; return ['ok' => true]; });
+$OXA['TIB'] = $pay('TIB', 'oro_' . $UL . '_aa', 'ADDRIB', [$tx('hIB1', 103.72)]);
+$HIST['ADDRIB'] = [['track_id' => 'TIB', 'txs' => [$tx('hIB1', 103.72) + ['address' => 'ADDRIB']]], ['track_id' => 'TIB2', 'txs' => [$tx('hIB2', 79.2) + ['address' => 'ADDRIB']]]];
+$ri = orolado_pay_admin_recheck($UU, 'ib@test.com');
+check('dépôt trouvé et 2e envoi crédité', ($ri['credited'] ?? 0) > 70 && count($ri['rows'] ?? []) > 0, json_encode($ri, JSON_UNESCAPED_UNICODE));
+$ri2 = orolado_pay_admin_recheck($UU, 'ib@test.com');
+check('re-clic : 0', ($ri2['credited'] ?? 1) == 0, json_encode($ri2['credited'] ?? null));
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

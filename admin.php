@@ -2094,7 +2094,7 @@ if ($isAjax) {
     admin_json(admin_credit_player('admin_master', $amt, 'Recharge test admin', ['email' => $adm], (string) ($me['email'] ?? '')));
   }
   if ($action === 'oxaRecheck') { // v3621 : revérifier les dépôts crypto d'un joueur chez OxaPay (sans double crédit)
-    admin_json(orolado_pay_admin_recheck((string) ($req['userId'] ?? ''))); // v3623 : crypto + Mobile Money + carte
+    admin_json(orolado_pay_admin_recheck((string) ($req['userId'] ?? ''), (string) ($req['email'] ?? ''))); // v3623 : crypto + Mobile Money + carte
   }
   if ($action === 'adjust') {
     admin_json(admin_credit_player(
@@ -4035,7 +4035,7 @@ async function openUser(uid) {
     btnOxaRe.disabled = true; btnOxaRe.textContent = '⏳ Vérification…';
     const out = document.getElementById('oxaReOut');
     let r;
-    try { r = await ajax({action:'oxaRecheck', userId:u.id}); } catch (e) { r = {ok:false, reason:'Réseau lent, réessayez'}; }
+    try { r = await ajax({action:'oxaRecheck', userId:u.id, email:u.email||''}); } catch (e) { r = {ok:false, reason:'Réseau lent, réessayez'}; }
     btnOxaRe.disabled = false; btnOxaRe.textContent = '🔄 Revérifier paiements';
     if (!r.ok) { out.textContent = r.reason || 'Échec'; return; }
     const lines = (r.rows||[]).map(x => '• '+x.depot+' ('+x.statut+', '+x.montant+' $) — '+x.oxapay+(x.envois?', '+x.envois+' envoi(s), reçu '+x.recu+' $':'')+' → '+x.resultat);
