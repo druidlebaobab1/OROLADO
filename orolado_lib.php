@@ -4994,7 +4994,7 @@ function orolado_pay_sweep_after_response(): void {
       $st = strtoupper((string) ($d['status'] ?? ''));
       $op = strtolower((string) ($d['operator'] ?? ''));
       if ($op === 'oxapay' && ($st === 'COMPLETED' || $st === 'PAID') && (string) ($d['parentId'] ?? '') === '' && ($u = (string) ($d['userId'] ?? '')) !== '') $cryptoUsers[$u] = true;
-      if ($st !== 'PENDING' || in_array($op, ['usdt', 'admin', 'refund', 'card'], true)) continue;
+      if (!in_array($st, ['PENDING', 'UNFINISHED'], true) || in_array($op, ['usdt', 'admin', 'refund', 'card'], true)) continue; // v3624 : UNFINISHED = crypto pas encore confirmée
       if ((string) ($d['id'] ?? '') === '') continue;
       $cand[] = $d;
     }
@@ -5028,18 +5028,38 @@ function orolado_pay_sweep_after_response(): void {
 }
 
 /** Bouton admin « Revérifier paiements » : crypto (OxaPay, historique compris) + Mobile Money / carte, 7 jours. */
-function orolado_pay_admin_recheck(string $uid): array {
+/**
+ * v3624 : l'admin désigne le joueur par son numéro Supabase, les dépôts du site par son numéro interne (u…) : on
+ * cherche sous TOUS ses numéros (interne, Supabase, e-mail). Avant : « Aucun dépôt crypto sur 7 jours » à tort.
+ */
+function orolado_pay_player_ids(string $id, string $email = ''): array {
+  $db = load_db(orolado_data_file());
+  $set = [];
+  if ($id !== '') $set[$id] = 1;
+  $email = strtolower(trim($email));
+  foreach (($db['users'] ?? []) as $k => $u) {
+    if (!is_array($u)) continue;
+    $c = array_values(array_filter([(string) $k, (string) ($u['id'] ?? ''), (string) ($u['sbId'] ?? ''), (string) ($u['publicId'] ?? '')], static fn($v) => $v !== ''));
+    if (($id !== '' && in_array($id, $c, true)) || ($email !== '' && strtolower(trim((string) ($u['email'] ?? ''))) === $email)) foreach ($c as $v) $set[$v] = 1;
+  }
+  return array_keys($set);
+}
+
+function orolado_pay_admin_recheck(string $uid, string $email = ''): array {
   $uid = trim($uid);
-  if ($uid === '') return ['ok' => false, 'reason' => 'Joueur introuvable'];
+  if ($uid === '' && trim($email) === '') return ['ok' => false, 'reason' => 'Joueur introuvable'];
+  $ids = orolado_pay_player_ids($uid, $email);
   $rows = []; $credited = 0.0;
   if (orolado_oxapay_key() !== '') {
-    $c = orolado_oxapay_admin_recheck($uid);
-    if (!empty($c['ok'])) { $rows = $c['rows']; $credited += (float) $c['credited']; }
+    foreach ($ids as $one) {
+      $c = orolado_oxapay_admin_recheck($one);
+      if (!empty($c['ok'])) { $rows = array_merge($rows, $c['rows']); $credited += (float) $c['credited']; }
+    }
   }
   $cut = time() - 7 * 86400; $n = 0;
   foreach (array_reverse(load_db(orolado_data_file())['deposits'] ?? []) as $d) {
-    if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
-    if (strtoupper((string) ($d['status'] ?? '')) !== 'PENDING') continue;
+    if (!is_array($d) || !in_array((string) ($d['userId'] ?? ''), $ids, true)) continue;
+    if (!in_array(strtoupper((string) ($d['status'] ?? '')), ['PENDING', 'UNFINISHED'], true)) continue;
     if (strtolower((string) ($d['operator'] ?? '')) === 'oxapay') continue;
     if ((strtotime((string) ($d['at'] ?? '')) ?: 0) < $cut) continue;
     $id = (string) ($d['id'] ?? '');
