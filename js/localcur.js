@@ -112,8 +112,8 @@
     var u = null;
     try { u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null; } catch (e) { u = null; }
     var sim = ''; try { sim = sessionStorage.getItem('oro_sim_cur') || ''; } catch (eS) { sim = ''; }
-    // lien de test ?simcur=… (affichage seulement) : visiteur ou admin
-    if (sim && CUR[sim] && (!u || u.guest || u.role === 'admin')) return sim;
+    // lien ?simcur=… (affichage seulement) : visiteur, admin OU tout compte connecté (v3631 : comptes affiliés, propriétaire)
+    if (sim && CUR[sim]) return sim;
     if (!u || u.guest) return byPlace();
     // compte admin : JAMAIS automatique (propriétaire)
     if (u.role === 'admin') return '';
