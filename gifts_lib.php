@@ -20,6 +20,7 @@ declare(strict_types=1);
  */
 
 const OROLADO_WHEEL_MIN_DEPOSIT = 10.0;
+const OROLADO_WHEEL_TOLERANCE = 0.5;
 const OROLADO_JAUGE_GOAL = 1000.0;
 const OROLADO_JAUGE_GIFT = 30.0;
 // [gain $, chances sur 10 000]
@@ -148,7 +149,9 @@ function orolado_gifts_status(array $db, array $user, bool $spin = false, int $n
     $deps = orolado_gifts_deposits($db, $uid, $st, $tester);
     $earned = 0; $sum = 0.0;
     // v2693 (propriétaire) : 1 tour par TRANCHE de 10 $ déposés (100 $ = 10 tours, 1 000 $ = 100 tours)
-    foreach ($deps as $d) { $earned += (int) floor(($d['amount'] + 0.001) / OROLADO_WHEEL_MIN_DEPOSIT); $sum += $d['amount']; }
+    // v3635 (propriétaire, joueur « déposé 10 $, pas de tour ») : un dépôt de 10 $ arrive parfois à 9,90 $ (frais du réseau
+    // crypto, arrondi du taux) → 0 tour. Tolérance 0,50 $ par dépôt : 9,50 $ et plus = 1 tour, 19,50 $ = 2 tours…
+    foreach ($deps as $d) { $earned += (int) floor(($d['amount'] + OROLADO_WHEEL_TOLERANCE + 0.001) / OROLADO_WHEEL_MIN_DEPOSIT); $sum += $d['amount']; }
     $used = count((array) ($st['spins'] ?? []));
     $todayDone = false;
     foreach ((array) ($st['spins'] ?? []) as $s) if (($s['day'] ?? '') === $day) $todayDone = true;

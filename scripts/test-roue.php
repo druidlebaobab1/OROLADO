@@ -133,5 +133,13 @@ for ($d = 0; $d < 40; $d++) { $r = orolado_gifts_status(load_db(), $lu, true, $n
 check('40 tours joués, 40 gains (aucun zéro)', $nz === 40, $nz . ' gains, ' . $won . ' $');
 check('total versé = total gagné (jamais en double)', abs(paid($credits, $L, 'whl_') - $won) < 0.001, paid($credits, $L, 'whl_') . ' / ' . $won);
 
+echo "8) Dépôt de 10 $ arrivé à 9,90 $ (frais crypto) : 1 tour quand même ; 9 $ : toujours 0\n";
+$db = load_db();
+$db['users']['u_t9'] = ['id' => 'u_t9', 'email' => 't9@gmail.com', 'role' => 'user', 'sbId' => 'dddddddd-1111-2222-3333-444444444444'];
+save_db(orolado_data_file(), $db);
+dep('u_t9', 9.9, $now - 100, 'oxapay');
+check('9,90 $ → 1 tour', orolado_gifts_status(load_db(), $db['users']['u_t9'], false, $now)['tickets'] === 1);
+dep('u_t9', 19.6, $now - 90, 'oxapay');
+check('+19,60 $ → 2 tours de plus (3)', orolado_gifts_status(load_db(), $db['users']['u_t9'], false, $now)['tickets'] === 3);
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
