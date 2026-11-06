@@ -306,14 +306,38 @@
     return feeds[id];
   }
 
+  /*
+   * v3634 (propriétaire : « 1 à 2 fois par jour la courbe bloque ») : une requête de prix sur un réseau mobile qui
+   * décroche peut rester « en attente » plusieurs minutes sans jamais répondre ni échouer. Pendant ce temps la lecture
+   * restait marquée « occupée » et la courbe ne bougeait plus jusqu'au rechargement. Maintenant chaque requête de prix
+   * est abandonnée au bout de quelques secondes et la suivante repart toute seule.
+   */
+  function fetchT(url, opt, ms) {
+    var ctl = null;
+    try { ctl = typeof AbortController !== 'undefined' ? new AbortController() : null; } catch (eA) { ctl = null; }
+    var o = {};
+    var k;
+    for (k in opt) if (Object.prototype.hasOwnProperty.call(opt, k)) o[k] = opt[k];
+    if (ctl) o.signal = ctl.signal;
+    return new Promise(function (resolve, reject) {
+      var over = false;
+      var tm = setTimeout(function () { over = true; try { if (ctl) ctl.abort(); } catch (eB) { /* ignore */ } reject(new Error('timeout')); }, ms);
+      fetch(url, o).then(function (r) {
+        if (over) return;
+        // le corps aussi peut rester bloqué : même délai
+        r.json().then(function (j) { if (!over) { clearTimeout(tm); resolve({ ok: r.ok, json: j }); } },
+          function (e) { if (!over) { clearTimeout(tm); resolve({ ok: r.ok, json: null }); } });
+      }, function (e) { if (!over) { clearTimeout(tm); reject(e); } });
+    });
+  }
+
   function getJson(url) {
     var t0 = Date.now();
-    return fetch(url, { cache: 'no-store', credentials: 'same-origin' }).then(function (r) {
-      return r.json().then(function (j) {
-        var t1 = Date.now();
-        if (j && j.serverMs) noteServerTime(j.serverMs, t0, t1);
-        return j;
-      });
+    return fetchT(url, { cache: 'no-store', credentials: 'same-origin' }, 9000).then(function (res) {
+      var j = res.json;
+      var t1 = Date.now();
+      if (j && j.serverMs) noteServerTime(j.serverMs, t0, t1);
+      return j;
     });
   }
 
@@ -609,7 +633,7 @@
       }
       function get(url, opt) {
         pending++;
-        fetch(url, opt).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        fetchT(url, opt, 3500).then(function (res) { return res.ok ? res.json : null; }).then(function (j) {
           pending--;
           finish(j && j.ok ? j : null);
         }, function () {
@@ -650,7 +674,18 @@
     return !!(direct.ws && direct.ws.readyState === 1 && Date.now() - direct.lastAt < 1000);
   }
   function directConnect() {
-    if (direct.ws || document.hidden || typeof WebSocket === 'undefined') return;
+    // v3634 : ligne « ouverte » mais muette depuis 6 s (réseau mobile qui a décroché sans prévenir), ou qui n'arrive
+    // pas à s'ouvrir en 8 s : on la ferme et on la rouvre (avant : elle restait coincée jusqu'au rechargement).
+    if (direct.ws) {
+      var dw = direct.ws, nowD = Date.now();
+      var mute = dw.readyState === 1 && nowD - Math.max(direct.lastAt, direct.openAt || 0) > 6000;
+      var stuck = dw.readyState === 0 && nowD - (direct.startAt || nowD) > 8000;
+      if (!mute && !stuck) return;
+      direct.ws = null;
+      try { dw.close(); } catch (eM) { /* ignore */ }
+      direct.retryAt = 0;
+    }
+    if (document.hidden || typeof WebSocket === 'undefined') return;
     var forced = '';
     try { forced = localStorage.getItem('oro_direct') || ''; } catch (eF) { /* ignore */ }
     if (!direct.allowed && !/^wss?:/.test(forced)) return;
@@ -660,8 +695,10 @@
     var ws;
     try { ws = new WebSocket(url); } catch (eW) { direct.fails++; return; }
     direct.ws = ws;
+    direct.startAt = Date.now();
     watchKey = watchIds().join(',');
     ws.onopen = function () {
+      direct.openAt = Date.now();
       direct.fails = 0;
       direct.everOpen = true;
       // Le marché a pu changer pendant l'ouverture : on redit la liste.
@@ -1488,6 +1525,7 @@
 
     /** Retard d'affichage actuel de cet appareil (ms), pour contrôle. */
     displayDelay: function () { return Math.round(dispDelay); },
+    lastTick: function (id) { var f = feeds[id]; return f && f.loaded ? f.last : -1; }, // v3634 : contrôle de la courbe (tests)
     delayDebug: function () { return { delay: Math.round(dispDelay), need: Math.round(needDelay), calls: delayDbg.calls, refused: delayDbg.refused, lastLag: delayDbg.lastLag, maxLag: delayDbg.maxLag, live: delayDbg.live, clockReady: clock.ready, offset: Math.round(clock.offset) }; },
     /** Numéro de prix du serveur → heure d'affichage actuelle (suit le décalage qui s'ajuste). */
     tickToLocal: function (tick) { return tickToLocal(Number(tick)); },
