@@ -2559,6 +2559,24 @@ if ($action === 'me') {
     exit;
   }
   $me = $stSess['user'];
+  // 2026-11-08 (propriétaire : « ça s'affiche dans son solde réel automatiquement ») — part d'affiliation (60 %) versée
+  // TOUTE SEULE sur le solde réel de celui qui invite, sans qu'il ouvre Cadeaux → Invitation : au plus toutes les 30 min,
+  // APRÈS la réponse (le joueur n'attend jamais), seulement pour un joueur qui a invité au moins un ami. Même calcul et même
+  // versement unique (référence unique) que la page Invitation.
+  $affUid = (string) ($me['id'] ?? '');
+  if ($affUid !== '' && function_exists('orolado_aff_rev_run') && function_exists('orolado_aff_is_affiliate')) {
+    register_shutdown_function(static function () use ($affUid): void {
+      try {
+        if (!orolado_aff_rev_enabled() || !orolado_aff_is_affiliate($affUid)) return;
+        if (!orolado_rate_ok('affrev_auto', $affUid, 1, 1800)) return;
+        if (function_exists('fastcgi_finish_request')) @fastcgi_finish_request();
+        $dbA = load_db(orolado_data_file());
+        $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($dbA);
+        orolado_aff_rev_run($dbA, $affUid);
+        unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+      } catch (Throwable $eAffAuto) { error_log('OROLADO affrev auto ' . $eAffAuto->getMessage()); }
+    });
+  }
   // Écritures sous verrou, sur le fichier À JOUR (jamais une vieille copie chargée en début
   // de requête : c'est ce qui pouvait remettre un dépôt en « attente » et le recréditer).
   // Charge : prolongation de session au plus toutes les 5 min (avant : 2 écritures du fichier
