@@ -122,8 +122,67 @@ function orolado_aff_rev_bet_margin(array $db, array $ids, int $cutTs): float {
     if ($voided) $credits += $stake;
     else if ($won) $credits += orolado_money($stake * $payout);
   }
+  // 2026-11-08 (propriétaire : « mes amis ont joué, rien n'arrive ») — AVANT : seuls les TRADES comptaient. Les parties de
+  // CASINO / LIVE / ACTION (journal des parties, argent réel) et les PARIS SPORTIFS réglés comptent maintenant aussi.
+  [$cs, $cc] = orolado_aff_rev_casino_margin($ids, $cutTs);
+  [$ss, $sc] = orolado_aff_rev_sports_margin($ids, $cutTs);
+  $stakes += $cs + $ss; $credits += $cc + $sc;
   // marge = ce que la caisse a gardé sur les PARIS (mises − gains rendus).
   return orolado_money($stakes - $credits);
+}
+
+/** Parties réelles (Casino, Live, Action) du journal du joueur, terminées depuis ≥ HOLD : [mises, gains rendus]. */
+function orolado_aff_rev_casino_margin(array $ids, int $cutTs): array {
+  $st = 0.0; $cr = 0.0;
+  if (!function_exists('casino_round_user_file')) return [0.0, 0.0];
+  foreach (array_unique($ids) as $id) {
+    $f = casino_round_user_file((string) $id);
+    if (!is_file($f) || !($fh = @fopen($f, 'r'))) continue;
+    while (($line = fgets($fh)) !== false) {
+      $line = trim($line);
+      if ($line === '' || $line[0] !== '{') continue;
+      $r = json_decode($line, true);
+      if (!is_array($r) && ($p = strrpos($line, '{"t":')) > 0) $r = json_decode(substr($line, $p), true);
+      if (!is_array($r) || ($r['m'] ?? '') !== 'real') continue;
+      $t = (float) ($r['t'] ?? 0);
+      if ($t <= 0 || $t > $cutTs) continue; // trop récent : compté après le délai
+      $s = (float) ($r['s'] ?? 0);
+      if ($s <= 0) continue;
+      $st += $s;
+      $cr += !empty($r['v']) ? $s : (float) ($r['w'] ?? 0);
+    }
+    fclose($fh);
+  }
+  return [$st, $cr];
+}
+
+/** Paris sportifs réels réglés depuis ≥ HOLD : [mises, gains rendus]. Fichier des paris lu une seule fois par requête. */
+function orolado_aff_rev_sports_margin(array $ids, int $cutTs): array {
+  static $bets = null;
+  if ($bets === null) {
+    $bets = [];
+    if (function_exists('sp_with')) {
+      foreach ((array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []) as $b) {
+        if (!is_array($b) || ($b['mode'] ?? '') !== 'real') continue;
+        $u = (string) ($b['uid'] ?? ''); if ($u === '') continue;
+        $bets[$u][] = $b;
+      }
+    }
+  }
+  $st = 0.0; $cr = 0.0;
+  foreach (array_unique($ids) as $id) {
+    foreach ($bets[(string) $id] ?? [] as $b) {
+      $status = (string) ($b['status'] ?? '');
+      if (!in_array($status, ['won', 'lost', 'void'], true)) continue;
+      $done = (int) ($b['done'] ?? 0);
+      if ($done <= 0 || $done > $cutTs) continue;
+      $s = (float) ($b['stake'] ?? 0);
+      if ($s <= 0) continue;
+      $st += $s;
+      $cr += $status === 'void' ? $s : (float) ($b['win'] ?? 0);
+    }
+  }
+  return [$st, $cr];
 }
 
 /**

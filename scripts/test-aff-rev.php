@@ -10,7 +10,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
  */
 $tmp = sys_get_temp_dir() . '/orolado_affrev_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
-foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'aff_lib.php', 'aff_rev_lib.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
+foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'aff_lib.php', 'aff_rev_lib.php', 'casino_lib.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 putenv('SUPABASE_URL=https://fake.supabase.test');
 putenv('SUPABASE_SERVICE_ROLE_KEY=fake-service-key');
 putenv('OROLADO_AFF_PUBLIC=1');
@@ -32,6 +32,7 @@ $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $me
 require $tmp . '/orolado_lib.php';
 require $tmp . '/trade_lib.php';
 require $tmp . '/aff_rev_lib.php';
+if (is_file($tmp . '/casino_lib.php')) require_once $tmp . '/casino_lib.php';
 
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
@@ -308,6 +309,25 @@ orolado_aff_code_delete('affX', 'PROMO');
 check('après suppression : 4 codes', count(orolado_aff_codes('affX')['custom']) === 4, (string) count(orolado_aff_codes('affX')['custom']));
 mkuser('newf2', 'newf2@g.com');
 check('inscription via un code supprimé → refusée', !orolado_aff_attach(load_db(), 'newf2', 'PROMO'));
+
+echo "14) Les parties de CASINO / LIVE / ACTION comptent aussi (avant : seulement les trades)\n";
+reset_db();
+mkuser('inv', 'inv@g.com'); mkuser('fc', 'fc@g.com');
+$code = (string) orolado_aff_status(load_db(), load_db()['users']['inv'])['code'];
+orolado_aff_attach(load_db(), 'fc', $code);
+deposit('fc', 50, $OLD);
+if (function_exists('casino_round_user_file')) {
+  $f = casino_round_user_file('fc'); @mkdir(dirname($f), 0755, true);
+  $tO = time() - 3 * 86400;
+  file_put_contents($f, json_encode(['t' => $tO, 'u' => 'fc', 'g' => 'slots', 'm' => 'real', 's' => 10, 'w' => 0]) . "\n" .
+    json_encode(['t' => $tO, 'u' => 'fc', 'g' => 'slots', 'm' => 'real', 's' => 10, 'w' => 4]) . "\n" .
+    json_encode(['t' => $tO, 'u' => 'fc', 'g' => 'slots', 'm' => 'demo', 's' => 500, 'w' => 0]) . "\n" .
+    json_encode(['t' => time(), 'u' => 'fc', 'g' => 'slots', 'm' => 'real', 's' => 20, 'w' => 0]) . "\n");
+  $r = orolado_aff_rev_friend(load_db(), 'fc');
+  check('casino réel perdu il y a 3 jours compté (10 + 10 − 4 = 16 $), démo et partie fraîche ignorées', abs($r['margin'] - 16) < 0.001, json_encode($r));
+  $w = orolado_aff_rev_wallet(load_db(), 'inv');
+  check('affilié : 60 % de 16 $ = 9,60 $', abs($w['entitled'] - 9.6) < 0.001, (string) $w['entitled']);
+} else check('casino_lib chargé', false);
 
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
