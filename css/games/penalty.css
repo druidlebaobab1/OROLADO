@@ -79,3 +79,6 @@ html:root body #casinoModal .cg-penalty .kp-sleeve{stroke:#FBBF24}
 html:root body #casinoModal .cg-penalty .kp-sleeve2{stroke:#F2A90F}
 html:root body #casinoModal .cg-penalty #pkK{filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 html.oro-lite body #casinoModal .cg-penalty #pkK{filter:none}
+/* 2026-11-07 : gardien en images (js/games/penalty.js, GK) — le dessin d'avant se cache dès que les images sont prêtes */
+html body #casinoModal .cg-penalty.pk-spr #pkK > :not(#kSpr){display:none}
+html body #casinoModal .cg-penalty #kSpr image{image-rendering:auto}
