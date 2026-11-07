@@ -706,6 +706,20 @@
   /* --------------------------------------------------------- Penalty Shootout ---------------------------------------------------------
      Home (red) and Away (blue) alternate; the drawn list k holds every kick taken (1 = goal), stopped as soon as it is decided, then
      sudden death. Each kick: run-up, shot, keeper dive (saves on a miss, beaten on a goal). Kick length adapts so long shootouts fit. */
+  // 2026-11-07 (propriétaire) : vrai gardien en images (mêmes images que le jeu Penalty), debout puis plongeon à gauche / à droite
+  var PK_GV = '3637', PK_GOK = 0;
+  ['ready', 'diveR', 'diveL', 'chest'].forEach(function (n) { var im = new Image(); im.onload = function () { PK_GOK++; }; im.src = 'img/games/gk_' + n + '.webp?v=' + PK_GV; });
+  var PK_GS = '<g class="pk-gs" style="display:none">' +
+    '<image data-s="ready" href="img/games/gk_ready.webp?v=' + PK_GV + '" x="-18.3" y="-58" width="36.6" height="58"/>' +
+    '<image data-s="chest" href="img/games/gk_chest.webp?v=' + PK_GV + '" x="-12.6" y="-58" width="25.3" height="58"/>' +
+    '<image data-s="diveR" href="img/games/gk_diveR.webp?v=' + PK_GV + '" x="-26" y="-34" width="65" height="26.7" style="display:none"/>' +
+    '<image data-s="diveL" href="img/games/gk_diveL.webp?v=' + PK_GV + '" x="-39" y="-34" width="65" height="26.7" style="display:none"/></g>';
+  function pkGs(c, nm, tilt) {
+    if (PK_GOK < 4) return;
+    if (!c.gs) { c.gs = c.q('.pk-gs'); c.gsi = [].slice.call(c.gs.querySelectorAll('image')); c.gs.style.display = ''; sa(c.ki, 'opacity', '0'); }
+    if (c.gsn !== nm) { c.gsn = nm; c.gsi.forEach(function (im) { im.style.display = im.getAttribute('data-s') === nm ? '' : 'none'; }); }
+    sa(c.gs, 'transform', 'rotate(' + (tilt || 0).toFixed(1) + ')');
+  }
   function pkDk(res) { var nk = (res.k || []).length; return Math.min(1.7, 30 / Math.max(1, nk)); }
   var PK_0 = .6;
   function pkSpot(s, j, goal) {
@@ -743,7 +757,7 @@
       for (k = 0; k <= 18; k++) h += '<path d="M' + (90 + k * 10) + ' 66V150"/>';
       for (k = 0; k <= 8; k++) h += '<path d="M90 ' + (66 + k * 10.5) + 'H270"/>';
       h += '</g><path d="M90 150V64H270V150" stroke="#F8FAFC" stroke-width="4" fill="none" stroke-linejoin="round"/><circle cx="180" cy="208" r="2" fill="#fff"/>' +
-        '<g class="pk-kp" transform="translate(180 150)"><g class="pk-ki"><rect x="-7" y="-34" width="14" height="20" rx="5" fill="#FACC15"/><circle cy="-40" r="5.5" fill="#FDE2C4"/><path d="M-7-30L-17-40M7-30L17-40" stroke="#FACC15" stroke-width="4" stroke-linecap="round"/><circle cx="-18" cy="-41" r="3" fill="#F8FAFC"/><circle cx="18" cy="-41" r="3" fill="#F8FAFC"/><path d="M-4-14L-6 0M4-14L6 0" stroke="#111827" stroke-width="4" stroke-linecap="round"/></g></g>' +
+        '<g class="pk-kp" transform="translate(180 150)"><g class="pk-ki"><rect x="-7" y="-34" width="14" height="20" rx="5" fill="#FACC15"/><circle cy="-40" r="5.5" fill="#FDE2C4"/><path d="M-7-30L-17-40M7-30L17-40" stroke="#FACC15" stroke-width="4" stroke-linecap="round"/><circle cx="-18" cy="-41" r="3" fill="#F8FAFC"/><circle cx="18" cy="-41" r="3" fill="#F8FAFC"/><path d="M-4-14L-6 0M4-14L6 0" stroke="#111827" stroke-width="4" stroke-linecap="round"/></g>' + PK_GS + '</g>' +
         '<g class="pk-pl" transform="translate(160 214)"><g class="pk-pc"><rect x="-6" y="-26" width="12" height="16" rx="4" fill="#DC2626"/><circle cy="-31" r="5" fill="#FDE2C4"/><path d="M-3-10L-5 4M3-10L6 3" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/></g></g>' +
         '<g class="pk-b" transform="translate(180 207)"><circle r="6" fill="#F8FAFC" stroke="#111827" stroke-width=".8"/><path d="M0-2.6L2.4-.8 1.5 2H-1.5L-2.4-.8Z" fill="#111827"/></g>' +
         '<g class="pk-fx" opacity="0"><rect x="-44" y="-13" width="88" height="26" rx="13"/><text y="5" text-anchor="middle"></text></g>' +
@@ -775,7 +789,7 @@
       txt(c.sc[0], String(gs[0])); txt(c.sc[1], String(gs[1]));
       txt(c.sdt, res && cur >= 10 ? c.l.sd : '', 200);
       if (!res || e < PK_0) {
-        sa(c.b, 'transform', 'translate(180 207)'); sa(c.kp, 'transform', 'translate(' + (180 + Math.sin(t * 1.3) * 10).toFixed(1) + ' 150)'); sa(c.ki, 'transform', 'rotate(0)');
+        sa(c.b, 'transform', 'translate(180 207)'); sa(c.kp, 'transform', 'translate(' + (180 + Math.sin(t * 1.3) * 10).toFixed(1) + ' 150)'); sa(c.ki, 'transform', 'rotate(0)'); pkGs(c, 'ready', 0);
         sa(c.pl, 'transform', 'translate(160 214)'); sa(c.fx, 'opacity', '0'); sa(c.pc, 'fill', res ? '#DC2626' : '#DC2626');
         if (!bnCd(c, R, t, e)) bnSet(c, ''); return;
       }
@@ -789,6 +803,8 @@
       sa(c.b, 'transform', tr(bx, by, bs, u * 720));
       var dv = eo(seg(ph, .34, .6)), kx = sp.save ? (sp.x - 180) * .9 : sp.kx * 60, ky = sp.save ? Math.min(0, sp.y - 120) * .6 : -12;
       sa(c.kp, 'transform', 'translate(' + (180 + kx * dv).toFixed(1) + ' ' + (150 + ky * dv).toFixed(1) + ')'); sa(c.ki, 'transform', 'rotate(' + (Math.sign(kx) * 70 * dv).toFixed(1) + ')');
+      if (dv < 0.2 || Math.abs(kx) < 15) pkGs(c, Math.abs(kx) < 15 && dv >= 0.2 ? 'chest' : 'ready', 0);
+      else pkGs(c, kx > 0 ? 'diveR' : 'diveL', (kx > 0 ? -1 : 1) * Math.max(0, Math.min(28, (130 - sp.y) * 0.5)) * dv);
       var show = ph >= .62 && ph < 1;
       sa(c.fx, 'opacity', show ? '1' : '0'); sa(c.fx, 'transform', 'translate(180 ' + (goal ? 104 : 104) + ')'); cls(c.fx, 'pk-fx ' + (goal ? 'g' : 'x'));
       txt(c.fxt, goal ? c.l.goal : sp.wide ? c.l.out : c.l.saved, 80);

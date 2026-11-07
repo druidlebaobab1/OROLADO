@@ -1409,7 +1409,7 @@
     var q = RUNF[pfx];
     if (!q) { q = RUNF[pfx] = { im: new Image(), fr: null, sps: [] }; q.im.decoding = 'async';
       q.im.onload = function () { q.fr = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = 320; cv.height = 400; cv.getContext('2d').drawImage(q.im, i * 320, 0, 320, 400, 0, 0, 320, 400); return cv; }); q.sps.forEach(function (x) { x.run = q.fr.slice(); }); };
-      q.im.src = 'img/games/' + pfx + '_run.webp?v=' + (pfx === 'cd' ? '3614' : '3593'); } // v3614 : Candy = fille
+      q.im.src = 'img/games/' + pfx + '_run.webp?v=' + '3637'; } // v3614 : Candy = fille
     if (q.fr) sp.run = q.fr.slice(); else q.sps.push(sp);
   }
   function worldTheme(pfx, ver, o) {

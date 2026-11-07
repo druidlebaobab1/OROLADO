@@ -194,6 +194,17 @@
       'L' + f(a[0] - nx * ra) + ' ' + f(a[1] - ny * ra) + 'A' + f(ra) + ' ' + f(ra) + ' 0 0 0 ' + f(a[0] + nx * ra) + ' ' + f(a[1] + ny * ra) + 'Z';
   }
   function gloveD() { return 'M-4.6 3C-5.6-2.5-4.6-8.6 0-9.4C4.6-8.6 5.6-2.5 4.6 3Z'; }
+  /* 2026-11-07 (propriétaire : « le gardien, réel même, comme s'il sautait même ») — vrai gardien en images (fal.ai, rendu 3D
+     réaliste, maillot jaune sans marque) posé SUR le squelette existant : même trajectoire, mêmes angles, mêmes zones ; seule
+     l'image change selon le geste (prêt, plongeon droite / gauche, détente en l'air, ballon contre la poitrine, au sol).
+     Repère du corps : origine = bassin, « haut » = colonne ; unités de la scène (bassin -> pieds ≈ 33). */
+  var GK_V = '3637';
+  var GK = { // nom : [largeur, hauteur, x, y, rotation du groupe]
+    ready: [46, 73, -23, -40.2, 0], up: [25.3, 68, -12.6, -49, 0], chest: [32.7, 75, -16.3, -42, 0], low: [32.2, 57, -16.1, -34.2, 0],
+    diveR: [82, 33.6, -32.8, -18.5, -90], diveL: [82, 33.6, -49.2, -18.5, 90]
+  };
+  var SPR_SVG = '<g id="kSpr">' + Object.keys(GK).map(function (n) { var g = GK[n];
+    return '<g data-s="' + n + '" transform="rotate(' + g[4] + ')" style="display:none"><image href="img/games/gk_' + n + '.webp?v=' + GK_V + '" x="' + g[2] + '" y="' + g[3] + '" width="' + g[0] + '" height="' + g[1] + '" preserveAspectRatio="none"/></g>'; }).join('') + '</g>';
   function keeperSvg() {
     var leg = function (s) {
       return '<path id="kTh' + s + '" class="kp-skin" stroke-width="6.6"/><path id="kSn' + s + '" class="kp-skin" stroke-width="5.6"/>' +
@@ -206,7 +217,7 @@
         '<path d="M-1.6-8V-2M1.6-8V-2" stroke="#CBD5E1" stroke-width=".6"/><ellipse cx="' + (s === 'L' ? 4.6 : -4.6) + '" cy="-2.6" rx="1.7" ry="3" fill="#E2E8F0" transform="rotate(' + (s === 'L' ? 28 : -28) + ' ' + (s === 'L' ? 4.6 : -4.6) + ' -2.6)"/></g>';
     };
     return '<g id="pkShadow"><ellipse rx="20" ry="3.4" fill="#000" opacity=".38"/></g>' +
-      '<g id="pkK" class="kp">' + leg('L') + leg('R') +
+      '<g id="pkK" class="kp">' + SPR_SVG + leg('L') + leg('R') +
         // short et maillot (fixes dans le repère du corps)
         '<path d="M-10-4H10L11 6Q6 7.6 2.2 6.4L0 3.4L-2.2 6.4Q-6 7.6-11 6Z" fill="url(#pkShortG)"/><path d="M-10-3.4H10" stroke="#FBBF24" stroke-width="1"/>' +
         '<path d="M-12-23Q-6-25.8 0-25.8Q6-25.8 12-23L11-12Q10.6-5 9.6-3.2H-9.6Q-10.6-5-11-12Z" fill="url(#pkShirt)"/>' +
@@ -289,8 +300,19 @@
     }
     var mid = function (a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; };
     var cur = READY;
+    // sprites du gardien : visibles dès que les 6 images sont chargées (sinon le dessin d'avant reste, jamais de trou)
+    var kMode = 'ready', kProg = 0, kSprOn = '', sprOk = false;
+    (function () { var n = 0, names = Object.keys(GK); names.forEach(function (nm) { var im = new Image(); im.onload = function () { if (++n === names.length && box.isConnected) { sprOk = true; box.classList.add('pk-spr'); drawK(cur); } }; im.src = 'img/games/gk_' + nm + '.webp?v=' + GK_V; }); })();
+    function pickSpr(P) {
+      if (!sprOk) return;
+      var nm = 'ready';
+      if (kMode === 'side') nm = Math.abs(P.rot) > 16 ? (P.rot > 0 ? 'diveR' : 'diveL') : 'ready';
+      else if (kMode !== 'ready' && kProg > 0.18) nm = kMode;
+      if (nm === kSprOn) return; kSprOn = nm;
+      box.querySelectorAll('#kSpr > g').forEach(function (el) { el.style.display = el.getAttribute('data-s') === nm ? '' : 'none'; });
+    }
     function drawK(P) {
-      cur = P;
+      cur = P; pickSpr(P);
       kG.setAttribute('transform', 'translate(' + P.x.toFixed(2) + ' ' + P.y.toFixed(2) + ') rotate(' + P.rot.toFixed(2) + ')');
       var A = P.a;
       [['L', -1, 0], ['R', 1, 2]].forEach(function (s) {
@@ -336,7 +358,7 @@
     }
     function setBShadow(x, y, s, o) { bSh.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') scale(' + s.toFixed(3) + ')'); bSh.style.opacity = o; }
     function reset() {
-      drawK(READY); setBall(SPOT[0], SPOT[1], 1, 0); setBShadow(SPOT[0], SPOT[1] + 10, 1, 1);
+      kMode = 'ready'; kProg = 0; drawK(READY); setBall(SPOT[0], SPOT[1], 1, 0); setBShadow(SPOT[0], SPOT[1] + 10, 1, 1);
       trail.setAttribute('opacity', '0'); net.removeAttribute('transform'); ball.style.opacity = '';
     }
     function flash(txt, cls) {
@@ -370,6 +392,7 @@
       var kcol = +shot[2], goal = !!+shot[3];
       var krow = shot.length > 4 ? +shot[4] : (kcol === col ? row : Math.floor(K.seeded(nShot, zi + 3) * 3) % 3);
       var target = divePose(kcol, krow), from = cur;
+      kMode = target.rot !== 0 ? 'side' : (krow === 0 ? 'up' : krow === 1 ? 'chest' : 'low'); kProg = 0;
       var fast = lite(), TB = fast ? 320 : 620, TK = fast ? 280 : 520, delay = fast ? 0 : 90;
       var tx = z[2], ty = z[3], cxp = (SPOT[0] + tx) / 2 + (tx - 180) * 0.32 + (col === 1 ? 14 : 0), cyp = Math.min(SPOT[1], ty) - 34 - (row === 0 ? 24 : row === 1 ? 10 : 0);
       var endS = 0.42, trailOn = !fast, side = target.rot !== 0;
@@ -386,6 +409,7 @@
           [2, 5, 8].forEach(function (h, j) { var p = hist[Math.min(h, hist.length - 1)]; trail.children[j].setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ') scale(' + p[2].toFixed(3) + ')'); });
         }
         var kk = Math.max(0, Math.min(1, (k * TB - delay) / TK)), e = easeIO(kk), P = lerpPose(from, target, e);
+        kProg = e;
         if (side) P.y -= 12 * Math.sin(Math.PI * e) * (krow === 2 ? 0.4 : 1); // l'élan : il décolle puis s'allonge
         else if (krow !== 1) P.y -= 5 * Math.sin(Math.PI * e);
         drawK(P);
@@ -481,7 +505,7 @@
       if (r) { g = r; if (r.done) K.resultLine(box, r); else $('pnFlash').setAttribute('class', 'pn-flash'); }
       paint();
     });
-    box._pk = { drawK: drawK, pose: divePose, lerp: lerpPose, fall: fallPose, ready: READY, setBall: setBall, stop: function () { busy = true; cancelAnimationFrame(idleT); } }; // essais (aperçu des poses)
+    box._pk = { mode: function (m) { kMode = m; kProg = 1; }, drawK: drawK, pose: divePose, lerp: lerpPose, fall: fallPose, ready: READY, setBall: setBall, stop: function () { busy = true; cancelAnimationFrame(idleT); } }; // essais (aperçu des poses)
     dressKeeper(); reset(); paint();
     requestAnimationFrame(function () { K.fitAll(box.querySelector('#pnLad')); });
     K.S.raf = idleT = requestAnimationFrame(idle);
