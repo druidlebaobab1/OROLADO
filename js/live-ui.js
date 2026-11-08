@@ -191,7 +191,7 @@
     s.onerror = function () { packs[l] = 0; };
     document.head.appendChild(s);
   }
-  setTimeout(loadPack, 1200);
+  setTimeout(loadPack, 150); // 2026-11-08 : plus tôt (avant 1,2 s) : Social ne s'affiche plus en anglais en russe, arabe, vietnamien…
   document.addEventListener('oro:lang', function () { setTimeout(loadPack, 50); });
   D6.BigPageSwipe = bindSwipe; // v2690 : aussi pour la page Casino (créée plus tard)
   /* v2786 (propriétaire) — LOGO DU TRANSFERT OROLADO : le hibou (tête carrée, perché sur sa branche) dans un rond orange

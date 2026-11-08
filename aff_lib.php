@@ -471,9 +471,13 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   // Part de revenu (NGR) : gain par ami = pct × ce qu'OROLADO a gardé sur lui. Calculé une fois ici.
   $revOn2 = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled();
   $revPct2 = $revOn2 && function_exists('orolado_aff_rev_pct') ? orolado_aff_rev_pct() : 0.0;
-  $ngrByUid = [];
+  $ngrByUid = []; $extByUid = [];
   if ($revOn2 && function_exists('orolado_aff_rev_aggregate')) {
-    foreach ((array) (orolado_aff_rev_aggregate($db, $uid)['friends'] ?? []) as $fr) $ngrByUid[(string) ($fr['uid'] ?? '')] = (float) ($fr['ngr'] ?? 0);
+    foreach ((array) (orolado_aff_rev_aggregate($db, $uid)['friends'] ?? []) as $fr) {
+      $kf = (string) ($fr['uid'] ?? '');
+      $ngrByUid[$kf] = (float) ($fr['ngr'] ?? 0);
+      $extByUid[$kf] = ['staked' => (float) ($fr['staked'] ?? 0), 'ngrAll' => (float) ($fr['ngrAll'] ?? ($fr['ngr'] ?? 0))]; // 2026-11-08 : misé, en attente
+    }
   }
   foreach ($friends as $f) {
     $fu = $db['users'][(string) ($f['uid'] ?? '')] ?? [];
@@ -499,7 +503,9 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       'gift' => $giftF,
       'ngr' => orolado_money($ngrF),
       'n' => $nDep,
-      'played' => $realTrades > 0,
+      'played' => $realTrades > 0 || (($extByUid[$fuid]['staked'] ?? 0) > 0),
+      'staked' => orolado_money($extByUid[$fuid]['staked'] ?? 0),
+      'pend' => $revOn2 ? orolado_money(max(0.0, $revPct2 * (float) ($extByUid[$fuid]['ngrAll'] ?? 0) - $giftF)) : 0.0,
     ];
     $depCount += $nDep;
   }
@@ -585,6 +591,11 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       'balance' => orolado_money($rev['balance'] ?? 0),       // peut être négatif (report)
       'withdrawable' => orolado_money($rev['withdrawable'] ?? 0),
       'minWithdraw' => orolado_money($rev['minWithdraw'] ?? 1),
+      // 2026-11-08 (propriétaire : « plusieurs cases importantes pour les affiliés ») :
+      'pending' => orolado_money($rev['pending'] ?? 0),   // en attente : versé après le délai
+      'staked' => orolado_money($rev['staked'] ?? 0),     // total misé en argent réel par les amis
+      'active' => (int) ($rev['active'] ?? 0),            // amis qui ont joué en argent réel
+      'log' => array_map(static fn($l) => ['a' => orolado_money($l['amount'] ?? 0), 't' => (int) strtotime((string) ($l['at'] ?? ''))], (array) ($rev['log'] ?? [])),
     ];
     if (!empty($rev['justPaid'])) $out['rev']['justPaid'] = orolado_money($rev['justPaid']);
     $out['pct'] = $out['rev']['pct'];
@@ -593,7 +604,14 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
     // pour que « Tu as gagné » soit cohérent partout (plus de vieux chiffres 5 %).
     $out['gains'] = [];
     if (isset($out['periods']) && is_array($out['periods'])) {
-      foreach ($out['periods'] as $pk => $pv) $out['periods'][$pk]['gain'] = ($pk === 'all') ? $out['rev']['paid'] : 0.0;
+      // 2026-11-08 : gains de chaque période = versements réels (60 %) de cette période (avant : 0 sauf « Tout »)
+      $revLog = function_exists('orolado_aff_rev_name') ? (array) (orolado_aff_read(orolado_aff_rev_name($uid))['log'] ?? []) : [];
+      foreach ($out['periods'] as $pk => $pv) {
+        if ($pk === 'all') { $out['periods'][$pk]['gain'] = $out['rev']['paid']; continue; }
+        $g = 0.0;
+        foreach ($revLog as $l) { $ts = (int) strtotime((string) ($l['at'] ?? '')); if ($ts >= (int) ($pv['from'] ?? 0)) $g += (float) ($l['amount'] ?? 0); }
+        $out['periods'][$pk]['gain'] = orolado_money($g);
+      }
     }
   }
   return $out;

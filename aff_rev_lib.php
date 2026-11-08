@@ -94,8 +94,19 @@ function orolado_aff_rev_withdrawals(array $db, array $ids): float {
  * « dépôts nets réglés » dans orolado_aff_rev_friend).
  */
 function orolado_aff_rev_bet_margin(array $db, array $ids, int $cutTs): float {
+  $t = orolado_aff_rev_bet_totals($db, $ids, $cutTs);
+  return orolado_money($t['s'] - $t['c']);
+}
+
+/**
+ * 2026-11-08 (tableau de bord affilié) : en UN passage, mises et gains rendus des paris RÉELS réglés de l'ami :
+ *   s / c = comptés (réglés depuis ≥ HOLD) ; sAll / cAll = tous, y compris les plus récents (« en attente »).
+ */
+function orolado_aff_rev_bet_totals(array $db, array $ids, int $cutTs): array {
   $stakes = 0.0;
   $credits = 0.0;
+  $stakesAll = 0.0;
+  $creditsAll = 0.0;
   $seen = [];
   foreach (orolado_orders_recent($db, $ids, 'real', true) as $o) { // 2026-11-08 (revue) : TOUT l'historique (avant : ~2 jours, puis les trades sortaient du calcul)
     if (!is_array($o)) continue;
@@ -112,29 +123,29 @@ function orolado_aff_rev_bet_margin(array $db, array $ids, int $cutTs): float {
     foreach (['settledAt', 'closedAt', 'resolvedAt', 'at', 'updatedAt', 'createdAt'] as $k) {
       if (!empty($o[$k])) { $ts = (int) strtotime((string) $o[$k]); if ($ts > 0) break; }
     }
-    if ($ts > 0 && $ts > $cutTs) continue; // trop récent : pas encore compté
     $stake = orolado_money($o['stake'] ?? 0);
     if ($stake <= 0.009) continue;
     $voided = $st === 'void' || !empty($o['voided']);
     $won = !$voided && ($st === 'won' || !empty($o['won']));
     $payout = (float) ($o['payout'] ?? $o['payoutMult'] ?? 1.88);
-    $stakes += $stake;
-    if ($voided) $credits += $stake;
-    else if ($won) $credits += orolado_money($stake * $payout);
+    $cr = $voided ? $stake : ($won ? orolado_money($stake * $payout) : 0.0);
+    $stakesAll += $stake; $creditsAll += $cr;
+    if ($ts > 0 && $ts > $cutTs) continue; // trop récent : pas encore compté (seulement « en attente »)
+    $stakes += $stake; $credits += $cr;
   }
   // 2026-11-08 (propriétaire : « mes amis ont joué, rien n'arrive ») — AVANT : seuls les TRADES comptaient. Les parties de
   // CASINO / LIVE / ACTION (journal des parties, argent réel) et les PARIS SPORTIFS réglés comptent maintenant aussi.
-  [$cs, $cc] = orolado_aff_rev_casino_margin($ids, $cutTs);
-  [$ss, $sc] = orolado_aff_rev_sports_margin($ids, $cutTs);
+  [$cs, $cc, $csA, $ccA] = orolado_aff_rev_casino_margin($ids, $cutTs);
+  [$ss, $sc, $ssA, $scA] = orolado_aff_rev_sports_margin($ids, $cutTs);
   $stakes += $cs + $ss; $credits += $cc + $sc;
-  // marge = ce que la caisse a gardé sur les PARIS (mises − gains rendus).
-  return orolado_money($stakes - $credits);
+  $stakesAll += $csA + $ssA; $creditsAll += $ccA + $scA;
+  return ['s' => $stakes, 'c' => $credits, 'sAll' => $stakesAll, 'cAll' => $creditsAll];
 }
 
 /** Parties réelles (Casino, Live, Action) du journal du joueur, terminées depuis ≥ HOLD : [mises, gains rendus]. */
 function orolado_aff_rev_casino_margin(array $ids, int $cutTs): array {
-  $st = 0.0; $cr = 0.0;
-  if (!function_exists('casino_round_user_file')) return [0.0, 0.0];
+  $st = 0.0; $cr = 0.0; $stA = 0.0; $crA = 0.0;
+  if (!function_exists('casino_round_user_file')) return [0.0, 0.0, 0.0, 0.0];
   foreach (array_unique($ids) as $id) {
     $f = casino_round_user_file((string) $id);
     if (!is_file($f) || !($fh = @fopen($f, 'r'))) continue;
@@ -145,15 +156,16 @@ function orolado_aff_rev_casino_margin(array $ids, int $cutTs): array {
       if (!is_array($r) && ($p = strrpos($line, '{"t":')) > 0) $r = json_decode(substr($line, $p), true);
       if (!is_array($r) || ($r['m'] ?? '') !== 'real') continue;
       $t = (float) ($r['t'] ?? 0);
-      if ($t <= 0 || $t > $cutTs) continue; // trop récent : compté après le délai
       $s = (float) ($r['s'] ?? 0);
-      if ($s <= 0) continue;
-      $st += $s;
-      $cr += !empty($r['v']) ? $s : (float) ($r['w'] ?? 0);
+      if ($t <= 0 || $s <= 0) continue;
+      $w = !empty($r['v']) ? $s : (float) ($r['w'] ?? 0);
+      $stA += $s; $crA += $w;
+      if ($t > $cutTs) continue; // trop récent : compté après le délai (« en attente »)
+      $st += $s; $cr += $w;
     }
     fclose($fh);
   }
-  return [$st, $cr];
+  return [$st, $cr, $stA, $crA];
 }
 
 /** Paris sportifs réels réglés depuis ≥ HOLD : [mises, gains rendus]. Fichier des paris lu une seule fois par requête. */
@@ -169,20 +181,21 @@ function orolado_aff_rev_sports_margin(array $ids, int $cutTs): array {
       }
     }
   }
-  $st = 0.0; $cr = 0.0;
+  $st = 0.0; $cr = 0.0; $stA = 0.0; $crA = 0.0;
   foreach (array_unique($ids) as $id) {
     foreach ($bets[(string) $id] ?? [] as $b) {
       $status = (string) ($b['status'] ?? '');
       if (!in_array($status, ['won', 'lost', 'void'], true)) continue;
       $done = (int) ($b['done'] ?? 0);
-      if ($done <= 0 || $done > $cutTs) continue;
       $s = (float) ($b['stake'] ?? 0);
-      if ($s <= 0) continue;
-      $st += $s;
-      $cr += $status === 'void' ? $s : (float) ($b['win'] ?? 0);
+      if ($done <= 0 || $s <= 0) continue;
+      $w = $status === 'void' ? $s : (float) ($b['win'] ?? 0);
+      $stA += $s; $crA += $w;
+      if ($done > $cutTs) continue;
+      $st += $s; $cr += $w;
     }
   }
-  return [$st, $cr];
+  return [$st, $cr, $stA, $crA];
 }
 
 /**
@@ -199,16 +212,22 @@ function orolado_aff_rev_friend(array $db, string $friendUid): array {
   $dep = orolado_aff_rev_settled_deposits($db, $friendUid, $cutTs);
   $wd = orolado_aff_rev_withdrawals($db, $ids);
   $settledIn = orolado_money($dep - $wd);
-  $margin = orolado_aff_rev_bet_margin($db, $ids, $cutTs);
+  $tot = orolado_aff_rev_bet_totals($db, $ids, $cutTs);
+  $margin = orolado_money($tot['s'] - $tot['c']);
   $ngr = orolado_money(min($margin, $settledIn));
-  return ['uid' => $friendUid, 'margin' => $margin, 'settledIn' => $settledIn, 'deposits' => $dep, 'withdrawals' => $wd, 'ngr' => $ngr];
+  // 2026-11-08 (tableau de bord) : « en attente » = ce qui comptera après le délai (parties / dépôts de moins de HOLD h).
+  $depAll = orolado_aff_rev_settled_deposits($db, $friendUid, PHP_INT_MAX);
+  $marginAll = orolado_money($tot['sAll'] - $tot['cAll']);
+  $ngrAll = orolado_money(min($marginAll, orolado_money($depAll - $wd)));
+  return ['uid' => $friendUid, 'margin' => $margin, 'settledIn' => $settledIn, 'deposits' => $dep, 'withdrawals' => $wd, 'ngr' => $ngr,
+    'staked' => orolado_money($tot['sAll']), 'ngrAll' => $ngrAll, 'depAll' => orolado_money($depAll)];
 }
 
 /** Agrégat de TOUS les amis d'un affilié (report négatif inclus : la somme peut être négative). */
 function orolado_aff_rev_aggregate(array $db, string $inviterUid): array {
   $own = orolado_aff_read(orolado_aff_owner_name($inviterUid));
   $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
-  $sum = 0.0;
+  $sum = 0.0; $sumAll = 0.0; $staked = 0.0; $active = 0;
   $rows = [];
   $seen = [];
   foreach ($friends as $f) {
@@ -217,9 +236,12 @@ function orolado_aff_rev_aggregate(array $db, string $inviterUid): array {
     $seen[$fu] = true;
     $r = orolado_aff_rev_friend($db, $fu);
     $sum += $r['ngr'];
+    $sumAll += (float) ($r['ngrAll'] ?? $r['ngr']);
+    $staked += (float) ($r['staked'] ?? 0);
+    if ((float) ($r['staked'] ?? 0) > 0) $active++;
     $rows[] = $r;
   }
-  return ['ngr' => orolado_money($sum), 'friends' => $rows, 'count' => count($rows)];
+  return ['ngr' => orolado_money($sum), 'ngrAll' => orolado_money($sumAll), 'staked' => orolado_money($staked), 'active' => $active, 'friends' => $rows, 'count' => count($rows)];
 }
 
 /**
@@ -248,6 +270,11 @@ function orolado_aff_rev_wallet(array $db, string $inviterUid): array {
     'minWithdraw' => orolado_money($minW),
     'friendsCount' => $agg['count'],
     'friends' => $agg['friends'],
+    // 2026-11-08 (tableau de bord) : en attente (comptera après le délai), volume misé par les amis, amis qui jouent
+    'pending' => orolado_money(max(0.0, floor($pct * $agg['ngrAll'] * 100) / 100 - $entitled)),
+    'staked' => $agg['staked'],
+    'active' => (int) $agg['active'],
+    'log' => array_slice(array_reverse((array) ($rev['log'] ?? [])), 0, 10),
   ];
 }
 

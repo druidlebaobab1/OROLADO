@@ -14482,3 +14482,27 @@ html body #casinoModal.in-game .cg-live5 .l5-stage{padding:4px!important}
 @media (max-width:859px){
   html:root body #portalModal#portalModal#portalModal #ghWheel:not([hidden]){flex:1 1 auto;min-height:0;overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 }
+/* 2026-11-08 — Affilié : « Tes résultats » (js/portal.js affResHtml) : cases versé / en attente / périodes / amis, versements, liste des amis */
+html body #portalModal .arr{position:relative;z-index:2;display:flex;flex-direction:column;gap:7px;margin:4px 0 10px;padding:11px;border-radius:14px;background:linear-gradient(180deg,#1b150a,#120e07)!important;border:1px solid rgba(242,193,78,.32)}
+html body #portalModal .arr-h{font-weight:800;font-size:15px;color:#F7D57A;letter-spacing:.01em}
+html body #portalModal .arr-g{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+html body #portalModal .arr-c{min-width:0;display:flex;flex-direction:column;gap:1px;padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(242,193,78,.14)}
+html body #portalModal .arr-c b{font-size:15px;font-weight:800;color:#FFF7E3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+html body #portalModal .arr-c span{font-size:11px;line-height:1.25;color:rgba(255,240,210,.68);overflow-wrap:anywhere}
+html body #portalModal .arr-c.ok{border-color:rgba(52,211,153,.45)} html body #portalModal .arr-c.ok b{color:#6EE7B7}
+html body #portalModal .arr-c.wait{border-color:rgba(251,191,36,.5)} html body #portalModal .arr-c.wait b{color:#FCD34D}
+html body #portalModal .arr-how{margin:0;font-size:11.5px;line-height:1.35;color:rgba(255,240,210,.78)}
+html body #portalModal .arr-sub{margin-top:3px;font-size:12.5px;font-weight:800;color:#F7D57A}
+html body #portalModal .arr-empty{margin:0;font-size:11.5px;color:rgba(255,240,210,.55)}
+html body #portalModal .arr-log{display:flex;flex-direction:column;gap:3px}
+html body #portalModal .arr-log div{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.03)}
+html body #portalModal .arr-log span{color:rgba(255,240,210,.7)} html body #portalModal .arr-log b{color:#6EE7B7;font-variant-numeric:tabular-nums}
+html body #portalModal .arr-fr{display:flex;flex-direction:column;gap:3px;max-height:260px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+html body #portalModal .arr-fh,html body #portalModal .arr-fl{display:grid;grid-template-columns:1.25fr 1fr 1fr 1.15fr;gap:5px;align-items:center;padding:5px 7px;font-size:11.5px}
+html body #portalModal .arr-fh{color:rgba(255,240,210,.6);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+html body #portalModal .arr-fl{border-radius:8px;background:rgba(255,255,255,.03);color:#FFF7E3;font-variant-numeric:tabular-nums}
+html body #portalModal .arr-fl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #portalModal .arr-fl .id{font-weight:700;color:#F7D57A}
+html body #portalModal .arr-fl .gn{color:#6EE7B7;font-weight:800;display:flex;flex-direction:column;white-space:normal}
+html body #portalModal .arr-fl .gn i{font-style:normal;font-size:10px;font-weight:700;color:#FCD34D}
+@media (min-width:600px){html body #portalModal .arr-g{grid-template-columns:repeat(4,1fr)}}
