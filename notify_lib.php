@@ -41,6 +41,21 @@ function orolado_notify_texts(string $kind, string $lang, string $amt, string $f
       'hi' => ['जमा सफल ✅', 'आपकी %s की जमा राशि आपके OROLADO खाते में आ गई है। मज़े करें!'],
       'zh' => ['充值成功 ✅', '您充值的 %s 已到账 OROLADO 账户。祝您玩得开心！'],
     ],
+    // 2026-11-08 (propriétaire, affiliés) : commission d'affiliation versée
+    'aff' => [
+      'fr' => ['Commission reçue 🤝', 'Vos amis vous ont rapporté %s sur OROLADO. C\'est déjà sur votre solde réel, retirable quand vous voulez.'],
+      'en' => ['Commission received 🤝', 'Your friends earned you %s on OROLADO. It is already on your real balance, withdraw it anytime.'],
+      'es' => ['Comisión recibida 🤝', 'Tus amigos te hicieron ganar %s en OROLADO. Ya está en tu saldo real, retíralo cuando quieras.'],
+      'pt' => ['Comissão recebida 🤝', 'Os seus amigos renderam-lhe %s na OROLADO. Já está no seu saldo real, levante quando quiser.'],
+      'ar' => ['وصلتك عمولة 🤝', 'ربحت %s من أصدقائك على OROLADO. المبلغ في رصيدك الحقيقي، اسحبه متى شئت.'],
+      'tr' => ['Komisyon geldi 🤝', 'Arkadaşların sana OROLADO\'da %s kazandırdı. Gerçek bakiyende, istediğin zaman çek.'],
+      'vi' => ['Đã nhận hoa hồng 🤝', 'Bạn bè đã mang về cho bạn %s trên OROLADO. Tiền đã vào số dư thật, rút bất cứ lúc nào.'],
+      'id' => ['Komisi diterima 🤝', 'Temanmu menghasilkan %s untukmu di OROLADO. Sudah di saldo asli, tarik kapan saja.'],
+      'ru' => ['Комиссия получена 🤝', 'Друзья принесли вам %s в OROLADO. Деньги уже на реальном балансе, выводите когда угодно.'],
+      'de' => ['Provision erhalten 🤝', 'Deine Freunde haben dir %s auf OROLADO eingebracht. Schon auf deinem Echtgeld-Guthaben, jederzeit auszahlbar.'],
+      'hi' => ['कमीशन मिला 🤝', 'आपके दोस्तों से आपको OROLADO पर %s मिले। यह आपके असली बैलेंस में है, कभी भी निकालें।'],
+      'zh' => ['佣金到账 🤝', '好友为您在 OROLADO 赚到 %s，已进入真实余额，可随时提现。'],
+    ],
     'xfer' => [
       'fr' => ['Argent reçu 💸', '%2$s vous a envoyé %1$s sur OROLADO.'],
       'en' => ['Money received 💸', '%2$s sent you %1$s on OROLADO.'],
