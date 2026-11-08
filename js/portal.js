@@ -612,7 +612,12 @@
     var friends = (aff && aff.list || []).filter(function (r) { return Number(r.deposit || 0) > 0 || r.played; });
     var log = (rev.log || []).slice(0, 5);
     var when = function (ts) { try { return new Date(ts * 1000).toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+    // état automatique (« pourquoi 0 $ ? ») : l'affilié comprend tout de suite où il en est
+    var nF = Number(aff && aff.friends) || 0, nDep = Number(aff && aff.deposited) || 0, stk = Number(rev.staked) || 0, pend = Number(rev.pending) || 0;
+    var stK = !nF ? 'affStNone' : !nDep ? 'affStNoDep' : stk <= 0 ? 'affStNoPlay' : pend > 0 ? 'affStPend' : (Number(rev.ngr) || 0) <= 0 ? 'affStWin' : 'affStOk';
+    var stTxt = t(stK, { p: money(pend), hold: V.hold, pct: V.pct });
     return '<div class="arr"><div class="arr-h">' + esc(t('affResTitle')) + '</div>' +
+      '<div class="arr-st arr-st-' + stK + '">' + esc(stTxt) + '</div>' +
       '<div class="arr-g">' +
         box(money(rev.paid || 0), t('affResPaid'), 'ok') +
         box(money(rev.pending || 0), t('affResPend', V), 'wait') +
@@ -798,6 +803,11 @@
       if (r.now) skew = r.now - Date.now() / 1000;
       aff = r;
       renderAff();
+      // 2026-11-08 : commission versée à l'instant → grande bulle « Commission reçue +X $ » + solde rafraîchi
+      if (r.rev && Number(r.rev.justPaid) > 0) {
+        bigToast(ICO_GIFT, t('affResPaid'), '+' + money(Number(r.rev.justPaid)), 'dw-start');
+        if (D6.Supabase && D6.Supabase.pullVault) { try { D6.Supabase.pullVault(); } catch (eV) { /* ignore */ } }
+      }
       if (r.invited && r.invited.justPaid && r.invited.gift > 0) {
         giftPopup(r.invited.gift);
         if (D6.Supabase && D6.Supabase.pullVault) { try { D6.Supabase.pullVault(); } catch (eW) { /* ignore */ } }

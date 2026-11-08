@@ -370,6 +370,10 @@ function orolado_aff_rev_run(array $db, string $inviterUid): array {
       });
       $wallet = orolado_aff_rev_wallet($db, $inviterUid);
       $wallet['justPaid'] = $delta;
+      // 2026-11-08 : l'affilié est prévenu (notification + e-mail) — à partir de 0,50 $, au plus une fois toutes les 6 h
+      if ($delta >= 0.5 && is_file(__DIR__ . '/notify_lib.php') && orolado_rate_ok('affrev_notify', $inviterUid, 1, 21600)) {
+        try { require_once __DIR__ . '/notify_lib.php'; orolado_notify_player($inviterUid, 'aff', $delta); } catch (Throwable $eN) { /* jamais bloquant */ }
+      }
     }
   }
   return $wallet;
