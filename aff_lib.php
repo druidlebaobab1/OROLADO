@@ -494,7 +494,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
     }
     $fuid = (string) ($f['uid'] ?? '');
     $ngrF = $revOn2 ? (float) ($ngrByUid[$fuid] ?? 0) : 0.0;
-    $giftF = $revOn2 ? orolado_money(max(0.0, $revPct2 * $ngrF)) : orolado_money($f['gift'] ?? 0);
+    $giftF = $revOn2 ? orolado_money(max(0.0, $revPct2 * $ngrF) + (float) ($f['gift'] ?? 0)) : orolado_money($f['gift'] ?? 0); // 2026-11-08 : + l'ancien 5 % déjà versé sur cet ami
     $list[] = [
       'id' => (string) ($fu['publicId'] ?? 'ORO-??????'), 'uid' => $fuid,
       'at' => $t,
@@ -505,7 +505,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       'n' => $nDep,
       'played' => $realTrades > 0 || (($extByUid[$fuid]['staked'] ?? 0) > 0),
       'staked' => orolado_money($extByUid[$fuid]['staked'] ?? 0),
-      'pend' => $revOn2 ? orolado_money(max(0.0, $revPct2 * (float) ($extByUid[$fuid]['ngrAll'] ?? 0) - $giftF)) : 0.0,
+      'pend' => $revOn2 ? orolado_money(max(0.0, $revPct2 * (float) ($extByUid[$fuid]['ngrAll'] ?? 0) - max(0.0, $revPct2 * $ngrF))) : 0.0,
     ];
     $depCount += $nDep;
   }
@@ -598,6 +598,16 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       'log' => array_map(static fn($l) => ['a' => orolado_money($l['amount'] ?? 0), 't' => (int) strtotime((string) ($l['at'] ?? ''))], (array) ($rev['log'] ?? [])),
     ];
     if (!empty($rev['justPaid'])) $out['rev']['justPaid'] = orolado_money($rev['justPaid']);
+    // 2026-11-08 (propriétaire : « même les anciens affiliés voient leurs résultats ») : ce qu'ils ont gagné avec l'ancien
+    // système (5 % des dépôts, déjà versé) s'ajoute au total versé, aux périodes et aux derniers versements.
+    $oldPaid = orolado_money($own['earned'] ?? 0);
+    $oldLog = array_values(array_filter((array) ($own['log'] ?? []), static fn($l) => is_array($l) && (float) ($l['amount'] ?? 0) > 0));
+    $out['rev']['oldPaid'] = $oldPaid;
+    $out['rev']['paid60'] = $out['rev']['paid'];
+    $out['rev']['paid'] = orolado_money($out['rev']['paid'] + $oldPaid);
+    $mergedLog = array_merge($out['rev']['log'], array_map(static fn($l) => ['a' => orolado_money($l['amount'] ?? 0), 't' => (int) strtotime((string) ($l['at'] ?? ''))], $oldLog));
+    usort($mergedLog, static fn($x, $y) => $y['t'] <=> $x['t']);
+    $out['rev']['log'] = array_slice($mergedLog, 0, 10);
     $out['pct'] = $out['rev']['pct'];
     $out['earned'] = $out['rev']['paid'];
     // Détail : on remplace les gains de l'ancien modèle 5 % par le versé réel (part de revenu),
@@ -609,7 +619,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       foreach ($out['periods'] as $pk => $pv) {
         if ($pk === 'all') { $out['periods'][$pk]['gain'] = $out['rev']['paid']; continue; }
         $g = 0.0;
-        foreach ($revLog as $l) { $ts = (int) strtotime((string) ($l['at'] ?? '')); if ($ts >= (int) ($pv['from'] ?? 0)) $g += (float) ($l['amount'] ?? 0); }
+        foreach (array_merge($revLog, $oldLog) as $l) { $ts = (int) strtotime((string) ($l['at'] ?? '')); if ($ts >= (int) ($pv['from'] ?? 0)) $g += (float) ($l['amount'] ?? 0); }
         $out['periods'][$pk]['gain'] = orolado_money($g);
       }
     }
@@ -648,6 +658,13 @@ function orolado_aff_history_rows(string $uid): array {
   foreach ((array) ($own['log'] ?? []) as $l) {
     if (!is_array($l) || empty($l['ref'])) continue;
     $rows[] = ['at' => (string) ($l['at'] ?? ''), 'ref' => (string) $l['ref'], 'amount' => orolado_money($l['amount'] ?? 0), 'kind' => 'bonus', 'status' => 'COMPLETED', 'gateway' => 'OROLADO', 'note' => 'Invitation'];
+  }
+  // 2026-11-08 : versements de la part de revenu (60 %) aussi dans l'historique financier (avant : seulement l'ancien 5 %)
+  if (function_exists('orolado_aff_rev_name')) {
+    foreach ((array) (orolado_aff_read(orolado_aff_rev_name($uid))['log'] ?? []) as $l) {
+      if (!is_array($l) || empty($l['ref'])) continue;
+      $rows[] = ['at' => (string) ($l['at'] ?? ''), 'ref' => (string) $l['ref'], 'amount' => orolado_money($l['amount'] ?? 0), 'kind' => 'bonus', 'status' => 'COMPLETED', 'gateway' => 'OROLADO', 'note' => 'Invitation'];
+    }
   }
   return $rows;
 }
