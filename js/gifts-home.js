@@ -162,7 +162,7 @@
     box.hidden = false;
     var g = guest(), s = st || {};
     var line = '', btn = '';
-    if (g) { line = x.wRule; btn = '<button type="button" class="gh-go" data-a="register">' + esc(x.guestBtn) + '</button><button type="button" class="gh-alt" data-a="login">' + esc(x.guestHave) + '</button>'; }
+    if (g) { line = ''; btn = '<button type="button" class="gh-go" data-a="register">' + esc(x.guestBtn) + '</button><button type="button" class="gh-alt" data-a="login">' + esc(x.guestHave) + '</button>'; }
     else if (s.spunToday) { line = x.today; btn = s.tickets > 0 ? '' : '<button type="button" class="gh-alt" id="ghDep">' + esc(x.deposit) + '</button>'; }
     else if (s.tickets > 0) { line = s.tickets === 1 ? x.ticket1 : fmt(x.tickets, { n: s.tickets }); btn = '<button type="button" class="gh-go gh-spin" id="ghSpin">' + esc(x.spin) + '</button>'; }
     else { line = x.noTicket; btn = '<button type="button" class="gh-go" id="ghDep">' + esc(x.deposit) + '</button>'; }
@@ -171,7 +171,7 @@
       : '<div class="gh-res"><b>' + esc(x.lose) + '</b><small>' + esc(x.loseS) + '</small></div>';
     box.innerHTML = '<p class="gh-lead">' + esc(x.wRule) + '</p>' +
       '<div class="whl-wrap"><i class="whl-glow"></i><div class="whl-rot" id="ghRot" style="transform:rotate(' + rot + 'deg)">' + wheelSvg(false) + '</div><i class="whl-pin"></i><b class="whl-o">O</b></div>' +
-      res + '<p class="gh-line">' + esc(line) + '</p>' + btn +
+      res + (line ? '<p class="gh-line">' + esc(line) + '</p>' : '') + btn + // 2026-11-08 : plus la même phrase deux fois
       (s.test ? '<p class="gh-note">' + esc(x.test) + ' <button type="button" class="gh-link" id="ghTestDep">' + esc(x.testDep) + '</button></p>' : '') +
       '<p class="gh-note">' + esc(x.bonusNote) + '</p>';
     bindCommon(box);

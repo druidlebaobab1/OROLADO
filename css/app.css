@@ -1787,10 +1787,10 @@ html.is-android .fs-trade-overlay.on .pad .btn-trade span{
 
 /* i18n: Arabic chrome RTL — never flip html/body (chart + CALL/PUT stay LTR) */
 html[lang="ar"],html.lang-ar{
-  --font:"Noto Naskh Arabic","Plus Jakarta Sans",system-ui,sans-serif;
+  --font:"Plus Jakarta Sans","Noto Naskh Arabic",system-ui,sans-serif; /* 2026-11-08 : chiffres et lettres latines en Plus Jakarta (avant : serif Naskh) ; l'arabe passe tout seul en Naskh */
 }
 html[lang="hi"]{
-  --font:"Noto Sans Devanagari","Plus Jakarta Sans",system-ui,sans-serif;
+  --font:"Plus Jakarta Sans","Noto Sans Devanagari",system-ui,sans-serif;
 }
 html[lang="ar"] body,
 html[lang="ar"] button,
@@ -8693,6 +8693,7 @@ html body #depositModal .pl-lead{font-size:13px;font-weight:900;color:#fff;line-
 html body #depositModal .pl-where{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#E6D9BC}
 html body #depositModal .pl-where svg{width:12px;height:12px;flex:0 0 12px;fill:none;stroke:#FFD27A;stroke-width:2.2}
 html body #depositModal .pl-logos{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+html body #depositModal .pl-logos,html body #depositModal .pl-logo{direction:ltr} /* 2026-11-08 : en arabe, logos de paiement à l'endroit (« G Pay », « mobi cash ») */
 html body #depositModal .pl-logo{display:inline-flex;align-items:center;gap:3px;height:20px;padding:0 6px;border-radius:5px;font-style:normal;font-size:10.5px;font-weight:900;line-height:1;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.35)}
 html body #depositModal .pl-logo small{font-size:8.5px;font-weight:700;opacity:.9}
 html body #depositModal .pl-visa{background:#fff;color:#71541A;font-style:italic;letter-spacing:.02em;font-size:11px}
@@ -14472,4 +14473,12 @@ html body #casinoModal.in-game:not([data-sec="skill"]) .cs-game > .cg-stage{marg
 html body #casinoModal.in-game:not([data-sec="skill"]) .cs-game{row-gap:5px!important}
 html body #casinoModal.in-game:not([data-sec="skill"]) .cs-game > .cs-gname{min-height:0!important;height:30px!important}
 html body #casinoModal.in-game .cg-live5 .l5-stage{padding:4px!important}
+}
+/* 2026-11-08 (revue, iPhone SE) : la place gardée sous la barre de Safari (92 px) coupait le bas des pages Cadeaux
+   (« Jouer en démo » du tournoi à moitié caché, fin du texte de la roue). Ces pages défilent maintenant dans leur carte. */
+@media (max-width:859px){
+  html:root body #portalModal#portalModal#portalModal #topCard#topCard{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+}
+@media (max-width:859px){
+  html:root body #portalModal#portalModal#portalModal #ghWheel:not([hidden]){flex:1 1 auto;min-height:0;overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 }
