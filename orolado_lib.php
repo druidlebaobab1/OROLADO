@@ -3981,6 +3981,9 @@ function credit_paid_deposit_core(array $hit): array {
   }
   $db['deposits'][$idx]['status'] = 'COMPLETED';
   $db['deposits'][$idx]['amount'] = $amount;
+  // 2026-11-08 (revue) : les envois crypto notés sur le dépôt = ceux de CE crédit (une autre vérification au même moment
+  // avait pu y écrire un 2e envoi, ensuite jamais crédité car « déjà compté »).
+  if (isset($hit['txids']) && is_array($hit['txids']) && $hit['txids']) $db['deposits'][$idx]['txids'] = array_values($hit['txids']);
   $db['deposits'][$idx]['paidAt'] = date('c');
   $db['deposits'][$idx]['paidTs'] = microtime(true); // v3627 : heure précise (écran de paiement de l'adresse permanente)
   if ($extId !== '') {
@@ -6751,13 +6754,20 @@ function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, str
   $uid = '';
   $address = trim($address);
   $email = strtolower(trim($email));
-  foreach ($db['deposits'] as $i => $d) {
-    if (!is_array($d)) continue;
-    $hit = ($orderId !== '' && (strcasecmp((string) ($d['id'] ?? ''), $orderId) === 0 || strcasecmp((string) ($d['ref'] ?? ''), $orderId) === 0))
-      || ($trackId !== '' && strcasecmp((string) ($d['trackId'] ?? ''), $trackId) === 0)
-      || ($trackId !== '' && strcasecmp((string) ($d['extId'] ?? ''), $trackId) === 0)
-      || ($address !== '' && strcasecmp((string) ($d['address'] ?? ''), $address) === 0);
-    if (!$hit) continue;
+  // 2026-11-08 (revue) : le dépôt est cherché par ORDRE DE CONFIANCE (n° de commande, puis n° OxaPay, puis adresse) :
+  // avant, le 1er de la liste qui partageait seulement l'adresse (ancien dépôt déjà payé) pouvait « cacher » le bon.
+  $rank = static function ($d) use ($orderId, $trackId, $address): int {
+    if (!is_array($d)) return 0;
+    if ($orderId !== '' && (strcasecmp((string) ($d['id'] ?? ''), $orderId) === 0 || strcasecmp((string) ($d['ref'] ?? ''), $orderId) === 0)) return 3;
+    if ($trackId !== '' && (strcasecmp((string) ($d['trackId'] ?? ''), $trackId) === 0 || strcasecmp((string) ($d['extId'] ?? ''), $trackId) === 0)) return 2;
+    if ($address !== '' && strcasecmp((string) ($d['address'] ?? ''), $address) === 0) return 1;
+    return 0;
+  };
+  $cand = [];
+  foreach ($db['deposits'] as $i => $d) { $rk = $rank($d); if ($rk > 0) $cand[] = [$rk, $i]; }
+  usort($cand, static fn($x, $y) => $y[0] <=> $x[0] ?: $x[1] <=> $y[1]);
+  foreach (array_map(static fn($c) => $c[1], array_slice($cand, 0, 1)) as $i) {
+    $d = $db['deposits'][$i];
     $ref = (string) ($d['id'] ?? $d['ref'] ?? '');
     $uid = (string) ($d['userId'] ?? '');
     $st = strtoupper((string) ($d['status'] ?? ''));
@@ -6836,7 +6846,7 @@ function orolado_oxapay_credit(string $orderId, string $trackId, float $usd, str
     'creditReceived' => true,
     'allowSmall' => true,
     'operator' => 'oxapay',
-  ]);
+  ] + ($txids ? ['txids' => array_values($txids)] : []));
   if (!empty($paid['duplicate'])) {
     $db = load_db($file);
     return ['ok' => true, 'duplicate' => true, 'amount' => orolado_money($paid['amount'] ?? $usd), 'vault' => $uid !== '' ? orolado_crypto_vault($db, $uid) : null];

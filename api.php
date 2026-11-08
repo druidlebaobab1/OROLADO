@@ -1932,7 +1932,7 @@ if ($action === 'resolveDeposit') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Dépôt introuvable']);
     exit;
   }
-  $amount = (int) ($req['amount'] ?? 0);
+  $amount = orolado_money($req['amount'] ?? 0); // 2026-11-08 (revue) : centimes gardés (avant : 9,99 → 9)
   $res = credit_paid_deposit(['ref' => $ref, 'amount' => $amount, 'paid' => true, 'manual' => true]);
   if (empty($res['ok'])) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($res['reason'] ?? 'unknown')]);
@@ -1941,7 +1941,7 @@ if ($action === 'resolveDeposit') {
   echo json_encode([
     'ok' => true,
     'server' => true,
-    'amount' => (int) ($res['amount'] ?? $amount),
+    'amount' => orolado_money($res['amount'] ?? $amount),
     'duplicate' => !empty($res['duplicate'])
   ]);
   exit;
