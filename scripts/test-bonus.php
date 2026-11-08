@@ -160,6 +160,9 @@ $sam = load_db()['users']['u_sam'];
 $wkNow = orolado_bonus_week(time());
 $prev = orolado_bonus_week($wkNow['start'] - 3600);
 $satTs = $prev['end'] - 36 * 3600;
+// 2026-11-08 : le bonus se remplit pendant 7 jours. Le dimanche, ce samedi-là a plus de 7 jours : on prend alors un dépôt plus récent
+// (la veille de lundi, la nuit) pour tester la même règle sans dépendre du jour où le test tourne.
+if (time() > $satTs + 7 * 86400 - 3600) $satTs = $prev['end'] - 2 * 3600;
 $depSam = dep('u_sam', 200, $satTs);
 orolado_bonus_with('u_sam', static function (&$st) use ($prev, $satTs, $depSam) {
   $st['weeks'][$prev['key']] = ['activatedAt' => $satTs - 60, 'weekEnd' => $prev['end'], 'depositId' => $depSam, 'depositAmount' => 200,

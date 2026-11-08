@@ -54,7 +54,7 @@
  "affDemoTitle": "用于视频的演示账户",
  "affIncome": "收入",
  "affFirstDep": "首次充值",
- "affAvgPlayer": "每位玩家平均收入",
+ "affAvgPlayer": "每位玩家平均存款",
  "affNbDep": "充值次数",
  "affC2R": "点击 → 注册",
  "affR2D": "注册 → 充值",

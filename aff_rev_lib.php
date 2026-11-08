@@ -97,7 +97,7 @@ function orolado_aff_rev_bet_margin(array $db, array $ids, int $cutTs): float {
   $stakes = 0.0;
   $credits = 0.0;
   $seen = [];
-  foreach (orolado_orders_recent($db, $ids, 'real') as $o) {
+  foreach (orolado_orders_recent($db, $ids, 'real', true) as $o) { // 2026-11-08 (revue) : TOUT l'historique (avant : ~2 jours, puis les trades sortaient du calcul)
     if (!is_array($o)) continue;
     $owner = (string) ($o['userId'] ?? $o['user_id'] ?? '');
     if ($owner === '' || !in_array($owner, $ids, true)) continue;

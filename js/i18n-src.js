@@ -3365,17 +3365,17 @@
   Object.keys(PROMO_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], PROMO_TR[l]); });
   // Tableau de bord affilié « pro » : indicateurs + conversions (façon 1win Partners).
   var AFF_MET_TR = {
-    fr: { affIncome: 'Revenus', affFirstDep: 'Premiers dépôts', affAvgPlayer: 'Revenu moyen / joueur', affNbDep: 'Nombre de dépôts', affC2R: 'Clic → Inscription', affR2D: 'Inscription → Dépôt', affMetTitle: 'Tes chiffres' },
-    en: { affIncome: 'Income', affFirstDep: 'First deposits', affAvgPlayer: 'Avg income / player', affNbDep: 'Number of deposits', affC2R: 'Click → Sign-up', affR2D: 'Sign-up → Deposit', affMetTitle: 'Your numbers' },
-    es: { affIncome: 'Ingresos', affFirstDep: 'Primeros depósitos', affAvgPlayer: 'Ingreso medio / jugador', affNbDep: 'Número de depósitos', affC2R: 'Clic → Registro', affR2D: 'Registro → Depósito', affMetTitle: 'Tus cifras' },
-    pt: { affIncome: 'Receitas', affFirstDep: 'Primeiros depósitos', affAvgPlayer: 'Receita média / jogador', affNbDep: 'Número de depósitos', affC2R: 'Clique → Registo', affR2D: 'Registo → Depósito', affMetTitle: 'Os teus números' },
-    ar: { affIncome: 'الإيرادات', affFirstDep: 'أول إيداعات', affAvgPlayer: 'متوسط الدخل / لاعب', affNbDep: 'عدد الإيداعات', affC2R: 'نقرة ← تسجيل', affR2D: 'تسجيل ← إيداع', affMetTitle: 'أرقامك' },
-    tr: { affIncome: 'Gelir', affFirstDep: 'İlk yatırımlar', affAvgPlayer: 'Oyuncu başına ort. gelir', affNbDep: 'Yatırım sayısı', affC2R: 'Tıklama → Kayıt', affR2D: 'Kayıt → Yatırım', affMetTitle: 'Rakamların' },
-    vi: { affIncome: 'Thu nhập', affFirstDep: 'Nạp lần đầu', affAvgPlayer: 'Thu nhập TB / người', affNbDep: 'Số lần nạp', affC2R: 'Nhấp → Đăng ký', affR2D: 'Đăng ký → Nạp', affMetTitle: 'Số liệu của bạn' },
-    id: { affIncome: 'Pendapatan', affFirstDep: 'Deposit pertama', affAvgPlayer: 'Pendapatan rata-rata / pemain', affNbDep: 'Jumlah deposit', affC2R: 'Klik → Daftar', affR2D: 'Daftar → Deposit', affMetTitle: 'Angkamu' },
-    ru: { affIncome: 'Доход', affFirstDep: 'Первые депозиты', affAvgPlayer: 'Средний доход / игрок', affNbDep: 'Число депозитов', affC2R: 'Клик → Регистрация', affR2D: 'Регистрация → Депозит', affMetTitle: 'Твои цифры' },
-    de: { affIncome: 'Einnahmen', affFirstDep: 'Erste Einzahlungen', affAvgPlayer: 'Ø Einnahmen / Spieler', affNbDep: 'Anzahl Einzahlungen', affC2R: 'Klick → Anmeldung', affR2D: 'Anmeldung → Einzahlung', affMetTitle: 'Deine Zahlen' },
-    hi: { affIncome: 'आय', affFirstDep: 'पहली जमा', affAvgPlayer: 'औसत आय / खिलाड़ी', affNbDep: 'जमा की संख्या', affC2R: 'क्लिक → पंजीकरण', affR2D: 'पंजीकरण → जमा', affMetTitle: 'आपके आँकड़े' }
+    fr: { affIncome: 'Revenus', affFirstDep: 'Premiers dépôts', affAvgPlayer: 'Dépôt moyen / joueur', affNbDep: 'Nombre de dépôts', affC2R: 'Clic → Inscription', affR2D: 'Inscription → Dépôt', affMetTitle: 'Tes chiffres' },
+    en: { affIncome: 'Income', affFirstDep: 'First deposits', affAvgPlayer: 'Avg deposit / player', affNbDep: 'Number of deposits', affC2R: 'Click → Sign-up', affR2D: 'Sign-up → Deposit', affMetTitle: 'Your numbers' },
+    es: { affIncome: 'Ingresos', affFirstDep: 'Primeros depósitos', affAvgPlayer: 'Depósito medio / jugador', affNbDep: 'Número de depósitos', affC2R: 'Clic → Registro', affR2D: 'Registro → Depósito', affMetTitle: 'Tus cifras' },
+    pt: { affIncome: 'Receitas', affFirstDep: 'Primeiros depósitos', affAvgPlayer: 'Depósito médio / jogador', affNbDep: 'Número de depósitos', affC2R: 'Clique → Registo', affR2D: 'Registo → Depósito', affMetTitle: 'Os teus números' },
+    ar: { affIncome: 'الإيرادات', affFirstDep: 'أول إيداعات', affAvgPlayer: 'متوسط الإيداع / لاعب', affNbDep: 'عدد الإيداعات', affC2R: 'نقرة ← تسجيل', affR2D: 'تسجيل ← إيداع', affMetTitle: 'أرقامك' },
+    tr: { affIncome: 'Gelir', affFirstDep: 'İlk yatırımlar', affAvgPlayer: 'Oyuncu başına ort. yatırım', affNbDep: 'Yatırım sayısı', affC2R: 'Tıklama → Kayıt', affR2D: 'Kayıt → Yatırım', affMetTitle: 'Rakamların' },
+    vi: { affIncome: 'Thu nhập', affFirstDep: 'Nạp lần đầu', affAvgPlayer: 'Nạp TB / người', affNbDep: 'Số lần nạp', affC2R: 'Nhấp → Đăng ký', affR2D: 'Đăng ký → Nạp', affMetTitle: 'Số liệu của bạn' },
+    id: { affIncome: 'Pendapatan', affFirstDep: 'Deposit pertama', affAvgPlayer: 'Deposit rata-rata / pemain', affNbDep: 'Jumlah deposit', affC2R: 'Klik → Daftar', affR2D: 'Daftar → Deposit', affMetTitle: 'Angkamu' },
+    ru: { affIncome: 'Доход', affFirstDep: 'Первые депозиты', affAvgPlayer: 'Средний депозит / игрок', affNbDep: 'Число депозитов', affC2R: 'Клик → Регистрация', affR2D: 'Регистрация → Депозит', affMetTitle: 'Твои цифры' },
+    de: { affIncome: 'Einnahmen', affFirstDep: 'Erste Einzahlungen', affAvgPlayer: 'Ø Einzahlung / Spieler', affNbDep: 'Anzahl Einzahlungen', affC2R: 'Klick → Anmeldung', affR2D: 'Anmeldung → Einzahlung', affMetTitle: 'Deine Zahlen' },
+    hi: { affIncome: 'आय', affFirstDep: 'पहली जमा', affAvgPlayer: 'औसत जमा / खिलाड़ी', affNbDep: 'जमा की संख्या', affC2R: 'क्लिक → पंजीकरण', affR2D: 'पंजीकरण → जमा', affMetTitle: 'आपके आँकड़े' }
   };
   Object.keys(AFF_MET_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF_MET_TR[l]); });
   // « Comment gagner » plus motivant : exemples concrets + classement des meilleures façons.

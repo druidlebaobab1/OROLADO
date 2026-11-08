@@ -2294,8 +2294,10 @@ if ($isAjax) {
       if (in_array(strtolower((string) ($row['status'] ?? '')), ['approved', 'paid', 'completed'], true)) {
         admin_json(['ok' => false, 'reason' => 'Ce retrait est déjà validé : il ne peut plus être refusé.']);
       }
-      orolado_refund_wd_once($db, $row);
-      if (empty($row['refunded'])) {
+      // 2026-11-08 (revue) : retrait créé HORS du site (jamais débité) → refusé SANS remboursement (sinon : argent créé)
+      $offsiteWd = !empty($row['offsite']) || !admin_wd_has_local($db, $id);
+      if (!$offsiteWd) orolado_refund_wd_once($db, $row);
+      if (!$offsiteWd && empty($row['refunded'])) {
         admin_json(['ok' => false, 'reason' => 'Remboursement non passé (base injoignable). Réessayez dans un instant.']);
       }
       $row['status'] = 'rejected';
