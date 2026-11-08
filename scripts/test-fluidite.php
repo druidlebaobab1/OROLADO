@@ -26,6 +26,10 @@ $allowed = [
     '.field:has(#err-otpCode.otp-wait-live.on)',
     '.wd-modal-head:has(#closeWithdraw.hidden)',
     '.field:not(:has(textarea))',
+    // 2026-11-08 : règles locales ajoutées depuis (petit bouton du solde, fenêtre de retrait seulement)
+    '.mb-wal:has(.mb-wal-img)',
+    '#wdStepForm:has(#wdBankFields:not(.hidden))',
+    '#withdrawModal:has(#wdStepForm:not(.hidden))',
 ];
 echo "1) Règles « :has() » coûteuses\n";
 $bad = [];

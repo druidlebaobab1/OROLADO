@@ -2185,7 +2185,7 @@ html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=3568"
   background-position:center top var(--ios-site-h,100%)!important;background-size:100% var(--ios-under,0px)!important}
 /* v3565 (propriétaire : « le petit bas ne doit pas aller dans la page d'actualisation ») — pendant le chargement, la bande du bas
    est la SUITE EXACTE de l'écran de chargement (mêmes couches que #oroLoader, dessinées à la hauteur de l'écran entier). */
-html.ios-app.is-ios:root:has(#oroLoader:not(.off)){
+html.ios-app.is-ios.ol-on:root{ /* 2026-11-08 : classe ol-on (avant : :has sur toute la page) */
   background-image:radial-gradient(ellipse at 50% 44%,rgba(60,40,12,.85) 0%,rgba(40,32,16,.35) 34%,rgba(0,0,0,0) 60%),url("galaxy-loader.svg?v=3565"),
     radial-gradient(120% 55% at 0% 0%,rgba(225,173,70,.28),transparent 62%),radial-gradient(110% 55% at 50% 112%,rgba(220,162,46,.22),transparent 62%),
     linear-gradient(180deg,#281E0B 0%,#060607 100%)!important;

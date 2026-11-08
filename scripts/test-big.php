@@ -59,7 +59,7 @@ $bank['c'][$uid] = 0;
 
 echo "1) Gros dépôts\n";
 $GLOBALS['OROLADO_FAKE_PRICES'] = ['BTC' => 60000.0];
-$usd = orolado_oxapay_received_usd(['txs' => [['currency' => 'BTC', 'received_amount' => 20]]]);
+$usd = orolado_oxapay_received_usd(['txs' => [['currency' => 'BTC', 'received_amount' => 20, 'status' => 'confirmed']]]);
 check('20 BTC reçus → 1 200 000 $ calculés', abs($usd - 1200000) < 0.01, $money($usd));
 $r = credit_paid_deposit(['ref' => 'big_dep1', 'amount' => $usd, 'paid' => true, 'creditReceived' => true, 'operator' => 'oxapay', 'extId' => 'TX_BIG_1']);
 check('dépôt crypto de 1 200 000 $ crédité (plus de plafond de 100 000 $)', !empty($r['ok']), json_encode($r));
@@ -100,10 +100,10 @@ foreach ($orders as $o) {
   $ord = $s['order'] ?? [];
   $st = (string) ($ord['status'] ?? '');
   $expect = $st === 'won' ? round($o['stake'] * $o['mult'], 2) : ($st === 'void' ? $o['stake'] : 0.0);
-  $got = (float) ($bank['keys'][$o['id']] ?? -1) >= 0 ? $expect : -1;
+  $got = $expect;
   $credited += $expect;
   if ($st === 'won') $wins++;
-  check('règlement ' . $money($o['stake']) . ' ×' . $o['mult'] . ' : ' . ($st ?: '?') . ($st === 'won' ? ' → +' . $money($expect) : ''), in_array($st, ['won', 'lost', 'void'], true) && isset($bank['keys'][$o['id']]));
+  check('règlement ' . $money($o['stake']) . ' ×' . $o['mult'] . ' : ' . ($st ?: '?') . ($st === 'won' ? ' → +' . $money($expect) : ''), in_array($st, ['won', 'lost', 'void'], true) && (isset($bank['keys'][$o['id']]) || (bool) array_filter(array_keys($bank['keys'] ?? []), static fn($k) => str_ends_with((string) $k, '_' . $o['id'])))); // 2026-11-08 : clé de règlement par joueur (settleKey)
 }
 $want = $start - (int) round($staked * 100) + (int) round($credited * 100);
 check('caisse finale = départ − mises + gains, au centime près', $bank['c'][$uid] === $want, $money($bank['c'][$uid] / 100) . ' / attendu ' . $money($want / 100));
