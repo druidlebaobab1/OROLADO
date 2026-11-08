@@ -144,5 +144,31 @@ $r = send('u_paul', 'u_frere', 900); // déjà 35 $ envoyés aujourd'hui
 $r2 = send('u_paul', 'u_frere', 200);
 check('plus de 1 000 $ envoyés en 24 h : refusé (sécurité, compte volé)', $r['ok'] === true && $r2['ok'] === false && $r2['reason'] === 'dayMax', json_encode([$r['ok'], $r2['reason'] ?? '']));
 
+echo "11) Réponse de la base PERDUE pendant le retrait (l'argent est bien parti) : l'ami est crédité, rien de perdu, jamais 2 fois\n";
+dep('u_ali', 100, date('c'));
+$GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url) use (&$bal) {
+  if (preg_match('#/rest/v1/vaults\?user_id=eq\.([^&]+)#', $url, $m)) { $u = rawurldecode($m[1]); return [['demo' => 0, 'real' => $bal[$u] ?? 0]]; }
+  return [];
+};
+$GLOBALS['OROLADO_FAKE_RPC_BACKUP'] = $GLOBALS['OROLADO_FAKE_RPC'];
+$GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) {
+  $r = ($GLOBALS['OROLADO_FAKE_RPC_BACKUP'])($fn, $a);
+  return $fn === 'debit_real' ? null : $r; // le retrait est FAIT, mais la réponse se perd
+};
+$ali0 = $bal[$U['u_ali']]; $paul1 = $bal[$U['u_paul']];
+$r = send('u_ali', 'u_paul', 12);
+$GLOBALS['OROLADO_FAKE_RPC'] = $GLOBALS['OROLADO_FAKE_RPC_BACKUP'];
+check('envoi réussi malgré la réponse perdue', $r['ok'] === true, json_encode($r));
+check('Ali débité une seule fois (12 $)', abs($bal[$U['u_ali']] - ($ali0 - 12)) < 0.001, (string) $bal[$U['u_ali']]);
+check('Paul crédité de 12 $', abs($bal[$U['u_paul']] - ($paul1 + 12)) < 0.001, (string) $bal[$U['u_paul']]);
+st('u_ali'); st('u_ali');
+check('nouvel essai : jamais un 2e retrait', abs($bal[$U['u_ali']] - ($ali0 - 12)) < 0.001, (string) $bal[$U['u_ali']]);
+$GLOBALS['OROLADO_FAKE_RPC'] = function (string $fn, array $a) use (&$down) { return $fn === 'debit_real' ? null : ($GLOBALS['OROLADO_FAKE_RPC_BACKUP'])($fn, $a); }; // base vraiment en panne : rien n'est parti
+$ali1 = $bal[$U['u_ali']];
+$r = send('u_ali', 'u_paul', 5);
+$GLOBALS['OROLADO_FAKE_RPC'] = $GLOBALS['OROLADO_FAKE_RPC_BACKUP'];
+check('base en panne (rien retiré) : envoi refusé, solde intact', $r['ok'] === false && abs($bal[$U['u_ali']] - $ali1) < 0.001, json_encode($r));
+$GLOBALS['OROLADO_FAKE_HTTP'] = function () { return []; };
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

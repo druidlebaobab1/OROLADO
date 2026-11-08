@@ -550,6 +550,7 @@
         '<div class="arv-kpi"><b>' + money(rev.balance || 0) + '</b><span>' + esc(t('affRevBalLabel')) + '</span></div>' +
         '<div class="arv-kpi"><b>' + money(rev.paid || 0) + '</b><span>' + esc(t('affEarned')) + '</span></div>' +
       '</div>' +
+      affResHtml(rev, V) +
       '<h3 class="arv-big">' + esc(t('affRevBig', V)) + '</h3>' +
       '<ul class="arv-rules">' +
         '<li>' + esc(t('affRevR1', V)) + '</li>' +
@@ -602,6 +603,39 @@
   }
   function affInt(n) { try { return Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 }); } catch (e) { return String(Math.round(Number(n || 0))); } }
   function affN(r) { return r.n != null ? Number(r.n) || 0 : (Number(r.deposit || 0) > 0 ? 1 : 0); }
+  // 2026-11-08 (propriétaire : « plusieurs cases importantes où les affiliés voient tout leur résultat ») — Tes résultats :
+  // versé, en attente (délai), gains du jour / 7 j / 30 j, amis qui jouent, misé et perdu par les amis, derniers versements,
+  // puis la liste des amis (déposé, misé, ton gain, en attente). Affichage seulement : les chiffres viennent du serveur.
+  function affResHtml(rev, V) {
+    var P = (aff && aff.periods) || {}, g = function (k) { return Number((P[k] || {}).gain) || 0; };
+    var box = function (v, lbl, cls) { return '<div class="arr-c' + (cls ? ' ' + cls : '') + '"><b>' + v + '</b><span>' + esc(lbl) + '</span></div>'; };
+    var friends = (aff && aff.list || []).filter(function (r) { return Number(r.deposit || 0) > 0 || r.played; });
+    var log = (rev.log || []).slice(0, 5);
+    var when = function (ts) { try { return new Date(ts * 1000).toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+    return '<div class="arr"><div class="arr-h">' + esc(t('affResTitle')) + '</div>' +
+      '<div class="arr-g">' +
+        box(money(rev.paid || 0), t('affResPaid'), 'ok') +
+        box(money(rev.pending || 0), t('affResPend', V), 'wait') +
+        box(money(g('day')), t('affResToday')) +
+        box(money(g('week')), t('affRes7')) +
+        box(money(g('month')), t('affRes30')) +
+        box(affInt(Number(rev.active) || 0) + ' / ' + affInt(Number(aff.friends) || 0), t('affResActive')) +
+        box(money(rev.staked || 0), t('affResStaked')) +
+        box(money(Math.max(0, Number(rev.ngr) || 0)), t('affResLost')) +
+      '</div>' +
+      '<p class="arr-how">' + esc(t('affResHow', V)) + '</p>' +
+      '<div class="arr-sub">' + esc(t('affResLog')) + '</div>' +
+      (log.length ? '<div class="arr-log">' + log.map(function (l) { return '<div><span>' + esc(when(l.t)) + '</span><b>+' + esc(money(l.a)) + '</b></div>'; }).join('') + '</div>'
+        : '<p class="arr-empty">' + esc(t('affResNoLog')) + '</p>') +
+      '<div class="arr-sub">' + esc(t('affResFriends')) + ' (' + affInt(friends.length) + ')</div>' +
+      (friends.length ? '<div class="arr-fr"><div class="arr-fh"><span>ID</span><span>' + esc(t('affResColDep')) + '</span><span>' + esc(t('affResColStake')) + '</span><span>' + esc(t('affResColGain')) + '</span></div>' +
+        friends.slice(0, 100).map(function (r) {
+          return '<div class="arr-fl"><span class="id">' + esc(String(r.id || '').replace(/^ORO-(\d+)$/, 'ORO$1')) + '</span><span>' + esc(money(r.deposit || 0)) + '</span><span>' + esc(money(r.staked || 0)) + '</span>' +
+            '<span class="gn">+' + esc(money(r.gift || 0)) + (Number(r.pend) > 0 ? '<i>⏳ +' + esc(money(r.pend)) + '</i>' : '') + '</span></div>';
+        }).join('') + '</div>'
+        : '<p class="arr-empty">' + esc(t('affResNoFriends')) + '</p>') +
+      '</div>';
+  }
   function affRowHtml(r) {
     var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
     return '<div class="aff-row"><div class="ar-id"><b>' + esc(String(r.id || '').replace(/^ORO-(\d+)$/, 'ORO$1')) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + '</span></div>' +

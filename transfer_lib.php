@@ -144,7 +144,25 @@ function orolado_xfer_send(array $db, array $user, array $to, float $amount, int
   if (!is_array($res)) return ['ok' => false, 'reason' => 'busy'];
   if (isset($res['err'])) return ['ok' => false, 'reason' => $res['err'], 'can' => $res['can'] ?? null];
   // 2) Retirer l'argent de l'envoyeur (une seule fois, refusé par la base si le solde ne suffit pas).
+  $v0 = function_exists('supabase_admin_vault') ? supabase_admin_vault($payFrom) : null;
   $deb = orolado_trade_debit($payFrom, $ref, $amount);
+  // 2026-11-08 (revue « transferts très importants ») : réponse perdue (base lente / coupure) → on ne sait pas si l'argent est
+  // parti. Avant : on annulait toujours → l'envoyeur pouvait être débité SANS que l'ami soit crédité. Maintenant on relit le
+  // vrai solde : s'il a baissé d'au moins le montant, le retrait a bien eu lieu → on le note et l'ami est crédité.
+  if (empty($deb['ok']) && ($deb['reason'] ?? '') !== 'insufficient' && is_array($v0) && function_exists('supabase_admin_vault')) {
+    $b0 = orolado_money($v0['real'] ?? 0);
+    for ($try = 0; $try < 3; $try++) {
+      if ($try) usleep(400000);
+      $v1 = supabase_admin_vault($payFrom);
+      if (!is_array($v1)) continue;
+      $b1 = orolado_money($v1['real'] ?? 0);
+      if ($b1 <= $b0 - $amount + 0.009) {
+        orolado_xfer_mark_debited($payFrom, $ref, $amount, $b1);
+        $deb = ['ok' => true, 'real' => $b1, 'recovered' => true];
+      }
+      break;
+    }
+  }
   if (empty($deb['ok'])) {
     orolado_xfer_with($uid, static function (array &$st) use ($ref, $amount) {
       $st['cap'] = orolado_money((float) ($st['cap'] ?? 0) + $amount);
@@ -169,6 +187,15 @@ function orolado_xfer_send(array $db, array $user, array $to, float $amount, int
   // 3) Créditer l'ami (bonus ×2), une seule fois. En cas d'échec : réessayé plus tard (orolado_xfer_retry).
   orolado_xfer_credit($db, $uid, $ref);
   return ['ok' => true, 'amount' => $amount, 'ref' => $ref, 'fromName' => $fromName];
+}
+
+/** Note « débit fait » (même marqueur que orolado_trade_debit) : un nouvel essai ne retire jamais une 2e fois. */
+function orolado_xfer_mark_debited(string $payId, string $ref, float $amount, float $real): void {
+  $dir = orolado_data_dir() . '/stakes';
+  if (!is_dir($dir)) @mkdir($dir, 0755, true);
+  $key = hash('sha256', $payId . '|' . $ref);
+  $marker = $dir . '/' . $key . '.ok';
+  if (!is_file($marker)) @file_put_contents($marker, json_encode(['at' => date('c'), 'stake' => orolado_money($amount), 'real' => orolado_money($real), 'recovered' => 1]));
 }
 
 /** Crédit de l'ami pour un envoi déjà retiré à l'envoyeur. */
