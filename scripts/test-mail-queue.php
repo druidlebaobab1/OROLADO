@@ -13,6 +13,7 @@ mkdir($tmp . '/data', 0755, true);
 foreach (['orolado_lib.php', 'mail_queue_lib.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 require $tmp . '/orolado_lib.php';
 require $tmp . '/mail_queue_lib.php';
+$GLOBALS['OROLADO_MAILQ_BATCH'] = 1; // 2026-11-08 : le site envoie par paquets de 30 (v3527) ; le test vérifie la logique e-mail par e-mail
 
 $fails = 0;
 $ok = static function (bool $c, string $what) use (&$fails): void {
@@ -59,7 +60,7 @@ $r2 = mail_queue_tick();
 $ok($r2 === 'wait' && count($sentLog) === 1, 'tic suivant tout de suite → attend (rien envoyé)');
 $j = $job();
 $gap = $j['nextAt'] - $j['lastTick'];
-$ok($gap >= 6 && $gap <= 9, "délai tiré entre 6 et 9 s ($gap s)");
+$ok($gap >= 1 && $gap <= 9, "délai avant le paquet suivant entre 1 et 9 s ($gap s)"); // 2026-11-08 : v3527 « plus rapide » : 1 s entre deux paquets
 $log = json_decode((string) file_get_contents($tmp . '/data/mail_' . $id . '.json'), true);
 $ok(($log['joueur1@test.com'] ?? null) === 1, 'journal mail_<id>.json : joueur1 = 1');
 
