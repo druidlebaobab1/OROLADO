@@ -39,6 +39,9 @@ function admin_day_bounds(string $which, string $from = '', string $to = ''): ar
     $y = $today->modify('-1 day');
     return [$y->format('c'), $today->format('c')];
   }
+  if ($which === '7d' || $which === '30d') { // 2026-11-09 : 7 / 30 derniers jours (aujourd'hui compris)
+    return [$today->modify($which === '7d' ? '-6 days' : '-29 days')->format('c'), $today->modify('+1 day')->format('c')];
+  }
   if ($which === 'range' || $which === 'date') {
     $a = $from !== '' ? new DateTimeImmutable($from, $tz) : $today;
     $b = $to !== '' ? new DateTimeImmutable($to, $tz) : $a;
@@ -1941,7 +1944,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

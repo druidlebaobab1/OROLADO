@@ -10,7 +10,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 $tmp = sys_get_temp_dir() . '/orolado_adm_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
 mkdir($tmp . '/feedcache', 0755, true);
-foreach (['orolado_lib.php', 'admin_lib.php', 'mail_queue_lib.php', 'admin.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'history_lib.php', 'wipe_lib.php', 'admin_gift_lib.php', 'push_lib.php', 'aff_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php', 'casino_lib.php', 'sports_lib.php', 'admin_games_lib.php'] as $f) {
+foreach (['orolado_lib.php', 'admin_lib.php', 'mail_queue_lib.php', 'admin.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'history_lib.php', 'wipe_lib.php', 'admin_gift_lib.php', 'push_lib.php', 'aff_lib.php', 'aff_rev_lib.php', 'top_lib.php', 'defi_lib.php', 'bonus_lib.php', 'casino_lib.php', 'sports_lib.php', 'admin_games_lib.php'] as $f) {
   if (is_file(__DIR__ . '/../' . $f)) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 }
 putenv('SUPABASE_URL=https://fake.supabase.test');
@@ -149,6 +149,11 @@ $localUsers8['ulocal9'] = ['id' => 'ulocal9', 'email' => 'joueur9@test.com', 'sb
 // Faux retrait écrit directement dans Supabase depuis un téléphone (aucun débit) : doit être bloqué.
 $T['withdrawals'][] = ['id' => 'wd_fake_phone', 'user_id' => $p1, 'amount' => 9999, 'status' => 'pending', 'operator' => 'wave', 'phone' => '0799999999',
   'reference' => 'wd_fake_phone', 'destination' => '0799999999', 'created_at' => $iso($now - 600)];
+if (in_array('--preview', $argv ?? [], true)) { // aperçu : un affilié (joueur 1) et ses 2 amis (joueurs 2 et 3)
+  $localUsers8['uloc1'] = ['id' => 'uloc1', 'email' => 'joueur1@test.com', 'sbId' => $p1, 'publicId' => 'ORO-100001'];
+  $localUsers8['uloc2'] = ['id' => 'uloc2', 'email' => 'joueur2@test.com', 'sbId' => $p2];
+  $localUsers8['uloc3'] = ['id' => 'uloc3', 'email' => 'joueur3@test.com', 'sbId' => $p3];
+}
 file_put_contents($tmp . '/data/orolado.json', json_encode([
   'users' => $localUsers8, 'vault' => [], 'sessions' => [], 'deposits' => [], 'withdrawals' => $localWds, 'support_messages' => [],
   'orders' => [['id' => 'stuck1', 'userId' => $p1, 'mode' => 'real', 'status' => 'open', 'stake' => 3, 'expiryAt' => $now - 600, 'at' => $now - 610]],
@@ -166,7 +171,11 @@ ob_end_clean();
 if (in_array('--preview', $argv ?? [], true)) {
   $db = json_decode((string) file_get_contents($tmp . '/data/orolado.json'), true);
   $db['users']['admin_master'] = ['id' => 'admin_master', 'email' => 'admin@orolado.com', 'role' => 'admin'];
+  // Aperçu : un affilié (joueur 1) qui a invité les joueurs 2 et 3 — pour voir les signes affiliation.
   file_put_contents($tmp . '/data/orolado.json', json_encode($db));
+  if (function_exists('orolado_aff_with')) orolado_aff_with(orolado_aff_owner_name('uloc1'), static function (&$st) {
+    $st['friends'] = [['uid' => 'uloc2', 'at' => date('c'), 'deposit' => 20, 'paid' => true], ['uid' => 'uloc3', 'at' => date('c', time() - 86400), 'deposit' => 0, 'paid' => false]];
+  });
   $_SESSION['admin_uid'] = 'admin_master';
   $resp = ['badges' => ['ok' => true, 'badges' => admin_badges(), 'board' => admin_board_watch()], 'list' => [], 'profile' => [], 'wipe' => ['ok' => true, 'keep' => [['email' => 'admin@orolado.com', 'name' => 'Admin', 'ids' => ['admin_master'], 'real' => 0, 'admin' => true, 'pid' => 'ORO-ADMIN'], ['email' => 'vraijoueur@gmail.com', 'name' => 'Vrai', 'ids' => ['g1'], 'real' => 12, 'admin' => false, 'pid' => 'ORO-2']], 'delete' => [['email' => 'cc33@laoia.com', 'name' => 'Faux 1', 'ids' => ['f1'], 'real' => 900, 'admin' => false, 'pid' => 'ORO-3'], ['email' => 'x9@tempmail.xyz', 'name' => 'Faux 2', 'ids' => ['f2'], 'real' => 5000, 'admin' => false, 'pid' => 'ORO-4']]]];
   foreach ($ADMIN_TABS as $ts) foreach ($ts as $t) $resp['list'][$t[0]] = admin_list_payload($t[0], ['preset' => 'all', 'page' => 1]);
