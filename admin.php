@@ -668,6 +668,71 @@ function admin_closed_accounts(array $people): array {
 }
 
 /** v2433 — Bonus par sorte, arrondis ; Affiliation = cadeau reçu comme ami invité + 5 % gagnés en invitant. */
+/** 2026-11-09 : identifiant LOCAL (u_…) d'un joueur vu par l'admin avec son id Supabase / son e-mail (l'affiliation est rangée sous l'id local). */
+function admin_aff_local_uid(string $uid, string $email = ''): string {
+  $db = load_db();
+  $users = $db['users'] ?? [];
+  if ($uid !== '' && isset($users[$uid]) && is_array($users[$uid])) return $uid;
+  if ($uid !== '' && function_exists('orolado_users_by_sb')) foreach (orolado_users_by_sb($db, $uid) as $k => $u) return (string) $k;
+  $email = strtolower(trim($email));
+  if ($email !== '' && function_exists('orolado_users_by_email')) foreach (orolado_users_by_email($db, $email) as $k => $u) return (string) $k;
+  return '';
+}
+
+/**
+ * 2026-11-09 (propriétaire : « je veux bien suivre mes affiliés ») — tout le suivi d'un affilié pour sa fiche admin :
+ * lien, clics, amis, dépôts, misé, perdu, dû (60 %), versé (60 % + ancien 5 %), en attente, versements, détail par ami.
+ * Lecture seule (aucun versement ici).
+ */
+function admin_aff_detail(string $local): ?array {
+  if ($local === '' || !function_exists('orolado_aff_owner_name')) return null;
+  $own = orolado_aff_read(orolado_aff_owner_name($local));
+  $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
+  if (!$friends && empty($own['clicks'])) return null;
+  $db = load_db();
+  $w = null;
+  if (function_exists('orolado_aff_rev_wallet') && $friends) {
+    if (function_exists('orolado_aff_build_deposit_index')) $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
+    $w = orolado_aff_rev_wallet($db, $local);
+    unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+  }
+  $pct = (int) ($w['pct'] ?? 60);
+  $byF = [];
+  foreach ((array) ($w['friends'] ?? []) as $fr) $byF[(string) ($fr['uid'] ?? '')] = $fr;
+  $rows = []; $dep = 0; $total = 0.0;
+  foreach ($friends as $f) {
+    $fu = (string) ($f['uid'] ?? '');
+    $u = $db['users'][$fu] ?? [];
+    $x = $byF[$fu] ?? [];
+    $d = (float) ($x['depAll'] ?? $f['deposit'] ?? 0);
+    if ($d > 0.009 || !empty($f['paid'])) $dep++;
+    $total += $d;
+    $ngr = (float) ($x['ngr'] ?? 0);
+    $rows[] = ['id' => (string) ($u['publicId'] ?? $fu), 'email' => (string) ($u['email'] ?? ''), 'name' => (string) ($u['displayName'] ?? ''),
+      'at' => (string) ($f['at'] ?? ''), 'deposit' => round($d, 2), 'staked' => round((float) ($x['staked'] ?? 0), 2), 'lost' => round($ngr, 2),
+      'gain' => round(max(0.0, $pct / 100 * $ngr) + (float) ($f['gift'] ?? 0), 2),
+      'pend' => round(max(0.0, $pct / 100 * (float) ($x['ngrAll'] ?? 0) - max(0.0, $pct / 100 * $ngr)), 2)];
+  }
+  usort($rows, static fn($a, $b) => strcmp($b['at'], $a['at']));
+  $rev = function_exists('orolado_aff_rev_name') ? orolado_aff_read(orolado_aff_rev_name($local)) : [];
+  $log = [];
+  foreach ((array) ($rev['log'] ?? []) as $l) $log[] = ['amount' => round((float) ($l['amount'] ?? 0), 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => '60 %'];
+  foreach ((array) ($own['log'] ?? []) as $l) if ((float) ($l['amount'] ?? 0) > 0) $log[] = ['amount' => round((float) $l['amount'], 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => 'ancien 5 %'];
+  usort($log, static fn($a, $b) => strcmp($b['at'], $a['at']));
+  $old5 = (float) ($own['earned'] ?? 0);
+  $paid60 = (float) ($w['withdrawn'] ?? 0);
+  $code = function_exists('orolado_aff_code') ? orolado_aff_code($local) : '';
+  return [
+    'local' => $local, 'code' => $code, 'link' => $code !== '' ? 'https://orolado.com/r/' . $code : '',
+    'clicks' => (int) ($own['clicks'] ?? 0), 'friends' => count($friends), 'deposited' => $dep, 'total' => round($total, 2),
+    'staked' => round((float) ($w['staked'] ?? 0), 2), 'lost' => round(max(0.0, (float) ($w['ngr'] ?? 0)), 2), 'pct' => $pct,
+    'entitled' => round((float) ($w['entitled'] ?? 0), 2), 'paid60' => round($paid60, 2), 'old5' => round($old5, 2),
+    'paid' => round($paid60 + $old5, 2), 'pending' => round((float) ($w['pending'] ?? 0), 2), 'active' => (int) ($w['active'] ?? 0),
+    'toPay' => round(max(0.0, (float) ($w['entitled'] ?? 0) - $paid60), 2),
+    'log' => array_slice($log, 0, 30), 'rows' => array_slice($rows, 0, 500),
+  ];
+}
+
 function admin_bonus_by(array $by, string $uid, array $p): array {
   if (function_exists('orolado_aff_owner_name')) {
     $db = load_db();
@@ -681,7 +746,10 @@ function admin_bonus_by(array $by, string $uid, array $p): array {
         if ((string) ($u['sbId'] ?? '') === $uid || ($mail !== '' && strtolower((string) ($u['email'] ?? '')) === $mail)) { $local = (string) $k; break; }
       }
     }
-    if ($local !== '') $by['aff'] += (float) (orolado_aff_read(orolado_aff_owner_name($local))['earned'] ?? 0);
+    if ($local !== '') {
+      $by['aff'] += (float) (orolado_aff_read(orolado_aff_owner_name($local))['earned'] ?? 0);
+      if (function_exists('orolado_aff_rev_name')) $by['aff'] += (float) (orolado_aff_read(orolado_aff_rev_name($local))['withdrawn'] ?? 0); // 2026-11-09 : + versements 60 %
+    }
   }
   foreach ($by as $k => $v) $by[$k] = round((float) $v, 2);
   return $by;
@@ -1726,7 +1794,9 @@ function admin_profile_payload(string $uid): array {
   }
   // Affiliation (part de revenu) : badge + chiffres si ce joueur a invité des amis.
   $affBox = null;
-  if (function_exists('orolado_aff_is_affiliate') && orolado_aff_is_affiliate($uid) && function_exists('orolado_aff_rev_wallet')) {
+  $affLocal = admin_aff_local_uid($uid, (string) ($p['email'] ?? ''));
+  $affFull = $affLocal !== '' ? admin_aff_detail($affLocal) : null; // 2026-11-09 : suivi complet de l'affilié (fiche)
+  if (false) {
     $aw = orolado_aff_rev_wallet(load_db(), $uid);
     $dep = 0;
     foreach ((array) ($aw['friends'] ?? []) as $fr) if (($fr['deposits'] ?? 0) > 0.009) $dep++;
@@ -1743,6 +1813,7 @@ function admin_profile_payload(string $uid): array {
   return [
     'ok' => true,
     'aff' => $affBox,
+    'affFull' => $affFull,
     'user' => [
       'id' => $uid,
       'publicId' => (string) ($p['publicId'] ?? ''),
@@ -2098,6 +2169,32 @@ if ($isAjax) {
     if ($amt <= 0 || $amt > 100000) admin_json(['ok' => false, 'reason' => 'Montant entre 1 et 100 000 $']);
     $adm = orolado_admin_emails()[0] ?? 'admin@orolado.com';
     admin_json(admin_credit_player('admin_master', $amt, 'Recharge test admin', ['email' => $adm], (string) ($me['email'] ?? '')));
+  }
+  // 2026-11-09 (propriétaire : suivi des affiliés) — fiche affilié : verser maintenant ce qui est dû ; envoyer un message
+  // (ex. identifiants d'un compte démo) dans sa discussion Social, avec notification sur son téléphone.
+  if ($action === 'aff_pay_now') {
+    $local = admin_aff_local_uid((string) ($req['userId'] ?? ''), (string) ($req['email'] ?? ''));
+    if ($local === '' || !function_exists('orolado_aff_rev_run')) admin_json(['ok' => false, 'reason' => 'Affilié introuvable']);
+    $dbP = load_db();
+    if (function_exists('orolado_aff_build_deposit_index')) $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($dbP);
+    $w = orolado_aff_rev_run($dbP, $local);
+    unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+    admin_json(['ok' => true, 'paid' => round((float) ($w['justPaid'] ?? 0), 2), 'pending' => round((float) ($w['pending'] ?? 0), 2)]);
+  }
+  if ($action === 'aff_msg') {
+    require_once __DIR__ . '/live_lib.php';
+    $local = admin_aff_local_uid((string) ($req['userId'] ?? ''), (string) ($req['email'] ?? ''));
+    $text = function_exists('live_clean_text') ? live_clean_text((string) ($req['text'] ?? '')) : trim((string) ($req['text'] ?? ''));
+    if ($local === '' || $text === '') admin_json(['ok' => false, 'reason' => 'Message vide ou joueur introuvable']);
+    $dbM = load_db();
+    $cands = array_values(array_unique(array_filter([$local, (string) ($dbM['users'][$local]['sbId'] ?? ''), (string) ($req['userId'] ?? '')])));
+    $tid = $cands[0];
+    foreach ($cands as $c) if (is_file(live_thread_file($c))) { $tid = $c; break; }
+    $r = live_add_msg(['id' => $tid], 'a', $text);
+    $rows = [];
+    if (function_exists('push_sub_files')) foreach (push_sub_files() as $pf) { $row = json_decode((string) @file_get_contents($pf), true); if (is_array($row) && in_array((string) ($row['uid'] ?? ''), $cands, true)) $rows[] = $row; }
+    if ($rows && function_exists('push_send_rows')) push_send_rows($rows, push_payload('💬 OROLADO', mb_substr($text, 0, 120), '/?live=1'));
+    admin_json(['ok' => !empty($r['ok'])]);
   }
   if ($action === 'partner_list') { // v3631 : tous les comptes affiliés, avec leur solde
     $ldb = admin_local_db();
@@ -4043,6 +4140,65 @@ function openMessage(m) {
   const bu = document.getElementById('btnMsgUser');
   if (bu) bu.onclick = () => openUser(m.userId);
 }
+// 2026-11-09 (propriétaire : « bien suivre mes affiliés ») — panneau Affiliation de la fiche : chiffres, lien, amis, versements, boutons
+function affPanel(A) {
+  if (!A) return '';
+  const c = (lbl, v, col) => '<div'+(col?' style="border-color:'+col+'"':'')+'><span>'+esc(lbl)+'</span><b'+(col?' style="color:'+col+'"':'')+'>'+v+'</b></div>';
+  const rows = (A.rows||[]);
+  return '<div class="aff-adm" style="margin:10px 0;padding:12px;border-radius:14px;border:1px solid rgba(43,212,154,.55);background:rgba(43,212,154,.07)">'+
+    '<h3 class="panel-title" style="margin:0 0 4px;color:#7FF5CF">🤝 Affilié — '+esc(A.pct)+' % de ce que ses amis perdent en argent réel (versé tout seul 24 h après)</h3>'+
+    '<p class="muted" style="margin:0 0 8px">Lien : <b>'+esc(A.link||'—')+'</b> '+(A.link?'<button class="mini" id="affCopyLink">Copier</button>':'')+' · Code : <b>'+esc(A.code||'—')+'</b></p>'+
+    '<div class="totals">'+
+      c('Clics sur son lien', esc(A.clicks))+c('Amis inscrits', esc(A.friends))+c('Amis qui ont déposé', esc(A.deposited))+c('Amis qui jouent (réel)', esc(A.active))+
+      c('Déposé par ses amis', money(A.total))+c('Misé par ses amis', money(A.staked))+c('Perdu par ses amis', money(A.lost))+c('Dû ('+A.pct+' %)', money(A.entitled), '#7FF5CF')+
+      c('Versé ('+A.pct+' %)', money(A.paid60), '#4ADE80')+c('Ancien 5 % versé', money(A.old5))+c('TOTAL versé', money(A.paid), '#4ADE80')+c('En attente (24 h)', money(A.pending), '#FCD34D')+
+      c('Reste à verser', money(A.toPay), A.toPay>0?'#F87171':'')+
+    '</div>'+
+    '<p style="margin:8px 0"><button class="mini ok" id="affPayNow">💸 Verser maintenant'+(A.toPay>0?' ('+money(A.toPay)+')':'')+'</button> '+
+      '<button class="mini" id="affDemo" style="border-color:#F59E0B;color:#FDE68A">🎁 Lui donner un compte démo</button> '+
+      '<button class="mini" id="affWrite">✉️ Lui écrire (Social)</button></p><div id="affOut" class="muted" style="font-size:12px;white-space:pre-wrap"></div>'+
+    (rows.length ? '<h3 class="panel-title">Ses amis ('+rows.length+')</h3><div class="table-wrap"><table><thead><tr><th>ID</th><th>E-mail</th><th>Inscrit le</th><th>Déposé</th><th>Misé</th><th>Perdu</th><th>Son gain</th><th>En attente</th></tr></thead><tbody>'+
+      rows.map(r => '<tr><td>'+esc(r.id)+'</td><td>'+esc(r.email||'—')+'</td><td>'+esc(fdate(r.at))+'</td><td>'+money(r.deposit)+'</td><td>'+money(r.staked)+'</td><td>'+money(r.lost)+'</td><td style="color:#4ADE80">+'+money(r.gain)+'</td><td style="color:#FCD34D">'+(r.pend>0?'+'+money(r.pend):'—')+'</td></tr>').join('')+'</tbody></table></div>' : '<p class="muted">Aucun ami inscrit pour l\'instant.</p>')+
+    ((A.log||[]).length ? '<h3 class="panel-title">Ses versements</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Montant</th><th>Système</th></tr></thead><tbody>'+
+      A.log.map(l => '<tr><td>'+esc(fdate(l.at))+'</td><td style="color:#4ADE80">+'+money(l.amount)+'</td><td>'+esc(l.kind)+'</td></tr>').join('')+'</tbody></table></div>' : '<p class="muted">Aucun versement pour l\'instant.</p>')+
+  '</div>';
+}
+function affPanelInit(A, u) {
+  if (!A) return;
+  const out = document.getElementById('affOut');
+  const cp = document.getElementById('affCopyLink');
+  if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(A.link); cp.textContent = 'Copié ✓'; } catch (e) { prompt('Lien :', A.link); } };
+  const pay = document.getElementById('affPayNow');
+  if (pay) pay.onclick = async () => {
+    pay.disabled = true;
+    const r = await ajax({action:'aff_pay_now', userId:u.id, email:u.email||''});
+    pay.disabled = false;
+    out.textContent = r.ok ? (r.paid > 0 ? '✅ '+money(r.paid)+' versés sur son solde réel.' : 'Rien à verser maintenant (en attente : '+money(r.pending)+').') : '❌ '+(r.reason||'Échec');
+    if (r.ok && r.paid > 0) setTimeout(() => openUser(u.id), 900);
+  };
+  const send = async (text) => {
+    const r = await ajax({action:'aff_msg', userId:u.id, email:u.email||'', text});
+    return r && r.ok;
+  };
+  const wr = document.getElementById('affWrite');
+  if (wr) wr.onclick = async () => {
+    const t = prompt('Message pour '+(u.name||'cet affilié')+' (Social) :', 'Bonjour '+(u.name||'')+' 👋 ');
+    if (!t || !t.trim()) return;
+    out.textContent = (await send(t.trim())) ? '✅ Message envoyé dans sa discussion Social.' : '❌ Message non envoyé.';
+  };
+  const demo = document.getElementById('affDemo');
+  if (demo) demo.onclick = async () => {
+    const amt = parseFloat(String(prompt('Compte démo pour '+(u.name||'cet affilié')+'\nMontant à mettre dessus (en $) :', '500') || '').replace(',', '.'));
+    if (!(amt >= 0)) return;
+    demo.disabled = true; out.textContent = '⏳ Création du compte…';
+    const r = await ajax({action:'partner_create', name: ('Démo '+(u.name||'')).trim().slice(0, 40), amount: amt});
+    demo.disabled = false;
+    if (!r.ok) { out.textContent = '❌ '+(r.reason||'Échec'); return; }
+    const msg = 'Bonjour '+(u.name||'')+' 👋\nVoici votre compte de démonstration OROLADO, pour vos vidéos et vos présentations :\n\nE-mail : '+r.email+'\nMot de passe : '+r.password+'\nSolde : '+money(amt)+'\n\nConnectez-vous sur orolado.com avec ces identifiants. Bonne promotion ! 💪';
+    out.textContent = '✅ Compte créé : '+r.email+' / '+r.password+' ('+(r.publicId||'')+')'+(r.credited===false?' — recharge à refaire : '+(r.creditReason||''):'');
+    if (confirm(msg+'\n\n— Envoyer ce message à l\'affilié dans Social ?')) out.textContent += (await send(msg)) ? '\n✅ Identifiants envoyés dans sa discussion Social.' : '\n❌ Envoi impossible : copiez les identifiants ci-dessus.';
+  };
+}
 async function openUser(uid) {
   if (!uid) return;
   const j = await ajax({action:'profile', userId: uid});
@@ -4058,7 +4214,7 @@ async function openUser(uid) {
     '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
     '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(fdate(u.createdAt))+'</strong></p>'+
     '<p>Solde réel : <strong>$ '+esc(u.real)+'</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
-    (j.aff ? '<div class="sus-box watch" style="border-color:rgba(43,212,154,.6);background:rgba(43,212,154,.12)">🤝 Affilié · '+esc(j.aff.friends)+' ami(s), '+esc(j.aff.deposited)+' ont déposé · NGR gardé '+money(j.aff.ngr)+' · dû '+esc(j.aff.pct)+'% = '+money(j.aff.entitled)+' · versé '+money(j.aff.paid)+' · solde '+money(j.aff.balance)+'</div>' : '')+
+    affPanel(j.affFull)+
     (j.suspect ? '<div class="sus-box'+(j.suspectLevel === 'orange' ? ' watch' : '')+'">'+(j.suspectLevel === 'orange' ? 'À suivre : ' : 'Ne pas payer sans vérifier : ')+esc(j.suspect)+'</div>' : '')+
     (j.totals ? '<div class="totals">'+
       '<div style="background:linear-gradient(180deg,rgba(34,197,94,.28),rgba(22,163,74,.12));border:1px solid rgba(74,222,128,.75);box-shadow:0 0 12px rgba(34,197,94,.35)"><span style="color:#BBF7D0">Solde réel actuel</span><b style="color:#4ADE80;font-size:1.25em">'+money(u.real)+'</b></div>'+
@@ -4090,6 +4246,7 @@ async function openUser(uid) {
   document.getElementById('userModal').classList.add('on');
   gmPlayerInit(u);
   spPlayerInit(u);
+  affPanelInit(j.affFull, u);
   const go = async (sign) => {
     const motif = document.getElementById('adjMotif').value.trim() || (sign > 0 ? 'Crédit admin' : 'Débit admin');
     const amt = Number(document.getElementById('adjAmt').value);
