@@ -40,13 +40,13 @@ echo "1) Invitation : affiliés\n";
 $r = admin_gift_payload('gift_aff', [], $people);
 $c = $r['rows'][0]['cells'] ?? [];
 check('une ligne pour l’affilié, ses chiffres', count($r['rows']) === 1 && $c[0] === 'ORO-111111' && $c[3] === '7' && $c[4] === '2' && $c[5] === '2', json_encode($c));
-check('alerte : un ami a la même IP que l’affilié', str_contains((string) ($c[8] ?? ''), '1 ami'), (string) ($c[8] ?? ''));
+check('alerte : un ami a la même IP que l’affilié', str_contains((string) (end($c) ?: ''), '1 ami'), (string) (end($c) ?: ''));
 check('clic sur la ligne → fiche du joueur (identifiant Supabase)', ($r['rows'][0]['userId'] ?? '') === 'sb-a');
 
 echo "2) Invitation : amis invités\n";
 $r = admin_gift_payload('gift_friends', [], $people);
 check('2 amis, le plus récent en premier', count($r['rows']) === 2 && $r['rows'][0]['cells'][0] === 'ORO-333333');
-check('l’ami à la même IP est marqué', str_contains($r['rows'][0]['cells'][7], 'même IP'));
+check('l’ami à la même IP est marqué', str_contains((string) end($r['rows'][0]['cells']), 'même IP'));
 check('recherche par e-mail', count(admin_gift_payload('gift_friends', ['q' => 'ami1@'], $people)['rows']) === 1);
 
 echo "3) Bonus dépôt et Défi du jour\n";

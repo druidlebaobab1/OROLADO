@@ -431,7 +431,7 @@ function admin_persist_admin_log(string $adminEmail, string $targetPid, string $
 }
 
 function admin_badges(): array {
-  $cached = admin_cache_get('badges_epoch3', 12);
+  $cached = admin_cache_get('badges_epoch4', 12);
   if (is_array($cached) && isset($cached['inscrits'])) return $cached;
   $people = admin_stat_people(admin_profiles()); // 2026-10-22 (propriétaire) : comptes admin (maison) hors de TOUS les chiffres
   $wds = admin_withdrawals();
@@ -456,6 +456,7 @@ function admin_badges(): array {
   $wdOpen = 0;
   $wdOpenSum = 0.0;
   $wdToday = 0;
+  $wdYest = 0; $wdTodaySum = 0.0; $wdYestSum = 0.0;
   $wdRej = 0;
   $wdVisible = 0;
   $closedN = 0;
@@ -469,17 +470,20 @@ function admin_badges(): array {
       $wdOpen++;
       $wdOpenSum += (float) $w['amount'];
     }
-    if (admin_wd_is_paid($w) && admin_in_range(admin_wd_paid_at($w) ?: null, $t0, $t1)) $wdToday++;
+    if (admin_wd_is_paid($w) && admin_in_range(admin_wd_paid_at($w) ?: null, $t0, $t1)) { $wdToday++; $wdTodaySum += (float) ($w['amount'] ?? 0); }
+    if (admin_wd_is_paid($w) && admin_in_range(admin_wd_paid_at($w) ?: null, $y0, $y1)) { $wdYest++; $wdYestSum += (float) ($w['amount'] ?? 0); }
     if (admin_wd_is_rejected($w)) $wdRej++;
   }
   $depToday = 0;
+  $depYest = 0; $depTodaySum = 0.0; $depYestSum = 0.0;
   $depPend = 0;
   $depFail = 0;
   $depPaidN = 0;
   foreach ($deps as $d) {
     if (admin_dep_is_paid($d)) {
       $depPaidN++;
-      if (admin_in_range($d['createdAt'] ?? null, $t0, $t1)) $depToday++;
+      if (admin_in_range($d['createdAt'] ?? null, $t0, $t1)) { $depToday++; $depTodaySum += (float) ($d['amount'] ?? 0); }
+      if (admin_in_range($d['createdAt'] ?? null, $y0, $y1)) { $depYest++; $depYestSum += (float) ($d['amount'] ?? 0); }
     }
     if (admin_dep_is_pending($d)) {
       $age = strtotime((string) ($d['createdAt'] ?? '')) ?: 0;
@@ -544,6 +548,19 @@ function admin_badges(): array {
   }
   [$w0, $w1] = admin_day_bounds('range', admin_now()->modify('-6 days')->format('Y-m-d'), admin_now()->format('Y-m-d'));
   $profitToday = admin_profit_between($deps, $wds, $t0, $t1);
+  $profitYest = admin_profit_between($deps, $wds, $y0, $y1);
+  // 2026-11-09 : joueurs venus par affiliation (total, aujourd'hui, hier) — même signe que dans les listes.
+  $affN = 0; $affToday = 0; $affYest = 0; $marks = [];
+  if (function_exists('admin_aff_marks')) {
+    $marks = admin_aff_marks();
+    foreach ($people as $p) {
+      $tg = admin_aff_tag($marks, (string) ($p['id'] ?? ''), (string) ($p['email'] ?? ''));
+      if (!$tg || empty($tg['ref'])) continue;
+      $affN++;
+      if (admin_in_range($p['createdAt'] ?? null, $t0, $t1)) $affToday++;
+      if (admin_in_range($p['createdAt'] ?? null, $y0, $y1)) $affYest++;
+    }
+  }
   $profit7 = admin_profit_between($deps, $wds, $w0, $w1);
   $profitAll = admin_profit_between($deps, $wds, '', '');
   // Barres B / C : mêmes règles que le bénéfice (dépôts payés ; retraits validés, hors masqués).
@@ -569,6 +586,19 @@ function admin_badges(): array {
     'no_deposit' => $noDep,
     'signup_closed' => count(admin_closed_accounts($people ?? admin_profiles())),
     'dep_today' => $depToday,
+    'dep_yesterday' => $depYest,
+    'signup_aff' => $affN,
+    'aff_track' => (int) ($marks['nAff'] ?? 0),
+    'gift_aff' => (int) ($marks['nAff'] ?? 0),
+    'gift_friends' => (int) ($marks['nRef'] ?? 0),
+    'wd_yesterday' => $wdYest,
+    'profit_yesterday' => round($profitYest, 2),
+    // Bandeau « Aujourd'hui / Hier » en haut du tableau
+    'kpi' => [
+      'signup' => [$signupToday, $signupYest], 'aff' => [$affToday, $affYest],
+      'dep' => [$depToday, $depYest], 'depSum' => [round($depTodaySum, 2), round($depYestSum, 2)],
+      'wdSum' => [round($wdTodaySum, 2), round($wdYestSum, 2)], 'profit' => [round($profitToday, 2), round($profitYest, 2)],
+    ],
     'dep_pending' => $depPend,
     'dep_failed' => $depFail,
     'dep_top' => count($depositors),
@@ -605,7 +635,7 @@ function admin_badges(): array {
     'messages' => $unreadMsg,
     'inscrits' => $nInscrits,
   ];
-  admin_cache_set('badges_epoch3', $out);
+  admin_cache_set('badges_epoch4', $out);
   return $out;
 }
 
@@ -771,11 +801,32 @@ function admin_money_by_country(array $list, array $pmap, array $req, callable $
   return [$list, $by, $want];
 }
 
+/**
+ * 2026-11-09 (propriétaire : « un signe bien visible ») — chaque ligne d'un joueur reçoit son signe affiliation :
+ * r.aff = { aff: nb d'amis invités } (c'est un affilié) et/ou { ref: { by, byId } } (venu par affiliation).
+ */
 function admin_list_payload(string $view, array $req): array {
+  $out = admin_list_payload_raw($view, $req);
+  if (empty($out['rows']) || !is_array($out['rows']) || !function_exists('admin_aff_marks')) return $out;
+  $marks = admin_aff_marks();
+  if (!$marks['aff'] && !$marks['ref']) return $out;
+  $mail = [];
+  foreach (admin_profiles() as $p) $mail[(string) ($p['id'] ?? '')] = (string) ($p['email'] ?? '');
+  foreach ($out['rows'] as &$r) {
+    $id = (string) ($r['userId'] ?? '');
+    if ($id === '') continue;
+    $tag = admin_aff_tag($marks, $id, $mail[$id] ?? '');
+    if ($tag) $r['aff'] = $tag;
+  }
+  unset($r);
+  return $out;
+}
+
+function admin_list_payload_raw(string $view, array $req): array {
   // v2426 — rubrique F · Cadeaux (lecture seule).
   if (str_starts_with($view, 'gift_')) return admin_gift_payload($view, $req, admin_profiles());
   $needPeople = !in_array($view, ['alerts', 'otp_mails', 'payout_stats', 'games', 'trade_minutes', 'messages'], true);
-  $needVaults = !in_array($view, ['alerts', 'otp_mails', 'dep_today', 'dep_pending', 'dep_failed', 'dep_all', 'dep_method', 'messages', 'traffic'], true);
+  $needVaults = !in_array($view, ['alerts', 'otp_mails', 'dep_today', 'dep_yesterday', 'dep_pending', 'dep_failed', 'dep_all', 'dep_method', 'messages', 'traffic'], true);
   $needWds = str_starts_with($view, 'wd_') || str_starts_with($view, 'profit_');
   $needDeps = str_starts_with($view, 'dep_') || str_starts_with($view, 'profit_');
   $needOrders = in_array($view, ['open_positions', 'payout_stats', 'games', 'top_winners', 'trade_minutes', 'wd_suspect'], true);
@@ -800,17 +851,10 @@ function admin_list_payload(string $view, array $req): array {
   $actions = false;
 
   $userCols = ['ID', 'Nom', 'E-mail', 'Téléphone', 'Pays', 'Inscrit', 'Via', 'Solde réel'];
-  // Petits signes affiliation (discrets) : 🤝 = a invité des amis · 🔗 = venu par un lien/code d'affiliation.
-  $affSet = [];
-  $refMap = [];
-  if (function_exists('orolado_aff_index_ids')) foreach (orolado_aff_index_ids() as $aid) $affSet[(string) $aid] = true;
-  if (function_exists('orolado_aff_referred_map')) $refMap = orolado_aff_referred_map();
-  $asUser = static function (array $p) use ($userCols, $affSet, $refMap): array {
-    $pid = (string) ($p['id'] ?? '');
-    $mark = (isset($affSet[$pid]) ? ' 🤝' : '') . (isset($refMap[$pid]) ? ' 🔗' : '');
+  $asUser = static function (array $p) use ($userCols): array {
     return [
       'cells' => [
-        (string) ($p['publicId'] ?? '') . $mark,
+        (string) ($p['publicId'] ?? ''),
         (string) ($p['name'] ?? '—'),
         (string) ($p['email'] ?? ''),
         admin_phone_cell($p),
@@ -835,11 +879,38 @@ function admin_list_payload(string $view, array $req): array {
       'summary' => count($sus) . ' suspendu(s) · ' . count($del) . ' supprimé(s) — e-mails bloqués pour toujours', 'actions' => false];
   }
 
+  // 2026-11-09 (propriétaire) : « Inscrits par Affiliation » — les joueurs venus par le lien / code d'un affilié.
+  if ($view === 'signup_aff') {
+    $marks = function_exists('admin_aff_marks') ? admin_aff_marks() : ['aff' => [], 'ref' => []];
+    $list = [];
+    foreach ($people as $p) {
+      $tag = admin_aff_tag($marks, (string) ($p['id'] ?? ''), (string) ($p['email'] ?? ''));
+      if ($tag && !empty($tag['ref'])) { $p['_by'] = (string) $tag['ref']['by']; $list[] = $p; }
+    }
+    $list = admin_apply_filters($list, $req, 'createdAt');
+    usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
+    $nDep = count(array_filter($list, static fn($p) => (float) ($p['depositTotal'] ?? 0) > 0));
+    $sumDep = array_sum(array_map(static fn($p) => (float) ($p['depositTotal'] ?? 0), $list));
+    [$slice, $total, $page, $pages] = admin_page($list, $req);
+    foreach ($slice as $p) {
+      $p = admin_enrich_user_row($p, $vaults);
+      $rows[] = ['cells' => [(string) ($p['publicId'] ?? ''), (string) ($p['name'] ?? '—'), (string) ($p['email'] ?? ''), admin_country_cell($p),
+        admin_when_cell((string) ($p['createdAt'] ?? '')), (string) $p['_by'], admin_money($p['depositTotal'] ?? 0), admin_money($p['real'] ?? 0)],
+        'userId' => (string) ($p['id'] ?? '')];
+    }
+    return ['ok' => true, 'cols' => ['ID', 'Nom', 'E-mail', 'Pays', 'Inscrit', 'Invité par', 'Déposé', 'Solde réel'], 'rows' => $rows, 'total' => $total,
+      'page' => $page, 'pages' => $pages, 'actions' => false,
+      'summary' => $total . ' joueur(s) venus par affiliation · ' . $nDep . ' ont déposé · ' . admin_money($sumDep) . ' déposés'];
+  }
+
   if (in_array($view, ['signup_today', 'signup_yesterday', 'signup_date', 'signup_google', 'signup_email', 'no_deposit', 'online', 'inactive', 'top_balances'], true)) {
     if (trim((string) ($req['q'] ?? '')) !== '') $people = $peopleAll; // recherche : l'admin retrouve aussi son compte
     $cols = $userCols;
     $list = $people;
-    if ($view === 'signup_today') {
+    $datePicked = ($req['preset'] ?? 'all') !== 'all'; // une date choisie remplace le jour de la case
+    if (($view === 'signup_today' || $view === 'signup_yesterday') && $datePicked) {
+      $list = $people;
+    } else if ($view === 'signup_today') {
       $list = array_values(array_filter($people, static fn($p) => admin_in_range($p['createdAt'] ?? null, $t0, $t1)));
     } else if ($view === 'signup_google' || $view === 'signup_email') {
       $want = $view === 'signup_google' ? 'google' : 'email';
@@ -891,7 +962,7 @@ function admin_list_payload(string $view, array $req): array {
       $p = admin_enrich_user_row($p, $vaults);
       $rows[] = $asUser($p);
     }
-    $summary = $total . ' joueur(s)' . ($wantC !== '' ? ' · ' . $wantC : '') . (count($countries) > 1 && $wantC === '' ? ' · ' . count($countries) . ' pays' : '') . ' · 🤝 a invité · 🔗 venu par affiliation';
+    $summary = $total . ' joueur(s)' . ($wantC !== '' ? ' · ' . $wantC : '') . (count($countries) > 1 && $wantC === '' ? ' · ' . count($countries) . ' pays' : '');
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'countries' => $countries];
   }
 
@@ -1022,13 +1093,19 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($src), 'page' => 1, 'pages' => 1, 'summary' => count($src) . ' joueurs', 'actions' => false];
   }
 
-    if (in_array($view, ['dep_today', 'dep_pending', 'dep_failed', 'dep_all'], true)) {
+    if (in_array($view, ['dep_today', 'dep_yesterday', 'dep_pending', 'dep_failed', 'dep_all'], true)) {
     $cols = ['Réf.', 'ID', 'E-mail', 'Montant', 'Méthode', 'Statut', 'Date'];
     $list = $deps;
     if ($view === 'dep_all') {
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d) && (float) ($d['amount'] ?? 0) > 0.009));
+    } else if (($view === 'dep_today' || $view === 'dep_yesterday') && ($req['preset'] ?? 'all') !== 'all') {
+      // 2026-11-09 : une date choisie dans le filtre remplace le jour de la case (avant : liste vide si on choisissait une autre date)
+      $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d)));
     } else if ($view === 'dep_today') {
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d) && admin_in_range($d['createdAt'] ?? null, $t0, $t1)));
+    } else if ($view === 'dep_yesterday') {
+      // 2026-11-09 (propriétaire : « il doit aussi voir les dépôts d'hier »)
+      $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d) && admin_in_range($d['createdAt'] ?? null, $y0, $y1)));
     } else if ($view === 'dep_pending') {
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_pending($d)));
       $actions = true;
@@ -1200,7 +1277,7 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => '🔴 ' . $nRed . ' à ne pas payer · 🟠 ' . ($total - $nRed) . ' à suivre · cliquez une ligne pour voir la fiche', 'actions' => false];
   }
 
-  if (in_array($view, ['wd_pending', 'wd_today', 'wd_all', 'wd_rejected', 'wd_volume'], true)) {
+  if (in_array($view, ['wd_pending', 'wd_today', 'wd_yesterday', 'wd_all', 'wd_rejected', 'wd_volume'], true)) {
     $cols = ['ID retrait', 'Joueur', 'Nom', 'E-mail', 'Montant', 'Méthode', 'Destination', 'État', 'Statut', 'Date'];
     $list = $wds;
     $ordersByUser = [];
@@ -1216,6 +1293,11 @@ function admin_list_payload(string $view, array $req): array {
       // v2655 : TOUS les retraits payés, rangés par date de PAIEMENT (le plus récent en haut) ; la case de
       // dates choisit le jour / la période (avant : seulement ceux DEMANDÉS aujourd'hui → liste souvent vide).
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w)));
+      foreach ($list as $i => $w) $list[$i]['createdAt'] = admin_wd_paid_at($w) ?: (string) ($w['createdAt'] ?? '');
+      usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
+    } else if ($view === 'wd_yesterday') {
+      // 2026-11-09 : retraits PAYÉS hier (date de paiement).
+      $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w) && admin_in_range(admin_wd_paid_at($w) ?: null, $y0, $y1)));
       foreach ($list as $i => $w) $list[$i]['createdAt'] = admin_wd_paid_at($w) ?: (string) ($w['createdAt'] ?? '');
       usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
     } else if ($view === 'wd_rejected') {
@@ -1473,12 +1555,14 @@ function admin_list_payload(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => false, 'alertOpen' => $errN];
   }
 
-  if (in_array($view, ['profit_today', 'profit_7d', 'profit_total'], true)) {
+  if (in_array($view, ['profit_today', 'profit_yesterday', 'profit_7d', 'profit_total'], true)) {
     $from = '';
     $to = '';
     $label = 'Total';
     if ($view === 'profit_today') {
       $from = $t0; $to = $t1; $label = 'Aujourd’hui';
+    } else if ($view === 'profit_yesterday') {
+      $from = $y0; $to = $y1; $label = 'Hier';
     } else if ($view === 'profit_7d') {
       $from = admin_now()->modify('-6 days')->setTime(0, 0, 0)->format('c');
       $to = admin_now()->modify('+1 day')->setTime(0, 0, 0)->format('c');
@@ -1810,10 +1894,12 @@ function admin_profile_payload(string $uid): array {
       'balance' => (float) ($aw['balance'] ?? 0),
     ];
   }
+  $affTag = function_exists('admin_aff_tag') ? admin_aff_tag(admin_aff_marks(), $uid, (string) ($p['email'] ?? '')) : null;
   return [
     'ok' => true,
     'aff' => $affBox,
     'affFull' => $affFull,
+    'affTag' => $affTag, // 2026-11-09 : signe bien visible (affilié / venu par affiliation)
     'user' => [
       'id' => $uid,
       'publicId' => (string) ($p['publicId'] ?? ''),
@@ -2620,7 +2706,12 @@ if ($isAjax) {
       ['id' => (string) ($m['id'] ?? ''), 'f' => (string) ($m['f'] ?? 'u'), 't' => (string) ($m['t'] ?? ''), 'at' => (int) ($m['at'] ?? 0)],
       !empty($m['img']) ? ['img' => 'admin.php?live_img=' . rawurlencode((string) $m['img'])] : []
     );
-    if ($action === 'live_threads') admin_json(['ok' => true, 'threads' => live_threads(), 'unread' => live_unread_admin()]);
+    if ($action === 'live_threads') {
+      // 2026-11-09 : signe affiliation aussi dans la liste des discussions Social
+      $ths = live_threads();
+      if (function_exists('admin_aff_marks')) { $mk = admin_aff_marks(); foreach ($ths as &$th) { $tg = admin_aff_tag($mk, (string) $th['uid'], (string) $th['email']); if ($tg) $th['aff'] = $tg; } unset($th); }
+      admin_json(['ok' => true, 'threads' => $ths, 'unread' => live_unread_admin()]);
+    }
     if ($action === 'live_thread') {
       $uid = live_safe_id((string) ($req['uid'] ?? ''));
       $th = live_thread($uid);
@@ -2910,6 +3001,7 @@ $ADMIN_TABS = [
   'gA' => [
     ['signup_today', 'Inscriptions du Jour'],
     ['signup_yesterday', 'Inscriptions d’Hier'],
+    ['signup_aff', '🔗 Inscrits par Affiliation'],
     ['signup_google', 'Inscrits par Google'],
     ['signup_email', 'Inscrits par E-mail'],
     ['signup_date', 'Inscriptions par Date'],
@@ -2921,6 +3013,7 @@ $ADMIN_TABS = [
   ],
   'gB' => [
     ['dep_today', 'Dépôts du Jour'],
+    ['dep_yesterday', 'Dépôts d’Hier'],
     ['dep_pending', 'Dépôts en Attente'],
     ['dep_failed', 'Dépôts Échoués'],
     ['dep_top', 'Meilleurs Déposants'],
@@ -2931,6 +3024,7 @@ $ADMIN_TABS = [
   'gC' => [
     ['wd_pending', 'Retraits en Cours'],
     ['wd_today', 'Retraits Validés du Jour'],
+    ['wd_yesterday', 'Retraits Validés d’Hier'],
     ['wd_all', 'Historique Global Retraits'],
     ['wd_rejected', 'Retraits Rejetés'],
     ['wd_volume', 'Volume Total à Payer'],
@@ -2942,6 +3036,7 @@ $ADMIN_TABS = [
     ['top_balances', 'Top Balances / Soldes'],
     ['top_winners', 'Top Gagnants du Jour'],
     ['profit_today', 'Bénéfice du Jour'],
+    ['profit_yesterday', 'Bénéfice d’Hier'],
     ['profit_7d', 'Bénéfice 7 Jours'],
     ['profit_total', 'Bénéfice Total'],
     ['open_positions', 'Positions Ouvertes'],
@@ -3039,6 +3134,14 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     tr.flag-suspect td:nth-last-child(4), .pill-suspect{color:#FCA5A5;font-weight:800}
     .pill{display:inline-block;border-radius:999px;padding:2px 8px;font-weight:800;font-size:.68rem}
     .pill-ok{background:rgba(52,211,153,.18);color:#34D399}
+    /* 2026-11-09 — signes affiliation bien visibles (listes + fiche joueur) */
+    .aff-tag{display:inline-flex;align-items:center;gap:4px;margin:3px 4px 0 0;padding:2px 8px;border-radius:999px;font-weight:900;font-size:.66rem;letter-spacing:.02em;white-space:nowrap;vertical-align:middle}
+    .aff-tag.aff{background:linear-gradient(90deg,#F59E0B,#FBBF24);color:#1a1206;box-shadow:0 0 0 1px rgba(251,191,36,.6)}
+    .aff-tag.ref{background:linear-gradient(90deg,#14B8A6,#2DD4BF);color:#05201c;box-shadow:0 0 0 1px rgba(45,212,191,.6)}
+    tr.row-ref td:first-child{box-shadow:inset 4px 0 0 #2DD4BF}
+    tr.row-aff td:first-child{box-shadow:inset 4px 0 0 #FBBF24}
+    .aff-big{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+    .aff-big .aff-tag{font-size:.82rem;padding:6px 12px}
     .pill-suspect{background:rgba(244,63,94,.18);color:#F43F5E}
     .sus-why{margin-top:6px;max-width:260px;white-space:normal;font-size:12px;line-height:1.35;color:#FCA5A5;font-weight:600}
     .pill-unread{background:rgba(245,158,11,.2);color:#FBBF24}
@@ -3085,10 +3188,43 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     @media (min-width:760px){.head > div{grid-template-columns:repeat(7,minmax(0,1fr))}#btnBack{grid-column:auto}}
     #inscritsHead{grid-column:1/-1;text-align:center;font-size:.95rem;font-weight:800;color:var(--text)}
     .metric-btn{padding:14px 12px!important;min-height:58px}
+    /* 2026-11-09 — nouvel en-tête rangé par groupes + bandeau Aujourd'hui / Hier */
+    .head.head2{display:block!important;padding:14px 16px 6px!important;border-bottom:0!important}
+    .head2 .hd-top{display:flex!important;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:0 0 10px}
+    .head2 .hd-top h1{font-size:1.15rem!important;text-align:left!important;margin:0}
+    .head2 #inscritsHead{grid-column:auto;text-align:left;flex:1 1 auto;font-size:.9rem}
+    .head2 #btnBack{grid-column:auto;width:auto!important;min-height:38px;padding:6px 14px!important;border-radius:11px}
+    .head2 .tb-groups{display:grid!important;grid-template-columns:1fr;gap:10px}
+    @media (min-width:900px){.head2 .tb-groups{grid-template-columns:1fr 1.4fr 1fr}.head2 .tb-tools{grid-column:1/-1}}
+    .head2 .tb-g{display:block!important;padding:10px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}
+    .head2 .tb-t{font-size:.72rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#9AA4CC;margin:0 0 8px;cursor:default}
+    .head2 details.tb-g > summary.tb-t{cursor:pointer;margin:0;list-style:none}
+    .head2 details.tb-g[open] > summary.tb-t{margin:0 0 8px}
+    .head2 .tb-row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    @media (min-width:900px){.head2 .tb-g:nth-child(2) .tb-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .head2 .tb-b{width:100%;min-height:46px;margin:0!important;font-size:.88rem!important;font-weight:800;border-radius:12px!important;display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;line-height:1.2;
+      border:1px solid color-mix(in srgb,var(--c) 70%,transparent)!important;color:color-mix(in srgb,var(--c) 55%,#fff)!important;background:color-mix(in srgb,var(--c) 12%,transparent)!important}
+    .head2 .tb-badge{background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px}
+    .head2 .tb-badge:empty{display:none}
+    .head2 #affListBox{margin-top:8px}
+    .kpi-band{max-width:1180px;margin:6px auto 4px;padding:0 16px;box-sizing:border-box}
+    .kpi-h{display:flex;align-items:baseline;gap:8px;margin:0 0 8px}.kpi-h b{font-size:1rem;color:#fff}.kpi-h span{font-size:.78rem;color:#9AA4CC}
+    .kpi-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    @media (min-width:700px){.kpi-g{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media (min-width:1000px){.kpi-g{grid-template-columns:repeat(6,minmax(0,1fr))}}
+    .kpi-c{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-width:0;padding:11px 12px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.1)}
+    .kpi-c:hover{border-color:var(--gold)}
+    .kpi-c span{font-size:.72rem;color:#9AA4CC;font-weight:700;line-height:1.2}
+    .kpi-c b{font-size:1.25rem;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .kpi-c small{font-size:.72rem;color:#C9D2F0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .kpi-c small i{font-style:normal;font-weight:800}.kpi-c small i.up{color:#4ADE80}.kpi-c small i.dn{color:#F87171}
+    .kpi-c.k-aff{border-color:rgba(45,212,191,.5)}.kpi-c.k-aff b{color:#5EEAD4}
+    .kpi-c.k-dep b{color:#4ADE80}.kpi-c.k-wd b{color:#FDBA74}
     .metric-btn .k{font-size:.74rem!important;line-height:1.25}
     .metric-btn .badge{font-size:.9rem;min-width:34px;text-align:center}
     .adm-back{display:none;position:sticky;top:0;z-index:30;width:100%;margin:0 0 10px;min-height:50px;border:1px solid var(--gold);border-radius:12px;background:#0E1420;color:var(--gold);font:inherit;font-size:1rem;font-weight:900;cursor:pointer}
     body.adm-page .adm-back{display:block}
+    body.adm-page .kpi-band,body.adm-page .app-bar,body.adm-page .head2 .tb-groups,
     body.adm-page .online-bar,body.adm-page .wrap > .sec,body.adm-page .wrap > .metrics,body.adm-page .sum-bar,body.adm-page .health-bar,body.adm-page .health-panel{display:none!important}
     body.adm-page .panel-title{font-size:1.25rem;font-weight:900}
     body:not(.adm-page) .wrap > .filters,body:not(.adm-page) #viewTitle,body:not(.adm-page) #viewSum,body:not(.adm-page) #panel,body:not(.adm-page) #pager{display:none!important}
@@ -3155,31 +3291,41 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     });
   </script>
 <?php else: ?>
-  <header class="head">
-    <h1>Super Admin Dashboard</h1>
-    <div>
-      <span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span>
-      <button class="mini" id="btnSelfTop" type="button" style="border-color:#3B82F6;color:#93C5FD">🧪 Recharger mon compte</button>
-      <button class="mini" id="btnAffCreate" type="button" style="border-color:#F59E0B;color:#FDE68A">🤝 Créer un compte affilié</button>
-      <button class="mini" id="btnAffList" type="button" style="border-color:#F59E0B;color:#FDE68A">📋 Mes comptes affiliés</button>
-      <div id="affListBox" style="grid-column:1/-1;display:none"></div>
-      <button class="mini" id="btnNotif" type="button" style="border-color:#F59E0B;color:#FCD34D">🔔 Notifications</button>
-      <button class="mini" id="btnMail" type="button" style="border-color:#60A5FA;color:#93C5FD">✉️ E-mail à tous</button>
-      <button class="mini" id="btnBonusAll" type="button" style="border-color:#4ADE80;color:#86EFAC">🎁 Bonus à tous</button>
-      <button class="mini" id="btnLiveA" type="button" style="border-color:#F43F6E;color:#FF7AA8">💬 Social <b id="lvBadge" style="background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px"></b></button>
-      <button class="mini" id="btnAffA" type="button" style="border-color:#2DD4BF;color:#5EEAD4">🤝 Affiliation</button>
-      <button class="mini" id="btnParisA" type="button" style="border-color:#60A5FA;color:#93C5FD">⚽ Paris</button>
-      <button class="mini" id="btnTradeA" type="button" style="border-color:#FBBF24;color:#FCD34D">📈 Trading</button>
-      <button class="mini" id="btnPredA" type="button" style="border-color:#C084FC;color:#D8B4FE">🔮 Predict</button>
-      <button class="mini" id="btnCasA" type="button" style="border-color:#1FD86B;color:#5CF59A">🎮 Jeux</button>
-      <button class="mini" id="btnTopG" type="button" style="border-color:#FACC15;color:#FDE68A">🏆 Jeux les plus joués</button>
-      <button class="mini" id="btnGm" type="button" style="border-color:#A78BFA;color:#C4B5FD">🎲 Parties de jeux</button>
-      <button class="mini bad" id="btnWipe" type="button">Nettoyer</button>
-      <button class="mini" id="btnBack" type="button">Retour</button>
+  <header class="head head2">
+    <!-- 2026-11-09 (propriétaire : « mon tableau est trop vieux, range bien, retire les boutons inutiles ») -->
+    <div class="hd-top"><h1>OROLADO · Tableau admin</h1><span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span><button class="mini" id="btnBack" type="button">← Retour au site</button></div>
+    <div class="tb-groups">
+      <div class="tb-g"><div class="tb-t">💬 Joueurs &amp; messages</div><div class="tb-row">
+        <button class="mini tb-b" id="btnLiveA" type="button" style="--c:#F43F6E">💬 Social <b id="lvBadge" class="tb-badge"></b></button>
+        <button class="mini tb-b" id="btnNotif" type="button" style="--c:#F59E0B">🔔 Notifications</button>
+        <button class="mini tb-b" id="btnMail" type="button" style="--c:#60A5FA">✉️ E-mail à tous</button>
+        <button class="mini tb-b" id="btnBonusAll" type="button" style="--c:#4ADE80">🎁 Bonus à tous</button>
+      </div></div>
+      <div class="tb-g"><div class="tb-t">📊 Suivi des produits</div><div class="tb-row">
+        <button class="mini tb-b" id="btnTradeA" type="button" style="--c:#FBBF24">📈 Trading</button>
+        <button class="mini tb-b" id="btnCasA" type="button" style="--c:#1FD86B">🎮 Jeux</button>
+        <button class="mini tb-b" id="btnParisA" type="button" style="--c:#60A5FA">⚽ Paris</button>
+        <button class="mini tb-b" id="btnPredA" type="button" style="--c:#C084FC">🔮 Predict</button>
+        <button class="mini tb-b" id="btnTopG" type="button" style="--c:#FACC15">🏆 Jeux les plus joués</button>
+        <button class="mini tb-b" id="btnGm" type="button" style="--c:#A78BFA">🎲 Parties de jeux</button>
+      </div></div>
+      <div class="tb-g"><div class="tb-t">🤝 Affiliation</div><div class="tb-row">
+        <button class="mini tb-b" id="btnAffA" type="button" style="--c:#2DD4BF">🤝 Suivi des affiliés</button>
+        <button class="mini tb-b" id="btnAffCreate" type="button" style="--c:#F59E0B">➕ Compte démo affilié</button>
+        <button class="mini tb-b" id="btnAffList" type="button" style="--c:#F59E0B">📋 Comptes démo affiliés</button>
+      </div><div id="affListBox" style="display:none"></div></div>
+      <details class="tb-g tb-tools"><summary class="tb-t">⚙️ Outils (rarement utiles)</summary><div class="tb-row">
+        <button class="mini tb-b" id="btnSelfTop" type="button" style="--c:#3B82F6">🧪 Recharger mon compte (test)</button>
+        <button class="mini tb-b bad" id="btnWipe" type="button" style="--c:#F87171">🧹 Nettoyer des comptes</button>
+      </div></details>
     </div>
   </header>
   <div class="online-bar"><div class="online-box" title="Personnes sur le site en ce moment (inscrites ou non, hors appareil admin)"><i class="dot"></i><b id="onlineNow">…</b><small>personnes connectées en direct sur le site</small></div></div>
   <div class="app-bar"><details class="app-box" id="appInst"><summary>📲 Application installée : <b id="appInstN">…</b> joueur(s) · nouveaux aujourd’hui <b id="appInstToday">…</b> · iPhone <b id="appInstIos">…</b> · Android <b id="appInstAnd">…</b> · sans compte aujourd’hui <b id="appInstAnon">…</b></summary><div id="appInstList" class="table-wrap"></div></details></div>
+  <div class="kpi-band" id="kpiBand">
+    <div class="kpi-h"><b>Aujourd’hui</b><span>comparé à hier</span></div>
+    <div class="kpi-g" id="kpiG"></div>
+  </div>
   <div class="wrap">
     <div class="sec">A · Inscriptions &amp; suivi pubs</div>
     <div class="metrics" id="gA"><?php foreach ($ADMIN_TABS['gA'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
@@ -3205,6 +3351,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <option value="all">Toutes dates</option>
         <option value="today">Aujourd’hui</option>
         <option value="yesterday">Hier</option>
+        <option value="7d">7 derniers jours</option>
+        <option value="30d">30 derniers jours</option>
         <option value="range">Plage personnalisée</option>
         <option value="date">Date unique</option>
       </select>
@@ -3754,7 +3902,7 @@ function badgeClass(id, n) {
   if (URGENT[id]) return n > 0 ? 'badge red' : 'badge zero';
   return n ? 'badge' : 'badge zero';
 }
-const MONEY_BADGE = {wd_volume:1, profit_today:1, profit_7d:1, profit_total:1};
+const MONEY_BADGE = {wd_volume:1, profit_today:1, profit_yesterday:1, profit_7d:1, profit_total:1};
 function fmtBadge(id, n) {
   if (MONEY_BADGE[id]) {
     const v = Number(n)||0;
@@ -3905,6 +4053,28 @@ async function loadBadges() {
   if (sw && bd.sum_wd_paid != null) sw.textContent = sfmt(bd.sum_wd_paid);
   paintHealth(j.board);
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
+  paintKpi(bd.kpi);
+}
+// 2026-11-09 (propriétaire : « il doit voir les dépôts d'hier ») — bandeau Aujourd'hui / Hier, chaque case ouvre sa liste.
+function paintKpi(k) {
+  const g = document.getElementById('kpiG'); if (!g || !k) return;
+  const n = v => Number(v || 0), cnt = v => String(n(v)), mon = v => n(v).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
+  const diff = (a, b, isMoney) => { const d = n(a) - n(b); if (Math.abs(d) < 0.005) return '<i>=</i>'; return '<i class="'+(d>0?'up':'dn')+'">'+(d>0?'▲ +':'▼ ')+(isMoney ? mon(d) : (d>0?'':'')+d)+'</i>'; };
+  const card = (cls, lbl, today, yest, isMoney, vT, vY) =>
+    '<button type="button" class="kpi-c '+cls+'" data-kv="'+vT+'" data-ky="'+vY+'"><span>'+lbl+'</span><b>'+(isMoney?mon(today):cnt(today))+'</b>'+
+    '<small>Hier : '+(isMoney?mon(yest):cnt(yest))+' · '+diff(today, yest, isMoney)+'</small></button>';
+  g.innerHTML =
+    card('', '👤 Inscriptions', k.signup[0], k.signup[1], false, 'signup_today', 'signup_yesterday')+
+    card('k-aff', '🔗 Venus par affiliation', k.aff[0], k.aff[1], false, 'signup_aff', 'signup_aff')+
+    card('', '💳 Dépôts (nombre)', k.dep[0], k.dep[1], false, 'dep_today', 'dep_yesterday')+
+    card('k-dep', '💰 Argent déposé', k.depSum[0], k.depSum[1], true, 'dep_today', 'dep_yesterday')+
+    card('k-wd', '💸 Retraits payés', k.wdSum[0], k.wdSum[1], true, 'wd_today', 'wd_yesterday')+
+    card('k-dep', '📈 Bénéfice', k.profit[0], k.profit[1], true, 'profit_today', 'profit_yesterday');
+  g.querySelectorAll('.kpi-c').forEach(c => c.onclick = ev => {
+    const yest = ev.target.closest('small');
+    const id = c.getAttribute(yest ? 'data-ky' : 'data-kv');
+    const btn = document.querySelector('.metric-btn[data-view="'+id+'"]'); if (btn) btn.click();
+  });
 }
 // 2026-10-20 (propriétaire) : inscrits PAR PAYS — liste déroulante (avec le nombre) + pastilles cliquables (les 8 premiers pays)
 function paintCountries(j) {
@@ -3926,6 +4096,12 @@ document.addEventListener('click', e => {
   const sel = document.getElementById('country'), v = b.getAttribute('data-c');
   sel.value = sel.value === v ? '' : v; page = 1; bustList(); loadList(true);
 });
+// 2026-11-09 — signes affiliation : 🤝 AFFILIÉ (a invité des amis) · 🔗 VENU PAR AFFILIATION (invité par …)
+function affTags(t) {
+  if (!t) return '';
+  return (t.aff ? '<span class="aff-tag aff" title="A invité '+esc(t.aff)+' ami(s)">🤝 AFFILIÉ · '+esc(t.aff)+' ami'+(t.aff>1?'s':'')+'</span>' : '')+
+    (t.ref ? '<span class="aff-tag ref" title="Venu par le lien de '+esc(t.ref.by||'')+'">🔗 VENU PAR '+esc(t.ref.by||'AFFILIATION')+'</span>' : '');
+}
 function renderList(j) {
   const panel = document.getElementById('panel');
   if (!j.ok) { panel.innerHTML = '<p class="muted" style="padding:12px">'+esc(j.reason||'Erreur')+'</p>'; return; }
@@ -3938,8 +4114,9 @@ function renderList(j) {
   (j.rows||[]).forEach((r, i) => {
     const flag = r.flag || (r.suspect ? 'suspect' : '');
     const clickable = r.userId || r.kind === 'message';
-    html += '<tr class="'+(clickable?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+'" data-uid="'+esc(r.userId||'')+'" data-row="'+i+'">';
+    html += '<tr class="'+(clickable?'clickable':'')+(flag==='suspect'?' flag-suspect':'')+(r.aff&&r.aff.ref?' row-ref':'')+(r.aff&&r.aff.aff?' row-aff':'')+'" data-uid="'+esc(r.userId||'')+'" data-row="'+i+'">';
     (r.cells||[]).forEach((c, ci) => {
+      if (ci === 0 && r.aff) { html += '<td>'+esc(String(c ?? ''))+'<br>'+affTags(r.aff)+'</td>'; return; }
       if ((view === 'alerts' || view === 'watch') && ci === 0) {
         html += '<td>';
         if (r.canAck && r.fp) html += '<button class="mini ok" data-act="healthack" data-fp="'+esc(r.fp)+'">C’est réglé</button>';
@@ -4220,6 +4397,7 @@ async function openUser(uid) {
   document.getElementById('userDetail').innerHTML =
     '<h2 style="color:var(--gold);margin:8px 0 4px">'+esc(u.publicId||u.id)+'</h2>'+
     '<p class="muted">'+esc(u.name)+' · '+esc(u.email)+' · '+esc(u.phone)+'</p>'+
+    (j.affTag ? '<div class="aff-big">'+affTags(j.affTag)+(j.affTag.ref && j.affTag.ref.byId ? '<button class="mini" id="btnSeeParrain">👤 Voir celui qui l’a invité ('+esc(j.affTag.ref.by)+')</button>' : '')+'</div>' : '')+
     '<p>IP : <strong>'+esc(u.ip||'—')+'</strong> · Pays : <strong>'+esc(u.country||'—')+'</strong> · Inscription : <strong>'+esc(fdate(u.createdAt))+'</strong></p>'+
     '<p>Solde réel : <strong>$ '+esc(u.real)+'</strong> · Source : '+esc(u.traffic||'direct')+' · Rôle : '+esc(u.role||'user')+' · Vu : '+esc(fdate(u.lastSeen))+'</p>'+
     affPanel(j.affFull)+
@@ -4241,9 +4419,11 @@ async function openUser(uid) {
     '<p><input id="adjAmt" type="number" step="0.01" min="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+
     '<button class="mini bad" id="btnDebit">Débiter</button> '+
-    '<button class="mini bad" id="btnSuspend">Suspendre</button> '+
-    '<button class="mini" id="btnOxaRe">🔄 Revérifier paiements</button> '+
-    '<button class="mini" id="btnPartner">'+(j.partner ? '🤝 Partenaire : OUI (retirer)' : '🤝 Faire un compte partenaire')+'</button></p><div id="oxaReOut" style="font-size:12px;white-space:pre-wrap"></div>'+
+    '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
+    // 2026-11-09 (propriétaire : « retire les boutons inutiles ») : outils rares rangés dans un volet fermé
+    '<details style="margin:4px 0 10px"><summary class="muted" style="cursor:pointer">⚙️ Outils (rarement utiles)</summary><p style="margin:8px 0 0">'+
+    '<button class="mini" id="btnOxaRe">🔄 Revérifier ses paiements crypto</button> '+
+    '<button class="mini" id="btnPartner">'+(j.partner ? '🤝 Compte démo affilié : OUI (retirer)' : '🤝 En faire un compte démo affilié')+'</button></p></details><div id="oxaReOut" style="font-size:12px;white-space:pre-wrap"></div>'+
     // v2405 : seuls les dépôts VRAIMENT payés sous « argent payé » ; les pages de paiement ouvertes puis
     // abandonnées (en attente, jamais payées) à part, pour ne plus croire qu'un joueur a payé.
     tbl('Dépôts (argent payé)', (j.deposits||[]).filter(d => d.paid !== false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
@@ -4255,6 +4435,8 @@ async function openUser(uid) {
   gmPlayerInit(u);
   spPlayerInit(u);
   affPanelInit(j.affFull, u);
+  const sp = document.getElementById('btnSeeParrain');
+  if (sp) sp.onclick = () => openUser(j.affTag.ref.byId);
   const go = async (sign) => {
     const motif = document.getElementById('adjMotif').value.trim() || (sign > 0 ? 'Crédit admin' : 'Débit admin');
     const amt = Number(document.getElementById('adjAmt').value);
@@ -4459,7 +4641,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       '<span class="lvI-main">' +
         '<span class="lvI-row"><span class="lvI-name">' + esc(nameOf(t)) + '</span><span class="lvI-time">' + esc(shortWhen(t.at)) + '</span></span>' +
         '<span class="lvI-row"><span class="lvI-prev">' + esc(t.prev || t.last || '') + '</span>' + (n ? '<span class="lvI-n" aria-label="' + n + ' non lu(s)">' + (n > 99 ? '99+' : n) + '</span>' : '') + '</span>' +
-        '<span class="lvI-id">' + esc([t.publicId, t.email].filter(Boolean).join(' · ')) + '</span>' +
+        '<span class="lvI-id">' + esc([t.publicId, t.email].filter(Boolean).join(' · ')) + '</span>' + (t.aff ? '<span class="lvI-row">' + affTags(t.aff) + '</span>' : '') +
       '</span></button>';
   }
   function paintList() {

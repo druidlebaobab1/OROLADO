@@ -642,3 +642,63 @@ function admin_all_job_step(string $token, array $players, callable $pay, ?int $
   if (function_exists('orolado_bonus_all_marker')) { if ($out === 'next') @touch(orolado_bonus_all_marker()); elseif ($out !== 'busy') @unlink(orolado_bonus_all_marker()); }
   return $out;
 }
+
+/**
+ * 2026-11-09 (propriétaire : « un signe bien visible pour reconnaître les joueurs venus par affiliation ») —
+ * qui est affilié (a invité des amis) et qui est venu par affiliation (et invité par qui), retrouvé quel que soit
+ * l'identifiant utilisé par la liste (id local u_…, id Supabase ou e-mail). Lecture seule, gardé 60 s en cache.
+ * Retour : ['aff' => [clé => nb d'amis], 'ref' => [clé => ['by' => ID public du parrain, 'byId' => id à ouvrir]]]
+ */
+function admin_aff_marks(): array {
+  $c = admin_cache_get('aff_marks_v1', 60);
+  if (is_array($c) && isset($c['aff'], $c['ref'])) return $c;
+  $out = ['aff' => [], 'ref' => []];
+  if (!function_exists('orolado_aff_read') || !function_exists('orolado_aff_owner_name')) return $out;
+  $db = admin_local_db();
+  $users = $db['users'] ?? [];
+  if (!is_iterable($users)) $users = [];
+  $keysOf = static function (string $uid, array $u): array {
+    $k = [$uid];
+    if (!empty($u['sbId'])) $k[] = (string) $u['sbId'];
+    $em = strtolower(trim((string) ($u['email'] ?? '')));
+    if ($em !== '') $k[] = 'mail:' . $em;
+    return $k;
+  };
+  $dir = function_exists('orolado_aff_dir') ? orolado_aff_dir() : '';
+  $nAff = 0; $nRef = 0;
+  foreach ($users as $uid => $u) {
+    $uid = (string) $uid;
+    if (!is_array($u)) continue;
+    if ($dir !== '' && !is_file($dir . DIRECTORY_SEPARATOR . orolado_aff_owner_name($uid) . '.json')) continue;
+    $own = orolado_aff_read(orolado_aff_owner_name($uid));
+    $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
+    if (!$friends) continue;
+    $nAff++; $nRef += count($friends);
+    foreach ($keysOf($uid, $u) as $k) $out['aff'][$k] = count($friends);
+    $by = (string) ($u['publicId'] ?? '') !== '' ? (string) $u['publicId'] : ((string) ($u['email'] ?? '') ?: $uid);
+    $byId = (string) ($u['sbId'] ?? '') !== '' ? (string) $u['sbId'] : $uid;
+    foreach ($friends as $f) {
+      $fu = (string) ($f['uid'] ?? '');
+      if ($fu === '') continue;
+      $fr = is_array($users[$fu] ?? null) ? $users[$fu] : [];
+      foreach ($keysOf($fu, $fr) as $k) $out['ref'][$k] = ['by' => $by, 'byId' => $byId];
+    }
+  }
+  $out['nAff'] = $nAff; $out['nRef'] = $nRef;
+  admin_cache_set('aff_marks_v1', $out);
+  return $out;
+}
+
+/** Le signe affiliation d'un joueur (id de la liste + son e-mail si connu), ou null. */
+function admin_aff_tag(array $marks, string $id, string $email = ''): ?array {
+  $keys = [$id];
+  $em = strtolower(trim($email));
+  if ($em !== '') $keys[] = 'mail:' . $em;
+  $t = [];
+  foreach ($keys as $k) {
+    if ($k === '' || $k === 'mail:') continue;
+    if (!isset($t['aff']) && isset($marks['aff'][$k])) $t['aff'] = (int) $marks['aff'][$k];
+    if (!isset($t['ref']) && isset($marks['ref'][$k])) $t['ref'] = $marks['ref'][$k];
+  }
+  return $t ?: null;
+}
