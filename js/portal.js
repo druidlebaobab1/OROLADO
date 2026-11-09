@@ -478,11 +478,6 @@
     var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
     return d + t('defiD') + ' ' + String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0');
   }
-  // v2422 — liste des amis : seulement les jours restants (« Reste 364 jours »), pas de secondes qui défilent.
-  function daysOnly(until) {
-    var n = Math.ceil((until - nowSrv()) / 86400);
-    return n <= 1 ? t('affLeft1') : t('affLeftN', { n: n });
-  }
   // Points du tournoi : « 1 000 000 [pièce] ORO ».
   // v2438 — signe bien visible : « + » vert au-dessus de 0, « − » rouge en dessous (ce n'est plus un simple tiret).
   function oroAmt(p) {
@@ -509,34 +504,25 @@
     $('affUrl').textContent = aff.guest ? t('affGuestLink') : affLink().replace(/^https?:\/\//, '');
     // v2517 — visiteur : la phrase « Inscris-toi pour avoir ton lien » passe à la ligne au lieu d'être coupée (PT, RU, DE).
     $('affUrl').classList.toggle('aff-url-msg', !!aff.guest);
-    $('affClicks').textContent = String(aff.clicks || 0);
-    $('affFriends').textContent = String(aff.friends || 0);
-    $('affDeposited').textContent = String(aff.deposited || 0);
-    $('affPlayed').textContent = String(aff.played || 0);
-    $('affTotal').textContent = money(aff.total || 0);
-    $('affEarned').textContent = money(aff.earned || 0);
     $('affListCount').textContent = String(aff.deposited || 0);
-    renderRevBox(aff.rev && aff.rev.on ? aff.rev : null);
+    // 2026-11-09 : un seul système (part de revenu). Visiteur : même page explicative, sans ses résultats ni sa liste.
+    renderRevBox(aff.rev && aff.rev.on ? aff.rev : { on: true, guest: true, pct: Number(aff.pct) || 60, holdH: 24 });
+    show($('affListView'), !aff.guest);
     renderAffCodes();
     renderAffList();
     fitPortal();
   }
-  // Part de revenu (NGR) : tableau de bord affilié (panneau + règles + projections + FAQ). Élastique, 12 langues.
+  // Part de revenu (NGR) : LE système d'invitation (l'ancien 5 % est supprimé, 2026-11-09). Page en cases claires :
+  // en haut le titre + le lien ; puis Tes résultats (connecté), Comment ça marche, Exemple, Tes chiffres, Combien tu peux
+  // gagner, Comment amener des amis, Règles, Questions. Élastique, 12 langues. Affichage seulement (chiffres du serveur).
   function renderRevBox(rev) {
-    var main = $('affMain');
-    if (!main) return;
-    // Masquage sûr des anciens blocs « +5 % » via une classe sur la carte (CSS !important).
-    var card = document.getElementById('affCard');
-    if (card) card.classList.toggle('aff-rev-on', !!rev);
-    var box = document.getElementById('affRevBox');
-    if (!rev) { if (box) box.style.display = 'none'; return; }
-    if (!box) { box = document.createElement('div'); box.id = 'affRevBox'; box.className = 'aff-revbox'; main.insertBefore(box, main.firstChild); }
-    box.style.display = '';
+    var top = $('affRevTop'), box = $('affRevBox');
+    if (!top || !box || !rev) return;
+    var guest = !!rev.guest;
     var pct = Number(rev.pct) || 60, hold = Number(rev.holdH) || 24, V = { pct: pct, hold: hold };
     var avg = 50; // exemple : perte nette moyenne par ami actif et par an
     var proj = [100, 1000, 10000].map(function (n) { return { n: n, amt: Math.round(n * avg * pct / 100) }; });
     var faq = [['affRevQ1', 'affRevA1'], ['affRevQ2', 'affRevA2'], ['affRevQ3', 'affRevA3'], ['affRevQ4', 'affRevA4']];
-    // Chiffres « pro » (façon 1win) calculés à partir des données déjà reçues.
     var clicks = Number(aff.clicks) || 0, friends = Number(aff.friends) || 0, dep = Number(aff.deposited) || 0;
     var nDep = Number(aff.depCount) || 0, totalDep = Number(aff.total) || 0;
     var avgPlayer = dep > 0 ? totalDep / dep : 0;
@@ -544,32 +530,41 @@
     var r2d = friends > 0 ? Math.round(100 * dep / friends) : 0;
     var demoMin = Number(rev.demoMin) || 50; // amis actifs (déposé) requis pour débloquer un compte démo
     var met = function (v, label) { return '<div class="arv-met"><b>' + v + '</b><span>' + esc(label) + '</span></div>'; };
+    var exDep = 100, exLost = 40, exGain = Math.round(exLost * pct) / 100;
+    var EX = { dep: money(exDep), lost: money(exLost), gain: money(exGain), pct: pct, hold: hold };
+    var ICO_STEP = [
+      '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></svg>',
+      '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.5" r="3.3"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><path d="M18.5 8v6M15.5 11h6"/></svg>',
+      '<svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/><path d="M12 7c-1.5-3-5-3.5-5-1.2C7 7 10 7 12 7zm0 0c1.5-3 5-3.5 5-1.2C17 7 14 7 12 7z"/></svg>'];
+    top.innerHTML =
+      '<div class="arv-hero"><span class="arv-pct">' + pct + '<i>%</i></span>' +
+        '<div class="arv-hero-t"><h3 class="arv-big">' + esc(t('affRevBig', V)) + '</h3><p class="arv-sub">' + esc(t('affRevSub', V)) + '</p></div></div>';
     box.innerHTML =
-      '<div class="arv-head">' +
-        '<div class="arv-kpi"><b class="g">' + pct + ' %</b><span>' + esc(t('affRevShareLabel')) + '</span></div>' +
-        '<div class="arv-kpi"><b>' + money(rev.balance || 0) + '</b><span>' + esc(t('affRevBalLabel')) + '</span></div>' +
-        '<div class="arv-kpi"><b>' + money(rev.paid || 0) + '</b><span>' + esc(t('affEarned')) + '</span></div>' +
-      '</div>' +
-      affResHtml(rev, V) +
-      '<h3 class="arv-big">' + esc(t('affRevBig', V)) + '</h3>' +
-      '<ul class="arv-rules">' +
-        '<li>' + esc(t('affRevR1', V)) + '</li>' +
-      '</ul>' +
-      '<div class="arv-income"><span>' + esc(t('affIncome')) + '</span><b>' + money(rev.paid || 0) + '</b></div>' +
-      '<div class="arv-mets">' +
-        met(affInt(clicks), t('affClicks')) +
-        met(affInt(friends), t('affFriends')) +
-        met(affInt(dep), t('affFirstDep')) +
-        met(money(avgPlayer), t('affAvgPlayer')) +
-        met(affInt(nDep), t('affNbDep')) +
-        met(money(totalDep), t('affTotal')) +
-        met(c2r + ' %', t('affC2R')) +
-        met(r2d + ' %', t('affR2D')) +
-      '</div>' +
+      (guest ? '' : affResHtml(rev, V)) +
+      '<div class="arv-sec"><b class="arv-st">' + esc(t('affHowT')) + '</b>' +
+        '<ol class="arv-how">' +
+          ['affSt1', 'affSt2', 'affSt3'].map(function (k, i) { return '<li><span class="arv-n">' + (i + 1) + '</span>' + ICO_STEP[i] + '<em>' + esc(t(k, V)) + '</em></li>'; }).join('') +
+        '</ol></div>' +
+      '<div class="arv-ex"><b class="arv-st">' + esc(t('affExT')) + '</b>' +
+        '<p>' + esc(t('affExA', EX)) + '</p>' +
+        '<p class="arv-exg">' + esc(t('affExB', EX)) + '</p>' +
+        '<p class="arv-exs">✓ ' + esc(t('affExC', EX)) + '</p>' +
+        '<small>' + esc(t('affPaid2', V)) + '</small></div>' +
+      (guest ? '' :
+        '<div class="arv-sec"><b class="arv-st">' + esc(t('affStatsT')) + '</b><div class="arv-mets">' +
+          met(affInt(clicks), t('affClicks')) +
+          met(affInt(friends), t('affFriends')) +
+          met(affInt(dep), t('affFirstDep')) +
+          met(money(avgPlayer), t('affAvgPlayer')) +
+          met(affInt(nDep), t('affNbDep')) +
+          met(money(totalDep), t('affTotal')) +
+          met(c2r + ' %', t('affC2R')) +
+          met(r2d + ' %', t('affR2D')) +
+        '</div></div>') +
       '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
         proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
         '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
-      '<details class="arv-promo" open><summary>' + esc(t('affPromoTitle')) + '</summary>' +
+      '<details class="arv-promo"' + (guest ? '' : ' open') + '><summary>' + esc(t('affPromoTitle')) + '</summary>' +
         '<p class="apr-lead">' + esc(t('affPromoLead')) + '</p>' +
         '<div class="apr-grid">' +
           '<div class="apr-card apr-wa"><span class="apr-n">1</span><i>WhatsApp</i><p>' + esc(t('affPromoWa')) + '</p><em>' + esc(t('affPromoWaEx')) + '</em></div>' +
@@ -579,11 +574,10 @@
         '</div>' +
         '<p class="apr-tip">' + esc(t('affPromoTip')) + '</p>' +
         '<p class="apr-go">' + esc(t('affPromoGo')) + '</p>' +
-        // Compte démo : visible seulement dans cette section repliée, et le « contacter le support »
-        // n'apparaît qu'à partir du seuil d'amis ACTIFS (amis qui ont déposé).
-        (dep >= demoMin
+        // Compte démo : le « contacter le support » n'apparaît qu'à partir du seuil d'amis ACTIFS (amis qui ont déposé).
+        (guest ? '' : (dep >= demoMin
           ? '<div class="apr-demo"><b>' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoText')) + '</p></div>'
-          : '<div class="apr-demo apr-demo-lock"><b>🔒 ' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoLocked', { min: demoMin })) + '</p></div>') +
+          : '<div class="apr-demo apr-demo-lock"><b>🔒 ' + esc(t('affDemoTitle')) + '</b><p>' + esc(t('affDemoLocked', { min: demoMin })) + '</p></div>')) +
       '</details>' +
       '<details class="arv-rules"><summary>' + esc(t('affRulesTitle')) + '</summary>' +
         '<div class="arl-ok"><b>✓ ' + esc(t('affRulesOkTitle')) + '</b><p>' + esc(t('affRulesOk')) + '</p></div>' +
@@ -642,11 +636,7 @@
       '<div class="ar-dep"><b>' + esc(money(r.deposit)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
       // v2489 — nombre de dépôts de l'ami.
       '<div class="ar-n"><b>' + affN(r) + '</b><span>' + esc(t('affColN')) + '</span></div>' +
-      '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b>' +
-        (aff && aff.rev && aff.rev.on
-          ? '<span class="ar-left">' + esc(money(r.ngr || 0)) + ' ' + esc(t('affKept')) + '</span>'
-          : '<span class="ar-left" data-until="' + Number(r.until || 0) + '">' + esc(daysOnly(r.until)) + '</span>') +
-      '</div></div>';
+      '<div class="ar-gain"><b>+' + esc(money(r.gift)) + '</b><span class="ar-left">' + esc(t('affResColGain')) + '</span></div></div>';
   }
   // v2491 — petit graphique des gains de celui qui invite (barres). 7 jours (Aujourd'hui / 7 jours) avec le nom du jour,
   // 30 jours avec la date, « Tout » = par semaine (12 dernières). Affichage seulement.
@@ -774,21 +764,8 @@
     $('affRowsAll').innerHTML = shown.length ? shown.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t(q ? 'affNoMatch' : 'affEmpty')) + '</p>';
   }
   function tickLists() {
-    var els = document.querySelectorAll('#affRows .ar-left, #affRowsAll .ar-left');
-    for (var i = 0; i < els.length; i++) els[i].textContent = daysOnly(Number(els[i].getAttribute('data-until')));
     if (bon && bon.enabled && $('bonTimer')) $('bonTimer').innerHTML = ICO_CLOCK + '<span>' + esc(daysLeft(bon.phase === 'filling' ? bon.until : bon.weekEnd)) + '</span>';
     if (top && top.enabled && $('topTimer')) $('topTimer').innerHTML = ICO_CLOCK + '<span>' + esc(top.prev ? t('topEnded') : daysLeft(top.endsAt)) + '</span>';
-  }
-  function giftPopup(amount) {
-    var box = document.createElement('div');
-    box.className = 'defi-win';
-    box.innerHTML = '<div class="dw-in"><div class="dw-rays"></div><div class="dw-cup">' + ICO_GIFT + '</div><div class="dw-t"></div><div class="dw-a"></div></div>';
-    sparkle(box);
-    box.querySelector('.dw-t').textContent = t('affGiftTitle');
-    box.querySelector('.dw-a').textContent = '+' + money(amount);
-    document.body.appendChild(box);
-    setTimeout(function () { box.classList.add('out'); }, 3200);
-    setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 3800);
   }
   async function refreshAff() {
     clearTimeout(affT);
@@ -803,15 +780,11 @@
         bigToast(ICO_GIFT, t('affResPaid'), '+' + money(Number(r.rev.justPaid)), 'dw-start');
         if (D6.Supabase && D6.Supabase.pullVault) { try { D6.Supabase.pullVault(); } catch (eV) { /* ignore */ } }
       }
-      if (r.invited && r.invited.justPaid && r.invited.gift > 0) {
-        giftPopup(r.invited.gift);
-        if (D6.Supabase && D6.Supabase.pullVault) { try { D6.Supabase.pullVault(); } catch (eW) { /* ignore */ } }
-      }
     }
-    // Ami invité qui n'a pas encore reçu son cadeau, ou celui qui invite : on revérifie chaque minute.
-    if (r && ((r.invited && !r.invited.paid) || r.enabled)) {
-      // Celui qui invite : seulement quand les Récompenses sont ouvertes. L'ami en attente de son cadeau : chaque minute.
-      if (!(r.invited && !r.invited.paid) && !portalOpen()) return;
+    // Celui qui invite : on revérifie chaque minute, seulement quand les Récompenses sont ouvertes
+    // (2026-11-09 : plus de « cadeau de l'ami » à attendre, l'ancien 5 % est supprimé).
+    if (r && r.enabled) {
+      if (!portalOpen()) return;
       affT = setTimeout(function () { if (!document.hidden) refreshAff(); else affT = setTimeout(refreshAff, 60000); }, 60000);
     }
   }
@@ -968,7 +941,7 @@
   // v2415 : la liste des amis est toujours affichée sous les carrés (plus de bouton « Voir mes amis »).
   function showAffList(full) {
     show($('affMain'), !full);
-    show($('affListView'), !full);
+    show($('affListView'), !full && !(aff && aff.guest));
     show($('affFull'), !!full);
     if (full) { affFilter = 'all'; document.querySelectorAll('#affFilter button').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-f') === 'all'); }); }
     // v2437 — page des amis : pas de grande planète (place pour la liste, la recherche et le tri).

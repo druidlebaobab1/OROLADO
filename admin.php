@@ -667,7 +667,7 @@ function admin_closed_accounts(array $people): array {
   return $out;
 }
 
-/** v2433 — Bonus par sorte, arrondis ; Affiliation = cadeau reçu comme ami invité + 5 % gagnés en invitant. */
+/** v2433 — Bonus par sorte, arrondis ; Affiliation = gains d'affilié (part de revenu 60 %, + anciens gains déjà versés). */
 /** 2026-11-09 : identifiant LOCAL (u_…) d'un joueur vu par l'admin avec son id Supabase / son e-mail (l'affiliation est rangée sous l'id local). */
 function admin_aff_local_uid(string $uid, string $email = ''): string {
   $db = load_db();
@@ -716,8 +716,8 @@ function admin_aff_detail(string $local): ?array {
   usort($rows, static fn($a, $b) => strcmp($b['at'], $a['at']));
   $rev = function_exists('orolado_aff_rev_name') ? orolado_aff_read(orolado_aff_rev_name($local)) : [];
   $log = [];
-  foreach ((array) ($rev['log'] ?? []) as $l) $log[] = ['amount' => round((float) ($l['amount'] ?? 0), 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => '60 %'];
-  foreach ((array) ($own['log'] ?? []) as $l) if ((float) ($l['amount'] ?? 0) > 0) $log[] = ['amount' => round((float) $l['amount'], 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => 'ancien 5 %'];
+  foreach ((array) ($rev['log'] ?? []) as $l) $log[] = ['amount' => round((float) ($l['amount'] ?? 0), 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => 'Part de revenu ' . $pct . ' %'];
+  foreach ((array) ($own['log'] ?? []) as $l) if ((float) ($l['amount'] ?? 0) > 0) $log[] = ['amount' => round((float) $l['amount'], 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => 'Ancien système (avant le ' . $pct . ' %)'];
   usort($log, static fn($a, $b) => strcmp($b['at'], $a['at']));
   $old5 = (float) ($own['earned'] ?? 0);
   $paid60 = (float) ($w['withdrawn'] ?? 0);
@@ -4143,21 +4143,29 @@ function openMessage(m) {
 // 2026-11-09 (propriétaire : « bien suivre mes affiliés ») — panneau Affiliation de la fiche : chiffres, lien, amis, versements, boutons
 function affPanel(A) {
   if (!A) return '';
-  const c = (lbl, v, col) => '<div'+(col?' style="border-color:'+col+'"':'')+'><span>'+esc(lbl)+'</span><b'+(col?' style="color:'+col+'"':'')+'>'+v+'</b></div>';
+  // 2026-11-09 (propriétaire : « retirer les anciens 5 %, des carreaux, tout bien compréhensif ») — fiche affilié en 4 groupes clairs.
+  const c = (lbl, v, col, big) => '<div class="afa-c'+(big?' big':'')+'"'+(col?' style="border-color:'+col+'"':'')+'><span>'+esc(lbl)+'</span><b'+(col?' style="color:'+col+'"':'')+'>'+v+'</b></div>';
+  const grp = (title, inner) => '<div class="afa-g"><div class="afa-t">'+title+'</div><div class="afa-grid">'+inner+'</div></div>';
   const rows = (A.rows||[]);
-  return '<div class="aff-adm" style="margin:10px 0;padding:12px;border-radius:14px;border:1px solid rgba(43,212,154,.55);background:rgba(43,212,154,.07)">'+
-    '<h3 class="panel-title" style="margin:0 0 4px;color:#7FF5CF">🤝 Affilié — '+esc(A.pct)+' % de ce que ses amis perdent en argent réel (versé tout seul 24 h après)</h3>'+
-    '<p class="muted" style="margin:0 0 8px">Lien : <b>'+esc(A.link||'—')+'</b> '+(A.link?'<button class="mini" id="affCopyLink">Copier</button>':'')+' · Code : <b>'+esc(A.code||'—')+'</b></p>'+
-    '<div class="totals">'+
-      c('Clics sur son lien', esc(A.clicks))+c('Amis inscrits', esc(A.friends))+c('Amis qui ont déposé', esc(A.deposited))+c('Amis qui jouent (réel)', esc(A.active))+
-      c('Déposé par ses amis', money(A.total))+c('Misé par ses amis', money(A.staked))+c('Perdu par ses amis', money(A.lost))+c('Dû ('+A.pct+' %)', money(A.entitled), '#7FF5CF')+
-      c('Versé ('+A.pct+' %)', money(A.paid60), '#4ADE80')+c('Ancien 5 % versé', money(A.old5))+c('TOTAL versé', money(A.paid), '#4ADE80')+c('En attente (24 h)', money(A.pending), '#FCD34D')+
-      c('Reste à verser', money(A.toPay), A.toPay>0?'#F87171':'')+
-    '</div>'+
-    '<p style="margin:8px 0"><button class="mini ok" id="affPayNow">💸 Verser maintenant'+(A.toPay>0?' ('+money(A.toPay)+')':'')+'</button> '+
+  return '<div class="aff-adm">'+
+    '<style>.aff-adm{margin:10px 0;padding:12px;border-radius:14px;border:1px solid rgba(43,212,154,.55);background:rgba(43,212,154,.06)}'+
+      '.aff-adm .afa-g{margin:10px 0 0}.aff-adm .afa-t{font-weight:800;font-size:13px;color:#C9F5E2;margin:0 0 6px}'+
+      '.aff-adm .afa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}'+
+      '.aff-adm .afa-c{border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:8px 10px;background:rgba(0,0,0,.18);min-width:0}'+
+      '.aff-adm .afa-c span{display:block;font-size:11px;color:#9AA4CC;line-height:1.25}.aff-adm .afa-c b{display:block;font-size:17px;margin-top:3px;overflow-wrap:anywhere}'+
+      '.aff-adm .afa-c.big b{font-size:20px}.aff-adm .afa-rule{margin:4px 0 0;font-size:12px;color:#C9D2F0;line-height:1.4}</style>'+
+    '<h3 class="panel-title" style="margin:0 0 2px;color:#7FF5CF">🤝 Affilié — '+esc(A.pct)+' % de ce qu’OROLADO gagne sur ses amis</h3>'+
+    '<p class="afa-rule">Règle unique : il reçoit '+esc(A.pct)+' % de ce que ses amis perdent en argent réel (trading, casino, paris), à vie, versé tout seul sur son solde réel 24 h après. Si ses amis gagnent, il ne doit rien.</p>'+
+    '<p class="muted" style="margin:8px 0 0">Lien : <b>'+esc(A.link||'—')+'</b> '+(A.link?'<button class="mini" id="affCopyLink">Copier</button>':'')+' · Code : <b>'+esc(A.code||'—')+'</b></p>'+
+    grp('👥 Ses amis', c('Clics sur son lien', esc(A.clicks))+c('Amis inscrits', esc(A.friends))+c('Amis qui ont déposé', esc(A.deposited))+c('Amis qui jouent (réel)', esc(A.active)))+
+    grp('💵 L’argent de ses amis', c('Déposé par ses amis', money(A.total))+c('Misé par ses amis', money(A.staked))+c('Perdu par ses amis', money(A.lost)))+
+    grp('💰 Son gain ('+esc(A.pct)+' %)', c('Gagné ('+A.pct+' %)', money(A.entitled), '#7FF5CF', 1)+c('Déjà versé', money(A.paid60), '#4ADE80', 1)+c('En attente (24 h)', money(A.pending), '#FCD34D', 1)+
+      c('Reste à verser', money(A.toPay), A.toPay>0?'#F87171':'', 1))+
+    (A.old5 > 0 ? '<p class="afa-rule" style="color:#9AA4CC">Avant le passage au '+esc(A.pct)+' %, il avait déjà reçu '+money(A.old5)+' avec l’ancien système (arrêté). Total reçu depuis le début : <b style="color:#4ADE80">'+money(A.paid)+'</b>.</p>' : '')+
+    '<p style="margin:10px 0 4px"><button class="mini ok" id="affPayNow">💸 Verser maintenant'+(A.toPay>0?' ('+money(A.toPay)+')':'')+'</button> '+
       '<button class="mini" id="affDemo" style="border-color:#F59E0B;color:#FDE68A">🎁 Lui donner un compte démo</button> '+
       '<button class="mini" id="affWrite">✉️ Lui écrire (Social)</button></p><div id="affOut" class="muted" style="font-size:12px;white-space:pre-wrap"></div>'+
-    (rows.length ? '<h3 class="panel-title">Ses amis ('+rows.length+')</h3><div class="table-wrap"><table><thead><tr><th>ID</th><th>E-mail</th><th>Inscrit le</th><th>Déposé</th><th>Misé</th><th>Perdu</th><th>Son gain</th><th>En attente</th></tr></thead><tbody>'+
+    (rows.length ? '<h3 class="panel-title">Ses amis, un par un ('+rows.length+')</h3><div class="table-wrap"><table><thead><tr><th>ID</th><th>E-mail</th><th>Inscrit le</th><th>Déposé</th><th>Misé</th><th>Perdu</th><th>Gain de l’affilié</th><th>En attente</th></tr></thead><tbody>'+
       rows.map(r => '<tr><td>'+esc(r.id)+'</td><td>'+esc(r.email||'—')+'</td><td>'+esc(fdate(r.at))+'</td><td>'+money(r.deposit)+'</td><td>'+money(r.staked)+'</td><td>'+money(r.lost)+'</td><td style="color:#4ADE80">+'+money(r.gain)+'</td><td style="color:#FCD34D">'+(r.pend>0?'+'+money(r.pend):'—')+'</td></tr>').join('')+'</tbody></table></div>' : '<p class="muted">Aucun ami inscrit pour l\'instant.</p>')+
     ((A.log||[]).length ? '<h3 class="panel-title">Ses versements</h3><div class="table-wrap"><table><thead><tr><th>Date</th><th>Montant</th><th>Système</th></tr></thead><tbody>'+
       A.log.map(l => '<tr><td>'+esc(fdate(l.at))+'</td><td style="color:#4ADE80">+'+money(l.amount)+'</td><td>'+esc(l.kind)+'</td></tr>').join('')+'</tbody></table></div>' : '<p class="muted">Aucun versement pour l\'instant.</p>')+

@@ -224,13 +224,13 @@
   <!-- 2026-10-20 : polices Google chargées SANS bloquer la page (avant : tout, même l'écran de chargement, les attendait) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="/css/app.css?v=3646">
-    <link rel="stylesheet" href="/css/auth.css?v=3646">
-    <link rel="stylesheet" href="/css/tv.css?v=3646">
-    <link rel="stylesheet" href="/css/galaxy.css?v=3646">
-    <link rel="stylesheet" href="/css/cg.css?v=3646">
-    <link rel="stylesheet" href="/css/lobby.css?v=3646">
-    <link rel="stylesheet" href="/css/sports2.css?v=3646">
+    <link rel="stylesheet" href="/css/app.css?v=3648">
+    <link rel="stylesheet" href="/css/auth.css?v=3648">
+    <link rel="stylesheet" href="/css/tv.css?v=3648">
+    <link rel="stylesheet" href="/css/galaxy.css?v=3648">
+    <link rel="stylesheet" href="/css/cg.css?v=3648">
+    <link rel="stylesheet" href="/css/lobby.css?v=3648">
+    <link rel="stylesheet" href="/css/sports2.css?v=3648">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -754,7 +754,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     // Version de CETTE page, lue au moment de la vérification (la ligne qui la porte est plus bas dans la page).
     function mine() {
       try {
-        var sc = document.querySelector('script[src*="js/app.js?v=3646"]');
+        var sc = document.querySelector('script[src*="js/app.js?v=3648"]');
         return sc ? parseInt(String(sc.getAttribute('src')).split('v=')[1], 10) || 0 : 0;
       } catch (e0) { return 0; }
     }
@@ -2154,46 +2154,15 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
       </section>
       <section class="aff-card hidden" id="affCard">
         <div class="aff-main" id="affMain">
-          <p class="aff-big"><b data-i18n="affBigYou">Toi tu gagnes +5 %</b><i>&amp;</i><b data-i18n="affBigFriend">Ton ami gagne +5 %</b></p>
-          <ol class="aff-steps3">
-            <li><span>1</span><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/></svg><em data-i18n="affS1">Envoie ton lien à ton ami.</em></li>
-            <li><span>2</span><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg><em data-i18n="affS2">Ton ami s’inscrit avec ton lien et fait un dépôt.</em></li>
-            <li><span>3</span><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/><path d="M12 7c-1.5-3-5-3.5-5-1.2C7 7 10 7 12 7zm0 0c1.5-3 5-3.5 5-1.2C17 7 14 7 12 7z"/></svg><em data-i18n="affS3">Vous gagnez tous les deux, tout de suite.</em></li>
-          </ol>
-          <div class="aff-ex">
-            <b class="ae-h" data-i18n="affExTitle">Exemples</b>
-            <p data-i18n="affEx1"></p>
-            <p data-i18n="affEx2"></p>
-            <p class="ae-note" data-i18n="affExNote"></p>
-            <p class="ae-sub" data-i18n="affEx3"></p>
-            <p class="ae-li" data-i18n="affEx4"></p>
-            <p class="ae-li" data-i18n="affEx5"></p>
-          </div>
-          <ul class="defi-rl aff-rl">
-            <li><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg><span data-i18n="affR1">Toi : 5 % de chaque dépôt de ton ami, pendant 365 jours. Tu retires quand tu veux.</span></li>
-            <li><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/><path d="M12 7c-1.5-3-5-3.5-5-1.2C7 7 10 7 12 7zm0 0c1.5-3 5-3.5 5-1.2C17 7 14 7 12 7z"/></svg><span data-i18n="affR2">Ton ami : 5 % sur son premier dépôt, à jouer 2 fois.</span></li>
-          </ul>
-          <p class="aff-paid" data-i18n="affPaidBy">Ces cadeaux sont payés par OROLADO, jamais pris sur l’argent de ton ami.</p>
+          <!-- 2026-11-09 : anciens blocs « 5 % / 365 jours » supprimés. Seul système : la part de revenu (js/portal.js). -->
+          <div class="arv-top" id="affRevTop"></div>
+          <b class="aff-link-t" data-i18n="affLinkT">Ton lien personnel</b>
           <div class="aff-link">
             <span class="aff-url" id="affUrl">—</span>
             <button type="button" class="aff-btn" id="affCopy"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg><span data-i18n="affCopy">Copier</span></button>
           </div>
           <button type="button" class="btn-gold aff-share" id="affShare"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4M8.2 13.2l7.6 4"/></svg><span data-i18n="affShare">Partager mon lien</span></button>
-          <div class="aff-stats aff-stats6">
-            <div><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v9l2.2-2.1 2 4.6 2-.9-2-4.5H16z"/></svg><b id="affClicks">0</b><span data-i18n="affClicks">Clics sur ton lien</span></div>
-            <div><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.5" r="3.3"/><path d="M3 19.5c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3"/><path d="M18.5 8v6M15.5 11h6"/></svg><b id="affFriends">0</b><span data-i18n="affFriends">Amis inscrits</span></div>
-            <div><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg><b id="affDeposited">0</b><span data-i18n="affDeposited">Ont déposé</span></div>
-            <div><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 7-8"/><path d="M15 6h4v4"/></svg><b id="affPlayed">0</b><span data-i18n="affPlayed">Ont joué en réel</span></div>
-            <div><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M16.5 7.5c-.6-1.4-2.3-2.3-4.5-2.3-2.6 0-4.3 1.3-4.3 3.1 0 4.4 9 2.4 9 6.9 0 1.9-1.9 3.3-4.7 3.3-2.3 0-4.2-1-4.8-2.6"/></svg><b id="affTotal">0 $</b><span data-i18n="affTotal">Total déposé par tes amis</span></div>
-            <div class="gold"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/><path d="M12 7c-1.5-3-5-3.5-5-1.2C7 7 10 7 12 7zm0 0c1.5-3 5-3.5 5-1.2C17 7 14 7 12 7z"/></svg><b id="affEarned">0 $</b><span data-i18n="affEarned">Tu as gagné</span></div>
-          </div>
-          <div class="aff-proj">
-            <b data-i18n="affProjTitle">Combien tu peux gagner (exemples) :</b>
-            <p data-i18n="affProj1">100 amis qui déposent 100 $ dans l’année → toi +500 $</p>
-            <p data-i18n="affProj2">1 000 amis → +5 000 $</p>
-            <p data-i18n="affProj3">10 000 amis → +50 000 $</p>
-            <small data-i18n="affProjNote">Ce sont de petits exemples : plus tes amis déposent, plus tu gagnes. Pas de limite.</small>
-          </div>
+          <div class="aff-revbox" id="affRevBox"></div>
         </div>
         <div class="aff-listview" id="affListView">
           <div class="aff-lv-top">
@@ -2370,25 +2339,25 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <script src="/js/indices.js?v=3646"></script>
+  <script src="/js/indices.js?v=3648"></script>
   <script>/* v2822 : emblèmes des indices (js/indices.js) posés dans le « monde OROLADO » de l'écran de chargement */
   (function(){try{var W=window.D6||{},list=(W.EXT_INDICES||[]).filter(function(e){return e&&e.glyph;}),orig=['v100','stable','apex500','horizon50','crash300','goldtrend','boomspike','nexusprime','v75','titanpulse'];
   var slots=document.querySelectorAll('#olWorld .ow-x');for(var i=0;i<slots.length;i++){var svg='';
   if(i%2===0&&W.origGlyph)svg=W.origGlyph(orig[(i/2)%orig.length]);if(!svg&&W.indexGlyph&&list.length)svg=W.indexGlyph(list[(i*5)%list.length]);
   if(svg){slots[i].innerHTML=svg.replace(/id="g([oq])/g,'id="lw'+i+'$1').replace(/url\(#g([oq])/g,'url(#lw'+i+'$1');slots[i].classList.add('in');}}}catch(e){}})();</script>
-  <script src="/js/config.js?v=3646"></script>
+  <script src="/js/config.js?v=3648"></script>
   <!-- 2026-10-20 (vieux Android) : traductions par langue — le noyau écrit juste après lui js/i18n/en.js + la langue du joueur
        (avant : les 12 langues à chaque visite). Textes : js/i18n-src.js, js/translations.js, js/i18n-zh.js → node scripts/gen-i18n.js -->
-  <script src="/js/i18n/core.js?v=e831e53c51"></script>
-  <script src="/js/store.js?v=3646"></script>
-  <script src="/js/api.js?v=3646"></script>
+  <script src="/js/i18n/core.js?v=e3240bc6b8"></script>
+  <script src="/js/store.js?v=3648"></script>
+  <script src="/js/api.js?v=3648"></script>
   <!-- 2026-10-20 : Supabase servi par orolado.com (avant : cdn.jsdelivr.net, version non fixée, bloquait le chargement si lent) -->
   <script src="/js/vendor/supabase-js-2.118.0.js"></script>
-  <script src="/js/supabase.js?v=3646"></script>
-  <script src="/js/auth.js?v=3646"></script>
-  <script src="/js/fair_table.js?v=3646"></script>
-  <script src="/js/engine.js?v=3646"></script>
-  <script src="/js/chart.js?v=3646"></script>
+  <script src="/js/supabase.js?v=3648"></script>
+  <script src="/js/auth.js?v=3648"></script>
+  <script src="/js/fair_table.js?v=3648"></script>
+  <script src="/js/engine.js?v=3648"></script>
+  <script src="/js/chart.js?v=3648"></script>
   <script>/* v2573 — paiement Flutterwave chargé APRÈS l'affichage (avant : 2 s de blocage, Safari restait en « chargement » avec sa grande barre sur ACHETER / VENDRE). Au clic sur Recharger, ensureFlwScript() le recharge si besoin. */(function(){function go(){if(window.FlutterwaveCheckout||window.__flwInject)return;window.__flwInject=1;var s=document.createElement('script');s.src='https://checkout.flutterwave.com/v3.js?v=2790';s.async=true;s.onload=function(){window.__flwLoad='ok'};s.onerror=function(){window.__flwLoad='err'};document.head.appendChild(s);}window.__oroFlwPreload=go;/* 2026-10-20 : plus chargé à chaque visite (vieux Android) : js/app.js le prépare à l'ouverture de Recharger */})();</script>
   <script>
   (function () {
@@ -2439,29 +2408,29 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="/js/receipt.js?v=3646"></script>
-  <script src="/js/back.js?v=3646"></script>
-  <script src="/js/push.js?v=3646"></script>
-  <script src="/js/app.js?v=3646"></script>
-  <script src="/js/portal.js?v=3646"></script>
-  <script src="/js/live-ui.js?v=3646"></script>
-  <script src="/js/live.js?v=3646"></script>
-  <script src="/js/live-quiz-data.js?v=3646"></script>
-  <script src="/js/live-fun.js?v=3646"></script>
-  <script src="/js/live-groups.js?v=3646"></script>
-  <script src="/js/live-send.js?v=3646"></script>
-  <script src="/js/gifts-home.js?v=3646"></script>
-  <script src="/js/sports.js?v=3646"></script>
-  <script src="/js/localcur.js?v=3646"></script>
-  <script src="/js/casino-art.js?v=3646"></script>
-  <script src="/js/games/scenes.js?v=3646"></script>
-  <script src="/js/sfx.js?v=3646"></script>
-  <script src="/js/casino.js?v=3646"></script>
-  <script src="/js/fit.js?v=3646"></script>
-  <script src="/js/learn-txt.js?v=3646"></script>
-  <script src="/js/learn-txt2.js?v=3646"></script>
-  <script src="/js/learn.js?v=3646"></script>
-  <script src="/js/art-rig.js?v=3646"></script>
+  <script src="/js/receipt.js?v=3648"></script>
+  <script src="/js/back.js?v=3648"></script>
+  <script src="/js/push.js?v=3648"></script>
+  <script src="/js/app.js?v=3648"></script>
+  <script src="/js/portal.js?v=3648"></script>
+  <script src="/js/live-ui.js?v=3648"></script>
+  <script src="/js/live.js?v=3648"></script>
+  <script src="/js/live-quiz-data.js?v=3648"></script>
+  <script src="/js/live-fun.js?v=3648"></script>
+  <script src="/js/live-groups.js?v=3648"></script>
+  <script src="/js/live-send.js?v=3648"></script>
+  <script src="/js/gifts-home.js?v=3648"></script>
+  <script src="/js/sports.js?v=3648"></script>
+  <script src="/js/localcur.js?v=3648"></script>
+  <script src="/js/casino-art.js?v=3648"></script>
+  <script src="/js/games/scenes.js?v=3648"></script>
+  <script src="/js/sfx.js?v=3648"></script>
+  <script src="/js/casino.js?v=3648"></script>
+  <script src="/js/fit.js?v=3648"></script>
+  <script src="/js/learn-txt.js?v=3648"></script>
+  <script src="/js/learn-txt2.js?v=3648"></script>
+  <script src="/js/learn.js?v=3648"></script>
+  <script src="/js/art-rig.js?v=3648"></script>
 <script>
 /* Petits boutons (+ − ÷2 ×2 ⌫ ↺, durées) : ils s'allument un instant au toucher, comme MA / BB / EMA. Dessin seulement. */
 (function(){var SEL='.qbtn,.ind-btn.zoom-btn,.ind-btn.chart-reset-btn,.chart-fs-btn,.fs-trade-close,.dur-chip,.help-badge,#btnProfile,.mode-btn,.lang-dd-btn';function lit(e){var t=e.target&&e.target.closest?e.target.closest(SEL):null;if(!t)return;t.classList.add('tap-lit');clearTimeout(t._tapLit);t._tapLit=setTimeout(function(){t.classList.remove('tap-lit');},340);}document.addEventListener(window.PointerEvent?'pointerdown':'touchstart',lit,{passive:true,capture:true});})();

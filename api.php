@@ -424,8 +424,7 @@ if ($action === 'defiStatus' || $action === 'defiActivate') {
   exit;
 }
 
-// v2413 — Inviter un ami (aff_lib.php) : lien du joueur, ses amis, ses gains ; verse les cadeaux dus
-// (5 % au 1er dépôt de l'ami ; 5 % de chaque dépôt de l'ami pendant 365 jours pour celui qui invite).
+// Inviter un ami (aff_lib.php + aff_rev_lib.php) : lien du joueur, ses amis, ses gains (part de revenu 60 %, à vie).
 if ($action === 'affStatus') {
   $me = session_user($db, $token);
   if (!$me || empty($me['id'])) {

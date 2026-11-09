@@ -236,11 +236,11 @@ check('bloc rev présent et actif', !empty($r['rev']['on']));
 check('pct = 60', (int) ($r['rev']['pct'] ?? 0) === 60, (string) ($r['rev']['pct'] ?? 0));
 check('hold = 24 h', (int) ($r['rev']['holdH'] ?? 0) === 24);
 check('total versé exposé (= earned)', abs(($r['earned'] ?? -1) - ($r['rev']['paid'] ?? 0)) < 0.001);
-check('sans le drapeau : pas de bloc rev', (function () {
+check('ancien 5 % supprimé : même avec OROLADO_AFF_REV=0, la part de revenu reste active', (function () {
   putenv('OROLADO_AFF_REV=0');
   $x = orolado_aff_status(load_db(), load_db()['users']['inv']);
   putenv('OROLADO_AFF_REV=1');
-  return empty($x['rev']);
+  return !empty($x['rev']['on']);
 })());
 
 echo "11) ANTI DOUBLE-PAIEMENT : via orolado_aff_status, seul le 60 % NGR est versé (pas le vieux 5 %)\n";

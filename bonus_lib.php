@@ -7,8 +7,7 @@ declare(strict_types=1);
  *  - le bonus se REMPLIT en jouant : +1 $ pour chaque 30 $ misés en réel (trades terminés), pendant 7 jours ;
  *  - pas de cumul avec le cadeau d'ami invité sur ce même dépôt (le bonus est diminué de ce cadeau) ;
  *  - chaque morceau versé est un bonus (opérateur admin) → règle « miser ×2 avant retrait », comme les autres.
- * Calcul anti-triche : pour remplir 10 $, il faut miser 300 $ (≈ 16,50 $ perdus en moyenne) ; même avec les
- * 5 % de l'affilié, un tricheur à 2 comptes perd ≈ 2,50 $ par 100 $.
+ * Calcul anti-triche : pour remplir 10 $, il faut miser 300 $ (≈ 16,50 $ perdus en moyenne).
  *
  * Ne touche à AUCUN chemin de paiement ni aux trades : lit la liste des dépôts confirmés et les trades réglés
  * (y compris archivés). Versements par orolado_trade_credit_once (référence unique par palier : jamais en double).
@@ -72,13 +71,8 @@ function orolado_bonus_find_deposit(array $db, string $uid, int $from, int $to):
   $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $uid) : [$uid];
   if (!$ids) $ids = [$uid];
   $best = null;
-  // v2426 — le tout premier vrai dépôt d'un ami invité ne compte pas (il reçoit déjà +5 % ; sinon un tricheur
-  // qui s'invite lui-même toucherait 5 % + 5 % + bonus sur le même dépôt).
+  // 2026-11-09 : l'ancien cadeau 5 % de l'ami invité est supprimé → son 1er dépôt compte aussi pour le bonus de la semaine.
   $skip = '';
-  if (function_exists('orolado_aff_read') && function_exists('orolado_aff_inv_name') && function_exists('orolado_aff_real_deposits')) {
-    $inv = orolado_aff_read(orolado_aff_inv_name($uid));
-    if (!empty($inv['inviter'])) $skip = (string) (orolado_aff_real_deposits($db, $uid)[0]['id'] ?? '');
-  }
   foreach (($db['deposits'] ?? []) as $d) {
     if (!is_array($d) || !in_array((string) ($d['userId'] ?? $d['user_id'] ?? ''), $ids, true)) continue;
     if ($skip !== '' && (string) ($d['id'] ?? $d['ref'] ?? '') === $skip) continue;

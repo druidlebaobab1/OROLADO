@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
 /**
- * Inviter un ami (v2413) — règle choisie par le propriétaire le 2026-10-07 :
- *  - l'ami invité reçoit 5 % de son PREMIER dépôt, une seule fois, en bonus (à miser ×2 avant retrait) ;
- *  - celui qui invite reçoit 5 % de CHAQUE dépôt de l'ami pendant 365 jours, LIBRE (retirable sans jouer).
- *  - tout le reste du site garde la règle normale ×2.
- * Calcul : un tricheur à 2 comptes reçoit 2 × 5 % mais perd ~5,5 % de tout ce qu'il mise
- * (dépôt + bonus misés 2 fois) → il perd ~1,6 $ sur 100 $. Au-delà de 5 %, il gagnerait.
+ * Inviter un ami — lien, codes, clics, amis, liste et chiffres de l'affilié.
+ * 2026-11-09 (propriétaire : « retirer les anciens systèmes, les 5 % ») : le SEUL gain est la part de revenu
+ * (aff_rev_lib.php : 60 % de ce qu'OROLADO gagne réellement sur les amis, à vie, versé 24 h après, argent libre).
+ * L'ancien système (5 % du 1er dépôt pour l'ami + 5 % de chaque dépôt pendant 365 jours) est supprimé :
+ * plus rien n'est versé ici ; les anciens gains déjà versés restent visibles (journal, totaux).
  *
  * Ne touche à AUCUN chemin de paiement : lit seulement la liste des dépôts confirmés (la même que
  * celle qui autorise les retraits). Versements par orolado_trade_credit_once (une seule fois par
@@ -324,11 +323,7 @@ function orolado_aff_pay_inviter(array $db, string $uid, float $gift, string $re
 }
 
 /**
- * Verse ce qui est dû, une seule fois par dépôt :
- *  - l'ami : 5 % de son PREMIER vrai dépôt (bonus, à miser ×2) — une seule fois ;
- *  - celui qui invite : 5 % de CHAQUE vrai dépôt de l'ami fait dans les 365 jours après son inscription
- *    (libre, retirable sans jouer).
- * Chaque versement a sa référence unique (par dépôt) : même appelé 100 fois, rien n'est payé deux fois.
+ * Note les vrais dépôts de l'ami (pour les chiffres de l'affilié). Ne verse plus rien (ancien 5 % supprimé).
  */
 const OROLADO_AFF_DAYS = 365;
 
@@ -341,8 +336,8 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
   if (empty($inv['inviter'])) return null;
   $deps = orolado_aff_real_deposits($db, $friendUid);
   if (!$deps) return $inv;
-  $start = (int) strtotime((string) ($inv['at'] ?? ''));
-  $end = $start + OROLADO_AFF_DAYS * 86400;
+  // Plus de limite « 365 jours » (ancien système) : tous les dépôts de l'ami sont notés, à vie.
+  $end = PHP_INT_MAX;
   $todo = false;
   if (empty($inv['friendPaid'])) $todo = true;
   foreach ($deps as $d) {
@@ -350,40 +345,21 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
   }
   if (!$todo) return $inv;
   $inviter = (string) $inv['inviter'];
-  // Part de revenu (NGR) active : le gain de celui qui invite est géré par aff_rev_lib.php
-  // (60 % de la marge réelle). On NE verse donc PLUS les 5 % par dépôt ici (sinon double paiement) ;
-  // on continue juste à noter les dépôts (pour le nombre affiché). Le cadeau de bienvenue de l'ami reste.
-  $revOn = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled();
-  $res = orolado_aff_with(orolado_aff_inv_name($friendUid), static function (&$st) use ($db, $friendUid, $inviter, $deps, $end, $revOn) {
+  // 2026-11-09 (propriétaire : « retirer les anciens systèmes, les 5 % ») — l'ancien système 5 % est SUPPRIMÉ.
+  // Le seul gain de celui qui invite est la part de revenu (aff_rev_lib.php : 60 % de la marge réelle, à vie).
+  // Ici on ne verse PLUS RIEN (ni 5 % à l'ami sur son 1er dépôt, ni 5 % par dépôt à celui qui invite) :
+  // on note seulement les dépôts de l'ami (pour les chiffres affichés). Les anciens 5 % déjà versés restent au journal.
+  $res = orolado_aff_with(orolado_aff_inv_name($friendUid), static function (&$st) use ($deps, $end) {
     if (!isset($st['deps']) || !is_array($st['deps'])) $st['deps'] = [];
-    // 1) Cadeau de l'ami : 5 % de son tout premier vrai dépôt, une fois. SUPPRIMÉ en mode part de revenu
-    //    (demande du propriétaire : on simplifie, plus de 5 % sur le 1er dépôt de l'ami).
     if (empty($st['friendPaid'])) {
-      if ($revOn) {
-        $st['friendPaid'] = true;
-        $st['friendGift'] = 0.0;
-        $st['friendDeposit'] = $deps[0]['amount'];
-      } else {
-        $g = orolado_aff_gift($deps[0]['amount']);
-        $ok = $g < 0.01 ? true : orolado_aff_pay_friend($db, $friendUid, $g, 'adm_ami_' . $friendUid);
-        if ($ok) {
-          $st['friendPaid'] = true;
-          $st['friendGift'] = $g;
-          $st['friendDeposit'] = $deps[0]['amount'];
-          if ($g >= 0.01) $st['justPaid'] = true;
-        }
-      }
+      $st['friendPaid'] = true;
+      $st['friendGift'] = (float) ($st['friendGift'] ?? 0);
+      $st['friendDeposit'] = $deps[0]['amount'];
     }
-    // 2) Part de celui qui invite : 5 % de chaque vrai dépôt pendant 365 jours (SAUF si NGR actif).
     foreach ($deps as $d) {
       if ($d['ts'] <= 0 || $d['ts'] > $end) continue;
       if (!empty($st['deps'][$d['id']]['paid'])) continue;
-      $g = $revOn ? 0.0 : orolado_aff_gift($d['amount']);
-      $ok = ($revOn || $g < 0.01) ? true : orolado_aff_pay_inviter($db, $inviter, $g, 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24));
-      if ($ok) {
-        $st['deps'][$d['id']] = ['amount' => $d['amount'], 'gift' => $g, 'paid' => true, 'at' => date('c')];
-        if (!$revOn && $g >= 0.01) $st['newPays'][] = ['ref' => 'aff_' . substr(hash('sha256', $friendUid . '|' . $d['id']), 0, 24), 'amount' => $g, 'deposit' => $d['amount'], 'at' => date('c')];
-      }
+      $st['deps'][$d['id']] = ['amount' => $d['amount'], 'gift' => 0.0, 'paid' => true, 'at' => date('c')];
     }
     $earned = 0.0;
     $total = 0.0;
@@ -422,7 +398,8 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
 /** Ce que voit le joueur : son lien, ses amis, ses gains ; et s'il a été invité, son cadeau. */
 function orolado_aff_status(array $db, array $user, array $opts = []): array {
   $uid = (string) ($user['id'] ?? '');
-  $out = ['ok' => true, 'enabled' => false, 'pct' => (int) round(OROLADO_AFF_PCT * 100)];
+  // 2026-11-09 : le seul pourcentage affiché est celui de la part de revenu (60 %), plus l'ancien 5 %.
+  $out = ['ok' => true, 'enabled' => false, 'pct' => (int) round((function_exists('orolado_aff_rev_pct') ? orolado_aff_rev_pct() : 0.6) * 100)];
   // Côté ami invité : vérifier / verser son cadeau (même si le Portail ne lui est pas encore ouvert).
   $inv = $uid !== '' ? orolado_aff_settle($db, $uid) : null;
   if (is_array($inv) && !empty($inv['inviter'])) {
@@ -436,17 +413,17 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   $code = orolado_aff_register_code($uid);
   $own = orolado_aff_read(orolado_aff_owner_name($uid));
   $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
-  // Amis encore dans leur année : on vérifie leurs nouveaux dépôts au passage.
+  // Tous les amis (à vie, plus de limite d'un an) : on note leurs nouveaux dépôts au passage.
   $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
   $changed = false;
   foreach ($friends as $f) {
     $t = (int) strtotime((string) ($f['at'] ?? ''));
-    if (!empty($f['uid']) && $t > 0 && time() - $t <= (OROLADO_AFF_DAYS + 2) * 86400) {
+    if (!empty($f['uid']) && $t > 0) {
       // v2492 : on ne rouvre le fichier de l'ami QUE s'il a un dépôt pas encore payé (avant : à chaque fois, lent).
       $fd = orolado_aff_real_deposits($db, (string) $f['uid']);
       if (!$fd) continue;
       $inWin = 0;
-      foreach ($fd as $d1) if ($d1['ts'] > 0 && $d1['ts'] <= $t + OROLADO_AFF_DAYS * 86400 + 172800) $inWin++;
+      foreach ($fd as $d1) if ($d1['ts'] > 0) $inWin++;
       if (!empty($f['paid']) && isset($f['n']) && (int) $f['n'] >= $inWin) continue;
       orolado_aff_settle($db, (string) $f['uid']);
       $changed = true;
@@ -458,7 +435,6 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   $out['enabled'] = true;
   $out['code'] = $code;
   $out['codes'] = orolado_aff_codes($uid); // code par défaut + codes promo personnalisés (max 5)
-  $out['days'] = OROLADO_AFF_DAYS;
   $out['now'] = time();
   $out['clicks'] = (int) ($own['clicks'] ?? 0);
   $out['friends'] = count($friends);
@@ -498,7 +474,6 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
     $list[] = [
       'id' => (string) ($fu['publicId'] ?? 'ORO-??????'), 'uid' => $fuid,
       'at' => $t,
-      'until' => $t > 0 ? $t + OROLADO_AFF_DAYS * 86400 : 0,
       'deposit' => orolado_money($f['deposit'] ?? 0),
       'gift' => $giftF,
       'ngr' => orolado_money($ngrF),
@@ -623,6 +598,16 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
         $out['periods'][$pk]['gain'] = orolado_money($g);
       }
     }
+    // 2026-11-09 : petit graphique « Tes gains » de la page Voir plus = vrais versements (60 % + anciens gains déjà versés).
+    $revLogAll = function_exists('orolado_aff_rev_name') ? (array) (orolado_aff_read(orolado_aff_rev_name($uid))['log'] ?? []) : [];
+    $gains = [];
+    foreach (array_merge($revLogAll, $oldLog) as $l) {
+      $ts = (int) strtotime((string) ($l['at'] ?? ''));
+      $amt = (float) ($l['amount'] ?? 0);
+      if ($ts > 0 && $amt > 0) { $h = intdiv($ts, 3600) * 3600; $gains[$h] = ($gains[$h] ?? 0) + $amt; }
+    }
+    ksort($gains);
+    foreach ($gains as $h => $sumH) $out['gains'][] = [$h, orolado_money($sumH)];
   }
   return $out;
 }
