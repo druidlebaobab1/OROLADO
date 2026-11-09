@@ -3053,9 +3053,8 @@ $ADMIN_TABS = [
     ['watch', 'À surveiller'],
   ],
   'gF' => [
-    ['aff_track', 'Affiliés : suivi (part de revenu)'],
-    ['gift_aff', 'Invitation : Affiliés'],
-    ['gift_friends', 'Invitation : Amis invités'],
+    ['gift_aff', '🤝 Affiliés (suivi complet)'],
+    ['gift_friends', '🔗 Amis invités par les affiliés'],
     ['gift_top', 'Tournoi démo : cette semaine'],
     ['gift_top_prev', 'Tournoi démo : semaine dernière'],
     ['gift_bon', 'Bonus dépôt'],

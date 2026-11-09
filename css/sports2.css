@@ -1380,3 +1380,9 @@ html:root body #casinoModal .sp2 .pz-delr button span{max-width:100%}
 html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb-t{gap:1px}
 html:root body #casinoModal .sp2 .sp2-slip #spBst .pz-bstb-t small{font-size:11.5px;line-height:1.2}
 html:root body #casinoModal .sp2 .pz-menu{gap:6px}
+/* 2026-11-09 (grande revue, téléphone couché) : coupon vide plus compact, le bouton « Voir les paris » n'est plus sous la barre du bas */
+@media (orientation:landscape) and (max-height:500px){
+  html:root body #casinoModal .sp2 .sp2-page .sp2-empty,html:root body #casinoModal .sp2 .sp2-empty{padding:6px 16px 8px!important;gap:6px!important}
+  html:root body #casinoModal .sp2 .sp2-empty-ball{width:48px!important;height:48px!important}
+  html:root body #casinoModal .sp2 .sp2-empty-ball svg{width:48px!important;height:48px!important}
+}

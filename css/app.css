@@ -14528,3 +14528,14 @@ html body #portalModal .arr-st.arr-st-affStPend,html body #portalModal .arr-st.a
    connecté, il est caché PARTOUT, quelle que soit sa place. */
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#c1):not(#c2):not(#c3):not(#c4) #authQuick#authQuick.hidden,
 html:root body #authQuick#authQuick#authQuick#authQuick#authQuick#authQuick.hidden{display:none!important}
+/* 2026-11-09 (grande revue, téléphone couché) — le sélecteur COMPTE RÉEL / DÉMO faisait 52 px dans une barre de 32 px :
+   les montants étaient coupés. En paysage bas : libellé + montant serrés pour tenir dans la barre ; puces de gain
+   (90 % … 5000 %) qui ne débordent plus à droite. (Sélecteurs très forts : les règles portrait sont déjà très fortes.) */
+@media (orientation:landscape) and (max-height:500px){
+  html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5):not(#q6) #modeSwitcher .mode-btn{height:100%!important;min-height:0!important;max-height:none!important;padding-top:0!important;padding-bottom:0!important;display:flex!important;flex-direction:column!important;justify-content:center!important;line-height:1.05!important;gap:0!important}
+  html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5):not(#q6) #modeSwitcher .mode-btn .mb-lbl{font-size:8px!important;line-height:10px!important}
+  html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5):not(#q6) #modeSwitcher #modeDemo .mb-amt,html:not(.fs-trade) body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5):not(#q6) #modeSwitcher #modeReal .mb-amt{font-size:11px!important;line-height:12px!important;margin:0!important}
+  #oddsRow .odds-chip[data-odds="1.9"]{transform-origin:0 60%!important}
+  #oddsRow .odds-chip[data-odds="50"]{transform-origin:100% 60%!important;scale:1.08!important}
+  #oddsRow .odds-chip[data-odds="10"]{scale:1!important}
+}
