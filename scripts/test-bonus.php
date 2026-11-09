@@ -115,16 +115,16 @@ dep('u_jo', 1000, $now + 400);
 orolado_bonus_status(load_db(), $jo);
 check('2e gros dépôt la même semaine : pas de 2e bonus', abs(bsum($credits, $A) - 20) < 0.001);
 
-echo "6) Ami invité : son 1er dépôt a déjà le cadeau de +5 %, il ne donne pas le bonus dépôt (v2426)\n";
-orolado_aff_with(orolado_aff_inv_name('u_ami'), function (&$st) { $st = ['inviter' => 'u_jo', 'at' => date('c'), 'friendPaid' => true, 'friendGift' => 10.0, 'deps' => []]; });
+echo "6) Ami invité : plus de cadeau 5 % (supprimé 2026-11-09) → son 1er dépôt donne le bonus dépôt comme pour tout le monde\n";
+orolado_aff_with(orolado_aff_inv_name('u_ami'), function (&$st) { $st = ['inviter' => 'u_jo', 'at' => date('c'), 'friendPaid' => true, 'friendGift' => 0.0, 'deps' => []]; });
 $ami = load_db()['users']['u_ami'];
 orolado_bonus_status(load_db(), $ami, true);
 dep('u_ami', 200, $now + 5);
 $r = orolado_bonus_status(load_db(), $ami);
-check('1er dépôt de 200 $ d\'un ami invité : pas de bonus dépôt (il a déjà +5 %)', $r['phase'] === 'waiting' && $r['target'] < 0.01, $r['phase'] . ' ' . $r['target']);
+check('1er dépôt de 200 $ d\'un ami invité : bonus +20 $', $r['phase'] === 'filling' && abs($r['target'] - 20) < 0.001, $r['phase'] . ' ' . $r['target']);
 dep('u_ami', 150, $now + 6);
 $r = orolado_bonus_status(load_db(), $ami);
-check('2e dépôt de 150 $ la même semaine : bonus +15 $', $r['phase'] === 'filling' && abs($r['target'] - 15) < 0.001, $r['phase'] . ' ' . $r['target']);
+check('2e dépôt de 150 $ la même semaine : pas de 2e bonus (toujours +20 $)', $r['phase'] === 'filling' && abs($r['target'] - 20) < 0.001, $r['phase'] . ' ' . $r['target']);
 
 echo "7) Après 7 jours : les trades ne comptent plus\n";
 $e = 'eeeeeeee-1111-2222-3333-444444444444';

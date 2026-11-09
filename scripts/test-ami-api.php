@@ -121,18 +121,19 @@ $google('autre@gmail.com', 'n3');
 $r = $call(['action' => 'googleLogin', 'idToken' => 'tok3', 'nonce' => 'n3', 'ami' => 'XXXXXXXX']);
 check('compte créé mais pas relié', !empty($r['ok']) && empty(orolado_aff_read(orolado_aff_inv_name((string) ($r['user']['id'] ?? '')))['inviter']));
 
-echo "5) L'ami dépose 100 \$, puis ouvre le site (affStatus) : cadeaux versés une fois\n";
+echo "5) L'ami dépose 100 \$, puis ouvre le site (affStatus) : plus de cadeau 5 % (ancien système supprimé)\n";
 $d = load_db();
 $d['deposits'][] = ['id' => 'flw_test1', 'ref' => 'flw_test1', 'userId' => $mid, 'amount' => 100, 'status' => 'COMPLETED', 'operator' => 'flutterwave', 'createdAt' => date('c'), 'paidAt' => date('c')];
 $d['users'][$mid]['realDepositTotal'] = 100;
 save_db(orolado_data_file(), $d);
 $demo0 = (float) load_db()['vault']['admin_master']['demo'];
 $r = $call(['action' => 'affStatus', 'token' => $tok]);
-check('réponse : cadeau reçu 5 $ (message à afficher)', !empty($r['invited']['justPaid']) && abs((float) $r['invited']['gift'] - 5) < 0.001, json_encode($r['invited'] ?? $r));
-check('ami : 5 $ crédités une fois', abs(array_sum(array_filter($credited(), fn($k) => str_contains($k, 'adm_ami_'), ARRAY_FILTER_USE_KEY)) - 5) < 0.001);
-check('admin (test) : +5 $ démo', abs((float) load_db()['vault']['admin_master']['demo'] - $demo0 - 5) < 0.001);
+// 2026-11-09 : l'ancien système 5 % est SUPPRIMÉ — plus aucun cadeau à l'ami ni 5 % à l'affilié.
+check('réponse : ami noté « a déposé », aucun cadeau 5 %', !empty($r['invited']['paid']) && empty($r['invited']['justPaid']) && (float) $r['invited']['gift'] === 0.0, json_encode($r['invited'] ?? $r));
+check('ami : rien crédité (ancien 5 %)', count($credited()) === 0);
+check('admin (test) : +0 $ démo (ancien 5 %)', abs((float) load_db()['vault']['admin_master']['demo'] - $demo0) < 0.001);
 for ($i = 0; $i < 3; $i++) $r = $call(['action' => 'affStatus', 'token' => $tok]);
-check('3 appels de plus : rien en double, message plus affiché', count($credited()) === 1 && empty($r['invited']['justPaid']) && abs((float) load_db()['vault']['admin_master']['demo'] - $demo0 - 5) < 0.001);
+check('3 appels de plus : toujours rien', count($credited()) === 0 && empty($r['invited']['justPaid']) && abs((float) load_db()['vault']['admin_master']['demo'] - $demo0) < 0.001);
 check('joueur normal (mode test) : pas de lien d\'invitation', empty($r['enabled']) && empty($r['code']));
 
 echo "6) Sans session : refusé\n";
@@ -168,17 +169,17 @@ $d['users'][$fid]['realTrades'] = 3;
 save_db(orolado_data_file(), $d);
 $call(['action' => 'affStatus', 'token' => $ftok]);
 $r = $call(['action' => 'affStatus', 'token' => $ptok]);
-check('carrés : 1 clic, 1 inscrit, 1 a déposé, 1 a joué, total 100 $, gagné 5 $', ($r['clicks'] ?? -1) === 1 && $r['friends'] === 1 && $r['deposited'] === 1 && $r['played'] === 1 && abs($r['total'] - 100) < 0.001 && abs($r['earned'] - 5) < 0.001, json_encode(array_intersect_key($r, array_flip(['clicks', 'friends', 'deposited', 'played', 'total', 'earned']))));
+check('carrés : 1 clic, 1 inscrit, 1 a déposé, 1 a joué, total 100 $, 0 $ d\'ancien 5 %', ($r['clicks'] ?? -1) === 1 && $r['friends'] === 1 && $r['deposited'] === 1 && $r['played'] === 1 && abs($r['total'] - 100) < 0.001 && abs($r['earned']) < 0.001, json_encode($r));
 $row = $r['list'][0] ?? [];
-check('liste : numéro ORO (pas de nom), fin = inscription + 365 jours', str_starts_with((string) ($row['id'] ?? ''), 'ORO-') && !isset($row['name']) && ($row['until'] - $row['at']) === 365 * 86400);
+check('liste : numéro ORO (pas de nom), plus de date de fin « 365 jours »', str_starts_with((string) ($row['id'] ?? ''), 'ORO-') && !isset($row['name']) && !isset($row['until']));
 check('liste : nombre de dépôts de cet ami = 2 (v2489)', ($row['n'] ?? -1) === 2, json_encode($row));
-check('graphique : gains datés (2 $ + 3 $, regroupés par heure) + nombre total de dépôts = 2 (v2492)', ($r['depCount'] ?? -1) === 2 && count($r['gains'] ?? []) >= 1 && abs(array_sum(array_column($r['gains'], 1)) - 5) < 0.001 && ($r['gains'][0][0] ?? 0) > time() - 3700, json_encode($r['gains'] ?? null));
+check('nombre total de dépôts = 2 (v2492) ; aucun gain de l\'ancien 5 % dans le graphique', ($r['depCount'] ?? -1) === 2 && abs(array_sum(array_column($r['gains'] ?? [], 1))) < 0.001);
 $h = $call(['action' => 'financeHistory', 'token' => $ptok]);
 $bon = array_values(array_filter((array) ($h['rows'] ?? []), fn($x) => ($x['kind'] ?? '') === 'bonus'));
-check('historique de celui qui invite : 2 lignes « bonus » (2 $ + 3 $)', count($bon) === 2 && abs(array_sum(array_column($bon, 'amount')) - 5) < 0.001, json_encode($h['rows'] ?? $h));
+check('historique de celui qui invite : aucune ligne de l\'ancien 5 %', count($bon) === 0, json_encode($h['rows'] ?? $h));
 $hf = $call(['action' => 'financeHistory', 'token' => $ftok]);
 $bf = array_values(array_filter((array) ($hf['rows'] ?? []), fn($x) => ($x['kind'] ?? '') === 'bonus'));
-check('historique de l\'ami : 1 ligne « bonus » de 2 $ (5 % de son 1er dépôt de 40 $)', count($bf) === 1 && abs($bf[0]['amount'] - 2) < 0.001);
+check('historique de l\'ami : aucune ligne « Cadeau invitation » (ancien 5 % supprimé)', count($bf) === 0);
 
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
