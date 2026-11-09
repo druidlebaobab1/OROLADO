@@ -59,11 +59,19 @@ function admin_gift_payload(string $view, array $req, array $people): array {
   if ($view === 'gift_aff' || $view === 'gift_friends') {
     $all = [];
     $friendsAll = [];
+    // 2026-11-08 (propriétaire : « change tout l'ancien système ») : chiffres du système ACTUEL — 60 % de ce que les amis
+    // perdent en argent réel (part de revenu), + l'ancien 5 % déjà versé. Même calcul que l'espace de l'affilié.
+    $rev60 = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled() && function_exists('orolado_aff_rev_wallet');
+    $pct60 = $rev60 && function_exists('orolado_aff_rev_pct') ? orolado_aff_rev_pct() : 0.0;
+    if ($rev60 && function_exists('orolado_aff_build_deposit_index')) $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
     foreach ($users as $uid => $u) {
       if (!function_exists('orolado_aff_owner_name')) break;
       $own = orolado_aff_read(orolado_aff_owner_name((string) $uid));
       $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
       if (!$friends && empty($own['clicks'])) continue;
+      $w60 = $rev60 && $friends ? orolado_aff_rev_wallet($db, (string) $uid) : null;
+      $byF = [];
+      foreach ((array) ($w60['friends'] ?? []) as $fr) $byF[(string) ($fr['uid'] ?? '')] = $fr;
       $who = admin_gift_who($db, (string) $uid);
       $myIp = $ipByEmail[strtolower($who['email'])] ?? '';
       $ipSeen = [];
@@ -81,24 +89,35 @@ function admin_gift_payload(string $view, array $req, array $people): array {
         $fw = admin_gift_who($db, (string) ($f['uid'] ?? ''));
         $friendsAll[] = ['t' => (int) strtotime((string) ($f['at'] ?? '')), 'cells' => [
           $fw['id'], $fw['email'] !== '' ? $fw['email'] : '—', $who['id'], $who['email'] !== '' ? $who['email'] : '—',
-          admin_gift_date($f['at'] ?? ''), admin_money($f['deposit'] ?? 0), admin_money($f['gift'] ?? 0), $flag !== '' ? $flag : '—',
+          admin_gift_date($f['at'] ?? ''), admin_money($f['deposit'] ?? 0),
+          admin_money($byF[(string) ($f['uid'] ?? '')]['staked'] ?? 0),
+          admin_money(max(0.0, (float) ($byF[(string) ($f['uid'] ?? '')]['ngr'] ?? 0))),
+          admin_money(max(0.0, $pct60 * (float) ($byF[(string) ($f['uid'] ?? '')]['ngr'] ?? 0)) + (float) ($f['gift'] ?? 0)),
+          $flag !== '' ? $flag : '—',
         ], 'who' => $fw];
       }
-      $all[] = ['earned' => (float) ($own['earned'] ?? 0), 'cells' => [
+      $old5 = (float) ($own['earned'] ?? 0);
+      $paid60 = (float) ($w60['withdrawn'] ?? 0);
+      $earnedAll = $paid60 + $old5;
+      $all[] = ['earned' => $earnedAll, 'pend' => (float) ($w60['pending'] ?? 0), 'cells' => [
         $who['id'], $who['name'], $who['email'] !== '' ? $who['email'] : '—', (string) (int) ($own['clicks'] ?? 0),
-        (string) count($friends), (string) $dep, admin_money($total), admin_money($own['earned'] ?? 0),
+        (string) count($friends), (string) $dep, admin_money($total), admin_money($w60['staked'] ?? 0),
+        admin_money(max(0.0, (float) ($w60['ngr'] ?? 0))), admin_money($earnedAll), admin_money($w60['pending'] ?? 0),
         $alerts > 0 ? '⚠ ' . $alerts . ' ami(s) à vérifier' : '—',
       ], 'who' => $who];
     }
+    unset($GLOBALS['OROLADO_AFF_DEPIDX']);
     if ($view === 'gift_aff') {
       usort($all, static fn($a, $b) => $b['earned'] <=> $a['earned']);
-      $cols = ['ID', 'Nom', 'E-mail', 'Clics', 'Amis inscrits', 'Amis qui ont déposé', 'Déposé par ses amis', 'Gagné (5 %)', 'Alerte'];
-      $sum = 0.0;
-      foreach ($all as $a) { $rows[] = $row($a['cells'], $a['who']); $sum += $a['earned']; }
-      $summary = count($all) . ' joueur(s) qui invitent · ' . admin_money($sum) . ' versés aux affiliés (argent libre, retirable)';
+      $pctTxt = (int) round(($pct60 ?: 0.6) * 100);
+      $cols = ['ID', 'Nom', 'E-mail', 'Clics', 'Amis inscrits', 'Amis qui ont déposé', 'Déposé par ses amis', 'Misé par ses amis', 'Perdu par ses amis', 'Versé à l’affilié', 'En attente (24 h)', 'Alerte'];
+      $sum = 0.0; $sumP = 0.0;
+      foreach ($all as $a) { $rows[] = $row($a['cells'], $a['who']); $sum += $a['earned']; $sumP += (float) ($a['pend'] ?? 0); }
+      $summary = count($all) . ' joueur(s) qui invitent · ' . admin_money($sum) . ' versés aux affiliés (argent libre, retirable) · '
+        . admin_money($sumP) . ' en attente · règle : ' . $pctTxt . ' % de ce que leurs amis perdent en argent réel, versé tout seul 24 h après';
     } else {
       usort($friendsAll, static fn($a, $b) => $b['t'] <=> $a['t']);
-      $cols = ['Ami (ID)', 'E-mail de l’ami', 'Invité par (ID)', 'E-mail de l’affilié', 'Inscrit le', 'Déposé', 'Gagné par l’affilié', 'Alerte'];
+      $cols = ['Ami (ID)', 'E-mail de l’ami', 'Invité par (ID)', 'E-mail de l’affilié', 'Inscrit le', 'Déposé', 'Misé', 'Perdu', 'Gagné par l’affilié', 'Alerte'];
       foreach ($friendsAll as $f) $rows[] = $row($f['cells'], $f['who']);
       $summary = count($friendsAll) . ' ami(s) invité(s) — « même IP » = peut-être la même personne : à vérifier avant de payer un retrait';
     }
