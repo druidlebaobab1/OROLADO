@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v3649';
+const CACHE = 'orolado-v3650';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -20,12 +20,16 @@ self.addEventListener('install', function (event) {
 self.addEventListener('activate', function (event) {
   event.waitUntil(
     caches.keys().then(function (keys) {
+      // 2026-11-09 (revue « site plus léger ») : un NOUVEAU visiteur n'a aucune ancienne version → pas de rechargement
+      // (avant : toute la page était téléchargée 2 fois à la toute première visite).
+      self.__oroUpgrade = keys.some(function (k) { return /^orolado-v\d+$/.test(k) && k !== CACHE; });
       return Promise.all(keys.filter(function (k) { return k !== CACHE; }).map(function (k) {
         return caches.delete(k);
       }));
     }).then(function () {
       return self.clients.claim();
     }).then(function () {
+      if (!self.__oroUpgrade) return;
       // 2026-11-02 (propriétaire : « rien ne change, c'est toujours pareil ») : quand une NOUVELLE version prend
       // la main, le service worker force lui-même les fenêtres ouvertes à charger le HTML frais (?swv=<version>).
       // Fiable même si l'app.js en cache est ancien (le navigateur revalide toujours sw.js). Le paramètre swv évite

@@ -10431,8 +10431,11 @@
       }).catch(function () { /* ignore */ });
       if (!window.__oroSwReload) {
         window.__oroSwReload = 1;
+        // 2026-11-09 (revue « site plus léger ») : première visite = aucune version précédente → pas de rechargement
+        // (avant : un nouveau visiteur téléchargeait toute la page 2 fois). Rechargement seulement pour une MISE À JOUR.
+        var oroHadCtl = !!navigator.serviceWorker.controller;
         navigator.serviceWorker.addEventListener('controllerchange', function () {
-          if (window.__oroSwReloaded) return;
+          if (window.__oroSwReloaded || !oroHadCtl) return;
           // 2026-11-02 (propriétaire : « c'est toujours pareil » alors qu'il reste sur l'écran de trading) :
           // pendant un trade on ne recharge pas la page (on ne coupe pas la partie) MAIS on recharge la
           // feuille de style en direct → le nouveau look (cadres du terminal, courbe sombre) apparaît
