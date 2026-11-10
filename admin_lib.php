@@ -1466,6 +1466,7 @@ function admin_enrich_wd(array $w, array $pmap): array {
   $ct = admin_wd_contacts()[$uid] ?? ['phone' => '', 'operator' => '', 'email' => '', 'name' => ''];
   $w['phone'] = admin_fill((string) ($w['phone'] ?? ''), (string) ($u['phone'] ?? ''), (string) ($ct['phone'] ?? ''));
   $w['operator'] = admin_method_label(admin_fill((string) ($w['operator'] ?? ''), (string) ($ct['operator'] ?? '')));
+  if (($w['network'] ?? '') !== '' && !str_contains((string) $w['operator'], '·')) $w['operator'] .= ' · ' . (string) $w['network']; // 2026-11-10 : réseau du retrait crypto
   $w['email'] = admin_fill((string) ($w['email'] ?? ''), (string) ($u['email'] ?? ''), (string) ($ct['email'] ?? ''));
   $w['name'] = admin_fill((string) ($w['name'] ?? ''), (string) ($u['name'] ?? ''), (string) ($ct['name'] ?? ''));
   $w['publicId'] = admin_fill((string) ($u['publicId'] ?? ''), (string) ($w['publicId'] ?? ''));
