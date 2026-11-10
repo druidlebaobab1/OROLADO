@@ -4557,6 +4557,22 @@
     hi: { payMethodUsdtDesc: 'तुरंत और अपने-आप • USDT, BTC, ETH, TRX…', oxaSelectCoin: 'मुद्रा चुनें', oxaSelectNet: 'नेटवर्क चुनें', oxaSearchCoin: 'खोजें…', oxaWalletTitle: 'वॉलेट पता', oxaMinAmt: 'न्यूनतम: ⁦$  {amt}⁩ · {net}', oxaWarnOnly: 'इस पते पर {coin} के अलावा कोई और मुद्रा जमा न करें।', cryptoPayAmt: '{amt} भुगतान करें', cryptoLive: 'भुगतान का इंतज़ार', cryptoAddrLabel: 'जमा पता', cryptoGuide1: 'इस नेटवर्क पर अपनी मनचाही राशि (न्यूनतम से) भेजें: जो भी राशि आएगी, जमा हो जाएगी।', cryptoGuide2: 'पुष्टि के बाद आपका बैलेंस अपने-आप अपडेट हो जाता है।', cryptoGuide3: 'अगर memo/tag ज़रूरी हो तो एक्सचेंज से न भेजें।', cryptoChecking: 'आपका जमा पता बनाया जा रहा है…', cryptoShowQr: 'QR कोड दिखाएँ', cryptoHideQr: 'QR कोड छिपाएँ', logoutAsk: 'इस खाते से लॉग आउट करें?' }
   };
   Object.keys(CRYPTO_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], CRYPTO_TR[l]); });
+  // 2026-11-10 : retrait crypto — choix du réseau et adresse vérifiée.
+  var WDNET_TR = {
+    fr: { wdNetLabel: 'Réseau', wdNetPick: 'Choisis le réseau de ton adresse', wdAddrBad: 'Adresse {net} invalide. Copie-la depuis ton portefeuille et vérifie le réseau.' },
+    en: { wdNetLabel: 'Network', wdNetPick: 'Choose your address network', wdAddrBad: 'Invalid {net} address. Copy it from your wallet and check the network.' },
+    es: { wdNetLabel: 'Red', wdNetPick: 'Elige la red de tu dirección', wdAddrBad: 'Dirección {net} no válida. Cópiala desde tu billetera y revisa la red.' },
+    pt: { wdNetLabel: 'Rede', wdNetPick: 'Escolhe a rede do teu endereço', wdAddrBad: 'Endereço {net} inválido. Copia-o da tua carteira e verifica a rede.' },
+    ar: { wdNetLabel: 'الشبكة', wdNetPick: 'اختر شبكة عنوانك', wdAddrBad: 'عنوان {net} غير صالح. انسخه من محفظتك وتحقق من الشبكة.' },
+    tr: { wdNetLabel: 'Ağ', wdNetPick: 'Adresinin ağını seç', wdAddrBad: 'Geçersiz {net} adresi. Cüzdanından kopyala ve ağı kontrol et.' },
+    vi: { wdNetLabel: 'Mạng', wdNetPick: 'Chọn mạng của địa chỉ', wdAddrBad: 'Địa chỉ {net} không hợp lệ. Hãy sao chép từ ví và kiểm tra mạng.' },
+    id: { wdNetLabel: 'Jaringan', wdNetPick: 'Pilih jaringan alamatmu', wdAddrBad: 'Alamat {net} tidak valid. Salin dari dompetmu dan periksa jaringannya.' },
+    ru: { wdNetLabel: 'Сеть', wdNetPick: 'Выберите сеть вашего адреса', wdAddrBad: 'Неверный адрес {net}. Скопируйте его из кошелька и проверьте сеть.' },
+    de: { wdNetLabel: 'Netzwerk', wdNetPick: 'Wähle das Netzwerk deiner Adresse', wdAddrBad: 'Ungültige {net}-Adresse. Kopiere sie aus deinem Wallet und prüfe das Netzwerk.' },
+    hi: { wdNetLabel: 'नेटवर्क', wdNetPick: 'अपने पते का नेटवर्क चुनें', wdAddrBad: 'अमान्य {net} पता। इसे अपने वॉलेट से कॉपी करें और नेटवर्क जाँचें।' },
+    zh: { wdNetLabel: '网络', wdNetPick: '选择你的地址网络', wdAddrBad: '无效的 {net} 地址。请从钱包复制并检查网络。' }
+  };
+  Object.keys(WDNET_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], WDNET_TR[l]); });
   // v2422 — un montant ne se coupe jamais en fin de ligne (« 1 000 $ », « 5 % », « 20 $ ») : espaces insécables.
   Object.keys(DICT).forEach(function (l) {
     Object.keys(DICT[l]).forEach(function (k) {

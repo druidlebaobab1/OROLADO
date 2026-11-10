@@ -7408,6 +7408,39 @@
   var wdOtpTimer = null;
   var wdOtpLeft = 0;
   var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, ltc: 1, doge: 1, usdc: 1, ada: 1, avax: 1, matic: 1 };
+  // 2026-11-10 (propriétaire : « vérifie les adresses des retraits crypto ») : réseau choisi + adresse au bon format
+  // (même règle que le serveur, orolado_wd_crypto_check) — un mauvais réseau ou une faute de frappe = argent perdu.
+  var WD_NETS = { usdt: ['TRC20'], usdc: ['ERC20', 'BEP20', 'SOL'], btc: ['BTC'], eth: ['ERC20'], trx: ['TRC20'], sol: ['SOL'], ltc: ['LTC'], doge: ['DOGE'], ada: ['ADA'], avax: ['AVAXC'], matic: ['POLYGON'] };
+  var WD_NET_NAME = { TRC20: 'TRC20 (Tron)', BEP20: 'BEP20 (BNB Smart Chain)', ERC20: 'ERC20 (Ethereum)', SOL: 'Solana', BTC: 'Bitcoin', LTC: 'Litecoin', DOGE: 'Dogecoin', ADA: 'Cardano', AVAXC: 'Avalanche C-Chain', POLYGON: 'Polygon' };
+  function wdAddrOk(net, a) {
+    var b = '[1-9A-HJ-NP-Za-km-z]';
+    if (net === 'TRC20') return new RegExp('^T' + b + '{33}$').test(a);
+    if (net === 'BEP20' || net === 'ERC20' || net === 'POLYGON' || net === 'AVAXC') return /^0x[0-9a-fA-F]{40}$/.test(a);
+    if (net === 'SOL') return new RegExp('^' + b + '{32,44}$').test(a) && a.charAt(0) !== 'T';
+    if (net === 'BTC') return new RegExp('^(bc1[02-9ac-hj-np-z]{11,71}|[13]' + b + '{25,34})$').test(/^bc1/i.test(a) ? a.toLowerCase() : a);
+    if (net === 'LTC') return new RegExp('^(ltc1[02-9ac-hj-np-z]{11,71}|[LM3]' + b + '{26,33})$').test(/^ltc1/i.test(a) ? a.toLowerCase() : a);
+    if (net === 'DOGE') return new RegExp('^[DA9]' + b + '{25,34}$').test(a);
+    if (net === 'ADA') return new RegExp('^(addr1[0-9a-z]{50,120}|Ae2' + b + '{50,120}|DdzFF' + b + '{50,120})$').test(a);
+    return false;
+  }
+  function wdNetSync(method) {
+    var sel = $('wdNet'), lab = $('wdNetLabel'), nets = WD_NETS[method] || [];
+    if (!sel) return;
+    var multi = nets.length > 1;
+    sel.classList.toggle('hidden', !multi); if (lab) lab.classList.toggle('hidden', !multi);
+    if (!multi) { sel.innerHTML = ''; return; }
+    if (sel.getAttribute('data-for') !== method) {
+      sel.setAttribute('data-for', method);
+      sel.innerHTML = '<option value="">' + t('wdNetPick') + '</option>' + nets.map(function (n) { return '<option value="' + n + '">' + WD_NET_NAME[n] + '</option>'; }).join('');
+    }
+  }
+  // Réseau deviné tout seul quand c'est sûr (adresse T… = Tron) ; une adresse 0x… peut être BEP20 ou ERC20 → le joueur choisit.
+  document.addEventListener('input', function (e) {
+    if (!e.target || e.target.id !== 'wdDestination') return;
+    var sel = $('wdNet'); if (!sel || sel.classList.contains('hidden') || sel.value) return;
+    var a = String(e.target.value || '').trim(), m = ($('wdMethod') && $('wdMethod').value) || '';
+    if (/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(a) && (WD_NETS[m] || []).indexOf('TRC20') >= 0) sel.value = 'TRC20';
+  });
   var WD_MOBILE = {
     opay: 1, palmpay: 1, wave: 1, orange: 1, mtn: 1, mpesa: 1, moov: 1, airtel: 1,
     tmoney: 1, celtiis: 1, vodafone: 1, mynita: 1,
@@ -7751,6 +7784,7 @@
     var bankFields = $('wdBankFields');
     var help = $('wdDestHelp');
     var isCrypto = !!WD_CRYPTO[method];
+    wdNetSync(isCrypto ? method : '');
     var isMobile = !!WD_MOBILE[method];
     var isCard = method === 'card';
     var isBank = method === 'bank';
@@ -9770,6 +9804,14 @@
         toast(t('wdDestErr'), 'err');
         return;
       }
+      var wdNetwork = '';
+      if (WD_CRYPTO[method]) {
+        destination = destination.replace(/\s+/g, '');
+        var nets = WD_NETS[method] || [];
+        wdNetwork = nets.length > 1 ? String(($('wdNet') && $('wdNet').value) || '') : (nets[0] || '');
+        if (!wdNetwork) { toast(t('wdNetPick'), 'err'); if ($('wdNet')) $('wdNet').focus(); return; }
+        if (!wdAddrOk(wdNetwork, destination)) { toast(t('wdAddrBad', { net: WD_NET_NAME[wdNetwork] || wdNetwork }), 'err', 5000); return; }
+      }
       if (isMobile && !WD_NO_NAME[method] && name.length < 2) { toast(t('wdName'), 'err'); return; }
       if (WD_EMAIL[method] && destination.indexOf('@') < 0) {
         toast(t('wdPaypalErr'), 'err');
@@ -9779,6 +9821,7 @@
         amount: amount,
         operator: method,
         method: method,
+        network: wdNetwork,
         methodName: WD_NAMES[method] || method,
         phone: destination,
         destination: destination,

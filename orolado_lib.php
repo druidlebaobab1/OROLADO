@@ -335,6 +335,44 @@ function orolado_min_withdraw(): float {
   return 3.0;
 }
 
+/**
+ * 2026-11-10 — Retrait crypto : réseau autorisé pour la monnaie + adresse au bon format.
+ * Retour : null (pas une crypto), ['ok'=>true,'network','address'] ou ['ok'=>false,'reason'].
+ */
+function orolado_wd_crypto_nets(): array {
+  return [
+    'usdt' => ['TRC20'], 'usdc' => ['ERC20', 'BEP20', 'SOL'],
+    'btc' => ['BTC'], 'eth' => ['ERC20'], 'trx' => ['TRC20'], 'sol' => ['SOL'], 'ltc' => ['LTC'], 'doge' => ['DOGE'],
+    'ada' => ['ADA'], 'avax' => ['AVAXC'], 'matic' => ['POLYGON'],
+  ];
+}
+function orolado_wd_addr_ok(string $net, string $a): bool {
+  $b58 = '[1-9A-HJ-NP-Za-km-z]';
+  switch ($net) {
+    case 'TRC20': return (bool) preg_match('/^T' . $b58 . '{33}$/', $a);
+    case 'BEP20': case 'ERC20': case 'POLYGON': case 'AVAXC': return (bool) preg_match('/^0x[0-9a-fA-F]{40}$/', $a);
+    case 'SOL': return (bool) preg_match('/^' . $b58 . '{32,44}$/', $a) && $a[0] !== 'T';
+    case 'BTC': return (bool) preg_match('/^(bc1[02-9ac-hj-np-z]{11,71}|[13]' . $b58 . '{25,34})$/', strtolower(substr($a, 0, 3)) === 'bc1' ? strtolower($a) : $a);
+    case 'LTC': return (bool) preg_match('/^(ltc1[02-9ac-hj-np-z]{11,71}|[LM3]' . $b58 . '{26,33})$/', strtolower(substr($a, 0, 4)) === 'ltc1' ? strtolower($a) : $a);
+    case 'DOGE': return (bool) preg_match('/^[DA9]' . $b58 . '{25,34}$/', $a);
+    case 'ADA': return (bool) preg_match('/^(addr1[0-9a-z]{50,120}|Ae2' . $b58 . '{50,120}|DdzFF' . $b58 . '{50,120})$/', $a);
+  }
+  return false;
+}
+function orolado_wd_crypto_check(string $op, string $net, string $addr): ?array {
+  $nets = orolado_wd_crypto_nets();
+  $op = strtolower($op);
+  if (!isset($nets[$op])) return null;
+  $addr = trim(preg_replace('/\s+/', '', $addr) ?? '');
+  $net = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $net) ?? '');
+  $allowed = $nets[$op];
+  if ($net === '' && count($allowed) === 1) $net = $allowed[0];
+  if ($net === '' && $op === 'usdt' && preg_match('/^T/', $addr)) $net = 'TRC20'; // ancienne version du site : réseau devinable
+  if (!in_array($net, $allowed, true)) return ['ok' => false, 'reason' => 'Choisissez le réseau de votre adresse (' . implode(', ', $allowed) . ').'];
+  if (!orolado_wd_addr_ok($net, $addr)) return ['ok' => false, 'reason' => 'Adresse ' . $net . ' invalide. Vérifiez-la (copiez-la depuis votre portefeuille).'];
+  return ['ok' => true, 'network' => $net, 'address' => $addr];
+}
+
 function orolado_withdraw_min_for(string $op): float {
   $map = [
     'usdt' => 10.0, 'trx' => 10.0, 'sol' => 10.0, 'bnb' => 10.0, 'btc' => 15.0, 'eth' => 15.0,

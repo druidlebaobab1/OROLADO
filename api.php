@@ -2241,6 +2241,17 @@ if ($action === 'withdraw') {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Indiquez le compte / adresse de réception']);
     exit;
   }
+  // 2026-11-10 (propriétaire : « vérifie les adresses crypto des retraits ») : réseau obligatoire et adresse au bon format
+  // (une faute de frappe ou un mauvais réseau = argent perdu). Le réseau est noté sur le retrait (admin, Telegram).
+  $wdNetwork = '';
+  if (function_exists('orolado_wd_crypto_check')) {
+    $cc = orolado_wd_crypto_check($operator, (string) ($req['network'] ?? ''), $destination);
+    if ($cc !== null) {
+      if (empty($cc['ok'])) { echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) $cc['reason']]); exit; }
+      $wdNetwork = (string) $cc['network'];
+      $destination = (string) $cc['address'];
+    }
+  }
   if (strlen($beneficiary) < 2) {
     echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Nom du bénéficiaire requis']);
     exit;
@@ -2319,6 +2330,7 @@ if ($action === 'withdraw') {
     'suspect' => $suspect,
     'operator' => $operator,
     'method' => $operator,
+    'network' => $wdNetwork,
     'methodName' => trim((string) ($req['methodName'] ?? $operator)),
     'phone' => $destination,
     'destination' => $destination,
@@ -2383,6 +2395,7 @@ if ($action === 'withdraw') {
         if ($insTg) $L[] = '📅 Inscrit le : ' . gmdate('d/m/Y H:i', $insTg) . ' (GMT)';
         $L[] = '';
         $L[] = '🏦 Moyen : ' . (trim((string) ($req['methodName'] ?? '')) ?: ucfirst((string) $operator));
+        if ($wdNetwork !== '') $L[] = '🔗 Réseau : ' . strtoupper($operator) . ' · ' . $wdNetwork;
         $L[] = '📲 Numéro / adresse : ' . (string) $destination;
         if (trim((string) $beneficiary) !== '') $L[] = '🧾 Bénéficiaire : ' . (string) $beneficiary;
         $L[] = '💰 Solde restant : ' . number_format((float) ($db['vault'][(string) $me['id']]['real'] ?? 0), 2, ',', ' ') . ' $';
