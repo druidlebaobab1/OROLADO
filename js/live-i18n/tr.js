@@ -431,7 +431,7 @@
       ],
       aff: [
         'Arkadaşlarını davet et',
-        'Yatırımlarından para kazan'
+        'OROLADO’nun onlardan kazandığının %60’ını ömür boyu kazan'
       ],
       defi: [
         'Günlük görev',

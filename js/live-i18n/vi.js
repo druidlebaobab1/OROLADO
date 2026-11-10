@@ -431,7 +431,7 @@
       ],
       aff: [
         'Mời bạn bè',
-        'Kiếm tiền từ các khoản nạp của họ'
+        'Nhận 60% số tiền OROLADO thu được từ họ, trọn đời'
       ],
       defi: [
         'Thử thách mỗi ngày',

@@ -405,7 +405,8 @@
     // v2844 (propriétaire) : comme Cadeaux — rien ne change → on garde la grille déjà dessinée (plus d'« éclair »)
     // 2026-10-20 (propriétaire : « les logos apparaissent après quelques secondes ») : un nouveau badge ne redessine plus
     // toute la grille (sur iPhone, les logos redessinés mettaient du temps à revenir) : seul le petit chiffre change.
-    var sig = list.map(function (t) { return t.k; }).join(',') + '|' + document.documentElement.lang;
+    // 2026-11-10 : + « pack de langue arrivé » : sinon la grille restait en anglais (es, pt, ar…) quand la traduction arrivait après le 1er dessin.
+    var sig = list.map(function (t) { return t.k; }).join(',') + '|' + document.documentElement.lang + '|' + (HT[(document.documentElement.lang || 'fr').slice(0, 2)] ? 1 : 0);
     if (g.dataset.sig === sig && g.firstChild) { homeBadges(g); paintMsgBar(); return; }
     g.dataset.sig = sig;
     g.className = 'lh-grid lh-free' + (list.length % 3 === 2 ? ' lh-r2' : list.length % 3 === 1 ? ' lh-r1' : ''); // 2026-10-21 : dernière rangée centrée (jamais de trou)

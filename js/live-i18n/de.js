@@ -431,7 +431,7 @@
       ],
       aff: [
         'Freunde einladen',
-        'Verdiene an ihren Einzahlungen'
+        'Verdiene 60 % von dem, was OROLADO an ihnen verdient, lebenslang'
       ],
       defi: [
         'Tages-Challenge',
