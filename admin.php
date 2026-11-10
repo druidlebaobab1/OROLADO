@@ -734,7 +734,8 @@ function admin_aff_detail(string $local): ?array {
     $fu = (string) ($f['uid'] ?? '');
     $u = $db['users'][$fu] ?? [];
     $x = $byF[$fu] ?? [];
-    $d = (float) ($x['depAll'] ?? $f['deposit'] ?? 0);
+    // 2026-11-10 : le plus grand des deux (le suivi 60 % peut ne pas encore voir un dépôt que la fiche d'invitation a noté)
+    $d = max((float) ($x['depAll'] ?? 0), (float) ($f['deposit'] ?? 0));
     if ($d > 0.009 || !empty($f['paid'])) $dep++;
     $total += $d;
     $ngr = (float) ($x['ngr'] ?? 0);
@@ -756,7 +757,8 @@ function admin_aff_detail(string $local): ?array {
     'local' => $local, 'code' => $code, 'link' => $code !== '' ? 'https://orolado.com/r/' . $code : '',
     'clicks' => (int) ($own['clicks'] ?? 0), 'friends' => count($friends), 'deposited' => $dep, 'total' => round($total, 2),
     'staked' => round((float) ($w['staked'] ?? 0), 2), 'lost' => round(max(0.0, (float) ($w['ngr'] ?? 0)), 2), 'pct' => $pct,
-    'entitled' => round((float) ($w['entitled'] ?? 0), 2), 'paid60' => round($paid60, 2), 'old5' => round($old5, 2),
+    // « Gagné » jamais plus petit que ce qui a déjà été versé (si ses amis regagnent ensuite, rien n'est repris).
+    'entitled' => round(max((float) ($w['entitled'] ?? 0), $paid60), 2), 'paid60' => round($paid60, 2), 'old5' => round($old5, 2),
     'paid' => round($paid60 + $old5, 2), 'pending' => round((float) ($w['pending'] ?? 0), 2), 'active' => (int) ($w['active'] ?? 0),
     'toPay' => round(max(0.0, (float) ($w['entitled'] ?? 0) - $paid60), 2),
     'log' => array_slice($log, 0, 30), 'rows' => array_slice($rows, 0, 500),
@@ -2356,6 +2358,14 @@ if ($isAjax) {
     admin_bust_cache();
     admin_json(['ok' => !empty($done['ok']), 'on' => $on, 'reason' => empty($done['ok']) ? 'Joueur introuvable' : '']);
   }
+  // 2026-11-10 (propriétaire : « 9 $ reçus chez OxaPay mais pas crédités ») : vérifier TOUS les paiements OxaPay /
+  // Flutterwave payés des 7 derniers jours, créditer ce qui ne l'est pas (jamais deux fois), et lister ceux qui ne
+  // correspondent à aucun joueur (à voir à la main).
+  if ($action === 'pay_reconcile_all') {
+    @set_time_limit(60);
+    $r = orolado_pay_reconcile(7);
+    admin_json(['ok' => true] + (is_array($r) ? $r : []));
+  }
   if ($action === 'oxaRecheck') { // v3621 : revérifier les dépôts crypto d'un joueur chez OxaPay (sans double crédit)
     admin_json(orolado_pay_admin_recheck((string) ($req['userId'] ?? ''), (string) ($req['email'] ?? ''))); // v3623 : crypto + Mobile Money + carte
   }
@@ -3299,7 +3309,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <button class="mini tb-b" id="btnNotif" type="button" style="--c:#F59E0B">🔔 Notifications</button>
         <button class="mini tb-b" id="btnMail" type="button" style="--c:#60A5FA">✉️ E-mail à tous</button>
         <button class="mini tb-b" id="btnBonusAll" type="button" style="--c:#4ADE80">🎁 Bonus à tous</button>
-      </div></div>
+        <button class="mini tb-b" id="btnPayAll" type="button" style="--c:#22D3EE">🔎 Vérifier tous les dépôts (7 j)</button>
+      </div><div id="payAllOut" class="muted" style="display:none;margin-top:8px;font-size:12px;white-space:pre-wrap"></div></div>
       <div class="tb-g"><div class="tb-t">📊 Suivi des produits</div><div class="tb-row">
         <button class="mini tb-b" id="btnTradeA" type="button" style="--c:#FBBF24">📈 Trading</button>
         <button class="mini tb-b" id="btnCasA" type="button" style="--c:#1FD86B">🎮 Jeux</button>
@@ -4418,10 +4429,10 @@ async function openUser(uid) {
     '<p><input id="adjAmt" type="number" step="0.01" min="0.01" placeholder="Montant" style="width:120px"> <input id="adjMotif" placeholder="Motif" style="width:200px"> '+
     '<button class="mini ok" id="btnCredit">Créditer +</button> '+
     '<button class="mini bad" id="btnDebit">Débiter</button> '+
-    '<button class="mini bad" id="btnSuspend">Suspendre</button></p>'+
+    '<button class="mini bad" id="btnSuspend">Suspendre</button> '+
+    '<button class="mini" id="btnOxaRe">🔄 Vérifier ses paiements (crypto, Mobile Money, carte)</button></p>'+
     // 2026-11-09 (propriétaire : « retire les boutons inutiles ») : outils rares rangés dans un volet fermé
     '<details style="margin:4px 0 10px"><summary class="muted" style="cursor:pointer">⚙️ Outils (rarement utiles)</summary><p style="margin:8px 0 0">'+
-    '<button class="mini" id="btnOxaRe">🔄 Revérifier ses paiements crypto</button> '+
     '<button class="mini" id="btnPartner">'+(j.partner ? '🤝 Compte démo affilié : OUI (retirer)' : '🤝 En faire un compte démo affilié')+'</button></p></details><div id="oxaReOut" style="font-size:12px;white-space:pre-wrap"></div>'+
     // v2405 : seuls les dépôts VRAIMENT payés sous « argent payé » ; les pages de paiement ouvertes puis
     // abandonnées (en attente, jamais payées) à part, pour ne plus croire qu'un joueur a payé.
@@ -4476,7 +4487,7 @@ async function openUser(uid) {
     const out = document.getElementById('oxaReOut');
     let r;
     try { r = await ajax({action:'oxaRecheck', userId:u.id, email:u.email||''}); } catch (e) { r = {ok:false, reason:'Réseau lent, réessayez'}; }
-    btnOxaRe.disabled = false; btnOxaRe.textContent = '🔄 Revérifier paiements';
+    btnOxaRe.disabled = false; btnOxaRe.textContent = '🔄 Vérifier ses paiements (crypto, Mobile Money, carte)';
     if (!r.ok) { out.textContent = r.reason || 'Échec'; return; }
     const lines = (r.rows||[]).map(x => '• '+x.depot+' ('+x.statut+', '+x.montant+' $) — '+x.oxapay+(x.envois?', '+x.envois+' envoi(s), reçu '+x.recu+' $':'')+' → '+x.resultat);
     const pend = (r.rows||[]).filter(x => /PENDING|EN ATTENTE|UNFINISHED/.test(x.statut) && !/crédité/.test(x.resultat));
@@ -4593,6 +4604,22 @@ document.getElementById('btnBack').onclick = () => {
   window.location.href = '/';
 };
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
+// 2026-11-10 : vérifier TOUS les paiements reçus chez OxaPay / Flutterwave (7 j) — crédite ce qui manque, liste les inconnus.
+(function () {
+  const b = document.getElementById('btnPayAll'), out = document.getElementById('payAllOut'); if (!b || !out) return;
+  b.onclick = async () => {
+    if (b.disabled) return; b.disabled = true; const t0 = b.textContent; b.textContent = '⏳ Vérification chez OxaPay…';
+    out.style.display = 'block'; out.textContent = 'Lecture des paiements des 7 derniers jours…';
+    let r; try { r = await ajax({action:'pay_reconcile_all'}); } catch (e) { r = {ok:false, reason:'Réseau lent, réessayez'}; }
+    b.disabled = false; b.textContent = t0;
+    if (!r || !r.ok) { out.textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
+    const rows = (r.rows||[]).filter(x => !/déjà crédité/.test(x.resultat||''));
+    const unk = (r.unknown||[]);
+    out.textContent = '✅ Vérification faite. Crédité maintenant : ' + money(r.credited||0) +
+      (rows.length ? '\n\nÀ noter :\n' + rows.map(x => '• '+x.qui+' '+x.ref+' — '+money(x.montant)+' → '+x.resultat).join('\n') : '\nTous les paiements reçus sont crédités.') +
+      (unk.length ? '\n\n⚠️ Paiements REÇUS qui ne correspondent à AUCUN joueur (à vérifier à la main) :\n' + unk.map(x => '• '+x.qui+' '+money(x.montant)+' — '+(x.email||'sans e-mail')+' — '+x.date+' — réf '+x.ref).join('\n') : '\nAucun paiement inconnu.');
+  };
+})();
 // v2676 — Live : conversations avec les joueurs (texte + photos) et Actualités.
 (function () {
   const $l = id => document.getElementById(id);
