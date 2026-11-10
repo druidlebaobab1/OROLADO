@@ -507,7 +507,9 @@
     $('affListCount').textContent = String(aff.deposited || 0);
     // 2026-11-09 : un seul système (part de revenu). Visiteur : même page explicative, sans ses résultats ni sa liste.
     renderRevBox(aff.rev && aff.rev.on ? aff.rev : { on: true, guest: true, pct: Number(aff.pct) || 60, holdH: 24 });
-    show($('affListView'), !aff.guest);
+    // 2026-11-10 (propriétaire : « une seule liste ») : la liste des amis est DANS « Tes résultats » ; l'ancienne liste
+    // en dessous (doublon) est cachée, son « Voir plus » est sous le tableau des amis.
+    show($('affListView'), false);
     renderAffCodes();
     renderAffList();
     fitPortal();
@@ -628,6 +630,7 @@
             '<span class="gn">+' + esc(money(r.gift || 0)) + (Number(r.pend) > 0 ? '<i>⏳ +' + esc(money(r.pend)) + '</i>' : '') + '</span></div>';
         }).join('') + '</div>'
         : '<p class="arr-empty">' + esc(t('affResNoFriends')) + '</p>') +
+      ((aff && (aff.list || []).length) ? '<button type="button" class="aff-more arr-more" data-affmore="1"><span>' + esc(t('affMore')) + '</span><i class="aff-more-go"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></i></button>' : '') +
       '</div>';
   }
   function affRowHtml(r) {
@@ -941,7 +944,7 @@
   // v2415 : la liste des amis est toujours affichée sous les carrés (plus de bouton « Voir mes amis »).
   function showAffList(full) {
     show($('affMain'), !full);
-    show($('affListView'), !full && !(aff && aff.guest));
+    show($('affListView'), false);
     show($('affFull'), !!full);
     if (full) { affFilter = 'all'; document.querySelectorAll('#affFilter button').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-f') === 'all'); }); }
     // v2437 — page des amis : pas de grande planète (place pour la liste, la recherche et le tri).
@@ -1046,6 +1049,7 @@
       if (ad) { if (needAccount()) return; var inp = $('affCodeInput'); var v = inp ? inp.value : ''; if (v && v.trim()) { affCodeDo('affCodeNew', v.trim()); if (inp) inp.value = ''; } return; }
     });
     if ($('affMore')) $('affMore').addEventListener('click', function () { showAffList(true); });
+    document.addEventListener('click', function (ev) { var b = ev.target && ev.target.closest && ev.target.closest('[data-affmore]'); if (b) showAffList(true); }, true);
     // v2437 — recherche (à chaque lettre) et tri.
     if ($('affSearch')) $('affSearch').addEventListener('input', renderAffList);
     document.querySelectorAll('#affSort button').forEach(function (bt) {
