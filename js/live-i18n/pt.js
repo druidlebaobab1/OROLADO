@@ -431,7 +431,7 @@
       ],
       aff: [
         'Convide seus amigos',
-        'Ganhe com os depósitos deles'
+        'Ganha 60 % do que a OROLADO ganha com eles, para sempre'
       ],
       defi: [
         'Desafio do dia',

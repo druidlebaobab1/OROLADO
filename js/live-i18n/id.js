@@ -431,7 +431,7 @@
       ],
       aff: [
         'Undang temanmu',
-        'Dapat uang dari deposit mereka'
+        'Dapatkan 60% dari yang OROLADO hasilkan dari mereka, seumur hidup'
       ],
       defi: [
         'Tantangan harian',
