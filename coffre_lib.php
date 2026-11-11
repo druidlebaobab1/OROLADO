@@ -302,10 +302,26 @@ function coffre_balances(string $addr): ?array {
   $r = coffre_tg('/v1/accounts/' . $addr);
   if (!is_array($r) || empty($r['success'])) return null;
   $a = $r['data'][0] ?? null;
-  if (!is_array($a)) return ['trx' => 0.0, 'usdt' => 0.0, 'active' => false];
-  $usdt = 0.0;
-  foreach ((array) ($a['trc20'] ?? []) as $t) if (is_array($t) && isset($t[OROLADO_USDT_TRC20])) $usdt = (float) $t[OROLADO_USDT_TRC20] / 1e6;
+  // 2026-11-11 (1er vrai test) : une adresse qui n'a reçu QUE des USDT n'est pas « activée » sur TRON → la liste des
+  // comptes la renvoie VIDE alors qu'elle a bien les USDT. Le solde USDT est donc toujours lu directement dans le
+  // contrat USDT (balanceOf), qui marche pour toutes les adresses.
+  $usdt = coffre_usdt_balance($addr);
+  if ($usdt === null) return null;
+  if (!is_array($a)) return ['trx' => 0.0, 'usdt' => $usdt, 'active' => false];
   return ['trx' => (float) ($a['balance'] ?? 0) / 1e6, 'usdt' => $usdt, 'active' => true];
+}
+
+/** Solde USDT d'une adresse, lu dans le contrat USDT lui-même (null si le réseau ne répond pas). */
+function coffre_usdt_balance(string $addr): ?float {
+  $bin = coffre_addr_bin($addr);
+  if ($bin === '') return null;
+  $r = coffre_tg('/wallet/triggerconstantcontract', ['owner_address' => $addr, 'contract_address' => OROLADO_USDT_TRC20,
+    'function_selector' => 'balanceOf(address)', 'parameter' => str_pad(bin2hex(substr($bin, 1)), 64, '0', STR_PAD_LEFT), 'visible' => true]);
+  $hex = (string) ($r['constant_result'][0] ?? '');
+  if (!is_array($r) || $hex === '' || !ctype_xdigit($hex)) return null;
+  $v = 0.0;
+  foreach (str_split(ltrim($hex, '0') ?: '0') as $c) $v = $v * 16 + hexdec($c);
+  return $v / 1e6;
 }
 
 /** Signe et diffuse une transaction préparée par TronGrid. */
@@ -513,7 +529,9 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
     $gas = coffre_gas();
     $now = time();
     $ix = coffre_json(coffre_index_file());
-    $due = array_filter($ix, static fn($e) => (int) ($e['due'] ?? 0) > 0);
+    // Bouton « Envoyer maintenant » : TOUTES les adresses qui ont reçu quelque chose (même marquées « vides » par erreur).
+    $due = array_filter($ix, static fn($e) => (int) ($e['due'] ?? 0) > 0 || ($force && (float) ($e['got'] ?? 0) > 0));
+    foreach ($due as $ad => $e) if ((int) ($e['due'] ?? 0) <= 0) $due[$ad]['due'] = 1;
     uasort($due, static fn($a, $b) => ((int) $a['due']) <=> ((int) $b['due']));
     $k = 0;
     foreach ($due as $addr => $e) {
