@@ -824,6 +824,6 @@ function coffre_only_coins(): ?array {
   $c = [];
   if (coffre_ready()) $c[] = 'usdt_trc20';
   if (function_exists('cevm_ready') && cevm_ready()) array_push($c, 'usdt_erc20', 'usdt_bep20', 'usdc', 'eth', 'bnb', 'pol');
-  if (function_exists('cutxo_ready_chains')) foreach (cutxo_ready_chains() as $uc) $c[] = $uc; // btc, ltc, doge
+  if (function_exists('cutxo_ready_chains') && !empty(coffre_cfg()['utxo_on'])) foreach (cutxo_ready_chains() as $uc) $c[] = $uc; // btc, ltc, doge
   return $c;
 }
