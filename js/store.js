@@ -105,6 +105,12 @@
 
   function xorCrypt(str, decode, salt) {
     salt = salt || SALT;
+    // 2026-11-12 (revue) : un nom en russe, arabe, chinois, hindi (ou « Nguyễn ») faisait planter btoa → la session n'était
+    // plus enregistrée et le joueur redevenait « invité » au rechargement. Texte non latin : encodé en UTF-8, marqué « u: ».
+    // Les anciennes données (sans « u: ») se lisent exactement comme avant.
+    var utf = false;
+    if (decode && typeof str === 'string' && str.slice(0, 2) === 'u:') { utf = true; str = str.slice(2); }
+    if (!decode && /[^\u0000-\u00ff]/.test(str)) { utf = true; str = unescape(encodeURIComponent(str)); }
     var src = decode ? atob(str) : str;
     // v2539 — même résultat qu'avant (lettre par lettre), mais par paquets de 4096 : ~10× plus rapide
     // (la mémoire du site fait ~100 000 lettres, encodée à chaque enregistrement).
@@ -116,7 +122,8 @@
       parts.push(String.fromCharCode.apply(null, codes));
     }
     var joined = parts.join('');
-    return decode ? joined : btoa(joined);
+    if (decode) { if (utf) { try { return decodeURIComponent(escape(joined)); } catch (eU) { return joined; } } return joined; }
+    return (utf ? 'u:' : '') + btoa(joined);
   }
 
   function decodeWithSalt(raw, salt) {
