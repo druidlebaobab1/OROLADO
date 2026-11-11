@@ -18,7 +18,7 @@ putenv('OXAPAY_MERCHANT_KEY=fake-oxa');
 const DEST = '0x19234aaaaaaaaaaaaaaaaaaaaaaaaaaaaa4ccbc8';
 putenv('VAULT_EVM_ADDRESS=' . DEST);
 require $tmp . '/orolado_lib.php';
-$GLOBALS['OROLADO_FAKE_PRICES'] = ['BNB' => 600.0, 'ETH' => 3000.0, 'POL' => 0.5];
+$GLOBALS['OROLADO_FAKE_PRICES'] = ['BNB' => 600.0, 'ETH' => 3000.0, 'POL' => 0.5, 'LINK' => 15.0, 'AVAX' => 25.0];
 $bank = ['c' => [], 'keys' => []];
 $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $method) use (&$bank) {
   $b = $body ? json_decode($body, true) : [];
@@ -147,6 +147,12 @@ $deposit('polygon', $a, 'USDC', 12.34); $scanAll();
 check('12,34 USDC sur Polygon (même adresse) → +12,34 $', abs($money($A) - 122.34) < 0.01, (string) $money($A));
 $deposit('bsc', $b, 'USDT', 0.4); $scanAll();
 check('poussière 0,40 USDT → rien', $money($B) == 0);
+$deposit('eth', $b, 'LINK', 2); $scanAll();
+check('2 LINK (15 $) sur Ethereum → +30 $ (prix du moment, pas 2 $)', abs($money($B) - 30) < 0.01, (string) $money($B));
+$deposit('avax', $b, 'USDC', 7); $deposit('avax', $b, 'N', 0.4); $scanAll();
+check('Avalanche : 7 USDC + 0,4 AVAX (25 $) → +17 $', abs($money($B) - 47) < 0.01, (string) $money($B));
+$ix = $inv('tokB', 'pepe');
+check('PEPE / OP / CAKE : même adresse 0x', strtolower($ix['address'] ?? '') === $b && strtolower($inv('tokB', 'op')['address'] ?? '') === $b && strtolower($inv('tokB', 'cake')['address'] ?? '') === $b, json_encode($ix));
 
 echo "3) Envoi vers le Trust Wallet : essence, jetons, BNB — et l'essence n'est JAMAIS créditée au joueur\n";
 cevm_sweep(true, 10);

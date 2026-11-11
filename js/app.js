@@ -6380,7 +6380,16 @@
     { id: 'dai', symbol: 'DAI', name: 'DAI', color: '#F5AC37', mark: 'D', minUsd: 5, networkName: 'Ethereum Network' },
     { id: 'bch', symbol: 'BCH', name: 'Bitcoin Cash', color: '#8DC351', mark: 'C', minUsd: 10, networkName: 'Bitcoin Cash Network' },
     { id: 'not', symbol: 'NOT', name: 'Notcoin', color: '#FFD21E', mark: 'N', minUsd: 5, networkName: 'TON Network' },
-    { id: 'dogs', symbol: 'DOGS', name: 'Dogs', color: '#E8A317', mark: 'd', minUsd: 5, networkName: 'TON Network' }
+    { id: 'dogs', symbol: 'DOGS', name: 'Dogs', color: '#E8A317', mark: 'd', minUsd: 5, networkName: 'TON Network' },
+    // 2026-11-11 : cryptos du coffre (même adresse 0x que USDT ERC20/BEP20)
+    { id: 'avax', symbol: 'AVAX', name: 'Avalanche', color: '#E84142', mark: 'A', minUsd: 5, networkName: 'Avalanche C-Chain' },
+    { id: 'link', symbol: 'LINK', name: 'Chainlink', color: '#2A5ADA', mark: 'L', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'uni', symbol: 'UNI', name: 'Uniswap', color: '#FF007A', mark: 'U', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'pepe', symbol: 'PEPE', name: 'Pepe', color: '#3D9A3A', mark: 'P', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'aave', symbol: 'AAVE', name: 'Aave', color: '#9A62B6', mark: 'A', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'arb', symbol: 'ARB', name: 'Arbitrum', color: '#28A0F0', mark: 'A', minUsd: 5, networkName: 'Arbitrum One' },
+    { id: 'op', symbol: 'OP', name: 'Optimism', color: '#FF0420', mark: 'O', minUsd: 5, networkName: 'Optimism' },
+    { id: 'cake', symbol: 'CAKE', name: 'PancakeSwap', color: '#D1884F', mark: 'C', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' }
   ];
 
   function oxaMeta(id) {
