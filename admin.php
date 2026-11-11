@@ -4654,7 +4654,8 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     (k.test && k.test.msg ? '<p style="margin:0 0 6px;font-size:12px;color:' + (k.test.ok === false ? '#F87171' : '#86EFAC') + '">' + esc(k.test.msg) + ' <small class="muted">(' + esc(when(k.test.at)) + ')</small></p>' : '') +
     '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
       (k.url ? '<a class="mini" href="' + esc(k.url) + '" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">↗ Créer la clé</a>' : '') +
-      '<input type="password" autocomplete="off" data-k="' + esc(k.name) + '" placeholder="' + (k.set ? 'Remplacer : coller la nouvelle clé' : 'Coller la clé ici') + '" style="flex:1 1 220px;min-width:0">' +
+      '<input type="password" autocomplete="off" autocapitalize="off" spellcheck="false" data-k="' + esc(k.name) + '" placeholder="' + (k.set ? 'Remplacer : coller la nouvelle clé' : 'Coller la clé ici') + '" style="flex:1 1 220px;min-width:0">' +
+      '<button class="mini" type="button" data-eye="' + esc(k.name) + '" title="Voir ce que j’ai collé">👁</button>' +
       '<button class="mini ok" data-save="' + esc(k.name) + '">Enregistrer</button>' +
       (k.set ? '<button class="mini" data-test="' + esc(k.name) + '">Tester</button>' : '') +
       (k.set && k.source !== 'hébergeur' ? '<button class="mini bad" data-del="' + esc(k.name) + '">Supprimer</button>' : '') +
@@ -4673,6 +4674,10 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       inp.value = '';
       out(n, (rr.test && rr.test.ok === false ? '⚠️ Enregistrée, mais ' : '✅ ') + ((rr.test && rr.test.msg) || 'Enregistrée') + (rr.hostWins ? ' — attention : une autre valeur est réglée chez l’hébergeur et reste prioritaire.' : ''));
       setTimeout(paint, 1800);
+    });
+    $k('keysList').querySelectorAll('[data-eye]').forEach(b => b.onclick = () => {
+      const inp = $k('keysList').querySelector('input[data-k="' + b.getAttribute('data-eye') + '"]');
+      inp.type = inp.type === 'password' ? 'text' : 'password'; b.textContent = inp.type === 'password' ? '👁' : '🙈';
     });
     $k('keysList').querySelectorAll('[data-test]').forEach(b => b.onclick = async () => {
       const n = b.getAttribute('data-test'); b.disabled = true; out(n, '⏳ Test…');

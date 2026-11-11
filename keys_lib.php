@@ -171,16 +171,38 @@ function keys_status(): array {
   return ['ok' => true, 'cats' => $cats];
 }
 
+/**
+ * 2026-11-11 (propriétaire : « la clé est complète mais elle est refusée ») — nettoie ce qui est collé depuis un téléphone :
+ * espaces / retours à la ligne / caractères invisibles, guillemets, et un nom collé devant (« TRONGRID_API_KEY= … »).
+ * Si la clé attendue a un format connu (TronGrid = UUID), on la retrouve dans le texte collé.
+ */
+function keys_clean(string $name, string $val, string $fmt = ''): string {
+  $v = preg_replace('/[\x{00A0}\x{1680}\x{2000}-\x{200F}\x{2028}\x{2029}\x{202F}\x{205F}\x{3000}\x{FEFF}\s]+/u', ' ', $val) ?? $val;
+  $v = trim($v, " \t\n\r\"'`«»“”‘’");
+  if (preg_match('/^' . preg_quote($name, '/') . '\s*[=:]?\s*(.+)$/i', $v, $m)) $v = trim($m[1], " \"'`«»“”‘’");
+  if ($fmt !== '') {
+    // ex. TronGrid : on cherche le motif xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx n'importe où dans le texte collé
+    $inner = trim($fmt, '/i');
+    $inner = preg_replace('/^\^|\$$/', '', $inner);
+    if (preg_match('/' . $inner . '/i', $v, $m)) return $m[0];
+  }
+  return str_replace(' ', '', $v);
+}
+
 function keys_set(string $name, string $val, string $by): array {
-  $name = strtoupper(trim($name)); $val = trim($val);
+  $name = strtoupper(trim($name));
   $known = keys_known();
+  $val = keys_clean($name, $val, (string) ($known[$name]['fmt'] ?? ''));
   if (!isset($known[$name])) {
     if (!preg_match('/^[A-Z][A-Z0-9_]{2,48}$/', $name)) return ['ok' => false, 'reason' => 'Nom invalide : lettres MAJUSCULES, chiffres et _ (ex. MON_SERVICE_API_KEY)'];
     if (keys_forbidden($name)) return ['ok' => false, 'reason' => 'Ce nom est réservé au fonctionnement du site : il ne peut pas être changé d’ici.'];
   }
-  if (!preg_match('/^[A-Za-z0-9_\-.:]{8,300}$/', $val)) return ['ok' => false, 'reason' => 'Clé invalide : copiez-la en entier, sans espace.'];
   $fmt = $known[$name]['fmt'] ?? '';
-  if ($fmt !== '' && !preg_match($fmt, $val)) return ['ok' => false, 'reason' => 'Format attendu : ' . $known[$name]['fmtTxt'] . '. La clé semble incomplète.'];
+  if ($fmt !== '' && !preg_match($fmt, $val)) {
+    $n = strlen($val);
+    return ['ok' => false, 'reason' => 'Ce n’est pas une clé ' . ($known[$name]['title'] ?? '') . ' complète (' . $n . ' caractères reçus, il en faut 36 au format ' . $known[$name]['fmtTxt'] . '). Recopiez-la depuis le site (bouton « copier » à côté de la clé).'];
+  }
+  if (!preg_match('/^[A-Za-z0-9_\-.:]{8,300}$/', $val)) return ['ok' => false, 'reason' => 'Clé invalide (' . strlen($val) . ' caractères, dont des caractères inattendus). Recopiez-la avec le bouton « copier » du site.'];
   $before = keys_read_env();
   if (!keys_write_env($name, $val)) return ['ok' => false, 'reason' => 'Écriture impossible sur le serveur'];
   $t = keys_test($name, $val);
