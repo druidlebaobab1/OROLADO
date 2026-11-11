@@ -4760,7 +4760,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
       (k.url ? '<a class="mini" href="' + esc(k.url) + '" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">↗ Créer la clé</a>' : '') +
       (k.value ? '<div style="flex:1 1 100%;font-size:12px">Adresse actuelle : <code style="word-break:break-all;color:#FDE047">' + esc(k.value) + '</code></div>' : '') +
-      '<input type="' + (k.show ? 'text' : 'password') + '" autocomplete="off" autocapitalize="off" spellcheck="false" data-k="' + esc(k.name) + '" placeholder="' + (k.show ? (k.set ? 'Remplacer : coller la nouvelle adresse' : 'Coller l’adresse ici (commence par T)') : (k.set ? 'Remplacer : coller la nouvelle clé' : 'Coller la clé ici')) + '" style="flex:1 1 220px;min-width:0">' +
+      '<input type="' + (k.show ? 'text' : 'password') + '" autocomplete="off" autocapitalize="off" spellcheck="false" data-k="' + esc(k.name) + '" placeholder="' + (k.show ? (k.set ? 'Remplacer : coller la nouvelle adresse' : 'Coller l’adresse ici') : (k.set ? 'Remplacer : coller la nouvelle clé' : 'Coller la clé ici')) + '" style="flex:1 1 220px;min-width:0">' +
       '<button class="mini" type="button" data-eye="' + esc(k.name) + '" title="Voir ce que j’ai collé">👁</button>' +
       '<button class="mini ok" data-save="' + esc(k.name) + '">Enregistrer</button>' +
       (k.set ? '<button class="mini" data-test="' + esc(k.name) + '">Tester</button>' : '') +
@@ -4770,7 +4770,9 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   async function paint() {
     const r = await ajax({action:'keys_status'});
     if (!r || !r.ok) { $k('keysList').textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
-    $k('keysList').innerHTML = r.cats.map(c => '<h3 class="panel-title" style="margin:14px 0 4px">' + esc(c.cat) + '</h3>' + c.items.map(card).join('')).join('');
+    // 2026-11-11 : les adresses Trust Wallet (VAULT_…) se règlent dans 🏦 Coffre — plus en double ici.
+    const cats = r.cats.map(c => ({cat: c.cat, items: c.items.filter(it => !String(it.name).startsWith('VAULT_'))})).filter(c => c.items.length);
+    $k('keysList').innerHTML = '<p class="muted" style="font-size:12px;margin:0 0 6px">🏦 Les adresses de ton Trust Wallet se règlent dans <b>🏦 Coffre</b>.</p>' + cats.map(c => '<h3 class="panel-title" style="margin:14px 0 4px">' + esc(c.cat) + '</h3>' + c.items.map(card).join('')).join('');
     $k('keysList').querySelectorAll('[data-save]').forEach(b => b.onclick = async () => {
       const n = b.getAttribute('data-save'), inp = $k('keysList').querySelector('input[data-k="' + n + '"]'), v = String(inp.value || '').trim();
       if (!v) { inp.focus(); return; }
