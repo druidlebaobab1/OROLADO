@@ -4,10 +4,11 @@
   (ni les modèles des indices dans `js/indices.js`) sans demande explicite du propriétaire.
   Contrôle : `sh scripts/sim-lock.sh` doit afficher « OK ».
 - Ne jamais retirer `try_sb`, `supabase_put_order`, `supabase_get_order` ; pas de remboursement auto sur échec `with_db_lock`.
-- MARGE PARIS SPORTIFS VERROUILLÉE (2026-11-01) : la marge maison des paris sportifs (`sb_lib.php`) est fixée EN DUR à
-  **10 %** par la constante `SB_MARGE_FIXE = 0.10`. Elle ne doit JAMAIS redescendre (par le passé elle retombait à 4 %).
-  Tout calcul de cote — avant-match (`sb_margin`), autres sports (`sb_o_margin`) et direct — DOIT utiliser `SB_MARGE_FIXE`.
-  Ne pas rebrancher la marge sur le réglage/les migrations, et ne pas la changer, sans demande explicite du propriétaire.
+- MARGE PARIS SPORTIFS VERROUILLÉE (2026-11-01, changée par le propriétaire le 2026-11-12) : la marge maison des paris sportifs (`sb_lib.php`)
+  est fixée EN DUR à **2,5 %** par la constante `SB_MARGE_FIXE = 0.025`, répartie ÉGALEMENT sur tous les choix (cote = (1 − m) / p,
+  dans `sb_wodd`) : un peu au-dessus de 1xBet (~3 % sur les grands matchs). Tout calcul de cote — avant-match (`sb_margin`), autres
+  sports (`sb_o_margin`) et direct — DOIT utiliser `SB_MARGE_FIXE`. Ne pas la rebrancher sur le réglage/les migrations, et ne pas la
+  changer, sans demande explicite du propriétaire.
 - Marge 6 % ; 12 langues ; aucun texte qui déborde, de l'iPhone SE à la télé.
 
 ## Téléphones du propriétaire (mesures réelles, relevées le 2026-10-20 par le diagnostic « 5 touches sur OROLADO .com »)
