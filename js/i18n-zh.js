@@ -60,6 +60,8 @@
  "affPromoTtEx": "例如：一个好视频能带来 100 个朋友。",
  "affPromoGo": "选择一种方式，现在就开始！",
  "affResTitle": "你的成绩",
+ "netRetry": "网络繁忙，请稍后再试。",
+ "sendToReq": "请输入好友的 ID 或电子邮箱。",
  "wdNetFail": "网络较慢：你的提现尚未确认。重试前请先查看历史记录。",
  "sendNetFail": "网络较慢：再次发送前请先查看历史记录。",
  "affOnline": "在线好友",

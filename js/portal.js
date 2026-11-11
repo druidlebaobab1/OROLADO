@@ -378,7 +378,11 @@
   async function refresh(activate) {
     if (!loggedIn()) { state = null; render(); return; }
     var r = await call(activate ? 'defiActivate' : 'defiStatus');
-    if (!r || r.ok === false) return;
+    if (!r || r.ok === false) {
+      // 2026-11-12 (revue) : « Commencer » qui échoue → un message, jamais un bouton qui ne fait rien
+      if (activate) { try { D6.App.toast((r && r.reason) || t('netRetry'), 'err'); } catch (eT) { /* ignore */ } }
+      return;
+    }
     if (r.now) skew = r.now - Date.now() / 1000;
     var wasActive = state && state.active;
     state = r;
@@ -630,7 +634,7 @@
       '<div class="arr-sub">' + esc(t('affResLog')) + '</div>' +
       (log.length ? '<div class="arr-log">' + log.map(function (l) { return '<div><span>' + esc(when(l.t)) + '</span><b>+' + esc(money(l.a)) + '</b></div>'; }).join('') + '</div>'
         : '<p class="arr-empty">' + esc(t('affResNoLog')) + '</p>') +
-      ((aff && (aff.list || []).length) ? '<button type="button" class="aff-more arr-more" data-affmore="1"><span>' + esc(t('affMore')) + ' (' + affInt(friends) + ')</span><i class="aff-more-go"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></i></button>' : '') +
+      ((aff && (aff.list || []).length) ? '<button type="button" class="aff-more arr-more" data-affmore="1"><span>' + esc(t('affMore')) + ' (' + affInt(Number(aff.deposited) || 0) + ')</span><i class="aff-more-go"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></i></button>' : '') +
       '</div>';
   }
   // Chiffre trop long pour sa case (gros montants, langues longues) : il rétrécit un peu, jamais de débordement.
@@ -1017,6 +1021,9 @@
     var msg = $('affCodeMsg');
     try {
       var r = await D6.Api.post(action, { code: code }, 12000);
+      // 2026-11-12 (revue) : le code tapé n'est effacé QUE s'il a été créé ; pas de réponse → message
+      if (!r || !r.server) { if (msg) { msg.textContent = t('netRetry'); msg.hidden = false; } return; }
+      if (action === 'affCodeNew' && r.ok !== false && $('affCodeInput')) $('affCodeInput').value = '';
       if (r && r.codes) { aff.codes = r.codes; renderAffCodes(); }
       if (r && r.ok === false && msg) {
         var reason = r.reason === 'taken' ? t('affCodeTaken') : (r.reason === 'bad' ? t('affCodeBad') : (r.reason === 'max' ? t('affCodeMaxMsg', { max: (aff.codes && aff.codes.max) || 5 }) : (r.reason === 'reserved' || r.reason === 'default' ? t('affCodeTaken') : '')));
@@ -1065,7 +1072,7 @@
       var dl = e.target.closest ? e.target.closest('.ac-del') : null;
       if (dl) { if (needAccount()) return; if (window.confirm(t('affCodeDelAsk'))) affCodeDo('affCodeDel', dl.getAttribute('data-code')); return; }
       var ad = e.target.closest ? e.target.closest('#affCodeAddBtn') : null;
-      if (ad) { if (needAccount()) return; var inp = $('affCodeInput'); var v = inp ? inp.value : ''; if (v && v.trim()) { affCodeDo('affCodeNew', v.trim()); if (inp) inp.value = ''; } return; }
+      if (ad) { if (needAccount()) return; var inp = $('affCodeInput'); var v = inp ? inp.value : ''; if (v && v.trim()) { if (!/^[A-Za-z0-9]{3,16}$/.test(v.replace(/[^A-Za-z0-9]/g, ''))) { var mB = $('affCodeMsg'); if (mB) { mB.textContent = t('affCodeBad'); mB.hidden = false; } return; } affCodeDo('affCodeNew', v.trim()); } return; }
     });
     if ($('affMore')) $('affMore').addEventListener('click', function () { showAffList(true); });
     document.addEventListener('click', function (ev) { var b = ev.target && ev.target.closest && ev.target.closest('[data-affmore]'); if (b) showAffList(true); }, true);
