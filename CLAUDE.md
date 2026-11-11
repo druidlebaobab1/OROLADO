@@ -7,7 +7,7 @@
 - MARGE PARIS SPORTIFS VERROUILLÉE (2026-11-01, changée par le propriétaire le 2026-11-12 : 1 %) : la marge maison des paris sportifs (`sb_lib.php`)
   est fixée EN DUR à **1 %** par la constante `SB_MARGE_FIXE = 0.01`, répartie ÉGALEMENT sur tous les choix (cote = (1 − m) / p,
   dans `sb_wodd`) : un peu au-dessus de 1xBet (~3 % sur les grands matchs). Tout calcul de cote — avant-match (`sb_margin`), autres
-  sports (`sb_o_margin`) et direct — DOIT utiliser `SB_MARGE_FIXE`. Ne pas la rebrancher sur le réglage/les migrations, et ne pas la
+  sports (`sb_o_margin`) — DOIT utiliser `SB_MARGE_FIXE` (le direct a sa propre marge, voir ci-dessous). Ne pas la rebrancher sur le réglage/les migrations, et ne pas la
   changer, sans demande explicite du propriétaire.
 - MARGE DU DIRECT VERROUILLÉE (propriétaire, 2026-11-12) : les paris EN DIRECT (live) ont leur marge fixée EN DUR à **4 %**
   par `SB_MARGE_DIRECT = 0.04` (`sb_live_markets`, même répartition égale). Les matchs pas encore commencés restent à 1 %.
