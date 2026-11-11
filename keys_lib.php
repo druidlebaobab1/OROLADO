@@ -15,10 +15,36 @@ function keys_catalog(): array {
   return [
     // 2026-11-11 : le coffre = le portefeuille du propriétaire (Trust Wallet). Adresse PUBLIQUE (pas un secret) : elle s'affiche.
     ['cat' => '🏦 Mon coffre : où part l’argent des joueurs (sans OxaPay)', 'items' => [
-      ['name' => 'VAULT_TRON_ADDRESS', 'title' => 'Mon Trust Wallet : adresse USDT (réseau TRON)', 'ico' => '🏦', 'show' => true,
+      ['name' => 'VAULT_TRON_ADDRESS', 'title' => 'Mon Trust Wallet : TRON (USDT, TRX)', 'ico' => '🏦', 'show' => true,
         'what' => 'Le site envoie ici, tout seul, l’argent déposé par les joueurs. Dans Trust Wallet : Recevoir → USDT → réseau TRON (TRC20) → Copier. Commence par T. Ce n’est pas un secret. Ne donne JAMAIS tes 12 mots.',
         'how' => 'Recevoir → USDT → TRON → Copier', 'fmt' => '/^T[1-9A-HJ-NP-Za-km-z]{33}$/', 'fmtTxt' => 'T + 33 caractères',
         'fmtBad' => 'Ce n’est pas une adresse TRON (elle commence par T et fait 34 caractères). Dans Trust Wallet : Recevoir → USDT → TRON → Copier.'],
+      // 2026-11-11 (propriétaire : « des cases pour tout en même temps ») : adresses Trust Wallet des autres réseaux,
+      // gardées dès maintenant ; chaque réseau s'en sert automatiquement le jour où son moteur est branché.
+      ['name' => 'VAULT_EVM_ADDRESS', 'title' => 'Mon Trust Wallet : Ethereum / BNB / Polygon / Base', 'ico' => '🔷', 'show' => true,
+        'what' => 'Dans Trust Wallet : Recevoir → « USDT Ethereum » → Copier (commence par 0x). La même adresse sert pour ETH, BNB (BEP20), Polygon et Base. PAS « BNB Beacon Chain » (bnb1…).',
+        'how' => 'Recevoir → USDT Ethereum → Copier', 'fmt' => '/^0x[0-9a-fA-F]{40}$/', 'fmtTxt' => '0x + 40 caractères',
+        'fmtBad' => 'Ce n’est pas une adresse Ethereum (elle commence par 0x et fait 42 caractères). Dans Trust Wallet : Recevoir → USDT Ethereum → Copier.'],
+      ['name' => 'VAULT_BTC_ADDRESS', 'title' => 'Mon Trust Wallet : Bitcoin', 'ico' => '🟠', 'show' => true,
+        'what' => 'Dans Trust Wallet : Recevoir → « BTC Bitcoin » → Copier (commence par bc1).', 'how' => 'Recevoir → BTC → Copier',
+        'fmt' => '/^(bc1[02-9ac-hj-np-z]{11,71}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/', 'fmtTxt' => 'bc1…',
+        'fmtBad' => 'Ce n’est pas une adresse Bitcoin (elle commence par bc1). Dans Trust Wallet : Recevoir → BTC → Copier.'],
+      ['name' => 'VAULT_SOL_ADDRESS', 'title' => 'Mon Trust Wallet : Solana', 'ico' => '🟣', 'show' => true,
+        'what' => 'Dans Trust Wallet : Recevoir → « SOL Solana » → Copier.', 'how' => 'Recevoir → SOL → Copier',
+        'fmt' => '/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', 'fmtTxt' => '32 à 44 caractères',
+        'fmtBad' => 'Ce n’est pas une adresse Solana. Dans Trust Wallet : Recevoir → SOL → Copier.'],
+      ['name' => 'VAULT_TON_ADDRESS', 'title' => 'Mon Trust Wallet : TON', 'ico' => '💎', 'show' => true,
+        'what' => 'Dans Trust Wallet : Recevoir → « TON » → Copier (commence par UQ).', 'how' => 'Recevoir → TON → Copier',
+        'fmt' => '/^(UQ|EQ|0Q|kQ)[A-Za-z0-9_-]{46}$/', 'fmtTxt' => 'UQ… (48 caractères)',
+        'fmtBad' => 'Ce n’est pas une adresse TON (elle commence par UQ). Dans Trust Wallet : Recevoir → TON → Copier.'],
+      ['name' => 'VAULT_LTC_ADDRESS', 'title' => 'Mon Trust Wallet : Litecoin', 'ico' => '🔵', 'show' => true,
+        'what' => 'Dans Trust Wallet : Recevoir → « LTC Litecoin » → Copier (commence par ltc1).', 'how' => 'Recevoir → LTC → Copier',
+        'fmt' => '/^(ltc1[02-9ac-hj-np-z]{11,71}|[LM3][1-9A-HJ-NP-Za-km-z]{26,33})$/', 'fmtTxt' => 'ltc1…',
+        'fmtBad' => 'Ce n’est pas une adresse Litecoin (elle commence par ltc1). Dans Trust Wallet : Recevoir → LTC → Copier.'],
+      ['name' => 'VAULT_DOGE_ADDRESS', 'title' => 'Mon Trust Wallet : Dogecoin', 'ico' => '🟡', 'show' => true,
+        'what' => 'Dans Trust Wallet : Recevoir → « DOGE Dogecoin » → Copier (commence par D).', 'how' => 'Recevoir → DOGE → Copier',
+        'fmt' => '/^D[1-9A-HJ-NP-Za-km-z]{25,34}$/', 'fmtTxt' => 'D…',
+        'fmtBad' => 'Ce n’est pas une adresse Dogecoin (elle commence par D). Dans Trust Wallet : Recevoir → DOGE → Copier.'],
     ]],
     ['cat' => 'Dépôts crypto : voir les paiements arriver', 'items' => [
       ['name' => 'TRONGRID_API_KEY', 'title' => 'TronGrid', 'ico' => '🟥', 'what' => 'USDT TRC20 et TRX (réseau TRON). Le plus utilisé en Afrique.', 'url' => 'https://www.trongrid.io/register', 'how' => 'Clés API → Créer', 'fmt' => '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', 'fmtTxt' => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'],
@@ -126,6 +152,15 @@ function keys_test(string $name, string $v): array {
   if ($v === '') return ['ok' => false, 'msg' => 'Aucune clé enregistrée'];
   $json = ['Content-Type: application/json'];
   switch ($name) {
+    case 'VAULT_EVM_ADDRESS':
+      if (preg_match('/[a-f]/', substr($v, 2)) && preg_match('/[A-F]/', substr($v, 2)) && function_exists('coffre_keccak256')) {
+        // Lettres majuscules/minuscules mélangées = somme de contrôle (EIP-55) : une faute de frappe est détectée.
+        $h = bin2hex(coffre_keccak256(strtolower(substr($v, 2))));
+        for ($i = 0; $i < 40; $i++) { $c = $v[$i + 2]; if (ctype_alpha($c) && (ctype_upper($c) !== (hexdec($h[$i]) >= 8))) return ['ok' => false, 'msg' => 'Adresse invalide (une lettre est fausse ?). Recopie-la avec le bouton « Copier » de Trust Wallet.']; }
+      }
+      return ['ok' => true, 'msg' => 'Adresse valide ✓ gardée. Ce réseau (ETH, BNB, Polygon, Base) sera branché bientôt : rien d’autre à faire.'];
+    case 'VAULT_BTC_ADDRESS': case 'VAULT_SOL_ADDRESS': case 'VAULT_TON_ADDRESS': case 'VAULT_LTC_ADDRESS': case 'VAULT_DOGE_ADDRESS':
+      return ['ok' => true, 'msg' => 'Adresse gardée ✓. Ce réseau sera branché bientôt : rien d’autre à faire.'];
     case 'VAULT_TRON_ADDRESS':
       if (!function_exists('coffre_addr_ok') || !coffre_addr_ok($v)) return ['ok' => false, 'msg' => 'Adresse TRON invalide (une lettre est fausse ?). Recopie-la avec le bouton « Copier » de Trust Wallet.'];
       $tk = keys_value('TRONGRID_API_KEY');
@@ -195,6 +230,12 @@ function keys_clean(string $name, string $val, string $fmt = ''): string {
   $v = preg_replace('/[\x{00A0}\x{1680}\x{2000}-\x{200F}\x{2028}\x{2029}\x{202F}\x{205F}\x{3000}\x{FEFF}\s]+/u', ' ', $val) ?? $val;
   $v = trim($v, " \t\n\r\"'`«»“”‘’");
   if (preg_match('/^' . preg_quote($name, '/') . '\s*[=:]?\s*(.+)$/i', $v, $m)) $v = trim($m[1], " \"'`«»“”‘’");
+  if ($fmt !== '' && str_starts_with($name, 'VAULT_')) {
+    // Adresses de portefeuille : JAMAIS un morceau découpé dans un texte (une adresse coupée = argent perdu).
+    // On garde seulement un « mot » collé qui correspond EN ENTIER au format.
+    foreach (preg_split('/[\s,;:()\[\]<>"\'«»]+/u', $v) ?: [] as $tok) if ($tok !== '' && preg_match($fmt, $tok)) return $tok;
+    return str_replace(' ', '', $v);
+  }
   if ($fmt !== '') {
     // ex. TronGrid : on cherche le motif xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx n'importe où dans le texte collé
     $inner = trim($fmt, '/i');
@@ -217,6 +258,11 @@ function keys_set(string $name, string $val, string $by): array {
   if ($fmt !== '' && !preg_match($fmt, $val)) {
     $n = strlen($val);
     return ['ok' => false, 'reason' => 'Ce n’est pas une clé ' . ($known[$name]['title'] ?? '') . ' complète (' . $n . ' caractères reçus, il en faut 36 au format ' . $known[$name]['fmtTxt'] . '). Recopiez-la depuis le site (bouton « copier » à côté de la clé).'];
+  }
+  if (str_starts_with($name, 'VAULT_')) {
+    // Adresse fausse (somme de contrôle) → refusée AVANT d'être enregistrée.
+    $chk = keys_test($name, $val);
+    if ($chk['ok'] === false && str_contains((string) $chk['msg'], 'invalide')) return ['ok' => false, 'reason' => $chk['msg']];
   }
   if (!preg_match('/^[A-Za-z0-9_\-.:]{8,300}$/', $val)) return ['ok' => false, 'reason' => 'Clé invalide (' . strlen($val) . ' caractères, dont des caractères inattendus). Recopiez-la avec le bouton « copier » du site.'];
   $before = keys_read_env();

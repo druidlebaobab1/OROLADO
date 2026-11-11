@@ -4679,8 +4679,16 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     if (!r || !r.ok) { $v('vaultBody').textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
     let h = '';
     const step = (ok, t) => '<div style="margin:3px 0">' + (ok ? '✅' : '⬜') + ' ' + t + '</div>';
+    // 2026-11-11 : toutes les adresses Trust Wallet À REMPLIR ICI (avant : cachées dans 🔑 Clés & connexions).
+    h += '<div class="nt-card" style="border-color:#86EFAC"><b style="font-size:15px">① Tes adresses Trust Wallet</b><br><small class="muted">Dans Trust Wallet : <b>Recevoir</b> → la ligne indiquée → bouton <b>copier</b>, puis colle ici et touche Enregistrer. Ce ne sont pas des secrets. Ne donne JAMAIS tes 12 mots.</small>' +
+      (r.nets || []).map(n => '<div style="margin:10px 0 0;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)"><b>' + esc(n.ico) + ' ' + esc(n.title.replace('Mon Trust Wallet : ', '')) + '</b> ' +
+        (n.live ? '<span class="pill pill-ok">actif</span>' : '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">branché bientôt</span>') +
+        '<br><small class="muted">Copier : ' + esc(n.how) + '</small>' +
+        (n.value ? '<div style="font-size:12px;margin:3px 0">✅ <code style="word-break:break-all;color:#FDE047">' + esc(n.value) + '</code></div>' : '') +
+        '<div style="display:flex;gap:6px;margin-top:4px"><input data-na="' + esc(n.name) + '" placeholder="' + (n.value ? 'Remplacer : coller la nouvelle adresse' : 'Coller l’adresse ici') + '" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0"><button class="mini ok" data-ns="' + esc(n.name) + '">Enregistrer</button></div>' +
+        '<div class="muted" data-no="' + esc(n.name) + '" style="font-size:12px"></div></div>').join('') + '</div>';
     h += '<div class="nt-card"><b>Mise en route</b>' +
-      step(!!r.dest, 'Adresse de ton Trust Wallet (USDT, réseau TRON) dans 🔑 Clés & connexions' + (r.dest ? ' : <code style="color:#FDE047;word-break:break-all">' + esc(r.dest) + '</code>' : '')) +
+      step(!!r.dest, 'Adresse TRON de ton Trust Wallet (case ① ci-dessus)') +
       step(r.tronKey, 'Clé TronGrid') +
       step(r.gasTrx !== null && r.gasTrx >= 30, 'Réservoir TRX rechargé (au moins 30 TRX, conseillé 200)' + (r.gas ? '<br><small class="muted">Envoie des TRX (réseau TRON) à :</small> ' + adl(r.gas) + ' <button class="mini" data-cp="' + esc(r.gas) + '">Copier</button> <b>' + (r.gasTrx === null ? '?' : r.gasTrx) + ' TRX</b>' : '')) +
       step(r.backupAt && r.backupN >= r.nKeys, r.backupAt ? ('Copie de secours du ' + esc(when(r.backupAt)) + (r.backupN < r.nKeys ? ' — <b style="color:#FCD34D">' + (r.nKeys - r.backupN) + ' nouvelle(s) adresse(s) depuis : refais-en une</b>' : ' ✓')) : 'Copie de secours téléchargée et gardée sur ton téléphone (bouton 💾 plus bas)') +
@@ -4699,6 +4707,16 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     h += r.journal.length ? '<table><tr><th>Quand</th><th>Quoi</th><th>Montant</th><th>Résultat</th></tr>' + r.journal.map(j => '<tr><td>' + esc(when(j.t)) + '</td><td>' + esc(KIND[j.k] || j.k) + '</td><td>' + (j.usdt ? Number(j.usdt).toFixed(2) + ' USDT' : (j.trx ? j.trx + ' TRX' : (j.need ? 'manque ' + j.need + ' TRX' : ''))) + '</td><td>' + (j.ok ? '✅ ' + txl(j.tx) : (j.k === 'reservoir_vide' ? '⚠️ recharge le réservoir' : '❌ ' + esc(j.why || ''))) + '</td></tr>').join('') + '</table>' : '<p class="muted">Aucun envoi pour l’instant.</p>';
     $v('vaultBody').innerHTML = h;
     const out = t => { $v('cfOut').textContent = t; };
+    $v('vaultBody').querySelectorAll('[data-ns]').forEach(b => b.onclick = async () => {
+      const n = b.getAttribute('data-ns'), inp = $v('vaultBody').querySelector('[data-na="' + n + '"]'), o = $v('vaultBody').querySelector('[data-no="' + n + '"]');
+      const val = String(inp.value || '').trim();
+      if (!val) { inp.focus(); return; }
+      b.disabled = true; o.textContent = '⏳ Vérification…';
+      const rr = await ajax({action:'keys_set', name:n, value:val}); b.disabled = false;
+      if (!rr || !rr.ok) { o.textContent = '❌ ' + ((rr && rr.reason) || 'Échec'); return; }
+      o.textContent = (rr.test && rr.test.ok === false ? '⚠️ ' : '✅ ') + ((rr.test && rr.test.msg) || 'Enregistrée');
+      setTimeout(() => paint(), 1800);
+    });
     $v('vaultBody').querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { try { navigator.clipboard.writeText(b.getAttribute('data-cp')); b.textContent = '✓ Copié'; } catch (e) {} });
     if ($v('cfOn')) $v('cfOn').onclick = async () => { if (!confirm('Allumer le coffre pour TOUS les joueurs ? Les dépôts USDT TRC20 iront sur les adresses OROLADO (plus OxaPay).')) return; const x = await ajax({action:'coffre_set', on:1}); x && x.ok ? paint(x) : out('❌ ' + ((x && x.reason) || 'Échec')); };
     if ($v('cfOff')) $v('cfOff').onclick = async () => { if (!confirm('Éteindre ? Les joueurs repasseront par OxaPay (les adresses OROLADO déjà données restent surveillées et créditées).')) return; const x = await ajax({action:'coffre_set', on:0}); x && x.ok ? paint(x) : out('❌ Échec'); };
