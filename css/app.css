@@ -14539,3 +14539,26 @@ html:root body #authQuick#authQuick#authQuick#authQuick#authQuick#authQuick.hidd
   #oddsRow .odds-chip[data-odds="50"]{transform-origin:100% 60%!important;scale:1.08!important}
   #oddsRow .odds-chip[data-odds="10"]{scale:1!important}
 }
+
+/* 2026-11-11 (propriétaire : « chaque crypto avec son logo ; la recherche est moche ») — liste des cryptos refaite. */
+html body #depositModal .oxa-ico.has-logo{background:transparent!important;overflow:hidden}
+html body #depositModal .oxa-ico img{width:100%;height:100%;display:block;border-radius:50%;object-fit:cover}
+html body #depositModal #oxaCoinBtn .oxa-ico{width:36px;height:36px}
+html body #depositModal #oxaCoinMenu.oxa-dd{top:calc(100% + 6px);padding:10px 8px 8px;border-radius:16px;
+  background:#0D0A05!important;border:1px solid rgba(236,204,139,.28)!important;box-shadow:0 22px 50px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.4);
+  max-height:min(62vh,430px);z-index:40}
+html body #depositModal #oxaCoinSearch{min-height:44px;margin:0 2px 8px;width:calc(100% - 4px);border-radius:999px;padding:10px 14px 10px 40px;
+  background:#17120A url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%23C9A85C' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='m13 13 4 4'/%3E%3C/svg%3E") no-repeat 14px 50%;
+  border:1px solid rgba(236,204,139,.22);color:#fff;font-size:.9rem;outline:0}
+html body #depositModal #oxaCoinSearch:focus{border-color:rgba(236,204,139,.6)}
+html body #depositModal #oxaCoinList{gap:0;padding-right:2px;overscroll-behavior:contain}
+html body #depositModal #oxaCoinList .oxa-dd-opt{min-height:56px;padding:9px 10px;gap:12px;border-radius:12px;border-bottom:1px solid rgba(255,255,255,.04)}
+html body #depositModal #oxaCoinList .oxa-dd-opt:last-child{border-bottom:0}
+html body #depositModal #oxaCoinList .oxa-dd-opt.on{background:linear-gradient(90deg,rgba(236,204,139,.16),rgba(236,204,139,.04));box-shadow:inset 3px 0 0 #E9C47A}
+html body #depositModal #oxaCoinList .oxa-dd-opt:active{background:rgba(236,204,139,.1)}
+html body #depositModal #oxaCoinList .oxa-ico{width:36px;height:36px;font-size:.8rem}
+html body #depositModal #oxaCoinList .oxa-dd-meta strong{font-size:.95rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #depositModal #oxaCoinList .oxa-dd-meta small{font-size:.74rem;color:#B8A679;letter-spacing:.02em}
+html body #depositModal .oxa-dd-tag{flex-shrink:0;max-width:56%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:.62rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#E9C47A;
+  padding:4px 8px;border-radius:999px;background:rgba(236,204,139,.1);border:1px solid rgba(236,204,139,.22)}

@@ -6474,11 +6474,26 @@
     if ($('oxaCoinBtn')) $('oxaCoinBtn').setAttribute('aria-expanded', 'false');
   }
 
+  // 2026-11-11 (propriétaire : « chaque crypto doit avoir son logo ») : vrais logos (ceux de Trust Wallet), /img/coins/<id>.png.
+  var COIN_LOGOS = ' 1inch aave aero ape arb avax axs babydoge bat bch blur bnb brett btc cake chz comp crv dai degen doge ena ens eth fdusd fet floki gala gram grt imx ldo link ltc mana mkr ondo op pepe pol pyusd qnt render sand shib snx sol sushi toshi trx tusd twt uni usdc usde usdt wbtc wld xrp xvs yfi ';
+  function coinLogoHtml(m) {
+    if (COIN_LOGOS.indexOf(' ' + m.id + ' ') >= 0) return '<img src="/img/coins/' + m.id + '.png?v=1" alt="" width="36" height="36" loading="lazy" decoding="async">';
+    return m.mark;
+  }
+  function coinNetTag(m) {
+    if (m.id === 'usdt') return 'TRC20·ERC20·BEP20';
+    var n = String(m.networkName || '');
+    if (/\(ERC20\)|^Ethereum Network$/.test(n)) return m.id === 'eth' ? 'Ethereum' : 'ERC20';
+    if (/BEP20|BNB Smart Chain/.test(n)) return m.id === 'bnb' ? 'BNB Chain' : 'BEP20';
+    return n.replace(/ Network$/, '').replace(' C-Chain', '').replace(' One', '');
+  }
   function paintOxaCoinBtn() {
     var m = oxaMeta(oxaAsset);
     if ($('oxaCoinIco')) {
-      $('oxaCoinIco').textContent = m.mark;
-      $('oxaCoinIco').style.background = m.color;
+      var hasLogo = COIN_LOGOS.indexOf(' ' + m.id + ' ') >= 0;
+      $('oxaCoinIco').innerHTML = coinLogoHtml(m);
+      $('oxaCoinIco').style.background = hasLogo ? 'transparent' : m.color;
+      $('oxaCoinIco').classList.toggle('has-logo', hasLogo);
     }
     if ($('oxaCoinName')) $('oxaCoinName').textContent = m.name;
     if ($('oxaCoinSym')) $('oxaCoinSym').textContent = m.symbol;
@@ -6522,9 +6537,11 @@
       if (!q) return true;
       return (c.symbol + ' ' + c.name + ' ' + c.id).toLowerCase().indexOf(q) >= 0;
     }).map(function (c) {
+      var lg = COIN_LOGOS.indexOf(' ' + c.id + ' ') >= 0;
       return '<button type="button" class="oxa-dd-opt' + (c.id === oxaAsset ? ' on' : '') + '" data-asset="' + c.id + '">' +
-        '<span class="oxa-ico" style="background:' + c.color + '">' + c.mark + '</span>' +
-        '<span class="oxa-dd-meta"><strong>' + c.name + '</strong><small>' + c.symbol + '</small></span></button>';
+        '<span class="oxa-ico' + (lg ? ' has-logo' : '') + '"' + (lg ? '' : ' style="background:' + c.color + '"') + '>' + coinLogoHtml(c) + '</span>' +
+        '<span class="oxa-dd-meta"><strong>' + c.name + '</strong><small>' + c.symbol + '</small></span>' +
+        '<span class="oxa-dd-tag">' + coinNetTag(c) + '</span></button>';
     }).join('') || '<div class="empty-feed">—</div>';
   }
 
