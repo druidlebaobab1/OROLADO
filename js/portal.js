@@ -963,7 +963,10 @@
     } catch (e2) { return false; }
   }
   async function copyLink() { return copyText(affLink()); }
-  function codeLink(code) { return 'https://orolado.com/r/' + code; }
+  // 2026-11-11 : le serveur ne connaît « /r/CODE » que pour 8 caractères → un code promo de 3 à 16 lettres (ex. FOOT1)
+  // donnait « page introuvable ». Lien qui marche pour TOUS les codes : orolado.com/?ref=CODE.
+  function codePath(code) { code = String(code || ''); return code.length === 8 ? 'orolado.com/r/' + code : 'orolado.com/?ref=' + code; }
+  function codeLink(code) { return 'https://' + codePath(code); }
   // Codes promo : code par défaut + jusqu'à 5 codes personnalisés. Créer / copier / supprimer.
   function renderAffCodes() {
     var main = $('affMain');
@@ -978,7 +981,7 @@
     var codes = aff.codes || { "default": aff.code, custom: [], max: 5 };
     var custom = codes.custom || [];
     var max = Number(codes.max) || 5;
-    var shortLink = function (code) { return 'orolado.com/r/' + code; };
+    var shortLink = codePath;
     var row = function (code) {
       return '<div class="ac-row"><div class="ac-ci"><b class="ac-codew">' + esc(code) + '</b><span class="ac-codelink">' + esc(shortLink(code)) + '</span></div>' +
         '<button type="button" class="ac-copy" data-code="' + esc(code) + '">' + esc(t('affCopy')) + '</button>' +
