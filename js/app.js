@@ -5638,8 +5638,7 @@
   // (les mêmes pour tout le monde). Affichage seulement.
   // v2509 → v2544 : ordre = cartes, banque / USSD / OPay, puis mobile money (Orange, MTN, M-Pesa, Airtel, Telecel, Tigo Pesa, Zamtel).
   var PAY_LOGOS =
-    '<i class="pl-logo pl-visa">VISA</i>' +
-    '<i class="pl-logo pl-mc"><b></b><b></b></i>' +
+    // 2026-11-12 (propriétaire) : Visa / Mastercard déplacés sur la ligne « PAYER PAR CARTE BANCAIRE ».
     '<i class="pl-logo pl-apple"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8c-1.6 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.4-1-2.4-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.3z"/></svg>Pay</i>' +
     '<i class="pl-logo pl-gpay"><b class="g">G</b>Pay</i>' +
     // v2590 (propriétaire) : MTN MoMo, Tigo Pesa et Zamtel retirés. Rangement : les 4 cartes sur une ligne, puis

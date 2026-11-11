@@ -14588,3 +14588,11 @@ html body #depositModal#depositModal .btn-card-only .cco-brands svg:first-child{
 html body #depositModal#depositModal .btn-card-only .cco-brands svg:last-child{width:24px}
 html body #depositModal#depositModal .btn-card-only.busy,html body #depositModal#depositModal .btn-card-only:disabled{opacity:.75;cursor:default}
 @media (max-width:374px){html body #depositModal#depositModal .btn-card-only .cco-txt{font-size:12.5px;letter-spacing:.2px}}
+/* 2026-11-12 (propriétaire) : Apple Pay et USSD en blanc comme les autres ; logos rangés 4 par rangée, tout à l'intérieur. */
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-apple,
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-ussd{background:#fff!important;color:#111!important;border-color:rgba(0,0,0,.08)!important}
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-apple svg{fill:#111!important;color:#111!important}
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-ussd b{color:#111!important}
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos{display:flex!important;flex-wrap:wrap!important;gap:4px!important}
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo:not(.pl-la){flex:0 0 calc(25% - 3px)!important;width:calc(25% - 3px)!important;max-width:none!important;min-width:0!important;overflow:hidden!important;box-sizing:border-box!important;white-space:nowrap!important}
+html.oro-latam body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-la2{flex:0 0 calc(25% - 3px)!important;width:calc(25% - 3px)!important}
