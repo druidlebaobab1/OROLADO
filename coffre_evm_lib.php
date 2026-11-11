@@ -159,7 +159,7 @@ function cevm_ready(): bool { return cevm_dest() !== '' && function_exists('coff
 
 function cevm_on_for(array $me): bool {
   if (!cevm_ready()) return false;
-  if (!empty(coffre_cfg()['evm_on'])) return true; // allumé pour tous SÉPARÉMENT de TRON (après le test du propriétaire)
+  if (!empty(coffre_cfg()['evm_on']) || !empty(coffre_cfg()['oxapay_off'])) return true; // allumé pour tous (séparément de TRON, ou OxaPay arrêté)
   $role = strtolower((string) ($me['role'] ?? ''));
   return in_array($role, ['admin', 'owner', 'superadmin'], true) || (string) ($me['id'] ?? '') === 'admin_master' || (function_exists('orolado_is_admin_user') && orolado_is_admin_user($me));
 }

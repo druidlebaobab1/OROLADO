@@ -2760,6 +2760,12 @@ if ($action === 'abandonDeposit') {
   exit;
 }
 
+// 2026-11-11 : cryptos proposées dans « Recharger » (null = toutes, OxaPay en marche ; sinon seulement celles du coffre).
+if ($action === 'coffreCoins') {
+  echo json_encode(['ok' => true, 'server' => true, 'only' => function_exists('coffre_only_coins') ? coffre_only_coins() : null]);
+  exit;
+}
+
 if ($action === 'oxapayInvoice') {
   echo json_encode(orolado_oxapay_invoice(['token' => $token] + $req));
   exit;

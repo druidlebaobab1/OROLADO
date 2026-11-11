@@ -2382,6 +2382,12 @@ if ($isAjax) {
       if (isset($req['min'])) $patch['min'] = max(5.0, min(5000.0, (float) $req['min']));
       if (isset($req['evm_on'])) $patch['evm_on'] = !empty($req['evm_on']) && $req['evm_on'] !== 'false' && $req['evm_on'] !== '0';
       $bool = static fn($v) => !empty($v) && $v !== 'false' && $v !== '0';
+      if (isset($req['direct_min'])) $patch['direct_min'] = max(0.0, min(1000000.0, (float) $req['direct_min']));
+      if (isset($req['oxapay_off'])) {
+        $patch['oxapay_off'] = $bool($req['oxapay_off']);
+        if ($patch['oxapay_off'] && !coffre_ready()) admin_json(['ok' => false, 'reason' => 'Il manque ton adresse TRON (case ①) ou la clé TronGrid : impossible d’arrêter OxaPay.']);
+        if ($patch['oxapay_off']) { $patch['on'] = true; if (function_exists('cevm_ready') && cevm_ready()) $patch['evm_on'] = true; }
+      }
       if (isset($req['caisse_on'])) $patch['caisse_on'] = $bool($req['caisse_on']);
       if (isset($req['caisse_max'])) $patch['caisse_max'] = max(50.0, min(100000.0, (float) $req['caisse_max']));
       if (isset($req['autowd_on'])) $patch['autowd_on'] = $bool($req['autowd_on']);
@@ -4705,6 +4711,8 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
         (n.value ? '<div style="font-size:12px;margin:3px 0">✅ <code style="word-break:break-all;color:#FDE047">' + esc(n.value) + '</code></div>' : '') +
         '<div style="display:flex;gap:6px;margin-top:4px"><input data-na="' + esc(n.name) + '" placeholder="' + (n.value ? 'Remplacer : coller la nouvelle adresse' : 'Coller l’adresse ici') + '" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0"><button class="mini ok" data-ns="' + esc(n.name) + '">Enregistrer</button></div>' +
         '<div class="muted" data-no="' + esc(n.name) + '" style="font-size:12px"></div></div>').join('') + '</div>';
+    // 2026-11-11 : un seul bouton pour arrêter OxaPay (et revenir en arrière à tout moment).
+    h += '<div class="nt-card" style="border-color:' + (r.oxapayOff ? '#86EFAC' : '#FCD34D') + '"><b style="font-size:15px">' + (r.oxapayOff ? '✅ OxaPay arrêté : toutes les cryptos passent par TON coffre' : '🔁 OxaPay marche encore pour les joueurs') + '</b><br><small class="muted">' + (r.oxapayOff ? 'Recharger ne propose que les cryptos de ton coffre. Tu peux revenir à OxaPay à tout moment.' : 'Un clic : tous les dépôts USDT TRC20 (et Ethereum/BNB si ta case 0x est remplie) passent par ton coffre, OxaPay est arrêté (gardé de côté).') + '</small><div style="margin-top:6px">' + (r.oxapayOff ? '<button class="mini" id="cfOxaBack">↩️ Revenir à OxaPay</button>' : '<button class="mini ok" id="cfOxaOff"' + (r.ready ? '' : ' disabled') + '>🚀 Tout passer sur mon coffre (arrêter OxaPay)</button>') + '</div></div>';
     h += '<div class="nt-card"><b>Mise en route</b>' +
       step(!!r.dest, 'Adresse TRON de ton Trust Wallet (case ① ci-dessus)') +
       step(r.tronKey, 'Clé TronGrid') +
@@ -4722,6 +4730,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     if (r.caisse) h += '<div class="nt-card" style="margin-top:8px;border-color:#FDE047"><b style="font-size:15px">💼 Caisse du site (USDT TRON)</b><br>' +
       '<b style="font-size:20px;color:#86EFAC">' + Number(r.caisse.usdt).toFixed(2) + ' USDT</b> <small class="muted">· ' + r.caisse.trx + ' TRX pour les frais</small><br>' +
       '<small class="muted">C’est l’adresse du réservoir (' + esc(r.caisse.addr.slice(0, 6)) + '…). </small>' +
+      '<div style="margin-top:6px;font-size:12px">💎 Gros dépôts <b>directement chez toi</b> (Trust Wallet) à partir de <input id="cfDirect" type="number" value="' + esc(r.directMin || 0) + '" style="width:80px"> $ <button class="mini" id="cfDirectOk">OK</button> <span class="muted">(0 = jamais)</span></div>' +
       '<div style="margin-top:6px">' + (r.caisseOn ? '✅ Les dépôts arrivent dans la caisse ; au-dessus de <input id="cfCaisseMax" type="number" value="' + esc(r.caisseMax) + '" style="width:80px"> $ le surplus part vers ton Trust Wallet. <button class="mini" id="cfCaisseMaxOk">OK</button> <button class="mini bad" id="cfCaisseOff">Éteindre la caisse</button>' : 'Éteinte : tout part directement vers ton Trust Wallet. <button class="mini ok" id="cfCaisseOn">Allumer la caisse</button>') + '</div>' +
       '<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)"><b>✍️ Envoyer vers…</b> <small class="muted">(depuis la caisse, n’importe quelle adresse TRON)</small><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><input id="cfSendTo" placeholder="Adresse TRON (T…)" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1 1 220px;min-width:0"><input id="cfSendAmt" type="number" step="0.01" placeholder="USDT" style="width:90px"><button class="mini ok" id="cfSendGo">Envoyer</button></div></div>' +
       '<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)"><b>🤖 Robot des retraits</b> ' + (r.autowdOn ? '<span class="pill pill-ok">allumé</span> <button class="mini bad" id="cfRobotOff">Éteindre</button>' : '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">éteint</span> <button class="mini ok" id="cfRobotOn">Allumer</button>') +
@@ -4732,7 +4741,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     else if (r.evm) h += '<div class="nt-card" style="margin-top:8px"><b>🔷 Ethereum / BNB / Polygon / Base / Arbitrum</b> — colle ton adresse « USDT Ethereum » (0x…) dans la case ① pour l’activer.</div>';
     h += '<div class="nt-card" style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap"><div><small class="muted">Adresses de joueurs</small><br><b style="font-size:18px">' + r.addresses + '</b></div><div><small class="muted">Total reçu et crédité</small><br><b style="font-size:18px;color:#86EFAC">' + Number(r.credited).toFixed(2) + ' $</b></div><div><small class="muted">En route vers ton Trust Wallet</small><br><b style="font-size:18px;color:#FDE047">' + Number(r.waiting).toFixed(2) + ' $</b></div></div>';
     h += '<h3 class="panel-title" style="margin:14px 0 4px">🏷️ Adresses de joueurs créées</h3>';
-    h += (r.addrs || []).length ? '<table><tr><th>Joueur</th><th>Son adresse OROLADO</th><th>Reçu</th></tr>' + r.addrs.map(a => '<tr><td>' + esc(a.user) + '</td><td>' + adl(a.addr) + '</td><td>' + Number(a.got).toFixed(2) + ' $</td></tr>').join('') + '</table>' : '<p class="muted">Aucune pour l’instant. Pour ton test : sur orolado.com avec ton compte admin → Recharger → USDT TRC20 : ton adresse OROLADO apparaîtra ici (ce n’est PAS ton adresse Trust Wallet).</p>';
+    h += (r.addrs || []).length ? '<table><tr><th>Joueur</th><th>Son adresse OROLADO</th><th>Reçu (total)</th><th>Sur l’adresse maintenant</th></tr>' + r.addrs.map(a => '<tr><td>' + esc(a.user) + '</td><td>' + adl(a.addr) + '</td><td>' + Number(a.got).toFixed(2) + ' $</td><td><b>' + Number(a.bal).toFixed(2) + ' $</b></td></tr>').join('') + '</table>' : '<p class="muted">Aucune pour l’instant. Pour ton test : sur orolado.com avec ton compte admin → Recharger → USDT TRC20 : ton adresse OROLADO apparaîtra ici (ce n’est PAS ton adresse Trust Wallet).</p>';
     h += '<h3 class="panel-title" style="margin:14px 0 4px">✅ Derniers dépôts reçus</h3>';
     h += r.deposits.length ? '<table><tr><th>Quand</th><th>Joueur</th><th>Montant</th><th>Envoi</th></tr>' + r.deposits.map(d => '<tr><td>' + esc(when(d.at)) + '</td><td>' + esc(d.user) + '</td><td>' + Number(d.amount).toFixed(2) + ' $' + (/COMPLETED|PAID/.test(d.status) ? '' : ' <small>(' + esc(d.status) + ')</small>') + '</td><td>' + txl(d.hash) + '</td></tr>').join('') + '</table>' : '<p class="muted">Pas encore de dépôt.</p>';
     h += '<h3 class="panel-title" style="margin:14px 0 4px">➡️ Envois vers ton Trust Wallet</h3>';
@@ -4750,6 +4759,9 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       setTimeout(() => paint(), 1800);
     });
     const setCfg = async (o, msg) => { if (msg && !confirm(msg)) return; const x = await ajax(Object.assign({action:'coffre_set'}, o)); x && x.ok ? paint(x) : alert((x && x.reason) || 'Échec'); };
+    if ($v('cfOxaOff')) $v('cfOxaOff').onclick = () => setCfg({oxapay_off: 1}, 'Arrêter OxaPay ? Les joueurs déposeront seulement par TON coffre (USDT TRC20, et Ethereum/BNB si ta case 0x est remplie). Tu pourras revenir en arrière à tout moment.');
+    if ($v('cfOxaBack')) $v('cfOxaBack').onclick = () => setCfg({oxapay_off: 0, on: 0, evm_on: 0}, 'Revenir à OxaPay pour les joueurs ? (Les adresses déjà données par ton coffre restent surveillées et créditées.)');
+    if ($v('cfDirectOk')) $v('cfDirectOk').onclick = () => setCfg({direct_min: $v('cfDirect').value});
     if ($v('cfCaisseOn')) $v('cfCaisseOn').onclick = () => setCfg({caisse_on: 1}, 'Allumer la caisse ? Les dépôts iront d’abord dans la caisse du site (pour payer les retraits), le surplus vers ton Trust Wallet.');
     if ($v('cfCaisseOff')) $v('cfCaisseOff').onclick = () => setCfg({caisse_on: 0}, 'Éteindre la caisse ? Tout ira de nouveau directement vers ton Trust Wallet.');
     if ($v('cfCaisseMaxOk')) $v('cfCaisseMaxOk').onclick = () => setCfg({caisse_max: $v('cfCaisseMax').value});
