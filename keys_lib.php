@@ -14,9 +14,9 @@ declare(strict_types=1);
 function keys_catalog(): array {
   return [
     // 2026-11-11 : le coffre = le portefeuille du propriétaire (Trust Wallet). Adresse PUBLIQUE (pas un secret) : elle s'affiche.
-    ['cat' => '🏦 Mon coffre : les dépôts arrivent directement chez moi (sans OxaPay)', 'items' => [
-      ['name' => 'VAULT_TRON_ADDRESS', 'title' => 'Adresse du coffre USDT (réseau TRON)', 'ico' => '🏦', 'show' => true,
-        'what' => 'Dans Trust Wallet : Recevoir → USDT → réseau TRON (TRC20) → Copier. L’adresse commence par T. Ce n’est pas un secret (comme un numéro de compte). Ne donne JAMAIS tes 12 mots. Besoin aussi de la clé TronGrid ci-dessous. Vide = OxaPay reprend.',
+    ['cat' => '🏦 Mon coffre : où part l’argent des joueurs (sans OxaPay)', 'items' => [
+      ['name' => 'VAULT_TRON_ADDRESS', 'title' => 'Mon Trust Wallet : adresse USDT (réseau TRON)', 'ico' => '🏦', 'show' => true,
+        'what' => 'Le site envoie ici, tout seul, l’argent déposé par les joueurs. Dans Trust Wallet : Recevoir → USDT → réseau TRON (TRC20) → Copier. Commence par T. Ce n’est pas un secret. Ne donne JAMAIS tes 12 mots.',
         'how' => 'Recevoir → USDT → TRON → Copier', 'fmt' => '/^T[1-9A-HJ-NP-Za-km-z]{33}$/', 'fmtTxt' => 'T + 33 caractères',
         'fmtBad' => 'Ce n’est pas une adresse TRON (elle commence par T et fait 34 caractères). Dans Trust Wallet : Recevoir → USDT → TRON → Copier.'],
     ]],
@@ -43,7 +43,7 @@ function keys_known(): array {
 
 /** Noms qu'on n'écrit jamais d'ici (le site en dépend pour fonctionner ou se protéger). */
 function keys_forbidden(string $name): bool {
-  return (bool) preg_match('/^(SUPABASE|ADMIN|OROLADO|SESSION|DB_|DATABASE|APP_|PHP|PATH|HOME|SERVER|HTTP|SMTP_PASS)/', $name);
+  return (bool) preg_match('/^(SUPABASE|ADMIN|OROLADO|SESSION|DB_|DATABASE|APP_|PHP|PATH|HOME|SERVER|HTTP|SMTP_PASS|COFFRE)/', $name);
 }
 
 function keys_env_file(): string { return orolado_data_dir() . '/.env'; }
@@ -127,12 +127,12 @@ function keys_test(string $name, string $v): array {
   $json = ['Content-Type: application/json'];
   switch ($name) {
     case 'VAULT_TRON_ADDRESS':
-      if (!function_exists('vault_tron_addr_ok') || !vault_tron_addr_ok($v)) return ['ok' => false, 'msg' => 'Adresse TRON invalide (une lettre est fausse ?). Recopie-la avec le bouton « Copier » de Trust Wallet.'];
+      if (!function_exists('coffre_addr_ok') || !coffre_addr_ok($v)) return ['ok' => false, 'msg' => 'Adresse TRON invalide (une lettre est fausse ?). Recopie-la avec le bouton « Copier » de Trust Wallet.'];
       $tk = keys_value('TRONGRID_API_KEY');
-      if ($tk === '') return ['ok' => false, 'msg' => 'Adresse valide, mais il manque la clé TronGrid (plus bas) : sans elle le site ne voit pas l’argent arriver. OxaPay reste utilisé en attendant.'];
+      if ($tk === '') return ['ok' => false, 'msg' => 'Adresse valide. Il manque la clé TronGrid (plus bas) : sans elle le site ne voit pas l’argent arriver.'];
       [$c, $r] = keys_http('https://api.trongrid.io/v1/accounts/' . $v, 'GET', null, ['TRON-PRO-API-KEY: ' . $tk, 'Accept: application/json']);
-      if ($c !== 200) return ['ok' => true, 'msg' => 'Adresse valide. Coffre ACTIF : les dépôts USDT TRC20 arrivent maintenant directement dans ton portefeuille (TronGrid n’a pas répondu au test, code ' . $c . ').'];
-      return ['ok' => true, 'msg' => 'Coffre ACTIF ✓ Les dépôts USDT TRC20 des joueurs arrivent maintenant directement dans ton portefeuille. Vérifie que c’est bien TON adresse : ' . substr($v, 0, 6) . '…' . substr($v, -6)];
+      if ($c !== 200) return ['ok' => true, 'msg' => 'Adresse valide ✓ (TronGrid n’a pas répondu au test, code ' . $c . '). Suite : admin → 🏦 Coffre.'];
+      return ['ok' => true, 'msg' => 'Adresse valide ✓ L’argent des joueurs partira ici. Vérifie que c’est bien TON adresse : ' . substr($v, 0, 6) . '…' . substr($v, -6) . '. Suite : admin → 🏦 Coffre.'];
     case 'TRONGRID_API_KEY':
       [$c, $r] = keys_http('https://api.trongrid.io/wallet/getnowblock', 'POST', '{}', array_merge($json, ['TRON-PRO-API-KEY: ' . $v]));
       return ($c === 200 && str_contains($r, 'block_header')) ? ['ok' => true, 'msg' => 'TronGrid répond : la clé fonctionne'] : ['ok' => false, 'msg' => 'TronGrid refuse la clé (code ' . $c . ')'];
@@ -179,7 +179,7 @@ function keys_status(): array {
   }
   $custom = [];
   foreach (array_keys($file) as $n) {
-    if (isset($known[$n])) continue;
+    if (isset($known[$n]) || keys_forbidden($n)) continue; // clé maîtresse du coffre etc. : jamais affichée ni supprimable
     $custom[] = $row($n, ['name' => $n, 'title' => $n, 'ico' => '🔑', 'what' => 'Clé ajoutée à la main.', 'custom' => true]);
   }
   if ($custom) $cats[] = ['cat' => 'Autres clés', 'items' => $custom];
