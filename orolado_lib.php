@@ -5166,7 +5166,7 @@ function orolado_pay_sweep_after_response(): void {
       orolado_oxapay_history_extras(load_db(orolado_data_file()), (string) $u, 2, 2);
     }
     // 2026-11-11 : USDT TRC20 vus directement sur la blockchain (TronGrid), même si OxaPay ne prévient pas.
-    if (function_exists('coffre_scan')) { try { coffre_scan(25, 6.0); if (microtime(true) - $t0 < 9) coffre_sweep(false, 3); } catch (Throwable $eV) { orolado_oxapay_log('coffre_err', ['e' => substr($eV->getMessage(), 0, 160)]); } }
+    if (function_exists('coffre_scan')) { try { coffre_scan(25, 6.0); if (microtime(true) - $t0 < 9) coffre_sweep(false, 3); if (microtime(true) - $t0 < 10) { coffre_autowd_round(2); coffre_caisse_excess(); } } catch (Throwable $eV) { orolado_oxapay_log('coffre_err', ['e' => substr($eV->getMessage(), 0, 160)]); } }
     if (function_exists('cevm_scan') && microtime(true) - $t0 < 10) { try { cevm_scan(10, 4.0); if (microtime(true) - $t0 < 12) cevm_sweep(false, 3); } catch (Throwable $eE) { orolado_oxapay_log('coffre_evm_err', ['e' => substr($eE->getMessage(), 0, 160)]); } }
     if (microtime(true) - $t0 < 11 && function_exists('orolado_trongrid_static_scan')) { try { orolado_trongrid_static_scan(6, 5.0); } catch (Throwable $eT) { /* jamais bloquant */ } }
     // v3625 : rapprochement depuis les listes OxaPay / Flutterwave (paiements payés 48 h), toutes les 10 min.

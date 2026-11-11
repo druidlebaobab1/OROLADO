@@ -2369,6 +2369,10 @@ if ($action === 'withdraw') {
   // 2026-10-23 : un seul envoi (push_notify_admin) qui part sur Telegram D'ABORD puis sur les téléphones admin, et qui est
   // noté dans le journal des alertes (avant : Telegram après les téléphones, parfois coupé ; aucun moyen de savoir pourquoi).
   if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
+  // 2026-11-11 : ROBOT DES RETRAITS (coffre_lib.php) — USDT TRC20 payé tout seul depuis la caisse si tout est bon.
+  $autoWd = null;
+  if (function_exists('coffre_autowd_try')) { try { $autoWd = coffre_autowd_try($wdId); } catch (Throwable $eAw) { error_log('OROLADO robot retrait ' . $eAw->getMessage()); } }
+  if (is_array($autoWd) && !empty($autoWd['ok'])) exit; // payé : pas d'alerte « à payer »
   if (is_file(__DIR__ . '/push_lib.php')) {
     try {
       require_once __DIR__ . '/push_lib.php';
