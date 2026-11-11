@@ -343,7 +343,7 @@ function orolado_wd_crypto_nets(): array {
   return [
     'usdt' => ['TRC20'], 'usdc' => ['ERC20', 'BEP20', 'SOL'],
     'btc' => ['BTC'], 'eth' => ['ERC20'], 'trx' => ['TRC20'], 'sol' => ['SOL'], 'ltc' => ['LTC'], 'doge' => ['DOGE'],
-    'ada' => ['ADA'], 'avax' => ['AVAXC'], 'matic' => ['POLYGON'],
+    'ada' => ['ADA'], 'avax' => ['AVAXC'], 'matic' => ['POLYGON'], 'bnb' => ['BEP20'], // 2026-11-12 (revue) : BNB vérifié (BEP20, 0x…)
   ];
 }
 function orolado_wd_addr_ok(string $net, string $a): bool {
