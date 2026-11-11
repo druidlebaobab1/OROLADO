@@ -115,7 +115,7 @@ check('TOUTES les cotes (' . $n . ') : ≥ 1,01', !$bad, implode(' ; ', array_sl
 $u0 = []; $bk3 = []; foreach ([[7.1, 4.97, 1.451], [6.9, 5.0, 1.43], [6.6, 4.6, 1.40]] as $o3) $bk3[] = ['bets' => [['name' => 'Match Winner', 'values' => [['value' => 'Home', 'odd' => (string) $o3[0]], ['value' => 'Draw', 'odd' => (string) $o3[1]], ['value' => 'Away', 'odd' => (string) $o3[2]]]]]];
 $m25 = sb_markets($bk3, ['mMain' => 2.5, 'mSide' => 2.5, 'mExotic' => 2.5, 'mLive' => 4, 'mOther' => 2.5], $u0);
 $s25 = 0.0; foreach ($m25['1x2'] ?? [] as $r) $s25 += 1 / $r[1];
-check('marge 2,5 % : Σ 1/cote ≈ 1/0,975 (aucun plafond « moyenne »), au-dessus de la moyenne des bookmakers', $s25 > 1.024 && $s25 < 1.032 && ($m25['1x2'][0][1] ?? 0) > 6.87, json_encode($m25['1x2'] ?? null) . ' ' . round($s25, 4));
+check('marge verrouillée ' . (SB_MARGE_FIXE * 100) . ' % : Σ 1/cote ≈ 1/(1 − m), répartie sur tous les choix, au-dessus de la moyenne des bookmakers', abs($s25 - 1 / (1 - SB_MARGE_FIXE)) < 0.006 && ($m25['1x2'][0][1] ?? 0) > 6.87, json_encode($m25['1x2'] ?? null) . ' ' . round($s25, 4));
 $m2 = sb_mk_file('9002')['mk'] ?? [];
 check('9002 : handicap asiatique à la convention inverse → retiré (contrôle contre 1x2)', isset($m2['1x2']) && !isset($m2['ah:-1.5']));
 check('9002 : ou:2.5 avec 2 bookmakers → pas proposé (3 exigés) ; tth:1.5 avec 2 → proposé', !isset($m2['ou:2.5']) && isset($m2['tth:1.5']));
