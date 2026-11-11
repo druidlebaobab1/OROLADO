@@ -106,7 +106,11 @@ save_db(orolado_data_file(), $db);
 $inv = fn(string $tok) => orolado_oxapay_invoice(['token' => $tok, 'coin' => 'usdt_trc20', 'amount' => 20, 'confirmed' => true]);
 $stat = fn(string $tok, array $i) => orolado_oxapay_status(['token' => $tok, 'orderId' => $i['orderId']]);
 
-echo "1) Éteint pour les joueurs : OxaPay comme avant ; l'admin peut déjà tester\n";
+echo "0) Par défaut (rien réglé) : OxaPay retiré, le joueur reçoit son adresse du coffre\n";
+$i0 = $inv('tokB');
+check('joueur : adresse du coffre sans rien allumer', !empty($i0['own']), json_encode($i0));
+echo "1) « Revenir à OxaPay » : OxaPay comme avant ; l'admin peut déjà tester\n";
+coffre_cfg_set(['oxapay_off' => false]);
 $GLOBALS['OXA_CALLS'] = 0;
 $i = $inv('tokA');
 check('joueur : pas d\'adresse coffre (OxaPay)', empty($i['own']) && ($GLOBALS['OXA_CALLS'] ?? 0) > 0, json_encode($i));

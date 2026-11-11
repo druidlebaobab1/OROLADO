@@ -109,7 +109,7 @@ $db = blank_db();
 foreach ([$A => 'a@t.com', $B => 'b@t.com'] as $id => $mail) { $db['users'][$id] = ['id' => $id, 'email' => $mail, 'role' => 'user', 'sbId' => $id, 'displayName' => $mail]; $db['vault'][$id] = ['demo' => 0, 'real' => 0]; }
 $db['sessions']['tokA'] = ['userId' => $A, 'at' => date('c')]; $db['sessions']['tokB'] = ['userId' => $B, 'at' => date('c')];
 save_db(orolado_data_file(), $db);
-coffre_cfg_set(['on' => true, 'evm_on' => true, 'utxo_on' => false, 'min' => 20]);
+coffre_cfg_set(['on' => true, 'evm_on' => true, 'utxo_on' => false, 'min' => 20, 'oxapay_off' => false]);
 $inv = fn($tok, $coin) => orolado_oxapay_invoice(['token' => $tok, 'coin' => $coin, 'amount' => 20, 'confirmed' => true]);
 $scanAll = function () { foreach (array_keys(coffre_json(cutxo_index_file())) as $ad) coffre_json_rw(cutxo_index_file(), function (&$st) use ($ad) { $st[$ad]['seen'] = 0; }); cutxo_scan(100, 30); };
 
@@ -174,7 +174,8 @@ check('aucune transaction refusée par le faux réseau (signatures, pièces)', $
 
 echo "5) Liste « Recharger » quand OxaPay est arrêté\n";
 coffre_cfg_set(['oxapay_off' => true, 'utxo_on' => false]);
-check('OxaPay arrêté mais BTC pas allumé par le propriétaire → BTC pas proposé', !in_array('btc', coffre_only_coins(), true) && empty($inv('tokB', 'btc')['own']));
+check('OxaPay retiré → BTC proposé sans rien allumer', in_array('btc', coffre_only_coins(), true) && !empty($inv('tokB', 'btc')['own']));
+check('crypto sans coffre (SOL, TRX, DAI) → retirée de la liste', !array_intersect(['sol', 'trx', 'dai', 'xrp'], coffre_only_coins()));
 coffre_cfg_set(['utxo_on' => true]);
 $only = coffre_only_coins();
 check('BTC, LTC, DOGE dans la liste', in_array('btc', $only, true) && in_array('ltc', $only, true) && in_array('doge', $only, true), json_encode($only));
