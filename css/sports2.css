@@ -1392,3 +1392,12 @@ html:root body #casinoModal .sp2 .pz-menu{gap:6px}
   html:root body #casinoModal .sp2 .pz-mh{margin-left:calc(-1 * var(--sp2-px));margin-right:calc(-1 * var(--sp2-px));border-radius:0;
     box-shadow:inset 0 1px 0 var(--pz-line),inset 0 -1px 0 var(--pz-line);padding-left:14px;padding-right:14px;box-sizing:border-box}
 }
+
+/* 2026-11-12 (propriétaire, modèle 1xBet) — page d'un match EN DIRECT : une ligne fine en haut avec le championnat
+   (drapeau · pays · compétition), lisible, sur une ou deux lignes maximum, étoile favori à droite */
+html:root body #casinoModal .sp2 .pz-lgl{display:flex;align-items:center;gap:8px;min-width:0;margin:0 0 8px;padding:2px 2px 0}
+html:root body #casinoModal .sp2 .pz-lgl > .pz-flag{flex:none;border-radius:2px}
+html:root body #casinoModal .sp2 .pz-lgl > span{flex:1;min-width:0;font:500 13px/1.35 var(--sp2-font)!important;color:var(--pz-mute)!important;
+  display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;letter-spacing:0!important}
+html:root body #casinoModal .sp2 .pz-lgl > span b{display:inline!important;font:700 13px/1.35 var(--sp2-font)!important;color:#F3EAD7!important}
+html:root body #casinoModal .sp2 .pz-lgl > .pz-star{width:32px;height:32px;font-size:17px;border-radius:10px}

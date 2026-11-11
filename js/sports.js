@@ -2389,7 +2389,9 @@
     var f = curFx(), l = f ? (sbLg(f.lg, spOf(f)) || (sbM && sbM.fx ? { n: sbM.fx.lgn || '', c: sbM.fx.c || '', f: '' } : null)) : null;
     var fv = favs(), isF = f && fv.f.indexOf(f.id) > -1;
     var star = f ? '<button type="button" class="pz-star' + (isF ? ' on' : '') + '" data-fav="' + esc(f.id) + '" aria-pressed="' + !!isF + '" aria-label="' + esc(SX().fav) + '">' + (isF ? '★' : '☆') + '</button>' : '';
-    shell((f && f.live ? '' : bar(l && l.n ? l.n : spName({ s: f ? spOf(f) : 'foot' }), star, l && l.c ? l.c : '')) + '<div id="pzMh"></div><div id="pzTrk"></div><div class="pz-gch pz-hs" id="pzG"></div><div id="pzMk" class="pz-mks"></div>'); // (propriétaire : aucune règle écrite dans la page du match)
+    // 2026-11-12 (propriétaire, comme 1xBet) : en DIRECT aussi, une ligne fine en haut dit le championnat (drapeau · pays · compétition)
+    var lgLine = f && f.live ? '<div class="pz-lgl">' + (l ? lgImg(l) : '') + '<span dir="auto">' + esc(spName({ s: spOf(f) })) + ' · ' + (l && l.c ? esc(l.c) + ' · ' : '') + '<b>' + esc(l && l.n ? l.n : spName({ s: spOf(f) })) + '</b></span>' + star + '</div>' : '';
+    shell((f && f.live ? lgLine : bar(l && l.n ? l.n : spName({ s: f ? spOf(f) : 'foot' }), star, l && l.c ? l.c : '')) + '<div id="pzMh"></div><div id="pzTrk"></div><div class="pz-gch pz-hs" id="pzG"></div><div id="pzMk" class="pz-mks"></div>'); // (propriétaire : aucune règle écrite dans la page du match)
     paintMatch();
   }
   function paintMatch() {
