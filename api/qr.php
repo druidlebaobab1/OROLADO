@@ -11,10 +11,12 @@ if (!preg_match('/^[A-Za-z0-9:_+=.\\/-]+$/', $data)) {
   exit;
 }
 
+// 2026-11-12 : ?s=320 → QR plus net (écran plus grand) ; par défaut 160 comme avant.
+$sz = ((int) ($_GET['s'] ?? 160)) >= 300 ? 320 : 160;
 $urls = [
-  'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=' . rawurlencode($data),
-  'https://quickchart.io/qr?size=160&margin=1&text=' . rawurlencode($data),
-  'https://image-charts.com/chart?chs=160x160&cht=qr&chld=M|1&chl=' . rawurlencode($data),
+  'https://api.qrserver.com/v1/create-qr-code/?size=' . $sz . 'x' . $sz . '&margin=8&data=' . rawurlencode($data),
+  'https://quickchart.io/qr?size=' . $sz . '&margin=1&text=' . rawurlencode($data),
+  'https://image-charts.com/chart?chs=' . $sz . 'x' . $sz . '&cht=qr&chld=M|1&chl=' . rawurlencode($data),
 ];
 $bin = '';
 foreach ($urls as $url) {

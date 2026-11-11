@@ -8215,7 +8215,7 @@ function orolado_flutterwave_checkout(array $req): array {
     'redirect_url' => $origin . '/api/flutterwave/callback',
     'customer' => $customer,
     'customizations' => $customizations,
-    'payment_options' => orolado_flw_payment_options($cc),
+    'payment_options' => !empty($req['cardOnly']) ? 'card' : orolado_flw_payment_options($cc), // 2026-11-12 : ligne « carte bancaire »
   ]);
   $cand = is_array($std) ? (string) ($std['data']['link'] ?? '') : '';
   if ($cand !== '' && preg_match('#^https://[a-z0-9.-]*flutterwave\.com/#i', $cand)) $link = $cand;
@@ -8234,7 +8234,7 @@ function orolado_flutterwave_checkout(array $req): array {
     'method' => $method,
     'customer' => $customer,
     'customizations' => $customizations,
-    'payment_options' => orolado_flw_payment_options($cc),
+    'payment_options' => !empty($req['cardOnly']) ? 'card' : orolado_flw_payment_options($cc), // 2026-11-12 : ligne « carte bancaire »
     'redirect_url' => $origin . '/api/flutterwave/callback',
   ];
 }
