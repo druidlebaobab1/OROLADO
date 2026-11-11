@@ -14764,3 +14764,14 @@ html:root body #drawerProfile#drawerProfile#drawerProfile#drawerProfile#drawerPr
 /* v3672 — onglet actif des jeux et bouton Coupon sans halo jaune autour */
 html:root body .cs-tab.cs-tab.cs-tab.cs-tab.cs-tab.on,
 html:root body .pz-cpc.pz-cpc.pz-cpc.pz-cpc.pz-cpc{box-shadow:0 2px 6px rgba(0,0,0,.45)!important}
+
+/* v3673 — ORDINATEUR (≥ 1100 px) : logo OROLADO en haut à gauche, panneau de mise à la hauteur de son contenu (plus de grande
+   case vide), fenêtre Paris haute (plus de petite fenêtre au milieu de l'écran). Téléphones inchangés. */
+@media (min-width:1100px) and (hover:hover){
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5):not(#y6) .topbar-row > #brandLockup#brandLockup{
+    display:flex!important;position:fixed!important;left:24px!important;top:18px!important;height:auto!important;transform:none!important;align-items:center!important;gap:8px!important;z-index:3!important;padding:0!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5):not(#y6) .topbar-row > #brandLockup#brandLockup .logo-mark{display:block!important;width:34px!important;height:34px!important}
+  html body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4):not(#y5):not(#y6) .topbar-row > #brandLockup#brandLockup .brand{display:block!important;font-size:1.05rem!important;letter-spacing:.14em!important}
+  html body #screenTrade#screenTrade#screenTrade #tradeWrap > .pad.glass{align-self:start!important;height:auto!important}
+  html body #casinoModal#casinoModal#casinoModal.pred-only > .cs-box{height:calc(100vh - 48px)!important;max-height:none!important;width:min(1100px,calc(100vw - 64px))!important;max-width:none!important}
+}
