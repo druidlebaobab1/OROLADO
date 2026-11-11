@@ -144,8 +144,13 @@
     var img = '<image class="lbg" href="img/games/lb_' + key + '.webp?v=' + (/^(monsterlive|archerylive|bullseye|dogracelive|horses|race)$/.test(key) ? '3618' : '3601') + '" x="-70" y="-25" width="500" height="290" preserveAspectRatio="xMidYMid slice" opacity=".92"/>';
     var i = h.indexOf('</defs>'), p = i < 0 ? 0 : i + 7, m = /^<rect\b[^>]*\/>/.exec(h.slice(p));
     if (m) { var w = /width="(-?[\d.]+)"/.exec(m[0]); if (w && +w[1] >= 300) p += m[0].length; }
-    return h.slice(0, p) + img + h.slice(p);
+    var rest = h.slice(p);
+    // 2026-11-12 (propriétaire : « améliore les jeux live ») : sur ces jeux, le ciel / le sol dessinés à plat CACHAIENT le vrai décor
+    // illustré → ces grands aplats (x = −300, toute la largeur) deviennent invisibles ; terrains, cibles, joueurs restent dessinés.
+    if (LBG_REVEAL.indexOf(key) >= 0) rest = rest.replace(/<rect x="-300"([^>]*)width="960"/g, '<rect opacity="0" x="-300"$1width="960"').replace(/<path d="M-300/g, '<path opacity="0" d="M-300');
+    return h.slice(0, p) + img + rest;
   }
+  var LBG_REVEAL = ['archerylive', 'basketlive', 'cricketlive', 'tennislive', 'volcanolive', 'monsterlive'];
   function live(key, G) {
     var showOf = function (res) { return G.show ? G.show(res) : G.SHOW; };
     K.register(key, function (box) {
@@ -837,12 +842,12 @@
     scene: function (uid, l) {
       var h = '<defs>' + lgd('bkF' + uid, '#C2410C', '#7C2D12', 1) + rgd('bkB' + uid, '#FDBA74', '#EA580C', '#7C2D12') + '</defs><rect x="-300" y="-300" width="960" height="830" fill="#0F0A1E"/>' +
         '<rect x="-300" y="-300" width="960" height="470" fill="#1E1B4B"/>';
-      for (var k = 0; k < 3; k++) for (var q = 0; q < 46; q++) h += '<circle cx="' + (q * 8 + (k % 2) * 4) + '" cy="' + (100 + k * 18) + '" r="2.8" fill="' + ['#F87171', '#60A5FA', '#FDE68A', '#4ADE80', '#F472B6', '#E2E8F0'][(q * 5 + k) % 6] + '" opacity=".45"/>';
+      var k; // 2026-11-12 : public en pointillés retiré (la vraie salle illustrée est derrière)
       h += '<rect x="-300" y="154" width="960" height="400" fill="url(#bkF' + uid + ')"/><path d="M-300 160H660" stroke="#FDE68A" stroke-opacity=".5"/><path d="M200 196Q240 164 300 160" stroke="#FDE68A" stroke-opacity=".4" fill="none"/>' +
         '<rect x="324" y="40" width="6" height="156" fill="#475569"/><rect x="310" y="56" width="6" height="52" rx="2" fill="#F8FAFC" stroke="#94A3B8"/><rect x="311" y="76" width="4" height="14" fill="none" stroke="#EF4444" stroke-width="1.2"/>' +
         '<path d="M283 92L288 116H304L309 92" stroke="#F8FAFC" stroke-opacity=".8" stroke-width="1" fill="none"/><path d="M286 98L306 110M306 98L286 110M288 104H304" stroke="#F8FAFC" stroke-opacity=".5" stroke-width=".8"/>' +
-        '<g class="bk-pl" transform="translate(74 196)"><path d="M-4-30L-6 0M4-30L6 0" stroke="#FDE2C4" stroke-width="4.4" stroke-linecap="round"/><rect x="-8" y="-50" width="16" height="22" rx="5" fill="#F97316"/><text y="-36" text-anchor="middle" font-size="8" fill="#fff">23</text>' +
-        '<g class="bk-arm"><path d="M5-46L14-58" stroke="#FDE2C4" stroke-width="3.6" stroke-linecap="round"/></g><circle cy="-56" r="6.5" fill="#E2AE88"/></g>' +
+        // 2026-11-12 : vrai basketteur (image) à la place du bonhomme en traits
+        '<g class="bk-pl" transform="translate(74 196)"><ellipse cy="1" rx="10" ry="2.4" fill="#000" opacity=".3"/><image href="img/games/live_basket.webp?v=1" x="-7" y="-66" width="13" height="66" preserveAspectRatio="none"/><g class="bk-arm" opacity="0"></g></g>' +
         '<g class="bk-b" transform="translate(88 138)"><circle r="6.5" fill="url(#bkB' + uid + ')"/><path d="M-6.5 0H6.5M0-6.5V6.5M-4.6-4.6Q0 0-4.6 4.6M4.6-4.6Q0 0 4.6 4.6" stroke="#431407" stroke-width=".8" fill="none"/></g>' +
         '<path d="M282 92H310" stroke="#EF4444" stroke-width="3" stroke-linecap="round"/>' +
         '<g class="bk-sb"><rect x="70" y="6" width="220" height="30" rx="10" fill="rgba(2,6,23,.78)" stroke="#FDE68A" stroke-opacity=".4"/>';
@@ -1053,14 +1058,14 @@
     }),
     scene: function (uid, l) {
       var h = '<defs>' + rgd('ckG' + uid, '#4ADE80', '#16A34A', '#14532D') + '</defs><rect x="-300" y="-300" width="960" height="830" fill="#0B2E16"/>' +
-        '<rect x="-300" y="-300" width="960" height="356" fill="#1E3A8A"/><ellipse cx="180" cy="150" rx="250" ry="110" fill="url(#ckG' + uid + ')"/><ellipse cx="180" cy="150" rx="236" ry="102" fill="none" stroke="#F8FAFC" stroke-opacity=".5" stroke-dasharray="4 4"/>' +
-        '<rect x="56" y="134" width="252" height="36" rx="4" fill="#D6C59A"/><path d="M80 134V170M284 134V170" stroke="#F8FAFC" stroke-width="1.4"/>' +
+        '<rect x="-300" y="-300" width="960" height="356" fill="#1E3A8A"/><ellipse cx="180" cy="150" rx="250" ry="110" fill="url(#ckG' + uid + ')" opacity="0"/>' +
+        '<rect x="56" y="134" width="252" height="36" rx="4" fill="#D6C59A" opacity=".55"/><path d="M80 134V170M284 134V170" stroke="#F8FAFC" stroke-width="1.4"/>' +
         '<g class="ck-st0" transform="translate(66 152)"><path d="M-4-18V6M0-18V6M4-18V6" stroke="#FDE68A" stroke-width="2"/><g class="ck-bl"><path d="M-5-19H5" stroke="#F59E0B" stroke-width="2"/></g></g>' +
         '<g transform="translate(298 152)"><path d="M-4-18V6M0-18V6M4-18V6" stroke="#FDE68A" stroke-width="2"/><path d="M-5-19H5" stroke="#F59E0B" stroke-width="2"/></g>' +
-        '<g class="ck-bt" transform="translate(84 160)"><path d="M-3-14L-5 0M3-14L4 0" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/><rect x="-7" y="-30" width="14" height="17" rx="4" fill="#F8FAFC"/><circle cy="-35" r="5.5" fill="#1E3A8A"/>' +
-        '<g class="ck-bat"><path d="M4-22L18-34" stroke="#B45309" stroke-width="4" stroke-linecap="round"/></g></g>' +
-        '<g class="ck-bw" transform="translate(320 160)"><path d="M-3-14L-5 0M3-14L4 0" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/><rect x="-7" y="-30" width="14" height="17" rx="4" fill="#0EA5E9"/><circle cy="-35" r="5.5" fill="#E2AE88"/></g>' +
-        '<g class="ck-rn" opacity="0"><path d="M-3-14L-5 0M3-14L4 0" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/><rect x="-7" y="-30" width="14" height="17" rx="4" fill="#F8FAFC"/><circle cy="-35" r="5.5" fill="#1E3A8A"/></g>' +
+        // 2026-11-12 : vrais joueurs (images) à la place des bonshommes en traits — batteur (tourné vers le lanceur) et lanceur
+        '<g class="ck-bt" transform="translate(84 160)"><ellipse cy="1" rx="9" ry="2" fill="#000" opacity=".3"/><g transform="scale(-1 1)"><image href="img/games/live_batsman.webp?v=1" x="-8" y="-48" width="15" height="48" preserveAspectRatio="none"/></g><g class="ck-bat" opacity="0"></g></g>' +
+        '<g class="ck-bw" transform="translate(320 160)"><ellipse cy="1" rx="10" ry="2" fill="#000" opacity=".3"/><image href="img/games/live_bowler.webp?v=1" x="-10" y="-50" width="20" height="50" preserveAspectRatio="none"/></g>' +
+        '<g class="ck-rn" opacity="0"><g transform="scale(-1 1)"><image href="img/games/live_batsman.webp?v=1" x="-8" y="-48" width="15" height="48" preserveAspectRatio="none"/></g></g>' +
         '<ellipse class="ck-sh" rx="3.5" ry="1.5" fill="#000" opacity=".3"/><circle class="ck-b" r="3.4" fill="#DC2626" stroke="#7F1D1D" stroke-width=".7"/>' +
         '<g class="ck-sb"><rect x="58" y="4" width="244" height="30" rx="10" fill="rgba(2,6,23,.8)" stroke="#FDE68A" stroke-opacity=".4"/>';
       for (var k = 0; k < 6; k++) h += '<g transform="translate(' + (78 + k * 26) + ' 19)"><circle class="ck-d" r="9"/><text class="ck-dt" y="4" text-anchor="middle"></text></g>';
@@ -1146,8 +1151,10 @@
       var RC = ['#F8FAFC', '#F8FAFC', '#7C3AED', '#7C3AED', '#2563EB', '#2563EB', '#DC2626', '#DC2626', '#FACC15', '#FACC15'];
       for (var k = 0; k < 10; k++) h += '<circle cx="' + AR_C[0] + '" cy="' + AR_C[1] + '" r="' + ((10 - k) * AR_R) + '" fill="' + RC[k] + '" stroke="' + (k === 2 || k === 3 ? '#F8FAFC' : '#64748B') + '" stroke-width=".5"/>';
       h += '<circle cx="' + AR_C[0] + '" cy="' + AR_C[1] + '" r="1.2" fill="#7C2D12"/>' +
-        '<g transform="translate(46 190)"><path d="M-3-24L-5 0M3-24L5 0" stroke="#1E3A8A" stroke-width="4.4" stroke-linecap="round"/><rect x="-7" y="-46" width="14" height="24" rx="5" fill="#16A34A"/><circle cy="-52" r="6" fill="#FDE2C4"/><path d="M-6-56Q0-62 6-56" stroke="#78350F" stroke-width="3" fill="none"/>' +
-        '<path d="M6-40L18-40" stroke="#FDE2C4" stroke-width="3.4" stroke-linecap="round"/><path d="M18-62Q30-40 18-18" stroke="#92400E" stroke-width="2.6" fill="none"/><path class="ar-str" d="M18-62L18-18" stroke="#F8FAFC" stroke-width=".8"/></g>';
+        // 2026-11-12 (propriétaire : « améliore les personnages ») : vraie archère (image) à la place du bonhomme en traits ;
+        // les flèches partent toujours de son arc (66, 150). La corde dessinée reste (invisible) pour l'animation.
+        '<ellipse cx="56" cy="206" rx="15" ry="3" fill="#000" opacity=".25"/><image href="img/games/live_archer.webp?v=1" x="44" y="124" width="23.5" height="82" preserveAspectRatio="none"/>' +
+        '<g transform="translate(46 190)" opacity="0"><path class="ar-str" d="M18-62L18-18"/></g>';
       for (k = 0; k < 3; k++) h += '<g class="ar-a" opacity="0"><path d="M0 0L-16 9" stroke="#78350F" stroke-width="2" stroke-linecap="round"/><path d="M-16 9L-21 9M-16 9L-18 13" stroke="#EF4444" stroke-width="2.2"/><circle r="1.6" fill="#334155"/></g>';
       h += '<g class="ar-sb"><rect x="60" y="6" width="240" height="30" rx="10" fill="rgba(2,6,23,.8)" stroke="#FDE68A" stroke-opacity=".4"/>';
       for (k = 0; k < 3; k++) h += '<g transform="translate(' + (88 + k * 36) + ' 21)"><circle class="ar-d" r="11"/><text class="ar-dt" y="4.5" text-anchor="middle"></text></g>';
@@ -1211,12 +1218,11 @@
     }),
     scene: function (uid, l) {
       var h = '<defs>' + lgd('fiS' + uid, '#FDBA74', '#FEF3C7', 1) + lgd('fiW' + uid, '#0EA5E9', '#075985', 1) + '<radialGradient id="fiG' + uid + '" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FDE68A" stop-opacity=".7"/><stop offset="1" stop-color="#FDE68A" stop-opacity="0"/></radialGradient></defs>' +
-        '<rect x="-300" y="-300" width="960" height="830" fill="#0C4A6E"/><rect x="-300" y="-300" width="960" height="404" fill="url(#fiS' + uid + ')"/><circle cx="300" cy="80" r="16" fill="#FDE68A" opacity=".85"/>' +
-        '<path d="M-300 104L-300 86Q20 60 120 84T260 78T660 88V104Z" fill="#166534" opacity=".7"/><rect x="-300" y="104" width="960" height="430" fill="url(#fiW' + uid + ')"/>';
-      for (var k = 0; k < 16; k++) h += '<path d="M' + ((k * 61) % 350) + ' ' + (116 + (k * 23) % 100) + 'q5-3 10 0t10 0" stroke="#BAE6FD" stroke-width="1" fill="none" opacity=".45"/>';
-      h += '<path d="M10 100Q20 112 70 112Q96 112 100 100Z" fill="#92400E" stroke="#451A03"/><rect x="10" y="98" width="90" height="4" fill="#B45309"/>' +
-        '<g transform="translate(52 98)"><rect x="-7" y="-24" width="14" height="20" rx="4" fill="#DC2626"/><circle cy="-29" r="6" fill="#FDE2C4"/><path d="M-9-33H9L5-38H-5Z" fill="#FACC15"/><path d="M6-18L16-24" stroke="#FDE2C4" stroke-width="3.2" stroke-linecap="round"/></g>' +
-        '<path class="fi-rod" d="M66 76L120 30" stroke="#1F2937" stroke-width="2.4" stroke-linecap="round"/><path class="fi-ln" d="M120 30L120 30" stroke="#F8FAFC" stroke-width=".8" fill="none"/>' +
+        // 2026-11-12 (propriétaire : « le pêcheur n'est pas amélioré ») : le vrai décor illustré (lac, ponton) n'est plus caché par le ciel
+        // et l'eau dessinés ; un vrai pêcheur (image) se tient sur le ponton, la ligne part du bout de SA canne.
+        '<rect x="-300" y="-300" width="960" height="830" fill="#0C4A6E"/>';
+      for (var k = 0; k < 10; k++) h += '<path d="M' + (150 + (k * 47) % 210) + ' ' + (182 + (k * 17) % 40) + 'q5-3 10 0t10 0" stroke="#E0F2FE" stroke-width=".9" fill="none" opacity=".35"/>';
+      h += '<g class="fi-rod"><ellipse cx="70" cy="174" rx="22" ry="3.6" fill="#000" opacity=".28"/><image href="img/games/fisher_angler.webp?v=1" x="51" y="74" width="40.2" height="100" preserveAspectRatio="none"/></g><path class="fi-ln" d="M91 75L91 75" stroke="#F8FAFC" stroke-width=".8" fill="none"/>' +        '<circle class="fi-rip" cx="0" cy="0" r="6" fill="none" stroke="#F8FAFC" stroke-width="1" opacity="0"/>' +
         '<circle class="fi-rip" cx="0" cy="0" r="6" fill="none" stroke="#F8FAFC" stroke-width="1" opacity="0"/>' +
         '<g class="fi-bob"><circle r="3.6" fill="#EF4444" stroke="#fff" stroke-width=".8"/><path d="M-3.6 0H3.6" stroke="#fff" stroke-width="1.6"/></g>' +
         '<g class="fi-c" opacity="0"><circle class="fi-g" r="40" fill="url(#fiG' + uid + ')" opacity="0"/><g class="fi-cs"></g></g>' + banner(26);
@@ -1230,17 +1236,17 @@
     wins: function (res) { var n = +res.n, w = ['f' + n]; if (n >= 3) w.push('big'); return w; },
     init: function (c) { c.ln = c.q('.fi-ln'); c.bob = c.q('.fi-bob'); c.rip = c.q('.fi-rip'); c.c = c.q('.fi-c'); c.cs = c.q('.fi-cs'); c.g = c.q('.fi-g'); c.rod = c.q('.fi-rod'); c.cn = -1; bnInit(c); },
     frame: function (c, R, t, e, res) {
-      var n = res ? +res.n : -1, s = res ? +res.s || 0 : 0, tip = [120, 30], bx, by, bob = 0;
-      var tx = 214 + (s % 50), ty = 140 + (s % 30);
-      if (!res || e < 0) { bx = 160 + Math.sin(t * .6) * 6; by = 128 + Math.sin(t * 2) * 1.5; }
+      var n = res ? +res.n : -1, s = res ? +res.s || 0 : 0, tip = [91, 75], bx, by, bob = 0;
+      var tx = 196 + (s % 60), ty = 186 + (s % 22);
+      if (!res || e < 0) { bx = 170 + Math.sin(t * .6) * 6; by = 188 + Math.sin(t * 2) * 1.5; }
       else if (e < FI_CAST) { var u = eo(e / FI_CAST); bx = lerp(tip[0], tx, u); by = lerp(tip[1], ty, u) - Math.sin(Math.PI * u) * 46; }
       else if (e < FI_UP) {
         bx = tx; by = ty; var nib = e > FI_BITE - 1.1 && e < FI_BITE - .8 ? 2 : 0;
         bob = e >= FI_BITE ? 7 : Math.sin(e * 5) * 1 + nib;
       } else { bx = tx; by = ty; bob = 30; }
       var rodK = res && e >= FI_UP && e < FI_SHOW ? Math.sin(Math.PI * seg(e, FI_UP, FI_SHOW)) : 0;
-      sa(c.rod, 'transform', 'rotate(' + (-rodK * 14).toFixed(1) + ' 66 76)');
-      var tipx = 66 + (tip[0] - 66) * Math.cos(rodK * .24) + (tip[1] - 76) * Math.sin(rodK * .24), tipy = 76 - (tip[0] - 66) * Math.sin(rodK * .24) + (tip[1] - 76) * Math.cos(rodK * .24);
+      sa(c.rod, 'transform', 'rotate(' + (-rodK * 6).toFixed(1) + ' 70 176)');
+      var ra = rodK * 6 * Math.PI / 180, tipx = 70 + (tip[0] - 70) * Math.cos(ra) + (tip[1] - 176) * Math.sin(ra), tipy = 176 - (tip[0] - 70) * Math.sin(ra) + (tip[1] - 176) * Math.cos(ra);
       var up = res && e >= FI_UP, ck = up ? eo(seg(e, FI_UP, FI_SHOW)) : 0, cx = lerp(tx, 180, ck), cy = lerp(ty, 100, ck) - Math.sin(Math.PI * ck) * 30;
       sa(c.bob, 'opacity', up ? '0' : '1'); sa(c.bob, 'transform', 'translate(' + bx.toFixed(1) + ' ' + (by + bob).toFixed(1) + ')');
       sa(c.ln, 'd', 'M' + tipx.toFixed(1) + ' ' + tipy.toFixed(1) + 'Q' + ((tipx + (up ? cx : bx)) / 2).toFixed(1) + ' ' + ((up ? cy : by + bob) + 10).toFixed(1) + ' ' + (up ? cx : bx).toFixed(1) + ' ' + (up ? cy - 10 : by + bob - 3).toFixed(1));

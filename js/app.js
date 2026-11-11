@@ -3827,7 +3827,7 @@
     profRecvCoin = 'usdt';
     paintProfRecv();
     prefetchRecv('usdt');
-    ['btc', 'eth', 'trx'].forEach(function (id, i) {
+    ['btc', 'eth', 'bnb'].forEach(function (id, i) {
       setTimeout(function () { prefetchRecv(id); }, 280 + i * 320);
     });
     setAdminBtns(u);
@@ -3854,7 +3854,7 @@
       recvCache = raw ? (JSON.parse(raw) || {}) : {};
     } catch (e0) { recvCache = {}; }
     if (u && u.recvAddrs) {
-      ['usdt', 'btc', 'eth', 'trx'].forEach(function (k) {
+      ['usdt', 'btc', 'eth', 'bnb'].forEach(function (k) {
         if (u.recvAddrs[k] && !recvCache[k]) recvCache[k] = u.recvAddrs[k];
       });
     }
@@ -3867,7 +3867,7 @@
   function profRecvMeta(id) {
     if (id === 'btc') return { coin: 'btc', min: 15, cache: 'btc' };
     if (id === 'eth') return { coin: 'eth', min: 15, cache: 'eth' };
-    if (id === 'trx') return { coin: 'trx', min: 5, cache: 'trx' };
+    if (id === 'bnb') return { coin: 'bnb', min: 10, cache: 'bnb' }; // 2026-11-12 : TRX → BNB (coffre)
     return { coin: 'usdt_trc20', min: 5, cache: 'usdt' };
   }
 
