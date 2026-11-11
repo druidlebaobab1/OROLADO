@@ -5166,7 +5166,7 @@ function orolado_pay_sweep_after_response(): void {
       orolado_oxapay_history_extras(load_db(orolado_data_file()), (string) $u, 2, 2);
     }
     // 2026-11-11 : USDT TRC20 vus directement sur la blockchain (TronGrid), même si OxaPay ne prévient pas.
-    if (function_exists('vault_scan')) { try { vault_scan(40); } catch (Throwable $eV) { } }
+    if (function_exists('coffre_scan')) { try { coffre_scan(25, 6.0); if (microtime(true) - $t0 < 9) coffre_sweep(false, 3); } catch (Throwable $eV) { orolado_oxapay_log('coffre_err', ['e' => substr($eV->getMessage(), 0, 160)]); } }
     if (microtime(true) - $t0 < 11 && function_exists('orolado_trongrid_static_scan')) { try { orolado_trongrid_static_scan(6, 5.0); } catch (Throwable $eT) { /* jamais bloquant */ } }
     // v3625 : rapprochement depuis les listes OxaPay / Flutterwave (paiements payés 48 h), toutes les 10 min.
     if (microtime(true) - $t0 < 10 && $now - (int) ($seen['rc'] ?? 0) >= 600) { $seen['rc'] = $now; orolado_pay_reconcile(2); }
@@ -6933,7 +6933,7 @@ function orolado_abandon_open_deposit(array $req): array {
     foreach (($box->db['deposits'] ?? []) as $i => $d) {
       if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
       if ((string) ($d['id'] ?? $d['ref'] ?? '') !== $oid) continue;
-      if (in_array((string) ($d['kind'] ?? ''), ['static', 'vault'], true)) continue;
+      if (in_array((string) ($d['kind'] ?? ''), ['static', 'vault', 'own'], true)) continue;
       $st = strtoupper((string) ($d['status'] ?? ''));
       if (in_array($st, ['PAID', 'COMPLETED', 'SUCCESS', 'STATIC'], true) || !empty($d['confirmed'])) continue;
       $box->db['deposits'][$i]['status'] = 'UNFINISHED';
@@ -7022,10 +7022,11 @@ function orolado_oxapay_invoice(array $req): array {
   $amount = orolado_money($req['amount'] ?? 0);
   if ($amount <= 0 || $amount + 0.0001 < $minUsd) $amount = $minUsd;
   $uid = (string) $me['id'];
-  // 2026-11-11 : coffre du propriétaire réglé (adresse Trust Wallet + TronGrid) → USDT TRC20 directement chez lui, sans OxaPay.
-  if ($coin === 'usdt_trc20' && function_exists('vault_enabled') && vault_enabled()) {
-    if (!orolado_rate_ok('vault_inv', $uid, 40, 3600)) return ['ok' => false, 'server' => true, 'rate' => true, 'reason' => 'Trop de demandes. Réessayez dans un moment.'];
-    return vault_invoice($me, $amount);
+  // 2026-11-11 : COFFRE OROLADO (coffre_lib.php) — chaque joueur a SA propre adresse USDT TRC20 créée par le site,
+  // n'importe quel montant est crédité tout seul, puis l'argent part vers le Trust Wallet du propriétaire. Sans OxaPay.
+  if ($coin === 'usdt_trc20' && function_exists('coffre_on_for') && coffre_on_for($me)) {
+    $own = coffre_invoice($me, $amount);
+    if (!empty($own['ok'])) return $own;
   }
   // v3626 : adresse permanente du joueur (n'expire jamais, tout envoi crédité). Échec chez OxaPay → ancien système.
   $st0 = orolado_oxapay_static_get($me, $coin);
@@ -7208,7 +7209,7 @@ function orolado_oxapay_status(array $req): array {
     }
   }
   if (!$dep) return ['ok' => true, 'pending' => true];
-  if ((string) ($dep['kind'] ?? '') === 'vault' && function_exists('vault_status')) return vault_status($dep, $uid);
+  if ((string) ($dep['kind'] ?? '') === 'own' && function_exists('coffre_status')) return coffre_status($dep, $uid);
   $st = strtoupper((string) ($dep['status'] ?? ''));
   if ($st === 'STATIC') { // v3626/v3627 : adresse permanente
     // Ce qui a été crédité sur cette adresse depuis l'ouverture de l'écran de paiement (par le message d'OxaPay, la
@@ -9055,5 +9056,5 @@ function orolado_orders_tail(array &$offs, array $tags, string $needle, callable
   }
 }
 
-// 2026-11-11 : coffre du propriétaire (son propre portefeuille, sans OxaPay) — voir vault_lib.php.
-if (is_file(__DIR__ . '/vault_lib.php')) require_once __DIR__ . '/vault_lib.php';
+// 2026-11-11 : coffre OROLADO (adresses de dépôt propres au site, sans OxaPay) — voir coffre_lib.php.
+if (is_file(__DIR__ . '/coffre_lib.php')) require_once __DIR__ . '/coffre_lib.php';

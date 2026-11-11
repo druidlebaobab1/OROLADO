@@ -2362,12 +2362,19 @@ if ($isAjax) {
   // Flutterwave payés des 7 derniers jours, créditer ce qui ne l'est pas (jamais deux fois), et lister ceux qui ne
   // correspondent à aucun joueur (à voir à la main).
   // 2026-11-10 (propriétaire : « un endroit où tous nos appels sont rangés ») — page « 🔑 Clés & connexions » (keys_lib.php).
-  // 2026-11-11 : 🏦 Coffre — argent arrivé directement dans le portefeuille du propriétaire (vault_lib.php).
-  if ($action === 'vault_view') admin_json(function_exists('vault_admin_view') ? vault_admin_view() : ['ok' => false, 'reason' => 'Coffre indisponible']);
-  if ($action === 'vault_assign') {
-    $r = vault_admin_assign((string) ($req['hash'] ?? ''), trim((string) ($req['user'] ?? '')), (string) ($me['email'] ?? 'admin'));
-    if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'COFFRE', 'deposit', (float) ($r['amount'] ?? 0), 'Envoi ' . substr((string) ($req['hash'] ?? ''), 0, 12) . ' attribué à ' . (string) ($req['user'] ?? ''));
-    admin_json($r);
+  // 2026-11-11 : 🏦 Coffre OROLADO (coffre_lib.php) — adresses des joueurs, réservoir TRX, balayage vers le Trust Wallet.
+  if (in_array($action, ['coffre_view', 'coffre_set', 'coffre_sweep'], true)) {
+    if (!function_exists('coffre_admin_view')) admin_json(['ok' => false, 'reason' => 'Coffre indisponible']);
+    if ($action === 'coffre_set') {
+      $patch = [];
+      if (isset($req['on'])) $patch['on'] = !empty($req['on']) && $req['on'] !== 'false' && $req['on'] !== '0';
+      if (isset($req['min'])) $patch['min'] = max(5.0, min(5000.0, (float) $req['min']));
+      if (!empty($patch['on']) && !coffre_ready()) admin_json(['ok' => false, 'reason' => 'Il manque l’adresse du coffre (Trust Wallet) ou la clé TronGrid dans 🔑 Clés & connexions.']);
+      coffre_cfg_set($patch);
+      admin_persist_admin_log((string) ($me['email'] ?? ''), 'COFFRE', 'config', 0, 'Coffre : ' . json_encode($patch));
+    }
+    if ($action === 'coffre_sweep') { $r = coffre_sweep(true, 5); admin_json($r + ['view' => coffre_admin_view()]); }
+    admin_json(coffre_admin_view());
   }
   if (in_array($action, ['keys_status', 'keys_set', 'keys_test', 'keys_del'], true)) {
     require_once __DIR__ . '/keys_lib.php';
@@ -3811,8 +3818,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <div class="modal" id="vaultModal">
     <div class="modal-box">
       <button class="mini" type="button" id="closeVault">Retour</button>
-      <h2 style="color:#86EFAC;margin:10px 0 4px">🏦 Mon coffre</h2>
-      <p class="muted" style="margin:0 0 10px">Les joueurs envoient leurs USDT (réseau TRON) <b>directement dans ton portefeuille</b>. Le site regarde la blockchain et crédite le bon joueur tout seul. Ici : ce qui est arrivé, et les envois dont le joueur n’a pas été reconnu (à attribuer d’un clic).</p>
+      <h2 style="color:#86EFAC;margin:10px 0 4px">🏦 Coffre OROLADO</h2>
+      <p class="muted" style="margin:0 0 10px">Chaque joueur a <b>sa propre adresse USDT (TRON)</b> créée par le site. Il envoie n’importe quel montant : le site le voit et le crédite tout seul. Ensuite l’argent part <b>tout seul vers ton Trust Wallet</b>. Aucun prestataire au milieu, personne ne peut bloquer.</p>
       <div id="vaultBody">Chargement…</div>
     </div>
   </div>
@@ -4654,32 +4661,42 @@ document.getElementById('btnBack').onclick = () => {
   window.location.href = '/';
 };
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
-// 2026-11-11 : 🏦 Coffre
+// 2026-11-11 : 🏦 Coffre OROLADO
 (function () {
   const $v = id => document.getElementById(id);
   if (!$v('btnVault') || !$v('vaultModal')) return;
   const when = iso => { try { return new Date(iso).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); } catch (e) { return ''; } };
-  const tx = h => '<a href="https://tronscan.org/#/transaction/' + esc(h) + '" target="_blank" rel="noopener" style="color:#93C5FD">' + esc(String(h).slice(0, 10)) + '…</a>';
-  async function paint() {
-    $v('vaultBody').textContent = 'Chargement…';
-    const r = await ajax({action:'vault_view'});
+  const txl = h => h ? '<a href="https://tronscan.org/#/transaction/' + esc(h) + '" target="_blank" rel="noopener" style="color:#93C5FD">' + esc(String(h).slice(0, 10)) + '…</a>' : '';
+  const adl = a => '<a href="https://tronscan.org/#/address/' + esc(a) + '" target="_blank" rel="noopener" style="color:#93C5FD;word-break:break-all">' + esc(a) + '</a>';
+  const KIND = {balayage: '➡️ Vers ton Trust Wallet', frais: '⛽ Frais envoyés', reservoir_vide: '⚠️ Réservoir vide'};
+  async function paint(r) {
+    if (!r) { $v('vaultBody').textContent = 'Chargement…'; r = await ajax({action:'coffre_view'}); }
     if (!r || !r.ok) { $v('vaultBody').textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
     let h = '';
-    if (!r.address) h += '<div class="nt-card" style="border-color:#FCD34D"><b>⚠️ Coffre pas encore réglé.</b><br>Ouvre <b>🔑 Clés &amp; connexions</b> → « Adresse du coffre USDT (réseau TRON) » et colle l’adresse de ton Trust Wallet (Recevoir → USDT → TRON → Copier). En attendant, les dépôts passent par OxaPay.</div>';
-    else h += '<div class="nt-card"><b>' + (r.enabled ? '✅ Coffre ACTIF' : '⚠️ Il manque la clé TronGrid') + '</b><br><small class="muted">Adresse :</small> <code style="word-break:break-all;color:#FDE047">' + esc(r.address) + '</code><br><a href="https://tronscan.org/#/address/' + esc(r.address) + '" target="_blank" rel="noopener" style="color:#93C5FD">Voir le coffre sur la blockchain ↗</a></div>';
-    h += '<h3 class="panel-title" style="margin:14px 0 4px">⚠️ Reçus, joueur non reconnu (' + r.unmatched.length + ')</h3>';
-    h += r.unmatched.length ? r.unmatched.map(u => '<div class="nt-card" style="margin:6px 0"><b style="color:#FDE047">' + Number(u.amount).toFixed(2) + ' USDT</b> · ' + esc(when(u.at)) + ' · ' + tx(u.hash) + '<br><small class="muted">Envoyé par ' + esc(u.from) + '</small><div style="display:flex;gap:6px;margin-top:6px"><input data-vu="' + esc(u.hash) + '" placeholder="ID, e-mail ou ID public du joueur" style="flex:1;min-width:0"><button class="mini ok" data-va="' + esc(u.hash) + '">Créditer ce joueur</button></div><div class="muted" data-vo="' + esc(u.hash) + '" style="font-size:12px"></div></div>').join('') : '<p class="muted">Aucun. Tout est attribué ✓</p>';
-    h += '<h3 class="panel-title" style="margin:14px 0 4px">✅ Derniers dépôts crédités par le coffre</h3>';
-    h += r.credited.length ? '<table><tr><th>Quand</th><th>Joueur</th><th>Montant</th><th>Envoi</th><th>Reconnu par</th></tr>' + r.credited.map(c => '<tr><td>' + esc(when(c.at)) + '</td><td>' + esc(c.user) + '</td><td>' + Number(c.amount).toFixed(2) + ' $</td><td>' + tx(c.hash) + '</td><td><small>' + esc(c.how) + (/COMPLETED|PAID/.test(c.status) ? '' : ' · ' + esc(c.status)) + '</small></td></tr>').join('') + '</table>' : '<p class="muted">Pas encore de dépôt par le coffre.</p>';
+    const step = (ok, t) => '<div style="margin:3px 0">' + (ok ? '✅' : '⬜') + ' ' + t + '</div>';
+    h += '<div class="nt-card"><b>Mise en route</b>' +
+      step(!!r.dest, 'Adresse de ton Trust Wallet (USDT, réseau TRON) dans 🔑 Clés & connexions' + (r.dest ? ' : <code style="color:#FDE047;word-break:break-all">' + esc(r.dest) + '</code>' : '')) +
+      step(r.tronKey, 'Clé TronGrid') +
+      step(r.gasTrx !== null && r.gasTrx >= 30, 'Réservoir TRX rechargé (au moins 30 TRX, conseillé 200)' + (r.gas ? '<br><small class="muted">Envoie des TRX (réseau TRON) à :</small> ' + adl(r.gas) + ' <button class="mini" data-cp="' + esc(r.gas) + '">Copier</button> <b>' + (r.gasTrx === null ? '?' : r.gasTrx) + ' TRX</b>' : '')) +
+      step(r.on, r.on ? '<b style="color:#86EFAC">Allumé pour tous les joueurs</b>' : 'Éteint pour les joueurs (toi, en admin, tu peux déjà tester : Recharger → USDT TRC20)') +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
+        (r.on ? '<button class="mini bad" id="cfOff">Éteindre (retour OxaPay)</button>' : '<button class="mini ok" id="cfOn"' + (r.ready ? '' : ' disabled') + '>Allumer pour tous les joueurs</button>') +
+        '<button class="mini" id="cfSweep">Envoyer maintenant vers mon Trust Wallet</button>' +
+      '</div>' +
+      '<div style="margin-top:8px;font-size:12px">Envoi automatique vers ton Trust Wallet dès <input id="cfMin" type="number" min="5" max="5000" value="' + esc(r.min) + '" style="width:80px"> $ sur une adresse <button class="mini" id="cfMinSave">OK</button><br><small class="muted">Chaque envoi coûte environ 7 TRX (≈ 2 $) au réservoir. Les petits montants partent au bout de 24 h.</small></div>' +
+      '<div class="muted" id="cfOut" style="font-size:12px;margin-top:6px"></div></div>';
+    h += '<div class="nt-card" style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap"><div><small class="muted">Adresses de joueurs</small><br><b style="font-size:18px">' + r.addresses + '</b></div><div><small class="muted">Total reçu et crédité</small><br><b style="font-size:18px;color:#86EFAC">' + Number(r.credited).toFixed(2) + ' $</b></div><div><small class="muted">En route vers ton Trust Wallet</small><br><b style="font-size:18px;color:#FDE047">' + Number(r.waiting).toFixed(2) + ' $</b></div></div>';
+    h += '<h3 class="panel-title" style="margin:14px 0 4px">✅ Derniers dépôts reçus</h3>';
+    h += r.deposits.length ? '<table><tr><th>Quand</th><th>Joueur</th><th>Montant</th><th>Envoi</th></tr>' + r.deposits.map(d => '<tr><td>' + esc(when(d.at)) + '</td><td>' + esc(d.user) + '</td><td>' + Number(d.amount).toFixed(2) + ' $' + (/COMPLETED|PAID/.test(d.status) ? '' : ' <small>(' + esc(d.status) + ')</small>') + '</td><td>' + txl(d.hash) + '</td></tr>').join('') + '</table>' : '<p class="muted">Pas encore de dépôt.</p>';
+    h += '<h3 class="panel-title" style="margin:14px 0 4px">➡️ Envois vers ton Trust Wallet</h3>';
+    h += r.journal.length ? '<table><tr><th>Quand</th><th>Quoi</th><th>Montant</th><th>Résultat</th></tr>' + r.journal.map(j => '<tr><td>' + esc(when(j.t)) + '</td><td>' + esc(KIND[j.k] || j.k) + '</td><td>' + (j.usdt ? Number(j.usdt).toFixed(2) + ' USDT' : (j.trx ? j.trx + ' TRX' : (j.need ? 'manque ' + j.need + ' TRX' : ''))) + '</td><td>' + (j.ok ? '✅ ' + txl(j.tx) : (j.k === 'reservoir_vide' ? '⚠️ recharge le réservoir' : '❌ ' + esc(j.why || ''))) + '</td></tr>').join('') + '</table>' : '<p class="muted">Aucun envoi pour l’instant.</p>';
     $v('vaultBody').innerHTML = h;
-    $v('vaultBody').querySelectorAll('[data-va]').forEach(b => b.onclick = async () => {
-      const hh = b.getAttribute('data-va'), who = String($v('vaultBody').querySelector('[data-vu="' + hh + '"]').value || '').trim(), o = $v('vaultBody').querySelector('[data-vo="' + hh + '"]');
-      if (!who) { o.textContent = 'Indique le joueur'; return; }
-      if (!confirm('Créditer cet envoi à « ' + who + ' » ?')) return;
-      b.disabled = true; const rr = await ajax({action:'vault_assign', hash:hh, user:who}); b.disabled = false;
-      o.textContent = rr && rr.ok ? '✅ Crédité ' + rr.amount + ' $' : '❌ ' + ((rr && rr.reason) || 'Échec');
-      if (rr && rr.ok) setTimeout(paint, 1200);
-    });
+    const out = t => { $v('cfOut').textContent = t; };
+    $v('vaultBody').querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { try { navigator.clipboard.writeText(b.getAttribute('data-cp')); b.textContent = '✓ Copié'; } catch (e) {} });
+    if ($v('cfOn')) $v('cfOn').onclick = async () => { if (!confirm('Allumer le coffre pour TOUS les joueurs ? Les dépôts USDT TRC20 iront sur les adresses OROLADO (plus OxaPay).')) return; const x = await ajax({action:'coffre_set', on:1}); x && x.ok ? paint(x) : out('❌ ' + ((x && x.reason) || 'Échec')); };
+    if ($v('cfOff')) $v('cfOff').onclick = async () => { if (!confirm('Éteindre ? Les joueurs repasseront par OxaPay (les adresses OROLADO déjà données restent surveillées et créditées).')) return; const x = await ajax({action:'coffre_set', on:0}); x && x.ok ? paint(x) : out('❌ Échec'); };
+    $v('cfMinSave').onclick = async () => { const x = await ajax({action:'coffre_set', min: $v('cfMin').value}); x && x.ok ? paint(x) : out('❌ Échec'); };
+    $v('cfSweep').onclick = async () => { out('⏳ Envoi…'); const x = await ajax({action:'coffre_sweep'}); if (!x || !x.ok) { out('❌ ' + ((x && (x.why || x.reason)) || 'Échec')); return; } paint(x.view); };
   }
   $v('btnVault').onclick = () => { $v('vaultModal').classList.add('on'); paint(); };
   $v('closeVault').onclick = () => $v('vaultModal').classList.remove('on');

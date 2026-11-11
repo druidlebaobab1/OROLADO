@@ -2751,11 +2751,6 @@ if ($action === 'submitUsdtDeposit' || $action === 'verifyCryptoDeposit') {
   exit;
 }
 
-if ($action === 'vaultClaim') { // 2026-11-11 : coffre — le joueur colle le numéro de sa transaction
-  echo json_encode(function_exists('vault_claim') ? vault_claim(['token' => $token] + $req) : ['ok' => false, 'code' => 'vault']);
-  exit;
-}
-
 if ($action === 'abandonDeposit') {
   echo json_encode(orolado_abandon_open_deposit(['token' => $token] + $req));
   exit;
