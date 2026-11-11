@@ -14663,3 +14663,41 @@ html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-c
 html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #usdtLiveBadge{display:inline-flex!important;align-items:center!important;gap:7px!important}
 html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #oxaPickWrap{text-align:center}
 @media (max-width:374px){html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net span{font-size:.44rem!important;letter-spacing:.02em!important}}
+/* ===== 2026-11-12 (propriétaire) : page Recharger + Dépôt crypto en SOMBRE CHIC (comme Retrait) — logos sur fond sombre,
+   plus de lueurs jaunes, tous les boutons de la même famille (sombre + bord or doux + petite lueur), rien de blanc. ===== */
+html body #depositModal#depositModal#depositModal#depositModal #depositBox{background:#0B0B0C!important;border-color:rgba(255,255,255,.07)!important}
+html body #depositModal#depositModal#depositModal#depositModal #depositBox .field{background:#121214!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #depositAmt{background:#0B0B0C!important;border:1px solid rgba(255,255,255,.07)!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard,
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard.on{background:#121214!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important;outline:0!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-logo{background:#1B1B1F!important;border:1px solid rgba(255,255,255,.07)!important;color:#ECECF1!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo .pl-n,
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo .pl-bank-t{color:#ECECF1!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-op2 svg{fill:#C9B27A!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-ussd2 b{color:#C9B27A!important}
+/* boutons : une seule famille */
+html body #depositModal#depositModal#depositModal#depositModal :is(#btnConfirmDeposit,#btnCardOnly,#btnMomoDeposit,#btnUsdtCopy){
+  background:linear-gradient(180deg,#221B10,#141009)!important;border:1px solid rgba(233,196,122,.42)!important;color:#F1DFB2!important;
+  box-shadow:0 0 0 1px rgba(233,196,122,.06),0 6px 18px -6px rgba(233,196,122,.28)!important;text-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal :is(#btnConfirmDeposit,#btnCardOnly,#btnMomoDeposit,#btnUsdtCopy):active{transform:translateY(1px);box-shadow:0 0 0 1px rgba(233,196,122,.1),0 2px 8px -4px rgba(233,196,122,.3)!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-txt,html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-brands text{color:#F1DFB2!important;fill:#F1DFB2!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnMomoDeposit.ready{background:linear-gradient(180deg,#2E2412,#1A140A)!important;border-color:rgba(233,196,122,.7)!important}
+/* Wave : indicatifs + numéro */
+html body #depositModal#depositModal#depositModal#depositModal #payMomoBox{background:#121214!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:14px!important;padding:8px!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMomoBox .wcc{background:#1B1B1F!important;border:1px solid rgba(255,255,255,.08)!important;color:#ECECF1!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMomoBox .wcc.on{background:#221B10!important;border-color:rgba(233,196,122,.55)!important;color:#F1DFB2!important}
+html body #depositModal#depositModal#depositModal#depositModal #momoPhone{background:#0B0B0C!important;border:1px solid rgba(255,255,255,.1)!important;box-shadow:none!important}
+/* bloc crypto */
+html body #depositModal#depositModal#depositModal#depositModal #payMethodUsdt{background:#121214!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important}
+/* écran Dépôt crypto : plus de lueurs */
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #oxaCoinBtn{background:#121214!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net{background:#121214!important;border:1px solid rgba(255,255,255,.09)!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net.on{background:#1C170E!important;border:1px solid rgba(233,196,122,.6)!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #oxaWalletBox.oxa-wallet{background:#121214!important;border:1px solid rgba(255,255,255,.08)!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto .crypto-qr{box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaCoinMenu.oxa-dd{background:#0E0E10!important;border:1px solid rgba(255,255,255,.1)!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaCoinSearch{background-color:#17171A!important;border-color:rgba(255,255,255,.1)!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaCoinList .oxa-dd-opt.on{background:#1B1B1F!important}
+html body #depositModal#depositModal#depositModal#depositModal .oxa-dd-tag{background:#1B1B1F!important;border-color:rgba(255,255,255,.1)!important;color:#C9B27A!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #btnUsdtCopy{background:linear-gradient(180deg,#221B10,#141009)!important;border:1px solid rgba(233,196,122,.42)!important;color:#F1DFB2!important;
+  box-shadow:0 0 0 1px rgba(233,196,122,.06),0 6px 18px -6px rgba(233,196,122,.28)!important}
