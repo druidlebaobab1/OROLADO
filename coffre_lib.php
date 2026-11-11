@@ -519,6 +519,9 @@ function coffre_journal(int $n = 40): array {
  */
 function coffre_sweep(bool $force = false, int $max = 3): array {
   $dest = coffre_dest();
+  // 2026-11-11 (propriétaire : « une caisse pour payer les retraits tout seul, comme les grands sites ») : caisse allumée →
+  // les dépôts vont d'abord dans la caisse du site (le réservoir) ; le surplus au-dessus du plafond part vers le Trust Wallet.
+  if (!empty(coffre_cfg()['caisse_on']) && coffre_ready()) { $g = coffre_gas(); if (!empty($g['addr'])) $dest = (string) $g['addr']; }
   if (!coffre_ready()) return ['ok' => false, 'why' => 'pas prêt'];
   $lk = @fopen(coffre_dir() . '/sweep.lock', 'c');
   if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return ['ok' => false, 'why' => 'déjà en cours']; }
@@ -618,7 +621,10 @@ function coffre_admin_view(): array {
     $u = $db['users'][(string) ($e['u'] ?? '')] ?? [];
     $mine[] = ['addr' => (string) $ad, 'user' => (string) ($u['displayName'] ?? $u['email'] ?? $e['u'] ?? ''), 'got' => (float) ($e['got'] ?? 0), 'bal' => (float) ($e['bal'] ?? 0)];
   }
-  return ['ok' => true, 'evm' => function_exists('cevm_admin_view') ? cevm_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
+  $caisse = (!empty($gas['addr']) && $gb) ? ['addr' => (string) $gas['addr'], 'usdt' => round($gb['usdt'], 2), 'trx' => round($gb['trx'], 2)] : null;
+  return ['ok' => true, 'caisse' => $caisse, 'caisseOn' => !empty($cfg['caisse_on']), 'caisseMax' => (float) ($cfg['caisse_max'] ?? 500),
+    'autowdOn' => !empty($cfg['autowd_on']), 'autowdMax' => (float) ($cfg['autowd_max'] ?? 100), 'autowdDay' => (float) ($cfg['autowd_day'] ?? 500), 'autowdToday' => round(coffre_autowd_today(), 2),
+    'evm' => function_exists('cevm_admin_view') ? cevm_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
     'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30)];
 }
@@ -657,4 +663,151 @@ function coffre_backup_open(array $file, string $pass): ?array {
   $p = openssl_decrypt((string) base64_decode((string) ($file['data'] ?? '')), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, (string) base64_decode((string) ($file['iv'] ?? '')), (string) base64_decode((string) ($file['tag'] ?? '')));
   $j = is_string($p) ? json_decode($p, true) : null;
   return is_array($j) ? $j : null;
+}
+
+/* ===================== Caisse du site, envoi libre, robot des retraits (TRON / USDT) ===================== */
+
+/** Prépare un envoi USDT (txID connu AVANT la diffusion : noté d'abord, pour ne jamais payer deux fois). */
+function coffre_usdt_prepare(string $from, string $to, int $units, int $feeLimitSun): array {
+  $r = coffre_tg('/wallet/triggersmartcontract', ['owner_address' => $from, 'contract_address' => OROLADO_USDT_TRC20,
+    'function_selector' => 'transfer(address,uint256)', 'parameter' => coffre_usdt_param($to, $units), 'fee_limit' => $feeLimitSun, 'call_value' => 0, 'visible' => true]);
+  $tx = $r['transaction'] ?? null;
+  if (!is_array($tx) || empty($tx['txID']) || empty($r['result']['result'])) return ['ok' => false, 'why' => 'création'];
+  return ['ok' => true, 'tx' => $tx, 'txid' => (string) $tx['txID']];
+}
+
+/** Coût prévu (TRX) d'un envoi USDT depuis la caisse, et le solde de la caisse. */
+function coffre_caisse_state(): ?array {
+  $g = coffre_gas();
+  if (empty($g['addr'])) return null;
+  $b = coffre_balances((string) $g['addr']);
+  if ($b === null) return null;
+  return ['addr' => (string) $g['addr'], 'usdt' => $b['usdt'], 'trx' => $b['trx']];
+}
+
+/**
+ * Envoi d'USDT depuis la caisse vers N'IMPORTE QUELLE adresse TRON (case « Envoyer vers… » de l'admin, robot des retraits,
+ * surplus vers le Trust Wallet). $onTx est appelé avec le txID AVANT la diffusion.
+ */
+function coffre_caisse_send(string $to, float $usdt, string $why, ?callable $onTx = null): array {
+  if (!coffre_addr_ok($to)) return ['ok' => false, 'why' => 'Adresse TRON invalide'];
+  $units = (int) floor($usdt * 1e6 + 1e-6);
+  if ($units < 1000000) return ['ok' => false, 'why' => 'Minimum 1 USDT'];
+  $lk = @fopen(coffre_dir() . '/caisse.lock', 'c');
+  if ($lk) flock($lk, LOCK_EX);
+  try {
+    $st = coffre_caisse_state();
+    if (!$st) return ['ok' => false, 'why' => 'Réseau TRON injoignable, réessayez'];
+    if ($st['usdt'] * 1e6 + 0.5 < $units) return ['ok' => false, 'why' => 'Caisse : ' . round($st['usdt'], 2) . ' USDT seulement', 'short' => true];
+    $need = coffre_usdt_cost_sun($st['addr'], $to, $units);
+    if ($st['trx'] * 1e6 < $need) return ['ok' => false, 'why' => 'Caisse : pas assez de TRX pour les frais (' . round($need / 1e6, 1) . ' TRX nécessaires)', 'short' => true];
+    $prep = coffre_usdt_prepare($st['addr'], $to, $units, $need);
+    if (empty($prep['ok'])) return ['ok' => false, 'why' => 'Réseau : ' . ($prep['why'] ?? '')];
+    if ($onTx) $onTx($prep['txid']);
+    $r = coffre_broadcast($prep['tx'], coffre_key_of($st['addr']));
+    coffre_log($why, ['to' => $to, 'usdt' => $units / 1e6, 'ok' => $r['ok'], 'tx' => $prep['txid'], 'why' => $r['why'] ?? '']);
+    return $r + ['txid' => $prep['txid']];
+  } finally { if ($lk) { flock($lk, LOCK_UN); fclose($lk); } }
+}
+
+/** Surplus de la caisse au-dessus du plafond → Trust Wallet (ronde automatique). */
+function coffre_caisse_excess(): void {
+  $cfg = coffre_cfg();
+  if (empty($cfg['caisse_on']) || coffre_dest() === '') return;
+  if (!orolado_rate_ok('coffre_excess', 'x', 1, 600)) return;
+  $st = coffre_caisse_state();
+  if (!$st) return;
+  $max = max(50.0, (float) ($cfg['caisse_max'] ?? 500));
+  $extra = floor(($st['usdt'] - $max) * 100) / 100;
+  if ($extra >= 20) coffre_caisse_send(coffre_dest(), $extra, 'surplus_trust');
+}
+
+/** Retraits payés automatiquement aujourd'hui (UTC). */
+function coffre_autowd_today(): float {
+  $s = 0.0; $day = gmdate('Y-m-d');
+  foreach (coffre_journal(400) as $j) if (($j['k'] ?? '') === 'retrait_auto' && !empty($j['ok']) && str_starts_with(gmdate('Y-m-d', (int) strtotime((string) ($j['t'] ?? ''))), $day)) $s += (float) ($j['usdt'] ?? 0);
+  return $s;
+}
+
+/**
+ * ROBOT DES RETRAITS : un retrait USDT (TRC20) d'un joueur est payé tout seul depuis la caisse si TOUT est bon :
+ * robot allumé, montant ≤ plafond par retrait, total du jour ≤ plafond du jour, pas « suspect », joueur déjà payé
+ * au moins une fois (1er retrait = toujours le propriétaire), caisse assez remplie. Sinon : rien, le propriétaire paie.
+ * Jamais deux fois : le retrait est « réservé » sous verrou, et le numéro de la transaction est noté AVANT l'envoi.
+ */
+function coffre_autowd_try(string $wdId): array {
+  $cfg = coffre_cfg();
+  if (empty($cfg['autowd_on']) || !coffre_ready()) return ['ok' => false, 'why' => 'robot éteint'];
+  $db = load_db(orolado_data_file());
+  $w = null;
+  foreach (($db['withdrawals'] ?? []) as $x) if (is_array($x) && (string) ($x['id'] ?? '') === $wdId) { $w = $x; break; }
+  if (!$w) return ['ok' => false, 'why' => 'introuvable'];
+  if (strtolower((string) ($w['status'] ?? '')) !== 'pending' || !empty($w['autoTx']) || !empty($w['autoTry'])) return ['ok' => false, 'why' => 'déjà traité'];
+  if (strtolower((string) ($w['operator'] ?? '')) !== 'usdt' || strtoupper((string) ($w['network'] ?? 'TRC20')) !== 'TRC20') return ['ok' => false, 'why' => 'pas USDT TRC20'];
+  if (!empty($w['suspect'])) return ['ok' => false, 'why' => 'suspect : le propriétaire vérifie'];
+  $amt = round(abs((float) ($w['amount'] ?? 0)), 2);
+  if ($amt > (float) ($cfg['autowd_max'] ?? 100)) return ['ok' => false, 'why' => 'au-dessus du plafond par retrait'];
+  if (coffre_autowd_today() + $amt > (float) ($cfg['autowd_day'] ?? 500)) return ['ok' => false, 'why' => 'plafond du jour atteint'];
+  $uid = (string) ($w['userId'] ?? '');
+  $paidBefore = 0;
+  foreach (($db['withdrawals'] ?? []) as $x) if (is_array($x) && (string) ($x['userId'] ?? '') === $uid && in_array(strtolower((string) ($x['status'] ?? '')), ['approved', 'paid', 'completed'], true)) $paidBefore++;
+  if ($paidBefore < 1) return ['ok' => false, 'why' => '1er retrait : le propriétaire paie'];
+  $to = trim((string) ($w['destination'] ?? $w['phone'] ?? ''));
+  if (!coffre_addr_ok($to)) return ['ok' => false, 'why' => 'adresse invalide'];
+  // Réservation sous verrou : un seul passage peut payer ce retrait.
+  $claim = with_db_lock(function ($box) use ($wdId) {
+    foreach (($box->db['withdrawals'] ?? []) as $i => $x) {
+      if (!is_array($x) || (string) ($x['id'] ?? '') !== $wdId) continue;
+      if (strtolower((string) ($x['status'] ?? '')) !== 'pending' || !empty($x['autoTx']) || !empty($x['autoTry'])) return ['ok' => false, 'skip_write' => true];
+      $box->db['withdrawals'][$i]['autoTry'] = date('c');
+      return ['ok' => true];
+    }
+    return ['ok' => false, 'skip_write' => true];
+  });
+  if (empty($claim['ok'])) return ['ok' => false, 'why' => 'déjà réservé'];
+  $setRow = static function (array $patch) use ($wdId) {
+    with_db_lock(function ($box) use ($wdId, $patch) {
+      foreach (($box->db['withdrawals'] ?? []) as $i => $x) if (is_array($x) && (string) ($x['id'] ?? '') === $wdId) { $box->db['withdrawals'][$i] = array_merge($x, $patch); return ['ok' => true]; }
+      return ['ok' => true, 'skip_write' => true];
+    });
+  };
+  $r = coffre_caisse_send($to, $amt, 'retrait_auto', static function (string $txid) use ($setRow) { $setRow(['autoTx' => $txid]); });
+  if (empty($r['ok'])) {
+    if (empty($r['txid'])) {
+      // Rien n'est parti (caisse vide, frais, réseau) : on libère, le propriétaire paie ou le robot réessaiera.
+      $setRow(['autoTry' => null, 'autoWait' => date('c'), 'autoWhy' => (string) ($r['why'] ?? '')]);
+      if (!empty($r['short']) && orolado_rate_ok('autowd_short', 'x', 1, 3600)) orolado_health_event('Retraits', '🤖 Robot des retraits : ' . ($r['why'] ?? '') . '. Recharge la caisse (🏦 Coffre) ; en attendant les retraits attendent ta validation.', 'warn');
+    } else {
+      // Préparé mais refusé par le réseau : on garde le numéro, le propriétaire vérifie sur tronscan avant de payer.
+      $setRow(['autoWhy' => 'refusé par le réseau : ' . (string) ($r['why'] ?? ''), 'suspect' => true]);
+      orolado_health_event('Retraits', '🤖 Retrait ' . $wdId . ' : envoi refusé par le réseau (' . ($r['why'] ?? '') . '). Vérifie la transaction ' . $r['txid'] . ' sur tronscan AVANT de payer à la main.', 'warn');
+    }
+    return ['ok' => false, 'why' => (string) ($r['why'] ?? '')];
+  }
+  $setRow(['status' => 'approved', 'approvedAt' => date('c'), 'autoPaid' => true, 'txid' => (string) $r['txid'], 'playerHidden' => false, 'adminHidden' => false]);
+  if (function_exists('supabase_admin_headers') && ($h = supabase_admin_headers())) {
+    try { supabase_http(supabase_project_url() . '/rest/v1/withdrawals?id=eq.' . rawurlencode($wdId), $h, json_encode(['status' => 'approved']), 'PATCH'); } catch (Throwable $e) { /* ignore */ }
+  }
+  try {
+    if (!function_exists('admin_wd_notify_paid') && is_file(__DIR__ . '/admin_lib.php')) require_once __DIR__ . '/admin_lib.php';
+    if (!function_exists('push_notify_user') && is_file(__DIR__ . '/push_lib.php')) require_once __DIR__ . '/push_lib.php';
+    if (function_exists('admin_wd_notify_paid')) admin_wd_notify_paid(load_db(orolado_data_file()), $uid, $w);
+  } catch (Throwable $e) { /* jamais bloquant */ }
+  orolado_health_event('Retraits', '🤖 Retrait payé automatiquement : ' . $amt . ' USDT → ' . $to . ' (réf. ' . $wdId . ', tx ' . substr((string) $r['txid'], 0, 10) . '…).', 'info');
+  return ['ok' => true, 'txid' => (string) $r['txid']];
+}
+
+/** Ronde : retraits USDT en attente que le robot n'a pas encore pu payer (caisse vide…) → nouvel essai toutes les 10 min. */
+function coffre_autowd_round(int $max = 3): void {
+  if (empty(coffre_cfg()['autowd_on'])) return;
+  $n = 0;
+  foreach ((load_db(orolado_data_file())['withdrawals'] ?? []) as $w) {
+    if ($n >= $max) break;
+    if (!is_array($w) || strtolower((string) ($w['status'] ?? '')) !== 'pending' || strtolower((string) ($w['operator'] ?? '')) !== 'usdt') continue;
+    if (!empty($w['autoTx']) || !empty($w['autoTry'])) continue;
+    $wait = (int) strtotime((string) ($w['autoWait'] ?? ''));
+    if ($wait && time() - $wait < 600) continue;
+    $n++;
+    coffre_autowd_try((string) $w['id']);
+  }
 }

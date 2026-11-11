@@ -2368,6 +2368,12 @@ if ($isAjax) {
     if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'COFFRE', 'config', 0, 'Copie de secours du coffre téléchargée (' . (int) $r['count'] . ' clés)');
     admin_json($r);
   }
+  if ($action === 'coffre_send_to' && function_exists('coffre_caisse_send')) {
+    $to = trim((string) ($req['to'] ?? '')); $amtS = round((float) ($req['amount'] ?? 0), 2);
+    $r = coffre_caisse_send($to, $amtS, 'envoi_libre');
+    admin_persist_admin_log((string) ($me['email'] ?? ''), 'COFFRE', 'withdraw', $amtS, 'Envoi libre ' . $amtS . ' USDT → ' . $to . ' : ' . (!empty($r['ok']) ? 'OK ' . ($r['txid'] ?? '') : ($r['why'] ?? 'échec')));
+    admin_json($r + ['view' => coffre_admin_view()]);
+  }
   if (in_array($action, ['coffre_view', 'coffre_set', 'coffre_sweep'], true)) {
     if (!function_exists('coffre_admin_view')) admin_json(['ok' => false, 'reason' => 'Coffre indisponible']);
     if ($action === 'coffre_set') {
@@ -2375,6 +2381,12 @@ if ($isAjax) {
       if (isset($req['on'])) $patch['on'] = !empty($req['on']) && $req['on'] !== 'false' && $req['on'] !== '0';
       if (isset($req['min'])) $patch['min'] = max(5.0, min(5000.0, (float) $req['min']));
       if (isset($req['evm_on'])) $patch['evm_on'] = !empty($req['evm_on']) && $req['evm_on'] !== 'false' && $req['evm_on'] !== '0';
+      $bool = static fn($v) => !empty($v) && $v !== 'false' && $v !== '0';
+      if (isset($req['caisse_on'])) $patch['caisse_on'] = $bool($req['caisse_on']);
+      if (isset($req['caisse_max'])) $patch['caisse_max'] = max(50.0, min(100000.0, (float) $req['caisse_max']));
+      if (isset($req['autowd_on'])) $patch['autowd_on'] = $bool($req['autowd_on']);
+      if (isset($req['autowd_max'])) $patch['autowd_max'] = max(1.0, min(10000.0, (float) $req['autowd_max']));
+      if (isset($req['autowd_day'])) $patch['autowd_day'] = max(1.0, min(100000.0, (float) $req['autowd_day']));
       if (!empty($patch['evm_on']) && !(function_exists('cevm_ready') && cevm_ready())) admin_json(['ok' => false, 'reason' => 'Il manque ton adresse Ethereum (0x…) dans la case ① du coffre.']);
       if (!empty($patch['on']) && !coffre_ready()) admin_json(['ok' => false, 'reason' => 'Il manque l’adresse du coffre (Trust Wallet) ou la clé TronGrid dans 🔑 Clés & connexions.']);
       coffre_cfg_set($patch);
@@ -4679,7 +4691,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   const when = iso => { try { return new Date(iso).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); } catch (e) { return ''; } };
   const txl = h => h ? '<a href="https://tronscan.org/#/transaction/' + esc(h) + '" target="_blank" rel="noopener" style="color:#93C5FD">' + esc(String(h).slice(0, 10)) + '…</a>' : '';
   const adl = a => '<a href="https://tronscan.org/#/address/' + esc(a) + '" target="_blank" rel="noopener" style="color:#93C5FD;word-break:break-all">' + esc(a) + '</a>';
-  const KIND = {balayage: '➡️ Vers ton Trust Wallet', frais: '⛽ Frais envoyés', reservoir_vide: '⚠️ Réservoir vide'};
+  const KIND = {balayage: '➡️ Envoi (adresse joueur → caisse / Trust Wallet)', frais: '⛽ Frais envoyés', reservoir_vide: '⚠️ Réservoir vide', retrait_auto: '🤖 Retrait payé tout seul', envoi_libre: '✍️ Envoi libre', surplus_trust: '🏦 Surplus caisse → Trust Wallet', confirme: '✔️ Confirmé', credit: '💰 Dépôt crédité'};
   async function paint(r) {
     if (!r) { $v('vaultBody').textContent = 'Chargement…'; r = await ajax({action:'coffre_view'}); }
     if (!r || !r.ok) { $v('vaultBody').textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
@@ -4706,6 +4718,15 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       '</div>' +
       '<div style="margin-top:8px;font-size:12px">Envoi automatique vers ton Trust Wallet dès <input id="cfMin" type="number" min="5" max="5000" value="' + esc(r.min) + '" style="width:80px"> $ sur une adresse <button class="mini" id="cfMinSave">OK</button><br><small class="muted">Chaque envoi coûte environ 7 TRX (≈ 2 $) au réservoir. Les petits montants partent au bout de 24 h.</small></div>' +
       '<div class="muted" id="cfOut" style="font-size:12px;margin-top:6px"></div></div>';
+    // 2026-11-11 : CAISSE du site + case « Envoyer vers… » + ROBOT DES RETRAITS (USDT TRC20).
+    if (r.caisse) h += '<div class="nt-card" style="margin-top:8px;border-color:#FDE047"><b style="font-size:15px">💼 Caisse du site (USDT TRON)</b><br>' +
+      '<b style="font-size:20px;color:#86EFAC">' + Number(r.caisse.usdt).toFixed(2) + ' USDT</b> <small class="muted">· ' + r.caisse.trx + ' TRX pour les frais</small><br>' +
+      '<small class="muted">C’est l’adresse du réservoir (' + esc(r.caisse.addr.slice(0, 6)) + '…). </small>' +
+      '<div style="margin-top:6px">' + (r.caisseOn ? '✅ Les dépôts arrivent dans la caisse ; au-dessus de <input id="cfCaisseMax" type="number" value="' + esc(r.caisseMax) + '" style="width:80px"> $ le surplus part vers ton Trust Wallet. <button class="mini" id="cfCaisseMaxOk">OK</button> <button class="mini bad" id="cfCaisseOff">Éteindre la caisse</button>' : 'Éteinte : tout part directement vers ton Trust Wallet. <button class="mini ok" id="cfCaisseOn">Allumer la caisse</button>') + '</div>' +
+      '<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)"><b>✍️ Envoyer vers…</b> <small class="muted">(depuis la caisse, n’importe quelle adresse TRON)</small><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><input id="cfSendTo" placeholder="Adresse TRON (T…)" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1 1 220px;min-width:0"><input id="cfSendAmt" type="number" step="0.01" placeholder="USDT" style="width:90px"><button class="mini ok" id="cfSendGo">Envoyer</button></div></div>' +
+      '<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)"><b>🤖 Robot des retraits</b> ' + (r.autowdOn ? '<span class="pill pill-ok">allumé</span> <button class="mini bad" id="cfRobotOff">Éteindre</button>' : '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">éteint</span> <button class="mini ok" id="cfRobotOn">Allumer</button>') +
+      '<br><small class="muted">Paie tout seul les retraits USDT (TRC20) depuis la caisse. Jamais le 1er retrait d’un joueur, jamais un retrait « suspect » : ceux-là, c’est toi.</small>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;font-size:12px">Max par retrait <input id="cfRobMax" type="number" value="' + esc(r.autowdMax) + '" style="width:70px"> $ · max par jour <input id="cfRobDay" type="number" value="' + esc(r.autowdDay) + '" style="width:80px"> $ <button class="mini" id="cfRobOk">OK</button> <span class="muted">(payé aujourd’hui : ' + r.autowdToday + ' $)</span></div></div></div>';
     // 2026-11-11 : famille Ethereum (Ethereum, BNB, Polygon, Base, Arbitrum) — réservoir 0x et son essence sur chaque réseau.
     if (r.evm && r.evm.ready) h += '<div class="nt-card" style="margin-top:8px"><b>🔷 Ethereum / BNB / Polygon / Base / Arbitrum</b> ' + (r.evm.on ? '<span class="pill pill-ok">allumé pour tous</span> <button class="mini bad" data-evm="0">Éteindre</button>' : '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">test : toi seul (admin)</span> <button class="mini ok" data-evm="1">Allumer pour tous</button>') + '<br><small class="muted">Réservoir (même adresse sur les 5 réseaux) :</small> <code style="word-break:break-all;color:#FDE047">' + esc(r.evm.gas) + '</code> <button class="mini" data-cp="' + esc(r.evm.gas) + '">Copier</button><br><small class="muted">Essence à mettre seulement sur le réseau utilisé, dans SA monnaie :</small><table>' + (r.evm.gasBal || []).map(g => '<tr><td>' + esc(g.name) + '</td><td><b>' + (g.bal === null ? '?' : g.bal) + ' ' + esc(g.native) + '</b></td></tr>').join('') + '</table><small class="muted">Conseillé : BNB 0,01 · POL 2 · ETH (Base/Arbitrum) 0,002 · ETH (Ethereum) 0,005. Les dépôts sont crédités même sans essence.</small></div>';
     else if (r.evm) h += '<div class="nt-card" style="margin-top:8px"><b>🔷 Ethereum / BNB / Polygon / Base / Arbitrum</b> — colle ton adresse « USDT Ethereum » (0x…) dans la case ① pour l’activer.</div>';
@@ -4728,6 +4749,20 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       o.textContent = (rr.test && rr.test.ok === false ? '⚠️ ' : '✅ ') + ((rr.test && rr.test.msg) || 'Enregistrée');
       setTimeout(() => paint(), 1800);
     });
+    const setCfg = async (o, msg) => { if (msg && !confirm(msg)) return; const x = await ajax(Object.assign({action:'coffre_set'}, o)); x && x.ok ? paint(x) : alert((x && x.reason) || 'Échec'); };
+    if ($v('cfCaisseOn')) $v('cfCaisseOn').onclick = () => setCfg({caisse_on: 1}, 'Allumer la caisse ? Les dépôts iront d’abord dans la caisse du site (pour payer les retraits), le surplus vers ton Trust Wallet.');
+    if ($v('cfCaisseOff')) $v('cfCaisseOff').onclick = () => setCfg({caisse_on: 0}, 'Éteindre la caisse ? Tout ira de nouveau directement vers ton Trust Wallet.');
+    if ($v('cfCaisseMaxOk')) $v('cfCaisseMaxOk').onclick = () => setCfg({caisse_max: $v('cfCaisseMax').value});
+    if ($v('cfRobotOn')) $v('cfRobotOn').onclick = () => setCfg({autowd_on: 1}, 'Allumer le robot ? Il paiera tout seul les retraits USDT (TRC20) dans les limites choisies.');
+    if ($v('cfRobotOff')) $v('cfRobotOff').onclick = () => setCfg({autowd_on: 0});
+    if ($v('cfRobOk')) $v('cfRobOk').onclick = () => setCfg({autowd_max: $v('cfRobMax').value, autowd_day: $v('cfRobDay').value});
+    if ($v('cfSendGo')) $v('cfSendGo').onclick = async () => {
+      const to = String($v('cfSendTo').value || '').trim(), amt = Number($v('cfSendAmt').value || 0);
+      if (!to || !(amt > 0)) { alert('Adresse et montant'); return; }
+      if (!confirm('Envoyer ' + amt + ' USDT (réseau TRON) à\n' + to + ' ?\nVérifie bien l’adresse : un envoi ne peut pas être annulé.')) return;
+      $v('cfSendGo').disabled = true; const x = await ajax({action:'coffre_send_to', to, amount: amt}); $v('cfSendGo').disabled = false;
+      if (x && x.ok) { alert('✅ Envoyé. Transaction : ' + x.txid); paint(x.view); } else alert('❌ ' + ((x && x.why) || 'Échec'));
+    };
     $v('vaultBody').querySelectorAll('[data-evm]').forEach(b => b.onclick = async () => {
       const on = b.getAttribute('data-evm') === '1';
       if (!confirm(on ? 'Allumer Ethereum / BNB / Polygon / Base / Arbitrum pour TOUS les joueurs ? (fais d’abord ton petit test)' : 'Éteindre pour les joueurs ? (OxaPay reprend pour ces cryptos)')) return;
