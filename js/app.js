@@ -2288,7 +2288,10 @@
       isBal = String(msg || '') === String(t('insufficient') || '') || /solde insuffisant|insufficient balance/i.test(String(msg || ''));
     } catch (eBal) { isBal = /solde insuffisant|insufficient balance/i.test(String(msg || '')); }
     // Démo : jamais de « Solde insuffisant » (argent illimité, le joueur rejoue simplement).
-    if (isBal) {
+    // 2026-11-12 (revue) : sauf pendant un envoi d'argent (Social) ou un retrait — là c'est toujours le solde RÉEL
+    var moneyScreen = false;
+    try { moneyScreen = !!document.querySelector('#liveModal.active, #withdrawModal.active'); } catch (eM) { moneyScreen = false; }
+    if (isBal && !moneyScreen) {
       var uBal = null;
       try { uBal = user(); } catch (eU) { uBal = null; }
       if (!uBal || uBal.mode !== 'real') return;
@@ -5417,6 +5420,7 @@
     $('depositModal').addEventListener('keydown', stop, true);
   }
   function openDeposit(preMsg, method) {
+    try { var eA0 = $('err-depositAmt'); if (eA0) { eA0.textContent = ''; eA0.classList.remove('on'); } } catch (eE) { /* ignore */ }
     // 2026-10-20 (vieux Android) : le paiement Flutterwave (~800 Ko) n'est plus chargé à chaque visite ;
     // il se prépare ici, dès l'ouverture de Recharger, pendant que le joueur choisit son moyen de paiement.
     if (!isGuest()) { try { ensureFlwScript(); } catch (eFlw) { /* ignore */ } }
@@ -5437,7 +5441,7 @@
     });
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
-    if (hint) hint.textContent = 'Minimum $\u00a0\u00a01';
+    if (hint) { var dmS = String(t('depositMin') || ''); hint.textContent = (dmS && dmS !== 'depositMin' && /5/.test(dmS)) ? dmS.replace('5', '1') : 'Minimum $\u00a0\u00a01'; } // 2026-11-12 (revue) : traduit
     setDepositPayMethod('card');
     paintPayLocal();
     paintLatamLogos();
@@ -6925,7 +6929,7 @@
     if (digits.indexOf(dialSel) === 0 && digits.length > 10) digits = digits.slice(dialSel.length);
     // v2631 : longueur EXACTE selon le pays choisi (Côte d'Ivoire 10 chiffres, Sénégal 9) → jamais de mélange.
     var wantLen = dialSel === '221' ? 9 : 10;
-    if (digits.length !== wantLen) { showFieldError('momoPhone', t('wdDestErr')); if ($('momoPhone')) $('momoPhone').focus(); return; }
+    if (digits.length !== wantLen) { showFieldError('momoPhone', t('m_phoneInvalid')); if ($('momoPhone')) $('momoPhone').focus(); return; }
     momoNet = 'wave';
     var btn = $('btnMomoDeposit');
     var lab = btn && btn.querySelector('span');
@@ -9706,6 +9710,8 @@
     if ($('depositAmt')) {
       $('depositAmt').addEventListener('input', function () {
         this.value = String(this.value || '').replace(/[^\d.]/g, '');
+        // 2026-11-12 (revue) : le message « dépôt minimum » disparaît dès qu'on corrige le montant
+        var eA = $('err-depositAmt'); if (eA && Number(this.value) >= 1) { eA.textContent = ''; eA.classList.remove('on'); }
         var n = Number(this.value);
         document.querySelectorAll('.dep-amt-chip').forEach(function (chip) {
           chip.classList.toggle('on', Number(chip.getAttribute('data-amt')) === n);
@@ -9900,10 +9906,11 @@
       var minWd = minWithdraw();
       var gate = wagerStatus(u);
       var free = u && u.partner ? real : (Number(gate.free != null ? gate.free : real) || 0); // v3628 : compte partenaire
-      if (amount > free + 0.009) { toast(gate.msg, 'err', 5000); return; }
+      // 2026-11-12 (revue) : la VRAIE raison d'abord (moyen, minimum, solde), le message « mise 2× ton dépôt » seulement s'il s'applique
       if (!method) { toast(t('wdMethod'), 'err'); return; }
       if (amount < minWd) { toast(formatWdMinErr(minWd), 'err'); return; }
-      if (amount > real) { toast(t('insufficient'), 'err'); return; }
+      if (amount > real + 0.009) { toast(t('insufficient'), 'err'); return; }
+      if (amount > free + 0.009) { toast(gate.msg, 'err', 5000); return; }
       if (method === 'card') {
         if (destination.length !== 16) { toast(t('wdCardErr'), 'err'); return; }
         if (name.length < 2) { toast(t('wdCardHolder'), 'err'); return; }

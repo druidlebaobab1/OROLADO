@@ -3425,17 +3425,17 @@
   Object.keys(AFF_DASH_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF_DASH_TR[l]); });
   // 2026-11-12 (revue) : retrait / envoi sans réponse claire du serveur → jamais de faux « confirmé »
   var NETCHK_TR = {
-    fr: {"wdNetFail": "Connexion lente : ton retrait n'est pas confirmé. Regarde ton historique avant de réessayer.", "sendNetFail": "Connexion lente : vérifie ton historique avant de renvoyer."},
-    en: {"wdNetFail": "Slow connection: your withdrawal is not confirmed. Check your history before trying again.", "sendNetFail": "Slow connection: check your history before sending again."},
-    es: {"wdNetFail": "Conexión lenta: tu retiro no está confirmado. Mira tu historial antes de reintentar.", "sendNetFail": "Conexión lenta: revisa tu historial antes de reenviar."},
-    pt: {"wdNetFail": "Ligação lenta: o teu levantamento não está confirmado. Vê o histórico antes de tentar de novo.", "sendNetFail": "Ligação lenta: vê o histórico antes de reenviar."},
-    ar: {"wdNetFail": "اتصال بطيء: لم يتم تأكيد السحب. راجع السجل قبل المحاولة مرة أخرى.", "sendNetFail": "اتصال بطيء: راجع السجل قبل الإرسال مرة أخرى."},
-    tr: {"wdNetFail": "Bağlantı yavaş: çekimin onaylanmadı. Tekrar denemeden önce geçmişine bak.", "sendNetFail": "Bağlantı yavaş: tekrar göndermeden önce geçmişine bak."},
-    vi: {"wdNetFail": "Mạng chậm: lệnh rút chưa được xác nhận. Xem lịch sử trước khi thử lại.", "sendNetFail": "Mạng chậm: xem lịch sử trước khi gửi lại."},
-    id: {"wdNetFail": "Koneksi lambat: penarikanmu belum dikonfirmasi. Cek riwayat sebelum mencoba lagi.", "sendNetFail": "Koneksi lambat: cek riwayat sebelum mengirim lagi."},
-    ru: {"wdNetFail": "Медленная связь: вывод не подтверждён. Проверь историю, прежде чем повторять.", "sendNetFail": "Медленная связь: проверь историю, прежде чем отправлять снова."},
-    de: {"wdNetFail": "Langsame Verbindung: deine Auszahlung ist nicht bestätigt. Prüfe den Verlauf, bevor du es erneut versuchst.", "sendNetFail": "Langsame Verbindung: prüfe den Verlauf, bevor du erneut sendest."},
-    hi: {"wdNetFail": "धीमा कनेक्शन: आपकी निकासी पुष्टि नहीं हुई। फिर कोशिश करने से पहले इतिहास देखें।", "sendNetFail": "धीमा कनेक्शन: फिर भेजने से पहले इतिहास देखें।"}
+    fr: {"netRetry": "Réseau occupé, réessaie dans un instant.", "sendToReq": "Entre l'identifiant ou l'e-mail de ton ami.", "wdNetFail": "Connexion lente : ton retrait n'est pas confirmé. Regarde ton historique avant de réessayer.", "sendNetFail": "Connexion lente : vérifie ton historique avant de renvoyer."},
+    en: {"netRetry": "Network busy, try again in a moment.", "sendToReq": "Enter your friend's ID or e-mail.", "wdNetFail": "Slow connection: your withdrawal is not confirmed. Check your history before trying again.", "sendNetFail": "Slow connection: check your history before sending again."},
+    es: {"netRetry": "Red ocupada, inténtalo de nuevo en un momento.", "sendToReq": "Escribe el ID o el e-mail de tu amigo.", "wdNetFail": "Conexión lenta: tu retiro no está confirmado. Mira tu historial antes de reintentar.", "sendNetFail": "Conexión lenta: revisa tu historial antes de reenviar."},
+    pt: {"netRetry": "Rede ocupada, tenta de novo daqui a pouco.", "sendToReq": "Escreve o ID ou o e-mail do teu amigo.", "wdNetFail": "Ligação lenta: o teu levantamento não está confirmado. Vê o histórico antes de tentar de novo.", "sendNetFail": "Ligação lenta: vê o histórico antes de reenviar."},
+    ar: {"netRetry": "الشبكة مشغولة، حاول مرة أخرى بعد لحظة.", "sendToReq": "أدخل معرّف صديقك أو بريده الإلكتروني.", "wdNetFail": "اتصال بطيء: لم يتم تأكيد السحب. راجع السجل قبل المحاولة مرة أخرى.", "sendNetFail": "اتصال بطيء: راجع السجل قبل الإرسال مرة أخرى."},
+    tr: {"netRetry": "Ağ meşgul, birazdan tekrar dene.", "sendToReq": "Arkadaşının kimliğini veya e-postasını gir.", "wdNetFail": "Bağlantı yavaş: çekimin onaylanmadı. Tekrar denemeden önce geçmişine bak.", "sendNetFail": "Bağlantı yavaş: tekrar göndermeden önce geçmişine bak."},
+    vi: {"netRetry": "Mạng bận, thử lại sau giây lát.", "sendToReq": "Nhập ID hoặc e-mail của bạn bè.", "wdNetFail": "Mạng chậm: lệnh rút chưa được xác nhận. Xem lịch sử trước khi thử lại.", "sendNetFail": "Mạng chậm: xem lịch sử trước khi gửi lại."},
+    id: {"netRetry": "Jaringan sibuk, coba lagi sebentar lagi.", "sendToReq": "Masukkan ID atau e-mail temanmu.", "wdNetFail": "Koneksi lambat: penarikanmu belum dikonfirmasi. Cek riwayat sebelum mencoba lagi.", "sendNetFail": "Koneksi lambat: cek riwayat sebelum mengirim lagi."},
+    ru: {"netRetry": "Сеть занята, попробуй через минуту.", "sendToReq": "Введи ID или e-mail друга.", "wdNetFail": "Медленная связь: вывод не подтверждён. Проверь историю, прежде чем повторять.", "sendNetFail": "Медленная связь: проверь историю, прежде чем отправлять снова."},
+    de: {"netRetry": "Netz ausgelastet, versuch es gleich noch einmal.", "sendToReq": "Gib die ID oder E-Mail deines Freundes ein.", "wdNetFail": "Langsame Verbindung: deine Auszahlung ist nicht bestätigt. Prüfe den Verlauf, bevor du es erneut versuchst.", "sendNetFail": "Langsame Verbindung: prüfe den Verlauf, bevor du erneut sendest."},
+    hi: {"netRetry": "नेटवर्क व्यस्त है, थोड़ी देर में फिर कोशिश करें।", "sendToReq": "अपने दोस्त की ID या ई-मेल डालें।", "wdNetFail": "धीमा कनेक्शन: आपकी निकासी पुष्टि नहीं हुई। फिर कोशिश करने से पहले इतिहास देखें।", "sendNetFail": "धीमा कनेक्शन: फिर भेजने से पहले इतिहास देखें।"}
   };
   Object.keys(NETCHK_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], NETCHK_TR[l]); });
   // 2026-11-08 : message d'état automatique de l'affilié (« pourquoi 0 $ ? »)
