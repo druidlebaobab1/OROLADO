@@ -627,7 +627,7 @@ function coffre_admin_view(): array {
   $caisse = (!empty($gas['addr']) && $gb) ? ['addr' => (string) $gas['addr'], 'usdt' => round($gb['usdt'], 2), 'trx' => round($gb['trx'], 2)] : null;
   return ['ok' => true, 'oxapayOff' => !empty($cfg['oxapay_off']), 'directMin' => (float) ($cfg['direct_min'] ?? 0), 'caisse' => $caisse, 'caisseOn' => !empty($cfg['caisse_on']), 'caisseMax' => (float) ($cfg['caisse_max'] ?? 500),
     'autowdOn' => !empty($cfg['autowd_on']), 'autowdMax' => (float) ($cfg['autowd_max'] ?? 100), 'autowdDay' => (float) ($cfg['autowd_day'] ?? 500), 'autowdToday' => round(coffre_autowd_today(), 2),
-    'evm' => function_exists('cevm_admin_view') ? cevm_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
+    'evm' => function_exists('cevm_admin_view') ? cevm_admin_view() : null, 'utxo' => function_exists('cutxo_admin_view') ? cutxo_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
     'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30)];
 }
@@ -824,5 +824,6 @@ function coffre_only_coins(): ?array {
   $c = [];
   if (coffre_ready()) $c[] = 'usdt_trc20';
   if (function_exists('cevm_ready') && cevm_ready()) array_push($c, 'usdt_erc20', 'usdt_bep20', 'usdc', 'eth', 'bnb', 'pol');
+  if (function_exists('cutxo_ready_chains')) foreach (cutxo_ready_chains() as $uc) $c[] = $uc; // btc, ltc, doge
   return $c;
 }

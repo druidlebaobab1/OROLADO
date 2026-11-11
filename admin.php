@@ -2381,6 +2381,7 @@ if ($isAjax) {
       if (isset($req['on'])) $patch['on'] = !empty($req['on']) && $req['on'] !== 'false' && $req['on'] !== '0';
       if (isset($req['min'])) $patch['min'] = max(5.0, min(5000.0, (float) $req['min']));
       if (isset($req['evm_on'])) $patch['evm_on'] = !empty($req['evm_on']) && $req['evm_on'] !== 'false' && $req['evm_on'] !== '0';
+      if (isset($req['utxo_on'])) $patch['utxo_on'] = !empty($req['utxo_on']) && $req['utxo_on'] !== 'false' && $req['utxo_on'] !== '0';
       $bool = static fn($v) => !empty($v) && $v !== 'false' && $v !== '0';
       if (isset($req['direct_min'])) $patch['direct_min'] = max(0.0, min(1000000.0, (float) $req['direct_min']));
       if (isset($req['oxapay_off'])) {
@@ -2393,6 +2394,7 @@ if ($isAjax) {
       if (isset($req['autowd_on'])) $patch['autowd_on'] = $bool($req['autowd_on']);
       if (isset($req['autowd_max'])) $patch['autowd_max'] = max(1.0, min(10000.0, (float) $req['autowd_max']));
       if (isset($req['autowd_day'])) $patch['autowd_day'] = max(1.0, min(100000.0, (float) $req['autowd_day']));
+      if (!empty($patch['utxo_on']) && !(function_exists('cutxo_ready_chains') && cutxo_ready_chains())) admin_json(['ok' => false, 'reason' => 'Il manque ton adresse Bitcoin, Litecoin ou Dogecoin dans la case ① du coffre.']);
       if (!empty($patch['evm_on']) && !(function_exists('cevm_ready') && cevm_ready())) admin_json(['ok' => false, 'reason' => 'Il manque ton adresse Ethereum (0x…) dans la case ① du coffre.']);
       if (!empty($patch['on']) && !coffre_ready()) admin_json(['ok' => false, 'reason' => 'Il manque l’adresse du coffre (Trust Wallet) ou la clé TronGrid dans 🔑 Clés & connexions.']);
       coffre_cfg_set($patch);
@@ -2401,6 +2403,7 @@ if ($isAjax) {
     if ($action === 'coffre_sweep') {
       $r = coffre_ready() ? coffre_sweep(true, 5) : ['ok' => true, 'done' => []];
       if (function_exists('cevm_sweep') && cevm_ready()) { $re = cevm_sweep(true, 6); $r['done'] = array_merge((array) ($r['done'] ?? []), (array) ($re['done'] ?? [])); $r['ok'] = true; }
+      if (function_exists('cutxo_sweep') && cutxo_ready_chains()) { $ru = cutxo_sweep(true, 6); $r['done'] = array_merge((array) ($r['done'] ?? []), (array) ($ru['done'] ?? [])); $r['ok'] = true; }
       admin_json($r + ['view' => coffre_admin_view()]);
     }
     admin_json(coffre_admin_view());
@@ -4739,6 +4742,11 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     // 2026-11-11 : famille Ethereum (Ethereum, BNB, Polygon, Base, Arbitrum) — réservoir 0x et son essence sur chaque réseau.
     if (r.evm && r.evm.ready) h += '<div class="nt-card" style="margin-top:8px"><b>🔷 Ethereum / BNB / Polygon / Base / Arbitrum</b> ' + (r.evm.on ? '<span class="pill pill-ok">allumé pour tous</span> <button class="mini bad" data-evm="0">Éteindre</button>' : '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">test : toi seul (admin)</span> <button class="mini ok" data-evm="1">Allumer pour tous</button>') + '<br><small class="muted">Réservoir (même adresse sur les 5 réseaux) :</small> <code style="word-break:break-all;color:#FDE047">' + esc(r.evm.gas) + '</code> <button class="mini" data-cp="' + esc(r.evm.gas) + '">Copier</button><br><small class="muted">Essence à mettre seulement sur le réseau utilisé, dans SA monnaie :</small><table>' + (r.evm.gasBal || []).map(g => '<tr><td>' + esc(g.name) + '</td><td><b>' + (g.bal === null ? '?' : g.bal) + ' ' + esc(g.native) + '</b></td></tr>').join('') + '</table><small class="muted">Conseillé : BNB 0,01 · POL 2 · ETH (Base/Arbitrum) 0,002 · ETH (Ethereum) 0,005. Les dépôts sont crédités même sans essence.</small></div>';
     else if (r.evm) h += '<div class="nt-card" style="margin-top:8px"><b>🔷 Ethereum / BNB / Polygon / Base / Arbitrum</b> — colle ton adresse « USDT Ethereum » (0x…) dans la case ① pour l’activer.</div>';
+    // 2026-11-11 : famille Bitcoin (Bitcoin, Litecoin, Dogecoin) — pas de réservoir : les frais sont pris sur le montant envoyé.
+    if (r.utxo) h += '<div class="nt-card" style="margin-top:8px"><b>🟠 Bitcoin / Litecoin / Dogecoin</b> ' + (!r.utxo.any ? '' : (r.utxo.on ? '<span class="pill pill-ok">allumé pour tous</span> <button class="mini bad" data-utxo="0">Éteindre</button>' : '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">test : toi seul (admin)</span> <button class="mini ok" data-utxo="1">Allumer pour tous</button>')) +
+      '<table>' + (r.utxo.nets || []).map(n => '<tr><td>' + esc(n.name) + '</td><td>' + (n.ready ? '<span class="pill pill-ok">branché</span> → <code style="word-break:break-all">' + esc(n.dest) + '</code>' : '<span class="muted">colle ton adresse ' + esc(n.sym) + ' dans la case ①</span>') + '</td></tr>').join('') + '</table>' +
+      '<small class="muted">Rien à recharger : les frais du réseau sont pris sur le montant envoyé vers ton Trust Wallet. Un dépôt est crédité après 1 confirmation (Bitcoin ≈ 10 min, Litecoin ≈ 3 min, Dogecoin ≈ 1 min).</small>' +
+      ((r.utxo.addrs || []).length ? '<table style="margin-top:6px"><tr><th>Joueur</th><th>Adresse</th><th>Reçu (total)</th><th>Sur l’adresse maintenant</th></tr>' + r.utxo.addrs.map(a => '<tr><td>' + esc(a.user) + '</td><td><small>' + esc(a.net) + '</small><br><code style="word-break:break-all;font-size:11px">' + esc(a.addr) + '</code></td><td>' + Number(a.got).toFixed(2) + ' $</td><td><b>' + a.bal + ' ' + esc(a.sym) + '</b>' + (a.wait > 0 ? '<br><small style="color:#FDE047">+ ' + a.wait + ' en confirmation</small>' : '') + '</td></tr>').join('') + '</table>' : '') + '</div>';
     h += '<div class="nt-card" style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap"><div><small class="muted">Adresses de joueurs</small><br><b style="font-size:18px">' + r.addresses + '</b></div><div><small class="muted">Total reçu et crédité</small><br><b style="font-size:18px;color:#86EFAC">' + Number(r.credited).toFixed(2) + ' $</b></div><div><small class="muted">En route vers ton Trust Wallet</small><br><b style="font-size:18px;color:#FDE047">' + Number(r.waiting).toFixed(2) + ' $</b></div></div>';
     h += '<h3 class="panel-title" style="margin:14px 0 4px">🏷️ Adresses de joueurs créées</h3>';
     h += (r.addrs || []).length ? '<table><tr><th>Joueur</th><th>Son adresse OROLADO</th><th>Reçu (total)</th><th>Sur l’adresse maintenant</th></tr>' + r.addrs.map(a => '<tr><td>' + esc(a.user) + '</td><td>' + adl(a.addr) + '</td><td>' + Number(a.got).toFixed(2) + ' $</td><td><b>' + Number(a.bal).toFixed(2) + ' $</b></td></tr>').join('') + '</table>' : '<p class="muted">Aucune pour l’instant. Pour ton test : sur orolado.com avec ton compte admin → Recharger → USDT TRC20 : ton adresse OROLADO apparaîtra ici (ce n’est PAS ton adresse Trust Wallet).</p>';
@@ -4760,7 +4768,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     });
     const setCfg = async (o, msg) => { if (msg && !confirm(msg)) return; const x = await ajax(Object.assign({action:'coffre_set'}, o)); x && x.ok ? paint(x) : alert((x && x.reason) || 'Échec'); };
     if ($v('cfOxaOff')) $v('cfOxaOff').onclick = () => setCfg({oxapay_off: 1}, 'Arrêter OxaPay ? Les joueurs déposeront seulement par TON coffre (USDT TRC20, et Ethereum/BNB si ta case 0x est remplie). Tu pourras revenir en arrière à tout moment.');
-    if ($v('cfOxaBack')) $v('cfOxaBack').onclick = () => setCfg({oxapay_off: 0, on: 0, evm_on: 0}, 'Revenir à OxaPay pour les joueurs ? (Les adresses déjà données par ton coffre restent surveillées et créditées.)');
+    if ($v('cfOxaBack')) $v('cfOxaBack').onclick = () => setCfg({oxapay_off: 0, on: 0, evm_on: 0, utxo_on: 0}, 'Revenir à OxaPay pour les joueurs ? (Les adresses déjà données par ton coffre restent surveillées et créditées.)');
     if ($v('cfDirectOk')) $v('cfDirectOk').onclick = () => setCfg({direct_min: $v('cfDirect').value});
     if ($v('cfCaisseOn')) $v('cfCaisseOn').onclick = () => setCfg({caisse_on: 1}, 'Allumer la caisse ? Les dépôts iront d’abord dans la caisse du site (pour payer les retraits), le surplus vers ton Trust Wallet.');
     if ($v('cfCaisseOff')) $v('cfCaisseOff').onclick = () => setCfg({caisse_on: 0}, 'Éteindre la caisse ? Tout ira de nouveau directement vers ton Trust Wallet.');
@@ -4779,6 +4787,11 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       const on = b.getAttribute('data-evm') === '1';
       if (!confirm(on ? 'Allumer Ethereum / BNB / Polygon / Base / Arbitrum pour TOUS les joueurs ? (fais d’abord ton petit test)' : 'Éteindre pour les joueurs ? (OxaPay reprend pour ces cryptos)')) return;
       const x = await ajax({action:'coffre_set', evm_on: on ? 1 : 0}); x && x.ok ? paint(x) : alert((x && x.reason) || 'Échec');
+    });
+    $v('vaultBody').querySelectorAll('[data-utxo]').forEach(b => b.onclick = async () => {
+      const on = b.getAttribute('data-utxo') === '1';
+      if (!confirm(on ? 'Allumer Bitcoin / Litecoin / Dogecoin pour TOUS les joueurs ? (fais d’abord ton petit test)' : 'Éteindre pour les joueurs ? (OxaPay reprend pour ces cryptos)')) return;
+      const x = await ajax({action:'coffre_set', utxo_on: on ? 1 : 0}); x && x.ok ? paint(x) : alert((x && x.reason) || 'Échec');
     });
     $v('vaultBody').querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { try { navigator.clipboard.writeText(b.getAttribute('data-cp')); b.textContent = '✓ Copié'; } catch (e) {} });
     if ($v('cfOn')) $v('cfOn').onclick = async () => { if (!confirm('Allumer le coffre pour TOUS les joueurs ? Les dépôts USDT TRC20 iront sur les adresses OROLADO (plus OxaPay).')) return; const x = await ajax({action:'coffre_set', on:1}); x && x.ok ? paint(x) : out('❌ ' + ((x && x.reason) || 'Échec')); };

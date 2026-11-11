@@ -5168,6 +5168,7 @@ function orolado_pay_sweep_after_response(): void {
     // 2026-11-11 : USDT TRC20 vus directement sur la blockchain (TronGrid), même si OxaPay ne prévient pas.
     if (function_exists('coffre_scan')) { try { coffre_scan(25, 6.0); if (microtime(true) - $t0 < 9) coffre_sweep(false, 3); if (microtime(true) - $t0 < 10) { coffre_autowd_round(2); coffre_caisse_excess(); } } catch (Throwable $eV) { orolado_oxapay_log('coffre_err', ['e' => substr($eV->getMessage(), 0, 160)]); } }
     if (function_exists('cevm_scan') && microtime(true) - $t0 < 10) { try { cevm_scan(10, 4.0); if (microtime(true) - $t0 < 12) cevm_sweep(false, 3); } catch (Throwable $eE) { orolado_oxapay_log('coffre_evm_err', ['e' => substr($eE->getMessage(), 0, 160)]); } }
+    if (function_exists('cutxo_scan') && microtime(true) - $t0 < 12) { try { cutxo_scan(8, 4.0); if (microtime(true) - $t0 < 14) cutxo_sweep(false, 2); } catch (Throwable $eU) { orolado_oxapay_log('coffre_utxo_err', ['e' => substr($eU->getMessage(), 0, 160)]); } }
     if (microtime(true) - $t0 < 11 && function_exists('orolado_trongrid_static_scan')) { try { orolado_trongrid_static_scan(6, 5.0); } catch (Throwable $eT) { /* jamais bloquant */ } }
     // v3625 : rapprochement depuis les listes OxaPay / Flutterwave (paiements payés 48 h), toutes les 10 min.
     if (microtime(true) - $t0 < 10 && $now - (int) ($seen['rc'] ?? 0) >= 600) { $seen['rc'] = $now; orolado_pay_reconcile(2); }
@@ -7034,6 +7035,11 @@ function orolado_oxapay_invoice(array $req): array {
     $own = cevm_invoice($me, $coin, $amount);
     if (!empty($own['ok'])) return $own;
   }
+  // Famille Bitcoin (BTC, LTC, DOGE) : une adresse par joueur et par réseau.
+  if (function_exists('cutxo_coin_chain') && ($uc = cutxo_coin_chain($coin)) !== '' && cutxo_on_for($me, $uc)) {
+    $own = cutxo_invoice($me, $coin, $amount);
+    if (!empty($own['ok'])) return $own;
+  }
   // OxaPay arrêté par le propriétaire : seulement les cryptos du coffre (plus jamais une adresse OxaPay).
   if (function_exists('coffre_only_coins') && ($onlyC = coffre_only_coins()) !== null) {
     return ['ok' => false, 'server' => true, 'code' => 'coin_off', 'coins' => $onlyC, 'reason' => 'Cette crypto arrive bientôt. Choisis USDT (TRC20).'];
@@ -7220,6 +7226,7 @@ function orolado_oxapay_status(array $req): array {
   }
   if (!$dep) return ['ok' => true, 'pending' => true];
   if ((string) ($dep['kind'] ?? '') === 'own' && (string) ($dep['fam'] ?? '') === 'evm' && function_exists('cevm_status')) return cevm_status($dep, $uid);
+  if ((string) ($dep['kind'] ?? '') === 'own' && (string) ($dep['fam'] ?? '') === 'utxo' && function_exists('cutxo_status')) return cutxo_status($dep, $uid);
   if ((string) ($dep['kind'] ?? '') === 'own' && function_exists('coffre_status')) return coffre_status($dep, $uid);
   $st = strtoupper((string) ($dep['status'] ?? ''));
   if ($st === 'STATIC') { // v3626/v3627 : adresse permanente
@@ -9070,3 +9077,4 @@ function orolado_orders_tail(array &$offs, array $tags, string $needle, callable
 // 2026-11-11 : coffre OROLADO (adresses de dépôt propres au site, sans OxaPay) — voir coffre_lib.php.
 if (is_file(__DIR__ . '/coffre_lib.php')) require_once __DIR__ . '/coffre_lib.php';
 if (is_file(__DIR__ . '/coffre_evm_lib.php')) require_once __DIR__ . '/coffre_evm_lib.php'; // Ethereum, BNB, Polygon, Base, Arbitrum
+if (is_file(__DIR__ . '/coffre_utxo_lib.php')) require_once __DIR__ . '/coffre_utxo_lib.php'; // Bitcoin, Litecoin, Dogecoin
