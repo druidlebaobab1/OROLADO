@@ -5639,25 +5639,20 @@
   // v2509 → v2544 : ordre = cartes, banque / USSD / OPay, puis mobile money (Orange, MTN, M-Pesa, Airtel, Telecel, Tigo Pesa, Zamtel).
   var PAY_LOGOS =
     // 2026-11-12 (propriétaire) : Visa / Mastercard déplacés sur la ligne « PAYER PAR CARTE BANCAIRE ».
-    '<i class="pl-logo pl-apple"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8c-1.6 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.4-1-2.4-3.8zM14.1 5.8c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.3z"/></svg>Pay</i>' +
-    '<i class="pl-logo pl-gpay"><b class="g">G</b>Pay</i>' +
-    // v2590 (propriétaire) : MTN MoMo, Tigo Pesa et Zamtel retirés. Rangement : les 4 cartes sur une ligne, puis
-    // Banque / USSD / OPay, puis M-PESA / Airtel / Telecel, et Orange Money seul en dessous, long et plus grand
-    // (le mobile money qui marche le mieux avec Flutterwave).
-    // v2628 (propriétaire) : 3 rangées de 4 — cartes / Orange, MTN, Moov, M-PESA / Banque, USSD, OPay, Telecel.
+    // 2026-11-12 (propriétaire) : bloc « Mobile Money » seul (cartes, Apple Pay, Google Pay → ligne « carte bancaire »).
+    // 12 moyens, tous pareils (petit logo + nom, fond blanc), 3 rangées de 4 bien remplies.
     '<i class="pl-logo pl-op2"><img src="icons/pay/orange.svg?v=2628" alt="">Orange</i>' +
     '<i class="pl-logo pl-op2"><img src="icons/pay/mtn.svg?v=2628" alt="">MTN</i>' +
-    // v2630 (propriétaire) : Moov retiré ; Airtel, Mobi Cash (Burkina) et 1Voucher (Afrique du Sud) ajoutés.
+    '<i class="pl-logo pl-op2"><img src="icons/pay/wave.svg?v=2790" alt="">Wave</i>' +
+    '<i class="pl-logo pl-op2"><img src="icons/pay/moov.svg?v=3664" alt="">Moov</i>' +
     '<i class="pl-logo pl-op2"><img src="icons/pay/airtel.svg?v=2628" alt="">Airtel</i>' +
-    '<i class="pl-logo pl-mobicash"><b>mobi</b>cash</i>' +
-    // v2632 (propriétaire) : mêmes logos qu'au Retrait (icons/pay) pour M-PESA, OPay et Banque.
     '<i class="pl-logo pl-op2 pl-mpesa2"><img src="icons/pay/mpesa.svg?v=2632" alt="">M-PESA</i>' +
-    '<i class="pl-logo pl-bank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 2.5 7v2.2h19V7z"/><path d="M4.5 10.4h2.4v7.4H4.5zm4.4 0h2.4v7.4H8.9zm3.8 0h2.4v7.4h-2.4zm4.4 0h2.4v7.4h-2.4z"/><path d="M2.5 19h19v2.8h-19z"/></svg><span class="pl-bank-t">Banque</span></i>' +
-    '<i class="pl-logo pl-ussd"><b>*#</b>USSD</i>' +
+    '<i class="pl-logo pl-op2"><img src="icons/pay/telecel.svg?v=3664" alt="">Telecel</i>' +
+    '<i class="pl-logo pl-op2"><img src="icons/pay/mobicash.svg?v=3664" alt="">Mobicash</i>' +
     '<i class="pl-logo pl-op2 pl-opay2"><img src="icons/pay/opay.svg?v=2632" alt="">OPay</i>' +
-    '<i class="pl-logo pl-telecel">telecel</i>' +
-    // 1Voucher : logo actuel (carré orange avec « 1 » blanc + « Voucher » orange).
-    '<i class="pl-logo pl-1voucher"><b>1</b>Voucher</i>' +
+    '<i class="pl-logo pl-op2 pl-bank2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2 2.5 7v2.2h19V7z"/><path d="M4.5 10.4h2.4v7.4H4.5zm4.4 0h2.4v7.4H8.9zm3.8 0h2.4v7.4h-2.4zm4.4 0h2.4v7.4h-2.4z"/><path d="M2.5 19h19v2.6h-19z"/></svg><span class="pl-bank-t">Bank</span></i>' +
+    '<i class="pl-logo pl-op2 pl-ussd2"><b>*#</b>USSD</i>' +
+    '<i class="pl-logo pl-op2 pl-1voucher2"><b>1</b>Voucher</i>' +
     // 2026-10-25 (propriétaire) : une rangée Amérique latine (Pago Móvil, Nequi, SPEI, Mercado Pago, PIX, Yape, Bancolombia, Daviplata, Plin, Zinli). Visible seulement
     // quand le dépôt Amérique latine est ouvert (html.oro-latam ; pour l'instant le compte admin).
     // Ordre : Venezuela (Pago Móvil), Colombie (Nequi), Mexique (SPEI) d'abord, puis les plus grands de chaque pays
@@ -5672,7 +5667,10 @@
     '<i class="pl-logo pl-la pl-la2 pl-bancol"><img src="icons/pay/bancol.svg?v=3577" alt=""><span class="pl-n">Bancolombia</span></i>' +
     '<i class="pl-logo pl-la pl-la2 pl-davi"><img src="icons/pay/davi.svg?v=3577" alt=""><span class="pl-n">Daviplata</span></i>' +
     '<i class="pl-logo pl-la pl-la2 pl-plin"><img src="icons/pay/plin.svg?v=3577" alt=""><span class="pl-n">Plin</span></i>' +
-    '<i class="pl-logo pl-la pl-la2 pl-zinli"><img src="icons/pay/zinli.svg?v=3577" alt=""><span class="pl-n">Zinli</span></i>';
+    '<i class="pl-logo pl-la pl-la2 pl-zinli"><img src="icons/pay/zinli.svg?v=3577" alt=""><span class="pl-n">Zinli</span></i>' +
+    // 2026-11-12 : + PicPay (Brésil, paie par PIX) et PSE (Colombie, paiement bancaire en ligne) → 3 rangées de 4 bien remplies.
+    '<i class="pl-logo pl-la pl-la2 pl-picpay"><img src="icons/pay/picpay.svg?v=3664" alt=""><span class="pl-n">PicPay</span></i>' +
+    '<i class="pl-logo pl-la pl-la2 pl-pse"><img src="icons/pay/pse.svg?v=3664" alt=""><span class="pl-n">PSE</span></i>';
   function paintPayLocal() {
     var card = $('payMethodCard');
     if (!card || card.querySelector('.pay-local')) return;

@@ -318,7 +318,7 @@
     usdtPendingMsg: 'Payment is being validated. Your balance will be updated shortly.',
     usdtTxErr: 'Enter a valid Tron TxID',
     payMethodLabel: 'Payment method',
-    payMethodCardTitle: 'Card & Instant Pay',
+    payMethodCardTitle: 'Mobile Money',
     payMethodCardRec: 'Recommended',
     payMethodCardDesc: 'Visa, Mastercard, Apple Pay, local transfers…',
     payMethodUsdtTitle: 'CRYPTO DEPOSIT',
@@ -677,7 +677,7 @@
     usdtPendingMsg: 'Paiement en cours de validation. Votre solde sera mis \u00e0 jour sous quelques instants.',
     usdtTxErr: 'Saisissez un TxID Tron valide',
     payMethodLabel: 'Moyen de paiement',
-    payMethodCardTitle: 'Carte & paiement instantan\u00e9',
+    payMethodCardTitle: 'Mobile Money',
     payMethodCardRec: 'Recommand\u00e9',
     payMethodCardDesc: 'Visa, Mastercard, Apple Pay, virements locaux\u2026',
     payMethodUsdtTitle: 'D\u00c9P\u00d4T CRYPTO',
@@ -1759,7 +1759,7 @@
   var CRYPTO_I18N = {
     es: {
       payMethodLabel: 'M\u00e9todo de pago',
-      payMethodCardTitle: 'Tarjeta y pago instant\u00e1neo',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: 'Recomendado',
       payMethodCardDesc: 'Visa, Mastercard, Mobile Transfer',
       payMethodUsdtTitle: 'Dep\u00f3sito cripto (USDT)',
@@ -1788,7 +1788,7 @@
     },
     pt: {
       payMethodLabel: 'M\u00e9todo de pagamento',
-      payMethodCardTitle: 'Cart\u00e3o e pagamento instant\u00e2neo',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: 'Recomendado',
       payMethodCardDesc: 'Visa, Mastercard, Mobile Transfer',
       payMethodUsdtTitle: 'Dep\u00f3sito cripto (USDT)',
@@ -1817,7 +1817,7 @@
     },
     ar: {
       payMethodLabel: '\u0637\u0631\u064a\u0642\u0629 \u0627\u0644\u062f\u0641\u0639',
-      payMethodCardTitle: '\u0627\u0644\u0628\u0637\u0627\u0642\u0629 \u0648\u0627\u0644\u062f\u0641\u0639 \u0627\u0644\u0641\u0648\u0631\u064a',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: '\u0645\u0648\u0635\u0649 \u0628\u0647',
       payMethodCardDesc: 'Visa\u060c Mastercard\u060c Mobile Transfer',
       payMethodUsdtTitle: '\u0625\u064a\u062f\u0627\u0639 \u0643\u0631\u064a\u0628\u062a\u0648 (USDT)',
@@ -1846,7 +1846,7 @@
     },
     tr: {
       payMethodLabel: '\u00d6deme y\u00f6ntemi',
-      payMethodCardTitle: 'Kart ve an\u0131nda \u00f6deme',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: '\u00d6nerilen',
       payMethodCardDesc: 'Visa, Mastercard, Mobile Transfer',
       payMethodUsdtTitle: 'Kripto yat\u0131rma (USDT)',
@@ -1875,7 +1875,7 @@
     },
     vi: {
       payMethodLabel: 'Ph\u01b0\u01a1ng th\u1ee9c thanh to\u00e1n',
-      payMethodCardTitle: 'Th\u1ebb & thanh to\u00e1n nhanh',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: '\u0110\u1ec1 xu\u1ea5t',
       payMethodCardDesc: 'Visa, Mastercard, Mobile Transfer',
       payMethodUsdtTitle: 'N\u1ea1p crypto (USDT)',
@@ -1904,7 +1904,7 @@
     },
     id: {
       payMethodLabel: 'Metode pembayaran',
-      payMethodCardTitle: 'Kartu & bayar instan',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: 'Direkomendasikan',
       payMethodCardDesc: 'Visa, Mastercard, Mobile Transfer',
       payMethodUsdtTitle: 'Deposit kripto (USDT)',
@@ -1933,7 +1933,7 @@
     },
     ru: {
       payMethodLabel: '\u0421\u043f\u043e\u0441\u043e\u0431 \u043e\u043f\u043b\u0430\u0442\u044b',
-      payMethodCardTitle: '\u041a\u0430\u0440\u0442\u0430 \u0438 \u043c\u0433\u043d\u043e\u0432\u0435\u043d\u043d\u044b\u0439 \u043f\u043b\u0430\u0442\u0451\u0436',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: '\u0420\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u0443\u0435\u043c',
       payMethodCardDesc: 'Visa, Mastercard, Mobile Transfer',
       payMethodUsdtTitle: '\u041a\u0440\u0438\u043f\u0442\u043e \u0434\u0435\u043f\u043e\u0437\u0438\u0442 (USDT)',
@@ -1962,7 +1962,7 @@
     },
     de: {
       payMethodLabel: 'Zahlungsmethode',
-      payMethodCardTitle: 'Karte & Sofortzahlung',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: 'Empfohlen',
       payMethodCardDesc: 'Visa, Mastercard, Mobile Transfer',
       payMethodUsdtTitle: 'Krypto-Einzahlung (USDT)',
@@ -2384,11 +2384,11 @@
     m_notFound: ['Not found.', 'Introuvable.', 'No encontrado.', 'Não encontrado.', 'غير موجود.', 'Не найдено.', 'Bulunamadı.', 'Không tìm thấy.', 'Tidak ditemukan.', 'Nicht gefunden.', 'नहीं मिला।'],
     m_addrGen: ['Generating your address…', 'Génération de l’adresse…', 'Generando tu dirección…', 'Gerando seu endereço…', 'جارٍ إنشاء عنوانك…', 'Создаём ваш адрес…', 'Adresiniz oluşturuluyor…', 'Đang tạo địa chỉ của bạn…', 'Membuat alamat Anda…', 'Deine Adresse wird erstellt…', 'आपका पता बनाया जा रहा है…'],
     // v2621 — fenêtre Recharger : Carte / Mobile Money / Crypto.
-    payCardBtn: ['PAY BY CARD / MOBILE MONEY', 'PAYER PAR CARTE / MOBILE MONEY', 'PAGAR CON TARJETA / MOBILE MONEY', 'PAGAR COM CARTÃO / MOBILE MONEY', 'الدفع بالبطاقة / Mobile Money', 'ОПЛАТИТЬ КАРТОЙ / MOBILE MONEY', 'KART / MOBILE MONEY İLE ÖDE', 'THANH TOÁN BẰNG THẺ / MOBILE MONEY', 'BAYAR DENGAN KARTU / MOBILE MONEY', 'MIT KARTE / MOBILE MONEY ZAHLEN', 'कार्ड / मोबाइल मनी से भुगतान'],
+    payCardBtn: ['PAY BY MOBILE MONEY', 'PAYER PAR MOBILE MONEY', 'PAGAR CON MOBILE MONEY', 'PAGAR COM MOBILE MONEY', 'الدفع عبر Mobile Money', 'ОПЛАТИТЬ ЧЕРЕЗ MOBILE MONEY', 'MOBILE MONEY İLE ÖDE', 'THANH TOÁN BẰNG MOBILE MONEY', 'BAYAR DENGAN MOBILE MONEY', 'MIT MOBILE MONEY ZAHLEN', 'Mobile Money से भुगतान'],
     openWaveBtn: ['OPEN WAVE', 'OUVRIR WAVE', 'ABRIR WAVE', 'ABRIR WAVE', 'افتح Wave', 'ОТКРЫТЬ WAVE', 'WAVE\'İ AÇ', 'MỞ WAVE', 'BUKA WAVE', 'WAVE ÖFFNEN', 'Wave खोलें'],
     payCardOnlyBtn: ['PAY BY BANK CARD', 'PAYER PAR CARTE BANCAIRE', 'PAGAR CON TARJETA', 'PAGAR COM CARTÃO', 'الدفع بالبطاقة البنكية', 'ОПЛАТИТЬ КАРТОЙ', 'BANKA KARTI İLE ÖDE', 'THANH TOÁN BẰNG THẺ', 'BAYAR DENGAN KARTU', 'MIT KARTE ZAHLEN', 'बैंक कार्ड से भुगतान'],
     payWaveBtn: ['PAY WITH WAVE', 'PAYER AVEC WAVE', 'PAGAR CON WAVE', 'PAGAR COM WAVE', 'الدفع عبر Wave', 'ОПЛАТИТЬ ЧЕРЕЗ WAVE', 'WAVE İLE ÖDE', 'THANH TOÁN BẰNG WAVE', 'BAYAR DENGAN WAVE', 'MIT WAVE ZAHLEN', 'Wave से भुगतान'],
-    payMethodCardTitle: ['Card & Mobile Money', 'Carte & Mobile Money', 'Tarjeta y Mobile Money', 'Cartão e Mobile Money', 'البطاقة و Mobile Money', 'Карта и Mobile Money', 'Kart ve Mobile Money', 'Thẻ & Mobile Money', 'Kartu & Mobile Money', 'Karte & Mobile Money', 'कार्ड और मोबाइल मनी'],
+    payMethodCardTitle: ['Mobile Money', 'Mobile Money', 'Mobile Money', 'Mobile Money', 'Mobile Money', 'Mobile Money', 'Mobile Money', 'Mobile Money', 'Mobile Money', 'Mobile Money', 'Mobile Money'],
     payMomoBtn: ['PAY BY MOBILE MONEY', 'PAYER PAR MOBILE MONEY', 'PAGAR CON MOBILE MONEY', 'PAGAR COM MOBILE MONEY', 'الدفع عبر Mobile Money', 'ОПЛАТИТЬ ЧЕРЕЗ MOBILE MONEY', 'MOBILE MONEY İLE ÖDE', 'THANH TOÁN BẰNG MOBILE MONEY', 'BAYAR DENGAN MOBILE MONEY', 'MIT MOBILE MONEY ZAHLEN', 'मोबाइल मनी से भुगतान'],
     momoOff: ['Mobile Money is temporarily unavailable. Please try again in a moment or use another method.', 'Mobile Money est momentanément indisponible. Réessayez dans un instant ou utilisez un autre moyen.', 'Mobile Money no está disponible por el momento. Inténtelo de nuevo en un momento o use otro método.', 'Mobile Money está indisponível no momento. Tente novamente em instantes ou use outro método.', 'خدمة Mobile Money غير متاحة مؤقتًا. حاول بعد لحظات أو استخدم وسيلة أخرى.', 'Mobile Money временно недоступен. Повторите попытку чуть позже или выберите другой способ.', 'Mobile Money şu anda kullanılamıyor. Biraz sonra tekrar deneyin veya başka bir yöntem kullanın.', 'Mobile Money tạm thời không khả dụng. Vui lòng thử lại sau hoặc dùng phương thức khác.', 'Mobile Money sedang tidak tersedia. Coba lagi sebentar lagi atau gunakan metode lain.', 'Mobile Money ist vorübergehend nicht verfügbar. Bitte gleich erneut versuchen oder eine andere Methode wählen.', 'मोबाइल मनी अभी उपलब्ध नहीं है। थोड़ी देर में फिर कोशिश करें या कोई और तरीका चुनें।'],
     momoAuto: ['Payment not confirmed yet. If you paid, your balance will be credited automatically as soon as it is confirmed — nothing else to do.', 'Paiement pas encore confirmé. Si vous avez payé, votre solde sera crédité automatiquement dès la confirmation — vous n’avez rien d’autre à faire.', 'Pago aún no confirmado. Si pagó, su saldo se acreditará automáticamente en cuanto se confirme; no tiene que hacer nada más.', 'Pagamento ainda não confirmado. Se você pagou, seu saldo será creditado automaticamente assim que for confirmado — não precisa fazer mais nada.', 'لم يتم تأكيد الدفع بعد. إذا دفعت، سيُضاف المبلغ إلى رصيدك تلقائيًا فور التأكيد — لا داعي لأي إجراء آخر.', 'Оплата ещё не подтверждена. Если вы оплатили, баланс пополнится автоматически сразу после подтверждения — больше ничего делать не нужно.', 'Ödeme henüz onaylanmadı. Ödediyseniz, onaylanır onaylanmaz bakiyenize otomatik olarak eklenecek — başka bir şey yapmanız gerekmez.', 'Thanh toán chưa được xác nhận. Nếu bạn đã thanh toán, số dư sẽ được cộng tự động ngay khi xác nhận — bạn không cần làm gì thêm.', 'Pembayaran belum dikonfirmasi. Jika Anda sudah membayar, saldo akan dikreditkan otomatis begitu dikonfirmasi — tidak perlu melakukan apa pun.', 'Zahlung noch nicht bestätigt. Wenn Sie bezahlt haben, wird Ihr Guthaben nach der Bestätigung automatisch gutgeschrieben – Sie müssen nichts weiter tun.', 'भुगतान अभी पुष्टि नहीं हुआ। अगर आपने भुगतान किया है, तो पुष्टि होते ही आपका बैलेंस अपने-आप जुड़ जाएगा — आपको कुछ और नहीं करना है।'],
@@ -3095,7 +3095,7 @@
           "tipTitle": "ट्रेडिंग टिप",
           "closeLbl": "बंद करें",
           "payMethodLabel": "भुगतान का तरीका",
-          "payMethodCardTitle": "कार्ड और तुरंत भुगतान",
+          "payMethodCardTitle": "Mobile Money",
           "payMethodCardRec": "अनुशंसित",
           "depositProceed": "भुगतान पर जाएँ →",
           "cryptoBack": "← वापस",
@@ -3517,7 +3517,7 @@
     id: { affClicks: 'Klik tautanmu', affPlayed: 'Main uang asli', affTotal: 'Total deposit temanmu', affListBtn: 'Lihat temanku', affListTitle: 'Teman yang kuundang', affFDay: 'Hari ini', affFWeek: '7 hari', affFAll: 'Semua', affColDep: 'Deposit', affEmpty: 'Tidak ada teman di periode ini.', affPlayedOne: 'sudah main', affLeft: 'Sisa', topTab: 'Top 25', topTitle: 'Top 25 minggu ini', topSub: 'Pemain demo terbaik minggu ini diberi hadiah oleh OROLADO.', topRule: 'Poin = menang ÷ taruhan. Minimal 5 trade demo. Peringkat baru tiap Senin.', topPlay: 'Main demo', topPrev: 'Minggu lalu', topThis: 'Minggu ini', topPts: 'poin', topEmpty: 'Main 20 trade demo untuk masuk!', topMeRank: 'Kamu: #{r} dari {n} · {p} poin', topMeNeed: '{n} trade demo lagi untuk masuk peringkat.', topMeOut: 'Kamu: {p} poin — terus untuk naik!', topEnded: 'Selesai' },
     ru: { affClicks: 'Переходы по ссылке', affPlayed: 'Играли на реальном', affTotal: 'Всего внесли друзья', affListBtn: 'Мои друзья', affListTitle: 'Приглашённые друзья', affFDay: 'Сегодня', affFWeek: '7 дней', affFAll: 'Все', affColDep: 'Внесено', affEmpty: 'Нет друзей за этот период.', affPlayedOne: 'играл', affLeft: 'Осталось', topTab: 'Топ 25', topTitle: 'Топ 25 недели', topSub: 'Лучших игроков демо недели награждает OROLADO.', topRule: 'Очки = выигрыш ÷ ставки. Минимум 5 демо-сделок. Новый рейтинг каждый понедельник.', topPlay: 'Играть в демо', topPrev: 'Прошлая неделя', topThis: 'Эта неделя', topPts: 'очк.', topEmpty: 'Сыграйте 20 демо-сделок!', topMeRank: 'Вы: {r}-й из {n} · {p} очк.', topMeNeed: 'Ещё {n} демо-сделок, чтобы попасть в рейтинг.', topMeOut: 'Вы: {p} очк. — продолжайте!', topEnded: 'Завершено' },
     de: { affClicks: 'Klicks auf deinen Link', affPlayed: 'Echt gespielt', affTotal: 'Einzahlungen deiner Freunde', affListBtn: 'Meine Freunde', affListTitle: 'Eingeladene Freunde', affFDay: 'Heute', affFWeek: '7 Tage', affFAll: 'Alle', affColDep: 'Eingezahlt', affEmpty: 'Keine Freunde in diesem Zeitraum.', affPlayedOne: 'gespielt', affLeft: 'Noch', topTab: 'Top 25', topTitle: 'Top 25 der Woche', topSub: 'Die besten Demo-Spieler der Woche werden von OROLADO belohnt.', topRule: 'Punkte = Gewinn ÷ Einsatz. Mindestens 5 Demo-Trades. Jeden Montag neue Rangliste.', topPlay: 'Demo spielen', topPrev: 'Letzte Woche', topThis: 'Diese Woche', topPts: 'Pkt.', topEmpty: 'Spiele 20 Demo-Trades!', topMeRank: 'Du: Platz {r} von {n} · {p} Pkt.', topMeNeed: 'Noch {n} Demo-Trades bis zur Rangliste.', topMeOut: 'Du: {p} Pkt. — weiter so!', topEnded: 'Beendet' },
-    hi: { affClicks: 'लिंक पर क्लिक', affPlayed: 'असली खेला', affTotal: 'दोस्तों की कुल जमा', affListBtn: 'मेरे दोस्त देखें', affListTitle: 'आमंत्रित दोस्त', affFDay: 'आज', affFWeek: '7 दिन', affFAll: 'सब', affColDep: 'जमा', affEmpty: 'इस अवधि में कोई दोस्त नहीं।', affPlayedOne: 'खेला', affLeft: 'बाकी', topTab: 'टॉप 25', topTitle: 'हफ़्ते के टॉप 25', topSub: 'हफ़्ते के सबसे अच्छे डेमो खिलाड़ियों को OROLADO इनाम देता है।', topRule: 'अंक = जीत ÷ दांव। कम से कम 5 डेमो ट्रेड। हर सोमवार नई सूची।', topPlay: 'डेमो खेलें', topPrev: 'पिछला हफ़्ता', topThis: 'यह हफ़्ता', topPts: 'अंक', topEmpty: '20 डेमो ट्रेड खेलें!', payMethodCardTitle: 'कार्ड और तुरंत भुगतान', topMeRank: 'आप: {n} में {r}वें · {p} अंक', topMeNeed: 'सूची में आने के लिए {n} डेमो ट्रेड और।', topMeOut: 'आप: {p} अंक — आगे बढ़ें!', topEnded: 'समाप्त' }
+    hi: { affClicks: 'लिंक पर क्लिक', affPlayed: 'असली खेला', affTotal: 'दोस्तों की कुल जमा', affListBtn: 'मेरे दोस्त देखें', affListTitle: 'आमंत्रित दोस्त', affFDay: 'आज', affFWeek: '7 दिन', affFAll: 'सब', affColDep: 'जमा', affEmpty: 'इस अवधि में कोई दोस्त नहीं।', affPlayedOne: 'खेला', affLeft: 'बाकी', topTab: 'टॉप 25', topTitle: 'हफ़्ते के टॉप 25', topSub: 'हफ़्ते के सबसे अच्छे डेमो खिलाड़ियों को OROLADO इनाम देता है।', topRule: 'अंक = जीत ÷ दांव। कम से कम 5 डेमो ट्रेड। हर सोमवार नई सूची।', topPlay: 'डेमो खेलें', topPrev: 'पिछला हफ़्ता', topThis: 'यह हफ़्ता', topPts: 'अंक', topEmpty: '20 डेमो ट्रेड खेलें!', payMethodCardTitle: 'Mobile Money', topMeRank: 'आप: {n} में {r}वें · {p} अंक', topMeNeed: 'सूची में आने के लिए {n} डेमो ट्रेड और।', topMeOut: 'आप: {p} अंक — आगे बढ़ें!', topEnded: 'समाप्त' }
   };
   Object.keys(TOP_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], TOP_TR[l]); });
   // v2415 — le Portail devient « Récompenses » (cadeau doré) ; phrase « payé par OROLADO ».
