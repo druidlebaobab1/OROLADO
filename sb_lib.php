@@ -171,6 +171,16 @@ function sb_config(): array {
     });
     $c = sb_read('config.json');
   }
+  // 2026-11-12 : affichage admin — direct 4 % (SB_MARGE_DIRECT), le reste 1 % (SB_MARGE_FIXE).
+  if (empty($c['mig16'])) {
+    sb_with('config.json', static function (array &$s) {
+      if (!empty($s['mig16'])) return true;
+      foreach (['mMain', 'mSide', 'mExotic', 'mOther'] as $k) $s[$k] = SB_MARGE_FIXE * 100;
+      $s['mLive'] = SB_MARGE_DIRECT * 100; $s['mig16'] = 1; $s['mig15'] = 1; $s['mig14'] = 1;
+      return true;
+    });
+    $c = sb_read('config.json');
+  }
   if (empty($c['mig14'])) {
     sb_with('config.json', static function (array &$s) {
       if (!empty($s['mig14'])) return true;
@@ -350,6 +360,11 @@ function sb_min_books(string $fam): int { return in_array($fam, ['1x2', 'dc', 'o
 // réparti ÉGALEMENT sur tous les choix (favori, nul, outsider), comme 1xBet. 1xBet prend ~3 % sur les grands matchs, 5–8 % ailleurs.
 // 2026-11-12 (propriétaire, 2e message : « 2,5 % ne marche pas, force la marge à 1 % et verrouille ») → 1 %.
 const SB_MARGE_FIXE = 0.01;
+// 2026-11-12 (propriétaire, comparé à 1xBet en direct : Cieza–Valencia II 1.408 / 4.09 / 8.77 ≈ 7 %, nous 1 % → « en live c'est trop
+// énorme, les gens peuvent tricher ; live c'est 4 %, les matchs pas encore commencés restent à 1 % ; force et verrouille »)
+// → marge du DIRECT VERROUILLÉE EN DUR à 4 %, répartie également (cote = (1 − m) / p), légèrement au-dessus de 1xBet.
+// L'avant-match et les autres sports restent à SB_MARGE_FIXE (1 %). Ne pas changer sans demande explicite du propriétaire.
+const SB_MARGE_DIRECT = 0.04;
 function sb_margin(string $fam, array $cfg): float { return SB_MARGE_FIXE; }
 /**
  * 2026-10-23 (propriétaire : « tout à 4 %, la marge surtout sur le favori, comme les grands ») — cote d'un choix de probabilité $p
@@ -2249,7 +2264,7 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
   }
   [$h, $a] = [(int) ($sc[0] ?? 0), (int) ($sc[1] ?? 0)];
   $mn = (int) ($r['fixture']['status']['elapsed'] ?? 0);
-  $m = SB_MARGE_FIXE; // marge du direct VERROUILLÉE (SB_MARGE_FIXE, 1 % depuis le 2026-11-12), ne dépend pas du réglage
+  $m = SB_MARGE_DIRECT; // marge du DIRECT VERROUILLÉE à 4 % (propriétaire, 2026-11-12), ne dépend pas du réglage ; avant-match : 1 %
   $out = [];
   foreach ($raw as $mk => $ks) {
     $fam = sb_fam($mk); $x = (float) substr($mk, strlen($fam) + 1);
