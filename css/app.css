@@ -14610,3 +14610,26 @@ html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-1
 html body #depositModal#depositModal #btnCardOnly{margin:8px 0 10px!important}
 html body #depositModal#depositModal #payMethodCard .pay-method-top{justify-content:flex-start!important}
 html body #depositModal#depositModal #payMethodCard .pay-method-top .pay-method-title{text-align:left!important;margin:0!important}
+/* 2026-11-12 (propriétaire, urgent) : retour au format d'avant, plus serré ; titre « Mobile Money » du bloc retiré
+   (le petit téléphone va DANS le bouton « Payer par Mobile Money ») ; ligne carte aux mêmes couleurs que les autres boutons. */
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard .pay-method-top{display:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMethodCard{padding-top:8px!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnConfirmDeposit::before{content:"";display:inline-block;flex:0 0 16px;width:16px;height:16px;margin-right:7px;vertical-align:-3px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='2' width='12' height='20' rx='3' fill='none' stroke='%23EBDAB0' stroke-width='1.9'/%3E%3Cpath d='M10.5 4.6h3' stroke='%23EBDAB0' stroke-width='1.6' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12.4' r='3.7' fill='%2322C55E'/%3E%3Cpath d='m10.3 12.4 1.2 1.2 2.3-2.4' fill='none' stroke='%23fff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/contain}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly.btn-card-only{height:40px!important;min-height:40px!important;margin:2px 0 0!important;padding:0 12px!important;border-radius:11px!important;
+  background:linear-gradient(180deg,#19150E,#0E0C08)!important;border:1px solid rgba(201,150,47,.5)!important;box-shadow:none!important;color:#EBDAB0!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-txt{font-size:13.5px!important;letter-spacing:.4px!important;color:#EBDAB0!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-ico{flex:0 0 22px!important;width:22px!important;height:16px!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-ico rect:first-child{fill:transparent!important;stroke:#EBDAB0!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-brands svg{height:12px!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-brands svg:first-child{width:28px!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-brands svg:last-child{width:19px!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly .cco-brands text{fill:#EBDAB0!important}
+@media (max-height:700px){
+  html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly.btn-card-only{height:36px!important;min-height:36px!important}
+}
+html body #depositModal#depositModal#depositModal#depositModal #btnConfirmDeposit.btn-deposit-confirm{margin:8px 0 0!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly.btn-card-only{margin:8px 0 0!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMomoBox{margin-top:8px!important;margin-bottom:0!important}
+html body #depositModal#depositModal#depositModal#depositModal #btnMomoDeposit{margin:8px 0 0!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMethodUsdt{margin-top:8px!important}
