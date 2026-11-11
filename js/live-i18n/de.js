@@ -446,7 +446,7 @@
         '+10 % auf deine Einzahlung'
       ],
       jauge: [
-        'Große Anzeige',
+        'Großer Balken',
         'Füll sie, gewinn ein Geschenk'
       ],
       wRule: '1 Gratis-Dreh für je 10 $ Einzahlung. Beispiel: 100 $ eingezahlt = 10 Drehs.',

@@ -3817,7 +3817,10 @@
     paintMyAvatar(u);
     // v2777 (propriétaire) : UN SEUL identifiant partout — « R » + 3 lettres + 3 chiffres au hasard (ex. RKBT482), donné par le serveur
     if ($('profPublicId')) showMyRid(u);
-    $('profEmail').textContent = u.email;
+    // 2026-11-12 (revue) : un invité ne voit jamais l'adresse interne « guest@orolado.local » (ligne cachée)
+    var gEm = isGuest(u) || /@orolado\.local$/i.test(String(u.email || ''));
+    $('profEmail').textContent = gEm ? '' : u.email;
+    try { var emRow = $('profEmail').closest('.list-row'); if (emRow) emRow.hidden = gEm; } catch (eEm) { /* ignore */ }
     if ($('profSince')) $('profSince').textContent = fmtMemberSince(u.createdAt || u.created_at);
     var real = D6.Store.realBalance ? D6.Store.realBalance(u) : 0;
     if ($('profWalletBal')) $('profWalletBal').textContent = D6.fmtMoney(real);
@@ -6468,6 +6471,7 @@
   function closeOxaMenus() {
     if ($('oxaCoinMenu')) $('oxaCoinMenu').classList.add('hidden');
     if ($('oxaCoinBtn')) $('oxaCoinBtn').setAttribute('aria-expanded', 'false');
+    document.documentElement.classList.remove('oxa-dd-open');
   }
 
   // 2026-11-11 (propriétaire : « chaque crypto doit avoir son logo ») : vrais logos (ceux de Trust Wallet), /img/coins/<id>.png.
@@ -9563,6 +9567,8 @@
           fillOxaCoinList(($('oxaCoinSearch') && $('oxaCoinSearch').value) || '');
           menu.classList.remove('hidden');
           $('oxaCoinBtn').setAttribute('aria-expanded', 'true');
+          // 2026-11-12 (propriétaire) : la liste couvre proprement tout l'écran du dessous (réseaux, adresse cachés derrière)
+          document.documentElement.classList.add('oxa-dd-open');
           if ($('oxaCoinSearch')) $('oxaCoinSearch').focus();
         } else closeOxaMenus();
       });
@@ -9618,11 +9624,23 @@
     });
     document.addEventListener('click', function (e) {
       if (!$('oxaPickWrap') || $('oxaPickWrap').classList.contains('hidden')) return;
-      if (e.target && e.target.closest && e.target.closest('#oxaPickWrap')) return;
+      if (e.target && e.target.closest && (e.target.closest('#oxaPickWrap') || e.target.closest('#oxaCoinBtn') || e.target.closest('#oxaCoinMenu'))) return; // 2026-11-12 : la flèche referme bien la liste
       closeOxaMenus();
+    }, true);
+    // 2026-11-12 (propriétaire) : liste ouverte → un toucher en dehors de la liste (et du bouton) la ferme, sans quitter la page.
+    document.addEventListener('pointerdown', function (e) {
+      var menu = $('oxaCoinMenu');
+      if (!menu || menu.classList.contains('hidden')) return;
+      var tgt = e.target;
+      if (tgt && tgt.closest && (tgt.closest('#oxaCoinMenu') || tgt.closest('#oxaCoinBtn'))) return;
+      closeOxaMenus();
+      closeOxaMenus.at = Date.now(); // le « clic » qui suit (ex. sur Retour) ne doit pas quitter la page
     }, true); // v2469 — capture : sur Android la fenêtre arrête les clics (le menu des cryptos ne se fermait pas).
     if ($('btnUsdtCopy')) bindAndroidTap($('btnUsdtCopy'), function () { copyUsdtAddr(); });
     if ($('btnUsdtBack')) bindAndroidTap($('btnUsdtBack'), function () {
+      // 2026-11-12 (propriétaire) : liste des cryptos ouverte → « Retour » ferme seulement la liste (on reste sur l'adresse)
+      if ($('oxaCoinMenu') && !$('oxaCoinMenu').classList.contains('hidden')) { closeOxaMenus(); return; }
+      if (closeOxaMenus.at && Date.now() - closeOxaMenus.at < 700) return;
       abandonUnconfirmedDeposit();
       resetOxaWallet();
       depositSendConfirmed = false;
