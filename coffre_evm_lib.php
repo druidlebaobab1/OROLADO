@@ -35,7 +35,7 @@ function cevm_chains(): array {
 
 /** Pièce du site (écran de dépôt) → réseau surveillé en priorité. */
 function cevm_coin_chain(string $coin): string {
-  return ['usdt_erc20' => 'eth', 'usdc' => 'eth', 'eth' => 'eth', 'dai' => 'eth', 'usdt_bep20' => 'bsc', 'bnb' => 'bsc', 'pol' => 'polygon',
+  return ['usdt_erc20' => 'eth', 'usdc' => 'eth', 'eth' => 'eth', 'usdt_bep20' => 'bsc', 'bnb' => 'bsc', 'pol' => 'polygon',
     'usdt_polygon' => 'polygon', 'usdc_polygon' => 'polygon', 'usdc_base' => 'base', 'eth_base' => 'base', 'usdt_arb' => 'arb', 'usdc_arb' => 'arb', 'eth_arb' => 'arb'][$coin] ?? '';
 }
 

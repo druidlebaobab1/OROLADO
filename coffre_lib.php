@@ -218,7 +218,9 @@ function coffre_json(string $file): array {
 
 function coffre_index_file(): string { return coffre_dir() . '/index.json'; }
 function coffre_user_file(string $uid): string { return coffre_dir() . '/w_' . sha1('coffre|' . $uid) . '.json'; }
-function coffre_cfg(): array { return coffre_json(coffre_dir() . '/cfg.json') + ['on' => false, 'min' => COFFRE_SWEEP_DEFAULT]; }
+// Propriétaire (2026-11-11) : « on retire OxaPay, tout va directement dans le coffre » → OxaPay arrêté par défaut
+// (le bouton « Revenir à OxaPay » de l'admin enregistre oxapay_off = false et le fait revenir).
+function coffre_cfg(): array { return coffre_json(coffre_dir() . '/cfg.json') + ['on' => false, 'min' => COFFRE_SWEEP_DEFAULT, 'oxapay_off' => true]; }
 function coffre_cfg_set(array $patch): array { return coffre_json_rw(coffre_dir() . '/cfg.json', static function (&$st) use ($patch) { $st = array_merge($st, $patch); return $st; }); }
 
 /** Adresse du coffre du propriétaire (destination du balayage) — son Trust Wallet. */
@@ -824,6 +826,6 @@ function coffre_only_coins(): ?array {
   $c = [];
   if (coffre_ready()) $c[] = 'usdt_trc20';
   if (function_exists('cevm_ready') && cevm_ready()) array_push($c, 'usdt_erc20', 'usdt_bep20', 'usdc', 'eth', 'bnb', 'pol');
-  if (function_exists('cutxo_ready_chains') && !empty(coffre_cfg()['utxo_on'])) foreach (cutxo_ready_chains() as $uc) $c[] = $uc; // btc, ltc, doge
-  return $c;
+  if (function_exists('cutxo_ready_chains')) foreach (cutxo_ready_chains() as $uc) $c[] = $uc; // btc, ltc, doge
+  return $c ?: null; // aucun réseau du coffre prêt : on ne bloque pas tous les dépôts
 }

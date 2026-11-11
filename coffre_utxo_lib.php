@@ -291,7 +291,7 @@ function cutxo_ready_chains(): array { return array_values(array_filter(array_ke
 function cutxo_on_for(array $me, string $chain): bool {
   if (!cutxo_ready($chain)) return false;
   $cfg = coffre_cfg();
-  if (!empty($cfg['utxo_on'])) return true; // seulement si le propriétaire l'allume lui-même (même OxaPay arrêté)
+  if (!empty($cfg['utxo_on']) || !empty($cfg['oxapay_off'])) return true; // OxaPay retiré : tout va au coffre
   $role = strtolower((string) ($me['role'] ?? ''));
   return in_array($role, ['admin', 'owner', 'superadmin'], true) || (string) ($me['id'] ?? '') === 'admin_master' || (function_exists('orolado_is_admin_user') && orolado_is_admin_user($me));
 }

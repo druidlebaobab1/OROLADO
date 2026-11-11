@@ -119,7 +119,7 @@ $db = blank_db();
 foreach ([$A => 'a@t.com', $B => 'b@t.com'] as $id => $mail) { $db['users'][$id] = ['id' => $id, 'email' => $mail, 'role' => 'user', 'sbId' => $id, 'displayName' => $mail]; $db['vault'][$id] = ['demo' => 0, 'real' => 0]; }
 $db['sessions']['tokA'] = ['userId' => $A, 'at' => date('c')]; $db['sessions']['tokB'] = ['userId' => $B, 'at' => date('c')];
 save_db(orolado_data_file(), $db);
-coffre_cfg_set(['on' => true, 'evm_on' => false, 'min' => 20]);
+coffre_cfg_set(['on' => true, 'evm_on' => false, 'min' => 20, 'oxapay_off' => false]);
 echo "0) Pas encore allumé pour tous : seul l'admin voit l'adresse 0x (même si TRON est allumé)\n";
 $i0 = orolado_oxapay_invoice(['token' => 'tokA', 'coin' => 'usdt_bep20', 'amount' => 20, 'confirmed' => true]);
 check('joueur : USDT BEP20 reste chez OxaPay tant que la famille Ethereum n’est pas allumée', empty($i0['own']), json_encode($i0));
