@@ -160,7 +160,11 @@ function keys_test(string $name, string $v): array {
         for ($i = 0; $i < 40; $i++) { $c = $v[$i + 2]; if (ctype_alpha($c) && (ctype_upper($c) !== (hexdec($h[$i]) >= 8))) return ['ok' => false, 'msg' => 'Adresse invalide (une lettre est fausse ?). Recopie-la avec le bouton « Copier » de Trust Wallet.']; }
       }
       return ['ok' => true, 'msg' => 'Adresse valide ✓ gardée. Ce réseau (ETH, BNB, Polygon, Base) sera branché bientôt : rien d’autre à faire.'];
-    case 'VAULT_BTC_ADDRESS': case 'VAULT_SOL_ADDRESS': case 'VAULT_TON_ADDRESS': case 'VAULT_LTC_ADDRESS': case 'VAULT_DOGE_ADDRESS':
+    case 'VAULT_BTC_ADDRESS': case 'VAULT_LTC_ADDRESS': case 'VAULT_DOGE_ADDRESS':
+      $uc = ['VAULT_BTC_ADDRESS' => 'btc', 'VAULT_LTC_ADDRESS' => 'ltc', 'VAULT_DOGE_ADDRESS' => 'doge'][$name];
+      if (function_exists('cutxo_addr_ok') && !cutxo_addr_ok($uc, $v)) return ['ok' => false, 'msg' => 'Adresse invalide (une lettre est fausse ?). Recopie-la avec le bouton « Copier » de Trust Wallet.'];
+      return ['ok' => true, 'msg' => 'Adresse valide ✓ L’argent des joueurs partira ici. Vérifie que c’est bien TON adresse : ' . substr($v, 0, 6) . '…' . substr($v, -6) . '. Suite : admin → 🏦 Coffre.'];
+    case 'VAULT_SOL_ADDRESS': case 'VAULT_TON_ADDRESS':
       return ['ok' => true, 'msg' => 'Adresse gardée ✓. Ce réseau sera branché bientôt : rien d’autre à faire.'];
     case 'VAULT_TRON_ADDRESS':
       if (!function_exists('coffre_addr_ok') || !coffre_addr_ok($v)) return ['ok' => false, 'msg' => 'Adresse TRON invalide (une lettre est fausse ?). Recopie-la avec le bouton « Copier » de Trust Wallet.'];
