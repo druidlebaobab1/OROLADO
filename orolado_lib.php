@@ -5155,6 +5155,8 @@ function orolado_pay_sweep_after_response(): void {
       $seen['h:' . $u] = $now; $k++;
       orolado_oxapay_history_extras(load_db(orolado_data_file()), (string) $u, 2, 2);
     }
+    // 2026-11-11 : USDT TRC20 vus directement sur la blockchain (TronGrid), même si OxaPay ne prévient pas.
+    if (microtime(true) - $t0 < 11 && function_exists('orolado_trongrid_static_scan')) { try { orolado_trongrid_static_scan(6, 5.0); } catch (Throwable $eT) { /* jamais bloquant */ } }
     // v3625 : rapprochement depuis les listes OxaPay / Flutterwave (paiements payés 48 h), toutes les 10 min.
     if (microtime(true) - $t0 < 10 && $now - (int) ($seen['rc'] ?? 0) >= 600) { $seen['rc'] = $now; orolado_pay_reconcile(2); }
     foreach ($seen as $kk => $tt) if ((int) $tt < $now - 3 * 86400) unset($seen[$kk]);
@@ -7261,6 +7263,90 @@ function orolado_oxapay_status(array $req): array {
  * temps : un seul à la fois, sinon deux dépôts enfants pour un envoi) + reprise des envois dont le crédit a échoué
  * (caisse injoignable un instant) au lieu de les laisser « connus » mais jamais crédités.
  */
+/**
+ * 2026-11-11 (propriétaire : « 9 $ reçus mais pas crédités » ; clé TronGrid ajoutée) — le site regarde LUI-MÊME la blockchain
+ * TRON : les USDT TRC20 arrivés sur l'adresse permanente d'un joueur sont crédités même si le message d'OxaPay se perd.
+ * Même chemin de crédit qu'OxaPay (orolado_oxapay_extra_payment : un envoi = un numéro unique, jamais crédité deux fois,
+ * que ce soit TronGrid ou OxaPay qui le voie en premier). Seulement le vrai contrat USDT, seulement les envois CONFIRMÉS.
+ */
+const OROLADO_USDT_TRC20 = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+
+function orolado_trongrid_key(): string {
+  orolado_load_env();
+  return trim((string) (getenv('TRONGRID_API_KEY') ?: ($_ENV['TRONGRID_API_KEY'] ?? '')));
+}
+
+/** Envois USDT TRC20 confirmés reçus par une adresse (TronGrid). null = TronGrid injoignable. */
+function orolado_trongrid_usdt_in(string $addr, int $sinceMs): ?array {
+  $key = orolado_trongrid_key();
+  if ($key === '' || !preg_match('/^T[1-9A-HJ-NP-Za-km-z]{33}$/', $addr) || !function_exists('curl_init')) return null;
+  $url = 'https://api.trongrid.io/v1/accounts/' . $addr . '/transactions/trc20?' . http_build_query([
+    'only_to' => 'true', 'only_confirmed' => 'true', 'limit' => 50, 'contract_address' => OROLADO_USDT_TRC20, 'min_timestamp' => max(0, $sinceMs)]);
+  $ch = curl_init($url);
+  curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_CONNECTTIMEOUT => 5, CURLOPT_HTTPHEADER => ['TRON-PRO-API-KEY: ' . $key, 'Accept: application/json']]);
+  $raw = curl_exec($ch); $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+  if ($code !== 200 || !is_string($raw)) return null;
+  $j = json_decode($raw, true);
+  if (!is_array($j) || empty($j['success'])) return null;
+  $out = [];
+  foreach ((array) ($j['data'] ?? []) as $t) {
+    if (!is_array($t)) continue;
+    if ((string) ($t['to'] ?? '') !== $addr || strtolower((string) ($t['type'] ?? '')) !== 'transfer') continue;
+    if ((string) ($t['token_info']['address'] ?? '') !== OROLADO_USDT_TRC20) continue; // jamais un faux jeton « USDT »
+    $dec = (int) ($t['token_info']['decimals'] ?? 6);
+    $amt = (float) ($t['value'] ?? 0) / (10 ** max(0, min(18, $dec)));
+    $h = (string) ($t['transaction_id'] ?? '');
+    if ($amt <= 0 || !preg_match('/^[0-9a-f]{64}$/i', $h)) continue;
+    $out[] = ['tx_hash' => $h, 'amount' => $amt, 'currency' => 'USDT', 'status' => 'confirmed', 'ts' => (int) floor(((int) ($t['block_timestamp'] ?? 0)) / 1000)];
+  }
+  return $out;
+}
+
+/** Ronde : quelques adresses TRON permanentes par passage (celles ouvertes récemment d'abord). Jamais bloquant. */
+function orolado_trongrid_static_scan(int $max = 6, float $budgetSec = 6.0): int {
+  if (orolado_trongrid_key() === '') return 0;
+  $t0 = microtime(true);
+  $seenF = orolado_data_dir() . '/tron_scan_seen.json';
+  $seen = json_decode((string) @file_get_contents($seenF), true);
+  if (!is_array($seen)) $seen = [];
+  $now = time(); $credited = 0; $done = 0;
+  $db = load_db(orolado_data_file());
+  $cand = [];
+  foreach (($db['deposits'] ?? []) as $d) {
+    if (!is_array($d) || (string) ($d['kind'] ?? '') !== 'static' || (string) ($d['fam'] ?? '') !== 'tron') continue;
+    $addr = trim((string) ($d['address'] ?? ''));
+    if ($addr === '' || (string) ($d['userId'] ?? '') === '') continue;
+    $opened = (int) max((float) ($d['openedAt'] ?? 0), (int) strtotime((string) ($d['at'] ?? '')));
+    // Adresse montée récemment : toutes les 2 min ; sinon toutes les 30 min.
+    $every = $opened >= $now - 7 * 86400 ? 120 : 1800;
+    $last = (int) ($seen[$addr] ?? 0);
+    if ($now - $last < $every) continue;
+    $cand[] = ['d' => $d, 'last' => $last, 'opened' => $opened];
+  }
+  usort($cand, static fn($a, $b) => $a['last'] <=> $b['last']);
+  foreach ($cand as $c) {
+    if ($done >= $max || microtime(true) - $t0 > $budgetSec) break;
+    $d = $c['d']; $addr = trim((string) $d['address']);
+    $seen[$addr] = $now; $done++;
+    $since = max(0, ((int) strtotime((string) ($d['at'] ?? '')) - 3600)) * 1000;
+    $txs = orolado_trongrid_usdt_in($addr, $since);
+    if (!$txs) continue;
+    foreach ($txs as $tx) {
+      $h = $tx['tx_hash'];
+      if (orolado_txid_already_used(load_db(orolado_data_file()), $h)) continue;
+      $r = orolado_oxapay_extra_payment(['txs' => [$tx], 'pay_currency' => 'USDT', 'status' => 'Paid', 'address' => $addr, 'track_id' => (string) ($d['trackId'] ?? '')], $d);
+      if (!empty($r['ok']) && empty($r['duplicate'])) {
+        $credited++;
+        orolado_oxapay_log('trongrid_credit', ['uid' => (string) $d['userId'], 'amount' => (float) ($r['amount'] ?? 0), 'tx' => substr($h, 0, 16)]);
+        if (function_exists('orolado_health_event')) orolado_health_event('Dépôts', 'Dépôt USDT TRC20 vu directement sur la blockchain (TronGrid) et crédité : ' . orolado_money($r['amount'] ?? 0) . ' $ (envoi ' . substr($h, 0, 10) . '…).', 'info');
+      }
+    }
+  }
+  foreach ($seen as $k => $v) if ((int) $v < $now - 30 * 86400) unset($seen[$k]);
+  @file_put_contents($seenF, json_encode($seen), LOCK_EX);
+  return $credited;
+}
+
 function orolado_oxapay_extra_payment(array $data, array $dep): array {
   $parentId = (string) ($dep['id'] ?? $dep['ref'] ?? '');
   if ($parentId === '') return ['ok' => false, 'code' => 'none'];
