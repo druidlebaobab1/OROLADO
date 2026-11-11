@@ -14633,3 +14633,33 @@ html body #depositModal#depositModal#depositModal#depositModal #btnCardOnly.btn-
 html body #depositModal#depositModal#depositModal#depositModal #payMomoBox{margin-top:8px!important;margin-bottom:0!important}
 html body #depositModal#depositModal#depositModal#depositModal #btnMomoDeposit{margin:8px 0 0!important}
 html body #depositModal#depositModal#depositModal#depositModal #payMethodUsdt{margin-top:8px!important}
+/* ===== 2026-11-12 (propriétaire) : écran « Dépôt crypto » revu en entier — onglets réseau propres (lueur sur toute la
+   case), espaces réguliers, couleurs or/sombre partout, rien qui dépasse. ===== */
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto .oxa-field{gap:0!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #oxaCoinBtn{margin:0 0 10px!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNetWrap{margin:0 0 12px!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets.oxa-nets{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net{position:relative!important;min-height:50px!important;height:50px!important;padding:6px 4px!important;margin:0!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;
+  border-radius:12px!important;border:1px solid rgba(233,196,122,.22)!important;background:#14100A!important;box-shadow:none!important;
+  color:#EDE3CC!important;font-size:.86rem!important;font-weight:900!important;letter-spacing:.02em!important;line-height:1!important;overflow:hidden!important;
+  transition:background .15s,border-color .15s,box-shadow .15s}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net::before{position:absolute!important;top:8px!important;left:9px!important;margin:0!important;width:7px!important;height:7px!important;
+  box-shadow:0 0 0 2px rgba(0,0,0,.35)!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net[data-net="TRC20"]::before{background:#FF3B4E!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net[data-net="ERC20"]::before{background:#8EA2F5!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net[data-net="BEP20"]::before{background:#F3BA2F!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net span{display:block!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+  font-size:.5rem!important;font-weight:800!important;letter-spacing:.04em!important;color:#9C8F72!important;line-height:1.1!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net.on{background:rgba(233,196,122,.15)!important;border:1.5px solid #E9C47A!important;
+  box-shadow:inset 0 0 18px rgba(233,196,122,.18),0 0 0 3px rgba(233,196,122,.1)!important;color:#FFF3D6!important}
+html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net.on span{color:#E9C47A!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #oxaWalletBox.oxa-wallet{margin:0!important;border-radius:16px!important;
+  border:1px solid rgba(233,196,122,.28)!important;background:linear-gradient(180deg,rgba(236,204,139,.1),rgba(233,196,122,.04))!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #oxaAddrLabel{font-size:.66rem!important;letter-spacing:.1em!important;color:#B8A679!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #usdtAddr{display:block!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-all!important;text-align:center!important;font-size:.92rem!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #btnUsdtCopy{width:100%!important;min-height:46px!important;margin:clamp(8px,1.6vh,14px) 0 0!important;border-radius:12px!important;
+  background:linear-gradient(180deg,#C9962F,#9A6E1E)!important;border:1px solid rgba(255,230,170,.35)!important;color:#FFF7E3!important;font-weight:900!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #usdtLiveBadge{display:inline-flex!important;align-items:center!important;gap:7px!important}
+html body #depositModal#depositModal#depositModal#depositModal .deposit-box.is-crypto #oxaPickWrap{text-align:center}
+@media (max-width:374px){html body #depositModal#depositModal#depositModal#depositModal #oxaNets .oxa-net span{font-size:.44rem!important;letter-spacing:.02em!important}}
