@@ -2362,6 +2362,13 @@ if ($isAjax) {
   // Flutterwave payés des 7 derniers jours, créditer ce qui ne l'est pas (jamais deux fois), et lister ceux qui ne
   // correspondent à aucun joueur (à voir à la main).
   // 2026-11-10 (propriétaire : « un endroit où tous nos appels sont rangés ») — page « 🔑 Clés & connexions » (keys_lib.php).
+  // 2026-11-11 : 🏦 Coffre — argent arrivé directement dans le portefeuille du propriétaire (vault_lib.php).
+  if ($action === 'vault_view') admin_json(function_exists('vault_admin_view') ? vault_admin_view() : ['ok' => false, 'reason' => 'Coffre indisponible']);
+  if ($action === 'vault_assign') {
+    $r = vault_admin_assign((string) ($req['hash'] ?? ''), trim((string) ($req['user'] ?? '')), (string) ($me['email'] ?? 'admin'));
+    if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'COFFRE', 'deposit', (float) ($r['amount'] ?? 0), 'Envoi ' . substr((string) ($req['hash'] ?? ''), 0, 12) . ' attribué à ' . (string) ($req['user'] ?? ''));
+    admin_json($r);
+  }
   if (in_array($action, ['keys_status', 'keys_set', 'keys_test', 'keys_del'], true)) {
     require_once __DIR__ . '/keys_lib.php';
     if ($action === 'keys_status') admin_json(keys_status());
@@ -3328,6 +3335,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <button class="mini tb-b" id="btnBonusAll" type="button" style="--c:#4ADE80">🎁 Bonus à tous</button>
         <button class="mini tb-b" id="btnPayAll" type="button" style="--c:#22D3EE">🔎 Vérifier tous les dépôts (7 j)</button>
         <button class="mini tb-b" id="btnKeys" type="button" style="--c:#FDE047">🔑 Clés &amp; connexions</button>
+        <button class="mini tb-b" id="btnVault" type="button" style="--c:#86EFAC">🏦 Coffre</button>
       </div><div id="payAllOut" class="muted" style="display:none;margin-top:8px;font-size:12px;white-space:pre-wrap"></div></div>
       <div class="tb-g"><div class="tb-t">📊 Suivi des produits</div><div class="tb-row">
         <button class="mini tb-b" id="btnTradeA" type="button" style="--c:#FBBF24">📈 Trading</button>
@@ -3797,6 +3805,15 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <div id="spList" style="margin-top:10px"><p class="muted">Chargement…</p></div>
       </div>
       <div id="csPaneSt" hidden><div id="csStats"><p class="muted">Chargement…</p></div></div>
+    </div>
+  </div>
+  <!-- 2026-11-11 : 🏦 Coffre — dépôts arrivés directement dans le portefeuille du propriétaire (vault_lib.php) -->
+  <div class="modal" id="vaultModal">
+    <div class="modal-box">
+      <button class="mini" type="button" id="closeVault">Retour</button>
+      <h2 style="color:#86EFAC;margin:10px 0 4px">🏦 Mon coffre</h2>
+      <p class="muted" style="margin:0 0 10px">Les joueurs envoient leurs USDT (réseau TRON) <b>directement dans ton portefeuille</b>. Le site regarde la blockchain et crédite le bon joueur tout seul. Ici : ce qui est arrivé, et les envois dont le joueur n’a pas été reconnu (à attribuer d’un clic).</p>
+      <div id="vaultBody">Chargement…</div>
     </div>
   </div>
   <!-- 2026-11-10 : 🔑 Clés & connexions — toutes les clés des services, au même endroit (keys_lib.php) -->
@@ -4637,6 +4654,36 @@ document.getElementById('btnBack').onclick = () => {
   window.location.href = '/';
 };
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
+// 2026-11-11 : 🏦 Coffre
+(function () {
+  const $v = id => document.getElementById(id);
+  if (!$v('btnVault') || !$v('vaultModal')) return;
+  const when = iso => { try { return new Date(iso).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); } catch (e) { return ''; } };
+  const tx = h => '<a href="https://tronscan.org/#/transaction/' + esc(h) + '" target="_blank" rel="noopener" style="color:#93C5FD">' + esc(String(h).slice(0, 10)) + '…</a>';
+  async function paint() {
+    $v('vaultBody').textContent = 'Chargement…';
+    const r = await ajax({action:'vault_view'});
+    if (!r || !r.ok) { $v('vaultBody').textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
+    let h = '';
+    if (!r.address) h += '<div class="nt-card" style="border-color:#FCD34D"><b>⚠️ Coffre pas encore réglé.</b><br>Ouvre <b>🔑 Clés &amp; connexions</b> → « Adresse du coffre USDT (réseau TRON) » et colle l’adresse de ton Trust Wallet (Recevoir → USDT → TRON → Copier). En attendant, les dépôts passent par OxaPay.</div>';
+    else h += '<div class="nt-card"><b>' + (r.enabled ? '✅ Coffre ACTIF' : '⚠️ Il manque la clé TronGrid') + '</b><br><small class="muted">Adresse :</small> <code style="word-break:break-all;color:#FDE047">' + esc(r.address) + '</code><br><a href="https://tronscan.org/#/address/' + esc(r.address) + '" target="_blank" rel="noopener" style="color:#93C5FD">Voir le coffre sur la blockchain ↗</a></div>';
+    h += '<h3 class="panel-title" style="margin:14px 0 4px">⚠️ Reçus, joueur non reconnu (' + r.unmatched.length + ')</h3>';
+    h += r.unmatched.length ? r.unmatched.map(u => '<div class="nt-card" style="margin:6px 0"><b style="color:#FDE047">' + Number(u.amount).toFixed(2) + ' USDT</b> · ' + esc(when(u.at)) + ' · ' + tx(u.hash) + '<br><small class="muted">Envoyé par ' + esc(u.from) + '</small><div style="display:flex;gap:6px;margin-top:6px"><input data-vu="' + esc(u.hash) + '" placeholder="ID, e-mail ou ID public du joueur" style="flex:1;min-width:0"><button class="mini ok" data-va="' + esc(u.hash) + '">Créditer ce joueur</button></div><div class="muted" data-vo="' + esc(u.hash) + '" style="font-size:12px"></div></div>').join('') : '<p class="muted">Aucun. Tout est attribué ✓</p>';
+    h += '<h3 class="panel-title" style="margin:14px 0 4px">✅ Derniers dépôts crédités par le coffre</h3>';
+    h += r.credited.length ? '<table><tr><th>Quand</th><th>Joueur</th><th>Montant</th><th>Envoi</th><th>Reconnu par</th></tr>' + r.credited.map(c => '<tr><td>' + esc(when(c.at)) + '</td><td>' + esc(c.user) + '</td><td>' + Number(c.amount).toFixed(2) + ' $</td><td>' + tx(c.hash) + '</td><td><small>' + esc(c.how) + (/COMPLETED|PAID/.test(c.status) ? '' : ' · ' + esc(c.status)) + '</small></td></tr>').join('') + '</table>' : '<p class="muted">Pas encore de dépôt par le coffre.</p>';
+    $v('vaultBody').innerHTML = h;
+    $v('vaultBody').querySelectorAll('[data-va]').forEach(b => b.onclick = async () => {
+      const hh = b.getAttribute('data-va'), who = String($v('vaultBody').querySelector('[data-vu="' + hh + '"]').value || '').trim(), o = $v('vaultBody').querySelector('[data-vo="' + hh + '"]');
+      if (!who) { o.textContent = 'Indique le joueur'; return; }
+      if (!confirm('Créditer cet envoi à « ' + who + ' » ?')) return;
+      b.disabled = true; const rr = await ajax({action:'vault_assign', hash:hh, user:who}); b.disabled = false;
+      o.textContent = rr && rr.ok ? '✅ Crédité ' + rr.amount + ' $' : '❌ ' + ((rr && rr.reason) || 'Échec');
+      if (rr && rr.ok) setTimeout(paint, 1200);
+    });
+  }
+  $v('btnVault').onclick = () => { $v('vaultModal').classList.add('on'); paint(); };
+  $v('closeVault').onclick = () => $v('vaultModal').classList.remove('on');
+})();
 // 2026-11-10 : 🔑 Clés & connexions — page complète ; les clés ne reviennent JAMAIS dans la page (seulement leur état).
 (function () {
   const $k = id => document.getElementById(id);
@@ -4654,7 +4701,8 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     (k.test && k.test.msg ? '<p style="margin:0 0 6px;font-size:12px;color:' + (k.test.ok === false ? '#F87171' : '#86EFAC') + '">' + esc(k.test.msg) + ' <small class="muted">(' + esc(when(k.test.at)) + ')</small></p>' : '') +
     '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
       (k.url ? '<a class="mini" href="' + esc(k.url) + '" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">↗ Créer la clé</a>' : '') +
-      '<input type="password" autocomplete="off" autocapitalize="off" spellcheck="false" data-k="' + esc(k.name) + '" placeholder="' + (k.set ? 'Remplacer : coller la nouvelle clé' : 'Coller la clé ici') + '" style="flex:1 1 220px;min-width:0">' +
+      (k.value ? '<div style="flex:1 1 100%;font-size:12px">Adresse actuelle : <code style="word-break:break-all;color:#FDE047">' + esc(k.value) + '</code></div>' : '') +
+      '<input type="' + (k.show ? 'text' : 'password') + '" autocomplete="off" autocapitalize="off" spellcheck="false" data-k="' + esc(k.name) + '" placeholder="' + (k.show ? (k.set ? 'Remplacer : coller la nouvelle adresse' : 'Coller l’adresse ici (commence par T)') : (k.set ? 'Remplacer : coller la nouvelle clé' : 'Coller la clé ici')) + '" style="flex:1 1 220px;min-width:0">' +
       '<button class="mini" type="button" data-eye="' + esc(k.name) + '" title="Voir ce que j’ai collé">👁</button>' +
       '<button class="mini ok" data-save="' + esc(k.name) + '">Enregistrer</button>' +
       (k.set ? '<button class="mini" data-test="' + esc(k.name) + '">Tester</button>' : '') +

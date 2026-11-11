@@ -3888,9 +3888,19 @@
     }
   }
 
+  // 2026-11-11 : coffre OROLADO (USDT TRC20 directement chez OROLADO) — son adresse n'est JAMAIS gardée comme « adresse
+  // du joueur » : chaque dépôt passe par l'écran de dépôt, qui donne le montant exact qui reconnaît le joueur.
+  var vaultInfo = (function () { try { return JSON.parse(localStorage.getItem('oro_vault_v1') || '{}') || {}; } catch (e) { return {}; } })();
+  function noteVault(remote, coin) {
+    if (!remote || !remote.ok || String(coin || remote.coin || '') !== 'usdt_trc20') return;
+    var on = !!remote.vault;
+    vaultInfo = on ? { on: 1, addr: String(remote.address || '') } : {};
+    try { localStorage.setItem('oro_vault_v1', JSON.stringify(vaultInfo)); } catch (e) { /* ignore */ }
+  }
   function isStaticPlatAddr(addr) {
     var a = String(addr || '').trim();
     if (!a) return false;
+    if (vaultInfo.addr && a === vaultInfo.addr) return true;
     var plat = String((D6.CONFIG && D6.CONFIG.USDT_TRC20_ADDRESS) || 'TD32ZDYDvhej6MGk7ZsYC5jLKDdCoJquP1').trim();
     return plat !== '' && a.toLowerCase() === plat.toLowerCase();
   }
@@ -3917,8 +3927,9 @@
     });
     var addr = assignedRecv(profRecvCoin);
     var busy = !!recvBusy[meta.cache];
+    if (vaultInfo.on && meta.coin === 'usdt_trc20') addr = '';
     if (el) {
-      el.textContent = addr || t('m_addrGen');
+      el.textContent = addr || (vaultInfo.on && meta.coin === 'usdt_trc20' ? t('vltProfHint') : t('m_addrGen'));
       el.title = addr;
     }
     if (copyBtn) copyBtn.disabled = !addr;
@@ -3960,6 +3971,8 @@
     }).then(function (remote) {
       recvBusy[meta.cache] = false;
       if (recvTimers[meta.cache]) clearTimeout(recvTimers[meta.cache]);
+      noteVault(remote, meta.coin);
+      if (remote && remote.ok && remote.vault) { recvFailed[meta.cache] = false; paintProfRecv(); return; }
       if (remote && remote.ok && remote.address) {
         persistRecv(id || 'usdt', String(remote.address));
         recvFailed[meta.cache] = false;
@@ -6476,6 +6489,7 @@
   }
 
   function cachedOxaAddr() {
+    if (vaultInfo.on && oxaCoin === 'usdt_trc20') return ''; // coffre : toujours une demande fraîche (montant exact)
     var a = recvIsFresh(oxaCoin) ? (recvCache[oxaCoin] || '') : '';
     if (!a && oxaAsset === 'usdt' && recvIsFresh('usdt')) a = recvCache.usdt || '';
     return isStaticPlatAddr(a) ? '' : a;
@@ -6603,13 +6617,14 @@
     oxaInvoice = inv;
     liveDepositAddr = rawCryptoAddr((inv && inv.address) || '');
     var cacheKey = String((inv && inv.coin) || oxaCoin || 'usdt_trc20');
-    if (liveDepositAddr) {
+    if (liveDepositAddr && !(inv && inv.vault)) {
       recvCache[cacheKey] = liveDepositAddr;
       recvFresh[cacheKey] = Date.now();
       if (oxaAsset === 'usdt' && (cacheKey === 'usdt_trc20' || cacheKey.indexOf('usdt_') === 0)) { recvCache.usdt = liveDepositAddr; recvFresh.usdt = Date.now(); }
     }
     var payCur = (inv && inv.payCurrency) || oxaMeta(oxaAsset).symbol;
     if ($('usdtPayAmt')) $('usdtPayAmt').textContent = '';
+    paintVaultBox(inv);
     if ($('usdtAddr') && liveDepositAddr) $('usdtAddr').innerHTML = styleOxaAddr(liveDepositAddr);
     if ($('oxaWalletBox')) setHidden($('oxaWalletBox'), false);
     if ($('oxaNetLabel')) {
@@ -6629,6 +6644,59 @@
       note.hidden = true;
       note.classList.remove('is-err');
     }
+  }
+
+  // 2026-11-11 (propriétaire : « un coffre où ça dépose, sans OxaPay ») : l'argent va DIRECTEMENT dans le portefeuille
+  // d'OROLADO. Le joueur envoie le montant exact affiché (les derniers chiffres reconnaissent sa demande) ; sinon il
+  // colle le numéro de sa transaction.
+  function paintVaultBox(inv) {
+    var box = $('oxaWalletBox');
+    var vb = $('vaultPay');
+    if (!inv || !inv.vault || !box) { if (vb) vb.hidden = true; return; }
+    if (!vb) {
+      vb = document.createElement('div');
+      vb.id = 'vaultPay';
+      vb.className = 'vault-pay';
+      var anchor = $('btnUsdtCopy');
+      box.insertBefore(vb, anchor ? anchor.nextSibling : null);
+    }
+    vb.hidden = false;
+    var amt = String(inv.payExact || inv.payAmount || '');
+    vb.innerHTML = '<div class="vp-lab">' + esc(t('vltExact')) + '</div>' +
+      '<div class="vp-amt" translate="no"><b>' + esc(amt) + '</b> USDT</div>' +
+      '<button type="button" class="oxa-act vp-copy">' + esc(t('vltCopyAmt')) + '</button>' +
+      '<p class="vp-note">' + esc(t('vltNote')) + '</p>' +
+      '<details class="vp-tx"><summary>' + esc(t('vltTxAsk')) + '</summary>' +
+      '<div class="vp-tx-row"><input type="text" class="vp-tx-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(t('vltTxPh')) + '">' +
+      '<button type="button" class="vp-tx-btn">' + esc(t('vltTxBtn')) + '</button></div><p class="vp-tx-out" hidden></p></details>';
+    var cp = vb.querySelector('.vp-copy');
+    bindAndroidTap(cp, function () {
+      copyTextSilent(amt, function () {
+        cp.textContent = t('vltCopied'); cp.classList.add('is-copied');
+        setTimeout(function () { cp.textContent = t('vltCopyAmt'); cp.classList.remove('is-copied'); }, 1600);
+      });
+    });
+    var btn = vb.querySelector('.vp-tx-btn'), inp = vb.querySelector('.vp-tx-in'), outp = vb.querySelector('.vp-tx-out');
+    bindAndroidTap(btn, async function () {
+      var v = String(inp.value || '').trim();
+      function say(msg, bad) { outp.hidden = false; outp.textContent = msg; outp.classList.toggle('is-err', !!bad); }
+      var hx = v.replace(/^.*\//, '').replace(/[^0-9a-fA-F]/g, '');
+      if (hx.length !== 64) { say(t('cryptoErrTx'), true); return; }
+      btn.disabled = true; say(t('vltTxWait'), false);
+      try {
+        var r = await D6.Api.post('vaultClaim', { txid: v }, 25000);
+        if (r && r.ok && (r.paid || r.success) && r.amount > 0) {
+          stopOxaPoll();
+          applyUsdtCredit(r);
+          setCryptoOkCopy(r.amount);
+          showDepositStep('ok');
+          return;
+        }
+        var c = r && r.code;
+        say(c === 'reused' ? t('cryptoErrReused') : c === 'txid' ? t('cryptoErrTx') : c === 'nomatch' ? t('vltTxNo') : c === 'session' ? t('sessionExpiredMsg') : t('vltTxLater'), true);
+      } catch (e) { say(t('vltTxLater'), true); }
+      finally { btn.disabled = false; }
+    });
   }
 
   async function postOxaInvoice(payload) {
@@ -6747,6 +6815,7 @@
         toast(safeReason, 'err', 5200);
         return;
       }
+      noteVault(remote, oxaCoin);
       paintOxaInvoice(remote);
       startOxaPoll();
     } catch (err) {
