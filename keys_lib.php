@@ -47,6 +47,7 @@ function keys_catalog(): array {
         'fmtBad' => 'Ce n’est pas une adresse Dogecoin (elle commence par D). Dans Trust Wallet : Recevoir → DOGE → Copier.'],
     ]],
     ['cat' => 'Dépôts crypto : voir les paiements arriver', 'items' => [
+      ['name' => 'TATUM_API_KEY', 'title' => 'Tatum (66 réseaux)', 'ico' => '🟪', 'what' => 'Les « yeux » pour Bitcoin, Ethereum, BNB, Polygon, Base, Solana, TON, Litecoin, Dogecoin, XRP… (et secours de TRON).', 'url' => 'https://dashboard.tatum.io', 'how' => 'Tableau de bord → API Keys → Mainnet → copier', 'fmt' => '/^t-[0-9a-f]{6,}[A-Za-z0-9_-]*$/', 'fmtTxt' => 't-…', 'fmtBad' => 'Ce n’est pas une clé Tatum (elle commence par t-). Dans Tatum : API Keys → Mainnet → bouton copier.'],
       ['name' => 'TRONGRID_API_KEY', 'title' => 'TronGrid', 'ico' => '🟥', 'what' => 'USDT TRC20 et TRX (réseau TRON). Le plus utilisé en Afrique.', 'url' => 'https://www.trongrid.io/register', 'how' => 'Clés API → Créer', 'fmt' => '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', 'fmtTxt' => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'],
       ['name' => 'NODEREAL_API_KEY', 'title' => 'NodeReal', 'ico' => '🟨', 'what' => 'USDT BEP20 et BNB (BNB Chain / Binance).', 'url' => 'https://nodereal.io/meganode', 'how' => 'Create API key → BNB Smart Chain'],
       ['name' => 'BLOCKCYPHER_TOKEN', 'title' => 'BlockCypher', 'ico' => '🟧', 'what' => 'Bitcoin, Litecoin, Dogecoin.', 'url' => 'https://accounts.blockcypher.com/signup', 'how' => 'Le « Token » est sur la page d’accueil du compte'],
@@ -168,6 +169,16 @@ function keys_test(string $name, string $v): array {
       [$c, $r] = keys_http('https://api.trongrid.io/v1/accounts/' . $v, 'GET', null, ['TRON-PRO-API-KEY: ' . $tk, 'Accept: application/json']);
       if ($c !== 200) return ['ok' => true, 'msg' => 'Adresse valide ✓ (TronGrid n’a pas répondu au test, code ' . $c . '). Suite : admin → 🏦 Coffre.'];
       return ['ok' => true, 'msg' => 'Adresse valide ✓ L’argent des joueurs partira ici. Vérifie que c’est bien TON adresse : ' . substr($v, 0, 6) . '…' . substr($v, -6) . '. Suite : admin → 🏦 Coffre.'];
+    case 'TATUM_API_KEY':
+      // Test réel sur plusieurs réseaux : la clé lit-elle bien Bitcoin, Ethereum, BNB, Solana ?
+      $ok = []; $ko = [];
+      foreach (['bitcoin-mainnet' => ['getblockcount', []], 'ethereum-mainnet' => ['eth_blockNumber', []], 'bsc-mainnet' => ['eth_blockNumber', []], 'solana-mainnet' => ['getSlot', []]] as $net => [$m, $prm]) {
+        [$c, $r] = keys_http('https://' . $net . '.gateway.tatum.io/', 'POST', json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => $m, 'params' => $prm]), ['Content-Type: application/json', 'x-api-key: ' . $v]);
+        $nm = ['bitcoin-mainnet' => 'Bitcoin', 'ethereum-mainnet' => 'Ethereum', 'bsc-mainnet' => 'BNB', 'solana-mainnet' => 'Solana'][$net];
+        if ($c === 200 && str_contains($r, '"result"')) $ok[] = $nm; else $ko[] = $nm . ' (code ' . $c . ')';
+      }
+      if (!$ok) return ['ok' => false, 'msg' => 'Tatum refuse la clé : ' . implode(', ', $ko)];
+      return ['ok' => true, 'msg' => 'Tatum répond ✓ ' . implode(', ', $ok) . ($ko ? ' — pas encore : ' . implode(', ', $ko) : '')];
     case 'TRONGRID_API_KEY':
       [$c, $r] = keys_http('https://api.trongrid.io/wallet/getnowblock', 'POST', '{}', array_merge($json, ['TRON-PRO-API-KEY: ' . $v]));
       return ($c === 200 && str_contains($r, 'block_header')) ? ['ok' => true, 'msg' => 'TronGrid répond : la clé fonctionne'] : ['ok' => false, 'msg' => 'TronGrid refuse la clé (code ' . $c . ')'];
