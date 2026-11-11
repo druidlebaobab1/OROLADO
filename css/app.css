@@ -14735,3 +14735,15 @@ html body #regAge:checked{background:linear-gradient(180deg,#F3D48A,#C9962F);bor
 html body #regAge:checked::after{content:"";width:5px;height:10px;border:solid #1a1205;border-width:0 2.4px 2.4px 0;transform:translate(0,-1px) rotate(45deg)}
 html body #regCode::placeholder{font-size:.9em;letter-spacing:.04em;text-transform:none}
 html body .list-row[hidden]{display:none!important}
+/* 2026-11-12 (propriétaire, 3e retour) : plus simple et sobre.
+   - mot « CRYPTO » sous « Dépôt crypto » retiré ;
+   - +225 / +221 : plus de ✓, choix calme (bord doré fin seulement) ;
+   - case du montant : sans « $ », une seule couleur, propre. */
+html body #depositModal #depositStepCrypto .oxa-field > label[for="oxaCoinBtn"]{display:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMomoBox .wave-cc .wcc.on::after{content:none!important;display:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #payMomoBox .wave-cc .wcc.on{background:rgba(255,255,255,.04)!important;border-color:rgba(233,196,122,.5)!important;color:#ECECF1!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #depositAmt.dep-amt-input{background:#0B0B0C!important;background-image:none!important;padding:0 16px!important;
+  border:1px solid rgba(255,255,255,.14)!important;color:#fff!important;font-size:22px!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #depositAmt.dep-amt-input:focus{border-color:rgba(233,196,122,.6)!important;box-shadow:none!important}
+html body #depositModal#depositModal#depositModal#depositModal #depositBox .field > label{color:#B9B9C2!important}
+html body #depositModal#depositModal#depositModal#depositModal #depositBox .field .amt-row,html body #depositModal#depositModal#depositModal#depositModal #depositBox .field .amt-row *{color:#8E8E98!important}
