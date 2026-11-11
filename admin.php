@@ -2374,11 +2374,17 @@ if ($isAjax) {
       $patch = [];
       if (isset($req['on'])) $patch['on'] = !empty($req['on']) && $req['on'] !== 'false' && $req['on'] !== '0';
       if (isset($req['min'])) $patch['min'] = max(5.0, min(5000.0, (float) $req['min']));
+      if (isset($req['evm_on'])) $patch['evm_on'] = !empty($req['evm_on']) && $req['evm_on'] !== 'false' && $req['evm_on'] !== '0';
+      if (!empty($patch['evm_on']) && !(function_exists('cevm_ready') && cevm_ready())) admin_json(['ok' => false, 'reason' => 'Il manque ton adresse Ethereum (0x…) dans la case ① du coffre.']);
       if (!empty($patch['on']) && !coffre_ready()) admin_json(['ok' => false, 'reason' => 'Il manque l’adresse du coffre (Trust Wallet) ou la clé TronGrid dans 🔑 Clés & connexions.']);
       coffre_cfg_set($patch);
       admin_persist_admin_log((string) ($me['email'] ?? ''), 'COFFRE', 'config', 0, 'Coffre : ' . json_encode($patch));
     }
-    if ($action === 'coffre_sweep') { $r = coffre_sweep(true, 5); admin_json($r + ['view' => coffre_admin_view()]); }
+    if ($action === 'coffre_sweep') {
+      $r = coffre_ready() ? coffre_sweep(true, 5) : ['ok' => true, 'done' => []];
+      if (function_exists('cevm_sweep') && cevm_ready()) { $re = cevm_sweep(true, 6); $r['done'] = array_merge((array) ($r['done'] ?? []), (array) ($re['done'] ?? [])); $r['ok'] = true; }
+      admin_json($r + ['view' => coffre_admin_view()]);
+    }
     admin_json(coffre_admin_view());
   }
   if (in_array($action, ['keys_status', 'keys_set', 'keys_test', 'keys_del'], true)) {
@@ -4700,6 +4706,9 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       '</div>' +
       '<div style="margin-top:8px;font-size:12px">Envoi automatique vers ton Trust Wallet dès <input id="cfMin" type="number" min="5" max="5000" value="' + esc(r.min) + '" style="width:80px"> $ sur une adresse <button class="mini" id="cfMinSave">OK</button><br><small class="muted">Chaque envoi coûte environ 7 TRX (≈ 2 $) au réservoir. Les petits montants partent au bout de 24 h.</small></div>' +
       '<div class="muted" id="cfOut" style="font-size:12px;margin-top:6px"></div></div>';
+    // 2026-11-11 : famille Ethereum (Ethereum, BNB, Polygon, Base, Arbitrum) — réservoir 0x et son essence sur chaque réseau.
+    if (r.evm && r.evm.ready) h += '<div class="nt-card" style="margin-top:8px"><b>🔷 Ethereum / BNB / Polygon / Base / Arbitrum</b> ' + (r.evm.on ? '<span class="pill pill-ok">allumé pour tous</span> <button class="mini bad" data-evm="0">Éteindre</button>' : '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">test : toi seul (admin)</span> <button class="mini ok" data-evm="1">Allumer pour tous</button>') + '<br><small class="muted">Réservoir (même adresse sur les 5 réseaux) :</small> <code style="word-break:break-all;color:#FDE047">' + esc(r.evm.gas) + '</code> <button class="mini" data-cp="' + esc(r.evm.gas) + '">Copier</button><br><small class="muted">Essence à mettre seulement sur le réseau utilisé, dans SA monnaie :</small><table>' + (r.evm.gasBal || []).map(g => '<tr><td>' + esc(g.name) + '</td><td><b>' + (g.bal === null ? '?' : g.bal) + ' ' + esc(g.native) + '</b></td></tr>').join('') + '</table><small class="muted">Conseillé : BNB 0,01 · POL 2 · ETH (Base/Arbitrum) 0,002 · ETH (Ethereum) 0,005. Les dépôts sont crédités même sans essence.</small></div>';
+    else if (r.evm) h += '<div class="nt-card" style="margin-top:8px"><b>🔷 Ethereum / BNB / Polygon / Base / Arbitrum</b> — colle ton adresse « USDT Ethereum » (0x…) dans la case ① pour l’activer.</div>';
     h += '<div class="nt-card" style="margin-top:8px;display:flex;gap:14px;flex-wrap:wrap"><div><small class="muted">Adresses de joueurs</small><br><b style="font-size:18px">' + r.addresses + '</b></div><div><small class="muted">Total reçu et crédité</small><br><b style="font-size:18px;color:#86EFAC">' + Number(r.credited).toFixed(2) + ' $</b></div><div><small class="muted">En route vers ton Trust Wallet</small><br><b style="font-size:18px;color:#FDE047">' + Number(r.waiting).toFixed(2) + ' $</b></div></div>';
     h += '<h3 class="panel-title" style="margin:14px 0 4px">🏷️ Adresses de joueurs créées</h3>';
     h += (r.addrs || []).length ? '<table><tr><th>Joueur</th><th>Son adresse OROLADO</th><th>Reçu</th></tr>' + r.addrs.map(a => '<tr><td>' + esc(a.user) + '</td><td>' + adl(a.addr) + '</td><td>' + Number(a.got).toFixed(2) + ' $</td></tr>').join('') + '</table>' : '<p class="muted">Aucune pour l’instant. Pour ton test : sur orolado.com avec ton compte admin → Recharger → USDT TRC20 : ton adresse OROLADO apparaîtra ici (ce n’est PAS ton adresse Trust Wallet).</p>';
@@ -4718,6 +4727,11 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       if (!rr || !rr.ok) { o.textContent = '❌ ' + ((rr && rr.reason) || 'Échec'); return; }
       o.textContent = (rr.test && rr.test.ok === false ? '⚠️ ' : '✅ ') + ((rr.test && rr.test.msg) || 'Enregistrée');
       setTimeout(() => paint(), 1800);
+    });
+    $v('vaultBody').querySelectorAll('[data-evm]').forEach(b => b.onclick = async () => {
+      const on = b.getAttribute('data-evm') === '1';
+      if (!confirm(on ? 'Allumer Ethereum / BNB / Polygon / Base / Arbitrum pour TOUS les joueurs ? (fais d’abord ton petit test)' : 'Éteindre pour les joueurs ? (OxaPay reprend pour ces cryptos)')) return;
+      const x = await ajax({action:'coffre_set', evm_on: on ? 1 : 0}); x && x.ok ? paint(x) : alert((x && x.reason) || 'Échec');
     });
     $v('vaultBody').querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { try { navigator.clipboard.writeText(b.getAttribute('data-cp')); b.textContent = '✓ Copié'; } catch (e) {} });
     if ($v('cfOn')) $v('cfOn').onclick = async () => { if (!confirm('Allumer le coffre pour TOUS les joueurs ? Les dépôts USDT TRC20 iront sur les adresses OROLADO (plus OxaPay).')) return; const x = await ajax({action:'coffre_set', on:1}); x && x.ok ? paint(x) : out('❌ ' + ((x && x.reason) || 'Échec')); };
