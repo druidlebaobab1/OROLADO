@@ -433,7 +433,9 @@
       } else {
         flash(l.save, 'save');
         var sd = col === 0 ? -1 : col === 2 ? 1 : (K.seeded(nShot, 9) < 0.5 ? -1 : 1), central = col === 1;
-        var ex = central ? 180 + sd * 54 : tx + sd * 84, ey = central ? 228 : 178, ec = central ? 0.9 : 0.5, pk = central ? ty - 30 : ty - 26;
+        // 2026-11-12 (propriétaire : « il dégage le ballon en le faisant rentrer ») : le ballon repoussé SORT du but —
+        // il revient vers la pelouse (vers nous, plus gros) et part sur le côté, au-delà du poteau, jamais vers le filet.
+        var ex = central ? 180 + sd * 70 : tx + sd * 120, ey = central ? 250 : 246, ec = central ? 0.92 : 0.86, pk = central ? ty - 34 : ty - 40;
         await anim(box, fast ? 260 : 660, function (k) {
           var bx = tx + (ex - tx) * k, by = bez(ty, pk, ey, k), s = endS + (ec - endS) * k;
           setBall(bx, by, s, 1080 - k * 600); setBShadow(bx, central ? 168 + (ey + 10 - 168) * k : 168 + 8 * k, s, 0.5);
