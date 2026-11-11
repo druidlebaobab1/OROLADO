@@ -637,11 +637,22 @@ function coffre_admin_view(): array {
     foreach (cutxo_chains() as $cc) $byNet[$cc['name']]['now'] = rtrim(rtrim(number_format(($ub[$cc['name']] ?? 0) / 1e8, 8, '.', ''), '0'), '.') . ' ' . $cc['sym'];
   }
   $evmNames = function_exists('cevm_chains') ? array_column(cevm_chains(), 'name') : [];
+  $evmCoin = [];
   foreach ($db['deposits'] ?? [] as $d) {
     if (!is_array($d) || (string) ($d['operator'] ?? '') !== 'coffre' || (string) ($d['parentId'] ?? '') === '' || !in_array(strtoupper((string) ($d['status'] ?? '')), ['COMPLETED', 'PAID'], true)) continue;
     $nw = (string) ($d['network'] ?? '');
     $k = ($nw === 'TRC20' || $nw === '') ? 'TRC20' : (in_array($nw, $evmNames, true) ? 'EVM' : $nw);
     if (isset($byNet[$k])) $byNet[$k]['got'] = round($byNet[$k]['got'] + (float) ($d['amount'] ?? 0), 2);
+    // Famille Ethereum : une ligne par crypto reçue (USDT · BNB Chain, PEPE · Ethereum…).
+    if ($k === 'EVM') {
+      $ck = strtoupper((string) ($d['coin'] ?? '')) . ' · ' . $nw;
+      $evmCoin[$ck] = ['net' => '↳ ' . $ck, 'n' => '', 'got' => round(($evmCoin[$ck]['got'] ?? 0) + (float) ($d['amount'] ?? 0), 2), 'now' => ''];
+    }
+  }
+  if (!empty($evmCoin)) {
+    uasort($evmCoin, static fn($a, $b) => $b['got'] <=> $a['got']);
+    $pos = array_search('EVM', array_keys($byNet), true) + 1;
+    $byNet = array_slice($byNet, 0, $pos, true) + $evmCoin + array_slice($byNet, $pos, null, true);
   }
   $nAddr = count($ix) + (empty($gas['addr']) ? 0 : 1);
   $mine = [];

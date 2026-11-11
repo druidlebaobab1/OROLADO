@@ -14562,3 +14562,29 @@ html body #depositModal #oxaCoinList .oxa-dd-meta small{font-size:.74rem;color:#
 html body #depositModal .oxa-dd-tag{flex-shrink:0;max-width:56%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   font-size:.62rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#E9C47A;
   padding:4px 8px;border-radius:999px;background:rgba(236,204,139,.1);border:1px solid rgba(236,204,139,.22)}
+/* 2026-11-12 (propriétaire) : pas de lueur jaune à gauche dans la liste ; écran crypto « tiré » vers le bas (QR plus grand, plus d'air). */
+html body #depositModal #oxaCoinList .oxa-dd-opt.on{box-shadow:none!important;background:rgba(236,204,139,.09)!important}
+html body #depositModal #oxaCoinList .oxa-dd-opt.on .oxa-dd-tag{background:rgba(236,204,139,.22);color:#FFE7A8}
+html body #depositModal #oxaCoinList .oxa-dd-opt:focus,html body #depositModal #oxaCoinList .oxa-dd-opt:focus-visible{outline:0;box-shadow:none}
+@media (hover:none){html body #depositModal #oxaCoinList .oxa-dd-opt:hover:not(.on){background:transparent}}
+html body #depositModal #oxaCoinMenu.oxa-dd{max-height:min(68vh,520px)}
+html body #depositModal#depositModal .deposit-box.is-crypto .oxa-wallet{padding:clamp(14px,2.6vh,22px) 14px clamp(14px,2.4vh,20px)!important}
+html body #depositModal#depositModal .deposit-box.is-crypto .crypto-qr-wrap{margin:clamp(2px,1vh,8px) 0 clamp(10px,2vh,16px)!important}
+html body #depositModal#depositModal .deposit-box.is-crypto .crypto-qr{width:clamp(150px,27vh,224px)!important;height:clamp(150px,27vh,224px)!important;padding:clamp(8px,1.4vh,12px)!important;border-radius:16px!important}
+html body #depositModal#depositModal .deposit-box.is-crypto .oxa-wallet-title{margin-bottom:clamp(6px,1.2vh,10px)!important}
+html body #depositModal#depositModal .deposit-box.is-crypto #usdtAddr{line-height:1.45!important;padding:clamp(4px,1vh,8px) 0!important}
+html body #depositModal#depositModal .deposit-box.is-crypto #usdtLiveBadge{margin-top:clamp(10px,1.8vh,16px)!important}
+/* 2026-11-12 (propriétaire) : ligne « carte bancaire » (Visa / Mastercard) sous Wave. */
+html body #depositModal#depositModal .btn-card-only{width:100%;height:44px;margin:0 0 8px;padding:0 12px;border-radius:11px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;font-family:inherit;color:#fff;touch-action:manipulation;
+  background:linear-gradient(135deg,#1F3263,#14203F)!important;border:1px solid rgba(233,196,122,.45)!important;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+html body #depositModal#depositModal .btn-card-only .cco-ico{flex:0 0 30px;width:30px;height:21px;display:block}
+html body #depositModal#depositModal .btn-card-only .cco-ico svg{width:100%;height:100%;display:block}
+html body #depositModal#depositModal .btn-card-only .cco-txt{flex:1;min-width:0;text-align:center;font-weight:900;font-size:13.5px;letter-spacing:.4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #depositModal#depositModal .btn-card-only .cco-brands{flex:0 0 auto;display:flex;align-items:center;gap:5px}
+html body #depositModal#depositModal .btn-card-only .cco-brands svg{height:15px;width:auto;display:block}
+html body #depositModal#depositModal .btn-card-only .cco-brands svg:first-child{width:34px}
+html body #depositModal#depositModal .btn-card-only .cco-brands svg:last-child{width:24px}
+html body #depositModal#depositModal .btn-card-only.busy,html body #depositModal#depositModal .btn-card-only:disabled{opacity:.75;cursor:default}
+@media (max-width:374px){html body #depositModal#depositModal .btn-card-only .cco-txt{font-size:12.5px;letter-spacing:.2px}}

@@ -582,6 +582,8 @@
  "payMethodUsdtTitle": "加密货币充值",
  "payMode": "支持的支付方式",
  "payMomoBtn": "Mobile Money 支付",
+ "payCardOnlyBtn": "使用银行卡支付",
+ "payCardOnlyBtn": "使用银行卡支付",
  "payWaveBtn": "使用 Wave 支付",
  "payoutBadge": "收益率",
  "payoutLabel": "收益率",

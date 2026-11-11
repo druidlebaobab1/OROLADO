@@ -6363,72 +6363,71 @@
   var oxaTimer = 0;
   var liveDepositAddr = '';
   var OXA_ASSETS = [
+    // 2026-11-12 : classées de la plus connue à la moins connue (logos : /img/coins).
     { id: 'usdt', symbol: 'USDT', name: 'Tether', color: '#26A17B', mark: '₮', minUsd: 5, nets: ['TRC20', 'ERC20', 'BEP20'] },
-    { id: 'usdc', symbol: 'USDC', name: 'USD Coin', color: '#2775CA', mark: '$', minUsd: 5, networkName: 'Ethereum Network' },
     { id: 'btc', symbol: 'BTC', name: 'Bitcoin', color: '#F7931A', mark: '₿', minUsd: 15, networkName: 'Bitcoin Network' },
     { id: 'eth', symbol: 'ETH', name: 'Ethereum', color: '#627EEA', mark: 'Ξ', minUsd: 15, networkName: 'Ethereum Network' },
-    { id: 'trx', symbol: 'TRX', name: 'TRON', color: '#FF0013', mark: 'T', minUsd: 5, networkName: 'Tron Network' },
+    { id: 'usdc', symbol: 'USDC', name: 'USD Coin', color: '#2775CA', mark: '$', minUsd: 5, networkName: 'Ethereum Network' },
     { id: 'bnb', symbol: 'BNB', name: 'BNB', color: '#F3BA2F', mark: 'B', minUsd: 10, networkName: 'BNB Smart Chain' },
+    { id: 'trx', symbol: 'TRX', name: 'TRON', color: '#FF0013', mark: 'T', minUsd: 5, networkName: 'Tron Network' },
     { id: 'sol', symbol: 'SOL', name: 'Solana', color: '#14F195', mark: 'S', minUsd: 10, networkName: 'Solana Network' },
-    { id: 'ltc', symbol: 'LTC', name: 'Litecoin', color: '#345D9D', mark: 'Ł', minUsd: 10, networkName: 'Litecoin Network' },
-    { id: 'doge', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', mark: 'Ð', minUsd: 5, networkName: 'Dogecoin Network' },
     { id: 'xrp', symbol: 'XRP', name: 'XRP', color: '#346AA9', mark: 'X', minUsd: 10, networkName: 'XRP Ledger' },
+    { id: 'doge', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', mark: 'Ð', minUsd: 5, networkName: 'Dogecoin Network' },
+    { id: 'ltc', symbol: 'LTC', name: 'Litecoin', color: '#345D9D', mark: 'Ł', minUsd: 10, networkName: 'Litecoin Network' },
     { id: 'pol', symbol: 'POL', name: 'Polygon', color: '#8247E5', mark: 'P', minUsd: 5, networkName: 'Polygon Network' },
     { id: 'shib', symbol: 'SHIB', name: 'Shiba Inu', color: '#FFA409', mark: 'S', minUsd: 5, networkName: 'BNB Smart Chain' },
-    { id: 'gram', symbol: 'GRAM', name: 'Gram (TON)', color: '#0098EA', mark: 'G', minUsd: 5, networkName: 'TON Network' },
-    { id: 'xmr', symbol: 'XMR', name: 'Monero', color: '#FF6600', mark: 'M', minUsd: 10, networkName: 'Monero Network' },
-    { id: 'dai', symbol: 'DAI', name: 'DAI', color: '#F5AC37', mark: 'D', minUsd: 5, networkName: 'Ethereum Network' },
-    { id: 'bch', symbol: 'BCH', name: 'Bitcoin Cash', color: '#8DC351', mark: 'C', minUsd: 10, networkName: 'Bitcoin Cash Network' },
-    { id: 'not', symbol: 'NOT', name: 'Notcoin', color: '#FFD21E', mark: 'N', minUsd: 5, networkName: 'TON Network' },
-    { id: 'dogs', symbol: 'DOGS', name: 'Dogs', color: '#E8A317', mark: 'd', minUsd: 5, networkName: 'TON Network' },
-    // 2026-11-11 : cryptos du coffre (même adresse 0x que USDT ERC20/BEP20)
+    { id: 'pepe', symbol: 'PEPE', name: 'Pepe', color: '#3D9A3A', mark: 'P', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'avax', symbol: 'AVAX', name: 'Avalanche', color: '#E84142', mark: 'A', minUsd: 5, networkName: 'Avalanche C-Chain' },
     { id: 'link', symbol: 'LINK', name: 'Chainlink', color: '#2A5ADA', mark: 'L', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'twt', symbol: 'TWT', name: 'Trust Wallet Token', color: '#3375BB', mark: 'T', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
+    { id: 'wbtc', symbol: 'WBTC', name: 'Wrapped Bitcoin', color: '#F09242', mark: 'W', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'uni', symbol: 'UNI', name: 'Uniswap', color: '#FF007A', mark: 'U', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'pepe', symbol: 'PEPE', name: 'Pepe', color: '#3D9A3A', mark: 'P', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'aave', symbol: 'AAVE', name: 'Aave', color: '#9A62B6', mark: 'A', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'dai', symbol: 'DAI', name: 'DAI', color: '#F5AC37', mark: 'D', minUsd: 5, networkName: 'Ethereum Network' },
     { id: 'arb', symbol: 'ARB', name: 'Arbitrum', color: '#28A0F0', mark: 'A', minUsd: 5, networkName: 'Arbitrum One' },
     { id: 'op', symbol: 'OP', name: 'Optimism', color: '#FF0420', mark: 'O', minUsd: 5, networkName: 'Optimism' },
+    { id: 'floki', symbol: 'FLOKI', name: 'Floki', color: '#F6A11A', mark: 'F', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'babydoge', symbol: 'BABYDOGE', name: 'Baby Doge', color: '#F0B90B', mark: 'B', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
+    { id: 'ape', symbol: 'APE', name: 'ApeCoin', color: '#0054F9', mark: 'A', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'sand', symbol: 'SAND', name: 'The Sandbox', color: '#00ADEF', mark: 'S', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'mana', symbol: 'MANA', name: 'Decentraland', color: '#FF2D55', mark: 'M', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'axs', symbol: 'AXS', name: 'Axie Infinity', color: '#0055D5', mark: 'A', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'gala', symbol: 'GALA', name: 'Gala', color: '#0E0E0E', mark: 'G', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'chz', symbol: 'CHZ', name: 'Chiliz', color: '#CD0124', mark: 'C', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'aave', symbol: 'AAVE', name: 'Aave', color: '#9A62B6', mark: 'A', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'cake', symbol: 'CAKE', name: 'PancakeSwap', color: '#D1884F', mark: 'C', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
-    // 2026-11-11 : 38 jetons populaires de Trust Wallet (coffre, même adresse 0x)
-    { id: 'wbtc', symbol: 'WBTC', name: 'Wrapped Bitcoin', color: '#F09242', mark: 'W', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'wld', symbol: 'WLD', name: 'Worldcoin', color: '#333333', mark: 'W', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'ondo', symbol: 'ONDO', name: 'Ondo', color: '#1A1A2E', mark: 'O', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'render', symbol: 'RENDER', name: 'Render', color: '#CF1011', mark: 'R', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'fet', symbol: 'FET', name: 'Fetch.ai', color: '#1D2A4F', mark: 'F', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'imx', symbol: 'IMX', name: 'Immutable', color: '#17B5CB', mark: 'I', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'ldo', symbol: 'LDO', name: 'Lido DAO', color: '#F69988', mark: 'L', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'crv', symbol: 'CRV', name: 'Curve', color: '#3A3A99', mark: 'C', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'comp', symbol: 'COMP', name: 'Compound', color: '#00D395', mark: 'C', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'snx', symbol: 'SNX', name: 'Synthetix', color: '#00D1FF', mark: 'S', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'grt', symbol: 'GRT', name: 'The Graph', color: '#6747ED', mark: 'G', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'sand', symbol: 'SAND', name: 'The Sandbox', color: '#00ADEF', mark: 'S', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'mana', symbol: 'MANA', name: 'Decentraland', color: '#FF2D55', mark: 'M', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'ape', symbol: 'APE', name: 'ApeCoin', color: '#0054F9', mark: 'A', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'axs', symbol: 'AXS', name: 'Axie Infinity', color: '#0055D5', mark: 'A', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'imx', symbol: 'IMX', name: 'Immutable', color: '#17B5CB', mark: 'I', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'render', symbol: 'RENDER', name: 'Render', color: '#CF1011', mark: 'R', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'fet', symbol: 'FET', name: 'Fetch.ai', color: '#1D2A4F', mark: 'F', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'ens', symbol: 'ENS', name: 'ENS', color: '#5298FF', mark: 'E', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: '1inch', symbol: '1INCH', name: '1inch', color: '#1B314F', mark: '1', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'bat', symbol: 'BAT', name: 'Basic Attention', color: '#FF5000', mark: 'B', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'chz', symbol: 'CHZ', name: 'Chiliz', color: '#CD0124', mark: 'C', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'ondo', symbol: 'ONDO', name: 'Ondo', color: '#1A1A2E', mark: 'O', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'wld', symbol: 'WLD', name: 'Worldcoin', color: '#333333', mark: 'W', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'pyusd', symbol: 'PYUSD', name: 'PayPal USD', color: '#0070E0', mark: 'P', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'floki', symbol: 'FLOKI', name: 'Floki', color: '#F6A11A', mark: 'F', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'blur', symbol: 'BLUR', name: 'Blur', color: '#FF6B00', mark: 'B', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'tusd', symbol: 'TUSD', name: 'TrueUSD', color: '#2B2E7F', mark: 'T', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'usde', symbol: 'USDe', name: 'Ethena USDe', color: '#111111', mark: 'U', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'gala', symbol: 'GALA', name: 'Gala', color: '#0E0E0E', mark: 'G', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'qnt', symbol: 'QNT', name: 'Quant', color: '#2B2B2B', mark: 'Q', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'mkr', symbol: 'MKR', name: 'Maker', color: '#1AAB9B', mark: 'M', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'sushi', symbol: 'SUSHI', name: 'SushiSwap', color: '#D65892', mark: 'S', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'yfi', symbol: 'YFI', name: 'yearn.finance', color: '#006AE3', mark: 'Y', minUsd: 5, networkName: 'Ethereum (ERC20)' },
     { id: 'ena', symbol: 'ENA', name: 'Ethena', color: '#2A2A2A', mark: 'E', minUsd: 5, networkName: 'Ethereum (ERC20)' },
-    { id: 'twt', symbol: 'TWT', name: 'Trust Wallet Token', color: '#3375BB', mark: 'T', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
-    { id: 'babydoge', symbol: 'BABYDOGE', name: 'Baby Doge', color: '#F0B90B', mark: 'B', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
-    { id: 'fdusd', symbol: 'FDUSD', name: 'First Digital USD', color: '#00B67A', mark: 'F', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
-    { id: 'xvs', symbol: 'XVS', name: 'Venus', color: '#F5B300', mark: 'X', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
     { id: 'brett', symbol: 'BRETT', name: 'Brett', color: '#0052FF', mark: 'B', minUsd: 5, networkName: 'Base' },
     { id: 'degen', symbol: 'DEGEN', name: 'Degen', color: '#A36EFD', mark: 'D', minUsd: 5, networkName: 'Base' },
     { id: 'aero', symbol: 'AERO', name: 'Aerodrome', color: '#0433FF', mark: 'A', minUsd: 5, networkName: 'Base' },
-    { id: 'toshi', symbol: 'TOSHI', name: 'Toshi', color: '#0052FF', mark: 'T', minUsd: 5, networkName: 'Base' }
+    { id: 'toshi', symbol: 'TOSHI', name: 'Toshi', color: '#0052FF', mark: 'T', minUsd: 5, networkName: 'Base' },
+    { id: 'xvs', symbol: 'XVS', name: 'Venus', color: '#F5B300', mark: 'X', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
+    { id: 'pyusd', symbol: 'PYUSD', name: 'PayPal USD', color: '#0070E0', mark: 'P', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'fdusd', symbol: 'FDUSD', name: 'First Digital USD', color: '#00B67A', mark: 'F', minUsd: 5, networkName: 'BNB Smart Chain (BEP20)' },
+    { id: 'tusd', symbol: 'TUSD', name: 'TrueUSD', color: '#2B2E7F', mark: 'T', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'usde', symbol: 'USDe', name: 'Ethena USDe', color: '#111111', mark: 'U', minUsd: 5, networkName: 'Ethereum (ERC20)' },
+    { id: 'bch', symbol: 'BCH', name: 'Bitcoin Cash', color: '#8DC351', mark: 'C', minUsd: 10, networkName: 'Bitcoin Cash Network' },
+    { id: 'xmr', symbol: 'XMR', name: 'Monero', color: '#FF6600', mark: 'M', minUsd: 10, networkName: 'Monero Network' },
+    { id: 'gram', symbol: 'GRAM', name: 'Gram (TON)', color: '#0098EA', mark: 'G', minUsd: 5, networkName: 'TON Network' },
+    { id: 'not', symbol: 'NOT', name: 'Notcoin', color: '#FFD21E', mark: 'N', minUsd: 5, networkName: 'TON Network' },
+    { id: 'dogs', symbol: 'DOGS', name: 'Dogs', color: '#E8A317', mark: 'd', minUsd: 5, networkName: 'TON Network' }
   ];
 
   function oxaMeta(id) {
@@ -6477,7 +6476,7 @@
   // 2026-11-11 (propriétaire : « chaque crypto doit avoir son logo ») : vrais logos (ceux de Trust Wallet), /img/coins/<id>.png.
   var COIN_LOGOS = ' 1inch aave aero ape arb avax axs babydoge bat bch blur bnb brett btc cake chz comp crv dai degen doge ena ens eth fdusd fet floki gala gram grt imx ldo link ltc mana mkr ondo op pepe pol pyusd qnt render sand shib snx sol sushi toshi trx tusd twt uni usdc usde usdt wbtc wld xrp xvs yfi ';
   function coinLogoHtml(m) {
-    if (COIN_LOGOS.indexOf(' ' + m.id + ' ') >= 0) return '<img src="/img/coins/' + m.id + '.png?v=1" alt="" width="36" height="36" loading="lazy" decoding="async">';
+    if (COIN_LOGOS.indexOf(' ' + m.id + ' ') >= 0) return '<img src="/img/coins/' + m.id + '.png?v=2" alt="" width="36" height="36" loading="lazy" decoding="async">';
     return m.mark;
   }
   function coinNetTag(m) {
@@ -6672,8 +6671,8 @@
     if (!qr || !raw) return;
     var enc = encodeURIComponent(raw);
     var sources = [
-      'api/qr.php?d=' + enc,
-      'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=' + enc,
+      '/api/qr.php?s=320&d=' + enc,
+      'https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=8&data=' + enc,
       'https://quickchart.io/qr?size=160&margin=1&text=' + enc,
       'https://image-charts.com/chart?chs=160x160&cht=qr&chld=M|1&chl=' + enc
     ];
@@ -7213,8 +7212,10 @@
     confirmDeposit();
   }
 
-  async function confirmDeposit() {
+  // opts.cardOnly (2026-11-12, propriétaire) : ligne « carte bancaire » — Flutterwave n'affiche que le paiement par carte.
+  async function confirmDeposit(opts) {
     if (depositing) return;
+    var cardOnly = !!(opts && opts.cardOnly);
     var u = user();
     if (!u) {
       toast(t('sessionExpiredMsg'), 'info');
@@ -7228,7 +7229,8 @@
       return;
     }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
-    var btn = $('btnConfirmDeposit');
+    var btn = $(cardOnly ? 'btnCardOnly' : 'btnConfirmDeposit');
+    var btnHtml = btn ? btn.innerHTML : '';
     depositing = true;
     if (btn) {
       btn.disabled = true;
@@ -7258,7 +7260,8 @@
         amount: amt,
         country: cc || '',
         lang: String(navigator.language || navigator.userLanguage || ''),
-        currency: cfa || ''
+        currency: cfa || '',
+        cardOnly: cardOnly ? 1 : 0
       });
       // v2542 — compte admin seulement : petit code à la fin du message pour savoir d'où vient un refus.
       var flwDiag = (u && u.role === 'admin') ? function (tag) { return ' [' + tag + ']'; } : function () { return ''; };
@@ -7289,7 +7292,7 @@
       if (btn) {
         btn.disabled = false;
         btn.classList.remove('busy');
-        btn.textContent = t('payCardBtn');
+        if (cardOnly) btn.innerHTML = btnHtml; else btn.textContent = t('payCardBtn');
       }
     }
   }
@@ -9552,6 +9555,7 @@
       closeModal('depositModal');
     });
     if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
+    if ($('btnCardOnly')) $('btnCardOnly').addEventListener('click', function () { if (!depositing) confirmDeposit({ cardOnly: true }); });
     if ($('payMethodUsdt')) $('payMethodUsdt').addEventListener('click', function () { setDepositPayMethod('usdt'); });
     if ($('btnExpressCrypto')) bindAndroidTap($('btnExpressCrypto'), function () { openDeposit(); }); // v2758 : « Recharger » ouvre la page de recharge (Wave, cartes, crypto…)
     if ($('oxaCoinBtn')) {
