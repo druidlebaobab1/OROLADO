@@ -603,10 +603,10 @@ function coffre_admin_view(): array {
   $nets = [];
   if (!function_exists('keys_catalog') && is_file(__DIR__ . '/keys_lib.php')) require_once __DIR__ . '/keys_lib.php';
   if (function_exists('keys_catalog')) foreach (keys_catalog() as $c) foreach ($c['items'] as $it) {
-    // Seulement les réseaux qui marchent vraiment (Solana, TON… : pas de case tant qu'ils ne sont pas branchés).
-    if (!in_array((string) $it['name'], ['VAULT_TRON_ADDRESS', 'VAULT_EVM_ADDRESS', 'VAULT_BTC_ADDRESS', 'VAULT_LTC_ADDRESS', 'VAULT_DOGE_ADDRESS'], true)) continue;
+    // Toutes les cases restent (le propriétaire colle ses adresses dès maintenant) ; « live » = moteur déjà branché.
+    if (!str_starts_with((string) $it['name'], 'VAULT_')) continue;
     $nets[] = ['name' => $it['name'], 'title' => $it['title'], 'ico' => $it['ico'], 'how' => $it['how'] ?? '', 'what' => $it['what'] ?? '',
-      'value' => keys_value((string) $it['name']), 'live' => true];
+      'value' => keys_value((string) $it['name']), 'live' => in_array((string) $it['name'], ['VAULT_TRON_ADDRESS', 'VAULT_EVM_ADDRESS', 'VAULT_BTC_ADDRESS', 'VAULT_LTC_ADDRESS', 'VAULT_DOGE_ADDRESS'], true)];
   }
   $gb = !empty($gas['addr']) ? coffre_balances((string) $gas['addr']) : null;
   $db = load_db(orolado_data_file());
