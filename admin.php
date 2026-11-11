@@ -2361,37 +2361,22 @@ if ($isAjax) {
   // 2026-11-10 (propriétaire : « 9 $ reçus chez OxaPay mais pas crédités ») : vérifier TOUS les paiements OxaPay /
   // Flutterwave payés des 7 derniers jours, créditer ce qui ne l'est pas (jamais deux fois), et lister ceux qui ne
   // correspondent à aucun joueur (à voir à la main).
-  // 2026-11-10 (propriétaire : « je n'arrive pas à mettre la clé dans l'hébergeur ») : l'admin colle ses clés API ici.
-  // Rangées dans data/.env (dossier fermé au web), JAMAIS réaffichées : on montre seulement « configurée ✓ ».
-  if ($action === 'keys_status' || $action === 'keys_set') {
-    $allowed = ['TRONGRID_API_KEY' => 'TronGrid (USDT TRC20, TRX)', 'NODEREAL_API_KEY' => 'NodeReal (USDT BEP20, BNB)', 'BLOCKCYPHER_TOKEN' => 'BlockCypher (Bitcoin, Litecoin, Dogecoin)',
-      'ETHERSCAN_API_KEY' => 'Etherscan (USDT ERC20, ETH)', 'HELIUS_API_KEY' => 'Helius (Solana)', 'TONCENTER_API_KEY' => 'TON Center (TON)', 'OXAPAY_PAYOUT_KEY' => 'OxaPay Payout (retraits)'];
-    $envF = orolado_data_dir() . '/.env';
-    $readEnv = static function () use ($envF): array { $o = []; foreach ((array) @file($envF, FILE_IGNORE_NEW_LINES) as $l) { if (preg_match('/^\s*([A-Z0-9_]+)\s*=\s*(.*)$/', (string) $l, $m)) $o[$m[1]] = trim($m[2], " \t\"'"); } return $o; };
+  // 2026-11-10 (propriétaire : « un endroit où tous nos appels sont rangés ») — page « 🔑 Clés & connexions » (keys_lib.php).
+  if (in_array($action, ['keys_status', 'keys_set', 'keys_test', 'keys_del'], true)) {
+    require_once __DIR__ . '/keys_lib.php';
+    if ($action === 'keys_status') admin_json(keys_status());
+    $kn = (string) ($req['name'] ?? '');
     if ($action === 'keys_set') {
-      $name = (string) ($req['name'] ?? '');
-      $val = trim((string) ($req['value'] ?? ''));
-      if (!isset($allowed[$name])) admin_json(['ok' => false, 'reason' => 'Nom de clé inconnu']);
-      if (!preg_match('/^[A-Za-z0-9_\-]{8,200}$/', $val)) admin_json(['ok' => false, 'reason' => 'Clé invalide : copiez-la en entier, sans espace.']);
-      if ($name === 'TRONGRID_API_KEY' && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $val)) admin_json(['ok' => false, 'reason' => 'Une clé TronGrid a ce format : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (12 caractères à la fin). Elle semble incomplète.']);
-      $lines = (array) @file($envF, FILE_IGNORE_NEW_LINES); $done = false;
-      foreach ($lines as $i => $l) { if (preg_match('/^\s*' . preg_quote($name, '/') . '\s*=/', (string) $l)) { $lines[$i] = $name . '=' . $val; $done = true; } }
-      if (!$done) $lines[] = $name . '=' . $val;
-      if (@file_put_contents($envF, implode("\n", array_filter(array_map('strval', $lines), static fn($l) => trim($l) !== '')) . "\n", LOCK_EX) === false) admin_json(['ok' => false, 'reason' => 'Écriture impossible sur le serveur']);
-      @chmod($envF, 0600);
-      $test = '';
-      if ($name === 'TRONGRID_API_KEY' && function_exists('curl_init')) { // test : la clé est-elle acceptée par TronGrid ?
-        $ch = curl_init('https://api.trongrid.io/wallet/getnowblock');
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_POSTFIELDS => '{}', CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'TRON-PRO-API-KEY: ' . $val]]);
-        $raw = curl_exec($ch); $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
-        $test = ($code === 200 && is_string($raw) && str_contains($raw, 'block_header')) ? 'ok' : ('refusée (code ' . $code . ')');
-      }
-      admin_persist_admin_log((string) ($me['email'] ?? ''), 'CLÉS', 'config', 0, 'Clé enregistrée : ' . $name);
-      admin_json(['ok' => true, 'test' => $test]);
+      $r = keys_set($kn, (string) ($req['value'] ?? ''), (string) ($me['email'] ?? ''));
+      if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'CLÉS', 'config', 0, 'Clé enregistrée : ' . strtoupper($kn));
+      admin_json($r);
     }
-    $have = $readEnv(); $rows = [];
-    foreach ($allowed as $k => $lbl) $rows[] = ['name' => $k, 'label' => $lbl, 'set' => (($have[$k] ?? '') !== '') || (string) getenv($k) !== ''];
-    admin_json(['ok' => true, 'keys' => $rows]);
+    if ($action === 'keys_test') admin_json(keys_retest(strtoupper($kn)));
+    if ($action === 'keys_del') {
+      $r = keys_delete($kn);
+      if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'CLÉS', 'config', 0, 'Clé supprimée : ' . strtoupper($kn));
+      admin_json($r);
+    }
   }
   if ($action === 'pay_reconcile_all') {
     @set_time_limit(60);
@@ -3342,8 +3327,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <button class="mini tb-b" id="btnMail" type="button" style="--c:#60A5FA">✉️ E-mail à tous</button>
         <button class="mini tb-b" id="btnBonusAll" type="button" style="--c:#4ADE80">🎁 Bonus à tous</button>
         <button class="mini tb-b" id="btnPayAll" type="button" style="--c:#22D3EE">🔎 Vérifier tous les dépôts (7 j)</button>
-        <button class="mini tb-b" id="btnKeys" type="button" style="--c:#FDE047">🔑 Clés API (crypto)</button>
-      </div><div id="payAllOut" class="muted" style="display:none;margin-top:8px;font-size:12px;white-space:pre-wrap"></div><div id="keysBox" style="display:none;margin-top:8px"></div></div>
+        <button class="mini tb-b" id="btnKeys" type="button" style="--c:#FDE047">🔑 Clés &amp; connexions</button>
+      </div><div id="payAllOut" class="muted" style="display:none;margin-top:8px;font-size:12px;white-space:pre-wrap"></div></div>
       <div class="tb-g"><div class="tb-t">📊 Suivi des produits</div><div class="tb-row">
         <button class="mini tb-b" id="btnTradeA" type="button" style="--c:#FBBF24">📈 Trading</button>
         <button class="mini tb-b" id="btnCasA" type="button" style="--c:#1FD86B">🎮 Jeux</button>
@@ -3812,6 +3797,21 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <div id="spList" style="margin-top:10px"><p class="muted">Chargement…</p></div>
       </div>
       <div id="csPaneSt" hidden><div id="csStats"><p class="muted">Chargement…</p></div></div>
+    </div>
+  </div>
+  <!-- 2026-11-10 : 🔑 Clés & connexions — toutes les clés des services, au même endroit (keys_lib.php) -->
+  <div class="modal" id="keysModal">
+    <div class="modal-box">
+      <button class="mini" type="button" id="closeKeys">Retour</button>
+      <h2 style="color:#FDE047;margin:10px 0 4px">🔑 Clés &amp; connexions</h2>
+      <p class="muted" style="margin:0 0 10px">Toutes les clés des services du site, au même endroit. <b>Clique sur « Créer la clé »</b>, copie-la, <b>colle-la ici</b>, puis « Enregistrer » : elle est rangée sur le serveur, testée tout de suite, et ne s’affiche plus jamais (même pas ici). Ne l’envoie jamais par message.</p>
+      <div id="keysList">Chargement…</div>
+      <details class="nt-card" style="margin-top:12px"><summary style="cursor:pointer;font-weight:800">➕ Ajouter une autre clé (nouveau service)</summary>
+        <p class="muted" style="font-size:12px;margin:8px 0">Nom en MAJUSCULES, par exemple <code>MON_SERVICE_API_KEY</code>. Je te donnerai le nom exact à chaque nouveau service.</p>
+        <input id="keyNewName" placeholder="NOM_DE_LA_CLE" autocomplete="off" style="width:100%;margin:4px 0">
+        <input id="keyNewVal" type="password" placeholder="Coller la clé ici" autocomplete="off" style="width:100%;margin:4px 0">
+        <button class="mini ok" type="button" id="keyNewSave">Enregistrer</button> <span class="muted" id="keyNewOut" style="font-size:12px"></span>
+      </details>
     </div>
   </div>
   <div class="modal" id="notifModal">
@@ -4637,29 +4637,63 @@ document.getElementById('btnBack').onclick = () => {
   window.location.href = '/';
 };
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
-// 2026-11-10 : 🔑 Clés API — l'admin colle ses clés ; elles ne sont jamais réaffichées (seulement « configurée ✓ »).
+// 2026-11-10 : 🔑 Clés & connexions — page complète ; les clés ne reviennent JAMAIS dans la page (seulement leur état).
 (function () {
-  const b = document.getElementById('btnKeys'), box = document.getElementById('keysBox'); if (!b || !box) return;
-  const paint = async () => {
-    const r = await ajax({action:'keys_status'});
-    if (!r || !r.ok) { box.textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
-    box.innerHTML = '<p class="muted" style="margin:0 0 8px;font-size:12px">Colle chaque clé ici (jamais dans un message). Elle est rangée sur le serveur dans un dossier fermé et ne sera plus jamais affichée.</p>' +
-      r.keys.map(k => '<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0;padding:8px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)">' +
-        '<b style="flex:1 1 100%;font-size:13px">' + esc(k.label) + ' ' + (k.set ? '<span style="color:#4ADE80">✓ configurée</span>' : '<span style="color:#FCD34D">— pas encore</span>') + '</b>' +
-        '<input type="password" autocomplete="off" data-k="' + esc(k.name) + '" placeholder="' + (k.set ? 'Remplacer la clé…' : 'Coller la clé ici') + '" style="flex:1 1 200px;min-width:0">' +
-        '<button class="mini ok" data-save="' + esc(k.name) + '">Enregistrer</button></div>').join('') + '<div id="keysOut" class="muted" style="font-size:12px"></div>';
-    box.querySelectorAll('[data-save]').forEach(btn => btn.onclick = async () => {
-      const name = btn.getAttribute('data-save'), inp = box.querySelector('input[data-k="' + name + '"]'), out = document.getElementById('keysOut');
-      const value = String(inp.value || '').trim(); if (!value) { inp.focus(); return; }
-      btn.disabled = true; out.textContent = '⏳ Enregistrement…';
-      const rr = await ajax({action:'keys_set', name, value}); btn.disabled = false;
-      if (!rr || !rr.ok) { out.textContent = '❌ ' + ((rr && rr.reason) || 'Échec'); return; }
-      inp.value = '';
-      out.textContent = '✅ Clé enregistrée' + (rr.test === 'ok' ? ' — TronGrid l’accepte, elle fonctionne ✓' : rr.test ? ' — mais TronGrid l’a ' + rr.test + ' : vérifiez-la' : '') + '.';
-      setTimeout(paint, 1500);
-    });
+  const $k = id => document.getElementById(id);
+  if (!$k('btnKeys') || !$k('keysModal')) return;
+  const when = iso => { try { return iso ? new Date(iso).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : ''; } catch (e) { return ''; } };
+  const state = k => {
+    if (!k.set) return '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">À ajouter</span>';
+    const t = k.test;
+    const pill = t && t.ok === false ? '<span class="pill pill-suspect">⚠️ Refusée</span>' : t && t.ok ? '<span class="pill pill-ok">✓ Fonctionne</span>' : '<span class="pill pill-ok">✓ Enregistrée</span>';
+    return pill + ' <small class="muted">' + (k.source === 'hébergeur' ? 'réglée chez l’hébergeur' : 'ajoutée ' + esc(when(k.updatedAt))) + '</small>';
   };
-  b.onclick = () => { const on = box.style.display === 'none'; box.style.display = on ? 'block' : 'none'; if (on) paint(); };
+  const card = k => '<div class="nt-card" style="margin:8px 0" data-card="' + esc(k.name) + '">' +
+    '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:15px">' + esc(k.ico || '🔑') + ' ' + esc(k.title) + '</b><span>' + state(k) + '</span></div>' +
+    '<p class="muted" style="margin:4px 0 6px;font-size:12px">' + esc(k.what || '') + (k.how ? ' · <i>' + esc(k.how) + '</i>' : '') + '</p>' +
+    (k.test && k.test.msg ? '<p style="margin:0 0 6px;font-size:12px;color:' + (k.test.ok === false ? '#F87171' : '#86EFAC') + '">' + esc(k.test.msg) + ' <small class="muted">(' + esc(when(k.test.at)) + ')</small></p>' : '') +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+      (k.url ? '<a class="mini" href="' + esc(k.url) + '" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">↗ Créer la clé</a>' : '') +
+      '<input type="password" autocomplete="off" data-k="' + esc(k.name) + '" placeholder="' + (k.set ? 'Remplacer : coller la nouvelle clé' : 'Coller la clé ici') + '" style="flex:1 1 220px;min-width:0">' +
+      '<button class="mini ok" data-save="' + esc(k.name) + '">Enregistrer</button>' +
+      (k.set ? '<button class="mini" data-test="' + esc(k.name) + '">Tester</button>' : '') +
+      (k.set && k.source !== 'hébergeur' ? '<button class="mini bad" data-del="' + esc(k.name) + '">Supprimer</button>' : '') +
+    '</div><div class="muted" data-out="' + esc(k.name) + '" style="font-size:12px;margin-top:4px"></div><code style="font-size:10px;opacity:.5">' + esc(k.name) + '</code></div>';
+  const out = (n, txt) => { const o = document.querySelector('[data-out="' + n + '"]'); if (o) o.textContent = txt; };
+  async function paint() {
+    const r = await ajax({action:'keys_status'});
+    if (!r || !r.ok) { $k('keysList').textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
+    $k('keysList').innerHTML = r.cats.map(c => '<h3 class="panel-title" style="margin:14px 0 4px">' + esc(c.cat) + '</h3>' + c.items.map(card).join('')).join('');
+    $k('keysList').querySelectorAll('[data-save]').forEach(b => b.onclick = async () => {
+      const n = b.getAttribute('data-save'), inp = $k('keysList').querySelector('input[data-k="' + n + '"]'), v = String(inp.value || '').trim();
+      if (!v) { inp.focus(); return; }
+      b.disabled = true; out(n, '⏳ Enregistrement et test…');
+      const rr = await ajax({action:'keys_set', name:n, value:v}); b.disabled = false;
+      if (!rr || !rr.ok) { out(n, '❌ ' + ((rr && rr.reason) || 'Échec')); return; }
+      inp.value = '';
+      out(n, (rr.test && rr.test.ok === false ? '⚠️ Enregistrée, mais ' : '✅ ') + ((rr.test && rr.test.msg) || 'Enregistrée') + (rr.hostWins ? ' — attention : une autre valeur est réglée chez l’hébergeur et reste prioritaire.' : ''));
+      setTimeout(paint, 1800);
+    });
+    $k('keysList').querySelectorAll('[data-test]').forEach(b => b.onclick = async () => {
+      const n = b.getAttribute('data-test'); b.disabled = true; out(n, '⏳ Test…');
+      const rr = await ajax({action:'keys_test', name:n}); b.disabled = false;
+      out(n, rr && rr.ok ? ((rr.test.ok === false ? '⚠️ ' : '✅ ') + rr.test.msg) : '❌ Échec'); setTimeout(paint, 1500);
+    });
+    $k('keysList').querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+      const n = b.getAttribute('data-del');
+      if (!confirm('Supprimer la clé ' + n + ' ? Le service correspondant s’arrêtera.')) return;
+      const rr = await ajax({action:'keys_del', name:n}); out(n, rr && rr.ok ? '🗑 Supprimée' : '❌ ' + ((rr && rr.reason) || 'Échec')); setTimeout(paint, 900);
+    });
+  }
+  $k('btnKeys').onclick = () => { $k('keysModal').classList.add('on'); paint(); };
+  $k('closeKeys').onclick = () => $k('keysModal').classList.remove('on');
+  $k('keyNewSave').onclick = async () => {
+    const n = String($k('keyNewName').value || '').trim().toUpperCase(), v = String($k('keyNewVal').value || '').trim();
+    if (!n || !v) { $k('keyNewOut').textContent = 'Nom et clé obligatoires'; return; }
+    const rr = await ajax({action:'keys_set', name:n, value:v});
+    $k('keyNewOut').textContent = rr && rr.ok ? '✅ Enregistrée' : '❌ ' + ((rr && rr.reason) || 'Échec');
+    if (rr && rr.ok) { $k('keyNewName').value = ''; $k('keyNewVal').value = ''; paint(); }
+  };
 })();
 // 2026-11-10 : vérifier TOUS les paiements reçus chez OxaPay / Flutterwave (7 j) — crédite ce qui manque, liste les inconnus.
 (function () {
