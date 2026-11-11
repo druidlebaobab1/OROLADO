@@ -763,7 +763,8 @@
       for (k = 0; k <= 8; k++) h += '<path d="M90 ' + (66 + k * 10.5) + 'H270"/>';
       h += '</g><path d="M90 150V64H270V150" stroke="#F8FAFC" stroke-width="4" fill="none" stroke-linejoin="round"/><circle cx="180" cy="208" r="2" fill="#fff"/>' +
         '<g class="pk-kp" transform="translate(180 150)"><g class="pk-ki"><rect x="-7" y="-34" width="14" height="20" rx="5" fill="#FACC15"/><circle cy="-40" r="5.5" fill="#FDE2C4"/><path d="M-7-30L-17-40M7-30L17-40" stroke="#FACC15" stroke-width="4" stroke-linecap="round"/><circle cx="-18" cy="-41" r="3" fill="#F8FAFC"/><circle cx="18" cy="-41" r="3" fill="#F8FAFC"/><path d="M-4-14L-6 0M4-14L6 0" stroke="#111827" stroke-width="4" stroke-linecap="round"/></g>' + PK_GS + '</g>' +
-        '<g class="pk-pl" transform="translate(160 214)"><g class="pk-pc"><rect x="-6" y="-26" width="12" height="16" rx="4" fill="#DC2626"/><circle cy="-31" r="5" fill="#FDE2C4"/><path d="M-3-10L-5 4M3-10L6 3" stroke="#F8FAFC" stroke-width="3.6" stroke-linecap="round"/></g></g>' +
+        '<g class="pk-pl" transform="translate(160 214)"><ellipse cy="4" rx="8" ry="2" fill="#000" opacity=".3"/><g class="pk-pc"><rect x="-6" y="-26" width="12" height="16" rx="4" fill="#DC2626" opacity="0"/>' +
+        '<image class="pk-ir" href="img/games/pk_kick_r.webp?v=1" x="-7.4" y="-32" width="14.8" height="36"/><image class="pk-ib" href="img/games/pk_kick_b.webp?v=1" x="-6" y="-32" width="12" height="36" style="display:none"/></g></g>' +
         '<g class="pk-b" transform="translate(180 207)"><circle r="6" fill="#F8FAFC" stroke="#111827" stroke-width=".8"/><path d="M0-2.6L2.4-.8 1.5 2H-1.5L-2.4-.8Z" fill="#111827"/></g>' +
         '<g class="pk-fx" opacity="0"><rect x="-44" y="-13" width="88" height="26" rx="13"/><text y="5" text-anchor="middle"></text></g>' +
         '<g class="pk-sb"><rect x="58" y="6" width="244" height="40" rx="10" fill="rgba(2,6,23,.78)" stroke="#FDE68A" stroke-opacity=".4"/>' +
@@ -794,24 +795,32 @@
       txt(c.sc[0], String(gs[0])); txt(c.sc[1], String(gs[1]));
       txt(c.sdt, res && cur >= 10 ? c.l.sd : '', 200);
       if (!res || e < PK_0) {
-        sa(c.b, 'transform', 'translate(180 207)'); sa(c.kp, 'transform', 'translate(' + (180 + Math.sin(t * 1.3) * 10).toFixed(1) + ' 150)'); sa(c.ki, 'transform', 'rotate(0)'); pkGs(c, 'ready', 0);
-        sa(c.pl, 'transform', 'translate(160 214)'); sa(c.fx, 'opacity', '0'); sa(c.pc, 'fill', res ? '#DC2626' : '#DC2626');
+        sa(c.b, 'transform', 'translate(180 207)'); c.b.style.opacity = '1'; sa(c.kp, 'transform', 'translate(' + (180 + Math.sin(t * 1.3) * 10).toFixed(1) + ' 150)'); sa(c.ki, 'transform', 'rotate(0)'); pkGs(c, 'ready', 0);
+        sa(c.pl, 'transform', 'translate(160 214)'); sa(c.fx, 'opacity', '0'); sa(c.pc, 'fill', '#DC2626'); if (c.pkh !== true) { c.pkh = true; c.q('.pk-ir').style.display = ''; c.q('.pk-ib').style.display = 'none'; }
         if (!bnCd(c, R, t, e)) bnSet(c, ''); return;
       }
       var goal = !!k[cur], sp = pkSpot(s, cur, goal), home = cur % 2 === 0;
-      sa(c.pc, 'fill', home ? '#DC2626' : '#2563EB');
+      sa(c.pc, 'fill', home ? '#DC2626' : '#2563EB'); if (c.pkh !== home) { c.pkh = home; c.q('.pk-ir').style.display = home ? '' : 'none'; c.q('.pk-ib').style.display = home ? 'none' : ''; }
       // run-up (0 → .3), shot (.3 → .62), result (.62 → 1)
       var ru = eo(seg(ph, 0, .3)); sa(c.pl, 'transform', 'translate(' + lerp(146, 170, ru).toFixed(1) + ' ' + lerp(226, 214, ru).toFixed(1) + ')');
       var u = seg(ph, .3, .62), bx = lerp(180, sp.x, u), by = lerp(207, sp.y, u) - Math.sin(Math.PI * u) * 16, bs = lerp(1, .55, u);
-      if (sp.save && ph > .62) { bx = sp.x + (sp.x < 180 ? -1 : 1) * 30 * seg(ph, .62, 1); by = sp.y + 40 * seg(ph, .62, 1); }
+      // v3671 (propriétaire : « il tape la balle, la fait descendre à terre ») : arrêt = le gant repousse le ballon HORS du but, à côté du poteau
+      var bo = 1;
+      if (sp.save && ph > .62) { var dq = eo(seg(ph, .62, .95)), sd = sp.x < 180 ? -1 : 1; bx = sp.x + sd * (Math.abs(sp.x - 180) < 15 ? 0 : 1) * 105 * dq; by = sp.y - Math.sin(Math.PI * Math.min(1, dq * 1.2)) * 22 - (Math.abs(sp.x - 180) < 15 ? 60 * dq : 0); bs = .55 - .12 * dq; bo = 1 - Math.max(0, seg(ph, .8, .97)); }
       if (goal && ph > .62) by = sp.y + 8 * seg(ph, .62, .8);
-      sa(c.b, 'transform', tr(bx, by, bs, u * 720));
+      sa(c.b, 'transform', tr(bx, by, bs, u * 720 + (sp.save && ph > .62 ? -300 * seg(ph, .62, 1) : 0))); c.b.style.opacity = String(bo.toFixed(2));
       var dv = eo(seg(ph, .34, .6)), kx = sp.save ? (sp.x - 180) * .9 : sp.kx * 60, ky = sp.save ? Math.min(0, sp.y - 120) * .6 : -12;
+      var tl = (kx > 0 ? -1 : 1) * Math.max(0, Math.min(28, (130 - sp.y) * 0.5));
+      if (sp.save && Math.abs(kx) >= 15) { // les GANTS (bout de l'image plongeon : ±36, −27) arrivent pile sur le ballon
+        var sg = kx > 0 ? 1 : -1, ra = tl * Math.PI / 180, gx = sg * 36, gy = -27;
+        kx = sp.x - (gx * Math.cos(ra) - gy * Math.sin(ra)) - 180; ky = Math.min(0, sp.y - (gx * Math.sin(ra) + gy * Math.cos(ra)) - 150);
+        if (Math.abs(kx) < 15) kx = 15 * sg;
+      }
       sa(c.kp, 'transform', 'translate(' + (180 + kx * dv).toFixed(1) + ' ' + (150 + ky * dv).toFixed(1) + ')'); sa(c.ki, 'transform', 'rotate(' + (Math.sign(kx) * 70 * dv).toFixed(1) + ')');
       if (dv < 0.2 || Math.abs(kx) < 15) pkGs(c, Math.abs(kx) < 15 && dv >= 0.2 ? 'chest' : 'ready', 0);
-      else pkGs(c, kx > 0 ? 'diveR' : 'diveL', (kx > 0 ? -1 : 1) * Math.max(0, Math.min(28, (130 - sp.y) * 0.5)) * dv);
+      else pkGs(c, kx > 0 ? 'diveR' : 'diveL', tl * dv);
       var show = ph >= .62 && ph < 1;
-      sa(c.fx, 'opacity', show ? '1' : '0'); sa(c.fx, 'transform', 'translate(180 ' + (goal ? 104 : 104) + ')'); cls(c.fx, 'pk-fx ' + (goal ? 'g' : 'x'));
+      sa(c.fx, 'opacity', show ? '1' : '0'); sa(c.fx, 'transform', 'translate(180 ' + (goal ? 104 : 174) + ')'); cls(c.fx, 'pk-fx ' + (goal ? 'g' : 'x'));
       txt(c.fxt, goal ? c.l.goal : sp.wide ? c.l.out : c.l.saved, 80);
       var fin = e >= PK_0 + k.length * dk + .2, n = +res.n;
       bnSet(c, fin ? (n ? c.l.away : c.l.home) + ' ' + c.l.wins + ' ' + (n ? gs[1] + '–' + gs[0] : gs[0] + '–' + gs[1]) : '', 'n0');
@@ -889,11 +898,12 @@
      Red vs Blue over up to 6 rounds. Result n: 0 Red KO · 1 Red on points · 2 draw · 3 Blue on points · 4 Blue KO ; r = round of the KO. */
   var BX_0 = .4, BX_R = 1.7;
   function bxRounds(res) { var n = +res.n; return n === 0 || n === 4 ? +res.r : 6; }
-  function boxer(cl, col, trunk) {
-    return '<g class="bx ' + cl + '"><g class="bx-in"><path d="M-6-34L-9 0M6-34L8 0" stroke="#E2AE88" stroke-width="6" stroke-linecap="round"/><rect x="-11" y="-44" width="22" height="13" rx="4" fill="' + trunk + '"/>' +
-      '<path d="M-10-74Q0-80 10-74L11-44H-11Z" fill="#F0C4A0"/><circle cy="-84" r="9" fill="#F0C4A0"/><path d="M-9-87Q0-97 9-87V-84H-9Z" fill="' + col + '"/>' +
-      '<g class="bx-g2"><path d="M4-70L12-62" stroke="#F0C4A0" stroke-width="5" stroke-linecap="round"/><circle cx="13" cy="-62" r="6.5" fill="' + col + '" stroke="#fff" stroke-opacity=".5"/></g>' +
-      '<g class="bx-g1"><path d="M6-72L16-74" stroke="#F0C4A0" stroke-width="5" stroke-linecap="round"/><circle cx="18" cy="-74" r="7" fill="' + col + '" stroke="#fff" stroke-opacity=".6"/></g></g></g>';
+  // v3671 : vrais boxeurs (images) — garde / direct ; pieds à y=0, hanches centrées sur x=0.
+  var BX_IM = { r: [['box_r_g', 28.4, .51], ['box_r_p', 69.7, .379]], b: [['box_b_g', 43.8, .467], ['box_b_p', 64.1, .434]] };
+  function boxer(cl) {
+    var im = function (d, c, vis) { return '<image class="' + c + '" href="img/games/' + d[0] + '.webp?v=1" x="' + (-d[1] * d[2]).toFixed(1) + '" y="-100" width="' + d[1] + '" height="100" preserveAspectRatio="none"' + (vis ? '' : ' style="display:none"') + '/>'; };
+    return '<g class="bx ' + cl + '"><ellipse cy="1" rx="22" ry="4" fill="#000" opacity=".35"/><g class="bx-in">' + im(BX_IM[cl][0], 'bx-ig', 1) + im(BX_IM[cl][1], 'bx-ip', 0) +
+      '<g class="bx-g1"></g><g class="bx-g2"></g></g></g>';
   }
   live('boxinglive', {
     lab: 'fg', bev: 'act', show: function (res) { return BX_0 + bxRounds(res) * BX_R + 2.8; },
@@ -919,7 +929,7 @@
       for (var k = 0; k < 2; k++) for (var q = 0; q < 46; q++) h += '<circle cx="' + (q * 8 + k * 4) + '" cy="' + (120 + k * 14) + '" r="3" fill="' + ['#F87171', '#60A5FA', '#FDE68A', '#E2E8F0'][(q * 3 + k) % 4] + '" opacity=".3"/>';
       h += '<path d="M24 196L60 160H300L336 196Z" fill="url(#bxF' + uid + ')"/><rect x="20" y="196" width="320" height="14" fill="#991B1B"/><rect x="-300" y="210" width="960" height="320" fill="#1E1B4B"/>' +
         '<rect x="54" y="98" width="6" height="68" fill="#E5E7EB"/><rect x="300" y="98" width="6" height="68" fill="#E5E7EB"/>' +
-        boxer('r', '#DC2626', '#7F1D1D') + boxer('b', '#2563EB', '#1E3A8A') +
+        boxer('r') + boxer('b') +
         '<g stroke-width="2.2"><path d="M57 110H303" stroke="#F8FAFC"/><path d="M57 126H303" stroke="#EF4444"/><path d="M57 142H303" stroke="#3B82F6"/></g>' +
         '<g class="bx-rd"><rect x="130" y="6" width="100" height="24" rx="12" fill="rgba(2,6,23,.8)" stroke="#FDE68A" stroke-opacity=".5"/><text class="bx-rt" x="180" y="23" text-anchor="middle"></text></g>' +
         '<g class="bx-ko" opacity="0" transform="translate(180 96)"><text text-anchor="middle" y="10">KO</text></g>' + banner(46);
@@ -933,7 +943,7 @@
     hist: function (n) { return chipS(n === 2 ? '=' : n === 0 || n === 4 ? 'KO' : 'P', 'bxh' + (n < 2 ? 0 : n > 2 ? 1 : 2)); },
     wins: function (res) { var n = +res.n, w = [n <= 1 ? 'red' : n === 2 ? 'draw' : 'blue']; if (n === 0 || n === 4) { w.push('ko'); if (+res.r <= 2) w.push('eko'); } else if (n !== 2) w.push('pts'); return w; },
     init: function (c) {
-      c.bx = ['r', 'b'].map(function (k) { var g = c.q('.bx.' + k); return { g: g, inn: g.querySelector('.bx-in'), g1: g.querySelector('.bx-g1'), g2: g.querySelector('.bx-g2') }; });
+      c.bx = ['r', 'b'].map(function (k) { var g = c.q('.bx.' + k); return { g: g, inn: g.querySelector('.bx-in'), g1: g.querySelector('.bx-g1'), g2: g.querySelector('.bx-g2'), ig: g.querySelector('.bx-ig'), ip: g.querySelector('.bx-ip'), pu: -1 }; });
       c.rt = c.q('.bx-rt'); c.ko = c.q('.bx-ko'); bnInit(c);
     },
     frame: function (c, R, t, e, res) {
@@ -954,6 +964,7 @@
         }
         sa(b.g, 'transform', 'translate(' + x.toFixed(1) + ' ' + (192 + fall * 4).toFixed(1) + ') scale(' + (dir * 1.32) + ' 1.32)');
         sa(b.inn, 'transform', 'rotate(' + (lean - fall * 82).toFixed(1) + ' 0 0) translate(0 ' + bob.toFixed(1) + ')');
+        var pu = Math.max(j1, j2) > .3 ? 1 : 0; if (pu !== b.pu) { b.pu = pu; b.ig.style.display = pu ? 'none' : ''; b.ip.style.display = pu ? '' : 'none'; }
         sa(b.g1, 'transform', 'translate(' + (j1 * 12).toFixed(1) + ' 0)');
         sa(b.g2, 'transform', j2 < 0 ? 'translate(0 -22) rotate(-40 13 -62)' : 'translate(' + (j2 * 14).toFixed(1) + ' ' + (-j2 * 8).toFixed(1) + ')');
       }
