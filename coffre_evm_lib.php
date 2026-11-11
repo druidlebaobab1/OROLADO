@@ -21,22 +21,31 @@ require_once __DIR__ . '/coffre_ec.php';
 function cevm_chains(): array {
   return [
     'eth' => ['id' => 1, 'name' => 'Ethereum', 'native' => 'ETH', 'gw' => 'ethereum-mainnet', 'pub' => 'https://ethereum-rpc.publicnode.com', 'min' => 100.0, 'tok_gas' => 70000,
-      'tokens' => ['USDT' => ['0xdac17f958d2ee523a2206206994597c13d831ec7', 6], 'USDC' => ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 6]]],
+      'tokens' => ['USDT' => ['0xdac17f958d2ee523a2206206994597c13d831ec7', 6], 'USDC' => ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 6],
+        // 2026-11-11 : + DAI, LINK, UNI, PEPE, AAVE (contrats et décimales vérifiés sur le réseau)
+        'DAI' => ['0x6b175474e89094c44da98b954eedeac495271d0f', 18], 'LINK' => ['0x514910771af9ca656af840dff83e8264ecf986ca', 18], 'UNI' => ['0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', 18],
+        'PEPE' => ['0x6982508145454ce325ddbe47a25d4ec3d2311933', 18], 'AAVE' => ['0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', 18]]],
     'bsc' => ['id' => 56, 'name' => 'BNB Chain', 'native' => 'BNB', 'gw' => 'bsc-mainnet', 'pub' => 'https://bsc-rpc.publicnode.com', 'min' => 20.0, 'tok_gas' => 70000,
-      'tokens' => ['USDT' => ['0x55d398326f99059ff775485246999027b3197955', 18], 'USDC' => ['0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d', 18]]],
+      'tokens' => ['USDT' => ['0x55d398326f99059ff775485246999027b3197955', 18], 'USDC' => ['0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d', 18],
+        'SHIB' => ['0x2859e4544c4bb03966803b044a93563bd2d0dd4d', 18], 'CAKE' => ['0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82', 18]]],
     'polygon' => ['id' => 137, 'name' => 'Polygon', 'native' => 'POL', 'gw' => 'polygon-mainnet', 'pub' => 'https://polygon-bor-rpc.publicnode.com', 'min' => 20.0, 'tok_gas' => 90000,
       'tokens' => ['USDT' => ['0xc2132d05d31c914a87c6611c10748aeb04b58e8f', 6], 'USDC' => ['0x3c499c542cef5e3811e1192ce70d8cc03d5c3359', 6]]],
     'base' => ['id' => 8453, 'name' => 'Base', 'native' => 'ETH', 'gw' => 'base-mainnet', 'pub' => 'https://base-rpc.publicnode.com', 'min' => 20.0, 'tok_gas' => 90000,
       'tokens' => ['USDC' => ['0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', 6]]],
     'arb' => ['id' => 42161, 'name' => 'Arbitrum', 'native' => 'ETH', 'gw' => 'arb-one-mainnet', 'pub' => 'https://arbitrum-one-rpc.publicnode.com', 'min' => 20.0, 'tok_gas' => 1000000,
-      'tokens' => ['USDT' => ['0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9', 6], 'USDC' => ['0xaf88d065e77c8cc2239327c5edb3a432268e5831', 6]]],
+      'tokens' => ['USDT' => ['0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9', 6], 'USDC' => ['0xaf88d065e77c8cc2239327c5edb3a432268e5831', 6], 'ARB' => ['0x912ce59144191c1204e64559fe8253a0e49e6548', 18]]],
+    'op' => ['id' => 10, 'name' => 'Optimism', 'native' => 'ETH', 'gw' => 'optimism-mainnet', 'pub' => 'https://optimism-rpc.publicnode.com', 'min' => 20.0, 'tok_gas' => 90000,
+      'tokens' => ['USDT' => ['0x94b008aa00579c1307b0ef2c499ad98a8ce58e58', 6], 'USDC' => ['0x0b2c639c533813f4aa9d7837caf62653d097ff85', 6], 'OP' => ['0x4200000000000000000000000000000000000042', 18]]],
+    'avax' => ['id' => 43114, 'name' => 'Avalanche', 'native' => 'AVAX', 'gw' => 'avax-mainnet', 'pub' => 'https://avalanche-c-chain-rpc.publicnode.com', 'min' => 20.0, 'tok_gas' => 90000,
+      'tokens' => ['USDT' => ['0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7', 6], 'USDC' => ['0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e', 6]]],
   ];
 }
 
 /** Pièce du site (écran de dépôt) → réseau surveillé en priorité. */
 function cevm_coin_chain(string $coin): string {
   return ['usdt_erc20' => 'eth', 'usdc' => 'eth', 'eth' => 'eth', 'usdt_bep20' => 'bsc', 'bnb' => 'bsc', 'pol' => 'polygon',
-    'usdt_polygon' => 'polygon', 'usdc_polygon' => 'polygon', 'usdc_base' => 'base', 'eth_base' => 'base', 'usdt_arb' => 'arb', 'usdc_arb' => 'arb', 'eth_arb' => 'arb'][$coin] ?? '';
+    'usdt_polygon' => 'polygon', 'usdc_polygon' => 'polygon', 'usdc_base' => 'base', 'eth_base' => 'base', 'usdt_arb' => 'arb', 'usdc_arb' => 'arb', 'eth_arb' => 'arb',
+    'dai' => 'eth', 'link' => 'eth', 'uni' => 'eth', 'pepe' => 'eth', 'aave' => 'eth', 'shib' => 'bsc', 'cake' => 'bsc', 'arb' => 'arb', 'op' => 'op', 'avax' => 'avax'][$coin] ?? '';
 }
 
 /* ===================== Outils ===================== */
@@ -291,7 +300,9 @@ function cevm_scan_addr(string $chain, string $addr, string $uid): int {
         $new = cevm_pos_sub($plus, $minus);
         if (cec_is_zero($new)) continue;
         $units = cevm_float($new, $dec);
-        $usd = $a === 'N' ? (function_exists('orolado_crypto_usd_price') ? (($pr = orolado_crypto_usd_price($sym)) !== null ? $units * $pr : -1.0) : -1.0) : $units;
+        // Dollars : USDT / USDC / DAI = 1 $ ; ETH, BNB, LINK, PEPE… = pièces × cours du moment.
+        $stable = in_array($sym, ['USDT', 'USDC', 'DAI'], true);
+        $usd = $stable ? $units : (function_exists('orolado_crypto_usd_price') ? (($pr = orolado_crypto_usd_price($sym)) !== null ? $units * $pr : -1.0) : -1.0);
         if ($usd < 0) continue; // pas de cours pour l'instant : au prochain passage
         if ($usd + 0.0001 < COFFRE_MIN_CREDIT) continue; // poussière : jamais créditée (reste comptée au prochain vrai dépôt)
         $newCred = cec_to_hex(cec_add($minus, $new), 0);
@@ -432,7 +443,7 @@ function cevm_sweep(bool $force = false, int $max = 4): array {
         if (!is_array($r) || !isset($r['gp']['result'], $r['bal']['result'])) continue;
         $gp = cevm_bn($r['gp']['result']);
         $gpHex = cec_to_hex(cec_add($gp, cevm_pct($gp, 20)), 0); // prix du moment +20 % (passe même si le réseau s'agite)
-        $l2 = in_array($chain, ['base', 'arb'], true); // réseaux « couche 2 » : frais variables en plus → marge plus large
+        $l2 = in_array($chain, ['base', 'arb', 'op'], true); // réseaux « couche 2 » : frais variables en plus → marge plus large
         $nat = cevm_bn($r['bal']['result']);
         // 1) Jetons (USDT, USDC) au-dessus du seuil
         foreach ($c['tokens'] as $sym => [$ta, $dec]) {

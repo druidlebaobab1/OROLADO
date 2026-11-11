@@ -6324,6 +6324,15 @@ function orolado_oxapay_coins(): array {
     'bch' => ['pay' => 'BCH', 'network' => '', 'label' => 'BCH', 'netLabel' => 'Bitcoin Cash Network'],
     'not' => ['pay' => 'NOT', 'network' => '', 'label' => 'NOT', 'netLabel' => 'TON Network'],
     'dogs' => ['pay' => 'DOGS', 'network' => '', 'label' => 'DOGS', 'netLabel' => 'TON Network'],
+    // 2026-11-11 : cryptos du coffre (même adresse 0x que USDT ERC20/BEP20)
+    'link' => ['pay' => 'LINK', 'network' => 'ERC20', 'label' => 'LINK', 'netLabel' => 'Ethereum (ERC20)'],
+    'uni' => ['pay' => 'UNI', 'network' => 'ERC20', 'label' => 'UNI', 'netLabel' => 'Ethereum (ERC20)'],
+    'pepe' => ['pay' => 'PEPE', 'network' => 'ERC20', 'label' => 'PEPE', 'netLabel' => 'Ethereum (ERC20)'],
+    'aave' => ['pay' => 'AAVE', 'network' => 'ERC20', 'label' => 'AAVE', 'netLabel' => 'Ethereum (ERC20)'],
+    'cake' => ['pay' => 'CAKE', 'network' => 'BEP20', 'label' => 'CAKE', 'netLabel' => 'BNB Smart Chain (BEP20)'],
+    'arb' => ['pay' => 'ARB', 'network' => 'ARB', 'label' => 'ARB', 'netLabel' => 'Arbitrum One'],
+    'op' => ['pay' => 'OP', 'network' => 'OP', 'label' => 'OP', 'netLabel' => 'Optimism'],
+    'avax' => ['pay' => 'AVAX', 'network' => 'AVAX', 'label' => 'AVAX', 'netLabel' => 'Avalanche C-Chain'],
   ];
 }
 
@@ -6641,7 +6650,8 @@ function orolado_crypto_usd_price(string $sym): ?float {
   if (!($price > 0)) {
     $ids = ['BTC' => 'bitcoin', 'ETH' => 'ethereum', 'TRX' => 'tron', 'BNB' => 'binancecoin', 'SOL' => 'solana', 'LTC' => 'litecoin',
       'DOGE' => 'dogecoin', 'XRP' => 'ripple', 'POL' => 'polygon-ecosystem-token', 'SHIB' => 'shiba-inu', 'GRAM' => 'gram-2',
-      'XMR' => 'monero', 'BCH' => 'bitcoin-cash', 'NOT' => 'notcoin', 'DOGS' => 'dogs-2', 'TON' => 'the-open-network'];
+      'XMR' => 'monero', 'BCH' => 'bitcoin-cash', 'NOT' => 'notcoin', 'DOGS' => 'dogs-2', 'TON' => 'the-open-network',
+      'LINK' => 'chainlink', 'UNI' => 'uniswap', 'PEPE' => 'pepe', 'AAVE' => 'aave', 'AVAX' => 'avalanche-2', 'CAKE' => 'pancakeswap-token', 'ARB' => 'arbitrum', 'OP' => 'optimism'];
     if (isset($ids[$sym])) {
       $cg = $get('https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=' . $ids[$sym]);
       if (is_array($cg) && is_numeric($cg[$ids[$sym]]['usd'] ?? null)) $price = (float) $cg[$ids[$sym]]['usd'];

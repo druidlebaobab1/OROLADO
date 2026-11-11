@@ -848,7 +848,7 @@ function coffre_only_coins(): ?array {
   if (empty(coffre_cfg()['oxapay_off'])) return null;
   $c = [];
   if (coffre_ready()) $c[] = 'usdt_trc20';
-  if (function_exists('cevm_ready') && cevm_ready()) array_push($c, 'usdt_erc20', 'usdt_bep20', 'usdc', 'eth', 'bnb', 'pol');
+  if (function_exists('cevm_ready') && cevm_ready()) array_push($c, 'usdt_erc20', 'usdt_bep20', 'usdc', 'eth', 'bnb', 'pol', 'dai', 'shib', 'link', 'uni', 'pepe', 'aave', 'cake', 'arb', 'op', 'avax');
   if (function_exists('cutxo_ready_chains')) foreach (cutxo_ready_chains() as $uc) $c[] = $uc; // btc, ltc, doge
   return $c ?: null; // aucun réseau du coffre prêt : on ne bloque pas tous les dépôts
 }
