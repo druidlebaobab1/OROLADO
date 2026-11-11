@@ -845,8 +845,7 @@ function live_my_stats(string $uid): array {
   }
   $invPaid = 0; $invAll = 0;
   if (function_exists('orolado_aff_read') && function_exists('orolado_aff_owner_name')) {
-    try { $own = orolado_aff_read(orolado_aff_owner_name($uid)); $fr = is_array($own['friends'] ?? null) ? $own['friends'] : [];
-      $invAll = count($fr); $invPaid = count(array_filter($fr, static fn($x) => !empty($x['paid']))); } catch (Throwable $e) { /* jamais bloquant */ }
+    try { if (function_exists('orolado_aff_counts')) { $cnt = orolado_aff_counts($uid); $invAll = $cnt['n']; $invPaid = $cnt['paid']; } } catch (Throwable $e) { /* jamais bloquant */ }
   }
   $groupsOwned = 0;
   foreach (live_ugroups($uid) as $gid) { $g = live_group_get((string) $gid); if ($g && (string) ($g['owner'] ?? '') === $uid && count((array) ($g['members'] ?? [])) >= 3) $groupsOwned++; }

@@ -76,7 +76,9 @@ function orolado_aff_rev_settled_deposits(array $db, string $friendUid, int $cut
 function orolado_aff_rev_withdrawals(array $db, array $ids): float {
   $wd = 0.0;
   $seen = [];
-  foreach (($db['withdrawals'] ?? []) as $w) {
+  $src = $db['withdrawals'] ?? [];
+  if (isset($GLOBALS['OROLADO_AFF_WDIDX']) && is_array($GLOBALS['OROLADO_AFF_WDIDX'])) { $src = []; foreach ($ids as $one) foreach ($GLOBALS['OROLADO_AFF_WDIDX'][(string) $one] ?? [] as $w) $src[] = $w; }
+  foreach ($src as $w) {
     if (!is_array($w)) continue;
     $owner = (string) ($w['userId'] ?? $w['user_id'] ?? '');
     if ($owner === '' || !in_array($owner, $ids, true)) continue;
@@ -112,7 +114,14 @@ function orolado_aff_rev_bet_totals(array $db, array $ids, int $cutTs): array {
   $stakesAll = 0.0;
   $creditsAll = 0.0;
   $seen = [];
-  foreach (orolado_orders_recent($db, $ids, 'real', true) as $o) { // 2026-11-08 (revue) : TOUT l'historique (avant : ~2 jours, puis les trades sortaient du calcul)
+  // 2026-11-11 : avec l'index de la requête, seulement les ordres de CE joueur (avant : toute la liste du site, à chaque ami).
+  $dbO = $db;
+  if (isset($GLOBALS['OROLADO_AFF_ORDIDX']) && is_array($GLOBALS['OROLADO_AFF_ORDIDX'])) {
+    $mine = [];
+    foreach ($ids as $one) foreach ($GLOBALS['OROLADO_AFF_ORDIDX'][(string) $one] ?? [] as $o) $mine[] = $o;
+    $dbO = ['orders' => $mine, 'ordersArchCut' => $db['ordersArchCut'] ?? 0];
+  }
+  foreach (orolado_orders_recent($dbO, $ids, 'real', true) as $o) { // 2026-11-08 (revue) : TOUT l'historique (avant : ~2 jours, puis les trades sortaient du calcul)
     if (!is_array($o)) continue;
     $owner = (string) ($o['userId'] ?? $o['user_id'] ?? '');
     if ($owner === '' || !in_array($owner, $ids, true)) continue;
@@ -173,7 +182,7 @@ function orolado_aff_rev_casino_margin(array $ids, int $cutTs): array {
 }
 
 /** Paris sportifs réels réglés depuis ≥ HOLD : [mises, gains rendus]. Fichier des paris lu une seule fois par requête. */
-function orolado_aff_rev_sports_margin(array $ids, int $cutTs): array {
+function orolado_aff_rev_sports_bets(): array {
   static $bets = null;
   if ($bets === null) {
     $bets = [];
@@ -185,6 +194,11 @@ function orolado_aff_rev_sports_margin(array $ids, int $cutTs): array {
       }
     }
   }
+  return $bets;
+}
+
+function orolado_aff_rev_sports_margin(array $ids, int $cutTs): array {
+  $bets = orolado_aff_rev_sports_bets();
   $st = 0.0; $cr = 0.0; $stA = 0.0; $crA = 0.0;
   foreach (array_unique($ids) as $id) {
     foreach ($bets[(string) $id] ?? [] as $b) {
@@ -209,7 +223,63 @@ function orolado_aff_rev_sports_margin(array $ids, int $cutTs): array {
  * l'argent non confirmé. Peut être négatif (ami qui gagne) → report négatif au niveau de l'affilié.
  */
 function orolado_aff_rev_friend(array $db, string $friendUid): array {
-  if (function_exists('orolado_is_partner') && orolado_is_partner($db, $friendUid)) return ['uid' => $friendUid, 'margin' => 0.0, 'settledIn' => 0.0, 'deposits' => 0.0, 'withdrawals' => 0.0, 'ngr' => 0.0]; // v3628 : compte partenaire = pas de commission
+  // 2026-11-11 (grande échelle) : résultat gardé en mémoire (fichier rc_…) tant que RIEN n'a bougé chez cet ami
+  // (dépôts, retraits, ordres, parties, paris : leur « empreinte » est comparée). Un ami qui a joué il y a moins de
+  // HOLD h est recalculé au plus toutes les 10 min (ses parties passent de « en attente » à « compté » avec le temps).
+  $sig = orolado_aff_rev_sig($db, $friendUid);
+  $cf = orolado_aff_dir() . DIRECTORY_SEPARATOR . 'rc_' . hash('sha256', 'aff-rc|' . $friendUid) . '.json';
+  $c = json_decode((string) @file_get_contents($cf), true);
+  $now = time();
+  if (is_array($c) && ($c['sig'] ?? '') === $sig['h'] && is_array($c['res'] ?? null)) {
+    $calm = (int) ($c['at'] ?? 0) - $sig['last'] > orolado_aff_rev_hold_h() * 3600 + 120; // tout était déjà « compté »
+    if ($calm || $now - (int) ($c['at'] ?? 0) < 600) return $c['res'];
+  }
+  $res = orolado_aff_rev_friend_calc($db, $friendUid);
+  @file_put_contents($cf, json_encode(['sig' => $sig['h'], 'at' => $now, 'res' => $res]), LOCK_EX);
+  return $res;
+}
+
+/** Empreinte de tout ce qui compte pour un ami + date de sa dernière activité. */
+function orolado_aff_rev_sig(array $db, string $friendUid): array {
+  $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $friendUid) : [$friendUid];
+  if (!$ids) $ids = [$friendUid];
+  $parts = [implode(',', $ids), orolado_aff_is_partner_memo($db, $friendUid) ? 'P' : '', orolado_aff_rev_hold_h()];
+  $last = 0;
+  foreach (orolado_aff_real_deposits($db, $friendUid) as $d) { $parts[] = $d['id'] . ':' . $d['amount'] . ':' . $d['ts']; $last = max($last, (int) $d['ts']); }
+  $wsrc = [];
+  if (isset($GLOBALS['OROLADO_AFF_WDIDX']) && is_array($GLOBALS['OROLADO_AFF_WDIDX'])) { foreach ($ids as $one) foreach ($GLOBALS['OROLADO_AFF_WDIDX'][(string) $one] ?? [] as $w) $wsrc[] = $w; }
+  else foreach (($db['withdrawals'] ?? []) as $w) if (is_array($w) && in_array((string) ($w['userId'] ?? $w['user_id'] ?? ''), $ids, true)) $wsrc[] = $w;
+  foreach ($wsrc as $w) if (is_array($w)) $parts[] = 'w' . ($w['id'] ?? '') . ':' . ($w['status'] ?? '') . ':' . ($w['amount'] ?? '');
+  $osrc = [];
+  if (isset($GLOBALS['OROLADO_AFF_ORDIDX']) && is_array($GLOBALS['OROLADO_AFF_ORDIDX'])) { foreach ($ids as $one) foreach ($GLOBALS['OROLADO_AFF_ORDIDX'][(string) $one] ?? [] as $o) $osrc[] = $o; }
+  else foreach (($db['orders'] ?? []) as $o) if (is_array($o) && in_array((string) ($o['userId'] ?? $o['user_id'] ?? ''), $ids, true)) $osrc[] = $o;
+  foreach ($osrc as $o) {
+    if (!is_array($o)) continue;
+    $parts[] = 'o' . ($o['id'] ?? '') . ':' . ($o['status'] ?? '') . ':' . ($o['stake'] ?? '');
+    foreach (['settledAt', 'closedAt', 'resolvedAt', 'at', 'updatedAt', 'createdAt'] as $k) if (!empty($o[$k])) { $t = is_numeric($o[$k]) ? (int) $o[$k] : (int) strtotime((string) $o[$k]); $last = max($last, $t); break; }
+  }
+  foreach ($ids as $one) {
+    $files = [];
+    if (function_exists('orolado_orders_user_file')) { $files[] = orolado_orders_user_file((string) $one, 'real'); $files[] = orolado_orders_user_file((string) $one, 'x'); }
+    if (function_exists('casino_round_user_file')) $files[] = casino_round_user_file((string) $one);
+    foreach ($files as $f) { clearstatcache(true, $f); if (is_file($f)) { $m = (int) filemtime($f); $parts[] = 'f' . $m . ':' . filesize($f); $last = max($last, $m); } }
+    foreach (orolado_aff_rev_sports_bets()[(string) $one] ?? [] as $b) { $parts[] = 's' . ($b['id'] ?? '') . ':' . ($b['status'] ?? '') . ':' . ($b['done'] ?? ''); $last = max($last, (int) ($b['done'] ?? 0)); }
+  }
+  return ['h' => sha1(implode('|', $parts)), 'last' => $last];
+}
+
+/** Compte partenaire ? (gardé pendant la requête : avant, recherché 2 fois par ami). */
+function orolado_aff_is_partner_memo(array $db, string $uid): bool {
+  if (!function_exists('orolado_is_partner')) return false;
+  if (isset($GLOBALS['OROLADO_AFF_DEPIDX'])) {
+    if (!isset($GLOBALS['OROLADO_AFF_PARTNER'][$uid])) $GLOBALS['OROLADO_AFF_PARTNER'][$uid] = orolado_is_partner($db, $uid);
+    return $GLOBALS['OROLADO_AFF_PARTNER'][$uid];
+  }
+  return orolado_is_partner($db, $uid);
+}
+
+function orolado_aff_rev_friend_calc(array $db, string $friendUid): array {
+  if (orolado_aff_is_partner_memo($db, $friendUid)) return ['uid' => $friendUid, 'margin' => 0.0, 'settledIn' => 0.0, 'deposits' => 0.0, 'withdrawals' => 0.0, 'ngr' => 0.0]; // v3628 : compte partenaire = pas de commission
   $ids = function_exists('orolado_linked_balance_ids') ? orolado_linked_balance_ids($db, $friendUid) : [$friendUid];
   if (!$ids) $ids = [$friendUid];
   $cutTs = time() - orolado_aff_rev_hold_h() * 3600;
@@ -229,8 +299,16 @@ function orolado_aff_rev_friend(array $db, string $friendUid): array {
 
 /** Agrégat de TOUS les amis d'un affilié (report négatif inclus : la somme peut être négative). */
 function orolado_aff_rev_aggregate(array $db, string $inviterUid): array {
-  $own = orolado_aff_read(orolado_aff_owner_name($inviterUid));
-  $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
+  // Pendant une même requête (index actifs), calculé une seule fois (la page l'utilisait 3 fois).
+  if (isset($GLOBALS['OROLADO_AFF_DEPIDX'], $GLOBALS['OROLADO_AFF_AGG'][$inviterUid])) return $GLOBALS['OROLADO_AFF_AGG'][$inviterUid];
+  $res = orolado_aff_rev_aggregate_calc($db, $inviterUid);
+  if (isset($GLOBALS['OROLADO_AFF_DEPIDX'])) $GLOBALS['OROLADO_AFF_AGG'][$inviterUid] = $res;
+  return $res;
+}
+
+function orolado_aff_rev_aggregate_calc(array $db, string $inviterUid): array {
+  orolado_aff_migrate($inviterUid);
+  $friends = array_map(static fn($l) => ['uid' => (string) $l['u']], orolado_aff_fr_lines($inviterUid));
   $sum = 0.0; $sumAll = 0.0; $staked = 0.0; $active = 0;
   $rows = [];
   $seen = [];
@@ -304,12 +382,11 @@ function orolado_aff_admin_overview(array $db, array $opts = []): array {
   $big = orolado_aff_rev_big_dep();
   $rows = [];
   $totalPaid = 0.0;
-  $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
+  orolado_aff_build_indexes($db);
   foreach ($ids as $uid) {
-    $own = orolado_aff_read(orolado_aff_owner_name($uid));
-    $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
+    $friends = orolado_aff_friends($uid);
     if (!$friends) continue;
-    $w = orolado_aff_rev_wallet($db, $uid);
+    $w = function_exists('orolado_aff_rev_wallet_view') ? orolado_aff_rev_wallet_view($db, $uid) : orolado_aff_rev_wallet($db, $uid);
     // Signaux (info) : grappes d'IP + gros déposeurs.
     $ipCount = [];
     foreach ($friends as $f) { $ip = (string) ($f['ip'] ?? ''); if ($ip !== '') $ipCount[$ip] = ($ipCount[$ip] ?? 0) + 1; }
@@ -337,7 +414,7 @@ function orolado_aff_admin_overview(array $db, array $opts = []): array {
       'watch' => ($sameIp >= 3),
     ];
   }
-  unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+  orolado_aff_clear_indexes();
   usort($rows, static fn($a, $b) => ($b['watch'] <=> $a['watch']) ?: ($b['paid'] <=> $a['paid']));
   return ['rows' => $rows, 'count' => count($rows), 'totalPaid' => orolado_money($totalPaid), 'bigThreshold' => $big];
 }

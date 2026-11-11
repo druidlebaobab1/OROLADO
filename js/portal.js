@@ -1012,7 +1012,7 @@
   function sendClick() {
     try {
       var o = JSON.parse(localStorage.getItem('oro_ami') || 'null');
-      if (!o || !o.c || o.sent || Date.now() - (o.t || 0) > 600000 || !D6.Api || !D6.Api.post) return;
+      if (!o || !o.c || o.sent || o.typed || Date.now() - (o.t || 0) > 600000 || !D6.Api || !D6.Api.post) return; // code tapé ≠ clic sur un lien
       var dev = localStorage.getItem('oro_dev');
       if (!dev) { dev = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('oro_dev', dev); }
       o.sent = 1;

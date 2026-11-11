@@ -3811,6 +3811,16 @@ function orolado_find_deposit_by_hit(array $hit): ?array {
 function credit_paid_deposit(array $hit): array {
   $res = credit_paid_deposit_core($hit);
   if (!empty($res['ok']) || !empty($res['duplicate']) || empty($hit['paid'])) {
+    // 2026-11-11 (affiliation grande échelle) : le dépôt d'un ami invité est noté chez son parrain tout de suite,
+    // APRÈS la réponse (avant : seulement quand le parrain ouvrait sa page → gros rattrapage lent d'un coup).
+    if (!empty($res['ok']) && empty($res['duplicate']) && ($depUid = (string) ($res['userId'] ?? '')) !== '' && $depUid !== 'admin_master') {
+      register_shutdown_function(static function () use ($depUid) {
+        try {
+          if (!function_exists('orolado_aff_settle') && is_file(__DIR__ . '/aff_lib.php')) require_once __DIR__ . '/aff_lib.php';
+          if (function_exists('orolado_aff_settle') && is_file(orolado_aff_dir() . DIRECTORY_SEPARATOR . orolado_aff_inv_name($depUid) . '.json')) orolado_aff_settle(load_db(orolado_data_file()), $depUid);
+        } catch (Throwable $e) { /* jamais bloquant */ }
+      });
+    }
     if (!empty($res['ok']) && empty($res['duplicate']) && ($ref = (string) ($hit['ref'] ?? '')) !== '') {
       with_db_lock(function ($box) use ($ref) { foreach (($box->db['deposits'] ?? []) as $i => $d) { if (is_array($d) && (string) ($d['id'] ?? '') === $ref && isset($d['payFail'])) { unset($box->db['deposits'][$i]['payFail'], $box->db['deposits'][$i]['payFailWhy']); return ['ok' => true]; } } return ['ok' => true, 'skip_write' => true]; });
     }

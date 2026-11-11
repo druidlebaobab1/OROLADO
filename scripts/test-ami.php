@@ -118,7 +118,8 @@ check('Pierre : aucun 5 % sur son solde', sum_for($credits, $A) < 0.001);
 
 echo "7) Plus de limite d'un an : un dépôt après 400 jours est toujours compté (pour la part de revenu à vie)\n";
 orolado_aff_with(orolado_aff_inv_name('u_ami2'), function (&$st) { $st['at'] = date('c', time() - 400 * 86400); });
-orolado_aff_with(orolado_aff_owner_name('u_pierre'), function (&$own) { foreach ($own['friends'] as &$f) $f['at'] = date('c', time() - 400 * 86400); });
+orolado_aff_friends('u_pierre'); // (conversion éventuelle) puis date des lignes d'amis reculée de 400 jours
+$frf = orolado_aff_fr_file('u_pierre'); $lines = []; foreach (orolado_aff_fr_lines('u_pierre') as $l) { $l['a'] = date('c', time() - 400 * 86400); $lines[] = json_encode($l); } file_put_contents($frf, implode("\n", $lines) . "\n");
 deposit('u_ami2', 1000);
 $r = orolado_aff_status(load_db(), load_db()['users']['u_pierre']);
 check('dépôt de 1000 $ après un an : compté (1 040 $ au total)', abs($r['total'] - 1040) < 0.001, (string) $r['total']);
