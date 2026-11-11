@@ -2363,6 +2363,11 @@ if ($isAjax) {
   // correspondent à aucun joueur (à voir à la main).
   // 2026-11-10 (propriétaire : « un endroit où tous nos appels sont rangés ») — page « 🔑 Clés & connexions » (keys_lib.php).
   // 2026-11-11 : 🏦 Coffre OROLADO (coffre_lib.php) — adresses des joueurs, réservoir TRX, balayage vers le Trust Wallet.
+  if ($action === 'coffre_backup' && function_exists('coffre_backup')) {
+    $r = coffre_backup((string) ($req['pass'] ?? ''));
+    if (!empty($r['ok'])) admin_persist_admin_log((string) ($me['email'] ?? ''), 'COFFRE', 'config', 0, 'Copie de secours du coffre téléchargée (' . (int) $r['count'] . ' clés)');
+    admin_json($r);
+  }
   if (in_array($action, ['coffre_view', 'coffre_set', 'coffre_sweep'], true)) {
     if (!function_exists('coffre_admin_view')) admin_json(['ok' => false, 'reason' => 'Coffre indisponible']);
     if ($action === 'coffre_set') {
@@ -4678,10 +4683,12 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       step(!!r.dest, 'Adresse de ton Trust Wallet (USDT, réseau TRON) dans 🔑 Clés & connexions' + (r.dest ? ' : <code style="color:#FDE047;word-break:break-all">' + esc(r.dest) + '</code>' : '')) +
       step(r.tronKey, 'Clé TronGrid') +
       step(r.gasTrx !== null && r.gasTrx >= 30, 'Réservoir TRX rechargé (au moins 30 TRX, conseillé 200)' + (r.gas ? '<br><small class="muted">Envoie des TRX (réseau TRON) à :</small> ' + adl(r.gas) + ' <button class="mini" data-cp="' + esc(r.gas) + '">Copier</button> <b>' + (r.gasTrx === null ? '?' : r.gasTrx) + ' TRX</b>' : '')) +
+      step(r.backupAt && r.backupN >= r.nKeys, r.backupAt ? ('Copie de secours du ' + esc(when(r.backupAt)) + (r.backupN < r.nKeys ? ' — <b style="color:#FCD34D">' + (r.nKeys - r.backupN) + ' nouvelle(s) adresse(s) depuis : refais-en une</b>' : ' ✓')) : 'Copie de secours téléchargée et gardée sur ton téléphone (bouton 💾 plus bas)') +
       step(r.on, r.on ? '<b style="color:#86EFAC">Allumé pour tous les joueurs</b>' : 'Éteint pour les joueurs (toi, en admin, tu peux déjà tester : Recharger → USDT TRC20)') +
       '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
         (r.on ? '<button class="mini bad" id="cfOff">Éteindre (retour OxaPay)</button>' : '<button class="mini ok" id="cfOn"' + (r.ready ? '' : ' disabled') + '>Allumer pour tous les joueurs</button>') +
         '<button class="mini" id="cfSweep">Envoyer maintenant vers mon Trust Wallet</button>' +
+        '<button class="mini" id="cfBackup">💾 Copie de secours</button>' +
       '</div>' +
       '<div style="margin-top:8px;font-size:12px">Envoi automatique vers ton Trust Wallet dès <input id="cfMin" type="number" min="5" max="5000" value="' + esc(r.min) + '" style="width:80px"> $ sur une adresse <button class="mini" id="cfMinSave">OK</button><br><small class="muted">Chaque envoi coûte environ 7 TRX (≈ 2 $) au réservoir. Les petits montants partent au bout de 24 h.</small></div>' +
       '<div class="muted" id="cfOut" style="font-size:12px;margin-top:6px"></div></div>';
@@ -4696,6 +4703,20 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     if ($v('cfOn')) $v('cfOn').onclick = async () => { if (!confirm('Allumer le coffre pour TOUS les joueurs ? Les dépôts USDT TRC20 iront sur les adresses OROLADO (plus OxaPay).')) return; const x = await ajax({action:'coffre_set', on:1}); x && x.ok ? paint(x) : out('❌ ' + ((x && x.reason) || 'Échec')); };
     if ($v('cfOff')) $v('cfOff').onclick = async () => { if (!confirm('Éteindre ? Les joueurs repasseront par OxaPay (les adresses OROLADO déjà données restent surveillées et créditées).')) return; const x = await ajax({action:'coffre_set', on:0}); x && x.ok ? paint(x) : out('❌ Échec'); };
     $v('cfMinSave').onclick = async () => { const x = await ajax({action:'coffre_set', min: $v('cfMin').value}); x && x.ok ? paint(x) : out('❌ Échec'); };
+    $v('cfBackup').onclick = async () => {
+      const p1 = prompt('Choisis un mot de passe pour la copie de secours (8 caractères minimum). NOTE-LE sur papier : sans lui, la copie ne sert à rien.');
+      if (!p1) return;
+      const p2 = prompt('Retape le même mot de passe :');
+      if (p1 !== p2) { out('❌ Les 2 mots de passe sont différents'); return; }
+      out('⏳ Préparation…');
+      const x = await ajax({action:'coffre_backup', pass:p1});
+      if (!x || !x.ok) { out('❌ ' + ((x && x.reason) || 'Échec')); return; }
+      const blob = new Blob([JSON.stringify(x.file)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orolado-coffre-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      out('✅ Copie téléchargée (' + x.count + ' clés). Garde ce fichier ET le mot de passe en lieu sûr (pas dans le téléphone seulement).');
+      setTimeout(() => ajax({action:'coffre_view'}).then(y => y && y.ok && paint(y)), 2500);
+    };
     $v('cfSweep').onclick = async () => { out('⏳ Envoi…'); const x = await ajax({action:'coffre_sweep'}); if (!x || !x.ok) { out('❌ ' + ((x && (x.why || x.reason)) || 'Échec')); return; } paint(x.view); };
   }
   $v('btnVault').onclick = () => { $v('vaultModal').classList.add('on'); paint(); };

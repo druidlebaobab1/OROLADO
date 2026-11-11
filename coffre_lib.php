@@ -571,7 +571,44 @@ function coffre_admin_view(): array {
     $rows[] = ['at' => (string) ($d['at'] ?? ''), 'user' => (string) ($u['displayName'] ?? $u['email'] ?? $d['userId'] ?? ''), 'amount' => (float) ($d['amount'] ?? 0), 'hash' => (string) ($d['txid'] ?? ''), 'status' => (string) ($d['status'] ?? '')];
     if (count($rows) >= 40) break;
   }
-  return ['ok' => true, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
+  $nAddr = count($ix) + (empty($gas['addr']) ? 0 : 1);
+  return ['ok' => true, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
     'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30)];
+}
+
+/* ===================== Copie de secours (gardée par le propriétaire) ===================== */
+
+/**
+ * Toutes les clés du coffre (adresses des joueurs + réservoir), fermées par un MOT DE PASSE choisi par le propriétaire
+ * (PBKDF2-SHA256 200 000 tours + AES-256-GCM). Si le serveur disparaît, ce fichier + ce mot de passe suffisent à
+ * récupérer l'argent resté sur les adresses (scripts/coffre-restore.php, ou import de la clé dans Trust Wallet).
+ */
+function coffre_backup(string $pass): array {
+  if (mb_strlen($pass) < 8) return ['ok' => false, 'reason' => 'Mot de passe trop court (8 caractères minimum).'];
+  $items = [];
+  $g = coffre_json(coffre_dir() . '/gas.json');
+  $add = static function (string $addr, string $uid, string $enc) use (&$items) {
+    $pem = coffre_dec($enc);
+    $k = $pem !== '' ? openssl_pkey_get_private($pem) : false;
+    $d = $k ? openssl_pkey_get_details($k) : null;
+    if (!$d || coffre_addr_from_pub((string) $d['ec']['x'], (string) $d['ec']['y']) !== $addr) return;
+    $items[] = ['addr' => $addr, 'uid' => $uid, 'pk' => str_pad(bin2hex((string) $d['ec']['d']), 64, '0', STR_PAD_LEFT)];
+  };
+  if (!empty($g['addr'])) $add((string) $g['addr'], 'RESERVOIR', (string) $g['enc']);
+  foreach (glob(coffre_dir() . '/w_*.json') ?: [] as $f) { $w = coffre_json($f); if (!empty($w['addr'])) $add((string) $w['addr'], (string) ($w['uid'] ?? ''), (string) ($w['enc'] ?? '')); }
+  $salt = random_bytes(16); $iv = random_bytes(12); $tag = '';
+  $key = hash_pbkdf2('sha256', $pass, $salt, 200000, 32, true);
+  $ct = openssl_encrypt(json_encode(['items' => $items, 'dest' => coffre_dest()]), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+  coffre_cfg_set(['backupAt' => date('c'), 'backupN' => count($items)]);
+  return ['ok' => true, 'count' => count($items), 'file' => ['app' => 'OROLADO coffre', 'v' => 1, 'at' => date('c'), 'count' => count($items),
+    'kdf' => 'pbkdf2-sha256-200000', 'salt' => base64_encode($salt), 'iv' => base64_encode($iv), 'tag' => base64_encode($tag), 'data' => base64_encode((string) $ct)]];
+}
+
+/** Relit une copie de secours (vérification / récupération). */
+function coffre_backup_open(array $file, string $pass): ?array {
+  $key = hash_pbkdf2('sha256', $pass, (string) base64_decode((string) ($file['salt'] ?? '')), 200000, 32, true);
+  $p = openssl_decrypt((string) base64_decode((string) ($file['data'] ?? '')), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, (string) base64_decode((string) ($file['iv'] ?? '')), (string) base64_decode((string) ($file['tag'] ?? '')));
+  $j = is_string($p) ? json_decode($p, true) : null;
+  return is_array($j) ? $j : null;
 }

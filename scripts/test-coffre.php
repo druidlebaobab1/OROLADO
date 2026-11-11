@@ -174,6 +174,22 @@ coffre_json_rw(coffre_index_file(), function (&$st) use ($addrA) { $st[$addrA]['
 coffre_scan(50, 5);
 check('envoi sur l\'ancienne adresse → crédité quand même', abs($money($A) - 1290.06) < 0.001, (string) $money($A));
 
+echo "6) Copie de secours : avec le mot de passe, chaque clé redonne bien son adresse\n";
+check('mot de passe trop court → refusé', empty(coffre_backup('abc')['ok']));
+$bk = coffre_backup('MonSecret2026');
+check('copie faite : toutes les clés (joueurs + réservoir)', !empty($bk['ok']) && $bk['count'] === coffre_admin_view()['nKeys'], json_encode(['n' => $bk['count'] ?? null, 'k' => coffre_admin_view()['nKeys']]));
+check('mauvais mot de passe → illisible', coffre_backup_open($bk['file'], 'faux') === null);
+$op = coffre_backup_open($bk['file'], 'MonSecret2026');
+$okAll = is_array($op) && $op['dest'] === DEST;
+foreach (($op['items'] ?? []) as $it) {
+  $der = hex2bin('302e0201010420') . hex2bin($it['pk']) . hex2bin('a00706052b8104000a');
+  $pem = "-----BEGIN EC PRIVATE KEY-----\n" . chunk_split(base64_encode($der), 64, "\n") . "-----END EC PRIVATE KEY-----\n";
+  $dd = openssl_pkey_get_details(openssl_pkey_get_private($pem));
+  if (coffre_addr_from_pub($dd['ec']['x'], $dd['ec']['y']) !== $it['addr']) $okAll = false;
+}
+check('chaque clé de la copie redonne exactement son adresse (récupération possible)', $okAll && in_array($addrA, array_column($op['items'], 'addr'), true));
+check('le fichier ne contient aucune clé lisible sans mot de passe', !str_contains(json_encode($bk['file']), $op['items'][0]['pk']));
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);
