@@ -432,6 +432,12 @@ function orolado_aff_rev_run(array $db, string $inviterUid): array {
   if (!orolado_aff_rev_enabled() || $inviterUid === '') return orolado_aff_rev_wallet($db, $inviterUid);
   $iu = $db['users'][$inviterUid] ?? null;
   if (!is_array($iu) || !orolado_aff_allowed($iu + ['id' => $inviterUid])) return orolado_aff_rev_wallet($db, $inviterUid);
+  // 2026-11-12 (revue) : UN SEUL versement à la fois par affilié (cron, page Invitation, rafraîchissement, bouton admin
+  // pouvaient tourner ensemble et payer deux fois avec deux références différentes). Verrou non bloquant : si un autre
+  // versement est en cours, on ne paie rien ici (il sera fait par l'autre / au prochain passage).
+  $lk = @fopen(sys_get_temp_dir() . '/oro_affrev_' . substr(hash('sha256', $inviterUid), 0, 24) . '.lock', 'c');
+  if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return orolado_aff_rev_wallet($db, $inviterUid); }
+  try {
   $wallet = orolado_aff_rev_wallet($db, $inviterUid);
   $entitled = orolado_money($wallet['entitled']);
   $rev = orolado_aff_read(orolado_aff_rev_name($inviterUid));
@@ -458,4 +464,5 @@ function orolado_aff_rev_run(array $db, string $inviterUid): array {
     }
   }
   return $wallet;
+  } finally { flock($lk, LOCK_UN); fclose($lk); }
 }

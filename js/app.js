@@ -7510,7 +7510,7 @@
   var WD_CRYPTO = { usdt: 1, btc: 1, eth: 1, trx: 1, sol: 1, ltc: 1, doge: 1, usdc: 1, ada: 1, avax: 1, matic: 1 };
   // 2026-11-10 (propriétaire : « vérifie les adresses des retraits crypto ») : réseau choisi + adresse au bon format
   // (même règle que le serveur, orolado_wd_crypto_check) — un mauvais réseau ou une faute de frappe = argent perdu.
-  var WD_NETS = { usdt: ['TRC20'], usdc: ['ERC20', 'BEP20', 'SOL'], btc: ['BTC'], eth: ['ERC20'], trx: ['TRC20'], sol: ['SOL'], ltc: ['LTC'], doge: ['DOGE'], ada: ['ADA'], avax: ['AVAXC'], matic: ['POLYGON'] };
+  var WD_NETS = { usdt: ['TRC20'], usdc: ['ERC20', 'BEP20', 'SOL'], btc: ['BTC'], eth: ['ERC20'], trx: ['TRC20'], sol: ['SOL'], ltc: ['LTC'], doge: ['DOGE'], ada: ['ADA'], avax: ['AVAXC'], matic: ['POLYGON'], bnb: ['BEP20'] };
   var WD_NET_NAME = { TRC20: 'TRC20 (Tron)', BEP20: 'BEP20 (BNB Smart Chain)', ERC20: 'ERC20 (Ethereum)', SOL: 'Solana', BTC: 'Bitcoin', LTC: 'Litecoin', DOGE: 'Dogecoin', ADA: 'Cardano', AVAXC: 'Avalanche C-Chain', POLYGON: 'Polygon' };
   function wdAddrOk(net, a) {
     var b = '[1-9A-HJ-NP-Za-km-z]';
@@ -10008,10 +10008,12 @@
         wdOtpLeft = 0;
         if (wdOtpTimer) { clearInterval(wdOtpTimer); wdOtpTimer = null; }
         if (remote && remote.ok && remote.vault) D6.Store.importRemote(u, remote.vault, { official: true, allowZero: true });
-        else {
-          var local = D6.Store.requestWithdraw(u, amount, payload);
-          if (!local.ok) { toast(local.reason, 'err'); return; }
-          createdId = local.id || '';
+        else if (!(remote && remote.ok)) {
+          // 2026-11-12 (revue) : pas de réponse claire du serveur (lenteur, 502…) → JAMAIS de faux « retrait confirmé »
+          // créé seulement sur le téléphone ; on recharge le compte et on demande de vérifier l'historique.
+          toast(t('wdNetFail'), 'err');
+          try { if (D6.Supabase && D6.Supabase.pullVault) D6.Supabase.pullVault(); } catch (eP) { /* ignore */ }
+          return;
         }
         createdId = createdId || (remote && remote.id) || '';
       } else {

@@ -2541,6 +2541,10 @@ if ($isAjax) {
       if (!empty($row['offsite']) || !admin_wd_has_local($db, $id)) {
         admin_json(['ok' => false, 'reason' => 'Retrait créé hors du site : aucun argent n’a été débité. Ne le payez pas.']);
       }
+      // 2026-11-12 (revue) : un retrait déjà refusé / remboursé ne peut plus être validé (sinon : remboursé ET payé)
+      if (in_array(strtolower((string) ($row['status'] ?? '')), ['rejected', 'refunded', 'silenced'], true) || !empty($row['refunded'])) {
+        admin_json(['ok' => false, 'reason' => 'Ce retrait a déjà été refusé et remboursé : il ne peut plus être validé.']);
+      }
       $row['status'] = 'approved';
       $row['approvedAt'] = date('c'); // v2655 : date de paiement (liste « Retraits validés »)
       $row['playerHidden'] = false;
@@ -2549,6 +2553,10 @@ if ($isAjax) {
       // Un retrait déjà validé (donc payé) ne peut plus être « refusé » : ça rembourserait le joueur une 2e fois.
       if (in_array(strtolower((string) ($row['status'] ?? '')), ['approved', 'paid', 'completed'], true)) {
         admin_json(['ok' => false, 'reason' => 'Ce retrait est déjà validé : il ne peut plus être refusé.']);
+      }
+      // 2026-11-12 (revue) : le robot des retraits est en train de l'envoyer (ou l'a envoyé) → pas de refus (sinon remboursé ET payé)
+      if (!empty($row['autoTry']) || !empty($row['autoTx'])) {
+        admin_json(['ok' => false, 'reason' => 'Le robot est en train d’envoyer ce retrait (ou l’a envoyé) : vérifie la transaction avant de le refuser.']);
       }
       // 2026-11-08 (revue) : retrait créé HORS du site (jamais débité) → refusé SANS remboursement (sinon : argent créé)
       $offsiteWd = !empty($row['offsite']) || !admin_wd_has_local($db, $id);

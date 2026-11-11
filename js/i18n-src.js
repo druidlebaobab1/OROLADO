@@ -3423,6 +3423,21 @@
     zh: {"affOnline": "在线好友", "affAct7": "活跃（7 天）", "affEarnedAll": "累计收益", "affOnNow": "在线"}
   };
   Object.keys(AFF_DASH_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF_DASH_TR[l]); });
+  // 2026-11-12 (revue) : retrait / envoi sans réponse claire du serveur → jamais de faux « confirmé »
+  var NETCHK_TR = {
+    fr: {"wdNetFail": "Connexion lente : ton retrait n'est pas confirmé. Regarde ton historique avant de réessayer.", "sendNetFail": "Connexion lente : vérifie ton historique avant de renvoyer."},
+    en: {"wdNetFail": "Slow connection: your withdrawal is not confirmed. Check your history before trying again.", "sendNetFail": "Slow connection: check your history before sending again."},
+    es: {"wdNetFail": "Conexión lenta: tu retiro no está confirmado. Mira tu historial antes de reintentar.", "sendNetFail": "Conexión lenta: revisa tu historial antes de reenviar."},
+    pt: {"wdNetFail": "Ligação lenta: o teu levantamento não está confirmado. Vê o histórico antes de tentar de novo.", "sendNetFail": "Ligação lenta: vê o histórico antes de reenviar."},
+    ar: {"wdNetFail": "اتصال بطيء: لم يتم تأكيد السحب. راجع السجل قبل المحاولة مرة أخرى.", "sendNetFail": "اتصال بطيء: راجع السجل قبل الإرسال مرة أخرى."},
+    tr: {"wdNetFail": "Bağlantı yavaş: çekimin onaylanmadı. Tekrar denemeden önce geçmişine bak.", "sendNetFail": "Bağlantı yavaş: tekrar göndermeden önce geçmişine bak."},
+    vi: {"wdNetFail": "Mạng chậm: lệnh rút chưa được xác nhận. Xem lịch sử trước khi thử lại.", "sendNetFail": "Mạng chậm: xem lịch sử trước khi gửi lại."},
+    id: {"wdNetFail": "Koneksi lambat: penarikanmu belum dikonfirmasi. Cek riwayat sebelum mencoba lagi.", "sendNetFail": "Koneksi lambat: cek riwayat sebelum mengirim lagi."},
+    ru: {"wdNetFail": "Медленная связь: вывод не подтверждён. Проверь историю, прежде чем повторять.", "sendNetFail": "Медленная связь: проверь историю, прежде чем отправлять снова."},
+    de: {"wdNetFail": "Langsame Verbindung: deine Auszahlung ist nicht bestätigt. Prüfe den Verlauf, bevor du es erneut versuchst.", "sendNetFail": "Langsame Verbindung: prüfe den Verlauf, bevor du erneut sendest."},
+    hi: {"wdNetFail": "धीमा कनेक्शन: आपकी निकासी पुष्टि नहीं हुई। फिर कोशिश करने से पहले इतिहास देखें।", "sendNetFail": "धीमा कनेक्शन: फिर भेजने से पहले इतिहास देखें।"}
+  };
+  Object.keys(NETCHK_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], NETCHK_TR[l]); });
   // 2026-11-08 : message d'état automatique de l'affilié (« pourquoi 0 $ ? »)
   var AFF_ST_TR = {
     fr: {"affStNone": "Partage ton lien : dès qu'un ami s'inscrit, dépose et joue, tu gagnes 60 % de ce qu'il perd.", "affStNoDep": "Tes amis sont inscrits mais n'ont pas encore déposé. Dès qu'ils déposent et jouent en argent réel, tu gagnes.", "affStNoPlay": "Tes amis ont déposé mais n'ont pas encore joué en argent réel. Dès qu'ils jouent, ta part arrive.", "affStPend": "{p} arrivent sur ton solde dans moins de {hold} h.", "affStWin": "Pour l'instant tes amis ont gagné plus qu'ils n'ont perdu : rien à verser. Dès qu'ils perdent, ta part arrive toute seule.", "affStOk": "Tout est à jour : tes gains arrivent tout seuls sur ton solde réel."},

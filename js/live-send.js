@@ -179,7 +179,21 @@
     $('lsYes').addEventListener('click', async function () {
       if (busy) return;
       busy = true; this.disabled = true; this.textContent = x.sending;
+      var t0 = Date.now() / 1000;
       var r = await api('xferSend', { to: id, amount: a });
+      if (!r || !r.server) {
+        // 2026-11-12 (revue) : pas de réponse (lenteur, coupure) — l'envoi a peut-être été fait. On relit l'historique
+        // AVANT de proposer de renvoyer (sinon le joueur renvoie et l'argent part deux fois).
+        await status();
+        var done = ((st && st.log) || []).filter(function (l) { return l.dir === 'out' && l.toId === id && Math.abs(+l.amount - a) < 0.005 && +l.at >= t0 - 120; })[0];
+        if (done) r = { ok: true, amount: a };
+        else {
+          busy = false; s.hidden = true;
+          var nf = ''; try { nf = D6.I18N && D6.I18N.t ? D6.I18N.t('sendNetFail') : ''; } catch (eT) { nf = ''; }
+          toast(nf && nf !== 'sendNetFail' ? nf : x.e_unavailable);
+          return;
+        }
+      }
       busy = false;
       if (r && r.ok) {
         try { if (D6.App && D6.App.onRemoteAccount) D6.App.onRemoteAccount(); } catch (e) { /* ignore */ }
