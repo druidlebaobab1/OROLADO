@@ -557,7 +557,16 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
 function coffre_admin_view(): array {
   $cfg = coffre_cfg();
   $ix = coffre_json(coffre_index_file());
-  $gas = coffre_ready() ? coffre_gas() : [];
+  // Réservoir montré dès la clé TronGrid (avant : seulement après l'adresse du Trust Wallet → le propriétaire ne le voyait pas).
+  $gas = (function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '') ? coffre_gas() : [];
+  // Cases « adresses de mon Trust Wallet » (toutes sur la page du coffre)
+  $nets = [];
+  if (!function_exists('keys_catalog') && is_file(__DIR__ . '/keys_lib.php')) require_once __DIR__ . '/keys_lib.php';
+  if (function_exists('keys_catalog')) foreach (keys_catalog() as $c) foreach ($c['items'] as $it) {
+    if (!str_starts_with((string) $it['name'], 'VAULT_')) continue;
+    $nets[] = ['name' => $it['name'], 'title' => $it['title'], 'ico' => $it['ico'], 'how' => $it['how'] ?? '', 'what' => $it['what'] ?? '',
+      'value' => keys_value((string) $it['name']), 'live' => $it['name'] === 'VAULT_TRON_ADDRESS'];
+  }
   $gb = !empty($gas['addr']) ? coffre_balances((string) $gas['addr']) : null;
   $db = load_db(orolado_data_file());
   $waiting = 0.0; $got = 0.0; $rows = [];
@@ -572,7 +581,7 @@ function coffre_admin_view(): array {
     if (count($rows) >= 40) break;
   }
   $nAddr = count($ix) + (empty($gas['addr']) ? 0 : 1);
-  return ['ok' => true, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
+  return ['ok' => true, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
     'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30)];
 }
