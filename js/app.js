@@ -11517,3 +11517,26 @@
   document.addEventListener('visibilitychange', stop);
   document.addEventListener('contextmenu', function (e) { if (e.target && e.target.closest && e.target.closest(SEL)) e.preventDefault(); }, true);
 })();
+
+// 2026-11-12 (propriétaire : « Mercado Pago déborde de son carré ») — chaque case de moyen de paiement : si le nom est plus
+// large que sa case (Mercado Pago, Bancolombia, Daviplata, langues longues…), il rétrécit un peu. Jamais de débordement.
+(function () {
+  function fitPayLogos() {
+    var pills = document.querySelectorAll('#payMethodCard .pl-logo');
+    for (var i = 0; i < pills.length; i++) {
+      var p = pills[i]; if (!p.clientWidth) continue;
+      var lab = p.querySelector('.pl-n') || p;
+      [p, lab].forEach(function (e) { e.style.removeProperty('font-size'); e.style.removeProperty('letter-spacing'); });
+      var fs = parseFloat(getComputedStyle(lab).fontSize) || 12, guard = 0;
+      var need = function () { var w = 0; for (var k = 0; k < p.children.length; k++) w += p.children[k].getBoundingClientRect().width; var r = document.createRange(); r.selectNodeContents(p); var tw = r.getBoundingClientRect().width; return Math.max(w, tw) > p.clientWidth - 12 || p.scrollWidth > p.clientWidth + 1; };
+      while (need() && fs > 8 && guard++ < 12) { fs -= 0.5; [p, lab].forEach(function (e) { e.style.setProperty('font-size', fs + 'px', 'important'); e.style.setProperty('letter-spacing', '-0.01em', 'important'); }); }
+    }
+  }
+  function arm() {
+    var c = document.getElementById('payMethodCard');
+    if (!c) return;
+    if (window.ResizeObserver) { var t; new ResizeObserver(function () { clearTimeout(t); t = setTimeout(fitPayLogos, 60); }).observe(c); }
+    setTimeout(fitPayLogos, 300);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
+})();

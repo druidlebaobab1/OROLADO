@@ -3407,6 +3407,22 @@
     hi: {"affResTitle": "आपके परिणाम", "affResPaid": "बैलेंस में भुगतान", "affResPend": "लंबित ({hold} घं.)", "affResToday": "आज", "affRes7": "7 दिन", "affRes30": "30 दिन", "affResActive": "खेलने वाले दोस्त", "affResStaked": "दोस्तों का दांव", "affResLost": "दोस्तों की हार", "affResLog": "हाल के भुगतान", "affResNoLog": "अभी कोई भुगतान नहीं", "affResFriends": "आपके दोस्त", "affResColGain": "आपकी कमाई", "affResColStake": "दांव", "affResColDep": "जमा", "affResColPend": "लंबित", "affResHow": "दोस्तों के खेलने के {hold} घंटे बाद आपकी कमाई अपने आप असली बैलेंस में आती है। हमेशा की तरह निकालें।", "affResNoFriends": "अभी किसी दोस्त ने जमा नहीं किया।"}
   };
   Object.keys(AFF_RES_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF_RES_TR[l]); });
+  // 2026-11-12 (propriétaire) : tableau de bord affilié en un seul bloc — amis en ligne, actifs 7 jours, gagné au total.
+  var AFF_DASH_TR = {
+    fr: {"affOnline": "Amis en ligne", "affAct7": "Actifs (7 jours)", "affEarnedAll": "Gagné au total", "affOnNow": "en ligne"},
+    en: {"affOnline": "Friends online", "affAct7": "Active (7 days)", "affEarnedAll": "Earned in total", "affOnNow": "online"},
+    es: {"affOnline": "Amigos en línea", "affAct7": "Activos (7 días)", "affEarnedAll": "Ganado en total", "affOnNow": "en línea"},
+    pt: {"affOnline": "Amigos online", "affAct7": "Ativos (7 dias)", "affEarnedAll": "Ganho no total", "affOnNow": "online"},
+    ar: {"affOnline": "أصدقاء متصلون", "affAct7": "نشطون (7 أيام)", "affEarnedAll": "إجمالي الربح", "affOnNow": "متصل"},
+    tr: {"affOnline": "Çevrimiçi arkadaşlar", "affAct7": "Aktif (7 gün)", "affEarnedAll": "Toplam kazanç", "affOnNow": "çevrimiçi"},
+    vi: {"affOnline": "Bạn đang online", "affAct7": "Hoạt động (7 ngày)", "affEarnedAll": "Tổng đã nhận", "affOnNow": "online"},
+    id: {"affOnline": "Teman online", "affAct7": "Aktif (7 hari)", "affEarnedAll": "Total didapat", "affOnNow": "online"},
+    ru: {"affOnline": "Друзья онлайн", "affAct7": "Активны (7 дней)", "affEarnedAll": "Заработано всего", "affOnNow": "онлайн"},
+    de: {"affOnline": "Freunde online", "affAct7": "Aktiv (7 Tage)", "affEarnedAll": "Insgesamt verdient", "affOnNow": "online"},
+    hi: {"affOnline": "ऑनलाइन दोस्त", "affAct7": "सक्रिय (7 दिन)", "affEarnedAll": "कुल कमाई", "affOnNow": "ऑनलाइन"},
+    zh: {"affOnline": "在线好友", "affAct7": "活跃（7 天）", "affEarnedAll": "累计收益", "affOnNow": "在线"}
+  };
+  Object.keys(AFF_DASH_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], AFF_DASH_TR[l]); });
   // 2026-11-08 : message d'état automatique de l'affilié (« pourquoi 0 $ ? »)
   var AFF_ST_TR = {
     fr: {"affStNone": "Partage ton lien : dès qu'un ami s'inscrit, dépose et joue, tu gagnes 60 % de ce qu'il perd.", "affStNoDep": "Tes amis sont inscrits mais n'ont pas encore déposé. Dès qu'ils déposent et jouent en argent réel, tu gagnes.", "affStNoPlay": "Tes amis ont déposé mais n'ont pas encore joué en argent réel. Dès qu'ils jouent, ta part arrive.", "affStPend": "{p} arrivent sur ton solde dans moins de {hold} h.", "affStWin": "Pour l'instant tes amis ont gagné plus qu'ils n'ont perdu : rien à verser. Dès qu'ils perdent, ta part arrive toute seule.", "affStOk": "Tout est à jour : tes gains arrivent tout seuls sur ton solde réel."},
