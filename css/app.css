@@ -14539,3 +14539,16 @@ html:root body #authQuick#authQuick#authQuick#authQuick#authQuick#authQuick.hidd
   #oddsRow .odds-chip[data-odds="50"]{transform-origin:100% 60%!important;scale:1.08!important}
   #oddsRow .odds-chip[data-odds="10"]{scale:1!important}
 }
+/* 2026-11-11 : coffre — montant exact à envoyer + numéro de transaction */
+.vault-pay{margin:2px 0 8px;padding:10px;border:1px solid rgba(74,222,128,.35);border-radius:14px;background:rgba(34,197,94,.08);text-align:center}
+.vault-pay .vp-lab{font-size:.66rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#86EFAC;overflow-wrap:anywhere}
+.vault-pay .vp-amt{font-size:1.45rem;font-weight:900;color:#F8E7B8;margin:4px 0 8px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.vault-pay .vp-amt b{color:#4ADE80}
+.vault-pay .vp-note{font-size:.72rem;line-height:1.4;color:#D6CCB6;margin:0 0 6px;overflow-wrap:anywhere}
+.vault-pay .vp-tx{text-align:left;font-size:.72rem;color:#B8AC94}
+.vault-pay .vp-tx summary{cursor:pointer;min-height:32px;display:flex;align-items:center;justify-content:center;text-align:center;color:#FCD34D;font-weight:700;overflow-wrap:anywhere}
+.vault-pay .vp-tx-row{display:flex;gap:6px;margin-top:6px}
+.vault-pay .vp-tx-in{flex:1 1 auto;min-width:0;min-height:40px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:#120F09;color:#E8EEF9;padding:0 8px;font:inherit;font-size:16px}
+.vault-pay .vp-tx-btn{flex:0 0 auto;min-height:40px;padding:0 12px;border-radius:10px;border:0;background:var(--gold);color:#1A1205;font:inherit;font-weight:800;font-size:.78rem;cursor:pointer;touch-action:manipulation}
+.vault-pay .vp-tx-out{margin:6px 0 0;color:#86EFAC;overflow-wrap:anywhere}
+.vault-pay .vp-tx-out.is-err{color:#FCA5A5}

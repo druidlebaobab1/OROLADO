@@ -13,6 +13,13 @@ declare(strict_types=1);
 
 function keys_catalog(): array {
   return [
+    // 2026-11-11 : le coffre = le portefeuille du propriétaire (Trust Wallet). Adresse PUBLIQUE (pas un secret) : elle s'affiche.
+    ['cat' => '🏦 Mon coffre : les dépôts arrivent directement chez moi (sans OxaPay)', 'items' => [
+      ['name' => 'VAULT_TRON_ADDRESS', 'title' => 'Adresse du coffre USDT (réseau TRON)', 'ico' => '🏦', 'show' => true,
+        'what' => 'Dans Trust Wallet : Recevoir → USDT → réseau TRON (TRC20) → Copier. L’adresse commence par T. Ce n’est pas un secret (comme un numéro de compte). Ne donne JAMAIS tes 12 mots. Besoin aussi de la clé TronGrid ci-dessous. Vide = OxaPay reprend.',
+        'how' => 'Recevoir → USDT → TRON → Copier', 'fmt' => '/^T[1-9A-HJ-NP-Za-km-z]{33}$/', 'fmtTxt' => 'T + 33 caractères',
+        'fmtBad' => 'Ce n’est pas une adresse TRON (elle commence par T et fait 34 caractères). Dans Trust Wallet : Recevoir → USDT → TRON → Copier.'],
+    ]],
     ['cat' => 'Dépôts crypto : voir les paiements arriver', 'items' => [
       ['name' => 'TRONGRID_API_KEY', 'title' => 'TronGrid', 'ico' => '🟥', 'what' => 'USDT TRC20 et TRX (réseau TRON). Le plus utilisé en Afrique.', 'url' => 'https://www.trongrid.io/register', 'how' => 'Clés API → Créer', 'fmt' => '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', 'fmtTxt' => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'],
       ['name' => 'NODEREAL_API_KEY', 'title' => 'NodeReal', 'ico' => '🟨', 'what' => 'USDT BEP20 et BNB (BNB Chain / Binance).', 'url' => 'https://nodereal.io/meganode', 'how' => 'Create API key → BNB Smart Chain'],
@@ -119,6 +126,13 @@ function keys_test(string $name, string $v): array {
   if ($v === '') return ['ok' => false, 'msg' => 'Aucune clé enregistrée'];
   $json = ['Content-Type: application/json'];
   switch ($name) {
+    case 'VAULT_TRON_ADDRESS':
+      if (!function_exists('vault_tron_addr_ok') || !vault_tron_addr_ok($v)) return ['ok' => false, 'msg' => 'Adresse TRON invalide (une lettre est fausse ?). Recopie-la avec le bouton « Copier » de Trust Wallet.'];
+      $tk = keys_value('TRONGRID_API_KEY');
+      if ($tk === '') return ['ok' => false, 'msg' => 'Adresse valide, mais il manque la clé TronGrid (plus bas) : sans elle le site ne voit pas l’argent arriver. OxaPay reste utilisé en attendant.'];
+      [$c, $r] = keys_http('https://api.trongrid.io/v1/accounts/' . $v, 'GET', null, ['TRON-PRO-API-KEY: ' . $tk, 'Accept: application/json']);
+      if ($c !== 200) return ['ok' => true, 'msg' => 'Adresse valide. Coffre ACTIF : les dépôts USDT TRC20 arrivent maintenant directement dans ton portefeuille (TronGrid n’a pas répondu au test, code ' . $c . ').'];
+      return ['ok' => true, 'msg' => 'Coffre ACTIF ✓ Les dépôts USDT TRC20 des joueurs arrivent maintenant directement dans ton portefeuille. Vérifie que c’est bien TON adresse : ' . substr($v, 0, 6) . '…' . substr($v, -6)];
     case 'TRONGRID_API_KEY':
       [$c, $r] = keys_http('https://api.trongrid.io/wallet/getnowblock', 'POST', '{}', array_merge($json, ['TRON-PRO-API-KEY: ' . $v]));
       return ($c === 200 && str_contains($r, 'block_header')) ? ['ok' => true, 'msg' => 'TronGrid répond : la clé fonctionne'] : ['ok' => false, 'msg' => 'TronGrid refuse la clé (code ' . $c . ')'];
@@ -153,6 +167,7 @@ function keys_status(): array {
   $row = static function (string $name, array $it) use ($file, $meta): array {
     $host = keys_host_has($name, $file);
     $m = $meta[$name] ?? [];
+    if (!empty($it['show'])) $it['value'] = keys_value($name); // adresse publique : on la montre pour vérifier
     return $it + ['set' => $host || (($file[$name] ?? '') !== ''), 'source' => $host ? 'hébergeur' : (($file[$name] ?? '') !== '' ? 'admin' : ''),
       'updatedAt' => (string) ($m['updatedAt'] ?? ''), 'by' => (string) ($m['by'] ?? ''), 'test' => $m['test'] ?? null];
   };
@@ -198,6 +213,7 @@ function keys_set(string $name, string $val, string $by): array {
     if (keys_forbidden($name)) return ['ok' => false, 'reason' => 'Ce nom est réservé au fonctionnement du site : il ne peut pas être changé d’ici.'];
   }
   $fmt = $known[$name]['fmt'] ?? '';
+  if ($fmt !== '' && !preg_match($fmt, $val) && !empty($known[$name]['fmtBad'])) return ['ok' => false, 'reason' => $known[$name]['fmtBad']];
   if ($fmt !== '' && !preg_match($fmt, $val)) {
     $n = strlen($val);
     return ['ok' => false, 'reason' => 'Ce n’est pas une clé ' . ($known[$name]['title'] ?? '') . ' complète (' . $n . ' caractères reçus, il en faut 36 au format ' . $known[$name]['fmtTxt'] . '). Recopiez-la depuis le site (bouton « copier » à côté de la clé).'];
