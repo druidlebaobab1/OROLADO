@@ -6333,7 +6333,8 @@ function orolado_oxapay_coins(): array {
     'arb' => ['pay' => 'ARB', 'network' => 'ARB', 'label' => 'ARB', 'netLabel' => 'Arbitrum One'],
     'op' => ['pay' => 'OP', 'network' => 'OP', 'label' => 'OP', 'netLabel' => 'Optimism'],
     'avax' => ['pay' => 'AVAX', 'network' => 'AVAX', 'label' => 'AVAX', 'netLabel' => 'Avalanche C-Chain'],
-  ];
+  ] + (function_exists('cevm_extra_tokens') ? array_map(static fn($t) => ['pay' => $t[1], 'network' => ['eth' => 'ERC20', 'bsc' => 'BEP20'][$t[0]] ?? strtoupper($t[0]), 'label' => $t[1],
+    'netLabel' => ['eth' => 'Ethereum (ERC20)', 'bsc' => 'BNB Smart Chain (BEP20)', 'base' => 'Base', 'polygon' => 'Polygon', 'arb' => 'Arbitrum One'][$t[0]] ?? $t[0]], cevm_extra_tokens()) : []);
 }
 
 function orolado_oxapay_min_usd(string $coin = 'usdt_trc20'): float {
@@ -6587,7 +6588,7 @@ function orolado_oxapay_hmac_ok(string $raw, string $hmacHeader): bool {
 }
 
 function orolado_oxapay_is_usd_coin(string $cur): bool {
-  return in_array(strtoupper(trim($cur)), ['USD', 'USDT', 'USDC', 'BUSD', 'DAI', 'TUSD'], true);
+  return in_array(strtoupper(trim($cur)), ['USD', 'USDT', 'USDC', 'BUSD', 'DAI', 'TUSD', 'FDUSD', 'PYUSD', 'USDE'], true);
 }
 
 function orolado_oxapay_num(array $row, array $keys): float {
@@ -6652,6 +6653,7 @@ function orolado_crypto_usd_price(string $sym): ?float {
       'DOGE' => 'dogecoin', 'XRP' => 'ripple', 'POL' => 'polygon-ecosystem-token', 'SHIB' => 'shiba-inu', 'GRAM' => 'gram-2',
       'XMR' => 'monero', 'BCH' => 'bitcoin-cash', 'NOT' => 'notcoin', 'DOGS' => 'dogs-2', 'TON' => 'the-open-network',
       'LINK' => 'chainlink', 'UNI' => 'uniswap', 'PEPE' => 'pepe', 'AAVE' => 'aave', 'AVAX' => 'avalanche-2', 'CAKE' => 'pancakeswap-token', 'ARB' => 'arbitrum', 'OP' => 'optimism'];
+    if (function_exists('cevm_extra_tokens')) foreach (cevm_extra_tokens() as $t) if ($t[6] !== '' && !isset($ids[$t[1]])) $ids[$t[1]] = $t[6];
     if (isset($ids[$sym])) {
       $cg = $get('https://api.coingecko.com/api/v3/simple/price?vs_currencies=usd&ids=' . $ids[$sym]);
       if (is_array($cg) && is_numeric($cg[$ids[$sym]]['usd'] ?? null)) $price = (float) $cg[$ids[$sym]]['usd'];
