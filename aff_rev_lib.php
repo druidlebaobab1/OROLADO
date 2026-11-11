@@ -29,6 +29,11 @@ declare(strict_types=1);
  */
 
 require_once __DIR__ . '/aff_lib.php';
+// 2026-11-10 (propriétaire : « son ami a perdu, je ne vois rien ») : les parties casino / Live / Action et les paris
+// sportifs ne comptaient que si casino_lib / sports_lib étaient DÉJÀ chargés. Dans l'admin ils ne l'étaient pas → Misé 0,
+// Perdu 0, gain 0. Le calcul les charge maintenant lui-même, partout.
+if (!function_exists('casino_round_user_file') && is_file(__DIR__ . '/casino_lib.php')) require_once __DIR__ . '/casino_lib.php';
+if (!function_exists('sp_with') && is_file(__DIR__ . '/sports_lib.php')) require_once __DIR__ . '/sports_lib.php';
 
 const OROLADO_AFF_REV_PCT_DEFAULT  = 0.60; // part versée à l'affilié sur la marge réelle
 const OROLADO_AFF_REV_HOLD_H_DEF   = 24;   // heures avant qu'un dépôt/pari compte (anti-chargeback)
