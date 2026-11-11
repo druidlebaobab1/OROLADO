@@ -4,7 +4,7 @@ Options -Indexes
 <IfModule mod_rewrite.c>
   RewriteEngine On
 # v2428 — lien d'invitation court : /r/CODE -> /?ref=CODE
-RewriteRule ^r/([A-Za-z0-9]{8})/?$ /?ref=$1 [R=302,L]
+RewriteRule ^r/([A-Za-z0-9]{3,16})/?$ /?ref=$1 [R=302,L]
   # 2026-10-21 : fichiers .js / .css avec numéro de version (?v=…) = gardés 1 jour par le téléphone (ouverture plus rapide)
   RewriteCond %{QUERY_STRING} (^|&)v=[0-9]
   RewriteRule \.(js|css)$ - [E=ORO_VER:1]
