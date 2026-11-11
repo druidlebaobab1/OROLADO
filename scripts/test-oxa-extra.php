@@ -345,5 +345,19 @@ $fresh([$dep('oV', $A, 'TV9', 'ADDRV', 'PENDING', 10)]);
 $rv = orolado_oxapay_webhook(json_encode(['track_id' => 'TV9', 'order_id' => 'oV', 'status' => 'Paid']), '');
 check('réponse 503 (OxaPay renverra le message)', ($rv['http'] ?? 0) === 503 && $money($A) == 0, json_encode($rv));
 
+echo "19) 2026-11-11 TronGrid voit l'envoi sur la blockchain AVANT OxaPay : crédité une seule fois\n";
+$fresh([]);
+$invT = orolado_oxapay_invoice(['token' => 'tokA', 'coin' => 'usdt_trc20', 'amount' => 20]);
+$ancT = null; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['kind'] ?? '') === 'static') $ancT = $dd;
+$tgTx = ['tx_hash' => 'hTG1', 'amount' => 12.5, 'currency' => 'USDT', 'status' => 'confirmed'];
+$rT = orolado_oxapay_extra_payment(['txs' => [$tgTx], 'pay_currency' => 'USDT', 'status' => 'Paid', 'address' => 'STATADDR'], $ancT);
+check('envoi vu par TronGrid → crédité 12,50 $', abs($money($A) - 12.5) < 0.02 && !empty($rT['ok']), json_encode($rT) . ' / ' . $money($A));
+$rT2 = orolado_oxapay_extra_payment(['txs' => [$tgTx], 'pay_currency' => 'USDT', 'status' => 'Paid', 'address' => 'STATADDR'], $ancT);
+check('TronGrid le revoit au passage suivant → rien de plus', abs($money($A) - 12.5) < 0.02, json_encode($rT2) . ' / ' . $money($A));
+$OXA['TG1'] = $pay('TG1', 'oxs_' . preg_replace('/[^a-zA-Z0-9]/', '', $A) . '_tron', 'STATADDR', [$tx('hTG1', 12.5) + ['address' => 'STATADDR']]);
+orolado_oxapay_webhook(json_encode(['track_id' => 'TG1', 'type' => 'static_address', 'status' => 'Paid']), '');
+check('puis le message d\'OxaPay pour le même envoi → rien de plus (pas de double crédit)', abs($money($A) - 12.5) < 0.02, (string) $money($A));
+check('aucun autre joueur crédité', $money($V) == 0);
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
