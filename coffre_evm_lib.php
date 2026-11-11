@@ -18,7 +18,65 @@
 
 require_once __DIR__ . '/coffre_ec.php';
 
+
+/**
+ * 2026-11-11 (propriétaire : « 40 à 50 cryptos populaires, faciles à trouver dans Trust Wallet ») — jetons en plus,
+ * tous sur l'adresse 0x du joueur. Symbole et décimales de chaque contrat vérifiés sur le réseau.
+ * Pas de jeton « qui change tout seul » (stETH…) : il serait crédité sans dépôt.
+ * coin => [réseau, symbole, contrat, décimales, nom, couleur, id CoinGecko]
+ */
+function cevm_extra_tokens(): array {
+  return [
+    'wbtc' => ['eth', 'WBTC', '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', 8, 'Wrapped Bitcoin', '#F09242', 'wrapped-bitcoin'],
+    'ldo' => ['eth', 'LDO', '0x5a98fcbea516cf06857215779fd812ca3bef1b32', 18, 'Lido DAO', '#F69988', 'lido-dao'],
+    'crv' => ['eth', 'CRV', '0xd533a949740bb3306d119cc777fa900ba034cd52', 18, 'Curve', '#3A3A99', 'curve-dao-token'],
+    'comp' => ['eth', 'COMP', '0xc00e94cb662c3520282e6f5717214004a7f26888', 18, 'Compound', '#00D395', 'compound-governance-token'],
+    'snx' => ['eth', 'SNX', '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f', 18, 'Synthetix', '#00D1FF', 'havven'],
+    'grt' => ['eth', 'GRT', '0xc944e90c64b2c07662a292be6244bdf05cda44a7', 18, 'The Graph', '#6747ED', 'the-graph'],
+    'sand' => ['eth', 'SAND', '0x3845badade8e6dff049820680d1f14bd3903a5d0', 18, 'The Sandbox', '#00ADEF', 'the-sandbox'],
+    'mana' => ['eth', 'MANA', '0x0f5d2fb29fb7d3cfee444a200298f468908cc942', 18, 'Decentraland', '#FF2D55', 'decentraland'],
+    'ape' => ['eth', 'APE', '0x4d224452801aced8b2f0aebe155379bb5d594381', 18, 'ApeCoin', '#0054F9', 'apecoin'],
+    'axs' => ['eth', 'AXS', '0xbb0e17ef65f82ab018d8edd776e8dd940327b28b', 18, 'Axie Infinity', '#0055D5', 'axie-infinity'],
+    'imx' => ['eth', 'IMX', '0xf57e7e7c23978c3caec3c3548e3d615c346e79ff', 18, 'Immutable', '#17B5CB', 'immutable-x'],
+    'render' => ['eth', 'RENDER', '0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24', 18, 'Render', '#CF1011', 'render-token'],
+    'fet' => ['eth', 'FET', '0xaea46a60368a7bd060eec7df8cba43b7ef41ad85', 18, 'Artificial Superintelligence (FET)', '#1D2A4F', 'fetch-ai'],
+    'ens' => ['eth', 'ENS', '0xc18360217d8f7ab5e7c516566761ea12ce7f9d72', 18, 'ENS', '#5298FF', 'ethereum-name-service'],
+    '1inch' => ['eth', '1INCH', '0x111111111117dc0aa78b770fa6a738034120c302', 18, '1inch', '#1B314F', '1inch'],
+    'bat' => ['eth', 'BAT', '0x0d8775f648430679a709e98d2b0cb6250d2887ef', 18, 'Basic Attention', '#FF5000', 'basic-attention-token'],
+    'chz' => ['eth', 'CHZ', '0x3506424f91fd33084466f402d5d97f05f8e3b4af', 18, 'Chiliz', '#CD0124', 'chiliz'],
+    'ondo' => ['eth', 'ONDO', '0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3', 18, 'Ondo', '#1A1A2E', 'ondo-finance'],
+    'wld' => ['eth', 'WLD', '0x163f8c2467924be0ae7b5347228cabf260318753', 18, 'Worldcoin', '#333333', 'worldcoin-wld'],
+    'pyusd' => ['eth', 'PYUSD', '0x6c3ea9036406852006290770bedfcaba0e23a0e8', 6, 'PayPal USD', '#0070E0', ''],
+    'floki' => ['eth', 'FLOKI', '0xcf0c122c6b73ff809c693db761e7baebe62b6a2e', 9, 'Floki', '#F6A11A', 'floki'],
+    'blur' => ['eth', 'BLUR', '0x5283d291dbcf85356a21ba090e6db59121208b44', 18, 'Blur', '#FF6B00', 'blur'],
+    'tusd' => ['eth', 'TUSD', '0x0000000000085d4780b73119b644ae5ecd22b376', 18, 'TrueUSD', '#2B2E7F', ''],
+    'usde' => ['eth', 'USDE', '0x4c9edd5852cd905f086c759e8383e09bff1e68b3', 18, 'Ethena USDe', '#111111', ''],
+    'gala' => ['eth', 'GALA', '0xd1d2eb1b1e90b638588728b4130137d262c87cae', 8, 'Gala', '#0E0E0E', 'gala'],
+    'qnt' => ['eth', 'QNT', '0x4a220e6096b25eadb88358cb44068a3248254675', 18, 'Quant', '#2B2B2B', 'quant-network'],
+    'mkr' => ['eth', 'MKR', '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', 18, 'Maker', '#1AAB9B', 'maker'],
+    'sushi' => ['eth', 'SUSHI', '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2', 18, 'SushiSwap', '#D65892', 'sushi'],
+    'yfi' => ['eth', 'YFI', '0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e', 18, 'yearn.finance', '#006AE3', 'yearn-finance'],
+    'ena' => ['eth', 'ENA', '0x57e114b691db790c35207b2e685d4a43181e6061', 18, 'Ethena', '#2A2A2A', 'ethena'],
+    'twt' => ['bsc', 'TWT', '0x4b0f1812e5df2a09796481ff14017e6005508003', 18, 'Trust Wallet Token', '#3375BB', 'trust-wallet-token'],
+    'babydoge' => ['bsc', 'BABYDOGE', '0xc748673057861a797275cd8a068abb95a902e8de', 9, 'Baby Doge', '#F0B90B', 'baby-doge-coin'],
+    'fdusd' => ['bsc', 'FDUSD', '0xc5f0f7b66764f6ec8c8dff7ba683102295e16409', 18, 'First Digital USD', '#00B67A', ''],
+    'xvs' => ['bsc', 'XVS', '0xcf6bb5389c92bdda8a3747ddb454cb7a64626c63', 18, 'Venus', '#F5B300', 'venus'],
+    'brett' => ['base', 'BRETT', '0x532f27101965dd16442e59d40670faf5ebb142e4', 18, 'Brett', '#0052FF', 'based-brett'],
+    'degen' => ['base', 'DEGEN', '0x4ed4e862860bed51a9570b96d89af5e1b0efefed', 18, 'Degen', '#A36EFD', 'degen-base'],
+    'aero' => ['base', 'AERO', '0x940181a94a35a4569e4529a3cdfb74e38fd98631', 18, 'Aerodrome', '#0433FF', 'aerodrome-finance'],
+    'toshi' => ['base', 'TOSHI', '0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4', 18, 'Toshi', '#0052FF', 'toshi'],
+  ];
+}
+
 function cevm_chains(): array {
+  static $out = null;
+  if ($out !== null) return $out;
+  $out = cevm_chains_base();
+  foreach (cevm_extra_tokens() as [$ch, $sym, $addr, $dec]) if (isset($out[$ch])) $out[$ch]['tokens'][$sym] = [$addr, $dec];
+  return $out;
+}
+
+function cevm_chains_base(): array {
   return [
     'eth' => ['id' => 1, 'name' => 'Ethereum', 'native' => 'ETH', 'gw' => 'ethereum-mainnet', 'pub' => 'https://ethereum-rpc.publicnode.com', 'min' => 100.0, 'tok_gas' => 70000,
       'tokens' => ['USDT' => ['0xdac17f958d2ee523a2206206994597c13d831ec7', 6], 'USDC' => ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 6],
@@ -45,7 +103,7 @@ function cevm_chains(): array {
 function cevm_coin_chain(string $coin): string {
   return ['usdt_erc20' => 'eth', 'usdc' => 'eth', 'eth' => 'eth', 'usdt_bep20' => 'bsc', 'bnb' => 'bsc', 'pol' => 'polygon',
     'usdt_polygon' => 'polygon', 'usdc_polygon' => 'polygon', 'usdc_base' => 'base', 'eth_base' => 'base', 'usdt_arb' => 'arb', 'usdc_arb' => 'arb', 'eth_arb' => 'arb',
-    'dai' => 'eth', 'link' => 'eth', 'uni' => 'eth', 'pepe' => 'eth', 'aave' => 'eth', 'shib' => 'bsc', 'cake' => 'bsc', 'arb' => 'arb', 'op' => 'op', 'avax' => 'avax'][$coin] ?? '';
+    'dai' => 'eth', 'link' => 'eth', 'uni' => 'eth', 'pepe' => 'eth', 'aave' => 'eth', 'shib' => 'bsc', 'cake' => 'bsc', 'arb' => 'arb', 'op' => 'op', 'avax' => 'avax'][$coin] ?? (cevm_extra_tokens()[$coin][0] ?? '');
 }
 
 /* ===================== Outils ===================== */
@@ -301,7 +359,7 @@ function cevm_scan_addr(string $chain, string $addr, string $uid): int {
         if (cec_is_zero($new)) continue;
         $units = cevm_float($new, $dec);
         // Dollars : USDT / USDC / DAI = 1 $ ; ETH, BNB, LINK, PEPE… = pièces × cours du moment.
-        $stable = in_array($sym, ['USDT', 'USDC', 'DAI'], true);
+        $stable = in_array($sym, ['USDT', 'USDC', 'DAI', 'TUSD', 'FDUSD', 'PYUSD', 'USDE'], true);
         $usd = $stable ? $units : (function_exists('orolado_crypto_usd_price') ? (($pr = orolado_crypto_usd_price($sym)) !== null ? $units * $pr : -1.0) : -1.0);
         if ($usd < 0) continue; // pas de cours pour l'instant : au prochain passage
         if ($usd + 0.0001 < COFFRE_MIN_CREDIT) continue; // poussière : jamais créditée (reste comptée au prochain vrai dépôt)

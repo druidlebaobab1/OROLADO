@@ -18,7 +18,7 @@ putenv('OXAPAY_MERCHANT_KEY=fake-oxa');
 const DEST = '0x19234aaaaaaaaaaaaaaaaaaaaaaaaaaaaa4ccbc8';
 putenv('VAULT_EVM_ADDRESS=' . DEST);
 require $tmp . '/orolado_lib.php';
-$GLOBALS['OROLADO_FAKE_PRICES'] = ['BNB' => 600.0, 'ETH' => 3000.0, 'POL' => 0.5, 'LINK' => 15.0, 'AVAX' => 25.0];
+$GLOBALS['OROLADO_FAKE_PRICES'] = ['BNB' => 600.0, 'ETH' => 3000.0, 'POL' => 0.5, 'LINK' => 15.0, 'AVAX' => 25.0, 'WBTC' => 60000.0, 'TWT' => 1.0];
 $bank = ['c' => [], 'keys' => []];
 $GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $method) use (&$bank) {
   $b = $body ? json_decode($body, true) : [];
@@ -151,6 +151,10 @@ $deposit('eth', $b, 'LINK', 2); $scanAll();
 check('2 LINK (15 $) sur Ethereum → +30 $ (prix du moment, pas 2 $)', abs($money($B) - 30) < 0.01, (string) $money($B));
 $deposit('avax', $b, 'USDC', 7); $deposit('avax', $b, 'N', 0.4); $scanAll();
 check('Avalanche : 7 USDC + 0,4 AVAX (25 $) → +17 $', abs($money($B) - 47) < 0.01, (string) $money($B));
+$deposit('eth', $b, 'WBTC', 0.001); $deposit('bsc', $b, 'TWT', 10); $deposit('eth', $b, 'PYUSD', 5); $scanAll();
+check('nouveaux jetons : 0,001 WBTC (60 $) + 10 TWT (10 $) + 5 PYUSD (5 $) → +75 $', abs($money($B) - 122) < 0.01, (string) $money($B));
+coffre_cfg_set(['oxapay_off' => true]); $onlyX = coffre_only_coins(); coffre_cfg_set(['oxapay_off' => false]);
+check('Recharger : 38 jetons de plus dans la liste du coffre', count(array_intersect(array_keys(cevm_extra_tokens()), $onlyX ?? [])) === 38 && isset(orolado_oxapay_coins()['twt']));
 $ix = $inv('tokB', 'pepe');
 check('PEPE / OP / CAKE : même adresse 0x', strtolower($ix['address'] ?? '') === $b && strtolower($inv('tokB', 'op')['address'] ?? '') === $b && strtolower($inv('tokB', 'cake')['address'] ?? '') === $b, json_encode($ix));
 
