@@ -618,12 +618,34 @@ function coffre_admin_view(): array {
   foreach (array_reverse($db['deposits'] ?? []) as $d) {
     if (!is_array($d) || (string) ($d['operator'] ?? '') !== 'coffre' || (string) ($d['kind'] ?? '') !== 'own' || (string) ($d['parentId'] ?? '') === '') continue;
     $u = $db['users'][(string) ($d['userId'] ?? '')] ?? [];
-    $rows[] = ['at' => (string) ($d['at'] ?? ''), 'user' => (string) ($u['displayName'] ?? $u['email'] ?? $d['userId'] ?? ''), 'amount' => (float) ($d['amount'] ?? 0), 'hash' => (string) ($d['txid'] ?? ''), 'status' => (string) ($d['status'] ?? '')];
+    $rows[] = ['at' => (string) ($d['at'] ?? ''), 'user' => (string) ($u['displayName'] ?? $u['email'] ?? $d['userId'] ?? ''), 'amount' => (float) ($d['amount'] ?? 0), 'hash' => (string) ($d['txid'] ?? ''), 'status' => (string) ($d['status'] ?? ''),
+      'net' => (string) ($d['network'] ?? ''), 'coin' => strtoupper((string) ($d['coin'] ?? ''))];
     if (count($rows) >= 40) break;
+  }
+  // Résumé PAR CRYPTO (propriétaire : « chacun affiche le sien ») : adresses, reçu total, sur les adresses maintenant.
+  $byNet = [];
+  $put = static function (string $k, string $label) use (&$byNet) { if (!isset($byNet[$k])) $byNet[$k] = ['net' => $label, 'n' => 0, 'got' => 0.0, 'now' => '']; };
+  $put('TRC20', 'USDT · TRON');
+  $byNet['TRC20']['n'] = count($ix); $tb = 0.0;
+  foreach ($ix as $e) $tb += (float) ($e['bal'] ?? 0);
+  $byNet['TRC20']['now'] = round($tb, 2) . ' USDT';
+  if (function_exists('cevm_index_file')) { $put('EVM', 'Ethereum / BNB / Polygon / Base / Arbitrum'); $byNet['EVM']['n'] = count(coffre_json(cevm_index_file())); $byNet['EVM']['now'] = '—'; }
+  $ub = [];
+  if (function_exists('cutxo_chains')) {
+    foreach (cutxo_chains() as $ck => $cc) $put($cc['name'], $cc['sym'] . ' · ' . $cc['name']);
+    foreach (coffre_json(cutxo_index_file()) as $e) { $cc = cutxo_chains()[(string) ($e['c'] ?? '')] ?? null; if (!$cc) continue; $byNet[$cc['name']]['n']++; $ub[$cc['name']] = ($ub[$cc['name']] ?? 0) + (int) ($e['bal'] ?? 0); }
+    foreach (cutxo_chains() as $cc) $byNet[$cc['name']]['now'] = rtrim(rtrim(number_format(($ub[$cc['name']] ?? 0) / 1e8, 8, '.', ''), '0'), '.') . ' ' . $cc['sym'];
+  }
+  $evmNames = function_exists('cevm_chains') ? array_column(cevm_chains(), 'name') : [];
+  foreach ($db['deposits'] ?? [] as $d) {
+    if (!is_array($d) || (string) ($d['operator'] ?? '') !== 'coffre' || (string) ($d['parentId'] ?? '') === '' || !in_array(strtoupper((string) ($d['status'] ?? '')), ['COMPLETED', 'PAID'], true)) continue;
+    $nw = (string) ($d['network'] ?? '');
+    $k = ($nw === 'TRC20' || $nw === '') ? 'TRC20' : (in_array($nw, $evmNames, true) ? 'EVM' : $nw);
+    if (isset($byNet[$k])) $byNet[$k]['got'] = round($byNet[$k]['got'] + (float) ($d['amount'] ?? 0), 2);
   }
   $nAddr = count($ix) + (empty($gas['addr']) ? 0 : 1);
   $mine = [];
-  foreach (array_slice(array_reverse($ix, true), 0, 15, true) as $ad => $e) {
+  foreach (array_slice(array_reverse($ix, true), 0, 100, true) as $ad => $e) {
     $u = $db['users'][(string) ($e['u'] ?? '')] ?? [];
     $mine[] = ['addr' => (string) $ad, 'user' => (string) ($u['displayName'] ?? $u['email'] ?? $e['u'] ?? ''), 'got' => (float) ($e['got'] ?? 0), 'bal' => (float) ($e['bal'] ?? 0)];
   }
@@ -632,7 +654,7 @@ function coffre_admin_view(): array {
     'autowdOn' => !empty($cfg['autowd_on']), 'autowdMax' => (float) ($cfg['autowd_max'] ?? 100), 'autowdDay' => (float) ($cfg['autowd_day'] ?? 500), 'autowdToday' => round(coffre_autowd_today(), 2),
     'evm' => function_exists('cevm_admin_view') ? cevm_admin_view() : null, 'utxo' => function_exists('cutxo_admin_view') ? cutxo_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
-    'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30)];
+    'byNet' => array_values($byNet), 'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30)];
 }
 
 /* ===================== Copie de secours (gardée par le propriétaire) ===================== */
