@@ -146,7 +146,9 @@ echo "3) Envoi de tout vers le Trust Wallet (frais pris sur le montant)\n";
 $fund('btc', $a, 50000); $scanAll(); // +30 $ → 90 $ sur l'adresse Bitcoin
 check('2e dépôt BTC (0,0005) → +30 $', abs($money($A) - 130) < 0.001, (string) $money($A));
 cutxo_sweep(false, 10);
-check('seuil atteint : Bitcoin parti (une seule transaction, 2 pièces)', count($N['mem']) >= 1 && $N['bad'] === 0, (string) json_encode(array_column($N["mem"], "txid")));
+check('envoi automatique éteint : rien ne part tout seul', count($N['mem']) === 0);
+cutxo_sweep(true, 1);
+check('bouton « Envoyer maintenant » : Bitcoin parti (une seule transaction, 2 pièces)', count($N['mem']) >= 1 && $N['bad'] === 0, (string) json_encode(array_column($N["mem"], "txid")));
 $scanAll(); // relu AVANT la confirmation de l'envoi
 $v = coffre_json(cutxo_index_file());
 check('admin : « sur l’adresse maintenant » = 0 juste après l’envoi, « reçu » garde 90 $', (int) $v[$a]['bal'] === 0 && abs($v[$a]['got'] - 90) < 0.01, json_encode($v[$a]));
@@ -171,7 +173,9 @@ check('frais normaux → parti ; crédit toujours 142 $', abs($money($A) - 142) 
 check('aucune transaction refusée par le faux réseau (signatures, pièces)', $N['bad'] === 0, (string) $N['bad']);
 
 echo "5) Liste « Recharger » quand OxaPay est arrêté\n";
-coffre_cfg_set(['oxapay_off' => true]);
+coffre_cfg_set(['oxapay_off' => true, 'utxo_on' => false]);
+check('OxaPay arrêté mais BTC pas allumé par le propriétaire → BTC pas proposé', !in_array('btc', coffre_only_coins(), true) && empty($inv('tokB', 'btc')['own']));
+coffre_cfg_set(['utxo_on' => true]);
 $only = coffre_only_coins();
 check('BTC, LTC, DOGE dans la liste', in_array('btc', $only, true) && in_array('ltc', $only, true) && in_array('doge', $only, true), json_encode($only));
 $x = $inv('tokB', 'xrp');

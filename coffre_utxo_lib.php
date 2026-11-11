@@ -291,7 +291,7 @@ function cutxo_ready_chains(): array { return array_values(array_filter(array_ke
 function cutxo_on_for(array $me, string $chain): bool {
   if (!cutxo_ready($chain)) return false;
   $cfg = coffre_cfg();
-  if (!empty($cfg['utxo_on']) || !empty($cfg['oxapay_off'])) return true;
+  if (!empty($cfg['utxo_on'])) return true; // seulement si le propriétaire l'allume lui-même (même OxaPay arrêté)
   $role = strtolower((string) ($me['role'] ?? ''));
   return in_array($role, ['admin', 'owner', 'superadmin'], true) || (string) ($me['id'] ?? '') === 'admin_master' || (function_exists('orolado_is_admin_user') && orolado_is_admin_user($me));
 }
@@ -455,6 +455,8 @@ function cutxo_status(array $dep, string $uid): array {
  * Frais pris sur le montant. Refus si les frais mangent plus de 10 % (50 % avec le bouton).
  */
 function cutxo_sweep(bool $force = false, int $max = 4): array {
+  // Propriétaire (2026-11-11) : rien ne part tout seul. Seulement quand IL appuie sur « Envoyer maintenant ».
+  if (!$force && empty(coffre_cfg()['utxo_auto'])) return ['ok' => true, 'done' => [], 'why' => 'envoi automatique éteint'];
   $lk = @fopen(coffre_dir() . '/utxo_sweep.lock', 'c');
   if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return ['ok' => false, 'why' => 'déjà en cours']; }
   $done = []; $tries = 0;
