@@ -6436,11 +6436,41 @@
     if ($('oxaCoinSym')) $('oxaCoinSym').textContent = m.symbol;
   }
 
+  // 2026-11-11 (propriétaire : « on arrête OxaPay ») : quand OxaPay est arrêté, seules les cryptos du coffre OROLADO
+  // sont proposées (le serveur donne la liste ; null = toutes).
+  var coffreOnly = null, coffreAsked = 0;
+  function loadCoffreCoins() {
+    if (coffreAsked && Date.now() - coffreAsked < 300000) return;
+    coffreAsked = Date.now();
+    try {
+      Promise.resolve(D6.Api.post('coffreCoins', {}, 10000)).then(function (r) {
+        coffreOnly = (r && r.ok && Array.isArray(r.only)) ? r.only : null;
+        applyCoffreCoins();
+      }).catch(function () { /* garde la liste complète */ });
+    } catch (e) { /* ignore */ }
+  }
+  function coffreAssetOk(id) {
+    if (!coffreOnly) return true;
+    if (id === 'usdt') return coffreOnly.some(function (c) { return c.indexOf('usdt_') === 0; });
+    return coffreOnly.indexOf(id) >= 0;
+  }
+  function coffreNetOk(net) { return !coffreOnly || coffreOnly.indexOf('usdt_' + String(net).toLowerCase()) >= 0; }
+  function applyCoffreCoins() {
+    if (!coffreOnly) return;
+    if (!coffreAssetOk(oxaAsset)) { oxaAsset = 'usdt'; oxaNet = 'TRC20'; oxaCoin = 'usdt_trc20'; }
+    if (oxaAsset === 'usdt' && !coffreNetOk(oxaNet)) { oxaNet = 'TRC20'; oxaCoin = 'usdt_trc20'; }
+    document.querySelectorAll('#oxaNets .oxa-net').forEach(function (btn) { btn.style.display = coffreNetOk(btn.getAttribute('data-net')) ? '' : 'none'; });
+    try { paintOxaCoinBtn(); syncOxaNetUi(); fillOxaCoinList(''); } catch (e) { /* ignore */ }
+  }
+  setTimeout(loadCoffreCoins, 2500);
+
   function fillOxaCoinList(q) {
     var list = $('oxaCoinList');
     if (!list) return;
+    loadCoffreCoins();
     q = String(q || '').toLowerCase().trim();
     list.innerHTML = OXA_ASSETS.filter(function (c) {
+      if (!coffreAssetOk(c.id)) return false;
       if (!q) return true;
       return (c.symbol + ' ' + c.name + ' ' + c.id).toLowerCase().indexOf(q) >= 0;
     }).map(function (c) {
@@ -6525,6 +6555,7 @@
     var card = $('payMethodCard');
     var usdt = $('payMethodUsdt');
     if (method === 'usdt') {
+      loadCoffreCoins();
       depositPayMethod = 'usdt';
       oxaAsset = 'usdt';
       oxaNet = 'TRC20';

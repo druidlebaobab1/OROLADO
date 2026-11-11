@@ -221,6 +221,25 @@ coffre_cfg_set(['autowd_on' => false]);
 $mkWd('wd6', 5);
 check('robot éteint → rien', empty(coffre_autowd_try('wd6')['ok']));
 
+echo "8) OxaPay arrêté, gros montants directement chez moi, « sur l'adresse maintenant »\n";
+coffre_cfg_set(['on' => false, 'oxapay_off' => true, 'caisse_on' => true, 'direct_min' => 500]);
+$GLOBALS['OXA_CALLS'] = 0;
+$iB = orolado_oxapay_invoice(['token' => 'tokB', 'coin' => 'usdt_trc20', 'amount' => 20, 'confirmed' => true]);
+check('OxaPay arrêté → le joueur reçoit SON adresse du coffre (même « allumer » non touché)', !empty($iB['own']) && ($GLOBALS['OXA_CALLS'] ?? 0) === 0);
+$iBtc = orolado_oxapay_invoice(['token' => 'tokB', 'coin' => 'btc', 'amount' => 20, 'confirmed' => true]);
+check('crypto pas encore dans le coffre (BTC) → refus clair, jamais une adresse OxaPay', empty($iBtc['ok']) && ($iBtc['code'] ?? '') === 'coin_off' && ($GLOBALS['OXA_CALLS'] ?? 0) === 0, json_encode($iBtc));
+check('liste des cryptos proposées = celles du coffre', coffre_only_coins() === ['usdt_trc20']);
+$destB = $L['usdt'][DEST] ?? 0; $caisseB = $L['usdt'][$gasA] ?? 0;
+$send($addrB, 800); coffre_json_rw(coffre_index_file(), function (&$st) use ($addrB) { $st[$addrB]['seen'] = 0; }); coffre_scan(50, 5);
+$ix = coffre_json(coffre_index_file());
+check('après le dépôt : « sur l’adresse maintenant » = 800 $', abs((float) ($ix[$addrB]['bal'] ?? 0) - 800) < 0.01, (string) ($ix[$addrB]['bal'] ?? ''));
+coffre_sweep(true, 5);
+check('800 $ (≥ 500) → DIRECTEMENT sur le Trust Wallet, pas dans la caisse', abs(($L['usdt'][DEST] ?? 0) - $destB - 800) < 1e-6 && abs(($L['usdt'][$gasA] ?? 0) - $caisseB) < 1e-6);
+$ix = coffre_json(coffre_index_file());
+check('après l’envoi : « sur l’adresse maintenant » = 0', abs((float) ($ix[$addrB]['bal'] ?? -1)) < 0.001);
+coffre_cfg_set(['oxapay_off' => false]);
+check('revenir à OxaPay → liste complète (null)', coffre_only_coins() === null);
+
 echo "6) Copie de secours : avec le mot de passe, chaque clé redonne bien son adresse\n";
 check('mot de passe trop court → refusé', empty(coffre_backup('abc')['ok']));
 $bk = coffre_backup('MonSecret2026');

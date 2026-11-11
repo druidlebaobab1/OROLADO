@@ -893,7 +893,7 @@ function admin_dep_channel_row($d): string {
 
 function admin_dep_channel(string $op): string {
   $op = strtolower(trim($op));
-  if (in_array($op, ['oxapay', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'usdc', 'ada', 'avax', 'matic', 'crypto'], true)) return 'Crypto';
+  if (in_array($op, ['oxapay', 'coffre', 'usdt', 'btc', 'eth', 'trx', 'sol', 'bnb', 'ltc', 'doge', 'usdc', 'ada', 'avax', 'matic', 'crypto'], true)) return 'Crypto';
   if (in_array($op, ['flutterwave', 'flw', 'card', 'card_flw'], true)) return 'Carte';
   if ($op === 'admin') return 'Crédit admin';
   if ($op === 'refund') return 'Remboursement';

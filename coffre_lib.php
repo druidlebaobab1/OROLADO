@@ -235,7 +235,7 @@ function coffre_ready(): bool {
 /** Actif pour ce joueur ? (allumé par le propriétaire, ou compte admin pour tester avant). */
 function coffre_on_for(array $me): bool {
   if (!coffre_ready()) return false;
-  if (!empty(coffre_cfg()['on'])) return true;
+  if (!empty(coffre_cfg()['on']) || !empty(coffre_cfg()['oxapay_off'])) return true;
   $role = strtolower((string) ($me['role'] ?? ''));
   return in_array($role, ['admin', 'owner', 'superadmin'], true) || (string) ($me['id'] ?? '') === 'admin_master'
     || (function_exists('orolado_is_admin_user') && orolado_is_admin_user($me));
@@ -424,7 +424,7 @@ function coffre_credit(string $uid, string $addr, array $tx): array {
     }
     $paid = credit_paid_deposit(['ref' => $cid, 'amount' => $usd, 'extId' => $h, 'paid' => true, 'creditReceived' => true, 'allowSmall' => true, 'operator' => 'coffre']);
     if (!empty($paid['ok']) && empty($paid['duplicate'])) {
-      coffre_json_rw(coffre_index_file(), static function (&$st) use ($addr, $usd) { if (isset($st[$addr])) { $st[$addr]['due'] = $st[$addr]['due'] ?: time(); $st[$addr]['got'] = round((float) ($st[$addr]['got'] ?? 0) + $usd, 6); } });
+      coffre_json_rw(coffre_index_file(), static function (&$st) use ($addr, $usd) { if (isset($st[$addr])) { $st[$addr]['due'] = $st[$addr]['due'] ?: time(); $st[$addr]['got'] = round((float) ($st[$addr]['got'] ?? 0) + $usd, 6); $st[$addr]['bal'] = round((float) ($st[$addr]['bal'] ?? 0) + $usd, 6); } });
       try { $vt = orolado_crypto_vault(load_db(orolado_data_file()), $uid); supabase_sync_real_min($uid, $vt['real'] ?? 0); } catch (Throwable $e) { /* ignore */ }
       orolado_oxapay_log('coffre_credit', ['uid' => $uid, 'amount' => $usd, 'tx' => substr($h, 0, 16)]);
       if ($usd >= 500) orolado_health_event('Dépôts', '🏦 Gros dépôt reçu sur le coffre : ' . $usd . ' $ (joueur ' . $uid . '). Il partira vers ton Trust Wallet au prochain balayage.', 'info');
@@ -521,6 +521,7 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
   $dest = coffre_dest();
   // 2026-11-11 (propriétaire : « une caisse pour payer les retraits tout seul, comme les grands sites ») : caisse allumée →
   // les dépôts vont d'abord dans la caisse du site (le réservoir) ; le surplus au-dessus du plafond part vers le Trust Wallet.
+  $trust = $dest; $directMin = (float) (coffre_cfg()['direct_min'] ?? 0);
   if (!empty(coffre_cfg()['caisse_on']) && coffre_ready()) { $g = coffre_gas(); if (!empty($g['addr'])) $dest = (string) $g['addr']; }
   if (!coffre_ready()) return ['ok' => false, 'why' => 'pas prêt'];
   $lk = @fopen(coffre_dir() . '/sweep.lock', 'c');
@@ -551,7 +552,9 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
       if (!$force && $bal['usdt'] < $min && $now - (int) $e['due'] < 86400) continue;
       $k++;
       $units = (int) floor($bal['usdt'] * 1e6 + 0.5);
-      $need = coffre_usdt_cost_sun((string) $addr, $dest, $units);
+      // Gros montant (≥ « directement chez moi à partir de ») : directement vers le Trust Wallet, pas dans la caisse.
+      $to = ($directMin > 0 && $bal['usdt'] >= $directMin) ? $trust : $dest;
+      $need = coffre_usdt_cost_sun((string) $addr, $to, $units);
       $have = (int) round($bal['trx'] * 1e6);
       if ($have < $need) {
         $send = $need - $have + 300_000;
@@ -574,11 +577,11 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
         }
         if (!$arrived) continue;
       }
-      $r = coffre_send_usdt((string) $addr, $dest, $units, $need);
-      coffre_log('balayage', ['addr' => $addr, 'usdt' => $units / 1e6, 'to' => $dest, 'ok' => $r['ok'], 'tx' => $r['txid'] ?? '', 'why' => $r['why'] ?? '']);
+      $r = coffre_send_usdt((string) $addr, $to, $units, $need);
+      coffre_log('balayage', ['addr' => $addr, 'usdt' => $units / 1e6, 'to' => $to, 'ok' => $r['ok'], 'tx' => $r['txid'] ?? '', 'why' => $r['why'] ?? '']);
       $done[] = ['addr' => $addr, 'step' => 'balayage', 'usdt' => $units / 1e6, 'ok' => $r['ok'], 'why' => $r['why'] ?? ''];
       if ($r['ok']) {
-        coffre_json_rw(coffre_index_file(), static function (&$st) use ($addr, $now) { if (isset($st[$addr])) { $st[$addr]['due'] = 0; $st[$addr]['swept'] = $now; } });
+        coffre_json_rw(coffre_index_file(), static function (&$st) use ($addr, $now) { if (isset($st[$addr])) { $st[$addr]['due'] = 0; $st[$addr]['swept'] = $now; $st[$addr]['bal'] = 0; } });
       } elseif (orolado_rate_ok('coffre_sweep_fail', (string) $addr, 1, 3600)) {
         orolado_health_event('Dépôts', '🏦 Balayage refusé pour ' . $addr . ' : ' . ($r['why'] ?? '') . '. Nouvel essai automatique.', 'warn');
       }
@@ -622,7 +625,7 @@ function coffre_admin_view(): array {
     $mine[] = ['addr' => (string) $ad, 'user' => (string) ($u['displayName'] ?? $u['email'] ?? $e['u'] ?? ''), 'got' => (float) ($e['got'] ?? 0), 'bal' => (float) ($e['bal'] ?? 0)];
   }
   $caisse = (!empty($gas['addr']) && $gb) ? ['addr' => (string) $gas['addr'], 'usdt' => round($gb['usdt'], 2), 'trx' => round($gb['trx'], 2)] : null;
-  return ['ok' => true, 'caisse' => $caisse, 'caisseOn' => !empty($cfg['caisse_on']), 'caisseMax' => (float) ($cfg['caisse_max'] ?? 500),
+  return ['ok' => true, 'oxapayOff' => !empty($cfg['oxapay_off']), 'directMin' => (float) ($cfg['direct_min'] ?? 0), 'caisse' => $caisse, 'caisseOn' => !empty($cfg['caisse_on']), 'caisseMax' => (float) ($cfg['caisse_max'] ?? 500),
     'autowdOn' => !empty($cfg['autowd_on']), 'autowdMax' => (float) ($cfg['autowd_max'] ?? 100), 'autowdDay' => (float) ($cfg['autowd_day'] ?? 500), 'autowdToday' => round(coffre_autowd_today(), 2),
     'evm' => function_exists('cevm_admin_view') ? cevm_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
@@ -810,4 +813,16 @@ function coffre_autowd_round(int $max = 3): void {
     $n++;
     coffre_autowd_try((string) $w['id']);
   }
+}
+
+/**
+ * 2026-11-11 (propriétaire : « arrête OxaPay, garde-le de côté pour pouvoir revenir ») — cryptos proposées aux joueurs
+ * quand OxaPay est arrêté : seulement celles que le coffre sait recevoir. null = OxaPay marche (toutes les cryptos).
+ */
+function coffre_only_coins(): ?array {
+  if (empty(coffre_cfg()['oxapay_off'])) return null;
+  $c = [];
+  if (coffre_ready()) $c[] = 'usdt_trc20';
+  if (function_exists('cevm_ready') && cevm_ready()) array_push($c, 'usdt_erc20', 'usdt_bep20', 'usdc', 'eth', 'bnb', 'pol');
+  return $c;
 }
