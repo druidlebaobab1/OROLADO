@@ -7034,6 +7034,10 @@ function orolado_oxapay_invoice(array $req): array {
     $own = cevm_invoice($me, $coin, $amount);
     if (!empty($own['ok'])) return $own;
   }
+  // OxaPay arrêté par le propriétaire : seulement les cryptos du coffre (plus jamais une adresse OxaPay).
+  if (function_exists('coffre_only_coins') && ($onlyC = coffre_only_coins()) !== null) {
+    return ['ok' => false, 'server' => true, 'code' => 'coin_off', 'coins' => $onlyC, 'reason' => 'Cette crypto arrive bientôt. Choisis USDT (TRC20).'];
+  }
   // v3626 : adresse permanente du joueur (n'expire jamais, tout envoi crédité). Échec chez OxaPay → ancien système.
   $st0 = orolado_oxapay_static_get($me, $coin);
   if ($st0) {
