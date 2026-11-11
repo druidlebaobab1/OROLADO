@@ -4081,7 +4081,8 @@ function credit_paid_deposit_core(array $hit): array {
     try { orolado_deposit_alert($db, $uid, $amount, $refId, $op, $idx); } catch (Throwable $e) { /* jamais bloquant */ }
   }
   // 2026-10-25 (propriétaire : « s'il y a des dépôts, ça sonne ») : chaque dépôt crédité → Pushover (important, son « caisse »), après la réponse
-  if (!$alreadyCredited && $amount > 0 && PHP_SAPI !== 'cli' && is_file(__DIR__ . '/po_lib.php') && !orolado_is_house_account($uid, (array) ($db['users'][$uid] ?? []))) {
+  // 2026-11-11 : dépôts du coffre → même alerte, y compris le test fait avec le compte admin.
+  if (!$alreadyCredited && $amount > 0 && PHP_SAPI !== 'cli' && is_file(__DIR__ . '/po_lib.php') && ($op === 'coffre' || !orolado_is_house_account($uid, (array) ($db['users'][$uid] ?? [])))) {
     $poWho = trim((string) ($db['users'][$uid]['publicId'] ?? '') . ' ' . (string) ($db['users'][$uid]['displayName'] ?? ''));
     $poT = '💰 Dépôt reçu : ' . number_format($amount, 2, ',', ' ') . ' $'; $poB = ($poWho !== '' ? $poWho : 'Joueur') . ' · ' . ($op !== '' ? ucfirst($op) : 'dépôt');
     register_shutdown_function(static function () use ($poT, $poB) {
