@@ -237,7 +237,8 @@ function coffre_on_for(array $me): bool {
   if (!coffre_ready()) return false;
   if (!empty(coffre_cfg()['on'])) return true;
   $role = strtolower((string) ($me['role'] ?? ''));
-  return in_array($role, ['admin', 'owner', 'superadmin'], true) || (string) ($me['id'] ?? '') === 'admin_master';
+  return in_array($role, ['admin', 'owner', 'superadmin'], true) || (string) ($me['id'] ?? '') === 'admin_master'
+    || (function_exists('orolado_is_admin_user') && orolado_is_admin_user($me));
 }
 
 /** Adresse permanente du joueur (créée la 1re fois). */
@@ -342,7 +343,12 @@ function coffre_usdt_cost_sun(string $from, string $to, int $units): int {
   $r = coffre_tg('/wallet/triggerconstantcontract', ['owner_address' => $from, 'contract_address' => OROLADO_USDT_TRC20,
     'function_selector' => 'transfer(address,uint256)', 'parameter' => coffre_usdt_param($to, $units), 'visible' => true]);
   $energy = (int) ($r['energy_used'] ?? 0);
-  if ($energy <= 0) $energy = 131000; // prudence : coût maximal habituel
+  // 2026-11-11 (vérifié sur le vrai réseau) : une estimation « REVERT » (ex. adresse pas encore approvisionnée) donne
+  // ~8 600 au lieu de 65 000-130 000 → l'envoi échouerait et brûlerait des TRX. Plancher de sécurité : jamais moins
+  // que le coût réel d'un transfert USDT ; en cas de doute, le maximum (135 000). Le surplus de TRX reste sur l'adresse.
+  $msg = strtolower((string) (@hex2bin((string) ($r['result']['message'] ?? '')) ?: ($r['result']['message'] ?? '')));
+  if ($energy <= 0 || str_contains($msg, 'revert') || empty($r['result']['result'])) $energy = 135000;
+  $energy = max($energy, 66000);
   $fee = 100;
   $p = coffre_tg('/wallet/getchainparameters');
   foreach ((array) ($p['chainParameter'] ?? []) as $c) if (($c['key'] ?? '') === 'getEnergyFee') $fee = max(1, (int) ($c['value'] ?? 100));
@@ -537,7 +543,15 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
         $r = coffre_send_trx((string) $gas['addr'], (string) $addr, $send);
         coffre_log('frais', ['addr' => $addr, 'trx' => round($send / 1e6, 2), 'ok' => $r['ok'], 'tx' => $r['txid'] ?? '', 'why' => $r['why'] ?? '']);
         $done[] = ['addr' => $addr, 'step' => 'frais', 'ok' => $r['ok'], 'why' => $r['why'] ?? ''];
-        continue; // le transfert USDT partira au passage suivant, une fois le TRX arrivé
+        if (!$force || !$r['ok']) continue; // ronde automatique : l'USDT part au passage suivant, une fois le TRX arrivé
+        // Bouton « Envoyer maintenant » : on attend que l'essence arrive (un bloc TRON ≈ 3 s), puis on envoie tout de suite.
+        $arrived = false;
+        for ($w = 0; $w < 8; $w++) {
+          if (!(PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_TG_API']))) sleep(3);
+          $nb = coffre_balances((string) $addr);
+          if ($nb && $nb['trx'] * 1e6 >= $need) { $arrived = true; break; }
+        }
+        if (!$arrived) continue;
       }
       $r = coffre_send_usdt((string) $addr, $dest, $units, $need);
       coffre_log('balayage', ['addr' => $addr, 'usdt' => $units / 1e6, 'to' => $dest, 'ok' => $r['ok'], 'tx' => $r['txid'] ?? '', 'why' => $r['why'] ?? '']);
@@ -581,7 +595,12 @@ function coffre_admin_view(): array {
     if (count($rows) >= 40) break;
   }
   $nAddr = count($ix) + (empty($gas['addr']) ? 0 : 1);
-  return ['ok' => true, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
+  $mine = [];
+  foreach (array_slice(array_reverse($ix, true), 0, 15, true) as $ad => $e) {
+    $u = $db['users'][(string) ($e['u'] ?? '')] ?? [];
+    $mine[] = ['addr' => (string) $ad, 'user' => (string) ($u['displayName'] ?? $u['email'] ?? $e['u'] ?? ''), 'got' => (float) ($e['got'] ?? 0), 'bal' => (float) ($e['bal'] ?? 0)];
+  }
+  return ['ok' => true, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
     'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30)];
 }

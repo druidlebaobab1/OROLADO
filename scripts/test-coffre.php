@@ -152,7 +152,7 @@ check('les joueurs restent crédités quand même', abs($money($B) - 100000) < 0
 $gas = coffre_gas()['addr'];
 $L['trx'][$gas] = 200;
 coffre_sweep(true, 5);
-check('réservoir rechargé → frais envoyés aux 2 adresses', ($L['trx'][$addrA] ?? 0) > 7 && ($L['trx'][$addrB] ?? 0) > 7, json_encode($L['trx']));
+check('réservoir rechargé → UN SEUL clic : essence envoyée puis USDT parti vers le Trust Wallet', abs(($L['usdt'][DEST] ?? 0) - (37.5 + 1234.56 + 100000.3)) < 0.001 && count(array_filter(coffre_journal(20), fn($j) => $j['k'] === 'frais' && $j['ok'])) === 2, json_encode($L['trx']));
 coffre_sweep(true, 5);
 check('passage suivant → tout l\'USDT est arrivé dans le Trust Wallet', abs(($L['usdt'][DEST] ?? 0) - (37.5 + 1234.56 + 100000.3)) < 0.001, (string) ($L['usdt'][DEST] ?? 0));
 check('adresses des joueurs vidées', ($L['usdt'][$addrA] ?? 0) < 1e-6 && ($L['usdt'][$addrB] ?? 0) < 1e-6);
