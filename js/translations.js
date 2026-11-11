@@ -141,7 +141,7 @@
       profileMenu: 'प्रोफ़ाइल मेनू',
       modeAccount: 'खाता मोड',
       payMethodLabel: 'भुगतान विधि',
-      payMethodCardTitle: 'कार्ड और तुरंत भुगतान',
+      payMethodCardTitle: 'Mobile Money',
       payMethodCardRec: 'अनुशंसित',
       payMethodCardDesc: 'Visa, Mastercard, Mobile Transfer',
       payMethodUsdtTitle: 'क्रिप्टो जमा (USDT)',

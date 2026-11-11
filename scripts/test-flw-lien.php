@@ -73,6 +73,16 @@ check('dépôt enregistré en attente (crédit seulement après vérification Fl
 
 echo "2) Secours\n";
 $mode = 'panne';
+// 2026-11-12 : ligne « carte bancaire » → Flutterwave en carte seulement, quel que soit le pays.
+foreach (['CI', 'NG', 'GH', 'FR', 'US'] as $ccC) {
+  $calls = [];
+  $rC = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => $ccC, 'cardOnly' => 1]);
+  $pC = null; foreach ($calls as $cl) if (($cl[1] ?? '') === '/payments') $pC = $cl[2];
+  check('carte bancaire (' . $ccC . ') : page Flutterwave « card » seulement', !empty($rC['ok']) && ($rC['payment_options'] ?? '') === 'card' && is_array($pC) && ($pC['payment_options'] ?? '') === 'card', json_encode([$rC['payment_options'] ?? null, $pC['payment_options'] ?? null]));
+}
+$calls = [];
+$rN = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => 'CI', 'currency' => 'XOF']);
+check('bouton Mobile Money (CI) : toujours carte + mobile money comme avant', ($rN['payment_options'] ?? '') === 'card,mobilemoneyfranco');
 $r = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => 'CI', 'currency' => 'XOF']);
 check('Flutterwave ne donne pas de lien : ancienne fenêtre gardée (inline + clé publique)', !empty($r['ok']) && ($r['link'] ?? 'x') === '' && !empty($r['inline']) && ($r['public_key'] ?? '') !== '', json_encode(['link' => $r['link'] ?? null]));
 $mode = 'pirate';

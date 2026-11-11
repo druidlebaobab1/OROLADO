@@ -14596,3 +14596,17 @@ html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-l
 html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos{display:flex!important;flex-wrap:wrap!important;gap:4px!important}
 html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo:not(.pl-la){flex:0 0 calc(25% - 3px)!important;width:calc(25% - 3px)!important;max-width:none!important;min-width:0!important;overflow:hidden!important;box-sizing:border-box!important;white-space:nowrap!important}
 html.oro-latam body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-la2{flex:0 0 calc(25% - 3px)!important;width:calc(25% - 3px)!important}
+/* 2026-11-12 (propriétaire) : bloc « Mobile Money » — petit téléphone devant le titre ; 12 moyens tous pareils. */
+html body #depositModal#depositModal #payMethodCard .pay-method-top{display:flex;align-items:center;gap:7px}
+html body #depositModal#depositModal #payMethodCard .pay-mm-ico{flex:0 0 22px;width:22px;height:22px;display:grid;place-items:center;border-radius:7px;
+  background:rgba(34,197,94,.14);color:#E8F5EC;border:1px solid rgba(34,197,94,.35)}
+html body #depositModal#depositModal #payMethodCard .pay-mm-ico svg{width:17px;height:17px;display:block}
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-op2{display:flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;
+  background:#fff!important;color:#111!important;font-weight:800!important;border:0!important;box-shadow:0 1px 0 rgba(0,0,0,.25)!important}
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-op2 svg{width:13px!important;height:13px!important;flex:0 0 13px!important;fill:#1F3263!important}
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-ussd2 b{color:#1F3263!important;font-weight:900!important}
+html body #depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-1voucher2 b{display:inline-grid!important;place-items:center!important;width:13px!important;height:13px!important;
+  border-radius:3px!important;background:#F26B21!important;color:#fff!important;font-size:9px!important;line-height:1!important}
+html body #depositModal#depositModal #btnCardOnly{margin:8px 0 10px!important}
+html body #depositModal#depositModal #payMethodCard .pay-method-top{justify-content:flex-start!important}
+html body #depositModal#depositModal #payMethodCard .pay-method-top .pay-method-title{text-align:left!important;margin:0!important}
