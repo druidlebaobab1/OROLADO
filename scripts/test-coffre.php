@@ -56,11 +56,14 @@ $verify = function (array $tx, string $owner): bool {
 $GLOBALS['OROLADO_FAKE_TG_API'] = function (string $path, ?array $b) use (&$L, $verify) {
   if (str_starts_with($path, '/v1/accounts/')) {
     $a = substr($path, 13);
-    if (!isset($L['trx'][$a]) && empty($L['usdt'][$a])) return ['success' => true, 'data' => []];
+    if (!isset($L['trx'][$a])) return ['success' => true, 'data' => []]; // comme le vrai réseau : reçu seulement des USDT = « pas activé », liste vide
     return ['success' => true, 'data' => [['balance' => (int) round(($L['trx'][$a] ?? 0) * 1e6), 'trc20' => [[OROLADO_USDT_TRC20 => (string) (int) round(($L['usdt'][$a] ?? 0) * 1e6)]]]]];
   }
   if ($path === '/wallet/getchainparameters') return ['chainParameter' => [['key' => 'getEnergyFee', 'value' => 100]]];
-  if ($path === '/wallet/triggerconstantcontract') return ['energy_used' => 64895, 'result' => ['result' => true]];
+  if ($path === '/wallet/triggerconstantcontract') {
+    if (($b['function_selector'] ?? '') === 'balanceOf(address)') { $h = "\x41" . hex2bin(substr($b['parameter'], 24, 40)); $ad = coffre_b58enc($h . substr(hash('sha256', hash('sha256', $h, true), true), 0, 4)); return ['constant_result' => [str_pad(dechex((int) round(($L['usdt'][$ad] ?? 0) * 1e6)), 64, '0', STR_PAD_LEFT)], 'result' => ['result' => true]]; }
+    return ['energy_used' => 64895, 'result' => ['result' => true]];
+  }
   $mk = function (array $op) use (&$L) { $raw = random_bytes(120); $id = hash('sha256', $raw); $L['pend'][$id] = $op; return ['txID' => $id, 'raw_data_hex' => bin2hex($raw), 'raw_data' => [], 'visible' => true]; };
   if ($path === '/wallet/createtransaction') {
     if (($L['trx'][$b['owner_address']] ?? 0) * 1e6 < $b['amount']) return ['Error' => 'balance is not sufficient'];
