@@ -161,6 +161,16 @@ function sb_config(): array {
     });
     $c = sb_read('config.json');
   }
+  // 2026-11-12 : affichage admin aligné sur la nouvelle marge verrouillée (2,5 %).
+  if (empty($c['mig14'])) {
+    sb_with('config.json', static function (array &$s) {
+      if (!empty($s['mig14'])) return true;
+      foreach (['mMain', 'mSide', 'mExotic', 'mLive', 'mOther'] as $k) $s[$k] = SB_MARGE_FIXE * 100;
+      $s['mig14'] = 1;
+      return true;
+    });
+    $c = sb_read('config.json');
+  }
   // 2026-10-22 (propriétaire : « avec les contrôles de 15 s, active tout ») : une seule fois, direct sur TOUS les championnats
   if (empty($c['mig10'])) {
     sb_with('config.json', static function (array &$s) { if (!empty($s['mig10'])) return true; $s['liveAll'] = true; $s['mig10'] = 1; return true; });
@@ -326,7 +336,10 @@ function sb_min_books(string $fam): int { return in_array($fam, ['1x2', 'dc', 'o
 // 2026-11-01 (propriétaire : « règle une bonne fois pour toutes et verrouille à 10 % ») — marge maison VERROUILLÉE
 // EN DUR à 10 %, pour l'avant-match ET le direct. Elle ne dépend PLUS du réglage ni des anciennes « migrations » :
 // elle ne peut donc plus jamais redescendre (fini le retour à 4 %). Pour la changer un jour : modifier SB_MARGE_FIXE ici.
-const SB_MARGE_FIXE = 0.10;
+// 2026-11-12 (propriétaire, capture 1xBet Turquie–Belgique 4 / 4,15 / 1,851 : « une cote un peu supérieure à 1xBet,
+// légèrement, qui reste à vie ; la marge 10 % c'est trop ; pas un côté qui gonfle et l'autre non ») → 2,5 % VERROUILLÉ,
+// réparti ÉGALEMENT sur tous les choix (favori, nul, outsider), comme 1xBet. 1xBet prend ~3 % sur les grands matchs, 5–8 % ailleurs.
+const SB_MARGE_FIXE = 0.025;
 function sb_margin(string $fam, array $cfg): float { return SB_MARGE_FIXE; }
 /**
  * 2026-10-23 (propriétaire : « tout à 4 %, la marge surtout sur le favori, comme les grands ») — cote d'un choix de probabilité $p
@@ -335,9 +348,9 @@ function sb_margin(string $fam, array $cfg): float { return SB_MARGE_FIXE; }
  */
 function sb_wodd(float $p, float $m, float $sq, float $exp = 1.0): float {
   if ($p <= 0) return 0.0;
-  $M = $m / max(0.01, 1 - $m);
-  $d = $sq > 0 ? $M * $exp * $p * $p / $sq : $M * $p;
-  return floor(1 / ($p + $d) * 100 + 1e-6) / 100;
+  // 2026-11-12 (propriétaire) : marge répartie ÉGALEMENT (proportionnelle) sur tous les choix — plus « surtout sur le favori ».
+  // cote = (1 − m) / p : chaque choix perd exactement m (2,5 %) par rapport à la cote juste. ($sq, $exp gardés pour les appels.)
+  return floor((1 - $m) / $p * 100 + 1e-6) / 100;
 }
 /** Ligne canonique : 2.5 → « 2.5 », -1 → « -1 », 0 → « 0 ». */
 function sb_line(float $x): string { if (abs($x) < 1e-9) return '0'; $s = rtrim(rtrim(number_format($x, 2, '.', ''), '0'), '.'); return $s; }
@@ -1148,6 +1161,8 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
   if (empty($st['rp4'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp4'])) return true; $s['od'] = []; $s['rp4'] = 1; return true; }); $st = sb_state(); }
   // 2026-11-01 (propriétaire : « verrouille à 10 % ») : marge VERROUILLÉE en dur (SB_MARGE_FIXE) → on relit TOUTES les cotes
   // une dernière fois pour qu'elles passent toutes à 10 %.
+  // 2026-11-12 (propriétaire) : marge 2,5 % répartie sur tous les choix → toutes les cotes relues une fois tout de suite.
+  if (empty($st['rp6'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp6'])) return true; $s['od'] = []; $s['rp6'] = 1; return true; }); $st = sb_state(); }
   if (empty($st['rp5'])) { sb_with('state.json', static function (array &$s) { if (!empty($s['rp5'])) return true; $s['od'] = []; $s['rp5'] = 1; return true; }); $st = sb_state(); }
   $fxEvery = [$d0 => 600, $d1 => 3600, $d2 => 10800, $dm1 => 1800] + array_fill_keys($mid, 21600) + array_fill_keys($lat, 43200); // J+3…J+7 : 6 h ; J+8…J+14 : 12 h
   foreach (array_merge([$d0, $dm1, $d1, $d2], $far) as $day) {
@@ -2222,7 +2237,7 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
   }
   [$h, $a] = [(int) ($sc[0] ?? 0), (int) ($sc[1] ?? 0)];
   $mn = (int) ($r['fixture']['status']['elapsed'] ?? 0);
-  $m = SB_MARGE_FIXE; // 2026-11-01 (propriétaire) : marge du direct VERROUILLÉE à 10 % (ne dépend plus du réglage)
+  $m = SB_MARGE_FIXE; // marge du direct VERROUILLÉE (SB_MARGE_FIXE, 2,5 % depuis le 2026-11-12), ne dépend pas du réglage
   $out = [];
   foreach ($raw as $mk => $ks) {
     $fam = sb_fam($mk); $x = (float) substr($mk, strlen($fam) + 1);
