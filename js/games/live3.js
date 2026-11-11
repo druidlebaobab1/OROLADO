@@ -876,8 +876,9 @@
       return '<defs><linearGradient id="beSky' + uid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0C4A6E"/><stop offset=".7" stop-color="#155E75"/><stop offset="1" stop-color="#14532D"/></linearGradient>' + lgd('beW' + uid, '#A16207', '#713F12', 1) + '</defs>' +
         '<rect x="-300" y="-300" width="960" height="830" fill="url(#beSky' + uid + ')"/><path d="M-300 196H660V530H-300Z" fill="#166534"/><path d="M' + (BE_X - 40) + ' 196L' + (BE_X - 18) + ' 130M' + (BE_X + 40) + ' 196L' + (BE_X + 18) + ' 130" stroke="url(#beW' + uid + ')" stroke-width="7" stroke-linecap="round"/>' +
         '<g class="be-tg" transform="translate(' + BE_X + ' ' + BE_Y + ')"><circle r="' + (BE_R + 5) + '" fill="#78350F"/>' + rings + '<path d="M-' + BE_R + ' 0H' + BE_R + 'M0-' + BE_R + 'V' + BE_R + '" stroke="#0F172A" stroke-opacity=".2"/></g>' +
-        '<g class="be-arch" transform="translate(42 150)"><circle cy="-46" r="8" fill="#FDE68A"/><path d="M0-38V-6M0-6L-8 22M0-6L8 22" stroke="#F8FAFC" stroke-width="4" stroke-linecap="round"/><path class="be-arm" d="M0-30L22-30" stroke="#F8FAFC" stroke-width="3.4" stroke-linecap="round"/>' +
-          '<path d="M24-62Q46-30 24 2" stroke="#B45309" stroke-width="3.4" fill="none" stroke-linecap="round"/><path class="be-str" d="M24-62L24 2" stroke="#E2E8F0" stroke-width="1"/></g>' +
+        // 2026-11-12 (propriétaire : « améliore les personnages ») : vrai archer (image) ; la flèche part toujours de son arc
+        '<g class="be-arch" transform="translate(42 150)"><ellipse cx="2" cy="22" rx="18" ry="3" fill="#000" opacity=".28"/><image href="img/games/live_archer2.webp?v=1" x="-22" y="-55" width="50" height="76" preserveAspectRatio="none"/>' +
+          '<g opacity="0"><path class="be-arm" d="M0-30L22-30"/><path class="be-str" d="M24-62L24 2"/></g></g>' +
         '<g class="be-ar"><path d="M-30 0H4" stroke="#F8FAFC" stroke-width="2.2"/><path d="M4-4L12 0L4 4Z" fill="#CBD5E1"/><path d="M-30 0L-38-5M-30 0L-38 5M-26 0L-34-5M-26 0L-34 5" stroke="#EF4444" stroke-width="1.8"/></g>' +
         '<g transform="translate(128 26)"><text class="be-wl" text-anchor="middle" y="0">≋</text><path class="be-wa" d="M-12 8H12M6 3L12 8L6 13" stroke="#E0F2FE" stroke-width="2" fill="none" stroke-linecap="round"/></g>' +
         '<text class="be-cd" x="64" y="40" text-anchor="middle"></text>';

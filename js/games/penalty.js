@@ -433,13 +433,17 @@
       } else {
         flash(l.save, 'save');
         var sd = col === 0 ? -1 : col === 2 ? 1 : (K.seeded(nShot, 9) < 0.5 ? -1 : 1), central = col === 1;
-        // 2026-11-12 (propriétaire : « il dégage le ballon en le faisant rentrer ») : le ballon repoussé SORT du but —
-        // il revient vers la pelouse (vers nous, plus gros) et part sur le côté, au-delà du poteau, jamais vers le filet.
-        var ex = central ? 180 + sd * 70 : tx + sd * 120, ey = central ? 250 : 246, ec = central ? 0.92 : 0.86, pk = central ? ty - 34 : ty - 40;
-        await anim(box, fast ? 260 : 660, function (k) {
-          var bx = tx + (ex - tx) * k, by = bez(ty, pk, ey, k), s = endS + (ec - endS) * k;
-          setBall(bx, by, s, 1080 - k * 600); setBShadow(bx, central ? 168 + (ey + 10 - 168) * k : 168 + 8 * k, s, 0.5);
-          ball.style.opacity = String(1 - Math.max(0, k - 0.7) / 0.3);
+        // 2026-11-12 (propriétaire : « il tape la balle et la fait descendre à terre, c'est moche ») : un vrai arrêt —
+        //  · plongeon sur le côté : il DÉVIE le ballon, qui repart vers l'extérieur, au-delà du poteau, et sort du cadre ;
+        //  · tir en haut au centre : claquette par-dessus la barre ;
+        //  · tir au centre (milieu / bas) : il CAPTE le ballon et le garde contre lui.
+        var catchIt = central && row > 0;
+        var ex = central ? (row === 0 ? 180 + sd * 30 : tx) : tx + sd * 190, ey = central ? (row === 0 ? ty - 90 : ty) : ty - 46, ec = central ? (row === 0 ? 0.62 : endS) : 0.78;
+        await anim(box, fast ? 260 : (catchIt ? 520 : 640), function (k) {
+          if (catchIt) { var hold = Math.min(1, k * 3); setBall(tx, ty + 6 * hold, endS, 1080 + hold * 90); setBShadow(tx, 168, endS, 0.35); ball.style.opacity = String(1 - Math.max(0, k - 0.75) / 0.25); return; }
+          var e2 = 1 - Math.pow(1 - k, 2), bx = tx + (ex - tx) * e2, by = ty + (ey - ty) * e2 - Math.sin(Math.PI * k) * 10, s = endS + (ec - endS) * e2;
+          setBall(bx, by, s, 1080 + sd * k * 720); setBShadow(bx, 168 + 10 * k, s, 0.4 * (1 - k));
+          ball.style.opacity = String(1 - Math.max(0, k - 0.6) / 0.4);
         });
       }
       await fall;
