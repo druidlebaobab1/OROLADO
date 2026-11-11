@@ -660,12 +660,26 @@ function coffre_admin_view(): array {
     $u = $db['users'][(string) ($e['u'] ?? '')] ?? [];
     $mine[] = ['addr' => (string) $ad, 'user' => (string) ($u['displayName'] ?? $u['email'] ?? $e['u'] ?? ''), 'got' => (float) ($e['got'] ?? 0), 'bal' => (float) ($e['bal'] ?? 0)];
   }
+  // 2026-11-12 (propriétaire : « ils utilisent toujours l'ancienne adresse ») — dépôts encore reçus par d'ANCIENNES adresses
+  // OxaPay (adresse permanente ou facture d'avant), crédités normalement : l'argent est sur le compte OxaPay. Affichage seulement.
+  $oxaOld = []; $oxaOldSum = 0.0; $oxaSince = time() - 30 * 86400;
+  foreach ((array) ($db['deposits'] ?? []) as $d) {
+    if (!is_array($d) || strtolower((string) ($d['operator'] ?? '')) !== 'oxapay' || strtoupper((string) ($d['status'] ?? '')) !== 'COMPLETED') continue;
+    $pt = (int) ($d['paidTs'] ?? 0) ?: (int) strtotime((string) ($d['paidAt'] ?? ''));
+    if ($pt < $oxaSince) continue;
+    $u = $db['users'][(string) ($d['userId'] ?? '')] ?? [];
+    $amt = (float) ($d['amount'] ?? 0); $oxaOldSum += $amt;
+    $oxaOld[] = ['t' => $pt, 'user' => trim((string) ($u['publicId'] ?? '') . ' ' . (string) ($u['displayName'] ?? '')), 'coin' => strtoupper((string) ($d['coin'] ?? $d['payCurrency'] ?? '')),
+      'amt' => round($amt, 2), 'kind' => (string) ($d['kind'] ?? '') === 'static' ? 'adresse permanente' : 'facture'];
+  }
+  usort($oxaOld, static fn($a, $b) => $b['t'] <=> $a['t']);
   $caisse = (!empty($gas['addr']) && $gb) ? ['addr' => (string) $gas['addr'], 'usdt' => round($gb['usdt'], 2), 'trx' => round($gb['trx'], 2)] : null;
   return ['ok' => true, 'oxapayOff' => !empty($cfg['oxapay_off']), 'directMin' => (float) ($cfg['direct_min'] ?? 0), 'caisse' => $caisse, 'caisseOn' => !empty($cfg['caisse_on']), 'caisseMax' => (float) ($cfg['caisse_max'] ?? 500),
     'autowdOn' => !empty($cfg['autowd_on']), 'autowdMax' => (float) ($cfg['autowd_max'] ?? 100), 'autowdDay' => (float) ($cfg['autowd_day'] ?? 500), 'autowdToday' => round(coffre_autowd_today(), 2),
     'evm' => function_exists('cevm_admin_view') ? cevm_admin_view() : null, 'utxo' => function_exists('cutxo_admin_view') ? cutxo_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
-    'byNet' => array_values($byNet), 'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30)];
+    'byNet' => array_values($byNet), 'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30),
+    'oxaOld' => array_slice($oxaOld, 0, 40), 'oxaOldN' => count($oxaOld), 'oxaOldSum' => round($oxaOldSum, 2)];
 }
 
 /* ===================== Copie de secours (gardée par le propriétaire) ===================== */

@@ -533,10 +533,15 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       $extByUid[$kf] = ['staked' => (float) ($fr['staked'] ?? 0), 'ngrAll' => (float) ($fr['ngrAll'] ?? ($fr['ngr'] ?? 0))]; // 2026-11-08 : misé, en attente
     }
   }
+  $onlineN = 0; $act7N = 0;
   foreach ($friends as $f) {
     $fu = $db['users'][(string) ($f['uid'] ?? '')] ?? [];
     $realTrades = (int) ($fu['realTrades'] ?? 0);
     if ($realTrades > 0) $played++;
+    // 2026-11-12 (propriétaire) : ami en ligne (vu il y a moins de 3 min) / actif sur 7 jours — affichage seulement
+    $seenT = (int) strtotime((string) ($fu['lastSeen'] ?? '')); $onF = $seenT > 0 && time() - $seenT < 180;
+    if ($onF) $onlineN++;
+    if ($seenT > 0 && time() - $seenT < 7 * 86400) $act7N++;
     $total += (float) ($f['deposit'] ?? 0);
     $t = (int) strtotime((string) ($f['at'] ?? ''));
     // v2489 : nombre de dépôts de l'ami (affichage seulement, lu dans son fichier d'invitation).
@@ -552,6 +557,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       'ngr' => orolado_money($ngrF),
       'n' => $nDep,
       'played' => $realTrades > 0 || (($extByUid[$fuid]['staked'] ?? 0) > 0),
+      'on' => $onF ? 1 : 0,
       'staked' => orolado_money($extByUid[$fuid]['staked'] ?? 0),
       'pend' => $revOn2 ? orolado_money(max(0.0, $revPct2 * (float) ($extByUid[$fuid]['ngrAll'] ?? 0) - max(0.0, $revPct2 * $ngrF))) : 0.0,
     ];
@@ -564,6 +570,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   foreach ($list as &$row) { if (!empty($rid[$row['uid']])) $row['id'] = (string) $rid[$row['uid']]; unset($row['uid']); }
   unset($row);
   $out['played'] = $played;
+  $out['online'] = $onlineN; $out['act7'] = $act7N;
   $out['total'] = orolado_money($total);
   $out['earned'] = orolado_money($own['earned'] ?? 0);
   // v2492 (audit, accord du propriétaire) : AUCUNE limite d'amis. Les totaux de chaque période (Aujourd'hui,

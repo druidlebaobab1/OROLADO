@@ -542,7 +542,6 @@
       '<div class="arv-hero"><span class="arv-pct">' + pct + '<i>%</i></span>' +
         '<div class="arv-hero-t"><h3 class="arv-big">' + esc(t('affRevBig', V)) + '</h3><p class="arv-sub">' + esc(t('affRevSub', V)) + '</p></div></div>';
     box.innerHTML =
-      (guest ? '' : affResHtml(rev, V)) +
       '<div class="arv-sec"><b class="arv-st">' + esc(t('affHowT')) + '</b>' +
         '<ol class="arv-how">' +
           ['affSt1', 'affSt2', 'affSt3'].map(function (k, i) { return '<li><span class="arv-n">' + (i + 1) + '</span>' + ICO_STEP[i] + '<em>' + esc(t(k, V)) + '</em></li>'; }).join('') +
@@ -552,17 +551,6 @@
         '<p class="arv-exg">' + esc(t('affExB', EX)) + '</p>' +
         '<p class="arv-exs">✓ ' + esc(t('affExC', EX)) + '</p>' +
         '<small>' + esc(t('affPaid2', V)) + '</small></div>' +
-      (guest ? '' :
-        '<div class="arv-sec"><b class="arv-st">' + esc(t('affStatsT')) + '</b><div class="arv-mets">' +
-          met(affInt(clicks), t('affClicks')) +
-          met(affInt(friends), t('affFriends')) +
-          met(affInt(dep), t('affFirstDep')) +
-          met(money(avgPlayer), t('affAvgPlayer')) +
-          met(affInt(nDep), t('affNbDep')) +
-          met(money(totalDep), t('affTotal')) +
-          met(c2r + ' %', t('affC2R')) +
-          met(r2d + ' %', t('affR2D')) +
-        '</div></div>') +
       '<div class="arv-proj"><b>' + esc(t('affRevProjTitle')) + '</b>' +
         proj.map(function (p) { return '<div class="arv-prow"><span>' + affInt(p.n) + ' ' + esc(t('affRevActive')) + '</span><b>+' + money(p.amt) + esc(t('affRevPerYear')) + '</b></div>'; }).join('') +
         '<small>' + esc(t('affRevProjNote')) + '</small></div>' +
@@ -590,7 +578,10 @@
       '</details>' +
       '<div class="arv-faq"><b>' + esc(t('affRevFaq')) + '</b>' +
         faq.map(function (q) { return '<details class="arv-q"><summary>' + esc(t(q[0])) + '</summary><p>' + esc(t(q[1], V)) + '</p></details>'; }).join('') +
-      '</div>';
+      '</div>' +
+      // 2026-11-12 (propriétaire) : TOUTES les cases ensemble, en un seul tableau, tout en bas (après les explications)
+      (guest ? '' : affResHtml(rev, V));
+    fitAffDash();
   }
   var affFound = null, affSearchT = 0;
   async function affServerSearch(q) {
@@ -603,39 +594,64 @@
   // versé, en attente (délai), gains du jour / 7 j / 30 j, amis qui jouent, misé et perdu par les amis, derniers versements,
   // puis la liste des amis (déposé, misé, ton gain, en attente). Affichage seulement : les chiffres viennent du serveur.
   function affResHtml(rev, V) {
+    // 2026-11-12 (propriétaire : « tous les carreaux ensemble, un seul tableau en bas, rempli, coloré ; la liste des amis
+    // seulement dans Voir plus ») — gains (vert), amis (or), dépôts et jeu (bleu). Les chiffres viennent du serveur.
     var P = (aff && aff.periods) || {}, g = function (k) { return Number((P[k] || {}).gain) || 0; };
-    var box = function (v, lbl, cls) { return '<div class="arr-c' + (cls ? ' ' + cls : '') + '"><b>' + v + '</b><span>' + esc(lbl) + '</span></div>'; };
-    var friends = (aff && aff.list || []).filter(function (r) { return Number(r.deposit || 0) > 0 || r.played; });
+    var box = function (v, lbl, cls) { return '<div class="arr-c' + (cls ? ' ' + cls : '') + '"><b dir="ltr">' + v + '</b><span>' + esc(lbl) + '</span></div>'; };
     var log = (rev.log || []).slice(0, 5);
     var when = function (ts) { try { return new Date(ts * 1000).toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+    var clicks = Number(aff.clicks) || 0, friends = Number(aff.friends) || 0, dep = Number(aff.deposited) || 0;
+    var nDep = Number(aff.depCount) || 0, totalDep = Number(aff.total) || 0, big = Number((P.all || {}).big) || 0;
+    var c2r = clicks > 0 ? Math.round(100 * friends / clicks) : 0, r2d = friends > 0 ? Math.round(100 * dep / friends) : 0;
     return '<div class="arr"><div class="arr-h">' + esc(t('affResTitle')) + '</div>' +
       '<div class="arr-g">' +
         box(money(rev.paid || 0), t('affResPaid'), 'ok') +
         box(money(rev.pending || 0), t('affResPend', V), 'wait') +
-        box(money(g('day')), t('affResToday')) +
-        box(money(g('week')), t('affRes7')) +
-        box(money(g('month')), t('affRes30')) +
-        box(affInt(Number(rev.active) || 0) + ' / ' + affInt(Number(aff.friends) || 0), t('affResActive')) +
-        box(money(rev.staked || 0), t('affResStaked')) +
-        box(money(Math.max(0, Number(rev.ngr) || 0)), t('affResLost')) +
+        box('+' + money(g('day')), t('affResToday'), 'ok') +
+        box('+' + money(g('week')), t('affRes7'), 'ok') +
+        box('+' + money(g('month')), t('affRes30'), 'ok') +
+        box('+' + money(Number(aff.earned) || 0), t('affEarnedAll'), 'ok') +
+        box('<i class="arr-dot"></i>' + affInt(Number(aff.online) || 0), t('affOnline'), 'live') +
+        box(affInt(Number(aff.act7) || 0), t('affAct7'), 'gold') +
+        box(affInt(clicks), t('affClicks'), 'gold') +
+        box(affInt(friends), t('affFriends'), 'gold') +
+        box(affInt(dep), t('affFirstDep'), 'gold') +
+        box(affInt(Number(rev.active) || 0) + ' / ' + affInt(friends), t('affResActive'), 'gold') +
+        box(affInt(nDep), t('affNbDep'), 'blue') +
+        box(money(totalDep), t('affTotal'), 'blue') +
+        box(money(dep > 0 ? totalDep / dep : 0), t('affAvgPlayer'), 'blue') +
+        box(money(big), t('affBiggest'), 'blue') +
+        box(money(rev.staked || 0), t('affResStaked'), 'blue') +
+        box(money(Math.max(0, Number(rev.ngr) || 0)), t('affResLost'), 'blue') +
+        box(c2r + ' %', t('affC2R'), 'blue') +
+        box(r2d + ' %', t('affR2D'), 'blue') +
       '</div>' +
       '<p class="arr-how">' + esc(t('affResHow', V)) + '</p>' +
       '<div class="arr-sub">' + esc(t('affResLog')) + '</div>' +
       (log.length ? '<div class="arr-log">' + log.map(function (l) { return '<div><span>' + esc(when(l.t)) + '</span><b>+' + esc(money(l.a)) + '</b></div>'; }).join('') + '</div>'
         : '<p class="arr-empty">' + esc(t('affResNoLog')) + '</p>') +
-      '<div class="arr-sub">' + esc(t('affResFriends')) + ' (' + affInt(friends.length) + ')</div>' +
-      (friends.length ? '<div class="arr-fr"><div class="arr-fh"><span>ID</span><span>' + esc(t('affResColDep')) + '</span><span>' + esc(t('affResColStake')) + '</span><span>' + esc(t('affResColGain')) + '</span></div>' +
-        friends.slice(0, 100).map(function (r) {
-          return '<div class="arr-fl"><span class="id">' + esc(String(r.id || '').replace(/^ORO-(\d+)$/, 'ORO$1')) + '</span><span>' + esc(money(r.deposit || 0)) + '</span><span>' + esc(money(r.staked || 0)) + '</span>' +
-            '<span class="gn">+' + esc(money(r.gift || 0)) + (Number(r.pend) > 0 ? '<i>⏳ +' + esc(money(r.pend)) + '</i>' : '') + '</span></div>';
-        }).join('') + '</div>'
-        : '<p class="arr-empty">' + esc(t('affResNoFriends')) + '</p>') +
-      ((aff && (aff.list || []).length) ? '<button type="button" class="aff-more arr-more" data-affmore="1"><span>' + esc(t('affMore')) + '</span><i class="aff-more-go"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></i></button>' : '') +
+      ((aff && (aff.list || []).length) ? '<button type="button" class="aff-more arr-more" data-affmore="1"><span>' + esc(t('affMore')) + ' (' + affInt(friends) + ')</span><i class="aff-more-go"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></i></button>' : '') +
       '</div>';
+  }
+  // Chiffre trop long pour sa case (gros montants, langues longues) : il rétrécit un peu, jamais de débordement.
+  var fitAffTry = 0;
+  function fitAffDash() {
+    var els = document.querySelectorAll('#affRevBox .arr-c b');
+    // page encore cachée (largeur 0) : on réessaie dès qu'elle s'affiche (au plus ~1 min)
+    if (els.length && !els[0].parentElement.clientWidth) { if (fitAffTry++ < 200) setTimeout(fitAffDash, 300); return; }
+    fitAffTry = 0;
+    var rb = $('affRevBox'); if (rb && !rb.__ro && window.ResizeObserver) { rb.__ro = new ResizeObserver(function () { clearTimeout(rb.__rt); rb.__rt = setTimeout(fitAffDash, 60); }); rb.__ro.observe(rb); }
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i], bx = el.parentElement; el.style.removeProperty('font-size');
+      var fs = parseFloat(getComputedStyle(el).fontSize) || 16, guard = 0;
+      // largeur VRAIE du texte (scrollWidth ment avec overflow:hidden + nowrap sur certains téléphones)
+      var tw = function () { var r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width; };
+      while (bx && tw() > el.clientWidth - 2 && fs > 10 && guard++ < 16) { fs -= 0.5; el.style.setProperty('font-size', fs + 'px', 'important'); }
+    }
   }
   function affRowHtml(r) {
     var when = new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' });
-    return '<div class="aff-row"><div class="ar-id"><b>' + esc(String(r.id || '').replace(/^ORO-(\d+)$/, 'ORO$1')) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + '</span></div>' +
+    return '<div class="aff-row"><div class="ar-id"><b>' + esc(String(r.id || '').replace(/^ORO-(\d+)$/, 'ORO$1')) + '</b><span>' + esc(when) + (r.played ? ' · <i>' + esc(t('affPlayedOne')) + '</i>' : '') + (r.on ? ' · <em class="ar-on">' + esc(t('affOnNow')) + '</em>' : '') + '</span></div>' +
       '<div class="ar-dep"><b>' + esc(money(r.deposit)) + '</b><span>' + esc(t('affColDep')) + '</span></div>' +
       // v2489 — nombre de dépôts de l'ami.
       '<div class="ar-n"><b>' + affN(r) + '</b><span>' + esc(t('affColN')) + '</span></div>' +
@@ -1153,6 +1169,7 @@
   function fitPortal() {
     clearTimeout(fitT);
     fitT = setTimeout(function () {
+      try { fitAffDash(); } catch (eF) { /* ignore */ }
       var box = document.querySelector('#portalModal .portal-box');
       var m = $('portalModal');
       if (box && m && m.classList.contains('active')) fitLines(box);
