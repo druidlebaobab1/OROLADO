@@ -34,6 +34,18 @@
     document.addEventListener('DOMContentLoaded', function () {
       try {
         var el = document.getElementById('regCode');
+        // 2026-11-11 : le code TAPÉ est gardé aussitôt (30 jours) : « Continuer avec Google » quitte la page puis y
+        // revient → avant, la case était vide au retour et le code était perdu (l'ami n'était pas relié).
+        if (el && !el.__oroKeep) {
+          el.__oroKeep = 1;
+          el.addEventListener('input', function () {
+            try {
+              var v = String(el.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+              if (v.length >= 3 && v.length <= 16) localStorage.setItem('oro_ami', JSON.stringify({ c: v, t: Date.now(), typed: 1 }));
+              else if (!v) { var o0 = JSON.parse(localStorage.getItem('oro_ami') || 'null'); if (o0 && o0.typed) localStorage.removeItem('oro_ami'); }
+            } catch (eK) { /* ignore */ }
+          });
+        }
         if (!el || el.value) return;
         var o = JSON.parse(localStorage.getItem('oro_ami') || 'null');
         if (o && o.c && Date.now() - (o.t || 0) < 30 * 86400000) el.value = String(o.c);

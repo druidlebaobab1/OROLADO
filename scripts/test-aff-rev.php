@@ -304,7 +304,7 @@ $rR = orolado_aff_code_create(load_db(), 'affY', 'admin');
 check('code réservé (ADMIN) refusé', empty($rR['ok']) && ($rR['reason'] ?? '') === 'reserved');
 mkuser('newf', 'newf@g.com');
 check('inscription via le code promo FOOT1 → relié à affX', orolado_aff_attach(load_db(), 'newf', 'foot1'));
-check('newf bien compté comme ami de affX', orolado_aff_is_affiliate('affX') && in_array('newf', array_column(orolado_aff_read(orolado_aff_owner_name('affX'))['friends'], 'uid'), true));
+check('newf bien compté comme ami de affX', orolado_aff_is_affiliate('affX') && in_array('newf', array_column(orolado_aff_friends('affX'), 'uid'), true));
 orolado_aff_code_delete('affX', 'PROMO');
 check('après suppression : 4 codes', count(orolado_aff_codes('affX')['custom']) === 4, (string) count(orolado_aff_codes('affX')['custom']));
 mkuser('newf2', 'newf2@g.com');

@@ -716,15 +716,15 @@ function admin_aff_local_uid(string $uid, string $email = ''): string {
  */
 function admin_aff_detail(string $local): ?array {
   if ($local === '' || !function_exists('orolado_aff_owner_name')) return null;
+  $friends = orolado_aff_friends($local);
   $own = orolado_aff_read(orolado_aff_owner_name($local));
-  $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
   if (!$friends && empty($own['clicks'])) return null;
   $db = load_db();
   $w = null;
   if (function_exists('orolado_aff_rev_wallet') && $friends) {
-    if (function_exists('orolado_aff_build_deposit_index')) $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
-    $w = orolado_aff_rev_wallet($db, $local);
-    unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+    if (function_exists('orolado_aff_build_indexes')) orolado_aff_build_indexes($db);
+    $w = function_exists('orolado_aff_rev_wallet_view') ? orolado_aff_rev_wallet_view($db, $local) : orolado_aff_rev_wallet($db, $local);
+    if (function_exists('orolado_aff_clear_indexes')) orolado_aff_clear_indexes();
   }
   $pct = (int) ($w['pct'] ?? 60);
   $byF = [];
@@ -2264,9 +2264,9 @@ if ($isAjax) {
     $local = admin_aff_local_uid((string) ($req['userId'] ?? ''), (string) ($req['email'] ?? ''));
     if ($local === '' || !function_exists('orolado_aff_rev_run')) admin_json(['ok' => false, 'reason' => 'Affilié introuvable']);
     $dbP = load_db();
-    if (function_exists('orolado_aff_build_deposit_index')) $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($dbP);
+    if (function_exists('orolado_aff_build_indexes')) orolado_aff_build_indexes($dbP);
     $w = orolado_aff_rev_run($dbP, $local);
-    unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+    if (function_exists('orolado_aff_clear_indexes')) orolado_aff_clear_indexes();
     admin_json(['ok' => true, 'paid' => round((float) ($w['justPaid'] ?? 0), 2), 'pending' => round((float) ($w['pending'] ?? 0), 2)]);
   }
   if ($action === 'aff_msg') {

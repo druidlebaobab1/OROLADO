@@ -52,6 +52,7 @@ function vault_tron_addr(): string {
 
 /** Le coffre est actif quand son adresse ET la clé TronGrid (pour voir l'argent arriver) sont réglées. */
 function vault_enabled(): bool {
+  return false; // 2026-11-11 : système « montant exact / numéro de transaction » refusé par le propriétaire — désactivé pour toujours (remplacé par coffre_lib.php).
   return vault_tron_addr() !== '' && function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '';
 }
 

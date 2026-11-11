@@ -63,13 +63,14 @@ function admin_gift_payload(string $view, array $req, array $people): array {
     // perdent en argent réel (part de revenu), + l'ancien 5 % déjà versé. Même calcul que l'espace de l'affilié.
     $rev60 = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled() && function_exists('orolado_aff_rev_wallet');
     $pct60 = $rev60 && function_exists('orolado_aff_rev_pct') ? orolado_aff_rev_pct() : 0.0;
-    if ($rev60 && function_exists('orolado_aff_build_deposit_index')) $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($db);
+    if ($rev60 && function_exists('orolado_aff_build_indexes')) orolado_aff_build_indexes($db);
     foreach ($users as $uid => $u) {
       if (!function_exists('orolado_aff_owner_name')) break;
+      if (!is_file(orolado_aff_dir() . DIRECTORY_SEPARATOR . orolado_aff_owner_name((string) $uid) . '.json')) continue;
+      $friends = orolado_aff_friends((string) $uid);
       $own = orolado_aff_read(orolado_aff_owner_name((string) $uid));
-      $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
       if (!$friends && empty($own['clicks'])) continue;
-      $w60 = $rev60 && $friends ? orolado_aff_rev_wallet($db, (string) $uid) : null;
+      $w60 = $rev60 && $friends ? orolado_aff_rev_wallet_view($db, (string) $uid) : null;
       $byF = [];
       foreach ((array) ($w60['friends'] ?? []) as $fr) $byF[(string) ($fr['uid'] ?? '')] = $fr;
       $who = admin_gift_who($db, (string) $uid);
@@ -106,7 +107,7 @@ function admin_gift_payload(string $view, array $req, array $people): array {
         $alerts > 0 ? '⚠ ' . $alerts . ' ami(s) à vérifier' : '—',
       ], 'who' => $who];
     }
-    unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+    if (function_exists('orolado_aff_clear_indexes')) orolado_aff_clear_indexes();
     if ($view === 'gift_aff') {
       usort($all, static fn($a, $b) => $b['earned'] <=> $a['earned']);
       $pctTxt = (int) round(($pct60 ?: 0.6) * 100);
@@ -670,8 +671,8 @@ function admin_aff_marks(): array {
     $uid = (string) $uid;
     if (!is_array($u)) continue;
     if ($dir !== '' && !is_file($dir . DIRECTORY_SEPARATOR . orolado_aff_owner_name($uid) . '.json')) continue;
-    $own = orolado_aff_read(orolado_aff_owner_name($uid));
-    $friends = is_array($own['friends'] ?? null) ? $own['friends'] : [];
+    $friends = [];
+    if (function_exists('orolado_aff_fr_lines')) { orolado_aff_migrate($uid); foreach (orolado_aff_fr_lines($uid) as $l) $friends[] = ['uid' => (string) $l['u']]; }
     if (!$friends) continue;
     $nAff++; $nRef += count($friends);
     foreach ($keysOf($uid, $u) as $k) $out['aff'][$k] = count($friends);
