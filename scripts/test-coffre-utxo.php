@@ -184,6 +184,8 @@ check('crypto pas encore branchée (XRP) → refusée, jamais une adresse OxaPay
 $av = cutxo_admin_view();
 check('vue admin : 3 réseaux branchés, adresses listées', count(array_filter($av['nets'], fn($n) => $n['ready'])) === 3 && count($av['addrs']) >= 4);
 
+$cv = coffre_admin_view(); $bn = array_column($cv['byNet'] ?? [], null, 'net');
+check('vue admin « par crypto » : BTC 2 adresses, 102 $ reçus ; LTC 20 $ ; DOGE 20 $', ($bn['BTC · Bitcoin']['n'] ?? 0) === 2 && abs(($bn['BTC · Bitcoin']['got'] ?? 0) - 102) < 0.01 && abs(($bn['LTC · Litecoin']['got'] ?? 0) - 20) < 0.01 && abs(($bn['DOGE · Dogecoin']['got'] ?? 0) - 20) < 0.01, json_encode($cv['byNet'] ?? null));
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);
