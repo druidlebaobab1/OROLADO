@@ -105,6 +105,8 @@
       return anim(f, [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], 150, 'ease-out');
     });
   }
+  // v3695 : cartes face cachée posées sur la table avant la 1re mise (plus de table vide) — retirées par clearCards
+  function backs(layer, pos) { try { layer.innerHTML = pos.map(function (q) { return '<g class="c1-c" style="transform:translate(' + q[0] + 'px,' + q[1] + 'px) scale(' + q[2] + ')">' + BACK + '</g>'; }).join(''); } catch (e) { /* ignore */ } }
   function clearCards(box, layer) {
     var old = [].slice.call(layer.querySelectorAll('.c1-c'));
     if (!old.length) return Promise.resolve();
@@ -237,6 +239,7 @@
     var ops = '<div class="cg-opts c1-opts">' + opt(0, l.andar, pm(0.5), 'ab-o a', '<i class="ab-i">A</i>') + opt(1, l.bahar, pm(0.5), 'ab-o b', '<i class="ab-i">B</i>') + '</div>';
     var u = shell(box, 'andar', svg, '', '', ops, l);
     bindPick(box, AB, 'ab-o'); hist('andar', u.hist);
+    backs(u.layer, [[8, 58, 1]]);
     u.go.addEventListener('click', async function () {
       if (box.classList.contains('c1-busy')) return;
       lock(box, true); box.querySelectorAll('.ab-row').forEach(function (e) { e.classList.remove('w'); });
@@ -356,6 +359,8 @@
     var u = shell(box, 'teenpatti', '<div class="tp-wrap">' + svg + pay + '</div>', '', '', '', l);
     hist('teenpatti', u.hist);
     var POS = [[6, 38, -14], [72, 24, 0], [138, 38, 14]];
+    // v3695 : avant la 1re mise, 3 cartes face cachée sur la table (plus de table vide)
+    try { u.layer.innerHTML = POS.map(function (q) { return '<g class="c1-c" style="transform:translate(' + q[0] + 'px,' + q[1] + 'px) scale(' + sc + ') translate(30px,42px) rotate(' + q[2] + 'deg) translate(-30px,-42px)">' + BACK + '</g>'; }).join(''); } catch (e0) { /* ignore */ }
     u.go.addEventListener('click', async function () {
       if (box.classList.contains('c1-busy')) return;
       lock(box, true); box.querySelectorAll('.tp-pay span').forEach(function (s) { s.classList.remove('on'); });
@@ -419,6 +424,7 @@
     var pay = '<div class="vp-pay">' + l.vp.map(function (n, i) { return '<span data-i="' + i + '"><b class="fit">' + esc(n) + '</b><i dir="ltr">×' + num(VP_M[i]) + '</i></span>'; }).join('') + '</div>';
     var u = shell(box, 'vpoker', svg, pay, '', '', l);
     hist('vpoker', u.hist);
+    backs(u.layer, [0, 1, 2, 3, 4].map(function (k) { return [8 + k * 62, 12, sc]; }));
     u.go.addEventListener('click', async function () {
       if (box.classList.contains('c1-busy')) return;
       lock(box, true); box.querySelectorAll('.vp-pay span').forEach(function (s) { s.classList.remove('on'); });
