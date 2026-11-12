@@ -1692,6 +1692,7 @@
       if (!ios || !app) return;
       root.classList.add('ios-app');
       root.style.setProperty('background-color', '#0F102E', 'important');
+      var floorOff = function () { try { return root.classList.contains('ol-on') || root.classList.contains('learn-on') || !!document.querySelector('.modal-backdrop.active, #liveModal.active'); } catch (eF) { return false; } };
       var paint = function () {
         try {
           // Hauteur réelle de l'écran (l'appli iPhone a une fenêtre plus courte que l'écran) : utilisée par le profil.
@@ -1741,7 +1742,9 @@
           }
           // v2965 (propriétaire, appli iPhone en PLEIN ÉCRAN : « petites lueurs / bulles en bas ») : en plein écran, plus aucun
           // petit monde de planètes en fond de la page (html et body) ; il revient en quittant le plein écran.
-          if (root.classList.contains('fs-trade')) {
+          // v3702 (propriétaire : « la bande de planètes doit être SEULEMENT sur l'écran de trading et le profil ») : chargement,
+          // fenêtres (Social, Cadeaux, Paris, Jeux, Recharger, Retrait, historiques…) et guide → plus de dessin en bas.
+          if (root.classList.contains('fs-trade') || floorOff()) {
             root.style.setProperty('background-image', 'none', 'important');
             if (document.body) document.body.style.setProperty('background-image', 'none', 'important');
           }
@@ -1749,6 +1752,8 @@
       };
       if (document.body) paint(); else document.addEventListener('DOMContentLoaded', paint);
       window.addEventListener('resize', paint);
+      var lastOff = null;
+      setInterval(function () { var o = floorOff(); if (o !== lastOff) { lastOff = o; paint(); } }, 400);
       // v2965 : entrée / sortie du plein écran (classe fs-trade) → fond repeint tout de suite
       try {
         var wasFs = root.classList.contains('fs-trade');
