@@ -2233,15 +2233,12 @@ html.ios-app.is-ios.ios-tall:root:has(#liveModal.active) body,
 html.ios-app.is-ios.ios-tall.learn-on:root body{height:var(--ios-screen-h,100%)!important}
 /* (c) 2026-10-21 (propriétaire : « pas de bande noire, garde ma planète ») : quand iOS ne donne pas tout l'écran, la bande du bas
    garde le petit monde de planètes sous TOUTES les fenêtres (plus de couleur unie) ; avec tout l'écran, la fenêtre descend jusqu'en bas. */
-html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active:not(#historySheet):not(#financeModal) > .modal-box{box-sizing:border-box!important;padding-bottom:var(--ios-under,0px)!important}
-html.ios-app.is-ios.ios-tall.learn-on:root body .learn-modal{padding-bottom:var(--ios-under,0px)!important;box-sizing:border-box!important}
 html.ios-app.is-ios:root body #liveModal .sx-panel{padding-bottom:0!important}
 html.ios-app.is-ios:root body #liveModal .sx-shin{padding-bottom:16px!important}
 html.ios-app.is-ios:root body #liveModal .lg-info{padding-bottom:20px!important}
 html.ios-app.is-ios:root body .learn-modal .lg-body{padding-bottom:30px!important}
 html.ios-app.is-ios:root body #liveModal .sx-comp{padding-bottom:8px!important}
 html.ios-app.is-ios:root body #liveModal #sxRoot.sx{padding-bottom:0!important}
-html.ios-app.is-ios.ios-tall:root body #liveModal #sxRoot.sx{padding-bottom:var(--ios-under,0px)!important}
 
 /* 2026-11-02 (propriétaire) : la bande du bas de l'app (iPhone) = NOIR PUR, et AUCUN décor qui
    monte sur ACHETER / VENDRE. On retire tout habillage chaud/bleu de cette bande. */
@@ -2252,11 +2249,6 @@ html.is-ios body:where(.oro-shown):not(#oroQ):not(.oroQ) #oroIosFloor#oroIosFloo
 /* v3567 (propriétaire : « le bas or n'est pas encore dans Paris ») — quand iOS donne TOUT l'écran à l'appli (ios-tall), les fenêtres
    pleine page (Paris, Jeux, Social, Cadeaux…) descendent jusqu'en bas et leur fond couvrait la bande : on y repose le MÊME bas or,
    exactement dans la hauteur de la bande (au-dessus de la barre d'accueil, sous le contenu). */
-html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active:not(#historySheet):not(#financeModal)::after,
-html.ios-app.is-ios.ios-tall:root body #liveModal.active::after{
-  content:""!important;display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;
-  height:var(--ios-under,0px)!important;z-index:2147483000!important;pointer-events:none!important;
-  background:url("../icons/ui/app-floor.svg?v=3568") center bottom/100% 100% no-repeat,#1E1507!important}
 /* v3567 : Paris dans l'appli (tout l'écran) — la barre Populaire / Direct / Coupon… reste AU-DESSUS du bas or (avant : elle
    descendait de 18 px dedans). */
 html.ios-app.is-ios.ios-tall:root body #casinoModal#casinoModal .sp2 .pz-nav{bottom:0!important}
