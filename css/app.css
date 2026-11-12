@@ -14802,3 +14802,21 @@ html body #portalModal .ar-on::before{content:'';display:inline-block;width:6px;
 html.oro-latam body #depositModal#depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-la2:is(.pl-mpago,.pl-bancol,.pl-davi,.pl-pmovil) .pl-n{
   font-size:9px!important;letter-spacing:-.02em!important}
 html.oro-latam body #depositModal#depositModal#depositModal#depositModal #payMethodCard .pl-logos .pl-logo.pl-la.pl-la2.pl-mpago .pl-n{font-size:8.6px!important}
+
+/* v3678 (propriétaire : « la partie Retrait : un carré blanc l'encadre ; la croix est trop basse, elle doit être en haut comme
+   partout ») — plus de cadre clair autour de la fenêtre Retrait (ni Recharger), croix au même endroit que les autres fenêtres. */
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal > .modal-box,
+html:root body #depositModal#depositModal#depositModal#depositModal > .modal-box{border:0!important;outline:0!important;box-shadow:none!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal > .modal-box{position:relative!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-modal-head #closeWithdraw#closeWithdraw{
+  position:absolute!important;top:9px!important;right:12px!important;left:auto!important;bottom:auto!important;margin:0!important;transform:none!important;z-index:5!important}
+html:root[dir="rtl"] body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-modal-head #closeWithdraw#closeWithdraw{right:auto!important;left:12px!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-modal-head{position:static!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-modal-head #btnWdBack#btnWdBack{position:absolute!important;top:9px!important;left:12px!important;right:auto!important;bottom:auto!important;margin:0!important;transform:none!important;z-index:5!important}
+html:root[dir="rtl"] body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-modal-head #btnWdBack#btnWdBack{left:auto!important;right:12px!important}
+html:root body #withdrawModal#withdrawModal#withdrawModal#withdrawModal .wd-modal-head #btnWdBack#btnWdBack.hidden{display:none!important}
+/* v3678 (propriétaire : « plus de lueur jaune bizarre ») — croix ✕ et retours ← : la même mini-planète dorée partout, SANS le halo jaune */
+html:root body .btn-close.btn-close:not(#oroZ1):not(#oroZ2):not(#oroZ3):not(#oroZ4):not(#oroZ5),html:root body #withdrawModal#withdrawModal .wd-back-ico.wd-back-ico,html:root body #rcptModal#rcptModal#rcptModal .rc-back.rc-back,html:root body #screenAuth#screenAuth#screenAuth#screenAuth .auth-back{
+  box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,-3px -3px 6px rgba(0,0,0,.35) inset,0 3px 8px rgba(0,0,0,.45)!important;filter:none!important}
+html:root body :is(#passModal,#emailModal) .modal-title{text-shadow:none!important;filter:none!important}
+html:root body :is(#passModal,#emailModal) .btn-gold{box-shadow:0 2px 6px rgba(0,0,0,.45)!important;filter:none!important}
