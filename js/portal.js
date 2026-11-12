@@ -664,6 +664,11 @@
   // v2491 — petit graphique des gains de celui qui invite (barres). 7 jours (Aujourd'hui / 7 jours) avec le nom du jour,
   // 30 jours avec la date, « Tout » = par semaine (12 dernières). Affichage seulement.
   // v2491 — un montant trop long (ex. 125 430,50 $) rétrécit un peu pour rester dans sa case, sur tous les téléphones et toutes les langues.
+  // v3689 : chaque bouton de tri garde son mot entier — la police rétrécit si besoin (toutes langues, tous écrans)
+  function fitAffSort() {
+    var bs = document.querySelectorAll('#affSort button');
+    for (var i = 0; i < bs.length; i++) { var b = bs[i]; b.style.fontSize = ''; var fs = parseFloat(getComputedStyle(b).fontSize) || 12, n = 0; while (b.scrollWidth > b.clientWidth + 1 && fs > 8 && n++ < 12) { fs -= 0.5; b.style.setProperty('font-size', fs + 'px', 'important'); } }
+  }
   function fitAffNumbers() {
     var els = document.querySelectorAll('#affSum b, #affSum2 b, #affGraph .ag-h b, #affRowsAll .aff-row b, #affRows .aff-row b, #affMain .aff-stats b');
     for (var i = 0; i < els.length; i++) {
@@ -773,7 +778,12 @@
     fitAffNumbers();
     // Recherche par numéro ORO (« 7030 », « oro-703098 »…) et tri choisi.
     var q = String(($('affSearch') && $('affSearch').value) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-    var shown = rows.filter(function (r) { return !q || String(r.id || '').toUpperCase().replace(/[^A-Z0-9]/g, '').indexOf(q) >= 0; });
+    // v3689 : recherche par ID, date (06/11/26) ou montant (7,26) — chiffres seuls comparés
+    var shown = rows.filter(function (r) {
+      if (!q) return true;
+      var hay = String(r.id || '') + ' ' + new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + money(r.deposit) + ' ' + money(r.gift) + ' ' + Number(r.deposit || 0).toFixed(2) + ' ' + Number(r.gift || 0).toFixed(2);
+      return hay.toUpperCase().replace(/[^A-Z0-9]/g, '').indexOf(q) >= 0;
+    });
     // v2492 : plus de 2 000 amis → la recherche se fait sur le serveur, parmi TOUS les amis.
     if (q && aff.more) {
       if (affFound && affFound.q === q) shown = affFound.rows.slice();
@@ -782,8 +792,11 @@
     shown.sort(function (a, b) {
       if (affSortBy === 'dep') return Number(b.deposit || 0) - Number(a.deposit || 0);
       if (affSortBy === 'gain') return Number(b.gift || 0) - Number(a.gift || 0);
+      if (affSortBy === 'play') return ((b.played ? 1 : 0) - (a.played ? 1 : 0)) || (affN(b) - affN(a)) || (Number(b.deposit || 0) - Number(a.deposit || 0));
+      if (affSortBy === 'on') return ((b.on ? 1 : 0) - (a.on ? 1 : 0)) || (Number(b.at || 0) - Number(a.at || 0));
       return Number(b.at || 0) - Number(a.at || 0);
     });
+    fitAffSort();
     $('affRowsAll').innerHTML = shown.length ? shown.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t(q ? 'affNoMatch' : 'affEmpty')) + '</p>';
   }
   function tickLists() {
