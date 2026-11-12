@@ -756,4 +756,14 @@
       (function () { function g(x, y, f, s) { return '<g transform="translate(' + x + ' ' + y + ')"><path d="M0 ' + (-18 * s) + 'l' + (16 * s) + ' ' + (6 * s) + 'l' + (-6 * s) + ' ' + (22 * s) + 'h' + (-20 * s) + 'l' + (-6 * s) + ' ' + (-22 * s) + 'z" fill="' + f + '" stroke="rgba(0,0,0,.3)" stroke-width="1"/><path d="M0 ' + (-18 * s) + 'v' + (40 * s) + 'M' + (-16 * s) + ' ' + (-12 * s) + 'H' + (16 * s) + '" stroke="rgba(255,255,255,.4)" stroke-width="0.8"/></g>'; } return g(-34, 6, 'url(#r5a)', 0.82) + g(32, 8, 'url(#r5c)', 0.78) + g(0, -4, 'url(#r5b)', 1); })() +
       '</g>'
   });
+
+  /* 2026-11-12 : lot 1 vers 1000 jeux — même moteur « révèle le gain », l'objet du jeu est son logo-photo (img/games/<clé>.webp) */
+  function pgame(k, rows, spin) {
+    rgame({ key: k, verb: V.tap, rows: rows, sfx: spin ? 'show' : 'chests', cy: 106, spin: !!spin,
+      scene: '<defs>' + GDEFS + '<clipPath id="pg' + k + '"><circle r="52"/></clipPath></defs>' + r5bg() + stars(16) + r5glow() +
+        '<g id="cyObj" transform="translate(150 106)"><circle r="57" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
+        '<image href="img/games/' + k + '.webp?v=3682" x="-52" y="-52" width="104" height="104" clip-path="url(#pg' + k + ')" preserveAspectRatio="xMidYMid slice"/>' +
+        '<circle r="52" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/></g>' });
+  }
+  pgame('goldcompass', RA); pgame('icecrystal', RB); pgame('phoenixegg', RA); pgame('luckybamboo', RB); pgame('silverchalice', RA); pgame('amulet', RB); pgame('owlidol', RA); pgame('magicmirror', RB); pgame('piratebarrel', RA); pgame('jadeturtle', RB); pgame('scepter', RA); pgame('windchime', RB); pgame('goldnugget', RA); pgame('fortunecookie', RB); pgame('crystalskull', RA); pgame('goldpineapple', RB); pgame('dicecup', RA); pgame('spacecapsule', RB); pgame('snowglobe', RA); pgame('cuckooclock', RB); pgame('hourglass', RA); pgame('goldenkey', RB); pgame('brooch', RA); pgame('pearlnecklace', RB); pgame('vikinghelmet', RA); pgame('onimask', RB); pgame('aztecidol', RA); pgame('goldenharp', RB); pgame('totem', RA); pgame('koipond', RB);
 })(window.D6 = window.D6 || {});

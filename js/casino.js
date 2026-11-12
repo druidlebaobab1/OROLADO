@@ -575,7 +575,8 @@
         'chestgold', 'fortunewheel', 'goldenegg', 'mysterybox', 'crystalorb', 'diamondvault',
         'diceroll', 'royalcard', 'genielamp', 'jackpotbell', 'oysterpearl', 'crownjewel',
         'geodegem', 'moneytree', 'lotteryball', 'dragoncoin', 'fireworkgold', 'treasuremap',
-        'goldbars', 'pokerchip', 'luckyclover', 'rubyheart', 'moneybag', 'luckyshoe', 'diamondring', 'goldtrophy', 'sunburst', 'gemtrio'];
+        'goldbars', 'pokerchip', 'luckyclover', 'rubyheart', 'moneybag', 'luckyshoe', 'diamondring', 'goldtrophy', 'sunburst', 'gemtrio',
+        'goldcompass', 'icecrystal', 'phoenixegg', 'luckybamboo', 'silverchalice', 'amulet', 'owlidol', 'magicmirror', 'piratebarrel', 'jadeturtle', 'scepter', 'windchime', 'goldnugget', 'fortunecookie', 'crystalskull', 'goldpineapple', 'dicecup', 'spacecapsule', 'snowglobe', 'cuckooclock', 'hourglass', 'goldenkey', 'brooch', 'pearlnecklace', 'vikinghelmet', 'onimask', 'aztecidol', 'goldenharp', 'totem', 'koipond'];
       var moPos = function (k) { var i = MO_POS.indexOf(k); return i < 0 ? 999 : i; };
       bySec.more.sort(function (a, b) { return moPos(a) - moPos(b); });
       // v2850 (propriétaire : « Live plein, 24 jeux ») : ordre fixe des jeux en direct (les catalogues arrivent dans n'importe quel ordre)
