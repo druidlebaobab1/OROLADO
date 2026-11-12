@@ -3324,4 +3324,111 @@
   function popcornS(d, s, yellow) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.fillStyle = yellow ? '#FDE047' : '#FFF7ED'; var pts = [[0, -s * 0.2], [s * 0.18, -s * 0.1], [s * 0.2, s * 0.12], [0, s * 0.22], [-s * 0.2, s * 0.1], [-s * 0.18, -s * 0.12]]; pts.forEach(function (p) { circ(c, p[0], p[1], s * 0.14, c.fillStyle); }); circ(c, 0, 0, s * 0.16, c.fillStyle); c.fillStyle = yellow ? '#EAB308' : '#FDE68A'; circ(c, -s * 0.06, -s * 0.04, s * 0.05, c.fillStyle); }); }
   function carrotS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.fillStyle = lg(c, 0, -s * 0.1, 0, s * 0.4, ['#FB923C', '#EA580C']); c.beginPath(); c.moveTo(-s * 0.14, -s * 0.1); c.lineTo(s * 0.14, -s * 0.1); c.lineTo(0, s * 0.42); c.closePath(); c.fill(); c.strokeStyle = 'rgba(194,65,12,.5)'; c.lineWidth = 1; for (var k = 0; k < 3; k++) { c.beginPath(); c.moveTo(-s * 0.1 + k * s * 0.1, 0 + k * s * 0.08); c.lineTo(-s * 0.04 + k * s * 0.1, s * 0.04 + k * s * 0.08); c.stroke(); } c.fillStyle = '#16A34A'; for (var g = -1; g <= 1; g++) { c.beginPath(); c.moveTo(g * s * 0.08, -s * 0.1); c.lineTo(g * s * 0.14, -s * 0.34); c.lineTo(g * s * 0.08 + s * 0.04, -s * 0.1); c.fill(); } }); }
   function tomatoS(d, s) { return mkc(s, s, d, function (c, w) { c.translate(w / 2, w / 2); c.fillStyle = lg(c, -s * 0.2, -s * 0.2, s * 0.3, s * 0.3, ['#F87171', '#DC2626', '#991B1B']); circ(c, 0, s * 0.04, s * 0.32, c.fillStyle); c.fillStyle = '#16A34A'; for (var k = 0; k < 5; k++) { var a = k / 5 * TAU - Math.PI / 2; c.beginPath(); c.moveTo(0, -s * 0.24); c.lineTo(Math.cos(a) * s * 0.12, -s * 0.24 + Math.sin(a) * s * 0.08); c.lineTo(0, -s * 0.16); c.fill(); } c.fillStyle = 'rgba(255,255,255,.35)'; circ(c, -s * 0.12, -s * 0.06, s * 0.08, 'rgba(255,255,255,.4)'); }); }
+
+  // 2026-11-12 : 15 jeux « attrape » de plus (même moteur catcher, images ci_<clé>_g1/g2 + cb_<clé>, mauvais objets réutilisés)
+  G.bananarain = G.donutcatch;
+  boot('bananarain', catcher({ art: { bg: 'bananarain', good: ['bananarain_g1','bananarain_g2'], bad: ['rock'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.honeyhunt = G.donutcatch;
+  boot('honeyhunt', catcher({ art: { bg: 'honeyhunt', good: ['honeyhunt_g1','honeyhunt_g2'], bad: ['wasp'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.cookiejar = G.donutcatch;
+  boot('cookiejar', catcher({ art: { bg: 'cookiejar', good: ['cookiejar_g1','cookiejar_g2'], bad: ['bomb'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.cherrydrop = G.donutcatch;
+  boot('cherrydrop', catcher({ art: { bg: 'cherrydrop', good: ['cherrydrop_g1','cherrydrop_g2'], bad: ['wasp'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.rubyrain = G.donutcatch;
+  boot('rubyrain', catcher({ art: { bg: 'rubyrain', good: ['rubyrain_g1','rubyrain_g2'], bad: ['rock'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.cashrain = G.donutcatch;
+  boot('cashrain', catcher({ art: { bg: 'cashrain', good: ['cashrain_g1','cashrain_g2'], bad: ['bomb'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.musicnotes = G.donutcatch;
+  boot('musicnotes', catcher({ art: { bg: 'musicnotes', good: ['musicnotes_g1','musicnotes_g2'], bad: ['storm'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.fishsplash = G.donutcatch;
+  boot('fishsplash', catcher({ art: { bg: 'fishsplash', good: ['fishsplash_g1','fishsplash_g2'], bad: ['urchin'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.teatime = G.donutcatch;
+  boot('teatime', catcher({ art: { bg: 'teatime', good: ['teatime_g1','teatime_g2'], bad: ['chili'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return chiliS(d, s); }]
+  }), 'drag', 0.5);
+  G.sneakerdrop = G.donutcatch;
+  boot('sneakerdrop', catcher({ art: { bg: 'sneakerdrop', good: ['sneakerdrop_g1','sneakerdrop_g2'], bad: ['bomb'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.toybox = G.donutcatch;
+  boot('toybox', catcher({ art: { bg: 'toybox', good: ['toybox_g1','toybox_g2'], bad: ['bomb'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.melonparty = G.donutcatch;
+  boot('melonparty', catcher({ art: { bg: 'melonparty', good: ['melonparty_g1','melonparty_g2'], bad: ['wasp'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.astrocatch = G.donutcatch;
+  boot('astrocatch', catcher({ art: { bg: 'astrocatch', good: ['astrocatch_g1','astrocatch_g2'], bad: ['storm'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.pumpkinpatch = G.donutcatch;
+  boot('pumpkinpatch', catcher({ art: { bg: 'pumpkinpatch', good: ['pumpkinpatch_g1','pumpkinpatch_g2'], bad: ['bomb'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.pearlpearl = G.donutcatch;
+  boot('pearlpearl', catcher({ art: { bg: 'pearlpearl', good: ['pearlpearl_g1','pearlpearl_g2'], bad: ['urchin'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
 })(window.D6 = window.D6 || {});
