@@ -99,7 +99,8 @@
   }
   // Sans numéro de téléphone : le FUSEAU HORAIRE du téléphone décide (un VPN change la connexion, pas le fuseau) ;
   // la connexion sert seulement à préciser en Afrique (plusieurs pays partagent un fuseau) ou quand le fuseau est inconnu.
-  function tzCode() { try { return String(Intl.DateTimeFormat().resolvedOptions().timeZone || ''); } catch (e) { return ''; } }
+  var TZC = null; // v3704 : fuseau lu une seule fois (Intl coûtait ~0,5 s par chargement sur un vieux téléphone)
+  function tzCode() { if (TZC !== null) return TZC; try { TZC = String(Intl.DateTimeFormat().resolvedOptions().timeZone || ''); } catch (e) { TZC = ''; } return TZC; }
   function byPlace() {
     askGeo();
     var tz = tzCode(), t = TZ[tz] || '', g = geoCC ? (CC[geoCC] || '') : '';
@@ -293,8 +294,11 @@
       }
     });
   }
+  var lastSpotC = null;
   function paint() {
-    try { spots(code()); } catch (eP) { /* ignore */ }
+    // v3704 (vieux téléphones) : pas de monnaie locale à afficher (dollars) → plus de balayage de la page toutes les 0,7 s
+    var cc = ''; try { cc = code(); } catch (eC) { cc = ''; }
+    if (cc || lastSpotC !== '') { try { spots(cc); } catch (eP) { /* ignore */ } lastSpotC = cc; }
     try { fitWallet(); } catch (eW) { /* ignore */ }
     put(document.getElementById('modeRealAmt'), document.getElementById('modeReal'));
     put(document.getElementById('fsRealAmt'), document.getElementById('fsBtnReal'));

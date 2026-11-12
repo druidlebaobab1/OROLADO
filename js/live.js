@@ -605,7 +605,8 @@
 
   var openedOnce = false;
   // v2855 : le menu Social est préparé dès que le site est chargé (DOM + dessins prêts avant le 1er clic)
-  setTimeout(function () { try { if ($('liveHomeGrid') && !$('liveHomeGrid').firstChild) paintHome(); prefitHome(); } catch (eP) { /* ignore */ } }, 3000);
+  // v3704 : préparation de Social quand le téléphone est au repos (avant : à 3 s, pendant que la courbe démarrait)
+  setTimeout(function () { (window.requestIdleCallback || function (f) { setTimeout(f, 200); })(function () { try { if ($('liveHomeGrid') && !$('liveHomeGrid').firstChild) paintHome(); prefitHome(); } catch (eP) { /* ignore */ } }, { timeout: 8000 }); }, 6000);
   // 2026-10-21 (propriétaire : « dans Social, une case reste vide quelques secondes puis se remplit ») : la case « Envoyer de
   // l'argent » dépend d'une réponse du serveur ; elle est demandée en avance (2 s après l'ouverture du site) pour que le menu
   // soit déjà complet au premier toucher.
