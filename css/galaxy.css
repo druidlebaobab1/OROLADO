@@ -2261,15 +2261,16 @@ html.ios-app.is-ios.ios-tall:root body #liveModal.active::after{
    descendait de 18 px dedans). */
 html.ios-app.is-ios.ios-tall:root body #casinoModal#casinoModal .sp2 .pz-nav{bottom:0!important}
 
-/* v3699 (propriétaire, 2026-11-13 : « la planète du bas ne doit être QUE sur le trading et le profil ; dans Paris, Cadeaux,
-   Social, Historique, Retrait… elle bouffe l'espace ») — APPLI iPhone, iOS donne tout l'écran (ios-tall) : toutes les fenêtres
-   descendent jusqu'au vrai bas (Historique compris), SANS bande de planètes ; leur contenu s'arrête juste au-dessus de la barre
-   d'accueil. Trading et Profil gardent la bande. */
-html.ios-app.is-ios.ios-tall:root:has(.modal-backdrop.active) body{height:var(--ios-screen-h,100%)!important}
-html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active::after,
-html.ios-app.is-ios.ios-tall:root body #liveModal.active::after{display:none!important;content:none!important}
-html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active > .modal-box,
-html.ios-app.is-ios.ios-tall:root body #historySheet#historySheet.active > .modal-box,
-html.ios-app.is-ios.ios-tall:root body #financeModal#financeModal.active > .modal-box{box-sizing:border-box!important;height:100%!important;max-height:100%!important;padding-bottom:max(8px,calc(env(safe-area-inset-bottom,0px) - 10px))!important}
-html.ios-app.is-ios.ios-tall:root body #liveModal #sxRoot.sx{padding-bottom:max(8px,calc(env(safe-area-inset-bottom,0px) - 10px))!important}
-html.ios-app.is-ios.ios-tall.learn-on:root body .learn-modal{padding-bottom:max(8px,calc(env(safe-area-inset-bottom,0px) - 10px))!important}
+/* v3701 (propriétaire, appli iPhone) — la bande de planètes n'existe QUE sur l'écran de trading et sous le Profil.
+   Partout ailleurs (écran de chargement, Social, Cadeaux, Paris, Jeux, Recharger, Retrait, historiques, guide…) le site
+   prend TOUT l'écran jusqu'en bas : plus de bande qui cache des boutons ; le contenu s'arrête au-dessus de la barre d'accueil. */
+html.ios-app.is-ios.ol-on:root body,
+html.ios-app.is-ios:root:has(.modal-backdrop.active) body,
+html.ios-app.is-ios:root:has(#liveModal.active) body,
+html.ios-app.is-ios.learn-on:root body{height:var(--ios-screen-h,100%)!important}
+html.ios-app.is-ios:root:has(.modal-backdrop.active),html.ios-app.is-ios:root:has(#liveModal.active),html.ios-app.is-ios.learn-on:root{background-image:none!important;background-color:#0B0906!important}
+html.ios-app.is-ios:root body .modal-backdrop.active::after,html.ios-app.is-ios:root body #liveModal.active::after{display:none!important;content:none!important}
+html.ios-app.is-ios:root body .modal-backdrop.active > .modal-box{box-sizing:border-box!important;height:100%!important;max-height:100%!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important}
+html.ios-app.is-ios:root body #liveModal #sxRoot.sx{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important}
+html.ios-app.is-ios.learn-on:root body .learn-modal{padding-bottom:env(safe-area-inset-bottom,0px)!important;box-sizing:border-box!important}
+html.ios-app.is-ios:root body #casinoModal#casinoModal .sp2 .pz-nav{bottom:0!important}

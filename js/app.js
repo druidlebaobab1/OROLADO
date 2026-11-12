@@ -122,6 +122,9 @@
       if (remember) { try { localStorage.setItem(KEY, String(Date.now())); } catch (eS) { /* ignore */ } }
     }
     if (force !== null) { setLite(force, false); return; }
+    // v3701 (propriétaire : « les vieux Android rament ») : téléphone Android faible (≤ 3 Go de mémoire ou ≤ 4 cœurs) →
+    // mode léger tout de suite (décors immobiles, courbe moins gourmande), sans attendre qu'il rame.
+    try { if (/android/i.test(navigator.userAgent || '') && ((navigator.deviceMemory && navigator.deviceMemory <= 3) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4))) { setLite(true, false); return; } } catch (eW) { /* ignore */ }
     try {
       var at = Number(localStorage.getItem(KEY) || 0);
       if (at && Date.now() - at < 7 * 864e5) { setLite(true, false); return; }
@@ -3118,7 +3121,13 @@
       var gap = Math.max(4, fs * 0.32);
       var center = ir.left + ir.width / 2 - fr.left;
       var left = center - textW / 2 - gap - curW;
-      if (left < ir.left - fr.left + 2) left = ir.left - fr.left + 2;
+      // v3701 (propriétaire : « en paysage le $ est collé au 1 ») : case trop étroite → le chiffre se décale à droite pour laisser
+      // la place au « $ » (plus de « $ » posé sur le chiffre).
+      if (left < ir.left - fr.left + 2) {
+        var pad = Math.min(curW + gap, Math.max(0, ir.width - textW - 2));
+        el.style.setProperty('padding-left', pad.toFixed(1) + 'px', 'important');
+        center += pad / 2; left = Math.max(ir.left - fr.left, center - textW / 2 - gap - curW);
+      } else if (el.style.paddingLeft) el.style.removeProperty('padding-left');
       cur.style.cssText = 'display:block;position:absolute;pointer-events:none;z-index:2;line-height:1;' +
         'left:' + left.toFixed(1) + 'px;top:' + (ir.top - fr.top + ir.height / 2).toFixed(1) + 'px;transform:translateY(-52%);' +
         'font-size:' + curFs.toFixed(1) + 'px;font-weight:' + cs.fontWeight + ';font-family:' + cs.fontFamily + ';' +

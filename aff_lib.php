@@ -558,6 +558,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       'n' => $nDep,
       'played' => $realTrades > 0 || (($extByUid[$fuid]['staked'] ?? 0) > 0),
       'on' => $onF ? 1 : 0,
+      'seen' => $seenT > 0 ? $seenT : 0, // v3701 : dernière visite (filtres Actifs / Inactifs du portail) — affichage seulement
       'staked' => orolado_money($extByUid[$fuid]['staked'] ?? 0),
       'pend' => $revOn2 ? orolado_money(max(0.0, $revPct2 * (float) ($extByUid[$fuid]['ngrAll'] ?? 0) - max(0.0, $revPct2 * $ngrF))) : 0.0,
     ];
