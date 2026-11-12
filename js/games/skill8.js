@@ -3431,4 +3431,254 @@
     good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
     bad: [function (d, s) { return donutS(d, s, true); }]
   }), 'drag', 0.5);
+  /* ===== lot v3687 : 40 « vol » + 7 « attrape » (images illustrées) ===== */
+  G.parrotflight = G.beefly;
+  boot('parrotflight', flappy({ art: 'parrotflight', gap: 0.47, wall: ['#16A34A', '#15803D', '#14532D'], cap: '#22C55E', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AAE2BE', '#1F5F35']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AAE2BE'); }); }
+  }), 'tap', 0.45);
+  G.dragonride = G.beefly;
+  boot('dragonride', flappy({ art: 'dragonride', gap: 0.47, wall: ['#7C3AED', '#5B21B6', '#2E1065'], cap: '#8B5CF6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#BCE2AA', '#345F1F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#BCE2AA'); }); }
+  }), 'tap', 0.45);
+  G.hotairballoon = G.beefly;
+  boot('hotairballoon', flappy({ art: 'hotairballoon', gap: 0.47, wall: ['#0EA5E9', '#0369A1', '#0C4A6E'], cap: '#38BDF8', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E0E2AA', '#5C5F1F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E0E2AA'); }); }
+  }), 'tap', 0.45);
+  G.witchbroom = G.beefly;
+  boot('witchbroom', flappy({ art: 'witchbroom', gap: 0.47, wall: ['#EA580C', '#C2410C', '#7C2D12'], cap: '#FB923C', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2AAD4', '#5F1F4E']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2AAD4'); }); }
+  }), 'tap', 0.45);
+  G.superhero = G.beefly;
+  boot('superhero', flappy({ art: 'superhero', gap: 0.47, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2BCAA', '#5F331F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2BCAA'); }); }
+  }), 'tap', 0.45);
+  G.pegasus = G.beefly;
+  boot('pegasus', flappy({ art: 'pegasus', gap: 0.47, wall: ['#16A34A', '#15803D', '#14532D'], cap: '#22C55E', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E7C3A6', '#643C1A']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E7C3A6'); }); }
+  }), 'tap', 0.45);
+  G.butterflyfly = G.beefly;
+  boot('butterflyfly', flappy({ art: 'butterflyfly', gap: 0.47, wall: ['#7C3AED', '#5B21B6', '#2E1065'], cap: '#8B5CF6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2C8AA', '#5F411F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2C8AA'); }); }
+  }), 'tap', 0.45);
+  G.eagleflight = G.beefly;
+  boot('eagleflight', flappy({ art: 'eagleflight', gap: 0.47, wall: ['#0EA5E9', '#0369A1', '#0C4A6E'], cap: '#38BDF8', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2AAAF', '#5F1F24']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2AAAF'); }); }
+  }), 'tap', 0.45);
+  G.penguinjet = G.beefly;
+  boot('penguinjet', flappy({ art: 'penguinjet', gap: 0.47, wall: ['#EA580C', '#C2410C', '#7C2D12'], cap: '#FB923C', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AAD5E2', '#1F4F5F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AAD5E2'); }); }
+  }), 'tap', 0.45);
+  G.fairyflight = G.beefly;
+  boot('fairyflight', flappy({ art: 'fairyflight', gap: 0.47, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AAE2C1', '#1F5F39']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AAE2C1'); }); }
+  }), 'tap', 0.45);
+  G.rocketpup = G.beefly;
+  boot('rocketpup', flappy({ art: 'rocketpup', gap: 0.47, wall: ['#16A34A', '#15803D', '#14532D'], cap: '#22C55E', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2AAC6', '#5F1F3F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2AAC6'); }); }
+  }), 'tap', 0.45);
+  G.seaplane = G.beefly;
+  boot('seaplane', flappy({ art: 'seaplane', gap: 0.47, wall: ['#7C3AED', '#5B21B6', '#2E1065'], cap: '#8B5CF6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AAE2DD', '#1F5F59']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AAE2DD'); }); }
+  }), 'tap', 0.45);
+  G.owlnight = G.beefly;
+  boot('owlnight', flappy({ art: 'owlnight', gap: 0.47, wall: ['#0EA5E9', '#0369A1', '#0C4A6E'], cap: '#38BDF8', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AADAE2', '#1F555F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AADAE2'); }); }
+  }), 'tap', 0.45);
+  G.phoenixfly = G.beefly;
+  boot('phoenixfly', flappy({ art: 'phoenixfly', gap: 0.47, wall: ['#EA580C', '#C2410C', '#7C2D12'], cap: '#FB923C', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E3BAA9', '#60311E']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E3BAA9'); }); }
+  }), 'tap', 0.45);
+  G.batflight = G.beefly;
+  boot('batflight', flappy({ art: 'batflight', gap: 0.47, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#BCAAE2', '#331F5F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#BCAAE2'); }); }
+  }), 'tap', 0.45);
+  G.dronerace = G.beefly;
+  boot('dronerace', flappy({ art: 'dronerace', gap: 0.47, wall: ['#16A34A', '#15803D', '#14532D'], cap: '#22C55E', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#CAAAE2', '#431F5F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#CAAAE2'); }); }
+  }), 'tap', 0.45);
+  G.kiteflight = G.beefly;
+  boot('kiteflight', flappy({ art: 'kiteflight', gap: 0.47, wall: ['#7C3AED', '#5B21B6', '#2E1065'], cap: '#8B5CF6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AAE0E2', '#1F5D5F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AAE0E2'); }); }
+  }), 'tap', 0.45);
+  G.ladybug = G.beefly;
+  boot('ladybug', flappy({ art: 'ladybug', gap: 0.47, wall: ['#0EA5E9', '#0369A1', '#0C4A6E'], cap: '#38BDF8', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2DEAA', '#5F5A1F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2DEAA'); }); }
+  }), 'tap', 0.45);
+  G.unicornfly = G.beefly;
+  boot('unicornfly', flappy({ art: 'unicornfly', gap: 0.47, wall: ['#EA580C', '#C2410C', '#7C2D12'], cap: '#FB923C', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2AADF', '#5F1F5C']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2AADF'); }); }
+  }), 'tap', 0.45);
+  G.gliderplane = G.beefly;
+  boot('gliderplane', flappy({ art: 'gliderplane', gap: 0.47, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AACBE2', '#1F455F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AACBE2'); }); }
+  }), 'tap', 0.45);
+  G.hummingbird = G.beefly;
+  boot('hummingbird', flappy({ art: 'hummingbird', gap: 0.47, wall: ['#16A34A', '#15803D', '#14532D'], cap: '#22C55E', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2D8AA', '#5F541F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2D8AA'); }); }
+  }), 'tap', 0.45);
+  G.paperdragon = G.beefly;
+  boot('paperdragon', flappy({ art: 'paperdragon', gap: 0.47, wall: ['#7C3AED', '#5B21B6', '#2E1065'], cap: '#8B5CF6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2BCAA', '#5F331F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2BCAA'); }); }
+  }), 'tap', 0.45);
+  G.bubblefish = G.beefly;
+  boot('bubblefish', flappy({ art: 'bubblefish', gap: 0.47, wall: ['#0EA5E9', '#0369A1', '#0C4A6E'], cap: '#38BDF8', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#B0AAE2', '#261F5F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#B0AAE2'); }); }
+  }), 'tap', 0.45);
+  G.starfighter = G.beefly;
+  boot('starfighter', flappy({ art: 'starfighter', gap: 0.47, wall: ['#EA580C', '#C2410C', '#7C2D12'], cap: '#FB923C', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2AADE', '#5F1F5A']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2AADE'); }); }
+  }), 'tap', 0.45);
+  G.cupidfly = G.beefly;
+  boot('cupidfly', flappy({ art: 'cupidfly', gap: 0.47, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E4A9AB', '#611E20']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E4A9AB'); }); }
+  }), 'tap', 0.45);
+  G.dragonflyblue = G.beefly;
+  boot('dragonflyblue', flappy({ art: 'dragonflyblue', gap: 0.47, wall: ['#16A34A', '#15803D', '#14532D'], cap: '#22C55E', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2BAAA', '#5F321F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2BAAA'); }); }
+  }), 'tap', 0.45);
+  G.monkeyjet = G.beefly;
+  boot('monkeyjet', flappy({ art: 'monkeyjet', gap: 0.47, wall: ['#7C3AED', '#5B21B6', '#2E1065'], cap: '#8B5CF6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#DFE2AA', '#5C5F1F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#DFE2AA'); }); }
+  }), 'tap', 0.45);
+  G.wizardfly = G.beefly;
+  boot('wizardfly', flappy({ art: 'wizardfly', gap: 0.47, wall: ['#0EA5E9', '#0369A1', '#0C4A6E'], cap: '#38BDF8', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2AFAA', '#5F251F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2AFAA'); }); }
+  }), 'tap', 0.45);
+  G.rocketgirl = G.beefly;
+  boot('rocketgirl', flappy({ art: 'rocketgirl', gap: 0.47, wall: ['#EA580C', '#C2410C', '#7C2D12'], cap: '#FB923C', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2AAD6', '#5F1F51']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2AAD6'); }); }
+  }), 'tap', 0.45);
+  G.santasleigh = G.beefly;
+  boot('santasleigh', flappy({ art: 'santasleigh', gap: 0.47, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AAB8E2', '#1F2F5F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AAB8E2'); }); }
+  }), 'tap', 0.45);
+  G.flamingoair = G.beefly;
+  boot('flamingoair', flappy({ art: 'flamingoair', gap: 0.47, wall: ['#16A34A', '#15803D', '#14532D'], cap: '#22C55E', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2ACAA', '#5F211F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2ACAA'); }); }
+  }), 'tap', 0.45);
+  G.beetlejet = G.beefly;
+  boot('beetlejet', flappy({ art: 'beetlejet', gap: 0.47, wall: ['#7C3AED', '#5B21B6', '#2E1065'], cap: '#8B5CF6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2DAAA', '#5F551F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2DAAA'); }); }
+  }), 'tap', 0.45);
+  G.cloudcat = G.beefly;
+  boot('cloudcat', flappy({ art: 'cloudcat', gap: 0.47, wall: ['#0EA5E9', '#0369A1', '#0C4A6E'], cap: '#38BDF8', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2D1AA', '#5F4C1F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2D1AA'); }); }
+  }), 'tap', 0.45);
+  G.robotfly = G.beefly;
+  boot('robotfly', flappy({ art: 'robotfly', gap: 0.47, wall: ['#EA580C', '#C2410C', '#7C2D12'], cap: '#FB923C', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2C6AA', '#5F3F1F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2C6AA'); }); }
+  }), 'tap', 0.45);
+  G.angelwings = G.beefly;
+  boot('angelwings', flappy({ art: 'angelwings', gap: 0.47, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E5CBA8', '#62451D']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E5CBA8'); }); }
+  }), 'tap', 0.45);
+  G.mothlight = G.beefly;
+  boot('mothlight', flappy({ art: 'mothlight', gap: 0.47, wall: ['#16A34A', '#15803D', '#14532D'], cap: '#22C55E', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AAD0E2', '#1F4A5F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AAD0E2'); }); }
+  }), 'tap', 0.45);
+  G.jetboard = G.beefly;
+  boot('jetboard', flappy({ art: 'jetboard', gap: 0.47, wall: ['#7C3AED', '#5B21B6', '#2E1065'], cap: '#8B5CF6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AAE2C6', '#1F5F3F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AAE2C6'); }); }
+  }), 'tap', 0.45);
+  G.airship = G.beefly;
+  boot('airship', flappy({ art: 'airship', gap: 0.47, wall: ['#0EA5E9', '#0369A1', '#0C4A6E'], cap: '#38BDF8', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#AACAE2', '#1F445F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#AACAE2'); }); }
+  }), 'tap', 0.45);
+  G.goldfinch = G.beefly;
+  boot('goldfinch', flappy({ art: 'goldfinch', gap: 0.47, wall: ['#EA580C', '#C2410C', '#7C2D12'], cap: '#FB923C', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E3B2AA', '#60281F']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E3B2AA'); }); }
+  }), 'tap', 0.45);
+  G.spacebee = G.beefly;
+  boot('spacebee', flappy({ art: 'spacebee', gap: 0.47, wall: ['#DB2777', '#9D174D', '#500724'], cap: '#F472B6', trail: false, winCols: ['#FDE047', '#FFFFFF'],
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#E2AAC2', '#5F1F3A']); c.fillRect(0, 0, W, H); },
+    player: function (d, s) { return mkc(s * 1.3, s, d, function (c, w, h) { circ(c, w / 2, h / 2, s * 0.4, '#E2AAC2'); }); }
+  }), 'tap', 0.45);
+  G.gemmine = G.donutcatch;
+  boot('gemmine', catcher({ art: { bg: 'gemmine', good: ['gemmine_g1','gemmine_g2'], bad: ['rock'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.nuggetcatch = G.donutcatch;
+  boot('nuggetcatch', catcher({ art: { bg: 'nuggetcatch', good: ['nuggetcatch_g1','nuggetcatch_g2'], bad: ['rock'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.cupcakerain = G.donutcatch;
+  boot('cupcakerain', catcher({ art: { bg: 'cupcakerain', good: ['cupcakerain_g1','cupcakerain_g2'], bad: ['chili'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.lemonade = G.donutcatch;
+  boot('lemonade', catcher({ art: { bg: 'lemonade', good: ['lemonade_g1','lemonade_g2'], bad: ['wasp'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.crowncatch = G.donutcatch;
+  boot('crowncatch', catcher({ art: { bg: 'crowncatch', good: ['crowncatch_g1','crowncatch_g2'], bad: ['bomb'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.bubbletea = G.donutcatch;
+  boot('bubbletea', catcher({ art: { bg: 'bubbletea', good: ['bubbletea_g1','bubbletea_g2'], bad: ['chili'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
+  G.eggbasket = G.donutcatch;
+  boot('eggbasket', catcher({ art: { bg: 'eggbasket', good: ['eggbasket_g1','eggbasket_g2'], bad: ['rock'] }, winCols: ['#FDE68A', '#FFFFFF'], ring: '#FBBF24',
+    bg: function (c, W, H) { c.fillStyle = lg(c, 0, 0, 0, H, ['#1E293B', '#0F172A']); c.fillRect(0, 0, W, H); },
+    basket: function (c, px, py, bw, bh) { woodBasket(c, px, py, bw, bh); },
+    good: [function (d, s) { return donutS(d, s); }, function (d, s) { return cupcakeS(d, s); }],
+    bad: [function (d, s) { return donutS(d, s, true); }]
+  }), 'drag', 0.5);
 })(window.D6 = window.D6 || {});

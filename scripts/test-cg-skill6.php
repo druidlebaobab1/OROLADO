@@ -62,7 +62,7 @@ foreach ($m[1] as $i => $g) {
   $langs = []; preg_match_all("/([a-z]{2}): '([^']+)'/", $m[4][$i], $q); foreach ($q[1] as $j => $l) $langs[$l] = $q[2][$j];
   check("$g : nom dans les 12 langues (≤ 22 caractères)", array_keys($langs) == $LANGS && max(array_map('mb_strlen', $langs)) <= 22, json_encode($langs, JSON_UNESCAPED_UNICODE));
   $js = (string) file_get_contents(__DIR__ . '/../js/games/' . $m[3][$i] . '.js');
-  check("module {$m[3][$i]} : $g enregistré + règles (12 langues)", strpos($js, "boot('$g'") !== false && (preg_match("/    $g: \{\n(      [a-z]{2}: \[.*\],?\n){12}    \}/", $js) === 1 || preg_match("/G\.$g = G\.(metrodash|donutcatch)/", $js) === 1)); // courses du moteur Subway : mêmes textes 12 langues que Metro Dash
+  check("module {$m[3][$i]} : $g enregistré + règles (12 langues)", strpos($js, "boot('$g'") !== false && (preg_match("/    $g: \{\n(      [a-z]{2}: \[.*\],?\n){12}    \}/", $js) === 1 || preg_match("/G\.$g = G\.(metrodash|donutcatch|beefly)/", $js) === 1)); // courses du moteur Subway : mêmes textes 12 langues que Metro Dash
 }
 foreach (array_unique($m[3]) as $file) {
   $js = (string) file_get_contents(__DIR__ . "/../js/games/$file.js");
