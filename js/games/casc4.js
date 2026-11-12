@@ -137,7 +137,7 @@
     key: 'rocketcash', verb: V.launch, rows: RA, prizeAt: [96, 120],
     chips: chips6(RA), chipOf: chipOf6(RA),
     scene: '<defs>' + SKY + GOLDG + '<linearGradient id="rkBody" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F8FAFC"/><stop offset="1" stop-color="#94A3B8"/></linearGradient></defs>' +
-      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#c4sky)"/>' + stars(26) +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#c4sky)"/>' + artBg('rocketcash') + stars(26) +
       '<g transform="translate(232 0)"><rect x="-6" y="18" width="12" height="214" rx="6" fill="#0B1026" stroke="#4338CA" stroke-width="1.4"/>' +
       RKY.map(function (y, j) { return '<g transform="translate(0 ' + y + ')"><rect x="-26" y="-10" width="52" height="20" rx="6" fill="rgba(79,70,229,.25)" stroke="#6366F1" stroke-width="1"/><text x="0" y="5" text-anchor="middle" font-size="12" font-weight="900" fill="#C7D2FE" font-family="var(--cg-font),Arial">' + (RA[j] ? xm(RA[j]) : '✗') + '</text></g>'; }).join('') + '</g>' +
       '<g id="rk"><g transform="translate(0 2)"><ellipse cx="0" cy="26" rx="10" ry="4" fill="#000" opacity=".3"/></g>' +
@@ -173,7 +173,7 @@
     key: 'golddig', verb: V.dig, rows: RB, prizeAt: [150, 118],
     chips: chips6(RB), chipOf: chipOf6(RB),
     scene: '<defs>' + GOLDG + '<linearGradient id="dgRock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#78716C"/><stop offset="1" stop-color="#44403C"/></linearGradient><linearGradient id="dgGround" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3B2A14"/><stop offset="1" stop-color="#1C1206"/></linearGradient></defs>' +
-      '<rect x="-400" y="-400" width="1100" height="1100" fill="#140E06"/><rect x="-400" y="150" width="1100" height="400" fill="url(#dgGround)"/>' +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="#140E06"/>' + artBg('golddig') + '<rect x="-400" y="150" opacity=".55" width="1100" height="400" fill="url(#dgGround)"/>' +
       '<g id="dgRockG"><path d="M150 72c40 0 58 26 58 52s-26 38-58 38-58-12-58-38 18-52 58-52z" fill="url(#dgRock)" stroke="#292524" stroke-width="2"/><path d="M120 110l16 8-12 10M186 108l-14 10 12 8" stroke="#1C1917" stroke-width="2" fill="none" opacity=".6"/>' +
       '<circle cx="128" cy="100" r="3" fill="#FCD34D" opacity=".8"/><circle cx="176" cy="118" r="2.6" fill="#7DD3FC" opacity=".7"/></g>' +
       '<g id="dgCrack" opacity="0"><path d="M150 74v76M120 110h60M134 90l32 44M166 90l-32 44" stroke="#FDE047" stroke-width="2.4"/></g>' +
@@ -211,7 +211,7 @@
     key: 'giftrush', verb: V.open, rows: RA, prizeAt: [150, 108],
     chips: chips6(RA), chipOf: chipOf6(RA),
     scene: '<defs>' + GOLDG + '<linearGradient id="gfBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F87171"/><stop offset="1" stop-color="#B91C1C"/></linearGradient><linearGradient id="gfRoom" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E1B4B"/><stop offset="1" stop-color="#0B1026"/></linearGradient></defs>' +
-      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#gfRoom)"/>' + stars(18) + '<rect x="-400" y="188" width="1100" height="400" fill="#140d33"/>' +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#gfRoom)"/>' + artBg('giftrush') + stars(18) + '<rect x="-400" y="188" width="1100" height="400" fill="#140d33" opacity=".55"/>' +
       '<g id="gfLid" transform="translate(150 150)"><rect x="-44" y="-14" width="88" height="20" rx="5" fill="url(#gfBox)" stroke="#7F1D1D" stroke-width="1.6"/><rect x="-8" y="-14" width="16" height="20" fill="#FBBF24"/><path d="M0-14q-16-18-24-8t24 8q16-18 24-8t-24 8z" fill="#FBBF24" stroke="#B45309"/></g>' +
       '<g id="gfBox"><rect x="110" y="150" width="80" height="48" rx="5" fill="url(#gfBox)" stroke="#7F1D1D" stroke-width="1.6"/><rect x="142" y="150" width="16" height="48" fill="#FBBF24"/></g>',
     init: function (c) { c.lid = c.id('gfLid'); tr(c.lid, 150, 150, 1); },
@@ -244,7 +244,7 @@
     key: 'cannonx', verb: V.fire, rows: RC, prizeAt: [160, 86],
     chips: chips6(RC), chipOf: chipOf6(RC),
     scene: '<defs>' + SKY + GOLDG + '<radialGradient id="cnBall"><stop offset="0" stop-color="#6B7280"/><stop offset="1" stop-color="#111827"/></radialGradient></defs>' +
-      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#c4sky)"/>' + stars(22) + '<rect x="-400" y="206" width="1100" height="400" fill="#140d33"/>' +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#c4sky)"/>' + artBg('cannonx') + stars(22) + '<rect x="-400" y="206" width="1100" height="400" fill="#140d33" opacity=".55"/>' +
       '<g transform="translate(60 198) rotate(-42)"><rect x="-14" y="-16" width="60" height="32" rx="14" fill="#334155" stroke="#0B1020" stroke-width="2"/><rect x="40" y="-14" width="10" height="28" rx="4" fill="#1F2937"/></g>' +
       '<circle cx="60" cy="210" r="18" fill="#1E293B" stroke="#0B1020" stroke-width="2"/>' +
       '<circle id="cnBall" r="9" fill="url(#cnBall)" stroke="#0B1020" opacity="0"/>',
@@ -279,7 +279,7 @@
     key: 'luckylift', verb: V.ride, rows: RA, prizeAt: [150, 112],
     chips: chips6(RA), chipOf: chipOf6(RA),
     scene: '<defs>' + GOLDG + '<linearGradient id="lfCab" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FBBF24"/><stop offset="1" stop-color="#B45309"/></linearGradient></defs>' +
-      '<rect x="-400" y="-400" width="1100" height="1100" fill="#0D1326"/><rect x="104" y="6" width="92" height="222" rx="6" fill="#141C34" stroke="#334155" stroke-width="1.6"/>' +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="#0D1326"/>' + artBg('luckylift') + '<rect x="104" y="6" width="92" height="222" rx="6" fill="#141C34" stroke="#334155" stroke-width="1.6"/>' +
       LFY.map(function (y, j) { return '<g><line x1="108" y1="' + (y + 20) + '" x2="192" y2="' + (y + 20) + '" stroke="#293550" stroke-width="1"/><text x="198" y="' + (y + 16) + '" font-size="11" font-weight="800" fill="#64748B" font-family="var(--cg-font),Arial">' + (RA[j] ? xm(RA[j]) : '✗') + '</text></g>'; }).join('') +
       '<g id="lfCab"><rect x="112" y="186" width="76" height="40" rx="4" fill="url(#lfCab)" stroke="#78350F" stroke-width="1.6"/><rect id="lfDoorL" x="130" y="188" width="18" height="36" fill="#1C1206"/><rect id="lfDoorR" x="152" y="188" width="18" height="36" fill="#1C1206"/><path d="M130 206h40" stroke="#78350F" stroke-width="1"/></g>',
     init: function (c) { c.cab = c.id('lfCab'); tr(c.cab, 0, 0, 1); },
@@ -315,7 +315,7 @@
     key: 'magichat', verb: V.tap, rows: RB, prizeAt: [150, 96],
     chips: chips6(RB), chipOf: chipOf6(RB),
     scene: '<defs>' + GOLDG + '<linearGradient id="mhHat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C1D95"/><stop offset="1" stop-color="#2E1065"/></linearGradient><radialGradient id="mhGlow"><stop offset="0" stop-color="#C4B5FD" stop-opacity=".9"/><stop offset="1" stop-color="#C4B5FD" stop-opacity="0"/></radialGradient></defs>' +
-      '<rect x="-400" y="-400" width="1100" height="1100" fill="#140A2E"/>' + stars(16) +
+      '<rect x="-400" y="-400" width="1100" height="1100" fill="#140A2E"/>' + artBg('magichat') + stars(16) +
       '<ellipse cx="150" cy="196" rx="70" ry="12" fill="#2E1065"/><circle cx="150" cy="150" r="46" fill="url(#mhGlow)" opacity=".4"/>' +
       '<g id="mhHat"><path d="M112 190q38 10 76 0l-10-72q-28-8-56 0z" fill="url(#mhHat)" stroke="#1A0A3E" stroke-width="1.8"/><ellipse cx="150" cy="190" rx="52" ry="12" fill="#3B1A6E" stroke="#1A0A3E"/><rect x="112" y="150" width="76" height="12" fill="#7C3AED"/><rect x="138" y="150" width="24" height="12" fill="#FBBF24"/></g>' +
       '<g id="mhWand" transform="translate(220 40)"><rect x="-2" y="0" width="4" height="40" rx="2" fill="#1C1206"/><rect x="-2" y="0" width="4" height="8" fill="#F8FAFC"/>' + '<g transform="translate(0 -2)">' + STAR(7, '#FDE047') + '</g></g>',
@@ -384,6 +384,8 @@
     '<radialGradient id="r5orb" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#A5F3FC"/><stop offset=".5" stop-color="#22D3EE"/><stop offset="1" stop-color="#0E7490"/></radialGradient>';
   function r5bg(fill) { return '<rect x="-400" y="-400" width="1100" height="1100" fill="' + (fill || 'url(#r5vel)') + '"/>'; }
   function r5glow() { return '<circle id="cyGlow" cx="150" cy="108" r="70" fill="url(#r5glow)" opacity="0"/>'; }
+  // v3697 : décor flouté aux couleurs du jeu (son logo), posé derrière l'animation d'origine
+  function artBg(k) { var lite = document.documentElement.classList.contains('oro-lite'); return '<defs><filter id="abf' + k + '" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="10"/></filter><radialGradient id="abv' + k + '" cx="50%" cy="45%" r="75%"><stop offset="0" stop-color="#05030C" stop-opacity=".35"/><stop offset="1" stop-color="#05030C" stop-opacity=".85"/></radialGradient></defs><image href="img/games/' + k + '.webp?v=3682" x="-60" y="-80" width="420" height="400" preserveAspectRatio="xMidYMid slice"' + (lite ? ' opacity=".4"' : ' filter="url(#abf' + k + ')" opacity=".8"') + '/><rect x="-400" y="-400" width="1100" height="1100" fill="url(#abv' + k + ')"/>'; }
   function rgame(o) {
     game({
       key: o.key, verb: o.verb, rows: o.rows, prizeAt: o.prizeAt || [150, 108],
@@ -405,367 +407,84 @@
   }
 
   /* ---- Treasure Chest (RA) ---- */
-  rgame({
-    key: 'chestgold', verb: V.open, rows: RA, sfx: 'chests', cy: 112,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(18) + r5glow() +
-      '<ellipse cx="150" cy="178" rx="96" ry="16" fill="#000" opacity=".35"/>' +
-      '<g id="cyObj" transform="translate(150 112)">' +
-      '<rect x="-62" y="-6" width="124" height="52" rx="8" fill="url(#r5wood)" stroke="#3E1F08" stroke-width="2"/>' +
-      '<path d="M-62 2a62 30 0 0 1 124 0v-4a62 34 0 0 0-124 0z" fill="#92400E"/>' +
-      '<path d="M-62 -4a62 34 0 0 1 124 0l0 6a62 30 0 0 0-124 0z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
-      '<rect x="-66" y="12" width="132" height="10" rx="3" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
-      '<rect x="-8" y="8" width="16" height="22" rx="3" fill="url(#cyGold)" stroke="#5C2E0E" stroke-width="2"/><circle cx="0" cy="19" r="3.5" fill="#3E1F08"/>' +
-      '<circle cx="-40" cy="-18" r="2.4" fill="#FEF3C7"/><circle cx="24" cy="-24" r="2" fill="#FEF3C7"/>' +
-      '</g>'
-  });
+  pgame('chestgold', RA, 0, V.open); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* ---- Fortune Wheel (RB, spin) ---- */
-  rgame({
-    key: 'fortunewheel', verb: { en: 'Spin', fr: 'Tourner', es: 'Girar', pt: 'Girar', ar: 'أدر', tr: 'Çevir', vi: 'Quay', id: 'Putar', ru: 'Крутить', de: 'Drehen', hi: 'घुमाएँ', zh: '旋转' },
-    rows: RB, spin: true, sfx: 'show', cy: 106,
-    scene: '<defs>' + GDEFS + '<linearGradient id="r5felt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14532D"/><stop offset="1" stop-color="#052e16"/></linearGradient></defs>' + r5bg('url(#r5felt)') + r5glow() +
-      '<g id="cyObj" transform="translate(150 106)">' +
-      (function () { var seg = ''; var cols = ['#DC2626', '#1E293B', '#B45309', '#065F46', '#6D28D9', '#B91C1C', '#1E3A8A', '#92400E']; for (var i = 0; i < 8; i++) { var a0 = i / 8 * Math.PI * 2 - Math.PI / 2, a1 = (i + 1) / 8 * Math.PI * 2 - Math.PI / 2, R = 62; seg += '<path d="M0 0L' + (Math.cos(a0) * R).toFixed(1) + ' ' + (Math.sin(a0) * R).toFixed(1) + 'A' + R + ' ' + R + ' 0 0 1 ' + (Math.cos(a1) * R).toFixed(1) + ' ' + (Math.sin(a1) * R).toFixed(1) + 'Z" fill="' + cols[i] + '"/>'; } return seg; })() +
-      '<circle r="62" fill="none" stroke="url(#cyGold)" stroke-width="5"/><circle r="62" fill="none" stroke="#78350F" stroke-width="1.5"/>' +
-      '<circle r="12" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
-      (function () { var p = ''; for (var i = 0; i < 8; i++) { var a = i / 8 * Math.PI * 2; p += '<circle cx="' + (Math.cos(a) * 62).toFixed(1) + '" cy="' + (Math.sin(a) * 62).toFixed(1) + '" r="2.5" fill="#FEF3C7"/>'; } return p; })() +
-      '</g>' +
-      '<path d="M150 36l-8-14h16z" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>'
-  });
+  pgame('fortunewheel', RB, 1, { en: 'Spin', fr: 'Tourner', es: 'Girar', pt: 'Girar', ar: 'أدر', tr: 'Çevir', vi: 'Quay', id: 'Putar', ru: 'Крутить', de: 'Drehen', hi: 'घुमाएँ', zh: '旋转' }); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* ---- Golden Egg (RB) ---- */
-  rgame({
-    key: 'goldenegg', verb: V.tap, rows: RB, sfx: 'chests', cy: 110,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(16) + r5glow() +
-      '<ellipse cx="150" cy="176" rx="60" ry="12" fill="#000" opacity=".35"/>' +
-      '<path d="M120 150h60l-6 14h-48z" fill="#5C2E0E"/><rect x="112" y="162" width="76" height="8" rx="3" fill="#78350F"/>' +
-      '<g id="cyObj" transform="translate(150 110)">' +
-      '<ellipse cx="0" cy="0" rx="38" ry="50" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
-      '<path d="M-38 -6q38 16 76 0" fill="none" stroke="#78350F" stroke-width="2" opacity=".5"/>' +
-      '<path d="M-34 18q34 14 68 0" fill="none" stroke="#78350F" stroke-width="2" opacity=".5"/>' +
-      '<path d="M0 -50v100M-30 -20q30 10 60 0M-34 10q34 10 68 0" fill="none" stroke="#B45309" stroke-width="1" opacity=".4"/>' +
-      '<ellipse cx="-12" cy="-22" rx="8" ry="14" fill="#FFF7D6" opacity=".55"/>' +
-      '</g>'
-  });
+  pgame('goldenegg', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* ---- Mystery Box (RA) ---- */
-  rgame({
-    key: 'mysterybox', verb: V.open, rows: RA, sfx: 'chests', cy: 112,
-    scene: '<defs>' + GDEFS + '<linearGradient id="r5box" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C3AED"/><stop offset="1" stop-color="#4C1D95"/></linearGradient></defs>' + r5bg() + stars(16) + r5glow() +
-      '<ellipse cx="150" cy="176" rx="74" ry="13" fill="#000" opacity=".35"/>' +
-      '<g id="cyObj" transform="translate(150 112)">' +
-      '<rect x="-48" y="-8" width="96" height="56" rx="6" fill="url(#r5box)" stroke="#2E1065" stroke-width="2"/>' +
-      '<rect x="-52" y="-22" width="104" height="18" rx="5" fill="#6D28D9" stroke="#2E1065" stroke-width="2"/>' +
-      '<rect x="-8" y="-22" width="16" height="70" fill="url(#cyGold)" opacity=".92"/>' +
-      '<rect x="-52" y="-10" width="104" height="10" fill="url(#cyGold)" opacity=".92"/>' +
-      '<path d="M0 -22q-18 -20-4 -6q-14 -14 4 -2q18 -12 4 2q14 -14-4 6z" fill="url(#cyGold)"/>' +
-      '<circle r="5" cx="0" cy="-22" fill="#FEF3C7"/>' +
-      '</g>'
-  });
+  pgame('mysterybox', RA, 0, V.open); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* ---- Crystal Orb (RA) ---- */
-  rgame({
-    key: 'crystalorb', verb: V.tap, rows: RA, sfx: 'show', cy: 104,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(20) + r5glow() +
-      '<ellipse cx="150" cy="182" rx="56" ry="12" fill="#000" opacity=".35"/>' +
-      '<path d="M120 150q30 22 60 0l8 20h-76z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
-      '<g id="cyObj" transform="translate(150 104)">' +
-      '<circle r="46" fill="url(#r5orb)" stroke="#155E75" stroke-width="2"/>' +
-      '<ellipse cx="-14" cy="-16" rx="14" ry="20" fill="#fff" opacity=".45"/>' +
-      '<circle cx="12" cy="14" r="8" fill="#fff" opacity=".2"/>' +
-      '<circle r="46" fill="none" stroke="#A5F3FC" stroke-width="1" opacity=".5"/>' +
-      '</g>'
-  });
+  pgame('crystalorb', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* ---- Diamond Vault (RB) ---- */
-  rgame({
-    key: 'diamondvault', verb: V.open, rows: RB, sfx: 'show', cy: 108,
-    scene: '<defs>' + GDEFS + '<radialGradient id="r5dia" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#E0F2FE"/><stop offset=".5" stop-color="#67E8F9"/><stop offset="1" stop-color="#0891B2"/></radialGradient></defs>' + r5bg('#0F172A') +
-      '<rect x="40" y="18" width="220" height="184" rx="10" fill="#1E293B"/>' + r5glow() +
-      '<g id="cyObj" transform="translate(150 108)">' +
-      '<rect x="-64" y="-64" width="128" height="128" rx="12" fill="url(#r5steel)" stroke="#0F172A" stroke-width="3"/>' +
-      '<circle r="52" fill="#334155" stroke="#0F172A" stroke-width="2"/><circle r="52" fill="none" stroke="#64748B" stroke-width="1"/>' +
-      '<circle r="18" fill="url(#r5steel)" stroke="#0F172A" stroke-width="2"/>' +
-      (function () { var p = ''; for (var i = 0; i < 6; i++) { var a = i / 6 * Math.PI * 2; p += '<rect x="-3" y="-34" width="6" height="16" rx="2" fill="#475569" transform="rotate(' + (i * 60) + ')"/>'; } return p; })() +
-      '<path d="M0 -8l10 4-4 12h-12l-4-12z" fill="url(#r5dia)" stroke="#0891B2" stroke-width="1"/>' +
-      '</g>'
-  });
+  pgame('diamondvault', RB, 0, V.open); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* ---- casc5 vague 2 ---- */
   function pip(x, y) { return '<circle cx="' + x + '" cy="' + y + '" r="4" fill="#1C1917"/>'; }
   /* Dice Roll (RA) */
-  rgame({
-    key: 'diceroll', verb: V.tap, rows: RA, sfx: 'show', cy: 110,
-    scene: '<defs>' + GDEFS + '<linearGradient id="r5f2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14532D"/><stop offset="1" stop-color="#052e16"/></linearGradient></defs>' + r5bg('url(#r5f2)') + r5glow() +
-      '<ellipse cx="150" cy="168" rx="80" ry="14" fill="#000" opacity=".3"/>' +
-      '<g id="cyObj" transform="translate(150 110)">' +
-      '<g transform="translate(-34 0) rotate(-10)"><rect x="-26" y="-26" width="52" height="52" rx="10" fill="#FEFCE8" stroke="#CA8A04" stroke-width="2"/>' + pip(-12, -12) + pip(12, -12) + pip(-12, 12) + pip(12, 12) + pip(0, 0) + '</g>' +
-      '<g transform="translate(36 2) rotate(14)"><rect x="-24" y="-24" width="48" height="48" rx="9" fill="#FEFCE8" stroke="#CA8A04" stroke-width="2"/>' + pip(-11, -11) + pip(11, 11) + pip(0, 0) + '</g>' +
-      '</g>'
-  });
+  pgame('diceroll', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Royal Card (RB) */
-  rgame({
-    key: 'royalcard', verb: V.tap, rows: RB, sfx: 'show', cy: 108,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(16) + r5glow() +
-      '<g id="cyObj" transform="translate(150 108)">' +
-      '<rect x="-40" y="-56" width="80" height="112" rx="9" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>' +
-      '<rect x="-33" y="-49" width="66" height="98" rx="6" fill="url(#r5vel)"/>' +
-      '<rect x="-33" y="-49" width="66" height="98" rx="6" fill="none" stroke="url(#cyGold)" stroke-width="2"/>' +
-      STAR(18, 'url(#cyGold)').replace('<path', '<path transform="translate(0 -14)"') +
-      '<text y="40" text-anchor="middle" font-size="22" font-weight="900" fill="url(#cyGold)" font-family="var(--cg-font),Arial">A</text>' +
-      '<text x="-27" y="-32" text-anchor="middle" font-size="12" font-weight="900" fill="#FDE68A" font-family="var(--cg-font),Arial">A</text>' +
-      '</g>'
-  });
+  pgame('royalcard', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Genie Lamp (RA) */
-  rgame({
-    key: 'genielamp', verb: V.tap, rows: RA, sfx: 'show', cy: 112,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(16) + r5glow() +
-      '<ellipse cx="150" cy="170" rx="70" ry="12" fill="#000" opacity=".35"/>' +
-      '<g id="cyObj" transform="translate(150 112)">' +
-      '<path d="M-52 18q-6-30 30-30 40 0 54 8 8 4 0 8-18 6-54 6h-30z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
-      '<ellipse cx="-6" cy="-6" rx="34" ry="18" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
-      '<path d="M-10 -22q6-10 2-16" fill="none" stroke="url(#cyGold)" stroke-width="5" stroke-linecap="round"/>' +
-      '<circle cx="-6" cy="-24" r="4" fill="#FDE68A"/>' +
-      '<path d="M44 2q22-4 26 8-14 2-26-2z" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
-      '<ellipse cx="-14" cy="-10" rx="10" ry="5" fill="#FFF7D6" opacity=".5"/>' +
-      '</g>'
-  });
+  pgame('genielamp', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Jackpot Bell (RB) */
-  rgame({
-    key: 'jackpotbell', verb: V.tap, rows: RB, sfx: 'show', cy: 104,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(16) + r5glow() +
-      '<g id="cyObj" transform="translate(150 104)">' +
-      '<circle cx="0" cy="-48" r="6" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
-      '<path d="M-44 36q0-78 44-78 44 0 44 78z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
-      '<rect x="-52" y="34" width="104" height="12" rx="6" fill="#B45309" stroke="#78350F" stroke-width="1.5"/>' +
-      '<circle cx="0" cy="52" r="8" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
-      '<ellipse cx="-16" cy="-8" rx="9" ry="26" fill="#FFF7D6" opacity=".45"/>' +
-      '<text y="12" text-anchor="middle" font-size="20" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">7</text>' +
-      '</g>'
-  });
+  pgame('jackpotbell', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Oyster Pearl (RA) */
-  rgame({
-    key: 'oysterpearl', verb: V.open, rows: RA, sfx: 'chests', cy: 110,
-    scene: '<defs>' + GDEFS + '<radialGradient id="r5pl" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#E0F2FE"/><stop offset="1" stop-color="#A5B4FC"/></radialGradient><linearGradient id="r5sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E7490"/><stop offset="1" stop-color="#083344"/></linearGradient></defs>' + r5bg('url(#r5sea)') + r5glow() +
-      '<g id="cyObj" transform="translate(150 110)">' +
-      '<path d="M-56 10a56 44 0 0 1 112 0z" fill="#CBD5E1" stroke="#64748B" stroke-width="2"/>' +
-      '<path d="M-56 10q56 24 112 0a56 40 0 0 0-112 0z" fill="#E2E8F0"/>' +
-      '<path d="M-48 10q48 20 96 0" fill="none" stroke="#94A3B8" stroke-width="1.5"/>' +
-      (function () { var p = ''; for (var i = 0; i < 7; i++) { var x = -44 + i * 14.6; p += '<path d="M' + x.toFixed(0) + ' 10q4 -18 7 0z" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>'; } return p; })() +
-      '<circle cx="0" cy="4" r="16" fill="url(#r5pl)"/><circle cx="-5" cy="-1" r="5" fill="#fff" opacity=".6"/>' +
-      '</g>'
-  });
+  pgame('oysterpearl', RA, 0, V.open); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Crown Jewel (RB) */
-  rgame({
-    key: 'crownjewel', verb: V.tap, rows: RB, sfx: 'show', cy: 112,
-    scene: '<defs>' + GDEFS + '<radialGradient id="r5ru" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FDA4AF"/><stop offset=".6" stop-color="#E11D48"/><stop offset="1" stop-color="#881337"/></radialGradient></defs>' + r5bg() + stars(16) + r5glow() +
-      '<ellipse cx="150" cy="168" rx="64" ry="12" fill="#000" opacity=".35"/>' +
-      '<g id="cyObj" transform="translate(150 112)">' +
-      '<path d="M-52 24L-52 -10 -26 10 0 -24 26 10 52 -10 52 24z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
-      '<rect x="-54" y="24" width="108" height="14" rx="4" fill="#B45309" stroke="#78350F" stroke-width="1.5"/>' +
-      '<circle cx="-52" cy="-10" r="5" fill="#FDE68A"/><circle cx="0" cy="-24" r="6" fill="url(#r5ru)"/><circle cx="52" cy="-10" r="5" fill="#FDE68A"/>' +
-      '<circle cx="-26" cy="14" r="5" fill="#67E8F9"/><circle cx="26" cy="14" r="5" fill="#67E8F9"/><circle cx="0" cy="18" r="6" fill="url(#r5ru)"/>' +
-      '<rect x="-54" y="30" width="108" height="3" fill="#FEF3C7" opacity=".5"/>' +
-      '</g>'
-  });
+  pgame('crownjewel', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* ---- casc5 vague 3 ---- */
   /* Geode Gem (RB) */
-  rgame({
-    key: 'geodegem', verb: V.open, rows: RB, sfx: 'chests', cy: 110,
-    scene: '<defs>' + GDEFS + '<radialGradient id="r5ge" cx="50%" cy="50%" r="60%"><stop offset="0" stop-color="#F0ABFC"/><stop offset=".5" stop-color="#A855F7"/><stop offset="1" stop-color="#6D28D9"/></radialGradient></defs>' + r5bg() + stars(14) + r5glow() +
-      '<ellipse cx="150" cy="170" rx="66" ry="12" fill="#000" opacity=".35"/>' +
-      '<g id="cyObj" transform="translate(150 110)">' +
-      '<path d="M-48 10q-8-44 46-46 52 2 50 44-6 30-48 32-42-2-48-30z" fill="#57534E" stroke="#292524" stroke-width="2"/>' +
-      '<path d="M-34 6q-4-30 34-32 36 2 36 30-6 22-36 22-30 0-34-20z" fill="url(#r5ge)"/>' +
-      (function () { var p = ''; for (var i = 0; i < 8; i++) { var a = i / 8 * Math.PI * 2, R = 18 + (i % 2) * 6; p += '<path d="M0 0L' + (Math.cos(a) * R).toFixed(0) + ' ' + (Math.sin(a - 0.3) * R * 0.7).toFixed(0) + 'l4 4z" fill="rgba(255,255,255,.3)"/>'; } return p; })() +
-      '<path d="M0 -8l7 3-3 10h-8l-3-10z" fill="#E0F2FE" stroke="#A5F3FC" stroke-width="1"/>' +
-      '</g>'
-  });
+  pgame('geodegem', RB, 0, V.open); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Money Tree (RA) */
-  rgame({
-    key: 'moneytree', verb: V.tap, rows: RA, sfx: 'chests', cy: 100,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 100)">' +
-      '<path d="M-6 60V6q-16-6-14-24M6 60V-4q18-4 18-26" fill="none" stroke="#78350F" stroke-width="7" stroke-linecap="round"/>' +
-      '<rect x="-7" y="56" width="14" height="22" fill="#5C2E0E"/>' +
-      '<path d="M-30 64h60l-6 16h-48z" fill="#92400E" stroke="#5C2E0E" stroke-width="1.5"/>' +
-      (function () { var p = '<circle cx="0" cy="-24" r="40" fill="#14532D"/><circle cx="-26" cy="-10" r="26" fill="#166534"/><circle cx="26" cy="-10" r="26" fill="#166534"/>'; var pos = [[-22, -34], [0, -42], [22, -34], [-30, -14], [-8, -22], [14, -20], [30, -12], [-14, 2], [10, 4]]; pos.forEach(function (q) { p += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="7" fill="url(#cyGold)" stroke="#78350F" stroke-width="1"/><text x="' + q[0] + '" y="' + (q[1] + 3.5) + '" text-anchor="middle" font-size="8" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">$</text>'; }); return p; })() +
-      '</g>'
-  });
+  pgame('moneytree', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Lottery Ball (RA) */
-  rgame({
-    key: 'lotteryball', verb: V.tap, rows: RA, sfx: 'show', cy: 106,
-    scene: '<defs>' + GDEFS + '<radialGradient id="r5gl2" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".3" stop-color="#FDE68A"/><stop offset="1" stop-color="#B45309"/></radialGradient></defs>' + r5bg() + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 106)">' +
-      '<circle r="52" fill="rgba(165,243,252,.12)" stroke="#94A3B8" stroke-width="2"/>' +
-      '<circle r="52" fill="none" stroke="#E2E8F0" stroke-width="1" opacity=".4"/>' +
-      '<circle cx="-14" cy="-16" r="10" fill="#fff" opacity=".2"/>' +
-      '<circle cx="4" cy="6" r="24" fill="url(#r5gl2)" stroke="#78350F" stroke-width="1.5"/>' +
-      '<circle cx="4" cy="6" r="14" fill="#FFF7ED" opacity=".85"/>' +
-      '<text x="4" y="11" text-anchor="middle" font-size="16" font-weight="900" fill="#B45309" font-family="var(--cg-font),Arial">7</text>' +
-      '<circle cx="-24" cy="26" r="9" fill="#F87171" opacity=".6"/><circle cx="26" cy="-22" r="7" fill="#60A5FA" opacity=".6"/>' +
-      '</g>'
-  });
+  pgame('lotteryball', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Dragon Coin (RB) */
-  rgame({
-    key: 'dragoncoin', verb: V.tap, rows: RB, sfx: 'chests', cy: 106,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 106)">' +
-      '<circle r="52" fill="url(#cyGold)" stroke="#78350F" stroke-width="3"/>' +
-      '<circle r="44" fill="none" stroke="#92400E" stroke-width="2" opacity=".6"/>' +
-      '<circle r="52" fill="none" stroke="#FEF3C7" stroke-width="1" opacity=".5"/>' +
-      '<path d="M-18 20q-14-14-6-30 6-12 20-8-10 4-10 14 0 12 14 10-8 12-18 14z M14 -22q16 4 14 22-2 14-16 14 8-6 6-16-2-12-16-10 6-10 12-10z" fill="#92400E"/>' +
-      '<circle cx="-8" cy="-6" r="3" fill="#B91C1C"/>' +
-      '<ellipse cx="-18" cy="-20" rx="12" ry="7" fill="#FFF7D6" opacity=".4"/>' +
-      '</g>'
-  });
+  pgame('dragoncoin', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Firework (RA) */
-  rgame({
-    key: 'fireworkgold', verb: V.launch, rows: RA, sfx: 'crash', cy: 150,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#c4sky)') + stars(26) + r5glow() +
-      '<rect x="138" y="150" width="24" height="54" rx="4" fill="#78350F"/><rect x="138" y="150" width="24" height="10" rx="3" fill="#92400E"/>' +
-      '<g id="cyObj" transform="translate(150 150)">' +
-      '<ellipse cx="0" cy="0" rx="18" ry="30" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
-      '<path d="M0 -30q6-8 0-16" fill="none" stroke="#F87171" stroke-width="3" stroke-linecap="round"/>' +
-      '<circle cx="0" cy="-46" r="4" fill="#FB923C"/><circle cx="0" cy="-46" r="2" fill="#FEF08A"/>' +
-      '<path d="M-18 -4h36M-14 10h28" fill="none" stroke="#92400E" stroke-width="1.5" opacity=".5"/>' +
-      '<text y="6" text-anchor="middle" font-size="16" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">★</text>' +
-      '</g>'
-  });
+  pgame('fireworkgold', RA, 0, V.launch); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Treasure Map (RB) */
-  rgame({
-    key: 'treasuremap', verb: V.open, rows: RB, sfx: 'show', cy: 108,
-    scene: '<defs>' + GDEFS + '<linearGradient id="r5pr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FEF3C7"/><stop offset="1" stop-color="#D6B98C"/></linearGradient></defs>' + r5bg() + stars(12) + r5glow() +
-      '<g id="cyObj" transform="translate(150 108)">' +
-      '<path d="M-66 -46q10 6 0 12 14 8 0 14 12 6 0 12 14 8 0 14 10 6 0 12 0 6 8 6h108q8 0 8-6 0-6 0-12 0-6-8-14 0-6 0-14 0-6-8-12 0-6 0-14 0-6-8-12H-58q-8 0-8 6z" fill="url(#r5pr)" stroke="#92400E" stroke-width="2"/>' +
-      '<path d="M-54 -20q30 10 60-4t44 10" fill="none" stroke="#92400E" stroke-width="1.5" stroke-dasharray="4 4" opacity=".6"/>' +
-      '<path d="M34 10l16 16M50 10l-16 16" stroke="#B91C1C" stroke-width="4" stroke-linecap="round"/>' +
-      '<g transform="translate(-40 -30)"><circle r="12" fill="#FEF3C7" stroke="#92400E" stroke-width="1.5"/><path d="M0 -9l3 9-3 9-3-9z" fill="#B91C1C"/><path d="M-9 0l9 3 9-3-9-3z" fill="#334155"/></g>' +
-      '</g>'
-  });
+  pgame('treasuremap', RB, 0, V.open); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* ---- casc5 vague 4 (finale → 232) ---- */
   function goldbar(x, y, s) { return '<g transform="translate(' + x + ' ' + y + ') skewX(-18)"><rect x="' + (-18 * s) + '" y="' + (-7 * s) + '" width="' + (36 * s) + '" height="' + (14 * s) + '" rx="2" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/><rect x="' + (-18 * s) + '" y="' + (-7 * s) + '" width="' + (36 * s) + '" height="' + (4 * s) + '" fill="#FFF7D6" opacity=".4"/></g>'; }
   /* Gold Bars (RA) */
-  rgame({
-    key: 'goldbars', verb: V.tap, rows: RA, sfx: 'chests', cy: 112,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(14) + r5glow() +
-      '<ellipse cx="150" cy="168" rx="70" ry="12" fill="#000" opacity=".35"/>' +
-      '<g id="cyObj" transform="translate(150 112)">' + goldbar(-20, 18, 1) + goldbar(22, 18, 1) + goldbar(0, 0, 1.1) + '</g>'
-  });
+  pgame('goldbars', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Poker Chip (RB) */
-  rgame({
-    key: 'pokerchip', verb: V.tap, rows: RB, sfx: 'show', cy: 106,
-    scene: '<defs>' + GDEFS + '<linearGradient id="r5f3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14532D"/><stop offset="1" stop-color="#052e16"/></linearGradient></defs>' + r5bg('url(#r5f3)') + r5glow() +
-      '<g id="cyObj" transform="translate(150 106)">' +
-      '<circle r="50" fill="#B91C1C" stroke="#7F1D1D" stroke-width="2"/>' +
-      (function () { var p = ''; for (var i = 0; i < 8; i++) { p += '<rect x="-7" y="-50" width="14" height="14" fill="#F8FAFC" transform="rotate(' + (i * 45) + ')"/>'; } return p; })() +
-      '<circle r="34" fill="#DC2626" stroke="url(#cyGold)" stroke-width="3"/>' +
-      '<circle r="22" fill="#B91C1C" stroke="url(#cyGold)" stroke-width="1.5"/>' +
-      '<text y="7" text-anchor="middle" font-size="18" font-weight="900" fill="url(#cyGold)" font-family="var(--cg-font),Arial">$</text>' +
-      '</g>'
-  });
+  pgame('pokerchip', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Lucky Clover (RA) */
-  rgame({
-    key: 'luckyclover', verb: V.tap, rows: RA, sfx: 'show', cy: 108,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 108)">' +
-      (function () { var p = ''; for (var i = 0; i < 4; i++) { var a = i * 90; p += '<path d="M0 0C-16 -14-16 -36 0 -36 16 -36 16 -14 0 0z" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5" transform="rotate(' + (a + 45) + ')"/>'; } return p; })() +
-      '<path d="M0 0q4 20-10 36" fill="none" stroke="#B45309" stroke-width="4" stroke-linecap="round"/>' +
-      '<circle r="5" fill="#FEF3C7"/>' +
-      '</g>'
-  });
+  pgame('luckyclover', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Ruby Heart (RB) */
-  rgame({
-    key: 'rubyheart', verb: V.tap, rows: RB, sfx: 'show', cy: 104,
-    scene: '<defs>' + GDEFS + '<radialGradient id="r5rb2" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FDA4AF"/><stop offset=".5" stop-color="#E11D48"/><stop offset="1" stop-color="#881337"/></radialGradient></defs>' + r5bg() + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 104)">' +
-      '<path d="M0 36C-44 4-40-40 0-20 40-40 44 4 0 36z" fill="url(#r5rb2)" stroke="#881337" stroke-width="2"/>' +
-      '<path d="M0 -20L-28-6 0 36 28-6z" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.2"/>' +
-      '<path d="M-28-6H28M0-20V36" stroke="rgba(255,255,255,.25)" stroke-width="1"/>' +
-      '<path d="M-16-10l8 8" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>' +
-      '</g>'
-  });
+  pgame('rubyheart', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Money Bag (RA) */
-  rgame({
-    key: 'moneybag', verb: V.open, rows: RA, sfx: 'chests', cy: 108,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(12) + r5glow() +
-      '<ellipse cx="150" cy="170" rx="60" ry="12" fill="#000" opacity=".35"/>' +
-      '<g id="cyObj" transform="translate(150 108)">' +
-      '<path d="M-38 48q-14-46 10-62-10-6-4-14h64q6 8-4 14 24 16 10 62z" fill="#92400E" stroke="#5C2E0E" stroke-width="2"/>' +
-      '<path d="M-32-28h64" stroke="#5C2E0E" stroke-width="3"/>' +
-      '<ellipse cx="-14" cy="6" rx="10" ry="18" fill="#A16207" opacity=".5"/>' +
-      '<circle cx="0" cy="14" r="16" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
-      '<text y="20" text-anchor="middle" font-size="18" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">$</text>' +
-      '</g>'
-  });
+  pgame('moneybag', RA, 0, V.open); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Horseshoe (RA) */
-  rgame({
-    key: 'luckyshoe', verb: V.tap, rows: RA, sfx: 'show', cy: 108,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 108)">' +
-      '<path d="M-30 40V6a30 36 0 0 1 60 0v34h-14V8a16 22 0 0 0-32 0v32z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
-      (function () { var p = ''; var pts = [[-22, 34], [-26, 14], [-18, -8], [18, -8], [26, 14], [22, 34]]; pts.forEach(function (q) { p += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="2.4" fill="#5C2E0E"/>'; }); return p; })() +
-      '<path d="M-26 2a26 30 0 0 1 52 0" fill="none" stroke="#FFF7D6" stroke-width="1.5" opacity=".5"/>' +
-      '</g>'
-  });
+  pgame('luckyshoe', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Diamond Ring (RB) */
-  rgame({
-    key: 'diamondring', verb: V.tap, rows: RB, sfx: 'show', cy: 112,
-    scene: '<defs>' + GDEFS + '<radialGradient id="r5dr2" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#A5F3FC"/><stop offset="1" stop-color="#0891B2"/></radialGradient></defs>' + r5bg('url(#r5vel)') + stars(16) + r5glow() +
-      '<g id="cyObj" transform="translate(150 112)">' +
-      '<circle cx="0" cy="18" r="30" fill="none" stroke="url(#cyGold)" stroke-width="9"/>' +
-      '<circle cx="0" cy="18" r="30" fill="none" stroke="#78350F" stroke-width="1" opacity=".5"/>' +
-      '<path d="M-14-20L0-36 14-20 0 2z" fill="url(#r5dr2)" stroke="#0891B2" stroke-width="1"/>' +
-      '<path d="M-14-20H14M0-36 0 2M-7-20L0-36 7-20" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="0.8"/>' +
-      '<circle cx="-6" cy="-24" r="3" fill="#fff" opacity=".8"/>' +
-      '</g>'
-  });
+  pgame('diamondring', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Gold Trophy (RB) */
-  rgame({
-    key: 'goldtrophy', verb: V.tap, rows: RB, sfx: 'show', cy: 104,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg() + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 104)">' +
-      '<path d="M-28-40h56v14a28 30 0 0 1-56 0z" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
-      '<path d="M-28-34c-18 0-20 20 2 22M28-34c18 0 20 20-2 22" fill="none" stroke="url(#cyGold)" stroke-width="4"/>' +
-      '<rect x="-6" y="-2" width="12" height="20" fill="url(#cyGold)"/>' +
-      '<path d="M-20 18h40l-4 14h-32z" fill="#B45309" stroke="#78350F" stroke-width="1.5"/>' +
-      '<rect x="-26" y="30" width="52" height="10" rx="2" fill="url(#cyGold)" stroke="#78350F" stroke-width="1.5"/>' +
-      '<ellipse cx="-10" cy="-26" rx="6" ry="14" fill="#FFF7D6" opacity=".45"/>' +
-      '<text y="-18" text-anchor="middle" font-size="12" font-weight="900" fill="#78350F" font-family="var(--cg-font),Arial">1</text>' +
-      '</g>'
-  });
+  pgame('goldtrophy', RB, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Sun Medallion (RA) */
-  rgame({
-    key: 'sunburst', verb: V.tap, rows: RA, sfx: 'show', cy: 106,
-    scene: '<defs>' + GDEFS + '</defs>' + r5bg('url(#r5vel)') + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 106)">' +
-      (function () { var p = ''; for (var i = 0; i < 16; i++) { p += '<path d="M0 -42l5 10h-10z" fill="url(#cyGold)" transform="rotate(' + (i * 22.5) + ')"/>'; } return p; })() +
-      '<circle r="34" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/>' +
-      '<circle r="26" fill="none" stroke="#92400E" stroke-width="1.5" opacity=".5"/>' +
-      '<circle cx="-10" cy="-6" r="3.5" fill="#5C2E0E"/><circle cx="10" cy="-6" r="3.5" fill="#5C2E0E"/>' +
-      '<path d="M-10 8q10 10 20 0" fill="none" stroke="#5C2E0E" stroke-width="2.5" stroke-linecap="round"/>' +
-      '</g>'
-  });
+  pgame('sunburst', RA, 0, V.tap); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
   /* Gem Trio (RB) */
-  rgame({
-    key: 'gemtrio', verb: V.open, rows: RB, sfx: 'chests', cy: 108,
-    scene: '<defs>' + GDEFS + '<radialGradient id="r5a" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#FDA4AF"/><stop offset="1" stop-color="#BE123C"/></radialGradient><radialGradient id="r5b" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#86EFAC"/><stop offset="1" stop-color="#15803D"/></radialGradient><radialGradient id="r5c" cx="40%" cy="30%" r="70%"><stop offset="0" stop-color="#A5F3FC"/><stop offset="1" stop-color="#0891B2"/></radialGradient></defs>' + r5bg() + stars(14) + r5glow() +
-      '<g id="cyObj" transform="translate(150 108)">' +
-      (function () { function g(x, y, f, s) { return '<g transform="translate(' + x + ' ' + y + ')"><path d="M0 ' + (-18 * s) + 'l' + (16 * s) + ' ' + (6 * s) + 'l' + (-6 * s) + ' ' + (22 * s) + 'h' + (-20 * s) + 'l' + (-6 * s) + ' ' + (-22 * s) + 'z" fill="' + f + '" stroke="rgba(0,0,0,.3)" stroke-width="1"/><path d="M0 ' + (-18 * s) + 'v' + (40 * s) + 'M' + (-16 * s) + ' ' + (-12 * s) + 'H' + (16 * s) + '" stroke="rgba(255,255,255,.4)" stroke-width="0.8"/></g>'; } return g(-34, 6, 'url(#r5a)', 0.82) + g(32, 8, 'url(#r5c)', 0.78) + g(0, -4, 'url(#r5b)', 1); })() +
-      '</g>'
-  });
+  pgame('gemtrio', RB, 0, V.open); // v3697 : ancienne scène dessinée remplacée par le médaillon (logo du jeu)
 
   /* 2026-11-12 : lot 1 vers 1000 jeux — même moteur « révèle le gain », l'objet du jeu est son logo-photo (img/games/<clé>.webp) */
-  var PGV = {};
-  function pgame(k, rows, spin) {
+  var PGV = PGV || {};
+  function pgame(k, rows, spin, verb) {
     // v3696 (revue propriétaire : « petit logo perdu dans un grand vide ») : fond = l'image du jeu floutée (chaque jeu a ses
     // couleurs), rayons de lumière, grand médaillon serti d'or. Même zone de gain, même moteur.
-    var src = 'img/games/' + k + '.webp?v=' + (PGV[k] || '3682'), R = 78, rays = '', studs = '';
+    var src = 'img/games/' + k + '.webp?v=' + ((PGV && PGV[k]) || '3682'), R = 78, rays = '', studs = '';
     for (var q = 0; q < 16; q++) rays += '<path d="M0 0L' + (Math.cos((q * 22.5 - 4) * Math.PI / 180) * 190).toFixed(1) + ' ' + (Math.sin((q * 22.5 - 4) * Math.PI / 180) * 190).toFixed(1) + 'L' + (Math.cos((q * 22.5 + 4) * Math.PI / 180) * 190).toFixed(1) + ' ' + (Math.sin((q * 22.5 + 4) * Math.PI / 180) * 190).toFixed(1) + 'Z"/>';
     for (q = 0; q < 12; q++) studs += '<circle cx="' + (Math.cos(q * Math.PI / 6) * (R + 5)).toFixed(1) + '" cy="' + (Math.sin(q * Math.PI / 6) * (R + 5)).toFixed(1) + '" r="2.3" fill="#FEF3C7" stroke="#92400E" stroke-width=".6"/>';
-    rgame({ key: k, verb: V.tap, rows: rows, sfx: spin ? 'show' : 'chests', cy: 108, spin: !!spin,
+    rgame({ key: k, verb: verb || V.tap, rows: rows, sfx: spin ? 'show' : 'chests', cy: 108, spin: !!spin,
       scene: '<defs>' + GDEFS + '<clipPath id="pg' + k + '"><circle r="' + R + '"/></clipPath><filter id="pgb' + k + '" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="9"/></filter>' +
         '<radialGradient id="pgv' + k + '" cx="50%" cy="48%" r="70%"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#05030C" stop-opacity=".82"/></radialGradient></defs>' + r5bg() +
         '<image href="' + src + '" x="-60" y="-80" width="420" height="380" preserveAspectRatio="xMidYMid slice"' + (document.documentElement.classList.contains('oro-lite') ? ' opacity=".45"' : ' filter="url(#pgb' + k + ')" opacity=".75"') + '/>' +
