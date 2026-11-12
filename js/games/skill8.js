@@ -2801,12 +2801,14 @@
       function spawn(live) {
         var lv = live ? A.lv() : 0.2, x = rnd(bw * 0.6, W - bw * 0.6);
         for (var i = 0; i < items.length; i++) if (items[i].y < T + isz * 2 && Math.abs(items[i].x - x) < isz * 1.2) return;
-        var bad = Math.random() < (0.12 + 0.2 * lv);
-        items.push({ x: x, y: T - isz, vy: (H - T) * (0.34 + 0.46 * lv) * rnd(0.9, 1.15), rot: rnd(-0.25, 0.25), vr: rnd(-1.3, 1.3), bad: bad, k: (Math.random() * (bad ? badS.length : goodS.length)) | 0 });
+        var bad = Math.random() < (0.12 + 0.2 * lv), vy0 = (H - T) * (0.34 + 0.46 * lv) * rnd(0.9, 1.15);
+        // v3688 : équité — un objet à attraper reste toujours atteignable après le précédent (plus de doublé impossible)
+        if (!bad) { var tN = (py - T + isz) / vy0; for (i = 0; i < items.length; i++) { var o = items[i]; if (o.bad) continue; var tO = (py - o.y) / o.vy, room = Math.abs(tN - tO) * W * 0.9 + bw * 0.35; if (Math.abs(x - o.x) > room) x = o.x + (x > o.x ? room : -room); } x = clamp(x, bw * 0.6, W - bw * 0.6); }
+        items.push({ x: x, y: T - isz, vy: vy0, rot: rnd(-0.25, 0.25), vr: rnd(-1.3, 1.3), bad: bad, k: (Math.random() * (bad ? badS.length : goodS.length)) | 0 });
       }
       return {
         size: function (w, h, uu, d, top) {
-          W = w; H = h; dpr = d; T = top; bw = clamp(W * 0.2, 58, 150); bh = bw * 0.56; isz = clamp(W * 0.1, 26, 58);
+          W = w; H = h; dpr = d; T = top; bw = clamp(W * 0.23, 64, 160); bh = bw * 0.56; isz = clamp(W * 0.1, 26, 58);
           py = H - clamp((H - T) * 0.08, 16, 46) - bh * 0.5; if (px == null) px = W / 2; mk();
           bg = mkc(W, H, dpr, function (c) { cfg.bg(c, W, H, T, py, bh, A); });
         },
