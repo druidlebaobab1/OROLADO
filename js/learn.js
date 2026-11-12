@@ -337,6 +337,7 @@
     return m;
   }
   function open() {
+    if (!D6.LEARN_TXT && window.__oroLate) { window.__oroLate(function () { if (D6.LEARN_TXT) open(); }); return; } // v3700 : textes chargés à la demande
     var m = ensure();
     render();
     m.setAttribute('dir', document.documentElement.getAttribute('dir') || 'ltr');

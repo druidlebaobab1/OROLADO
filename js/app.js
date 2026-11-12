@@ -10685,7 +10685,9 @@
         location.replace(fresh);
       } catch (eR) { try { location.reload(); } catch (e2) { reloading = false; } }
     }
-    setInterval(function(){ var pr=check(); if(pr&&pr.then){pr.then(maybeReload, function(){});} else { maybeReload(); } }, 90 * 1000);
+    // v3700 (propriétaire : « ça s'actualise à tout moment ») : la nouvelle version n'est plus appliquée PENDANT qu'on est sur le
+    // site (avant : relevé toutes les 90 s → rechargement à chaque mise en ligne) ; seulement au RETOUR sur le site (voir plus bas).
+    setInterval(check, 5 * 60 * 1000);
     setTimeout(check, 8 * 1000); // relève le numéro de départ tôt (une mise en ligne dans la 1re minute n'est plus manquée)
     // 2026-10-21 (propriétaire : « les changements du site n'arrivent pas dans l'appli iPhone ») : l'appli de l'écran
     // d'accueil n'est presque jamais rechargée — iOS la remet telle quelle au premier plan (page gardée en mémoire, minuteries
@@ -10700,7 +10702,7 @@
       if (document.hidden) check();
       else checkThenReload();
     });
-    window.addEventListener('focus', maybeReload);
+
     window.addEventListener('pageshow', function (ev) { if (ev && ev.persisted) checkThenReload(); });
     // jamais de rechargement pendant une partie de jeu, une discussion ou une saisie en cours
     function busyElsewhere() {
@@ -10717,7 +10719,7 @@
     var awayAt = 0;
     function backFromAway() {
       var gone = awayAt ? Date.now() - awayAt : 0; awayAt = 0;
-      if (gone < 90000 || reloading || openTrades() > 0 || busyElsewhere()) return;
+      if (gone < 15 * 60000 || reloading || openTrades() > 0 || busyElsewhere()) return;
       try {
         var st = $('screenTrade'); if (!st || st.classList.contains('hidden') || !st.offsetWidth) return;
         if (document.querySelector('.modal-backdrop.active, #drawerProfile.on, .oro-welcome')) return;
