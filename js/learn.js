@@ -161,7 +161,9 @@
     return '<div class="lg-art lg-row lg-tools"><span>MA</span><span>BB</span><span>EMA</span><span>' + I('zin') + '</span><span>' + I('zout') + '</span><span class="fs">' + I('full') + '</span></div>';
   }
   // v2463 — vrais logos des 4 cadeaux (les mêmes que les onglets de la fenêtre Cadeaux).
-  function gIco(k) { return '<img class="lg-gico" src="icons/ui/gift-' + k + '.svg?v=2463" alt="" aria-hidden="true">'; }
+  // v3703 (propriétaire : « le guide montre encore les anciens logos ») : mêmes images que Cadeaux / Social
+  var GIMG = { defi: 'img/social/duel.webp', aff: 'img/social/invite.webp', top: 'img/social/record.webp', bon: 'img/social/bonus.webp' };
+  function gIco(k) { return '<img class="lg-gico" src="' + (GIMG[k] ? GIMG[k] + '?v=3407' : 'icons/ui/gift-' + k + '.svg?v=2463') + '" alt="" aria-hidden="true" decoding="async">'; }
   function artGifts() {
     return '<div class="lg-art lg-row lg-gifts"><div>' + gIco('defi') + '<small>' + esc(S('defiTab', 'Daily challenge')) + '</small></div><div>' + gIco('aff') + '<small>' + esc(S('affTab', 'Invite')) + '</small></div><div>' + gIco('top') + '<small>' + esc(S('topTab', 'Tournament')) + '</small></div><div>' + gIco('bon') + '<small>' + esc(S('bonTab', 'Bonus')) + '</small></div></div>';
   }  // v2463 — les VRAIS logos de l'écran de retrait (copiés de ses cases) : crypto, PayPal, carte, banque, Revolut, Skrill.
@@ -251,7 +253,8 @@
   // v2910 — étape « Jeux, Paris et Social » : les 3 boutons du haut du site.
   function artWorld() {
     return '<div class="lg-art lg-row lg-gifts lg-world">' + [['pad', 'wG'], ['ball', 'wB'], ['chat', 'wS']].map(function (x) {
-      return '<div><i>' + I(x[0]) + '</i><small>' + esc(T(x[1])) + '</small></div>';
+      var W = { pad: 'img/loadicons/joy.webp', ball: 'img/loadicons/ball.webp', chat: 'img/social/chat.webp' };
+      return '<div><img class="lg-gico" src="' + W[x[0]] + '?v=3407" alt="" aria-hidden="true" decoding="async"><small>' + esc(T(x[1])) + '</small></div>';
     }).join('') + '</div>';
   }
   function gifts() {
@@ -324,7 +327,7 @@
     m.className = 'learn-modal';
     m.setAttribute('role', 'dialog');
     m.setAttribute('aria-modal', 'true');
-    m.innerHTML = '<div class="lg-top"><div class="lg-top-ico">' + ICON + '</div><div class="lg-top-t" id="learnTitle"></div>' +
+    m.innerHTML = '<div class="lg-top"><div class="lg-top-ico"><img src="img/social/learn.webp?v=3407" alt="" aria-hidden="true" style="width:30px;height:30px;object-fit:contain"></div><div class="lg-top-t" id="learnTitle"></div>' +
       '<button type="button" class="btn-close lg-close" data-learn-close aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
       '<div class="lg-progress"><i id="learnProg"></i></div></div><div class="lg-scroll" id="learnScroll"><div class="lg-body" id="learnBody"></div></div>';
     document.body.appendChild(m);
