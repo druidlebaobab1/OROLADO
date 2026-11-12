@@ -760,11 +760,21 @@
   /* 2026-11-12 : lot 1 vers 1000 jeux — même moteur « révèle le gain », l'objet du jeu est son logo-photo (img/games/<clé>.webp) */
   var PGV = {};
   function pgame(k, rows, spin) {
-    rgame({ key: k, verb: V.tap, rows: rows, sfx: spin ? 'show' : 'chests', cy: 106, spin: !!spin,
-      scene: '<defs>' + GDEFS + '<clipPath id="pg' + k + '"><circle r="52"/></clipPath></defs>' + r5bg() + stars(16) + r5glow() +
-        '<g id="cyObj" transform="translate(150 106)"><circle r="57" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
-        '<image href="img/games/' + k + '.webp?v=' + (PGV[k] || '3682') + '" x="-52" y="-52" width="104" height="104" clip-path="url(#pg' + k + ')" preserveAspectRatio="xMidYMid slice"/>' +
-        '<circle r="52" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/></g>' });
+    // v3696 (revue propriétaire : « petit logo perdu dans un grand vide ») : fond = l'image du jeu floutée (chaque jeu a ses
+    // couleurs), rayons de lumière, grand médaillon serti d'or. Même zone de gain, même moteur.
+    var src = 'img/games/' + k + '.webp?v=' + (PGV[k] || '3682'), R = 78, rays = '', studs = '';
+    for (var q = 0; q < 16; q++) rays += '<path d="M0 0L' + (Math.cos((q * 22.5 - 4) * Math.PI / 180) * 190).toFixed(1) + ' ' + (Math.sin((q * 22.5 - 4) * Math.PI / 180) * 190).toFixed(1) + 'L' + (Math.cos((q * 22.5 + 4) * Math.PI / 180) * 190).toFixed(1) + ' ' + (Math.sin((q * 22.5 + 4) * Math.PI / 180) * 190).toFixed(1) + 'Z"/>';
+    for (q = 0; q < 12; q++) studs += '<circle cx="' + (Math.cos(q * Math.PI / 6) * (R + 5)).toFixed(1) + '" cy="' + (Math.sin(q * Math.PI / 6) * (R + 5)).toFixed(1) + '" r="2.3" fill="#FEF3C7" stroke="#92400E" stroke-width=".6"/>';
+    rgame({ key: k, verb: V.tap, rows: rows, sfx: spin ? 'show' : 'chests', cy: 108, spin: !!spin,
+      scene: '<defs>' + GDEFS + '<clipPath id="pg' + k + '"><circle r="' + R + '"/></clipPath><filter id="pgb' + k + '" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="9"/></filter>' +
+        '<radialGradient id="pgv' + k + '" cx="50%" cy="48%" r="70%"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#05030C" stop-opacity=".82"/></radialGradient></defs>' + r5bg() +
+        '<image href="' + src + '" x="-60" y="-80" width="420" height="380" preserveAspectRatio="xMidYMid slice"' + (document.documentElement.classList.contains('oro-lite') ? ' opacity=".45"' : ' filter="url(#pgb' + k + ')" opacity=".75"') + '/>' +
+        '<rect x="-400" y="-400" width="1100" height="1100" fill="url(#pgv' + k + ')"/>' + stars(16) +
+        '<g transform="translate(150 108)" fill="#FDE68A" opacity=".10">' + rays + '</g>' + r5glow() +
+        '<ellipse cx="150" cy="200" rx="70" ry="9" fill="#000" opacity=".35"/>' +
+        '<g id="cyObj" transform="translate(150 108)"><circle r="' + (R + 10) + '" fill="url(#cyGold)" stroke="#78350F" stroke-width="2.5"/><circle r="' + (R + 3) + '" fill="#3B2408"/>' + studs +
+        '<image href="' + src + '" x="-' + R + '" y="-' + R + '" width="' + 2 * R + '" height="' + 2 * R + '" clip-path="url(#pg' + k + ')" preserveAspectRatio="xMidYMid slice"/>' +
+        '<circle r="' + R + '" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><path d="M-' + (R - 14) + ' -' + (R - 34) + 'a' + R + ' ' + R + ' 0 0 1 ' + (R - 6) + ' -30" stroke="rgba(255,255,255,.35)" stroke-width="5" fill="none" stroke-linecap="round"/></g>' });
   }
   pgame('goldcompass', RA); pgame('icecrystal', RB); pgame('phoenixegg', RA); pgame('luckybamboo', RB); pgame('silverchalice', RA); pgame('amulet', RB); pgame('owlidol', RA); pgame('magicmirror', RB); pgame('piratebarrel', RA); pgame('jadeturtle', RB); pgame('scepter', RA); pgame('windchime', RB); pgame('goldnugget', RA); pgame('fortunecookie', RB); pgame('crystalskull', RA); pgame('goldpineapple', RB); pgame('dicecup', RA); pgame('spacecapsule', RB); pgame('snowglobe', RA); pgame('cuckooclock', RB); pgame('hourglass', RA); pgame('goldenkey', RB); pgame('brooch', RA); pgame('pearlnecklace', RB); pgame('vikinghelmet', RA); pgame('onimask', RB); pgame('aztecidol', RA); pgame('goldenharp', RB); pgame('totem', RA); pgame('koipond', RB);
   PGV.sapphirestar = '3684'; PGV.goldenlion = '3684'; PGV.cosmicdice = '3684'; PGV.luckypanda = '3684'; PGV.treasureisle = '3684'; PGV.moonstone = '3684'; PGV.dragonpearl = '3684'; PGV.goldenhorse = '3684'; PGV.lavagem = '3684'; PGV.starcrown = '3684'; PGV.mermaidshell = '3684'; PGV.thunderhammer = '3684'; PGV.icephoenix = '3684'; PGV.goldenbull = '3684'; PGV.cherryblossom = '3684'; PGV.desertrose = '3684'; PGV.fortuneteller = '3684'; PGV.goldenanchor = '3684'; PGV.neonarcade = '3684'; PGV.mysticowl = '3684'; PGV.spacegold = '3684'; PGV.jungleidol = '3684'; PGV.lightningorb = '3684'; PGV.rubydragon = '3684'; PGV.sunflowergold = '3684'; PGV.frostcrown = '3684'; PGV.lotusgold = '3684'; PGV.eagleemblem = '3684'; PGV.tikitreasure = '3684'; PGV.crystalwolf = '3684';
