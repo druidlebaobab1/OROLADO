@@ -14828,3 +14828,5 @@ html body #portalModal#portalModal .arr-c.live .arr-dot{margin-inline-end:9px!im
 /* v3689 : 5 tris courts sur une ligne, texte qui s'adapte (12 langues, iPhone SE → TV) */
 html body #portalModal#portalModal .aff-sort{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important}
 html body #portalModal#portalModal .aff-sort button{padding:7px 2px!important;font-size:clamp(10.5px,3.1vw,13px)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;letter-spacing:-.1px}
+/* v3692 : rappel « seulement cette adresse » (dépôts perdus sur les anciennes adresses) */
+html body .oxa-only{margin:8px 0 2px;padding:7px 10px;border-radius:10px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.35);color:#FCD34D;font-size:clamp(11px,3.1vw,12.5px);line-height:1.35;text-align:center;overflow-wrap:anywhere}

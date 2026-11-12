@@ -136,6 +136,7 @@
  "affPlayedOne": "已交易",
  "affSearchPh": "搜索：ID、日期、金额",
  "affShare": "分享我的链接",
+ "cryptoOnlyThis": "⚠️ 只能发送到此处显示的地址。旧地址已失效。",
  "affSortDep": "充值",
  "affSortGain": "收益",
  "affSortOn": "在线",
