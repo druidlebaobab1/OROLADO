@@ -2186,11 +2186,11 @@ html.ios-app.is-ios:root{background-image:url("../icons/ui/app-floor.svg?v=3568"
 /* v3565 (propriétaire : « le petit bas ne doit pas aller dans la page d'actualisation ») — pendant le chargement, la bande du bas
    est la SUITE EXACTE de l'écran de chargement (mêmes couches que #oroLoader, dessinées à la hauteur de l'écran entier). */
 html.ios-app.is-ios.ol-on:root{ /* 2026-11-08 : classe ol-on (avant : :has sur toute la page) */
-  background-image:radial-gradient(ellipse at 50% 44%,rgba(60,40,12,.85) 0%,rgba(40,32,16,.35) 34%,rgba(0,0,0,0) 60%),url("galaxy-loader.svg?v=3565"),
-    radial-gradient(120% 55% at 0% 0%,rgba(225,173,70,.28),transparent 62%),radial-gradient(110% 55% at 50% 112%,rgba(220,162,46,.22),transparent 62%),
-    linear-gradient(180deg,#281E0B 0%,#060607 100%)!important;
-  background-size:100% var(--ios-screen-h,100%),cover,100% var(--ios-screen-h,100%),100% var(--ios-screen-h,100%),100% var(--ios-screen-h,100%)!important;
-  background-position:center top!important;background-repeat:no-repeat!important;background-color:#060607!important}
+  background-image:radial-gradient(ellipse at 50% 44%,rgba(58,42,14,.42) 0%,rgba(30,22,8,.18) 34%,rgba(0,0,0,0) 60%),
+    radial-gradient(120% 50% at 0% 0%,rgba(225,173,70,.07),transparent 62%),
+    linear-gradient(180deg,#0E0B06 0%,#060505 55%,#030303 100%)!important;
+  background-size:100% var(--ios-screen-h,100%),100% var(--ios-screen-h,100%),100% var(--ios-screen-h,100%)!important;
+  background-position:center top!important;background-repeat:no-repeat!important;background-color:#030303!important}
 /* plein écran : la fenêtre du plein écran s'arrête au bas du site (rien ne passe dans la bande, rien au-dessus d'ACHETER) */
 html.ios-app.is-ios:root body #fsTradeOverlay#fsTradeOverlay#fsTradeOverlay{top:0!important;bottom:auto!important;height:100%!important;max-height:100%!important}
 
@@ -2260,3 +2260,16 @@ html.ios-app.is-ios.ios-tall:root body #liveModal.active::after{
 /* v3567 : Paris dans l'appli (tout l'écran) — la barre Populaire / Direct / Coupon… reste AU-DESSUS du bas or (avant : elle
    descendait de 18 px dedans). */
 html.ios-app.is-ios.ios-tall:root body #casinoModal#casinoModal .sp2 .pz-nav{bottom:0!important}
+
+/* v3699 (propriétaire, 2026-11-13 : « la planète du bas ne doit être QUE sur le trading et le profil ; dans Paris, Cadeaux,
+   Social, Historique, Retrait… elle bouffe l'espace ») — APPLI iPhone, iOS donne tout l'écran (ios-tall) : toutes les fenêtres
+   descendent jusqu'au vrai bas (Historique compris), SANS bande de planètes ; leur contenu s'arrête juste au-dessus de la barre
+   d'accueil. Trading et Profil gardent la bande. */
+html.ios-app.is-ios.ios-tall:root:has(.modal-backdrop.active) body{height:var(--ios-screen-h,100%)!important}
+html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active::after,
+html.ios-app.is-ios.ios-tall:root body #liveModal.active::after{display:none!important;content:none!important}
+html.ios-app.is-ios.ios-tall:root body .modal-backdrop.active > .modal-box,
+html.ios-app.is-ios.ios-tall:root body #historySheet#historySheet.active > .modal-box,
+html.ios-app.is-ios.ios-tall:root body #financeModal#financeModal.active > .modal-box{box-sizing:border-box!important;height:100%!important;max-height:100%!important;padding-bottom:max(8px,calc(env(safe-area-inset-bottom,0px) - 10px))!important}
+html.ios-app.is-ios.ios-tall:root body #liveModal #sxRoot.sx{padding-bottom:max(8px,calc(env(safe-area-inset-bottom,0px) - 10px))!important}
+html.ios-app.is-ios.ios-tall.learn-on:root body .learn-modal{padding-bottom:max(8px,calc(env(safe-area-inset-bottom,0px) - 10px))!important}
