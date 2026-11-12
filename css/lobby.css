@@ -244,3 +244,6 @@ html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch input::placeho
 html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch input:focus{border-color:rgba(233,196,122,.6)}
 html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch-no{text-align:center;color:rgba(245,233,208,.6);margin:24px 0}
 html:root body #casinoModal#casinoModal #csView :is(.cs-srch-res,.cs-srch-no,.cs-sec)[hidden]{display:none!important}
+/* v3700 (propriétaire) : petite ligne de présentation (1 ligne, peu de place) ; barre de recherche qui reste en place sous les onglets */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-sec-d{margin:0 2px 8px!important;padding:0 4px!important;font:600 12px/1.25 var(--lb-font)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-srch{position:sticky!important;top:calc(var(--cs-tabs-top,50px) + var(--cs-tabs-h,56px))!important;z-index:6!important;margin:-6px 0 10px!important;padding:4px 0!important;background:#0D0A05!important;box-shadow:0 -16px 0 #0D0A05,0 6px 10px rgba(13,10,5,.85)!important}

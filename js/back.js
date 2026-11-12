@@ -258,7 +258,7 @@
           if (!isOn('casinoModal', 'in-game') && isOn('casinoModal') && D6.Casino.home) D6.Casino.home('games'); // jeu retiré : la salle de jeux
         } else { D6.Casino.open(null, 'games'); if (r.v === 'sports' && D6.Casino.home) D6.Casino.home('sports'); }
         if (r.sp && (r.v === 'sports' || r.v === 'pred')) { // 2026-10-23 : retour au même écran de Paris (match en direct compris)
-          if (await wait(function () { return D6.Sports && D6.Sports.restore && document.querySelector('#casinoModal .sp2'); }, 5000)) D6.Sports.restore(r.sp);
+          if (await wait(function () { return D6.Sports && D6.Sports.restore && document.querySelector('#casinoModal .sp2'); }, 15000)) D6.Sports.restore(r.sp);
         } else if (r.mine) {
           await wait(function () { return document.querySelector('#casinoModal .sp2-tabs [data-sv="mine"]'); }, 4000);
           var mb = document.querySelector('#casinoModal .sp2-tabs [data-sv="mine"]'); if (mb && !mb.classList.contains('on')) mb.click();

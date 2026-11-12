@@ -14852,3 +14852,4 @@ html.ios-app:root body #historySheet#historySheet#historySheet .sheet-feed,html.
 html.ios-app:root body #financeModal#financeModal#financeModal > .modal-box,html.ios-app:root body #historySheet#historySheet#historySheet > .modal-box{padding-bottom:0!important}
 html.ios-app:root body #portalModal#portalModal#portalModal > .modal-box.portal-box,html.ios-app:root body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-bottom:8px!important}
 html.ios-app:root body #withdrawModal#withdrawModal > .modal-box,html.ios-app:root body #casinoModal#casinoModal.in-game > .modal-box{padding-bottom:6px!important}
+@keyframes spin{to{transform:rotate(360deg)}}
