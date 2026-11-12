@@ -789,6 +789,11 @@
       if (affFound && affFound.q === q) shown = affFound.rows.slice();
       else { clearTimeout(affSearchT); affSearchT = setTimeout(function () { affServerSearch(q); }, 450); }
     }
+    // v3698 (propriétaire : « les boutons affichent toujours la même liste ») : chaque bouton FILTRE vraiment —
+    // Gains = amis qui t'ont rapporté, Joueurs = amis qui ont joué, En ligne = amis connectés maintenant. Nombre affiché sur le bouton.
+    var FL = { gain: function (r) { return Number(r.gift || 0) > 0; }, play: function (r) { return !!r.played; }, on: function (r) { return !!r.on; }, dep: function (r) { return Number(r.deposit || 0) > 0; } };
+    try { [].forEach.call(document.querySelectorAll('#affSort button'), function (bt) { var k = bt.getAttribute('data-s'), n = FL[k] ? shown.filter(FL[k]).length : shown.length, i = bt.querySelector('i.as-n'); if (!i) { i = document.createElement('i'); i.className = 'as-n'; bt.appendChild(i); } i.textContent = String(n); bt.classList.toggle('as-zero', n === 0); }); } catch (eC) { /* ignore */ }
+    if (FL[affSortBy]) shown = shown.filter(FL[affSortBy]);
     shown.sort(function (a, b) {
       if (affSortBy === 'dep') return Number(b.deposit || 0) - Number(a.deposit || 0);
       if (affSortBy === 'gain') return Number(b.gift || 0) - Number(a.gift || 0);
@@ -797,7 +802,7 @@
       return Number(b.at || 0) - Number(a.at || 0);
     });
     fitAffSort();
-    $('affRowsAll').innerHTML = shown.length ? shown.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t(q ? 'affNoMatch' : 'affEmpty')) + '</p>';
+    $('affRowsAll').innerHTML = shown.length ? shown.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t(q ? 'affNoMatch' : (FL[affSortBy] && rows.length ? 'affNoneCat' : 'affEmpty'))) + '</p>';
   }
   function tickLists() {
     if (bon && bon.enabled && $('bonTimer')) $('bonTimer').innerHTML = ICO_CLOCK + '<span>' + esc(daysLeft(bon.phase === 'filling' ? bon.until : bon.weekEnd)) + '</span>';
