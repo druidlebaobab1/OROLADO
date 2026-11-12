@@ -56,18 +56,18 @@
       zh: ['按住向右漂移，松开向左', '冲出赛道！', '爆胎了！', '你的赛车在之字形赛道上飞驰。按住手指向右漂移，松开向左漂移：每个弯道切换一次。赛车会稍微滑行，所以要提前一点转向。赛道会越来越窄、越来越快。冲出赛道，本回合结束。']
     },
     horsejump: {
-      en: ['Hold to charge, release to jump', 'Knocked the fence!', 'The horse is spooked!', 'Your horse gallops by itself. Hold your finger down to charge the jump (the gauge fills), release to jump. Tall fences need a strong jump, wide water needs a long one, and the timing matters. Touching a fence or landing in the water ends the round.', 'Splash in the water!'],
-      fr: ['Maintiens pour charger, lâche pour sauter', 'Barre tombée !', 'Le cheval prend peur !', 'Ton cheval galope tout seul. Garde le doigt posé pour charger le saut (la jauge se remplit), lâche pour sauter. Les hautes barres demandent un saut puissant, l’eau large un saut long, et le bon moment compte. Toucher une barre ou tomber dans l’eau termine la partie.', 'Plouf dans l’eau !'],
-      es: ['Mantén para cargar, suelta para saltar', '¡Derribaste la valla!', '¡El caballo se asusta!', 'Tu caballo galopa solo. Mantén el dedo para cargar el salto (la barra se llena) y suelta para saltar. Las vallas altas piden un salto fuerte, el agua ancha uno largo, y el momento importa. Tocar una valla o caer al agua termina la ronda.', '¡Al agua!'],
-      pt: ['Segure para carregar, solte para saltar', 'Derrubou a barra!', 'O cavalo se assusta!', 'Seu cavalo galopa sozinho. Segure o dedo para carregar o salto (a barra enche) e solte para saltar. Obstáculos altos pedem um salto forte, a água larga um salto longo, e o momento importa. Tocar um obstáculo ou cair na água encerra a rodada.', 'Caiu na água!'],
-      ar: ['اضغط للشحن وأفلت للقفز', 'أسقطت الحاجز!', 'الحصان فزع!', 'يعدو حصانك وحده. أبقِ إصبعك مضغوطًا لشحن القفزة (يمتلئ المؤشر) وأفلت للقفز. الحواجز العالية تحتاج قفزة قوية والماء العريض قفزة طويلة، والتوقيت مهم. لمس الحاجز أو السقوط في الماء ينهي الجولة.', 'سقطت في الماء!'],
-      tr: ['Doldurmak için bas, zıplamak için bırak', 'Engeli devirdin!', 'At ürktü!', 'Atın kendi dörtnala koşar. Atlayışı doldurmak için parmağını basılı tut (gösterge dolar), atlamak için bırak. Yüksek engeller güçlü, geniş su uzun bir atlayış ister; zamanlama önemlidir. Engele değmek ya da suya düşmek turu bitirir.', 'Suya düştün!'],
-      vi: ['Giữ để tích lực, thả để nhảy', 'Đổ rào!', 'Ngựa hoảng sợ!', 'Ngựa tự phi nước đại. Giữ ngón tay để tích lực nhảy (thanh đầy dần), thả ra để nhảy. Rào cao cần cú nhảy mạnh, hố nước rộng cần cú nhảy xa, và thời điểm rất quan trọng. Chạm rào hoặc rơi xuống nước là kết thúc ván.', 'Rơi xuống nước!'],
-      id: ['Tahan untuk mengisi, lepas untuk lompat', 'Palang jatuh!', 'Kudanya kaget!', 'Kudamu berlari sendiri. Tahan jarimu untuk mengisi lompatan (meteran terisi), lepas untuk melompat. Pagar tinggi butuh lompatan kuat, air lebar butuh lompatan jauh, dan waktunya penting. Menyentuh pagar atau jatuh ke air mengakhiri ronde.', 'Tercebur ke air!'],
-      ru: ['Держи — заряд, отпусти — прыжок', 'Сбил барьер!', 'Лошадь испугалась!', 'Лошадь скачет сама. Держи палец, чтобы зарядить прыжок (шкала заполняется), отпусти — прыжок. Высокие барьеры требуют сильного прыжка, широкая вода — длинного, и момент важен. Касание барьера или падение в воду завершает раунд.', 'Плюх в воду!'],
-      de: ['Halten lädt, loslassen springt', 'Stange gerissen!', 'Das Pferd scheut!', 'Dein Pferd galoppiert von selbst. Halte den Finger gedrückt, um den Sprung aufzuladen (die Anzeige füllt sich), lass los zum Springen. Hohe Hindernisse brauchen einen kräftigen Sprung, breites Wasser einen weiten, und der Zeitpunkt zählt. Berührst du ein Hindernis oder landest im Wasser, endet die Runde.', 'Platsch ins Wasser!'],
-      hi: ['चार्ज करने को दबाएँ, कूदने को छोड़ें', 'बाड़ गिरा दी!', 'घोड़ा डर गया!', 'आपका घोड़ा खुद दौड़ता है। छलाँग चार्ज करने के लिए उँगली दबाए रखें (मीटर भरता है), कूदने के लिए छोड़ें। ऊँची बाड़ को ताकतवर और चौड़े पानी को लंबी छलाँग चाहिए, और समय मायने रखता है। बाड़ छूने या पानी में गिरने पर राउंड खत्म।', 'पानी में छपाक!'],
-      zh: ['按住蓄力，松开起跳', '碰倒栏杆了！', '马受惊了！', '你的马会自己奔跑。按住手指为跳跃蓄力（能量条会充满），松开起跳。高栏需要有力的跳跃，宽水沟需要跳得远，时机也很重要。碰到栏杆或落入水中，本回合结束。', '掉进水里了！']
+      en: ['Tap to jump', 'Knocked the fence!', 'The horse is spooked!', 'Your horse gallops by itself. Tap to jump over each fence or water pool. Jump a little before the obstacle. Touching a fence or landing in the water ends the round.', 'Splash in the water!'],
+      fr: ['Touche pour sauter', 'Barre tombée !', 'Le cheval prend peur !', 'Ton cheval galope tout seul. Touche l’écran pour sauter chaque barre ou mare d’eau, un peu avant l’obstacle. Toucher une barre ou tomber dans l’eau termine la partie.', 'Plouf dans l’eau !'],
+      es: ['Toca para saltar', '¡Derribaste la valla!', '¡El caballo se asusta!', 'Tu caballo galopa solo. Toca para saltar cada valla o charco, un poco antes del obstáculo. Tocar una valla o caer al agua termina la ronda.', '¡Al agua!'],
+      pt: ['Toque para saltar', 'Derrubou a barra!', 'O cavalo se assusta!', 'Seu cavalo galopa sozinho. Toque para saltar cada obstáculo ou poça, um pouco antes dele. Tocar um obstáculo ou cair na água encerra a rodada.', 'Caiu na água!'],
+      ar: ['المس للقفز', 'أسقطت الحاجز!', 'الحصان فزع!', 'يعدو حصانك وحده. المس الشاشة للقفز فوق كل حاجز أو بركة ماء، قبل العائق بقليل. لمس الحاجز أو السقوط في الماء ينهي الجولة.', 'سقطت في الماء!'],
+      tr: ['Zıplamak için dokun', 'Engeli devirdin!', 'At ürktü!', 'Atın kendi dörtnala koşar. Her engelin ya da su birikintisinin biraz önünde zıplamak için dokun. Engele değmek ya da suya düşmek turu bitirir.', 'Suya düştün!'],
+      vi: ['Chạm để nhảy', 'Đổ rào!', 'Ngựa hoảng sợ!', 'Ngựa tự phi nước đại. Chạm để nhảy qua mỗi rào hoặc vũng nước, hơi trước chướng ngại. Chạm rào hoặc rơi xuống nước là kết thúc ván.', 'Rơi xuống nước!'],
+      id: ['Ketuk untuk lompat', 'Palang jatuh!', 'Kudanya kaget!', 'Kudamu berlari sendiri. Ketuk untuk melompati setiap pagar atau kolam, sedikit sebelum rintangan. Menyentuh pagar atau jatuh ke air mengakhiri ronde.', 'Tercebur ke air!'],
+      ru: ['Нажми, чтобы прыгнуть', 'Сбил барьер!', 'Лошадь испугалась!', 'Лошадь скачет сама. Нажимай, чтобы перепрыгнуть каждый барьер или лужу, чуть раньше препятствия. Касание барьера или падение в воду завершает раунд.', 'Плюх в воду!'],
+      de: ['Tippen zum Springen', 'Stange gerissen!', 'Das Pferd scheut!', 'Dein Pferd galoppiert von selbst. Tippe, um jedes Hindernis oder Wasser zu überspringen, kurz davor. Berührst du ein Hindernis oder landest im Wasser, endet die Runde.', 'Platsch ins Wasser!'],
+      hi: ['कूदने के लिए टैप करें', 'बाड़ गिरा दी!', 'घोड़ा डर गया!', 'आपका घोड़ा खुद दौड़ता है। हर बाड़ या पानी से थोड़ा पहले कूदने के लिए टैप करें। बाड़ छूने या पानी में गिरने पर राउंड खत्म।', 'पानी में छपाक!'],
+      zh: ['点击起跳', '碰倒栏杆了！', '马受惊了！', '你的马会自己奔跑。在栏杆或水坑前一点点击起跳。碰到栏杆或落入水中，本回合结束。', '掉进水里了！']
     },
     skatetricks: {
       en: ['Tap when the ring closes on the edge', 'Bail!', 'Board snapped!', 'Your skater rides the half-pipe from edge to edge. A ring shrinks on the next edge: tap the moment it closes to pop a trick. The rides get faster and the timing tighter. Missing an edge, or tapping too early, ends the round.', 'Too early!'],
@@ -658,7 +658,7 @@
     }
     return {
       size: function (ww, hh, u, d, top) {
-        W = ww; H = hh; dpr = d; T = top; rw = clamp(Math.min(W, H - T) * 0.2, 56, 150); cl = clamp(rw * 0.5, 26, 66);
+        W = ww; H = hh; dpr = d; T = top; rw = clamp(Math.min(W, H - T) * 0.22, 60, 160); cl = clamp(rw * 0.6, 32, 80);
         bg = mkc(W, H, dpr, function (c) { c.fillStyle = '#0D1A12'; c.fillRect(0, 0, W, H); });
         var ts = 160; tileS = mkc(ts, ts, dpr, function (c) {
           c.fillStyle = '#166534'; c.fillRect(0, 0, ts, ts);
@@ -685,7 +685,7 @@
         t += dt; var lv = live ? A.lv() : 0.15, i;
         if (won) { won += dt; sp = Math.max(0, sp - sp * dt * 1.6); }
         else if (dead) { dead.t += dt; sp = Math.max(0, sp - rw * 4 * dt); hd += dead.spin * dt * Math.max(0, 1 - dead.t / 1.6); }
-        else sp += (rw * (4.2 + 3.4 * lv) - sp) * Math.min(1, dt * 1.5);
+        else sp += (rw * (3.5 + 2.8 * lv) - sp) * Math.min(1, dt * 1.5);
         if (A.idle() && !dead) held = want();
         if (!dead && !won) {
           tgt = held ? D : -D;
@@ -807,18 +807,17 @@
       obs = []; cam = 0; nextX = (live ? W * 0.9 : W * 0.75) + u * 2; for (var i = 0; i < 4; i++) addObs(live);
       z = 0; vz = 0; air = false; held = false; chg = 0; dead = null; won = 0; rear = 0; v = u * 2.9;
     }
-    function jump() { var p = clamp(chg, 0.15, 1), hgt = hmax * (0.3 + 0.7 * p); vz = Math.sqrt(2 * gk * hgt); air = true; chg = 0; A.sx('whoosh', { v: 0.4 }); }
+    function jump() { var p = 1, hgt = hmax * (0.3 + 0.7 * p); vz = Math.sqrt(2 * gk * hgt); air = true; chg = 0; A.sx('whoosh', { v: 0.4 }); }
     // where the hooves are now (world x of the hind / front hoof)
     function hoofs() { return [cam + hx - 0.3 * u, cam + hx + 0.34 * u]; }
     // the autopilot: charge as needed, release at the right distance
     function auto() {
       var o = null; for (var i = 0; i < obs.length; i++) if (obs[i].x + (obs[i].w || 0) > cam + hx - 0.2 * u) { o = obs[i]; break; }
       if (!o || air) return false;
-      var need = o.k === 'f' ? clamp((o.h / hmax - 0.3) / 0.7 + 0.25, 0.3, 1) : 1, dist = o.x - (cam + hx);
+      var need = 1, dist = o.x - (cam + hx);
       var p = clamp(need, 0.15, 1), ta = 2 * Math.sqrt(2 * hmax * (0.3 + 0.7 * p) / gk), span = v * ta;
       var launch = o.k === 'f' ? span * 0.5 + 0.05 * u : 0.48 * u;
-      if (dist < launch + v * 0.05 && chg >= need - 0.04) return 'go';
-      return dist < launch + v * (need / 1.1) + u * 0.3;
+      return dist < launch + v * 0.05 ? 'go' : false;
     }
     return {
       size: function (ww, hh, uu, d, top) {
@@ -858,12 +857,12 @@
         var hf = hoofs();
         for (i = 0; i < obs.length; i++) {
           var o = obs[i];
-          if (o.k === 'f' && !o.hit && o.x > hf[0] - 0.1 * u && o.x < hf[1] + 0.05 * u && z < o.h - 0.03 * u) {
+          if (o.k === 'f' && !o.hit && o.x > hf[0] && o.x < hf[1] - 0.05 * u && z < o.h - 0.12 * u) {
             o.hit = 1;
             if (A.live()) { if (A.fail(A.l.fail)) { dead = { t: 0, k: 'f' }; o.fall = 0.001; A.shake(0.25); } }
             else { reset(false); return; }
           }
-          if (o.k === 'w' && !air && ((hf[1] > o.x + 0.05 * u && hf[1] < o.x + o.w - 0.05 * u) || (hf[0] > o.x + 0.05 * u && hf[0] < o.x + o.w - 0.05 * u))) {
+          if (o.k === 'w' && !air && hf[1] > o.x + 0.18 * u && hf[1] < o.x + o.w - 0.12 * u) {
             if (A.live()) { if (A.fail(A.l.fail2)) { dead = { t: 0, k: 'w' }; A.burst(hx, G, 26, ['#BFDBFE', '#60A5FA', '#FFFFFF'], 220, 0.8, 3.4, 300); A.shake(0.25); } }
             else { reset(false); return; }
           }
@@ -909,20 +908,20 @@
         if (dead && dead.k === 'w') c.translate(0, u * 0.25 * ease(dead.t / 0.5));
         c.drawImage(img, -u * 0.95, -u * 1.65, u * 1.9, u * 1.75); c.restore();
         // charge gauge next to the horse
-        if ((held || chg > 0) && !air && !dead) {
+        if (false) {
           var gx = hx - u * 0.9, gh = u * 0.9, gy = G - u * 1.3;
           c.fillStyle = 'rgba(10,6,30,.6)'; rr(c, gx - 5, gy - 5, 16, gh + 10, 8); c.fill();
           c.fillStyle = lg(c, 0, gy + gh, 0, gy, ['#22C55E', '#FACC15', '#F97316']); rr(c, gx, gy + gh * (1 - chg), 6, gh * chg, 3); c.fill();
         }
       },
-      down: function () { if (!air && !dead) held = true; },
+      down: function () { if (!air && !dead && !rear) jump(); },
       move: function () { },
-      up: function () { if (held && !air && !dead && !rear) jump(); held = false; },
+      up: function () { },
       boom: function () { rear = 0.001; held = false; chg = 0; A.sx('crash'); A.shake(0.2); },
       win: function () { won = 0.001; held = false; chg = 0; A.burst(hx, G - u * 1.2, 16, ['#FDE68A', '#DC2626', '#FFFFFF'], 150, 0.6, 3); },
       dbg: function () { var a = auto(); return { auto: a === 'go' ? 2 : a ? 1 : 0, chg: chg, air: air, z: z / u, dead: dead ? dead.k : '', obs: obs.slice(0, 2).map(function (o) { return [o.k, Math.round(o.x - cam - hx), Math.round(o.h || o.w)]; }) }; }
     };
-  }, 'hold', 0.45);
+  }, 'tap', 0.45);
 
   /* ================================================================== 4. SKATE TRICKS — a half-pipe; the skater rides from edge to edge.
      A ring shrinks on the next edge: TAP when it closes (timing window) to pop a trick. Faster rides, tighter timing. */
