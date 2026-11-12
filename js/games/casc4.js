@@ -758,12 +758,15 @@
   });
 
   /* 2026-11-12 : lot 1 vers 1000 jeux — même moteur « révèle le gain », l'objet du jeu est son logo-photo (img/games/<clé>.webp) */
+  var PGV = {};
   function pgame(k, rows, spin) {
     rgame({ key: k, verb: V.tap, rows: rows, sfx: spin ? 'show' : 'chests', cy: 106, spin: !!spin,
       scene: '<defs>' + GDEFS + '<clipPath id="pg' + k + '"><circle r="52"/></clipPath></defs>' + r5bg() + stars(16) + r5glow() +
         '<g id="cyObj" transform="translate(150 106)"><circle r="57" fill="url(#cyGold)" stroke="#78350F" stroke-width="2"/>' +
-        '<image href="img/games/' + k + '.webp?v=3682" x="-52" y="-52" width="104" height="104" clip-path="url(#pg' + k + ')" preserveAspectRatio="xMidYMid slice"/>' +
+        '<image href="img/games/' + k + '.webp?v=' + (PGV[k] || '3682') + '" x="-52" y="-52" width="104" height="104" clip-path="url(#pg' + k + ')" preserveAspectRatio="xMidYMid slice"/>' +
         '<circle r="52" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"/></g>' });
   }
   pgame('goldcompass', RA); pgame('icecrystal', RB); pgame('phoenixegg', RA); pgame('luckybamboo', RB); pgame('silverchalice', RA); pgame('amulet', RB); pgame('owlidol', RA); pgame('magicmirror', RB); pgame('piratebarrel', RA); pgame('jadeturtle', RB); pgame('scepter', RA); pgame('windchime', RB); pgame('goldnugget', RA); pgame('fortunecookie', RB); pgame('crystalskull', RA); pgame('goldpineapple', RB); pgame('dicecup', RA); pgame('spacecapsule', RB); pgame('snowglobe', RA); pgame('cuckooclock', RB); pgame('hourglass', RA); pgame('goldenkey', RB); pgame('brooch', RA); pgame('pearlnecklace', RB); pgame('vikinghelmet', RA); pgame('onimask', RB); pgame('aztecidol', RA); pgame('goldenharp', RB); pgame('totem', RA); pgame('koipond', RB);
+  PGV.sapphirestar = '3684'; PGV.goldenlion = '3684'; PGV.cosmicdice = '3684'; PGV.luckypanda = '3684'; PGV.treasureisle = '3684'; PGV.moonstone = '3684'; PGV.dragonpearl = '3684'; PGV.goldenhorse = '3684'; PGV.lavagem = '3684'; PGV.starcrown = '3684'; PGV.mermaidshell = '3684'; PGV.thunderhammer = '3684'; PGV.icephoenix = '3684'; PGV.goldenbull = '3684'; PGV.cherryblossom = '3684'; PGV.desertrose = '3684'; PGV.fortuneteller = '3684'; PGV.goldenanchor = '3684'; PGV.neonarcade = '3684'; PGV.mysticowl = '3684'; PGV.spacegold = '3684'; PGV.jungleidol = '3684'; PGV.lightningorb = '3684'; PGV.rubydragon = '3684'; PGV.sunflowergold = '3684'; PGV.frostcrown = '3684'; PGV.lotusgold = '3684'; PGV.eagleemblem = '3684'; PGV.tikitreasure = '3684'; PGV.crystalwolf = '3684';
+  pgame('sapphirestar', RA); pgame('goldenlion', RB); pgame('cosmicdice', RA, 1); pgame('luckypanda', RB); pgame('treasureisle', RA); pgame('moonstone', RB, 1); pgame('dragonpearl', RA); pgame('goldenhorse', RB); pgame('lavagem', RA, 1); pgame('starcrown', RB); pgame('mermaidshell', RA); pgame('thunderhammer', RB, 1); pgame('icephoenix', RA); pgame('goldenbull', RB); pgame('cherryblossom', RA, 1); pgame('desertrose', RB); pgame('fortuneteller', RA); pgame('goldenanchor', RB, 1); pgame('neonarcade', RA); pgame('mysticowl', RB); pgame('spacegold', RA, 1); pgame('jungleidol', RB); pgame('lightningorb', RA); pgame('rubydragon', RB, 1); pgame('sunflowergold', RA); pgame('frostcrown', RB); pgame('lotusgold', RA, 1); pgame('eagleemblem', RB); pgame('tikitreasure', RA); pgame('crystalwolf', RB, 1);
 })(window.D6 = window.D6 || {});

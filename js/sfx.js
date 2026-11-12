@@ -230,7 +230,7 @@
     airstrike: 'shoot', zombiesiege: 'shoot', brickbreak: 'arcade', neonsnake: 'arcade'
   };
   // casb (round 6) : familles des jeux de tables, cartes, dés et hasard d'arcade
-  Object.assign(MAP, { blackjack: 'cards', tcpoker: 'cards', holdem: 'cards', niuniu: 'cards', acerace: 'cards', trente: 'cards', clocksol: 'cards',
+  Object.assign(MAP, { sapphirestar: 'chests', goldenlion: 'show', cosmicdice: 'chests', luckypanda: 'show', treasureisle: 'chests', moonstone: 'show', dragonpearl: 'chests', goldenhorse: 'show', lavagem: 'chests', starcrown: 'show', mermaidshell: 'chests', thunderhammer: 'show', icephoenix: 'chests', goldenbull: 'show', cherryblossom: 'chests', desertrose: 'show', fortuneteller: 'chests', goldenanchor: 'show', neonarcade: 'chests', mysticowl: 'show', spacegold: 'chests', jungleidol: 'show', lightningorb: 'chests', rubydragon: 'show', sunflowergold: 'chests', frostcrown: 'show', lotusgold: 'chests', eagleemblem: 'show', tikitreasure: 'chests', crystalwolf: 'show', blackjack: 'cards', tcpoker: 'cards', holdem: 'cards', niuniu: 'cards', acerace: 'cards', trente: 'cards', clocksol: 'cards',
     yatzy: 'dice', crownanchor: 'dice', derby: 'dice', ceelo: 'dice', shipcrew: 'dice', dblroul: 'wheel', twinwheel: 'wheel', twoup: 'coin', fantan: 'cups',
     pachinko: 'balls', skeeball: 'balls', amida: 'pick', ducks: 'cups', dreidel: 'wheel', oracle: 'show', rpsduel: 'cups', cometqueen: 'crash' });
   /* ---- casa (round 6) : 12 machines à sous + 12 jeux instantanés (js/games/casa1-3.js) ---- */
