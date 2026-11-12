@@ -107,7 +107,7 @@ return [
   // 2026-11-03 (propriétaire, 2e vague) : 2 courses (skill3) + 2 galeries de tir (skill7)
   'parisrun'      => ['type' => 'skill', 'name' => 'Paris Run',      'rate' => 0.03],
   // 2026-11-12 : deux nouveaux mondes de course (même moteur que Paris Run)
-  'abidjanrun'    => ['type' => 'skill', 'name' => 'Abidjan Run',    'rate' => 0.03],
+  'abidjanrun'    => ['type' => 'skill', 'name' => 'Sunset Market', 'rate' => 0.03],
   'dubairun'      => ['type' => 'skill', 'name' => 'Dubai Run',      'rate' => 0.03],
   'candyrun'      => ['type' => 'skill', 'name' => 'Candy Princess', 'rate' => 0.03],
   'alienattack'   => ['type' => 'skill', 'name' => 'Alien Attack',   'rate' => 0.03],
