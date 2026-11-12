@@ -150,7 +150,7 @@
   };
   // Subway Dash réutilise les textes de Metro Dash (même course en perspective, décor tunnel).
   G.subwaydash = G.metrodash;
-  G.tokyodash = G.metrodash; G.pharaohrun = G.metrodash; G.parisrun = G.metrodash; G.candyrun = G.metrodash; // mêmes règles et mêmes textes (12 langues) que Metro / Subway
+  G.tokyodash = G.metrodash; G.pharaohrun = G.metrodash; G.parisrun = G.metrodash; G.candyrun = G.metrodash; G.abidjanrun = G.metrodash; G.dubairun = G.metrodash; // 2026-11-12 // mêmes règles et mêmes textes (12 langues) que Metro / Subway
 
   /* ------------------------------------------------------------------ shared engine (round flow + canvas loop + gestures) */
   function boot(key, mk, gest, hy) {
@@ -1514,6 +1514,17 @@
   boot('pharaohrun', function (A) { return runner(A, PHARAOH); }, 'swipe4', 0.5);
   boot('parisrun', function (A) { return runner(A, PARIS); }, 'swipe4', 0.5);
   boot('candyrun', function (A) { return runner(A, CANDY); }, 'swipe4', 0.5);
+  // 2026-11-12 : ABIDJAN RUN (rue de marché d'Afrique de l'Ouest, gbaka vert et jaune, étals de pagnes) et DUBAI RUN (or et marbre, métro blanc et or)
+  var ABIDJAN = worldTheme('ab', '3680', {
+    sky: ['#FB923C', '#FDBA74', '#FED7AA', '#FEF3C7'], ground: ['#C9A27A', '#B38B63', '#9A744F'], lane: ['#A57B55', '#926A48', '#7E5B3C'],
+    back: '#E7B577', walk: '#D9B48A', roof: ['#15803D', '#EAB308'], dust: 'rgba(253,186,116,'
+  });
+  var DUBAI = worldTheme('db', '3680', {
+    sky: ['#F59E0B', '#FBBF24', '#FDE68A', '#FEF3C7'], ground: ['#E7D3AE', '#D6BE93', '#C2A77A'], lane: ['#CDB68C', '#BBA27A', '#A68E68'],
+    back: '#E9DCC2', walk: '#EFE4CF', roof: ['#B8860B', '#E5C76B'], dust: 'rgba(253,230,138,'
+  });
+  boot('abidjanrun', function (A) { return runner(A, ABIDJAN); }, 'swipe4', 0.5);
+  boot('dubairun', function (A) { return runner(A, DUBAI); }, 'swipe4', 0.5);
   // v3594 (propriétaire : « améliore les jeux qu'on contrôle, en commençant par le haut ») : Metro Dash et Jungle Dash passent
   // dans de vrais mondes illustrés (même moteur, mêmes voies, mêmes obstacles, mêmes collisions ; seules les images changent).
   var NEON = worldTheme('mt', '3594', {
