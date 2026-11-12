@@ -665,9 +665,9 @@
   // 30 jours avec la date, « Tout » = par semaine (12 dernières). Affichage seulement.
   // v2491 — un montant trop long (ex. 125 430,50 $) rétrécit un peu pour rester dans sa case, sur tous les téléphones et toutes les langues.
   // v3689 : chaque bouton de tri garde son mot entier — la police rétrécit si besoin (toutes langues, tous écrans)
-  function fitAffSort() {
+  function fitAffSort() { // v3702 : le libellé (sans le nombre) rétrécit jusqu'à tenir sur 2 lignes max, sans déborder
     var bs = document.querySelectorAll('#affSort button');
-    for (var i = 0; i < bs.length; i++) { var b = bs[i]; b.style.fontSize = ''; var fs = parseFloat(getComputedStyle(b).fontSize) || 12, n = 0; while (b.scrollWidth > b.clientWidth + 1 && fs > 8 && n++ < 12) { fs -= 0.5; b.style.setProperty('font-size', fs + 'px', 'important'); } }
+    for (var i = 0; i < bs.length; i++) { var b = bs[i]; b.style.removeProperty('font-size'); var fs = parseFloat(getComputedStyle(b).fontSize) || 12, n = 0; while ((b.scrollWidth > b.clientWidth + 1 || b.scrollHeight > b.clientHeight + 1) && fs > 8 && n++ < 14) { fs -= 0.5; b.style.setProperty('font-size', fs + 'px', 'important'); } }
   }
   function fitAffNumbers() {
     var els = document.querySelectorAll('#affSum b, #affSum2 b, #affGraph .ag-h b, #affRowsAll .aff-row b, #affRows .aff-row b, #affMain .aff-stats b');
