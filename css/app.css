@@ -14820,3 +14820,8 @@ html:root body .btn-close.btn-close:not(#oroZ1):not(#oroZ2):not(#oroZ3):not(#oro
   box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,-3px -3px 6px rgba(0,0,0,.35) inset,0 3px 8px rgba(0,0,0,.45)!important;filter:none!important}
 html:root body :is(#passModal,#emailModal) .modal-title{text-shadow:none!important;filter:none!important}
 html:root body :is(#passModal,#emailModal) .btn-gold{box-shadow:0 2px 6px rgba(0,0,0,.45)!important;filter:none!important}
+/* v3689 (propriétaire) : « Voir plus » = seulement la liste des amis (les chiffres sont déjà dans « Tes résultats ») ;
+   point vert « Amis en ligne » entier (le halo n'est plus coupé) */
+html body #portalModal #affSum,html body #portalModal #affSum2,html body #portalModal #affGraph{display:none!important}
+html body #portalModal#portalModal .arr-c.live b{overflow:visible!important;padding-inline-start:4px!important;display:flex!important;align-items:center!important}
+html body #portalModal#portalModal .arr-c.live .arr-dot{margin-inline-end:9px!important;width:10px!important;height:10px!important}
