@@ -1514,7 +1514,7 @@
   boot('pharaohrun', function (A) { return runner(A, PHARAOH); }, 'swipe4', 0.5);
   boot('parisrun', function (A) { return runner(A, PARIS); }, 'swipe4', 0.5);
   boot('candyrun', function (A) { return runner(A, CANDY); }, 'swipe4', 0.5);
-  // 2026-11-12 : ABIDJAN RUN (rue de marché d'Afrique de l'Ouest, gbaka vert et jaune, étals de pagnes) et DUBAI RUN (or et marbre, métro blanc et or)
+  // 2026-11-12 : SUNSET MARKET (rue de marché d'Afrique de l'Ouest, gbaka vert et jaune, étals de pagnes) et DUBAI RUN (or et marbre, métro blanc et or)
   var ABIDJAN = worldTheme('ab', '3680', {
     sky: ['#FB923C', '#FDBA74', '#FED7AA', '#FEF3C7'], ground: ['#C9A27A', '#B38B63', '#9A744F'], lane: ['#A57B55', '#926A48', '#7E5B3C'],
     back: '#E7B577', walk: '#D9B48A', roof: ['#15803D', '#EAB308'], dust: 'rgba(253,186,116,'
