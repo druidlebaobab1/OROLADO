@@ -169,6 +169,8 @@
   }
   function find(gen, ok, n) { for (var t = 0; t < (n || 30000); t++) { var x = gen(); if (ok(x)) return x; } return null; }
   function rowX(n, gap) { return 150 - (n - 1) * gap / 2; }
+  // v3695 : cartes face cachée posées avant la 1re donne (plus de table vide) ; reset() les retire
+  function backsAt(L, n, gap, y, s) { try { var h = ''; for (var j = 0; j < n; j++) h += '<g transform="translate(' + (rowX(n, gap) + j * gap) + ' ' + y + ')' + (s ? ' scale(' + s + ')' : '') + '">' + card(null) + '</g>'; L.insertAdjacentHTML('beforeend', h); } catch (e) { /* ignore */ } }
   game({
     key: 'blackjack', l: verb('deal'), vb: '0 0 300 250', W: [480, 87, 388, 45],
     chips: [[CHIP.eq, 1], [CHIP.win, 1.94], [CHIP.mini(['A', 'K'], true), 2.2]],
@@ -176,7 +178,7 @@
     scene: felt('bjF', '#15803D', '#052E16') + '<path d="M20 118Q150 150 280 118" stroke="#FDE68A" stroke-opacity=".45" stroke-width="1.5" fill="none"/>' + txt(150, 136, 'BLACKJACK ×2.2', 10, '#FDE68A', ' opacity=".55" letter-spacing="2"') +
       '<g transform="translate(270 22)"><rect x="-20" y="-16" width="40" height="34" rx="5" fill="#78350F"/>' + card(null).replace('<rect', '<rect transform="scale(.7) translate(0 -2)"') + '</g>' +
       '<g id="bjD"></g><g id="bjP"></g>' + pill('bjDt', 40, 62) + pill('bjPt', 40, 190),
-    init: function (c) { whoTags(c, 6, 88); },
+    init: function (c) { whoTags(c, 6, 88); backsAt(c.id('bjD'), 2, 26, 62); backsAt(c.id('bjP'), 2, 26, 190); },
     reset: function (c) { c.id('bjD').innerHTML = ''; c.id('bjP').innerHTML = ''; setPill(c, 'bjDt', ''); setPill(c, 'bjPt', ''); },
     play: async function (c, r) {
       var i = +r.view.i, h = find(bjDeal, function (x) { return x.cat === i; }) || bjDeal();
@@ -243,7 +245,7 @@
     chipOf: function (i) { return [-1, -1, 1, 0, 2, 3, 4][i]; },
     scene: felt('tcF', '#1E3A8A', '#0B1437') + '<path d="M30 125H270" stroke="#93C5FD" stroke-opacity=".25" stroke-width="1.5"/>' + txt(150, 129, 'DEALER QUALIFIES Q+', 8, '#BFDBFE', ' opacity=".45" letter-spacing="1.5"') +
       '<g id="tcD"></g><g id="tcP"></g><g id="tcDx" opacity="0">' + txt(150, 106, '✕', 18, '#F87171') + '</g>',
-    init: function (c) { whoTags(c, 6, 88); },
+    init: function (c) { whoTags(c, 6, 88); backsAt(c.id('tcD'), 3, 40, 62, 1.15); backsAt(c.id('tcP'), 3, 40, 186, 1.15); },
     reset: function (c) { c.id('tcD').innerHTML = ''; c.id('tcP').innerHTML = ''; c.id('tcDx').setAttribute('opacity', '0'); },
     play: async function (c, r) {
       var i = +r.view.i, h = find(tcDeal, function (x) { return x.cat === i; }) || tcDeal(), gap = 40;
@@ -310,7 +312,7 @@
     chips: [[CHIP.win, 1.75], [CHIP.flush, 2.2], [CHIP.mini(['K', 'K', '7', '7']), 2.6], [CHIP.mini(['A', 'A', 'A', 'A']), 6], [CHIP.mini(['9', '10', 'J'], true), 20]],
     chipOf: function (i) { return i >= 2 ? i - 2 : -1; },
     scene: felt('heF', '#7F1D1D', '#2A0A0A') + '<rect x="40" y="96" width="220" height="56" rx="12" fill="#000" opacity=".22"/><g id="heB"></g><g id="heD"></g><g id="heP"></g>',
-    init: function (c) { whoTags(c, 4, 90); },
+    init: function (c) { whoTags(c, 4, 90); backsAt(c.id('heP'), 2, 42, 206, 1.05); backsAt(c.id('heD'), 2, 42, 46, 1.05); backsAt(c.id('heB'), 5, 41, 124, 1.05); },
     reset: function (c) { ['heB', 'heD', 'heP'].forEach(function (k) { c.id(k).innerHTML = ''; }); },
     play: async function (c, r) {
       var i = +r.view.i, h = i === 6 ? heSF() : find(function () { return heDeal(i); }, function (x) { return x && x.cat === i; }, 60000);
@@ -356,6 +358,7 @@
     chipOf: function (i) { return i <= 0 ? -1 : i <= 6 ? 0 : i <= 9 ? 1 : i === 10 ? 2 : 3; },
     scene: felt('nnF', '#B91C1C', '#3F0A0A') + '<g opacity=".18">' + [0, 1, 2, 3].map(function (j) { return '<circle cx="' + (40 + j * 74) + '" cy="40" r="26" fill="none" stroke="#FDE68A" stroke-width="2"/>'; }).join('') + '</g>' +
       '<g id="nnC"></g><g id="nnBull" transform="translate(150 70)" opacity="0"></g><g id="nnSum" opacity="0"></g>',
+    init: function (c) { backsAt(c.id('nnC'), 5, 50, 180, 1.3); },
     reset: function (c) { c.id('nnC').innerHTML = ''; c.id('nnBull').setAttribute('opacity', '0'); c.id('nnSum').setAttribute('opacity', '0'); },
     play: async function (c, r) {
       var i = +r.view.i, h;

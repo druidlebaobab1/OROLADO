@@ -207,7 +207,7 @@
     scene: felt('tqF', '#166534', '#022C22') + '<rect x="8" y="34" width="284" height="80" rx="14" fill="#0F172A" opacity=".55"/><rect x="8" y="136" width="284" height="80" rx="14" fill="#7F1D1D" opacity=".55"/>' +
       '<g id="tqN"></g><g id="tqR"></g>' + tqPill('tqNt', 74, '#1E293B') + tqPill('tqRt', 176, '#B91C1C') + txt(150, 128, '31 … 40', 9, '#FDE68A', ' opacity=".6" letter-spacing="3"'),
     opts: function (l) { return '<div class="cg-opts tq-opts">' + optBtn(0, '<b class="fit">' + K.esc(l.noir) + '</b>', pm(0.445)) + optBtn(1, '<b class="fit">' + K.esc(l.rouge) + '</b>', pm(0.445), 'tq-red') + '</div>'; },
-    init: function (c) { c.sel = 0; },
+    init: function (c) { c.sel = 0; try { [['tqN', 74], ['tqR', 176]].forEach(function (q) { var h = ''; for (var k = 0; k < 4; k++) h += '<g transform="translate(' + (30 + k * 30) + ' ' + q[1] + ') scale(.85)">' + card(null) + '</g>'; c.id(q[0]).insertAdjacentHTML('beforeend', h); }); } catch (e) { /* ignore */ } }, // v3695 : cartes face cachée avant la 1re donne
     params: function (c) { return { pick: c.sel }; },
     reset: function (c) { c.id('tqN').innerHTML = ''; c.id('tqR').innerHTML = ''; c.id('tqNt').setAttribute('opacity', '0'); c.id('tqRt').setAttribute('opacity', '0'); c.qa('#tqNt,#tqRt').forEach(function (g) { g.classList.remove('cb-win'); }); },
     play: async function (c, r) {
