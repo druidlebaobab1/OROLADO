@@ -224,13 +224,13 @@
   <!-- 2026-10-20 : polices Google chargées SANS bloquer la page (avant : tout, même l'écran de chargement, les attendait) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="/css/app.css?v=3693">
-    <link rel="stylesheet" href="/css/auth.css?v=3693">
-    <link rel="stylesheet" href="/css/tv.css?v=3693">
-    <link rel="stylesheet" href="/css/galaxy.css?v=3693">
-    <link rel="stylesheet" href="/css/cg.css?v=3693">
-    <link rel="stylesheet" href="/css/lobby.css?v=3693">
-    <link rel="stylesheet" href="/css/sports2.css?v=3693">
+    <link rel="stylesheet" href="/css/app.css?v=3694">
+    <link rel="stylesheet" href="/css/auth.css?v=3694">
+    <link rel="stylesheet" href="/css/tv.css?v=3694">
+    <link rel="stylesheet" href="/css/galaxy.css?v=3694">
+    <link rel="stylesheet" href="/css/cg.css?v=3694">
+    <link rel="stylesheet" href="/css/lobby.css?v=3694">
+    <link rel="stylesheet" href="/css/sports2.css?v=3694">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -455,12 +455,6 @@ html.oro-lite #oroLoader .ol-pu .pb{animation:none;opacity:.8}
   box-shadow:0 0 calc(var(--s)*.3) color-mix(in srgb,var(--c) 70%,transparent),0 0 0 1.2px rgba(255,255,255,.4) inset}
 #oroLoader .ol-bub.ol-ic svg{width:56%;height:56%;overflow:visible;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.35))}
 /* v2822 : « monde OROLADO » — petits logos posés tout autour (verre transparent, bord coloré, léger flottement) */
-/* v3692 (propriétaire : « je déteste les planètes ») : plus de planètes à l'écran de chargement — fond sans planètes, barre or fine */
-#oroLoader .ol-planets.ol-planets{gap:5px!important;width:min(250px,64vw)}
-#oroLoader .ol-planets.ol-planets i{flex:1 1 0;width:auto!important;height:7px!important;border-radius:99px!important;overflow:hidden!important;background:rgba(255,236,190,.12)!important;box-shadow:inset 0 0 0 1px rgba(255,226,150,.18)!important}
-#oroLoader .ol-planets.ol-planets i::before,#oroLoader .ol-planets.ol-planets i::after{display:none!important}
-#oroLoader .ol-planets.ol-planets i b{inset:0!important;height:100%!important;border-radius:99px!important;background:linear-gradient(90deg,#B8860B,#F5D27A 55%,#FFF1C4)!important;box-shadow:0 0 10px rgba(245,200,90,.55)!important}
-#oroLoader .ol-planets.ol-planets i.full{box-shadow:0 0 12px rgba(245,200,90,.45)!important}
 #oroLoader .ol-world{position:absolute;inset:0;z-index:1;pointer-events:none}
 #oroLoader .ow{position:absolute;width:var(--s);height:var(--s);margin:calc(var(--s)/-2) 0 0 calc(var(--s)/-2);border-radius:50%;display:grid;place-items:center;
   background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.32),rgba(255,255,255,0) 34%),rgba(255,255,255,.05);
@@ -500,7 +494,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     function paint() {
       for (var i = 0; i < pl.length; i++) {
         var part = Math.max(0, Math.min(1, (p - i * 20) / 20));
-        var cp = document.documentElement.dir === 'rtl' ? 'inset(0 0 0 ' + (100 - part * 100).toFixed(1) + '%)' : 'inset(0 ' + (100 - part * 100).toFixed(1) + '% 0 0)'; pl[i].firstChild.style.webkitClipPath = cp; pl[i].firstChild.style.clipPath = cp;
+        var cp = 'inset(' + (100 - part * 100).toFixed(1) + '% 0 0 0)'; pl[i].firstChild.style.webkitClipPath = cp; pl[i].firstChild.style.clipPath = cp;
         pl[i].classList.toggle('full', part >= 1);
       }
       t.textContent = Math.round(p) + '%';
@@ -760,7 +754,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     // Version de CETTE page, lue au moment de la vérification (la ligne qui la porte est plus bas dans la page).
     function mine() {
       try {
-        var sc = document.querySelector('script[src*="js/app.js?v=3693"]');
+        var sc = document.querySelector('script[src*="js/app.js?v=3694"]');
         return sc ? parseInt(String(sc.getAttribute('src')).split('v=')[1], 10) || 0 : 0;
       } catch (e0) { return 0; }
     }
@@ -2353,25 +2347,25 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <script src="/js/indices.js?v=3693"></script>
+  <script src="/js/indices.js?v=3694"></script>
   <script>/* v2822 : emblèmes des indices (js/indices.js) posés dans le « monde OROLADO » de l'écran de chargement */
   (function(){try{var W=window.D6||{},list=(W.EXT_INDICES||[]).filter(function(e){return e&&e.glyph;}),orig=['v100','stable','apex500','horizon50','crash300','goldtrend','boomspike','nexusprime','v75','titanpulse'];
   /* v3691 (propriétaire : « ce sont les anciens logos ») : les NOUVEAUX emblèmes-photos des indices (mêmes images que la barre du haut) */
   var slots=document.querySelectorAll('#olWorld .ow-x');for(var i=0;i<slots.length;i++){var id=(i%2===0)?orig[(i/2)%orig.length]:(list.length?list[(i*5)%list.length].id:orig[i%orig.length]);
   if(id){slots[i].innerHTML='<img class="ol-rimg" src="/img/indices/'+id+'.webp?v=3448" alt="" draggable="false" decoding="async">';slots[i].classList.add('in','ol-hasimg');}}}catch(e){}})();</script>
-  <script src="/js/config.js?v=3693"></script>
+  <script src="/js/config.js?v=3694"></script>
   <!-- 2026-10-20 (vieux Android) : traductions par langue — le noyau écrit juste après lui js/i18n/en.js + la langue du joueur
        (avant : les 12 langues à chaque visite). Textes : js/i18n-src.js, js/translations.js, js/i18n-zh.js → node scripts/gen-i18n.js -->
   <script src="/js/i18n/core.js?v=478395eefb"></script>
-  <script src="/js/store.js?v=3693"></script>
-  <script src="/js/api.js?v=3693"></script>
+  <script src="/js/store.js?v=3694"></script>
+  <script src="/js/api.js?v=3694"></script>
   <!-- 2026-10-20 : Supabase servi par orolado.com (avant : cdn.jsdelivr.net, version non fixée, bloquait le chargement si lent) -->
   <script src="/js/vendor/supabase-js-2.118.0.js"></script>
-  <script src="/js/supabase.js?v=3693"></script>
-  <script src="/js/auth.js?v=3693"></script>
-  <script src="/js/fair_table.js?v=3693"></script>
-  <script src="/js/engine.js?v=3693"></script>
-  <script src="/js/chart.js?v=3693"></script>
+  <script src="/js/supabase.js?v=3694"></script>
+  <script src="/js/auth.js?v=3694"></script>
+  <script src="/js/fair_table.js?v=3694"></script>
+  <script src="/js/engine.js?v=3694"></script>
+  <script src="/js/chart.js?v=3694"></script>
   <script>/* v2573 — paiement Flutterwave chargé APRÈS l'affichage (avant : 2 s de blocage, Safari restait en « chargement » avec sa grande barre sur ACHETER / VENDRE). Au clic sur Recharger, ensureFlwScript() le recharge si besoin. */(function(){function go(){if(window.FlutterwaveCheckout||window.__flwInject)return;window.__flwInject=1;var s=document.createElement('script');s.src='https://checkout.flutterwave.com/v3.js?v=2790';s.async=true;s.onload=function(){window.__flwLoad='ok'};s.onerror=function(){window.__flwLoad='err'};document.head.appendChild(s);}window.__oroFlwPreload=go;/* 2026-10-20 : plus chargé à chaque visite (vieux Android) : js/app.js le prépare à l'ouverture de Recharger */})();</script>
   <script>
   (function () {
@@ -2422,29 +2416,29 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="/js/receipt.js?v=3693"></script>
-  <script src="/js/back.js?v=3693"></script>
-  <script src="/js/push.js?v=3693"></script>
-  <script src="/js/app.js?v=3693"></script>
-  <script src="/js/portal.js?v=3693"></script>
-  <script src="/js/live-ui.js?v=3693"></script>
-  <script src="/js/live.js?v=3693"></script>
-  <script src="/js/live-quiz-data.js?v=3693"></script>
-  <script src="/js/live-fun.js?v=3693"></script>
-  <script src="/js/live-groups.js?v=3693"></script>
-  <script src="/js/live-send.js?v=3693"></script>
-  <script src="/js/gifts-home.js?v=3693"></script>
-  <script src="/js/sports.js?v=3693"></script>
-  <script src="/js/localcur.js?v=3693"></script>
-  <script src="/js/casino-art.js?v=3693"></script>
-  <script src="/js/games/scenes.js?v=3693"></script>
-  <script src="/js/sfx.js?v=3693"></script>
-  <script src="/js/casino.js?v=3693"></script>
-  <script src="/js/fit.js?v=3693"></script>
-  <script src="/js/learn-txt.js?v=3693"></script>
-  <script src="/js/learn-txt2.js?v=3693"></script>
-  <script src="/js/learn.js?v=3693"></script>
-  <script src="/js/art-rig.js?v=3693"></script>
+  <script src="/js/receipt.js?v=3694"></script>
+  <script src="/js/back.js?v=3694"></script>
+  <script src="/js/push.js?v=3694"></script>
+  <script src="/js/app.js?v=3694"></script>
+  <script src="/js/portal.js?v=3694"></script>
+  <script src="/js/live-ui.js?v=3694"></script>
+  <script src="/js/live.js?v=3694"></script>
+  <script src="/js/live-quiz-data.js?v=3694"></script>
+  <script src="/js/live-fun.js?v=3694"></script>
+  <script src="/js/live-groups.js?v=3694"></script>
+  <script src="/js/live-send.js?v=3694"></script>
+  <script src="/js/gifts-home.js?v=3694"></script>
+  <script src="/js/sports.js?v=3694"></script>
+  <script src="/js/localcur.js?v=3694"></script>
+  <script src="/js/casino-art.js?v=3694"></script>
+  <script src="/js/games/scenes.js?v=3694"></script>
+  <script src="/js/sfx.js?v=3694"></script>
+  <script src="/js/casino.js?v=3694"></script>
+  <script src="/js/fit.js?v=3694"></script>
+  <script src="/js/learn-txt.js?v=3694"></script>
+  <script src="/js/learn-txt2.js?v=3694"></script>
+  <script src="/js/learn.js?v=3694"></script>
+  <script src="/js/art-rig.js?v=3694"></script>
 <script>
 /* Petits boutons (+ − ÷2 ×2 ⌫ ↺, durées) : ils s'allument un instant au toucher, comme MA / BB / EMA. Dessin seulement. */
 (function(){var SEL='.qbtn,.ind-btn.zoom-btn,.ind-btn.chart-reset-btn,.chart-fs-btn,.fs-trade-close,.dur-chip,.help-badge,#btnProfile,.mode-btn,.lang-dd-btn';function lit(e){var t=e.target&&e.target.closest?e.target.closest(SEL):null;if(!t)return;t.classList.add('tap-lit');clearTimeout(t._tapLit);t._tapLit=setTimeout(function(){t.classList.remove('tap-lit');},340);}document.addEventListener(window.PointerEvent?'pointerdown':'touchstart',lit,{passive:true,capture:true});})();
