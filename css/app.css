@@ -14845,11 +14845,4 @@ html body #portalModal .aff-sort button.as-zero:not(.on){opacity:.55}
   html body #screenTrade .topbar-row .tb-left #btnPortal{transform:scale(.84)!important;transform-origin:50% 0!important}
   html body #screenTrade .topbar{position:relative!important;z-index:6!important}
 }
-/* v3698 (propriétaire, appli iPhone installée) : le site s'arrête déjà AU-DESSUS du « sol » du bas ; la marge
-   env(safe-area-inset-bottom) (34 px) ajoutée en plus dans les fenêtres laissait une bande vide entre la liste et le sol.
-   Les listes défilent maintenant jusqu'en bas, sans bande. */
-html.ios-app:root body #historySheet#historySheet#historySheet .sheet-feed,html.ios-app:root body #financeModal#financeModal#financeModal #txFeed{padding-bottom:10px!important}
-html.ios-app:root body #financeModal#financeModal#financeModal > .modal-box,html.ios-app:root body #historySheet#historySheet#historySheet > .modal-box{padding-bottom:0!important}
-html.ios-app:root body #portalModal#portalModal#portalModal > .modal-box.portal-box,html.ios-app:root body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-bottom:8px!important}
-html.ios-app:root body #withdrawModal#withdrawModal > .modal-box,html.ios-app:root body #casinoModal#casinoModal.in-game > .modal-box{padding-bottom:6px!important}
 @keyframes spin{to{transform:rotate(360deg)}}
