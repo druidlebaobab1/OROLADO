@@ -232,3 +232,15 @@ html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal > .m
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-top,
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal:not(.in-game):not(.pred-only) .cs-top{background:#0E0C0A!important;box-shadow:0 -80px 0 60px #0E0C0A,0 1px 0 rgba(255,255,255,.05)!important}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal#casinoModal .cs-panel{background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.08)!important;box-shadow:none!important}
+
+/* 2026-11-12 (propriétaire) — barre de recherche de la salle de jeux : sombre, bord or discret, loupe, pleine largeur */
+html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch{position:relative;margin:-4px 0 12px;display:flex;align-items:center}
+html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch svg{position:absolute;left:14px;width:18px;height:18px;fill:none;stroke:#C9A86A;stroke-width:2.4;stroke-linecap:round;pointer-events:none}
+html:root[dir="rtl"] body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch svg{left:auto;right:14px}
+html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch input{width:100%;box-sizing:border-box;height:44px;padding:0 14px 0 42px;border-radius:14px;
+  background:#16120B;border:1px solid rgba(233,196,122,.28);color:#F5E9D0;font:500 15px/1 inherit;outline:none;-webkit-appearance:none;appearance:none}
+html:root[dir="rtl"] body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch input{padding:0 42px 0 14px}
+html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch input::placeholder{color:rgba(245,233,208,.45)}
+html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch input:focus{border-color:rgba(233,196,122,.6)}
+html:root body #casinoModal#casinoModal #csView.cs-grid3 .cs-srch-no{text-align:center;color:rgba(245,233,208,.6);margin:24px 0}
+html:root body #casinoModal#casinoModal #csView :is(.cs-srch-res,.cs-srch-no,.cs-sec)[hidden]{display:none!important}
