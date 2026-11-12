@@ -8045,9 +8045,13 @@
   // v2795 : le Casino a sa propre mise en page couchée (jeu à gauche, mise à droite) — on ne le réduit plus ici (il sortait de 34 px à droite)
   var LS_FIT_SEL = '.modal-backdrop.active:not(#casinoModal) > .modal-box, #screenAuth:not(.hidden) .auth-card, #drawerProfile.drawer.on';
   var lsFitted = [];
+  // v3704 : taille de fenêtre mémorisée (relue seulement quand elle change) — avant, chaque appel forçait un calcul de page
+  var lsWin = null;
+  try { window.addEventListener('resize', function () { lsWin = null; }); window.addEventListener('orientationchange', function () { lsWin = null; }); } catch (eLw) { /* ignore */ }
   function lsPhoneLandscape() {
-    var iw = window.innerWidth || 0;
-    var ih = window.innerHeight || 0;
+    if (!lsWin) lsWin = [window.innerWidth || 0, window.innerHeight || 0];
+    var iw = lsWin[0];
+    var ih = lsWin[1];
     return iw > ih && ih > 0 && ih <= 500 && !document.documentElement.classList.contains('is-tv');
   }
   function lsUnfit(el) {
@@ -8103,6 +8107,9 @@
   var lsFitRaf = 0;
   function scheduleLandscapeFit() {
     if (lsFitRaf) return;
+    // v3704 (vieux téléphones) : téléphone debout et rien à remettre → aucun travail (avant : un balayage de toute la page
+    // à CHAQUE changement de classe, des dizaines de fois par seconde)
+    if (!lsFitted.length && !lsPhoneLandscape()) return;
     lsFitRaf = requestAnimationFrame(function () {
       lsFitRaf = 0;
       try { fitLandscapeBoxes(); } catch (eFit) { /* ignore */ }

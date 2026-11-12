@@ -209,15 +209,17 @@
   if (!SUP[lang]) lang = 'en';
   var lockedLang = !!(urlLang() || hasExplicitLang());
 
+  // v3704 (vieux téléphones) : on n'écrit sur <html> que si la valeur CHANGE (chaque écriture recalculait tout le style de la page)
   function syncHtmlDir() {
     var html = document.documentElement;
     if (!html) return;
-    html.lang = lang;
-    html.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    html.setAttribute('data-lang', lang);
-    html.setAttribute('translate', 'no');
-    html.classList.add('notranslate');
-    html.classList.toggle('lang-ar', lang === 'ar');
+    var dir = lang === 'ar' ? 'rtl' : 'ltr';
+    if (html.lang !== lang) html.lang = lang;
+    if (html.dir !== dir) html.dir = dir;
+    if (html.getAttribute('data-lang') !== lang) html.setAttribute('data-lang', lang);
+    if (html.getAttribute('translate') !== 'no') html.setAttribute('translate', 'no');
+    if (!html.classList.contains('notranslate')) html.classList.add('notranslate');
+    if (html.classList.contains('lang-ar') !== (lang === 'ar')) html.classList.toggle('lang-ar', lang === 'ar');
   }
   syncHtmlDir();
 
@@ -281,24 +283,24 @@
         var key = el.getAttribute('data-i18n');
         if (key === 'authRealPitch') { el.textContent = ''; return; }
         var val = (key === 'recharge' || key === 'deposit') ? depositLabel() : t(key);
-        el.textContent = val;
+        if (el.textContent !== val) el.textContent = val;
       } catch (eEl) { /* ignore */ }
     });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
-      try { el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'))); } catch (ePh) { /* ignore */ }
+      try { var v = t(el.getAttribute('data-i18n-placeholder')); if (el.getAttribute('placeholder') !== v) el.setAttribute('placeholder', v); } catch (ePh) { /* ignore */ }
     });
     document.querySelectorAll('[data-i18n-aria]').forEach(function (el) {
-      try { el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); } catch (eAr) { /* ignore */ }
+      try { var v = t(el.getAttribute('data-i18n-aria')); if (el.getAttribute('aria-label') !== v) el.setAttribute('aria-label', v); } catch (eAr) { /* ignore */ }
     });
     document.querySelectorAll('[data-i18n-title]').forEach(function (el) {
-      try { el.setAttribute('title', t(el.getAttribute('data-i18n-title'))); } catch (eTi) { /* ignore */ }
+      try { var v = t(el.getAttribute('data-i18n-title')); if (el.getAttribute('title') !== v) el.setAttribute('title', v); } catch (eTi) { /* ignore */ }
     });
     document.querySelectorAll('.lang-btn').forEach(function (btn) {
       try { btn.classList.toggle('on', btn.dataset.lang === lang); } catch (eLg) { /* ignore */ }
     });
     try {
       var dep = document.getElementById('btnDepositLabel');
-      if (dep) dep.textContent = depositLabel();
+      if (dep) { var dl = depositLabel(); if (dep.textContent !== dl) dep.textContent = dl; }
     } catch (eLbl) { /* ignore */ }
     try {
       document.dispatchEvent(new CustomEvent('orolado-i18n'));

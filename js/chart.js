@@ -6832,7 +6832,13 @@
         try {
           if (!window.__oroladoFsResizeBound) {
             window.__oroladoFsResizeBound = true;
+            // v3704 (vieux téléphones) : on ne recalcule la courbe que si le plein écran a VRAIMENT changé (avant : 2 recalculs
+            // à chaque changement de classe de la page, des dizaines au démarrage)
+            var fsWas = null;
             var fsObs = new MutationObserver(function () {
+              var fsNow = document.documentElement.classList.contains('fs-trade') + '|' + document.documentElement.classList.contains('is-fullscreen') + '|' + !!(document.getElementById('fsTradeOverlay') && document.getElementById('fsTradeOverlay').classList.contains('on'));
+              if (fsNow === fsWas) return;
+              fsWas = fsNow;
               try { resize(); } catch (eFs) { /* ignore */ }
               requestAnimationFrame(function () {
                 try { resize(); } catch (eFs2) { /* ignore */ }
