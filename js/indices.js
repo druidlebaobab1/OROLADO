@@ -1067,7 +1067,7 @@
      l'emblème-photo a un fond détouré en bord doux (transparent) → il flotte sur la galaxie, aucun rond ni cadre noir.
      Lazy-load : seules les vignettes visibles de la barre se chargent → léger, aucun poids sur les courbes. */
   var IDX_PV = '3448';
-  var IDX_PV_ID = { minerva: '3693', v75: '3693', ganesha: '3693', samael: '3693', buer: '3693', cerberus: '3693', abaddon: '3693' }; // v3693 (propriétaire) : casque de Minerva retourné, il regarde le joueur (vers la droite)
+  var IDX_PV_ID = { minerva: '3694', v75: '3693', ganesha: '3693', samael: '3693', buer: '3693', cerberus: '3693', abaddon: '3693' }; // v3693 (propriétaire) : casque de Minerva retourné, il regarde le joueur (vers la droite)
   function phImg(id) {
     return '<img class="idx-ph" loading="lazy" decoding="async" src="img/indices/' + id + '.webp?v=' + (IDX_PV_ID[id] || IDX_PV) + '" alt="" aria-hidden="true">';
   }
