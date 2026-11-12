@@ -14830,3 +14830,43 @@ html body #portalModal#portalModal .aff-sort{grid-template-columns:repeat(5,minm
 html body #portalModal#portalModal .aff-sort button{padding:7px 2px!important;font-size:clamp(10.5px,3.1vw,13px)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;letter-spacing:-.1px}
 /* v3692 : rappel « seulement cette adresse » (dépôts perdus sur les anciennes adresses) */
 html body .oxa-only{margin:8px 0 2px;padding:7px 10px;border-radius:10px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.35);color:#FCD34D;font-size:clamp(11px,3.1vw,12.5px);line-height:1.35;text-align:center;overflow-wrap:anywhere}
+/* v3698 : nombre d'amis sur chaque bouton de tri/filtre */
+html body #portalModal#portalModal .aff-sort button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:1px!important;line-height:1.1!important;padding:5px 2px!important}
+html body #portalModal .aff-sort button i.as-n{font-style:normal;font-weight:800;font-size:.86em;opacity:.85;font-variant-numeric:tabular-nums}
+html body #portalModal .aff-sort button.as-zero:not(.on){opacity:.55}
+/* v3698 (propriétaire, captures téléphone tourné) — PLEIN ÉCRAN en paysage (téléphone couché) : panneau complet et rangé
+   (durée · mise + gain · 4 paliers de gain · Acheter / Vendre), plus de « OROLADO .com » sous le bouton Quitter. */
+@media (orientation:landscape) and (max-height:520px){
+  html body #fsTradeOverlay#fsTradeOverlay .oro-sign.fs{display:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad{display:flex!important;flex-direction:column!important;gap:6px!important;justify-content:flex-start!important;overflow:hidden!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .stake-line{flex:none!important;height:auto!important;max-height:none!important;display:flex!important;flex-direction:column!important;width:100%!important;max-width:none!important;min-width:0!important;align-self:stretch!important;height:auto!important;gap:6px!important;margin:0!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .dur-row{display:flex!important;visibility:visible!important;max-height:none!important;height:auto!important;opacity:1!important;width:100%!important;gap:3px!important;overflow-x:auto!important;scrollbar-width:none!important;flex:none!important;margin:0!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .dur-row::-webkit-scrollbar{display:none}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .dur-row .dur-nav{display:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .dur-row .dur-chip{display:flex!important;visibility:visible!important;flex:1 0 auto!important;min-width:32px!important;height:28px!important;padding:0 4px!important;font-size:11px!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .dur-row .dur-chip svg{display:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .stake-field{width:100%!important;max-width:none!important;height:46px!important;min-height:0!important;flex:none!important;position:relative!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .odds-row{display:grid!important;visibility:visible!important;max-height:none!important;height:auto!important;opacity:1!important;overflow:visible!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important;width:100%!important;margin:0!important;flex:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .odds-row .odds-chip{display:flex!important;visibility:visible!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;width:auto!important;height:38px!important;min-width:0!important;padding:0!important;border-radius:10px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .odds-row .odds-chip .odds-mult{font-size:11.5px!important;line-height:1!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .odds-row .odds-chip .odds-pct{font-size:8px!important;line-height:1!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .trade-row{flex:1 1 auto!important;height:auto!important;min-height:0!important;display:grid!important;grid-template-rows:1fr 1fr!important;gap:6px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .trade-row .btn-trade{height:auto!important;min-height:44px!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .trade-row{grid-template-columns:minmax(0,1fr)!important;width:100%!important;max-width:none!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .trade-row .btn-trade{width:100%!important;max-width:none!important;grid-column:1!important}
+  html.fs-trade body #fsTradeOverlay#fsTradeOverlay #tradeWrap#tradeWrap#tradeWrap:not(#z1):not(#z2):not(#z3):not(#z4):not(#z5):not(#z6):not(#z7) > .pad .trade-row .fs-pad-capsule{display:none!important}
+}
+/* v3698 : téléphone couché (mode normal) — « Cadeaux » / « Social » : libellé entier (il était coupé à 6 px de haut) */
+@media (orientation:landscape) and (max-height:520px){
+  html:root body #screenTrade#screenTrade .topbar-row #btnPortal .pw-lbl,html:root body #screenTrade#screenTrade .topbar-row #btnHelp .hb-txt{height:auto!important;max-height:none!important;overflow:visible!important;line-height:1.15!important;font-size:9.5px!important}
+  html body #screenTrade .topbar-row .tb-left #btnPortal{transform:scale(.84)!important;transform-origin:50% 0!important}
+  html body #screenTrade .topbar{position:relative!important;z-index:6!important}
+}
+html.fs-trade body #fsTradeOverlay .pad .dur-row .dur-chip *{font-size:inherit!important}
+/* v3698 (propriétaire, appli iPhone installée) : le site s'arrête déjà AU-DESSUS du « sol » du bas ; la marge
+   env(safe-area-inset-bottom) (34 px) ajoutée en plus dans les fenêtres laissait une bande vide entre la liste et le sol.
+   Les listes défilent maintenant jusqu'en bas, sans bande. */
+html.ios-app:root body #historySheet#historySheet#historySheet .sheet-feed,html.ios-app:root body #financeModal#financeModal#financeModal #txFeed{padding-bottom:10px!important}
+html.ios-app:root body #financeModal#financeModal#financeModal > .modal-box,html.ios-app:root body #historySheet#historySheet#historySheet > .modal-box{padding-bottom:0!important}
+html.ios-app:root body #portalModal#portalModal#portalModal > .modal-box.portal-box,html.ios-app:root body #portalModal#portalModal#portalModal.tabs-on > .modal-box.portal-box{padding-bottom:8px!important}
+html.ios-app:root body #withdrawModal#withdrawModal > .modal-box,html.ios-app:root body #casinoModal#casinoModal.in-game > .modal-box{padding-bottom:6px!important}
