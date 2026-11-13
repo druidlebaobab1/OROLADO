@@ -532,7 +532,7 @@
     var clicks = Number(aff.clicks) || 0, friends = Number(aff.friends) || 0, dep = Number(aff.deposited) || 0;
     var nDep = Number(aff.depCount) || 0, totalDep = Number(aff.total) || 0;
     var avgPlayer = dep > 0 ? totalDep / dep : 0;
-    var c2r = clicks > 0 ? Math.round(100 * friends / clicks) : 0;
+    var c2r = clicks > 0 ? Math.min(100, Math.round(100 * friends / clicks)) : 0;
     var r2d = friends > 0 ? Math.round(100 * dep / friends) : 0;
     var demoMin = Number(rev.demoMin) || 50; // amis actifs (déposé) requis pour débloquer un compte démo
     var met = function (v, label) { return '<div class="arv-met"><b>' + v + '</b><span>' + esc(label) + '</span></div>'; };
@@ -606,7 +606,7 @@
     var when = function (ts) { try { return new Date(ts * 1000).toLocaleString(undefined, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
     var clicks = Number(aff.clicks) || 0, friends = Number(aff.friends) || 0, dep = Number(aff.deposited) || 0;
     var nDep = Number(aff.depCount) || 0, totalDep = Number(aff.total) || 0, big = Number((P.all || {}).big) || 0;
-    var c2r = clicks > 0 ? Math.round(100 * friends / clicks) : 0, r2d = friends > 0 ? Math.round(100 * dep / friends) : 0;
+    var c2r = clicks > 0 ? Math.min(100, Math.round(100 * friends / clicks)) : 0, r2d = friends > 0 ? Math.round(100 * dep / friends) : 0;
     return '<div class="arr"><div class="arr-h">' + esc(t('affResTitle')) + '</div>' +
       '<div class="arr-g">' +
         box(money(rev.paid || 0), t('affResPaid'), 'ok') +
@@ -634,7 +634,7 @@
       '<div class="arr-sub">' + esc(t('affResLog')) + '</div>' +
       (log.length ? '<div class="arr-log">' + log.map(function (l) { return '<div><span>' + esc(when(l.t)) + '</span><b>+' + esc(money(l.a)) + '</b></div>'; }).join('') + '</div>'
         : '<p class="arr-empty">' + esc(t('affResNoLog')) + '</p>') +
-      ((aff && (aff.list || []).length) ? '<button type="button" class="aff-more arr-more" data-affmore="1"><span>' + esc(t('affMore')) + ' (' + affInt(Number(aff.deposited) || 0) + ')</span><i class="aff-more-go"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></i></button>' : '') +
+      ((aff && (aff.list || []).length) ? '<button type="button" class="aff-more arr-more" data-affmore="1"><span>' + esc(t('affMore')) + ' (' + affInt(Number(aff.friends) || (aff.list || []).length) + ')</span><i class="aff-more-go"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></i></button>' : '') +
       '</div>';
   }
   // Chiffre trop long pour sa case (gros montants, langues longues) : il rétrécit un peu, jamais de débordement.
@@ -739,14 +739,18 @@
   function renderAffList() {
     if (!aff || !$('affRows')) return;
     var all = (aff.list || []).filter(function (r) { return Number(r.deposit || 0) > 0; });
+    // 2026-11-13 (propriétaire : « il y a beaucoup de choses qu'il ne peut pas voir ») : la page « Voir plus » montre
+    // TOUS les amis inscrits (avec ou sans dépôt) ; le filtre « Sans dépôt » les retrouve. L'aperçu garde ceux qui ont déposé.
+    var allS = aff.list || [];
     $('affRows').innerHTML = all.length ? all.slice(0, 2).map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t('affEmptyAll')) + '</p>';
-    show($('affMore'), all.length > 0);
+    show($('affMore'), allS.length > 0);
     if (!$('affRowsAll')) return;
     // v2491 : périodes en jours entiers (aujourd'hui, les 7 / 30 derniers jours depuis minuit), comme le graphique.
     var midnight = Math.floor(new Date().setHours(0, 0, 0, 0) / 1000);
     var from = affFilter === 'day' ? midnight
       : affFilter === 'week' ? midnight - 6 * 86400 : affFilter === 'month' ? midnight - 29 * 86400 : 0;
     var rows = all.filter(function (r) { return r.at >= from; });
+    var rowsS = allS.filter(function (r) { return r.at >= from; });
     var dep = 0, gain = 0;
     rows.forEach(function (r) { dep += Number(r.deposit || 0); gain += Number(r.gift || 0); });
     // v2491 : « Tu as gagné » = gains vraiment reçus pendant la période (même chiffre que le graphique)
@@ -779,7 +783,7 @@
     // Recherche par numéro ORO (« 7030 », « oro-703098 »…) et tri choisi.
     var q = String(($('affSearch') && $('affSearch').value) || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     // v3689 : recherche par ID, date (06/11/26) ou montant (7,26) — chiffres seuls comparés
-    var shown = rows.filter(function (r) {
+    var shown = rowsS.filter(function (r) {
       if (!q) return true;
       var hay = String(r.id || '') + ' ' + new Date(r.at * 1000).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + money(r.deposit) + ' ' + money(r.gift) + ' ' + Number(r.deposit || 0).toFixed(2) + ' ' + Number(r.gift || 0).toFixed(2);
       return hay.toUpperCase().replace(/[^A-Z0-9]/g, '').indexOf(q) >= 0;
@@ -804,7 +808,7 @@
       return Number(b.at || 0) - Number(a.at || 0);
     });
     fitAffSort();
-    $('affRowsAll').innerHTML = shown.length ? shown.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t(q ? 'affNoMatch' : (FL[affSortBy] && rows.length ? 'affNoneCat' : 'affEmpty'))) + '</p>';
+    $('affRowsAll').innerHTML = shown.length ? shown.map(affRowHtml).join('') : '<p class="aff-empty">' + esc(t(q ? 'affNoMatch' : (FL[affSortBy] && rowsS.length ? 'affNoneCat' : 'affEmpty'))) + '</p>';
   }
   function tickLists() {
     if (bon && bon.enabled && $('bonTimer')) $('bonTimer').innerHTML = ICO_CLOCK + '<span>' + esc(daysLeft(bon.phase === 'filling' ? bon.until : bon.weekEnd)) + '</span>';
