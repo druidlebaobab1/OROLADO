@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v3714';
+const CACHE = 'orolado-v3715';
 const STATIC = 'orolado-static-1'; // code versionné (?v=…) gardé d'une version à l'autre ; vidé de l'ancien à chaque mise à jour
 const STATIC_RE = /\.(?:js|css)\?(?:[^#]*&)?v=[0-9a-f]{3,}(?:[&#]|$)/i;
 function typeOk(url, res) {

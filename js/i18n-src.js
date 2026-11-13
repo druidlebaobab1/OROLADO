@@ -3999,7 +3999,7 @@
   // v2507 — bouton « Ouvrir » du dépôt crypto.
   // v2518 — moyens de retrait « Carte bancaire » / « Virement bancaire » : restaient en français dans toutes les langues.
   AUDIT_TR.wdMethodCard = ['Bank card', 'Carte bancaire', 'Tarjeta bancaria', 'Cartão bancário', 'البطاقة البنكية', 'Banka kartı', 'Thẻ ngân hàng', 'Kartu bank', 'Банковская карта', 'Bankkarte', 'बैंक कार्ड'];
-  AUDIT_TR.wdMethodBank = ['Bank transfer', 'Virement bancaire', 'Transferencia bancaria', 'Transferência bancária', 'تحويل بنكي', 'Banka havalesi', 'Chuyển khoản ngân hàng', 'Transfer bank', 'Банковский перевод', 'Banküberweisung', 'बैंक ट्रांसफ़र'];
+  AUDIT_TR.wdMethodBank = ['Bank transfer', 'Virement bancaire', 'Transferencia bancaria', 'Transferência bancária', 'تحويل بنكي', 'Banka havalesi', 'Chuyển khoản ngân hàng', 'Transfer bank', 'Банковский перевод', 'Überweisung', 'बैंक ट्रांसफ़र'];
   AUDIT_TR.cryptoSearchPh = ['Search…', 'Rechercher…', 'Buscar…', 'Pesquisar…', 'بحث…', 'Ara…', 'Tìm kiếm…', 'Cari…', 'Поиск…', 'Suchen…', 'खोजें…'];
   AUDIT_TR.payGo = ['Open', 'Ouvrir', 'Abrir', 'Abrir', 'فتح', 'Aç', 'Mở', 'Buka', 'Открыть', 'Öffnen', 'खोलें'];
   // v2493 — bouton Installer sur Android : 3 étapes Android (plus la consigne iPhone).
