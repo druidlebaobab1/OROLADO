@@ -1,4 +1,4 @@
-const CACHE = 'orolado-v3712';
+const CACHE = 'orolado-v3713';
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -34,16 +34,12 @@ self.addEventListener('activate', function (event) {
       // la main, le service worker force lui-même les fenêtres ouvertes à charger le HTML frais (?swv=<version>).
       // Fiable même si l'app.js en cache est ancien (le navigateur revalide toujours sw.js). Le paramètre swv évite
       // toute boucle : on ne renavigue qu'une fois par version et par fenêtre.
+      // 2026-11-13 (propriétaire : « le chargement finit presque, puis ça recommence ») : la page est TOUJOURS chargée fraîche
+      // (HTML / JS / CSS ne passent pas par ce service worker) → plus de rechargement forcé de toutes les fenêtres. On prévient
+      // seulement les pages ; une page vraiment plus ancienne (ouverte avant la mise à jour) se recharge elle-même, une fois.
       var ver = (CACHE.match(/(\d+)/) || ['', ''])[1];
       return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
-        list.forEach(function (c) {
-          try {
-            var u = new URL(c.url);
-            if (!ver || u.searchParams.get('swv') === ver) return;
-            u.searchParams.set('swv', ver);
-            if ('navigate' in c) c.navigate(u.href);
-          } catch (e) { /* ignore */ }
-        });
+        list.forEach(function (c) { try { c.postMessage({ t: 'oro-ver', v: Number(ver) || 0 }); } catch (e) { /* ignore */ } });
       });
     })
   );
