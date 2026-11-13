@@ -190,7 +190,7 @@
     A('mouseracelive', 'Mouse Race', ['#E0F2FE', '#0369A1']),
     A('dragonracelive', 'Dragon Race', ['#FCE7F3', '#BE185D']),
     A('unicornracelive', 'Unicorn Race', ['#EDE9FE', '#6D28D9']),
-    A('jetskiracelive', 'Jet Ski Race', ['#FEF3C7', '#B45309']),
+    A('jetskiracelive', 'Jet Ski Live', ['#FEF3C7', '#B45309']),
     A('bikeracelive', 'Bike Race', ['#DCFCE7', '#15803D']),
     A('sprintracelive', 'Sprint Race', ['#E0F2FE', '#0369A1']),
     A('skiracelive', 'Ski Race', ['#FCE7F3', '#BE185D']),

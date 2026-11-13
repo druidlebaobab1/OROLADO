@@ -81,7 +81,7 @@
   var A = function (k, name, pal) { return { k: k, name: name, sec: 'live', file: 'live4', pal: pal, icon: ICONS[k] }; };
   D6.CasinoCatalog.add([
     A('baccaratlive', 'Baccarat Live', ['#DCFCE7', '#047857']),
-    A('andarlive', 'Andar Bahar', ['#FFEDD5', '#B45309']),
+    A('andarlive', 'Andar Bahar Live', ['#FFEDD5', '#B45309']),
     A('teenpattilive', 'Teen Patti Live', ['#F3E8FF', '#6D28D9']),
     A('pokerlive', 'Poker Live', ['#D1FAE5', '#065F46']),
     A('redblacklive', 'Red or Black', ['#FEE2E2', '#991B1B']),

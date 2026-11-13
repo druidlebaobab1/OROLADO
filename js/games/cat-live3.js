@@ -84,7 +84,7 @@
     { k: 'hilolive', name: 'Hi-Lo Live', sec: 'live', file: 'live3', pal: ['#CCFBF1', '#0F766E'], icon: ICONS.hilolive },
     { k: 'bullseye', name: 'Bullseye', sec: 'live', file: 'live3', pal: ['#FEF9C3', '#A16207'], icon: ICONS.bullseye },
     { k: 'lucky10', name: 'Lucky Ten', sec: 'live', file: 'live3', pal: ['#E0F2FE', '#0284C7'], icon: ICONS.lucky10 },
-    { k: 'ladderlive', name: 'Lucky Ladder', sec: 'live', file: 'live3', pal: ['#F5F3FF', '#6D28D9'], icon: ICONS.ladderlive },
+    { k: 'ladderlive', name: 'Lucky Ladder Live', sec: 'live', file: 'live3', pal: ['#F5F3FF', '#6D28D9'], icon: ICONS.ladderlive },
     { k: 'coinlive', name: 'Coin Toss', sec: 'live', file: 'live3', pal: ['#FFEDD5', '#C2410C'], icon: ICONS.coinlive }
   ]);
 })(window.D6 = window.D6 || {});

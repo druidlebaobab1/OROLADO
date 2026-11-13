@@ -247,3 +247,10 @@ html:root body #casinoModal#casinoModal #csView :is(.cs-srch-res,.cs-srch-no,.cs
 /* v3700 (propriétaire) : petite ligne de présentation (1 ligne, peu de place) ; barre de recherche qui reste en place sous les onglets */
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-sec-d{margin:0 2px 8px!important;padding:0 4px!important;font:600 12px/1.25 var(--lb-font)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important}
 html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-srch{position:sticky!important;top:calc(var(--cs-tabs-top,50px) + var(--cs-tabs-h,56px))!important;z-index:6!important;margin:-6px 0 10px!important;padding:4px 0!important;background:#0D0A05!important;box-shadow:0 -16px 0 #0D0A05,0 6px 10px rgba(13,10,5,.85)!important}
+/* 2026-11-13 (propriétaire, capture) : la barre Action / Live / Casino était un cadre arrondi DANS la page → des creux aux coins
+   laissaient voir les jeux qui défilent derrière. Maintenant une BANDE PLEINE d'un bord à l'autre (fond uni, sans coins), les
+   3 boutons restent arrondis à l'intérieur. */
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tabs{border-radius:0!important;margin-left:-16px!important;margin-right:-16px!important;padding:6px 16px!important;
+  background:#16110A!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+  box-shadow:0 -14px 0 #16110A,0 1px 0 rgba(242,193,78,.28),0 10px 18px -12px rgba(0,0,0,.9)!important}
+html:root body #casinoModal#casinoModal#casinoModal#casinoModal #csView.cs-grid3 .cs-tab{border-radius:10px!important}

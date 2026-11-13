@@ -950,7 +950,7 @@
   // 2026-11-01 (propriétaire : « des vrais logos réalistes comme les grands sites ») — PHOTOS : certains jeux ont une
   // vraie image (img/games/<clé>.webp) au lieu d'un dessin. On force ici (passe AVANT tous les setObj/addObj, quel que
   // soit l'ordre de chargement). Même cadre rond que penalty.webp. Ajouter une clé + 2 couleurs d'anneau = logo-photo.
-  var PHOTO_VK = { cosmicunicorn: '3710', junglehorse: '3710', shadowclock: '3710', shadowlamp: '3710', shadowvase: '3710', shadowsword: '3710', shadowwolf: '3710', shadoweagle: '3710', shadowcactus: '3710', shadowhawk: '3710', shadowcauldron: '3710', shadowbear: '3710', shadowmoon: '3710' }; // 2026-11-13 : logos noirs / trop sombres refaits
+  var PHOTO_VK = { andar: '3718', andarlive: '3718', striker: '3718', jazzclub: '3718', archerylive: '3718', boxinglive: '3718', cosmicunicorn: '3710', junglehorse: '3710', shadowclock: '3710', shadowlamp: '3710', shadowvase: '3710', shadowsword: '3710', shadowwolf: '3710', shadoweagle: '3710', shadowcactus: '3710', shadowhawk: '3710', shadowcauldron: '3710', shadowbear: '3710', shadowmoon: '3710' }; // 2026-11-13 : logos noirs / trop sombres refaits
   var PHOTO_V = '3679'; // 3679 : 16 logos refaits (doublons coffres / échelle / safari / trèfles, Horseshoes, Firefly, Color Jump, Paper Plane, Bubble Pop, Rocket Cave, Peg Drop, Lucky Ten, Color Game)
   var PHOTO = {
     acorncatch:['#FDBA74','#7C2D12'], airraid:['#FCA5A5','#7F1D1D'], airstrike:['#FDE68A','#78350F'], alienwave:['#BAE6FD','#0C4A6E'], applecatch:['#C4B5FD','#312E81'], archer:['#86EFAC','#14532D'],
