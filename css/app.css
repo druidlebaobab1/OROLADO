@@ -14868,3 +14868,5 @@ html body #screenTrade #tradeWrap,html body #fsTradeOverlay{overscroll-behavior:
 html body #portalModal .aff-codes .ac-msg.ok{color:#86EFAC}
 html body #portalModal .aff-row .ar-id b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(11px,3.3vw,13px);letter-spacing:-.1px}
 html body #portalModal #affSearch{font-size:clamp(12px,3.9vw,15px);text-overflow:ellipsis}
+/* 2026-11-13 (revue 12 langues, écran 320 px) : le texte long du bouton de paiement (arabe) passe sur 2 lignes au lieu d'être coupé */
+html body #depositModal#depositModal#depositModal#depositModal #btnConfirmDeposit.btn-deposit-confirm{white-space:normal!important;height:auto!important;min-height:44px!important;line-height:1.2!important;overflow-wrap:anywhere}

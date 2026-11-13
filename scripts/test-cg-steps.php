@@ -78,7 +78,7 @@ $mines = casino_with($file, fn(array &$st) => $st['g']['mines']['mines']);
 $o = casino_multi(load_db(), $me, 'mines', 'open', 'real', 0, ['cell' => $mines[0]]);
 check('mine touchée : perdu, toutes les mines montrées', $o['done'] && $o['win'] == 0.0 && $o['boom'] === $mines[0] && $o['mines'] === $mines);
 
-echo "3) Mines : plafond de gain → fin automatique\n";
+echo "3) Mines : aucun plafond de gain (propriétaire, 2026-10-20) — gros gain payé exactement\n";
 $bal[$U] = 1000.0; $db = load_db(); $db['vault']['u_st']['real'] = 1000; save_db(orolado_data_file(), $db);
 $b0 = $bal[$U];
 $s = casino_multi(load_db(), $me, 'mines', 'start', 'real', 1000, ['mines' => 20]);
@@ -86,7 +86,9 @@ $mines = casino_with($file, fn(array &$st) => $st['g']['mines']['mines']);
 $safe = array_values(array_diff(range(0, 24), $mines));
 $o = casino_multi(load_db(), $me, 'mines', 'open', 'real', 0, ['cell' => $safe[0]]);
 $o = $o['done'] ? $o : casino_multi(load_db(), $me, 'mines', 'open', 'real', 0, ['cell' => $safe[1]]);
-check('20 mines à 1000 $ : terminé et payé au plafond', $o['done'] && abs($o['win'] - CASINO_MAX_WIN) < 0.001 && abs($bal[$U] - ($b0 - 1000 + CASINO_MAX_WIN)) < 0.001, json_encode([$o['win'], $o['done']]));
+check('20 mines à 1000 $ : 2 cases sûres, la partie continue (pas de plafond qui coupe)', empty($o['done']) && empty($o['boom']), json_encode([$o['win'] ?? null, $o['done'] ?? null]));
+$c = casino_multi(load_db(), $me, 'mines', 'cash', 'real', 0, []);
+check('encaissé : solde = départ − 1000 + gain exact (gain > mise)', !empty($c['done']) && ($c['win'] ?? 0) > 1000 && abs($bal[$U] - ($b0 - 1000 + (float) $c['win'])) < 0.001, json_encode([$c['win'] ?? null, $bal[$U]]));
 
 echo "4) Tour, Verger, Ballon : échelles inchangées (94 %)\n";
 for ($k = 1; $k <= CASINO_TOWER_ROWS; $k++) { $ev = pow(2 / 3, $k) * casino_tower_mult($k); if ($ev > 0.94 + 1e-9) check("tour $k", false); }

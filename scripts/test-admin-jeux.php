@@ -101,11 +101,11 @@ foreach (file(casino_dir('rounds') . '/' . gmdate('Y-m') . '.jsonl', FILE_IGNORE
 check('journal = argent réellement bougé (100 000 − misé + payé = solde)', abs((100000 - $sumS + $sumW) - $bal[$A]) < 0.01, sprintf('%.2f vs %.2f', 100000 - $sumS + $sumW, $bal[$A]));
 
 echo "2) Fiche joueur : ses parties, de la plus récente à la plus ancienne, page par page, filtre réel / démo\n";
-for ($i = 0; $i < 3; $i++) casino_play(load_db(), $adm, 'dice', 'demo', 1, $P); // admin : solde de test (démo)
+for ($i = 0; $i < 3; $i++) casino_play(load_db(), $adm, 'coin', 'demo', 1, $P); // casino : argent réel seulement (le mode démo des jeux n'existe plus) → refusé sans compte réel, rien d'écrit // admin : solde de test (démo) — « dice » n'existe plus
 for ($i = 0; $i < 5; $i++) casino_play(load_db(), $ub, 'coin', 'real', 2, $P);
 $all = admin_gm_player('u_a', 'a@test.com', '', 0, 1000);
 $nA = array_sum($logN['real'] ?? []);
-check('fiche d\'Alice (id local) : toutes ses parties', $all['tot']['n'] === $nA && count($all['rows']) === $nA, $all['tot']['n'] . ' / ' . $nA);
+check('fiche d\'Alice (id local) : toutes ses parties (total exact ; page de 200 au plus)', $all['tot']['n'] === $nA && count($all['rows']) === min($nA, 200), $all['tot']['n'] . ' / ' . $nA);
 $viaSb = admin_gm_player($A, 'a@test.com', '', 0, 5);
 check('fiche ouverte par l\'id de la base (UUID) : mêmes parties', $viaSb['tot']['n'] === $nA);
 $p1 = admin_gm_player('u_a', '', 'real', 0, 20);
@@ -117,7 +117,7 @@ $r0 = $p1['rows'][0];
 check('chaque ligne : date, jeu, section, mise, gain, résultat, mode, multiplicateur', isset($r0['at'], $r0['name'], $r0['sec'], $r0['s'], $r0['w'], $r0['res'], $r0['m'], $r0['x']) && $r0['m'] === 'real');
 $d = admin_gm_player('admin_master', '', 'demo', 0, 50);
 $dr = admin_gm_player('admin_master', '', 'real', 0, 50);
-check('filtre démo / réel', $d['tot']['n'] === 3 && $dr['tot']['n'] === 0 && $d['rows'][0]['m'] === 'demo');
+check('filtre démo / réel : jeux en argent réel seulement (aucune partie démo inventée)', $d['tot']['n'] === 0 && $dr['tot']['n'] === 0 && admin_gm_player('u_b', '', 'real', 0, 50)['tot']['n'] === 5);
 // anciennes parties (avant le journal) : visibles, sans doublon
 casino_with(casino_user_file('u_old'), static function (array &$st) { $st['h'] = [['g' => 'dice', 'm' => 'real', 's' => 3, 'w' => 0, 'at' => time() - 86400 * 3]]; $st['uid'] = 'u_old'; return true; });
 $o = admin_gm_player('u_old', '', '', 0, 10);
@@ -130,7 +130,7 @@ check('direct : 10 parties, la plus récente d\'abord (Bob, Coin Flip)', count($
 $f2 = admin_gm_feed('', '', '', end($f['rows'])['t'], 10);
 check('direct : page suivante plus ancienne, sans doublon', $f2['rows'] && $f2['rows'][0]['t'] < end($f['rows'])['t'] && !array_intersect(array_column($f['rows'], 'k'), array_column($f2['rows'], 'k')));
 $fd = admin_gm_feed('demo', '', '', 0, 50);
-check('direct : filtre démo (admin marqué)', count($fd['rows']) === 3 && $fd['rows'][0]['adm'] === 1);
+check('direct : filtre démo vide (jeux en argent réel seulement)', count($fd['rows']) === 0);
 $fl = admin_gm_feed('real', 'live', '', 0, 200);
 check('direct : filtre section Live', $fl['rows'] && !array_filter($fl['rows'], static fn($r) => $r['sec'] !== 'live'));
 $newest = $f['rows'][0]['t'];

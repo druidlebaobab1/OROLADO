@@ -5,7 +5,7 @@ declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 $tmp = sys_get_temp_dir() . '/orolado_social_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
-foreach (['orolado_lib.php', 'live_lib.php', 'live.php', 'live_quiz_data.php'] as $f) if (is_file(__DIR__ . '/../' . $f)) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
+foreach (['orolado_lib.php', 'live_lib.php', 'live.php', 'live_quiz_data.php', 'coffre_ec.php'] as $f) if (is_file(__DIR__ . '/../' . $f)) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 foreach ((array) glob(__DIR__ . '/../*_lib.php') as $f) if (!is_file($tmp . '/' . basename((string) $f)) && basename((string) $f) !== 'push_lib.php') copy((string) $f, $tmp . '/' . basename((string) $f));
 require $tmp . '/orolado_lib.php';
 require $tmp . '/live_lib.php';

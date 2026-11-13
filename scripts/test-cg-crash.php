@@ -41,13 +41,14 @@ foreach (['crash', 'jet', 'rocket'] as $gm) {
   $t = 5000.0; $rr = []; casino_round_advance($rr, $t);
   $seen = [];
   for ($k = 0; $k < 30; $k++) { $seen[] = (float) $rr['c']; casino_round_advance($rr, (float) $rr['end'] + 0.001); }
-  $want = array_slice(array_reverse($seen), 0, 24);
-  check("$gm : historique = 24 derniers points d'explosion, du plus récent au plus ancien", ($rr['h'] ?? null) === $want, json_encode(array_slice($rr['h'] ?? [], 0, 4)));
-  check("$gm : le tour EN COURS n'est jamais dans l'historique", !in_array('c', array_keys($rr['h'] ?? []), true) && count($rr['h']) === 24);
+  // v3616 / v3618 (propriétaire) : bandeau de 40 tours, prérempli dès le 1er tour (jamais vide) ; les tours joués passent devant.
+  $want = array_reverse($seen);
+  check("$gm : historique = les 30 tours joués, du plus récent au plus ancien, devant", array_slice($rr['h'] ?? [], 0, 30) === $want, json_encode(array_slice($rr['h'] ?? [], 0, 4)));
+  check("$gm : le tour EN COURS n'est jamais dans l'historique ; bandeau de " . CASINO_ROUND_HIST . " tours", !in_array('c', array_keys($rr['h'] ?? []), true) && count($rr['h']) === CASINO_ROUND_HIST);
   // public : l'historique est vu par tout le monde, le point du tour en cours reste caché pendant la mise et le vol
   $now = microtime(true);
   $p0 = casino_round_public($gm, $now);
-  check("$gm : nouveau fichier, historique vide au départ", $p0['h'] === [] && !isset($p0['c']), json_encode($p0));
+  check("$gm : nouveau fichier, bandeau déjà rempli (" . CASINO_ROUND_HIST . " tours), rien de secret", count($p0['h']) === CASINO_ROUND_HIST && !isset($p0['c']) && !isset($p0['nc']), (string) count($p0['h']));
   $s = casino_round_slot($gm, $now);
   $end = $s['t0'] + casino_crash_secs($s['c']) + CASINO_ROUND_SHOW + 0.01;
   $p1 = casino_round_public($gm, $end);
