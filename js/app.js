@@ -11618,3 +11618,26 @@
   document.addEventListener('visibilitychange', function () { if (!document.hidden) wake(); });
   t = setTimeout(goCalm, 12000);
 })();
+
+/* 2026-11-13 (test de fluidité) : l'appli iPhone utilisait des règles CSS « :has() » sur toute la page (fenêtre ouverte ?) —
+   recalculées à CHAQUE changement de la page. Remplacées par 3 classes posées ici, seulement quand une fenêtre s'ouvre / se ferme. */
+(function () {
+  var R = document.documentElement, mo = null, seen = typeof WeakSet === 'function' ? new WeakSet() : null;
+  function sync() {
+    if (!R.classList.contains('ios-app')) return;
+    var any = false, any2 = false, live = false;
+    var list = document.querySelectorAll('.modal-backdrop.active, #liveModal.active');
+    for (var i = 0; i < list.length; i++) { var m = list[i]; if (m.id === 'liveModal') live = true; if (m.classList.contains('modal-backdrop')) { any = true; if (m.id !== 'historySheet' && m.id !== 'financeModal') any2 = true; } }
+    if (R.classList.contains('oro-mopen') !== any) R.classList.toggle('oro-mopen', any);
+    if (R.classList.contains('oro-mopen2') !== any2) R.classList.toggle('oro-mopen2', any2);
+    if (R.classList.contains('oro-mlive') !== live) R.classList.toggle('oro-mlive', live);
+  }
+  function hook() {
+    if (!R.classList.contains('ios-app')) return;
+    if (!mo && window.MutationObserver) mo = new MutationObserver(sync);
+    document.querySelectorAll('.modal-backdrop, #liveModal').forEach(function (m) { if (seen && seen.has(m)) return; if (seen) seen.add(m); if (mo) mo.observe(m, { attributes: true, attributeFilter: ['class'] }); });
+    sync();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook); else hook();
+  setInterval(hook, 2000);
+})();

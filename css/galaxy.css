@@ -2228,8 +2228,8 @@ html.ios-app body .learn-modal .lg-close.btn-close:not(#btnCloseDrawer):not(#oro
       en bas de ces fenêtres → la case « Écris ton message… » et les boutons du bas descendent au bas du site. */
 /* (b) 2026-10-21 : ces fenêtres prennent TOUT l'écran (comme une vraie appli) : le site descend jusqu'au vrai bas, la fenêtre
    aussi, et son contenu s'arrête au-dessus de la barre d'accueil (marge = hauteur de la bande) → plus de bande, plus de planètes. */
-html.ios-app.is-ios.ios-tall:root:has(.modal-backdrop.active:not(#historySheet):not(#financeModal)) body,
-html.ios-app.is-ios.ios-tall:root:has(#liveModal.active) body,
+html.ios-app.is-ios.ios-tall.oro-mopen2.oro-mopen2:not(#oz1):not(#oz2):root body,
+html.ios-app.is-ios.ios-tall.oro-mlive.oro-mlive:not(#oz1):root body,
 html.ios-app.is-ios.ios-tall.learn-on:root body{height:var(--ios-screen-h,100%)!important}
 /* (c) 2026-10-21 (propriétaire : « pas de bande noire, garde ma planète ») : quand iOS ne donne pas tout l'écran, la bande du bas
    garde le petit monde de planètes sous TOUTES les fenêtres (plus de couleur unie) ; avec tout l'écran, la fenêtre descend jusqu'en bas. */
@@ -2257,10 +2257,10 @@ html.ios-app.is-ios.ios-tall:root body #casinoModal#casinoModal .sp2 .pz-nav{bot
    Partout ailleurs (écran de chargement, Social, Cadeaux, Paris, Jeux, Recharger, Retrait, historiques, guide…) le site
    prend TOUT l'écran jusqu'en bas : plus de bande qui cache des boutons ; le contenu s'arrête au-dessus de la barre d'accueil. */
 html.ios-app.is-ios.ol-on:root body,
-html.ios-app.is-ios:root:has(.modal-backdrop.active) body,
-html.ios-app.is-ios:root:has(#liveModal.active) body,
+html.ios-app.is-ios.oro-mopen.oro-mopen:root body,
+html.ios-app.is-ios.oro-mlive.oro-mlive:not(#oz1):root body,
 html.ios-app.is-ios.learn-on:root body{height:var(--ios-screen-h,100%)!important}
-html.ios-app.is-ios:root:has(.modal-backdrop.active),html.ios-app.is-ios:root:has(#liveModal.active),html.ios-app.is-ios.learn-on:root{background-image:none!important;background-color:#0B0906!important}
+html.ios-app.is-ios.oro-mopen.oro-mopen:root,html.ios-app.is-ios.oro-mlive.oro-mlive:not(#oz1):root,html.ios-app.is-ios.learn-on:root{background-image:none!important;background-color:#0B0906!important}
 html.ios-app.is-ios:root body .modal-backdrop.active::after,html.ios-app.is-ios:root body #liveModal.active::after{display:none!important;content:none!important}
 html.ios-app.is-ios:root body .modal-backdrop.active > .modal-box{box-sizing:border-box!important;height:100%!important;max-height:100%!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px)!important}
 html.ios-app.is-ios:root body #liveModal #sxRoot.sx{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important}
