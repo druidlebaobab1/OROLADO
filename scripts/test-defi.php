@@ -31,7 +31,7 @@ function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail;
 
 $uuid = 'aaaaaaaa-1111-2222-3333-444444444444';
 $db = blank_db();
-$db['users']['admin_master'] = ['id' => 'admin_master', 'email' => 'admin@orolado.com', 'role' => 'admin'];
+$db['users']['admin_master'] = ['id' => 'admin_master', 'email' => 'admin@orolado.com', 'role' => 'admin', 'sbId' => 'bbbbbbbb-1111-2222-3333-444444444444'];
 $db['users']['u_joueur'] = ['id' => 'u_joueur', 'email' => 'joueur@gmail.com', 'role' => 'user', 'sbId' => $uuid];
 $db['vault']['admin_master'] = ['demo' => 1000, 'real' => 0];
 $db['vault']['u_joueur'] = ['demo' => 1000000, 'real' => 100];
@@ -52,7 +52,7 @@ check('joueur normal : pas de défi', empty($r['enabled']));
 echo "2) Admin : activation, marché du jour (au hasard pour chacun), fin à minuit\n";
 $r = orolado_defi_status($db, $admin, true);
 $m = (string) $r['market'];
-check('activé, mode démo (aucun argent réel)', !empty($r['active']) && $r['mode'] === 'demo', $m);
+check('activé, compte réel (#65 : l\'admin joue en réel)', !empty($r['active']) && $r['mode'] === 'real', $m);
 check("défi valable jusqu'à minuit (aujourd'hui)", $r['expiresAt'] === (int) strtotime(date('Y-m-d') . ' 23:59:59'));
 $vus = []; foreach (range(1, 40) as $k) $vus[orolado_defi_pick_market('u_' . $k, time())] = 1;
 check('marché au hasard pour chaque joueur (40 joueurs → plusieurs marchés)', count($vus) >= 5, count($vus) . ' marchés');
@@ -62,18 +62,18 @@ check('pas le même marché que la veille (40 jours de suite)', $diff);
 $other = $m === 'v100' ? 'v75' : 'v100';
 
 echo "3) Série : victoires, autres marchés et petites mises ignorés ; UNE défaite = défi perdu pour la journée\n";
-trade($db, 'admin_master', $m, 'demo', 10, true);
-trade($db, 'admin_master', $m, 'demo', 10, true);
-trade($db, 'admin_master', $other, 'demo', 10, false);
-trade($db, 'admin_master', $m, 'demo', 0.5, false);
+trade($db, 'admin_master', $m, 'real', 10, true);
+trade($db, 'admin_master', $m, 'real', 10, true);
+trade($db, 'admin_master', $other, 'real', 10, false);
+trade($db, 'admin_master', $m, 'real', 0.5, false);
 $r = orolado_defi_status($db, $admin);
 check('2 victoires (autre marché et petite mise ignorés)', $r['streak'] === 2, (string) $r['streak']);
-trade($db, 'admin_master', $m, 'demo', 10, false);
+trade($db, 'admin_master', $m, 'real', 10, false);
 $r = orolado_defi_status($db, $admin);
 check('défaite sur le marché : défi perdu, terminé', empty($r['active']) && empty($r['won']) && !empty($r['finished']));
 $r = orolado_defi_status($db, $admin, true);
 check('pas de nouveau défi avant minuit', empty($r['active']) && empty($r['canActivate']));
-foreach ([10, 10, 10, 10, 10] as $s) trade($db, 'admin_master', $m, 'demo', $s, true);
+foreach ([10, 10, 10, 10, 10] as $s) trade($db, 'admin_master', $m, 'real', $s, true);
 $r = orolado_defi_status($db, $admin);
 check('5 victoires APRÈS la défaite : rien (défi déjà perdu)', empty($r['won']) && empty($r['paid']));
 // Le lendemain : on recule l'heure du défi d'hier et des anciens trades.
@@ -81,20 +81,20 @@ orolado_defi_with('admin_master', function (&$st) { $st['activatedAt'] = time() 
 foreach ($db['orders'] as &$o) { $o['openedAt'] -= 3600; $o['at'] -= 3600; } unset($o);
 $r = orolado_defi_status($db, $admin, true);
 check('le lendemain : nouveau défi possible', !empty($r['active']));
-trade($db, 'admin_master', $m, 'real', 50, true);
+trade($db, 'admin_master', $m, 'demo', 50, true);
 $r = orolado_defi_status($db, $admin);
-check('trade du mauvais compte (réel) ignoré pour le testeur', $r['streak'] === 0);
+check('trade du mauvais compte (démo) ignoré', $r['streak'] === 0);
 
 echo "4) 5 victoires d'affilée : récompense = 3 × la plus petite mise, versée une seule fois\n";
-foreach ([2, 5, 3, 10, 4] as $s) trade($db, 'admin_master', $m, 'demo', $s, true);
-$demoBefore = (float) load_db()['vault']['admin_master']['demo'];
+foreach ([2, 5, 3, 10, 4] as $s) trade($db, 'admin_master', $m, 'real', $s, true);
+$demoBefore = (float) (load_db()['vault']['admin_master']['real'] ?? 0);
 $r = orolado_defi_status($db, $admin);
-$demoAfter = (float) load_db()['vault']['admin_master']['demo'];
+$demoAfter = (float) (load_db()['vault']['admin_master']['real'] ?? 0);
 check('défi réussi', !empty($r['won']) && !empty($r['paid']));
 check('récompense 3 × 2 $ = 6 $', abs($r['reward'] - 6) < 0.001, (string) $r['reward']);
-check('versée sur la démo du testeur (+6)', abs(($demoAfter - $demoBefore) - 6) < 0.001, $demoBefore . ' → ' . $demoAfter);
+check('versée sur le compte réel (+6)', abs(($demoAfter - $demoBefore) - 6) < 0.001, $demoBefore . ' → ' . $demoAfter);
 orolado_defi_status($db, $admin); orolado_defi_status($db, $admin);
-check('3 lectures de plus : toujours une seule récompense', abs((float) load_db()['vault']['admin_master']['demo'] - $demoAfter) < 0.001);
+check('3 lectures de plus : toujours une seule récompense', abs((float) (load_db()['vault']['admin_master']['real'] ?? 0) - $demoAfter) < 0.001);
 $r = orolado_defi_status($db, $admin, true);
 check('pas de nouveau défi avant demain', empty($r['active']) && empty($r['canActivate']) && !empty($r['won']));
 
@@ -109,12 +109,12 @@ check('4 victoires : pas encore réussi', $r['streak'] === 4 && empty($r['won'])
 trade($db, 'u_joueur', $jm, 'real', 10, true);
 $r = orolado_defi_status($db, $joueur);
 check('5e victoire : 30 $ (3 × 10 $)', !empty($r['paid']) && abs($r['reward'] - 30) < 0.001, (string) $r['reward']);
-check('crédit réel envoyé une seule fois sur le coffre du joueur', count(array_filter(array_keys($credits), fn($k) => str_starts_with($k, $uuid . '|adm_defi_'))) === 1 && abs(array_sum($credits) - 30) < 0.001);
+check('crédit réel envoyé une seule fois sur le coffre du joueur', count(array_filter(array_keys($credits), fn($k) => str_starts_with($k, $uuid . '|adm_defi_'))) === 1 && abs(array_sum(array_filter($credits, fn($k) => str_starts_with($k, $uuid . '|'), ARRAY_FILTER_USE_KEY)) - 30) < 0.001);
 $d = load_db();
-$dep = array_values(array_filter((array) $d['deposits'], fn($x) => str_starts_with((string) ($x['id'] ?? ''), 'adm_defi_')));
+$dep = array_values(array_filter((array) $d['deposits'], fn($x) => str_starts_with((string) ($x['id'] ?? ''), 'adm_defi_') && ($x['userId'] ?? '') === 'u_joueur'));
 check('enregistré comme bonus (opérateur admin) avec la règle « miser ×2 »', count($dep) === 1 && ($dep[0]['operator'] ?? '') === 'admin' && (float) ($d['users']['u_joueur']['wagerNeed'] ?? 0) >= 60);
 orolado_defi_status($db, $joueur); orolado_defi_status($db, $joueur);
-check('pas de double paiement', abs(array_sum($credits) - 30) < 0.001);
+check('pas de double paiement', abs(array_sum(array_filter($credits, fn($k) => str_starts_with($k, $uuid . '|'), ARRAY_FILTER_USE_KEY)) - 30) < 0.001);
 
 echo "6) Tricheur : 4 toutes petites mises (1 $) puis une grosse\n";
 $db['users']['u_malin'] = ['id' => 'u_malin', 'email' => 'malin@gmail.com', 'role' => 'user', 'sbId' => 'bbbbbbbb-1111-2222-3333-444444444444'];
