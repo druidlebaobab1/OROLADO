@@ -185,7 +185,8 @@ function orolado_aff_code_create(array $db, string $uid, string $raw): array {
   $u = $db['users'][$uid] ?? null;
   if (!is_array($u) || !orolado_aff_allowed($u + ['id' => $uid])) return ['ok' => false, 'reason' => 'not_allowed'];
   $code = orolado_aff_norm_code($raw);
-  if ($code === '') return ['ok' => false, 'reason' => 'bad'];
+  // 2026-11-13 (propriétaire : « on ne doit pas pouvoir créer A ou AB ») : comme les grandes plateformes, 4 à 16 lettres / chiffres
+  if ($code === '' || strlen($code) < 4) return ['ok' => false, 'reason' => 'bad'];
   if ($code === orolado_aff_code($uid)) return ['ok' => false, 'reason' => 'default'];
   // 2026-11-13 (propriétaire) : le nom OROLADO (et ses imitations : 0ROLAD0, ROLADO, OROLAD…) est réservé à l'admin.
   if (($u['role'] ?? '') !== 'admin' && orolado_aff_code_reserved($code)) return ['ok' => false, 'reason' => 'reserved'];

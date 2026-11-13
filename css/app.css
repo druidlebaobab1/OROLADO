@@ -14870,3 +14870,9 @@ html body #portalModal .aff-row .ar-id b{white-space:nowrap;overflow:hidden;text
 html body #portalModal #affSearch{font-size:clamp(12px,3.9vw,15px);text-overflow:ellipsis}
 /* 2026-11-13 (revue 12 langues, écran 320 px) : le texte long du bouton de paiement (arabe) passe sur 2 lignes au lieu d'être coupé */
 html body #depositModal#depositModal#depositModal#depositModal #btnConfirmDeposit.btn-deposit-confirm{white-space:normal!important;height:auto!important;min-height:44px!important;line-height:1.2!important;overflow-wrap:anywhere}
+/* 2026-11-13 (revue, iPhone couché 932×430) : les − / + de la mise (26 px) écrasaient le montant (« $1 » réduit à 7 px).
+   Même taille que sur Android couché (20 px) : le montant garde sa taille normale. Téléphone couché seulement. */
+@media (orientation:landscape) and (max-height:520px){
+  html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5):not(#q6) .stake-field .stake-pm{width:20px!important;min-width:20px!important;max-width:20px!important}
+  html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5):not(#q6) .stake-field{padding-left:2px!important;padding-right:2px!important;gap:1px!important}
+}
