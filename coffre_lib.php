@@ -811,7 +811,7 @@ function coffre_autowd_try(string $wdId): array {
   $claim = with_db_lock(function ($box) use ($wdId) {
     foreach (($box->db['withdrawals'] ?? []) as $i => $x) {
       if (!is_array($x) || (string) ($x['id'] ?? '') !== $wdId) continue;
-      if (strtolower((string) ($x['status'] ?? '')) !== 'pending' || !empty($x['autoTx']) || !empty($x['autoTry'])) return ['ok' => false, 'skip_write' => true];
+      if (strtolower((string) ($x['status'] ?? '')) !== 'pending' || !empty($x['autoTx']) || !empty($x['autoTry']) || (!empty($x['adminBusy']) && time() - (int) $x['adminBusy'] < 120)) return ['ok' => false, 'skip_write' => true]; // 2026-11-13 : l'admin est en train de le traiter
       $box->db['withdrawals'][$i]['autoTry'] = date('c');
       return ['ok' => true];
     }
