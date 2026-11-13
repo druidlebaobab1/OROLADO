@@ -81,6 +81,8 @@ foreach ($list as $r) {
 check('chaque événement a son image (écusson dans img/teams/ ou icône)', !$badI, implode(' | ', $badI));
 check('compétitions traduites (Ligue Europa, total de points) dans js/sports.js', str_contains($js, "'Ligue Europa': {") && str_contains($js, "'total de points': {"));
 
+// 2026-11-13 : série d'octobre — tous ses matchs sont passés → rien à publier (normal), la suite ne peut plus être testée
+if (!$future) { check('série passée : aucun match à publier (normal)', true); echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n"; exit($fail === 0 ? 0 : 1); }
 // --- un événement de la liste existe DÉJÀ avec un pari : il ne doit pas bouger ---
 $pre = null; foreach ($future as $r) if ($r[2] === 'foot') { $pre = $r; break; }
 $oldE = sp_admin_save(['title' => $pre[0], 'league' => 'Ancien', 'sport' => 'foot', 'start' => $pre[3], 'opts' => [['label' => 'A', 'odd' => 1.90], ['label' => 'B', 'odd' => 1.90]]]);
