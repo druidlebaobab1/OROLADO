@@ -832,7 +832,10 @@
     // (2026-11-09 : plus de « cadeau de l'ami » à attendre, l'ancien 5 % est supprimé).
     if (r && r.enabled) {
       if (!portalOpen()) return;
-      affT = setTimeout(function () { if (!document.hidden) refreshAff(); else affT = setTimeout(refreshAff, 60000); }, 60000);
+      // 2026-11-13 (propriétaire : « quand un ami se connecte, il doit apparaître en ligne chez celui qui invite ») : page
+      // Affiliation ouverte → toutes les 20 s (l'ami signale sa présence toutes les 20 s) ; sinon toutes les 60 s.
+      var affOpen = !!(($('affMain') && $('affMain').offsetParent) || ($('affFull') && $('affFull').offsetParent));
+      affT = setTimeout(function () { if (!document.hidden) refreshAff(); else affT = setTimeout(refreshAff, 60000); }, affOpen ? 20000 : 60000);
     }
   }
   function flag(cc) {
@@ -1052,8 +1055,8 @@
       if (!r || !r.server) { if (btn) btn.disabled = false; say(t('netRetry')); return; }
       if (r.codes) { aff.codes = r.codes; renderAffCodes(); }
       if (r.ok === false) {
-        var why = r.reason === 'taken' || r.reason === 'default' ? t('affCodeTaken') : r.reason === 'bad' ? t('affCodeBad') :
-          r.reason === 'max' ? t('affCodeMaxMsg', { max: (aff.codes && aff.codes.max) || 5 }) : r.reason === 'reserved' ? t('affCodeReserved') : t('affCodeErr');
+        var why = r.reason === 'taken' || r.reason === 'default' || r.reason === 'reserved' ? t('affCodeTaken') : r.reason === 'bad' ? t('affCodeBad') :
+          r.reason === 'max' ? t('affCodeMaxMsg', { max: (aff.codes && aff.codes.max) || 5 }) : t('affCodeErr'); // 2026-11-13 (propriétaire) : nom réservé → simplement « existe déjà »
         var inp = $('affCodeInput'); if (inp && action === 'affCodeNew') { inp.value = code; try { inp.focus(); } catch (e0) {} }
         say(why);
       } else if (action === 'affCodeNew') {
@@ -1103,7 +1106,7 @@
       var dl = e.target.closest ? e.target.closest('.ac-del') : null;
       if (dl) { if (needAccount()) return; if (window.confirm(t('affCodeDelAsk'))) affCodeDo('affCodeDel', dl.getAttribute('data-code')); return; }
       var ad = e.target.closest ? e.target.closest('#affCodeAddBtn') : null;
-      if (ad) { if (needAccount()) return; var inp = $('affCodeInput'); var v = inp ? inp.value : ''; if (v && v.trim()) { if (!/^[A-Za-z0-9]{3,16}$/.test(v.replace(/[^A-Za-z0-9]/g, ''))) { var mB = $('affCodeMsg'); if (mB) { mB.textContent = t('affCodeBad'); mB.hidden = false; } return; } affCodeDo('affCodeNew', v.trim()); } return; }
+      if (ad) { if (needAccount()) return; var inp = $('affCodeInput'); var v = inp ? inp.value : ''; if (v && v.trim()) { if (!/^[A-Za-z0-9]{4,16}$/.test(v.replace(/[^A-Za-z0-9]/g, ''))) { var mB = $('affCodeMsg'); if (mB) { mB.textContent = t('affCodeBad'); mB.hidden = false; } return; } affCodeDo('affCodeNew', v.trim()); } return; }
     });
     if ($('affMore')) $('affMore').addEventListener('click', function () { showAffList(true); });
     document.addEventListener('click', function (ev) { var b = ev.target && ev.target.closest && ev.target.closest('[data-affmore]'); if (b) showAffList(true); }, true);

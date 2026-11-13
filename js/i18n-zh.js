@@ -35,7 +35,7 @@
  "affCodeTaken": "该代码已存在，请换一个。",
  "affCodeReserved": "此名称为 OROLADO 专用，请换一个代码。",
  "affCodeErr": "暂时无法操作，请稍后再试。",
- "affCodeBad": "3 到 16 个字母或数字。",
+ "affCodeBad": "4 到 16 个字母或数字。",
  "affCodeMaxMsg": "你已经有 {max} 个代码。",
  "affCodeDelAsk": "删除此代码？",
  "affCodeHelp": "创建一个好记的词（如 FOOT）。你的链接：orolado.com/?ref=FOOT。好友注册时也可以输入 FOOT。",
