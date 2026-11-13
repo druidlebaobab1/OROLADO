@@ -109,6 +109,7 @@ $db['users']['u_m'] = ['id' => 'u_m', 'email' => 'm@gmail.com', 'role' => 'user'
 $db['vault']['u_m'] = ['demo' => 500, 'real' => 100];
 save_db(orolado_data_file(), $db); $bal[$U] = 100.0; $me = $db['users']['u_m'];
 foreach ($fiches as $g => $d) {
+  if ($bal[$U] < 20) $bal[$U] = 100.0; // 2026-11-13 : plus de 300 jeux → le joueur de test manquait d'argent (faux échecs)
   $b0 = $bal[$U];
   $r = casino_play(load_db(), $me, $g, 'real', 1, $d['type'] === 'pick' ? ['pick' => 0] : []);
   check("$g : solde = avant − 1 + gain (×" . ($r['mult'] ?? '?') . ')', $r['ok'] === true && abs($bal[$U] - ($b0 - 1 + $r['win'])) < 0.001, json_encode([$b0, $bal[$U], $r['win'] ?? null]));
