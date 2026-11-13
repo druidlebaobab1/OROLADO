@@ -170,6 +170,16 @@ function orolado_aff_codes(string $uid): array {
   return ['default' => orolado_aff_code($uid), 'custom' => array_keys($custom), 'max' => OROLADO_AFF_MAX_CODES];
 }
 
+/** Code réservé : mots officiels, ou toute imitation du nom OROLADO (chiffres pris pour des lettres compris). */
+function orolado_aff_code_reserved(string $code): bool {
+  $c = strtoupper($code);
+  if (in_array($c, ['ORO', 'ADMIN', 'SUPPORT', 'TEST', 'OFFICIEL', 'OFFICIAL', 'STAFF', 'MODERATEUR', 'MODERATOR'], true)) return true;
+  $l = strtr($c, ['0' => 'O', '1' => 'L', '4' => 'A', '3' => 'E', '5' => 'S', '7' => 'T', '8' => 'B', '|' => 'L']);
+  $l = preg_replace('/(.)\\1+/', '$1', $l) ?? $l; // OOROLLADO → OROLADO
+  foreach (['ROLAD', 'ORLAD', 'OROLA', 'ORLADO'] as $w) if (strpos($l, $w) !== false) return true;
+  return false;
+}
+
 /** Crée un code promo personnalisé (max OROLADO_AFF_MAX_CODES). Retour: ['ok'=>bool,'code'=>..,'reason'=>..]. */
 function orolado_aff_code_create(array $db, string $uid, string $raw): array {
   $u = $db['users'][$uid] ?? null;
@@ -177,7 +187,8 @@ function orolado_aff_code_create(array $db, string $uid, string $raw): array {
   $code = orolado_aff_norm_code($raw);
   if ($code === '') return ['ok' => false, 'reason' => 'bad'];
   if ($code === orolado_aff_code($uid)) return ['ok' => false, 'reason' => 'default'];
-  if (in_array($code, ['OROLADO', 'ADMIN', 'SUPPORT', 'ORO', 'TEST'], true)) return ['ok' => false, 'reason' => 'reserved'];
+  // 2026-11-13 (propriétaire) : le nom OROLADO (et ses imitations : 0ROLAD0, ROLADO, OROLAD…) est réservé à l'admin.
+  if (($u['role'] ?? '') !== 'admin' && orolado_aff_code_reserved($code)) return ['ok' => false, 'reason' => 'reserved'];
   $cur = orolado_aff_codes($uid);
   if (in_array($code, $cur['custom'], true)) return ['ok' => true, 'code' => $code]; // déjà à lui
   if (count($cur['custom']) >= OROLADO_AFF_MAX_CODES) return ['ok' => false, 'reason' => 'max'];
@@ -502,6 +513,8 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
   if ($changed) { $friends = orolado_aff_friends($uid); $own = orolado_aff_read(orolado_aff_owner_name($uid)); }
   $out['enabled'] = true;
   $out['code'] = $code;
+  // 2026-11-13 (propriétaire) : un code « OROLADO… » créé par un joueur AVANT la règle est retiré (seul l'admin peut l'avoir).
+  if (($user['role'] ?? '') !== 'admin') foreach (orolado_aff_codes($uid)['custom'] as $cR) if (orolado_aff_code_reserved($cR)) orolado_aff_code_delete($uid, $cR);
   $out['codes'] = orolado_aff_codes($uid); // code par défaut + codes promo personnalisés (max 5)
   $out['now'] = time();
   $out['clicks'] = (int) ($own['clicks'] ?? 0);

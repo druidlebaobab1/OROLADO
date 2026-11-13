@@ -1005,6 +1005,7 @@
   async function copyLink() { return copyText(affLink()); }
   // 2026-11-11 : le serveur ne connaît « /r/CODE » que pour 8 caractères → un code promo de 3 à 16 lettres (ex. FOOT1)
   // donnait « page introuvable ». Lien qui marche pour TOUS les codes : orolado.com/?ref=CODE.
+  // 2026-11-13 : le serveur en ligne (nginx) ne redirige /r/ que pour 8 caractères → ?ref= pour les codes promo.
   function codePath(code) { code = String(code || ''); return code.length === 8 ? 'orolado.com/r/' + code : 'orolado.com/?ref=' + code; }
   function codeLink(code) { return 'https://' + codePath(code); }
   // Codes promo : code par défaut + jusqu'à 5 codes personnalisés. Créer / copier / supprimer.
@@ -1038,18 +1039,24 @@
   }
   async function affCodeDo(action, code) {
     if (!D6.Api || !D6.Api.post) return;
-    var msg = $('affCodeMsg');
+    // 2026-11-13 (propriétaire : « j'ai écrit un code, ça n'a pas marché ») : la liste est redessinée après la réponse →
+    // le message et le texte tapé étaient perdus (écrits dans l'ancien cadre). On les remet APRÈS le nouveau dessin.
+    function say(txt, ok) { var m = $('affCodeMsg'); if (!m) return; m.textContent = txt || ''; m.hidden = !txt; m.classList.toggle('ok', !!ok); }
+    var btn = $('affCodeAddBtn'); if (btn && action === 'affCodeNew') btn.disabled = true;
     try {
       var r = await D6.Api.post(action, { code: code }, 12000);
-      // 2026-11-12 (revue) : le code tapé n'est effacé QUE s'il a été créé ; pas de réponse → message
-      if (!r || !r.server) { if (msg) { msg.textContent = t('netRetry'); msg.hidden = false; } return; }
-      if (action === 'affCodeNew' && r.ok !== false && $('affCodeInput')) $('affCodeInput').value = '';
-      if (r && r.codes) { aff.codes = r.codes; renderAffCodes(); }
-      if (r && r.ok === false && msg) {
-        var reason = r.reason === 'taken' ? t('affCodeTaken') : (r.reason === 'bad' ? t('affCodeBad') : (r.reason === 'max' ? t('affCodeMaxMsg', { max: (aff.codes && aff.codes.max) || 5 }) : (r.reason === 'reserved' || r.reason === 'default' ? t('affCodeTaken') : '')));
-        if (reason) { msg.textContent = reason; msg.hidden = false; }
-      } else if (msg) { msg.hidden = true; }
-    } catch (e) { /* ignore */ }
+      if (!r || !r.server) { if (btn) btn.disabled = false; say(t('netRetry')); return; }
+      if (r.codes) { aff.codes = r.codes; renderAffCodes(); }
+      if (r.ok === false) {
+        var why = r.reason === 'taken' || r.reason === 'default' ? t('affCodeTaken') : r.reason === 'bad' ? t('affCodeBad') :
+          r.reason === 'max' ? t('affCodeMaxMsg', { max: (aff.codes && aff.codes.max) || 5 }) : r.reason === 'reserved' ? t('affCodeReserved') : t('affCodeErr');
+        var inp = $('affCodeInput'); if (inp && action === 'affCodeNew') { inp.value = code; try { inp.focus(); } catch (e0) {} }
+        say(why);
+      } else if (action === 'affCodeNew') {
+        say('✓ ' + codePath(String(code).toUpperCase().replace(/[^A-Z0-9]/g, '')), true);
+      } else say('');
+    } catch (e) { say(t('netRetry')); }
+    var b2 = $('affCodeAddBtn'); if (b2) b2.disabled = false;
   }
   // Clic sur un lien d'ami (orolado.com/r/CODE) : envoyé une fois ; le serveur filtre par téléphone et par jour.
   function sendClick() {
