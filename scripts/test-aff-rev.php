@@ -302,6 +302,9 @@ $rT = orolado_aff_code_create(load_db(), 'affY', 'FOOT1');
 check('code déjà pris par un autre → refusé', empty($rT['ok']) && ($rT['reason'] ?? '') === 'taken');
 $rR = orolado_aff_code_create(load_db(), 'affY', 'admin');
 check('code réservé (ADMIN) refusé', empty($rR['ok']) && ($rR['reason'] ?? '') === 'reserved');
+$okB = true; foreach (['OROLADO', 'orolado2026', '0ROLAD0', 'ROLADO', 'OROLADOVIP', 'ORO'] as $c) { $r = orolado_aff_code_create(load_db(), 'affY', $c); if (!empty($r['ok']) || ($r['reason'] ?? '') !== 'reserved') $okB = false; }
+check('nom OROLADO et ses imitations refusés pour un joueur', $okB);
+check('mots ordinaires acceptés (CHORO, OROBET ne sont pas réservés)', !orolado_aff_code_reserved('CHORO') && !orolado_aff_code_reserved('OROBET') && !orolado_aff_code_reserved('DIABLE'));
 mkuser('newf', 'newf@g.com');
 check('inscription via le code promo FOOT1 → relié à affX', orolado_aff_attach(load_db(), 'newf', 'foot1'));
 check('newf bien compté comme ami de affX', orolado_aff_is_affiliate('affX') && in_array('newf', array_column(orolado_aff_friends('affX'), 'uid'), true));
