@@ -309,7 +309,11 @@
     if (cw) put(cw.querySelector('b'), cw);
   }
   var queued = false;
-  function soon() { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; try { paint(); } catch (e) { /* ignore */ } }); }
+  // 2026-11-13 (propriétaire : « le site est lent, l'enregistrement vidéo bug ») : paint() modifie lui-même les zones
+  // surveillées (classes, tailles) → l'observateur relançait paint() à CHAQUE image, 60 fois par seconde, sans fin.
+  // Les changements faits par paint() sont maintenant jetés (takeRecords) : il ne se relance plus tout seul.
+  var selfMo = [];
+  function soon() { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; try { paint(); } catch (e) { /* ignore */ } for (var i = 0; i < selfMo.length; i++) { try { selfMo[i].takeRecords(); } catch (e2) { /* ignore */ } } }); }
   var seen = typeof WeakSet === 'function' ? new WeakSet() : null;
   function watch() {
     var mo = new MutationObserver(function (list) {
@@ -330,6 +334,7 @@
     // v3053 : bouton ENCAISSER des jeux — le montant en dollars bouge sans cesse (crash, jeux d'adresse) : l'équivalent suit
     // en moins de 0,25 s (avant : jusqu'à 0,7 s de retard, « ≈ » d'un ancien montant) ; limité à 4 fois par seconde
     var goT = 0, goMo = new MutationObserver(function () { if (goT) return; goT = setTimeout(function () { goT = 0; soon(); }, 220); });
+    selfMo.push(mo, goMo);
     function hookGo() {
       var g = document.getElementById('csGo');
       if (!g || (seen && seen.has(g))) return;

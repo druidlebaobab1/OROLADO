@@ -6382,7 +6382,8 @@
       // de batterie, et l'enregistrement d'écran tient). Ordinateurs : 60, sauf saturation / mode léger.
       // v2574 : limite SUR LE TEMPS (au plus ~30 images/s) au lieu de « une image sur deux » : avant, un téléphone déjà
       // à 2 img/s (Android + enregistrement d'écran) tombait à 1 img/s. Maintenant, si le téléphone est lent, AUCUNE image n'est sautée.
-      if (IS_MOBILE_CHART || fsSkip.heavy || D6.lite) { if (ts - (fsSkip.lastDraw || 0) < 30) skipDraw = true; }
+      // 2026-11-13 : mode léger (vieux téléphone) → ~22 images/s (moins de chauffe ; l'enregistrement d'écran tient).
+      if (IS_MOBILE_CHART || fsSkip.heavy || D6.lite) { if (ts - (fsSkip.lastDraw || 0) < (D6.lite ? 44 : 30)) skipDraw = true; }
       if (!skipDraw) fsSkip.lastDraw = ts;
       if (!skipDraw) {
         drawFrame(ts);
