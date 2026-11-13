@@ -1639,4 +1639,69 @@
       bnSet(c, dn ? (win === 0 ? c.l.east : c.l.west) + ' ' + c.l.wins + ' · ' + (thr ? c.l.thr : c.l.push) : e < SU_0 ? 'Hakkeyoi!' : '', 'n0');
     }
   });
+
+  /* ===== 2026-11-13 (propriétaire : « Live jusqu'à 74 ») — 20 courses en images : gagnant · TOP 2 (même calcul exact que Boat Race,
+     serveur casino_live5.php CASINO_L5_TOP2). Coureur = image (img/games/lr_<clé>.webp) + dossard numéroté de sa couleur. ===== */
+  var IR_C = ['#DC2626', '#2563EB', '#16A34A', '#F59E0B', '#9333EA', '#0EA5E9'];
+  var IR_T = { grass: ['#86EFAC', '#15803D', '#14532D', '#38BDF8'], sand: ['#FDE68A', '#D97706', '#78350F', '#FDBA74'], mud: ['#D6A77A', '#7C4A1E', '#3F2410', '#93C5FD'],
+    water: ['#7DD3FC', '#0369A1', '#082F49', '#BAE6FD'], city: ['#94A3B8', '#334155', '#0F172A', '#1E1B4B'], snow: ['#F8FAFC', '#CBD5E1', '#64748B', '#BAE6FD'], space: ['#A78BFA', '#312E81', '#0B0A24', '#020617'] };
+  var IR_R = {
+    en: ['{N} racers line up. Bet on the winner ({w0} for n°1 to {wL} for n°{N}) or on a racer finishing in the TOP 2 ({t0} for n°1 to {tL} for n°{N}).', 'Each racer has its own fixed chance (n°1 is the favourite). The finishing order is drawn by the server, the same for everyone.'],
+    fr: ['{N} concurrents sont au départ. Parie sur le gagnant ({w0} pour le n°1 à {wL} pour le n°{N}) ou sur un concurrent dans le TOP 2 ({t0} pour le n°1 à {tL} pour le n°{N}).', 'Chaque concurrent a sa chance fixe (le n°1 est le favori). L’ordre d’arrivée est tiré par le serveur, le même pour tout le monde.'],
+    es: ['{N} competidores en la salida. Apuesta al ganador ({w0} el n°1 a {wL} el n°{N}) o a uno en el TOP 2 ({t0} el n°1 a {tL} el n°{N}).', 'Cada competidor tiene su probabilidad fija (el n°1 es el favorito). El orden de llegada lo sortea el servidor, igual para todos.'],
+    pt: ['{N} competidores na largada. Aposte no vencedor ({w0} o n°1 a {wL} o n°{N}) ou num competidor no TOP 2 ({t0} o n°1 a {tL} o n°{N}).', 'Cada competidor tem sua chance fixa (o n°1 é o favorito). A ordem de chegada é sorteada pelo servidor, igual para todos.'],
+    ar: ['{N} متسابقين عند الانطلاق. راهن على الفائز ({w0} للرقم 1 حتى {wL} للرقم {N}) أو على متسابق ضمن أول 2 ({t0} للرقم 1 حتى {tL} للرقم {N}).', 'لكل متسابق فرصة ثابتة (الرقم 1 هو المرشح). يسحب الخادم ترتيب الوصول، وهو نفسه للجميع.'],
+    tr: ['{N} yarışmacı başlangıçta. Kazananı ({w0} 1 numaradan {wL} {N} numaraya) ya da İLK 2’ye girecek birini ({t0} 1 numaradan {tL} {N} numaraya) oyna.', 'Her yarışmacının sabit şansı var (1 numara favori). Varış sırasını sunucu çeker, herkes için aynıdır.'],
+    vi: ['{N} tay đua xuất phát. Cược người thắng ({w0} cho số 1 đến {wL} cho số {N}) hoặc một tay đua vào TOP 2 ({t0} cho số 1 đến {tL} cho số {N}).', 'Mỗi tay đua có cơ hội cố định (số 1 được ưa chuộng). Thứ tự về đích do máy chủ quay, giống nhau cho mọi người.'],
+    id: ['{N} peserta di garis start. Pasang pemenang ({w0} untuk no.1 hingga {wL} untuk no.{N}) atau peserta di TOP 2 ({t0} untuk no.1 hingga {tL} untuk no.{N}).', 'Tiap peserta punya peluang tetap (no.1 favorit). Urutan finis diundi server, sama untuk semua.'],
+    ru: ['На старте {N} участников. Ставьте на победителя ({w0} за №1 до {wL} за №{N}) или на участника в ТОП-2 ({t0} за №1 до {tL} за №{N}).', 'У каждого участника свой постоянный шанс (№1 — фаворит). Порядок финиша разыгрывает сервер, один для всех.'],
+    de: ['{N} Teilnehmer am Start. Setze auf den Sieger ({w0} für Nr. 1 bis {wL} für Nr. {N}) oder auf einen Teilnehmer in den TOP 2 ({t0} für Nr. 1 bis {tL} für Nr. {N}).', 'Jeder Teilnehmer hat seine feste Chance (Nr. 1 ist Favorit). Die Zielreihenfolge zieht der Server, für alle gleich.'],
+    hi: ['{N} प्रतियोगी शुरुआत पर हैं। विजेता पर दांव लगाएँ (नंबर 1 पर {w0} से नंबर {N} पर {wL}) या टॉप 2 में आने वाले पर ({t0} से {tL})।', 'हर प्रतियोगी का अपना तय मौका है (नंबर 1 फ़ेवरेट)। पहुँचने का क्रम सर्वर निकालता है, सबके लिए एक जैसा।'],
+    zh: ['{N} 名选手出发。押冠军（1 号 {w0} 至 {N} 号 {wL}），或押进入前二的选手（1 号 {t0} 至 {N} 号 {tL}）。', '每名选手的胜率固定（1 号为热门）。到达顺序由服务器抽取，所有人相同。'] };
+  function irace(key, N, track, o0) {
+    var cols = IR_C.slice(0, N), T = IR_T[track] || IR_T.grass, L = N - 1, R = {};
+    Object.keys(IR_R).forEach(function (lg) { R[lg] = IR_R[lg].map(function (s) { return s.replace(/\{N\}/g, N).replace('{wL}', '{w' + L + '}').replace('{tL}', '{t' + L + '}'); }); });
+    var rk = { w0: o0.w0, t0: o0.t0 }; rk['w' + L] = o0['w' + L]; rk['t' + L] = o0['t' + L];
+    race(key, {
+      cols: cols, D: 10.5, gap: [.12, .55], stride: 9, bob: 1.6, leg: 0,
+      odds0: o0,
+      wins: function (o) { return ['w' + o[0], 't' + o[0], 't' + o[1]]; },
+      sprite: function (i) {
+        return '<image href="img/games/lr_' + key + '.webp?v=3705" x="-44" y="-17" width="42" height="24" preserveAspectRatio="xMidYMid meet"/>' +
+          '<circle cx="-48" cy="2" r="5.2" fill="' + cols[i] + '" stroke="#fff" stroke-width="1"/><text x="-48" y="4.4" text-anchor="middle" font-size="6.4" font-weight="900" fill="#fff">' + (i + 1) + '</text>';
+      },
+      bg: function (uid, LH, N2) {
+        var h = '<defs>' + lgd('irS' + uid, T[3], T[0], 1) + lgd('irT' + uid, T[1], T[2], 1) + '</defs><rect x="-300" y="-300" width="960" height="830" fill="' + T[2] + '"/>' +
+          '<rect x="-300" y="-300" width="960" height="346" fill="url(#irS' + uid + ')"/>' +
+          '<image href="img/games/lg_' + key + '.webp?v=3705" x="0" y="-4" width="360" height="50" preserveAspectRatio="xMidYMid slice" opacity=".55"/>' +
+          '<rect x="-300" y="' + RY0 + '" width="960" height="' + (RY1 - RY0) + '" fill="url(#irT' + uid + ')"/>';
+        for (var k = 1; k < N2; k++) h += '<path d="M30 ' + (RY0 + k * LH).toFixed(1) + 'H350" stroke="#fff" stroke-opacity=".35" stroke-width="1" stroke-dasharray="6 5"/>';
+        return h + '<rect x="-300" y="' + RY1 + '" width="960" height="320" fill="' + T[2] + '"/>' + gateFin(N2, LH, '#F8FAFC');
+      },
+      board: function (uid, l, oddTxt, o) {
+        return winBtns(cols, null, oddTxt, o) + cols.map(function (c, i) { return btn('t' + i, lab(l.top2 + ' · ' + (i + 1)) + odd('t' + i, oddTxt, o), 'rl'); }).join('');
+      },
+      rules: rules(150, rk, R)
+    });
+  }
+  irace('ostrichracelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('turtleracelive', 5, 'sand', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('rabbitracelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('pigracelive', 5, 'mud', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('duckracelive', 5, 'water', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('frogracelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('robotracelive', 6, 'city', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('rhinoracelive', 5, 'sand', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('penguinracelive', 5, 'snow', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('cheetahracelive', 6, 'sand', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('zebraracelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('kangarooracelive', 5, 'sand', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('mouseracelive', 6, 'city', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('dragonracelive', 5, 'space', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('unicornracelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('jetskiracelive', 6, 'water', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('bikeracelive', 6, 'city', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('sprintracelive', 6, 'city', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('skiracelive', 5, 'snow', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('crabracelive', 5, 'sand', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
 })(window.D6 = window.D6 || {});

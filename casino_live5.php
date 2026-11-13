@@ -37,12 +37,18 @@ const CASINO_LIVE5 = ['dogracelive' => [150, 120], 'camelracelive' => [155, 120]
   'monsterlive' => [140, 120], 'boatracelive' => [150, 120], 'spaceracelive' => [150, 120], 'penaltylive' => [170, 120],
   'basketlive' => [145, 120], 'boxinglive' => [150, 120], 'tennislive' => [150, 120], 'cricketlive' => [145, 120],
   'archerylive' => [140, 120], 'fishinglive' => [140, 120], 'balloonlive' => [140, 120], 'volcanolive' => [140, 120],
-  'footmatchlive' => [160, 120], 'sumolive' => [145, 120]];
+  'footmatchlive' => [160, 120], 'sumolive' => [145, 120],
+  // 2026-11-13 (propriétaire : « Live jusqu'à 74 ») : 20 courses en images (gagnant · TOP 2, même calcul exact que Boat Race)
+  'ostrichracelive' => [150, 120], 'turtleracelive' => [150, 120], 'rabbitracelive' => [150, 120], 'pigracelive' => [150, 120], 'duckracelive' => [150, 120], 'frogracelive' => [150, 120], 'robotracelive' => [150, 120], 'rhinoracelive' => [150, 120], 'penguinracelive' => [150, 120], 'cheetahracelive' => [150, 120], 'zebraracelive' => [150, 120], 'kangarooracelive' => [150, 120], 'mouseracelive' => [150, 120], 'dragonracelive' => [150, 120], 'unicornracelive' => [150, 120], 'jetskiracelive' => [150, 120], 'bikeracelive' => [150, 120], 'sprintracelive' => [150, 120], 'skiracelive' => [150, 120], 'crabracelive' => [150, 120]];
 const CASINO_LIVE5_KEYS = ['dogracelive', 'camelracelive', 'snailracelive', 'chickenracelive', 'monsterlive', 'boatracelive', 'spaceracelive', 'penaltylive',
-  'basketlive', 'boxinglive', 'tennislive', 'cricketlive', 'archerylive', 'fishinglive', 'balloonlive', 'volcanolive', 'footmatchlive', 'sumolive'];
+  'basketlive', 'boxinglive', 'tennislive', 'cricketlive', 'archerylive', 'fishinglive', 'balloonlive', 'volcanolive', 'footmatchlive', 'sumolive',
+  'ostrichracelive', 'turtleracelive', 'rabbitracelive', 'pigracelive', 'duckracelive', 'frogracelive', 'robotracelive', 'rhinoracelive', 'penguinracelive', 'cheetahracelive', 'zebraracelive', 'kangarooracelive', 'mouseracelive', 'dragonracelive', 'unicornracelive', 'jetskiracelive', 'bikeracelive', 'sprintracelive', 'skiracelive', 'crabracelive'];
 // poids des concurrents (favori → outsider)
 const CASINO_L5_RACE = ['dogracelive' => [26, 21, 18, 14, 12, 9], 'camelracelive' => [30, 25, 20, 15, 10], 'snailracelive' => [1, 1, 1, 1],
-  'chickenracelive' => [24, 20, 18, 15, 13, 10], 'boatracelive' => [28, 24, 20, 16, 12], 'spaceracelive' => [22, 20, 17, 16, 13, 12]];
+  'chickenracelive' => [24, 20, 18, 15, 13, 10], 'boatracelive' => [28, 24, 20, 16, 12], 'spaceracelive' => [22, 20, 17, 16, 13, 12],
+  'ostrichracelive' => [26, 21, 18, 14, 12, 9], 'turtleracelive' => [28, 24, 20, 16, 12], 'rabbitracelive' => [26, 21, 18, 14, 12, 9], 'pigracelive' => [28, 24, 20, 16, 12], 'duckracelive' => [28, 24, 20, 16, 12], 'frogracelive' => [26, 21, 18, 14, 12, 9], 'robotracelive' => [26, 21, 18, 14, 12, 9], 'rhinoracelive' => [28, 24, 20, 16, 12], 'penguinracelive' => [28, 24, 20, 16, 12], 'cheetahracelive' => [26, 21, 18, 14, 12, 9], 'zebraracelive' => [26, 21, 18, 14, 12, 9], 'kangarooracelive' => [28, 24, 20, 16, 12], 'mouseracelive' => [26, 21, 18, 14, 12, 9], 'dragonracelive' => [28, 24, 20, 16, 12], 'unicornracelive' => [26, 21, 18, 14, 12, 9], 'jetskiracelive' => [26, 21, 18, 14, 12, 9], 'bikeracelive' => [26, 21, 18, 14, 12, 9], 'sprintracelive' => [26, 21, 18, 14, 12, 9], 'skiracelive' => [28, 24, 20, 16, 12], 'crabracelive' => [28, 24, 20, 16, 12]];
+/** 2026-11-13 : courses « gagnant · TOP 2 » (comme Boat Race). */
+const CASINO_L5_TOP2 = ['ostrichracelive', 'turtleracelive', 'rabbitracelive', 'pigracelive', 'duckracelive', 'frogracelive', 'robotracelive', 'rhinoracelive', 'penguinracelive', 'cheetahracelive', 'zebraracelive', 'kangarooracelive', 'mouseracelive', 'dragonracelive', 'unicornracelive', 'jetskiracelive', 'bikeracelive', 'sprintracelive', 'skiracelive', 'crabracelive'];
 const CASINO_L5_TEAMS = [[0, 3], [1, 4], [2, 5]]; // Space Race : équipes or, cyan, rose
 const CASINO_L5_MONSTER = [120, 60, 70, 85, 100, 110, 105, 95, 80, 65, 50, 35, 25]; // ‰ : voitures sautées 0…12
 const CASINO_L5_MONSTER_B = ['c0' => [0, 0], 'c1' => [1, 4], 'c2' => [5, 7], 'c3' => [8, 10], 'c4' => [11, 12], 'c12' => [12, 12]];
@@ -95,6 +101,7 @@ function casino_live5_race_wins(string $g, array $o): array {
     case 'snailracelive': $a = min((int) $o[0], (int) $o[1]); $b = max((int) $o[0], (int) $o[1]); $w[] = 'q' . $a . $b; break;
     case 'chickenracelive': $w[] = $f < 3 ? 'lo' : 'hi'; break;
     case 'boatracelive': $w[] = 't' . (int) $o[0]; $w[] = 't' . (int) $o[1]; break;
+    default: if (in_array($g, CASINO_L5_TOP2, true)) { $w[] = 't' . (int) $o[0]; $w[] = 't' . (int) $o[1]; } break;
     case 'spaceracelive': foreach (CASINO_L5_TEAMS as $k => $tm) if (in_array($f, $tm, true)) $w[] = 'k' . $k; break;
   }
   return $w;
