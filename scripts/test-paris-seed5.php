@@ -39,8 +39,8 @@ $titles = array_map(static fn($r) => sp_lower($r[0]), $list);
 check('aucun titre en double', count($titles) === count(array_unique($titles)));
 $older = []; foreach ([sp_suggestions3(), sp_suggestions4()] as $l) foreach ($l as $r) $older[sp_lower($r[0])] = 1;
 check('aucun match déjà dans les séries 3 / 4', !array_filter($titles, static fn($t) => isset($older[$t])));
-$badM = array_filter($list, static function ($r) { $s = 0; foreach ($r[4] as $o) $s += 1 / $o[1]; return $s < 1 / 0.94 - 1e-9 || $s > 1.08; });
-check('marge maison entre 6 % et 8 % (cotes jamais généreuses)', !$badM, implode(' | ', array_column($badM, 0)));
+$badM = array_filter($list, static function ($r) { $s = 0; foreach ($r[4] as $o) $s += 1 / $o[1]; return $s < 1 / 0.94 - 1e-9 || $s > 1.12; });
+check('marge maison entre 6 % et 12 % (cotes jamais généreuses)', !$badM, implode(' | ', array_column($badM, 0)));
 check('1 · Nul · 2 partout', !array_filter($list, static fn($r) => count($r[4]) !== 3 || $r[4][1][0] !== 'Nul'));
 $badI = array_filter($list, static function ($r) { foreach ($r[5] as $l) if (!is_file(__DIR__ . '/../' . $l) || substr((string) file_get_contents(__DIR__ . '/../' . $l), 0, 4) !== "\x89PNG") return true; return count($r[5]) !== 2; });
 check('deux écussons PNG présents pour chaque match', !$badI, implode(' | ', array_column($badI, 0)));
@@ -49,11 +49,12 @@ check('titres ≤ 80 caractères', !array_filter($list, static fn($r) => mb_strl
 $n0 = count(sp_events());
 $pub = sp_public_events();
 $mine = array_values(array_filter($pub, static fn($e) => in_array(sp_lower($e['title']), $titles, true)));
-check('publiés tout seuls à la 1re ouverture', count($mine) === count($list), count($mine) . ' / ' . count($list));
+$fut = count(array_filter($list, static fn($r) => $r[3] > time())); // matchs déjà joués : jamais publiés (normal)
+check('publiés tout seuls à la 1re ouverture (matchs à venir)', count($mine) === $fut, count($mine) . ' / ' . $fut);
 check('cotes publiées = cotes de la liste', !array_filter($mine, static function ($e) use ($list) { foreach ($list as $r) if ($r[0] === $e['title']) { foreach ($r[4] as $i => $o) if ((float) $e['opts'][$i]['odd'] !== (float) $o[1]) return true; return false; } return true; }));
 sp_public_events(); sp_public_events();
 $r2 = sp_admin_seed(sp_suggestions5());
-check('jamais ajoutés deux fois', count(sp_events()) === $n0 + count($list) && $r2['added'] === 0, json_encode($r2));
+check('jamais ajoutés deux fois', count(sp_events()) === $n0 + $fut && $r2['added'] === 0, json_encode($r2) . ' ' . count(sp_events()) . '/' . ($n0 + $fut));
 // combiné de 2 matchs (journée 4 + journée 5), cote = produit arrondi au cent inférieur, gain payé une fois
 $e1 = $mine[0]; $e2 = $mine[count($mine) - 1];
 $b = sp_bet(load_db(), $db['users']['u_a'], 'real', 2, [['ev' => $e1['id'], 'k' => 'o0'], ['ev' => $e2['id'], 'k' => $e2['opts'][1]['k']]]);

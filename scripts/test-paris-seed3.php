@@ -45,8 +45,8 @@ check('dates entre le 23/10 et le 30/11/2026', !$badT, implode(' | ', array_colu
 $badE = array_filter($list, static fn($r) => (int) ($r[6] ?? 0) <= $r[3]);
 check('chaque événement a une heure de FIN exacte, après la fermeture des paris', !$badE, implode(' | ', array_column($badE, 0)));
 // marge 6 % : somme des 1/cote ≥ 1/0,94 (la maison garde au moins 6 %), et pas plus de ~7,5 %
-$badM = array_filter($list, static function ($r) { $s = 0; foreach ($r[4] as $o) $s += 1 / $o[1]; return $s < 1 / 0.94 - 1e-9 || $s > 1.075; });
-check('marge maison entre 6 % et 7,5 % sur chaque événement', !$badM, implode(' | ', array_column($badM, 0)));
+$badM = array_filter($list, static function ($r) { $s = 0; foreach ($r[4] as $o) $s += 1 / $o[1]; return $s < 1 / 0.94 - 1e-9 || $s > 1.12; });
+check('marge maison entre 6 % et 12 % sur chaque événement (2026-11 : cotes réduites, marge 10 %)', !$badM, implode(' | ', array_column($badM, 0)));
 // cotes serrées : hors foot, 2 choix entre 1,55 et 2,30 ; foot : 1 · Nul · 2 avec deux équipes proches (cotes 2,10 à 3,20)
 $badC = array_filter($list, static function ($r) {
   if ($r[2] === 'foot') return count($r[4]) !== 3 || $r[4][1][0] !== 'Nul' || $r[4][0][1] < 2.10 || $r[4][0][1] > 3.20 || $r[4][2][1] < 2.10 || $r[4][2][1] > 3.20;

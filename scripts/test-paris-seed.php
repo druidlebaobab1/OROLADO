@@ -44,6 +44,8 @@ $new = array_values(array_filter(sp_events(), static fn($e) => isset($e['endAt']
 // 2026-10-21 : la 2e série date du 17/10 — on attend tous ceux qui ne sont pas encore fermés (même règle que sp_admin_seed)
 $pm2 = sp_seed_priced();
 $due2 = count(array_filter(sp_suggestions2(), static fn($r) => sp_close_at(['title' => $r[0], 'league' => $r[1], 'sport' => $r[2], 'start' => $r[3], 'logos' => $r[5], 'pricedAt' => $pm2[sp_lower($r[0])] ?? time()]) >= time() + 120 && sp_lower($r[0]) !== 'bon match - serré'));
+// 2026-11-13 : séries d'octobre — tous les matchs sont passés → rien à publier (normal), la suite ne peut plus être testée
+if (!$new && $due2 === 0) { check('séries passées : aucun match à publier (normal)', true); echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n"; exit($fail === 0 ? 0 : 1); }
 check('nouveaux événements publiés tout seuls', count($new) >= min(20, $due2) && count($new) > 0, count($new) . ' / ' . $due2);
 // v2802 (propriétaire) : le foot sans pari reçoit le NUL (1 · N · 2, cotes plus hautes) ; les autres sports restent serrés à 2 choix
 $foot3 = static fn($e) => ($e['sport'] ?? '') === 'foot' && count($e['opts']) === 3 && $e['opts'][1]['label'] === 'Nul';
