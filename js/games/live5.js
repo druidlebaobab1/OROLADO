@@ -1667,7 +1667,7 @@
       odds0: o0,
       wins: function (o) { return ['w' + o[0], 't' + o[0], 't' + o[1]]; },
       sprite: function (i) {
-        return '<image href="img/games/lr_' + key + '.webp?v=3705" x="-44" y="-17" width="42" height="24" preserveAspectRatio="xMidYMid meet"/>' +
+        return '<image href="img/games/lr_' + key + '.webp?v=3705" x="-42" y="-22" width="50" height="30" preserveAspectRatio="xMidYMid meet"/>' +
           '<circle cx="-48" cy="2" r="5.2" fill="' + cols[i] + '" stroke="#fff" stroke-width="1"/><text x="-48" y="4.4" text-anchor="middle" font-size="6.4" font-weight="900" fill="#fff">' + (i + 1) + '</text>';
       },
       bg: function (uid, LH, N2) {
@@ -1704,4 +1704,34 @@
   irace('sprintracelive', 6, 'city', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
   irace('skiracelive', 5, 'snow', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
   irace('crabracelive', 5, 'sand', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('elephantracelive', 5, 'sand', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('girafferacelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('lionracelive', 6, 'sand', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('tigerracelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('bearracelive', 5, 'snow', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('foxracelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('wolfracelive', 6, 'snow', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('goatracelive', 5, 'grass', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('sheepracelive', 5, 'grass', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('cowracelive', 5, 'mud', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('llamaracelive', 5, 'grass', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('hipporacelive', 5, 'mud', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('monkeyracelive', 6, 'grass', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('pandaracelive', 5, 'grass', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('koalaracelive', 5, 'grass', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('catracelive', 6, 'city', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('lizardracelive', 6, 'sand', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('beetleracelive', 6, 'sand', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('dinoracelive', 5, 'grass', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('dolphinracelive', 6, 'water', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('sharkracelive', 5, 'water', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('swanracelive', 5, 'water', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('kartracelive', 6, 'city', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('truckracelive', 5, 'sand', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('rocketracelive', 6, 'space', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('uforacelive', 6, 'space', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('alienracelive', 6, 'space', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
+  irace('sledracelive', 5, 'snow', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('yetiracelive', 5, 'snow', { w0: 3.21, w1: 3.75, w2: 4.5, w3: 5.62, w4: 7.5, t0: 1.69, t1: 1.9, t2: 2.21, t3: 2.69, t4: 3.49 });
+  irace('camelrunlive', 6, 'sand', { w0: 3.46, w1: 4.28, w2: 5, w3: 6.42, w4: 7.5, w5: 10, t0: 1.83, t1: 2.17, t2: 2.48, t3: 3.1, t4: 3.57, t5: 4.68 });
 })(window.D6 = window.D6 || {});
