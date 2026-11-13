@@ -1,4 +1,10 @@
-const CACHE = 'orolado-v3713';
+const CACHE = 'orolado-v3714';
+const STATIC = 'orolado-static-1'; // code versionné (?v=…) gardé d'une version à l'autre ; vidé de l'ancien à chaque mise à jour
+const STATIC_RE = /\.(?:js|css)\?(?:[^#]*&)?v=[0-9a-f]{3,}(?:[&#]|$)/i;
+function typeOk(url, res) {
+  var ct = String((res.headers && res.headers.get('content-type')) || '').toLowerCase();
+  return /\.css\?/i.test(url) ? ct.indexOf('text/css') >= 0 : (ct.indexOf('javascript') >= 0 || ct.indexOf('ecmascript') >= 0);
+}
 const ASSETS = [
   './manifest.json',
   './icons/icon.svg',
@@ -23,9 +29,20 @@ self.addEventListener('activate', function (event) {
       // 2026-11-09 (revue « site plus léger ») : un NOUVEAU visiteur n'a aucune ancienne version → pas de rechargement
       // (avant : toute la page était téléchargée 2 fois à la toute première visite).
       self.__oroUpgrade = keys.some(function (k) { return /^orolado-v\d+$/.test(k) && k !== CACHE; });
-      return Promise.all(keys.filter(function (k) { return k !== CACHE; }).map(function (k) {
+      return Promise.all(keys.filter(function (k) { return k !== CACHE && k !== STATIC; }).map(function (k) {
         return caches.delete(k);
       }));
+    }).then(function () {
+      // code d'une ANCIENNE version : retiré (garde la mémoire du téléphone petite) — fichiers à empreinte (i18n) gardés au plus 300
+      var ver = (CACHE.match(/(\d+)/) || ['', ''])[1];
+      return caches.open(STATIC).then(function (c) {
+        return c.keys().then(function (ks) {
+          var old = ks.filter(function (r) { var m = /[?&]v=(\d{3,5})(?:[&#]|$)/.exec(r.url); return m && ver && m[1] !== ver; });
+          var rest = ks.filter(function (r) { return old.indexOf(r) < 0; });
+          if (rest.length > 300) old = old.concat(rest.slice(0, rest.length - 300));
+          return Promise.all(old.map(function (r) { return c.delete(r); }));
+        });
+      }).catch(function () { /* ignore */ });
     }).then(function () {
       return self.clients.claim();
     }).then(function () {
@@ -93,7 +110,23 @@ self.addEventListener('fetch', function (event) {
   var req = event.request;
   if (req.method !== 'GET') return;
   var url = req.url || '';
-  // Ne jamais intercepter HTML / CSS / JS : un fallback HTML-as-CSS gèle tous les clics.
+  // 2026-11-13 (propriétaire : « vieux téléphones : c'est lent ») : le serveur interdit au téléphone de garder le code
+  // (no-cache) → à chaque ouverture, ~40 fichiers revérifiés un par un. Un fichier JS / CSS VERSIONNÉ (?v=3713, ou empreinte)
+  // ne change jamais à la même adresse → il est gardé ici et resservi tout de suite. Sûr : seulement une vraie réponse 200
+  // du bon type (jamais de HTML à la place d'un CSS), aucune réponse de secours inventée ; nouvelle version = nouvelle adresse.
+  if (req.mode !== 'navigate' && STATIC_RE.test(url) && url.indexOf(self.location.origin) === 0 && !/\/sw\.js/i.test(url)) {
+    event.respondWith(caches.open(STATIC).then(function (cache) {
+      return cache.match(req).then(function (hit) {
+        if (hit && typeOk(url, hit)) return hit;
+        return fetch(req).then(function (res) {
+          if (res && res.status === 200 && res.type === 'basic' && typeOk(url, res)) { try { cache.put(req, res.clone()); } catch (eP) { /* ignore */ } }
+          return res;
+        });
+      });
+    }).catch(function () { return fetch(req); }));
+    return;
+  }
+  // Ne jamais intercepter HTML / CSS / JS non versionnés : un fallback HTML-as-CSS gèle tous les clics.
   if (req.mode === 'navigate' || /\.(?:html|css|js)(?:\?|$)/i.test(url)) return;
   // Flux de prix / API : toujours le réseau, jamais de cache (sinon des milliers d'entrées).
   if (/\.php(?:\?|$)/i.test(url)) return;
