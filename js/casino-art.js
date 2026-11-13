@@ -950,6 +950,7 @@
   // 2026-11-01 (propriétaire : « des vrais logos réalistes comme les grands sites ») — PHOTOS : certains jeux ont une
   // vraie image (img/games/<clé>.webp) au lieu d'un dessin. On force ici (passe AVANT tous les setObj/addObj, quel que
   // soit l'ordre de chargement). Même cadre rond que penalty.webp. Ajouter une clé + 2 couleurs d'anneau = logo-photo.
+  var PHOTO_VK = { cosmicunicorn: '3710', junglehorse: '3710', shadowclock: '3710', shadowlamp: '3710', shadowvase: '3710', shadowsword: '3710', shadowwolf: '3710', shadoweagle: '3710', shadowcactus: '3710', shadowhawk: '3710', shadowcauldron: '3710', shadowbear: '3710', shadowmoon: '3710' }; // 2026-11-13 : logos noirs / trop sombres refaits
   var PHOTO_V = '3679'; // 3679 : 16 logos refaits (doublons coffres / échelle / safari / trèfles, Horseshoes, Firefly, Color Jump, Paper Plane, Bubble Pop, Rocket Cave, Peg Drop, Lucky Ten, Color Game)
   var PHOTO = {
     acorncatch:['#FDBA74','#7C2D12'], airraid:['#FCA5A5','#7F1D1D'], airstrike:['#FDE68A','#78350F'], alienwave:['#BAE6FD','#0C4A6E'], applecatch:['#C4B5FD','#312E81'], archer:['#86EFAC','#14532D'],
@@ -1030,7 +1031,7 @@
       '<linearGradient id="IDg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient>' +
       '<linearGradient id="IDs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>' +
       '<circle cx="32" cy="35" r="28.5" fill="#000" opacity=".38"/><circle cx="32" cy="33" r="28.5" fill="url(#IDg)"/>' +
-      '<image href="img/games/' + k + '.webp?v=' + PHOTO_V + '" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
+      '<image href="img/games/' + k + '.webp?v=' + (PHOTO_VK[k] || PHOTO_V) + '" x="5.5" y="6.5" width="53" height="53" clip-path="url(#IDm)" preserveAspectRatio="xMidYMid slice"/>' +
       '<circle cx="32" cy="33" r="26.5" fill="url(#IDs)"/><circle cx="32" cy="33" r="26.5" fill="none" stroke="#000" stroke-opacity=".35" stroke-width=".8"/>';
   }
   function obj(k) {
