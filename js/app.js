@@ -4460,6 +4460,28 @@
   var adminPresenceTimer = 0;
   var presenceVisBound = false;
 
+  // 2026-11-13 (revue avant la publicité) : quand le site se rouvre dans Chrome depuis Facebook / Instagram / TikTok (Google,
+  // installation), Chrome n'a pas la mémoire de l'appli : on lui passe dans le lien le code du parrain (tapé ou gardé), la
+  // source de la pub et la langue (chemin /en/…). Avant, le compte était créé sans parrain et compté « direct ».
+  function carryQs() {
+    var q = '';
+    try {
+      var c = '';
+      var el = document.getElementById('regCode');
+      if (el && el.value) c = String(el.value).toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (!c) { var o = JSON.parse(localStorage.getItem('oro_ami') || 'null'); if (o && o.c && Date.now() - (o.t || 0) < 30 * 86400000) c = String(o.c); }
+      if (c.length >= 3 && c.length <= 16) q += '&ref=' + encodeURIComponent(c);
+    } catch (eC) { /* ignore */ }
+    try {
+      var m = JSON.parse(localStorage.getItem('orolado_utm_meta') || 'null');
+      if (m && m.source && m.source !== 'direct') {
+        q += '&utm_source=' + encodeURIComponent(m.source);
+        if (m.medium) q += '&utm_medium=' + encodeURIComponent(m.medium);
+        if (m.campaign) q += '&utm_campaign=' + encodeURIComponent(m.campaign);
+      }
+    } catch (eU) { /* ignore */ }
+    return q;
+  }
   function classifyTrafficHost(host) {
     host = String(host || '').toLowerCase();
     if (!host) return '';
@@ -4489,7 +4511,15 @@
       if (p.get('fbclid')) { src = src || 'facebook'; medium = medium || 'social'; }
       if (p.get('gclid') || p.get('wbraid') || p.get('gbraid')) { src = src || 'google'; medium = medium || 'cpc'; }
       if (p.get('ttclid')) { src = src || 'tiktok'; medium = medium || 'social'; }
+      // 2026-11-13 (revue avant la publicité) : seule une VRAIE trace de campagne (utm_…, fbclid, gclid, ttclid) remplace la
+      // source déjà gardée. Avant, chaque nouvelle visite (appli de l'écran d'accueil, retour de Google ou d'un paiement)
+      // l'écrasait en « direct » : un joueur venu d'une pub puis inscrit plus tard était compté « direct ».
+      var strong = !!src;
       if (!src) src = classifyTrafficHost(host);
+      var had = '';
+      try { had = String(localStorage.getItem('orolado_utm_source') || ''); } catch (eS) { had = ''; }
+      if (!strong && had && had !== 'direct') return;
+      if (!src && had) return;
       if (!src) src = 'direct';
       src = src.replace(/[^a-z0-9_\-.]/g, '').slice(0, 40) || 'direct';
       localStorage.setItem('orolado_utm_source', src);
@@ -8568,7 +8598,7 @@
           if (IS_ANDROID) {
             var gt = '';
             try { if (sessionStorage.getItem('oro_gtest') === '1') gt = '&gtest=1'; } catch (eGt) { /* ignore */ }
-            location.href = 'intent://' + location.host + '/?google=1' + gt + '#Intent;scheme=https;package=com.android.chrome;end';
+            location.href = 'intent://' + location.host + location.pathname + '?google=1' + gt + carryQs() + '#Intent;scheme=https;package=com.android.chrome;end';
             return;
           }
           toast(t('googleInApp'), 'err', 6000);
@@ -9848,7 +9878,13 @@
       wdOtpLeft -= 1;
       refreshWdOtpHint();
     }
+    var wdResending = false;
     async function resendWithdrawOtp() {
+      if (wdResending) return;
+      wdResending = true;
+      try { await resendWithdrawOtpNow(); } finally { wdResending = false; }
+    }
+    async function resendWithdrawOtpNow() {
       if (wdOtpLeft > 0) return;
       var btn = $('btnWdOtpResend');
       if (btn && typeof setResendWait === 'function') setResendWait(btn, true);
@@ -9882,7 +9918,15 @@
       if ($('wdConfirmStatus')) $('wdConfirmStatus').textContent = t('wdConfirmStatus');
       openModal('wdConfirmModal');
     }
+    // 2026-11-13 (revue avant la publicité) : un double toucher envoyait 2 demandes (2 codes par e-mail, 2 retraits → message
+    // d'erreur par-dessus « Demande reçue »). Le bouton est bloqué tant que la demande est en cours.
+    var wdSending = false;
     $('btnSendWithdraw').addEventListener('click', async function () {
+      if (wdSending) return;
+      var bW = this; wdSending = true; bW.disabled = true;
+      try { await sendWithdrawNow(); } finally { wdSending = false; bW.disabled = false; }
+    });
+    async function sendWithdrawNow() {
       var u = user();
       if (!u || !requireAccount()) return;
       var amount = D6.roundMoney(Number($('withdrawAmt').value) || 0);
@@ -10056,7 +10100,7 @@
       closeModal('withdrawModal');
       updateBalance(true);
       showWithdrawConfirm(createdId, amount);
-    });
+    }
     function hideLogoutConfirm() {
       closeModal('logoutModal');
     }
@@ -10515,7 +10559,7 @@
         if (inAppBrowser()) {
           hideInstallBanner();
           if (/Android/i.test(navigator.userAgent || '')) {
-            location.href = 'intent://' + location.host + location.pathname + '?install=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(location.href) + ';end';
+            location.href = 'intent://' + location.host + location.pathname + '?install=1' + carryQs() + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(location.href) + ';end';
             return;
           }
           installHelp('inapp');
@@ -10644,7 +10688,12 @@
           try { if (sessionStorage.getItem('oro_swv') === String(v)) return; sessionStorage.setItem('oro_swv', String(v)); } catch (eS) { /* ignore */ }
           if (document.documentElement.classList.contains('oro-trade-open')) { try { oroHotSwapCss(); } catch (eH) {} return; }
           window.__oroSwReloaded = 1;
-          try { location.replace(location.pathname + '?swv=' + v); } catch (e3) { try { location.reload(); } catch (e4) { location.href = location.pathname; } }
+          // 2026-11-13 (revue avant la publicité) : jamais au milieu de Recharger, Retirer, d'un jeu ou d'une fenêtre
+          // ouverte (ce qui était tapé était perdu) : on attend que tout soit fermé, puis on recharge.
+          var goNow = function () { try { location.replace(location.pathname + '?swv=' + v); } catch (e3) { try { location.reload(); } catch (e4) { location.href = location.pathname; } } };
+          var busy = function () { return !!document.querySelector('.modal-backdrop.active') || document.documentElement.classList.contains('oro-trade-open'); };
+          if (!busy()) { goNow(); return; }
+          var wT = setInterval(function () { if (!busy()) { clearInterval(wT); goNow(); } }, 4000);
         });
       }
     }
