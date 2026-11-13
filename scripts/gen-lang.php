@@ -15,17 +15,17 @@ $root = dirname(__DIR__);
 $site = 'https://www.orolado.com/';
 // La racine (orolado.com/) reste en français (choix du propriétaire) et sert aussi de version par défaut.
 $L = [
-  'en' => ['OROLADO – Synthetic Indices Trading, Live Casino & Sports Betting', 'Trade synthetic indices 24/7, play 200+ live casino games and bet on sports. Chat with your friends. Free demo account.', 'en_US'],
-  'es' => ['OROLADO – Trading de índices sintéticos, Casino en vivo y Apuestas deportivas', 'Opera índices sintéticos 24/7, juega a más de 200 juegos de casino en vivo y apuesta en deportes. Chatea con tus amigos. Cuenta demo gratis.', 'es_ES'],
-  'pt' => ['OROLADO – Trading de índices sintéticos, Cassino ao vivo e Apostas esportivas', 'Negocie índices sintéticos 24h por dia, jogue mais de 200 jogos de cassino ao vivo e aposte em esportes. Converse com seus amigos. Conta demo grátis.', 'pt_BR'],
-  'ar' => ['OROLADO – تداول المؤشرات الاصطناعية، كازينو مباشر ومراهنات رياضية', 'تداول المؤشرات الاصطناعية على مدار الساعة، والعب أكثر من 200 لعبة كازينو مباشر وراهن على الرياضة. تحدّث مع أصدقائك. حساب تجريبي مجاني.', 'ar_AR'],
-  'tr' => ['OROLADO – Sentetik Endeks Ticareti, Canlı Casino ve Spor Bahisleri', 'Sentetik endekslerde 7/24 işlem yapın, 200’den fazla canlı casino oyunu oynayın ve spora bahis yapın. Arkadaşlarınızla sohbet edin. Ücretsiz demo hesap.', 'tr_TR'],
-  'vi' => ['OROLADO – Giao dịch chỉ số tổng hợp, Casino trực tiếp & Cá cược thể thao', 'Giao dịch chỉ số tổng hợp 24/7, chơi hơn 200 trò casino trực tiếp và cá cược thể thao. Trò chuyện với bạn bè. Tài khoản demo miễn phí.', 'vi_VN'],
-  'id' => ['OROLADO – Trading Indeks Sintetis, Kasino Live & Taruhan Olahraga', 'Trading indeks sintetis 24/7, mainkan lebih dari 200 game kasino live dan pasang taruhan olahraga. Ngobrol dengan teman. Akun demo gratis.', 'id_ID'],
-  'ru' => ['OROLADO – Торговля синтетическими индексами, живое казино и ставки на спорт', 'Торгуйте синтетическими индексами 24/7, играйте в более чем 200 игр живого казино и делайте ставки на спорт. Общайтесь с друзьями. Бесплатный демо-счёт.', 'ru_RU'],
-  'de' => ['OROLADO – Handel mit synthetischen Indizes, Live-Casino & Sportwetten', 'Handeln Sie synthetische Indizes rund um die Uhr, spielen Sie über 200 Live-Casino-Spiele und wetten Sie auf Sport. Chatten Sie mit Freunden. Kostenloses Demokonto.', 'de_DE'],
-  'hi' => ['OROLADO – सिंथेटिक इंडेक्स ट्रेडिंग, लाइव कैसीनो और स्पोर्ट्स बेटिंग', 'सिंथेटिक इंडेक्स में 24/7 ट्रेड करें, 200 से ज़्यादा लाइव कैसीनो गेम खेलें और खेलों पर दांव लगाएँ। दोस्तों से चैट करें। मुफ़्त डेमो खाता।', 'hi_IN'],
-  'zh' => ['OROLADO – 合成指数交易、真人娱乐场与体育投注', '全天候交易合成指数，畅玩 200 多款真人娱乐场游戏，投注体育赛事。与好友聊天。免费模拟账户。', 'zh_CN'],
+  'en' => ['OROLADO – Synthetic Indices Trading, Live Casino & Sports Betting', 'Trade synthetic indices 24/7, play more than 1000 games (casino, live and arcade) and bet on sports. Chat with your friends. Free demo account.', 'en_US'],
+  'es' => ['OROLADO – Trading de índices sintéticos, Casino en vivo y Apuestas deportivas', 'Opera índices sintéticos 24/7, juega a más de 1000 juegos (casino, en vivo y arcade) y apuesta en deportes. Chatea con tus amigos. Cuenta demo gratis.', 'es_ES'],
+  'pt' => ['OROLADO – Trading de índices sintéticos, Cassino ao vivo e Apostas esportivas', 'Negocie índices sintéticos 24h por dia, jogue mais de 1000 jogos (cassino, ao vivo e arcade) e aposte em esportes. Converse com seus amigos. Conta demo grátis.', 'pt_BR'],
+  'ar' => ['OROLADO – تداول المؤشرات الاصطناعية، كازينو مباشر ومراهنات رياضية', 'تداول المؤشرات الاصطناعية على مدار الساعة، والعب أكثر من 1000 لعبة (كازينو، مباشر وأركيد) وراهن على الرياضة. تحدّث مع أصدقائك. حساب تجريبي مجاني.', 'ar_AR'],
+  'tr' => ['OROLADO – Sentetik Endeks Ticareti, Canlı Casino ve Spor Bahisleri', 'Sentetik endekslerde 7/24 işlem yapın, 1000’den fazla oyun oynayın (casino, canlı ve arcade) ve spora bahis yapın. Arkadaşlarınızla sohbet edin. Ücretsiz demo hesap.', 'tr_TR'],
+  'vi' => ['OROLADO – Giao dịch chỉ số tổng hợp, Casino trực tiếp & Cá cược thể thao', 'Giao dịch chỉ số tổng hợp 24/7, chơi hơn 1000 trò chơi (casino, trực tiếp và arcade) và cá cược thể thao. Trò chuyện với bạn bè. Tài khoản demo miễn phí.', 'vi_VN'],
+  'id' => ['OROLADO – Trading Indeks Sintetis, Kasino Live & Taruhan Olahraga', 'Trading indeks sintetis 24/7, mainkan lebih dari 1000 game (kasino, live dan arcade) dan pasang taruhan olahraga. Ngobrol dengan teman. Akun demo gratis.', 'id_ID'],
+  'ru' => ['OROLADO – Торговля синтетическими индексами, живое казино и ставки на спорт', 'Торгуйте синтетическими индексами 24/7, играйте в более чем 1000 игр (казино, live и аркады) и делайте ставки на спорт. Общайтесь с друзьями. Бесплатный демо-счёт.', 'ru_RU'],
+  'de' => ['OROLADO – Handel mit synthetischen Indizes, Live-Casino & Sportwetten', 'Handeln Sie synthetische Indizes rund um die Uhr, spielen Sie über 1000 Spiele (Casino, Live und Arcade) und wetten Sie auf Sport. Chatten Sie mit Freunden. Kostenloses Demokonto.', 'de_DE'],
+  'hi' => ['OROLADO – सिंथेटिक इंडेक्स ट्रेडिंग, लाइव कैसीनो और स्पोर्ट्स बेटिंग', 'सिंथेटिक इंडेक्स में 24/7 ट्रेड करें, 1000 से ज़्यादा गेम खेलें (कैसीनो, लाइव और आर्केड) और खेलों पर दांव लगाएँ। दोस्तों से चैट करें। मुफ़्त डेमो खाता।', 'hi_IN'],
+  'zh' => ['OROLADO – 合成指数交易、真人娱乐场与体育投注', '全天候交易合成指数，畅玩 1000 多款游戏（娱乐场、真人直播与街机），投注体育赛事。与好友聊天。免费模拟账户。', 'zh_CN'],
 ];
 $check = in_array('--check', $argv, true);
 $h = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
