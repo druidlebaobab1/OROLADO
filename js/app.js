@@ -149,7 +149,11 @@
       if (t - t0 >= 3000) {
         if (n >= 8 && slow / n > 0.34) bad++; else bad = 0;
         if (bad >= 2) { setLite(true, true); return; }
-        n = 0; slow = 0; t0 = t;
+        n = 0; slow = 0; t0 = 0; last = 0;
+        // 2026-11-13 : la mesure elle-même demandait 60 images/s SANS FIN (doublait le travail d'affichage, surtout
+        // pendant un enregistrement vidéo). Maintenant : 3 s de mesure, puis pause (2e mesure 6 s après si lent, sinon 20 s).
+        setTimeout(function () { requestAnimationFrame(frame); }, bad ? 6000 : 20000);
+        return;
       }
       requestAnimationFrame(frame);
     }
@@ -10629,8 +10633,18 @@
           // feuille de style en direct → le nouveau look (cadres du terminal, courbe sombre) apparaît
           // tout de suite, sans attendre que le joueur quitte l'écran.
           if (document.documentElement.classList.contains('oro-trade-open')) { try { oroHotSwapCss(); } catch (eH) {} return; }
+          // 2026-11-13 : plus de rechargement ici (la page était déjà la nouvelle → tout se chargeait 2 fois) ;
+          // seul le message « oro-ver » du service worker recharge une page vraiment plus ancienne (ci-dessous).
+        });
+        navigator.serviceWorker.addEventListener('message', function (ev) {
+          var d = ev && ev.data; if (!d || d.t !== 'oro-ver') return;
+          var v = Number(d.v) || 0, page = 0;
+          try { var sc = document.querySelector('script[src*="js/app.js?v="]'); page = sc ? parseInt(String(sc.getAttribute('src')).split('v=')[1], 10) || 0 : 0; } catch (eP) { page = 0; }
+          if (!v || !page || page >= v || window.__oroSwReloaded) return;
+          try { if (sessionStorage.getItem('oro_swv') === String(v)) return; sessionStorage.setItem('oro_swv', String(v)); } catch (eS) { /* ignore */ }
+          if (document.documentElement.classList.contains('oro-trade-open')) { try { oroHotSwapCss(); } catch (eH) {} return; }
           window.__oroSwReloaded = 1;
-          try { location.replace(location.pathname + '?v=' + Date.now()); } catch (e3) { try { location.reload(); } catch (e4) { location.href = location.pathname; } }
+          try { location.replace(location.pathname + '?swv=' + v); } catch (e3) { try { location.reload(); } catch (e4) { location.href = location.pathname; } }
         });
       }
     }
@@ -11571,4 +11585,36 @@
     setTimeout(fitPayLogos, 300);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
+})();
+
+/* 2026-11-13 (propriétaire : « même sur iPhone, l'enregistrement vidéo devient lent ; vieux Android : ça rame ») — MODE CALME.
+   Après 8 s sans toucher l'écran, les animations DÉCORATIVES qui tournent en boucle sans fin (reflets des boutons, planètes,
+   vagues, halos) se mettent en pause ; elles reprennent au premier toucher. La courbe, les prix, les chronos et les animations
+   courtes (messages, gains) ne sont jamais touchés. Mesuré : moins d'images d'écran redessinées quand on regarde la courbe. */
+(function () {
+  if (typeof document.getAnimations !== 'function') return;
+  var paused = [], calm = false, t = 0;
+  function isLoop(a) {
+    try {
+      var tm = a.effect && a.effect.getTiming && a.effect.getTiming(); if (!(tm && tm.iterations === Infinity && a.playState === 'running')) return false;
+      // seulement le décor de l'écran de trading / barre du haut (jamais une fenêtre ouverte : sablier de dépôt, chargement…)
+      var el = a.effect.target; if (!el || !el.closest) return false;
+      return !!el.closest('#screenTrade,#fsTradeOverlay,.topbar') && !el.closest('.modal-backdrop,#oroLoader,.toast,.oro-toast');
+    } catch (e) { return false; }
+  }
+  function goCalm() {
+    if (calm || document.hidden) return;
+    calm = true; paused = [];
+    try { document.getAnimations().forEach(function (a) { if (isLoop(a)) { try { a.pause(); paused.push(a); } catch (e1) { /* ignore */ } } }); } catch (e) { /* ignore */ }
+  }
+  function wake() {
+    clearTimeout(t); t = setTimeout(goCalm, 8000);
+    if (!calm) return;
+    calm = false;
+    var list = paused; paused = [];
+    list.forEach(function (a) { try { if (a.playState === 'paused') a.play(); } catch (e2) { /* ignore */ } });
+  }
+  ['pointerdown', 'touchstart', 'keydown', 'wheel'].forEach(function (ev) { document.addEventListener(ev, wake, { capture: true, passive: true }); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) wake(); });
+  t = setTimeout(goCalm, 12000);
 })();

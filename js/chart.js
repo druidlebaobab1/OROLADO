@@ -133,7 +133,7 @@
   var openTradeVisualQueue = [];
   var lastDraw = 0;
   var lastFlush = 0;
-  var loopRaf = 0;
+  var loopRaf = 0, loopTo = 0;
   var drawRaf = 0;
   var chartTickTimer = 0;
   var strikeLock = null;
@@ -6339,7 +6339,15 @@
       window.lastTickTime = ts;
       return;
     }
-    loopRaf = requestAnimationFrame(loop);
+    // 2026-11-13 (propriétaire : « vieux téléphones : la courbe rame, l'enregistrement vidéo bug ») : sur téléphone, la boucle
+    // demandait une image d'écran 60 fois/s alors qu'elle n'en dessine que 30 (22 en mode léger) → chaque image vide
+    // coûtait un recalcul complet de l'écran. Maintenant l'image suivante n'est demandée qu'au moment du prochain dessin.
+    var gapMs = (IS_MOBILE_CHART || fsSkip.heavy || D6.lite) ? (D6.lite ? 44 : 30) : 0;
+    if (gapMs) {
+      loopRaf = -1;
+      if (loopTo) clearTimeout(loopTo);
+      loopTo = setTimeout(function () { loopTo = 0; if (loopRaf === -1 && running) { loopRaf = requestAnimationFrame(loop); window.animationFrameId = loopRaf; } }, gapMs - 4);
+    } else loopRaf = requestAnimationFrame(loop);
     window.animationFrameId = loopRaf;
     try {
       var liveN = (D6.Engine && D6.Engine.liveCount) ? D6.Engine.liveCount() : 0;
@@ -6383,7 +6391,7 @@
       // v2574 : limite SUR LE TEMPS (au plus ~30 images/s) au lieu de « une image sur deux » : avant, un téléphone déjà
       // à 2 img/s (Android + enregistrement d'écran) tombait à 1 img/s. Maintenant, si le téléphone est lent, AUCUNE image n'est sautée.
       // 2026-11-13 : mode léger (vieux téléphone) → ~22 images/s (moins de chauffe ; l'enregistrement d'écran tient).
-      if (IS_MOBILE_CHART || fsSkip.heavy || D6.lite) { if (ts - (fsSkip.lastDraw || 0) < (D6.lite ? 44 : 30)) skipDraw = true; }
+      if (IS_MOBILE_CHART || fsSkip.heavy || D6.lite) { if (ts - (fsSkip.lastDraw || 0) < (D6.lite ? 44 : 30) - 10) skipDraw = true; }
       if (!skipDraw) fsSkip.lastDraw = ts;
       if (!skipDraw) {
         drawFrame(ts);

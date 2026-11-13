@@ -13485,7 +13485,7 @@ html,html body,html body *{font-variant-ligatures:no-common-ligatures}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#C65663!important}
 html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-ico{opacity:.72!important}
 @keyframes oroFsDot3{0%,100%{opacity:.25}50%{opacity:.7}}
-html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::after{animation:oroFsDot3 1.6s ease-in-out infinite!important}
+html:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::after{animation:oroFsDot3 1.6s ease-in-out 4!important}
 html.fs-trade:root body #btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs#btnChartFs::after{animation:none!important;opacity:0!important}
 /* 2026-10-21 (propriétaire, modèle A) : carte de bienvenue après la création du compte (js/app.js welcomeCard) */
 html body .oro-welcome{position:fixed;inset:0;z-index:2147482000;display:grid;place-items:center;font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:#fff;animation:owIn .32s ease-out}
@@ -13570,7 +13570,7 @@ html:root body #casinoModal .cs-try.cs-try2 .cs-try-live{filter:drop-shadow(0 0 
 /* 2026-10-21 (propriétaire : « le mot PLEIN ÉCRAN aussi léger que ses voisins (loupes, flèche) ») : même couleur que les icônes
    voisines (#F5ECD9), écriture un peu moins grasse ; il garde un clignotement très doux, le petit carré rouge ne change pas */
 @keyframes oroFsSoft2{0%,100%{opacity:.78}50%{opacity:.55}}
-html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#C6BE9E!important;-webkit-text-fill-color:#C6BE9E!important;font-weight:700!important;text-shadow:none!important;animation:oroFsSoft2 2s ease-in-out infinite!important}
+html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#y1):not(#y2):not(#y3):not(#y4) #btnChartFs.chart-fs-btn .chart-fs-label{color:#C6BE9E!important;-webkit-text-fill-color:#C6BE9E!important;font-weight:700!important;text-shadow:none!important;animation:oroFsSoft2 2s ease-in-out 3!important}
 
 /* 2026-10-21 (propriétaire, choix 1) — équivalent en monnaie locale, en tout petit sous le montant du Compte réel
    (js/localcur.js) : la case garde sa taille (la ligne prend la place laissée en bas), rien d'autre ne bouge. */
