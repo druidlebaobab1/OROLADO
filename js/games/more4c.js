@@ -150,7 +150,7 @@
   // 0 chute · 1 court (<95 m) · 2 95 m+ ×0.5 · 3 105 m+ ×1.2 · 4 115 m+ ×2.5 · 5 125 m+ ×6 · 6 135 m+ ×20 · 7 145 m+ record ×150
   var SJ_X = function (d) { return 104 + (d - 70) * 2.25; };            // distance → x sur la piste d'atterrissage
   var SJ_Y = function (x) { return 120 + Math.pow(Math.max(0, x - 96) / 190, 1.4) * 112; }; // profil de la piste
-  function skier() { return '<g><path d="M-14 6L16 2" stroke="#F43F5E" stroke-width="2.4" stroke-linecap="round"/><path d="M-12 9L18 5" stroke="#F43F5E" stroke-width="2.4" stroke-linecap="round"/><path d="M-4 5L4-10" stroke="#1D4ED8" stroke-width="6" stroke-linecap="round"/><circle cx="6" cy="-14" r="4.5" fill="#FDE68A"/><path d="M2-16a5 5 0 0 1 9 0" fill="#EF4444"/></g>'; }
+  function skier() { return '<g><image href="img/games/sj_skier.webp?v=3718" x="-22" y="-26" width="44" height="33" preserveAspectRatio="xMidYMid meet"/></g>'; } // 2026-11-13 : sauteur illustré (avant : formes simples)
   game({
     key: 'skijump', l: verb('jump'), vb: '0 0 300 250',
     chips: [95, 105, 115, 125, 135, 145].map(function (d, j) { return ['<text y="3.5" font-size="10" font-weight="900" fill="' + (j === 5 ? '#FDE68A' : '#BAE6FD') + '" text-anchor="middle">' + d + '</text>', [0.5, 1.2, 2.5, 6, 20, 150][j]]; }),
@@ -224,11 +224,10 @@
       '<g id="crStumpsB" transform="translate(226 170)"><path d="M-4 0V-20M0 0V-20M4 0V-20" stroke="#FDE68A" stroke-width="2"/></g>' +
       '<g id="crStumps" transform="translate(66 176)"><path d="M-5 0V-26M0 0V-26M5 0V-26" stroke="#FDE68A" stroke-width="2.4"/><g id="crBails"><path d="M-6-27H6" stroke="#F59E0B" stroke-width="2.2"/></g></g>' +
       // batteur
-      '<g id="crBat" transform="translate(82 178)"><path d="M-4 0L-2-18M4 0L2-18" stroke="#F8FAFC" stroke-width="4" stroke-linecap="round"/><rect x="-6" y="-38" width="12" height="22" rx="4" fill="#F8FAFC"/>' +
-        '<circle cy="-44" r="6.5" fill="#1D4ED8"/><path d="M-6-44h12" stroke="#94A3B8" stroke-width="1.5"/>' +
-        '<g id="crBlade" transform="translate(4 -28) rotate(150)"><rect x="-2" y="0" width="4" height="10" fill="#78350F"/><rect x="-4" y="10" width="8" height="20" rx="2" fill="#FDE68A" stroke="#B45309"/></g></g>' +
+      '<g id="crBat" transform="translate(82 178)"><image href="img/games/cr_bat.webp?v=3718" x="-13" y="-56" width="26" height="58" preserveAspectRatio="xMidYMax meet"/>' +
+        '<g id="crBlade" transform="translate(4 -28) rotate(150)"></g></g>' + // 2026-11-13 : batteur illustré (sa batte est dans l'image)
       // lanceur
-      '<g id="crBowl" transform="translate(250 176)"><path d="M-4 0L-2-18M4 0L2-18" stroke="#FCA5A5" stroke-width="4" stroke-linecap="round"/><rect x="-6" y="-38" width="12" height="22" rx="4" fill="#DC2626"/><circle cy="-44" r="6" fill="#FDBA74"/></g>' +
+      '<g id="crBowl" transform="translate(250 176)"><g transform="scale(-1 1)"><image href="img/games/cr_bowl.webp?v=3718" x="-24" y="-52" width="48" height="54" preserveAspectRatio="xMidYMax meet"/></g></g>' +
       '<g id="crBallG" opacity="0"><circle r="4" fill="url(#crBall)"/></g>' +
       '<g transform="translate(150 16)"><rect x="-34" y="-12" width="68" height="22" rx="7" fill="#0B0820" stroke="#FDE68A" stroke-opacity=".6"/><text id="crRuns" y="4" text-anchor="middle" font-size="13" font-weight="900" fill="#FDE68A">0</text></g>' +
       '<g id="crFx" opacity="0">' + burst('#FDE68A') + '</g>',
@@ -362,13 +361,13 @@
         '<path d="M' + CT(-1, 0).join(' ') + 'L' + CT(-1, 1).join(' ') + 'L' + CT(1, 1).join(' ') + 'L' + CT(1, 0).join(' ') + 'z"/>' +
         '<path d="M' + CT(-1, 0.77).join(' ') + 'L' + CT(1, 0.77).join(' ') + 'M' + CT(-1, 0.23).join(' ') + 'L' + CT(1, 0.23).join(' ') + 'M' + CT(0, 0.23).join(' ') + 'L' + CT(0, 0.77).join(' ') + '"/></g>' +
       '<g id="tnBox" opacity="0"><path d="M' + CT(-1, 0.5).join(' ') + 'L' + CT(-1, 0.77).join(' ') + 'L' + CT(0, 0.77).join(' ') + 'L' + CT(0, 0.5).join(' ') + 'z" fill="#FDE68A" opacity=".25"/></g>' +
-      '<g id="tnRec" transform="translate(' + CT(-0.5, 1.02).join(' ') + ')"><path d="M-3 0l-1-12M3 0l1-12" stroke="#F8FAFC" stroke-width="3"/><rect x="-5" y="-24" width="10" height="13" rx="3" fill="#DC2626"/><circle cy="-28" r="4" fill="#FDBA74"/><path d="M5-18l7-6" stroke="#475569" stroke-width="2"/><ellipse cx="14" cy="-26" rx="3.5" ry="4.5" fill="none" stroke="#475569" stroke-width="1.4"/></g>' +
+      '<g id="tnRec" transform="translate(' + CT(-0.5, 1.02).join(' ') + ')"><ellipse cy="1" rx="8" ry="2.2" fill="#000" opacity=".3"/><image href="img/games/ace_rec.webp?v=3718" x="-10" y="-46" width="20" height="47" preserveAspectRatio="xMidYMax meet"/></g>' +
       // filet
       '<path d="M' + CT(-1.3, 0.5).join(' ') + 'L' + CT(1.3, 0.5).join(' ') + '" stroke="#fff" stroke-width="2"/><path d="M' + CT(-1.3, 0.5)[0] + ' ' + (CT(0, 0.5)[1] + 12) + 'H' + CT(1.3, 0.5)[0] + '" stroke="#CBD5E1" stroke-width="10" opacity=".35"/>' +
       '<rect x="' + (CT(-1.3, 0.5)[0] - 2) + '" y="' + (CT(0, 0.5)[1]) + '" width="3" height="13" fill="#E2E8F0"/><rect x="' + (CT(1.3, 0.5)[0] - 1) + '" y="' + (CT(0, 0.5)[1]) + '" width="3" height="13" fill="#E2E8F0"/>' +
       '<g id="tnSh" opacity="0"><ellipse rx="3" ry="1.2" fill="#000" opacity=".4"/></g><g id="tnBall" opacity="0"><circle r="4" fill="url(#tnB)"/></g>' +
-      '<g id="tnSrv" transform="translate(' + CT(0.25, -0.02).join(' ') + ')"><path d="M-4 0l-2-18M4 0l2-18" stroke="#F8FAFC" stroke-width="5" stroke-linecap="round"/><rect x="-8" y="-40" width="16" height="22" rx="5" fill="#7C3AED"/><circle cy="-46" r="6.5" fill="#FDBA74"/>' +
-        '<g id="tnRk" transform="translate(8 -34) rotate(30)"><path d="M0 0V-14" stroke="#334155" stroke-width="2.5"/><ellipse cy="-22" rx="7" ry="9" fill="none" stroke="#F472B6" stroke-width="2.4"/></g></g>' +
+      '<g id="tnSrv" transform="translate(' + CT(0.25, -0.02).join(' ') + ')"><ellipse cy="1" rx="14" ry="3.5" fill="#000" opacity=".3"/><image href="img/games/ace_srv.webp?v=3718" x="-17" y="-82" width="34" height="84" preserveAspectRatio="xMidYMax meet"/>' +
+        '<g id="tnRk" transform="translate(8 -34) rotate(30)"></g></g>' +
       '<g transform="translate(244 30)"><rect x="-44" y="-13" width="88" height="24" rx="8" fill="#0B0820" stroke="#A3E635" stroke-opacity=".6"/><text id="tnSpd" y="4" text-anchor="middle" font-size="12" font-weight="900" fill="#D9F99D" font-family="monospace">— km/h</text></g>' +
       '<g id="tnFx" opacity="0">' + burst('#FDE68A') + '</g>',
     reset: function (c) { c.id('tnBall').setAttribute('opacity', '0'); c.id('tnSh').setAttribute('opacity', '0'); c.id('tnSpd').textContent = '— km/h'; c.id('tnBox').setAttribute('opacity', '0'); c.id('tnBall').querySelector('circle').setAttribute('fill', 'url(#tnB)'); tr(c.id('tnRec'), CT(-0.5, 1.02)[0], CT(-0.5, 1.02)[1]); },
