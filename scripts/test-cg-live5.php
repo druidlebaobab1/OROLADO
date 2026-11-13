@@ -41,7 +41,7 @@ $G = array_slice($argv, 1) ?: $ALL;
 $T0 = microtime(true);
 
 echo "1) Déclaration : 18 jeux en direct, clés libres, anciens jeux inchangés\n";
-check('CASINO_LIVE5 = 18 jeux, mises ouvertes 120 s, période ≥ 140 s, clés = CASINO_LIVE5_KEYS', count($ALL) === 18 && $ALL === CASINO_LIVE5_KEYS && count(array_filter(CASINO_LIVE5, static fn($pb) => $pb[1] === 120 && $pb[0] >= 140)) === 18);
+check('CASINO_LIVE5 = 38 jeux, mises ouvertes 120 s, période ≥ 140 s, clés = CASINO_LIVE5_KEYS', count($ALL) === 38 && $ALL === CASINO_LIVE5_KEYS && count(array_filter(CASINO_LIVE5, static fn($pb) => $pb[1] === 120 && $pb[0] >= 140)) === 38);
 check('CASINO_DRAW, CASINO_LIVE2, CASINO_LIVE3 inchangés' . (CASINO_LIVE4 ? ', CASINO_LIVE4 présent (12)' : ''), count(CASINO_DRAW) === 5 && count(CASINO_LIVE2) === 4 && count(CASINO_LIVE3) === 12 && CASINO_LIVE3['moonshot'] === [165, 120] && (!CASINO_LIVE4 || count(CASINO_LIVE4) === 12));
 check('aucune clé en double dans CASINO_GAMES / CASINO_MULTI ; aucune clé commune avec LIVE 4', count(CASINO_GAMES) === count(array_unique(CASINO_GAMES)) && count(CASINO_MULTI) === count(array_unique(CASINO_MULTI)) && !array_intersect($ALL, CASINO_LIVE4_KEYS));
 $tour = (string) file_get_contents(__DIR__ . '/../casino-tour.php');
@@ -179,7 +179,8 @@ echo implode("\n", $simTxt) . "\n";
 $inv = ['dogracelive' => ['w6', 'l0', 'x'], 'camelracelive' => ['w5', 'l5', 'odd'], 'snailracelive' => ['q10', 'q44', 'w4'], 'chickenracelive' => ['w6', 'even'], 'boatracelive' => ['t5', 'w9'],
   'spaceracelive' => ['k3', 'w6'], 'monsterlive' => ['c5', 'c13'], 'penaltylive' => ['x', 'H'], 'basketlive' => ['p9', 'e7'], 'boxinglive' => ['ko2', 'green'], 'tennislive' => ['srv2', 'y'],
   'cricketlive' => ['r4', 'four'], 'archerylive' => ['a4', 'nine'], 'fishinglive' => ['f6', 'boot'], 'balloonlive' => ['gold2', 'red3'], 'volcanolive' => ['v4', 'up'],
-  'footmatchlive' => ['x', '1', 'o35'], 'sumolive' => ['ko', 'draw']];
+  'footmatchlive' => ['x', '1', 'o35'], 'sumolive' => ['ko', 'draw'],
+  'ostrichracelive' => ['t9', 'w9', 'odd'], 'turtleracelive' => ['t9', 'w9', 'odd'], 'rabbitracelive' => ['t9', 'w9', 'odd'], 'pigracelive' => ['t9', 'w9', 'odd'], 'duckracelive' => ['t9', 'w9', 'odd'], 'frogracelive' => ['t9', 'w9', 'odd'], 'robotracelive' => ['t9', 'w9', 'odd'], 'rhinoracelive' => ['t9', 'w9', 'odd'], 'penguinracelive' => ['t9', 'w9', 'odd'], 'cheetahracelive' => ['t9', 'w9', 'odd'], 'zebraracelive' => ['t9', 'w9', 'odd'], 'kangarooracelive' => ['t9', 'w9', 'odd'], 'mouseracelive' => ['t9', 'w9', 'odd'], 'dragonracelive' => ['t9', 'w9', 'odd'], 'unicornracelive' => ['t9', 'w9', 'odd'], 'jetskiracelive' => ['t9', 'w9', 'odd'], 'bikeracelive' => ['t9', 'w9', 'odd'], 'sprintracelive' => ['t9', 'w9', 'odd'], 'skiracelive' => ['t9', 'w9', 'odd'], 'crabracelive' => ['t9', 'w9', 'odd']];
 $okI = true; foreach ($inv as $g => $l) foreach ($l as $s) if (casino_draw_mult($g, $s, []) !== null) { $okI = false; echo "     accepté à tort : $g/$s\n"; }
 check('sélections invalides refusées', $okI);
 check('rien n\'est montré pendant les mises (aucun « pre »)', !array_filter($ALL, static fn($g) => casino_live5_pre($g, casino_live5_draw($g)) !== []));
@@ -193,7 +194,8 @@ save_db(orolado_data_file(), $db); $bal[$U] = 1000.0; $me = $db['users']['u_l'];
 $file = casino_user_file('u_l');
 $sels = ['dogracelive' => 'w0', 'camelracelive' => 'l4', 'snailracelive' => 'q01', 'chickenracelive' => 'lo', 'monsterlive' => 'c2', 'boatracelive' => 't1', 'spaceracelive' => 'k0',
   'penaltylive' => 'h', 'basketlive' => 'e5', 'boxinglive' => 'ko', 'tennislive' => 'rcv', 'cricketlive' => 'six', 'archerylive' => 'ten', 'fishinglive' => 'f1', 'balloonlive' => 'mix', 'volcanolive' => 'left',
-  'footmatchlive' => 'btts', 'sumolive' => 'throw'];
+  'footmatchlive' => 'btts', 'sumolive' => 'throw',
+  'ostrichracelive' => 't1', 'turtleracelive' => 't1', 'rabbitracelive' => 't1', 'pigracelive' => 't1', 'duckracelive' => 't1', 'frogracelive' => 't1', 'robotracelive' => 't1', 'rhinoracelive' => 't1', 'penguinracelive' => 't1', 'cheetahracelive' => 't1', 'zebraracelive' => 't1', 'kangarooracelive' => 't1', 'mouseracelive' => 't1', 'dragonracelive' => 't1', 'unicornracelive' => 't1', 'jetskiracelive' => 't1', 'bikeracelive' => 't1', 'sprintracelive' => 't1', 'skiracelive' => 't1', 'crabracelive' => 't1'];
 foreach ($G as $g) {
   [$P, $B] = CASINO_LIVE5[$g]; $sel = $sels[$g];
   $i0 = casino_draw_i($g, time()) + 40; $t = casino_draw_start($g, $i0) + 2.0;

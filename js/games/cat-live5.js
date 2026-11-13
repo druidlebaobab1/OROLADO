@@ -103,7 +103,27 @@
       '<path d="M14 14Q22 6 30 8M52 12Q44 4 36 8" stroke="#FDBA74" stroke-width="1" fill="none" stroke-dasharray="2 2"/>',
     // 2026-11-03 : logos-photos (casino-art.js PHOTO) ; ce dessin ne sert que de secours
     footmatchlive: '<image href="img/games/footmatchlive.webp?v=3580" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
-    sumolive: '<image href="img/games/sumolive.webp?v=3580" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>'
+    sumolive: '<image href="img/games/sumolive.webp?v=3580" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    ostrichracelive: '<image href="img/games/ostrichracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    turtleracelive: '<image href="img/games/turtleracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    rabbitracelive: '<image href="img/games/rabbitracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    pigracelive: '<image href="img/games/pigracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    duckracelive: '<image href="img/games/duckracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    frogracelive: '<image href="img/games/frogracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    robotracelive: '<image href="img/games/robotracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    rhinoracelive: '<image href="img/games/rhinoracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    penguinracelive: '<image href="img/games/penguinracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    cheetahracelive: '<image href="img/games/cheetahracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    zebraracelive: '<image href="img/games/zebraracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    kangarooracelive: '<image href="img/games/kangarooracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    mouseracelive: '<image href="img/games/mouseracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    dragonracelive: '<image href="img/games/dragonracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    unicornracelive: '<image href="img/games/unicornracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    jetskiracelive: '<image href="img/games/jetskiracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    bikeracelive: '<image href="img/games/bikeracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    sprintracelive: '<image href="img/games/sprintracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    skiracelive: '<image href="img/games/skiracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>',
+    crabracelive: '<image href="img/games/crabracelive.webp?v=3705" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>'
   };
   var A = function (k, name, pal) { return { k: k, name: name, sec: 'live', file: 'live5', pal: pal, icon: ICONS[k] }; };
   D6.CasinoCatalog.add([
@@ -124,6 +144,26 @@
     A('balloonlive', 'Balloon Pop', ['#F3E8FF', '#7C3AED']),
     A('volcanolive', 'Volcano Live', ['#FFEDD5', '#B91C1C']),
     A('footmatchlive', 'Football Live', ['#DCFCE7', '#166534']),
-    A('sumolive', 'Sumo Live', ['#FEE2E2', '#7F1D1D'])
+    A('sumolive', 'Sumo Live', ['#FEE2E2', '#7F1D1D']),
+    A('ostrichracelive', 'Ostrich Race', ['#FEF3C7', '#B45309']),
+    A('turtleracelive', 'Turtle Race', ['#DCFCE7', '#15803D']),
+    A('rabbitracelive', 'Rabbit Race', ['#E0F2FE', '#0369A1']),
+    A('pigracelive', 'Pig Race', ['#FCE7F3', '#BE185D']),
+    A('duckracelive', 'Duck Race', ['#EDE9FE', '#6D28D9']),
+    A('frogracelive', 'Frog Race', ['#FEF3C7', '#B45309']),
+    A('robotracelive', 'Robot Race', ['#DCFCE7', '#15803D']),
+    A('rhinoracelive', 'Rhino Race', ['#E0F2FE', '#0369A1']),
+    A('penguinracelive', 'Penguin Race', ['#FCE7F3', '#BE185D']),
+    A('cheetahracelive', 'Cheetah Race', ['#EDE9FE', '#6D28D9']),
+    A('zebraracelive', 'Zebra Race', ['#FEF3C7', '#B45309']),
+    A('kangarooracelive', 'Kangaroo Race', ['#DCFCE7', '#15803D']),
+    A('mouseracelive', 'Mouse Race', ['#E0F2FE', '#0369A1']),
+    A('dragonracelive', 'Dragon Race', ['#FCE7F3', '#BE185D']),
+    A('unicornracelive', 'Unicorn Race', ['#EDE9FE', '#6D28D9']),
+    A('jetskiracelive', 'Jet Ski Race', ['#FEF3C7', '#B45309']),
+    A('bikeracelive', 'Bike Race', ['#DCFCE7', '#15803D']),
+    A('sprintracelive', 'Sprint Race', ['#E0F2FE', '#0369A1']),
+    A('skiracelive', 'Ski Race', ['#FCE7F3', '#BE185D']),
+    A('crabracelive', 'Crab Race', ['#EDE9FE', '#6D28D9'])
   ].filter(function (e) { return e.icon; }));
 })(window.D6 = window.D6 || {});
