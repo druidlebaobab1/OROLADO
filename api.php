@@ -2428,6 +2428,21 @@ if ($action === 'resolveWithdraw') {
   $id = $req['id'] ?? '';
   $act = strtolower((string) ($req['act'] ?? ''));
   if ($act === '') $act = !empty($req['approve']) ? 'approve' : 'reject';
+  // 2026-11-13 (revue avant la grande publicité) : réservation SOUS VERROU sur le fichier à jour. Avant, un « Refuser » cliqué
+  // pendant que le robot envoyait les USDT (ou 2 admins en même temps : Accepter + Refuser) donnait remboursement ET paiement.
+  // Maintenant : refusé tant que le robot est en train d'envoyer ; un 2e clic d'admin dans les 30 s est refusé aussi.
+  $wdClaim = with_db_lock(function ($box) use ($id) {
+    foreach (($box->db['withdrawals'] ?? []) as $i => $x) {
+      if (!is_array($x) || (string) ($x['id'] ?? '') !== (string) $id) continue;
+      if (!empty($x['autoTry']) && empty($x['autoWhy'])) return ['ok' => false, 'skip_write' => true, 'reason' => 'Le robot est en train de payer ce retrait. Attendez une minute puis rafraîchissez.'];
+      if (!empty($x['adminBusy']) && time() - (int) $x['adminBusy'] < 30) return ['ok' => false, 'skip_write' => true, 'reason' => 'Ce retrait est déjà en cours de traitement. Rafraîchissez dans un instant.'];
+      $box->db['withdrawals'][$i]['adminBusy'] = time();
+      return ['ok' => true];
+    }
+    return ['ok' => false, 'skip_write' => true, 'reason' => 'Retrait introuvable'];
+  });
+  if (empty($wdClaim['ok'])) { echo json_encode(['ok' => false, 'server' => true, 'reason' => (string) ($wdClaim['reason'] ?? 'Réessayez.')]); exit; }
+  $db = load_db($file);
   foreach ($db['withdrawals'] as &$w) {
     if (($w['id'] ?? '') !== $id) continue;
     if ($act === 'silent') {

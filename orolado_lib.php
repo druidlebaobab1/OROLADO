@@ -50,7 +50,10 @@ function orolado_server_user_fields(): array {
   // téléphone les EFFAÇAIT (robot jamais repéré) et un tricheur pouvait y écrire de faux chiffres.
   // 2026-10-19 : 'clickFavDemo' / 'clickUnfavDemo' (mêmes compteurs, démo seulement, trade_lib.php).
   // 2026-10-20 : 'clickW' / 'clickW2' / 'clickWn' (même mesure pondérée par la mise, trade_lib.php).
-  return ['sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav', 'clickFavDemo', 'clickUnfavDemo', 'clickW', 'clickW2', 'clickWn', 'devices'];
+  // 2026-11-13 (revue avant la grande publicité) : 'partner' (compte partenaire = retrait sans code ni condition, posé par
+  // l'admin SEUL), 'devices' (empreintes servant à repérer les comptes suspendus) et 'banReason' ne peuvent plus être
+  // écrits par le téléphone : avant, n'importe quel joueur pouvait s'auto-déclarer partenaire et retirer sans contrôle.
+  return ['partner', 'devices', 'banReason', 'sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav', 'clickFavDemo', 'clickUnfavDemo', 'clickW', 'clickW2', 'clickWn', 'devices'];
 }
 
 /** Compteurs d'argent tenus par le serveur seul (dépôts validés, trades réels réglés). */
