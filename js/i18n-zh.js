@@ -129,7 +129,7 @@
  "affGuestLink": "注册即可获取你的链接",
  "affLeft": "剩余",
  "affListBtn": "查看我的好友",
- "affListTitle": "已充值的好友",
+ "affListTitle": "我邀请注册的好友",
  "affMore": "查看更多",
  "affNDep": "好友充值次数",
  "affNDepS": "充值次数",

@@ -14866,3 +14866,5 @@ html body #screenTrade #tradeWrap,html body #fsTradeOverlay{overscroll-behavior:
 }
 .learn-modal .lg-top-ico{background:none!important}.learn-modal .lg-g i{background:none!important}
 html body #portalModal .aff-codes .ac-msg.ok{color:#86EFAC}
+html body #portalModal .aff-row .ar-id b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(11px,3.3vw,13px);letter-spacing:-.1px}
+html body #portalModal #affSearch{font-size:clamp(12px,3.9vw,15px);text-overflow:ellipsis}
