@@ -2901,6 +2901,7 @@ if ($isAjax) {
     if ($btn === '') $btn = $group === 'fr' ? 'Jouer maintenant' : 'Play now';
     $btnLink = trim((string) ($req['link'] ?? ''));
     if ($btnLink !== '') { if (!preg_match('~^https://[^\s<>"\']+$~i', $btnLink) || mb_strlen($btnLink) > 300) admin_json(['ok' => false, 'reason' => 'Lien du bouton : il doit commencer par https://']); $btn .= "\n" . $btnLink; }
+    if (!empty($req['styled'])) $btn .= (strpos($btn, "\n") === false ? "\n" : '') . "\n@oro"; // 2026-11-15 : e-mail stylé OROLADO (case à cocher)
     if ($target === 'all' && (string) ($req['confirm'] ?? '') !== 'ENVOYER') admin_json(['ok' => false, 'reason' => 'Confirmation manquante.']);
     @set_time_limit(55);
     if ($target === 'test') {
@@ -2948,6 +2949,7 @@ if ($isAjax) {
     if ($btn === '') $btn = $group === 'fr' ? 'Jouer maintenant' : 'Play now';
     $btnLink = trim((string) ($req['link'] ?? ''));
     if ($btnLink !== '') { if (!preg_match('~^https://[^\s<>"\']+$~i', $btnLink) || mb_strlen($btnLink) > 300) admin_json(['ok' => false, 'reason' => 'Lien du bouton : il doit commencer par https://']); $btn .= "\n" . $btnLink; }
+    if (!empty($req['styled'])) $btn .= (strpos($btn, "\n") === false ? "\n" : '') . "\n@oro"; // 2026-11-15 : e-mail stylé OROLADO (case à cocher)
     if ((string) ($req['confirm'] ?? '') !== 'ENVOYER') admin_json(['ok' => false, 'reason' => 'Confirmation manquante.']);
     $list = admin_mail_groups()[$group];
     if (!$list) admin_json(['ok' => false, 'reason' => 'Aucun joueur dans ce groupe.']);
@@ -3530,6 +3532,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <textarea id="mlBody" maxlength="2000" rows="8" class="nt-in" placeholder="Bonjour {prenom},&#10;&#10;Les marchés bougent bien aujourd'hui. Passe faire quelques trades : orolado.com&#10;&#10;À bientôt,&#10;L'équipe OROLADO"></textarea>
         <p class="muted" style="margin:4px 0 0">Écrivez <b>{prenom}</b> : il est remplacé par le prénom du joueur. Mettez <b>orolado.com</b> dans le texte (ou utilisez le bouton 🎁 Affiliés). Envoi <b>rapide par paquets</b> : ça continue même si vous fermez la page. Si Brevo atteint sa limite, l'envoi se met en pause tout seul et vous le reprenez.</p>
         <label class="nt-lab">Texte du bouton orange (vide = « Jouer maintenant » / « Play now »)</label><input id="mlBtn" maxlength="40" class="nt-in" placeholder="Jouer maintenant"><label class="nt-lab">Lien du bouton (vide = orolado.com)</label><input id="mlLink" maxlength="300" class="nt-in" placeholder="https://orolado.com/" inputmode="url">
+        <label style="display:flex;gap:8px;align-items:center;margin:10px 0 2px;color:#F2C879;font-weight:700"><input type="checkbox" id="mlStyled"> ✨ E-mail stylé OROLADO (fond sombre, titre doré, gros bouton doré)</label>
+        <p class="muted" style="margin:2px 0 6px">La 1re ligne du message devient le grand titre doré. Décoché = e-mail simple (arrive plus souvent dans « Principale »).</p>
         <label class="nt-lab">Envoyer le test à (votre vraie adresse e-mail)</label>
         <input id="mlTestTo" type="email" maxlength="120" class="nt-in" placeholder="exemple@gmail.com" autocomplete="email">
         <p style="margin-top:12px">
@@ -5115,11 +5119,11 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       // v2668 — « Envoyer à tous » : l'adresse du propriétaire (case du test) reçoit d'abord une copie, pour voir que c'est parti.
       if (target === 'all' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) {
         $m('mlSt').textContent = 'Copie envoyée à ' + testTo + '…';
-        try { await ajax({action:'mail_send', target:'test', group, subject, message, button, link, testTo}); } catch (eCopy) { /* ignore */ }
+        try { await ajax({action:'mail_send', target:'test', group, subject, message, button, link, testTo, styled: $m('mlStyled').checked ? 1 : 0}); } catch (eCopy) { /* ignore */ }
       }
       do {
         $m('mlSt').textContent = 'Envoi en cours… ' + (already > 0 ? already + ' déjà reçu(s) avant, ' : '') + sent + ' e-mail(s) parti(s)' + (j && j.total ? ' sur ' + j.total : '') + (j && j.left ? ' · environ ' + Math.max(1, Math.round(j.left * 7.5 / 60)) + ' min restante(s)' : '') + '. Gardez la page ouverte.';
-        j = await ajax({action:'mail_send', target, group, subject, message, button, link, id, confirm: confirmTxt, testTo});
+        j = await ajax({action:'mail_send', target, group, subject, message, button, link, id, confirm: confirmTxt, testTo, styled: $m('mlStyled').checked ? 1 : 0});
         if (!j.ok) { $m('mlSt').textContent = 'Échec : ' + (j.reason || 'pas de réponse du serveur d\'e-mails'); break; }
         if (already < 0) already = j.already || 0;
         id = j.id; sent += j.sent || 0; fail += j.fail || 0; if (j.err) err = j.err;
@@ -5182,8 +5186,8 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     $m('btnMlBg').disabled = true;
     try {
       // Comme « Envoyer à tous » : l'adresse du test reçoit d'abord une copie.
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) { try { await ajax({action:'mail_send', target:'test', group, subject, message, button, link, testTo}); } catch (eCopy) { /* ignore */ } }
-      const j = await ajax({action:'mail_queue_start', group, subject, message, button, link, confirm:'ENVOYER'});
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) { try { await ajax({action:'mail_send', target:'test', group, subject, message, button, link, testTo, styled: $m('mlStyled').checked ? 1 : 0}); } catch (eCopy) { /* ignore */ } }
+      const j = await ajax({action:'mail_queue_start', group, subject, message, button, link, confirm:'ENVOYER', styled: $m('mlStyled').checked ? 1 : 0});
       $m('mlSt').textContent = j.ok ? 'C’est parti : le serveur envoie seul, lentement. Vous pouvez fermer la page.' : (j.reason || 'Échec');
       if (j.status) qPaint(j.status);
       qStatus();
