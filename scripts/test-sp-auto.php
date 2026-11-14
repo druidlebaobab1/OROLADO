@@ -51,5 +51,5 @@ check('mise rendue (2000)', abs($bal[$A] - 2000.0) < 0.001, (string) $bal[$A]);
 $r3 = sp_auto_settle_maybe($now + 7200 + 80 * 3600, true);
 check('2e passage : rien de plus, pas rendu 2 fois', ($r3['voided'] ?? -1) === 0 && abs($bal[$A] - 2000.0) < 0.001, json_encode($r3) . ' ' . $bal[$A]);
 $r4 = sp_auto_settle_maybe($now + 7200 + 80 * 3600 + 60);
-check('moins de 20 min après : sauté', !empty($r4['skip']), json_encode($r4));
+check('sans forçage : arrêté (le propriétaire valide lui-même)', !empty($r4['off']), json_encode($r4));
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
