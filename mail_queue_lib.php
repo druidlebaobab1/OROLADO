@@ -110,7 +110,8 @@ function admin_mail_html(string $text, string $btnSpec = ''): string {
   if ($origin === '') $origin = 'https://orolado.com';
   $fr = (bool) preg_match('/\b(le|la|les|tu|ton|ta|tes|vous|des|est|pour|jeux|joue[sz]?|dépôt|mise|salut|bonjour)\b/iu', $text);
   // bouton choisi par l'admin : « texte\nlien » (lien https seulement, sinon l'accueil OROLADO)
-  [$bT, $bL] = array_pad(explode("\n", $btnSpec, 2), 2, '');
+  [$bT, $bL, $bS] = array_pad(explode("\n", $btnSpec, 3), 3, '');
+  $styled = trim($bS) === '@oro';
   $btn = trim($bT) !== '' && !in_array(trim($bT), ['Ouvrir OROLADO', 'Open OROLADO'], true) ? trim($bT) : ($fr ? 'Jouer maintenant' : 'Play now');
   $btn = $e(mb_substr($btn, 0, 40));
   $href = $origin . '/';
@@ -122,6 +123,7 @@ function admin_mail_html(string $text, string $btnSpec = ''): string {
     $h = (string) preg_replace('~(https?://[^\s<]+)~u', '<a href="$1" style="color:#1A5FB4;text-decoration:underline">$1</a>', $h);
     $body .= '<p style="margin:0 0 14px;">' . nl2br($h) . '</p>';
   }
+  if ($styled) return admin_mail_html_oro($text, $btn, $href);
   // 2026-11-02 (propriétaire : « je veux un message NORMAL, pas en style ») — e-mail tout simple, comme écrit à la main :
   // fond clair, texte noir, un lien souligné. Aucune mise en forme « campagne ». Meilleure délivrabilité (boîte Principale).
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
@@ -131,6 +133,38 @@ function admin_mail_html(string $text, string $btnSpec = ''): string {
     . '<tr><td style="padding:20px 22px 2px;color:#222733;font-size:15px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;">' . $body
     . '<p style="margin:2px 0 6px;"><a href="' . $e($href) . '" style="color:#1A5FB4;font-weight:700;text-decoration:underline;">' . $btn . '</a></p></td></tr>'
     . '<tr><td style="padding:10px 22px 18px;border-top:1px solid #eceef1;color:#9aa0ab;font-size:11px;font-family:Arial,Helvetica,sans-serif;">OROLADO · orolado.com</td></tr>'
+    . '</table></td></tr></table></body></html>';
+}
+
+/**
+ * 2026-11-15 (propriétaire : « un e-mail stylé OROLADO, comme pour les retraits ») — case « ✨ E-mail stylé » de l'admin :
+ * fond sombre, logo OROLADO doré, 1re ligne du message = grand titre doré, texte clair, gros bouton doré. Sans image ni pixel.
+ */
+function admin_mail_html_oro(string $text, string $btn, string $href): string {
+  $e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+  $lines = preg_split('/\n/', trim($text)) ?: [];
+  $title = trim((string) array_shift($lines));
+  $rest = trim(implode("\n", $lines));
+  $ff = 'font-family:Arial,Helvetica,sans-serif;';
+  $fr = (bool) preg_match('/\b(le|la|les|tu|ton|ta|tes|vous|des|est|pour|jeux|joue[sz]?|dépôt|mise|salut|bonjour|retrait|gain)\b/iu', $text);
+  $foot = $fr ? 'Jeu responsable : joue seulement l’argent que tu peux perdre. 18+' : 'Play responsibly: only play with money you can afford to lose. 18+';
+  $body = '';
+  foreach (preg_split('/\n{2,}/', $rest) ?: [] as $para) {
+    if (trim($para) === '') continue;
+    $h = $e($para);
+    $h = (string) preg_replace('~(https?://[^\s<]+)~u', '<a href="$1" style="color:#F2C879;text-decoration:underline">$1</a>', $h);
+    $body .= '<p style="margin:0 0 14px;' . $ff . 'font-size:16px;line-height:25px;color:#E8EEF9;">' . nl2br($h) . '</p>';
+  }
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
+    . '<body style="margin:0;padding:0;background:#0B0820;">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0B0820;padding:24px 10px;"><tr><td align="center">'
+    . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#16112F;border-radius:18px;border:1px solid #3A2F12;">'
+    . '<tr><td align="center" style="padding:26px 24px 6px;' . $ff . 'font-size:24px;font-weight:900;letter-spacing:4px;color:#F2C879;">OROLADO</td></tr>'
+    . '<tr><td align="center" style="padding:0 24px 18px;"><div style="height:2px;width:70px;background:#F2C879;border-radius:2px;line-height:2px;font-size:0;">&nbsp;</div></td></tr>'
+    . ($title !== '' ? '<tr><td align="center" style="padding:4px 26px 18px;' . $ff . 'font-size:26px;line-height:33px;font-weight:800;color:#FFD166;">' . $e($title) . '</td></tr>' : '')
+    . '<tr><td align="center" style="padding:0 28px 6px;text-align:center;">' . $body . '</td></tr>'
+    . '<tr><td align="center" style="padding:8px 24px 28px;"><a href="' . $e($href) . '" style="display:inline-block;background:#F2C879;background-image:linear-gradient(180deg,#FFD98A,#E0A43A);color:#1A1203;' . $ff . 'font-size:17px;font-weight:800;text-decoration:none;padding:15px 34px;border-radius:12px;">' . $btn . '</a></td></tr>'
+    . '<tr><td align="center" style="padding:14px 24px 20px;border-top:1px solid #2A2350;' . $ff . 'font-size:11px;line-height:17px;color:#8E89B0;">OROLADO · orolado.com<br>' . $foot . '</td></tr>'
     . '</table></td></tr></table></body></html>';
 }
 
