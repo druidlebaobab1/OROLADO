@@ -407,7 +407,7 @@ function orolado_deposit_over_cap(float $amount): bool {
 
 function orolado_meta_pixel_id(): string {
   $id = supabase_env('META_PIXEL_ID');
-  return $id !== '' ? $id : '935068479097391';
+  return $id !== '' ? $id : '987866443886391'; // 2026-11-15 : nouveau pixel OROLADO (le précédent est mort)
 }
 
 function orolado_meta_access_token(): string {
