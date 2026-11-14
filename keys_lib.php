@@ -55,6 +55,13 @@ function keys_catalog(): array {
       ['name' => 'HELIUS_API_KEY', 'title' => 'Helius', 'ico' => '🟪', 'what' => 'Solana (SOL, USDT et USDC sur Solana).', 'url' => 'https://dashboard.helius.dev/signup', 'how' => 'API Keys'],
       ['name' => 'TONCENTER_API_KEY', 'title' => 'TON Center', 'ico' => '💎', 'what' => 'TON et USDT sur TON.', 'url' => 'https://t.me/tonapibot', 'how' => 'Le robot Telegram donne la clé'],
     ]],
+    // 2026-11-15 (propriétaire) : clé de l'API Conversions du pixel OROLADO — les DÉPÔTS sont envoyés à Facebook par le serveur
+    // (marche même avec un bloqueur de pub). Clé secrète : collée ici par le propriétaire, jamais dans le code ni dans le chat.
+    ['cat' => '📣 Publicité Facebook', 'items' => [
+      ['name' => 'META_ACCESS_TOKEN', 'title' => 'Facebook : clé de l’API Conversions', 'ico' => '📣',
+        'what' => 'Envoie chaque dépôt à ton pixel OROLADO directement depuis le serveur (plus fiable que le pixel seul).',
+        'url' => 'https://business.facebook.com/events_manager2', 'how' => 'Events Manager → pixel OROLADO → Settings → Conversions API → Generate access token → Copier'],
+    ]],
     ['cat' => 'Paiements', 'items' => [
       ['name' => 'OXAPAY_MERCHANT_KEY', 'title' => 'OxaPay — dépôts', 'ico' => '💳', 'what' => 'Clé « Merchant » d’OxaPay (dépôts crypto par OxaPay).', 'url' => 'https://app.oxapay.com', 'how' => 'Merchant service → API key'],
       ['name' => 'OXAPAY_PAYOUT_KEY', 'title' => 'OxaPay — retraits', 'ico' => '💸', 'what' => 'Clé « Payout » d’OxaPay (retraits crypto automatiques, plus tard).', 'url' => 'https://app.oxapay.com', 'how' => 'Payout service → API key'],
@@ -202,6 +209,11 @@ function keys_test(string $name, string $v): array {
     case 'TONCENTER_API_KEY':
       [$c, $r] = keys_http('https://toncenter.com/api/v2/getMasterchainInfo', 'GET', null, ['X-API-Key: ' . $v]);
       return ($c === 200 && str_contains($r, '"ok":true')) ? ['ok' => true, 'msg' => 'TON Center répond : la clé fonctionne'] : ['ok' => false, 'msg' => 'TON Center refuse la clé (code ' . $c . ')'];
+    case 'META_ACCESS_TOKEN':
+      $px = function_exists('orolado_meta_pixel_id') ? orolado_meta_pixel_id() : '987866443886391';
+      [$c, $r] = keys_http('https://graph.facebook.com/v25.0/' . rawurlencode($px) . '?fields=id,name&access_token=' . rawurlencode($v));
+      if ($c === 200 && str_contains($r, '"id"')) return ['ok' => true, 'msg' => 'Facebook accepte la clé ✓ pour le pixel ' . $px . '. Les dépôts seront envoyés tout seuls.'];
+      return ['ok' => false, 'msg' => 'Facebook refuse la clé pour le pixel ' . $px . ' (code ' . $c . '). Vérifie que tu l’as générée DANS le pixel OROLADO (Settings → Conversions API).'];
     case 'OXAPAY_MERCHANT_KEY':
     case 'OXAPAY_PAYOUT_KEY':
       [$c, $r] = keys_http('https://api.oxapay.com/v1/payment?size=1&page=1', 'GET', null, ['merchant_api_key: ' . $v, 'Content-Type: application/json']);
