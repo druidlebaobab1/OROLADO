@@ -2724,10 +2724,13 @@
     function wrap(list, names) { return list.map(function (f, i) { var n = names[i] || names[0]; return function (d, sz) { var fb = f(d, sz); return gSprite(fb.w || sz, fb.h || sz, d, 'img/games/ci_' + n + '.webp' + V, function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); }; }); }
     cfg.good = wrap(cfg.good, a.good); cfg.bad = wrap(cfg.bad, a.bad); return cfg;
   }
+  // 2026-11-14 (propriétaire : « l'hélicoptère vole en arrière ») : 20 personnages volants regardaient vers la gauche alors que le
+  // jeu avance vers la droite → images retournées (nouvelle version 3722).
+  var FB_FLIP = {copter: 1, gull: 1, hedgehogfly: 1, lionhero: 1, pegasus: 1, robokid: 1, superhero: 1, unicornfly: 1, ladybug: 1, duckpilot: 1, beetlejet: 1, jetboard: 1, astronautkid: 1, fairyflight: 1, airship: 1, butterflyfly: 1, frogballoon: 1, spacebee: 1, bee: 1, beeprincess: 1};
   function withFArt(cfg) { // v3596 : jeux « vol » — décor + personnage illustrés (anciens dessins en secours)
     var V = '?v=3596', ob = cfg.bg, op = cfg.player, k = cfg.art;
     cfg.bg = function (c) { ob.apply(this, arguments); gCover(c.canvas, 'img/games/fb_' + k + '_bg.webp' + V); };
-    cfg.player = function (d, sz) { var fb = op(d, sz); return gSprite(fb.w || sz, fb.h || sz, d, 'img/games/fb_' + k + '_pl.webp' + V, function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); };
+    cfg.player = function (d, sz) { var fb = op(d, sz); return gSprite(fb.w || sz, fb.h || sz, d, 'img/games/fb_' + k + '_pl.webp' + (FB_FLIP[k] ? '?v=3722' : V), function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); };
     return cfg;
   }
   function dodger(cfg) {
