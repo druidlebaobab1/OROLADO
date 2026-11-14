@@ -8,6 +8,18 @@ require_once __DIR__ . '/mail_queue_lib.php';
  * + fusion du JSON local. Aucun DROP / TRUNCATE.
  */
 
+/**
+ * 2026-11-15 (propriétaire : « certaines heures sont à l'heure de mon téléphone, d'autres non ») : une date enregistrée SANS fuseau
+ * (« 2026-11-14 10:20:00 », bases et anciens enregistrements) est en heure universelle : elle était lue comme si c'était déjà
+ * l'heure du téléphone (décalage de 5 h 45 au Népal). Elle est maintenant lue en UTC puis convertie.
+ */
+if (!function_exists('admin_ts')) { function admin_ts(string $s): int {
+  $s = trim($s);
+  if ($s === '') return 0;
+  if (preg_match('/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/', $s)) $s .= ' UTC';
+  return (int) (strtotime($s) ?: 0);
+} }
+
 function admin_tz(): DateTimeZone {
   // v2956 (propriétaire) : l'admin s'affiche à l'heure du téléphone qui l'ouvre (fuseau envoyé par le navigateur,
   // cookie oro_admin_tz) ; sinon heure de Côte d'Ivoire comme avant.
@@ -863,7 +875,7 @@ function admin_stat_user_visible(array $p): bool {
   if ($id === 'admin_master') return true;
   if (function_exists('orolado_admin_emails') && in_array($em, orolado_admin_emails(), true)) return true;
   if ($em === 'admin@orolado.com' || $em === 'admin@6diablo.com') return true;
-  $t = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+  $t = admin_ts((string) ($p['createdAt'] ?? '')) ?: 0;
   return $t > admin_stat_cutoff_ts();
 }
 
@@ -962,7 +974,7 @@ function admin_apply_live_seen(array $list): array {
   foreach ($list as $i => $p) {
     $id = (string) ($p['id'] ?? '');
     if ($id === '' || !isset($live[$id])) continue;
-    $cur = strtotime((string) ($p['lastSeen'] ?? '')) ?: 0;
+    $cur = admin_ts((string) ($p['lastSeen'] ?? '')) ?: 0;
     $nxt = strtotime((string) $live[$id]) ?: 0;
     if ($nxt > $cur) $list[$i]['lastSeen'] = $live[$id];
   }
@@ -1378,7 +1390,7 @@ function admin_upsert_local_wd(array &$db, array $row): int {
 function admin_wd_fingerprint(array $w): string {
   $uid = admin_fill((string) ($w['userId'] ?? ''));
   $amt = number_format(abs((float) ($w['amount'] ?? 0)), 2, '.', '');
-  $t = strtotime((string) ($w['createdAt'] ?? '')) ?: 0;
+  $t = admin_ts((string) ($w['createdAt'] ?? '')) ?: 0;
   $bucket = $t > 0 ? (string) intdiv($t, 90) : '0';
   if ($uid === '' && $amt === '0.00') return '';
   return $uid . '|' . $amt . '|' . $bucket;
@@ -1840,7 +1852,7 @@ function admin_online_count(): int {
   $cut = time() - 90;
   $nProf = 0;
   foreach (admin_stat_people(admin_profiles()) as $p) { // 2026-10-22 : l'admin connecté n'est pas un joueur en ligne
-    $t = strtotime((string) ($p['lastSeen'] ?? '')) ?: 0;
+    $t = admin_ts((string) ($p['lastSeen'] ?? '')) ?: 0;
     if ($t >= $cut) $nProf++;
   }
   return $nProf;
@@ -1906,7 +1918,7 @@ function admin_collect_alerts(): array {
         if (str_contains($blob, 'mail') || str_contains($blob, 'otp')) $msg = 'L’envoi d’un e-mail / code de vérification a échoué.';
         if (str_contains($blob, 'webhook')) $msg = 'Le retour de paiement (webhook) a été refusé ou incomplet.';
         $svc = str_contains($blob, 'mail') ? 'Mail' : (str_contains($blob, 'webhook') ? 'Webhook' : 'Paiement');
-        admin_alert_push($svc, $msg . ' (' . date('H:i', strtotime((string) ($j['ts'] ?? 'now')) ?: time()) . ')', 'error');
+        admin_alert_push($svc, $msg . ' (' . date('H:i', admin_ts((string) ($j['ts'] ?? 'now')) ?: time()) . ')', 'error');
       }
     }
   }
@@ -1918,7 +1930,7 @@ function admin_collect_alerts(): array {
   $cut = time() - 7 * 86400;
   $fresh = [];
   foreach ($rows as $r) {
-    $t = strtotime((string) ($r['at'] ?? ''));
+    $t = admin_ts((string) ($r['at'] ?? ''));
     if ($t && $t >= $cut) $fresh[] = $r;
   }
   return $fresh;
@@ -2159,7 +2171,7 @@ function admin_keep_purge_tick(): array {
       'name' => (string) ($p['display_name'] ?? ''),
     ];
     $em = strtolower(trim($row['email']));
-    $t = strtotime((string) ($p['created_at'] ?? '')) ?: 0;
+    $t = admin_ts((string) ($p['created_at'] ?? '')) ?: 0;
     $isAdmin = $em !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($em);
     $isFifty = $em === 'xsw93108@laoia.com' || str_contains($em, 'laoia.com');
     if (!$isAdmin && !$isFifty && $t > $newestT) {
@@ -2325,12 +2337,12 @@ function admin_board_issues_raw(): array {
     $codes = 0;
     foreach (admin_otp_rows() as $r) {
       if (($r['type'] ?? '') !== 'OTP inscription') continue;
-      $t = strtotime((string) ($r['at'] ?? '')) ?: 0;
+      $t = admin_ts((string) ($r['at'] ?? '')) ?: 0;
       if ($t >= time() - 86400 && ($r['status'] ?? '') !== 'échec') $codes++;
     }
     $newUsers = 0;
     foreach (admin_stat_people(admin_profiles()) as $p) {
-      $t = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+      $t = admin_ts((string) ($p['createdAt'] ?? '')) ?: 0;
       if ($t >= time() - 86400) $newUsers++;
     }
     if ($codes >= 5 && $newUsers === 0) {
@@ -2340,7 +2352,7 @@ function admin_board_issues_raw(): array {
   // 2) des trades réels ont lieu en ce moment, mais personne n'apparaît « en ligne ».
   $recentTrades = 0;
   foreach (admin_orders() as $o) {
-    $t = strtotime((string) ($o['created_at'] ?? '')) ?: 0;
+    $t = admin_ts((string) ($o['created_at'] ?? '')) ?: 0;
     if ($t >= time() - 300) $recentTrades++;
   }
   if ($recentTrades >= 3 && admin_online_count() === 0) {
@@ -2596,7 +2608,7 @@ function admin_order_expiry_ts(array $o): int {
     $t = strtotime($ex);
     if ($t) return $t;
   }
-  $created = strtotime((string) ($o['created_at'] ?? $o['at'] ?? '')) ?: 0;
+  $created = admin_ts((string) ($o['created_at'] ?? $o['at'] ?? '')) ?: 0;
   $dur = (int) ($o['duration'] ?? 0);
   if ($created > 0 && $dur > 0) return $created + $dur;
   return 0;
@@ -2665,7 +2677,7 @@ function admin_legacy_reason(array $p, array $realOrders, ?array $wd = null, arr
   if ($play) { $trades += $games; $wagered += (float) $play['cs']['in'] + (float) $play['sp']['in']; }
   if ($wd && $trades <= 0 && $amt >= 5 && !($aff > 0 && $amt <= $aff + 0.01)) return 'Retrait sans aucun jeu réel (ni trade, ni jeu, ni pari)';
   if ($wd && $amt >= 50 && $wagered + 0.01 < $amt && $trades < 4) return 'Retrait supérieur aux mises';
-  $created = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+  $created = admin_ts((string) ($p['createdAt'] ?? '')) ?: 0;
   if ($wd && $created > 0 && (time() - $created) < 180 && $amt >= 5) return 'Retrait dans les 3 min après inscription';
   $dep = (float) ($p['depositTotal'] ?? 0);
   if ($dep >= 50 && $trades <= 1 && $wd && $amt >= 20) return 'Gros dépôt puis cash-out immédiat';
@@ -2674,7 +2686,7 @@ function admin_legacy_reason(array $p, array $realOrders, ?array $wd = null, arr
   if ($n >= 8) {
     $times = [];
     foreach ($realOrders as $o) {
-      $t = strtotime((string) ($o['created_at'] ?? ''));
+      $t = admin_ts((string) ($o['created_at'] ?? ''));
       if ($t) $times[] = $t;
     }
     sort($times);
@@ -2822,11 +2834,11 @@ function admin_alerts(array $p, array $realOrders, ?array $wd = null, array $ctx
   if ($fav >= 8 && $fav >= 2.5 * max(1, $unf) && !str_contains($legacy, 'obot')) $add('orange', 'Clic souvent « en avance » sur la courbe (' . $fav . ' contre ' . $unf . ')');
 
   $dep = (float) ($p['depositTotal'] ?? 0);
-  $created = strtotime((string) ($p['createdAt'] ?? '')) ?: 0;
+  $created = admin_ts((string) ($p['createdAt'] ?? '')) ?: 0;
   if ($dep > 0 && $net > 2 * $dep && $net >= 20) $add('orange', 'Gains de jeu (+' . admin_money($net) . ') plus de 2× ses dépôts');
   if ($dep > 0 && (float) ($ctx['wdPaid'] ?? 0) > 3 * $dep && (float) ($ctx['wdPaid'] ?? 0) >= 30) $add('orange', 'A déjà retiré plus de 3× ses dépôts (' . admin_money($ctx['wdPaid']) . ')');
   if ($wd) {
-    $wAt = strtotime((string) ($wd['createdAt'] ?? '')) ?: time();
+    $wAt = admin_ts((string) ($wd['createdAt'] ?? '')) ?: time();
     if ($created > 0 && $wAt - $created < 86400) $add('orange', 'Compte créé il y a moins de 24 h');
     $lastDep = (int) ($ctx['lastDepAt'] ?? 0);
     if ($lastDep > 0 && $wAt >= $lastDep && $wAt - $lastDep < 3600) $add('orange', 'Retrait moins d’1 h après son dépôt');
@@ -2918,13 +2930,13 @@ function admin_suspects(): array {
   }
   $wd24By = [];
   foreach ($wds as $w) {
-    $t = strtotime((string) ($w['createdAt'] ?? '')) ?: 0;
+    $t = admin_ts((string) ($w['createdAt'] ?? '')) ?: 0;
     if ($t >= time() - 86400 && !admin_wd_is_silenced($w)) $wd24By[(string) ($w['userId'] ?? '')] = ($wd24By[(string) ($w['userId'] ?? '')] ?? 0) + 1;
   }
   $lastDepBy = [];
   foreach (admin_deposits() as $d) {
     if (!admin_dep_is_paid($d)) continue;
-    $t = strtotime((string) ($d['createdAt'] ?? '')) ?: 0;
+    $t = admin_ts((string) ($d['createdAt'] ?? '')) ?: 0;
     $u = (string) ($d['userId'] ?? '');
     if ($t > ($lastDepBy[$u] ?? 0)) $lastDepBy[$u] = $t;
   }
@@ -2956,7 +2968,7 @@ function admin_suspects(): array {
       if ($mine) $ctx['sameDest'] = array_values($mine);
       $big = 0.0;
       foreach ($ordersBy[$uid] ?? [] as $o) {
-        $t = strtotime((string) ($o['created_at'] ?? '')) ?: 0;
+        $t = admin_ts((string) ($o['created_at'] ?? '')) ?: 0;
         if ($t >= $dayAgo) $big = max($big, (float) ($o['net'] ?? 0));
       }
       if ($big > 0) $ctx['bigWin'] = $big;
@@ -3214,7 +3226,7 @@ function admin_health_live_checks(): array {
   $old = 0;
   foreach (admin_withdrawals() as $w) {
     if (!admin_wd_is_open($w)) continue;
-    $t = strtotime((string) ($w['createdAt'] ?? '')) ?: 0;
+    $t = admin_ts((string) ($w['createdAt'] ?? '')) ?: 0;
     if ($t > 0 && $t < time() - 86400) $old++;
   }
   $rows[] = $old > 0
@@ -3229,7 +3241,7 @@ function admin_health_live_checks(): array {
     foreach (array_slice(@file($log, FILE_IGNORE_NEW_LINES) ?: [], -400) as $line) {
       $j = json_decode((string) $line, true);
       if (!is_array($j)) continue;
-      $t = strtotime((string) ($j['ts'] ?? '')) ?: 0;
+      $t = admin_ts((string) ($j['ts'] ?? '')) ?: 0;
       if ($t < time() - 86400) continue;
       $sent++;
       if (($j['status'] ?? '') !== 'envoyé') $fail++;

@@ -214,7 +214,7 @@ function admin_apply_filters(array $rows, array $req, string $dateField = 'creat
 
 /** v2641 — date d'inscription lisible, à l'heure du tableau (avant : texte brut, fuseaux mélangés). */
 function admin_when_cell(string $iso): string {
-  $ts = $iso !== '' ? strtotime($iso) : false;
+  $ts = $iso !== '' ? admin_ts($iso) : false;
   if (!$ts) return '—';
   try { return (new DateTimeImmutable('@' . $ts))->setTimezone(admin_tz())->format('d/m/Y H:i'); } catch (Throwable $e) { return date('d/m/Y H:i', $ts); }
 }
@@ -449,7 +449,7 @@ function admin_badges(): array {
     $paid = (float) ($p['depositTotal'] ?? 0);
     if ($paid > 0) $noDep++; // 2026-10-25 (propriétaire) : la case compte maintenant les joueurs AVEC dépôt (clé « no_deposit » gardée)
     if ($paid > 0) {
-      $ls = strtotime((string) ($p['lastSeen'] ?? '')) ?: 0;
+      $ls = admin_ts((string) ($p['lastSeen'] ?? '')) ?: 0;
       if ($ls < $cut7) $inactive++;
     }
   }
@@ -486,7 +486,7 @@ function admin_badges(): array {
       if (admin_in_range($d['createdAt'] ?? null, $y0, $y1)) { $depYest++; $depYestSum += (float) ($d['amount'] ?? 0); }
     }
     if (admin_dep_is_pending($d)) {
-      $age = strtotime((string) ($d['createdAt'] ?? '')) ?: 0;
+      $age = admin_ts((string) ($d['createdAt'] ?? '')) ?: 0;
       if ($age === 0 || $age >= time() - 7 * 86400) $depPend++;
     }
     if (admin_dep_is_failed($d)) $depFail++;
@@ -874,7 +874,7 @@ function admin_list_payload_raw(string $view, array $req): array {
     $sus = array_values(array_filter($all, static fn($r) => $r['kind'] === 'suspended'));
     $del = array_values(array_filter($all, static fn($r) => $r['kind'] === 'deleted'));
     $cols = ['Statut', 'ID', 'E-mail', 'Date'];
-    $fmt = static fn($at) => $at !== '' ? date('d/m/Y H:i', strtotime($at) ?: time()) : '—';
+    $fmt = static fn($at) => $at !== '' ? date('d/m/Y H:i', admin_ts((string) $at) ?: time()) : '—';
     foreach ($sus as $r) $rows[] = ['cells' => ['⛔ Suspendu', $r['publicId'] !== '' ? $r['publicId'] : '—', $r['email'] !== '' ? $r['email'] : '—', $fmt($r['at'])], 'userId' => $r['id']];
     foreach ($del as $r) $rows[] = ['cells' => ['🗑 Supprimé', $r['publicId'] !== '' ? $r['publicId'] : '—', $r['email'] !== '' ? $r['email'] : '—', $fmt($r['at'])], 'userId' => ''];
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1,
@@ -890,7 +890,7 @@ function admin_list_payload_raw(string $view, array $req): array {
       if ($tag && !empty($tag['ref'])) { $p['_by'] = (string) $tag['ref']['by']; $list[] = $p; }
     }
     $list = admin_apply_filters($list, $req, 'createdAt');
-    usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
+    usort($list, static fn($a, $b) => (admin_ts((string) ($b['createdAt'] ?? '')) ?: 0) <=> (admin_ts((string) ($a['createdAt'] ?? '')) ?: 0));
     $nDep = count(array_filter($list, static fn($p) => (float) ($p['depositTotal'] ?? 0) > 0));
     $sumDep = array_sum(array_map(static fn($p) => (float) ($p['depositTotal'] ?? 0), $list));
     [$slice, $total, $page, $pages] = admin_page($list, $req);
@@ -925,14 +925,14 @@ function admin_list_payload_raw(string $view, array $req): array {
     } else if ($view === 'online') {
       $cut = time() - 90;
       $list = array_values(array_filter($people, static function ($p) use ($cut) {
-        $t = strtotime((string) ($p['lastSeen'] ?? ''));
+        $t = admin_ts((string) ($p['lastSeen'] ?? ''));
         return $t && $t >= $cut;
       }));
     } else if ($view === 'inactive') {
       $cut7 = time() - 7 * 86400;
       $list = array_values(array_filter($people, static function ($p) use ($cut7) {
         if ((float) ($p['depositTotal'] ?? 0) <= 0) return false;
-        $t = strtotime((string) ($p['lastSeen'] ?? '')) ?: 0;
+        $t = admin_ts((string) ($p['lastSeen'] ?? '')) ?: 0;
         return $t < $cut7;
       }));
     } else if ($view === 'top_balances') {
@@ -957,7 +957,7 @@ function admin_list_payload_raw(string $view, array $req): array {
     if ($wantC !== '') $list = array_values(array_filter($list, static fn($p) => admin_country_cell($p) === $wantC));
     if ($view !== 'top_balances') {
       // v2641 : rangé par VRAIE heure (les fiches n'écrivent pas l'heure au même format) : le plus récent en haut.
-      usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
+      usort($list, static fn($a, $b) => (admin_ts((string) ($b['createdAt'] ?? '')) ?: 0) <=> (admin_ts((string) ($a['createdAt'] ?? '')) ?: 0));
     }
     [$slice, $total, $page, $pages] = admin_page($list, $req);
     foreach ($slice as $p) {
@@ -1041,7 +1041,7 @@ function admin_list_payload_raw(string $view, array $req): array {
       $src = array_values(array_filter($people, static fn($p) => admin_in_range($p['createdAt'] ?? null, $t0, $t1)));
     }
     foreach ($src as $p) {
-      $t = strtotime((string) ($p['createdAt'] ?? ''));
+      $t = admin_ts((string) ($p['createdAt'] ?? ''));
       if (!$t) continue;
       $h = (int) (new DateTimeImmutable('@' . $t))->setTimezone(admin_tz())->format('G');
       $bucket[$h]++;
@@ -1296,12 +1296,12 @@ function admin_list_payload_raw(string $view, array $req): array {
       // dates choisit le jour / la période (avant : seulement ceux DEMANDÉS aujourd'hui → liste souvent vide).
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w)));
       foreach ($list as $i => $w) $list[$i]['createdAt'] = admin_wd_paid_at($w) ?: (string) ($w['createdAt'] ?? '');
-      usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
+      usort($list, static fn($a, $b) => (admin_ts((string) ($b['createdAt'] ?? '')) ?: 0) <=> (admin_ts((string) ($a['createdAt'] ?? '')) ?: 0));
     } else if ($view === 'wd_yesterday') {
       // 2026-11-09 : retraits PAYÉS hier (date de paiement).
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w) && admin_in_range(admin_wd_paid_at($w) ?: null, $y0, $y1)));
       foreach ($list as $i => $w) $list[$i]['createdAt'] = admin_wd_paid_at($w) ?: (string) ($w['createdAt'] ?? '');
-      usort($list, static fn($a, $b) => (strtotime((string) ($b['createdAt'] ?? '')) ?: 0) <=> (strtotime((string) ($a['createdAt'] ?? '')) ?: 0));
+      usort($list, static fn($a, $b) => (admin_ts((string) ($b['createdAt'] ?? '')) ?: 0) <=> (admin_ts((string) ($a['createdAt'] ?? '')) ?: 0));
     } else if ($view === 'wd_rejected') {
       $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_rejected($w)));
     } else {
@@ -4084,7 +4084,9 @@ function bustList() { listCache = {}; }
 function wdLoc(d) { var a = +d.amount || 0, r = +d.locRate || 0, sym = d.locSym || '';
   if (!(r > 0) && /^(225|221|223|226|229|228|227|245|237|241|242|235|236|240)$/.test(String(d.countryCode || '').replace(/\D/g, ''))) { r = 600; sym = 'FCFA'; }
   return r > 0 ? ' · ' + Math.floor(a * r + 1e-6).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g, ' ') + ' ' + sym + ' (taux ' + r + ')' : ''; }
-function fdate(s) { if (!s) return '—'; const d = new Date(s); return isNaN(d) ? String(s) : d.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}); }
+// 2026-11-15 : date sans fuseau (« 2026-11-14 10:20:00 ») = heure universelle → convertie à l'heure de ce téléphone
+function tzFix(s) { return (typeof s === 'string' && /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s.trim())) ? s.trim().replace(' ', 'T') + 'Z' : s; }
+function fdate(s) { if (!s) return '—'; const d = new Date(tzFix(s)); return isNaN(d) ? String(s) : d.toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}); }
 function money(n) { return '$ ' + (Number(n)||0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function paintHealth(h) {
@@ -4709,7 +4711,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
 (function () {
   const $v = id => document.getElementById(id);
   if (!$v('btnVault') || !$v('vaultModal')) return;
-  const when = iso => { try { return new Date(iso).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); } catch (e) { return ''; } };
+  const when = iso => { try { return new Date(tzFix(iso)).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); } catch (e) { return ''; } };
   const txl = h => h ? '<a href="https://tronscan.org/#/transaction/' + esc(h) + '" target="_blank" rel="noopener" style="color:#93C5FD">' + esc(String(h).slice(0, 10)) + '…</a>' : '';
   const adl = a => '<a href="https://tronscan.org/#/address/' + esc(a) + '" target="_blank" rel="noopener" style="color:#93C5FD;word-break:break-all">' + esc(a) + '</a>';
   const KIND = {balayage: '➡️ Envoi (adresse joueur → caisse / Trust Wallet)', frais: '⛽ Frais envoyés', reservoir_vide: '⚠️ Réservoir vide', retrait_auto: '🤖 Retrait payé tout seul', envoi_libre: '✍️ Envoi libre', surplus_trust: '🏦 Surplus caisse → Trust Wallet', confirme: '✔️ Confirmé', credit: '💰 Dépôt crédité'};
@@ -4837,7 +4839,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
 (function () {
   const $k = id => document.getElementById(id);
   if (!$k('btnKeys') || !$k('keysModal')) return;
-  const when = iso => { try { return iso ? new Date(iso).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : ''; } catch (e) { return ''; } };
+  const when = iso => { try { return iso ? new Date(tzFix(iso)).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : ''; } catch (e) { return ''; } };
   const state = k => {
     if (!k.set) return '<span class="pill" style="background:rgba(252,211,77,.15);color:#FCD34D">À ajouter</span>';
     const t = k.test;
@@ -5283,7 +5285,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     const log = j.journal || [];
     $n('ntLog').innerHTML = !log.length ? 'Aucun envoi pour l’instant.' :
       '<table class="nt-log"><tr><th>Date</th><th>Message</th><th>Pour</th><th>Reçus</th><th>Partis</th><th>Échecs</th></tr>' +
-      log.map(l => '<tr><td>' + esc(String(l.at || '').replace('T', ' ').slice(0, 16)) + '</td><td><b>' + esc(l.title) + '</b><br>' + esc(l.body) + '</td><td>' +
+      log.map(l => '<tr><td>' + esc(l.at ? fdate(l.at) : '') + '</td><td><b>' + esc(l.title) + '</b><br>' + esc(l.body) + '</td><td>' +
         (l.target === 'all' ? 'Tous' : 'Test') + (l.lang ? ' · ' + esc(LANGN[l.lang] || l.lang) : '') + (l.done ? '' : ' (en cours)') + '</td><td>' + (l.sent | 0) + '</td><td>' + (l.gone | 0) + '</td><td>' + (l.fail | 0) + (l.fail && l.err ? '<br><small>' + esc(l.err) + '</small>' : '') + '</td></tr>').join('') + '</table>';
   }
   function preview() {

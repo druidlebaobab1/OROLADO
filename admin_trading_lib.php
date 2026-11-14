@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+if (!function_exists('admin_ts')) { function admin_ts(string $s): int { $s = trim($s); if ($s === '') return 0; if (preg_match('/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/', $s)) $s .= ' UTC'; return (int) (strtotime($s) ?: 0); } } // 2026-11-15 : date sans fuseau = UTC (voir admin_lib.php)
 /**
  * 2026-10-23 (propriétaire : « une case Trading : statistiques, les plus joués, plus grands gagnants / perdants, alertes ») —
  * tableau de bord du TRADING en argent réel (lecture seule). Source : admin_orders() (30 derniers jours, comptes de la maison
@@ -14,7 +15,7 @@ function admin_trading_dash(string $per, array $orders, callable $who, ?int $now
   $assets = []; $pl = []; $rows = [];
   foreach ($orders as $o) {
     if (!is_array($o)) continue;
-    $t = strtotime((string) ($o['created_at'] ?? '')) ?: 0;
+    $t = admin_ts((string) ($o['created_at'] ?? '')) ?: 0;
     if ($t < $from || $t >= $to) continue;
     $uid = (string) ($o['user_id'] ?? $o['userId'] ?? '');
     $stake = (float) ($o['stake'] ?? 0);

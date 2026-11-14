@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+if (!function_exists('admin_ts')) { function admin_ts(string $s): int { $s = trim($s); if ($s === '') return 0; if (preg_match('/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/', $s)) $s .= ' UTC'; return (int) (strtotime($s) ?: 0); } } // 2026-11-15 : date sans fuseau = UTC (voir admin_lib.php)
 
 /**
  * v2843 (propriétaire) — ADMIN : LES PARTIES DE JEUX (Action, Live, Casino), comme les trades.
@@ -307,7 +308,7 @@ function admin_gm_compare(): array {
     if (($o['mode'] ?? 'real') !== 'real') continue;
     $st = (string) ($o['status'] ?? '');
     if ($st === 'void' || $st === 'open') continue;
-    $t = strtotime((string) ($o['created_at'] ?? '')) ?: 0;
+    $t = admin_ts((string) ($o['created_at'] ?? '')) ?: 0;
     if ($t < $cut) continue;
     $uid = (string) ($o['user_id'] ?? $o['userId'] ?? '');
     foreach ($W as $k => $from) {
