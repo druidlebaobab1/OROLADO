@@ -104,7 +104,7 @@ function admin_mail_first_name(string $em): string {
  * 2026-10-22 (propriétaire) : « E-mail à tous » dans le cadre OROLADO (fond sombre, titre doré, gros bouton doré).
  * Le texte reste celui de l'admin (aucune traduction automatique) ; liens cliquables ; bouton FR ou EN selon la langue du texte.
  */
-function admin_mail_html(string $text, string $btnSpec = ''): string {
+function admin_mail_html(string $text, string $btnSpec = '', string $name = ''): string {
   $e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
   $origin = function_exists('orolado_public_origin') ? rtrim((string) orolado_public_origin(), '/') : '';
   if ($origin === '') $origin = 'https://orolado.com';
@@ -123,7 +123,7 @@ function admin_mail_html(string $text, string $btnSpec = ''): string {
     $h = (string) preg_replace('~(https?://[^\s<]+)~u', '<a href="$1" style="color:#1A5FB4;text-decoration:underline">$1</a>', $h);
     $body .= '<p style="margin:0 0 14px;">' . nl2br($h) . '</p>';
   }
-  if ($styled) return admin_mail_html_oro($text, $btn, $href);
+  if ($styled) return admin_mail_html_oro($text, $btn, $href, $name);
   // 2026-11-02 (propriétaire : « je veux un message NORMAL, pas en style ») — e-mail tout simple, comme écrit à la main :
   // fond clair, texte noir, un lien souligné. Aucune mise en forme « campagne ». Meilleure délivrabilité (boîte Principale).
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>'
@@ -140,7 +140,7 @@ function admin_mail_html(string $text, string $btnSpec = ''): string {
  * 2026-11-15 (propriétaire : « un e-mail stylé OROLADO, comme pour les retraits ») — case « ✨ E-mail stylé » de l'admin :
  * fond sombre, logo OROLADO doré, 1re ligne du message = grand titre doré, texte clair, gros bouton doré. Sans image ni pixel.
  */
-function admin_mail_html_oro(string $text, string $btn, string $href): string {
+function admin_mail_html_oro(string $text, string $btn, string $href, string $name = ''): string {
   $e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
   $lines = preg_split('/\n/', trim($text)) ?: [];
   $title = trim((string) array_shift($lines));
@@ -148,6 +148,9 @@ function admin_mail_html_oro(string $text, string $btn, string $href): string {
   $ff = 'font-family:Arial,Helvetica,sans-serif;';
   $fr = (bool) preg_match('/\b(le|la|les|tu|ton|ta|tes|vous|des|est|pour|jeux|joue[sz]?|dépôt|mise|salut|bonjour|retrait|gain)\b/iu', $text);
   $foot = $fr ? 'Jeu responsable : joue seulement l’argent que tu peux perdre. 18+' : 'Play responsibly: only play with money you can afford to lose. 18+';
+  // 2026-11-15 (propriétaire : « je veux que ça dise leur nom ») : « Bonjour Prénom 👋 » en haut, tout seul (sauf si le
+  // message contient déjà le prénom via {prenom}).
+  $hello = ($name !== '' && mb_stripos($text, $name) !== false) ? '' : (($fr ? 'Bonjour' : 'Hi') . ($name !== '' ? ' ' . $name : '') . ' 👋');
   $body = '';
   foreach (preg_split('/\n{2,}/', $rest) ?: [] as $para) {
     if (trim($para) === '') continue;
@@ -161,6 +164,7 @@ function admin_mail_html_oro(string $text, string $btn, string $href): string {
     . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#16112F;border-radius:18px;border:1px solid #3A2F12;">'
     . '<tr><td align="center" style="padding:26px 24px 6px;' . $ff . 'font-size:24px;font-weight:900;letter-spacing:4px;color:#F2C879;">OROLADO</td></tr>'
     . '<tr><td align="center" style="padding:0 24px 18px;"><div style="height:2px;width:70px;background:#F2C879;border-radius:2px;line-height:2px;font-size:0;">&nbsp;</div></td></tr>'
+    . ($hello !== '' ? '<tr><td align="center" style="padding:2px 26px 6px;' . $ff . 'font-size:17px;line-height:24px;color:#E8EEF9;">' . $e($hello) . '</td></tr>' : '')
     . ($title !== '' ? '<tr><td align="center" style="padding:4px 26px 18px;' . $ff . 'font-size:26px;line-height:33px;font-weight:800;color:#FFD166;">' . $e($title) . '</td></tr>' : '')
     . '<tr><td align="center" style="padding:0 28px 6px;text-align:center;">' . $body . '</td></tr>'
     . '<tr><td align="center" style="padding:8px 24px 28px;"><a href="' . $e($href) . '" style="display:inline-block;background:#F2C879;background-image:linear-gradient(180deg,#FFD98A,#E0A43A);color:#1A1203;' . $ff . 'font-size:17px;font-weight:800;text-decoration:none;padding:15px 34px;border-radius:12px;">' . $btn . '</a></td></tr>'
@@ -179,7 +183,7 @@ function admin_mail_plain(string $to, string $subject, string $msg, string $btn 
     'sender' => ['email' => brevo_env('BREVO_SENDER_EMAIL', 'contact@mail.orolado.com'), 'name' => 'OROLADO'],
     'to' => [['email' => $to, 'name' => $first !== '' ? $first : $to]],
     'subject' => $subject,
-    'htmlContent' => admin_mail_html($text, $btn),
+    'htmlContent' => admin_mail_html($text, $btn, $first),
     'textContent' => $text,
     'replyTo' => ['email' => 'support@orolado.com', 'name' => 'OROLADO'],
   ]);
