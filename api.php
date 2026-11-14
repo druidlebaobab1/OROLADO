@@ -918,6 +918,7 @@ if ($action === 'registerVerify') {
   $tok = $created['token'];
   orolado_set_session_cookie($tok);
   $db = load_db($file);
+  if (function_exists('orolado_meta_capi_registration')) orolado_meta_capi_registration((array) $user); // 2026-11-15 : inscription → Facebook (serveur)
   if (function_exists('orolado_aff_attach') && !empty($req['ami'])) {
     try { orolado_aff_attach($db, (string) $user['id'], (string) $req['ami']); } catch (Throwable $eAff) { error_log('OROLADO aff attach ' . $eAff->getMessage()); }
   }
@@ -1481,6 +1482,7 @@ if ($action === 'googleLogin') {
   }
   save_db($file, $db);
   orolado_set_session_cookie($tok);
+  if ($isNew && function_exists('orolado_meta_capi_registration')) orolado_meta_capi_registration(((array) $user) + ['id' => $uid]); // 2026-11-15 : inscription Google → Facebook (serveur)
   if ($isNew && function_exists('orolado_aff_attach') && !empty($req['ami'])) {
     try { orolado_aff_attach($db, $uid, (string) $req['ami']); } catch (Throwable $eAff) { error_log('OROLADO aff attach ' . $eAff->getMessage()); }
   }
@@ -2590,6 +2592,8 @@ if ($action === 'me') {
     exit;
   }
   $me = $stSess['user'];
+  // 2026-11-15 : cookies Facebook (_fbp/_fbc) + IP + navigateur gardés sur la fiche (les dépôts faits plus tard sont reconnus)
+  if (function_exists('orolado_meta_remember') && (isset($_COOKIE['_fbp']) || isset($_COOKIE['_fbc']))) { try { $dbM = load_db($file); orolado_meta_remember($dbM, (string) ($me['id'] ?? '')); } catch (Throwable $eM) { /* jamais bloquant */ } }
   // 2026-11-08 (propriétaire : « ça s'affiche dans son solde réel automatiquement ») — part d'affiliation (60 %) versée
   // TOUTE SEULE sur le solde réel de celui qui invite, sans qu'il ouvre Cadeaux → Invitation : au plus toutes les 30 min,
   // APRÈS la réponse (le joueur n'attend jamais), seulement pour un joueur qui a invité au moins un ami. Même calcul et même

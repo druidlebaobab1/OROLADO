@@ -57,7 +57,7 @@ function orolado_server_user_fields(): array {
   // 2026-11-13 (revue avant la grande publicité) : 'partner' (compte partenaire = retrait sans code ni condition, posé par
   // l'admin SEUL), 'devices' (empreintes servant à repérer les comptes suspendus) et 'banReason' ne peuvent plus être
   // écrits par le téléphone : avant, n'importe quel joueur pouvait s'auto-déclarer partenaire et retirer sans contrôle.
-  return ['partner', 'devices', 'banReason', 'sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav', 'clickFavDemo', 'clickUnfavDemo', 'clickW', 'clickW2', 'clickWn', 'devices'];
+  return ['partner', 'devices', 'banReason', 'fbp', 'fbc', 'lastIp', 'lastUa', 'sbId', 'lastDepositAmount', 'wagerLock', 'wagerNeed', 'requiredWagering', 'publicId', 'originalEmail', 'createdAt', 'emailHistory', 'country', 'countryIso', 'pwTag', 'transactions', 'deletedAt', 'lastOperator', 'clickFav', 'clickUnfav', 'clickFavDemo', 'clickUnfavDemo', 'clickW', 'clickW2', 'clickWn', 'devices'];
 }
 
 /** Compteurs d'argent tenus par le serveur seul (dépôts validés, trades réels réglés). */
@@ -436,65 +436,92 @@ function orolado_request_ua(): string {
   return substr((string) ($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 512);
 }
 
-/** CAPI Purchase — jamais lever, timeout court, n’altère pas le crédit. */
-function orolado_meta_capi_purchase(array $opts): void {
+/**
+ * 2026-11-15 (propriétaire : « un très bon travail solide pour que ça fonctionne super bien pour Facebook ») — API Conversions :
+ * le SERVEUR envoie à Facebook les DÉPÔTS (Purchase, tous les moyens de paiement, coffre crypto compris) et les INSCRIPTIONS
+ * (CompleteRegistration), même si le joueur a un bloqueur de pub. Pour que Facebook reconnaisse la personne : e-mail et
+ * identifiant (chiffrés SHA-256), cookies Facebook _fbp / _fbc, adresse IP et navigateur. Même event_id que le pixel du
+ * téléphone → Facebook ne compte jamais deux fois. Comptes maison / admin : jamais envoyés. Jamais bloquant (2 s au plus).
+ */
+function orolado_meta_capi_send(string $name, array $opts): bool {
   try {
     $token = orolado_meta_access_token();
     $pixel = orolado_meta_pixel_id();
-    if ($token === '' || $pixel === '') return;
-    $value = orolado_money($opts['value'] ?? 0);
-    if ($value <= 0) return;
+    if ($token === '' || $pixel === '') return false;
+    $u = (array) ($opts['user'] ?? []);
     $userData = [];
-    $email = strtolower(trim((string) ($opts['email'] ?? '')));
-    if ($email !== '' && str_contains($email, '@')) {
-      $userData['em'] = [hash('sha256', $email)];
-    }
-    $ip = trim((string) ($opts['ip'] ?? ''));
-    if ($ip !== '') $userData['client_ip_address'] = explode(',', $ip)[0];
-    $ua = trim((string) ($opts['ua'] ?? ''));
-    if ($ua !== '') $userData['client_user_agent'] = $ua;
-    $event = [
-      'event_name' => 'Purchase',
-      'event_time' => time(),
-      'action_source' => 'website',
-      'user_data' => $userData,
-      'custom_data' => ['value' => $value, 'currency' => 'USD'],
-    ];
+    $email = strtolower(trim((string) ($opts['email'] ?? ($u['email'] ?? ''))));
+    if ($email !== '' && str_contains($email, '@')) $userData['em'] = [hash('sha256', $email)];
+    $uid = trim((string) ($opts['uid'] ?? ($u['id'] ?? '')));
+    if ($uid !== '') $userData['external_id'] = [hash('sha256', $uid)];
+    $fbp = trim((string) ($opts['fbp'] ?? ($u['fbp'] ?? '')));
+    if ($fbp !== '' && preg_match('/^fb\.\d\.\d+\.\d+$/', $fbp)) $userData['fbp'] = $fbp;
+    $fbc = trim((string) ($opts['fbc'] ?? ($u['fbc'] ?? '')));
+    if ($fbc !== '' && preg_match('/^fb\.\d\.\d+\.[A-Za-z0-9_\-]+$/', $fbc)) $userData['fbc'] = $fbc;
+    $ip = trim(explode(',', (string) (($opts['ip'] ?? '') !== '' ? $opts['ip'] : ($u['lastIp'] ?? '')))[0]);
+    if ($ip !== '' && filter_var($ip, FILTER_VALIDATE_IP)) $userData['client_ip_address'] = $ip;
+    $ua = trim((string) (($opts['ua'] ?? '') !== '' ? $opts['ua'] : ($u['lastUa'] ?? '')));
+    if ($ua !== '') $userData['client_user_agent'] = mb_substr($ua, 0, 400);
+    $cc = strtolower(trim((string) ($u['countryIso'] ?? '')));
+    if (preg_match('/^[a-z]{2}$/', $cc)) $userData['country'] = [hash('sha256', $cc)];
+    if (!$userData) return false;
+    $event = ['event_name' => $name, 'event_time' => time(), 'action_source' => 'website', 'event_source_url' => 'https://orolado.com/', 'user_data' => $userData];
+    $value = isset($opts['value']) ? orolado_money($opts['value']) : 0.0;
+    if ($name === 'Purchase') { if ($value <= 0) return false; $event['custom_data'] = ['value' => $value, 'currency' => 'USD']; }
     $eid = trim((string) ($opts['event_id'] ?? ''));
-    if ($eid !== '') $event['event_id'] = $eid;
+    if ($eid !== '') $event['event_id'] = mb_substr($eid, 0, 120);
     $url = 'https://graph.facebook.com/v25.0/' . rawurlencode($pixel) . '/events?access_token=' . rawurlencode($token);
+    if (isset($GLOBALS['OROLADO_FAKE_CAPI']) && is_callable($GLOBALS['OROLADO_FAKE_CAPI'])) return (bool) ($GLOBALS['OROLADO_FAKE_CAPI'])($event);
     $ch = curl_init($url);
-    if ($ch === false) return;
-    curl_setopt_array($ch, [
-      CURLOPT_POST => true,
-      CURLOPT_POSTFIELDS => json_encode(['data' => [$event]], JSON_UNESCAPED_UNICODE),
-      CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_TIMEOUT => 2,
-      CURLOPT_CONNECTTIMEOUT => 1,
-    ]);
-    curl_exec($ch);
-    curl_close($ch);
+    if ($ch === false) return false;
+    curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => json_encode(['data' => [$event]], JSON_UNESCAPED_UNICODE),
+      CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 3, CURLOPT_CONNECTTIMEOUT => 2]);
+    $r = curl_exec($ch); $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+    if ($code !== 200) error_log('OROLADO meta capi ' . $name . ' code ' . $code . ' ' . substr((string) $r, 0, 200));
+    return $code === 200;
   } catch (Throwable $e) {
-    /* le tracking ne doit jamais casser un dépôt */
+    return false; /* le suivi Facebook ne doit jamais casser un dépôt ni une inscription */
   }
 }
 
-function orolado_meta_capi_purchase_later(array $opts): void {
-  if (!isset($GLOBALS['__oro_meta_capi']) || !is_array($GLOBALS['__oro_meta_capi'])) {
-    $GLOBALS['__oro_meta_capi'] = [];
-  }
-  $GLOBALS['__oro_meta_capi'][] = $opts;
+/** CAPI Purchase — jamais lever, timeout court, n’altère pas le crédit. */
+function orolado_meta_capi_purchase(array $opts): void { orolado_meta_capi_send('Purchase', $opts); }
+
+/** Envoi APRÈS la réponse au joueur (il n'attend jamais Facebook). */
+function orolado_meta_capi_later(string $name, array $opts): void {
+  if (!isset($GLOBALS['__oro_meta_capi']) || !is_array($GLOBALS['__oro_meta_capi'])) $GLOBALS['__oro_meta_capi'] = [];
+  $GLOBALS['__oro_meta_capi'][] = [$name, $opts];
   static $reg = false;
   if ($reg) return;
   $reg = true;
   register_shutdown_function(static function () {
-    if (function_exists('fastcgi_finish_request')) {
-      try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ }
-    }
-    foreach (($GLOBALS['__oro_meta_capi'] ?? []) as $row) {
-      if (is_array($row)) orolado_meta_capi_purchase($row);
-    }
+    if (function_exists('fastcgi_finish_request')) { try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
+    foreach (($GLOBALS['__oro_meta_capi'] ?? []) as $row) if (is_array($row)) orolado_meta_capi_send((string) $row[0], (array) $row[1]);
+  });
+}
+function orolado_meta_capi_purchase_later(array $opts): void { orolado_meta_capi_later('Purchase', $opts); }
+
+/** Inscription → CompleteRegistration (même event_id « reg_<id> » que le pixel du téléphone). */
+function orolado_meta_capi_registration(array $user): void {
+  $id = (string) ($user['id'] ?? '');
+  if ($id === '' || (function_exists('orolado_is_house_account') && orolado_is_house_account($id, $user))) return;
+  orolado_meta_capi_later('CompleteRegistration', ['user' => $user + ['fbp' => (string) ($_COOKIE['_fbp'] ?? ''), 'fbc' => (string) ($_COOKIE['_fbc'] ?? '')],
+    'ip' => function_exists('orolado_request_ip') ? orolado_request_ip() : '', 'ua' => function_exists('orolado_request_ua') ? orolado_request_ua() : '', 'event_id' => 'reg_' . $id]);
+}
+
+/** Garde sur la fiche du joueur ses cookies Facebook + IP + navigateur (pour reconnaître ses dépôts faits plus tard). */
+function orolado_meta_remember(array &$db, string $uid): void {
+  if ($uid === '' || !isset($db['users'][$uid]) || !is_array($db['users'][$uid])) return;
+  $u = $db['users'][$uid];
+  $want = ['fbp' => substr((string) ($_COOKIE['_fbp'] ?? ''), 0, 80), 'fbc' => substr((string) ($_COOKIE['_fbc'] ?? ''), 0, 200),
+    'lastIp' => function_exists('orolado_request_ip') ? orolado_request_ip() : '', 'lastUa' => function_exists('orolado_request_ua') ? substr(orolado_request_ua(), 0, 300) : ''];
+  $ch = [];
+  foreach ($want as $k => $v) if ($v !== '' && (string) ($u[$k] ?? '') !== $v) $ch[$k] = $v;
+  if (!$ch) return;
+  with_db_lock(static function ($box) use ($uid, $ch) {
+    if (!isset($box->db['users'][$uid]) || !is_array($box->db['users'][$uid])) return ['ok' => true, 'skip_write' => true];
+    foreach ($ch as $k => $v) $box->db['users'][$uid][$k] = $v;
+    return ['ok' => true];
   });
 }
 
@@ -4076,9 +4103,11 @@ function credit_paid_deposit_core(array $hit): array {
   flock($fp, LOCK_UN);
   fclose($fp);
   $op = strtolower((string) ($dep['operator'] ?? $txOp));
-  if (!$alreadyCredited && in_array($op, ['flutterwave', 'flw', 'oxapay', 'usdt'], true) && $amount > 0) {
+  // 2026-11-15 : TOUS les dépôts réels (coffre crypto compris, avant : Flutterwave / OxaPay seulement), jamais les comptes maison
+  if (!$alreadyCredited && $amount > 0 && !(function_exists('orolado_is_house_account') && orolado_is_house_account($uid, (array) ($db['users'][$uid] ?? [])))) {
     orolado_meta_capi_purchase_later([
       'value' => $amount,
+      'user' => ((array) ($db['users'][$uid] ?? [])) + ['id' => $uid],
       'email' => (string) ($db['users'][$uid]['email'] ?? $dep['customerEmail'] ?? ''),
       'event_id' => $refId !== '' ? $refId : (string) ($dep['id'] ?? ''),
       'ip' => (string) ($dep['clientIp'] ?? ''),
