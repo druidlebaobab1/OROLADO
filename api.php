@@ -2608,6 +2608,25 @@ if ($action === 'me') {
       } catch (Throwable $eAffAuto) { error_log('OROLADO affrev auto ' . $eAffAuto->getMessage()); }
     });
   }
+  // 2026-11-14 (propriétaire : « je suis seul, tout doit être automatique ») — UNE FOIS PAR HEURE pour TOUS les affiliés : leur part
+  // (60 %, après les 24 h d'attente) est versée sur leur solde réel même s'ils n'ouvrent pas le site. Même calcul, même verrou et
+  // même référence unique que la page Invitation / le bouton admin : jamais payé deux fois. Après la réponse (personne n'attend).
+  if (function_exists('orolado_aff_rev_run') && function_exists('orolado_aff_index_ids') && orolado_aff_rev_enabled() && orolado_rate_ok('affrev_all', 'all', 1, 3600)) {
+    register_shutdown_function(static function (): void {
+      try {
+        if (function_exists('fastcgi_finish_request')) @fastcgi_finish_request();
+        @set_time_limit(240);
+        $dbAll = load_db(orolado_data_file());
+        $GLOBALS['OROLADO_AFF_DEPIDX'] = orolado_aff_build_deposit_index($dbAll);
+        $n = 0;
+        foreach (orolado_aff_index_ids() as $aid) {
+          if (++$n > 500) break;
+          try { if (orolado_aff_friends((string) $aid)) orolado_aff_rev_run($dbAll, (string) $aid); } catch (Throwable $e1) { error_log('OROLADO affrev all ' . $e1->getMessage()); }
+        }
+        unset($GLOBALS['OROLADO_AFF_DEPIDX']);
+      } catch (Throwable $eAll) { error_log('OROLADO affrev all ' . $eAll->getMessage()); }
+    });
+  }
   // Écritures sous verrou, sur le fichier À JOUR (jamais une vieille copie chargée en début
   // de requête : c'est ce qui pouvait remettre un dépôt en « attente » et le recréditer).
   // Charge : prolongation de session au plus toutes les 5 min (avant : 2 écritures du fichier
