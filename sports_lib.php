@@ -1249,6 +1249,62 @@ function sp_admin_event_bets(string $eid): array {
 }
 
 // 2026-10-22 — paris automatiques API-Football (étape 1 : football avant-match). Sans ce fichier : paris manuels seulement.
+/**
+ * 2026-11-13 (propriétaire : « je suis seul, je reste parfois 24 h sans me connecter : tout doit être automatique ») —
+ * RÈGLEMENT AUTOMATIQUE des matchs / questions entrés à la main (events.json), au plus toutes les 20 min, après la réponse :
+ *  1. résultat CERTAIN trouvé dans les sources publiques (sports_results.php, confiance « sûr » : deux sources d'accord ou
+ *     noms identiques) → réglé tout seul (même action que le clic « … a gagné » de l'admin, même paiement unique) ;
+ *  2. toujours pas réglé 72 h après sa fin → ANNULÉ, mises rendues (personne ne perd son argent, rien n'est payé au hasard).
+ * Les matchs de l'API (sb:…) se règlent déjà seuls ailleurs. L'admin reçoit un résumé (notification).
+ */
+const SP_AUTO_EVERY = 1200;
+const SP_AUTO_VOID_AFTER = 259200; // 72 h après la fin
+function sp_end_ts(array $e): int {
+  $end = (int) ($e['endAt'] ?? 0);
+  if ($end <= 0) $end = (int) ($e['start'] ?? 0) + (sp_is_question($e) ? 0 : 3 * 3600);
+  return $end;
+}
+function sp_auto_settle_maybe(int $now = 0, bool $force = false): array {
+  $now = $now ?: time();
+  $mark = sp_dir() . DIRECTORY_SEPARATOR . 'auto-settle.at';
+  if (!$force && is_file($mark) && $now - (int) @filemtime($mark) < SP_AUTO_EVERY) return ['ok' => true, 'skip' => 1];
+  $lk = @fopen(sp_dir() . DIRECTORY_SEPARATOR . 'auto-settle.lock', 'c');
+  if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return ['ok' => true, 'busy' => 1]; }
+  try {
+    @touch($mark, $now);
+    $pending = array_values(array_filter(sp_events(), static fn($e) => ($e['status'] ?? '') !== 'settled' && sp_end_ts($e) <= $now));
+    if (!$pending) return ['ok' => true, 'settled' => 0, 'voided' => 0];
+    $db = load_db(orolado_data_file());
+    $done = []; $voided = [];
+    // 1) résultats certains
+    if (is_file(__DIR__ . '/sports_results.php')) {
+      try {
+        require_once __DIR__ . '/sports_results.php';
+        $pr = spr_admin_proposals($now);
+        foreach ((array) ($pr['list'] ?? []) as $p) {
+          if (($p['conf'] ?? '') !== 'sur' || empty($p['k']) || ($p['status'] ?? '') === 'settled') continue;
+          $r = sp_admin_settle($db, (string) $p['id'], (string) $p['k']);
+          if (!empty($r['ok'])) $done[] = (string) $p['title'] . ' → ' . (string) ($p['label'] ?? $p['k']);
+        }
+      } catch (Throwable $e) { error_log('OROLADO sp auto results ' . $e->getMessage()); }
+    }
+    // 2) trop vieux sans résultat sûr → annulé, mises rendues
+    foreach (sp_events() as $e) {
+      if (($e['status'] ?? '') === 'settled' || sp_end_ts($e) > $now - SP_AUTO_VOID_AFTER) continue;
+      $r = sp_admin_settle($db, (string) $e['id'], 'void');
+      if (!empty($r['ok'])) $voided[] = (string) $e['title'];
+    }
+    if (($done || $voided) && is_file(__DIR__ . '/push_lib.php')) {
+      try {
+        require_once __DIR__ . '/push_lib.php';
+        $msg = ($done ? count($done) . ' réglé(s) automatiquement' : '') . ($done && $voided ? ' · ' : '') . ($voided ? count($voided) . ' annulé(s), mises rendues (pas de résultat sûr après 72 h)' : '');
+        push_notify_admin('🤖 Paris réglés tout seuls', $msg, '/admin.php');
+      } catch (Throwable $e) { /* jamais bloquant */ }
+    }
+    return ['ok' => true, 'settled' => count($done), 'voided' => count($voided), 'list' => $done, 'voidList' => $voided];
+  } finally { flock($lk, LOCK_UN); fclose($lk); }
+}
+
 if (is_file(__DIR__ . '/sb_lib.php')) require_once __DIR__ . '/sb_lib.php';
 // 2026-10-22 — prédictions « Predict » (import JSON, cotes depuis les chances, règlement automatique crypto via Binance)
 if (is_file(__DIR__ . '/pred_lib.php')) require_once __DIR__ . '/pred_lib.php';

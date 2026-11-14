@@ -12,6 +12,10 @@
 - MARGE DU DIRECT VERROUILLÉE (propriétaire, 2026-11-12) : les paris EN DIRECT (live) ont leur marge fixée EN DUR à **4 %**
   par `SB_MARGE_DIRECT = 0.04` (`sb_live_markets`, même répartition égale). Les matchs pas encore commencés restent à 1 %.
   Contrôle : `php scripts/test-sb-marge.php` doit finir par « 0 échec(s) ». Ne pas changer sans demande explicite du propriétaire.
+- PROPRIÉTAIRE SEUL (2026-11-14, à retenir) : « je suis seul, je reste parfois 24 h sans me connecter ». Tout ce qui touche
+  l'argent et les résultats doit marcher TOUT SEUL et en sécurité, sans clic de l'admin (règlements, versements affiliés,
+  retraits automatiques dans leurs plafonds, annulations). Quand rien de sûr n'est possible : rendre les mises plutôt que
+  payer au hasard, et prévenir l'admin. Lui expliquer les choses en mots très simples, avec un exemple.
 - Marge 6 % ; 12 langues ; aucun texte qui déborde, de l'iPhone SE à la télé.
 
 ## Téléphones du propriétaire (mesures réelles, relevées le 2026-10-20 par le diagnostic « 5 touches sur OROLADO .com »)

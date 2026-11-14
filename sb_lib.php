@@ -1287,6 +1287,7 @@ function sb_after_response(): void {
     try { sb_res_fetch_wanted(sb_now()); } catch (Throwable $e) { /* jamais bloquant */ }
     try { sb_o_maybe_run(); } catch (Throwable $e) { /* autres sports : jamais bloquant */ }
     try { if (function_exists('pred_maybe_run')) pred_maybe_run(); } catch (Throwable $e) { /* prédictions Predict : jamais bloquant */ }
+    try { if (function_exists('sp_auto_settle_maybe')) sp_auto_settle_maybe(); } catch (Throwable $e) { /* 2026-11-13 : matchs entrés à la main réglés tout seuls */ }
   });
 }
 /** Page d'un match ouverte, cotes de plus de 3 h → demandé (au plus une fois par 3 h et par match, 20 par heure en tout). */
