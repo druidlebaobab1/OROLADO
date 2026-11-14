@@ -754,9 +754,25 @@
     }
   }
 
+  // 2026-11-15 (Facebook) : le joueur connecté est reconnu par le pixel (e-mail + identifiant, chiffrés par Facebook), une fois par compte
+  var metaIdFor = '';
+  function metaIdentify() {
+    try {
+      if (typeof window.fbq !== 'function') return;
+      var u = D6.Auth && D6.Auth.current && D6.Auth.current();
+      if (!u || !u.id || metaIdFor === String(u.id)) return;
+      metaIdFor = String(u.id);
+      var am = { external_id: String(u.id) };
+      if (u.email && /@/.test(u.email)) am.em = String(u.email).trim().toLowerCase();
+      window.fbq('init', '987866443886391', am);
+    } catch (e) { /* jamais bloquant */ }
+  }
   function metaTrack(eventName, params, opts) {
     try {
       if (typeof window.fbq !== 'function') return;
+      metaIdentify();
+      // inscription : même identifiant que l'envoi du serveur (« reg_<id> ») → Facebook ne la compte qu'une fois
+      if (eventName === 'CompleteRegistration' && !(opts && opts.eventID)) { var cu = D6.Auth && D6.Auth.current && D6.Auth.current(); if (cu && cu.id) opts = { eventID: 'reg_' + cu.id }; }
       var extra = (opts && opts.eventID) ? { eventID: String(opts.eventID) } : null;
       if (params && extra) window.fbq('track', eventName, params, extra);
       else if (params) window.fbq('track', eventName, params);
