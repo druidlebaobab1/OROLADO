@@ -139,6 +139,7 @@ function keys_host_has(string $name, array $fileBefore): bool {
 /** Valeur effective (hébergeur d'abord, puis data/.env) — reste sur le serveur. */
 function keys_value(string $name): string {
   $file = keys_read_env();
+  if (trim((string) ($file[$name] ?? '')) !== '' && isset(keys_known()[$name])) return trim((string) $file[$name]); // 2026-11-15 : la clé collée dans l'admin passe en premier
   if (keys_host_has($name, $file)) { $env = getenv($name); if (is_string($env) && trim($env) !== '') return trim($env); }
   return (string) ($file[$name] ?? '');
 }
@@ -211,9 +212,13 @@ function keys_test(string $name, string $v): array {
       return ($c === 200 && str_contains($r, '"ok":true')) ? ['ok' => true, 'msg' => 'TON Center répond : la clé fonctionne'] : ['ok' => false, 'msg' => 'TON Center refuse la clé (code ' . $c . ')'];
     case 'META_ACCESS_TOKEN':
       $px = function_exists('orolado_meta_pixel_id') ? orolado_meta_pixel_id() : '987866443886391';
-      [$c, $r] = keys_http('https://graph.facebook.com/v25.0/' . rawurlencode($px) . '?fields=id,name&access_token=' . rawurlencode($v));
-      if ($c === 200 && str_contains($r, '"id"')) return ['ok' => true, 'msg' => 'Facebook accepte la clé ✓ pour le pixel ' . $px . '. Les dépôts seront envoyés tout seuls.'];
-      return ['ok' => false, 'msg' => 'Facebook refuse la clé pour le pixel ' . $px . ' (code ' . $c . '). Vérifie que tu l’as générée DANS le pixel OROLADO (Settings → Conversions API).'];
+      // Vrai test de l'API Conversions : un événement de TEST (visible seulement dans « Événements de test », jamais compté).
+      $ev = json_encode(['data' => [['event_name' => 'PageView', 'event_time' => time(), 'action_source' => 'website', 'event_source_url' => 'https://orolado.com/',
+        'user_data' => ['client_user_agent' => 'OROLADO-admin-test', 'client_ip_address' => '1.1.1.1']]], 'test_event_code' => 'TEST' . date('His')]);
+      [$c, $r] = keys_http('https://graph.facebook.com/v25.0/' . rawurlencode($px) . '/events?access_token=' . rawurlencode($v), 'POST', (string) $ev, ['Content-Type: application/json']);
+      if ($c === 200 && str_contains($r, 'events_received')) return ['ok' => true, 'msg' => 'Facebook accepte la clé ✓ pour le pixel ' . $px . '. Les dépôts seront envoyés tout seuls.'];
+      $why = ''; $j = json_decode($r, true); if (is_array($j) && !empty($j['error']['message'])) $why = ' — Facebook : ' . mb_substr((string) $j['error']['message'], 0, 140);
+      return ['ok' => false, 'msg' => 'Facebook refuse la clé pour le pixel ' . $px . ' (code ' . $c . ')' . $why . '. Génère-la DANS le pixel OROLADO (Réglages → API de conversions) puis recolle-la.'];
     case 'OXAPAY_MERCHANT_KEY':
     case 'OXAPAY_PAYOUT_KEY':
       [$c, $r] = keys_http('https://api.oxapay.com/v1/payment?size=1&page=1', 'GET', null, ['merchant_api_key: ' . $v, 'Content-Type: application/json']);
