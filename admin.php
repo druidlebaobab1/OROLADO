@@ -4444,7 +4444,7 @@ function affPanel(A) {
     grp('👥 Ses amis', c('Clics sur son lien', esc(A.clicks))+c('Amis inscrits', esc(A.friends))+c('Amis qui ont déposé', esc(A.deposited))+c('Amis qui jouent (réel)', esc(A.active)))+
     grp('💵 L’argent de ses amis', c('Déposé par ses amis', money(A.total))+c('Misé par ses amis', money(A.staked))+c('Perdu par ses amis', money(A.lost)))+
     grp('💰 Son gain ('+esc(A.pct)+' %)', c('Gagné ('+A.pct+' %)', money(A.entitled), '#7FF5CF', 1)+c('Déjà versé', money(A.paid60), '#4ADE80', 1)+c('En attente (24 h)', money(A.pending), '#FCD34D', 1)+
-      c('Reste à verser', money(A.toPay), A.toPay>0?'#F87171':'', 1))+
+      c('Versé tout seul à sa prochaine visite', money(A.toPay), A.toPay>0?'#FBBF24':'', 1))+
     (A.old5 > 0 ? '<p class="afa-rule" style="color:#9AA4CC">Avant le passage au '+esc(A.pct)+' %, il avait déjà reçu '+money(A.old5)+' avec l’ancien système (arrêté). Total reçu depuis le début : <b style="color:#4ADE80">'+money(A.paid)+'</b>.</p>' : '')+
     '<p style="margin:10px 0 4px"><button class="mini ok" id="affPayNow">💸 Verser maintenant'+(A.toPay>0?' ('+money(A.toPay)+')':'')+'</button> '+
       '<button class="mini" id="affDemo" style="border-color:#F59E0B;color:#FDE68A">🎁 Lui donner un compte démo</button> '+
