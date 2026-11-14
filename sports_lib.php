@@ -1264,7 +1264,9 @@ function sp_end_ts(array $e): int {
   if ($end <= 0) $end = (int) ($e['start'] ?? 0) + (sp_is_question($e) ? 0 : 3 * 3600);
   return $end;
 }
+const SP_AUTO_ON = false; // 2026-11-14 (propriétaire : « ne dérange rien, c'est moi qui valide les anciens matchs ») : ARRÊTÉ
 function sp_auto_settle_maybe(int $now = 0, bool $force = false): array {
+  if (!SP_AUTO_ON && !$force) return ['ok' => true, 'off' => 1];
   $now = $now ?: time();
   $mark = sp_dir() . DIRECTORY_SEPARATOR . 'auto-settle.at';
   if (!$force && is_file($mark) && $now - (int) @filemtime($mark) < SP_AUTO_EVERY) return ['ok' => true, 'skip' => 1];
