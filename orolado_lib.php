@@ -21,7 +21,11 @@ function orolado_load_env(?string $path = null): void {
         $val = substr($val, 1, -1);
       }
       $cur = getenv($key);
-      if ($cur === false || $cur === '') {
+      // 2026-11-15 (propriétaire : « ça refuse toujours ») : les clés que le propriétaire colle dans l'admin 🔑 (data/.env)
+      // passent AVANT une vieille valeur gardée chez l'hébergeur (avant : l'ancienne clé Facebook restait prioritaire).
+      $panel = str_ends_with(str_replace('\\', '/', $file), '/data/.env') && $val !== ''
+        && preg_match('/^(META_|VAULT_|TATUM_|TRONGRID_|NODEREAL_|BLOCKCYPHER_|ETHERSCAN_|HELIUS_|TONCENTER_|OXAPAY_)/', $key);
+      if ($cur === false || $cur === '' || $panel) {
         putenv($key . '=' . $val);
         $_ENV[$key] = $val;
         $_SERVER[$key] = $val;
