@@ -254,7 +254,9 @@ function keys_status(): array {
  * Si la clé attendue a un format connu (TronGrid = UUID), on la retrouve dans le texte collé.
  */
 function keys_clean(string $name, string $val, string $fmt = ''): string {
-  $v = preg_replace('/[\x{00A0}\x{1680}\x{2000}-\x{200F}\x{2028}\x{2029}\x{202F}\x{205F}\x{3000}\x{FEFF}\s]+/u', ' ', $val) ?? $val;
+  // 2026-11-15 (propriétaire : « quand il copie-colle, ça peut ajouter des choses ») : TOUS les caractères invisibles du téléphone
+  // (espaces spéciaux, retours à la ligne, tiret conditionnel, liants, marques de direction) sont retirés, pour TOUTES les clés.
+  $v = preg_replace('/[\x{00A0}\x{00AD}\x{1680}\x{180E}\x{2000}-\x{200F}\x{2028}-\x{202F}\x{205F}-\x{206F}\x{3000}\x{FEFF}\s]+/u', ' ', $val) ?? $val;
   $v = trim($v, " \t\n\r\"'`«»“”‘’");
   if (preg_match('/^' . preg_quote($name, '/') . '\s*[=:]?\s*(.+)$/i', $v, $m)) $v = trim($m[1], " \"'`«»“”‘’");
   if ($fmt !== '' && str_starts_with($name, 'VAULT_')) {
