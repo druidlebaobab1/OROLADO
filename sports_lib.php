@@ -1307,6 +1307,42 @@ function sp_auto_settle_maybe(int $now = 0, bool $force = false): array {
   } finally { flock($lk, LOCK_UN); fclose($lk); }
 }
 
+/**
+ * 2026-11-14 (propriétaire : « j'ai assez de matchs, je veux me débarrasser de tout ; le reste, annule, ils seront tous
+ * remboursés ; désormais uniquement les prédictions ») — UNE SEULE FOIS : les anciens événements entrés à la main et déjà
+ * FINIS reçoivent leur vrai résultat quand il est connu (vérifié : ESPN / BLS), tous les autres sont ANNULÉS, mises rendues.
+ * Les événements pas encore finis (prédictions à venir) ne bougent pas. Déjà réglés par l'admin : jamais touchés.
+ */
+function sp_old_cleanup_once(int $now = 0): array {
+  $now = $now ?: time();
+  $flag = sp_dir() . DIRECTORY_SEPARATOR . 'old-cleanup-2026-11-14.done';
+  if (is_file($flag)) return ['ok' => true, 'skip' => 1];
+  if (@file_put_contents($flag, (string) $now, LOCK_EX) === false) return ['ok' => false];
+  $known = [ // titre (minuscules, sans accents ni ponctuation) → libellé du choix gagnant
+    'fc barcelona real madrid' => 'real madrid',            // 25/10 : Barcelona 1 – 2 Real Madrid (ESPN)
+    'psg lyon 3 buts ou plus dans le match' => 'non',       // 26/10 : PSG 2 – 0 Lyon (ESPN)
+    'inflation usa doctobre cpi sur 1 mois' => '0 4 ou plus', // BLS : octobre +0,35 % → 0,4 %
+  ];
+  $norm = static function (string $t): string {
+    $t = sp_lower($t);
+    $t = strtr($t, ['é' => 'e', 'è' => 'e', 'ê' => 'e', 'à' => 'a', 'â' => 'a', 'ô' => 'o', 'î' => 'i', 'ï' => 'i', 'ç' => 'c', 'ù' => 'u', 'û' => 'u', "'" => '', '’' => '']);
+    return trim(preg_replace('/\s+/', ' ', preg_replace('/[^a-z0-9]+/', ' ', $t)) ?? '');
+  };
+  $db = load_db(orolado_data_file());
+  $set = []; $void = [];
+  foreach (sp_events() as $e) {
+    if (($e['status'] ?? '') === 'settled' || sp_end_ts($e) > $now) continue;
+    $k = 'void'; $t = $norm((string) $e['title']);
+    if (isset($known[$t])) foreach ((array) $e['opts'] as $o) if ($norm((string) $o['label']) === $known[$t]) $k = (string) $o['k'];
+    $r = sp_admin_settle($db, (string) $e['id'], $k);
+    if (!empty($r['ok'])) { if ($k === 'void') $void[] = (string) $e['title']; else $set[] = (string) $e['title']; }
+  }
+  if (($set || $void) && is_file(__DIR__ . '/push_lib.php')) {
+    try { require_once __DIR__ . '/push_lib.php'; push_notify_admin('🧹 Anciens matchs nettoyés', count($set) . ' réglé(s) avec le vrai résultat · ' . count($void) . ' annulé(s), mises rendues', '/admin.php'); } catch (Throwable $e) { /* jamais bloquant */ }
+  }
+  return ['ok' => true, 'set' => $set, 'void' => $void];
+}
+
 if (is_file(__DIR__ . '/sb_lib.php')) require_once __DIR__ . '/sb_lib.php';
 // 2026-10-22 — prédictions « Predict » (import JSON, cotes depuis les chances, règlement automatique crypto via Binance)
 if (is_file(__DIR__ . '/pred_lib.php')) require_once __DIR__ . '/pred_lib.php';
