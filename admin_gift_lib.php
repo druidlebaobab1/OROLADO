@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+if (!function_exists('admin_ts')) { function admin_ts(string $s): int { $s = trim($s); if ($s === '') return 0; if (preg_match('/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/', $s)) $s .= ' UTC'; return (int) (strtotime($s) ?: 0); } } // 2026-11-15 : date sans fuseau = UTC (voir admin_lib.php)
 /**
  * v2426 — Tableau admin, rubrique « F · Cadeaux » : suivre l'Invitation (affiliés et amis invités),
  * le Tournoi démo (cette semaine et la semaine dernière, avec l'e-mail pour récompenser les gagnants),
@@ -88,7 +89,7 @@ function admin_gift_payload(string $view, array $req, array $people): array {
         if (!empty($f['paid'])) $dep++;
         $total += (float) ($f['deposit'] ?? 0);
         $fw = admin_gift_who($db, (string) ($f['uid'] ?? ''));
-        $friendsAll[] = ['t' => (int) strtotime((string) ($f['at'] ?? '')), 'cells' => [
+        $friendsAll[] = ['t' => (int) admin_ts((string) ($f['at'] ?? '')), 'cells' => [
           $fw['id'], $fw['email'] !== '' ? $fw['email'] : '—', $who['id'], $who['email'] !== '' ? $who['email'] : '—',
           admin_gift_date($f['at'] ?? ''), admin_money($f['deposit'] ?? 0),
           admin_money($byF[(string) ($f['uid'] ?? '')]['staked'] ?? 0),

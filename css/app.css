@@ -14876,3 +14876,6 @@ html body #depositModal#depositModal#depositModal#depositModal #btnConfirmDeposi
   html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5):not(#q6) .stake-field .stake-pm{width:20px!important;min-width:20px!important;max-width:20px!important}
   html:root body #screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade#screenTrade:not(#q1):not(#q2):not(#q3):not(#q4):not(#q5):not(#q6) .stake-field{padding-left:2px!important;padding-right:2px!important;gap:1px!important}
 }
+/* 2026-11-15 (propriétaire : « Déconnecter mes autres appareils » passait SOUS « Se déconnecter » sur iPhone / appli) :
+   « Se déconnecter » n'est plus collé en bas (sticky) : il suit la liste, et fitProfileDrawer ajuste tout à la hauteur. */
+html body #drawerProfile .drawer-nav .drawer-item.drawer-logout{position:relative!important;bottom:auto!important;top:auto!important}
