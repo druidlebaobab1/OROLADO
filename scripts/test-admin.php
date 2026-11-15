@@ -231,6 +231,7 @@ $pp8 = admin_profile_payload($p8);
 check('il apparaît sur la fiche du joueur, en attente 5 $', in_array('wd_local8', array_map(static fn($r) => (string) ($r['id'] ?? ''), $pp8['withdrawals'] ?? []), true) && abs(($pp8['totals']['wdOpen'] ?? 0) - 5) < 0.01, json_encode($pp8['totals'] ?? []));
 
 echo "1c) Vraie date d'inscription gardée quand la caisse est créée plus tard\n";
+$jf = admin_list_payload('dep_ftd_today', ['preset' => 'all']); check('liste « inscrits avec 1er dépôt aujourd’hui »', !empty($jf['ok']) && is_array($jf['rows']), (string) ($jf['summary'] ?? ''));
 $j = admin_list_payload('signup_today', ['preset' => 'all']);
 $todayIds = array_map(static fn($r) => (string) ($r['userId'] ?? ''), $j['rows'] ?? []);
 check('joueur inscrit il y a 5 jours (caisse créée aujourd\'hui) absent des « Inscriptions du Jour »', !in_array($p9, $todayIds, true), implode(',', $todayIds));

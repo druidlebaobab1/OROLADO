@@ -602,6 +602,7 @@ function admin_badges(): array {
     'no_deposit' => $noDep,
     'signup_closed' => count(admin_closed_accounts($people ?? admin_profiles())),
     'dep_today' => $depToday,
+    'dep_ftd_today' => $ftdToday,
     'dep_yesterday' => $depYest,
     'signup_aff' => $affN,
     'aff_track' => (int) ($marks['nAff'] ?? 0),
@@ -885,6 +886,34 @@ function admin_list_payload_raw(string $view, array $req): array {
       'userId' => (string) ($p['id'] ?? ''),
     ];
   };
+
+  // 2026-11-15 (propriétaire) — liste des joueurs dont le 1er dépôt payé est aujourd'hui (mesure des pubs).
+  if ($view === 'dep_ftd_today') {
+    $stat = [];
+    foreach ($people as $p) $stat[(string) ($p['id'] ?? '')] = true;
+    $first = [];
+    foreach ($deps as $d) {
+      if (!admin_dep_is_paid($d)) continue;
+      $u = (string) ($d['userId'] ?? ''); if ($u === '' || !isset($stat[$u])) continue;
+      $ts = admin_ts((string) ($d['createdAt'] ?? '')) ?: 0;
+      if (!isset($first[$u]) || $ts < $first[$u][0]) $first[$u] = [$ts, (float) ($d['amount'] ?? 0), (string) ($d['createdAt'] ?? '')];
+    }
+    $first = array_filter($first, static fn($fd) => admin_in_range($fd[2], $t0, $t1));
+    uasort($first, static fn($a, $b) => $b[0] <=> $a[0]);
+    $cols = ['ID', 'Nom', 'E-mail', '1er dépôt', 'Heure', 'Inscrit', 'Via'];
+    $sum = 0.0;
+    foreach ($first as $u => $fd) {
+      $p = $pmap[$u] ?? ['id' => $u];
+      $sum += $fd[1];
+      $rows[] = ['cells' => [
+        (string) ($p['publicId'] ?? '—'), (string) ($p['name'] ?? '—'), (string) ($p['email'] ?? ''),
+        admin_money($fd[1]), admin_when_cell($fd[2]), admin_when_cell((string) ($p['createdAt'] ?? '')),
+        ($p['via'] ?? '') === 'google' ? 'Google' : (($p['via'] ?? '') === 'email' ? 'E-mail' : '—'),
+      ], 'userId' => $u];
+    }
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1,
+      'summary' => count($rows) . ' nouveau(x) joueur(s) avec 1er dépôt aujourd’hui · total ' . admin_money($sum), 'actions' => false];
+  }
 
   if ($view === 'signup_closed') {
     $all = admin_closed_accounts($people);
@@ -3110,6 +3139,7 @@ $ADMIN_TABS = [
     ['visits', 'Visites du Site'],
     ['no_deposit', 'Joueurs Avec Dépôt'],
     ['signup_closed', 'Comptes suspendus / supprimés'],
+    ['dep_ftd_today', '🆕 Inscrits avec 1er dépôt (aujourd’hui)'],
   ],
   'gB' => [
     ['dep_today', 'Dépôts du Jour'],
@@ -4196,7 +4226,7 @@ function paintKpi(k) {
   g.innerHTML =
     card('', '👤 Inscriptions', k.signup[0], k.signup[1], false, 'signup_today', 'signup_yesterday')+
     card('k-aff', '🔗 Venus par affiliation', k.aff[0], k.aff[1], false, 'signup_aff', 'signup_aff')+
-    (k.ftd ? card('k-dep', '🆕 1ers dépôts (nouveaux joueurs)', k.ftd[0], k.ftd[1], false, 'dep_today', 'dep_yesterday') : '')+
+    (k.ftd ? card('k-dep', '🆕 1ers dépôts (nouveaux joueurs)', k.ftd[0], k.ftd[1], false, 'dep_ftd_today', 'dep_yesterday') : '')+
     (k.pushOn ? '<button type="button" class="kpi-c k-aff" onclick="var b=document.getElementById(\'btnNotif\'); if (b) b.click();"><span>🔔 Notifications activées</span><b>'+cnt(k.pushOn.all)+'</b><small>iPhone '+cnt(k.pushOn.ios)+' · Android '+cnt(k.pushOn.android)+'</small></button>' : '')+
     card('', '💳 Dépôts (nombre)', k.dep[0], k.dep[1], false, 'dep_today', 'dep_yesterday')+
     card('k-dep', '💰 Argent déposé', k.depSum[0], k.depSum[1], true, 'dep_today', 'dep_yesterday')+
