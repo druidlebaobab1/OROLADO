@@ -232,6 +232,8 @@ check('il apparaît sur la fiche du joueur, en attente 5 $', in_array('wd_local8
 
 echo "1c) Vraie date d'inscription gardée quand la caisse est créée plus tard\n";
 $jf = admin_list_payload('dep_ftd_today', ['preset' => 'all']); check('liste « inscrits avec 1er dépôt aujourd’hui »', !empty($jf['ok']) && is_array($jf['rows']), (string) ($jf['summary'] ?? ''));
+check('1ers dépôts du jour : pastilles de tous les pays', is_array($jf['countries'] ?? null) && array_sum(array_map(static fn($c) => $c[1], $jf['countries'])) === count($jf['rows']), json_encode($jf['countries'] ?? null, JSON_UNESCAPED_UNICODE));
+if (!empty($jf['countries'][0][0])) { $jc = admin_list_payload('dep_ftd_today', ['preset' => 'all', 'country' => $jf['countries'][0][0]]); check('1ers dépôts du jour : choix d’un pays', ($jc['total'] ?? -1) === (int) $jf['countries'][0][1], (string) ($jc['summary'] ?? '')); }
 $j = admin_list_payload('signup_today', ['preset' => 'all']);
 $todayIds = array_map(static fn($r) => (string) ($r['userId'] ?? ''), $j['rows'] ?? []);
 check('joueur inscrit il y a 5 jours (caisse créée aujourd\'hui) absent des « Inscriptions du Jour »', !in_array($p9, $todayIds, true), implode(',', $todayIds));

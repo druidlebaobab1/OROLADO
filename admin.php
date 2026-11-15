@@ -900,6 +900,11 @@ function admin_list_payload_raw(string $view, array $req): array {
     }
     $first = array_filter($first, static fn($fd) => admin_in_range($fd[2], $t0, $t1));
     uasort($first, static fn($a, $b) => $b[0] <=> $a[0]);
+    // 2026-11-16 (propriétaire : « ça affiche seulement Côte d'Ivoire ») : pastilles de TOUS les pays + choix d'un pays
+    $fl = []; foreach ($first as $u => $fd) $fl[] = ['u' => (string) $u, 'amount' => $fd[1]];
+    [$fl, $countries, $wantC] = admin_money_by_country($fl, $pmap, $req, static fn($r) => admin_country_cell(admin_user_lookup($r['u'], $pmap)));
+    $keep = []; foreach ($fl as $r) $keep[$r['u']] = true;
+    $first = array_filter($first, static fn($fd, $u) => isset($keep[(string) $u]), ARRAY_FILTER_USE_BOTH);
     $cols = ['ID', 'Nom', 'E-mail', '1er dépôt', 'Heure', 'Inscrit', 'Via'];
     $sum = 0.0;
     foreach ($first as $u => $fd) {
@@ -912,7 +917,7 @@ function admin_list_payload_raw(string $view, array $req): array {
       ], 'userId' => $u];
     }
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1,
-      'summary' => count($rows) . ' nouveau(x) joueur(s) avec 1er dépôt aujourd’hui · total ' . admin_money($sum), 'actions' => false];
+      'summary' => count($rows) . ' nouveau(x) joueur(s) avec 1er dépôt aujourd’hui · total ' . admin_money($sum) . ($wantC !== '' ? ' · ' . $wantC : (count($countries) > 1 ? ' · ' . count($countries) . ' pays' : '')), 'actions' => false, 'countries' => $countries];
   }
 
   if ($view === 'signup_closed') {
