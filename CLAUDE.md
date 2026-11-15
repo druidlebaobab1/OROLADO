@@ -12,6 +12,10 @@
 - MARGE DU DIRECT VERROUILLÉE (propriétaire, 2026-11-12, passée à 3 % par le propriétaire le 2026-11-16) : les paris EN DIRECT (live) ont leur marge fixée EN DUR à **3 %**
   par `SB_MARGE_DIRECT = 0.03` (`sb_live_markets`, même répartition égale). Les matchs pas encore commencés restent à 1 %.
   Contrôle : `php scripts/test-sb-marge.php` doit finir par « 0 échec(s) ». Ne pas changer sans demande explicite du propriétaire.
+- RÈGLE 1xBet (propriétaire, 2026-11-16) : AVANT-MATCH seulement, choix par choix, si la cote de 1xBet est plus haute que la nôtre,
+  la nôtre devient 1xBet + 0,01 (`sb_beat_1x`, `SB_1X_PLUS = 0.01`). Sécurités : cote 1xBet ignorée si > moyenne + 15 % ; le match
+  garde toujours ≥ 0,5 % pour la maison (`SB_1X_MIN_MARGE`). En direct : impossible (le fournisseur ne nomme pas les bookmakers).
+  Contrôle : `php scripts/test-sb.php` (« 0 échec(s) »). Ne pas changer sans demande explicite du propriétaire.
 - PROPRIÉTAIRE SEUL (2026-11-14, à retenir) : « je suis seul, je reste parfois 24 h sans me connecter ». Tout ce qui touche
   l'argent et les résultats doit marcher TOUT SEUL et en sécurité, sans clic de l'admin (règlements, versements affiliés,
   retraits automatiques dans leurs plafonds, annulations). Quand rien de sûr n'est possible : rendre les mises plutôt que

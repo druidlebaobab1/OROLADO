@@ -376,6 +376,34 @@ function sb_margin(string $fam, array $cfg): float { return SB_MARGE_FIXE; }
  * (sans marge) dans un groupe de somme $exp (1, ou 2 pour la double chance) dont la somme des p² vaut $sq : la marge totale vaut
  * $m (même total qu'avant), répartie selon p² → le favori porte presque toute la marge, nul et outsider gardent de belles cotes.
  */
+/**
+ * 2026-11-16 (propriétaire : « là où 1xBet est plus haut que moi, je passe à 1xBet + 0,01 ») — AVANT-MATCH seulement
+ * (en direct, le fournisseur ne donne pas le nom des bookmakers). La marge 1 % (SB_MARGE_FIXE) reste la base ; puis,
+ * choix par choix : si la cote de 1xBet est plus haute que la nôtre, la nôtre devient cote 1xBet + 0,01.
+ * SÉCURITÉS : (1) cote 1xBet ignorée si elle dépasse la moyenne des bookmakers de plus de 15 % (erreur ou cote périmée) ;
+ * (2) le marché garde toujours au moins SB_1X_MIN_MARGE (0,5 %) pour la maison : si la hausse le ferait passer en dessous,
+ * la cote monte seulement jusqu'à cette limite (jamais en dessous de notre cote de départ) ;
+ * (3) seulement sur un marché complet (tous les choix présents), pour que la limite (2) se calcule juste.
+ */
+const SB_1X_PLUS = 0.01;
+const SB_1X_MIN_MARGE = 0.005;
+function sb_beat_1x(array $row, array $x1, array $avg, string $fam): array {
+  $size = sb_group_size($fam);
+  if ($size === null || count($row) < $size) return $row;
+  $cap = sb_expected($fam) / (1 - SB_1X_MIN_MARGE); // Σ 1/cote doit rester ≥ cette valeur
+  $inv = 0.0; foreach ($row as $r) $inv += 1 / $r[1];
+  if ($inv < $cap) return $row;
+  foreach ($row as $i => [$k, $o]) {
+    $x = (float) ($x1[$k] ?? 0);
+    if ($x <= $o || !isset($avg[$k]) || $x > $avg[$k] * 1.15) continue;
+    $want = round($x + SB_1X_PLUS, 2);
+    $rest = $inv - 1 / $o;                       // le reste du marché
+    $max = $cap - $rest > 0 ? floor(1 / ($cap - $rest) * 100 + 1e-6) / 100 : $want;
+    $new = max($o, min($want, $max));
+    if ($new > $o) { $row[$i][1] = round($new, 2); $inv = $rest + 1 / $new; }
+  }
+  return $row;
+}
 function sb_wodd(float $p, float $m, float $sq, float $exp = 1.0): float {
   if ($p <= 0) return 0.0;
   // 2026-11-12 (propriétaire) : marge répartie ÉGALEMENT (proportionnelle) sur tous les choix — plus « surtout sur le favori ».
@@ -658,7 +686,7 @@ function sb_mk_cmp(string $a, string $b): int {
  *    ≤ moy − 0,01, ≥ 1,01 ; 5) handicaps contrôlés contre 1x2 (signe / convention) sinon retirés.
  */
 function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
-  $sum = []; $cnt = [];
+  $sum = []; $cnt = []; $x1 = [];
   foreach ($bookmakers as $bk) {
     if (!is_array($bk)) continue;
     $mine = [];
@@ -666,10 +694,12 @@ function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
       if (!is_array($bet)) continue;
       foreach (sb_parse_bet((string) ($bet['name'] ?? ''), (array) ($bet['values'] ?? []), $unk) as [$mk, $k, $odd]) $mine[$mk][$k] = $odd;
     }
+    $is1x = (bool) preg_match('/^1\s*x\s*bet$/i', trim((string) ($bk['name'] ?? '')));
     foreach ($mine as $mk => $ks) {
       $fam = sb_fam($mk); $size = sb_group_size($fam);
       $inv = 0.0; foreach ($ks as $o) $inv += 1 / $o;
       if ($size !== null && count($ks) >= $size && $inv < 0.98 * sb_expected($fam)) continue; // bookmaker incohérent sur ce marché
+      if ($is1x) $x1[$mk] = $ks;
       foreach ($ks as $k => $o) { $sum[$mk][$k] = ($sum[$mk][$k] ?? 0) + $o; $cnt[$mk][$k] = ($cnt[$mk][$k] ?? 0) + 1; }
     }
   }
@@ -696,6 +726,7 @@ function sb_markets(array $bookmakers, array $cfg, array &$unk): array {
       if ($k === 'A') $pA[$mk] = $p;
     }
     if (!$row) continue;
+    if (!$indep && isset($x1[$mk])) $row = sb_beat_1x($row, $x1[$mk], $avg, $fam);
     usort($row, static fn($x, $y) => sb_k_rank($x[0], $fam) <=> sb_k_rank($y[0], $fam));
     $out[$mk] = $row;
   }
