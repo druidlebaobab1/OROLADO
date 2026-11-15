@@ -2064,8 +2064,11 @@
       size: function (w, h, uu, d, top) {
         W = w; H = h; dpr = d; T = top; rx0 = W * 0.14; rx1 = W * 0.86;
         cw = clamp((rx1 - rx0) / 4 * 0.74, 26, 72); ch = cw * 1.7; py = H - ch * 0.9; if (px == null) px = W / 2;
-        carS = {}; COLS.forEach(function (cl, i) { carS[i] = carSprite(cw, ch, cl, false); });
-        meS = carSprite(cw, ch, ['#BAE6FD', '#0EA5E9', '#075985'], true);
+        // 2026-11-15 (propriétaire : « les voitures ne sont pas bien dessinées ») : vraies voitures illustrées vues de dessus
+        // (les anciens dessins restent en secours tant que l'image n'est pas arrivée)
+        carS = {}; COLS.forEach(function (cl, i) { var fb = carSprite(cw, ch, cl, false); carS[i] = gSprite(fb.w || cw + 8, fb.h || ch + 8, dpr, 'img/games/rr_c' + ((i % 6) + 1) + '.webp?v=3728', function (c, w2, h2) { c.drawImage(fb, 0, 0, w2, h2); }); });
+        var fbMe = carSprite(cw, ch, ['#BAE6FD', '#0EA5E9', '#075985'], true);
+        meS = gSprite(fbMe.w || cw + 8, fbMe.h || ch + 8, dpr, 'img/games/rr_me.webp?v=3728', function (c, w2, h2) { c.drawImage(fbMe, 0, 0, w2, h2); });
         bg = mkc(W, H, dpr, function (c) {
           c.fillStyle = '#0F2A17'; c.fillRect(0, 0, W, H);
           c.fillStyle = lg(c, 0, T, 0, H, ['#1F2937', '#374151', '#1F2937']); c.fillRect(rx0, 0, rx1 - rx0, H);
