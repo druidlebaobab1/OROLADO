@@ -3106,7 +3106,11 @@ if ($isAjax) {
       $r = json_decode((string) @file_get_contents($f), true);
       if (!is_array($r)) continue;
       if ($target === 'test' && empty($r['test'])) continue;
-      if ($lang !== '' && (string) ($r['lang'] ?? '') !== $lang) continue;
+      // 2026-11-16 (propriétaire) : 2 envois seulement — « fr » = joueurs en français ; « en » = TOUS les autres (comme les e-mails).
+      // Le test (mes appareils) part toujours, quelle que soit la langue.
+      $rl = (string) ($r['lang'] ?? 'fr');
+      if ($target !== 'test' && $lang === 'fr' && $rl !== 'fr') continue;
+      if ($target !== 'test' && $lang === 'en' && $rl === 'fr') continue;
       $rows[] = $r;
     }
     $res = push_send_rows($rows, $payload);
@@ -3988,11 +3992,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <textarea id="ntBody" maxlength="240" rows="3" class="nt-in" placeholder="Ex. : Le marché bouge fort en ce moment. Venez trader !"></textarea>
         <label class="nt-lab">Envoyer aux joueurs qui ont le site en</label>
         <select id="ntLang" class="nt-in">
-          <option value="">Toutes les langues</option>
-          <option value="fr">Français</option><option value="en">Anglais</option><option value="es">Espagnol</option>
-          <option value="pt">Portugais</option><option value="ar">Arabe</option><option value="tr">Turc</option>
-          <option value="vi">Vietnamien</option><option value="id">Indonésien</option><option value="ru">Russe</option>
-          <option value="de">Allemand</option><option value="hi">Hindi</option>
+          <option value="fr">Français — joueurs qui ont le site en français</option>
+          <option value="en">Anglais — TOUS les autres joueurs (toutes les autres langues)</option>
         </select>
         <div class="nt-lab">Aperçu sur le téléphone</div>
         <div class="nt-prev"><img src="/icons/icon-192.png?v=2656" alt=""><div><small>OROLADO · maintenant</small><b id="ntPrevT">Titre</b><span id="ntPrevB">Message</span></div></div>
@@ -5309,13 +5310,14 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   const reach = () => {
     if (!lastStats) return null;
     const lg = $n('ntLang').value;
-    return lg ? ((lastStats.langs || {})[lg] || 0) : lastStats.subs;
+    const nFr = (lastStats.langs || {}).fr || 0;
+    return lg === 'fr' ? nFr : lg === 'en' ? Math.max(0, lastStats.subs - nFr) : lastStats.subs;
   };
   const paintWho = () => {
     const r = reach();
     $n('ntWho').textContent = r === null ? '' : '« Envoyer à tous » partira vers ' + r + ' téléphone(s)' + ($n('ntLang').value ? ' (' + (LANGN[$n('ntLang').value] || '') + ')' : '') + '.';
   };
-  const LANGN = {fr:'Français',en:'Anglais',es:'Espagnol',pt:'Portugais',ar:'Arabe',tr:'Turc',vi:'Vietnamien',id:'Indonésien',ru:'Russe',de:'Allemand',hi:'Hindi'};
+  const LANGN = {fr:'Français',en:'Anglais — toutes les autres langues',es:'Espagnol',pt:'Portugais',ar:'Arabe',tr:'Turc',vi:'Vietnamien',id:'Indonésien',ru:'Russe',de:'Allemand',hi:'Hindi'};
   const plat = () => /android/i.test(navigator.userAgent) ? 'android' : (/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 'ios' : 'pc');
   const isApp = () => !!(navigator.standalone || matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches);
   async function loadStats() {

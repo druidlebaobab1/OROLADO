@@ -386,3 +386,42 @@
   try { if (typeof D6.installIndices === 'function') D6.installIndices(D6.CONFIG); } catch (eIdx) { /* ignore */ }
   try { Object.freeze(D6.CONFIG.ASSETS); } catch (e) { /* ignore */ }
 })(window.D6 = window.D6 || {});
+
+/* 2026-11-16 (propriétaire : « le $ doit être DEVANT les montants, partout ») — filet de sécurité pour tout le site :
+   chaque texte affiché « 10 $ », « +63 567,50 $ », « {p} $ » devient « $10 », « +$63 567,50 »… (traductions, jeux,
+   messages, reçus). Ne touche ni aux champs de saisie ni aux scripts. Pas de « lookbehind » (vieux iPhone). */
+(function (D6) {
+  var N = '(?:\\d{1,3}(?:[ \\u00a0\\u202f.,]\\d{3})+(?:[.,]\\d{1,2})?|\\d+(?:[.,]\\d+)?)';
+  var RE = new RegExp('(^|[^\\w.,$])([+\\-\\u2212]?)(' + N + '(?:\\s?[\\u2013-]\\s?' + N + ')?|\\{\\w+\\})[ \\u00a0\\u202f]?\\$(?![\\w$])', 'g');
+  function usdFront(s) {
+    if (typeof s !== 'string' || s.indexOf('$') < 0) return s;
+    return s.replace(RE, function (m, pre, sign, num) { return pre + sign + '$' + num; });
+  }
+  D6.usdFront = usdFront;
+  if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') return;
+  var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, INPUT: 1, NOSCRIPT: 1 };
+  function fixText(n) {
+    var v = n.nodeValue; if (!v || v.indexOf('$') < 0) return;
+    var p = n.parentNode; if (!p || SKIP[p.nodeName] || (p.isContentEditable)) return;
+    var w = usdFront(v); if (w !== v) n.nodeValue = w;
+  }
+  function walk(root) {
+    if (!root) return;
+    if (root.nodeType === 3) return fixText(root);
+    if (root.nodeType !== 1 || SKIP[root.nodeName]) return;
+    if (root.textContent.indexOf('$') < 0) return;
+    var it = document.createTreeWalker(root, 4, null, false), t;
+    while ((t = it.nextNode())) fixText(t);
+  }
+  function start() {
+    walk(document.body);
+    new MutationObserver(function (ms) {
+      for (var i = 0; i < ms.length; i++) {
+        var m = ms[i];
+        if (m.type === 'characterData') fixText(m.target);
+        else for (var j = 0; j < m.addedNodes.length; j++) walk(m.addedNodes[j]);
+      }
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})(window.D6 = window.D6 || {});

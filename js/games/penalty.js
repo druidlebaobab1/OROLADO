@@ -347,7 +347,7 @@
       K.setText($('pnTip'), on ? l.pick : '');
       if (live()) {
         go.classList.add('cash'); go.disabled = busy || !(g.k > 0);
-        K.setText(go, g.k > 0 ? l.cash + ' $ ' + K.m2(g.stake * g.mult) : l.cash);
+        K.setText(go, g.k > 0 ? l.cash + ' $' + K.m2(g.stake * g.mult) : l.cash);
       } else { go.classList.remove('cash'); go.disabled = busy; K.setText(go, l.bet); }
       fitGo(go);
     }

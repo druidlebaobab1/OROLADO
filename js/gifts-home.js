@@ -140,7 +140,7 @@
       // v2783 (propriétaire) : sur l'accueil Cadeaux, roue « verre » — cases de couleur transparentes, traits clairs
       out += '<path d="M0 0 L' + pt(118, a0) + ' A118 118 0 0 1 ' + pt(118, a1) + 'Z" fill="' + c[0] + '"' + (mini ? ' fill-opacity=".62" stroke="rgba(255,255,255,.7)" stroke-width="1.6"' : ' stroke="rgba(255,255,255,.18)" stroke-width="1.2"') + '/>';
       if (!mini) {
-        var lab = (v < 1 ? (v === 0.25 ? '0,25' : '0,50') : (v >= 10000 ? '10 000' : v >= 1000 ? '1 000' : String(v))) + ' $';
+        var lab = '$' + (v < 1 ? (v === 0.25 ? '0,25' : '0,50') : (v >= 10000 ? '10 000' : v >= 1000 ? '1 000' : String(v)));
         out += '<g transform="rotate(' + (a0 + step / 2) + ') translate(0 -78)"><text text-anchor="middle" dominant-baseline="middle" transform="rotate(90)" font-size="' + (v >= 10000 ? 13 : v >= 100 ? 16 : 15) + '" font-weight="800" fill="' + (v === 100 ? '#5a3500' : v === 10000 ? '#FFD27A' : '#fff') + '" font-family="Plus Jakarta Sans,system-ui,sans-serif">' + lab + '</text></g>';
       }
     }
