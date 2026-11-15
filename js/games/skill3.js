@@ -1409,7 +1409,7 @@
     var q = RUNF[pfx];
     if (!q) { q = RUNF[pfx] = { im: new Image(), fr: null, sps: [] }; q.im.decoding = 'async';
       q.im.onload = function () { q.fr = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = 320; cv.height = 400; cv.getContext('2d').drawImage(q.im, i * 320, 0, 320, 400, 0, 0, 320, 400); return cv; }); q.sps.forEach(function (x) { x.run = q.fr.slice(); }); };
-      q.im.src = 'img/games/' + pfx + '_run.webp?v=' + '3637'; } // v3614 : Candy = fille
+      q.im.src = 'img/games/' + pfx + '_run.webp?v=' + (pfx === 'pr' ? '3736' : '3637'); } // v3614 : Candy = fille
     if (q.fr) sp.run = q.fr.slice(); else q.sps.push(sp);
   }
   function worldTheme(pfx, ver, o) {
@@ -1496,7 +1496,7 @@
     back: '#A97C45', walk: '#D9C08E', roof: ['#8B5E34', '#B07A45'], dust: 'rgba(240,214,160,'
   });
   // 2026-11-03 : PARIS RUN (Haussmann, cafés, tour Eiffel, métro vert) et CANDY KINGDOM (maisons en pain d'épice, train en chocolat)
-  var PARIS = worldTheme('pr', '3582', {
+  var PARIS = worldTheme('pr', '3736', {
     sky: ['#60A5FA', '#93C5FD', '#DBEAFE', '#F1F5F9'], ground: ['#A8A29E', '#8D8379', '#6F655B'], lane: ['#7C7268', '#6B6157', '#5A5047'],
     back: '#C8B79A', walk: '#CFC8BF', roof: ['#2F4A3A', '#43644F']
   });

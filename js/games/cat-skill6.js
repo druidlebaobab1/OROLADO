@@ -870,7 +870,7 @@
     icon: '<image href="img/games/bunkerbreach.webp?v=3579" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>' },
   { k: 'parisrun', name: 'Paris Run', sec: 'skill', file: 'skill3', pal: ['#BFDBFE', '#1E3A8A'],
     nm: { en: 'Paris Run', fr: 'Paris Run', es: 'Paris Run', pt: 'Paris Run', ar: 'Paris Run', tr: 'Paris Run', vi: 'Paris Run', id: 'Paris Run', ru: 'Paris Run', de: 'Paris Run', hi: 'Paris Run', zh: 'Paris Run' },
-    icon: '<image href="img/games/parisrun.webp?v=3735" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>' },
+    icon: '<image href="img/games/parisrun.webp?v=3736" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>' },
   { k: 'abidjanrun', name: 'Sunset Market', sec: 'skill', file: 'skill3', pal: ['#FED7AA', '#9A3412'],
     nm: { en: 'Sunset Market', fr: 'Sunset Market', es: 'Sunset Market', pt: 'Sunset Market', ar: 'Sunset Market', tr: 'Sunset Market', vi: 'Sunset Market', id: 'Sunset Market', ru: 'Sunset Market', de: 'Sunset Market', hi: 'Sunset Market', zh: 'Sunset Market' },
     icon: '<image href="img/games/abidjanrun.webp?v=3733" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>' },
