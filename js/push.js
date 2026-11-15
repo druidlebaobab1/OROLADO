@@ -240,4 +240,14 @@
     }
   };
   watchTrades();
+  // 2026-11-15 (propriétaire : « les joueurs de l'appli qui ne tradent pas ne voient jamais la demande ») : dans l'appli installée,
+  // la carte arrive aussi 25 s après l'ouverture (mêmes règles : pas plus d'une fois par 24 h, plus jamais après 3 « Plus tard »),
+  // seulement si aucune fenêtre n'est ouverte (jamais au milieu d'un dépôt ou d'un jeu).
+  setTimeout(function tryAsk() {
+    try {
+      if (asked || !canAsk()) return;
+      if (document.querySelector('.modal-backdrop.active, #casinoModal.active') || document.documentElement.classList.contains('oro-trade-open')) { setTimeout(tryAsk, 15000); return; }
+      asked = true; showCard();
+    } catch (e) { /* jamais bloquant */ }
+  }, 25000);
 })(window.D6 = window.D6 || {});
