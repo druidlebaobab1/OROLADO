@@ -187,11 +187,6 @@
           resendIn: (start && (start.resendIn || start.retryIn)) || waitStart || 60
         };
       }
-      // 2026-11-15 : e-mail du code impossible (Brevo) → le serveur donne le code et l'inscription se termine tout de suite
-      if (start.autoCode && /^\d{6}$/.test(String(start.autoCode))) {
-        var auto = await D6.Auth.verifyRegisterOtp(email, String(start.autoCode), password);
-        if (auto && auto.ok) return auto;
-      }
       return {
         ok: true,
         pendingOtp: true,
