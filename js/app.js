@@ -4434,6 +4434,8 @@
     }
     document.documentElement.classList.add('oro-profile-open');
     fitProfileDrawer();
+    // 2026-11-15 : contenu qui arrive en retard (bouton admin, adresse, solde, police) → réajusté encore 3 fois
+    [350, 1200, 3000].forEach(function (ms) { setTimeout(function () { var dd = $('drawerProfile'); if (dd && dd.classList.contains('on') && dd.scrollHeight > dd.clientHeight + 1) fitProfileDrawer(); }, ms); });
     closeModal('logoutModal');
   }
   function closeDrawer() {
@@ -7795,15 +7797,15 @@
       // 2026-10-23 : la photo est maintenant un vrai rond (avant, sur Android, un ovale moitié moins haut) ; si même la plus
       // petite taille ne tient pas (iPhone SE), la photo rapetisse un peu (jamais sous 64 px) : jamais de défilement.
       for (var tries = 0; tries < 4 && !fits(); tries++) {
-        if (tries) { avT = Math.max(64, avT - 7); setZ(1); if (fits()) break; }
-        var lo = 0.66, hi = 1;
+        if (tries) { avT = Math.max(56, avT - 9); setZ(1); if (fits()) break; }
+        var lo = 0.5, hi = 1; // 2026-11-15 : 0,5 (avant 0,66) — le Profil ne défile JAMAIS : il se réduit jusqu'à tout montrer
         for (var k = 0; k < 8; k++) {
           var mid = (lo + hi) / 2;
           setZ(mid);
           if (fits()) lo = mid; else hi = mid;
         }
         setZ(Math.round(lo * 1000) / 1000);
-        if (avT <= 64) break;
+        if (avT <= 56) break;
       }
       // v2952 (propriétaire) : on garde la taille trouvée, puis on récupère le petit vide sous « Se déconnecter »
       // (marge de la ligne ©) et on le donne seulement à certaines cases, avec un poids :

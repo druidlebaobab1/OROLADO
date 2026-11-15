@@ -14880,5 +14880,10 @@ html body #depositModal#depositModal#depositModal#depositModal #btnConfirmDeposi
    « Se déconnecter » n'est plus collé en bas (sticky) : il suit la liste, et fitProfileDrawer ajuste tout à la hauteur. */
 html body #drawerProfile .drawer-nav .drawer-item.drawer-logout{position:relative!important;bottom:auto!important;top:auto!important}
 
-/* 2026-11-15 : sécurité — si le Profil ne tient pas en hauteur malgré l'ajustement, il défile (jamais « Se déconnecter » caché). */
-html body #drawerProfile.drawer.on{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+/* 2026-11-15 (propriétaire : « mon site ne doit pas défiler ») : pas de défilement du Profil — fitProfileDrawer réduit tout pour que
+   tout tienne, « Se déconnecter » compris. Fenêtre « Déconnecter mes autres appareils » : sobre, comme « Se déconnecter » (plus de
+   lueur verte forte). */
+html:root body #logoutOthersModal#logoutOthersModal#logoutOthersModal .modal-box{background:linear-gradient(180deg,#14110C 0%,#0F0D09 100%)!important;
+  border:1px solid rgba(255,255,255,.09)!important;box-shadow:0 14px 34px rgba(0,0,0,.6)!important}
+html:root body #logoutOthersModal#logoutOthersModal#logoutOthersModal .modal-box::before{box-shadow:inset -4px -4px 10px rgba(0,0,0,.3)!important;animation:none!important}
+html:root body #logoutOthersModal#logoutOthersModal#logoutOthersModal .logout-go{box-shadow:none!important}
