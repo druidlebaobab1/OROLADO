@@ -1021,7 +1021,18 @@ $ub = []; $rb = sb_odds_to_rows($jbk, $ub); sb_bk_measure([], [], true);
 $m1 = (array) (sb_state()['bk1x'] ?? []);
 check('1xBet : 2 matchs lus, présent sur 1', ($m1['n'] ?? 0) >= 2 && ($m1['x'] ?? 0) >= 1, json_encode($m1));
 check('1xBet : comparaison 1X2 faite (3 choix)', (($m1['up'] ?? 0) + ($m1['down'] ?? 0) + ($m1['eq'] ?? 0)) >= 3, json_encode($rb['990001']['1x2'] ?? null));
-check('1xBet : les cotes ne changent pas (mesure seulement)', isset($rb['990001']['1x2']) && isset($m1['bk']['1xBet']));
+check('1xBet + 0,01 : là où 1xBet était plus haut (3,52), nous passons à 3,53', ($rb['990001']['1x2'][0][1] ?? 0) == 3.53, json_encode($rb['990001']['1x2'] ?? null));
+$rw = (array) ($rb['990001']['1x2'] ?? []); $iv = 0.0; foreach ($rw as $o) $iv += 1 / $o[1];
+check('1xBet + 0,01 : la maison garde au moins 0,5 % sur le match', $iv >= 1 / (1 - SB_1X_MIN_MARGE) - 1e-9, 'Σ1/cote=' . round($iv, 4));
+check('1xBet + 0,01 : les choix déjà au-dessus de 1xBet ne bougent pas', ($rw[1][1] ?? 0) >= 3.22 && ($rw[2][1] ?? 0) >= 2.30, json_encode($rw));
+// sécurité : 1xBet très au-dessus de tout le monde (erreur) → ignoré ; marge plancher respectée sur un match serré
+$jz = ['response' => [['fixture' => ['id' => 990003], 'bookmakers' => [$bk1('Bet365', '2.00', '3.40', '3.80'), $bk1('Pinnacle', '2.00', '3.40', '3.80'), $bk1('Bwin', '2.00', '3.40', '3.80'), $bk1('1xBet', '2.60', '3.40', '3.80')]],
+  ['fixture' => ['id' => 990004], 'bookmakers' => [$bk1('Bet365', '1.90', '3.50', '4.20'), $bk1('Pinnacle', '1.92', '3.55', '4.25'), $bk1('Bwin', '1.90', '3.50', '4.20'), $bk1('1xBet', '1.97', '3.70', '4.45')]]]];
+$uz = []; $rz = sb_odds_to_rows($jz, $uz); sb_bk_measure([], [], true);
+check('1xBet + 0,01 : cote 1xBet absurde (+30 %) ignorée', ($rz['990003']['1x2'][0][1] ?? 9) < 2.5, json_encode($rz['990003']['1x2'] ?? null));
+$rw4 = (array) ($rz['990004']['1x2'] ?? []); $iv4 = 0.0; foreach ($rw4 as $o) $iv4 += 1 / $o[1];
+check('1xBet + 0,01 : match où 1xBet est haut partout → plancher 0,5 % tenu', $rw4 && $iv4 >= 1 / (1 - SB_1X_MIN_MARGE) - 1e-9, json_encode($rw4) . ' Σ=' . round($iv4, 4));
+
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
