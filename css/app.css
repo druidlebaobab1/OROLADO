@@ -14879,3 +14879,6 @@ html body #depositModal#depositModal#depositModal#depositModal #btnConfirmDeposi
 /* 2026-11-15 (propriétaire : « Déconnecter mes autres appareils » passait SOUS « Se déconnecter » sur iPhone / appli) :
    « Se déconnecter » n'est plus collé en bas (sticky) : il suit la liste, et fitProfileDrawer ajuste tout à la hauteur. */
 html body #drawerProfile .drawer-nav .drawer-item.drawer-logout{position:relative!important;bottom:auto!important;top:auto!important}
+
+/* 2026-11-15 : sécurité — si le Profil ne tient pas en hauteur malgré l'ajustement, il défile (jamais « Se déconnecter » caché). */
+html body #drawerProfile.drawer.on{overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
