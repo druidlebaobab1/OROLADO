@@ -451,7 +451,7 @@
     // état + montant
     var stTxt = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL }[st] || st;
     var bigLab = st === 'won' ? x.rcPaid : st === 'lost' ? x.rcLostTxt : st === 'void' ? x.rcBack : x.potL;
-    var big = (st === 'won' ? n2(bt.win) : st === 'lost' ? n2(0) : st === 'void' ? n2(bt.stake) : n2(bt.pot)) + ' $';
+    var big = '$' + (st === 'won' ? n2(bt.win) : st === 'lost' ? n2(0) : st === 'void' ? n2(bt.stake) : n2(bt.pot));
     g.font = '800 14px ' + FONT;
     var sw = g.measureText(spaced(String(stTxt).toUpperCase())).width + 34;
     rr(g, (W - sw) / 2, 196, sw, 30, 15);
@@ -509,7 +509,7 @@
     var d = new Date((bt.at || 0) * 1000), pad = function (k) { return (k < 10 ? '0' : '') + k; };
     var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     var no = String(bt.id || '').slice(-10).toUpperCase();
-    var R = [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], [x.rcNo, no]];
+    var R = [[x.stakeL, '$' + n2(bt.stake)], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, '$' + n2(bt.pot)], [x.rcDate, dt], [x.rcNo, no]];
     rr(g, 28, rowsTop, W - 56, rows * rowH + 8, 14);
     g.fillStyle = 'rgba(251,191,36,0.07)'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = 'rgba(251,191,36,0.35)'; g.stroke();
     R.forEach(function (r, i) {
@@ -730,7 +730,7 @@
     // état + montant
     var stTxt = String({ open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL }[st] || st).toUpperCase();
     var bigLab = st === 'won' ? x.rcPaid : st === 'lost' ? x.rcLostTxt : st === 'void' ? x.rcBack : x.potL;
-    var big = (st === 'won' ? n2(bt.win) : st === 'lost' ? n2(0) : st === 'void' ? n2(bt.stake) : n2(bt.pot)) + ' $';
+    var big = '$' + (st === 'won' ? n2(bt.win) : st === 'lost' ? n2(0) : st === 'void' ? n2(bt.stake) : n2(bt.pot));
     g.textAlign = 'center'; g.font = '800 14px ' + FONT;
     var sTxt = spaced(stTxt), sw = Math.min(W - 2 * P, g.measureText(sTxt).width + 28);
     g.strokeStyle = col; g.lineWidth = 1.5; g.strokeRect((W - sw) / 2, stTop + 22, sw, 28);
@@ -814,8 +814,8 @@
     var no = String(bt.id || '').slice(-10).toUpperCase();
     var d = new Date((bt.at || 0) * 1000), pad = function (v) { return (v < 10 ? '0' : '') + v; };
     var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-    var TR = [[x.stakeL, n2(bt.stake) + ' $'], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, n2(bt.pot) + ' $'], [x.rcDate, dt], bt.code ? [x.betCode || 'Code', String(bt.code)] : [x.rcNo, no]]; // 2026-10-23 : « Code de pari » à la place du n°
-    if (bt.bst) TR.splice(2, 0, [(x.bstL || 'Bonus'), st === 'won' ? '+' + n2(bt.bw) + ' $' : st === 'open' ? '+' + n2(Math.max(0, bt.pot - Math.floor(bt.stake * bt.odd * 100 + 1e-6) / 100)) + ' $' : '—']);
+    var TR = [[x.stakeL, '$' + n2(bt.stake)], [x.totalOdd, Number(bt.odd).toFixed(2)], [x.potL, '$' + n2(bt.pot)], [x.rcDate, dt], bt.code ? [x.betCode || 'Code', String(bt.code)] : [x.rcNo, no]]; // 2026-10-23 : « Code de pari » à la place du n°
+    if (bt.bst) TR.splice(2, 0, [(x.bstL || 'Bonus'), st === 'won' ? '+$' + n2(bt.bw) + '' : st === 'open' ? '+$' + n2(Math.max(0, bt.pot - Math.floor(bt.stake * bt.odd * 100 + 1e-6) / 100)) + '' : '—']);
     var iPot = bt.bst ? 3 : 2, iNo = TR.length - 1;
     TR.forEach(function (r, i) {
       var y = totTop + i * totRow + totRow / 2;

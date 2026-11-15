@@ -88,7 +88,7 @@
     if (shown && shown === sig(friends)) return;
     if (shown && !untouched(box, preId)) {
       // la personne a déjà commencé : on ne touche qu'au solde et à l'historique
-      var cv = box.querySelector('.ls2-cv b'); if (cv) cv.innerHTML = m2(st.can) + ' <i>$</i>';
+      var cv = box.querySelector('.ls2-cv b'); if (cv) cv.innerHTML = '<i>$</i> ' + m2(st.can);
       var h = box.querySelector('#lsHist'); if (h) { h.innerHTML = hist(); bindHist(box); }
       return;
     }
@@ -107,13 +107,13 @@
     var noDep = st.can < (st.min || 1);
     box.innerHTML = '<div class="ls2">' +
       // v2786 (propriétaire) : carte de solde comme les grandes applis d'envoi (petit hibou, disponible, 0 % de frais)
-      '<div class="ls2-card"><span class="ls2-cl">' + logo() + '</span><div class="ls2-cv"><small>' + esc(x.can) + '</small><b>' + m2(st.can) + ' <i>$</i></b></div><em class="ls2-cf">' + esc(x.fee0) + '</em></div>' +
+      '<div class="ls2-card"><span class="ls2-cl">' + logo() + '</span><div class="ls2-cv"><small>' + esc(x.can) + '</small><b><i>$</i> ' + m2(st.can) + '</b></div><em class="ls2-cf">' + esc(x.fee0) + '</em></div>' +
       (noDep ? '<p class="ls2-nodep">' + esc(x.noDep) + '</p><button type="button" class="ls2-go" id="lsDep">' + esc(x.deposit) + '</button>' :
         '<div class="ls2-sec"><label>' + esc(x.to) + '</label>' +
         (friends.length ? '<div class="ls2-fr">' + friends.map(function (f) { return '<button type="button" data-id="' + esc(f.id) + '"><i style="--av:' + avc(f.name) + '">' + ini(f.name) + '</i><span>' + esc(f.name) + '</span></button>'; }).join('') + '</div>' : '') +
         '<input class="ls2-in" id="lsTo" maxlength="80" spellcheck="false" autocapitalize="off" autocomplete="off" inputmode="email" placeholder="' + esc(x.toPh) + '" value="' + esc(preId || '') + '"></div>' +
-        '<div class="ls2-sec ls2-amt"><label>' + esc(x.amount) + '</label><div class="ls2-big"><input id="lsAmt" inputmode="decimal" placeholder="0"><i>$</i></div>' +
-        '<div class="ls2-chips">' + [5, 10, 20, 50].map(function (v) { return '<button type="button" data-v="' + v + '">' + v + ' $</button>'; }).join('') + '<button type="button" data-v="max">MAX</button></div></div>' +
+        '<div class="ls2-sec ls2-amt"><label>' + esc(x.amount) + '</label><div class="ls2-big"><i>$</i><input id="lsAmt" inputmode="decimal" placeholder="0"></div>' +
+        '<div class="ls2-chips">' + [5, 10, 20, 50].map(function (v) { return '<button type="button" data-v="' + v + '">$' + v + '</button>'; }).join('') + '<button type="button" data-v="max">MAX</button></div></div>' +
         '<button type="button" class="ls2-go" id="lsGo">' + esc(x.go) + ' <span aria-hidden="true">→</span></button>') +
       '</div><b class="ls2-h">' + esc(x.hist) + '</b><div class="ls2-hist" id="lsHist">' + hist() + '</div>' +
       '<div class="ls2-sheet" id="lsSheet" hidden></div>';
@@ -141,7 +141,7 @@
       if (day !== last) { out += '<p class="ls2-day">' + esc(day) + '</p>'; last = day; }
       out += '<button type="button" class="ls2-row ' + (o ? 'out' : 'in') + '" data-i="' + i + '"><i style="--av:' + avc(name) + '">' + ini(name) + '<em>' + (o ? '↑' : '↓') + '</em></i>' +
         '<span><b>' + esc(fmt(o ? x.sent : x.got, { n: name })) + '</b><small>' + d.toLocaleTimeString(document.documentElement.lang || undefined, { hour: '2-digit', minute: '2-digit' }) + (l.state && l.state !== 'done' && l.state !== 'credit' ? ' · ' + esc(x.rPend) : '') + '</small></span>' +
-        '<strong>' + (o ? '−' : '+') + m2(l.amount) + ' $</strong></button>';
+        '<strong>' + (o ? '−' : '+') + '$' + m2(l.amount) + '</strong></button>';
     });
     return out;
   }
@@ -176,7 +176,7 @@
     }
     var s = sheet(box, '<b class="ls2-st">' + esc(x.sure) + '</b>' +
       '<div class="ls2-who"><i style="--av:' + avc(name) + '">' + ini(name) + '</i><span><b>' + esc(name) + '</b><small>' + esc(id) + '</small></span></div>' +
-      '<div class="ls2-lines"><p><span>' + esc(x.sumAmt) + '</span><b>' + m2(a) + ' $</b></p><p><span>' + esc(x.sumFee) + '</span><b class="g">0,00 $</b></p><p class="t"><span>' + esc(x.sumTot) + '</span><b>' + m2(a) + ' $</b></p></div>' +
+      '<div class="ls2-lines"><p><span>' + esc(x.sumAmt) + '</span><b>$' + m2(a) + '</b></p><p><span>' + esc(x.sumFee) + '</span><b class="g">$0.00</b></p><p class="t"><span>' + esc(x.sumTot) + '</span><b>$' + m2(a) + '</b></p></div>' +
       '<button type="button" class="ls2-go" id="lsYes">' + esc(x.confirm) + '</button><button type="button" class="ls2-alt" id="lsNo">' + esc(x.cancel) + '</button>');
     $('lsNo').addEventListener('click', function () { s.hidden = true; });
     $('lsYes').addEventListener('click', async function () {
@@ -230,7 +230,7 @@
     var done = !l.state || l.state === 'done' || l.state === 'credit';
     var rows = [[o ? x.rTo : x.rFrom, name], [x.rId, o ? (l.toId || '—') : (l.fromId || '—')], [x.rDate, d.toLocaleString(document.documentElement.lang || undefined)], [x.rRef, ref], [x.rFee, '0,00 $'], [x.rSt, done ? x.rOk : x.rPend]];
     var s = sheet(box, '<div class="ls2-rc"><div class="ls2-rc-top"><svg class="ls2-check sm" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg><small>' + esc(x.rT) + '</small>' +
-      '<b class="' + (o ? 'out' : 'in') + '">' + (o ? '−' : '+') + m2(l.amount) + ' $</b><span>OROLADO</span></div>' +
+      '<b class="' + (o ? 'out' : 'in') + '">' + (o ? '−' : '+') + '$' + m2(l.amount) + '</b><span>OROLADO</span></div>' +
       '<div class="ls2-rc-rows">' + rows.map(function (r) { return '<p><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></p>'; }).join('') + '</div><i class="ls2-rc-cut"></i></div>' +
       '<button type="button" class="ls2-go" id="lsShare">' + esc(x.share) + '</button><button type="button" class="ls2-alt" id="lsClose">' + esc(x.fin) + '</button>');
     $('lsClose').addEventListener('click', function () { s.hidden = true; });

@@ -656,9 +656,9 @@
         var fsTxt = Array.isArray(s.fs) ? '<u class="sp-rcpt-fs"><var class="fsN" dir="ltr">' + (+s.fs[0] || 0) + ':' + (+s.fs[1] || 0) + '</var></u>' : '';
         return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
-      '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>' + m2(bt.stake) + ' $</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
-      (bt.bst ? '<p class="bst"><span>' + esc(bstLabel(bt)) + '</span><b>' + (st === 'won' ? '+' + m2(bt.bw || 0) + ' $' : st === 'open' ? '+' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + ' $' : '—') + '</b></p>' : '') +
-      '<p><span>' + esc(x.potL) + '</span><b>' + m2(bt.pot) + ' $</b></p><p><span>' + esc(x.rcDate) + '</span><b>' + dt + '</b></p>' +
+      '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>$' + m2(bt.stake) + '</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
+      (bt.bst ? '<p class="bst"><span>' + esc(bstLabel(bt)) + '</span><b>' + (st === 'won' ? '+$' + m2(bt.bw || 0) + '' : st === 'open' ? '+$' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + '' : '—') + '</b></p>' : '') +
+      '<p><span>' + esc(x.potL) + '</span><b>$' + m2(bt.pot) + '</b></p><p><span>' + esc(x.rcDate) + '</span><b>' + dt + '</b></p>' +
       // 2026-10-23 (propriétaire) : « Code de pari » à la place du numéro (on le copie pour rejouer le coupon) ; le numéro en tout petit en bas
       (bt.code ? '<p class="code"><span>' + esc(NX().betCode) + '</span><b class="mono">' + esc(bt.code) + '</b></p>' : '<p><span>' + esc(x.rcNo) + '</span><b class="mono">' + esc(no) + '</b></p>') + '</div>' +
       '<div class="sp-rcpt-bars" aria-hidden="true">' + bars + '</div><p class="sp-rcpt-foot">orolado.com' + (bt.code ? ' · ' + esc(NX().rcNoS) + ' ' + esc(no) : '') + '</p>' +
@@ -676,7 +676,7 @@
       // iPhone : « Enregistrer l'image » dans la galerie). Plus de reçu noir ni WhatsApp / Partager ici.
       if (D6.Receipt && D6.Receipt.saveBet) { D6.Receipt.saveBet(); return; }
       var txt = 'OROLADO · ' + x.rcTitle + ' ' + no + (bt.code ? ' · ' + NX().betCode + ' ' + bt.code : '') + '\n' + bt.sel.map(function (s) { return '• ' + s.t + ' — ' + s.l + ' (' + Number(s.odd).toFixed(2) + ')'; }).join('\n') +
-        '\n' + x.stakeL + ' ' + m2(bt.stake) + ' $ · ' + x.totalOdd + ' ' + Number(bt.odd).toFixed(2) + ' · ' + stTxt + '\nhttps://orolado.com';
+        '\n' + x.stakeL + ' $' + m2(bt.stake) + ' · ' + x.totalOdd + ' ' + Number(bt.odd).toFixed(2) + ' · ' + stTxt + '\nhttps://orolado.com';
       try { if (navigator.share) { navigator.share({ text: txt }).catch(function () { /* ignore */ }); return; } } catch (e) { /* ignore */ }
       try { navigator.clipboard.writeText(txt); sbToast('✓', 'ok'); } catch (e) { /* ignore */ }
     });
@@ -2305,7 +2305,7 @@
   function pxCur(a, v) {
     var m = /(USDT|USDC|FDUSD|BUSD|USD)$/.exec(a || ''), q = /^[A-Z0-9]+?(BTC|ETH|BNB|EUR)$/.exec(a || ''), n = Number(v);
     if (!m) return pxTxt(v) + (q ? ' ' + q[1] : '');
-    try { return n.toLocaleString(loc(), { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol', minimumFractionDigits: n >= 100 ? 2 : 0, maximumFractionDigits: n >= 100 ? 2 : n >= 1 ? 4 : 6 }).replace(/\u202f/g, '\u00a0'); } catch (e) { return '$' + pxTxt(v); }
+    return '$' + pxTxt(v); // 2026-11-16 (propriétaire) : le « $ » toujours DEVANT, dans toutes les langues
   }
   function pdPxPaint() { if (!box) return; box.querySelectorAll('[data-px]').forEach(function (el) { var a = el.getAttribute('data-px'), v = pdPx[a]; var tx = v ? pxCur(a, v) : '…'; if (el.textContent !== tx) el.textContent = tx; }); }
   function pdPxLoad() {

@@ -24,7 +24,7 @@
   }
   function money(n) {
     var v = Math.round(Number(n || 0) * 100) / 100;
-    return v.toLocaleString(undefined, { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 }) + ' $';
+    return '$' + v.toLocaleString(undefined, { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
   }
   function left(sec) {
     sec = Math.max(0, Math.floor(sec));
