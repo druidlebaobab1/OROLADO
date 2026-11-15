@@ -181,6 +181,11 @@ function sb_config(): array {
     });
     $c = sb_read('config.json');
   }
+  // 2026-11-16 (propriétaire) : direct 4 % → 3 % ; l'affichage admin suit la constante.
+  if ((float) ($c['mLive'] ?? -1) !== (float) (SB_MARGE_DIRECT * 100)) {
+    sb_with('config.json', static function (array &$s) { $s['mLive'] = SB_MARGE_DIRECT * 100; return true; });
+    $c = sb_read('config.json');
+  }
   if (empty($c['mig14'])) {
     sb_with('config.json', static function (array &$s) {
       if (!empty($s['mig14'])) return true;
@@ -364,7 +369,7 @@ const SB_MARGE_FIXE = 0.01;
 // énorme, les gens peuvent tricher ; live c'est 4 %, les matchs pas encore commencés restent à 1 % ; force et verrouille »)
 // → marge du DIRECT VERROUILLÉE EN DUR à 4 %, répartie également (cote = (1 − m) / p), légèrement au-dessus de 1xBet.
 // L'avant-match et les autres sports restent à SB_MARGE_FIXE (1 %). Ne pas changer sans demande explicite du propriétaire.
-const SB_MARGE_DIRECT = 0.04;
+const SB_MARGE_DIRECT = 0.03; // 2026-11-16 (propriétaire) : 4 % → 3 %
 function sb_margin(string $fam, array $cfg): float { return SB_MARGE_FIXE; }
 /**
  * 2026-10-23 (propriétaire : « tout à 4 %, la marge surtout sur le favori, comme les grands ») — cote d'un choix de probabilité $p
@@ -2307,7 +2312,7 @@ function sb_live_markets(array $r, array $cfg, array $sc, array &$unk): array {
   }
   [$h, $a] = [(int) ($sc[0] ?? 0), (int) ($sc[1] ?? 0)];
   $mn = (int) ($r['fixture']['status']['elapsed'] ?? 0);
-  $m = SB_MARGE_DIRECT; // marge du DIRECT VERROUILLÉE à 4 % (propriétaire, 2026-11-12), ne dépend pas du réglage ; avant-match : 1 %
+  $m = SB_MARGE_DIRECT; // marge du DIRECT VERROUILLÉE à 3 % (propriétaire, 2026-11-12, 3 % depuis le 2026-11-16), ne dépend pas du réglage ; avant-match : 1 %
   $out = [];
   foreach ($raw as $mk => $ks) {
     $fam = sb_fam($mk); $x = (float) substr($mk, strlen($fam) + 1);

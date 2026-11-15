@@ -9,8 +9,8 @@
   dans `sb_wodd`) : un peu au-dessus de 1xBet (~3 % sur les grands matchs). Tout calcul de cote — avant-match (`sb_margin`), autres
   sports (`sb_o_margin`) — DOIT utiliser `SB_MARGE_FIXE` (le direct a sa propre marge, voir ci-dessous). Ne pas la rebrancher sur le réglage/les migrations, et ne pas la
   changer, sans demande explicite du propriétaire.
-- MARGE DU DIRECT VERROUILLÉE (propriétaire, 2026-11-12) : les paris EN DIRECT (live) ont leur marge fixée EN DUR à **4 %**
-  par `SB_MARGE_DIRECT = 0.04` (`sb_live_markets`, même répartition égale). Les matchs pas encore commencés restent à 1 %.
+- MARGE DU DIRECT VERROUILLÉE (propriétaire, 2026-11-12, passée à 3 % par le propriétaire le 2026-11-16) : les paris EN DIRECT (live) ont leur marge fixée EN DUR à **3 %**
+  par `SB_MARGE_DIRECT = 0.03` (`sb_live_markets`, même répartition égale). Les matchs pas encore commencés restent à 1 %.
   Contrôle : `php scripts/test-sb-marge.php` doit finir par « 0 échec(s) ». Ne pas changer sans demande explicite du propriétaire.
 - PROPRIÉTAIRE SEUL (2026-11-14, à retenir) : « je suis seul, je reste parfois 24 h sans me connecter ». Tout ce qui touche
   l'argent et les résultats doit marcher TOUT SEUL et en sécurité, sans clic de l'admin (règlements, versements affiliés,

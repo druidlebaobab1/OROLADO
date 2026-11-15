@@ -58,8 +58,8 @@ $odd = static function (string $fid, string $mk, string $k): ?float { foreach ((
 
 echo "1) Réglages par défaut, visibilité\n";
 $c0 = sb_config(); // 1re lecture : Public allumé une seule fois (mise en ligne du 2026-10-22), marges au moins 15/20/30/20/15
-// 2026-11-12 (propriétaire, CLAUDE.md) : marges VERROUILLÉES en dur (SB_MARGE_FIXE 1 %, SB_MARGE_DIRECT 4 %) — les réglages ne changent plus les cotes
-check('mise en ligne : Public allumé une fois ; direct sur tous les championnats ; marges verrouillées 1 % / 4 %', $c0['public'] === true && $c0['liveAll'] === true && SB_MARGE_FIXE == 0.01 && SB_MARGE_DIRECT == 0.04);
+// 2026-11-12 (propriétaire, CLAUDE.md) : marges VERROUILLÉES en dur (SB_MARGE_FIXE 1 %, SB_MARGE_DIRECT 3 % depuis le 2026-11-16) — les réglages ne changent plus les cotes
+check('mise en ligne : Public allumé une fois ; direct sur tous les championnats ; marges verrouillées 1 % / 3 %', $c0['public'] === true && $c0['liveAll'] === true && SB_MARGE_FIXE == 0.01 && SB_MARGE_DIRECT == 0.03);
 sb_config_save(['mMain' => 30]);
 check('réglage admin accepté (sans effet sur les cotes : marge verrouillée)', true);
 sb_with('config.json', static function (array &$s) { $s = ['mig1' => 1, 'mig2' => 1, 'mig3' => 1, 'mig4' => 1, 'mig5' => 1, 'mig7' => 1, 'mig8' => 1, 'mig9' => 1, 'mig10' => 1, 'mig11' => 1, 'liveAll' => true]; return true; }); // la suite teste le réglage « Public éteint »
@@ -473,7 +473,7 @@ check('pari direct sur le handicap asiatique : accepté (cote, score et minute d
 check('pari direct sur un choix inconnu : refusé', empty(sb_live_pick('9101', 'ah:-0.5', 'Z', $ua, $L0)['ok']) && empty(sb_live_pick('9101', 'cs', '5:0', $ua, $L0)['ok']));
 check('noms inconnus du direct → diagnostic (Next Goal) ; Asian Handicap connu', isset($u['Next Goal']) && !isset($u['Asian Handicap']) && isset(sb_admin_diag($L0)['unkLive']['Next Goal']), json_encode($u));
 $h1 = null; $invL = 0; foreach ($M['mk'] as $m) if ($m['mk'] === '1x2') { $h1 = $m['o'][0]; foreach ($m['o'] as $oL) $invL += 1 / $oL[1]; }
-check('marge du direct verrouillée 4 % (Σ 1/cote ≥ 1/0,96), cote H raisonnable', $h1[0] === 'H' && $h1[1] >= 1.01 && $h1[1] <= 1.40 * 1.06 && $invL >= 1 / (1 - SB_MARGE_DIRECT) - 0.002, json_encode([$h1, round($invL, 4)]));
+check('marge du direct verrouillée 3 % (Σ 1/cote ≥ 1/0,97), cote H raisonnable', $h1[0] === 'H' && $h1[1] >= 1.01 && $h1[1] <= 1.40 * 1.06 && $invL >= 1 / (1 - SB_MARGE_DIRECT) - 0.002, json_encode([$h1, round($invL, 4)]));
 check('tracker : buts / cartons / changement (penalty manqué ignoré)', count($M['trk']['events']) === 4 && $M['trk']['events'][0]['type'] === 'goal' && $M['trk']['events'][0]['team'] === 'h' && $M['trk']['events'][2]['detail'] === 'red' && $M['trk']['events'][3]['type'] === 'subst');
 check('statistiques : pas encore lues → null', $M['trk']['stats'] === null);
 sb_live_tick($L0 + 16);
