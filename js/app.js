@@ -7742,6 +7742,24 @@
       profFitObs = new MutationObserver(function () { fitProfileDrawer(); });
       profFitObs.observe(d, { attributes: true, attributeFilter: ['class'] });
       window.addEventListener('resize', function () { fitProfileDrawer(); });
+      // 2026-11-15 (propriétaire, appli iPhone : « Se déconnecter » caché sous le bas) : le bouton « Dashboard Admin », l'adresse du
+      // portefeuille ou le solde arrivent APRÈS l'ajustement et rallongeaient la liste → on réajuste dès qu'une partie change de taille.
+      if (typeof ResizeObserver === 'function') {
+        var rzT = 0, rzBusy = false;
+        var ro = new ResizeObserver(function () {
+          if (rzBusy || !d.classList.contains('on')) return;
+          clearTimeout(rzT);
+          rzT = setTimeout(function () {
+            if (d.scrollHeight <= d.clientHeight + 1 && !d.__fitDirty) return;
+            rzBusy = true; d.__fitDirty = false;
+            try { fitProfileDrawer(); } catch (eF) { /* ignore */ }
+            setTimeout(function () { rzBusy = false; }, 120);
+          }, 120);
+        });
+        Array.prototype.forEach.call(d.querySelectorAll('.prof-head, .wallet-card, .drawer-admin, .drawer-nav'), function (el) { try { ro.observe(el); } catch (eO) { /* ignore */ } });
+        var ad2 = $('btnAdmin2');
+        if (ad2 && typeof MutationObserver === 'function') new MutationObserver(function () { d.__fitDirty = true; }).observe(ad2, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+      }
     }
     // v2940 — on cherche la plus grande taille qui tient (mesure réelle, marche aussi sur les vieux Chrome Android),
     // puis la place qui reste en bas est donnée aux lignes du menu (Historique, Retirer, …) : plus de vide en bas.
