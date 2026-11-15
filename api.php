@@ -781,18 +781,11 @@ if ($action === 'registerStart') {
   ignore_user_abort(true);
   $sent = brevo_send_otp($email, $code);
   if (empty($sent['ok'])) {
-    // 2026-11-15 (propriétaire : « avant, 50 à 100 inscriptions avec 5 $ de pub ; maintenant presque rien ») : quand Brevo
-    // n'envoie plus le code (quota gratuit de 300 e-mails/jour atteint, offre expirée, panne), le joueur restait BLOQUÉ.
-    // Maintenant l'inscription se termine quand même (le téléphone valide tout seul) et l'admin est prévenu (une fois par heure).
-    $pending[$email]['expiresAt'] = time() + OROLADO_OTP_TTL;
-    $pending[$email]['lastSentAt'] = time();
-    $pending[$email]['noMail'] = true;
-    $db['pendingRegistrations'] = $pending;
-    save_db($file, $db);
+    // 2026-11-15 (propriétaire) : le CODE par e-mail reste OBLIGATOIRE (pas de faux e-mails). Brevo en panne → admin prévenu.
     if (function_exists('orolado_rate_ok') && orolado_rate_ok('otp_mail_down', 'all', 1, 3600) && function_exists('orolado_health_event')) {
-      try { orolado_health_event('E-mails', '📧 Brevo n’envoie plus les codes d’inscription (' . substr((string) ($sent['reason'] ?? 'erreur'), 0, 120) . '). Les inscriptions continuent SANS code. Renouvelle ton offre Brevo.', 'warn'); } catch (Throwable $eH) { /* jamais bloquant */ }
+      try { orolado_health_event('E-mails', '📧 Brevo n’envoie pas les codes d’inscription (' . substr((string) ($sent['reason'] ?? 'erreur'), 0, 120) . '). Vérifie Brevo.', 'warn'); } catch (Throwable $eH) { /* jamais bloquant */ }
     }
-    echo json_encode(['ok' => true, 'server' => true, 'pendingOtp' => true, 'noMail' => true, 'autoCode' => $code, 'email' => $email, 'expiresIn' => OROLADO_OTP_TTL, 'resendIn' => OROLADO_OTP_RESEND_UI]);
+    echo json_encode(['ok' => false, 'server' => true, 'reason' => $sent['reason'] ?? 'Impossible d’envoyer le code. Réessayez.']);
     exit;
   }
   $pending[$email]['expiresAt'] = time() + OROLADO_OTP_TTL;
