@@ -14887,3 +14887,8 @@ html:root body #logoutOthersModal#logoutOthersModal#logoutOthersModal .modal-box
   border:1px solid rgba(255,255,255,.09)!important;box-shadow:0 14px 34px rgba(0,0,0,.6)!important}
 html:root body #logoutOthersModal#logoutOthersModal#logoutOthersModal .modal-box::before{box-shadow:inset -4px -4px 10px rgba(0,0,0,.3)!important;animation:none!important}
 html:root body #logoutOthersModal#logoutOthersModal#logoutOthersModal .logout-go{box-shadow:none!important}
+/* 2026-11-16 (propriétaire, iPhone : « le dernier chiffre du chrono du tournoi est caché ») : le titre rétrécit (…) avant le chrono,
+   et le chrono garde une marge à droite du cadre (les chiffres de l'iPhone sont un peu plus larges). */
+html body #portalModal #topCard .top-head{padding-inline-end:10px;min-width:0;max-width:100%;box-sizing:border-box}
+html body #portalModal #topCard .top-title{flex:1 1 0;min-width:0;overflow:hidden}
+html body #portalModal #topCard .top-timer{flex:0 0 auto!important;padding-inline-end:2px;overflow:visible}
