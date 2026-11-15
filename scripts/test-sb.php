@@ -1013,6 +1013,16 @@ check(count($B2) . ' règlements de la 2e série (mené 0-1, gagne 2-1)', !$bad,
 check('contrôle du direct : grand championnat (Premier League) 15 s ; petit championnat 25 s ; combiné avec un petit = 25 s',
   sb_live_hold(['1'], ['fx' => ['1' => ['lg' => 39]]]) === 15 && sb_live_hold(['2'], ['fx' => ['2' => ['lg' => 383]]]) === 25 && sb_live_hold(['1', '2'], ['fx' => ['1' => ['lg' => 39], '2' => ['lg' => 383]]]) === 25);
 
+echo "\n— Mesure 1xBet (lecture seule) —\n";
+$bk1 = static fn($n, $h, $x, $a) => ['name' => $n, 'bets' => [['name' => 'Match Winner', 'values' => [['value' => 'Home', 'odd' => $h], ['value' => 'Draw', 'odd' => $x], ['value' => 'Away', 'odd' => $a]]]]];
+$jbk = ['response' => [['fixture' => ['id' => 990001], 'bookmakers' => [$bk1('Bet365', '3.40', '3.30', '2.30'), $bk1('1xBet', '3.52', '3.21', '2.295'), $bk1('Pinnacle', '3.30', '3.35', '2.40')]],
+  ['fixture' => ['id' => 990002], 'bookmakers' => [$bk1('Bet365', '2', '3', '4'), $bk1('Bwin', '2', '3', '4'), $bk1('Pinnacle', '2', '3', '4')]]]];
+$ub = []; $rb = sb_odds_to_rows($jbk, $ub); sb_bk_measure([], [], true);
+$m1 = (array) (sb_state()['bk1x'] ?? []);
+check('1xBet : 2 matchs lus, présent sur 1', ($m1['n'] ?? 0) >= 2 && ($m1['x'] ?? 0) >= 1, json_encode($m1));
+check('1xBet : comparaison 1X2 faite (3 choix)', (($m1['up'] ?? 0) + ($m1['down'] ?? 0) + ($m1['eq'] ?? 0)) >= 3, json_encode($rb['990001']['1x2'] ?? null));
+check('1xBet : les cotes ne changent pas (mesure seulement)', isset($rb['990001']['1x2']) && isset($m1['bk']['1xBet']));
+
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);

@@ -5792,6 +5792,9 @@ setInterval(() => {
         '<br>Paris non reconnus (' + u.length + ') :' + (u.length ? '<br>' + u.slice(0, 40).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun') +
         ((uo => '<br>Autres sports, paris non reconnus (' + uo.length + ') :' + (uo.length ? '<br>' + uo.slice(0, 40).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun'))(Object.entries(r.unkOther || {}))) +
         (r.live ? '<br>Direct : ' + (r.live.on ? 'allumé' : 'éteint') + (r.live.wanted ? ' · regardé' : '') + ' · ' + r.live.fx + ' match(s) · cotes ' + r.live.od + ' · lu ' + t(r.live.at) : '') +
+        ((b => b && b.n ? '<br><b>1xBet chez le fournisseur (aujourd’hui, avant-match)</b> : présent sur ' + b.x + ' match(s) sur ' + b.n + ' (' + Math.round(100 * b.x / b.n) + ' %)' +
+          ((b.up + b.down + b.eq) ? ' · résultat 1X2 : nous au-dessus ' + b.up + ' fois, en dessous ' + b.down + ' fois, égal ' + b.eq : '') +
+          '<br>Bookmakers lus : ' + Object.entries(b.bk || {}).slice(0, 15).map(([k, n]) => esc(k) + ' ×' + n).join(' · ') + '<br>(Direct : le fournisseur ne donne pas le nom des bookmakers.)' : '<br>1xBet : mesure en cours (après la prochaine lecture des cotes).')(r.bk1x)) +
         ((ul => '<br>Direct, paris non reconnus (' + ul.length + ') :' + (ul.length ? '<br>' + ul.slice(0, 30).map(([k, n]) => esc(k) + ' ×' + n).join('<br>') : ' aucun'))(Object.entries(r.unkLive || {})));
     };
   })();

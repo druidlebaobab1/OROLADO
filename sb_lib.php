@@ -1129,10 +1129,50 @@ function sb_odds_to_rows(array $j, array &$unk): array {
     if ($id <= 0) continue;
     $mk = sb_markets((array) ($r['bookmakers'] ?? []), $cfg, $unk);
     if ($mk) $out[(string) $id] = $mk;
+    sb_bk_measure((array) ($r['bookmakers'] ?? []), $mk);
     $bk = null; foreach ((array) ($r['bookmakers'] ?? []) as $b) if (is_array($b) && count((array) ($b['bets'] ?? [])) > count((array) ($bk['bets'] ?? []))) $bk = $b;
     if ($bk && count((array) $bk['bets']) >= 40) sb_raw_sample('raw-pre.json', ['fx' => $id, 'bk' => (string) ($bk['name'] ?? ''), 'bets' => $bk['bets']], sb_now());
   }
   return $out;
+}
+/**
+ * 2026-11-16 (propriétaire : « vérifier si le fournisseur donne les cotes de 1xBet, avant de mettre +0,03 au-dessus ») —
+ * MESURE SEULEMENT (aucune cote changée) : matchs lus, matchs où 1xBet est présent, et sur le résultat 1X2 combien de choix
+ * nous sommes au-dessus / en dessous de 1xBet. Compteur du jour (UTC), écrit à la fin de chaque page /odds.
+ */
+function sb_bk_measure(array $bookmakers, array $ours = [], bool $flush = false): void {
+  static $acc = null;
+  if ($acc === null) $acc = ['n' => 0, 'x' => 0, 'up' => 0, 'down' => 0, 'eq' => 0, 'bk' => []];
+  if (!$flush) {
+    $acc['n']++;
+    $x = null;
+    foreach ($bookmakers as $b) {
+      if (!is_array($b)) continue;
+      $nm = trim((string) ($b['name'] ?? '')); if ($nm === '') continue;
+      $acc['bk'][$nm] = ($acc['bk'][$nm] ?? 0) + 1;
+      if (preg_match('/^1\s*x\s*bet$/i', $nm)) $x = $b;
+    }
+    if ($x === null) return;
+    $acc['x']++;
+    $mine = []; $u = [];
+    foreach ((array) ($x['bets'] ?? []) as $bet) if (is_array($bet)) foreach (sb_parse_bet((string) ($bet['name'] ?? ''), (array) ($bet['values'] ?? []), $u) as [$m, $k, $o]) if ($m === '1x2') $mine[$k] = (float) $o;
+    foreach ((array) ($ours['1x2'] ?? []) as [$k, $o]) {
+      if (!isset($mine[$k])) continue;
+      if ($o > $mine[$k] + 1e-9) $acc['up']++; elseif ($o < $mine[$k] - 1e-9) $acc['down']++; else $acc['eq']++;
+    }
+    return;
+  }
+  if ($acc['n'] <= 0) return;
+  $day = gmdate('Y-m-d'); $add = $acc; $acc = null;
+  sb_with('state.json', static function (array &$s) use ($add, $day) {
+    $c = (array) ($s['bk1x'] ?? []);
+    if (($c['day'] ?? '') !== $day) $c = ['day' => $day, 'n' => 0, 'x' => 0, 'up' => 0, 'down' => 0, 'eq' => 0, 'bk' => []];
+    foreach (['n', 'x', 'up', 'down', 'eq'] as $f) $c[$f] = (int) ($c[$f] ?? 0) + (int) $add[$f];
+    foreach ($add['bk'] as $nm => $v) $c['bk'][$nm] = (int) ($c['bk'][$nm] ?? 0) + (int) $v;
+    arsort($c['bk']); $c['bk'] = array_slice($c['bk'], 0, 30, true);
+    $s['bk1x'] = $c;
+    return true;
+  });
 }
 const SB_UNK_V = 4; // version de la liste des paris connus (diagnostic « paris non lus » remis à zéro à chaque version)
 /** Échantillon brut d'un match (diagnostic admin : forme exacte des paris du fournisseur), gardé ≤ 1 fois / 10 min. */
@@ -1156,7 +1196,7 @@ function sb_note_unknown(array $unk): void {
 function sb_import_fixture_odds(int $id, int $now): bool {
   $j = sb_get('odds?fixture=' . $id, $now);
   if ($j === null) return false;
-  $unk = []; $rows = sb_odds_to_rows($j, $unk); sb_note_unknown($unk);
+  $unk = []; $rows = sb_odds_to_rows($j, $unk); sb_note_unknown($unk); sb_bk_measure([], [], true);
   sb_store_markets($rows, $now);
   return true;
 }
@@ -1216,7 +1256,7 @@ function sb_job_tick(int $now, int $max = SB_JOB_CALLS): array {
       $calls++; $pages++;
       $j = sb_get('odds?date=' . $day . '&timezone=UTC&page=' . $next, $now);
       if ($j === null) { $log[] = 'odds ' . $day . ' p' . $next . ' ✗'; $next = 0; $c['err'] = $now; break; }
-      $rows = sb_odds_to_rows($j, $unk);
+      $rows = sb_odds_to_rows($j, $unk); sb_bk_measure([], [], true);
       $stored = sb_store_markets($rows, $now);
       $tot = max(1, min(200, (int) ($j['paging']['total'] ?? 1)));
       $log[] = 'odds ' . $day . ' p' . $next . '/' . $tot . ' (' . $stored . ')';
@@ -1872,7 +1912,8 @@ function sb_admin_diag(int $now = 0): array {
   $st = sb_state();
   return ['ok' => true, 'status' => $j === null ? null : ['plan' => (string) ($r['subscription']['plan'] ?? ''), 'end' => (string) ($r['subscription']['end'] ?? ''), 'active' => (bool) ($r['subscription']['active'] ?? false),
     'cur' => (int) ($r['requests']['current'] ?? 0), 'max' => (int) ($r['requests']['limit_day'] ?? 0)], 'err' => (string) ($st['err'] ?? ''), 'errAt' => (int) ($st['errAt'] ?? 0),
-    'unk' => (array) ($st['unk'] ?? []), 'unkLive' => (array) ($st['unkLive'] ?? []), 'unkOther' => (array) ($st['ounk'] ?? []), 'budget' => sb_budget($now), 'live' => sb_live_admin($now)];
+    'unk' => (array) ($st['unk'] ?? []), 'unkLive' => (array) ($st['unkLive'] ?? []), 'unkOther' => (array) ($st['ounk'] ?? []), 'budget' => sb_budget($now), 'live' => sb_live_admin($now),
+    'bk1x' => (array) ($st['bk1x'] ?? [])];
 }
 /** Bouton « Importer maintenant » (admin) : un passage complet, sans attendre la minute. */
 function sb_admin_import(int $now = 0): array {
