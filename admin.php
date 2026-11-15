@@ -561,6 +561,22 @@ function admin_badges(): array {
       if (admin_in_range($p['createdAt'] ?? null, $y0, $y1)) $affYest++;
     }
   }
+  // 2026-11-15 (propriétaire : « savoir combien de nouveaux joueurs ont fait leur PREMIER dépôt aujourd'hui ») — 1er dépôt payé
+  // de chaque joueur ; compté le jour de ce 1er dépôt (mesure des pubs).
+  $firstDep = [];
+  foreach ($deps as $d) {
+    if (!admin_dep_is_paid($d)) continue;
+    $u = (string) ($d['userId'] ?? ''); if ($u === '') continue;
+    $ts = admin_ts((string) ($d['createdAt'] ?? '')) ?: 0;
+    if (!isset($firstDep[$u]) || $ts < $firstDep[$u][0]) $firstDep[$u] = [$ts, (float) ($d['amount'] ?? 0), (string) ($d['createdAt'] ?? '')];
+  }
+  $ftdToday = 0; $ftdYest = 0; $ftdTodaySum = 0.0;
+  foreach ($firstDep as $fd) {
+    if (admin_in_range($fd[2], $t0, $t1)) { $ftdToday++; $ftdTodaySum += $fd[1]; }
+    if (admin_in_range($fd[2], $y0, $y1)) $ftdYest++;
+  }
+  $pushOn = ['all' => 0, 'ios' => 0, 'android' => 0];
+  if (is_file(__DIR__ . '/push_lib.php')) { try { require_once __DIR__ . '/push_lib.php'; $ps = push_stats(); $pushOn = ['all' => (int) $ps['subs'] - (int) $ps['test'], 'ios' => (int) $ps['ios'], 'android' => (int) $ps['android']]; } catch (Throwable $eP) { /* ignore */ } }
   $profit7 = admin_profit_between($deps, $wds, $w0, $w1);
   $profitAll = admin_profit_between($deps, $wds, '', '');
   // Barres B / C : mêmes règles que le bénéfice (dépôts payés ; retraits validés, hors masqués).
@@ -596,6 +612,7 @@ function admin_badges(): array {
     // Bandeau « Aujourd'hui / Hier » en haut du tableau
     'kpi' => [
       'signup' => [$signupToday, $signupYest], 'aff' => [$affToday, $affYest],
+      'ftd' => [$ftdToday, $ftdYest], 'ftdSum' => round($ftdTodaySum, 2), 'pushOn' => $pushOn,
       'dep' => [$depToday, $depYest], 'depSum' => [round($depTodaySum, 2), round($depYestSum, 2)],
       'wdSum' => [round($wdTodaySum, 2), round($wdYestSum, 2)], 'profit' => [round($profitToday, 2), round($profitYest, 2)],
     ],
@@ -4179,6 +4196,8 @@ function paintKpi(k) {
   g.innerHTML =
     card('', '👤 Inscriptions', k.signup[0], k.signup[1], false, 'signup_today', 'signup_yesterday')+
     card('k-aff', '🔗 Venus par affiliation', k.aff[0], k.aff[1], false, 'signup_aff', 'signup_aff')+
+    (k.ftd ? card('k-dep', '🆕 1ers dépôts (nouveaux joueurs)', k.ftd[0], k.ftd[1], false, 'dep_today', 'dep_yesterday') : '')+
+    (k.pushOn ? '<button type="button" class="kpi-c k-aff" onclick="var b=document.getElementById(\'btnNotif\'); if (b) b.click();"><span>🔔 Notifications activées</span><b>'+cnt(k.pushOn.all)+'</b><small>iPhone '+cnt(k.pushOn.ios)+' · Android '+cnt(k.pushOn.android)+'</small></button>' : '')+
     card('', '💳 Dépôts (nombre)', k.dep[0], k.dep[1], false, 'dep_today', 'dep_yesterday')+
     card('k-dep', '💰 Argent déposé', k.depSum[0], k.depSum[1], true, 'dep_today', 'dep_yesterday')+
     card('k-wd', '💸 Retraits payés', k.wdSum[0], k.wdSum[1], true, 'wd_today', 'wd_yesterday')+
