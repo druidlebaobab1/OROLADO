@@ -1408,9 +1408,15 @@
   function runFrames(pfx, sp) {
     var q = RUNF[pfx];
     if (!q) { q = RUNF[pfx] = { im: new Image(), fr: null, sps: [] }; q.im.decoding = 'async';
-      q.im.onload = function () { q.fr = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = 320; cv.height = 400; cv.getContext('2d').drawImage(q.im, i * 320, 0, 320, 400, 0, 0, 320, 400); return cv; }); q.sps.forEach(function (x) { x.run = q.fr.slice(); }); };
+      q.im.onload = function () {
+        q.fr = [0, 1, 2, 3].map(function (i) { var cv = document.createElement('canvas'); cv.width = 320; cv.height = 400; cv.getContext('2d').drawImage(q.im, i * 320, 0, 320, 400, 0, 0, 320, 400); return cv; });
+        // 2026-11-16 (propriétaire : « quand il se baisse ou saute, il change d'habits ») : glissade et saut faits à partir de
+        // SES images de course (mêmes habits) — glissade = accroupi (tassé en hauteur, posé au sol), saut = foulée.
+        var sl = document.createElement('canvas'); sl.width = 320; sl.height = 400; sl.getContext('2d').drawImage(q.fr[0], 0, 0, 320, 400, 14, 400 - 400 * 0.66, 292, 400 * 0.66); q.sl = sl;
+        q.sps.forEach(function (x) { x.run = q.fr.slice(); x.slide = q.sl; x.jump = q.fr[1]; });
+      };
       q.im.src = 'img/games/' + pfx + '_run.webp?v=' + (pfx === 'pr' ? '3736' : '3637'); } // v3614 : Candy = fille
-    if (q.fr) sp.run = q.fr.slice(); else q.sps.push(sp);
+    if (q.fr) { sp.run = q.fr.slice(); sp.slide = q.sl; sp.jump = q.fr[1]; } else q.sps.push(sp);
   }
   function worldTheme(pfx, ver, o) {
     var I = {}, kidImg = null, kidFr = null;
@@ -1453,13 +1459,30 @@
       side: function (c, V, dist, SP) {
         if (!(ok('wall0') && ok('wall1'))) return METRO.side(c, V, dist, SP);
         var w0 = I.wall0, w1 = I.wall1, S = 1.5, off = dist % S, k = Math.floor(dist / S), z, i, zMax = V.ZM * 2.2 + S, zF = zMax - S;
-        wallQuad(c, V, -2.07, -0.8, zF, 0, 2.3, o.back); wallQuad(c, V, 2.07, -0.8, zF, 0, 2.3, o.back);
-        [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.58, V.ZF), V.SY(V.ZF), V.SX(s * 2.07, V.ZF), V.SY(V.ZF), V.SX(s * 2.07, -0.14), V.SY(-0.14), V.SX(s * 1.58, -0.14), V.SY(-0.14)], o.walk);
+        // 2026-11-16 (propriétaire : « les maisons sont plates, longues ») : des MAISONS avec du relief — chacune avance ou
+        // recule un peu, a sa hauteur, et on voit son côté (le mur qui fait face au joueur), comme de vraies rues.
+        var DEP = [0, 0.34, 0.14, 0.42, 0.06], HGT = [4.0, 4.5, 3.6, 4.3, 3.8];
+        if (!I._shade) { try { var sc = document.createElement('canvas'); sc.width = sc.height = 1; var sx = sc.getContext('2d'); sx.drawImage(w0.im, 0, 0, 1, 1); var px = sx.getImageData(0, 0, 1, 1).data; I._shade = 'rgb(' + (px[0] * 0.55 | 0) + ',' + (px[1] * 0.55 | 0) + ',' + (px[2] * 0.55 | 0) + ')'; } catch (eS) { I._shade = o.corner || '#2B2420'; } }
+        wallQuad(c, V, -2.5, -0.8, zF, 0, 2.3, o.back); wallQuad(c, V, 2.5, -0.8, zF, 0, 2.3, o.back);
+        [-1, 1].forEach(function (s) { poly(c, [V.SX(s * 1.58, V.ZF), V.SY(V.ZF), V.SX(s * 2.5, V.ZF), V.SY(V.ZF), V.SX(s * 2.5, -0.14), V.SY(-0.14), V.SX(s * 1.58, -0.14), V.SY(-0.14)], o.walk);
           poly(c, [V.SX(s * 1.58, V.ZF), V.SY(V.ZF), V.SX(s * 1.64, V.ZF), V.SY(V.ZF), V.SX(s * 1.64, -0.14), V.SY(-0.14), V.SX(s * 1.58, -0.14), V.SY(-0.14)], 'rgba(0,0,0,.35)'); });
+        var endFace = function (sd, x0, x1, zz, h) {
+          if (zz <= NEAR_Z) return;
+          var p = V.P(zz), yb = V.SY(zz), yt = yb - h * V.lw * p, xa = V.SX(sd * x0, zz), xb = V.SX(sd * x1, zz);
+          poly(c, [xa, yt, xb, yt, xb, yb, xa, yb], I._shade);
+          var g = c.createLinearGradient(xa, 0, xb, 0); g.addColorStop(0, 'rgba(255,255,255,.10)'); g.addColorStop(1, 'rgba(0,0,0,.30)');
+          poly(c, [xa, yt, xb, yt, xb, yb, xa, yb], g);
+          c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(Math.min(xa, xb), yt, Math.abs(xb - xa), Math.max(1, 2 * p));
+        };
         for (z = zMax - off, i = 0; z > -0.8; z -= S, i++) {
-          var a = (k + i) % 2 ? w0.im : w1.im, b = (k + i) % 2 ? w1.im : w0.im;
+          var n = k + i, a = n % 2 ? w0.im : w1.im, b = n % 2 ? w1.im : w0.im;
+          var dl = DEP[(n * 3 + 1) % 5], dr = DEP[(n * 7 + 3) % 5], hl = HGT[(n * 2 + 1) % 5], hr = HGT[(n * 3 + 2) % 5];
+          var dlN = DEP[((n + 1) * 3 + 1) % 5], drN = DEP[((n + 1) * 7 + 3) % 5];
           c.globalAlpha = clamp((zMax - z) / (S * 0.9), 0, 1);
-          wallImg(c, V, a, -2.05, z - S, z, 0, 4.0, 22, NEAR_Z); wallImg(c, V, b, 2.05, z - S, z, 0, 4.0, 22, NEAR_Z);
+          wallImg(c, V, a, -(2.05 + dl), z - S, z, 0, hl, 22, NEAR_Z); wallImg(c, V, b, 2.05 + dr, z - S, z, 0, hr, 22, NEAR_Z);
+          // le côté de la maison quand la suivante (plus près) est en retrait
+          if (dlN > dl + 0.02) endFace(-1, 2.05 + dl, 2.05 + dlN, z - S, hl);
+          if (drN > dr + 0.02) endFace(1, 2.05 + dr, 2.05 + drN, z - S, hr);
         }
         c.globalAlpha = 1; nearCorner(c, V, -2.05, 4.0, o.corner || '#2B2420'); nearCorner(c, V, 2.05, 4.0, o.corner || '#2B2420');
       },
@@ -1515,7 +1538,7 @@
   boot('parisrun', function (A) { return runner(A, PARIS); }, 'swipe4', 0.5);
   boot('candyrun', function (A) { return runner(A, CANDY); }, 'swipe4', 0.5);
   // 2026-11-12 : SUNSET MARKET (rue de marché d'Afrique de l'Ouest, gbaka vert et jaune, étals de pagnes) et DUBAI RUN (or et marbre, métro blanc et or)
-  var ABIDJAN = worldTheme('ab', '3680', {
+  var ABIDJAN = worldTheme('ab', '3739', {
     sky: ['#FB923C', '#FDBA74', '#FED7AA', '#FEF3C7'], ground: ['#C9A27A', '#B38B63', '#9A744F'], lane: ['#A57B55', '#926A48', '#7E5B3C'],
     back: '#E7B577', walk: '#D9B48A', roof: ['#15803D', '#EAB308'], dust: 'rgba(253,186,116,'
   });
