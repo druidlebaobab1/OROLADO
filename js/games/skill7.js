@@ -570,7 +570,7 @@
      aim (the guide shows only the start of the arc), release to fire. Each enemy tank fills a reload bar: destroy it first. */
   // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
   var WBF = {};
-  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=3599'; }
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=' + (k === 'trenchdef' ? '3741' : '3599'); }
     if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('tankbattle', function (A) {
@@ -710,8 +710,10 @@
      Each soldier's red ring closes as he aims: hit him first. Never shoot a civilian (white shirt, hands up). */
   boot('sniper', function (A) {
     var W, H, T, dpr, bg, slots = [], foes = [], sc = { x: 0, y: 0 }, drag = null, Rs, Z = 2.4, dead = 0, won = 0, strike = null, t = 0, spT = 0, cool = 0, flash = null, sold = {}, civ = {}, aiT = 0, aiTg = null, holes = [], kills = 0;
+    var snE = warImg('sn_enemy', function () { sold = {}; }), snC = warImg('sn_civ', function () { civ = {}; });
     function soldierS(h, enemy) { // upper body seen in a window: helmet, face, vest, rifle — real proportions
-      var w = h * 0.8;
+      var w = h * 0.8, si = enemy ? snE : snC;
+      if (si.ok) return mkc(w, h, dpr, function (c) { var im = si.im, s2 = Math.min(w / im.naturalWidth, h / im.naturalHeight) * 1.0, iw = im.naturalWidth * s2, ih = im.naturalHeight * s2; c.drawImage(im, (w - iw) / 2, h - ih, iw, ih); });
       return mkc(w, h, dpr, function (c) {
         var cx = w / 2, hd = h * 0.17;
         if (enemy) {
@@ -1223,6 +1225,10 @@
   }
   function rigHelmet(col) { return function (c, x, y, r) { var g = c.createLinearGradient(0, y - r * 1.4, 0, y); g.addColorStop(0, col[0]); g.addColorStop(1, col[1]); c.fillStyle = g; c.beginPath(); c.ellipse(x, y - r * 0.25, r * 1.22, r * 1.0, 0, Math.PI, 0); c.lineTo(x + r * 1.3, y - r * 0.05); c.lineTo(x - r * 1.3, y - r * 0.05); c.fill(); c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.ellipse(x - r * 0.4, y - r * 0.85, r * 0.45, r * 0.16, -0.3, 0, TAU); c.fill(); }; }
   var RIG_EN = { skin: '#F5D0B0', top: ['#7A7F88', '#4A4E55'], bottom: ['#5E636B', '#3D4148'], shoe: '#111111', gloves: '#2B2F14', hat: rigHelmet(['#8A8F98', '#3D4148']) };
+  // 2026-11-16 (propriétaire : « améliore les personnages des jeux de guerre, comme les zombies ») : vrais personnages
+  // illustrés (fal.ai) pour Trench Defense et Sniper ; les anciens dessins restent en secours tant que l'image n'est pas là.
+  var WARI = {};
+  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=3741'; } if (cb && !o.ok) o.cbs.push(cb); return o; }
   function rigFrames(h, n, fn) { // pre-rendered frames: canvas size 1.1h × 1.1h, feet at the bottom centre
     var out = []; for (var i = 0; i < n; i++) out.push(mkc(h * 1.2, h * 1.12, Math.min(2, window.devicePixelRatio || 1), function (c) { c.translate(h * 0.6, h * 1.08); fn(c, i / n); }));
     return out;
@@ -1373,15 +1379,21 @@
     function gpos(g) { var k = Math.min(1, g.t / g.T), x = g.x0 + (g.x1 - g.x0) * k, y = g.y0 + (g.y1 - g.y0) * k - Math.sin(k * Math.PI) * (H - T) * 0.35; return { x: x, y: y, k: k }; }
     return {
       size: function (w, h, uu, d, top) {
-        W = w; H = h; dpr = d; T = top; hy = Math.max(T + (H - T) * 0.12, H * 0.66); gy = H - (H - T) * 0.14; bh = clamp((H - T) * 0.42, 90, 260); // 2026-11-16 (propriétaire : « les ennemis viennent du ciel ») : horizon de la photo du décor (≈ 60 %)
+        W = w; H = h; dpr = d; T = top; hy = Math.max(T + (H - T) * 0.12, H * 0.37); gy = H - (H - T) * 0.14; bh = clamp((H - T) * 0.42, 90, 260); // 2026-11-16 (propriétaire) : nouveau champ de bataille ouvert, horizon de la photo ≈ 35 %
         // v2860 people: D6.Rig (js/art-rig.js, real proportions) + helmet + rifle held across the chest; own rig as a fallback
-        fr = rigFrames(bh, NF, function (c, ph) {
+        var tdS = warImg('td_soldier', function () { fr = rigFrames(bh, NF, tdDraw); });
+        var tdDraw = function (c, ph) {
+          if (tdS.ok) { // vrai soldat illustré : il court vers nous (pas de course = petit balancement, pas alterné = image retournée)
+            var im = tdS.im, hh = bh * 1.02, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(ph * TAU), bob = Math.abs(st) * bh * 0.025;
+            c.save(); c.translate(0, -bob); c.rotate(st * 0.05); if (ph >= 0.5) c.scale(-1, 1); c.drawImage(im, -ww / 2, -hh, ww, hh); c.restore(); return;
+          }
           if (!D6.Rig) { soldierFront(c, bh, ph); return; }
           D6.Rig.draw(c, bh, { view: 'front', pose: 'run', ph: ph, pal: RIG_EN });
           var s = bh / 100, bob = Math.abs(Math.sin(ph * TAU)) * 1.5 * s;
           c.save(); c.translate(0, -bh * 0.62 - bob); c.rotate(-0.7); c.fillStyle = lg(c, 0, -3 * s, 0, 3 * s, ['#52525B', '#1F1F22']); rr(c, -20 * s, -2.4 * s, 40 * s, 4.8 * s, 1.5 * s); c.fill(); c.fillStyle = '#5C4033'; rr(c, 9 * s, -3 * s, 11 * s, 6 * s, 1.5 * s); c.fill(); c.restore();
           circ(c, -5 * s, -bh * 0.56 - bob, 3.2 * s, '#2B2F14'); circ(c, 7 * s, -bh * 0.68 - bob, 3.2 * s, '#2B2F14');
-        });
+        };
+        fr = rigFrames(bh, NF, tdDraw);
         bg = mkc(W, H, dpr, function (c) {
           c.fillStyle = lg(c, 0, 0, 0, hy, ['#1F2937', '#57534E', '#A8A29E']); c.fillRect(0, 0, W, hy + 2);
           for (var i = 0; i < 5; i++) { var sx = rnd(0, W), sy = hy - rnd(4, 30); circ(c, sx, sy, rnd(14, 34), 'rgba(41,37,36,.35)'); }
