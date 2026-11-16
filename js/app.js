@@ -6717,6 +6717,23 @@
     showDepositStep('select');
   }
 
+  // 2026-11-16 (propriétaire) : écran « Recharger en crypto » pro (js/dep-crypto.js) : une ligne touchée ouvre directement
+  // l'adresse + QR de CETTE crypto (asset, réseau) ; « toutes » ouvre la liste complète.
+  D6.depPick = function (asset, net, all) {
+    try {
+      setDepositPayMethod('usdt');
+      if (asset && asset !== 'usdt' && coffreAssetOk(asset)) {
+        oxaAsset = asset; var meta = oxaMeta(asset); oxaNet = (meta.nets && meta.nets[0]) || ''; oxaCoin = oxaCoinKey();
+        paintOxaCoinBtn(); syncOxaNetUi(); enforceOxaMin(); syncOxaLabels(); clearCryptoPreview(); paintOxaAddrLabel();
+        var pv = cachedOxaAddr(); if (pv) paintPreviewAddr(pv); else showCryptoInvoice(false);
+      } else if (asset === 'usdt' && net && net !== 'TRC20' && coffreNetOk(net)) {
+        oxaNet = net; oxaCoin = oxaCoinKey(); syncOxaNetUi(); clearCryptoPreview(); paintOxaAddrLabel();
+        var pv2 = cachedOxaAddr(); if (pv2) paintPreviewAddr(pv2); else showCryptoInvoice(false);
+      }
+      if (all && $('oxaCoinBtn')) setTimeout(function () { var m = $('oxaCoinMenu'); if (m && m.classList.contains('hidden')) { fillOxaCoinList(''); m.classList.remove('hidden'); $('oxaCoinBtn').setAttribute('aria-expanded', 'true'); document.documentElement.classList.add('oxa-dd-open'); } }, 120);
+    } catch (e) { /* ignore */ }
+  };
+
   function stopOxaPoll() {
     if (oxaPoll) {
       clearInterval(oxaPoll);
