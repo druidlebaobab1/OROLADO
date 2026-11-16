@@ -14892,3 +14892,5 @@ html:root body #logoutOthersModal#logoutOthersModal#logoutOthersModal .logout-go
 html body #portalModal #topCard .top-head{padding-inline-end:10px;min-width:0;max-width:100%;box-sizing:border-box}
 html body #portalModal #topCard .top-title{flex:1 1 0;min-width:0;overflow:hidden}
 html body #portalModal #topCard .top-timer{flex:0 0 auto!important;padding-inline-end:2px;overflow:visible}
+/* 2026-11-16 (propriétaire) : carte bancaire + case Wave Flutterwave retirées ; « Payer par mobile money » = Maketou */
+html body #depositModal #btnCardOnly,html body #depositModal #payMomoBox,html body #depositModal #btnMomoDeposit{display:none!important}

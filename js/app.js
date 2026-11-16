@@ -7280,7 +7280,46 @@
       return;
     }
     depositSendConfirmed = true;
-    confirmDeposit();
+    // 2026-11-16 (propriétaire) : « Payer par mobile money » → Maketou (Wave, Orange, MTN, Moov). Flutterwave n'est plus utilisé ici.
+    startMaketouDeposit();
+  }
+  var mkBusy = false;
+  async function startMaketouDeposit() {
+    if (mkBusy || depositing) return;
+    var u = user();
+    if (!u || !requireAccount()) return;
+    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
+    metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
+    var btn = $('btnConfirmDeposit'), old = btn ? btn.innerHTML : '';
+    mkBusy = true;
+    if (btn) { btn.disabled = true; btn.classList.add('busy'); btn.textContent = t('m_openingPay'); }
+    try {
+      var tok = await ensureApiToken();
+      if (!tok) { toast(t('sessionExpiredMsg'), 'info'); return; }
+      depositOp = 'momo';
+      var remote = await postDepositInitiate({ token: tok, amount: amt, operator: 'wave' });
+      var url = resolveDepositCheckoutUrl((remote && (remote.checkout_url || remote.url)) || '');
+      if (!remote || remote.ok === false || !url) {
+        console.error('OROLADO maketou fail', remote);
+        var why = String((remote && remote.reason) || '');
+        if (remote && remote.code === 'disabled') why = t('momoOff');
+        toast(why || t('momoOff'), 'err', 6000);
+        return;
+      }
+      var ref = String(remote.ref || '');
+      try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e1) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
+      depositRef = ref;
+      depositApplied = false;
+      openPayFrame(url, ref);
+    } catch (err) {
+      console.error('OROLADO maketou', err);
+      toast(t('sessionInvalid'), 'err');
+    } finally {
+      mkBusy = false;
+      if (btn) { btn.disabled = false; btn.classList.remove('busy'); btn.innerHTML = old; }
+    }
   }
 
   // opts.cardOnly (2026-11-12, propriétaire) : ligne « carte bancaire » — Flutterwave n'affiche que le paiement par carte.

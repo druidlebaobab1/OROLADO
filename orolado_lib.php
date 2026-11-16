@@ -4655,6 +4655,10 @@ function orolado_min_deposit(?array $me): float {
  * ou OROLADO_PAY_USDT_DIRECT=1. (Actifs : Flutterwave et OxaPay, qui ne passent pas par ici.)
  */
 function orolado_pay_enabled(string $method): bool {
+  // 2026-11-16 (propriétaire : « les frais Flutterwave ont trop augmenté, on fait revenir Maketou ») : Maketou est actif par
+  // défaut (OROLADO_PAY_MAKETOU=0 dans .env pour le couper). Sans clé MAKETOU_API_KEY, la création du panier échoue
+  // proprement (le joueur voit un message, aucun argent n'est pris).
+  if (strtolower($method) === 'maketou') return supabase_env('OROLADO_PAY_MAKETOU') !== '0';
   return supabase_env('OROLADO_PAY_' . strtoupper($method)) === '1';
 }
 
