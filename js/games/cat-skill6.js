@@ -906,7 +906,7 @@
     icon: '<image href="img/games/forestambush.webp?v=3742" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>' },
   { k: 'junglestrike', name: 'Jungle Strike', sec: 'skill', file: 'skill7', pal: ['#BEF264', '#365314'],
     nm: { en: 'Jungle Strike', fr: 'Jungle Strike', es: 'Jungle Strike', pt: 'Jungle Strike', ar: 'Jungle Strike', tr: 'Jungle Strike', vi: 'Jungle Strike', id: 'Jungle Strike', ru: 'Jungle Strike', de: 'Jungle Strike', hi: 'Jungle Strike', zh: 'Jungle Strike' },
-    icon: '<image href="img/games/junglestrike.webp?v=3742" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>' }
+    icon: '<image href="img/games/junglestrike.webp?v=3744" x="0" y="0" width="64" height="64" preserveAspectRatio="xMidYMid slice"/>' }
 ]);
   var V = ''; try { V = ((document.currentScript && document.currentScript.src) || '').split('?v=')[1] || ''; } catch (e) { V = ''; }
   var warmed = false, warmT = 0;

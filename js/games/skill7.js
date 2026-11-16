@@ -45,18 +45,18 @@
       zh: ['向后拉瞄准，松开开炮', '你的坦克被击中！', '空袭！', '从你的坦克向后拉动瞄准（像弹弓一样），松开即可开炮。每辆敌方坦克都有装填条：在装填条满之前摧毁它，否则它的炮弹会击中你。敌人来得越来越快、越来越近，风向也会变化。']
     },
     sniper: {
-      en: ['Drag the scope, release to shoot', 'You were spotted!', 'Artillery strike!', 'Drag to move the scope (it sways a little) and release to shoot at its centre. Hit each enemy soldier before he aims at you — his red ring closes. Never shoot a civilian in white. Enemies appear faster and further away.', 'Civilian hit!'],
-      fr: ['Glisse la lunette, lâche pour tirer', 'Tu as été repéré !', 'Tir d’artillerie !', 'Glisse pour déplacer la lunette (elle bouge un peu) et lâche pour tirer au centre. Touche chaque soldat ennemi avant qu’il te vise — son anneau rouge se referme. Ne tire jamais sur un civil en blanc. Les ennemis apparaissent plus vite et plus loin.', 'Civil touché !'],
-      es: ['Mueve la mira, suelta para disparar', '¡Te han descubierto!', '¡Ataque de artillería!', 'Desliza para mover la mira (se mueve un poco) y suelta para disparar al centro. Alcanza a cada soldado enemigo antes de que te apunte: su anillo rojo se cierra. Nunca dispares a un civil de blanco. Los enemigos aparecen más rápido y más lejos.', '¡Civil alcanzado!'],
-      pt: ['Mova a mira, solte para atirar', 'Você foi avistado!', 'Ataque de artilharia!', 'Deslize para mover a mira (ela balança um pouco) e solte para atirar no centro. Acerte cada soldado inimigo antes que ele mire em você — o anel vermelho dele se fecha. Nunca atire em um civil de branco. Os inimigos aparecem mais rápido e mais longe.', 'Civil atingido!'],
-      ar: ['حرّك المنظار ثم أفلت للرمي', 'لقد كُشفت!', 'قصف مدفعي!', 'اسحب لتحريك المنظار (يهتز قليلًا) ثم أفلت لإطلاق النار على مركزه. أصب كل جندي معادٍ قبل أن يصوّب نحوك — حلقته الحمراء تنغلق. لا تطلق النار أبدًا على مدني بالأبيض. يظهر الأعداء أسرع وأبعد.', 'أصبت مدنيًا!'],
-      tr: ['Dürbünü kaydır, bırakıp ateş et', 'Fark edildin!', 'Topçu atışı!', 'Dürbünü taşımak için kaydır (biraz sallanır) ve merkezine ateş etmek için bırak. Her düşman askerini sana nişan almadan vur — kırmızı halkası kapanır. Beyazlı bir sivile asla ateş etme. Düşmanlar daha hızlı ve uzakta belirir.', 'Sivil vuruldu!'],
-      vi: ['Kéo ống ngắm, thả ra để bắn', 'Bạn bị phát hiện!', 'Pháo kích!', 'Kéo để di chuyển ống ngắm (hơi rung) và thả ra để bắn vào tâm. Bắn trúng từng lính địch trước khi hắn ngắm bạn — vòng đỏ của hắn khép lại. Không bao giờ bắn dân thường mặc áo trắng. Địch xuất hiện nhanh hơn và xa hơn.', 'Trúng dân thường!'],
-      id: ['Geser teropong, lepas untuk menembak', 'Kamu ketahuan!', 'Serangan artileri!', 'Geser untuk menggerakkan teropong (sedikit bergoyang) lalu lepas untuk menembak ke tengahnya. Kenai setiap tentara musuh sebelum ia membidikmu — cincin merahnya menutup. Jangan pernah menembak warga sipil berbaju putih. Musuh muncul makin cepat dan jauh.', 'Warga sipil kena!'],
-      ru: ['Веди прицел, отпусти — выстрел', 'Тебя заметили!', 'Артобстрел!', 'Веди пальцем прицел (он слегка качается) и отпусти, чтобы выстрелить в центр. Порази каждого вражеского солдата, пока он не прицелился — его красное кольцо сужается. Никогда не стреляй в мирного в белом. Враги появляются быстрее и дальше.', 'Попал в мирного!'],
-      de: ['Zielfernrohr ziehen, loslassen', 'Du wurdest entdeckt!', 'Artillerieschlag!', 'Ziehe, um das Zielfernrohr zu bewegen (es wackelt etwas), und lass los, um in die Mitte zu schießen. Triff jeden feindlichen Soldaten, bevor er auf dich zielt — sein roter Ring schließt sich. Schieße nie auf einen Zivilisten in Weiß. Die Feinde erscheinen schneller und weiter weg.', 'Zivilist getroffen!'],
-      hi: ['स्कोप खींचें, छोड़ें तो गोली', 'आप देख लिए गए!', 'तोपखाने का हमला!', 'स्कोप हिलाने के लिए खींचें (थोड़ा डोलता है) और बीच में गोली चलाने के लिए छोड़ें। हर दुश्मन सैनिक को निशाना साधने से पहले मारें — उसका लाल घेरा बंद होता है। सफ़ेद कपड़ों वाले नागरिक पर कभी गोली न चलाएँ। दुश्मन तेज़ी से और दूर दिखते हैं।', 'नागरिक को लगी!'],
-      zh: ['拖动瞄准镜，松开射击', '你被发现了！', '炮火袭击！', '拖动移动瞄准镜（会轻微晃动），松开即向中心射击。在敌兵瞄准你之前击中他——他的红圈会逐渐收紧。绝不能射击穿白衣的平民。敌人出现得越来越快、越来越远。', '误伤平民！']
+      en: ['Tap an enemy to shoot', 'You were spotted!', 'Artillery strike!', 'Tap the screen: the scope jumps to your finger; slide to adjust and lift your finger to shoot. Hit each masked gunman before he aims at you — his red ring closes. Never shoot a civilian in a white shirt with his hands up. Enemies appear faster and faster.', 'Civilian hit!'],
+      fr: ['Touche un ennemi pour tirer', 'Tu as été repéré !', 'Tir d’artillerie !', 'Touche l’écran : la lunette va sous ton doigt ; glisse pour ajuster et lève le doigt pour tirer. Abats chaque tireur cagoulé avant qu’il te vise — son anneau rouge se referme. Ne tire jamais sur un civil en chemise blanche, les mains levées. Les ennemis apparaissent de plus en plus vite.', 'Civil touché !'],
+      es: ['Toca a un enemigo para disparar', '¡Te han descubierto!', '¡Ataque de artillería!', 'Toca la pantalla: la mira va a tu dedo; desliza para ajustar y levanta el dedo para disparar. Abate a cada tirador encapuchado antes de que te apunte: su anillo rojo se cierra. Nunca dispares a un civil de camisa blanca con las manos en alto. Los enemigos aparecen cada vez más rápido.', '¡Civil alcanzado!'],
+      pt: ['Toque num inimigo para atirar', 'Você foi avistado!', 'Ataque de artilharia!', 'Toque na tela: a mira vai até o seu dedo; deslize para ajustar e levante o dedo para atirar. Abata cada atirador encapuzado antes que ele mire em você — o anel vermelho se fecha. Nunca atire num civil de camisa branca com as mãos para cima. Os inimigos aparecem cada vez mais rápido.', 'Civil atingido!'],
+      ar: ['المس عدوًا لإطلاق النار', 'لقد كُشفت!', 'قصف مدفعي!', 'المس الشاشة: ينتقل المنظار إلى إصبعك؛ اسحب للضبط وارفع إصبعك لإطلاق النار. أصب كل مسلح ملثم قبل أن يصوّب نحوك — حلقته الحمراء تنغلق. لا تطلق النار أبدًا على مدني بقميص أبيض يرفع يديه. يظهر الأعداء بسرعة متزايدة.', 'أصبت مدنيًا!'],
+      tr: ['Ateş etmek için bir düşmana dokun', 'Fark edildin!', 'Topçu atışı!', 'Ekrana dokun: dürbün parmağına gider; ayarlamak için kaydır, ateş etmek için parmağını kaldır. Her maskeli silahlıyı sana nişan almadan vur — kırmızı halkası kapanır. Elleri havada beyaz gömlekli sivile asla ateş etme. Düşmanlar giderek daha hızlı çıkar.', 'Sivil vuruldu!'],
+      vi: ['Chạm vào kẻ địch để bắn', 'Bạn bị phát hiện!', 'Pháo kích!', 'Chạm màn hình: ống ngắm đến dưới ngón tay; trượt để chỉnh và nhấc ngón tay để bắn. Hạ từng tay súng đeo mặt nạ trước khi hắn ngắm bạn — vòng đỏ khép lại. Đừng bao giờ bắn dân thường áo trắng đang giơ tay. Kẻ địch xuất hiện ngày càng nhanh.', 'Trúng dân thường!'],
+      id: ['Ketuk musuh untuk menembak', 'Kamu ketahuan!', 'Serangan artileri!', 'Ketuk layar: teropong pindah ke jarimu; geser untuk menyesuaikan dan angkat jari untuk menembak. Lumpuhkan setiap penembak bertopeng sebelum ia membidikmu — cincin merahnya menutup. Jangan pernah menembak warga sipil berkemeja putih yang mengangkat tangan. Musuh muncul makin cepat.', 'Warga sipil kena!'],
+      ru: ['Нажми на врага, чтобы выстрелить', 'Тебя заметили!', 'Артобстрел!', 'Нажми на экран: прицел переходит под палец; веди, чтобы поправить, и отпусти палец для выстрела. Сними каждого стрелка в маске, пока он не прицелился в тебя — его красное кольцо сжимается. Никогда не стреляй в мирного в белой рубашке с поднятыми руками. Враги появляются всё быстрее.', 'Попал в мирного!'],
+      de: ['Tippe auf einen Feind, um zu schießen', 'Du wurdest entdeckt!', 'Artillerieschlag!', 'Tippe auf den Bildschirm: das Zielfernrohr springt unter deinen Finger; ziehe zum Nachjustieren und heb den Finger zum Schießen. Triff jeden maskierten Schützen, bevor er auf dich zielt — sein roter Ring schließt sich. Schieß nie auf einen Zivilisten im weißen Hemd mit erhobenen Händen. Die Feinde kommen immer schneller.', 'Zivilist getroffen!'],
+      hi: ['गोली चलाने के लिए दुश्मन को टैप करें', 'आप देख लिए गए!', 'तोपखाने का हमला!', 'स्क्रीन टैप करें: स्कोप आपकी उँगली के नीचे आ जाता है; ठीक करने के लिए खिसकाएँ और गोली चलाने के लिए उँगली उठाएँ। हर नकाबपोश बंदूकधारी को उसके निशाना लगाने से पहले गिराएँ — उसका लाल घेरा बंद होता है। हाथ उठाए सफ़ेद कमीज़ वाले नागरिक पर कभी गोली न चलाएँ। दुश्मन तेज़ी से आते जाते हैं।', 'नागरिक को लगी!'],
+      zh: ['点击敌人即可射击', '你被发现了！', '炮火袭击！', '点击屏幕：瞄准镜会移到你的手指下；滑动微调，抬起手指射击。在每个蒙面枪手瞄准你之前击倒他——他的红圈会收紧。绝不要射击穿白衬衫、举起双手的平民。敌人出现得越来越快。', '误伤平民！']
     },
     gunship: {
       en: ['Drag up or down to fly', 'Shot down!', 'Missile swarm!', 'Drag up or down: the helicopter follows your finger and fires by itself. Shoot the enemy helicopters and ground guns, dodge their bullets, rockets and the mountains. A single hit brings you down.'],
@@ -936,8 +936,10 @@
         // scope position follows a relative drag: keep the stored centre in sync with the clamped one
         sc.x = cx; sc.y = cy;
       },
-      down: function (x, y) { if (dead) return; drag = { x: x, y: y }; },
-      move: function (x, y) { if (!drag) return; sc.x += (x - drag.x) * 1.15; sc.y += (y - drag.y) * 1.15; drag.x = x; drag.y = y; },
+      // 2026-11-16 (propriétaire : « les joueurs touchent le personnage et ça tire à côté ») : la lunette va LÀ OÙ ON TOUCHE,
+      // suit le doigt, et le coup part quand on lève le doigt → toucher un ennemi = le viser et lui tirer dessus.
+      down: function (x, y) { if (dead) return; drag = { x: x, y: y }; sc.x = x; sc.y = y; },
+      move: function (x, y) { if (!drag) return; sc.x = x; sc.y = y; drag.x = x; drag.y = y; },
       up: function () { if (!drag) return; drag = null; shoot(); },
       key: function (k) { var s = Rs * 0.25; if (k === 'left') sc.x -= s; else if (k === 'right') sc.x += s; else if (k === 'up') sc.y -= s; else if (k === 'down') { shoot(); } },
       boom: function () { strike = { t: 0, k: 0, n: 0 }; drag = null; },
@@ -1418,7 +1420,7 @@
   /* 2026-11-16 (propriétaire : « ajoute 2 jeux de guerre, les gens sont dans la forêt ») — le moteur de Trench Defense sert à
      plusieurs fronts : chacun a son décor (wb_<clé>.webp), son soldat illustré et sa ligne d'horizon. */
   function warFront(P) { return function (A) {
-    var W, H, T, dpr, bg, hy, gy, bh, fr = [], foes = [], gren = [], puffs = [], cool = 0, aimA = 0, flash = 0, dead = 0, won = 0, bomb = null, t = 0, spT = 0, aiT = 0, kills = 0, NF = 8;
+    var W, H, T, dpr, bg, hy, gy, bh, fr = [], foes = [], gren = [], puffs = [], cool = 0, aimA = -Math.PI / 2, flash = 0, dead = 0, won = 0, bomb = null, t = 0, spT = 0, aiT = 0, kills = 0, NF = 8;
     function scr(f) { var k = 1 - f.z, sc = 0.3 + 0.7 * k * k; return { x: W / 2 + f.x * W * 0.46 * (0.35 + 0.65 * k), y: hy + (gy - hy) * (0.05 + 0.95 * k * k), s: sc }; }
     function spawn(live) { var lv = live ? A.lv() : 0.2; foes.push({ x: rnd(-0.9, 0.9), z: 1, vz: (0.075 + 0.075 * lv) * rnd(0.85, 1.2), dx: rnd(-0.12, 0.12), ph: Math.random(), dn: 0, gT: lv > 0.15 && Math.random() < 0.35 + 0.3 * lv ? rnd(0.25, 0.6) : 9 }); }
     function shootAt(x, y) {
@@ -1459,7 +1461,7 @@
           for (var row = 0; row < 2; row++) for (var x2 = -20 + row * 18; x2 < W + 20; x2 += 36) { var by = H - (H - gy) * (row ? 0.95 : 0.5); c.fillStyle = lg(c, 0, by - 12, 0, by + 12, ['#C2B280', '#8B7D5A', '#5C5340']); rr(c, x2, by - 12, 38, 24, 11); c.fill(); c.strokeStyle = 'rgba(0,0,0,.25)'; c.stroke(); }
         });
       },
-      reset: function () { foes = []; gren = []; puffs = []; cool = 0; dead = 0; won = 0; bomb = null; spT = 0.5; kills = 0; },
+      reset: function () { aimA = -Math.PI / 2; foes = []; gren = []; puffs = []; cool = 0; dead = 0; won = 0; bomb = null; spT = 0.5; kills = 0; },
       step: function (dt, live) {
         t += dt; cool = Math.max(0, cool - dt); flash = Math.max(0, flash - dt); var i, f;
         for (i = puffs.length - 1; i >= 0; i--) { puffs[i].t += dt; if (puffs[i].t > 0.5) puffs.splice(i, 1); }
