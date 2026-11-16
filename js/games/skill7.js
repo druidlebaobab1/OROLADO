@@ -100,6 +100,62 @@
       hi: ['गोली के लिए सैनिकों पर टैप', 'खाई पर कब्ज़ा हो गया!', 'ऊपर बमवर्षक!', 'दुश्मन सैनिक आपकी खाई पर धावा बोलते हैं: हर एक पर टैप करके गोली चलाएँ (हर गोली के बाद थोड़ा रीलोड)। हवा में ग्रेनेड भी मार गिराएँ। समय के साथ ज़्यादा और तेज़ आते हैं। कोई खाई तक पहुँचा तो राउंड खत्म।', 'ग्रेनेड!'],
       zh: ['点击士兵射击', '战壕失守！', '轰炸机来袭！', '敌军士兵冲向你的战壕：点击每个士兵射击（每枪后短暂装弹）。也要击落空中的手榴弹。随着时间推移，敌人越来越多、越来越快。有人冲到战壕，本回合结束。', '手榴弹！']
     },
+    deadhighway: {
+      en: ['Tap the zombies to shoot', 'Overrun!', 'The horde!', 'Tap a zombie to shoot it — the big ones take several shots. If a zombie reaches your barricade, the round ends.'],
+      fr: ['Touche les zombies pour tirer', 'Submergé !', 'La horde !', 'Touche un zombie pour lui tirer dessus — les gros demandent plusieurs tirs. Si un zombie atteint ta barricade, la partie se termine.'],
+      es: ['Toca a los zombis para disparar', '¡Invadido!', '¡La horda!', 'Toca un zombi para dispararle: los grandes necesitan varios disparos. Si un zombi llega a tu barricada, la ronda termina.'],
+      pt: ['Toque nos zumbis para atirar', 'Invadido!', 'A horda!', 'Toque num zumbi para atirar nele — os grandes precisam de vários tiros. Se um zumbi chegar à sua barricada, a rodada termina.'],
+      ar: ['المس الزومبي لإطلاق النار', 'اجتياح!', 'الحشد!', 'المس زومبي لإطلاق النار عليه — الكبار يحتاجون عدة طلقات. إذا وصل زومبي إلى حاجزك تنتهي الجولة.'],
+      tr: ['Ateş için zombilere dokun', 'İstila edildin!', 'Sürü geliyor!', 'Ateş etmek için bir zombiye dokun — büyükler birkaç atış ister. Bir zombi barikatına ulaşırsa tur biter.'],
+      vi: ['Chạm vào zombie để bắn', 'Bị tràn vào!', 'Bầy zombie!', 'Chạm vào zombie để bắn — con lớn cần nhiều phát. Nếu một zombie chạm tới chiến lũy của bạn, ván kết thúc.'],
+      id: ['Ketuk zombi untuk menembak', 'Kewalahan!', 'Gerombolan!', 'Ketuk zombi untuk menembaknya — yang besar butuh beberapa tembakan. Jika zombi mencapai barikademu, ronde berakhir.'],
+      ru: ['Нажимай на зомби, чтобы стрелять', 'Прорыв!', 'Орда!', 'Нажми на зомби, чтобы выстрелить — крупным нужно несколько попаданий. Если зомби дойдёт до баррикады, раунд завершится.'],
+      de: ['Tippe auf Zombies zum Schießen', 'Überrannt!', 'Die Horde!', 'Tippe auf einen Zombie, um zu schießen — große brauchen mehrere Treffer. Erreicht ein Zombie deine Barrikade, endet die Runde.'],
+      hi: ['गोली चलाने को ज़ॉम्बी पर टैप करें', 'घुस आए!', 'ज़ॉम्बी का झुंड!', 'ज़ॉम्बी पर गोली चलाने के लिए उस पर टैप करें — बड़ों को कई गोलियाँ चाहिए। कोई ज़ॉम्बी आपके मोर्चे तक पहुँचा तो राउंड खत्म।'],
+      zh: ['点击僵尸射击', '防线失守！', '尸潮来袭！', '点击僵尸开枪——大个子要打好几枪。只要有僵尸冲到你的路障，本回合结束。']
+    },
+    graveyardnight: {
+      en: ['Tap the zombies to shoot', 'Overrun!', 'The horde!', 'Tap a zombie to shoot it — the big ones take several shots. If a zombie reaches your barricade, the round ends.'],
+      fr: ['Touche les zombies pour tirer', 'Submergé !', 'La horde !', 'Touche un zombie pour lui tirer dessus — les gros demandent plusieurs tirs. Si un zombie atteint ta barricade, la partie se termine.'],
+      es: ['Toca a los zombis para disparar', '¡Invadido!', '¡La horda!', 'Toca un zombi para dispararle: los grandes necesitan varios disparos. Si un zombi llega a tu barricada, la ronda termina.'],
+      pt: ['Toque nos zumbis para atirar', 'Invadido!', 'A horda!', 'Toque num zumbi para atirar nele — os grandes precisam de vários tiros. Se um zumbi chegar à sua barricada, a rodada termina.'],
+      ar: ['المس الزومبي لإطلاق النار', 'اجتياح!', 'الحشد!', 'المس زومبي لإطلاق النار عليه — الكبار يحتاجون عدة طلقات. إذا وصل زومبي إلى حاجزك تنتهي الجولة.'],
+      tr: ['Ateş için zombilere dokun', 'İstila edildin!', 'Sürü geliyor!', 'Ateş etmek için bir zombiye dokun — büyükler birkaç atış ister. Bir zombi barikatına ulaşırsa tur biter.'],
+      vi: ['Chạm vào zombie để bắn', 'Bị tràn vào!', 'Bầy zombie!', 'Chạm vào zombie để bắn — con lớn cần nhiều phát. Nếu một zombie chạm tới chiến lũy của bạn, ván kết thúc.'],
+      id: ['Ketuk zombi untuk menembak', 'Kewalahan!', 'Gerombolan!', 'Ketuk zombi untuk menembaknya — yang besar butuh beberapa tembakan. Jika zombi mencapai barikademu, ronde berakhir.'],
+      ru: ['Нажимай на зомби, чтобы стрелять', 'Прорыв!', 'Орда!', 'Нажми на зомби, чтобы выстрелить — крупным нужно несколько попаданий. Если зомби дойдёт до баррикады, раунд завершится.'],
+      de: ['Tippe auf Zombies zum Schießen', 'Überrannt!', 'Die Horde!', 'Tippe auf einen Zombie, um zu schießen — große brauchen mehrere Treffer. Erreicht ein Zombie deine Barrikade, endet die Runde.'],
+      hi: ['गोली चलाने को ज़ॉम्बी पर टैप करें', 'घुस आए!', 'ज़ॉम्बी का झुंड!', 'ज़ॉम्बी पर गोली चलाने के लिए उस पर टैप करें — बड़ों को कई गोलियाँ चाहिए। कोई ज़ॉम्बी आपके मोर्चे तक पहुँचा तो राउंड खत्म।'],
+      zh: ['点击僵尸射击', '防线失守！', '尸潮来袭！', '点击僵尸开枪——大个子要打好几枪。只要有僵尸冲到你的路障，本回合结束。']
+    },
+    forestambush: {
+      en: ['Tap the soldiers to shoot', 'The trench is overrun!', 'Bombers overhead!', 'Enemy soldiers charge your trench: tap each one to shoot him (a short reload after each shot). Shoot the grenades in the air too. More and faster soldiers come with time. If one reaches the trench, the round ends.', 'Grenade!'],
+      fr: ['Touche les soldats pour tirer', 'La tranchée est prise !', 'Bombardiers en vue !', 'Des soldats ennemis chargent ta tranchée : touche chacun pour tirer (petit rechargement après chaque tir). Abats aussi les grenades en l’air. Ils arrivent plus nombreux et plus vite avec le temps. Si l’un atteint la tranchée, la partie est finie.', 'Grenade !'],
+      es: ['Toca a los soldados para disparar', '¡La trinchera cayó!', '¡Bombarderos encima!', 'Soldados enemigos cargan contra tu trinchera: toca a cada uno para disparar (breve recarga tras cada tiro). Derriba también las granadas en el aire. Llegan más y más rápido con el tiempo. Si uno alcanza la trinchera, la ronda termina.', '¡Granada!'],
+      pt: ['Toque nos soldados para atirar', 'A trincheira caiu!', 'Bombardeiros acima!', 'Soldados inimigos atacam sua trincheira: toque em cada um para atirar (breve recarga após cada tiro). Acerte também as granadas no ar. Chegam mais e mais rápido com o tempo. Se um alcançar a trincheira, a rodada termina.', 'Granada!'],
+      ar: ['المس الجنود لإطلاق النار', 'سقط الخندق!', 'قاذفات فوقنا!', 'يهاجم جنود العدو خندقك: المس كل جندي لإطلاق النار عليه (تلقيم قصير بعد كل طلقة). أسقط القنابل في الهواء أيضًا. يأتي المزيد وبسرعة أكبر مع الوقت. إذا وصل أحدهم إلى الخندق تنتهي الجولة.', 'قنبلة!'],
+      tr: ['Ateş için askerlere dokun', 'Siper düştü!', 'Bombardıman uçakları!', 'Düşman askerleri siperine hücum ediyor: her birine ateş etmek için dokun (her atıştan sonra kısa dolum). Havadaki el bombalarını da vur. Zamanla daha çok ve daha hızlı gelirler. Biri sipere ulaşırsa tur biter.', 'El bombası!'],
+      vi: ['Chạm vào lính để bắn', 'Chiến hào thất thủ!', 'Máy bay ném bom!', 'Lính địch xông vào chiến hào: chạm từng tên để bắn (nạp đạn ngắn sau mỗi phát). Bắn cả lựu đạn trên không. Địch đến đông hơn và nhanh hơn theo thời gian. Một tên chạm chiến hào là kết thúc ván.', 'Lựu đạn!'],
+      id: ['Ketuk tentara untuk menembak', 'Parit jatuh!', 'Pengebom datang!', 'Tentara musuh menyerbu paritmu: ketuk setiap tentara untuk menembak (isi ulang singkat setiap tembakan). Tembak juga granat di udara. Makin lama makin banyak dan cepat. Jika satu mencapai parit, ronde berakhir.', 'Granat!'],
+      ru: ['Тап по солдатам — выстрел', 'Окоп захвачен!', 'Бомбардировщики!', 'Вражеские солдаты атакуют твой окоп: нажимай на каждого, чтобы выстрелить (короткая перезарядка после выстрела). Сбивай и гранаты в воздухе. Со временем их всё больше и они быстрее. Если кто-то добежит до окопа, раунд окончен.', 'Граната!'],
+      de: ['Tippe auf die Soldaten', 'Der Graben ist überrannt!', 'Bomber im Anflug!', 'Feindliche Soldaten stürmen deinen Graben: tippe jeden an, um zu schießen (kurzes Nachladen nach jedem Schuss). Schieß auch die Granaten in der Luft ab. Mit der Zeit kommen mehr und schnellere. Erreicht einer den Graben, endet die Runde.', 'Granate!'],
+      hi: ['गोली के लिए सैनिकों पर टैप', 'खाई पर कब्ज़ा हो गया!', 'ऊपर बमवर्षक!', 'दुश्मन सैनिक आपकी खाई पर धावा बोलते हैं: हर एक पर टैप करके गोली चलाएँ (हर गोली के बाद थोड़ा रीलोड)। हवा में ग्रेनेड भी मार गिराएँ। समय के साथ ज़्यादा और तेज़ आते हैं। कोई खाई तक पहुँचा तो राउंड खत्म।', 'ग्रेनेड!'],
+      zh: ['点击士兵射击', '战壕失守！', '轰炸机来袭！', '敌军士兵冲向你的战壕：点击每个士兵射击（每枪后短暂装弹）。也要击落空中的手榴弹。随着时间推移，敌人越来越多、越来越快。有人冲到战壕，本回合结束。', '手榴弹！']
+    },
+    junglestrike: {
+      en: ['Tap the soldiers to shoot', 'The trench is overrun!', 'Bombers overhead!', 'Enemy soldiers charge your trench: tap each one to shoot him (a short reload after each shot). Shoot the grenades in the air too. More and faster soldiers come with time. If one reaches the trench, the round ends.', 'Grenade!'],
+      fr: ['Touche les soldats pour tirer', 'La tranchée est prise !', 'Bombardiers en vue !', 'Des soldats ennemis chargent ta tranchée : touche chacun pour tirer (petit rechargement après chaque tir). Abats aussi les grenades en l’air. Ils arrivent plus nombreux et plus vite avec le temps. Si l’un atteint la tranchée, la partie est finie.', 'Grenade !'],
+      es: ['Toca a los soldados para disparar', '¡La trinchera cayó!', '¡Bombarderos encima!', 'Soldados enemigos cargan contra tu trinchera: toca a cada uno para disparar (breve recarga tras cada tiro). Derriba también las granadas en el aire. Llegan más y más rápido con el tiempo. Si uno alcanza la trinchera, la ronda termina.', '¡Granada!'],
+      pt: ['Toque nos soldados para atirar', 'A trincheira caiu!', 'Bombardeiros acima!', 'Soldados inimigos atacam sua trincheira: toque em cada um para atirar (breve recarga após cada tiro). Acerte também as granadas no ar. Chegam mais e mais rápido com o tempo. Se um alcançar a trincheira, a rodada termina.', 'Granada!'],
+      ar: ['المس الجنود لإطلاق النار', 'سقط الخندق!', 'قاذفات فوقنا!', 'يهاجم جنود العدو خندقك: المس كل جندي لإطلاق النار عليه (تلقيم قصير بعد كل طلقة). أسقط القنابل في الهواء أيضًا. يأتي المزيد وبسرعة أكبر مع الوقت. إذا وصل أحدهم إلى الخندق تنتهي الجولة.', 'قنبلة!'],
+      tr: ['Ateş için askerlere dokun', 'Siper düştü!', 'Bombardıman uçakları!', 'Düşman askerleri siperine hücum ediyor: her birine ateş etmek için dokun (her atıştan sonra kısa dolum). Havadaki el bombalarını da vur. Zamanla daha çok ve daha hızlı gelirler. Biri sipere ulaşırsa tur biter.', 'El bombası!'],
+      vi: ['Chạm vào lính để bắn', 'Chiến hào thất thủ!', 'Máy bay ném bom!', 'Lính địch xông vào chiến hào: chạm từng tên để bắn (nạp đạn ngắn sau mỗi phát). Bắn cả lựu đạn trên không. Địch đến đông hơn và nhanh hơn theo thời gian. Một tên chạm chiến hào là kết thúc ván.', 'Lựu đạn!'],
+      id: ['Ketuk tentara untuk menembak', 'Parit jatuh!', 'Pengebom datang!', 'Tentara musuh menyerbu paritmu: ketuk setiap tentara untuk menembak (isi ulang singkat setiap tembakan). Tembak juga granat di udara. Makin lama makin banyak dan cepat. Jika satu mencapai parit, ronde berakhir.', 'Granat!'],
+      ru: ['Тап по солдатам — выстрел', 'Окоп захвачен!', 'Бомбардировщики!', 'Вражеские солдаты атакуют твой окоп: нажимай на каждого, чтобы выстрелить (короткая перезарядка после выстрела). Сбивай и гранаты в воздухе. Со временем их всё больше и они быстрее. Если кто-то добежит до окопа, раунд окончен.', 'Граната!'],
+      de: ['Tippe auf die Soldaten', 'Der Graben ist überrannt!', 'Bomber im Anflug!', 'Feindliche Soldaten stürmen deinen Graben: tippe jeden an, um zu schießen (kurzes Nachladen nach jedem Schuss). Schieß auch die Granaten in der Luft ab. Mit der Zeit kommen mehr und schnellere. Erreicht einer den Graben, endet die Runde.', 'Granate!'],
+      hi: ['गोली के लिए सैनिकों पर टैप', 'खाई पर कब्ज़ा हो गया!', 'ऊपर बमवर्षक!', 'दुश्मन सैनिक आपकी खाई पर धावा बोलते हैं: हर एक पर टैप करके गोली चलाएँ (हर गोली के बाद थोड़ा रीलोड)। हवा में ग्रेनेड भी मार गिराएँ। समय के साथ ज़्यादा और तेज़ आते हैं। कोई खाई तक पहुँचा तो राउंड खत्म।', 'ग्रेनेड!'],
+      zh: ['点击士兵射击', '战壕失守！', '轰炸机来袭！', '敌军士兵冲向你的战壕：点击每个士兵射击（每枪后短暂装弹）。也要击落空中的手榴弹。随着时间推移，敌人越来越多、越来越快。有人冲到战壕，本回合结束。', '手榴弹！']
+    },
     commando: {
       en: ['Swipe up to jump · down to slide · tap to shoot', 'Hit!', 'Airstrike!', 'Your commando runs by himself. Swipe up to jump over wire and mines, swipe down to slide under barriers, tap to shoot the soldiers ahead before they fire. The run gets faster and faster. One hit ends the round.'],
       fr: ['Haut : saut · bas : glissade · touche : tir', 'Touché !', 'Frappe aérienne !', 'Ton commando court tout seul. Glisse vers le haut pour sauter les barbelés et les mines, vers le bas pour glisser sous les barrières, touche pour abattre les soldats devant avant qu’ils tirent. La course accélère sans cesse. Un seul coup termine la partie.'],
@@ -570,7 +626,7 @@
      aim (the guide shows only the start of the arc), release to fire. Each enemy tank fills a reload bar: destroy it first. */
   // v3599 (propriétaire : « finis tous les jeux qu'on contrôle ») : vrai décor illustré sous le jeu (fond d'origine en secours)
   var WBF = {};
-  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=' + (k === 'trenchdef' ? '3741' : '3599'); }
+  function wbFill(c, k, dark) { var o = WBF[k]; if (!o) { o = WBF[k] = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = 'img/games/wb_' + k + '.webp?v=' + (k === 'trenchdef' ? '3741' : (k === 'forestambush' || k === 'junglestrike') ? '3742' : '3599'); }
     if (!o.ok) return; var cv = c.canvas, im = o.im, s = Math.max(cv.width / im.naturalWidth, cv.height / im.naturalHeight), iw = im.naturalWidth * s, ih = im.naturalHeight * s;
     c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(im, (cv.width - iw) / 2, (cv.height - ih) / 2, iw, ih); if (dark) { c.fillStyle = dark; c.fillRect(0, 0, cv.width, cv.height); } c.restore(); }
   boot('tankbattle', function (A) {
@@ -1363,7 +1419,9 @@
   /* ================================================================== 13. TRENCH DEFENSE — first-person from the trench: enemy
      soldiers charge across the battlefield (front-view run cycle, perspective). Tap one to shoot him; shoot grenades in
      the air too. One soldier reaching the trench, or a grenade landing in it, ends the round. */
-  boot('trenchdef', function (A) {
+  /* 2026-11-16 (propriétaire : « ajoute 2 jeux de guerre, les gens sont dans la forêt ») — le moteur de Trench Defense sert à
+     plusieurs fronts : chacun a son décor (wb_<clé>.webp), son soldat illustré et sa ligne d'horizon. */
+  function warFront(P) { return function (A) {
     var W, H, T, dpr, bg, hy, gy, bh, fr = [], foes = [], gren = [], puffs = [], cool = 0, aimA = 0, flash = 0, dead = 0, won = 0, bomb = null, t = 0, spT = 0, aiT = 0, kills = 0, NF = 8;
     function scr(f) { var k = 1 - f.z, sc = 0.3 + 0.7 * k * k; return { x: W / 2 + f.x * W * 0.46 * (0.35 + 0.65 * k), y: hy + (gy - hy) * (0.05 + 0.95 * k * k), s: sc }; }
     function spawn(live) { var lv = live ? A.lv() : 0.2; foes.push({ x: rnd(-0.9, 0.9), z: 1, vz: (0.075 + 0.075 * lv) * rnd(0.85, 1.2), dx: rnd(-0.12, 0.12), ph: Math.random(), dn: 0, gT: lv > 0.15 && Math.random() < 0.35 + 0.3 * lv ? rnd(0.25, 0.6) : 9 }); }
@@ -1379,9 +1437,9 @@
     function gpos(g) { var k = Math.min(1, g.t / g.T), x = g.x0 + (g.x1 - g.x0) * k, y = g.y0 + (g.y1 - g.y0) * k - Math.sin(k * Math.PI) * (H - T) * 0.35; return { x: x, y: y, k: k }; }
     return {
       size: function (w, h, uu, d, top) {
-        W = w; H = h; dpr = d; T = top; hy = Math.max(T + (H - T) * 0.12, H * 0.37); gy = H - (H - T) * 0.14; bh = clamp((H - T) * 0.42, 90, 260); // 2026-11-16 (propriétaire) : nouveau champ de bataille ouvert, horizon de la photo ≈ 35 %
+        W = w; H = h; dpr = d; T = top; hy = Math.max(T + (H - T) * 0.12, H * P.hy); gy = H - (H - T) * 0.14; bh = clamp((H - T) * 0.42, 90, 260); // 2026-11-16 (propriétaire) : nouveau champ de bataille ouvert, horizon de la photo ≈ 35 %
         // v2860 people: D6.Rig (js/art-rig.js, real proportions) + helmet + rifle held across the chest; own rig as a fallback
-        var tdS = warImg('td_soldier', function () { fr = rigFrames(bh, NF, tdDraw); });
+        var tdS = warImg(P.sold, function () { fr = rigFrames(bh, NF, tdDraw); });
         var tdDraw = function (c, ph) {
           if (tdS.ok) { // vrai soldat illustré : il court vers nous (pas de course = petit balancement, pas alterné = image retournée)
             var im = tdS.im, hh = bh * 1.02, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(ph * TAU), bob = Math.abs(st) * bh * 0.025;
@@ -1425,7 +1483,7 @@
         if (A.idle()) { aiT += dt; if (aiT > 0.55) { aiT = 0; var tg = gren[0]; if (tg) { var gp = gpos(tg); shootAt(gp.x, gp.y); } else { var near = foes.filter(function (q) { return !q.dn; }).sort(function (a, b) { return a.z - b.z; })[0]; if (near && near.z < 0.8) { var p2 = scr(near); shootAt(p2.x, p2.y - bh * p2.s * 0.55); } } } }
       },
       draw: function (c) {
-        A.bg(bg); wbFill(c, 'trenchdef', 'rgba(0,0,0,.16)');
+        A.bg(bg); wbFill(c, P.wb, 'rgba(0,0,0,.16)');
         var list = foes.slice().sort(function (a, b) { return b.z - a.z; }), i;
         for (i = 0; i < list.length; i++) {
           var f = list[i], p = scr(f), hh = bh * p.s, img = fr[Math.floor(f.ph * NF) % NF];
@@ -1449,7 +1507,10 @@
       win: function () { won = 0.001; A.burst(W / 2, H * 0.8, 16, ['#FDE68A', '#FFFFFF'], 150, 0.6, 3); },
       dbg: function () { return { foes: foes.map(function (f) { var p = scr(f); return { x: p.x, y: p.y, h: bh * p.s, z: f.z, dn: f.dn }; }), gren: gren.map(function (g) { var p = gpos(g); return { x: p.x, y: p.y, t: g.t, T: g.T }; }), cool: cool, dead: dead, kills: kills }; }
     };
-  }, 'aim', 0.5);
+  }; }
+  boot('trenchdef', warFront({ wb: 'trenchdef', sold: 'td_soldier', hy: 0.37 }), 'aim', 0.5);
+  boot('forestambush', warFront({ wb: 'forestambush', sold: 'fa_sold', hy: 0.55 }), 'aim', 0.5);
+  boot('junglestrike', warFront({ wb: 'junglestrike', sold: 'js_sold', hy: 0.6 }), 'aim', 0.5);
 
   /* ================================================================== 14. COMMANDO RUN — side-scrolling run (12-frame run cycle,
      parallax, dust): swipe up to jump wire and mines, swipe down to slide under barriers and bullets, tap to shoot. */
@@ -1485,9 +1546,20 @@
     return {
       size: function (w, h, uu, d, top) {
         W = w; H = h; dpr = d; T = top; gy = H - (H - T) * 0.16; ch = clamp((H - T) * 0.3, 70, 190); px = W * 0.22; G2 = ch * 9;
-        runF = rigFrames(ch, NR, function (c, p) { soldierSide(c, ch, p, 'run'); });
-        jumpS = rigFrames(ch, 1, function (c) { soldierSide(c, ch, 0.2, 'jump'); })[0];
-        slideS = rigFrames(ch, 1, function (c) { soldierSide(c, ch, 0.2, 'slide'); })[0];
+        // 2026-11-16 (propriétaire : « améliore le commando lui-même ») : vrai commando illustré (fal.ai) — course (balancement +
+        // inclinaison), saut (penché en avant), glissade (accroupi) ; l'ancien dessin reste en secours tant que l'image n'est pas là.
+        var hero = function (mode) { return function (c, p) {
+          var hi = warImg('cmd_hero');
+          if (!hi.ok) { soldierSide(c, ch, mode === 'run' ? p : 0.2, mode); return; }
+          var im = hi.im, hh = ch * 1.04, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(p * TAU * 2);
+          c.save();
+          if (mode === 'run') { c.translate(0, -Math.abs(st) * ch * 0.04); c.rotate(st * 0.03); c.scale(1 + st * 0.02, 1 - Math.abs(st) * 0.02); }
+          else if (mode === 'jump') c.rotate(-0.12);
+          else { c.scale(1.12, 0.62); }
+          c.drawImage(im, -ww / 2, -hh, ww, hh); c.restore();
+        }; };
+        var build = function () { runF = rigFrames(ch, NR, hero('run')); jumpS = rigFrames(ch, 1, hero('jump'))[0]; slideS = rigFrames(ch, 1, hero('slide'))[0]; };
+        build(); warImg('cmd_hero', function () { build(); });
         enAim = rigFrames(ch, 1, function (c) { soldierSide(c, ch, 0, 'aim', UNE); })[0];
         bg = mkc(W, H, dpr, function (c) { c.fillStyle = lg(c, 0, 0, 0, H, ['#7C2D12', '#EA580C', '#FDBA74']); c.fillRect(0, 0, W, H); circ(c, W * 0.75, T + (H - T) * 0.3, (H - T) * 0.1, 'rgba(255,247,237,.85)'); });
         far = mkc(W * 2, H, dpr, function (c) {
@@ -1735,4 +1807,166 @@
       dbg: function () { return { mis: mis.map(function (m) { return [m.x | 0, m.y | 0, m.vx | 0, m.vy | 0]; }), ints: ints.length, cities: cities.map(function (c) { return c.on; }), R: R, dead: dead, kills: kills }; }
     };
   }, 'aim', 0.5);
+
+  /* 2026-11-16 (propriétaire : « crée 2 jeux de zombies de plus, dans différents endroits ») — même moteur que Zombie Siege
+     (js/games/skill4.js) : décor vu au niveau du sol (<pré>_bg.webp, point de fuite VX/VY), 3 zombies illustrés (marche / coureur /
+     brute : 3 images par planche), même barricade et même mitrailleuse. Gains : loi du serveur (rate 0,03), comme tous ces jeux. */
+  var gImgCache4 = {};
+  function gImg4(src) { if (gImgCache4[src]) return gImgCache4[src]; var o = { im: new Image(), ok: false }; o.im.onload = function () { o.ok = true; }; o.im.src = src; gImgCache4[src] = o; return o; }
+  function zombieWorld(P) { return function (A) {
+    /* v3548 (propriétaire : « les zombies quittent depuis le ciel, ils sont moches ») — refait de zéro :
+       • décor fal.ai VU AU NIVEAU DE LA RUE (zomb2_bg.webp 896×1152, point de fuite (446, 742)) : on le cale pour que
+         l'horizon tombe à 40 % de la zone de jeu → les zombies naissent dans le brouillard AU MILIEU de l'écran, jamais en haut ;
+       • vraie perspective : taille = ZK × (y − horizon) (une personne debout sur la route), largeur de route idem ;
+         l'approche suit une loi géométrique (ils grandissent régulièrement puis foncent sur la barricade) et ils dérivent vers toi ;
+       • 3 zombies dessin animé fal.ai (employé, ado en sweat, brute de chantier) : 2 poses de marche + 1 pose de chute ;
+       • barricade de sacs de sable et mitrailleuse vue de derrière (fal.ai), qui pivote vers le tir, flamme + recul. */
+    var W, H, u, dpr, T, bg, zs = [], spT = 0, dead = 0, won = 0, t = 0, horde = false, ang = -Math.PI / 2, fx = [], cool = 0, autoT = 0, flashT = 0, splats = [];
+    var BW = 896, BH = 1152, VX = P.vx, VY = P.vy, hz, yTop, yB, ZK = 0.78, gunH, gunX, gunY, rot = 0;
+    var ZI = {}, ZA = P.za, ZM = { w: 1, r: 0.96, b: 1.13 }, BAR = null, GUN = null, ZF = {}, zh = 80, NF = 6;
+    function zy(p) { return hz + (yTop - hz) * Math.pow((yB - hz) / (yTop - hz), Math.pow(p, 0.8)); }
+    function kk(y) { return clamp((y - yTop) / (yB - yTop), 0, 1); }
+    function sx(z) { return W / 2 + z.x * (z.y - hz) * 1.05; }
+    function dims(z) { var hh = ZK * (z.y - hz) * (ZM[z.k] || 1); return [hh * (ZA[z.k] || 0.66), hh]; }
+    function spawn(live) {
+      var lv = live ? A.lv() : 0, r = Math.random(), k = 'w';
+      if (lv > 0.3 && r < 0.12 + 0.12 * lv) k = 'b'; else if ((live ? lv > 0.12 : true) && r < 0.4) k = 'r';
+      if (!live && r > 0.85) k = 'b';
+      var D = (live ? 8 - 3.4 * lv : 8.5) * (k === 'r' ? 0.62 : k === 'b' ? 1.3 : 1);
+      var x = rnd(-0.8, 0.8), tries = 0;
+      while (tries++ < 6 && zs.some(function (z) { return z.p < 0.25 && Math.abs(z.x - x) < 0.3; })) x = rnd(-0.8, 0.8);
+      zs.push({ k: k, x: x, p: 0, y: yTop, v: 1 / D, hp: k === 'b' ? 3 : 1, max: k === 'b' ? 3 : 1, ph: rnd(0, 2), hit: 0, die: 0 });
+    }
+    function muzzle() { return [gunX + Math.sin(rot) * gunH * 0.93, gunY - Math.cos(rot) * gunH * 0.93]; }
+    function shoot(x, y) {
+      var best = null, i;
+      ang = Math.atan2(y - gunY, x - gunX); rot = clamp(ang + Math.PI / 2, -0.75, 0.75);
+      var m = muzzle(); fx.push({ x0: m[0], y0: m[1], x1: x, y1: y, t: 0.09 }); flashT = 0.07;
+      for (i = 0; i < zs.length; i++) {
+        var z = zs[i]; if (z.die || z.hord) continue;
+        var d = dims(z), zx = sx(z), pad = Math.max(10, d[0] * 0.15);
+        if (x > zx - d[0] * 0.5 - pad && x < zx + d[0] * 0.5 + pad && y > z.y - d[1] - pad && y < z.y + pad && (!best || z.y > best.y)) best = z;
+      }
+      if (!best) { A.burst(x, y, 4, ['#A8A29E', '#D6D3D1'], 70, 0.35, 2.2); return; }
+      var bx = sx(best), bd = dims(best);
+      best.hp--; best.hit = 0.14; best.p = Math.max(0, best.p - 0.025);
+      A.burst(bx, best.y - bd[1] * 0.62, 9, ['#7F1D1D', '#4D7C0F', '#B91C1C'], 130, 0.5, 3);
+      if (best.hp <= 0) { best.die = 0.001; A.burst(bx, best.y - bd[1] * 0.5, 14, ['#7F1D1D', '#991B1B', '#365314'], 170, 0.6, 3.4); splats.push({ x: bx, y: best.y, r: bd[0] * 0.45, t: 0 }); if (splats.length > 14) splats.shift(); }
+    }
+    function crash(z) {
+      if (dead) return;
+      if (!A.fail(A.l.fail)) return;
+      dead = 1; A.burst(sx(z), yB, 18, ['#A16207', '#FDE68A', '#78716C'], 200, 0.7, 3.4); A.shake(0.55); A.flash(0.3);
+    }
+    return {
+      size: function (w, h, uu, d, top) {
+        W = w; H = h; u = uu; dpr = d; T = top;
+        hz = T + (H - T) * 0.4; yB = H - (H - T) * 0.13;
+        ZK = Math.min(0.8, (H - T) * 0.42 / (yB - hz)); zh = ZK * (yB - hz);
+        yTop = hz + Math.max(8, 16 / ZK);
+        var s = Math.max(W / (2 * Math.min(VX, BW - VX)), hz / VY, (H - hz) / (BH - VY)), ox = W / 2 - VX * s, oy = hz - VY * s;
+        ['w', 'r', 'b'].forEach(function (k) { ZI[k] = gImg4('img/games/' + P.pre + '_' + k + '.webp?v=3742'); });
+        BAR = gImg4('img/games/zomb2_bar.webp?v=3548'); GUN = gImg4('img/games/zomb2_gun.webp?v=3548');
+        gunH = Math.min((H - T) * 0.4, W * 0.62); gunX = W / 2; gunY = H + gunH * 0.12;
+        function paintBg(c) {
+          var o = gImg4('img/games/' + P.pre + '_bg.webp?v=3742');
+          if (o.ok) { c.drawImage(o.im, ox, oy, BW * s, BH * s); c.fillStyle = 'rgba(6,10,14,.12)'; c.fillRect(0, 0, W, H); }
+          else { c.fillStyle = lg(c, 0, 0, 0, H, ['#0B2A2A', '#164040', '#1A1D22', '#0E0F12']); c.fillRect(0, 0, W, H); }
+        }
+        bg = mkc(W, H, dpr, paintBg);
+        var ob = gImg4('img/games/' + P.pre + '_bg.webp?v=3742');
+        if (!ob.ok) ob.im.addEventListener('load', function () { if (W === w && H === h) bg = mkc(W, H, dpr, paintBg); });
+        NF = A.lite ? 4 : 6; var zw = zh * 0.62;
+        ['w', 'r', 'b'].forEach(function (k) { ZF[k] = []; });
+      },
+      reset: function (live) { zs = []; splats = []; dead = 0; won = 0; horde = false; fx = []; spT = live ? 0.8 : 0.2; ang = -Math.PI / 2; rot = 0; autoT = 0.8; },
+      step: function (dt, live) {
+        t += dt; cool -= dt; flashT = Math.max(0, flashT - dt);
+        var lv = live ? A.lv() : 0, playing = A.live(), i;
+        if (!dead && !horde && !won) {
+          spT -= dt;
+          var alive = zs.filter(function (z) { return !z.die; }).length;
+          if (spT <= 0 && alive < (live ? 3 + Math.floor(5 * lv) : 4)) { spawn(live); spT = live ? Math.max(0.5, rnd(1.35, 1.85) - 0.95 * lv) : 1.4; }
+        }
+        if (!live && !dead && !horde) { // démo : la mitrailleuse tire toute seule sur les zombies déjà proches
+          autoT -= dt;
+          if (autoT <= 0) { autoT = 0.55; var tg = zs.filter(function (z) { return !z.die && z.p > 0.62; }).sort(function (a, b) { return b.y - a.y; })[0]; if (tg) { var d0 = dims(tg); shoot(sx(tg), tg.y - d0[1] * 0.6); } }
+        }
+        for (i = zs.length - 1; i >= 0; i--) {
+          var z = zs[i]; z.hit = Math.max(0, z.hit - dt);
+          if (z.die) { z.die += dt; if (z.die > 0.9) zs.splice(i, 1); continue; }
+          if (!dead) { z.p += z.v * dt * (z.hit ? 0.15 : 1); z.x *= 1 - 0.1 * dt * z.p; }
+          z.p = Math.min(1, z.p); z.y = zy(z.p);
+          if (z.p >= 1) {
+            if (z.hord) { if (!dead) { dead = 1; A.explode(W / 2, yB, 1.6); A.flash(0.6); } continue; }
+            if (playing) crash(z); else if (!live) { z.die = 0.001; }
+          }
+        }
+        for (i = splats.length - 1; i >= 0; i--) { splats[i].t += dt; if (splats[i].t > 6) splats.splice(i, 1); }
+        for (i = fx.length - 1; i >= 0; i--) { fx[i].t -= dt; if (fx[i].t <= 0) fx.splice(i, 1); }
+        if (won) won += dt;
+      },
+      busy: function () { var bgI = gImg4('img/games/' + P.pre + '_bg.webp?v=3742'); return t < 20 && !(bgI.ok && ZI.w && ZI.w.ok && ZI.r && ZI.r.ok && ZI.b && ZI.b.ok && GUN && GUN.ok); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
+      draw: function (c) {
+        // 2026-11-03 : jamais l'ancien dessin de secours — chargement propre tant que la rue, les zombies et l'arme ne sont pas là (≤ 8 s)
+        var bgI = gImg4('img/games/' + P.pre + '_bg.webp?v=3742');
+        if (t < 20 && !(bgI.ok && ZI.w && ZI.w.ok && ZI.r && ZI.r.ok && ZI.b && ZI.b.ok && GUN && GUN.ok)) {
+          c.fillStyle = '#0B2A2A'; c.fillRect(0, 0, W, H); var lr = Math.min(W, H) * 0.06; c.lineWidth = Math.max(3, lr * 0.22); c.lineCap = 'round';
+          c.strokeStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(W / 2, H * 0.55, lr, 0, TAU); c.stroke(); c.strokeStyle = '#86EFAC'; c.beginPath(); c.arc(W / 2, H * 0.55, lr, t * 5, t * 5 + 1.6); c.stroke();
+          return;
+        }
+        A.bg(bg);
+        var i;
+        for (i = 0; i < splats.length; i++) { var sp0 = splats[i]; c.globalAlpha = Math.max(0, 0.7 - sp0.t * 0.1); c.fillStyle = '#3F0A0A'; c.beginPath(); c.ellipse(sp0.x, sp0.y, sp0.r, sp0.r * 0.22, 0, 0, TAU); c.fill(); }
+        c.globalAlpha = 1;
+        var list = zs.slice().sort(function (a, b) { return a.y - b.y; });
+        for (i = 0; i < list.length; i++) {
+          var z = list[i], d = dims(z), x = sx(z), sp = z.k === 'r' ? 2.4 : z.k === 'b' ? 0.9 : 1.2, im = ZI[z.k];
+          var stp = t * sp * 2 + z.ph * 3, fi = (Math.floor(stp) % 2 + 2) % 2, lift = Math.abs(Math.sin(stp * Math.PI)) * d[1] * 0.03;
+          var fog = clamp(z.p * 3, 0.25, 1);
+          c.globalAlpha = (z.die ? Math.max(0, 1 - Math.max(0, z.die - 0.45) / 0.45) : 1) * fog;
+          c.fillStyle = 'rgba(0,0,0,.4)'; c.beginPath(); c.ellipse(x, z.y, d[0] * 0.4, d[0] * 0.09, 0, 0, TAU); c.fill();
+          c.save(); c.translate(x, z.y);
+          if (z.die) { var fall = Math.min(1, z.die / 0.45); c.translate(0, -d[1] * 0.05 * fall); c.scale(1, 1 - 0.35 * fall); }
+          else c.rotate(Math.sin(t * sp * 2.2 + z.ph) * 0.05 + (z.hit ? -0.08 : 0));
+          if (im && im.ok) {
+            var cw = im.im.naturalWidth / 3, ch = im.im.naturalHeight, cell = z.die ? 2 : fi;
+            c.drawImage(im.im, cell * cw, 0, cw, ch, -d[0] / 2, -d[1] - (z.die ? 0 : lift), d[0], d[1]);
+            if (z.hit && !z.die) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = 0.6 * Math.min(1, z.hit / 0.14); c.drawImage(im.im, cell * cw, 0, cw, ch, -d[0] / 2, -d[1] - lift, d[0], d[1]); c.globalCompositeOperation = 'source-over'; }
+          } else {
+            /* image pas encore là : rien (écran de chargement avant) */
+          }
+          c.restore(); c.globalAlpha = 1;
+          if (z.max > 1 && !z.die && z.p > 0.2) { var bw = d[0] * 0.55, by = z.y - d[1] - 7; c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(x - bw / 2, by, bw, 4); c.fillStyle = '#F43F5E'; c.fillRect(x - bw / 2, by, bw * z.hp / z.max, 4); }
+        }
+        // barricade (sacs de sable fal.ai) devant les pieds des zombies arrivés
+        var bw2 = W * 1.12, bh2 = bw2 * 209 / 1024, by2 = yB - bh2 * 0.3;
+        if (BAR && BAR.ok) { c.fillStyle = '#1A1612'; c.fillRect(0, by2 + bh2 * 0.6, W, H); c.drawImage(BAR.im, (W - bw2) / 2, by2, bw2, Math.max(bh2, H - by2 + 4)); }
+        else { c.fillStyle = '#8A7350'; c.fillRect(0, yB, W, H - yB); }
+        for (i = 0; i < fx.length; i++) { var f = fx[i], k2 = f.t / 0.09; c.globalAlpha = k2; c.strokeStyle = '#FDE68A'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(f.x0 + (f.x1 - f.x0) * (1 - k2) * 0.6, f.y0 + (f.y1 - f.y0) * (1 - k2) * 0.6); c.lineTo(f.x1, f.y1); c.stroke(); c.globalAlpha = 1; }
+        // mitrailleuse vue de derrière : pivote vers le tir, recule à chaque coup
+        var rec = flashT > 0 ? gunH * 0.03 : 0;
+        c.save(); c.translate(gunX, gunY + rec); c.rotate(rot);
+        if (GUN && GUN.ok) { var gw = gunH * 367 / 560; c.drawImage(GUN.im, -gw * 0.476, -gunH, gw, gunH); }
+        else { c.fillStyle = '#374151'; c.fillRect(-gunH * 0.06, -gunH, gunH * 0.12, gunH); }
+        if (flashT > 0) { var fs = gunH * 0.1 * (0.8 + Math.random() * 0.4), my = -gunH * 0.97; circ(c, 0, my, fs * 0.9, 'rgba(253,186,116,.35)'); c.fillStyle = '#FEF3C7'; c.beginPath(); c.moveTo(-fs * 0.5, my); c.lineTo(0, my - fs * 1.8); c.lineTo(fs * 0.5, my); c.lineTo(0, my - fs * 0.4); c.closePath(); c.fill(); circ(c, 0, my, fs * 0.45, '#FFFFFF'); }
+        c.restore();
+      },
+      act: function (k, x, y) { if (dead || horde || cool > 0) return; cool = 0.06; shoot(x, y); },
+      key: function () {
+        if (dead || horde) return;
+        var tg = zs.filter(function (z) { return !z.die; }).sort(function (a, b) { return b.y - a.y; })[0];
+        if (tg) { var d = dims(tg); shoot(sx(tg), tg.y - d[1] * 0.6); }
+      },
+      boom: function () {
+        horde = true;
+        for (var i = 0; i < 18; i++) { var p0 = i < 9 ? 0.35 : 0.2; zs.push({ k: i % 5 === 0 ? 'b' : i % 2 ? 'r' : 'w', x: -0.9 + (i % 9) * 0.22 + rnd(-0.05, 0.05), p: p0, y: zy(p0), v: 1 / 1.3, hp: 99, max: 1, ph: rnd(0, 2), hit: 0, die: 0, hord: 1 }); }
+        A.flash(0.25);
+      },
+      win: function () { won = 0.001; zs.forEach(function (z) { if (!z.die) { z.die = 0.001; var d = dims(z); A.burst(sx(z), z.y - d[1] * 0.5, 6, ['#FDE68A', '#FFFFFF'], 120, 0.5, 2.6); } }); },
+      dbg: function () { return { dead: dead, hz: hz, zs: zs.filter(function (z) { return !z.die; }).map(function (z) { var d = dims(z); return { x: sx(z), y: z.y, w: d[0], h: d[1], hp: z.hp, k: z.k }; }), yB: yB }; }
+    };
+  }; }
+  boot('deadhighway', zombieWorld({ pre: 'zw1', vx: 448, vy: 640, za: { w: 0.626, r: 0.448, b: 0.54 } }), 'aim', 0.55);
+  boot('graveyardnight', zombieWorld({ pre: 'zw2', vx: 448, vy: 615, za: { w: 0.543, r: 0.457, b: 0.583 } }), 'aim', 0.55);
 })(window.D6 = window.D6 || {});
