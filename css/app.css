@@ -6080,7 +6080,7 @@ html body #portalModal .top-card.is-prev .top-prev{flex:1 1 auto;justify-content
   html body #portalModal#portalModal .portal-box > .bon-card,
   html body #portalModal#portalModal .portal-box > .gift-guest{flex:1 1 auto!important;min-height:0!important;margin:0!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;zoom:1!important}
   /* Les listes ne défilent plus à part : c'est la carte entière qui défile. */
-  html body #portalModal#portalModal#portalModal .top-rows,html body #portalModal#portalModal#portalModal .aff-rows-all{max-height:none!important;overflow:visible!important}
+  html body #portalModal#portalModal#portalModal .top-rows,html body #portalModal#portalModal#portalModal .aff-rows-all{max-height:none!important;overflow:hidden!important}
 }
 /* v2420 — barre du haut professionnelle : Cadeaux, Aide, langue et Profil = 4 tuiles identiques (même taille,
    même fond vitré, même texte dessous), espacées régulièrement de chaque côté de « Recharger » (taille inchangée). */
@@ -14894,3 +14894,15 @@ html body #portalModal #topCard .top-title{flex:1 1 0;min-width:0;overflow:hidde
 html body #portalModal #topCard .top-timer{flex:0 0 auto!important;padding-inline-end:2px;overflow:visible}
 /* 2026-11-16 (propriétaire) : carte bancaire + case Wave Flutterwave retirées ; « Payer par mobile money » = Maketou */
 html body #depositModal #btnCardOnly,html body #depositModal #payMomoBox,html body #depositModal #btnMomoDeposit{display:none!important}
+/* 2026-11-16 (propriétaire : « clé Maketou invalide : en attendant, seulement la crypto, carreau plus grand ») */
+html body #depositModal#depositModal #depositBox.dep-crypto-only #depositStepSelect > .field,
+html body #depositModal#depositModal #depositBox.dep-crypto-only .pay-method-label,
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodCard,
+html body #depositModal#depositModal #depositBox.dep-crypto-only #btnConfirmDeposit{display:none!important}
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt{padding:22px 16px 20px!important;margin-top:6px!important;border-width:1.5px!important}
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-method-top{margin-bottom:18px!important}
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-method-title{font-size:1.3rem!important}
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-crypto-wall{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px 10px!important}
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-crypto-cell{padding:10px 4px 8px!important;gap:7px!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important}
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:40px!important;height:40px!important}
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-crypto-cell b{font-size:.82rem!important}
