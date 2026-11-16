@@ -118,7 +118,7 @@ if ($action === 'send') {
   if ($wh !== '') $o['wh'] = $wh;
   $auto = null;
   try {
-    $ar = live_auto_reply($uid, substr(preg_replace('/[^a-z]/', '', strtolower((string) ($req['lang'] ?? 'fr'))), 0, 2));
+    $ar = live_auto_reply($uid, substr(preg_replace('/[^a-z]/', '', strtolower((string) ($req['lang'] ?? 'fr'))), 0, 2), $text);
     if (is_array($ar) && !empty($ar['ok'])) $auto = ['id' => $ar['msg']['id'], 'f' => 'a', 't' => $ar['msg']['t'], 'at' => $ar['msg']['at']];
   } catch (Throwable $e) { $auto = null; }
   echo json_encode(['ok' => true, 'msg' => $o, 'auto' => $auto], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

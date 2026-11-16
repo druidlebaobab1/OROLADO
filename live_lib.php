@@ -200,7 +200,15 @@ function live_add_msg(array $user, string $from, string $text, string $img = '',
  * depuis 12 h (ni réponse automatique), on ajoute « bien reçu, merci de patienter ». Ne touche pas au compteur
  * « non lu » de l'admin (le message du joueur reste à traiter).
  */
-function live_auto_reply(string $uid, string $lang): ?array {
+/**
+ * 2026-11-16 (propriétaire : « en 15-20 minutes il commence à écrire ; les retraits ne sont pas instantanés ») —
+ * sujet RETRAIT détecté (mot du message, dans les 12 langues) → réponses automatiques dédiées : vérification avant envoi,
+ * 24 h au maximum, crypto plus rapide, attendre 24 h avant d'écrire.
+ */
+function live_is_withdraw_topic(string $text): bool {
+  return (bool) preg_match('/retra|withdr|payout|cash ?out|retiro|retirar|saque|sacar|levantamento|سحب|çekim|rút tiền|rut tien|penarikan|tarik|вывод|auszahl|निकासी|提现|提款/iu', $text);
+}
+function live_auto_reply(string $uid, string $lang, string $text = ''): ?array {
   // v3200 (propriétaire) : réponse automatique PROFESSIONNELLE et au VOUVOIEMENT, et GÉNÉRALE (pas seulement « dépôt »).
   // On accuse réception, on dit qu'on examine, et on demande une preuve SEULEMENT si c'est une réclamation.
   $txt = [
@@ -233,8 +241,38 @@ function live_auto_reply(string $uid, string $lang): ?array {
     'de' => 'Hallo 🙏 Ihre Nachricht ist bei uns eingegangen und wird bearbeitet. Wir prüfen Ihre Situation sorgfältig. Falls auf unserer Seite etwas zu klären ist, erhalten Sie hier eine Antwort mit den nächsten Schritten. Vielen Dank für Ihre Geduld.',
     'hi' => 'नमस्ते 🙏 आपका संदेश हम तक पहुँच गया है और उस पर काम चल रहा है। हम आपकी स्थिति को ध्यान से देख रहे हैं। यदि हमारी ओर से कुछ हल करने की ज़रूरत होगी, तो आपको यहाँ अगले क़दम के साथ जवाब मिलेगा। आपके धैर्य के लिए धन्यवाद।',
   ];
-  $t1 = $txt[$lang] ?? $txt['en'];
-  $t2 = $txt2[$lang] ?? $txt2['en'];
+  $wd1 = [
+    'fr' => 'Bonjour 🙏 Votre demande de retrait a bien été reçue. Pour votre sécurité, chaque retrait est vérifié par notre équipe avant d\'être envoyé : le délai est de 24 h au maximum (souvent beaucoup moins). Les retraits en crypto sont les plus rapides. Merci d\'attendre 24 h après votre demande avant de nous écrire. Si votre retrait n\'est pas arrivé après 24 h, envoyez-nous ici une capture et nous réglerons cela.',
+    'en' => 'Hello 🙏 Your withdrawal request has been received. For your security, every withdrawal is checked by our team before it is sent: it takes 24 hours at most (often much less). Crypto withdrawals are the fastest. Please wait 24 hours after your request before writing to us. If your withdrawal has not arrived after 24 hours, send us a screenshot here and we will sort it out.',
+    'zh' => '您好 🙏 我们已收到您的提现申请。为了您的安全，每笔提现在发出前都会由我们的团队核实：最长 24 小时（通常快得多）。加密货币提现最快。请在申请后等待 24 小时再联系我们。如果 24 小时后仍未到账，请在这里发送截图，我们会为您处理。',
+    'es' => 'Hola 🙏 Hemos recibido su solicitud de retiro. Por su seguridad, nuestro equipo verifica cada retiro antes de enviarlo: el plazo es de 24 h como máximo (a menudo mucho menos). Los retiros en cripto son los más rápidos. Por favor, espere 24 h después de su solicitud antes de escribirnos. Si su retiro no ha llegado tras 24 h, envíenos aquí una captura y lo resolveremos.',
+    'pt' => 'Olá 🙏 O seu pedido de levantamento foi recebido. Para sua segurança, cada levantamento é verificado pela nossa equipa antes de ser enviado: o prazo é de 24 h no máximo (muitas vezes bem menos). Os levantamentos em cripto são os mais rápidos. Por favor, aguarde 24 h após o pedido antes de nos escrever. Se o levantamento não tiver chegado após 24 h, envie-nos aqui uma captura e resolveremos.',
+    'ar' => 'مرحبًا 🙏 تم استلام طلب السحب الخاص بكم. حفاظًا على أمانكم، يقوم فريقنا بالتحقق من كل عملية سحب قبل إرسالها: المدة 24 ساعة كحد أقصى (وغالبًا أقل بكثير). السحب بالعملات الرقمية هو الأسرع. يرجى الانتظار 24 ساعة بعد طلبكم قبل مراسلتنا. إذا لم يصل السحب بعد 24 ساعة، أرسلوا لنا هنا لقطة شاشة وسنعالج الأمر.',
+    'tr' => 'Merhaba 🙏 Çekim talebiniz alındı. Güvenliğiniz için her çekim gönderilmeden önce ekibimiz tarafından kontrol edilir: süre en fazla 24 saattir (çoğu zaman çok daha kısa). Kripto çekimleri en hızlısıdır. Lütfen talebinizden sonra bize yazmadan önce 24 saat bekleyin. Çekiminiz 24 saat sonra ulaşmadıysa buraya bir ekran görüntüsü gönderin, çözelim.',
+    'vi' => 'Xin chào 🙏 Yêu cầu rút tiền của Quý khách đã được tiếp nhận. Vì sự an toàn của Quý khách, mỗi lệnh rút đều được đội ngũ của chúng tôi kiểm tra trước khi gửi: tối đa 24 giờ (thường nhanh hơn nhiều). Rút bằng crypto là nhanh nhất. Vui lòng đợi 24 giờ sau khi yêu cầu rồi mới liên hệ. Nếu sau 24 giờ vẫn chưa nhận được, hãy gửi ảnh chụp màn hình tại đây, chúng tôi sẽ xử lý.',
+    'id' => 'Halo 🙏 Permintaan penarikan Anda sudah kami terima. Demi keamanan Anda, setiap penarikan diperiksa oleh tim kami sebelum dikirim: paling lama 24 jam (sering jauh lebih cepat). Penarikan kripto adalah yang tercepat. Mohon tunggu 24 jam setelah permintaan sebelum menulis kepada kami. Jika penarikan belum tiba setelah 24 jam, kirimkan tangkapan layar di sini dan kami akan menyelesaikannya.',
+    'ru' => 'Здравствуйте 🙏 Ваша заявка на вывод получена. Для вашей безопасности каждый вывод проверяется нашей командой перед отправкой: срок — не более 24 часов (часто гораздо быстрее). Быстрее всего — вывод в криптовалюте. Пожалуйста, подождите 24 часа после заявки, прежде чем писать нам. Если через 24 часа вывод не пришёл, пришлите сюда скриншот, и мы всё решим.',
+    'de' => 'Hallo 🙏 Ihre Auszahlungsanfrage ist eingegangen. Zu Ihrer Sicherheit wird jede Auszahlung vor dem Versand von unserem Team geprüft: Das dauert höchstens 24 Stunden (oft deutlich weniger). Krypto-Auszahlungen sind am schnellsten. Bitte warten Sie nach Ihrer Anfrage 24 Stunden, bevor Sie uns schreiben. Ist die Auszahlung nach 24 Stunden nicht da, senden Sie uns hier einen Screenshot, und wir kümmern uns darum.',
+    'hi' => 'नमस्ते 🙏 आपका निकासी अनुरोध मिल गया है। आपकी सुरक्षा के लिए हर निकासी भेजने से पहले हमारी टीम जाँचती है: अधिकतम 24 घंटे (अक्सर इससे बहुत कम)। क्रिप्टो निकासी सबसे तेज़ है। कृपया अनुरोध के बाद हमें लिखने से पहले 24 घंटे प्रतीक्षा करें। यदि 24 घंटे बाद भी निकासी नहीं आई, तो यहाँ स्क्रीनशॉट भेजें, हम इसे सुलझा देंगे।',
+  ];
+  $wd2 = [
+    'fr' => 'Votre retrait est en cours de vérification 🙏 Comme indiqué, le délai est de 24 h au maximum : écrire plusieurs fois ne l\'accélère pas. Merci de patienter ; si après 24 h il n\'est toujours pas arrivé, envoyez-nous une capture ici.',
+    'en' => 'Your withdrawal is being checked 🙏 As mentioned, it takes 24 hours at most: writing several times does not speed it up. Thank you for your patience; if it has still not arrived after 24 hours, send us a screenshot here.',
+    'zh' => '您的提现正在核实中 🙏 如前所述，最长 24 小时：多次发消息并不会加快处理。感谢耐心等待；如果 24 小时后仍未到账，请在这里发送截图。',
+    'es' => 'Su retiro está en verificación 🙏 Como le indicamos, el plazo es de 24 h como máximo: escribir varias veces no lo acelera. Gracias por su paciencia; si tras 24 h aún no ha llegado, envíenos aquí una captura.',
+    'pt' => 'O seu levantamento está em verificação 🙏 Como indicado, o prazo é de 24 h no máximo: escrever várias vezes não o acelera. Obrigado pela paciência; se após 24 h ainda não tiver chegado, envie-nos aqui uma captura.',
+    'ar' => 'عملية السحب الخاصة بكم قيد التحقق 🙏 كما ذكرنا، المدة 24 ساعة كحد أقصى: تكرار الرسائل لا يسرّعها. شكرًا لصبركم؛ وإذا لم تصل بعد 24 ساعة، أرسلوا لنا لقطة شاشة هنا.',
+    'tr' => 'Çekiminiz kontrol ediliyor 🙏 Belirttiğimiz gibi süre en fazla 24 saattir: birkaç kez yazmak işlemi hızlandırmaz. Sabrınız için teşekkürler; 24 saat sonra hâlâ ulaşmadıysa buraya bir ekran görüntüsü gönderin.',
+    'vi' => 'Lệnh rút của Quý khách đang được kiểm tra 🙏 Như đã nêu, thời gian tối đa là 24 giờ: nhắn nhiều lần không làm nhanh hơn. Cảm ơn Quý khách đã kiên nhẫn; nếu sau 24 giờ vẫn chưa nhận được, hãy gửi ảnh chụp màn hình tại đây.',
+    'id' => 'Penarikan Anda sedang diperiksa 🙏 Seperti disebutkan, paling lama 24 jam: menulis berkali-kali tidak mempercepatnya. Terima kasih atas kesabaran Anda; jika setelah 24 jam belum tiba, kirimkan tangkapan layar di sini.',
+    'ru' => 'Ваш вывод проверяется 🙏 Как мы указали, срок — не более 24 часов: повторные сообщения его не ускоряют. Спасибо за терпение; если через 24 часа вывод не пришёл, пришлите сюда скриншот.',
+    'de' => 'Ihre Auszahlung wird geprüft 🙏 Wie erwähnt, dauert es höchstens 24 Stunden: Mehrfaches Schreiben beschleunigt nichts. Danke für Ihre Geduld; ist sie nach 24 Stunden noch nicht da, senden Sie uns hier einen Screenshot.',
+    'hi' => 'आपकी निकासी की जाँच चल रही है 🙏 जैसा बताया, अधिकतम 24 घंटे लगते हैं: बार-बार लिखने से यह तेज़ नहीं होती। धैर्य के लिए धन्यवाद; 24 घंटे बाद भी न आए तो यहाँ स्क्रीनशॉट भेजें।',
+  ];
+  $isWd = live_is_withdraw_topic($text);
+  if (!$isWd) { foreach (array_slice((array) (live_thread($uid)['msgs'] ?? []), -6) as $pm) if (($pm['f'] ?? '') === 'u' && live_is_withdraw_topic((string) ($pm['t'] ?? ''))) { $isWd = true; break; } }
+  $t1 = $isWd ? ($wd1[$lang] ?? $wd1['en']) : ($txt[$lang] ?? $txt['en']);
+  $t2 = $isWd ? ($wd2[$lang] ?? $wd2['en']) : ($txt2[$lang] ?? $txt2['en']);
   return live_update(live_thread_file($uid), function ($th) use ($t1, $t2) {
     $now = time();
     $autoCount = 0; $lastAuto = 0; $humanReply = false;
