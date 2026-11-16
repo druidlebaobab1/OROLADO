@@ -806,7 +806,7 @@
     }
     return {
       size: function (w, h, uu, d, top) {
-        W = w; H = h; dpr = d; T = top; Rs = Math.min(W * 0.3, (H - T) * 0.28); sold = {}; civ = {};
+        W = w; H = h; dpr = d; T = top; Rs = Math.min(W * 0.2, (H - T) * 0.19); // 2026-11-16 (propriétaire : « la lunette est trop grosse, on ne peut pas bien viser ») sold = {}; civ = {};
         var bl = null;
         bg = mkc(W, H, dpr, function (c) {
           c.fillStyle = lg(c, 0, 0, 0, H, ['#0F172A', '#4C1D95', '#F97316']); c.fillRect(0, 0, W, H);
@@ -867,7 +867,7 @@
         scene(c, 1);
         // dim the scene outside the scope
         c.fillStyle = 'rgba(2,6,23,.35)'; c.fillRect(0, 0, W, H);
-        var sw = sway(), cx = clamp(sc.x, Rs * 0.4, W - Rs * 0.4), cy = clamp(sc.y, T + Rs * 0.2, H - Rs * 0.2);
+        var sw = sway(), cx = clamp(sc.x, Rs * 0.15, W - Rs * 0.15), cy = clamp(sc.y, T + Rs * 0.1, H - Rs * 0.1);
         c.save(); c.beginPath(); c.arc(cx, cy, Rs, 0, TAU); c.clip();
         c.translate(cx, cy); c.scale(Z, Z); c.translate(-sc.x - sw[0] / Z, -sc.y - sw[1] / Z);
         scene(c, Z, sc.x + sw[0] / Z, sc.y + sw[1] / Z);
@@ -1373,7 +1373,7 @@
     function gpos(g) { var k = Math.min(1, g.t / g.T), x = g.x0 + (g.x1 - g.x0) * k, y = g.y0 + (g.y1 - g.y0) * k - Math.sin(k * Math.PI) * (H - T) * 0.35; return { x: x, y: y, k: k }; }
     return {
       size: function (w, h, uu, d, top) {
-        W = w; H = h; dpr = d; T = top; hy = T + (H - T) * 0.12; gy = H - (H - T) * 0.14; bh = clamp((H - T) * 0.42, 90, 260);
+        W = w; H = h; dpr = d; T = top; hy = Math.max(T + (H - T) * 0.12, H * 0.66); gy = H - (H - T) * 0.14; bh = clamp((H - T) * 0.42, 90, 260); // 2026-11-16 (propriétaire : « les ennemis viennent du ciel ») : horizon de la photo du décor (≈ 60 %)
         // v2860 people: D6.Rig (js/art-rig.js, real proportions) + helmet + rifle held across the chest; own rig as a fallback
         fr = rigFrames(bh, NF, function (c, ph) {
           if (!D6.Rig) { soldierFront(c, bh, ph); return; }

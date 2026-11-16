@@ -2715,7 +2715,7 @@
   function dgRun(k) { if (!DGRUN[k]) return null; var o = DGRI[k]; if (!o) { o = DGRI[k] = new Image(); o.decoding = 'async'; o.src = 'img/games/dg_' + k + '_run.webp?v=3619'; } return o.complete && o.naturalWidth ? o : null; }
   function withArt(k, cfg) {
     var P = 'img/games/dg_' + k + '_', V = '?v=3596', ob = cfg.bg, op = cfg.player, oo = cfg.obs;
-    var VP = (k === 'lava' || k === 'snow') ? '?v=3619' : V; dgRun(k);
+    var VP = (k === 'kayak' || k === 'dune') ? '?v=3740' : (k === 'lava' || k === 'snow') ? '?v=3619' : V; dgRun(k); // 2026-11-16 : kayak vu de dos, buggy droit
     cfg.bg = function (c) { ob.apply(this, arguments); gCover(c.canvas, P + 'bg.webp' + V); };
     cfg.player = function (d, w, h) { var fb = op(d, w, h); return gSprite(fb.w || w + 8, fb.h || h + 8, d, P + 'pl.webp' + VP, function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); };
     cfg.obs = oo.map(function (f, i) { return function (d, w, h) { var fb = f(d, w, h); return gSprite(fb.w || w + 6, fb.h || h + 6, d, P + 'o' + (i + 1) + '.webp' + V, function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); }; });
@@ -2733,7 +2733,7 @@
   function withFArt(cfg) { // v3596 : jeux « vol » — décor + personnage illustrés (anciens dessins en secours)
     var V = '?v=3596', ob = cfg.bg, op = cfg.player, k = cfg.art;
     cfg.bg = function (c) { ob.apply(this, arguments); gCover(c.canvas, 'img/games/fb_' + k + '_bg.webp' + V); };
-    cfg.player = function (d, sz) { var fb = op(d, sz); return gSprite(fb.w || sz, fb.h || sz, d, 'img/games/fb_' + k + '_pl.webp' + (FB_FLIP[k] ? '?v=3722' : V), function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); };
+    cfg.player = function (d, sz) { var fb = op(d, sz); return gSprite(fb.w || sz, fb.h || sz, d, 'img/games/fb_' + k + '_pl.webp' + (k === 'girlpilot' ? '?v=3740' : FB_FLIP[k] ? '?v=3722' : V), function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); };
     return cfg;
   }
   function dodger(cfg) {
