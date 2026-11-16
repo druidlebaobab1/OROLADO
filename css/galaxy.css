@@ -2271,3 +2271,7 @@ html.ios-app.is-ios:root body #casinoModal#casinoModal .sp2 .pz-nav{bottom:0!imp
    les PETITES fenêtres de confirmation (déconnexion, retrait confirmé, dépôt réussi/en attente, code, installation) ne prennent
    plus tout l'écran dans l'appli iPhone : petite fenêtre centrée, comme dans Safari. Les grandes fenêtres restent plein écran. */
 html.ios-app.is-ios:root body .modal-backdrop.active > .modal-box:is(.logout-box,.wd-confirm-box,.convert-box,.install-ios-box,.otp-box){height:auto!important;max-height:calc(100% - 40px)!important;overflow-y:auto!important}
+/* 2026-11-16 (propriétaire, appli iPhone : « dans Cadeaux / Invite tes amis, une bordure noire cache le bas ») : les 59 px du bas
+   de l'écran ne sont pas dessinables dans l'appli → la page Cadeaux garde cette hauteur libre en bas : en descendant, tout le
+   contenu (exemple, règles…) remonte au-dessus de la bande noire. */
+html.ios-app.is-ios:root body #portalModal#portalModal#portalModal#portalModal > .modal-box.portal-box{padding-bottom:calc(var(--ios-under,0px) + 14px)!important}

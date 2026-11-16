@@ -1390,6 +1390,9 @@
     try {
       var tp = document.querySelector('#casinoModal .cs-top'), mb = mbox();
       if (tp) box.style.setProperty('--sp-top', Math.max(40, tp.offsetHeight - 6) + 'px');
+      // 2026-11-16 (propriétaire : « la recherche de Paris est coupée ») : l'en-tête (solde / Connexion) recouvrait le haut de la
+      // recherche → petit espace au-dessus de la recherche, exactement la partie cachée (+ 6 px).
+      if (tp) { var ovq = Math.round(tp.getBoundingClientRect().bottom - box.getBoundingClientRect().top); box.style.setProperty('--sp2-qtop', (ovq > 0 && ovq < 160 ? ovq + 6 : 0) + 'px'); }
       if (!mb) return;
       var cs = getComputedStyle(mb), pb = parseFloat(cs.paddingBottom) || 18;
       box.style.setProperty('--sp2-px', (parseFloat(cs.paddingLeft) || 14) + 'px'); box.style.setProperty('--sp2-pb', pb + 'px');
