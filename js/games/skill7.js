@@ -770,6 +770,7 @@
     function soldierS(h, enemy) { // upper body seen in a window: helmet, face, vest, rifle — real proportions
       var w = h * 0.8, si = enemy ? snE : snC;
       if (si.ok) return mkc(w, h, dpr, function (c) { var im = si.im, s2 = Math.min(w / im.naturalWidth, h / im.naturalHeight) * 1.0, iw = im.naturalWidth * s2, ih = im.naturalHeight * s2; c.drawImage(im, (w - iw) / 2, h - ih, iw, ih); });
+      return mkc(w, h, dpr, function () {}); // image pas encore là : rien (plus d'ancien dessin)
       return mkc(w, h, dpr, function (c) {
         var cx = w / 2, hd = h * 0.17;
         if (enemy) {
@@ -1284,7 +1285,8 @@
   // 2026-11-16 (propriétaire : « améliore les personnages des jeux de guerre, comme les zombies ») : vrais personnages
   // illustrés (fal.ai) pour Trench Defense et Sniper ; les anciens dessins restent en secours tant que l'image n'est pas là.
   var WARI = {};
-  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=3741'; } if (cb && !o.ok) o.cbs.push(cb); return o; }
+  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=' + (k === 'zomb2_gun' ? '3548' : k === 'td_soldier' || k === 'sn_enemy' || k === 'sn_civ' ? '3741' : '3742'); } if (cb && !o.ok) o.cbs.push(cb); return o; }
+  ['td_soldier', 'fa_sold', 'js_sold', 'sn_enemy', 'sn_civ', 'cmd_hero', 'zomb2_gun'].forEach(function (k) { warImg(k); }); // chargées dès l'ouverture du module
   function rigFrames(h, n, fn) { // pre-rendered frames: canvas size 1.1h × 1.1h, feet at the bottom centre
     var out = []; for (var i = 0; i < n; i++) out.push(mkc(h * 1.2, h * 1.12, Math.min(2, window.devicePixelRatio || 1), function (c) { c.translate(h * 0.6, h * 1.08); fn(c, i / n); }));
     return out;
@@ -1445,7 +1447,7 @@
             var im = tdS.im, hh = bh * 1.02, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(ph * TAU), bob = Math.abs(st) * bh * 0.025;
             c.save(); c.translate(0, -bob); c.rotate(st * 0.05); if (ph >= 0.5) c.scale(-1, 1); c.drawImage(im, -ww / 2, -hh, ww, hh); c.restore(); return;
           }
-          if (!D6.Rig) { soldierFront(c, bh, ph); return; }
+          return; // 2026-11-16 (propriétaire : « ça affiche d'abord les anciennes images ») : plus d'ancien dessin, le soldat apparaît avec son image
           D6.Rig.draw(c, bh, { view: 'front', pose: 'run', ph: ph, pal: RIG_EN });
           var s = bh / 100, bob = Math.abs(Math.sin(ph * TAU)) * 1.5 * s;
           c.save(); c.translate(0, -bh * 0.62 - bob); c.rotate(-0.7); c.fillStyle = lg(c, 0, -3 * s, 0, 3 * s, ['#52525B', '#1F1F22']); rr(c, -20 * s, -2.4 * s, 40 * s, 4.8 * s, 1.5 * s); c.fill(); c.fillStyle = '#5C4033'; rr(c, 9 * s, -3 * s, 11 * s, 6 * s, 1.5 * s); c.fill(); c.restore();
@@ -1495,9 +1497,12 @@
         for (i = 0; i < gren.length; i++) { var g = gren[i], gp = gpos(g); c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(g.x0 + (g.x1 - g.x0) * gp.k, g.y0 + (g.y1 - g.y0) * gp.k, 7, 2.5, 0, 0, TAU); c.fill(); circ(c, gp.x, gp.y, Math.max(4, bh * 0.035), '#3F4422'); circ(c, gp.x - 1.5, gp.y - 1.5, 1.6, '#A3B18A'); if ((t * 8 | 0) % 2) { c.strokeStyle = '#EF4444'; c.lineWidth = 1.5; c.beginPath(); c.arc(gp.x, gp.y, 12, 0, TAU); c.stroke(); } }
         for (i = 0; i < puffs.length; i++) { var q = puffs[i]; c.globalAlpha = 1 - q.t / 0.5; circ(c, q.x, q.y - q.t * 20, 4 + q.t * 18, 'rgba(214,211,209,.7)'); c.globalAlpha = 1; }
         // our rifle at the bottom, turned toward the last shot
-        c.save(); c.translate(W / 2 + W * 0.12, H + 6); c.rotate(clamp(aimA, -2.6, -0.55) + Math.PI / 2);
-        c.fillStyle = lg(c, -6, 0, 6, 0, ['#1F1F22', '#52525B', '#1F1F22']); c.fillRect(-4, -(H - T) * 0.3, 8, (H - T) * 0.3); c.fillStyle = '#5C4033'; rr(c, -9, -(H - T) * 0.1, 18, (H - T) * 0.12, 4); c.fill();
-        if (flash) { circ(c, 0, -(H - T) * 0.32, 14, rg(c, 0, -(H - T) * 0.32, 14, ['#FFF7ED', '#FDBA74', 'rgba(251,146,60,0)'])); }
+        // 2026-11-16 (propriétaire : « mets un vrai fusil, bien placé ») : la mitrailleuse illustrée de Zombie Siege, vue de derrière,
+        // au centre en bas, qui pivote vers le tir, recule et crache une flamme à chaque coup.
+        var gunI = warImg('zomb2_gun'), gH = Math.min((H - T) * 0.4, W * 0.62), gW = gH * 367 / 560, gRot = clamp(aimA + Math.PI / 2, -0.75, 0.75), rec = flash ? gH * 0.03 : 0;
+        c.save(); c.translate(W / 2, H + gH * 0.12 + rec); c.rotate(gRot);
+        if (gunI.ok) c.drawImage(gunI.im, -gW * 0.476, -gH, gW, gH);
+        if (flash) { var fs2 = gH * 0.1, my2 = -gH * 0.97; circ(c, 0, my2, fs2 * 0.9, 'rgba(253,186,116,.35)'); c.fillStyle = '#FEF3C7'; c.beginPath(); c.moveTo(-fs2 * 0.5, my2); c.lineTo(0, my2 - fs2 * 1.8); c.lineTo(fs2 * 0.5, my2); c.fill(); }
         c.restore();
         if (cool > 0) { c.fillStyle = 'rgba(253,230,138,.85)'; c.fillRect(W / 2 - 20, H - 6, 40 * (1 - cool / 0.26), 3); }
       },
@@ -1550,7 +1555,7 @@
         // inclinaison), saut (penché en avant), glissade (accroupi) ; l'ancien dessin reste en secours tant que l'image n'est pas là.
         var hero = function (mode) { return function (c, p) {
           var hi = warImg('cmd_hero');
-          if (!hi.ok) { soldierSide(c, ch, mode === 'run' ? p : 0.2, mode); return; }
+          if (!hi.ok) return; // pas d'ancien dessin : le commando apparaît avec son image
           var im = hi.im, hh = ch * 1.04, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(p * TAU * 2);
           c.save();
           if (mode === 'run') { c.translate(0, -Math.abs(st) * ch * 0.04); c.rotate(st * 0.03); c.scale(1 + st * 0.02, 1 - Math.abs(st) * 0.02); }
