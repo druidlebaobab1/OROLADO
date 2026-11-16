@@ -766,7 +766,7 @@
      Each soldier's red ring closes as he aims: hit him first. Never shoot a civilian (white shirt, hands up). */
   boot('sniper', function (A) {
     var W, H, T, dpr, bg, slots = [], foes = [], sc = { x: 0, y: 0 }, drag = null, Rs, Z = 2.4, dead = 0, won = 0, strike = null, t = 0, spT = 0, cool = 0, flash = null, sold = {}, civ = {}, aiT = 0, aiTg = null, holes = [], kills = 0;
-    var snE = warImg('sn_enemy', function () { sold = {}; }), snC = warImg('sn_civ', function () { civ = {}; });
+    var snE = warImg('sn_enemy2', function () { sold = {}; }), snC = warImg('sn_civ2', function () { civ = {}; });
     function soldierS(h, enemy) { // upper body seen in a window: helmet, face, vest, rifle — real proportions
       var w = h * 0.8, si = enemy ? snE : snC;
       if (si.ok) return mkc(w, h, dpr, function (c) { var im = si.im, s2 = Math.min(w / im.naturalWidth, h / im.naturalHeight) * 1.0, iw = im.naturalWidth * s2, ih = im.naturalHeight * s2; c.drawImage(im, (w - iw) / 2, h - ih, iw, ih); });
@@ -844,7 +844,7 @@
       A._xb = 1; A.burst(px, py, 5, ['#D6D3D1', '#A8A29E'], 60, 0.35, 2, 60); A._xb = 0;
     }
     function scene(c, z, fx, fy) { // the city with people (drawn normally, or zoomed inside the scope)
-      if (z === 1) { A.bg(bg); wbFill(c, 'sniper', 'rgba(0,0,0,.14)'); } // static layer behind the scene (painted once)
+      if (z === 1) { A.bg(bg); } // static layer behind the scene (painted once)
       else { // only the small part of the city seen through the scope (cheap on old phones)
         var r0 = Rs / z + 4, x0 = clamp(fx - r0, 0, W), y0 = clamp(fy - r0, 0, H), x1 = clamp(fx + r0, 0, W), y1 = clamp(fy + r0, 0, H);
         if (x1 - x0 > 1 && y1 - y0 > 1) c.drawImage(bg, x0 * dpr, y0 * dpr, (x1 - x0) * dpr, (y1 - y0) * dpr, x0, y0, x1 - x0, y1 - y0);
@@ -865,36 +865,30 @@
     }
     return {
       size: function (w, h, uu, d, top) {
-        W = w; H = h; dpr = d; T = top; Rs = Math.min(W * 0.2, (H - T) * 0.19); // 2026-11-16 (propriétaire : « la lunette est trop grosse, on ne peut pas bien viser ») sold = {}; civ = {};
-        var bl = null;
-        bg = mkc(W, H, dpr, function (c) {
-          c.fillStyle = lg(c, 0, 0, 0, H, ['#0F172A', '#4C1D95', '#F97316']); c.fillRect(0, 0, W, H);
-          circ(c, W * 0.8, H * 0.45, H * 0.07, '#FDBA74');
-          bl = buildCity();
-          // far skyline
-          c.fillStyle = 'rgba(30,20,50,.8)'; var fx = 0; while (fx < W) { var fw = rnd(14, 34), fh = rnd(H * 0.12, H * 0.3); c.fillRect(fx, H * 0.9 - fh - (H - T) * 0.25, fw, fh + (H - T) * 0.25); fx += fw + rnd(0, 6); }
-          bl.forEach(function (b) {
-            var g = H * 0.9, base = b.d ? ['#5B5470', '#3B3550', '#2A2540'] : ['#8A7F72', '#6B6157', '#4A423B'];
-            c.fillStyle = lg(c, b.x, 0, b.x + b.w, 0, [base[0], base[1], base[2]]); c.fillRect(b.x, b.top, b.w, g - b.top);
-            // brick courses + vertical pilasters
-            c.fillStyle = 'rgba(0,0,0,.08)'; for (var by = b.top + 6; by < g; by += 6) c.fillRect(b.x, by, b.w, 1);
-            c.fillStyle = 'rgba(255,255,255,.07)'; c.fillRect(b.x, b.top, Math.max(3, b.w * 0.04), g - b.top);
-            c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(b.x + b.w - Math.max(4, b.w * 0.05), b.top, Math.max(4, b.w * 0.05), g - b.top);
-            // cornice + roof gear
-            c.fillStyle = b.d ? '#2E2A3C' : '#3F3A35'; c.fillRect(b.x - 3, b.top - 5, b.w + 6, 6); c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(b.x - 3, b.top - 5, b.w + 6, 1.5);
-            if (b.w > 50) { var tx = b.x + b.w * 0.75; c.fillStyle = '#3F3A35'; c.fillRect(tx - 1, b.top - 18, 2, 13); c.fillRect(tx - 6, b.top - 18, 12, 2); }
-            for (var yy = b.top + b.wh * 0.7; yy < g - b.wh * 1.8; yy += b.wh * 1.6) for (var xx = b.x + b.ww * 0.5; xx < b.x + b.w - b.ww * 1.2; xx += b.ww * 1.6) {
-              var lit = Math.random() < 0.22;
-              c.fillStyle = '#2B2622'; c.fillRect(xx - 2, yy - 2, b.ww + 4, b.wh + 4); // frame
-              c.fillStyle = lit ? lg(c, 0, yy, 0, yy + b.wh, ['#FDE68A', '#D97706']) : lg(c, 0, yy, 0, yy + b.wh, ['#1F2937', '#0B0F19']); c.fillRect(xx, yy, b.ww, b.wh);
-              if (!lit) { c.fillStyle = 'rgba(148,163,184,.12)'; c.beginPath(); c.moveTo(xx, yy); c.lineTo(xx + b.ww * 0.5, yy); c.lineTo(xx, yy + b.wh * 0.6); c.fill(); }
-              c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(xx + b.ww / 2 - 0.5, yy, 1, b.wh);
-              c.fillStyle = 'rgba(255,255,255,.16)'; c.fillRect(xx - 3, yy + b.wh + 2, b.ww + 6, 2.4); // sill
-            }
+        W = w; H = h; dpr = d; T = top; Rs = Math.min(W * 0.2, (H - T) * 0.19); sold = {}; civ = {}; // 2026-11-16 (propriétaire : « la lunette est trop grosse »)
+        // 2026-11-16 (propriétaire : « une grande maison qui fait face, ils apparaissent tous dans les fenêtres ») : façade illustrée
+        // vue de face qui remplit l'écran (wb_sniper2.webp 480×800), 12 grandes fenêtres (3 × 4) : les ennemis et les civils y
+        // apparaissent. Le décor est dans « bg » : la lunette grossit la même image.
+        var bl = [];
+        var WIN = [[28, 117], [150, 238], [373, 461]], ROW = [[40, 147], [237, 360], [438, 560], [650, 780]];
+        var SNI = warImg('wb_sniper2', function () { if (W === w && H === h) { snPaint(); slots.forEach(function (q) { q.busy = 0; }); foes = []; } });
+        var snPaint = function () {
+          slots = [];
+          // échelle : remplit l'écran ; si la zone est large et basse, au moins 2 rangées de fenêtres visibles et la façade
+          // est répétée sur les côtés (mur de briques régulier)
+          var ok = SNI.ok, gh = H - T, sc0 = Math.max(gh / 800, Math.min(W / 480, gh / 420)), tw = 480 * sc0;
+          var oy = clamp(T + gh / 2 - 400 * sc0, H - 800 * sc0, T), ox = W / 2 - tw / 2; while (ox > 0) ox -= tw;
+          var tiles = []; for (var tx0 = ox; tx0 < W; tx0 += tw) tiles.push(tx0);
+          if (ok) tiles.forEach(function (tx) { WIN.forEach(function (cx) { ROW.forEach(function (ry) {
+            var x0 = tx + cx[0] * sc0, x1 = tx + cx[1] * sc0, y0 = oy + ry[0] * sc0, y1 = oy + ry[1] * sc0;
+            if (x0 >= 2 && x1 <= W - 2 && y0 >= T + 4 && y1 <= H - 4) slots.push({ x: (x0 + x1) / 2, y: y1 - (y1 - y0) * 0.04, h: (y1 - y0) * 0.92, w: (x1 - x0) * 0.96, d: 0, kind: 'win' });
+          }); }); });
+          bg = mkc(W, H, dpr, function (c) {
+            c.fillStyle = '#1A1210'; c.fillRect(0, 0, W, H);
+            if (ok) { tiles.forEach(function (tx) { c.drawImage(SNI.im, tx, oy, tw, 800 * sc0); }); c.fillStyle = 'rgba(10,6,4,.12)'; c.fillRect(0, 0, W, H); }
           });
-          c.fillStyle = '#1C1917'; c.fillRect(0, H * 0.9, W, H * 0.1);
-          for (var i = 0; i < 6; i++) { var sx2 = rnd(0, W), sw2 = rnd(30, 60); c.fillStyle = '#78716C'; rr(c, sx2, H * 0.9 - 14, sw2, 16, 6); c.fill(); }
-        });
+        };
+        snPaint();
         city = bl; foes = []; slots.forEach(function (s) { s.busy = 0; });
         sc.x = W / 2; sc.y = T + (H - T) * 0.5;
       },
@@ -1285,8 +1279,8 @@
   // 2026-11-16 (propriétaire : « améliore les personnages des jeux de guerre, comme les zombies ») : vrais personnages
   // illustrés (fal.ai) pour Trench Defense et Sniper ; les anciens dessins restent en secours tant que l'image n'est pas là.
   var WARI = {};
-  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=' + (k === 'zomb2_gun' ? '3548' : k === 'td_soldier' || k === 'sn_enemy' || k === 'sn_civ' ? '3741' : '3742'); } if (cb && !o.ok) o.cbs.push(cb); return o; }
-  ['td_soldier', 'fa_sold', 'js_sold', 'sn_enemy', 'sn_civ', 'cmd_hero', 'zomb2_gun'].forEach(function (k) { warImg(k); }); // chargées dès l'ouverture du module
+  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=' + (k === 'zomb2_gun' ? '3548' : k === 'td_soldier' || k === 'sn_enemy' || k === 'sn_civ' ? '3741' : k === 'wb_sniper2' || k === 'sn_enemy2' || k === 'sn_civ2' ? '3744' : '3742'); } if (cb && !o.ok) o.cbs.push(cb); return o; }
+  ['td_soldier', 'fa_sold', 'js_sold', 'cmd_hero', 'zomb2_gun', 'wb_sniper2', 'sn_enemy2', 'sn_civ2'].forEach(function (k) { warImg(k); }); // chargées dès l'ouverture du module
   function rigFrames(h, n, fn) { // pre-rendered frames: canvas size 1.1h × 1.1h, feet at the bottom centre
     var out = []; for (var i = 0; i < n; i++) out.push(mkc(h * 1.2, h * 1.12, Math.min(2, window.devicePixelRatio || 1), function (c) { c.translate(h * 0.6, h * 1.08); fn(c, i / n); }));
     return out;
