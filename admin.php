@@ -2271,7 +2271,46 @@ if ($isAjax) {
     exit;
   }
 
+  // 2026-11-16 (propriétaire) — tournoi démo : paiement AUTOMATIQUE (appelé par le serveur lui-même, jeton secret, sans session).
+  if ($action === 'top_pay_auto') {
+    require_once __DIR__ . '/bonus_kick_lib.php';
+    $tok = (string) ($req['token'] ?? '');
+    if ($tok === '' || !hash_equals(orolado_top_auto_token(), $tok)) admin_json(['ok' => false], 403);
+    ignore_user_abort(true);
+    @set_time_limit(120);
+    header('Content-Type: application/json; charset=utf-8');
+    echo '{"ok":true}';
+    if (session_status() === PHP_SESSION_ACTIVE) @session_write_close();
+    if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
+    $_SESSION['admin_email'] = 'tournoi-auto';
+    $p = ['confirm' => 'PAYER', 'week' => 'prev', 'fromRank' => 1, 'max' => OROLADO_TOP_AUTO_MAX, 'min' => OROLADO_TOP_AUTO_MIN];
+    $res = admin_top_pay_run($p, static fn(string $id, float $amt, string $motif, array $hint): array
+      => admin_credit_player($id, $amt, $motif, $hint, 'tournoi-auto'), 10);
+    $key = preg_replace('/[^0-9W-]/', '', (string) ($res['week'] ?? ''));
+    $d = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR;
+    if ($key !== '') {
+      $sum = $d . 'top_auto_' . $key . '.sum';
+      $acc = is_file($sum) ? (json_decode((string) @file_get_contents($sum), true) ?: []) : [];
+      $acc['paid'] = (int) ($acc['paid'] ?? 0) + (int) ($res['paid'] ?? 0); $acc['total'] = round((float) ($acc['total'] ?? 0) + (float) ($res['total'] ?? 0), 2);
+      @file_put_contents($sum, json_encode($acc), LOCK_EX);
+      if (!empty($res['ok']) && empty($res['more'])) {
+        @file_put_contents($d . 'top_auto_' . $key . '.done', date('c'), LOCK_EX);
+        admin_alert_push('Tournoi démo', 'Semaine ' . $key . ' payée automatiquement : ' . $acc['paid'] . ' joueur(s), ' . number_format($acc['total'], 2, ',', ' ') . ' $ (1er 0,35 $ → 50e 0,10 $).', 'info');
+      } elseif (!empty($res['ok'])) {
+        orolado_top_auto_kick(); // paquet suivant
+      } elseif (!empty($res['errors'])) {
+        @file_put_contents($d . 'top_auto_' . $key . '.err', (string) ($res['reason'] ?? ''), LOCK_EX);
+        admin_alert_push('Tournoi démo', 'Paiement automatique arrêté (nouvel essai dans 1 h) : ' . (string) ($res['reason'] ?? '?'), 'error');
+      }
+    }
+    exit;
+  }
+
   $me = admin_require();
+  // 2026-11-16 (propriétaire : « mon tableau admin est lent ; je clique Dépôts du jour et ça reste 1 minute sur Inscriptions ») :
+  // PHP gardait la session verrouillée pendant toute la demande → une liste lente bloquait TOUTES les demandes suivantes
+  // (elles attendaient leur tour). Rien n'écrit plus dans la session après ce point : on la libère tout de suite.
+  if (session_status() === PHP_SESSION_ACTIVE) @session_write_close();
   if ($action === 'online_now') {
     admin_json(['ok' => true, 'online' => admin_online_now()]);
   }
@@ -3508,10 +3547,11 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <p class="muted" id="viewSum"></p>
     <div class="top-pay" id="topPay" hidden>
       <div class="panel-title" style="margin-top:0">💰 Bonus tournoi démo : payer le Top 50 (du rang 1 au 50e)</div>
+      <p class="muted" style="margin:2px 0 8px">✅ <b>Automatique</b> : 10 min après la fin de chaque semaine, le site paie tout seul le Top 50 (1er 0,35 $ → 50e 0,10 $), avec notification et e-mail. Ce bouton ne sert qu’en secours.</p>
       <div class="tp-row">
         <label>À partir du rang<input id="tpFrom" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
-        <label>Montant du premier ($)<input id="tpMax" type="number" min="0.01" max="5" step="0.01" value="0.90" inputmode="decimal"></label>
-        <label>Montant du dernier ($)<input id="tpMin" type="number" min="0.01" max="5" step="0.01" value="0.20" inputmode="decimal"></label>
+        <label>Montant du premier ($)<input id="tpMax" type="number" min="0.01" max="5" step="0.01" value="0.35" inputmode="decimal"></label>
+        <label>Montant du dernier ($)<input id="tpMin" type="number" min="0.01" max="5" step="0.01" value="0.10" inputmode="decimal"></label>
       </div>
       <div class="tp-row" style="margin-top:8px">
         <button class="mini" type="button" id="tpPreview">Aperçu</button>
@@ -4461,6 +4501,8 @@ async function loadList(force) {
     renderList(listCache[key].j);
     return;
   }
+  // 2026-11-16 (propriétaire : « c'est toujours l'ancienne page qui s'affiche ») : l'ancienne liste disparaît tout de suite
+  try { document.getElementById('viewSum').textContent = '⏳ Chargement…'; document.getElementById('panel').innerHTML = '<p class="muted" style="padding:14px">⏳ Chargement de « ' + esc(TITLES[view] || view) + ' »…</p>'; } catch (eL) { /* ignore */ }
   const j = await ajax(Object.assign({action:'list', view}, f));
   if (my !== listReq) return;
   listCache[key] = { t: Date.now(), j };

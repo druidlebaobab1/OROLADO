@@ -50,6 +50,13 @@ register_shutdown_function(static function (): void {
   try { orolado_bonus_all_watchdog(); } catch (Throwable $e) { /* jamais bloquant */ }
 });
 
+// 2026-11-16 (propriétaire) — tournoi démo payé automatiquement à la fin de la semaine (quelques stat() quand rien à faire).
+register_shutdown_function(static function (): void {
+  if (!is_file(__DIR__ . '/bonus_kick_lib.php')) return;
+  require_once __DIR__ . '/bonus_kick_lib.php';
+  try { orolado_top_auto_watchdog(); } catch (Throwable $e) { /* jamais bloquant */ }
+});
+
 // 2026-10-23 — notifications automatiques (2 par jour, notif_daily_lib.php) : APRÈS la réponse ; sans créneau dû : deux stat().
 register_shutdown_function(static function (): void {
   if (!is_file(__DIR__ . '/notif_daily_lib.php')) return;

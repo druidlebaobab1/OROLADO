@@ -420,5 +420,14 @@ if (!$gitOk || !$hasRefactor) {
 }
 
 if (str_starts_with($tmp, sys_get_temp_dir() . '/orolado_toppay_')) exec('rm -rf ' . escapeshellarg($tmp));
+echo "\n— Paiement AUTOMATIQUE du tournoi (2026-11-16) —\n";
+$au = admin_top_pay_amounts(50, 0.35, 0.10);
+check('auto : 1er 0,35 $, 50e 0,10 $, décroissant', $au[0] === 0.35 && $au[49] === 0.10 && $au[0] >= $au[1] && $au[48] >= $au[49], json_encode([$au[0], $au[24], $au[49]]));
+$adm = (string) file_get_contents(__DIR__ . '/../admin.php');
+check('admin.php : action top_pay_auto protégée par jeton, semaine précédente, 0,35 → 0,10, rang 1',
+  str_contains($adm, "\$action === 'top_pay_auto'") && str_contains($adm, 'hash_equals(orolado_top_auto_token()') && str_contains($adm, "'week' => 'prev', 'fromRank' => 1, 'max' => OROLADO_TOP_AUTO_MAX, 'min' => OROLADO_TOP_AUTO_MIN"));
+require_once __DIR__ . '/../bonus_kick_lib.php';
+check('auto : montants verrouillés 0,35 / 0,10', OROLADO_TOP_AUTO_MAX === 0.35 && OROLADO_TOP_AUTO_MIN === 0.10);
+
 echo "\n" . ($fail === 0 ? 'TOUT EST BON' : 'PROBLÈME') . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
