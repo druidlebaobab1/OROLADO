@@ -32,6 +32,8 @@
     { k: 'FasoChange', u: 'https://fasochange.net/', c: '#F59E0B', t: 'tB' }
   ];
   var OPS = ['wave', 'orange', 'mtn', 'moov'];
+  // 2026-11-16 (propriétaire : « attends, rien n'est testé, on doit d'abord en parler ») : désactivé jusqu'à son accord.
+  var MM_ON = false;
   var T = {
     fr: { mmT: "Payer avec ton Mobile Money", mmS: "Wave, Orange Money, MTN, Moov : un site d’échange t’envoie des USDT en quelques minutes, directement sur ton adresse OROLADO.", mm1: "Touche « Voir mon adresse » et copie ton adresse USDT · TRC20 OROLADO.", mm2: "Ouvre un des sites ci-dessus et choisis « Acheter USDT », réseau TRC20.", mm3: "Colle ton adresse OROLADO, entre le montant et choisis Wave, Orange Money, MTN ou Moov.", mm4: "Valide le paiement sur ton téléphone : les USDT arrivent en quelques minutes et ton solde OROLADO est crédité tout seul.", mmBtn: "Payer avec Mobile Money", mmAddr: "Voir mon adresse USDT · TRC20", tA: "Sans compte · rapide", tB: "Entreprise enregistrée", mmW: "Ces sites ne font pas partie d’OROLADO. Vérifie toujours le réseau TRC20 et ton adresse avant de payer. La première fois, essaie avec un petit montant.", mmHow: "Comment faire", sum: "En bref : copie ton adresse OROLADO → achète de la crypto sur Binance (ou Bybit, OKX…) → fais un « retrait » vers ton adresse OROLADO. C’est tout.", yt: "Tutos vidéo", ytD: "Sur YouTube, cherche « acheter USDT Binance P2P Orange Money » : beaucoup de vidéos montrent chaque écran pas à pas.", ytB: "Voir les tutos sur YouTube", ytQ: "acheter usdt binance p2p orange money mobile money", title: 'Recharger en crypto', b1: 'Crédit automatique', b2: 'Sécurisé', b3: '24h/24', pick: 'Choisis ta crypto', rec: 'Recommandé · frais très bas', all: 'Toutes les cryptos', allS: '+60 cryptos et réseaux',
       how: 'Comment ça marche', s1: 'Choisis ta crypto, puis copie ton adresse OROLADO (ou scanne le QR).', s2: 'Envoie depuis Binance, Bybit, OKX ou ton portefeuille, sur le MÊME réseau.', s3: 'Ton solde est crédité tout seul, en dollars, en quelques minutes.',
@@ -199,6 +201,7 @@
       '<div class="dcp-sec">' + esc(t.how) + '</div>' +
       '<ol class="dcp-steps"><li><i>1</i><span>' + esc(t.s1) + '</span></li><li><i>2</i><span>' + esc(t.s2) + '</span></li><li><i>3</i><span>' + esc(t.s3) + '</span></li></ol>' +
       '<button type="button" class="dcp-buy dcp-buy2" data-buy="1">' + ICO.help + '<span>' + esc(t.buy) + '</span></button>';
+    if (!MM_ON) { var mmc = el.querySelector('.dcp-mm'); if (mmc) mmc.remove(); }
   }
 
   function guide() {
@@ -238,6 +241,7 @@
   }
   // sous l'adresse crypto (étape « Dépôt ») : un bouton « Payer avec Mobile Money » ouvre le même guide
   function addrLink() {
+    if (!MM_ON) { var old = document.getElementById('dcpMmLink'); if (old) old.remove(); return; }
     var w = document.getElementById('oxaWalletBox'), box = document.getElementById('depositBox');
     if (!w || !box || !box.classList.contains('dep-crypto-only')) return;
     var t = T[lg()], b = document.getElementById('dcpMmLink');
