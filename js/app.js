@@ -11725,4 +11725,11 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook); else hook();
   setInterval(hook, 2000);
+  // 2026-11-16 (propriétaire, appli iPhone : « Paris monte, descend, vibre avant de se placer ») : une fenêtre créée APRÈS le
+  // dernier passage n'était vue qu'au passage suivant (jusqu'à 2 s) → la fenêtre changeait de taille sous les yeux. On revérifie
+  // tout de suite après chaque toucher / clic (et au cadre suivant).
+  function soon() { setTimeout(hook, 0); try { requestAnimationFrame(hook); } catch (e) { /* ignore */ } }
+  document.addEventListener('click', soon, true);
+  document.addEventListener('touchend', soon, { capture: true, passive: true });
+  try { if (window.MutationObserver && document.body) new MutationObserver(hook).observe(document.body, { childList: true }); } catch (eB) { /* ignore */ }
 })();
