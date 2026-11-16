@@ -63,6 +63,7 @@
   // Seulement quand les cadeaux sont ouverts à tous (CONFIG.GIFTS_PUBLIC), ou en aperçu : orolado.com/?cadeaux=1.
   (function () {
     try { if (/[?&]cadeaux=1(?:&|$)/.test(location.search || '')) sessionStorage.setItem('oro_gift_prev', '1'); } catch (e) { /* ignore */ }
+    try { if (/[?&]partenaire=1(?:&|$)/.test(location.search || '')) sessionStorage.setItem('oro_partner_go', '1'); } catch (e) { /* ignore */ }
   })();
   function nextMonday() {
     var d = new Date(); d.setUTCHours(0, 0, 0, 0);
@@ -1160,6 +1161,13 @@
     setInterval(function () {
       var tok = (D6.Api && D6.Api.token && D6.Api.token()) || '';
       if (tok !== lastTok) { lastTok = tok; aff = null; top = null; bon = null; setTab('defi'); renderAff(); renderTop(); renderBon(); if (tok) { refreshAff(); refreshTop(); refreshBon(); } }
+      // 2026-11-16 : venu par orolado.com/?partenaire=1 → dès qu'un vrai compte est connecté (déjà inscrit, ou juste après
+      // l'inscription), la page Partenaire s'ouvre toute seule (une seule fois).
+      var pgo = ''; try { pgo = sessionStorage.getItem('oro_partner_go') || ''; } catch (e) { pgo = ''; }
+      if (pgo && tok && loggedIn()) {
+        try { sessionStorage.removeItem('oro_partner_go'); } catch (e) { /* ignore */ }
+        setTimeout(function () { openPortal(); setTimeout(function () { if (D6.GiftsHome && D6.GiftsHome.go) D6.GiftsHome.go('aff'); else setTab('aff'); }, 120); }, 900);
+      }
     }, 1500);
     setTimeout(sendClick, 1500);
   }

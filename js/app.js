@@ -11475,8 +11475,13 @@
           try { wantAuth = sessionStorage.getItem('oro_auth_tab') || ''; } catch (eWant) { wantAuth = ''; }
           // v2565 — liens de la page orolado.online : « ?inscription=1 » / « ?connexion=1 » ouvrent le bon écran.
           try { if (/[?&]inscription=1\b/.test(location.search)) wantAuth = 'register'; else if (/[?&]connexion=1\b/.test(location.search)) wantAuth = 'login'; } catch (eQ) { /* ignore */ }
+          // 2026-11-16 (propriétaire) : orolado.com/?partenaire=1 (pub pour recruter des affiliés) → inscription + message clair ;
+          // juste après l'inscription, js/portal.js ouvre la page Partenaire (son lien, ses gains).
+          var wantPartner = false; try { wantPartner = /[?&]partenaire=1\b/.test(location.search); } catch (eP) { /* ignore */ }
+          if (wantPartner) wantAuth = 'register';
           if (wantAuth === 'register' || wantAuth === 'login') {
             showAuthScreen(wantAuth);
+            if (wantPartner) setTimeout(function () { toast(t('partnerJoin'), 'ok', 7000); }, 600);
             return;
           }
           try { sessionStorage.setItem('oro_demo_preview', '1'); } catch (ePrev) { /* ignore */ }
