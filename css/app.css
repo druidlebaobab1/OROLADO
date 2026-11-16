@@ -14966,3 +14966,8 @@ html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#
 .dcp-guide .dcpg-go{all:unset;box-sizing:border-box;margin:0 14px 14px;padding:14px 12px;border-radius:14px;text-align:center;cursor:pointer;font-weight:900;font-size:.96rem;
   color:#05220F;background:linear-gradient(180deg,#4ADE80,#16A34A)}
 html body #depositModal#depositModal #depositBox.dcpg-open{overflow:hidden!important}
+#depCryptoPro .dcp-buy2{margin:2px 0 8px}
+.dcp-guide .dcpg-sum{margin:0;padding:11px 12px;border-radius:12px;font-size:.88rem;line-height:1.45;font-weight:800;color:#FFF7E6;background:rgba(233,196,122,.12);border:1px solid rgba(233,196,122,.35)}
+.dcp-guide .dcpg-yt{display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 12px;border-radius:14px;text-decoration:none;font-weight:900;font-size:.92rem;color:#fff;
+  background:#1C1C1C;border:1px solid rgba(255,0,0,.45);text-align:center;line-height:1.25}
+.dcp-guide .dcpg-yt svg{flex:0 0 28px;width:28px;height:28px}

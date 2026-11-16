@@ -26,7 +26,7 @@
   ];
 
   var T = {
-    fr: { title: 'Recharger en crypto', b1: 'Crédit automatique', b2: 'Sécurisé', b3: '24h/24', pick: 'Choisis ta crypto', rec: 'Recommandé · frais très bas', all: 'Toutes les cryptos', allS: '+60 cryptos et réseaux',
+    fr: { sum: "En bref : copie ton adresse OROLADO → achète de la crypto sur Binance (ou Bybit, OKX…) → fais un « retrait » vers ton adresse OROLADO. C’est tout.", yt: "Tutos vidéo", ytD: "Sur YouTube, cherche « acheter USDT Binance P2P Orange Money » : beaucoup de vidéos montrent chaque écran pas à pas.", ytB: "Voir les tutos sur YouTube", ytQ: "acheter usdt binance p2p orange money mobile money", title: 'Recharger en crypto', b1: 'Crédit automatique', b2: 'Sécurisé', b3: '24h/24', pick: 'Choisis ta crypto', rec: 'Recommandé · frais très bas', all: 'Toutes les cryptos', allS: '+60 cryptos et réseaux',
       how: 'Comment ça marche', s1: 'Choisis ta crypto, puis copie ton adresse OROLADO (ou scanne le QR).', s2: 'Envoie depuis Binance, Bybit, OKX ou ton portefeuille, sur le MÊME réseau.', s3: 'Ton solde est crédité tout seul, en dollars, en quelques minutes.',
       buy: 'Je n’ai pas de crypto : comment en acheter ?', gT: 'Acheter de la crypto avec ton Mobile Money', gI: 'Tu peux acheter des USDT avec Orange Money, MTN, Moov ou Wave en quelques minutes sur une grande plateforme, puis les envoyer sur OROLADO.',
       gP: 'Où acheter (P2P)', gPd: 'Achat entre particuliers, protégé par la plateforme. Paiement par Orange Money, MTN, Moov, Wave…', gS: 'Étape par étape',
@@ -36,7 +36,7 @@
       gE: 'Exemple', gEx: 'Tu veux recharger 10 $ : achète 11 USDT en P2P (environ 6 600 F CFA). Envoie-les en TRC20 : la plateforme garde environ 1 USDT de frais, 10 $ arrivent sur ton solde.',
       gW: 'Important', w1: 'Choisis le même réseau des deux côtés (ex. TRC20 ↔ TRC20). Un mauvais réseau = argent perdu.', w2: 'Ne paie jamais un vendeur en dehors de la plateforme.', w3: 'Besoin d’aide ? Écris-nous dans Social.',
       go: 'Choisir USDT · TRC20', open: 'Ouvrir', close: 'Fermer' },
-    en: { title: 'Deposit with crypto', b1: 'Automatic credit', b2: 'Secure', b3: '24/7', pick: 'Choose your crypto', rec: 'Recommended · very low fees', all: 'All cryptos', allS: '60+ cryptos and networks',
+    en: { sum: "In short: copy your OROLADO address → buy crypto on Binance (or Bybit, OKX…) → make a “withdrawal” to your OROLADO address. That’s it.", yt: "Video tutorials", ytD: "On YouTube, search “buy USDT Binance P2P mobile money”: many videos show every screen step by step.", ytB: "Watch tutorials on YouTube", ytQ: "buy usdt binance p2p mobile money", title: 'Deposit with crypto', b1: 'Automatic credit', b2: 'Secure', b3: '24/7', pick: 'Choose your crypto', rec: 'Recommended · very low fees', all: 'All cryptos', allS: '60+ cryptos and networks',
       how: 'How it works', s1: 'Choose your crypto, then copy your OROLADO address (or scan the QR).', s2: 'Send from Binance, Bybit, OKX or your wallet, on the SAME network.', s3: 'Your balance is credited automatically, in dollars, within minutes.',
       buy: 'No crypto yet? How to buy some', gT: 'Buy crypto with Mobile Money', gI: 'You can buy USDT with Orange Money, MTN, Moov or Wave in a few minutes on a major platform, then send it to OROLADO.',
       gP: 'Where to buy (P2P)', gPd: 'Person-to-person purchase, protected by the platform. Pay with Orange Money, MTN, Moov, Wave…', gS: 'Step by step',
@@ -46,7 +46,7 @@
       gE: 'Example', gEx: 'You want to deposit $10: buy 11 USDT on P2P. Send them on TRC20: the platform keeps about 1 USDT in fees, $10 reach your balance.',
       gW: 'Important', w1: 'Use the same network on both sides (e.g. TRC20 ↔ TRC20). Wrong network = lost money.', w2: 'Never pay a seller outside the platform.', w3: 'Need help? Write to us in Social.',
       go: 'Choose USDT · TRC20', open: 'Open', close: 'Close' },
-    es: { title: 'Recargar con cripto', b1: 'Crédito automático', b2: 'Seguro', b3: '24/7', pick: 'Elige tu cripto', rec: 'Recomendado · comisiones muy bajas', all: 'Todas las criptos', allS: '+60 criptos y redes',
+    es: { sum: "En resumen: copia tu dirección OROLADO → compra cripto en Binance (o Bybit, OKX…) → haz un «retiro» a tu dirección OROLADO. Eso es todo.", yt: "Tutoriales en vídeo", ytD: "En YouTube busca «comprar USDT Binance P2P»: muchos vídeos muestran cada pantalla paso a paso.", ytB: "Ver tutoriales en YouTube", ytQ: "comprar usdt binance p2p", title: 'Recargar con cripto', b1: 'Crédito automático', b2: 'Seguro', b3: '24/7', pick: 'Elige tu cripto', rec: 'Recomendado · comisiones muy bajas', all: 'Todas las criptos', allS: '+60 criptos y redes',
       how: 'Cómo funciona', s1: 'Elige tu cripto y copia tu dirección OROLADO (o escanea el QR).', s2: 'Envía desde Binance, Bybit, OKX o tu billetera, en la MISMA red.', s3: 'Tu saldo se acredita solo, en dólares, en pocos minutos.',
       buy: '¿No tienes cripto? Cómo comprar', gT: 'Comprar cripto con dinero móvil', gI: 'Puedes comprar USDT con tu método de pago local en pocos minutos en una gran plataforma y enviarlos a OROLADO.',
       gP: 'Dónde comprar (P2P)', gPd: 'Compra entre particulares, protegida por la plataforma. Pago con dinero móvil, transferencia…', gS: 'Paso a paso',
@@ -56,7 +56,7 @@
       gE: 'Ejemplo', gEx: 'Quieres recargar 10 $: compra 11 USDT en P2P. Envíalos por TRC20: la plataforma cobra cerca de 1 USDT, llegan 10 $ a tu saldo.',
       gW: 'Importante', w1: 'Usa la misma red en ambos lados (TRC20 ↔ TRC20). Red equivocada = dinero perdido.', w2: 'Nunca pagues a un vendedor fuera de la plataforma.', w3: '¿Ayuda? Escríbenos en Social.',
       go: 'Elegir USDT · TRC20', open: 'Abrir', close: 'Cerrar' },
-    pt: { title: 'Recarregar com cripto', b1: 'Crédito automático', b2: 'Seguro', b3: '24h', pick: 'Escolhe a tua cripto', rec: 'Recomendado · taxas muito baixas', all: 'Todas as criptos', allS: '+60 criptos e redes',
+    pt: { sum: "Resumindo: copia o teu endereço OROLADO → compra cripto na Binance (ou Bybit, OKX…) → faz um «levantamento» para o teu endereço OROLADO. É só isso.", yt: "Tutoriais em vídeo", ytD: "No YouTube, pesquisa «comprar USDT Binance P2P»: muitos vídeos mostram cada ecrã passo a passo.", ytB: "Ver tutoriais no YouTube", ytQ: "comprar usdt binance p2p", title: 'Recarregar com cripto', b1: 'Crédito automático', b2: 'Seguro', b3: '24h', pick: 'Escolhe a tua cripto', rec: 'Recomendado · taxas muito baixas', all: 'Todas as criptos', allS: '+60 criptos e redes',
       how: 'Como funciona', s1: 'Escolhe a tua cripto e copia o teu endereço OROLADO (ou lê o QR).', s2: 'Envia da Binance, Bybit, OKX ou da tua carteira, na MESMA rede.', s3: 'O teu saldo é creditado sozinho, em dólares, em poucos minutos.',
       buy: 'Não tens cripto? Como comprar', gT: 'Comprar cripto com dinheiro móvel', gI: 'Podes comprar USDT com o teu meio de pagamento local em poucos minutos numa grande plataforma e enviá-los para a OROLADO.',
       gP: 'Onde comprar (P2P)', gPd: 'Compra entre particulares, protegida pela plataforma. Pagamento por dinheiro móvel, PIX, transferência…', gS: 'Passo a passo',
@@ -66,7 +66,7 @@
       gE: 'Exemplo', gEx: 'Queres recarregar 10 $: compra 11 USDT em P2P. Envia em TRC20: a plataforma fica com cerca de 1 USDT, chegam 10 $ ao teu saldo.',
       gW: 'Importante', w1: 'Usa a mesma rede dos dois lados (TRC20 ↔ TRC20). Rede errada = dinheiro perdido.', w2: 'Nunca pagues a um vendedor fora da plataforma.', w3: 'Precisas de ajuda? Escreve-nos no Social.',
       go: 'Escolher USDT · TRC20', open: 'Abrir', close: 'Fechar' },
-    ar: { title: 'الشحن بالعملات الرقمية', b1: 'إضافة تلقائية', b2: 'آمن', b3: '24/7', pick: 'اختر عملتك', rec: 'موصى به · رسوم منخفضة جدًا', all: 'كل العملات', allS: '+60 عملة وشبكة',
+    ar: { sum: "باختصار: انسخ عنوان OROLADO ← اشترِ عملة رقمية من Binance (أو Bybit أو OKX…) ← قم «بسحب» إلى عنوان OROLADO. هذا كل شيء.", yt: "شروحات بالفيديو", ytD: "ابحث في YouTube عن «شراء USDT Binance P2P»: فيديوهات كثيرة تشرح كل شاشة خطوة بخطوة.", ytB: "شاهد الشروحات على YouTube", ytQ: "شراء usdt binance p2p", title: 'الشحن بالعملات الرقمية', b1: 'إضافة تلقائية', b2: 'آمن', b3: '24/7', pick: 'اختر عملتك', rec: 'موصى به · رسوم منخفضة جدًا', all: 'كل العملات', allS: '+60 عملة وشبكة',
       how: 'كيف يعمل', s1: 'اختر عملتك ثم انسخ عنوان OROLADO الخاص بك (أو امسح رمز QR).', s2: 'أرسل من Binance أو Bybit أو OKX أو محفظتك على الشبكة نفسها.', s3: 'يُضاف رصيدك تلقائيًا بالدولار خلال دقائق.',
       buy: 'ليس لديك عملات رقمية؟ كيف تشتري', gT: 'اشترِ العملات الرقمية بالمال عبر الهاتف', gI: 'يمكنك شراء USDT بوسيلة الدفع المحلية خلال دقائق على منصة كبيرة ثم إرسالها إلى OROLADO.',
       gP: 'أين تشتري (P2P)', gPd: 'شراء بين الأفراد تحميه المنصة. الدفع بالمال عبر الهاتف أو التحويل…', gS: 'خطوة بخطوة',
@@ -76,7 +76,7 @@
       gE: 'مثال', gEx: 'تريد شحن 10 $: اشترِ 11 USDT عبر P2P وأرسلها على TRC20. تأخذ المنصة نحو 1 USDT رسومًا ويصل 10 $ إلى رصيدك.',
       gW: 'مهم', w1: 'استخدم الشبكة نفسها في الجهتين (TRC20 ↔ TRC20). الشبكة الخاطئة = ضياع المال.', w2: 'لا تدفع أبدًا لبائع خارج المنصة.', w3: 'تحتاج مساعدة؟ راسلنا في Social.',
       go: 'اختيار USDT · TRC20', open: 'فتح', close: 'إغلاق' },
-    tr: { title: 'Kripto ile yükle', b1: 'Otomatik yükleme', b2: 'Güvenli', b3: '7/24', pick: 'Kriptonu seç', rec: 'Önerilen · çok düşük ücret', all: 'Tüm kriptolar', allS: '60+ kripto ve ağ',
+    tr: { sum: "Kısaca: OROLADO adresini kopyala → Binance’ten (veya Bybit, OKX…) kripto al → OROLADO adresine “çekim” yap. Bu kadar.", yt: "Video anlatımlar", ytD: "YouTube’da “Binance P2P USDT alma” ara: birçok video her ekranı adım adım gösterir.", ytB: "YouTube’da anlatımları izle", ytQ: "binance p2p usdt alma", title: 'Kripto ile yükle', b1: 'Otomatik yükleme', b2: 'Güvenli', b3: '7/24', pick: 'Kriptonu seç', rec: 'Önerilen · çok düşük ücret', all: 'Tüm kriptolar', allS: '60+ kripto ve ağ',
       how: 'Nasıl çalışır', s1: 'Kriptonu seç, sonra OROLADO adresini kopyala (veya QR’ı tara).', s2: 'Binance, Bybit, OKX veya cüzdanından AYNI ağda gönder.', s3: 'Bakiyen birkaç dakikada dolar olarak otomatik yüklenir.',
       buy: 'Kriptun yok mu? Nasıl alınır', gT: 'Mobil para ile kripto al', gI: 'Büyük bir platformda yerel ödeme yönteminle birkaç dakikada USDT alıp OROLADO’ya gönderebilirsin.',
       gP: 'Nereden alınır (P2P)', gPd: 'Platform korumalı kişiden kişiye alım. Mobil para, havale… ile ödeme.', gS: 'Adım adım',
@@ -86,7 +86,7 @@
       gE: 'Örnek', gEx: '10 $ yüklemek istiyorsun: P2P’de 11 USDT al. TRC20 ile gönder: platform yaklaşık 1 USDT ücret alır, bakiyene 10 $ gelir.',
       gW: 'Önemli', w1: 'İki tarafta aynı ağı kullan (TRC20 ↔ TRC20). Yanlış ağ = kaybolan para.', w2: 'Satıcıya asla platform dışında ödeme yapma.', w3: 'Yardım mı lazım? Social’dan yaz.',
       go: 'USDT · TRC20 seç', open: 'Aç', close: 'Kapat' },
-    vi: { title: 'Nạp bằng crypto', b1: 'Cộng tự động', b2: 'An toàn', b3: '24/7', pick: 'Chọn crypto', rec: 'Khuyên dùng · phí rất thấp', all: 'Tất cả crypto', allS: '60+ crypto và mạng',
+    vi: { sum: "Tóm tắt: sao chép địa chỉ OROLADO → mua crypto trên Binance (hoặc Bybit, OKX…) → «rút» về địa chỉ OROLADO của bạn. Vậy thôi.", yt: "Video hướng dẫn", ytD: "Trên YouTube, tìm «mua USDT Binance P2P»: nhiều video hướng dẫn từng màn hình.", ytB: "Xem hướng dẫn trên YouTube", ytQ: "mua usdt binance p2p", title: 'Nạp bằng crypto', b1: 'Cộng tự động', b2: 'An toàn', b3: '24/7', pick: 'Chọn crypto', rec: 'Khuyên dùng · phí rất thấp', all: 'Tất cả crypto', allS: '60+ crypto và mạng',
       how: 'Cách hoạt động', s1: 'Chọn crypto, rồi sao chép địa chỉ OROLADO của bạn (hoặc quét QR).', s2: 'Gửi từ Binance, Bybit, OKX hoặc ví của bạn, trên CÙNG một mạng.', s3: 'Số dư được cộng tự động bằng đô la trong vài phút.',
       buy: 'Chưa có crypto? Cách mua', gT: 'Mua crypto bằng ví điện thoại', gI: 'Bạn có thể mua USDT bằng phương thức thanh toán địa phương trong vài phút trên sàn lớn, rồi gửi về OROLADO.',
       gP: 'Mua ở đâu (P2P)', gPd: 'Mua giữa người với người, được sàn bảo vệ. Thanh toán bằng ví điện thoại, chuyển khoản…', gS: 'Từng bước',
@@ -96,7 +96,7 @@
       gE: 'Ví dụ', gEx: 'Bạn muốn nạp 10 $: mua 11 USDT qua P2P. Gửi bằng TRC20: sàn giữ khoảng 1 USDT phí, 10 $ vào số dư.',
       gW: 'Quan trọng', w1: 'Dùng cùng một mạng ở hai đầu (TRC20 ↔ TRC20). Sai mạng = mất tiền.', w2: 'Không bao giờ trả tiền cho người bán ngoài sàn.', w3: 'Cần hỗ trợ? Nhắn cho chúng tôi trong Social.',
       go: 'Chọn USDT · TRC20', open: 'Mở', close: 'Đóng' },
-    id: { title: 'Isi saldo dengan kripto', b1: 'Kredit otomatis', b2: 'Aman', b3: '24/7', pick: 'Pilih kriptomu', rec: 'Disarankan · biaya sangat rendah', all: 'Semua kripto', allS: '60+ kripto dan jaringan',
+    id: { sum: "Singkatnya: salin alamat OROLADO → beli kripto di Binance (atau Bybit, OKX…) → lakukan «penarikan» ke alamat OROLADO-mu. Selesai.", yt: "Tutorial video", ytD: "Di YouTube, cari «beli USDT Binance P2P»: banyak video menunjukkan setiap layar langkah demi langkah.", ytB: "Tonton tutorial di YouTube", ytQ: "beli usdt binance p2p", title: 'Isi saldo dengan kripto', b1: 'Kredit otomatis', b2: 'Aman', b3: '24/7', pick: 'Pilih kriptomu', rec: 'Disarankan · biaya sangat rendah', all: 'Semua kripto', allS: '60+ kripto dan jaringan',
       how: 'Cara kerjanya', s1: 'Pilih kriptomu, lalu salin alamat OROLADO-mu (atau pindai QR).', s2: 'Kirim dari Binance, Bybit, OKX atau dompetmu, di jaringan yang SAMA.', s3: 'Saldomu otomatis bertambah dalam dolar dalam beberapa menit.',
       buy: 'Belum punya kripto? Cara membeli', gT: 'Beli kripto dengan uang seluler', gI: 'Kamu bisa membeli USDT dengan metode pembayaran lokal dalam beberapa menit di platform besar, lalu mengirimnya ke OROLADO.',
       gP: 'Tempat membeli (P2P)', gPd: 'Pembelian antarpengguna, dilindungi platform. Bayar dengan uang seluler, transfer…', gS: 'Langkah demi langkah',
@@ -106,7 +106,7 @@
       gE: 'Contoh', gEx: 'Kamu ingin isi 10 $: beli 11 USDT lewat P2P. Kirim via TRC20: platform mengambil sekitar 1 USDT, 10 $ masuk ke saldomu.',
       gW: 'Penting', w1: 'Gunakan jaringan yang sama di kedua sisi (TRC20 ↔ TRC20). Jaringan salah = uang hilang.', w2: 'Jangan pernah membayar penjual di luar platform.', w3: 'Butuh bantuan? Tulis ke kami di Social.',
       go: 'Pilih USDT · TRC20', open: 'Buka', close: 'Tutup' },
-    ru: { title: 'Пополнение криптовалютой', b1: 'Автозачисление', b2: 'Безопасно', b3: '24/7', pick: 'Выберите криптовалюту', rec: 'Рекомендуем · очень низкие комиссии', all: 'Все криптовалюты', allS: '60+ монет и сетей',
+    ru: { sum: "Коротко: скопируйте адрес OROLADO → купите криптовалюту на Binance (или Bybit, OKX…) → сделайте «вывод» на свой адрес OROLADO. Вот и всё.", yt: "Видеоуроки", ytD: "На YouTube найдите «купить USDT Binance P2P»: много видео показывают каждый экран по шагам.", ytB: "Смотреть уроки на YouTube", ytQ: "купить usdt binance p2p", title: 'Пополнение криптовалютой', b1: 'Автозачисление', b2: 'Безопасно', b3: '24/7', pick: 'Выберите криптовалюту', rec: 'Рекомендуем · очень низкие комиссии', all: 'Все криптовалюты', allS: '60+ монет и сетей',
       how: 'Как это работает', s1: 'Выберите криптовалюту и скопируйте свой адрес OROLADO (или отсканируйте QR).', s2: 'Отправьте с Binance, Bybit, OKX или своего кошелька в ТОЙ ЖЕ сети.', s3: 'Баланс пополнится автоматически, в долларах, за несколько минут.',
       buy: 'Нет криптовалюты? Как купить', gT: 'Купить криптовалюту через мобильные деньги', gI: 'Вы можете за несколько минут купить USDT местным способом оплаты на крупной платформе и отправить их в OROLADO.',
       gP: 'Где купить (P2P)', gPd: 'Покупка между людьми под защитой платформы. Оплата мобильными деньгами, переводом…', gS: 'Пошагово',
@@ -116,7 +116,7 @@
       gE: 'Пример', gEx: 'Хотите пополнить на 10 $: купите 11 USDT через P2P. Отправьте в сети TRC20: платформа берёт около 1 USDT, на баланс придут 10 $.',
       gW: 'Важно', w1: 'Используйте одну и ту же сеть с обеих сторон (TRC20 ↔ TRC20). Не та сеть = потерянные деньги.', w2: 'Никогда не платите продавцу вне платформы.', w3: 'Нужна помощь? Напишите нам в Social.',
       go: 'Выбрать USDT · TRC20', open: 'Открыть', close: 'Закрыть' },
-    de: { title: 'Mit Krypto einzahlen', b1: 'Automatische Gutschrift', b2: 'Sicher', b3: '24/7', pick: 'Wähle deine Krypto', rec: 'Empfohlen · sehr niedrige Gebühren', all: 'Alle Kryptos', allS: '60+ Kryptos und Netzwerke',
+    de: { sum: "Kurz gesagt: OROLADO-Adresse kopieren → Krypto bei Binance (oder Bybit, OKX…) kaufen → eine „Auszahlung“ an deine OROLADO-Adresse machen. Fertig.", yt: "Video-Anleitungen", ytD: "Suche auf YouTube nach „USDT kaufen Binance P2P“: viele Videos zeigen jeden Bildschirm Schritt für Schritt.", ytB: "Anleitungen auf YouTube ansehen", ytQ: "usdt kaufen binance p2p", title: 'Mit Krypto einzahlen', b1: 'Automatische Gutschrift', b2: 'Sicher', b3: '24/7', pick: 'Wähle deine Krypto', rec: 'Empfohlen · sehr niedrige Gebühren', all: 'Alle Kryptos', allS: '60+ Kryptos und Netzwerke',
       how: 'So funktioniert’s', s1: 'Wähle deine Krypto und kopiere deine OROLADO-Adresse (oder scanne den QR-Code).', s2: 'Sende von Binance, Bybit, OKX oder deiner Wallet im GLEICHEN Netzwerk.', s3: 'Dein Guthaben wird in wenigen Minuten automatisch in Dollar gutgeschrieben.',
       buy: 'Noch keine Krypto? So kaufst du sie', gT: 'Krypto mit Mobile Money kaufen', gI: 'Du kannst USDT in wenigen Minuten mit deiner lokalen Zahlungsart auf einer großen Plattform kaufen und an OROLADO senden.',
       gP: 'Wo kaufen (P2P)', gPd: 'Kauf von Privat zu Privat, von der Plattform geschützt. Zahlung per Mobile Money, Überweisung…', gS: 'Schritt für Schritt',
@@ -126,7 +126,7 @@
       gE: 'Beispiel', gEx: 'Du willst 10 $ einzahlen: kaufe 11 USDT per P2P. Sende sie über TRC20: die Plattform behält etwa 1 USDT Gebühr, 10 $ kommen an.',
       gW: 'Wichtig', w1: 'Nutze auf beiden Seiten dasselbe Netzwerk (TRC20 ↔ TRC20). Falsches Netzwerk = Geld verloren.', w2: 'Bezahle einen Verkäufer nie außerhalb der Plattform.', w3: 'Hilfe nötig? Schreib uns in Social.',
       go: 'USDT · TRC20 wählen', open: 'Öffnen', close: 'Schließen' },
-    hi: { title: 'क्रिप्टो से रिचार्ज', b1: 'अपने-आप क्रेडिट', b2: 'सुरक्षित', b3: '24/7', pick: 'अपनी क्रिप्टो चुनें', rec: 'सुझाया गया · बहुत कम शुल्क', all: 'सभी क्रिप्टो', allS: '60+ क्रिप्टो और नेटवर्क',
+    hi: { sum: "संक्षेप में: अपना OROLADO पता कॉपी करें → Binance (या Bybit, OKX…) पर क्रिप्टो खरीदें → अपने OROLADO पते पर «निकासी» करें। बस इतना ही।", yt: "वीडियो गाइड", ytD: "YouTube पर «Binance P2P से USDT कैसे खरीदें» खोजें: कई वीडियो हर स्क्रीन कदम दर कदम दिखाते हैं।", ytB: "YouTube पर गाइड देखें", ytQ: "binance p2p usdt kaise kharide", title: 'क्रिप्टो से रिचार्ज', b1: 'अपने-आप क्रेडिट', b2: 'सुरक्षित', b3: '24/7', pick: 'अपनी क्रिप्टो चुनें', rec: 'सुझाया गया · बहुत कम शुल्क', all: 'सभी क्रिप्टो', allS: '60+ क्रिप्टो और नेटवर्क',
       how: 'यह कैसे काम करता है', s1: 'अपनी क्रिप्टो चुनें, फिर अपना OROLADO पता कॉपी करें (या QR स्कैन करें)।', s2: 'Binance, Bybit, OKX या अपने वॉलेट से उसी नेटवर्क पर भेजें।', s3: 'कुछ मिनटों में आपका बैलेंस डॉलर में अपने-आप जुड़ जाता है।',
       buy: 'क्रिप्टो नहीं है? कैसे खरीदें', gT: 'मोबाइल मनी से क्रिप्टो खरीदें', gI: 'आप किसी बड़े प्लेटफ़ॉर्म पर अपने स्थानीय भुगतान तरीके से कुछ मिनटों में USDT खरीदकर OROLADO पर भेज सकते हैं।',
       gP: 'कहाँ खरीदें (P2P)', gPd: 'लोगों के बीच खरीद, प्लेटफ़ॉर्म द्वारा सुरक्षित। मोबाइल मनी, ट्रांसफ़र… से भुगतान।', gS: 'कदम दर कदम',
@@ -136,7 +136,7 @@
       gE: 'उदाहरण', gEx: '10 $ रिचार्ज करना है: P2P पर 11 USDT खरीदें। TRC20 पर भेजें: प्लेटफ़ॉर्म लगभग 1 USDT शुल्क लेता है, 10 $ बैलेंस में आते हैं।',
       gW: 'ज़रूरी', w1: 'दोनों तरफ़ एक ही नेटवर्क चुनें (TRC20 ↔ TRC20)। गलत नेटवर्क = पैसे गए।', w2: 'प्लेटफ़ॉर्म के बाहर कभी किसी विक्रेता को भुगतान न करें।', w3: 'मदद चाहिए? Social में लिखें।',
       go: 'USDT · TRC20 चुनें', open: 'खोलें', close: 'बंद करें' },
-    zh: { title: '加密货币充值', b1: '自动到账', b2: '安全', b3: '24小时', pick: '选择你的加密货币', rec: '推荐 · 手续费极低', all: '全部加密货币', allS: '60+ 币种和网络',
+    zh: { sum: "简单来说：复制你的 OROLADO 地址 → 在 Binance（或 Bybit、OKX…）购买加密货币 → “提现”到你的 OROLADO 地址。就这么简单。", yt: "视频教程", ytD: "在 YouTube 搜索“Binance P2P 购买 USDT”：很多视频一步步展示每个页面。", ytB: "在 YouTube 观看教程", ytQ: "binance p2p 购买 usdt", title: '加密货币充值', b1: '自动到账', b2: '安全', b3: '24小时', pick: '选择你的加密货币', rec: '推荐 · 手续费极低', all: '全部加密货币', allS: '60+ 币种和网络',
       how: '如何操作', s1: '选择加密货币，然后复制你的 OROLADO 地址（或扫描二维码）。', s2: '从 Binance、Bybit、OKX 或你的钱包，在同一网络上发送。', s3: '几分钟内，余额以美元自动到账。',
       buy: '没有加密货币？如何购买', gT: '用移动支付购买加密货币', gI: '你可以在大型平台上用本地支付方式几分钟内买到 USDT，然后发送到 OROLADO。',
       gP: '在哪里买（P2P）', gPd: '个人之间交易，由平台担保。可用移动支付、转账等付款。', gS: '分步说明',
@@ -155,6 +155,7 @@
     chev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6"/></svg>',
     plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
     help: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5v.6"/><circle cx="12" cy="17" r=".9" fill="currentColor"/></svg>',
+    yt: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="13" rx="4" fill="#FF0000"/><path d="M10 9.2v5.6l4.8-2.8z" fill="#fff"/></svg>',
     warn: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5L2.5 20h19z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.2" r=".9" fill="currentColor"/></svg>'
   };
   function logo(a) { return '<img src="/img/coins/' + a + '.png?v=2" alt="" width="34" height="34" loading="lazy" decoding="async">'; }
@@ -187,7 +188,8 @@
       }).join('') +
       '<button type="button" class="dcp-row dcp-all" data-all="1"><span class="dcp-logo dcp-plus">' + ICO.plus + '</span><span class="dcp-meta"><b>' + esc(t.all) + '</b><small>' + esc(t.allS) + '</small></span><span class="dcp-go">' + ICO.chev + '</span></button></div>' +
       '<div class="dcp-sec">' + esc(t.how) + '</div>' +
-      '<ol class="dcp-steps"><li><i>1</i><span>' + esc(t.s1) + '</span></li><li><i>2</i><span>' + esc(t.s2) + '</span></li><li><i>3</i><span>' + esc(t.s3) + '</span></li></ol>';
+      '<ol class="dcp-steps"><li><i>1</i><span>' + esc(t.s1) + '</span></li><li><i>2</i><span>' + esc(t.s2) + '</span></li><li><i>3</i><span>' + esc(t.s3) + '</span></li></ol>' +
+      '<button type="button" class="dcp-buy dcp-buy2" data-buy="1">' + ICO.help + '<span>' + esc(t.buy) + '</span></button>';
   }
 
   function guide() {
@@ -196,12 +198,14 @@
     if (!g) { g = document.createElement('div'); g.id = 'dcpGuide'; g.className = 'dcp-guide'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-modal', 'true'); box.appendChild(g); }
     g.innerHTML =
       '<div class="dcpg-head"><b>' + esc(t.gT) + '</b><button type="button" class="dcpg-x" data-x="1" aria-label="' + esc(t.close) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>' +
-      '<div class="dcpg-body"><p class="dcpg-intro">' + esc(t.gI) + '</p>' +
+      '<div class="dcpg-body"><p class="dcpg-sum">' + esc(t.sum) + '</p><p class="dcpg-intro">' + esc(t.gI) + '</p>' +
         '<div class="dcp-sec">' + esc(t.gP) + '</div><p class="dcpg-pd">' + esc(t.gPd) + '</p>' +
         '<div class="dcpg-plat">' + PLAT.map(function (p) { return '<a href="' + p.u + '" target="_blank" rel="noopener noreferrer"><i style="background:' + p.c + '">' + p.k.charAt(0) + '</i><b>' + p.k + '</b><small>P2P</small></a>'; }).join('') + '</div>' +
         '<div class="dcp-sec">' + esc(t.gS) + '</div>' +
         '<ol class="dcp-steps">' + ['g1', 'g2', 'g3', 'g4', 'g5', 'g6'].map(function (k, i) { return '<li><i>' + (i + 1) + '</i><span>' + esc(t[k]) + '</span></li>'; }).join('') + '</ol>' +
         '<div class="dcpg-ex"><b>' + esc(t.gE) + '</b><p>' + esc(t.gEx) + '</p></div>' +
+        '<div class="dcp-sec">' + esc(t.yt) + '</div><p class="dcpg-pd">' + esc(t.ytD) + '</p>' +
+        '<a class="dcpg-yt" href="https://www.youtube.com/results?search_query=' + encodeURIComponent(t.ytQ) + '" target="_blank" rel="noopener noreferrer">' + ICO.yt + '<span>' + esc(t.ytB) + '</span></a>' +
         '<div class="dcpg-warn"><b>' + ICO.warn + esc(t.gW) + '</b><ul><li>' + esc(t.w1) + '</li><li>' + esc(t.w2) + '</li><li>' + esc(t.w3) + '</li></ul></div>' +
       '</div><button type="button" class="dcpg-go" data-go="1">' + esc(t.go) + '</button>';
     box.scrollTop = 0; box.classList.add('dcpg-open'); g.classList.add('on');
@@ -213,7 +217,7 @@
     var tg = e.target && e.target.closest ? e.target : null; if (!tg) return;
     var row = tg.closest('#depCryptoPro .dcp-row');
     if (row) { e.preventDefault(); var c = COINS[+row.getAttribute('data-i')]; if (D6.depPick) D6.depPick(c ? c.a : 'usdt', c ? c.n : '', !!row.getAttribute('data-all')); return; }
-    if (tg.closest('#dcpBuy')) { e.preventDefault(); guide(); return; }
+    if (tg.closest('#dcpBuy') || tg.closest('#depCryptoPro [data-buy]')) { e.preventDefault(); guide(); return; }
     if (tg.closest('#dcpGuide [data-x]')) { e.preventDefault(); closeGuide(); return; }
     if (tg.closest('#dcpGuide [data-go]')) { e.preventDefault(); closeGuide(); if (D6.depPick) D6.depPick('usdt', 'TRC20', false); }
   }, true);
