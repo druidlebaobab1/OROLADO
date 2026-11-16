@@ -2732,7 +2732,7 @@
   var FB_FLIP = {copter: 1, gull: 1, hedgehogfly: 1, lionhero: 1, pegasus: 1, robokid: 1, superhero: 1, unicornfly: 1, ladybug: 1, duckpilot: 1, beetlejet: 1, jetboard: 1, astronautkid: 1, fairyflight: 1, airship: 1, butterflyfly: 1, frogballoon: 1, spacebee: 1, bee: 1, beeprincess: 1};
   function withFArt(cfg) { // v3596 : jeux « vol » — décor + personnage illustrés (anciens dessins en secours)
     var V = '?v=3596', ob = cfg.bg, op = cfg.player, k = cfg.art;
-    cfg.bg = function (c) { ob.apply(this, arguments); gCover(c.canvas, 'img/games/fb_' + k + '_bg.webp' + V); };
+    cfg.bg = function (c) { ob.apply(this, arguments); gCover(c.canvas, 'img/games/fb_' + k + '_bg.webp' + (k === 'girlpilot' ? '?v=3741' : V)); }; // 2026-11-16 : ciel net
     cfg.player = function (d, sz) { var fb = op(d, sz); return gSprite(fb.w || sz, fb.h || sz, d, 'img/games/fb_' + k + '_pl.webp' + (k === 'girlpilot' ? '?v=3740' : FB_FLIP[k] ? '?v=3722' : V), function (c, cw, ch) { c.drawImage(fb, 0, 0, cw, ch); }); };
     return cfg;
   }
