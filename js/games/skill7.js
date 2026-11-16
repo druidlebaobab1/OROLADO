@@ -1422,14 +1422,14 @@
   function warFront(P) { return function (A) {
     var W, H, T, dpr, bg, hy, gy, bh, fr = [], foes = [], gren = [], puffs = [], cool = 0, aimA = -Math.PI / 2, flash = 0, dead = 0, won = 0, bomb = null, t = 0, spT = 0, aiT = 0, kills = 0, NF = 8;
     function scr(f) { var k = 1 - f.z, sc = 0.3 + 0.7 * k * k; return { x: W / 2 + f.x * W * 0.46 * (0.35 + 0.65 * k), y: hy + (gy - hy) * (0.05 + 0.95 * k * k), s: sc }; }
-    function spawn(live) { var lv = live ? A.lv() : 0.2; foes.push({ x: rnd(-0.9, 0.9), z: 1, vz: (0.075 + 0.075 * lv) * rnd(0.85, 1.2), dx: rnd(-0.12, 0.12), ph: Math.random(), dn: 0, gT: lv > 0.15 && Math.random() < 0.35 + 0.3 * lv ? rnd(0.25, 0.6) : 9 }); }
+    function spawn(live) { var lv = live ? A.lv() : 0.2; foes.push({ x: rnd(-0.42, 0.42), z: 1, vz: (0.075 + 0.075 * lv) * rnd(0.85, 1.2), dx: rnd(-0.03, 0.03), /* 2026-11-16 : ils courent droit vers le fusil */ ph: Math.random(), dn: 0, gT: lv > 0.15 && Math.random() < 0.35 + 0.3 * lv ? rnd(0.25, 0.6) : 9 }); }
     function shootAt(x, y) {
       if (cool > 0 || dead || bomb || won) return;
       cool = 0.26; flash = 0.08; aimA = Math.atan2(y - H, x - W / 2); A.sx('gun', { k: 'rifle' });
       for (var i = 0; i < gren.length; i++) { var g = gren[i], gp = gpos(g); if (Math.hypot(gp.x - x, gp.y - y) < Math.max(18, bh * 0.12)) { gren.splice(i, 1); boomFx(A, gp.x, gp.y, 0.5); return; } }
       var best = null;
       foes.forEach(function (f) { if (f.dn) return; var p = scr(f), hh = bh * p.s; if (Math.abs(x - p.x) < hh * 0.24 + 6 && y > p.y - hh * 1.02 - 6 && y < p.y + 4) { if (!best || f.z < best.z) best = f; } });
-      if (best) { best.dn = 0.001; kills++; var p = scr(best); A.burst(x, y, 6, ['#7F1D1D', '#B91C1C', '#D6D3D1'], 70, 0.4, 2.4, 120); A.sx('hit'); void p; return; }
+      if (best) { best.dn = 0.001; kills++; var p = scr(best); A.burst(x, y, 6, ['#7F1D1D', '#B91C1C', '#D6D3D1'], 70, 0.4, 2.4, 120); void p; return; } // l'impact sonne « blast » (famille guerre)
       puffs.push({ x: x, y: y, t: 0 }); if (puffs.length > 10) puffs.shift();
     }
     function gpos(g) { var k = Math.min(1, g.t / g.T), x = g.x0 + (g.x1 - g.x0) * k, y = g.y0 + (g.y1 - g.y0) * k - Math.sin(k * Math.PI) * (H - T) * 0.35; return { x: x, y: y, k: k }; }
@@ -1464,12 +1464,13 @@
       reset: function () { aimA = -Math.PI / 2; foes = []; gren = []; puffs = []; cool = 0; dead = 0; won = 0; bomb = null; spT = 0.5; kills = 0; },
       step: function (dt, live) {
         t += dt; cool = Math.max(0, cool - dt); flash = Math.max(0, flash - dt); var i, f;
+        if (cool <= 0) aimA += (-Math.PI / 2 - aimA) * Math.min(1, dt * 3); // le fusil revient droit entre deux tirs
         for (i = puffs.length - 1; i >= 0; i--) { puffs[i].t += dt; if (puffs[i].t > 0.5) puffs.splice(i, 1); }
         for (i = foes.length - 1; i >= 0; i--) {
           f = foes[i];
           if (f.dn) { f.dn += dt; if (f.dn > 0.9) foes.splice(i, 1); continue; }
           if (bomb || dead || won) continue;
-          f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1; f.z -= f.vz * dt; f.x = clamp(f.x + f.dx * dt, -0.95, 0.95); if (Math.random() < dt * 0.5) f.dx = -f.dx;
+          f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1; f.z -= f.vz * dt; f.x = clamp(f.x + f.dx * dt, -0.5, 0.5); if (Math.random() < dt * 0.5) f.dx = -f.dx;
           if (f.gT < 9 && f.z < 1 - f.gT) { f.gT = 9; var p = scr(f), hh = bh * p.s; gren.push({ x0: p.x, y0: p.y - hh * 0.8, x1: clamp(p.x + rnd(-40, 40), 30, W - 30), y1: H - (H - gy) * 0.6, t: 0, T: 1.8 + f.z }); }
           if (f.z <= 0) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); } } else foes.splice(i, 1); }
         }
@@ -1495,7 +1496,7 @@
         // our rifle at the bottom, turned toward the last shot
         // 2026-11-16 (propriétaire : « mets un vrai fusil, bien placé ») : la mitrailleuse illustrée de Zombie Siege, vue de derrière,
         // au centre en bas, qui pivote vers le tir, recule et crache une flamme à chaque coup.
-        var gunI = warImg('zomb2_gun'), gH = Math.min((H - T) * 0.4, W * 0.62), gW = gH * 367 / 560, gRot = clamp(aimA + Math.PI / 2, -0.75, 0.75), rec = flash ? gH * 0.03 : 0;
+        var gunI = warImg('zomb2_gun'), gH = Math.min((H - T) * 0.4, W * 0.62), gW = gH * 367 / 560, gRot = clamp(aimA + Math.PI / 2, -0.28, 0.28), rec = flash ? gH * 0.03 : 0;
         c.save(); c.translate(W / 2, H + gH * 0.12 + rec); c.rotate(gRot);
         if (gunI.ok) c.drawImage(gunI.im, -gW * 0.476, -gH, gW, gH);
         if (flash) { var fs2 = gH * 0.1, my2 = -gH * 0.97; circ(c, 0, my2, fs2 * 0.9, 'rgba(253,186,116,.35)'); c.fillStyle = '#FEF3C7'; c.beginPath(); c.moveTo(-fs2 * 0.5, my2); c.lineTo(0, my2 - fs2 * 1.8); c.lineTo(fs2 * 0.5, my2); c.fill(); }
@@ -1834,21 +1835,22 @@
       if (lv > 0.3 && r < 0.12 + 0.12 * lv) k = 'b'; else if ((live ? lv > 0.12 : true) && r < 0.4) k = 'r';
       if (!live && r > 0.85) k = 'b';
       var D = (live ? 8 - 3.4 * lv : 8.5) * (k === 'r' ? 0.62 : k === 'b' ? 1.3 : 1);
-      var x = rnd(-0.8, 0.8), tries = 0;
-      while (tries++ < 6 && zs.some(function (z) { return z.p < 0.25 && Math.abs(z.x - x) < 0.3; })) x = rnd(-0.8, 0.8);
+      // 2026-11-16 (propriétaire : « les cibles doivent venir tout droit, face au fusil ») : couloir central plus étroit
+      var x = rnd(-0.45, 0.45), tries = 0;
+      while (tries++ < 6 && zs.some(function (z) { return z.p < 0.25 && Math.abs(z.x - x) < 0.22; })) x = rnd(-0.45, 0.45);
       zs.push({ k: k, x: x, p: 0, y: yTop, v: 1 / D, hp: k === 'b' ? 3 : 1, max: k === 'b' ? 3 : 1, ph: rnd(0, 2), hit: 0, die: 0 });
     }
     function muzzle() { return [gunX + Math.sin(rot) * gunH * 0.93, gunY - Math.cos(rot) * gunH * 0.93]; }
     function shoot(x, y) {
       var best = null, i;
-      ang = Math.atan2(y - gunY, x - gunX); rot = clamp(ang + Math.PI / 2, -0.75, 0.75);
-      var m = muzzle(); fx.push({ x0: m[0], y0: m[1], x1: x, y1: y, t: 0.09 }); flashT = 0.07;
+      ang = Math.atan2(y - gunY, x - gunX); rot = clamp(ang + Math.PI / 2, -0.28, 0.28); // l'arme reste presque droite, face aux zombies
+      var m = muzzle(); fx.push({ x0: m[0], y0: m[1], x1: x, y1: y, t: 0.09 }); flashT = 0.07; A.sx('gun', { k: 'mg' }); // vrai coup de mitrailleuse
       for (i = 0; i < zs.length; i++) {
         var z = zs[i]; if (z.die || z.hord) continue;
         var d = dims(z), zx = sx(z), pad = Math.max(10, d[0] * 0.15);
         if (x > zx - d[0] * 0.5 - pad && x < zx + d[0] * 0.5 + pad && y > z.y - d[1] - pad && y < z.y + pad && (!best || z.y > best.y)) best = z;
       }
-      if (!best) { A.burst(x, y, 4, ['#A8A29E', '#D6D3D1'], 70, 0.35, 2.2); return; }
+      if (!best) { A._xb = 1; A.burst(x, y, 4, ['#A8A29E', '#D6D3D1'], 70, 0.35, 2.2); A._xb = 0; return; } // raté : poussière, sans le bruit « touché »
       var bx = sx(best), bd = dims(best);
       best.hp--; best.hit = 0.14; best.p = Math.max(0, best.p - 0.025);
       A.burst(bx, best.y - bd[1] * 0.62, 9, ['#7F1D1D', '#4D7C0F', '#B91C1C'], 130, 0.5, 3);
@@ -1882,7 +1884,7 @@
       },
       reset: function (live) { zs = []; splats = []; dead = 0; won = 0; horde = false; fx = []; spT = live ? 0.8 : 0.2; ang = -Math.PI / 2; rot = 0; autoT = 0.8; },
       step: function (dt, live) {
-        t += dt; cool -= dt; flashT = Math.max(0, flashT - dt);
+        t += dt; cool -= dt; flashT = Math.max(0, flashT - dt); if (flashT <= 0) rot *= Math.max(0, 1 - dt * 3); // l'arme revient droite après le tir
         var lv = live ? A.lv() : 0, playing = A.live(), i;
         if (!dead && !horde && !won) {
           spT -= dt;
