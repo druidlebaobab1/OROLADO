@@ -385,7 +385,17 @@
       if (!L) { noise(c, { t: 0.01, f: 2400, f2: 500, q: 0.8, d: 0.35, v: 0.12 * s }); for (var i = 0; i < 4; i++) noise(c, { t: 0.18 + Math.random() * 0.6, f: 900 + Math.random() * 1500, q: 3, d: 0.04, v: 0.05 * s }); }
     },
     blast: function (c, P, a) { var s = a.s || 1; tone(c, { f: 120, f2: 42, d: 0.28, v: 0.26 * s, a: 0.003 }); noise(c, { ft: 'lowpass', f: 1300, f2: 180, d: 0.38, v: 0.2 * s, a: 0.002 }); },
-    gun: function (c, P) { noise(c, { f: 1900, f2: 700, q: 0.9, d: 0.07, v: 0.2, a: 0.001 }); tone(c, { f: 150, f2: 55, d: 0.1, v: 0.22, a: 0.001 }); if (!lite()) noise(c, { t: 0.04, ft: 'lowpass', f: 600, d: 0.22, v: 0.05, a: 0.01 }); },
+    // 2026-11-16 (propriétaire : « les sons de tir font jouet, ping ping ; il faut de vraies armes ») : vrai coup de feu =
+    // claquement sec + coup sourd dans la poitrine + souffle + écho ; fusil (rifle), mitrailleuse (mg, plus court), canon (grave).
+    gun: function (c, P, a) {
+      a = a || {}; var k = a.k || 'rifle', v = a.v || 1, L = lite();
+      if (k === 'laser') { noise(c, { f: 1900, f2: 700, q: 0.9, d: 0.07, v: 0.2 * v, a: 0.001 }); tone(c, { f: 150, f2: 55, d: 0.1, v: 0.22 * v, a: 0.001 }); return; }
+      var big = k === 'cannon', mg = k === 'mg';
+      noise(c, { ft: 'highpass', f: big ? 900 : 1600, d: mg ? 0.03 : 0.045, v: (big ? 0.25 : 0.34) * v, a: 0.0008 });
+      tone(c, { f: big ? 85 : mg ? 150 : 125, f2: big ? 30 : 42, d: big ? 0.38 : mg ? 0.09 : 0.16, v: (big ? 0.5 : 0.42) * v, a: 0.001 });
+      noise(c, { ft: 'lowpass', f: big ? 1100 : 3000, f2: 180, d: big ? 0.8 : mg ? 0.13 : 0.34, v: (mg ? 0.24 : 0.3) * v, a: 0.001 });
+      if (!L && !mg) noise(c, { t: big ? 0.16 : 0.1, ft: 'lowpass', f: 850, f2: 140, d: big ? 0.9 : 0.6, v: 0.09 * v, a: 0.02 });
+    },
     zombie: function (c, P) { voc(c, { f: 150 + Math.random() * 30, f2: 68, d: 0.55, bp: 520, q: 4, v: 0.1 }); noise(c, { ft: 'lowpass', f: 650, d: 0.14, v: 0.16 }); },
     groan: function (c, P, a) { voc(c, { f: 105 + Math.random() * 40, f2: 72, d: 0.95, bp: 480 + Math.random() * 160, q: 5, v: 0.06 * (a.v || 1), a: 0.25 }); },
     bump: function (c, P) { tone(c, { f: 190, f2: 58, d: 0.24, v: 0.36, a: 0.002 }); noise(c, { ft: 'lowpass', f: 900, d: 0.11, v: 0.22 }); tone(c, { t: 0.03, f: 880, f2: 380, d: 0.14, v: 0.04, type: 'triangle', a: 0.003 }); },
@@ -415,6 +425,9 @@
   FAM.war = { ins: 'synth', sp: 0.08, launch: 'pop', act: 'gun', hit: 'blast', crash: 'boom' };
   FAM.zombie = { ins: 'synth', sp: 0.08, launch: 'pop', act: 'gun', hit: 'zombie', crash: 'bump' };
   MAP.airstrike = 'war'; MAP.zombiesiege = 'zombie';
+  // 2026-11-16 : tous les jeux de guerre / de tir réalistes sonnent « guerre » (vrai coup de feu, impact sourd), plus de « pew »
+  ['trenchdef', 'sniper', 'forestambush', 'junglestrike', 'bunkerbreach', 'westernshowdown', 'tankbattle', 'gunship'].forEach(function (k) { MAP[k] = 'war'; });
+  MAP.deadhighway = 'zombie'; MAP.graveyardnight = 'zombie';
   FAM.run.step = 'footstep'; FAM.run.act = 'jump'; FAM.run.crash = 'bump';
   FAM.fly.crash = 'boom'; FAM.build.crash = 'bump'; FAM.throwg.crash = 'bump'; FAM.arcade.crash = 'bump'; FAM.shoot.crash = 'boom'; FAM.crash.crash = 'boom';
   DEF.crash = 'bump'; DEF.near = 'near'; DEF.cashout = 'cashout'; DEF.fail = 'fail';
@@ -491,7 +504,7 @@
       rp: [3, 6], rnd: function (c, P, i, V) { R.crowd(c, P, { v: 0.3 * V }); } }
   };
   var BED_OF = {
-    crash: 'engine', jet: 'jet', rocket: 'rocket', flappyrock: 'rocket', airstrike: 'war', zombiesiege: 'zombie', fleets: 'war',
+    crash: 'engine', jet: 'jet', rocket: 'rocket', flappyrock: 'rocket', airstrike: 'war', zombiesiege: 'zombie', trenchdef: 'war', sniper: 'war', forestambush: 'war', junglestrike: 'war', deadhighway: 'zombie', graveyardnight: 'zombie', fleets: 'war',
     race: 'race', highway: 'race', horses: 'horses',
     hamster: 'run', jungledash: 'run', metrodash: 'run', spacerun: 'run', princess: 'run', chicken: 'run',
     basket: 'sport', archer: 'sport', dartspro: 'sport', penalty: 'sport', goal: 'sport', bowling: 'sport', golf: 'sport', skijump: 'sport', cricket: 'sport',

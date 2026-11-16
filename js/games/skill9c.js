@@ -42,18 +42,18 @@
       zh: ['拖动驾驶卡丁车', '撞上了！', '引擎爆了！', '你的卡丁车在弯道众多的赛道上飞驰（后方视角）。左右拖动转向：弯道会把你甩向外侧，要往内侧打方向。避开路锥、木箱、香蕉皮和较慢的卡丁车。撞上任何一个或撞上边缘的轮胎墙，本回合结束。']
     },
     desertrally: {
-      en: ['Hold for gas, release to coast', 'Flipped over!', 'Sandstorm!', 'Your rally truck crosses the dunes. Hold your finger down for gas (in the air, gas lifts the nose), release to coast (in the air, the nose drops). Land on your wheels and grab the fuel cans before the tank is empty. Landing on the roof, or running out of fuel, ends the round.', 'Out of fuel!'],
-      fr: ['Maintiens pour accélérer, lâche pour rouler', 'Sur le toit !', 'Tempête de sable !', 'Ton camion de rallye traverse les dunes. Garde le doigt posé pour accélérer (en l’air, l’accélérateur lève le nez), lâche pour rouler en roue libre (en l’air, le nez plonge). Retombe sur tes roues et attrape les bidons d’essence avant que le réservoir soit vide. Atterrir sur le toit, ou tomber en panne d’essence, termine la partie.', 'Panne d’essence !'],
-      es: ['Mantén para acelerar, suelta para rodar', '¡Volcaste!', '¡Tormenta de arena!', 'Tu camión de rally cruza las dunas. Mantén el dedo para acelerar (en el aire, el gas levanta el morro) y suelta para rodar (en el aire, el morro baja). Cae sobre las ruedas y recoge los bidones antes de vaciar el depósito. Caer sobre el techo, o quedarte sin gasolina, termina la ronda.', '¡Sin gasolina!'],
-      pt: ['Segure para acelerar, solte para rolar', 'Capotou!', 'Tempestade de areia!', 'Seu caminhão de rali cruza as dunas. Segure o dedo para acelerar (no ar, o acelerador levanta o bico) e solte para rolar (no ar, o bico desce). Caia sobre as rodas e pegue os galões antes de o tanque esvaziar. Cair de capota, ou ficar sem combustível, encerra a rodada.', 'Sem combustível!'],
-      ar: ['اضغط للتسارع وأفلت للانطلاق الحر', 'انقلبت!', 'عاصفة رملية!', 'تعبر شاحنة الرالي الكثبان. أبقِ إصبعك مضغوطًا للتسارع (في الهواء يرفع الوقود المقدمة) وأفلت للسير الحر (في الهواء تنخفض المقدمة). اهبط على العجلات واجمع عبوات الوقود قبل أن يفرغ الخزان. الهبوط على السقف أو نفاد الوقود ينهي الجولة.', 'نفد الوقود!'],
-      tr: ['Gaz için bas, serbest için bırak', 'Takla attın!', 'Kum fırtınası!', 'Ralli kamyonun kum tepelerini aşar. Gaz için parmağını basılı tut (havada gaz burnu kaldırır), serbest gitmek için bırak (havada burun düşer). Tekerleklerin üstüne in ve depo boşalmadan yakıt bidonlarını topla. Tavan üstü inmek ya da yakıtın bitmesi turu bitirir.', 'Yakıt bitti!'],
-      vi: ['Giữ để tăng ga, thả để trôi', 'Lật xe!', 'Bão cát!', 'Xe tải rally vượt qua các đụn cát. Giữ ngón tay để tăng ga (trên không, ga làm đầu xe ngóc lên), thả ra để trôi (trên không, đầu xe chúc xuống). Đáp bằng bánh xe và nhặt can xăng trước khi hết bình. Đáp ngửa mui, hoặc hết xăng, là kết thúc ván.', 'Hết xăng!'],
-      id: ['Tahan untuk gas, lepas untuk meluncur', 'Terbalik!', 'Badai pasir!', 'Truk relimu melintasi bukit pasir. Tahan jarimu untuk gas (di udara, gas mengangkat moncong), lepas untuk meluncur (di udara, moncong turun). Mendaratlah di roda dan ambil jeriken bensin sebelum tangki kosong. Mendarat terbalik, atau kehabisan bensin, mengakhiri ronde.', 'Bensin habis!'],
-      ru: ['Держи — газ, отпусти — накат', 'Перевернулся!', 'Песчаная буря!', 'Раллийный грузовик мчится по дюнам. Держи палец — газ (в воздухе газ поднимает нос), отпусти — накат (в воздухе нос опускается). Приземляйся на колёса и собирай канистры, пока бак не опустел. Приземление на крышу или пустой бак завершает раунд.', 'Кончилось топливо!'],
-      de: ['Halten für Gas, loslassen zum Rollen', 'Überschlagen!', 'Sandsturm!', 'Dein Rallye-Truck fährt über die Dünen. Halte den Finger gedrückt für Gas (in der Luft hebt Gas die Nase), lass los zum Rollen (in der Luft sinkt die Nase). Lande auf den Rädern und sammle die Kanister, bevor der Tank leer ist. Auf dem Dach landen oder leerer Tank beendet die Runde.', 'Tank leer!'],
-      hi: ['गैस को दबाएँ, छोड़ें तो लुढ़के', 'पलट गए!', 'रेतीला तूफ़ान!', 'आपका रैली ट्रक रेत के टीलों को पार करता है। गैस के लिए उँगली दबाए रखें (हवा में गैस आगे का हिस्सा उठाती है), छोड़ें तो लुढ़के (हवा में आगे का हिस्सा झुकता है)। पहियों पर उतरें और टंकी खाली होने से पहले ईंधन के डिब्बे लें। छत के बल उतरना या ईंधन खत्म होना राउंड खत्म करता है।', 'ईंधन खत्म!'],
-      zh: ['按住加油，松开滑行', '翻车了！', '沙尘暴！', '你的拉力卡车穿越沙丘。按住手指加油（空中加油会抬起车头），松开滑行（空中车头下沉）。用车轮着地，并在油箱见底前拿到油桶。车顶着地或燃油耗尽，本回合结束。', '没油了！']
+      en: ['Tap to jump over the rocks', 'Crashed!', 'Sandstorm!', 'Your rally truck drives across the dunes on its own. Rocks, barrels and cacti block the track: tap the screen to jump over them. The truck goes faster and faster. Hitting an obstacle ends the round. Cash out whenever you want.'],
+      fr: ['Touche pour sauter les rochers', 'Accident !', 'Tempête de sable !', 'Ton camion de rallye roule tout seul sur les dunes. Des rochers, des fûts et des cactus barrent la piste : touche l’écran pour sauter par-dessus. Le camion va de plus en plus vite. Heurter un obstacle termine la partie. Encaisse quand tu veux.'],
+      es: ['Toca para saltar las rocas', '¡Choque!', '¡Tormenta de arena!', 'Tu camión de rally cruza las dunas solo. Rocas, barriles y cactus bloquean la pista: toca la pantalla para saltarlos. El camión va cada vez más rápido. Chocar con un obstáculo termina la ronda. Cobra cuando quieras.'],
+      pt: ['Toque para pular as pedras', 'Batida!', 'Tempestade de areia!', 'Seu caminhão de rali cruza as dunas sozinho. Pedras, barris e cactos bloqueiam a pista: toque na tela para pular. O caminhão fica cada vez mais rápido. Bater num obstáculo encerra a rodada. Saque quando quiser.'],
+      ar: ['المس للقفز فوق الصخور', 'حادث!', 'عاصفة رملية!', 'تسير شاحنة الرالي وحدها فوق الكثبان. صخور وبراميل وصبار تسد الطريق: المس الشاشة للقفز فوقها. تزداد سرعة الشاحنة شيئًا فشيئًا. الاصطدام بعائق ينهي الجولة. اسحب أرباحك متى شئت.'],
+      tr: ['Kayaların üstünden atlamak için dokun', 'Kaza!', 'Kum fırtınası!', 'Ralli kamyonun kum tepelerinde kendi kendine ilerler. Kayalar, variller ve kaktüsler yolu kapatır: üstlerinden atlamak için ekrana dokun. Kamyon giderek hızlanır. Bir engele çarpmak turu bitirir. İstediğin an çek.'],
+      vi: ['Chạm để nhảy qua đá', 'Tai nạn!', 'Bão cát!', 'Xe tải rally tự chạy qua các đụn cát. Đá, thùng phuy và xương rồng chắn đường: chạm màn hình để nhảy qua. Xe chạy ngày càng nhanh. Đâm vào chướng ngại vật là kết thúc ván. Rút tiền bất cứ lúc nào.'],
+      id: ['Ketuk untuk melompati batu', 'Tabrakan!', 'Badai pasir!', 'Truk relimu melaju sendiri di bukit pasir. Batu, tong, dan kaktus menghalangi jalur: ketuk layar untuk melompatinya. Truk makin lama makin cepat. Menabrak rintangan mengakhiri ronde. Tarik kapan saja.'],
+      ru: ['Нажми, чтобы перепрыгнуть камни', 'Авария!', 'Песчаная буря!', 'Раллийный грузовик сам едет по дюнам. Камни, бочки и кактусы преграждают путь: нажимай на экран, чтобы перепрыгивать их. Грузовик едет всё быстрее. Удар о препятствие завершает раунд. Забирай выигрыш когда хочешь.'],
+      de: ['Tippen, um über Felsen zu springen', 'Unfall!', 'Sandsturm!', 'Dein Rallye-Truck fährt von allein über die Dünen. Felsen, Fässer und Kakteen versperren die Strecke: tippe auf den Bildschirm, um darüber zu springen. Der Truck wird immer schneller. Ein Aufprall beendet die Runde. Kassiere, wann du willst.'],
+      hi: ['चट्टानों पर कूदने के लिए टैप करें', 'दुर्घटना!', 'रेतीला तूफ़ान!', 'आपका रैली ट्रक टीलों पर अपने आप चलता है। चट्टानें, ड्रम और कैक्टस रास्ता रोकते हैं: उन पर कूदने के लिए स्क्रीन टैप करें। ट्रक तेज़ होता जाता है। किसी बाधा से टकराना राउंड खत्म करता है। जब चाहें निकालें।'],
+      zh: ['点击跳过岩石', '撞车了！', '沙尘暴！', '你的拉力卡车自动穿越沙丘。岩石、油桶和仙人掌挡住赛道：点击屏幕跳过去。卡车越来越快。撞上障碍物，本回合结束。随时可以提现。']
     },
     rooftopninja: {
       en: ['Tap to leap to the other wall', 'Spiked!', 'Spotted by a drone!', 'Your ninja runs up between two skyscrapers. Tap to leap to the other wall. Spikes stick out of the walls: always be on the other side when you reach them. The climb gets faster and the spikes closer together. Touching a spike ends the round.'],
@@ -620,25 +620,53 @@
   /* ================================================================== 10. DESERT RALLY — hill-climb over dunes. Hold = gas (in the air:
      the nose lifts), release = coast (in the air: the nose drops). Land on the wheels; grab fuel cans before the tank is empty. */
   boot('desertrally', function (A) {
-    var W, H, T, dpr, bg, dune, G0, amp, wl, car, cw, ch, wr, x = 0, y = 0, s = 0, vx = 0, vy = 0, ang = 0, av = 0, air = false, held = false, rot = 0, fuel = 1, cans = [], nextCan = 0, camY = 0, t = 0, dead = null, won = 0, storm = 0, ph = 0, GR, cx0;
-    function gy(xx) { var a = amp * (1 + Math.min(1, Math.max(0, xx) / (W * 50))); return G0 + a * (0.55 * Math.sin(xx / wl * TAU + ph) + 0.3 * Math.sin(xx / (wl * 0.47) * TAU + ph * 2) + 0.15 * Math.sin(xx / (wl * 0.21) * TAU)); }
+    // 2026-11-16 (propriétaire : « on ne sait pas comment jouer, ça avance puis ça s'arrête, il faut revoir le scénario ») : le camion
+    // AVANCE TOUT SEUL sur des dunes douces (il ne cale plus jamais dans une montée, plus de jauge d'essence) ; le joueur TOUCHE
+    // L'ÉCRAN POUR SAUTER par-dessus les rochers, les fûts et les cactus. La vitesse monte avec le temps. Heurter un obstacle = fin.
+    var W, H, T, dpr, bg, dune, G0, amp, wl, car, cw, ch, wr, x = 0, y = 0, s = 0, vy = 0, jy = 0, ang = 0, air = false, obs = [], nextO = 0, camY = 0, t = 0, dead = null, won = 0, storm = 0, ph = 0, GR, JV, cx0, tip = 0;
+    function gy(xx) { return G0 + amp * (0.6 * Math.sin(xx / wl * TAU + ph) + 0.4 * Math.sin(xx / (wl * 0.53) * TAU + ph * 2)); }
     function slope(xx) { return (gy(xx + 2) - gy(xx - 2)) / 4; }
-    function reset(live) { ph = rnd(0, TAU); x = cx0; s = W * 0.3; air = false; ang = Math.atan(slope(x)); av = 0; y = gy(x); fuel = 1; cans = []; nextCan = x + W * 1.2; dead = null; won = 0; storm = 0; held = false; camY = 0; }
+    function airT() { return 2 * JV / GR; }
+    function reset(live) { ph = rnd(0, TAU); x = cx0; s = W * 0.5; air = false; jy = 0; vy = 0; ang = Math.atan(slope(x)); y = gy(x); obs = []; nextO = x + W * (live ? 2.2 : 0.9); dead = null; won = 0; storm = 0; camY = 0; tip = 0; }
+    function addObs(live) {
+      var lv = live ? A.lv() : 0.25, k = ['rock', 'barrel', 'cactus', 'rock'][Math.floor(Math.random() * 4)];
+      obs.push({ x: nextO, k: k, w: cw * (k === 'cactus' ? 0.22 : k === 'barrel' ? 0.26 : 0.34), h: ch * (k === 'cactus' ? 0.95 : k === 'barrel' ? 0.62 : 0.55) });
+      var minGap = s * airT() * 1.15 + cw; // always room to land and jump again
+      nextO += Math.max(minGap, W * rnd(0.75, 1.5) * (1.15 - 0.45 * Math.min(1, lv)));
+    }
+    function jump() { if (air || dead || won || storm) return; air = true; vy = -JV; A.sx('jump'); puff(A, cx0 - cw * 0.3, y - camY, 6, ['#FDBA74', '#FED7AA'], 80, 0.45, 3); }
+    function rock(c, o, X, Y) { // obstacles drawn at their base (X centre, Y ground)
+      var w = o.w, h = o.h;
+      c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(X, Y, w * 0.7, h * 0.08, 0, 0, TAU); c.fill();
+      if (o.k === 'rock') {
+        c.fillStyle = lg(c, X - w / 2, Y - h, X + w / 2, Y, ['#A8A29E', '#78716C', '#44403C']); c.beginPath(); c.moveTo(X - w * 0.55, Y); c.lineTo(X - w * 0.45, Y - h * 0.6); c.lineTo(X - w * 0.1, Y - h); c.lineTo(X + w * 0.3, Y - h * 0.85); c.lineTo(X + w * 0.55, Y - h * 0.3); c.lineTo(X + w * 0.55, Y); c.closePath(); c.fill();
+        c.strokeStyle = 'rgba(28,25,23,.5)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(X - w * 0.1, Y - h); c.lineTo(X, Y - h * 0.4); c.lineTo(X + w * 0.3, Y - h * 0.2); c.stroke();
+      } else if (o.k === 'barrel') {
+        c.fillStyle = lg(c, X - w / 2, 0, X + w / 2, 0, ['#7F1D1D', '#DC2626', '#7F1D1D']); rr(c, X - w / 2, Y - h, w, h, w * 0.12); c.fill();
+        c.fillStyle = '#1C1917'; c.fillRect(X - w / 2, Y - h * 0.7, w, h * 0.07); c.fillRect(X - w / 2, Y - h * 0.32, w, h * 0.07);
+        c.fillStyle = '#FDE047'; c.font = '900 ' + Math.round(w * 0.45) + 'px system-ui,sans-serif'; c.textAlign = 'center'; c.fillText('!', X, Y - h * 0.4);
+      } else {
+        c.fillStyle = lg(c, X - w / 2, 0, X + w / 2, 0, ['#166534', '#22C55E', '#14532D']);
+        rr(c, X - w * 0.22, Y - h, w * 0.44, h, w * 0.22); c.fill();
+        rr(c, X - w * 0.8, Y - h * 0.62, w * 0.3, h * 0.36, w * 0.15); c.fill(); c.fillRect(X - w * 0.6, Y - h * 0.34, w * 0.4, w * 0.22);
+        rr(c, X + w * 0.5, Y - h * 0.8, w * 0.3, h * 0.4, w * 0.15); c.fill(); c.fillRect(X + w * 0.2, Y - h * 0.46, w * 0.4, w * 0.22);
+      }
+    }
     return {
       size: function (ww, hh, u, d, top) {
-        W = ww; H = hh; dpr = d; T = top; G0 = T + (H - T) * 0.62; amp = (H - T) * 0.12; wl = clamp(W * 1.1, 360, 1000); GR = (H - T) * 2.2; cx0 = W * 0.32;
-        cw = clamp(Math.min(W * 0.22, (H - T) * 0.2), 64, 160); ch = cw * 0.55; wr = cw * 0.17;
+        W = ww; H = hh; dpr = d; T = top; G0 = T + (H - T) * 0.66; amp = Math.min((H - T) * 0.06, W * 0.09); wl = clamp(W * 1.6, 420, 1200); cx0 = W * 0.3;
+        cw = clamp(Math.min(W * 0.24, (H - T) * 0.2), 64, 170); ch = cw * 0.55; wr = cw * 0.17;
+        GR = cw * 9; JV = Math.sqrt(2 * GR * ch * 1.55); // jump height ≈ 1.55 × the truck height
         bg = mkc(W, H, dpr, function (c) {
           c.fillStyle = lg(c, 0, 0, 0, H, ['#7C2D12', '#EA580C', '#FDBA74', '#FEF3C7']); c.fillRect(0, 0, W, H);
           circ(c, W * 0.75, T + (H - T) * 0.22, Math.min(W, H) * 0.08, rg(c, W * 0.75, T + (H - T) * 0.22, Math.min(W, H) * 0.08, ['#FFFBEB', '#FDE047', '#F59E0B']));
         });
         var dw = Math.max(W, 600) * 1.4, dh = (H - T) * 0.35;
-        dune = mkc(dw, dh, dpr, function (c) { c.fillStyle = '#C2410C'; c.globalAlpha = 0.55; c.beginPath(); c.moveTo(0, dh); for (var xx = 0; xx <= dw; xx += 8) c.lineTo(xx, dh * (0.45 + 0.25 * Math.sin(xx / dw * TAU * 3) + 0.1 * Math.sin(xx / dw * TAU * 8))); c.lineTo(dw, dh); c.fill(); c.globalAlpha = 1;
-          for (var i = 0; i < 4; i++) { var px2 = dw * (0.1 + i * 0.25), py2 = dh * 0.55; c.fillStyle = '#7C2D12'; c.fillRect(px2 - 2, py2 - dh * 0.28, 4, dh * 0.28); c.fillRect(px2 - dh * 0.1, py2 - dh * 0.2, dh * 0.1, 3); c.fillRect(px2 - dh * 0.1, py2 - dh * 0.26, 3, dh * 0.07); c.fillRect(px2, py2 - dh * 0.16, dh * 0.09, 3); c.fillRect(px2 + dh * 0.09 - 3, py2 - dh * 0.22, 3, dh * 0.07); } });
+        dune = mkc(dw, dh, dpr, function (c) { c.fillStyle = '#C2410C'; c.globalAlpha = 0.55; c.beginPath(); c.moveTo(0, dh); for (var xx = 0; xx <= dw; xx += 8) c.lineTo(xx, dh * (0.45 + 0.25 * Math.sin(xx / dw * TAU * 3) + 0.1 * Math.sin(xx / dw * TAU * 8))); c.lineTo(dw, dh); c.fill(); c.globalAlpha = 1; });
         dune.w = dw; dune.h = dh;
-        car = mkc(cw * 1.1, ch * 1.2, sdpr(), function (c, w, h) { // side view facing right, wheels drawn apart; origin = centre of the axle line
+        car = mkc(cw * 1.1, ch * 1.2, sdpr(), function (c, w, h) { // side view facing right; origin = centre of the axle line
           c.translate(w * 0.5, h * 0.78);
-          c.fillStyle = '#1F2937'; c.fillRect(-cw * 0.42, -ch * 0.12, cw * 0.84, ch * 0.12); // chassis
+          c.fillStyle = '#1F2937'; c.fillRect(-cw * 0.42, -ch * 0.12, cw * 0.84, ch * 0.12);
           c.fillStyle = lg(c, 0, -ch * 0.75, 0, 0, ['#FDE68A', '#F59E0B', '#B45309']); c.beginPath(); c.moveTo(-cw * 0.5, -ch * 0.12); c.lineTo(-cw * 0.48, -ch * 0.48); c.lineTo(-cw * 0.15, -ch * 0.5); c.lineTo(-cw * 0.02, -ch * 0.82); c.lineTo(cw * 0.22, -ch * 0.82); c.lineTo(cw * 0.32, -ch * 0.5); c.lineTo(cw * 0.52, -ch * 0.42); c.lineTo(cw * 0.54, -ch * 0.12); c.closePath(); c.fill();
           c.fillStyle = 'rgba(15,23,42,.85)'; c.beginPath(); c.moveTo(-cw * 0.0, -ch * 0.76); c.lineTo(cw * 0.19, -ch * 0.76); c.lineTo(cw * 0.27, -ch * 0.52); c.lineTo(-cw * 0.08, -ch * 0.52); c.closePath(); c.fill();
           c.fillStyle = '#DC2626'; c.fillRect(-cw * 0.48, -ch * 0.36, cw * 1.0, ch * 0.08); c.fillStyle = '#F8FAFC'; c.font = '900 ' + Math.round(ch * 0.22) + 'px system-ui,sans-serif'; c.textAlign = 'center'; c.fillText('21', -cw * 0.28, -ch * 0.17);
@@ -650,40 +678,28 @@
       reset: function (live) { reset(live); },
       step: function (dt, live) {
         t += dt; var lv = live ? A.lv() : 0.25, i;
-        if (A.idle() && !dead) { if (air) { var tg = Math.atan(slope(x + vx * 0.25)); held = ang > tg + 0.05; } else held = s < W * 0.75; if (fuel < 0.3) fuel = 1; }
-        if (won) { won += dt; s *= 1 - dt * 1.5; if (!air) { x += s * dt; y = gy(x); ang = Math.atan(slope(x)); } return; }
-        if (dead) { dead.t += dt; if (dead.k === 'flip') { ang += av * dt; av *= 1 - dt; } else { s *= 1 - dt * 1.5; x += s * dt; y = gy(x); } return; }
-        if (storm) { storm += dt; s *= 1 - dt; x += s * dt; y = gy(x); return; }
-        fuel -= dt / (8.5 - 2.5 * lv) * (held ? 1.15 : 0.8);
-        if (fuel <= 0) { fuel = 0; if (A.live()) { if (A.fail(A.l.fail2)) dead = { t: 0, k: 'fuel' }; return; } fuel = 1; }
-        var n = 3, h = dt / n;
-        for (var k = 0; k < n; k++) {
-          if (!air) {
-            var th = Math.atan(slope(x));
-            s += ((held ? W * 0.95 : 0) + GR * Math.sin(th) - s * 0.35) * h; s = clamp(s, -W * 0.4, W * 1.25);
-            vx = s * Math.cos(th); vy = s * Math.sin(th);
-            var nx = x + vx * h, ny = y + vy * h + 0.5 * GR * h * h;
-            if (ny < gy(nx) - 1 && s > W * 0.35) { air = true; x = nx; y = ny; av = 0; }
-            else { x = nx; y = gy(x); ang += (th - ang) * Math.min(1, h * 18); }
-          } else {
-            vy += GR * h; x += vx * h; y += vy * h; av += (held ? -5.5 : 4) * h; av *= 1 - 0.8 * h; ang += av * h;
-            if (y >= gy(x)) {
-              var tg2 = Math.atan(slope(x)), dif = Math.atan2(Math.sin(ang - tg2), Math.cos(ang - tg2));
-              y = gy(x); air = false;
-              if (Math.abs(dif) > 1.05) { if (A.live()) { if (A.fail(A.l.fail)) { dead = { t: 0, k: 'flip' }; av = dif > 0 ? 4 : -4; A.shake(0.35); puff(A, cx0, y - camY, 18, ['#FDBA74', '#FED7AA', '#9A3412'], 170, 0.7, 3.4); } return; } }
-              s = Math.hypot(vx, vy) * Math.cos(Math.atan2(vy, vx) - tg2) * (Math.abs(dif) < 0.35 ? 1 : 0.7); ang = tg2; av = 0;
-              puff(A, cx0, y - camY, 8, ['#FDBA74', '#FED7AA'], 100, 0.5, 3);
+        if (won) { won += dt; s *= 1 - dt * 1.5; }
+        else if (dead) { dead.t += dt; s *= 1 - dt * 3; tip = Math.min(1.9, tip + dt * 5); }
+        else if (storm) { storm += dt; s *= 1 - dt; }
+        else s += (W * (0.5 + 0.35 * Math.min(1, lv)) - s) * Math.min(1, dt * 1.5); // always moving forward, a bit faster with time
+        x += s * dt;
+        var g = gy(x);
+        if (air) { vy += GR * dt; jy += vy * dt; if (jy >= 0) { jy = 0; vy = 0; air = false; puff(A, cx0, g - camY, 8, ['#FDBA74', '#FED7AA'], 100, 0.5, 3); } }
+        y = g + jy; ang += ((air ? Math.atan(slope(x)) * 0.5 - 0.12 : Math.atan(slope(x))) - ang) * Math.min(1, dt * 10);
+        if (!dead && !won && !storm) {
+          while (nextO < x + W * 1.6) addObs(live);
+          if (A.idle()) { for (i = 0; i < obs.length; i++) { var dx = obs[i].x - x; if (dx > 0 && dx < s * airT() * 0.42 + cw * 0.35) { jump(); break; } } }
+          for (i = 0; i < obs.length; i++) {
+            var o = obs[i], ox2 = o.x - x;
+            if (o.hit || Math.abs(ox2) > cw * 0.42 + o.w * 0.45) continue;
+            if (-jy < o.h * 0.8) { // the wheels are lower than the top of the obstacle: crash
+              o.hit = 1;
+              if (A.live()) { if (A.fail(A.l.fail)) { dead = { t: 0 }; A.shake(0.4); A.sx('crash'); puff(A, cx0 + cw * 0.3, g - camY - ch * 0.4, 16, ['#FDBA74', '#9A3412', '#44403C'], 170, 0.7, 3.4); } }
             }
           }
         }
-        // fuel cans on the dunes
-        while (nextCan < x + W * 1.5) { cans.push({ x: nextCan }); nextCan += W * rnd(1.6, 2.4) * (1 + lv * 0.25); }
-        for (i = cans.length - 1; i >= 0; i--) {
-          var cn = cans[i];
-          if (Math.abs(cn.x - x) < cw * 0.55 && Math.abs(gy(cn.x) - ch * 0.4 - y + ch * 0.3) < ch * 1.4) { cans.splice(i, 1); fuel = 1; A.burst(cx0, y - camY - ch * 0.5, 12, ['#FDE68A', '#22C55E', '#FFFFFF'], 130, 0.5, 3); continue; }
-          if (cn.x < x - W) cans.splice(i, 1);
-        }
-        var tyc = Math.min(0, y - (T + (H - T) * 0.45)); camY += (tyc - camY) * Math.min(1, dt * 4);
+        for (i = obs.length - 1; i >= 0; i--) if (obs[i].x < x - W) obs.splice(i, 1);
+        var tyc = Math.min(0, g - (T + (H - T) * 0.5)); camY += (tyc - camY) * Math.min(1, dt * 4);
       },
       draw: function (c) {
         A.bg(bg); wbFill(c, 'desertrally', 'rgba(0,0,0,.14)');
@@ -694,36 +710,24 @@
         c.fillStyle = '#F59E0B'; c.fill();
         c.strokeStyle = '#FCD34D'; c.lineWidth = 3; c.beginPath(); for (X = 0; X <= W + stp; X += stp) { if (X) c.lineTo(X, gy(X + ox) - camY); else c.moveTo(X, gy(X + ox) - camY); } c.stroke();
         c.strokeStyle = 'rgba(180,83,9,.35)'; c.lineWidth = 2; c.beginPath(); for (X = 0; X <= W + stp; X += stp) { var yy = gy(X + ox) - camY + (H - T) * 0.06; if (X) c.lineTo(X, yy); else c.moveTo(X, yy); } c.stroke();
-        // fuel cans
-        for (i = 0; i < cans.length; i++) {
-          var cxx = cans[i].x - ox; if (cxx < -40 || cxx > W + 40) continue;
-          var cyy = gy(cans[i].x) - camY - wr * 2.4 + Math.sin(t * 4 + i) * 3;
-          circ(c, cxx, cyy, wr * 1.6, 'rgba(253,230,138,.35)');
-          c.fillStyle = lg(c, cxx - wr, 0, cxx + wr, 0, ['#991B1B', '#EF4444', '#991B1B']); rr(c, cxx - wr * 0.8, cyy - wr, wr * 1.6, wr * 2, wr * 0.3); c.fill();
-          c.fillStyle = '#FDE68A'; c.fillRect(cxx - wr * 0.25, cyy - wr * 1.35, wr * 0.5, wr * 0.4); c.strokeStyle = '#FDE68A'; c.lineWidth = 2; c.beginPath(); c.moveTo(cxx - wr * 0.5, cyy - wr * 0.6); c.lineTo(cxx + wr * 0.5, cyy + wr * 0.6); c.stroke();
-        }
-        // the truck: body rotated with the angle, wheels at both ends of the axle line
+        for (i = 0; i < obs.length; i++) { var ox3 = obs[i].x - ox; if (ox3 < -60 || ox3 > W + 60) continue; rock(c, obs[i], ox3, gy(obs[i].x) - camY + 2); }
+        // the truck: body follows the slope, wheels on the axle line; the shadow stays on the sand during a jump
         var by = y - camY, rot2 = t * s / wr;
-        c.save(); c.translate(cx0, by - wr); c.rotate(ang);
-        if (held && !dead && !air && Math.random() < 0.5) puff(A, cx0 - Math.cos(ang) * cw * 0.45, by - wr * 0.6, 1, ['rgba(253,186,116,.8)', 'rgba(254,215,170,.7)'], 40, 0.6, 6, -20);
+        if (air) { c.fillStyle = 'rgba(0,0,0,' + (0.25 * Math.max(0.2, 1 + jy / (ch * 2))) + ')'; c.beginPath(); c.ellipse(cx0, gy(x) - camY + 2, cw * 0.45, ch * 0.08, 0, 0, TAU); c.fill(); }
+        c.save(); c.translate(cx0, by - wr); c.rotate(ang - tip);
+        if (!dead && !air && s > W * 0.3 && Math.random() < 0.5) puff(A, cx0 - Math.cos(ang) * cw * 0.45, by - wr * 0.6, 1, ['rgba(253,186,116,.8)', 'rgba(254,215,170,.7)'], 40, 0.6, 6, -20);
         c.drawImage(car, -cw * 0.55, -ch * 1.2 * 0.78, cw * 1.1, ch * 1.2);
         wheel(c, -cw * 0.33, 0, wr, rot2, '#E5E7EB'); wheel(c, cw * 0.33, 0, wr, rot2, '#E5E7EB');
         c.restore();
-        // fuel gauge (top left, under the HUD)
-        var gw = clamp(W * 0.26, 80, 160), gx = 10, gyy = T + 4, gh = 10;
-        c.fillStyle = 'rgba(10,6,30,.6)'; rr(c, gx - 4, gyy - 4, gw + 8 + 18, gh + 8, 8); c.fill();
-        c.fillStyle = fuel < 0.25 ? (Math.sin(t * 12) > 0 ? '#EF4444' : '#7F1D1D') : lg(c, gx, 0, gx + gw, 0, ['#EF4444', '#FACC15', '#22C55E']); rr(c, gx + 18, gyy, gw * fuel, gh, 5); c.fill();
-        c.fillStyle = '#EF4444'; rr(c, gx, gyy - 2, 12, 14, 3); c.fill(); c.fillStyle = '#FDE68A'; c.fillRect(gx + 3, gyy - 4, 6, 3);
         if (storm) { c.fillStyle = 'rgba(194,65,12,' + Math.min(0.6, storm * 0.5) + ')'; c.fillRect(0, T, W, H - T); c.fillStyle = 'rgba(254,215,170,.7)'; for (i = 0; i < 40; i++) c.fillRect((i * 89 - t * 900) % W + W, T + (i * 47 + t * 60) % (H - T), 8, 2); }
       },
-      down: function () { held = true; },
-      move: function () { },
-      up: function () { held = false; },
-      boom: function () { storm = 0.001; held = false; A.sx('crash'); },
-      win: function () { won = 0.001; held = false; A.burst(cx0, y - camY - ch, 16, ['#FDE68A', '#F59E0B', '#FFFFFF'], 150, 0.6, 3); },
-      dbg: function () { var tg = Math.atan(slope(x + vx * 0.25)); return { air: air, ang: ang, tg: tg, s: s / W, fuel: fuel, want: air ? (ang > tg + 0.05 ? 1 : 0) : (s < W * 0.75 ? 1 : 0), dead: dead ? dead.k : '' }; }
+      act: function () { jump(); },
+      key: function (k) { if (k === 'up' || k === 'tap' || k === 'space') jump(); },
+      boom: function () { storm = 0.001; A.sx('crash'); },
+      win: function () { won = 0.001; A.burst(cx0, y - camY - ch, 16, ['#FDE68A', '#F59E0B', '#FFFFFF'], 150, 0.6, 3); },
+      dbg: function () { var nx = 1e9; obs.forEach(function (o) { var d0 = o.x - x; if (d0 > 0 && d0 < nx) nx = d0; }); return { x: x, s: s / W, air: air, obs: obs.length, dead: dead ? 1 : 0, nx: nx, jd: s * airT() * 0.42 + cw * 0.35 }; }
     };
-  }, 'hold', 0.4);
+  }, 'tap', 0.4);
 
   /* ================================================================== 11. ROOFTOP NINJA — the ninja runs up between two walls; tap = leap
      to the other wall. Spikes stick out of the walls: be on the other side when you reach them. */
