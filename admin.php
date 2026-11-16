@@ -1608,6 +1608,52 @@ function admin_list_payload_raw(string $view, array $req): array {
     return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => false, 'alertOpen' => $errN];
   }
 
+  // 2026-11-16 (propriétaire : « Sénégal ou Côte d'Ivoire : quel pays rapporte le plus ? ») — un tableau par pays :
+  // inscrits, nouveaux (hier + aujourd'hui), déposants, dépôts, argent déposé, retraits payés, bénéfice, et des moyennes
+  // qui permettent de comparer des pays de tailles différentes (bénéfice par inscrit, dépôt par déposant…).
+  if ($view === 'profit_country') {
+    $C = [];
+    $blank = ['ins' => 0, 'new' => 0, 'depUsers' => [], 'newDepUsers' => [], 'nDep' => 0, 'sumDep' => 0.0, 'newSum' => 0.0, 'sumWd' => 0.0];
+    $isNew = [];
+    foreach ($people as $p) {
+      $c = admin_country_cell($p); if ($c === '' ) $c = '—';
+      $C[$c] = $C[$c] ?? $blank; $C[$c]['ins']++;
+      $ca = (string) ($p['createdAt'] ?? '');
+      if (admin_in_range($ca, $y0, $t1)) { $C[$c]['new']++; $isNew[(string) ($p['id'] ?? '')] = true; }
+    }
+    $cOf = static function (string $uid) use ($pmap): array { $u = admin_user_lookup($uid, $pmap); $c = admin_country_cell($u); return [$c !== '' ? $c : '—', (string) ($u['id'] ?? $uid)]; };
+    foreach ($deps as $d) {
+      if (!admin_dep_is_paid($d)) continue;
+      [$c, $uid] = $cOf((string) ($d['userId'] ?? ''));
+      if (!isset($C[$c])) continue; // comptes admin / inconnus : hors comparaison
+      $a = (float) ($d['amount'] ?? 0);
+      $C[$c]['nDep']++; $C[$c]['sumDep'] += $a; $C[$c]['depUsers'][$uid] = true;
+      if (isset($isNew[$uid])) { $C[$c]['newDepUsers'][$uid] = true; $C[$c]['newSum'] += $a; }
+    }
+    foreach ($wds as $w) {
+      if (!admin_wd_is_paid($w) || admin_wd_is_silenced($w)) continue;
+      [$c] = $cOf((string) ($w['userId'] ?? ''));
+      if (isset($C[$c])) $C[$c]['sumWd'] += (float) ($w['amount'] ?? 0);
+    }
+    uasort($C, static fn($a, $b) => (($b['sumDep'] - $b['sumWd']) <=> ($a['sumDep'] - $a['sumWd'])) ?: ($b['ins'] <=> $a['ins']));
+    $cols = ['Pays', 'Inscrits', 'Nouveaux (hier + auj.)', 'Déposants', '% qui déposent', 'Nb de dépôts', 'Argent déposé', 'Retraits payés', 'Bénéfice', 'Dépôt moyen / déposant', 'Bénéfice / inscrit', 'Nouveaux : déposants', 'Nouveaux : déposé'];
+    $tot = $blank; $nIns = 0;
+    foreach ($C as $c => $x) {
+      if ($x['ins'] < 1) continue;
+      $nd = count($x['depUsers']); $prof = $x['sumDep'] - $x['sumWd'];
+      $rows[] = ['cells' => [
+        $c, (string) $x['ins'], (string) $x['new'], (string) $nd, ($x['ins'] ? round(100 * $nd / $x['ins'], 1) : 0) . ' %',
+        (string) $x['nDep'], admin_money($x['sumDep']), admin_money($x['sumWd']), admin_money($prof),
+        admin_money($nd ? $x['sumDep'] / $nd : 0), admin_money($x['ins'] ? $prof / $x['ins'] : 0),
+        count($x['newDepUsers']) . ' / ' . $x['new'], admin_money($x['newSum']),
+      ], 'userId' => ''];
+    }
+    $top = array_slice(array_keys(array_filter($C, static fn($x) => $x['ins'] >= 20)), 0, 3);
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1,
+      'summary' => 'Tous les temps · classés par bénéfice (dépôts − retraits payés). Pour comparer des pays de tailles différentes, regardez « % qui déposent » et « Bénéfice / inscrit ». « Nouveaux » = inscrits hier et aujourd’hui.' . ($top ? ' Meilleurs pays (≥ 20 inscrits) : ' . implode(', ', $top) . '.' : ''),
+      'actions' => false];
+  }
+
   if (in_array($view, ['profit_today', 'profit_yesterday', 'profit_7d', 'profit_total'], true)) {
     $from = '';
     $to = '';
@@ -3217,6 +3263,7 @@ $ADMIN_TABS = [
     ['profit_yesterday', 'Bénéfice d’Hier'],
     ['profit_7d', 'Bénéfice 7 Jours'],
     ['profit_total', 'Bénéfice Total'],
+    ['profit_country', '🌍 Comparaison par Pays'],
     ['open_positions', 'Positions Ouvertes'],
     ['payout_stats', 'Payout Classement'],
     ['games', 'Statistiques des Jeux'],

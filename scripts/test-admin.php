@@ -231,6 +231,8 @@ $pp8 = admin_profile_payload($p8);
 check('il apparaît sur la fiche du joueur, en attente 5 $', in_array('wd_local8', array_map(static fn($r) => (string) ($r['id'] ?? ''), $pp8['withdrawals'] ?? []), true) && abs(($pp8['totals']['wdOpen'] ?? 0) - 5) < 0.01, json_encode($pp8['totals'] ?? []));
 
 echo "1c) Vraie date d'inscription gardée quand la caisse est créée plus tard\n";
+$jcc = admin_list_payload('profit_country', ['preset' => 'all']);
+check('comparaison par pays : un tableau par pays', !empty($jcc['ok']) && count($jcc['rows'] ?? []) >= 1 && count($jcc['cols'] ?? []) === 13, json_encode(array_map(static fn($r) => array_slice($r['cells'], 0, 9), $jcc['rows'] ?? []), JSON_UNESCAPED_UNICODE));
 $jf = admin_list_payload('dep_ftd_today', ['preset' => 'all']); check('liste « inscrits avec 1er dépôt aujourd’hui »', !empty($jf['ok']) && is_array($jf['rows']), (string) ($jf['summary'] ?? ''));
 check('1ers dépôts du jour : pastilles de tous les pays', is_array($jf['countries'] ?? null) && array_sum(array_map(static fn($c) => $c[1], $jf['countries'])) === count($jf['rows']), json_encode($jf['countries'] ?? null, JSON_UNESCAPED_UNICODE));
 if (!empty($jf['countries'][0][0])) { $jc = admin_list_payload('dep_ftd_today', ['preset' => 'all', 'country' => $jf['countries'][0][0]]); check('1ers dépôts du jour : choix d’un pays', ($jc['total'] ?? -1) === (int) $jf['countries'][0][1], (string) ($jc['summary'] ?? '')); }
