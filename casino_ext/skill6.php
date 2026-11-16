@@ -291,4 +291,9 @@ return [
   'icecreamcatch' => ['type' => 'skill', 'name' => 'Ice Cream Catch','rate' => 0.03],
   'popcorncatch'  => ['type' => 'skill', 'name' => 'Popcorn Catch',  'rate' => 0.03],
   'veggiecatch'   => ['type' => 'skill', 'name' => 'Veggie Catch',   'rate' => 0.03],
+  // 2026-11-16 (propriétaire : « 2 jeux de zombies de plus, 2 jeux de guerre en forêt ») — js/games/skill7.js
+  'deadhighway'    => ['type' => 'skill', 'name' => 'Dead Highway',    'rate' => 0.03],
+  'graveyardnight' => ['type' => 'skill', 'name' => 'Graveyard Night', 'rate' => 0.03],
+  'forestambush'   => ['type' => 'skill', 'name' => 'Forest Ambush',   'rate' => 0.03],
+  'junglestrike'   => ['type' => 'skill', 'name' => 'Jungle Strike',   'rate' => 0.03],
 ];
