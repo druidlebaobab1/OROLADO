@@ -14906,3 +14906,63 @@ html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#
 html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-crypto-cell{padding:10px 4px 8px!important;gap:7px!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important}
 html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:40px!important;height:40px!important}
 html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt .pay-crypto-cell b{font-size:.82rem!important}
+/* 2026-11-16 (propriétaire) : écran « Recharger en crypto » pro (js/dep-crypto.js) */
+html body #depositModal#depositModal #depositBox.dep-crypto-only #payMethodUsdt#payMethodUsdt{display:none!important}
+#depCryptoPro{--g:#E9C47A;--g2:#F5D88E;--ln:rgba(233,196,122,.22);display:flex;flex-direction:column;gap:10px;margin-top:4px;color:#ECE6D8}
+#depCryptoPro .dcp-hero{padding:16px 14px 14px;border-radius:16px;border:1px solid var(--ln);
+  background:radial-gradient(120% 140% at 0% 0%,rgba(233,196,122,.22),transparent 55%),linear-gradient(165deg,#2A2112,#17120A)}
+#depCryptoPro .dcp-hero h3{margin:0 0 10px;font-size:1.3rem;font-weight:900;letter-spacing:.01em;color:#FFF7E6;line-height:1.2}
+#depCryptoPro .dcp-badges{display:flex;flex-wrap:wrap;gap:6px}
+#depCryptoPro .dcp-badges span{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;font-size:.74rem;font-weight:800;
+  background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#BBF7D0;white-space:nowrap}
+#depCryptoPro .dcp-badges svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#depCryptoPro .dcp-badges span:first-child svg{fill:currentColor;stroke:none}
+#depCryptoPro .dcp-sec{font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--g);margin:6px 2px -2px}
+#depCryptoPro .dcp-list{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;border:1px solid var(--ln);background:#141210}
+#depCryptoPro .dcp-row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,.06);-webkit-tap-highlight-color:transparent;transition:background .15s}
+#depCryptoPro .dcp-row:last-child{border-bottom:0}
+#depCryptoPro .dcp-row:active,#depCryptoPro .dcp-row:hover{background:rgba(233,196,122,.08)}
+#depCryptoPro .dcp-row.rec{background:linear-gradient(90deg,rgba(38,161,123,.16),transparent 70%)}
+#depCryptoPro .dcp-logo{flex:0 0 34px;width:34px;height:34px;border-radius:50%;overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+#depCryptoPro .dcp-logo img{width:100%;height:100%;display:block}
+#depCryptoPro .dcp-plus{background:rgba(233,196,122,.14);color:var(--g)}
+#depCryptoPro .dcp-plus svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+#depCryptoPro .dcp-meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
+#depCryptoPro .dcp-meta b{font-size:.98rem;font-weight:900;color:#FFF}
+#depCryptoPro .dcp-meta small{font-size:.76rem;font-weight:700;color:#A8A29E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#depCryptoPro .dcp-meta em{font-style:normal;font-size:.7rem;font-weight:800;color:#6EE7B7;margin-top:2px;white-space:normal;line-height:1.25}
+#depCryptoPro .dcp-go{flex:0 0 26px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(233,196,122,.12);color:var(--g)}
+#depCryptoPro .dcp-go svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#depCryptoPro .dcp-steps,.dcp-guide .dcp-steps{list-style:none;margin:0;padding:12px;display:flex;flex-direction:column;gap:10px;border-radius:16px;border:1px solid var(--ln,rgba(233,196,122,.22));background:#141210}
+#depCryptoPro .dcp-steps li,.dcp-guide .dcp-steps li{display:flex;gap:10px;align-items:flex-start;font-size:.84rem;font-weight:600;line-height:1.4;color:#E7E2D6}
+#depCryptoPro .dcp-steps i,.dcp-guide .dcp-steps i{flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:.8rem;
+  color:#1A1408;background:linear-gradient(180deg,#F5D88E,#C99A3B)}
+#depCryptoPro .dcp-buy{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 12px;border-radius:14px;cursor:pointer;
+  font-weight:900;font-size:.95rem;line-height:1.25;text-align:center;color:#1A1408;background:linear-gradient(180deg,#F8DE96,#D8A746);box-shadow:0 8px 20px rgba(216,167,70,.25);margin:0}
+#depCryptoPro .dcp-buy svg{flex:0 0 20px;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.dcp-guide{position:absolute;inset:0;z-index:30;display:none;flex-direction:column;background:#0D0B08;border-radius:inherit;color:#ECE6D8}
+.dcp-guide.on{display:flex}
+.dcp-guide .dcpg-head{display:flex;align-items:center;gap:10px;padding:16px 14px 10px;border-bottom:1px solid rgba(233,196,122,.18)}
+.dcp-guide .dcpg-head b{flex:1;min-width:0;font-size:1.08rem;font-weight:900;line-height:1.25;color:#FFF7E6}
+.dcp-guide .dcpg-x{all:unset;flex:0 0 36px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:rgba(255,255,255,.08)}
+.dcp-guide .dcpg-x svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round}
+.dcp-guide .dcpg-body{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.dcp-guide .dcp-sec{font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#E9C47A;margin:6px 2px -4px}
+.dcp-guide .dcpg-intro,.dcp-guide .dcpg-pd{margin:0;font-size:.86rem;line-height:1.45;font-weight:600;color:#D6D0C2}
+.dcp-guide .dcpg-pd{font-size:.8rem;color:#A8A29E}
+.dcp-guide .dcpg-plat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.dcp-guide .dcpg-plat a{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;text-decoration:none;border:1px solid rgba(233,196,122,.2);background:#141210;min-width:0}
+.dcp-guide .dcpg-plat i{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-weight:900;color:#111}
+.dcp-guide .dcpg-plat b{font-size:.78rem;font-weight:900;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dcp-guide .dcpg-plat small{font-size:.66rem;font-weight:800;color:#6EE7B7}
+.dcp-guide .dcpg-ex{padding:12px;border-radius:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3)}
+.dcp-guide .dcpg-ex b{font-size:.84rem;font-weight:900;color:#86EFAC}
+.dcp-guide .dcpg-ex p{margin:4px 0 0;font-size:.84rem;line-height:1.45;font-weight:600}
+.dcp-guide .dcpg-warn{padding:12px;border-radius:14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.32)}
+.dcp-guide .dcpg-warn b{display:flex;align-items:center;gap:6px;font-size:.84rem;font-weight:900;color:#FCA5A5}
+.dcp-guide .dcpg-warn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round}
+.dcp-guide .dcpg-warn ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:.82rem;line-height:1.4;font-weight:600}
+.dcp-guide .dcpg-go{all:unset;box-sizing:border-box;margin:0 14px 14px;padding:14px 12px;border-radius:14px;text-align:center;cursor:pointer;font-weight:900;font-size:.96rem;
+  color:#05220F;background:linear-gradient(180deg,#4ADE80,#16A34A)}
+html body #depositModal#depositModal #depositBox.dcpg-open{overflow:hidden!important}
