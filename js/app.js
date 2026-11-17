@@ -7321,6 +7321,7 @@
         console.error('OROLADO maketou fail', remote);
         var why = String((remote && remote.reason) || '');
         if (remote && remote.code === 'disabled') why = t('momoOff');
+        if (/api|key|maketou|moneroo|redirect|http|\{/i.test(why)) why = t('momoOff'); // 2026-11-17 : jamais de message technique pour le joueur
         toast(why || t('momoOff'), 'err', 6000);
         return;
       }

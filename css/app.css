@@ -15067,3 +15067,4 @@ html body #depositModal#depositModal #depositBox.dep-crypto-only #depositStepSel
 .dcp-guide .dcph-arrow{color:#86EFAC;font-weight:900}
 .dcp-guide .dcph h4{margin:12px 0 6px;font-size:1.15rem;font-weight:900;line-height:1.3;color:#fff}
 .dcp-guide .dcph p{margin:0;font-size:.88rem;font-weight:600;line-height:1.45;color:#D9F99D}
+html body #depositModal#depositModal #depositBox.dcp-on .oxa-only{display:none!important}
