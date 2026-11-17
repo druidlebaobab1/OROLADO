@@ -15014,3 +15014,22 @@ html body #depositModal#depositModal #depositBox.dcp-fr #oxaNetWrap{display:none
 .dcp-guide .dcpk .dcpq-img{max-width:100%;margin:0 auto}
 .dcp-guide a.dcpk-go{text-decoration:none;font-size:1.1rem;padding:16px 12px;display:block}
 .dcp-guide a.dcpk-go.ok{background:linear-gradient(180deg,#86EFAC,#22C55E)}
+/* 2026-11-17 (propriétaire) : croix sous la barre de l'iPhone, message « anciennes adresses » retiré, logos des grandes applications */
+html body #depositModal#depositModal #depositBox.dep-crypto-only .oxa-only{display:none!important}
+.dcp-guide .dcpg-head{padding-top:calc(14px + env(safe-area-inset-top,0px))!important}
+html.is-ios .dcp-guide .dcpg-head{padding-top:max(52px,calc(14px + env(safe-area-inset-top,0px)))!important}
+.dcp-guide .dcpg-brand{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:900;color:#052e16;background:#4ADE80;vertical-align:middle}
+.dcp-guide .dcpk-addr{gap:10px}
+.dcp-guide .dcpk-code{display:block;padding:10px;border-radius:10px;background:#0B0B0B;border:1px solid rgba(255,255,255,.12);color:#86EFAC;font-size:.8rem;font-weight:700;word-break:break-all;text-align:center}
+.dcp-guide .dcpq-btn.ok{background:linear-gradient(180deg,#86EFAC,#22C55E)!important;color:#052e16!important}
+.dcp-guide .dcpk .dcpq-img{max-width:300px;width:100%}
+.dcp-guide a.dcpk-go{font-size:1.15rem}
+#depositModal .dcpl-row{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;width:100%;margin:10px 0 6px;padding:12px;border-radius:16px;cursor:pointer;background:#141210;border:1px solid rgba(233,196,122,.25);-webkit-tap-highlight-color:transparent}
+#depositModal .dcpl-row small{font-size:.8rem;font-weight:800;color:#E9C47A;text-align:center;line-height:1.3}
+#depositModal .dcpl-logos{display:flex;justify-content:space-between;gap:6px}
+#depositModal .dcpl-logos img{width:40px;height:40px;border-radius:10px;display:block;flex:0 0 auto}
+.dcp-guide .dcpl-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dcp-guide .dcpl{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border-radius:14px;text-decoration:none;background:#141210;border:1px solid rgba(233,196,122,.22);min-width:0}
+.dcp-guide .dcpl img{width:44px;height:44px;border-radius:12px}
+.dcp-guide .dcpl b{font-size:.82rem;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dcp-guide .dcpl span{font-size:.72rem;font-weight:900;color:#052e16;background:#4ADE80;border-radius:999px;padding:3px 10px}
