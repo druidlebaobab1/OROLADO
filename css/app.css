@@ -15044,3 +15044,17 @@ html.is-ios .dcp-guide .dcpg-head{padding-top:max(52px,calc(14px + env(safe-area
 .dcp-guide .dcpk .dcpq-img{max-width:240px;width:100%;margin:0 0 0 42px;border-radius:8px}
 .dcp-guide .dcpk-addr .dcpk-code{font-size:.74rem;padding:8px}
 .dcp-guide .dcpk-addr .dcpq-btn{padding:9px 10px;font-size:.86rem}
+/* 2026-11-17 (propriétaire : « la croix au bout, je n'aime pas ; dans l'appli iPhone elle est mal placée ») :
+   un bouton « ← Retour » bien visible à gauche, sous la barre de l'iPhone (navigateur et appli installée) */
+.dcp-guide .dcpg-head2{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px 10px!important}
+html.is-ios .dcp-guide .dcpg-head2{padding-top:max(50px,calc(10px + env(safe-area-inset-top,0px)))!important}
+.dcp-guide.dcp-app .dcpg-head2{padding-top:max(62px,calc(12px + env(safe-area-inset-top,0px)))!important}
+.dcp-guide .dcpg-back{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;padding:9px 16px 9px 10px;border-radius:999px;cursor:pointer;
+  font-weight:900;font-size:.98rem;color:#1A1408;background:linear-gradient(180deg,#F8DE96,#D8A746);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.dcp-guide .dcpg-back svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.dcp-guide .dcpg-head2 b{font-size:1.12rem}
+.dcp-guide .dcpk-intro{margin:0 0 4px;font-size:.95rem;font-weight:800;line-height:1.4;color:#FDE68A}
+.dcp-guide .dcpf-list{display:flex;flex-direction:column;gap:8px}
+.dcp-guide .dcpf{padding:10px 12px;border-radius:12px;background:#141210;border:1px solid rgba(233,196,122,.22)}
+.dcp-guide .dcpf b{display:block;font-size:.9rem;font-weight:900;color:#FFF7E6}
+.dcp-guide .dcpf p{margin:4px 0 0;font-size:.85rem;font-weight:600;line-height:1.4;color:#D6D0C2}
