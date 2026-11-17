@@ -4695,10 +4695,7 @@ function orolado_initiate_deposit(array $req): array {
   if ($amountFcfa < 1 || $amountFcfa > 5000000) {
     return ['ok' => false, 'server' => true, 'reason' => 'Montant invalide'];
   }
-  // 2026-11-17 : Maketou refuse un panier sous 1 600 F (« CUSTOMER_PRICE_BELOW_MINIMUM ») → message clair : minimum 3 $.
-  if ($amountFcfa < 1600) {
-    return ['ok' => false, 'server' => true, 'code' => 'min', 'min' => 3, 'reason' => 'Le minimum pour le Mobile Money est de 3 $.'];
-  }
+
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
   if (!in_array($op, $ops, true)) $op = 'wave';
@@ -4753,6 +4750,14 @@ function orolado_initiate_deposit(array $req): array {
     'webhookUrl' => $webhookUrl,
   ]);
   if (empty($pay['ok'])) {
+    // 2026-11-17 : minimum fixé par Maketou (réglable chez Maketou) → on lit SON minimum et on l'affiche en $ (jamais un chiffre en dur)
+    $rawErr = (string) ($pay['raw'] ?? '') . ' ' . (string) ($pay['reason'] ?? '');
+    if (stripos($rawErr, 'BELOW_MINIMUM') !== false && preg_match('/minimum price \((\d+)\)/i', $rawErr, $mm)) {
+      $minF = (int) $mm[1];
+      $minUsd = (int) ceil(($minF * (1 + $feePct / 100)) / max(1.0, (float) orolado_usd_fcfa_rate()) * 100) / 100;
+      $minUsd = (float) ceil($minUsd);
+      return ['ok' => false, 'server' => true, 'code' => 'min', 'min' => $minUsd, 'reason' => 'Le minimum pour le Mobile Money est de ' . $minUsd . ' $.'];
+    }
     return [
       'ok' => false,
       'server' => true,
