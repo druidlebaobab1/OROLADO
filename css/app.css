@@ -15005,3 +15005,12 @@ html body #depositModal#depositModal #depositBox.dcp-fr #oxaNetWrap{display:none
 .dcp-guide .dcpq-go{font-size:1.02rem;padding:15px 12px}
 .dcp-guide .dcpq-sub{margin:-4px 0 2px;text-align:center;font-size:.82rem;font-weight:800;color:#86EFAC}
 .dcp-guide .dcpq-other{all:unset;box-sizing:border-box;display:block;width:100%;text-align:center;padding:10px;margin-top:2px;font-size:.84rem;font-weight:800;color:#E9C47A;text-decoration:underline;cursor:pointer}
+/* 2026-11-17 : guide Mobile Money ultra simple */
+.dcp-guide .dcpk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.dcp-guide .dcpk{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:#141210;border:1px solid rgba(233,196,122,.22)}
+.dcp-guide .dcpk-h{display:flex;align-items:center;gap:12px}
+.dcp-guide .dcpk-h i{flex:0 0 38px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:1.15rem;color:#1A1408;background:linear-gradient(180deg,#F5D88E,#C99A3B)}
+.dcp-guide .dcpk-h b{font-size:1.06rem;font-weight:800;line-height:1.35;color:#FFF}
+.dcp-guide .dcpk .dcpq-img{max-width:100%;margin:0 auto}
+.dcp-guide a.dcpk-go{text-decoration:none;font-size:1.1rem;padding:16px 12px;display:block}
+.dcp-guide a.dcpk-go.ok{background:linear-gradient(180deg,#86EFAC,#22C55E)}
