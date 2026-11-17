@@ -241,7 +241,7 @@
     var box = document.getElementById('depositBox'); if (!box) return;
     var t = T[lg()], g = document.getElementById('dcpGuide'), x = XCH[0];
     if (!g) { g = document.createElement('div'); g.id = 'dcpGuide'; g.className = 'dcp-guide'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-modal', 'true'); box.appendChild(g); }
-    var st = function (n, txt, img) { return '<li class="dcpk"><div class="dcpk-h"><i>' + n + '</i><b>' + esc(txt) + '</b></div>' + (img ? '<img class="dcpq-img" src="img/pay/' + img + '?v=2" alt="" loading="lazy">' : '') + '</li>'; };
+    var st = function (n, txt, img) { return '<li class="dcpk"><div class="dcpk-h"><i>' + n + '</i><b>' + esc(txt) + '</b></div>' + (img ? '<img class="dcpq-img" src="img/pay/' + img + '?v=5" alt="" loading="lazy">' : '') + '</li>'; };
     g.innerHTML =
       '<div class="dcpg-head"><b>' + esc(t.mmBtn) + '</b><button type="button" class="dcpg-x" data-x="1" aria-label="' + esc(t.close) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg></button></div>' +
       '<div class="dcpg-body"><ol class="dcpk-list">' +
