@@ -14993,3 +14993,10 @@ html body #depositModal#depositModal #depositBox.dcpg-open{overflow:hidden!impor
 .dcp-guide .dcpg-xch b{font-size:.98rem;font-weight:900;color:#fff}
 .dcp-guide .dcpg-xch small{font-size:.76rem;font-weight:700;color:#86EFAC}
 .dcp-guide .dcpg-xch svg{flex:0 0 18px;width:18px;height:18px;fill:none;stroke:#86EFAC;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.dcp-guide .dcpq li{flex-wrap:wrap}
+.dcp-guide .dcpq li>span{display:flex;flex-direction:column;gap:8px;font-size:.92rem;font-weight:700;line-height:1.4}
+.dcp-guide .dcpq-img{width:100%;max-width:300px;border-radius:12px;border:1px solid rgba(255,255,255,.15);display:block}
+.dcp-guide .dcpq-btn{all:unset;box-sizing:border-box;display:block;text-align:center;padding:11px 12px;border-radius:12px;font-weight:900;font-size:.9rem;cursor:pointer;
+  color:#1A1408;background:linear-gradient(180deg,#F8DE96,#D8A746)}
+.dcp-guide .dcpq-open{color:#fff;background:linear-gradient(180deg,#22C55E,#15803D);text-decoration:none}
+.dcp-guide .dcpq-fee{margin:2px 0 0;font-size:.78rem;font-weight:700;color:#A8A29E;text-align:center}
