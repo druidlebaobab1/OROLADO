@@ -15058,3 +15058,5 @@ html.is-ios .dcp-guide .dcpg-head2{padding-top:max(50px,calc(10px + env(safe-are
 .dcp-guide .dcpf{padding:10px 12px;border-radius:12px;background:#141210;border:1px solid rgba(233,196,122,.22)}
 .dcp-guide .dcpf b{display:block;font-size:.9rem;font-weight:900;color:#FFF7E6}
 .dcp-guide .dcpf p{margin:4px 0 0;font-size:.85rem;font-weight:600;line-height:1.4;color:#D6D0C2}
+/* liste jamais visible en mode crypto seule (on va droit sur TRC20) */
+html body #depositModal#depositModal #depositBox.dep-crypto-only #depositStepSelect #depCryptoPro{display:none!important}
