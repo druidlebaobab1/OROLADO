@@ -585,7 +585,7 @@
  "passOtpSent": "验证码已发送",
  "passUpdated": "密码修改成功",
  "password": "密码",
- "payCardBtn": "使用 Mobile Money 支付",
+ "payCardBtn": "Mobile Money / 信用卡支付",
  "payFrameTitle": "安全支付",
  "payGo": "打开",
  "payMethodCardDesc": "Visa、Mastercard、Apple Pay、本地转账…",
