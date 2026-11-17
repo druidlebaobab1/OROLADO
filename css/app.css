@@ -15000,3 +15000,8 @@ html body #depositModal#depositModal #depositBox.dcpg-open{overflow:hidden!impor
   color:#1A1408;background:linear-gradient(180deg,#F8DE96,#D8A746)}
 .dcp-guide .dcpq-open{color:#fff;background:linear-gradient(180deg,#22C55E,#15803D);text-decoration:none}
 .dcp-guide .dcpq-fee{margin:2px 0 0;font-size:.78rem;font-weight:700;color:#A8A29E;text-align:center}
+/* 2026-11-17 : crypto seule — Afrique francophone : TRC20 seulement ; guide CryptoXOF simple */
+html body #depositModal#depositModal #depositBox.dcp-fr #oxaNetWrap{display:none!important}
+.dcp-guide .dcpq-go{font-size:1.02rem;padding:15px 12px}
+.dcp-guide .dcpq-sub{margin:-4px 0 2px;text-align:center;font-size:.82rem;font-weight:800;color:#86EFAC}
+.dcp-guide .dcpq-other{all:unset;box-sizing:border-box;display:block;width:100%;text-align:center;padding:10px;margin-top:2px;font-size:.84rem;font-weight:800;color:#E9C47A;text-decoration:underline;cursor:pointer}
