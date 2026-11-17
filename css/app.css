@@ -15068,3 +15068,27 @@ html body #depositModal#depositModal #depositBox.dep-crypto-only #depositStepSel
 .dcp-guide .dcph h4{margin:12px 0 6px;font-size:1.15rem;font-weight:900;line-height:1.3;color:#fff}
 .dcp-guide .dcph p{margin:0;font-size:.88rem;font-weight:600;line-height:1.45;color:#D9F99D}
 html body #depositModal#depositModal #depositBox.dcp-on .oxa-only{display:none!important}
+/* 2026-11-17 (propriétaire : « la page crypto est trop grosse, elle ne doit pas défiler » ; « agrandir les logos crypto ») */
+html body #depositModal#depositModal #depositBox.dcp-on #depositStepCrypto .crypto-step-head{margin:0 0 2px!important;min-height:0!important}
+html body #depositModal#depositModal #depositBox.dcp-on #depositStepCrypto .modal-title{font-size:1.25rem!important;margin:2px 0 6px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #depositStepCrypto .oxa-field{margin:0 0 6px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #depositStepCrypto .oxa-dd-btn{min-height:0!important;padding:7px 10px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #oxaWalletBox{padding:10px 12px!important;gap:6px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #oxaQrWrap,html body #depositModal#depositModal #depositBox.dcp-on .crypto-qr-wrap{width:min(150px,19vh)!important;height:min(150px,19vh)!important;padding:7px!important;margin:0 auto 4px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #usdtQr{width:100%!important;height:100%!important}
+html body #depositModal#depositModal #depositBox.dcp-on .oxa-wallet-title{margin:2px 0 0!important}
+html body #depositModal#depositModal #depositBox.dcp-on .oxa-wallet-addr{margin:2px 0 4px!important;font-size:.82rem!important}
+html body #depositModal#depositModal #depositBox.dcp-on #btnUsdtCopy{min-height:0!important;padding:10px!important;margin:0!important}
+html body #depositModal#depositModal #depositBox.dcp-on #usdtLiveBadge{margin:4px auto 0!important;padding:3px 10px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #oxaMinHint{display:none!important}
+html body #depositModal#depositModal #depositBox.dcp-on .dcp-mm-addr{margin:8px 0 4px!important;padding:10px 12px!important}
+html body #depositModal#depositModal #depositBox.dcp-on .dcpl-row{margin:6px 0 2px!important;padding:8px 10px!important;gap:6px!important}
+html body #depositModal#depositModal #depositBox.dcp-on .dcpl-logos img{width:34px!important;height:34px!important}
+/* page de choix : logos crypto plus grands (ils remplissent le bas) */
+html body #depositModal#depositModal #depositBox.dcp-on #payMethodUsdt#payMethodUsdt .pay-crypto-wall{gap:12px 4px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #payMethodUsdt#payMethodUsdt .pay-crypto-cell{height:auto!important;padding:4px 0!important;gap:5px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #payMethodUsdt#payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:38px!important;height:38px!important}
+html body #depositModal#depositModal #depositBox.dcp-on #payMethodUsdt#payMethodUsdt .pay-crypto-cell b{font-size:.74rem!important}
+html body #depositModal#depositModal #depositBox.dcp-on .dcp-mm-addr .dcp-mm-t b{font-size:.95rem!important;white-space:nowrap!important}
+html body #depositModal#depositModal #depositBox.dcp-on .dcp-mm-addr .dcp-mm-ops{grid-template-columns:repeat(4,20px)!important;gap:3px!important}
+html body #depositModal#depositModal #depositBox.dcp-on .dcp-mm-addr .dcp-mm-ops img{width:20px!important;height:20px!important}

@@ -4695,6 +4695,10 @@ function orolado_initiate_deposit(array $req): array {
   if ($amountFcfa < 1 || $amountFcfa > 5000000) {
     return ['ok' => false, 'server' => true, 'reason' => 'Montant invalide'];
   }
+  // 2026-11-17 : Maketou refuse un panier sous 1 600 F (« CUSTOMER_PRICE_BELOW_MINIMUM ») → message clair : minimum 3 $.
+  if ($amountFcfa < 1600) {
+    return ['ok' => false, 'server' => true, 'code' => 'min', 'min' => 3, 'reason' => 'Le minimum pour le Mobile Money est de 3 $.'];
+  }
   $ops = ['wave', 'orange', 'mtn', 'moov'];
   $op = strtolower((string) ($req['operator'] ?? 'wave'));
   if (!in_array($op, $ops, true)) $op = 'wave';

@@ -7301,12 +7301,14 @@
     startMaketouDeposit();
   }
   var mkBusy = false;
+  var MM_MIN = { fr: 'Le minimum pour le Mobile Money est de 3 $.', en: 'The minimum for Mobile Money is $3.', es: 'El mínimo para dinero móvil es 3 $.', pt: 'O mínimo para dinheiro móvel é 3 $.', ar: 'الحد الأدنى للدفع عبر الهاتف هو 3 $.', tr: 'Mobil para için en az 3 $.', vi: 'Tối thiểu cho ví điện thoại là 3 $.', id: 'Minimal uang seluler adalah 3 $.', ru: 'Минимум для мобильных денег — 3 $.', de: 'Mindestbetrag für Mobile Money: 3 $.', hi: 'मोबाइल मनी के लिए न्यूनतम 3 $ है।', zh: '移动支付最低 3 $。' };
   async function startMaketouDeposit() {
     if (mkBusy || depositing) return;
     var u = user();
     if (!u || !requireAccount()) return;
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
+    // 2026-11-17 : Maketou n'accepte pas moins de 1 600 F → 3 $ minimum pour le Mobile Money
+    if (amt < 3) { showFieldError('depositAmt', MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en); if ($('depositAmt')) $('depositAmt').focus(); return; }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
     var btn = $('btnConfirmDeposit'), old = btn ? btn.innerHTML : '';
     mkBusy = true;
@@ -7321,7 +7323,8 @@
         console.error('OROLADO maketou fail', remote);
         var why = String((remote && remote.reason) || '');
         if (remote && remote.code === 'disabled') why = t('momoOff');
-        if (/api|key|maketou|moneroo|redirect|http|\{/i.test(why)) why = t('momoOff'); // 2026-11-17 : jamais de message technique pour le joueur
+        if (remote && remote.code === 'min') why = MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en;
+        else if (/api|key|maketou|moneroo|redirect|http|\{/i.test(why)) why = t('momoOff'); // 2026-11-17 : jamais de message technique pour le joueur
         toast(why || t('momoOff'), 'err', 6000);
         return;
       }
