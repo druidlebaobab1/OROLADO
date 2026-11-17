@@ -7308,7 +7308,7 @@
     if (!u || !requireAccount()) return;
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     // 2026-11-17 : Maketou n'accepte pas moins de 1 600 F → 3 $ minimum pour le Mobile Money
-    if (amt < 3) { showFieldError('depositAmt', MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en); if ($('depositAmt')) $('depositAmt').focus(); return; }
+    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
     var btn = $('btnConfirmDeposit'), old = btn ? btn.innerHTML : '';
     mkBusy = true;
@@ -7323,7 +7323,7 @@
         console.error('OROLADO maketou fail', remote);
         var why = String((remote && remote.reason) || '');
         if (remote && remote.code === 'disabled') why = t('momoOff');
-        if (remote && remote.code === 'min') why = MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en;
+        if (remote && remote.code === 'min') { why = (MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en).replace('3', String(remote.min || 3)); showFieldError('depositAmt', why); }
         else if (/api|key|maketou|moneroo|redirect|http|\{/i.test(why)) why = t('momoOff'); // 2026-11-17 : jamais de message technique pour le joueur
         toast(why || t('momoOff'), 'err', 6000);
         return;
