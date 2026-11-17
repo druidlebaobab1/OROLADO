@@ -293,7 +293,7 @@
   function addrLink() {
     if (!mmOn()) { var old = document.getElementById('dcpMmLink'); if (old) old.remove(); return; }
     var w = document.getElementById('oxaWalletBox'), box = document.getElementById('depositBox');
-    if (!w || !box || !box.classList.contains('dep-crypto-only')) return;
+    if (!w || !box || !(box.classList.contains('dep-crypto-only') || box.classList.contains('dcp-on'))) return;
     var t = T[lg()], b = document.getElementById('dcpMmLink');
     if (!b) { b = document.createElement('button'); b.type = 'button'; b.id = 'dcpMmLink'; b.className = 'dcp-mm dcp-mm-addr'; b.setAttribute('data-mm', '1'); w.parentNode.insertBefore(b, w.nextSibling); }
     if (b.getAttribute('data-l') === lg()) return;
@@ -302,7 +302,7 @@
   }
   function plRow() {
     var w = document.getElementById('dcpMmLink') || document.getElementById('oxaWalletBox'), box = document.getElementById('depositBox');
-    if (!w || !box || !box.classList.contains('dep-crypto-only')) return;
+    if (!w || !box || !(box.classList.contains('dep-crypto-only') || box.classList.contains('dcp-on'))) return;
     var t = T[lg()], r = document.getElementById('dcpPlRow');
     if (!r) { r = document.createElement('button'); r.type = 'button'; r.id = 'dcpPlRow'; r.className = 'dcpl-row'; r.setAttribute('data-pl', '1'); }
     if (r.previousSibling !== w) w.parentNode.insertBefore(r, w.nextSibling);

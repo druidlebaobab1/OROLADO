@@ -63,6 +63,8 @@ function keys_catalog(): array {
         'url' => 'https://business.facebook.com/events_manager2', 'how' => 'Events Manager → pixel OROLADO → Settings → Conversions API → Generate access token → Copier'],
     ]],
     ['cat' => 'Paiements', 'items' => [
+      // 2026-11-17 (propriétaire : « pas d'ordinateur : un bouton dans l'admin pour coller la nouvelle clé Maketou »)
+      ['name' => 'MAKETOU_API_KEY', 'title' => 'Maketou — clé API (Mobile Money)', 'ico' => '📱', 'what' => 'Clé API de ta boutique Maketou : « PAYER PAR MOBILE MONEY » s’en sert pour créer le paiement (Wave, Orange, MTN, Moov). Elle passe AVANT l’ancienne clé gardée chez l’hébergeur.', 'url' => 'https://maketou.net', 'how' => 'Maketou → Paramètres → API → Copier la clé (msk_…)', 'fmt' => '/^msk_[A-Za-z0-9]{20,}$/', 'fmtTxt' => 'msk_…', 'fmtBad' => 'Ce n’est pas une clé Maketou (elle commence par msk_).'],
       ['name' => 'OXAPAY_MERCHANT_KEY', 'title' => 'OxaPay — dépôts', 'ico' => '💳', 'what' => 'Clé « Merchant » d’OxaPay (dépôts crypto par OxaPay).', 'url' => 'https://app.oxapay.com', 'how' => 'Merchant service → API key'],
       ['name' => 'OXAPAY_PAYOUT_KEY', 'title' => 'OxaPay — retraits', 'ico' => '💸', 'what' => 'Clé « Payout » d’OxaPay (retraits crypto automatiques, plus tard).', 'url' => 'https://app.oxapay.com', 'how' => 'Payout service → API key'],
     ]],
