@@ -332,7 +332,13 @@
 
   // peint quand l'écran Recharger s'ouvre (et à chaque changement de langue)
   function isCO() { var b = document.getElementById('depositBox'); return !!(b && b.classList.contains('dep-crypto-only')); }
-  var wasOpen = false;
+  var wasOpen = false, goT = 0;
+  function goTrc() {
+    var m = document.getElementById('depositModal'), sel = document.getElementById('depositStepSelect');
+    if (!m || !m.classList.contains('active') || !isCO() || !sel || sel.classList.contains('hidden') || !D6.depPick) return;
+    if (Date.now() - goT < 400) return; goT = Date.now();
+    D6.depPick('usdt', 'TRC20', false);
+  }
   // 2026-11-17 (propriétaire : « quand on clique sur + ça affiche directement cette page ») : ouverture directe sur USDT TRC20
   var mo = new MutationObserver(function () {
     var m = document.getElementById('depositModal'), open = !!(m && m.classList.contains('active'));
@@ -340,11 +346,17 @@
       paint();
       var box = document.getElementById('depositBox'); if (box) box.classList.toggle('dcp-fr', mmOn());
       var sel = document.getElementById('depositStepSelect');
-      if (!wasOpen && isCO() && sel && !sel.classList.contains('hidden') && D6.depPick) setTimeout(function () { D6.depPick('usdt', 'TRC20', false); }, 0);
+      // 2026-11-17 (propriétaire : « c'est encore l'ancienne page ») : à CHAQUE ouverture (pas seulement la première), la liste
+      // n'est jamais montrée — on va droit sur l'adresse USDT TRC20.
+      goTrc();
     } else closeGuide();
     wasOpen = open;
   });
-  function arm() { var m = document.getElementById('depositModal'); if (m) mo.observe(m, { attributes: true, attributeFilter: ['class', 'style'] }); paint(); }
+  function arm() {
+    var m = document.getElementById('depositModal'); if (m) mo.observe(m, { attributes: true, attributeFilter: ['class', 'style'] });
+    var sel = document.getElementById('depositStepSelect'); if (sel) new MutationObserver(function () { setTimeout(goTrc, 0); }).observe(sel, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    paint();
+  }
   new MutationObserver(function () { var el = document.getElementById('depCryptoPro'); if (el && el.getAttribute('data-l').split('+')[0] !== lg()) { el.removeAttribute('data-l'); paint(); } addrLink(); plRow(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
   D6.DepCrypto = { paint: paint, guide: guide, mm: mmGuide };
