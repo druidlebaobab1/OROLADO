@@ -263,7 +263,7 @@
     var t = T[lg()], x = XCH[0];
     var st = function (n, txt, img) { return '<li class="dcpk"><div class="dcpk-h"><i>' + n + '</i><b>' + esc(txt) + '</b></div>' + (img ? '<img class="dcpq-img" src="img/pay/' + img + '?v=6" alt="" loading="lazy">' : '') + '</li>'; };
     sheet(esc(t.mmBtn) + ' <small class="dcpg-brand">CryptoXOF</small>',
-      '<ol class="dcpk-list">' + '<li>' + addrCard(t, 1) + '</li>' + st(2, t.y2, 'cxof-1.webp') + st(3, t.y3, 'cxof-2.webp') + st(4, t.y4, 'cxof-3.webp') + st(5, t.y5, 'cxof-4.webp') + st(6, t.y6) + '</ol>',
+      '<ol class="dcpk-list">' + '<li>' + addrCard(t, 1) + '</li>' + st(2, t.y2, 'cxs-1.webp') + st(3, t.y3, 'cxs-2.webp') + st(4, t.y4, 'cxs-3.webp') + st(5, t.y5, 'cxs-4.webp') + st(6, t.y6) + '</ol>',
       '<a class="dcpg-go dcpk-go" href="' + x.u + '" target="_blank" rel="noopener noreferrer" data-cx="1">' + esc(t.payB) + '</a>');
   }
   function plGuide() { // les grandes applications : logos + Installer + explication

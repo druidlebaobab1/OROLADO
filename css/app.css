@@ -15036,3 +15036,11 @@ html.is-ios .dcp-guide .dcpg-head{padding-top:max(52px,calc(14px + env(safe-area
 .dcp-guide .dcpv-list{display:flex;flex-direction:column;gap:8px}
 .dcp-guide .dcpv-list .dcpg-yt{justify-content:flex-start;text-align:left;font-size:.88rem;padding:11px 12px}
 .dcp-guide .dcpt-list{margin:0;padding:12px 12px 12px 30px;border-radius:14px;background:#141210;border:1px solid rgba(233,196,122,.22);display:flex;flex-direction:column;gap:8px;font-size:.86rem;font-weight:600;line-height:1.4;color:#E7E2D6}
+/* 2026-11-17 : guide Mobile Money compact — petites captures, le bouton reste proche */
+.dcp-guide .dcpk-list{gap:8px}
+.dcp-guide .dcpk{padding:10px 12px;gap:8px}
+.dcp-guide .dcpk-h i{flex:0 0 30px;width:30px;height:30px;font-size:.95rem}
+.dcp-guide .dcpk-h b{font-size:.95rem}
+.dcp-guide .dcpk .dcpq-img{max-width:240px;width:100%;margin:0 0 0 42px;border-radius:8px}
+.dcp-guide .dcpk-addr .dcpk-code{font-size:.74rem;padding:8px}
+.dcp-guide .dcpk-addr .dcpq-btn{padding:9px 10px;font-size:.86rem}
