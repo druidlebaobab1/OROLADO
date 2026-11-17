@@ -7323,7 +7323,7 @@
         console.error('OROLADO maketou fail', remote);
         var why = String((remote && remote.reason) || '');
         if (remote && remote.code === 'disabled') why = t('momoOff');
-        if (remote && remote.code === 'min') { why = (MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en).replace('3', String(remote.min || 3)); showFieldError('depositAmt', why); }
+        if (remote && remote.code === 'min') { why = (MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en).replace('3', String(remote.min || 3)); showFieldError('depositAmt', why); return; }
         else if (/api|key|maketou|moneroo|redirect|http|\{/i.test(why)) why = t('momoOff'); // 2026-11-17 : jamais de message technique pour le joueur
         toast(why || t('momoOff'), 'err', 6000);
         return;
