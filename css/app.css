@@ -15000,3 +15000,61 @@ html body #depositModal#depositModal #depositBox.dcpg-open{overflow:hidden!impor
   color:#1A1408;background:linear-gradient(180deg,#F8DE96,#D8A746)}
 .dcp-guide .dcpq-open{color:#fff;background:linear-gradient(180deg,#22C55E,#15803D);text-decoration:none}
 .dcp-guide .dcpq-fee{margin:2px 0 0;font-size:.78rem;font-weight:700;color:#A8A29E;text-align:center}
+/* 2026-11-17 : crypto seule — Afrique francophone : TRC20 seulement ; guide CryptoXOF simple */
+html body #depositModal#depositModal #depositBox.dcp-fr #oxaNetWrap{display:none!important}
+.dcp-guide .dcpq-go{font-size:1.02rem;padding:15px 12px}
+.dcp-guide .dcpq-sub{margin:-4px 0 2px;text-align:center;font-size:.82rem;font-weight:800;color:#86EFAC}
+.dcp-guide .dcpq-other{all:unset;box-sizing:border-box;display:block;width:100%;text-align:center;padding:10px;margin-top:2px;font-size:.84rem;font-weight:800;color:#E9C47A;text-decoration:underline;cursor:pointer}
+/* 2026-11-17 : guide Mobile Money ultra simple */
+.dcp-guide .dcpk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.dcp-guide .dcpk{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:#141210;border:1px solid rgba(233,196,122,.22)}
+.dcp-guide .dcpk-h{display:flex;align-items:center;gap:12px}
+.dcp-guide .dcpk-h i{flex:0 0 38px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:1.15rem;color:#1A1408;background:linear-gradient(180deg,#F5D88E,#C99A3B)}
+.dcp-guide .dcpk-h b{font-size:1.06rem;font-weight:800;line-height:1.35;color:#FFF}
+.dcp-guide .dcpk .dcpq-img{max-width:100%;margin:0 auto}
+.dcp-guide a.dcpk-go{text-decoration:none;font-size:1.1rem;padding:16px 12px;display:block}
+.dcp-guide a.dcpk-go.ok{background:linear-gradient(180deg,#86EFAC,#22C55E)}
+/* 2026-11-17 (propriétaire) : croix sous la barre de l'iPhone, message « anciennes adresses » retiré, logos des grandes applications */
+html body #depositModal#depositModal #depositBox.dep-crypto-only .oxa-only{display:none!important}
+.dcp-guide .dcpg-head{padding-top:calc(14px + env(safe-area-inset-top,0px))!important}
+html.is-ios .dcp-guide .dcpg-head{padding-top:max(52px,calc(14px + env(safe-area-inset-top,0px)))!important}
+.dcp-guide .dcpg-brand{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:900;color:#052e16;background:#4ADE80;vertical-align:middle}
+.dcp-guide .dcpk-addr{gap:10px}
+.dcp-guide .dcpk-code{display:block;padding:10px;border-radius:10px;background:#0B0B0B;border:1px solid rgba(255,255,255,.12);color:#86EFAC;font-size:.8rem;font-weight:700;word-break:break-all;text-align:center}
+.dcp-guide .dcpq-btn.ok{background:linear-gradient(180deg,#86EFAC,#22C55E)!important;color:#052e16!important}
+.dcp-guide .dcpk .dcpq-img{max-width:300px;width:100%}
+.dcp-guide a.dcpk-go{font-size:1.15rem}
+#depositModal .dcpl-row{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;width:100%;margin:10px 0 6px;padding:12px;border-radius:16px;cursor:pointer;background:#141210;border:1px solid rgba(233,196,122,.25);-webkit-tap-highlight-color:transparent}
+#depositModal .dcpl-row small{font-size:.8rem;font-weight:800;color:#E9C47A;text-align:center;line-height:1.3}
+#depositModal .dcpl-logos{display:flex;justify-content:space-between;gap:6px}
+#depositModal .dcpl-logos img{width:40px;height:40px;border-radius:10px;display:block;flex:0 0 auto}
+.dcp-guide .dcpl-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dcp-guide .dcpl{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border-radius:14px;text-decoration:none;background:#141210;border:1px solid rgba(233,196,122,.22);min-width:0}
+.dcp-guide .dcpl img{width:44px;height:44px;border-radius:12px}
+.dcp-guide .dcpl b{font-size:.82rem;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dcp-guide .dcpl span{font-size:.72rem;font-weight:900;color:#052e16;background:#4ADE80;border-radius:999px;padding:3px 10px}
+.dcp-guide .dcpv-list{display:flex;flex-direction:column;gap:8px}
+.dcp-guide .dcpv-list .dcpg-yt{justify-content:flex-start;text-align:left;font-size:.88rem;padding:11px 12px}
+.dcp-guide .dcpt-list{margin:0;padding:12px 12px 12px 30px;border-radius:14px;background:#141210;border:1px solid rgba(233,196,122,.22);display:flex;flex-direction:column;gap:8px;font-size:.86rem;font-weight:600;line-height:1.4;color:#E7E2D6}
+/* 2026-11-17 : guide Mobile Money compact — petites captures, le bouton reste proche */
+.dcp-guide .dcpk-list{gap:8px}
+.dcp-guide .dcpk{padding:10px 12px;gap:8px}
+.dcp-guide .dcpk-h i{flex:0 0 30px;width:30px;height:30px;font-size:.95rem}
+.dcp-guide .dcpk-h b{font-size:.95rem}
+.dcp-guide .dcpk .dcpq-img{max-width:240px;width:100%;margin:0 0 0 42px;border-radius:8px}
+.dcp-guide .dcpk-addr .dcpk-code{font-size:.74rem;padding:8px}
+.dcp-guide .dcpk-addr .dcpq-btn{padding:9px 10px;font-size:.86rem}
+/* 2026-11-17 (propriétaire : « la croix au bout, je n'aime pas ; dans l'appli iPhone elle est mal placée ») :
+   un bouton « ← Retour » bien visible à gauche, sous la barre de l'iPhone (navigateur et appli installée) */
+.dcp-guide .dcpg-head2{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 14px 10px!important}
+html.is-ios .dcp-guide .dcpg-head2{padding-top:max(50px,calc(10px + env(safe-area-inset-top,0px)))!important}
+.dcp-guide.dcp-app .dcpg-head2{padding-top:max(62px,calc(12px + env(safe-area-inset-top,0px)))!important}
+.dcp-guide .dcpg-back{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;padding:9px 16px 9px 10px;border-radius:999px;cursor:pointer;
+  font-weight:900;font-size:.98rem;color:#1A1408;background:linear-gradient(180deg,#F8DE96,#D8A746);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.dcp-guide .dcpg-back svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.dcp-guide .dcpg-head2 b{font-size:1.12rem}
+.dcp-guide .dcpk-intro{margin:0 0 4px;font-size:.95rem;font-weight:800;line-height:1.4;color:#FDE68A}
+.dcp-guide .dcpf-list{display:flex;flex-direction:column;gap:8px}
+.dcp-guide .dcpf{padding:10px 12px;border-radius:12px;background:#141210;border:1px solid rgba(233,196,122,.22)}
+.dcp-guide .dcpf b{display:block;font-size:.9rem;font-weight:900;color:#FFF7E6}
+.dcp-guide .dcpf p{margin:4px 0 0;font-size:.85rem;font-weight:600;line-height:1.4;color:#D6D0C2}
