@@ -5417,7 +5417,7 @@
     return D6.CONFIG.MIN_DEPOSIT || 5;
   }
   function minCardDeposit() {
-    return 1; // v3020 (propriétaire) : 1 $ carte et Mobile Money (crypto : inchangé)
+    return 3; // 2026-11-17 (propriétaire) : Maketou refuse tout paiement sous 1 600 F (vérifié sur l'API) → Mobile Money 3 $ minimum
   }
 
   function withdrawMinFor(method) {
@@ -5507,7 +5507,7 @@
     });
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
-    if (hint) { var dmS = String(t('depositMin') || ''); hint.textContent = (dmS && dmS !== 'depositMin' && /5/.test(dmS)) ? dmS.replace('5', '1') : 'Minimum $\u00a0\u00a01'; } // 2026-11-12 (revue) : traduit
+    if (hint) { var dmS = String(t('depositMin') || ''); hint.textContent = (dmS && dmS !== 'depositMin' && /5/.test(dmS)) ? dmS.replace('5', String(min)) : 'Minimum $\u00a0\u00a0' + min; } // 2026-11-12 (revue) : traduit
     setDepositPayMethod('card');
     paintPayLocal();
     paintLatamLogos();
@@ -7005,7 +7005,7 @@
   function paintMomoMode() { /* rien à repeindre */ }
   async function startFlwMomo() {
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
+    if (amt < 3) { showFieldError('depositAmt', MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en); return; }
     // v2628 : indicatif choisi par le joueur (+225 / +221 / +226), pas de détection automatique.
     var dialSel = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
     var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
