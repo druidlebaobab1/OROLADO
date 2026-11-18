@@ -62,10 +62,10 @@ save_db(orolado_data_file(), $db);
 $rate = orolado_usd_fcfa_rate();
 
 echo "1) Page de paiement GeniusPay (bouton principal)\n";
-$r = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 1, 'mode' => 'checkout']);
+$r = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 3, 'mode' => 'checkout']);
 check('réponse OK, lien geniuspay.ci', !empty($r['ok']) && str_starts_with((string) $r['url'], 'https://geniuspay.ci/checkout/'), json_encode($r));
 $p = lastPost();
-check('1 $ envoyé en XOF au taux du site, sans moyen imposé', (int) $p['amount'] === max(200, (int) round($rate)) && $p['currency'] === 'XOF' && !isset($p['payment_method']), json_encode($p));
+check('3 $ envoyé en XOF au taux du site, sans moyen imposé', (int) $p['amount'] === (int) round(3 * $rate) && $p['currency'] === 'XOF' && !isset($p['payment_method']), json_encode($p));
 check('notre référence dans metadata + retour vers /api/geniuspay-return.php', ($p['metadata']['ref'] ?? '') === $r['ref'] && str_contains((string) $p['success_url'], '/api/geniuspay-return.php?ref=' . $r['ref']));
 check('pas d\'e-mail du joueur envoyé', !isset($p['customer']['email']));
 $dep = gp_find_dep($r['ref']);
@@ -78,20 +78,20 @@ check('solde inchangé', bank() == 0.0);
 echo "3) Payé → crédité une seule fois\n";
 $GLOBALS['GP'][$dep['gpRef']]['status'] = 'completed';
 $c = orolado_geniuspay_confirm(['token' => 'tokG'], gp_find_dep($r['ref']));
-check('crédité 1 $', abs(bank() - 1.0) < 0.001, (string) bank());
+check('crédité 3 $', abs(bank() - 3.0) < 0.001, (string) bank());
 orolado_geniuspay_webhook(json_encode(['event' => 'payment.success', 'data' => ['reference' => $dep['gpRef'], 'metadata' => ['ref' => $r['ref']]]]));
 orolado_geniuspay_recheck(['token' => 'tokG']);
-check('webhook + rattrapage après coup : pas de 2e crédit', abs(bank() - 1.0) < 0.001, (string) bank());
+check('webhook + rattrapage après coup : pas de 2e crédit', abs(bank() - 3.0) < 0.001, (string) bank());
 check('dépôt marqué payé', in_array(gp_find_dep($r['ref'])['status'], ['COMPLETED', 'PAID'], true));
 
 echo "4) Montant : jamais plus que demandé\n";
-$r2 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 2, 'mode' => 'card']);
+$r2 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 4, 'mode' => 'card']);
 $d2 = gp_find_dep($r2['ref']);
 check('carte : payment_method=card', (lastPost()['payment_method'] ?? '') === 'card');
 $GLOBALS['GP'][$d2['gpRef']]['status'] = 'completed';
 $GLOBALS['GP'][$d2['gpRef']]['amount'] = 999999;
 gp_check_dep($d2);
-check('crédité 2 $ (pas 999 999 F)', abs(bank() - 3.0) < 0.001, (string) bank());
+check('crédité 4 $ (pas 999 999 F)', abs(bank() - 7.0) < 0.001, (string) bank());
 
 echo "5) Paiement d'un AUTRE dépôt → refusé\n";
 $r3 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 5, 'mode' => 'checkout']);
@@ -102,25 +102,25 @@ check('référence différente → pas payé', empty($v['paid']), json_encode($v
 
 echo "6) Paiement de TEST avec les clés réelles → refusé\n";
 $GLOBALS['GP_ENV'] = 'sandbox';
-$r4 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 1, 'mode' => 'checkout']);
+$r4 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 3, 'mode' => 'checkout']);
 $d4 = gp_find_dep($r4['ref']);
 $GLOBALS['GP'][$d4['gpRef']]['status'] = 'completed';
 gp_check_dep($d4);
-check('pas crédité', abs(bank() - 3.0) < 0.001, (string) bank());
+check('pas crédité', abs(bank() - 7.0) < 0.001, (string) bank());
 $GLOBALS['GP_ENV'] = 'live';
 
 echo "7) Wave direct\n";
-$r5 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 1, 'mode' => 'wave', 'phone' => '2250701020304']);
+$r5 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 3, 'mode' => 'wave', 'phone' => '2250701020304']);
 check('lien Wave direct (wave.com)', !empty($r5['ok']) && str_contains((string) $r5['url'], 'wave.com'), json_encode($r5));
 check('numéro +225 et payment_method=wave', (lastPost()['customer']['phone'] ?? '') === '+2250701020304' && (lastPost()['payment_method'] ?? '') === 'wave');
-$r6 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 1, 'mode' => 'wave', 'phone' => '22507010203']);
+$r6 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 3, 'mode' => 'wave', 'phone' => '22507010203']);
 check('numéro trop court refusé', empty($r6['ok']) && ($r6['code'] ?? '') === 'phone');
-$r7 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 0.5, 'mode' => 'checkout']);
-check('moins de 1 $ refusé', empty($r7['ok']) && ($r7['code'] ?? '') === 'min');
+$r7 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 2, 'mode' => 'checkout']);
+check('moins de 3 $ refusé', empty($r7['ok']) && ($r7['code'] ?? '') === 'min');
 
 echo "8) Clés de test : seul l'admin\n";
 $GLOBALS['OROLADO_FAKE_GP_SANDBOX'] = true;
-$r8 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 1, 'mode' => 'checkout']);
+$r8 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 3, 'mode' => 'checkout']);
 check('joueur : GeniusPay pas activé (il garde l\'ancien moyen)', empty($r8['ok']) && ($r8['code'] ?? '') === 'off');
 check('admin : activé', gp_on_for(['id' => 'admin_master', 'role' => 'admin']));
 $GLOBALS['OROLADO_FAKE_GP_SANDBOX'] = false;
