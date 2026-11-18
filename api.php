@@ -2830,7 +2830,22 @@ if ($action === 'oxapayRecheck') {
   if (function_exists('orolado_flw_recheck')) {
     try { $oxaRe['flutterwave'] = orolado_flw_recheck(['token' => $token] + $req); } catch (Throwable $eFw) { /* jamais bloquant */ }
   }
+  // 2026-11-19 : rattrapage des dépôts GeniusPay payés mais pas encore crédités.
+  if (function_exists('orolado_geniuspay_recheck')) {
+    try { $oxaRe['geniuspay'] = orolado_geniuspay_recheck(['token' => $token] + $req); } catch (Throwable $eGp) { /* jamais bloquant */ }
+  }
   echo json_encode($oxaRe);
+  exit;
+}
+
+if ($action === 'geniuspayOn') {
+  $gpMe = orolado_session_user(load_db(orolado_data_file()), $token);
+  echo json_encode(['ok' => true, 'on' => function_exists('gp_on_for') && gp_on_for($gpMe), 'test' => function_exists('gp_sandbox') && gp_configured() && gp_sandbox()]);
+  exit;
+}
+
+if ($action === 'geniuspayStart') {
+  echo json_encode(orolado_geniuspay_start(['token' => $token] + $req));
   exit;
 }
 

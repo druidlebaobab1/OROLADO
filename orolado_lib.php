@@ -24,7 +24,7 @@ function orolado_load_env(?string $path = null): void {
       // 2026-11-15 (propriétaire : « ça refuse toujours ») : les clés que le propriétaire colle dans l'admin 🔑 (data/.env)
       // passent AVANT une vieille valeur gardée chez l'hébergeur (avant : l'ancienne clé Facebook restait prioritaire).
       $panel = str_ends_with(str_replace('\\', '/', $file), '/data/.env') && $val !== ''
-        && preg_match('/^(META_|VAULT_|TATUM_|TRONGRID_|NODEREAL_|BLOCKCYPHER_|ETHERSCAN_|HELIUS_|TONCENTER_|OXAPAY_|MAKETOU_API_KEY$)/', $key);
+        && preg_match('/^(META_|VAULT_|TATUM_|TRONGRID_|NODEREAL_|BLOCKCYPHER_|ETHERSCAN_|HELIUS_|TONCENTER_|OXAPAY_|MAKETOU_API_KEY$|GENIUSPAY_)/', $key);
       if ($cur === false || $cur === '' || $panel) {
         putenv($key . '=' . $val);
         $_ENV[$key] = $val;
@@ -4972,6 +4972,10 @@ function orolado_confirm_deposit(array $req): array {
   if ($depOp === 'flutterwave' || $depOp === 'flw' || str_starts_with($depRefGuess, 'flw_')) {
     return orolado_flutterwave_confirm($req, $dep);
   }
+  // 2026-11-19 : Mobile Money par GeniusPay (geniuspay_lib.php).
+  if (($depOp === 'geniuspay' || str_starts_with($depRefGuess, 'gp_')) && function_exists('orolado_geniuspay_confirm')) {
+    return orolado_geniuspay_confirm($req, $dep);
+  }
 
   if (!orolado_pay_enabled('maketou')) {
     $out = orolado_deposit_status($req);
@@ -5053,8 +5057,8 @@ function orolado_maketou_recheck(array $req): array {
     if (!is_array($d) || (string) ($d['userId'] ?? '') !== $uid) continue;
     if (strtoupper((string) ($d['status'] ?? '')) !== 'PENDING') continue;
     $op = strtolower((string) ($d['operator'] ?? ''));
-    if (in_array($op, ['oxapay', 'flutterwave', 'flw', 'usdt', 'coffre', 'admin', 'refund', 'card'], true)) continue;
-    if (str_starts_with(strtolower((string) ($d['id'] ?? '')), 'flw_')) continue;
+    if (in_array($op, ['oxapay', 'flutterwave', 'flw', 'usdt', 'coffre', 'admin', 'refund', 'card', 'geniuspay'], true)) continue;
+    if (str_starts_with(strtolower((string) ($d['id'] ?? '')), 'flw_') || str_starts_with(strtolower((string) ($d['id'] ?? '')), 'gp_')) continue;
     if (trim((string) ($d['sellId'] ?? $d['cartId'] ?? '')) === '') continue;
     if ((strtotime((string) ($d['at'] ?? '')) ?: 0) < $cut) continue;
     $list[] = $d;
@@ -5143,6 +5147,9 @@ function orolado_pay_check_one(array $d): array {
       if (empty($pf['paid'])) return ['r' => 'pas payé chez Flutterwave'];
       orolado_flutterwave_credit($id, (string) ($pf['extId'] ?? ''), (float) ($pf['amount_usd'] ?? 0));
       return ['r' => 'payé chez Flutterwave', 'paid' => 1];
+    }
+    if ($op === 'geniuspay' || str_starts_with(strtolower($id), 'gp_')) {
+      return function_exists('gp_check_dep') ? gp_check_dep($d) : ['r' => 'GeniusPay non chargé'];
     }
     if (in_array($op, ['usdt', 'coffre', 'admin', 'refund', 'card'], true)) return ['r' => 'non vérifiable automatiquement'];
     if (trim((string) ($d['sellId'] ?? $d['cartId'] ?? '')) === '') return ['r' => 'Maketou : paiement jamais ouvert (pas de numéro de vente)'];
@@ -9142,3 +9149,4 @@ function orolado_orders_tail(array &$offs, array $tags, string $needle, callable
 if (is_file(__DIR__ . '/coffre_lib.php')) require_once __DIR__ . '/coffre_lib.php';
 if (is_file(__DIR__ . '/coffre_evm_lib.php')) require_once __DIR__ . '/coffre_evm_lib.php'; // Ethereum, BNB, Polygon, Base, Arbitrum
 if (is_file(__DIR__ . '/coffre_utxo_lib.php')) require_once __DIR__ . '/coffre_utxo_lib.php'; // Bitcoin, Litecoin, Dogecoin
+if (is_file(__DIR__ . '/geniuspay_lib.php')) require_once __DIR__ . '/geniuspay_lib.php'; // 2026-11-19 : Mobile Money par GeniusPay
