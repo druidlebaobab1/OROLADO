@@ -5416,8 +5416,42 @@
   function minDeposit() {
     return D6.CONFIG.MIN_DEPOSIT || 5;
   }
+  // 2026-11-19 (propriétaire) : GeniusPay branché → 1 $ minimum comme avant. Sans GeniusPay (Maketou) : 3 $ (Maketou
+  // refuse tout paiement sous 1 600 F, vérifié sur l'API).
+  var gpOn = false, gpAsked = 0;
   function minCardDeposit() {
-    return 3; // 2026-11-17 (propriétaire) : Maketou refuse tout paiement sous 1 600 F (vérifié sur l'API) → Mobile Money 3 $ minimum
+    return gpOn ? 1 : 3;
+  }
+  // Case Wave + ligne « carte bancaire » (ancien menu de dépôt direct) : montrées seulement quand GeniusPay est actif.
+  function applyGpUi() {
+    var m = $('depositModal');
+    if (m) m.classList.toggle('gp-on', gpOn);
+    ['payMomoBox', 'btnMomoDeposit', 'btnCardOnly'].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      if (gpOn) { el.removeAttribute('hidden'); el.style.display = ''; } else { el.setAttribute('hidden', ''); el.style.display = 'none'; }
+    });
+    var min = minCardDeposit(), inp = $('depositAmt');
+    if (inp) {
+      var v = Number(inp.value) || 0;
+      inp.min = String(min);
+      inp.placeholder = String(min);
+      if (v === 1 || v === 3) inp.value = String(min);
+    }
+    var hint = m ? m.querySelector('.hint-min') : null;
+    if (hint) { var dmS = String(t('depositMin') || ''); hint.textContent = (dmS && dmS !== 'depositMin' && /5/.test(dmS)) ? dmS.replace('5', String(min)) : 'Minimum $\u00a0\u00a0' + min; }
+  }
+  async function refreshGpOn() {
+    if (isGuest() || !user()) return;
+    if (Date.now() - gpAsked < 60000) { applyGpUi(); return; }
+    gpAsked = Date.now();
+    try {
+      var tok = await ensureApiToken();
+      if (!tok) return;
+      var r = await D6.Api.post('geniuspayOn', { token: tok }, 12000);
+      gpOn = !!(r && r.ok && r.on);
+    } catch (eG) { /* garde l'état connu */ }
+    applyGpUi();
   }
 
   function withdrawMinFor(method) {
@@ -5526,6 +5560,7 @@
     paintDepositWagerNotes();
     closeDrawer();
     openModal('depositModal');
+    try { applyGpUi(); refreshGpOn(); } catch (eGp) { /* ignore */ }
     // « Dépôt Express Crypto » : on arrive directement sur le choix de la crypto et le QR code.
     if (method === 'crypto') setDepositPayMethod('usdt');
   }
@@ -7005,7 +7040,7 @@
   function paintMomoMode() { /* rien à repeindre */ }
   async function startFlwMomo() {
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < 3) { showFieldError('depositAmt', MM_MIN[String(document.documentElement.lang || 'fr').slice(0, 2)] || MM_MIN.en); return; }
+    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
     // v2628 : indicatif choisi par le joueur (+225 / +221 / +226), pas de détection automatique.
     var dialSel = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
     var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
@@ -7025,9 +7060,11 @@
       if (!tok) { toast(t('sessionExpiredMsg'), 'info'); return; }
       metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
       momoInflight = true;
-      var r = await D6.Api.post('flutterwaveMomo', { token: tok, amount: amt, network: momoNet, phone: dialSel + digits }, 30000);
-      // Compte admin (test) : la raison exacte donnée par Flutterwave est ajoutée au message.
-      if (!r || !r.ok) { toast(String((r && r.reason) || t('momoOff')) + (r && r.detail ? ' [Flutterwave : ' + r.detail + ']' : ''), 'err', 9000); return; }
+      // 2026-11-19 : Wave en direct par GeniusPay (avant : Flutterwave).
+      var r = await D6.Api.post('geniuspayStart', { token: tok, amount: amt, mode: 'wave', phone: dialSel + digits }, 30000);
+      if (r && r.code === 'off') { gpOn = false; applyGpUi(); toast(t('momoOff'), 'err', 6000); return; }
+      if (r && r.code === 'phone') { showFieldError('momoPhone', t('m_phoneInvalid')); return; }
+      if (!r || !r.ok) { toast(String((r && r.reason) || t('momoOff')), 'err', 7000); return; }
       var ref = String(r.ref || '');
       try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e1) { /* ignore */ }
       try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
@@ -7104,7 +7141,7 @@
   function scheduleMomoPrep() {
     clearTimeout(momoPrepTimer);
     momoPrepTimer = setTimeout(async function () {
-      if (!momoReadyToPrep() || momoBusy || momoInflight || depositing) return;
+      if (!gpOn || !momoReadyToPrep() || momoBusy || momoInflight || depositing) return;
       var key = momoKeyNow();
       if ((momoLink && momoLink.key === key && Date.now() - momoLink.at < 540000) || momoPrepKey === key) return;
       momoPrepKey = key;
@@ -7112,7 +7149,7 @@
         var tok = await ensureApiToken();
         if (!tok || momoKeyNow() !== key) return;
         var parts = key.split('|')[0], dial = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
-        var r = await D6.Api.post('flutterwaveMomo', { token: tok, amount: Number(key.split('|')[1]), network: 'wave', phone: parts.slice(0, dial.length) + parts.slice(dial.length) }, 30000);
+        var r = await D6.Api.post('geniuspayStart', { token: tok, amount: Number(key.split('|')[1]), mode: 'wave', phone: parts.slice(0, dial.length) + parts.slice(dial.length) }, 30000);
         if (r && r.ok && /^https:\/\//i.test(String(r.redirect || '')) && momoKeyNow() === key) {
           momoLink = { key: key, url: String(r.redirect), ref: String(r.ref || ''), at: Date.now() };
         }
@@ -7297,8 +7334,44 @@
       return;
     }
     depositSendConfirmed = true;
-    // 2026-11-16 (propriétaire) : « Payer par mobile money » → Maketou (Wave, Orange, MTN, Moov). Flutterwave n'est plus utilisé ici.
+    // 2026-11-19 (propriétaire) : GeniusPay actif → sa page de paiement (Wave, Orange, MTN, Moov, carte) ;
+    // sinon Maketou comme avant (2026-11-16).
+    if (gpOn) { startGeniusDeposit('checkout'); return; }
     startMaketouDeposit();
+  }
+  var gpBusy = false;
+  async function startGeniusDeposit(mode) {
+    if (gpBusy || mkBusy || depositing) return;
+    var u = user();
+    if (!u || !requireAccount()) return;
+    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
+    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
+    metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
+    var btn = $(mode === 'card' ? 'btnCardOnly' : 'btnConfirmDeposit'), old = btn ? btn.innerHTML : '';
+    gpBusy = true;
+    var leaving = false;
+    if (btn) { btn.disabled = true; btn.classList.add('busy'); btn.textContent = t('m_openingPay'); }
+    try {
+      var tok = await ensureApiToken();
+      if (!tok) { toast(t('sessionExpiredMsg'), 'info'); return; }
+      var r = await D6.Api.post('geniuspayStart', { token: tok, amount: amt, mode: mode }, 30000);
+      if (r && r.code === 'off') { gpOn = false; applyGpUi(); gpBusy = false; if (btn) { btn.disabled = false; btn.classList.remove('busy'); btn.innerHTML = old; } startMaketouDeposit(); return; }
+      if (r && r.code === 'min') { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', String(r.min || 1))); return; }
+      if (!r || !r.ok || !/^https:\/\//i.test(String(r.url || ''))) { toast(String((r && r.reason) || t('momoOff')), 'err', 7000); return; }
+      var ref = String(r.ref || '');
+      try { sessionStorage.setItem('oro_dep_ref', ref); } catch (e1) { /* ignore */ }
+      try { localStorage.setItem('oro_dep_ref', ref); } catch (e2) { /* ignore */ }
+      depositRef = ref;
+      depositApplied = false;
+      leaving = true;
+      window.location.href = String(r.url); // page ouverte EN PLEIN : l'application Wave peut s'ouvrir
+    } catch (err) {
+      console.error('OROLADO geniuspay', err);
+      toast(t('sessionInvalid'), 'err');
+    } finally {
+      gpBusy = false;
+      if (btn && !leaving) { btn.disabled = false; btn.classList.remove('busy'); btn.innerHTML = old; }
+    }
   }
   var mkBusy = false;
   var MM_MIN = { fr: 'Le minimum pour le Mobile Money est de 3 $.', en: 'The minimum for Mobile Money is $3.', es: 'El mínimo para dinero móvil es 3 $.', pt: 'O mínimo para dinheiro móvel é 3 $.', ar: 'الحد الأدنى للدفع عبر الهاتف هو 3 $.', tr: 'Mobil para için en az 3 $.', vi: 'Tối thiểu cho ví điện thoại là 3 $.', id: 'Minimal uang seluler adalah 3 $.', ru: 'Минимум для мобильных денег — 3 $.', de: 'Mindestbetrag für Mobile Money: 3 $.', hi: 'मोबाइल मनी के लिए न्यूनतम 3 $ है।', zh: '移动支付最低 3 $。' };
@@ -9711,7 +9784,7 @@
       closeModal('depositModal');
     });
     if ($('payMethodCard')) $('payMethodCard').addEventListener('click', function () { setDepositPayMethod('card'); });
-    if ($('btnCardOnly')) $('btnCardOnly').addEventListener('click', function () { if (!depositing) confirmDeposit({ cardOnly: true }); });
+    if ($('btnCardOnly')) $('btnCardOnly').addEventListener('click', function () { if (gpOn) { startGeniusDeposit('card'); return; } if (!depositing) confirmDeposit({ cardOnly: true }); });
     if ($('payMethodUsdt')) $('payMethodUsdt').addEventListener('click', function () { setDepositPayMethod('usdt'); });
     if ($('btnExpressCrypto')) bindAndroidTap($('btnExpressCrypto'), function () { openDeposit(); }); // v2758 : « Recharger » ouvre la page de recharge (Wave, cartes, crypto…)
     if ($('oxaCoinBtn')) {
