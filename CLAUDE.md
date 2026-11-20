@@ -4,13 +4,13 @@
   (ni les modèles des indices dans `js/indices.js`) sans demande explicite du propriétaire.
   Contrôle : `sh scripts/sim-lock.sh` doit afficher « OK ».
 - Ne jamais retirer `try_sb`, `supabase_put_order`, `supabase_get_order` ; pas de remboursement auto sur échec `with_db_lock`.
-- MARGE PARIS SPORTIFS VERROUILLÉE (2026-11-01, changée par le propriétaire le 2026-11-12 : 1 %) : la marge maison des paris sportifs (`sb_lib.php`)
-  est fixée EN DUR à **1 %** par la constante `SB_MARGE_FIXE = 0.01`, répartie ÉGALEMENT sur tous les choix (cote = (1 − m) / p,
+- MARGE PARIS SPORTIFS VERROUILLÉE (2026-11-01, changée par le propriétaire le 2026-11-12 : 1 %, puis le 2026-11-20 : 3 %) : la marge maison des paris sportifs (`sb_lib.php`)
+  est fixée EN DUR à **3 %** par la constante `SB_MARGE_FIXE = 0.03`, répartie ÉGALEMENT sur tous les choix (cote = (1 − m) / p,
   dans `sb_wodd`) : un peu au-dessus de 1xBet (~3 % sur les grands matchs). Tout calcul de cote — avant-match (`sb_margin`), autres
   sports (`sb_o_margin`) — DOIT utiliser `SB_MARGE_FIXE` (le direct a sa propre marge, voir ci-dessous). Ne pas la rebrancher sur le réglage/les migrations, et ne pas la
   changer, sans demande explicite du propriétaire.
-- MARGE DU DIRECT VERROUILLÉE (propriétaire, 2026-11-12, passée à 3 % par le propriétaire le 2026-11-16) : les paris EN DIRECT (live) ont leur marge fixée EN DUR à **3 %**
-  par `SB_MARGE_DIRECT = 0.03` (`sb_live_markets`, même répartition égale). Les matchs pas encore commencés restent à 1 %.
+- MARGE DU DIRECT VERROUILLÉE (propriétaire, 2026-11-12, passée à 3 % le 2026-11-16, puis à 5 % le 2026-11-20) : les paris EN DIRECT (live) ont leur marge fixée EN DUR à **5 %**
+  par `SB_MARGE_DIRECT = 0.05` (`sb_live_markets`, même répartition égale). Les matchs pas encore commencés sont à 3 %.
   Contrôle : `php scripts/test-sb-marge.php` doit finir par « 0 échec(s) ». Ne pas changer sans demande explicite du propriétaire.
 - RÈGLE 1xBet (propriétaire, 2026-11-16) : AVANT-MATCH seulement, choix par choix, si la cote de 1xBet est plus haute que la nôtre,
   la nôtre devient 1xBet + 0,01 (`sb_beat_1x`, `SB_1X_PLUS = 0.01`). Sécurités : cote 1xBet ignorée si > moyenne + 15 % ; le match

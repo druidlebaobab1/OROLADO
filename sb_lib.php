@@ -364,12 +364,13 @@ function sb_min_books(string $fam): int { return in_array($fam, ['1x2', 'dc', 'o
 // légèrement, qui reste à vie ; la marge 10 % c'est trop ; pas un côté qui gonfle et l'autre non ») → 2,5 % VERROUILLÉ,
 // réparti ÉGALEMENT sur tous les choix (favori, nul, outsider), comme 1xBet. 1xBet prend ~3 % sur les grands matchs, 5–8 % ailleurs.
 // 2026-11-12 (propriétaire, 2e message : « 2,5 % ne marche pas, force la marge à 1 % et verrouille ») → 1 %.
-const SB_MARGE_FIXE = 0.01;
+// 2026-11-20 (propriétaire : « avant-match à 3 %, direct à 5 %, verrouille ») → 3 % / 5 %.
+const SB_MARGE_FIXE = 0.03;
 // 2026-11-12 (propriétaire, comparé à 1xBet en direct : Cieza–Valencia II 1.408 / 4.09 / 8.77 ≈ 7 %, nous 1 % → « en live c'est trop
 // énorme, les gens peuvent tricher ; live c'est 4 %, les matchs pas encore commencés restent à 1 % ; force et verrouille »)
 // → marge du DIRECT VERROUILLÉE EN DUR à 4 %, répartie également (cote = (1 − m) / p), légèrement au-dessus de 1xBet.
 // L'avant-match et les autres sports restent à SB_MARGE_FIXE (1 %). Ne pas changer sans demande explicite du propriétaire.
-const SB_MARGE_DIRECT = 0.03; // 2026-11-16 (propriétaire) : 4 % → 3 %
+const SB_MARGE_DIRECT = 0.05; // 2026-11-16 (propriétaire) : 4 % → 3 % ; 2026-11-20 (propriétaire) : 3 % → 5 %
 function sb_margin(string $fam, array $cfg): float { return SB_MARGE_FIXE; }
 /**
  * 2026-10-23 (propriétaire : « tout à 4 %, la marge surtout sur le favori, comme les grands ») — cote d'un choix de probabilité $p
