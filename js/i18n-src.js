@@ -2384,7 +2384,7 @@
     m_notFound: ['Not found.', 'Introuvable.', 'No encontrado.', 'Não encontrado.', 'غير موجود.', 'Не найдено.', 'Bulunamadı.', 'Không tìm thấy.', 'Tidak ditemukan.', 'Nicht gefunden.', 'नहीं मिला।'],
     m_addrGen: ['Generating your address…', 'Génération de l’adresse…', 'Generando tu dirección…', 'Gerando seu endereço…', 'جارٍ إنشاء عنوانك…', 'Создаём ваш адрес…', 'Adresiniz oluşturuluyor…', 'Đang tạo địa chỉ của bạn…', 'Membuat alamat Anda…', 'Deine Adresse wird erstellt…', 'आपका पता बनाया जा रहा है…'],
     // v2621 — fenêtre Recharger : Carte / Mobile Money / Crypto.
-    payCardBtn: ['PAY BY MOBILE MONEY', 'PAYER PAR MOBILE MONEY', 'PAGAR CON MOBILE MONEY', 'PAGAR COM MOBILE MONEY', 'الدفع عبر Mobile Money', 'ОПЛАТИТЬ ЧЕРЕЗ MOBILE MONEY', 'MOBILE MONEY İLE ÖDE', 'THANH TOÁN BẰNG MOBILE MONEY', 'BAYAR DENGAN MOBILE MONEY', 'MIT MOBILE MONEY ZAHLEN', 'Mobile Money से भुगतान'],
+    payCardBtn: ['PAY NOW', 'PAYER MAINTENANT', 'PAGAR AHORA', 'PAGAR AGORA', 'ادفع الآن', 'ОПЛАТИТЬ СЕЙЧАС', 'ŞİMDİ ÖDE', 'THANH TOÁN NGAY', 'BAYAR SEKARANG', 'JETZT BEZAHLEN', 'अभी भुगतान करें'],
     openWaveBtn: ['OPEN WAVE', 'OUVRIR WAVE', 'ABRIR WAVE', 'ABRIR WAVE', 'افتح Wave', 'ОТКРЫТЬ WAVE', 'WAVE\'İ AÇ', 'MỞ WAVE', 'BUKA WAVE', 'WAVE ÖFFNEN', 'Wave खोलें'],
     payCardOnlyBtn: ['PAY BY BANK CARD', 'PAYER PAR CARTE BANCAIRE', 'PAGAR CON TARJETA', 'PAGAR COM CARTÃO', 'الدفع بالبطاقة البنكية', 'ОПЛАТИТЬ КАРТОЙ', 'BANKA KARTI İLE ÖDE', 'THANH TOÁN BẰNG THẺ', 'BAYAR DENGAN KARTU', 'MIT KARTE ZAHLEN', 'बैंक कार्ड से भुगतान'],
     payWaveBtn: ['PAY WITH WAVE', 'PAYER AVEC WAVE', 'PAGAR CON WAVE', 'PAGAR COM WAVE', 'الدفع عبر Wave', 'ОПЛАТИТЬ ЧЕРЕЗ WAVE', 'WAVE İLE ÖDE', 'THANH TOÁN BẰNG WAVE', 'BAYAR DENGAN WAVE', 'MIT WAVE ZAHLEN', 'Wave से भुगतान'],
