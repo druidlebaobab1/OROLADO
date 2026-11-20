@@ -7046,7 +7046,7 @@
     var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
     if (digits.indexOf(dialSel) === 0 && digits.length > 10) digits = digits.slice(dialSel.length);
     // v2631 : longueur EXACTE selon le pays choisi (Côte d'Ivoire 10 chiffres, Sénégal 9) → jamais de mélange.
-    var wantLen = dialSel === '221' ? 9 : 10;
+    var wantLen = dialSel === '221' ? 9 : dialSel === '226' ? 8 : 10; // 2026-11-20 : Burkina (+226) = 8 chiffres
     if (digits.length !== wantLen) { showFieldError('momoPhone', t('m_phoneInvalid')); if ($('momoPhone')) $('momoPhone').focus(); return; }
     momoNet = 'wave';
     var btn = $('btnMomoDeposit');
@@ -7136,7 +7136,7 @@
     var dg = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
     if (dg.indexOf(ds) === 0 && dg.length > 10) dg = dg.slice(ds.length);
     var am = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    return dg.length === (ds === '221' ? 9 : 10) && am >= 1 && !isGuest() && !!user();
+    return dg.length === (ds === '221' ? 9 : ds === '226' ? 8 : 10) && am >= 1 && !isGuest() && !!user();
   }
   function scheduleMomoPrep() {
     clearTimeout(momoPrepTimer);
