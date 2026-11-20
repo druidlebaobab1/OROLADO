@@ -114,6 +114,8 @@ $r5 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 3, 'mode' => 'wave
 check('lien Wave direct (wave.com)', !empty($r5['ok']) && str_contains((string) $r5['url'], 'wave.com'), json_encode($r5));
 check('numéro +225 et payment_method=wave', (lastPost()['customer']['phone'] ?? '') === '+2250701020304' && (lastPost()['payment_method'] ?? '') === 'wave');
 $r6 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 3, 'mode' => 'wave', 'phone' => '22507010203']);
+$r6b = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 1, 'mode' => 'wave', 'phone' => '22670000000']);
+check('Wave Burkina (+226, 8 chiffres) accepté, pays BF', !empty($r6b['ok']) && (lastPost()['customer']['country'] ?? '') === 'BF', json_encode($r6b));
 check('numéro trop court refusé', empty($r6['ok']) && ($r6['code'] ?? '') === 'phone');
 $r7 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 0.5, 'mode' => 'checkout']);
 check('moins de 1 $ refusé', empty($r7['ok']) && ($r7['code'] ?? '') === 'min');

@@ -99,7 +99,8 @@ function orolado_geniuspay_start(array $req): array {
     if (strlen($digits) === 10 && $digits[0] === '0') $digits = '225' . $digits;
     $okCi = strlen($digits) === 13 && str_starts_with($digits, '225');
     $okSn = strlen($digits) === 12 && str_starts_with($digits, '221');
-    if (!$okCi && !$okSn) return ['ok' => false, 'server' => true, 'code' => 'phone', 'reason' => 'Numéro Wave invalide.'];
+    $okBf = strlen($digits) === 11 && str_starts_with($digits, '226'); // 2026-11-20 : Wave Burkina (proposé par GeniusPay)
+    if (!$okCi && !$okSn && !$okBf) return ['ok' => false, 'server' => true, 'code' => 'phone', 'reason' => 'Numéro Wave invalide.'];
   }
   $uid = (string) $me['id'];
   $ref = 'gp_' . substr(preg_replace('/[^a-zA-Z0-9]/', '', $uid) ?? '', 0, 24) . '_' . bin2hex(random_bytes(6));
@@ -107,7 +108,7 @@ function orolado_geniuspay_start(array $req): array {
   $sandbox = gp_sandbox();
   $name = trim((string) ($me['displayName'] ?? ''));
   $customer = ['name' => $name !== '' ? mb_substr($name, 0, 60) : 'Joueur OROLADO'];
-  if ($digits !== '') { $customer['phone'] = '+' . $digits; $customer['country'] = str_starts_with($digits, '221') ? 'SN' : 'CI'; }
+  if ($digits !== '') { $customer['phone'] = '+' . $digits; $customer['country'] = str_starts_with($digits, '221') ? 'SN' : (str_starts_with($digits, '226') ? 'BF' : 'CI'); }
   $body = [
     'amount' => $cfa,
     'currency' => 'XOF',
