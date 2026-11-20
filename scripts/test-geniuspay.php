@@ -115,8 +115,8 @@ check('lien Wave direct (wave.com)', !empty($r5['ok']) && str_contains((string) 
 check('numéro +225 et payment_method=wave', (lastPost()['customer']['phone'] ?? '') === '+2250701020304' && (lastPost()['payment_method'] ?? '') === 'wave');
 $r6 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 3, 'mode' => 'wave', 'phone' => '22507010203']);
 check('numéro trop court refusé', empty($r6['ok']) && ($r6['code'] ?? '') === 'phone');
-$r7 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 2, 'mode' => 'checkout']);
-check('moins de 3 $ refusé', empty($r7['ok']) && ($r7['code'] ?? '') === 'min');
+$r7 = orolado_geniuspay_start(['token' => 'tokG', 'amount' => 0.5, 'mode' => 'checkout']);
+check('moins de 1 $ refusé', empty($r7['ok']) && ($r7['code'] ?? '') === 'min');
 
 echo "8) Clés de test : seul l'admin\n";
 $GLOBALS['OROLADO_FAKE_GP_SANDBOX'] = true;
