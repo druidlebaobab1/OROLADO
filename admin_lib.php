@@ -855,6 +855,23 @@ function admin_dep_is_failed(array $d): bool {
   return in_array($st, ['FAILED', 'CANCELED', 'CANCELLED', 'EXPIRED', 'REJECTED', 'ERROR', 'VOID'], true);
 }
 
+/** 2026-11-20 (propriétaire) : au-delà de ce délai, un dépôt resté « en attente » sans être payé est considéré abandonné. */
+const ADMIN_DEP_ABANDON_H = 24;
+
+/**
+ * Dépôt échoué / abandonné (affichage admin seulement, rien n'est modifié) : FAILED, EXPIRED, CANCELLED…, ou en attente
+ * depuis plus de 24 h sans jamais avoir été payé. Ces lignes sont rangées dans un volet fermé « ▸ Dépôts échoués / abandonnés ».
+ */
+function admin_dep_is_abandoned(array $d, ?int $now = null): bool {
+  if (admin_dep_is_paid($d) || admin_dep_bonus_paid($d)) return false;
+  if (admin_dep_is_failed($d)) return true;
+  if (!admin_dep_is_pending($d)) return false;
+  $iso = (string) ($d['createdRaw'] ?? '');
+  if ($iso === '') $iso = (string) ($d['createdAt'] ?? '');
+  $ts = $iso !== '' ? (admin_ts($iso) ?: 0) : 0;
+  return $ts > 0 && $ts < ($now ?? time()) - ADMIN_DEP_ABANDON_H * 3600;
+}
+
 /**
  * Époque du tableau admin (affichage seulement).
  * Les comptes plus anciens restent en base, ils ne s’affichent plus.

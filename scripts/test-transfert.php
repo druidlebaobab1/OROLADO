@@ -8,7 +8,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
  */
 $tmp = sys_get_temp_dir() . '/orolado_xfer_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data/archive', 0755, true);
-foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'aff_lib.php', 'transfer_lib.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
+foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'aff_lib.php', 'transfer_lib.php', 'history_lib.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 putenv('SUPABASE_URL=https://fake.supabase.test');
 putenv('SUPABASE_SERVICE_ROLE_KEY=fake-service-key');
 putenv('OROLADO_XFER_START=2026-10-01 00:00:00 UTC');
@@ -35,6 +35,7 @@ require $tmp . '/orolado_lib.php';
 require $tmp . '/trade_lib.php';
 require $tmp . '/aff_lib.php';
 require $tmp . '/transfer_lib.php';
+require $tmp . '/history_lib.php';
 $pass = 0; $fail = 0;
 function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
 $n = 0;
@@ -83,9 +84,9 @@ check('Paul : -20 $', $bal[$U['u_paul']] == 50);
 check('Frère : +20 $', $bal[$U['u_frere']] == 20);
 $dbx = load_db();
 $row = null; foreach ($dbx['deposits'] as $d) if (($d['userId'] ?? '') === 'u_frere') $row = $d;
-check('chez le frère : BONUS (opérateur admin) « Reçu de ton ami »', $row && $row['operator'] === 'admin' && str_contains((string) $row['note'], 'Reçu de ton ami'));
+check('chez le frère : BONUS (opérateur admin) « Transfert reçu de u_paul »', $row && $row['operator'] === 'admin' && str_contains((string) $row['note'], 'Transfert reçu de u_paul'), (string) ($row['note'] ?? ''));
 check('le frère doit miser 40 $ (×2) avant retrait', abs((float) ($dbx['users']['u_frere']['wagerNeed'] ?? 0) - 40) < 0.001);
-check('Paul : ligne « Envoyé à ton ami » dans ses opérations', ($dbx['users']['u_paul']['transactions'][0]['type'] ?? '') === 'transfer');
+check('Paul : ligne « Transfert envoyé à » dans ses opérations', ($dbx['users']['u_paul']['transactions'][0]['type'] ?? '') === 'transfer' && str_starts_with((string) ($dbx['users']['u_paul']['transactions'][0]['note'] ?? ''), 'Transfert envoyé à u_frere'));
 check('Paul : plus rien d\'envoyable', st('u_paul')['can'] == 0);
 $r = send('u_paul', 'u_frere', 1);
 check('Paul renvoie 1 $ : refusé (ses 50 $ viennent d\'un dépôt ancien)', $r['ok'] === false);
@@ -169,6 +170,46 @@ $r = send('u_ali', 'u_paul', 5);
 $GLOBALS['OROLADO_FAKE_RPC'] = $GLOBALS['OROLADO_FAKE_RPC_BACKUP'];
 check('base en panne (rien retiré) : envoi refusé, solde intact', $r['ok'] === false && abs($bal[$U['u_ali']] - $ali1) < 0.001, json_encode($r));
 $GLOBALS['OROLADO_FAKE_HTTP'] = function () { return []; };
+
+echo "12) Compte démo affilié (partenaire) : n'envoie JAMAIS, même appelé directement (sans passer par api.php)\n";
+$db = load_db();
+$db['users']['u_demo'] = ['id' => 'u_demo', 'email' => 'u_demo@gmail.com', 'role' => 'user', 'sbId' => 'eeeeeeee-1111-2222-3333-444444444444', 'displayName' => 'u_demo', 'partner' => true];
+$db['vault']['u_demo'] = ['demo' => 1000000, 'real' => 0];
+save_db(orolado_data_file(), $db);
+dep('u_demo', 300, date('c'), 'admin');   // recharge de l'admin
+dep('u_demo', 50, date('c'));             // même un « vrai » dépôt ne le rend pas envoyable
+$demo0 = $bal['eeeeeeee-1111-2222-3333-444444444444']; $paul2 = $bal[$U['u_paul']]; $deb0 = $debits;
+$r = send('u_demo', 'u_paul', 10);
+check('envoi refusé (off)', $r['ok'] === false && $r['reason'] === 'off', json_encode($r));
+check('aucun argent n\'a bougé (ni retrait, ni crédit)', $bal['eeeeeeee-1111-2222-3333-444444444444'] == $demo0 && $bal[$U['u_paul']] == $paul2 && $debits === $deb0);
+$db = load_db(); $db['users']['u_demo']['partner'] = false; save_db(orolado_data_file(), $db); // fichier sans le drapeau
+$demoUser = load_db()['users']['u_demo']; $demoUser['partner'] = true; // drapeau posé par orolado_public_user
+$r = orolado_xfer_send(load_db(), $demoUser, ['uid' => 'u_paul', 'id' => 'ORPAUL', 'name' => 'u_paul'], 10);
+check('drapeau « partner » sur la session : refusé aussi', $r['ok'] === false && $r['reason'] === 'off', json_encode($r));
+check('solde démo (vault.demo) jamais envoyable : seul le solde réel de la base est débité', $debits === $deb0);
+
+echo "13) Liste de TOUS les transferts (admin + scripts/list-transfers.php)\n";
+$all = orolado_xfer_all(load_db());
+$refs = array_column($all, 'ref');
+check('une seule ligne par envoi (pas de doublon envoyeur / receveur)', count($refs) === count(array_unique($refs)) && count($all) >= 5, (string) count($all));
+$first = null; foreach ($all as $x) if ($x['fromUid'] === 'u_paul' && $x['toUid'] === 'u_frere' && abs($x['amount'] - 20) < 0.001) $first = $x;
+check('Paul → frère, 20 $ : de / à / montant / état « done »', $first && $first['state'] === 'done' && $first['toName'] === 'u_frere' && $first['fromName'] !== '', json_encode($first));
+check('du plus récent au plus ancien', $all[0]['at'] >= $all[count($all) - 1]['at']);
+$src = (string) file_get_contents(__DIR__ . '/list-transfers.php');
+check('scripts/list-transfers.php refuse le web (PHP_SAPI !== cli → 404)', str_contains($src, "if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }"));
+$out = shell_exec('cd ' . escapeshellarg($tmp) . ' && mkdir -p scripts && cp ' . escapeshellarg(__DIR__ . '/list-transfers.php') . ' scripts/ && ' . escapeshellarg(PHP_BINARY) . ' scripts/list-transfers.php u_frere 2>&1');
+check('le script liste les transferts du frère', is_string($out) && str_contains($out, 'u_frere') && str_contains($out, 'transfert(s)'), substr((string) $out, -300));
+
+echo "14) Historique du joueur : « Transfert reçu de X » / « Transfert envoyé à X »\n";
+$db = load_db();
+$hf = orolado_finance_history($db, 'u_frere', false, 0, 200)['rows'];
+$in = null; foreach ($hf as $h) if (($h['kind'] ?? '') === 'xfer_in') $in = $h;
+check('chez le frère : ligne xfer_in avec le nom de Paul', $in && $in['peer'] === 'u_paul' && $in['amount'] > 0, json_encode($in));
+$no = true; foreach ($hf as $h) if (str_starts_with((string) $h['ref'], 'adm_xf_') && $h['kind'] !== 'xfer_in') $no = false;
+check('plus aucune ligne « Bonus » anonyme pour un transfert reçu', $no);
+$hp = orolado_finance_history($db, 'u_paul', false, 0, 200)['rows'];
+$out1 = null; foreach ($hp as $h) if (($h['kind'] ?? '') === 'xfer_out' && $h['peer'] === 'u_frere') $out1 = $h;
+check('chez Paul : ligne xfer_out « envoyé à u_frere », montant négatif', $out1 && $out1['amount'] < 0, json_encode($out1));
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);
