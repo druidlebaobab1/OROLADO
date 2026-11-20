@@ -442,14 +442,35 @@ function orolado_aff_rev_run(array $db, string $inviterUid): array {
   $entitled = orolado_money($wallet['entitled']);
   $rev = orolado_aff_read(orolado_aff_rev_name($inviterUid));
   $paid = orolado_money($rev['withdrawn'] ?? 0);
-  $delta = orolado_money(floor(($entitled - $paid) * 100) / 100);
-  if ($delta >= 0.01) {
+  // 2026-11-20 (revue double paiement) : un versement est d'abord NOTÉ « en cours » (référence + montant) AVANT d'être
+  // envoyé à la caisse. Si la caisse a payé mais que la réponse s'est perdue (délai, coupure) ou que la fiche n'a pas
+  // été écrite, le passage suivant renvoie EXACTEMENT la même référence (la caisse ne paie jamais 2 fois la même) au lieu
+  // d'en fabriquer une nouvelle avec un total plus grand (avant : la même part pouvait être versée deux fois).
+  $pend = is_array($rev['pending'] ?? null) ? $rev['pending'] : null;
+  if ($pend && orolado_money($pend['total'] ?? 0) <= $paid + 0.001) {
+    orolado_aff_with(orolado_aff_rev_name($inviterUid), static function (&$st) { unset($st['pending']); }); // déjà noté payé
+    $pend = null;
+  }
+  if ($pend && (string) ($pend['ref'] ?? '') !== '' && orolado_money($pend['amount'] ?? 0) >= 0.01) {
+    $newTotal = orolado_money($pend['total']);
+    $delta = orolado_money($pend['amount']);
+    $ref = (string) $pend['ref'];
+  } else {
+    $delta = orolado_money(floor(($entitled - $paid) * 100) / 100);
     $newTotal = orolado_money($paid + $delta);
     $ref = 'affrev_' . substr(hash('sha256', $inviterUid . '|' . number_format($newTotal, 2, '.', '')), 0, 20);
+    if ($delta >= 0.01) {
+      orolado_aff_with(orolado_aff_rev_name($inviterUid), static function (&$st) use ($newTotal, $delta, $ref) {
+        $st['pending'] = ['ref' => $ref, 'amount' => $delta, 'total' => $newTotal, 'at' => date('c')];
+      });
+    }
+  }
+  if ($delta >= 0.01) {
     $ok = orolado_aff_pay_inviter($db, $inviterUid, $delta, $ref);
     if ($ok) {
       orolado_aff_with(orolado_aff_rev_name($inviterUid), static function (&$st) use ($newTotal, $delta, $ref) {
-        $st['withdrawn'] = $newTotal; // total versé à ce jour (argent libre chez l'affilié)
+        if ((string) ($st['pending']['ref'] ?? '') === $ref) unset($st['pending']);
+        if (orolado_money($st['withdrawn'] ?? 0) < $newTotal) $st['withdrawn'] = $newTotal; // total versé (argent libre)
         if (!isset($st['log']) || !is_array($st['log'])) $st['log'] = [];
         foreach ($st['log'] as $l) if (($l['ref'] ?? '') === $ref) return; // déjà noté
         $st['log'][] = ['ref' => $ref, 'amount' => $delta, 'at' => date('c')];
