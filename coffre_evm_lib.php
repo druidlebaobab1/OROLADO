@@ -486,6 +486,13 @@ function cevm_sweep(bool $force = false, int $max = 4): array {
   $done = []; $gasAddr = cevm_gas_addr();
   try {
     $min = max(1.0, (float) (coffre_cfg()['min'] ?? COFFRE_SWEEP_DEFAULT));
+    // 2026-11-20 : réservoir déjà vu vide sur ce réseau pour cette adresse → pas de nouvel essai (ni de ligne au journal)
+    // tant que son solde n'a pas changé, ou 3 h. Solde du réservoir lu au plus une fois par réseau et par passage.
+    $waits = coffre_gas_wait_all(); $gasBal = [];
+    $readGas = static function (string $chain) use (&$gasBal, $gasAddr): ?float {
+      if (!array_key_exists($chain, $gasBal)) { $b = cevm_rpc($chain, 'eth_getBalance', [$gasAddr, 'latest']); $gasBal[$chain] = isset($b['result']) ? cevm_float(cevm_bn((string) $b['result']), 18) : null; }
+      return $gasBal[$chain];
+    };
     foreach (coffre_json(cevm_index_file()) as $addr => $e) {
       $uid = (string) ($e['u'] ?? '');
       $L = coffre_json(cevm_ledger_file($uid));
@@ -495,6 +502,7 @@ function cevm_sweep(bool $force = false, int $max = 4): array {
         if (empty($C) || !empty($C['pend'])) continue;
         $hasCred = false; foreach ($C as $k => $v) if (is_array($v) && !empty($v['cred'])) $hasCred = true;
         if (!$hasCred) continue;
+        if (!$force && isset($waits['evm:' . $chain]['addrs'][$addr]) && coffre_gas_wait_active('evm:' . $chain, $readGas($chain))) continue;
         $calls = ['bal' => ['eth_getBalance', [$addr, 'latest']], 'gp' => ['eth_gasPrice', []]];
         foreach ($c['tokens'] as $sym => [$ta, $dec]) $calls['t_' . $sym] = cevm_bal_call($ta, $addr);
         $r = cevm_rpc_batch($chain, $calls);
@@ -521,13 +529,21 @@ function cevm_sweep(bool $force = false, int $max = 4): array {
             $gb = cevm_rpc($chain, 'eth_getBalance', [$gasAddr, 'latest']);
             $gbal = cevm_bn((string) ($gb['result'] ?? '0x0'));
             $gneed = cec_add($send, cec_mul(cevm_bn($gpHex), cec_from_hex(dechex(21000))));
+            $gasBal[$chain] = isset($gb['result']) ? cevm_float($gbal, 18) : null;
             if (cec_cmp($gbal, $gneed) < 0) {
-              coffre_log('reservoir_vide', ['net' => $chain, 'addr' => $addr, 'need' => round(cevm_float($gneed, 18), 6) . ' ' . $c['native']]);
-              if (orolado_rate_ok('cevm_gas_warn', $chain, 1, 3600)) orolado_health_event('Dépôts', '🏦 Réservoir ' . $c['name'] . ' : il manque du ' . $c['native'] . ' (envoie-en à ' . cevm_checksum($gasAddr) . ', réseau ' . $c['name'] . '). Les dépôts restent crédités.', 'warn');
+              // 2026-11-20 : avant, « 'need' => round(…, 6) . ' BNB' » donnait « 7.0E-6 BNB » (écriture scientifique de PHP),
+              // et l'écran y ajoutait « TRX » → « 7.0E-6 BNB TRX ». Maintenant : nombre en clair + pièce du réseau à part.
+              $needF = cevm_float($gneed, 18);
+              $miss = coffre_ceil_sig(max(0.0, $needF - (float) ($gasBal[$chain] ?? 0)));
+              if (coffre_gas_wait_set('evm:' . $chain, ['coin' => $c['native'], 'name' => $c['name'], 'gas' => cevm_checksum($gasAddr), 'bal' => $gasBal[$chain], 'need' => $needF], (string) $addr)) {
+                coffre_log('reservoir_vide', ['net' => $chain, 'coin' => $c['native'], 'addr' => $addr, 'need' => coffre_num($miss, 12)]);
+                if (orolado_rate_ok('cevm_gas_warn', $chain, 1, 3600)) orolado_health_event('Dépôts', '🏦 Réservoir ' . $c['name'] . ' : il manque ' . coffre_fr($miss, 12) . ' ' . $c['native'] . ' (envoie-en à ' . cevm_checksum($gasAddr) . ', réseau ' . $c['name'] . '). Les dépôts restent crédités.', 'warn');
+              }
               break;
             }
             $s = cevm_send($chain, $gasAddr, $addr, cec_to_hex($send, 0), '', 21000, $gpHex);
-            coffre_log('frais', ['net' => $chain, 'addr' => $addr, 'trx' => round(cevm_float($send, 18), 6) . ' ' . $c['native'], 'ok' => $s['ok'], 'tx' => $s['h'] ?? '', 'why' => $s['why'] ?? '']);
+            if ($s['ok']) { coffre_gas_wait_clear('evm:' . $chain); unset($gasBal[$chain]); } // réservoir rechargé : l'alerte disparaît
+            coffre_log('frais', ['net' => $chain, 'coin' => $c['native'], 'addr' => $addr, 'amt' => coffre_num(cevm_float($send, 18), 12), 'ok' => $s['ok'], 'tx' => $s['h'] ?? '', 'why' => $s['why'] ?? '']);
             if ($s['ok']) cevm_add_pend($uid, $chain, ['h' => $s['h'], 'k' => 'top', 'a' => 'N', 'v' => cec_to_hex($send, 0)], cec_to_hex($send, 0));
             $done[] = ['net' => $chain, 'step' => 'frais', 'ok' => $s['ok']];
             continue 2; // l'envoi des jetons partira quand l'essence sera confirmée
