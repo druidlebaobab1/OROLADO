@@ -333,5 +333,44 @@ if (function_exists('casino_round_user_file')) {
   check('affilié : 60 % de 16 $ = 9,60 $', abs($w['entitled'] - 9.6) < 0.001, (string) $w['entitled']);
 } else check('casino_lib chargé', false);
 
+echo "15) S'INVITER SOI-MÊME avec un 2e compte : refusé (alias Gmail, même téléphone, comptes liés)\n";
+reset_db();
+mkuser('inv', 'jean.dupont@gmail.com');
+$code = (string) orolado_aff_status(load_db(), load_db()['users']['inv'])['code'];
+mkuser('alias', 'jeandupont+2@gmail.com');
+check('alias Gmail (points / +étiquette) → refusé', !orolado_aff_attach(load_db(), 'alias', $code));
+mkuser('alias2', 'Jean.Dupont@googlemail.com');
+check('même boîte via googlemail.com → refusé', !orolado_aff_attach(load_db(), 'alias2', $code));
+$db = load_db(); $db['users']['inv']['devices'] = ['d0123456789abcdef0']; save_db(orolado_data_file(), $db);
+mkuser('samephone', 'autre@yahoo.fr');
+$db = load_db(); $db['users']['samephone']['devices'] = ['d0123456789abcdef0']; save_db(orolado_data_file(), $db);
+check('même téléphone (identifiant d\'appareil) → refusé', !orolado_aff_attach(load_db(), 'samephone', $code));
+mkuser('honest', 'ami.vrai@gmail.com');
+$db = load_db(); $db['users']['honest']['devices'] = ['dfedcba9876543210f']; save_db(orolado_data_file(), $db);
+check('vrai ami (autre e-mail, autre téléphone, même IP possible) → relié', orolado_aff_attach(load_db(), 'honest', $code));
+check('jean.dupont@gmail.com ≡ jeandupont+x@gmail.com ; hotmail : points gardés', orolado_aff_email_key('jean.dupont@gmail.com') === orolado_aff_email_key('JeanDupont+x@gmail.com') && orolado_aff_email_key('a.b@hotmail.com') !== orolado_aff_email_key('ab@hotmail.com'));
+
+echo "16) VERSEMENT : réponse de la caisse perdue → même référence renvoyée, jamais payé 2 fois\n";
+$credits = [];
+reset_db();
+mkuser('inv', 'inv@g.com'); mkuser('f1', 'f1@g.com');
+$code = (string) orolado_aff_status(load_db(), load_db()['users']['inv'])['code'];
+orolado_aff_attach(load_db(), 'f1', $code);
+deposit('f1', 100, $OLD); bet('f1', 100, false, $OLD); // dû 60 $
+$realHttp = $GLOBALS['OROLADO_FAKE_HTTP'];
+$GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $method) use ($realHttp) {
+  $realHttp($url, $body, $method); // la caisse PAIE…
+  return str_contains($url, '/rpc/resolve_trade') ? [] : $realHttp($url, $body, $method); // …mais la réponse se perd
+};
+orolado_aff_rev_run(load_db(), 'inv');
+$GLOBALS['OROLADO_FAKE_HTTP'] = $realHttp;
+check('1er passage : la caisse a payé 60 $ (réponse perdue)', abs(paid_to($credits, 'inv', 'affrev_') - 60) < 0.001, (string) paid_to($credits, 'inv', 'affrev_'));
+deposit('f1', 50, $OLD); bet('f1', 50, false, $OLD); // le dû monte à 90 $ entre-temps
+orolado_aff_rev_run(load_db(), 'inv');
+orolado_aff_rev_run(load_db(), 'inv');
+check('ensuite : total versé = 90 $ (60 + 30), pas 150 $', abs(paid_to($credits, 'inv', 'affrev_') - 90) < 0.001, (string) paid_to($credits, 'inv', 'affrev_'));
+$rv = orolado_aff_read(orolado_aff_rev_name('inv'));
+check('fiche : versé noté 90 $, plus rien « en cours »', abs((float) ($rv['withdrawn'] ?? 0) - 90) < 0.001 && empty($rv['pending']), json_encode(['w' => $rv['withdrawn'] ?? null, 'p' => $rv['pending'] ?? null]));
+
 echo "\n" . ($fail === 0 ? "TOUT EST BON" : "PROBLÈME") . " : $pass OK, $fail échec(s)\n";
 exit($fail === 0 ? 0 : 1);
