@@ -8555,7 +8555,7 @@
       if (!r) return;
       var gw = String(r.gateway || '');
       var method = /instant/i.test(gw) ? 'Instant' : (/usdt|btc|eth|trx|sol|bnb|ton|ltc|xrp|doge|matic|link|avax|ada|crypto|oxa|binance/i.test(gw + ' ' + (r.ref || '')) ? 'Crypto' : '');
-      D6.Receipt.money({ kind: r.kind, amount: r.amount, at: r.at, ref: r.ref, method: r.kind === 'bonus' ? '' : method, statusLabel: r.kind === 'withdraw' && r.status ? r.status.label : '' });
+      D6.Receipt.money({ kind: r.kind, amount: r.amount, at: r.at, ref: r.ref, method: r.kind === 'bonus' || r.xfer ? '' : method, statusLabel: r.kind === 'withdraw' && r.status && !r.xfer ? r.status.label : '', title: r.xfer ? r.title : '' });
     };
   }
 
@@ -8599,7 +8599,28 @@
   // 50 lignes à la fois, « Voir plus » jusqu'à 2 000. Le téléphone ne sert plus que de secours.
   var financePage = { rows: [], total: 0, busy: false };
 
+  // 2026-11-20 (propriétaire) : transfert entre joueurs — « Transfert reçu de X » / « Transfert envoyé à X » (X = nom ou ID).
+  function xferLabel(dir, peer) {
+    var k = dir === 'in' ? 'txXferIn' : 'txXferOut', s = t(k);
+    if (!s || s === k) s = dir === 'in' ? 'Transfer received from {n}' : 'Transfer sent to {n}';
+    return s.replace('{n}', String(peer || '').trim() || '?');
+  }
+
   function financeRowFromServer(r) {
+    if (r.kind === 'xfer_in' || r.kind === 'xfer_out') {
+      var xin = r.kind === 'xfer_in', xk = xin ? 'deposit' : 'withdraw', title = xferLabel(xin ? 'in' : 'out', r.peer);
+      return {
+        at: r.at || '',
+        ref: 'TRF-' + String(r.ref || '').replace(/^adm_xf_/i, '').slice(0, 8).toUpperCase(),
+        amount: Number(r.amount) || 0,
+        status: normFinanceStatus(r.status || 'COMPLETED', xk),
+        label: adminEsc(title),
+        title: title,
+        kind: xk,
+        xfer: true,
+        gateway: 'OROLADO'
+      };
+    }
     var kind = r.kind === 'withdraw' ? 'withdraw' : (r.kind === 'bonus' ? 'bonus' : 'deposit');
     var ref = String(r.ref || '—');
     // Bonus : référence affichée « BONUS-XXXXXXXX » (l'identifiant interne adm_… reste en base).

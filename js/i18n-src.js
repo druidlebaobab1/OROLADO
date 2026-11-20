@@ -3438,6 +3438,22 @@
     hi: {"netRetry": "नेटवर्क व्यस्त है, थोड़ी देर में फिर कोशिश करें।", "sendToReq": "अपने दोस्त की ID या ई-मेल डालें।", "wdNetFail": "धीमा कनेक्शन: आपकी निकासी पुष्टि नहीं हुई। फिर कोशिश करने से पहले इतिहास देखें।", "sendNetFail": "धीमा कनेक्शन: फिर भेजने से पहले इतिहास देखें।"}
   };
   Object.keys(NETCHK_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], NETCHK_TR[l]); });
+  // 2026-11-20 (propriétaire) : transferts entre joueurs écrits clairement dans l'historique ({n} = nom ou ID de l'autre joueur)
+  var XFER_TR = {
+    fr: {"txXferIn": "Transfert reçu de {n}", "txXferOut": "Transfert envoyé à {n}"},
+    en: {"txXferIn": "Transfer received from {n}", "txXferOut": "Transfer sent to {n}"},
+    es: {"txXferIn": "Transferencia recibida de {n}", "txXferOut": "Transferencia enviada a {n}"},
+    pt: {"txXferIn": "Transferência recebida de {n}", "txXferOut": "Transferência enviada para {n}"},
+    ar: {"txXferIn": "تحويل مستلم من {n}", "txXferOut": "تحويل مرسل إلى {n}"},
+    tr: {"txXferIn": "{n} kişisinden transfer alındı", "txXferOut": "{n} kişisine transfer gönderildi"},
+    vi: {"txXferIn": "Nhận chuyển tiền từ {n}", "txXferOut": "Đã chuyển tiền cho {n}"},
+    id: {"txXferIn": "Transfer diterima dari {n}", "txXferOut": "Transfer dikirim ke {n}"},
+    ru: {"txXferIn": "Перевод получен от {n}", "txXferOut": "Перевод отправлен: {n}"},
+    de: {"txXferIn": "Überweisung erhalten von {n}", "txXferOut": "Überweisung gesendet an {n}"},
+    hi: {"txXferIn": "{n} से ट्रांसफ़र मिला", "txXferOut": "{n} को ट्रांसफ़र भेजा"},
+    zh: {"txXferIn": "收到 {n} 的转账", "txXferOut": "已转账给 {n}"}
+  };
+  Object.keys(XFER_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], XFER_TR[l]); });
   // 2026-11-08 : message d'état automatique de l'affilié (« pourquoi 0 $ ? »)
   var AFF_ST_TR = {
     fr: {"affStNone": "Partage ton lien : dès qu'un ami s'inscrit, dépose et joue, tu gagnes 60 % de ce qu'il perd.", "affStNoDep": "Tes amis sont inscrits mais n'ont pas encore déposé. Dès qu'ils déposent et jouent en argent réel, tu gagnes.", "affStNoPlay": "Tes amis ont déposé mais n'ont pas encore joué en argent réel. Dès qu'ils jouent, ta part arrive.", "affStPend": "{p} arrivent sur ton solde dans moins de {hold} h.", "affStWin": "Pour l'instant tes amis ont gagné plus qu'ils n'ont perdu : rien à verser. Dès qu'ils perdent, ta part arrive toute seule.", "affStOk": "Tout est à jour : tes gains arrivent tout seuls sur ton solde réel."},

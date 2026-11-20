@@ -66,6 +66,8 @@
  "sendToReq": "请输入好友的 ID 或电子邮箱。",
  "wdNetFail": "网络较慢：你的提现尚未确认。重试前请先查看历史记录。",
  "sendNetFail": "网络较慢：再次发送前请先查看历史记录。",
+ "txXferIn": "收到 {n} 的转账",
+ "txXferOut": "已转账给 {n}",
  "affOnline": "在线好友",
  "affAct7": "活跃（7 天）",
  "affEarnedAll": "累计收益",

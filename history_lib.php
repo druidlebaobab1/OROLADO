@@ -135,6 +135,26 @@ function orolado_finance_history(array $db, string $uid, bool $isAdmin, int $off
     foreach (orolado_aff_history_rows($uid) as $r) $push($r);
   }
 
+  // 2026-11-20 (propriétaire) : transferts entre joueurs écrits clairement — chez celui qui reçoit, le bonus adm_xf_… devient
+  // « Transfert reçu de X » ; chez celui qui envoie, une ligne « Transfert envoyé à X » (avant : rien dans son historique).
+  if (function_exists('orolado_xfer_history_rows')) {
+    $xf = orolado_xfer_history_rows($ids);
+    $notes = [];
+    foreach (($db['deposits'] ?? []) as $d) {
+      if (is_array($d) && str_starts_with((string) ($d['id'] ?? ''), 'adm_xf_')) $notes[(string) $d['id']] = (string) ($d['note'] ?? $d['motif'] ?? '');
+    }
+    foreach ($rows as $k => $r) {
+      if ($r['kind'] === 'withdraw' || !str_starts_with((string) $r['ref'], 'adm_xf_')) continue;
+      $p = $xf['in'][$r['ref']] ?? null;
+      $peer = $p ? ($p['name'] !== '' ? $p['name'] : $p['id']) : trim((string) preg_replace('/^(Transfert reçu de|Reçu de ton ami)\s*/u', '', $notes[$r['ref']] ?? ''));
+      $rows[$k]['kind'] = 'xfer_in';
+      $rows[$k]['gateway'] = 'OROLADO';
+      $rows[$k]['peer'] = $peer;
+      $rows[$k]['peerId'] = (string) ($p['id'] ?? '');
+    }
+    foreach ($xf['out'] as $r) $push($r);
+  }
+
   // v3632 (propriétaire) : compte affilié — les recharges de l'admin (lignes « Bonus ») ne s'affichent pas dans SON historique.
   $partner = false;
   foreach ($ids as $pid) if (is_array($db['users'][$pid] ?? null) && !empty($db['users'][$pid]['partner'])) { $partner = true; break; }

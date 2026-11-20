@@ -77,6 +77,20 @@ function orolado_xfer_day_sent(array $st, int $now): float {
   return orolado_money($s);
 }
 
+/** Compte démo affilié (partenaire) : son solde « réel » est rechargé par l'admin, il ne doit jamais sortir. */
+function orolado_xfer_is_demo_account(array $db, array $user): bool {
+  if (!empty($user['partner'])) return true;
+  $uid = (string) ($user['id'] ?? '');
+  return $uid !== '' && function_exists('orolado_is_partner') && orolado_is_partner($db, $uid);
+}
+
+/** « Nom (ID) », ou seulement le nom, ou seulement l'ID. */
+function orolado_xfer_label(string $name, string $id): string {
+  $name = trim($name); $id = trim($id);
+  if ($name !== '' && $id !== '' && $name !== $id) return $name . ' (' . $id . ')';
+  return $name !== '' ? $name : ($id !== '' ? $id : '?');
+}
+
 /** Ce que le joueur peut envoyer maintenant + son historique d'envois / réceptions. */
 function orolado_xfer_status(array $db, array $user, ?float $balance = null): array {
   $uid = (string) ($user['id'] ?? '');
@@ -119,6 +133,9 @@ function orolado_xfer_send(array $db, array $user, array $to, float $amount, int
   $toUid = (string) ($to['uid'] ?? '');
   $now = $now ?: time();
   if ($uid === '' || !orolado_xfer_allowed($user)) return ['ok' => false, 'reason' => 'off'];
+  // 2026-11-20 (revue « comptes démo ») : un compte démo affilié (partenaire, rechargé par l'admin) n'envoie JAMAIS d'argent,
+  // vérifié ICI aussi (pas seulement dans api.php) : son argent ne doit jamais devenir celui d'un vrai joueur.
+  if (orolado_xfer_is_demo_account($db, $user)) return ['ok' => false, 'reason' => 'off'];
   $amount = floor($amount * 100 + 1e-6) / 100;
   if ($amount + 1e-9 < OROLADO_XFER_MIN) return ['ok' => false, 'reason' => 'min'];
   if ($toUid === '' || !isset($db['users'][$toUid])) return ['ok' => false, 'reason' => 'notFound'];
@@ -183,7 +200,7 @@ function orolado_xfer_send(array $db, array $user, array $to, float $amount, int
     return ['ok' => true];
   });
   $fromName = trim((string) ($user['displayName'] ?? $user['name'] ?? ''));
-  orolado_xfer_history($uid, $ref, -$amount, 'transfer', 'Envoyé à ton ami ' . (string) ($to['name'] ?? '') . ' (' . (string) ($to['id'] ?? '') . ')');
+  orolado_xfer_history($uid, $ref, -$amount, 'transfer', 'Transfert envoyé à ' . orolado_xfer_label((string) ($to['name'] ?? ''), (string) ($to['id'] ?? '')));
   // 3) Créditer l'ami (bonus ×2), une seule fois. En cas d'échec : réessayé plus tard (orolado_xfer_retry).
   orolado_xfer_credit($db, $uid, $ref);
   return ['ok' => true, 'amount' => $amount, 'ref' => $ref, 'fromName' => $fromName];
@@ -206,8 +223,14 @@ function orolado_xfer_credit(array $db, string $uid, string $ref): bool {
   });
   if (!is_array($l) || ($l['state'] ?? '') !== 'credit') return false;
   $from = function_exists('live_who_uid') ? live_who_uid($uid) : null;
-  $fromLabel = $from ? ($from['name'] . ' (' . $from['id'] . ')') : 'un ami';
-  $note = 'Reçu de ton ami ' . $fromLabel;
+  if (!$from && is_array($db['users'][$uid] ?? null)) {
+    // Secours (Live indisponible) : nom et ID du compte, pour que l'ami sache QUI lui a envoyé.
+    $su = $db['users'][$uid];
+    $from = ['name' => trim((string) ($su['displayName'] ?? $su['name'] ?? '')), 'id' => (string) ($su['publicId'] ?? '')];
+    if ($from['name'] === '' && $from['id'] === '') $from = null;
+  }
+  $fromLabel = $from ? orolado_xfer_label((string) $from['name'], (string) $from['id']) : 'un ami';
+  $note = 'Transfert reçu de ' . $fromLabel;
   $ok = function_exists('orolado_aff_pay_friend') && orolado_aff_pay_friend($db, (string) $l['to'], (float) $l['amount'], $ref, $note);
   if (!$ok) return false;
   orolado_xfer_with($uid, static function (array &$st) use ($ref) {
@@ -260,4 +283,98 @@ function orolado_xfer_retry(array $db, string $uid): void {
     }
     orolado_xfer_credit($db, $uid, $ref);
   }
+}
+
+/** Lecture seule (sans verrou) de l'état des transferts d'un compte. */
+function orolado_xfer_read(string $uid): array {
+  $f = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer' . DIRECTORY_SEPARATOR . hash('sha256', 'xfer|' . $uid) . '.json';
+  if (!is_file($f)) return [];
+  $st = json_decode((string) @file_get_contents($f), true);
+  return is_array($st) ? $st : [];
+}
+
+/**
+ * Lignes « transfert » de l'historique financier d'un joueur (comptes liés compris) :
+ *  - ['in'][ref]  = nom / ID de celui qui a envoyé (pour réétiqueter le bonus adm_xf_… reçu) ;
+ *  - ['out'][]    = envois déjà retirés du solde (état credit / done), montant négatif.
+ */
+function orolado_xfer_history_rows(array $ids): array {
+  $in = []; $out = [];
+  foreach (array_unique(array_filter(array_map('strval', $ids))) as $uid) {
+    foreach ((array) (orolado_xfer_read($uid)['log'] ?? []) as $l) {
+      if (!is_array($l) || ($l['ref'] ?? '') === '') continue;
+      $ref = (string) $l['ref'];
+      if (($l['dir'] ?? '') === 'in') {
+        $in[$ref] = ['name' => (string) ($l['name'] ?? ''), 'id' => (string) ($l['fromId'] ?? '')];
+      } else if (($l['dir'] ?? '') === 'out' && in_array((string) ($l['state'] ?? ''), ['credit', 'done'], true)) {
+        $out[$ref] = [
+          'at' => date('c', (int) ($l['at'] ?? 0)), 'ref' => $ref, 'amount' => -abs(orolado_money($l['amount'] ?? 0)),
+          'kind' => 'xfer_out', 'status' => 'COMPLETED', 'gateway' => 'OROLADO',
+          'peer' => trim((string) ($l['name'] ?? '')) !== '' ? (string) $l['name'] : (string) ($l['toId'] ?? ''),
+          'peerId' => (string) ($l['toId'] ?? ''),
+        ];
+      }
+    }
+  }
+  return ['in' => $in, 'out' => array_values($out)];
+}
+
+/**
+ * TOUS les transferts entre joueurs (admin + scripts/list-transfers.php), du plus récent au plus ancien.
+ * Source : data/xfer/<sha256("xfer|" + id du compte)>.json. Chaque envoi y est noté deux fois : « out » chez celui qui
+ * envoie (avec le compte qui reçoit), « in » chez celui qui reçoit (avec le compte qui envoie) ; ici, une ligne par envoi.
+ */
+function orolado_xfer_all(array $db): array {
+  $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer';
+  if (!is_dir($dir)) return [];
+  $owner = [];
+  foreach (array_keys((array) ($db['users'] ?? [])) as $uid) $owner[hash('sha256', 'xfer|' . $uid) . '.json'] = (string) $uid;
+  $rows = [];
+  foreach (glob($dir . DIRECTORY_SEPARATOR . '*.json') ?: [] as $f) {
+    $me = $owner[basename($f)] ?? '';
+    $st = json_decode((string) @file_get_contents($f), true);
+    if (!is_array($st)) continue;
+    foreach ((array) ($st['log'] ?? []) as $l) {
+      if (!is_array($l) || ($l['ref'] ?? '') === '') continue;
+      $ref = (string) $l['ref'];
+      $r = $rows[$ref] ?? ['ref' => $ref, 'at' => 0, 'amount' => 0.0, 'fromUid' => '', 'fromId' => '', 'fromName' => '', 'toUid' => '', 'toId' => '', 'toName' => '', 'state' => ''];
+      if (($l['dir'] ?? '') === 'out') {
+        $r['at'] = (int) ($l['at'] ?? 0) ?: $r['at'];
+        $r['amount'] = orolado_money($l['amount'] ?? 0);
+        $r['state'] = (string) ($l['state'] ?? '');
+        if ($me !== '') $r['fromUid'] = $me;
+        $r['toUid'] = (string) ($l['to'] ?? $r['toUid']);
+        $r['toId'] = (string) ($l['toId'] ?? '') ?: $r['toId'];
+        $r['toName'] = (string) ($l['name'] ?? '') ?: $r['toName'];
+      } else if (($l['dir'] ?? '') === 'in') {
+        if (!$r['at']) $r['at'] = (int) ($l['at'] ?? 0);
+        if ($r['amount'] <= 0) $r['amount'] = orolado_money($l['amount'] ?? 0);
+        if ($r['state'] === '') $r['state'] = (string) ($l['state'] ?? 'done');
+        $r['fromUid'] = (string) ($l['from'] ?? '') ?: $r['fromUid'];
+        $r['fromId'] = (string) ($l['fromId'] ?? '') ?: $r['fromId'];
+        $r['fromName'] = (string) ($l['name'] ?? '') ?: $r['fromName'];
+        if ($me !== '' && $r['toUid'] === '') $r['toUid'] = $me;
+      } else {
+        continue;
+      }
+      $rows[$ref] = $r;
+    }
+  }
+  foreach ($rows as &$r) {
+    foreach (['from', 'to'] as $side) {
+      $u = $db['users'][$r[$side . 'Uid']] ?? null;
+      if (!is_array($u)) continue;
+      if ($r[$side . 'Name'] === '') $r[$side . 'Name'] = trim((string) ($u['displayName'] ?? $u['name'] ?? ''));
+      if ($r[$side . 'Id'] === '') $r[$side . 'Id'] = (string) ($u['publicId'] ?? '');
+    }
+  }
+  unset($r);
+  $rows = array_values($rows);
+  usort($rows, static fn($a, $b) => ($b['at'] <=> $a['at']) ?: strcmp($a['ref'], $b['ref']));
+  return $rows;
+}
+
+/** État lisible d'un envoi : « Réussi » (ami crédité), « En cours » (ami pas encore crédité, réessayé tout seul). */
+function orolado_xfer_state_label(string $state): string {
+  return $state === 'done' ? 'Réussi' : ($state === 'credit' ? 'En cours (ami pas encore crédité)' : ($state === 'debit' ? 'En cours (retrait en route)' : $state));
 }
