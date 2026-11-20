@@ -515,6 +515,136 @@ function coffre_journal(int $n = 40): array {
 }
 
 /**
+ * 2026-11-20 (propriétaire) : journal pour l'écran — les anciennes alertes « Réservoir vide » répétées (une toutes les
+ * 2 min avant ce correctif) sont regroupées en UNE ligne par réseau (la plus récente, avec « ×N »).
+ */
+function coffre_journal_view(int $n = 30): array {
+  $out = []; $seen = [];
+  foreach (coffre_journal(400) as $j) {
+    if (($j['k'] ?? '') === 'reservoir_vide') {
+      $key = (string) ($j['net'] ?? 'tron');
+      if (isset($seen[$key])) { $out[$seen[$key]]['x'] = (int) ($out[$seen[$key]]['x'] ?? 1) + 1; continue; }
+      $seen[$key] = count($out);
+    }
+    if (count($out) < $n) $out[] = $j;
+  }
+  return $out;
+}
+
+/** Nombre écrit en entier, sans « 7.0E-6 » : au plus $maxDec décimales, zéros inutiles retirés (point décimal). */
+function coffre_num(float $v, int $maxDec = 8): string {
+  $s = number_format($v, max(0, $maxDec), '.', '');
+  if (str_contains($s, '.')) $s = rtrim(rtrim($s, '0'), '.');
+  return ($s === '' || $s === '-0') ? '0' : $s;
+}
+
+/** Nombre à la française (1 234,56) : $minDec à $maxDec décimales, jamais d'écriture scientifique. */
+function coffre_fr(float $v, int $maxDec = 8, int $minDec = 0): string {
+  $s = number_format($v, max($minDec, $maxDec), ',', "\u{202F}");
+  if ($maxDec > $minDec && str_contains($s, ',')) {
+    [$i, $d] = explode(',', $s, 2);
+    $d = rtrim($d, '0');
+    if (strlen($d) < $minDec) $d = str_pad($d, $minDec, '0');
+    $s = $d === '' ? $i : $i . ',' . $d;
+  }
+  return $s;
+}
+
+/** Arrondi VERS LE HAUT à 2 chiffres significatifs (0,00000613 → 0,0000062) : un montant à recharger lisible. */
+function coffre_ceil_sig(float $v, int $sig = 2): float {
+  if ($v <= 0) return 0.0;
+  $f = 10 ** ($sig - 1 - (int) floor(log10($v)));
+  return ceil($v * $f - 1e-9) / $f;
+}
+
+/* ===================== Réservoir vide : UNE alerte, pas d'essai toutes les 2 min ===================== */
+// 2026-11-20 (propriétaire : des dizaines de lignes « ⚠️ Réservoir vide » identiques) : quand l'essence manque sur un
+// réseau, on le note UNE fois (journal + alerte en haut de la page du coffre) ; l'adresse n'est réessayée que si le solde
+// du réservoir a changé (rechargé) ou au bout de 3 h. Le bouton « Envoyer maintenant » réessaie toujours (sans doublon).
+const COFFRE_GAS_RETRY = 10800;
+
+function coffre_gas_wait_file(): string { return coffre_dir() . '/gas_wait.json'; }
+function coffre_gas_wait_all(): array { return coffre_json(coffre_gas_wait_file()); }
+
+/** Le réservoir de ce réseau est-il toujours dans le même état que lors du dernier échec (et moins de 3 h) ? */
+function coffre_gas_wait_active(string $net, ?float $balNow): bool {
+  $w = coffre_gas_wait_all()[$net] ?? null;
+  if (!is_array($w) || time() - (int) ($w['last'] ?? 0) >= COFFRE_GAS_RETRY) return false;
+  if ($balNow === null) return true; // réseau muet : on ne réessaie pas à l'aveugle
+  if (!isset($w['bal'])) return false; // solde inconnu la dernière fois : on réessaie
+  return abs($balNow - (float) $w['bal']) < 1e-12; // solde changé (rechargé) → on réessaie tout de suite
+}
+
+/** Note l'échec (adresse en attente d'essence). Retour : true si c'est une NOUVELLE alerte (à écrire au journal). */
+function coffre_gas_wait_set(string $net, array $info, string $addr): bool {
+  return (bool) coffre_json_rw(coffre_gas_wait_file(), static function (&$st) use ($net, $info, $addr) {
+    $new = empty($st[$net]);
+    $st[$net] = array_merge(is_array($st[$net] ?? null) ? $st[$net] : ['since' => time(), 'addrs' => []], $info, ['last' => time()]);
+    $st[$net]['addrs'][$addr] = time();
+    return $new;
+  });
+}
+
+function coffre_gas_wait_clear(string $net): void {
+  coffre_json_rw(coffre_gas_wait_file(), static function (&$st) use ($net) { unset($st[$net]); });
+}
+
+/** Montant conseillé pour recharger un réservoir (de quoi faire beaucoup d'envois). */
+function coffre_gas_advice(string $net, string $coin): string {
+  $a = ['tron' => '200 TRX', 'evm:bsc' => '0,01 BNB', 'evm:polygon' => '2 POL', 'evm:eth' => '0,005 ETH', 'evm:base' => '0,002 ETH', 'evm:arb' => '0,002 ETH', 'evm:op' => '0,002 ETH', 'evm:avax' => '0,1 AVAX'];
+  return $a[$net] ?? ('un peu de ' . $coin);
+}
+
+/**
+ * Alertes à montrer en haut de la page du coffre : une par réseau dont le réservoir manque d'essence.
+ * $balNow : solde actuel du réservoir par réseau (null = inconnu). Rechargé assez → l'alerte disparaît.
+ */
+function coffre_gas_alerts(array $balNow): array {
+  $out = [];
+  foreach (coffre_gas_wait_all() as $net => $w) {
+    if (!is_array($w)) continue;
+    $need = (float) ($w['need'] ?? 0); $cur = $balNow[$net] ?? null;
+    if ($cur !== null && $cur + 1e-12 >= $need) continue; // rechargé : l'envoi repart tout seul au prochain passage
+    $miss = coffre_ceil_sig(max(0.0, $need - ($cur ?? (float) ($w['bal'] ?? 0))));
+    $coin = (string) ($w['coin'] ?? ''); $name = (string) ($w['name'] ?? $net); $addr = (string) ($w['gas'] ?? '');
+    $out[] = ['net' => $net, 'coin' => $coin, 'name' => $name, 'addr' => $addr, 'miss' => coffre_num($miss, 12), 'since' => date('c', (int) ($w['since'] ?? time())), 'n' => count((array) ($w['addrs'] ?? [])),
+      'txt' => '⚠️ Recharge au moins ' . coffre_fr($miss, 12) . ' ' . $coin . ' sur le réservoir ' . $name . ' pour pouvoir envoyer vers ton Trust Wallet (conseillé : ' . coffre_gas_advice((string) $net, $coin) . ').'];
+  }
+  return $out;
+}
+
+/**
+ * Totaux DÉJÀ ENVOYÉS vers le Trust Wallet, relus dans tout le journal (envois réussis seulement) :
+ *  - TRON : balayages vers le Trust Wallet (pas ceux vers la caisse), surplus caisse → Trust Wallet, envois libres vers lui ;
+ *  - Ethereum… : balayages acceptés, moins ceux que le réseau a ensuite refusés (« confirmé » en échec) ;
+ *  - Bitcoin… : lignes « balaye » (écrites seulement après un envoi accepté).
+ */
+function coffre_sent_totals(): array {
+  $out = ['tron' => 0.0, 'evm' => [], 'utxo' => []];
+  $fp = @fopen(coffre_dir() . '/journal.log', 'r');
+  if (!$fp) return $out;
+  $caisse = (string) (coffre_json(coffre_dir() . '/gas.json')['addr'] ?? ''); $trust = coffre_dest();
+  $evm = []; $failed = [];
+  while (($l = fgets($fp)) !== false) {
+    $j = json_decode($l, true);
+    if (!is_array($j)) continue;
+    $k = (string) ($j['k'] ?? ''); $net = (string) ($j['net'] ?? '');
+    if ($k === 'balayage' && $net === '') { if (!empty($j['ok']) && (string) ($j['to'] ?? '') !== $caisse) $out['tron'] += (float) ($j['usdt'] ?? 0); }
+    elseif ($k === 'surplus_trust' && !empty($j['ok'])) $out['tron'] += (float) ($j['usdt'] ?? 0);
+    elseif ($k === 'envoi_libre' && !empty($j['ok']) && $trust !== '' && (string) ($j['to'] ?? '') === $trust) $out['tron'] += (float) ($j['usdt'] ?? 0);
+    elseif ($k === 'balayage' && !empty($j['ok'])) $evm[] = [$net, strtoupper((string) ($j['sym'] ?? 'USDT')), (float) ($j['usdt'] ?? 0), strtolower((string) ($j['tx'] ?? ''))];
+    elseif ($k === 'confirme' && $net !== '' && empty($j['ok'])) $failed[strtolower((string) ($j['tx'] ?? ''))] = true;
+    elseif ($k === 'balaye' && $net !== '') {
+      $out['utxo'][$net]['units'] = ($out['utxo'][$net]['units'] ?? 0) + (float) ($j['units'] ?? 0);
+      $out['utxo'][$net]['usd'] = ($out['utxo'][$net]['usd'] ?? 0) + (float) ($j['usd'] ?? 0);
+    }
+  }
+  fclose($fp);
+  foreach ($evm as [$net, $sym, $units, $tx]) if ($tx === '' || empty($failed[$tx])) $out['evm'][$sym . '|' . $net] = ($out['evm'][$sym . '|' . $net] ?? 0) + $units;
+  return $out;
+}
+
+/**
  * Envoie l'argent des adresses des joueurs vers le coffre (Trust Wallet du propriétaire).
  * Étape 1 : si l'adresse n'a pas assez de TRX pour les frais, le réservoir lui en envoie juste assez.
  * Étape 2 (ronde suivante, quand le TRX est arrivé) : tout l'USDT part vers le coffre.
@@ -540,9 +670,14 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
     foreach ($due as $ad => $e) if ((int) ($e['due'] ?? 0) <= 0) $due[$ad]['due'] = 1;
     uasort($due, static fn($a, $b) => ((int) $a['due']) <=> ((int) $b['due']));
     $k = 0;
+    // Réservoir déjà vu vide pour ces adresses : pas de nouvel essai tant que son solde n'a pas changé (ou 3 h).
+    $waitAddrs = (array) (coffre_gas_wait_all()['tron']['addrs'] ?? []);
+    $gasTrx = false; // solde du réservoir, lu au plus une fois par passage
+    $readGas = static function () use (&$gasTrx, $gas) { if ($gasTrx === false) { $b = coffre_balances((string) $gas['addr']); $gasTrx = $b ? (float) $b['trx'] : null; } return $gasTrx; };
     foreach ($due as $addr => $e) {
       if ($k >= $max) break;
       if (!$force && $now - (int) ($e['tried'] ?? 0) < 90) continue;
+      if (!$force && isset($waitAddrs[$addr]) && coffre_gas_wait_active('tron', $readGas())) continue;
       $bal = coffre_balances((string) $addr);
       if ($bal === null) continue;
       coffre_json_rw(coffre_index_file(), static function (&$st) use ($addr, $now, $bal) { if (isset($st[$addr])) { $st[$addr]['tried'] = $now; $st[$addr]['bal'] = $bal['usdt']; } });
@@ -561,12 +696,18 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
       if ($have < $need) {
         $send = $need - $have + 300_000;
         $gb = coffre_balances((string) $gas['addr']);
+        $gasTrx = $gb ? (float) $gb['trx'] : null;
         if (!$gb || $gb['trx'] * 1e6 < $send + 1_200_000) {
-          coffre_log('reservoir_vide', ['addr' => $addr, 'need' => round($send / 1e6, 2)]);
-          if (orolado_rate_ok('coffre_gas_warn', 'x', 1, 3600)) orolado_health_event('Dépôts', '🏦 Réservoir TRX presque vide : ' . (int) (($gb['trx'] ?? 0)) . ' TRX. Envoie des TRX à ' . $gas['addr'] . ' (admin → 🏦 Coffre) pour que l’argent des joueurs parte vers ton Trust Wallet. Les dépôts des joueurs, eux, sont crédités normalement.', 'warn');
+          $needTrx = ($send + 1_200_000) / 1e6;
+          // Une seule ligne au journal par épisode (plus une toutes les 2 min) ; l'alerte reste en haut du coffre.
+          if (coffre_gas_wait_set('tron', ['coin' => 'TRX', 'name' => 'TRON', 'gas' => (string) $gas['addr'], 'bal' => $gasTrx, 'need' => $needTrx], (string) $addr)) {
+            coffre_log('reservoir_vide', ['net' => 'tron', 'coin' => 'TRX', 'addr' => $addr, 'need' => coffre_num(coffre_ceil_sig(max(0.0, $needTrx - (float) ($gasTrx ?? 0))), 8)]);
+            if (orolado_rate_ok('coffre_gas_warn', 'x', 1, 3600)) orolado_health_event('Dépôts', '🏦 Réservoir TRX presque vide : ' . (int) (($gb['trx'] ?? 0)) . ' TRX. Envoie des TRX à ' . $gas['addr'] . ' (admin → 🏦 Coffre) pour que l’argent des joueurs parte vers ton Trust Wallet. Les dépôts des joueurs, eux, sont crédités normalement.', 'warn');
+          }
           break;
         }
         $r = coffre_send_trx((string) $gas['addr'], (string) $addr, $send);
+        if ($r['ok']) coffre_gas_wait_clear('tron'); // réservoir rechargé : l'alerte disparaît
         coffre_log('frais', ['addr' => $addr, 'trx' => round($send / 1e6, 2), 'ok' => $r['ok'], 'tx' => $r['txid'] ?? '', 'why' => $r['why'] ?? '']);
         $done[] = ['addr' => $addr, 'step' => 'frais', 'ok' => $r['ok'], 'why' => $r['why'] ?? ''];
         if (!$force || !$r['ok']) continue; // ronde automatique : l'USDT part au passage suivant, une fois le TRX arrivé
@@ -593,6 +734,91 @@ function coffre_sweep(bool $force = false, int $max = 3): array {
 }
 
 /* ===================== Admin ===================== */
+
+/**
+ * 2026-11-20 (propriétaire) — « Par crypto » : 4 valeurs SÉPARÉES pour chaque crypto :
+ *   💼 disponible dans la caisse · 🏷️ encore sur les adresses des joueurs · 🏦 déjà envoyé vers le Trust Wallet · 📥 total reçu.
+ * L'argent déjà parti vers le Trust Wallet n'est JAMAIS compté comme disponible. Seule la caisse TRON (USDT) existe :
+ * sur les autres réseaux tout part vers le Trust Wallet. Rien n'est demandé au réseau ici (données déjà connues).
+ */
+function coffre_by_coin(array $db, array $ix, ?array $caisse, bool $caisseOn): array {
+  $sent = coffre_sent_totals();
+  $evmCh = function_exists('cevm_chains') ? cevm_chains() : [];
+  $utxoCh = function_exists('cutxo_chains') ? cutxo_chains() : [];
+  $evmByName = []; foreach ($evmCh as $k => $c) $evmByName[$c['name']] = $k;
+  $utxoByName = []; foreach ($utxoCh as $k => $c) $utxoByName[$c['name']] = $k;
+  $stable = static fn(string $sym): bool => in_array(strtoupper($sym), ['USDT', 'USDC', 'DAI', 'TUSD', 'FDUSD', 'PYUSD', 'USDE'], true);
+  // 📥 Reçu : dépôts crédités, en dollars et en pièces.
+  $recv = [];
+  foreach ((array) ($db['deposits'] ?? []) as $d) {
+    if (!is_array($d) || (string) ($d['operator'] ?? '') !== 'coffre' || (string) ($d['parentId'] ?? '') === '' || !in_array(strtoupper((string) ($d['status'] ?? '')), ['COMPLETED', 'PAID'], true)) continue;
+    $nw = (string) ($d['network'] ?? ''); $usd = (float) ($d['amount'] ?? 0);
+    if ($nw === 'TRC20' || $nw === '') { $key = 'tron'; $units = $usd; }
+    elseif (isset($evmByName[$nw])) { $key = 'evm|' . strtoupper((string) ($d['coin'] ?? '')) . '|' . $evmByName[$nw]; $units = (float) ($d['units'] ?? $usd); }
+    elseif (isset($utxoByName[$nw])) { $key = 'utxo|' . $utxoByName[$nw]; $units = (float) ($d['units'] ?? 0); }
+    else continue;
+    $recv[$key]['usd'] = ($recv[$key]['usd'] ?? 0) + $usd;
+    $recv[$key]['units'] = ($recv[$key]['units'] ?? 0) + $units;
+    $recv[$key]['addr'][(string) ($d['address'] ?? '')] = 1;
+  }
+  // 🏷️ Encore sur les adresses des joueurs.
+  $onAddr = ['tron' => 0.0];
+  foreach ($ix as $e) $onAddr['tron'] += max(0.0, (float) ($e['bal'] ?? 0));
+  if ($evmCh && function_exists('cevm_index_file')) foreach (coffre_json(cevm_index_file()) as $e) {
+    // Grand livre exact : sur l'adresse = crédité − sorti (confirmé), par pièce et par réseau.
+    $L = coffre_json(cevm_ledger_file((string) ($e['u'] ?? '')));
+    foreach ($L as $chain => $C) {
+      if (!isset($evmCh[$chain]) || !is_array($C)) continue;
+      foreach ($C as $a => $v) {
+        if (!is_array($v) || empty($v['cred']) || in_array($a, ['pend'], true)) continue;
+        $sym = $a === 'N' ? $evmCh[$chain]['native'] : (string) $a;
+        $dec = $a === 'N' ? 18 : (int) ($evmCh[$chain]['tokens'][$a][1] ?? 18);
+        $left = cevm_float(cevm_pos_sub(cevm_bn((string) $v['cred']), cevm_bn((string) ($v['out'] ?? '0'))), $dec);
+        $onAddr['evm|' . $sym . '|' . $chain] = ($onAddr['evm|' . $sym . '|' . $chain] ?? 0) + $left;
+      }
+    }
+  }
+  if ($utxoCh && function_exists('cutxo_index_file')) foreach (coffre_json(cutxo_index_file()) as $e) {
+    $ck = (string) ($e['c'] ?? '');
+    if (isset($utxoCh[$ck])) $onAddr['utxo|' . $ck] = ($onAddr['utxo|' . $ck] ?? 0) + (int) ($e['bal'] ?? 0) / 1e8;
+  }
+  $card = static function (string $key, string $label, string $sym, bool $st, int $n, ?float $cs, float $on, float $snt, float $rcvU, float $rcvUsd, string $note) {
+    $f = static fn(float $v): string => coffre_fr($v, $st ? 2 : 8, $st ? 2 : 0) . ' ' . $sym;
+    return ['key' => $key, 'label' => $label, 'sym' => $sym, 'n' => $n,
+      'caisse' => $cs === null ? null : $f($cs), 'onAddr' => $f($on), 'sent' => $f($snt),
+      'recv' => $f($rcvU) . ($st ? '' : ' (≈ ' . coffre_fr($rcvUsd, 2, 2) . ' $)'), 'note' => $note,
+      'v' => ['caisse' => $cs, 'onAddr' => round($on, 8), 'sent' => round($snt, 8), 'recv' => round($rcvU, 8), 'recvUsd' => round($rcvUsd, 2)]];
+  };
+  $out = [];
+  // USDT · TRON (la seule avec une caisse)
+  $out[] = $card('tron', 'USDT · TRON', 'USDT', true, count($ix), $caisse ? (float) $caisse['usdt'] : null, $onAddr['tron'], $sent['tron'],
+    (float) ($recv['tron']['units'] ?? 0), (float) ($recv['tron']['usd'] ?? 0),
+    $caisseOn ? 'La caisse paie les retraits tout seule ; au-dessus du plafond, le surplus part vers ton Trust Wallet.' : 'Caisse éteinte : l’argent des adresses part directement vers ton Trust Wallet.');
+  if ($caisse === null) $out[0]['caisse'] = '? (réseau TRON muet, réessaie)';
+  // Famille Ethereum : une carte par pièce et par réseau (USDT · BNB Chain, BNB · BNB Chain…)
+  $evmKeys = [];
+  foreach (array_merge(array_keys($recv), array_keys($onAddr)) as $k) if (str_starts_with($k, 'evm|')) $evmKeys[$k] = 1;
+  foreach (array_keys($sent['evm']) as $k) { [$sym, $ch] = explode('|', $k, 2); $evmKeys['evm|' . $sym . '|' . $ch] = 1; }
+  $evmCards = [];
+  foreach (array_keys($evmKeys) as $k) {
+    [, $sym, $ch] = explode('|', $k, 3);
+    if (!isset($evmCh[$ch])) continue;
+    $evmCards[] = $card($k, $sym . ' · ' . $evmCh[$ch]['name'], $sym, $stable($sym), count($recv[$k]['addr'] ?? []), null, (float) ($onAddr[$k] ?? 0),
+      (float) ($sent['evm'][$sym . '|' . $ch] ?? 0), (float) ($recv[$k]['units'] ?? 0), (float) ($recv[$k]['usd'] ?? 0), 'Pas de caisse sur ce réseau : tout part vers ton Trust Wallet.');
+  }
+  usort($evmCards, static fn($a, $b) => $b['v']['recvUsd'] <=> $a['v']['recvUsd']);
+  $out = array_merge($out, $evmCards);
+  // Bitcoin / Litecoin / Dogecoin
+  foreach ($utxoCh as $ck => $c) {
+    $k = 'utxo|' . $ck;
+    $active = (function_exists('cutxo_ready') && cutxo_ready($ck)) || isset($recv[$k]) || !empty($onAddr[$k]) || isset($sent['utxo'][$ck]);
+    if (!$active) continue;
+    $n = 0; if (function_exists('cutxo_index_file')) foreach (coffre_json(cutxo_index_file()) as $e) if ((string) ($e['c'] ?? '') === $ck) $n++;
+    $out[] = $card($k, $c['sym'] . ' · ' . $c['name'], $c['sym'], false, $n, null, (float) ($onAddr[$k] ?? 0), (float) ($sent['utxo'][$ck]['units'] ?? 0),
+      (float) ($recv[$k]['units'] ?? 0), (float) ($recv[$k]['usd'] ?? 0), 'Pas de caisse : part vers ton Trust Wallet quand tu appuies sur « Envoyer maintenant ».');
+  }
+  return $out;
+}
 
 function coffre_admin_view(): array {
   $cfg = coffre_cfg();
@@ -674,11 +900,16 @@ function coffre_admin_view(): array {
   }
   usort($oxaOld, static fn($a, $b) => $b['t'] <=> $a['t']);
   $caisse = (!empty($gas['addr']) && $gb) ? ['addr' => (string) $gas['addr'], 'usdt' => round($gb['usdt'], 2), 'trx' => round($gb['trx'], 2)] : null;
+  $evmView = function_exists('cevm_admin_view') ? cevm_admin_view() : null;
+  // Alertes « recharge le réservoir » (une par réseau), cachées dès que le réservoir a assez.
+  $gasNow = ['tron' => $gb ? (float) $gb['trx'] : null];
+  foreach ((array) ($evmView['gasBal'] ?? []) as $g) $gasNow['evm:' . $g['net']] = $g['bal'] === null ? null : (float) $g['bal'];
+  $gasAlerts = coffre_gas_alerts($gasNow);
   return ['ok' => true, 'oxapayOff' => !empty($cfg['oxapay_off']), 'directMin' => (float) ($cfg['direct_min'] ?? 0), 'caisse' => $caisse, 'caisseOn' => !empty($cfg['caisse_on']), 'caisseMax' => (float) ($cfg['caisse_max'] ?? 500),
     'autowdOn' => !empty($cfg['autowd_on']), 'autowdMax' => (float) ($cfg['autowd_max'] ?? 100), 'autowdDay' => (float) ($cfg['autowd_day'] ?? 500), 'autowdToday' => round(coffre_autowd_today(), 2),
-    'evm' => function_exists('cevm_admin_view') ? cevm_admin_view() : null, 'utxo' => function_exists('cutxo_admin_view') ? cutxo_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
+    'evm' => $evmView, 'gasAlerts' => $gasAlerts, 'byCoin' => coffre_by_coin($db, $ix, $caisse, !empty($cfg['caisse_on'])), 'utxo' => function_exists('cutxo_admin_view') ? cutxo_admin_view() : null, 'addrs' => $mine, 'nets' => $nets, 'backupAt' => (string) ($cfg['backupAt'] ?? ''), 'backupN' => (int) ($cfg['backupN'] ?? 0), 'nKeys' => $nAddr, 'ready' => coffre_ready(), 'on' => !empty($cfg['on']), 'min' => (float) ($cfg['min'] ?? COFFRE_SWEEP_DEFAULT), 'dest' => coffre_dest(),
     'tronKey' => function_exists('orolado_trongrid_key') && orolado_trongrid_key() !== '', 'gas' => (string) ($gas['addr'] ?? ''), 'gasTrx' => $gb ? round($gb['trx'], 2) : null,
-    'byNet' => array_values($byNet), 'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal(30),
+    'byNet' => array_values($byNet), 'addresses' => count($ix), 'credited' => round($got, 2), 'waiting' => round($waiting, 2), 'deposits' => $rows, 'journal' => coffre_journal_view(30),
     'oxaOld' => array_slice($oxaOld, 0, 40), 'oxaOldN' => count($oxaOld), 'oxaOldSum' => round($oxaOldSum, 2)];
 }
 

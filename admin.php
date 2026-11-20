@@ -485,11 +485,9 @@ function admin_badges(): array {
       if (admin_in_range($d['createdAt'] ?? null, $t0, $t1)) { $depToday++; $depTodaySum += (float) ($d['amount'] ?? 0); }
       if (admin_in_range($d['createdAt'] ?? null, $y0, $y1)) { $depYest++; $depYestSum += (float) ($d['amount'] ?? 0); }
     }
-    if (admin_dep_is_pending($d)) {
-      $age = admin_ts((string) ($d['createdAt'] ?? '')) ?: 0;
-      if ($age === 0 || $age >= time() - 7 * 86400) $depPend++;
-    }
-    if (admin_dep_is_failed($d)) $depFail++;
+    // 2026-11-20 : en attente depuis plus de 24 h sans paiement = abandonné (compté avec les échoués, plus dans « en attente »).
+    if (admin_dep_is_abandoned($d)) $depFail++;
+    else if (admin_dep_is_pending($d)) $depPend++;
   }
   $otp = 0;
   foreach (admin_otp_rows() as $r) {
@@ -623,6 +621,7 @@ function admin_badges(): array {
     'dep_all' => $depPaidN,
     'dep_method' => count($channels),
     'dep_bonus' => $bonusN,
+    'xfer_list' => count(admin_xfer_rows()),
     'wd_pending' => $wdOpen,
     'wd_today' => $wdToday,
     'wd_all' => $wdVisible,
@@ -842,9 +841,57 @@ function admin_list_payload(string $view, array $req): array {
   return $out;
 }
 
+/**
+ * 2026-11-20 (propriétaire) — « 💸 Transferts entre joueurs » : date, de, à, montant, état (lecture seule).
+ * Source : data/xfer/*.json (transfer_lib.php, orolado_xfer_all) — même liste que `php scripts/list-transfers.php`.
+ */
+function admin_xfer_rows(): array {
+  if (!function_exists('orolado_xfer_all') && is_file(__DIR__ . '/transfer_lib.php')) require_once __DIR__ . '/transfer_lib.php';
+  return function_exists('orolado_xfer_all') ? orolado_xfer_all(admin_local_db()) : [];
+}
+
+function admin_xfer_payload(array $req): array {
+  $db = admin_local_db();
+  $cols = ['Date', 'De', 'À', 'Montant', 'État', 'Réf.'];
+  $list = [];
+  foreach (admin_xfer_rows() as $r) {
+    $r['createdAt'] = $r['at'] ? date('c', (int) $r['at']) : '';
+    $r['id'] = (string) $r['ref'];
+    $r['email'] = trim((string) ($db['users'][$r['fromUid']]['email'] ?? '') . ' ' . (string) ($db['users'][$r['toUid']]['email'] ?? ''));
+    $r['name'] = $r['fromName'] . ' ' . $r['toName'];
+    $r['publicId'] = $r['fromId'] . ' ' . $r['toId'];
+    $list[] = $r;
+  }
+  $shown = admin_apply_filters($list, $req, 'createdAt');
+  $sum = 0.0;
+  foreach ($shown as $r) $sum += (float) $r['amount'];
+  [$slice, $total, $page, $pages] = admin_page($shown, $req);
+  $rows = [];
+  foreach ($slice as $r) {
+    $who = static fn(string $n, string $id): string => function_exists('orolado_xfer_label') ? orolado_xfer_label($n, $id) : trim($n . ' ' . $id);
+    $fromU = $db['users'][$r['fromUid']] ?? [];
+    $rows[] = [
+      'cells' => [
+        admin_when_cell($r['createdAt']),
+        $who($r['fromName'], $r['fromId']),
+        $who($r['toName'], $r['toId']),
+        admin_money($r['amount']),
+        function_exists('orolado_xfer_state_label') ? orolado_xfer_state_label((string) $r['state']) : (string) $r['state'],
+        (string) $r['ref'],
+      ],
+      // clic sur la ligne = fiche de celui qui a envoyé
+      'userId' => (string) (is_array($fromU) && !empty($fromU['sbId']) ? $fromU['sbId'] : $r['fromUid']),
+      'wrap' => 1,
+    ];
+  }
+  return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages,
+    'summary' => $total . ' transfert(s) · ' . admin_money($sum) . ' — chez celui qui reçoit, c’est un bonus à miser ×2 (aussi dans « Bonus Offerts »)', 'actions' => false];
+}
+
 function admin_list_payload_raw(string $view, array $req): array {
   // v2426 — rubrique F · Cadeaux (lecture seule).
   if (str_starts_with($view, 'gift_')) return admin_gift_payload($view, $req, admin_profiles());
+  if ($view === 'xfer_list') return admin_xfer_payload($req);
   $needPeople = !in_array($view, ['alerts', 'otp_mails', 'payout_stats', 'games', 'trade_minutes', 'messages'], true);
   $needVaults = !in_array($view, ['alerts', 'otp_mails', 'dep_today', 'dep_yesterday', 'dep_pending', 'dep_failed', 'dep_all', 'dep_method', 'messages', 'traffic'], true);
   $needWds = str_starts_with($view, 'wd_') || str_starts_with($view, 'profit_');
@@ -1149,38 +1196,47 @@ function admin_list_payload_raw(string $view, array $req): array {
     if (in_array($view, ['dep_today', 'dep_yesterday', 'dep_pending', 'dep_failed', 'dep_all'], true)) {
     $cols = ['Réf.', 'ID', 'E-mail', 'Montant', 'Méthode', 'Statut', 'Date'];
     $list = $deps;
+    // 2026-11-20 (propriétaire) : les dépôts échoués / abandonnés (FAILED, EXPIRED, CANCELLED…, ou en attente depuis plus de
+    // 24 h sans paiement) ne sont plus mêlés aux listes : ils vont dans un volet fermé « ▸ Dépôts échoués / abandonnés (N) ».
+    $nowAb = time();
+    $abandoned = array_values(array_filter($deps, static fn($d) => admin_dep_is_abandoned($d, $nowAb)));
+    $hidden = null; // lignes du volet fermé (null = pas de volet sur cette liste)
     if ($view === 'dep_all') {
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d) && (float) ($d['amount'] ?? 0) > 0.009));
+      $hidden = $abandoned;
     } else if (($view === 'dep_today' || $view === 'dep_yesterday') && ($req['preset'] ?? 'all') !== 'all') {
       // 2026-11-09 : une date choisie dans le filtre remplace le jour de la case (avant : liste vide si on choisissait une autre date)
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d)));
+      $hidden = $abandoned;
     } else if ($view === 'dep_today') {
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d) && admin_in_range($d['createdAt'] ?? null, $t0, $t1)));
+      $hidden = array_values(array_filter($abandoned, static fn($d) => admin_in_range($d['createdAt'] ?? null, $t0, $t1)));
     } else if ($view === 'dep_yesterday') {
       // 2026-11-09 (propriétaire : « il doit aussi voir les dépôts d'hier »)
       $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_paid($d) && admin_in_range($d['createdAt'] ?? null, $y0, $y1)));
+      $hidden = array_values(array_filter($abandoned, static fn($d) => admin_in_range($d['createdAt'] ?? null, $y0, $y1)));
     } else if ($view === 'dep_pending') {
-      $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_pending($d)));
+      $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_pending($d) && !admin_dep_is_abandoned($d, $nowAb)));
+      $hidden = $abandoned;
       $actions = true;
     } else if ($view === 'dep_failed') {
-      $list = array_values(array_filter($deps, static fn($d) => admin_dep_is_failed($d)));
+      // Cette case sert justement à les voir : liste ouverte (échoués + en attente depuis plus de 24 h).
+      $list = $abandoned;
     }
-    $enriched = [];
-    foreach ($list as $d) {
-      $u = admin_user_lookup((string) $d['userId'], $pmap);
-      $d['email'] = (string) ($u['email'] ?? '');
-      $d['publicId'] = (string) ($u['publicId'] ?? '');
-      $d['name'] = (string) ($u['name'] ?? '');
-      $d['phone'] = (string) ($u['phone'] ?? '');
-      $enriched[] = $d;
-    }
-    $enriched = admin_apply_filters($enriched, $req, 'createdAt');
-    [$enriched, $countries, $wantC] = admin_money_by_country($enriched, $pmap, $req, static fn($d) => admin_country_cell(admin_user_lookup((string) ($d['userId'] ?? ''), $pmap)));
-    $sum = 0.0;
-    foreach ($enriched as $d) $sum += (float) $d['amount'];
-    [$slice, $total, $page, $pages] = admin_page($enriched, $req);
-    foreach ($slice as $d) {
-      $rows[] = [
+    $enrich = static function (array $src) use ($pmap): array {
+      $out = [];
+      foreach ($src as $d) {
+        $u = admin_user_lookup((string) $d['userId'], $pmap);
+        $d['email'] = (string) ($u['email'] ?? '');
+        $d['publicId'] = (string) ($u['publicId'] ?? '');
+        $d['name'] = (string) ($u['name'] ?? '');
+        $d['phone'] = (string) ($u['phone'] ?? '');
+        $out[] = $d;
+      }
+      return $out;
+    };
+    $depRow = static function (array $d): array {
+      return [
         'cells' => [
           (string) $d['id'],
           (string) ($d['publicId'] ?? ''),
@@ -1195,8 +1251,23 @@ function admin_list_payload_raw(string $view, array $req): array {
         'kind' => 'deposit',
         'pending' => admin_dep_is_pending($d),
       ];
+    };
+    $enriched = admin_apply_filters($enrich($list), $req, 'createdAt');
+    [$enriched, $countries, $wantC] = admin_money_by_country($enriched, $pmap, $req, static fn($d) => admin_country_cell(admin_user_lookup((string) ($d['userId'] ?? ''), $pmap)));
+    $sum = 0.0;
+    foreach ($enriched as $d) $sum += (float) $d['amount'];
+    [$slice, $total, $page, $pages] = admin_page($enriched, $req);
+    foreach ($slice as $d) $rows[] = $depRow($d);
+    $out = ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' dépôt(s) · ' . admin_money($sum) . ($wantC !== '' ? ' · ' . $wantC : (count($countries) > 1 ? ' · ' . count($countries) . ' pays' : '')), 'actions' => $actions, 'countries' => $countries];
+    if ($hidden !== null) {
+      $hid = admin_apply_filters($enrich($hidden), $req, 'createdAt');
+      $hSum = 0.0;
+      foreach ($hid as $d) $hSum += (float) $d['amount'];
+      // 200 lignes au plus dans le volet (les plus récentes) ; la case « Dépôts Échoués » les montre toutes.
+      $out['hidden'] = ['label' => 'Dépôts échoués / abandonnés', 'n' => count($hid), 'sum' => admin_money($hSum), 'cols' => $cols,
+        'rows' => array_map($depRow, array_slice($hid, 0, 200))];
     }
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $total . ' dépôt(s) · ' . admin_money($sum) . ($wantC !== '' ? ' · ' . $wantC : (count($countries) > 1 ? ' · ' . count($countries) . ' pays' : '')), 'actions' => $actions, 'countries' => $countries];
+    return $out;
   }
 
   // Bonus envoyés depuis l'admin : jamais mélangés aux dépôts (ce n'est pas de l'argent reçu).
@@ -1934,6 +2005,7 @@ function admin_profile_payload(string $uid): array {
       'amount' => $d['amount'],
       'status' => $d['status'],
       'paid' => admin_dep_is_paid($d),
+      'abandoned' => admin_dep_is_abandoned($d),
       'method' => admin_dep_channel_row($d),
       'at' => $d['createdAt'],
     ];
@@ -3239,11 +3311,12 @@ $ADMIN_TABS = [
     ['dep_today', 'Dépôts du Jour'],
     ['dep_yesterday', 'Dépôts d’Hier'],
     ['dep_pending', 'Dépôts en Attente'],
-    ['dep_failed', 'Dépôts Échoués'],
+    ['dep_failed', 'Dépôts Échoués / Abandonnés'],
     ['dep_top', 'Meilleurs Déposants'],
     ['dep_all', 'Historique Global Dépôts'],
     ['dep_method', 'Dépôts par Méthode'],
     ['dep_bonus', 'Bonus Offerts'],
+    ['xfer_list', '💸 Transferts entre joueurs'],
   ],
   'gC' => [
     ['wd_pending', 'Retraits en Cours'],
@@ -3493,6 +3566,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       .metrics{gap:12px!important}
       .sum-bar{max-width:1180px;margin-left:auto;margin-right:auto}
     }
+    details.dep-hidden > summary{list-style:none} details.dep-hidden > summary::-webkit-details-marker{display:none}
   </style>
 </head>
 <body>
@@ -4410,7 +4484,25 @@ function renderList(j) {
   });
   html += '</tbody></table>';
   if (!(j.rows||[]).length) html = '<p class="muted" style="padding:12px">Aucune ligne pour ces filtres.</p>';
+  // 2026-11-20 (propriétaire) : dépôts échoués / abandonnés rangés dans un volet FERMÉ sous la liste.
+  if (j.hidden && j.hidden.n > 0) {
+    const hd = j.hidden;
+    html += '<details class="dep-hidden" style="margin:10px 0" ontoggle="this.querySelector(\'.tri\').textContent=this.open?\'▾\':\'▸\'"><summary class="muted" style="cursor:pointer;padding:6px 4px;font-weight:700"><span class="tri">▸</span> '+
+      esc(hd.label)+' ('+esc(hd.n)+') · '+esc(hd.sum)+'</summary>'+
+      (hd.n > (hd.rows||[]).length ? '<p class="muted" style="margin:4px">Les '+(hd.rows||[]).length+' plus récents — tous dans « Dépôts Échoués / Abandonnés ».</p>' : '')+
+      '<div class="table-wrap"><table><thead><tr>'+(hd.cols||[]).map(c=>'<th>'+esc(c)+'</th>').join('')+(j.actions?'<th></th>':'')+'</tr></thead><tbody>'+
+      (hd.rows||[]).map(r => '<tr class="clickable-h" data-uid="'+esc(r.userId||'')+'" style="opacity:.75;cursor:pointer">'+
+        (r.cells||[]).map(c => '<td>'+esc(String(c ?? ''))+'</td>').join('')+
+        (j.actions ? '<td>'+(r.pending && r.kind === 'deposit' ? '<button class="mini ok" data-act="approve" data-kind="dep" data-id="'+esc(r.ref)+'">Valider</button><button class="mini bad" data-act="reject" data-kind="dep" data-id="'+esc(r.ref)+'">Rejeter</button>' : '')+'</td>' : '')+
+        '</tr>').join('')+
+      '</tbody></table></div></details>';
+  }
   panel.innerHTML = html;
+  panel.querySelectorAll('tr.clickable-h').forEach(tr => tr.addEventListener('click', ev => {
+    if (ev.target.closest('button')) return;
+    const uid = tr.getAttribute('data-uid');
+    if (uid) openUser(uid);
+  }));
   const pg = document.getElementById('pager');
   pg.innerHTML = j.pages > 1 ? ('Page '+j.page+' / '+j.pages+' <button class="mini" id="prevP">←</button> <button class="mini" id="nextP">→</button>') : '';
   const prev = document.getElementById('prevP'); const next = document.getElementById('nextP');
@@ -4684,6 +4776,11 @@ async function openUser(uid) {
     // v2405 : seuls les dépôts VRAIMENT payés sous « argent payé » ; les pages de paiement ouvertes puis
     // abandonnées (en attente, jamais payées) à part, pour ne plus croire qu'un joueur a payé.
     tbl('Dépôts (argent payé)', (j.deposits||[]).filter(d => d.paid !== false), ['Réf','Montant','Méthode','Statut','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
+    // 2026-11-20 (propriétaire) : ses dépôts échoués / abandonnés (jamais payés) dans un volet fermé.
+    ((ab => ab.length ? '<details class="dep-hidden" style="margin:6px 0 10px" ontoggle="this.querySelector(\'.tri\').textContent=this.open?\'▾\':\'▸\'"><summary class="muted" style="cursor:pointer;font-weight:700"><span class="tri">▸</span> Dépôts échoués / abandonnés ('+ab.length+')</summary>'+
+      '<div class="table-wrap"><table><thead><tr><th>Réf</th><th>Montant</th><th>Méthode</th><th>Statut</th><th>Date</th></tr></thead><tbody>'+
+      ab.map(d => '<tr style="opacity:.75"><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.method)+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td></tr>').join('')+
+      '</tbody></table></div></details>' : '')((j.deposits||[]).filter(d => d.abandoned)))+
     tbl('Bonus reçus', j.bonuses || [], ['Réf','Montant','Motif','Date'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+'</td><td>'+esc(d.motif && d.motif !== 'Bonus' ? d.motif : '—')+'</td><td>'+esc(fdate(d.at))+'</td></tr>')+
     tbl('Retraits', j.withdrawals, ['Réf','Montant','Méthode','Destination','Statut','Date','Motif'], d => '<tr><td>'+esc(d.id)+'</td><td>'+esc(d.amount)+esc(wdLoc(d))+'</td><td>'+esc(d.method||'—')+'</td><td>'+esc(d.phone||'—')+'</td><td>'+esc(d.status)+'</td><td>'+esc(fdate(d.at))+'</td><td>'+esc(d.reason||'')+'</td></tr>')+
     gmPlayerBox()+spPlayerBox()+
@@ -4858,11 +4955,28 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   const when = iso => { try { return new Date(tzFix(iso)).toLocaleString('fr-FR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); } catch (e) { return ''; } };
   const txl = h => h ? '<a href="https://tronscan.org/#/transaction/' + esc(h) + '" target="_blank" rel="noopener" style="color:#93C5FD">' + esc(String(h).slice(0, 10)) + '…</a>' : '';
   const adl = a => '<a href="https://tronscan.org/#/address/' + esc(a) + '" target="_blank" rel="noopener" style="color:#93C5FD;word-break:break-all">' + esc(a) + '</a>';
-  const KIND = {balayage: '➡️ Envoi (adresse joueur → caisse / Trust Wallet)', frais: '⛽ Frais envoyés', reservoir_vide: '⚠️ Réservoir vide', retrait_auto: '🤖 Retrait payé tout seul', envoi_libre: '✍️ Envoi libre', surplus_trust: '🏦 Surplus caisse → Trust Wallet', confirme: '✔️ Confirmé', credit: '💰 Dépôt crédité'};
+  const KIND = {balayage: '➡️ Envoi (adresse joueur → caisse / Trust Wallet)', balaye: '➡️ Envoi vers ton Trust Wallet', frais: '⛽ Frais envoyés', reservoir_vide: '⚠️ Réservoir vide', retrait_auto: '🤖 Retrait payé tout seul', envoi_libre: '✍️ Envoi libre', surplus_trust: '🏦 Surplus caisse → Trust Wallet', confirme: '✔️ Confirmé', credit: '💰 Dépôt crédité', attente: '⏳ En attente', erreur: '❌ Erreur'};
+  // 2026-11-20 : montants du journal en clair (jamais « 7.0E-6 »), avec la BONNE pièce du réseau (avant : « 7.0E-6 BNB TRX »).
+  const cfNum = (v, d) => { const n = Number(v); return isFinite(n) ? n.toLocaleString('fr-FR', {maximumFractionDigits: d}) : String(v); };
+  const cfUnit = s => { const m = String(s).trim().match(/^(-?[0-9.]+(?:[eE][-+]?[0-9]+)?)\s*([A-Za-z]+)$/); return m ? cfNum(m[1], 12) + ' ' + m[2] : String(s); };
+  const cfAmt = j => {
+    const hasU = v => /[A-Za-z]/.test(String(v).replace(/[eE][-+]?[0-9]+$/, ''));
+    if (j.k === 'reservoir_vide') return j.need ? 'manque ' + (j.coin ? cfNum(j.need, 12) + ' ' + j.coin : (hasU(j.need) ? cfUnit(j.need) : cfNum(j.need, 2) + ' TRX')) : '';
+    if (j.k === 'frais') return j.coin ? cfNum(j.amt, 12) + ' ' + j.coin : (j.trx === undefined ? '' : (hasU(j.trx) ? cfUnit(j.trx) : cfNum(j.trx, 2) + ' TRX'));
+    if (j.k === 'balaye') return cfNum(j.units, 8) + ' ' + String(j.sym || j.net || '').toUpperCase();
+    if (j.k === 'credit') return j.units !== undefined ? cfNum(j.units, 8) + ' ' + (j.sym || '') : '';
+    if (j.usdt) return cfNum(j.usdt, j.sym && !/^USD/.test(j.sym) ? 8 : 2) + ' ' + (j.sym || 'USDT');
+    if (j.trx) return cfNum(j.trx, 2) + ' TRX';
+    return '';
+  };
   async function paint(r) {
     if (!r) { $v('vaultBody').textContent = 'Chargement…'; r = await ajax({action:'coffre_view'}); }
     if (!r || !r.ok) { $v('vaultBody').textContent = '❌ ' + ((r && r.reason) || 'Échec'); return; }
     let h = '';
+    // 2026-11-20 : UNE alerte claire par réseau dont le réservoir manque d'essence (au lieu de dizaines de lignes au journal).
+    (r.gasAlerts || []).forEach(a => { h += '<div class="nt-card" style="border-color:#FCA5A5;background:rgba(239,68,68,.08)"><b style="font-size:15px;overflow-wrap:anywhere">' + esc(a.txt) + '</b>' +
+      (a.addr ? '<br><small class="muted">Adresse du réservoir (réseau ' + esc(a.name) + ', envoie seulement du ' + esc(a.coin) + ') :</small><br><code style="word-break:break-all;color:#FDE047">' + esc(a.addr) + '</code> <button class="mini" data-cp="' + esc(a.addr) + '">Copier</button>' : '') +
+      '<br><small class="muted">Depuis le ' + esc(when(a.since)) + ' · ' + a.n + ' adresse(s) en attente. Les dépôts des joueurs sont crédités normalement. Dès que le réservoir est rechargé, l’envoi repart tout seul.</small></div>'; });
     const step = (ok, t) => '<div style="margin:3px 0">' + (ok ? '✅' : '⬜') + ' ' + t + '</div>';
     // 2026-11-11 : toutes les adresses Trust Wallet À REMPLIR ICI (avant : cachées dans 🔑 Clés & connexions).
     h += '<div class="nt-card" style="border-color:#86EFAC"><b style="font-size:15px">① Tes adresses Trust Wallet</b><br><small class="muted">Dans Trust Wallet : <b>Recevoir</b> → la ligne indiquée → bouton <b>copier</b>, puis colle ici et touche Enregistrer. Ce ne sont pas des secrets. Ne donne JAMAIS tes 12 mots.</small>' +
@@ -4908,7 +5022,16 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     // 2026-11-12 (propriétaire) : dépôts encore reçus sur d'ANCIENNES adresses OxaPay (30 jours) — l'argent est sur ton compte OxaPay.
     h += '<div class="nt-card" style="margin-top:8px"><b>🕘 Anciennes adresses OxaPay (30 jours)</b> <span class="muted">' + (r.oxaOldN || 0) + ' dépôt(s) · <b style="color:#FCD34D">' + Number(r.oxaOldSum || 0).toFixed(2) + ' $</b> — crédités au joueur, l’argent est sur ton compte OxaPay (pas dans le coffre).</span>' +
       ((r.oxaOld || []).length ? '<table><tr><th>Quand</th><th>Joueur</th><th>Crypto</th><th>Montant</th><th>Par</th></tr>' + r.oxaOld.map(o => '<tr><td>' + esc(new Date(o.t * 1000).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'})) + '</td><td>' + esc(o.user) + '</td><td>' + esc(String(o.coin).replace('_', ' ')) + '</td><td><b style="color:#FCD34D">' + Number(o.amt).toFixed(2) + ' $</b></td><td>' + esc(o.kind) + '</td></tr>').join('') + '</table>' : '<p class="muted" style="margin:6px 0 0">Aucun.</p>') + '</div>';
-    h += '<div class="nt-card" style="margin-top:8px"><b>📊 Par crypto</b><table><tr><th>Crypto</th><th>Adresses</th><th>Reçu (total)</th><th>Sur les adresses maintenant</th></tr>' + (r.byNet || []).map(b => '<tr><td>' + esc(b.net) + '</td><td>' + b.n + '</td><td><b style="color:#86EFAC">' + Number(b.got).toFixed(2) + ' $</b></td><td>' + esc(b.now) + '</td></tr>').join('') + '</table></div>';
+    // 2026-11-20 (propriétaire) : une carte par crypto, 4 valeurs séparées (lisible sur un téléphone de 360 px, pas de tableau large).
+    const cfRow = (ico, t, v, col) => '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.07)"><span style="min-width:0;flex:1 1 150px">' + ico + ' ' + t + '</span><b style="min-width:0;text-align:right;overflow-wrap:anywhere;margin-left:auto' + (col ? ';color:' + col : '') + '">' + esc(v) + '</b></div>';
+    h += '<div class="nt-card" style="margin-top:8px"><b style="font-size:15px">📊 Par crypto</b><br><small class="muted">« Disponible » = seulement ce qui est dans la caisse du site. Ce qui est déjà parti vers ton Trust Wallet n’y est jamais compté.</small>' +
+      ((r.byCoin || []).length ? (r.byCoin || []).map(c => '<div style="margin-top:10px;padding:8px 10px;border:1px solid rgba(255,255,255,.1);border-radius:10px;min-width:0">' +
+        '<b style="overflow-wrap:anywhere">' + esc(c.label) + '</b>' + (c.n ? ' <small class="muted">· ' + c.n + ' adresse(s)</small>' : '') +
+        cfRow('💼', 'Disponible dans la caisse', c.caisse === null ? '— (pas de caisse)' : c.caisse, c.caisse === null ? '' : '#86EFAC') +
+        cfRow('🏷️', 'Encore sur les adresses joueurs', c.onAddr, '#FDE047') +
+        cfRow('🏦', 'Déjà envoyé vers mon Trust Wallet', c.sent, '#93C5FD') +
+        cfRow('📥', 'Total reçu depuis le début', c.recv, '') +
+        (c.note ? '<small class="muted" style="display:block;margin-top:3px">' + esc(c.note) + '</small>' : '') + '</div>').join('') : '<p class="muted" style="margin:6px 0 0">Rien reçu pour l’instant.</p>') + '</div>';
     // Des milliers d'adresses à terme : cachées derrière un bouton.
     h += '<details style="margin:14px 0 4px"><summary class="panel-title" style="cursor:pointer">🏷️ Adresses USDT TRON des joueurs (' + r.addresses + ') — toucher pour voir</summary>';
     h += (r.addrs || []).length ? '<table><tr><th>Joueur</th><th>Son adresse OROLADO</th><th>Reçu (total)</th><th>Sur l’adresse maintenant</th></tr>' + r.addrs.map(a => '<tr><td>' + esc(a.user) + '</td><td>' + adl(a.addr) + '</td><td>' + Number(a.got).toFixed(2) + ' $</td><td><b>' + Number(a.bal).toFixed(2) + ' $</b></td></tr>').join('') + '</table>' : '<p class="muted">Aucune pour l’instant. Pour ton test : sur orolado.com avec ton compte admin → Recharger → USDT TRC20 : ton adresse OROLADO apparaîtra ici (ce n’est PAS ton adresse Trust Wallet).</p>';
@@ -4916,7 +5039,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     h += '<h3 class="panel-title" style="margin:14px 0 4px">✅ Derniers dépôts reçus</h3>';
     h += r.deposits.length ? '<table><tr><th>Quand</th><th>Joueur</th><th>Crypto</th><th>Montant</th><th>Envoi</th></tr>' + r.deposits.map(d => '<tr><td>' + esc(when(d.at)) + '</td><td>' + esc(d.user) + '</td><td>' + esc((d.coin === 'USDT_TRC20' ? 'USDT' : d.coin) + ' · ' + d.net) + '</td><td>' + Number(d.amount).toFixed(2) + ' $' + (/COMPLETED|PAID/.test(d.status) ? '' : ' <small>(' + esc(d.status) + ')</small>') + '</td><td>' + (d.net === 'TRC20' ? txl(d.hash) : '') + '</td></tr>').join('') + '</table>' : '<p class="muted">Pas encore de dépôt.</p>';
     h += '<h3 class="panel-title" style="margin:14px 0 4px">➡️ Envois vers ton Trust Wallet</h3>';
-    h += r.journal.length ? '<table><tr><th>Quand</th><th>Quoi</th><th>Montant</th><th>Résultat</th></tr>' + r.journal.map(j => '<tr><td>' + esc(when(j.t)) + '</td><td>' + esc(KIND[j.k] || j.k) + '</td><td>' + (j.usdt ? Number(j.usdt).toFixed(2) + ' USDT' : (j.trx ? j.trx + ' TRX' : (j.need ? 'manque ' + j.need + ' TRX' : ''))) + '</td><td>' + (j.ok ? '✅ ' + txl(j.tx) : (j.k === 'reservoir_vide' ? '⚠️ recharge le réservoir' : '❌ ' + esc(j.why || ''))) + '</td></tr>').join('') + '</table>' : '<p class="muted">Aucun envoi pour l’instant.</p>';
+    h += r.journal.length ? '<table><tr><th>Quand</th><th>Quoi</th><th>Montant</th><th>Résultat</th></tr>' + r.journal.map(j => '<tr><td>' + esc(when(j.t)) + '</td><td>' + esc(KIND[j.k] || j.k) + '</td><td>' + esc(cfAmt(j)) + '</td><td>' + (j.ok || (j.k === 'balaye' && j.tx) ? '✅ ' + (j.net ? esc(String(j.tx || '').slice(0, 10)) + (j.tx ? '…' : '') : txl(j.tx)) : (j.k === 'reservoir_vide' ? '⚠️ recharge le réservoir' + (j.net && j.net !== 'tron' ? ' ' + esc(j.net === 'bsc' ? 'BNB Chain' : j.net) : '') + (j.x > 1 ? ' <small class="muted">(×' + j.x + ', regroupé)</small>' : '') : (j.k === 'credit' ? '✅' : '❌ ' + esc(j.why || '')))) + '</td></tr>').join('') + '</table>' : '<p class="muted">Aucun envoi pour l’instant.</p>';
     $v('vaultBody').innerHTML = h;
     const out = t => { $v('cfOut').textContent = t; };
     $v('vaultBody').querySelectorAll('[data-ns]').forEach(b => b.onclick = async () => {

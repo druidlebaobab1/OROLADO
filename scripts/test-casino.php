@@ -466,6 +466,36 @@ $bal[$U] = 50.0; syncv();
 $r = casino_play(load_db(), $me, 'rps', 'real', 1, ['pick' => 0]);
 check('Pierre-Feuille-Ciseaux : refusé par le serveur, rien retiré', $r['ok'] === false && $r['reason'] === 'game' && abs($bal[$U] - 50.0) < 0.001);
 
+echo "13) Requête en retard (double appui / 2 onglets) : l'ancienne partie A ne marque jamais la nouvelle partie B « payée »\n";
+foreach (['real'] as $mdx) { // (le casino joue toujours en réel : casino_mode)
+  $bal[$U] = 100.0; syncv();
+  $meX = load_db()['users']['u_cs'];
+  $file = casino_user_file('u_cs');
+  casino_with($file, static function (array &$st) { unset($st['g']['tower']); return true; });
+  $sA = casino_multi(load_db(), $meX, 'tower', 'start', $mdx, 1, []);
+  $mdA = (string) ($sA['mode'] ?? $mdx);
+  $money = static function () use ($mdA, &$bal, $U) { return $mdA === 'demo' ? (float) load_db()['vault']['u_cs']['demo'] : (float) $bal[$U]; };
+  $traps = casino_with($file, static fn(array &$st) => $st['g']['tower']['traps']);
+  casino_multi(load_db(), $meX, 'tower', 'pick', $mdA, 0, ['door' => ($traps[0] + 1) % 3]);
+  // La requête n°1 a lu A « terminée, pas encore payée » (encaissement noté, versement pas encore fait)…
+  $gA = casino_with($file, static function (array &$st) { $st['g']['tower']['done'] = 1; $st['g']['tower']['win'] = casino_win(1.0, casino_tower_mult(1)); return $st['g']['tower']; });
+  $m0 = $money();
+  // …la requête n°2 (double appui) verse A puis lance la partie B…
+  casino_multi(load_db(), $meX, 'tower', 'start', $mdA, 1, []);
+  $mAfterB = $money();
+  // …puis la requête n°1, en retard, finit « A ».
+  casino_finish(load_db(), 'u_cs', 'tower', $gA, microtime(true));
+  check("[$mdA] gain de A versé UNE fois (" . $gA['win'] . ' $), mise de B retirée', abs($money() - ($m0 + $gA['win'] - 1)) < 0.001 && abs($money() - $mAfterB) < 0.001, $m0 . ' → ' . $money());
+  $gB = casino_with($file, static fn(array &$st) => $st['g']['tower']);
+  check("[$mdA] la partie B n'est PAS marquée « payée » par la requête en retard", empty($gB['done']) && empty($gB['paid']), json_encode(['done' => $gB['done'] ?? null, 'paid' => $gB['paid'] ?? null]));
+  $trB = $gB['traps'];
+  casino_multi(load_db(), $meX, 'tower', 'pick', $mdA, 0, ['door' => ($trB[0] + 1) % 3]);
+  $m1 = $money();
+  $cB = casino_multi(load_db(), $meX, 'tower', 'cash', $mdA, 0, []);
+  check("[$mdA] encaisser B : le gain affiché (" . ($cB['win'] ?? '?') . ' $) est bien versé', !empty($cB['done']) && (float) $cB['win'] > 0 && abs($money() - ($m1 + (float) $cB['win'])) < 0.001, $m1 . ' → ' . $money());
+  casino_with($file, static function (array &$st) { unset($st['g']['tower']); return true; });
+}
+
 echo "9) Admin : joueurs du casino (v2698)\n";
 casino_hist_add('u_admin_t', ['g' => 'coin', 'm' => 'real', 's' => 2.0, 'w' => 3.88, 'at' => time()]);
 casino_hist_add('u_admin_t', ['g' => 'dice', 'm' => 'real', 's' => 5.0, 'w' => 0.0, 'at' => time()]);

@@ -186,6 +186,10 @@ check('vue admin : 3 réseaux branchés, adresses listées', count(array_filter(
 
 $cv = coffre_admin_view(); $bn = array_column($cv['byNet'] ?? [], null, 'net');
 check('vue admin « par crypto » : BTC 2 adresses, 102 $ reçus ; LTC 20 $ ; DOGE 20 $', ($bn['BTC · Bitcoin']['n'] ?? 0) === 2 && abs(($bn['BTC · Bitcoin']['got'] ?? 0) - 102) < 0.01 && abs(($bn['LTC · Litecoin']['got'] ?? 0) - 20) < 0.01 && abs(($bn['DOGE · Dogecoin']['got'] ?? 0) - 20) < 0.01, json_encode($cv['byNet'] ?? null));
+$bc = array_column($cv['byCoin'] ?? [], null, 'label'); $sentBtc = 0.0;
+foreach (coffre_journal(400) as $j) if (($j['k'] ?? '') === 'balaye' && ($j['net'] ?? '') === 'btc') $sentBtc += (float) $j['units'];
+$c = $bc['BTC · Bitcoin'] ?? [];
+check('« Par crypto » BTC : 4 valeurs (pas de caisse ; envoyé = envois réussis ; reçu en BTC et en $)', $sentBtc > 0 && abs(($c['v']['sent'] ?? -1) - $sentBtc) < 1e-9 && array_key_exists('caisse', $c) && $c['caisse'] === null && abs(($c['v']['recvUsd'] ?? 0) - 102) < 0.01 && str_contains($c['recv'] ?? '', 'BTC (≈ 102,00 $)') && !preg_match('/E[-+]?\d/', ($c['sent'] ?? '') . ($c['onAddr'] ?? '')), json_encode($c, JSON_UNESCAPED_UNICODE));
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);

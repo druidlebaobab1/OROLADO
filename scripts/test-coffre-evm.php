@@ -183,6 +183,35 @@ check('nouvel essai → les 30 USDT partent ; total Trust Wallet 80 USDT', abs($
 check('toujours 152,34 $ crédités (aucun doublon)', abs($money($A) - 152.34) < 0.01);
 check('aucune signature refusée par le faux réseau', $N['bad'] === 0);
 
+echo "5) « Par crypto » en 4 valeurs ; réservoir BNB vide = UNE alerte claire (plus de « 7.0E-6 BNB TRX »)\n";
+$bc = array_column(coffre_admin_view()['byCoin'] ?? [], null, 'label');
+$u = $bc['USDT · BNB Chain'] ?? [];
+check('USDT · BNB Chain : envoyé 80, sur les adresses 0, reçu 80, pas de caisse', abs(($u['v']['sent'] ?? -1) - 80) < 1e-6 && abs(($u['v']['onAddr'] ?? -1)) < 1e-6 && abs(($u['v']['recv'] ?? -1) - 80) < 1e-6 && array_key_exists('caisse', $u) && $u['caisse'] === null, json_encode($u, JSON_UNESCAPED_UNICODE));
+$p = $bc['USDC · Polygon'] ?? [];
+check('USDC · Polygon : envoyé 12,34 (réussi), reçu 12,34', abs(($p['v']['sent'] ?? -1) - 12.34) < 1e-6 && abs(($p['v']['recv'] ?? -1) - 12.34) < 1e-6, json_encode($p['v'] ?? null));
+$gas = cevm_gas_addr();
+$N['nat']['bsc'][$gas] = U(0.000001, 18); $N['nat']['bsc'][$a] = [0];
+$deposit('bsc', $a, 'USDT', 25); $scanAll();
+$bc = array_column(coffre_admin_view()['byCoin'] ?? [], null, 'label');
+check('nouveau dépôt 25 USDT : « encore sur les adresses joueurs » = 25', abs(($bc['USDT · BNB Chain']['v']['onAddr'] ?? -1) - 25) < 1e-6, json_encode($bc['USDT · BNB Chain']['v'] ?? null));
+$nVide = fn() => count(array_filter(coffre_journal(400), fn($j) => ($j['k'] ?? '') === 'reservoir_vide'));
+$est = 0; $origEvm = $GLOBALS['OROLADO_FAKE_EVM'];
+$GLOBALS['OROLADO_FAKE_EVM'] = function (string $chain, string $m, array $pp) use (&$est, $origEvm, $a) { if ($chain === 'bsc' && $m === 'eth_estimateGas' && !empty($pp[0]['data']) && strtolower($pp[0]['from']) === $a) $est++; return $origEvm($chain, $m, $pp); };
+$n0 = $nVide();
+for ($k = 0; $k < 6; $k++) cevm_sweep(false, 10);
+check('6 rondes automatiques → UNE seule ligne « Réservoir vide », un seul essai', $nVide() === $n0 + 1 && $est === 1, ($nVide() - $n0) . ' ligne(s), ' . $est . ' essai(s)');
+$last = array_values(array_filter(coffre_journal(50), fn($j) => ($j['k'] ?? '') === 'reservoir_vide'))[0] ?? [];
+check('journal : réseau bsc, pièce BNB, « manque » en nombre clair (pas 7.0E-6)', ($last['net'] ?? '') === 'bsc' && ($last['coin'] ?? '') === 'BNB' && preg_match('/^0\.\d+$/', (string) ($last['need'] ?? '')), json_encode($last));
+$al = array_values(array_filter(coffre_admin_view()['gasAlerts'] ?? [], fn($x) => $x['net'] === 'evm:bsc')); // (Ethereum a aussi la sienne : réservoir ETH vide depuis l'étape 3)
+check('UNE alerte : « Recharge au moins 0,0000… BNB sur le réservoir BNB Chain », adresse 0x, jamais TRX', count($al) === 1 && preg_match('/^⚠️ Recharge au moins 0,0+\d+ BNB sur le réservoir BNB Chain/u', $al[0]['txt']) && !str_contains($al[0]['txt'], 'TRX') && !preg_match('/E[-+]?\d/', $al[0]['txt']) && strtolower($al[0]['addr']) === $gas, json_encode($al, JSON_UNESCAPED_UNICODE));
+$N['nat']['bsc'][$gas] = U(1, 18);
+check('réservoir rechargé → l’alerte BNB disparaît (celle d’Ethereum reste : toujours vide)', array_column(coffre_admin_view()['gasAlerts'] ?? [], 'net') === ['evm:eth']);
+$destB = $tokBal('bsc', 'USDT', DEST);
+for ($k = 0; $k < 3; $k++) { cevm_sweep(false, 10); $mine(); $scanAll(); }
+$fr = array_values(array_filter(coffre_journal(50), fn($j) => ($j['k'] ?? '') === 'frais' && ($j['net'] ?? '') === 'bsc'))[0] ?? [];
+check('… l’envoi repart tout seul : 25 USDT sur le Trust Wallet, frais notés « BNB » en nombre clair', abs($tokBal('bsc', 'USDT', DEST) - $destB - 25) < 1e-6 && ($fr['coin'] ?? '') === 'BNB' && preg_match('/^0\.\d+$/', (string) ($fr['amt'] ?? '')) && !isset(coffre_gas_wait_all()['evm:bsc']), json_encode($fr));
+$GLOBALS['OROLADO_FAKE_EVM'] = $origEvm;
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);

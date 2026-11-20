@@ -132,6 +132,12 @@
     var diff = Math.round((b - a) / 86400000);
     return diff === 0 ? x.today : diff === 1 ? x.yday : d.toLocaleDateString(document.documentElement.lang || undefined, { day: 'numeric', month: 'long', year: 'numeric' });
   }
+  // 2026-11-20 (propriétaire) : « Transfert envoyé à X » / « Transfert reçu de X » dans les 12 langues (js/i18n-src.js).
+  function xl(o, x) {
+    var k = o ? 'txXferOut' : 'txXferIn', s = '';
+    try { s = D6.I18N && D6.I18N.t ? D6.I18N.t(k) : ''; } catch (e) { s = ''; }
+    return s && s !== k ? s : (o ? x.sent : x.got);
+  }
   function hist() {
     var x = X(), log = (st && st.log) || [];
     if (!log.length) return '<p class="lf-empty">' + esc(x.none) + '</p>';
@@ -140,7 +146,7 @@
       var d = new Date((l.at || 0) * 1000), day = dayLabel(d), o = l.dir === 'out', name = l.name || l.toId || l.fromId || '?';
       if (day !== last) { out += '<p class="ls2-day">' + esc(day) + '</p>'; last = day; }
       out += '<button type="button" class="ls2-row ' + (o ? 'out' : 'in') + '" data-i="' + i + '"><i style="--av:' + avc(name) + '">' + ini(name) + '<em>' + (o ? '↑' : '↓') + '</em></i>' +
-        '<span><b>' + esc(fmt(o ? x.sent : x.got, { n: name })) + '</b><small>' + d.toLocaleTimeString(document.documentElement.lang || undefined, { hour: '2-digit', minute: '2-digit' }) + (l.state && l.state !== 'done' && l.state !== 'credit' ? ' · ' + esc(x.rPend) : '') + '</small></span>' +
+        '<span><b>' + esc(fmt(xl(o, x), { n: name })) + '</b><small>' + d.toLocaleTimeString(document.documentElement.lang || undefined, { hour: '2-digit', minute: '2-digit' }) + (l.state && l.state !== 'done' && l.state !== 'credit' ? ' · ' + esc(x.rPend) : '') + '</small></span>' +
         '<strong>' + (o ? '−' : '+') + '$' + m2(l.amount) + '</strong></button>';
     });
     return out;

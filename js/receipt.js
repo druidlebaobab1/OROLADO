@@ -376,7 +376,9 @@
     g.shadowColor = 'rgba(0,0,0,0.20)'; g.shadowBlur = 6; g.shadowOffsetY = 2;
     var label = kind === 'deposit' ? t.dep : (kind === 'bonus' ? t.bonus : t.wd);
     if (kind === 'withdraw' && r.statusLabel) label = t.wd + ' · ' + String(r.statusLabel).toUpperCase();
+    if (r.title) label = String(r.title); // 2026-11-20 : transfert entre joueurs (« Transfert reçu de X »)
     g.font = '800 16px ' + FONT;
+    if (r.title) { label = label.length > 46 ? label.slice(0, 45) + '…' : label; fitText(g, spaced(label), W - 60, 16, '800', FONT); }
     g.fillText(spaced(label), W / 2, 272);
     var amt = (r.amount >= 0 ? '+' : '−') + money(r.amount);
     fitText(g, amt, W - 80, 64, '800', FONT);

@@ -260,6 +260,40 @@ foreach (($op['items'] ?? []) as $it) {
 check('chaque clé de la copie redonne exactement son adresse (récupération possible)', $okAll && in_array($addrA, array_column($op['items'], 'addr'), true));
 check('le fichier ne contient aucune clé lisible sans mot de passe', !str_contains(json_encode($bk['file']), $op['items'][0]['pk']));
 
+echo "9) « Par crypto » en 4 valeurs ; réservoir vide = UNE alerte, pas d'essai toutes les 2 min\n";
+$v = coffre_admin_view(); $tc = $v['byCoin'][0] ?? [];
+$gotAll = 0.0; foreach (coffre_json(coffre_index_file()) as $e) $gotAll += (float) ($e['got'] ?? 0);
+// (dans ce test, l'adresse du « joueur » qui retire est la même que le Trust Wallet : ses retraits ne sont pas des envois du coffre)
+$wdToDest = 0.0; foreach (coffre_journal(400) as $j) if (($j['k'] ?? '') === 'retrait_auto' && !empty($j['ok']) && ($j['to'] ?? '') === DEST) $wdToDest += (float) $j['usdt'];
+check('USDT · TRON : « déjà envoyé vers mon Trust Wallet » = ce que le Trust Wallet a vraiment reçu du coffre', ($tc['label'] ?? '') === 'USDT · TRON' && abs(($tc['v']['sent'] ?? -1) - (($L['usdt'][DEST] ?? 0) - $wdToDest)) < 0.01, json_encode($tc['v'] ?? null) . ' / ' . ($L['usdt'][DEST] ?? 0) . ' - ' . $wdToDest);
+check('« disponible dans la caisse » = solde de la caisse seulement (l’envoyé n’y est pas compté)', abs(($tc['v']['caisse'] ?? -1) - ($L['usdt'][$gasA] ?? 0)) < 0.01, json_encode($tc['v'] ?? null));
+check('« total reçu depuis le début » = tous les dépôts crédités ; 4 textes séparés, sans écriture scientifique', abs(($tc['v']['recv'] ?? -1) - $gotAll) < 0.01 && isset($tc['caisse'], $tc['onAddr'], $tc['sent'], $tc['recv']) && !preg_match('/E[-+]?\d/', $tc['caisse'] . $tc['onAddr'] . $tc['sent'] . $tc['recv']), json_encode($tc));
+coffre_cfg_set(['caisse_on' => false, 'direct_min' => 0, 'on' => true]);
+$L['trx'][$gasA] = 0.5; $L['trx'][$addrA] = 0;
+$send($addrA, 50); coffre_json_rw(coffre_index_file(), function (&$st) use ($addrA) { $st[$addrA]['seen'] = 0; }); coffre_scan(50, 5);
+$nVide = fn() => count(array_filter(coffre_journal(400), fn($j) => ($j['k'] ?? '') === 'reservoir_vide'));
+$tgN = 0; $origTg = $GLOBALS['OROLADO_FAKE_TG_API'];
+$GLOBALS['OROLADO_FAKE_TG_API'] = function (string $path, ?array $b) use (&$tgN, $origTg) { if (($b['function_selector'] ?? '') === 'transfer(address,uint256)') $tgN++; return $origTg($path, $b); };
+$n0 = $nVide();
+$retry = function () use ($addrA) { coffre_json_rw(coffre_index_file(), function (&$st) use ($addrA) { $st[$addrA]['tried'] = 0; }); coffre_sweep(false, 5); };
+for ($k = 0; $k < 6; $k++) $retry();
+check('6 rondes automatiques, réservoir vide → UNE seule ligne « Réservoir vide » au journal', $nVide() === $n0 + 1, ($nVide() - $n0) . ' ligne(s)');
+check('… et une seule estimation de frais (pas de nouvel essai tant que le réservoir n’a pas bougé)', $tgN === 1, (string) $tgN);
+$last = array_values(array_filter(coffre_journal(50), fn($j) => ($j['k'] ?? '') === 'reservoir_vide'))[0] ?? [];
+check('ligne du journal : « manque » en nombre clair, pièce TRX', ($last['coin'] ?? '') === 'TRX' && preg_match('/^\d+(\.\d+)?$/', (string) ($last['need'] ?? '')), json_encode($last));
+$al = coffre_admin_view()['gasAlerts'] ?? [];
+check('UNE alerte en haut du coffre : « Recharge au moins … TRX sur le réservoir TRON »', count($al) === 1 && str_contains($al[0]['txt'], 'Recharge au moins') && str_contains($al[0]['txt'], 'TRX') && $al[0]['addr'] === $gasA && !preg_match('/E[-+]?\d/', $al[0]['txt']), json_encode($al, JSON_UNESCAPED_UNICODE));
+$L['trx'][$gasA] = 0.7; $retry();
+check('solde du réservoir changé (mais encore trop bas) → nouvel essai, toujours pas de doublon au journal', $tgN === 2 && $nVide() === $n0 + 1, $tgN . ' / ' . ($nVide() - $n0));
+$L['trx'][$gasA] = 200;
+check('réservoir rechargé → l’alerte disparaît de la page', (coffre_admin_view()['gasAlerts'] ?? null) === []);
+$destB = $L['usdt'][DEST] ?? 0; $onA = $L['usdt'][$addrA] ?? 0;
+$retry(); $retry();
+check('… et l’envoi repart tout seul (tout l’USDT de l’adresse arrivé sur le Trust Wallet), alerte effacée', $onA >= 50 && abs(($L['usdt'][DEST] ?? 0) - $destB - $onA) < 1e-6 && !isset(coffre_gas_wait_all()['tron']), (string) (($L['usdt'][DEST] ?? 0) - $destB));
+$GLOBALS['OROLADO_FAKE_TG_API'] = $origTg;
+check('nombres : 7.0E-6 → « 0,000007 », jamais d’écriture scientifique', coffre_fr(7.0E-6, 12) === '0,000007' && coffre_num(7.0E-6, 12) === '0.000007' && coffre_fr(1234.5, 2, 2) === "1\u{202F}234,50" && abs(coffre_ceil_sig(6.13e-6) - 6.2e-6) < 1e-15);
+check('anciennes alertes en double regroupées en une ligne (×N) dans le journal de la page', count(array_filter(coffre_journal_view(30), fn($j) => ($j['k'] ?? '') === 'reservoir_vide')) === 1);
+
 echo "\nRésultat : $pass OK, $fail échec(s)\n";
 exec('rm -rf ' . escapeshellarg($tmp));
 exit($fail ? 1 : 0);

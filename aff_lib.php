@@ -235,6 +235,42 @@ function orolado_aff_client_ip(): string {
   return substr(preg_replace('/[^0-9a-fA-F:.]/', '', $ip) ?? '', 0, 64);
 }
 
+/** E-mail « de base » : minuscules, sans « +étiquette » ; Gmail : sans les points (jean.d+2@gmail.com = jeand@gmail.com). */
+function orolado_aff_email_key(string $email): string {
+  $e = strtolower(trim($email));
+  $at = strrpos($e, '@');
+  if ($at === false || $at === 0) return '';
+  $local = substr($e, 0, $at);
+  $dom = substr($e, $at + 1);
+  $plus = strpos($local, '+');
+  if ($plus !== false) $local = substr($local, 0, $plus);
+  if ($dom === 'googlemail.com') $dom = 'gmail.com';
+  if ($dom === 'gmail.com') $local = str_replace('.', '', $local);
+  return $local === '' ? '' : $local . '@' . $dom;
+}
+
+/**
+ * 2026-11-20 (revue) : le nouveau compte est-il la MÊME personne que celui qui invite ? (2e compte pour toucher
+ * 60 % de ses propres pertes.) Oui si : comptes liés (même coffre / même e-mail), même e-mail de base
+ * (alias Gmail « + » ou points), ou même téléphone (identifiant d'appareil du site). Jamais l'adresse IP seule
+ * (une même IP est partagée par des milliers de joueurs chez les opérateurs mobiles).
+ */
+function orolado_aff_same_person(array $db, string $a, string $b): bool {
+  if ($a === '' || $b === '') return false;
+  if ($a === $b) return true;
+  if (function_exists('orolado_linked_balance_ids')) {
+    if (in_array($b, orolado_linked_balance_ids($db, $a), true) || in_array($a, orolado_linked_balance_ids($db, $b), true)) return true;
+  }
+  $ua = $db['users'][$a] ?? null;
+  $ub = $db['users'][$b] ?? null;
+  if (!is_array($ua) || !is_array($ub)) return false;
+  $ea = orolado_aff_email_key((string) ($ua['email'] ?? ''));
+  if ($ea !== '' && $ea === orolado_aff_email_key((string) ($ub['email'] ?? ''))) return true;
+  $da = array_filter((array) ($ua['devices'] ?? []), static fn($d) => is_string($d) && $d !== '');
+  $dbv = array_filter((array) ($ub['devices'] ?? []), static fn($d) => is_string($d) && $d !== '');
+  return (bool) array_intersect($da, $dbv);
+}
+
 /**
  * À l'inscription d'un NOUVEAU compte avec un lien d'ami : relie le nouveau joueur à celui qui invite.
  * Refusé : code inconnu, soi-même, compte qui invite introuvable / bloqué / non autorisé, déjà relié.
@@ -247,6 +283,7 @@ function orolado_aff_attach(array $db, string $newUid, string $code): bool {
   $iu = $db['users'][$inviter] ?? null;
   if (!is_array($iu) || !orolado_aff_allowed($iu + ['id' => $inviter])) return false;
   if (function_exists('orolado_user_block_kind') && orolado_user_block_kind($db, $inviter) !== '') return false;
+  if (orolado_aff_same_person($db, $inviter, $newUid)) return false; // s'inviter soi-même avec un 2e compte : refusé
   $ip = orolado_aff_client_ip();
   orolado_aff_migrate($inviter);
   $name = (string) ($db['users'][$newUid]['displayName'] ?? '');

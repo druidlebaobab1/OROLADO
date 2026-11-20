@@ -1229,7 +1229,12 @@ function casino_draw_act(array $db, array $user, string $uid, string $file, stri
 /** Fin de partie (plusieurs étapes) : versement une seule fois, statistiques, historique. */
 function casino_finish(array $db, string $uid, string $game, array $g, float $now): array {
   $file = casino_user_file($uid);
-  $first = casino_with($file, static function (array &$st) use ($game) {
+  // 2026-11-20 (revue double paiement) : le drapeau « payé » ne se pose QUE sur CETTE partie (même référence). Avant, une
+  // requête en retard (double appui, 2 onglets) qui avait lu l'ancienne partie A pouvait, après le départ de la partie B,
+  // marquer B « payée » (gain de B jamais versé) et reverser A (démo : versé deux fois).
+  $ref = (string) ($g['ref'] ?? '');
+  $first = casino_with($file, static function (array &$st) use ($game, $ref) {
+    if ($ref === '' || (string) ($st['g'][$game]['ref'] ?? '') !== $ref) return false;
     if (!empty($st['g'][$game]['paid'])) return false;
     $st['g'][$game]['paid'] = 1;
     return true;
@@ -1239,7 +1244,7 @@ function casino_finish(array $db, string $uid, string $game, array $g, float $no
     $bal = casino_credit($db, $uid, (string) $g['mode'], (float) ($g['win'] ?? 0), (string) $g['ref']);
     if ($bal === null && $g['mode'] === 'real') {
       // base injoignable : on réessaiera au prochain appel
-      casino_with($file, static function (array &$st) use ($game) { $st['g'][$game]['paid'] = 0; return true; });
+      casino_with($file, static function (array &$st) use ($game, $ref) { if ((string) ($st['g'][$game]['ref'] ?? '') === $ref) $st['g'][$game]['paid'] = 0; return true; });
     } else {
       casino_stat($game, (string) $g['mode'], (float) $g['stake'], (float) ($g['win'] ?? 0), $uid, is_array($db['users'][$uid] ?? null) ? $db['users'][$uid] : null);
       casino_hist_add($uid, ['g' => $game, 'm' => $g['mode'], 's' => (float) $g['stake'], 'w' => (float) ($g['win'] ?? 0), 'at' => time()], ['r' => (string) ($g['ref'] ?? ''), 'v' => !empty($g['void'])]);
