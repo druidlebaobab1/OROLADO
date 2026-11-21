@@ -9477,8 +9477,11 @@
       try {
         if (window.ResizeObserver) {
           var stakeRoW = 0;
-          new ResizeObserver(function (ents) {
-            var w = Math.round((ents[0] && ents[0].contentRect.width) || 0);
+          // 2026-11-21 (propriétaire : « la mise et le gain vibrent, deviennent flous ») : on suit la largeur EXTÉRIEURE
+          // de la case. Avant : contentRect (sans le retrait) → placeStakeCur change le retrait à gauche, la largeur intérieure
+          // change, l'observateur relançait le réglage ≈ 40 fois par seconde (taille du chiffre qui saute entre 2 valeurs).
+          new ResizeObserver(function () {
+            var w = Math.round($('inputStake').offsetWidth || 0);
             if (w === stakeRoW) return;
             stakeRoW = w;
             fitStakeText($('inputStake'));
