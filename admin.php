@@ -2507,7 +2507,7 @@ if ($isAjax) {
       $sb = (string) ($u['sbId'] ?? '');
       $bal = null;
       if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $sb)) { $v = supabase_admin_vault($sb); if ($v) $bal = orolado_money($v['real'] ?? 0); }
-      $rows[] = ['id' => (string) $id, 'sbId' => $sb, 'name' => (string) ($u['displayName'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? ''), 'balance' => $bal, 'createdAt' => (string) ($u['createdAt'] ?? '')];
+      $rows[] = ['id' => (string) $id, 'sbId' => $sb, 'name' => (string) ($u['displayName'] ?? ''), 'email' => (string) ($u['email'] ?? ''), 'publicId' => (string) ($u['publicId'] ?? ''), 'pw' => (string) ($u['partnerPw'] ?? ''), 'balance' => $bal, 'createdAt' => (string) ($u['createdAt'] ?? '')];
     }
     usort($rows, static fn($a, $b) => strcmp($b['createdAt'], $a['createdAt']));
     admin_json(['ok' => true, 'rows' => $rows]);
@@ -2520,7 +2520,7 @@ if ($isAjax) {
     $alpha = 'abcdefghjkmnpqrstuvwxyz23456789';
     $pw = ''; for ($i = 0; $i < 10; $i++) $pw .= $alpha[random_int(0, strlen($alpha) - 1)];
     $hash = orolado_hash_password($pw);
-    with_db_lock(function ($box) use ($pid, $hash) { if (isset($box->db['users'][$pid]) && is_array($box->db['users'][$pid])) $box->db['users'][$pid]['passwordHash'] = $hash; return ['ok' => true]; });
+    with_db_lock(function ($box) use ($pid, $hash, $pw) { if (isset($box->db['users'][$pid]) && is_array($box->db['users'][$pid])) { $box->db['users'][$pid]['passwordHash'] = $hash; $box->db['users'][$pid]['partnerPw'] = $pw; } return ['ok' => true]; });
     supabase_admin_set_password((string) ($u['sbId'] ?? ''), (string) ($u['email'] ?? ''), $pw);
     admin_json(['ok' => true, 'email' => (string) ($u['email'] ?? ''), 'password' => $pw, 'publicId' => (string) ($u['publicId'] ?? '')]);
   }
@@ -2541,7 +2541,7 @@ if ($isAjax) {
       $db['users'][$uid] = ['id' => $uid, 'displayName' => $name, 'email' => $em, 'phone' => '', 'countryCode' => '+225', 'country' => '',
         'passwordHash' => orolado_hash_password($pw), 'role' => 'user', 'createdAt' => date('c'), 'mode' => 'real', 'assetId' => 'v100', 'duration' => 10,
         'trades' => 0, 'wins' => 0, 'realTrades' => 0, 'realStakeVolume' => 0, 'realDepositTotal' => 0, 'trafficSource' => 'partner',
-        'publicId' => $pid, 'transactions' => [], 'positions' => [], 'partner' => true];
+        'publicId' => $pid, 'transactions' => [], 'positions' => [], 'partner' => true, 'partnerPw' => $pw]; // 2026-11-21 (propriétaire) : mot de passe du compte démo affilié affiché dans l'admin
       $db['vault'][$uid] = ['demo' => 1000000, 'real' => 0];
       $db['partnerIds'] = array_values(array_unique(array_merge((array) ($db['partnerIds'] ?? []), [$uid]))); // v3631 : liste des comptes affiliés
       return ['ok' => true, 'uid' => $uid, 'email' => $em, 'publicId' => $pid];
@@ -5926,6 +5926,7 @@ setInterval(() => {
       if (!j.rows.length) { box.innerHTML = '<p class="muted">Aucun compte affilié.</p>'; return; }
       box.innerHTML = j.rows.map(r => '<div style="border:1px solid #334155;border-radius:12px;padding:10px;margin:8px 0">' +
         '<b>' + esc(r.name || 'Partenaire') + '</b> · ' + esc(r.publicId) + '<br><span class="muted">' + esc(r.email) + '</span><br>' +
+        'Mot de passe : ' + (r.pw ? '<b style="user-select:all">' + esc(r.pw) + '</b>' : '<span class="muted">inconnu — touchez « 🔑 Nouveau mot de passe »</span>') + '<br>' +
         'Solde : <b>' + (r.balance == null ? '—' : esc(r.balance) + ' $') + '</b><br>' +
         '<button class="mini ok" data-rech="' + esc(r.sbId || r.id) + '" data-em="' + esc(r.email) + '" data-pid="' + esc(r.publicId) + '">💰 Recharger</button> ' +
         '<button class="mini" data-open="' + esc(r.sbId || r.id) + '">Ouvrir la fiche</button> ' +
@@ -5937,7 +5938,7 @@ setInterval(() => {
         if (!j.ok) { alert('❌ ' + (j.reason || 'Échec')); return; }
         const txt = 'Compte affilié OROLADO\nSite : https://orolado.com\nE-mail : ' + j.email + '\nMot de passe : ' + j.password + '\nID : ' + j.publicId;
         try { await navigator.clipboard.writeText(txt); } catch (e) { /* le texte reste affiché */ }
-        alert('✅ Nouveau mot de passe.\n\n' + txt + '\n\n(Copié : collez-le dans WhatsApp.)');
+        alert('✅ Nouveau mot de passe.\n\n' + txt + '\n\n(Copié : collez-le dans WhatsApp.)'); load();
       });
       box.querySelectorAll('button[data-rech]').forEach(b => b.onclick = async () => {
         const v = parseFloat(String(prompt('Montant à ajouter, en $ :', '500') || '').replace(',', '.')); if (!(v > 0)) return;
