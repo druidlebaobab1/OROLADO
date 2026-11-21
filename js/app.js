@@ -5267,6 +5267,10 @@
       if (/insuffisant|insufficient/i.test(String(res.reason || ''))) {
         toast(t('insufficient'), 'err', 2000);
         tradeQ.length = 0;
+      } else if (res.reason) {
+        // 2026-11-21 (propriétaire : « je mise et rien ne part ») : la raison est toujours montrée (avant : rien du tout).
+        toast(String(res.reason), 'err', 2500);
+        tradeQ.length = 0;
       }
       syncTradeButtons();
       return false;
