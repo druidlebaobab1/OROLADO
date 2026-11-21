@@ -67,6 +67,174 @@ function orolado_aff_inv_name(string $uid): string { return 'inv_' . hash('sha25
 function orolado_aff_owner_name(string $uid): string { return 'own_' . hash('sha256', 'aff-own|' . $uid); }
 
 /*
+ * 2026-11-21 (propriétaire : « les amis de mes affiliés ont disparu de leur page » — l'admin, lui, voyait encore les chiffres).
+ * CAUSE : tout ce qui est rangé ici (amis fr_…, compteurs own_…, codes, versements rev_…) porte l'identifiant du joueur AU
+ * MOMENT où il a invité (souvent l'id local u_…). Un même joueur peut avoir PLUSIEURS fiches : id local u_… + fiche à son id
+ * Supabase (connexion par Supabase, fiche « Trader » créée par un dépôt / un crédit, connexion Google…), ou une 2e fiche au même
+ * e-mail. Le jour où sa connexion tombe sur l'autre fiche, la page Invitation lisait les fichiers de CETTE fiche : vides
+ * (0 ami, nouveau lien), alors que les amis existaient toujours sous la première.
+ * MAINTENANT : toutes les fiches d'une même personne (même id Supabase, même e-mail, champ id) forment un GROUPE, retenu à vie
+ * sur le disque (lnk_…, il ne fait que grandir : un lien trouvé une fois n'est jamais perdu). Le groupe a une fiche « maison »
+ * (celle qui a ses amis) : son lien, ses codes et ses versements y restent. La page, l'admin et les versements additionnent les
+ * amis de TOUTES les fiches du groupe (un ami compté une seule fois) et TOUT ce qui a déjà été versé (jamais payé deux fois).
+ */
+function orolado_aff_link_name(string $id): string { return 'lnk_' . hash('sha256', 'aff-lnk|' . $id); }
+
+function orolado_aff_is_uuid(string $s): bool {
+  return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $s);
+}
+
+/** Fiches locales de la même personne, trouvées par les index (aucun appel réseau) : id, champ id, id Supabase, e-mail. */
+function orolado_aff_live_ids(array $db, string $uid): array {
+  if ($uid === '') return [];
+  $ids = [$uid => true];
+  $todo = [$uid];
+  $doneSb = []; $doneMail = [];
+  for ($round = 0; $todo && $round < 4 && count($ids) < 24; $round++) {
+    $next = [];
+    foreach ($todo as $id) {
+      $sbs = [];
+      $mails = [];
+      if (orolado_aff_is_uuid($id)) $sbs[] = strtolower($id);
+      $u = $db['users'][$id] ?? null;
+      if (is_array($u)) {
+        $fid = (string) ($u['id'] ?? '');
+        if ($fid !== '' && $fid !== $id && is_array($db['users'][$fid] ?? null)) $next[] = $fid;
+        $sb = (string) ($u['sbId'] ?? '');
+        if (orolado_aff_is_uuid($sb)) $sbs[] = strtolower($sb);
+        foreach (['email', 'originalEmail'] as $k) {
+          $e = strtolower(trim((string) ($u[$k] ?? '')));
+          if ($e !== '' && filter_var($e, FILTER_VALIDATE_EMAIL)) $mails[] = $e;
+        }
+      }
+      foreach (array_unique($sbs) as $sb) {
+        if (isset($doneSb[$sb])) continue;
+        $doneSb[$sb] = true;
+        if (is_array($db['users'][$sb] ?? null)) $next[] = $sb;
+        if (function_exists('orolado_users_by_sb')) foreach (orolado_users_by_sb($db, $sb) as $k => $_) $next[] = (string) $k;
+      }
+      foreach (array_unique($mails) as $e) {
+        if (isset($doneMail[$e])) continue;
+        $doneMail[$e] = true;
+        if (function_exists('orolado_users_by_email')) foreach (orolado_users_by_email($db, $e) as $k => $_) $next[] = (string) $k;
+      }
+    }
+    $todo = [];
+    foreach ($next as $n) { if ($n !== '' && !isset($ids[$n])) { $ids[$n] = true; $todo[] = $n; } }
+  }
+  return array_keys($ids);
+}
+
+/** Ids retenus sur le disque pour cette fiche (sans base : historique, compteurs). Toujours avec $uid en premier. */
+function orolado_aff_stored_ids(string $uid): array {
+  if ($uid === '') return [];
+  $st = orolado_aff_read(orolado_aff_link_name($uid));
+  $ids = [$uid];
+  foreach ((array) ($st['ids'] ?? []) as $x) { $x = (string) $x; if ($x !== '' && !in_array($x, $ids, true)) $ids[] = $x; }
+  return $ids;
+}
+
+/** La fiche a-t-elle des données d'affiliation (amis, compteurs, versements) ? */
+function orolado_aff_has_data(string $id): bool {
+  $d = orolado_aff_dir() . DIRECTORY_SEPARATOR;
+  $fr = orolado_aff_fr_file($id);
+  return (is_file($fr) && (int) @filesize($fr) > 0) || is_file($d . orolado_aff_owner_name($id) . '.json')
+    || (function_exists('orolado_aff_rev_name') && is_file($d . orolado_aff_rev_name($id) . '.json'));
+}
+
+/** Classement « fiche maison » : celle qui a le plus d'amis, puis le plus de versements, puis des compteurs. */
+function orolado_aff_home_score(string $id): array {
+  $fr = orolado_aff_fr_file($id);
+  $own = orolado_aff_read(orolado_aff_owner_name($id));
+  $size = is_file($fr) ? (int) @filesize($fr) : 0;
+  if (strpos(json_encode($own) ?: '', '"friends"') !== false) $size += 1000000; // ancien format (amis dans le fichier)
+  $wd = function_exists('orolado_aff_rev_name') ? (float) (orolado_aff_read(orolado_aff_rev_name($id))['withdrawn'] ?? 0) : 0.0;
+  return [$size, $wd + (float) ($own['earned'] ?? 0), (int) ($own['n'] ?? 0) + (int) ($own['clicks'] ?? 0), $own ? 1 : 0];
+}
+
+/**
+ * Groupe d'une fiche : ['home' => fiche maison, 'ids' => toutes les fiches (maison d'abord)]. Retenu sur le disque dès qu'il
+ * compte plus d'une fiche et que l'une d'elles a des données (écrit seulement s'il change).
+ */
+function orolado_aff_group(array $db, string $uid, bool $persist = true): array {
+  if ($uid === '') return ['home' => '', 'ids' => []];
+  $memo = $persist && isset($GLOBALS['OROLADO_AFF_DEPIDX']);
+  if ($memo && isset($GLOBALS['OROLADO_AFF_GRP'][$uid])) return $GLOBALS['OROLADO_AFF_GRP'][$uid];
+  $ids = [];
+  foreach (orolado_aff_live_ids($db, $uid) as $x) $ids[$x] = true;
+  $homes = [];
+  // Liens déjà retenus (ils ne se perdent jamais, même si une fiche change d'e-mail plus tard).
+  $todo = array_keys($ids);
+  for ($i = 0; $i < count($todo) && $i < 48; $i++) {
+    $st = orolado_aff_read(orolado_aff_link_name($todo[$i]));
+    if (!empty($st['home'])) $homes[(string) $st['home']] = true;
+    foreach ((array) ($st['ids'] ?? []) as $x) { $x = (string) $x; if ($x !== '' && !isset($ids[$x])) { $ids[$x] = true; $todo[] = $x; } }
+  }
+  $all = array_keys($ids);
+  $cands = $homes ? array_values(array_filter(array_keys($homes), static fn($h) => isset($ids[$h]))) : [];
+  if (!$cands) $cands = array_values(array_filter($all, static fn($x) => orolado_aff_has_data($x)));
+  $home = $uid;
+  if ($cands) {
+    $best = null;
+    foreach ($cands as $c) { $s = orolado_aff_home_score($c); if ($best === null || $s > $best[0]) $best = [$s, $c]; }
+    $home = (string) $best[1];
+  }
+  $ordered = array_values(array_unique(array_merge([$home], $all)));
+  if ($persist && count($ordered) > 1 && ($homes || $cands)) {
+    $want = $ordered; sort($want);
+    foreach ($ordered as $x) {
+      $cur = orolado_aff_read(orolado_aff_link_name($x));
+      $have = array_map('strval', (array) ($cur['ids'] ?? [])); sort($have);
+      if ($have === $want && (string) ($cur['home'] ?? '') === $home) continue;
+      orolado_aff_with(orolado_aff_link_name($x), static function (&$st) use ($want, $home) {
+        $prev = array_map('strval', (array) ($st['ids'] ?? []));
+        $st['ids'] = array_values(array_unique(array_merge($prev, $want))); // ne fait que grandir
+        sort($st['ids']);
+        $st['home'] = $home;
+        $st['at'] = $st['at'] ?? date('c');
+      });
+    }
+  }
+  $res = ['home' => $home, 'ids' => $ordered];
+  if ($memo) $GLOBALS['OROLADO_AFF_GRP'][$uid] = $res;
+  return $res;
+}
+
+function orolado_aff_home(array $db, string $uid): string {
+  $h = orolado_aff_group($db, $uid)['home'];
+  return $h !== '' ? $h : $uid;
+}
+
+/** Ids du groupe (maison d'abord) ; sans base : ceux retenus sur le disque. */
+function orolado_aff_group_ids(string $uid, ?array $db = null): array {
+  if ($uid === '') return [];
+  return $db !== null ? orolado_aff_group($db, $uid)['ids'] : orolado_aff_stored_ids($uid);
+}
+
+/** Compteurs et anciens gains (5 %) additionnés sur tout le groupe : clics, earned, log, codes perso. */
+function orolado_aff_own_all(string $uid, ?array $db = null): array {
+  $out = ['clicks' => 0, 'earned' => 0.0, 'log' => [], 'n' => 0, 'nPaid' => 0];
+  $seenRef = [];
+  foreach (orolado_aff_group_ids($uid, $db) as $id) {
+    orolado_aff_migrate($id);
+    $own = orolado_aff_read(orolado_aff_owner_name($id));
+    $out['clicks'] += (int) ($own['clicks'] ?? 0);
+    $out['earned'] += (float) ($own['earned'] ?? 0);
+    $out['n'] += (int) ($own['n'] ?? 0);
+    $out['nPaid'] += (int) ($own['nPaid'] ?? 0);
+    foreach ((array) ($own['log'] ?? []) as $l) {
+      if (!is_array($l)) continue;
+      $r = (string) ($l['ref'] ?? '');
+      if ($r !== '' && isset($seenRef[$r])) continue;
+      if ($r !== '') $seenRef[$r] = true;
+      $out['log'][] = $l;
+    }
+  }
+  $out['earned'] = orolado_money($out['earned']);
+  return $out;
+}
+
+/*
  * 2026-11-11 (propriétaire : « même 10 000, 1 million d'inscrits par un lien, ça doit toujours s'afficher, solide 10-20 ans »)
  * GRANDE ÉCHELLE — avant, la liste des amis était DANS le fichier du parrain : chaque inscription réécrivait tout le
  * fichier (de plus en plus lent), et la page de l'affilié recalculait tout à chaque ouverture (mesuré : 5 000 amis =
@@ -121,11 +289,28 @@ function orolado_aff_migrate(string $uid): void {
   });
 }
 
-/** Les amis d'un affilié, même forme qu'avant (uid, at, ip, name, deposit, paid, n, gift). */
-function orolado_aff_friends(string $uid): array {
-  orolado_aff_migrate($uid);
+/**
+ * Lignes d'amis de TOUT le groupe de la fiche (2026-11-21) : un ami n'apparaît qu'une fois. Sans base : fiches retenues
+ * sur le disque. Un ami dont les deux fiches seraient reliées (ancien doublon) n'est compté qu'une fois aussi.
+ */
+function orolado_aff_group_fr_lines(string $uid, ?array $db = null): array {
+  $out = []; $seen = [];
+  foreach (orolado_aff_group_ids($uid, $db) as $id) {
+    orolado_aff_migrate($id);
+    foreach (orolado_aff_fr_lines($id) as $l) {
+      $fu = (string) $l['u'];
+      if (isset($seen[$fu])) continue;
+      $seen[$fu] = true;
+      $out[] = $l;
+    }
+  }
+  return $out;
+}
+
+/** Les amis d'un affilié, même forme qu'avant (uid, at, ip, name, deposit, paid, n, gift). Avec $db : tout son groupe. */
+function orolado_aff_friends(string $uid, ?array $db = null): array {
   $out = [];
-  foreach (orolado_aff_fr_lines($uid) as $l) {
+  foreach (orolado_aff_group_fr_lines($uid, $db) as $l) {
     $fu = (string) $l['u'];
     $inv = orolado_aff_read(orolado_aff_inv_name($fu));
     $deps = is_array($inv['deps'] ?? null) ? $inv['deps'] : [];
@@ -138,9 +323,8 @@ function orolado_aff_friends(string $uid): array {
 
 /** Compteurs rapides (sans lire la liste) : ['n' => inscrits, 'paid' => ont déposé, 'clicks' => clics]. */
 function orolado_aff_counts(string $uid): array {
-  orolado_aff_migrate($uid);
-  $own = orolado_aff_read(orolado_aff_owner_name($uid));
-  return ['n' => (int) ($own['n'] ?? 0), 'paid' => (int) ($own['nPaid'] ?? 0), 'clicks' => (int) ($own['clicks'] ?? 0)];
+  $own = orolado_aff_own_all($uid); // 2026-11-21 : toutes les fiches retenues de la même personne
+  return ['n' => (int) $own['n'], 'paid' => (int) $own['nPaid'], 'clicks' => (int) $own['clicks']];
 }
 
 /** Code d'invitation du joueur : 8 caractères, toujours le même pour lui. */
@@ -162,12 +346,18 @@ function orolado_aff_norm_code(string $code): string {
 
 const OROLADO_AFF_MAX_CODES = 5; // codes promo personnalisés max par affilié (demande du propriétaire)
 
-/** Codes de l'affilié : son code par défaut + ses codes promo personnalisés. */
-function orolado_aff_codes(string $uid): array {
-  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+/**
+ * Codes de l'affilié : son code par défaut + ses codes promo personnalisés. Avec $db (2026-11-21) : code par défaut de sa fiche
+ * maison (le lien qu'il a toujours partagé) et codes perso de toutes ses fiches.
+ */
+function orolado_aff_codes(string $uid, ?array $db = null): array {
+  $home = $db !== null ? orolado_aff_home($db, $uid) : $uid;
   $custom = [];
-  foreach ((array) ($own['codes'] ?? []) as $c) { $c = orolado_aff_norm_code((string) $c); if ($c !== '') $custom[$c] = true; }
-  return ['default' => orolado_aff_code($uid), 'custom' => array_keys($custom), 'max' => OROLADO_AFF_MAX_CODES];
+  foreach (orolado_aff_group_ids($uid, $db) as $id) {
+    $own = orolado_aff_read(orolado_aff_owner_name($id));
+    foreach ((array) ($own['codes'] ?? []) as $c) { $c = orolado_aff_norm_code((string) $c); if ($c !== '') $custom[$c] = true; }
+  }
+  return ['default' => orolado_aff_code($home), 'custom' => array_keys($custom), 'max' => OROLADO_AFF_MAX_CODES];
 }
 
 /** Code réservé : mots officiels, ou toute imitation du nom OROLADO (chiffres pris pour des lettres compris). */
@@ -187,20 +377,24 @@ function orolado_aff_code_create(array $db, string $uid, string $raw): array {
   $code = orolado_aff_norm_code($raw);
   // 2026-11-13 (propriétaire : « on ne doit pas pouvoir créer A ou AB ») : comme les grandes plateformes, 4 à 16 lettres / chiffres
   if ($code === '' || strlen($code) < 4) return ['ok' => false, 'reason' => 'bad'];
-  if ($code === orolado_aff_code($uid)) return ['ok' => false, 'reason' => 'default'];
+  // 2026-11-21 : le code est rangé sur la fiche maison de la personne (là où sont ses amis), quelle que soit la fiche connectée.
+  $grp = orolado_aff_group($db, $uid);
+  $home = $grp['home'] !== '' ? $grp['home'] : $uid;
+  if ($code === orolado_aff_code($home) || $code === orolado_aff_code($uid)) return ['ok' => false, 'reason' => 'default'];
   // 2026-11-13 (propriétaire) : le nom OROLADO (et ses imitations : 0ROLAD0, ROLADO, OROLAD…) est réservé à l'admin.
   if (($u['role'] ?? '') !== 'admin' && orolado_aff_code_reserved($code)) return ['ok' => false, 'reason' => 'reserved'];
-  $cur = orolado_aff_codes($uid);
+  $cur = orolado_aff_codes($uid, $db);
   if (in_array($code, $cur['custom'], true)) return ['ok' => true, 'code' => $code]; // déjà à lui
   if (count($cur['custom']) >= OROLADO_AFF_MAX_CODES) return ['ok' => false, 'reason' => 'max'];
   $taken = false;
-  orolado_aff_with('code_' . $code, static function (&$st) use ($uid, &$taken) {
+  $mine = $grp['ids'] ?: [$uid];
+  orolado_aff_with('code_' . $code, static function (&$st) use ($home, $mine, &$taken) {
     $owner = (string) ($st['uid'] ?? '');
-    if ($owner === '') { $st = ['uid' => $uid, 'custom' => true, 'at' => date('c')]; }
-    else if ($owner !== $uid) { $taken = true; }
+    if ($owner === '') { $st = ['uid' => $home, 'custom' => true, 'at' => date('c')]; }
+    else if (!in_array($owner, $mine, true)) { $taken = true; }
   });
   if ($taken) return ['ok' => false, 'reason' => 'taken'];
-  orolado_aff_with(orolado_aff_owner_name($uid), static function (&$st) use ($code) {
+  orolado_aff_with(orolado_aff_owner_name($home), static function (&$st) use ($code) {
     if (!isset($st['codes']) || !is_array($st['codes'])) $st['codes'] = [];
     if (!in_array($code, $st['codes'], true)) $st['codes'][] = $code;
     $st['codes'] = array_slice($st['codes'], 0, OROLADO_AFF_MAX_CODES);
@@ -209,14 +403,18 @@ function orolado_aff_code_create(array $db, string $uid, string $raw): array {
 }
 
 /** Supprime un code promo personnalisé (et le libère s'il appartient bien à cet affilié). */
-function orolado_aff_code_delete(string $uid, string $raw): array {
+function orolado_aff_code_delete(string $uid, string $raw, ?array $db = null): array {
   $code = orolado_aff_norm_code($raw);
   if ($code === '') return ['ok' => false, 'reason' => 'bad'];
-  orolado_aff_with(orolado_aff_owner_name($uid), static function (&$st) use ($code) {
-    if (isset($st['codes']) && is_array($st['codes'])) $st['codes'] = array_values(array_filter($st['codes'], static fn($c) => orolado_aff_norm_code((string) $c) !== $code));
-  });
-  orolado_aff_with('code_' . $code, static function (&$st) use ($uid) {
-    if ((string) ($st['uid'] ?? '') === $uid) $st = ['uid' => '', 'removed' => true, 'at' => date('c')];
+  $mine = orolado_aff_group_ids($uid, $db) ?: [$uid]; // 2026-11-21 : le code peut être rangé sur une autre fiche de la personne
+  foreach ($mine as $id) {
+    if (!is_file(orolado_aff_dir() . DIRECTORY_SEPARATOR . orolado_aff_owner_name($id) . '.json')) continue;
+    orolado_aff_with(orolado_aff_owner_name($id), static function (&$st) use ($code) {
+      if (isset($st['codes']) && is_array($st['codes'])) $st['codes'] = array_values(array_filter($st['codes'], static fn($c) => orolado_aff_norm_code((string) $c) !== $code));
+    });
+  }
+  orolado_aff_with('code_' . $code, static function (&$st) use ($mine) {
+    if (in_array((string) ($st['uid'] ?? ''), $mine, true)) $st = ['uid' => '', 'removed' => true, 'at' => date('c')];
   });
   return ['ok' => true];
 }
@@ -278,12 +476,21 @@ function orolado_aff_same_person(array $db, string $a, string $b): bool {
 function orolado_aff_attach(array $db, string $newUid, string $code): bool {
   $code = orolado_aff_norm_code($code); // accepte le code par défaut (8) ET les codes promo personnalisés
   if ($code === '' || $newUid === '') return false;
-  $inviter = (string) (orolado_aff_read('code_' . $code)['uid'] ?? '');
-  if ($inviter === '' || $inviter === $newUid) return false;
-  $iu = $db['users'][$inviter] ?? null;
+  $codeOwner = (string) (orolado_aff_read('code_' . $code)['uid'] ?? '');
+  if ($codeOwner === '' || $codeOwner === $newUid) return false;
+  // 2026-11-21 : l'ami est rangé sur la fiche MAISON de celui qui invite (là où sont déjà ses autres amis), même si le code
+  // a été créé depuis une autre de ses fiches. Jamais chez soi-même, quelle que soit la fiche.
+  $grpI = orolado_aff_group($db, $codeOwner);
+  $inviter = $grpI['home'] !== '' ? $grpI['home'] : $codeOwner;
+  if (in_array($newUid, $grpI['ids'], true)) return false;
+  $iu = $db['users'][$inviter] ?? ($db['users'][$codeOwner] ?? null);
   if (!is_array($iu) || !orolado_aff_allowed($iu + ['id' => $inviter])) return false;
-  if (function_exists('orolado_user_block_kind') && orolado_user_block_kind($db, $inviter) !== '') return false;
-  if (orolado_aff_same_person($db, $inviter, $newUid)) return false; // s'inviter soi-même avec un 2e compte : refusé
+  if (function_exists('orolado_user_block_kind') && (orolado_user_block_kind($db, $inviter) !== '' || orolado_user_block_kind($db, $codeOwner) !== '')) return false;
+  if (orolado_aff_same_person($db, $codeOwner, $newUid) || ($inviter !== $codeOwner && orolado_aff_same_person($db, $inviter, $newUid))) return false; // s'inviter soi-même avec un 2e compte : refusé
+  // Relié UNE fois à vie pour la PERSONNE : si une autre fiche du nouveau joueur est déjà reliée, on ne relie pas une 2e fois.
+  foreach (orolado_aff_live_ids($db, $newUid) as $nid) {
+    if ($nid !== $newUid && !empty(orolado_aff_read(orolado_aff_inv_name($nid))['inviter'])) return false;
+  }
   $ip = orolado_aff_client_ip();
   orolado_aff_migrate($inviter);
   $name = (string) ($db['users'][$newUid]['displayName'] ?? '');
@@ -310,9 +517,10 @@ function orolado_aff_attach(array $db, string $newUid, string $code): bool {
 }
 
 /** Ce joueur a-t-il invité au moins un ami ? (pour le petit badge 🤝 dans l'admin). */
-function orolado_aff_is_affiliate(string $uid): bool {
+function orolado_aff_is_affiliate(string $uid, ?array $db = null): bool {
   if ($uid === '') return false;
-  return orolado_aff_counts($uid)['n'] > 0;
+  if (orolado_aff_counts($uid)['n'] > 0) return true;
+  return $db !== null && orolado_aff_group_fr_lines($uid, $db) !== []; // 2026-11-21 : amis rangés sous une autre de ses fiches
 }
 
 /** Liste des uid affiliés connus (index). Les anciens (avant l'index) sont ajoutés à la volée par l'admin. */
@@ -508,6 +716,7 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
   // 2026-11-11 : chez le parrain, seulement le compteur (les chiffres de l'ami restent dans SA fiche : plus de
   // réécriture du gros fichier du parrain à chaque dépôt d'ami).
   if ($became) {
+    $inviter = orolado_aff_home($db, $inviter); // 2026-11-21 : compteur sur la fiche maison de celui qui invite
     orolado_aff_migrate($inviter);
     orolado_aff_with(orolado_aff_owner_name($inviter), static function (&$own) { $own['nPaid'] = (int) ($own['nPaid'] ?? 0) + 1; });
   }
@@ -516,22 +725,28 @@ function orolado_aff_settle(array $db, string $friendUid): ?array {
 
 /** Ce que voit le joueur : son lien, ses amis, ses gains ; et s'il a été invité, son cadeau. */
 function orolado_aff_status(array $db, array $user, array $opts = []): array {
-  $uid = (string) ($user['id'] ?? '');
+  $sessUid = (string) ($user['id'] ?? '');
   // 2026-11-09 : le seul pourcentage affiché est celui de la part de revenu (60 %), plus l'ancien 5 %.
   $out = ['ok' => true, 'enabled' => false, 'pct' => (int) round((function_exists('orolado_aff_rev_pct') ? orolado_aff_rev_pct() : 0.6) * 100)];
+  // 2026-11-21 (propriétaire : « les amis ont disparu ») : la connexion peut tomber sur une AUTRE fiche du même joueur
+  // (id Supabase / 2e fiche au même e-mail). Tout se lit sur sa fiche MAISON et sur toutes ses fiches (voir orolado_aff_group).
+  $grp = $sessUid !== '' ? orolado_aff_group($db, $sessUid) : ['home' => '', 'ids' => []];
+  $uid = $grp['home'] !== '' ? $grp['home'] : $sessUid;
   // Côté ami invité : vérifier / verser son cadeau (même si le Portail ne lui est pas encore ouvert).
-  $inv = $uid !== '' ? orolado_aff_settle($db, $uid) : null;
+  $invUid = $sessUid;
+  foreach ($grp['ids'] as $gid) { if (!empty(orolado_aff_read(orolado_aff_inv_name($gid))['inviter'])) { $invUid = $gid; break; } }
+  $inv = $invUid !== '' ? orolado_aff_settle($db, $invUid) : null;
   if (is_array($inv) && !empty($inv['inviter'])) {
     $out['invited'] = ['paid' => !empty($inv['paid']), 'gift' => orolado_money($inv['friendGift'] ?? 0)];
     if (!empty($inv['justPaid'])) {
       $out['invited']['justPaid'] = true;
-      orolado_aff_with(orolado_aff_inv_name($uid), static function (&$st) { unset($st['justPaid']); });
+      orolado_aff_with(orolado_aff_inv_name($invUid), static function (&$st) { unset($st['justPaid']); });
     }
   }
   if ($uid === '' || !orolado_aff_allowed($user)) return $out;
   $code = orolado_aff_register_code($uid);
-  $friends = orolado_aff_friends($uid);
-  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+  $friends = orolado_aff_friends($uid, $db);
+  $own = orolado_aff_own_all($uid, $db);
   // Tous les amis (à vie, plus de limite d'un an) : on note leurs nouveaux dépôts au passage.
   orolado_aff_build_indexes($db);
   $changed = false;
@@ -548,12 +763,12 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       $changed = true;
     }
   }
-  if ($changed) { $friends = orolado_aff_friends($uid); $own = orolado_aff_read(orolado_aff_owner_name($uid)); }
+  if ($changed) { $friends = orolado_aff_friends($uid, $db); $own = orolado_aff_own_all($uid, $db); }
   $out['enabled'] = true;
   $out['code'] = $code;
   // 2026-11-13 (propriétaire) : un code « OROLADO… » créé par un joueur AVANT la règle est retiré (seul l'admin peut l'avoir).
-  if (($user['role'] ?? '') !== 'admin') foreach (orolado_aff_codes($uid)['custom'] as $cR) if (orolado_aff_code_reserved($cR)) orolado_aff_code_delete($uid, $cR);
-  $out['codes'] = orolado_aff_codes($uid); // code par défaut + codes promo personnalisés (max 5)
+  if (($user['role'] ?? '') !== 'admin') foreach (orolado_aff_codes($uid, $db)['custom'] as $cR) if (orolado_aff_code_reserved($cR)) orolado_aff_code_delete($uid, $cR, $db);
+  $out['codes'] = orolado_aff_codes($uid, $db); // code par défaut + codes promo personnalisés (max 5)
   $out['now'] = time();
   $out['clicks'] = (int) ($own['clicks'] ?? 0);
   $out['friends'] = count($friends);
@@ -718,7 +933,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
     $out['gains'] = [];
     if (isset($out['periods']) && is_array($out['periods'])) {
       // 2026-11-08 : gains de chaque période = versements réels (60 %) de cette période (avant : 0 sauf « Tout »)
-      $revLog = function_exists('orolado_aff_rev_name') ? (array) (orolado_aff_read(orolado_aff_rev_name($uid))['log'] ?? []) : [];
+      $revLog = function_exists('orolado_aff_rev_log_all') ? orolado_aff_rev_log_all($uid, $db) : [];
       foreach ($out['periods'] as $pk => $pv) {
         if ($pk === 'all') { $out['periods'][$pk]['gain'] = $out['rev']['paid']; continue; }
         $g = 0.0;
@@ -727,7 +942,7 @@ function orolado_aff_status(array $db, array $user, array $opts = []): array {
       }
     }
     // 2026-11-09 : petit graphique « Tes gains » de la page Voir plus = vrais versements (60 % + anciens gains déjà versés).
-    $revLogAll = function_exists('orolado_aff_rev_name') ? (array) (orolado_aff_read(orolado_aff_rev_name($uid))['log'] ?? []) : [];
+    $revLogAll = function_exists('orolado_aff_rev_log_all') ? orolado_aff_rev_log_all($uid, $db) : [];
     $gains = [];
     foreach (array_merge($revLogAll, $oldLog) as $l) {
       $ts = (int) strtotime((string) ($l['at'] ?? ''));
@@ -754,6 +969,7 @@ function orolado_aff_agg_save(string $uid, array $agg, array $wallet): void {
 
 /** Lecture seule (admin, pages) : portefeuille 60 % d'un affilié ; très gros affilié → dernier calcul (< 1 h). */
 function orolado_aff_rev_wallet_view(array $db, string $uid): array {
+  $uid = orolado_aff_home($db, $uid); // 2026-11-21 : fiche maison de la personne
   if (orolado_aff_counts($uid)['n'] > OROLADO_AFF_BIG) {
     $bc = orolado_aff_read('agg_' . hash('sha256', 'aff-agg|' . $uid));
     if (!empty($bc['at']) && time() - (int) $bc['at'] < 3600 && is_array($bc['wallet'] ?? null)) {
@@ -795,7 +1011,7 @@ function orolado_aff_build_indexes(array $db): void {
 }
 
 function orolado_aff_clear_indexes(): void {
-  unset($GLOBALS['OROLADO_AFF_DEPIDX'], $GLOBALS['OROLADO_AFF_WDIDX'], $GLOBALS['OROLADO_AFF_ORDIDX'], $GLOBALS['OROLADO_AFF_PARTNER'], $GLOBALS['OROLADO_AFF_AGG']);
+  unset($GLOBALS['OROLADO_AFF_DEPIDX'], $GLOBALS['OROLADO_AFF_WDIDX'], $GLOBALS['OROLADO_AFF_ORDIDX'], $GLOBALS['OROLADO_AFF_PARTNER'], $GLOBALS['OROLADO_AFF_AGG'], $GLOBALS['OROLADO_AFF_GRP']);
 }
 
 /**
@@ -838,7 +1054,7 @@ function orolado_aff_click(string $code, string $device): bool {
 
 /** Lignes d'historique des gains de celui qui invite (affichage : « Cadeau invitation »). */
 function orolado_aff_history_rows(string $uid): array {
-  $own = orolado_aff_read(orolado_aff_owner_name($uid));
+  $own = orolado_aff_own_all($uid); // 2026-11-21 : toutes les fiches retenues de la même personne
   $rows = [];
   foreach ((array) ($own['log'] ?? []) as $l) {
     if (!is_array($l) || empty($l['ref'])) continue;
@@ -846,7 +1062,7 @@ function orolado_aff_history_rows(string $uid): array {
   }
   // 2026-11-08 : versements de la part de revenu (60 %) aussi dans l'historique financier (avant : seulement l'ancien 5 %)
   if (function_exists('orolado_aff_rev_name')) {
-    foreach ((array) (orolado_aff_read(orolado_aff_rev_name($uid))['log'] ?? []) as $l) {
+    foreach (orolado_aff_rev_log_all($uid) as $l) {
       if (!is_array($l) || empty($l['ref'])) continue;
       $rows[] = ['at' => (string) ($l['at'] ?? ''), 'ref' => (string) $l['ref'], 'amount' => orolado_money($l['amount'] ?? 0), 'kind' => 'bonus', 'status' => 'COMPLETED', 'gateway' => 'OROLADO', 'note' => 'Invitation'];
     }

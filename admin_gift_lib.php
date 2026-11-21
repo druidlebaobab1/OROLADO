@@ -30,6 +30,7 @@ function admin_gift_who(array $db, string $uid): array {
     'name' => trim((string) ($u['name'] ?? $u['displayName'] ?? '')) ?: '—',
     'email' => (string) ($u['email'] ?? ''),
     'sb' => (string) ($u['sbId'] ?? ''),
+    'uid' => is_array($db['users'][$uid] ?? null) ? $uid : '', // 2026-11-21 : fiche locale (toujours retrouvable par la fiche admin)
   ];
 }
 
@@ -54,7 +55,9 @@ function admin_gift_payload(string $view, array $req, array $people): array {
     if ($e !== '' && !empty($p['ip'])) $ipByEmail[$e] = (string) $p['ip'];
   }
   $row = static function (array $cells, array $who) {
-    return ['cells' => $cells, 'userId' => $who['sb'] !== '' ? $who['sb'] : $who['id']];
+    // 2026-11-21 : id Supabase, sinon l'id de la fiche locale (avant : le numéro ORO-…, parfois celui d'une autre fiche du
+    // même joueur → fiche admin vide). admin_profile_payload retrouve la personne à partir de n'importe lequel.
+    return ['cells' => $cells, 'userId' => $who['sb'] !== '' ? $who['sb'] : (($who['uid'] ?? '') !== '' ? $who['uid'] : $who['id'])];
   };
 
   if ($view === 'gift_aff' || $view === 'gift_friends') {
@@ -65,11 +68,16 @@ function admin_gift_payload(string $view, array $req, array $people): array {
     $rev60 = function_exists('orolado_aff_rev_enabled') && orolado_aff_rev_enabled() && function_exists('orolado_aff_rev_wallet');
     $pct60 = $rev60 && function_exists('orolado_aff_rev_pct') ? orolado_aff_rev_pct() : 0.0;
     if ($rev60 && function_exists('orolado_aff_build_indexes')) orolado_aff_build_indexes($db);
+    $homesSeen = [];
     foreach ($users as $uid => $u) {
       if (!function_exists('orolado_aff_owner_name')) break;
       if (!is_file(orolado_aff_dir() . DIRECTORY_SEPARATOR . orolado_aff_owner_name((string) $uid) . '.json')) continue;
-      $friends = orolado_aff_friends((string) $uid);
-      $own = orolado_aff_read(orolado_aff_owner_name((string) $uid));
+      // 2026-11-21 : une seule ligne par personne, avec les amis de TOUTES ses fiches (fiche maison, voir aff_lib.php).
+      if (function_exists('orolado_aff_home')) $uid = orolado_aff_home($db, (string) $uid);
+      if (isset($homesSeen[(string) $uid])) continue;
+      $homesSeen[(string) $uid] = true;
+      $friends = function_exists('orolado_aff_own_all') ? orolado_aff_friends((string) $uid, $db) : orolado_aff_friends((string) $uid);
+      $own = function_exists('orolado_aff_own_all') ? orolado_aff_own_all((string) $uid, $db) : orolado_aff_read(orolado_aff_owner_name((string) $uid));
       if (!$friends && empty($own['clicks'])) continue;
       $w60 = $rev60 && $friends ? orolado_aff_rev_wallet_view($db, (string) $uid) : null;
       $byF = [];

@@ -462,9 +462,9 @@ if ($action === 'affCodeNew' || $action === 'affCodeDel') {
   $out = ['ok' => false, 'reason' => 'Indisponible'];
   try {
     if ($action === 'affCodeNew' && function_exists('orolado_aff_code_create')) $out = orolado_aff_code_create($db, $uid, $raw);
-    else if ($action === 'affCodeDel' && function_exists('orolado_aff_code_delete')) $out = orolado_aff_code_delete($uid, $raw);
+    else if ($action === 'affCodeDel' && function_exists('orolado_aff_code_delete')) $out = orolado_aff_code_delete($uid, $raw, $db);
   } catch (Throwable $eCc) { error_log('OROLADO affcode ' . $eCc->getMessage()); $out = ['ok' => false, 'reason' => 'Indisponible']; }
-  if (function_exists('orolado_aff_codes')) $out['codes'] = orolado_aff_codes($uid);
+  if (function_exists('orolado_aff_codes')) $out['codes'] = orolado_aff_codes($uid, $db); // 2026-11-21 : codes de toutes ses fiches
   echo json_encode(['server' => true] + $out);
   exit;
 }
@@ -2294,7 +2294,7 @@ if ($action === 'withdraw') {
   // d'invitation (libre, retirable sans jouer). La règle « jouer ×2 les dépôts » ne change pas.
   $affEarned = 0.0;
   if (function_exists('orolado_aff_read') && function_exists('orolado_aff_owner_name')) {
-    $affOwn = orolado_aff_read(orolado_aff_owner_name((string) ($me['id'] ?? '')));
+    $affOwn = function_exists('orolado_aff_own_all') ? orolado_aff_own_all((string) ($me['id'] ?? ''), $db) : orolado_aff_read(orolado_aff_owner_name((string) ($me['id'] ?? ''))); // 2026-11-21 : toutes ses fiches
     $affEarned = (float) ($affOwn['earned'] ?? 0);
   }
   $suspect = (($me['realTrades'] ?? 0) === 0) && $amount > $affEarned + 0.01;
