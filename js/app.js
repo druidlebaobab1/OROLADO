@@ -3103,6 +3103,9 @@
     try {
       if (!el) return;
       el.style.removeProperty('font-size');
+      // 2026-11-21 (propriétaire : « la mise s'agrandit, se rétrécit ») : le retrait gauche posé par placeStakeCur pour le
+      // « $ » est retiré AVANT de mesurer ; sinon la place libre changeait d'un réglage à l'autre et la taille alternait.
+      el.style.removeProperty('padding-left');
       if (!el.clientWidth) return;
       var cs = window.getComputedStyle(el);
       var fs = parseFloat(cs.fontSize) || 18;
