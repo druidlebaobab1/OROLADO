@@ -63,6 +63,33 @@ function orolado_aff_rev_hold_h(): int {
 
 function orolado_aff_rev_name(string $uid): string { return 'rev_' . hash('sha256', 'aff-rev|' . $uid); }
 
+/**
+ * 2026-11-21 : déjà versé à la PERSONNE = somme des fiches rev_… de toutes ses fiches (groupe, voir orolado_aff_group dans
+ * aff_lib.php). Chaque versement n'est noté que sur UNE fiche (la maison au moment du versement) : la somme ne compte donc
+ * jamais deux fois, et rien de ce qui a été versé avant ne peut être oublié (le groupe ne fait que grandir).
+ */
+function orolado_aff_rev_paid_all(string $uid, ?array $db = null): float {
+  $sum = 0.0;
+  foreach (orolado_aff_group_ids($uid, $db) as $id) $sum += (float) (orolado_aff_read(orolado_aff_rev_name($id))['withdrawn'] ?? 0);
+  return orolado_money($sum);
+}
+
+/** Journal des versements 60 % de toute la personne (sans doublon de référence), du plus ancien au plus récent. */
+function orolado_aff_rev_log_all(string $uid, ?array $db = null): array {
+  $out = []; $seen = [];
+  foreach (orolado_aff_group_ids($uid, $db) as $id) {
+    foreach ((array) (orolado_aff_read(orolado_aff_rev_name($id))['log'] ?? []) as $l) {
+      if (!is_array($l)) continue;
+      $r = (string) ($l['ref'] ?? '');
+      if ($r !== '' && isset($seen[$r])) continue;
+      if ($r !== '') $seen[$r] = true;
+      $out[] = $l;
+    }
+  }
+  usort($out, static fn($a, $b) => strcmp((string) ($a['at'] ?? ''), (string) ($b['at'] ?? '')));
+  return $out;
+}
+
 /** Somme des vrais dépôts d'un joueur, réglés depuis ≥ HOLD heures (bonus/défi/admin exclus). */
 function orolado_aff_rev_settled_deposits(array $db, string $friendUid, int $cutTs): float {
   $sum = 0.0;
@@ -299,6 +326,7 @@ function orolado_aff_rev_friend_calc(array $db, string $friendUid): array {
 
 /** Agrégat de TOUS les amis d'un affilié (report négatif inclus : la somme peut être négative). */
 function orolado_aff_rev_aggregate(array $db, string $inviterUid): array {
+  $inviterUid = orolado_aff_home($db, $inviterUid); // 2026-11-21 : fiche maison de la personne (tous ses amis)
   // Pendant une même requête (index actifs), calculé une seule fois (la page l'utilisait 3 fois).
   if (isset($GLOBALS['OROLADO_AFF_DEPIDX'], $GLOBALS['OROLADO_AFF_AGG'][$inviterUid])) return $GLOBALS['OROLADO_AFF_AGG'][$inviterUid];
   $res = orolado_aff_rev_aggregate_calc($db, $inviterUid);
@@ -307,15 +335,28 @@ function orolado_aff_rev_aggregate(array $db, string $inviterUid): array {
 }
 
 function orolado_aff_rev_aggregate_calc(array $db, string $inviterUid): array {
-  orolado_aff_migrate($inviterUid);
-  $friends = array_map(static fn($l) => ['uid' => (string) $l['u']], orolado_aff_fr_lines($inviterUid));
+  // 2026-11-21 : amis de TOUTES les fiches de la personne. Un ami qui aurait deux fiches reliées (même id Supabase / même
+  // e-mail) n'est compté qu'UNE fois (sinon ses pertes seraient payées deux fois).
+  $friends = array_map(static fn($l) => ['uid' => (string) $l['u']], orolado_aff_group_fr_lines($inviterUid, $db));
   $sum = 0.0; $sumAll = 0.0; $staked = 0.0; $active = 0;
   $rows = [];
   $seen = [];
   foreach ($friends as $f) {
     $fu = (string) ($f['uid'] ?? '');
     if ($fu === '' || isset($seen[$fu])) continue;
+    $fids = [$fu];
+    $fr0 = $db['users'][$fu] ?? null;
+    if (is_array($fr0)) {
+      if (orolado_aff_is_uuid((string) ($fr0['sbId'] ?? ''))) $fids[] = strtolower((string) $fr0['sbId']);
+      $fe = strtolower(trim((string) ($fr0['email'] ?? '')));
+      if ($fe !== '') $fids[] = 'e:' . $fe;
+    }
+    if (orolado_aff_is_uuid($fu)) $fids[] = strtolower($fu);
+    $dup = false;
+    foreach ($fids as $x) if (isset($seen[$x])) { $dup = true; break; }
+    foreach ($fids as $x) $seen[$x] = true;
     $seen[$fu] = true;
+    if ($dup) continue;
     $r = orolado_aff_rev_friend($db, $fu);
     $sum += $r['ngr'];
     $sumAll += (float) ($r['ngrAll'] ?? $r['ngr']);
@@ -334,11 +375,11 @@ function orolado_aff_rev_aggregate_calc(array $db, string $inviterUid): array {
  * Le dû ne peut JAMAIS dépasser PCT × (marge réelle gardée par la caisse) : la caisse garde toujours ≥ (1−PCT).
  */
 function orolado_aff_rev_wallet(array $db, string $inviterUid): array {
+  $inviterUid = orolado_aff_home($db, $inviterUid); // 2026-11-21 : fiche maison de la personne
   $pct = orolado_aff_rev_pct();
   $agg = orolado_aff_rev_aggregate($db, $inviterUid);
   $entitled = orolado_money(floor($pct * $agg['ngr'] * 100) / 100); // arrondi vers le bas
-  $rev = orolado_aff_read(orolado_aff_rev_name($inviterUid));
-  $withdrawn = orolado_money($rev['withdrawn'] ?? 0);
+  $withdrawn = orolado_aff_rev_paid_all($inviterUid, $db); // tout ce qui a déjà été versé à la personne (toutes ses fiches)
   $balance = orolado_money($entitled - $withdrawn);
   $minW = function_exists('orolado_min_withdraw') ? orolado_min_withdraw() : 1.0;
   return [
@@ -356,7 +397,7 @@ function orolado_aff_rev_wallet(array $db, string $inviterUid): array {
     'pending' => orolado_money(max(0.0, floor($pct * $agg['ngrAll'] * 100) / 100 - $entitled)),
     'staked' => $agg['staked'],
     'active' => (int) $agg['active'],
-    'log' => array_slice(array_reverse((array) ($rev['log'] ?? [])), 0, 10),
+    'log' => array_slice(array_reverse(orolado_aff_rev_log_all($inviterUid, $db)), 0, 10),
   ];
 }
 
@@ -383,8 +424,13 @@ function orolado_aff_admin_overview(array $db, array $opts = []): array {
   $rows = [];
   $totalPaid = 0.0;
   orolado_aff_build_indexes($db);
+  $homesSeen = [];
   foreach ($ids as $uid) {
-    $friends = orolado_aff_friends($uid);
+    // 2026-11-21 : une seule ligne par personne (ses fiches sont regroupées sur sa fiche maison).
+    $uid = orolado_aff_home($db, (string) $uid);
+    if (isset($homesSeen[$uid])) continue;
+    $homesSeen[$uid] = true;
+    $friends = orolado_aff_friends($uid, $db);
     if (!$friends) continue;
     $w = function_exists('orolado_aff_rev_wallet_view') ? orolado_aff_rev_wallet_view($db, $uid) : orolado_aff_rev_wallet($db, $uid);
     // Signaux (info) : grappes d'IP + gros déposeurs.
@@ -420,6 +466,45 @@ function orolado_aff_admin_overview(array $db, array $opts = []): array {
 }
 
 /**
+ * 2026-11-21 : termine un versement resté « en cours » sur une fiche qui n'est PAS (ou plus) la maison de la personne : même
+ * référence renvoyée (la caisse ne paie jamais deux fois la même), noté sur cette fiche-là. Rien de nouveau n'y est versé.
+ */
+function orolado_aff_rev_finish_other(array $db, string $id): void {
+  $rev = orolado_aff_read(orolado_aff_rev_name($id));
+  $pend = is_array($rev['pending'] ?? null) ? $rev['pending'] : null;
+  if (!$pend) return;
+  $ref = (string) ($pend['ref'] ?? '');
+  $amt = orolado_money($pend['amount'] ?? 0);
+  $inLog = false;
+  foreach ((array) ($rev['log'] ?? []) as $l) if (is_array($l) && ($l['ref'] ?? '') === $ref) { $inLog = true; break; }
+  $cmpTot = orolado_money(array_key_exists('own', $pend) ? ($pend['own'] ?? 0) : ($pend['total'] ?? 0)); // total de CETTE fiche après versement
+  if ($ref === '' || $amt < 0.01 || $inLog || $cmpTot <= orolado_money($rev['withdrawn'] ?? 0) + 0.001) {
+    orolado_aff_with(orolado_aff_rev_name($id), static function (&$st) use ($ref) { if ((string) ($st['pending']['ref'] ?? '') === $ref) unset($st['pending']); });
+    return;
+  }
+  if (orolado_aff_pay_inviter($db, $id, $amt, $ref)) orolado_aff_with(orolado_aff_rev_name($id), orolado_aff_rev_note_paid($ref, $amt));
+}
+
+/** Note un versement réussi sur une fiche rev_… : une seule fois par référence (+ montant au total versé de CETTE fiche). */
+function orolado_aff_rev_note_paid(string $ref, float $delta): callable {
+  return static function (&$st) use ($ref, $delta) {
+    if (!isset($st['log']) || !is_array($st['log'])) $st['log'] = [];
+    $isPend = (string) ($st['pending']['ref'] ?? '') === $ref;
+    foreach ($st['log'] as $l) if (($l['ref'] ?? '') === $ref) { if ($isPend) unset($st['pending']); return; } // déjà noté
+    if ($isPend) {
+      // Ancienne écriture (avant 2026-11-21, sans « own ») : « total » = total de cette fiche après versement.
+      $tot = array_key_exists('own', (array) $st['pending']) ? 0.0 : orolado_money($st['pending']['total'] ?? 0);
+      unset($st['pending']);
+    } else {
+      $tot = 0.0;
+    }
+    $st['withdrawn'] = orolado_money(max(orolado_money($st['withdrawn'] ?? 0) + $delta, $tot)); // total versé par cette fiche (argent libre)
+    $st['log'][] = ['ref' => $ref, 'amount' => $delta, 'at' => date('c')];
+    $st['log'] = array_slice($st['log'], -500);
+  };
+}
+
+/**
  * VERSEMENT (vesting) : crédite à l'affilié, en argent LIBRE (retirable ou jouable, comme aujourd'hui),
  * la part de commission qui vient d'être acquise — c.-à-d. ce qui dépasse ce qu'on lui a DÉJÀ versé.
  *   à_verser = entitled − déjà_versé   (seulement si > 0 ; jamais de reprise si le compteur redescend)
@@ -429,6 +514,11 @@ function orolado_aff_admin_overview(array $db, array $opts = []): array {
  * Compte admin (mode test) : versé sur la démo, jamais d'argent réel (via orolado_aff_pay_inviter).
  */
 function orolado_aff_rev_run(array $db, string $inviterUid): array {
+  // 2026-11-21 : toujours la fiche maison de la personne (un seul verrou, un seul compteur), quelle que soit la fiche appelée.
+  if ($inviterUid !== '') {
+    $grpR = orolado_aff_group($db, $inviterUid);
+    if ($grpR['home'] !== '') $inviterUid = $grpR['home'];
+  }
   if (!orolado_aff_rev_enabled() || $inviterUid === '') return orolado_aff_rev_wallet($db, $inviterUid);
   $iu = $db['users'][$inviterUid] ?? null;
   if (!is_array($iu) || !orolado_aff_allowed($iu + ['id' => $inviterUid])) return orolado_aff_rev_wallet($db, $inviterUid);
@@ -438,44 +528,45 @@ function orolado_aff_rev_run(array $db, string $inviterUid): array {
   $lk = @fopen(sys_get_temp_dir() . '/oro_affrev_' . substr(hash('sha256', $inviterUid), 0, 24) . '.lock', 'c');
   if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return orolado_aff_rev_wallet($db, $inviterUid); }
   try {
+  // 2026-11-21 : un versement resté « en cours » sur une autre fiche de la personne est d'abord terminé (même référence).
+  foreach ($grpR['ids'] ?? [] as $oid) if ($oid !== $inviterUid) orolado_aff_rev_finish_other($db, (string) $oid);
   $wallet = orolado_aff_rev_wallet($db, $inviterUid);
   $entitled = orolado_money($wallet['entitled']);
   $rev = orolado_aff_read(orolado_aff_rev_name($inviterUid));
-  $paid = orolado_money($rev['withdrawn'] ?? 0);
+  $paid = orolado_aff_rev_paid_all($inviterUid, $db); // 2026-11-21 : déjà versé à la personne, toutes fiches comprises
+  $ownPaid = orolado_money($rev['withdrawn'] ?? 0);
   // 2026-11-20 (revue double paiement) : un versement est d'abord NOTÉ « en cours » (référence + montant) AVANT d'être
   // envoyé à la caisse. Si la caisse a payé mais que la réponse s'est perdue (délai, coupure) ou que la fiche n'a pas
   // été écrite, le passage suivant renvoie EXACTEMENT la même référence (la caisse ne paie jamais 2 fois la même) au lieu
   // d'en fabriquer une nouvelle avec un total plus grand (avant : la même part pouvait être versée deux fois).
   $pend = is_array($rev['pending'] ?? null) ? $rev['pending'] : null;
-  if ($pend && orolado_money($pend['total'] ?? 0) <= $paid + 0.001) {
+  $pendDone = false;
+  if ($pend) foreach ((array) ($rev['log'] ?? []) as $l) if (is_array($l) && ($l['ref'] ?? '') === (string) ($pend['ref'] ?? '')) { $pendDone = true; break; }
+  // (ancienne écriture sans « own » : son total est celui de CETTE fiche ; nouvelle : celui de la personne)
+  $pendCmp = $pend && array_key_exists('own', $pend) ? $paid : $ownPaid;
+  if ($pend && ($pendDone || orolado_money($pend['total'] ?? 0) <= $pendCmp + 0.001)) {
     orolado_aff_with(orolado_aff_rev_name($inviterUid), static function (&$st) { unset($st['pending']); }); // déjà noté payé
     $pend = null;
   }
   if ($pend && (string) ($pend['ref'] ?? '') !== '' && orolado_money($pend['amount'] ?? 0) >= 0.01) {
-    $newTotal = orolado_money($pend['total']);
     $delta = orolado_money($pend['amount']);
     $ref = (string) $pend['ref'];
   } else {
     $delta = orolado_money(floor(($entitled - $paid) * 100) / 100);
     $newTotal = orolado_money($paid + $delta);
+    // Même référence qu'avant pour une personne à une seule fiche (total de la personne = total de la fiche).
     $ref = 'affrev_' . substr(hash('sha256', $inviterUid . '|' . number_format($newTotal, 2, '.', '')), 0, 20);
     if ($delta >= 0.01) {
-      orolado_aff_with(orolado_aff_rev_name($inviterUid), static function (&$st) use ($newTotal, $delta, $ref) {
-        $st['pending'] = ['ref' => $ref, 'amount' => $delta, 'total' => $newTotal, 'at' => date('c')];
+      $ownAfter = orolado_money($ownPaid + $delta);
+      orolado_aff_with(orolado_aff_rev_name($inviterUid), static function (&$st) use ($newTotal, $delta, $ref, $ownAfter) {
+        $st['pending'] = ['ref' => $ref, 'amount' => $delta, 'total' => $newTotal, 'own' => $ownAfter, 'at' => date('c')];
       });
     }
   }
   if ($delta >= 0.01) {
     $ok = orolado_aff_pay_inviter($db, $inviterUid, $delta, $ref);
     if ($ok) {
-      orolado_aff_with(orolado_aff_rev_name($inviterUid), static function (&$st) use ($newTotal, $delta, $ref) {
-        if ((string) ($st['pending']['ref'] ?? '') === $ref) unset($st['pending']);
-        if (orolado_money($st['withdrawn'] ?? 0) < $newTotal) $st['withdrawn'] = $newTotal; // total versé (argent libre)
-        if (!isset($st['log']) || !is_array($st['log'])) $st['log'] = [];
-        foreach ($st['log'] as $l) if (($l['ref'] ?? '') === $ref) return; // déjà noté
-        $st['log'][] = ['ref' => $ref, 'amount' => $delta, 'at' => date('c')];
-        $st['log'] = array_slice($st['log'], -500);
-      });
+      orolado_aff_with(orolado_aff_rev_name($inviterUid), orolado_aff_rev_note_paid($ref, $delta));
       $wallet = orolado_aff_rev_wallet($db, $inviterUid);
       $wallet['justPaid'] = $delta;
       // 2026-11-08 : l'affilié est prévenu (notification + e-mail) — à partir de 0,50 $, au plus une fois toutes les 6 h

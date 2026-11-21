@@ -719,11 +719,15 @@ function admin_closed_accounts(array $people): array {
 function admin_aff_local_uid(string $uid, string $email = ''): string {
   $db = load_db();
   $users = $db['users'] ?? [];
-  if ($uid !== '' && isset($users[$uid]) && is_array($users[$uid])) return $uid;
-  if ($uid !== '' && function_exists('orolado_users_by_sb')) foreach (orolado_users_by_sb($db, $uid) as $k => $u) return (string) $k;
+  $found = '';
+  if ($uid !== '' && isset($users[$uid]) && is_array($users[$uid])) $found = $uid;
+  if ($found === '' && $uid !== '' && function_exists('orolado_users_by_sb')) foreach (orolado_users_by_sb($db, $uid) as $k => $u) { $found = (string) $k; break; }
   $email = strtolower(trim($email));
-  if ($email !== '' && function_exists('orolado_users_by_email')) foreach (orolado_users_by_email($db, $email) as $k => $u) return (string) $k;
-  return '';
+  if ($found === '' && $email !== '' && function_exists('orolado_users_by_email')) foreach (orolado_users_by_email($db, $email) as $k => $u) { $found = (string) $k; break; }
+  // 2026-11-21 (propriétaire : « ses amis ont disparu ») : un même joueur peut avoir plusieurs fiches (id local, id Supabase,
+  // 2e fiche au même e-mail). L'affiliation est lue sur sa fiche MAISON (celle qui a ses amis), jamais sur une fiche vide.
+  if ($found !== '' && function_exists('orolado_aff_home')) $found = orolado_aff_home($db, $found);
+  return $found;
 }
 
 /**
@@ -733,10 +737,12 @@ function admin_aff_local_uid(string $uid, string $email = ''): string {
  */
 function admin_aff_detail(string $local): ?array {
   if ($local === '' || !function_exists('orolado_aff_owner_name')) return null;
-  $friends = orolado_aff_friends($local);
-  $own = orolado_aff_read(orolado_aff_owner_name($local));
-  if (!$friends && empty($own['clicks'])) return null;
   $db = load_db();
+  // 2026-11-21 : toutes les fiches de la personne (amis, clics, anciens gains, versements), comme sa page Invitation.
+  if (function_exists('orolado_aff_home')) $local = orolado_aff_home($db, $local);
+  $friends = orolado_aff_friends($local, $db);
+  $own = function_exists('orolado_aff_own_all') ? orolado_aff_own_all($local, $db) : orolado_aff_read(orolado_aff_owner_name($local));
+  if (!$friends && empty($own['clicks'])) return null;
   $w = null;
   if (function_exists('orolado_aff_rev_wallet') && $friends) {
     if (function_exists('orolado_aff_build_indexes')) orolado_aff_build_indexes($db);
@@ -762,9 +768,9 @@ function admin_aff_detail(string $local): ?array {
       'pend' => round(max(0.0, $pct / 100 * (float) ($x['ngrAll'] ?? 0) - max(0.0, $pct / 100 * $ngr)), 2)];
   }
   usort($rows, static fn($a, $b) => strcmp($b['at'], $a['at']));
-  $rev = function_exists('orolado_aff_rev_name') ? orolado_aff_read(orolado_aff_rev_name($local)) : [];
+  $revLog = function_exists('orolado_aff_rev_log_all') ? orolado_aff_rev_log_all($local, $db) : [];
   $log = [];
-  foreach ((array) ($rev['log'] ?? []) as $l) $log[] = ['amount' => round((float) ($l['amount'] ?? 0), 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => 'Part de revenu ' . $pct . ' %'];
+  foreach ($revLog as $l) $log[] = ['amount' => round((float) ($l['amount'] ?? 0), 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => 'Part de revenu ' . $pct . ' %'];
   foreach ((array) ($own['log'] ?? []) as $l) if ((float) ($l['amount'] ?? 0) > 0) $log[] = ['amount' => round((float) $l['amount'], 2), 'at' => (string) ($l['at'] ?? ''), 'kind' => 'Ancien système (avant le ' . $pct . ' %)'];
   usort($log, static fn($a, $b) => strcmp($b['at'], $a['at']));
   $old5 = (float) ($own['earned'] ?? 0);
@@ -796,8 +802,10 @@ function admin_bonus_by(array $by, string $uid, array $p): array {
       }
     }
     if ($local !== '') {
-      $by['aff'] += (float) (orolado_aff_read(orolado_aff_owner_name($local))['earned'] ?? 0);
-      if (function_exists('orolado_aff_rev_name')) $by['aff'] += (float) (orolado_aff_read(orolado_aff_rev_name($local))['withdrawn'] ?? 0); // 2026-11-09 : + versements 60 %
+      // 2026-11-21 : toutes les fiches de la personne (un versement n'est noté que sur une seule : jamais compté deux fois)
+      if (function_exists('orolado_aff_home')) $local = orolado_aff_home($db, $local);
+      $by['aff'] += function_exists('orolado_aff_own_all') ? (float) orolado_aff_own_all($local, $db)['earned'] : (float) (orolado_aff_read(orolado_aff_owner_name($local))['earned'] ?? 0);
+      if (function_exists('orolado_aff_rev_paid_all')) $by['aff'] += orolado_aff_rev_paid_all($local, $db); // 2026-11-09 : + versements 60 %
     }
   }
   foreach ($by as $k => $v) $by[$k] = round((float) $v, 2);
@@ -1966,6 +1974,44 @@ function admin_list_payload_raw(string $view, array $req): array {
   return ['ok' => false, 'reason' => 'Vue inconnue'];
 }
 
+/**
+ * 2026-11-21 (propriétaire : « je clique sur un ami, sa fiche est vide : pas d'IP, pas de pays, pas de date, 0 $ partout ») —
+ * l'identifiant reçu (id local u_…, id Supabase, numéro ORO-… ou identifiant R…) n'est pas toujours une ligne de la liste
+ * des joueurs : un même joueur peut avoir plusieurs fiches (id local + id Supabase, 2e fiche au même e-mail) et la liste n'en
+ * garde qu'UNE (son numéro ORO-… peut alors être celui de l'autre fiche). On retrouve la fiche locale, puis la ligne de la
+ * liste de la MÊME personne (id Supabase, autre fiche, même e-mail) ; sinon une ligne faite depuis la fiche locale.
+ * Retour : ['row' => ligne, 'ids' => toutes les fiches de la personne] ou null (inconnu).
+ */
+function admin_resolve_player_row(string $id, array $pmap): ?array {
+  if ($id === '') return null;
+  $ldb = admin_local_db();
+  $users = $ldb['users'] ?? [];
+  $local = '';
+  if (is_array($users[$id] ?? null)) $local = $id;
+  if ($local === '' && preg_match('/^R[A-Z0-9]{4,12}$/', $id) && is_file(__DIR__ . '/live_lib.php')) { // identifiant affiché R…
+    require_once __DIR__ . '/live_lib.php';
+    try { $w = live_who($id); if ($w && is_array($users[(string) $w['uid']] ?? null)) $local = (string) $w['uid']; } catch (Throwable $e) { /* ignore */ }
+  }
+  if ($local === '' && function_exists('orolado_users_by_sb')) foreach (orolado_users_by_sb($ldb, $id) as $k => $_) { $local = (string) $k; break; }
+  if ($local === '' && str_starts_with(strtoupper($id), 'ORO-')) {
+    foreach ($users as $k => $u) { if (is_array($u) && strcasecmp((string) ($u['publicId'] ?? ''), $id) === 0) { $local = (string) $k; break; } }
+  }
+  if ($local === '') return null;
+  $ids = function_exists('orolado_aff_live_ids') ? orolado_aff_live_ids($ldb, $local) : [$local];
+  foreach ($ids as $x) { $sb = (string) ($users[$x]['sbId'] ?? ''); if ($sb !== '' && !in_array($sb, $ids, true)) $ids[] = $sb; }
+  foreach ($ids as $x) if (isset($pmap[$x])) return ['row' => $pmap[$x], 'ids' => $ids];
+  $lu = $users[$local];
+  $em = strtolower(trim((string) ($lu['email'] ?? '')));
+  if ($em !== '') foreach ($pmap as $row) if (strtolower(trim((string) ($row['email'] ?? ''))) === $em) return ['row' => $row, 'ids' => array_values(array_unique(array_merge($ids, [(string) $row['id']])))];
+  $iso = strtoupper((string) ($lu['country'] ?? ''));
+  return ['row' => [
+    'id' => $local, 'email' => $em, 'name' => (string) ($lu['displayName'] ?? ''), 'phone' => (string) ($lu['phone'] ?? ''),
+    'country' => preg_match('/^[A-Z]{2}$/', $iso) ? $iso : (string) ($lu['countryCode'] ?? ''), 'role' => (string) ($lu['role'] ?? 'user'),
+    'createdAt' => (string) ($lu['createdAt'] ?? ''), 'lastSeen' => (string) ($lu['lastSeen'] ?? ''), 'depositTotal' => (float) ($lu['realDepositTotal'] ?? 0),
+    'realTrades' => (int) ($lu['realTrades'] ?? 0), 'traffic' => (string) ($lu['trafficSource'] ?? 'direct'), 'ip' => '', 'publicId' => (string) ($lu['publicId'] ?? ''),
+  ], 'ids' => $ids];
+}
+
 function admin_profile_payload(string $uid): array {
   $pmap = admin_profile_map();
   $vaults = admin_vaults();
@@ -1979,6 +2025,12 @@ function admin_profile_payload(string $uid): array {
       }
     }
   }
+  // Toutes les fiches de la personne : seulement quand l'identifiant reçu n'est pas une ligne de la liste (sinon rien ne change).
+  $idSet = [$uid];
+  if (!isset($pmap[(string) ($p['id'] ?? '')])) {
+    $res = admin_resolve_player_row($uid, $pmap);
+    if ($res) { $p = $res['row']; $uid = (string) $p['id']; $idSet = array_values(array_unique(array_merge([$uid], $res['ids']))); }
+  }
   $p = admin_enrich_user_row($p, $vaults);
   // Dépôts payés et bonus : deux tableaux séparés, deux totaux séparés.
   $deps = [];
@@ -1986,8 +2038,12 @@ function admin_profile_payload(string $uid): array {
   $sumDep = 0.0;
   $sumBonus = 0.0;
   $bonusBy = ['defi' => 0.0, 'aff' => 0.0, 'dep' => 0.0, 'adm' => 0.0];
+  $seenDep = [];
   foreach (admin_deposits() as $d) {
-    if ((string) $d['userId'] !== $uid) continue;
+    if (!in_array((string) $d['userId'], $idSet, true)) continue;
+    $dk = (string) ($d['id'] ?? '');
+    if (count($idSet) > 1 && $dk !== '' && isset($seenDep[$dk])) continue;
+    if ($dk !== '') $seenDep[$dk] = true;
     if (admin_dep_is_bonus($d)) {
       if (admin_dep_bonus_paid($d)) {
         $sumBonus += (float) $d['amount'];
@@ -2013,8 +2069,12 @@ function admin_profile_payload(string $uid): array {
   $wds = [];
   $sumWdPaid = 0.0;
   $sumWdOpen = 0.0;
+  $seenWd = [];
   foreach (admin_withdrawals() as $w) {
-    if ((string) $w['userId'] !== $uid) continue;
+    if (!in_array((string) $w['userId'], $idSet, true)) continue;
+    $wk = (string) ($w['id'] ?? '');
+    if (count($idSet) > 1 && $wk !== '' && isset($seenWd[$wk])) continue;
+    if ($wk !== '') $seenWd[$wk] = true;
     if (admin_wd_is_silenced($w)) continue;
     if (admin_wd_is_paid($w)) $sumWdPaid += (float) $w['amount'];
     if (admin_wd_is_open($w)) $sumWdOpen += (float) $w['amount'];
@@ -2033,7 +2093,10 @@ function admin_profile_payload(string $uid): array {
   $sumNet = 0.0;
   $sumStake = 0.0;
   $nTrades = 0;
-  foreach (admin_orders_for_user($uid) as $o) {
+  $ordersAll = [];
+  foreach ($idSet as $oneId) foreach (admin_orders_for_user($oneId) as $o) { $ok0 = (string) ($o['id'] ?? ''); if ($ok0 === '' || !isset($ordersAll[$ok0])) $ordersAll[$ok0 !== '' ? $ok0 : count($ordersAll) . '#'] = $o; }
+  if (count($idSet) > 1) usort($ordersAll, static fn($a, $b) => strcmp((string) ($b['created_at'] ?? ''), (string) ($a['created_at'] ?? '')));
+  foreach ($ordersAll as $o) {
     $sumNet += (float) ($o['net'] ?? 0);
     $sumStake += (float) ($o['stake'] ?? 0);
     $nTrades++;
