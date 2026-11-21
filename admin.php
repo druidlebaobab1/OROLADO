@@ -2512,6 +2512,18 @@ if ($isAjax) {
     usort($rows, static fn($a, $b) => strcmp($b['createdAt'], $a['createdAt']));
     admin_json(['ok' => true, 'rows' => $rows]);
   }
+  if ($action === 'partner_newpass') { // 2026-11-21 (propriétaire : « je n'arrive pas à me connecter avec le mot de passe ») : nouveau mot de passe d'un compte démo affilié
+    $pid = (string) ($req['id'] ?? '');
+    $ldb = admin_local_db();
+    $u = $ldb['users'][$pid] ?? null;
+    if (!is_array($u) || empty($u['partner'])) admin_json(['ok' => false, 'reason' => 'Seulement pour un compte démo affilié']);
+    $alpha = 'abcdefghjkmnpqrstuvwxyz23456789';
+    $pw = ''; for ($i = 0; $i < 10; $i++) $pw .= $alpha[random_int(0, strlen($alpha) - 1)];
+    $hash = orolado_hash_password($pw);
+    with_db_lock(function ($box) use ($pid, $hash) { if (isset($box->db['users'][$pid]) && is_array($box->db['users'][$pid])) $box->db['users'][$pid]['passwordHash'] = $hash; return ['ok' => true]; });
+    supabase_admin_set_password((string) ($u['sbId'] ?? ''), (string) ($u['email'] ?? ''), $pw);
+    admin_json(['ok' => true, 'email' => (string) ($u['email'] ?? ''), 'password' => $pw, 'publicId' => (string) ($u['publicId'] ?? '')]);
+  }
   if ($action === 'partner_create') { // v3629 : crée un compte affilié (identifiant + mot de passe générés), partenaire, rechargé
     $name = trim(mb_substr(preg_replace('/[\x00-\x1F<>]/u', '', (string) ($req['name'] ?? '')) ?? '', 0, 40));
     if ($name === '') $name = 'Partenaire';
@@ -5916,7 +5928,17 @@ setInterval(() => {
         '<b>' + esc(r.name || 'Partenaire') + '</b> · ' + esc(r.publicId) + '<br><span class="muted">' + esc(r.email) + '</span><br>' +
         'Solde : <b>' + (r.balance == null ? '—' : esc(r.balance) + ' $') + '</b><br>' +
         '<button class="mini ok" data-rech="' + esc(r.sbId || r.id) + '" data-em="' + esc(r.email) + '" data-pid="' + esc(r.publicId) + '">💰 Recharger</button> ' +
-        '<button class="mini" data-open="' + esc(r.sbId || r.id) + '">Ouvrir la fiche</button></div>').join('');
+        '<button class="mini" data-open="' + esc(r.sbId || r.id) + '">Ouvrir la fiche</button> ' +
+        '<button class="mini" data-npw="' + esc(r.id) + '">🔑 Nouveau mot de passe</button></div>').join('');
+      box.querySelectorAll('button[data-npw]').forEach(b => b.onclick = async () => {
+        if (!confirm('Créer un nouveau mot de passe pour ce compte ? L\'ancien ne marchera plus.')) return;
+        b.disabled = true; let j; try { j = await ajax({action:'partner_newpass', id:b.getAttribute('data-npw')}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
+        b.disabled = false;
+        if (!j.ok) { alert('❌ ' + (j.reason || 'Échec')); return; }
+        const txt = 'Compte affilié OROLADO\nSite : https://orolado.com\nE-mail : ' + j.email + '\nMot de passe : ' + j.password + '\nID : ' + j.publicId;
+        try { await navigator.clipboard.writeText(txt); } catch (e) { /* le texte reste affiché */ }
+        alert('✅ Nouveau mot de passe.\n\n' + txt + '\n\n(Copié : collez-le dans WhatsApp.)');
+      });
       box.querySelectorAll('button[data-rech]').forEach(b => b.onclick = async () => {
         const v = parseFloat(String(prompt('Montant à ajouter, en $ :', '500') || '').replace(',', '.')); if (!(v > 0)) return;
         b.disabled = true;
