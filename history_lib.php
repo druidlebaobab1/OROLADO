@@ -126,7 +126,8 @@ function orolado_finance_history(array $db, string $uid, bool $isAdmin, int $off
   foreach (($db['partnerWd'] ?? []) as $w) {
     if (!is_array($w) || !in_array((string) ($w['userId'] ?? ''), $ids, true)) continue;
     $push(['at' => (string) ($w['at'] ?? ''), 'ref' => (string) ($w['id'] ?? ''), 'amount' => -abs(orolado_money($w['amount'] ?? 0)), 'kind' => 'withdraw',
-      'status' => orolado_history_wd_status('pending'), 'gateway' => (string) ($w['operator'] ?? '')]);
+      // 2026-11-22 (propriétaire) : comme chez les autres joueurs, le retrait passe à « Effectué » (après 3 min, comme un vrai paiement).
+      'status' => orolado_history_wd_status(time() - (int) strtotime((string) ($w['at'] ?? '')) >= 180 ? 'completed' : 'pending'), 'gateway' => (string) ($w['operator'] ?? '')]);
   }
 
   // v2414 — gains « Inviter un ami » de celui qui invite (argent libre, sans ligne de dépôt) : affichage
