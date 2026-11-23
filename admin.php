@@ -4150,14 +4150,14 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         </div>
         <div class="lvC-bar">
           <label class="lvC-cam" title="Envoyer une photo" aria-label="Envoyer une photo">📷<input type="file" id="lvImg" accept="image/*" hidden></label>
-          <div class="lvC-in"><span class="lvC-file" id="lvFile" hidden></span><textarea id="lvText" rows="1" maxlength="1000" placeholder="Écrire une réponse…" enterkeyhint="send"></textarea></div>
+          <div class="lvC-in"><span class="lvC-file" id="lvFile" hidden></span><textarea id="lvText" rows="1" maxlength="4000" placeholder="Écrire une réponse…" enterkeyhint="send"></textarea></div>
           <button type="button" class="lvC-send" id="lvSend" aria-label="Envoyer">Envoyer</button>
         </div>
       </div>
       <div id="lvPanePost" hidden>
         <div class="nt-card">
           <label class="nt-lab">Texte de l'actualité (vu par tous, même sans compte)</label>
-          <textarea id="lvPostText" rows="4" maxlength="1000" class="nt-in" placeholder="Ex. : 🔥 Wave est disponible ! Recharge en 1 toucher."></textarea>
+          <textarea id="lvPostText" rows="4" maxlength="4000" class="nt-in" placeholder="Ex. : 🔥 Wave est disponible ! Recharge en 1 toucher."></textarea>
           <label class="nt-lab">Photo (facultatif)</label>
           <input type="file" id="lvPostImg" accept="image/*" class="nt-in">
           <label class="nt-lab">Lien vidéo YouTube / TikTok (facultatif, commence par https://)</label>
