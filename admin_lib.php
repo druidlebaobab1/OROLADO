@@ -258,6 +258,26 @@ function admin_cache_get(string $key, int $ttl): ?array {
   return is_array($j) ? $j : null;
 }
 
+/**
+ * 2026-11-23 (propriétaire : « mon compte admin est devenu très lent ») — réponse IMMÉDIATE avec les derniers chiffres connus
+ * (jusqu'à 1 h), recalcul APRÈS la réponse quand ils ont plus de $fresh secondes (un seul recalcul à la fois). Premier appel
+ * sans aucun chiffre gardé : calcul tout de suite (comme avant).
+ */
+function admin_swr(string $key, int $fresh, callable $make): array {
+  $f = admin_cache_file('admin_cache_' . preg_replace('/[^a-z0-9_]+/i', '', $key) . '.json');
+  $age = is_file($f) ? time() - (int) filemtime($f) : PHP_INT_MAX;
+  $j = $age <= 3600 ? json_decode((string) @file_get_contents($f), true) : null;
+  if (!is_array($j)) { $v = $make(); admin_cache_set($key, $v); return $v; }
+  if ($age > $fresh) {
+    static $queued = [];
+    if (empty($queued[$key])) { $queued[$key] = 1; register_shutdown_function(static function () use ($key, $f, $make): void {
+      if (function_exists('fastcgi_finish_request')) { try { @fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
+      $lk = @fopen($f . '.lock', 'c'); if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return; }
+      try { admin_cache_set($key, $make()); } catch (Throwable $e) { /* jamais bloquant */ } finally { flock($lk, LOCK_UN); fclose($lk); }
+    }); }
+  }
+  return $j;
+}
 function admin_cache_set(string $key, array $data): void {
   $f = admin_cache_file('admin_cache_' . preg_replace('/[^a-z0-9_]+/i', '', $key) . '.json');
   @file_put_contents($f, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
@@ -392,11 +412,7 @@ function admin_auth_users_count(): int {
 }
 
 function admin_inscrits_count(): int {
-  $cached = admin_cache_get('inscrits_n_epoch3', 20);
-  if (is_array($cached) && isset($cached['n']) && (int) $cached['n'] > 0) return (int) $cached['n'];
-  $n = count(admin_stat_people(admin_profiles())); // 2026-10-22 : sans les comptes admin (maison)
-  admin_cache_set('inscrits_n_epoch3', ['n' => $n]);
-  return $n;
+  return (int) (admin_swr('inscrits_n_epoch4', 120, static fn(): array => ['n' => count(admin_stat_people(admin_profiles()))])['n'] ?? 0); // 2026-10-22 : sans les comptes admin (maison)
 }
 
 function admin_sb_all(string $table, string $select, string $order, int $pageSize = 1000, string $filter = ''): array {
@@ -2104,7 +2120,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'wd_epoch3', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'wd_epoch3', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'badges_epoch5', 'inscrits_n_epoch4', 'board_watch2', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }
@@ -2446,8 +2462,9 @@ function admin_board_fp(array $issue): string {
 }
 
 function admin_board_issues_raw(): array {
-  $cached = admin_cache_get('board_watch', 15);
-  if (is_array($cached) && isset($cached['issues'])) return $cached['issues'];
+  return (array) (admin_swr('board_watch2', 60, static fn(): array => ['issues' => admin_board_issues_compute()])['issues'] ?? []);
+}
+function admin_board_issues_compute(): array {
   $issues = [];
   $push = static function (array &$issues, array $ids, string $label, string $msg): void {
     foreach ($ids as $id) {
