@@ -285,6 +285,30 @@ function orolado_xfer_retry(array $db, string $uid): void {
   }
 }
 
+/**
+ * 2026-11-23 (propriétaire : « vérifier qu'il n'y a pas d'erreur dans les envois d'argent ») — avant, un envoi retiré à
+ * l'envoyeur mais pas encore crédité à l'ami (base injoignable un instant) n'était repris QUE quand l'envoyeur rouvrait
+ * « Envoyer de l'argent ». Maintenant la ronde automatique (toutes les 2 min, après une réponse) les reprend tous, tout seule :
+ * mêmes références uniques (jamais retiré ni crédité deux fois). Au plus 20 comptes par ronde.
+ */
+function orolado_xfer_retry_all(array $db): int {
+  $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer';
+  if (!is_dir($dir)) return 0;
+  $owner = [];
+  foreach (orolado_xfer_user_ids($db) as $uid) $owner[hash('sha256', 'xfer|' . $uid) . '.json'] = (string) $uid;
+  $n = 0;
+  foreach (glob($dir . DIRECTORY_SEPARATOR . '*.json') ?: [] as $f) {
+    $me = $owner[basename($f)] ?? ''; if ($me === '') continue;
+    $st = json_decode((string) @file_get_contents($f), true); if (!is_array($st)) continue;
+    $todo = false;
+    foreach ((array) ($st['log'] ?? []) as $l) if (($l['dir'] ?? '') === 'out' && (($l['state'] ?? '') === 'credit' || (($l['state'] ?? '') === 'debit' && (int) ($l['at'] ?? 0) < time() - 120))) { $todo = true; break; }
+    if (!$todo) continue;
+    try { orolado_xfer_retry($db, $me); } catch (Throwable $e) { /* jamais bloquant */ }
+    if (++$n >= 20) break;
+  }
+  return $n;
+}
+
 /** Lecture seule (sans verrou) de l'état des transferts d'un compte. */
 function orolado_xfer_read(string $uid): array {
   $f = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer' . DIRECTORY_SEPARATOR . hash('sha256', 'xfer|' . $uid) . '.json';
@@ -324,11 +348,17 @@ function orolado_xfer_history_rows(array $ids): array {
  * Source : data/xfer/<sha256("xfer|" + id du compte)>.json. Chaque envoi y est noté deux fois : « out » chez celui qui
  * envoie (avec le compte qui reçoit), « in » chez celui qui reçoit (avec le compte qui envoie) ; ici, une ligne par envoi.
  */
+/** 2026-11-23 : les joueurs sont dans un OroladoMap (pas un tableau) — « (array) » donnait ses champs internes, pas les joueurs. */
+function orolado_xfer_user_ids(array $db): array {
+  $u = $db['users'] ?? [];
+  if (is_object($u) && method_exists($u, 'toArray')) $u = $u->toArray();
+  return is_array($u) ? array_map('strval', array_keys($u)) : [];
+}
 function orolado_xfer_all(array $db): array {
   $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer';
   if (!is_dir($dir)) return [];
   $owner = [];
-  foreach (array_keys((array) ($db['users'] ?? [])) as $uid) $owner[hash('sha256', 'xfer|' . $uid) . '.json'] = (string) $uid;
+  foreach (orolado_xfer_user_ids($db) as $uid) $owner[hash('sha256', 'xfer|' . $uid) . '.json'] = (string) $uid;
   $rows = [];
   foreach (glob($dir . DIRECTORY_SEPARATOR . '*.json') ?: [] as $f) {
     $me = $owner[basename($f)] ?? '';

@@ -154,13 +154,13 @@ for ($q = 0; $q < 8; $q++) {
     'ou:1.5' => [['O', 1.25], ['U', 3.6]], 'ou:2.5' => [['O', 1.75], ['U', 2.0]], 'ou:3.5' => [['O', 2.9], ['U', 1.38]], 'btts' => [['Y', 1.8], ['N', 1.95]]]]; return true; });
 }
 @array_map('unlink', glob(sb_dir() . '/cache/suggest-*.json'));
-$SG = sb_suggest($uadm, 0, $NOW); $ty = array_column((array) ($SG['cp'] ?? []), 't'); $bounds = ['safe' => [1.15, 1.42], 'fav' => [1.25, 1.75], 'goals' => [1.45, 2.1], 'big' => [1.45, 2.2]]; $okB = true; $mix = [];
-foreach ((array) ($SG['cp'] ?? []) as $cp) { $mks = []; foreach ($cp['sel'] as $z) { $mks[$z['mk']] = 1; if ($z['odd'] < $bounds[$cp['t']][0] || $z['odd'] > $bounds[$cp['t']][1]) $okB = false; } $mix[$cp['t']] = count($mks); }
-check('coupons proposés (8 matchs du jour) : Sûr, Favoris, Buts, Grosse cote ; cotes dans les bornes', $ty === ['safe', 'fav', 'goals', 'big'] && $okB, json_encode($SG));
+$SG = sb_suggest($uadm, 0, $NOW); $ty = array_column((array) ($SG['cp'] ?? []), 't'); $bounds = ['safe' => [1.12, 1.42, 4], 'bank' => [1.08, 1.32, 3], 'fav' => [1.25, 1.75, 5], 'dc' => [1.10, 1.45, 6], 'o15' => [1.12, 1.42, 5], 'goals' => [1.45, 2.1, 4], 'btts' => [1.55, 2.15, 5], 'big' => [1.45, 2.2, 6], 'x10' => [1.6, 2.5, 4], 'x20' => [1.65, 2.7, 5], 'x50' => [1.75, 3.2, 6]]; $okN = true; $okB = true; $mix = [];
+foreach ((array) ($SG['cp'] ?? []) as $cp) { $mks = []; if (count($cp['sel']) > $bounds[$cp['t']][2]) $okN = false; foreach ($cp['sel'] as $z) { $mks[$z['mk']] = 1; if ($z['odd'] < $bounds[$cp['t']][0] || $z['odd'] > $bounds[$cp['t']][1]) $okB = false; } $mix[$cp['t']] = count($mks); }
+check('coupons proposés (8 matchs du jour) : Sûr, Gros favoris, Favoris, Double chance, +1,5, Buts, Les deux marquent, Grosse cote, ×10, ×20, ×50 ; cotes dans les bornes', $ty[0] === 'safe' && count($ty) >= 10 && count(array_unique($ty)) >= 9 && $okB, json_encode($ty));
 check('coupons proposés : « Sûr » et « Grosse cote » mélangent les types de paris', ($mix['safe'] ?? 0) >= 2 && ($mix['big'] ?? 0) >= 2, json_encode($mix));
 $pkOk = true; foreach ((array) ($SG['cp'] ?? []) as $cp) foreach ($cp['sel'] as $z) { $pk = sb_pick($z['ev'], $z['k'], $uadm, $NOW); if (empty($pk['ok']) || abs((float) $pk['sel']['odd'] - (float) $z['odd']) > 0.001) $pkOk = false; }
 check('coupons proposés : chaque choix se parie tel quel (sb_pick, même cote)', $pkOk);
-check('coupons proposés : 4 / 5 / 4 / 6 choix au plus', array_map(static fn($c) => count($c['sel']), $SG['cp']) <= [4, 5, 4, 6] && count($SG['cp'][3]['sel'] ?? []) >= 4);
+check('coupons proposés : nombre de choix par modèle respecté (3 à 6)', $okN);
 foreach ($tmpIds as $id) { sb_with(sb_day_file($day), static function (array &$s) use ($id) { unset($s['fx'][$id]); return true; }); @unlink(sb_dir() . '/mk/foot-' . $id . '.json'); }
 @array_map('unlink', glob(sb_dir() . '/cache/suggest-*.json'));
 

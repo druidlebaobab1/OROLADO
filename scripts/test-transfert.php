@@ -136,8 +136,12 @@ $r = send('u_paul', 'u_frere', 15);
 check('envoi accepté (Paul débité de 15 $)', $r['ok'] === true && abs($bal[$U['u_paul']] - ($paul0 - 15)) < 0.001, (string) $bal[$U['u_paul']]);
 check('frère pas encore crédité (base en panne)', $bal[$U['u_frere']] == $frere0);
 $GLOBALS['OROLADO_FAKE_RPC'] = $GLOBALS['OROLADO_FAKE_RPC_BACKUP'];
-st('u_paul'); st('u_paul'); st('u_paul');
+// 2026-11-23 : repris TOUT SEUL par la ronde automatique, sans que Paul rouvre la page d'envoi
+$nR = orolado_xfer_retry_all(load_db());
+check('ronde automatique : frère crédité sans que Paul revienne (1 compte repris)', $nR === 1 && $bal[$U['u_frere']] == $frere0 + 15, json_encode([$nR, $bal[$U['u_frere']]]));
+orolado_xfer_retry_all(load_db()); st('u_paul'); st('u_paul');
 check('base revenue : frère crédité de 15 $, une seule fois', $bal[$U['u_frere']] == $frere0 + 15, (string) $bal[$U['u_frere']]);
+check('ronde suivante : plus rien en attente', orolado_xfer_retry_all(load_db()) === 0);
 
 echo "10) Limite cachée par jour\n";
 dep('u_paul', 2000, '2026-10-19');

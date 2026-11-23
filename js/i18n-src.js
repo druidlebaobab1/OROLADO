@@ -4599,6 +4599,21 @@
     hi: { sbSugSafe: "सुरक्षित", sbSugGoals: "गोल" },
   };
   Object.keys(SBS2_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBS2_TR[l]); });
+  var SBS3_TR = {
+    fr: { sbSugBank: "Gros favoris", sbSugO15: "+1,5 but" },
+    en: { sbSugBank: "Big favourites", sbSugO15: "Over 1.5 goals" },
+    es: { sbSugBank: "Grandes favoritos", sbSugO15: "Más de 1,5 goles" },
+    pt: { sbSugBank: "Grandes favoritos", sbSugO15: "Mais de 1,5 gol" },
+    ar: { sbSugBank: "مرشحون أقوياء", sbSugO15: "أكثر من 1.5 هدف" },
+    tr: { sbSugBank: "Büyük favoriler", sbSugO15: "1,5 üst" },
+    vi: { sbSugBank: "Cửa trên mạnh", sbSugO15: "Tài 1,5" },
+    id: { sbSugBank: "Favorit kuat", sbSugO15: "Over 1,5 gol" },
+    ru: { sbSugBank: "Явные фавориты", sbSugO15: "Тотал больше 1,5" },
+    de: { sbSugBank: "Klare Favoriten", sbSugO15: "Über 1,5 Tore" },
+    zh: { sbSugBank: "大热门", sbSugO15: "大于1.5球" },
+    hi: { sbSugBank: "बड़े पसंदीदा", sbSugO15: "1.5 से ज़्यादा गोल" },
+  };
+  Object.keys(SBS3_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBS3_TR[l]); });
   // 2026-10-22 (propriétaire) — Paris : section des prédictions. NOM AFFICHÉ = PRED_NAME (un seul endroit, le même mot dans les 12 langues).
   var PRED_NAME = 'Predict';
   var PRED_TR = {

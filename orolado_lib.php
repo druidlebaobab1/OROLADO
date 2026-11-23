@@ -5232,6 +5232,7 @@ function orolado_pay_sweep_after_response(): void {
   if (!is_array($seen)) $seen = [];
   try {
     $db = load_db(orolado_data_file());
+    if (function_exists('orolado_xfer_retry_all')) { try { orolado_xfer_retry_all($db); } catch (Throwable $eX) { /* jamais bloquant */ } } // 2026-11-23 : envois d'argent en attente repris tout seuls
     $cut = $now - 48 * 3600; $cand = []; $cryptoUsers = [];
     foreach (($db['deposits'] ?? []) as $d) {
       if (!is_array($d)) continue;
