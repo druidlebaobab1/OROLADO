@@ -1403,3 +1403,6 @@ html:root body #casinoModal .sp2 .pz-lgl > span b{display:inline!important;font:
 html:root body #casinoModal .sp2 .pz-lgl > .pz-star{width:32px;height:32px;font-size:17px;border-radius:10px}
 /* 2026-11-16 (propriétaire : « la recherche de Paris est coupée ») : la recherche commence sous l'en-tête (solde / Connexion). */
 html:root body #casinoModal .sp2 .pz-page > .pz-q:first-child,html:root body #casinoModal .sp2 .pz-page > :first-child > .pz-q:first-child{margin-top:var(--sp2-qtop,0px)}
+/* 2026-11-23 : choix du coupon → page du match */
+html:root body #casinoModal .sp2 .sp2-sel-t.go{cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:8px}
+html:root body #casinoModal .sp2 .sp2-sel-t.go:active{opacity:.65}
