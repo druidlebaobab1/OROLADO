@@ -1613,3 +1613,7 @@ html:root body #casinoModal .sp2 .pz-wa{background:#1DAA61;color:#fff;overflow:h
 html:root body #casinoModal .sp2 .pz-wa .pz-wai{width:21px;height:21px;flex:none;fill:currentColor;stroke:none;overflow:visible}
 html:root body #casinoModal .sp2 .pz-wa .pz-wai path{fill:currentColor;stroke:none}
 html:root body #casinoModal .sp2 .pz-wa .fit{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 2026-11-23 (propriétaire : « le trophée de Résultats est coupé en haut ») : de l'air au-dessus de l'en-tête Résultats
+   (le carré et son ombre ne touchent plus la ligne du haut) */
+html:root body #casinoModal .sp2 .pz-resq{padding-top:12px!important}
+html:root body #casinoModal .sp2 .pz-rhero{padding:2px 2px 2px!important;overflow:visible}

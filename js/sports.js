@@ -3174,7 +3174,7 @@
     }
     if ((b = t.closest('.pz-rres[data-rid]'))) { resMid = b.getAttribute('data-rid'); go('resm'); return; }
     if ((b = t.closest('[data-resmore]'))) { resMore = true; var cd2 = $('pzResD'); if (cd2) { cd2.innerHTML = resChips(); var nb2 = cd2.querySelector('[data-res="-7"]'); if (nb2) cd2.scrollLeft += nb2.getBoundingClientRect().left - cd2.getBoundingClientRect().left - 40; } return; }
-    if ((b = t.closest('[data-res]'))) { var rv = b.getAttribute('data-res'); resDay = rv === 'all' ? 'all' : +rv; paintResults(); return; }
+    if ((b = t.closest('[data-res]'))) { var rv = b.getAttribute('data-res'); resDay = rv === 'all' ? 'all' : +rv; paintResults(); try { var mbR = box.closest('.modal-box'); if (mbR && mbR.scrollTop < 160) mbR.scrollTop = 0; } catch (eR) { /* ignore */ } return; } // 2026-11-23 : en-tête Résultats jamais à moitié coupé
     if ((b = t.closest('[data-menu]'))) { menuAct(b.getAttribute('data-menu')); return; }
     if ((b = t.closest('[data-open]'))) { openMatch(b.getAttribute('data-open')); return; }
     // toute la ligne d'un match ouvre sa page (sauf la zone des cotes) : grande cible, plus de flèche minuscule
