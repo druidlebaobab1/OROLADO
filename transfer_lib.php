@@ -357,9 +357,16 @@ function orolado_xfer_history_rows(array $ids): array {
  */
 /** 2026-11-23 : les joueurs sont dans un OroladoMap (pas un tableau) — « (array) » donnait ses champs internes, pas les joueurs. */
 function orolado_xfer_user_ids(array $db): array {
-  $u = $db['users'] ?? [];
-  if (is_object($u) && method_exists($u, 'toArray')) $u = $u->toArray();
-  return is_array($u) ? array_map('strval', array_keys($u)) : [];
+  /* 2026-11-23 (b) (propriétaire : « le tableau admin est devenu lent ») : NE LIT PLUS tous les comptes (toArray lisait chaque
+     joueur à chaque ouverture du tableau). Les joueurs concernés se trouvent DANS les fichiers de transferts : propriétaire
+     noté (« uid »), destinataire (« to ») et envoyeur (« from ») de chaque ligne. */
+  $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer'; $ids = [];
+  foreach (glob($dir . DIRECTORY_SEPARATOR . '*.json') ?: [] as $f) {
+    $st = json_decode((string) @file_get_contents($f), true); if (!is_array($st)) continue;
+    if (!empty($st['uid'])) $ids[(string) $st['uid']] = 1;
+    foreach ((array) ($st['log'] ?? []) as $l) { if (!empty($l['to'])) $ids[(string) $l['to']] = 1; if (!empty($l['from'])) $ids[(string) $l['from']] = 1; }
+  }
+  return array_keys($ids);
 }
 function orolado_xfer_all(array $db): array {
   $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer';
