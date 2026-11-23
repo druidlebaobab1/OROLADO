@@ -11906,3 +11906,44 @@
   document.addEventListener('touchend', soon, { capture: true, passive: true });
   try { if (window.MutationObserver && document.body) new MutationObserver(hook).observe(document.body, { childList: true }); } catch (eB) { /* ignore */ }
 })();
+
+/* 2026-11-23 (propriétaire : « quand on touche une photo dans les messages, l'écran devient noir ») — VISIONNEUSE DE PHOTOS,
+   comme WhatsApp : la photo s'ouvre en grand PAR-DESSUS l'écran (position fixe, jamais en haut d'une liste défilée), un toucher
+   zoome ×2 (on peut alors la faire glisser), ✕ ou toucher le fond ferme. Pour : Écris-nous (équipe), groupes, Social. */
+(function () {
+  var st = document.createElement('style');
+  st.textContent = '#oroImgV{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}' +
+    '#oroImgV[hidden]{display:none!important}#oroImgV img{max-width:100vw;max-height:100%;max-height:100dvh;object-fit:contain;display:block;margin:auto;transition:none}' +
+    '#oroImgV.z{display:block}#oroImgV.z img{max-width:none;max-height:none;width:200vw;height:auto}' +
+    '#oroImgV .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font:700 22px/42px system-ui;text-align:center;z-index:2}' +
+    '#oroImgV .ld{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font:600 14px system-ui}';
+  (document.head || document.documentElement).appendChild(st);
+  var box = null;
+  function close() { if (!box) return; box.hidden = true; box.classList.remove('z'); box.innerHTML = ''; }
+  function show(src) {
+    if (!src) return;
+    if (!box) {
+      box = document.createElement('div'); box.id = 'oroImgV'; box.hidden = true; box.setAttribute('role', 'dialog');
+      document.body.appendChild(box);
+      box.addEventListener('click', function (e) {
+        if (e.target.closest('.x')) { close(); return; }
+        if (e.target.tagName === 'IMG') { box.classList.toggle('z'); return; } // toucher la photo : zoom ×2 / normal
+        close();
+      });
+    }
+    box.innerHTML = '<span class="ld">…</span><img alt=""><button type="button" class="x" aria-label="✕">✕</button>';
+    var im = box.querySelector('img');
+    im.onload = function () { var l = box.querySelector('.ld'); if (l) l.remove(); };
+    im.onerror = function () { var l = box.querySelector('.ld'); if (l) l.textContent = '⚠'; };
+    im.src = src; box.hidden = false; box.classList.remove('z'); box.scrollTop = 0;
+  }
+  window.D6 = window.D6 || {}; D6.imgView = show;
+  document.addEventListener('click', function (e) {
+    var im = e.target && e.target.closest ? e.target.closest('.lv-m img, img.lv-pimg, .sx-b img') : null;
+    if (!im || im.closest('#oroImgV')) return;
+    e.preventDefault(); e.stopPropagation();
+    show(im.currentSrc || im.getAttribute('src'));
+  }, true);
+  // bouton retour du téléphone : ferme la photo d'abord
+  window.addEventListener('popstate', function () { if (box && !box.hidden) close(); });
+})();
