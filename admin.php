@@ -4134,8 +4134,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <div class="lvC" id="lvChat" hidden role="dialog" aria-modal="true" aria-labelledby="lvName">
         <div class="lvC-top">
           <button type="button" class="lvC-back" id="lvBack" aria-label="Retour aux conversations">‹</button>
-          <span class="lvI-av" id="lvAv" aria-hidden="true"></span>
-          <div class="lvC-id"><b id="lvName">…</b><small id="lvSub"></small></div>
+          <span class="lvI-av lvC-prof" id="lvAv" aria-hidden="true"></span>
+          <div class="lvC-id lvC-prof" id="lvWho" role="button" tabindex="0" title="Voir la fiche du joueur (dépôts, retraits, affiliés…)"><b id="lvName">…</b><small id="lvSub"></small></div>
           <button type="button" class="lvC-unr" id="lvMarkUnread" title="Marquer comme non lu">Non lu</button>
           <button type="button" class="lvC-unr lvC-res" id="lvMarkRes" title="Marquer comme résolu">✓ Résolu</button>
         </div>
@@ -4175,6 +4175,9 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .lvA-tabs b{background:#F43F6E;color:#fff;border-radius:9px;padding:0 6px;font-size:.75rem}
     .lvA-tabs b:empty{display:none}
     /* 2026-10-23 — Social : liste des conversations (non lus en haut) + page de discussion plein écran (iPhone 375–430 px) */
+    #liveModal .lvC-prof{cursor:pointer;-webkit-tap-highlight-color:transparent}
+    #liveModal .lvC-prof:active{opacity:.7}
+    #liveModal #lvName::after{content:' ›';color:var(--gold);font-weight:900}
     #liveModal .lvI-search{display:block;width:100%!important;min-height:44px;margin:0 0 10px;font-size:16px!important}
     .lvI-list{display:flex;flex-direction:column;gap:6px;padding-bottom:20px}
     .lvI-sec{display:flex;align-items:center;gap:8px;margin:10px 2px 2px;font-size:.78rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#A5B4D8}
@@ -5933,6 +5936,11 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     $l('lvReps').innerHTML = j.reports.length ? j.reports.map(r => '<div class="lvA-post"><b>'+esc(r.by)+'</b> a signalé <b style="color:#FCA5A5">'+esc(r.who)+'</b> · <small class="muted">'+when(r.at)+'</small>'+(r.why?'<br>Motif : '+esc(r.why):'')+'<div class="muted" style="margin-top:4px;font-size:.8rem">'+r.snap.map(m => (m.f==='signalé'?'🚩 ':'• ')+esc(m.t)).join('<br>')+'</div></div>').join('') : '<p class="muted">Aucun signalement.</p>';
   }
   const tab = w => { $l('lvPaneMsg').hidden = w !== 'msg'; $l('lvPanePost').hidden = w !== 'post'; $l('lvPaneRep').hidden = w !== 'rep'; $l('lvTabMsg').classList.toggle('ok', w === 'msg'); $l('lvTabPost').classList.toggle('ok', w === 'post'); $l('lvTabRep').classList.toggle('ok', w === 'rep'); if (w === 'post') posts(); if (w === 'rep') reps(); };
+  // 2026-11-23 (propriétaire) : toucher le nom / la photo du joueur → sa fiche complète (dépôts, retraits, numéros,
+  // affiliés…), par-dessus la conversation ; la fermer ramène à la conversation.
+  const openProf = () => { if (cur) openUser(cur); };
+  $l('lvWho').onclick = openProf; $l('lvAv').onclick = openProf;
+  $l('lvWho').onkeydown = e => { if (e.key === 'Enter') openProf(); };
   const openInbox = () => { $l('liveModal').classList.add('on'); tab('msg'); list(); if (!qr.length) loadQr(); clearInterval(timer); timer = setInterval(() => { if ($l('lvChat').hidden && visible() && !$l('lvPaneMsg').hidden) list(); }, 20000); };
   $l('btnLiveA').onclick = openInbox;
   $l('closeLiveA').onclick = () => { $l('lvChat').hidden = true; clearInterval(chatTimer); cur = ''; $l('liveModal').classList.remove('on'); clearInterval(timer); };
