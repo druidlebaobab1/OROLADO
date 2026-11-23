@@ -737,7 +737,7 @@
     var list = '<div class="sp2-sels" id="spSels">' + slip.map(function (z, i) {
       var e = z.sb ? null : evById(z.ev), st = stOf(z);
       return '<div class="sp2-sel' + (z.closed || z.susp ? ' closed' : '') + (z.chg ? ' chg' : '') + '"><div class="sp2-sel-r"><span class="sp2-sel-ic">' + sico(z.sb ? spIco(spOf(z)) : e ? qKind(e) : 'autre') + '</span>' +
-        '<div class="sp2-sel-t"><b class="fit" dir="auto">' + esc(z.off ? z.l : z.closed ? x.closed : z.susp ? NX().susp : z.l) + '</b>' +
+        '<div class="sp2-sel-t' + (z.sb && z.fx ? ' go" data-gofx="' + esc(z.fx) + '" role="button" tabindex="0' : '') + '"><b class="fit" dir="auto">' + esc(z.off ? z.l : z.closed ? x.closed : z.susp ? NX().susp : z.l) + '</b>' +
           (z.off ? '<small class="pz-offst ' + esc(z.off) + '" dir="auto">' + IC.lock + esc(z.off === 'fin' ? (NX().ftS || NX().ft) + (z.osc ? ' · ' + z.osc[0] + '-' + z.osc[1] : '') : z.off === 'live' ? NX().nLive + (z.osc ? ' · ' + z.osc[0] + '-' + z.osc[1] : '') : x.closed) + '</small>' : '') + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '<small class="sp2-mkt fit" dir="auto">' + esc((z.lv ? NX().nLive + ' · ' : '') + (z.sb ? sbMkName(z.mk, z.h.n, z.a.n, spOf(z)) : mkt(e))) + '</small></div>' +
         '<em' + (z.chg && z.prev ? ' class="' + (z.odd > z.prev ? 'up' : 'dn') + '"' : '') + '>' + (z.closed || z.susp ? IC.lock : (z.chg && z.prev ? '<s>' + Number(z.prev).toFixed(2) + '</s>' : '') + Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>' +
         (each ? '<div class="sp2-ss"><label class="sp2-inw sm"><input data-st="' + i + '" inputmode="decimal" autocomplete="off" value="' + (st > 0 ? m2(st) : '') + '" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></label>' +
@@ -775,6 +775,8 @@
       clearArm = 0; slip = []; render(); // propriétaire : on reste sur le ticket (vide), pas de saut
     });
     box.querySelectorAll('.sp2-x').forEach(function (bt) { bt.addEventListener('click', function () { if (sending) return; slip.splice(+bt.getAttribute('data-i'), 1); render(); }); });
+    // 2026-11-23 (propriétaire) : toucher un choix du coupon ouvre directement la page de son match
+    box.querySelectorAll('[data-gofx]').forEach(function (el) { el.addEventListener('click', function () { if (sending) return; openMatch(el.getAttribute('data-gofx')); }); });
     var inp = $('spStake');
     var total = function () { return each ? slip.reduce(function (a, z) { return a + stOf(z); }, 0) : stake; };
     var upd = function () {
@@ -1407,7 +1409,11 @@
         var lift = app ? Math.max(0, Math.min(140, Math.round(mb.getBoundingClientRect().bottom - vis))) : 0;
         box.style.setProperty('--sp2-lift', lift + 'px');
         var top = box.getBoundingClientRect().top - mb.getBoundingClientRect().top + mb.scrollTop;
-        box.style.minHeight = Math.max(0, Math.round(mb.clientHeight - top - pb - lift)) + 'px';
+        /* 2026-11-23 (propriétaire : « sur l'appli iPhone, en repliant un championnat du Direct, la barre du bas monte ») : dans
+           l'appli iPhone, la barre est collée tout en bas (bottom:0, galaxy.css), sans la remontée « lift » ; la page courte doit
+           donc remplir jusqu'en bas elle aussi, sinon la barre suit le contenu et monte. */
+        var navFix = app && document.documentElement.classList.contains('is-ios');
+        box.style.minHeight = Math.max(0, Math.round(mb.clientHeight - top - pb - (navFix ? 0 : lift))) + 'px';
       }
     } catch (e) { /* ignore */ }
   }
@@ -2424,7 +2430,11 @@
     if (!r.ok || !r.mk.length) { gc.innerHTML = ''; mk.innerHTML = '<p class="pz-none">' + esc(f.live ? NX().susp : x.closedM) + '</p>'; mk.dataset.sig = ''; return; }
     var by = {}, fsp = spOf(f); r.mk.forEach(function (m) { var g = grpOf(m.mk, fsp); (by[g] = by[g] || []).push(m); });
     var gs = GRP.filter(function (g) { return by[g[0]]; });
-    if (!by[mGrp]) mGrp = gs[0][0];
+    /* 2026-11-23 (propriétaire : « dans Principaux, toutes les options du match ») : l'onglet Principaux montre TOUS les paris
+       (les principaux d'abord, puis buts, corners, mi-temps…) ; les autres onglets restent des raccourcis. */
+    if (gs.length > 1 && !by.main) gs.unshift(GRP[0]);
+    by.all = []; GRP.forEach(function (g) { if (by[g[0]]) by.all = by.all.concat(by[g[0]]); });
+    if (mGrp !== 'main' && !by[mGrp]) mGrp = gs[0][0];
     var gsig = gs.map(function (g) { return g[0]; }).join(',') + '|' + mGrp + '|' + lg();
     if (gc.dataset.sig !== gsig) {
       gc.dataset.sig = gsig;
@@ -2433,8 +2443,9 @@
       var gon = gc.querySelector('.on'); // la puce choisie reste visible dans sa rangée
       if (gon && gc.scrollWidth > gc.clientWidth) { var gr = gon.getBoundingClientRect(), cr = gc.getBoundingClientRect(); if (gr.left < cr.left || gr.right > cr.right) gc.scrollLeft += (gr.left + gr.width / 2) - (cr.left + cr.width / 2); }
     }
-    var msig = mGrp + '|' + by[mGrp].map(function (m) { return m.mk + ':' + fullO(m.mk, m.o).map(function (o) { return o[0]; }).join('.'); }).join(',') + '|' + lg();
-    if (mk.dataset.sig !== msig) { mk.dataset.sig = msig; mk.innerHTML = mkCards(by[mGrp], f); }
+    var cur = mGrp === 'main' ? by.all : by[mGrp];
+    var msig = mGrp + '|' + cur.map(function (m) { return m.mk + ':' + fullO(m.mk, m.o).map(function (o) { return o[0]; }).join('.'); }).join(',') + '|' + lg();
+    if (mk.dataset.sig !== msig) { mk.dataset.sig = msig; mk.innerHTML = mkCards(cur, f); }
     else patchAll(mk);
   }
   function mhHtml(f) {
@@ -2742,7 +2753,7 @@
     var blocks = [], byF = {};
     ms.forEach(function (m) { var p = mkParts(m.mk), key = p[1] !== '' && !/^(rm|ng|g10|gi|ngs|co3|psh|pst|pas)$/.test(p[0]) ? p[0] : m.mk; /* minute / ligne dans le titre : une section chacun */ if (!byF[key]) { byF[key] = { key: key, fam: p[0], m: [] }; blocks.push(byF[key]); } byF[key].m.push(m); });
     return blocks.map(function (B, i) {
-      var open = mkOpen[B.key] != null ? mkOpen[B.key] : (mGrp === 'main' || i < 3);
+      var open = mkOpen[B.key] != null ? mkOpen[B.key] : (mGrp === 'main' ? i < 30 : i < 3);
       var legend = LEG[B.fam] ? '<p class="pz-mkl"><span><b>1</b><span dir="auto">' + esc(f.h.n) + '</span></span><span><b>2</b><span dir="auto">' + esc(f.a.n) + '</span></span></p>' : '';
       var rows = B.m.map(function (m) {
         var ev = 'sb:' + f.id + ':' + m.mk, oo = fullO(m.mk, m.o), n = oo.length, s = !!m.s || !!(f.live && (f.susp || f.end));

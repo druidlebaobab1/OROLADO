@@ -2448,7 +2448,9 @@ function sb_live_store_odds(array $j, int $now): int {
       if ($jsd !== '') $od[$id]['jsd'] = $jsd;
       if ($dgt) $od[$id]['dgt'] = $dgt;
       if (!empty($o['blk']) && empty($old[$id]['blk'])) $jmp = $now;
-      if ($od[$id]['chg']) $jmp = $now; // score changé : 90 s de cadenas
+      // 2026-11-23 (propriétaire : « on ne peut plus parier en direct ») : score changé = cadenas de 90 s (gjmp) ; un saut de cote
+      // ou un passage en « bloqué » = 25 s seulement (jmp) — avant, 90 s relancées à chaque alerte : match fermé presque tout le temps
+      $gj = (int) ($old[$id]['gjmp'] ?? 0); if ($od[$id]['chg']) $gj = $now; if ($gj) $od[$id]['gjmp'] = $gj;
       // horloge : « 0:00 » du fournisseur lissé (petits écarts ignorés, jamais de saut quand « seconds » manque)
       // 2026-10-23 (mesures face à Flashscore, 7 matchs) : « seconds » du fournisseur n'est rafraîchi qu'~1 fois par minute ;
       // à chaque NOUVELLE valeur, « maintenant − seconds » tombe 15 à 23 s après le vrai « 0:00 » (puis l'image vieillit).
@@ -2495,7 +2497,8 @@ function sb_live_p1x2(array $row): ?array {
   $t = array_sum($inv); foreach ($inv as $k => $v) $inv[$k] = $v / $t;
   return $inv;
 }
-const SB_LIVE_JUMP_LOCK = 90; // secondes de cadenas après un saut de cote, un passage en « bloqué » ou un changement de score (propriétaire : « même 1 min 30, ce n'est pas grave »)
+const SB_LIVE_JUMP_LOCK = 25; // 2026-11-23 : secondes de cadenas après un saut de cote ou un passage en « bloqué » (avant 90 : le direct était presque toujours fermé)
+const SB_LIVE_GOAL_LOCK = 90; // secondes de cadenas après un changement de score (inchangé)
 function sb_live_budget_ok(int $now, int $left = -1): bool { return sb_budget($now)['left'] > ($left < 0 ? sb_live_reserve($now) : $left); }
 /** 2026-10-25 : réserve gardée pour l'avant-match et les résultats : 1 000 le matin, de moins en moins vers 0 h UTC (au moins 300). */
 function sb_live_reserve(int $now): int { return max(300, (int) ceil(SB_LIVE_RESERVE * (86400 - ($now % 86400)) / 86400)); }
@@ -2713,7 +2716,7 @@ function sb_live_view(string $id, array $L, int $now, array $cfg): ?array {
   }
   // cotes de ce match en retard de plus de 90 s sur les autres matchs du flux (fournisseur figé pour ce match) → cadenas
   $odStale = is_array($od) && (int) ($od['lag'] ?? 0) > 180; // (un match calme n'a pas de raison de changer de cote : seulement un flux vraiment figé)
-  $jumped = is_array($od) && (int) ($od['jmp'] ?? 0) > $now - SB_LIVE_JUMP_LOCK;
+  $jumped = is_array($od) && ((int) ($od['jmp'] ?? 0) > $now - SB_LIVE_JUMP_LOCK || (int) ($od['gjmp'] ?? 0) > $now - SB_LIVE_GOAL_LOCK);
   // 2026-10-22 (propriétaire : « à la mi-temps tout est verrouillé ») : à la mi-temps rien ne se passe et chaque pari est
   // contrôlé 15 s → ni « cotes qui ne bougent plus », ni pause du fournisseur, ni saut ne verrouillent pendant la pause.
   if ($st === 'HT') { $odStale = false; $jumped = false; }
@@ -2928,7 +2931,7 @@ function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?
   foreach ($picked as $p) if (!empty($p['lv'])) $ids[] = (int) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']);
   $L0 = sb_live_data(); $base = [];
   foreach (array_unique($ids) as $id) $base[(string) $id] = sb_live_p1x2((array) ($L0['od'][(string) $id]['r1'] ?? []));
-  $t = $now; $done = 0; $seen = 0; $hold = sb_live_hold(array_unique($ids), $L0);
+  $t = $now; $done = 0; $seen = 0; $extra = 0; $hold = sb_live_hold(array_unique($ids), $L0);
   if (function_exists('set_time_limit')) @set_time_limit(90);
   while ($done < $hold) {
     $step = min(SB_LIVE_STEP, $hold - $done);
@@ -2937,6 +2940,13 @@ function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?
     $fx = sb_live_fx_fresh($ids, $t);
     if (count($fx) >= count(array_unique($ids))) $seen++;
     $r = sb_live_check($picked, $acc, $user, $t, $fx, $done >= $hold, $base);
+    /* 2026-11-23 (propriétaire : « même au changement de cote, ça refuse ») : une simple suspension (attaque, cote qui bouge —
+       sans but, carton rouge, vidéo ni gros saut du 1 · X · 2) n'annule plus le pari : on continue les contrôles ; à la fin,
+       le match doit être rouvert (jusqu'à 2 contrôles de plus), sinon refus. But / carton rouge / VAR / score : refus immédiat. */
+    if ($r !== null && ($r['reason'] ?? '') === 'susp' && empty($r['why']) && $extra < 2) {
+      if ($done >= $hold) { $extra++; $hold += SB_LIVE_STEP; }
+      continue;
+    }
     if ($r !== null) { $now = $t; return $r; }
   }
   $now = $t;
