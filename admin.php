@@ -438,9 +438,9 @@ function admin_persist_admin_log(string $adminEmail, string $targetPid, string $
   });
 }
 
-function admin_badges(): array {
-  $cached = admin_cache_get('badges_epoch4', 25); // 2026-11-23 : 25 s (avant 12) — calcul lourd (tous les joueurs)
-  if (is_array($cached) && isset($cached['inscrits'])) return $cached;
+// 2026-11-23 (propriétaire : « mon compte admin est lent ») : compteurs montrés tout de suite, recalculés après la réponse
+function admin_badges(): array { return admin_swr('badges_epoch5', 30, 'admin_badges_compute'); }
+function admin_badges_compute(): array {
   $people = admin_stat_people(admin_profiles()); // 2026-10-22 (propriétaire) : comptes admin (maison) hors de TOUS les chiffres
   $wds = admin_withdrawals();
   $deps = admin_deposits();

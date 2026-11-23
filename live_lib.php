@@ -348,6 +348,7 @@ function live_index_dirty_file(): string { return live_dir() . '/threads_dirty.l
 /** Note qu'une conversation a changé (ajout d'une ligne, sous verrou : rien ne se perd si deux écritures se croisent). */
 function live_index_dirty(string $uid): void {
   unset($GLOBALS['LIVE_IDX_MEMO']);
+  @unlink(live_dir() . '/unread_n.json'); // compteur des non lus recalculé à la prochaine demande
   @file_put_contents(live_index_dirty_file(), live_safe_id($uid) . "\n", FILE_APPEND | LOCK_EX);
 }
 
@@ -475,8 +476,12 @@ function live_threads(int $limit = 200): array {
 }
 
 function live_unread_admin(): int {
+  // 2026-11-23 (admin lent) : le petit compteur est gardé 20 s (avant : toutes les conversations relues à chaque ouverture)
+  $f = live_dir() . '/unread_n.json'; $c = is_file($f) ? json_decode((string) @file_get_contents($f), true) : null;
+  if (is_array($c) && (int) ($c['at'] ?? 0) > time() - 20 && !isset($GLOBALS['LIVE_IDX_MEMO'])) return (int) ($c['n'] ?? 0);
   $n = 0;
   foreach (live_index() as $r) if ((int) ($r['unread'] ?? 0) > 0) $n++;
+  @file_put_contents($f, json_encode(['at' => time(), 'n' => $n]), LOCK_EX);
   return $n;
 }
 
