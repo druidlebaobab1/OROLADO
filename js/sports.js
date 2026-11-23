@@ -2027,7 +2027,7 @@
   }
   function sugHtml() {
     var hasLive = (sugD.cp || []).some(function (c) { return /^live/.test(c.t); });
-    if (!sugD.cp || Date.now() - sugD.at > (hasLive ? 30000 : 120000)) { sugLoad().then(function () { if (alive() && view === 'home') { var bd = $('pzBody'); if (bd) bd.dataset.sig = ''; paintHome(); } }); if (!sugD.cp) return ''; }
+    if (!sugD.cp || Date.now() - sugD.at > (hasLive ? 90000 : 300000)) { sugLoad().then(function () { if (alive() && view === 'home') { var bd = $('pzBody'); if (bd) bd.dataset.sig = ''; paintHome(); } }); if (!sugD.cp) return ''; }
     sugC = sugD.cp.filter(function (c) { return c && SUGT[c.t] && Array.isArray(c.sel) && c.sel.length; });
     if (!sugC.length) return '';
     return '<section class="pz-blk pz-sug"><div class="pz-bh"><b dir="auto">🎯 ' + esc(T18('sbSugT', "Today's bets")) + '</b></div><div class="pz-sugs pz-hs">' + sugC.map(function (c, i) {
@@ -3182,7 +3182,8 @@
     if (view === 'home') return sbOn && sport === 'foot' && (per === 'top' || per === 'all') && !sbQ && liveShown() ? 12000 : 60000; // direct de l'accueil : mêmes cotes / cadenas que la page du match
     if (view === 'slip' && slip.some(function (s) { return s.lv; })) return 10000;
     // 2026-11-23 : Mes paris — un pari ouvert sur un match en cours : score, minute et ✓ / ✕ suivis toutes les 20 s
-    if (view === 'mine' && mineCache && mineCache.some(function (b) { return (b.status || 'open') === 'open'; })) return mineCache.some(function (b) { return (b.status || 'open') === 'open' && (b.sel || []).some(function (s) { return Array.isArray(s.cs); }); }) ? 30000 : 60000; // (offres de cash out à jour ; 2026-11-23 (c) : moins souvent, serveur moins chargé)
+    // 2026-11-23 (d) (serveur chargé) : Mes paris relu seulement s'il y a un pari ouvert sur un match EN COURS, toutes les 90 s
+    if (view === 'mine' && mineCache && mineCache.some(function (b) { return (b.status || 'open') === 'open' && (b.sel || []).some(function (s) { return Array.isArray(s.cs); }); })) return 90000;
     return -1;
   }
   function schedule(ms) {
@@ -3197,7 +3198,7 @@
     var v = view;
     try {
       if (v === 'live') { await liveProbe(true); if (view === 'live') paintLive(); }
-      else if (v === 'mine' && !coBusy && !coArm) { var mr = await loadMine(); if (mr) { mineCache = mr; await coLoad(); } if (mr && view === 'mine' && !delMode && !coBusy && !coArm) { paintMine(); delPaint(); } }
+      else if (v === 'mine' && !coBusy && !coArm) { var mr = await loadMine(); if (mr) { mineCache = mr; if (Date.now() - coAt > 180000) await coLoad(); } if (mr && view === 'mine' && !delMode && !coBusy && !coArm) { paintMine(); delPaint(); } }
       else if (v === 'fav') { await favLoad(true); if (view === 'fav') paintFav(); }
       else if (v === 'match') { await loadMatch(sbMid, false); }
       else if (v === 'home' && sbOn) {
@@ -3266,10 +3267,11 @@
   /* 2026-11-23 (propriétaire : « oui pour le cash out ») — offres d'encaissement des coupons ouverts (spCashQ), relues avec
      « Mes paris » ; 1er toucher = « Confirmer 9,20 $ », 2e toucher (dans les 4 s) = encaisser (spCash, contrôle du direct côté
      serveur, sans compte à rebours : le bouton clignote « … »). */
-  var coQ = {}, coArm = '', coArmT = 0, coBusy = false;
+  var coQ = {}, coArm = '', coArmT = 0, coBusy = false, coAt = 0;
   async function coLoad() {
     var ids = (mineCache || []).filter(function (b) { return (b.status || 'open') === 'open' && b.co == null && (b.sel || []).every(function (q) { return !!q.mk; }); }).slice(0, 30).map(function (b) { return b.id; });
     if (!ids.length) { coQ = {}; return false; }
+    coAt = Date.now();
     var r = null; try { r = await D6.Api.post('spCashQ', { ids: ids }, 15000); } catch (e) { r = null; }
     if (!r || !r.ok) return false;
     var nq = r.q || {}, chg = JSON.stringify(nq) !== JSON.stringify(coQ); coQ = nq; return chg;

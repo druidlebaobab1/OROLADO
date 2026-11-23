@@ -1976,7 +1976,7 @@ function sb_suggest(?array $user, int $tz = 0, int $now = 0): array {
     return $cp;
   };
   $pre = $get('suggest-pre.json', 300, static fn() => sb_suggest_pre(0, $now, true));
-  $live = sb_live_visible($user) ? $get('suggest-live.json', 20, static fn() => sb_suggest_live($now)) : [];
+  $live = sb_live_visible($user) ? $get('suggest-live.json', 60, static fn() => sb_suggest_live($now)) : [];
   return ['ok' => true, 'cp' => array_merge($live, $pre)];
 }
 /** Choix proposables d'un match d'avant-match (cotes actuelles du serveur). */
