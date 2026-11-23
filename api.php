@@ -340,6 +340,7 @@ $OROLADO_RATE_RULES = [
   'sbLive'            => [['i', 240, 60]],
   'sbStats'           => [['i', 120, 60]],
   'sbForm'            => [['i', 60, 60]],
+  'sbSuggest'         => [['i', 60, 60]],
   'sbUnk'             => [['i', 30, 60]],
   'sbResults'         => [['i', 120, 60]],
   'sbCodeSave'        => [['t', 30, 600], ['i', 400, 600]],
@@ -498,6 +499,15 @@ if ($action === 'sbUnk') {
   exit;
 }
 // 2026-11-23 — forme des équipes et face-à-face d'un match (sb_form)
+// 2026-11-23 — coupons proposés par le système (sb_suggest)
+if ($action === 'sbSuggest') {
+  if (!function_exists('sb_suggest')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  $me = $token !== '' ? session_user($db, $token) : null;
+  try { $res = sb_suggest($me ?: null, (int) ($req['tz'] ?? 0)); }
+  catch (Throwable $eSb) { error_log('OROLADO sbSuggest ' . $eSb->getMessage()); $res = ['ok' => false, 'reason' => 'busy']; }
+  echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
 if ($action === 'sbForm') {
   if (!function_exists('sb_form')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
   $me = $token !== '' ? session_user($db, $token) : null;

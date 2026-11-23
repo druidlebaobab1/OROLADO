@@ -1509,3 +1509,4 @@ html:root body #casinoModal .sp2.pz-navh .pz-nav,html:root body #casinoModal .sp
 html:root body #casinoModal .sp2 .pz-v-mine > .pz-bar,html:root body #casinoModal .sp2 .pz-v-slip > .pz-bar{padding-top:8px}
 html:root body #casinoModal .sp2 .pz-bar .sp2-clear{background:#DC2626!important;color:#fff!important;border-color:#DC2626!important;box-shadow:0 3px 10px rgba(220,38,38,.35)!important}
 html:root body #casinoModal .sp2 .pz-bar .sp2-clear .sp2-i,html:root body #casinoModal .sp2 .pz-bar .sp2-clear svg{color:#fff!important;stroke:#fff!important}
+html:root body #casinoModal .sp2 .pz-sugm{margin:0;color:var(--pz-mute);font:800 12px/1 var(--sp2-font)}

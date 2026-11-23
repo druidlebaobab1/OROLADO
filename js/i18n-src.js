@@ -4584,6 +4584,21 @@
     hi: { sbSugT: "आज के कूपन", sbSugFav: "पसंदीदा", sbSugBig: "बड़ा ऑड", sbSugLive: "लाइव", sbSugGo: "यह कूपन लगाएँ" },
   };
   Object.keys(SBS_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBS_TR[l]); });
+  var SBS2_TR = {
+    fr: { sbSugSafe: "Sûr", sbSugGoals: "Buts" },
+    en: { sbSugSafe: "Safe", sbSugGoals: "Goals" },
+    es: { sbSugSafe: "Seguro", sbSugGoals: "Goles" },
+    pt: { sbSugSafe: "Seguro", sbSugGoals: "Gols" },
+    ar: { sbSugSafe: "آمن", sbSugGoals: "أهداف" },
+    tr: { sbSugSafe: "Garanti", sbSugGoals: "Goller" },
+    vi: { sbSugSafe: "An toàn", sbSugGoals: "Bàn thắng" },
+    id: { sbSugSafe: "Aman", sbSugGoals: "Gol" },
+    ru: { sbSugSafe: "Надёжный", sbSugGoals: "Голы" },
+    de: { sbSugSafe: "Sicher", sbSugGoals: "Tore" },
+    zh: { sbSugSafe: "稳健", sbSugGoals: "进球" },
+    hi: { sbSugSafe: "सुरक्षित", sbSugGoals: "गोल" },
+  };
+  Object.keys(SBS2_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBS2_TR[l]); });
   // 2026-10-22 (propriétaire) — Paris : section des prédictions. NOM AFFICHÉ = PRED_NAME (un seul endroit, le même mot dans les 12 langues).
   var PRED_NAME = 'Predict';
   var PRED_TR = {

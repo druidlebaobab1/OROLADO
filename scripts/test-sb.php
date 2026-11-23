@@ -138,6 +138,31 @@ check('fuseau Népal (+345 min) : 9002 (20:00 UTC = 01:45 locale) passe à demai
 $M = sb_match($uadm, 'foot:9001', $NOW);
 check('sbMatch : fx + mk[{mk,o,s}] + règles', $M['ok'] && $M['fx']['id'] === 'foot:9001' && $M['mk'][0]['mk'] === '1x2' && $M['mk'][0]['s'] === 0 && count($M['mk']) === count($m1) && str_contains($M['rules'], '48 h'));
 check('sbMatch : joueur refusé (admin seul)', sb_match($ua, 'foot:9001', $NOW)['ok'] === false);
+// 2026-11-23 — coupons proposés (sbSuggest) : matchs du jour, cotes actuelles du serveur, choix valides (repris par sb_pick)
+$SG = sb_suggest($uadm, 0, $NOW); $sgOk = $SG['ok'] === true; $sgAll = true; $sgN = 0;
+foreach ((array) ($SG['cp'] ?? []) as $cp) foreach ($cp['sel'] as $z) { $sgN++; $pk = sb_pick($z['ev'], $z['k'], $uadm, $NOW); if (empty($pk['ok']) || abs((float) $pk['sel']['odd'] - (float) $z['odd']) > 0.001) $sgAll = false; }
+check('coupons proposés : réponse ok, chaque choix existe au même prix (sb_pick)', $sgOk && $sgAll, json_encode($SG));
+check('coupons proposés : refusés pour un joueur tant que Paris n\'est pas public', sb_suggest($ua, 0, $NOW)['ok'] === false);
+$sgIds = []; foreach ((array) ($SG['cp'] ?? []) as $cp) { $ids = array_column($cp['sel'], 'fx'); if (count($ids) !== count(array_unique($ids))) $sgIds[] = $cp['t']; }
+check('coupons proposés : jamais deux fois le même match dans un coupon', !$sgIds, implode(',', $sgIds));
+// … avec 8 matchs du jour ajoutés (cotes variées) : coupons Sûr / Favoris / Buts / Grosse cote, choix mélangés, cotes dans les bornes
+$day = gmdate('Y-m-d', $NOW); $tmpIds = [];
+for ($q = 0; $q < 8; $q++) {
+  $id = (string) (9700 + $q); $tmpIds[] = $id; $fh = 1.30 + $q * 0.07;
+  sb_with(sb_day_file($day), static function (array &$s) use ($id, $NOW, $q) { $s['fx'][$id] = ['lg' => 39, 'ts' => $NOW + 3600 * (2 + $q), 'st' => 'NS', 'h' => [80000 + $q, 'Home' . $q, ''], 'a' => [81000 + $q, 'Away' . $q, ''], 'n' => 20, 'oat' => $NOW, 'o' => [['H', 1.5], ['D', 4], ['A', 6]]]; return true; });
+  sb_with('mk' . DIRECTORY_SEPARATOR . 'foot-' . $id . '.json', static function (array &$s) use ($NOW, $fh) { $s = ['at' => $NOW, 'mk' => ['1x2' => [['H', $fh], ['D', 4.1], ['A', 6.5]], 'dc' => [['HD', 1.16], ['HA', 1.2], ['DA', 2.4]], 'dnb' => [['H', 1.22], ['A', 4.4]],
+    'ou:1.5' => [['O', 1.25], ['U', 3.6]], 'ou:2.5' => [['O', 1.75], ['U', 2.0]], 'ou:3.5' => [['O', 2.9], ['U', 1.38]], 'btts' => [['Y', 1.8], ['N', 1.95]]]]; return true; });
+}
+@array_map('unlink', glob(sb_dir() . '/cache/suggest-*.json'));
+$SG = sb_suggest($uadm, 0, $NOW); $ty = array_column((array) ($SG['cp'] ?? []), 't'); $bounds = ['safe' => [1.15, 1.42], 'fav' => [1.25, 1.75], 'goals' => [1.45, 2.1], 'big' => [1.45, 2.2]]; $okB = true; $mix = [];
+foreach ((array) ($SG['cp'] ?? []) as $cp) { $mks = []; foreach ($cp['sel'] as $z) { $mks[$z['mk']] = 1; if ($z['odd'] < $bounds[$cp['t']][0] || $z['odd'] > $bounds[$cp['t']][1]) $okB = false; } $mix[$cp['t']] = count($mks); }
+check('coupons proposés (8 matchs du jour) : Sûr, Favoris, Buts, Grosse cote ; cotes dans les bornes', $ty === ['safe', 'fav', 'goals', 'big'] && $okB, json_encode($SG));
+check('coupons proposés : « Sûr » et « Grosse cote » mélangent les types de paris', ($mix['safe'] ?? 0) >= 2 && ($mix['big'] ?? 0) >= 2, json_encode($mix));
+$pkOk = true; foreach ((array) ($SG['cp'] ?? []) as $cp) foreach ($cp['sel'] as $z) { $pk = sb_pick($z['ev'], $z['k'], $uadm, $NOW); if (empty($pk['ok']) || abs((float) $pk['sel']['odd'] - (float) $z['odd']) > 0.001) $pkOk = false; }
+check('coupons proposés : chaque choix se parie tel quel (sb_pick, même cote)', $pkOk);
+check('coupons proposés : 4 / 5 / 4 / 6 choix au plus', array_map(static fn($c) => count($c['sel']), $SG['cp']) <= [4, 5, 4, 6] && count($SG['cp'][3]['sel'] ?? []) >= 4);
+foreach ($tmpIds as $id) { sb_with(sb_day_file($day), static function (array &$s) use ($id) { unset($s['fx'][$id]); return true; }); @unlink(sb_dir() . '/mk/foot-' . $id . '.json'); }
+@array_map('unlink', glob(sb_dir() . '/cache/suggest-*.json'));
 
 echo "4) Pari (sp_bet) : admin seul, contrôles\n";
 $o1 = $odd('9001', '1x2', 'H');
