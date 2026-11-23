@@ -3126,7 +3126,7 @@
     if (view === 'home') return sbOn && sport === 'foot' && (per === 'top' || per === 'all') && !sbQ && liveShown() ? 12000 : 60000; // direct de l'accueil : mêmes cotes / cadenas que la page du match
     if (view === 'slip' && slip.some(function (s) { return s.lv; })) return 10000;
     // 2026-11-23 : Mes paris — un pari ouvert sur un match en cours : score, minute et ✓ / ✕ suivis toutes les 20 s
-    if (view === 'mine' && mineCache && mineCache.some(function (b) { return (b.status || 'open') === 'open'; })) return mineCache.some(function (b) { return (b.status || 'open') === 'open' && (b.sel || []).some(function (s) { return Array.isArray(s.cs); }); }) ? 20000 : 45000; // (offres de cash out à jour)
+    if (view === 'mine' && mineCache && mineCache.some(function (b) { return (b.status || 'open') === 'open'; })) return mineCache.some(function (b) { return (b.status || 'open') === 'open' && (b.sel || []).some(function (s) { return Array.isArray(s.cs); }); }) ? 30000 : 60000; // (offres de cash out à jour ; 2026-11-23 (c) : moins souvent, serveur moins chargé)
     return -1;
   }
   function schedule(ms) {

@@ -46,6 +46,7 @@ function orolado_xfer_with(string $uid, callable $fn) {
   if (!is_array($st)) $st = [];
   $before = $st;
   $res = $fn($st);
+  if ($st !== $before) $st['uid'] = $uid; // 2026-11-23 : le propriétaire du fichier (la ronde de reprise n'a plus à lire tous les joueurs)
   if ($st !== $before) {
     rewind($fp);
     ftruncate($fp, 0);
@@ -201,8 +202,8 @@ function orolado_xfer_send(array $db, array $user, array $to, float $amount, int
   });
   $fromName = trim((string) ($user['displayName'] ?? $user['name'] ?? ''));
   orolado_xfer_history($uid, $ref, -$amount, 'transfer', 'Transfert envoyé à ' . orolado_xfer_label((string) ($to['name'] ?? ''), (string) ($to['id'] ?? '')));
-  // 3) Créditer l'ami (bonus ×2), une seule fois. En cas d'échec : réessayé plus tard (orolado_xfer_retry).
-  orolado_xfer_credit($db, $uid, $ref);
+  // 3) Créditer l'ami (bonus ×2), une seule fois. En cas d'échec : réessayé plus tard (orolado_xfer_retry / ronde automatique).
+  if (!orolado_xfer_credit($db, $uid, $ref)) orolado_xfer_flag($uid);
   return ['ok' => true, 'amount' => $amount, 'ref' => $ref, 'fromName' => $fromName];
 }
 
@@ -291,21 +292,27 @@ function orolado_xfer_retry(array $db, string $uid): void {
  * « Envoyer de l'argent ». Maintenant la ronde automatique (toutes les 2 min, après une réponse) les reprend tous, tout seule :
  * mêmes références uniques (jamais retiré ni crédité deux fois). Au plus 20 comptes par ronde.
  */
+function orolado_xfer_flag(string $uid): void {
+  $f = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer' . DIRECTORY_SEPARATOR . 'pending.json';
+  $p = json_decode((string) @file_get_contents($f), true); if (!is_array($p)) $p = [];
+  $p[$uid] = time(); @file_put_contents($f, json_encode($p), LOCK_EX);
+}
+/** Léger : ne lit QUE les comptes notés « en attente » (aucun envoi en attente = rien à faire, aucune lecture). */
 function orolado_xfer_retry_all(array $db): int {
-  $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer';
-  if (!is_dir($dir)) return 0;
-  $owner = [];
-  foreach (orolado_xfer_user_ids($db) as $uid) $owner[hash('sha256', 'xfer|' . $uid) . '.json'] = (string) $uid;
-  $n = 0;
-  foreach (glob($dir . DIRECTORY_SEPARATOR . '*.json') ?: [] as $f) {
-    $me = $owner[basename($f)] ?? ''; if ($me === '') continue;
-    $st = json_decode((string) @file_get_contents($f), true); if (!is_array($st)) continue;
-    $todo = false;
-    foreach ((array) ($st['log'] ?? []) as $l) if (($l['dir'] ?? '') === 'out' && (($l['state'] ?? '') === 'credit' || (($l['state'] ?? '') === 'debit' && (int) ($l['at'] ?? 0) < time() - 120))) { $todo = true; break; }
-    if (!$todo) continue;
-    try { orolado_xfer_retry($db, $me); } catch (Throwable $e) { /* jamais bloquant */ }
-    if (++$n >= 20) break;
+  $f = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'xfer' . DIRECTORY_SEPARATOR . 'pending.json';
+  if (!is_file($f)) return 0;
+  $p = json_decode((string) @file_get_contents($f), true); if (!is_array($p) || !$p) { @unlink($f); return 0; }
+  $n = 0; $left = [];
+  foreach (array_slice($p, 0, 20, true) as $uid => $at) {
+    $uid = (string) $uid;
+    try { orolado_xfer_retry($db, $uid); } catch (Throwable $e) { /* jamais bloquant */ }
+    $n++;
+    $st = orolado_xfer_read($uid); $still = false;
+    foreach ((array) ($st['log'] ?? []) as $l) if (($l['dir'] ?? '') === 'out' && in_array((string) ($l['state'] ?? ''), ['credit', 'debit'], true)) { $still = true; break; }
+    if ($still && (int) $at > time() - 7 * 86400) $left[$uid] = (int) $at;
   }
+  foreach (array_slice($p, 20, null, true) as $uid => $at) $left[(string) $uid] = (int) $at;
+  if ($left) @file_put_contents($f, json_encode($left), LOCK_EX); else @unlink($f);
   return $n;
 }
 
