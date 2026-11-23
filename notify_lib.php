@@ -167,7 +167,7 @@ function orolado_notify_reply(string $uid, string $msg, bool $photo = false): st
     $name = trim((string) ($u['displayName'] ?? $u['name'] ?? ''));
     $greet = $hi . ($name !== '' ? ' ' . $name : '') . ',';
     $body = trim($msg) !== '' ? trim($msg) : '📷';
-    if (mb_strlen($body) > 1500) $body = mb_substr($body, 0, 1500) . '…';
+    if (mb_strlen($body) > 4000) $body = mb_substr($body, 0, 4000) . '…';
     $e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     $url = 'https://orolado.com/?live=1';
     $html = '<!doctype html><html dir="' . ($lang === 'ar' ? 'rtl' : 'ltr') . '"><body style="margin:0;padding:0;background:#0F0B2A;">' .
