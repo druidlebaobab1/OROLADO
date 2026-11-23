@@ -1663,4 +1663,8 @@ html:root body #casinoModal .sp2 .sp2-bx .pz-bstb-t small{display:none!important
 html:root body #casinoModal .sp2 .sp2-bx .pz-bstb > em{font-size:13px!important;padding:3px 8px!important}
 /* match en direct dans une carte ouverte : on peut toucher la ligne pour voir le match */
 html:root body #casinoModal .sp2 .sp2-bx .pz-golv{cursor:pointer}
-html:root body #casinoModal .sp2 .sp2-bx .pz-golv .sp2-bst > small:first-child::after{content:" ›";color:var(--sp2-gold,#E0A824);font-weight:800}
+/* 2026-11-23 (b) : « En direct 40’ » toujours sur UNE ligne (l'ancienne règle .sp-rcpt-s span la mettait en colonne) */
+.sp-rcpt-card .sp-rcpt-s .sp-rcpt-live{display:block;white-space:nowrap}
+.sp-rcpt-card .sp-rcpt-s .sp-rcpt-live .mn{display:inline!important;flex:none!important;margin-inline-start:8px}
+/* Mes paris : « En cours » | « Pari simple » — vraie séparation (petit trait) */
+html:root body #casinoModal .sp2 .pz-b1 .pz-bk2{margin-inline-start:4px!important;padding-inline-start:12px!important;border-inline-start:1px solid rgba(255,255,255,.18)!important}
