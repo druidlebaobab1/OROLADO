@@ -4614,6 +4614,22 @@
     hi: { sbSugBank: "बड़े पसंदीदा", sbSugO15: "1.5 से ज़्यादा गोल" },
   };
   Object.keys(SBS3_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBS3_TR[l]); });
+  // 2026-11-23 (propriétaire) — Paris : résumé de Mes paris, partage du coupon (WhatsApp)
+  var SBR_TR = {
+    fr: { sbSumSt: "Misé", sbSumWon: "Gagné", sbSumNet: "Résultat", sbShare: "Partager", sbShareT: "Mon coupon OROLADO" },
+    en: { sbSumSt: "Staked", sbSumWon: "Won", sbSumNet: "Result", sbShare: "Share", sbShareT: "My OROLADO bet slip" },
+    es: { sbSumSt: "Apostado", sbSumWon: "Ganado", sbSumNet: "Resultado", sbShare: "Compartir", sbShareT: "Mi cupón OROLADO" },
+    pt: { sbSumSt: "Apostado", sbSumWon: "Ganho", sbSumNet: "Resultado", sbShare: "Partilhar", sbShareT: "O meu bilhete OROLADO" },
+    ar: { sbSumSt: "المراهَن", sbSumWon: "الربح", sbSumNet: "النتيجة", sbShare: "مشاركة", sbShareT: "قسيمتي على OROLADO" },
+    tr: { sbSumSt: "Yatırılan", sbSumWon: "Kazanılan", sbSumNet: "Sonuç", sbShare: "Paylaş", sbShareT: "OROLADO kuponum" },
+    vi: { sbSumSt: "Đã cược", sbSumWon: "Đã thắng", sbSumNet: "Kết quả", sbShare: "Chia sẻ", sbShareT: "Phiếu cược OROLADO của tôi" },
+    id: { sbSumSt: "Dipasang", sbSumWon: "Menang", sbSumNet: "Hasil", sbShare: "Bagikan", sbShareT: "Kupon OROLADO saya" },
+    ru: { sbSumSt: "Поставлено", sbSumWon: "Выиграно", sbSumNet: "Итог", sbShare: "Поделиться", sbShareT: "Мой купон OROLADO" },
+    de: { sbSumSt: "Eingesetzt", sbSumWon: "Gewonnen", sbSumNet: "Ergebnis", sbShare: "Teilen", sbShareT: "Mein OROLADO-Wettschein" },
+    zh: { sbSumSt: "投注", sbSumWon: "赢得", sbSumNet: "结果", sbShare: "分享", sbShareT: "我的 OROLADO 投注单" },
+    hi: { sbSumSt: "लगाया", sbSumWon: "जीता", sbSumNet: "नतीजा", sbShare: "शेयर करें", sbShareT: "मेरा OROLADO कूपन" },
+  };
+  Object.keys(SBR_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBR_TR[l]); });
   // 2026-10-22 (propriétaire) — Paris : section des prédictions. NOM AFFICHÉ = PRED_NAME (un seul endroit, le même mot dans les 12 langues).
   var PRED_NAME = 'Predict';
   var PRED_TR = {

@@ -510,11 +510,21 @@
       '<div class="sp2-perc pz-hs" id="spMfPer">' + per.map(function (o) { return '<button type="button" data-mper="' + o[0] + '" class="' + (MF.per === o[0] ? 'on' : '') + (o[0] === 'day' ? ' dy' : '') + '">' + (o[0] === 'day' ? IC.cal : '') + '<span dir="auto">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
       '<div class="sp2-days pz-hs" id="spMfDays"' + (MF.per === 'day' ? '' : ' hidden') + '>' + mDays() + '</div></div>';
   }
+  /* 2026-11-23 (propriétaire : « oui, le résumé ») : une ligne au-dessus des paris de la période choisie — misé, gagné (paiements
+     et cash out compris), résultat des paris terminés. Un simple compteur, aucun bonus. */
+  function mineSum() {
+    var L = filt(mineCache || [], true); if (!L.length) return '';
+    var st = 0, won = 0, doneSt = 0;
+    L.forEach(function (b) { var s0 = +b.stake || 0, w = b.co != null ? +b.co : +b.win || 0; if (b.status === 'void') return; st += s0; won += w; if (b.status !== 'open') doneSt += s0; });
+    var net = Math.round((won - doneSt) * 100) / 100;
+    return '<div class="pz-msum"><p><small dir="auto">' + esc(T18('sbSumSt', 'Staked')) + '</small><b dir="ltr">' + money(st) + '</b></p><p><small dir="auto">' + esc(T18('sbSumWon', 'Won')) + '</small><b dir="ltr" class="w">' + money(won) + '</b></p>' +
+      '<p><small dir="auto">' + esc(T18('sbSumNet', 'Result')) + '</small><b dir="ltr" class="' + (net >= 0 ? 'w' : 'l') + '">' + (net >= 0 ? '+' : '−') + money(Math.abs(net)) + '</b></p></div>';
+  }
   function paintMine() {
     if (!$('spRcs')) return;
     var x = X(), c = counts(); shown = filt(mineCache);
     box.querySelectorAll('[data-mst]').forEach(function (b) { var n = b.querySelector('b'); if (n) n.textContent = String(c[b.getAttribute('data-mst')] || 0); });
-    $('spRcs').innerHTML = shown.length || !(mineCache && mineCache.length) ? receipts(shown) : '<p class="sp2-none"><span class="fit">' + esc(x.fNone) + '</span></p>';
+    $('spRcs').innerHTML = mineSum() + (shown.length || !(mineCache && mineCache.length) ? receipts(shown) : '<p class="sp2-none"><span class="fit">' + esc(x.fNone) + '</span></p>');
     bindRc(); fitAll($('spRcs'));
   }
   function bindMine() {
@@ -714,11 +724,12 @@
       '<div class="sp2-done-c"><p><span class="fit">' + esc(one ? x.stakeL : x.totSt) + '</span><b class="fit">' + money(tst) + '</b></p>' + (one ? '<p><span class="fit">' + esc(x.oddL) + '</span><b class="fit">' + Number(lb.odd).toFixed(2) + '</b></p>' : '') +
       '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b class="fit">' + money(tpot) + '</b></p></div>' +
       (one && lb.bst ? bstBanner(lb.bst, bstAmt(lb.stake, sp2Pot(lb.stake, lb.odd), lb.bst), 'done') : '') +
-      (one ? (lb.code ? '<button type="button" class="sp2-bcode sp2-done-code" data-cpc="' + esc(lb.code) + '"><small>' + esc(NX().betCode) + '</small><b dir="ltr">' + esc(lb.code) + '</b>' + CPIC + '</button>' : '<small class="sp2-done-id fit">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small>') : '') +
+      (one ? (lb.code ? '<button type="button" class="sp2-bcode sp2-done-code" data-cpc="' + esc(lb.code) + '"><small>' + esc(NX().betCode) + '</small><b dir="ltr">' + esc(lb.code) + '</b>' + CPIC + '</button><button type="button" class="pz-wa" id="spWaDone">' + WAIC + '<span class="fit">' + esc(T18('sbShare', 'Share')) + '</span></button>' : '<small class="sp2-done-id fit">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small>') : '') +
       '<div class="sp2-done-b">' + (one ? '<button type="button" class="sp2-cta" id="spSeeRc"><span class="fit">' + esc(x.rcSee) + '</span></button>' : '') +
       '<div><button type="button" class="sp2-cta2" id="spSeeMine"><span class="fit">' + esc(x.mine) + '</span></button><button type="button" class="sp2-cta2" id="spCont"><span class="fit">' + esc(x.cont) + '</span></button></div></div></div></div>');
     slipTop(); fitAll(box);
     if ($('spSeeRc')) $('spSeeRc').addEventListener('click', function () { showReceipt(lb); });
+    if ($('spWaDone')) $('spWaDone').addEventListener('click', function () { shareSlip(lb.code, (lb.sel || []).map(function (s0) { return { l: selLbl(s0), t: s0.t, odd: s0.odd }; }), lb.odd); });
     box.querySelectorAll('.sp2-done [data-cpc]').forEach(function (b) { b.addEventListener('click', function () { copyTx(codeLink(b.getAttribute('data-cpc'))); }); });
     $('spSeeMine').addEventListener('click', function () { lastBet = null; lastBets = null; view = 'mine'; render(); });
     $('spCont').addEventListener('click', backToList);
@@ -1315,6 +1326,48 @@
   // ---------- code de coupon ----------
   function slipSig() { return slip.map(function (s) { return s.ev + '|' + s.k; }).join(','); }
   function codeLink(c) { return 'https://orolado.com/?code=' + c; }
+  /* 2026-11-23 (propriétaire : « partage WhatsApp en image, bien stylé, sans rien déranger ») — une image du coupon (matchs,
+     choix, cotes, cote totale, gros code, lien) faite dans le téléphone ; partage du téléphone (WhatsApp, Telegram…) avec
+     l'image + le lien ; sinon WhatsApp avec le texte et le lien. Rien n'est envoyé au serveur. */
+  var WAIC = '<svg class="sp2-i pz-wai" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2a8.7 8.7 0 0 0-7.5 13.1L3.3 20.8l4.6-1.2A8.7 8.7 0 1 0 12 3.2z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.9 7.9c-.3 0-.6.1-.8.4-.3.4-.8 1-.8 2.2s.9 2.4 1 2.6c.1.2 1.8 2.8 4.4 3.8 2.2.8 2.6.6 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.5-.3l-1.7-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.1-.2 0-.4.1-.5l.5-.6c.1-.2.2-.3.3-.5v-.5l-.8-1.9c-.2-.4-.4-.4-.6-.4h-.5z" fill="currentColor"/></svg>';
+  function shareImg(code, rows, odd) {
+    var W = 1080, P = 64, RH = 132, n = Math.min(rows.length, 12), H = 245 + n * RH + 420;
+    var c = document.createElement('canvas'); c.width = W; c.height = H; var g = c.getContext('2d');
+    var font = function (w, sz) { return w + ' ' + sz + 'px "Hanken Grotesk", "Segoe UI", Roboto, Arial, sans-serif'; };
+    var bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1F170A'); bg.addColorStop(1, '#0B0906'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgba(224,168,46,.10)'; g.beginPath(); g.arc(W - 120, 120, 260, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#F5C542'; g.font = font(900, 64); g.textBaseline = 'alphabetic'; g.fillText('OROLADO', P, 120);
+    g.fillStyle = '#E8DFC8'; g.font = font(700, 40); g.fillText(T18('sbShareT', 'My OROLADO bet slip'), P, 190);
+    g.fillStyle = 'rgba(255,255,255,.06)'; if (g.roundRect) { g.beginPath(); g.roundRect(P - 16, 230, W - 2 * P + 32, n * RH + 30, 36); g.fill(); } else g.fillRect(P - 16, 230, W - 2 * P + 32, n * RH + 30);
+    var clip = function (t, mw) { t = String(t || ''); if (g.measureText(t).width <= mw) return t; while (t.length > 1 && g.measureText(t + '…').width > mw) t = t.slice(0, -1); return t + '…'; };
+    rows.slice(0, n).forEach(function (r, i) {
+      var y = 245 + i * RH;
+      if (i) { g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(P, y, W - 2 * P, 2); }
+      g.fillStyle = '#FFFFFF'; g.font = font(800, 42); g.fillText(clip(r.l, W - 2 * P - 220), P + 10, y + 62);
+      g.fillStyle = '#B8AA8A'; g.font = font(600, 32); g.fillText(clip(r.t, W - 2 * P - 220), P + 10, y + 108);
+      g.fillStyle = '#F5C542'; g.font = font(900, 48); g.textAlign = 'right'; g.fillText(Number(r.odd).toFixed(2), W - P - 10, y + 82); g.textAlign = 'left';
+    });
+    var y0 = 245 + n * RH + 70;
+    g.fillStyle = '#E8DFC8'; g.font = font(700, 38); g.fillText((XX().totalOdd || 'Total odds'), P, y0);
+    g.fillStyle = '#4ADE80'; g.font = font(900, 64); g.textAlign = 'right'; g.fillText(Number(odd).toFixed(2), W - P, y0 + 8); g.textAlign = 'left';
+    var yc = y0 + 60; g.fillStyle = '#F5C542'; if (g.roundRect) { g.beginPath(); g.roundRect(P, yc, W - 2 * P, 150, 30); g.fill(); } else g.fillRect(P, yc, W - 2 * P, 150);
+    g.fillStyle = '#1A1205'; g.font = font(700, 34); g.fillText((NX().betCode || 'Code'), P + 40, yc + 62);
+    g.font = font(900, 76); g.textAlign = 'right'; g.fillText(String(code).split('').join(' '), W - P - 40, yc + 108); g.textAlign = 'left';
+    g.fillStyle = '#B8AA8A'; g.font = font(700, 34); g.textAlign = 'center'; g.fillText('orolado.com/?code=' + code, W / 2, yc + 220); g.textAlign = 'left';
+    return c;
+  }
+  function shareSlip(code, rows, odd) {
+    if (!code) return;
+    var link = codeLink(code), msg = '🎯 ' + T18('sbShareT', 'My OROLADO bet slip') + ' · ' + rows.length + ' · ' + (XX().oddL || 'Odds') + ' ' + Number(odd).toFixed(2) + '\n' + (NX().betCode || 'Code') + ' : ' + code + '\n' + link;
+    var wa = function () { try { window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener'); } catch (e) { location.href = 'https://wa.me/?text=' + encodeURIComponent(msg); } };
+    var cv; try { cv = shareImg(code, rows, odd); } catch (e) { cv = null; }
+    if (!cv || !cv.toBlob || !navigator.share) { wa(); return; }
+    cv.toBlob(function (bl) {
+      var f = null; try { f = bl ? new File([bl], 'orolado-' + code + '.png', { type: 'image/png' }) : null; } catch (e) { f = null; }
+      if (f && navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f], text: msg }).catch(function (e) { if (!e || e.name !== 'AbortError') wa(); }); return; }
+      navigator.share({ text: msg, url: link }).catch(function (e) { if (!e || e.name !== 'AbortError') wa(); });
+    }, 'image/png');
+  }
   /* ======================================================================================================================
      2026-10-22 (propriétaire : « quand on touche Paris, ça doit ouvrir un MONDE : un vrai site de paris, calme, simple, pro »)
      PARIS v2 — barre du bas comme les grandes applis : Populaire · Direct · Coupon (au centre) · Mes paris · Menu.
@@ -3329,7 +3382,8 @@
     var x = SX(), n = NX();
     if (sbCode && sbCode.sig === slipSig()) {
       return '<div class="sb-cp1"><span>' + esc(n.betCode) + '</span><b dir="ltr">' + esc(sbCode.code) + '</b>' +
-        '<button type="button" id="sbCopy"><span>' + esc(x.copy) + '</span></button><button type="button" id="sbCodeX" aria-label="✕">' + IC.x + '</button></div>';
+        '<button type="button" id="sbCopy"><span>' + esc(x.copy) + '</span></button><button type="button" id="sbCodeX" aria-label="✕">' + IC.x + '</button></div>' +
+        '<button type="button" class="pz-wa pz-wa-s" id="sbWa">' + WAIC + '<span class="fit">' + esc(T18('sbShare', 'Share')) + '</span></button>';
     }
     return withShare ? '<button type="button" class="pz-lnk" id="sbShare">' + SBIC.share + '<span>' + esc(n.share) + '</span></button>' : '';
   }
@@ -3337,6 +3391,7 @@
     var x = SX(), sh = $('sbShare'), cp = $('sbCopy'), cx = $('sbCodeX'), w = $('sbCode'), share = view === 'menu';
     var redo = function () { if (w) { w.innerHTML = codeBox(share); bindCodeBox(); } };
     if (cx) cx.addEventListener('click', function () { sbCode = null; redo(); });
+    var wb = $('sbWa'); if (wb && sbCode) wb.addEventListener('click', function () { shareSlip(sbCode.code, slip.map(function (z) { return { l: z.l, t: z.t, odd: z.odd }; }), totalOdd()); });
     if (sh && !sh.dataset.b) sh.dataset.b = '1';
     else if (sh) sh = null; // déjà branché (bouton « Télécharger » hors de la boîte)
     if (sh) sh.addEventListener('click', async function () {
