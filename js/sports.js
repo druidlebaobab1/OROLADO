@@ -1409,7 +1409,11 @@
         var lift = app ? Math.max(0, Math.min(140, Math.round(mb.getBoundingClientRect().bottom - vis))) : 0;
         box.style.setProperty('--sp2-lift', lift + 'px');
         var top = box.getBoundingClientRect().top - mb.getBoundingClientRect().top + mb.scrollTop;
-        box.style.minHeight = Math.max(0, Math.round(mb.clientHeight - top - pb - lift)) + 'px';
+        /* 2026-11-23 (propriétaire : « sur l'appli iPhone, en repliant un championnat du Direct, la barre du bas monte ») : dans
+           l'appli iPhone, la barre est collée tout en bas (bottom:0, galaxy.css), sans la remontée « lift » ; la page courte doit
+           donc remplir jusqu'en bas elle aussi, sinon la barre suit le contenu et monte. */
+        var navFix = app && document.documentElement.classList.contains('is-ios');
+        box.style.minHeight = Math.max(0, Math.round(mb.clientHeight - top - pb - (navFix ? 0 : lift))) + 'px';
       }
     } catch (e) { /* ignore */ }
   }

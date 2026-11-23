@@ -540,14 +540,14 @@ check('score changé depuis la lecture précédente (but) : suspendu', $view($ba
 $alt['odds/live'] = $lodds(['g' => [2, 0]]); sb_live_refresh_now($base + 10);
 check('… et toujours tant que /fixtures dit encore 1-0', $view($base + 10)['susp'] === true);
 $alt['fixtures?live=all&timezone=UTC'] = $lfx(['g' => [2, 0], 'm' => 64]); sb_live_demand($base + 60); sb_live_tick($base + 60);
-sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp']); return true; }); // 90 s de cadenas passées (simulé)
+sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp'], $s['od'][$i]['gjmp']); return true; }); // 90 s de cadenas passées (simulé)
 check('scores d\'accord (2-0) : rouvert ; ou:1.5 retiré (déjà joué)', $view($base + 60)['susp'] === false && !isset($view($base + 60)['mk']['ou:1.5']));
 $alt['odds/live'] = $lodds(['ti' => [501, 999]]); sb_live_refresh_now($base + 62);
 check('équipes différentes dans /odds/live : jamais utilisé (suspendu)', $view($base + 62)['susp'] === true);
 $alt['odds/live'] = $lodds(['g' => [2, 0]]); sb_live_refresh_now($base + 64);
 sb_live_refresh_now($base + 66);
 
-sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp']); return true; }); // 90 s de cadenas passées (simulé)
+sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp'], $s['od'][$i]['gjmp']); return true; }); // 90 s de cadenas passées (simulé)
 // pari en direct : 8 s + relecture
 $B0 = $base + 66; $at(gmdate('Y-m-d H:i:s', $B0));
 $slept = [];
@@ -568,7 +568,7 @@ $next = $lodds(['g' => [2, 1]]);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $oH]], $B1);
 check('but pendant l\'attente : refusé « susp » dès le 1er contrôle (3 s), rien retiré', $r['ok'] === false && $r['reason'] === 'susp' && $slept === [3] && abs($bal[$A] - $b0) < 0.001, json_encode([$r, $slept]));
 
-$B2 = $B1 + 40; $at(gmdate('Y-m-d H:i:s', $B2)); $alt['odds/live'] = $lodds(['g' => [2, 1]]); $alt['fixtures?live=all&timezone=UTC'] = $lfx(['g' => [2, 1], 'm' => 66]); sb_live_demand($B2); sb_live_tick($B2); sb_live_refresh_now($B2 + 1); sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp']); return true; });
+$B2 = $B1 + 40; $at(gmdate('Y-m-d H:i:s', $B2)); $alt['odds/live'] = $lodds(['g' => [2, 1]]); $alt['fixtures?live=all&timezone=UTC'] = $lfx(['g' => [2, 1], 'm' => 66]); sb_live_demand($B2); sb_live_tick($B2); sb_live_refresh_now($B2 + 1); sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp'], $s['od'][$i]['gjmp']); return true; });
 $B2 += 1; $oH2 = (float) sb_pick('sb:foot:9101:1x2', 'H', $ua, $B2)['sel']['odd'];
 $next = $lodds(['g' => [2, 1], 'h' => '1.36']); // petite variation (une grosse = cadenas)
 $alt['fixtures?ids=9101'] = $fxIds([2, 1]); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
@@ -598,6 +598,17 @@ $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:btts', 'k' => 'N
 check('btts retiré à 2-1 (déjà joué) : refusé', $r['ok'] === false);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:ou:3.5', 'k' => 'U']], $B4, 'any');
 check('suspendu pendant les 5 s : refusé « susp »', $r['ok'] === false && $r['reason'] === 'susp', json_encode($r));
+// 2026-11-23 (propriétaire : « on ne peut plus parier en direct ») : suspension courte (attaque) pendant le contrôle, puis rouvert → accepté
+$seq = [$lodds(['g' => [2, 1], 'h' => '1.33', 'susp' => true]), $lodds(['g' => [2, 1], 'h' => '1.33'])]; $slept = [];
+$GLOBALS['SB_SLEEP'] = function (int $sec, int $now) use (&$slept, &$seq, &$alt) { $slept[] = $sec; $alt['odds/live'] = count($slept) === 1 ? $seq[0] : $seq[1]; $GLOBALS['SB_NOW'] = $now + $sec; return $now + $sec; };
+$alt['fixtures?ids=9101'] = $fxIds([2, 1]); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
+$B5 = $B4 + 40; $at(gmdate("Y-m-d H:i:s", $B5)); $alt["odds/live"] = $seq[1]; $alt["fixtures?live=all&timezone=UTC"] = $lfx(["g" => [2, 1], "m" => 67]); sb_live_demand($B5); sb_live_tick($B5); sb_live_refresh_now($B5); sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp'], $s['od'][$i]['gjmp']); return true; });
+$oH5 = (float) (sb_pick('sb:foot:9101:1x2', 'H', $ua, $B5)['sel']['odd'] ?? 0);
+$r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $oH5]], $B5, 'any');
+check('courte suspension pendant le contrôle puis rouvert : accepté (plus de refus pour une simple attaque)', $oH5 > 1 && ($r['ok'] ?? false) === true, json_encode([$r, $slept]));
+$GLOBALS['SB_SLEEP'] = function (int $sec, int $now) use (&$slept, &$next, &$alt) { $slept[] = $sec; if ($next !== null) $alt['odds/live'] = $next; $GLOBALS['SB_NOW'] = $now + $sec; return $now + $sec; };
+unset($alt['fixtures?ids=9101']); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
+check('verrou après une action dangereuse : 25 s (but : 90 s)', SB_LIVE_JUMP_LOCK === 25 && SB_LIVE_GOAL_LOCK === 90);
 $GLOBALS['SB_SLEEP'] = function (int $sec, int $now) use (&$slept) { $slept[] = $sec; $GLOBALS['SB_NOW'] = $now + $sec; return $now + $sec; };
 $alt['odds/live'] = $lodds(['g' => [2, 1], 'h' => '1.25']); $B5 = $B4 + 20; $at(gmdate('Y-m-d H:i:s', $B5)); sb_live_refresh_now($B5);
 check('pari sur le match AVANT-MATCH déjà commencé par le chemin direct seulement : marché hors direct (eh) refusé', sb_pick('sb:foot:9101:eh:-1', 'H', $ua, $B5)['ok'] === false);
