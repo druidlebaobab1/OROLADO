@@ -727,7 +727,7 @@
       if (!o) { g.fillStyle = MUTE; g.font = '500 ' + fs + 'px ' + FONT; g.fillText(ell(g, s.t, maxW), x0, y); return; }
       g.font = '800 ' + fs + 'px ' + FONT; var sw = g.measureText(o.sc).width;
       var fin = o.fin ? String(x.finL || 'FT').toUpperCase() : '', fw = 0;
-      if (fin) { g.font = '800 ' + (fs - 4) + 'px ' + FONT; fw = g.measureText(fin).width + 12 + 10; }
+      if (fin) { g.font = '800 ' + (fs - 5) + 'px ' + FONT; fw = g.measureText(fin).width + 10 + 8; }
       g.font = '500 ' + fs + 'px ' + FONT;
       var gap = 8, half = Math.max(30, (maxW - sw - 2 * gap - fw) / 2);
       var hT = ell(g, o.h, half), aT = ell(g, o.a, half), xx = x0;
@@ -735,9 +735,9 @@
       g.font = '800 ' + fs + 'px ' + FONT; g.fillStyle = INK; g.fillText(o.sc, xx, y); xx += sw + gap;
       g.font = '500 ' + fs + 'px ' + FONT; g.fillStyle = MUTE; g.fillText(aT, xx, y); xx += g.measureText(aT).width;
       if (fin) {
-        g.font = '800 ' + (fs - 4) + 'px ' + FONT; var tw = g.measureText(fin).width, bx2 = xx + 10, bh = fs + 2;
-        rr(g, bx2, y - bh / 2, tw + 12, bh, 4); g.fillStyle = '#475569'; g.fill();
-        g.fillStyle = '#FFFFFF'; g.textAlign = 'center'; g.fillText(fin, bx2 + (tw + 12) / 2, y + 0.5); g.textAlign = 'left';
+        g.font = '800 ' + (fs - 5) + 'px ' + FONT; var tw = g.measureText(fin).width, bx2 = xx + 8, bh = fs - 1;
+        rr(g, bx2, y - bh / 2, tw + 10, bh, 3); g.fillStyle = '#64748B'; g.fill();
+        g.fillStyle = '#FFFFFF'; g.textAlign = 'center'; g.fillText(fin, bx2 + (tw + 10) / 2, y + 0.5); g.textAlign = 'left';
       }
     };
     if (showScore) rowH = 80;
@@ -804,7 +804,7 @@
       g.textAlign = 'left';
       // 2026-10-31 (propriétaire) : AGENCEMENT IDENTIQUE À L'ÉCRAN → nom du match, puis choix, puis le carré
       // de score SOUS le choix (jamais à côté du match, donc jamais de croisement même si le match est long).
-      var scO = scOf(s), liveL = scO && !scO.fin ? String(x.liveL || 'Live') + (scO.min ? ' · ' + scO.min : '') : '';
+      var scO = scOf(s), liveL = scO && !scO.fin ? String(x.liveL || 'Live') + (scO.min ? '  ' + scO.min : '') : ''; // « En direct  90’ » (sans point)
       var matchY = liveL ? y + 17 : y + 19, pickY = liveL ? y + 39 : y + 41;
       matchLine(s, P, matchY, right - P - 4, 14);
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
