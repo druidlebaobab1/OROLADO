@@ -1502,3 +1502,10 @@ html:root body #casinoModal .sp2 .pz-sugl em{flex:none;color:#F5C542;font:800 13
 html:root body #casinoModal .sp2 .pz-sugb{margin:6px 0 0;height:38px;border:0;border-radius:10px;background:linear-gradient(180deg,#22C55E,#15803D);color:#fff;font:800 14px/1 var(--sp2-font)}
 html:root body #casinoModal .sp2 .pz-sug .pz-sugs{padding:4px 12px 12px!important;margin:0!important;scroll-padding-inline:12px}
 html:root body #casinoModal .sp2 .pz-sugc .pz-sugb{margin-top:auto!important}
+/* 2026-11-23 : la barre du bas se range quand on défile vers le bas (revient en remontant) */
+html:root body #casinoModal .sp2 .pz-nav{transition:transform .22s ease}
+html:root body #casinoModal .sp2.pz-navh .pz-nav,html:root body #casinoModal .sp2 .pz-navh .pz-nav{transform:translateY(calc(100% + 60px))}
+/* 2026-11-23 (propriétaire : « le bouton Supprimer en haut est un peu caché ») : Supprimer / Tout supprimer bien visibles, plus bas sous l'en-tête */
+html:root body #casinoModal .sp2 .pz-v-mine > .pz-bar,html:root body #casinoModal .sp2 .pz-v-slip > .pz-bar{padding-top:8px}
+html:root body #casinoModal .sp2 .pz-bar .sp2-clear{background:#DC2626!important;color:#fff!important;border-color:#DC2626!important;box-shadow:0 3px 10px rgba(220,38,38,.35)!important}
+html:root body #casinoModal .sp2 .pz-bar .sp2-clear .sp2-i,html:root body #casinoModal .sp2 .pz-bar .sp2-clear svg{color:#fff!important;stroke:#fff!important}
