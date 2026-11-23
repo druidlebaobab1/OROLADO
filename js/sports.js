@@ -471,7 +471,9 @@
     if (r === 'hwon' || r === 'hlost') r = r === 'hwon' ? 'won' : 'lost'; // ligne au quart : moitié gagnée / perdue (couleur du gain / de la perte)
     if (s.mk) { // 2026-10-22 : choix SB → choix en gras, match · marché en petit (traduits depuis mk / k)
       var tm = teams(s.t) || [s.t, ''];
-      return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(s.t) + '</small><b class="fit" dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="fit sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1], spOf(s))) + '</small>' + (s.fs || s.cs ? liveChip(s) : '') + '</div><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+      // 2026-11-23 (propriétaire) : match EN DIRECT → toucher la ligne ouvre la page du match (la flèche ˄ ferme toujours la carte)
+      var goF = s.fx && Array.isArray(s.cs) && !Array.isArray(s.fs) ? ' data-gofx="' + esc(s.fx) + '"' : '';
+      return '<div class="sp2-bs r-' + esc(r) + (goF ? ' pz-golv' : '') + '"' + goF + '><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(s.t) + '</small><b class="fit" dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="fit sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1], spOf(s))) + '</small>' + (s.fs || s.cs ? liveChip(s) : '') + '</div><em>' + Number(s.odd).toFixed(2) + '</em></div>';
     }
     return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst">' + linesHtml(e ? trT(e) : s.t, 'small', right ? 20 : 34, true) + '<b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
   }
@@ -482,7 +484,11 @@
   function rcBody(bt) {
     var x = XX();
     return '<div class="sp2-bx">' + bt.sel.map(selRow).join('') +
-      (bt.bst ? bstBanner(bt.bst, bt.status === 'won' ? (bt.bw || 0) : bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst), bt.status === 'won' ? 'won' : bt.status === 'lost' ? 'lost' : '') : '') +
+      (function () { // 2026-11-23 (propriétaire) : bandeau bonus seulement s'il y a un vrai montant (plus de « +0,00 $ »), petit
+        if (!bt.bst) return '';
+        var amt = bt.status === 'won' ? (bt.bw || 0) : bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst);
+        return amt >= 0.01 ? bstBanner(bt.bst, amt, bt.status === 'won' ? 'won' : bt.status === 'lost' ? 'lost' : '') : '';
+      })() +
       '<div class="sp2-bid">' + (bt.code ? '<button type="button" class="sp2-bcode" data-cpc="' + esc(bt.code) + '"><small>' + esc(NX().betCode) + '</small><b dir="ltr">' + esc(bt.code) + '</b>' + CPIC + '</button>' : '<span class="fit">#' + esc(String(bt.id || '').slice(-8).toUpperCase()) + '</span>') + '<button type="button" class="sp2-rcv" data-rcv="1"><span class="fit">' + esc(x.rcSee) + '</span>' + IC.back + '</button></div></div>';
   }
   /* v2790 (propriétaire) — MES PARIS : recherche par état (en cours, gagnés, perdus, remboursés) et par période
@@ -638,6 +644,7 @@
       var t = ev.target;
       if (t.closest('#spMore')) { rcLimit += 30; paintMine(); return; }
       if (t.closest('.pz-co')) return; // 2026-11-23 : bouton « Encaisser » (géré plus haut, n'ouvre pas la carte)
+      var gfx = t.closest('.sp2-bx [data-gofx]'); if (gfx) { openMatch(gfx.getAttribute('data-gofx')); return; } // match en direct → sa page
       var c = t.closest('.sp2-bet[data-rc]'); if (!c) return;
       var bt = (shown && shown.length ? shown : (mineCache || []))[+c.getAttribute('data-rc')]; if (!bt) return;
       if (t.closest('[data-rcv]')) { showReceipt(bt); return; }
@@ -679,7 +686,7 @@
         // (« Sochaux  2 – 3  Dunkerque ») ; match fini : petite étiquette FIN ; en direct : « En direct · 70’ » dessous.
         var tmR = teams(s.t), scR = Array.isArray(s.fs) ? s.fs : Array.isArray(s.cs) ? s.cs : null, finR = Array.isArray(s.fs);
         var mLine = tmR && scR ? esc(tmR[0]) + '<b class="sp-rcpt-sc" dir="ltr">' + (+scR[0] || 0) + ' – ' + (+scR[1] || 0) + '</b>' + esc(tmR[1]) + (finR ? '<em class="sp-rcpt-fin">' + esc(NX().ftS || NX().ft || 'FT') + '</em>' : '') : esc(s.t);
-        var fsTxt = !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? ' · <span dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
+        var fsTxt = !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? '<span class="mn" dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
 
         return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + mLine + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
@@ -3353,7 +3360,7 @@
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + (delSel[id] ? ' pz-dchk' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' + '<i class="pz-dck" aria-hidden="true"></i>' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
-          '<span class="pz-b1"><em class="sp2-pill' + (co ? ' pz-copill' : '') + '">' + esc(co ? T18('sbCoDone', 'Cashed out') : ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + ''/* v3316 (propriétaire) : logo cadeau rond retiré des cartes de paris (le bonus reste affiché dans la carte) */ + (st === 'open' && bt.sel.some(function (s) { return Array.isArray(s.cs); }) ? '<i class="pz-blv"><i></i>' + esc(n.live) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
+          '<span class="pz-b1"><em class="sp2-pill' + (co ? ' pz-copill' : '') + '">' + esc(co ? T18('sbCoDone', 'Cashed out') : ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + ''/* v3316 (propriétaire) : logo cadeau rond retiré des cartes de paris (le bonus reste affiché dans la carte) */ + ''/* 2026-11-23 (propriétaire) : plus de « EN DIRECT » rouge sur la carte (encombrait) */ + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
           (on ? '' : '<span class="pz-bsel">' + sels + '</span>') +
           '<span class="sp2-bf"><span><small class="fit">' + esc(x.stakeL) + '</small><b class="fit">' + money(bt.stake) + '</b></span><span><small class="fit">' + esc(x.oddL) + '</small><b class="fit">' + Number(bt.odd).toFixed(2) + '</b></span>' +
           '<span class="big"><small class="fit">' + esc(lab) + '</small><b class="fit">' + big + '</b></span><i class="sp2-chev">' + IC.back + '</i></span></button>' +
