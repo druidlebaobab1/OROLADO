@@ -2774,7 +2774,19 @@ function sb_live_fresh_first(int $now): void {
   $L = sb_live_data();
   if (empty($L['fx'])) return;
   if ($now - (int) ($L['at'] ?? 0) <= sb_live_stale($now) - 3) return;
-  try { sb_live_refresh_now($now); } catch (Throwable $e) { /* jamais bloquant */ }
+  /* 2026-11-23 (urgent : serveur bloqué) : JAMAIS d'attente — si une relecture est déjà en cours (ou a été tentée il y a moins
+     de 8 s), on répond tout de suite avec ce qu'on a. Avant : verrou bloquant + fournisseur lent = toutes les demandes en file. */
+  if (!sb_has_key() || !sb_live_budget_ok($now)) return;
+  $mark = sb_dir() . DIRECTORY_SEPARATOR . 'live-fresh.at';
+  if ((int) @file_get_contents($mark) > $now - 8) return;
+  $lk = @fopen(sb_dir() . DIRECTORY_SEPARATOR . 'live.lock', 'c');
+  if (!$lk) return;
+  if (!flock($lk, LOCK_EX | LOCK_NB)) { fclose($lk); return; }
+  @file_put_contents($mark, (string) $now);
+  try {
+    if ((int) (sb_live_data()['at'] ?? 0) < $now - 1) { $j = sb_get('odds/live', $now); if ($j !== null) sb_live_store_odds($j, $now); }
+  } catch (Throwable $e) { /* jamais bloquant */ }
+  finally { flock($lk, LOCK_UN); fclose($lk); }
 }
 function sb_live_refresh_now(int $now): bool {
   if (!sb_has_key() || !sb_live_budget_ok($now)) return false;
