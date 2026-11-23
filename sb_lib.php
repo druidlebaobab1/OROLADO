@@ -1948,13 +1948,23 @@ function sb_form(?array $user, string $fid, int $now = 0): array {
 function sb_suggest(?array $user, int $tz = 0, int $now = 0): array {
   $now = $now ?: sb_now();
   if (!sb_visible($user)) return ['ok' => false, 'reason' => 'off'];
-  $tz = max(-840, min(840, $tz));
+  /* 2026-11-23 (c) (site lent / 502) : UN seul calcul pour tout le monde (avant : un par fuseau horaire, ~2 s chacun), gardé
+     5 min ; un seul calcul à la fois (verrou non bloquant) — les autres reçoivent la version précédente tout de suite. Direct :
+     gardé 20 s. Fenêtre « aujourd'hui » = les 18 prochaines heures (le même pour tous les fuseaux). */
   $cd = sb_dir() . DIRECTORY_SEPARATOR . 'cache'; if (!is_dir($cd)) @mkdir($cd, 0750, true);
-  $cf = $cd . DIRECTORY_SEPARATOR . 'suggest-' . ($tz + 1000) . '.json';
-  $c = is_file($cf) ? json_decode((string) @file_get_contents($cf), true) : null;
-  $pre = is_array($c) && (int) ($c['at'] ?? 0) > $now - 120 ? (array) ($c['cp'] ?? []) : null; // avant-match : 2 min
-  if ($pre === null) { $pre = sb_suggest_pre($tz, $now); @file_put_contents($cf, json_encode(['at' => $now, 'cp' => $pre], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX); }
-  $live = sb_live_visible($user) ? sb_suggest_live($now) : []; // direct : recalculé à chaque fois (rien de suspendu proposé)
+  $get = static function (string $name, int $ttl, callable $make) use ($cd, $now): array {
+    $f = $cd . DIRECTORY_SEPARATOR . $name;
+    $c = is_file($f) ? json_decode((string) @file_get_contents($f), true) : null;
+    if (is_array($c) && (int) ($c['at'] ?? 0) > $now - $ttl) return (array) ($c['cp'] ?? []);
+    $lk = @fopen($f . '.lock', 'c');
+    if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return is_array($c) ? (array) ($c['cp'] ?? []) : []; }
+    try { $cp = $make(); @file_put_contents($f, json_encode(['at' => $now, 'cp' => $cp], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX); }
+    catch (Throwable $e) { $cp = is_array($c) ? (array) ($c['cp'] ?? []) : []; }
+    flock($lk, LOCK_UN); fclose($lk);
+    return $cp;
+  };
+  $pre = $get('suggest-pre.json', 300, static fn() => sb_suggest_pre(0, $now, true));
+  $live = sb_live_visible($user) ? $get('suggest-live.json', 20, static fn() => sb_suggest_live($now)) : [];
   return ['ok' => true, 'cp' => array_merge($live, $pre)];
 }
 /** Choix proposables d'un match d'avant-match (cotes actuelles du serveur). */
@@ -1972,14 +1982,14 @@ function sb_suggest_opts(array $mk): array {
  * championnats d'abord. Chaque modèle est fait 2 fois (2e fois avec d'autres matchs) ; un même match peut revenir dans un
  * autre coupon avec un autre pari. Jamais deux choix du même match dans un coupon (le pari le refuserait).
  */
-function sb_suggest_pre(int $tz, int $now): array {
-  $loc = $now + $tz * 60; $eod = $loc - ($loc % 86400) + 86400 - $tz * 60;
+function sb_suggest_pre(int $tz, int $now, bool $win18 = false): array {
+  $loc = $now + $tz * 60; $eod = $win18 ? $now + 18 * 3600 : $loc - ($loc % 86400) + 86400 - $tz * 60;
   $rows = [];
   foreach (sb_days($now) as $d) { $j = sb_day($d); foreach ((array) ($j['fx'] ?? []) as $id => $r) { if (!is_array($r) || !sb_bettable_row($r, $now) || (int) $r['ts'] < $now + max(600, SB_LATE)) continue; $rows[(string) $id] = ['r' => $r, 'p' => (int) ($j['lg'][(string) ($r['lg'] ?? '')]['p'] ?? 100)]; } }
   $pick = static fn(array $rows, int $until): array => array_filter($rows, static fn($x) => (int) $x['r']['ts'] <= $until);
   $pre = $pick($rows, $eod); if (count($pre) < 15) $pre = $pick($rows, max($eod, $now + 18 * 3600));
   uasort($pre, static fn($a, $b) => ($a['p'] <=> $b['p']) ?: ((int) $a['r']['ts'] <=> (int) $b['r']['ts']));
-  $pre = array_slice($pre, 0, 120, true);
+  $pre = array_slice($pre, 0, 80, true);
   $opts = [];
   foreach ($pre as $id => $x) {
     $mf = sb_mk_file((string) $id);
