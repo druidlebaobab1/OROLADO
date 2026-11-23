@@ -1556,7 +1556,7 @@
   }
   async function paint(container, c) {
     box = container; ctx = c || {}; navStk = [];
-    try { if (!sugD.cp || Date.now() - sugD.at > 60000) sugLoad(); } catch (e) { /* ignore */ } // 2026-11-23 (b) : coupons du jour chargés dès l'ouverture de Paris
+    try { if (!sugD.cp || Date.now() - sugD.at > 600000) sugLoad(); } catch (e) { /* ignore */ } // coupons du jour : une lecture à l'ouverture de Paris (au plus toutes les 10 min)
     if (!box) return;
     qRaw = ''; sbQ = ''; qMem = -1; lvQ = ''; resQ = ''; // Paris rouvert : recherches vides
     box.classList.add('sp2');
@@ -2027,7 +2027,7 @@
   }
   function sugHtml() {
     var hasLive = (sugD.cp || []).some(function (c) { return /^live/.test(c.t); });
-    if (!sugD.cp || Date.now() - sugD.at > (hasLive ? 90000 : 300000)) { sugLoad().then(function () { if (alive() && view === 'home') { var bd = $('pzBody'); if (bd) bd.dataset.sig = ''; paintHome(); } }); if (!sugD.cp) return ''; }
+    if (!sugD.cp && !sugD.at) { sugLoad().then(function () { if (alive() && view === 'home') { var bd = $('pzBody'); if (bd) bd.dataset.sig = ''; paintHome(); } }); if (!sugD.cp) return ''; }
     sugC = sugD.cp.filter(function (c) { return c && SUGT[c.t] && Array.isArray(c.sel) && c.sel.length; });
     if (!sugC.length) return '';
     return '<section class="pz-blk pz-sug"><div class="pz-bh"><b dir="auto">🎯 ' + esc(T18('sbSugT', "Today's bets")) + '</b></div><div class="pz-sugs pz-hs">' + sugC.map(function (c, i) {
@@ -3182,8 +3182,7 @@
     if (view === 'home') return sbOn && sport === 'foot' && (per === 'top' || per === 'all') && !sbQ && liveShown() ? 12000 : 60000; // direct de l'accueil : mêmes cotes / cadenas que la page du match
     if (view === 'slip' && slip.some(function (s) { return s.lv; })) return 10000;
     // 2026-11-23 : Mes paris — un pari ouvert sur un match en cours : score, minute et ✓ / ✕ suivis toutes les 20 s
-    // 2026-11-23 (d) (serveur chargé) : Mes paris relu seulement s'il y a un pari ouvert sur un match EN COURS, toutes les 90 s
-    if (view === 'mine' && mineCache && mineCache.some(function (b) { return (b.status || 'open') === 'open' && (b.sel || []).some(function (s) { return Array.isArray(s.cs); }); })) return 90000;
+    // 2026-11-23 (e) (propriétaire : « tu as augmenté les demandes ») : Mes paris n'est plus relu tout seul (comme avant)
     return -1;
   }
   function schedule(ms) {
