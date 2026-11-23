@@ -676,6 +676,9 @@
         // 2026-10-31 (propriétaire) : match terminé → pastille avec LE SCORE SEUL, centré (plus de « Terminé »),
         // couleur selon le résultat (gagné vert / perdu rouge / remboursé bleu, via la classe du parent). s.fs = [dom, ext]
         var fsTxt = Array.isArray(s.fs) ? '<u class="sp-rcpt-fs"><var class="fsN" dir="ltr">' + (+s.fs[0] || 0) + ':' + (+s.fs[1] || 0) + '</var></u>' : '';
+        // 2026-11-23 (propriétaire) : score EN DIRECT (● 1:3 · 72’) et, pour un pari pris en direct, le score au moment du pari
+        if (!fsTxt && Array.isArray(s.cs)) fsTxt = '<u class="sp-rcpt-fs sp-rcpt-lv"><var class="fsN" dir="ltr">● ' + (+s.cs[0] || 0) + ':' + (+s.cs[1] || 0) + (s.cm != null && s.cm !== '' ? ' · ' + esc(String(s.cm)) + '’' : '') + '</var></u>';
+        if (s.lv && Array.isArray(s.sc)) fsTxt += '<small class="sp-rcpt-ab" dir="auto">' + esc(T18('rcAtBet', 'Bet at')) + ' <span dir="ltr">' + (+s.sc[0] || 0) + ':' + (+s.sc[1] || 0) + (s.m != null && s.m !== '' ? ' · ' + esc(String(s.m)) + '’' : '') + '</span></small>';
         return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>$' + m2(bt.stake) + '</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
@@ -688,7 +691,7 @@
     // dans Paris : le reçu est posé DANS la fenêtre du casino (le bouton retour du téléphone le ferme, sans fermer Paris)
     var host = box && box.isConnected && box.closest('#casinoModal') ? box.closest('#casinoModal') : document.body;
     host.appendChild(el);
-    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, ftS: NX().ft })); } catch (eP) { /* ignore */ }
+    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, rcAtBet: T18('rcAtBet', 'Bet at'), ftS: NX().ft })); } catch (eP) { /* ignore */ }
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
     var close = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); }, 220); };
     el.addEventListener('click', function (e) { if (e.target === el) close(); });
