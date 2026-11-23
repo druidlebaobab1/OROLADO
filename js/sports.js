@@ -1331,6 +1331,22 @@
   var liveData = null, livePend = null, scrollMem = {}, sbCode = null, pendCode = '';
   function lv() { return 'home'; }
   function mbox() { return box ? box.closest('.modal-box') : null; }
+  /* 2026-11-23 (propriétaire : « en défilant, le bas de la liste est caché par la barre du bas, il faut toujours retirer vers le
+     haut ») : comme les grandes applis, la barre du bas (et la barre du coupon) se range quand on défile vers le BAS, et revient
+     dès qu'on remonte un peu, en haut de page, ou sur le coupon (jamais cachée sur le coupon). */
+  var navSc = { el: null, y: 0 };
+  function navScrollBind() {
+    var mb = mbox(); if (!mb || navSc.el === mb) return;
+    navSc.el = mb; navSc.y = mb.scrollTop;
+    mb.addEventListener('scroll', function () {
+      if (!box || !box.isConnected) return;
+      var y = mb.scrollTop, dy = y - navSc.y;
+      if (Math.abs(dy) < 8) return;
+      navSc.y = y;
+      var hide = dy > 0 && y > 80 && view !== 'slip' && !sending;
+      if (box.classList.contains('pz-navh') !== hide) box.classList.toggle('pz-navh', hide);
+    }, { passive: true });
+  }
   function alive() {
     if (!box || !box.isConnected || !box.classList.contains('sp2')) return false;
     var m = box.closest('#casinoModal'); return !m || m.classList.contains('active');
@@ -1400,7 +1416,7 @@
   function shell(inner) {
     closeSheet(true);
     box.innerHTML = '<div class="pz-page pz-v-' + view + '">' + inner + '</div>' + navHtml();
-    box.dataset.pzv = view;
+    box.dataset.pzv = view; box.classList.remove('pz-navh'); navScrollBind();
     bindBox(); layoutVars(); fitAll($('pzNav')); sbarPaint(); startTick();
   }
   function layoutVars() {
