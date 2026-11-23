@@ -314,7 +314,7 @@ function sb_get(string $path, int $now = 0, string $sp = 'foot', string $kind = 
   $rem = null;
   if ($fake) $raw = (string) $fake($o ? $sp . ':' . $path : $path);
   else {
-    $ctx = stream_context_create(['http' => ['method' => 'GET', 'timeout' => 15, 'ignore_errors' => true,
+    $ctx = stream_context_create(['http' => ['method' => 'GET', 'timeout' => (int) ($GLOBALS['SB_HTTP_TIMEOUT'] ?? 15), 'ignore_errors' => true,
       'header' => "x-apisports-key: " . $key . "\r\nAccept: application/json\r\nUser-Agent: OROLADO\r\n"], 'ssl' => ['verify_peer' => true]]);
     $raw = @file_get_contents(($o ? 'https://' . SB_O_SPORTS[$sp]['h'] . '.api-sports.io/' : SB_FOOT_BASE) . $path, false, $ctx, 0, 30000001);
     $raw = is_string($raw) && strlen($raw) <= 30000000 ? $raw : '';
@@ -2804,7 +2804,8 @@ function sb_live_fresh_first(int $now): void {
 function sb_live_refresh_now(int $now): bool {
   if (!sb_has_key() || !sb_live_budget_ok($now)) return false;
   $lk = @fopen(sb_dir() . DIRECTORY_SEPARATOR . 'live.lock', 'c');
-  if (!$lk || !flock($lk, LOCK_EX)) { if ($lk) fclose($lk); return false; }
+  // 2026-11-23 : sans attendre — si une autre demande relit déjà les cotes, on prend ce qu'elle écrit (avant : file d'attente)
+  if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return false; }
   try {
     if ((int) (sb_live_data()['at'] ?? 0) >= $now - 1) return true;
     $j = sb_get('odds/live', $now);
@@ -3089,10 +3090,15 @@ function sb_live_wait(int $sec, int $now): int {
  * Dès qu'un problème apparaît → refus tout de suite : score différent / but, carton rouge ou vidéo depuis la minute du pari,
  * match suspendu → « susp » ; cote changée → règle $acc (« odds »). Rien trouvé au bout des 15 s → accepté (cotes relues).
  */
-const SB_LIVE_HOLD = 15;
+/* 2026-11-23 (propriétaire : « en direct, tout refuse ; on a perdu des joueurs ») : le serveur web coupe toute demande au bout
+   de 30 s. Avec 15 s (25 s petits championnats) de contrôles + 1 à 2 s par question au fournisseur, on dépassait souvent 30 s :
+   la demande était tuée → refus pour le joueur (argent jamais pris). Comme les grands sites (5 à 10 s), maintenant 8 s
+   (12 s petits championnats), et jamais plus de SB_LIVE_WALL secondes réelles au total. */
+const SB_LIVE_HOLD = 8;
+const SB_LIVE_WALL = 20;
 /* 2026-10-23 (propriétaire : « les petits championnats à 25 secondes ») : hors de la liste des grands championnats (SB_LIVE_BIG :
    coupes d'Europe, 8 grands championnats, coupes nationales, sélections), les données arrivent plus lentement → 25 s de contrôles */
-const SB_LIVE_HOLD_SMALL = 25;
+const SB_LIVE_HOLD_SMALL = 12;
 function sb_live_hold(array $ids, array $L): int {
   foreach ($ids as $id) if (!in_array((int) ($L['fx'][(string) $id]['lg'] ?? 0), SB_LIVE_BIG, true)) return SB_LIVE_HOLD_SMALL;
   return SB_LIVE_HOLD;
@@ -3136,9 +3142,9 @@ function sb_live_check(array &$picked, string $acc, ?array $user, int $now, arra
       $m0 = (int) ($p['m'] ?? 0);
       foreach ((array) $f['ev'] as $e) {
         $big = $e['type'] === 'goal' || $e['type'] === 'var' || ($e['type'] === 'card' && $e['detail'] === 'red');
-        if ($big && (int) $e['t'] + (int) $e['x'] >= $m0 - 1) return ['ok' => false, 'reason' => 'susp', 'why' => $e['type'] === 'goal' ? 'goal' : 'event', 'ev' => $p['ev']];
+        if ($big && (int) $e['t'] + (int) $e['x'] >= $m0) return ['ok' => false, 'reason' => 'susp', 'why' => $e['type'] === 'goal' ? 'goal' : 'event', 'ev' => $p['ev']];
       }
-      foreach ((array) ($f['pm'] ?? []) as $t) if ((int) $t >= $m0 - 1) return ['ok' => false, 'reason' => 'susp', 'why' => 'event', 'ev' => $p['ev']]; // penalty (manqué) récent
+      foreach ((array) ($f['pm'] ?? []) as $t) if ((int) $t >= $m0) return ['ok' => false, 'reason' => 'susp', 'why' => 'event', 'ev' => $p['ev']]; // penalty (manqué) récent
     }
     $v = sb_live_view($id, $L, $now, $cfg);
     if ($v && $v['sc'] !== $p['sc']) return $goal;
@@ -3165,7 +3171,16 @@ function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?
   foreach (array_unique($ids) as $id) $base[(string) $id] = sb_live_p1x2((array) ($L0['od'][(string) $id]['r1'] ?? []));
   $t = $now; $done = 0; $seen = 0; $extra = 0; $hold = sb_live_hold(array_unique($ids), $L0);
   if (function_exists('set_time_limit')) @set_time_limit(90);
+  $wall = microtime(true) + SB_LIVE_WALL; // secondes RÉELLES (pas celles des tests)
+  $GLOBALS['SB_HTTP_TIMEOUT'] = 4; // une question au fournisseur : 4 s au plus pendant le contrôle
   while ($done < $hold) {
+    if (microtime(true) > $wall && $done > 0) { // trop long (fournisseur lent) : dernier contrôle tout de suite, sans attendre
+      $fx = sb_live_fx_fresh($ids, $t); if (count($fx) >= count(array_unique($ids))) $seen++;
+      $r = sb_live_check($picked, $acc, $user, $t, $fx, true, $base);
+      $now = $t;
+      if ($r !== null) return $r;
+      return $seen < 1 && !defined('SB_LIVE_NO_FX_CHECK') ? ['ok' => false, 'reason' => 'susp', 'why' => 'event'] : null;
+    }
     $step = min(SB_LIVE_STEP, $hold - $done);
     $t = sb_live_wait($step, $t); $done += $step;
     sb_live_refresh_now($t);
@@ -3183,7 +3198,7 @@ function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?
   }
   $now = $t;
   // le match n'a pu être relu qu'une fois ou jamais pendant les 15 s (fournisseur muet) : on ne prend pas le risque
-  if ($seen < 2 && !defined('SB_LIVE_NO_FX_CHECK')) return ['ok' => false, 'reason' => 'susp', 'why' => 'event'];
+  if ($seen < 1 && !defined('SB_LIVE_NO_FX_CHECK')) return ['ok' => false, 'reason' => 'susp', 'why' => 'event'];
   return null;
 }
 /** Admin : état du direct (diagnostic). */

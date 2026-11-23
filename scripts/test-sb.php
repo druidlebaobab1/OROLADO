@@ -585,7 +585,7 @@ $fxIds = static fn(array $g, array $ev = []) => json_encode(['errors' => [], 're
 $alt['fixtures?ids=9101'] = $fxIds([2, 0]);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $oH]], $B0);
 $bet = $r['bet'] ?? [];
-check('pari en direct : 15 s, contrôle toutes les 3 s (5 relectures de /odds/live et du match), accepté', $r['ok'] === true && $slept === [3, 3, 3, 3, 3] && $cnt('odds/live') === $nOdds + 5 && $cnt('fixtures?ids=9101') === 5 && abs($bal[$A] - ($b0 - 10)) < 0.001, json_encode([$r, $slept]));
+check('pari en direct : 8 s, contrôle toutes les 3 s (3 relectures de /odds/live et du match), accepté', $r['ok'] === true && $slept === [3, 3, 2] && $cnt('odds/live') === $nOdds + 3 && $cnt('fixtures?ids=9101') === 3 && abs($bal[$A] - ($b0 - 10)) < 0.001, json_encode([$r, $slept]));
 $raw = null; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $b) if ($b['id'] === ($bet['id'] ?? '')) $raw = $b;
 check('coupon « live : 1 », choix lv = 1 avec score 2-0 et minute', ($raw['live'] ?? 0) === 1 && ($raw['sel'][0]['lv'] ?? 0) === 1 && $raw['sel'][0]['sc'] === [2, 0] && ($bet['live'] ?? 0) === 1 && ($bet['sel'][0]['lv'] ?? 0) === 1 && $raw['at'] === $B0 + SB_LIVE_HOLD);
 $slept = []; $b0 = $bal[$A]; $B1 = $B0 + 20; $at(gmdate('Y-m-d H:i:s', $B1)); $alt['odds/live'] = $lodds(['g' => [2, 0]]); sb_live_refresh_now($B1);
@@ -616,7 +616,7 @@ $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H'
 check('carton rouge depuis la minute du pari : refusé « événement »', $r['ok'] === false && ($r['why'] ?? '') === 'event' && $slept === [3], json_encode([$r, $slept]));
 $slept = []; $alt['fixtures?ids=9101'] = '{"errors":[],"response":[]}'; @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => $newH]], $B3 + 3, 'any');
-check('match impossible à relire pendant les 15 s : refusé (on ne prend pas le risque)', $r['ok'] === false && ($r['why'] ?? '') === 'event' && count($slept) === 5, json_encode([$r, $slept]));
+check('match impossible à relire pendant les 8 s : refusé (on ne prend pas le risque)', $r['ok'] === false && ($r['why'] ?? '') === 'event' && count($slept) === 3, json_encode([$r, $slept]));
 unset($alt['fixtures?ids=9101']); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $B4 = $B3 + 6; $at(gmdate('Y-m-d H:i:s', $B4)); $next = $lodds(['g' => [2, 1], 'h' => '1.33', 'susp' => true]);
 $r = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:btts', 'k' => 'N']], $B4, 'any');
@@ -644,7 +644,7 @@ $alt['fixtures?ids=9101'] = $fxIds([2, 1]); @array_map('unlink', glob(sb_dir() .
 $r = sp_cash_out(load_db(), $ua, $coId, $qv + 5, $B6);
 check('cash out : montant plus haut que l\'offre refusé (« coChg » avec la vraie offre)', $r['ok'] === false && $r['reason'] === 'coChg' && abs($r['amt'] - $qv) < 0.011, json_encode($r));
 $r = sp_cash_out(load_db(), $ua, $coId, $qv, $B6);
-check('cash out en direct : contrôle anti-triche (relectures toutes les 3 s), puis payé une fois', $r['ok'] === true && count($slept) >= 5 && abs($bal[$A] - ($b0 + $r['amt'])) < 0.001 && $r['amt'] <= $qv + 1e-9, json_encode([$r, $slept]));
+check('cash out en direct : contrôle anti-triche (relectures toutes les 3 s), puis payé une fois', $r['ok'] === true && count($slept) >= 3 && abs($bal[$A] - ($b0 + $r['amt'])) < 0.001 && $r['amt'] <= $qv + 1e-9, json_encode([$r, $slept]));
 $r2 = sp_cash_out(load_db(), $ua, $coId, $qv, $B6 + 1);
 check('cash out deux fois : refusé, rien payé en plus', $r2['ok'] === false && abs($bal[$A] - ($b0 + $r['amt'])) < 0.001, json_encode($r2));
 $raw = null; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $bb) if ($bb['id'] === $coId) $raw = $bb;
@@ -1085,8 +1085,8 @@ $B2 = [['eg', '3', 'won'], ['eg', '4+', 'lost'], ['hteg', '1', 'won'], ['weh', '
 $bad = []; foreach ($B2 as [$mk, $k, $w]) { $g = sb_settle_mk($mk, $k, $FT4, $HT4, $xs3); if ($g !== $w) $bad[] = "$mk/$k=" . var_export($g, true) . "≠$w"; }
 check(count($B2) . ' règlements de la 2e série (mené 0-1, gagne 2-1)', !$bad, implode(' ; ', $bad));
 
-check('contrôle du direct : grand championnat (Premier League) 15 s ; petit championnat 25 s ; combiné avec un petit = 25 s',
-  sb_live_hold(['1'], ['fx' => ['1' => ['lg' => 39]]]) === 15 && sb_live_hold(['2'], ['fx' => ['2' => ['lg' => 383]]]) === 25 && sb_live_hold(['1', '2'], ['fx' => ['1' => ['lg' => 39], '2' => ['lg' => 383]]]) === 25);
+check('contrôle du direct : grand championnat (Premier League) 8 s ; petit championnat 12 s ; combiné avec un petit = 12 s',
+  sb_live_hold(['1'], ['fx' => ['1' => ['lg' => 39]]]) === 8 && sb_live_hold(['2'], ['fx' => ['2' => ['lg' => 383]]]) === 12 && sb_live_hold(['1', '2'], ['fx' => ['1' => ['lg' => 39], '2' => ['lg' => 383]]]) === 12);
 
 echo "\n— Mesure 1xBet (lecture seule) —\n";
 $bk1 = static fn($n, $h, $x, $a) => ['name' => $n, 'bets' => [['name' => 'Match Winner', 'values' => [['value' => 'Home', 'odd' => $h], ['value' => 'Draw', 'odd' => $x], ['value' => 'Away', 'odd' => $a]]]]];

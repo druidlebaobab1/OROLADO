@@ -713,7 +713,7 @@
   function keepSel() { return false; }
   function mode() { return slip.length < 2 ? 'single' : 'combo'; }
   function cur() { return '$'; } // monnaie affichée (la monnaie locale viendra ici)
-  function qtxt(v) { return (v % 1 ? m2(v) : String(v)) + ' ' + cur(); }
+  function qtxt(v) { return cur() + (v % 1 ? m2(v) : String(v)); } // 2026-11-23 (propriétaire) : « $ » devant
   function mkt(e) { var x = XX(); if (!e) return ''; if (e.q || EVK[e.sport]) return x.mktQ; return e.opts && e.opts.length === 3 ? x.mkt3 : x.mkt2; }
   function stOf() { return stake; }
   function slipTop() { try { var mb = box.closest('.modal-box'); if (mb) mb.scrollTop = 0; } catch (e) { /* ignore */ } }
@@ -752,13 +752,13 @@
         '<div class="sp2-sel-t' + (z.sb && z.fx ? ' go" data-gofx="' + esc(z.fx) + '" role="button" tabindex="0' : '') + '"><b class="fit" dir="auto">' + esc(z.off ? z.l : z.closed ? x.closed : z.susp ? NX().susp : z.l) + '</b>' +
           (z.off ? '<small class="pz-offst ' + esc(z.off) + '" dir="auto">' + IC.lock + esc(z.off === 'fin' ? (NX().ftS || NX().ft) + (z.osc ? ' · ' + z.osc[0] + '-' + z.osc[1] : '') : z.off === 'live' ? NX().nLive + (z.osc ? ' · ' + z.osc[0] + '-' + z.osc[1] : '') : x.closed) + '</small>' : '') + linesHtml(e ? trT(e) : z.t, 'small', 44, true) + '<small class="sp2-mkt fit" dir="auto">' + esc((z.lv ? NX().nLive + ' · ' : '') + (z.sb ? sbMkName(z.mk, z.h.n, z.a.n, spOf(z)) : mkt(e))) + '</small></div>' +
         '<em' + (z.chg && z.prev ? ' class="' + (z.odd > z.prev ? 'up' : 'dn') + '"' : '') + '>' + (z.closed || z.susp ? IC.lock : (z.chg && z.prev ? '<s>' + Number(z.prev).toFixed(2) + '</s>' : '') + Number(z.odd).toFixed(2)) + '</em><button type="button" class="sp2-x" data-i="' + i + '" aria-label="×">' + IC.x + '</button></div>' +
-        (each ? '<div class="sp2-ss"><label class="sp2-inw sm"><input data-st="' + i + '" inputmode="decimal" autocomplete="off" value="' + (st > 0 ? m2(st) : '') + '" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></label>' +
+        (each ? '<div class="sp2-ss"><label class="sp2-inw sm"><em class="pz-curp">' + cur() + '</em><input data-st="' + i + '" inputmode="decimal" autocomplete="off" value="' + (st > 0 ? m2(st) : '') + '" aria-label="' + esc(x.stakeL) + '"></label>' +
           '<span class="sp2-ssw"><small class="fit">' + esc(x.potL) + '</small><b class="fit" data-pw="' + i + '">' + money(sp2Pot(st, z.odd)) + '</b></span></div>' : '') + '</div>';
     }).join('') + '</div>';
     var guestBtn = String(x.guestBet || '').replace(/^🔒\s*/, '').trim(); // « 🔒 Inscris-toi pour parier (c'est gratuit) » sans le cadenas
     var bal = ctx.guest ? null : curBal(), q = qk(), main = each ? (slip.every(function (z) { return stOf(z) === stOf(slip[0]); }) ? stOf(slip[0]) : 0) : stake;
     var stk = '<div class="sp2-stk">' +
-      '<div class="sp2-amt"><label class="sp2-inw" for="spStake"><span class="sp2-inl"><span class="fit">' + esc(each ? x.eachL : x.stakeL) + '</span></span><span class="sp2-inv"><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + (main > 0 ? sv(main) : '') + '" placeholder="0" aria-label="' + esc(x.stakeL) + '"><em>' + cur() + '</em></span></label><button type="button" class="sp2-pm plus" id="spPlus" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>' +
+      '<div class="sp2-amt"><label class="sp2-inw" for="spStake"><span class="sp2-inl"><span class="fit">' + esc(each ? x.eachL : x.stakeL) + '</span></span><span class="sp2-inv"><em class="pz-curp">' + cur() + '</em><input id="spStake" inputmode="decimal" autocomplete="off" enterkeyhint="done" value="' + (main > 0 ? sv(main) : '') + '" placeholder="0" aria-label="' + esc(x.stakeL) + '"></span></label><button type="button" class="sp2-pm plus" id="spPlus" aria-label="+"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>' +
         '<button type="button" class="sp2-clr" id="spClr"><svg viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8"/></svg><span class="fit">' + esc(x.clrSt) + '</span></button></div>' +
       '<div class="sp2-qk4">' + q.map(function (v) { return '<button type="button" data-q="' + v + '"><span class="fit">' + esc(qtxt(v)) + '</span></button>'; }).join('') +
         '<button type="button" data-q="max" class="mx"><span class="fit">' + esc(x.maxL) + '</span></button></div>' +
@@ -1608,7 +1608,14 @@
         var was = liveShown(); liveOn = true;
         r.fx = r.fx.filter(function (f) { return f && f.id && f.h && f.a; });
         r.lg = Array.isArray(r.lg) ? r.lg : [];
-        liveData = { r: r, at: Date.now() }; noteSrv(r.at);
+        // 2026-11-23 (propriétaire : « le direct disparaît quelques secondes, la page paraît vide, puis ça revient ») :
+        // une réponse vide juste après une liste pleine (cotes en cours de relecture, réseau faible) ne vide plus l'écran :
+        // on garde la dernière liste (1 min au plus, 3 réponses vides de suite au plus).
+        if (!r.fx.length && liveData && liveData.r && liveData.r.fx && liveData.r.fx.length && Date.now() - (liveData.full || liveData.at) < 60000 && (liveData.nEmpty || 0) < 3) {
+          liveData.nEmpty = (liveData.nEmpty || 0) + 1;
+          return liveData.r;
+        }
+        liveData = { r: r, at: Date.now(), full: r.fx.length ? Date.now() : 0, nEmpty: 0 }; noteSrv(r.at);
         r.fx.forEach(function (f) { confSc(f); noteLive(f, 'list'); });
         if (was !== liveShown()) paintNav();
         return r;
@@ -2322,7 +2329,7 @@
         (slip.some(function (s) { return s.sb; }) ? '<div class="sb-code" id="sbCode">' + codeBox(true) + '</div>' : '') + '</div>' : '') +
       (ctx.guest ? '' : '<div class="pz-mcard pz-1c"><label class="pz-1cr"><span class="pz-1ct"><b dir="auto">⚡ ' + esc(T18('sb1clk', 'One-click bet')) + '</b><small dir="auto">' + esc(T18('sb1clkHint', 'Tap an odd to place the bet at once')) + '</small></span>' +
         '<input type="checkbox" id="pz1c" role="switch"' + (oneOn() ? ' checked' : '') + '><i class="pz-sw" aria-hidden="true"></i></label>' +
-        '<label class="pz-1cs"' + (oneOn() ? '' : ' hidden') + ' id="pz1cS"><span dir="auto">' + esc(T18('sb1clkSt', 'One-click stake')) + '</span><span class="pz-1ci"><input id="pz1cIn" inputmode="decimal" autocomplete="off" value="' + esc(String(oneSt())) + '"><em>' + cur() + '</em></span></label></div>') +
+        '<label class="pz-1cs"' + (oneOn() ? '' : ' hidden') + ' id="pz1cS"><span dir="auto">' + esc(T18('sb1clkSt', 'One-click stake')) + '</span><span class="pz-1ci"><em class="pz-curp">' + cur() + '</em><input id="pz1cIn" inputmode="decimal" autocomplete="off" value="' + esc(String(oneSt())) + '"></span></label></div>') +
       '<div class="pz-mcard"><p class="pz-mt2">' + esc(xx.accT) + '</p>' + [['none', xx.accNone], ['up', xx.accUp], ['any', xx.accAny]].map(function (o) {
         return '<label class="pz-rad"><input type="radio" name="pzAcc" value="' + o[0] + '"' + (acc === o[0] ? ' checked' : '') + '><i></i><span dir="auto">' + esc(o[1]) + '</span></label>'; }).join('') + '</div></div>'; // (propriétaire : aucune règle écrite dans Paris)
     shell(html);
@@ -2339,7 +2346,7 @@
     var el = document.createElement('div'); el.className = 'pz-rf pz-qs'; el.setAttribute('role', 'dialog');
     el.innerHTML = '<div class="pz-rfc pz-qsc"><div class="pz-mcard pz-1c"><label class="pz-1cr"><span class="pz-1ct"><b dir="auto">⚡ ' + esc(T18('sb1clk', 'One-click bet')) + '</b><small dir="auto">' + esc(T18('sb1clkHint', 'Tap an odd to place the bet at once')) + '</small></span>' +
       '<input type="checkbox" id="pzQ1c" role="switch"' + (oneOn() ? ' checked' : '') + '><i class="pz-sw" aria-hidden="true"></i></label>' +
-      '<label class="pz-1cs" id="pzQ1cS"' + (oneOn() ? '' : ' hidden') + '><span dir="auto">' + esc(T18('sb1clkSt', 'One-click stake')) + '</span><span class="pz-1ci"><input id="pzQ1cIn" inputmode="decimal" autocomplete="off" value="' + esc(String(oneSt())) + '"><em>' + cur() + '</em></span></label></div>' +
+      '<label class="pz-1cs" id="pzQ1cS"' + (oneOn() ? '' : ' hidden') + '><span dir="auto">' + esc(T18('sb1clkSt', 'One-click stake')) + '</span><span class="pz-1ci"><em class="pz-curp">' + cur() + '</em><input id="pzQ1cIn" inputmode="decimal" autocomplete="off" value="' + esc(String(oneSt())) + '"></span></label></div>' +
       '<div class="pz-mcard"><p class="pz-mt2">' + esc(xx.accT) + '</p>' + [['none', xx.accNone], ['up', xx.accUp], ['any', xx.accAny]].map(function (o) {
         return '<label class="pz-rad"><input type="radio" name="pzQAcc" value="' + o[0] + '"' + (acc === o[0] ? ' checked' : '') + '><i></i><span dir="auto">' + esc(o[1]) + '</span></label>'; }).join('') + '</div>' +
       '<button type="button" class="pz-qsok"><span class="fit">OK</span></button></div>';
