@@ -4215,6 +4215,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .lvC-m.a{align-self:flex-end;background:linear-gradient(145deg,#F43F6E,#C8174C);color:#fff;border-bottom-right-radius:5px}
     .lvC-m.auto{opacity:.62}
     .lvC-m img{display:block;max-width:100%;width:240px;border-radius:11px;margin-bottom:4px;cursor:zoom-in}
+    .lvC-m .lvC-imgx{display:inline-block;margin-bottom:4px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.08);color:#FDE68A;font-weight:700;text-decoration:none}
     .lvC-m audio{display:block;max-width:100%;width:240px;margin-bottom:4px}
     .lvC-m small{display:block;text-align:right;opacity:.7;font-size:.68rem;margin-top:3px;white-space:nowrap}
     .lvC-st{flex:0 0 auto;min-height:0;padding:0 14px;font-size:.78rem;color:#A5B4D8}
@@ -5732,7 +5733,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       if (/\.(webm|m4a|ogg)(\?|$)/.test(m.img)) media = '<audio controls preload="none" src="' + esc(m.img) + '"></audio>';
       else {
         const wh = /^(\d+)x(\d+)$/.exec(m.wh || ''); // la bulle garde la place de la photo : pas de saut pendant le chargement
-        media = '<img src="' + esc(m.img) + '" alt="Photo" loading="lazy" decoding="async"' + (wh ? ' width="' + wh[1] + '" height="' + wh[2] + '" style="height:auto;aspect-ratio:' + wh[1] + '/' + wh[2] + '"' : '') + ' onclick="window.open(this.src)">';
+        media = '<img src="' + esc(m.img) + '" alt="Photo" decoding="async" onerror="if(!this.dataset.r){this.dataset.r=1;this.src=this.src+\'&r=\'+Date.now();}else{this.replaceWith(Object.assign(document.createElement(\'a\'),{href:this.src,target:\'_blank\',className:\'lvC-imgx\',textContent:\'📷 Photo — toucher pour l’ouvrir\'}));}"' + (wh ? ' width="' + wh[1] + '" height="' + wh[2] + '" style="height:auto;aspect-ratio:' + wh[1] + '/' + wh[2] + '"' : '') + ' onclick="window.open(this.src)">';
       }
     }
     return '<div class="lvC-m ' + (m.f === 'a' ? 'a' : 'u') + (m.auto ? ' auto' : '') + '" data-id="' + esc(m.id || '') + '">' + media + esc(m.t || '') +
