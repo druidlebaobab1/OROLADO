@@ -609,6 +609,25 @@ check('courte suspension pendant le contrôle puis rouvert : accepté (plus de r
 $GLOBALS['SB_SLEEP'] = function (int $sec, int $now) use (&$slept, &$next, &$alt) { $slept[] = $sec; if ($next !== null) $alt['odds/live'] = $next; $GLOBALS['SB_NOW'] = $now + $sec; return $now + $sec; };
 unset($alt['fixtures?ids=9101']); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 check('verrou après une action dangereuse : 25 s (but : 90 s)', SB_LIVE_JUMP_LOCK === 25 && SB_LIVE_GOAL_LOCK === 90);
+// 2026-11-23 (propriétaire : « oui pour le cash out ») — CASH OUT d'un pari en direct
+$coId = (string) ($r['bet']['id'] ?? '');
+$B6 = $B5 + 2; $at(gmdate("Y-m-d H:i:s", $B6)); $alt["odds/live"] = $seq[1]; $next = $seq[1]; sb_live_refresh_now($B6);
+sb_with('live.json', static function (array &$s) { foreach ((array) ($s['od'] ?? []) as $i => $o) unset($s['od'][$i]['jmp'], $s['od'][$i]['gjmp']); return true; });
+$q = sp_co_quotes($ua, [$coId, 'sp_000000'], $B6); $qv = (float) ($q['q'][$coId] ?? 0);
+check('cash out : offre calculée (mise × cote jouée / cote actuelle − 8 %), jamais plus que le gain prévu', $qv >= 0.1 && $qv < 13.91 && count($q['q']) === 1, json_encode($q));
+$alt['fixtures?ids=9101'] = $fxIds([2, 1]); @array_map('unlink', glob(sb_dir() . '/cache/*.json')); $slept = []; $b0 = $bal[$A];
+$r = sp_cash_out(load_db(), $ua, $coId, $qv + 5, $B6);
+check('cash out : montant plus haut que l\'offre refusé (« coChg » avec la vraie offre)', $r['ok'] === false && $r['reason'] === 'coChg' && abs($r['amt'] - $qv) < 0.011, json_encode($r));
+$r = sp_cash_out(load_db(), $ua, $coId, $qv, $B6);
+check('cash out en direct : contrôle anti-triche (relectures toutes les 3 s), puis payé une fois', $r['ok'] === true && count($slept) >= 5 && abs($bal[$A] - ($b0 + $r['amt'])) < 0.001 && $r['amt'] <= $qv + 1e-9, json_encode([$r, $slept]));
+$r2 = sp_cash_out(load_db(), $ua, $coId, $qv, $B6 + 1);
+check('cash out deux fois : refusé, rien payé en plus', $r2['ok'] === false && abs($bal[$A] - ($b0 + $r['amt'])) < 0.001, json_encode($r2));
+$raw = null; foreach ((array) sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) as $bb) if ($bb['id'] === $coId) $raw = $bb;
+check('coupon encaissé : fermé (co, payé), plus d\'offre', isset($raw['co']) && !empty($raw['copaid']) && $raw['status'] !== 'open' && !isset(sp_co_quotes($ua, [$coId], $B6 + 2)['q'][$coId]), json_encode($raw));
+$sl0 = []; $alt['fixtures?ids=9101'] = $fxIds([2, 2]); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
+$r3 = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => 9.99]], $B6 + 3, 'any');
+check('(pari refusé pendant un but : rien à encaisser)', $r3['ok'] === false);
+unset($alt['fixtures?ids=9101']); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
 $GLOBALS['SB_SLEEP'] = function (int $sec, int $now) use (&$slept) { $slept[] = $sec; $GLOBALS['SB_NOW'] = $now + $sec; return $now + $sec; };
 $alt['odds/live'] = $lodds(['g' => [2, 1], 'h' => '1.25']); $B5 = $B4 + 20; $at(gmdate('Y-m-d H:i:s', $B5)); sb_live_refresh_now($B5);
 check('pari sur le match AVANT-MATCH déjà commencé par le chemin direct seulement : marché hors direct (eh) refusé', sb_pick('sb:foot:9101:eh:-1', 'H', $ua, $B5)['ok'] === false);

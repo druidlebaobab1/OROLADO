@@ -4552,6 +4552,22 @@
     hi: { sbMkSearch: 'दांव खोजें', sbMkNone: 'कोई दांव नहीं मिला', sbForm: 'फ़ॉर्म', sbH2H: 'आमने-सामने', sbLast5: 'पिछले 5 मैच', sb1clk: '1 क्लिक दांव', sb1clkHint: 'ऑड छूते ही दांव लग जाता है', sb1clkSt: '1 क्लिक राशि', sb1clkDone: 'दांव लगा', sbFW: 'जी', sbFD: 'ड्र', sbFL: 'हा' },
   };
   Object.keys(SBX_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBX_TR[l]); });
+  // 2026-11-23 (propriétaire) — Paris : cash out (encaisser avant la fin)
+  var SBC_TR = {
+    fr: { sbCoBtn: "Encaisser", sbCoConf: "Confirmer", sbCoDone: "Encaissé", sbCoNew: "Nouvelle offre", sbCoOff: "Encaissement indisponible pour le moment" },
+    en: { sbCoBtn: "Cash out", sbCoConf: "Confirm", sbCoDone: "Cashed out", sbCoNew: "New offer", sbCoOff: "Cash out not available right now" },
+    es: { sbCoBtn: "Cobrar", sbCoConf: "Confirmar", sbCoDone: "Cobrado", sbCoNew: "Nueva oferta", sbCoOff: "Cobro no disponible por ahora" },
+    pt: { sbCoBtn: "Cash out", sbCoConf: "Confirmar", sbCoDone: "Encerrada", sbCoNew: "Nova oferta", sbCoOff: "Cash out indisponível no momento" },
+    ar: { sbCoBtn: "صرف الآن", sbCoConf: "تأكيد", sbCoDone: "تم الصرف", sbCoNew: "عرض جديد", sbCoOff: "الصرف غير متاح حاليًا" },
+    tr: { sbCoBtn: "Bozdur", sbCoConf: "Onayla", sbCoDone: "Bozduruldu", sbCoNew: "Yeni teklif", sbCoOff: "Bozdurma şu an kullanılamıyor" },
+    vi: { sbCoBtn: "Rút sớm", sbCoConf: "Xác nhận", sbCoDone: "Đã rút sớm", sbCoNew: "Mức mới", sbCoOff: "Hiện chưa thể rút sớm" },
+    id: { sbCoBtn: "Cash out", sbCoConf: "Konfirmasi", sbCoDone: "Sudah di-cash out", sbCoNew: "Tawaran baru", sbCoOff: "Cash out belum tersedia" },
+    ru: { sbCoBtn: "Выкуп", sbCoConf: "Подтвердить", sbCoDone: "Выкуплено", sbCoNew: "Новое предложение", sbCoOff: "Выкуп сейчас недоступен" },
+    de: { sbCoBtn: "Auszahlen", sbCoConf: "Bestätigen", sbCoDone: "Ausgezahlt", sbCoNew: "Neues Angebot", sbCoOff: "Cash-out gerade nicht verfügbar" },
+    zh: { sbCoBtn: "提前兑现", sbCoConf: "确认", sbCoDone: "已兑现", sbCoNew: "新报价", sbCoOff: "暂时无法提前兑现" },
+    hi: { sbCoBtn: "कैश आउट", sbCoConf: "पुष्टि करें", sbCoDone: "कैश आउट हुआ", sbCoNew: "नया ऑफ़र", sbCoOff: "अभी कैश आउट उपलब्ध नहीं" },
+  };
+  Object.keys(SBC_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBC_TR[l]); });
   // 2026-10-22 (propriétaire) — Paris : section des prédictions. NOM AFFICHÉ = PRED_NAME (un seul endroit, le même mot dans les 12 langues).
   var PRED_NAME = 'Predict';
   var PRED_TR = {

@@ -1480,3 +1480,10 @@ html:root body #casinoModal .sp2 .pz-sbar > span b{display:inline!important;font
 html:root body #casinoModal .sp2 .pz-sbar .pz-sbc{background:none!important;box-shadow:none!important;border:0!important}
 html:root body #casinoModal .sp2 .pz-sbar .pz-sbc svg{fill:none;stroke:#F5D27A;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;background:none}
 html:root body #casinoModal .sp2.pz-sbon .pz-page,html:root body #casinoModal .sp2 .pz-sbon .pz-page{padding-bottom:72px}
+/* 2026-11-23 : cash out (Mes paris) */
+html:root body #casinoModal .sp2 .pz-co{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 24px);height:42px;margin:0 12px 12px;padding:0 14px;border:0;border-radius:12px;background:linear-gradient(180deg,#22C55E,#15803D);color:#fff;font:800 15px/1 var(--sp2-font);box-shadow:0 4px 14px rgba(34,197,94,.25)}
+html:root body #casinoModal .sp2 .pz-co b{font:900 16px/1 var(--sp2-font);color:#fff}
+html:root body #casinoModal .sp2 .pz-co.arm{background:linear-gradient(180deg,#F5C542,#D99A1E);color:#1A1205}
+html:root body #casinoModal .sp2 .pz-co.arm b{color:#1A1205}
+html:root body #casinoModal .sp2 .pz-co.busy{opacity:.75;animation:pz1b 1s ease-in-out infinite}
+html:root body #casinoModal .sp2 .sp2-pill.pz-copill{background:rgba(34,197,94,.18)!important;color:#86EFAC!important}

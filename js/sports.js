@@ -616,6 +616,7 @@
     rcs.addEventListener('click', function (ev) {
       var t = ev.target;
       if (t.closest('#spMore')) { rcLimit += 30; paintMine(); return; }
+      if (t.closest('.pz-co')) return; // 2026-11-23 : bouton « Encaisser » (géré plus haut, n'ouvre pas la carte)
       var c = t.closest('.sp2-bet[data-rc]'); if (!c) return;
       var bt = (shown && shown.length ? shown : (mineCache || []))[+c.getAttribute('data-rc')]; if (!bt) return;
       if (t.closest('[data-rcv]')) { showReceipt(bt); return; }
@@ -2997,6 +2998,7 @@
       go(v); if (b.closest('.pz-nav') && v !== 'slip') navStk = [];
       return;
     }
+    if ((b = t.closest('.pz-co[data-co]'))) { ev.stopPropagation(); coTap(b); return; }
     if ((b = t.closest('.pz-ob[data-ev]'))) { if (!b.disabled) { if (oneOn()) oneClick(b); else sbPick(b); } return; }
     if ((b = t.closest('.pd-b[data-ev]'))) { if (!b.disabled) pick(b); return; } // choix Predict (carte ou résultat de recherche)
     if ((b = t.closest('#pzQx'))) { ev.preventDefault(); setQ(''); var qi = $('pzQ'); if (qi) qi.blur(); return; }
@@ -3062,7 +3064,7 @@
     if (view === 'home') return sbOn && sport === 'foot' && (per === 'top' || per === 'all') && !sbQ && liveShown() ? 12000 : 60000; // direct de l'accueil : mêmes cotes / cadenas que la page du match
     if (view === 'slip' && slip.some(function (s) { return s.lv; })) return 10000;
     // 2026-11-23 : Mes paris — un pari ouvert sur un match en cours : score, minute et ✓ / ✕ suivis toutes les 20 s
-    if (view === 'mine' && mineCache && mineCache.some(function (b) { return (b.status || 'open') === 'open' && (b.sel || []).some(function (s) { return Array.isArray(s.cs); }); })) return 20000;
+    if (view === 'mine' && mineCache && mineCache.some(function (b) { return (b.status || 'open') === 'open'; })) return mineCache.some(function (b) { return (b.status || 'open') === 'open' && (b.sel || []).some(function (s) { return Array.isArray(s.cs); }); }) ? 20000 : 45000; // (offres de cash out à jour)
     return -1;
   }
   function schedule(ms) {
@@ -3077,7 +3079,7 @@
     var v = view;
     try {
       if (v === 'live') { await liveProbe(true); if (view === 'live') paintLive(); }
-      else if (v === 'mine') { var mr = await loadMine(); if (mr && view === 'mine' && !delMode) { mineCache = mr; paintMine(); delPaint(); } }
+      else if (v === 'mine' && !coBusy && !coArm) { var mr = await loadMine(); if (mr) { mineCache = mr; await coLoad(); } if (mr && view === 'mine' && !delMode && !coBusy && !coArm) { paintMine(); delPaint(); } }
       else if (v === 'fav') { await favLoad(true); if (view === 'fav') paintFav(); }
       else if (v === 'match') { await loadMatch(sbMid, false); }
       else if (v === 'home' && sbOn) {
@@ -3143,14 +3145,52 @@
     var cw = s.cw === 'won' ? '<i class="pz-cw won" aria-hidden="true">✓</i>' : s.cw === 'lost' ? '<i class="pz-cw lost" aria-hidden="true">✕</i>' : '';
     return '<em class="pz-lvt' + (s.cw ? ' cw-' + esc(s.cw) : '') + '">' + cw + p(sc) + (m != null && m !== '' ? '<small dir="ltr"><i class="pz-lvd"></i>' + esc(String(m)) + '’</small>' : '') + '</em>';
   }
+  /* 2026-11-23 (propriétaire : « oui pour le cash out ») — offres d'encaissement des coupons ouverts (spCashQ), relues avec
+     « Mes paris » ; 1er toucher = « Confirmer 9,20 $ », 2e toucher (dans les 4 s) = encaisser (spCash, contrôle du direct côté
+     serveur, sans compte à rebours : le bouton clignote « … »). */
+  var coQ = {}, coArm = '', coArmT = 0, coBusy = false;
+  async function coLoad() {
+    var ids = (mineCache || []).filter(function (b) { return (b.status || 'open') === 'open' && b.co == null && (b.sel || []).every(function (q) { return !!q.mk; }); }).slice(0, 30).map(function (b) { return b.id; });
+    if (!ids.length) { coQ = {}; return false; }
+    var r = null; try { r = await D6.Api.post('spCashQ', { ids: ids }, 15000); } catch (e) { r = null; }
+    if (!r || !r.ok) return false;
+    var nq = r.q || {}, chg = JSON.stringify(nq) !== JSON.stringify(coQ); coQ = nq; return chg;
+  }
+  async function coTap(b) {
+    var id = b.getAttribute('data-co'), amt = +b.getAttribute('data-amt');
+    if (coBusy || !id || !(amt > 0)) return;
+    if (coArm !== id || Date.now() - coArmT > 4000) {
+      coArm = id; coArmT = Date.now(); b.classList.add('arm');
+      var t = b.querySelector('span'); if (t) t.textContent = T18('sbCoConf', 'Confirm');
+      setTimeout(function () { if (coArm === id && Date.now() - coArmT >= 3900) { coArm = ''; b.classList.remove('arm'); var t2 = b.querySelector('span'); if (t2) t2.textContent = T18('sbCoBtn', 'Cash out'); } }, 4000);
+      return;
+    }
+    coArm = ''; coBusy = true; b.classList.remove('arm'); b.classList.add('busy'); b.disabled = true;
+    var t3 = b.querySelector('span'); if (t3) t3.textContent = '…';
+    var r = null; try { r = await D6.Api.post('spCash', { id: id, amt: amt }, 60000); } catch (e) { r = null; }
+    coBusy = false;
+    if (r && r.ok) {
+      delete coQ[id];
+      if (ctx.afterPlay) ctx.afterPlay({ mode: 'real', bal: r.bal, win: r.amt, stake: 0 });
+      if (mineCache && r.bet) mineCache = mineCache.map(function (q) { return q.id === id ? r.bet : q; });
+      sbToast('✓ ' + T18('sbCoDone', 'Cashed out') + ' · ' + money(r.amt), 'ok');
+    } else if (r && r.reason === 'coChg' && r.amt > 0) {
+      coQ[id] = r.amt; sbToast(T18('sbCoNew', 'New offer') + ' : ' + money(r.amt), 'info');
+    } else {
+      delete coQ[id];
+      sbToast(r && r.reason === 'susp' ? NX().rfEv || T18('sbCoOff', 'Cash out not available right now') : T18('sbCoOff', 'Cash out not available right now'), 'err');
+    }
+    if (view === 'mine') paintMine();
+  }
   function receipts(bets) {
     var x = XX(), n = NX();
     if (!bets.length) return empty(x.noBets, x.seeBets, null, 'home');
     var ST = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL };
     var html = bets.slice(0, rcLimit).map(function (bt, bi) {
-      var st = bt.status || 'open', id = String(bt.id || ''), on = !!rcOpen[id];
-      var big = st === 'won' ? '+' + money(bt.win) : st === 'lost' ? '−' + money(bt.stake - (bt.win || 0)) : money(st === 'void' ? bt.stake : bt.pot); // moitié perdue : la partie rendue est déduite
-      var lab = st === 'won' ? x.wonL : st === 'lost' ? x.lostL : st === 'void' ? x.voidL : x.potL;
+      var st = bt.status || 'open', id = String(bt.id || ''), on = !!rcOpen[id], co = bt.co != null;
+      var big = co ? '+' + money(bt.co) : st === 'won' ? '+' + money(bt.win) : st === 'lost' ? '−' + money(bt.stake - (bt.win || 0)) : money(st === 'void' ? bt.stake : bt.pot); // moitié perdue : la partie rendue est déduite
+      var lab = co ? T18('sbCoDone', 'Cashed out') : st === 'won' ? x.wonL : st === 'lost' ? x.lostL : st === 'void' ? x.voidL : x.potL;
+      var cq = st === 'open' && coQ[id] ? coQ[id] : 0;
       var multi = bt.sel.length > 1, kind = multi ? x.rcCombo + ' · ' + bt.sel.length : x.rcSingle;
       var show = multi ? bt.sel.slice(0, 3) : bt.sel;
       var sels = show.map(function (s) {
@@ -3160,10 +3200,11 @@
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + (delSel[id] ? ' pz-dchk' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' + '<i class="pz-dck" aria-hidden="true"></i>' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
-          '<span class="pz-b1"><em class="sp2-pill">' + esc(ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + ''/* v3316 (propriétaire) : logo cadeau rond retiré des cartes de paris (le bonus reste affiché dans la carte) */ + (st === 'open' && bt.sel.some(function (s) { return Array.isArray(s.cs); }) ? '<i class="pz-blv"><i></i>' + esc(n.live) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
+          '<span class="pz-b1"><em class="sp2-pill' + (co ? ' pz-copill' : '') + '">' + esc(co ? T18('sbCoDone', 'Cashed out') : ST[st] || st) + '</em><span class="pz-bk2" dir="auto">' + esc(kind) + '</span>' + ''/* v3316 (propriétaire) : logo cadeau rond retiré des cartes de paris (le bonus reste affiché dans la carte) */ + (st === 'open' && bt.sel.some(function (s) { return Array.isArray(s.cs); }) ? '<i class="pz-blv"><i></i>' + esc(n.live) + '</i>' : '') + '<time dir="auto">' + esc(bt.at ? when2(bt.at) : '') + '</time></span>' +
           (on ? '' : '<span class="pz-bsel">' + sels + '</span>') +
           '<span class="sp2-bf"><span><small class="fit">' + esc(x.stakeL) + '</small><b class="fit">' + money(bt.stake) + '</b></span><span><small class="fit">' + esc(x.oddL) + '</small><b class="fit">' + Number(bt.odd).toFixed(2) + '</b></span>' +
           '<span class="big"><small class="fit">' + esc(lab) + '</small><b class="fit">' + big + '</b></span><i class="sp2-chev">' + IC.back + '</i></span></button>' +
+        (cq ? '<button type="button" class="pz-co" data-co="' + esc(id) + '" data-amt="' + cq + '"><span dir="auto">' + esc(T18('sbCoBtn', 'Cash out')) + '</span><b dir="ltr">' + money(cq) + '</b></button>' : '') +
         (on ? rcBody(bt) : '') + '</div>';
     }).join('');
     if (bets.length > rcLimit) html += '<button type="button" class="sp2-more" id="spMore"><span class="fit">' + esc(x.more) + ' (' + (bets.length - rcLimit) + ')</span></button>';
@@ -3182,6 +3223,7 @@
     if (view !== 'mine' || !$('spRcs')) return;
     if (r) { mineCache = r; paintMine(); delPaint(); }
     else if (!mineCache) $('spRcs').innerHTML = '<p class="sp2-none fit">' + esc(x.e_unavailable) + '</p>';
+    if (r && await coLoad() && view === 'mine' && !delMode && !coBusy) paintMine();
     schedule();
   }
   // ticket : en-tête = flèche retour · « Coupon » · nombre · Tout supprimer
