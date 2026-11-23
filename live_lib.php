@@ -51,7 +51,11 @@ function live_update(string $f, callable $fn, array $def = []) {
   if ($lock) flock($lock, LOCK_EX);
   $cur = live_read_json($f, $def);
   $res = $fn($cur);
-  if (is_array($res) && isset($res['__write'])) live_write_json($f, $res['__write']);
+  if (is_array($res) && isset($res['__write'])) {
+    live_write_json($f, $res['__write']);
+    // 2026-11-23 : une conversation a changé → notée pour le sommaire de la boîte admin (voir live_index()).
+    if (basename(dirname($f)) === 'threads') live_index_dirty(basename($f, '.json'));
+  }
   if ($lock) { flock($lock, LOCK_UN); fclose($lock); }
   return $res;
 }
@@ -173,12 +177,18 @@ function live_quota_ok(string $uid, string $kind, int $max, int $window): bool {
 }
 
 /** Message dans la conversation d'un joueur. $from = 'u' (joueur) ou 'a' (OROLADO). */
-function live_add_msg(array $user, string $from, string $text, string $img = '', string $wh = ''): array {
+function live_add_msg(array $user, string $from, string $text, string $img = '', string $wh = '', string $cid = ''): array {
   $uid = (string) ($user['id'] ?? '');
   if ($uid === '' || ($text === '' && $img === '')) return ['ok' => false];
   $msg = ['id' => 'm' . bin2hex(random_bytes(6)), 'f' => $from === 'a' ? 'a' : 'u', 't' => $text, 'at' => time()];
   if ($img !== '') { $msg['img'] = $img; if ($wh !== '') $msg['wh'] = $wh; }
-  return live_update(live_thread_file($uid), function ($th) use ($user, $uid, $msg, $from) {
+  // 2026-11-23 : « Réessayer » après une coupure réseau ne doit jamais envoyer DEUX fois la même réponse (clé d'envoi).
+  $cid = preg_replace('/[^A-Za-z0-9_-]/', '', substr($cid, 0, 40)) ?? '';
+  if ($cid !== '') $msg['cid'] = $cid;
+  return live_update(live_thread_file($uid), function ($th) use ($user, $uid, $msg, $from, $cid) {
+    if ($cid !== '') foreach (array_slice((array) ($th['msgs'] ?? []), -40) as $old) {
+      if (is_array($old) && (string) ($old['cid'] ?? '') === $cid) return ['ok' => true, 'msg' => $old, 'dup' => true];
+    }
     $th['uid'] = $uid;
     if ($from !== 'a') {
       $th['email'] = (string) ($user['email'] ?? $th['email'] ?? '');
@@ -190,7 +200,7 @@ function live_add_msg(array $user, string $from, string $text, string $img = '',
     $th['msgs'] = array_slice($msgs, -LIVE_THREAD_KEEP);
     $th['at'] = $msg['at'];
     if ($from === 'a') { $th['unreadUser'] = (int) ($th['unreadUser'] ?? 0) + 1; $th['unreadAdmin'] = 0; }
-    else { $th['unreadAdmin'] = (int) ($th['unreadAdmin'] ?? 0) + 1; }
+    else { $th['unreadAdmin'] = (int) ($th['unreadAdmin'] ?? 0) + 1; unset($th['resolvedAt']); } // le joueur réécrit : plus « résolu »
     return ['ok' => true, 'msg' => $msg, '__write' => $th];
   });
 }
@@ -322,37 +332,208 @@ function live_mark_unread_admin(string $uid): bool {
   return !empty($r['ok']);
 }
 
-/** Liste des conversations pour l'admin (plus récentes d'abord). */
-function live_threads(int $limit = 200): array {
-  $out = [];
-  foreach (glob(live_dir('threads') . '/*.json') ?: [] as $f) {
-    $th = live_read_json($f, []);
-    if (!$th || empty($th['msgs'])) continue;
-    $last = end($th['msgs']);
-    // 2026-10-23 (propriétaire) : l'aperçu montre le dernier VRAI message (pas la réponse automatique « Merci pour ton
-    // message 🙏 », qui cachait ce que le joueur avait écrit).
-    $show = $last;
-    foreach (array_reverse((array) $th['msgs']) as $mm) { if (is_array($mm) && empty($mm['auto'])) { $show = $mm; break; } }
-    $out[] = [
-      'uid' => (string) ($th['uid'] ?? ''), 'publicId' => (string) ($th['publicId'] ?? ''), 'name' => (string) ($th['name'] ?? ''),
-      'email' => (string) ($th['email'] ?? ''), 'at' => (int) ($th['at'] ?? 0), 'unread' => (int) ($th['unreadAdmin'] ?? 0),
-      'last' => is_array($last) ? (($last['f'] === 'a' ? 'Vous : ' : '') . live_media_label($last)) : '',
-      'prev' => is_array($show) ? (($show['f'] === 'a' ? 'Vous : ' : '') . live_media_label($show)) : '',
-      'from' => is_array($show) ? (($show['f'] ?? 'u') === 'a' ? 'a' : 'u') : 'u',
-      'ph' => function_exists('live_photo_of') ? live_photo_of((string) ($th['uid'] ?? '')) : '',
-    ];
+/**
+ * 2026-11-23 (propriétaire : « améliore la partie Messages, rends-la rapide ») — SOMMAIRE de la boîte admin.
+ * Avant : chaque ouverture de la liste (et chaque sondage toutes les 20 s, et chaque conversation ouverte) relisait et
+ * décodait TOUTES les conversations (jusqu'à 5000 messages chacune), deux fois (liste + compteur « non lus »).
+ * Maintenant : data/live/threads_idx.json garde une ligne courte par conversation (nom, aperçu, non lus, résolu…),
+ * avec l'« empreinte » du fichier (date + taille + inode). Seules les conversations qui ont changé sont relues :
+ * celles notées par live_update() dans threads_dirty.log, et toute autre dont l'empreinte a bougé (filet de sécurité).
+ * Les conversations elles-mêmes ne changent PAS de format (rien à migrer, rien ne peut se perdre) ; le sommaire peut être
+ * effacé à tout moment : il se refait tout seul.
+ */
+function live_index_file(): string { return live_dir() . '/threads_idx.json'; }
+function live_index_dirty_file(): string { return live_dir() . '/threads_dirty.log'; }
+
+/** Note qu'une conversation a changé (ajout d'une ligne, sous verrou : rien ne se perd si deux écritures se croisent). */
+function live_index_dirty(string $uid): void {
+  unset($GLOBALS['LIVE_IDX_MEMO']);
+  @file_put_contents(live_index_dirty_file(), live_safe_id($uid) . "\n", FILE_APPEND | LOCK_EX);
+}
+
+function live_file_sig(string $f): string {
+  $st = @stat($f);
+  return $st ? ($st['mtime'] . '-' . $st['size'] . '-' . $st['ino']) : '';
+}
+
+/** Ligne courte d'une conversation (ce que la liste affiche). */
+function live_thread_summary(array $th, string $uid, string $sig): ?array {
+  $msgs = (array) ($th['msgs'] ?? []);
+  if (!$msgs) return null;
+  $last = end($msgs);
+  // 2026-10-23 (propriétaire) : l'aperçu montre le dernier VRAI message (pas la réponse automatique « Merci pour ton
+  // message 🙏 », qui cachait ce que le joueur avait écrit).
+  $show = $last;
+  for ($k = count($msgs) - 1; $k >= 0; $k--) { $mm = $msgs[$k] ?? null; if (is_array($mm) && empty($mm['auto'])) { $show = $mm; break; } }
+  $cut = static fn(string $t): string => preg_match('/^.{0,140}/us', str_replace("\n", ' ', $t), $m) ? $m[0] : '';
+  return [
+    'uid' => (string) ($th['uid'] ?? $uid), 'publicId' => (string) ($th['publicId'] ?? ''), 'name' => (string) ($th['name'] ?? ''),
+    'email' => (string) ($th['email'] ?? ''), 'at' => (int) ($th['at'] ?? (is_array($last) ? ($last['at'] ?? 0) : 0)), 'unread' => (int) ($th['unreadAdmin'] ?? 0),
+    'res' => (int) ($th['resolvedAt'] ?? 0), 'n' => count($msgs),
+    'last' => is_array($last) ? $cut((($last['f'] ?? '') === 'a' ? 'Vous : ' : '') . live_media_label($last)) : '',
+    'prev' => is_array($show) ? $cut((($show['f'] ?? '') === 'a' ? 'Vous : ' : '') . live_media_label($show)) : '',
+    'from' => is_array($show) ? (($show['f'] ?? 'u') === 'a' ? 'a' : 'u') : 'u',
+    'sig' => $sig,
+  ];
+}
+
+/** Sommaire de toutes les conversations [uid => ligne], à jour. */
+function live_index(): array {
+  if (isset($GLOBALS['LIVE_IDX_MEMO'])) return $GLOBALS['LIVE_IDX_MEMO']; // déjà fait pendant cette demande
+  $dir = live_dir('threads');
+  $lock = @fopen(live_index_file() . '.lock', 'c');
+  if ($lock) flock($lock, LOCK_EX);
+  try {
+    $idx = (array) (live_read_json(live_index_file(), [])['t'] ?? []);
+    $changed = false;
+    // 1) conversations notées « changées » (lecture + remise à zéro du carnet sous le même verrou que les ajouts)
+    $dirty = [];
+    $df = live_index_dirty_file();
+    if (is_file($df) && ($h = @fopen($df, 'c+'))) {
+      flock($h, LOCK_EX);
+      foreach (explode("\n", (string) stream_get_contents($h)) as $u) { $u = live_safe_id(trim($u)); if ($u !== '') $dirty[$u] = true; }
+      ftruncate($h, 0); fflush($h); flock($h, LOCK_UN); fclose($h);
+    }
+    // 2) toutes les conversations présentes : empreinte du fichier (sans le lire)
+    clearstatcache();
+    $seen = [];
+    foreach (glob($dir . '/*.json') ?: [] as $f) {
+      $uid = basename($f, '.json');
+      $seen[$uid] = true;
+      $sig = live_file_sig($f);
+      if (!isset($dirty[$uid]) && isset($idx[$uid]) && is_array($idx[$uid]) && ($idx[$uid]['sig'] ?? '') === $sig) continue;
+      $th = live_read_json($f, []);
+      $row = $th ? live_thread_summary($th, $uid, $sig) : null;
+      $idx[$uid] = $row ?? ['sig' => $sig, 'empty' => 1]; // conversation vide : notée pour ne pas la relire à chaque fois
+      $changed = true;
+    }
+    foreach (array_keys($idx) as $uid) if (!isset($seen[$uid])) { unset($idx[$uid]); $changed = true; }
+    if ($changed) live_write_json(live_index_file(), ['v' => 1, 't' => $idx]);
+  } finally {
+    if ($lock) { flock($lock, LOCK_UN); fclose($lock); }
   }
-  usort($out, static fn($a, $b) => [$b['unread'] > 0, $b['at']] <=> [$a['unread'] > 0, $a['at']]);
-  return array_slice($out, 0, $limit);
+  return $GLOBALS['LIVE_IDX_MEMO'] = array_filter($idx, static fn($r) => is_array($r) && empty($r['empty']) && isset($r['uid']));
+}
+
+/** État d'une ligne pour les filtres : unread (non lu) / resolved (résolu) / read (lu). */
+function live_index_state(array $r): string {
+  if ((int) ($r['unread'] ?? 0) > 0) return 'unread';
+  return (int) ($r['res'] ?? 0) > 0 ? 'resolved' : 'read';
+}
+
+/**
+ * Page de la liste admin : filtre (all|unread|read|resolved), recherche (nom, numéro, ID, e-mail ; et texte des messages
+ * dès 3 lettres), décalage + taille de page. « Tous » : non lus en haut (choix du propriétaire, 2026-10-23), puis le plus récent.
+ */
+function live_inbox_page(string $filter = 'all', string $q = '', int $offset = 0, int $limit = 40): array {
+  $idx = live_index();
+  $counts = ['all' => 0, 'unread' => 0, 'read' => 0, 'resolved' => 0];
+  foreach ($idx as $r) { $counts['all']++; $counts[live_index_state($r)]++; }
+  $q = trim(mb_strtolower($q));
+  $hits = [];
+  if ($q !== '') {
+    $low = static fn(string $s): string => mb_strtolower($s);
+    foreach ($idx as $uid => $r) {
+      if (str_contains($low($r['name'] . ' ' . $r['publicId'] . ' ' . $r['email'] . ' ' . $r['uid']), $q)) { $hits[$uid] = ''; continue; }
+      if (mb_strlen($q) < 3) continue;
+      // Texte des messages : lecture brute du fichier, décodage seulement s'il peut contenir le mot (rapide).
+      $raw = (string) @file_get_contents(live_thread_file((string) $uid));
+      if ($raw === '') continue;
+      $maybe = str_contains($low($raw), $q);
+      // mot avec accent, guillemet ou barre : il peut être écrit « échappé » (é, \", \/) dans le fichier → on décode pour voir
+      if (!$maybe && preg_match('~[^\x20-\x7E]|["\\\\/]~', $q) && str_contains($raw, '\\')) $maybe = true;
+      if (!$maybe) continue;
+      $th = json_decode($raw, true);
+      foreach (array_reverse((array) ($th['msgs'] ?? [])) as $m) {
+        $t = (string) ($m['t'] ?? '');
+        if ($t !== '' && str_contains($low($t), $q)) { $hits[$uid] = preg_match('/^.{0,140}/us', str_replace("\n", ' ', $t), $mm) ? $mm[0] : ''; break; }
+      }
+    }
+    $idx = array_intersect_key($idx, $hits);
+  }
+  $rows = array_values(array_filter($idx, static fn($r) => $filter === 'all' || live_index_state($r) === $filter || !in_array($filter, ['unread', 'read', 'resolved'], true)));
+  usort($rows, $filter === 'all'
+    ? static fn($a, $b) => [(int) ($b['unread'] > 0), $b['at']] <=> [(int) ($a['unread'] > 0), $a['at']]
+    : static fn($a, $b) => $b['at'] <=> $a['at']);
+  $total = count($rows);
+  $limit = max(1, min(200, $limit));
+  $offset = max(0, $offset);
+  $page = array_slice($rows, $offset, $limit);
+  foreach ($page as &$r) {
+    $r['state'] = live_index_state($r);
+    $r['ph'] = function_exists('live_photo_of') ? live_photo_of((string) $r['uid']) : '';
+    if (isset($hits[$r['uid']]) && $hits[$r['uid']] !== '') $r['hit'] = $hits[$r['uid']];
+    unset($r['sig']);
+  }
+  unset($r);
+  return ['threads' => $page, 'total' => $total, 'counts' => $counts, 'offset' => $offset, 'more' => $offset + count($page) < $total];
+}
+
+/** Liste des conversations pour l'admin (ancienne forme : non lus en haut, puis les plus récentes). */
+function live_threads(int $limit = 200): array {
+  return live_inbox_page('all', '', 0, $limit)['threads'];
 }
 
 function live_unread_admin(): int {
   $n = 0;
-  foreach (glob(live_dir('threads') . '/*.json') ?: [] as $f) {
-    $th = live_read_json($f, []);
-    if ((int) ($th['unreadAdmin'] ?? 0) > 0) $n++;
-  }
+  foreach (live_index() as $r) if ((int) ($r['unread'] ?? 0) > 0) $n++;
   return $n;
+}
+
+/** 2026-11-23 — « Résolu » : l'admin range la conversation (elle redevient active dès que le joueur réécrit). */
+function live_set_resolved(string $uid, bool $on): bool {
+  $f = live_thread_file($uid);
+  if ($uid === '' || !is_file($f)) return false;
+  $r = live_update($f, function ($th) use ($on) {
+    if ($on) { $th['resolvedAt'] = time(); $th['unreadAdmin'] = 0; }
+    else unset($th['resolvedAt']);
+    return ['ok' => true, '__write' => $th];
+  });
+  return !empty($r['ok']);
+}
+
+/**
+ * 2026-11-23 — une page de la conversation : les $limit derniers messages, ou ceux AVANT $before (« voir plus »),
+ * ou seulement ceux APRÈS $after (sondage : rien de lourd quand rien n'a changé).
+ */
+function live_thread_page(array $th, int $limit = 50, string $before = '', string $after = ''): array {
+  $msgs = array_values(array_filter((array) ($th['msgs'] ?? []), 'is_array'));
+  $n = count($msgs);
+  $limit = max(1, min(300, $limit));
+  if ($after !== '') {
+    for ($k = $n - 1; $k >= 0; $k--) if ((string) ($msgs[$k]['id'] ?? '') === $after) return ['msgs' => array_slice($msgs, $k + 1), 'more' => null, 'n' => $n, 'mode' => 'after'];
+    // message de départ introuvable : on renvoie la dernière page complète
+  }
+  $end = $n;
+  if ($before !== '') { $end = 0; for ($k = $n - 1; $k >= 0; $k--) if ((string) ($msgs[$k]['id'] ?? '') === $before) { $end = $k; break; } }
+  $start = max(0, $end - $limit);
+  return ['msgs' => array_slice($msgs, $start, $end - $start), 'more' => $start > 0, 'n' => $n, 'mode' => $before !== '' ? 'before' : 'last'];
+}
+
+/** 2026-11-23 — réponses rapides de l'admin (modifiables) : data/live/quick_replies.json. */
+const LIVE_QR_DEFAULT = [
+  'Bonjour 👋 Je regarde votre demande tout de suite.',
+  'Votre dépôt est bien crédité ✅ Regardez votre solde réel.',
+  'Votre retrait est validé ✅ Il arrive sur votre compte dans quelques minutes.',
+  'Merci d\'envoyer une capture d\'écran du paiement (montant, date, numéro).',
+  'C\'est réglé ✅ Merci et bon jeu sur OROLADO !',
+];
+function live_quick_replies(): array {
+  $l = live_read_json(live_dir() . '/quick_replies.json', null);
+  if (!is_array($l) || !isset($l['l']) || !is_array($l['l'])) return LIVE_QR_DEFAULT;
+  return array_values(array_filter(array_map('strval', $l['l']), static fn($t) => $t !== ''));
+}
+function live_quick_replies_set(array $list): array {
+  $out = [];
+  foreach ($list as $t) {
+    $t = live_clean_text((string) $t);
+    if ($t === '') continue;
+    if (preg_match('/^.{0,500}/us', $t, $m)) $t = $m[0];
+    $out[] = $t;
+    if (count($out) >= 20) break;
+  }
+  live_update(live_dir() . '/quick_replies.json', static fn() => ['ok' => true, '__write' => ['l' => $out]]);
+  return $out;
 }
 
 /* ---------- Actualités ---------- */
