@@ -1643,3 +1643,8 @@ html:root body #casinoModal .sp2 .pz-ban.goal::before,html:root body #casinoModa
 .sp-rcpt-s .sp-rcpt-fs.sp-rcpt-lv{background:#FEF2F2;border-color:#FECACA}
 .sp-rcpt-s .sp-rcpt-fs.sp-rcpt-lv .fsN{color:#DC2626;letter-spacing:.04em}
 .sp-rcpt-s .sp-rcpt-ab{display:block;margin-top:3px;color:#64748B;font-size:12px;font-weight:600;line-height:1.2}
+/* 2026-11-23 (propriétaire, modèles « Direct 2 » / « Terminé 2 ») : score entre les équipes, petite étiquette FIN,
+   « En direct · 70’ » sous le choix (vert, sans point) */
+.sp-rcpt-s small .sp-rcpt-sc{display:inline-block;margin:0 8px;color:#111;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+.sp-rcpt-s small .sp-rcpt-fin{display:inline-block;margin-inline-start:8px;padding:1px 6px;border-radius:4px;background:#475569;color:#fff;font:800 10px/1.4 inherit;font-style:normal;letter-spacing:.06em;text-transform:uppercase;vertical-align:1px}
+.sp-rcpt-s .sp-rcpt-live{display:block;margin-top:4px;color:#16A34A;font-size:12.5px;font-weight:700}
