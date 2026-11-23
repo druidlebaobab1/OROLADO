@@ -1111,7 +1111,16 @@ function sb_sel_late(string $id, array $sel, int $now): ?bool {
   $mBet = (int) ($sel['m'] ?? 0); $sc = (array) ($sel['sc'] ?? []);
   if ($mBet <= 0 || count($sc) !== 2) return false; // ancien pari sans minute / score : réglé normalement
   $j = sb_cache_peek('fixtures?id=' . $id, 86400, $now);
-  if ($j === null && sb_has_key() && sb_budget($now)['left'] > 300) $j = sb_get_cached('fixtures?id=' . $id, 86400, $now);
+  // 2026-11-23 (c) (site lent) : jamais d'appel au fournisseur pendant une demande ; lu APRÈS la réponse (une fois par match),
+  // le pari est réglé à la relecture suivante (quelques minutes)
+  if ($j === null && sb_has_key() && sb_budget($now)['left'] > 300) {
+    static $queued = [];
+    if (empty($queued[$id])) { $queued[$id] = 1; register_shutdown_function(static function () use ($id, $now): void {
+      if (function_exists('fastcgi_finish_request')) { try { @fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
+      try { sb_get_cached('fixtures?id=' . $id, 86400, $now); } catch (Throwable $e) { /* jamais bloquant */ }
+    }); }
+    if (PHP_SAPI === 'cli' && !empty($GLOBALS['SB_FAKE_FETCH'])) $j = sb_get_cached('fixtures?id=' . $id, 86400, $now); // (tests)
+  }
   $r = is_array($j) ? (($j['response'] ?? [])[0] ?? null) : null;
   if (!is_array($r)) return null;
   $st0 = (string) ($sel['st0'] ?? ''); $cnt = [0, 0];
@@ -1924,13 +1933,16 @@ function sb_form(?array $user, string $fid, int $now = 0): array {
   if (!$h || !$a) return ['ok' => false, 'reason' => 'unavailable'];
   $ttl = 21600;
   $paths = ['fixtures/headtohead?h2h=' . $h . '-' . $a . '&last=5', 'fixtures?team=' . $h . '&last=5', 'fixtures?team=' . $a . '&last=5'];
-  $js = [];
-  foreach ($paths as $p) {
-    $j = sb_cache_peek($p, $ttl, $now);
-    if ($j === null && sb_has_key() && sb_budget($now)['left'] > 1500) $j = sb_get_cached($p, $ttl, $now);
-    $js[] = $j;
+  $js = []; $miss = [];
+  foreach ($paths as $p) { $j = sb_cache_peek($p, $ttl, $now); if ($j === null) $miss[] = $p; $js[] = $j; }
+  // 2026-11-23 (c) (site lent) : les lectures manquantes se font APRÈS la réponse (jamais un joueur qui attend le fournisseur)
+  if ($miss && sb_has_key() && sb_budget($now)['left'] > 1500) {
+    register_shutdown_function(static function () use ($miss, $ttl, $now): void {
+      if (function_exists('fastcgi_finish_request')) { try { @fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ } }
+      foreach ($miss as $p) { try { sb_get_cached($p, $ttl, $now); } catch (Throwable $e) { /* jamais bloquant */ } }
+    });
   }
-  if ($js[1] === null && $js[2] === null && $js[0] === null) return ['ok' => false, 'reason' => 'unavailable'];
+  if ($js[1] === null && $js[2] === null && $js[0] === null) return ['ok' => false, 'reason' => $miss ? 'pending' : 'unavailable'];
   $hr = sb_form_rows($js[1]); $ar = sb_form_rows($js[2]); $hh = sb_form_rows($js[0]);
   $pub = static fn(array $r): array => ['ts' => $r['ts'], 'h' => $r['h'][1], 'a' => $r['a'][1], 'g' => $r['g'], 'hi' => $r['h'][0], 'ai' => $r['a'][0], 'lg' => $r['lg']];
   return ['ok' => true, 'hi' => $h, 'ai' => $a, 'hf' => sb_form_wdl($hr, $h), 'af' => sb_form_wdl($ar, $a), 'hm' => array_map($pub, $hr), 'am' => array_map($pub, $ar), 'h2h' => array_map($pub, $hh)];
@@ -2776,6 +2788,7 @@ function sb_live_fresh_first(int $now): void {
   if ($now - (int) ($L['at'] ?? 0) <= sb_live_stale($now) - 3) return;
   /* 2026-11-23 (urgent : serveur bloqué) : JAMAIS d'attente — si une relecture est déjà en cours (ou a été tentée il y a moins
      de 8 s), on répond tout de suite avec ce qu'on a. Avant : verrou bloquant + fournisseur lent = toutes les demandes en file. */
+  return; // 2026-11-23 (c) (site lent / connexions bloquées) : AUCUN appel au fournisseur pendant la demande d'un joueur ; la relecture reste faite après la réponse (sb_after_response)
   if (!sb_has_key() || !sb_live_budget_ok($now)) return;
   $mark = sb_dir() . DIRECTORY_SEPARATOR . 'live-fresh.at';
   if ((int) @file_get_contents($mark) > $now - 8) return;

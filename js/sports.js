@@ -2508,11 +2508,13 @@
   }
   /* 2026-11-23 (propriétaire : « les dernières rencontres, quelques infos pour les joueurs ») : forme des 2 équipes (5 derniers
      matchs V / N / D) et 5 derniers face-à-face (sbForm, gardé 6 h par le serveur). Rien si l'API ne donne rien. */
-  var formC = {}, formOpen = false;
+  var formC = {}, formTry = {}, formOpen = false;
   function formLoad(fid) {
     if (formC[fid]) return;
     formC[fid] = { wait: 1 };
-    D6.Api.post('sbForm', { id: fid }, 15000).then(function (r) { formC[fid] = r && r.ok ? r : { none: 1 }; if (view === 'match' && sbMid === fid) formPaint(); })
+    D6.Api.post('sbForm', { id: fid }, 15000).then(function (r) {
+      if (r && !r.ok && r.reason === 'pending' && !formTry[fid]) { formTry[fid] = 1; setTimeout(function () { delete formC[fid]; if (view === 'match' && sbMid === fid) formLoad(fid); }, 9000); return; } // lu par le serveur après sa réponse : on redemande une fois
+      formC[fid] = r && r.ok ? r : { none: 1 }; if (view === 'match' && sbMid === fid) formPaint(); })
       .catch(function () { delete formC[fid]; });
   }
   function formPaint() {
