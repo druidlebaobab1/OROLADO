@@ -283,3 +283,6 @@ html body #screenAuth .brand-sub{margin:9px 0 18px!important}
   html body #screenAuth .brand-xl{font-size:1.15rem!important}
   html body #screenAuth .brand-sub{margin:3px 0 8px!important}
 }
+
+/* 2026-11-23 : date de mise à jour en haut des conditions */
+#termsModal .terms-body .tc-date{margin:0 0 10px;color:#9CA3AF;font-size:12.5px;font-weight:600;text-align:start}

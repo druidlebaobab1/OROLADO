@@ -23,7 +23,8 @@ function loadTerms() {
   for (const f of files) vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
   const I = ctx.D6.I18N, out = {};
   const keys = ['termsTitle', 'tcGiftsT', 'tcMoreT'];
-  for (let i = 1; i <= 27; i++) { keys.push('tc' + i + 't', 'tc' + i); if (i >= 19) keys.push('tc' + i + 'b'); }
+  for (let i = 1; i <= 37; i++) { keys.push('tc' + i + 't', 'tc' + i); if (i >= 19 && i <= 22) keys.push('tc' + i + 'b'); }
+  keys.push('tcDate');
   for (const c of ['en', 'fr', 'es', 'pt', 'ar', 'tr', 'de', 'ru', 'id', 'vi', 'hi']) {
     I.set(c); if (I.lang !== c) throw new Error('langue absente : ' + c);
     out[c] = {}; for (const k of keys) out[c][k] = String(I.t(k) || '').replace(/[⁦-⁩]/g, '').replace(/\$\s+(?=\d)/g, '$');
@@ -132,12 +133,13 @@ ${body}
 // 3) Page Conditions : 11 langues, le texte anglais est écrit en dur (pour Google et les vérificateurs).
 function termsHtml(T, l) {
   const t = T[l]; const upd = (NAV[l] || NAV.en).upd;
-  let h = `<h1>${esc(t.termsTitle)}</h1>\n`;
+  let h = `<h1>${esc(t.termsTitle)}</h1>\n<p class="upd">${esc(t.tcDate || '')}</p>\n`;
   for (let i = 1; i <= 18; i++) h += `<h3>${esc(t['tc' + i + 't'])}</h3>\n<p>${esc(t['tc' + i])}</p>\n`;
   h += `<h2>${esc(t.tcGiftsT)}</h2>\n`;
   for (let i = 19; i <= 22; i++) h += `<h3>${esc(t['tc' + i + 't'])}</h3>\n<p>${esc(t['tc' + i])}</p>\n<p class="ex">${esc(t['tc' + i + 'b'])}</p>\n`;
   h += `<h2>${esc(t.tcMoreT)}</h2>\n`; // v2790 : Jeux, Paris, Envoyer de l'argent, Amis & groupes, Identifiant & niveaux
-  for (let i = 23; i <= 27; i++) h += `<h3>${esc(t['tc' + i + 't'])}</h3>\n<p>${esc(t['tc' + i])}</p>\n`;
+  // 2026-11-23 : ordre affiché = Jeux, Paris, Direct, Encaisser, Predict, Codes, Envoyer, Amis, Identifiant, puis 28 à 33
+  for (const i of [23, 24, 28, 29, 30, 31, 25, 26, 27, 32, 33, 34, 35, 36, 37]) h += `<h3>${esc(t['tc' + i + 't'])}</h3>\n<p>${esc(t['tc' + i])}</p>\n`;
   h += `<div class="box">${l === 'fr' ? 'Contact : ' : 'Contact: '}<a href="mailto:${MAIL}">${MAIL}</a></div>\n`;
   void upd;
   return h;
@@ -182,7 +184,7 @@ const render2 = (DATA) => `var DATA=${JSON.stringify(DATA)};
   function render(l){document.getElementById('main').innerHTML=DATA[l]||DATA.en}`;
 const termData = {}; termLangs.forEach(l => termData[l] = termsHtml(T, l));
 const out = [
-  { file: 'conditions', title: 'OROLADO — Terms of Use & Risks', desc: 'OROLADO terms of use: synthetic indices trading, deposits, withdrawals, bonuses, risks and responsible gaming.', body: termData.en, langs: termLangs, script: render2(termData) },
+  { file: 'conditions', title: 'OROLADO — Terms of Use & Risks', desc: 'OROLADO terms of use: trading, sports betting (pre-match and live), casino games, Predict, deposits, withdrawals, bonuses, risks and responsible gaming.', body: termData.en, langs: termLangs, script: render2(termData) },
   { file: 'confidentialite', title: 'OROLADO — Privacy Policy', desc: 'How OROLADO uses and protects your personal data.', body: PRIVACY.en, langs: termLangs, script: render2(PRIVACY) },
   { file: 'contact', title: 'OROLADO — Contact', desc: 'Contact OROLADO support: ' + MAIL, body: CONTACT.en, langs: termLangs, script: render2(CONTACT) },
   { file: 'about', title: 'OROLADO — About Us', desc: 'About OROLADO: an online entertainment and gaming platform — synthetic-indices trading, games and sports predictions.', body: ABOUT.en, langs: termLangs, script: render2(ABOUT) }

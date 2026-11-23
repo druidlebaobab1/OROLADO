@@ -1639,3 +1639,7 @@ html:root body #casinoModal .sp2 .pz-ban .pz-btx small{font:600 11px/1.2 var(--s
    notification « BUT » (classe goal) : c'est ce qui la rendait grosse et carrée. */
 html:root body #casinoModal .sp2 .pz-ban.goal{height:auto!important;min-height:0!important;margin:0!important;border:0!important;outline:0!important;background:rgba(28,22,12,.92)!important}
 html:root body #casinoModal .sp2 .pz-ban.goal::before,html:root body #casinoModal .sp2 .pz-ban.goal::after{content:none!important;display:none!important}
+/* 2026-11-23 : reçu — score en direct (rouge) et « Parié à 1:3 · 60’ » */
+.sp-rcpt-s .sp-rcpt-fs.sp-rcpt-lv{background:#FEF2F2;border-color:#FECACA}
+.sp-rcpt-s .sp-rcpt-fs.sp-rcpt-lv .fsN{color:#DC2626;letter-spacing:.04em}
+.sp-rcpt-s .sp-rcpt-ab{display:block;margin-top:3px;color:#64748B;font-size:12px;font-weight:600;line-height:1.2}

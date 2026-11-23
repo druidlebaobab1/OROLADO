@@ -711,7 +711,15 @@
     var nc = D === 4 ? 3 : D === 3 ? 2 : 1, rowH = [58, 30, 24, 36, 32][D], rows = Math.ceil(n / nc);
     // 2026-10-31 (propriétaire) : pari simple / court avec score final → on réserve une 3e ligne pour le
     // carré de score SOUS le choix (comme à l'écran), pour qu'il ne croise jamais un nom de match long.
-    var showScore = D === 0 && sel.some(function (s) { return Array.isArray(s.fs); });
+    // 2026-11-23 (propriétaire : « le score actuel sur le reçu, c'est ce que les gens postent ») : score final, ou score EN DIRECT
+    // au moment du téléchargement (● 1:3 · 72'), et pour un pari pris en direct le score au moment du pari.
+    var scOf = function (s) {
+      if (Array.isArray(s.fs)) return { t: (+s.fs[0] || 0) + ':' + (+s.fs[1] || 0), live: false };
+      if (Array.isArray(s.cs)) return { t: (+s.cs[0] || 0) + ':' + (+s.cs[1] || 0) + (s.cm != null && s.cm !== '' ? ' · ' + s.cm + '\u2019' : ''), live: true };
+      return null;
+    };
+    var atBet = function (s) { return s.lv && Array.isArray(s.sc) ? (x.rcAtBet || 'Bet at') + ' ' + (+s.sc[0] || 0) + ':' + (+s.sc[1] || 0) + (s.m != null && s.m !== '' ? ' · ' + s.m + '\u2019' : '') : ''; };
+    var showScore = D === 0 && sel.some(function (s) { return !!scOf(s) || !!atBet(s); });
     if (showScore) rowH = 90;
     var HB = 96, stTop = HB, selHead = stTop + 158, selTop = selHead + 22, selEnd = selTop + rows * rowH;
     var totTop = selEnd + 18, totRow = 34, nT = bt.bst ? 6 : 5, H = totTop + nT * totRow + 112; // 2026-10-23 : + ligne « Bonus combiné »
@@ -759,7 +767,7 @@
       var avail = right - x0 - 6;
       g.textAlign = 'left';
       g.font = '800 ' + fs + 'px ' + FONT;
-      var ch = String(s.l || ''), chW = g.measureText(ch).width;
+      var sc1 = scOf(s), ch = String(s.l || '') + (sc1 ? '  (' + sc1.t + ')' : ''), chW = g.measureText(ch).width;
       g.font = '500 ' + fs + 'px ' + FONT;
       var sep = ' — ', sepW = g.measureText(sep).width, mt = String(s.t || '');
       var mW = Math.max(0, avail - Math.min(chW, avail * 0.62) - sepW);
@@ -776,12 +784,14 @@
       g.textAlign = 'left';
       // 2026-10-31 (propriétaire) : AGENCEMENT IDENTIQUE À L'ÉCRAN → nom du match, puis choix, puis le carré
       // de score SOUS le choix (jamais à côté du match, donc jamais de croisement même si le match est long).
-      var fsStr = Array.isArray(s.fs) ? ((+s.fs[0] || 0) + ':' + (+s.fs[1] || 0)) : '';
-      var matchY = fsStr ? y + 18 : y + 19, pickY = fsStr ? y + 40 : y + 41;
+      var scO = scOf(s), fsStr = scO ? (scO.live ? '\u25CF ' : '') + scO.t : '', ab = atBet(s);
+      var matchY = fsStr || ab ? y + 18 : y + 19, pickY = fsStr || ab ? y + 40 : y + 41;
       g.fillStyle = MUTE; g.font = '500 14px ' + FONT; g.fillText(ell(g, s.t, right - P - 4), P, matchY);
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
+      var boxEnd = P;
       if (fsStr) {
-        var FC = (s.r === 'won' || s.r === 'hwon') ? { bg: '#ECFDF3', bd: '#BBF7D0', n: '#15803D' }
+        var FC = scO.live && !(s.r === 'won' || s.r === 'lost' || s.r === 'void') ? { bg: '#FEF2F2', bd: '#FECACA', n: '#DC2626' }
+          : (s.r === 'won' || s.r === 'hwon') ? { bg: '#ECFDF3', bd: '#BBF7D0', n: '#15803D' }
           : (s.r === 'lost' || s.r === 'hlost') ? { bg: '#FEF2F2', bd: '#FECACA', n: '#B91C1C' }
           : (s.r === 'void') ? { bg: '#EFF6FF', bd: '#BFDBFE', n: '#1E40AF' }
           : { bg: '#F1F5F9', bd: '#E2E8F0', n: '#334155' };
@@ -790,7 +800,9 @@
         rr(g, bx, by, boxW, boxH, 3); g.fillStyle = FC.bg; g.fill();
         g.lineWidth = 1; g.strokeStyle = FC.bd; g.stroke();
         g.fillStyle = FC.n; g.textAlign = 'center'; g.fillText(fsStr, bx + boxW / 2, by + boxH / 2); g.textAlign = 'left';
+        boxEnd = bx + boxW + 10;
       }
+      if (ab) { g.fillStyle = MUTE; g.font = '600 12.5px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, ab, right - boxEnd - 4), boxEnd, y + 71); }
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {
       var y = selTop + i * rowH;
