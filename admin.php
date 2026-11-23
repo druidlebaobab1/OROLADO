@@ -3268,7 +3268,10 @@ if ($isAjax) {
       $rows = [];
       foreach (push_sub_files() as $pf) { $row = json_decode((string) @file_get_contents($pf), true); if (is_array($row) && (string) ($row['uid'] ?? '') === $uid) $rows[] = $row; }
       $sent = $rows ? push_send_rows($rows, push_payload('💬 OROLADO Live', $text !== '' ? $text : '📷 Photo', '/?live=1')) : ['sent' => 0];
-      admin_json(['ok' => !empty($r['ok']), 'msg' => !empty($r['msg']) ? $imgOut($r['msg']) : null, 'pushed' => (int) ($sent['sent'] ?? 0)]);
+      // 2026-11-23 (propriétaire) : la réponse part AUSSI par e-mail (au plus un toutes les 3 min par joueur)
+      $mailed = 'none';
+      if (!empty($r['ok'])) { try { require_once __DIR__ . '/notify_lib.php'; $mailed = orolado_notify_reply($uid, $text, $img !== ''); } catch (Throwable $eM) { $mailed = 'failed'; } }
+      admin_json(['ok' => !empty($r['ok']), 'msg' => !empty($r['msg']) ? $imgOut($r['msg']) : null, 'pushed' => (int) ($sent['sent'] ?? 0), 'mailed' => $mailed]);
     }
     if ($action === 'live_posts') {
       admin_json(['ok' => true, 'posts' => array_map(static fn($p) => array_merge($p, !empty($p['img']) ? ['img' => 'live.php?p=' . rawurlencode((string) $p['img'])] : []), live_posts())]);
@@ -5612,7 +5615,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     try {
       const img = f ? await shrink(f) : '';
       const j = await ajax({action:'live_reply', uid: cur, text, img});
-      if (j.ok) { $l('lvText').value = ''; grow(); clearFile(); $l('lvSt').textContent = j.pushed ? 'Envoyé ✓ — notification envoyée sur son téléphone' : 'Envoyé ✓ — il le verra dans Social'; open(cur, true); setTimeout(() => { if ($l('lvSt').textContent.startsWith('Envoyé')) $l('lvSt').textContent = ''; }, 4000); }
+      if (j.ok) { $l('lvText').value = ''; grow(); clearFile(); $l('lvSt').textContent = 'Envoyé ✓' + (j.pushed ? ' · 📱 notification' : '') + (j.mailed === 'sent' ? ' · ✉️ e-mail' : j.mailed === 'throttled' ? ' · ✉️ e-mail déjà envoyé il y a moins de 3 min' : j.mailed === 'none' ? ' · pas d\'e-mail (adresse absente)' : j.mailed === 'failed' ? ' · ✉️ e-mail non parti' : '') + (!j.pushed && j.mailed !== 'sent' ? ' — il le verra dans Social' : ''); open(cur, true); setTimeout(() => { if ($l('lvSt').textContent.startsWith('Envoyé')) $l('lvSt').textContent = ''; }, 4000); }
       else $l('lvSt').textContent = j.reason || 'Échec';
     } catch (e) { $l('lvSt').textContent = 'Échec : ' + (e.message || e); }
     $l('lvSend').disabled = false;
