@@ -1617,3 +1617,7 @@ html:root body #casinoModal .sp2 .pz-wa .fit{min-width:0;overflow:hidden;text-ov
    (le carré et son ombre ne touchent plus la ligne du haut) */
 html:root body #casinoModal .sp2 .pz-resq{padding-top:12px!important}
 html:root body #casinoModal .sp2 .pz-rhero{padding:2px 2px 2px!important;overflow:visible}
+/* 2026-11-23 (propriétaire, application iPhone : « en défilant, le dernier match reste caché sous la barre du bas ») :
+   plus de place en bas de chaque page dans l'application installée (la barre y est plus haute à cause du bas de l'écran) */
+html.ios-app body #casinoModal .sp2 .pz-page{padding-bottom:88px!important}
+html.ios-app body #casinoModal .sp2.pz-sbon .pz-page,html.ios-app body #casinoModal .sp2 .pz-sbon .pz-page{padding-bottom:144px!important}
