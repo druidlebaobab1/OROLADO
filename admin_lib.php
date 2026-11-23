@@ -251,11 +251,47 @@ function admin_cache_file(string $name): string {
 }
 
 function admin_cache_get(string $key, int $ttl): ?array {
+  if (($GLOBALS['ADMIN_FORCE_KEY'] ?? '') === $key) return null; // préparateur : on recalcule CETTE clé
   $f = admin_cache_file('admin_cache_' . preg_replace('/[^a-z0-9_]+/i', '', $key) . '.json');
   if (!is_file($f)) return null;
-  if (filemtime($f) + $ttl < time()) return null;
+  $age = time() - (int) filemtime($f);
+  // 2026-11-23 : PHP-FPM coupe toute demande au bout de 30 s ; avec les vraies données, relire Supabase (joueurs,
+  // dépôts, retraits) dépasse ce temps → la demande était tuée et le tableau affichait « — ». Quand le préparateur
+  // (scripts/admin-warm.php, sans limite de temps) tourne, on garde la dernière copie (5 min au plus) : il la renouvelle.
+  if ($age > $ttl && !($age <= ADMIN_WARM_STALE_MAX && admin_warm_active())) return null;
   $j = json_decode((string) file_get_contents($f), true);
   return is_array($j) ? $j : null;
+}
+
+/** 2026-11-23 — préparateur des chiffres admin (processus à part, hors limite de 30 s du serveur web). */
+const ADMIN_WARM_STALE_MAX = 300;
+function admin_warm_active(): bool {
+  static $memo = null;
+  if ($memo !== null) return $memo;
+  if (PHP_SAPI === 'cli' && defined('OROLADO_ADMIN_WARM')) return $memo = false; // le préparateur lui-même : jamais de vieille copie
+  $lk = @fopen(admin_cache_file('admin_warm.lock'), 'c');
+  if (!$lk) return $memo = false;
+  $free = flock($lk, LOCK_EX | LOCK_NB);
+  if ($free) flock($lk, LOCK_UN);
+  fclose($lk);
+  return $memo = !$free;
+}
+/** Chaque demande admin : « l'admin est là » + lance le préparateur s'il ne tourne pas. */
+function admin_warm_kick(): bool {
+  if (PHP_SAPI === 'cli') return false;
+  @touch(admin_cache_file('admin_warm.seen'));
+  if (admin_warm_active()) return true;
+  $k = admin_cache_file('admin_warm.kick');
+  if (is_file($k) && time() - (int) filemtime($k) < 20) return true; // vient d'être lancé
+  $dis = array_map('trim', explode(',', (string) ini_get('disable_functions')));
+  if (!function_exists('exec') || in_array('exec', $dis, true)) return false;
+  @touch($k);
+  $php = is_executable('/usr/bin/php') ? '/usr/bin/php' : 'php';
+  $script = __DIR__ . '/scripts/admin-warm.php';
+  if (!is_file($script)) return false;
+  $pre = is_executable('/usr/bin/setsid') ? '/usr/bin/setsid ' : '';
+  @exec($pre . 'nohup ' . escapeshellarg($php) . ' ' . escapeshellarg($script) . ' > /dev/null 2>&1 &');
+  return true;
 }
 
 /**
@@ -265,9 +301,21 @@ function admin_cache_get(string $key, int $ttl): ?array {
  */
 function admin_swr(string $key, int $fresh, callable $make): array {
   $f = admin_cache_file('admin_cache_' . preg_replace('/[^a-z0-9_]+/i', '', $key) . '.json');
+  if (($GLOBALS['ADMIN_FORCE_KEY'] ?? '') === $key) { $v = $make(); admin_cache_set($key, $v); return $v; } // préparateur
   $age = is_file($f) ? time() - (int) filemtime($f) : PHP_INT_MAX;
-  $j = $age <= 3600 ? json_decode((string) @file_get_contents($f), true) : null;
-  if (!is_array($j)) { $v = $make(); admin_cache_set($key, $v); return $v; }
+  // 2026-11-23 : une vieille copie (même de plusieurs heures) vaut mieux que « — » ; le préparateur la renouvelle.
+  $j = $age <= 86400 ? json_decode((string) @file_get_contents($f), true) : null;
+  if (!is_array($j)) {
+    if (admin_warm_kick()) { // pas encore de copie : on attend le préparateur (20 s au plus), sans calcul ici
+      for ($i = 0; $i < 40; $i++) {
+        usleep(500000); clearstatcache(true, $f);
+        if (is_file($f)) { $j = json_decode((string) @file_get_contents($f), true); if (is_array($j)) return $j; }
+      }
+      return [];
+    }
+    $v = $make(); admin_cache_set($key, $v); return $v;
+  }
+  if ($age > $fresh && admin_warm_kick()) return $j; // le préparateur s'en charge
   if ($age > $fresh) {
     static $queued = [];
     if (empty($queued[$key])) { $queued[$key] = 1; register_shutdown_function(static function () use ($key, $f, $make): void {

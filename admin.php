@@ -10,6 +10,8 @@ require_once __DIR__ . '/push_lib.php';
 if (is_file(__DIR__ . '/aff_rev_lib.php')) require_once __DIR__ . '/aff_rev_lib.php'; // suivi affiliation (part de revenu)
 orolado_load_env();
 date_default_timezone_set(admin_tz()->getName()); // v2956 : heure du téléphone de l'admin (voir admin_tz)
+// 2026-11-23 : scripts/admin-warm.php (préparateur des chiffres, hors du serveur web) charge seulement les fonctions de cette page.
+if (defined('OROLADO_ADMIN_FUNCS_ONLY')) { require_once __DIR__ . '/live_lib.php'; return; }
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
   session_name('oro_admin');
@@ -2660,6 +2662,7 @@ if ($isAjax) {
   // PHP gardait la session verrouillée pendant toute la demande → une liste lente bloquait TOUTES les demandes suivantes
   // (elles attendaient leur tour). Rien n'écrit plus dans la session après ce point : on la libère tout de suite.
   if (session_status() === PHP_SESSION_ACTIVE) @session_write_close();
+  admin_warm_kick(); // 2026-11-23 : préparateur des chiffres (hors limite de 30 s)
   if ($action === 'online_now') {
     admin_json(['ok' => true, 'online' => admin_online_now()]);
   }
@@ -3628,6 +3631,7 @@ if ($isAjax) {
 }
 
 $logged = admin_me() !== null;
+if ($logged) admin_warm_kick();
 $ADMIN_TABS = [
   'gA' => [
     ['signup_today', 'Inscriptions du Jour'],
