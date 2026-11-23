@@ -125,3 +125,67 @@ function orolado_notify_player(string $uid, string $kind, float $amount, string 
     if (function_exists('push_notify_user')) push_notify_user($uid, static fn(string $l): array => orolado_notify_texts($kind, $l, $amt, $from), '/');
   } catch (Throwable $e) { /* jamais bloquant */ }
 }
+
+/**
+ * 2026-11-23 (propriétaire : « quand je réponds aux gens dans Messages, ça doit partir aussi en e-mail, comme les e-mails
+ * Brevo ; souvent ils mettent longtemps avant de revenir ») — RÉPONSE DE L'ADMIN dans Messages : en plus de la notification
+ * (déjà envoyée par admin.php), un e-mail soigné dans la langue du joueur, avec le texte de la réponse et un bouton « Lire et
+ * répondre » (ouvre Messages sur le site). Au plus un e-mail toutes les 3 minutes par joueur (plusieurs petites réponses à la
+ * suite = un seul e-mail, avec la dernière). Jamais bloquant ; jamais vers une adresse admin réservée.
+ */
+function orolado_notify_reply_texts(string $lang): array {
+  $T = [
+    'fr' => ['Nouveau message d\'OROLADO 💬', 'Le service client OROLADO vous a répondu :', 'Lire et répondre'],
+    'en' => ['New message from OROLADO 💬', 'OROLADO customer service has replied to you:', 'Read and reply'],
+    'es' => ['Nuevo mensaje de OROLADO 💬', 'El servicio de atención de OROLADO te ha respondido:', 'Leer y responder'],
+    'pt' => ['Nova mensagem da OROLADO 💬', 'O atendimento da OROLADO respondeu-lhe:', 'Ler e responder'],
+    'ar' => ['رسالة جديدة من OROLADO 💬', 'ردّت عليك خدمة عملاء OROLADO:', 'اقرأ وردّ'],
+    'tr' => ['OROLADO\'dan yeni mesaj 💬', 'OROLADO müşteri hizmetleri size yanıt verdi:', 'Oku ve yanıtla'],
+    'vi' => ['Tin nhắn mới từ OROLADO 💬', 'Bộ phận hỗ trợ OROLADO đã trả lời bạn:', 'Đọc và trả lời'],
+    'id' => ['Pesan baru dari OROLADO 💬', 'Layanan pelanggan OROLADO membalas Anda:', 'Baca dan balas'],
+    'ru' => ['Новое сообщение от OROLADO 💬', 'Служба поддержки OROLADO ответила вам:', 'Прочитать и ответить'],
+    'de' => ['Neue Nachricht von OROLADO 💬', 'Der OROLADO-Kundendienst hat dir geantwortet:', 'Lesen und antworten'],
+    'hi' => ['OROLADO से नया संदेश 💬', 'OROLADO ग्राहक सेवा ने आपको जवाब दिया है:', 'पढ़ें और जवाब दें'],
+    'zh' => ['来自 OROLADO 的新消息 💬', 'OROLADO 客服已回复您：', '阅读并回复'],
+  ];
+  return $T[$lang] ?? $T['en'];
+}
+function orolado_notify_reply(string $uid, string $msg, bool $photo = false): string {
+  if ($uid === '') return 'none';
+  try {
+    $dir = orolado_data_dir() . '/live'; if (!is_dir($dir)) @mkdir($dir, 0750, true);
+    $mark = $dir . '/mailed_' . hash('sha256', 'reply|' . $uid) . '.at';
+    if ((int) @file_get_contents($mark) > time() - 180) return 'throttled';
+    $db = load_db();
+    $u = (isset($db['users'][$uid]) && is_array($db['users'][$uid])) ? $db['users'][$uid] : [];
+    $email = trim((string) ($u['email'] ?? ''));
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || !function_exists('orolado_mail_send')
+      || (function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($email))) return 'none';
+    $lang = strtolower(substr((string) ($u['lang'] ?? $u['language'] ?? 'fr'), 0, 2));
+    [$t, $intro, $btn] = orolado_notify_reply_texts($lang);
+    $hi = ['fr' => 'Bonjour', 'es' => 'Hola', 'pt' => 'Olá', 'de' => 'Hallo', 'tr' => 'Merhaba', 'id' => 'Halo', 'vi' => 'Xin chào', 'ru' => 'Здравствуйте', 'ar' => 'مرحبًا', 'hi' => 'नमस्ते', 'zh' => '您好'][$lang] ?? 'Hello';
+    $name = trim((string) ($u['displayName'] ?? $u['name'] ?? ''));
+    $greet = $hi . ($name !== '' ? ' ' . $name : '') . ',';
+    $body = trim($msg) !== '' ? trim($msg) : '📷';
+    if (mb_strlen($body) > 1500) $body = mb_substr($body, 0, 1500) . '…';
+    $e = static fn(string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $url = 'https://orolado.com/?live=1';
+    $html = '<!doctype html><html dir="' . ($lang === 'ar' ? 'rtl' : 'ltr') . '"><body style="margin:0;padding:0;background:#0F0B2A;">' .
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0F0B2A;padding:24px 0;"><tr><td align="center">' .
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#1B1442;border-radius:16px;">' .
+      '<tr><td style="padding:22px 28px 6px;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:bold;letter-spacing:3px;color:#FBBF24;">OROLADO</td></tr>' .
+      '<tr><td style="padding:6px 28px 14px;font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:bold;color:#FFFFFF;">' . $e($t) . '</td></tr>' .
+      '<tr><td style="padding:0 28px 10px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:23px;color:#E8EEF9;">' . $e($greet) . '</td></tr>' .
+      '<tr><td style="padding:0 28px 10px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:23px;color:#E8EEF9;">' . $e($intro) . '</td></tr>' .
+      '<tr><td style="padding:0 28px 16px;"><div style="padding:14px 16px;border-radius:12px;background:#0F0B2A;border-left:4px solid #FBBF24;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:23px;color:#FFFFFF;white-space:pre-wrap;">' . nl2br($e($body)) . ($photo && trim($msg) !== '' ? '<br>📷' : '') . '</div></td></tr>' .
+      '<tr><td style="padding:0 28px 22px;"><a href="' . $url . '" style="display:inline-block;padding:12px 22px;border-radius:10px;background:#FBBF24;color:#1A1205;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;">' . $e($btn) . '</a></td></tr>' .
+      '<tr><td style="padding:0 28px 26px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#A5B4D8;">OROLADO · <a href="https://orolado.com" style="color:#A5B4D8;">orolado.com</a></td></tr>' .
+      '</table></td></tr></table></body></html>';
+    $text = $greet . "\n\n" . $intro . "\n\n" . $body . "\n\n" . $btn . ' : ' . $url . "\n\nOROLADO\nhttps://orolado.com\n";
+    if (PHP_SAPI === 'cli' && isset($GLOBALS['OROLADO_FAKE_MAIL']) && is_callable($GLOBALS['OROLADO_FAKE_MAIL'])) $r = ($GLOBALS['OROLADO_FAKE_MAIL'])($email, $t, $text);
+    else $r = orolado_mail_send($email, $name, $t, $html, $text);
+    if (is_array($r) && !empty($r['ok'])) { @file_put_contents($mark, (string) time(), LOCK_EX); return 'sent'; }
+    error_log('OROLADO mail réponse Messages non envoyé : ' . (string) (is_array($r) ? ($r['reason'] ?? '?') : '?'));
+    return 'failed';
+  } catch (Throwable $e) { return 'failed'; }
+}
