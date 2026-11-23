@@ -1421,7 +1421,7 @@ const SP_CO_MARGE = 0.08;
 const SP_CO_MIN = 0.10;
 const SP_CO_LAST_MIN = 80; // 2026-11-23 (propriétaire : « à la 81e, à la 90e, le client gagne facilement ») : plus de cash out d'un match en direct dès la 80e
 /** Offre pour un coupon (données du fichier) : ['v' => montant, 'live' => [choix en direct relus]] ou null. */
-function sp_co_quote(array $b, ?array $user, int $now): ?array {
+function sp_co_quote(array $b, ?array $user, int $now, bool $final = false): ?array {
   if (($b['status'] ?? '') !== 'open' || ($b['mode'] ?? '') !== 'real' || isset($b['co']) || !function_exists('sb_pick')) return null;
   $f = 1.0; $pend = 0; $live = [];
   foreach ((array) ($b['sel'] ?? []) as $sl) {
@@ -1430,7 +1430,7 @@ function sp_co_quote(array $b, ?array $user, int $now): ?array {
     if ($r === 'void') continue;
     if ($r === 'won') { $f *= (float) $sl['odd']; continue; }
     if ($r !== null) return null; // perdu, moitié gagnée / perdue
-    $p = sb_pick((string) $sl['ev'], (string) $sl['k'], $user, $now);
+    $p = sb_pick((string) $sl['ev'], (string) $sl['k'], $user, $now, $final); // offre affichée : sans appel au fournisseur (2026-11-23 c)
     if (empty($p['ok']) || empty($p['sel']['odd']) || (float) $p['sel']['odd'] < 1.01) return null;
     $f *= (float) $sl['odd'] / (float) $p['sel']['odd']; $pend++;
     if (!empty($p['live'])) { if ((int) ($p['sel']['m'] ?? 0) >= SP_CO_LAST_MIN) return null; $live[] = $p['sel']; }
@@ -1457,7 +1457,7 @@ function sp_cash_out(array $db, array $user, string $id, float $amt, int $now = 
   if ($uid === '' || !preg_match('/^sp_[a-f0-9]{6,40}$/', $id) || !($amt >= SP_CO_MIN)) return ['ok' => false, 'reason' => 'param'];
   $find = static function () use ($id, $uid): ?array { foreach ((array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []) as $b) if ((string) ($b['id'] ?? '') === $id && (string) ($b['uid'] ?? '') === $uid) return $b; return null; };
   $b = $find(); if (!$b) return ['ok' => false, 'reason' => 'param'];
-  $o = sp_co_quote($b, $user, $now); if (!$o) return ['ok' => false, 'reason' => 'coOff'];
+  $o = sp_co_quote($b, $user, $now, true); if (!$o) return ['ok' => false, 'reason' => 'coOff'];
   if ($o['v'] < round($amt, 2) - 0.004) return ['ok' => false, 'reason' => 'coChg', 'amt' => $o['v']];
   if ($o['live'] && function_exists('sb_live_accept')) { // même contrôle anti-triche que les paris en direct
     $pk = $o['live']; $lr = sb_live_accept($pk, 'any', $user, $now);
