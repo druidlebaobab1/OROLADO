@@ -877,14 +877,19 @@ function admin_dep_is_paid(array $d): bool {
   return in_array($st, ['COMPLETED', 'PAID', 'SUCCESS', 'CONFIRMED'], true) && !admin_dep_is_bonus($d);
 }
 
+const ADMIN_DEP_PENDING_ST = ['PENDING', 'PROCESSING', 'WAITING', 'INITIATED', 'CREATED', 'OPEN'];
+const ADMIN_DEP_FAILED_ST = ['FAILED', 'CANCELED', 'CANCELLED', 'EXPIRED', 'REJECTED', 'ERROR', 'VOID'];
+/** 2026-11-23 : dépôts jamais payés gardés dans le tableau admin pendant ce nombre de jours (ensuite : plus chargés). */
+const ADMIN_DEP_KEEP_FAIL_D = 3;
+
 function admin_dep_is_pending(array $d): bool {
   $st = strtoupper(trim((string) ($d['status'] ?? '')));
-  return in_array($st, ['PENDING', 'PROCESSING', 'WAITING', 'INITIATED', 'CREATED', 'OPEN'], true);
+  return in_array($st, ADMIN_DEP_PENDING_ST, true);
 }
 
 function admin_dep_is_failed(array $d): bool {
   $st = strtoupper(trim((string) ($d['status'] ?? '')));
-  return in_array($st, ['FAILED', 'CANCELED', 'CANCELLED', 'EXPIRED', 'REJECTED', 'ERROR', 'VOID'], true);
+  return in_array($st, ADMIN_DEP_FAILED_ST, true);
 }
 
 /** 2026-11-20 (propriétaire) : au-delà de ce délai, un dépôt resté « en attente » sans être payé est considéré abandonné. */
@@ -1781,14 +1786,26 @@ function admin_withdrawals(): array {
 }
 
 function admin_deposits(): array {
-  $cached = admin_cache_get('deposits_epoch2', 20);
+  $cached = admin_cache_get('deposits_epoch3', 20);
   if (is_array($cached)) return $cached;
+  // 2026-11-23 (propriétaire : « des milliers de dépôts échoués, inutiles, rendent l'admin lourd ») : les dépôts JAMAIS payés
+  // (échoués, annulés, restés en attente) de plus de ADMIN_DEP_KEEP_FAIL_D jours ne sont plus chargés. Rien n'est effacé
+  // dans la base ; les dépôts payés restent tous.
+  $cut = gmdate('Y-m-d\TH:i:s\Z', time() - ADMIN_DEP_KEEP_FAIL_D * 86400);
+  $junk = [];
+  foreach (array_merge(ADMIN_DEP_FAILED_ST, ADMIN_DEP_PENDING_ST) as $st) { $junk[] = $st; $junk[] = strtolower($st); }
   $sb = admin_sb_all(
     'deposits',
     'id,user_id,amount,status,operator,reference,created_at,completed_at,alias_email',
     'created_at.desc',
-    1000
+    1000,
+    'or=' . rawurlencode('(created_at.gte.' . $cut . ',status.not.in.(' . implode(',', $junk) . '))')
   );
+  if (isset($GLOBALS['ADMIN_SB_FAIL']['deposits']) && !$sb) { // filtre refusé ? on relit comme avant (jamais une liste vide par erreur)
+    unset($GLOBALS['ADMIN_SB_FAIL']['deposits']);
+    $sb = admin_sb_all('deposits', 'id,user_id,amount,status,operator,reference,created_at,completed_at,alias_email', 'created_at.desc', 1000);
+  }
+  $cutTs = time() - ADMIN_DEP_KEEP_FAIL_D * 86400;
   $byId = [];
   foreach ($sb as $d) {
     $id = (string) ($d['id'] ?? $d['reference'] ?? '');
@@ -1819,6 +1836,10 @@ function admin_deposits(): array {
       'createdRaw' => (string) ($d['createdAt'] ?? $d['at'] ?? ''),
       'motif' => (string) ($d['motif'] ?? $d['note'] ?? ''),
     ];
+    if (!isset($byId[$id]) && admin_dep_is_abandoned($row) && !admin_dep_is_paid($row)) {
+      $ts = admin_ts($row['createdRaw'] !== '' ? $row['createdRaw'] : $row['createdAt']) ?: 0;
+      if ($ts > 0 && $ts < $cutTs) continue; // vieux dépôt jamais payé : plus affiché (voir plus haut)
+    }
     if (!isset($byId[$id])) {
       $byId[$id] = $row;
     } else {
@@ -1848,7 +1869,7 @@ function admin_deposits(): array {
     $uid = (string) ($d['userId'] ?? '');
     return $uid !== '' && isset($keepIds[$uid]);
   }));
-  admin_cache_set('deposits_epoch2', $list);
+  admin_cache_set('deposits_epoch3', $list);
   return $list;
 }
 
@@ -2120,7 +2141,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'wd_epoch3', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'badges_epoch5', 'inscrits_n_epoch4', 'board_watch2', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'deposits_epoch3', 'rid_map1', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'wd_epoch3', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'badges_epoch5', 'inscrits_n_epoch4', 'board_watch2', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

@@ -18,6 +18,14 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     'cookie_samesite' => 'Lax',
     'cookie_secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
   ]);
+  // 2026-11-23 (propriétaire : « mon admin, rien ne bouge, aucun bouton ne marche ») : PHP verrouille la session pendant
+  // toute la demande. La page, rid_map (lecture de tous les joueurs) et les listes gardaient ce verrou → chaque clic
+  // suivant de l'admin attendait son tour. Admin déjà connecté : on lit la session puis on la libère TOUT DE SUITE.
+  if ((string) ($_SESSION['admin_uid'] ?? '') !== '') @session_write_close();
+}
+/** Rouvre la session (connexion / déconnexion seulement : ce sont les seules écritures). */
+function admin_sess_open(): void {
+  if (session_status() !== PHP_SESSION_ACTIVE) @session_start();
 }
 
 // 2026-11-23 (propriétaire : « le tableau admin est lent ») : la réponse part TOUT DE SUITE (fastcgi_finish_request, en premier
@@ -85,11 +93,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['rid_map'])) {
   header('Cache-Control: private, no-store');
   if (!admin_me()) { http_response_code(401); echo '{}'; exit; }
   require_once __DIR__ . '/live_lib.php';
-  $db = load_db(); $pids = [];
-  foreach ($db['users'] as $id => $u) { $p = is_array($u) ? trim((string) ($u['publicId'] ?? '')) : ''; if ($p !== '') $pids[(string) $id] = $p; }
-  $out = [];
-  foreach (live_rids_for(array_keys($pids)) as $uid => $c) $out[$pids[$uid]] = $c;
-  echo json_encode($out, JSON_UNESCAPED_SLASHES);
+  // 2026-11-23 : lecture de toute la base → gardée 10 min, recalculée après la réponse (admin_swr)
+  $out = admin_swr('rid_map1', 600, static function (): array {
+    $db = load_db(); $pids = [];
+    foreach ($db['users'] as $id => $u) { $p = is_array($u) ? trim((string) ($u['publicId'] ?? '')) : ''; if ($p !== '') $pids[(string) $id] = $p; }
+    $out = [];
+    foreach (live_rids_for(array_keys($pids)) as $uid => $c) $out[$pids[$uid]] = $c;
+    return $out;
+  });
+  echo $out ? json_encode($out, JSON_UNESCAPED_SLASHES) : '{}';
   exit;
 }
 
@@ -2577,6 +2589,7 @@ if ($isAjax) {
     }
     if (function_exists('orolado_login_ok')) orolado_login_ok('admin');
     // Nouvel identifiant de session à chaque connexion (un identifiant « planté » d'avance ne sert à rien).
+    admin_sess_open();
     session_regenerate_id(true);
     $_SESSION['admin_uid'] = (string) $u['id'];
     $_SESSION['admin_email'] = (string) $u['email'];
@@ -2585,6 +2598,7 @@ if ($isAjax) {
   }
   if ($action === 'logout') {
     admin_keep_drop();
+    admin_sess_open();
     $_SESSION = [];
     session_destroy();
     admin_json(['ok' => true]);
@@ -3633,7 +3647,7 @@ $ADMIN_TABS = [
     ['dep_today', 'Dépôts du Jour'],
     ['dep_yesterday', 'Dépôts d’Hier'],
     ['dep_pending', 'Dépôts en Attente'],
-    ['dep_failed', 'Dépôts Échoués / Abandonnés'],
+    ['dep_failed', 'Dépôts Échoués / Abandonnés (3 jours)'],
     ['dep_top', 'Meilleurs Déposants'],
     ['dep_all', 'Historique Global Dépôts'],
     ['dep_method', 'Dépôts par Méthode'],
@@ -4790,7 +4804,7 @@ async function loadAppInst() {
       '</tbody></table>' + '<p class="muted">Sans compte (appareils) : aujourd’hui ' + (n.anonToday | 0) + ' · hier ' + (n.anonYesterday | 0) + '</p>';
   } catch (e) { /* ignore */ }
 }
-if (document.getElementById('appInst')) { loadAppInst(); setInterval(loadAppInst, 120000); }
+if (document.getElementById('appInst')) { setTimeout(loadAppInst, 3500); setInterval(loadAppInst, 120000); }
 async function loadBadges() {
   const j = await ajax({action:'badges'});
   if (!j.ok) return;
@@ -6115,7 +6129,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   $m('baAmt').addEventListener('input', () => { baPlan = null; $m('baRun').disabled = true; });
   const openMail = $m('btnMail').onclick;
   $m('btnMail').onclick = () => { openMail(); qStatus(); };
-  qStatus(); // page ouverte : si un envoi tourne, on suit (et on le fait avancer) toutes les 10 s
+  setTimeout(qStatus, 6000); // page ouverte : si un envoi tourne, on suit (et on le fait avancer) toutes les 10 s
 })();
 // v2607 — Notifications : chiffres, test sur l'appareil admin, envoi à tous (par paquets de 100).
 (function () {
@@ -6487,7 +6501,7 @@ setInterval(() => {
   (function () {
     const st = $c('apifKeySt'), inp = $c('apifKeyIn'), go = $c('apifKeyGo'); if (!st || !go) return;
     const paint = j => { st.textContent = j && j.ok && j.set ? '✅ Clé enregistrée (…' + j.end + '). Le site peut l\'utiliser.' : 'Aucune clé enregistrée pour l\'instant.'; };
-    ajax({action:'apif_key_status'}).then(paint).catch(() => {});
+    setTimeout(() => ajax({action:'apif_key_status'}).then(paint).catch(() => {}), 4000);
     go.onclick = async () => {
       const k = inp.value.trim(); if (!k) { alert('Collez d\'abord la clé.'); return; }
       go.disabled = true; let j; try { j = await ajax({action:'apif_key_set', key:k}); } catch (e) { j = {ok:false, reason:'Réseau'}; }
@@ -6591,7 +6605,7 @@ setInterval(() => {
         if (!r.ok) { btn.disabled = false; alert(r.reason || 'Échec'); return; } paint(r.status);
       });
     };
-    ajax({action:'sb_status'}).then(paint).catch(() => {});
+    setTimeout(() => ajax({action:'sb_status'}).then(paint).catch(() => {}), 4500);
     $c('sbSave').onclick = async () => {
       const cfg = {public: $c('sbPub').checked, autosettle: $c('sbAuto').checked, live: $c('sbLive').checked, livePublic: $c('sbLivePub').checked};
       F.forEach(k => { const v = parseFloat(String($c('sb' + k).value).replace(',', '.')); if (!isNaN(v)) cfg[k] = v; });
@@ -6757,7 +6771,7 @@ setInterval(() => {
       $c('predMsg').innerHTML = '✓ ' + (r.repriced || 0) + ' cote(s) recalculée(s) · ' + (r.sug || 0) + ' résultat(s) proposé(s) · ' + (r.chk || 0) + ' à vérifier' + ((r.log || []).length ? '<br>' + r.log.map(esc).join('<br>') : '');
       if (r.list) paint(r.list); try { list(); } catch (e) { /* ignore */ }
     };
-    load();
+    setTimeout(load, 5000); // 2026-11-23 : après les compteurs et la liste (page admin plus réactive à l'ouverture)
   })();
   $c('spResAll').onclick = async () => {
     const sure = spResList.filter(p => p.conf === 'sur' && p.k);
