@@ -1860,6 +1860,49 @@ function orolado_refund_wd_once(array &$db, array &$w): bool {
   return !empty($res['ok']);
 }
 
+/**
+ * 2026-11-23 (propriétaire : « des retraits en cours disparaissent tout seuls ») — JOURNAL DES RETRAITS, en ajout seulement
+ * (data/wd_audit.jsonl, une ligne par changement d'état) : qui (admin, robot, réparation…), quand, ancien → nouvel état.
+ * Jamais réécrit, jamais vidé par le site. Une ligne n'est écrite QUE si l'état change vraiment (pas de doublon sur un 2e clic).
+ */
+function orolado_wd_audit_file(): string {
+  return rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'wd_audit.jsonl';
+}
+
+function orolado_wd_audit(string $id, string $from, string $to, string $by, array $extra = []): bool {
+  $from = strtolower(trim($from)); $to = strtolower(trim($to));
+  if ($id === '' || $to === '' || $from === $to) return false;
+  $row = ['t' => date('c'), 'id' => $id, 'from' => $from !== '' ? $from : 'pending', 'to' => $to, 'by' => $by !== '' ? $by : '?'];
+  foreach (['amount', 'dest', 'operator', 'userId', 'note', 'txid'] as $k) {
+    if (isset($extra[$k]) && $extra[$k] !== '' && $extra[$k] !== null) $row[$k] = is_float($extra[$k]) || is_int($extra[$k]) ? round((float) $extra[$k], 2) : mb_substr((string) $extra[$k], 0, 200);
+  }
+  $ok = @file_put_contents(orolado_wd_audit_file(), json_encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+  if ($ok === false) error_log('OROLADO journal retraits : écriture impossible (' . $id . ' ' . $from . '→' . $to . ')');
+  return $ok !== false;
+}
+
+/** Lignes du journal (les plus anciennes d'abord). $ids : seulement ces retraits. Lit au plus les 8 derniers Mo. */
+function orolado_wd_audit_read(?array $ids = null): array {
+  $f = orolado_wd_audit_file();
+  if (!is_file($f)) return [];
+  $size = (int) @filesize($f);
+  $fp = @fopen($f, 'r');
+  if (!$fp) return [];
+  @flock($fp, LOCK_SH);
+  if ($size > 8 * 1024 * 1024) { fseek($fp, $size - 8 * 1024 * 1024); fgets($fp); }
+  $want = $ids !== null ? array_flip(array_map('strval', $ids)) : null;
+  $out = [];
+  while (($line = fgets($fp)) !== false) {
+    $j = json_decode(trim($line), true);
+    if (!is_array($j) || !isset($j['id'])) continue;
+    if ($want !== null && !isset($want[(string) $j['id']])) continue;
+    $out[] = $j;
+  }
+  @flock($fp, LOCK_UN);
+  fclose($fp);
+  return $out;
+}
+
 function supabase_insert_deposit(array $row): void {
   // La table Supabase « deposits » n'accepte qu'un identifiant UUID : un joueur encore sans coffre
   // Supabase (identifiant local « u_… ») est ignoré ici (le dépôt reste dans data/ et sera recopié
