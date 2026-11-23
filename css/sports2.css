@@ -1584,3 +1584,8 @@ html:root body #casinoModal .sp2 .pz-sugc.hot .pz-sugt em{background:linear-grad
 html:root body #casinoModal .sp2 .pz-sugc{flex-basis:min(70%,250px)!important;padding:10px!important;gap:5px!important}
 html:root body #casinoModal .sp2 .pz-sugb{height:34px!important;font-size:13.5px!important}
 html:root body #casinoModal .sp2 .pz-sugt b{font-size:14px!important}
+/* 2026-11-23 (c) (propriétaire : « Si la cote change déborde dans la fenêtre ⋯ ») : titre dans la carte, avec la même marge */
+html:root body #casinoModal .sp2 .pz-qsc .pz-mcard{overflow:hidden}
+html:root body #casinoModal .sp2 .pz-qsc .pz-mt2{margin:0!important;padding:12px 14px 8px!important;text-align:start;font:700 15px/1.25 var(--sp2-font)!important;color:#fff!important}
+html:root body #casinoModal .sp2 .pz-qsc .pz-rad{padding-inline:14px!important}
+html:root body #casinoModal .sp2 .pz-qsc .pz-1c{padding:12px 14px!important}

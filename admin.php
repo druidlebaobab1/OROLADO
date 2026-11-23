@@ -70,7 +70,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['live_img'])) {
   require_once __DIR__ . '/live_lib.php';
   $f = admin_me() ? live_img_path((string) $_GET['live_img'], 'img') : '';
   if ($f === '') { http_response_code(404); exit; }
-  live_send_media($f, 'private, max-age=86400'); // v2790 : photos ET notes vocales
+  live_send_media($f, 'private, max-age=2592000, immutable'); // v2790 : photos ET notes vocales (2026-11-23 : nom unique → gardée 30 j par le téléphone)
 }
 
 // v2777 (propriétaire) — identifiant unique R… des joueurs : table « numéro interne ORO-… → R… » pour l'affichage admin.
@@ -2126,6 +2126,38 @@ function admin_resolve_player_row(string $id, array $pmap): ?array {
   ], 'ids' => $ids];
 }
 
+/**
+ * 2026-11-23 (propriétaire : Messages) — résumé court du joueur en haut d'une conversation : solde réel, dépôts payés
+ * (nombre, total, dernier), retraits en attente. Mêmes règles que la fiche (dépôts payés, hors bonus ; retraits ouverts,
+ * hors masqués), mais sans les parties ni l'affiliation : léger, chargé après les messages.
+ */
+function admin_live_player(string $uid): array {
+  if ($uid === '') return ['ok' => false, 'reason' => 'Joueur introuvable'];
+  $pmap = admin_profile_map();
+  $ids = [$uid];
+  $row = $pmap[$uid] ?? null;
+  $res = admin_resolve_player_row($uid, $pmap);
+  if ($res) { $row = $res['row']; $ids = array_values(array_unique(array_merge($ids, [(string) $row['id']], $res['ids']))); }
+  $vaults = admin_vaults();
+  $real = 0.0;
+  foreach ($ids as $x) if (isset($vaults[$x])) $real = max($real, (float) ($vaults[$x]['real'] ?? 0));
+  $depN = 0; $depSum = 0.0; $lastDep = null; $seen = [];
+  foreach (admin_deposits() as $d) {
+    if (!in_array((string) ($d['userId'] ?? ''), $ids, true) || admin_dep_is_bonus($d) || !admin_dep_is_paid($d)) continue;
+    $k = (string) ($d['id'] ?? ''); if ($k !== '' && isset($seen[$k])) continue; $seen[$k] = 1;
+    $depN++; $depSum += (float) ($d['amount'] ?? 0);
+    if ($lastDep === null || strcmp((string) ($d['createdAt'] ?? ''), (string) $lastDep['at']) > 0) $lastDep = ['amount' => (float) ($d['amount'] ?? 0), 'at' => (string) ($d['createdAt'] ?? ''), 'method' => admin_dep_channel_row($d)];
+  }
+  $wdN = 0; $wdSum = 0.0; $seen = [];
+  foreach (admin_withdrawals() as $w) {
+    if (!in_array((string) ($w['userId'] ?? ''), $ids, true) || !admin_wd_is_open($w)) continue;
+    $k = (string) ($w['id'] ?? ''); if ($k !== '' && isset($seen[$k])) continue; $seen[$k] = 1;
+    $wdN++; $wdSum += (float) ($w['amount'] ?? 0);
+  }
+  return ['ok' => true, 'id' => (string) ($row['id'] ?? $uid), 'real' => round($real, 2), 'depN' => $depN, 'depSum' => round($depSum, 2), 'lastDep' => $lastDep,
+    'wdN' => $wdN, 'wdSum' => round($wdSum, 2), 'country' => (string) ($row['country'] ?? ''), 'lastSeen' => (string) ($row['lastSeen'] ?? '')];
+}
+
 function admin_profile_payload(string $uid): array {
   $pmap = admin_profile_map();
   $vaults = admin_vaults();
@@ -3050,13 +3082,15 @@ if ($isAjax) {
   if ($action === 'mark_msg') {
     $id = (string) ($req['id'] ?? '');
     $db = admin_local_db();
+    $found = false;
     foreach (($db['support_messages'] ?? []) as $i => $m) {
       if ((string) ($m['id'] ?? '') !== $id) continue;
       $db['support_messages'][$i]['status'] = 'resolu';
       $db['support_messages'][$i]['readAt'] = date('c');
+      $found = true;
       break;
     }
-    save_db(orolado_data_file(), $db);
+    if ($found) save_db(orolado_data_file(), $db); // 2026-11-23 : la grosse base n'est réécrite que s'il y a vraiment un changement
     admin_json(['ok' => true]);
   }
   if ($action === 'resolve_dep') {
@@ -3240,39 +3274,69 @@ if ($isAjax) {
     require_once __DIR__ . '/live_lib.php';
     $imgOut = static fn(array $m): array => array_merge(
       ['id' => (string) ($m['id'] ?? ''), 'f' => (string) ($m['f'] ?? 'u'), 't' => (string) ($m['t'] ?? ''), 'at' => (int) ($m['at'] ?? 0)],
-      !empty($m['img']) ? ['img' => 'admin.php?live_img=' . rawurlencode((string) $m['img'])] : []
+      !empty($m['img']) ? ['img' => 'admin.php?live_img=' . rawurlencode((string) $m['img'])] : [],
+      !empty($m['wh']) ? ['wh' => (string) $m['wh']] : [] // taille de la photo : la bulle garde sa place (pas de saut)
     );
+    // 2026-11-23 (propriétaire : « rends la partie Messages rapide ») : la liste vient du SOMMAIRE (live_index), page par page.
     if ($action === 'live_threads') {
+      $pg = live_inbox_page(preg_replace('/[^a-z]/', '', (string) ($req['filter'] ?? 'all')) ?: 'all', (string) ($req['q'] ?? ''),
+        (int) ($req['offset'] ?? 0), (int) ($req['limit'] ?? 200));
       // 2026-11-09 : signe affiliation aussi dans la liste des discussions Social
-      $ths = live_threads();
-      if (function_exists('admin_aff_marks')) { $mk = admin_aff_marks(); foreach ($ths as &$th) { $tg = admin_aff_tag($mk, (string) $th['uid'], (string) $th['email']); if ($tg) $th['aff'] = $tg; } unset($th); }
-      admin_json(['ok' => true, 'threads' => $ths, 'unread' => live_unread_admin()]);
+      if ($pg['threads'] && function_exists('admin_aff_marks')) { $mk = admin_aff_marks(); foreach ($pg['threads'] as &$th) { $tg = admin_aff_tag($mk, (string) $th['uid'], (string) $th['email']); if ($tg) $th['aff'] = $tg; } unset($th); }
+      admin_json(['ok' => true, 'unread' => (int) $pg['counts']['unread']] + $pg);
     }
+    if ($action === 'live_badge') admin_json(['ok' => true, 'unread' => live_unread_admin()]);
     if ($action === 'live_thread') {
       $uid = live_safe_id((string) ($req['uid'] ?? ''));
+      $f = live_thread_file($uid);
+      $sig = is_file($f) ? live_file_sig($f) : '';
+      // Sondage : la conversation n'a pas bougé → réponse minuscule, rien n'est relu.
+      if ($sig !== '' && (string) ($req['sig'] ?? '') === $sig) admin_json(['ok' => true, 'same' => 1, 'sig' => $sig]);
       $th = live_thread($uid);
-      live_mark_read($uid, 'a');
+      $before = (string) ($req['before'] ?? '');
+      if ($before === '' && (int) ($th['unreadAdmin'] ?? 0) > 0) { live_mark_read($uid, 'a'); clearstatcache(); $sig = is_file($f) ? live_file_sig($f) : ''; }
+      $pg = live_thread_page($th, isset($req['limit']) ? (int) $req['limit'] : 120, $before, (string) ($req['after'] ?? ''));
       admin_json(['ok' => true, 'uid' => $uid, 'name' => (string) ($th['name'] ?? ''), 'publicId' => (string) ($th['publicId'] ?? ''), 'email' => (string) ($th['email'] ?? ''),
-        'ph' => live_photo_of($uid), 'unread' => live_unread_admin(),
-        'msgs' => array_map(static fn(array $m): array => $imgOut($m) + (!empty($m['auto']) ? ['auto' => 1] : []), array_slice((array) ($th['msgs'] ?? []), -120))]);
+        'ph' => live_photo_of($uid), 'unread' => live_unread_admin(), 'res' => (int) ($th['resolvedAt'] ?? 0), 'sig' => $sig,
+        'more' => $pg['more'], 'n' => $pg['n'], 'mode' => $pg['mode'],
+        'msgs' => array_map(static fn(array $m): array => $imgOut($m) + (!empty($m['auto']) ? ['auto' => 1] : []), $pg['msgs'])]);
     }
     // 2026-10-23 (propriétaire) : remettre une conversation en « non lu » (à traiter plus tard)
     if ($action === 'live_unread') admin_json(['ok' => live_mark_unread_admin(live_safe_id((string) ($req['uid'] ?? ''))), 'unread' => live_unread_admin()]);
+    // 2026-11-23 : « ✓ Résolu » (ou le retirer) ; la conversation revient d'elle-même quand le joueur réécrit.
+    if ($action === 'live_resolve') admin_json(['ok' => live_set_resolved(live_safe_id((string) ($req['uid'] ?? '')), !isset($req['on']) || !empty($req['on'])), 'unread' => live_unread_admin()]);
     if ($action === 'live_reply') {
       $uid = live_safe_id((string) ($req['uid'] ?? ''));
       $text = live_clean_text((string) ($req['text'] ?? ''));
       $img = (string) ($req['img'] ?? '') !== '' ? live_save_image((string) $req['img'], 'img') : '';
       if ($uid === '' || ($text === '' && $img === '') || !is_file(live_thread_file($uid))) admin_json(['ok' => false, 'reason' => 'Message vide ou joueur introuvable.']);
-      $r = live_add_msg(['id' => $uid], 'a', $text, $img);
-      // Notification sur le téléphone du joueur (s'il a accepté les notifications).
-      $rows = [];
-      foreach (push_sub_files() as $pf) { $row = json_decode((string) @file_get_contents($pf), true); if (is_array($row) && (string) ($row['uid'] ?? '') === $uid) $rows[] = $row; }
-      $sent = $rows ? push_send_rows($rows, push_payload('💬 OROLADO Live', $text !== '' ? $text : '📷 Photo', '/?live=1')) : ['sent' => 0];
-      // 2026-11-23 (propriétaire) : la réponse part AUSSI par e-mail (au plus un toutes les 3 min par joueur)
-      $mailed = 'none';
-      if (!empty($r['ok'])) { try { require_once __DIR__ . '/notify_lib.php'; $mailed = orolado_notify_reply($uid, $text, $img !== ''); } catch (Throwable $eM) { $mailed = 'failed'; } }
-      admin_json(['ok' => !empty($r['ok']), 'msg' => !empty($r['msg']) ? $imgOut($r['msg']) : null, 'pushed' => (int) ($sent['sent'] ?? 0), 'mailed' => $mailed]);
+      $r = live_add_msg(['id' => $uid], 'a', $text, $img, '', (string) ($req['cid'] ?? ''));
+      if (!empty($r['dup'])) admin_json(['ok' => true, 'dup' => 1, 'msg' => $imgOut($r['msg']), 'pushed' => 0]); // déjà envoyé (« Réessayer ») : pas en double
+      $out = ['ok' => !empty($r['ok']), 'msg' => !empty($r['msg']) ? $imgOut($r['msg']) : null, 'pushed' => 0, 'pushLater' => 1];
+      // Notification sur le téléphone du joueur (s'il a accepté les notifications) : APRÈS la réponse, l'admin n'attend plus.
+      $send = static function () use ($uid, $text, $img): int {
+        $rows = [];
+        foreach (push_sub_files() as $pf) { $row = json_decode((string) @file_get_contents($pf), true); if (is_array($row) && (string) ($row['uid'] ?? '') === $uid) $rows[] = $row; }
+        $sent = $rows ? push_send_rows($rows, push_payload('💬 OROLADO Live', $text !== '' ? $text : '📷 Photo', '/?live=1')) : ['sent' => 0];
+        // 2026-11-23 (propriétaire) : la réponse part AUSSI par e-mail (au plus un toutes les 3 min par joueur), après la réponse
+        try { require_once __DIR__ . '/notify_lib.php'; orolado_notify_reply($uid, $text, $img !== ''); } catch (Throwable $eM) { /* jamais bloquant */ }
+        return (int) ($sent['sent'] ?? 0);
+      };
+      if (!empty($r['ok']) && function_exists('fastcgi_finish_request')) {
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store');
+        echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        try { fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ }
+        try { $send(); } catch (Throwable $e) { /* jamais bloquant */ }
+        exit;
+      }
+      if (!empty($r['ok'])) { try { $out['pushed'] = $send(); } catch (Throwable $e) { /* jamais bloquant */ } unset($out['pushLater']); }
+      admin_json($out);
     }
+    // 2026-11-23 : en-tête de la conversation — solde réel, dépôts, dernier dépôt, retraits en attente (chargé APRÈS les messages).
+    if ($action === 'live_player') admin_json(admin_live_player(live_safe_id((string) ($req['uid'] ?? ''))));
+    if ($action === 'live_qr') admin_json(['ok' => true, 'l' => live_quick_replies()]);
+    if ($action === 'live_qr_set') admin_json(['ok' => true, 'l' => live_quick_replies_set((array) ($req['l'] ?? []))]);
     if ($action === 'live_posts') {
       admin_json(['ok' => true, 'posts' => array_map(static fn($p) => array_merge($p, !empty($p['img']) ? ['img' => 'live.php?p=' . rawurlencode((string) $p['img'])] : []), live_posts())]);
     }
@@ -4032,8 +4096,14 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
       <div id="lvPaneMsg">
         <!-- 2026-10-23 (propriétaire) : boîte de messages comme une vraie messagerie — NON LUS en haut (pastille, gras),
              puis déjà lus ; toucher une conversation ouvre la page de discussion (bulles, heures, grande zone de réponse). -->
-        <input id="lvSearch" class="lvI-search" type="search" placeholder="🔎 Chercher (nom, ID, e-mail)" autocomplete="off" enterkeyhint="search">
+        <!-- 2026-11-23 (propriétaire : « améliore Messages, rapide et mieux ») : filtres Tous / Non lus / Lus / Résolus,
+             recherche aussi dans le texte des messages, liste par pages (« Voir plus »). -->
+        <input id="lvSearch" class="lvI-search" type="search" placeholder="🔎 Nom, ID, e-mail ou mot d'un message" autocomplete="off" enterkeyhint="search">
+        <div class="lvI-filt" id="lvFilt" role="tablist" aria-label="Filtrer les conversations">
+          <button type="button" class="on" data-f="all">Tous <b id="lvCAll"></b></button><button type="button" data-f="unread">Non lus <b id="lvCUnread"></b></button><button type="button" data-f="read">Lus <b id="lvCRead"></b></button><button type="button" data-f="resolved">Résolus <b id="lvCRes"></b></button>
+        </div>
         <div id="lvList" class="lvI-list"><p class="muted">Chargement…</p></div>
+        <button type="button" class="lvI-more" id="lvMore" hidden>Voir plus de conversations</button>
       </div>
       <div class="lvC" id="lvChat" hidden role="dialog" aria-modal="true" aria-labelledby="lvName">
         <div class="lvC-top">
@@ -4041,9 +4111,17 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
           <span class="lvI-av" id="lvAv" aria-hidden="true"></span>
           <div class="lvC-id"><b id="lvName">…</b><small id="lvSub"></small></div>
           <button type="button" class="lvC-unr" id="lvMarkUnread" title="Marquer comme non lu">Non lu</button>
+          <button type="button" class="lvC-unr lvC-res" id="lvMarkRes" title="Marquer comme résolu">✓ Résolu</button>
         </div>
+        <div class="lvC-sum" id="lvSum" aria-live="polite"></div>
         <div class="lvC-msgs" id="lvMsgs"></div>
         <div class="lvC-st" id="lvSt" aria-live="polite"></div>
+        <div class="lvC-qr" id="lvQr" aria-label="Réponses rapides"></div>
+        <div class="lvC-qre" id="lvQrEd" hidden>
+          <label for="lvQrTa">Réponses rapides — une par ligne (20 au plus). Toucher une réponse la met dans la zone d'écriture.</label>
+          <textarea id="lvQrTa" rows="5" maxlength="10000"></textarea>
+          <div class="lvC-qre-b"><button type="button" class="mini" id="lvQrCancel">Annuler</button><button type="button" class="mini ok" id="lvQrSave">Enregistrer</button></div>
+        </div>
         <div class="lvC-bar">
           <label class="lvC-cam" title="Envoyer une photo" aria-label="Envoyer une photo">📷<input type="file" id="lvImg" accept="image/*" hidden></label>
           <div class="lvC-in"><span class="lvC-file" id="lvFile" hidden></span><textarea id="lvText" rows="1" maxlength="1000" placeholder="Écrire une réponse…" enterkeyhint="send"></textarea></div>
@@ -4120,6 +4198,40 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .lvC-send{flex:0 0 auto;min-width:84px;height:48px;padding:0 14px;border:0;border-radius:24px;background:linear-gradient(135deg,#F43F6E,#C8174C);color:#fff;font:inherit;font-size:.92rem;font-weight:900;cursor:pointer}
     .lvC-send:disabled{opacity:.55}
     @media (max-width:360px){.lvC-send{min-width:0;padding:0 12px}.lvC-unr{padding:0 8px}}
+    /* 2026-11-23 — Messages : filtres, « voir plus », résumé du joueur, réponses rapides, envoi / réessayer */
+    .lvI-filt{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 8px}
+    .lvI-filt button{min-width:0;min-height:40px;padding:4px 2px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.04);color:#C9CFE6;font:inherit;font-size:.78rem;font-weight:800;line-height:1.15;cursor:pointer;overflow:hidden;text-overflow:ellipsis}
+    .lvI-filt button.on{background:rgba(244,63,110,.16);border-color:#F43F6E;color:#fff}
+    .lvI-filt b{display:inline-block;margin-left:2px;font-size:.72rem;color:#FF7AA8}
+    .lvI-filt b:empty{display:none}
+    .lvI-hit{font-size:.78rem;color:#FCD34D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .lvI-ok{flex:0 0 auto;font-size:.68rem;font-weight:900;color:#4ADE80;border:1px solid rgba(74,222,128,.45);border-radius:8px;padding:0 5px}
+    .lvI-more{display:block;width:100%;min-height:44px;margin:0 0 20px;border:1px dashed rgba(255,255,255,.2);border-radius:12px;background:transparent;color:#FCD34D;font:inherit;font-size:.88rem;font-weight:800;cursor:pointer}
+    .lvI-more[hidden]{display:none}
+    .lvC-res.on{border-color:#4ADE80;color:#4ADE80}
+    .lvC-sum{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px;background:rgba(15,20,36,.9);border-bottom:1px solid rgba(255,255,255,.06);font-size:.74rem;min-width:0}
+    .lvC-sum:empty{display:none}
+    .lvC-sum span,.lvC-sum button{display:inline-flex;align-items:center;gap:3px;max-width:100%;min-width:0;padding:3px 8px;border-radius:9px;background:rgba(255,255,255,.06);color:#C9CFE6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box}
+    .lvC-sum b{color:#fff}
+    .lvC-sum .g b{color:#4ADE80}
+    .lvC-sum button{border:1px solid rgba(250,204,21,.5);background:rgba(250,204,21,.1);color:#FCD34D;font:inherit;font-size:.74rem;font-weight:800;cursor:pointer}
+    .lvC-sum button.z{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#A5B4D8}
+    @media (max-width:400px){.lvC-sum{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.lvC-sum::-webkit-scrollbar{display:none}.lvC-sum span,.lvC-sum button{flex:0 0 auto;max-width:none}.lvC-sum button:not(.z){order:-1}}
+    .lvC-older{align-self:center;margin:2px 0 6px;min-height:36px;padding:0 14px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(255,255,255,.05);color:#FCD34D;font:inherit;font-size:.8rem;font-weight:800;cursor:pointer}
+    .lvC-m.sending{opacity:.6}
+    .lvC-m.fail{outline:2px solid #FB7185}
+    .lvC-m .lvC-retry{display:block;margin-top:6px;min-height:34px;width:100%;border:0;border-radius:10px;background:#fff;color:#C8174C;font:inherit;font-size:.8rem;font-weight:900;cursor:pointer}
+    .lvC-qr{flex:0 0 auto;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:6px 10px 0;background:rgba(15,20,36,.97);border-top:1px solid rgba(255,255,255,.08)}
+    .lvC-qr::-webkit-scrollbar{display:none}
+    .lvC-qr:empty{display:none}
+    .lvC-qr button{flex:0 0 auto;max-width:72vw;min-height:34px;padding:0 12px;border:1px solid rgba(255,255,255,.14);border-radius:17px;background:rgba(255,255,255,.05);color:#E8EEF9;font:inherit;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+    .lvC-qr button.ed{color:#FCD34D;font-weight:800}
+    .lvC-qr + .lvC-qre + .lvC-bar{border-top:0}
+    .lvC-qre{flex:0 0 auto;padding:8px 10px;background:rgba(15,20,36,.97);border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:6px}
+    .lvC-qre[hidden]{display:none!important}
+    .lvC-qre label{font-size:.76rem;color:#A5B4D8}
+    #liveModal .lvC-qre textarea{width:100%!important;min-height:110px!important;max-height:38vh;font-size:15px!important}
+    .lvC-qre-b{display:flex;justify-content:flex-end;gap:8px}
     .al-res{margin:10px 0 0;display:flex;flex-direction:column;gap:6px}
     .al-res:empty{display:none}
     .al-ln{padding:9px 11px;border-radius:12px;font-size:.86rem;line-height:1.4;overflow-wrap:anywhere;background:rgba(255,255,255,.05)}
@@ -5508,7 +5620,12 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     });
   }
   // 2026-10-23 (propriétaire) — messagerie : liste (NON LUS en haut, pastille + gras), puis page de discussion plein écran.
-  let threads = [], sig = '', chatTimer = 0;
+  // 2026-11-23 (propriétaire : « rends Messages rapide et mieux ») — la liste vient d'un sommaire côté serveur, par pages de 40,
+  // avec filtres (Tous / Non lus / Lus / Résolus) et recherche (aussi dans le texte) ; la conversation charge les 60 derniers
+  // messages (« Voir les messages plus anciens »), le sondage ne renvoie rien quand rien n'a changé ; envoi avec « Réessayer ».
+  let threads = [], chatTimer = 0, filt = 'all', listOff = 0, listMore = false, listSeq = 0, searchT = 0;
+  let sig = '', lastId = '', firstId = '', hasOlder = false, curRes = 0, qr = [], sumCache = {};
+  const PAGE = 40, MSG_PAGE = 60;
   const pad2 = n => String(n).padStart(2, '0');
   const dayKey = d => d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
   const shortWhen = t => {
@@ -5525,34 +5642,50 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined});
   };
   const hm = t => { const d = new Date(t * 1000); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
+  const fullWhen = t => new Date(t * 1000).toLocaleString('fr-FR', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
   const nameOf = t => (t.name || '').trim() || (t.publicId || '').trim() || 'Joueur';
-  const avatar = t => t.ph ? '<img src="' + esc(t.ph) + '" alt="" loading="lazy">' : esc((nameOf(t).match(/[A-Za-zÀ-ÿ0-9]/) || ['?'])[0].toUpperCase());
+  const avatar = t => t.ph ? '<img src="' + esc(t.ph) + '" alt="" loading="lazy" decoding="async">' : esc((nameOf(t).match(/[A-Za-zÀ-ÿ0-9]/) || ['?'])[0].toUpperCase());
+  const visible = () => !document.hidden && $l('liveModal').classList.contains('on');
   function setBadges(n) { $l('lvBadge').textContent = n || ''; $l('lvUnread').textContent = n || ''; }
-  async function badge() { try { const j = await ajax({action:'live_threads'}); if (j.ok) { setBadges(j.unread); return j; } } catch (e) { /* ignore */ } return null; }
+  async function badge() { try { const j = await ajax({action:'live_badge'}); if (j.ok) setBadges(j.unread); } catch (e) { /* ignore */ } }
   function item(t) {
     const n = t.unread | 0;
     return '<button type="button" class="lvI' + (n ? ' unread' : '') + '" data-u="' + esc(t.uid) + '">' +
       '<span class="lvI-av" aria-hidden="true">' + avatar(t) + '</span>' +
       '<span class="lvI-main">' +
-        '<span class="lvI-row"><span class="lvI-name">' + esc(nameOf(t)) + '</span><span class="lvI-time">' + esc(shortWhen(t.at)) + '</span></span>' +
+        '<span class="lvI-row"><span class="lvI-name">' + esc(nameOf(t)) + '</span>' + (t.state === 'resolved' ? '<span class="lvI-ok">✓ Résolu</span>' : '') + '<span class="lvI-time" title="' + esc(t.at ? fullWhen(t.at) : '') + '">' + esc(shortWhen(t.at)) + '</span></span>' +
         '<span class="lvI-row"><span class="lvI-prev">' + esc(t.prev || t.last || '') + '</span>' + (n ? '<span class="lvI-n" aria-label="' + n + ' non lu(s)">' + (n > 99 ? '99+' : n) + '</span>' : '') + '</span>' +
+        (t.hit ? '<span class="lvI-hit">🔎 ' + esc(t.hit) + '</span>' : '') +
         '<span class="lvI-id">' + esc([t.publicId, t.email].filter(Boolean).join(' · ')) + '</span>' + (t.aff ? '<span class="lvI-row">' + affTags(t.aff) + '</span>' : '') +
       '</span></button>';
   }
   function paintList() {
-    const q = ($l('lvSearch').value || '').trim().toLowerCase();
-    const rows = threads.filter(t => !q || [t.name, t.publicId, t.email, t.uid].some(v => String(v || '').toLowerCase().includes(q)));
-    const un = rows.filter(t => (t.unread | 0) > 0), rd = rows.filter(t => !((t.unread | 0) > 0));
+    const q = ($l('lvSearch').value || '').trim();
+    const un = filt === 'all' ? threads.filter(t => (t.unread | 0) > 0) : [], rd = filt === 'all' ? threads.filter(t => !((t.unread | 0) > 0)) : threads;
     let h = '';
     if (un.length) h += '<div class="lvI-sec new">● Non lus <b>' + un.length + '</b></div>' + un.map(item).join('');
-    if (rd.length) h += '<div class="lvI-sec">' + (un.length ? 'Déjà lus' : 'Conversations') + '</div>' + rd.map(item).join('');
-    if (!h) h = '<p class="muted" style="padding:10px">' + (q ? 'Aucun joueur trouvé.' : 'Aucun message pour le moment.') + '</p>';
+    if (rd.length) h += (filt === 'all' ? '<div class="lvI-sec">' + (un.length ? 'Déjà lus' : 'Conversations') + '</div>' : '') + rd.map(item).join('');
+    if (!h) h = '<p class="muted" style="padding:10px">' + (q ? 'Aucune conversation trouvée.' : ({unread: 'Aucun message non lu 👍', read: 'Aucune conversation lue.', resolved: 'Aucune conversation résolue.'}[filt] || 'Aucun message pour le moment.')) + '</p>';
     $l('lvList').innerHTML = h;
-    $l('lvList').querySelectorAll('.lvI').forEach(el => el.onclick = () => open(el.dataset.u));
+    $l('lvMore').hidden = !listMore;
   }
-  async function list() {
-    const j = await badge(); if (!j) return;
-    threads = j.threads || [];
+  function setCounts(c) {
+    if (!c) return;
+    $l('lvCAll').textContent = c.all || ''; $l('lvCUnread').textContent = c.unread || ''; $l('lvCRead').textContent = c.read || ''; $l('lvCRes').textContent = c.resolved || '';
+  }
+  // more = true : page suivante (« Voir plus ») ; sinon on recharge depuis le début (en gardant autant de lignes qu'affichées).
+  async function list(more) {
+    const seq = ++listSeq, q = ($l('lvSearch').value || '').trim();
+    const off = more ? threads.length : 0, lim = more ? PAGE : Math.max(PAGE, Math.min(200, threads.length));
+    if (more) { $l('lvMore').disabled = true; $l('lvMore').textContent = 'Chargement…'; }
+    let j = null;
+    try { j = await ajax({action:'live_threads', filter: filt, q, offset: off, limit: lim}); } catch (e) { /* réseau */ }
+    $l('lvMore').disabled = false; $l('lvMore').textContent = 'Voir plus de conversations';
+    if (seq !== listSeq) return; // une demande plus récente est partie entre-temps
+    if (!j || !j.ok) { if (!threads.length) $l('lvList').innerHTML = '<p class="muted" style="padding:10px">Échec du chargement. <button type="button" class="mini" id="lvRetryList">Réessayer</button></p>'; const b = $l('lvRetryList'); if (b) b.onclick = () => list(); return; }
+    setBadges(j.unread); setCounts(j.counts);
+    threads = more ? threads.concat((j.threads || []).filter(t => !threads.some(x => x.uid === t.uid))) : (j.threads || []);
+    listMore = !!j.more;
     paintList();
   }
   // Hauteur de la page de discussion = partie visible de l'écran (le clavier de l'iPhone ne cache plus la zone de réponse).
@@ -5565,41 +5698,124 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   if (window.visualViewport) { visualViewport.addEventListener('resize', fitChat); visualViewport.addEventListener('scroll', fitChat); }
   window.addEventListener('resize', fitChat);
   function bubble(m) {
-    const media = m.img ? (/\.(webm|m4a|ogg)$/.test(m.img) ? '<audio controls preload="none" src="' + esc(m.img) + '"></audio>' : '<img src="' + esc(m.img) + '" alt="Photo" onclick="window.open(this.src)">') : '';
-    return '<div class="lvC-m ' + (m.f === 'a' ? 'a' : 'u') + (m.auto ? ' auto' : '') + '">' + media + esc(m.t || '') +
-      '<small>' + (m.auto ? 'Réponse automatique · ' : '') + hm(m.at) + '</small></div>';
+    let media = '';
+    if (m.img) {
+      if (/\.(webm|m4a|ogg)(\?|$)/.test(m.img)) media = '<audio controls preload="none" src="' + esc(m.img) + '"></audio>';
+      else {
+        const wh = /^(\d+)x(\d+)$/.exec(m.wh || ''); // la bulle garde la place de la photo : pas de saut pendant le chargement
+        media = '<img src="' + esc(m.img) + '" alt="Photo" loading="lazy" decoding="async"' + (wh ? ' width="' + wh[1] + '" height="' + wh[2] + '" style="height:auto;aspect-ratio:' + wh[1] + '/' + wh[2] + '"' : '') + ' onclick="window.open(this.src)">';
+      }
+    }
+    return '<div class="lvC-m ' + (m.f === 'a' ? 'a' : 'u') + (m.auto ? ' auto' : '') + '" data-id="' + esc(m.id || '') + '">' + media + esc(m.t || '') +
+      '<small title="' + esc(fullWhen(m.at)) + '">' + (m.auto ? 'Réponse automatique · ' : '') + hm(m.at) + '</small></div>';
   }
-  function paintMsgs(msgs) {
-    let h = '', last = '';
+  // Messages → HTML avec les séparateurs de jour ; prevAt = heure du message juste avant (pour ne pas répéter le jour).
+  function paintMsgs(msgs, prevAt) {
+    let h = '', last = prevAt ? dayKey(new Date(prevAt * 1000)) : '';
     msgs.forEach(m => { const k = dayKey(new Date(m.at * 1000)); if (k !== last) { h += '<div class="lvC-day">' + esc(dayLabel(m.at)) + '</div>'; last = k; } h += bubble(m); });
-    return h || '<p class="muted" style="text-align:center;margin-top:30px">Aucun message.</p>';
+    return h;
+  }
+  const olderBtn = () => hasOlder ? '<button type="button" class="lvC-older" id="lvOlder">↑ Voir les messages plus anciens</button>' : '';
+  const nearEnd = box => box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+  function toEnd(box) {
+    box.scrollTop = box.scrollHeight;
+    box.querySelectorAll('img').forEach(im => { if (!im.complete) im.addEventListener('load', () => { if (box.scrollHeight - box.scrollTop - box.clientHeight < 400) box.scrollTop = box.scrollHeight; }, {once: true}); });
+  }
+  function bindOlder() { const b = $l('lvOlder'); if (b) b.onclick = older; }
+  function setRes(on) { curRes = on ? 1 : 0; const b = $l('lvMarkRes'); b.classList.toggle('on', !!on); b.textContent = on ? '✓ Résolu' : 'Résolu ?'; b.title = on ? 'Résolu — toucher pour le retirer' : 'Marquer comme résolu'; }
+  function head(j) {
+    const t = {name: j.name, publicId: j.publicId, ph: j.ph};
+    $l('lvName').textContent = nameOf(t); $l('lvSub').textContent = [j.publicId, j.email].filter(Boolean).join(' · '); $l('lvAv').innerHTML = avatar(t);
   }
   async function open(uid, refresh) {
     if (!uid) return;
     const first = !refresh || cur !== uid;
     cur = uid;
-    const c = $l('lvChat');
+    const c = $l('lvChat'), box = $l('lvMsgs');
     if (first) {
       const t = threads.find(x => x.uid === uid) || {uid};
       $l('lvName').textContent = nameOf(t); $l('lvSub').textContent = [t.publicId, t.email].filter(Boolean).join(' · ');
-      $l('lvAv').innerHTML = avatar(t); $l('lvSt').textContent = ''; sig = '';
-      if (c.hidden) { $l('lvMsgs').innerHTML = '<p class="muted" style="text-align:center;margin-top:30px">Chargement…</p>'; $l('lvText').value = ''; clearFile(); }
+      $l('lvAv').innerHTML = avatar(t); $l('lvSt').textContent = ''; sig = ''; lastId = ''; firstId = ''; hasOlder = false;
+      setRes(t.state === 'resolved');
+      box.innerHTML = '<p class="muted" style="text-align:center;margin-top:30px">Chargement…</p>';
+      $l('lvText').value = ''; grow(); clearFile(); $l('lvQrEd').hidden = true; paintQr();
+      $l('lvSum').innerHTML = sumCache[uid] ? sumHtml(sumCache[uid]) : '';
       c.hidden = false; fitChat();
-      clearInterval(chatTimer); chatTimer = setInterval(() => { if (cur && !$l('lvChat').hidden) open(cur, true); }, 10000);
+      clearInterval(chatTimer); chatTimer = setInterval(() => { if (cur && !$l('lvChat').hidden && !document.hidden) open(cur, true); }, 8000);
     }
     let j;
-    try { j = await ajax({action:'live_thread', uid}); } catch (e) { if (first) $l('lvSt').textContent = 'Échec du chargement : ' + (e.message || e); return; }
+    const req = {action:'live_thread', uid, limit: MSG_PAGE};
+    if (!first) { if (sig) req.sig = sig; if (lastId) req.after = lastId; }
+    try { j = await ajax(req); } catch (e) { if (first) box.innerHTML = '<p class="muted" style="text-align:center;margin-top:30px">Échec du chargement : ' + esc(e.message || e) + '</p>'; return; }
     if (!j || !j.ok || cur !== uid || c.hidden) return;
-    setBadges(j.unread);
-    const t = {name: j.name, publicId: j.publicId, ph: j.ph};
-    $l('lvName').textContent = nameOf(t); $l('lvSub').textContent = [j.publicId, j.email].filter(Boolean).join(' · '); $l('lvAv').innerHTML = avatar(t);
-    const msgs = j.msgs || [], ns = msgs.length + ':' + (msgs.length ? msgs[msgs.length - 1].id : '');
-    if (ns === sig) return;
-    const box = $l('lvMsgs'), atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-    sig = ns; box.innerHTML = paintMsgs(msgs);
-    if (first || atEnd) { box.scrollTop = box.scrollHeight; box.querySelectorAll('img').forEach(im => im.addEventListener('load', () => { if (box.scrollHeight - box.scrollTop - box.clientHeight < 400) box.scrollTop = box.scrollHeight; }, {once: true})); }
-    const it = threads.find(x => x.uid === uid); if (it) it.unread = 0;
+    if (j.same) return; // rien de neuf
+    sig = j.sig || '';
+    if (typeof j.unread !== 'undefined') setBadges(j.unread);
+    head(j); setRes(j.res);
+    if (j.mode === 'after') {
+      // seulement les messages pas encore affichés (une réponse qu'on vient d'envoyer est déjà là)
+      const msgs = (j.msgs || []).filter(m => !box.querySelector('.lvC-m[data-id="' + CSS.escape(m.id) + '"]'));
+      if (!msgs.length) { const a = (j.msgs || []); if (a.length) lastId = a[a.length - 1].id; return; }
+      const end = nearEnd(box), last = box.querySelector('.lvC-m[data-id="' + CSS.escape(lastId) + '"]');
+      const prevAt = last ? (Number(last.dataset.at) || 0) : 0;
+      const tmp = box.querySelector('.lvC-m[data-cid]'); // bulles en cours d'envoi : restent en bas
+      if (tmp) tmp.insertAdjacentHTML('beforebegin', paintMsgs(msgs, prevAt || msgs[0].at)); else box.insertAdjacentHTML('beforeend', paintMsgs(msgs, prevAt || msgs[0].at));
+      lastId = msgs[msgs.length - 1].id; markAt(box, msgs);
+      if (end) toEnd(box);
+    } else {
+      const msgs = j.msgs || [];
+      hasOlder = !!j.more;
+      firstId = msgs.length ? msgs[0].id : ''; lastId = msgs.length ? msgs[msgs.length - 1].id : '';
+      box.innerHTML = olderBtn() + (paintMsgs(msgs) || '<p class="muted" style="text-align:center;margin-top:30px">Aucun message.</p>');
+      markAt(box, msgs); bindOlder(); toEnd(box);
+    }
+    const it = threads.find(x => x.uid === uid); if (it && it.unread) { it.unread = 0; if (it.state === 'unread') it.state = curRes ? 'resolved' : 'read'; }
+    if (first) summary(uid);
   }
+  function markAt(box, msgs) { msgs.forEach(m => { const el = box.querySelector('.lvC-m[data-id="' + CSS.escape(m.id) + '"]'); if (el) el.dataset.at = m.at; }); }
+  // « Voir les messages plus anciens » : la page grandit vers le haut, l'écran ne saute pas.
+  async function older() {
+    const b = $l('lvOlder'); if (!b || !cur || !firstId) return;
+    b.disabled = true; b.textContent = 'Chargement…';
+    const uid = cur, box = $l('lvMsgs');
+    let j; try { j = await ajax({action:'live_thread', uid, before: firstId, limit: MSG_PAGE}); } catch (e) { j = null; }
+    if (cur !== uid) return;
+    if (!j || !j.ok) { b.disabled = false; b.textContent = '↑ Réessayer'; return; }
+    const msgs = j.msgs || [];
+    const h0 = box.scrollHeight, t0 = box.scrollTop;
+    b.remove();
+    // le premier séparateur de jour déjà affiché est refait si le jour continue
+    const firstDay = box.querySelector('.lvC-day');
+    if (firstDay && msgs.length && firstDay === box.firstElementChild) {
+      const fe = box.querySelector('.lvC-m'); if (fe && dayKey(new Date(Number(fe.dataset.at) * 1000)) === dayKey(new Date(msgs[msgs.length - 1].at * 1000))) firstDay.remove();
+    }
+    hasOlder = !!j.more; if (msgs.length) firstId = msgs[0].id;
+    box.insertAdjacentHTML('afterbegin', olderBtn() + paintMsgs(msgs));
+    markAt(box, msgs); bindOlder();
+    box.scrollTop = t0 + (box.scrollHeight - h0);
+  }
+  // En-tête du joueur : solde réel, dépôts, retraits en attente (lien vers la page 💸 Retraits).
+  function sumHtml(p) {
+    if (!p || !p.ok) return '';
+    const d = p.lastDep;
+    const dd = d && d.at ? new Date(d.at) : null;
+    return '<span class="g">Solde réel <b>' + esc(money(p.real)) + '</b></span>' +
+      '<span>Dépôts <b>' + (p.depN | 0) + '</b>' + (p.depN ? ' · ' + esc(money(p.depSum)) : '') + '</span>' +
+      (d ? '<span title="' + esc(d.method || '') + '">Dernier dépôt <b>' + esc(money(d.amount)) + '</b>' + (dd && !isNaN(dd) ? ' · ' + esc(shortWhen(dd.getTime() / 1000)) : '') + '</span>' : '') +
+      '<button type="button" class="' + (p.wdN ? '' : 'z') + '" data-wdx="1">💸 Retraits en attente : <b>' + (p.wdN | 0) + '</b>' + (p.wdN ? ' · ' + esc(money(p.wdSum)) : '') + '</button>';
+  }
+  async function summary(uid) {
+    let p = null;
+    try { p = await ajax({action:'live_player', uid}); } catch (e) { p = null; }
+    if (cur !== uid || !p || !p.ok) return;
+    sumCache[uid] = p;
+    $l('lvSum').innerHTML = sumHtml(p);
+  }
+  $l('lvSum').addEventListener('click', e => {
+    if (!e.target.closest('[data-wdx]')) return;
+    const m = $l('wdxModal'), b = $l('btnWdx'); if (!m || !b) return;
+    m.style.zIndex = '300'; b.click(); // la page Retraits s'ouvre PAR-DESSUS la conversation ; « Retour » ramène ici
+  });
   function closeChat() {
     $l('lvChat').hidden = true; clearInterval(chatTimer); cur = ''; sig = '';
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -5607,19 +5823,68 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
   }
   function clearFile() { $l('lvImg').value = ''; $l('lvFile').hidden = true; $l('lvFile').textContent = ''; }
   function grow() { const ta = $l('lvText'); ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight + 2) + 'px'; }
+  // Envoi : la bulle apparaît tout de suite (« Envoi… ») ; en cas d'échec : « Réessayer » (même clé d'envoi → jamais en double).
+  async function sendOne(uid, cid, text, f, el) {
+    el.classList.remove('fail'); el.classList.add('sending');
+    const r0 = el.querySelector('.lvC-retry'); if (r0) r0.remove();
+    el.querySelector('small').textContent = 'Envoi…';
+    let j = null, err = '';
+    try {
+      const img = f ? await shrink(f) : '';
+      j = await ajax({action:'live_reply', uid, text, img, cid});
+    } catch (e) { err = e.message || String(e); }
+    el.classList.remove('sending');
+    if (j && j.ok && j.msg && !el.isConnected) return true; // conversation fermée entre-temps : c'est envoyé quand même
+    if (j && j.ok && j.msg) {
+      if ($l('lvMsgs').querySelector('.lvC-m[data-id="' + CSS.escape(j.msg.id) + '"]')) el.remove(); // déjà affiché par le sondage
+      else {
+        el.outerHTML = bubble(j.msg);
+        const nel = $l('lvMsgs').querySelector('.lvC-m[data-id="' + CSS.escape(j.msg.id) + '"]'); if (nel) nel.dataset.at = j.msg.at;
+      }
+      if (cur === uid && !$l('lvMsgs').querySelector('.lvC-m[data-cid]')) { lastId = j.msg.id; sig = ''; }
+      $l('lvSt').textContent = j.pushed ? 'Envoyé ✓ — notification envoyée sur son téléphone' : 'Envoyé ✓';
+      setTimeout(() => { if ($l('lvSt').textContent.startsWith('Envoyé')) $l('lvSt').textContent = ''; }, 3000);
+      { const bx = $l('lvMsgs'); if (bx.scrollHeight - bx.scrollTop - bx.clientHeight < 300) toEnd(bx); } // la ligne « Envoyé ✓ » ne cache pas la bulle
+      const it = threads.find(x => x.uid === uid); if (it) { it.prev = it.last = 'Vous : ' + (text || '📷 Photo'); it.at = j.msg.at; it.unread = 0; }
+      return true;
+    }
+    el.classList.add('fail');
+    el.querySelector('small').textContent = 'Non envoyé — ' + ((j && j.reason) || err || 'échec');
+    el.insertAdjacentHTML('beforeend', '<button type="button" class="lvC-retry">↻ Réessayer</button>');
+    el.querySelector('.lvC-retry').onclick = () => sendOne(uid, cid, text, f, el);
+    return false;
+  }
   async function send() {
     if (!cur) return;
     const text = $l('lvText').value.trim(); const f = $l('lvImg').files[0];
     if (!text && !f) { $l('lvText').focus(); return; }
-    $l('lvSend').disabled = true; $l('lvSt').textContent = 'Envoi…';
-    try {
-      const img = f ? await shrink(f) : '';
-      const j = await ajax({action:'live_reply', uid: cur, text, img});
-      if (j.ok) { $l('lvText').value = ''; grow(); clearFile(); $l('lvSt').textContent = 'Envoyé ✓' + (j.pushed ? ' · 📱 notification' : '') + (j.mailed === 'sent' ? ' · ✉️ e-mail' : j.mailed === 'throttled' ? ' · ✉️ e-mail déjà envoyé il y a moins de 3 min' : j.mailed === 'none' ? ' · pas d\'e-mail (adresse absente)' : j.mailed === 'failed' ? ' · ✉️ e-mail non parti' : '') + (!j.pushed && j.mailed !== 'sent' ? ' — il le verra dans Social' : ''); open(cur, true); setTimeout(() => { if ($l('lvSt').textContent.startsWith('Envoyé')) $l('lvSt').textContent = ''; }, 4000); }
-      else $l('lvSt').textContent = j.reason || 'Échec';
-    } catch (e) { $l('lvSt').textContent = 'Échec : ' + (e.message || e); }
-    $l('lvSend').disabled = false;
+    const cid = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8), box = $l('lvMsgs');
+    $l('lvText').value = ''; grow(); clearFile(); $l('lvSt').textContent = '';
+    const nm = box.querySelector('p.muted'); if (nm && !box.querySelector('.lvC-m')) nm.remove();
+    box.insertAdjacentHTML('beforeend', '<div class="lvC-m a sending" data-cid="' + cid + '">' + (f ? '📷 ' : '') + esc(text) + '<small>Envoi…</small></div>');
+    toEnd(box);
+    sendOne(cur, cid, text, f, box.querySelector('[data-cid="' + cid + '"]'));
+    $l('lvText').focus();
   }
+  // Réponses rapides (modifiables, gardées sur le serveur) : toucher = mettre le texte dans la zone d'écriture.
+  function paintQr() {
+    $l('lvQr').innerHTML = qr.map((t, i) => '<button type="button" data-q="' + i + '" title="' + esc(t) + '">' + esc(t) + '</button>').join('') + '<button type="button" class="ed" data-qe="1" title="Modifier les réponses rapides">✏️ Modifier</button>';
+  }
+  async function loadQr() { try { const j = await ajax({action:'live_qr'}); if (j.ok) { qr = j.l || []; paintQr(); } } catch (e) { /* ignore */ } }
+  $l('lvQr').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.qe) { $l('lvQrTa').value = qr.join('\n'); $l('lvQrEd').hidden = false; $l('lvQrTa').focus(); return; }
+    const t = qr[+b.dataset.q] || ''; const ta = $l('lvText');
+    ta.value = ta.value.trim() ? ta.value.replace(/\s*$/, ' ') + t : t; grow(); ta.focus();
+  });
+  $l('lvQrCancel').onclick = () => { $l('lvQrEd').hidden = true; };
+  $l('lvQrSave').onclick = async () => {
+    const l = $l('lvQrTa').value.split('\n').map(x => x.trim()).filter(Boolean);
+    $l('lvQrSave').disabled = true;
+    try { const j = await ajax({action:'live_qr_set', l}); if (j.ok) { qr = j.l || []; paintQr(); $l('lvQrEd').hidden = true; $l('lvSt').textContent = 'Réponses rapides enregistrées ✓'; } else $l('lvSt').textContent = j.reason || 'Échec'; }
+    catch (e) { $l('lvSt').textContent = 'Échec : ' + (e.message || e); }
+    $l('lvQrSave').disabled = false;
+  };
   async function posts() {
     const j = await ajax({action:'live_posts'}); if (!j.ok) return;
     $l('lvPosts').innerHTML = j.posts.length ? j.posts.map(p => '<div class="lvA-post">'+(p.img?'<img src="'+esc(p.img)+'" alt="">':'')+esc(p.t||'')+(p.link?'<br><a href="'+esc(p.link)+'" target="_blank" rel="noopener">'+esc(p.link)+'</a>':'')+'<br><small class="muted">'+when(p.at)+' · 👁 '+(p.views||0)+' · ❤️ '+(p.likes||0)+'</small> <button class="mini bad" data-del="'+esc(p.id)+'">Supprimer</button></div>').join('') : '<p class="muted">Aucune publication.</p>';
@@ -5642,24 +5907,45 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     $l('lvReps').innerHTML = j.reports.length ? j.reports.map(r => '<div class="lvA-post"><b>'+esc(r.by)+'</b> a signalé <b style="color:#FCA5A5">'+esc(r.who)+'</b> · <small class="muted">'+when(r.at)+'</small>'+(r.why?'<br>Motif : '+esc(r.why):'')+'<div class="muted" style="margin-top:4px;font-size:.8rem">'+r.snap.map(m => (m.f==='signalé'?'🚩 ':'• ')+esc(m.t)).join('<br>')+'</div></div>').join('') : '<p class="muted">Aucun signalement.</p>';
   }
   const tab = w => { $l('lvPaneMsg').hidden = w !== 'msg'; $l('lvPanePost').hidden = w !== 'post'; $l('lvPaneRep').hidden = w !== 'rep'; $l('lvTabMsg').classList.toggle('ok', w === 'msg'); $l('lvTabPost').classList.toggle('ok', w === 'post'); $l('lvTabRep').classList.toggle('ok', w === 'rep'); if (w === 'post') posts(); if (w === 'rep') reps(); };
-  const openInbox = () => { $l('liveModal').classList.add('on'); tab('msg'); list(); clearInterval(timer); timer = setInterval(() => { if ($l('lvChat').hidden) list(); }, 20000); };
+  const openInbox = () => { $l('liveModal').classList.add('on'); tab('msg'); list(); if (!qr.length) loadQr(); clearInterval(timer); timer = setInterval(() => { if ($l('lvChat').hidden && visible() && !$l('lvPaneMsg').hidden) list(); }, 20000); };
   $l('btnLiveA').onclick = openInbox;
   $l('closeLiveA').onclick = () => { $l('lvChat').hidden = true; clearInterval(chatTimer); cur = ''; $l('liveModal').classList.remove('on'); clearInterval(timer); };
   $l('lvTabMsg').onclick = () => tab('msg'); $l('lvTabPost').onclick = () => tab('post'); $l('lvTabRep').onclick = () => tab('rep');
   $l('lvSend').onclick = send; $l('lvPostBtn').onclick = publish;
   $l('lvBack').onclick = closeChat;
-  $l('lvSearch').addEventListener('input', paintList);
+  // Recherche : demandée au serveur 300 ms après la dernière lettre (cherche aussi dans le texte des messages).
+  $l('lvSearch').addEventListener('input', () => { clearTimeout(searchT); searchT = setTimeout(() => { threads = []; list(); }, 300); });
+  $l('lvFilt').addEventListener('click', e => {
+    const b = e.target.closest('button[data-f]'); if (!b || b.dataset.f === filt) return;
+    filt = b.dataset.f; $l('lvFilt').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    threads = []; $l('lvList').innerHTML = '<p class="muted">Chargement…</p>'; $l('lvMore').hidden = true; list();
+  });
+  $l('lvMore').onclick = () => list(true);
+  $l('lvList').addEventListener('click', e => { const el = e.target.closest('.lvI'); if (el) open(el.dataset.u); });
   $l('lvText').addEventListener('input', grow);
   $l('lvText').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey || (!e.shiftKey && matchMedia('(hover:hover) and (pointer:fine)').matches))) { e.preventDefault(); send(); } });
   $l('lvImg').addEventListener('change', () => { const f = $l('lvImg').files[0]; $l('lvFile').hidden = !f; $l('lvFile').textContent = f ? '📎 ' + f.name + ' (touchez Envoyer)' : ''; });
-  $l('lvMarkUnread').onclick = async () => { if (!cur) return; try { const j = await ajax({action:'live_unread', uid: cur}); if (j.ok) { setBadges(j.unread); const it = threads.find(x => x.uid === cur); if (it) it.unread = Math.max(1, it.unread | 0); closeChat(); } } catch (e) { $l('lvSt').textContent = 'Échec : ' + (e.message || e); } };
+  $l('lvMarkUnread').onclick = async () => { if (!cur) return; try { const j = await ajax({action:'live_unread', uid: cur}); if (j.ok) { setBadges(j.unread); const it = threads.find(x => x.uid === cur); if (it) { it.unread = Math.max(1, it.unread | 0); it.state = 'unread'; } closeChat(); } } catch (e) { $l('lvSt').textContent = 'Échec : ' + (e.message || e); } };
+  // 2026-11-23 : « ✓ Résolu » range la conversation (onglet « Résolus ») ; elle revient toute seule si le joueur réécrit.
+  $l('lvMarkRes').onclick = async () => {
+    if (!cur) return; const on = !curRes, uid = cur;
+    try {
+      const j = await ajax({action:'live_resolve', uid, on: on ? 1 : 0});
+      if (!j.ok) { $l('lvSt').textContent = 'Échec'; return; }
+      setBadges(j.unread); setRes(on);
+      const it = threads.find(x => x.uid === uid); if (it) { it.state = on ? 'resolved' : 'read'; it.unread = 0; }
+      $l('lvSt').textContent = on ? 'Conversation résolue ✓ — elle revient si le joueur réécrit' : 'Conversation remise en « Lu »';
+      if (on) setTimeout(() => { if (cur === uid) closeChat(); }, 700);
+    } catch (e) { $l('lvSt').textContent = 'Échec : ' + (e.message || e); }
+  };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && visible()) { if (cur && !$l('lvChat').hidden) open(cur, true); else if (!$l('lvPaneMsg').hidden) list(); } });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$l('lvChat').hidden) closeChat(); });
   // Alerte « 💬 Message de … » touchée sur le téléphone : /admin.php?live=<joueur> ouvre directement cette conversation.
   try {
     const want = new URLSearchParams(location.search).get('live');
     if (want && /^[A-Za-z0-9_-]{1,80}$/.test(want)) { openInbox(); open(want); history.replaceState(null, '', location.pathname); }
   } catch (e) { /* ignore */ }
-  badge(); setInterval(badge, 60000);
+  badge(); setInterval(() => { if (!document.hidden) badge(); }, 60000);
 })();
 // v2664 — E-mail à tous (français pour les pays francophones, anglais pour les autres), par paquets de 40.
 (function () {
@@ -7030,7 +7316,7 @@ function gmPlayerInit(u) {
   if (window._wdxBadges) window.wdxPaintHealth(window._wdxBadges.wd_health, window._wdxBadges.wd_pending); // compteurs déjà reçus avant ce script
   $w('btnWdx').onclick = open;
   if ($w('btnWdx2')) $w('btnWdx2').onclick = open;
-  $w('closeWdx').onclick = () => { $w('wdxModal').classList.remove('on'); clearInterval(timer); };
+  $w('closeWdx').onclick = () => { $w('wdxModal').classList.remove('on'); $w('wdxModal').style.zIndex = ''; clearInterval(timer); };
 })();
 </script>
 <?php endif; ?>

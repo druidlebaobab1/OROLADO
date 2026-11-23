@@ -607,6 +607,54 @@
     return tradeListScratch;
   }
 
+  /* 2026-11-23 (propriétaire : « Connexion au marché : ne pas afficher un fond vide ni bloquer Acheter / Vendre ; montrer
+     l'ancienne courbe avec un petit chargement ») — AFFICHAGE SEULEMENT (prix, trades et moteur inchangés) : toutes les 3 s,
+     l'image complète du graphique est gardée par marché (et toutes les 20 s dans le téléphone, petite image JPEG) ; pendant
+     « Connexion au marché », elle est redessinée, légèrement voilée, avec une petite pastille « Connexion… » qui tourne. */
+  var snaps = {}, snapImg = {};
+  function snapKeep(id) {
+    try {
+      if (!canvas || !canvas.width || !canvas.height) return;
+      var s0 = snaps[id], now = Date.now();
+      if (s0 && now - s0.at < 3000) return;
+      var c = s0 && s0.c && s0.c.width === canvas.width && s0.c.height === canvas.height ? s0.c : document.createElement('canvas');
+      c.width = canvas.width; c.height = canvas.height;
+      c.getContext('2d').drawImage(canvas, 0, 0);
+      snaps[id] = { c: c, at: now, saved: s0 ? s0.saved : 0 };
+      if (now - (snaps[id].saved || 0) > 20000) {
+        snaps[id].saved = now;
+        var t = document.createElement('canvas'), k = Math.min(1, 720 / c.width); t.width = Math.round(c.width * k); t.height = Math.round(c.height * k);
+        t.getContext('2d').drawImage(c, 0, 0, t.width, t.height);
+        try { localStorage.setItem('oro_csnap_' + id, t.toDataURL('image/jpeg', 0.55)); } catch (eS) { /* plein : tant pis */ }
+      }
+    } catch (e) { /* jamais bloquant */ }
+  }
+  function snapDraw(id) {
+    var src = snaps[id] && snaps[id].c;
+    if (!src) {
+      var im = snapImg[id];
+      if (!im) {
+        var d = null; try { d = localStorage.getItem('oro_csnap_' + id); } catch (eL) { d = null; }
+        if (!d) { snapImg[id] = { none: 1 }; return false; }
+        im = snapImg[id] = new Image(); im.src = d;
+      }
+      if (im.none || !im.complete || !im.naturalWidth) return false;
+      src = im;
+    }
+    try {
+      ctx.drawImage(src, 0, 0, cssW, cssH);
+      ctx.fillStyle = 'rgba(10,8,4,0.38)'; ctx.fillRect(0, 0, cssW, cssH);
+      var txt = (D6.I18N && D6.I18N.t) ? D6.I18N.t('m_connecting') : 'Connecting to the market…';
+      ctx.font = '700 12px "Hanken Grotesk", sans-serif';
+      var tw = ctx.measureText(txt).width, pw = tw + 40, ph = 28, px = (cssW - pw) / 2, py = Math.max(10, cssH * 0.12);
+      ctx.fillStyle = 'rgba(20,16,8,0.88)';
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(px, py, pw, ph, 14); ctx.fill(); } else ctx.fillRect(px, py, pw, ph);
+      var a = (Date.now() / 140) % (Math.PI * 2), cx = px + 16, cy = py + ph / 2;
+      ctx.strokeStyle = 'rgba(245,197,24,0.95)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, 6, a, a + Math.PI * 1.4); ctx.stroke();
+      ctx.fillStyle = '#F5D27A'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(txt, px + 28, cy); ctx.textBaseline = 'alphabetic';
+      return true;
+    } catch (e) { return false; }
+  }
   function drawNow() {
     if (!isChartReady()) return false;
     lastDraw = 0;
@@ -5627,6 +5675,12 @@
     var market = D6.Engine && D6.Engine.getMarket ? D6.Engine.getMarket(activeAsset) : null;
     if (!market) return;
     frameHeld = !!(market.waiting || arrivalHold());
+    if (!frameHeld) snapKeep(activeAsset); // (le canvas contient encore la dernière image complète)
+    if (frameHeld && snapDraw(activeAsset)) { // 2026-11-23 : dernière courbe vue + « Connexion… » (jamais un fond vide)
+      if (headPriceMotion[activeAsset]) headPriceMotion[activeAsset].value = NaN;
+      viewMin = 0; viewMax = 0; wantFitY = true;
+      return;
+    }
     if (frameHeld) {
       // Historique pas encore reçu du serveur : fond seul, jamais une fausse courbe.
       // v2813 : le décor habituel (plus d'écran noir qui « clignote » au changement de marché) ; le texte
