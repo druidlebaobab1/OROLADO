@@ -1083,6 +1083,11 @@ function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bo
     if ($ts <= 0) return null;
     if ($ko > 0 && $ts > $ko + SB_PST_VOID) return 'void';
     if ($betAt >= $ts && empty($sel['lv'])) return 'void'; // pari posé après le vrai coup d'envoi (sauf pari EN DIRECT : c'est voulu)
+    if (!empty($sel['lv'])) { // 2026-11-23 : pari TARDIF (but déjà marqué, pas encore connu de nous) → remboursé
+      $late = sb_sel_late($m[1], $sel, $now);
+      if ($late === true) return 'void';
+      if ($late === null && $now < $ts + 6 * 3600) return null; // événements pas encore lisibles : on attend (au plus 6 h)
+    }
     $mk = substr((string) $sel['ev'], strlen('sb:foot:' . $m[1] . ':'));
     $res = sb_settle_mk($mk, (string) ($sel['k'] ?? ''), (array) ($r['ft'] ?? []), isset($r['ht']) ? (array) $r['ht'] : null, isset($r['xs']) ? (array) $r['xs'] : null);
     // corners / cartons / buteurs sans données 8 h après le coup d'envoi (petit championnat sans statistiques) : remboursé
@@ -1091,6 +1096,33 @@ function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bo
   }
   if ($v === 'wait' && $auto && $ko > 0 && $now > $ko + SB_PST_VOID && (int) ($r['at'] ?? 0) > $now - 7200) return 'void';
   return null;
+}
+
+/**
+ * 2026-11-23 (propriétaire : « annuler si notre système a vu le but après, mais pas rendre les coupons de tout le monde ») —
+ * PARI TARDIF : choix EN DIRECT posé alors qu'un but avait DÉJÀ été marqué mais que notre flux ne le montrait pas encore.
+ * Données OFFICIELLES seulement (événements du match chez le fournisseur, gardés 24 h) ; la minute du pari est celle que NOTRE
+ * flux montrait (toujours ≤ la vraie minute). Un but compte comme « sûrement avant le pari » seulement s'il est d'au moins
+ * 2 minutes avant cette minute (ex. but à la 61e, pari montré à la 63e) — ou dans les arrêts de jeu de la 1re mi-temps pour un
+ * pari de la 2e. S'il y a plus de buts « sûrement avant » que dans le score du pari → true (remboursé). Le même but que le
+ * pari, ou un but de la même minute (doute) → false : le pari est réglé normalement. null = événements illisibles.
+ */
+function sb_sel_late(string $id, array $sel, int $now): ?bool {
+  $mBet = (int) ($sel['m'] ?? 0); $sc = (array) ($sel['sc'] ?? []);
+  if ($mBet <= 0 || count($sc) !== 2) return false; // ancien pari sans minute / score : réglé normalement
+  $j = sb_cache_peek('fixtures?id=' . $id, 86400, $now);
+  if ($j === null && sb_has_key() && sb_budget($now)['left'] > 300) $j = sb_get_cached('fixtures?id=' . $id, 86400, $now);
+  $r = is_array($j) ? (($j['response'] ?? [])[0] ?? null) : null;
+  if (!is_array($r)) return null;
+  $st0 = (string) ($sel['st0'] ?? ''); $cnt = [0, 0];
+  foreach (sb_live_events($r) as $e) {
+    if (($e['type'] ?? '') !== 'goal') continue;
+    $t = (int) $e['t']; $x = (int) $e['x'];
+    $before = $x > 0 ? ($t === 45 && ($st0 === '2H' || $mBet >= 47)) : ($t <= $mBet - 2);
+    if ($before) $cnt[($e['team'] ?? 'h') === 'a' ? 1 : 0]++;
+  }
+  // total des buts (pas par équipe : le fournisseur range parfois le but contre son camp du mauvais côté)
+  return $cnt[0] + $cnt[1] > (int) $sc[0] + (int) $sc[1];
 }
 
 /* ------------------------------------------------------------- index des matchs (par jour) -------------------------- */

@@ -628,6 +628,23 @@ $sl0 = []; $alt['fixtures?ids=9101'] = $fxIds([2, 2]); @array_map('unlink', glob
 $r3 = sp_bet(load_db(), $ua, 'real', 10, [['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'odd' => 9.99]], $B6 + 3, 'any');
 check('(pari refusé pendant un but : rien à encaisser)', $r3['ok'] === false);
 unset($alt['fixtures?ids=9101']); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
+// 2026-11-23 — PARI TARDIF : but déjà marqué (pas encore dans notre flux) → choix remboursé ; doute (même minute) → réglé normalement
+$fxId = static fn(array $goals) => json_encode(['errors' => [], 'response' => [['fixture' => ['id' => 9101, 'status' => ['short' => 'FT', 'elapsed' => 90]], 'teams' => ['home' => ['id' => 501], 'away' => ['id' => 502]], 'goals' => ['home' => 2, 'away' => 2],
+  'events' => array_map(static fn($g) => ['time' => ['elapsed' => $g[0], 'extra' => $g[2] ?? null], 'team' => ['id' => $g[1]], 'type' => 'Goal', 'detail' => $g[3] ?? 'Normal Goal', 'player' => ['name' => 'X']], $goals)]]]);
+$lsel = ['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1, 'm' => 63, 'sc' => [2, 1], 'st0' => '2H', 'ti' => [501, 502]];
+$res9101 = ['9101' => ['v' => 'fin', 'ts' => $LT, 'ft' => [3, 1], 'ti' => [501, 502]]];
+$late = static function (array $goals) use (&$alt, $fxId, $lsel, $res9101, $LT): ?string { $alt['fixtures?id=9101'] = $fxId($goals); @array_map('unlink', glob(sb_dir() . '/cache/*.json')); return sb_sel_result($lsel, $LT + 3800, $res9101, $LT + 7200, true); };
+check('pari tardif : score du pari = buts déjà marqués → réglé normalement', $late([[10, 501], [30, 501], [50, 502], [80, 501]]) === 'won');
+check('pari tardif : un but 2 min AVANT la minute du pari, absent du score → remboursé', $late([[10, 501], [30, 501], [50, 502], [61, 501]]) === 'void');
+check('pari tardif : but dans la même minute (doute) → réglé normalement (pas remboursé)', $late([[10, 501], [30, 501], [50, 502], [62, 501]]) === 'won');
+check('pari tardif : but contre son camp rangé du mauvais côté → compté au total, pas d\'erreur', $late([[10, 502, null, 'Own Goal'], [30, 501], [50, 502], [80, 501]]) === 'won');
+check('pari tardif : but des arrêts de jeu de la 1re mi-temps, pari en 2e → remboursé s\'il manquait au score', $late([[10, 501], [30, 501], [45, 502, 2], [46, 501]]) === 'void');
+$alt['fixtures?id=9101'] = '{"errors":[],"response":[]}'; @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
+check('pari tardif : événements illisibles → on attend (pas payé au hasard)', sb_sel_result($lsel, $LT + 3800, $res9101, $LT + 7200, true) === null);
+check('… et après 6 h, réglé normalement', sb_sel_result($lsel, $LT + 3800, $res9101, $LT + 7 * 3600, true) === 'won');
+check('ancien pari en direct sans minute : jamais remboursé par cette règle', sb_sel_result(['ev' => 'sb:foot:9101:1x2', 'k' => 'H', 'lv' => 1], $LT + 3800, $res9101, $LT + 7200, true) === 'won');
+unset($alt['fixtures?id=9101']); @array_map('unlink', glob(sb_dir() . '/cache/*.json'));
+check('cash out : plus d\'offre sur un match en direct dès la 80e', SP_CO_LAST_MIN === 80);
 $GLOBALS['SB_SLEEP'] = function (int $sec, int $now) use (&$slept) { $slept[] = $sec; $GLOBALS['SB_NOW'] = $now + $sec; return $now + $sec; };
 $alt['odds/live'] = $lodds(['g' => [2, 1], 'h' => '1.25']); $B5 = $B4 + 20; $at(gmdate('Y-m-d H:i:s', $B5)); sb_live_refresh_now($B5);
 check('pari sur le match AVANT-MATCH déjà commencé par le chemin direct seulement : marché hors direct (eh) refusé', sb_pick('sb:foot:9101:eh:-1', 'H', $ua, $B5)['ok'] === false);
@@ -635,6 +652,7 @@ check('admin : état du direct', ($la = sb_live_admin($B5))['fx'] === 1 && $la['
 
 // règlement (score des 90 min), jamais annulé « posé après le coup d'envoi »
 $live1 = $bet; $balS = $bal[$A];
+$alt['fixtures?id=9101'] = $fxId([[10, 501], [40, 501], [64, 502], [80, 501]]); @array_map('unlink', glob(sb_dir() . '/cache/*.json')); // événements officiels (pas de but caché avant les paris)
 sb_with('results.json', static function (array &$s) use ($LT, $B5) { $s['fx']['9101'] = ['v' => 'fin', 'st' => 'FT', 'ts' => $LT, 'ti' => [501, 502], 'ft' => [3, 1], 'ht' => [1, 0], 'at' => $B5, 't' => 'Live Rovers - Direct FC']; return true; });
 sp_resolve(load_db());
 $byId = []; foreach (sp_my_bets('u_a') as $b) $byId[$b['id']] = $b;

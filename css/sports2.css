@@ -1487,3 +1487,18 @@ html:root body #casinoModal .sp2 .pz-co.arm{background:linear-gradient(180deg,#F
 html:root body #casinoModal .sp2 .pz-co.arm b{color:#1A1205}
 html:root body #casinoModal .sp2 .pz-co.busy{opacity:.75;animation:pz1b 1s ease-in-out infinite}
 html:root body #casinoModal .sp2 .sp2-pill.pz-copill{background:rgba(34,197,94,.18)!important;color:#86EFAC!important}
+/* 2026-11-23 : coupons du jour (Populaire) */
+html:root body #casinoModal .sp2 .pz-sugs{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 6px;scrollbar-width:none}
+html:root body #casinoModal .sp2 .pz-sugs::-webkit-scrollbar{display:none}
+html:root body #casinoModal .sp2 .pz-sugc{flex:0 0 min(78%,270px);scroll-snap-align:start;display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:14px;background:linear-gradient(180deg,rgba(224,168,46,.12),rgba(255,255,255,.03));box-shadow:inset 0 0 0 1px rgba(224,168,46,.35);min-width:0}
+html:root body #casinoModal .sp2 .pz-sugt{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 2px}
+html:root body #casinoModal .sp2 .pz-sugt b{display:flex;align-items:center;gap:6px;color:#fff;font:800 15px/1.2 var(--sp2-font);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:root body #casinoModal .sp2 .pz-sugt em{flex:none;padding:3px 8px;border-radius:8px;background:#E0A82E;color:#1A1205;font:900 14px/1 var(--sp2-font);font-style:normal}
+html:root body #casinoModal .sp2 .pz-sugl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;min-width:0}
+html:root body #casinoModal .sp2 .pz-sugl span{display:flex;flex-direction:column;gap:2px;min-width:0}
+html:root body #casinoModal .sp2 .pz-sugl b{color:#F5E9CC;font:700 13px/1.2 var(--sp2-font);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:root body #casinoModal .sp2 .pz-sugl small{color:var(--pz-mute);font:600 11px/1.2 var(--sp2-font);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html:root body #casinoModal .sp2 .pz-sugl em{flex:none;color:#F5C542;font:800 13px/1 var(--sp2-font);font-style:normal}
+html:root body #casinoModal .sp2 .pz-sugb{margin:6px 0 0;height:38px;border:0;border-radius:10px;background:linear-gradient(180deg,#22C55E,#15803D);color:#fff;font:800 14px/1 var(--sp2-font)}
+html:root body #casinoModal .sp2 .pz-sug .pz-sugs{padding:4px 12px 12px!important;margin:0!important;scroll-padding-inline:12px}
+html:root body #casinoModal .sp2 .pz-sugc .pz-sugb{margin-top:auto!important}
