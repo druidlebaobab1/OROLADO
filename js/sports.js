@@ -1381,7 +1381,7 @@
   var view = 'home', mineCache = null;
   var sbOn = null, liveOn = null, liveCnt = -1, sbSports = [], sport = 'foot', per = 'all', hourF = -1, sbQ = '', sbData = {}, sbOpen = {};
   var sbMid = '', sbM = null, mGrp = 'main', mkOpen = {}, trkTab = '', matchFrom = 'home', slipFrom = 'home', resDay = 0, resData = {};
-  var liveData = null, livePend = null, scrollMem = {}, sbCode = null, pendCode = '';
+  var liveData = null, livePend = null, scrollMem = {}, sbCode = null, pendCode = '', pendMatch = '';
   function lv() { return 'home'; }
   function mbox() { return box ? box.closest('.modal-box') : null; }
   function alive() {
@@ -1565,6 +1565,7 @@
     if (lastList) events = lastList;
     syncSlip();
     if (pendCode) { var pc = pendCode; pendCode = ''; loadCode(pc); }
+    else if (pendMatch) { var pm = pendMatch; pendMatch = ''; setTimeout(function () { if (alive()) openMatch(pm); }, 50); } // 2026-11-23 : lien d'une page « Pronostic » (?m=foot:ID)
     render();
     sbProbe(container);
     liveProbe();
@@ -3468,10 +3469,10 @@
   // lien partagé https://orolado.com/?code=XXXXXX : Paris s'ouvre avec le ticket chargé (visiteur aussi)
   (function () {
     try {
-      var p = new URLSearchParams(location.search || ''), c = String(p.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-      if (!/^[A-Z2-9]{6}$/.test(c)) return;
-      pendCode = c;
-      p.delete('code');
+      var p = new URLSearchParams(location.search || ''), c = String(p.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, ''), mm = String(p.get('m') || '');
+      if (/^foot:\d{1,12}$/.test(mm)) { pendMatch = mm; p.delete('m'); } // 2026-11-23 : page « Pronostic » → ce match s'ouvre dans Paris
+      else if (!/^[A-Z2-9]{6}$/.test(c)) return;
+      else { pendCode = c; p.delete('code'); }
       var qs = p.toString();
       if (history.replaceState) history.replaceState(history.state, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
       var tries = 0, go = function () {
