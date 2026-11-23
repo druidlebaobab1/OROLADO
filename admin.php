@@ -4215,11 +4215,12 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .lvC-m.a{align-self:flex-end;background:linear-gradient(145deg,#F43F6E,#C8174C);color:#fff;border-bottom-right-radius:5px}
     .lvC-m.auto{opacity:.62}
     .lvC-m img{display:block;max-width:100%;width:240px;border-radius:11px;margin-bottom:4px;cursor:zoom-in}
-    #oroImgV{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);overflow:auto;-webkit-overflow-scrolling:touch}
+    #oroImgV{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding-top:calc(env(safe-area-inset-top,0px) + 58px);box-sizing:border-box;background:rgba(0,0,0,.96);overflow:auto;-webkit-overflow-scrolling:touch}
+    #oroImgV .bar{position:fixed;left:0;right:0;top:0;height:calc(env(safe-area-inset-top,0px) + 58px);background:#000;z-index:2;pointer-events:none}
     #oroImgV[hidden]{display:none!important}
-    #oroImgV img{max-width:100vw;max-height:100dvh;object-fit:contain;display:block;margin:auto}
+    #oroImgV img{max-width:100vw;max-height:calc(100dvh - 70px);object-fit:contain;display:block;margin:auto}
     #oroImgV.z{display:block}#oroImgV.z img{max-width:none;max-height:none;width:200vw;height:auto}
-    #oroImgV .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font:700 22px/42px system-ui}
+    #oroImgV .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font:700 22px/42px system-ui;z-index:3}
     .lvC-m .lvC-imgx{display:inline-block;margin-bottom:4px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.08);color:#FDE68A;font-weight:700;text-decoration:none}
     .lvC-m audio{display:block;max-width:100%;width:240px;margin-bottom:4px}
     .lvC-m small{display:block;text-align:right;opacity:.7;font-size:.68rem;margin-top:3px;white-space:nowrap}
@@ -4809,7 +4810,7 @@ function oroImgV(src) {
     v = document.createElement('div'); v.id = 'oroImgV'; document.body.appendChild(v);
     v.addEventListener('click', e => { if (e.target.tagName === 'IMG') { v.classList.toggle('z'); return; } v.hidden = true; v.classList.remove('z'); v.innerHTML = ''; });
   }
-  v.innerHTML = '<img alt="Photo"><button type="button" class="x" aria-label="Fermer">✕</button>';
+  v.innerHTML = '<span class="bar"></span><img alt="Photo"><button type="button" class="x" aria-label="Fermer">✕</button>';
   v.querySelector('img').src = src; v.hidden = false; v.classList.remove('z');
 }
 if (document.getElementById('onlineNow')) { loadOnline(); setInterval(() => { if (!document.hidden) loadOnline(); }, 15000); }

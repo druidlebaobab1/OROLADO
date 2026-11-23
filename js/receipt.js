@@ -718,7 +718,7 @@
       if (Array.isArray(s.cs)) return { t: (+s.cs[0] || 0) + ':' + (+s.cs[1] || 0) + (s.cm != null && s.cm !== '' ? ' · ' + s.cm + '\u2019' : ''), live: true };
       return null;
     };
-    var atBet = function (s) { return s.lv && Array.isArray(s.sc) ? (x.rcAtBet || 'Bet at') + ' ' + (+s.sc[0] || 0) + ':' + (+s.sc[1] || 0) + (s.m != null && s.m !== '' ? ' · ' + s.m + '\u2019' : '') : ''; };
+    var atBet = function () { return ''; }; // 2026-11-23 (propriétaire) : plus de « Parié à » (inutile, encombre) — seulement le score
     var showScore = D === 0 && sel.some(function (s) { return !!scOf(s) || !!atBet(s); });
     if (showScore) rowH = 90;
     var HB = 96, stTop = HB, selHead = stTop + 158, selTop = selHead + 22, selEnd = selTop + rows * rowH;

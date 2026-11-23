@@ -11912,10 +11912,13 @@
    zoome ×2 (on peut alors la faire glisser), ✕ ou toucher le fond ferme. Pour : Écris-nous (équipe), groupes, Social. */
 (function () {
   var st = document.createElement('style');
-  st.textContent = '#oroImgV{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.94);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}' +
-    '#oroImgV[hidden]{display:none!important}#oroImgV img{max-width:100vw;max-height:100%;max-height:100dvh;object-fit:contain;display:block;margin:auto;transition:none}' +
+  // 2026-11-23 : la croix est dans une BARRE en haut (jamais sur la photo, même une longue capture) ; la photo dessous
+  var TOP = 'calc(env(safe-area-inset-top,0px) + 58px)';
+  st.textContent = '#oroImgV{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding-top:' + TOP + ';box-sizing:border-box;background:rgba(0,0,0,.96);overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}' +
+    '#oroImgV[hidden]{display:none!important}#oroImgV img{max-width:100vw;max-height:calc(100dvh - 70px);object-fit:contain;display:block;margin:auto;transition:none}' +
     '#oroImgV.z{display:block}#oroImgV.z img{max-width:none;max-height:none;width:200vw;height:auto}' +
-    '#oroImgV .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font:700 22px/42px system-ui;text-align:center;z-index:2}' +
+    '#oroImgV .bar{position:fixed;left:0;right:0;top:0;height:' + TOP + ';background:#000;z-index:2;pointer-events:none}' +
+    '#oroImgV .x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font:700 22px/42px system-ui;text-align:center;z-index:3;pointer-events:auto}' +
     '#oroImgV .ld{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#ddd;font:600 14px system-ui}';
   (document.head || document.documentElement).appendChild(st);
   var box = null;
@@ -11931,7 +11934,7 @@
         close();
       });
     }
-    box.innerHTML = '<span class="ld">…</span><img alt=""><button type="button" class="x" aria-label="✕">✕</button>';
+    box.innerHTML = '<span class="bar"></span><span class="ld">…</span><img alt=""><button type="button" class="x" aria-label="✕">✕</button>';
     var im = box.querySelector('img');
     im.onload = function () { var l = box.querySelector('.ld'); if (l) l.remove(); };
     im.onerror = function () { var l = box.querySelector('.ld'); if (l) l.textContent = '⚠'; };
