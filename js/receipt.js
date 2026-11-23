@@ -713,14 +713,34 @@
     // carré de score SOUS le choix (comme à l'écran), pour qu'il ne croise jamais un nom de match long.
     // 2026-11-23 (propriétaire : « le score actuel sur le reçu, c'est ce que les gens postent ») : score final, ou score EN DIRECT
     // au moment du téléchargement (● 1:3 · 72'), et pour un pari pris en direct le score au moment du pari.
+    // 2026-11-23 (propriétaire, modèles « Direct 2 » / « Terminé 2 ») : score ENTRE les équipes (« Sochaux  2 – 3  Dunkerque »),
+    // petite étiquette FIN quand c'est fini ; en direct, « En direct · 70’ » sous le choix (en vert, sans point).
     var scOf = function (s) {
-      if (Array.isArray(s.fs)) return { t: (+s.fs[0] || 0) + ':' + (+s.fs[1] || 0), live: false };
-      if (Array.isArray(s.cs)) return { t: (+s.cs[0] || 0) + ':' + (+s.cs[1] || 0) + (s.cm != null && s.cm !== '' ? ' · ' + s.cm + '\u2019' : ''), live: true };
-      return null;
+      var tm = String(s.t || '').split(/\s+(?:-|–|—|vs\.?)\s+/);
+      var sc = Array.isArray(s.fs) ? s.fs : Array.isArray(s.cs) ? s.cs : null;
+      if (!sc || tm.length !== 2) return null;
+      return { h: tm[0], a: tm[1], sc: (+sc[0] || 0) + ' – ' + (+sc[1] || 0), fin: Array.isArray(s.fs), min: !Array.isArray(s.fs) && s.cm != null && s.cm !== '' ? String(s.cm) + '\u2019' : '' };
     };
-    var atBet = function () { return ''; }; // 2026-11-23 (propriétaire) : plus de « Parié à » (inutile, encombre) — seulement le score
-    var showScore = D === 0 && sel.some(function (s) { return !!scOf(s) || !!atBet(s); });
-    if (showScore) rowH = 90;
+    var showScore = D === 0 && sel.some(function (s) { var o = scOf(s); return o && !o.fin; });
+    var matchLine = function (s, x0, y, maxW, fs) { // « Équipe A  2 – 3  Équipe B  [FIN] » ; sans score : le nom du match
+      var o = scOf(s); g.textAlign = 'left';
+      if (!o) { g.fillStyle = MUTE; g.font = '500 ' + fs + 'px ' + FONT; g.fillText(ell(g, s.t, maxW), x0, y); return; }
+      g.font = '800 ' + fs + 'px ' + FONT; var sw = g.measureText(o.sc).width;
+      var fin = o.fin ? String(x.finL || 'FT').toUpperCase() : '', fw = 0;
+      if (fin) { g.font = '800 ' + (fs - 4) + 'px ' + FONT; fw = g.measureText(fin).width + 12 + 10; }
+      g.font = '500 ' + fs + 'px ' + FONT;
+      var gap = 8, half = Math.max(30, (maxW - sw - 2 * gap - fw) / 2);
+      var hT = ell(g, o.h, half), aT = ell(g, o.a, half), xx = x0;
+      g.fillStyle = MUTE; g.fillText(hT, xx, y); xx += g.measureText(hT).width + gap;
+      g.font = '800 ' + fs + 'px ' + FONT; g.fillStyle = INK; g.fillText(o.sc, xx, y); xx += sw + gap;
+      g.font = '500 ' + fs + 'px ' + FONT; g.fillStyle = MUTE; g.fillText(aT, xx, y); xx += g.measureText(aT).width;
+      if (fin) {
+        g.font = '800 ' + (fs - 4) + 'px ' + FONT; var tw = g.measureText(fin).width, bx2 = xx + 10, bh = fs + 2;
+        rr(g, bx2, y - bh / 2, tw + 12, bh, 4); g.fillStyle = '#475569'; g.fill();
+        g.fillStyle = '#FFFFFF'; g.textAlign = 'center'; g.fillText(fin, bx2 + (tw + 12) / 2, y + 0.5); g.textAlign = 'left';
+      }
+    };
+    if (showScore) rowH = 80;
     var HB = 96, stTop = HB, selHead = stTop + 158, selTop = selHead + 22, selEnd = selTop + rows * rowH;
     var totTop = selEnd + 18, totRow = 34, nT = bt.bst ? 6 : 5, H = totTop + nT * totRow + 112; // 2026-10-23 : + ligne « Bonus combiné »
     // très long coupon (jusqu'à 1 000 choix) : résolution réduite pour rester sous les limites des téléphones (iPhone : ≈ 16 Mpx
@@ -767,9 +787,9 @@
       var avail = right - x0 - 6;
       g.textAlign = 'left';
       g.font = '800 ' + fs + 'px ' + FONT;
-      var sc1 = scOf(s), ch = String(s.l || '') + (sc1 ? '  (' + sc1.t + ')' : ''), chW = g.measureText(ch).width;
+      var sc1 = scOf(s), ch = String(s.l || ''), chW = g.measureText(ch).width;
       g.font = '500 ' + fs + 'px ' + FONT;
-      var sep = ' — ', sepW = g.measureText(sep).width, mt = String(s.t || '');
+      var sep = ' — ', sepW = g.measureText(sep).width, mt = sc1 ? sc1.h + ' ' + sc1.sc + ' ' + sc1.a + (sc1.fin ? ' (' + String(x.finL || 'FT') + ')' : '') : String(s.t || '');
       var mW = Math.max(0, avail - Math.min(chW, avail * 0.62) - sepW);
       var mTxt = mW >= 40 ? ell(g, mt, mW) : '';
       var xx = x0;
@@ -784,25 +804,11 @@
       g.textAlign = 'left';
       // 2026-10-31 (propriétaire) : AGENCEMENT IDENTIQUE À L'ÉCRAN → nom du match, puis choix, puis le carré
       // de score SOUS le choix (jamais à côté du match, donc jamais de croisement même si le match est long).
-      var scO = scOf(s), fsStr = scO ? (scO.live ? '\u25CF ' : '') + scO.t : '', ab = atBet(s);
-      var matchY = fsStr || ab ? y + 18 : y + 19, pickY = fsStr || ab ? y + 40 : y + 41;
-      g.fillStyle = MUTE; g.font = '500 14px ' + FONT; g.fillText(ell(g, s.t, right - P - 4), P, matchY);
-      g.fillStyle = INK; g.font = '800 18px ' + FONT; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
-      var boxEnd = P;
-      if (fsStr) {
-        var FC = scO.live && !(s.r === 'won' || s.r === 'lost' || s.r === 'void') ? { bg: '#FEF2F2', bd: '#FECACA', n: '#DC2626' }
-          : (s.r === 'won' || s.r === 'hwon') ? { bg: '#ECFDF3', bd: '#BBF7D0', n: '#15803D' }
-          : (s.r === 'lost' || s.r === 'hlost') ? { bg: '#FEF2F2', bd: '#FECACA', n: '#B91C1C' }
-          : (s.r === 'void') ? { bg: '#EFF6FF', bd: '#BFDBFE', n: '#1E40AF' }
-          : { bg: '#F1F5F9', bd: '#E2E8F0', n: '#334155' };
-        g.font = '800 13px ' + FONT; var wN = g.measureText(fsStr).width;
-        var boxW = Math.max(44, wN + 20), boxH = 22, bx = P, by = y + 60;
-        rr(g, bx, by, boxW, boxH, 3); g.fillStyle = FC.bg; g.fill();
-        g.lineWidth = 1; g.strokeStyle = FC.bd; g.stroke();
-        g.fillStyle = FC.n; g.textAlign = 'center'; g.fillText(fsStr, bx + boxW / 2, by + boxH / 2); g.textAlign = 'left';
-        boxEnd = bx + boxW + 10;
-      }
-      if (ab) { g.fillStyle = MUTE; g.font = '600 12.5px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, ab, right - boxEnd - 4), boxEnd, y + 71); }
+      var scO = scOf(s), liveL = scO && !scO.fin ? String(x.liveL || 'Live') + (scO.min ? ' · ' + scO.min : '') : '';
+      var matchY = liveL ? y + 17 : y + 19, pickY = liveL ? y + 39 : y + 41;
+      matchLine(s, P, matchY, right - P - 4, 14);
+      g.fillStyle = INK; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
+      if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.fillText(ell(g, liveL, right - P - 4), P, y + 61); }
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {
       var y = selTop + i * rowH;

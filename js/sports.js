@@ -675,11 +675,13 @@
       '<div class="sp-rcpt-sels"><p class="sp-rcpt-k">' + esc(bt.sel.length > 1 ? x.rcCombo : x.rcSingle) + ' · ' + bt.sel.length + '</p>' + bt.sel.map(function (s) {
         // 2026-10-31 (propriétaire) : match terminé → pastille avec LE SCORE SEUL, centré (plus de « Terminé »),
         // couleur selon le résultat (gagné vert / perdu rouge / remboursé bleu, via la classe du parent). s.fs = [dom, ext]
-        var fsTxt = Array.isArray(s.fs) ? '<u class="sp-rcpt-fs"><var class="fsN" dir="ltr">' + (+s.fs[0] || 0) + ':' + (+s.fs[1] || 0) + '</var></u>' : '';
-        // 2026-11-23 (propriétaire) : score EN DIRECT (● 1:3 · 72’) ; fini : score final (plus de « Parié à »)
-        if (!fsTxt && Array.isArray(s.cs)) fsTxt = '<u class="sp-rcpt-fs sp-rcpt-lv"><var class="fsN" dir="ltr">● ' + (+s.cs[0] || 0) + ':' + (+s.cs[1] || 0) + (s.cm != null && s.cm !== '' ? ' · ' + esc(String(s.cm)) + '’' : '') + '</var></u>';
+        // 2026-11-23 (propriétaire, modèles « Direct 2 » / « Terminé 2 ») : le score se place ENTRE les deux équipes
+        // (« Sochaux  2 – 3  Dunkerque ») ; match fini : petite étiquette FIN ; en direct : « En direct · 70’ » dessous.
+        var tmR = teams(s.t), scR = Array.isArray(s.fs) ? s.fs : Array.isArray(s.cs) ? s.cs : null, finR = Array.isArray(s.fs);
+        var mLine = tmR && scR ? esc(tmR[0]) + '<b class="sp-rcpt-sc" dir="ltr">' + (+scR[0] || 0) + ' – ' + (+scR[1] || 0) + '</b>' + esc(tmR[1]) + (finR ? '<em class="sp-rcpt-fin">' + esc(NX().ftS || NX().ft || 'FT') + '</em>' : '') : esc(s.t);
+        var fsTxt = !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? ' · <span dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
 
-        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + esc(s.t) + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + mLine + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>$' + m2(bt.stake) + '</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
       (bt.bst ? '<p class="bst"><span>' + esc(bstLabel(bt)) + '</span><b>' + (st === 'won' ? '+$' + m2(bt.bw || 0) + '' : st === 'open' ? '+$' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + '' : '—') + '</b></p>' : '') +
@@ -691,7 +693,7 @@
     // dans Paris : le reçu est posé DANS la fenêtre du casino (le bouton retour du téléphone le ferme, sans fermer Paris)
     var host = box && box.isConnected && box.closest('#casinoModal') ? box.closest('#casinoModal') : document.body;
     host.appendChild(el);
-    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, rcAtBet: T18('rcAtBet', 'Bet at'), ftS: NX().ft })); } catch (eP) { /* ignore */ }
+    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, liveL: NX().live, finL: NX().ftS || NX().ft, ftS: NX().ft })); } catch (eP) { /* ignore */ }
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
     var close = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); }, 220); };
     el.addEventListener('click', function (e) { if (e.target === el) close(); });
