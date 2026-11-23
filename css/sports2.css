@@ -1608,3 +1608,8 @@ html:root body #casinoModal .sp2 .pz-msum b.l{color:#F87171}
 html:root body #casinoModal .sp2 .pz-wa{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:340px;height:42px;margin:10px auto 0;padding:0 16px;border:0;border-radius:12px;background:#25D366;color:#06301A;font:800 15px/1 var(--sp2-font);box-shadow:0 4px 14px rgba(37,211,102,.25)}
 html:root body #casinoModal .sp2 .pz-wa .pz-wai{width:20px;height:20px;flex:none}
 html:root body #casinoModal .sp2 .pz-wa.pz-wa-s{max-width:none;height:36px;margin:8px 0 0;font-size:14px}
+/* 2026-11-23 (propriétaire) : bouton WhatsApp = vrai logo (plein, blanc) dans le vert WhatsApp, rien ne déborde */
+html:root body #casinoModal .sp2 .pz-wa{background:#1DAA61;color:#fff;overflow:hidden}
+html:root body #casinoModal .sp2 .pz-wa .pz-wai{width:21px;height:21px;flex:none;fill:currentColor;stroke:none;overflow:visible}
+html:root body #casinoModal .sp2 .pz-wa .pz-wai path{fill:currentColor;stroke:none}
+html:root body #casinoModal .sp2 .pz-wa .fit{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

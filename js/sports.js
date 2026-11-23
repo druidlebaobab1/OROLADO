@@ -724,7 +724,7 @@
       '<div class="sp2-done-c"><p><span class="fit">' + esc(one ? x.stakeL : x.totSt) + '</span><b class="fit">' + money(tst) + '</b></p>' + (one ? '<p><span class="fit">' + esc(x.oddL) + '</span><b class="fit">' + Number(lb.odd).toFixed(2) + '</b></p>' : '') +
       '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b class="fit">' + money(tpot) + '</b></p></div>' +
       (one && lb.bst ? bstBanner(lb.bst, bstAmt(lb.stake, sp2Pot(lb.stake, lb.odd), lb.bst), 'done') : '') +
-      (one ? (lb.code ? '<button type="button" class="sp2-bcode sp2-done-code" data-cpc="' + esc(lb.code) + '"><small>' + esc(NX().betCode) + '</small><b dir="ltr">' + esc(lb.code) + '</b>' + CPIC + '</button><button type="button" class="pz-wa" id="spWaDone">' + WAIC + '<span class="fit">' + esc(T18('sbShare', 'Share')) + '</span></button>' : '<small class="sp2-done-id fit">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small>') : '') +
+      (one ? (lb.code ? '<button type="button" class="sp2-bcode sp2-done-code" data-cpc="' + esc(lb.code) + '"><small>' + esc(NX().betCode) + '</small><b dir="ltr">' + esc(lb.code) + '</b>' + CPIC + '</button><button type="button" class="pz-wa" id="spWaDone">' + WAIC + '<span class="fit">WhatsApp</span></button>' : '<small class="sp2-done-id fit">#' + esc(String(lb.id || '').slice(-8).toUpperCase()) + '</small>') : '') +
       '<div class="sp2-done-b">' + (one ? '<button type="button" class="sp2-cta" id="spSeeRc"><span class="fit">' + esc(x.rcSee) + '</span></button>' : '') +
       '<div><button type="button" class="sp2-cta2" id="spSeeMine"><span class="fit">' + esc(x.mine) + '</span></button><button type="button" class="sp2-cta2" id="spCont"><span class="fit">' + esc(x.cont) + '</span></button></div></div></div></div>');
     slipTop(); fitAll(box);
@@ -1329,7 +1329,8 @@
   /* 2026-11-23 (propriétaire : « partage WhatsApp en image, bien stylé, sans rien déranger ») — une image du coupon (matchs,
      choix, cotes, cote totale, gros code, lien) faite dans le téléphone ; partage du téléphone (WhatsApp, Telegram…) avec
      l'image + le lien ; sinon WhatsApp avec le texte et le lien. Rien n'est envoyé au serveur. */
-  var WAIC = '<svg class="sp2-i pz-wai" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2a8.7 8.7 0 0 0-7.5 13.1L3.3 20.8l4.6-1.2A8.7 8.7 0 1 0 12 3.2z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.9 7.9c-.3 0-.6.1-.8.4-.3.4-.8 1-.8 2.2s.9 2.4 1 2.6c.1.2 1.8 2.8 4.4 3.8 2.2.8 2.6.6 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.5-.3l-1.7-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.1-.2 0-.4.1-.5l.5-.6c.1-.2.2-.3.3-.5v-.5l-.8-1.9c-.2-.4-.4-.4-.6-.4h-.5z" fill="currentColor"/></svg>';
+  // 2026-11-23 (propriétaire : « un vrai logo WhatsApp, qui ne déborde pas ») : logo officiel (dessin plein), dans son carré
+  var WAIC = '<svg class="sp2-i pz-wai" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>';
   function shareImg(code, rows, odd) {
     var W = 1080, P = 64, RH = 132, n = Math.min(rows.length, 12), H = 245 + n * RH + 420;
     var c = document.createElement('canvas'); c.width = W; c.height = H; var g = c.getContext('2d');
@@ -1359,14 +1360,17 @@
   function shareSlip(code, rows, odd) {
     if (!code) return;
     var link = codeLink(code), msg = '🎯 ' + T18('sbShareT', 'My OROLADO bet slip') + ' · ' + rows.length + ' · ' + (XX().oddL || 'Odds') + ' ' + Number(odd).toFixed(2) + '\n' + (NX().betCode || 'Code') + ' : ' + code + '\n' + link;
-    var wa = function () { try { window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener'); } catch (e) { location.href = 'https://wa.me/?text=' + encodeURIComponent(msg); } };
-    var cv; try { cv = shareImg(code, rows, odd); } catch (e) { cv = null; }
-    if (!cv || !cv.toBlob || !navigator.share) { wa(); return; }
-    cv.toBlob(function (bl) {
-      var f = null; try { f = bl ? new File([bl], 'orolado-' + code + '.png', { type: 'image/png' }) : null; } catch (e) { f = null; }
-      if (f && navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f], text: msg }).catch(function (e) { if (!e || e.name !== 'AbortError') wa(); }); return; }
-      navigator.share({ text: msg, url: link }).catch(function (e) { if (!e || e.name !== 'AbortError') wa(); });
-    }, 'image/png');
+    // 2026-11-23 (propriétaire : « on touche WhatsApp, ça doit ouvrir WhatsApp, pas le menu Partager ») : WhatsApp
+    // s'ouvre DIRECTEMENT (choix du contact) avec le message, le code et le lien qui recharge le coupon.
+    var enc = encodeURIComponent(msg);
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')) {
+      var t0 = Date.now();
+      location.href = 'whatsapp://send?text=' + enc;
+      // WhatsApp absent : la page est toujours là après 1,5 s → lien web (wa.me propose de l'installer ou l'ouvre)
+      setTimeout(function () { if (!document.hidden && Date.now() - t0 < 4000) { try { window.open('https://wa.me/?text=' + enc, '_blank', 'noopener'); } catch (e) { /* ignore */ } } }, 1500);
+    } else {
+      try { window.open('https://web.whatsapp.com/send?text=' + enc, '_blank', 'noopener'); } catch (e) { location.href = 'https://wa.me/?text=' + enc; }
+    }
   }
   /* ======================================================================================================================
      2026-10-22 (propriétaire : « quand on touche Paris, ça doit ouvrir un MONDE : un vrai site de paris, calme, simple, pro »)
@@ -3387,7 +3391,7 @@
     if (sbCode && sbCode.sig === slipSig()) {
       return '<div class="sb-cp1"><span>' + esc(n.betCode) + '</span><b dir="ltr">' + esc(sbCode.code) + '</b>' +
         '<button type="button" id="sbCopy"><span>' + esc(x.copy) + '</span></button><button type="button" id="sbCodeX" aria-label="✕">' + IC.x + '</button></div>' +
-        '<button type="button" class="pz-wa pz-wa-s" id="sbWa">' + WAIC + '<span class="fit">' + esc(T18('sbShare', 'Share')) + '</span></button>';
+        '<button type="button" class="pz-wa pz-wa-s" id="sbWa">' + WAIC + '<span class="fit">WhatsApp</span></button>';
     }
     return withShare ? '<button type="button" class="pz-lnk" id="sbShare">' + SBIC.share + '<span>' + esc(n.share) + '</span></button>' : '';
   }
