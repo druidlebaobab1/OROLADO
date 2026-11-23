@@ -8,4 +8,4 @@ Disallow: /data/
 Disallow: /sites/
 
 Sitemap: https://www.orolado.com/sitemap.xml
-Sitemap: https://www.orolado.com/sitemap-pronostics.xml
+Sitemap: https://www.orolado.com/pronostic.php?sitemap=1
