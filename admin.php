@@ -167,6 +167,8 @@ function admin_keep_drop(): void {
 /** Page rechargée sans session PHP : on reprend la connexion longue (ou celle du jeu, si admin). */
 function admin_keep_restore(): void {
   if (admin_me()) return;
+  // 2026-11-23 : sans cookie de connexion, rien à restaurer → pas de lecture de toute la base (page de connexion rapide)
+  if (trim((string) ($_COOKIE[ADMIN_KEEP_COOKIE] ?? '')) === '' && trim((string) ($_COOKIE['oro_token'] ?? '')) === '') return;
   $db = admin_local_db();
   $keep = trim((string) ($_COOKIE[ADMIN_KEEP_COOKIE] ?? ''));
   if ($keep !== '') {
@@ -437,7 +439,7 @@ function admin_persist_admin_log(string $adminEmail, string $targetPid, string $
 }
 
 function admin_badges(): array {
-  $cached = admin_cache_get('badges_epoch4', 12);
+  $cached = admin_cache_get('badges_epoch4', 25); // 2026-11-23 : 25 s (avant 12) — calcul lourd (tous les joueurs)
   if (is_array($cached) && isset($cached['inscrits'])) return $cached;
   $people = admin_stat_people(admin_profiles()); // 2026-10-22 (propriétaire) : comptes admin (maison) hors de TOUS les chiffres
   $wds = admin_withdrawals();
@@ -4772,7 +4774,7 @@ async function loadOnline() {
     }
   } catch (e) { /* ignore */ }
 }
-if (document.getElementById('onlineNow')) { loadOnline(); setInterval(loadOnline, 10000); }
+if (document.getElementById('onlineNow')) { loadOnline(); setInterval(() => { if (!document.hidden) loadOnline(); }, 15000); }
 // 2026-10-22 (propriétaire) — « Application installée » : chiffres + liste (plus récents d'abord, heure de l'admin)
 async function loadAppInst() {
   try {
@@ -6300,9 +6302,10 @@ document.getElementById('q').addEventListener('keydown', e => { if (e.key==='Ent
 document.getElementById('preset').addEventListener('change', filters);
 loadBadges().then(() => loadList(true));
 setInterval(() => {
+  if (document.hidden) return; // 2026-11-23 : onglet caché = pas de relecture (serveur moins chargé)
   loadBadges();
   if (view === 'online') loadList(true);
-}, 8000);
+}, 15000);
 // v2690 — Casino & Paris (admin)
 (function () {
   const $c = id => document.getElementById(id);
