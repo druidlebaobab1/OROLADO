@@ -903,7 +903,7 @@
     g.disabled = on; g.classList.toggle('wait', on); g.setAttribute('aria-busy', on ? 'true' : 'false');
     var p = g.querySelector('.sp2-prog');
     if (on) {
-      if (!sendT0) { sendT0 = Date.now(); sendDur = live ? (liveSmall() ? 25500 : 15500) : 1600; } // direct : 15 s de contrôles (petits championnats : 25 s) ; le serveur répond plus tôt s'il refuse
+      if (!sendT0) { sendT0 = Date.now(); sendDur = live ? (liveSmall() ? 12500 : 8500) : 1600; } // direct : 8 s de contrôles (petits championnats : 12 s, 2026-11-23) ; le serveur répond plus tôt s'il refuse
       if (!p) { p = document.createElement('i'); p.className = 'sp2-prog'; p.setAttribute('aria-hidden', 'true'); p.innerHTML = '<i></i>'; g.insertBefore(p, g.firstChild); }
       // bouton refait pendant l'envoi (cotes qui bougent) : la barre reprend où elle en était. En ligne et « important » :
       // elle bouge aussi en mode léger (html.oro-lite, retenu 7 jours sur un téléphone lent : c'est ce qui figeait la roue).
@@ -970,7 +970,7 @@
     }
     if (!fails.length) {
       if (okBets.length === 1) lastBet = okBets[0]; else lastBets = okBets;
-      if (view === 'slip') render();
+      if (view === 'slip') render(); else sbToast('✓ ' + (okBets.length > 1 ? fmt(x.doneN, { n: okBets.length }) : String(x.done || x.placeB))); // joueur parti ailleurs pendant l'envoi
       return;
     }
     var why = fails[fails.length - 1], wasLive = jobs.some(function (j) { return !j.done && j.zs.some(function (z) { return z.lv; }); });
@@ -1503,7 +1503,8 @@
   // changer d'écran (barre du bas, liens) ; la position de la liste est gardée pour le retour
   function go(v) {
     if (!box) return;
-    if (sending && view === 'slip') return;
+    // 2026-11-23 (propriétaire : « pendant la validation du pari, tout est bloqué ») : on peut aller ailleurs pendant l'envoi ;
+    // le pari continue et le résultat s'affiche (message) une fois fini.
     var mb = mbox();
     if (v === view && v !== 'slip') { if (mb) mb.scrollTop = 0; if (v === 'home' && (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot')) { per = 'all'; sbQ = ''; hourF = -1; sport = 'foot'; render(); } return; }
     if (mb) scrollMem[view] = mb.scrollTop;
@@ -1522,7 +1523,6 @@
     if (rc) { rc.classList.remove('on'); setTimeout(function () { rc.remove(); }, 220); return true; }
     if (!alive()) return false;
     if (closeSheet()) return true;
-    if (sending) return true;
     while (navStk.length) {
       var pv = navStk.pop();
       if (pv.v === view && (pv.v !== 'match' || pv.mid === sbMid)) continue;
@@ -1590,7 +1590,7 @@
   function sbProbe(container) {
     var was = sbOn;
     sbLoad(true).then(function () {
-      if (!alive() || box !== container || sending) return;
+      if (!alive() || box !== container || (sending && view === 'slip')) return;
       if (sbOn !== was) { if (view === 'home' || view === 'menu' || ((view === 'live' || view === 'match') && sbOn === false)) render(); else paintNav(); }
       else if (view === 'home') paintHome();
     });
