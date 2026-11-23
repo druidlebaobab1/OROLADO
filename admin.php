@@ -20,6 +20,12 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
   ]);
 }
 
+// 2026-11-23 (propriétaire : « le tableau admin est lent ») : la réponse part TOUT DE SUITE (fastcgi_finish_request, en premier
+// des travaux de fin) ; les rondes ci-dessous (e-mails, notifications, dépôts en attente) se font ensuite, sans faire attendre.
+register_shutdown_function(static function (): void {
+  if (!function_exists('fastcgi_finish_request')) return;
+  try { while (ob_get_level() > 0) @ob_end_flush(); @fastcgi_finish_request(); } catch (Throwable $e) { /* ignore */ }
+});
 // v3000 — « E-mail à tous » en arrière-plan : chaque requête admin fait aussi un tic APRÈS sa réponse
 // (la page admin ouverte appelle mail_queue_status toutes les 10 s : l'envoi avance même sans joueurs).
 register_shutdown_function(static function (): void {
