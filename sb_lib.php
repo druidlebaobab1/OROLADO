@@ -1857,6 +1857,52 @@ function sb_find(string $id, int $now): ?array {
   foreach (sb_days($now) as $d) { $j = sb_day($d); if (isset($j['fx'][$id])) return ['row' => (array) $j['fx'][$id], 'lg' => (array) ($j['lg'][(string) $j['fx'][$id]['lg']] ?? []), 'day' => $d]; }
   return null;
 }
+/**
+ * 2026-11-23 (propriétaire : « si l'API donne les dernières rencontres, mets-les ») — sbForm {id} : forme des 2 équipes (5 derniers
+ * matchs : V / N / D) et 5 derniers face-à-face. 3 lectures API par match (headtohead + 2 × fixtures?team&last), gardées 6 h,
+ * jamais quand le budget du jour est serré (> 1 500 lectures restantes exigées). Affichage seulement.
+ */
+function sb_form_row(array $r): ?array {
+  $hid = (int) ($r['teams']['home']['id'] ?? 0); $aid = (int) ($r['teams']['away']['id'] ?? 0);
+  $gh = $r['goals']['home'] ?? null; $ga = $r['goals']['away'] ?? null;
+  if (!$hid || !$aid || !is_numeric($gh) || !is_numeric($ga)) return null;
+  if (!in_array((string) ($r['fixture']['status']['short'] ?? ''), SB_FINAL, true)) return null;
+  return ['ts' => (int) ($r['fixture']['timestamp'] ?? 0), 'h' => [$hid, mb_substr((string) ($r['teams']['home']['name'] ?? ''), 0, 40)], 'a' => [$aid, mb_substr((string) ($r['teams']['away']['name'] ?? ''), 0, 40)],
+    'g' => [(int) $gh, (int) $ga], 'lg' => mb_substr((string) ($r['league']['name'] ?? ''), 0, 40)];
+}
+function sb_form_rows(?array $j, int $max = 5): array {
+  $out = [];
+  foreach ((array) ($j['response'] ?? []) as $r) if (is_array($r) && ($row = sb_form_row($r))) $out[] = $row;
+  usort($out, static fn($x, $y) => $y['ts'] <=> $x['ts']);
+  return array_slice($out, 0, $max);
+}
+function sb_form_wdl(array $rows, int $team): array {
+  $f = [];
+  foreach ($rows as $r) { $me = $r['h'][0] === $team ? 0 : ($r['a'][0] === $team ? 1 : -1); if ($me < 0) continue; $d = $r['g'][$me] - $r['g'][1 - $me]; $f[] = $d > 0 ? 'W' : ($d < 0 ? 'L' : 'D'); }
+  return $f;
+}
+function sb_form(?array $user, string $fid, int $now = 0): array {
+  $now = $now ?: sb_now();
+  if (!sb_visible($user)) return ['ok' => false, 'reason' => 'off'];
+  if (!preg_match('/^foot:(\d{1,12})$/', $fid, $m)) return ['ok' => false, 'reason' => 'param'];
+  $id = $m[1];
+  $f = sb_find($id, $now); $row = $f['row'] ?? null;
+  if (!$row) { $L = function_exists('sb_live_data') ? sb_live_data() : []; $row = $L['fx'][$id] ?? null; }
+  $h = (int) ($row['h'][0] ?? 0); $a = (int) ($row['a'][0] ?? 0);
+  if (!$h || !$a) return ['ok' => false, 'reason' => 'unavailable'];
+  $ttl = 21600;
+  $paths = ['fixtures/headtohead?h2h=' . $h . '-' . $a . '&last=5', 'fixtures?team=' . $h . '&last=5', 'fixtures?team=' . $a . '&last=5'];
+  $js = [];
+  foreach ($paths as $p) {
+    $j = sb_cache_peek($p, $ttl, $now);
+    if ($j === null && sb_has_key() && sb_budget($now)['left'] > 1500) $j = sb_get_cached($p, $ttl, $now);
+    $js[] = $j;
+  }
+  if ($js[1] === null && $js[2] === null && $js[0] === null) return ['ok' => false, 'reason' => 'unavailable'];
+  $hr = sb_form_rows($js[1]); $ar = sb_form_rows($js[2]); $hh = sb_form_rows($js[0]);
+  $pub = static fn(array $r): array => ['ts' => $r['ts'], 'h' => $r['h'][1], 'a' => $r['a'][1], 'g' => $r['g'], 'hi' => $r['h'][0], 'ai' => $r['a'][0], 'lg' => $r['lg']];
+  return ['ok' => true, 'hi' => $h, 'ai' => $a, 'hf' => sb_form_wdl($hr, $h), 'af' => sb_form_wdl($ar, $a), 'hm' => array_map($pub, $hr), 'am' => array_map($pub, $ar), 'h2h' => array_map($pub, $hh)];
+}
 function sb_mk_file(string $id): array { return sb_read('mk' . DIRECTORY_SEPARATOR . 'foot-' . $id . '.json'); }
 /** sbMatch : tous les marchés d'un match. */
 function sb_match(?array $user, string $fid, int $now = 0): array {

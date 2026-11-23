@@ -1099,7 +1099,15 @@ function sp_my_bets(string $uid, bool $withHidden = false): array { // $withHidd
       if (!preg_match('/^foot:(\d+)$/', (string) ($sl['fx'] ?? ''), $m)) continue;
       $r = $res[$m[1]] ?? null; $lv = $L['fx'][$m[1]] ?? null;
       if (is_array($r) && ($r['v'] ?? '') === 'fin' && is_array($r['ft'] ?? null)) $out[$i]['sel'][$j]['fs'] = array_map('intval', $r['ft']);
-      elseif (is_array($lv) && empty($lv['end']) && is_array($lv['g'] ?? null)) { $out[$i]['sel'][$j]['cs'] = array_map('intval', $lv['g']); $out[$i]['sel'][$j]['cm'] = $lv['m'] ?? null; }
+      elseif (is_array($lv) && empty($lv['end']) && is_array($lv['g'] ?? null)) {
+        $out[$i]['sel'][$j]['cs'] = array_map('intval', $lv['g']); $out[$i]['sel'][$j]['cm'] = $lv['m'] ?? null;
+        // 2026-11-23 (propriétaire : « Mes paris en direct ») : si le match finissait sur ce score, ce choix serait-il gagnant ?
+        // (cw = won / lost ; rien quand on ne peut pas savoir : mi-temps, corners, joueurs…) — affichage seulement, jamais réglé
+        if (empty($sl['r']) && function_exists('sb_settle_mk') && isset($sl['mk'], $sl['k'])) {
+          try { $cw = sb_settle_mk((string) $sl['mk'], (string) $sl['k'], $out[$i]['sel'][$j]['cs'], null); } catch (\Throwable $e) { $cw = null; }
+          if ($cw === 'won' || $cw === 'lost') $out[$i]['sel'][$j]['cw'] = $cw;
+        }
+      }
       elseif (is_array($lv) && !empty($lv['end']) && is_array($lv['g'] ?? null)) $out[$i]['sel'][$j]['fs'] = array_map('intval', $lv['g']);
     }
   }
@@ -1184,15 +1192,66 @@ function sp_resolve(array $db): array {
     }
     return $pay;
   }) ?: [];
-  $won = 0; $lostN = 0; $paidFail = 0;
+  $won = 0; $lostN = 0; $paidFail = 0; $notes = [];
   foreach ($todo as $p) {
     $bal = casino_credit($db, (string) $p['uid'], (string) $p['mode'], (float) $p['w'], (string) $p['i']);
     if ($bal === null && $p['mode'] === 'real') { $paidFail++; sp_mark_unpaid((string) $p['i']); continue; }
     casino_stat('sports', (string) $p['mode'], (float) $p['s'], (float) $p['w'], (string) $p['uid'], is_array($db['users'][(string) $p['uid']] ?? null) ? $db['users'][(string) $p['uid']] : null); // 2026-10-22 : jamais les comptes admin dans les chiffres
     if (!empty($p['sb']) && $p['w'] > 0 && $p['mode'] === 'real' && function_exists('sb_alert_win')) { try { sb_alert_win((float) $p['w']); } catch (Throwable $e) { /* jamais bloquant */ } }
     if ($p['w'] > 0) $won++; else $lostN++;
+    if ($p['mode'] === 'real') $notes[] = [(string) $p['uid'], (float) $p['w'], (float) $p['s']];
   }
+  if ($notes) { try { sp_push_results($notes); } catch (Throwable $e) { /* jamais bloquant */ } }
   return ['won' => $won, 'lost' => $lostN, 'retry' => $paidFail];
+}
+/**
+ * 2026-11-23 (propriétaire : « alerte quand un pari est gagné ou perdu ») — notification sur le téléphone du joueur (ses appareils
+ * abonnés), dans la langue de chaque appareil. Gagné = montant payé ; remboursé = mise rendue ; perdu = message court.
+ * Jamais bloquant ; seulement l'argent réel.
+ */
+function sp_push_texts(string $kind, string $lang, string $amt): array {
+  $T = [
+    'won' => ['fr' => ['Pari gagné 🎉', 'Bravo ! %s ont été ajoutés à votre solde OROLADO.'], 'en' => ['Bet won 🎉', 'Well done! %s has been added to your OROLADO balance.'],
+      'es' => ['Apuesta ganada 🎉', '¡Bravo! Se añadieron %s a tu saldo OROLADO.'], 'pt' => ['Aposta ganha 🎉', 'Parabéns! %s foram adicionados ao seu saldo OROLADO.'],
+      'ar' => ['ربحت الرهان 🎉', 'أحسنت! تمت إضافة %s إلى رصيدك على OROLADO.'], 'tr' => ['Bahis kazandı 🎉', 'Tebrikler! OROLADO bakiyenize %s eklendi.'],
+      'vi' => ['Thắng cược 🎉', 'Tuyệt vời! %s đã được cộng vào số dư OROLADO.'], 'id' => ['Taruhan menang 🎉', 'Hebat! %s sudah masuk ke saldo OROLADO kamu.'],
+      'ru' => ['Ставка выиграла 🎉', 'Отлично! %s зачислено на ваш баланс OROLADO.'], 'de' => ['Wette gewonnen 🎉', 'Super! %s wurden deinem OROLADO-Guthaben gutgeschrieben.'],
+      'hi' => ['दांव जीता 🎉', 'बधाई! आपके OROLADO बैलेंस में %s जोड़े गए।'], 'zh' => ['投注赢了 🎉', '恭喜！%s 已加入您的 OROLADO 余额。']],
+    'void' => ['fr' => ['Pari remboursé', 'Votre mise de %s est revenue sur votre solde OROLADO.'], 'en' => ['Bet refunded', 'Your stake of %s is back on your OROLADO balance.'],
+      'es' => ['Apuesta reembolsada', 'Tu apuesta de %s volvió a tu saldo OROLADO.'], 'pt' => ['Aposta reembolsada', 'A sua aposta de %s voltou ao saldo OROLADO.'],
+      'ar' => ['تم رد الرهان', 'عاد مبلغ رهانك %s إلى رصيدك على OROLADO.'], 'tr' => ['Bahis iade edildi', '%s tutarındaki bahsiniz OROLADO bakiyenize iade edildi.'],
+      'vi' => ['Hoàn tiền cược', 'Tiền cược %s đã về số dư OROLADO.'], 'id' => ['Taruhan dikembalikan', 'Taruhan %s sudah kembali ke saldo OROLADO kamu.'],
+      'ru' => ['Ставка возвращена', 'Ваша ставка %s вернулась на баланс OROLADO.'], 'de' => ['Wette erstattet', 'Dein Einsatz von %s ist zurück auf deinem OROLADO-Guthaben.'],
+      'hi' => ['दांव वापस', 'आपका %s का दांव OROLADO बैलेंस में वापस आ गया।'], 'zh' => ['投注已退款', '您的 %s 投注已退回 OROLADO 余额。']],
+    'lost' => ['fr' => ['Pari perdu', 'Pas cette fois. Les prochains matchs vous attendent sur OROLADO.'], 'en' => ['Bet lost', 'Not this time. More matches are waiting for you on OROLADO.'],
+      'es' => ['Apuesta perdida', 'Esta vez no. Más partidos te esperan en OROLADO.'], 'pt' => ['Aposta perdida', 'Desta vez não. Mais jogos esperam por si na OROLADO.'],
+      'ar' => ['خسرت الرهان', 'ليس هذه المرة. مباريات أخرى بانتظارك على OROLADO.'], 'tr' => ['Bahis kaybetti', 'Bu sefer olmadı. OROLADO\'da yeni maçlar seni bekliyor.'],
+      'vi' => ['Thua cược', 'Lần này chưa may. Nhiều trận khác đang chờ bạn trên OROLADO.'], 'id' => ['Taruhan kalah', 'Belum kali ini. Laga lain menunggumu di OROLADO.'],
+      'ru' => ['Ставка проиграла', 'Не в этот раз. Другие матчи ждут вас на OROLADO.'], 'de' => ['Wette verloren', 'Diesmal nicht. Weitere Spiele warten auf OROLADO auf dich.'],
+      'hi' => ['दांव हारे', 'इस बार नहीं। OROLADO पर और मैच आपका इंतज़ार कर रहे हैं।'], 'zh' => ['投注未中', '这次没中。OROLADO 上还有更多比赛等着您。']],
+  ];
+  $t = $T[$kind][$lang] ?? $T[$kind]['en'];
+  return [$t[0], sprintf($t[1], $amt)];
+}
+/** $notes = [[uid, gain, mise], …] : les abonnements sont lus UNE fois pour tout le lot ; au plus 40 joueurs par passage. */
+function sp_push_results(array $notes): void {
+  if (!function_exists('push_send_rows') && is_file(__DIR__ . '/push_lib.php')) require_once __DIR__ . '/push_lib.php';
+  if (!function_exists('push_send_rows') || !function_exists('push_sub_files') || !function_exists('push_payload')) return;
+  $by = [];
+  foreach ($notes as $n) { if ((string) $n[0] === '') continue; $by[(string) $n[0]][] = $n; }
+  if (!$by) return;
+  $by = array_slice($by, 0, 40, true);
+  $subs = [];
+  foreach (push_sub_files() as $f) { $r = json_decode((string) @file_get_contents($f), true); if (is_array($r) && isset($by[(string) ($r['uid'] ?? '')])) $subs[(string) $r['uid']][] = $r; }
+  foreach ($subs as $uid => $rows) {
+    $list = $by[$uid]; $n = end($list); // un seul message par joueur : le dernier coupon réglé (plusieurs gagnés : total)
+    $wins = array_filter($list, static fn($q) => $q[1] > $q[2] + 0.005);
+    $win = (float) $n[1]; $stake = (float) $n[2];
+    if (count($wins) > 1) { $kind = 'won'; $amt = array_sum(array_column($wins, 1)); }
+    else { $kind = $win <= 0 ? 'lost' : ($win > $stake + 0.005 ? 'won' : 'void'); $amt = $win > 0 ? $win : $stake; }
+    $txt = number_format($amt, 2, '.', '') . ' $';
+    foreach ($rows as $r) { [$t, $b] = sp_push_texts($kind, (string) ($r['lang'] ?? 'fr'), $txt); push_send_rows([$r], push_payload($t, $b, '/')); }
+  }
 }
 /** Base injoignable pendant le paiement : le coupon repasse « ouvert » pour être réglé au prochain clic (référence unique : jamais payé 2 fois). */
 function sp_mark_unpaid(string $id): void {

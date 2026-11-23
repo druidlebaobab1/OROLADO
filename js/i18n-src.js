@@ -4536,6 +4536,22 @@
     hi: { sbM12: 'विजेता (ओवरटाइम सहित)', sbM12mma: 'मुक़ाबले का विजेता', sbM1x2reg: '1X2 (निर्धारित समय)', sbMtotPts: 'कुल अंक', sbMtotGoals: 'कुल गोल', sbMtotRuns: 'कुल रन', sbMhcp: 'हैंडिकैप', sbMhcpSets: 'सेट हैंडिकैप', sbGTot: 'कुल', sbSpAmfoot: 'अमेरिकी फ़ुटबॉल', sbSpAfl: 'AFL', sbSpMma: 'MMA' }
   };
   Object.keys(SBO_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBO_TR[l]); });
+  // 2026-11-23 (propriétaire) — Paris : loupe dans le match, forme / face-à-face, pari en 1 clic
+  var SBX_TR = {
+    fr: { sbMkSearch: 'Rechercher un pari', sbMkNone: 'Aucun pari trouvé', sbForm: 'Forme', sbH2H: 'Face-à-face', sbLast5: '5 derniers matchs', sb1clk: 'Pari en 1 clic', sb1clkHint: 'Toucher une cote place le pari tout de suite', sb1clkSt: 'Mise du pari en 1 clic', sb1clkDone: 'Pari placé', sbFW: 'V', sbFD: 'N', sbFL: 'D' },
+    en: { sbMkSearch: 'Search a bet', sbMkNone: 'No bet found', sbForm: 'Form', sbH2H: 'Head to head', sbLast5: 'Last 5 matches', sb1clk: 'One-click bet', sb1clkHint: 'Tap an odd to place the bet at once', sb1clkSt: 'One-click stake', sb1clkDone: 'Bet placed', sbFW: 'W', sbFD: 'D', sbFL: 'L' },
+    es: { sbMkSearch: 'Buscar una apuesta', sbMkNone: 'Ninguna apuesta encontrada', sbForm: 'Forma', sbH2H: 'Cara a cara', sbLast5: 'Últimos 5 partidos', sb1clk: 'Apuesta en 1 clic', sb1clkHint: 'Toca una cuota y la apuesta se hace al instante', sb1clkSt: 'Importe en 1 clic', sb1clkDone: 'Apuesta hecha', sbFW: 'G', sbFD: 'E', sbFL: 'P' },
+    pt: { sbMkSearch: 'Procurar uma aposta', sbMkNone: 'Nenhuma aposta encontrada', sbForm: 'Forma', sbH2H: 'Frente a frente', sbLast5: 'Últimos 5 jogos', sb1clk: 'Aposta em 1 clique', sb1clkHint: 'Toque numa odd e a aposta é feita na hora', sb1clkSt: 'Valor em 1 clique', sb1clkDone: 'Aposta feita', sbFW: 'V', sbFD: 'E', sbFL: 'D' },
+    ar: { sbMkSearch: 'ابحث عن رهان', sbMkNone: 'لا يوجد رهان', sbForm: 'المستوى', sbH2H: 'المواجهات المباشرة', sbLast5: 'آخر 5 مباريات', sb1clk: 'رهان بنقرة واحدة', sb1clkHint: 'المس الاحتمال ليتم الرهان فورًا', sb1clkSt: 'مبلغ الرهان بنقرة', sb1clkDone: 'تم الرهان', sbFW: 'ف', sbFD: 'ت', sbFL: 'خ' },
+    tr: { sbMkSearch: 'Bahis ara', sbMkNone: 'Bahis bulunamadı', sbForm: 'Form', sbH2H: 'Aralarındaki maçlar', sbLast5: 'Son 5 maç', sb1clk: 'Tek tıkla bahis', sb1clkHint: 'Bir orana dokun, bahis hemen yapılır', sb1clkSt: 'Tek tık tutarı', sb1clkDone: 'Bahis yapıldı', sbFW: 'G', sbFD: 'B', sbFL: 'M' },
+    vi: { sbMkSearch: 'Tìm kèo', sbMkNone: 'Không tìm thấy kèo', sbForm: 'Phong độ', sbH2H: 'Đối đầu', sbLast5: '5 trận gần nhất', sb1clk: 'Cược 1 chạm', sb1clkHint: 'Chạm vào tỷ lệ là đặt cược ngay', sb1clkSt: 'Tiền cược 1 chạm', sb1clkDone: 'Đã đặt cược', sbFW: 'T', sbFD: 'H', sbFL: 'B' },
+    id: { sbMkSearch: 'Cari taruhan', sbMkNone: 'Taruhan tidak ditemukan', sbForm: 'Performa', sbH2H: 'Head to head', sbLast5: '5 laga terakhir', sb1clk: 'Taruhan 1 klik', sb1clkHint: 'Sentuh odds, taruhan langsung dipasang', sb1clkSt: 'Nominal 1 klik', sb1clkDone: 'Taruhan dipasang', sbFW: 'M', sbFD: 'S', sbFL: 'K' },
+    ru: { sbMkSearch: 'Найти ставку', sbMkNone: 'Ставка не найдена', sbForm: 'Форма', sbH2H: 'Личные встречи', sbLast5: 'Последние 5 матчей', sb1clk: 'Ставка в 1 клик', sb1clkHint: 'Нажмите на коэффициент — ставка сделана сразу', sb1clkSt: 'Сумма ставки в 1 клик', sb1clkDone: 'Ставка принята', sbFW: 'В', sbFD: 'Н', sbFL: 'П' },
+    de: { sbMkSearch: 'Wette suchen', sbMkNone: 'Keine Wette gefunden', sbForm: 'Form', sbH2H: 'Direkter Vergleich', sbLast5: 'Letzte 5 Spiele', sb1clk: '1-Klick-Wette', sb1clkHint: 'Quote antippen = Wette sofort platziert', sb1clkSt: '1-Klick-Einsatz', sb1clkDone: 'Wette platziert', sbFW: 'S', sbFD: 'U', sbFL: 'N' },
+    zh: { sbMkSearch: '搜索投注', sbMkNone: '未找到投注', sbForm: '状态', sbH2H: '交锋记录', sbLast5: '近5场', sb1clk: '一键投注', sb1clkHint: '点击赔率立即下注', sb1clkSt: '一键投注金额', sb1clkDone: '已下注', sbFW: '胜', sbFD: '平', sbFL: '负' },
+    hi: { sbMkSearch: 'दांव खोजें', sbMkNone: 'कोई दांव नहीं मिला', sbForm: 'फ़ॉर्म', sbH2H: 'आमने-सामने', sbLast5: 'पिछले 5 मैच', sb1clk: '1 क्लिक दांव', sb1clkHint: 'ऑड छूते ही दांव लग जाता है', sb1clkSt: '1 क्लिक राशि', sb1clkDone: 'दांव लगा', sbFW: 'जी', sbFD: 'ड्र', sbFL: 'हा' },
+  };
+  Object.keys(SBX_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBX_TR[l]); });
   // 2026-10-22 (propriétaire) — Paris : section des prédictions. NOM AFFICHÉ = PRED_NAME (un seul endroit, le même mot dans les 12 langues).
   var PRED_NAME = 'Predict';
   var PRED_TR = {

@@ -337,6 +337,7 @@ $OROLADO_RATE_RULES = [
   'sbMatch'           => [['i', 240, 60]],
   'sbLive'            => [['i', 240, 60]],
   'sbStats'           => [['i', 120, 60]],
+  'sbForm'            => [['i', 60, 60]],
   'sbUnk'             => [['i', 30, 60]],
   'sbResults'         => [['i', 120, 60]],
   'sbCodeSave'        => [['t', 30, 600], ['i', 400, 600]],
@@ -492,6 +493,15 @@ if ($action === 'sbUnk') {
   $rawU = [];
   if (!empty($req['raw']) && function_exists('sb_dir')) foreach (['pre' => 'raw-pre.json', 'live' => 'raw-live.json'] as $kU => $fU) { $jU = json_decode((string) @file_get_contents(sb_dir() . DIRECTORY_SEPARATOR . $fU), true); if (is_array($jU)) $rawU[$kU] = $jU; } // échantillon brut des cotes d'un match (forme exacte des paris)
   echo json_encode(['ok' => true, 'server' => true, 'unk' => (array) ($stU['unk'] ?? []), 'unkLive' => (array) ($stU['unkLive'] ?? []), 'unkOther' => (array) ($stU['ounk'] ?? [])] + ($rawU ? ['raw' => $rawU] : []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
+// 2026-11-23 — forme des équipes et face-à-face d'un match (sb_form)
+if ($action === 'sbForm') {
+  if (!function_exists('sb_form')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  $me = $token !== '' ? session_user($db, $token) : null;
+  try { $res = sb_form($me ?: null, (string) ($req['id'] ?? '')); }
+  catch (Throwable $eSb) { error_log('OROLADO sbForm ' . $eSb->getMessage()); $res = ['ok' => false, 'reason' => 'busy']; }
+  echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   exit;
 }
 if ($action === 'sbStats') {
