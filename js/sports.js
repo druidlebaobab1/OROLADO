@@ -1946,11 +1946,11 @@
       return;
     }
     var H = homeFx(rs), top = per === 'top' && !sbQ, allP = per === 'all' && !sbQ, lf = (top || allP) && sport === 'foot' && liveShown() ? liveFx().filter(function (f) { return !f.end; }) : [];
-    var sig = [sport, per, hourF, sbQ, lg(), H.fx.map(function (f) { return f.id; }).join(','), lf.map(function (f) { return f.id; }).join(','), JSON.stringify(sbOpen)].join('|');
+    var sig = [sport, per, hourF, sbQ, lg(), sugD.at, H.fx.map(function (f) { return f.id; }).join(','), lf.map(function (f) { return f.id; }).join(','), JSON.stringify(sbOpen)].join('|');
     if (body.dataset.sig === sig) { patchAll(body); return; }
     body.dataset.sig = sig;
     var blocks = [];
-    if ((top || allP) && sport === 'foot') { var sug = sugHtml(H.fx, lf); if (sug) blocks.push(sug); }
+    if (per !== 'fav' && !sbQ && sport === 'foot') { var sug = sugHtml(); if (sug) blocks.push(sug); }
     if (top) { // 2026-10-22 (propriétaire) : « Top » = seulement les GRANDS matchs (grands clubs, classiques, derbys, Côte d'Ivoire / Sénégal), 20 au plus
       var n = NX(), x = SX(), big = lf.filter(isBig).concat(H.fx.filter(isBig)).slice(0, 20);
       if (!big.length && sport !== 'foot') big = H.fx.slice(0, 10); // autres sports sans grande compétition ce jour-là : les plus proches
@@ -1969,41 +1969,33 @@
      tout faits en haut de Populaire / Tout : « Les favoris » (3 matchs, favori à 1,20–1,65), « Grosse cote » (4 matchs, favori à
      1,55–2,10), « En direct » (2 matchs en cours avant la 70e, favori à 1,15–1,60). Grands championnats d'abord, jamais deux fois
      le même match. Aucun bonus en plus. « Parier ce coupon » met les choix dans le coupon (cotes du moment) et l'ouvre. */
-  var sugC = [];
-  function favOf(f) {
-    var o = f && f.o && f.o.mk === '1x2' && Array.isArray(f.o.o) ? f.o.o : null; if (!o) return null;
-    var h = null, a = null; o.forEach(function (z) { if (z[0] === 'H') h = +z[1]; if (z[0] === 'A') a = +z[1]; });
-    if (!(h > 1) || !(a > 1)) return null;
-    return h <= a ? ['H', h] : ['A', a];
+  var sugC = [], sugD = { at: 0, cp: null, p: null };
+  var SUGT = { safe: ['sbSugSafe', 'Safe'], fav: ['sbSugFav', 'Favourites'], goals: ['sbSugGoals', 'Goals'], big: ['sbSugBig', 'Big odds'], live: ['sbSugLive', 'Live'] };
+  function sugLoad() {
+    if (sugD.p) return sugD.p;
+    sugD.p = D6.Api.post('sbSuggest', { tz: tzMin() }, 15000).then(function (r) { sugD.p = null; sugD.at = Date.now(); sugD.cp = r && r.ok && Array.isArray(r.cp) ? r.cp : []; return sugD.cp; })
+      .catch(function () { sugD.p = null; sugD.at = Date.now(); sugD.cp = sugD.cp || []; return sugD.cp; });
+    return sugD.p;
   }
-  function sugPick(list, n, lo, hi, used) {
-    var out = [];
-    list.forEach(function (f) { if (out.length >= n || used[f.id]) return; var v = favOf(f); if (v && v[1] >= lo && v[1] <= hi) { out.push({ f: f, k: v[0], odd: v[1] }); used[f.id] = 1; } });
-    return out.length === n ? out : null;
-  }
-  function sugHtml(pre, live) {
-    var now = nowS(), used = {};
-    var byP = function (a, b) { var A = sbLg(a.lg) || {}, B = sbLg(b.lg) || {}; return ((A.p || 100) - (B.p || 100)) || (a.ts - b.ts); };
-    var pl = (pre || []).filter(function (f) { return !f.live && f.ts > now + 600 && f.ts < now + 86400 * 2; }).sort(byP);
-    var ll = (live || []).filter(function (f) { return !f.end && !f.susp && f.m != null && +f.m < 70; }).sort(byP);
-    sugC = [['sbSugFav', 'Favourites', sugPick(pl, 3, 1.2, 1.65, used)], ['sbSugBig', 'Big odds', sugPick(pl, 4, 1.55, 2.1, used)], ['sbSugLive', 'Live', sugPick(ll, 2, 1.15, 1.6, used)]].filter(function (c) { return c[2]; });
+  function sugHtml() {
+    if (!sugD.cp || Date.now() - sugD.at > 120000) { sugLoad().then(function () { if (alive() && view === 'home') { var bd = $('pzBody'); if (bd) bd.dataset.sig = ''; paintHome(); } }); if (!sugD.cp) return ''; }
+    sugC = sugD.cp.filter(function (c) { return c && SUGT[c.t] && Array.isArray(c.sel) && c.sel.length; });
     if (!sugC.length) return '';
-    var x = XX();
     return '<section class="pz-blk pz-sug"><div class="pz-bh"><b dir="auto">🎯 ' + esc(T18('sbSugT', "Today's bets")) + '</b></div><div class="pz-sugs pz-hs">' + sugC.map(function (c, i) {
-      var tot = Math.floor(c[2].reduce(function (a, z) { return a * z.odd; }, 1) * 100 + 1e-6) / 100;
-      return '<div class="pz-sugc"><p class="pz-sugt"><b dir="auto">' + (c[0] === 'sbSugLive' ? '<i class="pz-ld"></i>' : '') + esc(T18(c[0], c[1])) + '</b><em dir="ltr">' + tot.toFixed(2) + '</em></p>' +
-        c[2].map(function (z) { var tm = z.k === 'H' ? z.f.h.n : z.f.a.n; return '<p class="pz-sugl"><span dir="auto"><b>' + esc(tm) + '</b><small>' + esc(z.f.h.n + ' - ' + z.f.a.n) + '</small></span><em dir="ltr">' + z.odd.toFixed(2) + '</em></p>'; }).join('') +
+      var tot = Math.floor(c.sel.reduce(function (a, z) { return a * z.odd; }, 1) * 100 + 1e-6) / 100, sh = c.sel.slice(0, 3);
+      return '<div class="pz-sugc"><p class="pz-sugt"><b dir="auto">' + (c.t === 'live' ? '<i class="pz-ld"></i>' : '') + esc(T18(SUGT[c.t][0], SUGT[c.t][1])) + ' · ' + c.sel.length + '</b><em dir="ltr">' + tot.toFixed(2) + '</em></p>' +
+        sh.map(function (z) { return '<p class="pz-sugl"><span dir="auto"><b>' + esc(sbOutL(z.mk, z.k, z.h.n, z.a.n)) + '</b><small>' + esc(z.t) + '</small></span><em dir="ltr">' + Number(z.odd).toFixed(2) + '</em></p>'; }).join('') +
+        (c.sel.length > 3 ? '<p class="pz-sugm" dir="ltr">+' + (c.sel.length - 3) + '</p>' : '') +
         '<button type="button" class="pz-sugb" data-sug="' + i + '"><span class="fit">' + esc(T18('sbSugGo', 'Bet this slip')) + '</span></button></div>';
     }).join('') + '</div></section>';
   }
   function sugGo(i) {
     var c = sugC[+i]; if (!c) return;
-    var add = c[2].filter(function (z) { var f = sbFx(z.f.id) || z.f; return f && !(f.live ? (f.susp || f.end) : nowS() >= f.ts); });
+    var add = c.sel.filter(function (z) { return z.lv ? true : nowS() < z.ko; });
     if (!add.length) { sbToast(SX().closedM, 'err'); return; }
     add.forEach(function (z) {
-      var f = sbFx(z.f.id) || z.f, v = favOf(f) || [z.k, z.odd], fid = f.id;
-      slip = slip.filter(function (s) { return s.fx !== fid; });
-      slip.push({ ev: 'sb:' + fid + ':1x2', k: z.k, odd: z.k === v[0] ? v[1] : z.odd, sb: 1, mk: '1x2', fx: fid, ko: f.ts, t: f.h.n + ' - ' + f.a.n, h: f.h, a: f.a, grp: ['fx:' + fid], q: false, l: sbOutL('1x2', z.k, f.h.n, f.a.n), lv: f.live ? 1 : 0 });
+      slip = slip.filter(function (s) { return s.fx !== z.fx; });
+      slip.push({ ev: z.ev, k: z.k, odd: +z.odd, sb: 1, mk: z.mk, fx: z.fx, ko: z.ko, t: z.t, h: z.h, a: z.a, grp: ['fx:' + z.fx], q: false, l: sbOutL(z.mk, z.k, z.h.n, z.a.n), lv: z.lv ? 1 : 0 });
     });
     sbCode = null; paintNav(true); go('slip');
   }
