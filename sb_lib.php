@@ -1952,68 +1952,93 @@ function sb_suggest(?array $user, int $tz = 0, int $now = 0): array {
   $cd = sb_dir() . DIRECTORY_SEPARATOR . 'cache'; if (!is_dir($cd)) @mkdir($cd, 0750, true);
   $cf = $cd . DIRECTORY_SEPARATOR . 'suggest-' . ($tz + 1000) . '.json';
   $c = is_file($cf) ? json_decode((string) @file_get_contents($cf), true) : null;
-  if (is_array($c) && (int) ($c['at'] ?? 0) > $now - 120) return ['ok' => true, 'cp' => (array) ($c['cp'] ?? [])];
-  // fin de la journée du joueur (tz = minutes de décalage, comme sbList)
+  $pre = is_array($c) && (int) ($c['at'] ?? 0) > $now - 120 ? (array) ($c['cp'] ?? []) : null; // avant-match : 2 min
+  if ($pre === null) { $pre = sb_suggest_pre($tz, $now); @file_put_contents($cf, json_encode(['at' => $now, 'cp' => $pre], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX); }
+  $live = sb_live_visible($user) ? sb_suggest_live($now) : []; // direct : recalculé à chaque fois (rien de suspendu proposé)
+  return ['ok' => true, 'cp' => array_merge($live, $pre)];
+}
+/** Choix proposables d'un match d'avant-match (cotes actuelles du serveur). */
+function sb_suggest_opts(array $mk): array {
+  $g = static function (string $m, string $k) use ($mk): ?float { foreach ((array) ($mk[$m] ?? []) as $o) if ((string) $o[0] === $k && is_numeric($o[1])) return (float) $o[1]; return null; };
+  $h = $g('1x2', 'H'); $a = $g('1x2', 'A'); if (!$h || !$a) return [];
+  $fav = $h <= $a ? 'H' : 'A'; $o = [['fav', '1x2', $fav, min($h, $a)]];
+  $add = static function (string $t, string $m, string $k) use (&$o, $g) { if (($v = $g($m, $k))) $o[] = [$t, $m, $k, $v]; };
+  $add('dc', 'dc', $fav === 'H' ? 'HD' : 'DA'); $add('dnb', 'dnb', $fav); $add('o15', 'ou:1.5', 'O'); $add('o25', 'ou:2.5', 'O');
+  $add('o35', 'ou:3.5', 'O'); $add('u35', 'ou:3.5', 'U'); $add('btts', 'btts', 'Y');
+  return $o;
+}
+/**
+ * Coupons d'avant-match : matchs du jour du joueur (sinon jusqu'à 18 h devant), pas ceux qui commencent dans 30 min, grands
+ * championnats d'abord. Chaque modèle est fait 2 fois (2e fois avec d'autres matchs) ; un même match peut revenir dans un
+ * autre coupon avec un autre pari. Jamais deux choix du même match dans un coupon (le pari le refuserait).
+ */
+function sb_suggest_pre(int $tz, int $now): array {
   $loc = $now + $tz * 60; $eod = $loc - ($loc % 86400) + 86400 - $tz * 60;
   $rows = [];
   foreach (sb_days($now) as $d) { $j = sb_day($d); foreach ((array) ($j['fx'] ?? []) as $id => $r) { if (!is_array($r) || !sb_bettable_row($r, $now) || (int) $r['ts'] < $now + max(600, SB_LATE)) continue; $rows[(string) $id] = ['r' => $r, 'p' => (int) ($j['lg'][(string) ($r['lg'] ?? '')]['p'] ?? 100)]; } }
-  $pick = static function (array $rows, int $until): array { return array_filter($rows, static fn($x) => (int) $x['r']['ts'] <= $until); };
-  $pre = $pick($rows, $eod); if (count($pre) < 12) $pre = $pick($rows, max($eod, $now + 18 * 3600));
+  $pick = static fn(array $rows, int $until): array => array_filter($rows, static fn($x) => (int) $x['r']['ts'] <= $until);
+  $pre = $pick($rows, $eod); if (count($pre) < 15) $pre = $pick($rows, max($eod, $now + 18 * 3600));
   uasort($pre, static fn($a, $b) => ($a['p'] <=> $b['p']) ?: ((int) $a['r']['ts'] <=> (int) $b['r']['ts']));
-  $pre = array_slice($pre, 0, 90, true);
-  $team = static fn(array $r, string $s): array => ['n' => (string) ($r[$s][1] ?? ''), 'lo' => (string) ($r[$s][2] ?? '')];
-  $opts = []; // id => [[type, mk, k, odd], …]
+  $pre = array_slice($pre, 0, 120, true);
+  $opts = [];
   foreach ($pre as $id => $x) {
     $mf = sb_mk_file((string) $id);
     if ((int) ($mf['at'] ?? 0) < $now - sb_odds_max_age((int) $x['r']['ts'], $now)) continue;
-    $mk = (array) ($mf['mk'] ?? []); $g = static function (string $m, string $k) use ($mk): ?float { foreach ((array) ($mk[$m] ?? []) as $o) if ((string) $o[0] === $k && is_numeric($o[1])) return (float) $o[1]; return null; };
-    $h = $g('1x2', 'H'); $a = $g('1x2', 'A'); if (!$h || !$a) continue;
-    $fav = $h <= $a ? 'H' : 'A'; $o = [];
-    $o[] = ['fav', '1x2', $fav, min($h, $a)];
-    if (($v = $g('dc', $fav === 'H' ? 'HD' : 'DA'))) $o[] = ['dc', 'dc', $fav === 'H' ? 'HD' : 'DA', $v];
-    if (($v = $g('dnb', $fav))) $o[] = ['dnb', 'dnb', $fav, $v];
-    if (($v = $g('ou:1.5', 'O'))) $o[] = ['o15', 'ou:1.5', 'O', $v];
-    if (($v = $g('ou:2.5', 'O'))) $o[] = ['o25', 'ou:2.5', 'O', $v];
-    if (($v = $g('ou:3.5', 'U'))) $o[] = ['u35', 'ou:3.5', 'U', $v];
-    if (($v = $g('btts', 'Y'))) $o[] = ['btts', 'btts', 'Y', $v];
-    $opts[(string) $id] = $o;
+    $o = sb_suggest_opts((array) ($mf['mk'] ?? [])); if ($o) $opts[(string) $id] = $o;
   }
-  $used = []; $out = [];
-  $build = static function (string $t, int $n, int $min, array $types, float $lo, float $hi) use (&$used, $opts, $pre, $team): ?array {
-    $sel = []; $ti = 0;
-    foreach ([false, true] as $reuse) {
-      foreach ($opts as $id => $o) {
-        if (count($sel) >= $n) break 2;
-        if (isset($sel[$id]) || (!$reuse && isset($used[$id]))) continue;
-        // types tournants (mélange) : on commence par le type suivant, puis les autres
-        $ord = array_merge(array_slice($types, $ti % count($types)), array_slice($types, 0, $ti % count($types)));
-        foreach ($ord as $ty) { foreach ($o as $z) if ($z[0] === $ty && $z[3] >= $lo && $z[3] <= $hi) { $r = $pre[$id]['r'];
-          $sel[$id] = ['ev' => 'sb:foot:' . $id . ':' . $z[1], 'k' => $z[2], 'odd' => $z[3], 'mk' => $z[1], 'fx' => 'foot:' . $id, 'ko' => (int) $r['ts'], 't' => ($r['h'][1] ?? '') . ' - ' . ($r['a'][1] ?? ''), 'h' => $team($r, 'h'), 'a' => $team($r, 'a'), 'lv' => 0];
-          $ti++; continue 3; } }
-      }
+  $team = static fn(array $r, string $s): array => ['n' => (string) ($r[$s][1] ?? ''), 'lo' => (string) ($r[$s][2] ?? '')];
+  $out = [];
+  $T = [ // [type affiché, nombre, minimum, types de paris (mélangés à tour de rôle), cote min, cote max]
+    ['safe', 4, 3, ['dc', 'o15', 'u35', 'fav', 'dnb'], 1.12, 1.42], ['bank', 3, 3, ['fav'], 1.08, 1.32], ['fav', 5, 3, ['fav'], 1.25, 1.75],
+    ['dc', 6, 4, ['dc'], 1.10, 1.45], ['o15', 5, 4, ['o15'], 1.12, 1.42], ['goals', 4, 3, ['o25', 'btts'], 1.45, 2.1], ['btts', 5, 4, ['btts'], 1.55, 2.15],
+    ['big', 6, 4, ['fav', 'o25', 'btts', 'dnb', 'dc'], 1.45, 2.2], ['x10', 4, 4, ['fav', 'o25', 'btts', 'dnb'], 1.6, 2.5], ['x20', 5, 5, ['fav', 'btts', 'o25', 'o35'], 1.65, 2.7],
+    ['x50', 6, 6, ['fav', 'btts', 'o25', 'o35'], 1.75, 3.2]];
+  $usedBy = [];
+  foreach ([0, 1] as $round) foreach ($T as [$t, $n, $min, $types, $lo, $hi]) {
+    $usedBy[$t] = $usedBy[$t] ?? [];
+    $sel = []; $ti = $round;
+    foreach ($opts as $id => $o) {
+      if (count($sel) >= $n) break;
+      if (isset($usedBy[$t][$id])) continue;
+      $ord = array_merge(array_slice($types, $ti % count($types)), array_slice($types, 0, $ti % count($types)));
+      foreach ($ord as $ty) { foreach ($o as $z) if ($z[0] === $ty && $z[3] >= $lo && $z[3] <= $hi) { $r = $pre[$id]['r'];
+        $sel[$id] = ['ev' => 'sb:foot:' . $id . ':' . $z[1], 'k' => $z[2], 'odd' => $z[3], 'mk' => $z[1], 'fx' => 'foot:' . $id, 'ko' => (int) $r['ts'], 't' => ($r['h'][1] ?? '') . ' - ' . ($r['a'][1] ?? ''), 'h' => $team($r, 'h'), 'a' => $team($r, 'a'), 'lv' => 0];
+        $ti++; continue 3; } }
     }
-    if (count($sel) < $min) return null;
-    foreach ($sel as $id => $_) $used[$id] = 1;
-    return ['t' => $t, 'sel' => array_values($sel)];
-  };
-  foreach ([['safe', 4, 3, ['dc', 'o15', 'u35', 'fav', 'dnb'], 1.15, 1.42], ['fav', 5, 3, ['fav'], 1.25, 1.75], ['goals', 4, 3, ['o25', 'btts'], 1.45, 2.1], ['big', 6, 4, ['fav', 'o25', 'btts', 'dnb', 'dc'], 1.45, 2.2]] as $c) {
-    $cp = $build(...$c); if ($cp) $out[] = $cp;
+    if (count($sel) < $min) continue;
+    foreach ($sel as $id => $_) $usedBy[$t][$id] = 1;
+    $out[] = ['t' => $t, 'sel' => array_values($sel)];
   }
-  // direct : favoris des matchs en cours (grands championnats du direct), avant la 70e, pas suspendus
-  if (function_exists('sb_live_data') && sb_live_visible($user)) {
-    $L = sb_live_data(); $cfg = sb_config(); $lv = [];
-    foreach ((array) ($L['fx'] ?? []) as $id => $r) {
-      $v = sb_live_view((string) $id, $L, $now, $cfg); if (!$v || $v['susp'] || (int) $v['m'] >= 70) continue;
-      $best = null; foreach ((array) ($v['mk']['1x2'] ?? []) as $z) if (in_array((string) $z[0], ['H', 'A'], true) && empty($z[2]) && ($best === null || (float) $z[1] < $best[1])) $best = [(string) $z[0], (float) $z[1]];
-      if (!$best || $best[1] < 1.15 || $best[1] > 1.7) continue;
-      $lv[] = ['p' => in_array((int) ($r['lg'] ?? 0), SB_LIVE_BIG, true) ? 0 : 1, 'sel' => ['ev' => 'sb:foot:' . $id . ':1x2', 'k' => $best[0], 'odd' => $best[1], 'mk' => '1x2', 'fx' => 'foot:' . $id, 'ko' => (int) ($r['ts'] ?? 0),
-        't' => ($r['h'][1] ?? '') . ' - ' . ($r['a'][1] ?? ''), 'h' => $team($r, 'h'), 'a' => $team($r, 'a'), 'lv' => 1]];
+  return $out;
+}
+/** Coupons du DIRECT : matchs en cours avant la 70e, rien de suspendu ; favoris, plus de buts, mélange. */
+function sb_suggest_live(int $now): array {
+  if (!function_exists('sb_live_data')) return [];
+  $L = sb_live_data(); $cfg = sb_config(); $c = [];
+  foreach ((array) ($L['fx'] ?? []) as $id => $r) {
+    $v = sb_live_view((string) $id, $L, $now, $cfg); if (!$v || $v['susp'] || (int) $v['m'] >= 70) continue;
+    $base = ['fx' => 'foot:' . $id, 'ko' => (int) ($r['ts'] ?? 0), 't' => ($r['h'][1] ?? '') . ' - ' . ($r['a'][1] ?? ''), 'h' => ['n' => (string) ($r['h'][1] ?? ''), 'lo' => (string) ($r['h'][2] ?? '')], 'a' => ['n' => (string) ($r['a'][1] ?? ''), 'lo' => (string) ($r['a'][2] ?? '')], 'lv' => 1];
+    $o = [];
+    $fav = null; foreach ((array) ($v['mk']['1x2'] ?? []) as $z) if (in_array((string) $z[0], ['H', 'A'], true) && empty($z[2]) && ($fav === null || (float) $z[1] < $fav[1])) $fav = [(string) $z[0], (float) $z[1]];
+    if ($fav) $o[] = ['fav', '1x2', $fav[0], $fav[1]];
+    foreach ((array) $v['mk'] as $mk => $zs) { if (sb_fam((string) $mk) !== 'ou') continue; foreach ((array) $zs as $z) if ((string) $z[0] === 'O' && empty($z[2])) $o[] = ['ov', (string) $mk, 'O', (float) $z[1]]; }
+    if ($o) $c[(string) $id] = ['p' => in_array((int) ($r['lg'] ?? 0), SB_LIVE_BIG, true) ? 0 : 1, 'o' => $o, 'b' => $base];
+  }
+  uasort($c, static fn($a, $b) => $a['p'] <=> $b['p']);
+  $out = [];
+  foreach ([['live', 3, 2, ['fav'], 1.12, 1.7], ['live', 3, 2, ['fav'], 1.12, 1.7], ['liveg', 3, 2, ['ov'], 1.4, 2.2], ['livebig', 3, 2, ['fav', 'ov'], 1.6, 2.6], ['livebig', 4, 3, ['ov', 'fav'], 1.5, 2.4]] as $k => [$t, $n, $min, $types, $lo, $hi]) {
+    $sel = []; $i = 0;
+    foreach ($c as $id => $x) {
+      if (count($sel) >= $n) break;
+      if ($k === 1 && $i++ < 3) continue; // 2e coupon « Direct » : d'autres matchs
+      $best = null; foreach ($types as $ty) { foreach ($x['o'] as $z) if ($z[0] === $ty && $z[3] >= $lo && $z[3] <= $hi && ($best === null || ($ty === 'ov' ? $z[3] < $best[3] : false))) $best = $z; if ($best) break; }
+      if (!$best) continue;
+      $sel[] = $x['b'] + ['ev' => 'sb:foot:' . $id . ':' . $best[1], 'k' => $best[2], 'odd' => $best[3], 'mk' => $best[1]];
     }
-    usort($lv, static fn($a, $b) => $a['p'] <=> $b['p']);
-    if (count($lv) >= 2) $out[] = ['t' => 'live', 'sel' => array_column(array_slice($lv, 0, 3), 'sel')];
+    if (count($sel) >= $min) $out[] = ['t' => $t, 'sel' => $sel];
   }
-  @file_put_contents($cf, json_encode(['at' => $now, 'cp' => $out], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
-  return ['ok' => true, 'cp' => $out];
+  // pas deux coupons identiques
+  $seen = []; return array_values(array_filter($out, static function ($cp) use (&$seen) { $k = implode(',', array_column($cp['sel'], 'ev')); if (isset($seen[$k])) return false; $seen[$k] = 1; return true; }));
 }
 function sb_mk_file(string $id): array { return sb_read('mk' . DIRECTORY_SEPARATOR . 'foot-' . $id . '.json'); }
 /** sbMatch : tous les marchés d'un match. */

@@ -1331,22 +1331,6 @@
   var liveData = null, livePend = null, scrollMem = {}, sbCode = null, pendCode = '';
   function lv() { return 'home'; }
   function mbox() { return box ? box.closest('.modal-box') : null; }
-  /* 2026-11-23 (propriétaire : « en défilant, le bas de la liste est caché par la barre du bas, il faut toujours retirer vers le
-     haut ») : comme les grandes applis, la barre du bas (et la barre du coupon) se range quand on défile vers le BAS, et revient
-     dès qu'on remonte un peu, en haut de page, ou sur le coupon (jamais cachée sur le coupon). */
-  var navSc = { el: null, y: 0 };
-  function navScrollBind() {
-    var mb = mbox(); if (!mb || navSc.el === mb) return;
-    navSc.el = mb; navSc.y = mb.scrollTop;
-    mb.addEventListener('scroll', function () {
-      if (!box || !box.isConnected) return;
-      var y = mb.scrollTop, dy = y - navSc.y;
-      if (Math.abs(dy) < 8) return;
-      navSc.y = y;
-      var hide = dy > 0 && y > 80 && view !== 'slip' && !sending;
-      if (box.classList.contains('pz-navh') !== hide) box.classList.toggle('pz-navh', hide);
-    }, { passive: true });
-  }
   function alive() {
     if (!box || !box.isConnected || !box.classList.contains('sp2')) return false;
     var m = box.closest('#casinoModal'); return !m || m.classList.contains('active');
@@ -1416,7 +1400,7 @@
   function shell(inner) {
     closeSheet(true);
     box.innerHTML = '<div class="pz-page pz-v-' + view + '">' + inner + '</div>' + navHtml();
-    box.dataset.pzv = view; box.classList.remove('pz-navh'); navScrollBind();
+    box.dataset.pzv = view;
     bindBox(); layoutVars(); fitAll($('pzNav')); sbarPaint(); startTick();
   }
   function layoutVars() {
@@ -1440,6 +1424,8 @@
         if (app && ih > 200) vis = Math.min(vis, ih);
         var lift = app ? Math.max(0, Math.min(140, Math.round(mb.getBoundingClientRect().bottom - vis))) : 0;
         box.style.setProperty('--sp2-lift', lift + 'px');
+        // 2026-11-23 (b) : panneau de mise du coupon collé juste au-dessus de la barre du bas (la liste défile derrière)
+        var nv = $('pzNav'); if (nv) { var nb = parseFloat(getComputedStyle(nv).bottom) || 0; box.style.setProperty('--sp2-stkb', Math.round(nb + nv.offsetHeight + 8) + 'px'); }
         var top = box.getBoundingClientRect().top - mb.getBoundingClientRect().top + mb.scrollTop;
         /* 2026-11-23 (propriétaire : « sur l'appli iPhone, en repliant un championnat du Direct, la barre du bas monte ») : dans
            l'appli iPhone, la barre est collée tout en bas (bottom:0, galaxy.css), sans la remontée « lift » ; la page courte doit
@@ -1517,6 +1503,7 @@
   }
   async function paint(container, c) {
     box = container; ctx = c || {}; navStk = [];
+    try { if (!sugD.cp || Date.now() - sugD.at > 60000) sugLoad(); } catch (e) { /* ignore */ } // 2026-11-23 (b) : coupons du jour chargés dès l'ouverture de Paris
     if (!box) return;
     qRaw = ''; sbQ = ''; qMem = -1; lvQ = ''; resQ = ''; // Paris rouvert : recherches vides
     box.classList.add('sp2');
@@ -1970,7 +1957,14 @@
      1,55–2,10), « En direct » (2 matchs en cours avant la 70e, favori à 1,15–1,60). Grands championnats d'abord, jamais deux fois
      le même match. Aucun bonus en plus. « Parier ce coupon » met les choix dans le coupon (cotes du moment) et l'ouvre. */
   var sugC = [], sugD = { at: 0, cp: null, p: null };
-  var SUGT = { safe: ['sbSugSafe', 'Safe'], fav: ['sbSugFav', 'Favourites'], goals: ['sbSugGoals', 'Goals'], big: ['sbSugBig', 'Big odds'], live: ['sbSugLive', 'Live'] };
+  var SUGT = { safe: ['sbSugSafe', 'Safe'], bank: ['sbSugBank', 'Big favourites'], fav: ['sbSugFav', 'Favourites'], dc: 'dc', o15: ['sbSugO15', 'Over 1.5 goals'], goals: ['sbSugGoals', 'Goals'], btts: 'btts',
+    big: ['sbSugBig', 'Big odds'], x10: 10, x20: 20, x50: 50, live: ['sbSugLive', 'Live'], liveg: ['sbSugGoals', 'Goals'], livebig: ['sbSugBig', 'Big odds'] };
+  function sugTitle(t) {
+    var d = SUGT[t]; if (!d) return '';
+    if (typeof d === 'number') return (XX().oddL || 'Odds') + ' ×' + d;
+    if (typeof d === 'string') return sbMkName(d, '', '', 'foot');
+    return T18(d[0], d[1]) + (d[2] ? ' · ' + T18(d[2], d[3]) : '');
+  }
   function sugLoad() {
     if (sugD.p) return sugD.p;
     sugD.p = D6.Api.post('sbSuggest', { tz: tzMin() }, 15000).then(function (r) { sugD.p = null; sugD.at = Date.now(); sugD.cp = r && r.ok && Array.isArray(r.cp) ? r.cp : []; return sugD.cp; })
@@ -1978,12 +1972,13 @@
     return sugD.p;
   }
   function sugHtml() {
-    if (!sugD.cp || Date.now() - sugD.at > 120000) { sugLoad().then(function () { if (alive() && view === 'home') { var bd = $('pzBody'); if (bd) bd.dataset.sig = ''; paintHome(); } }); if (!sugD.cp) return ''; }
+    var hasLive = (sugD.cp || []).some(function (c) { return /^live/.test(c.t); });
+    if (!sugD.cp || Date.now() - sugD.at > (hasLive ? 30000 : 120000)) { sugLoad().then(function () { if (alive() && view === 'home') { var bd = $('pzBody'); if (bd) bd.dataset.sig = ''; paintHome(); } }); if (!sugD.cp) return ''; }
     sugC = sugD.cp.filter(function (c) { return c && SUGT[c.t] && Array.isArray(c.sel) && c.sel.length; });
     if (!sugC.length) return '';
     return '<section class="pz-blk pz-sug"><div class="pz-bh"><b dir="auto">🎯 ' + esc(T18('sbSugT', "Today's bets")) + '</b></div><div class="pz-sugs pz-hs">' + sugC.map(function (c, i) {
       var tot = Math.floor(c.sel.reduce(function (a, z) { return a * z.odd; }, 1) * 100 + 1e-6) / 100, sh = c.sel.slice(0, 3);
-      return '<div class="pz-sugc"><p class="pz-sugt"><b dir="auto">' + (c.t === 'live' ? '<i class="pz-ld"></i>' : '') + esc(T18(SUGT[c.t][0], SUGT[c.t][1])) + ' · ' + c.sel.length + '</b><em dir="ltr">' + tot.toFixed(2) + '</em></p>' +
+      return '<div class="pz-sugc' + (/^live/.test(c.t) ? ' lv' : /^x/.test(c.t) ? ' hot' : '') + '"><p class="pz-sugt"><b dir="auto">' + (/^live/.test(c.t) ? '<i class="pz-ld"></i>' : /^x/.test(c.t) ? '🔥 ' : '') + esc(sugTitle(c.t)) + ' · ' + c.sel.length + '</b><em dir="ltr">' + tot.toFixed(2) + '</em></p>' +
         sh.map(function (z) { return '<p class="pz-sugl"><span dir="auto"><b>' + esc(sbOutL(z.mk, z.k, z.h.n, z.a.n)) + '</b><small>' + esc(z.t) + '</small></span><em dir="ltr">' + Number(z.odd).toFixed(2) + '</em></p>'; }).join('') +
         (c.sel.length > 3 ? '<p class="pz-sugm" dir="ltr">+' + (c.sel.length - 3) + '</p>' : '') +
         '<button type="button" class="pz-sugb" data-sug="' + i + '"><span class="fit">' + esc(T18('sbSugGo', 'Bet this slip')) + '</span></button></div>';
@@ -2279,6 +2274,25 @@
     if (c1) c1.addEventListener('change', function () { lsSet('oro_sp_1c', c1.checked ? '1' : '0'); var w = $('pz1cS'); if (w) w.hidden = !c1.checked; if (c1.checked) sbToast('⚡ ' + T18('sb1clk', 'One-click bet') + ' · ' + money(oneSt()), 'ok'); });
     if (s1) s1.addEventListener('change', function () { var v = parseFloat(String(s1.value).replace(',', '.')); if (!isFinite(v) || v < 0.1) v = 0.1; v = Math.floor(v * 100 + 1e-6) / 100; lsSet('oro_sp_1cst', String(v)); s1.value = String(v); });
   }
+  /* 2026-11-23 (b) (propriétaire : « à côté de l'étoile, 3 points pour aller vite : pari en 1 clic, accepter les hausses… ») —
+     petite fenêtre de réglages rapides, sans quitter le match : pari en 1 clic (+ mise) et « si la cote change ». */
+  function quickSet() {
+    var xx = XX(), acc = accMode(), old = box.querySelector('.pz-qs'); if (old) { old.remove(); return; }
+    var el = document.createElement('div'); el.className = 'pz-rf pz-qs'; el.setAttribute('role', 'dialog');
+    el.innerHTML = '<div class="pz-rfc pz-qsc"><div class="pz-mcard pz-1c"><label class="pz-1cr"><span class="pz-1ct"><b dir="auto">⚡ ' + esc(T18('sb1clk', 'One-click bet')) + '</b><small dir="auto">' + esc(T18('sb1clkHint', 'Tap an odd to place the bet at once')) + '</small></span>' +
+      '<input type="checkbox" id="pzQ1c" role="switch"' + (oneOn() ? ' checked' : '') + '><i class="pz-sw" aria-hidden="true"></i></label>' +
+      '<label class="pz-1cs" id="pzQ1cS"' + (oneOn() ? '' : ' hidden') + '><span dir="auto">' + esc(T18('sb1clkSt', 'One-click stake')) + '</span><span class="pz-1ci"><input id="pzQ1cIn" inputmode="decimal" autocomplete="off" value="' + esc(String(oneSt())) + '"><em>' + cur() + '</em></span></label></div>' +
+      '<div class="pz-mcard"><p class="pz-mt2">' + esc(xx.accT) + '</p>' + [['none', xx.accNone], ['up', xx.accUp], ['any', xx.accAny]].map(function (o) {
+        return '<label class="pz-rad"><input type="radio" name="pzQAcc" value="' + o[0] + '"' + (acc === o[0] ? ' checked' : '') + '><i></i><span dir="auto">' + esc(o[1]) + '</span></label>'; }).join('') + '</div>' +
+      '<button type="button" class="pz-qsok"><span class="fit">OK</span></button></div>';
+    var close = function () { el.classList.add('out'); setTimeout(function () { el.remove(); if (view === 'match') { renderMatch(); } }, 160); };
+    el.addEventListener('click', function (e) { if (e.target === el || e.target.closest('.pz-qsok')) close(); });
+    box.appendChild(el);
+    var c1 = el.querySelector('#pzQ1c'), s1 = el.querySelector('#pzQ1cIn');
+    c1.addEventListener('change', function () { lsSet('oro_sp_1c', c1.checked ? '1' : '0'); el.querySelector('#pzQ1cS').hidden = !c1.checked; });
+    s1.addEventListener('change', function () { var v = parseFloat(String(s1.value).replace(',', '.')); if (!isFinite(v) || v < 0.1) v = 0.1; v = Math.floor(v * 100 + 1e-6) / 100; lsSet('oro_sp_1cst', String(v)); s1.value = String(v); });
+    el.querySelectorAll('input[name="pzQAcc"]').forEach(function (i) { i.addEventListener('change', function () { if (i.checked) lsSet('oro_sp_acc', i.value); }); });
+  }
   function menuAct(a) {
     if (a === 'res') { go('results'); return; }
     if (a === 'mine') { go('mine'); return; }
@@ -2478,7 +2492,7 @@
     if (r && r.ok && r.fx) { r.mk = Array.isArray(r.mk) ? r.mk.filter(function (m) { return m && m.mk && Array.isArray(m.o) && m.o.length; }) : []; confSc(r.fx); noteLive(r.fx, 'match'); sbM = r; }
     else if (first || !sbM) sbM = { ok: false, reason: r ? r.reason : 'unavailable' };
     else return; // erreur passagère : on garde ce qui est affiché
-    paintMatch();
+    if (first && sbM && sbM.ok && box && !box.querySelector('.pz-star')) { renderMatch(); } else paintMatch(); // (match ouvert avant d'être connu : étoile et ⋯ ajoutées)
     if (sbM && sbM.ok && sbM.fx && sbM.fx.live) statsTick(fid, sbM.fx);
   }
   function curFx() { return (sbM && sbM.fx) || sbFx(sbMid); }
@@ -2511,6 +2525,7 @@
     var f = curFx(), l = f ? (sbLg(f.lg, spOf(f)) || (sbM && sbM.fx ? { n: sbM.fx.lgn || '', c: sbM.fx.c || '', f: '' } : null)) : null;
     var fv = favs(), isF = f && fv.f.indexOf(f.id) > -1;
     var star = f ? '<button type="button" class="pz-star' + (isF ? ' on' : '') + '" data-fav="' + esc(f.id) + '" aria-pressed="' + !!isF + '" aria-label="' + esc(SX().fav) + '">' + (isF ? '★' : '☆') + '</button>' : '';
+    if (f && !ctx.guest) star += '<button type="button" class="pz-star pz-qset" data-qset="1" aria-label="⋯">⋯</button>'; // 2026-11-23 (b) : réglages rapides
     // 2026-11-12 (propriétaire, comme 1xBet) : en DIRECT aussi, une ligne fine en haut dit le championnat (drapeau · pays · compétition)
     var lgLine = f && f.live ? '<div class="pz-lgl">' + (l ? lgImg(l) : '') + '<span dir="auto">' + esc(spName({ s: spOf(f) })) + ' · ' + (l && l.c ? esc(l.c) + ' · ' : '') + '<b>' + esc(l && l.n ? l.n : spName({ s: spOf(f) })) + '</b></span>' + star + '</div>' : '';
     shell((f && f.live ? lgLine : bar(l && l.n ? l.n : spName({ s: f ? spOf(f) : 'foot' }), star, l && l.c ? l.c : '')) + '' + (oneOn() ? '<button type="button" class="pz-1bar" data-go="menu"><span dir="auto">⚡ ' + esc(T18('sb1clk', 'One-click bet')) + ' · <b>' + esc(money(oneSt())) + '</b></span></button>' : '') + '<div id="pzMh"></div><div id="pzTrk"></div><div id="pzForm"></div><div class="pz-gch pz-hs" id="pzG"></div>' + mqHtml() + '<div id="pzMk" class="pz-mks"></div>'); // (propriétaire : aucune règle écrite dans la page du match)
@@ -2988,28 +3003,22 @@
   function oneOn() { return !ctx.guest && lsGet('oro_sp_1c', '0') === '1'; }
   function oneSt() { var v = parseFloat(lsGet('oro_sp_1cst', '1')); return isFinite(v) && v >= 0.1 ? Math.floor(v * 100 + 1e-6) / 100 : 1; }
   async function oneClick(b) {
+    /* 2026-11-23 (b) (propriétaire : « en 1 clic, ça écrit Validation en haut, on ne voit rien ; ça doit ouvrir le coupon, enlever
+       les anciens choix et montrer le chargement ») : le coupon est vidé, ce seul choix y est mis avec la mise du 1 clic, le coupon
+       s'ouvre et le pari part tout de suite (même barre de chargement, même reçu ou même message de refus que d'habitude). */
     var x = XX(), ev = b.getAttribute('data-ev'), k = b.getAttribute('data-k'), odd = +b.getAttribute('data-odd');
     var m = /^sb:([a-z]+:\d+):(.+)$/.exec(ev || ''); if (!m) return;
-    if (oneBusy || sending) { sbToast(NX().liveWait || x.sending, 'info'); return; }
+    if (oneBusy || sending) return;
     var fid = m[1], mk = m[2], f = sbFx(fid), live = !!(f && f.live);
     if (!f || (live ? (f.susp || f.end) : nowS() >= f.ts)) { sbToast(live ? NX().susp : SX().closedM, 'err'); return; }
     var st = oneSt(), b0 = curBal();
     if (b0 != null && st > b0 + 1e-9) { sbToast(x.errBal, 'err'); if (ctx.deposit) ctx.deposit(); return; }
-    var z = { ev: ev, k: k, odd: odd, sb: 1, mk: mk, fx: fid, ko: f.ts, t: f.h.n + ' - ' + f.a.n, h: f.h, a: f.a, grp: ['fx:' + fid], q: false, l: sbOutL(mk, k, f.h.n, f.a.n), lv: live ? 1 : 0 };
-    oneBusy = true; b.classList.add('pz-1busy');
-    sbToast((live ? (NX().liveWait || x.sending) : x.sending) + ' · ' + money(st), 'info');
-    var r = null; try { r = await send1([z], st); } catch (e) { r = null; }
-    oneBusy = false; b.classList.remove('pz-1busy');
-    if (r && r.ok) {
-      if (ctx.afterPlay) ctx.afterPlay({ mode: 'real', bal: r.bal, win: 0, stake: st });
-      if (mineCache) mineCache = [r.bet].concat(mineCache.filter(function (q) { return q.id !== r.bet.id; }));
-      b.classList.remove('pz-1ok'); void b.offsetWidth; b.classList.add('pz-1ok'); setTimeout(function () { b.classList.remove('pz-1ok'); }, 1600);
-      sbToast('✓ ' + T18('sb1clkDone', 'Bet placed') + ' · ' + money(st) + ' × ' + Number(r.bet && r.bet.odd || odd).toFixed(2), 'ok');
-      return;
-    }
-    var why = (r && r.reason) || 'unavailable';
-    if (why === 'odds' && r && Array.isArray(r.odds) && r.odds[0]) { sbToast(x.e_odds || XX().oddsChg, 'err'); return; }
-    sbToast(x['e_' + why] || NX()['e_' + why] || (why === 'susp' ? NX().rfEv : '') || x.e_unavailable, 'err');
+    oneBusy = true;
+    slip = [{ ev: ev, k: k, odd: odd, sb: 1, mk: mk, fx: fid, ko: f.ts, t: f.h.n + ' - ' + f.a.n, h: f.h, a: f.a, grp: ['fx:' + fid], q: false, l: sbOutL(mk, k, f.h.n, f.a.n), lv: live ? 1 : 0 }];
+    stake = st; lastBet = null; lastBets = null; sbCode = null;
+    if (view !== 'slip') { slipFrom = view; navPush(); leaveQ(view, 'slip'); }
+    view = 'slip'; render(); var mb = mbox(); if (mb) mb.scrollTop = 0;
+    try { await place(); } finally { oneBusy = false; }
   }
   function sbPick(b) {
     var x = X(), xx = XX(), ev = b.getAttribute('data-ev'), k = b.getAttribute('data-k'), odd = +b.getAttribute('data-odd');
@@ -3049,6 +3058,7 @@
       go(v); if (b.closest('.pz-nav') && v !== 'slip') navStk = [];
       return;
     }
+    if ((b = t.closest('[data-qset]'))) { quickSet(); return; }
     if ((b = t.closest('[data-sug]'))) { sugGo(b.getAttribute('data-sug')); return; }
     if ((b = t.closest('.pz-co[data-co]'))) { ev.stopPropagation(); coTap(b); return; }
     if ((b = t.closest('.pz-ob[data-ev]'))) { if (!b.disabled) { if (oneOn()) oneClick(b); else sbPick(b); } return; }
