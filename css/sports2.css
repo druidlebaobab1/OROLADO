@@ -1624,3 +1624,18 @@ html.ios-app body #casinoModal .sp2.pz-sbon .pz-page,html.ios-app body #casinoMo
 /* 2026-11-23 (propriétaire : « les 3 points doivent être debout, comme les grandes plateformes ») */
 html:root body #casinoModal .sp2 .pz-qset .pz-kebab{width:20px;height:20px;fill:currentColor;stroke:none;display:block}
 html:root body #casinoModal .sp2 .pz-star.pz-qset{display:inline-grid;place-items:center}
+/* 2026-11-23 (propriétaire : « la notification de but est trop grosse, trop carrée ») : petite pilule fine et légère,
+   centrée au-dessus de la barre du bas, une ligne pour le titre, une pour le score (coupées proprement) */
+html:root body #casinoModal .sp2 .pz-ban{left:50%;right:auto;width:max-content;max-width:min(320px,calc(100% - 32px));transform:translate(-50%,120%);gap:8px;padding:6px 14px 6px 8px;border-radius:999px;
+  background:rgba(28,22,12,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(251,191,36,.35),0 8px 20px -8px rgba(0,0,0,.8)}
+html:root body #casinoModal .sp2 .pz-ban.on{transform:translate(-50%,0)}
+html:root body #casinoModal .sp2 .pz-ban.red{box-shadow:inset 0 0 0 1px rgba(244,63,94,.45),0 8px 20px -8px rgba(0,0,0,.8)}
+html:root body #casinoModal .sp2 .pz-ban .pz-bi{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:rgba(251,191,36,.14);font-size:14px}
+html:root body #casinoModal .sp2 .pz-ban .pz-bi .pz-card{width:10px;height:14px}
+html:root body #casinoModal .sp2 .pz-ban .pz-btx{gap:1px}
+html:root body #casinoModal .sp2 .pz-ban .pz-btx b{font:800 12.5px/1.2 var(--sp2-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html:root body #casinoModal .sp2 .pz-ban .pz-btx small{font:600 11px/1.2 var(--sp2-font);color:#D6CCB4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* … et le style de la « cage » du jeu de penalty (#casinoModal .goal : 280 × 110 px, cadre blanc) ne s'applique plus à la
+   notification « BUT » (classe goal) : c'est ce qui la rendait grosse et carrée. */
+html:root body #casinoModal .sp2 .pz-ban.goal{height:auto!important;min-height:0!important;margin:0!important;border:0!important;outline:0!important;background:rgba(28,22,12,.92)!important}
+html:root body #casinoModal .sp2 .pz-ban.goal::before,html:root body #casinoModal .sp2 .pz-ban.goal::after{content:none!important;display:none!important}
