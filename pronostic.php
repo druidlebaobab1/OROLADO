@@ -31,7 +31,10 @@ function pron_cache(string $name, int $ttl, callable $make): string {
   $f = $d . DIRECTORY_SEPARATOR . $name;
   clearstatcache(true, $f);
   if (is_file($f) && filemtime($f) > time() - $ttl) return (string) file_get_contents($f);
-  $out = $make();
+  // un seul calcul de page à la fois (verrou non bloquant) : sinon ancienne version, ou « réessayer dans un instant »
+  $lk = @fopen($d . DIRECTORY_SEPARATOR . 'pron.lock', 'c');
+  if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); if (is_file($f)) return (string) file_get_contents($f); http_response_code(503); header('Retry-After: 30'); exit('Un instant, réessayez.'); }
+  try { $out = $make(); } finally { flock($lk, LOCK_UN); fclose($lk); }
   if ($out !== '') @file_put_contents($f, $out, LOCK_EX);
   return $out;
 }
@@ -76,7 +79,8 @@ function pron_foot(): string {
 /** Page d'un match. */
 function pron_match(string $id): ?string {
   $now = time();
-  $f = sb_find($id, $now);
+  $f = null; // (léger : 4 jours lus au plus, pas les 16 de sb_find)
+  foreach ([0, 1, 2, -1] as $dd) { $d = gmdate('Y-m-d', $now + $dd * 86400); $j = sb_day($d); if (isset($j['fx'][$id])) { $f = ['row' => (array) $j['fx'][$id], 'lg' => (array) ($j['lg'][(string) ($j['fx'][$id]['lg'] ?? '')] ?? []), 'day' => $d]; break; } }
   $row = $f['row'] ?? null; $lg = (array) ($f['lg'] ?? []);
   if (!is_array($row)) return null;
   $h = (string) ($row['h'][1] ?? ''); $a = (string) ($row['a'][1] ?? ''); $ts = (int) ($row['ts'] ?? 0);
