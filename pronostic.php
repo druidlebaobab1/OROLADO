@@ -3,10 +3,10 @@ declare(strict_types=1);
 /**
  * 2026-11-23 (propriétaire : « pages Google, pub gratuite, puissant comme les grandes plateformes ») — PAGES « PRONOSTIC »
  * publiques, lisibles par Google, en français (public : Côte d'Ivoire, Sénégal…) :
- *   /pronostic/                     → matchs du jour et de demain (grands championnats d'abord), lien vers chaque match
- *   /pronostic/<equipes>-<id>       → une page par match : cotes, probabilités, avis calculé à partir des cotes, forme et
+ *   /pronostic.php                  → matchs du jour et de demain (grands championnats d'abord), lien vers chaque match
+ *   /pronostic.php?m=<equipes>-<id> → une page par match : cotes, probabilités, avis calculé à partir des cotes, forme et
  *                                     face-à-face (si déjà en mémoire), bouton « Parier sur ce match » (ouvre le match dans Paris)
- *   /sitemap-pronostics.xml         → plan de ces pages pour Google
+ *   /pronostic.php?sitemap=1        → plan de ces pages pour Google
  * Lecture des fichiers locaux SEULEMENT (jamais d'appel au fournisseur : les robots de Google ne coûtent rien) ; pages gardées
  * 10 min (liste 5 min, plan 30 min). Rien si Paris n'est pas public.
  */
@@ -23,7 +23,9 @@ function pron_slug(string $s): string {
   if ($t === '') $t = $s;
   return trim((string) preg_replace('/[^a-z0-9]+/', '-', strtolower($t)), '-') ?: 'match';
 }
-function pron_url(string $id, array $row): string { return PRON_BASE . '/pronostic/' . pron_slug((string) ($row['h'][1] ?? '') . '-' . (string) ($row['a'][1] ?? '')) . '-' . $id; }
+// (le serveur web n'applique pas les adresses courtes de .htaccess : adresses avec « ?m= », lues telles quelles par Google)
+const PRON_HOME = PRON_BASE . '/pronostic.php';
+function pron_url(string $id, array $row): string { return PRON_HOME . '?m=' . pron_slug((string) ($row['h'][1] ?? '') . '-' . (string) ($row['a'][1] ?? '')) . '-' . $id; }
 function pron_cache(string $name, int $ttl, callable $make): string {
   $d = sb_dir() . DIRECTORY_SEPARATOR . 'cache'; if (!is_dir($d)) @mkdir($d, 0750, true);
   $f = $d . DIRECTORY_SEPARATOR . $name;
@@ -68,7 +70,7 @@ function pron_head(string $title, string $desc, string $canon, string $jsonld = 
     '</style></head><body><header class="top"><a class="logo" href="/">OROLADO</a><a class="cta s" href="/">Ouvrir OROLADO</a></header>';
 }
 function pron_foot(): string {
-  return '<footer>OROLADO · Les pronostics et probabilités sont calculés à partir des cotes : aucun résultat n\'est garanti. 18+ · Jouez avec modération.<br><a href="/pronostic/">Tous les pronostics</a> · <a href="/">orolado.com</a></footer></body></html>';
+  return '<footer>OROLADO · Les pronostics et probabilités sont calculés à partir des cotes : aucun résultat n\'est garanti. 18+ · Jouez avec modération.<br><a href="/pronostic.php">Tous les pronostics</a> · <a href="/">orolado.com</a></footer></body></html>';
 }
 
 /** Page d'un match. */
@@ -132,7 +134,7 @@ function pron_match(string $id): ?string {
     foreach ((array) ($j['fx'] ?? []) as $oid => $r) { if ((string) $oid === $id || (int) ($r['lg'] ?? 0) !== (int) ($row['lg'] ?? -1) || (int) ($r['ts'] ?? 0) < $now) continue;
       $more .= '<a class="m" href="' . pron_e(pron_url((string) $oid, $r)) . '"><span class="t">' . gmdate('H:i', (int) $r['ts']) . '</span><span>' . pron_e(($r['h'][1] ?? '') . ' – ' . ($r['a'][1] ?? '')) . '</span><span class="o">›</span></a>'; if (++$k >= 8) break; } }
   return pron_head($title, $desc, $canon, $ld, $ts > $now - 3 * 86400) . '<main class="w">' .
-    '<div class="crumb"><a href="/pronostic/">Pronostics</a> › ' . pron_e(trim($lgc . ' · ' . $lgn, ' ·')) . '</div>' .
+    '<div class="crumb"><a href="/pronostic.php">Pronostics</a> › ' . pron_e(trim($lgc . ' · ' . $lgn, ' ·')) . '</div>' .
     '<h1>Pronostic ' . pron_e($h) . ' – ' . pron_e($a) . '</h1><div class="meta">' . pron_e(($lgn !== '' ? $lgn . ($lgc !== '' ? ' (' . $lgc . ')' : '') . ' · ' : '') . $when) . '</div>' .
     '<div class="card"><div class="teams"><div>' . $logo((string) ($row['h'][2] ?? '')) . '<b>' . pron_e($h) . '</b></div><span class="vs">' . ($started ? 'En cours / terminé' : gmdate('H:i', $ts)) . '</span><div>' . $logo((string) ($row['a'][2] ?? '')) . '<b>' . pron_e($a) . '</b></div></div>' .
     '<p style="text-align:center;margin:14px 0 0"><a class="cta" href="' . pron_e($go) . '">Parier sur ce match ›</a></p></div>' .
@@ -168,14 +170,14 @@ function pron_index(): string {
       $html .= '<a class="m" href="' . pron_e(pron_url($x['id'], $r)) . '"><span class="t">' . gmdate('d/m H:i', (int) $r['ts']) . '</span><span>' . pron_e(($r['h'][1] ?? '') . ' – ' . ($r['a'][1] ?? '')) . '</span><span class="o">' . pron_e(implode(' · ', $os)) . '</span></a>'; }
     $html .= '</div>';
   }
-  return pron_head('Pronostics foot du jour : cotes et analyses | OROLADO', 'Pronostics football d\'aujourd\'hui et de demain : Ligue des champions, Premier League, Ligue 1, Liga, championnats africains… Cotes, probabilités, forme des équipes. Pariez sur OROLADO.', PRON_BASE . '/pronostic/') .
+  return pron_head('Pronostics foot du jour : cotes et analyses | OROLADO', 'Pronostics football d\'aujourd\'hui et de demain : Ligue des champions, Premier League, Ligue 1, Liga, championnats africains… Cotes, probabilités, forme des équipes. Pariez sur OROLADO.', PRON_HOME) .
     '<main class="w"><h1>Pronostics foot du jour</h1><p class="meta">Cotes, probabilités et analyse de chaque match. Heures en GMT (Abidjan, Dakar).</p>' .
     ($html !== '' ? $html : '<div class="card">Aucun match pour le moment. Revenez bientôt.</div>') .
     '<p style="text-align:center;margin:20px 0"><a class="cta" href="/">Parier sur OROLADO ›</a></p></main>' . pron_foot();
 }
 function pron_sitemap(): string {
   $x = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-  $x .= '<url><loc>' . PRON_BASE . '/pronostic/</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>' . "\n";
+  $x .= '<url><loc>' . PRON_HOME . '</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>' . "\n";
   foreach (array_slice(pron_list(), 0, 2000, true) as $m) $x .= '<url><loc>' . pron_e(pron_url($m['id'], $m['r'])) . '</loc><lastmod>' . gmdate('Y-m-d') . '</lastmod><changefreq>hourly</changefreq><priority>0.7</priority></url>' . "\n";
   return $x . '</urlset>' . "\n";
 }
@@ -187,11 +189,11 @@ try {
     header('Content-Type: application/xml; charset=utf-8'); header('Cache-Control: public, max-age=1800');
     echo pron_cache('pron-sitemap.xml', 1800, 'pron_sitemap'); exit;
   }
-  $id = preg_match('/^\d{3,12}$/', (string) ($_GET['id'] ?? '')) ? (string) $_GET['id'] : '';
+  $id = preg_match('/^\d{3,12}$/', (string) ($_GET['id'] ?? '')) ? (string) $_GET['id'] : (preg_match('/-(\d{3,12})$/', (string) ($_GET['m'] ?? ''), $mm) ? $mm[1] : '');
   header('Content-Type: text/html; charset=utf-8'); header('Cache-Control: public, max-age=300');
   if ($id === '') { echo pron_cache('pron-index.html', 300, 'pron_index'); exit; }
   $page = pron_cache('pron-' . $id . '.html', 600, static fn() => (string) pron_match($id));
-  if ($page === '') { http_response_code(404); echo pron_head('Match introuvable | OROLADO', 'Ce match n\'est plus disponible.', PRON_BASE . '/pronostic/', '', false) . '<main class="w"><h1>Match introuvable</h1><p><a class="cta" href="/pronostic/">Voir les pronostics du jour ›</a></p></main>' . pron_foot(); exit; }
+  if ($page === '') { http_response_code(404); echo pron_head('Match introuvable | OROLADO', 'Ce match n\'est plus disponible.', PRON_HOME, '', false) . '<main class="w"><h1>Match introuvable</h1><p><a class="cta" href="/pronostic.php">Voir les pronostics du jour ›</a></p></main>' . pron_foot(); exit; }
   echo $page;
 } catch (Throwable $e) {
   error_log('OROLADO pronostic ' . $e->getMessage());
