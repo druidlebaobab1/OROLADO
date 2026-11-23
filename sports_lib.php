@@ -1419,6 +1419,7 @@ if (is_file(__DIR__ . '/pred_lib.php')) require_once __DIR__ . '/pred_lib.php';
  * =================================================================================================================== */
 const SP_CO_MARGE = 0.08;
 const SP_CO_MIN = 0.10;
+const SP_CO_LAST_MIN = 80; // 2026-11-23 (propriétaire : « à la 81e, à la 90e, le client gagne facilement ») : plus de cash out d'un match en direct dès la 80e
 /** Offre pour un coupon (données du fichier) : ['v' => montant, 'live' => [choix en direct relus]] ou null. */
 function sp_co_quote(array $b, ?array $user, int $now): ?array {
   if (($b['status'] ?? '') !== 'open' || ($b['mode'] ?? '') !== 'real' || isset($b['co']) || !function_exists('sb_pick')) return null;
@@ -1432,7 +1433,7 @@ function sp_co_quote(array $b, ?array $user, int $now): ?array {
     $p = sb_pick((string) $sl['ev'], (string) $sl['k'], $user, $now);
     if (empty($p['ok']) || empty($p['sel']['odd']) || (float) $p['sel']['odd'] < 1.01) return null;
     $f *= (float) $sl['odd'] / (float) $p['sel']['odd']; $pend++;
-    if (!empty($p['live'])) $live[] = $p['sel'];
+    if (!empty($p['live'])) { if ((int) ($p['sel']['m'] ?? 0) >= SP_CO_LAST_MIN) return null; $live[] = $p['sel']; }
   }
   if ($pend === 0) return null; // tout est déjà joué : le règlement normal arrive
   $v = sp_floor2(min((float) ($b['pot'] ?? PHP_FLOAT_MAX), (float) $b['stake'] * $f * (1 - SP_CO_MARGE)));

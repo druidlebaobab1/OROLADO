@@ -4568,6 +4568,22 @@
     hi: { sbCoBtn: "कैश आउट", sbCoConf: "पुष्टि करें", sbCoDone: "कैश आउट हुआ", sbCoNew: "नया ऑफ़र", sbCoOff: "अभी कैश आउट उपलब्ध नहीं" },
   };
   Object.keys(SBC_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBC_TR[l]); });
+  // 2026-11-23 (propriétaire) — Paris : coupons proposés par le système (Populaire)
+  var SBS_TR = {
+    fr: { sbSugT: "Coupons du jour", sbSugFav: "Les favoris", sbSugBig: "Grosse cote", sbSugLive: "En direct", sbSugGo: "Parier ce coupon" },
+    en: { sbSugT: "Today's bets", sbSugFav: "Favourites", sbSugBig: "Big odds", sbSugLive: "Live", sbSugGo: "Bet this slip" },
+    es: { sbSugT: "Cupones del día", sbSugFav: "Favoritos", sbSugBig: "Cuota alta", sbSugLive: "En vivo", sbSugGo: "Apostar este cupón" },
+    pt: { sbSugT: "Bilhetes do dia", sbSugFav: "Favoritos", sbSugBig: "Odd alta", sbSugLive: "Ao vivo", sbSugGo: "Apostar neste bilhete" },
+    ar: { sbSugT: "قسائم اليوم", sbSugFav: "المرشحون", sbSugBig: "احتمال كبير", sbSugLive: "مباشر", sbSugGo: "راهن بهذه القسيمة" },
+    tr: { sbSugT: "Günün kuponları", sbSugFav: "Favoriler", sbSugBig: "Yüksek oran", sbSugLive: "Canlı", sbSugGo: "Bu kuponu oyna" },
+    vi: { sbSugT: "Phiếu cược hôm nay", sbSugFav: "Cửa trên", sbSugBig: "Tỷ lệ cao", sbSugLive: "Trực tiếp", sbSugGo: "Cược phiếu này" },
+    id: { sbSugT: "Kupon hari ini", sbSugFav: "Favorit", sbSugBig: "Odds besar", sbSugLive: "Live", sbSugGo: "Pasang kupon ini" },
+    ru: { sbSugT: "Купоны дня", sbSugFav: "Фавориты", sbSugBig: "Высокий коэффициент", sbSugLive: "Live", sbSugGo: "Поставить этот купон" },
+    de: { sbSugT: "Tipps des Tages", sbSugFav: "Favoriten", sbSugBig: "Hohe Quote", sbSugLive: "Live", sbSugGo: "Diesen Schein spielen" },
+    zh: { sbSugT: "今日推荐", sbSugFav: "热门", sbSugBig: "高赔率", sbSugLive: "滚球", sbSugGo: "投注此单" },
+    hi: { sbSugT: "आज के कूपन", sbSugFav: "पसंदीदा", sbSugBig: "बड़ा ऑड", sbSugLive: "लाइव", sbSugGo: "यह कूपन लगाएँ" },
+  };
+  Object.keys(SBS_TR).forEach(function (l) { if (DICT[l]) Object.assign(DICT[l], SBS_TR[l]); });
   // 2026-10-22 (propriétaire) — Paris : section des prédictions. NOM AFFICHÉ = PRED_NAME (un seul endroit, le même mot dans les 12 langues).
   var PRED_NAME = 'Predict';
   var PRED_TR = {
