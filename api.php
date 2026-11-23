@@ -2461,10 +2461,12 @@ if ($action === 'resolveWithdraw') {
     if ($act === 'silent') {
       // Remboursement seulement si le retrait n'a pas encore été payé.
       if (in_array((string) ($w['status'] ?? ''), ['pending', 'review'], true)) orolado_refund_wd_once($db, $w);
+      $wdFrom = (string) ($w['status'] ?? 'pending');
       $w['status'] = 'silenced';
       $w['adminHidden'] = true;
       $w['playerHidden'] = true;
       save_db($file, $db);
+      if (function_exists('orolado_wd_audit')) orolado_wd_audit((string) $id, $wdFrom, 'silenced', 'admin ' . (string) ($me['email'] ?? ''), ['amount' => (float) ($w['amount'] ?? 0), 'note' => 'site (resolveWithdraw)']);
       echo json_encode(['ok' => true, 'server' => true, 'act' => 'silent']);
       exit;
     }
@@ -2474,6 +2476,7 @@ if ($action === 'resolveWithdraw') {
       $w['status'] = 'review';
       $w['playerNote'] = 'Vérification de sécurité';
       save_db($file, $db);
+      if (function_exists('orolado_wd_audit')) orolado_wd_audit((string) $id, $st, 'review', 'admin ' . (string) ($me['email'] ?? ''), ['amount' => (float) ($w['amount'] ?? 0), 'note' => 'site (resolveWithdraw)']);
       echo json_encode(['ok' => true, 'server' => true, 'act' => 'suspend']);
       exit;
     }
@@ -2486,7 +2489,10 @@ if ($action === 'resolveWithdraw') {
       }
     }
     $w['status'] = $approve ? 'approved' : 'rejected';
+    if ($approve) $w['approvedAt'] = date('c');
+    $w['resolvedBy'] = 'admin ' . (string) ($me['email'] ?? '');
     save_db($file, $db);
+    if (function_exists('orolado_wd_audit')) orolado_wd_audit((string) $id, $st, (string) $w['status'], (string) $w['resolvedBy'], ['amount' => (float) ($w['amount'] ?? 0), 'dest' => (string) ($w['destination'] ?? $w['phone'] ?? ''), 'note' => 'site (resolveWithdraw)']);
     echo json_encode(['ok' => true, 'server' => true, 'act' => $act]);
     exit;
   }

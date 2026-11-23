@@ -623,6 +623,7 @@ function admin_badges(): array {
     'dep_bonus' => $bonusN,
     'xfer_list' => count(admin_xfer_rows()),
     'wd_pending' => $wdOpen,
+    'wd_health' => admin_wd_health(), // 2026-11-23 : bandeau « source des retraits en panne » (jamais un 0 muet)
     'wd_today' => $wdToday,
     'wd_all' => $wdVisible,
     'wd_rejected' => $wdRej,
@@ -654,6 +655,114 @@ function admin_badges(): array {
   ];
   admin_cache_set('badges_epoch4', $out);
   return $out;
+}
+
+/**
+ * 2026-11-23 (propriétaire : « les retraits en cours disparaissent, j'ai validé d'anciens retraits par erreur ») — page dédiée
+ * « 💸 Retraits » : À payer (les plus anciens d'abord) / Payés / Rejetés / Historique, avec le journal de chaque retrait.
+ * Lecture seule : les boutons « Marquer payé » / « Rejeter » passent par resolve_wd (mêmes contrôles qu'avant + réservation).
+ */
+function admin_wdx_payload(array $req): array {
+  $wds = admin_withdrawals();
+  $health = admin_wd_health();
+  $pmap = admin_profile_map();
+  $suspects = admin_suspects();
+  $now = time();
+  $tab = (string) ($req['tab'] ?? 'pending');
+  if (!in_array($tab, ['pending', 'paid', 'rejected', 'history'], true)) $tab = 'pending';
+  $counts = ['pending' => 0, 'pendingSum' => 0.0, 'old' => 0, 'paid' => 0, 'rejected' => 0, 'all' => 0];
+  foreach ($wds as $w) {
+    if (admin_wd_is_silenced($w)) continue;
+    $counts['all']++;
+    if (admin_wd_is_open($w)) {
+      $counts['pending']++;
+      $counts['pendingSum'] += (float) ($w['amount'] ?? 0);
+      $t = admin_ts((string) ($w['createdAt'] ?? '')) ?: 0;
+      if ($t > 0 && $now - $t > 48 * 3600) $counts['old']++;
+    } else if (admin_wd_is_paid($w)) $counts['paid']++;
+    else if (admin_wd_is_rejected($w)) $counts['rejected']++;
+  }
+  $counts['pendingSum'] = round($counts['pendingSum'], 2);
+  $list = [];
+  if ($tab === 'pending') {
+    $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_open($w)));
+    usort($list, static fn($a, $b) => (admin_ts((string) ($a['createdAt'] ?? '')) ?: 0) <=> (admin_ts((string) ($b['createdAt'] ?? '')) ?: 0)); // le plus ancien en haut
+  } else if ($tab === 'paid') {
+    $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w)));
+    usort($list, static fn($a, $b) => (admin_ts(admin_wd_paid_at($b)) ?: 0) <=> (admin_ts(admin_wd_paid_at($a)) ?: 0));
+  } else if ($tab === 'rejected') {
+    $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_rejected($w)));
+  } else {
+    $list = array_values(array_filter($wds, static fn($w) => !admin_wd_is_silenced($w) || !empty($req['withHidden'])));
+  }
+  // Recherche + dates (Historique ; aussi possible sur Payés / Rejetés). « À payer » : jamais filtré par date.
+  $q = strtolower(trim((string) ($req['q'] ?? '')));
+  $from = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['from'] ?? '')) ? (string) $req['from'] : '';
+  $to = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['to'] ?? '')) ? (string) $req['to'] : '';
+  [$a, $b] = ($from !== '' || $to !== '') ? admin_day_bounds('range', $from !== '' ? $from : '2000-01-01', $to !== '' ? $to : date('Y-m-d')) : ['', ''];
+  $rows = [];
+  foreach ($list as $w) {
+    $w = admin_enrich_wd($w, $pmap);
+    if ($q !== '' && $tab !== 'pending') {
+      $blob = strtolower(implode(' ', [(string) $w['id'], (string) ($w['userId'] ?? ''), (string) ($w['publicId'] ?? ''), (string) ($w['name'] ?? ''), (string) ($w['email'] ?? ''), (string) ($w['phone'] ?? ''), (string) ($w['operator'] ?? '')]));
+      if (!str_contains($blob, $q)) continue;
+    }
+    if ($tab !== 'pending' && $a !== '' && !admin_in_range($tab === 'paid' ? (admin_wd_paid_at($w) ?: null) : ((string) ($w['createdAt'] ?? '') ?: null), $a, $b)) continue;
+    $uid = (string) ($w['userId'] ?? '');
+    $t = admin_ts((string) ($w['createdAt'] ?? '')) ?: 0;
+    $ageH = $t > 0 ? (int) floor(($now - $t) / 3600) : -1;
+    $open = admin_wd_is_open($w);
+    $flags = [];
+    if ($open) {
+      if ($ageH >= 48) $flags[] = ['lvl' => 'red', 'txt' => 'Ancien : en attente depuis ' . (int) floor($ageH / 24) . ' j — vérifier qu’il n’a pas déjà été payé'];
+      else if ($ageH >= 24) $flags[] = ['lvl' => 'orange', 'txt' => 'En attente depuis plus de 24 h'];
+      if (isset($suspects[$uid])) foreach ((array) ($suspects[$uid]['alerts'] ?? []) as $al) $flags[] = ['lvl' => (string) ($al['lvl'] ?? 'orange'), 'txt' => (string) ($al['txt'] ?? '')];
+      if (!empty($w['suspectFlag'])) $flags[] = ['lvl' => 'orange', 'txt' => 'Signalé « à vérifier » au moment de la demande'];
+      if (!empty($w['_conflict'])) $flags[] = ['lvl' => 'red', 'txt' => 'Une autre copie (base Supabase / journal) dit « ' . (string) $w['_conflict'] . ' » : vérifier avant de payer'];
+      if (!empty($w['_logOnly'])) $flags[] = ['lvl' => 'red', 'txt' => 'Trace seulement (absent du registre des retraits) : peut être un doublon d’un retrait déjà traité'];
+      if ((string) ($w['autoWhy'] ?? '') !== '') $flags[] = ['lvl' => 'orange', 'txt' => 'Robot : ' . (string) $w['autoWhy']];
+      if ((string) ($w['autoTry'] ?? '') !== '' && (string) ($w['autoWhy'] ?? '') === '') $flags[] = ['lvl' => 'red', 'txt' => 'Le robot est en train de l’envoyer'];
+      if ((string) ($w['autoTx'] ?? '') !== '') $flags[] = ['lvl' => 'red', 'txt' => 'Transaction robot déjà préparée : ' . (string) $w['autoTx']];
+      if (!empty($w['refunded'])) $flags[] = ['lvl' => 'red', 'txt' => 'Déjà remboursé au joueur : NE PAS PAYER'];
+    }
+    $loc = '';
+    if ((float) ($w['locRate'] ?? 0) > 0) $loc = number_format((int) floor((float) $w['amount'] * (float) $w['locRate'] + 1e-6), 0, ',', ' ') . ' ' . (string) ($w['locSym'] ?? '');
+    $rows[] = [
+      'id' => (string) $w['id'],
+      'userId' => $uid,
+      'publicId' => (string) ($w['publicId'] ?? ''),
+      'name' => (string) ($w['name'] ?? ''),
+      'email' => (string) ($w['email'] ?? ''),
+      'amount' => round((float) ($w['amount'] ?? 0), 2),
+      'loc' => $loc,
+      'method' => admin_method_label(admin_fill((string) ($w['operator'] ?? ''))),
+      'dest' => admin_fill((string) ($w['phone'] ?? '')),
+      'createdAt' => (string) ($w['createdAt'] ?? ''),
+      'ageH' => $ageH,
+      'status' => (string) ($w['status'] ?? ''),
+      'state' => $open ? 'pending' : (admin_wd_is_paid($w) ? 'paid' : (admin_wd_is_rejected($w) ? 'rejected' : (admin_wd_is_silenced($w) ? 'hidden' : (!empty($w['offsite']) ? 'offsite' : 'other')))),
+      'paidAt' => admin_wd_is_paid($w) ? admin_wd_paid_at($w) : '',
+      'by' => (string) ($w['resolvedBy'] ?? ''),
+      'reason' => (string) ($w['reason'] ?? ''),
+      'flags' => $flags,
+      'level' => admin_alerts_level($flags),
+    ];
+  }
+  $total = count($rows);
+  $limit = max(20, min(500, (int) ($req['limit'] ?? 200)));
+  $rows = array_slice($rows, 0, $tab === 'pending' ? 1000 : $limit);
+  // Journal de chaque retrait affiché (qui, quand, ancien → nouvel état). Payé / rejeté sans ligne au journal (ancien
+  // retrait, avant le journal) : « par » reste vide → affiché « inconnu (avant le journal) ».
+  $aud = [];
+  foreach (orolado_wd_audit_read(array_column($rows, 'id')) as $l) $aud[(string) $l['id']][] = $l;
+  foreach ($rows as $i => $r) {
+    $rows[$i]['audit'] = $aud[$r['id']] ?? [];
+    if ($r['by'] === '' && $rows[$i]['audit']) {
+      $last = end($rows[$i]['audit']);
+      if (in_array((string) ($last['to'] ?? ''), ['approved', 'rejected'], true)) $rows[$i]['by'] = (string) ($last['by'] ?? '');
+    }
+  }
+  return ['ok' => true, 'tab' => $tab, 'rows' => $rows, 'total' => $total, 'counts' => $counts, 'health' => $health, 'now' => date('c')];
 }
 
 /** Personnes connectées maintenant (inscrites ou non) : signal de présence de moins de 60 s. */
@@ -1452,7 +1561,9 @@ function admin_list_payload_raw(string $view, array $req): array {
       $w['_alerts'] = $al;
       $w['_suspect'] = $al !== [];
       if ($q !== '' && !admin_match_q($w, $q) && !str_contains(strtolower((string) ($w['name'] ?? '')), $q)) continue;
-      if ($preset !== 'all' && $preset !== '' && ($w['createdAt'] ?? '') !== '') {
+      // 2026-11-23 : « Retraits en cours » ignore la case de dates (partagée avec les autres listes) — avant, un « Aujourd’hui »
+      // choisi ailleurs cachait les retraits en attente plus anciens : ils semblaient avoir disparu.
+      if ($preset !== 'all' && $preset !== '' && ($w['createdAt'] ?? '') !== '' && $view !== 'wd_pending' && $view !== 'wd_volume') {
         $tmp = admin_apply_filters([$w], $req, 'createdAt');
         if ($tmp === []) continue;
       }
@@ -1497,7 +1608,10 @@ function admin_list_payload_raw(string $view, array $req): array {
       ];
     }
     $summary = $total . ' retrait(s) · ' . admin_money($sum) . ($wantC !== '' ? ' · ' . $wantC : (count($countries) > 1 ? ' · ' . count($countries) . ' pays' : ''));
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'countries' => $countries];
+    if ($view === 'wd_pending' || $view === 'wd_volume') $summary .= ' · toutes dates · page dédiée : bouton « 💸 Retraits » en haut';
+    $wh = admin_wd_health();
+    if (empty($wh['ok'])) $summary = '⚠️ ' . implode(' ', array_merge((array) ($wh['errors'] ?? []), (array) ($wh['warnings'] ?? []))) . ' — ' . $summary;
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => $summary, 'actions' => $actions, 'countries' => $countries, 'wdHealth' => $wh];
   }
 
   if ($view === 'top_winners') {
@@ -2495,6 +2609,9 @@ if ($isAjax) {
   if ($action === 'online_now') {
     admin_json(['ok' => true, 'online' => admin_online_now()]);
   }
+  if ($action === 'wdx') { // 2026-11-23 : page « 💸 Retraits »
+    admin_json(admin_wdx_payload($req));
+  }
   if ($action === 'badges') {
     admin_json(['ok' => true, 'badges' => admin_badges(), 'board' => admin_board_watch()]);
   }
@@ -2819,35 +2936,87 @@ if ($isAjax) {
     if ($amt > 0) $row['amount'] = $amt;
     if ($motif !== '') $row['reason'] = $motif;
 
+    // 2026-11-23 (propriétaire : « j'ai validé d'anciens retraits par erreur ») — réservation SOUS VERROU sur le registre À JOUR
+    // (comme resolveWithdraw dans api.php) : état réel relu, 2e clic / 2e admin / robot en train de payer → refusé ; et la page
+    // « 💸 Retraits » envoie le montant qu'elle affiche : s'il ne correspond pas (liste périmée, mauvaise ligne) → refusé.
+    $claim = with_db_lock(static function ($box) use ($id, $act, $req) {
+      foreach (($box->db['withdrawals'] ?? []) as $i => $x) {
+        if (!is_array($x) || ((string) ($x['id'] ?? '') !== $id && (string) ($x['reference'] ?? '') !== $id)) continue;
+        $st = strtolower(trim((string) ($x['status'] ?? 'pending')));
+        $paid = admin_wd_is_paid($x);
+        $who = trim((string) ($x['resolvedBy'] ?? (!empty($x['autoPaid']) ? 'robot des retraits' : '')));
+        $when = (string) ($x['approvedAt'] ?? '');
+        if ($act === 'approve' && $paid) return ['ok' => false, 'skip_write' => true, 'reason' => 'Ce retrait est DÉJÀ PAYÉ' . ($when !== '' ? ' (le ' . admin_when_cell($when) . ')' : '') . ($who !== '' ? ' par ' . $who : '') . '. Ne le payez pas une 2e fois.'];
+        if ($act === 'reject' && admin_wd_is_rejected($x)) return ['ok' => false, 'skip_write' => true, 'reason' => 'Ce retrait est déjà rejeté (et remboursé).'];
+        if ($act === 'approve' && (!empty($x['autoTx']) || (!empty($x['autoTry']) && empty($x['autoWhy'])))) return ['ok' => false, 'skip_write' => true, 'reason' => 'Le robot des retraits a envoyé (ou envoie) ce retrait' . (!empty($x['autoTx']) ? ' — transaction ' . (string) $x['autoTx'] : '') . '. Vérifiez sur tronscan avant de payer à la main.'];
+        if (!empty($x['adminBusy']) && time() - (int) $x['adminBusy'] < 30) return ['ok' => false, 'skip_write' => true, 'reason' => 'Ce retrait est déjà en cours de traitement. Rafraîchissez dans un instant.'];
+        if (isset($req['expectAmount']) && $req['expectAmount'] !== '' && abs(abs((float) ($x['amount'] ?? 0)) - (float) $req['expectAmount']) > 0.009) {
+          return ['ok' => false, 'skip_write' => true, 'reason' => 'Le montant a changé (' . number_format(abs((float) ($x['amount'] ?? 0)), 2, ',', ' ') . ' $ au lieu de ' . number_format((float) $req['expectAmount'], 2, ',', ' ') . ' $). Rafraîchissez la liste.'];
+        }
+        if (!empty($req['expectOpen']) && ($paid || admin_wd_is_rejected($x) || admin_wd_is_silenced($x))) {
+          return ['ok' => false, 'skip_write' => true, 'reason' => 'Ce retrait n’est plus en attente (état : ' . $st . '). Rafraîchissez la liste.'];
+        }
+        $box->db['withdrawals'][$i]['adminBusy'] = time();
+        return ['ok' => true, 'row' => $x];
+      }
+      return ['ok' => true, 'row' => null];
+    });
+    if (empty($claim['ok'])) admin_json(['ok' => false, 'reason' => (string) ($claim['reason'] ?? 'Réessayez.')]);
+    // Refus après la réservation : la réservation est levée tout de suite (un nouvel essai reste possible sans attendre 30 s).
+    $wdFail = static function (string $reason) use ($id): void {
+      with_db_lock(static function ($box) use ($id) {
+        foreach (($box->db['withdrawals'] ?? []) as $i => $x) {
+          if (is_array($x) && ((string) ($x['id'] ?? '') === $id || (string) ($x['reference'] ?? '') === $id) && !empty($x['adminBusy'])) { $box->db['withdrawals'][$i]['adminBusy'] = null; return ['ok' => true]; }
+        }
+        return ['ok' => true, 'skip_write' => true];
+      });
+      admin_json(['ok' => false, 'reason' => $reason]);
+    };
+    if (is_array($claim['row'] ?? null)) {
+      $fresh = $claim['row'];
+      unset($fresh['adminBusy']);
+      $row = array_merge($row, $fresh);
+      $row['id'] = $id;
+      if ($motif !== '') $row['reason'] = $motif;
+    } else if (!empty($req['expectOpen']) && !admin_wd_is_open($row)) {
+      $wdFail('Ce retrait n’est plus en attente. Rafraîchissez la liste.');
+    }
+    foreach (array_keys($row) as $k) if (str_starts_with((string) $k, '_')) unset($row[$k]); // champs d'affichage (source, conflit…)
+    $fromStatus = strtolower(trim((string) ($row['status'] ?? 'pending'))) ?: 'pending';
+    $byWho = 'admin ' . (string) ($me['email'] ?? '?');
+
     $wasPaid = in_array(strtolower((string) ($row['status'] ?? '')), ['approved', 'paid', 'completed'], true);
     if ($act === 'approve') {
       if (!empty($row['offsite']) || !admin_wd_has_local($db, $id)) {
-        admin_json(['ok' => false, 'reason' => 'Retrait créé hors du site : aucun argent n’a été débité. Ne le payez pas.']);
+        $wdFail('Retrait créé hors du site : aucun argent n’a été débité. Ne le payez pas.');
       }
       // 2026-11-12 (revue) : un retrait déjà refusé / remboursé ne peut plus être validé (sinon : remboursé ET payé)
       if (in_array(strtolower((string) ($row['status'] ?? '')), ['rejected', 'refunded', 'silenced'], true) || !empty($row['refunded'])) {
-        admin_json(['ok' => false, 'reason' => 'Ce retrait a déjà été refusé et remboursé : il ne peut plus être validé.']);
+        $wdFail('Ce retrait a déjà été refusé et remboursé : il ne peut plus être validé.');
       }
       $row['status'] = 'approved';
       $row['approvedAt'] = date('c'); // v2655 : date de paiement (liste « Retraits validés »)
+      $row['resolvedBy'] = $byWho; // 2026-11-23 : payé PAR QUI (page « 💸 Retraits »)
       $row['playerHidden'] = false;
       $row['adminHidden'] = false;
     } else if ($act === 'reject') {
       // Un retrait déjà validé (donc payé) ne peut plus être « refusé » : ça rembourserait le joueur une 2e fois.
       if (in_array(strtolower((string) ($row['status'] ?? '')), ['approved', 'paid', 'completed'], true)) {
-        admin_json(['ok' => false, 'reason' => 'Ce retrait est déjà validé : il ne peut plus être refusé.']);
+        $wdFail('Ce retrait est déjà validé : il ne peut plus être refusé.');
       }
       // 2026-11-12 (revue) : le robot des retraits est en train de l'envoyer (ou l'a envoyé) → pas de refus (sinon remboursé ET payé)
       if (!empty($row['autoTry']) || !empty($row['autoTx'])) {
-        admin_json(['ok' => false, 'reason' => 'Le robot est en train d’envoyer ce retrait (ou l’a envoyé) : vérifie la transaction avant de le refuser.']);
+        $wdFail('Le robot est en train d’envoyer ce retrait (ou l’a envoyé) : vérifie la transaction avant de le refuser.');
       }
       // 2026-11-08 (revue) : retrait créé HORS du site (jamais débité) → refusé SANS remboursement (sinon : argent créé)
       $offsiteWd = !empty($row['offsite']) || !admin_wd_has_local($db, $id);
       if (!$offsiteWd) orolado_refund_wd_once($db, $row);
       if (!$offsiteWd && empty($row['refunded'])) {
-        admin_json(['ok' => false, 'reason' => 'Remboursement non passé (base injoignable). Réessayez dans un instant.']);
+        $wdFail('Remboursement non passé (base injoignable). Réessayez dans un instant.');
       }
       $row['status'] = 'rejected';
+      $row['rejectedAt'] = date('c');
+      $row['resolvedBy'] = $byWho;
       $row['adminHidden'] = false;
     } else if ($act === 'silent') {
       $row['status'] = 'silenced';
@@ -2859,6 +3028,7 @@ if ($isAjax) {
       if ($uid !== '') orolado_force_suspend($db, $uid, 'suspended');
     }
 
+    $row['adminBusy'] = null; // réservation levée à l'écriture
     admin_upsert_local_wd($db, $row);
     $hdrs = supabase_admin_headers();
     if ($hdrs && $act !== 'suspend') {
@@ -2871,6 +3041,8 @@ if ($isAjax) {
     }
     save_db(orolado_data_file(), $db);
     admin_bust_cache();
+    // 2026-11-23 : journal des retraits (ajout seulement) — qui, quand, ancien → nouvel état ; une ligne par vrai changement.
+    orolado_wd_audit($id, $fromStatus, (string) ($row['status'] ?? ''), $byWho, ['amount' => (float) ($row['amount'] ?? 0), 'dest' => (string) ($row['destination'] ?? $row['phone'] ?? ''), 'operator' => (string) ($row['operator'] ?? ''), 'userId' => $uid, 'note' => $motif]);
     // 2026-10-19 : le joueur est prévenu (notification + e-mail) une seule fois, quand le retrait passe à « validé ».
     if ($act === 'approve' && !$wasPaid && $uid !== '') admin_wd_notify_paid($db, $uid, $row);
     admin_json(['ok' => true, 'refunded' => !empty($row['refunded']), 'status' => $row['status'] ?? '']);
@@ -3667,6 +3839,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
   <header class="head head2">
     <!-- 2026-11-09 (propriétaire : « mon tableau est trop vieux, range bien, retire les boutons inutiles ») -->
     <div class="hd-top"><h1>OROLADO · Tableau admin</h1><span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span><button class="mini" id="btnBack" type="button">← Retour au site</button></div>
+    <!-- 2026-11-23 (propriétaire) : page dédiée aux retraits, tout en haut (payer les joueurs = le plus important) -->
+    <button type="button" class="wdx-top" id="btnWdx"><span>💸 Retraits</span><b id="wdxTopN">…</b><small id="wdxTopTxt">à payer</small></button>
     <div class="tb-groups">
       <div class="tb-g"><div class="tb-t">💬 Joueurs &amp; messages</div><div class="tb-row">
         <button class="mini tb-b" id="btnLiveA" type="button" style="--c:#F43F6E">💬 Social <b id="lvBadge" class="tb-badge"></b></button>
@@ -3711,6 +3885,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     <div class="sec">C · Retraits &amp; sorties d’argent</div>
     <div class="metrics" id="gC"><?php foreach ($ADMIN_TABS['gC'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sum-bar wd" id="sumWdBar">Total des retraits validés : <b id="sumWdVal">—</b></div>
+    <div class="wdx-warn" id="wdHealthBar" hidden></div>
+    <button type="button" class="wdx-link" id="btnWdx2">💸 Ouvrir la page Retraits (à payer, payés, rejetés, historique, journal)</button>
     <div class="sec">D · Joueurs, soldes &amp; jeux</div>
     <div class="metrics" id="gD"><?php foreach ($ADMIN_TABS['gD'] as $t) { echo '<button type="button" class="metric-btn" data-view="'.admin_esc($t[0]).'"><div class="k">'.admin_esc($t[1]).' <span class="badge zero" data-badge="'.admin_esc($t[0]).'">—</span></div></button>'; } ?></div>
     <div class="sec">E · Trafic, mails &amp; alertes</div>
@@ -4262,6 +4438,55 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .nt-prev span{font-size:.85rem;color:#374151;white-space:pre-wrap;word-break:break-word}
     .nt-who{margin:12px 0 0;font-size:.85rem;color:#FCD34D;font-weight:800}
     .nt-log td,.nt-log th{padding:4px 6px;border-bottom:1px solid var(--line);font-size:.78rem;text-align:left;vertical-align:top}
+
+    /* 2026-11-23 — page « 💸 Retraits » (lisible dès 360 px) */
+    .wdx-top{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;margin:10px 0 4px;padding:12px 14px;border-radius:14px;border:1px solid rgba(34,197,94,.55);background:linear-gradient(135deg,rgba(34,197,94,.22),rgba(16,185,129,.08));color:#E8FFF1;font:inherit;font-weight:900;font-size:1.02rem;cursor:pointer;text-align:left;flex-wrap:wrap}
+    .wdx-top b{min-width:28px;padding:2px 9px;border-radius:999px;background:#22C55E;color:#06210F;text-align:center}
+    .wdx-top small{font-weight:600;color:#BBF7D0;font-size:.82rem;flex:1 1 120px;min-width:0}
+    .wdx-top.warn{border-color:rgba(249,115,22,.7);background:linear-gradient(135deg,rgba(249,115,22,.25),rgba(239,68,68,.08))}
+    .wdx-top.warn b{background:#F97316;color:#1F0A00}
+    .wdx-top.bad{border-color:#EF4444;background:linear-gradient(135deg,rgba(239,68,68,.35),rgba(239,68,68,.1))}
+    .wdx-top.bad b{background:#EF4444;color:#fff}
+    .wdx-link{display:block;width:100%;box-sizing:border-box;margin:6px 0 4px;padding:10px 12px;border-radius:12px;border:1px dashed rgba(34,197,94,.6);background:rgba(34,197,94,.08);color:#BBF7D0;font:inherit;font-weight:800;font-size:.86rem;cursor:pointer;text-align:left;white-space:normal}
+    .wdx-warn{margin:8px 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(249,115,22,.6);background:rgba(249,115,22,.12);color:#FED7AA;font-size:.84rem;line-height:1.45;word-break:break-word}
+    .wdx-warn.bad{border-color:#EF4444;background:rgba(239,68,68,.16);color:#FECACA}
+    .wdx-warn b{color:#fff}
+    .wdx-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0 10px}
+    .wdx-tabs button{min-width:0;padding:9px 4px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#C9D2F0;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer;line-height:1.2;overflow-wrap:anywhere}
+    .wdx-tabs button i{display:block;font-style:normal;font-size:1rem;color:#fff;margin-top:2px}
+    .wdx-tabs button.on{border-color:#22C55E;background:rgba(34,197,94,.16);color:#fff}
+    .wdx-filt{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+    .wdx-filt[hidden],.wdx-warn[hidden]{display:none!important}
+    .wdx-filt input{flex:1 1 140px;min-width:0}
+    .wdx-filt input[type=date]{flex:1 1 130px}
+    .wdx-sum{font-size:.84rem;color:#C9D2F0;margin:2px 0 10px}
+    .wdx-card{box-sizing:border-box;max-width:100%;border:1px solid rgba(255,255,255,.1);border-left:4px solid #22C55E;border-radius:14px;background:rgba(255,255,255,.04);padding:12px;margin:0 0 10px;overflow-wrap:anywhere}
+    .wdx-card.orange{border-left-color:#F97316}
+    .wdx-card.red{border-left-color:#EF4444;background:rgba(239,68,68,.06)}
+    .wdx-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
+    .wdx-amt{font-size:1.35rem;font-weight:900;color:#fff}
+    .wdx-loc{font-size:.8rem;color:#FCD34D;font-weight:700}
+    .wdx-age{margin-left:auto;padding:2px 8px;border-radius:999px;font-size:.74rem;font-weight:800;background:rgba(34,197,94,.18);color:#BBF7D0;white-space:nowrap}
+    .wdx-age.orange{background:rgba(249,115,22,.22);color:#FED7AA}
+    .wdx-age.red{background:#EF4444;color:#fff}
+    .wdx-l{display:flex;gap:8px;font-size:.86rem;line-height:1.45;margin:3px 0;min-width:0}
+    .wdx-l > span{flex:0 0 74px;color:#8B95B5;font-size:.78rem}
+    .wdx-l > b{flex:1 1 auto;min-width:0;font-weight:700;color:#E8EEF9;word-break:break-word}
+    .wdx-dest{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;color:#fff;word-break:break-all}
+    .wdx-flags{margin:8px 0 0;padding:0;list-style:none}
+    .wdx-flags li{font-size:.8rem;line-height:1.4;margin:3px 0;padding:5px 8px;border-radius:8px;background:rgba(249,115,22,.12);color:#FED7AA}
+    .wdx-flags li.red{background:rgba(239,68,68,.16);color:#FECACA}
+    .wdx-act{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+    .wdx-act button{min-height:44px;border-radius:12px;font:inherit;font-weight:900;font-size:.9rem;cursor:pointer;border:0}
+    .wdx-pay{background:#22C55E;color:#04210E}
+    .wdx-rej{background:rgba(239,68,68,.15);color:#FCA5A5;border:1px solid rgba(239,68,68,.55)!important}
+    .wdx-act button:disabled{opacity:.5}
+    .wdx-cp{margin-left:6px;padding:1px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#C9D2F0;font-size:.72rem;cursor:pointer}
+    .wdx-aud{margin-top:8px;font-size:.78rem;color:#AEB7D6}
+    .wdx-aud summary{cursor:pointer;color:#93C5FD;font-weight:700}
+    .wdx-aud ol{margin:6px 0 0;padding-left:18px}
+    .wdx-aud li{margin:2px 0;line-height:1.4}
+    .wdx-empty{padding:18px 12px;border-radius:12px;background:rgba(255,255,255,.04);color:#C9D2F0;text-align:center;font-size:.9rem}
   </style>
 
   <div class="modal" id="userModal">
@@ -4454,6 +4679,8 @@ async function loadBadges() {
   if (sd && bd.sum_dep_all != null) sd.textContent = sfmt(bd.sum_dep_all);
   if (sw && bd.sum_wd_paid != null) sw.textContent = sfmt(bd.sum_wd_paid);
   paintHealth(j.board);
+  window._wdxBadges = bd;
+  if (window.wdxPaintHealth) window.wdxPaintHealth(bd.wd_health, bd.wd_pending); // 2026-11-23 : bouton « 💸 Retraits » + bandeau de panne
   document.getElementById('inscritsHead').textContent = (j.badges.inscrits||0) + ' inscrits (total)';
   paintKpi(bd.kpi);
 }
@@ -6653,6 +6880,154 @@ function gmPlayerInit(u) {
   document.querySelectorAll('#gmModal [data-gt]').forEach(b => b.onclick = () => tab(b.dataset.gt));
   $g('btnGm').onclick = () => { $g('gmModal').classList.add('on'); tab(pane); };
   $g('closeGm').onclick = () => { $g('gmModal').classList.remove('on'); clearInterval(poll); };
+})();
+</script>
+  <div class="modal" id="wdxModal">
+    <div class="modal-box">
+      <button class="mini" type="button" id="closeWdx">Retour</button>
+      <h2 style="color:#86EFAC">💸 Retraits</h2>
+      <p class="muted" style="margin:0 0 6px">Un retrait reste dans « À payer » tant que vous (ou le robot des retraits) ne l’avez pas marqué payé ou rejeté. Chaque changement est noté dans son journal.</p>
+      <div class="wdx-warn" id="wdxHealth" hidden></div>
+      <div class="wdx-tabs" id="wdxTabs">
+        <button type="button" data-wt="pending" class="on">À payer<i id="wdxCP">…</i></button>
+        <button type="button" data-wt="paid">Payés<i id="wdxCD">…</i></button>
+        <button type="button" data-wt="rejected">Rejetés<i id="wdxCR">…</i></button>
+        <button type="button" data-wt="history">Historique<i id="wdxCH">…</i></button>
+      </div>
+      <div class="wdx-filt" id="wdxFilt" hidden>
+        <input id="wdxQ" type="search" placeholder="Nom, ID, e-mail, numéro…">
+        <input id="wdxFrom" type="date" title="Du">
+        <input id="wdxTo" type="date" title="Au">
+      </div>
+      <p class="wdx-sum" id="wdxSum">Chargement…</p>
+      <div id="wdxList"></div>
+    </div>
+  </div>
+<script>
+// 2026-11-23 (propriétaire) — page « 💸 Retraits » : À payer (le plus ancien en haut) / Payés / Rejetés / Historique.
+(function () {
+  const $w = id => document.getElementById(id);
+  if (!$w('wdxModal')) return;
+  let tab = 'pending', busy = false, timer = 0, last = null, seq = 0;
+  const m2 = v => (Number(v) || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}).replace(/ | /g, ' ') + ' $';
+  const ageTxt = h => h < 0 ? 'date inconnue' : (h < 1 ? 'moins d’1 h' : (h < 48 ? h + ' h' : Math.floor(h / 24) + ' j ' + (h % 24) + ' h'));
+  const ageCls = h => h >= 48 ? 'red' : (h >= 24 ? 'orange' : '');
+  const ST = {pending: 'En attente', paid: 'Payé', rejected: 'Rejeté', hidden: 'Masqué', offsite: 'Hors site (non débité)', other: 'Autre'};
+  function health(h) {
+    const box = $w('wdxHealth');
+    const errs = (h && h.errors) || [], warns = (h && h.warnings) || [];
+    if (!errs.length && !warns.length) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.className = 'wdx-warn' + (errs.length ? ' bad' : '');
+    box.innerHTML = '<b>⚠️ Attention : la liste peut être incomplète.</b><br>' + errs.concat(warns).map(esc).join('<br>');
+  }
+  window.wdxPaintHealth = function (h, n) {
+    const top = $w('btnWdx'), bar = $w('wdHealthBar');
+    const errs = (h && h.errors) || [], warns = (h && h.warnings) || [];
+    if ($w('wdxTopN')) $w('wdxTopN').textContent = (n == null ? '…' : String(n));
+    if (top) top.className = 'wdx-top' + (errs.length ? ' bad' : (warns.length ? ' warn' : ''));
+    if ($w('wdxTopTxt')) $w('wdxTopTxt').textContent = errs.length ? 'à payer · ⚠️ source en panne, chiffre peut-être faux' : (warns.length ? 'à payer · ⚠️ base lente' : 'à payer');
+    if (bar) {
+      if (!errs.length && !warns.length) { bar.hidden = true; bar.innerHTML = ''; }
+      else { bar.hidden = false; bar.className = 'wdx-warn' + (errs.length ? ' bad' : ''); bar.innerHTML = '<b>⚠️ Retraits : source de données en panne.</b> Le compteur « Retraits en cours » peut être faux. ' + errs.concat(warns).map(esc).join(' '); }
+    }
+  };
+  function audit(r) {
+    const a = r.audit || [];
+    if (!a.length) return '<details class="wdx-aud"><summary>Journal (vide)</summary><ol><li>Aucun changement d’état noté depuis la demande' + (r.state === 'paid' || r.state === 'rejected' ? ' (traité avant la mise en place du journal)' : '') + '.</li></ol></details>';
+    return '<details class="wdx-aud"><summary>Journal (' + a.length + ')</summary><ol>' + a.map(l =>
+      '<li>' + esc(fdate(l.t)) + ' · <b>' + esc(ST[l.from] || l.from) + ' → ' + esc(ST[l.to] || l.to) + '</b> · par ' + esc(l.by || '?') + (l.txid ? ' · tx ' + esc(String(l.txid).slice(0, 14)) + '…' : '') + (l.note ? ' · « ' + esc(l.note) + ' »' : '') + '</li>').join('') + '</ol></details>';
+  }
+  function card(r, i) {
+    const pend = r.state === 'pending';
+    const lvl = r.level || (pend ? ageCls(r.ageH) : '');
+    const who = (r.name || '—') + (r.publicId ? ' · ' + r.publicId : '');
+    let h = '<div class="wdx-card ' + esc(lvl) + '">' +
+      '<div class="wdx-h"><span class="wdx-amt">' + esc(m2(r.amount)) + '</span>' + (r.loc ? '<span class="wdx-loc">' + esc(r.loc) + '</span>' : '') +
+      (pend ? '<span class="wdx-age ' + ageCls(r.ageH) + '">⏱ ' + esc(ageTxt(r.ageH)) + '</span>' : '<span class="wdx-age">' + esc(ST[r.state] || r.status) + '</span>') + '</div>' +
+      '<div class="wdx-l"><span>Joueur</span><b>' + esc(who) + (r.email ? '<br><small style="color:#8B95B5;font-weight:500">' + esc(r.email) + '</small>' : '') + '</b></div>' +
+      '<div class="wdx-l"><span>Méthode</span><b>' + esc(r.method || '—') + '</b></div>' +
+      '<div class="wdx-l"><span>Vers</span><b class="wdx-dest">' + esc(r.dest || '—') + (r.dest ? ' <button type="button" class="wdx-cp" data-cp="' + i + '">Copier</button>' : '') + '</b></div>' +
+      '<div class="wdx-l"><span>Demandé</span><b>' + esc(fdate(r.createdAt)) + '</b></div>';
+    if (r.state === 'paid') h += '<div class="wdx-l"><span>Payé</span><b>' + esc(fdate(r.paidAt)) + ' · par ' + esc(r.by || 'inconnu (avant le journal)') + '</b></div>';
+    if (r.state === 'rejected') h += '<div class="wdx-l"><span>Rejeté</span><b>par ' + esc(r.by || 'inconnu (avant le journal)') + (r.reason ? ' · « ' + esc(r.reason) + ' »' : '') + '</b></div>';
+    h += '<div class="wdx-l"><span>Réf.</span><b style="font-size:.74rem;color:#8B95B5">' + esc(r.id) + '</b></div>';
+    if ((r.flags || []).length) h += '<ul class="wdx-flags">' + r.flags.map(f => '<li class="' + (f.lvl === 'red' ? 'red' : '') + '">' + (f.lvl === 'red' ? '🔴 ' : '🟠 ') + esc(f.txt) + '</li>').join('') + '</ul>';
+    if (pend) h += '<div class="wdx-act"><button type="button" class="wdx-pay" data-pay="' + i + '">✅ Marquer payé</button><button type="button" class="wdx-rej" data-rej="' + i + '">✖ Rejeter</button></div>';
+    return h + audit(r) + '</div>';
+  }
+  async function load(silent) {
+    const my = ++seq;
+    if (!silent) $w('wdxSum').textContent = 'Chargement…';
+    const body = {action: 'wdx', tab};
+    if (tab !== 'pending') { body.q = $w('wdxQ').value; body.from = $w('wdxFrom').value; body.to = $w('wdxTo').value; }
+    let j;
+    try { j = await ajax(body); } catch (e) { j = {ok: false, reason: 'Connexion perdue'}; }
+    if (my !== seq) return;
+    if (!j || !j.ok) {
+      // Jamais une liste vide « muette » : on garde l'ancienne et on dit pourquoi.
+      $w('wdxSum').innerHTML = '<span style="color:#FCA5A5">⚠️ Liste non chargée (' + esc((j && j.reason) || 'erreur') + '). Ce n’est PAS « 0 retrait ». Réessayez.</span>';
+      return;
+    }
+    last = j;
+    const c = j.counts || {};
+    $w('wdxCP').textContent = c.pending ?? 0; $w('wdxCD').textContent = c.paid ?? 0; $w('wdxCR').textContent = c.rejected ?? 0; $w('wdxCH').textContent = c.all ?? 0;
+    health(j.health);
+    window.wdxPaintHealth(j.health, c.pending);
+    const rows = j.rows || [];
+    $w('wdxSum').textContent = tab === 'pending'
+      ? (rows.length ? rows.length + ' à payer · ' + m2(c.pendingSum) + (c.old ? ' · ' + c.old + ' ancien(s) de plus de 48 h' : '') + ' · le plus ancien en haut' : '')
+      : j.total + ' retrait(s)' + (j.total > rows.length ? ' (les ' + rows.length + ' premiers)' : '');
+    $w('wdxList').innerHTML = rows.length ? rows.map(card).join('') :
+      '<div class="wdx-empty">' + (tab === 'pending' ? (((j.health || {}).errors || []).length ? '⚠️ Aucun retrait lu — mais la source est en panne (voir l’avertissement) : ce n’est peut-être pas vrai.' : '✅ Aucun retrait à payer.') : 'Aucun retrait.') + '</div>';
+  }
+  function detail(r) {
+    return 'Montant : ' + m2(r.amount) + (r.loc ? ' (' + r.loc + ')' : '') + '\nVers : ' + (r.method || '?') + ' · ' + (r.dest || '?') +
+      '\nJoueur : ' + (r.name || '—') + (r.publicId ? ' (' + r.publicId + ')' : '') + '\nDemandé le : ' + fdate(r.createdAt) + ' (il y a ' + ageTxt(r.ageH) + ')' +
+      ((r.flags || []).length ? '\n\n' + r.flags.map(f => (f.lvl === 'red' ? '🔴 ' : '🟠 ') + f.txt).join('\n') : '');
+  }
+  async function act(r, a) {
+    if (busy) return;
+    let motif = '';
+    if (a === 'approve') {
+      if (!confirm('MARQUER CE RETRAIT PAYÉ ?\n\n' + detail(r) + '\n\nConfirmez seulement si VOUS avez bien envoyé ce montant à CE numéro / cette adresse.')) return;
+      if (r.ageH >= 48 && !confirm('⚠️ Ce retrait est ANCIEN (' + ageTxt(r.ageH) + ').\nVérifiez qu’il n’a pas déjà été payé avant de confirmer.\n\nContinuer ?')) return;
+    } else {
+      const p = prompt('REJETER CE RETRAIT ?\nLe montant sera rendu au solde du joueur.\n\n' + detail(r) + '\n\nMotif du rejet :', '');
+      if (p === null) return;
+      motif = p;
+    }
+    busy = true;
+    document.querySelectorAll('#wdxList .wdx-act button').forEach(b => { b.disabled = true; });
+    let res;
+    try { res = await ajax({action: 'resolve_wd', id: r.id, act: a, motif, expectAmount: r.amount, expectOpen: 1}); } catch (e) { res = {ok: false, reason: 'Connexion perdue : rien n’est sûr, rafraîchissez avant de recliquer.'}; }
+    busy = false;
+    if (!res.ok) alert(res.reason || 'Échec');
+    else alert(a === 'approve' ? '✅ Noté payé : ' + m2(r.amount) + ' → ' + (r.dest || '') : '✖ Rejeté' + (res.refunded ? ' et remboursé au joueur' : '') + '.');
+    try { bustList(); loadBadges(); } catch (e) { /* ignore */ }
+    load(true);
+  }
+  $w('wdxList').addEventListener('click', ev => {
+    const b = ev.target.closest('button'); if (!b || !last) return;
+    const rows = last.rows || [];
+    if (b.dataset.pay != null) act(rows[+b.dataset.pay], 'approve');
+    else if (b.dataset.rej != null) act(rows[+b.dataset.rej], 'reject');
+    else if (b.dataset.cp != null) { const d = (rows[+b.dataset.cp] || {}).dest || ''; try { navigator.clipboard.writeText(d); b.textContent = 'Copié'; } catch (e) { prompt('Numéro :', d); } }
+  });
+  document.querySelectorAll('#wdxTabs [data-wt]').forEach(b => b.onclick = () => {
+    tab = b.dataset.wt;
+    document.querySelectorAll('#wdxTabs [data-wt]').forEach(x => x.classList.toggle('on', x === b));
+    $w('wdxFilt').hidden = tab === 'pending';
+    $w('wdxList').innerHTML = '';
+    load();
+  });
+  let qt = 0;
+  ['wdxQ', 'wdxFrom', 'wdxTo'].forEach(id => $w(id).addEventListener(id === 'wdxQ' ? 'input' : 'change', () => { clearTimeout(qt); qt = setTimeout(() => load(), 350); }));
+  function open() { $w('wdxModal').classList.add('on'); load(); clearInterval(timer); timer = setInterval(() => { if (tab === 'pending' && !busy && $w('wdxModal').classList.contains('on')) load(true); }, 30000); }
+  if (window._wdxBadges) window.wdxPaintHealth(window._wdxBadges.wd_health, window._wdxBadges.wd_pending); // compteurs déjà reçus avant ce script
+  $w('btnWdx').onclick = open;
+  if ($w('btnWdx2')) $w('btnWdx2').onclick = open;
+  $w('closeWdx').onclick = () => { $w('wdxModal').classList.remove('on'); clearInterval(timer); };
 })();
 </script>
 <?php endif; ?>

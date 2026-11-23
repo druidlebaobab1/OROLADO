@@ -414,6 +414,8 @@ function admin_sb_all(string $table, string $select, string $order, int $pageSiz
       $i--;
       continue;
     }
+    // 2026-11-23 : une page qui ne répond pas est NOTÉE (avant : liste vide ou à moitié, sans rien dire → « 0 retrait »).
+    if (empty($res['ok'])) { admin_sb_note_fail($table, (int) ($res['code'] ?? 0), $from > 0); break; }
     $chunk = is_array($res['rows']) ? $res['rows'] : [];
     foreach ($chunk as $row) {
       if (is_array($row)) $out[] = $row;
@@ -423,6 +425,15 @@ function admin_sb_all(string $table, string $select, string $order, int $pageSiz
     $from += $pageSize;
   }
   return $out;
+}
+
+/** 2026-11-23 — pannes de lecture Supabase de CETTE requête (table → code HTTP, partiel = des pages manquent). */
+function admin_sb_note_fail(string $table, int $code, bool $partial): void {
+  $GLOBALS['ADMIN_SB_FAIL'][$table] = ['code' => $code, 'partial' => $partial, 'at' => date('c')];
+}
+
+function admin_sb_fail_count(): int {
+  return count((array) ($GLOBALS['ADMIN_SB_FAIL'] ?? []));
 }
 
 function admin_log(array &$db, string $adminEmail, string $targetPublicId, string $type, $amount, string $motif): void {
@@ -663,6 +674,7 @@ function admin_collect_local_wds(array $local): array {
   $push = static function ($w, string $fb) use (&$rows, &$seen): void {
     if (!is_array($w)) return;
     $n = admin_wd_norm($w, $fb);
+    $n['_src'] = (string) ($w['_src'] ?? 'log'); // 'log' = trace (journal joueur, autre liste) : pas le registre
     if ($n['id'] === '') return;
     if (abs((float) $n['amount']) < 0.0001) return;
     if (isset($seen[$n['id']])) {
@@ -682,6 +694,7 @@ function admin_collect_local_wds(array $local): array {
     foreach (($local[$k] ?? []) as $w) {
       if (!is_array($w)) continue;
       $i++;
+      $w['_src'] = 'reg'; // registre du serveur (écrit au moment du débit) : c'est LUI qui fait foi pour l'état
       $push($w, $k . '_' . $i);
     }
   }
@@ -719,6 +732,9 @@ function admin_walk_local_wds($node, string $path, callable $push, int $depth): 
     'vault', 'sessions', 'positions', 'orders', 'processedtx', 'admin_logs',
     'pendingregistrations', 'users', 'withdrawals', 'withdrawal_requests',
     'payouts', 'retraits',
+    // 2026-11-23 : retraits des comptes démo affiliés (v3628 : « jamais payés, jamais dans la file admin »). Avant, ce
+    // parcours les ramassait quand même : ils apparaissaient « en cours » (et validables) selon le chargement des profils.
+    'partnerwd',
   ], true)) {
     return;
   }
@@ -1345,6 +1361,18 @@ function admin_wd_norm(array $w, string $fallbackId = ''): array {
     'refunded' => !empty($w['refunded']) || !empty($w['refundedAt']),
     'name' => admin_fill((string) ($w['name'] ?? ''), (string) ($w['beneficiary'] ?? '')),
     'email' => (string) ($w['email'] ?? ''),
+    // 2026-11-23 : page « 💸 Retraits » (date et auteur du paiement, robot, montant local)
+    'approvedAt' => (string) ($w['approvedAt'] ?? $w['paidAt'] ?? ''),
+    'resolvedBy' => (string) ($w['resolvedBy'] ?? (!empty($w['autoPaid']) ? 'robot des retraits' : '')),
+    'autoTry' => (string) ($w['autoTry'] ?? ''),
+    'autoTx' => (string) ($w['autoTx'] ?? $w['txid'] ?? ''),
+    'autoWhy' => (string) ($w['autoWhy'] ?? ''),
+    'suspectFlag' => !empty($w['suspect']),
+    'network' => (string) ($w['network'] ?? ''),
+    'countryCode' => (string) ($w['countryCode'] ?? ''),
+    'locRate' => (float) ($w['locRate'] ?? 0),
+    'locSym' => (string) ($w['locSym'] ?? ''),
+    'locAmount' => (int) ($w['locAmount'] ?? 0),
   ];
 }
 
@@ -1356,15 +1384,35 @@ function admin_wd_status_rank(array $w): int {
 }
 
 function admin_wd_merge_into(array &$dst, array $src): void {
-  foreach (['phone', 'reason', 'name', 'email', 'operator', 'createdAt', 'userId'] as $k) {
+  foreach (['phone', 'reason', 'name', 'email', 'operator', 'createdAt', 'userId', 'approvedAt', 'resolvedBy'] as $k) {
     if (admin_fill((string) ($dst[$k] ?? '')) === '' && admin_fill((string) ($src[$k] ?? '')) !== '') {
       $dst[$k] = $src[$k];
     }
   }
-  if (!empty($src['adminHidden'])) $dst['adminHidden'] = true;
   if (!empty($src['playerHidden'])) $dst['playerHidden'] = true;
   if (!empty($src['refundedAt'])) $dst['refundedAt'] = $src['refundedAt'];
   if (!empty($src['refunded'])) $dst['refunded'] = true;
+  // 2026-11-23 (propriétaire : « les retraits en cours disparaissent tout seuls, puis reviennent ») — avant, l'état le plus
+  // « fort » des copies gagnait : une vieille ligne Supabase « approved » / « silenced » ou une trace du journal joueur
+  // suffisait à faire sortir un retrait EN ATTENTE de la liste (et inversement à le faire revenir). Maintenant le REGISTRE
+  // DU SERVEUR (data, écrit au moment du débit) fait foi ; un désaccord est montré (« _conflict »), jamais appliqué en silence.
+  $dReg = ($dst['_src'] ?? '') === 'reg';
+  $sReg = ($src['_src'] ?? '') === 'reg';
+  if ($dReg && !$sReg) {
+    if (admin_wd_status_rank($src) !== admin_wd_status_rank($dst) && admin_wd_status_rank($src) > 10) $dst['_conflict'] = (string) ($src['status'] ?? '');
+    return;
+  }
+  if ($sReg && !$dReg) {
+    if (admin_wd_status_rank($dst) !== admin_wd_status_rank($src) && admin_wd_status_rank($dst) > 10) $dst['_conflict'] = (string) ($dst['status'] ?? '');
+    $dst['status'] = $src['status'];
+    $dst['adminHidden'] = !empty($src['adminHidden']);
+    $dst['_src'] = 'reg';
+    foreach (['approvedAt', 'resolvedBy', 'autoTry', 'autoTx', 'autoWhy', 'suspectFlag', 'network', 'countryCode', 'locRate', 'locSym', 'locAmount'] as $k) {
+      if (isset($src[$k]) && $src[$k] !== '' && $src[$k] !== 0 && $src[$k] !== 0.0 && $src[$k] !== false) $dst[$k] = $src[$k];
+    }
+    return;
+  }
+  if (!empty($src['adminHidden'])) $dst['adminHidden'] = true;
   if (admin_wd_status_rank($src) > admin_wd_status_rank($dst)) {
     $dst['status'] = $src['status'];
   }
@@ -1417,6 +1465,7 @@ function admin_sb_withdraw_txs(): array {
   $cached = admin_cache_get('wd_tx2', 20);
   if (is_array($cached) && isset($cached['rows']) && is_array($cached['rows'])) return $cached['rows'];
   $byId = [];
+  $f0 = admin_sb_fail_count();
   $add = static function (array $rows) use (&$byId): void {
     foreach ($rows as $r) {
       if (!is_array($r) || !admin_tx_is_withdraw($r)) continue;
@@ -1432,7 +1481,7 @@ function admin_sb_withdraw_txs(): array {
     $add(admin_sb_all('transactions', 'id,user_id,type,amount,note,mode,created_at', 'created_at.desc', 1000, ''));
   }
   $rows = array_values($byId);
-  admin_cache_set('wd_tx2', ['rows' => $rows]);
+  if (admin_sb_fail_count() === $f0) admin_cache_set('wd_tx2', ['rows' => $rows]); // 2026-11-23 : pas de cache d'une réponse en panne
   return $rows;
 }
 
@@ -1518,6 +1567,7 @@ function admin_restore_hidden_wds_once(): void {
     $db['withdrawals'][$i]['playerHidden'] = false;
     if (in_array($st, ['silenced', 'silent', 'hidden', 'deleted'], true)) {
       $db['withdrawals'][$i]['status'] = 'pending';
+      if (function_exists('orolado_wd_audit')) orolado_wd_audit((string) ($w['id'] ?? ''), $st, 'pending', 'réparation automatique (retraits masqués rendus visibles, une seule fois)', ['amount' => (float) ($w['amount'] ?? 0)]);
     }
     $n++;
   }
@@ -1534,14 +1584,48 @@ function admin_restore_hidden_wds_once(): void {
   admin_bust_cache();
 }
 
+/**
+ * 2026-11-23 — état des sources des retraits pour la DERNIÈRE liste calculée (bandeau d'avertissement de l'admin) :
+ * ok = tout a répondu ; sinon « errors » dit quoi (base Supabase injoignable, registre du serveur illisible…).
+ */
+function admin_wd_health(): array {
+  if (!isset($GLOBALS['ADMIN_WD_HEALTH'])) admin_withdrawals();
+  return (array) ($GLOBALS['ADMIN_WD_HEALTH'] ?? ['ok' => true, 'errors' => []]);
+}
+
+function admin_wd_build_health(array $failsBefore): array {
+  $errors = [];
+  $warn = [];
+  $js = admin_json_state();
+  if (empty($js['exists']) || empty($js['readable']) || empty($js['jsonOk'])) {
+    $errors[] = 'Le registre des retraits du serveur (' . (string) ($js['file'] ?? 'orolado.json') . ') est illisible : la liste peut être VIDE ou fausse. Ne vous fiez pas à « 0 ». Détail : ' . (string) ($js['line'] ?? '');
+  } else if (($js['picked'] ?? '') !== '' && ($js['picked'] ?? '') !== ($js['file'] ?? '')) {
+    $errors[] = 'Registre principal illisible : copie de secours « ' . (string) $js['picked'] . ' » affichée (peut être ANCIENNE). Ne validez rien avant que le registre principal revienne.';
+  }
+  $fails = (array) ($GLOBALS['ADMIN_SB_FAIL'] ?? []);
+  $newFails = [];
+  foreach ($fails as $t => $f) if (!isset($failsBefore[$t]) || $failsBefore[$t] !== $f) $newFails[$t] = $f;
+  foreach ($newFails as $t => $f) {
+    $what = ['withdrawals' => 'retraits', 'transactions' => 'opérations', 'profiles' => 'joueurs'][$t] ?? $t;
+    $warn[] = 'Base Supabase : la table « ' . $what . ' » n’a pas répondu' . (!empty($f['partial']) ? ' en entier (liste partielle)' : '') . ' (code ' . (int) ($f['code'] ?? 0) . ').';
+  }
+  if ($warn) $warn[] = 'Les retraits du registre du serveur restent TOUS affichés (ils ne dépendent pas de Supabase) ; seuls les noms / e-mails ou des lignes « hors site » peuvent manquer.';
+  return ['ok' => $errors === [] && $warn === [], 'errors' => $errors, 'warnings' => $warn, 'at' => date('c')];
+}
+
 function admin_withdrawals(): array {
   admin_restore_hidden_wds_once();
-  $cached = admin_cache_get('wd_epoch2', 15);
-  if (is_array($cached)) return $cached;
+  $cached = admin_cache_get('wd_epoch3', 15);
+  if (is_array($cached) && isset($cached['list']) && is_array($cached['list'])) {
+    $GLOBALS['ADMIN_WD_HEALTH'] = (array) ($cached['health'] ?? ['ok' => true, 'errors' => [], 'warnings' => []]);
+    return $cached['list'];
+  }
+  $failsBefore = (array) ($GLOBALS['ADMIN_SB_FAIL'] ?? []);
   $byId = [];
   $byFp = [];
   $localIds = [];
-  $put = static function (array $row) use (&$byId, &$byFp, &$localIds): void {
+  $synth = static fn(string $x): bool => (bool) preg_match('/^(walk_|utx_|gtx_|stx_|withdrawals_|payouts_|retraits_|withdrawal_requests_)/', $x);
+  $put = static function (array $row) use (&$byId, &$byFp, &$localIds, $synth): void {
     $id = admin_fill((string) ($row['id'] ?? ''));
     if ($id === '') return;
     $fp = admin_wd_fingerprint($row);
@@ -1549,11 +1633,9 @@ function admin_withdrawals(): array {
       admin_wd_merge_into($byId[$id], $row);
       return;
     }
-    if ($fp !== '' && isset($byFp[$fp])) {
+    if ($fp !== '' && isset($byFp[$fp]) && isset($byId[$byFp[$fp]])) {
       $existId = $byFp[$fp];
-      $sameId = $existId === $id;
-      $synth = static fn(string $x): bool => (bool) preg_match('/^(walk_|utx_|stx_|withdrawals_|payouts_|retraits_)/', $x);
-      if (!$sameId && !$synth($id) && !$synth($existId)) {
+      if (!$synth($id) && !$synth($existId)) {
         $byId[$id] = $row;
         return;
       }
@@ -1583,7 +1665,11 @@ function admin_withdrawals(): array {
     if (function_exists('orolado_balance_uuid')) { $sb = (string) orolado_balance_uuid($wdLocalDb, $uid); if ($sb !== '') return $sb; }
     return $uid;
   };
-  foreach (admin_collect_local_wds($wdLocalDb) as $w) {
+  // Le registre d'abord, puis les traces : à identifiant égal, c'est la ligne du registre qui est gardée.
+  $localRows = admin_collect_local_wds($wdLocalDb);
+  usort($localRows, static fn($a, $b) => (($a['_src'] ?? '') === 'reg' ? 0 : 1) <=> (($b['_src'] ?? '') === 'reg' ? 0 : 1));
+  foreach ($localRows as $w) {
+    $w['_luid'] = (string) ($w['userId'] ?? '');
     $sbUid = (string) ($w['sbUserId'] ?? '');
     if ($sbUid === '') $sbUid = $wdSbOf((string) ($w['userId'] ?? ''));
     if ($sbUid !== '') $w['userId'] = $sbUid;
@@ -1591,8 +1677,10 @@ function admin_withdrawals(): array {
     $localIds[admin_fill((string) ($w['id'] ?? ''))] = true;
   }
 
+  // 2026-11-23 : une réponse Supabase en panne n'est plus gardée 20 s en cache (avant : liste vide / partielle gardée).
   $sbCached = admin_cache_get('wd_sb2', 20);
   if (!is_array($sbCached)) {
+    $f0 = admin_sb_fail_count();
     $sbCached = admin_sb_all(
       'withdrawals',
       'id,user_id,amount,status,operator,phone,reference,destination,created_at',
@@ -1600,17 +1688,46 @@ function admin_withdrawals(): array {
       1000
     );
     if (!is_array($sbCached)) $sbCached = [];
-    admin_cache_set('wd_sb2', $sbCached);
+    if (admin_sb_fail_count() === $f0) admin_cache_set('wd_sb2', $sbCached);
   }
   foreach ($sbCached as $w) {
     if (!is_array($w)) continue;
-    $put(admin_wd_norm($w));
+    $n = admin_wd_norm($w);
+    $n['_src'] = 'sb';
+    $put($n);
   }
 
   foreach (admin_sb_withdraw_txs() as $tx) {
     if (!is_array($tx)) continue;
     if (!isset($tx['status']) || $tx['status'] === '') $tx['status'] = 'pending';
-    $put(admin_wd_norm($tx, (string) ($tx['id'] ?? '')));
+    $n = admin_wd_norm($tx, (string) ($tx['id'] ?? ''));
+    $n['_src'] = 'stx';
+    $put($n);
+  }
+
+  // 2026-11-23 : une TRACE locale (journal joueur, autre liste) qui n'a pas trouvé son retrait du registre au même
+  // 90 s près (horloges différentes : téléphone / serveur) devenait un 2e retrait « en attente » fantôme — que l'admin
+  // validait par erreur (payé deux fois). Elle est rattachée au retrait du registre du même joueur, même montant, ±24 h.
+  $regByKey = [];
+  foreach ($byId as $id => $w) {
+    if (($w['_src'] ?? '') !== 'reg') continue;
+    $regByKey[(string) ($w['userId'] ?? '') . '|' . number_format((float) ($w['amount'] ?? 0), 2, '.', '')][] = $id;
+  }
+  foreach ($byId as $id => $w) {
+    if (($w['_src'] ?? '') !== 'log') continue;
+    $k = (string) ($w['userId'] ?? '') . '|' . number_format((float) ($w['amount'] ?? 0), 2, '.', '');
+    $t = admin_ts((string) ($w['createdAt'] ?? '')) ?: 0;
+    $match = '';
+    foreach ($regByKey[$k] ?? [] as $rid) {
+      $rt = admin_ts((string) ($byId[$rid]['createdAt'] ?? '')) ?: 0;
+      if ($t > 0 && $rt > 0 && abs($rt - $t) <= 86400) { $match = $rid; break; }
+    }
+    if ($match !== '') {
+      admin_wd_merge_into($byId[$match], $w);
+      unset($byId[$id]);
+      continue;
+    }
+    $byId[$id]['_logOnly'] = true; // gardé (jamais caché en silence), mais signalé : pas dans le registre des retraits
   }
 
   // SÉCURITÉ : un vrai retrait est TOUJOURS enregistré par le serveur (fichier) au moment où il
@@ -1626,11 +1743,24 @@ function admin_withdrawals(): array {
     return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
   });
   $keepIds = admin_stat_visible_user_ids();
-  $list = array_values(array_filter($list, static function ($w) use ($keepIds) {
+  // 2026-11-23 (cause n° 1 des retraits « qui disparaissent ») : un retrait n'était gardé que si son joueur figurait dans
+  // la liste des joueurs. Supabase lent / en panne (liste des joueurs incomplète, gardée 40 s en cache), un joueur sous
+  // un autre identifiant, ou deux comptes avec le même e-mail (un seul gardé) → le retrait EN ATTENTE sortait de
+  // « Retraits en cours » (0), puis revenait quand la base répondait. Maintenant, un retrait du registre du serveur est
+  // TOUJOURS gardé ; seuls les comptes de la maison (admin) restent hors des chiffres.
+  $list = array_values(array_filter($list, static function ($w) use ($keepIds, $localIds) {
     $uid = (string) ($w['userId'] ?? '');
-    return $uid !== '' && isset($keepIds[$uid]);
+    if ($uid !== '' && isset($keepIds[$uid])) return true;
+    if (!isset($localIds[(string) ($w['id'] ?? '')])) return false;
+    $luid = (string) ($w['_luid'] ?? '');
+    if ($uid !== '' && admin_is_house_account($uid)) return false;
+    if ($luid !== '' && $luid !== $uid && admin_is_house_account($luid)) return false;
+    return true;
   }));
-  admin_cache_set('wd_epoch2', $list);
+  $health = admin_wd_build_health($failsBefore);
+  $GLOBALS['ADMIN_WD_HEALTH'] = $health;
+  // Liste calculée pendant une panne : gardée 15 s comme avant, mais AVEC son avertissement (le bandeau reste affiché).
+  admin_cache_set('wd_epoch3', ['list' => $list, 'health' => $health]);
   return $list;
 }
 
@@ -1974,7 +2104,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'wd_epoch3', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

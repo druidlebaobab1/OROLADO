@@ -1068,7 +1068,9 @@ function coffre_autowd_try(string $wdId): array {
     }
     return ['ok' => false, 'why' => (string) ($r['why'] ?? '')];
   }
-  $setRow(['status' => 'approved', 'approvedAt' => date('c'), 'autoPaid' => true, 'txid' => (string) $r['txid'], 'playerHidden' => false, 'adminHidden' => false]);
+  $setRow(['status' => 'approved', 'approvedAt' => date('c'), 'autoPaid' => true, 'resolvedBy' => 'robot des retraits', 'txid' => (string) $r['txid'], 'playerHidden' => false, 'adminHidden' => false]);
+  // 2026-11-23 : journal des retraits (qui a changé l'état : ici le robot, avec la transaction)
+  if (function_exists('orolado_wd_audit')) orolado_wd_audit($wdId, 'pending', 'approved', 'robot des retraits', ['amount' => $amt, 'dest' => $to, 'operator' => 'usdt', 'txid' => (string) $r['txid']]);
   if (function_exists('supabase_admin_headers') && ($h = supabase_admin_headers())) {
     try { supabase_http(supabase_project_url() . '/rest/v1/withdrawals?id=eq.' . rawurlencode($wdId), $h, json_encode(['status' => 'approved']), 'PATCH'); } catch (Throwable $e) { /* ignore */ }
   }
