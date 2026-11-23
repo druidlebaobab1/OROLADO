@@ -1048,7 +1048,7 @@ function sp_bet_public(array $b): array {
   return ['id' => $b['id'], 'mode' => $b['mode'], 'stake' => (float) $b['stake'], 'odd' => (float) $b['odd'], 'pot' => (float) $b['pot'], 'status' => $b['status'], 'win' => (float) ($b['win'] ?? 0), 'at' => (int) $b['at'], 'done' => (int) ($b['done'] ?? 0),
     'sel' => array_map(static fn($s) => ['t' => $s['t'], 'l' => $s['l'], 'odd' => (float) $s['odd'], 'r' => $s['r'] ?? null]
       + (isset($s['mk']) ? ['mk' => (string) $s['mk'], 'k' => (string) $s['k'], 'sp' => (string) ($s['sp'] ?? ''), 'fx' => (string) ($s['fx'] ?? '')] : [])
-      + (!empty($s['lv']) ? ['lv' => 1, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] : []), $b['sel'])] + (!empty($b['live']) ? ['live' => 1] : []) + (!empty($b['bst']) ? ['bst' => (float) $b['bst'], 'bw' => (float) ($b['bw'] ?? 0)] : []) + (!empty($b['code']) ? ['code' => (string) $b['code']] : []); // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
+      + (!empty($s['lv']) ? ['lv' => 1, 'sc' => $s['sc'] ?? null, 'm' => $s['m'] ?? null] : []), $b['sel'])] + (!empty($b['live']) ? ['live' => 1] : []) + (!empty($b['bst']) ? ['bst' => (float) $b['bst'], 'bw' => (float) ($b['bw'] ?? 0)] : []) + (!empty($b['code']) ? ['code' => (string) $b['code']] : []) + (isset($b['co']) ? ['co' => (float) $b['co']] : []); // 2026-10-22 : choix SB → mk / k (le téléphone traduit)
 }
 /**
  * 2026-10-25 (propriétaire : « le joueur doit pouvoir supprimer ses paris terminés ») : les paris TERMINÉS choisis (gagné,
@@ -1144,6 +1144,7 @@ function sp_admin_settle(array $db, string $eid, string $k): array {
 
 /** Règle les coupons prêts. Retour : nombre de coupons gagnés / perdus / payés. */
 function sp_resolve(array $db): array {
+  if (function_exists('sp_co_retry')) { try { sp_co_retry($db); } catch (Throwable $e) { /* jamais bloquant */ } } // 2026-11-23 : cash out pas encore payé
   $res = []; foreach (sp_events() as $e) if ($e['status'] === 'settled') $res[$e['id']] = $e['result'];
   // 2026-10-22 — choix SB (sb_lib.php) : réglés depuis data/sports/sb/results.json (même paiement, même référence unique)
   $sbr = function_exists('sb_results') ? sb_results() : []; $sbAuto = function_exists('sb_config') ? (bool) sb_config()['autosettle'] : true; $sbNow = function_exists('sb_now') ? sb_now() : time();
@@ -1405,3 +1406,90 @@ function sp_old_cleanup_once(int $now = 0): array {
 if (is_file(__DIR__ . '/sb_lib.php')) require_once __DIR__ . '/sb_lib.php';
 // 2026-10-22 — prédictions « Predict » (import JSON, cotes depuis les chances, règlement automatique crypto via Binance)
 if (is_file(__DIR__ . '/pred_lib.php')) require_once __DIR__ . '/pred_lib.php';
+
+/* ===================================================================================================================
+ * 2026-11-23 (propriétaire : « oui pour le cash out ») — CASH OUT (encaisser avant la fin). Matchs automatiques (sb:) seulement.
+ *  Offre = mise × Π(cote jouée / cote actuelle) des choix encore en jeu × Π(cote jouée) des choix déjà gagnés × (1 − SP_CO_MARGE),
+ *  jamais plus que le gain prévu. Aucune offre si : un choix perdu / à moitié réglé, un choix sans cote actuelle (match fermé,
+ *  suspendu, fini pas encore réglé), une prédiction (Predict), argent démo/test, offre < 0,10 $.
+ *  Encaisser : l'offre est RECALCULÉE par le serveur ; un choix EN DIRECT passe par le MÊME contrôle que les paris en direct
+ *  (15 / 25 s, but, carton rouge, VAR, saut du 1X2 → refus) ; à la fin, si l'offre a baissé → refus avec la nouvelle offre
+ *  (jamais plus que l'offre montrée). Écriture sous le verrou des paris (coupon encore « ouvert » → « encaissé ») PUIS paiement
+ *  avec la référence unique « co_<id> » (jamais payé deux fois) ; paiement en échec → « copaid » = 0, repris tout seul ensuite.
+ * =================================================================================================================== */
+const SP_CO_MARGE = 0.08;
+const SP_CO_MIN = 0.10;
+/** Offre pour un coupon (données du fichier) : ['v' => montant, 'live' => [choix en direct relus]] ou null. */
+function sp_co_quote(array $b, ?array $user, int $now): ?array {
+  if (($b['status'] ?? '') !== 'open' || ($b['mode'] ?? '') !== 'real' || isset($b['co']) || !function_exists('sb_pick')) return null;
+  $f = 1.0; $pend = 0; $live = [];
+  foreach ((array) ($b['sel'] ?? []) as $sl) {
+    if (!str_starts_with((string) ($sl['ev'] ?? ''), 'sb:')) return null;
+    $r = $sl['r'] ?? null;
+    if ($r === 'void') continue;
+    if ($r === 'won') { $f *= (float) $sl['odd']; continue; }
+    if ($r !== null) return null; // perdu, moitié gagnée / perdue
+    $p = sb_pick((string) $sl['ev'], (string) $sl['k'], $user, $now);
+    if (empty($p['ok']) || empty($p['sel']['odd']) || (float) $p['sel']['odd'] < 1.01) return null;
+    $f *= (float) $sl['odd'] / (float) $p['sel']['odd']; $pend++;
+    if (!empty($p['live'])) $live[] = $p['sel'];
+  }
+  if ($pend === 0) return null; // tout est déjà joué : le règlement normal arrive
+  $v = sp_floor2(min((float) ($b['pot'] ?? PHP_FLOAT_MAX), (float) $b['stake'] * $f * (1 - SP_CO_MARGE)));
+  return $v >= SP_CO_MIN ? ['v' => $v, 'live' => $live] : null;
+}
+/** spCashQ {ids} → {ok, q: {id: montant}} (seulement les coupons du joueur qui ont une offre). */
+function sp_co_quotes(array $user, array $ids, int $now = 0): array {
+  $now = $now ?: time(); $uid = (string) ($user['id'] ?? '');
+  $want = []; foreach (array_slice($ids, 0, 30) as $i) if (is_string($i) && preg_match('/^sp_[a-f0-9]{6,40}$/', $i)) $want[$i] = 1;
+  $q = [];
+  if (!$want) return ['ok' => true, 'q' => $q];
+  foreach ((array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []) as $b) {
+    if (!isset($want[(string) ($b['id'] ?? '')]) || (string) ($b['uid'] ?? '') !== $uid) continue;
+    $o = sp_co_quote($b, $user, $now); if ($o) $q[(string) $b['id']] = $o['v'];
+  }
+  return ['ok' => true, 'q' => $q];
+}
+/** spCash {id, amt} : encaisse au plus le montant montré. */
+function sp_cash_out(array $db, array $user, string $id, float $amt, int $now = 0): array {
+  $now = $now ?: time(); $uid = (string) ($user['id'] ?? '');
+  if ($uid === '' || !preg_match('/^sp_[a-f0-9]{6,40}$/', $id) || !($amt >= SP_CO_MIN)) return ['ok' => false, 'reason' => 'param'];
+  $find = static function () use ($id, $uid): ?array { foreach ((array) (sp_with('bets.json', static fn(array &$s) => $s['b'] ?? []) ?: []) as $b) if ((string) ($b['id'] ?? '') === $id && (string) ($b['uid'] ?? '') === $uid) return $b; return null; };
+  $b = $find(); if (!$b) return ['ok' => false, 'reason' => 'param'];
+  $o = sp_co_quote($b, $user, $now); if (!$o) return ['ok' => false, 'reason' => 'coOff'];
+  if ($o['v'] < round($amt, 2) - 0.004) return ['ok' => false, 'reason' => 'coChg', 'amt' => $o['v']];
+  if ($o['live'] && function_exists('sb_live_accept')) { // même contrôle anti-triche que les paris en direct
+    $pk = $o['live']; $lr = sb_live_accept($pk, 'any', $user, $now);
+    if ($lr !== null) return ['ok' => false, 'reason' => 'susp'];
+    $b = $find(); if (!$b) return ['ok' => false, 'reason' => 'param'];
+    $o = sp_co_quote($b, $user, $now); if (!$o) return ['ok' => false, 'reason' => 'coOff'];
+    if ($o['v'] < round($amt, 2) - 0.004) return ['ok' => false, 'reason' => 'coChg', 'amt' => $o['v']];
+  }
+  $pay = sp_floor2(min($o['v'], round($amt, 2)));
+  $done = sp_with('bets.json', static function (array &$s) use ($id, $uid, $pay, $now) {
+    foreach ((array) ($s['b'] ?? []) as $i => $x) {
+      if ((string) ($x['id'] ?? '') !== $id || (string) ($x['uid'] ?? '') !== $uid) continue;
+      if (($x['status'] ?? '') !== 'open' || isset($x['co'])) return ['ok' => false, 'reason' => 'coOff'];
+      $s['b'][$i]['co'] = $pay; $s['b'][$i]['copaid'] = 0; $s['b'][$i]['win'] = $pay; $s['b'][$i]['done'] = $now;
+      $s['b'][$i]['status'] = $pay + 1e-9 >= (float) $x['stake'] ? 'won' : 'lost';
+      return ['ok' => true, 'b' => $s['b'][$i]];
+    }
+    return ['ok' => false, 'reason' => 'param'];
+  });
+  if (!is_array($done) || empty($done['ok'])) return is_array($done) ? $done : ['ok' => false, 'reason' => 'busy'];
+  $bal = casino_credit($db, $uid, 'real', $pay, 'co_' . $id);
+  if ($bal !== null) sp_with('bets.json', static function (array &$s) use ($id) { foreach ((array) ($s['b'] ?? []) as $i => $x) if ((string) ($x['id'] ?? '') === $id) { $s['b'][$i]['copaid'] = 1; return true; } return false; });
+  if (function_exists('casino_stat')) { try { casino_stat('sports', 'real', (float) $done['b']['stake'], $pay, $uid, is_array($db['users'][$uid] ?? null) ? $db['users'][$uid] : null); } catch (Throwable $e) { /* jamais bloquant */ } }
+  return ['ok' => true, 'amt' => $pay, 'bal' => $bal, 'bet' => sp_bet_public($done['b'])];
+}
+/** Cash out dont le paiement a échoué : repris (même référence unique « co_<id> » : jamais payé deux fois). */
+function sp_co_retry(array $db): int {
+  $todo = (array) (sp_with('bets.json', static function (array &$s) { $t = []; foreach ((array) ($s['b'] ?? []) as $x) if (isset($x['co']) && empty($x['copaid'])) $t[] = [(string) $x['id'], (string) $x['uid'], (float) $x['co']]; return $t; }) ?: []);
+  $n = 0;
+  foreach (array_slice($todo, 0, 20) as [$id, $uid, $v]) {
+    if (casino_credit($db, $uid, 'real', $v, 'co_' . $id) === null) continue;
+    sp_with('bets.json', static function (array &$s) use ($id) { foreach ((array) ($s['b'] ?? []) as $i => $x) if ((string) ($x['id'] ?? '') === $id) { $s['b'][$i]['copaid'] = 1; return true; } return false; });
+    $n++;
+  }
+  return $n;
+}
