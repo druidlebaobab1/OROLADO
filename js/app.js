@@ -5447,6 +5447,9 @@
     }
     var hint = m ? m.querySelector('.hint-min') : null;
     if (hint) { var dmS = String(t('depositMin') || ''); hint.textContent = (dmS && dmS !== 'depositMin' && /5/.test(dmS)) ? dmS.replace('5', String(min)) : 'Minimum $\u00a0\u00a0' + min; }
+    // 2026-11-23 (propriétaire : « Recharger défile, la crypto est cachée ») : les cases GeniusPay (carte + Wave) arrivent
+    // APRÈS l'ouverture → on réajuste la taille à ce moment-là aussi (avant : seulement à l'ouverture → ça défilait).
+    try { if (m && m.classList.contains('active')) fitSheet('depositModal'); } catch (eF) { /* ignore */ }
   }
   async function refreshGpOn() {
     if (isGuest() || !user()) return;
@@ -8351,7 +8354,8 @@
     var kids = [].slice.call(box.children).filter(function (k) { return !k.classList.contains('btn-close'); });
     kids.forEach(function (k) { k.style.removeProperty('zoom'); });
     var z = parseFloat(getComputedStyle(kids[0] || box).zoom) || 1, n = 0;
-    while (box.scrollHeight > box.clientHeight + 1 && z > 0.8 && n < 20) {
+    // 2026-11-23 : jusqu’à 0,66 (avant 0,8 : avec les cases GeniusPay, la crypto restait cachée en bas)
+    while (box.scrollHeight > box.clientHeight + 1 && z > 0.66 && n < 30) {
       z = Math.round((z - 0.02) * 100) / 100; n++;
       kids.forEach(function (k) { k.style.setProperty('zoom', String(z), 'important'); });
     }
