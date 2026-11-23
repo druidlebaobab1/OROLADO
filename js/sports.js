@@ -799,7 +799,7 @@
     });
     box.querySelectorAll('.sp2-x').forEach(function (bt) { bt.addEventListener('click', function () { if (sending) return; slip.splice(+bt.getAttribute('data-i'), 1); render(); }); });
     // 2026-11-23 (propriétaire) : toucher un choix du coupon ouvre directement la page de son match
-    box.querySelectorAll('[data-gofx]').forEach(function (el) { el.addEventListener('click', function () { if (sending) return; openMatch(el.getAttribute('data-gofx')); }); });
+    box.querySelectorAll('[data-gofx]').forEach(function (el) { el.addEventListener('click', function () { openMatch(el.getAttribute('data-gofx')); }); });
     var inp = $('spStake');
     var total = function () { return each ? slip.reduce(function (a, z) { return a + stOf(z); }, 0) : stake; };
     var upd = function () {
@@ -922,7 +922,9 @@
       p.firstChild.style.setProperty('animation', 'sp2Sweep 1.3s linear 0s infinite normal none running', 'important');
     } else { if (p) p.remove(); sendT0 = 0; g.classList.remove('okd', 'kod'); }
     setTx($('spGoT'), on ? (live ? NX().liveWait : x.sending) : mode() === 'single' && slip.length > 1 ? fmt(x.placeN, { n: slip.length }) : x.placeB);
-    box.querySelectorAll('.sp2-page button:not(#spGo), .sp2-page input').forEach(function (b) { b.disabled = on; });
+    // 2026-11-23 (propriétaire : « pendant le chargement, tout est verrouillé ») : pendant l'envoi, seuls la mise et le retrait
+    // des choix restent figés (le pari ne change pas en route) ; voir le match, charger / télécharger un coupon : libres.
+    box.querySelectorAll('.sp2-page button:not(#spGo):not(.pz-cload):not(.pz-cdl):not([data-gofx]), .sp2-page input').forEach(function (b) { if (!b.closest('.pz-cin')) b.disabled = on; });
   }
   // fin de l'envoi : barre pleine + « ✓ Pari enregistré ! » (≈ 0,35 s) ou « ✕ Pari refusé » (≈ 0,7 s) ; le bouton reste désactivé
   function busyEnd(ok) {
