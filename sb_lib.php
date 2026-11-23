@@ -2764,6 +2764,18 @@ function sb_live_tick(int $now = 0): array {
   return $done;
 }
 /** Relecture FORCÉE de /odds/live (pari en direct, après les 5 s) : attend le lecteur en cours ; rien si lu il y a ≤ 1 s. */
+/**
+ * 2026-11-23 (propriétaire : « quand un match est cadenassé, tous les autres le sont aussi ») — quand personne ne regardait
+ * le direct, les cotes n'étaient plus relues : le premier joueur voyait des cotes trop vieilles → TOUS les matchs cadenassés
+ * 10 à 20 s (jusqu'à la relecture faite après sa réponse). Maintenant, cotes trop vieilles → relues AVANT de répondre
+ * (une lecture, partagée par tout le monde ; budget du jour respecté).
+ */
+function sb_live_fresh_first(int $now): void {
+  $L = sb_live_data();
+  if (empty($L['fx'])) return;
+  if ($now - (int) ($L['at'] ?? 0) <= sb_live_stale($now) - 3) return;
+  try { sb_live_refresh_now($now); } catch (Throwable $e) { /* jamais bloquant */ }
+}
 function sb_live_refresh_now(int $now): bool {
   if (!sb_has_key() || !sb_live_budget_ok($now)) return false;
   $lk = @fopen(sb_dir() . DIRECTORY_SEPARATOR . 'live.lock', 'c');
@@ -2977,6 +2989,7 @@ function sb_live_list(?array $user, int $now = 0): array {
   $now = $now ?: sb_now();
   if (!sb_visible($user) || !sb_live_visible($user)) return ['ok' => false, 'reason' => 'off'];
   sb_live_demand($now); sb_after_response();
+  sb_live_fresh_first($now);
   $L = sb_live_data(); $cfg = sb_config();
   $fx = []; $used = [];
   foreach ((array) ($L['fx'] ?? []) as $id => $r) {
@@ -2999,6 +3012,7 @@ function sb_live_rules(): string {
 /** sbMatch d'un match en direct : marchés du direct (s = suspendu), tracker (événements, statistiques). null = pas en direct. */
 function sb_live_match(?array $user, string $id, int $now): ?array {
   if (!sb_live_visible($user)) return null;
+  if (isset(sb_live_data()['fx'][$id])) sb_live_fresh_first($now);
   $L = sb_live_data(); $cfg = sb_config();
   $v = sb_live_view($id, $L, $now, $cfg);
   if (!$v) return null;
@@ -3082,7 +3096,7 @@ function sb_live_check(array &$picked, string $acc, ?array $user, int $now, arra
   // 3 points ou plus depuis le début du pari (action dangereuse, penalty, but pas encore noté…) → refus, quel que soit le réglage
   foreach ($base as $id => $pa) {
     $pb = sb_live_p1x2((array) ($L['od'][$id]['r1'] ?? []));
-    if ($pa && $pb) foreach ($pb as $k => $pv) if (isset($pa[$k]) && abs($pv - $pa[$k]) >= 0.03) {
+    if ($pa && $pb) foreach ($pb as $k => $pv) if (isset($pa[$k]) && abs($pv - $pa[$k]) >= 0.045) { // 2026-11-23 : 4,5 points (avant 3 : les combinés de plusieurs matchs en direct étaient presque toujours refusés ; un but = 10 points et plus)
       foreach ($picked as $p) if (!empty($p['lv']) && str_starts_with((string) $p['ev'], 'sb:foot:' . $id . ':')) return ['ok' => false, 'reason' => 'susp', 'why' => 'event', 'ev' => $p['ev']];
     }
   }

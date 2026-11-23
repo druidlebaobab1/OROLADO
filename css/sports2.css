@@ -1589,3 +1589,11 @@ html:root body #casinoModal .sp2 .pz-qsc .pz-mcard{overflow:hidden}
 html:root body #casinoModal .sp2 .pz-qsc .pz-mt2{margin:0!important;padding:12px 14px 8px!important;text-align:start;font:700 15px/1.25 var(--sp2-font)!important;color:#fff!important}
 html:root body #casinoModal .sp2 .pz-qsc .pz-rad{padding-inline:14px!important}
 html:root body #casinoModal .sp2 .pz-qsc .pz-1c{padding:12px 14px!important}
+/* 2026-11-23 (d) : titre « Coupon » + pastille du nombre de choix ; « Mise » jamais coupé dans sa case */
+html:root body #casinoModal .sp2 .pz-bar .pz-bt.pz-btc{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;text-align:start!important}
+html:root body #casinoModal .sp2 .pz-cnt{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:#E0A82E;color:#1A1205;font:900 13px/1 var(--sp2-font);font-style:normal}
+html:root body #casinoModal .sp2 .sp2-slip .sp2-inw:not(.sm){justify-content:center!important;gap:1px!important;padding-top:3px!important;padding-bottom:3px!important;overflow:visible!important}
+html:root body #casinoModal .sp2 .sp2-slip .sp2-inw:not(.sm) .sp2-inl{display:block!important;line-height:1.15!important;margin:0!important;overflow:visible!important}
+html:root body #casinoModal .sp2 .sp2-slip .sp2-inw:not(.sm) .sp2-inl *{line-height:1.15!important}
+html:root body #casinoModal .sp2 .sp2-slip .sp2-inw:not(.sm) .sp2-inv{line-height:1.1!important;margin:0!important}
+html:root body #casinoModal .sp2 .sp2-slip .sp2-inw:not(.sm) input{height:22px!important;line-height:22px!important;padding:0!important}

@@ -3291,7 +3291,9 @@
   // ticket : en-tête = flèche retour · « Coupon » · nombre · Tout supprimer
   function slipHead() {
     var x = XX(), clr = slip.length && !lastBet && !lastBets ? '<button type="button" class="sp2-clear" id="spCpClear">' + IC.trash + '<span class="fit">' + esc(x.clearAll) + '</span></button>' : '';
-    return bar(NX().nSlip + (slip.length && !lastBet && !lastBets ? ' · ' + slip.length : ''), clr);
+    // 2026-11-23 (propriétaire : « Coupon · 1, ce n'est pas stylé ») : « Coupon » + pastille ronde avec le nombre de choix
+    var h = bar(NX().nSlip, clr);
+    return slip.length && !lastBet && !lastBets ? h.replace('class="pz-bt"', 'class="pz-bt pz-btc"').replace('</b>', '</b><em class="pz-cnt" dir="ltr">' + slip.length + '</em>') : h;
   }
   function backToList() { lastBet = null; lastBets = null; go(slipFrom && slipFrom !== 'slip' ? slipFrom : 'home'); }
   // code de coupon : « Charger un code » (ticket vide, menu) ; « Partager le code » seulement dans le Menu (ticket sans bouton en plus)
