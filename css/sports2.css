@@ -1621,3 +1621,6 @@ html:root body #casinoModal .sp2 .pz-rhero{padding:2px 2px 2px!important;overflo
    plus de place en bas de chaque page dans l'application installée (la barre y est plus haute à cause du bas de l'écran) */
 html.ios-app body #casinoModal .sp2 .pz-page{padding-bottom:88px!important}
 html.ios-app body #casinoModal .sp2.pz-sbon .pz-page,html.ios-app body #casinoModal .sp2 .pz-sbon .pz-page{padding-bottom:144px!important}
+/* 2026-11-23 (propriétaire : « les 3 points doivent être debout, comme les grandes plateformes ») */
+html:root body #casinoModal .sp2 .pz-qset .pz-kebab{width:20px;height:20px;fill:currentColor;stroke:none;display:block}
+html:root body #casinoModal .sp2 .pz-star.pz-qset{display:inline-grid;place-items:center}

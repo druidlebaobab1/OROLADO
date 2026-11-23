@@ -2350,7 +2350,10 @@
       '<div class="pz-mcard"><p class="pz-mt2">' + esc(xx.accT) + '</p>' + [['none', xx.accNone], ['up', xx.accUp], ['any', xx.accAny]].map(function (o) {
         return '<label class="pz-rad"><input type="radio" name="pzQAcc" value="' + o[0] + '"' + (acc === o[0] ? ' checked' : '') + '><i></i><span dir="auto">' + esc(o[1]) + '</span></label>'; }).join('') + '</div>' +
       '<button type="button" class="pz-qsok"><span class="fit">OK</span></button></div>';
-    var close = function () { el.classList.add('out'); setTimeout(function () { el.remove(); if (view === 'match') { renderMatch(); } }, 160); };
+    // 2026-11-23 (propriétaire : « OK fait bouger / vibrer la page ») : on ne redessine la page du match QUE si le pari en 1 clic
+    // a changé, et à la même position (avant : tout était redessiné à chaque OK → le terrain et les cotes sautaient).
+    var one0 = oneOn();
+    var close = function () { el.classList.add('out'); setTimeout(function () { el.remove(); if (view === 'match' && oneOn() !== one0) { var mbQ = mbox(), y = mbQ ? mbQ.scrollTop : 0; renderMatch(); if (mbQ) mbQ.scrollTop = y; } }, 160); };
     el.addEventListener('click', function (e) { if (e.target === el || e.target.closest('.pz-qsok')) close(); });
     box.appendChild(el);
     var c1 = el.querySelector('#pzQ1c'), s1 = el.querySelector('#pzQ1cIn');
@@ -2592,7 +2595,7 @@
     var f = curFx(), l = f ? (sbLg(f.lg, spOf(f)) || (sbM && sbM.fx ? { n: sbM.fx.lgn || '', c: sbM.fx.c || '', f: '' } : null)) : null;
     var fv = favs(), isF = f && fv.f.indexOf(f.id) > -1;
     var star = f ? '<button type="button" class="pz-star' + (isF ? ' on' : '') + '" data-fav="' + esc(f.id) + '" aria-pressed="' + !!isF + '" aria-label="' + esc(SX().fav) + '">' + (isF ? '★' : '☆') + '</button>' : '';
-    if (f && !ctx.guest) star += '<button type="button" class="pz-star pz-qset" data-qset="1" aria-label="⋯">⋯</button>'; // 2026-11-23 (b) : réglages rapides
+    if (f && !ctx.guest) star += '<button type="button" class="pz-star pz-qset" data-qset="1" aria-label="⋮"><svg class="pz-kebab" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5.2" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="12" cy="18.8" r="2.1"/></svg></button>'; // 2026-11-23 (b) : réglages rapides
     // 2026-11-12 (propriétaire, comme 1xBet) : en DIRECT aussi, une ligne fine en haut dit le championnat (drapeau · pays · compétition)
     var lgLine = f && f.live ? '<div class="pz-lgl">' + (l ? lgImg(l) : '') + '<span dir="auto">' + esc(spName({ s: spOf(f) })) + ' · ' + (l && l.c ? esc(l.c) + ' · ' : '') + '<b>' + esc(l && l.n ? l.n : spName({ s: spOf(f) })) + '</b></span>' + star + '</div>' : '';
     shell((f && f.live ? lgLine : bar(l && l.n ? l.n : spName({ s: f ? spOf(f) : 'foot' }), star, l && l.c ? l.c : '')) + '' + (oneOn() ? '<button type="button" class="pz-1bar" data-go="menu"><span dir="auto">⚡ ' + esc(T18('sb1clk', 'One-click bet')) + ' · <b>' + esc(money(oneSt())) + '</b></span></button>' : '') + '<div id="pzMh"></div><div id="pzTrk"></div><div id="pzForm"></div><div class="pz-gch pz-hs" id="pzG"></div>' + mqHtml() + '<div id="pzMk" class="pz-mks"></div>'); // (propriétaire : aucune règle écrite dans la page du match)
