@@ -139,6 +139,8 @@ function ensure_admin_user(array &$db, string $email, string $hash): array {
 
 // v2408 — Connexion Google : identifiant PUBLIC du bouton (le même que js/config.js GOOGLE_CLIENT_ID).
 const OROLADO_GOOGLE_CLIENT_ID = '549155545150-2efbga9m4me35us0a70q3tkrfbhq7sjn.apps.googleusercontent.com';
+const OROLADO_DEMO_REFILL_UNDER = 100000; // 2026-11-23 : démo rechargée à 1 000 000 $ dès qu'elle passe sous 100 000 $
+const OROLADO_DEMO_REFILL_GAP = 60;        // au plus une recharge par minute (pas d'attente de 24 h)
 
 /**
  * Demande à Google si le ticket (jeton d'identité) est authentique : Google vérifie la signature et
@@ -2723,18 +2725,21 @@ if ($action === 'me') {
   // jamais touché). Le téléphone affiche « Compte démo rechargé ».
   $demoRefilled = false;
   $demoRefillWait = 0;
-  if (!$resetDemo && $demoNow < 1000) {
+  // 2026-11-23 (propriétaire : « des joueurs m'écrivent pour recharger la démo ») : sous 100 000 $ (avant 1 000 $), la démo
+  // revient à 1 000 000 $ toute seule, SANS attente de 24 h (avant : une fois par jour, sans rien dire → messages à l'admin).
+  // Seulement quand aucun trade démo n'est en cours. Argent fictif : le réel n'est jamais touché.
+  if (!$resetDemo && $demoNow < OROLADO_DEMO_REFILL_UNDER) {
     $demoOpen = false;
     foreach (($db['orders'] ?? []) as $oD) {
       if (($oD['userId'] ?? '') === $uid && ($oD['status'] ?? '') === 'open' && ($oD['mode'] ?? 'demo') !== 'real') { $demoOpen = true; break; }
     }
     $sinceRefill = time() - (int) ($me['demoRefillAt'] ?? 0);
-    if (!$demoOpen && $sinceRefill >= 86400) {
+    if (!$demoOpen && $sinceRefill >= OROLADO_DEMO_REFILL_GAP) {
       $resetDemo = true;
       $demoRefilled = true;
       $demoNow = 1000000;
     } else if (!$demoOpen) {
-      $demoRefillWait = 86400 - $sinceRefill;
+      $demoRefillWait = OROLADO_DEMO_REFILL_GAP - $sinceRefill;
     }
   }
   // Écrit seulement si quelque chose a changé : solde, démo à recharger, ou « vu en ligne »

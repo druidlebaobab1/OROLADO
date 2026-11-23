@@ -450,8 +450,19 @@
   function guestNote() { var x = X(); if (D6.App && D6.App.toast) D6.App.toast(x.guestBet, 'info'); }
   // ---------- MES PARIS ----------
   function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString(loc(), { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }); }
+  /* 2026-11-23 (propriétaire : « au fur et à mesure du match, ça coche ») : choix déjà SÛR pendant le match (le score ne peut plus
+     revenir en arrière) : plus de N,5 buts atteint → gagné ; moins de N,5 dépassé → perdu ; les 2 équipes marquent → oui gagné /
+     non perdu ; idem pour les buts d'une équipe. Sinon : rien (on attend). */
+  function selSure(s) {
+    if (!s || !s.mk || (s.r && s.r !== 'open') || !Array.isArray(s.cs)) return '';
+    var h = +s.cs[0] || 0, a = +s.cs[1] || 0, m = /^(ou|tth|tta):(\d+\.5)$/.exec(String(s.mk)), k = String(s.k || '');
+    if (m) { var g = m[1] === 'ou' ? h + a : m[1] === 'tth' ? h : a, ln = +m[2]; if (g > ln) return k === 'O' ? 'won' : k === 'U' ? 'lost' : ''; return ''; }
+    if (s.mk === 'btts' && h > 0 && a > 0) return k === 'Y' ? 'won' : k === 'N' ? 'lost' : '';
+    return '';
+  }
   function selRow(s) {
     var x = XX(), r = s.r || 'open', e = evByTitle(s.t), right = '';
+    var sure = selSure(s); if (sure) r = sure; // coché tout de suite (vert ✓ / rouge ✕) dès que c'est sûr
     if (r === 'open' && e) {
       if (e.open && e.start > nowS()) right = '<span class="sp2-cd' + (e.start - nowS() < 3600 ? ' soon' : '') + '" data-ts="' + e.start + '">' + IC.clock + '<span class="fit">' + cd(e.start - nowS()) + '</span></span>';
       else if (e.status !== 'settled') right = '<span class="sp2-cd gone"><span class="fit">' + esc(x.inPlay) + '</span></span>';
@@ -3062,7 +3073,7 @@
     el.innerHTML = '<span class="pz-bi">' + ({ goal: '⚽', red: '<i class="pz-card r"></i>', ht: '⏸', end: '🏁' }[it[0]] || '') + '</span><span class="pz-btx"><b dir="auto">' + esc(it[1]) + '</b><small dir="auto">' + esc(it[2]) + '</small></span>';
     box.appendChild(el);
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
-    setTimeout(function () { el.classList.remove('on'); setTimeout(function () { el.remove(); banNext(); }, 350); }, 3800);
+    setTimeout(function () { el.classList.remove('on'); setTimeout(function () { el.remove(); banNext(); }, 350); }, 3000);
   }
 
   // ---------- toucher une cote : ajoutée / retirée du coupon sans rien redessiner (un seul choix par match) ----------
@@ -3274,8 +3285,9 @@
     if (Array.isArray(s.fs)) return '<em class="pz-lvt fin">' + p(s.fs) + '<small>' + esc(n.ftS || n.ft) + '</small></em>';
     var sc = Array.isArray(s.cs) ? s.cs : Array.isArray(s.sc) ? s.sc : [0, 0], m = Array.isArray(s.cs) ? s.cm : s.m;
     // 2026-11-23 (propriétaire : « Mes paris en direct ») : ✓ vert = gagnant si le match finissait maintenant, ✕ rouge = perdant
-    var cw = s.cw === 'won' ? '<i class="pz-cw won" aria-hidden="true">✓</i>' : s.cw === 'lost' ? '<i class="pz-cw lost" aria-hidden="true">✕</i>' : '';
-    return '<em class="pz-lvt' + (s.cw ? ' cw-' + esc(s.cw) : '') + '">' + cw + p(sc) + (m != null && m !== '' ? '<small dir="ltr"><i class="pz-lvd"></i>' + esc(String(m)) + '’</small>' : '') + '</em>';
+    // 2026-11-23 (propriétaire : « ça sert à quoi ? ») : plus de ✓ / ✕ « si le match finissait maintenant » collé au score
+    // (confus) ; le rond à gauche du choix se coche quand le choix est SÛR (selSure)
+    return '<em class="pz-lvt">' + p(sc) + (m != null && m !== '' ? '<small dir="ltr"><i class="pz-lvd"></i>' + esc(String(m)) + '’</small>' : '') + '</em>';
   }
   /* 2026-11-23 (propriétaire : « oui pour le cash out ») — offres d'encaissement des coupons ouverts (spCashQ), relues avec
      « Mes paris » ; 1er toucher = « Confirmer 9,20 $ », 2e toucher (dans les 4 s) = encaisser (spCash, contrôle du direct côté
@@ -3328,7 +3340,8 @@
       var show = multi ? bt.sel.slice(0, 3) : bt.sel;
       var sels = show.map(function (s) {
         var e = s.mk ? null : evByTitle(s.t);
-        var rr = s.r === 'won' || s.r === 'hwon' ? ' won' : s.r === 'lost' || s.r === 'hlost' ? ' lost' : s.r === 'void' ? ' void' : '';
+        var sr = selSure(s) || s.r; // 2026-11-23 : coché dès que c'est sûr pendant le match
+        var rr = sr === 'won' || sr === 'hwon' ? ' won' : sr === 'lost' || sr === 'hlost' ? ' lost' : sr === 'void' ? ' void' : '';
         return '<span class="pz-bs1' + rr + '"><span class="pz-bs1t"><b dir="auto">' + esc(selLbl(s)) + '</b><small dir="auto">' + esc(e ? trT(e) : s.t) + '</small></span>' + (s.fs || s.cs || s.lv ? liveChip(s) : '') + '</span>';
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + (delSel[id] ? ' pz-dchk' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' + '<i class="pz-dck" aria-hidden="true"></i>' +
