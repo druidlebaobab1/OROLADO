@@ -689,7 +689,7 @@
         // 2026-11-24 (propriétaire, modèle C) : match fini → « TERMINÉ » en petit SOUS le choix (jamais caché par un long nom)
         var fsTxt = finR ? '<small class="sp-rcpt-end">' + esc(NX().ft || NX().ftS || 'FT') + '</small>' : !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? '<span class="mn" dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
 
-        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + mLine + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + mLine + '</small><b>' + esc(s.mk ? optLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>$' + m2(bt.stake) + '</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
       (bt.bst ? '<p class="bst"><span>' + esc(bstLabel(bt)) + '</span><b>' + (st === 'won' ? '+$' + m2(bt.bw || 0) + '' : st === 'open' ? '+$' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + '' : '—') + '</b></p>' : '') +
@@ -701,7 +701,7 @@
     // dans Paris : le reçu est posé DANS la fenêtre du casino (le bouton retour du téléphone le ferme, sans fermer Paris)
     var host = box && box.isConnected && box.closest('#casinoModal') ? box.closest('#casinoModal') : document.body;
     host.appendChild(el);
-    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, liveL: NX().live, finL: NX().ft || NX().ftS, ftS: NX().ft })); } catch (eP) { /* ignore */ }
+    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: optLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, liveL: NX().live, finL: NX().ft || NX().ftS, ftS: NX().ft })); } catch (eP) { /* ignore */ }
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
     var close = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); }, 220); };
     el.addEventListener('click', function (e) { if (e.target === el) close(); });
@@ -1333,6 +1333,8 @@
   }
   function sep() { return lg() === 'fr' ? ' : ' : ': '; }
   // choix d'un pari (Mes paris, reçus, ticket) : traduit si mk / k sont là, sinon l'ancien libellé (inchangé)
+  // 2026-11-24 (propriétaire) : sur le REÇU, l'option seule (« Plus de 3,5 », « Brighton U21 »), sans le nom du type de pari
+  function optLbl(s) { if (s && s.mk) { var tm = teams(s.t) || [s.t, '']; return sbOutL(s.mk, s.k, tm[0], tm[1]); } return trO(s ? s.l : ''); }
   function selLbl(s) {
     if (s && s.mk) { var tm = teams(s.t) || [s.t, ''], sp = spOf(s), f = mkParts(s.mk)[0]; var o = sbOutL(s.mk, s.k, tm[0], tm[1]); return (f === '1x2' && sp === 'foot') || f === '12' ? o : sbMkName(s.mk, tm[0], tm[1], sp) + sep() + o; }
     return trO(s ? s.l : '');

@@ -810,7 +810,7 @@
       matchLine(s, P, matchY, right - P - 4, 14);
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
       if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.fillText(ell(g, liveL, right - P - 4), P, y + 61); }
-      if (endL) { g.fillStyle = '#64748B'; g.font = '800 11.5px ' + FONT; g.fillText(ell(g, spaced(endL), right - P - 4), P, y + 61); }
+      if (endL) { g.fillStyle = '#64748B'; g.font = '800 11px ' + FONT; g.fillText(ell(g, spaced(endL), right - P - 4), P, y + 65); } // un peu plus bas, sans agrandir la ligne
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {
       var y = selTop + i * rowH;
