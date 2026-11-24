@@ -1067,6 +1067,27 @@ function sb_results(): array { return (array) (sb_read('results.json')['fx'] ?? 
  * Règles : pari à / après le VRAI coup d'envoi → annulé ; joué plus de 48 h après le coup d'envoi prévu (ko du pari) → annulé ;
  * reporté / annulé / arrêté et pas joué 48 h après → annulé (si autosettle, sinon l'admin décide) ; AWD / WO → annulé.
  */
+/* 2026-11-24 (propriétaire : « pourquoi ce pari corners est remboursé ? ») — championnat SANS statistiques chez le fournisseur
+   (corners, cartons, buteurs impossibles à vérifier) : retenu 60 jours ; ses paris corners / cartons / buteurs ne sont PLUS
+   proposés (avant-match et direct) → plus de choix remboursés faute de données. */
+const SB_NOSTATS_DAYS = 60;
+function sb_nostats_note(int $lg, int $now): void {
+  if ($lg <= 0) return;
+  sb_with('nostats.json', static function (array &$s) use ($lg, $now) { if ((int) ($s['lg'][(string) $lg] ?? 0) > $now - 86400) return false; $s['lg'][(string) $lg] = $now; return true; });
+}
+function sb_nostats(int $lg, int $now = 0): bool {
+  static $m = null;
+  if ($lg <= 0) return false;
+  if ($m === null) $m = (array) (sb_read('nostats.json')['lg'] ?? []);
+  $t = (int) ($m[(string) $lg] ?? 0);
+  return $t > 0 && $t > ($now ?: time()) - SB_NOSTATS_DAYS * 86400;
+}
+/** Retire les marchés corners / cartons / buteurs d'une liste {mk => …} pour un championnat sans statistiques. */
+function sb_nostats_filter(array $mk, int $lg, int $now): array {
+  if (!sb_nostats($lg, $now)) return $mk;
+  foreach (array_keys($mk) as $k) if (in_array(sb_fam((string) $k), SB_XS_FAMS, true)) unset($mk[$k]);
+  return $mk;
+}
 function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bool $auto = null): ?string {
   $now = $now ?: sb_now();
   if (preg_match('/^sb:([a-z]+):(\d+):(.+)$/', (string) ($sel['ev'] ?? ''), $mo) && $mo[1] !== 'foot') return sb_o_sel_result($mo[1], $mo[2], $mo[3], $sel, $betAt, $now, $auto); // autres sports
@@ -1091,7 +1112,7 @@ function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bo
     $mk = substr((string) $sel['ev'], strlen('sb:foot:' . $m[1] . ':'));
     $res = sb_settle_mk($mk, (string) ($sel['k'] ?? ''), (array) ($r['ft'] ?? []), isset($r['ht']) ? (array) $r['ht'] : null, isset($r['xs']) ? (array) $r['xs'] : null);
     // corners / cartons / buteurs sans données 8 h après le coup d'envoi (petit championnat sans statistiques) : remboursé
-    if ($res === null && in_array(sb_fam($mk), SB_XS_FAMS, true) && $auto && $now > $ts + SB_XS_WAIT) return 'void';
+    if ($res === null && in_array(sb_fam($mk), SB_XS_FAMS, true) && $auto && $now > $ts + SB_XS_WAIT) { sb_nostats_note((int) ($r['lg'] ?? 0), $now); return 'void'; }
     return $res;
   }
   if ($v === 'wait' && $auto && $ko > 0 && $now > $ko + SB_PST_VOID && (int) ($r['at'] ?? 0) > $now - 7200) return 'void';
@@ -1459,7 +1480,7 @@ function sb_open_fixtures(): array {
 /** Classe un état API : fin / void / wait / live / chk, avec contrôle des numéros d'équipes. */
 function sb_classify(array $row, ?array $ti, int $ko, int $now): array {
   $st = (string) ($row['st'] ?? '');
-  $base = ['st' => $st, 'ts' => (int) ($row['ts'] ?? 0), 'ti' => [(int) ($row['h'][0] ?? 0), (int) ($row['a'][0] ?? 0)], 'at' => $now];
+  $base = ['st' => $st, 'ts' => (int) ($row['ts'] ?? 0), 'ti' => [(int) ($row['h'][0] ?? 0), (int) ($row['a'][0] ?? 0)], 'at' => $now, 'lg' => (int) ($row['lg'] ?? 0)];
   if ($ti !== null && array_map('intval', $ti) !== $base['ti']) return $base + ['v' => 'chk', 'why' => 'Équipes différentes de celles du pari'];
   if (in_array($st, SB_FINAL, true)) {
     $ft = $row['ft'] ?? null;
@@ -2088,7 +2109,7 @@ function sb_match(?array $user, string $fid, int $now = 0): array {
   $open = sb_bettable_row($f['row'], $now) && (int) ($mf['at'] ?? 0) > $now - sb_odds_max_age((int) $f['row']['ts'], $now);
   if ((int) ($mf['at'] ?? 0) < $now - SB_FX_ODDS_TTL && (int) $f['row']['ts'] > $now) sb_want_fixture((int) $m[1], $now);
   $mk = [];
-  if ($open) foreach ((array) ($mf['mk'] ?? []) as $k => $o) $mk[] = ['mk' => (string) $k, 'o' => $o, 's' => 0];
+  if ($open) foreach (sb_nostats_filter((array) ($mf['mk'] ?? []), (int) ($f['row']['lg'] ?? 0), $now) as $k => $o) $mk[] = ['mk' => (string) $k, 'o' => $o, 's' => 0];
   $fx = sb_fx_public($m[1], $f['row']) + ['lgn' => (string) ($f['lg']['n'] ?? ''), 'c' => (string) ($f['lg']['c'] ?? '')];
   return ['ok' => true, 'fx' => $fx, 'mk' => $mk, 'rules' => sb_rules()];
 }
@@ -2127,6 +2148,7 @@ function sb_pick(string $ev, string $k, ?array $user, int $now, bool $liveCheck 
   $odd = null;
   foreach ((array) ($mf['mk'][$mk] ?? []) as $o) if ((string) ($o[0] ?? '') === $k) $odd = (float) $o[1];
   if ($odd === null || $odd < 1.01) return ['ok' => false, 'reason' => 'param'];
+  if (in_array(sb_fam($mk), SB_XS_FAMS, true) && sb_nostats((int) ($row['lg'] ?? 0), $now)) return ['ok' => false, 'reason' => 'closed'];
   if ($liveCheck && (int) $row['ts'] - $now < SB_LATE) { $live = sb_live_ids($now); if ($live !== null && isset($live[$id])) return ['ok' => false, 'reason' => 'closed']; }
   $home = (string) ($row['h'][1] ?? ''); $away = (string) ($row['a'][1] ?? '');
   $kn = sb_k_name($mk, $k, $home, $away);
@@ -3062,7 +3084,7 @@ function sb_live_match(?array $user, string $id, int $now): ?array {
   });
   sb_after_response();
   $mk = [];
-  foreach ($v['mk'] as $k => $o) $mk[] = ['mk' => (string) $k, 'o' => array_map(static fn($z) => [$z[0], $z[1]], $o), 's' => $v['susp'] || array_sum(array_column($o, 2)) > 0 ? 1 : 0];
+  foreach (sb_nostats_filter((array) $v['mk'], (int) ($v['row']['lg'] ?? 0), $now) as $k => $o) $mk[] = ['mk' => (string) $k, 'o' => array_map(static fn($z) => [$z[0], $z[1]], $o), 's' => $v['susp'] || array_sum(array_column($o, 2)) > 0 ? 1 : 0];
   $lg = (array) ($L['lg'][(string) ($v['row']['lg'] ?? 0)] ?? []);
   $fx = sb_live_fx_public($id, $v) + ['lgn' => (string) ($lg['n'] ?? ''), 'c' => (string) ($lg['c'] ?? '')];
   return ['ok' => true, 'fx' => $fx, 'mk' => $mk, 'trk' => ['events' => (array) ($v['row']['ev'] ?? []), 'stats' => sb_live_stats($id, $v['row'], $now)], 'rules' => sb_live_rules(), 'oat' => (int) ($L['at'] ?? 0)];
@@ -3075,7 +3097,8 @@ function sb_live_pick(string $id, string $mk, string $k, ?array $user, int $now)
   $v = sb_live_view($id, $L, $now, sb_config());
   if (!$v) return ['ok' => false, 'reason' => 'closed']; // petit championnat (direct limité) ou match sorti du flux
   $fam = sb_fam($mk);
-  if (!in_array($fam, SB_LIVE_FAMS, true) || (sb_valid_k($fam) && !in_array($k, sb_valid_k($fam), true))) return ['ok' => false, 'reason' => 'closed']; // (choix libres : score exact, joueurs, nombre de buts → vérifiés dans les cotes)
+  if (!in_array($fam, SB_LIVE_FAMS, true) || (sb_valid_k($fam) && !in_array($k, sb_valid_k($fam), true))) return ['ok' => false, 'reason' => 'closed'];
+  if (in_array($fam, SB_XS_FAMS, true) && sb_nostats((int) ($v['row']['lg'] ?? 0), $now)) return ['ok' => false, 'reason' => 'closed']; // championnat sans statistiques // (choix libres : score exact, joueurs, nombre de buts → vérifiés dans les cotes)
   if ($v['susp']) return ['ok' => false, 'reason' => 'susp'];
   $odd = null; $s = 0;
   foreach ((array) ($v['mk'][$mk] ?? []) as $o) if ((string) $o[0] === $k) { $odd = (float) $o[1]; $s = (int) ($o[2] ?? 0); }
