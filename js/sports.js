@@ -3502,6 +3502,9 @@
     if (r.hidden) msg.push(fmt(x.codeHidden, { n: r.hidden }));
     sbToast(msg.join(' '), slip.length ? 'ok' : 'info');
     if (alive()) { if (view !== 'slip') { slipFrom = view; navPush(); } view = 'slip'; render(); }
+    // 2026-11-24 (propriétaire : « par le lien, parfois le coupon reste verrouillé avec l'ancienne cote ») : le lien ouvre le site à
+    // froid, avant que le direct soit chargé → on relit les cotes du serveur après 1,5 s puis 5 s (cote actuelle, cadenas levé)
+    [1500, 5000].forEach(function (ms) { setTimeout(function () { if (alive() && view === 'slip' && !sending && !lastBet && !lastBets) sbRefreshSlip().then(function (chg) { if (chg && view === 'slip' && !sending) render(); }); }, ms); });
     return true;
   }
   // ticket : relire les cotes SB du serveur (en entrant dans le ticket, après un refus « cotes changées » / « fermé »)
