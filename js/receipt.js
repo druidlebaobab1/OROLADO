@@ -740,7 +740,7 @@
         g.fillStyle = '#FFFFFF'; g.textAlign = 'center'; g.fillText(fin, bx2 + (tw + 10) / 2, y + 0.5); g.textAlign = 'left';
       }
     };
-    if (showScore) rowH = 80;
+    if (showScore) rowH = sel.some(function (s) { var o = scOf(s); return o && !o.fin; }) ? 86 : 66;
     var HB = 96, stTop = HB, selHead = stTop + 158, selTop = selHead + 22, selEnd = selTop + rows * rowH;
     var totTop = selEnd + 18, totRow = 34, nT = bt.bst ? 6 : 5, H = totTop + nT * totRow + 112; // 2026-10-23 : + ligne « Bonus combiné »
     // très long coupon (jusqu'à 1 000 choix) : résolution réduite pour rester sous les limites des téléphones (iPhone : ≈ 16 Mpx
@@ -812,11 +812,12 @@
       // 2026-10-31 (propriétaire) : AGENCEMENT IDENTIQUE À L'ÉCRAN → nom du match, puis choix, puis le carré
       // de score SOUS le choix (jamais à côté du match, donc jamais de croisement même si le match est long).
       var scO = scOf(s), liveL = n <= 5 && scO && !scO.fin ? String(x.liveL || 'Live') + (scO.min ? '  ' + scO.min : '') : ''; // « En direct  90’ » (sans point)
-      var endL = n <= 5 && scO && scO.fin ? String(x.finL || 'FT').toUpperCase() : ''; // match fini : « TERMINÉ » sous le choix
-      var matchY = liveL || endL ? y + 17 : y + 19, pickY = liveL || endL ? y + 39 : y + 41;
+      var endL = false && scO && scO.fin ? String(x.finL || 'FT').toUpperCase() : ''; // match fini : « TERMINÉ » sous le choix
+      // 2026-11-24 (propriétaire) : plus de « TERMINÉ » ; l'option descend (plus d'air sous la ligne du match), « En direct » un peu plus bas
+      var matchY = scO ? y + 18 : y + 19, pickY = scO ? y + 47 : y + 41;
       matchLine(s, P, matchY, right - P - 4, 14);
       g.fillStyle = '#8A5A00'; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
-      if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.fillText(ell(g, liveL, right - P - 4), P, y + 61); }
+      if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.fillText(ell(g, liveL, right - P - 4), P, y + 71); }
       if (endL) { g.fillStyle = '#64748B'; g.font = '800 11px ' + FONT; g.fillText(ell(g, spaced(endL), right - P - 4), P, y + 65); } // un peu plus bas, sans agrandir la ligne
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {

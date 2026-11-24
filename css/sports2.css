@@ -1712,3 +1712,12 @@ html:root body #casinoModal .sp2 .sp2-bx .pz-rcol > em{color:var(--sp2-gold);fon
 .sp-rcpt-card.dn .sp-rcpt-s > i svg{width:11px;height:11px}
 .sp-rcpt-card.dn .sp-rcpt-s > i{flex-basis:21px!important;width:21px!important;height:21px!important}
 .sp-rcpt-card.dn .sp-rcpt-s > i svg{width:12px;height:12px}
+/* 2026-11-24 (c) (propriétaire) — reçu : plus de « TERMINÉ » ; l'option descend un peu sous le match ; « En direct » un peu plus bas */
+.sp-rcpt-card .sp-rcpt-s .sp-rcpt-end{display:none!important}
+.sp-rcpt-card .sp-rcpt-s small.sp-rcpt-mt + b{margin-top:7px!important}
+.sp-rcpt-card.dn .sp-rcpt-s small.sp-rcpt-mt + b{margin-top:3px!important}
+.sp-rcpt-card .sp-rcpt-s .sp-rcpt-live{margin-top:7px!important}
+/* Mes paris : « En cours » | « Pari simple » plus séparés ; case du score (score + minute) moins haute */
+html:root body #casinoModal .sp2 .pz-b1 .pz-bk2{margin-inline-start:8px!important;padding-inline-start:16px!important}
+html:root body #casinoModal .sp2 .pz-lvt{padding-top:1px!important;padding-bottom:1px!important;min-height:0!important}
+html:root body #casinoModal .sp2 .pz-lvt small{padding-top:2px!important;padding-bottom:2px!important}
