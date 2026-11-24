@@ -1672,3 +1672,9 @@ html:root body #casinoModal .sp2 .pz-b1 .pz-bk2{margin-inline-start:4px!importan
 .sp-rcpt-card .sp-rcpt-s .sp-rcpt-end{display:block;margin-top:3px;color:#64748B;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 /* 2026-11-24 : « TERMINÉ » un peu détaché de l'option (sans agrandir la ligne) */
 .sp-rcpt-card .sp-rcpt-s .sp-rcpt-end{margin-top:6px!important;margin-bottom:-2px;font-size:10px!important}
+/* 2026-11-24 (propriétaire : reçu de 8 matchs « TERMINÉ » collé partout) : reçus de plus de 5 choix (une ligne par choix) →
+   pas de « TERMINÉ » ni « En direct » (le ✓ / ✕ et le score suffisent) */
+.sp-rcpt-card.dn .sp-rcpt-s .sp-rcpt-end,.sp-rcpt-card.dn .sp-rcpt-s .sp-rcpt-live{display:none!important}
+.sp-rcpt-card.dn .sp-rcpt-s span{flex-direction:column!important;align-items:stretch!important;gap:0!important}
+.sp-rcpt-card.dn .sp-rcpt-s small::after{content:none!important}
+.sp-rcpt-card.dn .sp-rcpt-s small{flex:none!important}
