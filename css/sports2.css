@@ -1689,3 +1689,15 @@ html:root body #casinoModal .sp2 .pz-b1 .pz-bk2{margin-inline-start:4px!importan
 .sp-rcpt-card .sp-rcpt-s > span > b{display:block;max-width:none!important;flex:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sp-rcpt-card.dn .sp-rcpt-s > span > b{font-size:13px!important}
 .sp-rcpt-card .sp-rcpt-s small.sp-rcpt-mt i.tn{display:block!important;flex:0 1 auto!important;height:auto!important;width:auto!important;border-radius:0!important;background:none!important;place-items:initial!important;color:#8B7E64!important;font:inherit!important;font-weight:500!important;font-style:normal!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+/* 2026-11-24 (propriétaire) — Mes paris : score TOUJOURS à droite (carte fermée et carte ouverte) ; le match en haut, le choix
+   en dessous ; chaque texte sur UNE ligne, terminé par « … » s'il est trop long (jamais de texte qui passe à la ligne) */
+html:root body #casinoModal .sp2 .pz-bs1t small,html:root body #casinoModal .sp2 .pz-bs1t b,
+html:root body #casinoModal .sp2 .sp2-bx .sp2-bst > small,html:root body #casinoModal .sp2 .sp2-bx .sp2-bst > b{display:block;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;overflow-wrap:normal!important;max-width:100%}
+html:root body #casinoModal .sp2 .sp2-bx .sp2-bs > .pz-lvt{flex:none;align-self:center;margin:0!important}
+html:root body #casinoModal .sp2 .sp2-bx .sp2-bs > em{flex:none}
+html:root body #casinoModal .sp2 .sp2-bx .sp2-bs > .pz-rcol{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+html:root body #casinoModal .sp2 .sp2-bx .pz-rcol > em{font-style:normal}
+html:root body #casinoModal .sp2 .sp2-bx .pz-rcol .pz-lvt{margin:0!important;padding:2px 3px 2px 8px!important;gap:8px!important;font-size:12px!important}
+html:root body #casinoModal .sp2 .sp2-bx .pz-rcol .pz-lvt b{font-size:13.5px!important}
+html:root body #casinoModal .sp2 .sp2-bx .pz-rcol .pz-lvt small{padding:2px 6px!important;font-size:11px!important}
+html:root body #casinoModal .sp2 .sp2-bx .pz-rcol > em{color:var(--sp2-gold);font:900 14.5px/1 var(--sp2-font);font-variant-numeric:tabular-nums}
