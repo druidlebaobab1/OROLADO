@@ -721,12 +721,12 @@
       if (!sc || tm.length !== 2) return null;
       return { h: tm[0], a: tm[1], sc: (+sc[0] || 0) + ' – ' + (+sc[1] || 0), fin: Array.isArray(s.fs), min: !Array.isArray(s.fs) && s.cm != null && s.cm !== '' ? String(s.cm) + '\u2019' : '' };
     };
-    var showScore = D === 0 && sel.some(function (s) { var o = scOf(s); return o && !o.fin; });
+    var showScore = D === 0 && sel.some(function (s) { return !!scOf(s); });
     var matchLine = function (s, x0, y, maxW, fs) { // « Équipe A  2 – 3  Équipe B  [FIN] » ; sans score : le nom du match
       var o = scOf(s); g.textAlign = 'left';
       if (!o) { g.fillStyle = MUTE; g.font = '500 ' + fs + 'px ' + FONT; g.fillText(ell(g, s.t, maxW), x0, y); return; }
       g.font = '800 ' + fs + 'px ' + FONT; var sw = g.measureText(o.sc).width;
-      var fin = o.fin ? String(x.finL || 'FT').toUpperCase() : '', fw = 0;
+      var fin = '', fw = 0; // 2026-11-24 (modèle C) : « TERMINÉ » sous le choix, plus d'étiquette sur la ligne du match
       if (fin) { g.font = '800 ' + (fs - 5) + 'px ' + FONT; fw = g.measureText(fin).width + 10 + 8; }
       g.font = '500 ' + fs + 'px ' + FONT;
       var gap = 8, half = Math.max(30, (maxW - sw - 2 * gap - fw) / 2);
@@ -789,7 +789,7 @@
       g.font = '800 ' + fs + 'px ' + FONT;
       var sc1 = scOf(s), ch = String(s.l || ''), chW = g.measureText(ch).width;
       g.font = '500 ' + fs + 'px ' + FONT;
-      var sep = ' — ', sepW = g.measureText(sep).width, mt = sc1 ? sc1.h + ' ' + sc1.sc + ' ' + sc1.a + (sc1.fin ? ' (' + String(x.finL || 'FT') + ')' : '') : String(s.t || '');
+      var sep = ' — ', sepW = g.measureText(sep).width, mt = sc1 ? sc1.h + ' ' + sc1.sc + ' ' + sc1.a : String(s.t || '');
       var mW = Math.max(0, avail - Math.min(chW, avail * 0.62) - sepW);
       var mTxt = mW >= 40 ? ell(g, mt, mW) : '';
       var xx = x0;
@@ -805,10 +805,12 @@
       // 2026-10-31 (propriétaire) : AGENCEMENT IDENTIQUE À L'ÉCRAN → nom du match, puis choix, puis le carré
       // de score SOUS le choix (jamais à côté du match, donc jamais de croisement même si le match est long).
       var scO = scOf(s), liveL = scO && !scO.fin ? String(x.liveL || 'Live') + (scO.min ? '  ' + scO.min : '') : ''; // « En direct  90’ » (sans point)
-      var matchY = liveL ? y + 17 : y + 19, pickY = liveL ? y + 39 : y + 41;
+      var endL = scO && scO.fin ? String(x.finL || 'FT').toUpperCase() : ''; // match fini : « TERMINÉ » sous le choix
+      var matchY = liveL || endL ? y + 17 : y + 19, pickY = liveL || endL ? y + 39 : y + 41;
       matchLine(s, P, matchY, right - P - 4, 14);
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
       if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.fillText(ell(g, liveL, right - P - 4), P, y + 61); }
+      if (endL) { g.fillStyle = '#64748B'; g.font = '800 11.5px ' + FONT; g.fillText(ell(g, spaced(endL), right - P - 4), P, y + 61); }
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {
       var y = selTop + i * rowH;

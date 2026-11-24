@@ -685,8 +685,9 @@
         // 2026-11-23 (propriétaire, modèles « Direct 2 » / « Terminé 2 ») : le score se place ENTRE les deux équipes
         // (« Sochaux  2 – 3  Dunkerque ») ; match fini : petite étiquette FIN ; en direct : « En direct · 70’ » dessous.
         var tmR = teams(s.t), scR = Array.isArray(s.fs) ? s.fs : Array.isArray(s.cs) ? s.cs : null, finR = Array.isArray(s.fs);
-        var mLine = tmR && scR ? esc(tmR[0]) + '<b class="sp-rcpt-sc" dir="ltr">' + (+scR[0] || 0) + ' – ' + (+scR[1] || 0) + '</b>' + esc(tmR[1]) + (finR ? '<em class="sp-rcpt-fin">' + esc(NX().ftS || NX().ft || 'FT') + '</em>' : '') : esc(s.t);
-        var fsTxt = !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? '<span class="mn" dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
+        var mLine = tmR && scR ? esc(tmR[0]) + '<b class="sp-rcpt-sc" dir="ltr">' + (+scR[0] || 0) + ' – ' + (+scR[1] || 0) + '</b>' + esc(tmR[1]) : esc(s.t);
+        // 2026-11-24 (propriétaire, modèle C) : match fini → « TERMINÉ » en petit SOUS le choix (jamais caché par un long nom)
+        var fsTxt = finR ? '<small class="sp-rcpt-end">' + esc(NX().ft || NX().ftS || 'FT') + '</small>' : !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? '<span class="mn" dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
 
         return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + mLine + '</small><b>' + esc(s.mk ? selLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
@@ -700,7 +701,7 @@
     // dans Paris : le reçu est posé DANS la fenêtre du casino (le bouton retour du téléphone le ferme, sans fermer Paris)
     var host = box && box.isConnected && box.closest('#casinoModal') ? box.closest('#casinoModal') : document.body;
     host.appendChild(el);
-    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, liveL: NX().live, finL: NX().ftS || NX().ft, ftS: NX().ft })); } catch (eP) { /* ignore */ }
+    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, liveL: NX().live, finL: NX().ft || NX().ftS, ftS: NX().ft })); } catch (eP) { /* ignore */ }
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
     var close = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); }, 220); };
     el.addEventListener('click', function (e) { if (e.target === el) close(); });
