@@ -478,7 +478,7 @@
 
     g.textAlign = 'left';
     g.fillStyle = '#FBBF24'; g.font = '800 12px ' + FONT;
-    g.fillText(spaced(String((sel.length > 1 ? x.rcCombo : x.rcSingle) + '\u2002' + sel.length).toUpperCase()), 30, 424);
+    g.fillText(spaced(String((sel.length > 1 ? x.rcCombo : x.rcSingle) + (sel.length > 1 ? '\u2002' + sel.length : '')).toUpperCase()), 30, 424);
 
     // chaque choix
     var RCOL = { won: '#22C55E', lost: '#F43F5E', void: '#94A3B8' };
@@ -771,7 +771,7 @@
     hr(selHead - 16, '#CBD5E1', 1.5);
     // en-tête des choix : type · nombre | cote
     g.textAlign = 'left'; g.fillStyle = MUTE; g.font = '800 12px ' + FONT;
-    g.fillText(spaced(String((n > 1 ? x.rcCombo : x.rcSingle) || '').toUpperCase() + '\u2002\u2002' + n), P, selHead);
+    g.fillText(spaced(String((n > 1 ? x.rcCombo : x.rcSingle) || '').toUpperCase() + (n > 1 ? '\u2002\u2002' + n : '')), P, selHead);
     g.textAlign = 'right'; g.fillText(spaced(String(x.oddL || x.odd || '').toUpperCase()), W - P, selHead);
     hr(selTop - 4);
     var mark = function (s, xr, y, size) { // ✓ / ✕ / ↺ d'un choix réglé (avant la cote)
