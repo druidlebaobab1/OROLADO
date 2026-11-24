@@ -40,3 +40,10 @@
 - Traductions : le site charge `js/i18n/core.js` + `js/i18n/<langue>.js` (générés). Textes à modifier dans `js/i18n-src.js`,
   `js/translations.js`, `js/i18n-zh.js` (logique : `scripts/i18n-core.js`), puis TOUJOURS `node scripts/gen-i18n.js`
   et `php scripts/gen-lang.php` (contrôle : `node scripts/gen-i18n.js --check` doit afficher « OK »).
+
+## Goûts du propriétaire (à relire avant chaque changement visible)
+- Pas de « : » ni de point « · » de séparation inutiles dans les libellés (ex. « Total de buts : Plus de 3,5 », « Pari simple · 1 ») :
+  il trouve ça pas professionnel. Toujours lui montrer 5 exemples en images et le laisser choisir avant de changer un affichage.
+- Paris (reçus, Mes paris) = la partie la plus importante du site : tout droit, aligné, une ligne par texte avec « … » si trop long,
+  jamais de chevauchement ; vérifier avec des noms d'équipes très longs et sur les 3 tailles de téléphone avant de mettre en ligne.
+- Messages aux joueurs : professionnels, signés « L'équipe OROLADO », sans emoji d'excuse.
