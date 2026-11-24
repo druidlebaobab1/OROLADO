@@ -1727,3 +1727,5 @@ html:root body #casinoModal .sp2 .pz-lvt b{font-size:13px!important;line-height:
 html:root body #casinoModal .sp2 .pz-lvt small{padding-top:1px!important;padding-bottom:1px!important;line-height:1.1!important}
 html:root body #casinoModal .sp2 .pz-lvt small{font-size:11px!important;line-height:1!important;padding:2px 6px!important}
 html:root body #casinoModal .sp2 .sp2-bx .pz-rcol .pz-lvt{padding-top:1px!important;padding-bottom:1px!important}
+/* 2026-11-24 (propriétaire) : « En direct 58’ » centré dans la ligne du reçu */
+.sp-rcpt-card .sp-rcpt-s .sp-rcpt-live{text-align:center!important;align-self:stretch;margin-inline-start:-30px}
