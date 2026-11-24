@@ -693,7 +693,9 @@
         // 2026-11-24 (propriétaire, modèle C) : match fini → « TERMINÉ » en petit SOUS le choix (jamais caché par un long nom)
         var fsTxt = finR ? '<small class="sp-rcpt-end">' + esc(NX().ft || NX().ftS || 'FT') + '</small>' : !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? '<span class="mn" dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
 
-        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small class="sp-rcpt-mt">' + mLine + '</small><b>' + esc(s.mk ? optLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small class="sp-rcpt-mt">' + mLine + '</small><b>' + esc(s.mk ? optLbl(s) : s.l) + '</b>' + (fsTxt.indexOf('sp-rcpt-live') > -1 ? '' : fsTxt) + '</span>' +
+          // 2026-11-24 (propriétaire) : « En direct 58’ » SOUS la cote, à droite
+          (fsTxt.indexOf('sp-rcpt-live') > -1 ? '<span class="sp-rcpt-rc"><em>' + Number(s.odd).toFixed(2) + '</em>' + fsTxt + '</span>' : '<em>' + Number(s.odd).toFixed(2) + '</em>') + '</div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>$' + m2(bt.stake) + '</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
       (bt.bst ? '<p class="bst"><span>' + esc(bstLabel(bt)) + '</span><b>' + (st === 'won' ? '+$' + m2(bt.bw || 0) + '' : st === 'open' ? '+$' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + '' : '—') + '</b></p>' : '') +
