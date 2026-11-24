@@ -1721,3 +1721,9 @@ html:root body #casinoModal .sp2 .sp2-bx .pz-rcol > em{color:var(--sp2-gold);fon
 html:root body #casinoModal .sp2 .pz-b1 .pz-bk2{margin-inline-start:8px!important;padding-inline-start:16px!important}
 html:root body #casinoModal .sp2 .pz-lvt{padding-top:1px!important;padding-bottom:1px!important;min-height:0!important}
 html:root body #casinoModal .sp2 .pz-lvt small{padding-top:2px!important;padding-bottom:2px!important}
+/* 2026-11-24 (d) : case score + minute encore un peu moins haute (≈ 17 px) */
+html:root body #casinoModal .sp2 .pz-lvt{line-height:1!important;padding-top:1px!important;padding-bottom:1px!important}
+html:root body #casinoModal .sp2 .pz-lvt b{font-size:13px!important;line-height:1.1!important}
+html:root body #casinoModal .sp2 .pz-lvt small{padding-top:1px!important;padding-bottom:1px!important;line-height:1.1!important}
+html:root body #casinoModal .sp2 .pz-lvt small{font-size:11px!important;line-height:1!important;padding:2px 6px!important}
+html:root body #casinoModal .sp2 .sp2-bx .pz-rcol .pz-lvt{padding-top:1px!important;padding-bottom:1px!important}
