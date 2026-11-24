@@ -685,11 +685,13 @@
         // 2026-11-23 (propriétaire, modèles « Direct 2 » / « Terminé 2 ») : le score se place ENTRE les deux équipes
         // (« Sochaux  2 – 3  Dunkerque ») ; match fini : petite étiquette FIN ; en direct : « En direct · 70’ » dessous.
         var tmR = teams(s.t), scR = Array.isArray(s.fs) ? s.fs : Array.isArray(s.cs) ? s.cs : null, finR = Array.isArray(s.fs);
-        var mLine = tmR && scR ? esc(tmR[0]) + '<b class="sp-rcpt-sc" dir="ltr">' + (+scR[0] || 0) + ' – ' + (+scR[1] || 0) + '</b>' + esc(tmR[1]) : esc(s.t);
+        // 2026-11-24 (propriétaire : « scores penchés, trop gros ») : ligne du match = nom · score · nom sur UNE ligne droite ;
+        // le score a la taille des noms et n'est JAMAIS caché (seuls les noms trop longs se raccourcissent « … »)
+        var mLine = tmR && scR ? '<i class="tn">' + esc(tmR[0]) + '</i><b class="sp-rcpt-sc" dir="ltr">' + (+scR[0] || 0) + ' – ' + (+scR[1] || 0) + '</b><i class="tn">' + esc(tmR[1]) + '</i>' : '<i class="tn">' + esc(s.t) + '</i>';
         // 2026-11-24 (propriétaire, modèle C) : match fini → « TERMINÉ » en petit SOUS le choix (jamais caché par un long nom)
         var fsTxt = finR ? '<small class="sp-rcpt-end">' + esc(NX().ft || NX().ftS || 'FT') + '</small>' : !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? '<span class="mn" dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
 
-        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small>' + mLine + '</small><b>' + esc(s.mk ? optLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small class="sp-rcpt-mt">' + mLine + '</small><b>' + esc(s.mk ? optLbl(s) : s.l) + '</b>' + fsTxt + '</span><em>' + Number(s.odd).toFixed(2) + '</em></div>';
       }).join('') + '</div>' +
       '<div class="sp-rcpt-rows"><p><span>' + esc(x.stakeL) + '</span><b>$' + m2(bt.stake) + '</b></p><p><span>' + esc(x.totalOdd) + '</span><b>' + Number(bt.odd).toFixed(2) + '</b></p>' +
       (bt.bst ? '<p class="bst"><span>' + esc(bstLabel(bt)) + '</span><b>' + (st === 'won' ? '+$' + m2(bt.bw || 0) + '' : st === 'open' ? '+$' + m2(bstAmt(bt.stake, sp2Pot(bt.stake, bt.odd), bt.bst)) + '' : '—') + '</b></p>' : '') +

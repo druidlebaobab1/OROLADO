@@ -1680,3 +1680,12 @@ html:root body #casinoModal .sp2 .pz-b1 .pz-bk2{margin-inline-start:4px!importan
 .sp-rcpt-card.dn .sp-rcpt-s small{flex:none!important}
 /* 2026-11-24 (propriétaire, style 2) : l'option du reçu en or foncé */
 .sp-rcpt-card .sp-rcpt-s > span > b{color:#8A5A00!important}
+/* 2026-11-24 (b) — REÇU : ligne du match nette et droite. Nom · score · nom sur une ligne, même taille, même ligne de base ;
+   le score ne se cache jamais, seuls les noms se raccourcissent. L'option (or) garde toute sa largeur, même au-delà de 5 choix. */
+.sp-rcpt-card .sp-rcpt-s small.sp-rcpt-mt{display:flex!important;align-items:baseline!important;gap:6px;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap;line-height:1.35;flex:none!important}
+.sp-rcpt-card .sp-rcpt-s small.sp-rcpt-mt::after{content:none!important}
+.sp-rcpt-card .sp-rcpt-s small.sp-rcpt-mt .tn{font-style:normal;min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-rcpt-card .sp-rcpt-s small.sp-rcpt-mt .sp-rcpt-sc{flex:none!important;display:inline!important;margin:0 2px!important;max-width:none!important;font-size:inherit!important;line-height:inherit!important;font-weight:800!important;color:#1F2937!important;letter-spacing:.02em}
+.sp-rcpt-card .sp-rcpt-s > span > b{display:block;max-width:none!important;flex:none!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-rcpt-card.dn .sp-rcpt-s > span > b{font-size:13px!important}
+.sp-rcpt-card .sp-rcpt-s small.sp-rcpt-mt i.tn{display:block!important;flex:0 1 auto!important;height:auto!important;width:auto!important;border-radius:0!important;background:none!important;place-items:initial!important;color:#8B7E64!important;font:inherit!important;font-weight:500!important;font-style:normal!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
