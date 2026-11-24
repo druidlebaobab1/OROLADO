@@ -473,7 +473,7 @@
       var tm = teams(s.t) || [s.t, ''];
       // 2026-11-23 (propriétaire) : match EN DIRECT → toucher la ligne ouvre la page du match (la flèche ˄ ferme toujours la carte)
       var goF = s.fx && Array.isArray(s.cs) && !Array.isArray(s.fs) ? ' data-gofx="' + esc(s.fx) + '"' : '';
-      return '<div class="sp2-bs r-' + esc(r) + (goF ? ' pz-golv' : '') + '"' + goF + '><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small dir="auto">' + esc(s.t) + '</small><b dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1], spOf(s))) + '</small></div><span class="pz-rcol"><em>' + Number(s.odd).toFixed(2) + '</em>' + (s.fs || s.cs ? liveChip(s) : '') + '</span></div>'; // 2026-11-24 : à DROITE, la cote puis le score dessous (le choix garde sa place)
+      return '<div class="sp2-bs r-' + esc(r) + (goF ? ' pz-golv' : '') + '"' + goF + '><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small dir="auto">' + esc(s.t) + '</small><b class="pz-optl">' + selHtml(s) + '</b></div><span class="pz-rcol"><em>' + Number(s.odd).toFixed(2) + '</em>' + (s.fs || s.cs ? liveChip(s) : '') + '</span></div>'; // 2026-11-24 : à DROITE, la cote puis le score dessous (le choix garde sa place)
     }
     return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst">' + linesHtml(e ? trT(e) : s.t, 'small', right ? 20 : 34, true) + '<b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
   }
@@ -693,7 +693,7 @@
         // 2026-11-24 (propriétaire, modèle C) : match fini → « TERMINÉ » en petit SOUS le choix (jamais caché par un long nom)
         var fsTxt = finR ? '<small class="sp-rcpt-end">' + esc(NX().ft || NX().ftS || 'FT') + '</small>' : !finR && Array.isArray(s.cs) ? '<small class="sp-rcpt-live">' + esc(NX().live || 'Live') + (s.cm != null && s.cm !== '' ? '<span class="mn" dir="ltr">' + esc(String(s.cm)) + '’</span>' : '') + '</small>' : '';
 
-        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small class="sp-rcpt-mt">' + mLine + '</small><b>' + esc(s.mk ? optLbl(s) : s.l) + '</b>' + (fsTxt.indexOf('sp-rcpt-live') > -1 ? '' : fsTxt) + '</span>' +
+        return '<div class="sp-rcpt-s ' + (s.r || 'open') + '">' + (ICO[s.r] || '<i class="op">•</i>') + '<span><small class="sp-rcpt-mt">' + mLine + '</small><b class="pz-optl">' + (s.mk ? selHtml(s) : esc(s.l)) + '</b>' + (fsTxt.indexOf('sp-rcpt-live') > -1 ? '' : fsTxt) + '</span>' +
           // 2026-11-24 (propriétaire) : « En direct 58’ » SOUS la cote, à droite
           (fsTxt.indexOf('sp-rcpt-live') > -1 ? '<span class="sp-rcpt-rc"><em>' + Number(s.odd).toFixed(2) + '</em>' + fsTxt + '</span>' : '<em>' + Number(s.odd).toFixed(2) + '</em>') + '</div>';
       }).join('') + '</div>' +
@@ -707,7 +707,7 @@
     // dans Paris : le reçu est posé DANS la fenêtre du casino (le bouton retour du téléphone le ferme, sans fermer Paris)
     var host = box && box.isConnected && box.closest('#casinoModal') ? box.closest('#casinoModal') : document.body;
     host.appendChild(el);
-    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: optLbl(s) }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, liveL: NX().live, finL: NX().ft || NX().ftS, ftS: NX().ft })); } catch (eP) { /* ignore */ }
+    try { if (D6.Receipt && D6.Receipt.prepBet) D6.Receipt.prepBet(bt.sel.some(function (s) { return s.mk; }) ? Object.assign({}, bt, { sel: bt.sel.map(function (s) { return s.mk ? Object.assign({}, s, { l: selParts(s).o, mkt: selParts(s).m }) : s; }) }) : bt, Object.assign({}, x, { bstL: bstLabel(bt), betCode: NX().betCode, rcNoS: NX().rcNoS, liveL: NX().live, finL: NX().ft || NX().ftS, ftS: NX().ft })); } catch (eP) { /* ignore */ }
     requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add('on'); }); });
     var close = function () { el.classList.remove('on'); setTimeout(function () { el.remove(); }, 220); };
     el.addEventListener('click', function (e) { if (e.target === el) close(); });
@@ -1343,6 +1343,17 @@
   // 2026-11-24 (b) : sauf quand l'option seule ne veut rien dire (« Oui », « Non », « Pair »…) → on garde le nom du pari
   // 2026-11-24 (c) (propriétaire : « un plus de 9,5 sans savoir de quoi ») : le REÇU montre EXACTEMENT l'option de l'historique
   function optLbl(s) { return selLbl(s); }
+  /* 2026-11-24 (propriétaire, modèle 3) : PAS de « : » — petite étiquette du type de pari DEVANT l'option
+     (« [Corners total] Plus de 9,5 ») ; résultat du match / vainqueur : l'option seule */
+  function selParts(s) {
+    if (s && s.mk) {
+      var tm = teams(s.t) || [s.t, ''], sp = spOf(s), f = mkParts(s.mk)[0], o = sbOutL(s.mk, s.k, tm[0], tm[1]);
+      if ((f === '1x2' && sp === 'foot') || f === '12') return { m: '', o: o };
+      return { m: String(sbMkName(s.mk, tm[0], tm[1], sp)).replace(/\s*:\s*/g, ' '), o: o };
+    }
+    return { m: '', o: trO(s ? s.l : '') };
+  }
+  function selHtml(s) { var q = selParts(s); return (q.m ? '<span class="pz-mtag" dir="auto">' + esc(q.m) + '</span>' : '') + '<span class="pz-opt" dir="auto">' + esc(q.o) + '</span>'; }
   function optLblOld(s) {
     if (s && s.mk) {
       var tm = teams(s.t) || [s.t, ''], o = sbOutL(s.mk, s.k, tm[0], tm[1]), f = mkParts(s.mk)[0];
@@ -3376,7 +3387,7 @@
         var e = s.mk ? null : evByTitle(s.t);
         var sr = selSure(s) || s.r; // 2026-11-23 : coché dès que c'est sûr pendant le match
         var rr = sr === 'won' || sr === 'hwon' ? ' won' : sr === 'lost' || sr === 'hlost' ? ' lost' : sr === 'void' ? ' void' : '';
-        return '<span class="pz-bs1' + rr + '"><span class="pz-bs1t"><small dir="auto">' + esc(e ? trT(e) : s.t) + '</small><b dir="auto">' + esc(selLbl(s)) + '</b></span>' + (s.fs || s.cs || s.lv ? liveChip(s) : '') + '</span>';
+        return '<span class="pz-bs1' + rr + '"><span class="pz-bs1t"><small dir="auto">' + esc(e ? trT(e) : s.t) + '</small><b class="pz-optl">' + selHtml(s) + '</b></span>' + (s.fs || s.cs || s.lv ? liveChip(s) : '') + '</span>';
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + (delSel[id] ? ' pz-dchk' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' + '<i class="pz-dck" aria-hidden="true"></i>' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
