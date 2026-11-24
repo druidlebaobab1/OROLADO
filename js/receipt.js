@@ -700,7 +700,7 @@
     while (lo < hi) { var mid = (lo + hi + 1) >> 1; if (g.measureText(txt.slice(0, mid) + '…').width <= maxW) lo = mid; else hi = mid - 1; }
     return lo ? txt.slice(0, lo).replace(/\s+$/, '') + '…' : '…';
   }
-  function betDensity(n) { return n <= 5 ? 0 : n <= 15 ? 1 : n <= 30 ? 2 : n <= 100 ? 3 : 4; }
+  function betDensity(n) { return n <= 15 ? 0 : n <= 30 ? 2 : n <= 100 ? 3 : 4; } // 2026-11-24 : jusqu'à 15 choix, même présentation propre (match + score, puis l'option)
   function drawBetLight(bt, x, icons) {
     var W = 540, P = 24, sel = bt.sel || [], st = bt.status || 'open', n = sel.length;
     var COL = { open: '#5B21B6', won: '#15803D', lost: '#B91C1C', void: '#475569' }, col = COL[st] || '#5B21B6';
@@ -721,7 +721,7 @@
       if (!sc || tm.length !== 2) return null;
       return { h: tm[0], a: tm[1], sc: (+sc[0] || 0) + ' – ' + (+sc[1] || 0), fin: Array.isArray(s.fs), min: !Array.isArray(s.fs) && s.cm != null && s.cm !== '' ? String(s.cm) + '\u2019' : '' };
     };
-    var showScore = D === 0 && sel.some(function (s) { return !!scOf(s); });
+    var showScore = D === 0 && n <= 5 && sel.some(function (s) { return !!scOf(s); }); // plus de 5 choix : pas de 3e ligne (compact, comme à l'écran)
     var matchLine = function (s, x0, y, maxW, fs) { // « Équipe A  2 – 3  Équipe B  [FIN] » ; sans score : le nom du match
       var o = scOf(s); g.textAlign = 'left';
       if (!o) { g.fillStyle = MUTE; g.font = '500 ' + fs + 'px ' + FONT; g.fillText(ell(g, s.t, maxW), x0, y); return; }
@@ -804,8 +804,8 @@
       g.textAlign = 'left';
       // 2026-10-31 (propriétaire) : AGENCEMENT IDENTIQUE À L'ÉCRAN → nom du match, puis choix, puis le carré
       // de score SOUS le choix (jamais à côté du match, donc jamais de croisement même si le match est long).
-      var scO = scOf(s), liveL = scO && !scO.fin ? String(x.liveL || 'Live') + (scO.min ? '  ' + scO.min : '') : ''; // « En direct  90’ » (sans point)
-      var endL = scO && scO.fin ? String(x.finL || 'FT').toUpperCase() : ''; // match fini : « TERMINÉ » sous le choix
+      var scO = scOf(s), liveL = n <= 5 && scO && !scO.fin ? String(x.liveL || 'Live') + (scO.min ? '  ' + scO.min : '') : ''; // « En direct  90’ » (sans point)
+      var endL = n <= 5 && scO && scO.fin ? String(x.finL || 'FT').toUpperCase() : ''; // match fini : « TERMINÉ » sous le choix
       var matchY = liveL || endL ? y + 17 : y + 19, pickY = liveL || endL ? y + 39 : y + 41;
       matchLine(s, P, matchY, right - P - 4, 14);
       g.fillStyle = INK; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
