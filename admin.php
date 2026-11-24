@@ -1333,7 +1333,7 @@ function admin_list_payload_raw(string $view, array $req): array {
   }
 
     if (in_array($view, ['dep_today', 'dep_yesterday', 'dep_pending', 'dep_failed', 'dep_all'], true)) {
-    $cols = ['Réf.', 'ID', 'E-mail', 'Montant', 'Méthode', 'Statut', 'Date'];
+    $cols = ['Réf.', 'ID', 'E-mail', 'Pays', 'Montant', 'Méthode', 'Statut', 'Date']; // 2026-11-24 (propriétaire) : drapeau du pays
     $list = $deps;
     // 2026-11-20 (propriétaire) : les dépôts échoués / abandonnés (FAILED, EXPIRED, CANCELLED…, ou en attente depuis plus de
     // 24 h sans paiement) ne sont plus mêlés aux listes : ils vont dans un volet fermé « ▸ Dépôts échoués / abandonnés (N) ».
@@ -1374,12 +1374,13 @@ function admin_list_payload_raw(string $view, array $req): array {
       }
       return $out;
     };
-    $depRow = static function (array $d): array {
+    $depRow = static function (array $d) use ($pmap): array {
       return [
         'cells' => [
           (string) $d['id'],
           (string) ($d['publicId'] ?? ''),
           (string) ($d['email'] ?? ''),
+          admin_country_cell(admin_user_lookup((string) ($d['userId'] ?? ''), $pmap)),
           admin_money($d['amount']),
           admin_dep_channel_row($d),
           (string) $d['status'],
@@ -1456,7 +1457,7 @@ function admin_list_payload_raw(string $view, array $req): array {
   }
 
   if ($view === 'dep_top') {
-    $cols = ['ID', 'Nom', 'E-mail', 'Total déposé', 'Solde réel'];
+    $cols = ['ID', 'Nom', 'E-mail', 'Pays', 'Total déposé', 'Solde réel']; // 2026-11-24 (propriétaire) : drapeau du pays
     $tot = [];
     foreach ($deps as $d) {
       if (!admin_dep_is_paid($d)) continue;
@@ -1469,19 +1470,20 @@ function admin_list_payload_raw(string $view, array $req): array {
     foreach ($tot as $uid => $amt) {
       $u = admin_enrich_user_row(admin_user_lookup($uid, $pmap), $vaults);
       $u['email'] = (string) ($u['email'] ?? '');
-      $u['topAmt'] = $amt;
+      $u['topAmt'] = $amt; $u['amount'] = $amt;
       $list[] = $u;
     }
     usort($list, static fn($a, $b) => ($b['topAmt'] <=> $a['topAmt']));
     $list = admin_apply_filters($list, $req, 'createdAt');
+    [$list, $countries, $wantC] = admin_money_by_country($list, $pmap, $req, static fn($u) => admin_country_cell($u)); // ligne des drapeaux + filtre par pays
     [$slice, $total, $page, $pages] = admin_page($list, $req);
     foreach ($slice as $p) {
       $rows[] = [
-        'cells' => [(string) ($p['publicId'] ?? ''), (string) ($p['name'] ?? ''), (string) ($p['email'] ?? ''), admin_money($p['topAmt'] ?? 0), admin_money($p['real'] ?? 0)],
+        'cells' => [(string) ($p['publicId'] ?? ''), (string) ($p['name'] ?? ''), (string) ($p['email'] ?? ''), admin_country_cell($p), admin_money($p['topAmt'] ?? 0), admin_money($p['real'] ?? 0)],
         'userId' => (string) ($p['id'] ?? ''),
       ];
     }
-    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => 'Classement déposants', 'actions' => false];
+    return ['ok' => true, 'cols' => $cols, 'rows' => $rows, 'total' => $total, 'page' => $page, 'pages' => $pages, 'summary' => 'Classement déposants' . ($wantC !== '' ? ' · ' . $wantC : (count($countries) > 1 ? ' · ' . count($countries) . ' pays' : '')), 'actions' => false, 'countries' => $countries];
   }
 
   if ($view === 'dep_method') {
