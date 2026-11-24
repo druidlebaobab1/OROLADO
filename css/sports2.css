@@ -1670,3 +1670,5 @@ html:root body #casinoModal .sp2 .sp2-bx .pz-golv{cursor:pointer}
 html:root body #casinoModal .sp2 .pz-b1 .pz-bk2{margin-inline-start:4px!important;padding-inline-start:12px!important;border-inline-start:1px solid rgba(255,255,255,.18)!important}
 /* 2026-11-24 (modèle C) : « TERMINÉ » en petit sous le choix */
 .sp-rcpt-card .sp-rcpt-s .sp-rcpt-end{display:block;margin-top:3px;color:#64748B;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+/* 2026-11-24 : « TERMINÉ » un peu détaché de l'option (sans agrandir la ligne) */
+.sp-rcpt-card .sp-rcpt-s .sp-rcpt-end{margin-top:6px!important;margin-bottom:-2px;font-size:10px!important}
