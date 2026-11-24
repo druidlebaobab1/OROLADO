@@ -776,8 +776,15 @@
     hr(selTop - 4);
     var mark = function (s, xr, y, size) { // ✓ / ✕ / ↺ d'un choix réglé (avant la cote)
       if (!RC[s.r]) return 0;
-      g.fillStyle = RC[s.r]; g.font = '800 ' + size + 'px ' + FONT; g.textAlign = 'right';
-      g.fillText(s.r === 'won' ? '✓' : s.r === 'lost' ? '✕' : '↺', xr, y); return size + 4;
+      // 2026-11-24 (propriétaire) : rond plein, comme dans Mes paris — vert ✓ / rouge ✕ / gris ↺ (bien visible, propre)
+      var d = Math.round(size * 1.35), r0 = d / 2, cx = xr - r0, w = Math.max(2, size * 0.16);
+      g.beginPath(); g.arc(cx, y, r0, 0, Math.PI * 2); g.fillStyle = s.r === 'won' ? '#16A34A' : s.r === 'lost' ? '#DC2626' : '#94A3B8'; g.fill();
+      g.strokeStyle = '#FFFFFF'; g.lineWidth = w; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath();
+      var q = r0 * 0.42;
+      if (s.r === 'won') { g.moveTo(cx - q, y + 0.05 * d); g.lineTo(cx - q * 0.2, y + q * 0.8); g.lineTo(cx + q * 1.05, y - q * 0.75); }
+      else if (s.r === 'lost') { g.moveTo(cx - q, y - q); g.lineTo(cx + q, y + q); g.moveTo(cx + q, y - q); g.lineTo(cx - q, y + q); }
+      else { g.arc(cx, y, q, -Math.PI * 0.2, Math.PI * 1.35); }
+      g.stroke(); return d + 6;
     };
     var oneLine = function (s, x0, x1, y, fs) { // « Match — Choix ……… cote »
       var odd = Number(s.odd).toFixed(2);
