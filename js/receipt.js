@@ -817,7 +817,7 @@
       var matchY = scO ? y + 18 : y + 19, pickY = scO ? y + 47 : y + 41;
       matchLine(s, P, matchY, right - P - 4, 14);
       g.fillStyle = '#8A5A00'; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
-      if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.textAlign = 'center'; g.fillText(ell(g, liveL, W - 2 * P), W / 2, y + 71); g.textAlign = 'left'; } // 2026-11-24 : centré
+      if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.textAlign = 'right'; g.fillText(liveL, W - P, y + rowH / 2 + 26); g.textAlign = 'left'; } // 2026-11-24 : sous la cote, à droite
       if (endL) { g.fillStyle = '#64748B'; g.font = '800 11px ' + FONT; g.fillText(ell(g, spaced(endL), right - P - 4), P, y + 65); } // un peu plus bas, sans agrandir la ligne
     });
     else if (D === 1 || D === 2) sel.forEach(function (s, i) {

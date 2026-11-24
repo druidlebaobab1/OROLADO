@@ -1729,3 +1729,6 @@ html:root body #casinoModal .sp2 .pz-lvt small{font-size:11px!important;line-hei
 html:root body #casinoModal .sp2 .sp2-bx .pz-rcol .pz-lvt{padding-top:1px!important;padding-bottom:1px!important}
 /* 2026-11-24 (propriétaire) : « En direct 58’ » centré dans la ligne du reçu */
 .sp-rcpt-card .sp-rcpt-s .sp-rcpt-live{text-align:center!important;align-self:stretch;margin-inline-start:-30px}
+/* 2026-11-24 (propriétaire) : « En direct 58’ » sous la cote, à droite (remplace le centrage) */
+.sp-rcpt-card .sp-rcpt-s .sp-rcpt-rc{flex:none!important;display:flex!important;flex-direction:column!important;align-items:flex-end!important;gap:6px;min-width:0}
+.sp-rcpt-card .sp-rcpt-s .sp-rcpt-rc .sp-rcpt-live{margin:0!important;text-align:right!important;align-self:auto!important;font-size:11.5px!important;white-space:nowrap}
