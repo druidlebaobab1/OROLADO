@@ -1678,3 +1678,5 @@ html:root body #casinoModal .sp2 .pz-b1 .pz-bk2{margin-inline-start:4px!importan
 .sp-rcpt-card.dn .sp-rcpt-s span{flex-direction:column!important;align-items:stretch!important;gap:0!important}
 .sp-rcpt-card.dn .sp-rcpt-s small::after{content:none!important}
 .sp-rcpt-card.dn .sp-rcpt-s small{flex:none!important}
+/* 2026-11-24 (propriétaire, style 2) : l'option du reçu en or foncé */
+.sp-rcpt-card .sp-rcpt-s > span > b{color:#8A5A00!important}
