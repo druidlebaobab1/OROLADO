@@ -794,7 +794,7 @@
       var avail = right - x0 - 6;
       g.textAlign = 'left';
       g.font = '800 ' + fs + 'px ' + FONT;
-      var sc1 = scOf(s), ch = String(s.l || ''), chW = g.measureText(ch).width;
+      var sc1 = scOf(s), ch = (s.mkt ? s.mkt + ' \u203A ' : '') + String(s.l || ''), chW = g.measureText(ch).width;
       g.font = '500 ' + fs + 'px ' + FONT;
       var sep = ' — ', sepW = g.measureText(sep).width, mt = sc1 ? sc1.h + ' ' + sc1.sc + ' ' + sc1.a : String(s.t || '');
       var mW = Math.max(0, avail - Math.min(chW, avail * 0.62) - sepW);
@@ -816,7 +816,14 @@
       // 2026-11-24 (propriétaire) : plus de « TERMINÉ » ; l'option descend (plus d'air sous la ligne du match), « En direct » un peu plus bas
       var matchY = scO ? y + 18 : y + 19, pickY = scO ? y + 47 : y + 41;
       matchLine(s, P, matchY, right - P - 4, 14);
-      g.fillStyle = '#8A5A00'; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
+      // 2026-11-24 (propriétaire, modèle 3) : petite étiquette du type de pari devant l'option (pas de « : »)
+      var ox = P;
+      if (s.mkt) {
+        g.font = '800 12px ' + FONT; var tg = ell(g, String(s.mkt), (right - P) * 0.55), tw = g.measureText(tg).width + 14;
+        rr(g, ox, pickY - 11, tw, 22, 5); g.fillStyle = '#F6EBD0'; g.fill();
+        g.fillStyle = '#7A5A12'; g.textAlign = 'left'; g.fillText(tg, ox + 7, pickY + 0.5); ox += tw + 8;
+      }
+      g.fillStyle = '#8A5A00'; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - ox - 4), ox, pickY);
       if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.textAlign = 'right'; g.fillText(liveL, W - P, y + rowH / 2 + 26); g.textAlign = 'left'; } // 2026-11-24 : sous la cote, à droite
       if (endL) { g.fillStyle = '#64748B'; g.font = '800 11px ' + FONT; g.fillText(ell(g, spaced(endL), right - P - 4), P, y + 65); } // un peu plus bas, sans agrandir la ligne
     });
@@ -836,7 +843,7 @@
         var right = x1 - g.measureText(odd).width - 6; right -= mark(s, right, y + rowH / 2, F[3]);
         g.textAlign = 'left';
         g.fillStyle = MUTE; g.font = '500 ' + F[0] + 'px ' + FONT; g.fillText(ell(g, s.t, right - x0 - 2), x0, y + rowH * 0.3);
-        g.fillStyle = INK; g.font = '800 ' + F[1] + 'px ' + FONT; g.fillText(ell(g, s.l, right - x0 - 2), x0, y + rowH * 0.72);
+        g.fillStyle = INK; g.font = '800 ' + F[1] + 'px ' + FONT; g.fillText(ell(g, (s.mkt ? s.mkt + ' \u203A ' : '') + s.l, right - x0 - 2), x0, y + rowH * 0.72);
       });
     }
     // totaux : mise, cote, gain, date, n°
