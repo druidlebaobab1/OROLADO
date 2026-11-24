@@ -855,7 +855,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3822'; // v3822 : reçu — option claire même pour Oui / Non
+  var MOD_V = '3823'; // v3823 : Mes paris — score toujours à droite, match en haut, une ligne par texte
 
   // 2026-11-03 (propriétaire : « en ouvrant Subway, on voit quelques secondes l'ANCIEN jeu avant le nouveau ») — une appli restée
   // ouverte garde l'ancienne version en mémoire (ancien catalogue → anciens jeux) jusqu'à ce qu'elle se recharge. On regarde en

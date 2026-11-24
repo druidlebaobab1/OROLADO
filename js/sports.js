@@ -473,7 +473,7 @@
       var tm = teams(s.t) || [s.t, ''];
       // 2026-11-23 (propriétaire) : match EN DIRECT → toucher la ligne ouvre la page du match (la flèche ˄ ferme toujours la carte)
       var goF = s.fx && Array.isArray(s.cs) && !Array.isArray(s.fs) ? ' data-gofx="' + esc(s.fx) + '"' : '';
-      return '<div class="sp2-bs r-' + esc(r) + (goF ? ' pz-golv' : '') + '"' + goF + '><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small class="fit" dir="auto">' + esc(s.t) + '</small><b class="fit" dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="fit sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1], spOf(s))) + '</small>' + (s.fs || s.cs ? liveChip(s) : '') + '</div><em>' + Number(s.odd).toFixed(2) + '</em></div>';
+      return '<div class="sp2-bs r-' + esc(r) + (goF ? ' pz-golv' : '') + '"' + goF + '><i class="sp2-ri">' + ic + '</i><div class="sp2-bst"><small dir="auto">' + esc(s.t) + '</small><b dir="auto">' + esc(sbOutL(s.mk, s.k, tm[0], tm[1])) + '</b><small class="sb-bsm" dir="auto">' + esc(sbMkName(s.mk, tm[0], tm[1], spOf(s))) + '</small></div><span class="pz-rcol"><em>' + Number(s.odd).toFixed(2) + '</em>' + (s.fs || s.cs ? liveChip(s) : '') + '</span></div>'; // 2026-11-24 : à DROITE, la cote puis le score dessous (le choix garde sa place)
     }
     return '<div class="sp2-bs r-' + esc(r) + '"><i class="sp2-ri">' + ic + '</i><div class="sp2-bst">' + linesHtml(e ? trT(e) : s.t, 'small', right ? 20 : 34, true) + '<b class="fit" dir="auto">' + esc(trO(s.l)) + '</b></div>' + right + '<em>' + Number(s.odd).toFixed(2) + '</em></div>';
   }
@@ -3369,7 +3369,7 @@
         var e = s.mk ? null : evByTitle(s.t);
         var sr = selSure(s) || s.r; // 2026-11-23 : coché dès que c'est sûr pendant le match
         var rr = sr === 'won' || sr === 'hwon' ? ' won' : sr === 'lost' || sr === 'hlost' ? ' lost' : sr === 'void' ? ' void' : '';
-        return '<span class="pz-bs1' + rr + '"><span class="pz-bs1t"><b dir="auto">' + esc(selLbl(s)) + '</b><small dir="auto">' + esc(e ? trT(e) : s.t) + '</small></span>' + (s.fs || s.cs || s.lv ? liveChip(s) : '') + '</span>';
+        return '<span class="pz-bs1' + rr + '"><span class="pz-bs1t"><small dir="auto">' + esc(e ? trT(e) : s.t) + '</small><b dir="auto">' + esc(selLbl(s)) + '</b></span>' + (s.fs || s.cs || s.lv ? liveChip(s) : '') + '</span>';
       }).join('') + (multi && bt.sel.length > 3 && !on ? '<small class="pz-bmore">' + esc(fmt(n.selAll, { n: bt.sel.length })) + ' ›</small>' : ''); // « +1 » → « Voir les 4 sélections » (toucher la carte les montre toutes)
       return '<div class="sp2-bet pz-bet st-' + esc(st) + (on ? ' on' : '') + (delSel[id] ? ' pz-dchk' : '') + '" data-rc="' + bi + '" data-id="' + esc(id) + '">' + '<i class="pz-dck" aria-hidden="true"></i>' +
         '<button type="button" class="sp2-bhd" aria-expanded="' + on + '">' +
