@@ -820,8 +820,8 @@
       var ox = P;
       if (s.mkt) {
         g.font = '800 12px ' + FONT; var tg = ell(g, String(s.mkt), (right - P) * 0.55), tw = g.measureText(tg).width + 14;
-        rr(g, ox, pickY - 11, tw, 22, 5); g.fillStyle = '#F6EBD0'; g.fill();
-        g.fillStyle = '#7A5A12'; g.textAlign = 'left'; g.fillText(tg, ox + 7, pickY + 0.5); ox += tw + 8;
+        rr(g, ox - 7, pickY - 11, tw, 22, 5); g.fillStyle = '#F6EBD0'; g.fill(); // texte de l'étiquette aligné sur le nom du match
+        g.fillStyle = '#7A5A12'; g.textAlign = 'left'; g.fillText(tg, ox, pickY + 0.5); ox += tw + 1;
       }
       g.fillStyle = '#8A5A00'; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - ox - 4), ox, pickY);
       if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.textAlign = 'right'; g.fillText(liveL, W - P, y + rowH / 2 + 26); g.textAlign = 'left'; } // 2026-11-24 : sous la cote, à droite
