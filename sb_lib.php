@@ -868,7 +868,7 @@ function sb_valid_k(string $fam): array {
   return [];
 }
 /* 2026-10-23 — paris réglés avec les statistiques / événements du match (fixtures?ids : events, statistics, players) */
-const SB_XS_WAIT = 8 * 3600;
+const SB_XS_WAIT = 3 * 3600; // 2026-11-24 (propriétaire : « trop long ») : corners / cartons sans statistiques 3 h après la fin → remboursé (avant 8 h)
 const SB_XS_FAMS = ['fts', 'lts', 'cou', 'couh', 'coua', 'c1x2', 'kou', 'kouh', 'koua', 'ags', 'fgs', 'lgs',
   'cah', 'co3', 'ceh', 'ng', 'rm', 'g10', 'ngs', 'p2g', 'p3g', 'pbk', 'psoff', 'psh', 'pst', 'pas',
   'og', 'htfts', 'pen', 'pmiss', 'hcfb', 'acfb', 'gi', 'htrc', 'kah', 'sog', 'tsh', 'tshh', 'tsha'];
@@ -1084,7 +1084,7 @@ function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bo
     if ($ko > 0 && $ts > $ko + SB_PST_VOID) return 'void';
     if ($betAt >= $ts && empty($sel['lv'])) return 'void'; // pari posé après le vrai coup d'envoi (sauf pari EN DIRECT : c'est voulu)
     if (!empty($sel['lv'])) { // 2026-11-23 : pari TARDIF (but déjà marqué, pas encore connu de nous) → remboursé
-      $late = sb_sel_late($m[1], $sel, $now);
+      $late = sb_sel_late($m[1], $sel, $now, isset($r['xs']['gl']) && is_array($r['xs']['gl']) ? $r['xs']['gl'] : null);
       if ($late === true) return 'void';
       if ($late === null && $now < $ts + 6 * 3600) return null; // événements pas encore lisibles : on attend (au plus 6 h)
     }
@@ -1107,7 +1107,7 @@ function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bo
  * pari de la 2e. S'il y a plus de buts « sûrement avant » que dans le score du pari → true (remboursé). Le même but que le
  * pari, ou un but de la même minute (doute) → false : le pari est réglé normalement. null = événements illisibles.
  */
-function sb_sel_late(string $id, array $sel, int $now): ?bool {
+function sb_sel_late(string $id, array $sel, int $now, ?array $xsGl = null): ?bool {
   $mBet = (int) ($sel['m'] ?? 0); $sc = (array) ($sel['sc'] ?? []);
   if ($mBet <= 0 || count($sc) !== 2) return false; // ancien pari sans minute / score : réglé normalement
   $j = sb_cache_peek('fixtures?id=' . $id, 86400, $now);
@@ -1122,6 +1122,18 @@ function sb_sel_late(string $id, array $sel, int $now): ?bool {
     if (PHP_SAPI === 'cli' && !empty($GLOBALS['SB_FAKE_FETCH'])) $j = sb_get_cached('fixtures?id=' . $id, 86400, $now); // (tests)
   }
   $r = is_array($j) ? (($j['response'] ?? [])[0] ?? null) : null;
+  // 2026-11-24 (propriétaire : « 1 h après la fin, toujours pas réglé ») : les buts du match sont DÉJÀ dans le résultat lu pour le
+  // règlement (xs.gl : côté, minute + arrêts/100) → on s'en sert tout de suite au lieu d'attendre une 2e lecture
+  if (!is_array($r) && is_array($xsGl)) {
+    $st0 = (string) ($sel['st0'] ?? ''); $n = 0;
+    foreach ($xsGl as $g) {
+      if (!is_array($g)) continue;
+      $mn = (float) ($g[1] ?? 0); $t = (int) floor($mn); $x = (int) round(($mn - $t) * 100);
+      $before = $x > 0 ? ($t === 45 && ($st0 === '2H' || $mBet >= 47)) : ($t <= $mBet - 2);
+      if ($before) $n++;
+    }
+    return $n > (int) $sc[0] + (int) $sc[1];
+  }
   if (!is_array($r)) return null;
   $st0 = (string) ($sel['st0'] ?? ''); $cnt = [0, 0];
   foreach (sb_live_events($r) as $e) {

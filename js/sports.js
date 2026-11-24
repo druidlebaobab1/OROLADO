@@ -1341,7 +1341,9 @@
   // choix d'un pari (Mes paris, reçus, ticket) : traduit si mk / k sont là, sinon l'ancien libellé (inchangé)
   // 2026-11-24 (propriétaire) : sur le REÇU, l'option seule (« Plus de 3,5 », « Brighton U21 »), sans le nom du type de pari
   // 2026-11-24 (b) : sauf quand l'option seule ne veut rien dire (« Oui », « Non », « Pair »…) → on garde le nom du pari
-  function optLbl(s) {
+  // 2026-11-24 (c) (propriétaire : « un plus de 9,5 sans savoir de quoi ») : le REÇU montre EXACTEMENT l'option de l'historique
+  function optLbl(s) { return selLbl(s); }
+  function optLblOld(s) {
     if (s && s.mk) {
       var tm = teams(s.t) || [s.t, ''], o = sbOutL(s.mk, s.k, tm[0], tm[1]), f = mkParts(s.mk)[0];
       var clear = /\d/.test(o) || ['1x2', '12', 'dc', 'dnb'].indexOf(f) > -1 || (tm[0] && o.indexOf(tm[0]) > -1) || (tm[1] && o.indexOf(tm[1]) > -1);
@@ -1350,7 +1352,8 @@
     return trO(s ? s.l : '');
   }
   function selLbl(s) {
-    if (s && s.mk) { var tm = teams(s.t) || [s.t, ''], sp = spOf(s), f = mkParts(s.mk)[0]; var o = sbOutL(s.mk, s.k, tm[0], tm[1]); return (f === '1x2' && sp === 'foot') || f === '12' ? o : sbMkName(s.mk, tm[0], tm[1], sp) + sep() + o; }
+    // 2026-11-24 : jamais deux « : » (« Corners : total : Plus de 9,5 » → « Corners total : Plus de 9,5 »)
+    if (s && s.mk) { var tm = teams(s.t) || [s.t, ''], sp = spOf(s), f = mkParts(s.mk)[0]; var o = sbOutL(s.mk, s.k, tm[0], tm[1]); return (f === '1x2' && sp === 'foot') || f === '12' ? o : String(sbMkName(s.mk, tm[0], tm[1], sp)).replace(/\s*:\s*/g, ' ') + sep() + o; }
     return trO(s ? s.l : '');
   }
 
