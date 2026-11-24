@@ -679,7 +679,7 @@
       '<div class="sp-rcpt-top"><img src="icons/logo-ring.svg" alt=""><div><b>OROLADO</b><small>orolado.com</small></div><span>' + esc(x.rcTitle) + '</span></div>' +
       '<div class="sp-rcpt-st"><em class="' + esc(st) + '">' + esc(stTxt) + '</em><small>' + esc(bigLab) + '</small><strong>' + big + ' $</strong></div>' +
       '<div class="sp-rcpt-cut"></div>' +
-      '<div class="sp-rcpt-sels"><p class="sp-rcpt-k">' + esc(bt.sel.length > 1 ? x.rcCombo : x.rcSingle) + ' · ' + bt.sel.length + '</p>' + bt.sel.map(function (s) {
+      '<div class="sp-rcpt-sels"><p class="sp-rcpt-k">' + esc(bt.sel.length > 1 ? x.rcCombo : x.rcSingle) + '\u2002' + bt.sel.length + '</p>' + bt.sel.map(function (s) {
         // 2026-10-31 (propriétaire) : match terminé → pastille avec LE SCORE SEUL, centré (plus de « Terminé »),
         // couleur selon le résultat (gagné vert / perdu rouge / remboursé bleu, via la classe du parent). s.fs = [dom, ext]
         // 2026-11-23 (propriétaire, modèles « Direct 2 » / « Terminé 2 ») : le score se place ENTRE les deux équipes
@@ -3363,7 +3363,7 @@
       var big = co ? '+' + money(bt.co) : st === 'won' ? '+' + money(bt.win) : st === 'lost' ? '−' + money(bt.stake - (bt.win || 0)) : money(st === 'void' ? bt.stake : bt.pot); // moitié perdue : la partie rendue est déduite
       var lab = co ? T18('sbCoDone', 'Cashed out') : st === 'won' ? x.wonL : st === 'lost' ? x.lostL : st === 'void' ? x.voidL : x.potL;
       var cq = st === 'open' && coQ[id] ? coQ[id] : 0;
-      var multi = bt.sel.length > 1, kind = multi ? x.rcCombo + ' · ' + bt.sel.length : x.rcSingle;
+      var multi = bt.sel.length > 1, kind = multi ? x.rcCombo + '\u2002' + bt.sel.length : x.rcSingle;
       var show = multi ? bt.sel.slice(0, 3) : bt.sel;
       var sels = show.map(function (s) {
         var e = s.mk ? null : evByTitle(s.t);
