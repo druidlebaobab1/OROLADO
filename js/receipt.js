@@ -808,7 +808,7 @@
       var endL = n <= 5 && scO && scO.fin ? String(x.finL || 'FT').toUpperCase() : ''; // match fini : « TERMINÉ » sous le choix
       var matchY = liveL || endL ? y + 17 : y + 19, pickY = liveL || endL ? y + 39 : y + 41;
       matchLine(s, P, matchY, right - P - 4, 14);
-      g.fillStyle = INK; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
+      g.fillStyle = '#8A5A00'; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - P - 4), P, pickY);
       if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.fillText(ell(g, liveL, right - P - 4), P, y + 61); }
       if (endL) { g.fillStyle = '#64748B'; g.font = '800 11px ' + FONT; g.fillText(ell(g, spaced(endL), right - P - 4), P, y + 65); } // un peu plus bas, sans agrandir la ligne
     });
