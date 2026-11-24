@@ -667,7 +667,9 @@
     var stTxt = { open: x.open, won: x.wonL, lost: x.lostL, void: x.voidL }[st] || st;
     var big = st === 'won' ? m2(bt.win) : st === 'lost' ? m2(bt.win || 0) : st === 'void' ? m2(bt.stake) : m2(bt.pot);
     var bigLab = st === 'won' ? x.rcPaid : st === 'lost' ? x.rcLostTxt : st === 'void' ? x.rcBack : x.potL;
-    var ICO = { won: '<i class="ok">✓</i>', lost: '<i class="ko">✕</i>', void: '<i class="vd">↺</i>', hwon: '<i class="ok">½✓</i>', hlost: '<i class="ko">½✕</i>' };
+    // 2026-11-24 (propriétaire) : vraie coche / vraie croix dessinées (traits épais blancs), comme dans Mes paris
+    var SVK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4L18 8"/></svg>', SVX = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>';
+    var ICO = { won: '<i class="ok">' + SVK + '</i>', lost: '<i class="ko">' + SVX + '</i>', void: '<i class="vd">↺</i>', hwon: '<i class="ok">' + SVK + '</i>', hlost: '<i class="ko">' + SVX + '</i>' };
     var no = String(bt.id || '').slice(-10).toUpperCase();
     var d = new Date((bt.at || 0) * 1000), pad = function (n) { return (n < 10 ? '0' : '') + n; };
     var dt = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
@@ -679,7 +681,7 @@
       '<div class="sp-rcpt-top"><img src="icons/logo-ring.svg" alt=""><div><b>OROLADO</b><small>orolado.com</small></div><span>' + esc(x.rcTitle) + '</span></div>' +
       '<div class="sp-rcpt-st"><em class="' + esc(st) + '">' + esc(stTxt) + '</em><small>' + esc(bigLab) + '</small><strong>' + big + ' $</strong></div>' +
       '<div class="sp-rcpt-cut"></div>' +
-      '<div class="sp-rcpt-sels"><p class="sp-rcpt-k">' + esc(bt.sel.length > 1 ? x.rcCombo : x.rcSingle) + '\u2002' + bt.sel.length + '</p>' + bt.sel.map(function (s) {
+      '<div class="sp-rcpt-sels"><p class="sp-rcpt-k">' + esc(bt.sel.length > 1 ? x.rcCombo : x.rcSingle) + (bt.sel.length > 1 ? '\u2002' + bt.sel.length : '') + '</p>' + bt.sel.map(function (s) {
         // 2026-10-31 (propriétaire) : match terminé → pastille avec LE SCORE SEUL, centré (plus de « Terminé »),
         // couleur selon le résultat (gagné vert / perdu rouge / remboursé bleu, via la classe du parent). s.fs = [dom, ext]
         // 2026-11-23 (propriétaire, modèles « Direct 2 » / « Terminé 2 ») : le score se place ENTRE les deux équipes
