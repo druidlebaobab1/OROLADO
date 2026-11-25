@@ -823,7 +823,7 @@
         rr(g, ox - 7, pickY - 11, tw, 22, 5); g.fillStyle = '#F6EBD0'; g.fill(); // texte de l'étiquette aligné sur le nom du match
         g.fillStyle = '#7A5A12'; g.textAlign = 'left'; g.fillText(tg, ox, pickY + 0.5); ox += tw + 1;
       }
-      g.fillStyle = '#8A5A00'; g.font = '800 18px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - ox - 4), ox, pickY);
+      g.fillStyle = '#8A5A00'; g.font = '800 ' + (s.mkt ? 16 : 18) + 'px ' + FONT; g.textAlign = 'left'; g.fillText(ell(g, s.l, right - ox - 4), ox, pickY); // un peu plus petit à côté de l'étiquette
       if (liveL) { g.fillStyle = '#16A34A'; g.font = '700 13px ' + FONT; g.textAlign = 'right'; g.fillText(liveL, W - P, y + rowH / 2 + 26); g.textAlign = 'left'; } // 2026-11-24 : sous la cote, à droite
       if (endL) { g.fillStyle = '#64748B'; g.font = '800 11px ' + FONT; g.fillText(ell(g, spaced(endL), right - P - 4), P, y + 65); } // un peu plus bas, sans agrandir la ligne
     });
