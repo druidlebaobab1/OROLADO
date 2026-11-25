@@ -1750,3 +1750,9 @@ html body .topbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 .pz-optl .pz-opt{font-size:.92em!important}
 .sp-rcpt-card .pz-optl{font-size:14px!important}
 .sp-rcpt-card .pz-optl .pz-mtag{font-size:10.5px!important;vertical-align:baseline}
+/* 2026-11-25 (b) (propriétaire : « le T de Total est coupé ; l'option est trop grosse, pas sur la même ligne ») :
+   étiquette jamais coupée (plus de décalage à gauche), option de la MÊME taille que la ligne du match, centrée sur l'étiquette */
+html body .pz-optl{align-items:center!important;overflow:visible!important;gap:6px!important;font-size:14px!important;line-height:1.25!important;margin-top:3px!important}
+html body .pz-optl .pz-mtag{margin-inline-start:0!important;padding:2px 6px!important;font-size:10.5px!important;line-height:1.3!important;overflow:hidden;text-overflow:ellipsis;max-width:62%}
+html body .pz-optl .pz-opt{font-size:14px!important;line-height:1.25!important;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis}
+html body .sp-rcpt-card .pz-optl,html body .sp-rcpt-card .pz-optl .pz-opt{font-size:14px!important}
