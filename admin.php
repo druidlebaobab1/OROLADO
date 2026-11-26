@@ -618,7 +618,7 @@ function admin_badges_compute(): array {
     'signup_date' => $nInscrits,
     'signup_hour' => $signupToday,
     'signup_geo' => $nInscrits,
-    'visits' => count(glob(rtrim(orolado_data_dir(), DIRECTORY_SEPARATOR . '/') . '/visits/' . date('Y-m-d') . '/*') ?: []),
+    'visits' => count(glob(rtrim(orolado_data_dir(), DIRECTORY_SEPARATOR . '/') . '/visits/' . admin_now()->format('Y-m-d') . '/*') ?: []),
     'no_deposit' => $noDep,
     'signup_closed' => count(admin_closed_accounts($people ?? admin_profiles())),
     'dep_today' => $depToday,
@@ -721,7 +721,7 @@ function admin_wdx_payload(array $req): array {
   $q = strtolower(trim((string) ($req['q'] ?? '')));
   $from = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['from'] ?? '')) ? (string) $req['from'] : '';
   $to = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['to'] ?? '')) ? (string) $req['to'] : '';
-  [$a, $b] = ($from !== '' || $to !== '') ? admin_day_bounds('range', $from !== '' ? $from : '2000-01-01', $to !== '' ? $to : date('Y-m-d')) : ['', ''];
+  [$a, $b] = ($from !== '' || $to !== '') ? admin_day_bounds('range', $from !== '' ? $from : '2000-01-01', $to !== '' ? $to : admin_now()->format('Y-m-d')) : ['', ''];
   $rows = [];
   foreach ($list as $w) {
     $w = admin_enrich_wd($w, $pmap);
@@ -1291,13 +1291,13 @@ function admin_list_payload_raw(string $view, array $req): array {
 
   if ($view === 'visits') {
     $preset = (string) ($req['preset'] ?? 'all');
-    $days = [date('Y-m-d')];
+    $days = [admin_now()->format('Y-m-d')];
     $label = 'aujourd’hui';
     if ($preset === 'all') {
       $days = array_values(array_filter((array) @scandir(rtrim(orolado_data_dir(), DIRECTORY_SEPARATOR . '/') . '/visits'), static fn($d) => (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $d)));
       $label = 'depuis le début';
     }
-    if ($preset === 'yesterday') { $days = [date('Y-m-d', strtotime('-1 day'))]; $label = 'hier'; }
+    if ($preset === 'yesterday') { $days = [admin_now()->modify('-1 day')->format('Y-m-d')]; $label = 'hier'; }
     if ($preset === 'date' && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['cal'] ?? ''))) { $days = [(string) $req['cal']]; $label = 'le ' . date('d/m/Y', strtotime((string) $req['cal'])); }
     if ($preset === 'range' && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['dateFrom'] ?? '')) && preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) ($req['dateTo'] ?? ''))) {
       $days = [];
