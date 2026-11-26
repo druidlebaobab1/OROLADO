@@ -1484,6 +1484,19 @@
       free.sort(function (a, b) { return Math.abs(a.x - f.x) + (1 - a.z) * 0.3 - Math.abs(b.x - f.x) - (1 - b.z) * 0.3; });
       return free[Math.random() < 0.7 ? 0 : (Math.random() * free.length) | 0];
     }
+    // abri qui barre la route du soldat (même profondeur, même place à l'écran) : de quel côté passer, et à quelle vitesse
+    function blocker(f, excl) {
+      var out = null;
+      covers.forEach(function (cv) {
+        if (out || cv === excl || !(f.z > cv.z - 0.035 && f.z < cv.z + 0.075)) return;
+        var b = coverBox(cv), q = scr(f.x, f.z), cx = b.x + b.w / 2, half = b.w / 2 + bh * q.s * 0.24 + 2;
+        if (Math.abs(q.x - cx) >= half) return;
+        var k2 = W * 0.46 * (0.35 + 0.65 * (1 - f.z)), sg = q.x < cx ? -1 : 1;
+        if (Math.abs((q.x + sg * (half - Math.abs(q.x - cx))) - W / 2) > W * 0.47) sg = -sg; // pas vers le bord de l'écran
+        out = { sg: sg, spd: Math.max(0.6, 2.4 * half / k2) };
+      });
+      return out;
+    }
     function release(f) { if (f.cv && f.cv.by === f) f.cv.by = null; f.cv = null; }
     function fpos(f) { var p = scr(f.x, f.z), hh = bh * p.s * f.sc, sink = (1 - f.e) * hh * 0.62 + f.duck * hh * 0.3, jy = f.jump > 0 ? Math.sin(Math.PI * f.jump) * hh * 0.32 : 0; return { x: p.x, y: p.y, hh: hh, top: p.y - hh * 1.02 + sink - jy, sink: sink, jy: jy }; }
     // partie visible (pour viser) : au-dessus de l'abri quand il s'y cache
@@ -1620,9 +1633,14 @@
           if (bomb || dead || won) continue;
           f.t += dt;
           if (f.st === 'run') {
-            f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1; f.z -= f.vz * dt * (f.duck ? 0.5 : 1);
-            var lim = XR * (0.6 + 0.6 * (1 - f.z)); f.x += f.dx * dt; if (Math.abs(f.x) > lim && f.x * f.dx > 0) f.dx = -f.dx * rnd(0.7, 1.1); if (Math.random() < dt * 0.6) f.dx = -f.dx;
-            covers.forEach(function (cv) { if (f.z > cv.z - 0.025 && f.z < cv.z + 0.06) { var b = coverBox(cv), q = scr(f.x, f.z), half = b.w / 2 + bh * q.s * 0.22, k2 = W * 0.46 * (0.35 + 0.65 * (1 - f.z)); if (Math.abs(q.x - (b.x + b.w / 2)) < half) { var sg = q.x < b.x + b.w / 2 ? -1 : 1; f.x += sg * dt * 1.4 * Math.max(0.3, half / k2); f.dx = sg * Math.abs(f.dx || 0.2); } } });
+            f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1;
+            var bl = blocker(f, null);
+            if (bl) { f.x += bl.sg * dt * bl.spd; f.dx = bl.sg * Math.max(0.2, Math.abs(f.dx)); f.z -= f.vz * dt * 0.12; } // obstacle devant : il le CONTOURNE (pas à travers)
+            else {
+              f.z -= f.vz * dt * (f.duck ? 0.5 : 1);
+              var lim = XR * (0.6 + 0.6 * (1 - f.z)), nx = f.x + f.dx * dt; if (Math.abs(nx) > lim && nx * f.dx > 0) f.dx = -f.dx * rnd(0.7, 1.1); if (Math.random() < dt * 0.6) f.dx = -f.dx;
+              var ox = f.x; f.x += f.dx * dt; if (blocker(f, null)) { f.x = ox; f.dx = -f.dx; } // un zigzag ne le fait jamais entrer dans un abri
+            }
             if (f.jT < 9 && f.z < f.jT) { f.jT = 9; f.jump = 0.001; }
             if (f.jump) { f.jump += dt / 0.55; if (f.jump >= 1) f.jump = 0; }
             if (f.z <= 0) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); } } else foes.splice(i, 1); }
@@ -1632,8 +1650,9 @@
           if (!cv) { f.st = 'run'; f.k = f.k === 'boss' ? 'boss' : 'run'; f.dx = rnd(-0.15, 0.15); continue; }
           if (f.st === 'move') {
             f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1;
-            var tz = cv.z + 0.012, dz = tz - f.z, dx = cv.x - f.x, sx2 = (0.35 + Math.abs(dx) * 0.9) * dt, spd = f.vz * 1.4 * dt;
-            f.x += Math.abs(dx) <= sx2 ? dx : (dx > 0 ? sx2 : -sx2); f.z += Math.abs(dz) <= spd ? dz : (dz > 0 ? spd : -spd);
+            var tz = cv.z + 0.012, dz = tz - f.z, dx = cv.x - f.x, sx2 = (0.35 + Math.abs(dx) * 0.9) * dt, spd = f.vz * 1.4 * dt, bm = blocker(f, cv);
+            if (bm) { f.x += bm.sg * dt * bm.spd; f.z += (dz > 0 ? 1 : -1) * Math.min(Math.abs(dz), spd * 0.12); } // un autre abri sur le chemin : il passe à côté
+            else { f.x += Math.abs(dx) <= sx2 ? dx : (dx > 0 ? sx2 : -sx2); f.z += Math.abs(dz) <= spd ? dz : (dz > 0 ? spd : -spd); }
             if (Math.abs(cv.x - f.x) < 1e-3 && Math.abs(tz - f.z) < 1e-3) { f.st = 'hide'; f.t = 0; f.e = 0.4; f.hT = rnd(0.5, 1.1); }
             continue;
           }
@@ -1709,7 +1728,8 @@
       key: function () { var near = foes.filter(function (q) { return !q.dn && exposed(q); }).sort(function (a, b) { return a.z - b.z; })[0]; if (near) { var v = vis(near); shootAt(v.x, v.top + (v.bot - v.top) * 0.4); } },
       boom: function () { bomb = { t: 0, k: 0.3, n: 0 }; A.sx('engine', { k: 'jet' }); },
       win: function () { won = 0.001; A.burst(W / 2, H * 0.8, 16, ['#FDE68A', '#FFFFFF'], 150, 0.6, 3); },
-      dbg: function () { return { foes: foes.map(function (f) { var v = vis(f), q = fpos(f); return { x: v.x, y: v.top + (v.bot - v.top) * 0.4, h: q.hh, z: f.z, dn: f.dn, k: f.k, st: f.st, ex: exposed(f) }; }), gren: gren.map(function (g) { var p = gpos(g); return { x: p.x, y: p.y, t: g.t, T: g.T }; }), cool: cool, dead: dead, kills: kills, danger: danger, wave: wave, covers: covers.length }; }
+      dbg: function () { return { foes: foes.map(function (f) { var v = vis(f), q = fpos(f); return { x: v.x, y: v.top + (v.bot - v.top) * 0.4, h: q.hh, z: f.z, dn: f.dn, k: f.k, st: f.st, ex: exposed(f) }; }), gren: gren.map(function (g) { var p = gpos(g); return { x: p.x, y: p.y, t: g.t, T: g.T }; }), cool: cool, dead: dead, kills: kills, danger: danger, wave: wave, covers: covers.length,
+        clip: foes.filter(function (f) { if (f.dn || f.st === 'hide' || f.st === 'peek' || f.st === 'aim' || f.st === 'fire' || f.st === 'duck') return false; return covers.some(function (cv) { if (cv === f.cv && f.st !== 'run') return false; if (!(f.z > cv.z - 0.012 && f.z < cv.z + 0.03)) return false; var b = coverBox(cv), q = scr(f.x, f.z); return Math.abs(q.x - (b.x + b.w / 2)) < b.w / 2 + bh * q.s * 0.1; }); }).length }; }
     };
   }; }
   boot('trenchdef', warFront({ wb: 'trenchdef', sold: 'td_soldier', aim: 'td_aim', cvi: 'war_cv_sand', hy: 0.37, cover: 'sand', chips: ['#C2B280', '#8B7D5A', '#E7DCC0'] }), 'aim', 0.5);
@@ -2044,6 +2064,14 @@
       var cx = W / 2 + c.sd * (W * 0.5 - w * 0.36); // collé au bord de la route, un peu coupé par l'écran comme une vraie rue
       return { x: cx - w / 2, y: y - h, w: w, h: h, by: y, cx: cx, hh: hh, ok: im.ok, im: im };
     }
+    function zBlock(z) {
+      for (var i = 0; i < COV.length; i++) {
+        var c = COV[i]; if (!(z.p > c.p - 0.1 && z.p < c.p + 0.03)) continue;
+        var cb = cvBox(c), d = dims(z), half = cb.w / 2 + d[0] * 0.5 + 3, zx = sx(z);
+        if (Math.abs(zx - cb.cx) < half) return { tx: xAt(cb.cx - c.sd * (half + 4), z.p) - (z.sw ? 0 : 0) };
+      }
+      return null;
+    }
     function xAt(px, p) { var y = zy(p); return (px - W / 2) / Math.max(1, (y - hz) * 1.05); }
     function edgeX(p) { var y = zy(p); return (W * 0.5) / Math.max(1, (y - hz) * 1.05); }
     function zy(p) { return hz + (yTop - hz) * Math.pow((yB - hz) / (yTop - hz), Math.pow(p, 0.8)); }
@@ -2067,7 +2095,9 @@
       } else if (r2 < 0.4 && freeC.length && P.roof) { // grimpe sur la voiture puis saute
         var c2 = pick(freeC), b2 = cvBox(c2); z.cv = c2; z.m = 'climb'; z.p = c2.p + 0.004; z.y = zy(z.p); z.x = xAt(b2.cx - c2.sd * b2.w * 0.08, z.p); z.vis = 0; z.oy = b2.h * 0.78; z.sw = 0; z.v *= 0.9;
       } else if (r2 < 0.62) { // entre par le côté de l'écran
-        var sd = Math.random() < 0.5 ? -1 : 1; z.p = rnd(0.28, 0.55); z.y = zy(z.p); z.x = sd * (edgeX(z.p) + 0.25); z.m = 'side'; z.vx = -sd * rnd(0.9, 1.3); z.sw = 0;
+        var sd = Math.random() < 0.5 ? -1 : 1, tr = 0; z.p = rnd(0.28, 0.55);
+        while (tr++ < 8 && COV.some(function (c) { return c.sd === sd && Math.abs(c.p - z.p) < 0.09; })) z.p = rnd(0.24, 0.6);
+        z.y = zy(z.p); z.x = sd * (edgeX(z.p) + 0.25); z.m = 'side'; z.vx = -sd * rnd(0.9, 1.3); z.sw = 0;
       } else if (r2 < 0.8 && P.rise) { // sort de terre
         z.p = rnd(0.3, 0.62); z.y = zy(z.p); z.x = rnd(-0.55, 0.55); z.m = 'rise'; z.vis = 0; z.sw = 0;
         var d0 = dims(z); A._xb = 1; A.burst(sx(z), z.y, 10, ['#3F3A2E', '#5C5340', '#7C6F55'], 90, 0.6, 3, 140); A._xb = 0; void d0;
@@ -2154,10 +2184,14 @@
             if (z.m === 'climb') { z.vis = Math.min(1, z.vis + dt * 2.2); if (z.vis >= 1) { z.m = 'perch'; z.st = rnd(0.35, 0.7); } continue; }
             if (z.m === 'perch') { if (z.st <= 0) { z.m = 'jump'; z.j = 0; z.p0 = z.p; z.oy0 = z.oy; } continue; }
             if (z.m === 'jump') { z.j += dt / 0.5; var jk = Math.min(1, z.j); z.oy = z.oy0 * (1 - jk) + Math.sin(jk * Math.PI) * dims(z)[1] * 0.25; z.p = z.p0 + 0.05 * jk; z.y = zy(z.p); if (jk >= 1) { z.m = 'walk'; z.oy = 0; A._xb = 1; A.burst(sx(z), z.y, 6, ['#78716C', '#A8A29E'], 80, 0.4, 2.4, 140); A._xb = 0; A.shake(0.08); } continue; }
-            if (z.m === 'side') { z.x += z.vx * dt; z.p += z.v * dt * 0.35; var lim = 0.5; if (Math.abs(z.x) < lim) { z.m = 'walk'; z.sw = 0.08; } }
+            if (z.m === 'side') { var zb0 = zBlock(z); if (zb0) { z.x += (zb0.tx - z.x) * Math.min(1, dt * 6); z.p += z.v * dt * 0.1; z.y = zy(z.p); continue; } z.x += z.vx * dt; z.p += z.v * dt * 0.35; var lim = 0.5; if (Math.abs(z.x) < lim) { z.m = 'walk'; z.sw = 0.08; } }
             if (z.m === 'rise') { z.vis = Math.min(1, z.vis + dt * 0.9); if (Math.random() < dt * 8) { A._xb = 1; A.burst(sx(z), z.y, 2, ['#3F3A2E', '#5C5340'], 60, 0.4, 2.4, 160); A._xb = 0; } if (z.vis >= 1) { z.m = 'walk'; } continue; }
           }
-          if (!dead) { z.p += z.v * dt * (z.hit ? 0.15 : 1); z.x *= 1 - 0.1 * dt * z.p; }
+          if (!dead) {
+            var zb = zBlock(z); // voiture / tombe devant : il passe À CÔTÉ (jamais à travers)
+            if (zb) { z.x += (zb.tx - z.x) * Math.min(1, dt * 6); z.sw = 0; z.p += z.v * dt * 0.2; }
+            else { z.p += z.v * dt * (z.hit ? 0.15 : 1); z.x *= 1 - 0.1 * dt * z.p; }
+          }
           z.p = Math.min(1, z.p); z.y = zy(z.p);
           if (z.p >= 1) {
             if (z.hord) { if (!dead) { dead = 1; A.explode(W / 2, yB, 1.6); A.flash(0.6); } continue; }
@@ -2232,7 +2266,7 @@
         A.flash(0.25);
       },
       win: function () { won = 0.001; zs.forEach(function (z) { if (!z.die) { z.die = 0.001; var d = dims(z); A.burst(sx(z), z.y - d[1] * 0.5, 6, ['#FDE68A', '#FFFFFF'], 120, 0.5, 2.6); } }); },
-      dbg: function () { return { dead: dead, hz: hz, zs: zs.filter(function (z) { return !z.die; }).map(function (z) { var d = dims(z), q = zbox(z); return { x: sx(z), y: q ? q.top + (q.bot - q.top) * 0.4 : z.y, w: d[0], h: d[1], hp: z.hp, k: z.k, m: z.m }; }), yB: yB }; }
+      dbg: function () { return { clip: zs.filter(function (z) { if (z.die || z.m === 'lurk' || z.m === 'emerge' || z.m === 'climb' || z.m === 'perch' || z.m === 'jump') return false; return COV.some(function (c) { if (!(z.p > c.p - 0.012 && z.p < c.p + 0.02)) return false; var cb = cvBox(c), d = dims(z); return Math.abs(sx(z) - cb.cx) < cb.w / 2 + d[0] * 0.15; }); }).length, dead: dead, hz: hz, zs: zs.filter(function (z) { return !z.die; }).map(function (z) { var d = dims(z), q = zbox(z); return { x: sx(z), y: q ? q.top + (q.bot - q.top) * 0.4 : z.y, w: d[0], h: d[1], hp: z.hp, k: z.k, m: z.m }; }), yB: yB }; }
     };
   }; }
   // abris : [image, profondeur (0 loin → 1 barricade), côté (−1 gauche / 1 droite), hauteur (× un zombie), retourné]
