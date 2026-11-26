@@ -310,6 +310,40 @@
       host.appendChild(o); setTimeout(function () { if (o.parentNode) o.remove(); }, 2600);
     } catch (e) { /* jamais bloquant */ }
   }
+  // 2026-11-26 (propriétaire : « une vraie animation de victoire, sérieuse, qui passe sur Facebook » — modèle 3 choisi) :
+  // étincelles dorées autour de la pastille « +$ » (qui reste en haut, inchangée) et quelques vraies pièces d'or 3D (fal.ai)
+  // qui en sortent, tournent et retombent. Calme : pas de flash, pas d'écran assombri. Jeux de guerre et de zombies.
+  var GOLD_GAMES = { trenchdef: 1, forestambush: 1, junglestrike: 1, zombiesiege: 1, deadhighway: 1, graveyardnight: 1 };
+  function goldBurst(host, pill) {
+    try {
+      var old = host.querySelector('.cs-goldfx'); if (old) old.remove();
+      var lite = document.documentElement.classList.contains('oro-lite');
+      var hr = host.getBoundingClientRect(), pr = pill.getBoundingClientRect();
+      var px = pr.left - hr.left + pr.width / 2, py = pr.top - hr.top + pr.height / 2, pw = pr.width, ph = pr.height;
+      var o = document.createElement('div'); o.className = 'cs-goldfx'; o.setAttribute('aria-hidden', 'true');
+      o.style.cssText = 'position:absolute;inset:0;z-index:29;pointer-events:none;overflow:hidden';
+      host.appendChild(o);
+      var CA = 'img/games/fx_coin_a.webp?v=3853', CB = 'img/games/fx_coin_b.webp?v=3853', SP = 'img/games/fx_spark.webp?v=3853', P = [], i;
+      var nS = lite ? 8 : 14, nC = lite ? 6 : 10;
+      for (i = 0; i < nS; i++) { var a = Math.random() * 6.283, rr = 0.55 + Math.random() * 0.75; P.push({ k: 's', d: Math.random() * 1.3, x: px + Math.cos(a) * pw * 0.62 * rr, y: py + Math.sin(a) * ph * 1.6 * rr + ph * 0.6, sz: 22 + Math.random() * 20 }); }
+      for (i = 0; i < nC; i++) { var an = -Math.PI * (0.12 + 0.76 * Math.random()); P.push({ k: 'c', d: 0.08 + i * 0.06, x: px, y: py + ph * 0.3, vx: Math.cos(an) * (110 + Math.random() * 110), vy: Math.sin(an) * (170 + Math.random() * 110) + 60, a: Math.random() * 6, va: 7 + Math.random() * 6, sz: 22 + Math.random() * 10 }); }
+      P.forEach(function (p) { var e = document.createElement('i'); e.style.cssText = 'position:absolute;left:0;top:0;display:block;opacity:0;will-change:transform,opacity;background:no-repeat center/contain url(' + (p.k === 's' ? SP : CA) + ');width:' + p.sz.toFixed(0) + 'px;height:' + p.sz.toFixed(0) + 'px;' + (p.k === 's' ? 'mix-blend-mode:screen' : 'filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))'); o.appendChild(e); p.e = e; p.img = 'a'; });
+      var H = hr.height, t0 = performance.now(), DUR = 2.4;
+      (function step(now) {
+        if (!o.isConnected) return;
+        var t = (now - t0) / 1000;
+        P.forEach(function (p) {
+          var u = t - p.d, e = p.e; if (u < 0) { e.style.opacity = 0; return; }
+          if (p.k === 's') { var q = Math.min(1, u / 0.7), sc = Math.sin(q * Math.PI); e.style.opacity = sc.toFixed(3); e.style.transform = 'translate(' + (p.x - p.sz / 2).toFixed(1) + 'px,' + (p.y - p.sz / 2).toFixed(1) + 'px) scale(' + (0.3 + sc).toFixed(3) + ') rotate(' + (q * 70).toFixed(0) + 'deg)'; return; }
+          var x = p.x + p.vx * u, y = p.y + p.vy * u + 420 * u * u, c = Math.cos(p.a + u * p.va), im = Math.abs(c) > 0.55 ? 'a' : 'b';
+          if (im !== p.img) { p.img = im; e.style.backgroundImage = 'url(' + (im === 'a' ? CA : CB) + ')'; }
+          e.style.opacity = y > H - 30 ? Math.max(0, 1 - (y - (H - 30)) / 30).toFixed(3) : (u < 0.12 ? (u / 0.12).toFixed(3) : 1);
+          e.style.transform = 'translate(' + (x - p.sz / 2).toFixed(1) + 'px,' + (y - p.sz / 2).toFixed(1) + 'px) scaleX(' + Math.max(0.18, Math.abs(c)).toFixed(3) + ')';
+        });
+        if (t < DUR) requestAnimationFrame(step); else o.remove();
+      })(t0);
+    } catch (e) { /* jamais bloquant */ }
+  }
   function resultLine(box, r, extra) {
     sfxResult(r);
     var x = X(), host = box.querySelector('.cg-stage') || box.querySelector('.cs-stage') || box;
@@ -324,7 +358,8 @@
     // 2026-10-20 (QA) : le compteur démarre APRÈS l'ajout à l'écran (avant : pastille pas encore affichée → le compteur
     // s'arrêtait dès la 1re image et le gain restait « +$ 0.00 » vert)
     if (win) countUp(t.querySelector('b[dir]'), Number(r.win) || 0); // dir=ltr : en arabe on lit bien « +$ 0 »
-    if (win && put > 0 && got / put >= 5) bigWin(host, got, got / put);
+    if (win && GOLD_GAMES[S.game] && got > put) { var tPill = t; requestAnimationFrame(function () { requestAnimationFrame(function () { goldBurst(host, tPill); }); }); }
+    else if (win && put > 0 && got / put >= 5) bigWin(host, got, got / put);
     else if (win && put > 0 && got / put >= 2) coinRain(host, got / put);
     // 2026-11-20 (propriétaire : « dans les nouveaux jeux, j'ai gagné mais je n'ai pas vu les jolies choses qui pleuvent ») — jeux
     // « Tu contrôles » (zombies, guerre, course…) : tout encaissement gagnant (gain > mise) a sa pluie de pièces, même sous ×2.
@@ -855,7 +890,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3852'; // v3852 : jeux de guerre — plus d'écriture « VAGUE » ni de barre de danger
+  var MOD_V = '3853'; // v3853 : encaissement — étincelles dorées et vraies pièces 3D (6 jeux)
 
   // 2026-11-03 (propriétaire : « en ouvrant Subway, on voit quelques secondes l'ANCIEN jeu avant le nouveau ») — une appli restée
   // ouverte garde l'ancienne version en mémoire (ancien catalogue → anciens jeux) jusqu'à ce qu'elle se recharge. On regarde en
