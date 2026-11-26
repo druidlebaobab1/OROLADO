@@ -671,7 +671,11 @@
     return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/direct' + sub;
   }
   function directFresh() {
-    return !!(direct.ws && direct.ws.readyState === 1 && Date.now() - direct.lastAt < 1000);
+    // 2026-11-26 (propriétaire : « la courbe fait de petits tics en avant / en arrière ») : mesuré sur la ligne directe, le serveur
+    // laisse parfois passer 0,5 à 1,1 s sans prix quand il est chargé ; à plus d'1 s, le téléphone se croyait coupé, passait en
+    // secours et reculait la courbe d'un pas. Il attend maintenant 2 s avant de passer en secours (affichage seulement : les prix,
+    // les gains et les règles du trading ne changent pas).
+    return !!(direct.ws && direct.ws.readyState === 1 && Date.now() - direct.lastAt < 2000);
   }
   function directConnect() {
     // v3634 : ligne « ouverte » mais muette depuis 6 s (réseau mobile qui a décroché sans prévenir), ou qui n'arrive
