@@ -1810,3 +1810,9 @@ html.ios-app.ios-solid.is-ios:not(.fs-trade):not(.oro-mopen):not(.oro-mlive):not
    très sombre sous le décor, identique pour tous les jeux ; la carte de mise est pleine (plus transparente). */
 html body #casinoModal#casinoModal.in-game > .modal-box,html body #casinoModal .cg-game{background:#0B0906!important;background-image:none!important}
 html body #casinoModal .cg-game > .cs-panel.cg-panel,html body #casinoModal .cg-game .cs-panel.cg-panel{background:#15110A!important;background-image:none!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+/* 2026-11-26 (b) (propriétaire : « la lueur des jeux rentre dans le terminal, il doit avoir UNE couleur ») : le halo de couleur de chaque
+   jeu (.cg-game::before / ::after, rose, bleu…) et les petites étoiles de la fenêtre débordaient sur la zone de mise → retirés
+   pendant un jeu : la zone de mise est d'un seul sombre, partout (validé sur image avant / après). */
+html body #casinoModal .cg-game::before,html body #casinoModal .cg-game::after{display:none!important;content:none!important;background:none!important}
+html body #casinoModal#casinoModal.in-game > .modal-box{background-image:none!important}
+html body #casinoModal#casinoModal.in-game > .modal-box::before,html body #casinoModal#casinoModal.in-game > .modal-box::after{display:none!important;content:none!important}
