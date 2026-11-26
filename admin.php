@@ -1384,7 +1384,7 @@ function admin_list_payload_raw(string $view, array $req): array {
           admin_money($d['amount']),
           admin_dep_channel_row($d),
           (string) $d['status'],
-          substr((string) ($d['createdAt'] ?? ''), 0, 16),
+          admin_when_cell((string) ($d['createdAt'] ?? '')),
         ],
         'userId' => (string) ($d['userId'] ?? ''),
         'ref' => (string) $d['id'],
@@ -1444,7 +1444,7 @@ function admin_list_payload_raw(string $view, array $req): array {
           (string) ($d['email'] ?? ''),
           admin_money($d['amount']),
           $motif !== '' && $motif !== 'Bonus' ? $motif : '—',
-          substr((string) ($d['createdAt'] ?? ''), 0, 16),
+          admin_when_cell((string) ($d['createdAt'] ?? '')),
         ],
         'userId' => (string) ($d['userId'] ?? ''),
         'wrap' => 5,
@@ -1771,7 +1771,7 @@ function admin_list_payload_raw(string $view, array $req): array {
     [$slice, $total, $page, $pages] = admin_page($list, $req);
     foreach ($slice as $r) {
       $rows[] = [
-        'cells' => [substr((string) ($r['at'] ?? ''), 0, 19), (string) ($r['email'] ?? ''), (string) ($r['type'] ?? ''), (string) ($r['status'] ?? '')],
+        'cells' => [admin_when_cell((string) ($r['at'] ?? '')), (string) ($r['email'] ?? ''), (string) ($r['type'] ?? ''), (string) ($r['status'] ?? '')],
         'userId' => '',
       ];
     }
@@ -1800,7 +1800,7 @@ function admin_list_payload_raw(string $view, array $req): array {
       $rows[] = [
         'cells' => [
           '',
-          substr((string) ($r['at'] ?? ''), 0, 19),
+          admin_when_cell((string) ($r['at'] ?? '')),
           (string) ($r['service'] ?? ''),
           $label,
           (string) ($r['message'] ?? ''),
@@ -1891,14 +1891,14 @@ function admin_list_payload_raw(string $view, array $req): array {
       if (!admin_in_range((string) ($d['createdAt'] ?? ''), $from, $to)) continue;
       $in += (float) $d['amount'];
       $u = admin_user_lookup((string) $d['userId'], $pmap);
-      $rows[] = ['cells' => ['Dépôt', (string) $d['id'], (string) ($u['name'] ?? $u['publicId'] ?? ''), admin_money($d['amount']), substr((string) ($d['createdAt'] ?? ''), 0, 16)], 'userId' => (string) $d['userId']];
+      $rows[] = ['cells' => ['Dépôt', (string) $d['id'], (string) ($u['name'] ?? $u['publicId'] ?? ''), admin_money($d['amount']), admin_when_cell((string) ($d['createdAt'] ?? ''))], 'userId' => (string) $d['userId']];
     }
     foreach ($wds as $w) {
       if (!admin_wd_is_paid($w) || admin_wd_is_silenced($w)) continue;
       if (!admin_in_range((string) ($w['createdAt'] ?? ''), $from, $to)) continue;
       $out += (float) $w['amount'];
       $w = admin_enrich_wd($w, $pmap);
-      $rows[] = ['cells' => ['Retrait', (string) $w['id'], (string) ($w['name'] ?? $w['publicId'] ?? ''), admin_money($w['amount']), substr((string) ($w['createdAt'] ?? ''), 0, 16)], 'userId' => (string) ($w['userId'] ?? '')];
+      $rows[] = ['cells' => ['Retrait', (string) $w['id'], (string) ($w['name'] ?? $w['publicId'] ?? ''), admin_money($w['amount']), admin_when_cell((string) ($w['createdAt'] ?? ''))], 'userId' => (string) ($w['userId'] ?? '')];
     }
     // Bonus offerts : affichés pour info. Ce n'est pas de l'argent reçu ; leur coût réel
     // apparaît seulement s'ils finissent retirés (déjà compté dans « Retraits »).
