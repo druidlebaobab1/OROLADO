@@ -893,7 +893,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3854'; // v3854 : jeux casino — estimation en monnaie du joueur dans la pastille de gain
+  var MOD_V = '3855'; // v3855 : estimation du gain en petit sous le montant
 
   // 2026-11-03 (propriétaire : « en ouvrant Subway, on voit quelques secondes l'ANCIEN jeu avant le nouveau ») — une appli restée
   // ouverte garde l'ancienne version en mémoire (ancien catalogue → anciens jeux) jusqu'à ce qu'elle se recharge. On regarde en

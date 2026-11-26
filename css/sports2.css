@@ -1819,3 +1819,6 @@ html body #casinoModal#casinoModal.in-game > .modal-box::before,html body #casin
 /* 2026-11-26 (propriétaire) : estimation dans la monnaie du joueur sous le gain des jeux casino (pastille « +$ ») */
 html body #casinoModal .cs-toast .ct-col{display:flex!important;flex-direction:column!important;align-items:flex-start!important;min-width:0;line-height:1.05}
 html body #casinoModal .cs-toast .ct-loc{display:block!important;font-size:12px!important;font-weight:700;opacity:.92;white-space:nowrap;margin-top:2px;letter-spacing:0}
+/* 2026-11-26 (b) (propriétaire : « l'estimation toujours EN BAS, en petit, pas à côté ») : sous le montant, petite. */
+html:root body #casinoModal#casinoModal#casinoModal .cs-toast .ct-col.ct-col{display:flex!important;flex-direction:column!important;align-items:center!important;gap:0!important;line-height:1.05!important}
+html:root body #casinoModal#casinoModal#casinoModal .cs-toast .ct-col.ct-col .ct-loc{font-size:10.5px!important;font-weight:700!important;opacity:.85!important;margin-top:1px!important}
