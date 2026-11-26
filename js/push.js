@@ -10,18 +10,18 @@
   // v2609 (texte validé par le propriétaire) : sérieux, sans ligne « publicité ».
   // [titre, texte, (vide), Activer, Plus tard, activé, consigne « Autoriser », Non merci (3e fois)]
   var TXT = {
-    fr: ['Activez les alertes OROLADO', 'Soyez prévenu dès qu’un marché s’emballe, et recevez vos bonus et nos annonces importantes en direct. Ne ratez plus aucun bon moment.', '', 'Activer', 'Plus tard', 'Alertes activées ✓', 'Appuyez sur « Autoriser » pour recevoir vos alertes.', 'Non merci'],
-    en: ['Turn on OROLADO alerts', 'Be notified as soon as a market takes off, and get your bonuses and important announcements instantly. Never miss a good moment again.', '', 'Turn on', 'Later', 'Alerts on ✓', 'Tap “Allow” to receive your alerts.', 'No thanks'],
-    es: ['Activa las alertas de OROLADO', 'Recibe un aviso en cuanto un mercado se dispare, y tus bonos y anuncios importantes al instante. No te pierdas ningún buen momento.', '', 'Activar', 'Más tarde', 'Alertas activadas ✓', 'Pulsa «Permitir» para recibir tus alertas.', 'No, gracias'],
-    pt: ['Ative os alertas da OROLADO', 'Seja avisado assim que um mercado disparar, e receba seus bônus e avisos importantes na hora. Não perca mais nenhum bom momento.', '', 'Ativar', 'Mais tarde', 'Alertas ativados ✓', 'Toque em “Permitir” para receber seus alertas.', 'Não, obrigado'],
-    ar: ['فعّل تنبيهات OROLADO', 'كن أول من يعلم عندما ينطلق أحد الأسواق، واستلم مكافآتك وإعلاناتنا المهمة فورًا. لا تفوّت أي لحظة مناسبة بعد اليوم.', '', 'تفعيل', 'لاحقًا', 'تم تفعيل التنبيهات ✓', 'اضغط على «السماح» لتلقي تنبيهاتك.', 'لا، شكرًا'],
-    tr: ['OROLADO uyarılarını açın', 'Bir piyasa hareketlendiği anda haberdar olun; bonuslarınızı ve önemli duyurularımızı anında alın. Hiçbir fırsatı kaçırmayın.', '', 'Aç', 'Sonra', 'Uyarılar açık ✓', 'Uyarıları almak için “İzin Ver”e dokunun.', 'Hayır, teşekkürler'],
-    vi: ['Bật thông báo OROLADO', 'Nhận cảnh báo ngay khi một thị trường bùng nổ, cùng tiền thưởng và thông báo quan trọng tức thì. Không bỏ lỡ bất kỳ thời điểm tốt nào.', '', 'Bật', 'Để sau', 'Đã bật thông báo ✓', 'Nhấn “Cho phép” để nhận thông báo.', 'Không, cảm ơn'],
-    id: ['Aktifkan notifikasi OROLADO', 'Dapatkan kabar begitu sebuah pasar melonjak, serta bonus dan pengumuman penting secara langsung. Jangan lewatkan momen terbaik.', '', 'Aktifkan', 'Nanti', 'Notifikasi aktif ✓', 'Ketuk “Izinkan” untuk menerima notifikasi.', 'Tidak, terima kasih'],
-    ru: ['Включите уведомления OROLADO', 'Узнавайте сразу, когда рынок резко движется, и мгновенно получайте бонусы и важные объявления. Не упускайте удачных моментов.', '', 'Включить', 'Позже', 'Уведомления включены ✓', 'Нажмите «Разрешить», чтобы получать уведомления.', 'Нет, спасибо'],
-    de: ['OROLADO-Benachrichtigungen aktivieren', 'Erfahre sofort, wenn ein Markt durchstartet, und erhalte deine Boni und wichtige Ankündigungen direkt. Verpasse keinen guten Moment mehr.', '', 'Aktivieren', 'Später', 'Benachrichtigungen an ✓', 'Tippe auf „Erlauben“, um deine Benachrichtigungen zu erhalten.', 'Nein, danke'],
-    zh: ['开启 OROLADO 提醒', '市场一有大动静就第一时间通知你，奖励和重要公告也能即时收到。不再错过任何好时机。', '', '开启', '稍后', '提醒已开启 ✓', '点击「允许」即可接收提醒。', '不用了，谢谢'],
-    hi: ['OROLADO अलर्ट चालू करें', 'जैसे ही कोई मार्केट तेज़ी पकड़े, तुरंत जानें, और अपने बोनस व ज़रूरी घोषणाएं तुरंत पाएं। कोई भी अच्छा मौका न चूकें।', '', 'चालू करें', 'बाद में', 'अलर्ट चालू ✓', 'अलर्ट पाने के लिए “अनुमति दें” पर टैप करें।', 'नहीं, धन्यवाद']
+    fr: ['Activez les alertes OROLADO', 'Soyez prévenu en direct des marchés, de vos bonus et de nos annonces.', '', 'Activer', 'Plus tard', 'Alertes activées ✓', 'Touchez « Autoriser »', 'Non merci'],
+    en: ['Turn on OROLADO alerts', 'Get instant alerts for markets, your bonuses and our news.', '', 'Turn on', 'Later', 'Alerts on ✓', 'Tap “Allow”', 'No thanks'],
+    es: ['Activa las alertas de OROLADO', 'Recibe al instante alertas de mercados, tus bonos y novedades.', '', 'Activar', 'Más tarde', 'Alertas activadas ✓', 'Pulsa «Permitir»', 'No, gracias'],
+    pt: ['Ative os alertas da OROLADO', 'Receba na hora alertas de mercados, seus bônus e novidades.', '', 'Ativar', 'Mais tarde', 'Alertas ativados ✓', 'Toque em “Permitir”', 'Não, obrigado'],
+    ar: ['فعّل تنبيهات OROLADO', 'تلقَّ فورًا تنبيهات الأسواق ومكافآتك وأخبارنا.', '', 'تفعيل', 'لاحقًا', 'تم تفعيل التنبيهات ✓', 'اضغط «السماح»', 'لا، شكرًا'],
+    tr: ['OROLADO uyarılarını açın', 'Piyasalar, bonusların ve duyurularımız için anında uyarı al.', '', 'Aç', 'Sonra', 'Uyarılar açık ✓', '“İzin Ver”e dokunun', 'Hayır, teşekkürler'],
+    vi: ['Bật thông báo OROLADO', 'Nhận ngay thông báo về thị trường, tiền thưởng và tin mới.', '', 'Bật', 'Để sau', 'Đã bật thông báo ✓', 'Nhấn “Cho phép”', 'Không, cảm ơn'],
+    id: ['Aktifkan notifikasi OROLADO', 'Dapatkan notifikasi pasar, bonusmu, dan kabar terbaru seketika.', '', 'Aktifkan', 'Nanti', 'Notifikasi aktif ✓', 'Ketuk “Izinkan”', 'Tidak, terima kasih'],
+    ru: ['Включите уведомления OROLADO', 'Мгновенные уведомления о рынках, бонусах и новостях.', '', 'Включить', 'Позже', 'Уведомления включены ✓', 'Нажмите «Разрешить»', 'Нет, спасибо'],
+    de: ['OROLADO-Benachrichtigungen aktivieren', 'Sofort informiert über Märkte, deine Boni und Neuigkeiten.', '', 'Aktivieren', 'Später', 'Benachrichtigungen an ✓', 'Tippe auf „Erlauben“', 'Nein, danke'],
+    zh: ['开启 OROLADO 提醒', '第一时间收到行情、奖励和公告提醒。', '', '开启', '稍后', '提醒已开启 ✓', '点击「允许」', '不用了，谢谢'],
+    hi: ['OROLADO अलर्ट चालू करें', 'बाज़ार, आपके बोनस और हमारी खबरों की तुरंत सूचना पाएं।', '', 'चालू करें', 'बाद में', 'अलर्ट चालू ✓', '“अनुमति दें” पर टैप करें', 'नहीं, धन्यवाद']
   };
   var reg = null;
   var asked = false;
@@ -115,6 +115,8 @@
     post({ action: 'ping', dev: dev, plat: plat(), token: tok }).then(function (j) { if (j && j.ok) ls('oro_app_ping', day); });
   }
 
+  // 2026-11-26 (propriétaire : « messages à moitié sur 2 lignes, superposés, pas pro ») : textes raccourcis, 1 ligne pour
+  // « Touchez Autoriser », 2 lignes au plus pour l'invitation (12 langues).
   function hideCard(card) {
     if (!card) return;
     card.classList.remove('on');
@@ -122,6 +124,9 @@
   }
   function showCard() {
     if (document.getElementById('pushAsk')) return;
+    // 2026-11-26 (propriétaire : « notifications superposées ») : jamais par-dessus une autre fenêtre (installation de l'appli,
+    // Recharger, Paris…) : elle attend qu'elle soit fermée.
+    try { var busyW = document.querySelector('#oroInstAsk, .modal-backdrop.active, #liveModal.active'); if (busyW && busyW.offsetParent !== null) { showCard._n = (showCard._n || 0) + 1; if (showCard._n < 40) setTimeout(showCard, 15000); return; } } catch (eB) { /* ignore */ }
     var card = document.createElement('div');
     card.id = 'pushAsk';
     card.className = 'push-ask';

@@ -29,6 +29,9 @@ function admin_tz(): DateTimeZone {
     // demande de l'admin (en-tête X-Admin-TZ) — le cookie ne suffisait pas sur son iPhone
     $want = (string) ($_SERVER['HTTP_X_ADMIN_TZ'] ?? '');
     if ($want === '') $want = (string) ($_COOKIE['oro_admin_tz'] ?? '');
+    $tzf = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'admin_tz.txt';
+    if ($want === '' && is_file($tzf)) $want = trim((string) @file_get_contents($tzf)); // préparateur (sans téléphone) : fuseau de l'admin
+    elseif ($want !== '' && PHP_SAPI !== 'cli' && preg_match('#^[A-Za-z_]+(/[A-Za-z0-9_+\-]+){0,2}$#', $want) && trim((string) @file_get_contents($tzf)) !== $want) @file_put_contents($tzf, $want, LOCK_EX);
     $tz = new DateTimeZone('Africa/Abidjan');
     if ($want !== '' && preg_match('#^[A-Za-z_]+(/[A-Za-z0-9_+\-]+){0,2}$#', $want)) {
       try { $tz = new DateTimeZone($want); } catch (Throwable $e) { /* fuseau inconnu : Côte d'Ivoire */ }
@@ -37,12 +40,11 @@ function admin_tz(): DateTimeZone {
   return $tz;
 }
 
-/** 2026-11-26 (propriétaire : « dépôts d'hier et d'aujourd'hui mélangés ») — la JOURNÉE de l'admin (Aujourd'hui / Hier, dates choisies)
- *  suit TOUJOURS l'heure de Côte d'Ivoire (GMT), celle des joueurs. Avant, elle suivait le téléphone de l'admin (Népal, GMT+5:45) :
- *  sa journée commençait à 18 h 15 GMT, donc les dépôts de la soirée d'hier en Afrique comptaient dans « Aujourd'hui » ; et le
- *  préparateur des chiffres (sans téléphone) comptait, lui, en GMT → chiffres et listes mélangés. Les heures AFFICHÉES restent
- *  celles du téléphone (admin_tz). */
-function admin_day_tz(): DateTimeZone { static $z = null; return $z ?? ($z = new DateTimeZone('Africa/Abidjan')); }
+/** 2026-11-26 (propriétaire : « l'admin doit suivre l'heure de MON téléphone, pas de la Côte d'Ivoire ») — la journée de l'admin
+ *  (Aujourd'hui / Hier, dates choisies) suit le fuseau du téléphone (admin_tz). Le préparateur des chiffres (scripts/admin-warm.php,
+ *  lancé sans téléphone) reprend le DERNIER fuseau envoyé par l'admin (fichier admin_tz.txt) : avant il comptait en heure de
+ *  Côte d'Ivoire pendant que la page comptait en heure du Népal → cases et listes mélangées. */
+function admin_day_tz(): DateTimeZone { return admin_tz(); }
 function admin_now(): DateTimeImmutable {
   return new DateTimeImmutable('now', admin_day_tz());
 }

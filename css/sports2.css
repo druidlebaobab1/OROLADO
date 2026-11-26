@@ -1791,3 +1791,10 @@ html.ios-app.ios-solid.is-ios:root body .modal-backdrop.active > .modal-box:not(
 html.ios-app.ios-solid.is-ios:root body #liveModal #sxRoot.sx{padding-bottom:var(--ios-under,22px)!important}
 html.ios-app.ios-solid.is-ios:root body .learn-modal{padding-bottom:var(--ios-under,22px)!important}
 html.ios-app.ios-solid.is-ios:root body #portalModal#portalModal#portalModal#portalModal > .modal-box.portal-box{padding-bottom:calc(var(--ios-under,22px) + 14px)!important}
+/* 2026-11-26 (propriétaire : « Paris : la barre du bas est trop haute, il y a de la place en bas ») — appli iPhone à barre d'état
+   noire (ios-solid) : Paris et les jeux gardaient en plus la marge de la barre d'accueil (env(safe-area-inset-bottom) + 10 px ≈ 44 px,
+   css/app.css « #casinoModal.in-game ») au-dessus de la bande sombre → barre du bas et MISER descendent : fine bande de 22 px. */
+html.ios-app.ios-solid:root body #casinoModal#casinoModal#casinoModal > .modal-box,
+html.ios-app.ios-solid:root body #casinoModal#casinoModal#casinoModal.in-game > .modal-box{padding-bottom:var(--ios-under,22px)!important}
+html body .push-ask.wait .push-ask-txt b,html body .push-ask.done .push-ask-txt b{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html body .push-ask.wait{grid-template-columns:24px auto!important;width:auto!important;max-width:calc(100vw - 24px);border-radius:999px!important;padding:5px 14px 5px 6px!important}
