@@ -352,7 +352,10 @@
     t.className = 'cs-toast ' + (win ? 'win' : 'lose');
     // v2794 (propriétaire) : comme le trading, SANS mots — seulement le montant : gagné = « +$ 12.50 » (vert, total encaissé),
     // perdu = « +$ 0 » (rouge). Plus de fond noir ni de texte (« 3 bons sur 5 », nom du gagnant…).
-    t.innerHTML = (win ? '<i class="ct-ic" aria-hidden="true">' + CASH + '</i>' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : got > 0 ? m2(got) : '0') + '</b>';
+    // 2026-11-26 (propriétaire : « les estimations dans les parties des jeux casino ») : sous le gain, son équivalent dans la
+    // monnaie du joueur (≈ 7 440 FCFA…), même règle que le solde et la mise (js/localcur.js) ; rien si le joueur est en dollars.
+    var locTxt = ''; try { var lc = win && D6.LocalCur ? D6.LocalCur.code() : ''; if (lc) locTxt = D6.LocalCur.fmt(got, lc) || ''; } catch (eLc) { locTxt = ''; }
+    t.innerHTML = (win ? '<i class="ct-ic" aria-hidden="true">' + CASH + '</i>' : '') + (locTxt ? '<span class="ct-col">' : '') + '<b dir="ltr">+$\u00a0' + (win ? m2(0) : got > 0 ? m2(got) : '0') + '</b>' + (locTxt ? '<small class="ct-loc" dir="ltr">' + esc(locTxt) + '</small></span>' : '');
     if (win) { var wl = ('+$ ' + m2(Number(r.win) || 0)).length; t.style.setProperty('--ctfs', (wl <= 9 ? 20 : wl <= 12 ? 17 : wl <= 15 ? 14.5 : 12.5) + 'px'); }
     host.appendChild(t);
     // 2026-10-20 (QA) : le compteur démarre APRÈS l'ajout à l'écran (avant : pastille pas encore affichée → le compteur
@@ -890,7 +893,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3853'; // v3853 : encaissement — étincelles dorées et vraies pièces 3D (6 jeux)
+  var MOD_V = '3854'; // v3854 : jeux casino — estimation en monnaie du joueur dans la pastille de gain
 
   // 2026-11-03 (propriétaire : « en ouvrant Subway, on voit quelques secondes l'ANCIEN jeu avant le nouveau ») — une appli restée
   // ouverte garde l'ancienne version en mémoire (ancien catalogue → anciens jeux) jusqu'à ce qu'elle se recharge. On regarde en
