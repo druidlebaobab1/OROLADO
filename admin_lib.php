@@ -44,7 +44,9 @@ function admin_tz(): DateTimeZone {
  *  (Aujourd'hui / Hier, dates choisies) suit le fuseau du téléphone (admin_tz). Le préparateur des chiffres (scripts/admin-warm.php,
  *  lancé sans téléphone) reprend le DERNIER fuseau envoyé par l'admin (fichier admin_tz.txt) : avant il comptait en heure de
  *  Côte d'Ivoire pendant que la page comptait en heure du Népal → cases et listes mélangées. */
-function admin_day_tz(): DateTimeZone { return admin_tz(); }
+// 2026-11-26 (propriétaire, choix fait : « à 5 h 45 = minuit en Côte d'Ivoire ») : la JOURNÉE (Aujourd'hui / Hier) repart à zéro
+// à minuit en Côte d'Ivoire, comme GeniusPay, Wave et les joueurs ; les HEURES affichées restent celles du téléphone (admin_tz).
+function admin_day_tz(): DateTimeZone { static $z = null; return $z ?? ($z = new DateTimeZone('Africa/Abidjan')); }
 function admin_now(): DateTimeImmutable {
   return new DateTimeImmutable('now', admin_day_tz());
 }

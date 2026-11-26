@@ -247,7 +247,7 @@ function admin_when_short(string $iso): string {
   if (!$ts) return '—';
   try {
     $d = (new DateTimeImmutable('@' . $ts))->setTimezone(admin_tz());
-    $day = $d->format('Y-m-d'); $now = admin_now();
+    $day = (new DateTimeImmutable('@' . $ts))->setTimezone(admin_day_tz())->format('Y-m-d'); $now = admin_now(); // « auj. / hier » : même journée que les cases
     if ($day === $now->format('Y-m-d')) return 'auj. ' . $d->format('H:i');
     if ($day === $now->modify('-1 day')->format('Y-m-d')) return 'hier ' . $d->format('H:i');
     return $d->format('d/m H:i');
