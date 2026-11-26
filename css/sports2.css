@@ -1798,3 +1798,10 @@ html.ios-app.ios-solid:root body #casinoModal#casinoModal#casinoModal > .modal-b
 html.ios-app.ios-solid:root body #casinoModal#casinoModal#casinoModal.in-game > .modal-box{padding-bottom:var(--ios-under,22px)!important}
 html body .push-ask.wait .push-ask-txt b,html body .push-ask.done .push-ask-txt b{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 html body .push-ask.wait{grid-template-columns:24px auto!important;width:auto!important;max-width:calc(100vw - 24px);border-radius:999px!important;padding:5px 14px 5px 6px!important}
+/* 2026-11-26 (b) (propriétaire : « remets la planète en bas, un peu moins haute ; pas de planète en plein écran ») — appli iPhone
+   à barre d'état noire (ios-solid) : écran de trading (aucune fenêtre ouverte, pas en plein écran) → le petit monde de planètes
+   revient sous ACHETER / VENDRE dans une bande de 40 px (avant 59 px). Plein écran, Paris, Jeux, fenêtres : fine bande sombre (22 px). */
+html.ios-app.ios-solid.is-ios:not(.fs-trade):not(.oro-mopen):not(.oro-mlive):not(.learn-on):not(.ol-on):root{
+  background-image:url("../icons/ui/app-floor.svg?v=3568")!important;background-repeat:no-repeat!important;
+  background-position:center top calc(var(--ios-screen-h,100vh) - 40px)!important;background-size:100% 40px!important;background-color:#000000!important}
+html.ios-app.ios-solid.is-ios:not(.fs-trade):not(.oro-mopen):not(.oro-mlive):not(.learn-on):not(.ol-on):root body{height:calc(var(--ios-screen-h,100%) - 40px)!important}
