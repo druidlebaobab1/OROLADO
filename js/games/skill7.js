@@ -1301,7 +1301,9 @@
   // 2026-11-16 (propriétaire : « améliore les personnages des jeux de guerre, comme les zombies ») : vrais personnages
   // illustrés (fal.ai) pour Trench Defense et Sniper ; les anciens dessins restent en secours tant que l'image n'est pas là.
   var WARI = {};
-  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=' + (k === 'zomb2_gun' ? '3548' : k === 'td_soldier' || k === 'sn_enemy' || k === 'sn_civ' ? '3741' : k === 'wb_sniper2' || k === 'sn_enemy2' || k === 'sn_civ2' ? '3744' : '3742'); } if (cb && !o.ok) o.cbs.push(cb); return o; }
+  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=' + (WARV[k] ? '3842' : k === 'zomb2_gun' ? '3548' : k === 'td_soldier' || k === 'sn_enemy' || k === 'sn_civ' ? '3741' : k === 'wb_sniper2' || k === 'sn_enemy2' || k === 'sn_civ2' ? '3744' : '3742'); } if (cb && !o.ok) o.cbs.push(cb); return o; }
+  // 2026-11-26 (propriétaire : « les obstacles sont moches ») : vrais abris et soldats qui visent, illustrés (fal.ai)
+  var WARV = { war_cv_sand: 1, war_cv_log: 1, war_cv_stone: 1, td_aim: 1, fa_aim: 1, js_aim: 1, war_boss: 1, zb_car: 1, zb_truck: 1, zb_tomb: 1, zb_sarco: 1 };
   ['td_soldier', 'fa_sold', 'js_sold', 'cmd_hero', 'zomb2_gun', 'wb_sniper2', 'sn_enemy2', 'sn_civ2'].forEach(function (k) { warImg(k); }); // chargées dès l'ouverture du module
   function rigFrames(h, n, fn) { // pre-rendered frames: canvas size 1.1h × 1.1h, feet at the bottom centre
     var out = []; for (var i = 0; i < n; i++) out.push(mkc(h * 1.2, h * 1.12, Math.min(2, window.devicePixelRatio || 1), function (c) { c.translate(h * 0.6, h * 1.08); fn(c, i / n); }));
@@ -1445,9 +1447,10 @@
      • BARRE DE DANGER (bas à gauche) : chaque balle reçue la remplit (elle redescend doucement) ; pleine = partie perdue.
      Même tour de jeu qu'avant : le serveur décide de la fin secrète et paie ; une erreur du joueur (barre pleine, soldat dans
      la tranchée, grenade non abattue) termine la partie (A.fail). */
+  function drawShells(c, L) { for (var i = 0; i < L.length; i++) { var q = L[i]; c.save(); c.globalAlpha = Math.max(0, 1 - q.t / 0.8); c.translate(q.x, q.y); c.rotate(q.a); c.fillStyle = '#E0B84A'; c.fillRect(-4, -1.6, 8, 3.2); c.fillStyle = '#8A6A1E'; c.fillRect(2.5, -1.6, 1.5, 3.2); c.restore(); } }
   function warFront(P) { return function (A) {
     var W, H, T, dpr, bg, hy, gy, bh, fr = [], foes = [], gren = [], puffs = [], covers = [], tracers = [], cool = 0, aimA = -Math.PI / 2, flash = 0, dead = 0, won = 0, bomb = null, t = 0, aiT = 0, kills = 0, NF = 8;
-    var danger = 0, hurtT = 9, hitFx = 0, wave = 0, queue = [], qT = 0, waveT = 0, banner = 0, XR = P.xr || 0.42, glow = P.glow || 'rgba(0,0,0,.55)';
+    var shells = [], danger = 0, hurtT = 9, hitFx = 0, wave = 0, queue = [], qT = 0, waveT = 0, banner = 0, XR = P.xr || 0.42, glow = P.glow || 'rgba(0,0,0,.55)';
     function scr(x, z) { var k = 1 - z, sc = 0.3 + 0.7 * k * k; return { x: W / 2 + x * W * 0.46 * (0.35 + 0.65 * k), y: hy + (gy - hy) * (0.05 + 0.95 * k * k), s: sc }; }
     function lvl(live) { return live ? A.lv() : 0.2; }
     // ---- abris : 2 rangées en quinconce, au milieu du chemin pour Jungle Strike (XR plus étroit)
@@ -1459,15 +1462,16 @@
         [-1, 1].forEach(function (sd) {
           // écart choisi À L'ÉCRAN (part de la largeur), converti en position du terrain selon la profondeur
           var o = sd * (P.co || 0.27) * (i % 2 ? 0.78 : 1) + flip * 0.04, k = 1 - z, x = o / (0.46 * (0.35 + 0.65 * k));
-          covers.push({ x: x + rnd(-0.03, 0.03), z: z + rnd(-0.02, 0.02), kind: P.cover, by: null, seed: Math.random() });
+          covers.push({ x: x + rnd(-0.03, 0.03), z: z + rnd(-0.02, 0.02), kind: P.cover, by: null, seed: Math.random(), fl: Math.random() < 0.5 });
         });
       });
     }
-    function coverBox(c) { var p = scr(c.x, c.z), hh = bh * p.s, w = hh * (c.kind === 'log' ? 1.05 : 0.82), h = hh * 0.46; return { x: p.x - w / 2, y: p.y - h, w: w, h: h, by: p.y, hh: hh }; }
+    var CVI = warImg(P.cvi), AIMI = warImg(P.aim), BOSSI = warImg('war_boss');
+    function coverBox(c) { var p = scr(c.x, c.z), hh = bh * p.s, h = hh * 0.5, w = CVI.ok ? h * CVI.im.naturalWidth / CVI.im.naturalHeight : hh * 0.9; return { x: p.x - w / 2, y: p.y - h, w: w, h: h, by: p.y + h * 0.04, hh: hh }; }
     // ---- soldats
     function add(k, side, live) {
       // par le côté : il entre depuis le bord de l'écran, à mi-distance
-      var lv = lvl(live), sx = side ? side * 2.1 : rnd(-XR, XR), f = { k: k, x: sx, z: k === 'snp' ? 0.97 : side ? rnd(0.6, 0.75) : rnd(0.9, 1), ph: Math.random(), dn: 0, e: 1, st: 'move', t: 0, cyc: 0, hp: k === 'boss' ? 3 : 1, sc: k === 'boss' ? 1.28 : 1, jump: 0, jT: 9, duck: 0, dx: 0, hurt: 0 };
+      var lv = lvl(live), sx = side ? side * 2.1 : rnd(-XR, XR), f = { k: k, x: sx, z: k === 'snp' ? 0.97 : side ? rnd(0.72, 0.8) : rnd(0.9, 1), ph: Math.random(), dn: 0, e: 1, st: 'move', t: 0, cyc: 0, hp: k === 'boss' ? 3 : 1, sc: k === 'boss' ? 1.28 : 1, jump: 0, jT: 9, duck: 0, dx: 0, hurt: 0 };
       f.vz = (k === 'run' ? 0.08 + 0.07 * lv : 0.11 + 0.05 * lv) * rnd(0.85, 1.15);
       if (k === 'run') { f.dx = side ? -side * rnd(0.55, 0.8) : rnd(0.12, 0.26) * (Math.random() < 0.5 ? -1 : 1); if (Math.random() < 0.55) f.jT = rnd(0.35, 0.7); f.st = 'run'; }
       else { var c = pickCover(f, k === 'snp' ? 0.7 : 0.5); if (c) { f.cv = c; c.by = f; } else { f.k = 'run'; f.st = 'run'; f.dx = rnd(-0.15, 0.15); } }
@@ -1505,6 +1509,7 @@
     function shootAt(x, y) {
       if (cool > 0 || dead || bomb || won) return;
       cool = 0.26; flash = 0.08; aimA = Math.atan2(y - H, x - W / 2); A.sx('gun', { k: 'rifle' });
+      shell();
       for (var i = 0; i < gren.length; i++) { var g = gren[i], gp = gpos(g); if (Math.hypot(gp.x - x, gp.y - y) < Math.max(18, bh * 0.12)) { gren.splice(i, 1); boomFx(A, gp.x, gp.y, 0.5); return; } }
       var best = null;
       foes.forEach(function (f) { if (f.dn || !exposed(f)) return; var v = vis(f); if (Math.abs(x - v.x) < v.w && y > v.top - 6 && y < v.bot + 4) { if (!best || f.z < best.z) best = f; } });
@@ -1519,6 +1524,7 @@
       puffs.push({ x: x, y: y, t: 0 }); if (puffs.length > 10) puffs.shift();
     }
     function gpos(g) { var k = Math.min(1, g.t / g.T), x = g.x0 + (g.x1 - g.x0) * k, y = g.y0 + (g.y1 - g.y0) * k - Math.sin(k * Math.PI) * (H - T) * 0.35; return { x: x, y: y, k: k }; }
+    function shell() { var gH = Math.min((H - T) * 0.4, W * 0.62); shells.push({ x: W / 2 + gH * 0.12, y: H - gH * 0.5, vx: rnd(90, 170), vy: -rnd(160, 260), a: rnd(0, 3), va: rnd(-14, 14), t: 0 }); if (shells.length > 14) shells.shift(); }
     function throwG(f) { var q = fpos(f); gren.push({ x0: q.x, y0: q.top + q.hh * 0.2, x1: clamp(q.x + rnd(-40, 40), 30, W - 30), y1: H - (H - gy) * 0.6, t: 0, T: 1.8 + f.z }); }
     // ---- tir ennemi sur le joueur
     function enemyFire(f, live) {
@@ -1534,7 +1540,8 @@
     // ---- dessin des abris
     function drawCover(c, cv) {
       var b = coverBox(cv), x = b.x, y = b.y, w = b.w, h = b.h, i, s = cv.seed;
-      c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(x + w / 2, b.by, w * 0.56, h * 0.12, 0, 0, TAU); c.fill();
+      c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(x + w / 2, b.by - h * 0.04, w * 0.5, h * 0.1, 0, 0, TAU); c.fill();
+      if (CVI.ok) { c.save(); if (cv.fl) { c.translate(x + w, 0); c.scale(-1, 1); c.drawImage(CVI.im, 0, y, w, h); } else c.drawImage(CVI.im, x, y, w, h); c.restore(); return; }
       if (cv.kind === 'sand') {
         var rows = [[3, 0], [3, 0.5], [2, 0]], bw = w / 3, bhh = h / 3;
         for (var r = 0; r < 3; r++) for (i = 0; i < rows[r][0]; i++) {
@@ -1563,6 +1570,8 @@
     function drawFoe(c, f) {
       var q = fpos(f), hh = q.hh, img = f.st === 'run' || f.st === 'move' ? fr[Math.floor(f.ph * NF) % NF] : fr[0];
       if (!img) return;
+      // pose : il VISE vers nous (aim / tir) ; le chef a son propre dessin
+      var spr = f.k === 'boss' && BOSSI.ok ? BOSSI.im : (f.st === 'aim' || f.st === 'fire' || f.st === 'peek' || (f.st === 'duck' && f.e > 0.5)) && AIMI.ok ? AIMI.im : null;
       var gyF = q.y; // le sol : rien sous les pieds quand il se baisse derrière l'abri
       if (!f.jump) { c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(q.x, q.y, hh * 0.2, hh * 0.04, 0, 0, TAU); c.fill(); }
       c.save();
@@ -1571,7 +1580,8 @@
       if (!A.lite) { c.shadowColor = glow; c.shadowBlur = Math.max(4, hh * 0.06); }
       var lean = f.st === 'aim' ? 0.04 : 0;
       c.translate(q.x, q.y + q.sink - q.jy); if (lean) c.rotate(lean * (f.x > 0 ? -1 : 1));
-      c.drawImage(img, -hh * 0.6, -hh * 1.08, hh * 1.2, hh * 1.12);
+      if (spr) { var sh = hh * 1.02, sw = sh * spr.naturalWidth / spr.naturalHeight, bob = f.st === 'run' || f.st === 'move' ? Math.abs(Math.sin(f.ph * TAU)) * hh * 0.025 : 0; c.drawImage(spr, -sw / 2, -sh - bob, sw, sh); }
+      else c.drawImage(img, -hh * 0.6, -hh * 1.08, hh * 1.2, hh * 1.12);
       c.restore();
       if (f.hurt > 0) { c.globalAlpha = f.hurt * 2; circ(c, q.x, q.top + hh * 0.35, hh * 0.18, 'rgba(239,68,68,.6)'); c.globalAlpha = 1; }
       if (f.mz > 0) { var mx = q.x + hh * 0.14, my = q.top + hh * 0.36, r = hh * 0.11; circ(c, mx, my, r * 1.8, 'rgba(253,186,116,.35)'); circ(c, mx, my, r, '#FEF3C7'); }
@@ -1602,6 +1612,7 @@
         if (cool <= 0) aimA += (-Math.PI / 2 - aimA) * Math.min(1, dt * 3);
         for (i = puffs.length - 1; i >= 0; i--) { puffs[i].t += dt; if (puffs[i].t > 0.5) puffs.splice(i, 1); }
         for (i = tracers.length - 1; i >= 0; i--) { tracers[i].t += dt; if (tracers[i].t > 0.12) tracers.splice(i, 1); }
+        for (i = shells.length - 1; i >= 0; i--) { var sl = shells[i]; sl.t += dt; sl.vy += 900 * dt; sl.x += sl.vx * dt; sl.y += sl.vy * dt; sl.a += sl.va * dt; if (sl.t > 0.8) shells.splice(i, 1); }
         for (i = foes.length - 1; i >= 0; i--) {
           f = foes[i];
           if (f.dn) { f.dn += dt; if (f.dn > 0.9) foes.splice(i, 1); continue; }
@@ -1611,6 +1622,7 @@
           if (f.st === 'run') {
             f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1; f.z -= f.vz * dt * (f.duck ? 0.5 : 1);
             var lim = XR * (0.6 + 0.6 * (1 - f.z)); f.x += f.dx * dt; if (Math.abs(f.x) > lim && f.x * f.dx > 0) f.dx = -f.dx * rnd(0.7, 1.1); if (Math.random() < dt * 0.6) f.dx = -f.dx;
+            covers.forEach(function (cv) { if (f.z > cv.z - 0.025 && f.z < cv.z + 0.06) { var b = coverBox(cv), q = scr(f.x, f.z), half = b.w / 2 + bh * q.s * 0.22, k2 = W * 0.46 * (0.35 + 0.65 * (1 - f.z)); if (Math.abs(q.x - (b.x + b.w / 2)) < half) { var sg = q.x < b.x + b.w / 2 ? -1 : 1; f.x += sg * dt * 1.4 * Math.max(0.3, half / k2); f.dx = sg * Math.abs(f.dx || 0.2); } } });
             if (f.jT < 9 && f.z < f.jT) { f.jT = 9; f.jump = 0.001; }
             if (f.jump) { f.jump += dt / 0.55; if (f.jump >= 1) f.jump = 0; }
             if (f.z <= 0) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); } } else foes.splice(i, 1); }
@@ -1673,6 +1685,7 @@
         if (flash) { var fs2 = gH * 0.1, my2 = -gH * 0.97; circ(c, 0, my2, fs2 * 0.9, 'rgba(253,186,116,.35)'); c.fillStyle = '#FEF3C7'; c.beginPath(); c.moveTo(-fs2 * 0.5, my2); c.lineTo(0, my2 - fs2 * 1.8); c.lineTo(fs2 * 0.5, my2); c.fill(); }
         c.restore();
         if (cool > 0) { c.fillStyle = 'rgba(253,230,138,.85)'; c.fillRect(W / 2 - 20, H - 6, 40 * (1 - cool / 0.26), 3); }
+        drawShells(c, shells);
         // bords rouges : touché (éclair) + danger qui monte (battement)
         var red = hitFx * 0.55 + (danger > 0.5 ? (danger - 0.5) * 0.9 * (0.75 + 0.25 * Math.sin(t * 8)) : 0);
         if (red > 0.02) { var rg = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.max(W, H) * 0.72); rg.addColorStop(0, 'rgba(220,38,38,0)'); rg.addColorStop(1, 'rgba(220,38,38,' + Math.min(0.75, red).toFixed(2) + ')'); c.fillStyle = rg; c.fillRect(0, 0, W, H); }
@@ -1699,10 +1712,10 @@
       dbg: function () { return { foes: foes.map(function (f) { var v = vis(f), q = fpos(f); return { x: v.x, y: v.top + (v.bot - v.top) * 0.4, h: q.hh, z: f.z, dn: f.dn, k: f.k, st: f.st, ex: exposed(f) }; }), gren: gren.map(function (g) { var p = gpos(g); return { x: p.x, y: p.y, t: g.t, T: g.T }; }), cool: cool, dead: dead, kills: kills, danger: danger, wave: wave, covers: covers.length }; }
     };
   }; }
-  boot('trenchdef', warFront({ wb: 'trenchdef', sold: 'td_soldier', hy: 0.37, cover: 'sand', chips: ['#C2B280', '#8B7D5A', '#E7DCC0'] }), 'aim', 0.5);
-  boot('forestambush', warFront({ wb: 'forestambush', sold: 'fa_sold', hy: 0.55, cover: 'log', chips: ['#7A5534', '#B98A5A', '#3F2A1A'], glow: 'rgba(255,236,200,.35)' }), 'aim', 0.5);
+  boot('trenchdef', warFront({ wb: 'trenchdef', sold: 'td_soldier', aim: 'td_aim', cvi: 'war_cv_sand', hy: 0.37, cover: 'sand', chips: ['#C2B280', '#8B7D5A', '#E7DCC0'] }), 'aim', 0.5);
+  boot('forestambush', warFront({ wb: 'forestambush', sold: 'fa_sold', aim: 'fa_aim', cvi: 'war_cv_log', hy: 0.55, cover: 'log', chips: ['#7A5534', '#B98A5A', '#3F2A1A'], glow: 'rgba(255,236,200,.35)' }), 'aim', 0.5);
   // Jungle Strike : soldats plus grands, au milieu du chemin (plus dans les feuilles), contour clair, décor un peu assombri
-  boot('junglestrike', warFront({ wb: 'junglestrike', sold: 'js_sold', hy: 0.62, xr: 0.3, bs: 1.12, co: 0.2, cover: 'stone', chips: ['#A8A390', '#7C7866', '#D6D3D1'], glow: 'rgba(255,245,210,.55)', dark: 'rgba(0,0,0,.24)' }), 'aim', 0.5);
+  boot('junglestrike', warFront({ wb: 'junglestrike', sold: 'js_sold', aim: 'js_aim', cvi: 'war_cv_stone', hy: 0.62, xr: 0.3, bs: 1.12, co: 0.2, cover: 'stone', chips: ['#A8A390', '#7C7866', '#D6D3D1'], glow: 'rgba(255,245,210,.55)', dark: 'rgba(0,0,0,.24)' }), 'aim', 0.5);
 
   /* ================================================================== 14. COMMANDO RUN — side-scrolling run (12-frame run cycle,
      parallax, dust): swipe up to jump wire and mines, swipe down to slide under barriers and bullets, tap to shoot. */
@@ -2016,9 +2029,26 @@
     var W, H, u, dpr, T, bg, zs = [], spT = 0, dead = 0, won = 0, t = 0, horde = false, ang = -Math.PI / 2, fx = [], cool = 0, autoT = 0, flashT = 0, splats = [];
     var BW = 896, BH = 1152, VX = P.vx, VY = P.vy, hz, yTop, yB, ZK = 0.78, gunH, gunX, gunY, rot = 0;
     var ZI = {}, ZA = P.za, ZM = { w: 1, r: 0.96, b: 1.13 }, BAR = null, GUN = null, ZF = {}, zh = 80, NF = 6;
+    /* 2026-11-26 (propriétaire : « les zombies viennent tout droit du milieu, c'est moche ; ils doivent sortir de partout : de gauche,
+       de droite, de derrière les voitures, sur les voitures, de terre au cimetière ») — ABRIS illustrés (voitures abandonnées / tombes,
+       fal.ai) sur les bords de la route, et 5 façons d'arriver : tout droit en titubant, par le CÔTÉ de l'écran, en SORTANT de derrière
+       un abri, en grimpant SUR une voiture puis en sautant, en SORTANT DE TERRE (cimetière). Même règle : un zombie qui touche la
+       barricade termine la partie ; le serveur décide de la fin secrète. */
+    var COV = [], shells = [];
+    function cvImg(n) { return warImg(n); }
+    function mkCov() {
+      COV = (P.cov || []).map(function (c) { return { n: c[0], p: c[1], sd: c[2], hk: c[3], fl: c[2] > 0 ? !!c[4] : !c[4] }; });
+    }
+    function cvBox(c) {
+      var y = zy(c.p), hh = ZK * (y - hz), im = cvImg(c.n), h = hh * c.hk, w = im.ok ? h * im.im.naturalWidth / im.im.naturalHeight : h * 1.4;
+      var cx = W / 2 + c.sd * (W * 0.5 - w * 0.36); // collé au bord de la route, un peu coupé par l'écran comme une vraie rue
+      return { x: cx - w / 2, y: y - h, w: w, h: h, by: y, cx: cx, hh: hh, ok: im.ok, im: im };
+    }
+    function xAt(px, p) { var y = zy(p); return (px - W / 2) / Math.max(1, (y - hz) * 1.05); }
+    function edgeX(p) { var y = zy(p); return (W * 0.5) / Math.max(1, (y - hz) * 1.05); }
     function zy(p) { return hz + (yTop - hz) * Math.pow((yB - hz) / (yTop - hz), Math.pow(p, 0.8)); }
     function kk(y) { return clamp((y - yTop) / (yB - yTop), 0, 1); }
-    function sx(z) { return W / 2 + z.x * (z.y - hz) * 1.05; }
+    function sx(z) { return W / 2 + (z.x + (z.sw ? Math.sin(t * 1.4 + z.ph * 2) * z.sw : 0)) * (z.y - hz) * 1.05; }
     function dims(z) { var hh = ZK * (z.y - hz) * (ZM[z.k] || 1); return [hh * (ZA[z.k] || 0.66), hh]; }
     function spawn(live) {
       var lv = live ? A.lv() : 0, r = Math.random(), k = 'w';
@@ -2028,23 +2058,51 @@
       // 2026-11-16 (propriétaire : « les cibles doivent venir tout droit, face au fusil ») : couloir central plus étroit
       var x = rnd(-0.45, 0.45), tries = 0;
       while (tries++ < 6 && zs.some(function (z) { return z.p < 0.25 && Math.abs(z.x - x) < 0.22; })) x = rnd(-0.45, 0.45);
-      zs.push({ k: k, x: x, p: 0, y: yTop, v: 1 / D, hp: k === 'b' ? 3 : 1, max: k === 'b' ? 3 : 1, ph: rnd(0, 2), hit: 0, die: 0 });
+      var z = { k: k, x: x, p: 0, y: yTop, v: 1 / D, hp: k === 'b' ? 3 : 1, max: k === 'b' ? 3 : 1, ph: rnd(0, 2), hit: 0, die: 0, m: 'walk', st: 0, vis: 1, oy: 0, sw: k === 'r' ? 0 : rnd(0.05, 0.12) };
+      // façon d'arriver
+      var r2 = Math.random(), freeC = COV.filter(function (c) { return !zs.some(function (q) { return q.cv === c && !q.die && q.m !== 'walk'; }); });
+      if (r2 < 0.26 && freeC.length) { // sort de derrière un abri
+        var c = pick(freeC), b = cvBox(c); z.cv = c; z.m = 'lurk'; z.st = rnd(0.2, 1.2); z.p = Math.max(0.02, c.p - 0.015); z.y = zy(z.p);
+        z.x = xAt(b.cx, z.p); z.tx = xAt(b.cx - c.sd * (b.w * 0.5 + b.hh * 0.32), z.p); z.sw = 0;
+      } else if (r2 < 0.4 && freeC.length && P.roof) { // grimpe sur la voiture puis saute
+        var c2 = pick(freeC), b2 = cvBox(c2); z.cv = c2; z.m = 'climb'; z.p = c2.p + 0.004; z.y = zy(z.p); z.x = xAt(b2.cx - c2.sd * b2.w * 0.08, z.p); z.vis = 0; z.oy = b2.h * 0.78; z.sw = 0; z.v *= 0.9;
+      } else if (r2 < 0.62) { // entre par le côté de l'écran
+        var sd = Math.random() < 0.5 ? -1 : 1; z.p = rnd(0.28, 0.55); z.y = zy(z.p); z.x = sd * (edgeX(z.p) + 0.25); z.m = 'side'; z.vx = -sd * rnd(0.9, 1.3); z.sw = 0;
+      } else if (r2 < 0.8 && P.rise) { // sort de terre
+        z.p = rnd(0.3, 0.62); z.y = zy(z.p); z.x = rnd(-0.55, 0.55); z.m = 'rise'; z.vis = 0; z.sw = 0;
+        var d0 = dims(z); A._xb = 1; A.burst(sx(z), z.y, 10, ['#3F3A2E', '#5C5340', '#7C6F55'], 90, 0.6, 3, 140); A._xb = 0; void d0;
+      }
+      zs.push(z);
+    }
+    // partie visible d'un zombie (pour viser et toucher)
+    function zbox(z) {
+      var d = dims(z), x = sx(z);
+      if (z.m === 'lurk') return null;
+      if (z.m === 'rise') { if (z.vis < 0.35) return null; return { x: x, w: d[0], top: z.y - d[1] * z.vis, bot: z.y }; }
+      if (z.m === 'climb') { if (z.vis < 0.4) return null; var ry = z.y - z.oy; return { x: x, w: d[0], top: ry - d[1] * z.vis, bot: ry }; }
+      if (z.m === 'emerge') { var b = cvBox(z.cv), half = d[0] * 0.5; if (Math.abs(x - b.cx) < b.w / 2 - half * 0.2) return null; return { x: x, w: d[0], top: z.y - d[1], bot: z.y }; }
+      return { x: x, w: d[0], top: z.y - z.oy - d[1], bot: z.y - z.oy };
     }
     function muzzle() { return [gunX + Math.sin(rot) * gunH * 0.93, gunY - Math.cos(rot) * gunH * 0.93]; }
     function shoot(x, y) {
       var best = null, i;
       ang = Math.atan2(y - gunY, x - gunX); rot = clamp(ang + Math.PI / 2, -0.28, 0.28); // l'arme reste presque droite, face aux zombies
       var m = muzzle(); fx.push({ x0: m[0], y0: m[1], x1: x, y1: y, t: 0.09 }); flashT = 0.07; A.sx('gun', { k: 'mg' }); // vrai coup de mitrailleuse
+      shells.push({ x: gunX + gunH * 0.12, y: gunY - gunH * 0.62, vx: rnd(90, 170), vy: -rnd(160, 260), a: rnd(0, 3), va: rnd(-14, 14), t: 0 }); if (shells.length > 14) shells.shift();
       for (i = 0; i < zs.length; i++) {
         var z = zs[i]; if (z.die || z.hord) continue;
-        var d = dims(z), zx = sx(z), pad = Math.max(10, d[0] * 0.15);
-        if (x > zx - d[0] * 0.5 - pad && x < zx + d[0] * 0.5 + pad && y > z.y - d[1] - pad && y < z.y + pad && (!best || z.y > best.y)) best = z;
+        var q = zbox(z); if (!q) continue;
+        var pad = Math.max(10, q.w * 0.15);
+        if (x > q.x - q.w * 0.5 - pad && x < q.x + q.w * 0.5 + pad && y > q.top - pad && y < q.bot + pad && (!best || z.y > best.y)) best = z;
       }
-      if (!best) { A._xb = 1; A.burst(x, y, 4, ['#A8A29E', '#D6D3D1'], 70, 0.35, 2.2); A._xb = 0; return; } // raté : poussière, sans le bruit « touché »
-      var bx = sx(best), bd = dims(best);
+      if (!best) { // raté : dans un abri → éclats de métal / de pierre, sinon poussière
+        var inC = COV.some(function (c) { var b = cvBox(c); return x > b.x && x < b.x + b.w && y > b.y && y < b.by; });
+        A._xb = 1; A.burst(x, y, inC ? 7 : 4, inC ? ['#FDE68A', '#D6D3D1', '#78716C'] : ['#A8A29E', '#D6D3D1'], inC ? 120 : 70, 0.35, 2.2); A._xb = 0; return;
+      }
+      var bx = sx(best), bd = dims(best), bq = zbox(best);
       best.hp--; best.hit = 0.14; best.p = Math.max(0, best.p - 0.025);
-      A.burst(bx, best.y - bd[1] * 0.62, 9, ['#7F1D1D', '#4D7C0F', '#B91C1C'], 130, 0.5, 3);
-      if (best.hp <= 0) { best.die = 0.001; A.burst(bx, best.y - bd[1] * 0.5, 14, ['#7F1D1D', '#991B1B', '#365314'], 170, 0.6, 3.4); splats.push({ x: bx, y: best.y, r: bd[0] * 0.45, t: 0 }); if (splats.length > 14) splats.shift(); }
+      A.burst(bx, bq.top + (bq.bot - bq.top) * 0.38, 9, ['#7F1D1D', '#4D7C0F', '#B91C1C'], 130, 0.5, 3);
+      if (best.hp <= 0) { best.die = 0.001; if (best.m === 'climb' || best.m === 'perch' || best.m === 'jump') { best.m = 'walk'; } A.burst(bx, bq.top + (bq.bot - bq.top) * 0.5, 14, ['#7F1D1D', '#991B1B', '#365314'], 170, 0.6, 3.4); splats.push({ x: bx, y: best.y, r: bd[0] * 0.45, t: 0 }); if (splats.length > 14) splats.shift(); }
     }
     function crash(z) {
       if (dead) return;
@@ -2071,8 +2129,9 @@
         if (!ob.ok) ob.im.addEventListener('load', function () { if (W === w && H === h) bg = mkc(W, H, dpr, paintBg); });
         NF = A.lite ? 4 : 6; var zw = zh * 0.62;
         ['w', 'r', 'b'].forEach(function (k) { ZF[k] = []; });
+        if (!COV.length) mkCov();
       },
-      reset: function (live) { zs = []; splats = []; dead = 0; won = 0; horde = false; fx = []; spT = live ? 0.8 : 0.2; ang = -Math.PI / 2; rot = 0; autoT = 0.8; },
+      reset: function (live) { mkCov(); shells = []; zs = []; splats = []; dead = 0; won = 0; horde = false; fx = []; spT = live ? 0.8 : 0.2; ang = -Math.PI / 2; rot = 0; autoT = 0.8; },
       step: function (dt, live) {
         t += dt; cool -= dt; flashT = Math.max(0, flashT - dt); if (flashT <= 0) rot *= Math.max(0, 1 - dt * 3); // l'arme revient droite après le tir
         var lv = live ? A.lv() : 0, playing = A.live(), i;
@@ -2083,11 +2142,21 @@
         }
         if (!live && !dead && !horde) { // démo : la mitrailleuse tire toute seule sur les zombies déjà proches
           autoT -= dt;
-          if (autoT <= 0) { autoT = 0.55; var tg = zs.filter(function (z) { return !z.die && z.p > 0.62; }).sort(function (a, b) { return b.y - a.y; })[0]; if (tg) { var d0 = dims(tg); shoot(sx(tg), tg.y - d0[1] * 0.6); } }
+          if (autoT <= 0) { autoT = 0.55; var tg = zs.filter(function (z) { return !z.die && z.p > 0.62; }).sort(function (a, b) { return b.y - a.y; })[0]; if (tg) { var q0 = zbox(tg); if (q0) shoot(q0.x, q0.top + (q0.bot - q0.top) * 0.4); } }
         }
         for (i = zs.length - 1; i >= 0; i--) {
           var z = zs[i]; z.hit = Math.max(0, z.hit - dt);
           if (z.die) { z.die += dt; if (z.die > 0.9) zs.splice(i, 1); continue; }
+          if (!dead && z.m !== 'walk') {
+            z.st -= dt;
+            if (z.m === 'lurk') { if (z.st <= 0) { z.m = 'emerge'; z.st = 0.75; } continue; }
+            if (z.m === 'emerge') { z.x += (z.tx - z.x) * Math.min(1, dt * 4.2); if (z.st <= 0) { z.m = 'walk'; z.sw = 0.06; } continue; }
+            if (z.m === 'climb') { z.vis = Math.min(1, z.vis + dt * 2.2); if (z.vis >= 1) { z.m = 'perch'; z.st = rnd(0.35, 0.7); } continue; }
+            if (z.m === 'perch') { if (z.st <= 0) { z.m = 'jump'; z.j = 0; z.p0 = z.p; z.oy0 = z.oy; } continue; }
+            if (z.m === 'jump') { z.j += dt / 0.5; var jk = Math.min(1, z.j); z.oy = z.oy0 * (1 - jk) + Math.sin(jk * Math.PI) * dims(z)[1] * 0.25; z.p = z.p0 + 0.05 * jk; z.y = zy(z.p); if (jk >= 1) { z.m = 'walk'; z.oy = 0; A._xb = 1; A.burst(sx(z), z.y, 6, ['#78716C', '#A8A29E'], 80, 0.4, 2.4, 140); A._xb = 0; A.shake(0.08); } continue; }
+            if (z.m === 'side') { z.x += z.vx * dt; z.p += z.v * dt * 0.35; var lim = 0.5; if (Math.abs(z.x) < lim) { z.m = 'walk'; z.sw = 0.08; } }
+            if (z.m === 'rise') { z.vis = Math.min(1, z.vis + dt * 0.9); if (Math.random() < dt * 8) { A._xb = 1; A.burst(sx(z), z.y, 2, ['#3F3A2E', '#5C5340'], 60, 0.4, 2.4, 160); A._xb = 0; } if (z.vis >= 1) { z.m = 'walk'; } continue; }
+          }
           if (!dead) { z.p += z.v * dt * (z.hit ? 0.15 : 1); z.x *= 1 - 0.1 * dt * z.p; }
           z.p = Math.min(1, z.p); z.y = zy(z.p);
           if (z.p >= 1) {
@@ -2097,6 +2166,7 @@
         }
         for (i = splats.length - 1; i >= 0; i--) { splats[i].t += dt; if (splats[i].t > 6) splats.splice(i, 1); }
         for (i = fx.length - 1; i >= 0; i--) { fx[i].t -= dt; if (fx[i].t <= 0) fx.splice(i, 1); }
+        for (i = shells.length - 1; i >= 0; i--) { var sl = shells[i]; sl.t += dt; sl.vy += 900 * dt; sl.x += sl.vx * dt; sl.y += sl.vy * dt; sl.a += sl.va * dt; if (sl.t > 0.8) shells.splice(i, 1); }
         if (won) won += dt;
       },
       busy: function () { var bgI = gImg4('img/games/' + P.pre + '_bg.webp?v=3742'); return t < 20 && !(bgI.ok && ZI.w && ZI.w.ok && ZI.r && ZI.r.ok && ZI.b && ZI.b.ok && GUN && GUN.ok); }, // v3590 : le moteur ne se fige pas pendant le chargement (iPhone, mode léger)
@@ -2112,14 +2182,18 @@
         var i;
         for (i = 0; i < splats.length; i++) { var sp0 = splats[i]; c.globalAlpha = Math.max(0, 0.7 - sp0.t * 0.1); c.fillStyle = '#3F0A0A'; c.beginPath(); c.ellipse(sp0.x, sp0.y, sp0.r, sp0.r * 0.22, 0, 0, TAU); c.fill(); }
         c.globalAlpha = 1;
-        var list = zs.slice().sort(function (a, b) { return a.y - b.y; });
+        var list = zs.map(function (z) { return { y: z.y, z: z }; }).concat(COV.map(function (c) { return { y: zy(c.p), c: c }; })).sort(function (a, b) { return a.y - b.y; });
         for (i = 0; i < list.length; i++) {
-          var z = list[i], d = dims(z), x = sx(z), sp = z.k === 'r' ? 2.4 : z.k === 'b' ? 0.9 : 1.2, im = ZI[z.k];
+          if (list[i].c) { var cb = cvBox(list[i].c); if (!cb.ok) continue; c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(cb.cx, cb.by - cb.h * 0.03, cb.w * 0.48, cb.h * 0.08, 0, 0, TAU); c.fill(); c.save(); if (list[i].c.fl) { c.translate(cb.x + cb.w, 0); c.scale(-1, 1); c.drawImage(cb.im.im, 0, cb.y, cb.w, cb.h); } else c.drawImage(cb.im.im, cb.x, cb.y, cb.w, cb.h); c.restore(); continue; }
+          if (list[i].z.m === 'lurk') continue;
+          var z = list[i].z, d = dims(z), x = sx(z), sp = z.k === 'r' ? 2.4 : z.k === 'b' ? 0.9 : 1.2, im = ZI[z.k];
           var stp = t * sp * 2 + z.ph * 3, fi = (Math.floor(stp) % 2 + 2) % 2, lift = Math.abs(Math.sin(stp * Math.PI)) * d[1] * 0.03;
           var fog = clamp(z.p * 3, 0.25, 1);
           c.globalAlpha = (z.die ? Math.max(0, 1 - Math.max(0, z.die - 0.45) / 0.45) : 1) * fog;
-          c.fillStyle = 'rgba(0,0,0,.4)'; c.beginPath(); c.ellipse(x, z.y, d[0] * 0.4, d[0] * 0.09, 0, 0, TAU); c.fill();
-          c.save(); c.translate(x, z.y);
+          if (!z.oy && z.m !== 'rise') { c.fillStyle = 'rgba(0,0,0,.4)'; c.beginPath(); c.ellipse(x, z.y, d[0] * 0.4, d[0] * 0.09, 0, 0, TAU); c.fill(); }
+          c.save();
+          if (z.m === 'rise' || z.m === 'climb') { var gl = z.m === 'rise' ? z.y : z.y - z.oy; c.beginPath(); c.rect(x - d[0], 0, d[0] * 2, gl); c.clip(); c.translate(x, gl + d[1] * (1 - z.vis)); }
+          else c.translate(x, z.y - z.oy);
           if (z.die) { var fall = Math.min(1, z.die / 0.45); c.translate(0, -d[1] * 0.05 * fall); c.scale(1, 1 - 0.35 * fall); }
           else c.rotate(Math.sin(t * sp * 2.2 + z.ph) * 0.05 + (z.hit ? -0.08 : 0));
           if (im && im.ok) {
@@ -2130,13 +2204,14 @@
             /* image pas encore là : rien (écran de chargement avant) */
           }
           c.restore(); c.globalAlpha = 1;
-          if (z.max > 1 && !z.die && z.p > 0.2) { var bw = d[0] * 0.55, by = z.y - d[1] - 7; c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(x - bw / 2, by, bw, 4); c.fillStyle = '#F43F5E'; c.fillRect(x - bw / 2, by, bw * z.hp / z.max, 4); }
+          if (z.max > 1 && !z.die && z.p > 0.2 && z.m === 'walk') { var bw = d[0] * 0.55, by = z.y - z.oy - d[1] - 7; c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(x - bw / 2, by, bw, 4); c.fillStyle = '#F43F5E'; c.fillRect(x - bw / 2, by, bw * z.hp / z.max, 4); }
         }
         // barricade (sacs de sable fal.ai) devant les pieds des zombies arrivés
         var bw2 = W * 1.12, bh2 = bw2 * 209 / 1024, by2 = yB - bh2 * 0.3;
         if (BAR && BAR.ok) { c.fillStyle = '#1A1612'; c.fillRect(0, by2 + bh2 * 0.6, W, H); c.drawImage(BAR.im, (W - bw2) / 2, by2, bw2, Math.max(bh2, H - by2 + 4)); }
         else { c.fillStyle = '#8A7350'; c.fillRect(0, yB, W, H - yB); }
         for (i = 0; i < fx.length; i++) { var f = fx[i], k2 = f.t / 0.09; c.globalAlpha = k2; c.strokeStyle = '#FDE68A'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(f.x0 + (f.x1 - f.x0) * (1 - k2) * 0.6, f.y0 + (f.y1 - f.y0) * (1 - k2) * 0.6); c.lineTo(f.x1, f.y1); c.stroke(); c.globalAlpha = 1; }
+        drawShells(c, shells);
         // mitrailleuse vue de derrière : pivote vers le tir, recule à chaque coup
         var rec = flashT > 0 ? gunH * 0.03 : 0;
         c.save(); c.translate(gunX, gunY + rec); c.rotate(rot);
@@ -2148,8 +2223,8 @@
       act: function (k, x, y) { if (dead || horde || cool > 0) return; cool = 0.06; shoot(x, y); },
       key: function () {
         if (dead || horde) return;
-        var tg = zs.filter(function (z) { return !z.die; }).sort(function (a, b) { return b.y - a.y; })[0];
-        if (tg) { var d = dims(tg); shoot(sx(tg), tg.y - d[1] * 0.6); }
+        var tg = zs.filter(function (z) { return !z.die && zbox(z); }).sort(function (a, b) { return b.y - a.y; })[0];
+        if (tg) { var q = zbox(tg); shoot(q.x, q.top + (q.bot - q.top) * 0.4); }
       },
       boom: function () {
         horde = true;
@@ -2157,9 +2232,13 @@
         A.flash(0.25);
       },
       win: function () { won = 0.001; zs.forEach(function (z) { if (!z.die) { z.die = 0.001; var d = dims(z); A.burst(sx(z), z.y - d[1] * 0.5, 6, ['#FDE68A', '#FFFFFF'], 120, 0.5, 2.6); } }); },
-      dbg: function () { return { dead: dead, hz: hz, zs: zs.filter(function (z) { return !z.die; }).map(function (z) { var d = dims(z); return { x: sx(z), y: z.y, w: d[0], h: d[1], hp: z.hp, k: z.k }; }), yB: yB }; }
+      dbg: function () { return { dead: dead, hz: hz, zs: zs.filter(function (z) { return !z.die; }).map(function (z) { var d = dims(z), q = zbox(z); return { x: sx(z), y: q ? q.top + (q.bot - q.top) * 0.4 : z.y, w: d[0], h: d[1], hp: z.hp, k: z.k, m: z.m }; }), yB: yB }; }
     };
   }; }
-  boot('deadhighway', zombieWorld({ pre: 'zw1', vx: 448, vy: 640, za: { w: 0.626, r: 0.448, b: 0.54 } }), 'aim', 0.55);
-  boot('graveyardnight', zombieWorld({ pre: 'zw2', vx: 448, vy: 615, za: { w: 0.543, r: 0.457, b: 0.583 } }), 'aim', 0.55);
+  // abris : [image, profondeur (0 loin → 1 barricade), côté (−1 gauche / 1 droite), hauteur (× un zombie), retourné]
+  boot('deadhighway', zombieWorld({ pre: 'zw1', vx: 448, vy: 640, za: { w: 0.626, r: 0.448, b: 0.54 }, roof: 1, cov: [['zb_car', 0.34, -1, 0.82], ['zb_truck', 0.5, 1, 0.84], ['zb_car', 0.68, -1, 0.82, 1]] }), 'aim', 0.55);
+  boot('graveyardnight', zombieWorld({ pre: 'zw2', vx: 448, vy: 615, za: { w: 0.543, r: 0.457, b: 0.583 }, rise: 1, cov: [['zb_tomb', 0.34, 1, 0.98], ['zb_sarco', 0.48, -1, 1.15], ['zb_tomb', 0.66, -1, 1.0, 1]] }), 'aim', 0.55);
+  // 2026-11-26 : Zombie Siege passe sur ce moteur (avant : copie à part dans skill4.js) — voitures dans la rue, zombies de partout
+  G.zombiesiege = G.zombiesiege || G.deadhighway;
+  boot('zombiesiege', zombieWorld({ pre: 'zomb2', vx: 446, vy: 742, za: { w: 0.655, r: 0.683, b: 0.74 }, roof: 1, cov: [['zb_truck', 0.36, 1, 0.84], ['zb_car', 0.52, -1, 0.82], ['zb_car', 0.7, 1, 0.82, 1]] }), 'aim', 0.55);
 })(window.D6 = window.D6 || {});

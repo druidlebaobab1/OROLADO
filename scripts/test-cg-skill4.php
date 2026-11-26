@@ -59,12 +59,15 @@ check('la fiche skill4 contient exactement ces 8 jeux', array_keys($own) === $GA
 foreach ($ALL as $g) check(sprintf('%-11s : ×2 après %.1f s, ×5 après %.1f s, ×10 après %.1f s', $g, casino_skill_secs($g, 2), casino_skill_secs($g, 5), casino_skill_secs($g, 10)), in_array($g, $k, true) && casino_skill_secs($g, 2) >= 20 && casino_skill_secs($g, 5) >= 50);
 // catalogue : les 8 jeux dans cat-skill4.js, section « skill », fichiers skill4 / skill5, logo à identifiants « ID »
 $cat = (string) file_get_contents(__DIR__ . '/../js/games/cat-skill4.js');
-preg_match_all("/\{ k: '([a-z0-9]+)', name: '([^']+)', sec: 'skill', file: '(skill[45])'/", $cat, $m);
+// 2026-11-26 : Zombie Siege est servi par js/games/skill7.js (moteur commun des zombies)
+preg_match_all("/\{ k: '([a-z0-9]+)', name: '([^']+)', sec: 'skill', file: '(skill[457])'/", $cat, $m);
 check('catalogue cat-skill4 : 8 jeux « Tu contrôles », dans l’ordre', $m[1] === $GAMES, implode(',', $m[1]));
 check('catalogue : mêmes noms que la fiche', array_combine($m[1], $m[2]) == $WANT);
-check('catalogue : 4 jeux dans skill4.js, 4 dans skill5.js', array_count_values($m[3]) == ['skill4' => 4, 'skill5' => 4]);
+check('catalogue : 4 jeux dans skill4.js, 4 dans skill5.js', array_count_values($m[3]) == ['skill4' => 3, 'skill7' => 1, 'skill5' => 4]);
 check('catalogue : aucune clé déjà prise par un autre catalogue', (function () use ($GAMES) { foreach (glob(__DIR__ . '/../js/games/cat-*.js') as $f) { if (basename($f) === 'cat-skill4.js') continue; $c = (string) file_get_contents($f); foreach ($GAMES as $g) if (preg_match("/k: '$g'/", $c)) return false; } return true; })());
-foreach (['skill4' => array_slice($GAMES, 0, 4), 'skill5' => array_slice($GAMES, 4)] as $file => $gs) {
+$js7 = (string) file_get_contents(__DIR__ . '/../js/games/skill7.js');
+check('module skill7 : zombiesiege enregistré (moteur commun) + règles', strpos($js7, "boot('zombiesiege'") !== false && strpos($js7, 'G.zombiesiege = G.zombiesiege || G.deadhighway') !== false);
+foreach (['skill4' => array_values(array_diff(array_slice($GAMES, 0, 4), ['zombiesiege'])), 'skill5' => array_slice($GAMES, 4)] as $file => $gs) {
   $js = (string) file_get_contents(__DIR__ . "/../js/games/$file.js");
   foreach ($gs as $g) check("module $file : $g enregistré + règles (12 langues, fin au hasard)", strpos($js, "boot('$g'") !== false && preg_match("/    $g: \{\n(      [a-z]{2}: \[.*\],?\n){12}    \}/", $js) === 1);
   check("module $file : textes communs en 12 langues", count(array_filter(['en', 'fr', 'es', 'pt', 'ar', 'tr', 'vi', 'id', 'ru', 'de', 'hi', 'zh'], function ($l) use ($js) { return strpos($js, "    $l: { go:") !== false; })) === 12);

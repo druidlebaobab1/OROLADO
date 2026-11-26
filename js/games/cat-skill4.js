@@ -15,7 +15,7 @@
   }
   D6.CasinoCatalog.add([
   { k: 'airstrike', name: 'Air Strike', sec: 'skill', file: 'skill4', pal: ['#DBEAFE', '#1D4ED8'], icon: medal('airstrike', '#60A5FA', '#1E3A8A', 0) },
-  { k: 'zombiesiege', name: 'Zombie Siege', sec: 'skill', file: 'skill4', pal: ['#DCFCE7', '#166534'], icon: medal('zombiesiege', '#F87171', '#7F1D1D', 0) },
+  { k: 'zombiesiege', name: 'Zombie Siege', sec: 'skill', file: 'skill7', pal: ['#DCFCE7', '#166534'], icon: medal('zombiesiege', '#F87171', '#7F1D1D', 0) },
   { k: 'brickbreak', name: 'Brick Breaker', sec: 'skill', file: 'skill4', pal: ['#FCE7F3', '#DB2777'], icon: '<defs><linearGradient id="IDp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBCFE8"/><stop offset=".5" stop-color="#EC4899"/><stop offset="1" stop-color="#9D174D"/></linearGradient><radialGradient id="IDo" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#FDE68A"/><stop offset="1" stop-color="#F59E0B"/></radialGradient></defs>' +
     '<g stroke="#fff" stroke-opacity=".45" stroke-width=".8"><rect x="4" y="6" width="13" height="7" rx="2" fill="#DB2777"/><rect x="18" y="6" width="13" height="7" rx="2" fill="#EA580C"/><rect x="32" y="6" width="13" height="7" rx="2" fill="#CA8A04"/><rect x="46" y="6" width="13" height="7" rx="2" fill="#16A34A"/>' +
     '<rect x="4" y="14" width="13" height="7" rx="2" fill="#0891B2"/><rect x="32" y="14" width="13" height="7" rx="2" fill="#7C3AED"/><rect x="46" y="14" width="13" height="7" rx="2" fill="#DB2777"/><rect x="11" y="22" width="13" height="7" rx="2" fill="#16A34A"/><rect x="39" y="22" width="13" height="7" rx="2" fill="#EA580C"/></g>' +
