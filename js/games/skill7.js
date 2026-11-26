@@ -256,9 +256,29 @@
       zh: ['点击发射拦截弹', '城市被击中！', '巨型弹头！', '导弹正落向你的城市：点击发射位置——拦截弹飞到那里爆炸，摧毁爆炸范围内的导弹。要提前瞄准。有些导弹会分裂。导弹击中城市，本回合结束。']
     }
   };
+  // 2026-11-26 (propriétaire) : fronts de guerre refaits (abris, tirs ennemis, vagues, chef, barre de danger) — mêmes textes pour
+  // les 3 jeux (avant : Forest Ambush avait en hindi / chinois les textes d'un autre jeu) : [indice, échec, fin, règle, grenade, vague, touché]
+  (function () {
+    var R = {
+      en: ['Enemy soldiers attack in waves: some charge, others dive behind cover, then rise to shoot at you. Tap them when they show themselves (short reload after each shot). The red circle marks the one about to fire: take him down first. Each bullet you take fills your danger bar. The officer takes 3 shots. Shoot the grenades in the air too. A full danger bar or a soldier in your trench ends the round.', 'WAVE {n}', 'You are hit!'],
+      fr: ['Les soldats ennemis attaquent par vagues : certains chargent, d’autres plongent derrière un abri puis se relèvent pour te tirer dessus. Touche-les quand ils se montrent (petit rechargement après chaque tir). Le cercle rouge montre celui qui va tirer : abats-le d’abord. Chaque balle reçue remplit ta barre de danger. Le chef demande 3 tirs. Abats aussi les grenades en l’air. Barre de danger pleine ou soldat dans ta tranchée : la partie est finie.', 'VAGUE {n}', 'Tu es touché !'],
+      es: ['Los soldados enemigos atacan por oleadas: unos cargan, otros se lanzan tras una cobertura y luego se levantan para dispararte. Tócalos cuando se asomen (breve recarga tras cada tiro). El círculo rojo marca al que va a disparar: abátelo primero. Cada bala recibida llena tu barra de peligro. El oficial necesita 3 tiros. Derriba también las granadas en el aire. Barra de peligro llena o un soldado en tu trinchera: la ronda termina.', 'OLEADA {n}', '¡Te han dado!'],
+      pt: ['Os soldados inimigos atacam em ondas: uns avançam correndo, outros se jogam atrás de uma cobertura e depois se levantam para atirar em você. Toque neles quando aparecerem (breve recarga após cada tiro). O círculo vermelho marca quem vai atirar: derrube-o primeiro. Cada bala recebida enche sua barra de perigo. O oficial precisa de 3 tiros. Acerte também as granadas no ar. Barra de perigo cheia ou um soldado na sua trincheira: a rodada termina.', 'ONDA {n}', 'Você foi atingido!'],
+      ar: ['يهاجم جنود العدو على موجات: بعضهم يندفع، وآخرون يحتمون خلف ساتر ثم ينهضون لإطلاق النار عليك. المسهم عندما يظهرون (تلقيم قصير بعد كل طلقة). الدائرة الحمراء تشير إلى من سيطلق النار: أسقطه أولًا. كل رصاصة تصيبك تملأ شريط الخطر. الضابط يحتاج إلى 3 طلقات. أسقط القنابل في الهواء أيضًا. امتلاء شريط الخطر أو وصول جندي إلى خندقك ينهي الجولة.', 'الموجة {n}', 'لقد أُصبت!'],
+      tr: ['Düşman askerleri dalgalar halinde saldırır: bazıları hücum eder, bazıları siper arkasına atlar, sonra sana ateş etmek için doğrulur. Göründüklerinde onlara dokun (her atıştan sonra kısa dolum). Kırmızı çember ateş etmek üzere olanı gösterir: önce onu vur. Aldığın her kurşun tehlike çubuğunu doldurur. Subay 3 atış ister. Havadaki el bombalarını da vur. Tehlike çubuğu dolarsa ya da bir asker siperine ulaşırsa tur biter.', 'DALGA {n}', 'Vuruldun!'],
+      vi: ['Lính địch tấn công theo từng đợt: có tên xông lên, có tên nấp sau vật chắn rồi nhô lên bắn bạn. Chạm vào chúng khi chúng lộ diện (nạp đạn ngắn sau mỗi phát). Vòng tròn đỏ đánh dấu tên sắp bắn: hạ hắn trước. Mỗi viên đạn trúng bạn làm đầy thanh nguy hiểm. Sĩ quan cần 3 phát. Bắn cả lựu đạn trên không. Thanh nguy hiểm đầy hoặc có lính vào chiến hào là kết thúc ván.', 'ĐỢT {n}', 'Bạn trúng đạn!'],
+      id: ['Tentara musuh menyerang bergelombang: ada yang menyerbu, ada yang berlindung di balik penghalang lalu bangkit untuk menembakmu. Ketuk mereka saat muncul (isi ulang singkat setiap tembakan). Lingkaran merah menandai yang akan menembak: jatuhkan dia dulu. Setiap peluru yang mengenaimu mengisi bilah bahaya. Perwira butuh 3 tembakan. Tembak juga granat di udara. Bilah bahaya penuh atau tentara masuk paritmu: ronde berakhir.', 'GELOMBANG {n}', 'Kamu tertembak!'],
+      ru: ['Враги наступают волнами: одни бегут в атаку, другие прячутся за укрытием и поднимаются, чтобы стрелять в тебя. Нажимай на них, когда они показываются (короткая перезарядка после выстрела). Красный круг — тот, кто сейчас выстрелит: сними его первым. Каждое попадание заполняет шкалу опасности. Офицеру нужно 3 выстрела. Сбивай и гранаты в воздухе. Полная шкала опасности или солдат в окопе — раунд окончен.', 'ВОЛНА {n}', 'Ты ранен!'],
+      de: ['Feindliche Soldaten greifen in Wellen an: manche stürmen vor, andere hechten hinter Deckung und tauchen dann auf, um auf dich zu schießen. Tippe sie an, wenn sie sich zeigen (kurzes Nachladen nach jedem Schuss). Der rote Kreis zeigt, wer gleich schießt: Schalte ihn zuerst aus. Jeder Treffer füllt deine Gefahrenleiste. Der Offizier braucht 3 Treffer. Schieß auch die Granaten in der Luft ab. Volle Gefahrenleiste oder ein Soldat in deinem Graben: Die Runde endet.', 'WELLE {n}', 'Du bist getroffen!'],
+      hi: ['दुश्मन सैनिक लहरों में हमला करते हैं: कुछ दौड़कर आते हैं, कुछ आड़ के पीछे छिपते हैं और फिर उठकर आप पर गोली चलाते हैं। जब वे दिखें तो उन पर टैप करें (हर गोली के बाद थोड़ा रीलोड)। लाल घेरा उसे दिखाता है जो गोली चलाने वाला है: पहले उसे गिराएँ। हर लगी गोली आपकी ख़तरे की पट्टी भरती है। अफ़सर को 3 गोलियाँ चाहिए। हवा में ग्रेनेड भी मार गिराएँ। ख़तरे की पट्टी भर गई या कोई सैनिक आपकी खाई में पहुँचा तो राउंड खत्म।', 'लहर {n}', 'आपको गोली लगी!'],
+      zh: ['敌军分波次进攻：有的冲锋，有的躲到掩体后面再起身向你开火。他们露头时点击射击（每枪后短暂装弹）。红圈标出即将开火的敌人：先干掉他。每中一枪，危险条就会上涨。军官要打 3 枪。也要击落空中的手榴弹。危险条满或有士兵冲进战壕，本回合结束。', '第 {n} 波', '你中弹了！']
+    }, base = G.trenchdef, WG = {};
+    Object.keys(R).forEach(function (lg) { var g = base[lg] || base.en; WG[lg] = [g[0], g[1], g[2], R[lg][0], g[4] || g[1], R[lg][1], R[lg][2]]; });
+    G.trenchdef = G.forestambush = G.junglestrike = WG;
+  })();
   function L(key) {
     var lg = K.lang(), c = Object.assign({}, C.en, C[lg] || {}), g = (G[key][lg] || G[key].en);
-    c.hint = g[0]; c.fail = g[1]; c.end = g[2]; c.fail2 = g[4] || g[1];
+    c.hint = g[0]; c.fail = g[1]; c.end = g[2]; c.fail2 = g[4] || g[1]; c.wave = g[5] || ''; c.hit = g[6] || g[1];
     return c;
   }
   function rules(key) {
@@ -1414,105 +1434,275 @@
       spots: [[0.26, 0.46, 0.36], [0.74, 0.45, 0.34], [0.50, 0.44, 0.3], [0.30, 0.70, 0.6], [0.70, 0.70, 0.6], [0.50, 0.86, 0.9], [0.24, 0.92, 0.95], [0.78, 0.92, 0.95]] });
   }, 'aim', 0.5);
 
-  /* ================================================================== 13. TRENCH DEFENSE — first-person from the trench: enemy
-     soldiers charge across the battlefield (front-view run cycle, perspective). Tap one to shoot him; shoot grenades in
-     the air too. One soldier reaching the trench, or a grenade landing in it, ends the round. */
-  /* 2026-11-16 (propriétaire : « ajoute 2 jeux de guerre, les gens sont dans la forêt ») — le moteur de Trench Defense sert à
-     plusieurs fronts : chacun a son décor (wb_<clé>.webp), son soldat illustré et sa ligne d'horizon. */
+  /* ================================================================== 13. FRONTS DE GUERRE (Trench Defense, Forest Ambush, Jungle Strike)
+     2026-11-26 (propriétaire : « on ne sent pas l'action, ils courent comme des zombies ; ils doivent se cacher, sortir, tirer,
+     sauter ; Jungle Strike : ils sont cachés dans les feuilles, il faut de l'espace ») — moteur refait :
+     • ABRIS (sacs de sable / troncs / pierres de ruine) : des soldats courent jusqu'à un abri, s'y baissent, se relèvent, VISENT
+       (cercle rouge qui se resserre) puis TIRENT sur le joueur (éclair, traçante, écran qui tremble) ; ils ne sont touchables que
+       quand ils se montrent ; une balle dans l'abri fait voler des éclats.
+     • VAGUES annoncées (« VAGUE 3 ») : coureurs, escouade, tireur d'élite au loin (reflet de lunette), CHEF (plus grand, 3 tirs).
+     • Ils arrivent aussi par les CÔTÉS, en zigzag, certains SAUTENT, et se baissent quand on tire à côté d'eux.
+     • BARRE DE DANGER (bas à gauche) : chaque balle reçue la remplit (elle redescend doucement) ; pleine = partie perdue.
+     Même tour de jeu qu'avant : le serveur décide de la fin secrète et paie ; une erreur du joueur (barre pleine, soldat dans
+     la tranchée, grenade non abattue) termine la partie (A.fail). */
   function warFront(P) { return function (A) {
-    var W, H, T, dpr, bg, hy, gy, bh, fr = [], foes = [], gren = [], puffs = [], cool = 0, aimA = -Math.PI / 2, flash = 0, dead = 0, won = 0, bomb = null, t = 0, spT = 0, aiT = 0, kills = 0, NF = 8;
-    function scr(f) { var k = 1 - f.z, sc = 0.3 + 0.7 * k * k; return { x: W / 2 + f.x * W * 0.46 * (0.35 + 0.65 * k), y: hy + (gy - hy) * (0.05 + 0.95 * k * k), s: sc }; }
-    function spawn(live) { var lv = live ? A.lv() : 0.2; foes.push({ x: rnd(-0.42, 0.42), z: 1, vz: (0.075 + 0.075 * lv) * rnd(0.85, 1.2), dx: rnd(-0.03, 0.03), /* 2026-11-16 : ils courent droit vers le fusil */ ph: Math.random(), dn: 0, gT: lv > 0.15 && Math.random() < 0.35 + 0.3 * lv ? rnd(0.25, 0.6) : 9 }); }
+    var W, H, T, dpr, bg, hy, gy, bh, fr = [], foes = [], gren = [], puffs = [], covers = [], tracers = [], cool = 0, aimA = -Math.PI / 2, flash = 0, dead = 0, won = 0, bomb = null, t = 0, aiT = 0, kills = 0, NF = 8;
+    var danger = 0, hurtT = 9, hitFx = 0, wave = 0, queue = [], qT = 0, waveT = 0, banner = 0, XR = P.xr || 0.42, glow = P.glow || 'rgba(0,0,0,.55)';
+    function scr(x, z) { var k = 1 - z, sc = 0.3 + 0.7 * k * k; return { x: W / 2 + x * W * 0.46 * (0.35 + 0.65 * k), y: hy + (gy - hy) * (0.05 + 0.95 * k * k), s: sc }; }
+    function lvl(live) { return live ? A.lv() : 0.2; }
+    // ---- abris : 2 rangées en quinconce, au milieu du chemin pour Jungle Strike (XR plus étroit)
+    function mkCovers() {
+      covers = [];
+      // 3 rangées de 2 abris, bien écartés (un à gauche, un à droite, décalés d'une rangée à l'autre)
+      var zs = [0.66, 0.45, 0.27], flip = Math.random() < 0.5 ? 1 : -1;
+      zs.forEach(function (z, i) {
+        [-1, 1].forEach(function (sd) {
+          // écart choisi À L'ÉCRAN (part de la largeur), converti en position du terrain selon la profondeur
+          var o = sd * (P.co || 0.27) * (i % 2 ? 0.78 : 1) + flip * 0.04, k = 1 - z, x = o / (0.46 * (0.35 + 0.65 * k));
+          covers.push({ x: x + rnd(-0.03, 0.03), z: z + rnd(-0.02, 0.02), kind: P.cover, by: null, seed: Math.random() });
+        });
+      });
+    }
+    function coverBox(c) { var p = scr(c.x, c.z), hh = bh * p.s, w = hh * (c.kind === 'log' ? 1.05 : 0.82), h = hh * 0.46; return { x: p.x - w / 2, y: p.y - h, w: w, h: h, by: p.y, hh: hh }; }
+    // ---- soldats
+    function add(k, side, live) {
+      // par le côté : il entre depuis le bord de l'écran, à mi-distance
+      var lv = lvl(live), sx = side ? side * 2.1 : rnd(-XR, XR), f = { k: k, x: sx, z: k === 'snp' ? 0.97 : side ? rnd(0.6, 0.75) : rnd(0.9, 1), ph: Math.random(), dn: 0, e: 1, st: 'move', t: 0, cyc: 0, hp: k === 'boss' ? 3 : 1, sc: k === 'boss' ? 1.28 : 1, jump: 0, jT: 9, duck: 0, dx: 0, hurt: 0 };
+      f.vz = (k === 'run' ? 0.08 + 0.07 * lv : 0.11 + 0.05 * lv) * rnd(0.85, 1.15);
+      if (k === 'run') { f.dx = side ? -side * rnd(0.55, 0.8) : rnd(0.12, 0.26) * (Math.random() < 0.5 ? -1 : 1); if (Math.random() < 0.55) f.jT = rnd(0.35, 0.7); f.st = 'run'; }
+      else { var c = pickCover(f, k === 'snp' ? 0.7 : 0.5); if (c) { f.cv = c; c.by = f; } else { f.k = 'run'; f.st = 'run'; f.dx = rnd(-0.15, 0.15); } }
+      foes.push(f);
+    }
+    function pickCover(f, minZ) {
+      var free = covers.filter(function (c) { return !c.by && c.z >= minZ && c.z < f.z - 0.05; });
+      if (!free.length) free = covers.filter(function (c) { return !c.by && c.z < f.z - 0.05; });
+      if (!free.length) return null;
+      free.sort(function (a, b) { return Math.abs(a.x - f.x) + (1 - a.z) * 0.3 - Math.abs(b.x - f.x) - (1 - b.z) * 0.3; });
+      return free[Math.random() < 0.7 ? 0 : (Math.random() * free.length) | 0];
+    }
+    function release(f) { if (f.cv && f.cv.by === f) f.cv.by = null; f.cv = null; }
+    function fpos(f) { var p = scr(f.x, f.z), hh = bh * p.s * f.sc, sink = (1 - f.e) * hh * 0.62 + f.duck * hh * 0.3, jy = f.jump > 0 ? Math.sin(Math.PI * f.jump) * hh * 0.32 : 0; return { x: p.x, y: p.y, hh: hh, top: p.y - hh * 1.02 + sink - jy, sink: sink, jy: jy }; }
+    // partie visible (pour viser) : au-dessus de l'abri quand il s'y cache
+    function vis(f) { var q = fpos(f), bot = f.cv && f.st !== 'move' ? coverBox(f.cv).y : q.y - q.jy; return { x: q.x, w: q.hh * 0.26 + 6, top: q.top, bot: bot, hh: q.hh }; }
+    function exposed(f) { var v = vis(f); return !f.dn && v.bot - v.top > v.hh * 0.22; }
+    // ---- vagues
+    function planWave(n) {
+      var L2 = [], s = function () { return Math.random() < 0.5 ? -1 : 1; };
+      if (n === 1) L2 = [['run', 0, 0], ['cov', 0, 0.9], ['run', s(), 1.6], ['cov', 0, 2.6]];
+      else if (n === 2) { var sd = s(); L2 = [['cov', sd, 0], ['cov', sd, 0.3], ['cov', sd, 0.6], ['cov', sd, 0.9], ['run', -sd, 2.2]]; }
+      else if (n === 3) L2 = [['snp', 0, 0], ['cov', -1, 0.8], ['cov', 1, 1.2], ['run', 0, 2.2], ['run', s(), 3.2]];
+      else if (n === 4) L2 = [['boss', 0, 0], ['cov', -1, 0.7], ['cov', 1, 1.1], ['run', s(), 2.4]];
+      else {
+        var m = 4 + Math.min(4, n - 4), d = 0;
+        if (n % 4 === 0) { L2.push(['boss', 0, 0]); d = 0.8; }
+        if (n % 3 === 0) { L2.push(['snp', 0, d]); d += 0.6; }
+        for (var i = 0; i < m; i++) { L2.push([Math.random() < 0.55 ? 'cov' : 'run', Math.random() < 0.45 ? s() : 0, d]); d += rnd(0.5, 1.1); }
+      }
+      return L2;
+    }
+    function nextWave() { wave++; queue = planWave(wave); qT = 0; waveT = 0; banner = 1.6; }
+    // ---- tirs du joueur
     function shootAt(x, y) {
       if (cool > 0 || dead || bomb || won) return;
       cool = 0.26; flash = 0.08; aimA = Math.atan2(y - H, x - W / 2); A.sx('gun', { k: 'rifle' });
       for (var i = 0; i < gren.length; i++) { var g = gren[i], gp = gpos(g); if (Math.hypot(gp.x - x, gp.y - y) < Math.max(18, bh * 0.12)) { gren.splice(i, 1); boomFx(A, gp.x, gp.y, 0.5); return; } }
       var best = null;
-      foes.forEach(function (f) { if (f.dn) return; var p = scr(f), hh = bh * p.s; if (Math.abs(x - p.x) < hh * 0.24 + 6 && y > p.y - hh * 1.02 - 6 && y < p.y + 4) { if (!best || f.z < best.z) best = f; } });
-      if (best) { best.dn = 0.001; kills++; var p = scr(best); A.burst(x, y, 6, ['#7F1D1D', '#B91C1C', '#D6D3D1'], 70, 0.4, 2.4, 120); void p; return; } // l'impact sonne « blast » (famille guerre)
+      foes.forEach(function (f) { if (f.dn || !exposed(f)) return; var v = vis(f); if (Math.abs(x - v.x) < v.w && y > v.top - 6 && y < v.bot + 4) { if (!best || f.z < best.z) best = f; } });
+      if (best) {
+        A.burst(x, y, 6, ['#7F1D1D', '#B91C1C', '#D6D3D1'], 70, 0.4, 2.4, 120);
+        if (--best.hp > 0) { best.hurt = 0.25; if (best.st === 'aim') { best.st = 'duck'; best.t = 0; } return; }
+        best.dn = 0.001; kills++; release(best); return;
+      }
+      // dans un abri : éclats ; à côté d'un soldat : il se baisse et change de direction
+      for (i = 0; i < covers.length; i++) { var b = coverBox(covers[i]); if (x > b.x && x < b.x + b.w && y > b.y && y < b.by) { A._xb = 1; A.burst(x, y, 7, P.chips, 90, 0.35, 2.2, 160); A._xb = 0; return; } }
+      foes.forEach(function (f) { if (f.dn || f.st !== 'run') return; var q = fpos(f); if (Math.abs(x - q.x) < q.hh * 0.6 && y > q.top - q.hh * 0.3 && y < q.y) { f.duck = 1; f.dx = -f.dx || rnd(-0.2, 0.2); } });
       puffs.push({ x: x, y: y, t: 0 }); if (puffs.length > 10) puffs.shift();
     }
     function gpos(g) { var k = Math.min(1, g.t / g.T), x = g.x0 + (g.x1 - g.x0) * k, y = g.y0 + (g.y1 - g.y0) * k - Math.sin(k * Math.PI) * (H - T) * 0.35; return { x: x, y: y, k: k }; }
+    function throwG(f) { var q = fpos(f); gren.push({ x0: q.x, y0: q.top + q.hh * 0.2, x1: clamp(q.x + rnd(-40, 40), 30, W - 30), y1: H - (H - gy) * 0.6, t: 0, T: 1.8 + f.z }); }
+    // ---- tir ennemi sur le joueur
+    function enemyFire(f, live) {
+      var q = fpos(f), mx = q.x + q.hh * 0.14, my = q.top + q.hh * 0.36, tx = W / 2 + rnd(-W * 0.32, W * 0.32), ty = H - (H - gy) * rnd(0.2, 0.9);
+      tracers.push({ x0: mx, y0: my, x1: tx, y1: ty, t: 0 }); f.mz = 0.09;
+      A.sx('gun', { k: 'rifle', v: f.k === 'snp' ? 0.9 : 0.55 });
+      if (!live) { A._xb = 1; A.burst(tx, ty, 4, P.chips, 60, 0.3, 2, 120); A._xb = 0; return; }
+      var dmg = f.k === 'snp' ? 0.34 : f.k === 'boss' ? 0.15 : 0.2;
+      danger = Math.min(1, danger + dmg); hurtT = 0; hitFx = 1; A.shake(0.18 + dmg * 0.4);
+      A._xb = 1; A.burst(tx, ty, 6, ['#FDE68A', '#D6D3D1', '#78716C'], 90, 0.35, 2.4, 140); A._xb = 0;
+      if (danger >= 1 && !dead && A.fail(A.l.hit)) { dead = 1; A.shake(0.45); A.flash(0.4); }
+    }
+    // ---- dessin des abris
+    function drawCover(c, cv) {
+      var b = coverBox(cv), x = b.x, y = b.y, w = b.w, h = b.h, i, s = cv.seed;
+      c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(x + w / 2, b.by, w * 0.56, h * 0.12, 0, 0, TAU); c.fill();
+      if (cv.kind === 'sand') {
+        var rows = [[3, 0], [3, 0.5], [2, 0]], bw = w / 3, bhh = h / 3;
+        for (var r = 0; r < 3; r++) for (i = 0; i < rows[r][0]; i++) {
+          var bx = x + (r === 2 ? bw * 0.5 : 0) + i * bw + (r === 1 ? bw * 0.08 : 0), by2 = b.by - (r + 1) * bhh * 0.98;
+          if (r === 1 && i === 2) bx -= bw * 0.16;
+          c.fillStyle = lg(c, 0, by2, 0, by2 + bhh, ['#D6C79A', '#A8956A', '#6E6045']); rr(c, bx + 1, by2, bw - 2, bhh, bhh * 0.45); c.fill();
+          c.strokeStyle = 'rgba(40,30,15,.45)'; c.lineWidth = 1; c.stroke();
+          c.strokeStyle = 'rgba(255,250,230,.25)'; c.beginPath(); c.moveTo(bx + bw * 0.2, by2 + bhh * 0.3); c.lineTo(bx + bw * 0.75, by2 + bhh * 0.3); c.stroke();
+        }
+      } else if (cv.kind === 'log') {
+        var ly = b.by - h * 0.62, lh = h * 0.62;
+        c.fillStyle = lg(c, 0, ly, 0, ly + lh, ['#7A5534', '#4A3220', '#2A1C12']); rr(c, x, ly, w, lh, lh * 0.45); c.fill();
+        c.strokeStyle = 'rgba(20,12,6,.6)'; c.lineWidth = 1;
+        for (i = 1; i < 5; i++) { c.beginPath(); c.moveTo(x + w * (i / 5 + (s - 0.5) * 0.05), ly + lh * 0.15); c.lineTo(x + w * (i / 5 + 0.03), ly + lh * 0.85); c.stroke(); }
+        c.fillStyle = '#B98A5A'; c.beginPath(); c.ellipse(x + w - lh * 0.18, ly + lh / 2, lh * 0.2, lh * 0.46, 0, 0, TAU); c.fill();
+        c.strokeStyle = '#6B4A2B'; c.beginPath(); c.ellipse(x + w - lh * 0.18, ly + lh / 2, lh * 0.1, lh * 0.24, 0, 0, TAU); c.stroke();
+        c.fillStyle = 'rgba(120,150,70,.55)'; c.beginPath(); c.ellipse(x + w * 0.3, ly + 2, w * 0.16, lh * 0.12, 0, 0, TAU); c.fill();
+        c.fillStyle = lg(c, 0, b.by - h, 0, b.by, ['#8A8A80', '#55554D']); c.beginPath(); c.ellipse(x + w * 0.12, b.by - h * 0.5, w * 0.14, h * 0.5, 0, Math.PI, 0); c.fill();
+      } else {
+        c.fillStyle = lg(c, 0, y, 0, b.by, ['#8E8A78', '#66634F', '#3E3C30']); rr(c, x + w * 0.04, y + h * 0.05, w * 0.92, h * 0.95, 3); c.fill();
+        c.strokeStyle = 'rgba(30,28,20,.5)'; c.lineWidth = 1; c.strokeRect(x + w * 0.04, y + h * 0.05, w * 0.46, h * 0.45); c.strokeRect(x + w * 0.5, y + h * 0.5, w * 0.46, h * 0.5);
+        c.beginPath(); c.moveTo(x + w * (0.3 + s * 0.3), y + h * 0.1); c.lineTo(x + w * (0.4 + s * 0.2), y + h * 0.6); c.stroke();
+        c.fillStyle = 'rgba(80,130,50,.75)'; c.beginPath(); c.ellipse(x + w * 0.5, y + h * 0.08, w * 0.42, h * 0.1, 0, 0, TAU); c.fill();
+      }
+    }
+    function drawFoe(c, f) {
+      var q = fpos(f), hh = q.hh, img = f.st === 'run' || f.st === 'move' ? fr[Math.floor(f.ph * NF) % NF] : fr[0];
+      if (!img) return;
+      var gyF = q.y; // le sol : rien sous les pieds quand il se baisse derrière l'abri
+      if (!f.jump) { c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(q.x, q.y, hh * 0.2, hh * 0.04, 0, 0, TAU); c.fill(); }
+      c.save();
+      if (f.dn) { c.globalAlpha = Math.max(0, 1 - f.dn * 1.1); c.translate(q.x, q.y); c.rotate(Math.min(1.4, f.dn * 5) * (f.x > 0 ? 1 : -1)); c.drawImage(img, -hh * 0.6, -hh * 1.08, hh * 1.2, hh * 1.12); c.restore(); return; }
+      c.beginPath(); c.rect(q.x - hh, 0, hh * 2, gyF - q.jy + 1); c.clip();
+      if (!A.lite) { c.shadowColor = glow; c.shadowBlur = Math.max(4, hh * 0.06); }
+      var lean = f.st === 'aim' ? 0.04 : 0;
+      c.translate(q.x, q.y + q.sink - q.jy); if (lean) c.rotate(lean * (f.x > 0 ? -1 : 1));
+      c.drawImage(img, -hh * 0.6, -hh * 1.08, hh * 1.2, hh * 1.12);
+      c.restore();
+      if (f.hurt > 0) { c.globalAlpha = f.hurt * 2; circ(c, q.x, q.top + hh * 0.35, hh * 0.18, 'rgba(239,68,68,.6)'); c.globalAlpha = 1; }
+      if (f.mz > 0) { var mx = q.x + hh * 0.14, my = q.top + hh * 0.36, r = hh * 0.11; circ(c, mx, my, r * 1.8, 'rgba(253,186,116,.35)'); circ(c, mx, my, r, '#FEF3C7'); }
+      if (f.k === 'snp' && (f.st === 'aim' || f.st === 'peek') && ((t * 5) | 0) % 2) { var gx = q.x + hh * 0.05, gy2 = q.top + hh * 0.18, gr = Math.max(4, hh * 0.09); c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(gx - gr, gy2); c.lineTo(gx + gr, gy2); c.moveTo(gx, gy2 - gr); c.lineTo(gx, gy2 + gr); c.stroke(); circ(c, gx, gy2, gr * 0.35, '#FFFFFF'); }
+      if (f.st === 'aim') { var p = Math.min(1, f.t / f.aT), rr2 = hh * (0.55 - 0.3 * p), cy = q.top + hh * 0.3; c.strokeStyle = p > 0.7 ? '#EF4444' : 'rgba(239,68,68,.75)'; c.lineWidth = Math.max(2, hh * 0.025); c.beginPath(); c.arc(q.x, cy, rr2, 0, TAU); c.stroke(); }
+      if (f.k === 'boss') { var pw = hh * 0.14, px = q.x - pw * 1.6, py = q.top - hh * 0.1; for (var i = 0; i < 3; i++) { c.fillStyle = i < f.hp ? '#EF4444' : 'rgba(255,255,255,.25)'; rr(c, px + i * pw * 1.1, py, pw, Math.max(4, hh * 0.035), 2); c.fill(); } star(c, q.x, py - hh * 0.07, Math.max(5, hh * 0.06)); }
+      if (f.k === 'run' && f.z < 0.3 && (t * 6 | 0) % 2) { c.strokeStyle = 'rgba(239,68,68,.8)'; c.lineWidth = 2; c.beginPath(); c.arc(q.x, q.y - hh * 0.55, hh * 0.45, 0, TAU); c.stroke(); }
+    }
+    function star(c, x, y, r) { c.fillStyle = '#FBBF24'; c.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, rr3 = i % 2 ? r * 0.45 : r; c.lineTo(x + Math.cos(a) * rr3, y + Math.sin(a) * rr3); } c.closePath(); c.fill(); }
     return {
       size: function (w, h, uu, d, top) {
-        W = w; H = h; dpr = d; T = top; hy = Math.max(T + (H - T) * 0.12, H * P.hy); gy = H - (H - T) * 0.14; bh = clamp((H - T) * 0.42, 90, 260); // 2026-11-16 (propriétaire) : nouveau champ de bataille ouvert, horizon de la photo ≈ 35 %
-        // v2860 people: D6.Rig (js/art-rig.js, real proportions) + helmet + rifle held across the chest; own rig as a fallback
+        W = w; H = h; dpr = d; T = top; hy = Math.max(T + (H - T) * 0.12, H * P.hy); gy = H - (H - T) * 0.14; bh = clamp((H - T) * 0.42, 90, 260) * (P.bs || 1);
         var tdS = warImg(P.sold, function () { fr = rigFrames(bh, NF, tdDraw); });
         var tdDraw = function (c, ph) {
-          if (tdS.ok) { // vrai soldat illustré : il court vers nous (pas de course = petit balancement, pas alterné = image retournée)
-            var im = tdS.im, hh = bh * 1.02, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(ph * TAU), bob = Math.abs(st) * bh * 0.025;
-            c.save(); c.translate(0, -bob); c.rotate(st * 0.05); if (ph >= 0.5) c.scale(-1, 1); c.drawImage(im, -ww / 2, -hh, ww, hh); c.restore(); return;
-          }
-          return; // 2026-11-16 (propriétaire : « ça affiche d'abord les anciennes images ») : plus d'ancien dessin, le soldat apparaît avec son image
-          D6.Rig.draw(c, bh, { view: 'front', pose: 'run', ph: ph, pal: RIG_EN });
-          var s = bh / 100, bob = Math.abs(Math.sin(ph * TAU)) * 1.5 * s;
-          c.save(); c.translate(0, -bh * 0.62 - bob); c.rotate(-0.7); c.fillStyle = lg(c, 0, -3 * s, 0, 3 * s, ['#52525B', '#1F1F22']); rr(c, -20 * s, -2.4 * s, 40 * s, 4.8 * s, 1.5 * s); c.fill(); c.fillStyle = '#5C4033'; rr(c, 9 * s, -3 * s, 11 * s, 6 * s, 1.5 * s); c.fill(); c.restore();
-          circ(c, -5 * s, -bh * 0.56 - bob, 3.2 * s, '#2B2F14'); circ(c, 7 * s, -bh * 0.68 - bob, 3.2 * s, '#2B2F14');
+          if (!tdS.ok) return; // le soldat apparaît avec son image (pas d'ancien dessin)
+          var im = tdS.im, hh = bh * 1.02, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(ph * TAU), bob = Math.abs(st) * bh * 0.025;
+          c.save(); c.translate(0, -bob); c.rotate(st * 0.05); if (ph >= 0.5) c.scale(-1, 1); c.drawImage(im, -ww / 2, -hh, ww, hh); c.restore();
         };
         fr = rigFrames(bh, NF, tdDraw);
-        bg = mkc(W, H, dpr, function (c) {
-          c.fillStyle = lg(c, 0, 0, 0, hy, ['#1F2937', '#57534E', '#A8A29E']); c.fillRect(0, 0, W, hy + 2);
-          for (var i = 0; i < 5; i++) { var sx = rnd(0, W), sy = hy - rnd(4, 30); circ(c, sx, sy, rnd(14, 34), 'rgba(41,37,36,.35)'); }
-          c.fillStyle = lg(c, 0, hy, 0, H, ['#57534E', '#44403C', '#292524']); c.fillRect(0, hy, W, H - hy);
-          for (i = 0; i < 26; i++) { var k = Math.random(), y = hy + (gy - hy) * k * k, r = (6 + 30 * k) * rnd(0.6, 1.3), x = rnd(0, W); c.fillStyle = 'rgba(28,25,23,.45)'; c.beginPath(); c.ellipse(x, y, r * 1.6, r * 0.45, 0, 0, TAU); c.fill(); c.fillStyle = 'rgba(168,162,158,.15)'; c.beginPath(); c.ellipse(x, y - r * 0.2, r * 1.6, r * 0.2, 0, Math.PI, 0); c.fill(); }
-          // barbed wire rows
-          [0.35, 0.62].forEach(function (k) { var y = hy + (gy - hy) * k * k; c.strokeStyle = 'rgba(28,25,23,.8)'; c.lineWidth = 1; for (var x = 0; x < W; x += 26 * (0.4 + k)) { c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - 14 * k); c.stroke(); } c.beginPath(); for (x = 0; x <= W; x += 4) c.lineTo(x, y - 9 * k + Math.sin(x * 0.5) * 3 * k); c.stroke(); });
-          // our parapet: sandbags
-          for (var row = 0; row < 2; row++) for (var x2 = -20 + row * 18; x2 < W + 20; x2 += 36) { var by = H - (H - gy) * (row ? 0.95 : 0.5); c.fillStyle = lg(c, 0, by - 12, 0, by + 12, ['#C2B280', '#8B7D5A', '#5C5340']); rr(c, x2, by - 12, 38, 24, 11); c.fill(); c.strokeStyle = 'rgba(0,0,0,.25)'; c.stroke(); }
-        });
+        bg = mkc(W, H, dpr, function (c) { c.fillStyle = '#292524'; c.fillRect(0, 0, W, H); });
+        if (!covers.length) mkCovers();
       },
-      reset: function () { aimA = -Math.PI / 2; foes = []; gren = []; puffs = []; cool = 0; dead = 0; won = 0; bomb = null; spT = 0.5; kills = 0; },
+      reset: function () { aimA = -Math.PI / 2; foes = []; gren = []; puffs = []; tracers = []; cool = 0; dead = 0; won = 0; bomb = null; kills = 0; danger = 0; hurtT = 9; hitFx = 0; wave = 0; queue = []; banner = 0; mkCovers(); nextWave(); qT = -0.6; },
       step: function (dt, live) {
-        t += dt; cool = Math.max(0, cool - dt); flash = Math.max(0, flash - dt); var i, f;
-        if (cool <= 0) aimA += (-Math.PI / 2 - aimA) * Math.min(1, dt * 3); // le fusil revient droit entre deux tirs
+        t += dt; cool = Math.max(0, cool - dt); flash = Math.max(0, flash - dt); hitFx = Math.max(0, hitFx - dt * 2.5); banner = Math.max(0, banner - dt);
+        hurtT += dt; if (hurtT > 2) danger = Math.max(0, danger - dt * 0.06);
+        var i, f, lv = lvl(live);
+        if (cool <= 0) aimA += (-Math.PI / 2 - aimA) * Math.min(1, dt * 3);
         for (i = puffs.length - 1; i >= 0; i--) { puffs[i].t += dt; if (puffs[i].t > 0.5) puffs.splice(i, 1); }
+        for (i = tracers.length - 1; i >= 0; i--) { tracers[i].t += dt; if (tracers[i].t > 0.12) tracers.splice(i, 1); }
         for (i = foes.length - 1; i >= 0; i--) {
           f = foes[i];
           if (f.dn) { f.dn += dt; if (f.dn > 0.9) foes.splice(i, 1); continue; }
+          if (f.mz) f.mz = Math.max(0, f.mz - dt); if (f.hurt) f.hurt = Math.max(0, f.hurt - dt); f.duck = Math.max(0, f.duck - dt * 2.2);
           if (bomb || dead || won) continue;
-          f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1; f.z -= f.vz * dt; f.x = clamp(f.x + f.dx * dt, -0.5, 0.5); if (Math.random() < dt * 0.5) f.dx = -f.dx;
-          if (f.gT < 9 && f.z < 1 - f.gT) { f.gT = 9; var p = scr(f), hh = bh * p.s; gren.push({ x0: p.x, y0: p.y - hh * 0.8, x1: clamp(p.x + rnd(-40, 40), 30, W - 30), y1: H - (H - gy) * 0.6, t: 0, T: 1.8 + f.z }); }
-          if (f.z <= 0) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); } } else foes.splice(i, 1); }
+          f.t += dt;
+          if (f.st === 'run') {
+            f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1; f.z -= f.vz * dt * (f.duck ? 0.5 : 1);
+            var lim = XR * (0.6 + 0.6 * (1 - f.z)); f.x += f.dx * dt; if (Math.abs(f.x) > lim && f.x * f.dx > 0) f.dx = -f.dx * rnd(0.7, 1.1); if (Math.random() < dt * 0.6) f.dx = -f.dx;
+            if (f.jT < 9 && f.z < f.jT) { f.jT = 9; f.jump = 0.001; }
+            if (f.jump) { f.jump += dt / 0.55; if (f.jump >= 1) f.jump = 0; }
+            if (f.z <= 0) { if (A.live()) { if (A.fail(A.l.fail)) { dead = 1; A.shake(0.4); } } else foes.splice(i, 1); }
+            continue;
+          }
+          var cv = f.cv;
+          if (!cv) { f.st = 'run'; f.k = f.k === 'boss' ? 'boss' : 'run'; f.dx = rnd(-0.15, 0.15); continue; }
+          if (f.st === 'move') {
+            f.ph = (f.ph + dt * (1.6 + f.vz * 4)) % 1;
+            var tz = cv.z + 0.012, dz = tz - f.z, dx = cv.x - f.x, sx2 = (0.35 + Math.abs(dx) * 0.9) * dt, spd = f.vz * 1.4 * dt;
+            f.x += Math.abs(dx) <= sx2 ? dx : (dx > 0 ? sx2 : -sx2); f.z += Math.abs(dz) <= spd ? dz : (dz > 0 ? spd : -spd);
+            if (Math.abs(cv.x - f.x) < 1e-3 && Math.abs(tz - f.z) < 1e-3) { f.st = 'hide'; f.t = 0; f.e = 0.4; f.hT = rnd(0.5, 1.1); }
+            continue;
+          }
+          if (f.st === 'hide') {
+            f.e = Math.max(0, f.e - dt * 4);
+            if (f.t >= f.hT) {
+              if (f.cyc >= 2 && f.k !== 'snp') { var nc = pickCover(f, 0); if (nc) { release(f); f.cv = nc; nc.by = f; f.st = 'move'; f.e = 1; f.cyc = 0; continue; } if (f.cyc >= 3) { release(f); f.st = 'run'; f.e = 1; f.dx = rnd(-0.15, 0.15); continue; } }
+              if (f.k !== 'snp' && Math.random() < 0.18 + 0.22 * lv && f.z < 0.8) throwG(f);
+              f.st = 'peek'; f.t = 0;
+            }
+            continue;
+          }
+          if (f.st === 'peek') { f.e = Math.min(1, f.e + dt * 4.5); if (f.e >= 1) { f.st = 'aim'; f.t = 0; f.aT = Math.max(0.85, 2.1 - 0.95 * lv) * (f.k === 'snp' ? 1.45 : f.k === 'boss' ? 0.9 : 1) * rnd(0.9, 1.15); f.shots = f.k === 'boss' ? 3 : (lv > 0.6 && Math.random() < 0.4 ? 2 : 1); } continue; }
+          if (f.st === 'aim') { if (f.t >= f.aT) { f.st = 'fire'; f.t = 0.18; } continue; }
+          if (f.st === 'fire') { if (f.t >= 0.18) { f.t = 0; enemyFire(f, A.live()); if (--f.shots <= 0) { f.st = 'duck'; f.t = 0; } } continue; }
+          if (f.st === 'duck') { f.e = Math.max(0, f.e - dt * 4); if (f.e <= 0) { f.st = 'hide'; f.t = 0; f.hT = rnd(0.6, 1.4); f.cyc++; } continue; }
         }
         for (i = gren.length - 1; i >= 0; i--) { var g = gren[i]; g.t += dt; if (g.t >= g.T) { gren.splice(i, 1); boomFx(A, g.x1, g.y1, 1.1); if (A.live() && !dead) { if (A.fail(A.l.fail2)) dead = 1; } } }
         if (bomb) { bomb.t += dt; bomb.k -= dt; if (bomb.k <= 0 && bomb.n < 6) { bomb.k = 0.15; bomb.n++; boomFx(A, (bomb.n / 6) * W, H - (H - gy) * 0.6, 1.3); } return; }
         if (dead || won) return;
-        var lv = live ? A.lv() : 0.2;
-        spT -= dt; if (spT <= 0) { spawn(live); spT = Math.max(0.45, 1.8 - 1.2 * lv) * rnd(0.7, 1.3); }
-        if (A.idle()) { aiT += dt; if (aiT > 0.55) { aiT = 0; var tg = gren[0]; if (tg) { var gp = gpos(tg); shootAt(gp.x, gp.y); } else { var near = foes.filter(function (q) { return !q.dn; }).sort(function (a, b) { return a.z - b.z; })[0]; if (near && near.z < 0.8) { var p2 = scr(near); shootAt(p2.x, p2.y - bh * p2.s * 0.55); } } } }
+        // vagues : la suivante quand tout est sorti et qu'il ne reste qu'un soldat (ou après 16 s)
+        waveT += dt; qT += dt;
+        var cap = A.idle() ? 3 : 3 + Math.round(2.4 * lv), alive = foes.filter(function (q) { return !q.dn; }).length;
+        while (queue.length && qT >= queue[0][2] && alive < cap) { var u = queue.shift(); add(u[0], u[1], live); alive++; }
+        if (!queue.length && (alive <= 1 || waveT > 16)) nextWave();
+        if (A.idle()) {
+          aiT += dt;
+          if (aiT > 0.5) {
+            aiT = 0; var tg = gren[0];
+            if (tg) { var gp = gpos(tg); shootAt(gp.x, gp.y); }
+            else {
+              var c2 = foes.filter(function (q) { return !q.dn && exposed(q) && (q.st === 'aim' || q.st === 'run' && q.z < 0.75); }).sort(function (a, b) { return (b.st === 'aim') - (a.st === 'aim') || a.z - b.z; })[0];
+              if (c2) { var v = vis(c2); shootAt(v.x, v.top + (v.bot - v.top) * 0.4); }
+            }
+          }
+        }
       },
       draw: function (c) {
-        A.bg(bg); wbFill(c, P.wb, 'rgba(0,0,0,.16)');
-        var list = foes.slice().sort(function (a, b) { return b.z - a.z; }), i;
-        for (i = 0; i < list.length; i++) {
-          var f = list[i], p = scr(f), hh = bh * p.s, img = fr[Math.floor(f.ph * NF) % NF];
-          c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(p.x, p.y, hh * 0.2, hh * 0.04, 0, 0, TAU); c.fill();
-          if (f.dn) { c.save(); c.globalAlpha = Math.max(0, 1 - f.dn * 1.1); c.translate(p.x, p.y); c.rotate(Math.min(1.4, f.dn * 5) * (f.x > 0 ? 1 : -1)); c.drawImage(img, -hh * 0.6, -hh * 1.08, hh * 1.2, hh * 1.12); c.restore(); continue; }
-          c.drawImage(img, p.x - hh * 0.6, p.y - hh * 1.08, hh * 1.2, hh * 1.12);
-          if (f.z < 0.3 && (t * 6 | 0) % 2) { c.strokeStyle = 'rgba(239,68,68,.8)'; c.lineWidth = 2; c.beginPath(); c.arc(p.x, p.y - hh * 0.55, hh * 0.45, 0, TAU); c.stroke(); }
-        }
+        A.bg(bg); wbFill(c, P.wb, P.dark || 'rgba(0,0,0,.16)');
+        var list = covers.map(function (cv) { return { z: cv.z, cv: cv }; }).concat(foes.map(function (f) { return { z: f.z, f: f }; })).sort(function (a, b) { return b.z - a.z; }), i;
+        for (i = 0; i < list.length; i++) { if (list[i].cv) drawCover(c, list[i].cv); else drawFoe(c, list[i].f); }
         for (i = 0; i < gren.length; i++) { var g = gren[i], gp = gpos(g); c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(g.x0 + (g.x1 - g.x0) * gp.k, g.y0 + (g.y1 - g.y0) * gp.k, 7, 2.5, 0, 0, TAU); c.fill(); circ(c, gp.x, gp.y, Math.max(4, bh * 0.035), '#3F4422'); circ(c, gp.x - 1.5, gp.y - 1.5, 1.6, '#A3B18A'); if ((t * 8 | 0) % 2) { c.strokeStyle = '#EF4444'; c.lineWidth = 1.5; c.beginPath(); c.arc(gp.x, gp.y, 12, 0, TAU); c.stroke(); } }
         for (i = 0; i < puffs.length; i++) { var q = puffs[i]; c.globalAlpha = 1 - q.t / 0.5; circ(c, q.x, q.y - q.t * 20, 4 + q.t * 18, 'rgba(214,211,209,.7)'); c.globalAlpha = 1; }
-        // our rifle at the bottom, turned toward the last shot
-        // 2026-11-16 (propriétaire : « mets un vrai fusil, bien placé ») : la mitrailleuse illustrée de Zombie Siege, vue de derrière,
-        // au centre en bas, qui pivote vers le tir, recule et crache une flamme à chaque coup.
+        for (i = 0; i < tracers.length; i++) { var tr = tracers[i], k = tr.t / 0.12; c.strokeStyle = 'rgba(253,224,71,' + (0.9 * (1 - k)).toFixed(2) + ')'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(tr.x0 + (tr.x1 - tr.x0) * k * 0.6, tr.y0 + (tr.y1 - tr.y0) * k * 0.6); c.lineTo(tr.x0 + (tr.x1 - tr.x0) * Math.min(1, k + 0.4), tr.y0 + (tr.y1 - tr.y0) * Math.min(1, k + 0.4)); c.stroke(); }
+        // notre arme (mitrailleuse illustrée), qui pivote vers le tir, recule et crache une flamme
         var gunI = warImg('zomb2_gun'), gH = Math.min((H - T) * 0.4, W * 0.62), gW = gH * 367 / 560, gRot = clamp(aimA + Math.PI / 2, -0.28, 0.28), rec = flash ? gH * 0.03 : 0;
         c.save(); c.translate(W / 2, H + gH * 0.12 + rec); c.rotate(gRot);
         if (gunI.ok) c.drawImage(gunI.im, -gW * 0.476, -gH, gW, gH);
         if (flash) { var fs2 = gH * 0.1, my2 = -gH * 0.97; circ(c, 0, my2, fs2 * 0.9, 'rgba(253,186,116,.35)'); c.fillStyle = '#FEF3C7'; c.beginPath(); c.moveTo(-fs2 * 0.5, my2); c.lineTo(0, my2 - fs2 * 1.8); c.lineTo(fs2 * 0.5, my2); c.fill(); }
         c.restore();
         if (cool > 0) { c.fillStyle = 'rgba(253,230,138,.85)'; c.fillRect(W / 2 - 20, H - 6, 40 * (1 - cool / 0.26), 3); }
+        // bords rouges : touché (éclair) + danger qui monte (battement)
+        var red = hitFx * 0.55 + (danger > 0.5 ? (danger - 0.5) * 0.9 * (0.75 + 0.25 * Math.sin(t * 8)) : 0);
+        if (red > 0.02) { var rg = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.32, W / 2, H / 2, Math.max(W, H) * 0.72); rg.addColorStop(0, 'rgba(220,38,38,0)'); rg.addColorStop(1, 'rgba(220,38,38,' + Math.min(0.75, red).toFixed(2) + ')'); c.fillStyle = rg; c.fillRect(0, 0, W, H); }
+        // barre de danger (bas à gauche)
+        if (danger > 0.01 || A.live()) {
+          var bw = Math.min(110, W * 0.28), bx = 14, by = H - 20;
+          c.fillStyle = 'rgba(0,0,0,.55)'; rr(c, bx - 4, by - 5, bw + 26, 16, 8); c.fill();
+          c.fillStyle = '#FCA5A5'; c.beginPath(); c.moveTo(bx + 6, by - 1); c.lineTo(bx + 12, by + 1); c.lineTo(bx + 11, by + 7); c.lineTo(bx + 6, by + 10); c.lineTo(bx + 1, by + 7); c.lineTo(bx, by + 1); c.closePath(); c.fill();
+          c.fillStyle = 'rgba(255,255,255,.18)'; rr(c, bx + 18, by + 1, bw, 6, 3); c.fill();
+          c.fillStyle = danger > 0.66 ? '#EF4444' : danger > 0.33 ? '#F59E0B' : '#22C55E'; rr(c, bx + 18, by + 1, Math.max(0, bw * danger), 6, 3); c.fill();
+        }
+        // annonce de vague
+        if (banner > 0) {
+          var a = banner > 1.3 ? (1.6 - banner) / 0.3 : Math.min(1, banner / 0.5), fs = Math.round(clamp(W * 0.1, 26, 46)), tx = String(A.l.wave || 'WAVE {n}').replace('{n}', wave);
+          c.save(); c.globalAlpha = a; c.font = '900 ' + fs + 'px "Plus Jakarta Sans",system-ui,sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+          var ty2 = T + (H - T) * 0.2; c.lineWidth = Math.max(4, fs * 0.14); c.strokeStyle = 'rgba(0,0,0,.75)'; c.strokeText(tx, W / 2, ty2); c.fillStyle = '#FDE68A'; c.fillText(tx, W / 2, ty2);
+          c.restore();
+        }
       },
       act: function (k, x, y) { shootAt(x, y); },
-      key: function () { var near = foes.filter(function (q) { return !q.dn; }).sort(function (a, b) { return a.z - b.z; })[0]; if (near) { var p = scr(near); shootAt(p.x, p.y - bh * p.s * 0.55); } },
+      key: function () { var near = foes.filter(function (q) { return !q.dn && exposed(q); }).sort(function (a, b) { return a.z - b.z; })[0]; if (near) { var v = vis(near); shootAt(v.x, v.top + (v.bot - v.top) * 0.4); } },
       boom: function () { bomb = { t: 0, k: 0.3, n: 0 }; A.sx('engine', { k: 'jet' }); },
       win: function () { won = 0.001; A.burst(W / 2, H * 0.8, 16, ['#FDE68A', '#FFFFFF'], 150, 0.6, 3); },
-      dbg: function () { return { foes: foes.map(function (f) { var p = scr(f); return { x: p.x, y: p.y, h: bh * p.s, z: f.z, dn: f.dn }; }), gren: gren.map(function (g) { var p = gpos(g); return { x: p.x, y: p.y, t: g.t, T: g.T }; }), cool: cool, dead: dead, kills: kills }; }
+      dbg: function () { return { foes: foes.map(function (f) { var v = vis(f), q = fpos(f); return { x: v.x, y: v.top + (v.bot - v.top) * 0.4, h: q.hh, z: f.z, dn: f.dn, k: f.k, st: f.st, ex: exposed(f) }; }), gren: gren.map(function (g) { var p = gpos(g); return { x: p.x, y: p.y, t: g.t, T: g.T }; }), cool: cool, dead: dead, kills: kills, danger: danger, wave: wave, covers: covers.length }; }
     };
   }; }
-  boot('trenchdef', warFront({ wb: 'trenchdef', sold: 'td_soldier', hy: 0.37 }), 'aim', 0.5);
-  boot('forestambush', warFront({ wb: 'forestambush', sold: 'fa_sold', hy: 0.55 }), 'aim', 0.5);
-  boot('junglestrike', warFront({ wb: 'junglestrike', sold: 'js_sold', hy: 0.6 }), 'aim', 0.5);
+  boot('trenchdef', warFront({ wb: 'trenchdef', sold: 'td_soldier', hy: 0.37, cover: 'sand', chips: ['#C2B280', '#8B7D5A', '#E7DCC0'] }), 'aim', 0.5);
+  boot('forestambush', warFront({ wb: 'forestambush', sold: 'fa_sold', hy: 0.55, cover: 'log', chips: ['#7A5534', '#B98A5A', '#3F2A1A'], glow: 'rgba(255,236,200,.35)' }), 'aim', 0.5);
+  // Jungle Strike : soldats plus grands, au milieu du chemin (plus dans les feuilles), contour clair, décor un peu assombri
+  boot('junglestrike', warFront({ wb: 'junglestrike', sold: 'js_sold', hy: 0.62, xr: 0.3, bs: 1.12, co: 0.2, cover: 'stone', chips: ['#A8A390', '#7C7866', '#D6D3D1'], glow: 'rgba(255,245,210,.55)', dark: 'rgba(0,0,0,.24)' }), 'aim', 0.5);
 
   /* ================================================================== 14. COMMANDO RUN — side-scrolling run (12-frame run cycle,
      parallax, dust): swipe up to jump wire and mines, swipe down to slide under barriers and bullets, tap to shoot. */
