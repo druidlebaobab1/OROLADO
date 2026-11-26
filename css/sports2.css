@@ -1759,6 +1759,8 @@ html body .sp-rcpt-card .pz-optl,html body .sp-rcpt-card .pz-optl .pz-opt{font-s
 /* 2026-11-26 (propriétaire : « appli iPhone : toute la ligne du haut est floue ») : iOS (application installée) ajoute son propre
    léger flou sous la barre de l'heure / batterie ; la ligne du haut collée à cette zone devenait floue. Appli iPhone uniquement :
    +12 px d'air sous la barre d'état (barre du haut du site et haut des fenêtres) pour sortir icônes et textes de cette zone. */
-html.ios-app body .topbar{padding-top:calc(env(safe-area-inset-top,0px) + 12px)!important;background-color:#000!important}
-html.ios-app body .modal-backdrop > .modal-box{padding-top:calc(env(safe-area-inset-top,0px) + 12px)}
-html.ios-app body .modal-backdrop > .modal-box > .btn-close{margin-top:12px}
+/* v3840 : barre d'état iOS désormais NOIRE pleine (index.html) → le site commence sous elle (zone du haut = 0) et rien à décaler.
+   Appli installée avant v3840 (encore dessinée sous l'heure) : +20 % de la zone du haut (59 px → +12 px), 0 quand elle vaut 0. */
+html.ios-app body .topbar{padding-top:calc(env(safe-area-inset-top,0px) * 1.2)!important;background-color:#000!important}
+html.ios-app body .modal-backdrop > .modal-box{padding-top:calc(env(safe-area-inset-top,0px) * 1.2)}
+html.ios-app body .modal-backdrop > .modal-box > .btn-close{margin-top:calc(env(safe-area-inset-top,0px) * .2)}

@@ -855,7 +855,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3839'; // v3839 : appli iPhone — haut de l'écran sorti de la zone floue d'iOS
+  var MOD_V = '3840'; // v3840 : appli iPhone — barre d'état noire pleine (fin du flou d'iOS 26)
 
   // 2026-11-03 (propriétaire : « en ouvrant Subway, on voit quelques secondes l'ANCIEN jeu avant le nouveau ») — une appli restée
   // ouverte garde l'ancienne version en mémoire (ancien catalogue → anciens jeux) jusqu'à ce qu'elle se recharge. On regarde en
