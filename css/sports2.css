@@ -1764,3 +1764,21 @@ html body .sp-rcpt-card .pz-optl,html body .sp-rcpt-card .pz-optl .pz-opt{font-s
 html.ios-app body .topbar{padding-top:calc(env(safe-area-inset-top,0px) * 1.2)!important;background-color:#000!important}
 html.ios-app body .modal-backdrop > .modal-box{padding-top:calc(env(safe-area-inset-top,0px) * 1.2)}
 html.ios-app body .modal-backdrop > .modal-box > .btn-close{margin-top:calc(env(safe-area-inset-top,0px) * .2)}
+/* 2026-11-26 (propriétaire : « les cartes d'alertes sont trop hautes, ça cache tout, ça fait faux ») : carte « Activez les alertes »
+   et bandeau « Alertes activées ✓ » plus fins — petite icône, texte sur 2 lignes au plus, boutons plus bas. */
+html body .push-ask{grid-template-columns:30px 1fr!important;gap:4px 10px!important;padding:8px 10px 8px!important;border-radius:14px!important;width:min(360px,calc(100vw - 24px))!important;box-shadow:0 8px 22px rgba(0,0,0,.5)!important}
+html body .push-ask-ico{width:30px!important;height:30px!important;border-radius:9px!important}
+html body .push-ask-ico svg{width:17px!important;height:17px!important}
+html body .push-ask-txt{gap:1px!important}
+html body .push-ask-txt b{font-size:13.5px!important;line-height:1.2!important}
+html body .push-ask-txt span{font-size:11.5px!important;line-height:1.3!important;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html body .push-ask-txt span:empty{display:none!important}
+html body .push-ask-txt em{font-size:10.5px!important;margin-top:1px!important}
+html body .push-ask-btns{margin-top:2px!important;gap:6px!important}
+html body .push-ask-btns button{min-height:30px!important;padding:0 12px!important;border-radius:9px!important;font-size:12px!important}
+html body .push-ask-yes{min-width:40%!important}
+html body .push-ask.wait,html body .push-ask.done{padding:6px 10px!important;align-items:center!important}
+html body .push-ask.wait .push-ask-ico,html body .push-ask.done .push-ask-ico{width:24px!important;height:24px!important;border-radius:7px!important}
+html body .push-ask.wait .push-ask-ico svg,html body .push-ask.done .push-ask-ico svg{width:14px!important;height:14px!important}
+html body .push-ask.wait .push-ask-txt b,html body .push-ask.done .push-ask-txt b{font-size:13px!important}
+html body .push-ask.done{grid-template-columns:24px auto!important;width:auto!important;max-width:calc(100vw - 24px);border-radius:999px!important;padding:5px 14px 5px 6px!important}

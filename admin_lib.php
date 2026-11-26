@@ -1834,7 +1834,7 @@ function admin_withdrawals(): array {
 }
 
 function admin_deposits(): array {
-  $cached = admin_cache_get('deposits_epoch3', 20);
+  $cached = admin_cache_get('deposits_epoch4', 20);
   if (is_array($cached)) return $cached;
   // 2026-11-23 (propriétaire : « des milliers de dépôts échoués, inutiles, rendent l'admin lourd ») : les dépôts JAMAIS payés
   // (échoués, annulés, restés en attente) de plus de ADMIN_DEP_KEEP_FAIL_D jours ne sont plus chargés. Rien n'est effacé
@@ -1907,7 +1907,11 @@ function admin_deposits(): array {
     }
   }
   $list = array_values($byId);
+  // 2026-11-26 (propriétaire : « les dépôts d'aujourd'hui se mélangent à ceux d'hier ») : tri par la VRAIE heure (avant : comparaison
+  // de textes, fausse entre « …Z », « +00:00 » et « +05:45 » → un dépôt d'hier pouvait passer devant un dépôt du jour).
   usort($list, static function ($a, $b) {
+    $ta = admin_ts((string) ($a['createdAt'] ?? '')) ?: 0; $tb = admin_ts((string) ($b['createdAt'] ?? '')) ?: 0;
+    if ($ta !== $tb) return $tb <=> $ta;
     return strcmp((string) ($b['createdAt'] ?? ''), (string) ($a['createdAt'] ?? ''));
   });
   $keepIds = admin_stat_visible_user_ids();
@@ -1917,7 +1921,7 @@ function admin_deposits(): array {
     $uid = (string) ($d['userId'] ?? '');
     return $uid !== '' && isset($keepIds[$uid]);
   }));
-  admin_cache_set('deposits_epoch3', $list);
+  admin_cache_set('deposits_epoch4', $list);
   return $list;
 }
 
@@ -2189,7 +2193,7 @@ function admin_asset_name(string $id): string {
 }
 
 function admin_bust_cache(): void {
-  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'deposits_epoch3', 'rid_map1', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'wd_epoch3', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'badges_epoch5', 'inscrits_n_epoch4', 'board_watch2', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
+  foreach (['profiles', 'profiles2', 'profiles3', 'profiles_mask1', 'profiles_live1', 'profiles_epoch2', 'vaults', 'withdrawals', 'deposits', 'deposits_mask1', 'deposits_live1', 'deposits_epoch2', 'deposits_epoch4', 'rid_map1', 'orders', 'orders_mask1', 'orders_live1', 'orders_epoch2', 'orders_epoch3', 'bonus_by_user', 'suspects', 'auth_users', 'inscrits_n', 'inscrits_n3', 'inscrits_n_mask1', 'inscrits_n_live1', 'inscrits_n_epoch2', 'inscrits_n_epoch3', 'auth_n', 'wd_sb', 'wd_tx', 'wd_sb2', 'wd_tx2', 'wd_merged', 'wd_mask1', 'wd_live1', 'wd_epoch2', 'wd_epoch3', 'badges', 'badges_mask1', 'badges_live1', 'badges_epoch2', 'badges_epoch3', 'badges_epoch4', 'badges_epoch5', 'inscrits_n_epoch4', 'board_watch2', 'aff_marks_v1', 'health', 'live_seen', 'board_watch', 'watch', 'service_probes'] as $k) {
     $f = admin_cache_file('admin_cache_' . $k . '.json');
     if (is_file($f)) @unlink($f);
   }

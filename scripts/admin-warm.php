@@ -30,7 +30,7 @@ if ($once) {
   // 1) données de base (Supabase) — 2) compteurs calculés dessus
   $step('profiles_epoch2', static fn() => admin_profiles());
   $step('wd_epoch3', static fn() => admin_withdrawals());
-  $step('deposits_epoch3', static fn() => admin_deposits());
+  $step('deposits_epoch4', static fn() => admin_deposits());
   $step('orders_epoch3', static fn() => admin_orders());
   $step('badges_epoch5', static fn() => admin_badges());
   $step('inscrits_n_epoch4', static fn() => admin_inscrits_count());
