@@ -37,12 +37,18 @@ function admin_tz(): DateTimeZone {
   return $tz;
 }
 
+/** 2026-11-26 (propriétaire : « dépôts d'hier et d'aujourd'hui mélangés ») — la JOURNÉE de l'admin (Aujourd'hui / Hier, dates choisies)
+ *  suit TOUJOURS l'heure de Côte d'Ivoire (GMT), celle des joueurs. Avant, elle suivait le téléphone de l'admin (Népal, GMT+5:45) :
+ *  sa journée commençait à 18 h 15 GMT, donc les dépôts de la soirée d'hier en Afrique comptaient dans « Aujourd'hui » ; et le
+ *  préparateur des chiffres (sans téléphone) comptait, lui, en GMT → chiffres et listes mélangés. Les heures AFFICHÉES restent
+ *  celles du téléphone (admin_tz). */
+function admin_day_tz(): DateTimeZone { static $z = null; return $z ?? ($z = new DateTimeZone('Africa/Abidjan')); }
 function admin_now(): DateTimeImmutable {
-  return new DateTimeImmutable('now', admin_tz());
+  return new DateTimeImmutable('now', admin_day_tz());
 }
 
 function admin_day_bounds(string $which, string $from = '', string $to = ''): array {
-  $tz = admin_tz();
+  $tz = admin_day_tz();
   $today = admin_now()->setTime(0, 0, 0);
   if ($which === 'today') {
     return [$today->format('c'), $today->modify('+1 day')->format('c')];
