@@ -118,10 +118,9 @@
       $('lvSignup').addEventListener('click', function () { toAuth('register'); });
       $('lvMail').addEventListener('click', function () { if (D6.Route && D6.Route.socialReturn) D6.Route.socialReturn('helpModal'); close(); if (D6.App && D6.App.openModal) D6.App.openModal('helpModal'); });
     } else if (!lastMsgs.length) {
-      $('liveQuick').innerHTML = ['q1', 'q2', 'q3', 'q4'].map(function (k) { return '<button type="button" data-q="' + k + '">' + x[k] + '</button>'; }).join('');
-      $('liveQuick').querySelectorAll('button').forEach(function (b) {
-        b.addEventListener('click', function () { var t = $('liveText'); t.value = x[b.getAttribute('data-q') + 't']; t.focus(); grow(); });
-      });
+      // 2026-11-26 (propriétaire : « retire les messages tout prêts — Mon retrait, Comment jouer… —, des gens sans dépôt les envoient
+      // pour voir, ça ne fait pas professionnel ») : plus de boutons de message tout fait ; le joueur écrit lui-même son message.
+      $('liveQuick').innerHTML = '';
     } else { $('liveQuick').innerHTML = ''; }
   }
 
