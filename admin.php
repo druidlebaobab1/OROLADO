@@ -3858,6 +3858,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     .head2 .hd-top h1{font-size:1.15rem!important;text-align:left!important;margin:0}
     .head2 #inscritsHead{grid-column:auto;text-align:left;flex:1 1 auto;font-size:.9rem}
     .head2 #btnBack{grid-column:auto;width:auto!important;min-height:38px;padding:6px 14px!important;border-radius:11px}
+    .head2 #btnSimXof,#btnSimXof{grid-column:auto;width:auto!important;min-height:38px;padding:6px 14px!important;border-radius:11px}
     .head2 .tb-groups{display:grid!important;grid-template-columns:1fr;gap:10px}
     @media (min-width:900px){.head2 .tb-groups{grid-template-columns:1fr 1.4fr 1fr}.head2 .tb-tools{grid-column:1/-1}}
     .head2 .tb-g{display:block!important;padding:10px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}
@@ -3958,7 +3959,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
 <?php else: ?>
   <header class="head head2">
     <!-- 2026-11-09 (propriétaire : « mon tableau est trop vieux, range bien, retire les boutons inutiles ») -->
-    <div class="hd-top"><h1>OROLADO · Tableau admin</h1><span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span><button class="mini" id="btnBack" type="button">← Retour au site</button></div>
+    <div class="hd-top"><h1>OROLADO · Tableau admin</h1><span class="muted" id="inscritsHead">Inscrits (total) : <?php echo (int) $inscritsHead; ?></span><button class="mini" id="btnBack" type="button">← Retour au site</button><button class="mini" id="btnSimXof" type="button">💱 FCFA sur ce téléphone</button></div>
     <!-- 2026-11-23 (propriétaire) : page dédiée aux retraits, tout en haut (payer les joueurs = le plus important) -->
     <button type="button" class="wdx-top" id="btnWdx"><span>💸 Retraits</span><b id="wdxTopN">…</b><small id="wdxTopTxt">à payer</small></button>
     <div class="tb-groups">
@@ -5438,6 +5439,14 @@ document.getElementById('btnBack').onclick = () => {
   try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { history.back(); return; } } catch (e) { /* ignore */ }
   window.location.href = '/';
 };
+// 2026-11-26 (propriétaire) : estimations en FCFA gardées sur CE téléphone (aussi dans l'appli installée, si l'admin y est ouvert)
+(function () {
+  const b = document.getElementById('btnSimXof'); if (!b) return;
+  const on = () => { try { return localStorage.getItem('oro_sim_keep') === 'XOF'; } catch (e) { return false; } };
+  const paint = () => { b.textContent = on() ? '💱 FCFA activé ✓ (toucher pour enlever)' : '💱 FCFA sur ce téléphone'; };
+  paint();
+  b.onclick = () => { try { if (on()) localStorage.removeItem('oro_sim_keep'); else localStorage.setItem('oro_sim_keep', 'XOF'); } catch (e) { /* ignore */ } paint(); };
+})();
 document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
 // 2026-11-11 : 🏦 Coffre OROLADO
 (function () {

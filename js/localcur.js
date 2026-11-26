@@ -79,7 +79,7 @@
     var qm = /[?&]simcur=([A-Za-z]{2,4})/.exec(location.search);
     if (qm) {
       var qv = qm[1].toUpperCase();
-      if (qv === 'OFF') sessionStorage.removeItem('oro_sim_cur'); else if (CUR[qv]) sessionStorage.setItem('oro_sim_cur', qv);
+      if (qv === 'OFF') { sessionStorage.removeItem('oro_sim_cur'); try { localStorage.removeItem('oro_sim_keep'); } catch (eK) { /* ignore */ } } else if (CUR[qv]) sessionStorage.setItem('oro_sim_cur', qv);
       history.replaceState(null, '', location.pathname + location.search.replace(/([?&])simcur=[^&]*&?/, '$1').replace(/[?&]$/, '') + location.hash);
     }
   } catch (eQ) { /* ignore */ }
@@ -113,6 +113,9 @@
     var u = null;
     try { u = D6.Auth && D6.Auth.current ? D6.Auth.current() : null; } catch (e) { u = null; }
     var sim = ''; try { sim = sessionStorage.getItem('oro_sim_cur') || ''; } catch (eS) { sim = ''; }
+    // 2026-11-26 (propriétaire : « je veux voir les estimations en FCFA aussi dans MON appli installée ») : réglage GARDÉ sur ce
+    // téléphone, posé par le bouton « 💱 FCFA sur ce téléphone » de l'admin (ouvert DANS l'appli) ; « Normal » ou ?simcur=off l'enlève.
+    if (!sim) { try { sim = localStorage.getItem('oro_sim_keep') || ''; } catch (eK) { sim = ''; } }
     // lien ?simcur=… (affichage seulement) : visiteur, admin OU tout compte connecté (v3631 : comptes affiliés, propriétaire)
     if (sim && CUR[sim]) return sim;
     if (!u || u.guest) return byPlace();
