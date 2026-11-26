@@ -1805,3 +1805,8 @@ html.ios-app.ios-solid.is-ios:not(.fs-trade):not(.oro-mopen):not(.oro-mlive):not
   background-image:url("../icons/ui/app-floor.svg?v=3568")!important;background-repeat:no-repeat!important;
   background-position:center top calc(var(--ios-screen-h,100vh) - 40px)!important;background-size:100% 40px!important;background-color:#000000!important}
 html.ios-app.ios-solid.is-ios:not(.fs-trade):not(.oro-mopen):not(.oro-mlive):not(.learn-on):not(.ol-on):root body{height:calc(var(--ios-screen-h,100%) - 40px)!important}
+/* 2026-11-26 (propriétaire : « le terminal des jeux doit avoir UNE couleur, sombre, la même dans tous les jeux ; les couleurs des
+   décors rentrent dans le terminal, ça ne fait pas puissant ») — zone de mise des jeux (– 0.10 + · ½ ×2 ⌫ MAX · MISER) : fond uni
+   très sombre sous le décor, identique pour tous les jeux ; la carte de mise est pleine (plus transparente). */
+html body #casinoModal#casinoModal.in-game > .modal-box,html body #casinoModal .cg-game{background:#0B0906!important;background-image:none!important}
+html body #casinoModal .cg-game > .cs-panel.cg-panel,html body #casinoModal .cg-game .cs-panel.cg-panel{background:#15110A!important;background-image:none!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}

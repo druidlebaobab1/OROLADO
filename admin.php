@@ -241,6 +241,23 @@ function admin_when_cell(string $iso): string {
   try { return (new DateTimeImmutable('@' . $ts))->setTimezone(admin_tz())->format('d/m/Y H:i'); } catch (Throwable $e) { return date('d/m/Y H:i', $ts); }
 }
 
+/** 2026-11-26 — heure courte pour les listes (« auj. 22:26 », « hier 23:10 », sinon « 24/11 18:05 »), à l'heure du téléphone. */
+function admin_when_short(string $iso): string {
+  $ts = $iso !== '' ? admin_ts($iso) : 0;
+  if (!$ts) return '—';
+  try {
+    $d = (new DateTimeImmutable('@' . $ts))->setTimezone(admin_tz());
+    $day = $d->format('Y-m-d'); $now = admin_now();
+    if ($day === $now->format('Y-m-d')) return 'auj. ' . $d->format('H:i');
+    if ($day === $now->modify('-1 day')->format('Y-m-d')) return 'hier ' . $d->format('H:i');
+    return $d->format('d/m H:i');
+  } catch (Throwable $e) { return date('d/m H:i', $ts); }
+}
+/** Référence longue raccourcie (« gp_…e067 ») : la référence complète reste dans la fiche et dans la recherche. */
+function admin_ref_short(string $ref): string {
+  return mb_strlen($ref) > 16 ? mb_substr($ref, 0, 4) . '…' . mb_substr($ref, -6) : $ref;
+}
+
 function admin_page(array $rows, array $req): array {
   $page = max(1, (int) ($req['page'] ?? 1));
   $per = 80;
@@ -1333,7 +1350,9 @@ function admin_list_payload_raw(string $view, array $req): array {
   }
 
     if (in_array($view, ['dep_today', 'dep_yesterday', 'dep_pending', 'dep_failed', 'dep_all'], true)) {
-    $cols = ['Réf.', 'ID', 'E-mail', 'Pays', 'Montant', 'Méthode', 'Statut', 'Date']; // 2026-11-24 (propriétaire) : drapeau du pays
+    // 2026-11-26 (propriétaire : « je ne vois pas mes chiffres ») : les références GeniusPay (gp_u…, 40 lettres) prenaient toute la
+    // largeur du téléphone → seuls Réf. et ID se voyaient. Heure et montant d'abord, référence raccourcie à la fin.
+    $cols = ['Heure', 'Montant', 'Pays', 'ID', 'Méthode', 'Statut', 'E-mail', 'Réf.']; // 2026-11-24 (propriétaire) : drapeau du pays
     $list = $deps;
     // 2026-11-20 (propriétaire) : les dépôts échoués / abandonnés (FAILED, EXPIRED, CANCELLED…, ou en attente depuis plus de
     // 24 h sans paiement) ne sont plus mêlés aux listes : ils vont dans un volet fermé « ▸ Dépôts échoués / abandonnés (N) ».
@@ -1377,14 +1396,14 @@ function admin_list_payload_raw(string $view, array $req): array {
     $depRow = static function (array $d) use ($pmap): array {
       return [
         'cells' => [
-          (string) $d['id'],
-          (string) ($d['publicId'] ?? ''),
-          (string) ($d['email'] ?? ''),
-          admin_country_cell(admin_user_lookup((string) ($d['userId'] ?? ''), $pmap)),
+          admin_when_short((string) ($d['createdAt'] ?? '')),
           admin_money($d['amount']),
+          admin_country_cell(admin_user_lookup((string) ($d['userId'] ?? ''), $pmap)),
+          (string) ($d['publicId'] ?? ''),
           admin_dep_channel_row($d),
           (string) $d['status'],
-          admin_when_cell((string) ($d['createdAt'] ?? '')),
+          (string) ($d['email'] ?? ''),
+          admin_ref_short((string) $d['id']),
         ],
         'userId' => (string) ($d['userId'] ?? ''),
         'ref' => (string) $d['id'],
