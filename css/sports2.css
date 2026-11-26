@@ -1816,3 +1816,6 @@ html body #casinoModal .cg-game > .cs-panel.cg-panel,html body #casinoModal .cg-
 html body #casinoModal .cg-game::before,html body #casinoModal .cg-game::after{display:none!important;content:none!important;background:none!important}
 html body #casinoModal#casinoModal.in-game > .modal-box{background-image:none!important}
 html body #casinoModal#casinoModal.in-game > .modal-box::before,html body #casinoModal#casinoModal.in-game > .modal-box::after{display:none!important;content:none!important}
+/* 2026-11-26 (propriétaire) : estimation dans la monnaie du joueur sous le gain des jeux casino (pastille « +$ ») */
+html body #casinoModal .cs-toast .ct-col{display:flex!important;flex-direction:column!important;align-items:flex-start!important;min-width:0;line-height:1.05}
+html body #casinoModal .cs-toast .ct-loc{display:block!important;font-size:12px!important;font-weight:700;opacity:.92;white-space:nowrap;margin-top:2px;letter-spacing:0}
