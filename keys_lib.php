@@ -215,7 +215,7 @@ function keys_test(string $name, string $v): array {
       [$c, $r] = keys_http('https://toncenter.com/api/v2/getMasterchainInfo', 'GET', null, ['X-API-Key: ' . $v]);
       return ($c === 200 && str_contains($r, '"ok":true')) ? ['ok' => true, 'msg' => 'TON Center répond : la clé fonctionne'] : ['ok' => false, 'msg' => 'TON Center refuse la clé (code ' . $c . ')'];
     case 'META_ACCESS_TOKEN':
-      $px = function_exists('orolado_meta_pixel_id') ? orolado_meta_pixel_id() : '987866443886391';
+      $px = function_exists('orolado_meta_pixel_id') ? orolado_meta_pixel_id() : '1697498245224959';
       // Vrai test de l'API Conversions : un événement de TEST (visible seulement dans « Événements de test », jamais compté).
       $ev = json_encode(['data' => [['event_name' => 'PageView', 'event_time' => time(), 'action_source' => 'website', 'event_source_url' => 'https://orolado.com/',
         'user_data' => ['client_user_agent' => 'OROLADO-admin-test', 'client_ip_address' => '1.1.1.1']]], 'test_event_code' => 'TEST' . date('His')]);
