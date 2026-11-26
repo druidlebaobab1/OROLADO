@@ -1471,7 +1471,7 @@
     // ---- soldats
     function add(k, side, live) {
       // par le côté : il entre depuis le bord de l'écran, à mi-distance
-      var lv = lvl(live), sx = side ? side * 2.1 : rnd(-XR, XR), f = { k: k, x: sx, z: k === 'snp' ? 0.97 : side ? rnd(0.72, 0.8) : rnd(0.9, 1), ph: Math.random(), dn: 0, e: 1, st: 'move', t: 0, cyc: 0, hp: k === 'boss' ? 3 : 1, sc: k === 'boss' ? 1.28 : 1, jump: 0, jT: 9, duck: 0, dx: 0, hurt: 0 };
+      var lv = lvl(live), sx = side ? side * 2.1 : rnd(-XR, XR), f = { ent: side ? 1 : 0, k: k, x: sx, z: k === 'snp' ? 0.97 : side ? rnd(0.72, 0.8) : rnd(0.9, 1), ph: Math.random(), dn: 0, e: 1, st: 'move', t: 0, cyc: 0, hp: k === 'boss' ? 3 : 1, sc: k === 'boss' ? 1.28 : 1, jump: 0, jT: 9, duck: 0, dx: 0, hurt: 0 };
       f.vz = (k === 'run' ? 0.08 + 0.07 * lv : 0.11 + 0.05 * lv) * rnd(0.85, 1.15);
       if (k === 'run') { f.dx = side ? -side * rnd(0.55, 0.8) : rnd(0.12, 0.26) * (Math.random() < 0.5 ? -1 : 1); if (Math.random() < 0.55) f.jT = rnd(0.35, 0.7); f.st = 'run'; }
       else { var c = pickCover(f, k === 'snp' ? 0.7 : 0.5); if (c) { f.cv = c; c.by = f; } else { f.k = 'run'; f.st = 'run'; f.dx = rnd(-0.15, 0.15); } }
@@ -1498,7 +1498,7 @@
       return out;
     }
     function release(f) { if (f.cv && f.cv.by === f) f.cv.by = null; f.cv = null; }
-    function fpos(f) { var p = scr(f.x, f.z), hh = bh * p.s * f.sc, sink = (1 - f.e) * hh * 0.62 + f.duck * hh * 0.3, jy = f.jump > 0 ? Math.sin(Math.PI * f.jump) * hh * 0.32 : 0; return { x: p.x, y: p.y, hh: hh, top: p.y - hh * 1.02 + sink - jy, sink: sink, jy: jy }; }
+    function fpos(f) { var p = scr(f.x, f.z), hh = bh * p.s * f.sc; if (!f.ent) { var hw0 = hh * 0.3 + 4; p.x = Math.max(hw0, Math.min(W - hw0, p.x)); } else if (p.x > hh * 0.3 && p.x < W - hh * 0.3) f.ent = 0; var sink = (1 - f.e) * hh * 0.62 + f.duck * hh * 0.3, jy = f.jump > 0 ? Math.sin(Math.PI * f.jump) * hh * 0.32 : 0; return { x: p.x, y: p.y, hh: hh, top: p.y - hh * 1.02 + sink - jy, sink: sink, jy: jy }; }
     // partie visible (pour viser) : au-dessus de l'abri quand il s'y cache
     function vis(f) { var q = fpos(f), bot = f.cv && f.st !== 'move' ? coverBox(f.cv).y : q.y - q.jy; return { x: q.x, w: q.hh * 0.26 + 6, top: q.top, bot: bot, hh: q.hh }; }
     function exposed(f) { var v = vis(f); return !f.dn && v.bot - v.top > v.hh * 0.22; }
@@ -1666,7 +1666,7 @@
             continue;
           }
           if (f.st === 'peek') { f.e = Math.min(1, f.e + dt * 4.5); if (f.e >= 1) { f.st = 'aim'; f.t = 0; f.aT = Math.max(0.85, 2.1 - 0.95 * lv) * (f.k === 'snp' ? 1.45 : f.k === 'boss' ? 0.9 : 1) * rnd(0.9, 1.15); f.shots = f.k === 'boss' ? 3 : (lv > 0.6 && Math.random() < 0.4 ? 2 : 1); } continue; }
-          if (f.st === 'aim') { if (f.t >= f.aT) { f.st = 'fire'; f.t = 0.18; } continue; }
+          if (f.st === 'aim') { if (f.t >= f.aT) { var qa = fpos(f); if (qa.x < 0 || qa.x > W) { f.t = f.aT * 0.5; continue; } f.st = 'fire'; f.t = 0.18; } continue; }
           if (f.st === 'fire') { if (f.t >= 0.18) { f.t = 0; enemyFire(f, A.live()); if (--f.shots <= 0) { f.st = 'duck'; f.t = 0; } } continue; }
           if (f.st === 'duck') { f.e = Math.max(0, f.e - dt * 4); if (f.e <= 0) { f.st = 'hide'; f.t = 0; f.hT = rnd(0.6, 1.4); f.cyc++; } continue; }
         }
@@ -1691,7 +1691,7 @@
         }
       },
       draw: function (c) {
-        A.bg(bg); wbFill(c, P.wb, P.dark || 'rgba(0,0,0,.16)');
+        A.bg(bg); wbFill(c, P.wb, P.dark || 'rgba(0,0,0,.05)'); // 2026-11-26 (propriétaire : « les jeux sont un peu sombres ») : voile 16 % → 5 %
         var list = covers.map(function (cv) { return { z: cv.z, cv: cv }; }).concat(foes.map(function (f) { return { z: f.z, f: f }; })).sort(function (a, b) { return b.z - a.z; }), i;
         for (i = 0; i < list.length; i++) { if (list[i].cv) drawCover(c, list[i].cv); else drawFoe(c, list[i].f); }
         for (i = 0; i < gren.length; i++) { var g = gren[i], gp = gpos(g); c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(g.x0 + (g.x1 - g.x0) * gp.k, g.y0 + (g.y1 - g.y0) * gp.k, 7, 2.5, 0, 0, TAU); c.fill(); circ(c, gp.x, gp.y, Math.max(4, bh * 0.035), '#3F4422'); circ(c, gp.x - 1.5, gp.y - 1.5, 1.6, '#A3B18A'); if ((t * 8 | 0) % 2) { c.strokeStyle = '#EF4444'; c.lineWidth = 1.5; c.beginPath(); c.arc(gp.x, gp.y, 12, 0, TAU); c.stroke(); } }
@@ -1735,7 +1735,7 @@
   boot('trenchdef', warFront({ wb: 'trenchdef', sold: 'td_soldier', aim: 'td_aim', cvi: 'war_cv_sand', hy: 0.37, cover: 'sand', chips: ['#C2B280', '#8B7D5A', '#E7DCC0'] }), 'aim', 0.5);
   boot('forestambush', warFront({ wb: 'forestambush', sold: 'fa_sold', aim: 'fa_aim', cvi: 'war_cv_log', hy: 0.55, cover: 'log', chips: ['#7A5534', '#B98A5A', '#3F2A1A'], glow: 'rgba(255,236,200,.35)' }), 'aim', 0.5);
   // Jungle Strike : soldats plus grands, au milieu du chemin (plus dans les feuilles), contour clair, décor un peu assombri
-  boot('junglestrike', warFront({ wb: 'junglestrike', sold: 'js_sold', aim: 'js_aim', cvi: 'war_cv_stone', hy: 0.62, xr: 0.3, bs: 1.12, co: 0.2, cover: 'stone', chips: ['#A8A390', '#7C7866', '#D6D3D1'], glow: 'rgba(255,245,210,.55)', dark: 'rgba(0,0,0,.24)' }), 'aim', 0.5);
+  boot('junglestrike', warFront({ wb: 'junglestrike', sold: 'js_sold', aim: 'js_aim', cvi: 'war_cv_stone', hy: 0.62, xr: 0.3, bs: 1.12, co: 0.2, cover: 'stone', chips: ['#A8A390', '#7C7866', '#D6D3D1'], glow: 'rgba(255,245,210,.55)', dark: 'rgba(0,0,0,.1)' }), 'aim', 0.5);
 
   /* ================================================================== 14. COMMANDO RUN — side-scrolling run (12-frame run cycle,
      parallax, dust): swipe up to jump wire and mines, swipe down to slide under barriers and bullets, tap to shoot. */
@@ -2061,7 +2061,7 @@
     }
     function cvBox(c) {
       var y = zy(c.p), hh = ZK * (y - hz), im = cvImg(c.n), h = hh * c.hk, w = im.ok ? h * im.im.naturalWidth / im.im.naturalHeight : h * 1.4;
-      var cx = W / 2 + c.sd * (W * 0.5 - w * 0.36); // collé au bord de la route, un peu coupé par l'écran comme une vraie rue
+      var cx = W / 2 + c.sd * Math.max(0, W * 0.5 - w * 0.5 - 6); // 2026-11-26 : au bord de la route mais ENTIER à l'écran (rien de caché hors écran)
       return { x: cx - w / 2, y: y - h, w: w, h: h, by: y, cx: cx, hh: hh, ok: im.ok, im: im };
     }
     function zBlock(z) {
@@ -2076,7 +2076,9 @@
     function edgeX(p) { var y = zy(p); return (W * 0.5) / Math.max(1, (y - hz) * 1.05); }
     function zy(p) { return hz + (yTop - hz) * Math.pow((yB - hz) / (yTop - hz), Math.pow(p, 0.8)); }
     function kk(y) { return clamp((y - yTop) / (yB - yTop), 0, 1); }
-    function sx(z) { return W / 2 + (z.x + (z.sw ? Math.sin(t * 1.4 + z.ph * 2) * z.sw : 0)) * (z.y - hz) * 1.05; }
+    // 2026-11-26 (propriétaire : « des zombies cachés tout au fond à gauche / à droite tuent le joueur sans qu'il les voie ») :
+    // un zombie est TOUJOURS entier à l'écran (sauf les premiers pas d'une entrée par le côté, où il ne peut pas atteindre la barricade)
+    function sx(z) { var x = W / 2 + (z.x + (z.sw ? Math.sin(t * 1.4 + z.ph * 2) * z.sw : 0)) * (z.y - hz) * 1.05; if (z.m === 'side') return x; var hw = ZK * (z.y - hz) * (ZM[z.k] || 1) * (ZA[z.k] || 0.66) * 0.5 + 4; return Math.max(hw, Math.min(W - hw, x)); }
     function dims(z) { var hh = ZK * (z.y - hz) * (ZM[z.k] || 1); return [hh * (ZA[z.k] || 0.66), hh]; }
     function spawn(live) {
       var lv = live ? A.lv() : 0, r = Math.random(), k = 'w';
@@ -2151,7 +2153,7 @@
         gunH = Math.min((H - T) * 0.4, W * 0.62); gunX = W / 2; gunY = H + gunH * 0.12;
         function paintBg(c) {
           var o = gImg4('img/games/' + P.pre + '_bg.webp?v=3742');
-          if (o.ok) { c.drawImage(o.im, ox, oy, BW * s, BH * s); c.fillStyle = 'rgba(6,10,14,.12)'; c.fillRect(0, 0, W, H); }
+          if (o.ok) { c.drawImage(o.im, ox, oy, BW * s, BH * s); c.fillStyle = 'rgba(255,240,220,.05)'; c.fillRect(0, 0, W, H); } // 2026-11-26 : plus clair (avant : voile sombre 12 %)
           else { c.fillStyle = lg(c, 0, 0, 0, H, ['#0B2A2A', '#164040', '#1A1D22', '#0E0F12']); c.fillRect(0, 0, W, H); }
         }
         bg = mkc(W, H, dpr, paintBg);
