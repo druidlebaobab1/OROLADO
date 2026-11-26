@@ -1562,7 +1562,10 @@ function admin_list_payload_raw(string $view, array $req): array {
   }
 
   if (in_array($view, ['wd_pending', 'wd_today', 'wd_yesterday', 'wd_all', 'wd_rejected', 'wd_volume'], true)) {
-    $cols = ['ID retrait', 'Joueur', 'Nom', 'E-mail', 'Montant', 'Méthode', 'Destination', 'État', 'Statut', 'Date'];
+    // 2026-11-26 (propriétaire : « j'ai payé des retraits aujourd'hui et ça affiche hier ») : heure du PAIEMENT et montant d'abord
+    // (lisibles sur téléphone), le reste ensuite.
+    $paidView = in_array($view, ['wd_today', 'wd_yesterday'], true);
+    $cols = [$paidView ? 'Payé' : 'Demandé', 'Montant', 'Nom', 'Joueur', 'Méthode', 'Destination', 'État', 'Statut', 'E-mail', 'ID retrait'];
     $list = $wds;
     $ordersByUser = [];
     foreach ($orders as $o) {
@@ -1576,7 +1579,10 @@ function admin_list_payload_raw(string $view, array $req): array {
     } else if ($view === 'wd_today') {
       // v2655 : TOUS les retraits payés, rangés par date de PAIEMENT (le plus récent en haut) ; la case de
       // dates choisit le jour / la période (avant : seulement ceux DEMANDÉS aujourd'hui → liste souvent vide).
-      $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w)));
+      // 2026-11-26 : par défaut SEULEMENT les retraits payés AUJOURD'HUI (avant, avec « Toutes dates », tous les retraits payés
+      // depuis le début étaient mêlés, avec la date de la demande) ; une date choisie dans le filtre reste possible.
+      $wdAll = ($req['preset'] ?? 'all') === 'all' || ($req['preset'] ?? '') === '';
+      $list = array_values(array_filter($wds, static fn($w) => admin_wd_is_paid($w) && (!$wdAll || admin_in_range(admin_wd_paid_at($w) ?: null, $t0, $t1))));
       foreach ($list as $i => $w) $list[$i]['createdAt'] = admin_wd_paid_at($w) ?: (string) ($w['createdAt'] ?? '');
       usort($list, static fn($a, $b) => (admin_ts((string) ($b['createdAt'] ?? '')) ?: 0) <=> (admin_ts((string) ($a['createdAt'] ?? '')) ?: 0));
     } else if ($view === 'wd_yesterday') {
@@ -1630,16 +1636,16 @@ function admin_list_payload_raw(string $view, array $req): array {
       }
       $rows[] = [
         'cells' => [
-          (string) $w['id'],
-          (string) ($w['publicId'] ?? ''),
-          (string) ($w['name'] ?? '—'),
-          (string) ($w['email'] ?? ''),
+          admin_when_short((string) ($w['createdAt'] ?? '')),
           admin_money($w['amount']) . admin_wd_local($w),
+          (string) ($w['name'] ?? '—'),
+          (string) ($w['publicId'] ?? ''),
           $method !== '' ? $method : '—',
           $dest,
           $suspect ? ($lvl === 'red' ? 'Ne pas payer' : 'À suivre') : 'Vérifié',
           (string) ($w['status'] ?? ''),
-          admin_when_cell((string) ($w['createdAt'] ?? '')),
+          (string) ($w['email'] ?? ''),
+          admin_ref_short((string) $w['id']),
         ],
         'userId' => (string) ($w['userId'] ?? ''),
         'ref' => (string) $w['id'],
