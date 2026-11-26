@@ -1782,3 +1782,12 @@ html body .push-ask.wait .push-ask-ico,html body .push-ask.done .push-ask-ico{wi
 html body .push-ask.wait .push-ask-ico svg,html body .push-ask.done .push-ask-ico svg{width:14px!important;height:14px!important}
 html body .push-ask.wait .push-ask-txt b,html body .push-ask.done .push-ask-txt b{font-size:13px!important}
 html body .push-ask.done{grid-template-columns:24px auto!important;width:auto!important;max-width:calc(100vw - 24px);border-radius:999px!important;padding:5px 14px 5px 6px!important}
+/* 2026-11-26 (propriétaire, appli iPhone à barre d'état noire — classe ios-solid posée par index.html) : plus de planète en bas,
+   une fine bande sombre (--ios-under : 22 px avec barre d'accueil) sous ACHETER / VENDRE, le plein écran, Paris et les jeux ;
+   les grandes fenêtres (Paris, Jeux, Social…) s'arrêtent au-dessus de cette bande (avant : 34 + 6 px de marge, trop haut). */
+html.ios-app.ios-solid:root,html.ios-app.ios-solid.is-ios:root{background-image:none!important;background-color:#000000!important}
+html.ios-app.ios-solid body #oroIosFloor{display:none!important}
+html.ios-app.ios-solid.is-ios:root body .modal-backdrop.active > .modal-box:not(.logout-box):not(.wd-confirm-box):not(.convert-box):not(.install-ios-box):not(.otp-box){padding-bottom:var(--ios-under,22px)!important}
+html.ios-app.ios-solid.is-ios:root body #liveModal #sxRoot.sx{padding-bottom:var(--ios-under,22px)!important}
+html.ios-app.ios-solid.is-ios:root body .learn-modal{padding-bottom:var(--ios-under,22px)!important}
+html.ios-app.ios-solid.is-ios:root body #portalModal#portalModal#portalModal#portalModal > .modal-box.portal-box{padding-bottom:calc(var(--ios-under,22px) + 14px)!important}
