@@ -764,7 +764,7 @@
       metaIdFor = String(u.id);
       var am = { external_id: String(u.id) };
       if (u.email && /@/.test(u.email)) am.em = String(u.email).trim().toLowerCase();
-      window.fbq('init', '987866443886391', am);
+      window.fbq('init', '1697498245224959', am);
     } catch (e) { /* jamais bloquant */ }
   }
   function metaTrack(eventName, params, opts) {
