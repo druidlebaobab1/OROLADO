@@ -3849,6 +3849,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     @media (min-width:760px){.head > div{grid-template-columns:repeat(6,minmax(0,1fr))}}
     .head > div > .mini{width:100%;min-height:48px;margin:0!important;font-size:.92rem;font-weight:800;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px}
     #btnBack{grid-column:1/-1}
+    .kpi-c .kpi-tod{font-style:normal;font-size:.72em;font-weight:700;opacity:.7;white-space:nowrap} /* 2026-11-26 (propriétaire) : « aujourd'hui » en petit dans chaque case */
     @media (min-width:760px){.head > div{grid-template-columns:repeat(7,minmax(0,1fr))}#btnBack{grid-column:auto}}
     #inscritsHead{grid-column:1/-1;text-align:center;font-size:.95rem;font-weight:800;color:var(--text)}
     .metric-btn{padding:14px 12px!important;min-height:58px}
@@ -4880,7 +4881,7 @@ function paintKpi(k) {
   const n = v => Number(v || 0), cnt = v => String(n(v)), mon = v => n(v).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
   const diff = (a, b, isMoney) => { const d = n(a) - n(b); if (Math.abs(d) < 0.005) return '<i>=</i>'; return '<i class="'+(d>0?'up':'dn')+'">'+(d>0?'▲ +':'▼ ')+(isMoney ? mon(d) : (d>0?'':'')+d)+'</i>'; };
   const card = (cls, lbl, today, yest, isMoney, vT, vY) =>
-    '<button type="button" class="kpi-c '+cls+'" data-kv="'+vT+'" data-ky="'+vY+'"><span>'+lbl+'</span><b>'+(isMoney?mon(today):cnt(today))+'</b>'+
+    '<button type="button" class="kpi-c '+cls+'" data-kv="'+vT+'" data-ky="'+vY+'"><span>'+lbl+' <em class="kpi-tod">aujourd’hui</em></span><b>'+(isMoney?mon(today):cnt(today))+'</b>'+
     '<small>Hier : '+(isMoney?mon(yest):cnt(yest))+' · '+diff(today, yest, isMoney)+'</small></button>';
   g.innerHTML =
     card('', '👤 Inscriptions', k.signup[0], k.signup[1], false, 'signup_today', 'signup_yesterday')+
