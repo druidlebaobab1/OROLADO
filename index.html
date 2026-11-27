@@ -246,13 +246,13 @@
   <!-- 2026-10-20 : polices Google chargées SANS bloquer la page (avant : tout, même l'écran de chargement, les attendait) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"><noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-    <link rel="stylesheet" href="css/app.css?v=3857">
-    <link rel="stylesheet" href="css/auth.css?v=3857">
-    <link rel="stylesheet" href="css/tv.css?v=3857">
-    <link rel="stylesheet" href="css/galaxy.css?v=3857">
-    <link rel="stylesheet" href="css/cg.css?v=3857">
-    <link rel="stylesheet" href="css/lobby.css?v=3857">
-    <link rel="stylesheet" href="css/sports2.css?v=3857">
+    <link rel="stylesheet" href="css/app.css?v=3858">
+    <link rel="stylesheet" href="css/auth.css?v=3858">
+    <link rel="stylesheet" href="css/tv.css?v=3858">
+    <link rel="stylesheet" href="css/galaxy.css?v=3858">
+    <link rel="stylesheet" href="css/cg.css?v=3858">
+    <link rel="stylesheet" href="css/lobby.css?v=3858">
+    <link rel="stylesheet" href="css/sports2.css?v=3858">
   <!-- Meta Pixel Code -->
   <script>
   !function(f,b,e,v,n,t,s)
@@ -785,7 +785,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     // Version de CETTE page, lue au moment de la vérification (la ligne qui la porte est plus bas dans la page).
     function mine() {
       try {
-        var sc = document.querySelector('script[src*="js/app.js?v=3857"]');
+        var sc = document.querySelector('script[src*="js/app.js?v=3858"]');
         return sc ? parseInt(String(sc.getAttribute('src')).split('v=')[1], 10) || 0 : 0;
       } catch (e0) { return 0; }
     }
@@ -869,7 +869,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
   <div id="toast" class="toast lux-msg" role="status" aria-live="polite"></div>
   <div id="sparkle" class="sparkle" hidden></div>
 
-  <div class="modal-backdrop" id="iosInstallModal">
+  <div data-nosnippet class="modal-backdrop" id="iosInstallModal">
     <div class="modal-box glass install-ios-box">
       <button type="button" class="btn-close" id="closeIosInstall"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="installIosTitle">Install OROLADO</div>
@@ -909,7 +909,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <section id="screenAuth" class="screen hidden">
+  <section data-nosnippet id="screenAuth" class="screen hidden">
     <button type="button" class="auth-back" id="btnAuthBack" data-i18n-aria="authBack" aria-label="Back">← <span data-i18n="authBack">Back</span></button>
     <div class="lang-dd lang-bar-auth" id="langBarAuth"></div>
     <div class="auth-ambient"></div>
@@ -1129,7 +1129,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </section>
 
-  <section id="screenTrade" class="screen">
+  <section data-nosnippet id="screenTrade" class="screen">
     <!-- Feu du bas : flammes réalistes (cœur blanc-jaune, corps orange, bords rouges), lueur de
          chaleur et étincelles qui montent. Animation CSS légère, téléphone uniquement. -->
     <div class="fire-bed" id="fireBed" aria-hidden="true">
@@ -1440,10 +1440,10 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
   </div>
 
   <div id="drawerBackdrop" class="drawer-backdrop"></div>
-  <aside id="drawerProfile" class="drawer" role="dialog" aria-modal="true" aria-labelledby="profTitle" aria-hidden="true">
+  <aside data-nosnippet id="drawerProfile" class="drawer" role="dialog" aria-modal="true" aria-labelledby="profTitle" aria-hidden="true">
     <div class="drawer-head">
       <!-- 2026-10-20 (propriétaire) : plus de titre « Profil » ; une fine barre : la langue (petite) à gauche, la croix à droite -->
-      <h2 id="profTitle" class="prof-title-sr" data-i18n="profileBtn">Profil</h2>
+      <h2 data-nosnippet id="profTitle" class="prof-title-sr" data-i18n="profileBtn">Profil</h2>
       <!-- v2690 (propriétaire) : la langue est maintenant dans le profil (plus dans la barre du haut) -->
       <div class="lang-dd lang-in-profile" id="langBarTrade"></div>
       <button type="button" class="btn-close" id="btnCloseDrawer" aria-label="Close">✕</button>
@@ -1547,7 +1547,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     <p class="legal drawer-legal" data-i18n="legal">© 2026 OROLADO.COM · Synthetic indices trading 24/7 · 18+</p>
   </aside>
 
-  <div class="modal-backdrop" id="logoutModal">
+  <div data-nosnippet class="modal-backdrop" id="logoutModal">
     <div class="modal-box glass logout-box">
       <div class="modal-title" data-i18n="logoutTitle">Voulez-vous vraiment vous déconnecter ?</div>
       <p class="logout-lead" data-i18n="logoutLead">Vous devrez ressaisir vos identifiants pour accéder à votre compte.</p>
@@ -1558,7 +1558,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <section id="screenAdmin" class="screen admin-screen hidden">
+  <section data-nosnippet id="screenAdmin" class="screen admin-screen hidden">
     <div class="admin-head">
       <button type="button" class="icon-btn" id="btnCloseAdmin">←</button>
       <h2 data-i18n="adminTitle">Super Admin Dashboard</h2>
@@ -1591,14 +1591,14 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </section>
 
-  <div class="modal-backdrop" id="adminUserModal">
+  <div data-nosnippet class="modal-backdrop" id="adminUserModal">
     <div class="modal-box glass admin-user-box" role="dialog" aria-modal="true">
       <button type="button" class="btn-close" id="closeAdminUser" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div id="adminUserDetail" class="admin-detail"></div>
     </div>
   </div>
 
-  <div class="modal-backdrop" id="otpModal">
+  <div data-nosnippet class="modal-backdrop" id="otpModal">
     <div class="modal-box glass otp-box">
       <button type="button" class="btn-close" id="closeOtp" data-i18n-aria="closeLbl" aria-label="Close"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="otpTitle">Confirm your email</div>
@@ -1617,7 +1617,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="forgotModal">
+  <div data-nosnippet class="modal-backdrop" id="forgotModal">
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeForgot"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="resetTitle">Reset password</div>
@@ -1660,7 +1660,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="passModal">
+  <div data-nosnippet class="modal-backdrop" id="passModal">
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closePass"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="changePass">Changer de mot de passe</div>
@@ -1701,7 +1701,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="emailModal">
+  <div data-nosnippet class="modal-backdrop" id="emailModal">
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeEmail"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="modal-title" data-i18n="changeEmail">Changer d’adresse e-mail</div>
@@ -1725,7 +1725,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="logoutOthersModal">
+  <div data-nosnippet class="modal-backdrop" id="logoutOthersModal">
     <div class="modal-box glass logout-box">
       <div class="modal-title" data-i18n="logoutOthers">Déconnecter mes autres appareils</div>
       <p class="logout-lead" data-i18n="logoutOthersLead">Tous vos autres téléphones et ordinateurs seront déconnectés. Cet appareil reste connecté.</p>
@@ -1736,7 +1736,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="financeModal">
+  <div data-nosnippet class="modal-backdrop" id="financeModal">
     <div class="modal-box glass">
       <div class="modal-head-row">
         <div class="modal-title" data-i18n="financeHist">Historique financier</div>
@@ -1746,7 +1746,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="withdrawModal"><!-- wd-ui v540 -->
+  <div data-nosnippet class="modal-backdrop" id="withdrawModal"><!-- wd-ui v540 -->
     <div class="modal-box glass withdraw-box">
       <div class="wd-modal-head">
         <button type="button" class="wd-back-ico hidden" id="btnWdBack" aria-label="Back">←</button>
@@ -1860,7 +1860,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="wdConfirmModal">
+  <div data-nosnippet class="modal-backdrop" id="wdConfirmModal">
     <div class="modal-box glass wd-confirm-box">
       <button type="button" class="btn-close" id="closeWdConfirm" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="cosmo-rays" aria-hidden="true"></div>
@@ -1872,7 +1872,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="depositModal">
+  <div data-nosnippet class="modal-backdrop" id="depositModal">
     <div class="modal-box glass withdraw-box deposit-box dcp-on" id="depositBox"><!-- 2026-11-17 (propriétaire) : nouvelle clé Maketou → page normale (Mobile Money = Maketou) ; « dcp-on » = page crypto améliorée derrière « Ouvrir ». Remettre « dep-crypto-only » pour revenir à la crypto seule. -->
       <button type="button" class="btn-close deposit-close" id="closeDeposit" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div id="depositStepSelect">
@@ -1995,7 +1995,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="depositSuccessModal">
+  <div data-nosnippet class="modal-backdrop" id="depositSuccessModal">
     <div class="modal-box glass convert-box">
       <button type="button" class="btn-close" id="closeDepositSuccess"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="cosmo-rays" aria-hidden="true"></div>
@@ -2008,7 +2008,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
   </div>
 
   <!-- v2622 (propriétaire) : paiement Mobile Money affiché DANS OROLADO (aucune adresse de passerelle visible). -->
-  <div class="modal-backdrop" id="payFrameModal">
+  <div data-nosnippet class="modal-backdrop" id="payFrameModal">
     <div class="pay-frame-box">
       <div class="pay-frame-head">
         <button type="button" class="pay-frame-close" id="closePayFrame" aria-label="Close" data-i18n-aria="ariaClose"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -2017,7 +2017,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="depositWaitModal">
+  <div data-nosnippet class="modal-backdrop" id="depositWaitModal">
     <div class="modal-box glass convert-box">
       <div class="wait-spin" id="depositWaitSpin" aria-hidden="true" hidden></div>
       <div class="convert-title" id="depositWaitTitle">Payment in progress</div>
@@ -2029,7 +2029,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="helpModal">
+  <div data-nosnippet class="modal-backdrop" id="helpModal">
     <div class="modal-box glass">
       <button type="button" class="btn-close" id="closeHelp"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="help-hero" aria-hidden="true"><div class="cosmo-rays"></div><svg class="help-hero-ico" viewBox="0 0 64 64"><defs><linearGradient id="hpBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2DBAC"/><stop offset=".5" stop-color="#E8C173"/><stop offset="1" stop-color="#E4B558"/></linearGradient><linearGradient id="hpGl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><circle cx="32" cy="32" r="29" fill="url(#hpBg)"/><ellipse cx="32" cy="17" rx="20" ry="9" fill="url(#hpGl)"/><path d="M18 34v-4a14 14 0 0 1 28 0v4" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/><rect x="14" y="32" width="8" height="12" rx="3.5" fill="#fff"/><rect x="42" y="32" width="8" height="12" rx="3.5" fill="#fff"/><path d="M46 44c0 4-4 6-10 6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="34" cy="50" r="2.6" fill="#fff"/></svg><i class="help-on"></i></div>
@@ -2059,7 +2059,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
   </div>
 
   <!-- v2676 — « Live » : Actualités d'OROLADO + conversation avec l'équipe (texte + photos). js/live.js -->
-  <div class="modal-backdrop" id="liveModal">
+  <div data-nosnippet class="modal-backdrop" id="liveModal">
     <div class="modal-box glass live-box" role="dialog" aria-modal="true" aria-labelledby="liveTitle">
       <button type="button" class="btn-close" id="closeLive" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="live-head">
@@ -2115,7 +2115,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
   </div>
 
   <!-- v2409 — Le Portail OROLADO : défis et récompenses (js/portal.js). -->
-  <div class="modal-backdrop" id="portalModal">
+  <div data-nosnippet class="modal-backdrop" id="portalModal">
     <div class="modal-box glass portal-box" role="dialog" aria-modal="true" aria-labelledby="portalTitle">
       <button type="button" class="btn-close" id="closePortal" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <canvas class="portal-sky" id="portalSky" aria-hidden="true"></canvas>
@@ -2144,7 +2144,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
         <button type="button" class="pt-tab t-top" data-tab="top" role="tab"><span class="pt-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3M8.5 20h7M10 16h4l.6 4H9.4z"/></svg></span><span data-i18n="topTab">Tournoi démo</span></button>
         <button type="button" class="pt-tab t-bon" data-tab="bon" role="tab"><span class="pt-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="9" r="5.5"/><path d="M9 6.5v5M7.4 7.8c0-.7.7-1.3 1.6-1.3s1.6.5 1.6 1.2c0 1.5-3.2.9-3.2 2.4 0 .7.7 1.2 1.6 1.2s1.6-.5 1.6-1.2"/><path d="M14.5 13.5h6M17.5 10.5v6" class="pt-arrow"/><path d="M5 19.5h10"/></svg></span><span data-i18n="bonTab">Bonus dépôt</span></button>
       </div>
-      <section class="gift-guest hidden" id="giftGuest">
+      <section data-nosnippet class="gift-guest hidden" id="giftGuest">
         <div class="gg-icons">
           <span class="gg-i t-defi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.6" class="pi-fill"/></svg></span>
           <span class="gg-i t-aff"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6.5" width="18" height="12" rx="2"/><path d="M3.5 7.5 12 13l8.5-5.5"/></svg></span>
@@ -2159,7 +2159,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
         <button type="button" class="btn-gold gg-go" id="giftGuestGo" data-i18n="giftGuestBtn">Créer mon compte gratuit</button>
         <button type="button" class="gg-login" id="giftGuestLogin" data-i18n="giftGuestLogin">J’ai déjà un compte</button>
       </section>
-      <section class="defi-card" id="defiCard">
+      <section data-nosnippet class="defi-card" id="defiCard">
         <div class="defi-top">
           <span class="defi-badge"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.4" class="pi-fill"/></svg><span data-i18n="defiTitle">Le Défi</span></span>
           <span class="defi-timer" id="defiTimer"></span>
@@ -2191,7 +2191,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
           </ul>
         </div>
       </section>
-      <section class="aff-card hidden" id="affCard">
+      <section data-nosnippet class="aff-card hidden" id="affCard">
         <div class="aff-main" id="affMain">
           <!-- 2026-11-09 : anciens blocs « 5 % / 365 jours » supprimés. Seul système : la part de revenu (js/portal.js). -->
           <div class="arv-top" id="affRevTop"></div>
@@ -2236,7 +2236,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
           <div class="aff-rows aff-rows-all" id="affRowsAll"></div>
         </div>
       </section>
-      <section class="bon-card hidden" id="bonCard">
+      <section data-nosnippet class="bon-card hidden" id="bonCard">
         <div class="bon-head">
           <p class="bon-big" data-i18n="bonBig">+10 % sur ton dépôt de 100 $ ou plus</p>
           <span class="top-timer" id="bonTimer"></span>
@@ -2263,7 +2263,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
         </ul>
         <button type="button" class="top-prev bon-test hidden" id="bonTest" data-i18n="bonTest">Test admin : simuler un dépôt de 200 $</button>
       </section>
-      <section class="top-card hidden" id="topCard">
+      <section data-nosnippet class="top-card hidden" id="topCard">
         <div class="top-head">
           <div class="top-title"><svg class="pi" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3M8.5 20h7M10 16h4l.6 4H9.4z"/></svg><b data-i18n="topTitle">Top 25 de la semaine</b></div>
           <span class="top-timer" id="topTimer"></span>
@@ -2283,7 +2283,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
   </div>
   <button type="button" class="defi-chip hidden" id="defiChip" aria-live="polite"></button>
 
-  <div class="modal-backdrop" id="tipModal">
+  <div data-nosnippet class="modal-backdrop" id="tipModal">
     <div class="modal-box glass convert-box tip-box">
       <button type="button" class="btn-close tip-close" id="closeTip" aria-label="Close" data-i18n-aria="ariaClose"><svg class="x-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="convert-fire">💡</div>
@@ -2293,7 +2293,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="termsModal">
+  <div data-nosnippet class="modal-backdrop" id="termsModal">
     <div class="modal-box glass terms-box" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
       <div class="modal-head-row terms-head">
         <div class="modal-title" id="termsTitle" data-i18n="termsTitle">CONDITIONS GÉNÉRALES D'UTILISATION &amp; RISQUES</div>
@@ -2387,7 +2387,7 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <div class="modal-backdrop" id="historySheet">
+  <div data-nosnippet class="modal-backdrop" id="historySheet">
     <div class="modal-box glass sheet">
       <div class="modal-head-row">
         <div class="modal-title" id="histSheetTitle" data-i18n="tradeHist">Historique des trades</div>
@@ -2401,25 +2401,25 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     </div>
   </div>
 
-  <script src="js/indices.js?v=3857"></script>
+  <script src="js/indices.js?v=3858"></script>
   <script>/* v2822 : emblèmes des indices (js/indices.js) posés dans le « monde OROLADO » de l'écran de chargement */
   (function(){try{var W=window.D6||{},list=(W.EXT_INDICES||[]).filter(function(e){return e&&e.glyph;}),orig=['v100','stable','apex500','horizon50','crash300','goldtrend','boomspike','nexusprime','v75','titanpulse'];
   /* v3691 (propriétaire : « ce sont les anciens logos ») : les NOUVEAUX emblèmes-photos des indices (mêmes images que la barre du haut) */
   var slots=document.querySelectorAll('#olWorld .ow-x');for(var i=0;i<slots.length;i++){var id=(i%2===0)?orig[(i/2)%orig.length]:(list.length?list[(i*5)%list.length].id:orig[i%orig.length]);
   if(id){slots[i].innerHTML='<img class="ol-rimg" src="img/indices/'+id+'.webp?v=3448" alt="" draggable="false" decoding="async">';slots[i].classList.add('in','ol-hasimg');}}}catch(e){}})();</script>
-  <script src="js/config.js?v=3857"></script>
+  <script src="js/config.js?v=3858"></script>
   <!-- 2026-10-20 (vieux Android) : traductions par langue — le noyau écrit juste après lui js/i18n/en.js + la langue du joueur
        (avant : les 12 langues à chaque visite). Textes : js/i18n-src.js, js/translations.js, js/i18n-zh.js → node scripts/gen-i18n.js -->
   <script src="js/i18n/core.js?v=dcd45d7eca"></script>
-  <script src="js/store.js?v=3857"></script>
-  <script src="js/api.js?v=3857"></script>
+  <script src="js/store.js?v=3858"></script>
+  <script src="js/api.js?v=3858"></script>
   <!-- 2026-10-20 : Supabase servi par orolado.com (avant : cdn.jsdelivr.net, version non fixée, bloquait le chargement si lent) -->
   <script src="js/vendor/supabase-js-2.118.0.js"></script>
-  <script src="js/supabase.js?v=3857"></script>
-  <script src="js/auth.js?v=3857"></script>
-  <script src="js/fair_table.js?v=3857"></script>
-  <script src="js/engine.js?v=3857"></script>
-  <script src="js/chart.js?v=3857"></script>
+  <script src="js/supabase.js?v=3858"></script>
+  <script src="js/auth.js?v=3858"></script>
+  <script src="js/fair_table.js?v=3858"></script>
+  <script src="js/engine.js?v=3858"></script>
+  <script src="js/chart.js?v=3858"></script>
   <script>/* v2573 — paiement Flutterwave chargé APRÈS l'affichage (avant : 2 s de blocage, Safari restait en « chargement » avec sa grande barre sur ACHETER / VENDRE). Au clic sur Recharger, ensureFlwScript() le recharge si besoin. */(function(){function go(){if(window.FlutterwaveCheckout||window.__flwInject)return;window.__flwInject=1;var s=document.createElement('script');s.src='https://checkout.flutterwave.com/v3.js?v=2790';s.async=true;s.onload=function(){window.__flwLoad='ok'};s.onerror=function(){window.__flwLoad='err'};document.head.appendChild(s);}window.__oroFlwPreload=go;/* 2026-10-20 : plus chargé à chaque visite (vieux Android) : js/app.js le prépare à l'ouverture de Recharger */})();</script>
   <script>
   (function () {
@@ -2470,35 +2470,35 @@ ld.querySelectorAll('.ol-bub.ol-ic, .ol-world .ow').forEach(function(el){var u=e
     window.oroPurgeDeadOverlays = purgeDeadOverlays;
   })();
   </script>
-  <script src="js/receipt.js?v=3857"></script>
-  <script src="js/back.js?v=3857"></script>
-  <script src="js/push.js?v=3857"></script>
-  <script src="js/app.js?v=3857"></script>
-  <script src="js/dep-crypto.js?v=3857"></script>
-  <script src="js/portal.js?v=3857"></script>
-  <script src="js/live-ui.js?v=3857"></script>
-  <script src="js/live.js?v=3857"></script>
-  <script src="js/live-quiz-data.js?v=3857"></script>
-  <script src="js/live-fun.js?v=3857"></script>
-  <script src="js/live-groups.js?v=3857"></script>
-  <script src="js/live-send.js?v=3857"></script>
-  <script src="js/gifts-home.js?v=3857"></script>
-  <script src="js/localcur.js?v=3857"></script>
-  <script src="js/casino-art.js?v=3857"></script>
-  <script src="js/games/scenes.js?v=3857"></script>
-  <script src="js/sfx.js?v=3857"></script>
-  <script src="js/casino.js?v=3857"></script>
-  <script src="js/fit.js?v=3857"></script>
-  <script src="js/learn.js?v=3857"></script>
+  <script src="js/receipt.js?v=3858"></script>
+  <script src="js/back.js?v=3858"></script>
+  <script src="js/push.js?v=3858"></script>
+  <script src="js/app.js?v=3858"></script>
+  <script src="js/dep-crypto.js?v=3858"></script>
+  <script src="js/portal.js?v=3858"></script>
+  <script src="js/live-ui.js?v=3858"></script>
+  <script src="js/live.js?v=3858"></script>
+  <script src="js/live-quiz-data.js?v=3858"></script>
+  <script src="js/live-fun.js?v=3858"></script>
+  <script src="js/live-groups.js?v=3858"></script>
+  <script src="js/live-send.js?v=3858"></script>
+  <script src="js/gifts-home.js?v=3858"></script>
+  <script src="js/localcur.js?v=3858"></script>
+  <script src="js/casino-art.js?v=3858"></script>
+  <script src="js/games/scenes.js?v=3858"></script>
+  <script src="js/sfx.js?v=3858"></script>
+  <script src="js/casino.js?v=3858"></script>
+  <script src="js/fit.js?v=3858"></script>
+  <script src="js/learn.js?v=3858"></script>
   <script>/* v3700 (propriétaire : « sur les vieux Android c'est lent ») — Paris (sports.js) et le guide (learn-txt*.js) ne sont plus
      chargés AVANT l'ouverture du site : ils arrivent juste après (téléphone au repos), ou tout de suite si on ouvre Paris / le guide. */
-  (function(){var L=["js/sports.js?v=3857","js/learn-txt.js?v=3857","js/learn-txt2.js?v=3857"],st=0,q=[];
+  (function(){var L=["js/sports.js?v=3858","js/learn-txt.js?v=3858","js/learn-txt2.js?v=3858"],st=0,q=[];
   function done(){st=2;var c=q;q=[];c.forEach(function(f){try{f()}catch(e){}})}
   function go(){if(st)return;st=1;var i=0;(function nx(){if(i>=L.length){done();return}var s=document.createElement('script');s.src=L[i++];s.onload=nx;s.onerror=nx;document.body.appendChild(s)})()}
   window.__oroLate=function(cb){if(st===2){if(cb)cb();return}if(cb)q.push(cb);go()};
   function idle(){(window.requestIdleCallback||function(f){setTimeout(f,300)})(go,{timeout:4000})}
   (function w(){if(document.documentElement.classList.contains('oro-booted'))setTimeout(idle,2500);else setTimeout(w,500)})();})();</script>
-  <script src="js/art-rig.js?v=3857"></script>
+  <script src="js/art-rig.js?v=3858"></script>
 <script>
 /* Petits boutons (+ − ÷2 ×2 ⌫ ↺, durées) : ils s'allument un instant au toucher, comme MA / BB / EMA. Dessin seulement. */
 (function(){var SEL='.qbtn,.ind-btn.zoom-btn,.ind-btn.chart-reset-btn,.chart-fs-btn,.fs-trade-close,.dur-chip,.help-badge,#btnProfile,.mode-btn,.lang-dd-btn';function lit(e){var t=e.target&&e.target.closest?e.target.closest(SEL):null;if(!t)return;t.classList.add('tap-lit');clearTimeout(t._tapLit);t._tapLit=setTimeout(function(){t.classList.remove('tap-lit');},340);}document.addEventListener(window.PointerEvent?'pointerdown':'touchstart',lit,{passive:true,capture:true});})();
