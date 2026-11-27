@@ -3849,7 +3849,8 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
     @media (min-width:760px){.head > div{grid-template-columns:repeat(6,minmax(0,1fr))}}
     .head > div > .mini{width:100%;min-height:48px;margin:0!important;font-size:.92rem;font-weight:800;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px}
     #btnBack{grid-column:1/-1}
-    .kpi-c .kpi-tod{font-style:normal;font-size:.72em;font-weight:700;opacity:.7;white-space:nowrap} /* 2026-11-26 (propriétaire) : « aujourd'hui » en petit dans chaque case */
+    .kpi-c .kpi-tod{font-style:normal;font-size:.85em;font-weight:700;opacity:.65}
+    .kpi-c span{white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;} /* 2026-11-27 (propriétaire) : titre + « aujourd'hui » sur UNE ligne, même forme partout */ /* 2026-11-26 (propriétaire) : « aujourd'hui » en petit dans chaque case */
     @media (min-width:760px){.head > div{grid-template-columns:repeat(7,minmax(0,1fr))}#btnBack{grid-column:auto}}
     #inscritsHead{grid-column:1/-1;text-align:center;font-size:.95rem;font-weight:800;color:var(--text)}
     .metric-btn{padding:14px 12px!important;min-height:58px}
@@ -4885,13 +4886,21 @@ function paintKpi(k) {
     '<small>Hier : '+(isMoney?mon(yest):cnt(yest))+' · '+diff(today, yest, isMoney)+'</small></button>';
   g.innerHTML =
     card('', '👤 Inscriptions', k.signup[0], k.signup[1], false, 'signup_today', 'signup_yesterday')+
-    card('k-aff', '🔗 Venus par affiliation', k.aff[0], k.aff[1], false, 'signup_aff', 'signup_aff')+
-    (k.ftd ? card('k-dep', '🆕 1ers dépôts (nouveaux joueurs)', k.ftd[0], k.ftd[1], false, 'dep_ftd_today', 'dep_yesterday') : '')+
-    (k.pushOn ? '<button type="button" class="kpi-c k-aff" onclick="var b=document.getElementById(\'btnNotif\'); if (b) b.click();"><span>🔔 Notifications activées</span><b>'+cnt(k.pushOn.all)+'</b><small>iPhone '+cnt(k.pushOn.ios)+' · Android '+cnt(k.pushOn.android)+'</small></button>' : '')+
-    card('', '💳 Dépôts (nombre)', k.dep[0], k.dep[1], false, 'dep_today', 'dep_yesterday')+
+    card('k-aff', '🔗 Affiliation', k.aff[0], k.aff[1], false, 'signup_aff', 'signup_aff')+
+    (k.ftd ? card('k-dep', '🆕 1ers dépôts', k.ftd[0], k.ftd[1], false, 'dep_ftd_today', 'dep_yesterday') : '')+
+    (k.pushOn ? '<button type="button" class="kpi-c k-aff" onclick="var b=document.getElementById(\'btnNotif\'); if (b) b.click();"><span>🔔 Notifications</span><b>'+cnt(k.pushOn.all)+'</b><small>iPhone '+cnt(k.pushOn.ios)+' · Android '+cnt(k.pushOn.android)+'</small></button>' : '')+
+    card('', '💳 Dépôts', k.dep[0], k.dep[1], false, 'dep_today', 'dep_yesterday')+
     card('k-dep', '💰 Argent déposé', k.depSum[0], k.depSum[1], true, 'dep_today', 'dep_yesterday')+
     card('k-wd', '💸 Retraits payés', k.wdSum[0], k.wdSum[1], true, 'wd_today', 'wd_yesterday')+
     card('k-dep', '📈 Bénéfice', k.profit[0], k.profit[1], true, 'profit_today', 'profit_yesterday');
+  // 2026-11-27 (propriétaire : « tout sur une ligne, même forme, sans déborder ») : la même taille pour tous les titres (et pour
+  // toutes les lignes « Hier »), la plus grande qui tient dans chaque case.
+  const fitAllRow = sel => { const els = [...g.querySelectorAll(sel)]; if (!els.length) return; let fs = 12.5; els.forEach(e => e.style.fontSize = fs + 'px');
+    const over = e => { const r = document.createRange(); r.selectNodeContents(e); const cs = getComputedStyle(e); return r.getBoundingClientRect().width > e.getBoundingClientRect().width - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0) - 1; };
+    for (let i = 0; i < 40 && fs > 8 && els.some(over); i++) { fs -= 0.25; els.forEach(e => e.style.fontSize = fs + 'px'); } };
+  fitAllRow('.kpi-c span'); fitAllRow('.kpi-c small');
+  try { document.fonts.ready.then(() => { fitAllRow('.kpi-c span'); fitAllRow('.kpi-c small'); }); } catch (eF) { /* ignore */ }
+  if (!window._kpiFitR) { window._kpiFitR = 1; window.addEventListener('resize', () => { fitAllRow('.kpi-c span'); fitAllRow('.kpi-c small'); }); }
   g.querySelectorAll('.kpi-c').forEach(c => c.onclick = ev => {
     const yest = ev.target.closest('small');
     const id = c.getAttribute(yest ? 'data-ky' : 'data-kv');
