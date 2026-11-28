@@ -33,4 +33,16 @@ casino_skill_act($db, $adm, 'trenchdef', 'start', 'real', 2.0, ['video' => 30]);
 ck('admin mais mise de 2 $ (> 1 $) : jamais', abs($c($adm, 'trenchdef') - 32.4) > 0.001);
 casino_skill_act($db, $adm, 'commando', 'start', 'real', 0.10, ['video' => 30]);
 ck('admin sur un autre jeu (Commando) : jamais', abs($c($adm, 'commando') - 32.4) > 0.001);
+// bouton 🎬 du tableau admin (fichier data/video_mode.json), sans lien
+file_put_contents(orolado_data_dir() . '/video_mode.json', json_encode(['x' => 25, 'until' => time() + 3600]));
+casino_with(casino_user_file($adm['id']), static function (array &$s) { unset($s['g']['trenchdef']); return true; });
+casino_skill_act($db, $adm, 'trenchdef', 'start', 'real', 0.10, []);
+ck('bouton admin ×25 allumé : la partie de l\'admin monte jusqu\'à ×25', abs($c($adm, 'trenchdef') - 27.0) < 0.001, (string) $c($adm, 'trenchdef'));
+casino_with(casino_user_file($usr['id']), static function (array &$s) { unset($s['g']['trenchdef']); return true; });
+casino_skill_act($db, $usr, 'trenchdef', 'start', 'real', 0.10, []);
+ck('bouton admin allumé : un joueur normal joue normalement', abs($c($usr, 'trenchdef') - 27.0) > 0.001);
+file_put_contents(orolado_data_dir() . '/video_mode.json', json_encode(['x' => 25, 'until' => time() - 1]));
+casino_with(casino_user_file($adm['id']), static function (array &$s) { unset($s['g']['trenchdef']); return true; });
+casino_skill_act($db, $adm, 'trenchdef', 'start', 'real', 0.10, []);
+ck('après 6 h : éteint tout seul', abs($c($adm, 'trenchdef') - 27.0) > 0.001);
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";

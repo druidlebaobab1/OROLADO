@@ -173,6 +173,11 @@ function casino_skill_act(array $db, array $user, string $g, string $act, string
     // Trench Defense, COMPTE ADMIN seulement, mise ≤ 1 $, allumé par le téléphone du propriétaire (orolado.com/?video=30) :
     // la partie monte jusqu'au multiplicateur choisi (2 à 100). Joueurs : jamais.
     $vid = (float) ($p['video'] ?? 0);
+    if ($vid < 2) { // bouton 🎬 du tableau admin (data/video_mode.json, s'éteint tout seul après 6 h)
+      $vf = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'video_mode.json';
+      $vj = is_file($vf) ? (json_decode((string) @file_get_contents($vf), true) ?: []) : [];
+      if ((int) ($vj['until'] ?? 0) > time()) $vid = (float) ($vj['x'] ?? 0);
+    }
     $vidOn = $g === 'trenchdef' && $vid >= 2 && $vid <= 100 && $stake <= 1.0 && function_exists('orolado_is_admin_user') && orolado_is_admin_user($user);
     return casino_user_lock($uid, static function () use ($db, $uid, $file, $g, $mode, $stake, $now, $vidOn, $vid) {
       $cur = casino_with($file, static fn(array &$st) => $st['g'][$g] ?? null);
