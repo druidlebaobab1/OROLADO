@@ -1769,7 +1769,7 @@
   function vfStats() {
     var y = VX2(), x = VX(), H = vf.hs || { n: 0, tm: {} }, rows = vf.tb.rows, n = H.n || 0;
     var card = function (title, body) { return body ? '<section class="vf-sc2"><h4>' + esc(title) + '</h4>' + body + '</section>' : ''; };
-    var ids = Object.keys(H.tm || {}).map(Number).filter(function (i) { var T = vfTmS(i); return T && T[0] >= 5 && vfTeams && vfTeams[i]; });
+    var ids = Object.keys(H.tm || {}).map(Number).filter(function (i) { var T = vfTmS(i); return T && T[0] >= 5 && vfTeams && vfTeams[i] && rows.some(function (r) { return r.t === i; }); }); // équipes de la saison en cours seulement
     var list = function (sorter, val, k) { return ids.slice().sort(sorter).slice(0, k || 5).map(function (i, j) { return '<div class="vf-sr"><span>' + (j + 1) + '</span>' + vfTeamBtn(i) + '<b>' + val(i) + '</b></div>'; }).join(''); };
     var rate = function (col) { return function (i) { var T = vfTmS(i); return T[col] / T[0]; }; };
     var by = function (fn) { return function (p, q) { return fn(q) - fn(p); }; };
@@ -1780,18 +1780,13 @@
     var pts = function (T) { return T[1] * 3 + T[2]; };
     return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(y.since) + '</span></div>' +
       (n ? '<div class="vf-kpi"><p><b>' + n + '</b><small>' + esc(y.mp) + '</small></p><p><b>' + H.g + '</b><small>' + esc(y.goals) + '</small></p><p><b>' + (H.g / n).toFixed(2) + '</b><small>' + esc(y.gpm) + '</small></p></div>' +
-        '<div class="vf-kpi"><p><b>' + vfPct(H.r[0], n) + '</b><small>' + esc(y.hw) + '</small></p><p><b>' + vfPct(H.r[1], n) + '</b><small>' + esc(y.dr) + '</small></p><p><b>' + vfPct(H.r[2], n) + '</b><small>' + esc(y.aw) + '</small></p></div>' +
-        '<div class="vf-kpi"><p><b>' + vfPct(H.o25, n) + '</b><small>' + esc(y.o25) + '</small></p><p><b>' + vfPct(H.bt, n) + '</b><small>' + esc(y.btts) + '</small></p><p><b>' + vfPct(H.nil, n) + '</b><small>' + esc(y.nil) + '</small></p></div>' : '') +
+ '' : '') + // 2026-11-28 (propriétaire) : plus de pourcentages globaux (domicile, nuls, +2,5, les deux marquent)
       '<p class="vf-note">' + esc(y.tap) + '</p>' +
       card(y.form, ids.length ? ids.slice().sort(function (p, q) { var a = vfTmS(p)[13].slice(-5), b = vfTmS(q)[13].slice(-5), s5 = function (f) { return f.split('').reduce(function (s0, c) { return s0 + (c === 'V' ? 3 : c === 'N' ? 1 : 0); }, 0); }; return s5(b) - s5(a) || pts(vfTmS(q)) / vfTmS(q)[0] - pts(vfTmS(p)) / vfTmS(p)[0]; }).slice(0, 5).map(function (i, j) { return '<div class="vf-sr"><span>' + (j + 1) + '</span>' + vfTeamBtn(i) + vfPills(vfTmS(i)[13], 5) + '</div>'; }).join('') : '') +
       (played.length && vf.tb.played >= 3 ? card(x.s + ' ' + vf.tb.S + ' ' + y.att, sTop(function (a, b) { return b.bp - a.bp || a.j - b.j; }, function (r) { return r.bp; })) +
         card(x.s + ' ' + vf.tb.S + ' ' + y.def, sTop(function (a, b) { return a.bc - b.bc || b.j - a.j; }, function (r) { return r.bc; })) : '') +
       card(y.ppm, list(by(function (i) { return pts(vfTmS(i)) / vfTmS(i)[0]; }), function (i) { return (pts(vfTmS(i)) / vfTmS(i)[0]).toFixed(2); })) +
-      card(y.o25, list(by(rate(6)), function (i) { return vfPct(vfTmS(i)[6], vfTmS(i)[0]); })) +
-      card(y.btts, list(by(rate(7)), function (i) { return vfPct(vfTmS(i)[7], vfTmS(i)[0]); })) +
-      card(y.cs, list(by(rate(8)), function (i) { return vfPct(vfTmS(i)[8], vfTmS(i)[0]); })) +
-      card(y.home, list(by(function (i) { var T = vfTmS(i); return T[9] ? T[10] / T[9] : 0; }), function (i) { var T = vfTmS(i); return (T[9] ? T[10] / T[9] : 0).toFixed(2); })) +
-      card(y.away, list(by(function (i) { var T = vfTmS(i); return T[11] ? T[12] / T[11] : 0; }), function (i) { var T = vfTmS(i); return (T[11] ? T[12] / T[11] : 0).toFixed(2); })) +
+
       card(y.big, bigs.map(function (z) { return '<div class="vf-sr vf-big"><span>' + esc(VX().j.charAt(0)) + z.j + '</span><span class="vf-bm">' + vfTeam(z.f.h) + '<b>' + z.f.ft[0] + ' - ' + z.f.ft[1] + '</b>' + vfTeam(z.f.a) + '</span></div>'; }).join(''));
   }
   var vfTeamId = -1, vfTabBack = 'st';
@@ -1804,8 +1799,7 @@
     if (!T) return h + '<p class="pz-none">' + esc(SX().noMatch) + '</p>';
     h += '<p class="vf-note">' + esc(y.since) + '</p><div class="vf-kpi">' + kp(T[0], y.mp) + kp(vfPct(T[1], T[0]), y.wL) + kp(vfPct(T[2], T[0]), y.dr) + '</div>' +
       '<div class="vf-kpi">' + kp(vfPct(T[3], T[0]), y.lL) + kp((T[4] / T[0]).toFixed(2), y.gf) + kp((T[5] / T[0]).toFixed(2), y.ga) + '</div>' +
-      '<div class="vf-kpi">' + kp(vfPct(T[6], T[0]), y.o25) + kp(vfPct(T[7], T[0]), y.btts) + kp(vfPct(T[8], T[0]), y.cs) + '</div>' +
-      '<div class="vf-kpi vf-kpi2">' + kp((T[9] ? T[10] / T[9] : 0).toFixed(2), y.home) + kp((T[11] ? T[12] / T[11] : 0).toFixed(2), y.away) + '</div>' +
+
       '<section class="vf-sc2"><h4>' + esc(y.form) + '</h4><div class="vf-sr vf-fr">' + vfPills(T[13], 10) + '</div></section>' +
       (last.length ? '<section class="vf-sc2"><h4>' + esc(y.lastM) + '</h4>' + last.slice(0, 8).map(function (z) { var w = z.f.h === i ? z.f.ft[0] - z.f.ft[1] : z.f.ft[1] - z.f.ft[0]; return '<div class="vf-sr vf-big vf-r' + (w > 0 ? 'w' : w < 0 ? 'l' : 'd') + '"><span>' + esc(VX().j.charAt(0)) + z.j + '</span><span class="vf-bm">' + vfTeam(z.f.h) + '<b>' + z.f.ft[0] + ' - ' + z.f.ft[1] + '</b>' + vfTeam(z.f.a) + '</span></div>'; }).join('') + '</section>' : '');
     return h;
@@ -1819,9 +1813,7 @@
       row(y.ppm, pp(A).toFixed(2), pp(B).toFixed(2), pp(A), pp(B)) +
       row(y.gf, (A[4] / A[0]).toFixed(2), (B[4] / B[0]).toFixed(2), A[4] / A[0], B[4] / B[0]) +
       row(y.ga, (A[5] / A[0]).toFixed(2), (B[5] / B[0]).toFixed(2), B[5] / B[0], A[5] / A[0]) +
-      row(y.o25, vfPct(A[6], A[0]), vfPct(B[6], B[0]), A[6] / A[0], B[6] / B[0]) +
-      row(y.btts, vfPct(A[7], A[0]), vfPct(B[7], B[0]), A[7] / A[0], B[7] / B[0]) +
-      row(y.cs, vfPct(A[8], A[0]), vfPct(B[8], B[0]), A[8] / A[0], B[8] / B[0]) + '</section>';
+      '</section>';
   }
   function vfBodyHtml() {
     var x = VX(), y = VX2();
