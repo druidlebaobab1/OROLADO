@@ -23,15 +23,15 @@ foreach (['1.9' => 0.50, '5' => 0.18, '10' => 0.09, '50' => 0.018] as $m => $p) 
   }
   $rtpA = $wa / $N * (float) $m; $rtpU = $wu / $N * (float) $m;
   ck(sprintf('admin démo ×%s : %.1f gagnés sur 100, retour %.0f %% (voulu ≈ 130 %%)', $m, 100 * $wa / $N, 100 * $rtpA), abs($rtpA - 1.30) < ($m === '50' ? 0.16 : 0.05));
-  ck(sprintf('joueur démo ×%s : %.1f gagnés sur 100 (démo facile pour tous)', $m, 100 * $wu / $N), abs($wu / $N * (float) $m - 1.30) < ($m === '50' ? 0.16 : 0.05));
+  ck(sprintf('joueur démo ×%s : %.1f gagnés sur 100 (démo normale)', $m, 100 * $wu / $N), abs($wu / $N - $p) < 0.012);
 }
 ck('un trade gagnant le reste toujours', orolado_trade_demo_easy($db, $adm, 'x', 1.9, 'won') === 'won');
 ck('égalité (mise rendue) inchangée', orolado_trade_demo_easy($db, $adm, 'x', 1.9, 'void') === 'void');
 ck('même trade → même résultat (jamais tiré deux fois)', orolado_trade_demo_easy($db, $adm, 'abc', 1.9, 'lost') === orolado_trade_demo_easy($db, $adm, 'abc', 1.9, 'lost'));
 $src = file_get_contents(__DIR__ . '/../trade_lib.php');
 ck('le RÉEL ne passe jamais par la démo facile', str_contains($src, "if (\$mode === 'demo' && \$verdict === 'lost') \$verdict = orolado_trade_demo_easy("));
-ck('ouvert à tous (2026-11-28, propriétaire)', OROLADO_DEMO_EASY_ALL === true);
+ck('mis de côté (2026-11-28 au soir)', OROLADO_DEMO_EASY_ALL === false);
 $wa = 0; $wb = 0; for ($i = 0; $i < 20000; $i++) { $v = random_int(0, 1) ? 'won' : 'lost'; if (orolado_trade_demo_easy($db, $usr, 'q' . $i, 1.9, $v, true) === 'won') $wa++; if (orolado_trade_demo_easy($db, $usr, 'q' . $i, 1.9, $v, false) === 'won') $wb++; }
 ck(sprintf('téléphone de test (?demotest=1), compte joueur : %.1f gagnés sur 100', $wa / 200), abs($wa / 20000 - 0.684) < 0.02);
-ck(sprintf('sans lien, même compte : %.1f gagnés sur 100 (démo facile pour tous)', $wb / 200), abs($wb / 20000 - 0.684) < 0.02);
+ck(sprintf('démo normale : %.1f gagnés sur 100', $wb / 200), abs($wb / 20000 - 0.5) < 0.02);
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";

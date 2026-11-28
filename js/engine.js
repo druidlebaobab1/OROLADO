@@ -1261,7 +1261,7 @@
   // orolado.com/?demotest=1 (?demotest=0 pour arrêter). Retour démo ≈ 130 % (même règle que trade_lib.php
   // orolado_trade_demo_easy) ; payout affiché inchangé ; réel jamais touché ; les autres téléphones jouent normalement.
   try { if (/[?&]demotest=1\b/.test(location.search)) localStorage.setItem('oro_demo_easy', '1'); if (/[?&]demotest=0\b/.test(location.search)) localStorage.removeItem('oro_demo_easy'); } catch (eDe) { /* ignore */ }
-  function demoEasyOn() { return true; } // 2026-11-28 (propriétaire) : démo facile pour tout le monde (visiteurs compris)
+  function demoEasyOn() { return false; } // 2026-11-28 (propriétaire, soir) : démo facile mise de côté (démo normale)
   var EASY_P = { '1.9': 0.50, '5': 0.18, '10': 0.09, '50': 0.018 };
   function easyVerdict(trade, verdict) {
     if (verdict !== 'lost' || trade.mode === 'real' || !demoEasyOn()) return verdict;
