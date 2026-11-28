@@ -202,8 +202,11 @@
     if (S.bal.real != null && r.bal == null && r.mode === 'real') S.bal.real = S.bal.real - r.stake + r.win;
     return r;
   }
+  // 2026-11-28 (propriétaire) — mode vidéo Trench Defense : orolado.com/?video=30 (compte admin seulement, vérifié par le serveur) ; ?video=0 l'arrête.
+  try { var vm = /[?&]video=(\d{1,3})\b/.exec(location.search); if (vm) { if (+vm[1] >= 2) localStorage.setItem('oro_video_x', vm[1]); else localStorage.removeItem('oro_video_x'); } } catch (eVm) { /* ignore */ }
   async function multi(game, act, p, quiet) {
     if (guest()) { if (!quiet) signup(); return null; }
+    if (act === 'start' && game === 'trenchdef') { try { var vx = Number(localStorage.getItem('oro_video_x')) || 0; if (vx >= 2) { p = Object.assign({}, p || {}, { video: vx }); } } catch (eVx) { /* ignore */ } }
     if (!quiet && (act === 'start' || act === 'bet')) sfx('launch', null, game);
     if (act === 'fail' && !LIVE_GAMES[game] && ambOn(game)) { sfx('crash', null, game); amb(game, false, 0, { fade: 0.15 }); } // v2851 : l'obstacle / l'erreur se SENT tout de suite
     var r = await api('csMulti', { game: game, act: act, mode: 'real', stake: S.stake, p: p || {} });
@@ -894,7 +897,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3904'; // v3863 : Paris — matchs virtuels (Ligue OROLADO)
+  var MOD_V = '3905'; // v3863 : Paris — matchs virtuels (Ligue OROLADO)
 
   // 2026-11-03 (propriétaire : « en ouvrant Subway, on voit quelques secondes l'ANCIEN jeu avant le nouveau ») — une appli restée
   // ouverte garde l'ancienne version en mémoire (ancien catalogue → anciens jeux) jusqu'à ce qu'elle se recharge. On regarde en

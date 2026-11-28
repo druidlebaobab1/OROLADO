@@ -169,14 +169,19 @@ function casino_skill_act(array $db, array $user, string $g, string $act, string
     if ($e = casino_check_stake($stake, $g)) return ['ok' => false, 'reason' => $e];
     $mode = casino_mode($mode, false, $user);
     // v2810 : vérifier → retirer → enregistrer sous le verrou du joueur (deux départs simultanés : une seule mise retirée)
-    return casino_user_lock($uid, static function () use ($db, $uid, $file, $g, $mode, $stake, $now) {
+    // 2026-11-28 (propriétaire : vidéo publicitaire, il ajoute lui-même « vidéo de démonstration » sur sa pub) — MODE VIDÉO :
+    // Trench Defense, COMPTE ADMIN seulement, mise ≤ 1 $, allumé par le téléphone du propriétaire (orolado.com/?video=30) :
+    // la partie monte jusqu'au multiplicateur choisi (2 à 100). Joueurs : jamais.
+    $vid = (float) ($p['video'] ?? 0);
+    $vidOn = $g === 'trenchdef' && $vid >= 2 && $vid <= 100 && $stake <= 1.0 && function_exists('orolado_is_admin_user') && orolado_is_admin_user($user);
+    return casino_user_lock($uid, static function () use ($db, $uid, $file, $g, $mode, $stake, $now, $vidOn, $vid) {
       $cur = casino_with($file, static fn(array &$st) => $st['g'][$g] ?? null);
       if (is_array($cur) && empty($cur['done'])) return ['ok' => true, 'resume' => 1, 'now' => $now] + casino_skill_public($g, $cur, $now);
       if (is_array($cur) && empty($cur['paid']) && (float) ($cur['win'] ?? 0) > 0) return ['ok' => false, 'reason' => 'unavailable']; // gain pas encore versé
       $ref = 'cs_' . bin2hex(random_bytes(9));
       $deb = casino_debit($db, $uid, $mode, $stake, $ref);
       if (empty($deb['ok'])) return ['ok' => false, 'reason' => $deb['reason'] ?? 'unavailable'];
-      $x = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 't0' => $now, 'c' => casino_crash_point(), 'done' => 0];
+      $x = ['ref' => $ref, 'mode' => $mode, 'stake' => $stake, 't0' => $now, 'c' => $vidOn ? round($vid * 1.08, 2) : casino_crash_point(), 'done' => 0];
       casino_with($file, static function (array &$st) use ($g, $x) { $st['g'][$g] = $x; return true; });
       return ['ok' => true, 'now' => $now, 'bal' => $mode === 'demo' ? ($deb['demo'] ?? null) : ($deb['real'] ?? null)] + casino_skill_public($g, $x, $now);
     });
