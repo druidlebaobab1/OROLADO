@@ -1632,39 +1632,52 @@
      Une seule rangée en haut : En direct (la journée qui se joue) · À venir (la journée suivante) · Classement · Résultats ·
      Statistiques. Quand la journée à venir commence, elle passe dans En direct et la suivante la remplace. */
   var VFL2 = {
-    fr: ['En direct', 'À venir', 'Statistiques', 'Aucun match en direct', 'Prochaine journée dans', 'Meilleures attaques', 'Meilleures défenses', 'En forme', 'Buts par match', 'Virtuel', 'Matchs joués', 'Buts', 'Victoires à domicile', 'Nuls', 'Victoires à l\'extérieur', 'Buts marqués', 'Buts encaissés', 'Plus de 2,5 buts', 'Les deux marquent', 'Matchs 0-0', 'Plus gros scores', 'Plus de victoires', '4 dernières journées'],
-    en: ['Live', 'Upcoming', 'Stats', 'No live match', 'Next matchday in', 'Best attacks', 'Best defences', 'In form', 'Goals per match', 'Virtual', 'Matches played', 'Goals', 'Home wins', 'Draws', 'Away wins', 'Goals scored', 'Goals conceded', 'Over 2.5 goals', 'Both teams score', '0-0 matches', 'Biggest wins', 'Most wins', 'Last 4 matchdays'],
-    es: ['En vivo', 'Próximos', 'Estadísticas', 'Ningún partido en vivo', 'Próxima jornada en', 'Mejores ataques', 'Mejores defensas', 'En forma', 'Goles por partido', 'Virtual', 'Partidos jugados', 'Goles', 'Victorias locales', 'Empates', 'Victorias visitantes', 'Goles marcados', 'Goles recibidos', 'Más de 2,5 goles', 'Ambos marcan', 'Partidos 0-0', 'Mayores goleadas', 'Más victorias', 'Últimas 4 jornadas'],
-    pt: ['Ao vivo', 'Próximos', 'Estatísticas', 'Nenhum jogo ao vivo', 'Próxima rodada em', 'Melhores ataques', 'Melhores defesas', 'Em forma', 'Gols por jogo', 'Virtual', 'Jogos disputados', 'Gols', 'Vitórias em casa', 'Empates', 'Vitórias fora', 'Gols marcados', 'Gols sofridos', 'Mais de 2,5 gols', 'Ambos marcam', 'Jogos 0-0', 'Maiores goleadas', 'Mais vitórias', 'Últimas 4 rodadas'],
-    ar: ['مباشر', 'القادمة', 'إحصائيات', 'لا توجد مباراة مباشرة', 'الجولة التالية خلال', 'أفضل هجوم', 'أفضل دفاع', 'في أفضل حال', 'أهداف لكل مباراة', 'افتراضي', 'مباريات لُعبت', 'أهداف', 'فوز على الأرض', 'تعادل', 'فوز خارج الأرض', 'أهداف مسجلة', 'أهداف مستقبلة', 'أكثر من 2.5 هدف', 'الفريقان يسجلان', 'مباريات 0-0', 'أكبر انتصارات', 'أكثر انتصارات', 'آخر 4 جولات'],
-    tr: ['Canlı', 'Yaklaşan', 'İstatistik', 'Canlı maç yok', 'Sonraki hafta', 'En iyi hücum', 'En iyi savunma', 'Formda', 'Maç başı gol', 'Sanal', 'Oynanan maç', 'Gol', 'İç saha galibiyeti', 'Beraberlik', 'Deplasman galibiyeti', 'Atılan gol', 'Yenilen gol', '2,5 üst', 'Karşılıklı gol', '0-0 maçlar', 'En farklı skorlar', 'En çok galibiyet', 'Son 4 hafta'],
-    vi: ['Trực tiếp', 'Sắp diễn ra', 'Thống kê', 'Không có trận trực tiếp', 'Vòng sau bắt đầu sau', 'Hàng công tốt nhất', 'Hàng thủ tốt nhất', 'Phong độ cao', 'Bàn mỗi trận', 'Ảo', 'Trận đã đấu', 'Bàn thắng', 'Thắng sân nhà', 'Hòa', 'Thắng sân khách', 'Bàn ghi được', 'Bàn thua', 'Tài 2,5', 'Hai đội ghi bàn', 'Trận 0-0', 'Thắng đậm nhất', 'Thắng nhiều nhất', '4 vòng gần nhất'],
-    id: ['Langsung', 'Mendatang', 'Statistik', 'Tidak ada laga langsung', 'Pekan berikutnya dalam', 'Serangan terbaik', 'Pertahanan terbaik', 'Sedang bagus', 'Gol per laga', 'Virtual', 'Laga dimainkan', 'Gol', 'Menang kandang', 'Seri', 'Menang tandang', 'Gol dicetak', 'Gol kebobolan', 'Lebih 2,5 gol', 'Kedua tim cetak gol', 'Laga 0-0', 'Kemenangan terbesar', 'Menang terbanyak', '4 pekan terakhir'],
-    ru: ['Live', 'Скоро', 'Статистика', 'Нет матчей в эфире', 'Следующий тур через', 'Лучшие атаки', 'Лучшие защиты', 'В форме', 'Голов за матч', 'Виртуал', 'Сыграно матчей', 'Голы', 'Победы дома', 'Ничьи', 'Победы в гостях', 'Забито', 'Пропущено', 'Больше 2,5', 'Обе забьют', 'Матчи 0:0', 'Крупные победы', 'Больше всего побед', 'Последние 4 тура'],
-    de: ['Live', 'Demnächst', 'Statistik', 'Kein Live-Spiel', 'Nächster Spieltag in', 'Beste Angriffe', 'Beste Abwehr', 'In Form', 'Tore pro Spiel', 'Virtuell', 'Gespielte Spiele', 'Tore', 'Heimsiege', 'Unentschieden', 'Auswärtssiege', 'Erzielte Tore', 'Gegentore', 'Über 2,5 Tore', 'Beide treffen', '0:0-Spiele', 'Höchste Siege', 'Meiste Siege', 'Letzte 4 Spieltage'],
-    hi: ['लाइव', 'आगामी', 'आँकड़े', 'कोई लाइव मैच नहीं', 'अगला राउंड', 'सर्वश्रेष्ठ आक्रमण', 'सर्वश्रेष्ठ रक्षा', 'फ़ॉर्म में', 'प्रति मैच गोल', 'वर्चुअल', 'खेले गए मैच', 'गोल', 'घरेलू जीत', 'ड्रॉ', 'बाहर जीत', 'किए गोल', 'खाए गोल', '2.5 से ज़्यादा गोल', 'दोनों टीमें गोल', '0-0 मैच', 'सबसे बड़ी जीत', 'सबसे ज़्यादा जीत', 'पिछले 4 राउंड'],
-    zh: ['直播', '即将开始', '统计', '暂无直播比赛', '下一轮开始于', '最佳进攻', '最佳防守', '状态火热', '场均进球', '虚拟', '已赛场次', '进球', '主场胜', '平局', '客场胜', '进球数', '失球数', '大于2.5球', '双方进球', '0-0 比赛', '最大比分胜利', '胜场最多', '最近4轮']
+    fr: ['En direct', 'À venir', 'Statistiques', 'Aucun match en direct', 'Prochaine journée dans', 'Meilleures attaques', 'Meilleures défenses', 'En forme', 'Buts par match', 'Virtuel', 'Matchs joués', 'Buts', 'Victoires à domicile', 'Nuls', 'Victoires à l\'extérieur', 'Buts marqués', 'Buts encaissés', 'Plus de 2,5 buts', 'Les deux marquent', 'Matchs 0-0', 'Plus gros scores', 'Plus de victoires', '4 dernières journées', 'Sans encaisser', 'Meilleurs à domicile', 'Meilleurs à l\'extérieur', 'Touchez une équipe pour voir sa fiche', 'Derniers matchs', 'Depuis le lancement', 'Points par match', 'Comparaison', 'Mi-temps', 'Victoires', 'Défaites'],
+    en: ['Live', 'Upcoming', 'Stats', 'No live match', 'Next matchday in', 'Best attacks', 'Best defences', 'In form', 'Goals per match', 'Virtual', 'Matches played', 'Goals', 'Home wins', 'Draws', 'Away wins', 'Goals scored', 'Goals conceded', 'Over 2.5 goals', 'Both teams score', '0-0 matches', 'Biggest wins', 'Most wins', 'Last 4 matchdays', 'Clean sheets', 'Best at home', 'Best away', 'Tap a team to see its profile', 'Last matches', 'Since launch', 'Points per match', 'Comparison', 'Half-time', 'Wins', 'Losses'],
+    es: ['En vivo', 'Próximos', 'Estadísticas', 'Ningún partido en vivo', 'Próxima jornada en', 'Mejores ataques', 'Mejores defensas', 'En forma', 'Goles por partido', 'Virtual', 'Partidos jugados', 'Goles', 'Victorias locales', 'Empates', 'Victorias visitantes', 'Goles marcados', 'Goles recibidos', 'Más de 2,5 goles', 'Ambos marcan', 'Partidos 0-0', 'Mayores goleadas', 'Más victorias', 'Últimas 4 jornadas', 'Portería a cero', 'Mejores en casa', 'Mejores fuera', 'Toca un equipo para ver su ficha', 'Últimos partidos', 'Desde el lanzamiento', 'Puntos por partido', 'Comparación', 'Descanso', 'Victorias', 'Derrotas'],
+    pt: ['Ao vivo', 'Próximos', 'Estatísticas', 'Nenhum jogo ao vivo', 'Próxima rodada em', 'Melhores ataques', 'Melhores defesas', 'Em forma', 'Gols por jogo', 'Virtual', 'Jogos disputados', 'Gols', 'Vitórias em casa', 'Empates', 'Vitórias fora', 'Gols marcados', 'Gols sofridos', 'Mais de 2,5 gols', 'Ambos marcam', 'Jogos 0-0', 'Maiores goleadas', 'Mais vitórias', 'Últimas 4 rodadas', 'Sem sofrer gols', 'Melhores em casa', 'Melhores fora', 'Toque numa equipe para ver a ficha', 'Últimos jogos', 'Desde o lançamento', 'Pontos por jogo', 'Comparação', 'Intervalo', 'Vitórias', 'Derrotas'],
+    ar: ['مباشر', 'القادمة', 'إحصائيات', 'لا توجد مباراة مباشرة', 'الجولة التالية خلال', 'أفضل هجوم', 'أفضل دفاع', 'في أفضل حال', 'أهداف لكل مباراة', 'افتراضي', 'مباريات لُعبت', 'أهداف', 'فوز على الأرض', 'تعادل', 'فوز خارج الأرض', 'أهداف مسجلة', 'أهداف مستقبلة', 'أكثر من 2.5 هدف', 'الفريقان يسجلان', 'مباريات 0-0', 'أكبر انتصارات', 'أكثر انتصارات', 'آخر 4 جولات', 'شباك نظيفة', 'الأفضل على أرضه', 'الأفضل خارج أرضه', 'اضغط على فريق لرؤية بطاقته', 'آخر المباريات', 'منذ الإطلاق', 'نقاط لكل مباراة', 'مقارنة', 'استراحة', 'انتصارات', 'هزائم'],
+    tr: ['Canlı', 'Yaklaşan', 'İstatistik', 'Canlı maç yok', 'Sonraki hafta', 'En iyi hücum', 'En iyi savunma', 'Formda', 'Maç başı gol', 'Sanal', 'Oynanan maç', 'Gol', 'İç saha galibiyeti', 'Beraberlik', 'Deplasman galibiyeti', 'Atılan gol', 'Yenilen gol', '2,5 üst', 'Karşılıklı gol', '0-0 maçlar', 'En farklı skorlar', 'En çok galibiyet', 'Son 4 hafta', 'Gol yemeden', 'İç sahada en iyi', 'Deplasmanda en iyi', 'Profil için bir takıma dokun', 'Son maçlar', 'Başlangıçtan beri', 'Maç başı puan', 'Karşılaştırma', 'Devre arası', 'Galibiyet', 'Mağlubiyet'],
+    vi: ['Trực tiếp', 'Sắp diễn ra', 'Thống kê', 'Không có trận trực tiếp', 'Vòng sau bắt đầu sau', 'Hàng công tốt nhất', 'Hàng thủ tốt nhất', 'Phong độ cao', 'Bàn mỗi trận', 'Ảo', 'Trận đã đấu', 'Bàn thắng', 'Thắng sân nhà', 'Hòa', 'Thắng sân khách', 'Bàn ghi được', 'Bàn thua', 'Tài 2,5', 'Hai đội ghi bàn', 'Trận 0-0', 'Thắng đậm nhất', 'Thắng nhiều nhất', '4 vòng gần nhất', 'Giữ sạch lưới', 'Mạnh nhất sân nhà', 'Mạnh nhất sân khách', 'Chạm vào đội để xem hồ sơ', 'Trận gần đây', 'Từ khi ra mắt', 'Điểm mỗi trận', 'So sánh', 'Nghỉ giữa hiệp', 'Thắng', 'Thua'],
+    id: ['Langsung', 'Mendatang', 'Statistik', 'Tidak ada laga langsung', 'Pekan berikutnya dalam', 'Serangan terbaik', 'Pertahanan terbaik', 'Sedang bagus', 'Gol per laga', 'Virtual', 'Laga dimainkan', 'Gol', 'Menang kandang', 'Seri', 'Menang tandang', 'Gol dicetak', 'Gol kebobolan', 'Lebih 2,5 gol', 'Kedua tim cetak gol', 'Laga 0-0', 'Kemenangan terbesar', 'Menang terbanyak', '4 pekan terakhir', 'Tanpa kebobolan', 'Terbaik di kandang', 'Terbaik di tandang', 'Ketuk tim untuk melihat profilnya', 'Laga terakhir', 'Sejak peluncuran', 'Poin per laga', 'Perbandingan', 'Turun minum', 'Menang', 'Kalah'],
+    ru: ['Live', 'Скоро', 'Статистика', 'Нет матчей в эфире', 'Следующий тур через', 'Лучшие атаки', 'Лучшие защиты', 'В форме', 'Голов за матч', 'Виртуал', 'Сыграно матчей', 'Голы', 'Победы дома', 'Ничьи', 'Победы в гостях', 'Забито', 'Пропущено', 'Больше 2,5', 'Обе забьют', 'Матчи 0:0', 'Крупные победы', 'Больше всего побед', 'Последние 4 тура', 'Сухие матчи', 'Лучшие дома', 'Лучшие в гостях', 'Нажмите на команду, чтобы открыть её карточку', 'Последние матчи', 'С запуска', 'Очки за матч', 'Сравнение', 'Перерыв', 'Победы', 'Поражения'],
+    de: ['Live', 'Demnächst', 'Statistik', 'Kein Live-Spiel', 'Nächster Spieltag in', 'Beste Angriffe', 'Beste Abwehr', 'In Form', 'Tore pro Spiel', 'Virtuell', 'Gespielte Spiele', 'Tore', 'Heimsiege', 'Unentschieden', 'Auswärtssiege', 'Erzielte Tore', 'Gegentore', 'Über 2,5 Tore', 'Beide treffen', '0:0-Spiele', 'Höchste Siege', 'Meiste Siege', 'Letzte 4 Spieltage', 'Zu null', 'Beste daheim', 'Beste auswärts', 'Team antippen für das Profil', 'Letzte Spiele', 'Seit dem Start', 'Punkte pro Spiel', 'Vergleich', 'Halbzeit', 'Siege', 'Niederlagen'],
+    hi: ['लाइव', 'आगामी', 'आँकड़े', 'कोई लाइव मैच नहीं', 'अगला राउंड', 'सर्वश्रेष्ठ आक्रमण', 'सर्वश्रेष्ठ रक्षा', 'फ़ॉर्म में', 'प्रति मैच गोल', 'वर्चुअल', 'खेले गए मैच', 'गोल', 'घरेलू जीत', 'ड्रॉ', 'बाहर जीत', 'किए गोल', 'खाए गोल', '2.5 से ज़्यादा गोल', 'दोनों टीमें गोल', '0-0 मैच', 'सबसे बड़ी जीत', 'सबसे ज़्यादा जीत', 'पिछले 4 राउंड', 'क्लीन शीट', 'घर पर सर्वश्रेष्ठ', 'बाहर सर्वश्रेष्ठ', 'प्रोफ़ाइल देखने के लिए टीम पर टैप करें', 'पिछले मैच', 'शुरुआत से', 'प्रति मैच अंक', 'तुलना', 'हाफ़-टाइम', 'जीत', 'हार'],
+    zh: ['直播', '即将开始', '统计', '暂无直播比赛', '下一轮开始于', '最佳进攻', '最佳防守', '状态火热', '场均进球', '虚拟', '已赛场次', '进球', '主场胜', '平局', '客场胜', '进球数', '失球数', '大于2.5球', '双方进球', '0-0 比赛', '最大比分胜利', '胜场最多', '最近4轮', '零封', '主场最佳', '客场最佳', '点按球队查看资料', '最近比赛', '自上线以来', '场均积分', '对比', '中场休息', '胜', '负']
   };
   // petit signe « virtuel » (coupon, Mes paris, reçu) : carré violet avec une manette — ne prend presque pas de place
   var VFPAD = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7h9a4.5 4.5 0 0 1 4.4 5.5l-1 4.3a2.3 2.3 0 0 1-4 .9L14.6 16H9.4l-1.3 1.7a2.3 2.3 0 0 1-4-.9l-1-4.3A4.5 4.5 0 0 1 7.5 7z" fill="#fff"/><path d="M7.6 10v3.4M5.9 11.7h3.4" stroke="#6D28D9" stroke-width="1.6" stroke-linecap="round"/><circle cx="15.6" cy="10.8" r="1" fill="#6D28D9"/><circle cx="17.4" cy="12.8" r="1" fill="#6D28D9"/></svg>';
   function vfTag(s) { return s && (s.vf || s.sp === 'virt' || /^sb:virt:/.test(s.ev || '') || /^virt:/.test(s.fx || '')) ? '<i class="vf-tag" title="' + esc(VX2().tag) + '" aria-label="' + esc(VX2().tag) + '">' + VFPAD + '</i>' : ''; }
-  function VX2() { var a = VFL2[lg()] || VFL2.en; return { live: a[0], next: a[1], st: a[2], none: a[3], nextIn: a[4], att: a[5], def: a[6], form: a[7], gpm: a[8], tag: a[9], mp: a[10], goals: a[11], hw: a[12], dr: a[13], aw: a[14], gf: a[15], ga: a[16], o25: a[17], btts: a[18], nil: a[19], big: a[20], wins: a[21], last4: a[22] }; }
+  function VX2() { var a = VFL2[lg()] || VFL2.en; return { live: a[0], next: a[1], st: a[2], none: a[3], nextIn: a[4], att: a[5], def: a[6], form: a[7], gpm: a[8], tag: a[9], mp: a[10], goals: a[11], hw: a[12], dr: a[13], aw: a[14], gf: a[15], ga: a[16], o25: a[17], btts: a[18], nil: a[19], big: a[20], wins: a[21], last4: a[22], cs: a[23], home: a[24], away: a[25], tap: a[26], lastM: a[27], since: a[28], ppm: a[29], cmp: a[30], htL: a[31], wL: a[32], lL: a[33] }; }
   var vf = null, vfTeams = null, vfTab = '', vfSkew = 0, vfTm = 0, vfBusy = false;
   function vfSwitch(on) { var x = VX(); return '<div class="vf-sw" role="tablist"><button type="button" data-vsw="sport" class="' + (on ? '' : 'on') + '">⚽ ' + esc(x.sport) + '</button><button type="button" data-vsw="virt" class="vf-v' + (on ? ' on' : '') + '">🎮 ' + esc(x.virt) + '</button></div>'; }
   function vfNow() { return Date.now() / 1000 + vfSkew; }
   function vfFlag(cc) { if (!cc || cc.length !== 2) return ''; return String.fromCodePoint(0x1F1E6 + cc.toUpperCase().charCodeAt(0) - 65, 0x1F1E6 + cc.toUpperCase().charCodeAt(1) - 65); }
-  function vfIc(i) { var t = (vfTeams || [])[i] || { c: '#888' }; return t.p && t.cc ? '<i class="vf-fl">' + vfFlag(t.cc) + '</i>' : '<i class="vf-cb" style="background:' + esc(t.c || '#888') + '"></i>'; }
+  // écusson OROLADO d'un club (bouclier aux 2 couleurs du club + 3 lettres) ; pays : drapeau
+  function vfCrest(t) {
+    var c1 = /^#[0-9A-Fa-f]{6}$/.test(t.c || '') ? t.c : '#888888', c2 = /^#[0-9A-Fa-f]{6}$/.test(t.c2 || '') ? t.c2 : '#111111';
+    var lum = function (h) { var n = parseInt(h.slice(1), 16); return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000; };
+    var tx = lum(c1) > 150 ? '#111' : '#fff', ab = String(t.n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3);
+    return '<svg class="vf-crest" viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1 22 4.5v8.2c0 6.6-4.3 11.3-10 14.3C6.3 24 2 19.3 2 12.7V4.5z" fill="' + c1 + '" stroke="' + c2 + '" stroke-width="1.6"/><path d="M2.8 17.5h18.4" stroke="' + c2 + '" stroke-width="2.4"/><text x="12" y="13.4" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="6.6" fill="' + tx + '">' + ab + '</text></svg>';
+  }
+  function vfIc(i) { var t = (vfTeams || [])[i] || { c: '#888' }; return t.p && t.cc ? '<i class="vf-fl">' + vfFlag(t.cc) + '</i>' : '<i class="vf-cb vf-cr">' + vfCrest(t) + '</i>'; }
   function vfTeam(i) { return '<span class="vf-tn">' + vfIc(i) + '<b class="vf-nm">' + esc(vfName(i)) + '</b></span>'; }
   function vfName(i) { var t = (vfTeams || [])[i]; return t ? t.n : '?'; }
   function vfLive() { return vf ? vf.days.filter(function (d) { return d.live; })[0] || null : null; }
   function vfNext() { return vf ? vf.days.filter(function (d) { return !d.live; })[0] || null : null; }
-  function vfMin(day) { return Math.max(1, Math.min(90, Math.floor((vfNow() - day.ko) * 90 / vf.match) + 1)); }
+  function vfMin(day) { // minute en cours (formule avec mi-temps : 45 pendant la pause)
+    var d = vfNow() - day.ko, M = vf.match, hp = day.hp;
+    if (hp) return Math.max(1, Math.min(90, d < hp[0] ? Math.floor(d * 45 / hp[0]) + 1 : d < hp[1] ? 45 : 45 + Math.floor((d - hp[1]) * 45 / (M - hp[1])) + 1));
+    return Math.max(1, Math.min(90, Math.floor(d * 90 / M) + 1));
+  }
+  function vfHT(day) { var d = vfNow() - day.ko; return !!(day.hp && d >= day.hp[0] && d < day.hp[1]); }
   function vfClock(sec) { sec = Math.max(0, Math.floor(sec)); return Math.floor(sec / 60) + ':' + ('0' + sec % 60).slice(-2); }
   // un match virtuel au format des matchs de Paris (rowHtml, page du match, coupon)
   function vfF(day, f) {
     var end = day.live && vfNow() >= day.ko + vf.match;
-    return { id: 'virt:' + f.id, sp: 'foot', vd: day, vr: f, h: { n: vfName(f.h), vi: f.h }, a: { n: vfName(f.a), vi: f.a }, ts: day.ko - vf.close, live: !!day.live, sc: f.sc || [0, 0],
-      m: day.live ? (end ? 90 : vfMin(day)) : null, st: end ? 'FT' : day.live ? (vfMin(day) <= 45 ? '1H' : '2H') : '', end: end,
+    var T = vfTeams || [], ch = (T[f.h] || {}).c || '#22C55E', ca = (T[f.a] || {}).c || '#F8FAFC'; if (ca === ch) ca = (T[f.a] || {}).c2 || '#F8FAFC';
+    return { id: 'virt:' + f.id, sp: 'foot', vd: day, vr: f, h: { n: vfName(f.h), vi: f.h, sh: ch }, a: { n: vfName(f.a), vi: f.a, sh: ca }, ts: day.ko - vf.close, live: !!day.live, sc: f.sc || [0, 0],
+      m: day.live ? (end ? 90 : vfMin(day)) : null, st: end ? 'FT' : day.live ? (vfHT(day) ? 'HT' : vfMin(day) <= 45 ? '1H' : '2H') : '', end: end,
       ht: day.live && (end || vfMin(day) > 45) ? (f.gl || []).reduce(function (a, g) { if (g[0] <= 45) a[g[1] === 'a' ? 1 : 0]++; return a; }, [0, 0]) : null, susp: day.live && !f.mk, o: { mk: '1x2', o: (f.mk && f.mk['1x2']) || [] } };
   }
   function vfFx(fid) {
@@ -1678,12 +1691,12 @@
     var f = vfFx(fid); if (!f) return null;
     var mk = f.vr.mk ? Object.keys(f.vr.mk).map(function (k) { return { mk: k, o: f.vr.mk[k], s: 0 }; }) : [{ mk: '1x2', o: [], s: 1 }];
     var W = { V: 'W', N: 'D', D: 'L' }, fm = function (ti) { var r = vf.tb.rows.filter(function (z) { return z.t === ti; })[0]; return r && r.f ? r.f.split('').map(function (c) { return W[c] || c; }) : []; };
-    formC[fid] = { ok: true, hf: fm(f.vr.h), af: fm(f.vr.a), h2h: [] };
+    formC[fid] = { ok: true, hf: fm(f.vr.h), af: fm(f.vr.a), h2h: (f.vr.hh || []).map(function (m) { return { ts: vf.hs ? vf.hs.since + m[0] * vf.slot : 0, h: vfName(m[1]), a: vfName(m[2]), g: [m[3], m[4]] }; }) };
     return { ok: true, fx: f, mk: mk };
   }
   function vfHead(day) {
     var x = VX(), t = vfNow();
-    if (day.live) { var fin = t >= day.ko + vf.match; return '<div class="vf-jd lv"><b>' + esc(x.j) + ' ' + day.j + '</b><span class="vf-st"><i class="vf-dot"></i>' + esc(fin ? x.ft : x.live) + ' <em data-vfmin="' + day.ko + '">' + (fin ? '' : vfMin(day) + '’') + '</em></span></div>'; }
+    if (day.live) { var fin = t >= day.ko + vf.match, ht = vfHT(day); return '<div class="vf-jd lv"><b>' + esc(x.j) + ' ' + day.j + '</b><span class="vf-st"><i class="vf-dot"></i>' + esc(fin ? x.ft : ht ? VX2().htL : x.live) + ' <em data-vfmin="' + day.ko + '">' + (fin || ht ? '' : vfMin(day) + '’') + '</em></span></div>'; }
     return '<div class="vf-jd"><b>' + esc(x.j) + ' ' + day.j + '</b><span class="vf-st">' + esc(x.ko) + ' <em data-vfko="' + day.ko + '">' + vfClock(day.ko - vf.close - t) + '</em></span></div>';
   }
   var vfQ = '';
@@ -1695,31 +1708,69 @@
   }
   function vfTabs() {
     var x = VX(), y = VX2(), lv = vfLive(), T = [['next', x.tm, 0], ['live', y.live, lv ? lv.fx.length : 0], ['tb', x.tb, 0], ['res', x.res, 0], ['st', y.st, 0], ['mine', XX().mine, 0]]; // (propriétaire : Matchs d'abord, puis En direct)
-    return T.map(function (t) { return '<button type="button" data-vft="' + t[0] + '" class="' + (vfTab === t[0] ? 'on' : '') + '"><span>' + (t[0] === 'live' ? '<i class="vf-ldot"></i>' : '') + esc(t[1]) + (t[2] ? ' <em>' + t[2] + '</em>' : '') + '</span></button>'; }).join('');
+    return T.map(function (t) { return '<button type="button" data-vft="' + t[0] + '" class="' + (vfTab === t[0] || (vfTab === 'team' && vfTabBack === t[0]) ? 'on' : '') + '"><span>' + (t[0] === 'live' ? '<i class="vf-ldot"></i>' : '') + esc(t[1]) + (t[2] ? ' <em>' + t[2] + '</em>' : '') + '</span></button>'; }).join('');
   }
+  // fiche « tous les matchs depuis le lancement » d'une équipe : [J, V, N, D, bp, bc, +2,5, 2 marquent, sans encaisser, dom J, dom pts, ext J, ext pts, forme]
+  function vfTmS(i) { var T = vf && vf.hs && vf.hs.tm ? vf.hs.tm[i] : null; return T && T[0] ? T : null; }
+  function vfPct(a, b) { return b ? Math.round(a * 100 / b) + ' %' : '-'; }
+  function vfPills(f, n) { var L = { V: T18('sbFW', 'W'), N: T18('sbFD', 'D'), D: T18('sbFL', 'L') }, K = { V: 'W', N: 'D', D: 'L' }; return '<span class="pz-fpl">' + String(f || '').slice(-(n || 5)).split('').map(function (c) { return '<i class="pz-fp ' + K[c] + '">' + esc(L[c]) + '</i>'; }).join('') + '</span>'; }
+  function vfTeamBtn(i) { return '<button type="button" class="vf-tb2" data-vteam="' + i + '">' + vfTeam(i) + '</button>'; }
   function vfStats() {
-    var y = VX2(), x = VX(), rows = vf.tb.rows, n = 0, g = 0, hw = 0, dr = 0, aw = 0;
-    vf.res.forEach(function (d) { d.fx.forEach(function (f) { n++; g += f.ft[0] + f.ft[1]; if (f.ft[0] > f.ft[1]) hw++; else if (f.ft[0] === f.ft[1]) dr++; else aw++; }); });
-    var mp = rows.reduce(function (s, r) { return s + r.j; }, 0) / 2, gt = rows.reduce(function (s, r) { return s + r.bp; }, 0);
-    var o25 = 0, bt = 0, nil = 0, all = [];
-    vf.res.forEach(function (d) { d.fx.forEach(function (f) { var a = f.ft[0], b = f.ft[1]; if (a + b > 2) o25++; if (a && b) bt++; if (!a && !b) nil++; all.push({ f: f, j: d.j }); }); });
-    var bigs = all.filter(function (z) { return z.f.ft[0] !== z.f.ft[1]; }).sort(function (p, q) { return Math.abs(q.f.ft[0] - q.f.ft[1]) - Math.abs(p.f.ft[0] - p.f.ft[1]) || (q.f.ft[0] + q.f.ft[1]) - (p.f.ft[0] + p.f.ft[1]); }).slice(0, 5);
-    var pct = function (v) { return n ? Math.round(v * 100 / n) + ' %' : '-'; };
-    var top = function (arr, val) { return arr.slice(0, 5).map(function (r, i) { return '<div class="vf-sr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<b>' + val(r) + '</b></div>'; }).join(''); };
-    var pts5 = function (r) { return (r.f || '').split('').reduce(function (s, c) { return s + (c === 'V' ? 3 : c === 'N' ? 1 : 0); }, 0); };
-    var L = { V: T18('sbFW', 'W'), N: T18('sbFD', 'D'), D: T18('sbFL', 'L') }, K = { V: 'W', N: 'D', D: 'L' };
-    var pills = function (r) { return '<span class="pz-fpl">' + (r.f || '').split('').map(function (c) { return '<i class="pz-fp ' + K[c] + '">' + esc(L[c]) + '</i>'; }).join('') + '</span>'; };
+    var y = VX2(), x = VX(), H = vf.hs || { n: 0, tm: {} }, rows = vf.tb.rows, n = H.n || 0;
+    var card = function (title, body) { return body ? '<section class="vf-sc2"><h4>' + esc(title) + '</h4>' + body + '</section>' : ''; };
+    var ids = Object.keys(H.tm || {}).map(Number).filter(function (i) { var T = vfTmS(i); return T && T[0] >= 5 && vfTeams && vfTeams[i]; });
+    var list = function (sorter, val, k) { return ids.slice().sort(sorter).slice(0, k || 5).map(function (i, j) { return '<div class="vf-sr"><span>' + (j + 1) + '</span>' + vfTeamBtn(i) + '<b>' + val(i) + '</b></div>'; }).join(''); };
+    var rate = function (col) { return function (i) { var T = vfTmS(i); return T[col] / T[0]; }; };
+    var by = function (fn) { return function (p, q) { return fn(q) - fn(p); }; };
     var played = rows.filter(function (r) { return r.j > 0; });
-    var card = function (title, body) { return '<section class="vf-sc2"><h4>' + esc(title) + '</h4>' + body + '</section>'; };
-    return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(x.s) + ' ' + vf.tb.S + '</span></div>' +
-      (mp ? '<div class="vf-kpi"><p><b>' + mp + '</b><small>' + esc(y.mp) + '</small></p><p><b>' + gt + '</b><small>' + esc(y.goals) + '</small></p><p><b>' + (gt / mp).toFixed(2) + '</b><small>' + esc(y.gpm) + '</small></p></div>' : '') + // (début de saison : pas de 0 / 0 / 0)
-      (n ? '<p class="vf-note">' + esc(y.last4) + '</p><div class="vf-kpi"><p><b>' + pct(hw) + '</b><small>' + esc(y.hw) + '</small></p><p><b>' + pct(dr) + '</b><small>' + esc(y.dr) + '</small></p><p><b>' + pct(aw) + '</b><small>' + esc(y.aw) + '</small></p></div>' +
-        '<div class="vf-kpi"><p><b>' + pct(o25) + '</b><small>' + esc(y.o25) + '</small></p><p><b>' + pct(bt) + '</b><small>' + esc(y.btts) + '</small></p><p><b>' + pct(nil) + '</b><small>' + esc(y.nil) + '</small></p></div>' : '') +
-      (bigs.length ? card(y.big, bigs.map(function (z) { return '<div class="vf-sr vf-big"><span>' + esc(VX().j.charAt(0)) + z.j + '</span><span class="vf-bm">' + vfTeam(z.f.h) + '<b>' + z.f.ft[0] + ' - ' + z.f.ft[1] + '</b>' + vfTeam(z.f.a) + '</span></div>'; }).join('')) : '') +
-      (played.length ? card(y.att, top(played.slice().sort(function (a, b) { return b.bp - a.bp || a.j - b.j; }), function (r) { return r.bp; })) +
-        card(y.def, top(played.slice().sort(function (a, b) { return a.bc - b.bc || b.j - a.j; }), function (r) { return r.bc; })) +
-        card(y.wins, top(played.slice().sort(function (a, b) { return b.v - a.v || b.pts - a.pts; }), function (r) { return r.v; })) +
-        card(y.form, played.slice().sort(function (a, b) { return pts5(b) - pts5(a) || b.pts - a.pts; }).slice(0, 5).map(function (r, i) { return '<div class="vf-sr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + pills(r) + '</div>'; }).join('')) : '');
+    var sTop = function (sorter, val) { return played.slice().sort(sorter).slice(0, 5).map(function (r, j) { return '<div class="vf-sr"><span>' + (j + 1) + '</span>' + vfTeamBtn(r.t) + '<b>' + val(r) + '</b></div>'; }).join(''); };
+    var all = []; (vf.res || []).forEach(function (d) { d.fx.forEach(function (f) { all.push({ f: f, j: d.j }); }); });
+    var bigs = all.filter(function (z) { return z.f.ft[0] !== z.f.ft[1]; }).sort(function (p, q) { return Math.abs(q.f.ft[0] - q.f.ft[1]) - Math.abs(p.f.ft[0] - p.f.ft[1]) || (q.f.ft[0] + q.f.ft[1]) - (p.f.ft[0] + p.f.ft[1]); }).slice(0, 5);
+    var pts = function (T) { return T[1] * 3 + T[2]; };
+    return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(y.since) + '</span></div>' +
+      (n ? '<div class="vf-kpi"><p><b>' + n + '</b><small>' + esc(y.mp) + '</small></p><p><b>' + H.g + '</b><small>' + esc(y.goals) + '</small></p><p><b>' + (H.g / n).toFixed(2) + '</b><small>' + esc(y.gpm) + '</small></p></div>' +
+        '<div class="vf-kpi"><p><b>' + vfPct(H.r[0], n) + '</b><small>' + esc(y.hw) + '</small></p><p><b>' + vfPct(H.r[1], n) + '</b><small>' + esc(y.dr) + '</small></p><p><b>' + vfPct(H.r[2], n) + '</b><small>' + esc(y.aw) + '</small></p></div>' +
+        '<div class="vf-kpi"><p><b>' + vfPct(H.o25, n) + '</b><small>' + esc(y.o25) + '</small></p><p><b>' + vfPct(H.bt, n) + '</b><small>' + esc(y.btts) + '</small></p><p><b>' + vfPct(H.nil, n) + '</b><small>' + esc(y.nil) + '</small></p></div>' : '') +
+      '<p class="vf-note">' + esc(y.tap) + '</p>' +
+      card(y.form, ids.length ? ids.slice().sort(function (p, q) { var a = vfTmS(p)[13].slice(-5), b = vfTmS(q)[13].slice(-5), s5 = function (f) { return f.split('').reduce(function (s0, c) { return s0 + (c === 'V' ? 3 : c === 'N' ? 1 : 0); }, 0); }; return s5(b) - s5(a) || pts(vfTmS(q)) / vfTmS(q)[0] - pts(vfTmS(p)) / vfTmS(p)[0]; }).slice(0, 5).map(function (i, j) { return '<div class="vf-sr"><span>' + (j + 1) + '</span>' + vfTeamBtn(i) + vfPills(vfTmS(i)[13], 5) + '</div>'; }).join('') : '') +
+      (played.length && vf.tb.played >= 3 ? card(x.s + ' ' + vf.tb.S + ' ' + y.att, sTop(function (a, b) { return b.bp - a.bp || a.j - b.j; }, function (r) { return r.bp; })) +
+        card(x.s + ' ' + vf.tb.S + ' ' + y.def, sTop(function (a, b) { return a.bc - b.bc || b.j - a.j; }, function (r) { return r.bc; })) : '') +
+      card(y.ppm, list(by(function (i) { return pts(vfTmS(i)) / vfTmS(i)[0]; }), function (i) { return (pts(vfTmS(i)) / vfTmS(i)[0]).toFixed(2); })) +
+      card(y.o25, list(by(rate(6)), function (i) { return vfPct(vfTmS(i)[6], vfTmS(i)[0]); })) +
+      card(y.btts, list(by(rate(7)), function (i) { return vfPct(vfTmS(i)[7], vfTmS(i)[0]); })) +
+      card(y.cs, list(by(rate(8)), function (i) { return vfPct(vfTmS(i)[8], vfTmS(i)[0]); })) +
+      card(y.home, list(by(function (i) { var T = vfTmS(i); return T[9] ? T[10] / T[9] : 0; }), function (i) { var T = vfTmS(i); return (T[9] ? T[10] / T[9] : 0).toFixed(2); })) +
+      card(y.away, list(by(function (i) { var T = vfTmS(i); return T[11] ? T[12] / T[11] : 0; }), function (i) { var T = vfTmS(i); return (T[11] ? T[12] / T[11] : 0).toFixed(2); })) +
+      card(y.big, bigs.map(function (z) { return '<div class="vf-sr vf-big"><span>' + esc(VX().j.charAt(0)) + z.j + '</span><span class="vf-bm">' + vfTeam(z.f.h) + '<b>' + z.f.ft[0] + ' - ' + z.f.ft[1] + '</b>' + vfTeam(z.f.a) + '</span></div>'; }).join(''));
+  }
+  var vfTeamId = -1, vfTabBack = 'st';
+  function vfTeamHtml(i) {
+    var y = VX2(), x = VX(), T = vfTmS(i), r = (vf.tb.rows || []).filter(function (z) { return z.t === i; })[0], pos = (vf.tb.rows || []).indexOf(r) + 1;
+    var kp = function (v, l) { return '<p><b>' + v + '</b><small>' + esc(l) + '</small></p>'; };
+    var last = []; (vf.res || []).forEach(function (d) { d.fx.forEach(function (f) { if (f.h === i || f.a === i) last.push({ f: f, j: d.j }); }); });
+    var h = '<button type="button" class="vf-back" data-vft="' + esc(vfTabBack) + '">' + IC.back + '<span>' + esc(vfTabBack === 'tb' ? x.tb : y.st) + '</span></button>' +
+      '<div class="vf-th"><i class="vf-thi">' + vfIc(i) + '</i><b>' + esc(vfName(i)) + '</b>' + (r && r.j ? '<small>' + esc(x.s + ' ' + vf.tb.S) + ' #' + pos + ' ' + r.pts + ' ' + esc(x.pts) + '</small>' : '') + '</div>';
+    if (!T) return h + '<p class="pz-none">' + esc(SX().noMatch) + '</p>';
+    h += '<p class="vf-note">' + esc(y.since) + '</p><div class="vf-kpi">' + kp(T[0], y.mp) + kp(vfPct(T[1], T[0]), y.wL) + kp(vfPct(T[2], T[0]), y.dr) + '</div>' +
+      '<div class="vf-kpi">' + kp(vfPct(T[3], T[0]), y.lL) + kp((T[4] / T[0]).toFixed(2), y.gf) + kp((T[5] / T[0]).toFixed(2), y.ga) + '</div>' +
+      '<div class="vf-kpi">' + kp(vfPct(T[6], T[0]), y.o25) + kp(vfPct(T[7], T[0]), y.btts) + kp(vfPct(T[8], T[0]), y.cs) + '</div>' +
+      '<div class="vf-kpi vf-kpi2">' + kp((T[9] ? T[10] / T[9] : 0).toFixed(2), y.home) + kp((T[11] ? T[12] / T[11] : 0).toFixed(2), y.away) + '</div>' +
+      '<section class="vf-sc2"><h4>' + esc(y.form) + '</h4><div class="vf-sr vf-fr">' + vfPills(T[13], 10) + '</div></section>' +
+      (last.length ? '<section class="vf-sc2"><h4>' + esc(y.lastM) + '</h4>' + last.slice(0, 8).map(function (z) { var w = z.f.h === i ? z.f.ft[0] - z.f.ft[1] : z.f.ft[1] - z.f.ft[0]; return '<div class="vf-sr vf-big vf-r' + (w > 0 ? 'w' : w < 0 ? 'l' : 'd') + '"><span>' + esc(VX().j.charAt(0)) + z.j + '</span><span class="vf-bm">' + vfTeam(z.f.h) + '<b>' + z.f.ft[0] + ' - ' + z.f.ft[1] + '</b>' + vfTeam(z.f.a) + '</span></div>'; }).join('') + '</section>' : '');
+    return h;
+  }
+  // page du match : comparaison des 2 équipes (depuis le lancement)
+  function vfCmp(f) {
+    var y = VX2(), A = vfTmS(f.vr.h), B = vfTmS(f.vr.a); if (!A || !B) return '';
+    var row = function (l, a, b, ra, rb) { return '<p><b class="' + (ra > rb ? 'hi' : '') + '">' + a + '</b><span>' + esc(l) + '</span><b class="' + (rb > ra ? 'hi' : '') + '">' + b + '</b></p>'; };
+    var pp = function (T) { return (T[1] * 3 + T[2]) / T[0]; };
+    return '<section class="vf-cmp"><h4>' + esc(y.cmp) + '<small>' + esc(y.since) + '</small></h4><p class="vf-cmph"><b>' + vfIc(f.vr.h) + '</b><span><span class="vf-cn">' + esc(f.h.n) + '</span><span class="vf-cn">' + esc(f.a.n) + '</span></span><b>' + vfIc(f.vr.a) + '</b></p>' +
+      row(y.ppm, pp(A).toFixed(2), pp(B).toFixed(2), pp(A), pp(B)) +
+      row(y.gf, (A[4] / A[0]).toFixed(2), (B[4] / B[0]).toFixed(2), A[4] / A[0], B[4] / B[0]) +
+      row(y.ga, (A[5] / A[0]).toFixed(2), (B[5] / B[0]).toFixed(2), B[5] / B[0], A[5] / A[0]) +
+      row(y.o25, vfPct(A[6], A[0]), vfPct(B[6], B[0]), A[6] / A[0], B[6] / B[0]) +
+      row(y.btts, vfPct(A[7], A[0]), vfPct(B[7], B[0]), A[7] / A[0], B[7] / B[0]) +
+      row(y.cs, vfPct(A[8], A[0]), vfPct(B[8], B[0]), A[8] / A[0], B[8] / B[0]) + '</section>';
   }
   function vfBodyHtml() {
     var x = VX(), y = VX2();
@@ -1727,7 +1778,7 @@
     if (vfTab === 'tb') {
       var tb = vf.tb;
       return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(x.s) + ' ' + tb.S + '</span><span>' + esc(x.j) + ' ' + tb.played + '</span></div><div class="vf-tb"><div class="vf-tr th"><span>#</span><span></span><span>' + esc(x.p) + '</span><span>' + esc(T18('sbFW', 'W')) + '</span><span>' + esc(T18('sbFD', 'D')) + '</span><span>' + esc(T18('sbFL', 'L')) + '</span><span>+/-</span><span>' + esc(x.pts) + '</span></div>' +
-        tb.rows.map(function (r, i) { return '<div class="vf-tr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<span>' + r.j + '</span><span>' + (r.v || 0) + '</span><span>' + (r.n || 0) + '</span><span>' + (r.d || 0) + '</span><span>' + (r.bp - r.bc > 0 ? '+' : '') + (r.bp - r.bc) + '</span><span><b>' + r.pts + '</b></span></div>'; }).join('') + '</div>';
+        tb.rows.map(function (r, i) { return '<div class="vf-tr" data-vteam="' + r.t + '"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<span>' + r.j + '</span><span>' + (r.v || 0) + '</span><span>' + (r.n || 0) + '</span><span>' + (r.d || 0) + '</span><span>' + (r.bp - r.bc > 0 ? '+' : '') + (r.bp - r.bc) + '</span><span><b>' + r.pts + '</b></span></div>'; }).join('') + '</div>';
     }
     if (vfTab === 'res') {
       return vf.res.map(function (d) {
@@ -1737,6 +1788,7 @@
       }).join('');
     }
     if (vfTab === 'st') return vfStats();
+    if (vfTab === 'team') return vfTeamHtml(vfTeamId);
     if (vfQ) { var hq = vf.days.map(vfDayHtml).join(''); return hq || '<p class="pz-none">' + esc(SX().noMatch) + '</p>'; } // recherche : les matchs virtuels seulement
     if (vfTab === 'live') {
       var lv = vfLive();
@@ -1759,14 +1811,21 @@
   function vfTick() { // minute / compte à rebours chaque seconde, sans relire le serveur
     if (!vf || (view !== 'virt' && !(view === 'match' && /^virt:/.test(sbMid)))) return;
     box.querySelectorAll('[data-vfko]').forEach(function (e) { e.textContent = vfClock(+e.getAttribute('data-vfko') - vf.close - vfNow()); });
-    box.querySelectorAll('[data-vfmin]').forEach(function (e) { var ko = +e.getAttribute('data-vfmin'); if (vfNow() < ko + vf.match) e.textContent = Math.max(1, Math.min(90, Math.floor((vfNow() - ko) * 90 / vf.match) + 1)) + '’'; });
+    box.querySelectorAll('[data-vfmin]').forEach(function (e) { var ko = +e.getAttribute('data-vfmin'), dd = null; (vf.days || []).forEach(function (d) { if (d.ko === ko) dd = d; }); if (dd && vfNow() < ko + vf.match && !vfHT(dd)) e.textContent = vfMin(dd) + '’'; });
   }
+  var vfFullAt = 0, vfHH = {}, vfSig = '';
   async function vfLoad() {
     if (vfBusy) return; vfBusy = true;
     try {
-      var r = await D6.Api.post('vfState', { teams: vfTeams ? 0 : 1 }, 9000);
+      var full = !vf || !vf.hs || Date.now() - vfFullAt > 45000 || (/^(tb|res|st|team)$/.test(vfTab) && Date.now() - vfFullAt > 15000) || vfSig === 'chg';
+      var r = await D6.Api.post('vfState', { teams: vfTeams ? 0 : 1, lite: full ? 0 : 1 }, 9000);
       if (r && r.ok) {
-        if (r.teams) vfTeams = r.teams; vfSkew = r.now - Date.now() / 1000; vf = r; vfPaint(); syncVfSlip();
+        if (r.teams) vfTeams = r.teams; vfSkew = r.now - Date.now() / 1000;
+        var sig = (r.days || []).map(function (d) { return d.g + (d.live ? 'L' : ''); }).join(',');
+        if (r.lite && vf) { r.res = vf.res; r.tb = vf.tb; r.hs = vf.hs; if (vfSig && sig !== vfSig) sig = 'chg'; } // nouvelle journée : tout relire au prochain tour
+        else { vfFullAt = Date.now(); (r.days || []).forEach(function (d) { d.fx.forEach(function (f) { if (f.hh) vfHH[f.id] = f.hh; }); }); }
+        (r.days || []).forEach(function (d) { d.fx.forEach(function (f) { if (!f.hh && vfHH[f.id]) f.hh = vfHH[f.id]; }); });
+        vfSig = sig; vf = r; vfPaint(); syncVfSlip();
         if (view === 'match' && /^virt:/.test(sbMid)) { var m = vfM(sbMid); if (m) sbM = m; else if (sbM && sbM.fx) { sbM.fx.end = true; sbM.fx.st = 'FT'; sbM.mk = [{ mk: '1x2', o: [], s: 1 }]; } paintMatch(); }
       }
     } catch (e) { /* réseau : prochain essai */ } finally { vfBusy = false; }
@@ -2858,7 +2917,7 @@
     return o;
   }
   function renderMatch() {
-    if (/^virt:/.test(sbMid)) { var vx = VX(), vfx = curFx(); shell(bar(vx.lg, '', vfx ? vx.s + ' ' + vfx.vd.S + '\u2002' + vx.j + ' ' + vfx.vd.j : '') + '<div id="pzMh"></div><div id="pzTrk"></div><div id="pzForm"></div><div class="pz-gch pz-hs" id="pzG"></div>' + mqHtml() + '<div id="pzMk" class="pz-mks"></div>'); paintMatch(); return; }
+    if (/^virt:/.test(sbMid)) { var vx = VX(), vfx = curFx(); shell(bar(vx.lg, '', vfx ? vx.s + ' ' + vfx.vd.S + '\u2002' + vx.j + ' ' + vfx.vd.j : '') + '<div id="pzMh"></div><div id="pzTrk"></div><div id="pzForm"></div><div id="vfCmp"></div><div class="pz-gch pz-hs" id="pzG"></div>' + mqHtml() + '<div id="pzMk" class="pz-mks"></div>'); paintMatch(); return; }
     var f = curFx(), l = f ? (sbLg(f.lg, spOf(f)) || (sbM && sbM.fx ? { n: sbM.fx.lgn || '', c: sbM.fx.c || '', f: '' } : null)) : null;
     var fv = favs(), isF = f && fv.f.indexOf(f.id) > -1;
     var star = f ? '<button type="button" class="pz-star' + (isF ? ' on' : '') + '" data-fav="' + esc(f.id) + '" aria-pressed="' + !!isF + '" aria-label="' + esc(SX().fav) + '">' + (isF ? '★' : '☆') + '</button>' : '';
@@ -2892,6 +2951,7 @@
     // direct : la mini télé (terrain simulé + infos) remplace les onglets Statistiques / Événements
     if (f.live && !f.vr) tvSync(f, r && r.ok ? r : null);
     formPaint();
+    if (f.vr) { var cm = $('vfCmp'), ch = vfCmp(f); if (cm && cm.dataset.sig !== ch) { cm.dataset.sig = ch; cm.innerHTML = ch; } }
     if (tk.firstChild) tk.innerHTML = '';
     if (!r) { // chargement : le 1 · X · 2 de la liste (ou des cadenas), jamais vide
       if (!mk.firstChild) { var m0 = f.o && f.o.o && f.o.o.length ? f.o : { mk: '1x2', o: [] }; mk.innerHTML = mkCards([{ mk: m0.mk || '1x2', o: m0.o, s: f.live && (f.susp || f.end) ? 1 : 0 }], f); mk.dataset.sig = ''; }
@@ -3039,8 +3099,8 @@
     var card = function (i) { return '<i class="pz-card r" data-rc="' + i + '"' + (+rc[i] ? '' : ' hidden') + '></i>'; };
     return '<div class="pz-tv" id="pzTv"><div class="pz-tvseg" id="pzTvSeg" role="tablist"><button type="button" role="tab" data-tvp="0" class="on" aria-selected="true"><span dir="auto">' + esc(x.pitch) + '</span></button>' +
         '<button type="button" role="tab" data-tvp="1" aria-selected="false"><span dir="auto">' + esc(x.info) + '</span></button></div><div class="pz-tvs" id="pzTvs">' +
-      '<section class="pz-tvp pz-tv1" aria-label="' + esc(x.pitch) + '"><div class="pz-tvh" dir="ltr"><b class="pz-tvn h">' + shirt('#22C55E') + '<span dir="auto">' + esc(f.h.n) + '</span>' + card(0) + '</b>' +
-        '<span class="pz-tvsc"><b id="pzSc" dir="ltr">' + esc(scTxt(f)) + '</b><em dir="ltr"><svg class="pz-clki" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span id="pzClk"></span></em></span><b class="pz-tvn a">' + card(1) + '<span dir="auto">' + esc(f.a.n) + '</span>' + shirt('#F8FAFC') + '</b></div>' +
+      '<section class="pz-tvp pz-tv1" aria-label="' + esc(x.pitch) + '"><div class="pz-tvh" dir="ltr"><b class="pz-tvn h">' + shirt(f.h.sh || '#22C55E') + '<span dir="auto">' + esc(f.h.n) + '</span>' + card(0) + '</b>' +
+        '<span class="pz-tvsc"><b id="pzSc" dir="ltr">' + esc(scTxt(f)) + '</b><em dir="ltr"><svg class="pz-clki" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span id="pzClk"></span></em></span><b class="pz-tvn a">' + card(1) + '<span dir="auto">' + esc(f.a.n) + '</span>' + shirt(f.a.sh || '#F8FAFC') + '</b></div>' +
         '<div class="pz-pitch" id="pzPitch" dir="ltr">' + PITCH + '<i class="pz-zone" id="pzZone"></i><i class="pz-bsh" id="pzBsh"></i><i class="pz-ballw" id="pzBall"><i class="pz-ball">' + BALL + '</i></i>' +
           '<div class="pz-act" id="pzAct" hidden><small dir="auto"></small><b dir="auto"></b><em dir="auto"></em></div>' +
           '<div class="pz-gov" id="pzGov" hidden><b dir="auto"></b><small dir="auto"></small></div></div></section>' +
@@ -3395,6 +3455,7 @@
     if (!t || !t.closest) return;
     if ((b = t.closest('[data-back]'))) { ev.preventDefault(); back(); return; }
     if ((b = t.closest('[data-vsw]'))) { var w = b.getAttribute('data-vsw'); if ((w === 'virt') !== (view === 'virt')) go(w === 'virt' ? 'virt' : 'home'); return; }
+    if ((b = t.closest('[data-vteam]'))) { vfTabBack = vfTab === 'tb' ? 'tb' : 'st'; vfTeamId = +b.getAttribute('data-vteam'); vfTab = 'team'; vfPaint(); var mbt = mbox(); if (mbt) mbt.scrollTop = 0; return; }
     if ((b = t.closest('[data-vft]'))) {
       var vt = b.getAttribute('data-vft');
       if (vt === 'mine') { mineVirt = true; go('mine'); return; } // Mes paris : les paris virtuels seulement
