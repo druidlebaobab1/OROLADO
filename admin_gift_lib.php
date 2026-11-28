@@ -546,12 +546,18 @@ function admin_all_pay_preview(array $req, array $players, ?int $now = null, arr
  * Verse, un par un, au plus $limit joueurs (l'écran rappelle tant que « more »). Réservation dans le registre AVANT le
  * crédit ; plantage pendant le crédit → « à vérifier », jamais reversé tout seul. S'arrête au premier refus.
  */
-function admin_all_pay_run(array $req, array $players, callable $pay, int $limit = 5, ?int $now = null, int $maxSec = 20): array {
+/** 2026-11-28 (propriétaire : « plus rapide ») : l'envoi en arrière-plan tourne sur ADMIN_ALL_LANES voies en même temps ;
+ *  chaque joueur appartient toujours à la même voie (crc32 de son id). Le registre (réservation sous verrou) garantit qu'un
+ *  joueur n'est jamais payé deux fois, même si deux voies le voyaient. */
+const ADMIN_ALL_LANES = 4;
+function admin_all_lane_of(string $id): int { return (int) (sprintf('%u', crc32($id)) % ADMIN_ALL_LANES); }
+function admin_all_pay_run(array $req, array $players, callable $pay, int $limit = 5, ?int $now = null, int $maxSec = 20, int $lane = -1): array {
   if ((string) ($req['confirm'] ?? '') !== 'PAYER') return ['ok' => false, 'reason' => 'Confirmation manquante : tapez PAYER'];
   $p = admin_all_pay_params($req, $now);
   if (empty($p['ok'])) return $p;
   $key = $p['key']; $amt = $p['amount']; $file = admin_all_paid_file($key);
-  $lk = @fopen($file . '.run.lock', 'c');
+  if ($lane >= 0) $players = array_values(array_filter($players, static fn($r) => admin_all_lane_of((string) $r['id']) === $lane));
+  $lk = @fopen($file . '.run.lock' . ($lane >= 0 ? '.' . $lane : ''), 'c');
   if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) {
     if ($lk) fclose($lk);
     return ['ok' => false, 'busy' => true, 'reason' => 'Un envoi du bonus est déjà en cours (autre onglet ?). Attendez qu’il finisse.'];
@@ -600,9 +606,9 @@ function admin_all_pay_run(array $req, array $players, callable $pay, int $limit
     fclose($lk);
   }
   if (function_exists('admin_bust_cache')) admin_bust_cache();
-  $left = admin_all_pay_preview($req, $players, $now);
+  $left = admin_all_pay_preview($req, $players, $now); // (voie : seulement ses joueurs)
   return ['ok' => !$errors, 'paid' => $paid, 'total' => round($paid * $amt, 2), 'mailFailed' => $mailFailed, 'errors' => $errors,
-    'remaining' => (int) ($left['count'] ?? 0), 'more' => !$errors && (int) ($left['count'] ?? 0) > 0,
+    'remaining' => (int) ($left['count'] ?? 0), 'more' => !$errors && (int) ($left['count'] ?? 0) > 0, 'lane' => $lane,
     'reason' => $errors ? ('Arrêt (' . ($errors[0]['email'] ?: $errors[0]['id']) . ') : ' . $errors[0]['reason']) : ''];
 }
 
@@ -650,12 +656,18 @@ function admin_all_job_status(): array {
 }
 
 /** Un paquet en arrière-plan ; renvoie 'next' (relancer), 'busy', 'done', 'stop' ou 'bad'. */
-function admin_all_job_step(string $token, array $players, callable $pay, ?int $now = null, int $limit = 200, int $maxSec = 10): string { // 2026-11-28 : paquets bornés par le TEMPS (10 s), plus par 10 joueurs
+function admin_all_job_step(string $token, array $players, callable $pay, ?int $now = null, int $limit = 200, int $maxSec = 10, int $lane = -1): string { // 2026-11-28 : paquets bornés par le TEMPS (10 s), plus par 10 joueurs
   $j = admin_all_job_read();
   if (!$j || empty($j['active']) || !hash_equals((string) ($j['token'] ?? ''), $token)) return 'bad';
   admin_all_job_update(static function (array &$x) use ($token): void { if (hash_equals((string) ($x['token'] ?? ''), $token)) $x['lastAt'] = time(); });
   if (function_exists('orolado_bonus_all_marker')) @touch(orolado_bonus_all_marker());
-  $r = admin_all_pay_run(['amount' => (string) $j['amount'], 'confirm' => 'PAYER'], $players, $pay, $limit, $now, $maxSec); // v3557 : paquets COURTS (une demande trop longue est coupée par l'hébergeur en plein versement)
+  $r = admin_all_pay_run(['amount' => (string) $j['amount'], 'confirm' => 'PAYER'], $players, $pay, $limit, $now, $maxSec, $lane);
+  // voie finie : la tâche n'est finie que si TOUS les joueurs sont payés (les autres voies peuvent encore travailler)
+  $allLeft = $lane >= 0 && empty($r['more']) && !empty($r['ok']) ? (int) (admin_all_pay_preview(['amount' => (string) $j['amount']], $players, $now)['count'] ?? 0) : null;
+  if ($allLeft !== null && $allLeft > 0) {
+    admin_all_job_update(static function (array &$x) use ($token, $r): void { if (hash_equals((string) ($x['token'] ?? ''), $token)) { $x['paid'] = (int) ($x['paid'] ?? 0) + (int) $r['paid']; $x['total'] = round((float) ($x['total'] ?? 0) + (float) $r['total'], 2); $x['lastAt'] = time(); } });
+    return 'idle';
+  } // v3557 : paquets COURTS (une demande trop longue est coupée par l'hébergeur en plein versement)
   if (!empty($r['busy'])) return 'busy';
   $out = 'next';
   admin_all_job_update(static function (array &$x) use ($token, $r, &$out): void {

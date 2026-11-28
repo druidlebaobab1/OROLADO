@@ -11,14 +11,18 @@ function orolado_bonus_all_marker(): string {
 }
 
 /** Lance le paquet suivant (réponse immédiate : le paquet tourne après sa propre réponse). */
-function orolado_bonus_all_kick(string $token): void {
+function orolado_bonus_all_kick(string $token, int $lane = -1): void {
   if ($token === '' || PHP_SAPI === 'cli') return;
-  $ctx = stream_context_create(['http' => [
-    'method' => 'POST', 'timeout' => 3, 'ignore_errors' => true,
-    'header' => "Host: orolado.com\r\nContent-Type: application/json\r\nAccept: application/json\r\n",
-    'content' => json_encode(['action' => 'bonus_all_bg', 'token' => $token]),
-  ]]);
-  @file_get_contents('http://127.0.0.1/admin.php', false, $ctx);
+  // 2026-11-28 (propriétaire : « plus rapide ») : sans voie précisée → les 4 voies sont lancées en même temps.
+  $lanes = $lane >= 0 ? [$lane] : [0, 1, 2, 3];
+  foreach ($lanes as $ln) {
+    $ctx = stream_context_create(['http' => [
+      'method' => 'POST', 'timeout' => 3, 'ignore_errors' => true,
+      'header' => "Host: orolado.com\r\nContent-Type: application/json\r\nAccept: application/json\r\n",
+      'content' => json_encode(['action' => 'bonus_all_bg', 'token' => $token, 'lane' => $ln]),
+    ]]);
+    @file_get_contents('http://127.0.0.1/admin.php', false, $ctx);
+  }
 }
 
 /** Chien de garde (fin des requêtes joueurs / admin) : envoi actif mais muet depuis 60 s → relancé. */
