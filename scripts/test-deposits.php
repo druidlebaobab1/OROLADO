@@ -79,6 +79,16 @@ credit_paid_deposit(['ref' => 'oro_test_2', 'amount' => 20, 'paid' => true, 'cre
 check('solde 150 → 170', abs($bank['real'][$uuid] - 170) < 0.001, (string) $bank['real'][$uuid]);
 check('2e dépôt : « Dépôt réussi » (20 $)', count($notes) === 2 && $notes[1][1] == 20.0, json_encode($notes));
 
+echo "4b) 2026-11-28 : minimum 3 $ pour LANCER un dépôt, mais un dépôt de 1 $ lancé AVANT puis payé est crédité\n";
+check('minimum pour lancer un dépôt = 3 $', orolado_min_deposit(null) === 3.0);
+foreach ([['oro_old_gp', 'geniuspay', 1.0], ['oro_old_mk', 'maketou', 2.0]] as [$ref, $op, $am]) {
+  $b0 = $bank['real'][$uuid];
+  with_db_lock(function ($box) use ($uuid, $ref, $op, $am) { $box->db['deposits'][] = ['id' => $ref, 'ref' => $ref, 'userId' => $uuid, 'amount' => $am, 'status' => 'PENDING', 'operator' => $op]; return ['ok' => true]; });
+  $rr = credit_paid_deposit(['ref' => $ref, 'amount' => $am, 'paid' => true, 'operator' => $op]);
+  check("dépôt $op de $am \$ déjà payé : crédité", abs($bank['real'][$uuid] - $b0 - $am) < 0.001, json_encode($rr) . ' ' . $bank['real'][$uuid]);
+}
+$notes = array_slice($notes, 0, 2);
+
 echo "5) L'e-mail « Dépôt réussi » : son nom + le montant\n";
 require_once $tmp . '/notify_lib.php';
 with_db_lock(function ($box) use ($uuid) { $box->db['users'][$uuid]['email'] = 'awa@example.com'; $box->db['users'][$uuid]['displayName'] = 'Awa'; $box->db['users'][$uuid]['lang'] = 'fr'; return ['ok' => true]; });
