@@ -1645,7 +1645,9 @@
     hi: ['लाइव', 'आगामी', 'आँकड़े', 'कोई लाइव मैच नहीं', 'अगला राउंड', 'सर्वश्रेष्ठ आक्रमण', 'सर्वश्रेष्ठ रक्षा', 'फ़ॉर्म में', 'प्रति मैच गोल', 'वर्चुअल', 'खेले गए मैच', 'गोल', 'घरेलू जीत', 'ड्रॉ', 'बाहर जीत', 'किए गोल', 'खाए गोल'],
     zh: ['直播', '即将开始', '统计', '暂无直播比赛', '下一轮开始于', '最佳进攻', '最佳防守', '状态火热', '场均进球', '虚拟', '已赛场次', '进球', '主场胜', '平局', '客场胜', '进球数', '失球数']
   };
-  function vfTag(s) { return s && (s.vf || s.sp === 'virt' || /^sb:virt:/.test(s.ev || '')) ? '<i class="vf-tag">' + esc(VX2().tag) + '</i>' : ''; }
+  // petit signe « virtuel » (coupon, Mes paris, reçu) : carré violet avec une manette — ne prend presque pas de place
+  var VFPAD = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7h9a4.5 4.5 0 0 1 4.4 5.5l-1 4.3a2.3 2.3 0 0 1-4 .9L14.6 16H9.4l-1.3 1.7a2.3 2.3 0 0 1-4-.9l-1-4.3A4.5 4.5 0 0 1 7.5 7z" fill="#fff"/><path d="M7.6 10v3.4M5.9 11.7h3.4" stroke="#6D28D9" stroke-width="1.6" stroke-linecap="round"/><circle cx="15.6" cy="10.8" r="1" fill="#6D28D9"/><circle cx="17.4" cy="12.8" r="1" fill="#6D28D9"/></svg>';
+  function vfTag(s) { return s && (s.vf || s.sp === 'virt' || /^sb:virt:/.test(s.ev || '') || /^virt:/.test(s.fx || '')) ? '<i class="vf-tag" title="' + esc(VX2().tag) + '" aria-label="' + esc(VX2().tag) + '">' + VFPAD + '</i>' : ''; }
   function VX2() { var a = VFL2[lg()] || VFL2.en; return { live: a[0], next: a[1], st: a[2], none: a[3], nextIn: a[4], att: a[5], def: a[6], form: a[7], gpm: a[8], tag: a[9], mp: a[10], goals: a[11], hw: a[12], dr: a[13], aw: a[14], gf: a[15], ga: a[16] }; }
   var vf = null, vfTeams = null, vfTab = '', vfSkew = 0, vfTm = 0, vfBusy = false;
   function vfSwitch(on) { var x = VX(); return '<div class="vf-sw" role="tablist"><button type="button" data-vsw="sport" class="' + (on ? '' : 'on') + '">⚽ ' + esc(x.sport) + '</button><button type="button" data-vsw="virt" class="vf-v' + (on ? ' on' : '') + '">🎮 ' + esc(x.virt) + '</button></div>'; }
@@ -1718,8 +1720,8 @@
     if (!vf || !vfTeams) return skelRows();
     if (vfTab === 'tb') {
       var tb = vf.tb;
-      return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(x.s) + ' ' + tb.S + '</span><span>' + esc(x.j) + ' ' + tb.played + '</span></div><div class="vf-tb"><div class="vf-tr th"><span>#</span><span></span><span>' + esc(x.p) + '</span><span>+/-</span><span>' + esc(x.pts) + '</span></div>' +
-        tb.rows.map(function (r, i) { return '<div class="vf-tr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<span>' + r.j + '</span><span>' + (r.bp - r.bc > 0 ? '+' : '') + (r.bp - r.bc) + '</span><span><b>' + r.pts + '</b></span></div>'; }).join('') + '</div>';
+      return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(x.s) + ' ' + tb.S + '</span><span>' + esc(x.j) + ' ' + tb.played + '</span></div><div class="vf-tb"><div class="vf-tr th"><span>#</span><span></span><span>' + esc(x.p) + '</span><span>' + esc(T18('sbFW', 'W')) + '</span><span>' + esc(T18('sbFD', 'D')) + '</span><span>' + esc(T18('sbFL', 'L')) + '</span><span>+/-</span><span>' + esc(x.pts) + '</span></div>' +
+        tb.rows.map(function (r, i) { return '<div class="vf-tr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<span>' + r.j + '</span><span>' + (r.v || 0) + '</span><span>' + (r.n || 0) + '</span><span>' + (r.d || 0) + '</span><span>' + (r.bp - r.bc > 0 ? '+' : '') + (r.bp - r.bc) + '</span><span><b>' + r.pts + '</b></span></div>'; }).join('') + '</div>';
     }
     if (vfTab === 'res') {
       return vf.res.map(function (d) {

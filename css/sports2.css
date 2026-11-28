@@ -1955,3 +1955,26 @@ html:root body #casinoModal .sp2 .vf-tabs2 button.on{background:linear-gradient(
 html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child::before{bottom:-4px}
 html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child{background:none;border-color:transparent}
 html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child::after{content:"";position:absolute;z-index:-1;inset:-1px;border-radius:10px;background:#15120d;border:1px solid #2f2a21;pointer-events:none}
+/* v3870 (propriétaire : « des couleurs et des logos dans la barre du bas ») — style 2 : petites cases carrées en couleur,
+   dessin blanc ; Coupon garde son grand rond doré ; la page choisie : libellé blanc + trait doré */
+html:root body #casinoModal .sp2 .pz-nav .pz-ni{width:32px;height:27px;border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 3px 8px -4px rgba(0,0,0,.8)}
+html:root body #casinoModal .sp2 .pz-nav .pz-ni svg{width:18px;height:18px;color:#fff;stroke:#fff}
+html:root body #casinoModal .sp2 .pz-nav [data-sv="home"] .pz-ni{background:linear-gradient(180deg,#FFB547,#F04E23)}
+html:root body #casinoModal .sp2 .pz-nav [data-sv="home"] .pz-ni svg{fill:#fff;stroke:none}
+html:root body #casinoModal .sp2 .pz-nav [data-sv="live"] .pz-ni{background:linear-gradient(180deg,#FF5A5F,#C1121F)}
+html:root body #casinoModal .sp2 .pz-nav [data-sv="mine"] .pz-ni{background:linear-gradient(180deg,#60A5FA,#1D4ED8)}
+html:root body #casinoModal .sp2 .pz-nav [data-sv="menu"] .pz-ni{background:linear-gradient(180deg,#A78BFA,#6D28D9)}
+html:root body #casinoModal .sp2 .pz-nav [data-sv="menu"] .pz-ni svg{stroke-width:2}
+html:root body #casinoModal .sp2 .pz-nav .pz-ni .pz-ld{top:-3px;inset-inline-end:-3px;width:8px;height:8px;background:#FDE047;box-shadow:0 0 0 2px rgba(15,13,9,.97)}
+html:root body #casinoModal .sp2 .pz-nav button:not(.on) .pz-ni{filter:saturate(.85) brightness(.92)}
+/* barre du bas : fond PLEIN (on ne voit plus les matchs à travers) */
+html:root body #casinoModal .sp2 .pz-nav{background:#0f0d09!important;isolation:isolate}
+/* étiquette « virtuel » : petit carré violet + manette (remplace le mot VIRTUEL, plus de risque de débordement) */
+html body .vf-tag,html body .sp-rcpt-mt i.vf-tag,html body .sp-rcpt i.vf-tag{display:inline-grid!important;place-items:center;flex:none!important;width:17px!important;height:14px!important;margin:0 5px 0 0!important;padding:0!important;border-radius:4px!important;background:linear-gradient(180deg,#8B5CF6,#6D28D9)!important;vertical-align:-2px;font-style:normal;overflow:hidden}
+html[dir=rtl] body .vf-tag{margin:0 0 0 5px!important}
+html body .vf-tag svg{width:13px;height:13px;display:block}
+html body #casinoModal .sp2 .pz-bar .vf-tag.vf-tagb{width:auto!important;height:auto!important;padding:3px 8px!important;font:800 10.5px/1.2 system-ui,sans-serif;color:#fff;letter-spacing:.3px;text-transform:uppercase}
+html body .sp-rcpt-mt i.vf-tag{margin-inline-end:0!important}
+html:root body #casinoModal .sp2 .vf-tabs2 button{padding:0 4px}html:root body #casinoModal .sp2 .vf-tabs2 button span{font-size:13px}html:root body #casinoModal .sp2 .vf-tabs2 .vf-ldot{margin-inline-end:4px}
+html body #casinoModal .sp2 .vf-tr{grid-template-columns:22px minmax(0,1fr) 24px 22px 22px 22px 32px 30px;gap:3px;padding:7px 8px}html body #casinoModal .sp2 .vf-tr .vf-tn{gap:5px}
+html:root body #casinoModal .sp2 .vf-tabs2 button span{line-height:1.45;padding-top:1px}
