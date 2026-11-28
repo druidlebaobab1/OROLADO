@@ -1938,3 +1938,8 @@ html body .sp-rcpt-mt i.vf-tag,html body .sp-rcpt i.vf-tag{flex:none!important;d
 /* v3867 : iPhone — la barre du solde recouvrait le haut de Sport / Virtuel (« il faut tirer l'écran ») : le bouton descend
    exactement de la partie cachée (même réglage que la recherche, mesuré par layoutVars) */
 html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child{margin-top:var(--sp2-qtop,0px)}
+/* v3867b : Virtuel — recherche, 6 onglets, Mes paris virtuels ; Sport / Virtuel jamais collé sous le solde */
+html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child{margin-top:max(4px,var(--sp2-qtop,0px))}
+html body #casinoModal .sp2 .pz-vf > .pz-q{margin:0}
+html body #casinoModal .sp2 .pz-bar .vf-tagb{margin-inline-start:8px;margin-inline-end:auto;font-size:10.5px;padding:2px 7px}
+html body #casinoModal .sp2 .vf-tabs2 button span{white-space:nowrap}

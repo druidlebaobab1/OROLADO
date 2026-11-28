@@ -35,13 +35,14 @@ const VF_TEAMS = [
   ['Corée du Sud', 'p', 78, '#DC2626', 'kr'], ['Chine', 'p', 68, '#DC2626', 'cn'], ['Arabie saoudite', 'p', 72, '#15803D', 'sa'], ['Maroc', 'p', 86, '#B91C1C', 'ma'],
   ['Sénégal', 'p', 84, '#16A34A', 'sn'], ['Côte d\'Ivoire', 'p', 83, '#F97316', 'ci'], ['Nigeria', 'p', 81, '#16A34A', 'ng'], ['Égypte', 'p', 80, '#DC2626', 'eg'],
   ['Cameroun', 'p', 78, '#15803D', 'cm'], ['Algérie', 'p', 79, '#16A34A', 'dz'], ['Ghana', 'p', 76, '#FACC15', 'gh'], ['Afrique du Sud', 'p', 74, '#FACC15', 'za'],
-  ['Madrid', 'c', 93, '#F8FAFC', ''], ['Barcelone', 'c', 90, '#1E3A8A', ''], ['Séville', 'c', 80, '#DC2626', ''], ['Manchester', 'c', 91, '#7DD3FC', ''],
-  ['Liverpool', 'c', 90, '#DC2626', ''], ['Londres', 'c', 89, '#EF4444', ''], ['Newcastle', 'c', 83, '#111827', ''], ['Munich', 'c', 91, '#DC2626', ''],
-  ['Dortmund', 'c', 84, '#FACC15', ''], ['Leverkusen', 'c', 85, '#DC2626', ''], ['Milan', 'c', 86, '#B91C1C', ''], ['Turin', 'c', 84, '#F8FAFC', ''],
-  ['Rome', 'c', 82, '#B45309', ''], ['Naples', 'c', 85, '#38BDF8', ''], ['Paris', 'c', 90, '#1E3A8A', ''], ['Marseille', 'c', 82, '#7DD3FC', ''],
-  ['Monaco', 'c', 81, '#DC2626', ''], ['Lille', 'c', 82, '#DC2626', ''], ['Lyon', 'c', 79, '#2563EB', ''], ['Amsterdam', 'c', 82, '#DC2626', ''],
-  ['Lisbonne', 'c', 83, '#DC2626', ''], ['Porto', 'c', 82, '#2563EB', ''], ['Istanbul', 'c', 80, '#FACC15', ''], ['Glasgow', 'c', 76, '#16A34A', ''],
-  ['Bruges', 'c', 75, '#1D4ED8', ''], ['Eindhoven', 'c', 72, '#DC2626', ''], ['Valence', 'c', 72, '#F59E0B', ''], ['Buenos Aires', 'c', 73, '#38BDF8', ''],
+  // 2026-11-28 (propriétaire : « uniquement des noms de pays ») : plus aucune ville — 60 sélections nationales (mêmes niveaux qu'avant, résultats inchangés)
+  ['Danemark', 'p', 93, '#DC2626', 'dk'], ['Suisse', 'p', 90, '#DC2626', 'ch'], ['Grèce', 'p', 80, '#2563EB', 'gr'], ['Suède', 'p', 91, '#FACC15', 'se'],
+  ['Pologne', 'p', 90, '#DC2626', 'pl'], ['Autriche', 'p', 89, '#DC2626', 'at'], ['Hongrie', 'p', 83, '#16A34A', 'hu'], ['Turquie', 'p', 91, '#DC2626', 'tr'],
+  ['Ukraine', 'p', 84, '#FACC15', 'ua'], ['Serbie', 'p', 85, '#DC2626', 'rs'], ['Norvège', 'p', 86, '#DC2626', 'no'], ['Tchéquie', 'p', 84, '#2563EB', 'cz'],
+  ['Roumanie', 'p', 82, '#FACC15', 'ro'], ['Chili', 'p', 85, '#DC2626', 'cl'], ['Canada', 'p', 90, '#DC2626', 'ca'], ['Irlande', 'p', 82, '#16A34A', 'ie'],
+  ['Slovaquie', 'p', 81, '#2563EB', 'sk'], ['Équateur', 'p', 82, '#FACC15', 'ec'], ['Paraguay', 'p', 79, '#DC2626', 'py'], ['Australie', 'p', 82, '#FACC15', 'au'],
+  ['Pérou', 'p', 83, '#DC2626', 'pe'], ['Iran', 'p', 82, '#16A34A', 'ir'], ['Slovénie', 'p', 80, '#2563EB', 'si'], ['Qatar', 'p', 76, '#7F1D1D', 'qa'],
+  ['Costa Rica', 'p', 75, '#2563EB', 'cr'], ['Venezuela', 'p', 72, '#7F1D1D', 've'], ['Islande', 'p', 72, '#2563EB', 'is'], ['Jamaïque', 'p', 73, '#FACC15', 'jm'],
   // 2026-11-28 : 4 pays populaires de plus (ligue de 60, à partir de VF_V2)
   ['Tunisie', 'p', 76, '#DC2626', 'tn'], ['Mali', 'p', 75, '#16A34A', 'ml'], ['RD Congo', 'p', 75, '#38BDF8', 'cd'], ['Burkina Faso', 'p', 73, '#DC2626', 'bf'],
 ];
