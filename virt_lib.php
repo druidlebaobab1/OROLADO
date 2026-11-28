@@ -20,7 +20,7 @@ const VF_MATCH = 600;          // match : 10 min réelles (2 × 5 min)
 const VF_CLOSE = 10;           // avant-match fermé 10 s avant le coup d'envoi
 const VF_LIVE_END = 88;        // paris en direct jusqu'à la 88e minute (propriétaire : moins de cadenas)
 const VF_GOAL_LOCK = 4;        // marchés suspendus 4 s après un but (le serveur recalcule toujours la cote au moment du pari)
-const VF_MARGE = 0.08;         // marge maison des matchs virtuels (propriétaire : 8 %)
+const VF_MARGE = 0.15;         // marge maison des matchs virtuels (propriétaire, 2026-11-28 : 15 % ; avant 8 %)
 const VF_ROUNDS = 55;          // ligue 1 (56 équipes) : 55 journées
 const VF_V2 = 40;              // 2026-11-28 (propriétaire : « 60 équipes ») : à partir de la journée 40 (10 h 00 GMT), 60 équipes / 59 journées
 /* 2026-11-28 (propriétaire : « mélange les pays et les grands clubs, c'est ce qui fera la spécialité d'OROLADO ») : à partir de la
