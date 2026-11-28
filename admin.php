@@ -705,6 +705,7 @@ function admin_wdx_payload(array $req): array {
   $wds = admin_withdrawals();
   $health = admin_wd_health();
   $pmap = admin_profile_map();
+  $vaultsX = function_exists('admin_vaults') ? admin_vaults() : []; // 2026-11-28 (propriétaire) : solde actuel du joueur sur chaque carte
   $suspects = admin_suspects();
   $now = time();
   $tab = (string) ($req['tab'] ?? 'pending');
@@ -773,6 +774,7 @@ function admin_wdx_payload(array $req): array {
       'name' => (string) ($w['name'] ?? ''),
       'email' => (string) ($w['email'] ?? ''),
       'amount' => round((float) ($w['amount'] ?? 0), 2),
+      'bal' => round((float) (($vaultsX[$uid] ?? [])['real'] ?? 0), 2),
       'loc' => $loc,
       'method' => admin_method_label(admin_fill((string) ($w['operator'] ?? ''))),
       'dest' => admin_fill((string) ($w['phone'] ?? '')),
@@ -1049,7 +1051,7 @@ function admin_list_payload_raw(string $view, array $req): array {
   if (str_starts_with($view, 'gift_')) return admin_gift_payload($view, $req, admin_profiles());
   if ($view === 'xfer_list') return admin_xfer_payload($req);
   $needPeople = !in_array($view, ['alerts', 'otp_mails', 'payout_stats', 'games', 'trade_minutes', 'messages'], true);
-  $needVaults = !in_array($view, ['alerts', 'otp_mails', 'dep_today', 'dep_yesterday', 'dep_pending', 'dep_failed', 'dep_all', 'dep_method', 'messages', 'traffic'], true);
+  $needVaults = !in_array($view, ['alerts', 'otp_mails', 'dep_method', 'messages', 'traffic'], true); // 2026-11-28 : dépôts aussi (colonne « Solde actuel »)
   $needWds = str_starts_with($view, 'wd_') || str_starts_with($view, 'profit_');
   $needDeps = str_starts_with($view, 'dep_') || str_starts_with($view, 'profit_');
   $needOrders = in_array($view, ['open_positions', 'payout_stats', 'games', 'top_winners', 'trade_minutes', 'wd_suspect'], true);
@@ -1352,7 +1354,7 @@ function admin_list_payload_raw(string $view, array $req): array {
     if (in_array($view, ['dep_today', 'dep_yesterday', 'dep_pending', 'dep_failed', 'dep_all'], true)) {
     // 2026-11-26 (propriétaire : « je ne vois pas mes chiffres ») : les références GeniusPay (gp_u…, 40 lettres) prenaient toute la
     // largeur du téléphone → seuls Réf. et ID se voyaient. Heure et montant d'abord, référence raccourcie à la fin.
-    $cols = ['Heure', 'Montant', 'Pays', 'ID', 'Méthode', 'Statut', 'E-mail', 'Réf.']; // 2026-11-24 (propriétaire) : drapeau du pays
+    $cols = ['Heure', 'Montant', 'Solde actuel', 'Pays', 'ID', 'Méthode', 'Statut', 'E-mail', 'Réf.']; // 2026-11-24 (propriétaire) : drapeau du pays ; 2026-11-28 : solde actuel du joueur
     $list = $deps;
     // 2026-11-20 (propriétaire) : les dépôts échoués / abandonnés (FAILED, EXPIRED, CANCELLED…, ou en attente depuis plus de
     // 24 h sans paiement) ne sont plus mêlés aux listes : ils vont dans un volet fermé « ▸ Dépôts échoués / abandonnés (N) ».
@@ -1398,6 +1400,7 @@ function admin_list_payload_raw(string $view, array $req): array {
         'cells' => [
           admin_when_short((string) ($d['createdAt'] ?? '')),
           admin_money($d['amount']),
+          admin_money((float) (($pmap[(string) ($d['userId'] ?? '')] ?? [])['real'] ?? 0)),
           admin_country_cell(admin_user_lookup((string) ($d['userId'] ?? ''), $pmap)),
           (string) ($d['publicId'] ?? ''),
           admin_dep_channel_row($d),
@@ -1565,7 +1568,7 @@ function admin_list_payload_raw(string $view, array $req): array {
     // 2026-11-26 (propriétaire : « j'ai payé des retraits aujourd'hui et ça affiche hier ») : heure du PAIEMENT et montant d'abord
     // (lisibles sur téléphone), le reste ensuite.
     $paidView = in_array($view, ['wd_today', 'wd_yesterday'], true);
-    $cols = [$paidView ? 'Payé' : 'Demandé', 'Montant', 'Nom', 'Joueur', 'Méthode', 'Destination', 'État', 'Statut', 'E-mail', 'ID retrait'];
+    $cols = [$paidView ? 'Payé' : 'Demandé', 'Montant', 'Solde actuel', 'Nom', 'Joueur', 'Méthode', 'Destination', 'État', 'Statut', 'E-mail', 'ID retrait']; // 2026-11-28 (propriétaire) : solde actuel du joueur, sans ouvrir sa fiche
     $list = $wds;
     $ordersByUser = [];
     foreach ($orders as $o) {
@@ -1638,6 +1641,7 @@ function admin_list_payload_raw(string $view, array $req): array {
         'cells' => [
           admin_when_short((string) ($w['createdAt'] ?? '')),
           admin_money($w['amount']) . admin_wd_local($w),
+          admin_money((float) (($pmap[(string) ($w['userId'] ?? '')] ?? [])['real'] ?? 0)),
           (string) ($w['name'] ?? '—'),
           (string) ($w['publicId'] ?? ''),
           $method !== '' ? $method : '—',
@@ -7334,6 +7338,7 @@ function gmPlayerInit(u) {
       '<div class="wdx-h"><span class="wdx-amt">' + esc(m2(r.amount)) + '</span>' + (r.loc ? '<span class="wdx-loc">' + esc(r.loc) + '</span>' : '') +
       (pend ? '<span class="wdx-age ' + ageCls(r.ageH) + '">⏱ ' + esc(ageTxt(r.ageH)) + '</span>' : '<span class="wdx-age">' + esc(ST[r.state] || r.status) + '</span>') + '</div>' +
       '<div class="wdx-l"><span>Joueur</span><b>' + esc(who) + (r.email ? '<br><small style="color:#8B95B5;font-weight:500">' + esc(r.email) + '</small>' : '') + '</b></div>' +
+      (r.bal != null ? '<div class="wdx-l"><span>Solde actuel</span><b style="color:#4ADE80">' + esc(m2(r.bal)) + '</b></div>' : '') +
       '<div class="wdx-l"><span>Méthode</span><b>' + esc(r.method || '—') + '</b></div>' +
       '<div class="wdx-l"><span>Vers</span><b class="wdx-dest">' + esc(r.dest || '—') + (r.dest ? ' <button type="button" class="wdx-cp" data-cp="' + i + '">Copier</button>' : '') + '</b></div>' +
       '<div class="wdx-l"><span>Demandé</span><b>' + esc(fdate(r.createdAt)) + '</b></div>';
