@@ -1,0 +1,168 @@
+<?php
+declare(strict_types=1);
+// Script de test : uniquement en ligne de commande, jamais depuis internet.
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
+/**
+ * v2625 — Flutterwave : le serveur demande un LIEN de paiement (page ouverte en plein, pour que Wave s'ouvre),
+ * et garde l'ancienne fenêtre en secours si Flutterwave ne donne pas de lien. Faux Flutterwave, dossier temporaire.
+ */
+$tmp = sys_get_temp_dir() . '/orolado_flw_' . bin2hex(random_bytes(4));
+mkdir($tmp . '/data', 0755, true);
+foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
+putenv('SUPABASE_URL=https://fake.supabase.test');
+putenv('SUPABASE_SERVICE_ROLE_KEY=fake-service-key');
+putenv('FLW_SECRET_KEY=faux-secret-de-test');
+putenv('FLW_PUBLIC_KEY=faux-public-de-test');
+// Fausse caisse Supabase (en mémoire) : vrai crédit testé jusqu'au solde.
+$GLOBALS['BANK'] = ['aaaaaaaa-1111-2222-3333-444444444444' => 0.0];
+$GLOBALS['OROLADO_FAKE_HTTP'] = function (string $url, ?string $body, string $method) {
+  $b = $body ? json_decode($body, true) : [];
+  if (preg_match('#/rest/v1/vaults\?user_id=eq\.([^&]+)#', $url, $m)) {
+    $u = rawurldecode($m[1]);
+    return isset($GLOBALS['BANK'][$u]) ? [['demo' => 0, 'real' => $GLOBALS['BANK'][$u]]] : [];
+  }
+  if (str_contains($url, '/rpc/resolve_trade')) {
+    static $keys = [];
+    $u = $b['p_user'];
+    if (isset($keys[$b['p_order']])) return ['ok' => true, 'duplicate' => true, 'real' => $GLOBALS['BANK'][$u]];
+    $keys[$b['p_order']] = 1;
+    $GLOBALS['BANK'][$u] = round(($GLOBALS['BANK'][$u] ?? 0) + $b['p_amount'], 2);
+    return ['ok' => true, 'real' => $GLOBALS['BANK'][$u]];
+  }
+  return [];
+};
+$calls = [];
+$mode = 'ok';
+$GLOBALS['OROLADO_FAKE_FLW'] = function (string $method, string $path, ?array $body) use (&$calls, &$mode) {
+  $calls[] = [$method, $path, $body];
+  if ($method === 'POST' && str_starts_with($path, '/charges?type=mobile_money_franco')) {
+    if (($body['network'] ?? '') === 'WAVE') return ['status' => 'success', 'data' => ['status' => 'pending'], 'meta' => ['authorization' => ['mode' => 'redirect', 'redirect_url' => 'https://pay.wave.com/c/cos-test123']], '_http' => 200];
+    return ['status' => 'success', 'data' => ['status' => 'pending'], 'meta' => ['authorization' => ['mode' => 'callback', 'redirect_url' => null]], '_http' => 200];
+  }
+  if ($method === 'GET' && str_starts_with($path, '/transactions?')) { return ['status' => 'success', 'data' => $GLOBALS['FLW_LIST'] ?? [], 'meta' => ['page_info' => ['total_pages' => 1]], '_http' => 200]; }
+  if ($method === 'GET' && str_starts_with($path, '/transactions/verify_by_reference')) {
+    parse_str((string) parse_url($path, PHP_URL_QUERY), $q);
+    $paid = $GLOBALS['FLW_PAID'][$q['tx_ref'] ?? ''] ?? null;
+    if (!$paid) return ['status' => 'success', 'data' => ['status' => 'pending', 'tx_ref' => $q['tx_ref'] ?? ''], '_http' => 200];
+    return ['status' => 'success', 'data' => ['status' => 'successful', 'tx_ref' => $q['tx_ref'], 'id' => 99001, 'currency' => $GLOBALS['FLW_CUR'][$q['tx_ref']] ?? 'XOF', 'amount' => $paid, 'charged_amount' => $paid], '_http' => 200];
+  }
+  if ($method === 'POST' && $path === '/payments') {
+    if ($mode === 'ok') return ['status' => 'success', 'data' => ['link' => 'https://checkout.flutterwave.com/v3/hosted/pay/abc123'], '_http' => 200];
+    if ($mode === 'pirate') return ['status' => 'success', 'data' => ['link' => 'https://evil.example.com/pay'], '_http' => 200];
+    return ['status' => 'error', '_http' => 500];
+  }
+  return ['_http' => 404];
+};
+require $tmp . '/orolado_lib.php';
+
+$pass = 0; $fail = 0;
+function check(string $w, bool $ok, string $d = ''): void { global $pass, $fail; $ok ? $pass++ : $fail++; echo ($ok ? '  OK   ' : '  ÉCHEC ') . $w . ($d !== '' ? "  ($d)" : '') . "\n"; }
+
+$uid = 'aaaaaaaa-1111-2222-3333-444444444444';
+$db = blank_db();
+$db['users'][$uid] = ['id' => $uid, 'email' => 'awa@yahoo.fr', 'role' => 'user', 'displayName' => 'Awa Kone', 'country' => 'CI', 'phone' => '+2250701020304'];
+$db['sessions']['tokF'] = ['userId' => $uid, 'createdAt' => date('c')];
+save_db(orolado_data_file(), $db);
+
+echo "1) Lien de paiement Flutterwave (page en plein → Wave peut s'ouvrir)\n";
+$r = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => 'CI', 'currency' => 'XOF']);
+check('réponse OK avec un lien flutterwave.com', !empty($r['ok']) && str_starts_with((string) ($r['link'] ?? ''), 'https://checkout.flutterwave.com/'), (string) ($r['link'] ?? json_encode($r)));
+$p = null; foreach ($calls as $c) if ($c[1] === '/payments') $p = $c[2];
+check('même référence, montant 1 800 FCFA en XOF, retour vers /api/flutterwave/callback', is_array($p) && $p['tx_ref'] === $r['tx_ref'] && (int) $p['amount'] === 1800 && $p['currency'] === 'XOF' && str_ends_with((string) $p['redirect_url'], '/api/flutterwave/callback'), json_encode($p));
+check('dépôt enregistré en attente (crédit seulement après vérification Flutterwave)', (function () use ($r) { foreach (load_db()['deposits'] ?? [] as $d) if (($d['id'] ?? '') === $r['tx_ref']) return $d['status'] === 'PENDING'; return false; })());
+
+echo "2) Secours\n";
+$mode = 'panne';
+// 2026-11-12 : ligne « carte bancaire » → Flutterwave en carte seulement, quel que soit le pays.
+foreach (['CI', 'NG', 'GH', 'FR', 'US'] as $ccC) {
+  $calls = [];
+  $rC = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => $ccC, 'cardOnly' => 1]);
+  $pC = null; foreach ($calls as $cl) if (($cl[1] ?? '') === '/payments') $pC = $cl[2];
+  check('carte bancaire (' . $ccC . ') : page Flutterwave « card » seulement', !empty($rC['ok']) && ($rC['payment_options'] ?? '') === 'card' && is_array($pC) && ($pC['payment_options'] ?? '') === 'card', json_encode([$rC['payment_options'] ?? null, $pC['payment_options'] ?? null]));
+}
+$calls = [];
+$rN = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => 'CI', 'currency' => 'XOF']);
+check('bouton Mobile Money (CI) : toujours carte + mobile money comme avant', ($rN['payment_options'] ?? '') === 'card,mobilemoneyfranco');
+$r = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => 'CI', 'currency' => 'XOF']);
+check('Flutterwave ne donne pas de lien : ancienne fenêtre gardée (inline + clé publique)', !empty($r['ok']) && ($r['link'] ?? 'x') === '' && !empty($r['inline']) && ($r['public_key'] ?? '') !== '', json_encode(['link' => $r['link'] ?? null]));
+$mode = 'pirate';
+$r = orolado_flutterwave_checkout(['token' => 'tokF', 'amount' => 3, 'country' => 'CI', 'currency' => 'XOF']);
+check('lien qui n’est pas flutterwave.com : refusé', ($r['link'] ?? 'x') === '', (string) ($r['link'] ?? ''));
+
+echo "3) v2626 — Mobile Money Flutterwave EN DIRECT (Wave ouvert en plein)\n";
+$calls = [];
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '2250701020304']);
+$c = null; foreach ($calls as $x) if (str_starts_with($x[1], '/charges')) $c = $x[2];
+check('Wave : lien pay.wave.com renvoyé au site', !empty($r['ok']) && $r['redirect'] === 'https://pay.wave.com/c/cos-test123', json_encode($r));
+check('demande : CI, XOF, 1 800, réseau WAVE, numéro 2250701020304, retour /api/flutterwave/callback', is_array($c) && $c['country'] === 'CI' && $c['currency'] === 'XOF' && (int) $c['amount'] === 1800 && $c['network'] === 'WAVE' && $c['phone_number'] === '2250701020304' && str_ends_with((string) $c['redirect_url'], '/api/flutterwave/callback'), json_encode($c));
+check('dépôt Flutterwave en attente avec la même référence', (function () use ($r) { foreach (load_db()['deposits'] ?? [] as $d) if (($d['id'] ?? '') === $r['ref']) return $d['status'] === 'PENDING' && $d['operator'] === 'flutterwave' && (int) $d['payAmount'] === 1800; return false; })());
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'orange', 'phone' => '0701020304']);
+check('Orange (sans lien) : OK, validation sur le téléphone, numéro 10 chiffres accepté', !empty($r['ok']) && $r['redirect'] === '' && $r['mode'] === 'callback', json_encode($r));
+$calls = [];
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '221770000000']);
+$c = null; foreach ($calls as $x) if (str_starts_with($x[1], '/charges')) $c = $x[2];
+check('v2629 Sénégal (+221, 9 chiffres) : envoyé comme SN / XOF / WAVE, sans se mélanger avec la Côte d’Ivoire', !empty($r['ok']) && is_array($c) && $c['country'] === 'SN' && $c['currency'] === 'XOF' && $c['network'] === 'WAVE' && $c['phone_number'] === '221770000000', json_encode($c));
+echo "4) v2631 — Côte d'Ivoire et Sénégal ne se mélangent jamais\n";
+$cas = [
+  ['2250701020304', true, 'CI', 'CI : 225 + 10 chiffres'],
+  ['0701020304', true, 'CI', 'CI : 10 chiffres sans indicatif'],
+  ['221770000000', true, 'SN', 'SN : 221 + 9 chiffres'],
+  ['2210701020304', false, '', 'SN choisi + numéro ivoirien (10 chiffres) : refusé'],
+  ['22577000000', false, '', 'CI choisi + numéro sénégalais (9 chiffres) : refusé'],
+  ['22670000000', false, '', 'Burkina avec Wave : refusé'],
+  ['22507010203041', false, '', 'CI avec un chiffre de trop (11) : refusé'],
+  ['2210770000000', false, '', 'SN avec un chiffre de trop (10) : refusé'],
+];
+foreach ($cas as [$ph, $ok, $want, $label]) {
+  $calls = [];
+  $r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => $ph]);
+  $c = null; foreach ($calls as $x) if (str_starts_with($x[1], '/charges')) $c = $x[2];
+  $good = $ok ? (!empty($r['ok']) && is_array($c) && $c['country'] === $want) : (empty($r['ok']) && $c === null);
+  check($label, $good, $ok ? (string) ($c['country'] ?? json_encode($r)) : (string) ($r['code'] ?? ''));
+}
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '123']);
+check('numéro invalide : refusé avant Flutterwave', empty($r['ok']) && ($r['code'] ?? '') === 'phone', json_encode($r));
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 0.5, 'network' => 'wave', 'phone' => '0701020304']);
+check('v3020 : moins de 1 $ : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'min');
+$r = orolado_flutterwave_momo_charge(['token' => 'mauvais', 'amount' => 3, 'network' => 'wave', 'phone' => '0701020304']);
+check('sans connexion : refusé', empty($r['ok']) && ($r['code'] ?? '') === 'session');
+
+echo "5) v2634 — rattrapage Flutterwave (joueur payé mais pas revenu sur le site)\n";
+$GLOBALS['FLW_PAID'] = [];
+$r = orolado_flutterwave_momo_charge(['token' => 'tokF', 'amount' => 3, 'network' => 'wave', 'phone' => '2250701020304']);
+$refW = (string) ($r['ref'] ?? '');
+$GLOBALS['FLW_PAID'][$refW] = 1800;
+$stat = function (string $ref): string { foreach (load_db()['deposits'] ?? [] as $d) if (($d['id'] ?? '') === $ref) return (string) $d['status']; return '?'; };
+@unlink(orolado_data_dir() . '/rate_flwrecheck__' . substr(hash('sha256', 'aaaaaaaa-1111-2222-3333-444444444444'), 0, 1) . '.json');
+$x = orolado_flw_recheck(['token' => 'tokF']);
+check('payé chez Flutterwave → crédité sans que le joueur revienne', in_array($stat($refW), ['COMPLETED', 'PAID'], true), json_encode($x) . ' ' . $stat($refW));
+check('solde du joueur : +3 $', abs($GLOBALS['BANK']['aaaaaaaa-1111-2222-3333-444444444444'] - 3) < 0.001, (string) $GLOBALS['BANK']['aaaaaaaa-1111-2222-3333-444444444444']);
+$x2 = orolado_flw_recheck(['token' => 'tokF']);
+check('2e passage tout de suite : limité, pas de double', !empty($x2['skipped']), json_encode($x2));
+@unlink(orolado_data_dir() . '/rate_flwrecheck__' . substr(hash('sha256', 'aaaaaaaa-1111-2222-3333-444444444444'), 0, 1) . '.json');
+orolado_flw_recheck(['token' => 'tokF']);
+check('repassé plus tard : toujours +3 $ (jamais crédité 2 fois)', abs($GLOBALS['BANK']['aaaaaaaa-1111-2222-3333-444444444444'] - 3) < 0.001, (string) $GLOBALS['BANK']['aaaaaaaa-1111-2222-3333-444444444444']);
+
+echo "v3625) Rapprochement depuis la liste Flutterwave (transactions « successful »)\n";
+with_db_lock(function ($box) { $box->db['deposits'][] = ['id' => 'flw_rc_1', 'ref' => 'flw_rc_1', 'userId' => 'u_rc', 'operator' => 'flutterwave', 'status' => 'PENDING', 'amount' => 15, 'currency' => 'USD', 'at' => date('c')]; $box->db['users']['u_rc'] = ['id' => 'u_rc', 'email' => 'rc@test.com', 'role' => 'user', 'sbId' => 'dddddddd-0000-0000-0000-00000000000d']; $box->db['vault']['u_rc'] = ['demo' => 0, 'real' => 0]; return ['ok' => true]; });
+$GLOBALS['FLW_LIST'] = [['id' => 5551, 'tx_ref' => 'flw_rc_1', 'status' => 'successful', 'currency' => 'XOF', 'amount' => orolado_usd_to_cfa_int(15), 'customer' => ['email' => 'rc@test.com']], ['id' => 5552, 'tx_ref' => 'zzz_inconnu', 'status' => 'successful', 'currency' => 'XOF', 'amount' => 6000, 'customer' => ['email' => 'p@q.com']]];
+$GLOBALS['FLW_PAID']['flw_rc_1'] = orolado_usd_to_cfa_int(15);
+$GLOBALS['BANK']['dddddddd-0000-0000-0000-00000000000d'] = 0;
+$rc = orolado_pay_reconcile(7, ['u_rc']);
+$stRc = ''; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['id'] ?? '') === 'flw_rc_1') $stRc = (string) $dd['status'];
+check('dépôt Wave payé (liste Flutterwave) → crédité', $stRc === 'COMPLETED', $stRc . ' ' . json_encode($rc['rows'] ?? [], JSON_UNESCAPED_UNICODE));
+check('paiement inconnu montré, pas crédité', count($rc['unknown'] ?? []) === 1, json_encode($rc['unknown'] ?? [], JSON_UNESCAPED_UNICODE));
+$rc2 = orolado_pay_reconcile(7, ['u_rc']);
+check('2e passage : déjà crédité', ($rc2['credited'] ?? 1) == 0, json_encode($rc2['rows'] ?? [], JSON_UNESCAPED_UNICODE));
+
+echo "v3627 (audit) Payer 1 EUR sur un dépôt de 1000 $ (même référence)\n";
+with_db_lock(function ($box) { $box->db['deposits'][] = ['id' => 'flw_eur_1', 'ref' => 'flw_eur_1', 'userId' => 'u_rc', 'operator' => 'flutterwave', 'status' => 'PENDING', 'amount' => 1000, 'currency' => 'USD', 'at' => date('c')]; return ['ok' => true]; });
+$GLOBALS['FLW_PAID']['flw_eur_1'] = 1; $GLOBALS['FLW_CUR']['flw_eur_1'] = 'EUR';
+$before = $GLOBALS['BANK']['dddddddd-0000-0000-0000-00000000000d'] ?? 0;
+$pf = orolado_flutterwave_verify('flw_eur_1', '');
+orolado_flutterwave_credit('flw_eur_1', (string) ($pf['extId'] ?? ''), (float) ($pf['amount_usd'] ?? 0));
+$stE = ''; foreach (load_db(orolado_data_file())['deposits'] as $dd) if (($dd['id'] ?? '') === 'flw_eur_1') $stE = (string) $dd['status'];
+check('1 EUR (monnaie non reconnue) → pas crédité, reste en attente', $stE === 'PENDING' && (($GLOBALS['BANK']['dddddddd-0000-0000-0000-00000000000d'] ?? 0) - $before) == 0, $stE);
+
+echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
+exit($fail ? 1 : 0);

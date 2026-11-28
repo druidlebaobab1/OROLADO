@@ -2872,6 +2872,10 @@ if ($action === 'oxapayRecheck') {
   if (function_exists('orolado_maketou_recheck')) {
     try { $oxaRe['maketou'] = orolado_maketou_recheck(['token' => $token] + $req); } catch (Throwable $eMk) { /* jamais bloquant */ }
   }
+  // v2634 : rattrapage des dépôts Flutterwave (Wave, Mobile Money, carte) payés mais pas encore crédités.
+  if (function_exists('orolado_flw_recheck')) {
+    try { $oxaRe['flutterwave'] = orolado_flw_recheck(['token' => $token] + $req); } catch (Throwable $eFw) { /* jamais bloquant */ }
+  }
   // 2026-11-19 : rattrapage des dépôts GeniusPay payés mais pas encore crédités.
   if (function_exists('orolado_geniuspay_recheck')) {
     try { $oxaRe['geniuspay'] = orolado_geniuspay_recheck(['token' => $token] + $req); } catch (Throwable $eGp) { /* jamais bloquant */ }
@@ -2896,5 +2900,24 @@ if ($action === 'oxapayStatus') {
   exit;
 }
 
-// 2026-11-28 : actions flutterwave* supprimées (Flutterwave retiré du site) → « Action inconnue ».
+if ($action === 'flutterwaveMomo') {
+  echo json_encode(orolado_flutterwave_momo_charge(['token' => $token] + $req));
+  exit;
+}
+
+if ($action === 'flutterwaveCheckout' || $action === 'flutterwaveCharge') {
+  echo json_encode(orolado_flutterwave_checkout(['token' => $token] + $req));
+  exit;
+}
+
+if ($action === 'flutterwaveStatus') {
+  echo json_encode(orolado_confirm_deposit(['token' => $token] + $req));
+  exit;
+}
+
+if ($action === 'flutterwaveVerify') {
+  echo json_encode(orolado_flutterwave_client_verify(['token' => $token] + $req));
+  exit;
+}
+
 echo json_encode(['ok' => false, 'server' => true, 'reason' => 'Action inconnue']);
