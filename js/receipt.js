@@ -612,6 +612,7 @@
   // L'image est préparée dès l'ouverture du reçu : le partage part tout de suite au toucher
   // (sur iPhone, un partage lancé trop tard après le toucher est refusé).
   function withBlob(fn) {
+    if (current.pend && !current.canvas) return current.pend.then(function () { return withBlob(fn); }); // reçu encore en dessin : on l'attend
     if (current.blob) return fn(current.blob);
     return toBlob().then(function (b) { if (b) current.blob = b; return b ? fn(b) : null; });
   }
@@ -674,7 +675,7 @@
     return Promise.all([fontsReady(), logo()]).then(function (res) {
       return build(res[1]);
     }).then(function (cv) {
-      current.canvas = cv; current.name = name; current.blob = null;
+      current.canvas = cv; current.name = name; current.blob = null; current.pend = null;
       try { cv.toBlob(function (bb) { if (current.canvas === cv) current.blob = bb; }, 'image/png'); } catch (eB) { /* ignore */ }
       var img = new Image();
       img.className = 'rc-img';
@@ -887,11 +888,16 @@
     // reçu de pari BLANC : image préparée à l'ouverture (le toucher « Télécharger » part tout de suite, iPhone compris)
     prepBet: function (bt, x) {
       if (!bt) return;
-      return Promise.all([fontsReady(), logo()]).then(function (res) {
+      // 2026-11-28 (propriétaire : « en téléchargeant, la manette disparaît ») : l'ancienne image est oubliée TOUT DE SUITE et
+      // « Télécharger » attend le dessin de CE reçu (avant : un appui rapide enregistrait l'image d'un reçu précédent)
+      current.canvas = null; current.blob = null;
+      var pr = current.pend = Promise.all([fontsReady(), logo()]).then(function (res) {
         var cv = drawBetLight(bt, x || {}, { logo: res[1] });
+        if (current.pend !== pr) return;
         current.canvas = cv; current.name = 'orolado-pari-' + String(bt.id || Date.now()).slice(-8) + '.png'; current.blob = null;
         try { cv.toBlob(function (bb) { if (current.canvas === cv) current.blob = bb; }, 'image/png'); } catch (e) { /* ignore */ }
       });
+      return pr;
     },
     saveBet: function () { return download(); },
     dlLabel: function () { return L().dl; },

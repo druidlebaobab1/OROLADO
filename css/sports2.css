@@ -2048,3 +2048,6 @@ html:root body #casinoModal .sp2 .pz-cs2 .pz-ob{min-width:0}
 /* v3883 : chiffres qui évoluent (règle générale, voir NUMSEL dans sports.js) — une ligne, jamais hors de leur case */
 .pz-min,.pz-sc,.pz-ov,.pz-msc,#pzSc,#pzSc2,#pzClk,#pzClk2,#pzPer,#pzMinT,#pzAdd,.pz-n,.pz-sbn,.vf-g > b,.pz-te em,.pz-in,.pz-rt > b,.vf-tr > span,.vf-tr b,.vf-kpi b,.vf-sr > b,.vf-sc b,.vf-tabs2 em,.vf-st em,.vf-bm > b,.vf-cmp p > b,.vf-jd > b,.sp2-st b,.pz-msum b,.sp2-bf b,.pz-rcol em,.sp-rcpt-sc{max-width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:clip}
 html:root body #casinoModal .sp2 .vf-st em,html:root body #casinoModal .sp2 .pz-in,html:root body #casinoModal .sp2 .vf-tabs2 em{display:inline-block;vertical-align:bottom}
+html:root body #casinoModal .sp2 .pz-msum p{padding-left:5px;padding-right:5px}
+html:root body #casinoModal .sp2 .sp2-st button{padding-left:3px!important;padding-right:3px!important}
+html:root body #casinoModal .sp2 .sp2-st button > span.fit{max-width:100%;overflow:hidden;white-space:nowrap}
