@@ -80,7 +80,7 @@ check('solde 150 → 170', abs($bank['real'][$uuid] - 170) < 0.001, (string) $ba
 check('2e dépôt : « Dépôt réussi » (20 $)', count($notes) === 2 && $notes[1][1] == 20.0, json_encode($notes));
 
 echo "4b) 2026-11-28 : GeniusPay minimum 3 $ pour LANCER un dépôt, mais un dépôt de 1 $ lancé AVANT puis payé est crédité\n";
-check('GeniusPay : minimum 3 $ ; Maketou : comme avant', OROLADO_DEP_MIN === 3.0 && orolado_min_deposit(null) === 1.0);
+check('GeniusPay : minimum 3 $ ; Flutterwave / Maketou : 1 $ comme avant', OROLADO_DEP_MIN === 3.0 && orolado_min_deposit(null) === 1.0);
 foreach ([['oro_old_gp', 'geniuspay', 1.0], ['oro_old_mk', 'maketou', 2.0]] as [$ref, $op, $am]) {
   $b0 = $bank['real'][$uuid];
   with_db_lock(function ($box) use ($uuid, $ref, $op, $am) { $box->db['deposits'][] = ['id' => $ref, 'ref' => $ref, 'userId' => $uuid, 'amount' => $am, 'status' => 'PENDING', 'operator' => $op]; return ['ok' => true]; });
@@ -88,14 +88,6 @@ foreach ([['oro_old_gp', 'geniuspay', 1.0], ['oro_old_mk', 'maketou', 2.0]] as [
   check("dépôt $op de $am \$ déjà payé : crédité", abs($bank['real'][$uuid] - $b0 - $am) < 0.001, json_encode($rr) . ' ' . $bank['real'][$uuid]);
 }
 $notes = array_slice($notes, 0, 2);
-
-echo "4c) 2026-11-28 : Flutterwave RETIRÉ — même avec ses clés remises, rien ne s'allume\n";
-putenv('FLW_SECRET_KEY=FLWSECK-test'); putenv('FLW_PUBLIC_KEY=FLWPUBK-test'); $_ENV['FLW_SECRET_KEY'] = 'FLWSECK-test';
-check('Flutterwave éteint pour toujours (clés ignorées)', orolado_flw_configured() === false && orolado_flw_secret() === '');
-$fw = function_exists('orolado_flutterwave_checkout') ? orolado_flutterwave_checkout(['token' => 'x', 'amount' => 10]) : ['ok' => false];
-check('paiement Flutterwave refusé', empty($fw['ok']), json_encode($fw));
-check('adresses api/flutterwave-* supprimées', !glob(__DIR__ . '/../api/flutterwave-*.php'));
-putenv('FLW_SECRET_KEY'); putenv('FLW_PUBLIC_KEY'); unset($_ENV['FLW_SECRET_KEY']);
 
 echo "5) L'e-mail « Dépôt réussi » : son nom + le montant\n";
 require_once $tmp . '/notify_lib.php';

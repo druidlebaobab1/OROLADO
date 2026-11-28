@@ -7968,14 +7968,24 @@ function orolado_oxapay_webhook(string $raw, string $hmacHeader): array {
   return orolado_oxapay_apply_payload($data, $signed);
 }
 
-/* 2026-11-28 (propriétaire : « Flutterwave, retire-le complètement de notre site, je suis bloqué là-bas ; on garde seulement
- * Maketou au cas où ») : Flutterwave est RETIRÉ. Ses clés ne sont plus jamais lues (même si FLW_* est remis dans .env) :
- * aucun paiement, aucune vérification, aucun appel vers Flutterwave. Les adresses api/flutterwave/* sont supprimées.
- * Restent seulement les petits outils de pays (orolado_flw_ip_country…, utilisés par geo.php) et l'étiquette des anciens dépôts. */
-function orolado_flw_secret(): string { return ''; }
-function orolado_flw_public(): string { return ''; }
-function orolado_flw_webhook_hash(): string { return ''; }
-function orolado_flw_configured(): bool { return false; }
+function orolado_flw_secret(): string {
+  orolado_load_env();
+  return trim((string) (getenv('FLW_SECRET_KEY') ?: ($_ENV['FLW_SECRET_KEY'] ?? $_SERVER['FLW_SECRET_KEY'] ?? '')));
+}
+
+function orolado_flw_public(): string {
+  orolado_load_env();
+  return trim((string) (getenv('FLW_PUBLIC_KEY') ?: ($_ENV['FLW_PUBLIC_KEY'] ?? $_SERVER['FLW_PUBLIC_KEY'] ?? '')));
+}
+
+function orolado_flw_webhook_hash(): string {
+  orolado_load_env();
+  return trim((string) (getenv('FLW_WEBHOOK_HASH') ?: ($_ENV['FLW_WEBHOOK_HASH'] ?? $_SERVER['FLW_WEBHOOK_HASH'] ?? '')));
+}
+
+function orolado_flw_configured(): bool {
+  return orolado_flw_secret() !== '' && orolado_flw_public() !== '';
+}
 
 function orolado_flw_xof_countries(): array {
   return ['CI', 'SN', 'BF', 'ML', 'TG', 'BJ'];
