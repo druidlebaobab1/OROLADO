@@ -1627,7 +1627,7 @@ function sb_mk_name(string $mk): string {
   $n = ['1x2' => 'Résultat', 'dc' => 'Double chance', 'dnb' => 'Remboursé si nul', 'ou' => 'Buts (plus/moins de ' . $x . ')', 'btts' => 'Les deux équipes marquent',
     'tth' => 'Buts domicile (' . $x . ')', 'tta' => 'Buts extérieur (' . $x . ')', 'oe' => 'Total de buts pair/impair', 'csh' => 'Domicile n\'encaisse pas', 'csa' => 'Extérieur n\'encaisse pas',
     'wnh' => 'Domicile gagne sans encaisser', 'wna' => 'Extérieur gagne sans encaisser', 'eh' => 'Handicap (' . $x . ')', 'ah' => 'Handicap asiatique (' . $x . ')',
-    'ht1x2' => 'Résultat à la mi-temps', 'htou' => 'Buts 1re mi-temps (' . $x . ')', 'htbtts' => 'Les deux marquent en 1re mi-temps', '2h1x2' => 'Résultat 2e mi-temps',
+    'ht1x2' => 'Résultat de la 1re mi-temps', 'htou' => 'Buts 1re mi-temps (' . $x . ')', 'htbtts' => 'Les deux marquent en 1re mi-temps', '2h1x2' => 'Résultat 2e mi-temps',
     'htft' => 'Mi-temps / fin', 'cs' => 'Score exact', 'rbtts' => 'Résultat + les deux marquent', 'rou' => 'Résultat + buts (' . $x . ')', 'eg' => 'Nombre exact de buts', 'hsh' => 'Mi-temps la plus prolifique',
     'htdc' => 'Double chance 1re mi-temps', '2hdc' => 'Double chance 2e mi-temps', '2hbtts' => 'Les deux marquent en 2e mi-temps', 'htcs' => 'Score exact 1re mi-temps',
     'htoe' => 'Buts pair/impair 1re mi-temps', '2hoe' => 'Buts pair/impair 2e mi-temps', '2hou' => 'Buts 2e mi-temps (' . $x . ')', 'httth' => 'Buts domicile 1re mi-temps (' . $x . ')',
