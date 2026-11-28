@@ -1599,6 +1599,123 @@
     if (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot') return bgo('home');
     return false;
   }
+
+  /* ================================================================== MATCHS VIRTUELS (2026-11-28, propriétaire) — « Ligue OROLADO » :
+     interrupteur Sport / Virtuel en haut de Paris ; en Virtuel : Matchs (journée en direct + journée suivante), Classement, Résultats.
+     Tout vient du serveur (virt_lib.php, action vfState) : scores tirés en secret, cotes, règlement. Choix = « sb:virt:<id>:<mk> »,
+     même coupon, même reçu, mêmes paris que le football. */
+  var VFL = {
+    fr: ['Sport', 'Virtuel', 'Matchs', 'Classement', 'Résultats', 'Journée', 'EN DIRECT', 'Coup d\'envoi dans', 'Terminé', 'Saison', 'J', 'Pts', 'Ligue OROLADO', 'Paris fermés', 'Mi-temps'],
+    en: ['Sport', 'Virtual', 'Matches', 'Table', 'Results', 'Matchday', 'LIVE', 'Kick-off in', 'Full time', 'Season', 'P', 'Pts', 'OROLADO League', 'Betting closed', 'Half-time'],
+    es: ['Deporte', 'Virtual', 'Partidos', 'Clasificación', 'Resultados', 'Jornada', 'EN VIVO', 'Empieza en', 'Final', 'Temporada', 'PJ', 'Pts', 'Liga OROLADO', 'Apuestas cerradas', 'Descanso'],
+    pt: ['Esporte', 'Virtual', 'Jogos', 'Classificação', 'Resultados', 'Rodada', 'AO VIVO', 'Começa em', 'Fim', 'Temporada', 'J', 'Pts', 'Liga OROLADO', 'Apostas fechadas', 'Intervalo'],
+    ar: ['رياضة', 'افتراضي', 'المباريات', 'الترتيب', 'النتائج', 'الجولة', 'مباشر', 'تبدأ خلال', 'انتهت', 'الموسم', 'لعب', 'نقاط', 'دوري OROLADO', 'الرهان مغلق', 'استراحة'],
+    tr: ['Spor', 'Sanal', 'Maçlar', 'Puan durumu', 'Sonuçlar', 'Hafta', 'CANLI', 'Başlamasına', 'Bitti', 'Sezon', 'O', 'P', 'OROLADO Ligi', 'Bahis kapalı', 'Devre'],
+    vi: ['Thể thao', 'Ảo', 'Trận đấu', 'Bảng xếp hạng', 'Kết quả', 'Vòng', 'TRỰC TIẾP', 'Bắt đầu sau', 'Kết thúc', 'Mùa', 'Tr', 'Đ', 'Giải OROLADO', 'Đã đóng cược', 'Nghỉ giữa hiệp'],
+    id: ['Olahraga', 'Virtual', 'Laga', 'Klasemen', 'Hasil', 'Pekan', 'LANGSUNG', 'Mulai dalam', 'Selesai', 'Musim', 'M', 'Poin', 'Liga OROLADO', 'Taruhan ditutup', 'Turun minum'],
+    ru: ['Спорт', 'Виртуал', 'Матчи', 'Таблица', 'Результаты', 'Тур', 'LIVE', 'Начало через', 'Конец', 'Сезон', 'И', 'О', 'Лига OROLADO', 'Ставки закрыты', 'Перерыв'],
+    de: ['Sport', 'Virtuell', 'Spiele', 'Tabelle', 'Ergebnisse', 'Spieltag', 'LIVE', 'Anstoß in', 'Ende', 'Saison', 'Sp', 'Pkt', 'OROLADO-Liga', 'Wetten geschlossen', 'Halbzeit'],
+    hi: ['खेल', 'वर्चुअल', 'मैच', 'तालिका', 'नतीजे', 'राउंड', 'लाइव', 'शुरू होने में', 'समाप्त', 'सीज़न', 'मै', 'अं', 'OROLADO लीग', 'दांव बंद', 'हाफ़-टाइम'],
+    zh: ['体育', '虚拟', '比赛', '积分榜', '赛果', '轮次', '直播', '开球倒计时', '完场', '赛季', '场', '分', 'OROLADO 联赛', '投注已关闭', '中场']
+  };
+  function VX() { var a = VFL[lg()] || VFL.en; return { sport: a[0], virt: a[1], tm: a[2], tb: a[3], res: a[4], j: a[5], live: a[6], ko: a[7], ft: a[8], s: a[9], p: a[10], pts: a[11], lg: a[12], closed: a[13], ht: a[14] }; }
+  var vf = null, vfTeams = null, vfTab = 'm', vfOpen = 0, vfSkew = 0, vfTm = 0, vfBusy = false;
+  function vfSwitch(on) { var x = VX(); return '<div class="vf-sw" role="tablist"><button type="button" data-vsw="sport" class="' + (on ? '' : 'on') + '">⚽ ' + esc(x.sport) + '</button><button type="button" data-vsw="virt" class="vf-v' + (on ? ' on' : '') + '">🎮 ' + esc(x.virt) + '</button></div>'; }
+  function vfNow() { return Date.now() / 1000 + vfSkew; }
+  function vfFlag(cc) { if (!cc || cc.length !== 2) return ''; return String.fromCodePoint(0x1F1E6 + cc.toUpperCase().charCodeAt(0) - 65, 0x1F1E6 + cc.toUpperCase().charCodeAt(1) - 65); }
+  function vfTeam(i) {
+    var t = (vfTeams || [])[i] || { n: '?', c: '#888' };
+    var ic = t.p && t.cc ? '<i class="vf-fl">' + vfFlag(t.cc) + '</i>' : '<i class="vf-cb" style="background:' + esc(t.c || '#888') + '"></i>';
+    return '<span class="vf-tn">' + ic + '<b class="vf-nm">' + esc(t.n) + '</b></span>';
+  }
+  function vfName(i) { var t = (vfTeams || [])[i]; return t ? t.n : '?'; }
+  function vfFx(fid) {
+    if (!vf) return null;
+    var id = +String(fid).split(':')[1];
+    for (var d = 0; d < vf.days.length; d++) for (var j = 0; j < vf.days[d].fx.length; j++) {
+      var f = vf.days[d].fx[j]; if (f.id !== id) continue;
+      var day = vf.days[d], h = vfName(f.h), a = vfName(f.a);
+      return { id: fid, h: { n: h }, a: { n: a }, ts: day.ko, live: !!day.live, susp: !f.mk, end: day.live && vfNow() >= day.ko + vf.match };
+    }
+    return null;
+  }
+  function vfMin(day) { return Math.max(0, Math.min(90, Math.floor((vfNow() - day.ko) * 90 / vf.match))); }
+  function vfClock(sec) { sec = Math.max(0, Math.floor(sec)); return Math.floor(sec / 60) + ':' + ('0' + sec % 60).slice(-2); }
+  function vfHead(day) {
+    var x = VX(), t = vfNow();
+    if (day.live) { var mn = vfMin(day); return '<div class="vf-jd lv"><b>' + esc(x.j) + ' ' + day.j + '</b><span class="vf-st"><i class="vf-dot"></i>' + esc(t >= day.ko + vf.match ? x.ft : x.live) + ' <em data-vfmin="' + day.ko + '">' + (t >= day.ko + vf.match ? '' : mn + '’') + '</em></span></div>'; }
+    return '<div class="vf-jd"><b>' + esc(x.j) + ' ' + day.j + '</b><span class="vf-st">' + esc(x.ko) + ' <em data-vfko="' + day.ko + '">' + vfClock(day.ko - vf.close - t) + '</em></span></div>';
+  }
+  function vfRow(day, f) {
+    var ev = function (mk) { return 'sb:virt:' + f.id + ':' + mk; }, by = {};
+    ((f.mk && f.mk['1x2']) || []).forEach(function (o) { by[o[0]] = o[1]; });
+    var susp = day.live && !f.mk, h = '<div class="vf-row' + (vfOpen === f.id ? ' op' : '') + '" data-vfx="' + f.id + '"><div class="vf-tms">' + vfTeam(f.h) + vfTeam(f.a) + '</div>' +
+      (day.live ? '<div class="vf-sc"><b>' + f.sc[0] + '</b><b>' + f.sc[1] + '</b></div>' : '') +
+      '<div class="pz-ro vf-ro">' + ['H', 'D', 'A'].map(function (k) { return obtn(ev('1x2'), k, susp ? null : (by[k] != null ? by[k] : null)); }).join('') + '</div></div>';
+    if (vfOpen === f.id && f.mk) {
+      var hn = vfName(f.h), an = vfName(f.a);
+      var prevT = '';
+      h += '<div class="vf-more">' + Object.keys(f.mk).filter(function (mk) { return mk !== '1x2'; }).map(function (mk) {
+        var tt = sbMkName(mk, hn, an), same = tt === prevT; prevT = tt; // plusieurs lignes de buts : un seul titre
+        return '<div class="vf-mk">' + (same ? '' : '<div class="vf-mkt">' + esc(tt) + '</div>') + '<div class="vf-mko">' + f.mk[mk].map(function (o) { return obtn(ev(mk), o[0], o[1], sbOutL(mk, o[0], hn, an)); }).join('') + '</div></div>';
+      }).join('') + '</div>';
+    }
+    return h;
+  }
+  function vfBodyHtml() {
+    var x = VX();
+    if (!vf || !vfTeams) return skelRows();
+    if (vfTab === 'tb') {
+      var tb = vf.tb;
+      return '<div class="vf-tbh">' + esc(x.lg) + ' · ' + esc(x.s) + ' ' + tb.S + ' · ' + esc(x.j) + ' ' + tb.played + '</div><div class="vf-tb"><div class="vf-tr th"><span>#</span><span></span><span>' + esc(x.p) + '</span><span>+/-</span><span>' + esc(x.pts) + '</span></div>' +
+        tb.rows.map(function (r, i) { return '<div class="vf-tr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<span>' + r.j + '</span><span>' + (r.bp - r.bc > 0 ? '+' : '') + (r.bp - r.bc) + '</span><span><b>' + r.pts + '</b></span></div>'; }).join('') + '</div>';
+    }
+    if (vfTab === 'res') {
+      return vf.res.map(function (d) {
+        return '<div class="vf-jd"><b>' + esc(x.j) + ' ' + d.j + '</b><span class="vf-st">' + esc(x.ft) + '</span></div>' + d.fx.map(function (f) {
+          return '<div class="vf-row vf-rr"><div class="vf-tms">' + vfTeam(f.h) + vfTeam(f.a) + '</div><div class="vf-sc"><b>' + f.ft[0] + '</b><b>' + f.ft[1] + '</b></div><div class="vf-ht">' + esc(x.ht) + ' ' + f.ht[0] + '-' + f.ht[1] + '</div></div>';
+        }).join('');
+      }).join('');
+    }
+    return vf.days.map(function (d) { return vfHead(d) + d.fx.map(function (f) { return vfRow(d, f); }).join(''); }).join('');
+  }
+  function vfPaint() {
+    var b = $('vfBody'); if (!b || view !== 'virt') return;
+    var mb = mbox(), st = mb ? mb.scrollTop : 0;
+    b.innerHTML = vfBodyHtml();
+    if (mb) mb.scrollTop = st;
+    box.querySelectorAll('[data-vft]').forEach(function (z) { z.classList.toggle('on', z.getAttribute('data-vft') === vfTab); });
+  }
+  function vfTick() { // minute / compte à rebours chaque seconde, sans relire le serveur
+    if (view !== 'virt' || !vf) return;
+    box.querySelectorAll('[data-vfko]').forEach(function (e) { e.textContent = vfClock(+e.getAttribute('data-vfko') - vf.close - vfNow()); });
+    box.querySelectorAll('[data-vfmin]').forEach(function (e) { var ko = +e.getAttribute('data-vfmin'); if (vfNow() < ko + vf.match) e.textContent = Math.max(0, Math.min(90, Math.floor((vfNow() - ko) * 90 / vf.match))) + '’'; });
+  }
+  async function vfLoad() {
+    if (vfBusy) return; vfBusy = true;
+    try {
+      var r = await D6.Api.post('vfState', { teams: vfTeams ? 0 : 1 }, 9000);
+      if (r && r.ok) { if (r.teams) vfTeams = r.teams; vfSkew = r.now - Date.now() / 1000; vf = r; vfPaint(); syncVfSlip(); }
+    } catch (e) { /* réseau : prochain essai */ } finally { vfBusy = false; }
+  }
+  function syncVfSlip() { // cotes du coupon tenues à jour (choix virtuels)
+    var chg = false;
+    slip.forEach(function (s) { var m = /^sb:virt:(\d+):(.+)$/.exec(s.ev || ''); if (!m || !vf) return; vf.days.forEach(function (d) { d.fx.forEach(function (f) { if (String(f.id) === m[1] && f.mk && f.mk[m[2]]) f.mk[m[2]].forEach(function (o) { if (o[0] === s.k && o[1] !== s.odd) { s.odd = o[1]; chg = true; } }); }); }); });
+    if (chg) paintNav();
+  }
+  function vfLoop() {
+    clearTimeout(vfTm);
+    if (view !== 'virt' || !alive()) return;
+    vfTick();
+    var n = (vfLoop.n = ((vfLoop.n || 0) + 1) % 3);
+    if (n === 0) vfLoad();
+    vfTm = setTimeout(vfLoop, 1000);
+  }
+  function renderVirt() {
+    var x = VX();
+    shell('<div class="pz-home pz-vf">' + vfSwitch(true) + '<div class="vf-tabs"><button type="button" data-vft="m">' + esc(x.tm) + '</button><button type="button" data-vft="tb">' + esc(x.tb) + '</button><button type="button" data-vft="res">' + esc(x.res) + '</button></div><div id="vfBody" class="pz-body vf-body"></div></div>');
+    vfPaint(); vfLoad(); vfLoop.n = 0; vfLoop();
+  }
   function render() {
     if (!box) return;
     box.classList.add('sp2');
@@ -1610,6 +1727,7 @@
     if (view === 'resm') { renderResMatch(); return; }
     if (view === 'news') { renderList(); return; }
     if (view === 'pred') { renderPred(); return; }
+    if (view === 'virt') { renderVirt(); return; }
     if (view === 'live') { if (liveOn === false) view = 'home'; else { renderLive(); return; } }
     if (view === 'match') { if (sbMid) { renderMatch(); return; } view = 'home'; }
     view = 'home'; renderHome();
@@ -1715,6 +1833,7 @@
   }
   function sbLoad(force) { return Promise.all(needDays().map(function (d) { return sbFetch(d, force); })); }
   function sbFx(fid) {
+    if (/^virt:/.test(fid)) return vfFx(fid); // matchs virtuels
     if (sbM && sbM.fx && sbM.fx.id === fid) return sbM.fx;
     if (liveData) for (var j = 0; j < liveData.r.fx.length; j++) if (liveData.r.fx[j].id === fid) return liveData.r.fx[j];
     for (var d in sbData) { var r = sbData[d] && sbData[d].r; if (r) for (var i = 0; i < r.fx.length; i++) if (r.fx[i].id === fid) return r.fx[i]; }
@@ -1894,7 +2013,7 @@
   function renderTop() {
     if (hasTop()) { swapTop(); return; }
     var x = SX();
-    shell('<div class="pz-home' + (view === 'pred' ? ' pz-pred' : '') + '"><label class="pz-q">' + SBIC.search + '<input id="pzQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(x.search) + '" value="' + esc(qRaw) + '">' +
+    shell('<div class="pz-home' + (view === 'pred' ? ' pz-pred' : '') + '">' + vfSwitch(false) + '<label class="pz-q">' + SBIC.search + '<input id="pzQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(x.search) + '" value="' + esc(qRaw) + '">' +
       '<button type="button" class="pz-qx" id="pzQx" aria-label="✕"' + (qRaw ? '' : ' hidden') + '>' + IC.x + '</button></label>' +
       sportsRow() + '<div class="pz-pers pz-hs' + (view === 'pred' ? ' pd-cats' : '') + '" id="pzPers">' + row2Html() + '</div><div id="pzBody" class="pz-body"></div></div>');
     bindQ();
@@ -3176,6 +3295,9 @@
     var t = ev.target, b;
     if (!t || !t.closest) return;
     if ((b = t.closest('[data-back]'))) { ev.preventDefault(); back(); return; }
+    if ((b = t.closest('[data-vsw]'))) { var w = b.getAttribute('data-vsw'); if ((w === 'virt') !== (view === 'virt')) go(w === 'virt' ? 'virt' : 'home'); return; }
+    if ((b = t.closest('[data-vft]'))) { vfTab = b.getAttribute('data-vft'); vfPaint(); var mbv = mbox(); if (mbv) mbv.scrollTop = 0; return; }
+    if (!t.closest('.pz-ob') && (b = t.closest('.vf-row[data-vfx]'))) { var vid = +b.getAttribute('data-vfx'); vfOpen = vfOpen === vid ? 0 : vid; vfPaint(); return; }
     if ((b = t.closest('.pz-nav [data-sv], .sp2-cta[data-sv], [data-go]'))) {
       var v = b.getAttribute('data-sv') || b.getAttribute('data-go'); if (v === 'list') v = 'home';
       // 2026-10-23 (propriétaire : « dans Paris on ne peut plus sortir ») : un onglet du bas (Populaire, Direct, Mes paris, Menu) repart

@@ -526,6 +526,16 @@ if ($action === 'sbStats') {
   echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   exit;
 }
+// 2026-11-28 (propriétaire) : MATCHS VIRTUELS (virt_lib.php) — journée en cours, suivante, résultats, classement ; équipes une fois
+if ($action === 'vfState') {
+  if (!function_exists('vf_view') || !function_exists('sb_visible')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  $me = $token !== '' ? session_user($db, $token) : null;
+  if (!sb_visible($me ?: null)) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
+  try { $res = vf_view(); if (!empty($req['teams'])) $res['teams'] = vf_teams(); }
+  catch (Throwable $eVf) { error_log('OROLADO vf ' . $eVf->getMessage()); $res = ['ok' => false, 'reason' => 'busy']; }
+  echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
 if ($action === 'sbList' || $action === 'sbMatch' || $action === 'sbLive' || $action === 'sbResults') {
   if (!function_exists('sb_list')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
   $me = $token !== '' ? session_user($db, $token) : null;
