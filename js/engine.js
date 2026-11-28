@@ -126,7 +126,7 @@
 
   // 2026-11-28 (propriétaire : « la démo à ×2,10 ») : cote PAYÉE d'un trade démo = même table que le serveur
   // (trade_lib.php orolado_trade_demo_mult). La ligne gagnante, elle, se calcule TOUJOURS avec la cote de base (×1,90 / ×5 / ×10 / ×50).
-  var DEMO_PAY = { '1.9': 2.1, '5': 5.83, '10': 11.66, '50': 58.33 };
+  var DEMO_PAY = {}; // 2026-11-28 (propriétaire) : la démo paie comme le réel (×1,90 / ×5 / ×10 / ×50)
   function demoPay(base) { var b = normalizeOdds(base); return DEMO_PAY[String(b)] || b; }
   function payOf(t) { return t && t.mode !== 'real' ? demoPay(t.payout) : normalizeOdds(t && t.payout); }
   function normalizeOdds(v) {

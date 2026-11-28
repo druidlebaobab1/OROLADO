@@ -30,7 +30,7 @@ $db['vault'][$uid] = ['demo' => 1000000.0, 'real' => 100000.0];
 save_db(orolado_data_file(), $db);
 $bank['real'][$uid] = 100000.0;
 $me = $db['users'][$uid];
-$DEMO = ['1.9' => 2.1, '5' => 5.83, '10' => 11.66, '50' => 58.33];
+$DEMO = ['1.9' => 1.9, '5' => 5.0, '10' => 10.0, '50' => 50.0]; // 2026-11-28 : la démo paie comme le réel
 $assets = array_keys(orolado_feed_assets());
 $short = []; $n = 0; $nPlaced = 0;
 echo count($assets) . " indices × 4 gains × 6 durées × démo/réel\n";
