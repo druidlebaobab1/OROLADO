@@ -27,12 +27,6 @@ RewriteRule ^r/([A-Za-z0-9]{3,16})/?$ /?ref=$1 [R=302,L]
   RewriteRule ^api/oxapay/status/?$ api/oxapay-status.php [L,QSA]
   RewriteRule ^api/oxapay/webhook/?$ api/oxapay-webhook.php [L,QSA]
   RewriteRule ^api/qr/?$ api/qr.php [L,QSA]
-  RewriteRule ^api/flutterwave/checkout/?$ api/flutterwave-checkout.php [L,QSA]
-  RewriteRule ^api/flutterwave/charge/?$ api/flutterwave-charge.php [L,QSA]
-  RewriteRule ^api/flutterwave/webhook/?$ api/flutterwave-webhook.php [L,QSA]
-  RewriteRule ^api/flutterwave/callback/?$ api/flutterwave-callback.php [L,QSA]
-  RewriteRule ^api/flutterwave/status/?$ api/flutterwave-status.php [L,QSA]
-  RewriteRule ^api/flutterwave/verify/?$ api/flutterwave-verify.php [L,QSA]
 </IfModule>
 
 <IfModule mod_mime.c>

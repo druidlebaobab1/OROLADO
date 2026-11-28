@@ -88,7 +88,8 @@ function orolado_geniuspay_start(array $req): array {
   if (!gp_on_for($me)) return ['ok' => false, 'server' => true, 'code' => 'off', 'reason' => 'GeniusPay pas activé'];
   $amountUsd = orolado_money($req['amount'] ?? 0);
   // 2026-11-20 (propriétaire) : retour à 1 $ minimum.
-  if ($amountUsd + 0.0001 < 1.0) return ['ok' => false, 'server' => true, 'code' => 'min', 'min' => 1, 'reason' => 'Le dépôt minimum est de $1.'];
+  $gpMin = defined('OROLADO_DEP_MIN') ? OROLADO_DEP_MIN : 3.0; // 2026-11-28 (propriétaire) : 3 $ minimum
+  if ($amountUsd + 0.0001 < $gpMin) return ['ok' => false, 'server' => true, 'code' => 'min', 'min' => $gpMin, 'reason' => 'Le dépôt minimum est de $3.'];
   if (function_exists('orolado_deposit_over_cap') && orolado_deposit_over_cap($amountUsd)) return ['ok' => false, 'server' => true, 'code' => 'max', 'reason' => 'Montant trop élevé.'];
   $cfa = max(200, orolado_usd_to_cfa_int($amountUsd)); // GeniusPay : 200 F minimum
   $mode = strtolower(trim((string) ($req['mode'] ?? 'checkout')));

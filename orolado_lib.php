@@ -3986,8 +3986,10 @@ function credit_paid_deposit_core(array $hit): array {
   $amount = orolado_money($hit['amount'] ?? 0);
   $opEarly = strtolower((string) ($dep['operator'] ?? $hit['operator'] ?? ''));
   $allowSmall = !empty($hit['allowSmall']) || in_array($opEarly, ['oxapay', 'flutterwave', 'flw', 'usdt'], true);
-  if ($amount <= 0 && $pendingAmt > 0 && ($allowSmall || $pendingAmt >= orolado_min_deposit(null))) $amount = $pendingAmt;
-  $minGate = $allowSmall ? orolado_oxapay_credit_floor() : orolado_min_deposit(null);
+  // 2026-11-28 : le minimum pour LANCER un dépôt passe à 3 $ (orolado_min_deposit), mais un dépôt DÉJÀ PAYÉ (ex. 1 $ lancé avant
+  // le changement) est toujours crédité : seuil de crédit inchangé à 1 $ (OROLADO_DEP_CREDIT_FLOOR).
+  if ($amount <= 0 && $pendingAmt > 0 && ($allowSmall || $pendingAmt >= OROLADO_DEP_CREDIT_FLOOR)) $amount = $pendingAmt;
+  $minGate = $allowSmall ? orolado_oxapay_credit_floor() : OROLADO_DEP_CREDIT_FLOOR;
   if ($amount + 0.0001 < $minGate || orolado_deposit_over_cap($amount)) {
     flock($fp, LOCK_UN);
     fclose($fp);
@@ -4692,6 +4694,11 @@ function orolado_min_deposit(?array $me): float {
   // v3020 (propriétaire, 2026-10-21) : 1 $ (carte, Mobile Money / Wave). La crypto (OxaPay) ne passe pas par ici.
   return 1.0;
 }
+/** 2026-11-28 (propriétaire : « dépôt minimum 3 $, UNIQUEMENT GeniusPay ; la crypto, tu ne touches pas ») : minimum 3 $ pour
+ *  GeniusPay seulement (geniuspay_lib.php). Flutterwave, Maketou et la crypto gardent leurs minimums d'avant. */
+const OROLADO_DEP_MIN = 3.0;
+/** Seuil pour CRÉDITER un dépôt déjà payé (inchangé, 1 $ comme avant) : jamais d'argent payé non crédité. */
+const OROLADO_DEP_CREDIT_FLOOR = 1.0;
 
 /**
  * Moyens de paiement en pause (Maketou, USDT direct sur adresse fixe) : fermés côté serveur,
@@ -7961,24 +7968,14 @@ function orolado_oxapay_webhook(string $raw, string $hmacHeader): array {
   return orolado_oxapay_apply_payload($data, $signed);
 }
 
-function orolado_flw_secret(): string {
-  orolado_load_env();
-  return trim((string) (getenv('FLW_SECRET_KEY') ?: ($_ENV['FLW_SECRET_KEY'] ?? $_SERVER['FLW_SECRET_KEY'] ?? '')));
-}
-
-function orolado_flw_public(): string {
-  orolado_load_env();
-  return trim((string) (getenv('FLW_PUBLIC_KEY') ?: ($_ENV['FLW_PUBLIC_KEY'] ?? $_SERVER['FLW_PUBLIC_KEY'] ?? '')));
-}
-
-function orolado_flw_webhook_hash(): string {
-  orolado_load_env();
-  return trim((string) (getenv('FLW_WEBHOOK_HASH') ?: ($_ENV['FLW_WEBHOOK_HASH'] ?? $_SERVER['FLW_WEBHOOK_HASH'] ?? '')));
-}
-
-function orolado_flw_configured(): bool {
-  return orolado_flw_secret() !== '' && orolado_flw_public() !== '';
-}
+/* 2026-11-28 (propriétaire : « Flutterwave, retire-le complètement de notre site, je suis bloqué là-bas ; on garde seulement
+ * Maketou au cas où ») : Flutterwave est RETIRÉ. Ses clés ne sont plus jamais lues (même si FLW_* est remis dans .env) :
+ * aucun paiement, aucune vérification, aucun appel vers Flutterwave. Les adresses api/flutterwave/* sont supprimées.
+ * Restent seulement les petits outils de pays (orolado_flw_ip_country…, utilisés par geo.php) et l'étiquette des anciens dépôts. */
+function orolado_flw_secret(): string { return ''; }
+function orolado_flw_public(): string { return ''; }
+function orolado_flw_webhook_hash(): string { return ''; }
+function orolado_flw_configured(): bool { return false; }
 
 function orolado_flw_xof_countries(): array {
   return ['CI', 'SN', 'BF', 'ML', 'TG', 'BJ'];
