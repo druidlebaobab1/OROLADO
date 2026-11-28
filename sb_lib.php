@@ -1450,7 +1450,6 @@ function sb_after_response(): void {
   $on = true;
   register_shutdown_function(static function () {
     try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ }
-    try { if (function_exists('vf_settle_due')) vf_settle_due(); } catch (Throwable $e) { /* 2026-11-28 : paris virtuels payés dès la fin de la journée */ }
     try { sb_live_tick(); } catch (Throwable $e) { /* jamais bloquant */ }
     try { sb_maybe_run(); } catch (Throwable $e) { /* jamais bloquant */ }
     try { sb_res_fetch_wanted(sb_now()); } catch (Throwable $e) { /* jamais bloquant */ }
@@ -1458,6 +1457,7 @@ function sb_after_response(): void {
     try { if (function_exists('pred_maybe_run')) pred_maybe_run(); } catch (Throwable $e) { /* prédictions Predict : jamais bloquant */ }
     try { if (function_exists('sp_old_cleanup_once')) sp_old_cleanup_once(); } catch (Throwable $e) { /* 2026-11-14 : anciens matchs, une seule fois */ }
     try { if (function_exists('sp_auto_settle_maybe')) sp_auto_settle_maybe(); } catch (Throwable $e) { /* 2026-11-13 : matchs entrés à la main réglés tout seuls */ }
+    try { if (function_exists('vf_settle_due')) vf_settle_due(); } catch (Throwable $e) { /* 2026-11-28 : paris virtuels payés dès la fin de la journée (en dernier : ne retarde jamais les autres tâches) */ }
   });
 }
 /** Page d'un match ouverte, cotes de plus de 3 h → demandé (au plus une fois par 3 h et par match, 20 par heure en tout). */

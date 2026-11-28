@@ -722,7 +722,19 @@
       return { h: tm[0], a: tm[1], sc: (+sc[0] || 0) + ' – ' + (+sc[1] || 0), fin: Array.isArray(s.fs), min: !Array.isArray(s.fs) && s.cm != null && s.cm !== '' ? String(s.cm) + '\u2019' : '' };
     };
     var showScore = D === 0 && n <= 5 && sel.some(function (s) { return !!scOf(s); }); // plus de 5 choix : pas de 3e ligne (compact, comme à l'écran)
+    // 2026-11-28 (propriétaire) : pari VIRTUEL → petit carré violet avec une manette devant le match (comme à l'écran)
+    var isV = function (s) { return !!s && (s.vf || s.sp === 'virt' || /^virt:/.test(String(s.fx || '')) || /^sb:virt:/.test(String(s.ev || ''))); };
+    var vTag = function (x0, y, fs) {
+      var h = Math.round(fs * 1.05), w = Math.round(h * 1.25), top = y - h / 2;
+      rr(g, x0, top, w, h, 4); var gr = g.createLinearGradient(0, top, 0, top + h); gr.addColorStop(0, '#8B5CF6'); gr.addColorStop(1, '#6D28D9'); g.fillStyle = gr; g.fill();
+      var cx = x0 + w / 2, cy = y, pw = w * 0.66, ph = h * 0.46; // manette blanche
+      rr(g, cx - pw / 2, cy - ph / 2, pw, ph, ph / 2); g.fillStyle = '#FFFFFF'; g.fill();
+      g.fillStyle = '#6D28D9'; g.fillRect(cx - pw * 0.34, cy - ph * 0.08, pw * 0.22, ph * 0.16); g.fillRect(cx - pw * 0.27, cy - ph * 0.25, pw * 0.08, ph * 0.5);
+      g.beginPath(); g.arc(cx + pw * 0.2, cy - ph * 0.08, ph * 0.12, 0, 7); g.arc(cx + pw * 0.32, cy + ph * 0.12, ph * 0.12, 0, 7); g.fill();
+      return w + 7;
+    };
     var matchLine = function (s, x0, y, maxW, fs) { // « Équipe A  2 – 3  Équipe B  [FIN] » ; sans score : le nom du match
+      if (isV(s)) { var tw0 = vTag(x0, y, fs); x0 += tw0; maxW -= tw0; }
       var o = scOf(s); g.textAlign = 'left';
       if (!o) { g.fillStyle = MUTE; g.font = '500 ' + fs + 'px ' + FONT; g.fillText(ell(g, s.t, maxW), x0, y); return; }
       g.font = '800 ' + fs + 'px ' + FONT; var sw = g.measureText(o.sc).width;
@@ -842,7 +854,8 @@
         g.font = '800 ' + F[2] + 'px ' + FONT; g.textAlign = 'right'; g.fillStyle = RC[s.r] || ODD; g.fillText(odd, x1, y + rowH / 2);
         var right = x1 - g.measureText(odd).width - 6; right -= mark(s, right, y + rowH / 2, F[3]);
         g.textAlign = 'left';
-        g.fillStyle = MUTE; g.font = '500 ' + F[0] + 'px ' + FONT; g.fillText(ell(g, s.t, right - x0 - 2), x0, y + rowH * 0.3);
+        var vx = isV(s) ? vTag(x0, y + rowH * 0.3, F[0]) : 0;
+        g.fillStyle = MUTE; g.font = '500 ' + F[0] + 'px ' + FONT; g.fillText(ell(g, s.t, right - x0 - vx - 2), x0 + vx, y + rowH * 0.3);
         g.fillStyle = INK; g.font = '800 ' + F[1] + 'px ' + FONT; g.fillText(ell(g, (s.mkt ? s.mkt + ' \u203A ' : '') + s.l, right - x0 - 2), x0, y + rowH * 0.72);
       });
     }
