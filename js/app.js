@@ -1342,6 +1342,7 @@
     var trade = $('screenTrade');
     if (!trade) return;
     u = u || user();
+    setTimeout(function () { try { updatePayoutUi(); } catch (e) { /* ignore */ } }, 0); // 2026-11-28 : démo sans marge → gains affichés selon le mode
     var guest = !u || isGuest(u);
     if (u) {
       trade.classList.toggle('mode-demo', u.mode !== 'real');
@@ -2945,10 +2946,21 @@
     field.style.setProperty('--fs-dollar-top', Math.round(inp.offsetTop + (h - pb) / 2) + 'px');
   }
 
+  // 2026-11-28 (propriétaire : « dans la démo, aucune marge ») : même table que le serveur (orolado_trade_demo_mult).
+  function demoMultOf(m) { m = Number(m); return Math.abs(m - 1.9) < 0.001 ? 2 : m === 5 ? 5.55 : m === 10 ? 11.11 : m === 50 ? 55.55 : m; }
+  function payMultFor(u, m) { return u && u.mode === 'real' ? Number(m) : demoMultOf(m); }
+  function pctOfMult(base, eff) { return Math.abs(Number(base) - 1.9) < 0.001 ? Math.round((eff - 1) * 100) : Math.round(eff * 100); }
   function updatePayoutUi() {
     if (!document.querySelector('.asset-chip .payout-live')) return;
-    var odds = currentOdds(user());
-    var pct = payoutPctOf(odds);
+    var uP = user();
+    var odds = currentOdds(uP);
+    var pct = uP && uP.mode === 'real' ? payoutPctOf(odds) : pctOfMult(odds, demoMultOf(odds));
+    document.querySelectorAll('#oddsRow .odds-chip').forEach(function (chip) {
+      var lb = chip.querySelector('.odds-mult'); if (!lb) return;
+      var b = Number(chip.dataset.odds), real = uP && uP.mode === 'real';
+      var txt = (real ? payoutPctOf(b) : pctOfMult(b, demoMultOf(b))) + '%';
+      if (lb.textContent !== txt) lb.textContent = txt;
+    });
     document.querySelectorAll('.asset-chip').forEach(function (chip) {
       var el = chip.querySelector('.payout-live');
       if (!el) return;
@@ -2960,7 +2972,7 @@
     var stake = stakeRaw > 0 ? Math.max(D6.CONFIG.MIN_STAKE, stakeRaw) : 0;
     // Comme les grandes plateformes : le carré montre le TOTAL reçu si on gagne,
     // exactement ce que le serveur crédite (mise × cote, cf. orolado_fair_credit).
-    var totalWin = D6.roundMoney(stake * (Number(odds) || 1.9));
+    var totalWin = D6.roundMoney(stake * (payMultFor(uP, odds) || 1.9));
     if ($('previewGain')) {
       $('previewGain').textContent = D6.fmtFCFA(totalWin);
       fitGainText($('previewGain'));
