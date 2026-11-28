@@ -2530,7 +2530,8 @@ function admin_credit_player(string $uid, float $delta, string $motif, array $hi
     if (admin_is_uuid($retry)) $targets = [$retry];
   }
   // v3630 : compte partenaire sans coffre de solde → on l'ouvre maintenant (sinon le crédit reste invisible pour lui).
-  if (!admin_is_uuid((string) $targets[0]) && str_starts_with((string) $targets[0], 'u_') && !empty($db['users'][(string) $targets[0]]['partner']) && function_exists('orolado_ensure_balance_uuid')) {
+  // 2026-11-28 : même chose pour un joueur inscrit qui n'a jamais déposé (caisse créée au 1er dépôt) : bonus / crédit admin possibles.
+  if (!admin_is_uuid((string) $targets[0]) && str_starts_with((string) $targets[0], 'u_') && is_array($db['users'][(string) $targets[0]] ?? null) && !admin_is_admin_account((string) $targets[0], $found + $hint) && function_exists('orolado_ensure_balance_uuid')) {
     $ens = orolado_ensure_balance_uuid((string) $targets[0]);
     if (admin_is_uuid($ens)) $targets = [$ens];
   }
@@ -6180,7 +6181,7 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
       + (j.already ? ' · ' + j.already + ' déjà payé(s) aujourd’hui avec ce montant' : '') + (j.check ? ' · ⚠ ' + j.check + ' à vérifier' : '')
       + (function () { // 2026-11-28 : qui n'est PAS payé, et pourquoi
         var w = j.why || {}, p = [];
-        if (w.noid) p.push(w.noid + ' anciens comptes sans caisse de jeu (jamais reconnectés depuis le changement de base)');
+        if (w.noid) p.push(w.noid + ' comptes sans e-mail valide');
         if (w.partner) p.push(w.partner + ' comptes démo affiliés');
         if (w.role) p.push(w.role + ' suspendus, bannis ou supprimés');
         if (w.house) p.push(w.house + ' comptes de la maison');

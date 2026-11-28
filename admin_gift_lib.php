@@ -508,7 +508,12 @@ function admin_all_pay_players(array $players, callable $isHouse, ?array &$why =
     $em = strtolower(trim((string) ($p['email'] ?? '')));
     if ($isHouse($id, $p) || ($em !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($em))) { $why['house']++; continue; }
     if (in_array(strtolower((string) ($p['role'] ?? '')), ['suspended', 'banned', 'deleted', 'admin'], true)) { $why['role']++; continue; }
-    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) { if (is_array($loc[$id] ?? null) && !empty($loc[$id]['partner'])) $why['partner']++; else $why['noid']++; continue; }
+    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) {
+      // 2026-11-28 (propriétaire) : un joueur inscrit par e-mail qui n'a JAMAIS déposé n'a pas encore de caisse (id u_…, créée au
+      // 1er dépôt) : il reçoit AUSSI le bonus — admin_credit_player lui crée sa caisse au moment du crédit.
+      if (is_array($loc[$id] ?? null) && !empty($loc[$id]['partner'])) { $why['partner']++; continue; }
+      if (!str_starts_with($id, 'u_') || !is_array($loc[$id] ?? null) || !filter_var($em, FILTER_VALIDATE_EMAIL) || str_ends_with($em, '.local') || str_ends_with($em, '.invalid')) { $why['noid']++; continue; }
+    }
     if (isset($seen[$id])) { $why['dup']++; continue; }
     $seen[$id] = 1;
     $out[] = ['id' => $id, 'email' => $em, 'name' => trim((string) ($p['name'] ?? '')), 'publicId' => (string) ($p['publicId'] ?? '')];
@@ -521,15 +526,16 @@ function admin_all_pay_preview(array $req, array $players, ?int $now = null, arr
   $p = admin_all_pay_params($req, $now);
   if (empty($p['ok'])) return $p;
   $led = admin_gift_json(admin_all_paid_file($p['key']));
-  $todo = 0; $paid = 0; $check = 0; $mail = 0;
+  $todo = 0; $paid = 0; $check = 0; $mail = 0; $skip = 0;
   foreach ($players as $r) {
     $e = $led[$r['id']] ?? null;
     if (is_array($e) && !empty($e['pending'])) $check++;
     elseif (is_array($e) && !empty($e['ok'])) $paid++;
+    elseif (is_array($e) && !empty($e['skip'])) $skip++;
     else { $todo++; if ($r['email'] !== '') $mail++; }
   }
   return ['ok' => true, 'key' => $p['key'], 'amount' => $p['amount'], 'players' => count($players), 'count' => $todo, 'withMail' => $mail,
-    'total' => round($todo * $p['amount'], 2), 'already' => $paid, 'check' => $check, 'why' => $why];
+    'total' => round($todo * $p['amount'], 2), 'already' => $paid, 'check' => $check, 'skip' => $skip, 'why' => $why];
 }
 
 /**
@@ -569,10 +575,13 @@ function admin_all_pay_run(array $req, array $players, callable $pay, int $limit
       $reason = $ok ? '' : (string) (is_array($res) ? ($res['reason'] ?? 'Échec') : 'Échec');
       $nl = $GLOBALS['OROLADO_NOTIFY_LAST'] ?? null;
       $mail = $ok ? (is_array($nl) ? (string) ($nl['mail'] ?? 'none') : 'none') : '';
-      admin_gift_led_with($file, static function (array &$led) use ($uid, $amt, $ok, $reason, $mail): void {
+      $soft = !$ok && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uid); // 2026-11-28 : caisse impossible à créer pour un non-déposant → on passe au suivant
+      admin_gift_led_with($file, static function (array &$led) use ($uid, $amt, $ok, $reason, $mail, $soft): void {
         if ($ok) $led[$uid] = ['amount' => $amt, 'at' => date('c'), 'ok' => true, 'mail' => $mail];
+        elseif ($soft) $led[$uid] = ['amount' => $amt, 'at' => date('c'), 'ok' => false, 'skip' => true, 'reason' => mb_substr($reason, 0, 120)]; // rien versé ; retenté un autre jour
         else unset($led[$uid]); // refusé (rien versé) : pourra être retenté
       });
+      if ($soft) continue;
       if (!$ok) { $errors[] = ['id' => $uid, 'email' => $r['email'], 'reason' => $reason]; break; }
       if ($mail === 'failed') $mailFailed++;
       $paid++;
