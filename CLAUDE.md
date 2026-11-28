@@ -29,11 +29,9 @@
   `orolado_flw_configured()` renvoie toujours false, api/flutterwave-* supprimés. Dépôts : GeniusPay (minimum 3 $, `OROLADO_DEP_MIN`),
   Maketou en secours (comme avant), crypto inchangée (tout montant reçu est crédité).
 
-- DÉMO FACILE VERROUILLÉE (propriétaire, 2026-11-28) : en DÉMO du trading, pour TOUT LE MONDE (visiteurs et comptes), retour ≈ 130 %
-  (≈ 68 trades gagnés sur 100 à 90 %), payouts AFFICHÉS inchangés (90 %, 500 %, 1000 %, 5000 %) ; `OROLADO_DEMO_EASY_ALL = true`
-  (trade_lib.php `orolado_trade_demo_easy`) + `easyVerdict` (js/engine.js, visiteur). Message « Démo facile… » (m_demoEasy, 12 langues)
-  au 1er trade démo puis tous les 30. Le RÉEL n'est jamais touché (×1,90). Contrôle : `php scripts/test-trade-demo-easy.php`.
-  Ne pas changer sans demande explicite du propriétaire.
+- DÉMO FACILE MISE DE CÔTÉ (propriétaire, 2026-11-28 au soir : « retire la notification », système jugé mauvais) : la démo du trading
+  est NORMALE (comme le réel, ×1,90) ; `OROLADO_DEMO_EASY_ALL = false`, `demoEasyOn()` = false, message m_demoEasy plus affiché.
+  Le code reste là (orolado_trade_demo_easy, easyVerdict) : ne pas le rallumer sans demande explicite du propriétaire.
 
 ## Téléphones du propriétaire (mesures réelles, relevées le 2026-10-20 par le diagnostic « 5 touches sur OROLADO .com »)
 - Heure du propriétaire : Népal, UTC+5:45. Ses captures sont à l'heure locale : comparer avec l'heure de mise en ligne

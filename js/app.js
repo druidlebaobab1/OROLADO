@@ -5290,15 +5290,6 @@
       syncTradeButtons();
       return false;
     }
-    // 2026-11-28 (propriétaire) — démo facile pour tous : message calme « Démo facile… » au 1er trade démo de la visite,
-    // puis tous les 30 trades démo (jamais en compte réel).
-    if (mode === 'demo') {
-      try {
-        var dk = 'oro_demo_easy_n', dn = (Number(sessionStorage.getItem(dk)) || 0) + 1;
-        sessionStorage.setItem(dk, String(dn));
-        if (dn === 1 || dn % 30 === 0) setTimeout(function () { toast(t('m_demoEasy'), 'info', 5000); }, 600);
-      } catch (eDm) { /* ignore */ }
-    }
     // v2555 — applyOpenTradeVisual dessine déjà le rond tout de suite : le 2ᵉ dessin complet qui suivait (iPhone / PC)
     // doublait le travail à chaque clic (mesuré sur iPhone : 25 % d'images lentes en lançant des trades).
     var visDone = false;
