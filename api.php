@@ -531,7 +531,7 @@ if ($action === 'vfState') {
   if (!function_exists('vf_view') || !function_exists('sb_visible')) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
   $me = $token !== '' ? session_user($db, $token) : null;
   if (!sb_visible($me ?: null)) { echo json_encode(['ok' => false, 'server' => true, 'reason' => 'off']); exit; }
-  try { $res = vf_view(0, !empty($req['lite'])); if (!empty($req['teams'])) $res['teams'] = vf_teams(); } // lite : sans historique (relectures toutes les 3 s)
+  try { $res = vf_view(0, !empty($req['lite']), (int) ($req['cs'] ?? 0)); if (!empty($req['teams'])) $res['teams'] = vf_teams(); } // lite : sans historique (relectures toutes les 3 s)
   catch (Throwable $eVf) { error_log('OROLADO vf ' . $eVf->getMessage()); $res = ['ok' => false, 'reason' => 'busy']; }
   if (function_exists('sb_after_response')) sb_after_response(); // règlement des journées virtuelles finies (après la réponse)
   echo json_encode(['server' => true] + $res, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

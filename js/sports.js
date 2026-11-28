@@ -1839,13 +1839,15 @@
     if (vfBusy) return; vfBusy = true;
     try {
       var full = !vf || !vf.hs || Date.now() - vfFullAt > 45000 || (/^(tb|res|st|team)$/.test(vfTab) && Date.now() - vfFullAt > 15000) || vfSig === 'chg';
-      var r = await D6.Api.post('vfState', { teams: vfTeams ? 0 : 1, lite: full ? 0 : 1 }, 9000);
+      var csId = view === 'match' && /^virt:/.test(sbMid) ? +String(sbMid).split(':')[1] : 0; // match ouvert : tous ses paris (score exact complet)
+      var r = await D6.Api.post('vfState', { teams: vfTeams ? 0 : 1, lite: full ? 0 : 1, cs: csId }, 9000);
       if (r && r.ok) {
         if (r.teams) vfTeams = r.teams; vfSkew = r.now - Date.now() / 1000;
         var sig = (r.days || []).map(function (d) { return d.g + (d.live ? 'L' : ''); }).join(',');
         if (r.lite && vf) { r.res = vf.res; r.tb = vf.tb; r.hs = vf.hs; if (vfSig && sig !== vfSig) sig = 'chg'; } // nouvelle journée : tout relire au prochain tour
         else { vfFullAt = Date.now(); (r.days || []).forEach(function (d) { d.fx.forEach(function (f) { if (f.hh) vfHH[f.id] = f.hh; }); }); }
         (r.days || []).forEach(function (d) { d.fx.forEach(function (f) { if (!f.hh && vfHH[f.id]) f.hh = vfHH[f.id]; }); });
+        if (vf && vf.days) { var oldMk = {}; vf.days.forEach(function (d) { d.fx.forEach(function (f) { if (f.mk) oldMk[f.id] = f.mk; }); }); (r.days || []).forEach(function (d) { d.fx.forEach(function (f) { if (f.mk && f.id !== csId && oldMk[f.id] && Object.keys(f.mk).length < Object.keys(oldMk[f.id]).length) { var mm = Object.assign({}, oldMk[f.id], f.mk); delete mm.cs; f.mk = mm; } }); }); } // relecture légère : on garde les autres paris connus
         vfSig = sig; vf = r; vfPaint(); syncVfSlip();
         if (view === 'match' && /^virt:/.test(sbMid)) { var m = vfM(sbMid); if (m) sbM = m; else if (sbM && sbM.fx) { sbM.fx.end = true; sbM.fx.st = 'FT'; sbM.mk = [{ mk: '1x2', o: [], s: 1 }]; } paintMatch(); }
       }
@@ -2894,7 +2896,7 @@
     if (view !== 'match' || sbMid !== fid) navPush();
     if (view !== 'match') { matchFrom = view; if (mb) scrollMem[view] = mb.scrollTop; leaveQ(view, 'match'); }
     sbMid = fid; sbM = null; mGrp = 'main'; mQ = ''; trkTab = ''; view = 'match';
-    if (/^virt:/.test(fid)) { sbM = vfM(fid); render(); if (mb) mb.scrollTop = 0; vfLoop.n = 0; vfLoop(); return; } // match virtuel : tout vient de vfState
+    if (/^virt:/.test(fid)) { sbM = vfM(fid); render(); if (mb) mb.scrollTop = 0; vfLoop.n = 0; vfLoop(); vfFullAt = 0; setTimeout(vfLoad, 50); return; } // tous les paris du match (score exact complet) tout de suite // match virtuel : tout vient de vfState
     render();
     if (mb) mb.scrollTop = 0;
     loadMatch(fid, true); formLoad(fid);

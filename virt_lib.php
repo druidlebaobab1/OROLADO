@@ -217,12 +217,19 @@ function vf_markets(int $g, int $i, int $t): ?array {
   else { $k1 = $res($hh, $ha); foreach ($M as [$x, $y, $p]) { $k = $k1 . '/' . $res($x, $y); $hf[$k] = ($hf[$k] ?? 0) + $p; } }
   $mk['htft'] = []; foreach (['H', 'D', 'A'] as $u) foreach (['H', 'D', 'A'] as $v) if (isset($hf[$u . '/' . $v])) $mk['htft'][] = [$u . '/' . $v, vf_odd($hf[$u . '/' . $v])];
   // score exact (0 à 4 buts par équipe), pair / impair, buts de chaque équipe
-  // score exact (propriétaire : « rangé en mode pair ») : TOUJOURS les mêmes 15 scores, 5 par colonne (1 | X | 2) ; un score
-  // devenu impossible en direct garde sa place avec un cadenas ; score rare : cote plafonnée à 60 (toujours en faveur de la maison)
+  /* score exact (propriétaire, comme les grands sites : « ne te limite pas, monte jusqu'à 10 ») : TOUS les scores de 0-0 à 10-10,
+     rangés 1 | X | 2. Anti-triche : la cote d'un score ne dépasse jamais 0,92 / probabilité (plafond 100) → même en prenant
+     TOUS les scores, le joueur récupère au plus 92 % ; un score devenu impossible en direct garde sa place avec un cadenas. */
   $cs = []; foreach ($M as [$x, $y, $p]) $cs[$x . ':' . $y] = ($cs[$x . ':' . $y] ?? 0) + $p;
+  $keys = [];
+  for ($x = 1; $x <= 10; $x++) for ($y = 0; $y < $x; $y++) $keys[] = $x . ':' . $y;
+  for ($x = 0; $x <= 10; $x++) $keys[] = $x . ':' . $x;
+  for ($y = 1; $y <= 10; $y++) for ($x = 0; $x < $y; $x++) $keys[] = $x . ':' . $y;
   $mk['cs'] = [];
-  foreach (['1:0', '2:0', '2:1', '3:0', '3:1', '0:0', '1:1', '2:2', '3:3', '4:4', '0:1', '0:2', '1:2', '0:3', '1:3'] as $k) {
-    $p = (float) ($cs[$k] ?? 0); $o = $p > 0.985 ? null : ($p >= 0.0005 ? min(60.0, floor((1 - VF_MARGE) / $p * 100) / 100) : null);
+  foreach ($keys as $k) {
+    [$x, $y] = array_map('intval', explode(':', $k));
+    $p = (float) ($cs[$k] ?? 0);
+    $o = ($x < $h || $y < $a || $p > 0.985) ? null : ($p > 0 ? min(100.0, floor((1 - VF_MARGE) / $p * 100) / 100) : 100.0);
     $mk['cs'][] = [$k, $o !== null && $o >= 1.02 ? $o : null];
   }
   $pod = $P(fn($x, $y) => ($x + $y) % 2 === 1); $mk['oe'] = [['O', vf_odd($pod)], ['E', vf_odd(1 - $pod)]];
@@ -325,7 +332,7 @@ function vf_settle_due(): void {
 /* ---------- vue envoyée au téléphone ---------- */
 function vf_id(int $g, int $i): int { return $g * 100 + $i; }
 function vf_split(int $id): array { return [intdiv($id, 100), $id % 100]; }
-function vf_view(int $t = 0, bool $lite = false): array {
+function vf_view(int $t = 0, bool $lite = false, int $csFor = 0): array {
   $t = $t ?: vf_now();
   $g = vf_slot($t);
   $cur = $t < vf_ko($g) + VF_MATCH ? $g : null; // journée en cours (10 premières minutes du créneau)
@@ -337,6 +344,7 @@ function vf_view(int $t = 0, bool $lite = false): array {
       $row = ['id' => vf_id($gg, $i), 'h' => $h, 'a' => $a];
       if ($gg === $cur) { $st = vf_state($gg, $i, $t); $row += ['sc' => [$st['h'], $st['a']], 'min' => $st['min'], 'gl' => $st['goals']]; }
       $row['mk'] = $m ? $m['mk'] : null;
+      if ($row['mk'] && $row['id'] !== $csFor) { if ($lite) $row['mk'] = array_intersect_key($row['mk'], ['1x2' => 1]); else unset($row['mk']['cs']); } // relectures légères : 1 X 2 pour la liste, tout pour le match ouvert
       $hk = min($h, $a) . '-' . max($h, $a); if (!empty($H['hh'][$hk])) $row['hh'] = array_reverse($H['hh'][$hk]);
       $rows[] = $row;
     }
