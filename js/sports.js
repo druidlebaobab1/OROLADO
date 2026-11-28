@@ -77,7 +77,8 @@
   function trO(lbl) { var l = lg(); return l !== 'fr' && LGW[lbl] && LGW[lbl][l] ? LGW[lbl][l] : lbl; }
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function fmt(s, o) { return String(s).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
-  function m2(v) { return (Number(v) || 0).toFixed(2); }
+  // 2026-11-28 (propriétaire : « quel que soit le montant ») : très grands nombres écrits en chiffres (jamais « 8.26e+22 »)
+  function m2(v) { v = Number(v) || 0; if (Math.abs(v) >= 1e15) { try { return v.toLocaleString('en-US', { useGrouping: false, minimumFractionDigits: 2, maximumFractionDigits: 2 }); } catch (e) { /* ignore */ } } return v.toFixed(2); }
   // case de mise : « 1 » et pas « 1.00 » (propriétaire : les zéros trompent) ; « 1.5 », « 0.8 » gardent leurs décimales utiles
   function sv(v) { return String(Math.round((Number(v) || 0) * 100) / 100); }
   // v2696 : petites icônes de sport dessinées (plus d'émojis)
@@ -257,11 +258,27 @@
   function linesHtml(t, tag, max, auto) { return lines(t, max).map(function (p) { return '<' + tag + ' class="fit"' + (auto ? ' dir="auto"' : '') + '>' + esc(p) + '</' + tag + '>'; }).join(''); }
   // textes élastiques (même règle que le casino : D6.CasinoKit.fitEl)
   function fitEl(el) {
-    var K = D6.CasinoKit; if (K && K.fitEl) { K.fitEl(el); return; }
+    var K = D6.CasinoKit; if (K && K.fitEl) { K.fitEl(el); fitMore(el); return; }
     if (!el || !el.isConnected) return;
     el.style.fontSize = '';
     var fs = parseFloat(getComputedStyle(el).fontSize) || 14, min = Math.max(7, fs * 0.5), n = 0;
     while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 30) { fs = Math.max(min, fs * 0.93); el.style.fontSize = fs.toFixed(1) + 'px'; }
+  }
+  // champ de saisie : la police rapetisse quand le montant s'allonge (comme la mise du trading), jamais coupé
+  var fitCv = null;
+  function fitInp(el) {
+    if (!el || !el.isConnected) return;
+    el.style.fontSize = '';
+    var cs = getComputedStyle(el), fs = parseFloat(cs.fontSize) || 20, w = el.clientWidth - 4; if (w <= 0) return;
+    fitCv = fitCv || document.createElement('canvas'); var g = fitCv.getContext('2d'); g.font = cs.fontWeight + ' ' + fs + 'px ' + cs.fontFamily;
+    var tw = g.measureText(el.value || el.placeholder || '').width;
+    if (tw > w) el.style.fontSize = Math.max(10, Math.floor(fs * w / tw * 10) / 10) + 'px';
+  }
+  // chiffres importants (data-fmin) : si la règle générale (50 %) ne suffit pas, on rapetisse encore jusqu'à ce minimum
+  function fitMore(el) {
+    if (!el || !el.isConnected || !el.getAttribute('data-fmin')) return;
+    var fs = parseFloat(getComputedStyle(el).fontSize) || 14, min = Math.max(6, parseFloat(el.getAttribute('data-fmin')) || 6), n = 0;
+    while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 40) { fs = Math.max(min, fs * 0.92); el.style.fontSize = fs.toFixed(1) + 'px'; }
   }
   function fitAll(root) { if (root) root.querySelectorAll('.fit').forEach(fitEl); }
   function setTx(el, t) { if (el && el.textContent !== t) { el.textContent = t; fitEl(el); } }
@@ -524,7 +541,7 @@
   function mineBar() {
     var x = X(), st = [['all', x.fAll], ['open', x.fOpen], ['won', x.fWon], ['lost', x.fLost], ['void', x.fVoid]], c = counts();
     var per = [['all', x.pAll], ['today', x.pToday], ['yday', NX().yday], ['7', x.p7], ['month', x.pMonth], ['year', x.pYear], ['day', x.pDay]];
-    return '<div class="sp2-mf"><div class="sp2-st">' + st.map(function (o) { return '<button type="button" data-mst="' + o[0] + '" class="st-' + o[0] + (MF.st === o[0] ? ' on' : '') + '" style="flex-grow:' + (String(o[1]).length + 3) + '"><b>' + (mineCache ? c[o[0]] || 0 : '·') + '</b><span class="fit">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
+    return '<div class="sp2-mf"><div class="sp2-st">' + st.map(function (o) { return '<button type="button" data-mst="' + o[0] + '" class="st-' + o[0] + (MF.st === o[0] ? ' on' : '') + '" style="flex-grow:' + (String(o[1]).length + 3) + '"><b class="fit">' + (mineCache ? c[o[0]] || 0 : '·') + '</b><span class="fit">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
       // 2026-10-23 (propriétaire : « le carré blanc pour choisir la période, pas cool ») : puces maison, jamais le menu blanc du téléphone
       '<div class="sp2-perc pz-hs" id="spMfPer">' + per.map(function (o) { return '<button type="button" data-mper="' + o[0] + '" class="' + (MF.per === o[0] ? 'on' : '') + (o[0] === 'day' ? ' dy' : '') + '">' + (o[0] === 'day' ? IC.cal : '') + '<span dir="auto">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
       '<div class="sp2-days pz-hs" id="spMfDays"' + (MF.per === 'day' ? '' : ' hidden') + '>' + mDays() + '</div></div>';
@@ -536,8 +553,8 @@
     var st = 0, won = 0, doneSt = 0;
     L.forEach(function (b) { var s0 = +b.stake || 0, w = b.co != null ? +b.co : +b.win || 0; if (b.status === 'void') return; st += s0; won += w; if (b.status !== 'open') doneSt += s0; });
     var net = Math.round((won - doneSt) * 100) / 100;
-    return '<div class="pz-msum"><p><small dir="auto">' + esc(T18('sbSumSt', 'Staked')) + '</small><b dir="ltr">' + money(st) + '</b></p><p><small dir="auto">' + esc(T18('sbSumWon', 'Won')) + '</small><b dir="ltr" class="w">' + money(won) + '</b></p>' +
-      '<p><small dir="auto">' + esc(T18('sbSumNet', 'Result')) + '</small><b dir="ltr" class="' + (net >= 0 ? 'w' : 'l') + '">' + (net >= 0 ? '+' : '−') + money(Math.abs(net)) + '</b></p></div>';
+    return '<div class="pz-msum"><p><small dir="auto">' + esc(T18('sbSumSt', 'Staked')) + '</small><b dir="ltr" class="fit">' + money(st) + '</b></p><p><small dir="auto">' + esc(T18('sbSumWon', 'Won')) + '</small><b dir="ltr" class="w fit">' + money(won) + '</b></p>' +
+      '<p><small dir="auto">' + esc(T18('sbSumNet', 'Result')) + '</small><b dir="ltr" class="fit ' + (net >= 0 ? 'w' : 'l') + '">' + (net >= 0 ? '+' : '−') + money(Math.abs(net)) + '</b></p></div>';
   }
   function paintMine() {
     if (!$('spRcs')) return;
@@ -797,8 +814,8 @@
       (bal == null ? '' : '<div class="sp2-balr" id="spBalR"><span class="fit" id="spBalT">' + esc(x.balL + (lg() === 'fr' ? ' : ' : ': ')) + money(bal) + '</span></div>') +
       '<p class="sp2-err" id="spErr" hidden><span class="fit" id="spErrT"></span></p>' +
       (each ? '' : '<div id="spBst"></div>') +
-      '<div class="sp2-sum">' + (each ? '<p><span class="fit">' + esc(x.totSt) + '</span><b id="spTot"></b></p>' : '<p><span class="fit">' + esc(x.totalOdd) + '</span><b id="spOdd">' + odd.toFixed(2) + '</b></p>') +
-        '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b id="spPot"></b></p></div>' +
+      '<div class="sp2-sum">' + (each ? '<p><span class="fit">' + esc(x.totSt) + '</span><b id="spTot" data-fmin="7"></b></p>' : '<p><span class="fit">' + esc(x.totalOdd) + '</span><b id="spOdd" data-fmin="7">' + m2(odd) + '</b></p>') +
+        '<p class="win"><span class="fit">' + esc(x.potL) + '</span><b id="spPot" data-fmin="7"></b></p></div>' +
       '<button type="button" class="sp2-place' + (ctx.guest ? ' guest' : '') + '" id="spGo"><span class="fit" id="spGoT">' + esc(ctx.guest ? guestBtn || x.guestBtn : each ? fmt(x.placeN, { n: slip.length }) : x.placeB) + '</span>' +
         '</button>' + // propriétaire : « Placer le pari » seul, sans le montant dans le bouton
       '<p class="sp2-min"><span class="fit">' + esc(x.minNote) + '</span></p></div>';
@@ -837,6 +854,9 @@
       }
       setTx($('spPot'), money(pot));
       if ($('spTot')) setTx($('spTot'), money(t));
+      if ($('spOdd')) fitEl($('spOdd'));
+      box.querySelectorAll('.pz-bstb em.fit').forEach(fitEl);
+      fitInp(inp); // 2026-11-28 (propriétaire) : le montant tapé rapetisse pour toujours tenir dans la case
       if ($('spGoAmt')) setTx($('spGoAmt'), money(t));
       if (each) slip.forEach(function (z, i) { var w = box.querySelector('[data-pw="' + i + '"]'); if (w) setTx(w, money(sp2Pot(stOf(z), z.odd))); });
       // erreurs claires : mise minimum, mise plus grande que le solde (bouton Recharger mis en avant)
@@ -921,7 +941,7 @@
   function bstBanner(pct, amt, cls) {
     var n = NX();
     if (!(pct > 0)) return '<div class="pz-bstb hint"><span class="pz-bstb-i">' + GIFT + '</span><span class="pz-bstb-t"><small dir="auto">' + esc(n.bstH) + '</small></span></div>';
-    return '<div class="pz-bstb' + (cls ? ' ' + cls : '') + '"><span class="pz-bstb-i">' + GIFT + '</span><span class="pz-bstb-t"><b dir="auto">' + esc(n.bstL) + '</b><small dir="auto">' + esc((cls === 'lost' ? '' : '+' + money(amt) + ' ') + n.bstAdd) + '</small></span><em dir="ltr">' + (cls === 'lost' ? '—' : '+' + money(amt)) + '</em></div>';
+    return '<div class="pz-bstb' + (cls ? ' ' + cls : '') + '"><span class="pz-bstb-i">' + GIFT + '</span><span class="pz-bstb-t"><b dir="auto">' + esc(n.bstL) + '</b><small dir="auto">' + esc((cls === 'lost' ? '' : '+' + money(amt) + ' ') + n.bstAdd) + '</small></span><em dir="ltr" class="fit" data-fmin="7">' + (cls === 'lost' ? '—' : '+' + money(amt)) + '</em></div>';
   }
   function pctTx(p) { return '+' + (Math.round(p * 10) / 10).toLocaleString(lg() === 'fr' ? 'fr-FR' : 'en-US') + ' %'; }
   /* 2026-10-22 (propriétaire : « sur iPhone la petite roue a l'air figée, les joueurs touchent encore ») — pendant l'envoi,
@@ -1495,9 +1515,9 @@
     if (!on) { if (!el.hidden) el.hidden = true; return; }
     var x = XX(), combo = mode() === 'combo', odd = totalOdd(), st = stake > 0 ? stake : 0;
     var pot = combo ? sp2Pot(st, odd) : slip.reduce(function (a, z) { return a + sp2Pot(st, z.odd); }, 0);
-    var h = '<span class="pz-sbn">' + slip.length + '</span><span class="pz-sbt" dir="auto">' + esc(combo ? x.totalOdd : NX().nSlip) + ' <b dir="ltr">' + (combo ? odd.toFixed(2) : '') + '</b></span>' +
+    var h = '<span class="pz-sbn">' + slip.length + '</span><span class="pz-sbt" dir="auto">' + esc(combo ? x.totalOdd : NX().nSlip) + ' <b dir="ltr">' + (combo ? m2(odd) : '') + '</b></span>' +
       (st > 0 ? '<span class="pz-sbp" dir="auto">' + esc(x.potL) + ' <b dir="ltr">' + money(pot) + '</b></span>' : '') + '<i class="pz-sbc">' + SBIC.chev + '</i>';
-    if (el.innerHTML !== h) el.innerHTML = h;
+    if (el.innerHTML !== h) { el.innerHTML = h; el.querySelectorAll('.pz-sbt, .pz-sbp').forEach(function (z) { z.setAttribute('data-fmin', '7'); fitMore(z); }); }
     el.hidden = false;
   }
   function paintNav(bump) {

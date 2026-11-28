@@ -130,7 +130,8 @@
   function fmt(usd, c) {
     var d = CUR[c]; if (!d) return '';
     var dec = d[2] < 20 && usd * d[2] < 1000 ? 2 : 0, v = Math.floor(Math.max(0, usd) * d[2] * Math.pow(10, dec) + 1e-6) / Math.pow(10, dec);
-    var parts = v.toFixed(dec).split('.'), s = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (dec ? '.' + parts[1] : '');
+    var vs = v >= 1e15 ? (function () { try { return v.toLocaleString('en-US', { useGrouping: false, minimumFractionDigits: dec, maximumFractionDigits: dec }); } catch (e) { return v.toFixed(dec); } })() : v.toFixed(dec); // très grands montants : en chiffres (jamais « 4.9e+25 »)
+    var parts = vs.split('.'), s = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (dec ? '.' + parts[1] : '');
     return '≈ ' + (d[1] ? d[0] + ' ' + s : s + ' ' + d[0]);
   }
   function usdOf(el) {
@@ -144,6 +145,7 @@
     if (!amtEl || !host) return;
     var c = code(), tag = host.querySelector('.oro-loc');
     var n = c ? usdOf(amtEl) : null;
+    if (n != null && n >= 1e12) n = null; // montant irréaliste (coupon géant) : pas d'équivalent, la case ne déborde jamais
     if (!c || n == null) { if (tag) tag.remove(); host.classList.remove('has-loc'); return; }
     if (!tag) { tag = document.createElement('span'); tag.className = 'oro-loc'; tag.setAttribute('dir', 'ltr'); host.appendChild(tag); }
     var txt = fmt(n, c);
@@ -270,7 +272,7 @@
         var box = (sp.after || sp.btn) ? host.parentNode : host;
         if (!box) continue;
         var tag = box.querySelector(':scope > .oro-loc2' + (sp.cls ? '.' + sp.cls : ':not(.fsl)'));
-        var n = c ? numOf(amt) : null;
+        var n = c ? numOf(amt) : null; if (n != null && n >= 1e12) n = null; // montant irréaliste : pas d'équivalent
         var fsOn = document.documentElement.classList.contains('fs-trade');
         if ((sp.noFs && fsOn) || (sp.fsOnly && !fsOn)) n = null; // plein écran : le gain « ≈ $ » est déjà sous la mise
         if ((!c || n == null) && sp.btn) host.classList.remove('has-gol');
