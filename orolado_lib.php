@@ -4692,10 +4692,10 @@ function orolado_min_deposit_fcfa(?array $me): int {
 function orolado_min_deposit(?array $me): float {
   // v2621 (propriétaire) : 3 $ comme affiché sur le site (avant 5 $ : un dépôt Mobile Money de 3 $ était refusé).
   // v3020 (propriétaire, 2026-10-21) : 1 $ (carte, Mobile Money / Wave). La crypto (OxaPay) ne passe pas par ici.
-  return OROLADO_DEP_MIN;
+  return 1.0;
 }
-/** 2026-11-28 (propriétaire : « publicités chères, dépôt minimum 1 $ pas rentable ») : dépôt minimum 3 $ pour carte, Mobile Money,
- *  Wave (GeniusPay, Flutterwave, Maketou). UN SEUL réglage, lu partout. La crypto garde son propre minimum (OxaPay, ≥ 5 $). */
+/** 2026-11-28 (propriétaire : « dépôt minimum 3 $, UNIQUEMENT GeniusPay ; la crypto, tu ne touches pas ») : minimum 3 $ pour
+ *  GeniusPay seulement (geniuspay_lib.php). Flutterwave, Maketou et la crypto gardent leurs minimums d'avant. */
 const OROLADO_DEP_MIN = 3.0;
 /** Seuil pour CRÉDITER un dépôt déjà payé (inchangé, 1 $ comme avant) : jamais d'argent payé non crédité. */
 const OROLADO_DEP_CREDIT_FLOOR = 1.0;
@@ -4741,7 +4741,7 @@ function orolado_initiate_deposit(array $req): array {
   $fullFcfa = $amountFcfa;
   if ($feePct > 0) $amountFcfa = (int) round($amountFcfa / (1 + $feePct / 100));
   if ($amountUsd + 0.0001 < $minUsd && $fullFcfa < $minFcfa) {
-    return ['ok' => false, 'server' => true, 'code' => 'min', 'min' => OROLADO_DEP_MIN, 'reason' => 'Le dépôt minimum est de $3.'];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $1.'];
   }
   if ($amountFcfa < 1 || $amountFcfa > 5000000) {
     return ['ok' => false, 'server' => true, 'reason' => 'Montant invalide'];
@@ -8241,9 +8241,9 @@ function orolado_flutterwave_checkout(array $req): array {
     return ['ok' => false, 'server' => true, 'reason' => 'Paiement carte indisponible pour le moment.', 'code' => 'keys'];
   }
   $amountUsd = orolado_money($req['amount'] ?? 0);
-  $minUsd = OROLADO_DEP_MIN; // 2026-11-28 (propriétaire) : 3 $ (v3020 : 1 $)
+  $minUsd = 1.0; // v3020 (propriétaire) : 1 $ (avant 3 $)
   if ($amountUsd + 0.0001 < $minUsd) {
-    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.', 'code' => 'min', 'min' => OROLADO_DEP_MIN];
+    return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $1.00.', 'code' => 'min'];
   }
   $cust = orolado_flw_customer($me, $token);
   if (!orolado_flw_email_ok((string) ($cust['email'] ?? ''))) {
@@ -8369,7 +8369,7 @@ function orolado_flutterwave_momo_charge(array $req): array {
   if (!$me) return ['ok' => false, 'server' => true, 'reason' => 'Session invalide', 'code' => 'session'];
   if (!orolado_flw_configured()) return ['ok' => false, 'server' => true, 'reason' => 'Mobile Money indisponible pour le moment.', 'code' => 'keys'];
   $amountUsd = orolado_money($req['amount'] ?? 0);
-  if ($amountUsd + 0.0001 < OROLADO_DEP_MIN) return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $3.', 'code' => 'min', 'min' => OROLADO_DEP_MIN]; // 2026-11-28 : 3 $ (v3020 : 1 $)
+  if ($amountUsd + 0.0001 < 1.0) return ['ok' => false, 'server' => true, 'reason' => 'Le dépôt minimum est de $1.', 'code' => 'min']; // v3020 : 1 $ (avant 3 $)
   $nets = orolado_flw_momo_networks();
   $netKey = strtolower(trim((string) ($req['network'] ?? 'wave')));
   if (!isset($nets[$netKey])) $netKey = 'wave';
