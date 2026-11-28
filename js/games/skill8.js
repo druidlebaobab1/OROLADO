@@ -2585,8 +2585,10 @@
         c.fillStyle = 'rgba(255,255,255,.15)'; rr(c, -w * 0.38, -h * 0.14, w * 0.3, h * 0.12, 3); c.fill();
       });
     }
+    function rdL() { return Math.max(W * 0.27, tw * 0.6); } // bords de la route sableuse du décor (collines et barbelés au-delà)
+    function rdR() { return Math.min(W * 0.73, W - tw * 0.6); }
     function spawn(live) {
-      var lv = live ? A.lv() : 0.2, x = rnd(W * 0.12, W * 0.88);
+      var lv = live ? A.lv() : 0.2, x = rnd(rdL(), rdR()); // 2026-11-28 (propriétaire) : les tanks ennemis roulent SUR la route, jamais sur les collines
       for (var i = 0; i < foes.length; i++) if (foes[i].y < T + tw * 1.5 && Math.abs(foes[i].x - x) < tw * 1.1) return;
       foes.push({ x: x, y: T - tw, vy: (H - T) * (0.08 + 0.1 * lv) * rnd(0.85, 1.2), hp: 1 });
     }
@@ -2605,7 +2607,7 @@
         if (strike) { strike.t += dt; strike.sh = strike.sh || []; if (strike.t < 0.8 && Math.random() < 0.5) strike.sh.push({ x: rnd(0, W), y: T, vy: (H - T) * 2.2 }); for (i = strike.sh.length - 1; i >= 0; i--) { var sh = strike.sh[i]; sh.y += sh.vy * dt; if (sh.y >= py) { boomFx(A, sh.x, py, 0.9); strike.sh.splice(i, 1); } } if (strike.t > 0.35 && !strike.hit) { strike.hit = 1; dead = 1; } return; }
         if (dead || won) return;
         if (A.idle()) { var near = foes.slice().sort(function (a2, b2) { return b2.y - a2.y; })[0]; if (near) px += clamp(near.x - px, -W * 1.1 * dt, W * 1.1 * dt); }
-        px = clamp(px, tw * 0.5, W - tw * 0.5);
+        px = clamp(px, rdL(), rdR());
         if (cool <= 0 && !dead) { cool = 0.26; bul.push({ x: px, y: py - tw * 0.6, vy: -(H - T) * 1.6 }); A.sx('gun', { k: 'tank', v: 0.35 }); }
         spT -= dt; if (spT <= 0 && foes.length < 3 + Math.round(5 * lv)) { spawn(live); spT = Math.max(0.5, 1.8 - 1.1 * lv) * rnd(0.7, 1.3); }
         for (i = bul.length - 1; i >= 0; i--) { b = bul[i]; b.y += b.vy * dt; if (b.y < T - 20) { bul.splice(i, 1); continue; } for (var j = foes.length - 1; j >= 0; j--) { f = foes[j]; if (Math.abs(b.x - f.x) < tw * 0.5 && Math.abs(b.y - f.y) < tw * 0.5) { bul.splice(i, 1); foes.splice(j, 1); kills++; boomFx(A, f.x, f.y, 0.7); break; } } }
@@ -2619,9 +2621,9 @@
         if (!dead) c.drawImage(tankS, px - tankS.w / 2, py - tankS.h / 2, tankS.w, tankS.h);
       },
       down: function (x) { drag = { x: x, s: px }; },
-      move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, tw * 0.5, W - tw * 0.5); },
+      move: function (x) { if (drag && !dead) px = clamp(drag.s + (x - drag.x) * 1.25, rdL(), rdR()); },
       up: function () { drag = null; },
-      key: function (k) { if (k === 'left') px -= tw * 0.6; else if (k === 'right') px += tw * 0.6; px = clamp(px, tw * 0.5, W - tw * 0.5); },
+      key: function (k) { if (k === 'left') px -= tw * 0.6; else if (k === 'right') px += tw * 0.6; px = clamp(px, rdL(), rdR()); },
       boom: function () { strike = { t: 0 }; drag = null; A.sx('engine', { k: 'jet' }); },
       win: function () { won = 0.001; drag = null; A.burst(px, py - tw * 0.5, 16, ['#A3B18A', '#FFFFFF', '#FDE68A'], 160, 0.6, 3); },
       dbg: function () { return { px: px | 0, py: py | 0, foes: foes.length, dead: dead, kills: kills }; }

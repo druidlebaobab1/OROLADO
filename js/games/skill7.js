@@ -1778,8 +1778,11 @@
           if (!hi.ok) return; // pas d'ancien dessin : le commando apparaît avec son image
           var im = hi.im, hh = ch * 1.04, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(p * TAU * 2);
           c.save();
-          if (mode === 'run') { c.translate(0, -Math.abs(st) * ch * 0.04); c.rotate(st * 0.03); c.scale(1 + st * 0.02, 1 - Math.abs(st) * 0.02); }
-          else if (mode === 'jump') c.rotate(-0.12);
+          // 2026-11-28 (propriétaire : « le soldat regarde vers la gauche, ses pieds ne touchent pas le sol ») : l'image court vers la
+          // gauche → retournée (il court vers les ennemis, à droite) ; pieds posés sur la route (léger appui, petit rebond seulement)
+          c.translate(0, ch * 0.035); c.scale(-1, 1);
+          if (mode === 'run') { c.translate(0, -Math.abs(st) * ch * 0.015); c.rotate(-st * 0.03); c.scale(1 + st * 0.02, 1 - Math.abs(st) * 0.02); }
+          else if (mode === 'jump') c.rotate(0.12);
           else { c.scale(1.12, 0.62); }
           c.drawImage(im, -ww / 2, -hh, ww, hh); c.restore();
         }; };
