@@ -1301,7 +1301,7 @@
   // 2026-11-16 (propriétaire : « améliore les personnages des jeux de guerre, comme les zombies ») : vrais personnages
   // illustrés (fal.ai) pour Trench Defense et Sniper ; les anciens dessins restent en secours tant que l'image n'est pas là.
   var WARI = {};
-  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=' + (WARV[k] ? '3842' : k === 'zomb2_gun' ? '3548' : k === 'td_soldier' || k === 'sn_enemy' || k === 'sn_civ' ? '3741' : k === 'wb_sniper2' || k === 'sn_enemy2' || k === 'sn_civ2' ? '3744' : '3742'); } if (cb && !o.ok) o.cbs.push(cb); return o; }
+  function warImg(k, cb) { var o = WARI[k]; if (!o) { o = WARI[k] = { im: new Image(), ok: false, cbs: [] }; o.im.decoding = 'async'; o.im.onload = function () { o.ok = true; o.cbs.forEach(function (f) { try { f(); } catch (e) { /* ignore */ } }); o.cbs = []; }; o.im.src = 'img/games/' + k + '.webp?v=' + (WARV[k] ? '3842' : k === 'zomb2_gun' ? '3548' : k === 'td_soldier' || k === 'sn_enemy' || k === 'sn_civ' ? '3741' : k === 'wb_sniper2' || k === 'sn_enemy2' || k === 'sn_civ2' ? '3744' : k === 'cmd_hero' ? '3891' : '3742'); /* 2026-11-28 : commando avec ses 2 chaussures */ } if (cb && !o.ok) o.cbs.push(cb); return o; }
   // 2026-11-26 (propriétaire : « les obstacles sont moches ») : vrais abris et soldats qui visent, illustrés (fal.ai)
   var WARV = { war_cv_sand: 1, war_cv_log: 1, war_cv_stone: 1, td_aim: 1, fa_aim: 1, js_aim: 1, war_boss: 1, zb_car: 1, zb_truck: 1, zb_tomb: 1, zb_sarco: 1 };
   ['td_soldier', 'fa_sold', 'js_sold', 'cmd_hero', 'zomb2_gun', 'wb_sniper2', 'sn_enemy2', 'sn_civ2'].forEach(function (k) { warImg(k); }); // chargées dès l'ouverture du module
@@ -1776,7 +1776,7 @@
         var hero = function (mode) { return function (c, p) {
           var hi = warImg('cmd_hero');
           if (!hi.ok) return; // pas d'ancien dessin : le commando apparaît avec son image
-          var im = hi.im, hh = ch * 1.04, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(p * TAU * 2);
+          var im = hi.im, hh = ch * 1.05, ww = hh * im.naturalWidth / im.naturalHeight, st = Math.sin(p * TAU * 2);
           c.save();
           // 2026-11-28 (propriétaire : « le soldat regarde vers la gauche, ses pieds ne touchent pas le sol ») : l'image court vers la
           // gauche → retournée (il court vers les ennemis, à droite) ; pieds posés sur la route (léger appui, petit rebond seulement)
