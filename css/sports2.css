@@ -1978,3 +1978,8 @@ html body .sp-rcpt-mt i.vf-tag{margin-inline-end:0!important}
 html:root body #casinoModal .sp2 .vf-tabs2 button{padding:0 4px}html:root body #casinoModal .sp2 .vf-tabs2 button span{font-size:13px}html:root body #casinoModal .sp2 .vf-tabs2 .vf-ldot{margin-inline-end:4px}
 html body #casinoModal .sp2 .vf-tr{grid-template-columns:22px minmax(0,1fr) 24px 22px 22px 22px 32px 30px;gap:3px;padding:7px 8px}html body #casinoModal .sp2 .vf-tr .vf-tn{gap:5px}
 html:root body #casinoModal .sp2 .vf-tabs2 button span{line-height:1.45;padding-top:1px}
+html body #casinoModal .sp2 .vf-note{margin:2px 0 6px;font:700 11.5px/1.2 var(--sp2-font);color:#8f8470;text-align:center}
+html body #casinoModal .sp2 .vf-big{grid-template-columns:30px minmax(0,1fr)}
+html body #casinoModal .sp2 .vf-bm{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px;min-width:0}
+html body #casinoModal .sp2 .vf-bm > b{color:#facc15;font-weight:900;white-space:nowrap}
+html body #casinoModal .sp2 .vf-bm > .vf-tn:last-child{flex-direction:row-reverse;text-align:end}

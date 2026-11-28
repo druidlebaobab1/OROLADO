@@ -3173,7 +3173,7 @@ function sb_live_check(array &$picked, string $acc, ?array $user, int $now, arra
     }
   }
   foreach ($picked as $i => $p) {
-    if (empty($p['lv'])) continue;
+    if (empty($p['lv']) || !str_starts_with((string) $p['ev'], 'sb:foot:')) continue; // (matchs virtuels : cote déjà prise à l'instant par vf_pick)
     $id = (string) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']);
     $goal = ['ok' => false, 'reason' => 'susp', 'why' => 'goal', 'ev' => $p['ev']];
     $f = $fx[$id] ?? null;
@@ -3207,7 +3207,8 @@ function sb_live_check(array &$picked, string $acc, ?array $user, int $now, arra
 }
 function sb_live_accept(array &$picked, string $acc, ?array $user, int &$now): ?array {
   $ids = [];
-  foreach ($picked as $p) if (!empty($p['lv'])) $ids[] = (int) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']);
+  foreach ($picked as $p) if (!empty($p['lv']) && str_starts_with((string) $p['ev'], 'sb:foot:')) $ids[] = (int) preg_replace('/^sb:foot:(\d+):.*$/', '$1', (string) $p['ev']); // (matchs virtuels : pas de contrôle du direct)
+  if (!$ids) return null;
   $L0 = sb_live_data(); $base = [];
   foreach (array_unique($ids) as $id) $base[(string) $id] = sb_live_p1x2((array) ($L0['od'][(string) $id]['r1'] ?? []));
   $t = $now; $done = 0; $seen = 0; $extra = 0; $hold = sb_live_hold(array_unique($ids), $L0);

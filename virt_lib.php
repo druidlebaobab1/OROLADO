@@ -18,8 +18,8 @@ const VF_EPOCH = 1795824000;   // 2026-11-28 00:00 UTC : début de la saison 1 (
 const VF_SLOT = 900;           // une journée toutes les 15 min
 const VF_MATCH = 600;          // match : 10 min réelles (2 × 5 min)
 const VF_CLOSE = 10;           // avant-match fermé 10 s avant le coup d'envoi
-const VF_LIVE_END = 85;        // paris en direct jusqu'à la 85e minute
-const VF_GOAL_LOCK = 12;       // marchés suspendus 12 s après un but
+const VF_LIVE_END = 88;        // paris en direct jusqu'à la 88e minute (propriétaire : moins de cadenas)
+const VF_GOAL_LOCK = 4;        // marchés suspendus 4 s après un but (le serveur recalcule toujours la cote au moment du pari)
 const VF_MARGE = 0.08;         // marge maison des matchs virtuels (propriétaire : 8 %)
 const VF_ROUNDS = 55;          // ligue 1 (56 équipes) : 55 journées
 const VF_V2 = 40;              // 2026-11-28 (propriétaire : « 60 équipes ») : à partir de la journée 40 (10 h 00 GMT), 60 équipes / 59 journées
@@ -32,9 +32,9 @@ const VF_TEAMS = [
   ['Espagne', 'p', 90, '#DC2626', 'es'], ['Portugal', 'p', 88, '#B91C1C', 'pt'], ['Allemagne', 'p', 87, '#E5E7EB', 'de'], ['Italie', 'p', 86, '#1D4ED8', 'it'],
   ['Pays-Bas', 'p', 86, '#F97316', 'nl'], ['Belgique', 'p', 84, '#B91C1C', 'be'], ['Croatie', 'p', 84, '#EF4444', 'hr'], ['Uruguay', 'p', 83, '#38BDF8', 'uy'],
   ['Colombie', 'p', 82, '#FACC15', 'co'], ['Mexique', 'p', 80, '#16A34A', 'mx'], ['États-Unis', 'p', 79, '#1E3A8A', 'us'], ['Japon', 'p', 81, '#1E40AF', 'jp'],
-  ['Corée du Sud', 'p', 78, '#DC2626', 'kr'], ['Chine', 'p', 68, '#DC2626', 'cn'], ['Arabie saoudite', 'p', 72, '#15803D', 'sa'], ['Maroc', 'p', 86, '#B91C1C', 'ma'],
+  ['Albanie', 'p', 78, '#DC2626', 'al'], ['Chine', 'p', 68, '#DC2626', 'cn'], ['Bolivie', 'p', 72, '#16A34A', 'bo'], ['Maroc', 'p', 86, '#B91C1C', 'ma'],
   ['Sénégal', 'p', 84, '#16A34A', 'sn'], ['Côte d\'Ivoire', 'p', 83, '#F97316', 'ci'], ['Nigeria', 'p', 81, '#16A34A', 'ng'], ['Égypte', 'p', 80, '#DC2626', 'eg'],
-  ['Cameroun', 'p', 78, '#15803D', 'cm'], ['Algérie', 'p', 79, '#16A34A', 'dz'], ['Ghana', 'p', 76, '#FACC15', 'gh'], ['Afrique du Sud', 'p', 74, '#FACC15', 'za'],
+  ['Cameroun', 'p', 78, '#15803D', 'cm'], ['Algérie', 'p', 79, '#16A34A', 'dz'], ['Ghana', 'p', 76, '#FACC15', 'gh'], ['Panama', 'p', 74, '#DC2626', 'pa'],
   // 2026-11-28 (propriétaire : « uniquement des noms de pays ») : plus aucune ville — 60 sélections nationales (mêmes niveaux qu'avant, résultats inchangés)
   ['Danemark', 'p', 93, '#DC2626', 'dk'], ['Suisse', 'p', 90, '#DC2626', 'ch'], ['Grèce', 'p', 80, '#2563EB', 'gr'], ['Suède', 'p', 91, '#FACC15', 'se'],
   ['Pologne', 'p', 90, '#DC2626', 'pl'], ['Autriche', 'p', 89, '#DC2626', 'at'], ['Hongrie', 'p', 83, '#16A34A', 'hu'], ['Turquie', 'p', 91, '#DC2626', 'tr'],
@@ -44,7 +44,7 @@ const VF_TEAMS = [
   ['Pérou', 'p', 83, '#DC2626', 'pe'], ['Iran', 'p', 82, '#16A34A', 'ir'], ['Slovénie', 'p', 80, '#2563EB', 'si'], ['Qatar', 'p', 76, '#7F1D1D', 'qa'],
   ['Costa Rica', 'p', 75, '#2563EB', 'cr'], ['Venezuela', 'p', 72, '#7F1D1D', 've'], ['Islande', 'p', 72, '#2563EB', 'is'], ['Jamaïque', 'p', 73, '#FACC15', 'jm'],
   // 2026-11-28 : 4 pays populaires de plus (ligue de 60, à partir de VF_V2)
-  ['Tunisie', 'p', 76, '#DC2626', 'tn'], ['Mali', 'p', 75, '#16A34A', 'ml'], ['RD Congo', 'p', 75, '#38BDF8', 'cd'], ['Burkina Faso', 'p', 73, '#DC2626', 'bf'],
+  ['Tunisie', 'p', 76, '#DC2626', 'tn'], ['Mali', 'p', 75, '#16A34A', 'ml'], ['RD Congo', 'p', 75, '#38BDF8', 'cd'], ['Bosnie', 'p', 73, '#2563EB', 'ba'],
 ];
 
 function vf_now(): int { return function_exists('sb_now') ? sb_now() : time(); }
