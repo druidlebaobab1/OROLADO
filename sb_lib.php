@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+if (is_file(__DIR__ . '/virt_lib.php')) require_once __DIR__ . '/virt_lib.php'; // 2026-11-28 : matchs virtuels
 /**
  * 2026-10-22 (propriétaire) — PARIS AUTOMATIQUES « SB » (API-Football v3), ÉTAPE 1 : FOOTBALL AVANT-MATCH SEULEMENT.
  * Spécification commune : ids, clés de marchés (mk), clés de choix (k), formes JSON de sbList / sbMatch.
@@ -1090,6 +1091,7 @@ function sb_nostats_filter(array $mk, int $lg, int $now): array {
 }
 function sb_sel_result(array $sel, int $betAt, array $results, int $now = 0, ?bool $auto = null): ?string {
   $now = $now ?: sb_now();
+  if (preg_match('/^sb:virt:(\d+):(.+)$/', (string) ($sel['ev'] ?? ''), $mv)) return function_exists('vf_sel_result') ? vf_sel_result($mv[1], $mv[2], $sel, $betAt, $now) : null; // matchs virtuels
   if (preg_match('/^sb:([a-z]+):(\d+):(.+)$/', (string) ($sel['ev'] ?? ''), $mo) && $mo[1] !== 'foot') return sb_o_sel_result($mo[1], $mo[2], $mo[3], $sel, $betAt, $now, $auto); // autres sports
   if (!preg_match('/^sb:foot:(\d+):/', (string) ($sel['ev'] ?? ''), $m)) return null;
   $r = $results[$m[1]] ?? null;
@@ -2131,6 +2133,10 @@ function sb_live_ids(int $now): ?array {
  * Retour ['ok' => true, 'sel' => [ev, k, odd, t, l, mk, sp, fx, ko, ti], 'grp' => 'fx:foot:ID'] ou ['ok' => false, 'reason'].
  */
 function sb_pick(string $ev, string $k, ?array $user, int $now, bool $liveCheck = true): array {
+  if (preg_match('/^sb:virt:(\d+):([a-z0-9]+(?::-?\d+(?:\.\d+)?)?)$/', $ev, $mv)) { // 2026-11-28 : matchs virtuels (virt_lib.php)
+    if (!sb_visible($user) || !function_exists('vf_pick')) return ['ok' => false, 'reason' => 'closed'];
+    return vf_pick($mv[1], $mv[2], $k, $now);
+  }
   if (preg_match('/^sb:([a-z]+):(\d+):([a-z0-9]+(?::-?\d+(?:\.\d+)?)?)$/', $ev, $mo) && $mo[1] !== 'foot') { // autres sports : avant-match seulement
     if (!sb_visible($user)) return ['ok' => false, 'reason' => 'closed'];
     return sb_o_pick($mo[1], $mo[2], $mo[3], $k, $now);
