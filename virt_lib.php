@@ -217,14 +217,20 @@ function vf_markets(int $g, int $i, int $t): ?array {
   else { $k1 = $res($hh, $ha); foreach ($M as [$x, $y, $p]) { $k = $k1 . '/' . $res($x, $y); $hf[$k] = ($hf[$k] ?? 0) + $p; } }
   $mk['htft'] = []; foreach (['H', 'D', 'A'] as $u) foreach (['H', 'D', 'A'] as $v) if (isset($hf[$u . '/' . $v])) $mk['htft'][] = [$u . '/' . $v, vf_odd($hf[$u . '/' . $v])];
   // score exact (0 à 4 buts par équipe), pair / impair, buts de chaque équipe
-  $cs = []; foreach ($M as [$x, $y, $p]) if ($x <= 4 && $y <= 4) $cs[$x . ':' . $y] = ($cs[$x . ':' . $y] ?? 0) + $p;
-  ksort($cs, SORT_NATURAL); $mk['cs'] = []; foreach ($cs as $k => $p) $mk['cs'][] = [$k, vf_odd($p)];
+  // score exact (propriétaire : « rangé en mode pair ») : TOUJOURS les mêmes 15 scores, 5 par colonne (1 | X | 2) ; un score
+  // devenu impossible en direct garde sa place avec un cadenas ; score rare : cote plafonnée à 60 (toujours en faveur de la maison)
+  $cs = []; foreach ($M as [$x, $y, $p]) $cs[$x . ':' . $y] = ($cs[$x . ':' . $y] ?? 0) + $p;
+  $mk['cs'] = [];
+  foreach (['1:0', '2:0', '2:1', '3:0', '3:1', '0:0', '1:1', '2:2', '3:3', '4:4', '0:1', '0:2', '1:2', '0:3', '1:3'] as $k) {
+    $p = (float) ($cs[$k] ?? 0); $o = $p > 0.985 ? null : ($p >= 0.0005 ? min(60.0, floor((1 - VF_MARGE) / $p * 100) / 100) : null);
+    $mk['cs'][] = [$k, $o !== null && $o >= 1.02 ? $o : null];
+  }
   $pod = $P(fn($x, $y) => ($x + $y) % 2 === 1); $mk['oe'] = [['O', vf_odd($pod)], ['E', vf_odd(1 - $pod)]];
   foreach (['0.5', '1.5'] as $L) {
     $ph = $P(fn($x, $y) => $x > (float) $L); $mk['tth:' . $L] = [['O', vf_odd($ph)], ['U', vf_odd(1 - $ph)]];
     $pa = $P(fn($x, $y) => $y > (float) $L); $mk['tta:' . $L] = [['O', vf_odd($pa)], ['U', vf_odd(1 - $pa)]];
   }
-  foreach ($mk as $k => $os) { $mk[$k] = array_values(array_filter($os, static fn($o) => $o[1] !== null)); if (!$mk[$k]) unset($mk[$k]); }
+  foreach ($mk as $k => $os) { if ($k !== 'cs') $mk[$k] = array_values(array_filter($os, static fn($o) => $o[1] !== null)); if (!array_filter($mk[$k], static fn($o) => $o[1] !== null)) unset($mk[$k]); } // (score exact : cases fixes, cadenas si impossible)
   return ['live' => $live, 'mk' => $mk];
 }
 
