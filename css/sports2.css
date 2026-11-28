@@ -2026,3 +2026,16 @@ html:root body #casinoModal .sp2 .pz-flag.vf-lgi{width:22px!important;height:22p
 /* coupon : plus de « · » entre le match et le pari (propriétaire : pas de séparateur), simple espace */
 html:root body #casinoModal .sp2 .sp2-slip .sp2-sel-t > small.sp2-mkt::before{content:""!important}
 html:root body #casinoModal .sp2 .sp2-slip .sp2-sel-t > small.sp2-mkt{margin-inline-start:6px}
+/* v3881 (propriétaire : « les chiffres doivent toujours s'adapter, quel que soit le montant ou le téléphone ») : compteurs de
+   Mes paris, résumé Misé / Gagné / Résultat, cote totale et gain du coupon → une ligne, la police rapetisse (fitEl) */
+html:root body #casinoModal .sp2 .sp2-st button{min-width:0}
+html:root body #casinoModal .sp2 .sp2-st button > b.fit,html:root body #casinoModal .sp2 .pz-msum p > b.fit{display:block;max-width:100%;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:clip}
+html:root body #casinoModal .sp2 .pz-msum p{min-width:0;overflow:hidden}
+html:root body #casinoModal .sp2 .sp2-sum p{min-width:0}
+html:root body #casinoModal .sp2 .sp2-sum p > b{display:block;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap}
+html:root body #casinoModal .sp2 .sp2-sum p > span.fit{min-width:0}
+/* flèche d'ouverture d'un pari : plus petite et un peu décollée du montant */
+html:root body #casinoModal#casinoModal .sp2 .sp2-chev{width:20px!important;height:20px!important;min-width:20px;margin-inline-start:10px!important}
+html:root body #casinoModal#casinoModal .sp2 .sp2-chev .sp2-i{width:11px!important;height:11px!important}
+html:root body #casinoModal .sp2 .pz-bstb em.fit{display:block;min-width:0;max-width:58%;overflow:hidden;white-space:nowrap;flex:0 1 auto}
+html:root body #casinoModal .sp2 .pz-bstb .pz-bstb-t{min-width:0}
