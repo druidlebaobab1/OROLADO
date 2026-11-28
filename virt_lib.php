@@ -202,6 +202,27 @@ function vf_markets(int $g, int $i, int $t): ?array {
     $Mh = vf_matrix($lh, $la, $hh, $ha, $rh);
     $Q = static function (callable $f) use ($Mh): float { $s = 0.0; foreach ($Mh as [$x, $y, $p]) if ($f($x, $y)) $s += $p; return $s; };
     $mk['ht1x2'] = [['H', vf_odd($Q(fn($x, $y) => $x > $y))], ['D', vf_odd($Q(fn($x, $y) => $x === $y))], ['A', vf_odd($Q(fn($x, $y) => $x < $y))]];
+    foreach (['0.5', '1.5'] as $L) { $po = $Q(fn($x, $y) => $x + $y > (float) $L); $mk['htou:' . $L] = [['O', vf_odd($po)], ['U', vf_odd(1 - $po)]]; }
+  }
+  /* 2026-11-28 (propriétaire : « victoire 1re / 2e mi-temps et d'autres options simples, sans triche, toujours notre marge ») :
+     toutes réglées avec le seul score final + mi-temps (sb_settle_mk) → jamais de remboursement. Même modèle, même marge. */
+  $res = static fn(int $x, int $y): string => $x > $y ? 'H' : ($x === $y ? 'D' : 'A');
+  // 2e mi-temps : buts marqués après la 45e seulement
+  $M2 = $min < 45 ? vf_matrix($lh, $la, 0, 0, 0.5) : vf_matrix($lh, $la, $h - $hh, $a - $ha, $r);
+  $P2 = static function (callable $f) use ($M2): float { $s = 0.0; foreach ($M2 as [$x, $y, $p]) if ($f($x, $y)) $s += $p; return $s; };
+  $mk['2h1x2'] = [['H', vf_odd($P2(fn($x, $y) => $x > $y))], ['D', vf_odd($P2(fn($x, $y) => $x === $y))], ['A', vf_odd($P2(fn($x, $y) => $x < $y))]];
+  // mi-temps / fin du match (H/H, H/D …)
+  $hf = [];
+  if ($min < 45) { foreach ($Mh as [$x1, $y1, $p1]) foreach ($M2 as [$x2, $y2, $p2]) { $k = $res($x1, $y1) . '/' . $res($x1 + $x2, $y1 + $y2); $hf[$k] = ($hf[$k] ?? 0) + $p1 * $p2; } }
+  else { $k1 = $res($hh, $ha); foreach ($M as [$x, $y, $p]) { $k = $k1 . '/' . $res($x, $y); $hf[$k] = ($hf[$k] ?? 0) + $p; } }
+  $mk['htft'] = []; foreach (['H', 'D', 'A'] as $u) foreach (['H', 'D', 'A'] as $v) if (isset($hf[$u . '/' . $v])) $mk['htft'][] = [$u . '/' . $v, vf_odd($hf[$u . '/' . $v])];
+  // score exact (0 à 4 buts par équipe), pair / impair, buts de chaque équipe
+  $cs = []; foreach ($M as [$x, $y, $p]) if ($x <= 4 && $y <= 4) $cs[$x . ':' . $y] = ($cs[$x . ':' . $y] ?? 0) + $p;
+  ksort($cs, SORT_NATURAL); $mk['cs'] = []; foreach ($cs as $k => $p) $mk['cs'][] = [$k, vf_odd($p)];
+  $pod = $P(fn($x, $y) => ($x + $y) % 2 === 1); $mk['oe'] = [['O', vf_odd($pod)], ['E', vf_odd(1 - $pod)]];
+  foreach (['0.5', '1.5'] as $L) {
+    $ph = $P(fn($x, $y) => $x > (float) $L); $mk['tth:' . $L] = [['O', vf_odd($ph)], ['U', vf_odd(1 - $ph)]];
+    $pa = $P(fn($x, $y) => $y > (float) $L); $mk['tta:' . $L] = [['O', vf_odd($pa)], ['U', vf_odd(1 - $pa)]];
   }
   foreach ($mk as $k => $os) { $mk[$k] = array_values(array_filter($os, static fn($o) => $o[1] !== null)); if (!$mk[$k]) unset($mk[$k]); }
   return ['live' => $live, 'mk' => $mk];
