@@ -1654,7 +1654,8 @@
   function vfF(day, f) {
     var end = day.live && vfNow() >= day.ko + vf.match;
     return { id: 'virt:' + f.id, sp: 'foot', vd: day, vr: f, h: { n: vfName(f.h), vi: f.h }, a: { n: vfName(f.a), vi: f.a }, ts: day.ko - vf.close, live: !!day.live, sc: f.sc || [0, 0],
-      m: day.live ? (end ? 90 : vfMin(day)) : null, st: end ? 'FT' : '', end: end, susp: day.live && !f.mk, o: { mk: '1x2', o: (f.mk && f.mk['1x2']) || [] } };
+      m: day.live ? (end ? 90 : vfMin(day)) : null, st: end ? 'FT' : day.live ? (vfMin(day) <= 45 ? '1H' : '2H') : '', end: end,
+      ht: day.live && (end || vfMin(day) > 45) ? (f.gl || []).reduce(function (a, g) { if (g[0] <= 45) a[g[1] === 'a' ? 1 : 0]++; return a; }, [0, 0]) : null, susp: day.live && !f.mk, o: { mk: '1x2', o: (f.mk && f.mk['1x2']) || [] } };
   }
   function vfFx(fid) {
     if (!vf) return null;
@@ -2847,7 +2848,12 @@
     if (!f) { mh.innerHTML = ''; mk.innerHTML = r ? '<p class="pz-none">' + esc(r.reason === 'closed' ? x.closedM : xx.e_unavailable) + '</p>' : skelRows(); return; }
     // en-tête : refait seulement si sa forme change (avant-match ↔ direct) ; score / minute changés sur place
     var hs = f.id + '|' + (f.live ? 1 : 0) + '|' + lg();
-    if (f.vr) { var vh = vfMh(f); if (mh.dataset.sig !== vh) { mh.dataset.sig = vh; mh.innerHTML = vh; } }
+    if (f.vr && !f.live) { var vh = vfMh(f); if (mh.dataset.sig !== vh) { mh.dataset.sig = vh; mh.innerHTML = vh; } }
+    else if (f.vr) { // match virtuel en direct : la MÊME mini télé que Paris (terrain, buts, horloge)
+      if (mh.dataset.sig !== hs) { mh.dataset.sig = hs; mh.innerHTML = tvHtml(f); bindTv(); }
+      else { var vsc = $('pzSc'), vt = scTxt(f); if (vsc && vsc.textContent !== vt) { vsc.textContent = vt; vsc.classList.remove('pop'); void vsc.offsetWidth; vsc.classList.add('pop'); } }
+      tvSync(f, { ok: true, trk: { events: (f.vr.gl || []).slice().sort(function (p, q) { return p[0] - q[0]; }).map(function (g) { return { type: 'goal', team: g[1] === 'a' ? 'a' : 'h', t: g[0] }; }) } });
+    }
     else if (mh.dataset.sig !== hs) { mh.dataset.sig = hs; mh.innerHTML = f.live ? tvHtml(f) : mhHtml(f); if (f.live) bindTv(); } // (2026-10-23 : la mini télé garde sa mémoire du match : plus de but rejoué à chaque redessin)
     else if (f.live) {
       var sc = $('pzSc'), mi = $('pzMinT'), t = scTxt(f);
@@ -2988,6 +2994,7 @@
   function tvClockTxt() {
     var f = TV.f; if (!f) return '';
     var t = tvMin(f); if (t) return t;
+    if (f.vr) return vfMin(f.vd) + '’'; // virtuel : 90 minutes en 10 minutes
     if (!TV.base) return f.m != null ? f.m + '’' : '';
     // (sans « 0:00 » du serveur : la minute de l'API est déjà la minute en cours → m:00 compté comme (m − 1):00)
     var s = TV.base.z != null ? Math.max(0, Math.floor(srvNow() + CLK_ADV - TV.base.z)) : TV.base.s - 60 + Math.min(179, Math.floor((Date.now() - TV.base.at) / 1000));
