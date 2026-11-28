@@ -290,8 +290,9 @@
     el.__fitting = 1;
     try {
       el.style.fontSize = '';
-      var cs = getComputedStyle(el), fs = parseFloat(cs.fontSize) || 14, min = Math.max(7, fs * 0.5), n = 0;
-      var over = function () { if (el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0) return true; var p = el.parentElement; if (!p || /^(absolute|fixed)$/.test(cs.position)) return false; var r = el.getBoundingClientRect(), q = p.getBoundingClientRect(), ps = getComputedStyle(p); return r.right > q.right - (parseFloat(ps.paddingRight) || 0) + 1 || r.left < q.left + (parseFloat(ps.paddingLeft) || 0) - 1; };
+      var cs = getComputedStyle(el), fs = parseFloat(cs.fontSize) || 14, min = Math.max(parseFloat(el.getAttribute('data-fmin')) || 7, fs * (el.getAttribute('data-fmin') ? 0.3 : 0.5)), n = 0;
+      var over = function () { if (el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0) return true;
+        var p = el.parentElement; if (!p || /^(absolute|fixed)$/.test(cs.position)) return false; var r = el.getBoundingClientRect(), q = p.getBoundingClientRect(), ps = getComputedStyle(p); return r.right > q.right - (parseFloat(ps.paddingRight) || 0) + 1 || r.left < q.left + (parseFloat(ps.paddingLeft) || 0) - 1; };
       while (over() && fs > min && n++ < 30) { fs = Math.max(min, fs * 0.92); el.style.fontSize = fs.toFixed(1) + 'px'; }
     } catch (e) { /* ignore */ } finally { el.__fitting = 0; }
   }
@@ -570,7 +571,7 @@
   function mineBar() {
     var x = X(), st = [['all', x.fAll], ['open', x.fOpen], ['won', x.fWon], ['lost', x.fLost], ['void', x.fVoid]], c = counts();
     var per = [['all', x.pAll], ['today', x.pToday], ['yday', NX().yday], ['7', x.p7], ['month', x.pMonth], ['year', x.pYear], ['day', x.pDay]];
-    return '<div class="sp2-mf"><div class="sp2-st">' + st.map(function (o) { return '<button type="button" data-mst="' + o[0] + '" class="st-' + o[0] + (MF.st === o[0] ? ' on' : '') + '" style="flex-grow:' + (String(o[1]).length + 3) + '"><b class="fit">' + (mineCache ? c[o[0]] || 0 : '·') + '</b><span class="fit">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
+    return '<div class="sp2-mf"><div class="sp2-st">' + st.map(function (o) { return '<button type="button" data-mst="' + o[0] + '" class="st-' + o[0] + (MF.st === o[0] ? ' on' : '') + '" style="flex-grow:' + (String(o[1]).length + 3) + '"><b class="fit" data-fmin="8">' + (mineCache ? c[o[0]] || 0 : '·') + '</b><span class="fit">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
       // 2026-10-23 (propriétaire : « le carré blanc pour choisir la période, pas cool ») : puces maison, jamais le menu blanc du téléphone
       '<div class="sp2-perc pz-hs" id="spMfPer">' + per.map(function (o) { return '<button type="button" data-mper="' + o[0] + '" class="' + (MF.per === o[0] ? 'on' : '') + (o[0] === 'day' ? ' dy' : '') + '">' + (o[0] === 'day' ? IC.cal : '') + '<span dir="auto">' + esc(o[1]) + '</span></button>'; }).join('') + '</div>' +
       '<div class="sp2-days pz-hs" id="spMfDays"' + (MF.per === 'day' ? '' : ' hidden') + '>' + mDays() + '</div></div>';
@@ -582,8 +583,8 @@
     var st = 0, won = 0, doneSt = 0;
     L.forEach(function (b) { var s0 = +b.stake || 0, w = b.co != null ? +b.co : +b.win || 0; if (b.status === 'void') return; st += s0; won += w; if (b.status !== 'open') doneSt += s0; });
     var net = Math.round((won - doneSt) * 100) / 100;
-    return '<div class="pz-msum"><p><small dir="auto">' + esc(T18('sbSumSt', 'Staked')) + '</small><b dir="ltr" class="fit">' + money(st) + '</b></p><p><small dir="auto">' + esc(T18('sbSumWon', 'Won')) + '</small><b dir="ltr" class="w fit">' + money(won) + '</b></p>' +
-      '<p><small dir="auto">' + esc(T18('sbSumNet', 'Result')) + '</small><b dir="ltr" class="fit ' + (net >= 0 ? 'w' : 'l') + '">' + (net >= 0 ? '+' : '−') + money(Math.abs(net)) + '</b></p></div>';
+    return '<div class="pz-msum"><p><small dir="auto">' + esc(T18('sbSumSt', 'Staked')) + '</small><b dir="ltr" class="fit" data-fmin="7">' + money(st) + '</b></p><p><small dir="auto">' + esc(T18('sbSumWon', 'Won')) + '</small><b dir="ltr" class="w fit" data-fmin="7">' + money(won) + '</b></p>' +
+      '<p><small dir="auto">' + esc(T18('sbSumNet', 'Result')) + '</small><b dir="ltr" data-fmin="7" class="fit ' + (net >= 0 ? 'w' : 'l') + '">' + (net >= 0 ? '+' : '−') + money(Math.abs(net)) + '</b></p></div>';
   }
   function paintMine() {
     if (!$('spRcs')) return;
