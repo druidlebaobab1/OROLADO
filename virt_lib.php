@@ -40,8 +40,8 @@ const VF_TEAMS = [
   ['Dortmund', 'c', 84, '#FACC15', ''], ['Leverkusen', 'c', 85, '#DC2626', ''], ['Milan', 'c', 86, '#B91C1C', ''], ['Turin', 'c', 84, '#F8FAFC', ''],
   ['Rome', 'c', 82, '#B45309', ''], ['Naples', 'c', 85, '#38BDF8', ''], ['Paris', 'c', 90, '#1E3A8A', ''], ['Marseille', 'c', 82, '#7DD3FC', ''],
   ['Monaco', 'c', 81, '#DC2626', ''], ['Lille', 'c', 82, '#DC2626', ''], ['Lyon', 'c', 79, '#2563EB', ''], ['Amsterdam', 'c', 82, '#DC2626', ''],
-  ['Lisbonne', 'c', 83, '#DC2626', ''], ['Porto', 'c', 82, '#2563EB', ''], ['Istanbul', 'c', 80, '#FACC15', ''], ['Le Caire', 'c', 76, '#DC2626', ''],
-  ['Casablanca', 'c', 75, '#16A34A', ''], ['Abidjan', 'c', 72, '#F97316', ''], ['Dakar', 'c', 72, '#16A34A', ''], ['Johannesburg', 'c', 73, '#FACC15', ''],
+  ['Lisbonne', 'c', 83, '#DC2626', ''], ['Porto', 'c', 82, '#2563EB', ''], ['Istanbul', 'c', 80, '#FACC15', ''], ['Glasgow', 'c', 76, '#16A34A', ''],
+  ['Bruges', 'c', 75, '#1D4ED8', ''], ['Eindhoven', 'c', 72, '#DC2626', ''], ['Valence', 'c', 72, '#F59E0B', ''], ['Buenos Aires', 'c', 73, '#38BDF8', ''],
   // 2026-11-28 : 4 pays populaires de plus (ligue de 60, à partir de VF_V2)
   ['Tunisie', 'p', 76, '#DC2626', 'tn'], ['Mali', 'p', 75, '#16A34A', 'ml'], ['RD Congo', 'p', 75, '#38BDF8', 'cd'], ['Burkina Faso', 'p', 73, '#DC2626', 'bf'],
 ];
