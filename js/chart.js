@@ -4390,6 +4390,8 @@
     // descend doucement entre ses sauts). Avant, en 88 % elle était cachée : le joueur jugeait avec le
     // prix d'entrée et croyait « gagné » quand c'était perdu (et l'inverse). Dessin seulement.
     if (!isFinite(bar) || bar <= 0 || Math.abs(bar - entry) < 0.005) return;
+    // 2026-11-28 (propriétaire) : en DÉMO à 90 %, pas de ligne objectif (comme le 90 % normal), même si la ligne démo est plus favorable.
+    if (trade.mode !== 'real' && Math.abs(mult - 1.9) < 0.01) return;
     var by = priceToY(bar, pad, plotH, minP, maxP);
     if (!isFinite(by)) return;
     var off = 0;
