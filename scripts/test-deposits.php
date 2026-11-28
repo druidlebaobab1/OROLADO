@@ -79,8 +79,8 @@ credit_paid_deposit(['ref' => 'oro_test_2', 'amount' => 20, 'paid' => true, 'cre
 check('solde 150 → 170', abs($bank['real'][$uuid] - 170) < 0.001, (string) $bank['real'][$uuid]);
 check('2e dépôt : « Dépôt réussi » (20 $)', count($notes) === 2 && $notes[1][1] == 20.0, json_encode($notes));
 
-echo "4b) 2026-11-28 : minimum 3 $ pour LANCER un dépôt, mais un dépôt de 1 $ lancé AVANT puis payé est crédité\n";
-check('minimum pour lancer un dépôt = 3 $', orolado_min_deposit(null) === 3.0);
+echo "4b) 2026-11-28 : GeniusPay minimum 3 $ pour LANCER un dépôt, mais un dépôt de 1 $ lancé AVANT puis payé est crédité\n";
+check('GeniusPay : minimum 3 $ ; Flutterwave / Maketou : 1 $ comme avant', OROLADO_DEP_MIN === 3.0 && orolado_min_deposit(null) === 1.0);
 foreach ([['oro_old_gp', 'geniuspay', 1.0], ['oro_old_mk', 'maketou', 2.0]] as [$ref, $op, $am]) {
   $b0 = $bank['real'][$uuid];
   with_db_lock(function ($box) use ($uuid, $ref, $op, $am) { $box->db['deposits'][] = ['id' => $ref, 'ref' => $ref, 'userId' => $uuid, 'amount' => $am, 'status' => 'PENDING', 'operator' => $op]; return ['ok' => true]; });

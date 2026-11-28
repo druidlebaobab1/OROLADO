@@ -5439,7 +5439,7 @@
   // refuse tout paiement sous 1 600 F, vérifié sur l'API).
   var gpOn = false, gpAsked = 0;
   function minCardDeposit() {
-    return 3; // 2026-11-28 (propriétaire : « dépôt minimum 3 $ ») — même règle que le serveur (OROLADO_DEP_MIN), quel que soit le moyen
+    return 3; // 2026-11-28 (propriétaire) : GeniusPay 3 $ (serveur OROLADO_DEP_MIN) ; sans GeniusPay (Maketou) : 3 $ comme avant
   }
   // Case Wave + ligne « carte bancaire » (ancien menu de dépôt direct) : montrées seulement quand GeniusPay est actif.
   function applyGpUi() {
@@ -7068,7 +7068,7 @@
   function paintMomoMode() { /* rien à repeindre */ }
   async function startFlwMomo() {
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < 3) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3')); return; }
+    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
     // v2628 : indicatif choisi par le joueur (+225 / +221 / +226), pas de détection automatique.
     var dialSel = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
     var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
@@ -7215,8 +7215,8 @@
     var u = user();
     if (!u || !requireAccount()) return;
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < 3) {
-      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3'));
+    if (amt < 1) {
+      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1'));
       return;
     }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
@@ -7409,7 +7409,7 @@
     if (!u || !requireAccount()) return;
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     // 2026-11-17 : Maketou n'accepte pas moins de 1 600 F → 3 $ minimum pour le Mobile Money
-    if (amt < 3) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3')); return; }
+    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
     metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
     var btn = $('btnConfirmDeposit'), old = btn ? btn.innerHTML : '';
     mkBusy = true;
@@ -7453,7 +7453,7 @@
       toast(t('sessionExpiredMsg'), 'info');
       return;
     }
-    var min = minCardDeposit();
+    var min = gpOn ? 1 : 3; // comme avant le 2026-11-28 (seul GeniusPay passe à 3 $)
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
     if (amt < min) {
       showFieldError('depositAmt', t('m_minDeposit').replace('{n}', String(min)));
