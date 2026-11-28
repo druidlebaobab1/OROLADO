@@ -280,6 +280,35 @@
     var fs = parseFloat(getComputedStyle(el).fontSize) || 14, min = Math.max(6, parseFloat(el.getAttribute('data-fmin')) || 6), n = 0;
     while (el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 40) { fs = Math.max(min, fs * 0.92); el.style.fontSize = fs.toFixed(1) + 'px'; }
   }
+  /* 2026-11-28 (propriétaire : « tous les chiffres qui grandissent — minute, temps additionnel, scores, compteurs, cotes, montants —
+     doivent toujours tenir dans leur case, sur tous les téléphones, comme les grands sites ») : RÈGLE GÉNÉRALE. Chaque fois qu'un de
+     ces chiffres change (n'importe où dans le site), sa police rapetisse juste ce qu'il faut ; elle revient à sa taille quand il
+     redevient court. Liste NUMSEL = tous les chiffres qui évoluent ; jamais coupés, jamais sur la case voisine. */
+  var NUMSEL = '.pz-min,.pz-sc,.pz-ov,.pz-msc,#pzSc,#pzSc2,#pzClk,#pzClk2,#pzPer,#pzMinT,#pzAdd,.pz-n,.pz-sbn,.vf-g > b,.pz-te em,.pz-tvsc b,.pz-in,.pz-rt > b,.vf-tr > span,.vf-tr b,.vf-kpi b,.vf-sr > b,.vf-sc b,.vf-tabs2 em,.vf-st em,.vf-bm > b,.vf-cmp p > b,.vf-jd > b,.sp2-st b,.pz-msum b,.sp2-bf b,.pz-rcol em,.sp-rcpt-sc,.pz-cnt,.pz-lc,.pz-lgc,#profWalletBal';
+  function fitNum(el) {
+    if (!el || !el.isConnected || el.__fitting) return;
+    el.__fitting = 1;
+    try {
+      el.style.fontSize = '';
+      var cs = getComputedStyle(el), fs = parseFloat(cs.fontSize) || 14, min = Math.max(7, fs * 0.5), n = 0;
+      var over = function () { if (el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0) return true; var p = el.parentElement; if (!p || /^(absolute|fixed)$/.test(cs.position)) return false; var r = el.getBoundingClientRect(), q = p.getBoundingClientRect(), ps = getComputedStyle(p); return r.right > q.right - (parseFloat(ps.paddingRight) || 0) + 1 || r.left < q.left + (parseFloat(ps.paddingLeft) || 0) - 1; };
+      while (over() && fs > min && n++ < 30) { fs = Math.max(min, fs * 0.92); el.style.fontSize = fs.toFixed(1) + 'px'; }
+    } catch (e) { /* ignore */ } finally { el.__fitting = 0; }
+  }
+  (function numWatch() {
+    if (!window.MutationObserver || window.__oroNumObs) return;
+    var q = [], raf = 0;
+    var flush = function () { raf = 0; var list = q; q = []; list.forEach(fitNum); };
+    var add = function (el) { if (el && el.nodeType === 1 && q.indexOf(el) < 0) { q.push(el); if (!raf) raf = requestAnimationFrame(flush); } };
+    var scan = function (node) {
+      var el = node.nodeType === 3 ? node.parentElement : node; if (!el || el.nodeType !== 1) return;
+      try { if (el.matches(NUMSEL)) add(el); else if (el.closest) { var c = el.closest(NUMSEL); if (c) add(c); } if (el.querySelectorAll && el.childElementCount) el.querySelectorAll(NUMSEL).forEach(add); } catch (e) { /* ignore */ }
+    };
+    window.__oroNumObs = new MutationObserver(function (ms) { for (var i = 0; i < ms.length; i++) { var m = ms[i]; if (m.type === 'characterData') scan(m.target); else for (var j = 0; j < m.addedNodes.length; j++) scan(m.addedNodes[j]); if (m.type === 'childList' && m.target.nodeType === 1 && m.target.matches && m.target.matches(NUMSEL)) add(m.target); } });
+    var go = function () { try { window.__oroNumObs.observe(document.body, { subtree: true, childList: true, characterData: true }); } catch (e) { /* ignore */ } };
+    if (document.body) go(); else document.addEventListener('DOMContentLoaded', go);
+    window.addEventListener('resize', function () { try { document.querySelectorAll(NUMSEL).forEach(add); } catch (e) { /* ignore */ } });
+  })();
   function fitAll(root) { if (root) root.querySelectorAll('.fit').forEach(fitEl); }
   function setTx(el, t) { if (el && el.textContent !== t) { el.textContent = t; fitEl(el); } }
   function inSlip(ev, k) { return slip.some(function (s) { return s.ev === ev && s.k === k; }); }
@@ -3319,7 +3348,16 @@
         if (B.fam === 'cs' || B.fam === 'htcs' || B.fam === '2hcs') { // score exact : victoires 1 | nuls | victoires 2
           var col = [[], [], []];
           m.o.forEach(function (o) { var q = String(o[0]).split(':'), hh = +q[0], aa = +q[1]; col[q.length === 2 && isFinite(hh) && isFinite(aa) ? (hh > aa ? 0 : hh === aa ? 1 : 2) : 1].push(o); });
-          return '<div class="pz-cs">' + col.map(function (c) { return '<div>' + c.map(function (o) { return obtn(ev, o[0], o[1], shortK(m.mk, o[0], f.h.n, f.a.n), s); }).join('') + '</div>'; }).join('') + '</div>';
+          // 2026-11-28 (propriétaire : « aligné, aucune case vide ») : lignes complètes 1 | X | 2 tant qu'il y a des nuls, puis le reste
+          // en 2 colonnes 1 | 2 ; un dernier score seul prend toute la largeur → jamais de trou dans la grille
+          var bt = function (o) { return obtn(ev, o[0], o[1], shortK(m.mk, o[0], f.h.n, f.a.n), s); };
+          var n3 = Math.min(col[0].length, col[1].length, col[2].length), top = '', rest = [], i3;
+          for (i3 = 0; i3 < n3; i3++) top += bt(col[0][i3]) + bt(col[1][i3]) + bt(col[2][i3]);
+          var rh = col[0].slice(n3), ra = col[2].slice(n3), rd = col[1].slice(n3);
+          for (i3 = 0; i3 < Math.max(rh.length, ra.length); i3++) { if (rh[i3]) rest.push(rh[i3]); if (ra[i3]) rest.push(ra[i3]); }
+          rest = rest.concat(rd);
+          var h2 = rest.map(function (o, j) { return j === rest.length - 1 && rest.length % 2 ? bt(o).replace('class="pz-ob', 'class="pz-full pz-ob') : bt(o); }).join('');
+          return '<div class="pz-cs2">' + (top ? '<div class="pz-cs3">' + top + '</div>' : '') + (h2 ? '<div class="pz-csr">' + h2 + '</div>' : '') + '</div>';
         }
         var cols = n === 2 || n === 4 || n === 6 && /^(rbtts|rou)$/.test(B.fam) ? 2 : 3;
         if (/^(ags|fgs|lgs|ngs|p2g|p3g|pbk|psoff|psh|pst|pas)$/.test(B.fam)) cols = 2; // joueurs : noms longs → 2 colonnes
