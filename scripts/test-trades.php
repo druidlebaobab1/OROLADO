@@ -69,8 +69,8 @@ foreach (array_keys(orolado_feed_assets()) as $a) {
 echo "2) Trade réel 10 \$ CALL 88 % sur 5 s\n";
 $r = orolado_trade_place($me, ['id' => 't1', 'stake' => 10, 'side' => 'call', 'duration' => 5, 'mode' => 'real', 'assetId' => 'v100', 'payout' => 1.9]);
 check('ordre accepté', !empty($r['ok']), $r['reason'] ?? '');
-check('RÉEL : payé ×1,90 (la démo à ×2,10 ne touche pas le réel)', abs((float) ($r['order']['payout'] ?? 0) - 1.9) < 0.0001, json_encode($r['order']['payout'] ?? null));
-check('DÉMO : cote ×2,10 / ×5,83, réel ×1,90 / ×5', orolado_trade_demo_mult(1.9) === 2.1 && orolado_trade_demo_mult(5.0) === 5.83);
+check('RÉEL : payé ×1,90', abs((float) ($r['order']['payout'] ?? 0) - 1.9) < 0.0001, json_encode($r['order']['payout'] ?? null));
+check('DÉMO : paie comme le réel (×1,90 / ×5)', orolado_trade_demo_mult(1.9) === 1.9 && orolado_trade_demo_mult(5.0) === 5.0);
 check('MOINS : caisse 100 → 90', abs($bank['real'][$uid] - 90) < 0.001, (string) $bank['real'][$uid]);
 // 2026-10-19 : la ligne 90 % suit le petit retour vers le départ (faille fermée) : = règle publique, à 0,1 % de l'entrée au plus.
 $eC = (int) round(((float) ($r['order']['entryPrice'] ?? 0)) * 100);

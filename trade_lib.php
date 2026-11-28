@@ -325,10 +325,7 @@ function orolado_trade_pick_entry(string $mode, string $side, int $arrivalTick, 
 /** 2026-11-28 — cote DÉMO (propriétaire : « marge démo à moins 10, ils gagnent ×2,10 ») : retour 105 % en démo
  *  (×1,90 → ×2,10 ; ×5 → ×5,83 ; ×10 → ×11,66 ; ×50 → ×58,33). Le RÉEL n'utilise JAMAIS cette fonction (×1,90). */
 function orolado_trade_demo_mult(float $m): float {
-  if (abs($m - 1.9) < 0.001) return 2.1;
-  if (abs($m - 5.0) < 0.001) return 5.83;
-  if (abs($m - 10.0) < 0.001) return 11.66;
-  if (abs($m - 50.0) < 0.001) return 58.33;
+  // 2026-11-28 (propriétaire : « les marges restent comme toujours, 90 %… ») : la démo paie de nouveau EXACTEMENT comme le réel.
   return $m;
 }
 
