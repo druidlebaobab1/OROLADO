@@ -1,6 +1,6 @@
 /* v2795 — Treasure rebuilt (owner request): Evoplay / 1x-style "pick one of three" — 3 treasure chests on a floating space
    island, tap a chest, bet, it shakes and opens (gold bursts out or it is empty), then the two others open to show where the
-   gold was. Pays ×2.85 (server: casino_instant 'chests', unchanged). */
+   gold was. Pays ×2.55 (server: casino_instant 'chests', unchanged). */
 (function (D6) {
   'use strict';
   var K = D6.CasinoKit, $ = K.$;
@@ -11,7 +11,7 @@
     de: { bet: 'Setzen', pick: 'Wähle eine Truhe' }, hi: { bet: 'दांव', pick: 'एक संदूक चुनें' }, zh: { bet: '投注', pick: '选一个宝箱' }
   };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
-  var MULT = 2.85;
+  var MULT = 2.55; // 2026-11-28 : marge 15 %
   function mx(v) { return '×' + String(v).replace('.', K.dec()); }
   var XS = [70, 180, 290];
 
@@ -105,18 +105,18 @@
     });
   }, {
     rules: {
-      en: '1. Tap one of the 3 chests on the island.\n2. Choose your stake and tap “Bet”: your chest opens.\n3. If it holds the gold you win ×2.85. The other chests then open to show where the gold was.',
-      fr: '1. Touche un des 3 coffres de l’île.\n2. Choisis ta mise et touche « Miser » : ton coffre s’ouvre.\n3. S’il contient l’or, tu gagnes ×2,85. Les autres coffres s’ouvrent ensuite pour montrer où était l’or.',
-      es: '1. Toca uno de los 3 cofres de la isla.\n2. Elige tu apuesta y toca «Apostar»: tu cofre se abre.\n3. Si tiene el oro ganas ×2,85. Luego se abren los otros para mostrar dónde estaba el oro.',
-      pt: '1. Toque em um dos 3 baús da ilha.\n2. Escolha a aposta e toque em «Apostar»: seu baú se abre.\n3. Se tiver o ouro, você ganha ×2,85. Depois os outros abrem para mostrar onde estava o ouro.',
-      ar: '1. اضغط على أحد الصناديق الثلاثة في الجزيرة.\n2. اختر رهانك واضغط «راهن»: يُفتح صندوقك.\n3. إذا كان فيه الذهب تربح ×2.85. ثم تُفتح الصناديق الأخرى لترى أين كان الذهب.',
-      tr: '1. Adadaki 3 sandıktan birine dokun.\n2. Bahsini seç ve «Bahis»e dokun: sandığın açılır.\n3. İçinde altın varsa ×2,85 kazanırsın. Sonra diğer sandıklar açılır ve altının yerini gösterir.',
-      vi: '1. Chạm vào một trong 3 rương trên đảo.\n2. Chọn mức cược rồi chạm «Đặt cược»: rương của bạn mở ra.\n3. Nếu có vàng, bạn thắng ×2,85. Sau đó các rương khác mở ra để cho thấy vàng ở đâu.',
-      id: '1. Ketuk salah satu dari 3 peti di pulau.\n2. Pilih taruhan lalu ketuk «Pasang»: petimu terbuka.\n3. Jika berisi emas kamu menang ×2,85. Lalu peti lain terbuka untuk menunjukkan letak emasnya.',
-      ru: '1. Нажми на один из 3 сундуков на острове.\n2. Выбери ставку и нажми «Ставка»: твой сундук откроется.\n3. Если в нём золото — выигрыш ×2,85. Потом откроются остальные и покажут, где было золото.',
-      de: '1. Tippe auf eine der 3 Truhen auf der Insel.\n2. Wähle deinen Einsatz und tippe auf „Setzen“: deine Truhe öffnet sich.\n3. Ist das Gold darin, gewinnst du ×2,85. Danach öffnen sich die anderen und zeigen, wo das Gold war.',
-      hi: '1. द्वीप पर 3 संदूकों में से एक को छुएँ।\n2. अपना दांव चुनें और «दांव» दबाएँ: आपका संदूक खुलता है।\n3. अगर उसमें सोना है तो आप ×2.85 जीतते हैं। फिर बाकी संदूक खुलकर दिखाते हैं कि सोना कहाँ था।',
-      zh: '1. 点击岛上 3 个宝箱中的一个。\n2. 选择投注额，点击“投注”：你的宝箱打开。\n3. 如果里面有金子，赢 ×2.85。随后其他宝箱打开，显示金子在哪里。'
+      en: '1. Tap one of the 3 chests on the island.\n2. Choose your stake and tap “Bet”: your chest opens.\n3. If it holds the gold you win ×2.55. The other chests then open to show where the gold was.',
+      fr: '1. Touche un des 3 coffres de l’île.\n2. Choisis ta mise et touche « Miser » : ton coffre s’ouvre.\n3. S’il contient l’or, tu gagnes ×2,55. Les autres coffres s’ouvrent ensuite pour montrer où était l’or.',
+      es: '1. Toca uno de los 3 cofres de la isla.\n2. Elige tu apuesta y toca «Apostar»: tu cofre se abre.\n3. Si tiene el oro ganas ×2,55. Luego se abren los otros para mostrar dónde estaba el oro.',
+      pt: '1. Toque em um dos 3 baús da ilha.\n2. Escolha a aposta e toque em «Apostar»: seu baú se abre.\n3. Se tiver o ouro, você ganha ×2,55. Depois os outros abrem para mostrar onde estava o ouro.',
+      ar: '1. اضغط على أحد الصناديق الثلاثة في الجزيرة.\n2. اختر رهانك واضغط «راهن»: يُفتح صندوقك.\n3. إذا كان فيه الذهب تربح ×2.55. ثم تُفتح الصناديق الأخرى لترى أين كان الذهب.',
+      tr: '1. Adadaki 3 sandıktan birine dokun.\n2. Bahsini seç ve «Bahis»e dokun: sandığın açılır.\n3. İçinde altın varsa ×2,55 kazanırsın. Sonra diğer sandıklar açılır ve altının yerini gösterir.',
+      vi: '1. Chạm vào một trong 3 rương trên đảo.\n2. Chọn mức cược rồi chạm «Đặt cược»: rương của bạn mở ra.\n3. Nếu có vàng, bạn thắng ×2,55. Sau đó các rương khác mở ra để cho thấy vàng ở đâu.',
+      id: '1. Ketuk salah satu dari 3 peti di pulau.\n2. Pilih taruhan lalu ketuk «Pasang»: petimu terbuka.\n3. Jika berisi emas kamu menang ×2,55. Lalu peti lain terbuka untuk menunjukkan letak emasnya.',
+      ru: '1. Нажми на один из 3 сундуков на острове.\n2. Выбери ставку и нажми «Ставка»: твой сундук откроется.\n3. Если в нём золото — выигрыш ×2,55. Потом откроются остальные и покажут, где было золото.',
+      de: '1. Tippe auf eine der 3 Truhen auf der Insel.\n2. Wähle deinen Einsatz und tippe auf „Setzen“: deine Truhe öffnet sich.\n3. Ist das Gold darin, gewinnst du ×2,55. Danach öffnen sich die anderen und zeigen, wo das Gold war.',
+      hi: '1. द्वीप पर 3 संदूकों में से एक को छुएँ।\n2. अपना दांव चुनें और «दांव» दबाएँ: आपका संदूक खुलता है।\n3. अगर उसमें सोना है तो आप ×2.55 जीतते हैं। फिर बाकी संदूक खुलकर दिखाते हैं कि सोना कहाँ था।',
+      zh: '1. 点击岛上 3 个宝箱中的一个。\n2. 选择投注额，点击“投注”：你的宝箱打开。\n3. 如果里面有金子，赢 ×2.55。随后其他宝箱打开，显示金子在哪里。'
     }
   });
 })(window.D6 = window.D6 || {});
