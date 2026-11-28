@@ -1201,7 +1201,7 @@ function sp_resolve(array $db): array {
       // v2779 (propriétaire) : tous les matchs du coupon annulés → « Remboursé » (la mise revient, visible dans l'historique et le reçu)
       // moitié perdue (cote finale < 1) : « perdu », mais la partie rendue est payée (win > 0)
       $s['b'][$i]['status'] = $live === 0 ? 'void' : ($odd < 1 - 1e-9 ? 'lost' : 'won'); $s['b'][$i]['win'] = $win; $s['b'][$i]['done'] = time();
-      $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake'], 'sb' => $sb];
+      $pay[] = ['i' => $b['id'], 'uid' => $b['uid'], 'mode' => $b['mode'], 'w' => $win, 's' => $b['stake'], 'sb' => $sb, 'v' => $live === 0 ? 1 : 0];
     }
     return $pay;
   }) ?: [];
@@ -1209,6 +1209,7 @@ function sp_resolve(array $db): array {
   foreach ($todo as $p) {
     $bal = casino_credit($db, (string) $p['uid'], (string) $p['mode'], (float) $p['w'], (string) $p['i']);
     if ($bal === null && $p['mode'] === 'real') { $paidFail++; sp_mark_unpaid((string) $p['i']); continue; }
+    if (!empty($p['v']) && $p['mode'] === 'real') sp_unwager((string) $p['uid'], (float) $p['s']); // remboursé : ne compte pas dans « miser ×2 avant retrait »
     casino_stat('sports', (string) $p['mode'], (float) $p['s'], (float) $p['w'], (string) $p['uid'], is_array($db['users'][(string) $p['uid']] ?? null) ? $db['users'][(string) $p['uid']] : null); // 2026-10-22 : jamais les comptes admin dans les chiffres
     if (!empty($p['sb']) && $p['w'] > 0 && $p['mode'] === 'real' && function_exists('sb_alert_win')) { try { sb_alert_win((float) $p['w']); } catch (Throwable $e) { /* jamais bloquant */ } }
     if ($p['w'] > 0) $won++; else $lostN++;
@@ -1265,6 +1266,24 @@ function sp_push_results(array $notes): void {
     $txt = number_format($amt, 2, '.', '') . ' $';
     foreach ($rows as $r) { [$t, $b] = sp_push_texts($kind, (string) ($r['lang'] ?? 'fr'), $txt); push_send_rows([$r], push_payload($t, $b, '/')); }
   }
+}
+/**
+ * 2026-11-28 (propriétaire : « un pari remboursé débloque-t-il le ×2 ? ») : non — un coupon entièrement remboursé n'a rien risqué,
+ * sa mise est retirée du total misé (et rajoutée à ce qu'il reste à miser pour un bonus encore bloqué). Jamais bloquant.
+ */
+function sp_unwager(string $uid, float $stake): void {
+  if ($uid === '' || $stake <= 0 || !function_exists('with_db_lock')) return;
+  try {
+    with_db_lock(static function ($box) use ($uid, $stake) {
+      if (!isset($box->db['users'][$uid]) || !is_array($box->db['users'][$uid])) return ['ok' => true, 'skip_write' => true];
+      $u =& $box->db['users'][$uid];
+      $u['realStakeVolume'] = orolado_money(max(0.0, (float) ($u['realStakeVolume'] ?? 0) - $stake));
+      $u['totalWageredSinceDeposit'] = $u['realStakeVolume'];
+      if ((float) ($u['wagerLock'] ?? 0) > 0 && array_key_exists('wagerNeed', $u)) $u['wagerNeed'] = orolado_money((float) $u['wagerNeed'] + $stake);
+      unset($u);
+      return ['ok' => true];
+    });
+  } catch (Throwable $e) { /* jamais bloquant */ }
 }
 /** Base injoignable pendant le paiement : le coupon repasse « ouvert » pour être réglé au prochain clic (référence unique : jamais payé 2 fois). */
 function sp_mark_unpaid(string $id): void {

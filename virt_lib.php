@@ -278,6 +278,23 @@ function vf_hist(int $t): array {
   return $c;
 }
 
+/* ---------- paiement juste après chaque journée (propriétaire : « payer rapidement les joueurs ») ---------- */
+/** Une journée virtuelle vient de finir : règlement des coupons tout de suite (une seule fois par journée, sous verrou). */
+function vf_settle_due(): void {
+  if (!function_exists('sp_resolve') || !function_exists('load_db')) return;
+  $t = vf_now(); $g = vf_slot($t); $last = $t >= vf_ko($g) + VF_MATCH ? $g : $g - 1;
+  if ($last < 0) return;
+  $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'sports'; if (!is_dir($dir)) @mkdir($dir, 0750, true);
+  $f = $dir . DIRECTORY_SEPARATOR . 'vf_paid.at';
+  if ((int) @file_get_contents($f) >= $last) return;
+  $lk = @fopen($f . '.lock', 'c'); if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) { if ($lk) fclose($lk); return; }
+  try {
+    if ((int) @file_get_contents($f) >= $last) return;
+    @file_put_contents($f, (string) $last, LOCK_EX); // posé AVANT : jamais deux règlements pour la même journée
+    $db = load_db(); if (is_array($db)) sp_resolve($db);
+  } finally { flock($lk, LOCK_UN); fclose($lk); }
+}
+
 /* ---------- vue envoyée au téléphone ---------- */
 function vf_id(int $g, int $i): int { return $g * 100 + $i; }
 function vf_split(int $id): array { return [intdiv($id, 100), $id % 100]; }

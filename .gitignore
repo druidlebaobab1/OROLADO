@@ -47,3 +47,5 @@ data/orders/
 data/sports/vf_secret.php
 data/sports/vf_table.json
 data/sports/vf_hist.json
+data/sports/vf_paid.at
+data/sports/vf_paid.at.lock
