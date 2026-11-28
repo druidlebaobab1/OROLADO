@@ -25,6 +25,10 @@
   baccara, dragon, sic bo, roue, cascade, keno, loto ≤ ×900, etc. — serveur `casino_instant` ET textes des jeux). Trading inchangé (×1,90).
   Ne pas changer sans demande explicite du propriétaire. 12 langues ; aucun texte qui déborde, de l'iPhone SE à la télé.
 
+- FLUTTERWAVE RETIRÉ (propriétaire, 2026-11-28 : « je suis bloqué là-bas, supprime-le complètement ») : ne JAMAIS le rebrancher.
+  `orolado_flw_configured()` renvoie toujours false, api/flutterwave-* supprimés. Dépôts : GeniusPay (minimum 3 $, `OROLADO_DEP_MIN`),
+  Maketou en secours (comme avant), crypto inchangée (tout montant reçu est crédité).
+
 ## Téléphones du propriétaire (mesures réelles, relevées le 2026-10-20 par le diagnostic « 5 touches sur OROLADO .com »)
 - Heure du propriétaire : Népal, UTC+5:45. Ses captures sont à l'heure locale : comparer avec l'heure de mise en ligne
   avant de conclure qu'un correctif « ne marche pas » (souvent son téléphone garde l'ancienne version : vérifier `version=` dans le diagnostic).
