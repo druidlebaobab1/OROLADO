@@ -52,7 +52,7 @@ if (is_file(__DIR__ . '/notif_daily_lib.php')) {
 register_shutdown_function(static function (): void { if (function_exists('orolado_pay_sweep_after_response')) { try { orolado_pay_sweep_after_response(); } catch (Throwable $e) { /* jamais bloquant */ } } });
 
 /** 2026-10-22 — un paquet du « 🎁 Bonus à tous » (en arrière-plan ou depuis la page) ; même crédit que « Ajuster ». */
-function admin_bonus_all_step_here(string $tok, array $job, int $limit = 200, int $maxSec = 10): string {
+function admin_bonus_all_step_here(string $tok, array $job, int $limit = 200, int $maxSec = 10, int $lane = -1): string {
   // 2026-11-28 (propriétaire : « plus rapide ») : la liste des joueurs est figée au 1er paquet de l'envoi (fichier à part) au lieu
   // d'être relue (3 000 fiches + comptes de connexion) à chaque paquet ; paquets bornés par le temps (10 s) et non plus par 10 joueurs.
   $snap = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'bonus_all_players.json';
@@ -63,7 +63,7 @@ function admin_bonus_all_step_here(string $tok, array $job, int $limit = 200, in
     @file_put_contents($snap, json_encode(['tok' => hash('sha256', $tok), 'list' => $allPl], JSON_UNESCAPED_UNICODE), LOCK_EX);
   }
   $by = (string) ($job['by'] ?? '');
-  return admin_all_job_step($tok, $allPl, static fn(string $id, float $amt, string $motif, array $hint): array => admin_credit_player($id, $amt, $motif, $hint, $by), null, $limit, $maxSec);
+  return admin_all_job_step($tok, $allPl, static fn(string $id, float $amt, string $motif, array $hint): array => admin_credit_player($id, $amt, $motif, $hint, $by), null, $limit, $maxSec, $lane);
 }
 
 function admin_json(array $payload, int $code = 200): void {
@@ -2658,7 +2658,8 @@ if ($isAjax) {
     if (session_status() === PHP_SESSION_ACTIVE) @session_write_close();
     if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
     $_SESSION['admin_uid'] = (string) ($job['uid'] ?? ''); $_SESSION['admin_email'] = (string) ($job['by'] ?? '');
-    if (admin_bonus_all_step_here($tok, $job) === 'next') orolado_bonus_all_kick($tok);
+    $lane = max(0, min(3, (int) ($req['lane'] ?? 0)));
+    if (admin_bonus_all_step_here($tok, $job, 200, 10, $lane) === 'next') orolado_bonus_all_kick($tok, $lane);
     exit;
   }
 
