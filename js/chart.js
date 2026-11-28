@@ -5186,7 +5186,7 @@
       var lines = [[[isCall ? tt('tcBuy', 'ACHAT ↗') : tt('tcSell', 'VENTE ↘'), sideCol]]];
       if (stakeC > 0) {
         lines.push([[tt('tcStake', 'Mise') + ' ', DIM], ['$\u00a0\u00a0' + stakeC.toFixed(2), '#F8E7B0']]);
-        lines.push([[tt('tcGain', 'Gain possible') + ' ', DIM], ['+$\u00a0\u00a0' + (stakeC * ((Number(tv.payout) || 1.9) - 1)).toFixed(2), UPC]]);
+        lines.push([[tt('tcGain', 'Gain possible') + ' ', DIM], ['+$\u00a0\u00a0' + (stakeC * ((((D6.Engine && D6.Engine.payOf) ? D6.Engine.payOf(tv) : Number(tv.payout)) || 1.9) - 1)).toFixed(2), UPC]]);
       }
       lines.push([[tt('tcLeft', 'Reste') + ' ', DIM], [Math.max(0, (expC - nowC) / 1000).toFixed(1) + ' s', '#F8E7B0']]);
       lines.push([[winning ? tt('tcWin', 'Gagnant en ce moment') : tt('tcLose', 'Perdant en ce moment'), winning ? UPC : DNC]]);

@@ -124,9 +124,19 @@
     return Math.round(Number(n) * 100) / 100;
   }
 
+  // 2026-11-28 (propriétaire : « la démo à ×2,10 ») : cote PAYÉE d'un trade démo = même table que le serveur
+  // (trade_lib.php orolado_trade_demo_mult). La ligne gagnante, elle, se calcule TOUJOURS avec la cote de base (×1,90 / ×5 / ×10 / ×50).
+  var DEMO_PAY = { '1.9': 2.1, '5': 5.83, '10': 11.66, '50': 58.33 };
+  function demoPay(base) { var b = normalizeOdds(base); return DEMO_PAY[String(b)] || b; }
+  function payOf(t) { return t && t.mode !== 'real' ? demoPay(t.payout) : normalizeOdds(t && t.payout); }
   function normalizeOdds(v) {
     var n = Number(v);
     var i;
+    // cote démo renvoyée par le serveur (×2,10…) → sa cote de base (ligne gagnante)
+    if (Math.abs(n - 2.1) < 0.001) return 1.9;
+    if (Math.abs(n - 5.83) < 0.001) return 5;
+    if (Math.abs(n - 11.66) < 0.001) return 10;
+    if (Math.abs(n - 58.33) < 0.001) return 50;
     for (i = 0; i < MULTS.length; i++) {
       if (Math.abs(MULTS[i] - n) < 0.001) return MULTS[i];
     }
@@ -1167,7 +1177,7 @@
     if (trade.settled) return null;
     trade.settled = true;
     var mode = trade.mode === 'real' ? 'real' : 'demo';
-    var payout = normalizeOdds(trade.payout);
+    var payout = mode === 'real' ? normalizeOdds(trade.payout) : demoPay(trade.payout); // démo : ×2,10 (comme le serveur)
     var stake = Number(trade.stake) || 0;
     var won = verdict === 'won';
     var voided = verdict === 'void';
@@ -1304,6 +1314,7 @@
   var api = {
     markets: markets,
     payoutLive: payoutLive,
+    payOf: payOf,
     onExpire: null,
     onSettled: null,
 
