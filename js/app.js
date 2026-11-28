@@ -5491,7 +5491,7 @@
   }
 
   function setDepositAmt(n) {
-    var min = minDeposit();
+    var min = minCardDeposit(); // 2026-11-28 : vrai minimum du moment (1 $ GeniusPay / 3 $) — avant minDeposit() = 5 → le bouton $2 mettait 5
     var amt = Math.max(min, D6.roundMoney(Number(n) || min));
     if ($('depositAmt')) $('depositAmt').value = String(amt);
     return amt;
