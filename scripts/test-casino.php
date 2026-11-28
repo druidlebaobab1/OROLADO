@@ -322,7 +322,7 @@ for ($k = 0; $k < 400; $k++) {
   for ($a = 0; $a < 10; $a++) for ($b = $a + 1; $b < 10; $b++) { $q = casino_pair_p($pp, $a, $b); $ev = $q * $cd['c']["$a-$b"]; if ($cd['c']["$a-$b"] < CASINO_ODDS_MAX) $worst = [min($worst[0], $ev), max($worst[1], $ev)]; }
 }
 check('chances des coureurs : total 1, de 3 % à 30 %', $nC === 0, (string) $nC);
-check(sprintf('chaque cote (gagnant et couplé) rend %.2f à %.2f %% : jamais plus de 94 %%', $worst[0] * 100, $worst[1] * 100), $worst[1] <= 0.94 + 1e-9 && $worst[0] > 0.92);
+check(sprintf('chaque cote (gagnant et couplé) rend %.2f à %.2f %% : jamais plus de 94 %%', $worst[0] * 100, $worst[1] * 100), $worst[1] <= 0.85 + 1e-9 && $worst[0] > 0.92);
 // l'arrivée suit bien les chances (favori gagne plus souvent)
 $pp = [0.30, 0.20, 0.12, 0.09, 0.08, 0.07, 0.05, 0.04, 0.03, 0.02]; $win = array_fill(0, 10, 0); $pair01 = 0; $N = 60000;
 for ($k = 0; $k < $N; $k++) { $o = casino_runner_order($pp); $win[$o[0]]++; $t2 = [$o[0], $o[1]]; sort($t2); if ($t2 === [0, 1]) $pair01++; if (count(array_unique($o)) !== 10) $nC++; }

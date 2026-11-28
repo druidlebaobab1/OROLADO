@@ -20,7 +20,9 @@
   l'argent et les résultats doit marcher TOUT SEUL et en sécurité, sans clic de l'admin (règlements, versements affiliés,
   retraits automatiques dans leurs plafonds, annulations). Quand rien de sûr n'est possible : rendre les mises plutôt que
   payer au hasard, et prévenir l'admin. Lui expliquer les choses en mots très simples, avec un exemple.
-- Marge 6 % ; 12 langues ; aucun texte qui déborde, de l'iPhone SE à la télé.
+- MARGE DES JEUX (propriétaire, 2026-11-28) : **15 %** sur tous les jeux casino / action / live (`CASINO_EDGE = 0.85`, `LIVE_SPORT_EDGE = 0.85`,
+  machines `casino_ext_house` à 85 % avec gros gains ÷ 3 à ÷ 6, avion ×100 au plus) et sur les matchs virtuels (`VF_MARGE = 0.15`). Trading inchangé (×1,90).
+  Ne pas changer sans demande explicite du propriétaire. 12 langues ; aucun texte qui déborde, de l'iPhone SE à la télé.
 
 ## Téléphones du propriétaire (mesures réelles, relevées le 2026-10-20 par le diagnostic « 5 touches sur OROLADO .com »)
 - Heure du propriétaire : Népal, UTC+5:45. Ses captures sont à l'heure locale : comparer avec l'heure de mise en ligne

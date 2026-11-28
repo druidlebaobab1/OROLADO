@@ -209,7 +209,7 @@
   // 5 demoiselles d'honneur : chances 35 · 25 · 20 · 12 · 8 % (la plus proche → la plus loin) ; gain = 0,94 ÷ chance (serveur)
   var BQ = [0.35, 0.25, 0.2, 0.12, 0.08], BQC = ['#F472B6', '#C084FC', '#34D399', '#60A5FA', '#FB923C'];
   var BQP = [[150, 214, 1.15], [82, 182, 0.95], [218, 182, 0.95], [44, 150, 0.78], [256, 150, 0.78]]; // place sur scène (x, y, taille)
-  function bqMult(p) { return Math.floor(0.94 / p * 100) / 100; }
+  function bqMult(p) { return Math.floor(0.85 / p * 100) / 100; }
   function lady(col, hair) { return '<g><path d="M-14 0L-6-30H6L14 0z" fill="' + col + '"/><path d="M-6-30L-8-44H8L6-30z" fill="' + col + '"/><circle cy="-50" r="7" fill="#FAD7BD"/><path d="M-7-52a7 7 0 0 1 14 0q-2-6-7-6t-7 6z" fill="' + hair + '"/><path d="M-8-42l-8 14M8-42l8 14" stroke="#FAD7BD" stroke-width="3" stroke-linecap="round" class="bq-arms"/></g>'; }
   function bouquet() { return '<g><path d="M-2 4L0 14 2 4z" fill="#15803D"/>' + [[-5, -2, '#F472B6'], [5, -2, '#FDE68A'], [0, -6, '#fff'], [-3, 3, '#FB7185'], [4, 3, '#F9A8D4']].map(function (f) { return '<circle cx="' + f[0] + '" cy="' + f[1] + '" r="4" fill="' + f[2] + '"/>'; }).join('') + '</g>'; }
   game({

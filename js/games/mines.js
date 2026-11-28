@@ -23,7 +23,7 @@
   function money(v) { return '\u2066$\u00a0' + K.m2(v).replace('.', K.dec()) + '\u2069'; }
   function xm(v) { return '\u2066×' + num(v) + '\u2069'; } // ×1.25 reste dans le bon sens en arabe
   // même calcul que casino_mines_mult (serveur) : aperçu avant la mise seulement
-  function mm(m, k) { if (k > 25 - m) return 0; var v = 0.94; for (var j = 0; j < k; j++) v *= (25 - j) / (25 - m - j); return Math.floor(v * 100 + 1e-6) / 100; }
+  function mm(m, k) { if (k > 25 - m) return 0; var v = 0.85; for (var j = 0; j < k; j++) v *= (25 - j) / (25 - m - j); return Math.floor(v * 100 + 1e-6) / 100; }
   var DEFS = '<svg class="mn-defs" width="0" height="0" aria-hidden="true"><defs>' +
     '<linearGradient id="mnGg" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#CFFAFE"/><stop offset=".45" stop-color="#67E8F9"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>' +
     '<radialGradient id="mnMg" cx="38%" cy="34%" r="70%"><stop offset="0" stop-color="#5B5490"/><stop offset=".6" stop-color="#231C48"/><stop offset="1" stop-color="#0C0820"/></radialGradient></defs></svg>';

@@ -894,7 +894,7 @@
     cryptox: 'live', horses: 'live', race: 'live', roulette: 'live', slots: 'slots', wheel: 'wheel', scratch: 'scratch', chests: 'chests', lotto: 'lotto',
     dragon: 'tables', baccarat: 'tables', sicbo: 'tables', dice: 'dice', coin: 'coin', limbo: 'limbo', hilo: 'hilo', penalty: 'penalty' };
   try { Object.assign(MODS, JSON.parse(localStorage.getItem('cg_dev_mods') || '{}')); } catch (eDm) { /* essais locaux seulement */ }
-  var MOD_V = '3886'; // v3863 : Paris — matchs virtuels (Ligue OROLADO)
+  var MOD_V = '3887'; // v3863 : Paris — matchs virtuels (Ligue OROLADO)
 
   // 2026-11-03 (propriétaire : « en ouvrant Subway, on voit quelques secondes l'ANCIEN jeu avant le nouveau ») — une appli restée
   // ouverte garde l'ancienne version en mémoire (ancien catalogue → anciens jeux) jusqu'à ce qu'elle se recharge. On regarde en
@@ -2078,7 +2078,7 @@
     if (guest()) { needAccount($('csNeed'), x); return; }
     bindStake(box);
     var btn = $('csGo');
-    var mult = function (k) { return k < 1 ? 0 : Math.floor(0.94 / Math.pow((5 - lv) / 5, k) * 100) / 100; };
+    var mult = function (k) { return k < 1 ? 0 : Math.floor(0.85 / Math.pow((5 - lv) / 5, k) * 100) / 100; };
     var labels = function () { box.querySelectorAll('.ap-row').forEach(function (row) { var k = +row.getAttribute('data-row') + 1, v = mult(k); row.querySelector('em').textContent = '×' + (v >= 1000 ? Math.round(v) : v.toFixed(2)); }); };
     labels();
     box.querySelectorAll('[data-lv]').forEach(function (b) { b.addEventListener('click', function () { if (g && !g.done) return; lv = +b.getAttribute('data-lv'); box.querySelectorAll('[data-lv]').forEach(function (z) { z.classList.toggle('on', z === b); }); labels(); }); });
@@ -2126,7 +2126,7 @@
     bindStake(box);
     var btn = $('csGo');
     // v2726 (propriétaire) : on voit ce que rapporte chaque case trouvée (même calcul que le serveur)
-    var mm = function (m, k) { var v = 0.94; for (var j = 0; j < k; j++) v *= (25 - j) / (25 - m - j); return Math.floor(v * 100) / 100; };
+    var mm = function (m, k) { var v = 0.85; for (var j = 0; j < k; j++) v *= (25 - j) / (25 - m - j); return Math.floor(v * 100) / 100; };
     var ladder = function (k0) { var s = ''; for (var k = k0 + 1; k <= k0 + 5 && k <= 25 - mines; k++) s += '<span class="' + (k === k0 + 1 ? 'nx' : '') + '"><small>' + k + '</small>×' + mm(mines, k).toFixed(2) + '</span>'; $('csMnL').innerHTML = s; };
     box.querySelector('.mn-info').insertAdjacentHTML('afterend', '<div class="mn-lad" id="csMnL"></div>');
     ladder(0);
@@ -2292,7 +2292,7 @@
   /* La Tour : 8 étages, 3 portes, 1 piège par étage */
   GAMES.tower = function (box, x) {
     var g = null, rows = '';
-    var mult = function (k) { return k < 1 ? 0 : Math.floor(0.94 / Math.pow(2 / 3, k) * 100) / 100; };
+    var mult = function (k) { return k < 1 ? 0 : Math.floor(0.85 / Math.pow(2 / 3, k) * 100) / 100; };
     for (var r = 7; r >= 0; r--) rows += '<div class="tw-row" data-row="' + r + '"><em>×' + mult(r + 1).toFixed(2) + '</em>' + [0, 1, 2].map(function (c) { return '<button type="button" data-c="' + c + '"></button>'; }).join('') + '</div>';
     box.innerHTML = '<div class="cs-stage tw-stage"><i class="tw-city"></i><div class="tw" id="csTw"><i class="tw-roof"></i>' + rows + '<i class="tw-door"></i></div></div><div class="cs-res"></div>' + (guest() ? '<div id="csNeed"></div>' : stakePanel(x.bet));
     if (guest()) { needAccount($('csNeed'), x); return; }

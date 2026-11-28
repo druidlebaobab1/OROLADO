@@ -146,7 +146,7 @@ foreach ($G as $g) {
       if ($g === 'lotto649live') { $part = in_array($sel, ['lo', 'hi'], true) ? 's' : 'o'; if ($out['part'] !== $part) continue; $p *= 2; }
       $m = casino_draw_mult($g, (string) $sel, $out); $rtp += $p * $m; if ($m > 0) $pw += $p; $wsum += $p;
     }
-    $ok = $rtp <= 0.90 + 1e-9 && $rtp >= 0.89 && abs($pw - $pr[$sel]) < 1e-9 && $o <= 1000 && $o > 1.01;
+    $ok = $rtp <= 0.85 + 1e-9 && $rtp >= 0.84 && abs($pw - $pr[$sel]) < 1e-9 && $o <= 1000 && $o > 1.01;
     if (!$ok) { $okR = false; $okG = false; }
     $txt[] = "$sel ×$o " . number_format($rtp * 100, 2) . '%' . ($ok ? '' : ' !!');
   }

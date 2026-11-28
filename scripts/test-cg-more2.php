@@ -55,7 +55,7 @@ foreach ($KEYS as $g) {
   $out = $fiche[$g]['out']; $w = 0; $ev = 0; $hit = 0; $max = 0; $same = is_array($rows[$g] ?? null) && count($rows[$g]) === count($out);
   foreach ($out as $i => $o) { $w += $o[1]; $ev += $o[0] * $o[1]; if ($o[0] > 0) $hit += $o[1]; $max = max($max, $o[0]); if (!$same || abs((float) $rows[$g][$i][0] - (float) $o[0]) > 1e-9) $same = false; }
   check(sprintf('%-10s mêmes multiplicateurs ligne par ligne (%d lignes)', $g, count($out)), $same);
-  check(sprintf('%-10s retour exact %.3f %%', $g, $ev / $w * 100), $ev / $w >= 0.935 && $ev / $w <= 0.94);
+  check(sprintf('%-10s retour exact %.3f %%', $g, $ev / $w * 100), $ev / $w >= 0.835 && $ev / $w <= 0.851);
   check(sprintf('%-10s gain 1 fois sur %.1f (%.1f %%)', $g, $w / $hit, $hit / $w * 100), $hit / $w >= 0.25 && $hit / $w <= 0.35);
   check(sprintf('%-10s gain max ×%s', $g, $max), $max >= 500 && $max <= 1000);
   check(sprintf('%-10s la ligne 0 est la perte', $g), (float) $out[0][0] === 0.0 && ($rows[$g][0] ?? null) === [0]);

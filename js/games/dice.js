@@ -29,7 +29,7 @@
   var SET = { c: 50, over: 0 };  // réglage gardé quand on revient au jeu
   function nf(v, d) { return Number(v).toFixed(d).replace('.', K.dec()); }
   // même calcul que le serveur : floor(EDGE × 100 / chance × 10000) / 10000
-  function multOf(c) { return Math.floor(0.94 * 100 / c * 10000) / 10000; }
+  function multOf(c) { return Math.floor(0.85 * 100 / c * 10000) / 10000; }
 
   K.register('dice', function (box, x) {
     var l = L(), busy = false, lastRoll = null;
