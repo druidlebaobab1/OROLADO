@@ -901,6 +901,7 @@ function sb_pname_eq(string $a, string $b): bool {
  */
 function sb_xs_build(array $r, array $row): array {
   $st = sb_stats_parse((array) ($r['statistics'] ?? []), $row);
+  if (isset($st['corners']) && function_exists('sb_yesstats_note')) { try { sb_yesstats_note((int) ($row['lg'] ?? 0), time()); } catch (Throwable $eY) { /* jamais bloquant */ } } // ce championnat donne ses statistiques
   $xs = ['st' => (string) ($row['st'] ?? ''), 'co' => isset($st['corners']) ? array_map('intval', $st['corners']) : null,
     'sh' => isset($st['shots']) ? array_map('intval', $st['shots']) : null, 'so' => isset($st['shotsOn']) ? array_map('intval', $st['shotsOn']) : null,
     'cd' => isset($st['yellow']) || isset($st['red']) ? [(int) (($st['yellow'][0] ?? 0) + ($st['red'][0] ?? 0)), (int) (($st['yellow'][1] ?? 0) + ($st['red'][1] ?? 0))] : null];
@@ -1076,12 +1077,26 @@ function sb_nostats_note(int $lg, int $now): void {
   if ($lg <= 0) return;
   sb_with('nostats.json', static function (array &$s) use ($lg, $now) { if ((int) ($s['lg'][(string) $lg] ?? 0) > $now - 86400) return false; $s['lg'][(string) $lg] = $now; return true; });
 }
+/* 2026-11-28 (propriétaire : « les options bizarres sont trop souvent remboursées ») : avant, corners / cartons / tirs / buteurs
+   étaient proposés PARTOUT, et retirés d'un championnat seulement APRÈS un premier remboursement (le 1er joueur de chaque petit
+   championnat était toujours remboursé). Maintenant c'est l'inverse : proposés SEULEMENT dans les championnats dont on sait qu'ils
+   donnent leurs statistiques (grandes ligues ci-dessous + championnats où le serveur a déjà reçu les corners d'un match terminé). */
+const SB_STATS_LG = [2, 3, 848, 39, 140, 135, 78, 61, 94, 88, 203, 1, 4, 5, 6, 9, 15, 32, 34, 45, 48, 66, 81, 137, 143, 531,
+  40, 136, 79, 62, 141, 144, 179, 71, 128, 253, 307, 98, 292, 197, 218, 207, 119, 113, 103, 106, 262];
+function sb_yesstats_note(int $lg, int $now): void {
+  if ($lg <= 0 || in_array($lg, SB_STATS_LG, true)) return;
+  sb_with('yesstats.json', static function (array &$s) use ($lg, $now) { if ((int) ($s['lg'][(string) $lg] ?? 0) > $now - 86400) return false; $s['lg'][(string) $lg] = $now; return true; });
+}
 function sb_nostats(int $lg, int $now = 0): bool {
-  static $m = null;
-  if ($lg <= 0) return false;
+  static $m = null, $y = null;
+  if ($lg <= 0) return true;
+  $now = $now ?: time();
   if ($m === null) $m = (array) (sb_read('nostats.json')['lg'] ?? []);
-  $t = (int) ($m[(string) $lg] ?? 0);
-  return $t > 0 && $t > ($now ?: time()) - SB_NOSTATS_DAYS * 86400;
+  if ($y === null) $y = (array) (sb_read('yesstats.json')['lg'] ?? []);
+  $t = (int) ($m[(string) $lg] ?? 0); $ok = (int) ($y[(string) $lg] ?? 0);
+  if ($t > 0 && $t > $now - SB_NOSTATS_DAYS * 86400 && $t >= $ok) return true; // déjà vu sans statistiques (le plus récent l'emporte)
+  if (in_array($lg, SB_STATS_LG, true)) return false;
+  return !($ok > 0 && $ok > $now - SB_NOSTATS_DAYS * 86400);
 }
 /** Retire les marchés corners / cartons / buteurs d'une liste {mk => …} pour un championnat sans statistiques. */
 function sb_nostats_filter(array $mk, int $lg, int $now): array {
@@ -1435,6 +1450,7 @@ function sb_after_response(): void {
   $on = true;
   register_shutdown_function(static function () {
     try { fastcgi_finish_request(); } catch (Throwable $e) { /* déjà fait */ }
+    try { if (function_exists('vf_settle_due')) vf_settle_due(); } catch (Throwable $e) { /* 2026-11-28 : paris virtuels payés dès la fin de la journée */ }
     try { sb_live_tick(); } catch (Throwable $e) { /* jamais bloquant */ }
     try { sb_maybe_run(); } catch (Throwable $e) { /* jamais bloquant */ }
     try { sb_res_fetch_wanted(sb_now()); } catch (Throwable $e) { /* jamais bloquant */ }
