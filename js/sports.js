@@ -1777,7 +1777,7 @@
     if (!vf || !vfTeams) return skelRows();
     if (vfTab === 'tb') {
       var tb = vf.tb;
-      return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(x.s) + ' ' + tb.S + '</span><span>' + esc(x.j) + ' ' + tb.played + '</span></div><div class="vf-tb"><div class="vf-tr th"><span>#</span><span></span><span>' + esc(x.p) + '</span><span>' + esc(T18('sbFW', 'W')) + '</span><span>' + esc(T18('sbFD', 'D')) + '</span><span>' + esc(T18('sbFL', 'L')) + '</span><span>+/-</span><span>' + esc(x.pts) + '</span></div>' +
+      return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(x.s) + ' ' + tb.S + '</span>' + (tb.played > 0 ? '<span>' + esc(x.j) + ' ' + tb.played + '</span>' : '') + '</div><div class="vf-tb"><div class="vf-tr th"><span>#</span><span></span><span>' + esc(x.p) + '</span><span>' + esc(T18('sbFW', 'W')) + '</span><span>' + esc(T18('sbFD', 'D')) + '</span><span>' + esc(T18('sbFL', 'L')) + '</span><span>+/-</span><span>' + esc(x.pts) + '</span></div>' +
         tb.rows.map(function (r, i) { return '<div class="vf-tr" data-vteam="' + r.t + '"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<span>' + r.j + '</span><span>' + (r.v || 0) + '</span><span>' + (r.n || 0) + '</span><span>' + (r.d || 0) + '</span><span>' + (r.bp - r.bc > 0 ? '+' : '') + (r.bp - r.bc) + '</span><span><b>' + r.pts + '</b></span></div>'; }).join('') + '</div>';
     }
     if (vfTab === 'res') {
