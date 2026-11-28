@@ -2947,7 +2947,7 @@
   }
 
   // 2026-11-28 (propriétaire : « dans la démo, aucune marge ») : même table que le serveur (orolado_trade_demo_mult).
-  function demoMultOf(m) { m = Number(m); return Math.abs(m - 1.9) < 0.001 ? 2 : m === 5 ? 5.55 : m === 10 ? 11.11 : m === 50 ? 55.55 : m; }
+  function demoMultOf(m) { m = Number(m); return Math.abs(m - 1.9) < 0.001 ? 2.1 : m === 5 ? 5.83 : m === 10 ? 11.66 : m === 50 ? 58.33 : m; } // démo ×2,10 (propriétaire)
   function payMultFor(u, m) { return u && u.mode === 'real' ? Number(m) : demoMultOf(m); }
   function pctOfMult(base, eff) { return Math.abs(Number(base) - 1.9) < 0.001 ? Math.round((eff - 1) * 100) : Math.round(eff * 100); }
   function updatePayoutUi() {

@@ -322,12 +322,13 @@ function orolado_trade_pick_entry(string $mode, string $side, int $arrivalTick, 
   return $out;
 }
 
-/** 2026-11-28 — cote DÉMO sans marge (retour 100 %) pour une cote réelle (×1,90 à 50 % de chances, ×5 / ×10 / ×50 à 90 % rendus). */
+/** 2026-11-28 — cote DÉMO (propriétaire : « marge démo à moins 10, ils gagnent ×2,10 ») : retour 105 % en démo
+ *  (×1,90 → ×2,10 ; ×5 → ×5,83 ; ×10 → ×11,66 ; ×50 → ×58,33). Le RÉEL n'utilise JAMAIS cette fonction (×1,90). */
 function orolado_trade_demo_mult(float $m): float {
-  if (abs($m - 1.9) < 0.001) return 2.0;
-  if (abs($m - 5.0) < 0.001) return 5.55;
-  if (abs($m - 10.0) < 0.001) return 11.11;
-  if (abs($m - 50.0) < 0.001) return 55.55;
+  if (abs($m - 1.9) < 0.001) return 2.1;
+  if (abs($m - 5.0) < 0.001) return 5.83;
+  if (abs($m - 10.0) < 0.001) return 11.66;
+  if (abs($m - 50.0) < 0.001) return 58.33;
   return $m;
 }
 
@@ -423,7 +424,7 @@ function orolado_trade_place(array $me, array $req): array {
   $expiryTick = $entryTick + intdiv($duration * 1000, OROLADO_TICK_MS);
   $barrierCents = orolado_fair_barrier($assetId, $duration, $side, $payout, $entryCents);
   // 2026-11-28 (propriétaire : « dans la démo, aucune marge ») : la ligne gagnante reste la même (calculée ci-dessus avec la
-  // cote de base), mais un trade DÉMO gagnant paie la cote sans marge (×1,90 → ×2,00 ; ×5 → ×5,55 ; ×10 → ×11,11 ; ×50 → ×55,55).
+  // cote de base), mais un trade DÉMO gagnant paie la cote démo (×1,90 → ×2,10 ; ×5 → ×5,83 ; ×10 → ×11,66 ; ×50 → ×58,33).
   if ($mode === 'demo') $payout = orolado_trade_demo_mult($payout);
 
   $realAfter = null;
