@@ -5545,9 +5545,6 @@
   }
   function openDeposit(preMsg, method) {
     try { var eA0 = $('err-depositAmt'); if (eA0) { eA0.textContent = ''; eA0.classList.remove('on'); } } catch (eE) { /* ignore */ }
-    // 2026-10-20 (vieux Android) : le paiement Flutterwave (~800 Ko) n'est plus chargé à chaque visite ;
-    // il se prépare ici, dès l'ouverture de Recharger, pendant que le joueur choisit son moyen de paiement.
-    if (!isGuest()) { try { ensureFlwScript(); } catch (eFlw) { /* ignore */ } }
     var peek = isGuest();
     if (peek) { bindDepositPeek(); preMsg = ''; }
     if ($('depositModal')) $('depositModal').classList.toggle('dep-peek', peek);
@@ -5858,228 +5855,13 @@
     if (document.readyState === 'complete') later(); else window.addEventListener('load', later);
   })();
 
-  async function postFlwVerify(payload) {
-    try {
-      var r = await fetch('api/flutterwave/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        cache: 'no-store'
-      });
-      if (r.ok) return await r.json();
-    } catch (e) { /* fallback */ }
-    return D6.Api.post('flutterwaveVerify', payload, 20000);
-  }
-
-  function flwXofCountries() {
-    return { CI: 1, SN: 1, BF: 1, ML: 1, TG: 1, BJ: 1 };
-  }
-  function flwXafCountries() {
-    return { CM: 1, GA: 1, CG: 1, GQ: 1, CF: 1, TD: 1 };
-  }
-  function flwCfaCurrency(cc) {
-    if (flwXofCountries()[cc]) return 'XOF';
-    if (flwXafCountries()[cc]) return 'XAF';
-    return '';
-  }
   function usdToCfaInt(usd) {
     var rate = Number((D6.CONFIG && D6.CONFIG.USD_FCFA_RATE) || 600) || 600;
     return Math.max(100, Math.round(Number(usd || 0) * rate));
   }
 
-  // v2541 — Wave ne fonctionne pas dans la page Flutterwave (on ne peut pas le retirer de leur liste).
-  // Pour les pays où Wave apparaît (Côte d'Ivoire, Sénégal), petite fenêtre AVANT la page de paiement :
-  // « Wave est en maintenance, payez avec … ». Affichage seulement : rien ne change au paiement lui-même.
-  var WAVE_OPS = { CI: ['orange', 'mtn', 'moov'], SN: ['orange'] };
-  var WAVE_NAMES = { orange: 'Orange Money', mtn: 'MTN MoMo', moov: 'Moov Money' };
-  function waveNotice(country) {
-    var cc = String(country || '').toUpperCase();
-    var ops = WAVE_OPS[cc];
-    if (!ops) return Promise.resolve(true);
-    // 2026-10-20 : textes dans les 12 langues (js/i18n.js x_wave*) ; avant : anglais, sinon français pour tout le monde.
-    var names = ops.map(function (o) { return WAVE_NAMES[o]; });
-    var list = names.length > 1 ? names.slice(0, -1).join(', ') + t('x_or') + names[names.length - 1] : names[0];
-    var txt = { t: t('x_waveT'), p: t('x_waveP').replace('{list}', list), go: t('continueBtn'), no: t('cancel') };
-    return new Promise(function (resolve) {
-      var old = $('waveNotice');
-      if (old) old.remove();
-      var bd = document.createElement('div');
-      bd.id = 'waveNotice';
-      bd.className = 'wave-notice';
-      bd.setAttribute('role', 'dialog');
-      bd.setAttribute('aria-modal', 'true');
-      var logos = ops.map(function (o) {
-        return '<span class="wn-op"><img src="icons/pay/' + o + '.svg" alt=""><b>' + WAVE_NAMES[o] + '</b></span>';
-      }).join('');
-      bd.innerHTML = '<div class="wn-box"><div class="wn-wave"><img src="icons/pay/wave.svg?v=2768" alt=""><i>✕</i></div>' +
-        '<h3>' + txt.t + '</h3><p>' + txt.p + '</p><div class="wn-ops">' + logos + '</div>' +
-        '<button type="button" class="wn-go">' + txt.go + '</button><button type="button" class="wn-no">' + txt.no + '</button></div>';
-      document.body.appendChild(bd);
-      function done(v) { try { bd.remove(); } catch (eR) { /* ignore */ } resolve(v); }
-      bd.querySelector('.wn-go').addEventListener('click', function () { done(true); });
-      bd.querySelector('.wn-no').addEventListener('click', function () { done(false); });
-      bd.addEventListener('click', function (e) { if (e.target === bd) done(false); });
-    });
-  }
 
 
-  function normalizeFlwSession(session) {
-    var s = session || {};
-    var cur = String(s.currency || 'USD').toUpperCase();
-    var amt = Number(s.amount) || 0;
-    var usd = Number(s.amountUsd) || 0;
-    if (!usd) usd = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || minDeposit());
-    if (cur === 'CFA' || cur === 'FCFA') cur = 'XOF';
-    if (cur === 'XOF' || cur === 'XAF') {
-      if (amt < 100) amt = usdToCfaInt(usd);
-      amt = Math.round(amt);
-    }
-    s.currency = cur;
-    s.amount = amt;
-    return s;
-  }
-
-  function flwModalVisible() {
-    return !!(document.querySelector('iframe[src*="flutterwave"], iframe[name*="checkout"], .flwp-container, #flwp-container, [class*="flw-checkout"]'));
-  }
-
-  // v2542 — le programme de paiement Flutterwave (checkout.flutterwave.com/v3.js) peut ne pas s'être chargé
-  // (Safari / bloqueur, réseau lent) : on le recharge et on l'attend (8 s au plus) avant d'abandonner.
-  var flwScriptWait = null;
-  function ensureFlwScript() {
-    if (window.FlutterwaveCheckout) return Promise.resolve(true);
-    if (flwScriptWait) return flwScriptWait;
-    flwScriptWait = new Promise(function (resolve) {
-      var done = false;
-      function finish(v) { if (done) return; done = true; flwScriptWait = null; resolve(v); }
-      try {
-        var s = document.createElement('script');
-        // v2546 : adresse neuve à chaque essai → jamais une vieille copie abîmée gardée par le téléphone.
-        s.src = 'https://checkout.flutterwave.com/v3.js?r=' + Date.now();
-        s.async = true;
-        s.onload = function () { finish(!!window.FlutterwaveCheckout); };
-        s.onerror = function () { finish(false); };
-        document.head.appendChild(s);
-      } catch (eS) { finish(false); }
-      var t0 = Date.now();
-      (function poll() {
-        if (window.FlutterwaveCheckout) { finish(true); return; }
-        if (Date.now() - t0 > 8000) { finish(false); return; }
-        setTimeout(poll, 200);
-      })();
-    });
-    return flwScriptWait;
-  }
-
-  function openFlwInline(session) {
-    if (window.FlutterwaveCheckout) { openFlwInlineNow(session); return; }
-    ensureFlwScript().then(function (ok) {
-      if (ok) { openFlwInlineNow(session); return; }
-      // v2547 — compte admin seulement : relevé pour savoir où ça casse (programme reçu ? erreur ? navigateur).
-      var diag = '';
-      try {
-        var uu = user();
-        if (uu && uu.role === 'admin') {
-          var tags = document.querySelectorAll('script[src*="checkout.flutterwave.com"]').length;
-          diag = ' [tag:' + String(window.__flwLoad || '?') + ' n:' + tags + ' type:' + (typeof window.FlutterwaveCheckout) +
-            ' ua:' + (/iPhone|iPad/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'and' : 'pc')) +
-            (/CriOS/.test(navigator.userAgent) ? '-chrome' : '') + ']';
-        }
-      } catch (eD) { /* ignore */ }
-      toast('La page de paiement est bloquée par votre navigateur. Essayez avec Chrome, ou désactivez le bloqueur de contenu, puis réessayez.' + diag, 'err', 9000);
-    });
-  }
-
-  function openFlwInlineNow(session) {
-    if (!window.FlutterwaveCheckout) {
-      toast('Paiement carte indisponible pour le moment.', 'err');
-      return;
-    }
-    session = normalizeFlwSession(session);
-    var pub = String((session && session.public_key) || '');
-    if (!pub || pub.indexOf('FLWPUBK') !== 0) {
-      toast('Paiement carte indisponible pour le moment.', 'err');
-      return;
-    }
-    if (!session.amount || session.amount <= 0) {
-      toast('Montant de paiement invalide.', 'err');
-      return;
-    }
-    depositApplied = false;
-    closeModal('depositModal');
-    var opened = false;
-    var watchdog = setTimeout(function () {
-      if (opened || flwModalVisible()) return;
-      toast('Le paiement n\'a pas pu s\'ouvrir. Réessayez.', 'err', 6000);
-      try { openModal('depositModal'); } catch (eR) { /* ignore */ }
-    }, 6000);
-    function markOpen() {
-      opened = true;
-      clearTimeout(watchdog);
-    }
-    try {
-      var cfg = {
-        public_key: pub,
-        tx_ref: session.tx_ref || session.ref,
-        amount: session.amount,
-        currency: session.currency,
-        customer: session.customer || {},
-        customizations: session.customizations || { title: 'OROLADO' },
-        redirect_url: session.redirect_url || ((location && location.origin) || 'https://orolado.com') + '/api/flutterwave/callback',
-        callback: function (data) {
-          markOpen();
-          var txId = (data && (data.transaction_id || data.id)) || '';
-          ensureApiToken().then(function (tok) {
-            return postFlwVerify({
-              token: tok || (D6.Api && D6.Api.token ? D6.Api.token() : ''),
-              transaction_id: txId,
-              tx_ref: session.tx_ref || session.ref || ''
-            });
-          }).then(function (remote) {
-            applyDepositPaid(remote);
-            // v2624 (propriétaire) : pas de message « paiement en cours » ; surveillance silencieuse.
-            if (!depositApplied) startDepositWatch(session.tx_ref || session.ref || '');
-          }).catch(function () {
-            startDepositWatch(session.tx_ref || session.ref || '');
-          });
-        },
-        onclose: function () { markOpen(); }
-      };
-      var payOpts = String(session.payment_options || '').trim();
-      if (!payOpts && (session.currency === 'XOF' || session.currency === 'XAF')) {
-        payOpts = 'card,mobilemoneyfranco';
-      }
-      if (payOpts) cfg.payment_options = payOpts;
-      FlutterwaveCheckout(cfg);
-      setTimeout(function () { if (flwModalVisible()) markOpen(); }, 700);
-    } catch (e) {
-      clearTimeout(watchdog);
-      toast('Paiement carte indisponible pour le moment.', 'err');
-    }
-  }
-
-  async function postFlutterwaveCheckout(payload) {
-    var ctrl = new AbortController();
-    var timer = setTimeout(function () { ctrl.abort(); }, 28000);
-    try {
-      var r = await fetch('api/flutterwave/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        cache: 'no-store',
-        signal: ctrl.signal
-      });
-      clearTimeout(timer);
-      if (r.ok) {
-        var json = await r.json();
-        if (json) return json;
-      }
-    } catch (e) {
-      console.error('OROLADO flutterwave checkout', e);
-    }
-    clearTimeout(timer);
-    return D6.Api.post('flutterwaveCheckout', payload, 28000);
-  }
 
   async function postDepositInitiate(payload) {
     var ctrl = new AbortController();
@@ -7050,25 +6832,14 @@
   // (montant en FCFA, taux fixe) et renvoie son adresse ; le joueur y paie puis revient sur ?deposit=success&ref=…
   // Le crédit n'arrive QUE si Maketou confirme le paiement (vérification serveur ou message signé).
   var momoBusy = false;
-  // v2626 — Mobile Money par Flutterwave EN DIRECT (Wave s'ouvre : lien ouvert en plein, pas dans l'écran Flutterwave).
-  // Activé pour tous si D6.CONFIG.MOMO_VIA === 'flutterwave' ; sinon seulement le compte admin avec ?momo=flw (test).
+  // Wave en direct par GeniusPay (2026-11-19). Flutterwave retiré du site (2026-11-28, propriétaire).
   var momoNet = 'wave';
   var momoInflight = false;
-  // v2627 : le réglage de test est GARDÉ (avant : perdu dès que l'adresse changeait, après connexion ou retour).
-  try { if (/[?&]momo=flw\b/.test(location.search)) localStorage.setItem('oro_momo_flw', '1'); if (/[?&]momo=off\b/.test(location.search)) localStorage.removeItem('oro_momo_flw'); } catch (eMf) { /* ignore */ }
-  function momoViaFlw() {
-    if (D6.CONFIG && D6.CONFIG.MOMO_VIA === 'flutterwave') return true;
-    var u = user();
-    var isAdm = !!(u && (u.role === 'admin' || u.isAdmin === true || String(u.email || '').toLowerCase() === 'admin@orolado.com'));
-    var flag = false;
-    try { flag = localStorage.getItem('oro_momo_flw') === '1'; } catch (eF) { flag = /[?&]momo=flw\b/.test(location.search); }
-    return isAdm && flag;
-  }
   // v2628 : case Wave toujours visible (plus de mode test, plus de cases d'opérateurs).
   function paintMomoMode() { /* rien à repeindre */ }
-  async function startFlwMomo() {
+  async function startWaveMomo() { // Wave par GeniusPay (2026-11-19) — minimum 3 $ (2026-11-28)
     var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < 1) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '1')); return; }
+    if (amt < 3) { showFieldError('depositAmt', t('m_minDeposit').replace('{n}', '3')); return; }
     // v2628 : indicatif choisi par le joueur (+225 / +221 / +226), pas de détection automatique.
     var dialSel = String(($('momoDial') && $('momoDial').value) || '225').replace(/\D/g, '') || '225';
     var digits = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
@@ -7110,7 +6881,7 @@
       toast(t('momoApprove'), 'info', 7000);
       startDepositWatch(ref);
     } catch (err) {
-      console.error('OROLADO flw momo', err);
+      console.error('OROLADO wave momo', err);
       toast(t('sessionInvalid'), 'err');
     } finally {
       momoBusy = false;
@@ -7156,7 +6927,7 @@
   }
   // v3021 (propriétaire : « avant, on mettait son numéro, on touchait Payer et Wave s'ouvrait DIRECTEMENT, sans le
   // message blanc Ouvrir dans Wave ? ») : l'iPhone n'ouvre Wave directement que si le lien est ouvert DANS le toucher.
-  // Le lien Flutterwave est donc préparé en silence dès que le numéro est complet (même appel serveur qu'au toucher) ;
+  // Le lien Wave (GeniusPay) est donc préparé en silence dès que le numéro est complet (même appel serveur qu'au toucher) ;
   // le toucher l'ouvre tout de suite. Numéro ou montant changé → lien jeté, un nouveau est préparé.
   var momoPrepTimer = 0, momoPrepKey = '';
   function momoReadyToPrep() {
@@ -7164,7 +6935,7 @@
     var dg = String(($('momoPhone') && $('momoPhone').value) || '').replace(/\D/g, '');
     if (dg.indexOf(ds) === 0 && dg.length > 10) dg = dg.slice(ds.length);
     var am = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    return dg.length === (ds === '221' ? 9 : ds === '226' ? 8 : 10) && am >= 1 && !isGuest() && !!user();
+    return dg.length === (ds === '221' ? 9 : ds === '226' ? 8 : 10) && am >= 3 && !isGuest() && !!user();
   }
   function scheduleMomoPrep() {
     clearTimeout(momoPrepTimer);
@@ -7210,7 +6981,7 @@
     if (true) {
       var uF = user();
       if (!uF || !requireAccount()) return;
-      return startFlwMomo();
+      return startWaveMomo();
     }
     var u = user();
     if (!u || !requireAccount()) return;
@@ -7288,7 +7059,7 @@
   // 2026-10-25 (propriétaire) — Amérique latine : « Payer par carte / Mobile Money » ouvre la page de dépôt en pesos
   // (js/latam.js : copier l'adresse USDT TRC20 du joueur, payer chez Guardarian ou El Dorado, crédit automatique).
   // Décidé par le PAYS ENREGISTRÉ à l'inscription (pas un VPN du moment) ; un compte au numéro africain (+2…) ne
-  // l'a jamais. Tous les autres : Flutterwave comme avant. Ouvert pour l'instant au compte admin seulement
+  // l'a jamais. Tous les autres : GeniusPay, ou Maketou si GeniusPay est coupé (Flutterwave retiré le 2026-11-28). Ouvert pour l'instant au compte admin seulement
   // (test : ?paycc=MX, CO, PE…) ; pour tous : D6.CONFIG.LATAM_PUBLIC = true.
   var LATAM_CC = { MX: 1, CO: 1, PE: 1, AR: 1, VE: 1, BO: 1, PY: 1, DO: 1, BR: 1, CL: 1, EC: 1, GT: 1, CR: 1, HN: 1, SV: 1, NI: 1, PA: 1, UY: 1 };
   function latamAdmin() {
@@ -7445,88 +7216,13 @@
   }
 
   // opts.cardOnly (2026-11-12, propriétaire) : ligne « carte bancaire » — Flutterwave n'affiche que le paiement par carte.
+  // 2026-11-28 (propriétaire : « Flutterwave, retire-le complètement ; on garde Maketou au cas où ») : plus aucun paiement
+  // Flutterwave. Carte → GeniusPay ; GeniusPay coupé → Maketou.
   async function confirmDeposit(opts) {
     if (depositing) return;
-    var cardOnly = !!(opts && opts.cardOnly);
-    var u = user();
-    if (!u) {
-      toast(t('sessionExpiredMsg'), 'info');
-      return;
-    }
-    var min = gpOn ? 1 : 3; // comme avant le 2026-11-28 (seul GeniusPay passe à 3 $)
-    var amt = D6.roundMoney(Number($('depositAmt') && $('depositAmt').value) || 0);
-    if (amt < min) {
-      showFieldError('depositAmt', t('m_minDeposit').replace('{n}', String(min)));
-      toast(t('m_minDeposit').replace('{n}', String(min)), 'err');
-      return;
-    }
-    metaTrack('InitiateCheckout', { value: amt, currency: 'USD' });
-    var btn = $(cardOnly ? 'btnCardOnly' : 'btnConfirmDeposit');
-    var btnHtml = btn ? btn.innerHTML : '';
-    depositing = true;
-    if (btn) {
-      btn.disabled = true;
-      btn.classList.add('busy');
-      btn.textContent = t('m_openingPay');
-    }
-    try {
-      var tok = await ensureApiToken();
-      if (!tok) {
-        toast(t('sessionExpiredMsg'), 'info');
-        return;
-      }
-      var cc = '';
-      try { cc = await detectPayCountry(); } catch (eCc) { cc = ''; }
-      // v2550 — compte ADMIN seulement : ?paycc=CM (ou SN, BF, GH…) ouvre la vraie page Flutterwave comme pour un
-      // joueur de ce pays, pour voir quels moyens de paiement s'affichent. Fermer sans payer. Joueurs : rien ne change.
-      try {
-        var mPc = /[?&]paycc=([A-Za-z]{2})\b/.exec(location.search);
-        if (mPc && u && u.role === 'admin') {
-          cc = mPc[1].toUpperCase();
-          toast('Test admin : paiement comme un joueur de ' + cc, 'info', 3000);
-        }
-      } catch (ePc) { /* ignore */ }
-      var cfa = flwCfaCurrency(cc);
-      var remote = await postFlutterwaveCheckout({
-        token: tok,
-        amount: amt,
-        country: cc || '',
-        lang: String(navigator.language || navigator.userLanguage || ''),
-        currency: cfa || '',
-        cardOnly: cardOnly ? 1 : 0
-      });
-      // v2542 — compte admin seulement : petit code à la fin du message pour savoir d'où vient un refus.
-      var flwDiag = (u && u.role === 'admin') ? function (tag) { return ' [' + tag + ']'; } : function () { return ''; };
-      if (remote && remote.ok === false) {
-        console.error('OROLADO flutterwave fail', remote);
-        toast(String((remote && remote.reason) || t('sessionInvalid')) + flwDiag('srv:' + String(remote.code || remote.error || '?')), 'err', 7000);
-        return;
-      }
-      if (!remote || !remote.inline || !remote.public_key || !remote.tx_ref) {
-        toast(String((remote && remote.reason) || 'Paiement carte indisponible pour le moment.') + flwDiag('rep:' + (remote ? Object.keys(remote).slice(0, 6).join(',') : 'vide')), 'err', 7000);
-        return;
-      }
-      try { sessionStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e) { /* ignore */ }
-      try { localStorage.setItem('oro_dep_ref', remote.tx_ref || remote.ref || ''); } catch (e2) { /* ignore */ }
-      // v2625 (propriétaire) : page Flutterwave ouverte EN PLEIN (lien du serveur) pour que l'application Wave
-      // puisse s'ouvrir ; la fenêtre intégrée (inline) bloquait Wave. Secours : l'ancienne fenêtre.
-      var flwLink = String(remote.link || '');
-      if (/^https:\/\/[a-z0-9.-]*flutterwave\.com\//i.test(flwLink)) {
-        window.location.href = flwLink;
-        return;
-      }
-      openFlwInline(remote);
-    } catch (err) {
-      console.error('OROLADO deposit', err);
-      toast(t('sessionInvalid'), 'err');
-    } finally {
-      depositing = false;
-      if (btn) {
-        btn.disabled = false;
-        btn.classList.remove('busy');
-        if (cardOnly) btn.innerHTML = btnHtml; else btn.textContent = t('payCardBtn');
-      }
-    }
+    if (!user()) { toast(t('sessionExpiredMsg'), 'info'); return; }
+    if (gpOn) { startGeniusDeposit(opts && opts.cardOnly ? 'card' : 'checkout'); return; }
+    startMaketouDeposit();
   }
 
   // Paramètres qu'un opérateur peut renvoyer au retour du paiement.
