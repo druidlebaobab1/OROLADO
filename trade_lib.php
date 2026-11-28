@@ -334,7 +334,7 @@ function orolado_trade_demo_mult(float $m): float {
  * démo perdus est comptée gagnée pour que le retour démo soit d'environ 130 % : ×1,90 → ~68 gagnés sur 100 ; ×5 → 26 ;
  * ×10 → 13 ; ×50 → 2,6. Le RÉEL n'est jamais touché. Pour l'ouvrir à tous : OROLADO_DEMO_EASY_ALL = true (avec un message visible). */
 const OROLADO_DEMO_EASY_RTP = 1.30;
-const OROLADO_DEMO_EASY_ALL = false;
+const OROLADO_DEMO_EASY_ALL = true; // 2026-11-28 (propriétaire) : démo facile pour TOUT LE MONDE, message « Démo facile… » montré de temps en temps (js/app.js)
 /** Chance de gagner « normale » de chaque payout (règle publique du jeu : D6.CONFIG.FAIR_WIN_CHANCE). */
 const OROLADO_DEMO_BASE_P = ['1.9' => 0.50, '5' => 0.18, '10' => 0.09, '50' => 0.018];
 function orolado_trade_demo_easy(array $db, string $uid, string $oid, float $payout, string $verdict, bool $asked = false): string {

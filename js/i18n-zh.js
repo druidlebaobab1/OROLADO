@@ -484,6 +484,7 @@
  "m_insufficient": "余额不足。",
  "m_maxStake": "此收益率下的最高投注额：⁦$  {n}⁩",
  "m_minDeposit": "最低充值金额为 ⁦$  {n}⁩。",
+ "m_demoEasy": "轻松模拟盘，这里比真实账户更容易赢。玩得开心！",
  "m_minStake": "最低投注额：⁦$  1⁩",
  "m_minWithdraw": "最低提现金额为 ⁦$  {n}⁩。",
  "m_must18": "您必须确认已年满 18 岁。",
