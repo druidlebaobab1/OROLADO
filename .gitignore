@@ -46,3 +46,4 @@ data/orders/
 # matchs virtuels : clé secrète du tirage et classement (propres à chaque serveur)
 data/sports/vf_secret.php
 data/sports/vf_table.json
+data/sports/vf_hist.json

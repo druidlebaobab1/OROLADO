@@ -23,8 +23,21 @@ const VF_GOAL_LOCK = 4;        // marchés suspendus 4 s après un but (le serve
 const VF_MARGE = 0.08;         // marge maison des matchs virtuels (propriétaire : 8 %)
 const VF_ROUNDS = 55;          // ligue 1 (56 équipes) : 55 journées
 const VF_V2 = 40;              // 2026-11-28 (propriétaire : « 60 équipes ») : à partir de la journée 40 (10 h 00 GMT), 60 équipes / 59 journées
-/** [équipes, journées par saison, 1re journée de cette formule, n° de saison de départ] pour la journée g. */
-function vf_cfg(int $g): array { if ($g < VF_V2) return [56, VF_ROUNDS, 0, 0]; return [60, 59, VF_V2, intdiv(VF_V2 - 1, VF_ROUNDS) + 1]; }
+/* 2026-11-28 (propriétaire : « mélange les pays et les grands clubs, c'est ce qui fera la spécialité d'OROLADO ») : à partir de la
+   journée VF_V3 (11 h 30 GMT), nouvelle saison : 44 pays + 16 grands clubs (villes, couleurs du club, écusson OROLADO), et une vraie
+   MI-TEMPS (1re période 4 min 30, pause 1 min, 2e période 4 min 30). Les journées d'avant ne changent pas (paris déjà posés). */
+const VF_V3 = 46;
+const VF_OUT3 = [16, 18, 27, 59, 44, 50, 54, 55, 53, 52, 51, 46, 45, 48, 49, 40]; // pays peu connus remplacés par les clubs
+function vf_ids3(): array { static $ids = null; if ($ids === null) $ids = array_values(array_merge(array_diff(range(0, 59), VF_OUT3), range(60, 75))); return $ids; }
+/** [équipes, journées par saison, 1re journée de cette formule, n° de saison de départ, liste des équipes] pour la journée g. */
+function vf_cfg(int $g): array {
+  if ($g < VF_V2) return [56, VF_ROUNDS, 0, 0, range(0, 55)];
+  if ($g < VF_V3) return [60, 59, VF_V2, intdiv(VF_V2 - 1, VF_ROUNDS) + 1, range(0, 59)];
+  return [60, 59, VF_V3, intdiv(VF_V3 - 1 - VF_V2, 59) + intdiv(VF_V2 - 1, VF_ROUNDS) + 2, vf_ids3()];
+}
+/** Mi-temps avec pause (formule 3). */
+function vf_ht(int $g): bool { return $g >= VF_V3; }
+const VF_H1 = 270; const VF_H2 = 330; // fin de la 1re période / reprise (secondes réelles après le coup d'envoi)
 
 /** Équipes : [nom, type p (pays) | c (ville d'un grand club), force 60-95, couleur, code pays ISO (pays)]. */
 const VF_TEAMS = [
@@ -45,6 +58,11 @@ const VF_TEAMS = [
   ['Costa Rica', 'p', 75, '#2563EB', 'cr'], ['Venezuela', 'p', 72, '#7F1D1D', 've'], ['Islande', 'p', 72, '#2563EB', 'is'], ['Jamaïque', 'p', 73, '#FACC15', 'jm'],
   // 2026-11-28 : 4 pays populaires de plus (ligue de 60, à partir de VF_V2)
   ['Tunisie', 'p', 76, '#DC2626', 'tn'], ['Mali', 'p', 75, '#16A34A', 'ml'], ['RD Congo', 'p', 75, '#38BDF8', 'cd'], ['Bosnie', 'p', 73, '#2563EB', 'ba'],
+  // 60-75 : grands clubs (formule 3) — nom de la ville, couleurs du club (2e couleur en 6e place), écusson dessiné par OROLADO
+  ['Madrid', 'c', 93, '#F8FAFC', '', '#D4AF37'], ['Barcelone', 'c', 91, '#A50044', '', '#004D98'], ['Manchester', 'c', 92, '#6CABDD', '', '#1C2C5B'], ['Liverpool', 'c', 90, '#C8102E', '', '#F6EB61'],
+  ['Londres', 'c', 89, '#EF0107', '', '#FFFFFF'], ['Munich', 'c', 92, '#DC052D', '', '#0066B2'], ['Dortmund', 'c', 85, '#FDE100', '', '#111111'], ['Milan', 'c', 86, '#FB090B', '', '#111111'],
+  ['Turin', 'c', 85, '#FFFFFF', '', '#111111'], ['Naples', 'c', 85, '#12A0D7', '', '#FFFFFF'], ['Paris', 'c', 90, '#004170', '', '#DA291C'], ['Marseille', 'c', 82, '#2FAEE0', '', '#FFFFFF'],
+  ['Lisbonne', 'c', 83, '#E83030', '', '#FFFFFF'], ['Porto', 'c', 83, '#00428C', '', '#FFFFFF'], ['Amsterdam', 'c', 83, '#D2122E', '', '#FFFFFF'], ['Istanbul', 'c', 81, '#FDB912', '', '#A90432'],
 ];
 
 function vf_now(): int { return function_exists('sb_now') ? sb_now() : time(); }
@@ -84,7 +102,7 @@ function vf_fixtures(int $g): array {
   static $cache = [];
   if (isset($cache[$g])) return $cache[$g];
   $S = vf_season($g); $r = vf_round($g); $n = vf_n($g);
-  $ord = range(0, $n - 1);
+  $ord = vf_cfg($g)[4];
   $rnd = vf_rng('sched|' . $S);
   for ($i = $n - 1; $i > 0; $i--) { $j = (int) floor($rnd() * ($i + 1)); [$ord[$i], $ord[$j]] = [$ord[$j], $ord[$i]]; }
   $rot = array_slice($ord, 1);
@@ -123,10 +141,16 @@ function vf_minute(int $g, int $t): int {
   $d = $t - vf_ko($g);
   if ($d < 0) return -1;
   if ($d >= VF_MATCH) return 90;
+  if (vf_ht($g)) return $d < VF_H1 ? (int) floor($d * 45 / VF_H1) : ($d < VF_H2 ? 45 : min(90, 45 + (int) floor(($d - VF_H2) * 45 / (VF_MATCH - VF_H2))));
   return (int) floor($d * 90 / VF_MATCH);
 }
+/** Pause de la mi-temps en cours ? */
+function vf_in_ht(int $g, int $t): bool { $d = $t - vf_ko($g); return vf_ht($g) && $d >= VF_H1 && $d < VF_H2; }
 /** Instant réel d'un but de la minute m. */
-function vf_goal_at(int $g, int $m): int { return vf_ko($g) + (int) ceil($m * VF_MATCH / 90); }
+function vf_goal_at(int $g, int $m): int {
+  if (vf_ht($g)) return vf_ko($g) + ($m <= 45 ? (int) ceil($m * VF_H1 / 45) : VF_H2 + (int) ceil(($m - 45) * (VF_MATCH - VF_H2) / 45));
+  return vf_ko($g) + (int) ceil($m * VF_MATCH / 90);
+}
 /** État visible à l'instant t (seulement les buts déjà marqués). */
 function vf_state(int $g, int $i, int $t): array {
   $min = vf_minute($g, $t); $h = 0; $a = 0; $hh = 0; $ha = 0; $last = 0; $goals = [];
@@ -137,7 +161,7 @@ function vf_state(int $g, int $i, int $t): array {
     if ($e['m'] <= 45) { if ($e['s'] === 'h') $hh++; else $ha++; }
     $last = max($last, $at); $goals[] = [$e['m'], $e['s']];
   }
-  return ['min' => $min, 'h' => $h, 'a' => $a, 'hh' => $hh, 'ha' => $ha, 'last' => $last, 'goals' => $goals, 'end' => $t >= vf_ko($g) + VF_MATCH];
+  return ['min' => $min, 'h' => $h, 'a' => $a, 'hh' => $hh, 'ha' => $ha, 'last' => $last, 'goals' => $goals, 'end' => $t >= vf_ko($g) + VF_MATCH, 'ht' => vf_in_ht($g, $t)];
 }
 
 /* ---------- probabilités (Poisson) et cotes ---------- */
@@ -197,7 +221,7 @@ function vf_table(int $g, int $t): array {
   $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'sports'; if (!is_dir($dir)) @mkdir($dir, 0750, true);
   $f = $dir . DIRECTORY_SEPARATOR . 'vf_table.json';
   $c = is_file($f) ? json_decode((string) @file_get_contents($f), true) : null;
-  if (!is_array($c) || (int) ($c['S'] ?? -1) !== $S) $c = ['S' => $S, 'done' => -1, 'tb' => array_fill(0, $nT, [0, 0, 0, 0, 0, 0, ''])];
+  if (!is_array($c) || (int) ($c['S'] ?? -1) !== $S) $c = ['S' => $S, 'done' => -1, 'tb' => array_fill_keys(vf_cfg($g)[4], [0, 0, 0, 0, 0, 0, ''])];
   $chg = false;
   for ($k = (int) $c['done'] + 1; $g0 + $k <= $g && $k < $R; $k++) {
     $gg = $g0 + $k;
@@ -221,34 +245,70 @@ function vf_table(int $g, int $t): array {
   return ['S' => $S + 1, 'played' => (int) $c['done'] + 1, 'rows' => $out];
 }
 
+/* ---------- historique depuis le lancement (statistiques des joueurs) ---------- */
+/** Tous les matchs TERMINÉS depuis la journée 0 : totaux, fiche de chaque équipe, derniers face-à-face (cache incrémental). */
+function vf_hist(int $t): array {
+  $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'sports'; if (!is_dir($dir)) @mkdir($dir, 0750, true);
+  $f = $dir . DIRECTORY_SEPARATOR . 'vf_hist.json';
+  $c = is_file($f) ? json_decode((string) @file_get_contents($f), true) : null;
+  if (!is_array($c) || (int) ($c['v'] ?? 0) !== 1) $c = ['v' => 1, 'done' => -1, 'n' => 0, 'g' => 0, 'r' => [0, 0, 0], 'o25' => 0, 'bt' => 0, 'nil' => 0, 'tm' => [], 'hh' => []];
+  $chg = false;
+  // fiche équipe : [joués, V, N, D, bp, bc, +2,5, les 2 marquent, sans encaisser, dom J, dom pts, ext J, ext pts, forme (10 derniers)]
+  for ($g = (int) $c['done'] + 1; $t >= vf_ko($g) + VF_MATCH && $g < (int) $c['done'] + 400; $g++) {
+    foreach (vf_fixtures($g) as $i => [$h, $a]) {
+      $r = vf_result($g, $i, $t); if (!$r) continue;
+      [$x, $y] = $r['ft'];
+      $c['n']++; $c['g'] += $x + $y; $c['r'][$x > $y ? 0 : ($x === $y ? 1 : 2)]++;
+      if ($x + $y > 2) $c['o25']++; if ($x && $y) $c['bt']++; if (!$x && !$y) $c['nil']++;
+      foreach ([[$h, $x, $y, true], [$a, $y, $x, false]] as [$tm, $gf, $ga, $home]) {
+        $T = $c['tm'][$tm] ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ''];
+        $pts = $gf > $ga ? 3 : ($gf === $ga ? 1 : 0);
+        $T[0]++; $T[$gf > $ga ? 1 : ($gf === $ga ? 2 : 3)]++; $T[4] += $gf; $T[5] += $ga;
+        if ($gf + $ga > 2) $T[6]++; if ($gf && $ga) $T[7]++; if (!$ga) $T[8]++;
+        if ($home) { $T[9]++; $T[10] += $pts; } else { $T[11]++; $T[12] += $pts; }
+        $T[13] = substr($T[13] . ($gf > $ga ? 'V' : ($gf === $ga ? 'N' : 'D')), -10);
+        $c['tm'][$tm] = $T;
+      }
+      $k = min($h, $a) . '-' . max($h, $a);
+      $c['hh'][$k] = array_slice(array_merge($c['hh'][$k] ?? [], [[$g, $h, $a, $x, $y]]), -5);
+    }
+    $c['done'] = $g; $chg = true;
+  }
+  if ($chg) { $tmp = $f . '.' . getmypid(); @file_put_contents($tmp, json_encode($c), LOCK_EX); @rename($tmp, $f); }
+  return $c;
+}
+
 /* ---------- vue envoyée au téléphone ---------- */
 function vf_id(int $g, int $i): int { return $g * 100 + $i; }
 function vf_split(int $id): array { return [intdiv($id, 100), $id % 100]; }
-function vf_view(int $t = 0): array {
+function vf_view(int $t = 0, bool $lite = false): array {
   $t = $t ?: vf_now();
   $g = vf_slot($t);
   $cur = $t < vf_ko($g) + VF_MATCH ? $g : null; // journée en cours (10 premières minutes du créneau)
-  $days = [];
-  foreach (array_filter([$cur, $g + 1]) as $gg) {
+  $days = []; $H = vf_hist($t);
+  foreach (array_filter([$cur, $g + 1], static fn($x) => $x !== null) as $gg) {
     $rows = [];
     foreach (vf_fixtures($gg) as $i => [$h, $a]) {
       $m = vf_markets($gg, $i, $t);
       $row = ['id' => vf_id($gg, $i), 'h' => $h, 'a' => $a];
       if ($gg === $cur) { $st = vf_state($gg, $i, $t); $row += ['sc' => [$st['h'], $st['a']], 'min' => $st['min'], 'gl' => $st['goals']]; }
       $row['mk'] = $m ? $m['mk'] : null;
+      $hk = min($h, $a) . '-' . max($h, $a); if (!empty($H['hh'][$hk])) $row['hh'] = array_reverse($H['hh'][$hk]);
       $rows[] = $row;
     }
-    $days[] = ['g' => $gg, 'j' => vf_round($gg) + 1, 'S' => vf_season($gg) + 1, 'ko' => vf_ko($gg), 'live' => $gg === $cur, 'fx' => $rows];
+    $days[] = ['g' => $gg, 'j' => vf_round($gg) + 1, 'S' => vf_season($gg) + 1, 'ko' => vf_ko($gg), 'live' => $gg === $cur, 'fx' => $rows] + (vf_ht($gg) ? ['hp' => [VF_H1, VF_H2]] : []);
   }
+  if ($lite) return ['ok' => true, 'lite' => 1, 'now' => $t, 'slot' => VF_SLOT, 'match' => VF_MATCH, 'close' => VF_CLOSE, 'days' => array_map(static function ($d) { $d['fx'] = array_map(static function ($f) { unset($f['hh']); return $f; }, $d['fx']); return $d; }, $days)];
   $res = [];
-  for ($gg = ($cur === null ? $g : $g - 1), $n = 0; $n < 4 && $gg >= 0; $gg--, $n++) {
+  for ($gg = ($cur === null ? $g : $g - 1), $n = 0; $n < 8 && $gg >= 0; $gg--, $n++) {
     $rows = [];
     foreach (vf_fixtures($gg) as $i => [$h, $a]) { $r = vf_result($gg, $i, $t); if ($r) $rows[] = ['h' => $h, 'a' => $a, 'ft' => $r['ft'], 'ht' => $r['ht']]; }
     if ($rows) $res[] = ['g' => $gg, 'j' => vf_round($gg) + 1, 'S' => vf_season($gg) + 1, 'ko' => vf_ko($gg), 'fx' => $rows];
   }
-  return ['ok' => true, 'now' => $t, 'slot' => VF_SLOT, 'match' => VF_MATCH, 'close' => VF_CLOSE, 'days' => $days, 'res' => $res, 'tb' => vf_table($cur ?? $g, $t)];
+  return ['ok' => true, 'now' => $t, 'slot' => VF_SLOT, 'match' => VF_MATCH, 'close' => VF_CLOSE, 'days' => $days, 'res' => $res, 'tb' => vf_table($cur ?? $g, $t),
+    'hs' => ['n' => $H['n'], 'g' => $H['g'], 'r' => $H['r'], 'o25' => $H['o25'], 'bt' => $H['bt'], 'nil' => $H['nil'], 'tm' => $H['tm'], 'since' => VF_EPOCH]];
 }
-function vf_teams(): array { return array_map(static fn($r) => ['n' => $r[0], 'p' => $r[1] === 'p' ? 1 : 0, 'c' => $r[3], 'cc' => $r[4]], VF_TEAMS); }
+function vf_teams(): array { return array_map(static fn($r) => ['n' => $r[0], 'p' => $r[1] === 'p' ? 1 : 0, 'c' => $r[3], 'cc' => $r[4]] + (isset($r[5]) ? ['c2' => $r[5]] : []), VF_TEAMS); }
 
 /* ---------- branchement sur les paris (sb_pick / sb_sel_result) ---------- */
 function vf_pick(string $id, string $mk, string $k, int $now): array {
