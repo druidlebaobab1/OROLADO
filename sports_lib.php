@@ -917,6 +917,7 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
       $p = sb_pick($eid, $k, $user, $now);
       if (empty($p['ok'])) return ['ok' => false, 'reason' => (string) ($p['reason'] ?? 'closed')];
       if (isset($grp[$p['grp']])) return ['ok' => false, 'reason' => 'corr']; // jamais deux choix d'un même match
+      $isV = str_starts_with($eid, 'sb:virt:'); if (isset($virtMix) && $virtMix !== $isV) return ['ok' => false, 'reason' => 'corr']; $virtMix = $isV; // virtuel et vrais matchs : jamais dans le même coupon
       $grp[$p['grp']] = 1; $seen[$eid] = 1;
       $o = $p['sel'];
       if (is_array($s) && isset($s['odd']) && is_numeric($s['odd']) && $acc !== 'any' && ($acc === 'up' ? (float) $o['odd'] < round((float) $s['odd'], 2) - 0.004 : abs(round((float) $s['odd'], 2) - (float) $o['odd']) > 0.004)) $chg[] = ['ev' => $eid, 'k' => $k, 'odd' => (float) $o['odd']];
@@ -944,6 +945,8 @@ function sp_bet(array $db, array $user, string $mode, float $stake, array $sel, 
     $picked[] = ['ev' => $eid, 'k' => $k, 'odd' => (float) $o['odd'], 't' => $e['title'], 'l' => $o['label']];
     $odd *= (float) $o['odd'];
   }
+  $nV = 0; foreach ($picked as $pp) if (str_starts_with((string) ($pp['ev'] ?? ''), 'sb:virt:')) $nV++;
+  if ($nV > 0 && $nV < count($picked)) return ['ok' => false, 'reason' => 'corr']; // virtuel + autre chose (vrai match, Predict) : refusé
   if ($chg) return ['ok' => false, 'reason' => 'odds', 'odds' => $chg];
   // 2026-10-22 (étape 3) — PARIS EN DIRECT : ATTENTE de 5 s, relecture forcée des cotes du direct ; but / suspendu → refus
   // « susp », cote changée → règle $acc. Rien n'est pris avant (l'argent n'est retiré qu'après ce contrôle).
