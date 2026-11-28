@@ -2039,3 +2039,12 @@ html:root body #casinoModal#casinoModal .sp2 .sp2-chev{width:20px!important;heig
 html:root body #casinoModal#casinoModal .sp2 .sp2-chev .sp2-i{width:11px!important;height:11px!important}
 html:root body #casinoModal .sp2 .pz-bstb em.fit{display:block;min-width:0;max-width:58%;overflow:hidden;white-space:nowrap;flex:0 1 auto}
 html:root body #casinoModal .sp2 .pz-bstb .pz-bstb-t{min-width:0}
+/* v3883 : score exact sans case vide — lignes 1 | X | 2, puis 1 | 2 sur 2 colonnes */
+html:root body #casinoModal .sp2 .pz-cs2{display:flex;flex-direction:column;gap:6px}
+html:root body #casinoModal .sp2 .pz-cs3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+html:root body #casinoModal .sp2 .pz-csr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+html:root body #casinoModal .sp2 .pz-csr .pz-full{grid-column:1 / -1}
+html:root body #casinoModal .sp2 .pz-cs2 .pz-ob{min-width:0}
+/* v3883 : chiffres qui évoluent (règle générale, voir NUMSEL dans sports.js) — une ligne, jamais hors de leur case */
+.pz-min,.pz-sc,.pz-ov,.pz-msc,#pzSc,#pzSc2,#pzClk,#pzClk2,#pzPer,#pzMinT,#pzAdd,.pz-n,.pz-sbn,.vf-g > b,.pz-te em,.pz-in,.pz-rt > b,.vf-tr > span,.vf-tr b,.vf-kpi b,.vf-sr > b,.vf-sc b,.vf-tabs2 em,.vf-st em,.vf-bm > b,.vf-cmp p > b,.vf-jd > b,.sp2-st b,.pz-msum b,.sp2-bf b,.pz-rcol em,.sp-rcpt-sc{max-width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:clip}
+html:root body #casinoModal .sp2 .vf-st em,html:root body #casinoModal .sp2 .pz-in,html:root body #casinoModal .sp2 .vf-tabs2 em{display:inline-block;vertical-align:bottom}
