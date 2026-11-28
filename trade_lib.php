@@ -337,9 +337,9 @@ const OROLADO_DEMO_EASY_RTP = 1.30;
 const OROLADO_DEMO_EASY_ALL = false;
 /** Chance de gagner « normale » de chaque payout (règle publique du jeu : D6.CONFIG.FAIR_WIN_CHANCE). */
 const OROLADO_DEMO_BASE_P = ['1.9' => 0.50, '5' => 0.18, '10' => 0.09, '50' => 0.018];
-function orolado_trade_demo_easy(array $db, string $uid, string $oid, float $payout, string $verdict): string {
+function orolado_trade_demo_easy(array $db, string $uid, string $oid, float $payout, string $verdict, bool $asked = false): string {
   if ($verdict !== 'lost') return $verdict;
-  if (!OROLADO_DEMO_EASY_ALL) {
+  if (!OROLADO_DEMO_EASY_ALL && !$asked) { // $asked : téléphone de test (?demotest=1), n'importe quel compte, DÉMO seulement
     $u = is_array($db['users'][$uid] ?? null) ? $db['users'][$uid] : ['id' => $uid];
     if (!function_exists('orolado_is_admin_user') || !orolado_is_admin_user($u + ['id' => $uid])) return $verdict;
   }
@@ -447,6 +447,7 @@ function orolado_trade_place(array $me, array $req): array {
   // 2026-11-28 (propriétaire : « dans la démo, aucune marge ») : la ligne gagnante reste la même (calculée ci-dessus avec la
   // cote de base), mais un trade DÉMO gagnant paie la cote démo (×1,90 → ×2,10 ; ×5 → ×5,83 ; ×10 → ×11,66 ; ×50 → ×58,33).
   if ($mode === 'demo') $payout = orolado_trade_demo_mult($payout);
+  $easyAsk = $mode === 'demo' && !empty($req['easy']); // 2026-11-28 : démo facile demandée par un téléphone de test (?demotest=1)
 
   $realAfter = null;
   if ($mode === 'real') {
@@ -477,6 +478,7 @@ function orolado_trade_place(array $me, array $req): array {
     'assetId' => $assetId,
     'payout' => $payout,
     'payoutMult' => $payout,
+    'easy' => $easyAsk ? 1 : 0,
     'entryTick' => $entryTick,
     'entryCents' => $entryCents,
     'expiryTick' => $expiryTick,
@@ -609,7 +611,7 @@ function orolado_trade_settle(string $uid, string $oid): array {
       }
       $exitCents = orolado_feed_price_at($asset, $expiryTick);
       $verdict = $exitCents === null ? 'void' : orolado_fair_verdict($side, $exitCents, (int) $o['barrierCents']);
-      if ($mode === 'demo' && $verdict === 'lost') $verdict = orolado_trade_demo_easy($db, $uid, $oid, $payout, $verdict);
+      if ($mode === 'demo' && $verdict === 'lost') $verdict = orolado_trade_demo_easy($db, $uid, $oid, $payout, $verdict, !empty($o['easy']));
     }
   }
   $credit = orolado_fair_credit($verdict, $stake, $payout);

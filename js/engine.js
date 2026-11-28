@@ -1257,6 +1257,22 @@
   }
 
   /** Invité démo : le résultat se lit dans le flux public, au tick d'expiration. */
+  // 2026-11-28 (propriétaire) — DÉMO FACILE en TEST, seulement sur les téléphones du propriétaire : ouvrir une fois
+  // orolado.com/?demotest=1 (?demotest=0 pour arrêter). Retour démo ≈ 130 % (même règle que trade_lib.php
+  // orolado_trade_demo_easy) ; payout affiché inchangé ; réel jamais touché ; les autres téléphones jouent normalement.
+  try { if (/[?&]demotest=1\b/.test(location.search)) localStorage.setItem('oro_demo_easy', '1'); if (/[?&]demotest=0\b/.test(location.search)) localStorage.removeItem('oro_demo_easy'); } catch (eDe) { /* ignore */ }
+  function demoEasyOn() { try { return localStorage.getItem('oro_demo_easy') === '1'; } catch (e) { return false; } }
+  var EASY_P = { '1.9': 0.50, '5': 0.18, '10': 0.09, '50': 0.018 };
+  function easyVerdict(trade, verdict) {
+    if (verdict !== 'lost' || trade.mode === 'real' || !demoEasyOn()) return verdict;
+    var m = normalizeOdds(trade.payout), p = EASY_P[String(m)];
+    if (!p) return verdict;
+    var want = Math.min(0.95, 1.30 / m), flip = (want - p) / (1 - p);
+    var h = 2166136261, sid = String(trade.id || '');
+    for (var i = 0; i < sid.length; i++) { h ^= sid.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return (h / 4294967295) < flip ? 'won' : verdict;
+  }
+  D6.demoEasyOn = demoEasyOn;
   function settleGuest(user, trade, tries) {
     var local = priceAtTick(trade.assetId, trade.expiryTick);
     function apply(cents) {
@@ -1264,7 +1280,7 @@
         finishTrade(user, trade, 'void', trade.entryPrice, null);
         return;
       }
-      finishTrade(user, trade, verdictOf(trade.side, cents, trade.barrierCents), cents / 100, null);
+      finishTrade(user, trade, easyVerdict(trade, verdictOf(trade.side, cents, trade.barrierCents)), cents / 100, null);
     }
     if (local > 0) {
       apply(local);

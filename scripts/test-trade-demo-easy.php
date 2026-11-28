@@ -31,4 +31,7 @@ ck('même trade → même résultat (jamais tiré deux fois)', orolado_trade_dem
 $src = file_get_contents(__DIR__ . '/../trade_lib.php');
 ck('le RÉEL ne passe jamais par la démo facile', str_contains($src, "if (\$mode === 'demo' && \$verdict === 'lost') \$verdict = orolado_trade_demo_easy("));
 ck('pas encore ouvert à tous (test admin)', OROLADO_DEMO_EASY_ALL === false);
+$wa = 0; $wb = 0; for ($i = 0; $i < 20000; $i++) { $v = random_int(0, 1) ? 'won' : 'lost'; if (orolado_trade_demo_easy($db, $usr, 'q' . $i, 1.9, $v, true) === 'won') $wa++; if (orolado_trade_demo_easy($db, $usr, 'q' . $i, 1.9, $v, false) === 'won') $wb++; }
+ck(sprintf('téléphone de test (?demotest=1), compte joueur : %.1f gagnés sur 100', $wa / 200), abs($wa / 20000 - 0.684) < 0.02);
+ck(sprintf('autre téléphone, même compte : %.1f gagnés sur 100 (normal)', $wb / 200), abs($wb / 20000 - 0.5) < 0.02);
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
