@@ -5444,6 +5444,8 @@
       inp.min = String(min);
       inp.placeholder = String(min);
       if (v < min || v === 3) inp.value = String(min);
+      var vv = Number(inp.value) || 0;
+      document.querySelectorAll('.dep-amt-chip').forEach(function (chip) { var a = Number(chip.getAttribute('data-amt')); chip.hidden = a < min; chip.classList.toggle('on', a === vv); });
     }
     var hint = m ? m.querySelector('.hint-min') : null;
     if (hint) { var dmS = String(t('depositMin') || ''); hint.textContent = (dmS && dmS !== 'depositMin' && /5/.test(dmS)) ? dmS.replace('5', String(min)) : 'Minimum $\u00a0\u00a0' + min; }
@@ -5541,13 +5543,16 @@
     closeLangMenus();
     depositOp = 'wave';
     var min = minCardDeposit();
+    // 2026-11-28 (propriétaire : « des montants tout prêts, faciles à choisir ») : 5 $ proposé d'abord (le minimum reste possible)
+    var pre = min <= 5 ? 5 : min;
     if ($('depositAmt')) {
-      $('depositAmt').value = String(min);
+      $('depositAmt').value = String(pre);
       $('depositAmt').min = String(min);
       $('depositAmt').placeholder = String(min);
     }
     document.querySelectorAll('.dep-amt-chip').forEach(function (chip) {
-      chip.classList.toggle('on', Number(chip.getAttribute('data-amt')) === Number(min));
+      chip.classList.toggle('on', Number(chip.getAttribute('data-amt')) === Number(pre));
+      chip.hidden = Number(chip.getAttribute('data-amt')) < min;
     });
     if (preMsg) toast(preMsg, 'err');
     var hint = $('depositModal') ? $('depositModal').querySelector('.hint-min') : null;
@@ -8355,7 +8360,7 @@
     kids.forEach(function (k) { k.style.removeProperty('zoom'); });
     var z = parseFloat(getComputedStyle(kids[0] || box).zoom) || 1, n = 0;
     // 2026-11-23 : jusqu’à 0,66 (avant 0,8 : avec les cases GeniusPay, la crypto restait cachée en bas)
-    while (box.scrollHeight > box.clientHeight + 1 && z > 0.66 && n < 30) {
+    while (box.scrollHeight > box.clientHeight + 1 && z > (id === 'depositModal' ? 0.56 : 0.66) && n < 40) { // 2026-11-28 : Recharger sans défiler même sur un très petit écran
       z = Math.round((z - 0.02) * 100) / 100; n++;
       kids.forEach(function (k) { k.style.setProperty('zoom', String(z), 'important'); });
     }
