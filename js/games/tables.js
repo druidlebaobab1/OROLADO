@@ -77,9 +77,9 @@
 
   /* ---------- per-game config ---------- */
   var CFG = {
-    dragon: { spots: [['dragon', 2, 'a'], ['tie', 12, 'x'], ['tiger', 2, 'b']], hands: ['dragon', 'tiger'], n: 1 },
-    baccarat: { spots: [['player', 2, 'a'], ['tie', 9, 'x'], ['banker', 1.95, 'b']], hands: ['player', 'banker'], n: 3 },
-    sicbo: { spots: [['small', 2, 'a', '4–10'], ['big', 2, 'b', '11–17']] }
+    dragon: { spots: [['dragon', 1.75, 'a'], ['tie', 11, 'x'], ['tiger', 1.75, 'b']], hands: ['dragon', 'tiger'], n: 1 },
+    baccarat: { spots: [['player', 1.69, 'a'], ['tie', 8.9, 'x'], ['banker', 1.64, 'b']], hands: ['player', 'banker'], n: 3 },
+    sicbo: { spots: [['small', 1.74, 'a', '4–10'], ['big', 1.74, 'b', '11–17']] } // 2026-11-28 : marge 15 % (serveur casino_instant)
   };
 
   function table(g) {
@@ -261,46 +261,46 @@
 
   var RULES = {
     dragon: {
-      en: '1. Tap Dragon, Tiger (×2) or Tie (×12) to place your chip, then tap “Deal”.\n2. One card is dealt to Dragon, one to Tiger (A = 1 … K = 13).\n3. The higher card wins. Tie: half of a Dragon / Tiger bet is returned.',
-      fr: '1. Touche Dragon, Tigre (×2) ou Égalité (×12) pour poser ton jeton, puis « Distribuer ».\n2. Une carte pour le Dragon, une pour le Tigre (A = 1 … R = 13).\n3. La plus forte gagne. Égalité : la moitié d’une mise Dragon / Tigre est rendue.',
-      es: '1. Toca Dragón, Tigre (×2) o Empate (×12) para poner tu ficha y luego “Repartir”.\n2. Una carta para el Dragón y otra para el Tigre (A = 1 … K = 13).\n3. Gana la carta más alta. Empate: se devuelve la mitad de una apuesta Dragón / Tigre.',
-      pt: '1. Toque em Dragão, Tigre (×2) ou Empate (×12) para colocar sua ficha e depois “Distribuir”.\n2. Uma carta para o Dragão e outra para o Tigre (A = 1 … K = 13).\n3. A carta mais alta vence. Empate: metade da aposta Dragão / Tigre é devolvida.',
-      ar: '1. المس التنين أو النمر (×2) أو تعادل (×12) لوضع رقاقتك، ثم «وزّع».\n2. ورقة للتنين وورقة للنمر (A = 1 … K = 13).\n3. الورقة الأعلى تربح. عند التعادل يُعاد نصف رهان التنين / النمر.',
-      tr: '1. Fişini koymak için Ejderha, Kaplan (×2) veya Beraberlik (×12) seç, sonra “Dağıt”.\n2. Ejderhaya bir kart, Kaplana bir kart (A = 1 … K = 13).\n3. Yüksek kart kazanır. Beraberlikte Ejderha / Kaplan bahsinin yarısı iade edilir.',
-      vi: '1. Chạm Rồng, Hổ (×2) hoặc Hòa (×12) để đặt chip, rồi chạm “Chia bài”.\n2. Rồng một lá, Hổ một lá (A = 1 … K = 13).\n3. Lá cao hơn thắng. Hòa: hoàn một nửa cược Rồng / Hổ.',
-      id: '1. Ketuk Naga, Harimau (×2) atau Seri (×12) untuk menaruh chip, lalu “Bagikan”.\n2. Satu kartu untuk Naga, satu untuk Harimau (A = 1 … K = 13).\n3. Kartu tertinggi menang. Seri: setengah taruhan Naga / Harimau dikembalikan.',
-      ru: '1. Нажмите Дракон, Тигр (×2) или Ничья (×12), чтобы поставить фишку, затем «Раздать».\n2. Одна карта Дракону, одна Тигру (A = 1 … K = 13).\n3. Старшая карта выигрывает. Ничья: половина ставки на Дракона / Тигра возвращается.',
-      de: '1. Tippe auf Drache, Tiger (×2) oder Remis (×12), um deinen Chip zu setzen, dann „Geben“.\n2. Eine Karte für den Drachen, eine für den Tiger (A = 1 … K = 13).\n3. Die höhere Karte gewinnt. Remis: die Hälfte eines Drache- / Tiger-Einsatzes kommt zurück.',
-      hi: '1. चिप रखने के लिए ड्रैगन, टाइगर (×2) या टाई (×12) दबाएँ, फिर “बाँटें”।\n2. ड्रैगन को एक पत्ता, टाइगर को एक पत्ता (A = 1 … K = 13)।\n3. बड़ा पत्ता जीतता है। टाई पर ड्रैगन / टाइगर दांव का आधा वापस।',
-      zh: '1. 点击 龙、虎（×2）或 和（×12）放下筹码，然后点“发牌”。\n2. 龙、虎各发一张牌（A = 1 … K = 13）。\n3. 点数大者赢。和局：龙 / 虎注退还一半。'
+      en: '1. Tap Dragon, Tiger (×1.75) or Tie (×11) to place your chip, then tap “Deal”.\n2. One card is dealt to Dragon, one to Tiger (A = 1 … K = 13).\n3. The higher card wins. Tie: half of a Dragon / Tiger bet is returned.',
+      fr: '1. Touche Dragon, Tigre (×1,75) ou Égalité (×11) pour poser ton jeton, puis « Distribuer ».\n2. Une carte pour le Dragon, une pour le Tigre (A = 1 … R = 13).\n3. La plus forte gagne. Égalité : la moitié d’une mise Dragon / Tigre est rendue.',
+      es: '1. Toca Dragón, Tigre (×1,75) o Empate (×11) para poner tu ficha y luego “Repartir”.\n2. Una carta para el Dragón y otra para el Tigre (A = 1 … K = 13).\n3. Gana la carta más alta. Empate: se devuelve la mitad de una apuesta Dragón / Tigre.',
+      pt: '1. Toque em Dragão, Tigre (×1,75) ou Empate (×11) para colocar sua ficha e depois “Distribuir”.\n2. Uma carta para o Dragão e outra para o Tigre (A = 1 … K = 13).\n3. A carta mais alta vence. Empate: metade da aposta Dragão / Tigre é devolvida.',
+      ar: '1. المس التنين أو النمر (×1.75) أو تعادل (×11) لوضع رقاقتك، ثم «وزّع».\n2. ورقة للتنين وورقة للنمر (A = 1 … K = 13).\n3. الورقة الأعلى تربح. عند التعادل يُعاد نصف رهان التنين / النمر.',
+      tr: '1. Fişini koymak için Ejderha, Kaplan (×1,75) veya Beraberlik (×11) seç, sonra “Dağıt”.\n2. Ejderhaya bir kart, Kaplana bir kart (A = 1 … K = 13).\n3. Yüksek kart kazanır. Beraberlikte Ejderha / Kaplan bahsinin yarısı iade edilir.',
+      vi: '1. Chạm Rồng, Hổ (×1,75) hoặc Hòa (×11) để đặt chip, rồi chạm “Chia bài”.\n2. Rồng một lá, Hổ một lá (A = 1 … K = 13).\n3. Lá cao hơn thắng. Hòa: hoàn một nửa cược Rồng / Hổ.',
+      id: '1. Ketuk Naga, Harimau (×1,75) atau Seri (×11) untuk menaruh chip, lalu “Bagikan”.\n2. Satu kartu untuk Naga, satu untuk Harimau (A = 1 … K = 13).\n3. Kartu tertinggi menang. Seri: setengah taruhan Naga / Harimau dikembalikan.',
+      ru: '1. Нажмите Дракон, Тигр (×1,75) или Ничья (×11), чтобы поставить фишку, затем «Раздать».\n2. Одна карта Дракону, одна Тигру (A = 1 … K = 13).\n3. Старшая карта выигрывает. Ничья: половина ставки на Дракона / Тигра возвращается.',
+      de: '1. Tippe auf Drache, Tiger (×1,75) oder Remis (×11), um deinen Chip zu setzen, dann „Geben“.\n2. Eine Karte für den Drachen, eine für den Tiger (A = 1 … K = 13).\n3. Die höhere Karte gewinnt. Remis: die Hälfte eines Drache- / Tiger-Einsatzes kommt zurück.',
+      hi: '1. चिप रखने के लिए ड्रैगन, टाइगर (×1.75) या टाई (×11) दबाएँ, फिर “बाँटें”।\n2. ड्रैगन को एक पत्ता, टाइगर को एक पत्ता (A = 1 … K = 13)।\n3. बड़ा पत्ता जीतता है। टाई पर ड्रैगन / टाइगर दांव का आधा वापस।',
+      zh: '1. 点击 龙、虎（×1.75）或 和（×11）放下筹码，然后点“发牌”。\n2. 龙、虎各发一张牌（A = 1 … K = 13）。\n3. 点数大者赢。和局：龙 / 虎注退还一半。'
     },
     baccarat: {
-      en: '1. Tap Player (×2), Banker (×1.95) or Tie (×9) to place your chip, then tap “Deal”.\n2. Two or three cards per hand (10, J, Q, K = 0; only the last digit counts).\n3. The hand closest to 9 wins. Tie: Player / Banker bets are returned.',
-      fr: '1. Touche Joueur (×2), Banque (×1,95) ou Égalité (×9) pour poser ton jeton, puis « Distribuer ».\n2. Deux ou trois cartes par main (10, V, D, R = 0 ; seul le dernier chiffre compte).\n3. La main la plus proche de 9 gagne. Égalité : mises Joueur / Banque rendues.',
-      es: '1. Toca Jugador (×2), Banca (×1,95) o Empate (×9) para poner tu ficha y luego “Repartir”.\n2. Dos o tres cartas por mano (10, J, Q, K = 0; solo cuenta la última cifra).\n3. Gana la mano más cercana a 9. Empate: se devuelven las apuestas Jugador / Banca.',
-      pt: '1. Toque em Jogador (×2), Banca (×1,95) ou Empate (×9) para colocar sua ficha e depois “Distribuir”.\n2. Duas ou três cartas por mão (10, J, Q, K = 0; só conta o último dígito).\n3. A mão mais próxima de 9 vence. Empate: apostas Jogador / Banca devolvidas.',
-      ar: '1. المس اللاعب (×2) أو المصرف (×1.95) أو تعادل (×9) لوضع رقاقتك، ثم «وزّع».\n2. ورقتان أو ثلاث لكل يد (10 وJ وQ وK = 0، يُحسب الرقم الأخير فقط).\n3. اليد الأقرب إلى 9 تربح. عند التعادل تُعاد رهانات اللاعب / المصرف.',
-      tr: '1. Fişini koymak için Oyuncu (×2), Banka (×1,95) veya Beraberlik (×9) seç, sonra “Dağıt”.\n2. Her ele iki veya üç kart (10, J, Q, K = 0; yalnızca son rakam sayılır).\n3. 9’a en yakın el kazanır. Beraberlikte Oyuncu / Banka bahisleri iade edilir.',
-      vi: '1. Chạm Con (×2), Cái (×1,95) hoặc Hòa (×9) để đặt chip, rồi chạm “Chia bài”.\n2. Mỗi bên hai hoặc ba lá (10, J, Q, K = 0; chỉ tính chữ số cuối).\n3. Bên gần 9 nhất thắng. Hòa: hoàn cược Con / Cái.',
-      id: '1. Ketuk Pemain (×2), Bankir (×1,95) atau Seri (×9) untuk menaruh chip, lalu “Bagikan”.\n2. Dua atau tiga kartu per tangan (10, J, Q, K = 0; hanya digit terakhir yang dihitung).\n3. Tangan paling dekat ke 9 menang. Seri: taruhan Pemain / Bankir dikembalikan.',
-      ru: '1. Нажмите Игрок (×2), Банкир (×1,95) или Ничья (×9), чтобы поставить фишку, затем «Раздать».\n2. Две или три карты на руку (10, J, Q, K = 0; считается только последняя цифра).\n3. Выигрывает рука ближе к 9. Ничья: ставки на Игрока / Банкира возвращаются.',
-      de: '1. Tippe auf Spieler (×2), Bank (×1,95) oder Remis (×9), um deinen Chip zu setzen, dann „Geben“.\n2. Zwei oder drei Karten pro Hand (10, B, D, K = 0; nur die letzte Ziffer zählt).\n3. Die Hand näher an 9 gewinnt. Remis: Spieler- / Bank-Einsätze kommen zurück.',
-      hi: '1. चिप रखने के लिए प्लेयर (×2), बैंकर (×1.95) या टाई (×9) दबाएँ, फिर “बाँटें”।\n2. हर हाथ में दो या तीन पत्ते (10, J, Q, K = 0; सिर्फ़ आख़िरी अंक गिना जाता है)।\n3. 9 के सबसे पास वाला हाथ जीतता है। टाई पर प्लेयर / बैंकर दांव वापस।',
-      zh: '1. 点击 闲（×2）、庄（×1.95）或 和（×9）放下筹码，然后点“发牌”。\n2. 每边两张或三张牌（10、J、Q、K 计 0，只算个位数）。\n3. 最接近 9 点者赢。和局：闲 / 庄注全数退还。'
+      en: '1. Tap Player (×1.69), Banker (×1.64) or Tie (×8.9) to place your chip, then tap “Deal”.\n2. Two or three cards per hand (10, J, Q, K = 0; only the last digit counts).\n3. The hand closest to 9 wins. Tie: Player / Banker bets are returned.',
+      fr: '1. Touche Joueur (×1,69), Banque (×1,64) ou Égalité (×8,9) pour poser ton jeton, puis « Distribuer ».\n2. Deux ou trois cartes par main (10, V, D, R = 0 ; seul le dernier chiffre compte).\n3. La main la plus proche de 9 gagne. Égalité : mises Joueur / Banque rendues.',
+      es: '1. Toca Jugador (×1,69), Banca (×1,64) o Empate (×8,9) para poner tu ficha y luego “Repartir”.\n2. Dos o tres cartas por mano (10, J, Q, K = 0; solo cuenta la última cifra).\n3. Gana la mano más cercana a 9. Empate: se devuelven las apuestas Jugador / Banca.',
+      pt: '1. Toque em Jogador (×1,69), Banca (×1,64) ou Empate (×8,9) para colocar sua ficha e depois “Distribuir”.\n2. Duas ou três cartas por mão (10, J, Q, K = 0; só conta o último dígito).\n3. A mão mais próxima de 9 vence. Empate: apostas Jogador / Banca devolvidas.',
+      ar: '1. المس اللاعب (×1.69) أو المصرف (×1.64) أو تعادل (×8.9) لوضع رقاقتك، ثم «وزّع».\n2. ورقتان أو ثلاث لكل يد (10 وJ وQ وK = 0، يُحسب الرقم الأخير فقط).\n3. اليد الأقرب إلى 9 تربح. عند التعادل تُعاد رهانات اللاعب / المصرف.',
+      tr: '1. Fişini koymak için Oyuncu (×1,69), Banka (×1,64) veya Beraberlik (×8,9) seç, sonra “Dağıt”.\n2. Her ele iki veya üç kart (10, J, Q, K = 0; yalnızca son rakam sayılır).\n3. 9’a en yakın el kazanır. Beraberlikte Oyuncu / Banka bahisleri iade edilir.',
+      vi: '1. Chạm Con (×1,69), Cái (×1,64) hoặc Hòa (×8,9) để đặt chip, rồi chạm “Chia bài”.\n2. Mỗi bên hai hoặc ba lá (10, J, Q, K = 0; chỉ tính chữ số cuối).\n3. Bên gần 9 nhất thắng. Hòa: hoàn cược Con / Cái.',
+      id: '1. Ketuk Pemain (×1,69), Bankir (×1,64) atau Seri (×8,9) untuk menaruh chip, lalu “Bagikan”.\n2. Dua atau tiga kartu per tangan (10, J, Q, K = 0; hanya digit terakhir yang dihitung).\n3. Tangan paling dekat ke 9 menang. Seri: taruhan Pemain / Bankir dikembalikan.',
+      ru: '1. Нажмите Игрок (×1,69), Банкир (×1,64) или Ничья (×8,9), чтобы поставить фишку, затем «Раздать».\n2. Две или три карты на руку (10, J, Q, K = 0; считается только последняя цифра).\n3. Выигрывает рука ближе к 9. Ничья: ставки на Игрока / Банкира возвращаются.',
+      de: '1. Tippe auf Spieler (×1,69), Bank (×1,64) oder Remis (×8,9), um deinen Chip zu setzen, dann „Geben“.\n2. Zwei oder drei Karten pro Hand (10, B, D, K = 0; nur die letzte Ziffer zählt).\n3. Die Hand näher an 9 gewinnt. Remis: Spieler- / Bank-Einsätze kommen zurück.',
+      hi: '1. चिप रखने के लिए प्लेयर (×1.69), बैंकर (×1.64) या टाई (×8.9) दबाएँ, फिर “बाँटें”।\n2. हर हाथ में दो या तीन पत्ते (10, J, Q, K = 0; सिर्फ़ आख़िरी अंक गिना जाता है)।\n3. 9 के सबसे पास वाला हाथ जीतता है। टाई पर प्लेयर / बैंकर दांव वापस।',
+      zh: '1. 点击 闲（×1.69）、庄（×1.64）或 和（×8.9）放下筹码，然后点“发牌”。\n2. 每边两张或三张牌（10、J、Q、K 计 0，只算个位数）。\n3. 最接近 9 点者赢。和局：闲 / 庄注全数退还。'
     },
     sicbo: {
-      en: '1. Tap Small (total 4–10) or Big (total 11–17) to place your chip, then tap “Roll”.\n2. The 3 dice are shaken in the glass dome, then the total lights up on the band.\n3. Total on your side: ×2. A triple (3 same dice) loses both.',
-      fr: '1. Touche Petit (total 4–10) ou Grand (total 11–17) pour poser ton jeton, puis « Lancer ».\n2. Les 3 dés sont secoués sous le dôme de verre, puis le total s’allume sur la bande.\n3. Total de ton côté : ×2. Un triple (3 dés pareils) fait perdre les deux.',
-      es: '1. Toca Pequeño (total 4–10) o Grande (total 11–17) para poner tu ficha y luego “Lanzar”.\n2. Los 3 dados se agitan en la cúpula de cristal y el total se ilumina en la banda.\n3. Total de tu lado: ×2. Un trío (3 dados iguales) pierde ambos.',
-      pt: '1. Toque em Pequeno (total 4–10) ou Grande (total 11–17) para colocar sua ficha e depois “Lançar”.\n2. Os 3 dados são agitados na cúpula de vidro e o total acende na faixa.\n3. Total do seu lado: ×2. Uma trinca (3 dados iguais) perde os dois.',
-      ar: '1. المس صغير (المجموع 4–10) أو كبير (11–17) لوضع رقاقتك، ثم «ارمِ».\n2. تُهزّ النرود الثلاثة داخل القبة الزجاجية، ثم يضيء المجموع على الشريط.\n3. المجموع في جهتك: ×2. الثلاثية (3 نرود متماثلة) تخسر الجهتين.',
-      tr: '1. Fişini koymak için Küçük (toplam 4–10) veya Büyük (11–17) seç, sonra “At”.\n2. 3 zar cam kubbede sallanır, toplam şeritte yanar.\n3. Toplam senin tarafında: ×2. Üçlü (3 aynı zar) iki tarafı da kaybettirir.',
-      vi: '1. Chạm Xỉu (tổng 4–10) hoặc Tài (tổng 11–17) để đặt chip, rồi chạm “Lắc”.\n2. 3 xúc xắc được lắc trong vòm kính, tổng sáng lên trên dải số.\n3. Tổng đúng bên bạn: ×2. Bộ ba (3 mặt giống nhau) thua cả hai.',
-      id: '1. Ketuk Kecil (total 4–10) atau Besar (total 11–17) untuk menaruh chip, lalu “Kocok”.\n2. 3 dadu dikocok di kubah kaca, lalu total menyala di pita angka.\n3. Total di sisimu: ×2. Triple (3 dadu sama) membuat keduanya kalah.',
-      ru: '1. Нажмите Малое (сумма 4–10) или Большое (11–17), чтобы поставить фишку, затем «Бросить».\n2. 3 кубика трясутся под стеклянным куполом, затем сумма загорается на полосе.\n3. Сумма на вашей стороне: ×2. Тройка (3 одинаковых кубика) проигрывает обе.',
-      de: '1. Tippe auf Klein (Summe 4–10) oder Groß (11–17), um deinen Chip zu setzen, dann „Würfeln“.\n2. Die 3 Würfel werden in der Glaskuppel geschüttelt, dann leuchtet die Summe auf dem Band.\n3. Summe auf deiner Seite: ×2. Ein Drilling (3 gleiche Würfel) verliert beide.',
-      hi: '1. चिप रखने के लिए छोटा (कुल 4–10) या बड़ा (11–17) दबाएँ, फिर “फेंकें”।\n2. 3 पासे काँच के गुंबद में हिलाए जाते हैं, फिर कुल पट्टी पर चमकता है।\n3. कुल आपकी तरफ़: ×2। ट्रिपल (3 एक जैसे पासे) पर दोनों हारते हैं।',
-      zh: '1. 点击 小（总点 4–10）或 大（11–17）放下筹码，然后点“摇骰”。\n2. 3 颗骰子在玻璃罩中摇动，总点数在号码条上亮起。\n3. 总点数在你一边：×2。围骰（3 颗相同）大小皆输。'
+      en: '1. Tap Small (total 4–10) or Big (total 11–17) to place your chip, then tap “Roll”.\n2. The 3 dice are shaken in the glass dome, then the total lights up on the band.\n3. Total on your side: ×1.74. A triple (3 same dice) loses both.',
+      fr: '1. Touche Petit (total 4–10) ou Grand (total 11–17) pour poser ton jeton, puis « Lancer ».\n2. Les 3 dés sont secoués sous le dôme de verre, puis le total s’allume sur la bande.\n3. Total de ton côté : ×1,74. Un triple (3 dés pareils) fait perdre les deux.',
+      es: '1. Toca Pequeño (total 4–10) o Grande (total 11–17) para poner tu ficha y luego “Lanzar”.\n2. Los 3 dados se agitan en la cúpula de cristal y el total se ilumina en la banda.\n3. Total de tu lado: ×1,74. Un trío (3 dados iguales) pierde ambos.',
+      pt: '1. Toque em Pequeno (total 4–10) ou Grande (total 11–17) para colocar sua ficha e depois “Lançar”.\n2. Os 3 dados são agitados na cúpula de vidro e o total acende na faixa.\n3. Total do seu lado: ×1,74. Uma trinca (3 dados iguais) perde os dois.',
+      ar: '1. المس صغير (المجموع 4–10) أو كبير (11–17) لوضع رقاقتك، ثم «ارمِ».\n2. تُهزّ النرود الثلاثة داخل القبة الزجاجية، ثم يضيء المجموع على الشريط.\n3. المجموع في جهتك: ×1.74. الثلاثية (3 نرود متماثلة) تخسر الجهتين.',
+      tr: '1. Fişini koymak için Küçük (toplam 4–10) veya Büyük (11–17) seç, sonra “At”.\n2. 3 zar cam kubbede sallanır, toplam şeritte yanar.\n3. Toplam senin tarafında: ×1,74. Üçlü (3 aynı zar) iki tarafı da kaybettirir.',
+      vi: '1. Chạm Xỉu (tổng 4–10) hoặc Tài (tổng 11–17) để đặt chip, rồi chạm “Lắc”.\n2. 3 xúc xắc được lắc trong vòm kính, tổng sáng lên trên dải số.\n3. Tổng đúng bên bạn: ×1,74. Bộ ba (3 mặt giống nhau) thua cả hai.',
+      id: '1. Ketuk Kecil (total 4–10) atau Besar (total 11–17) untuk menaruh chip, lalu “Kocok”.\n2. 3 dadu dikocok di kubah kaca, lalu total menyala di pita angka.\n3. Total di sisimu: ×1,74. Triple (3 dadu sama) membuat keduanya kalah.',
+      ru: '1. Нажмите Малое (сумма 4–10) или Большое (11–17), чтобы поставить фишку, затем «Бросить».\n2. 3 кубика трясутся под стеклянным куполом, затем сумма загорается на полосе.\n3. Сумма на вашей стороне: ×1,74. Тройка (3 одинаковых кубика) проигрывает обе.',
+      de: '1. Tippe auf Klein (Summe 4–10) oder Groß (11–17), um deinen Chip zu setzen, dann „Würfeln“.\n2. Die 3 Würfel werden in der Glaskuppel geschüttelt, dann leuchtet die Summe auf dem Band.\n3. Summe auf deiner Seite: ×1,74. Ein Drilling (3 gleiche Würfel) verliert beide.',
+      hi: '1. चिप रखने के लिए छोटा (कुल 4–10) या बड़ा (11–17) दबाएँ, फिर “फेंकें”।\n2. 3 पासे काँच के गुंबद में हिलाए जाते हैं, फिर कुल पट्टी पर चमकता है।\n3. कुल आपकी तरफ़: ×1.74। ट्रिपल (3 एक जैसे पासे) पर दोनों हारते हैं।',
+      zh: '1. 点击 小（总点 4–10）或 大（11–17）放下筹码，然后点“摇骰”。\n2. 3 颗骰子在玻璃罩中摇动，总点数在号码条上亮起。\n3. 总点数在你一边：×1.74。围骰（3 颗相同）大小皆输。'
     }
   };
   ['dragon', 'baccarat', 'sicbo'].forEach(function (g) { K.register(g, table(g), { rules: RULES[g] }); });

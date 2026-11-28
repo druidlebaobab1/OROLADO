@@ -1,5 +1,5 @@
 /* v2795 — Coin Flip rebuilt (owner request): BGaming / Evoplay-style coin flip — a 3D coin (gold heads / silver tails)
-   is tossed and spins, heads or tails ×1.94, history of the last flips. Server: K.play('coin', {side: 0|1}) → view {r}. */
+   is tossed and spins, heads or tails ×1.70, history of the last flips. Server: K.play('coin', {side: 0|1}) → view {r}. */
 (function (D6) {
   'use strict';
   var K = D6.CasinoKit, $ = K.$;
@@ -27,7 +27,7 @@
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   var HIST = [];          // derniers lancers : 0 = face (or), 1 = pile (argent)
   var SET = { side: 0, rot: 0 };
-  var MULT = '×1.94';
+  var MULT = '×1.70';
 
   // faces dessinées (SVG maison) : FACE = or, couronne + planète OROLADO ; PILE = argent, planète à anneau + étoiles
   function faceSvg(gold, id) {
@@ -93,17 +93,17 @@
     });
     paintPick(); paintHist();
   }, { rules: {
-    en: '1. Choose Heads (gold) or Tails (silver).\n2. Tap “Bet”: the coin is tossed.\n3. If it lands on your side you win ×1.94 your stake.',
-    fr: '1. Choisis Face (or) ou Pile (argent).\n2. Touche « Miser » : la pièce est lancée.\n3. Si elle tombe sur ton côté, tu gagnes ×1,94 ta mise.',
-    es: '1. Elige Cara (oro) o Cruz (plata).\n2. Toca «Apostar»: se lanza la moneda.\n3. Si cae de tu lado ganas ×1,94 tu apuesta.',
-    pt: '1. Escolha Cara (ouro) ou Coroa (prata).\n2. Toque em «Apostar»: a moeda é lançada.\n3. Se cair no seu lado, você ganha ×1,94 a aposta.',
-    ar: '1. اختر وجه (ذهبي) أو كتابة (فضي).\n2. اضغط «راهن»: تُرمى العملة.\n3. إذا وقعت على جهتك تربح ×1.94 من رهانك.',
-    tr: '1. Tura (altın) ya da Yazı (gümüş) seç.\n2. «Bahis»e dokun: para atılır.\n3. Senin tarafın gelirse bahsinin ×1,94 katını kazanırsın.',
-    vi: '1. Chọn Ngửa (vàng) hoặc Sấp (bạc).\n2. Chạm «Cược»: đồng xu được tung.\n3. Nếu rơi đúng mặt bạn chọn, bạn thắng ×1,94 tiền cược.',
-    id: '1. Pilih Gambar (emas) atau Angka (perak).\n2. Ketuk «Pasang»: koin dilempar.\n3. Jika jatuh di sisimu, kamu menang ×1,94 taruhan.',
-    ru: '1. Выберите Орёл (золото) или Решку (серебро).\n2. Нажмите «Ставка»: монета подброшена.\n3. Если выпала ваша сторона, вы выигрываете ×1,94 ставки.',
-    de: '1. Wähle Kopf (Gold) oder Zahl (Silber).\n2. Tippe auf „Setzen“: Die Münze wird geworfen.\n3. Landet sie auf deiner Seite, gewinnst du ×1,94 deines Einsatzes.',
-    hi: '1. चित (सोना) या पट (चाँदी) चुनें।\n2. «दांव» दबाएँ: सिक्का उछाला जाता है।\n3. आपकी तरफ़ गिरे तो आप दांव का ×1.94 जीतते हैं।',
-    zh: '1. 选择正面（金）或反面（银）。\n2. 点「下注」：抛出硬币。\n3. 落在你选的一面即赢得下注的 ×1.94。'
+    en: '1. Choose Heads (gold) or Tails (silver).\n2. Tap “Bet”: the coin is tossed.\n3. If it lands on your side you win ×1.70 your stake.',
+    fr: '1. Choisis Face (or) ou Pile (argent).\n2. Touche « Miser » : la pièce est lancée.\n3. Si elle tombe sur ton côté, tu gagnes ×1,70 ta mise.',
+    es: '1. Elige Cara (oro) o Cruz (plata).\n2. Toca «Apostar»: se lanza la moneda.\n3. Si cae de tu lado ganas ×1,70 tu apuesta.',
+    pt: '1. Escolha Cara (ouro) ou Coroa (prata).\n2. Toque em «Apostar»: a moeda é lançada.\n3. Se cair no seu lado, você ganha ×1,70 a aposta.',
+    ar: '1. اختر وجه (ذهبي) أو كتابة (فضي).\n2. اضغط «راهن»: تُرمى العملة.\n3. إذا وقعت على جهتك تربح ×1.70 من رهانك.',
+    tr: '1. Tura (altın) ya da Yazı (gümüş) seç.\n2. «Bahis»e dokun: para atılır.\n3. Senin tarafın gelirse bahsinin ×1,70 katını kazanırsın.',
+    vi: '1. Chọn Ngửa (vàng) hoặc Sấp (bạc).\n2. Chạm «Cược»: đồng xu được tung.\n3. Nếu rơi đúng mặt bạn chọn, bạn thắng ×1,70 tiền cược.',
+    id: '1. Pilih Gambar (emas) atau Angka (perak).\n2. Ketuk «Pasang»: koin dilempar.\n3. Jika jatuh di sisimu, kamu menang ×1,70 taruhan.',
+    ru: '1. Выберите Орёл (золото) или Решку (серебро).\n2. Нажмите «Ставка»: монета подброшена.\n3. Если выпала ваша сторона, вы выигрываете ×1,70 ставки.',
+    de: '1. Wähle Kopf (Gold) oder Zahl (Silber).\n2. Tippe auf „Setzen“: Die Münze wird geworfen.\n3. Landet sie auf deiner Seite, gewinnst du ×1,70 deines Einsatzes.',
+    hi: '1. चित (सोना) या पट (चाँदी) चुनें।\n2. «दांव» दबाएँ: सिक्का उछाला जाता है।\n3. आपकी तरफ़ गिरे तो आप दांव का ×1.70 जीतते हैं।',
+    zh: '1. 选择正面（金）或反面（银）。\n2. 点「下注」：抛出硬币。\n3. 落在你选的一面即赢得下注的 ×1.70。'
   } });
 })(window.D6 = window.D6 || {});

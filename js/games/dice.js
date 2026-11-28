@@ -71,7 +71,7 @@
       K.setText($('dcCh'), nf(SET.c, 0) + ' %');
       box.classList.toggle('is-over', !!SET.over);
     }
-    function setC(c) { if (busy) return; SET.c = Math.max(2, Math.min(95, Math.round(c))); paint(); }
+    function setC(c) { if (busy) return; SET.c = Math.max(2, Math.min(84, Math.round(c))); /* 2026-11-28 : au-delà de 84 % le gain serait sous la mise (marge 15 %) */ paint(); }
     function paintHist() {
       $('dcHist').innerHTML = HIST.slice(0, 14).map(function (h) { return '<i class="' + (h[1] ? 'w' : 'l') + '">' + nf(h[0], 2) + '</i>'; }).join('');
     }
@@ -130,17 +130,17 @@
       K.setText(num, nf(h[0], 2)); K.setText($('dcMarkN'), nf(h[0], 2)); num.className = 'dc-num fit ' + (h[1] ? 'w' : 'l'); mark.className = 'dc-mark ' + (h[1] ? 'w' : 'l');
     }
   }, { rules: {
-    en: '1. Drag the slider to set your target: the green zone is your win chance (2 to 95 %). Tap “Roll Under / Roll Over” to switch side.\n2. Tap “Bet”: a number from 0.00 to 99.99 is rolled.\n3. If it lands in the green zone you win stake × multiplier (94 ÷ chance). Smaller chance = bigger win.',
-    fr: '1. Fais glisser le curseur : la zone verte est ta chance de gain (2 à 95 %). Touche « Moins de / Plus de » pour changer de côté.\n2. Touche « Miser » : un nombre de 0,00 à 99,99 est tiré.\n3. S’il tombe dans la zone verte, tu gagnes mise × multiplicateur (94 ÷ chance). Petite chance = gros gain.',
-    es: '1. Desliza el control: la zona verde es tu probabilidad de ganar (2 a 95 %). Toca «Menor que / Mayor que» para cambiar de lado.\n2. Toca «Apostar»: sale un número de 0,00 a 99,99.\n3. Si cae en la zona verde ganas apuesta × multiplicador (94 ÷ probabilidad). Menos probabilidad = más ganancia.',
-    pt: '1. Arraste o controle: a zona verde é a sua chance de ganhar (2 a 95 %). Toque em «Abaixo de / Acima de» para trocar de lado.\n2. Toque em «Apostar»: sai um número de 0,00 a 99,99.\n3. Se cair na zona verde, você ganha aposta × multiplicador (94 ÷ chance). Chance menor = ganho maior.',
-    ar: '1. حرّك المؤشر: المنطقة الخضراء هي فرصة فوزك (من 2 إلى 95 %). اضغط «أقل من / أكثر من» لتغيير الجهة.\n2. اضغط «راهن»: يُسحب رقم من 0.00 إلى 99.99.\n3. إذا وقع في المنطقة الخضراء تربح الرهان × المضاعف (94 ÷ الفرصة). فرصة أصغر = ربح أكبر.',
-    tr: '1. Kaydırıcıyı sürükle: yeşil alan kazanma şansındır (%2 ile %95 arası). Taraf değiştirmek için «Altında / Üstünde»ye dokun.\n2. «Bahis»e dokun: 0,00 ile 99,99 arasında bir sayı çekilir.\n3. Sayı yeşil alana düşerse bahis × çarpan kazanırsın (94 ÷ şans). Şans küçükse kazanç büyür.',
-    vi: '1. Kéo thanh trượt: vùng xanh là cơ hội thắng của bạn (2 đến 95 %). Chạm «Dưới / Trên» để đổi phía.\n2. Chạm «Cược»: một số từ 0,00 đến 99,99 được quay.\n3. Nếu số rơi vào vùng xanh, bạn thắng tiền cược × hệ số (94 ÷ cơ hội). Cơ hội nhỏ = thắng lớn.',
-    id: '1. Geser slider: zona hijau adalah peluang menangmu (2 sampai 95 %). Ketuk «Di bawah / Di atas» untuk ganti sisi.\n2. Ketuk «Pasang»: angka 0,00 sampai 99,99 diundi.\n3. Jika jatuh di zona hijau, kamu menang taruhan × pengganda (94 ÷ peluang). Peluang kecil = menang besar.',
-    ru: '1. Двигайте ползунок: зелёная зона — ваш шанс выигрыша (от 2 до 95 %). Нажмите «Меньше / Больше», чтобы сменить сторону.\n2. Нажмите «Ставка»: выпадает число от 0,00 до 99,99.\n3. Если оно в зелёной зоне, вы выигрываете ставку × множитель (94 ÷ шанс). Меньше шанс — больше выигрыш.',
-    de: '1. Schieb den Regler: Die grüne Zone ist deine Gewinnchance (2 bis 95 %). Tippe auf „Unter / Über“, um die Seite zu wechseln.\n2. Tippe auf „Setzen“: Eine Zahl von 0,00 bis 99,99 wird gewürfelt.\n3. Landet sie in der grünen Zone, gewinnst du Einsatz × Multiplikator (94 ÷ Chance). Kleinere Chance = größerer Gewinn.',
-    hi: '1. स्लाइडर खिसकाएँ: हरा हिस्सा आपकी जीत का मौका है (2 से 95 %)। तरफ़ बदलने के लिए «से कम / से ज़्यादा» दबाएँ।\n2. «दांव» दबाएँ: 0.00 से 99.99 तक एक संख्या निकलती है।\n3. संख्या हरे हिस्से में आए तो आप दांव × गुणक जीतते हैं (94 ÷ मौका)। कम मौका = बड़ी जीत।',
-    zh: '1. 拖动滑块：绿色区域就是你的胜率（2% 到 95%）。点「小于 / 大于」切换方向。\n2. 点「下注」：随机掷出 0.00 到 99.99 之间的数字。\n3. 落在绿色区域即赢得 下注 × 倍数（94 ÷ 胜率）。胜率越小，奖金越高。'
+    en: '1. Drag the slider to set your target: the green zone is your win chance (2 to 84 %). Tap “Roll Under / Roll Over” to switch side.\n2. Tap “Bet”: a number from 0.00 to 99.99 is rolled.\n3. If it lands in the green zone you win stake × multiplier (94 ÷ chance). Smaller chance = bigger win.',
+    fr: '1. Fais glisser le curseur : la zone verte est ta chance de gain (2 à 84 %). Touche « Moins de / Plus de » pour changer de côté.\n2. Touche « Miser » : un nombre de 0,00 à 99,99 est tiré.\n3. S’il tombe dans la zone verte, tu gagnes mise × multiplicateur (94 ÷ chance). Petite chance = gros gain.',
+    es: '1. Desliza el control: la zona verde es tu probabilidad de ganar (2 a 84 %). Toca «Menor que / Mayor que» para cambiar de lado.\n2. Toca «Apostar»: sale un número de 0,00 a 99,99.\n3. Si cae en la zona verde ganas apuesta × multiplicador (94 ÷ probabilidad). Menos probabilidad = más ganancia.',
+    pt: '1. Arraste o controle: a zona verde é a sua chance de ganhar (2 a 84 %). Toque em «Abaixo de / Acima de» para trocar de lado.\n2. Toque em «Apostar»: sai um número de 0,00 a 99,99.\n3. Se cair na zona verde, você ganha aposta × multiplicador (94 ÷ chance). Chance menor = ganho maior.',
+    ar: '1. حرّك المؤشر: المنطقة الخضراء هي فرصة فوزك (من 2 إلى 84 %). اضغط «أقل من / أكثر من» لتغيير الجهة.\n2. اضغط «راهن»: يُسحب رقم من 0.00 إلى 99.99.\n3. إذا وقع في المنطقة الخضراء تربح الرهان × المضاعف (94 ÷ الفرصة). فرصة أصغر = ربح أكبر.',
+    tr: '1. Kaydırıcıyı sürükle: yeşil alan kazanma şansındır (%2 ile %84 arası). Taraf değiştirmek için «Altında / Üstünde»ye dokun.\n2. «Bahis»e dokun: 0,00 ile 99,99 arasında bir sayı çekilir.\n3. Sayı yeşil alana düşerse bahis × çarpan kazanırsın (94 ÷ şans). Şans küçükse kazanç büyür.',
+    vi: '1. Kéo thanh trượt: vùng xanh là cơ hội thắng của bạn (2 đến 84 %). Chạm «Dưới / Trên» để đổi phía.\n2. Chạm «Cược»: một số từ 0,00 đến 99,99 được quay.\n3. Nếu số rơi vào vùng xanh, bạn thắng tiền cược × hệ số (94 ÷ cơ hội). Cơ hội nhỏ = thắng lớn.',
+    id: '1. Geser slider: zona hijau adalah peluang menangmu (2 sampai 84 %). Ketuk «Di bawah / Di atas» untuk ganti sisi.\n2. Ketuk «Pasang»: angka 0,00 sampai 99,99 diundi.\n3. Jika jatuh di zona hijau, kamu menang taruhan × pengganda (94 ÷ peluang). Peluang kecil = menang besar.',
+    ru: '1. Двигайте ползунок: зелёная зона — ваш шанс выигрыша (от 2 до 84 %). Нажмите «Меньше / Больше», чтобы сменить сторону.\n2. Нажмите «Ставка»: выпадает число от 0,00 до 99,99.\n3. Если оно в зелёной зоне, вы выигрываете ставку × множитель (94 ÷ шанс). Меньше шанс — больше выигрыш.',
+    de: '1. Schieb den Regler: Die grüne Zone ist deine Gewinnchance (2 bis 84 %). Tippe auf „Unter / Über“, um die Seite zu wechseln.\n2. Tippe auf „Setzen“: Eine Zahl von 0,00 bis 99,99 wird gewürfelt.\n3. Landet sie in der grünen Zone, gewinnst du Einsatz × Multiplikator (94 ÷ Chance). Kleinere Chance = größerer Gewinn.',
+    hi: '1. स्लाइडर खिसकाएँ: हरा हिस्सा आपकी जीत का मौका है (2 से 84 %)। तरफ़ बदलने के लिए «से कम / से ज़्यादा» दबाएँ।\n2. «दांव» दबाएँ: 0.00 से 99.99 तक एक संख्या निकलती है।\n3. संख्या हरे हिस्से में आए तो आप दांव × गुणक जीतते हैं (94 ÷ मौका)। कम मौका = बड़ी जीत।',
+    zh: '1. 拖动滑块：绿色区域就是你的胜率（2% 到 84%）。点「小于 / 大于」切换方向。\n2. 点「下注」：随机掷出 0.00 到 99.99 之间的数字。\n3. 落在绿色区域即赢得 下注 × 倍数（94 ÷ 胜率）。胜率越小，奖金越高。'
   } });
 })(window.D6 = window.D6 || {});

@@ -1,6 +1,6 @@
 /* v2795 — Oro Lotto rebuilt (owner request): Spribe Keno-style — 40 numbers, pick 1 to 10 (dice = random, bin = clear),
    the payout table for the current pick count lights up live while 10 balls leave the lottery globe one by one and roll
-   into the tube. Tap the button again during the draw to finish it at once. Server table CASINO_LOTTO unchanged (RTP 94 %). */
+   into the tube. Tap the button again during the draw to finish it at once. Server table CASINO_LOTTO (RTP 85 %, 2026-11-28). */
 (function (D6) {
   'use strict';
   var K = D6.CasinoKit, $ = K.$;
@@ -12,10 +12,10 @@
   };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   // EXACTEMENT la table du serveur (casino_lib.php CASINO_LOTTO) : [k][bons numéros] = gain ÷ mise
-  var LOTTO = { 1: [0, 3.76], 2: [0, 1.45, 6.61], 3: [0, 0, 4.25, 29.5], 4: [0, 0, 2.07, 8.03, 78],
-    5: [0, 0, 0, 5.92, 32.1, 422], 6: [0, 0, 0, 3.24, 12.3, 90.8, 1000], 7: [0, 0, 0, 2.07, 6.09, 31.4, 309, 1000],
-    8: [0, 0, 0, 0, 5.56, 22.1, 153, 1000, 1000], 9: [0, 0, 0, 0, 3.39, 10.9, 58.4, 546, 1000, 1000],
-    10: [0, 0, 0, 0, 2.35, 6.36, 27.5, 198, 1000, 1000, 1000] };
+  var LOTTO = { 1: [0, 3.4], 2: [0, 1.31, 5.98], 3: [0, 0, 3.84, 26.7], 4: [0, 0, 1.87, 7.26, 70.6],
+    5: [0, 0, 0, 5.36, 29, 382], 6: [0, 0, 0, 2.93, 11.1, 82.3, 900], 7: [0, 0, 0, 1.87, 5.51, 28.4, 279, 900],
+    8: [0, 0, 0, 0, 5.03, 20, 138, 900, 900], 9: [0, 0, 0, 0, 3.07, 9.88, 52.9, 494, 900, 900],
+    10: [0, 0, 0, 0, 2.12, 5.75, 24.8, 179, 900, 900, 900] }; // 2026-11-28 : marge 15 %
   var N = 40, MAXK = 10, DRAW = 10;
   function mx(v) { return '×' + String(v).replace('.', K.dec()); }
   var DICE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="8.5" cy="8.5" r="1.6"/><circle cx="15.5" cy="15.5" r="1.6"/><circle cx="15.5" cy="8.5" r="1.6"/><circle cx="8.5" cy="15.5" r="1.6"/><circle cx="12" cy="12" r="1.6"/></svg>';
@@ -108,18 +108,18 @@
     });
   }, {
     rules: {
-      en: '1. Tap 1 to 10 numbers on the grid (dice = random pick, bin = clear).\n2. Choose your stake and tap “Bet”: 10 balls are drawn out of 40, one by one.\n3. The table above the grid shows what you win for each number of hits with your pick count (up to ×1000). It lights up live during the draw.',
-      fr: '1. Touche 1 à 10 numéros sur la grille (dé = choix au hasard, poubelle = tout effacer).\n2. Choisis ta mise et touche « Miser » : 10 boules sont tirées sur 40, une par une.\n3. Le tableau au-dessus de la grille montre le gain pour chaque nombre de bons numéros (jusqu’à ×1000). Il s’allume en direct pendant le tirage.',
-      es: '1. Toca de 1 a 10 números en la cuadrícula (dado = al azar, papelera = borrar).\n2. Elige tu apuesta y toca «Apostar»: se sacan 10 bolas de 40, una por una.\n3. La tabla sobre la cuadrícula muestra lo que ganas según tus aciertos (hasta ×1000). Se ilumina en directo durante el sorteo.',
-      pt: '1. Toque de 1 a 10 números na grade (dado = aleatório, lixeira = limpar).\n2. Escolha a aposta e toque em «Apostar»: 10 bolas são sorteadas de 40, uma a uma.\n3. A tabela acima da grade mostra o ganho para cada número de acertos (até ×1000). Ela acende ao vivo durante o sorteio.',
-      ar: '1. اضغط من 1 إلى 10 أرقام في الشبكة (النرد = اختيار عشوائي، السلة = مسح).\n2. اختر رهانك واضغط «راهن»: تُسحب 10 كرات من 40 واحدة تلو الأخرى.\n3. الجدول فوق الشبكة يبيّن ربحك حسب عدد الأرقام الصحيحة (حتى ×1000)، ويضيء مباشرة أثناء السحب.',
-      tr: '1. Tablodan 1 ile 10 arası sayıya dokun (zar = rastgele, çöp kutusu = temizle).\n2. Bahsini seç ve «Bahis»e dokun: 40 toptan 10 tanesi tek tek çekilir.\n3. Tablonun üstündeki çizelge, isabet sayısına göre kazancını gösterir (×1000’e kadar). Çekiliş sırasında canlı yanar.',
-      vi: '1. Chạm 1 đến 10 số trên bảng (xúc xắc = chọn ngẫu nhiên, thùng rác = xóa).\n2. Chọn mức cược rồi chạm «Đặt cược»: 10 quả bóng được rút từ 40, từng quả một.\n3. Bảng phía trên cho biết tiền thắng theo số lần trúng (tới ×1000). Bảng sáng lên trực tiếp khi quay.',
-      id: '1. Ketuk 1 sampai 10 angka di papan (dadu = acak, tempat sampah = hapus).\n2. Pilih taruhan lalu ketuk «Pasang»: 10 bola ditarik dari 40, satu per satu.\n3. Tabel di atas papan menunjukkan kemenangan untuk tiap jumlah angka yang kena (hingga ×1000). Tabel menyala langsung saat undian.',
-      ru: '1. Нажми от 1 до 10 чисел на поле (кубик = случайный выбор, корзина = очистить).\n2. Выбери ставку и нажми «Ставка»: из 40 по одному выпадают 10 шаров.\n3. Таблица над полем показывает выигрыш за каждое число совпадений (до ×1000). Она подсвечивается прямо во время тиража.',
-      de: '1. Tippe 1 bis 10 Zahlen im Feld an (Würfel = Zufallswahl, Papierkorb = löschen).\n2. Wähle deinen Einsatz und tippe auf „Setzen“: 10 von 40 Kugeln werden nacheinander gezogen.\n3. Die Tabelle über dem Feld zeigt den Gewinn je Trefferzahl (bis ×1000). Sie leuchtet live während der Ziehung.',
-      hi: '1. ग्रिड पर 1 से 10 नंबर छुएँ (पासा = रैंडम, डिब्बा = साफ़ करें)।\n2. अपना दांव चुनें और «दांव» दबाएँ: 40 में से 10 गेंदें एक-एक करके निकलती हैं।\n3. ग्रिड के ऊपर की तालिका हर सही नंबर की गिनती पर जीत दिखाती है (×1000 तक)। ड्रॉ के दौरान यह लाइव चमकती है।',
-      zh: '1. 在号码盘上选 1 到 10 个号码（骰子 = 随机选号，垃圾桶 = 清除）。\n2. 选择投注额，点击“投注”：从 40 个球中逐个摇出 10 个。\n3. 号码盘上方的表格显示每种命中数量的奖金（最高 ×1000），开奖时实时点亮。'
+      en: '1. Tap 1 to 10 numbers on the grid (dice = random pick, bin = clear).\n2. Choose your stake and tap “Bet”: 10 balls are drawn out of 40, one by one.\n3. The table above the grid shows what you win for each number of hits with your pick count (up to ×900). It lights up live during the draw.',
+      fr: '1. Touche 1 à 10 numéros sur la grille (dé = choix au hasard, poubelle = tout effacer).\n2. Choisis ta mise et touche « Miser » : 10 boules sont tirées sur 40, une par une.\n3. Le tableau au-dessus de la grille montre le gain pour chaque nombre de bons numéros (jusqu’à ×900). Il s’allume en direct pendant le tirage.',
+      es: '1. Toca de 1 a 10 números en la cuadrícula (dado = al azar, papelera = borrar).\n2. Elige tu apuesta y toca «Apostar»: se sacan 10 bolas de 40, una por una.\n3. La tabla sobre la cuadrícula muestra lo que ganas según tus aciertos (hasta ×900). Se ilumina en directo durante el sorteo.',
+      pt: '1. Toque de 1 a 10 números na grade (dado = aleatório, lixeira = limpar).\n2. Escolha a aposta e toque em «Apostar»: 10 bolas são sorteadas de 40, uma a uma.\n3. A tabela acima da grade mostra o ganho para cada número de acertos (até ×900). Ela acende ao vivo durante o sorteio.',
+      ar: '1. اضغط من 1 إلى 10 أرقام في الشبكة (النرد = اختيار عشوائي، السلة = مسح).\n2. اختر رهانك واضغط «راهن»: تُسحب 10 كرات من 40 واحدة تلو الأخرى.\n3. الجدول فوق الشبكة يبيّن ربحك حسب عدد الأرقام الصحيحة (حتى ×900)، ويضيء مباشرة أثناء السحب.',
+      tr: '1. Tablodan 1 ile 10 arası sayıya dokun (zar = rastgele, çöp kutusu = temizle).\n2. Bahsini seç ve «Bahis»e dokun: 40 toptan 10 tanesi tek tek çekilir.\n3. Tablonun üstündeki çizelge, isabet sayısına göre kazancını gösterir (×900’e kadar). Çekiliş sırasında canlı yanar.',
+      vi: '1. Chạm 1 đến 10 số trên bảng (xúc xắc = chọn ngẫu nhiên, thùng rác = xóa).\n2. Chọn mức cược rồi chạm «Đặt cược»: 10 quả bóng được rút từ 40, từng quả một.\n3. Bảng phía trên cho biết tiền thắng theo số lần trúng (tới ×900). Bảng sáng lên trực tiếp khi quay.',
+      id: '1. Ketuk 1 sampai 10 angka di papan (dadu = acak, tempat sampah = hapus).\n2. Pilih taruhan lalu ketuk «Pasang»: 10 bola ditarik dari 40, satu per satu.\n3. Tabel di atas papan menunjukkan kemenangan untuk tiap jumlah angka yang kena (hingga ×900). Tabel menyala langsung saat undian.',
+      ru: '1. Нажми от 1 до 10 чисел на поле (кубик = случайный выбор, корзина = очистить).\n2. Выбери ставку и нажми «Ставка»: из 40 по одному выпадают 10 шаров.\n3. Таблица над полем показывает выигрыш за каждое число совпадений (до ×900). Она подсвечивается прямо во время тиража.',
+      de: '1. Tippe 1 bis 10 Zahlen im Feld an (Würfel = Zufallswahl, Papierkorb = löschen).\n2. Wähle deinen Einsatz und tippe auf „Setzen“: 10 von 40 Kugeln werden nacheinander gezogen.\n3. Die Tabelle über dem Feld zeigt den Gewinn je Trefferzahl (bis ×900). Sie leuchtet live während der Ziehung.',
+      hi: '1. ग्रिड पर 1 से 10 नंबर छुएँ (पासा = रैंडम, डिब्बा = साफ़ करें)।\n2. अपना दांव चुनें और «दांव» दबाएँ: 40 में से 10 गेंदें एक-एक करके निकलती हैं।\n3. ग्रिड के ऊपर की तालिका हर सही नंबर की गिनती पर जीत दिखाती है (×900 तक)। ड्रॉ के दौरान यह लाइव चमकती है।',
+      zh: '1. 在号码盘上选 1 到 10 个号码（骰子 = 随机选号，垃圾桶 = 清除）。\n2. 选择投注额，点击“投注”：从 40 个球中逐个摇出 10 个。\n3. 号码盘上方的表格显示每种命中数量的奖金（最高 ×900），开奖时实时点亮。'
     }
   });
 })(window.D6 = window.D6 || {});

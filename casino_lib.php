@@ -159,9 +159,9 @@ function casino_runner_card(string $g, array $p): array {
   return $c;
 }
 const CASINO_CRYPTOX_N = 15;
-const CASINO_CRYPTOX_MULT = 14.4; // v2781 : jeu où la chance se voit → gain des grands sites (retour 96 %)
+const CASINO_CRYPTOX_MULT = 12.75; // 2026-11-28 (propriétaire) : marge 15 % ; avant 14,4 — // v2781 : jeu où la chance se voit → gain des grands sites (retour 96 %)
 const CASINO_HORSES_N = 10;
-const CASINO_HORSES_MULT = 9.6;   // v2781 : jeu où la chance se voit → retour 96 %
+const CASINO_HORSES_MULT = 8.5;  // 2026-11-28 : 15 % ; avant 9,6 —  // v2781 : jeu où la chance se voit → retour 96 %
 // v2695 (propriétaire, comme Evoplay) : Penalty en série de 8 tirs ; chaque but ×1,5 (×1,44 → ×24,60), on encaisse quand on veut.
 // Le gardien couvre 1 zone sur 3 à chaque tir (tiré par le serveur) : retour aux joueurs 96 % quel que soit le moment où l'on encaisse.
 const CASINO_PEN_ROWS = 8;
@@ -258,33 +258,36 @@ function casino_apple_bad(array $g, int $row): array { $b = $g['bad'][$row] ?? [
 // v2691 (propriétaire : « trop de zéros ») : 21 cases [multiplicateur, chances sur 10 000], ×0,5 = moitié rendue.
 // Zéro 25 %, moitié rendue 32 %, gain 43 %. Retour aux joueurs 95 %.
 // v2780 (propriétaire, marge 6 %) : cases ×0,5 un peu plus petites, cases ×0 un peu plus grandes → retour 94 %.
-const CASINO_WHEEL = [[0.5, 600], [1.2, 500], [0, 680], [1.5, 550], [0.5, 600], [2, 325], [0, 680], [1.2, 500], [0.5, 600], [3, 350], [0, 681], [1.2, 500], [0.5, 600], [5, 120], [1.5, 550], [0, 681], [0.5, 600], [1.2, 500], [2, 325], [10, 50], [50, 8]];
-const CASINO_PLINKO = [12, 3, 1.4, 0.6, 0.33, 0.6, 1.4, 3, 12];                                     // 8 rangées, retour 94 % (v2780)
-const CASINO_KENO = [0, 0.6, 3.37, 25];                                                              // 3 numéros choisis sur 20, 5 tirés : retour 94 % (v2780)
-const CASINO_RACE_MULT = 5.7;                                                                         // 6 voitures : retour 95 % (v2781 : chance visible)
+// 2026-11-28 (propriétaire) : marge 15 % → cases ×0 plus grandes, retour 84,8 %.
+const CASINO_WHEEL = [[0.5, 542], [1.2, 452], [0, 857], [1.5, 497], [0.5, 542], [2, 293], [0, 857], [1.2, 452], [0.5, 542], [3, 316], [0, 856], [1.2, 452], [0.5, 542], [5, 108], [1.5, 497], [0, 856], [0.5, 542], [1.2, 452], [2, 293], [10, 45], [50, 7]];
+const CASINO_PLINKO = [11, 2.7, 1.2, 0.5, 0.4, 0.5, 1.2, 2.7, 11]; // 2026-11-28 : retour 84,5 % (marge 15 %) —                                     // 8 rangées, retour 94 % (v2780)
+const CASINO_KENO = [0, 0.55, 3, 23]; // 2026-11-28 : retour 85 % —                                                              // 3 numéros choisis sur 20, 5 tirés : retour 94 % (v2780)
+const CASINO_RACE_MULT = 5.1;                                                                         // 6 voitures : retour 95 % (v2781 : chance visible)
 // v2791 (propriétaire) : ORO LOTTO remplace Pierre-Feuille-Ciseaux — loterie comme les grands sites : le joueur choisit 1 à 10
 // numéros sur 40, le serveur tire 10 boules. CASINO_LOTTO[k][h] = gain ÷ mise pour h bons numéros sur k choisis.
 // Chaque ligne est calculée (loi hypergéométrique) pour un retour aux joueurs de 93,8 à 94 % : marge maison 6 %, comme les autres jeux.
 const CASINO_LOTTO_N = 40;
 const CASINO_LOTTO_DRAW = 10;
-const CASINO_LOTTO = [
-  1 => [0, 3.76], 2 => [0, 1.45, 6.61], 3 => [0, 0, 4.25, 29.5], 4 => [0, 0, 2.07, 8.03, 78],
-  5 => [0, 0, 0, 5.92, 32.1, 422], 6 => [0, 0, 0, 3.24, 12.3, 90.8, 1000], 7 => [0, 0, 0, 2.07, 6.09, 31.4, 309, 1000],
-  8 => [0, 0, 0, 0, 5.56, 22.1, 153, 1000, 1000], 9 => [0, 0, 0, 0, 3.39, 10.9, 58.4, 546, 1000, 1000],
-  10 => [0, 0, 0, 0, 2.35, 6.36, 27.5, 198, 1000, 1000, 1000],
+const CASINO_LOTTO = [ // 2026-11-28 (propriétaire) : marge 15 % (retour 84,7 à 85 % pour chaque nombre de numéros)
+  1 => [0, 3.4], 2 => [0, 1.31, 5.98], 3 => [0, 0, 3.84, 26.7], 4 => [0, 0, 1.87, 7.26, 70.6],
+  5 => [0, 0, 0, 5.36, 29, 382], 6 => [0, 0, 0, 2.93, 11.1, 82.3, 900], 7 => [0, 0, 0, 1.87, 5.51, 28.4, 279, 900],
+  8 => [0, 0, 0, 0, 5.03, 20, 138, 900, 900], 9 => [0, 0, 0, 0, 3.07, 9.88, 52.9, 494, 900, 900],
+  10 => [0, 0, 0, 0, 2.12, 5.75, 24.8, 179, 900, 900, 900],
 ];
 const CASINO_RPS_MULT = 1.91;                                                                         // Pierre-Feuille-Ciseaux (égalité = mise rendue) : retour 97 % (v2781 : chance visible)
-const CASINO_DICE_DUEL = 1.92;                                                                         // dé rouge contre dé noir (égalité = mise rendue) : retour 96,7 % (v2781 : chance visible)
-const CASINO_COIN_MULT = 1.94;                                                                        // retour 97 % (v2781 : chance visible)
-const CASINO_PENALTY_MULT = 1.44;                                                                     // 3 zones, le gardien en couvre 1 : retour 96 % (v2781 : chance visible)
+const CASINO_DICE_DUEL = 1.64; // 2026-11-28 : retour 85 % ; avant 1,92 —                                                                         // dé rouge contre dé noir (égalité = mise rendue) : retour 96,7 % (v2781 : chance visible)
+const CASINO_COIN_MULT = 1.70; // 2026-11-28 : retour 85 % ; avant 1,94 —                                                                        // retour 97 % (v2781 : chance visible)
+const CASINO_PENALTY_MULT = 1.27; // 2026-11-28 : retour 84,7 % ; avant 1,44 —                                                                     // 3 zones, le gardien en couvre 1 : retour 96 % (v2781 : chance visible)
 const CASINO_EDGE = 0.85; // 2026-11-28 (propriétaire : « marge 15 % sur tous les jeux ») ; avant 0,94                                                                             // v2780 (propriétaire) : marge 6 % — limbo, avion, jet, fusée, mines, hi-lo, tour, ballon, verger
 const LIVE_SPORT_EDGE = 0.85; // 2026-11-28 (propriétaire) : 15 % ; avant 0,90                                                                         // v3314 (propriétaire) : marge 10 % — paris en direct (courses/matchs live : casino_live4 / casino_live5)
 // Machine à sous : [catégorie, multiplicateur, chances sur 1000] — retour 94 % (v2780)
-const CASINO_SLOTS = [['gem', 50, 1], ['seven', 20, 4], ['bell', 10, 10], ['lemon', 5, 30], ['cherry3', 3, 60], ['cherry2', 1.5, 253]];
+// 2026-11-28 (propriétaire) : marge 15 % → chances sur 10 000, retour 84,8 %
+const CASINO_SLOTS = [['gem', 50, 9], ['seven', 20, 36], ['bell', 10, 90], ['lemon', 5, 271], ['cherry3', 3, 542], ['cherry2', 1.5, 2288]];
 // Grattage : [multiplicateur, chances sur 1000] — retour 94 % (v2780)
-const CASINO_SCRATCH = [[20, 10], [5, 40], [2, 120], [1, 300]];
+// 2026-11-28 : chances sur 10 000, retour 84,9 %
+const CASINO_SCRATCH = [[20, 90], [5, 361], [2, 1085], [1, 2712]];
 // v2694 — Fléchettes : [multiplicateur, chances sur 10 000] — centre ×20, anneaux ×5 / ×2 / ×1, bord ×0 : retour 95 %
-const CASINO_DARTS = [[20, 100], [5, 400], [2, 1500], [1, 2400], [0, 5600]]; // v2780 : retour 94 %
+const CASINO_DARTS = [[20, 90], [5, 361], [2, 1356], [1, 2170], [0, 6023]]; // 2026-11-28 : retour 84,9 % // v2780 : retour 94 %
 
 function casino_money(float $v): float { return round($v + 1e-9, 2); }
 /** v2810 (audit argent) — GAIN versé au joueur : mise × multiplicateur, plafonné, arrondi VERS LE BAS au centime.
@@ -301,12 +304,12 @@ const CASINO_ROULETTE_RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 
  *  v2781 (propriétaire) : gains des grands sites — rouge / noir / pair / impair ×2 · douzaine ×3 · numéro ×36 (retour 97,3 %). */
 function casino_roulette_mult(string $bet, int $n): ?float {
   $red = in_array($n, CASINO_ROULETTE_RED, true);
-  if ($bet === 'red') return ($n > 0 && $red) ? 2.0 : 0.0;
-  if ($bet === 'black') return ($n > 0 && !$red) ? 2.0 : 0.0;
-  if ($bet === 'even') return ($n > 0 && $n % 2 === 0) ? 2.0 : 0.0;
-  if ($bet === 'odd') return ($n % 2 === 1) ? 2.0 : 0.0;
-  if (preg_match('/^d([123])$/', $bet, $mm)) { $d = (int) $mm[1]; return ($n >= ($d - 1) * 12 + 1 && $n <= $d * 12) ? 3.0 : 0.0; }
-  if (preg_match('/^n(\d{1,2})$/', $bet, $mm) && (int) $mm[1] <= 36) return $n === (int) $mm[1] ? 36.0 : 0.0;
+  if ($bet === 'red') return ($n > 0 && $red) ? 1.74 : 0.0; // 2026-11-28 (propriétaire) : marge 15 % (rouge ×1,74 · douzaine ×2,61 · numéro ×31,4)
+  if ($bet === 'black') return ($n > 0 && !$red) ? 1.74 : 0.0;
+  if ($bet === 'even') return ($n > 0 && $n % 2 === 0) ? 1.74 : 0.0;
+  if ($bet === 'odd') return ($n % 2 === 1) ? 1.74 : 0.0;
+  if (preg_match('/^d([123])$/', $bet, $mm)) { $d = (int) $mm[1]; return ($n >= ($d - 1) * 12 + 1 && $n <= $d * 12) ? 2.61 : 0.0; }
+  if (preg_match('/^n(\d{1,2})$/', $bet, $mm) && (int) $mm[1] <= 36) return $n === (int) $mm[1] ? 31.4 : 0.0;
   return null;
 }
 
@@ -446,7 +449,7 @@ function casino_instant(string $game, array $p, float $stake): array {
         $m = $dr === $db2 ? 1.0 : (($side === 'red') === ($dr > $db2) ? CASINO_DICE_DUEL : 0.0);
         return ['mult' => $m, 'view' => ['r' => $dr, 'b' => $db2, 'side' => $side]];
       }
-      $c = max(2, min(95, (int) ($p['chance'] ?? 50)));
+      $c = max(2, min(84, (int) ($p['chance'] ?? 50))); // 2026-11-28 : 84 % au plus → gain ×1,0119 (au-delà, gagner rendrait moins que la mise)
       $over = !empty($p['over']);
       $roll = random_int(0, 9999) / 100; // 0,00 à 99,99
       $win = $over ? $roll >= 100 - $c : $roll < $c;
@@ -467,7 +470,7 @@ function casino_instant(string $game, array $p, float $stake): array {
       if ($m === null) return ['err' => 'param'];
       return ['mult' => $m, 'view' => ['n' => $n, 'red' => in_array($n, CASINO_ROULETTE_RED, true)]];
     case 'slots':
-      $r = random_int(1, 1000); $acc = 0; $cat = 'lose'; $m = 0.0;
+      $r = random_int(1, 10000); $acc = 0; $cat = 'lose'; $m = 0.0; // 2026-11-28 : sur 10 000
       foreach (CASINO_SLOTS as [$k, $x, $w]) { $acc += $w; if ($r <= $acc) { $cat = $k; $m = (float) $x; break; } }
       return ['mult' => $m, 'view' => ['reels' => casino_slot_reels($cat)]];
     case 'plinko':
@@ -484,7 +487,7 @@ function casino_instant(string $game, array $p, float $stake): array {
       $hits = count(array_intersect($picks, $draw));
       return ['mult' => (float) CASINO_KENO[$hits], 'view' => ['draw' => $draw, 'hits' => $hits]];
     case 'scratch':
-      $r = random_int(1, 1000); $acc = 0; $m = 0.0;
+      $r = random_int(1, 10000); $acc = 0; $m = 0.0; // 2026-11-28 : sur 10 000
       foreach (CASINO_SCRATCH as [$x, $w]) { $acc += $w; if ($r <= $acc) { $m = (float) $x; break; } }
       return ['mult' => $m, 'view' => ['grid' => casino_scratch_grid($m)]];
     case 'penalty':
@@ -496,10 +499,10 @@ function casino_instant(string $game, array $p, float $stake): array {
       $n = random_int(0, 9);
       $m = 0.0;
       // v2780 : retour 94 % (vert / rouge ×1,97 · violet ×4,7 · numéro ×9,4)
-      if ($bet === 'green') $m = in_array($n, [1, 3, 7, 9], true) ? 1.97 : ($n === 5 ? 1.5 : 0);
-      elseif ($bet === 'red') $m = in_array($n, [2, 4, 6, 8], true) ? 1.97 : ($n === 0 ? 1.5 : 0);
-      elseif ($bet === 'violet') $m = in_array($n, [0, 5], true) ? 4.7 : 0;
-      elseif (preg_match('/^n(\d)$/', $bet, $mm)) $m = $n === (int) $mm[1] ? 9.4 : 0;
+      if ($bet === 'green') $m = in_array($n, [1, 3, 7, 9], true) ? 1.78 : ($n === 5 ? 1.36 : 0); // 2026-11-28 : retour 84,8 %
+      elseif ($bet === 'red') $m = in_array($n, [2, 4, 6, 8], true) ? 1.78 : ($n === 0 ? 1.36 : 0);
+      elseif ($bet === 'violet') $m = in_array($n, [0, 5], true) ? 4.25 : 0;
+      elseif (preg_match('/^n(\d)$/', $bet, $mm)) $m = $n === (int) $mm[1] ? 8.5 : 0;
       else return ['err' => 'param'];
       return ['mult' => (float) $m, 'view' => ['n' => $n]];
     case 'dragon':
@@ -507,18 +510,18 @@ function casino_instant(string $game, array $p, float $stake): array {
       if (!in_array($bet, ['dragon', 'tiger', 'tie'], true)) return ['err' => 'param'];
       $dr = random_int(1, 13); $ti = random_int(1, 13);
       // v2781 : gains des grands sites (Dragon / Tigre ×2 · Égalité ×12)
-      if ($bet === 'tie') $m = $dr === $ti ? 12.0 : 0.0;
+      if ($bet === 'tie') $m = $dr === $ti ? 11.0 : 0.0; // 2026-11-28 (propriétaire) : marge 15 % (Dragon / Tigre ×1,75 · Égalité ×11)
       elseif ($dr === $ti) $m = 0.5; // égalité : la moitié de la mise est rendue
-      else $m = (($bet === 'dragon') === ($dr > $ti)) ? 2.0 : 0.0;
+      else $m = (($bet === 'dragon') === ($dr > $ti)) ? 1.75 : 0.0;
       return ['mult' => $m, 'view' => ['d' => $dr, 't' => $ti]];
     case 'baccarat':
       $bet = (string) ($p['bet'] ?? 'player');
       if (!in_array($bet, ['player', 'banker', 'tie'], true)) return ['err' => 'param'];
       [$pc, $bc, $tp, $tb] = casino_baccarat_deal();
       // v2781 : gains des grands sites (Joueur ×2 · Banque ×1,95 · Égalité ×9)
-      if ($tp === $tb) $m = $bet === 'tie' ? 9.0 : 1.0; // égalité : Joueur / Banque remboursés
-      elseif ($bet === 'player') $m = $tp > $tb ? 2.0 : 0.0;
-      elseif ($bet === 'banker') $m = $tb > $tp ? 1.95 : 0.0;
+      if ($tp === $tb) $m = $bet === 'tie' ? 8.9 : 1.0; // 2026-11-28 (propriétaire) : marge 15 % (Joueur ×1,69 · Banque ×1,64 · Égalité ×8,9) // égalité : Joueur / Banque remboursés
+      elseif ($bet === 'player') $m = $tp > $tb ? 1.69 : 0.0;
+      elseif ($bet === 'banker') $m = $tb > $tp ? 1.64 : 0.0;
       else $m = 0.0;
       return ['mult' => $m, 'view' => ['p' => $pc, 'b' => $bc, 'tp' => $tp, 'tb' => $tb]];
     case 'sicbo':
@@ -527,11 +530,11 @@ function casino_instant(string $game, array $p, float $stake): array {
       $dice = [random_int(1, 6), random_int(1, 6), random_int(1, 6)];
       $sum = array_sum($dice); $triple = $dice[0] === $dice[1] && $dice[1] === $dice[2];
       $win = !$triple && ($bet === 'small' ? ($sum >= 4 && $sum <= 10) : ($sum >= 11 && $sum <= 17));
-      return ['mult' => $win ? 2.0 : 0.0, 'view' => ['dice' => $dice, 'sum' => $sum, 'triple' => $triple]]; // v2781 : ×2 comme les grands sites
+      return ['mult' => $win ? 1.74 : 0.0, 'view' => ['dice' => $dice, 'sum' => $sum, 'triple' => $triple]]; // v2781 : ×2 comme les grands sites
     case 'chests':
       $pick = max(0, min(2, (int) ($p['pick'] ?? 0)));
       $gold = random_int(0, 2);
-      return ['mult' => $gold === $pick ? 2.85 : 0.0, 'view' => ['gold' => $gold, 'pick' => $pick]]; // v2781 : chance visible (retour 95 %)
+      return ['mult' => $gold === $pick ? 2.55 : 0.0, /* 2026-11-28 : retour 85 % */ 'view' => ['gold' => $gold, 'pick' => $pick]]; // v2781 : chance visible (retour 95 %)
     case 'rps':
       // v2738 (propriétaire) : PIERRE-FEUILLE-CISEAUX contre le robot. 0 = pierre, 1 = feuille, 2 = ciseaux.
       // Feuille bat pierre, ciseaux bat feuille, pierre bat ciseaux. Gagné ×1,91 · égalité = mise rendue · perdu = 0.
@@ -611,7 +614,7 @@ function casino_pen_keeper(int $aim, int $hgt, ?int $kc = null, ?int $kr = null)
   $krow = $goal ? ($kr ?? random_int(0, 2)) : $hgt; // sur le ballon s'il a pris la bonne colonne, ailleurs sinon (dessin)
   return [$keeper, $goal, $krow];
 }
-function casino_pen_mult(int $k): float { return $k < 1 ? 0.0 : floor(0.96 * pow(1.5, $k) * 100 + 1e-6) / 100; } // v2781 : chance visible (retour 96 %)
+function casino_pen_mult(int $k): float { return $k < 1 ? 0.0 : floor(CASINO_EDGE * pow(1.5, $k) * 100 + 1e-6) / 100; } // 2026-11-28 : marge 15 % (avant 0,96) // v2781 : chance visible (retour 96 %)
 /** Hi-Lo : multiplicateur pour « plus haut ou égal » / « plus bas ou égal » à la carte $a (1 à 13). */
 function casino_hilo_mult(int $a, bool $hi): float {
   $p = $hi ? (14 - $a) / 13 : $a / 13;
