@@ -1096,6 +1096,18 @@ function sp_my_bets(string $uid, bool $withHidden = false): array { // $withHidd
   if (function_exists('sb_results')) {
     $res = sb_results(); $L = function_exists('sb_live_data') ? sb_live_data() : [];
     foreach ($out as $i => $b) foreach ($b['sel'] as $j => $sl) {
+      // 2026-11-28 (propriétaire : « copie pareil ») : matchs virtuels — score final, ou score et minute du direct, comme le football
+      if (function_exists('vf_result') && preg_match('/^virt:(\d+)$/', (string) ($sl['fx'] ?? ''), $vm)) {
+        try {
+          [$vg, $vi] = vf_split((int) $vm[1]); $vt = vf_now(); $vr = vf_result($vg, $vi, $vt);
+          if ($vr) $out[$i]['sel'][$j]['fs'] = $vr['ft'];
+          elseif ($vt >= vf_ko($vg)) {
+            $vs = vf_state($vg, $vi, $vt); $out[$i]['sel'][$j]['cs'] = [$vs['h'], $vs['a']]; $out[$i]['sel'][$j]['cm'] = max(1, $vs['min']);
+            if (empty($sl['r']) && isset($sl['mk'], $sl['k'])) { $cw = sb_settle_mk((string) $sl['mk'], (string) $sl['k'], [$vs['h'], $vs['a']], null); if ($cw === 'won' || $cw === 'lost') $out[$i]['sel'][$j]['cw'] = $cw; }
+          }
+        } catch (\Throwable $e) { /* affichage seulement */ }
+        continue;
+      }
       if (!preg_match('/^foot:(\d+)$/', (string) ($sl['fx'] ?? ''), $m)) continue;
       $r = $res[$m[1]] ?? null; $lv = $L['fx'][$m[1]] ?? null;
       if (is_array($r) && ($r['v'] ?? '') === 'fin' && is_array($r['ft'] ?? null)) $out[$i]['sel'][$j]['fs'] = array_map('intval', $r['ft']);
