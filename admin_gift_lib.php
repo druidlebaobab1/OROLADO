@@ -502,6 +502,9 @@ function admin_all_pay_players(array $players, callable $isHouse, ?array &$why =
   // par raison ($why), et l'Aperçu l'affiche. Rien ne change sur qui est payé.
   $out = []; $seen = []; $why = ['house' => 0, 'role' => 0, 'noid' => 0, 'partner' => 0, 'dup' => 0];
   $loc = function_exists('admin_local_db') ? (admin_local_db()['users'] ?? []) : [];
+  // 2026-11-28 : un joueur payé quand il n'avait pas encore de caisse (id u_…) reçoit alors un id de caisse (UUID) : on garde
+  // les deux noms (« alt ») pour ne JAMAIS le compter « pas encore payé » et le payer deux fois.
+  $sb2u = []; foreach ($loc as $lid => $lu) if (is_array($lu) && !empty($lu['sbId'])) $sb2u[(string) $lu['sbId']] = (string) $lid;
   foreach ($players as $p) {
     if (!is_array($p)) continue;
     $id = (string) ($p['id'] ?? '');
@@ -516,7 +519,8 @@ function admin_all_pay_players(array $players, callable $isHouse, ?array &$why =
     }
     if (isset($seen[$id])) { $why['dup']++; continue; }
     $seen[$id] = 1;
-    $out[] = ['id' => $id, 'email' => $em, 'name' => trim((string) ($p['name'] ?? '')), 'publicId' => (string) ($p['publicId'] ?? '')];
+    $alt = str_starts_with($id, 'u_') ? (string) ($loc[$id]['sbId'] ?? '') : (string) ($sb2u[$id] ?? '');
+    $out[] = ['id' => $id, 'email' => $em, 'name' => trim((string) ($p['name'] ?? '')), 'publicId' => (string) ($p['publicId'] ?? ''), 'alt' => $alt];
   }
   return $out;
 }
@@ -528,7 +532,7 @@ function admin_all_pay_preview(array $req, array $players, ?int $now = null, arr
   $led = admin_gift_json(admin_all_paid_file($p['key']));
   $todo = 0; $paid = 0; $check = 0; $mail = 0; $skip = 0;
   foreach ($players as $r) {
-    $e = $led[$r['id']] ?? null;
+    $e = $led[$r['id']] ?? (($r['alt'] ?? '') !== '' ? ($led[$r['alt']] ?? null) : null);
     if (is_array($e) && !empty($e['pending'])) $check++;
     elseif (is_array($e) && !empty($e['ok'])) $paid++;
     elseif (is_array($e) && !empty($e['skip'])) $skip++;
@@ -555,11 +559,15 @@ function admin_all_pay_run(array $req, array $players, callable $pay, int $limit
   $paid = 0; $errors = []; $mailFailed = 0; $t0 = microtime(true);
   $GLOBALS['OROLADO_BULK_CREDIT'] = true; // v3556 : pas de rechargement de toute la liste après chaque joueur
   try {
+    // 2026-11-28 : registre lu UNE fois par paquet (avant : relu sous verrou pour chaque joueur, même déjà payé → de plus en
+    // plus lent, puis presque bloqué vers 2 400 joueurs). La réservation sous verrou reste là pour les joueurs à payer.
+    $seenLed = admin_gift_json($file);
     foreach ($players as $r) {
       if ($paid >= $limit || microtime(true) - $t0 > $maxSec) break;
-      $uid = $r['id'];
-      $go = admin_gift_led_with($file, static function (array &$led) use ($uid, $amt): bool {
-        if (isset($led[$uid])) return false;
+      $uid = $r['id']; $alt = (string) ($r['alt'] ?? '');
+      if (isset($seenLed[$uid]) || ($alt !== '' && isset($seenLed[$alt]))) continue;
+      $go = admin_gift_led_with($file, static function (array &$led) use ($uid, $amt, $alt): bool {
+        if (isset($led[$uid]) || ($alt !== '' && isset($led[$alt]))) return false;
         $led[$uid] = ['amount' => $amt, 'at' => date('c'), 'ok' => false, 'pending' => true];
         return true;
       });
