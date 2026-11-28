@@ -3565,6 +3565,18 @@ if ($isAjax) {
   }
   // 2026-10-22 (propriétaire) — « Application installée » : joueurs qui ouvrent l'appli installée (heures de l'admin)
   if ($action === 'app_users') admin_json(['ok' => true] + admin_app_users_payload());
+  // 2026-11-28 (propriétaire) — 🎬 MODE VIDÉO (pub) : Trench Defense, compte admin seulement, mise ≤ 1 $ ; la partie monte
+  // jusqu'au multiplicateur choisi. S'éteint tout seul après 6 h. Réglage lu par casino_ext.php (casino_video_x).
+  if ($action === 'video_mode') {
+    $vf = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'video_mode.json';
+    if (isset($req['x'])) {
+      $x = (int) $req['x'];
+      if ($x >= 2 && $x <= 100) @file_put_contents($vf, json_encode(['x' => $x, 'until' => time() + 6 * 3600]), LOCK_EX); else @unlink($vf);
+    }
+    $j = is_file($vf) ? (json_decode((string) @file_get_contents($vf), true) ?: []) : [];
+    $on = (int) ($j['x'] ?? 0) >= 2 && (int) ($j['until'] ?? 0) > time();
+    admin_json(['ok' => true, 'x' => $on ? (int) $j['x'] : 0, 'until' => $on ? (int) $j['until'] : 0]);
+  }
   // 2026-10-25 — Pushover : alarme qui sonne (retrait = jusqu'à « J'ai vu »), réglage + test
   if ($action === 'po_status' || $action === 'po_save' || $action === 'po_test') {
     if (!is_file(__DIR__ . '/po_lib.php')) admin_json(['ok' => false, 'reason' => 'Module Pushover absent du serveur (po_lib.php)']);
@@ -3987,6 +3999,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
         <button class="mini tb-b" id="btnPayAll" type="button" style="--c:#22D3EE">🔎 Vérifier tous les dépôts (7 j)</button>
         <button class="mini tb-b" id="btnKeys" type="button" style="--c:#FDE047">🔑 Clés &amp; connexions</button>
         <button class="mini tb-b" id="btnVault" type="button" style="--c:#86EFAC">🏦 Coffre</button>
+        <button class="mini tb-b" id="btnVideo" type="button" style="--c:#F472B6">🎬 Mode vidéo</button>
       </div><div id="payAllOut" class="muted" style="display:none;margin-top:8px;font-size:12px;white-space:pre-wrap"></div></div>
       <div class="tb-g"><div class="tb-t">📊 Suivi des produits</div><div class="tb-row">
         <button class="mini tb-b" id="btnTradeA" type="button" style="--c:#FBBF24">📈 Trading</button>
@@ -5683,6 +5696,20 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     });
   }
   $k('btnKeys').onclick = () => { $k('keysModal').classList.add('on'); paint(); };
+  // 2026-11-28 — 🎬 Mode vidéo (Trench Defense, compte admin, mise ≤ 1 $)
+  (function () {
+    const b = document.getElementById('btnVideo'); if (!b) return;
+    const show = (j) => { b.textContent = j && j.x ? '🎬 Mode vidéo ×' + j.x + ' (allumé)' : '🎬 Mode vidéo'; };
+    ajax({action:'video_mode'}).then(show).catch(() => {});
+    b.onclick = async () => {
+      const cur = await ajax({action:'video_mode'}).catch(() => null);
+      const v = prompt('🎬 Mode vidéo — Trench Defense, ton compte admin seulement, mise de 1 $ au plus.\nJusqu’à quel multiplicateur la partie doit monter ? (2 à 100)\nTape 0 pour éteindre.' + (cur && cur.x ? '\n\nActuellement : ×' + cur.x : ''), cur && cur.x ? String(cur.x) : '30');
+      if (v === null) return;
+      const j = await ajax({action:'video_mode', x: parseInt(v, 10) || 0}).catch(() => null);
+      show(j);
+      alert(j && j.x ? 'Mode vidéo allumé : ×' + j.x + '.\nOuvre Trench Defense avec ton compte admin, mise 1 $ au plus, et encaisse à ×' + j.x + '.\nIl s’éteint tout seul dans 6 h.' : 'Mode vidéo éteint.');
+    };
+  })();
   $k('closeKeys').onclick = () => $k('keysModal').classList.remove('on');
   $k('keyNewSave').onclick = async () => {
     const n = String($k('keyNewName').value || '').trim().toUpperCase(), v = String($k('keyNewVal').value || '').trim();
