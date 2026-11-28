@@ -52,8 +52,16 @@ if (is_file(__DIR__ . '/notif_daily_lib.php')) {
 register_shutdown_function(static function (): void { if (function_exists('orolado_pay_sweep_after_response')) { try { orolado_pay_sweep_after_response(); } catch (Throwable $e) { /* jamais bloquant */ } } });
 
 /** 2026-10-22 — un paquet du « 🎁 Bonus à tous » (en arrière-plan ou depuis la page) ; même crédit que « Ajuster ». */
-function admin_bonus_all_step_here(string $tok, array $job, int $limit = 10, int $maxSec = 8): string {
-  $allPl = admin_all_pay_players(admin_profiles(), static fn(string $id, array $row): bool => admin_is_house_account($id, $row));
+function admin_bonus_all_step_here(string $tok, array $job, int $limit = 200, int $maxSec = 10): string {
+  // 2026-11-28 (propriétaire : « plus rapide ») : la liste des joueurs est figée au 1er paquet de l'envoi (fichier à part) au lieu
+  // d'être relue (3 000 fiches + comptes de connexion) à chaque paquet ; paquets bornés par le temps (10 s) et non plus par 10 joueurs.
+  $snap = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'bonus_all_players.json';
+  $sj = is_file($snap) ? json_decode((string) @file_get_contents($snap), true) : null;
+  if (is_array($sj) && hash_equals((string) ($sj['tok'] ?? ''), hash('sha256', $tok)) && is_array($sj['list'] ?? null)) $allPl = $sj['list'];
+  else {
+    $allPl = admin_all_pay_players(admin_profiles(), static fn(string $id, array $row): bool => admin_is_house_account($id, $row));
+    @file_put_contents($snap, json_encode(['tok' => hash('sha256', $tok), 'list' => $allPl], JSON_UNESCAPED_UNICODE), LOCK_EX);
+  }
   $by = (string) ($job['by'] ?? '');
   return admin_all_job_step($tok, $allPl, static fn(string $id, float $amt, string $motif, array $hint): array => admin_credit_player($id, $amt, $motif, $hint, $by), null, $limit, $maxSec);
 }
@@ -2932,8 +2940,9 @@ if ($isAjax) {
   // 2026-10-21 (propriétaire) — Tournoi démo : payer tous les classés (petits bonus décroissants, 0,90 $ → 0,20 $).
   // 2026-10-22 (propriétaire) — 🎁 Bonus à tous : même montant pour tous les joueurs (crédit + e-mail, comme « Ajuster »).
   if ($action === 'bonus_all_preview' || $action === 'bonus_all_run') {
-    $allPl = admin_all_pay_players(admin_profiles(), static fn(string $id, array $row): bool => admin_is_house_account($id, $row));
-    if ($action === 'bonus_all_preview') admin_json(admin_all_pay_preview($req, $allPl) + ['bg' => admin_all_job_status()]);
+    $why = [];
+    $allPl = admin_all_pay_players(admin_profiles(), static fn(string $id, array $row): bool => admin_is_house_account($id, $row), $why);
+    if ($action === 'bonus_all_preview') admin_json(admin_all_pay_preview($req, $allPl, null, $why) + ['bg' => admin_all_job_status(), 'inscrits' => admin_inscrits_count()]);
     @set_time_limit(0);
     ignore_user_abort(true);
     $adminEmail = (string) ($me['email'] ?? '');
@@ -4101,7 +4110,7 @@ $inscritsHead = $logged ? admin_inscrits_count() : 0;
           <button class="mini" type="button" id="baPreview">Aperçu</button>
           <button class="mini ok" type="button" id="baRun" disabled>🎁 Envoyer à tous</button>
         </p>
-        <p class="muted" id="baMsg" style="overflow-wrap:anywhere"></p>
+        <p class="muted" id="baMsg" style="overflow-wrap:anywhere;white-space:pre-line"></p>
         <div id="baBg" hidden style="margin-top:10px;padding:10px;border:1px solid #2A3550;border-radius:10px;overflow-wrap:anywhere">
           <b>🎁 Envoi en arrière-plan</b>
           <p id="baBgLine" style="margin:6px 0"></p>
@@ -6168,7 +6177,16 @@ document.getElementById('btnHealthBar').onclick = () => { showBoardPanel(); };
     baPlan = j;
     $m('baRun').disabled = !(j.count > 0);
     baSay(j.count + ' joueur(s) à payer × ' + money(j.amount) + ' = TOTAL ' + money(j.total) + ' · ' + j.withMail + ' recevront un e-mail'
-      + (j.already ? ' · ' + j.already + ' déjà payé(s) aujourd’hui avec ce montant' : '') + (j.check ? ' · ⚠ ' + j.check + ' à vérifier' : ''));
+      + (j.already ? ' · ' + j.already + ' déjà payé(s) aujourd’hui avec ce montant' : '') + (j.check ? ' · ⚠ ' + j.check + ' à vérifier' : '')
+      + (function () { // 2026-11-28 : qui n'est PAS payé, et pourquoi
+        var w = j.why || {}, p = [];
+        if (w.noid) p.push(w.noid + ' anciens comptes sans caisse de jeu (jamais reconnectés depuis le changement de base)');
+        if (w.partner) p.push(w.partner + ' comptes démo affiliés');
+        if (w.role) p.push(w.role + ' suspendus, bannis ou supprimés');
+        if (w.house) p.push(w.house + ' comptes de la maison');
+        if (w.dup) p.push(w.dup + ' en double');
+        return p.length ? '\nNon payés ' + p.join(', ') + '.' : '';
+      })());
   }
   let baTimer = 0;
   function baBg(b) {

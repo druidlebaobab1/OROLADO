@@ -497,16 +497,19 @@ function admin_all_pay_params(array $req, ?int $now = null): array {
 }
 
 /** Joueurs à qui verser : [['id' => uuid, 'email', 'name', 'publicId']] ; $players = liste des profils (admin_profiles()). */
-function admin_all_pay_players(array $players, callable $isHouse): array {
-  $out = []; $seen = [];
+function admin_all_pay_players(array $players, callable $isHouse, ?array &$why = null): array {
+  // 2026-11-28 (propriétaire : « 3046 inscrits mais 2183 à payer, pourquoi ? ») : chaque compte laissé de côté est COMPTÉ
+  // par raison ($why), et l'Aperçu l'affiche. Rien ne change sur qui est payé.
+  $out = []; $seen = []; $why = ['house' => 0, 'role' => 0, 'noid' => 0, 'partner' => 0, 'dup' => 0];
+  $loc = function_exists('admin_local_db') ? (admin_local_db()['users'] ?? []) : [];
   foreach ($players as $p) {
     if (!is_array($p)) continue;
     $id = (string) ($p['id'] ?? '');
-    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id) || isset($seen[$id])) continue;
-    if (in_array(strtolower((string) ($p['role'] ?? '')), ['suspended', 'banned', 'deleted', 'admin'], true)) continue;
     $em = strtolower(trim((string) ($p['email'] ?? '')));
-    if ($em !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($em)) continue;
-    if ($isHouse($id, $p)) continue;
+    if ($isHouse($id, $p) || ($em !== '' && function_exists('orolado_is_reserved_admin_email') && orolado_is_reserved_admin_email($em))) { $why['house']++; continue; }
+    if (in_array(strtolower((string) ($p['role'] ?? '')), ['suspended', 'banned', 'deleted', 'admin'], true)) { $why['role']++; continue; }
+    if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id)) { if (is_array($loc[$id] ?? null) && !empty($loc[$id]['partner'])) $why['partner']++; else $why['noid']++; continue; }
+    if (isset($seen[$id])) { $why['dup']++; continue; }
     $seen[$id] = 1;
     $out[] = ['id' => $id, 'email' => $em, 'name' => trim((string) ($p['name'] ?? '')), 'publicId' => (string) ($p['publicId'] ?? '')];
   }
@@ -514,7 +517,7 @@ function admin_all_pay_players(array $players, callable $isHouse): array {
 }
 
 /** Aperçu : combien de joueurs, total, déjà payés aujourd'hui avec ce montant. */
-function admin_all_pay_preview(array $req, array $players, ?int $now = null): array {
+function admin_all_pay_preview(array $req, array $players, ?int $now = null, array $why = []): array {
   $p = admin_all_pay_params($req, $now);
   if (empty($p['ok'])) return $p;
   $led = admin_gift_json(admin_all_paid_file($p['key']));
@@ -526,7 +529,7 @@ function admin_all_pay_preview(array $req, array $players, ?int $now = null): ar
     else { $todo++; if ($r['email'] !== '') $mail++; }
   }
   return ['ok' => true, 'key' => $p['key'], 'amount' => $p['amount'], 'players' => count($players), 'count' => $todo, 'withMail' => $mail,
-    'total' => round($todo * $p['amount'], 2), 'already' => $paid, 'check' => $check];
+    'total' => round($todo * $p['amount'], 2), 'already' => $paid, 'check' => $check, 'why' => $why];
 }
 
 /**
@@ -630,7 +633,7 @@ function admin_all_job_status(): array {
 }
 
 /** Un paquet en arrière-plan ; renvoie 'next' (relancer), 'busy', 'done', 'stop' ou 'bad'. */
-function admin_all_job_step(string $token, array $players, callable $pay, ?int $now = null, int $limit = 10, int $maxSec = 8): string {
+function admin_all_job_step(string $token, array $players, callable $pay, ?int $now = null, int $limit = 200, int $maxSec = 10): string { // 2026-11-28 : paquets bornés par le TEMPS (10 s), plus par 10 joueurs
   $j = admin_all_job_read();
   if (!$j || empty($j['active']) || !hash_equals((string) ($j['token'] ?? ''), $token)) return 'bad';
   admin_all_job_update(static function (array &$x) use ($token): void { if (hash_equals((string) ($x['token'] ?? ''), $token)) $x['lastAt'] = time(); });
