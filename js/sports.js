@@ -1652,6 +1652,9 @@
     var susp = day.live && !f.mk, h = '<div class="vf-row' + (vfOpen === f.id ? ' op' : '') + '" data-vfx="' + f.id + '"><div class="vf-tms">' + vfTeam(f.h) + vfTeam(f.a) + '</div>' +
       (day.live ? '<div class="vf-sc"><b>' + f.sc[0] + '</b><b>' + f.sc[1] + '</b></div>' : '') +
       '<div class="pz-ro vf-ro">' + ['H', 'D', 'A'].map(function (k) { return obtn(ev('1x2'), k, susp ? null : (by[k] != null ? by[k] : null)); }).join('') + '</div></div>';
+    if (vfOpen === f.id && day.live && f.gl && f.gl.length) {
+      h += '<div class="vf-gl">' + f.gl.slice().sort(function (p, q) { return p[0] - q[0]; }).map(function (g) { var aw = g[1] === 'a'; return '<div class="vf-g' + (aw ? ' a' : '') + '"><b>' + g[0] + '\'</b><span>⚽ ' + esc(vfName(aw ? f.a : f.h)) + '</span></div>'; }).join('') + '</div>';
+    }
     if (vfOpen === f.id && f.mk) {
       var hn = vfName(f.h), an = vfName(f.a);
       var prevT = '';
@@ -1667,7 +1670,7 @@
     if (!vf || !vfTeams) return skelRows();
     if (vfTab === 'tb') {
       var tb = vf.tb;
-      return '<div class="vf-tbh">' + esc(x.lg) + ' · ' + esc(x.s) + ' ' + tb.S + ' · ' + esc(x.j) + ' ' + tb.played + '</div><div class="vf-tb"><div class="vf-tr th"><span>#</span><span></span><span>' + esc(x.p) + '</span><span>+/-</span><span>' + esc(x.pts) + '</span></div>' +
+      return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(x.s) + ' ' + tb.S + '</span><span>' + esc(x.j) + ' ' + tb.played + '</span></div><div class="vf-tb"><div class="vf-tr th"><span>#</span><span></span><span>' + esc(x.p) + '</span><span>+/-</span><span>' + esc(x.pts) + '</span></div>' +
         tb.rows.map(function (r, i) { return '<div class="vf-tr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<span>' + r.j + '</span><span>' + (r.bp - r.bc > 0 ? '+' : '') + (r.bp - r.bc) + '</span><span><b>' + r.pts + '</b></span></div>'; }).join('') + '</div>';
     }
     if (vfTab === 'res') {

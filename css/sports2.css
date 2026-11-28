@@ -1886,3 +1886,17 @@ html body #casinoModal .sp2 .vf-tr:first-child{border-top:0}
 html body #casinoModal .sp2 .vf-tr.th{background:#17130c;color:#9c8f70;font-size:11.5px}
 html body #casinoModal .sp2 .vf-tr>span:not(.vf-tn){text-align:center}
 html body #casinoModal .sp2 .vf-tr:nth-child(2),html body #casinoModal .sp2 .vf-tr:nth-child(3),html body #casinoModal .sp2 .vf-tr:nth-child(4){background:rgba(124,58,237,.10)}
+/* v3864 : haut de la page Paris plus compact (solde + Sport/Virtuel), seulement dans Paris */
+html body #casinoModal:has(#csView.sp2) .cs-top{padding-top:4px;padding-bottom:4px;margin-bottom:6px}
+html body #casinoModal:has(#csView.sp2) .cs-wallet{zoom:.82}
+html body #casinoModal .sp2 .vf-sw{margin:0 auto 6px;padding:2px}
+html body #casinoModal .sp2 .vf-sw button{padding:3px 12px;font-size:12px}
+html body #casinoModal .sp2 .vf-tbh{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+html body #casinoModal .sp2 .vf-gl{display:flex;flex-direction:column;gap:3px;margin:0 0 6px;padding:6px 10px;border-radius:10px;background:#15120d;border:1px solid #2a251c}
+html body #casinoModal .sp2 .vf-g{display:flex;align-items:center;gap:8px;min-width:0;font:700 12.5px/1.25 var(--sp2-font);color:#e9e1cf}
+html body #casinoModal .sp2 .vf-g.a{flex-direction:row-reverse;text-align:right}
+html body #casinoModal .sp2 .vf-g b{flex:0 0 auto;min-width:28px;color:#facc15}
+html body #casinoModal .sp2 .vf-g span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* virtuel : choix à 3 colonnes (double chance, mi-temps) — nom au-dessus de la cote, une ligne, « … » si trop long */
+html body #casinoModal .sp2 .vf-mko:has(> :nth-child(3)) .pz-ob2{height:auto!important;min-height:44px;line-height:1.2;flex-direction:column;justify-content:center;align-items:center;gap:1px;padding:5px 6px;text-align:center}
+html body #casinoModal .sp2 .vf-mko .pz-ob2 .pz-ol{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}

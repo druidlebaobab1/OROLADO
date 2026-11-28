@@ -5443,7 +5443,7 @@
       var v = Number(inp.value) || 0;
       inp.min = String(min);
       inp.placeholder = String(min);
-      if (v < min || (v === 3 && !coachDeposited(user()))) inp.value = String(min);
+      if (v < min || v === 3) inp.value = String(min);
       var vv = Number(inp.value) || 0;
       document.querySelectorAll('.dep-amt-chip').forEach(function (chip) { var a = Number(chip.getAttribute('data-amt')); chip.hidden = a < min; chip.classList.toggle('on', a === vv); });
     }
@@ -5545,7 +5545,7 @@
     var min = minCardDeposit();
     // 2026-11-28 (propriétaire) : montant déjà rempli = le MINIMUM pour un nouveau joueur (il paie tout de suite, sans rien changer) ;
     // 5 $ pour un joueur qui a DÉJÀ déposé (il connaît le site). Tous les montants restent à un toucher.
-    var pre = coachDeposited(user()) && min <= 5 ? 5 : min;
+    var pre = min; // 2026-11-28 (propriétaire) : toujours le minimum, pour tout le monde (le 5 $ proposé est retiré)
     if ($('depositAmt')) {
       $('depositAmt').value = String(pre);
       $('depositAmt').min = String(min);

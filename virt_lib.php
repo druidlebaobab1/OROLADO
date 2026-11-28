@@ -21,7 +21,10 @@ const VF_CLOSE = 10;           // avant-match fermé 10 s avant le coup d'envoi
 const VF_LIVE_END = 85;        // paris en direct jusqu'à la 85e minute
 const VF_GOAL_LOCK = 12;       // marchés suspendus 12 s après un but
 const VF_MARGE = 0.08;         // marge maison des matchs virtuels (propriétaire : 8 %)
-const VF_ROUNDS = 55;          // 56 équipes → 55 journées (matchs aller)
+const VF_ROUNDS = 55;          // ligue 1 (56 équipes) : 55 journées
+const VF_V2 = 40;              // 2026-11-28 (propriétaire : « 60 équipes ») : à partir de la journée 40 (10 h 00 GMT), 60 équipes / 59 journées
+/** [équipes, journées par saison, 1re journée de cette formule, n° de saison de départ] pour la journée g. */
+function vf_cfg(int $g): array { if ($g < VF_V2) return [56, VF_ROUNDS, 0, 0]; return [60, 59, VF_V2, intdiv(VF_V2 - 1, VF_ROUNDS) + 1]; }
 
 /** Équipes : [nom, type p (pays) | c (ville d'un grand club), force 60-95, couleur, code pays ISO (pays)]. */
 const VF_TEAMS = [
@@ -39,10 +42,12 @@ const VF_TEAMS = [
   ['Monaco', 'c', 81, '#DC2626', ''], ['Lille', 'c', 82, '#DC2626', ''], ['Lyon', 'c', 79, '#2563EB', ''], ['Amsterdam', 'c', 82, '#DC2626', ''],
   ['Lisbonne', 'c', 83, '#DC2626', ''], ['Porto', 'c', 82, '#2563EB', ''], ['Istanbul', 'c', 80, '#FACC15', ''], ['Le Caire', 'c', 76, '#DC2626', ''],
   ['Casablanca', 'c', 75, '#16A34A', ''], ['Abidjan', 'c', 72, '#F97316', ''], ['Dakar', 'c', 72, '#16A34A', ''], ['Johannesburg', 'c', 73, '#FACC15', ''],
+  // 2026-11-28 : 4 pays populaires de plus (ligue de 60, à partir de VF_V2)
+  ['Tunisie', 'p', 76, '#DC2626', 'tn'], ['Mali', 'p', 75, '#16A34A', 'ml'], ['RD Congo', 'p', 75, '#38BDF8', 'cd'], ['Burkina Faso', 'p', 73, '#DC2626', 'bf'],
 ];
 
 function vf_now(): int { return function_exists('sb_now') ? sb_now() : time(); }
-function vf_n(): int { return count(VF_TEAMS); }
+function vf_n(int $g = PHP_INT_MAX): int { return vf_cfg($g)[0]; }
 /** Clé secrète du tirage (créée une seule fois ; fichier .php : rien n'est lisible même s'il était servi). */
 function vf_secret(): string {
   static $s = null; if ($s !== null) return $s;
@@ -70,14 +75,14 @@ function vf_rng(string $seed): callable {
 }
 function vf_slot(int $t): int { return (int) floor(($t - VF_EPOCH) / VF_SLOT); }
 function vf_ko(int $g): int { return VF_EPOCH + $g * VF_SLOT; }
-function vf_season(int $g): int { return intdiv($g, VF_ROUNDS); }
-function vf_round(int $g): int { return $g % VF_ROUNDS; }
+function vf_season(int $g): int { [, $R, $b, $o] = vf_cfg($g); return $o + intdiv($g - $b, $R); }
+function vf_round(int $g): int { [, $R, $b] = vf_cfg($g); return ($g - $b) % $R; }
 
 /** Ordre des équipes de la saison (public : calendrier) puis tableau « en cercle » → 28 matchs de la journée g. */
 function vf_fixtures(int $g): array {
   static $cache = [];
   if (isset($cache[$g])) return $cache[$g];
-  $S = vf_season($g); $r = vf_round($g); $n = vf_n();
+  $S = vf_season($g); $r = vf_round($g); $n = vf_n($g);
   $ord = range(0, $n - 1);
   $rnd = vf_rng('sched|' . $S);
   for ($i = $n - 1; $i > 0; $i--) { $j = (int) floor($rnd() * ($i + 1)); [$ord[$i], $ord[$j]] = [$ord[$j], $ord[$i]]; }
@@ -187,13 +192,13 @@ function vf_result(int $g, int $i, int $t): ?array {
 }
 /** Classement de la saison de la journée g, avec les journées TERMINÉES à l'instant t (cache par saison). */
 function vf_table(int $g, int $t): array {
-  $S = vf_season($g); $g0 = $S * VF_ROUNDS;
+  $S = vf_season($g); [$nT, $R, $b, $o] = vf_cfg($g); $g0 = $b + ($S - $o) * $R;
   $dir = rtrim(orolado_data_dir(), '/\\') . DIRECTORY_SEPARATOR . 'sports'; if (!is_dir($dir)) @mkdir($dir, 0750, true);
   $f = $dir . DIRECTORY_SEPARATOR . 'vf_table.json';
   $c = is_file($f) ? json_decode((string) @file_get_contents($f), true) : null;
-  if (!is_array($c) || (int) ($c['S'] ?? -1) !== $S) $c = ['S' => $S, 'done' => -1, 'tb' => array_fill(0, vf_n(), [0, 0, 0, 0, 0, 0, ''])];
+  if (!is_array($c) || (int) ($c['S'] ?? -1) !== $S) $c = ['S' => $S, 'done' => -1, 'tb' => array_fill(0, $nT, [0, 0, 0, 0, 0, 0, ''])];
   $chg = false;
-  for ($k = (int) $c['done'] + 1; $g0 + $k <= $g && $k < VF_ROUNDS; $k++) {
+  for ($k = (int) $c['done'] + 1; $g0 + $k <= $g && $k < $R; $k++) {
     $gg = $g0 + $k;
     if ($t < vf_ko($gg) + VF_MATCH) break;
     foreach (vf_fixtures($gg) as $i => [$h, $a]) {
