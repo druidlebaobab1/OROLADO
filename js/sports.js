@@ -1351,6 +1351,7 @@
     if (s && s.mk) {
       var tm = teams(s.t) || [s.t, ''], sp = spOf(s), f = mkParts(s.mk)[0], o = sbOutL(s.mk, s.k, tm[0], tm[1]);
       if ((f === '1x2' && sp === 'foot') || f === '12') return { m: '', o: o };
+      if (f === 'htft' || f === 'hthtft') o = shortK(s.mk, s.k, tm[0], tm[1]); // mi-temps / fin : « 1/1 » (avant : « Manchester / Manchester », trop long pour le reçu)
       return { m: String(sbMkName(s.mk, tm[0], tm[1], sp)).replace(/\s*:\s*/g, ' '), o: o };
     }
     return { m: '', o: trO(s ? s.l : '') };

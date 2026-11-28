@@ -2023,3 +2023,6 @@ html:root body #casinoModal#casinoModal .sp2-inw.loc2-ov > .oro-loc2{top:6px!imp
 html[dir=rtl]:root body #casinoModal#casinoModal .sp2-inw.loc2-ov > .oro-loc2{right:auto!important;left:12px!important;text-align:left!important}
 /* coupe de la Ligue OROLADO : sa propre case (22 px), elle ne déborde plus sur le nom de la ligue (iPhone : emoji plus large) */
 html:root body #casinoModal .sp2 .pz-flag.vf-lgi{width:22px!important;height:22px!important;box-shadow:none;border-radius:0;display:grid!important;place-items:center;overflow:hidden;font-size:16px;line-height:1;margin-inline-end:2px}
+/* coupon : plus de « · » entre le match et le pari (propriétaire : pas de séparateur), simple espace */
+html:root body #casinoModal .sp2 .sp2-slip .sp2-sel-t > small.sp2-mkt::before{content:""!important}
+html:root body #casinoModal .sp2 .sp2-slip .sp2-sel-t > small.sp2-mkt{margin-inline-start:6px}
