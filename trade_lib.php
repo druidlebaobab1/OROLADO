@@ -322,6 +322,15 @@ function orolado_trade_pick_entry(string $mode, string $side, int $arrivalTick, 
   return $out;
 }
 
+/** 2026-11-28 — cote DÉMO sans marge (retour 100 %) pour une cote réelle (×1,90 à 50 % de chances, ×5 / ×10 / ×50 à 90 % rendus). */
+function orolado_trade_demo_mult(float $m): float {
+  if (abs($m - 1.9) < 0.001) return 2.0;
+  if (abs($m - 5.0) < 0.001) return 5.55;
+  if (abs($m - 10.0) < 0.001) return 11.11;
+  if (abs($m - 50.0) < 0.001) return 55.55;
+  return $m;
+}
+
 function orolado_trade_place(array $me, array $req): array {
   $uid = (string) ($me['id'] ?? '');
   $stake = orolado_money($req['stake'] ?? 0);
@@ -413,6 +422,9 @@ function orolado_trade_place(array $me, array $req): array {
   $clickMove = $pick['move'];
   $expiryTick = $entryTick + intdiv($duration * 1000, OROLADO_TICK_MS);
   $barrierCents = orolado_fair_barrier($assetId, $duration, $side, $payout, $entryCents);
+  // 2026-11-28 (propriétaire : « dans la démo, aucune marge ») : la ligne gagnante reste la même (calculée ci-dessus avec la
+  // cote de base), mais un trade DÉMO gagnant paie la cote sans marge (×1,90 → ×2,00 ; ×5 → ×5,55 ; ×10 → ×11,11 ; ×50 → ×55,55).
+  if ($mode === 'demo') $payout = orolado_trade_demo_mult($payout);
 
   $realAfter = null;
   if ($mode === 'real') {
