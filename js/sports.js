@@ -494,7 +494,9 @@
   /* v2790 (propriétaire) — MES PARIS : recherche par état (en cours, gagnés, perdus, remboursés) et par période
      (aujourd'hui, 7 jours, ce mois, cette année, un jour précis). Tout se fait sur le téléphone, la liste ne recharge pas. */
   var MF = { st: 'all', per: 'all', day: '' }, shown = [];
+  var mineVirt = false; // Mes paris ouvert depuis Virtuel : les paris virtuels seulement
   function filt(list, anySt) {
+    if (mineVirt) list = (list || []).filter(function (b) { return (b.sel || []).some(function (q) { return q.sp === 'virt' || /^virt:/.test(q.fx || ''); }); });
     var now = new Date(), d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
     if (MF.per === 'yday') return (list || []).filter(function (b) { return (anySt || MF.st === 'all' || b.status === MF.st) && b.at >= d0 - 86400 && b.at < d0; });
     var from = MF.per === 'today' ? d0 : MF.per === '7' ? d0 - 6 * 86400 : MF.per === 'month' ? new Date(now.getFullYear(), now.getMonth(), 1).getTime() / 1000 : MF.per === 'year' ? new Date(now.getFullYear(), 0, 1).getTime() / 1000 : 0;
@@ -1515,6 +1517,7 @@
     box.innerHTML = '<div class="pz-page pz-v-' + view + '">' + inner + '</div>' + navHtml();
     box.dataset.pzv = view;
     bindBox(); layoutVars(); fitAll($('pzNav')); sbarPaint(); startTick();
+    clearTimeout(shell.t1); clearTimeout(shell.t2); shell.t1 = setTimeout(layoutVars, 350); shell.t2 = setTimeout(layoutVars, 1500); // (iPhone : solde / police chargés après)
   }
   function layoutVars() {
     // en-tête du casino collé en haut (sa hauteur change : visiteur / connecté) ; la page remplit l'écran (barre du bas en bas)
@@ -1565,6 +1568,7 @@
     if (v === view && v !== 'slip') { if (mb) mb.scrollTop = 0; if (v === 'home' && (per !== 'all' || sbQ || hourF >= 0 || sport !== 'foot')) { per = 'all'; sbQ = ''; hourF = -1; sport = 'foot'; render(); } return; }
     if (mb) scrollMem[view] = mb.scrollTop;
     if (v === 'slip') { if (view !== 'slip') slipFrom = view; lastBet = null; lastBets = null; }
+    if (v !== 'mine') mineVirt = false;
     navPush();
     leaveQ(view, v);
     view = v; render();
@@ -1676,12 +1680,15 @@
     if (day.live) { var fin = t >= day.ko + vf.match; return '<div class="vf-jd lv"><b>' + esc(x.j) + ' ' + day.j + '</b><span class="vf-st"><i class="vf-dot"></i>' + esc(fin ? x.ft : x.live) + ' <em data-vfmin="' + day.ko + '">' + (fin ? '' : vfMin(day) + '’') + '</em></span></div>'; }
     return '<div class="vf-jd"><b>' + esc(x.j) + ' ' + day.j + '</b><span class="vf-st">' + esc(x.ko) + ' <em data-vfko="' + day.ko + '">' + vfClock(day.ko - vf.close - t) + '</em></span></div>';
   }
+  var vfQ = '';
+  function vfHit(f) { if (!vfQ) return true; var q = normS(vfQ).trim(), h = normS(vfName(f.h) + ' ' + vfName(f.a)); return q.split(/\s+/).every(function (w) { return h.indexOf(w) > -1; }); }
   function vfDayHtml(day) {
-    var x = VX(), l = { id: 'virt', n: x.lg, c: x.s + ' ' + day.S };
-    return vfHead(day) + lgSection('virt|' + day.g, l, day.fx.map(function (f) { return vfF(day, f); }), true, { soon: 1 }, true).replace('<i class="pz-flag pz-noflag"></i>', '<i class="pz-flag vf-lgi">🏆</i>');
+    var x = VX(), l = { id: 'virt', n: x.lg, c: x.s + ' ' + day.S }, key = 'virt|' + day.g, fx = day.fx.filter(vfHit);
+    if (!fx.length) return '';
+    return vfHead(day) + lgSection(key, l, fx.map(function (f) { return vfF(day, f); }), sbOpen[key] != null ? sbOpen[key] : true, { soon: 1 }, false).replace('<i class="pz-flag pz-noflag"></i>', '<i class="pz-flag vf-lgi">🏆</i>');
   }
   function vfTabs() {
-    var x = VX(), y = VX2(), lv = vfLive(), T = [['live', y.live, lv ? lv.fx.length : 0], ['next', y.next, 0], ['tb', x.tb, 0], ['res', x.res, 0], ['st', y.st, 0]];
+    var x = VX(), y = VX2(), lv = vfLive(), T = [['live', y.live, lv ? lv.fx.length : 0], ['next', y.next, 0], ['tb', x.tb, 0], ['res', x.res, 0], ['st', y.st, 0], ['mine', XX().mine, 0]];
     return T.map(function (t) { return '<button type="button" data-vft="' + t[0] + '" class="' + (vfTab === t[0] ? 'on' : '') + '"><span>' + (t[0] === 'live' ? '<i class="vf-ldot"></i>' : '') + esc(t[1]) + (t[2] ? ' <em>' + t[2] + '</em>' : '') + '</span></button>'; }).join('');
   }
   function vfStats() {
@@ -1718,6 +1725,7 @@
       }).join('');
     }
     if (vfTab === 'st') return vfStats();
+    if (vfQ) { var hq = vf.days.map(vfDayHtml).join(''); return hq || '<p class="pz-none">' + esc(SX().noMatch) + '</p>'; } // recherche : les matchs virtuels seulement
     if (vfTab === 'live') {
       var lv = vfLive();
       if (lv) return vfDayHtml(lv);
@@ -1765,7 +1773,14 @@
     vfTm = setTimeout(vfLoop, 1000);
   }
   function renderVirt() {
-    shell('<div class="pz-home pz-vf">' + vfSwitch(true) + '<div class="pz-pers pz-hs vf-tabs2" id="vfTabs"></div><div id="vfBody" class="pz-body vf-body"></div></div>');
+    shell('<div class="pz-home pz-vf">' + vfSwitch(true) + '<label class="pz-q">' + SBIC.search + '<input id="vfQ" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(SX().search) + '" value="' + esc(vfQ) + '">' +
+      '<button type="button" class="pz-qx" id="vfQx" aria-label="✕"' + (vfQ ? '' : ' hidden') + '>' + IC.x + '</button></label><div class="pz-pers pz-hs vf-tabs2" id="vfTabs"></div><div id="vfBody" class="pz-body vf-body"></div></div>');
+    var qi = $('vfQ'), qx = $('vfQx'), qt = 0;
+    if (qi) {
+      qi.addEventListener('input', function () { if (qx) qx.hidden = !qi.value; clearTimeout(qt); qt = setTimeout(function () { vfQ = qi.value.trim(); vfPaint(); }, 150); });
+      qi.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); qi.blur(); } if (e.key === 'Escape') { e.preventDefault(); qi.value = ''; vfQ = ''; if (qx) qx.hidden = true; vfPaint(); qi.blur(); } });
+    }
+    if (qx) qx.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); if (qi) qi.value = ''; vfQ = ''; qx.hidden = true; vfPaint(); });
     vfPaint(); vfLoad(); vfLoop.n = 0; vfLoop();
   }
   // en-tête de la page d'un match virtuel : comme Paris (équipes, score, minute) + la liste des buts minute par minute
@@ -3368,12 +3383,18 @@
     if (!t || !t.closest) return;
     if ((b = t.closest('[data-back]'))) { ev.preventDefault(); back(); return; }
     if ((b = t.closest('[data-vsw]'))) { var w = b.getAttribute('data-vsw'); if ((w === 'virt') !== (view === 'virt')) go(w === 'virt' ? 'virt' : 'home'); return; }
-    if ((b = t.closest('[data-vft]'))) { vfTab = b.getAttribute('data-vft'); vfPaint(); var mbv = mbox(); if (mbv) mbv.scrollTop = 0; return; }
+    if ((b = t.closest('[data-vft]'))) {
+      var vt = b.getAttribute('data-vft');
+      if (vt === 'mine') { mineVirt = true; go('mine'); return; } // Mes paris : les paris virtuels seulement
+      vfTab = vt; if (vfQ) { vfQ = ''; var vq = $('vfQ'), vqx = $('vfQx'); if (vq) vq.value = ''; if (vqx) vqx.hidden = true; }
+      vfPaint(); var mbv = mbox(); if (mbv) mbv.scrollTop = 0; return;
+    }
     if ((b = t.closest('.pz-nav [data-sv], .sp2-cta[data-sv], [data-go]'))) {
       var v = b.getAttribute('data-sv') || b.getAttribute('data-go'); if (v === 'list') v = 'home';
       // 2026-10-23 (propriétaire : « dans Paris on ne peut plus sortir ») : un onglet du bas (Populaire, Direct, Mes paris, Menu) repart
       // d'une pile vide → retour = Populaire, puis Paris se ferme (le pas-à-pas reste pour match, coupon, résultats)
       if (b.closest('.pz-nav') && v !== 'slip') navStk = [];
+      if (b.closest('.pz-nav') && mineVirt) { mineVirt = false; if (v === 'mine' && view === 'mine') { renderMine(); return; } }
       go(v); if (b.closest('.pz-nav') && v !== 'slip') navStk = [];
       return;
     }
@@ -3601,7 +3622,7 @@
       fitAll(box); if ($('spMineSign')) $('spMineSign').addEventListener('click', function () { if (ctx.signup) ctx.signup(); });
       return;
     }
-    shell(bar(x.mine, delHead()) + mineBar() + '<div class="sp2-bets" id="spRcs">' + (mineCache ? receipts(shown = filt(mineCache)) : '<div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div><div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div>') + '</div>');
+    shell(bar(x.mine, (mineVirt ? '<i class="vf-tag vf-tagb">' + esc(VX2().tag) + '</i>' : '') + delHead()) + mineBar() + '<div class="sp2-bets" id="spRcs">' + (mineCache ? receipts(shown = filt(mineCache)) : '<div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div><div class="sp2-bet sp2-skel"><i></i><i></i><i></i></div>') + '</div>');
     bindRc(); bindMine(); bindDel(); delPaint(); fitAll(box);
     var r = await loadMine();
     if (view !== 'mine' || !$('spRcs')) return;
