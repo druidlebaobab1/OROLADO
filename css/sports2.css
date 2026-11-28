@@ -1897,3 +1897,6 @@ html body #casinoModal .sp2 .vf-g{display:flex;align-items:center;gap:8px;min-wi
 html body #casinoModal .sp2 .vf-g.a{flex-direction:row-reverse;text-align:right}
 html body #casinoModal .sp2 .vf-g b{flex:0 0 auto;min-width:28px;color:#facc15}
 html body #casinoModal .sp2 .vf-g span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* virtuel : choix à 3 colonnes (double chance, mi-temps) — nom au-dessus de la cote, une ligne, « … » si trop long */
+html body #casinoModal .sp2 .vf-mko:has(> :nth-child(3)) .pz-ob2{height:auto!important;min-height:44px;line-height:1.2;flex-direction:column;justify-content:center;align-items:center;gap:1px;padding:5px 6px;text-align:center}
+html body #casinoModal .sp2 .vf-mko .pz-ob2 .pz-ol{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
