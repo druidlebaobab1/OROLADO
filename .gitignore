@@ -49,3 +49,6 @@ data/sports/vf_table.json
 data/sports/vf_hist.json
 data/sports/vf_paid.at
 data/sports/vf_paid.at.lock
+
+# calcul de la ligne démo en cours (scripts/demo-fair-calib.php)
+demo_fair.part*.json

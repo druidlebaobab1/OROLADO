@@ -353,6 +353,26 @@ function orolado_trade_demo_easy(array $db, string $uid, string $oid, float $pay
   return $r < $flip ? 'won' : $verdict;
 }
 
+/** 2026-11-28 — ligne objectif de la DÉMO (jamais du réel). Sans table pour cet indice : ligne normale ($normal). */
+const OROLADO_DEMO_LINE = true;
+function orolado_trade_demo_table(): array {
+  static $t = null;
+  if ($t === null) { $f = __DIR__ . '/demo_fair.json'; $t = is_file($f) ? (json_decode((string) file_get_contents($f), true) ?: []) : []; }
+  return $t;
+}
+function orolado_trade_demo_barrier(string $asset, int $duration, string $side, float $mult, int $entryCents, int $normal): int {
+  if (!OROLADO_DEMO_LINE || $entryCents <= 0) return $normal;
+  $k = abs($mult - 1.9) < 0.001 ? '1.9' : (string) (int) round($mult);
+  $cell = orolado_trade_demo_table()[$asset][(string) $duration][$k] ?? null;
+  if (!is_array($cell) || count($cell) < 2) return $normal;
+  $rel = (float) $cell[$side === 'put' ? 1 : 0];
+  $dr = function_exists('orolado_fair_drift') ? orolado_fair_drift($asset, $duration, $entryCents) : 0.0; // même retour vers la base que le réel
+  $b = (int) round($entryCents * (1 + $rel) * exp($dr), 0, PHP_ROUND_HALF_UP);
+  // sécurité : la ligne démo n'est jamais PLUS difficile que la ligne normale
+  if ($side === 'put') return max($b, $normal);
+  return min($b, $normal);
+}
+
 function orolado_trade_place(array $me, array $req): array {
   $uid = (string) ($me['id'] ?? '');
   $stake = orolado_money($req['stake'] ?? 0);
@@ -444,6 +464,10 @@ function orolado_trade_place(array $me, array $req): array {
   $clickMove = $pick['move'];
   $expiryTick = $entryTick + intdiv($duration * 1000, OROLADO_TICK_MS);
   $barrierCents = orolado_fair_barrier($assetId, $duration, $side, $payout, $entryCents);
+  // 2026-11-28 (propriétaire) — DÉMO PLUS FACILE : en DÉMO seulement, ligne objectif plus favorable (demo_fair.json,
+  // calculé avec le vrai moteur de prix : ≈ 62 % gagnés à 90 %, ≈ 118 % rendus à ×5 / ×10 / ×50). Payouts affichés inchangés.
+  // Le RÉEL garde toujours la ligne ci-dessus (fair_table.php / feed_lib.php inchangés).
+  if ($mode === 'demo') $barrierCents = orolado_trade_demo_barrier($assetId, $duration, $side, $payout, $entryCents, $barrierCents);
   // 2026-11-28 (propriétaire : « dans la démo, aucune marge ») : la ligne gagnante reste la même (calculée ci-dessus avec la
   // cote de base), mais un trade DÉMO gagnant paie la cote démo (×1,90 → ×2,10 ; ×5 → ×5,83 ; ×10 → ×11,66 ; ×50 → ×58,33).
   if ($mode === 'demo') $payout = orolado_trade_demo_mult($payout);

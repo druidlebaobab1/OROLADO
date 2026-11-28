@@ -29,9 +29,12 @@
   `orolado_flw_configured()` renvoie toujours false, api/flutterwave-* supprimés. Dépôts : GeniusPay (minimum 3 $, `OROLADO_DEP_MIN`),
   Maketou en secours (comme avant), crypto inchangée (tout montant reçu est crédité).
 
-- DÉMO FACILE MISE DE CÔTÉ (propriétaire, 2026-11-28 au soir : « retire la notification », système jugé mauvais) : la démo du trading
-  est NORMALE (comme le réel, ×1,90) ; `OROLADO_DEMO_EASY_ALL = false`, `demoEasyOn()` = false, message m_demoEasy plus affiché.
-  Le code reste là (orolado_trade_demo_easy, easyVerdict) : ne pas le rallumer sans demande explicite du propriétaire.
+- DÉMO PLUS FACILE (propriétaire, 2026-11-28 au soir) : en DÉMO du trading seulement, la LIGNE OBJECTIF est plus favorable
+  (demo_fair.json + js/demo_fair.js, calculés par `php scripts/demo-fair-calib.php` avec le vrai moteur de prix) : ≈ 62 trades gagnés
+  sur 100 à 90 %, ≈ 118 % rendus à ×5 / ×10 / ×50. Boutons AFFICHÉS inchangés (90 %, 500 %, 1000 %, 5000 %), AUCUNE notification ;
+  seule une phrase dans l'article 7 des conditions (12 langues). Le RÉEL garde fair_table.php / feed_lib.php (inchangés).
+  L'ancien système « perdu compté gagné » reste éteint. Contrôle : `php scripts/test-demo-line.php` (« 0 échec(s) »).
+  Ne pas changer sans demande explicite du propriétaire.
 
 ## Téléphones du propriétaire (mesures réelles, relevées le 2026-10-20 par le diagnostic « 5 touches sur OROLADO .com »)
 - Heure du propriétaire : Népal, UTC+5:45. Ses captures sont à l'heure locale : comparer avec l'heure de mise en ligne

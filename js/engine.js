@@ -171,6 +171,16 @@
     var ticks = Math.floor(duration * 1000 / 250);
     return -(1 - Math.pow(1 - pull, ticks)) * Math.log(entryCents / base);
   }
+  // 2026-11-28 (propriétaire) — DÉMO PLUS FACILE : même table que le serveur (js/demo_fair.js ← demo_fair.json), DÉMO seulement.
+  function demoBarrierCents(assetId, duration, side, mult, entryCents, normal) {
+    var t = D6.DEMO_FAIR && D6.DEMO_FAIR[assetId] && D6.DEMO_FAIR[assetId][String(duration)];
+    var m = normalizeOdds(mult), k = m === 1.9 ? '1.9' : String(m), cell = t && t[k];
+    if (!cell || !(entryCents > 0)) return normal;
+    var rel = Number(cell[side === 'put' ? 1 : 0]) || 0;
+    var x = entryCents * (1 + rel) * Math.exp(fairDrift(assetId, duration, entryCents));
+    var b = x >= 0 ? Math.floor(x + 0.5) : -Math.floor(-x + 0.5);
+    return side === 'put' ? Math.max(b, normal) : Math.min(b, normal);
+  }
   function barrierCents(assetId, duration, side, mult, entryCents) {
     var table = D6.FAIR_TABLE || {};
     var row = table[assetId] && table[assetId][String(duration)];
@@ -1605,6 +1615,7 @@
       if (!(entryCents > 0)) return { ok: false, reason: (D6.I18N && D6.I18N.t ? D6.I18N.t('m_connecting') : 'Connecting to the market…') };
       var expiryTick = entryTick + Math.round(duration * 1000 / TICK_MS);
       var bar = barrierCents(assetId, duration, side, payout, entryCents);
+      if (mode === 'demo') bar = demoBarrierCents(assetId, duration, side, payout, entryCents, bar); // 2026-11-28 : démo plus facile
       var guest = !hasToken();
       // v2831 : le serveur prendra-t-il le prix du clic ? (réel : prix vu au plus ~2 prix avant l'arrivée de l'ordre, mise ≤ 20 —
       // trade_lib.php). Oui → rond et lignes posés au clic tout de suite. Sinon → ils attendent le vrai prix d'entrée et

@@ -11,7 +11,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
  */
 $tmp = sys_get_temp_dir() . '/orolado_tdemo_' . bin2hex(random_bytes(4));
 mkdir($tmp . '/data', 0755, true);
-foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'indices.json'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
+foreach (['orolado_lib.php', 'trade_lib.php', 'feed_lib.php', 'fair_table.php', 'indices.json', 'demo_fair.json'] as $f) copy(__DIR__ . '/../' . $f, $tmp . '/' . $f);
 require $tmp . '/orolado_lib.php';
 require $tmp . '/trade_lib.php';
 $bank = ['real' => [], 'settled' => []];
@@ -47,7 +47,9 @@ foreach ($assets as $a) {
         $want = $mode === 'demo' ? $DEMO[(string) (float) $m === '1.9' ? '1.9' : (string) (int) $m] : (float) $m;
         ck("$a ×$m {$d}s $mode : cote", abs((float) $o['payout'] - $want) < 0.0001, $o['payout'] . ' au lieu de ' . $want);
         $eC = (int) round((float) $o['entryPrice'] * 100); $bC = (int) round((float) $o['barrier'] * 100);
-        ck("$a ×$m {$d}s $mode : même ligne qu'en réel", $bC === orolado_fair_barrier($a, $d, $side, (float) $m, $eC), "$bC");
+        $bN = orolado_fair_barrier($a, $d, $side, (float) $m, $eC);
+        $bWant = $mode === 'demo' ? orolado_trade_demo_barrier($a, $d, $side, (float) $m, $eC, $bN) : $bN; // 2026-11-28 : ligne démo plus facile
+        ck("$a ×$m {$d}s $mode : bonne ligne (" . ($mode === 'demo' ? 'démo plus facile' : 'réel inchangée') . ")", $bC === $bWant && ($mode === 'real' || ($side === 'put' ? $bC >= $bN : $bC <= $bN)), "$bC / $bWant / $bN");
         if ($d === 5) $short[] = [$id, $mode, (float) $m, $a];
       }
     }
