@@ -2016,3 +2016,10 @@ html body #casinoModal .sp2 .vf-cmp p.vf-cmph > span{display:flex;justify-conten
 html body #casinoModal .sp2 .vf-cmp .vf-cn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html body #casinoModal .sp2 .vf-cmp .vf-cn:last-child{text-align:end}
 html body #casinoModal .sp2 .vf-cmp .vf-cb.vf-cr{width:20px;height:23px}
+/* v3878 (propriétaire : « l'estimation rentre dans le montant ») : case de mise du coupon — l'équivalent en monnaie locale passe
+   en haut à droite, sur la ligne du mot « Mise » (place libre) ; le montant garde toute sa ligne, plus rien ne se chevauche */
+html:root body #casinoModal#casinoModal .sp2-inw.loc2-ov .sp2-inv{transform:none!important}
+html:root body #casinoModal#casinoModal .sp2-inw.loc2-ov > .oro-loc2{top:6px!important;bottom:auto!important;left:auto!important;right:12px!important;text-align:right!important;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[dir=rtl]:root body #casinoModal#casinoModal .sp2-inw.loc2-ov > .oro-loc2{right:auto!important;left:12px!important;text-align:left!important}
+/* coupe de la Ligue OROLADO : sa propre case (22 px), elle ne déborde plus sur le nom de la ligue (iPhone : emoji plus large) */
+html:root body #casinoModal .sp2 .pz-flag.vf-lgi{width:22px!important;height:22px!important;box-shadow:none;border-radius:0;display:grid!important;place-items:center;overflow:hidden;font-size:16px;line-height:1;margin-inline-end:2px}
