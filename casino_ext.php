@@ -37,10 +37,37 @@ function casino_ext_defs(): array {
       if (!preg_match('/^[a-z][a-z0-9]{1,15}$/', $k) || in_array($k, CASINO_GAMES, true) || isset($defs[$k]) || !is_array($d)) continue;
       $ok = casino_ext_check($d);
       if ($ok !== true) { error_log('OROLADO casino_ext: fiche ' . $k . ' ignorée (' . $ok . ')'); continue; }
+      if (($d['type'] ?? '') === 'table') $d = casino_ext_house($d); // 2026-11-28 : marge 15 %, gros gains bien plus rares
       $defs[$k] = $d;
     }
   }
   return $defs;
+}
+/**
+ * 2026-11-28 (propriétaire : « marge 15 % sur tous les jeux casino, et réduis fortement les gros gains ») — appliqué à chaque fiche
+ * 'table' au chargement (le navigateur ne dessine que la ligne tirée : rien à changer chez lui) :
+ *   1) gros gains bien plus rares : poids ÷ 6 pour ×40 et plus, ÷ 3 pour ×15 à ×40, ÷ 1,5 pour ×5 à ×15 ;
+ *   2) la ligne « perdu » (×0) grandit pour que le retour aux joueurs soit exactement CASINO_EDGE (85 %).
+ * Fiche sans ligne ×0 : toutes ses lignes gagnantes sont réduites dans la même proportion, la plus petite absorbe le reste.
+ */
+function casino_ext_house(array $d): array {
+  $src = (array) $d['out'];
+  $z = -1; foreach ($src as $j => $o) if ((float) $o[0] <= 0) { $z = $j; break; }
+  $mi = 0; foreach ($src as $j => $o) if ((float) $o[0] > 0 && ((float) $src[$mi][0] <= 0 || (float) $o[0] < (float) $src[$mi][0])) $mi = $j;
+  // gros gains réduits avec une force t (1 = pleine force) ; on baisse t si la table ne peut pas atteindre 85 % autrement
+  $build = static function (float $t) use ($src, $z, $mi) {
+    $out = $src;
+    foreach ($out as $j => $o) { $m = (float) $o[0]; if ($m <= 0) continue; $f = $m >= 40 ? 6.0 : ($m >= 15 ? 3.0 : ($m >= 5 ? 1.5 : 1.0)); $out[$j][1] = (float) $o[1] / (1 + $t * ($f - 1)); }
+    $Wg = 0.0; $Eg = 0.0; foreach ($out as $j => $o) if ($j !== $z) { $Wg += (float) $o[1]; $Eg += (float) $o[0] * (float) $o[1]; }
+    if ($z >= 0) { $wz = $Eg / CASINO_EDGE - $Wg; if ($wz < 0) return null; $out[$z][1] = $wz; return $out; }
+    // pas de ligne ×0 : le plus petit gain (s'il est sous 0,85) prend le poids qui ramène le retour à 85 %
+    $m0 = (float) $out[$mi][0]; if ($m0 >= CASINO_EDGE) return null;
+    $Wo = $Wg - (float) $out[$mi][1]; $Eo = $Eg - $m0 * (float) $out[$mi][1];
+    $w0 = ($Eo - CASINO_EDGE * $Wo) / (CASINO_EDGE - $m0); if ($w0 <= 0) return null;
+    $out[$mi][1] = $w0; return $out;
+  };
+  for ($t = 1.0; $t >= -0.001; $t -= 0.05) { $o = $build(max(0.0, $t)); if ($o !== null) { $d['out'] = $o; return $d; } }
+  return $d; // (cas impossible : la fiche garde ses poids d'origine, déjà ≤ 94,5 %)
 }
 /** true si la fiche est sûre, sinon la raison. */
 function casino_ext_check(array $d) {

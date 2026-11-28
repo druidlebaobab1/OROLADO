@@ -50,9 +50,9 @@ foreach ($fiches as $g => $d) {
   if ($d['type'] === 'table') {
     $w = 0.0; $ev = 0.0; $mx = 0.0;
     foreach ($d['out'] as $o) { $w += $o[1]; $ev += $o[0] * $o[1]; $mx = max($mx, $o[0]); }
-    check(sprintf('%-9s table : %.3f %% (max ×%s)', $g, $ev / $w * 100, $mx), $ev / $w >= 0.935 && $ev / $w <= 0.94 + 1e-9 && $mx <= 1000);
+    check(sprintf('%-9s table : %.3f %% (max ×%s)', $g, $ev / $w * 100, $mx), $ev / $w >= 0.835 && $ev / $w <= 0.85 + 1e-9 && $mx <= 1000);
   } else {
-    foreach ($d['opts'] as $i => $p) { $m = casino_ext_pick_mult($p); check(sprintf('%-9s option %d : ×%.2f → %.3f %%', $g, $i, $m, $p * $m * 100), $p * $m >= 0.935 && $p * $m <= 0.94 + 1e-9); }
+    foreach ($d['opts'] as $i => $p) { $m = casino_ext_pick_mult($p); check(sprintf('%-9s option %d : ×%.2f → %.3f %%', $g, $i, $m, $p * $m * 100), $p * $m >= 0.835 && $p * $m <= 0.85 + 1e-9); }
   }
 }
 // tirages exacts attendus par le dessin du navigateur

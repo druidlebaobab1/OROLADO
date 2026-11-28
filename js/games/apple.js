@@ -24,7 +24,7 @@
   function num(v) { v = Number(v); if (v >= 1e6) return (Math.floor(v / 1e4) / 100).toFixed(2).replace('.', K.dec()) + 'M'; if (v >= 1e4) return Math.floor(v / 1e3) + 'K'; return v >= 1000 ? String(Math.floor(v)) : v.toFixed(2).replace('.', K.dec()); }
   function money(v) { return '\u2066$\u00a0' + K.m2(v).replace('.', K.dec()) + '\u2069'; }
   function xm(v) { return '\u2066×' + num(v) + '\u2069'; } // ×1.25 reste dans le bon sens en arabe
-  function mult(k, lv) { return k < 1 ? 0 : Math.floor(0.94 / Math.pow((5 - lv) / 5, k) * 100 + 1e-6) / 100; } // = casino_apple_mult
+  function mult(k, lv) { return k < 1 ? 0 : Math.floor(0.85 / Math.pow((5 - lv) / 5, k) * 100 + 1e-6) / 100; } // = casino_apple_mult
   var DEFS = '<svg class="ap-defs" width="0" height="0" aria-hidden="true"><defs>' +
     '<radialGradient id="apGold" cx="35%" cy="32%" r="75%"><stop offset="0" stop-color="#FEF9C3"/><stop offset=".35" stop-color="#FDE047"/><stop offset=".75" stop-color="#F59E0B"/><stop offset="1" stop-color="#B45309"/></radialGradient>' +
     '<radialGradient id="apRot" cx="38%" cy="34%" r="75%"><stop offset="0" stop-color="#A16207"/><stop offset=".55" stop-color="#6B3A1F"/><stop offset="1" stop-color="#3B1D12"/></radialGradient></defs></svg>';

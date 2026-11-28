@@ -62,7 +62,7 @@
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = rnd(i + 1), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function ease(k) { return 1 - Math.pow(1 - k, 3); }
   function lerp(a, b, k) { return a + (b - a) * k; }
-  function pmult(p) { return Math.floor(0.94 / p * 100) / 100; } // = casino_ext_pick_mult()
+  function pmult(p) { return Math.floor(0.85 / p * 100) / 100; } // = casino_ext_pick_mult()
   function tw(box, ms, fn) {
     ms = lite() ? Math.round(ms * 0.6) : ms;
     return new Promise(function (res, rej) {

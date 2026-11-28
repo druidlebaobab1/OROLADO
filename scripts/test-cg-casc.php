@@ -56,9 +56,9 @@ foreach ($fiches as $g => $d) {
   if ($d['type'] === 'table') {
     $w = 0.0; $ev = 0.0; $mx = 0.0; $hit = 0.0;
     foreach ($d['out'] as $o) { $w += $o[1]; $ev += $o[0] * $o[1]; $mx = max($mx, $o[0]); if ($o[0] > 0) $hit += $o[1]; }
-    check(sprintf('%-10s table : %.3f %% (gagne %.1f %% des parties, max ×%s, %d lignes)', $g, $ev / $w * 100, $hit / $w * 100, $mx, count($d['out'])), $ev / $w >= 0.935 && $ev / $w <= 0.94 + 1e-9 && $mx <= 1000 && $d['out'][0][1] > 0);
+    check(sprintf('%-10s table : %.3f %% (gagne %.1f %% des parties, max ×%s, %d lignes)', $g, $ev / $w * 100, $hit / $w * 100, $mx, count($d['out'])), $ev / $w >= 0.835 && $ev / $w <= 0.85 + 1e-9 && $mx <= 1000 && $d['out'][0][1] > 0);
   } else {
-    foreach ($d['opts'] as $i => $p) { $m = casino_ext_pick_mult($p); check(sprintf('%-10s option %d : ×%.2f → %.3f %%', $g, $i, $m, $p * $m * 100), $p * $m >= 0.935 && $p * $m <= 0.94 + 1e-9); }
+    foreach ($d['opts'] as $i => $p) { $m = casino_ext_pick_mult($p); check(sprintf('%-10s option %d : ×%.2f → %.3f %%', $g, $i, $m, $p * $m * 100), $p * $m >= 0.835 && $p * $m <= 0.85 + 1e-9); }
   }
 }
 
@@ -99,7 +99,7 @@ foreach ($fiches as $g => $d) {
   // tolérance = 4 écarts-types de la moyenne (calculés sur la table elle-même)
   if ($n) { $m2 = 0.0; foreach ($d['opts'] as $p) $m2 += $p * casino_ext_pick_mult($p) ** 2 / $n; } else { $tw = array_sum(array_column($d['out'], 1)); $m2 = 0.0; foreach ($d['out'] as $o) $m2 += $o[0] ** 2 * $o[1] / $tw; }
   $tol = max(0.004, 4 * sqrt($m2) / sqrt($N));
-  check(sprintf('%-9s simulé %.2f %%', $g, $s / $N * 100), $s / $N < 0.94 + $tol && $s / $N > 0.93 - $tol && $bad === 0, "bad=$bad");
+  check(sprintf('%-9s simulé %.2f %%', $g, $s / $N * 100), $s / $N < 0.85 + $tol && $s / $N > 0.84 - $tol && $bad === 0, "bad=$bad");
 }
 
 echo "5) Argent : une vraie partie retire la mise une fois et verse le gain une fois\n";

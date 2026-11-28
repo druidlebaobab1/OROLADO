@@ -85,7 +85,7 @@ foreach ($G as $g) {
     foreach ($od as $sel => $o) {
       $rtp = 0.0; $pw = 0.0;
       foreach ($L as [$p, $out]) { $m = casino_draw_mult($g, (string) $sel, $out + ($g === 'hilolive' ? ['b' => $base] : [])); $rtp += $p * $m; if ($m > 0) $pw += $p; }
-      $ok = $rtp <= 0.94 + 1e-9 && $rtp >= 0.93 && abs($pw - casino_live3_probs($g, ['b' => $base])[$sel]) < 1e-9;
+      $ok = $rtp <= 0.85 + 1e-9 && $rtp >= 0.93 && abs($pw - casino_live3_probs($g, ['b' => $base])[$sel]) < 1e-9;
       if (!$ok) $okR = false;
       $txt[] = "$sel ×$o " . number_format($rtp * 100, 2) . '%' . ($ok ? '' : ' !!');
     }

@@ -12,7 +12,7 @@
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = rnd(i + 1), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function ease(k) { return 1 - Math.pow(1 - k, 3); }
   function lerp(a, b, k) { return a + (b - a) * k; }
-  function pm(p) { return Math.floor(0.94 / p * 100) / 100; } // gain d'une option « choix » (même calcul que le serveur)
+  function pm(p) { return Math.floor(0.85 / p * 100) / 100; } // gain d'une option « choix » (même calcul que le serveur)
   function tw(box, ms, fn) {
     ms = lite() ? Math.round(ms * 0.55) : ms;
     return new Promise(function (res, rej) {
@@ -363,7 +363,7 @@
     }
     // ---- visiteur : vols de démonstration (aucune mise, aucun son)
     function demoStep() {
-      if (phase === 'idle') { outT -= 0.016; if (outT > 0) return; phase = 'play'; dT = performance.now(); newLook(); var q = Math.random(); dC = Math.min(30, Math.max(1, Math.floor(0.94 / Math.max(1e-6, 1 - q) * 100) / 100)); mShown = ''; say('', ''); return; }
+      if (phase === 'idle') { outT -= 0.016; if (outT > 0) return; phase = 'play'; dT = performance.now(); newLook(); var q = Math.random(); dC = Math.min(30, Math.max(1, Math.floor(0.85 / Math.max(1e-6, 1 - q) * 100) / 100)); mShown = ''; say('', ''); return; }
       if (phase === 'play' && mult() >= dC) { crashAt = secs(); crash(); }
     }
     function crash() {

@@ -23,7 +23,7 @@
   function num(v) { return Number(v).toFixed(2).replace('.', K.dec()); }
   function money(v) { return '\u2066$\u00a0' + K.m2(v).replace('.', K.dec()) + '\u2069'; }
   function xm(v) { return '\u2066×' + num(v) + '\u2069'; } // ×1.25 reste dans le bon sens en arabe
-  function mult(k) { return k < 1 ? 0 : Math.floor(0.94 / Math.pow(2 / 3, k) * 100 + 1e-6) / 100; } // = casino_tower_mult
+  function mult(k) { return k < 1 ? 0 : Math.floor(0.85 / Math.pow(2 / 3, k) * 100 + 1e-6) / 100; } // = casino_tower_mult
   var STAR = '<svg class="tw-ico" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17" fill="#FBBF24" opacity=".22"/><path d="M24 7l4.9 10.4 11.4 1.4-8.4 7.8 2.2 11.3L24 32.3l-10.1 5.6 2.2-11.3-8.4-7.8 11.4-1.4z" fill="#FDE047" stroke="#B45309" stroke-width="1.6" stroke-linejoin="round"/><path d="M19 17.5l3-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".85"/></svg>';
   var HOLE = '<svg class="tw-ico" viewBox="0 0 48 48" aria-hidden="true"><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="#FB7185" stroke-width="2.4" opacity=".8" transform="rotate(-18 24 24)"/><circle cx="24" cy="24" r="10.5" fill="#05020F" stroke="#F43F5E" stroke-width="2"/><path d="M6.5 30A20 8 -18 0 0 41.5 18" fill="none" stroke="#FDA4AF" stroke-width="2.4" transform="rotate(0)"/><circle cx="20" cy="22" r="1.8" fill="#F43F5E"/><circle cx="28" cy="22" r="1.8" fill="#F43F5E"/></svg>';
 

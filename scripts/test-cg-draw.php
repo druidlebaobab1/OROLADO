@@ -47,7 +47,7 @@ $a = $ev[$eA];
 check('Paris FC - Rennes : 3 choix 1 · Nul · 2', count($a['opts']) === 3 && $a['opts'][1]['label'] === 'Nul' && $a['opts'][1]['k'] === 'oD' && $a['opts'][0]['k'] === 'o0' && $a['opts'][2]['k'] === 'o1');
 check('« nul = remboursé » retiré de la ligue', $a['league'] === 'Ligue 1', $a['league']);
 $rt = 0; foreach ($a['opts'] as $o) $rt += 1 / $o['odd'];
-check(sprintf('marge maison ≈ 6 %% (somme des 1/cote = %.3f)', $rt), $rt >= 1 / 0.94 - 0.001 && $rt < 1 / 0.94 + 0.03);
+check(sprintf('marge maison ≈ 6 %% (somme des 1/cote = %.3f)', $rt), $rt >= 1 / 0.85 - 0.001 && $rt < 1 / 0.85 + 0.03);
 check('le favori reste favori', $a['opts'][2]['odd'] < $a['opts'][0]['odd']);
 check('Lens - Lille (déjà parié) ne change pas', count($ev[$eB]['opts']) === 2 && strpos($ev[$eB]['league'], 'nul = remboursé') !== false);
 check('NBA : pas de nul', count($ev[$eC]['opts']) === 2);

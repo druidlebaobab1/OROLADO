@@ -46,7 +46,7 @@ $d = $fiches['bowling'];
 check('12 lignes : 0…10 quilles + strike doré', count($d['out']) === 12);
 check('gains du dessin : 6 ×0,3 · 7 ×0,8 · 8 ×1,2 · 9 ×1,8 · strike ×3,25 · doré ×15', array_column($d['out'], 0) === [0, 0, 0, 0, 0, 0, 0.3, 0.8, 1.2, 1.8, 3.25, 15]);
 $w = 0.0; $ev = 0.0; foreach ($d['out'] as $o) { $w += $o[1]; $ev += $o[0] * $o[1]; }
-check(sprintf('retour exact %.3f %% (entre 93,5 et 94)', $ev / $w * 100), $ev / $w >= 0.935 && $ev / $w <= 0.94);
+check(sprintf('retour exact %.3f %% (entre 93,5 et 94)', $ev / $w * 100), $ev / $w >= 0.835 && $ev / $w <= 0.851);
 $N = 400000; $s = 0.0; $bad = 0;
 for ($i = 0; $i < $N; $i++) { $r = casino_ext_instant('bowling', []); $s += $r['mult']; if ((float) $d['out'][$r['view']['i']][0] !== (float) $r['mult']) $bad++; }
 check(sprintf('retour simulé %.2f %% · dessin = gain', $s / $N * 100), abs($s / $N - $ev / $w) < 0.012 && $bad === 0, "bad=$bad");
@@ -56,7 +56,7 @@ check('jeu en direct déclaré (tirage commun, v2811 : P 160 s, mises 120 s)', i
 check('chances : total 100', array_sum(CASINO_PLANETS_W) === 100 && count(CASINO_PLANETS_W) === 6);
 $od = casino_planets_odds();
 check('cotes affichées ×2,93 ×3,91 ×5,22 ×7,23 ×10,44 ×23,50', $od === [2.93, 3.91, 5.22, 7.23, 10.44, 23.5], json_encode($od));
-foreach (CASINO_PLANETS_W as $i => $wt) check(sprintf('planète %d : retour %.2f %%', $i, $wt * $od[$i]), $wt * $od[$i] <= 94.0 + 1e-9 && $wt * $od[$i] >= 93.5);
+foreach (CASINO_PLANETS_W as $i => $wt) check(sprintf('planète %d : retour %.2f %%', $i, $wt * $od[$i]), $wt * $od[$i] <= 85.0 + 1e-9 && $wt * $od[$i] >= 93.5);
 $cnt = array_fill(0, 6, 0); $M = 200000; for ($k = 0; $k < $M; $k++) $cnt[casino_planets_draw()]++;
 $okd = true; foreach (CASINO_PLANETS_W as $i => $wt) if (abs($cnt[$i] / $M - $wt / 100) > 0.004) $okd = false;
 check('tirage selon les chances (200 000 tirages)', $okd, json_encode($cnt));

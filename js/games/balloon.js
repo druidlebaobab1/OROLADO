@@ -22,7 +22,7 @@
   function num(v) { return Number(v).toFixed(2).replace('.', K.dec()); }
   function money(v) { return '\u2066$\u00a0' + K.m2(v).replace('.', K.dec()) + '\u2069'; }
   function xm(v) { return '\u2066×' + num(v) + '\u2069'; } // ×1.25 reste dans le bon sens en arabe
-  function mult(k) { return k < 1 ? 0 : Math.floor(0.94 / Math.pow(0.9, k) * 100 + 1e-6) / 100; } // = casino_balloon_mult
+  function mult(k) { return k < 1 ? 0 : Math.floor(0.85 / Math.pow(0.9, k) * 100 + 1e-6) / 100; } // = casino_balloon_mult
   function size(k) { return 0.42 + 0.58 * (1 - Math.exp(-k / 9)); }
   var BALLOON = '<svg viewBox="0 0 100 132" aria-hidden="true"><defs><radialGradient id="blBody" cx="34%" cy="28%" r="78%"><stop offset="0" stop-color="#FFF3C4"/><stop offset=".22" stop-color="#FCD34D"/><stop offset=".62" stop-color="#F59E0B"/><stop offset="1" stop-color="#9A3412"/></radialGradient>' +
     '<radialGradient id="blRim" cx="50%" cy="50%" r="50%"><stop offset=".8" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#FDE68A" stop-opacity=".5"/></radialGradient></defs>' +

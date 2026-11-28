@@ -12,7 +12,7 @@
     vi: { bet: 'Cược' }, id: { bet: 'Pasang' }, ru: { bet: 'Ставка' }, de: { bet: 'Setzen' }, hi: { bet: 'दांव' }, zh: { bet: '下注' } };
   function L() { return Object.assign({}, T.en, T[K.lang()] || {}); }
   function lite() { return document.documentElement.classList.contains('oro-lite'); }
-  function pm(p) { return Math.floor(0.94 / p * 100) / 100; }
+  function pm(p) { return Math.floor(0.85 / p * 100) / 100; }
   function num(v) { return String(v).replace('.', K.dec()); }
   function xm(v) { return '×' + (Math.round(v * 100) / 100).toFixed(2).replace('.', K.dec()); }
   function rnd(n) { return Math.floor(Math.random() * n); }

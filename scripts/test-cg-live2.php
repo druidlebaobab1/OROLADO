@@ -46,10 +46,10 @@ check('anciens jeux : mêmes durées via casino_draw_pb', casino_draw_pb('planet
 echo "2) Retour EXACT de chaque choix (chance × cote ≤ 94 %, ≥ 93,5 %)\n";
 $okR = true; $txt = [];
 foreach (['fleets', 'gemcount', 'claw'] as $g) {
-  foreach (casino_live2_probs($g) as $sel => $p) { $o = casino_live2_odds($g)[$sel]; $rtp = $p * $o; if ($rtp > 0.94 + 1e-9 || $rtp < 0.935) $okR = false; $txt[] = "$g:$sel ×$o " . round($rtp * 100, 2) . '%'; }
+  foreach (casino_live2_probs($g) as $sel => $p) { $o = casino_live2_odds($g)[$sel]; $rtp = $p * $o; if ($rtp > 0.85 + 1e-9 || $rtp < 0.845) $okR = false; $txt[] = "$g:$sel ×$o " . round($rtp * 100, 2) . '%'; }
   check("$g : somme des chances des choix exclusifs = 1", abs(array_sum(array_intersect_key(casino_live2_probs($g), array_flip($g === 'fleets' ? ['s0', 's1', 's2', 's3', 's4', 's5'] : ($g === 'gemcount' ? ['1', '2', '3', '4'] : ['0', '1', '2', '3', '4', '5'])))) - 1) < 1e-12);
 }
-foreach (CASINO_CATWALK_W as $w) { $o = casino_live2_odd($w / 100); $rtp = $w / 100 * $o; if ($rtp > 0.94 + 1e-9 || $rtp < 0.935) $okR = false; $txt[] = "catwalk:$w% ×$o " . round($rtp * 100, 2) . '%'; }
+foreach (CASINO_CATWALK_W as $w) { $o = casino_live2_odd($w / 100); $rtp = $w / 100 * $o; if ($rtp > 0.85 + 1e-9 || $rtp < 0.845) $okR = false; $txt[] = "catwalk:$w% ×$o " . round($rtp * 100, 2) . '%'; }
 check('chaque choix des 4 jeux : retour ≤ 94 % exact', $okR);
 echo '       ' . implode(' · ', $txt) . "\n";
 check('cotes Star Fleets ×1,88 / ×3,00 / ×6,01 / ×30,08', casino_live2_odds('fleets') === ['g' => 1.88, 'v' => 1.88, 's0' => 30.08, 's1' => 6.01, 's2' => 3.0, 's3' => 3.0, 's4' => 6.01, 's5' => 30.08], json_encode(casino_live2_odds('fleets')));
@@ -74,7 +74,7 @@ for ($k = 0; $k < $M; $k++) {
 check('catwalk : chances redistribuées, gagnante = meilleur total unique, notes 7,2–10,0, ordre = permutation', $okC);
 $okF = true; foreach (CASINO_CATWALK_W as $r => $w) if (abs($byRank[$r] / $M - $w / 100) > 0.006) $okF = false;
 check('catwalk : la gagnante suit les chances (30/22/17/13/10/8 %)', $okF, json_encode($byRank));
-check(sprintf('catwalk : retour simulé (toujours le mannequin 0) %.2f %%', $ev / $M * 100), abs($ev / $M - 0.94) < 0.03);
+check(sprintf('catwalk : retour simulé (toujours le mannequin 0) %.2f %%', $ev / $M * 100), abs($ev / $M - 0.85) < 0.03);
 $cnt = array_fill(0, 6, 0); $okH = true;
 for ($k = 0; $k < $M; $k++) { $o = casino_live2_draw('fleets'); $cnt[$o['n']]++; if (count($o['h']) !== 5 || array_sum($o['h']) !== $o['n']) $okH = false; }
 $okF = $okH; foreach ([1, 5, 10, 10, 5, 1] as $k => $c) if (abs($cnt[$k] / $M - $c / 32) > 0.005) $okF = false;

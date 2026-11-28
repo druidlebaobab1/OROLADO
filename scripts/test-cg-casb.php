@@ -61,9 +61,9 @@ foreach ($fiches as $g => $d) {
   if ($d['type'] === 'table') {
     $w = 0.0; $ev = 0.0; $mx = 0.0;
     foreach ($d['out'] as $o) { $w += $o[1]; $ev += $o[0] * $o[1]; $mx = max($mx, $o[0]); }
-    check(sprintf('%-11s table : %.3f %% (max ×%s, %d lignes)', $g, $ev / $w * 100, $mx, count($d['out'])), $ev / $w >= 0.935 && $ev / $w <= 0.94 + 1e-9 && $mx <= 1000);
+    check(sprintf('%-11s table : %.3f %% (max ×%s, %d lignes)', $g, $ev / $w * 100, $mx, count($d['out'])), $ev / $w >= 0.835 && $ev / $w <= 0.85 + 1e-9 && $mx <= 1000);
   } else {
-    foreach ($d['opts'] as $i => $p) { $m = casino_ext_pick_mult($p); check(sprintf('%-11s option %d : ×%.2f → %.3f %%', $g, $i, $m, $p * $m * 100), $p * $m >= 0.935 && $p * $m <= 0.94 + 1e-9); }
+    foreach ($d['opts'] as $i => $p) { $m = casino_ext_pick_mult($p); check(sprintf('%-11s option %d : ×%.2f → %.3f %%', $g, $i, $m, $p * $m * 100), $p * $m >= 0.835 && $p * $m <= 0.85 + 1e-9); }
   }
 }
 check('comet queen : vitesse 0,12 (×2 après ' . round(casino_skill_secs('cometqueen', 2), 1) . ' s), moment secret = loi de l’avion', casino_skill_rate('cometqueen') === 0.12);
@@ -159,7 +159,7 @@ check('la comète s’est écrasée (×1,5 passé) : done, why=end, c révélé'
 $r = casino_multi(load_db(), $me, $g, 'cash', 'real', 0, []);
 check('encaisser après l’écrasement : rien', (float) ($r['win'] ?? 0) === 0.0 && abs($bal[$U] - $b3) < 0.001);
 $N = 400000; $s = 0.0; for ($i = 0; $i < $N; $i++) { $c = casino_crash_point(); $s += $c > 2 ? 2 : 0; }
-check(sprintf('stratégie « toujours ×2 » : retour %.2f %% (≈ 94)', $s / $N * 100), $s / $N > 0.92 && $s / $N < 0.955);
+check(sprintf('stratégie « toujours ×2 » : retour %.2f %% (≈ 94)', $s / $N * 100), $s / $N > 0.82 && $s / $N < 0.87);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

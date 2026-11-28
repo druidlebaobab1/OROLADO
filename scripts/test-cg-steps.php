@@ -41,7 +41,7 @@ for ($m = 1; $m <= 24; $m++) for ($k = 1; $k <= 25 - $m; $k++) {
   $p = 1.0; for ($j = 0; $j < $k; $j++) $p *= (25 - $m - $j) / (25 - $j);
   $ev = $p * casino_mines_mult($m, $k); $worst = min($worst, $ev); $best = max($best, $ev);
 }
-check(sprintf('toutes les combinaisons rendent entre %.2f %% et %.2f %%', $worst * 100, $best * 100), $best <= 0.94 + 1e-9 && $worst > 0.9);
+check(sprintf('toutes les combinaisons rendent entre %.2f %% et %.2f %%', $worst * 100, $best * 100), $best <= 0.85 + 1e-9 && $worst > 0.9);
 check('24 mines, 1 case : ×23,50', abs(casino_mines_mult(24, 1) - 23.5) < 0.001);
 
 echo "2) Mines : partie réelle avec 1, 5, 20, 24 mines\n";
@@ -91,11 +91,11 @@ $c = casino_multi(load_db(), $me, 'mines', 'cash', 'real', 0, []);
 check('encaissé : solde = départ − 1000 + gain exact (gain > mise)', !empty($c['done']) && ($c['win'] ?? 0) > 1000 && abs($bal[$U] - ($b0 - 1000 + (float) $c['win'])) < 0.001, json_encode([$c['win'] ?? null, $bal[$U]]));
 
 echo "4) Tour, Verger, Ballon : échelles inchangées (94 %)\n";
-for ($k = 1; $k <= CASINO_TOWER_ROWS; $k++) { $ev = pow(2 / 3, $k) * casino_tower_mult($k); if ($ev > 0.94 + 1e-9) check("tour $k", false); }
+for ($k = 1; $k <= CASINO_TOWER_ROWS; $k++) { $ev = pow(2 / 3, $k) * casino_tower_mult($k); if ($ev > 0.85 + 1e-9) check("tour $k", false); }
 check('tour : chaque étage rend ≤ 94 %', true);
-for ($lv = 1; $lv <= 4; $lv++) { $mx = 0; for ($k = 1; $k <= CASINO_APPLE_ROWS; $k++) $mx = max($mx, pow((5 - $lv) / 5, $k) * casino_apple_mult($k, $lv)); check("verger niveau $lv : ≤ 94 %", $mx <= 0.94 + 1e-9, (string) round($mx * 100, 2)); }
+for ($lv = 1; $lv <= 4; $lv++) { $mx = 0; for ($k = 1; $k <= CASINO_APPLE_ROWS; $k++) $mx = max($mx, pow((5 - $lv) / 5, $k) * casino_apple_mult($k, $lv)); check("verger niveau $lv : ≤ 94 %", $mx <= 0.85 + 1e-9, (string) round($mx * 100, 2)); }
 $mx = 0; for ($k = 1; $k <= 60; $k++) $mx = max($mx, pow(0.9, $k) * casino_balloon_mult($k));
-check('ballon : chaque souffle rend ≤ 94 %', $mx <= 0.94 + 1e-9);
+check('ballon : chaque souffle rend ≤ 94 %', $mx <= 0.85 + 1e-9);
 
 echo "\nRÉSULTAT : $pass OK, $fail échec(s)\n";
 exit($fail ? 1 : 0);

@@ -78,7 +78,7 @@ foreach (['skill4' => array_values(array_diff(array_slice($GAMES, 0, 4), ['zombi
 echo "2) Retour ≤ 94 % QUELLE QUE SOIT l'adresse : la fin secrète c suit la loi de l'avion, payée seulement si encaissé avant\n";
 // exact : P(c > x) = 0,94 / (x + 0,01) → encaisser à ×x rend 0,94·x / (x + 0,01) < 94 % pour tout x
 $worst = 0.0; for ($x = 1.01; $x <= 1000; $x *= 1.05) { $worst = max($worst, CASINO_EDGE * $x / ($x + 0.01)); }
-check(sprintf('exact : meilleur seuil possible rend %.3f %% (< 94 %%)', $worst * 100), $worst < 0.94);
+check(sprintf('exact : meilleur seuil possible rend %.3f %% (< 94 %%)', $worst * 100), $worst < 0.85);
 // simulation : un robot PARFAIT (aucune faute, réflexes infinis) ne connaît pas c ; quelle que soit sa règle d'encaissement…
 $N = 400000; $cs = []; for ($i = 0; $i < $N; $i++) $cs[] = casino_crash_point();
 $strats = [

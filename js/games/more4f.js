@@ -287,7 +287,7 @@
       '<g id="crpHist" transform="translate(150 182)"></g>' +
       '<g id="crpSum" transform="translate(150 98)" opacity="0"><circle r="20" fill="#0B0820" opacity=".7"/><text id="crpS" y="8" text-anchor="middle" font-size="22" font-weight="900" fill="#FDE68A"></text></g>' +
       '<g id="crpD1" transform="translate(250 130)">' + die(5, 1.3) + '</g><g id="crpD2" transform="translate(270 150)">' + die(2, 1.3) + '</g>',
-    opts: function (l) { return '<div class="cg-opts cr-opts">' + [l.pass, l.dpass].map(function (t, j) { return '<button type="button" data-o="' + j + '"' + (j === 0 ? ' class="on"' : '') + '><b class="fit">' + K.esc(t) + '</b><small class="fit">' + xm(Math.floor(0.94 / CR[j] * 100) / 100) + '</small></button>'; }).join('') + '</div>'; },
+    opts: function (l) { return '<div class="cg-opts cr-opts">' + [l.pass, l.dpass].map(function (t, j) { return '<button type="button" data-o="' + j + '"' + (j === 0 ? ' class="on"' : '') + '><b class="fit">' + K.esc(t) + '</b><small class="fit">' + xm(Math.floor(0.85 / CR[j] * 100) / 100) + '</small></button>'; }).join('') + '</div>'; },
     init: function (c) { c.sel = 0; c.qa('.cr-opts button').forEach(function (b) { b.addEventListener('click', function () { if (c.box.classList.contains('m4-busy')) return; c.sel = +b.getAttribute('data-o'); c.qa('.cr-opts button').forEach(function (x) { x.classList.toggle('on', x === b); }); }); }); },
     params: function (c) { return { pick: c.sel }; },
     reset: function (c) { c.id('crpHist').innerHTML = ''; c.id('crpPk').textContent = 'OFF'; tr(c.id('crpPuck'), 40, 92); c.qa('#crpBoxes > g').forEach(function (g) { g.removeAttribute('class'); }); c.id('crpSum').setAttribute('opacity', '0'); },
