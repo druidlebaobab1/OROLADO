@@ -1842,3 +1842,8 @@ html body #depositModal .dep-amt-chips2 .dep-amt-chip.on{background:linear-gradi
   html body #depositModal#depositModal #depositBox.dcp-on #payMethodUsdt#payMethodUsdt .pay-crypto-cell .pay-crypto-badge{width:31px!important;height:31px!important}
   html body #depositModal#depositModal #depositBox.dcp-on #payMethodUsdt#payMethodUsdt .pay-crypto-cell b{font-size:.68rem!important}
 }
+/* 2026-11-28 (b) (propriétaire : « boutons des montants fins, pas trop hauts ») */
+@media (max-width:859px){
+  html body #depositModal#depositModal #depositBox.dcp-on .dep-amt-chips2{gap:4px!important;margin-top:5px!important}
+  html body #depositModal#depositModal #depositBox.dcp-on .dep-amt-chips2 .dep-amt-chip{height:26px!important;border-radius:8px!important;font-size:12.5px!important}
+}
