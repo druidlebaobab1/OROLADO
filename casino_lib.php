@@ -594,7 +594,7 @@ function casino_scratch_grid(float $m): array {
 /** Avion : multiplicateur affiché après $s secondes de vol. */
 function casino_crash_mult(float $s): float { return max(1.0, floor(exp(0.08 * max(0.0, $s)) * 100) / 100); }
 /** Avion : point d'explosion (même loi que le limbo : P(≥ x) = 0,97 / x), plafonné à 1 000. */
-function casino_crash_point(): float { return min(100.0, /* 2026-11-28 (propriétaire : gros gains réduits) : ×100 au plus, avant ×1000 */ max(1.0, floor(CASINO_EDGE / casino_rand() * 100) / 100)); }
+function casino_crash_point(): float { return min(1000.0, /* 2026-11-28 (propriétaire) : l'avion peut partir loin (×1000 au plus) */ max(1.0, floor(CASINO_EDGE / casino_rand() * 100) / 100)); }
 /** Mines : multiplicateur après $k cases sûres avec $m mines sur 25. */
 function casino_mines_mult(int $m, int $k): float {
   $x = CASINO_EDGE;

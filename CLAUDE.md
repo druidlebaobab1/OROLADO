@@ -21,7 +21,7 @@
   retraits automatiques dans leurs plafonds, annulations). Quand rien de sûr n'est possible : rendre les mises plutôt que
   payer au hasard, et prévenir l'admin. Lui expliquer les choses en mots très simples, avec un exemple.
 - MARGE DES JEUX (propriétaire, 2026-11-28) : **15 %** sur tous les jeux casino / action / live (`CASINO_EDGE = 0.85`, `LIVE_SPORT_EDGE = 0.85`,
-  machines `casino_ext_house` à 85 % avec gros gains ÷ 3 à ÷ 6, avion ×100 au plus) et sur les matchs virtuels (`VF_MARGE = 0.15`). Trading inchangé (×1,90).
+  machines `casino_ext_house` à 85 % avec gros gains ÷ 3 à ÷ 6 et jamais au-delà de ×50 (`CASINO_EXT_MAX_MULT`), avion jusqu’à ×1000) et sur les matchs virtuels (`VF_MARGE = 0.15`). Trading inchangé (×1,90).
   Ne pas changer sans demande explicite du propriétaire. 12 langues ; aucun texte qui déborde, de l'iPhone SE à la télé.
 
 ## Téléphones du propriétaire (mesures réelles, relevées le 2026-10-20 par le diagnostic « 5 touches sur OROLADO .com »)

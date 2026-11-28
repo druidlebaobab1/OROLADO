@@ -22,6 +22,7 @@ declare(strict_types=1);
  */
 
 const CASINO_EXT_RTP_MAX = 0.945;
+const CASINO_EXT_MAX_MULT = 50.0; // 2026-11-28 (propriétaire : « enlève les ×300, maximum ×50 ») : machines du casino, plus aucun gain au-delà de ×50
 const CASINO_SKILL_MAX_S = 180.0; // une partie « où tu contrôles » dure au plus 3 minutes
 
 /** Toutes les fiches valides (chargées une seule fois). */
@@ -57,7 +58,7 @@ function casino_ext_house(array $d): array {
   // gros gains réduits avec une force t (1 = pleine force) ; on baisse t si la table ne peut pas atteindre 85 % autrement
   $build = static function (float $t) use ($src, $z, $mi) {
     $out = $src;
-    foreach ($out as $j => $o) { $m = (float) $o[0]; if ($m <= 0) continue; $f = $m >= 40 ? 6.0 : ($m >= 15 ? 3.0 : ($m >= 5 ? 1.5 : 1.0)); $out[$j][1] = (float) $o[1] / (1 + $t * ($f - 1)); }
+    foreach ($out as $j => $o) { $m = (float) $o[0]; if ($m <= 0) continue; if ($m > CASINO_EXT_MAX_MULT) { $out[$j][1] = 0.0; continue; } $f = $m >= 40 ? 6.0 : ($m >= 15 ? 3.0 : ($m >= 5 ? 1.5 : 1.0)); $out[$j][1] = (float) $o[1] / (1 + $t * ($f - 1)); } // au-delà de ×50 : jamais tiré
     $Wg = 0.0; $Eg = 0.0; foreach ($out as $j => $o) if ($j !== $z) { $Wg += (float) $o[1]; $Eg += (float) $o[0] * (float) $o[1]; }
     if ($z >= 0) { $wz = $Eg / CASINO_EDGE - $Wg; if ($wz < 0) return null; $out[$z][1] = $wz; return $out; }
     // pas de ligne ×0 : le plus petit gain (s'il est sous 0,85) prend le poids qui ramène le retour à 85 %
