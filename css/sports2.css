@@ -1943,3 +1943,15 @@ html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child{margin
 html body #casinoModal .sp2 .pz-vf > .pz-q{margin:0}
 html body #casinoModal .sp2 .pz-bar .vf-tagb{margin-inline-start:8px;margin-inline-end:auto;font-size:10.5px;padding:2px 7px}
 html body #casinoModal .sp2 .vf-tabs2 button span{white-space:nowrap}
+/* v3869 (propriétaire : « verrouillés comme le solde ») : Sport / Virtuel collé sous le solde, jamais caché ; les puces dessous */
+html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child{position:sticky;top:var(--vf-swt,44px);z-index:9;margin-top:4px}
+html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child::before{content:"";position:absolute;z-index:-1;left:calc(-1 * var(--sp2-px,14px) - 2px);right:calc(-1 * var(--sp2-px,14px) - 2px);top:-9px;bottom:-7px;background:#161310;pointer-events:none}
+html:root body #casinoModal .sp2 .pz-home:has(> .vf-sw) > .pz-pers{top:var(--vf-swb,92px)}
+/* Virtuel : les 6 boutons tous visibles (3 × 2), carrés, rien de caché à droite */
+html:root body #casinoModal .sp2 .pz-home > .pz-pers.vf-tabs2{position:static;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible;margin:0;padding:2px 0 0;background:none}
+html:root body #casinoModal .sp2 .vf-tabs2 button{display:flex;align-items:center;justify-content:center;min-width:0;height:36px;padding:0 6px;border-radius:9px}
+html:root body #casinoModal .sp2 .vf-tabs2 button span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px}
+html:root body #casinoModal .sp2 .vf-tabs2 button.on{background:linear-gradient(90deg,#7c3aed,#5b21b6);color:#fff;box-shadow:none}
+html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child::before{bottom:-4px}
+html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child{background:none;border-color:transparent}
+html:root body #casinoModal .sp2 .pz-page > .pz-home > .vf-sw:first-child::after{content:"";position:absolute;z-index:-1;inset:-1px;border-radius:10px;background:#15120d;border:1px solid #2f2a21;pointer-events:none}

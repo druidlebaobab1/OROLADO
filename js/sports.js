@@ -1524,6 +1524,10 @@
     try {
       var tp = document.querySelector('#casinoModal .cs-top'), mb = mbox();
       if (tp) box.style.setProperty('--sp-top', Math.max(40, tp.offsetHeight - 6) + 'px');
+      // 2026-11-28 (propriétaire : « Sport / Virtuel verrouillés comme le solde ») : le bouton reste collé juste sous le solde
+      // (jamais caché, même en défilant) ; la rangée de puces se colle juste dessous
+      var sw = box.querySelector('.pz-home > .vf-sw');
+      if (tp && sw) { var swt = Math.max(30, Math.round(tp.offsetHeight + (parseFloat(getComputedStyle(tp).top) || 0) + 4)); box.style.setProperty('--vf-swt', swt + 'px'); box.style.setProperty('--vf-swb', (swt + sw.offsetHeight + 6) + 'px'); }
       // 2026-11-16 (propriétaire : « la recherche de Paris est coupée ») : l'en-tête (solde / Connexion) recouvrait le haut de la
       // recherche → petit espace au-dessus de la recherche, exactement la partie cachée (+ 6 px).
       if (tp) { var ovq = Math.round(tp.getBoundingClientRect().bottom - box.getBoundingClientRect().top); box.style.setProperty('--sp2-qtop', (ovq > 0 && ovq < 160 ? ovq + 6 : 0) + 'px'); }

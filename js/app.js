@@ -10874,6 +10874,13 @@
           reg.update();
           if (reg.waiting && navigator.serviceWorker.controller) { try { reg.waiting.postMessage('skip'); } catch (e2) {} }
         } catch (eU) {}
+        // 2026-11-28 (propriétaire : son téléphone garde l'ancienne version des heures, onglet resté ouvert) : on revérifie la
+        // version quand on revient sur le site (écran rallumé, retour d'une autre appli) et toutes les 5 min s'il reste ouvert
+        try {
+          var lastUp = Date.now(), upChk = function () { if (document.hidden || Date.now() - lastUp < 60000) return; lastUp = Date.now(); try { reg.update(); } catch (e3) {} };
+          document.addEventListener('visibilitychange', upChk); window.addEventListener('focus', upChk); window.addEventListener('pageshow', upChk);
+          setInterval(function () { lastUp = 0; upChk(); }, 300000);
+        } catch (eV) {}
       }).catch(function () { /* ignore */ });
       if (!window.__oroSwReload) {
         window.__oroSwReload = 1;
