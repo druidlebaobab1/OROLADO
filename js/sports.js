@@ -446,7 +446,7 @@
   var lastBet = null, clearArm = 0, sending = false;
   // grands championnats (même liste que le serveur, SB_LIVE_BIG) : 15 s de contrôle en direct ; les autres : 25 s
   var LIVE_BIG = [2, 3, 848, 39, 140, 135, 78, 61, 94, 88, 203, 1, 4, 5, 6, 9, 15, 32, 34, 45, 48, 66, 81, 137, 143, 531];
-  function liveSmall() { return slip.some(function (s) { if (!s.lv) return false; var f = sbFx(s.fx); return !f || LIVE_BIG.indexOf(+f.lg) < 0; }); }
+  function liveSmall() { return slip.some(function (s) { if (!s.lv || /^sb:virt:/.test(s.ev || '')) return false; var f = sbFx(s.fx); return !f || LIVE_BIG.indexOf(+f.lg) < 0; }); }
   function guestNote() { var x = X(); if (D6.App && D6.App.toast) D6.App.toast(x.guestBet, 'info'); }
   // ---------- MES PARIS ----------
   function when2(t) { var d = new Date(t * 1000); return d.toLocaleDateString(loc(), { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' }); }
@@ -931,7 +931,7 @@
   var sendT0 = 0, sendDur = 0;
   function busy(on) {
     var g = $('spGo'), x = XX(); if (!g) return;
-    var live = slip.some(function (z) { return z.lv; });
+    var live = slip.some(function (z) { return z.lv && !/^sb:virt:/.test(z.ev || ''); }); // virtuel : réponse immédiate (pas de contrôle du direct)
     g.disabled = on; g.classList.toggle('wait', on); g.setAttribute('aria-busy', on ? 'true' : 'false');
     var p = g.querySelector('.sp2-prog');
     if (on) {
@@ -1632,23 +1632,23 @@
      Une seule rangée en haut : En direct (la journée qui se joue) · À venir (la journée suivante) · Classement · Résultats ·
      Statistiques. Quand la journée à venir commence, elle passe dans En direct et la suivante la remplace. */
   var VFL2 = {
-    fr: ['En direct', 'À venir', 'Statistiques', 'Aucun match en direct', 'Prochaine journée dans', 'Meilleures attaques', 'Meilleures défenses', 'En forme', 'Buts par match', 'Virtuel', 'Matchs joués', 'Buts', 'Victoires à domicile', 'Nuls', 'Victoires à l\'extérieur', 'Buts marqués', 'Buts encaissés'],
-    en: ['Live', 'Upcoming', 'Stats', 'No live match', 'Next matchday in', 'Best attacks', 'Best defences', 'In form', 'Goals per match', 'Virtual', 'Matches played', 'Goals', 'Home wins', 'Draws', 'Away wins', 'Goals scored', 'Goals conceded'],
-    es: ['En vivo', 'Próximos', 'Estadísticas', 'Ningún partido en vivo', 'Próxima jornada en', 'Mejores ataques', 'Mejores defensas', 'En forma', 'Goles por partido', 'Virtual', 'Partidos jugados', 'Goles', 'Victorias locales', 'Empates', 'Victorias visitantes', 'Goles marcados', 'Goles recibidos'],
-    pt: ['Ao vivo', 'Próximos', 'Estatísticas', 'Nenhum jogo ao vivo', 'Próxima rodada em', 'Melhores ataques', 'Melhores defesas', 'Em forma', 'Gols por jogo', 'Virtual', 'Jogos disputados', 'Gols', 'Vitórias em casa', 'Empates', 'Vitórias fora', 'Gols marcados', 'Gols sofridos'],
-    ar: ['مباشر', 'القادمة', 'إحصائيات', 'لا توجد مباراة مباشرة', 'الجولة التالية خلال', 'أفضل هجوم', 'أفضل دفاع', 'في أفضل حال', 'أهداف لكل مباراة', 'افتراضي', 'مباريات لُعبت', 'أهداف', 'فوز على الأرض', 'تعادل', 'فوز خارج الأرض', 'أهداف مسجلة', 'أهداف مستقبلة'],
-    tr: ['Canlı', 'Yaklaşan', 'İstatistik', 'Canlı maç yok', 'Sonraki hafta', 'En iyi hücum', 'En iyi savunma', 'Formda', 'Maç başı gol', 'Sanal', 'Oynanan maç', 'Gol', 'İç saha galibiyeti', 'Beraberlik', 'Deplasman galibiyeti', 'Atılan gol', 'Yenilen gol'],
-    vi: ['Trực tiếp', 'Sắp diễn ra', 'Thống kê', 'Không có trận trực tiếp', 'Vòng sau bắt đầu sau', 'Hàng công tốt nhất', 'Hàng thủ tốt nhất', 'Phong độ cao', 'Bàn mỗi trận', 'Ảo', 'Trận đã đấu', 'Bàn thắng', 'Thắng sân nhà', 'Hòa', 'Thắng sân khách', 'Bàn ghi được', 'Bàn thua'],
-    id: ['Langsung', 'Mendatang', 'Statistik', 'Tidak ada laga langsung', 'Pekan berikutnya dalam', 'Serangan terbaik', 'Pertahanan terbaik', 'Sedang bagus', 'Gol per laga', 'Virtual', 'Laga dimainkan', 'Gol', 'Menang kandang', 'Seri', 'Menang tandang', 'Gol dicetak', 'Gol kebobolan'],
-    ru: ['Live', 'Скоро', 'Статистика', 'Нет матчей в эфире', 'Следующий тур через', 'Лучшие атаки', 'Лучшие защиты', 'В форме', 'Голов за матч', 'Виртуал', 'Сыграно матчей', 'Голы', 'Победы дома', 'Ничьи', 'Победы в гостях', 'Забито', 'Пропущено'],
-    de: ['Live', 'Demnächst', 'Statistik', 'Kein Live-Spiel', 'Nächster Spieltag in', 'Beste Angriffe', 'Beste Abwehr', 'In Form', 'Tore pro Spiel', 'Virtuell', 'Gespielte Spiele', 'Tore', 'Heimsiege', 'Unentschieden', 'Auswärtssiege', 'Erzielte Tore', 'Gegentore'],
-    hi: ['लाइव', 'आगामी', 'आँकड़े', 'कोई लाइव मैच नहीं', 'अगला राउंड', 'सर्वश्रेष्ठ आक्रमण', 'सर्वश्रेष्ठ रक्षा', 'फ़ॉर्म में', 'प्रति मैच गोल', 'वर्चुअल', 'खेले गए मैच', 'गोल', 'घरेलू जीत', 'ड्रॉ', 'बाहर जीत', 'किए गोल', 'खाए गोल'],
-    zh: ['直播', '即将开始', '统计', '暂无直播比赛', '下一轮开始于', '最佳进攻', '最佳防守', '状态火热', '场均进球', '虚拟', '已赛场次', '进球', '主场胜', '平局', '客场胜', '进球数', '失球数']
+    fr: ['En direct', 'À venir', 'Statistiques', 'Aucun match en direct', 'Prochaine journée dans', 'Meilleures attaques', 'Meilleures défenses', 'En forme', 'Buts par match', 'Virtuel', 'Matchs joués', 'Buts', 'Victoires à domicile', 'Nuls', 'Victoires à l\'extérieur', 'Buts marqués', 'Buts encaissés', 'Plus de 2,5 buts', 'Les deux marquent', 'Matchs 0-0', 'Plus gros scores', 'Plus de victoires', '4 dernières journées'],
+    en: ['Live', 'Upcoming', 'Stats', 'No live match', 'Next matchday in', 'Best attacks', 'Best defences', 'In form', 'Goals per match', 'Virtual', 'Matches played', 'Goals', 'Home wins', 'Draws', 'Away wins', 'Goals scored', 'Goals conceded', 'Over 2.5 goals', 'Both teams score', '0-0 matches', 'Biggest wins', 'Most wins', 'Last 4 matchdays'],
+    es: ['En vivo', 'Próximos', 'Estadísticas', 'Ningún partido en vivo', 'Próxima jornada en', 'Mejores ataques', 'Mejores defensas', 'En forma', 'Goles por partido', 'Virtual', 'Partidos jugados', 'Goles', 'Victorias locales', 'Empates', 'Victorias visitantes', 'Goles marcados', 'Goles recibidos', 'Más de 2,5 goles', 'Ambos marcan', 'Partidos 0-0', 'Mayores goleadas', 'Más victorias', 'Últimas 4 jornadas'],
+    pt: ['Ao vivo', 'Próximos', 'Estatísticas', 'Nenhum jogo ao vivo', 'Próxima rodada em', 'Melhores ataques', 'Melhores defesas', 'Em forma', 'Gols por jogo', 'Virtual', 'Jogos disputados', 'Gols', 'Vitórias em casa', 'Empates', 'Vitórias fora', 'Gols marcados', 'Gols sofridos', 'Mais de 2,5 gols', 'Ambos marcam', 'Jogos 0-0', 'Maiores goleadas', 'Mais vitórias', 'Últimas 4 rodadas'],
+    ar: ['مباشر', 'القادمة', 'إحصائيات', 'لا توجد مباراة مباشرة', 'الجولة التالية خلال', 'أفضل هجوم', 'أفضل دفاع', 'في أفضل حال', 'أهداف لكل مباراة', 'افتراضي', 'مباريات لُعبت', 'أهداف', 'فوز على الأرض', 'تعادل', 'فوز خارج الأرض', 'أهداف مسجلة', 'أهداف مستقبلة', 'أكثر من 2.5 هدف', 'الفريقان يسجلان', 'مباريات 0-0', 'أكبر انتصارات', 'أكثر انتصارات', 'آخر 4 جولات'],
+    tr: ['Canlı', 'Yaklaşan', 'İstatistik', 'Canlı maç yok', 'Sonraki hafta', 'En iyi hücum', 'En iyi savunma', 'Formda', 'Maç başı gol', 'Sanal', 'Oynanan maç', 'Gol', 'İç saha galibiyeti', 'Beraberlik', 'Deplasman galibiyeti', 'Atılan gol', 'Yenilen gol', '2,5 üst', 'Karşılıklı gol', '0-0 maçlar', 'En farklı skorlar', 'En çok galibiyet', 'Son 4 hafta'],
+    vi: ['Trực tiếp', 'Sắp diễn ra', 'Thống kê', 'Không có trận trực tiếp', 'Vòng sau bắt đầu sau', 'Hàng công tốt nhất', 'Hàng thủ tốt nhất', 'Phong độ cao', 'Bàn mỗi trận', 'Ảo', 'Trận đã đấu', 'Bàn thắng', 'Thắng sân nhà', 'Hòa', 'Thắng sân khách', 'Bàn ghi được', 'Bàn thua', 'Tài 2,5', 'Hai đội ghi bàn', 'Trận 0-0', 'Thắng đậm nhất', 'Thắng nhiều nhất', '4 vòng gần nhất'],
+    id: ['Langsung', 'Mendatang', 'Statistik', 'Tidak ada laga langsung', 'Pekan berikutnya dalam', 'Serangan terbaik', 'Pertahanan terbaik', 'Sedang bagus', 'Gol per laga', 'Virtual', 'Laga dimainkan', 'Gol', 'Menang kandang', 'Seri', 'Menang tandang', 'Gol dicetak', 'Gol kebobolan', 'Lebih 2,5 gol', 'Kedua tim cetak gol', 'Laga 0-0', 'Kemenangan terbesar', 'Menang terbanyak', '4 pekan terakhir'],
+    ru: ['Live', 'Скоро', 'Статистика', 'Нет матчей в эфире', 'Следующий тур через', 'Лучшие атаки', 'Лучшие защиты', 'В форме', 'Голов за матч', 'Виртуал', 'Сыграно матчей', 'Голы', 'Победы дома', 'Ничьи', 'Победы в гостях', 'Забито', 'Пропущено', 'Больше 2,5', 'Обе забьют', 'Матчи 0:0', 'Крупные победы', 'Больше всего побед', 'Последние 4 тура'],
+    de: ['Live', 'Demnächst', 'Statistik', 'Kein Live-Spiel', 'Nächster Spieltag in', 'Beste Angriffe', 'Beste Abwehr', 'In Form', 'Tore pro Spiel', 'Virtuell', 'Gespielte Spiele', 'Tore', 'Heimsiege', 'Unentschieden', 'Auswärtssiege', 'Erzielte Tore', 'Gegentore', 'Über 2,5 Tore', 'Beide treffen', '0:0-Spiele', 'Höchste Siege', 'Meiste Siege', 'Letzte 4 Spieltage'],
+    hi: ['लाइव', 'आगामी', 'आँकड़े', 'कोई लाइव मैच नहीं', 'अगला राउंड', 'सर्वश्रेष्ठ आक्रमण', 'सर्वश्रेष्ठ रक्षा', 'फ़ॉर्म में', 'प्रति मैच गोल', 'वर्चुअल', 'खेले गए मैच', 'गोल', 'घरेलू जीत', 'ड्रॉ', 'बाहर जीत', 'किए गोल', 'खाए गोल', '2.5 से ज़्यादा गोल', 'दोनों टीमें गोल', '0-0 मैच', 'सबसे बड़ी जीत', 'सबसे ज़्यादा जीत', 'पिछले 4 राउंड'],
+    zh: ['直播', '即将开始', '统计', '暂无直播比赛', '下一轮开始于', '最佳进攻', '最佳防守', '状态火热', '场均进球', '虚拟', '已赛场次', '进球', '主场胜', '平局', '客场胜', '进球数', '失球数', '大于2.5球', '双方进球', '0-0 比赛', '最大比分胜利', '胜场最多', '最近4轮']
   };
   // petit signe « virtuel » (coupon, Mes paris, reçu) : carré violet avec une manette — ne prend presque pas de place
   var VFPAD = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7h9a4.5 4.5 0 0 1 4.4 5.5l-1 4.3a2.3 2.3 0 0 1-4 .9L14.6 16H9.4l-1.3 1.7a2.3 2.3 0 0 1-4-.9l-1-4.3A4.5 4.5 0 0 1 7.5 7z" fill="#fff"/><path d="M7.6 10v3.4M5.9 11.7h3.4" stroke="#6D28D9" stroke-width="1.6" stroke-linecap="round"/><circle cx="15.6" cy="10.8" r="1" fill="#6D28D9"/><circle cx="17.4" cy="12.8" r="1" fill="#6D28D9"/></svg>';
   function vfTag(s) { return s && (s.vf || s.sp === 'virt' || /^sb:virt:/.test(s.ev || '') || /^virt:/.test(s.fx || '')) ? '<i class="vf-tag" title="' + esc(VX2().tag) + '" aria-label="' + esc(VX2().tag) + '">' + VFPAD + '</i>' : ''; }
-  function VX2() { var a = VFL2[lg()] || VFL2.en; return { live: a[0], next: a[1], st: a[2], none: a[3], nextIn: a[4], att: a[5], def: a[6], form: a[7], gpm: a[8], tag: a[9], mp: a[10], goals: a[11], hw: a[12], dr: a[13], aw: a[14], gf: a[15], ga: a[16] }; }
+  function VX2() { var a = VFL2[lg()] || VFL2.en; return { live: a[0], next: a[1], st: a[2], none: a[3], nextIn: a[4], att: a[5], def: a[6], form: a[7], gpm: a[8], tag: a[9], mp: a[10], goals: a[11], hw: a[12], dr: a[13], aw: a[14], gf: a[15], ga: a[16], o25: a[17], btts: a[18], nil: a[19], big: a[20], wins: a[21], last4: a[22] }; }
   var vf = null, vfTeams = null, vfTab = '', vfSkew = 0, vfTm = 0, vfBusy = false;
   function vfSwitch(on) { var x = VX(); return '<div class="vf-sw" role="tablist"><button type="button" data-vsw="sport" class="' + (on ? '' : 'on') + '">⚽ ' + esc(x.sport) + '</button><button type="button" data-vsw="virt" class="vf-v' + (on ? ' on' : '') + '">🎮 ' + esc(x.virt) + '</button></div>'; }
   function vfNow() { return Date.now() / 1000 + vfSkew; }
@@ -1694,13 +1694,16 @@
     return vfHead(day) + lgSection(key, l, fx.map(function (f) { return vfF(day, f); }), sbOpen[key] != null ? sbOpen[key] : true, { soon: 1 }, false).replace('<i class="pz-flag pz-noflag"></i>', '<i class="pz-flag vf-lgi">🏆</i>');
   }
   function vfTabs() {
-    var x = VX(), y = VX2(), lv = vfLive(), T = [['live', y.live, lv ? lv.fx.length : 0], ['next', y.next, 0], ['tb', x.tb, 0], ['res', x.res, 0], ['st', y.st, 0], ['mine', XX().mine, 0]];
+    var x = VX(), y = VX2(), lv = vfLive(), T = [['next', x.tm, 0], ['live', y.live, lv ? lv.fx.length : 0], ['tb', x.tb, 0], ['res', x.res, 0], ['st', y.st, 0], ['mine', XX().mine, 0]]; // (propriétaire : Matchs d'abord, puis En direct)
     return T.map(function (t) { return '<button type="button" data-vft="' + t[0] + '" class="' + (vfTab === t[0] ? 'on' : '') + '"><span>' + (t[0] === 'live' ? '<i class="vf-ldot"></i>' : '') + esc(t[1]) + (t[2] ? ' <em>' + t[2] + '</em>' : '') + '</span></button>'; }).join('');
   }
   function vfStats() {
     var y = VX2(), x = VX(), rows = vf.tb.rows, n = 0, g = 0, hw = 0, dr = 0, aw = 0;
     vf.res.forEach(function (d) { d.fx.forEach(function (f) { n++; g += f.ft[0] + f.ft[1]; if (f.ft[0] > f.ft[1]) hw++; else if (f.ft[0] === f.ft[1]) dr++; else aw++; }); });
     var mp = rows.reduce(function (s, r) { return s + r.j; }, 0) / 2, gt = rows.reduce(function (s, r) { return s + r.bp; }, 0);
+    var o25 = 0, bt = 0, nil = 0, all = [];
+    vf.res.forEach(function (d) { d.fx.forEach(function (f) { var a = f.ft[0], b = f.ft[1]; if (a + b > 2) o25++; if (a && b) bt++; if (!a && !b) nil++; all.push({ f: f, j: d.j }); }); });
+    var bigs = all.filter(function (z) { return z.f.ft[0] !== z.f.ft[1]; }).sort(function (p, q) { return Math.abs(q.f.ft[0] - q.f.ft[1]) - Math.abs(p.f.ft[0] - p.f.ft[1]) || (q.f.ft[0] + q.f.ft[1]) - (p.f.ft[0] + p.f.ft[1]); }).slice(0, 5);
     var pct = function (v) { return n ? Math.round(v * 100 / n) + ' %' : '-'; };
     var top = function (arr, val) { return arr.slice(0, 5).map(function (r, i) { return '<div class="vf-sr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + '<b>' + val(r) + '</b></div>'; }).join(''); };
     var pts5 = function (r) { return (r.f || '').split('').reduce(function (s, c) { return s + (c === 'V' ? 3 : c === 'N' ? 1 : 0); }, 0); };
@@ -1709,10 +1712,13 @@
     var played = rows.filter(function (r) { return r.j > 0; });
     var card = function (title, body) { return '<section class="vf-sc2"><h4>' + esc(title) + '</h4>' + body + '</section>'; };
     return '<div class="vf-tbh"><span>' + esc(x.lg) + '</span><span>' + esc(x.s) + ' ' + vf.tb.S + '</span></div>' +
-      '<div class="vf-kpi"><p><b>' + mp + '</b><small>' + esc(y.mp) + '</small></p><p><b>' + gt + '</b><small>' + esc(y.goals) + '</small></p><p><b>' + (mp ? (gt / mp).toFixed(2) : '0') + '</b><small>' + esc(y.gpm) + '</small></p></div>' +
-      (n ? '<div class="vf-kpi"><p><b>' + pct(hw) + '</b><small>' + esc(y.hw) + '</small></p><p><b>' + pct(dr) + '</b><small>' + esc(y.dr) + '</small></p><p><b>' + pct(aw) + '</b><small>' + esc(y.aw) + '</small></p></div>' : '') +
+      (mp ? '<div class="vf-kpi"><p><b>' + mp + '</b><small>' + esc(y.mp) + '</small></p><p><b>' + gt + '</b><small>' + esc(y.goals) + '</small></p><p><b>' + (gt / mp).toFixed(2) + '</b><small>' + esc(y.gpm) + '</small></p></div>' : '') + // (début de saison : pas de 0 / 0 / 0)
+      (n ? '<p class="vf-note">' + esc(y.last4) + '</p><div class="vf-kpi"><p><b>' + pct(hw) + '</b><small>' + esc(y.hw) + '</small></p><p><b>' + pct(dr) + '</b><small>' + esc(y.dr) + '</small></p><p><b>' + pct(aw) + '</b><small>' + esc(y.aw) + '</small></p></div>' +
+        '<div class="vf-kpi"><p><b>' + pct(o25) + '</b><small>' + esc(y.o25) + '</small></p><p><b>' + pct(bt) + '</b><small>' + esc(y.btts) + '</small></p><p><b>' + pct(nil) + '</b><small>' + esc(y.nil) + '</small></p></div>' : '') +
+      (bigs.length ? card(y.big, bigs.map(function (z) { return '<div class="vf-sr vf-big"><span>' + esc(VX().j.charAt(0)) + z.j + '</span><span class="vf-bm">' + vfTeam(z.f.h) + '<b>' + z.f.ft[0] + ' - ' + z.f.ft[1] + '</b>' + vfTeam(z.f.a) + '</span></div>'; }).join('')) : '') +
       (played.length ? card(y.att, top(played.slice().sort(function (a, b) { return b.bp - a.bp || a.j - b.j; }), function (r) { return r.bp; })) +
         card(y.def, top(played.slice().sort(function (a, b) { return a.bc - b.bc || b.j - a.j; }), function (r) { return r.bc; })) +
+        card(y.wins, top(played.slice().sort(function (a, b) { return b.v - a.v || b.pts - a.pts; }), function (r) { return r.v; })) +
         card(y.form, played.slice().sort(function (a, b) { return pts5(b) - pts5(a) || b.pts - a.pts; }).slice(0, 5).map(function (r, i) { return '<div class="vf-sr"><span>' + (i + 1) + '</span>' + vfTeam(r.t) + pills(r) + '</div>'; }).join('')) : '');
   }
   function vfBodyHtml() {
@@ -1736,14 +1742,14 @@
       var lv = vfLive();
       if (lv) return vfDayHtml(lv);
       var nx = vfNext();
-      return '<div class="vf-none"><p>' + esc(y.none) + '</p>' + (nx ? '<p class="vf-nin">' + esc(y.nextIn) + ' <em data-vfko="' + nx.ko + '">' + vfClock(nx.ko - vf.close - vfNow()) + '</em></p><button type="button" class="vf-go" data-vft="next">' + esc(y.next) + '</button>' : '') + '</div>';
+      return '<div class="vf-none"><p>' + esc(y.none) + '</p>' + (nx ? '<p class="vf-nin">' + esc(y.nextIn) + ' <em data-vfko="' + nx.ko + '">' + vfClock(nx.ko - vf.close - vfNow()) + '</em></p><button type="button" class="vf-go" data-vft="next">' + esc(x.tm) + '</button>' : '') + '</div>';
     }
     var n2 = vfNext();
     return n2 ? vfDayHtml(n2) : skelRows();
   }
   function vfPaint() {
     var b = $('vfBody'); if (!b || view !== 'virt') return;
-    if (!vfTab) vfTab = vf && !vfLive() ? 'next' : 'live';
+    if (!vfTab) vfTab = 'next'; // on arrive sur les matchs à venir (comme Populaire dans Paris)
     var tb = $('vfTabs'), th = vfTabs(); if (tb && tb.dataset.sig !== th) { tb.dataset.sig = th; tb.innerHTML = th; }
     var h = vfBodyHtml(); if (b.dataset.sig === h) return;
     var mb = mbox(), st = mb ? mb.scrollTop : 0;
